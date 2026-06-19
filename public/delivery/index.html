@@ -20,6 +20,21 @@
     <div id="menuGrid" class="grid grid-3"></div>
     <nav id="menuPagination" class="menu-pagination" aria-label="เปลี่ยนหน้ารายการอาหาร" hidden></nav>
     <section class="card" style="margin-top:18px"><div class="section-title"><h2>ตะกร้าอาหาร</h2><span id="cartCount" class="badge">0 รายการ</span></div><div id="cartList" class="cart-list"></div></section>
+
+    <section class="card" style="margin-top:18px">
+      <div class="section-title"><h2>บัญชีและที่อยู่จัดส่ง</h2></div>
+      <div class="grid grid-2" style="align-items:center">
+        <div>
+          <div id="customerAccount" hidden><strong id="customerAccountName"></strong></div>
+          <div id="customerModeText" class="menu-category">โหมด Guest: ที่อยู่จะจำเฉพาะอุปกรณ์และเบราว์เซอร์นี้</div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+          <button type="button" class="btn btn-primary" id="googleLoginButton">เข้าสู่ระบบด้วย Google</button>
+          <button type="button" class="btn" id="customerLogoutButton" hidden>ออกจากระบบลูกค้า</button>
+        </div>
+      </div>
+    </section>
+
     <section class="card" style="margin-top:18px">
       <div class="section-title"><h2>ข้อมูลจัดส่ง</h2></div>
       <div class="grid grid-2">
