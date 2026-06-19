@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/assets/css/app.css">
   <link rel="stylesheet" href="/assets/css/admin-upload.css">
   <link rel="stylesheet" href="/assets/css/menu-pagination.css">
+  <link rel="stylesheet" href="/assets/css/admin-sort.css">
   <title>จัดการระบบ</title>
 </head>
 <body data-roles="admin">
@@ -47,6 +48,22 @@
     </div>
 
     <section class="card" style="margin-top:16px">
+      <div class="section-title">
+        <div><h2>จัดลำดับการแสดงเมนู</h2><div class="menu-category">ลากจากสัญลักษณ์ ⋮⋮ เพื่อจัดลำดับหมวดและเมนู รองรับทั้งเมาส์และมือถือ</div></div>
+      </div>
+      <div class="sort-manager">
+        <div class="sort-panel">
+          <div class="sort-panel-head"><strong>ลำดับหมวดหมู่</strong><button type="button" class="btn btn-primary btn-sm" id="saveCategoryOrder">บันทึกลำดับหมวด</button></div>
+          <div id="categorySortList" class="sort-list"></div>
+        </div>
+        <div class="sort-panel">
+          <div class="sort-panel-head"><div><strong>ลำดับเมนูในหมวด</strong><div class="menu-category" id="selectedSortCategory">-</div></div><button type="button" class="btn btn-primary btn-sm" id="saveItemOrder">บันทึกลำดับเมนู</button></div>
+          <div id="itemSortList" class="sort-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:16px">
       <div class="section-title"><h2>รายการสินค้า/อาหาร</h2></div>
       <div class="grid grid-2" style="margin-bottom:12px">
         <input class="input" id="menuListSearch" placeholder="ค้นหาชื่อเมนูหรือหมวดหมู่...">
@@ -66,9 +83,11 @@
       <nav id="tableListPagination" class="menu-pagination" aria-label="แบ่งหน้ารายการโต๊ะ" hidden></nav>
     </section>
   </main>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
   <script type="module" src="/assets/js/page-guard.js"></script>
   <script type="module" src="/assets/js/admin.js"></script>
   <script type="module" src="/assets/js/admin-payment.js"></script>
   <script type="module" src="/assets/js/admin-list-pagination.js"></script>
+  <script type="module" src="/assets/js/admin-sort.js"></script>
 </body>
 </html>
