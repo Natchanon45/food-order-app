@@ -5,13 +5,14 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAT2YIuk4A0ibSBXpMA_3Im54gj9s4WRW8",
-  authDomain: "project-987b9bba-eddc-4459-bdb.firebaseapp.com",
-  projectId: "project-987b9bba-eddc-4459-bdb",
-  storageBucket: "project-987b9bba-eddc-4459-bdb.firebasestorage.app",
-  messagingSenderId: "298432652014",
-  appId: "1:298432652014:web:787620331c0de816f489ff",
-  measurementId: "G-4SLNZRLR5E"
+  apiKey: "AIzaSyAX4e6-nbiS9Y8tpqW8rKbMkryAwZXSmCo",
+  authDomain: "chat-45754.firebaseapp.com",
+  databaseURL: "https://chat-45754-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "chat-45754",
+  storageBucket: "chat-45754.firebasestorage.app",
+  messagingSenderId: "1046915702525",
+  appId: "1:1046915702525:web:869e1a0d1407375610e894",
+  measurementId: "G-2RR5CK5D89"
 };
 
 export const isFirebaseConfigured = !firebaseConfig.apiKey.startsWith("PUT_") && !firebaseConfig.projectId.startsWith("PUT_");
