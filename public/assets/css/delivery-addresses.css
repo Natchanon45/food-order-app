@@ -1,3 +1,18 @@
+.delivery-contact-grid {
+  align-items: start;
+}
+
+.delivery-contact-grid .field {
+  align-self: start;
+  align-content: start;
+  grid-template-rows: auto 44px 18px;
+}
+
+.delivery-contact-grid .input {
+  min-height: 44px;
+  height: 44px;
+}
+
 .address-book {
   margin-top: 14px;
   padding: 14px;
@@ -97,12 +112,18 @@
 }
 
 .address-lookup-status {
-  margin-top: 6px;
+  min-height: 18px;
+  margin-top: 0;
   color: var(--muted);
   font-size: 12px;
+  line-height: 18px;
 }
 
 @media (max-width: 480px) {
+  .delivery-contact-grid .field {
+    grid-template-rows: auto 44px auto;
+  }
+
   .address-book-head {
     align-items: flex-start;
   }
