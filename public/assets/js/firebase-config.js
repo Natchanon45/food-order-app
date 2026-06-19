@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 import {
   getFirestore, collection, addDoc, doc, getDoc, getDocs, setDoc, updateDoc,
-  deleteDoc, onSnapshot, query, where, orderBy, serverTimestamp
+  deleteDoc, onSnapshot, query, where, orderBy, serverTimestamp, runTransaction
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 import {
   getStorage, ref, uploadBytes, getDownloadURL, deleteObject
@@ -30,6 +30,6 @@ if (isFirebaseConfigured) {
 
 export {
   collection, addDoc, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc,
-  onSnapshot, query, where, orderBy, serverTimestamp,
+  onSnapshot, query, where, orderBy, serverTimestamp, runTransaction,
   ref, uploadBytes, getDownloadURL, deleteObject
 };
