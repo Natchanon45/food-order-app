@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#159447">
   <link rel="stylesheet" href="/assets/css/app.css">
+  <link rel="stylesheet" href="/assets/css/receipt-layout.css">
   <title>บันทึกคำสั่งซื้อ</title>
 </head>
 <body>
@@ -35,8 +36,8 @@
       <div><strong>โทร:</strong> <span id="receiptPhone">-</span></div>
       <div><strong>ที่อยู่:</strong> <span id="receiptAddress">-</span></div>
       <hr class="receipt-rule">
-      <table class="receipt-items">
-        <thead><tr><th>รายการ</th><th class="num">จำนวน</th><th class="num">ราคา</th><th class="num">รวม</th></tr></thead>
+      <table class="receipt-items receipt-items-3col">
+        <thead><tr><th>รายการ</th><th class="num receipt-unit">ราคา</th><th class="num receipt-line-total">รวม</th></tr></thead>
         <tbody id="receiptItems"></tbody>
       </table>
       <hr class="receipt-rule">
