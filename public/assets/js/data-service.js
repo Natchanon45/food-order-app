@@ -27,12 +27,30 @@ export const dataService = {
     if (usingDemoMode) return demoStore.tables.list();
     return mapDocs(await getDocs(collection(db, "tables")));
   },
+  async getTable(id) {
+    if (usingDemoMode) {
+      return demoStore.tables.list().find(item => item.id === id || item.code === id) || null;
+    }
+    const snapshot = await getDoc(doc(db, "tables", id));
+    return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
+  },
   async saveTable(table) {
     if (usingDemoMode) return demoStore.tables.save(table);
     const id = table.id || table.code;
-    const payload = { ...table };
+    const payload = { status: "available", orderToken: "", ...table };
     delete payload.id;
     return setDoc(doc(db, "tables", id), payload, { merge: true });
+  },
+  async updateTable(id, patch) {
+    if (usingDemoMode) {
+      const table = await this.getTable(id);
+      if (!table) return;
+      return demoStore.tables.save({ ...table, ...patch, id: table.id });
+    }
+    return updateDoc(doc(db, "tables", id), {
+      ...patch,
+      updatedAt: serverTimestamp()
+    });
   },
   async deleteTable(id) {
     if (usingDemoMode) return demoStore.tables.remove(id);
