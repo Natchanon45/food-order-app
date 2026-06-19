@@ -1,15 +1,21 @@
 import { dataService, usingDemoMode } from "./data-service.js";
-import { money, toast, getTableCode } from "./ui.js";
+import { money, toast, getTableCode, formatTime } from "./ui.js";
 
 const tableCode = getTableCode();
 const tableToken = new URLSearchParams(location.search).get("token") || "";
 const menuGrid = document.querySelector("#menuGrid");
 const cartList = document.querySelector("#cartList");
 const categoryTabs = document.querySelector("#categoryTabs");
+const previousOrdersSection = document.querySelector("#previousOrdersSection");
+const previousOrdersList = document.querySelector("#previousOrdersList");
+const previousRoundCount = document.querySelector("#previousRoundCount");
+const currentRoundLabel = document.querySelector("#currentRoundLabel");
 const cart = new Map();
 let menus = [];
+let sessionOrders = [];
 let activeCategory = "ทั้งหมด";
 let tableSessionValid = false;
+let unsubscribeOrders = null;
 
 if (usingDemoMode) {
   document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง: ยังไม่ได้ใส่ Firebase Config ข้อมูลจะเก็บในเบราว์เซอร์นี้</div>';
@@ -56,6 +62,41 @@ function renderMenus() {
   `).join("") : '<div class="card empty">ไม่พบเมนูในหมวดหมู่นี้</div>';
 }
 
+function timestampValue(value) {
+  if (!value) return 0;
+  if (typeof value?.toMillis === "function") return value.toMillis();
+  const parsed = new Date(value).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function renderPreviousOrders() {
+  const sorted = [...sessionOrders].sort((a, b) => timestampValue(a.createdAt) - timestampValue(b.createdAt));
+  currentRoundLabel.textContent = `รอบที่ ${sorted.length + 1}`;
+  previousRoundCount.textContent = `${sorted.length} รอบ`;
+  previousOrdersSection.hidden = sorted.length === 0;
+
+  previousOrdersList.innerHTML = sorted.map((order, index) => `
+    <article class="previous-round">
+      <div class="previous-round-head">
+        <div class="previous-round-title">รอบที่ ${index + 1}</div>
+        <small>${formatTime(order.createdAt)}</small>
+      </div>
+      <div class="previous-round-items">
+        ${(order.items || []).map(item => `
+          <div class="previous-round-item">
+            <span>${item.qty} × ${item.name}${item.note ? `<br><small>${item.note}</small>` : ""}</span>
+            <strong>${money(Number(item.qty) * Number(item.price))}</strong>
+          </div>
+        `).join("")}
+      </div>
+      <div class="previous-round-head" style="margin-top:8px;margin-bottom:0">
+        <small>ยืนยันแล้ว</small>
+        <strong>${money(order.totalAmount)} บาท</strong>
+      </div>
+    </article>
+  `).join("");
+}
+
 function updateCart() {
   const items = [...cart.values()];
   cartList.innerHTML = items.length ? items.map(item => `
@@ -71,7 +112,7 @@ function updateCart() {
         <button data-inc="${item.id}">+</button>
       </div>
     </div>
-  `).join("") : '<div class="empty">ยังไม่มีรายการในตะกร้า</div>';
+  `).join("") : '<div class="empty">ยังไม่มีรายการในรอบปัจจุบัน</div>';
 
   const totalQty = items.reduce((sum, item) => sum + item.qty, 0);
   const total = items.reduce((sum, item) => sum + item.qty * item.price, 0);
@@ -89,6 +130,19 @@ async function validateTableSession() {
     table.status === "occupied" &&
     table.orderToken === tableToken
   );
+}
+
+function startSharedOrderFeed() {
+  if (unsubscribeOrders) unsubscribeOrders();
+  unsubscribeOrders = dataService.subscribeOrders(orders => {
+    sessionOrders = orders.filter(order =>
+      order.orderType !== "delivery" &&
+      order.tableCode === tableCode &&
+      order.tableToken === tableToken &&
+      !["paid", "cancelled"].includes(order.status)
+    );
+    renderPreviousOrders();
+  });
 }
 
 categoryTabs.addEventListener("click", event => {
@@ -149,6 +203,7 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
     note: note || ""
   }));
   const totalAmount = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const roundNumber = sessionOrders.length + 1;
 
   button.disabled = true;
   button.textContent = "กำลังส่ง...";
@@ -157,6 +212,7 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
     await dataService.createOrder({
       tableCode,
       tableToken,
+      roundNumber,
       status: "pending",
       totalAmount,
       note: document.querySelector("#orderNote").value.trim(),
@@ -165,7 +221,7 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
     cart.clear();
     document.querySelector("#orderNote").value = "";
     updateCart();
-    toast("ส่งรายการเข้าครัวเรียบร้อย");
+    toast(`ส่งรายการรอบที่ ${roundNumber} เข้าครัวแล้ว`);
   } catch (error) {
     console.error(error);
     toast("ส่งออเดอร์ไม่สำเร็จ", "error");
@@ -187,6 +243,7 @@ try {
     menus = await dataService.listMenus();
     renderCategoryTabs();
     renderMenus();
+    startSharedOrderFeed();
   }
 } catch (error) {
   console.error(error);
