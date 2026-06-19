@@ -1,4 +1,4 @@
-function createPaginator({ rowsSelector, searchSelector, statusSelector, paginationSelector, emptyColumns }) {
+function createPaginator({ rowsSelector, searchSelector, statusSelector, paginationSelector, emptyColumns, activeWords }) {
   const rowsContainer = document.querySelector(rowsSelector);
   const searchInput = document.querySelector(searchSelector);
   const statusFilter = document.querySelector(statusSelector);
@@ -20,14 +20,19 @@ function createPaginator({ rowsSelector, searchSelector, statusSelector, paginat
     return [...rowsContainer.querySelectorAll(":scope > tr")].filter(row => !row.dataset.paginationEmpty);
   }
 
+  function rowStatus(row) {
+    if (row.dataset.active) return row.dataset.active === "true" ? "active" : "inactive";
+    const badgeText = row.querySelector(".badge")?.textContent.trim() || "";
+    return activeWords.includes(badgeText) ? "active" : "inactive";
+  }
+
   function filteredRows() {
     const keyword = (searchInput?.value || "").trim().toLowerCase();
     const status = statusFilter?.value || "all";
 
     return allDataRows().filter(row => {
       const textMatch = !keyword || row.textContent.toLowerCase().includes(keyword);
-      const rowStatus = row.dataset.active === "true" ? "active" : "inactive";
-      const statusMatch = status === "all" || status === rowStatus;
+      const statusMatch = status === "all" || status === rowStatus(row);
       return textMatch && statusMatch;
     });
   }
@@ -36,8 +41,7 @@ function createPaginator({ rowsSelector, searchSelector, statusSelector, paginat
     if (rendering) return;
     rendering = true;
 
-    const oldEmpty = rowsContainer.querySelector("[data-pagination-empty]");
-    if (oldEmpty) oldEmpty.remove();
+    rowsContainer.querySelector("[data-pagination-empty]")?.remove();
 
     const rows = allDataRows();
     const matched = filteredRows();
@@ -60,9 +64,9 @@ function createPaginator({ rowsSelector, searchSelector, statusSelector, paginat
 
     pagination.hidden = totalPages <= 1;
     pagination.innerHTML = totalPages <= 1 ? "" : `
-      <button type="button" class="menu-page-button" data-page="${currentPage - 1}" ${currentPage === 1 ? "disabled" : ""}>‹</button>
-      ${visiblePages(totalPages).map(page => `<button type="button" class="menu-page-button${page === currentPage ? " active" : ""}" data-page="${page}">${page}</button>`).join("")}
-      <button type="button" class="menu-page-button" data-page="${currentPage + 1}" ${currentPage === totalPages ? "disabled" : ""}>›</button>
+      <button type="button" class="menu-page-button" data-page="${currentPage - 1}" ${currentPage === 1 ? "disabled" : ""} aria-label="หน้าก่อนหน้า">‹</button>
+      ${visiblePages(totalPages).map(page => `<button type="button" class="menu-page-button${page === currentPage ? " active" : ""}" data-page="${page}" aria-label="หน้า ${page}">${page}</button>`).join("")}
+      <button type="button" class="menu-page-button" data-page="${currentPage + 1}" ${currentPage === totalPages ? "disabled" : ""} aria-label="หน้าถัดไป">›</button>
       <div class="menu-page-summary">หน้า ${currentPage} จาก ${totalPages} • ${matched.length} รายการ</div>
     `;
 
@@ -84,7 +88,13 @@ function createPaginator({ rowsSelector, searchSelector, statusSelector, paginat
     rowsContainer.closest("section")?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
-  const observer = new MutationObserver(() => {
+  const observer = new MutationObserver(mutations => {
+    const hasRealChange = mutations.some(mutation =>
+      [...mutation.addedNodes, ...mutation.removedNodes].some(node =>
+        node.nodeType === Node.ELEMENT_NODE && !node.dataset?.paginationEmpty
+      )
+    );
+    if (!hasRealChange) return;
     currentPage = 1;
     queueMicrotask(render);
   });
@@ -104,7 +114,8 @@ createPaginator({
   searchSelector: "#menuListSearch",
   statusSelector: "#menuListStatus",
   paginationSelector: "#menuListPagination",
-  emptyColumns: 6
+  emptyColumns: 6,
+  activeWords: ["เปิดขาย"]
 });
 
 createPaginator({
@@ -112,5 +123,6 @@ createPaginator({
   searchSelector: "#tableListSearch",
   statusSelector: "#tableListStatus",
   paginationSelector: "#tableListPagination",
-  emptyColumns: 4
+  emptyColumns: 4,
+  activeWords: ["ใช้งาน"]
 });
