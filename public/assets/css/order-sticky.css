@@ -1,0 +1,85 @@
+.table-order-page .app-header {
+  min-height: 58px;
+}
+
+.order-sticky-nav {
+  position: sticky;
+  top: 58px;
+  z-index: 19;
+  display: grid;
+  gap: 6px;
+  padding: 8px 10px 6px;
+  background: rgba(255, 255, 255, .97);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 5px 16px rgba(16, 35, 23, .08);
+  backdrop-filter: blur(10px);
+}
+
+.order-table-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 30px;
+  padding-inline: 3px;
+}
+
+.order-table-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.order-table-code {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--green);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.order-sticky-nav .category-tabs {
+  gap: 6px;
+  margin: 0;
+  padding: 0 0 3px;
+}
+
+.order-sticky-nav .category-tab {
+  min-height: 44px;
+  padding: 7px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.1;
+}
+
+.order-container {
+  padding-top: 12px;
+}
+
+.order-search-area {
+  margin-top: 4px;
+}
+
+@media (max-width: 480px) {
+  .table-order-page .app-header {
+    min-height: 54px;
+  }
+
+  .order-sticky-nav {
+    top: 54px;
+    padding-inline: 8px;
+  }
+
+  .order-sticky-nav .category-tab {
+    min-height: 44px;
+    padding-inline: 11px;
+    font-size: 12px;
+  }
+
+  .order-hero {
+    padding: 16px;
+  }
+}
