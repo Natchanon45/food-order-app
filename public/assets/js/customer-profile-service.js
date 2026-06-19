@@ -8,6 +8,16 @@ import {
 
 const GUEST_KEY = "food_order_guest_delivery_profile";
 
+function getGuestProfile() {
+  const saved = localStorage.getItem(GUEST_KEY);
+  return saved ? JSON.parse(saved) : { displayName: "", phone: "", addresses: [] };
+}
+
+function saveGuestProfile(payload) {
+  localStorage.setItem(GUEST_KEY, JSON.stringify(payload));
+  return payload;
+}
+
 export function watchCustomerAuth(callback) {
   return onAuthStateChanged(auth, callback);
 }
@@ -34,10 +44,10 @@ export async function logoutCustomer() {
 }
 
 export async function getCustomerProfile(user = auth.currentUser) {
-  if (!user) {
-    const saved = localStorage.getItem(GUEST_KEY);
-    return saved ? JSON.parse(saved) : { displayName: "", phone: "", addresses: [] };
-  }
+  if (!user) return getGuestProfile();
+
+  const staff = await getStaffSession(user);
+  if (staff) return getGuestProfile();
 
   const snapshot = await getDoc(doc(db, "customerProfiles", user.uid));
   return snapshot.exists()
@@ -53,13 +63,10 @@ export async function saveCustomerProfile(profile, user = auth.currentUser) {
     addresses: (profile.addresses || []).slice(0, 5)
   };
 
-  if (!user) {
-    localStorage.setItem(GUEST_KEY, JSON.stringify(payload));
-    return payload;
-  }
+  if (!user) return saveGuestProfile(payload);
 
   const staff = await getStaffSession(user);
-  if (staff) throw new Error("STAFF_SESSION_ACTIVE");
+  if (staff) return saveGuestProfile({ ...payload, email: "" });
 
   await setDoc(doc(db, "customerProfiles", user.uid), {
     ...payload,
