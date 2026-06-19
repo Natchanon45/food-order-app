@@ -21,6 +21,9 @@ function render(orders) {
   grid.innerHTML = active.length ? active.map(order => {
     const roundText = order.orderType === "delivery" ? "" : ` • รอบที่ ${order.roundNumber || 1}`;
     const title = order.orderType === "delivery" ? `Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}` : `โต๊ะ ${order.tableCode}${roundText}`;
+    const paymentBadge = order.orderType === "delivery"
+      ? `<p><span class="badge ${order.paymentStatus === "paid" ? "" : "warning"}">${order.paymentStatus === "paid" ? "ชำระเงินแล้ว" : "ยังไม่ชำระเงิน"}</span><br><strong>โทร:</strong> ${order.recipientPhone || "-"}<br><strong>ที่อยู่:</strong> ${order.deliveryAddress || "-"}</p>`
+      : "";
     const itemRows = (order.items || []).map((item, index) => `
       <li style="${item.cancelled ? "opacity:.48;text-decoration:line-through" : ""}">
         <strong>${item.qty} × ${item.name}</strong>${item.note ? `<br><small>หมายเหตุ: ${item.note}</small>` : ""}
@@ -30,7 +33,7 @@ function render(orders) {
 
     return `<article class="card order-card">
       <div class="order-head"><div><h2 style="margin:0">${title}</h2><small>${formatTime(order.createdAt)}</small></div><span class="badge">${statusLabel(order.status)}</span></div>
-      ${order.orderType === "delivery" ? `<p><strong>โทร:</strong> ${order.recipientPhone || "-"}<br><strong>ที่อยู่:</strong> ${order.deliveryAddress || "-"}</p>` : ""}
+      ${paymentBadge}
       <ul class="order-items">${itemRows}</ul>
       ${order.note ? `<p><strong>หมายเหตุรวม:</strong> ${order.note}</p>` : ""}
       <div class="order-head"><strong>รวม ${money(order.totalAmount)} บาท</strong></div>
@@ -72,8 +75,25 @@ grid.addEventListener("click", async event => {
   const button = event.target.closest("[data-id][data-status]");
   if (!button) return;
   const { id, status } = button.dataset;
-  await dataService.updateOrder(id, { status });
-  toast(`เปลี่ยนสถานะเป็น ${statusLabel(status)} แล้ว`);
+  const order = currentOrders.find(item => item.id === id);
+  button.disabled = true;
+
+  try {
+    const patch = { status };
+    if (order?.orderType === "delivery" && status === "served" && order.paymentStatus === "paid") {
+      patch.status = "paid";
+      patch.completedAt = new Date().toISOString();
+    }
+
+    await dataService.updateOrder(id, patch);
+    toast(patch.status === "paid"
+      ? "ส่งให้ไรเดอร์และปิดออเดอร์ Delivery แล้ว"
+      : `เปลี่ยนสถานะเป็น ${statusLabel(status)} แล้ว`);
+  } catch (error) {
+    console.error(error);
+    toast("อัปเดตสถานะไม่สำเร็จ", "error");
+    button.disabled = false;
+  }
 });
 
 dataService.subscribeOrders(render);
