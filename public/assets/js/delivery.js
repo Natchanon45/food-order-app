@@ -14,12 +14,23 @@ const promptPayQr = document.querySelector("#promptPayQr");
 const promptPayPlaceholder = document.querySelector("#promptPayPlaceholder");
 const promptPayAmount = document.querySelector("#promptPayAmount");
 const promptPayName = document.querySelector("#promptPayName");
+const paymentSlipWrap = document.querySelector("#paymentSlipWrap");
 const paymentSlip = document.querySelector("#paymentSlip");
+const paymentSlipDropzone = document.querySelector("#paymentSlipDropzone");
+const paymentSlipContent = document.querySelector("#paymentSlipContent");
+const paymentSlipPreviewWrap = document.querySelector("#paymentSlipPreviewWrap");
+const paymentSlipPreview = document.querySelector("#paymentSlipPreview");
+const paymentSlipFileName = document.querySelector("#paymentSlipFileName");
+const paymentSlipFileSize = document.querySelector("#paymentSlipFileSize");
+const paymentSlipError = document.querySelector("#paymentSlipError");
+const removePaymentSlip = document.querySelector("#removePaymentSlip");
 const cart = new Map();
 let menus = [];
 let activeCategory = "ทั้งหมด";
 let storeSettings = {};
 let currentTotal = 0;
+let selectedSlipFile = null;
+let selectedSlipObjectUrl = "";
 
 function categories() {
   return ["ทั้งหมด", ...new Set(menus.filter(x => x.active !== false).map(x => x.category || "อื่น ๆ"))];
@@ -45,7 +56,12 @@ function showPromptPayPlaceholder(message) {
 function renderPromptPay() {
   const isPromptPay = paymentMethod.value === "promptpay";
   promptPaySection.hidden = !isPromptPay;
-  if (!isPromptPay) return;
+  paymentSlipWrap.hidden = !isPromptPay;
+  paymentSlip.required = isPromptPay;
+  if (!isPromptPay) {
+    clearSlipSelection();
+    return;
+  }
 
   promptPayAmount.textContent = `${money(currentTotal)} บาท`;
   promptPayName.textContent = storeSettings.promptPayName || storeSettings.bankAccountName || "";
@@ -83,6 +99,61 @@ function updateCart() {
   renderPromptPay();
 }
 
+function formatFileSize(bytes = 0) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function setSlipError(message = "") {
+  paymentSlipError.textContent = message;
+  paymentSlipError.hidden = !message;
+}
+
+function clearSlipSelection() {
+  selectedSlipFile = null;
+  paymentSlip.value = "";
+  paymentSlipDropzone.classList.remove("has-file", "is-dragover");
+  paymentSlipContent.hidden = false;
+  paymentSlipPreviewWrap.hidden = true;
+  removePaymentSlip.hidden = true;
+  paymentSlipPreview.removeAttribute("src");
+  paymentSlipFileName.textContent = "-";
+  paymentSlipFileSize.textContent = "-";
+  setSlipError("");
+  if (selectedSlipObjectUrl) URL.revokeObjectURL(selectedSlipObjectUrl);
+  selectedSlipObjectUrl = "";
+}
+
+function selectSlipFile(file) {
+  if (!file) return;
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+  if (file.size > 8 * 1024 * 1024) {
+    clearSlipSelection();
+    setSlipError("สลิปต้องมีขนาดไม่เกิน 8 MB");
+    toast("สลิปต้องมีขนาดไม่เกิน 8 MB", "error");
+    return;
+  }
+  if (file.type && !allowedTypes.includes(file.type)) {
+    clearSlipSelection();
+    setSlipError("รองรับเฉพาะไฟล์รูปภาพ JPG, PNG, WebP และ HEIC");
+    toast("ชนิดไฟล์สลิปไม่รองรับ", "error");
+    return;
+  }
+
+  if (selectedSlipObjectUrl) URL.revokeObjectURL(selectedSlipObjectUrl);
+  selectedSlipFile = file;
+  selectedSlipObjectUrl = URL.createObjectURL(file);
+  paymentSlipPreview.src = selectedSlipObjectUrl;
+  paymentSlipFileName.textContent = file.name || "สลิปการชำระเงิน";
+  paymentSlipFileSize.textContent = formatFileSize(file.size);
+  paymentSlipContent.hidden = true;
+  paymentSlipPreviewWrap.hidden = false;
+  removePaymentSlip.hidden = false;
+  paymentSlipDropzone.classList.add("has-file");
+  setSlipError("");
+}
+
 async function uploadSlip(file, orderId) {
   if (!file) return { url: "", path: "" };
   if (file.size > 8 * 1024 * 1024) throw new Error("SLIP_TOO_LARGE");
@@ -93,6 +164,25 @@ async function uploadSlip(file, orderId) {
   await uploadBytes(fileRef, file, { contentType: file.type || "image/jpeg" });
   return { url: await getDownloadURL(fileRef), path };
 }
+
+paymentSlip.addEventListener("change", event => selectSlipFile(event.target.files?.[0] || null));
+
+for (const eventName of ["dragenter", "dragover"]) {
+  paymentSlipDropzone.addEventListener(eventName, event => {
+    event.preventDefault();
+    paymentSlipDropzone.classList.add("is-dragover");
+  });
+}
+
+for (const eventName of ["dragleave", "drop"]) {
+  paymentSlipDropzone.addEventListener(eventName, event => {
+    event.preventDefault();
+    paymentSlipDropzone.classList.remove("is-dragover");
+  });
+}
+
+paymentSlipDropzone.addEventListener("drop", event => selectSlipFile(event.dataTransfer?.files?.[0] || null));
+removePaymentSlip.addEventListener("click", clearSlipSelection);
 
 categoryTabs.addEventListener("click", event => {
   const button = event.target.closest("[data-category]");
@@ -139,12 +229,13 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
   }
 
   const method = paymentMethod.value;
-  const slipFile = paymentSlip.files?.[0] || null;
   if (method === "promptpay" && !storeSettings.promptPayId) {
     toast("ร้านยังไม่ได้ตั้งค่าเลขพร้อมเพย์", "error");
     return;
   }
-  if (method === "promptpay" && !slipFile) {
+  if (method === "promptpay" && !selectedSlipFile) {
+    setSlipError("กรุณาแนบสลิปก่อนยืนยันคำสั่งซื้อ");
+    paymentSlipDropzone.scrollIntoView({ behavior: "smooth", block: "center" });
     toast("กรุณาแนบสลิปหรือหลักฐานการชำระ", "error");
     return;
   }
@@ -171,11 +262,12 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
     });
 
     if (method === "promptpay" && result?.id) {
-      const slip = await uploadSlip(slipFile, result.id);
+      const slip = await uploadSlip(selectedSlipFile, result.id);
       await dataService.updateOrder(result.id, { paymentSlipUrl: slip.url, paymentSlipPath: slip.path });
     }
 
     cart.clear();
+    clearSlipSelection();
     updateCart();
     toast("ส่งคำสั่งซื้อ Delivery เรียบร้อย");
     if (result?.id) location.href = `/delivery/success/?order=${encodeURIComponent(result.id)}`;
