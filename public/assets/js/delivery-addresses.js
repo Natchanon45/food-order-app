@@ -16,11 +16,13 @@ const addressText = document.querySelector("#addressText");
 const addressDefault = document.querySelector("#addressDefault");
 const saveAddressButton = document.querySelector("#saveAddressButton");
 const cancelAddressButton = document.querySelector("#cancelAddressButton");
+const submitOrderButton = document.querySelector("#submitOrder");
 
 let currentProfile = { displayName: "", addresses: [] };
 let selectedAddressId = "";
 let editingAddressId = "";
 let lookupTimer = null;
+let bypassSubmitCapture = false;
 
 function normalizePhone(value) {
   return String(value || "").replace(/\D/g, "");
@@ -161,6 +163,7 @@ saveAddressButton.addEventListener("click", async () => {
     return;
   }
 
+  const wasEditing = Boolean(editingAddressId);
   const id = editingAddressId || newAddressId();
   const isDefault = addressDefault.checked || addresses.length === 0;
   if (isDefault) addresses = addresses.map(item => ({ ...item, isDefault: false }));
@@ -179,7 +182,7 @@ saveAddressButton.addEventListener("click", async () => {
     await persistProfile();
     closeAddressForm();
     renderAddressBook();
-    toast(editingAddressId ? "แก้ไขที่อยู่แล้ว" : "บันทึกที่อยู่แล้ว");
+    toast(wasEditing ? "แก้ไขที่อยู่แล้ว" : "บันทึกที่อยู่แล้ว");
   } catch (error) {
     console.error(error);
     toast("บันทึกที่อยู่ไม่สำเร็จ", "error");
@@ -256,5 +259,36 @@ export async function saveCurrentDeliveryAddress() {
   currentProfile = { ...currentProfile, displayName: recipientName, addresses: addresses.slice(0, 5) };
   await dataService.saveDeliveryCustomer(phone, currentProfile);
 }
+
+submitOrderButton.addEventListener("click", async event => {
+  if (bypassSubmitCapture) {
+    bypassSubmitCapture = false;
+    return;
+  }
+
+  const phone = normalizePhone(phoneInput.value);
+  const recipientName = nameInput.value.trim();
+  const address = addressInput.value.trim();
+  if (phone.length < 9 || !recipientName || !address) return;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  submitOrderButton.disabled = true;
+  const originalText = submitOrderButton.textContent;
+  submitOrderButton.textContent = "กำลังบันทึกที่อยู่...";
+
+  try {
+    await saveCurrentDeliveryAddress();
+    bypassSubmitCapture = true;
+    submitOrderButton.disabled = false;
+    submitOrderButton.textContent = originalText;
+    submitOrderButton.click();
+  } catch (error) {
+    console.error(error);
+    submitOrderButton.disabled = false;
+    submitOrderButton.textContent = originalText;
+    toast("บันทึกที่อยู่ไม่สำเร็จ กรุณาลองใหม่", "error");
+  }
+}, true);
 
 lookupStatus.textContent = "กรอกเบอร์โทรเพื่อค้นหาที่อยู่เดิม";
