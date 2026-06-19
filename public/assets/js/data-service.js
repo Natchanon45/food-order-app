@@ -78,6 +78,29 @@ export const dataService = {
       updatedAt: serverTimestamp()
     });
   },
+  async getStoreSettings() {
+    const fallback = {
+      shopName: "Food Order QR",
+      shopAddress: "",
+      shopPhone: ""
+    };
+    if (usingDemoMode) {
+      const saved = localStorage.getItem("food_order_store_settings");
+      return saved ? { ...fallback, ...JSON.parse(saved) } : fallback;
+    }
+    const snapshot = await getDoc(doc(db, "settings", "store"));
+    return snapshot.exists() ? { ...fallback, ...snapshot.data() } : fallback;
+  },
+  async saveStoreSettings(settings) {
+    if (usingDemoMode) {
+      localStorage.setItem("food_order_store_settings", JSON.stringify(settings));
+      return settings;
+    }
+    return setDoc(doc(db, "settings", "store"), {
+      ...settings,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+  },
   subscribeOrders(callback) {
     if (usingDemoMode) {
       const emit = () => callback(demoStore.orders.list());
