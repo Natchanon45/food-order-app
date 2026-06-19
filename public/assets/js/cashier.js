@@ -7,8 +7,10 @@ if (usingDemoMode) {
 }
 
 const grid = document.querySelector("#orderGrid");
+let currentOrders = [];
 
 function render(orders) {
+  currentOrders = orders;
   const active = orders.filter(order => !["paid", "cancelled"].includes(order.status));
 
   grid.innerHTML = active.length
@@ -49,11 +51,33 @@ function render(orders) {
 }
 
 grid.addEventListener("click", async event => {
-  const { id, status } = event.target.dataset;
-  if (!id || !status) return;
+  const button = event.target.closest("[data-id][data-status]");
+  if (!button) return;
 
-  await dataService.updateOrder(id, { status });
-  toast(status === "paid" ? "ปิดบิลเรียบร้อย" : "ยกเลิกบิลแล้ว");
+  const { id, status } = button.dataset;
+  const order = currentOrders.find(item => item.id === id);
+  button.disabled = true;
+
+  try {
+    await dataService.updateOrder(id, { status });
+
+    if ((status === "paid" || status === "cancelled") && order?.tableCode) {
+      const table = await dataService.getTable(order.tableCode);
+      if (table && (!order.tableToken || table.orderToken === order.tableToken)) {
+        await dataService.updateTable(table.id, {
+          status: "available",
+          orderToken: "",
+          sessionStartedAt: null
+        });
+      }
+    }
+
+    toast(status === "paid" ? "ปิดบิลและคืนสถานะโต๊ะว่างแล้ว" : "ยกเลิกบิลและคืนสถานะโต๊ะว่างแล้ว");
+  } catch (error) {
+    console.error(error);
+    toast("อัปเดตสถานะไม่สำเร็จ", "error");
+    button.disabled = false;
+  }
 });
 
 dataService.subscribeOrders(render);
