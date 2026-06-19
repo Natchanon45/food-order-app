@@ -1,3 +1,4 @@
+export const APP_VERSION = "1.1.0";
 export const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
 
 export const money = (value = 0) => new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value) || 0);
@@ -24,10 +25,21 @@ export function formatTime(value) {
   return date.toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" });
 }
 
+function mountVersion() {
+  if (document.querySelector(".app-version")) return;
+  const footer = document.createElement("footer");
+  footer.className = "app-version";
+  footer.textContent = `Food Order QR • Version ${APP_VERSION}`;
+  document.body.appendChild(footer);
+}
+
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mountVersion);
+else mountVersion();
+
 document.addEventListener("error", event => {
   const image = event.target;
   if (!(image instanceof HTMLImageElement)) return;
-  if (!image.closest(".menu-image") && !image.matches("[data-food-image]")) return;
+  if (!image.closest(".menu-image") && !image.matches("[data-food-image]") && image.id !== "menuImagePreview") return;
   if (image.dataset.defaultApplied === "true") return;
 
   image.dataset.defaultApplied = "true";
