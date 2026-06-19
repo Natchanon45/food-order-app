@@ -38,19 +38,19 @@ function roleLabel(role) {
 function greetingName(profile) {
   if (profile.role === "cashier") return "แคชเชียร์";
   if (profile.role === "kitchen") return "Kitchen";
+  if (profile.role === "admin") return "Admin";
+  if (profile.role === "super_admin") return "Owner";
   return profile.displayName || roleLabel(profile.role);
 }
 
 function roleMenuLinks(profile) {
-  const links = [
-    { href: "/", icon: "home", label: "หน้าหลัก" }
-  ];
+  const links = [{ href: "/", icon: "home", label: "หน้าหลัก" }];
 
-  if (profile.role === "cashier" || profile.role === "super_admin") {
+  if (["cashier", "super_admin"].includes(profile.role)) {
     links.push({ href: "/cashier/table-qr", icon: "table", label: "ออกโต๊ะ" });
   }
 
-  if (profile.role === "admin" || profile.role === "super_admin") {
+  if (["admin", "super_admin"].includes(profile.role)) {
     links.push({ href: "/admin", icon: "settings", label: "จัดการระบบ" });
   }
 
@@ -61,7 +61,7 @@ function roleMenuLinks(profile) {
   return links;
 }
 
-function mountUserMenu(profile) {
+export function mountUserMenu(profile) {
   ensureIconStyles();
   const header = document.querySelector(".app-header");
   if (!header || header.querySelector("[data-user-menu]")) return;
@@ -103,16 +103,12 @@ function mountUserMenu(profile) {
     trigger.setAttribute("aria-expanded", "false");
   };
 
-  const toggleMenu = () => {
+  trigger.addEventListener("click", event => {
+    event.stopPropagation();
     const nextOpen = panel.hidden;
     panel.hidden = !nextOpen;
     menu.classList.toggle("open", nextOpen);
     trigger.setAttribute("aria-expanded", String(nextOpen));
-  };
-
-  trigger.addEventListener("click", event => {
-    event.stopPropagation();
-    toggleMenu();
   });
 
   document.addEventListener("click", event => {
@@ -155,7 +151,7 @@ export async function requireRole(allowedRoles = []) {
 
   const profile = await getUserProfile(user);
   if (!profile || profile.active === false || (profile.role !== "super_admin" && !allowedRoles.includes(profile.role))) {
-    location.replace(ROLE_HOME[profile?.role] || "/login");
+    location.replace(ROLE_HOME[profile?.role] || "/delivery");
     return new Promise(() => {});
   }
 
