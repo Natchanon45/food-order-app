@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="/assets/css/app.css">
   <title>หน้าแคชเชียร์</title>
 </head>
-<body>
+<body data-roles="cashier">
   <div id="demoBanner"></div>
   <header class="app-header">
     <div class="brand"><span class="brand-mark">FO</span>หน้าแคชเชียร์</div>
@@ -17,12 +17,10 @@
     </div>
   </header>
   <main class="container">
-    <section class="hero">
-      <h1>หน้าแคชเชียร์</h1>
-      <p>ออก QR ให้ลูกค้า ตรวจสอบยอดรวม และปิดบิล</p>
-    </section>
+    <section class="hero"><h1>หน้าแคชเชียร์</h1><p>ออก QR ให้ลูกค้า ตรวจสอบยอดรวม และปิดบิล</p></section>
     <div id="orderGrid" class="grid grid-2"></div>
   </main>
+  <script type="module" src="/assets/js/page-guard.js"></script>
   <script type="module" src="/assets/js/cashier.js"></script>
 </body>
 </html>
