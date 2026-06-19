@@ -1,10 +1,24 @@
 {
   "hosting": {
     "public": "public",
-    "cleanUrls": true
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "rewrites": [
+      { "source": "/order/**", "destination": "/order/index.html" },
+      { "source": "/kitchen/**", "destination": "/kitchen/index.html" },
+      { "source": "/cashier/**", "destination": "/cashier/index.html" },
+      { "source": "/admin/qr/**", "destination": "/admin/qr/index.html" },
+      { "source": "/admin/**", "destination": "/admin/index.html" }
+    ]
   },
   "firestore": {
-    "rules": "firestore.rules"
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
   },
   "storage": {
     "rules": "storage.rules"
