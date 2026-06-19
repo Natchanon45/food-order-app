@@ -1,14 +1,24 @@
 import { dataService, usingDemoMode } from "./data-service.js";
+import { storage, ref, uploadBytes, getDownloadURL } from "./firebase-config.js";
 import { money, toast } from "./ui.js";
+import { generatePromptPayPayload } from "./promptpay.js";
 
 if (usingDemoMode) document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง</div>';
 
 const menuGrid = document.querySelector("#menuGrid");
 const cartList = document.querySelector("#cartList");
 const categoryTabs = document.querySelector("#categoryTabs");
+const paymentMethod = document.querySelector("#paymentMethod");
+const promptPaySection = document.querySelector("#promptPaySection");
+const promptPayQr = document.querySelector("#promptPayQr");
+const promptPayAmount = document.querySelector("#promptPayAmount");
+const promptPayName = document.querySelector("#promptPayName");
+const paymentSlip = document.querySelector("#paymentSlip");
 const cart = new Map();
 let menus = [];
 let activeCategory = "ทั้งหมด";
+let storeSettings = {};
+let currentTotal = 0;
 
 function categories() {
   return ["ทั้งหมด", ...new Set(menus.filter(x => x.active !== false).map(x => x.category || "อื่น ๆ"))];
@@ -21,17 +31,52 @@ function renderTabs() {
 function renderMenus() {
   const keyword = document.querySelector("#searchInput").value.trim().toLowerCase();
   const filtered = menus.filter(item => item.active !== false && (!keyword || item.name.toLowerCase().includes(keyword)) && (activeCategory === "ทั้งหมด" || (item.category || "อื่น ๆ") === activeCategory));
-  menuGrid.innerHTML = filtered.length ? filtered.map(item => `<article class="card menu-card"><div class="menu-image">${item.image ? `<img src="${item.image}" alt="${item.name}">` : "🍲"}</div><div class="menu-name">${item.name}</div><div class="menu-category">${item.category || "อื่น ๆ"}</div><div class="menu-footer"><span class="price">${money(item.price)} บาท</span><button class="btn btn-primary btn-sm" data-add="${item.id}">เพิ่ม</button></div></article>`).join("") : '<div class="card empty">ไม่พบเมนู</div>';
+  menuGrid.innerHTML = filtered.length ? filtered.map(item => `<article class="card menu-card"><div class="menu-image"><img src="${item.image}" alt="${item.name}"></div><div class="menu-name">${item.name}</div><div class="menu-category">${item.category || "อื่น ๆ"}</div><div class="menu-footer"><span class="price">${money(item.price)} บาท</span><button class="btn btn-primary btn-sm" data-add="${item.id}">เพิ่ม</button></div></article>`).join("") : '<div class="card empty">ไม่พบเมนู</div>';
+}
+
+function renderPromptPay() {
+  const isPromptPay = paymentMethod.value === "promptpay";
+  promptPaySection.hidden = !isPromptPay;
+  if (!isPromptPay) return;
+
+  promptPayAmount.textContent = `${money(currentTotal)} บาท`;
+  promptPayName.textContent = storeSettings.promptPayName || storeSettings.bankAccountName || "";
+
+  if (!storeSettings.promptPayId || currentTotal <= 0) {
+    promptPayQr.removeAttribute("src");
+    promptPayQr.alt = "ยังไม่พร้อมสร้าง QR";
+    return;
+  }
+
+  try {
+    const payload = generatePromptPayPayload(storeSettings.promptPayId, currentTotal);
+    promptPayQr.src = `https://quickchart.io/qr?text=${encodeURIComponent(payload)}&size=320&margin=1`;
+  } catch (error) {
+    console.error(error);
+    promptPayQr.removeAttribute("src");
+  }
 }
 
 function updateCart() {
   const items = [...cart.values()];
   cartList.innerHTML = items.length ? items.map(item => `<div class="cart-row"><div><strong>${item.name}</strong><div class="menu-category">${money(item.price)} บาท</div><input class="input" data-note="${item.id}" value="${item.note || ""}" placeholder="หมายเหตุรายการ" style="margin-top:7px"></div><div class="qty"><button data-dec="${item.id}">−</button><strong>${item.qty}</strong><button data-inc="${item.id}">+</button></div></div>`).join("") : '<div class="empty">ยังไม่มีรายการในตะกร้า</div>';
   const totalQty = items.reduce((sum, x) => sum + x.qty, 0);
-  const total = items.reduce((sum, x) => sum + x.qty * Number(x.price), 0);
+  currentTotal = items.reduce((sum, x) => sum + x.qty * Number(x.price), 0);
   document.querySelector("#cartCount").textContent = `${totalQty} รายการ`;
-  document.querySelector("#cartTotal").textContent = money(total);
+  document.querySelector("#cartTotal").textContent = money(currentTotal);
   document.querySelector("#submitOrder").disabled = !items.length;
+  renderPromptPay();
+}
+
+async function uploadSlip(file, orderId) {
+  if (!file) return { url: "", path: "" };
+  if (file.size > 8 * 1024 * 1024) throw new Error("SLIP_TOO_LARGE");
+  if (!storage) throw new Error("STORAGE_NOT_READY");
+  const extension = (file.name.split(".").pop() || "jpg").replace(/[^a-zA-Z0-9]/g, "");
+  const path = `payment-slips/${orderId}/${Date.now()}.${extension}`;
+  const fileRef = ref(storage, path);
+  await uploadBytes(fileRef, file, { contentType: file.type || "image/jpeg" });
+  return { url: await getDownloadURL(fileRef), path };
 }
 
 categoryTabs.addEventListener("click", event => {
@@ -43,6 +88,7 @@ categoryTabs.addEventListener("click", event => {
 });
 
 document.querySelector("#searchInput").addEventListener("input", renderMenus);
+paymentMethod.addEventListener("change", renderPromptPay);
 menuGrid.addEventListener("click", event => {
   const id = event.target.dataset.add;
   if (!id) return;
@@ -77,29 +123,58 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
     return;
   }
 
+  const method = paymentMethod.value;
+  const slipFile = paymentSlip.files?.[0] || null;
+  if (method === "promptpay" && !storeSettings.promptPayId) {
+    toast("ร้านยังไม่ได้ตั้งค่าเลขพร้อมเพย์", "error");
+    return;
+  }
+  if (method === "promptpay" && !slipFile) {
+    toast("กรุณาแนบสลิปหรือหลักฐานการชำระ", "error");
+    return;
+  }
+
   const button = document.querySelector("#submitOrder");
-  const items = [...cart.values()].map(({ id, name, price, qty, note }) => ({ menuId: id, name, price: Number(price), qty, note: note || "" }));
+  const items = [...cart.values()].map(({ id, name, price, qty, note }) => ({ menuId: id, name, price: Number(price), qty, note: note || "", cancelled: false }));
   const totalAmount = items.reduce((sum, x) => sum + x.price * x.qty, 0);
-  const paymentMethod = document.querySelector("#paymentMethod").value;
 
   button.disabled = true;
   button.textContent = "กำลังส่ง...";
   try {
-    const result = await dataService.createOrder({ orderType: "delivery", tableCode: "DELIVERY", recipientName, recipientPhone, deliveryAddress, paymentMethod, paymentStatus: paymentMethod === "paid" ? "paid" : "unpaid", status: "pending", totalAmount, note: document.querySelector("#orderNote").value.trim(), items });
+    const result = await dataService.createOrder({
+      orderType: "delivery",
+      tableCode: "DELIVERY",
+      recipientName,
+      recipientPhone,
+      deliveryAddress,
+      paymentMethod: method,
+      paymentStatus: method === "promptpay" ? "pending_verification" : "unpaid",
+      status: "pending",
+      totalAmount,
+      note: document.querySelector("#orderNote").value.trim(),
+      items
+    });
+
+    if (method === "promptpay" && result?.id) {
+      const slip = await uploadSlip(slipFile, result.id);
+      await dataService.updateOrder(result.id, { paymentSlipUrl: slip.url, paymentSlipPath: slip.path });
+    }
+
     cart.clear();
     updateCart();
     toast("ส่งคำสั่งซื้อ Delivery เรียบร้อย");
     if (result?.id) location.href = `/delivery/success/?order=${encodeURIComponent(result.id)}`;
   } catch (error) {
     console.error(error);
-    toast("ส่งคำสั่งซื้อไม่สำเร็จ", "error");
+    const message = error.message === "SLIP_TOO_LARGE" ? "สลิปต้องมีขนาดไม่เกิน 8 MB" : "ส่งคำสั่งซื้อไม่สำเร็จ";
+    toast(message, "error");
   } finally {
     button.textContent = "ยืนยันการสั่ง";
     updateCart();
   }
 });
 
-menus = await dataService.listMenus();
+[menus, storeSettings] = await Promise.all([dataService.listMenus(), dataService.getStoreSettings()]);
 renderTabs();
 renderMenus();
 updateCart();
