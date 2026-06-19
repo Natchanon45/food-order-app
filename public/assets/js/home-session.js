@@ -8,14 +8,17 @@ if (!user) {
   const profile = await getUserProfile(user);
   const header = document.querySelector(".app-header");
   const loginLink = document.querySelector("#staffLoginLink");
+  const staffManagementCard = document.querySelector("#staffManagementCard");
+
   if (loginLink) loginLink.hidden = true;
+  if (staffManagementCard) staffManagementCard.hidden = profile?.role !== "super_admin";
 
   if (header && profile && !header.querySelector("[data-home-logout]")) {
     const account = document.createElement("div");
     account.className = "auth-user";
     account.innerHTML = `
       <span class="badge dark">${profile.displayName || profile.email} • ${profile.role}</span>
-      ${profile.role === "super_admin" ? '<a class="btn btn-primary btn-sm" href="/admin/users">ผู้ใช้งาน</a>' : ""}
+      ${profile.role === "super_admin" ? '<a class="btn btn-primary btn-sm" href="/admin/users">จัดการพนักงาน</a>' : ""}
       <button type="button" class="btn btn-sm" data-home-logout>ออกจากระบบ</button>
     `;
     header.appendChild(account);
