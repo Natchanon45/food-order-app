@@ -9,6 +9,7 @@ const menuGrid = document.querySelector("#menuGrid");
 const cartList = document.querySelector("#cartList");
 const categoryTabs = document.querySelector("#categoryTabs");
 const paymentMethod = document.querySelector("#paymentMethod");
+const deliveryZone = document.querySelector("#deliveryZone");
 const promptPaySection = document.querySelector("#promptPaySection");
 const promptPayQr = document.querySelector("#promptPayQr");
 const promptPayPlaceholder = document.querySelector("#promptPayPlaceholder");
@@ -29,6 +30,8 @@ const cart = new Map();
 let menus = [];
 let activeCategory = "ทั้งหมด";
 let storeSettings = {};
+let currentSubtotal = 0;
+let currentDeliveryFee = 0;
 let currentTotal = 0;
 let selectedSlipFile = null;
 let selectedSlipObjectUrl = "";
@@ -46,6 +49,24 @@ function renderMenus() {
   const keyword = document.querySelector("#searchInput").value.trim().toLowerCase();
   const filtered = menus.filter(item => item.active !== false && (!keyword || item.name.toLowerCase().includes(keyword)) && (activeCategory === "ทั้งหมด" || (item.category || "อื่น ๆ") === activeCategory));
   menuGrid.innerHTML = filtered.length ? filtered.map(item => `<article class="card menu-card"><div class="menu-image"><img src="${item.image}" alt="${item.name}"></div><div class="menu-name">${item.name}</div><div class="menu-category">${item.category || "อื่น ๆ"}</div><div class="menu-footer"><span class="price">${money(item.price)} บาท</span><button class="btn btn-primary btn-sm" data-add="${item.id}">เพิ่ม</button></div></article>`).join("") : '<div class="card empty">ไม่พบเมนู</div>';
+}
+
+function deliveryZones() {
+  return [
+    { id: "nearby", label: "ในเขตใกล้ร้าน", fee: Number(storeSettings.deliveryFeeNearby ?? 0) },
+    { id: "general", label: "พื้นที่ทั่วไป", fee: Number(storeSettings.deliveryFeeGeneral ?? 30) },
+    { id: "far", label: "พื้นที่ห่างไกล", fee: Number(storeSettings.deliveryFeeFar ?? 50) }
+  ];
+}
+
+function renderDeliveryZones() {
+  const previous = deliveryZone.value || "nearby";
+  deliveryZone.innerHTML = deliveryZones().map(zone => `<option value="${zone.id}">${zone.label} • ${money(zone.fee)} บาท</option>`).join("");
+  deliveryZone.value = deliveryZones().some(zone => zone.id === previous) ? previous : "nearby";
+}
+
+function selectedZone() {
+  return deliveryZones().find(zone => zone.id === deliveryZone.value) || deliveryZones()[0];
 }
 
 function showPromptPayPlaceholder(message) {
@@ -73,7 +94,7 @@ function renderPromptPay() {
     return;
   }
 
-  if (currentTotal <= 0) {
+  if (currentSubtotal <= 0) {
     showPromptPayPlaceholder("เพิ่มรายการอาหารเพื่อสร้าง QR ตามยอดสุทธิ");
     return;
   }
@@ -94,8 +115,12 @@ function updateCart() {
   const items = [...cart.values()];
   cartList.innerHTML = items.length ? items.map(item => `<div class="cart-row"><div><strong>${item.name}</strong><div class="menu-category">${money(item.price)} บาท</div><input class="input" data-note="${item.id}" value="${item.note || ""}" placeholder="หมายเหตุรายการ" style="margin-top:7px"></div><div class="qty"><button data-dec="${item.id}">−</button><strong>${item.qty}</strong><button data-inc="${item.id}">+</button></div></div>`).join("") : '<div class="empty">ยังไม่มีรายการในตะกร้า</div>';
   const totalQty = items.reduce((sum, x) => sum + x.qty, 0);
-  currentTotal = items.reduce((sum, x) => sum + x.qty * Number(x.price), 0);
+  currentSubtotal = items.reduce((sum, x) => sum + x.qty * Number(x.price), 0);
+  currentDeliveryFee = currentSubtotal > 0 ? selectedZone().fee : 0;
+  currentTotal = currentSubtotal + currentDeliveryFee;
   document.querySelector("#cartCount").textContent = `${totalQty} รายการ`;
+  document.querySelector("#deliverySubtotal").textContent = money(currentSubtotal);
+  document.querySelector("#deliveryFeeDisplay").textContent = money(currentDeliveryFee);
   document.querySelector("#cartTotal").textContent = money(currentTotal);
   submitOrderButton.disabled = isSubmitting || !items.length;
   renderPromptPay();
@@ -142,7 +167,6 @@ function selectSlipFile(file) {
     toast("ชนิดไฟล์สลิปไม่รองรับ", "error");
     return;
   }
-
   if (selectedSlipObjectUrl) URL.revokeObjectURL(selectedSlipObjectUrl);
   selectedSlipFile = file;
   selectedSlipObjectUrl = URL.createObjectURL(file);
@@ -178,131 +202,56 @@ function submitErrorMessage(error) {
 }
 
 paymentSlip.addEventListener("change", event => selectSlipFile(event.target.files?.[0] || null));
-
-for (const eventName of ["dragenter", "dragover"]) {
-  paymentSlipDropzone.addEventListener(eventName, event => {
-    event.preventDefault();
-    paymentSlipDropzone.classList.add("is-dragover");
-  });
-}
-
-for (const eventName of ["dragleave", "drop"]) {
-  paymentSlipDropzone.addEventListener(eventName, event => {
-    event.preventDefault();
-    paymentSlipDropzone.classList.remove("is-dragover");
-  });
-}
-
+for (const eventName of ["dragenter", "dragover"]) paymentSlipDropzone.addEventListener(eventName, event => { event.preventDefault(); paymentSlipDropzone.classList.add("is-dragover"); });
+for (const eventName of ["dragleave", "drop"]) paymentSlipDropzone.addEventListener(eventName, event => { event.preventDefault(); paymentSlipDropzone.classList.remove("is-dragover"); });
 paymentSlipDropzone.addEventListener("drop", event => selectSlipFile(event.dataTransfer?.files?.[0] || null));
 removePaymentSlip.addEventListener("click", clearSlipSelection);
-
-categoryTabs.addEventListener("click", event => {
-  const button = event.target.closest("[data-category]");
-  if (!button) return;
-  activeCategory = button.dataset.category;
-  renderTabs();
-  renderMenus();
-});
-
+categoryTabs.addEventListener("click", event => { const button = event.target.closest("[data-category]"); if (!button) return; activeCategory = button.dataset.category; renderTabs(); renderMenus(); });
 document.querySelector("#searchInput").addEventListener("input", renderMenus);
 paymentMethod.addEventListener("change", renderPromptPay);
-menuGrid.addEventListener("click", event => {
-  const id = event.target.dataset.add;
-  if (!id) return;
-  const menu = menus.find(x => x.id === id);
-  const current = cart.get(id);
-  cart.set(id, current ? { ...current, qty: current.qty + 1 } : { ...menu, qty: 1, note: "" });
-  updateCart();
-  toast(`เพิ่ม ${menu.name} แล้ว`);
-});
-cartList.addEventListener("click", event => {
-  const id = event.target.dataset.inc || event.target.dataset.dec;
-  if (!id) return;
-  const item = cart.get(id);
-  item.qty += event.target.dataset.inc ? 1 : -1;
-  if (item.qty <= 0) cart.delete(id); else cart.set(id, item);
-  updateCart();
-});
-cartList.addEventListener("input", event => {
-  const id = event.target.dataset.note;
-  if (!id) return;
-  const item = cart.get(id);
-  item.note = event.target.value;
-  cart.set(id, item);
-});
+deliveryZone.addEventListener("change", updateCart);
+menuGrid.addEventListener("click", event => { const id = event.target.dataset.add; if (!id) return; const menu = menus.find(x => x.id === id); const current = cart.get(id); cart.set(id, current ? { ...current, qty: current.qty + 1 } : { ...menu, qty: 1, note: "" }); updateCart(); toast(`เพิ่ม ${menu.name} แล้ว`); });
+cartList.addEventListener("click", event => { const id = event.target.dataset.inc || event.target.dataset.dec; if (!id) return; const item = cart.get(id); item.qty += event.target.dataset.inc ? 1 : -1; if (item.qty <= 0) cart.delete(id); else cart.set(id, item); updateCart(); });
+cartList.addEventListener("input", event => { const id = event.target.dataset.note; if (!id) return; const item = cart.get(id); item.note = event.target.value; cart.set(id, item); });
 
 submitOrderButton.addEventListener("click", async () => {
   if (isSubmitting) return;
-
   const recipientName = document.querySelector("#recipientName").value.trim();
   const recipientPhone = document.querySelector("#recipientPhone").value.trim();
   const deliveryAddress = document.querySelector("#deliveryAddress").value.trim();
-  if (!recipientName || !recipientPhone || !deliveryAddress) {
-    toast("กรุณากรอกชื่อผู้รับ ที่อยู่ และเบอร์โทรศัพท์", "error");
-    return;
-  }
-
+  if (!recipientName || !recipientPhone || !deliveryAddress) { toast("กรุณากรอกชื่อผู้รับ ที่อยู่ และเบอร์โทรศัพท์", "error"); return; }
   const method = paymentMethod.value;
-  if (method === "promptpay" && !storeSettings.promptPayId) {
-    toast("ร้านยังไม่ได้ตั้งค่าเลขพร้อมเพย์", "error");
-    return;
-  }
-  if (method === "promptpay" && !selectedSlipFile) {
-    setSlipError("กรุณาแนบสลิปก่อนยืนยันคำสั่งซื้อ");
-    paymentSlipDropzone.scrollIntoView({ behavior: "smooth", block: "center" });
-    toast("กรุณาแนบสลิปหรือหลักฐานการชำระ", "error");
-    return;
-  }
-
+  if (method === "promptpay" && !storeSettings.promptPayId) { toast("ร้านยังไม่ได้ตั้งค่าเลขพร้อมเพย์", "error"); return; }
+  if (method === "promptpay" && !selectedSlipFile) { setSlipError("กรุณาแนบสลิปก่อนยืนยันคำสั่งซื้อ"); paymentSlipDropzone.scrollIntoView({ behavior: "smooth", block: "center" }); toast("กรุณาแนบสลิปหรือหลักฐานการชำระ", "error"); return; }
   const items = [...cart.values()].map(({ id, name, price, qty, note }) => ({ menuId: id, name, price: Number(price), qty, note: note || "", cancelled: false }));
   if (!items.length) return;
-
-  const totalAmount = items.reduce((sum, x) => sum + x.price * x.qty, 0);
+  const zone = selectedZone();
   const orderId = crypto.randomUUID();
   const slipFile = selectedSlipFile;
-
   isSubmitting = true;
   submitOrderButton.disabled = true;
   submitOrderButton.textContent = method === "promptpay" ? "กำลังอัปโหลดสลิป..." : "กำลังส่ง...";
-
   try {
     let slip = { url: "", path: "" };
-    if (method === "promptpay") {
-      slip = await uploadSlip(slipFile, orderId);
-      submitOrderButton.textContent = "กำลังสร้างออเดอร์...";
-    }
-
+    if (method === "promptpay") { slip = await uploadSlip(slipFile, orderId); submitOrderButton.textContent = "กำลังสร้างออเดอร์..."; }
     await dataService.createOrderWithId(orderId, {
-      orderType: "delivery",
-      tableCode: "DELIVERY",
-      recipientName,
-      recipientPhone,
-      deliveryAddress,
-      paymentMethod: method,
-      paymentStatus: method === "promptpay" ? "pending_verification" : "unpaid",
-      paymentSlipUrl: slip.url,
-      paymentSlipPath: slip.path,
-      status: "pending",
-      totalAmount,
-      note: document.querySelector("#orderNote").value.trim(),
-      items
+      orderType: "delivery", tableCode: "DELIVERY", recipientName, recipientPhone, deliveryAddress,
+      deliveryZone: zone.id, deliveryZoneLabel: zone.label, deliveryFee: zone.fee,
+      subtotalAmount: currentSubtotal, totalAmount: currentTotal,
+      paymentMethod: method, paymentStatus: method === "promptpay" ? "pending_verification" : "unpaid",
+      paymentSlipUrl: slip.url, paymentSlipPath: slip.path,
+      status: "pending", note: document.querySelector("#orderNote").value.trim(), items
     });
-
-    cart.clear();
-    clearSlipSelection();
-    toast("ส่งคำสั่งซื้อ Delivery เรียบร้อย");
-    location.href = `/delivery/success/?order=${encodeURIComponent(orderId)}`;
+    cart.clear(); clearSlipSelection(); toast("ส่งคำสั่งซื้อ Delivery เรียบร้อย"); location.href = `/delivery/success/?order=${encodeURIComponent(orderId)}`;
   } catch (error) {
-    console.error(error);
-    toast(submitErrorMessage(error), "error");
+    console.error(error); toast(submitErrorMessage(error), "error");
   } finally {
-    isSubmitting = false;
-    submitOrderButton.textContent = "ยืนยันการสั่ง";
-    updateCart();
+    isSubmitting = false; submitOrderButton.textContent = "ยืนยันการสั่ง"; updateCart();
   }
 });
 
 [menus, storeSettings] = await Promise.all([dataService.listMenus(), dataService.getStoreSettings()]);
+renderDeliveryZones();
 renderTabs();
 renderMenus();
 updateCart();
