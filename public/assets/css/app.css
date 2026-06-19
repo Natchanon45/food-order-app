@@ -90,12 +90,16 @@ textarea.input { min-height: 82px; resize: vertical; }
 .receipt-items .num { text-align: right; white-space: nowrap; }
 .receipt-total { font-size: 1.25em; font-weight: 700; }
 .receipt-note { overflow-wrap: anywhere; }
+.app-version { padding: 16px 12px 26px; text-align: center; color: var(--muted); font-size: 12px; }
+.auth-shell { min-height: 100vh; display: grid; place-items: center; padding: 20px; }
+.auth-card { width: min(420px, 100%); }
+.auth-user { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 @media (max-width: 760px) { .grid-2, .grid-3, .nav-cards, .qr-grid { grid-template-columns: 1fr 1fr; } .table-list { font-size: 13px; } }
 @media (max-width: 480px) { .grid-2, .grid-3, .nav-cards, .qr-grid { grid-template-columns: 1fr; } .container { padding-inline: 10px; } .hero { border-radius: 18px; } .app-header { padding-inline: 12px; } .receipt { max-width: 100%; } }
 @media print {
   @page { margin: 0; }
   body { background: #fff; font-family: "TH Sarabun New", "Sarabun", sans-serif; }
-  .no-print, .app-header, .demo-banner { display: none !important; }
+  .no-print, .app-header, .demo-banner, .app-version { display: none !important; }
   .receipt-page { width: auto; margin: 0; padding: 0; }
   .receipt { width: 80mm; min-height: auto; margin: 0 auto; padding: 5mm 4mm; box-shadow: none; font-family: "TH Sarabun New", "Sarabun", sans-serif; font-size: 18px; }
   .receipt.size-58 { width: 58mm; padding: 4mm 3mm; font-size: 16px; }
