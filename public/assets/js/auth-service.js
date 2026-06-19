@@ -1,4 +1,9 @@
-import { auth, db, signInWithEmailAndPassword, signOut, onAuthStateChanged, doc, getDoc } from "./firebase-config.js";
+import {
+  auth, db, firebaseConfig, initializeApp, getAuth,
+  signInWithEmailAndPassword, signOut, onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  collection, doc, getDoc, getDocs, setDoc, updateDoc, serverTimestamp
+} from "./firebase-config.js";
 
 export const ROLE_HOME = {
   super_admin: "/",
@@ -6,6 +11,8 @@ export const ROLE_HOME = {
   cashier: "/cashier",
   kitchen: "/kitchen"
 };
+
+export const STAFF_ROLES = ["admin", "cashier", "kitchen", "super_admin"];
 
 export function waitForAuth() {
   return new Promise(resolve => {
@@ -60,4 +67,38 @@ export async function login(email, password) {
     throw new Error("ACCOUNT_NOT_ALLOWED");
   }
   return profile;
+}
+
+export async function listStaffUsers() {
+  const snapshot = await getDocs(collection(db, "users"));
+  return snapshot.docs
+    .map(item => ({ uid: item.id, ...item.data() }))
+    .sort((a, b) => String(a.displayName || a.email || "").localeCompare(String(b.displayName || b.email || ""), "th"));
+}
+
+export async function createStaffUser({ email, password, displayName, role, active }) {
+  if (!STAFF_ROLES.includes(role)) throw new Error("INVALID_ROLE");
+  const secondaryApp = initializeApp(firebaseConfig, `staff-create-${Date.now()}`);
+  const secondaryAuth = getAuth(secondaryApp);
+
+  try {
+    const credential = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+    await setDoc(doc(db, "users", credential.user.uid), {
+      email,
+      displayName,
+      role,
+      active: Boolean(active),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+    return credential.user.uid;
+  } finally {
+    await signOut(secondaryAuth).catch(() => {});
+  }
+}
+
+export async function updateStaffUser(uid, patch) {
+  const nextPatch = { ...patch, updatedAt: serverTimestamp() };
+  if (nextPatch.role && !STAFF_ROLES.includes(nextPatch.role)) throw new Error("INVALID_ROLE");
+  await updateDoc(doc(db, "users", uid), nextPatch);
 }
