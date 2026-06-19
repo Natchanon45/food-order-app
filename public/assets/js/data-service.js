@@ -93,6 +93,12 @@ export const dataService = {
     if (usingDemoMode) return demoStore.orders.add(order);
     return addDoc(collection(db, "orders"), { ...order, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
   },
+  async createOrderWithId(id, order) {
+    if (!id) throw new Error("ORDER_ID_REQUIRED");
+    if (usingDemoMode) return demoStore.orders.add({ ...order, id });
+    await setDoc(doc(db, "orders", id), { ...order, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+    return { id };
+  },
   async createTableOrder(order) {
     if (usingDemoMode) {
       const table = await this.getTable(order.tableCode);
