@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#159447">
   <link rel="stylesheet" href="/assets/css/app.css">
   <link rel="stylesheet" href="/assets/css/menu-qr.css">
+  <link rel="stylesheet" href="/assets/css/payment-slip.css">
   <title>สั่งอาหาร Delivery</title>
 </head>
 <body>
@@ -21,14 +22,32 @@
       <div class="grid grid-2"><div class="field"><label>ชื่อผู้รับ *</label><input class="input" id="recipientName" required maxlength="120"></div><div class="field"><label>เบอร์โทรศัพท์ *</label><input class="input" id="recipientPhone" type="tel" inputmode="tel" required maxlength="20"></div></div>
       <div class="field" style="margin-top:12px"><label>ที่อยู่จัดส่ง *</label><textarea class="input" id="deliveryAddress" required maxlength="500"></textarea></div>
       <div class="field" style="margin-top:12px"><label>หมายเหตุถึงร้าน</label><textarea class="input" id="orderNote" maxlength="300"></textarea></div>
-      <div class="field" style="margin-top:12px"><label>วิธีชำระเงิน *</label><select class="input" id="paymentMethod"><option value="promptpay">พร้อมเพย์/โอนเงิน</option><option value="cod">เก็บเงินปลายทาง</option></select></div>
+      <div class="field" style="margin-top:12px"><label>วิธีชำระเงิน *</label><select class="input" id="paymentMethod"><option value="promptpay">ชำระแล้วด้วยพร้อมเพย์/โอนเงิน</option><option value="cod">เก็บเงินปลายทาง</option></select></div>
       <div id="promptPaySection" class="card" style="margin-top:12px;text-align:center">
         <h3 style="margin-top:0">สแกน QR พร้อมเพย์</h3>
         <div id="promptPayPlaceholder" class="empty" style="padding:24px 12px">เพิ่มรายการอาหารเพื่อสร้าง QR ตามยอดสุทธิ</div>
         <img id="promptPayQr" width="220" height="220" alt="QR พร้อมเพย์" hidden>
         <div><strong id="promptPayAmount">0.00 บาท</strong></div>
         <div id="promptPayName" class="menu-category"></div>
-        <div class="field" style="margin-top:12px;text-align:left"><label>แนบสลิปหรือหลักฐานการชำระ *</label><input class="input" id="paymentSlip" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif"></div>
+
+        <div id="paymentSlipWrap" class="payment-slip-wrap" style="margin-top:14px;text-align:left">
+          <label style="font-size:13px;font-weight:700;color:var(--muted)">แนบสลิปหรือหลักฐานการชำระ *</label>
+          <div class="payment-slip-dropzone" id="paymentSlipDropzone">
+            <input id="paymentSlip" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" required>
+            <div class="payment-slip-content" id="paymentSlipContent">
+              <div class="payment-slip-icon">+</div>
+              <div class="payment-slip-title">แตะเพื่อแนบสลิป หรือลากไฟล์มาวาง</div>
+              <div class="payment-slip-help">รองรับรูปจากกล้องและคลังรูป • ไม่เกิน 8 MB</div>
+            </div>
+            <div class="payment-slip-preview" id="paymentSlipPreviewWrap" hidden>
+              <img id="paymentSlipPreview" alt="ตัวอย่างสลิป">
+              <div class="payment-slip-meta"><span id="paymentSlipFileName">-</span><span id="paymentSlipFileSize">-</span></div>
+            </div>
+          </div>
+          <div class="payment-slip-error" id="paymentSlipError" hidden></div>
+          <button type="button" class="btn btn-danger btn-sm" id="removePaymentSlip" hidden style="margin-top:8px">ลบสลิป</button>
+        </div>
+
         <small class="menu-category">ระบบรับหลักฐานไว้ให้ร้านตรวจสอบ แต่ไม่ได้ตรวจสอบกับธนาคารอัตโนมัติ</small>
       </div>
     </section>
