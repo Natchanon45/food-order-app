@@ -5,21 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#159447">
   <link rel="stylesheet" href="/assets/css/app.css">
+  <link rel="stylesheet" href="/assets/css/icons.css">
   <title>Food Order QR</title>
 </head>
 <body>
   <header class="app-header">
     <div class="brand"><span class="brand-mark">FO</span> Food Order QR</div>
-    <a class="btn btn-sm" id="staffLoginLink" href="/login" hidden>เข้าสู่ระบบพนักงาน</a>
   </header>
-  <main class="container">
-    <section class="hero"><h1>ระบบสั่งอาหาร</h1><p>รองรับสั่งที่โต๊ะและจัดส่ง Delivery</p></section>
+  <main class="container" id="staffDashboard" hidden>
+    <section class="hero"><h1>ระบบจัดการร้าน</h1><p>เมนูจะแสดงตามสิทธิ์ของผู้ใช้งาน</p></section>
     <section class="nav-cards">
-      <a class="card nav-card" href="/delivery"><span>🛵</span>สั่ง Delivery</a>
-      <a class="card nav-card" href="/kitchen"><span>👨‍🍳</span>หน้าครัว</a>
-      <a class="card nav-card" href="/cashier"><span>🧾</span>แคชเชียร์</a>
-      <a class="card nav-card" href="/admin"><span>⚙️</span>จัดการระบบ</a>
-      <a class="card nav-card" id="staffManagementCard" href="/admin/users" hidden><span>👥</span>จัดการพนักงาน</a>
+      <a class="card nav-card" href="/kitchen" data-dashboard-role="kitchen,super_admin" hidden><span>👨‍🍳</span>หน้าครัว</a>
+      <a class="card nav-card" href="/cashier" data-dashboard-role="cashier,super_admin" hidden><span>🧾</span>แคชเชียร์</a>
+      <a class="card nav-card" href="/admin" data-dashboard-role="admin,super_admin" hidden><span>⚙️</span>จัดการระบบ</a>
+      <a class="card nav-card" href="/admin/users" data-dashboard-role="super_admin" hidden><span>👥</span>จัดการพนักงาน</a>
     </section>
   </main>
   <script type="module" src="/assets/js/ui.js"></script>
