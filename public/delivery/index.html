@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/assets/css/menu-qr.css">
   <link rel="stylesheet" href="/assets/css/payment-slip.css">
   <link rel="stylesheet" href="/assets/css/menu-pagination.css">
+  <link rel="stylesheet" href="/assets/css/delivery-addresses.css">
   <title>สั่งอาหาร Delivery</title>
 </head>
 <body>
@@ -21,8 +22,30 @@
     <section class="card" style="margin-top:18px"><div class="section-title"><h2>ตะกร้าอาหาร</h2><span id="cartCount" class="badge">0 รายการ</span></div><div id="cartList" class="cart-list"></div></section>
     <section class="card" style="margin-top:18px">
       <div class="section-title"><h2>ข้อมูลจัดส่ง</h2></div>
-      <div class="grid grid-2"><div class="field"><label>ชื่อผู้รับ *</label><input class="input" id="recipientName" required maxlength="120"></div><div class="field"><label>เบอร์โทรศัพท์ *</label><input class="input" id="recipientPhone" type="tel" inputmode="tel" required maxlength="20"></div></div>
-      <div class="field" style="margin-top:12px"><label>ที่อยู่จัดส่ง *</label><textarea class="input" id="deliveryAddress" required maxlength="500"></textarea></div>
+      <div class="grid grid-2">
+        <div class="field"><label>ชื่อผู้รับ *</label><input class="input" id="recipientName" required maxlength="120"></div>
+        <div class="field"><label>เบอร์โทรศัพท์ *</label><input class="input" id="recipientPhone" type="tel" inputmode="tel" required maxlength="20"><div id="addressLookupStatus" class="address-lookup-status"></div></div>
+      </div>
+
+      <section id="addressBook" class="address-book" hidden>
+        <div class="address-book-head">
+          <div><strong>ที่อยู่จัดส่งของฉัน</strong><div class="menu-category">เลือกที่อยู่ที่ต้องการให้จัดส่ง</div></div>
+          <div style="display:flex;align-items:center;gap:8px"><span id="addressCount" class="badge">0/5 ที่อยู่</span><button type="button" class="btn btn-primary btn-sm" id="addAddressButton">+ เพิ่มที่อยู่</button></div>
+        </div>
+        <div id="addressList" class="address-list"></div>
+
+        <div id="addressForm" class="address-form" hidden>
+          <div class="grid grid-2">
+            <div class="field"><label>ชื่อที่อยู่ *</label><input class="input" id="addressLabel" maxlength="50" placeholder="เช่น บ้าน, ที่ทำงาน"></div>
+            <div class="field"><label>ชื่อผู้รับ *</label><input class="input" id="addressRecipient" maxlength="120"></div>
+          </div>
+          <div class="field" style="margin-top:10px"><label>รายละเอียดที่อยู่ *</label><textarea class="input" id="addressText" maxlength="500" placeholder="บ้านเลขที่ ถนน แขวง/ตำบล เขต/อำเภอ จังหวัด รหัสไปรษณีย์"></textarea></div>
+          <label style="display:block;margin-top:10px"><input type="checkbox" id="addressDefault"> ตั้งเป็นที่อยู่หลัก</label>
+          <div class="address-form-actions"><button type="button" class="btn" id="cancelAddressButton">ยกเลิก</button><button type="button" class="btn btn-primary" id="saveAddressButton">บันทึกที่อยู่</button></div>
+        </div>
+      </section>
+
+      <div class="field" style="margin-top:12px"><label>ที่อยู่จัดส่ง *</label><textarea class="input" id="deliveryAddress" required maxlength="500" placeholder="เลือกจากที่อยู่เดิม หรือกรอกที่อยู่ใหม่"></textarea></div>
       <div class="field" style="margin-top:12px"><label>หมายเหตุถึงร้าน</label><textarea class="input" id="orderNote" maxlength="300"></textarea></div>
       <div class="field" style="margin-top:12px"><label>วิธีชำระเงิน *</label><select class="input" id="paymentMethod"><option value="promptpay">ชำระแล้วด้วยพร้อมเพย์/โอนเงิน</option><option value="cod">เก็บเงินปลายทาง</option></select></div>
       <div id="promptPaySection" class="card" style="margin-top:12px;text-align:center">
@@ -31,25 +54,16 @@
         <img id="promptPayQr" width="220" height="220" alt="QR พร้อมเพย์" hidden>
         <div><strong id="promptPayAmount">0.00 บาท</strong></div>
         <div id="promptPayName" class="menu-category"></div>
-
         <div id="paymentSlipWrap" class="payment-slip-wrap" style="margin-top:14px;text-align:left">
           <label style="font-size:13px;font-weight:700;color:var(--muted)">แนบสลิปหรือหลักฐานการชำระ *</label>
           <div class="payment-slip-dropzone" id="paymentSlipDropzone">
             <input id="paymentSlip" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" required>
-            <div class="payment-slip-content" id="paymentSlipContent">
-              <div class="payment-slip-icon">+</div>
-              <div class="payment-slip-title">แตะเพื่อแนบสลิป หรือลากไฟล์มาวาง</div>
-              <div class="payment-slip-help">รองรับรูปจากกล้องและคลังรูป • ไม่เกิน 8 MB</div>
-            </div>
-            <div class="payment-slip-preview" id="paymentSlipPreviewWrap" hidden>
-              <img id="paymentSlipPreview" alt="ตัวอย่างสลิป">
-              <div class="payment-slip-meta"><span id="paymentSlipFileName">-</span><span id="paymentSlipFileSize">-</span></div>
-            </div>
+            <div class="payment-slip-content" id="paymentSlipContent"><div class="payment-slip-icon">+</div><div class="payment-slip-title">แตะเพื่อแนบสลิป หรือลากไฟล์มาวาง</div><div class="payment-slip-help">รองรับรูปจากกล้องและคลังรูป • ไม่เกิน 8 MB</div></div>
+            <div class="payment-slip-preview" id="paymentSlipPreviewWrap" hidden><img id="paymentSlipPreview" alt="ตัวอย่างสลิป"><div class="payment-slip-meta"><span id="paymentSlipFileName">-</span><span id="paymentSlipFileSize">-</span></div></div>
           </div>
           <div class="payment-slip-error" id="paymentSlipError" hidden></div>
           <button type="button" class="btn btn-danger btn-sm" id="removePaymentSlip" hidden style="margin-top:8px">ลบสลิป</button>
         </div>
-
         <small class="menu-category">ระบบรับหลักฐานไว้ให้ร้านตรวจสอบ แต่ไม่ได้ตรวจสอบกับธนาคารอัตโนมัติ</small>
       </div>
     </section>
