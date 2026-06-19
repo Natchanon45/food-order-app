@@ -9,6 +9,7 @@ const grid = document.querySelector("#orderGrid");
 let currentOrders = [];
 
 function paymentLabel(order) {
+  if (order.paymentStatus === "paid" && order.status === "served") return "ชำระแล้ว รอระบบปิดออเดอร์";
   if (order.paymentStatus === "paid") return "ตรวจสอบและรับชำระแล้ว";
   if (order.paymentStatus === "pending_verification") return "มีสลิป รอตรวจสอบ";
   if (order.paymentMethod === "cod") return "เก็บเงินปลายทาง";
@@ -55,9 +56,24 @@ grid.addEventListener("click", async event => {
   if (paymentButton) {
     if (!confirm("ตรวจสอบสลิปหรือรับเงินเรียบร้อยแล้วใช่หรือไม่?")) return;
     paymentButton.disabled = true;
+    const order = currentOrders.find(item => item.id === paymentButton.dataset.paymentId);
+
     try {
-      await dataService.updateOrder(paymentButton.dataset.paymentId, { paymentStatus: "paid", paidAt: new Date().toISOString() });
-      toast("บันทึกสถานะชำระเงินแล้ว");
+      const now = new Date().toISOString();
+      const patch = {
+        paymentStatus: "paid",
+        paidAt: now
+      };
+
+      if (order?.orderType === "delivery" && order.status === "served") {
+        patch.status = "paid";
+        patch.completedAt = now;
+      }
+
+      await dataService.updateOrder(paymentButton.dataset.paymentId, patch);
+      toast(patch.status === "paid"
+        ? "ชำระเงินและปิดออเดอร์ Delivery แล้ว"
+        : "บันทึกการชำระเงินแล้ว รอครัวส่งให้ไรเดอร์");
     } catch (error) {
       console.error(error);
       toast("บันทึกการชำระเงินไม่สำเร็จ", "error");
