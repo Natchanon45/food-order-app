@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.6.0";
+export const APP_VERSION = "1.6.1";
 export const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
 
 export const money = (value = 0) => new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value) || 0);
@@ -25,6 +25,64 @@ export function formatTime(value) {
   return date.toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" });
 }
 
+function iconMarkup(name) {
+  return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg#icon-${name}"></use></svg>`;
+}
+
+function mountIconStyles() {
+  if (document.querySelector('link[href="/assets/css/icons.css"]')) return;
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "/assets/css/icons.css";
+  document.head.appendChild(link);
+}
+
+function replaceSystemEmoji() {
+  const replacements = new Map([
+    ["🛵", "delivery"],
+    ["👨‍🍳", "kitchen"],
+    ["🧾", "receipt"],
+    ["⚙️", "settings"],
+    ["👥", "users"]
+  ]);
+
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(node => {
+    if (node.parentElement?.closest("script, style, textarea, input")) return;
+    let text = node.nodeValue || "";
+    const found = [...replacements.keys()].find(emoji => text.includes(emoji));
+    if (!found) return;
+
+    const fragment = document.createDocumentFragment();
+    while (text) {
+      let nearestIndex = -1;
+      let nearestEmoji = "";
+      for (const emoji of replacements.keys()) {
+        const index = text.indexOf(emoji);
+        if (index >= 0 && (nearestIndex < 0 || index < nearestIndex)) {
+          nearestIndex = index;
+          nearestEmoji = emoji;
+        }
+      }
+
+      if (nearestIndex < 0) {
+        fragment.append(document.createTextNode(text));
+        break;
+      }
+
+      if (nearestIndex > 0) fragment.append(document.createTextNode(text.slice(0, nearestIndex)));
+      const wrapper = document.createElement("span");
+      wrapper.innerHTML = iconMarkup(replacements.get(nearestEmoji));
+      fragment.append(wrapper.firstElementChild);
+      text = text.slice(nearestIndex + nearestEmoji.length);
+    }
+    node.replaceWith(fragment);
+  });
+}
+
 function mountVersion() {
   if (document.querySelector(".app-version")) return;
   const footer = document.createElement("footer");
@@ -33,8 +91,14 @@ function mountVersion() {
   document.body.appendChild(footer);
 }
 
-if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mountVersion);
-else mountVersion();
+function initializeUi() {
+  mountIconStyles();
+  replaceSystemEmoji();
+  mountVersion();
+}
+
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initializeUi);
+else initializeUi();
 
 document.addEventListener("error", event => {
   const image = event.target;
