@@ -1,5 +1,5 @@
 import { login, ROLE_HOME, waitForAuth, getUserProfile } from "./auth-service.js";
-import "./ui.js";
+import { toast } from "./ui.js";
 
 const existingUser = await waitForAuth();
 if (existingUser) {
@@ -12,6 +12,20 @@ if (existingUser) {
 const form = document.getElementById("loginForm");
 const button = document.getElementById("loginButton");
 const errorBox = document.getElementById("loginError");
+
+function getLoginErrorMessage(error) {
+  const code = String(error?.code || error?.message || "");
+
+  if (code.includes("invalid-credential") || code.includes("wrong-password") || code.includes("user-not-found")) {
+    return "อีเมลหรือรหัสผ่านไม่ถูกต้อง";
+  }
+  if (code.includes("invalid-email")) return "รูปแบบอีเมลไม่ถูกต้อง";
+  if (code.includes("too-many-requests")) return "มีการลองเข้าสู่ระบบหลายครั้งเกินไป กรุณารอสักครู่แล้วลองใหม่";
+  if (code.includes("network-request-failed")) return "ไม่สามารถเชื่อมต่อเครือข่ายได้ กรุณาตรวจสอบอินเทอร์เน็ต";
+  if (code.includes("ACCOUNT_NOT_ALLOWED")) return "บัญชีนี้ไม่มีสิทธิ์ใช้งานหรือถูกปิดใช้งาน";
+
+  return "เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบอีเมลและรหัสผ่าน";
+}
 
 form.addEventListener("submit", async event => {
   event.preventDefault();
@@ -28,8 +42,7 @@ form.addEventListener("submit", async event => {
     location.replace(next || ROLE_HOME[profile.role] || "/");
   } catch (error) {
     console.error(error);
-    errorBox.textContent = "อีเมล รหัสผ่าน หรือสิทธิ์ผู้ใช้งานไม่ถูกต้อง";
-    errorBox.hidden = false;
+    toast(getLoginErrorMessage(error), "error");
   } finally {
     button.disabled = false;
     button.textContent = "เข้าสู่ระบบ";
