@@ -2,12 +2,14 @@ import { dataService, usingDemoMode } from "./data-service.js";
 import { money, toast, getTableCode } from "./ui.js";
 
 const tableCode = getTableCode();
+const tableToken = new URLSearchParams(location.search).get("token") || "";
 const menuGrid = document.querySelector("#menuGrid");
 const cartList = document.querySelector("#cartList");
 const categoryTabs = document.querySelector("#categoryTabs");
 const cart = new Map();
 let menus = [];
 let activeCategory = "ทั้งหมด";
+let tableSessionValid = false;
 
 if (usingDemoMode) {
   document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง: ยังไม่ได้ใส่ Firebase Config ข้อมูลจะเก็บในเบราว์เซอร์นี้</div>';
@@ -15,29 +17,25 @@ if (usingDemoMode) {
 
 document.querySelector("#tableBadge").textContent = tableCode ? `โต๊ะ ${tableCode}` : "ไม่พบรหัสโต๊ะ";
 document.querySelector("#tableTitle").textContent = tableCode ? `เมนูสำหรับโต๊ะ ${tableCode}` : "กรุณาสแกน QR ของโต๊ะ";
-document.querySelector("#submitOrder").disabled = !tableCode;
+document.querySelector("#submitOrder").disabled = true;
 
 function categories() {
   return ["ทั้งหมด", ...new Set(
-    menus
-      .filter(item => item.active !== false)
-      .map(item => item.category || "อื่น ๆ")
+    menus.filter(item => item.active !== false).map(item => item.category || "อื่น ๆ")
   )];
 }
 
 function renderCategoryTabs() {
   categoryTabs.innerHTML = categories().map(category => `
-    <button
-      type="button"
-      class="category-tab${category === activeCategory ? " active" : ""}"
-      data-category="${category}"
-      role="tab"
-      aria-selected="${category === activeCategory}"
-    >${category}</button>
+    <button type="button" class="category-tab${category === activeCategory ? " active" : ""}"
+      data-category="${category}" role="tab" aria-selected="${category === activeCategory}">
+      ${category}
+    </button>
   `).join("");
 }
 
 function renderMenus() {
+  if (!tableSessionValid) return;
   const keyword = document.querySelector("#searchInput").value.trim().toLowerCase();
   const filtered = menus.filter(item =>
     item.active !== false &&
@@ -79,13 +77,23 @@ function updateCart() {
   const total = items.reduce((sum, item) => sum + item.qty * item.price, 0);
   document.querySelector("#cartCount").textContent = `${totalQty} รายการ`;
   document.querySelector("#cartTotal").textContent = money(total);
-  document.querySelector("#submitOrder").disabled = !tableCode || !items.length;
+  document.querySelector("#submitOrder").disabled = !tableSessionValid || !items.length;
+}
+
+async function validateTableSession() {
+  if (!tableCode || !tableToken) return false;
+  const table = await dataService.getTable(tableCode);
+  return Boolean(
+    table &&
+    table.active !== false &&
+    table.status === "occupied" &&
+    table.orderToken === tableToken
+  );
 }
 
 categoryTabs.addEventListener("click", event => {
   const button = event.target.closest("[data-category]");
   if (!button) return;
-
   activeCategory = button.dataset.category;
   renderCategoryTabs();
   renderMenus();
@@ -93,8 +101,7 @@ categoryTabs.addEventListener("click", event => {
 
 menuGrid.addEventListener("click", event => {
   const id = event.target.dataset.add;
-  if (!id) return;
-
+  if (!id || !tableSessionValid) return;
   const menu = menus.find(item => item.id === id);
   const current = cart.get(id);
   cart.set(id, current ? { ...current, qty: current.qty + 1 } : { ...menu, qty: 1, note: "" });
@@ -107,7 +114,6 @@ cartList.addEventListener("click", event => {
   const dec = event.target.dataset.dec;
   const id = inc || dec;
   if (!id) return;
-
   const item = cart.get(id);
   item.qty += inc ? 1 : -1;
   if (item.qty <= 0) cart.delete(id);
@@ -127,6 +133,14 @@ document.querySelector("#searchInput").addEventListener("input", renderMenus);
 
 document.querySelector("#submitOrder").addEventListener("click", async () => {
   const button = document.querySelector("#submitOrder");
+  const stillValid = await validateTableSession();
+  if (!stillValid) {
+    tableSessionValid = false;
+    updateCart();
+    toast("QR นี้หมดอายุแล้ว กรุณาติดต่อแคชเชียร์", "error");
+    return;
+  }
+
   const items = [...cart.values()].map(({ id, name, price, qty, note }) => ({
     menuId: id,
     name,
@@ -142,6 +156,7 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
   try {
     await dataService.createOrder({
       tableCode,
+      tableToken,
       status: "pending",
       totalAmount,
       note: document.querySelector("#orderNote").value.trim(),
@@ -160,7 +175,22 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
   }
 });
 
-menus = await dataService.listMenus();
-renderCategoryTabs();
-renderMenus();
+try {
+  tableSessionValid = await validateTableSession();
+  if (!tableSessionValid) {
+    document.querySelector("#tableBadge").textContent = "QR หมดอายุ";
+    document.querySelector("#tableTitle").textContent = "QR นี้ไม่สามารถใช้งานได้";
+    categoryTabs.innerHTML = "";
+    menuGrid.innerHTML = '<div class="card empty">กรุณาติดต่อแคชเชียร์เพื่อรับ QR สำหรับโต๊ะของคุณ</div>';
+    document.querySelector("#searchInput").disabled = true;
+  } else {
+    menus = await dataService.listMenus();
+    renderCategoryTabs();
+    renderMenus();
+  }
+} catch (error) {
+  console.error(error);
+  menuGrid.innerHTML = '<div class="card empty">ตรวจสอบ QR ไม่สำเร็จ กรุณาติดต่อพนักงาน</div>';
+}
+
 updateCart();
