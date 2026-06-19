@@ -17,7 +17,8 @@ function nextActions(status, orderType) {
 function render(orders) {
   const active = orders.filter(x => activeStatuses.includes(x.status));
   grid.innerHTML = active.length ? active.map(order => {
-    const title = order.orderType === "delivery" ? `Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}` : `โต๊ะ ${order.tableCode}`;
+    const roundText = order.orderType === "delivery" ? "" : ` • รอบที่ ${order.roundNumber || 1}`;
+    const title = order.orderType === "delivery" ? `Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}` : `โต๊ะ ${order.tableCode}${roundText}`;
     return `<article class="card order-card"><div class="order-head"><div><h2 style="margin:0">${title}</h2><small>${formatTime(order.createdAt)}</small></div><span class="badge">${statusLabel(order.status)}</span></div>${order.orderType === "delivery" ? `<p><strong>โทร:</strong> ${order.recipientPhone || "-"}<br><strong>ที่อยู่:</strong> ${order.deliveryAddress || "-"}</p>` : ""}<ul class="order-items">${(order.items || []).map(item => `<li><strong>${item.qty} × ${item.name}</strong>${item.note ? `<br><small>หมายเหตุ: ${item.note}</small>` : ""}</li>`).join("")}</ul>${order.note ? `<p><strong>หมายเหตุรวม:</strong> ${order.note}</p>` : ""}<div class="order-head"><strong>รวม ${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:12px">${nextActions(order.status, order.orderType).map(([status,label,cls]) => `<button class="btn ${cls}" data-id="${order.id}" data-status="${status}">${label}</button>`).join("")}</div></article>`;
   }).join("") : '<div class="card empty">ยังไม่มีออเดอร์ที่รอดำเนินการ</div>';
 }
