@@ -9,52 +9,39 @@
 </head>
 <body>
   <div id="demoBanner"></div>
-  <header class="app-header">
-    <div class="brand"><span class="brand-mark">FO</span>จัดการระบบ</div>
-    <a class="btn btn-sm" href="/">หน้าหลัก</a>
-  </header>
-
+  <header class="app-header"><div class="brand"><span class="brand-mark">FO</span>จัดการระบบ</div><a class="btn btn-sm" href="/">หน้าหลัก</a></header>
   <main class="container">
-    <section class="hero">
-      <h1>เมนูและโต๊ะ</h1>
-      <p>เพิ่มเมนู รูปอาหาร เปิด/ปิดการขาย และจัดการโต๊ะ</p>
+    <section class="hero"><h1>จัดการร้าน</h1><p>ตั้งค่าร้าน เมนู รูปอาหาร และโต๊ะ</p></section>
+
+    <section class="card" style="margin-bottom:16px">
+      <div class="section-title"><h2>ข้อมูลร้านสำหรับใบเสร็จ</h2></div>
+      <form id="storeForm" class="grid">
+        <div class="field"><label>ชื่อร้าน</label><input class="input" id="shopName" required></div>
+        <div class="field"><label>ที่อยู่ร้าน</label><textarea class="input" id="shopAddress" required></textarea></div>
+        <div class="field"><label>เบอร์โทรร้าน</label><input class="input" id="shopPhone" type="tel"></div>
+        <button class="btn btn-primary">บันทึกข้อมูลร้าน</button>
+      </form>
     </section>
 
     <div class="grid grid-2">
       <section class="card">
         <div class="section-title"><h2>เพิ่ม/แก้ไขเมนู</h2></div>
         <form id="menuForm" class="grid">
-          <input type="hidden" id="menuId">
-          <input type="hidden" id="menuImage">
-          <input type="hidden" id="menuImagePath">
-
-          <div class="field">
-            <label>ชื่อเมนู</label>
-            <input class="input" id="menuName" required>
-          </div>
-
+          <input type="hidden" id="menuId"><input type="hidden" id="menuImage"><input type="hidden" id="menuImagePath">
+          <div class="field"><label>ชื่อเมนู</label><input class="input" id="menuName" required></div>
           <div class="grid grid-2">
-            <div class="field">
-              <label>หมวดหมู่</label>
-              <input class="input" id="menuCategory" required>
-            </div>
-            <div class="field">
-              <label>ราคา</label>
-              <input class="input" id="menuPrice" type="number" min="0" step="0.01" required>
-            </div>
+            <div class="field"><label>หมวดหมู่</label><input class="input" id="menuCategory" required></div>
+            <div class="field"><label>ราคา</label><input class="input" id="menuPrice" type="number" min="0" step="0.01" required></div>
           </div>
-
           <div class="field">
             <label>รูปอาหาร</label>
             <input class="input" id="menuImageFile" type="file" accept="image/jpeg,image/png,image/webp" capture="environment">
-            <small class="menu-category">รองรับ JPG, PNG และ WebP ขนาดไม่เกิน 8 MB ระบบจะย่อรูปให้อัตโนมัติ</small>
+            <small class="menu-category">เลือกจากคลังรูปหรือถ่ายจากมือถือได้ ขนาดไม่เกิน 8 MB</small>
           </div>
-
           <div id="menuImagePreviewWrap" hidden>
             <img id="menuImagePreview" alt="ตัวอย่างรูปอาหาร" style="width:100%;max-width:320px;height:180px;object-fit:cover;border-radius:14px;border:1px solid var(--line)">
             <button type="button" class="btn btn-danger btn-sm" id="removeMenuImage" style="margin-top:8px">ลบรูป</button>
           </div>
-
           <label><input type="checkbox" id="menuActive" checked> เปิดขาย</label>
           <button class="btn btn-primary" id="saveMenuButton">บันทึกเมนู</button>
         </form>
@@ -72,27 +59,9 @@
       </section>
     </div>
 
-    <section class="card" style="margin-top:16px">
-      <div class="section-title"><h2>รายการเมนู</h2></div>
-      <div style="overflow:auto">
-        <table class="table-list">
-          <thead><tr><th>รูป</th><th>เมนู</th><th>หมวด</th><th>ราคา</th><th>สถานะ</th><th></th></tr></thead>
-          <tbody id="menuRows"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="card" style="margin-top:16px">
-      <div class="section-title"><h2>รายการโต๊ะ</h2></div>
-      <div style="overflow:auto">
-        <table class="table-list">
-          <thead><tr><th>รหัส</th><th>ชื่อ</th><th>สถานะ</th><th></th></tr></thead>
-          <tbody id="tableRows"></tbody>
-        </table>
-      </div>
-    </section>
+    <section class="card" style="margin-top:16px"><div class="section-title"><h2>รายการเมนู</h2></div><div style="overflow:auto"><table class="table-list"><thead><tr><th>รูป</th><th>เมนู</th><th>หมวด</th><th>ราคา</th><th>สถานะ</th><th></th></tr></thead><tbody id="menuRows"></tbody></table></div></section>
+    <section class="card" style="margin-top:16px"><div class="section-title"><h2>รายการโต๊ะ</h2></div><div style="overflow:auto"><table class="table-list"><thead><tr><th>รหัส</th><th>ชื่อ</th><th>สถานะ</th><th></th></tr></thead><tbody id="tableRows"></tbody></table></div></section>
   </main>
-
   <script type="module" src="/assets/js/admin.js"></script>
 </body>
 </html>
