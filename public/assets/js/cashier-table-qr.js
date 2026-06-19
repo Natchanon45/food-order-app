@@ -11,7 +11,18 @@ const availableCount = document.querySelector("#availableCount");
 const occupiedCount = document.querySelector("#occupiedCount");
 const issuedQrWrap = document.querySelector("#issuedQrWrap");
 const issuedQr = document.querySelector("#issuedQr");
+const qrPaperSize = document.querySelector("#qrPaperSize");
 let tables = [];
+
+function setPaperSize(value) {
+  document.body.classList.remove("qr-size-58", "qr-size-80", "qr-size-a4");
+  document.body.classList.add(value === "58" ? "qr-size-58" : value === "a4" ? "qr-size-a4" : "qr-size-80");
+  localStorage.setItem("qr_paper_size", value);
+}
+
+qrPaperSize.value = localStorage.getItem("qr_paper_size") || "80";
+setPaperSize(qrPaperSize.value);
+qrPaperSize.addEventListener("change", () => setPaperSize(qrPaperSize.value));
 
 function buildQrImageUrl(value) {
   return `https://quickchart.io/qr?text=${encodeURIComponent(value)}&size=320&margin=1`;
@@ -20,16 +31,8 @@ function buildQrImageUrl(value) {
 async function loadTables() {
   tables = await dataService.listTables();
 
-  const available = tables.filter(table =>
-    table.active !== false &&
-    (!table.status || table.status === "available")
-  );
-
-  const occupied = tables.filter(table =>
-    table.active !== false &&
-    table.status === "occupied" &&
-    table.orderToken
-  );
+  const available = tables.filter(table => table.active !== false && (!table.status || table.status === "available"));
+  const occupied = tables.filter(table => table.active !== false && table.status === "occupied" && table.orderToken);
 
   availableCount.textContent = `${available.length} โต๊ะ`;
   occupiedCount.textContent = `${occupied.length} โต๊ะ`;
@@ -38,9 +41,7 @@ async function loadTables() {
     <article class="card">
       <h2 style="margin-top:0">${table.name}</h2>
       <div class="badge">โต๊ะว่าง</div>
-      <button class="btn btn-primary" data-issue-table="${table.id}" style="width:100%;margin-top:14px">
-        ออก QR และพิมพ์
-      </button>
+      <button class="btn btn-primary" data-issue-table="${table.id}" style="width:100%;margin-top:14px">ออก QR และพิมพ์</button>
     </article>
   `).join("") : '<div class="card empty">ขณะนี้ไม่มีโต๊ะว่าง</div>';
 
@@ -48,12 +49,8 @@ async function loadTables() {
     <article class="card order-card">
       <h2 style="margin-top:0">${table.name}</h2>
       <div class="badge warning">ออก QR แล้ว</div>
-      <p class="menu-category" style="margin-bottom:0">
-        สามารถพิมพ์ซ้ำได้โดยใช้ QR เดิม ไม่สร้าง Token ใหม่
-      </p>
-      <button class="btn btn-dark" data-reprint-table="${table.id}" style="width:100%;margin-top:14px">
-        พิมพ์ QR ซ้ำ
-      </button>
+      <p class="menu-category" style="margin-bottom:0">สามารถพิมพ์ซ้ำได้โดยใช้ QR เดิม ไม่สร้าง Token ใหม่</p>
+      <button class="btn btn-dark" data-reprint-table="${table.id}" style="width:100%;margin-top:14px">พิมพ์ QR ซ้ำ</button>
     </article>
   `).join("") : '<div class="card empty">ยังไม่มีโต๊ะที่ออก QR</div>';
 }
@@ -71,19 +68,14 @@ function renderTicket(table, token, autoPrint = true) {
           <div class="qr-ticket-table">${table.name}</div>
         </div>
         <div class="qr-ticket-rule"></div>
-        <div class="qr-ticket-code">
-          <img src="${qrUrl}" width="260" height="260" alt="QR ${table.name}">
-        </div>
+        <div class="qr-ticket-code"><img src="${qrUrl}" width="260" height="260" alt="QR ${table.name}"></div>
         <div class="qr-ticket-rule"></div>
         <div class="qr-ticket-steps">
           <div>1. เปิดกล้องโทรศัพท์</div>
           <div>2. สแกน QR Code</div>
           <div>3. เลือกเมนูและยืนยันออเดอร์</div>
         </div>
-        <div class="qr-ticket-footer">
-          QR นี้ใช้สำหรับ ${table.name} เท่านั้น<br>
-          กรุณาตรวจสอบเลขโต๊ะก่อนสั่งอาหาร
-        </div>
+        <div class="qr-ticket-footer">QR นี้ใช้สำหรับ ${table.name} เท่านั้น<br>กรุณาตรวจสอบเลขโต๊ะก่อนสั่งอาหาร</div>
       </div>
       <button class="btn btn-dark" id="printIssuedQr" style="margin-top:12px">พิมพ์อีกครั้ง</button>
     </article>
@@ -91,7 +83,6 @@ function renderTicket(table, token, autoPrint = true) {
 
   issuedQrWrap.hidden = false;
   issuedQrWrap.scrollIntoView({ behavior: "smooth", block: "start" });
-
   if (!autoPrint) return;
 
   document.body.classList.add("qr-printing");
@@ -104,7 +95,6 @@ function renderTicket(table, token, autoPrint = true) {
 availableTables.addEventListener("click", async event => {
   const button = event.target.closest("[data-issue-table]");
   if (!button) return;
-
   const table = tables.find(item => item.id === button.dataset.issueTable);
   if (!table) return;
 
@@ -123,6 +113,7 @@ availableTables.addEventListener("click", async event => {
     await dataService.updateTable(table.id, {
       status: "occupied",
       orderToken: token,
+      currentRound: 0,
       sessionStartedAt: new Date().toISOString()
     });
 
@@ -140,7 +131,6 @@ availableTables.addEventListener("click", async event => {
 occupiedTables.addEventListener("click", async event => {
   const button = event.target.closest("[data-reprint-table]");
   if (!button) return;
-
   button.disabled = true;
   button.textContent = "กำลังเตรียม QR...";
 
@@ -151,7 +141,6 @@ occupiedTables.addEventListener("click", async event => {
       await loadTables();
       return;
     }
-
     renderTicket(table, table.orderToken, true);
     toast(`พิมพ์ QR เดิมของ ${table.name} ซ้ำ`);
   } catch (error) {
@@ -169,8 +158,6 @@ issuedQr.addEventListener("click", event => {
   window.print();
 });
 
-window.addEventListener("afterprint", () => {
-  document.body.classList.remove("qr-printing");
-});
+window.addEventListener("afterprint", () => document.body.classList.remove("qr-printing"));
 
 await loadTables();
