@@ -1,0 +1,81 @@
+.menu-filter-area {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.category-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 1px 8px;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.category-tab {
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 9px 15px;
+  background: #fff;
+  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background .18s ease, color .18s ease, border-color .18s ease;
+}
+
+.category-tab.active {
+  border-color: var(--green);
+  background: var(--green);
+  color: #fff;
+  box-shadow: 0 5px 14px rgba(21, 148, 71, .2);
+}
+
+.category-tab:focus-visible {
+  outline: 3px solid rgba(21, 148, 71, .22);
+  outline-offset: 2px;
+}
+
+.menu-search {
+  max-width: 420px;
+}
+
+@media print {
+  body.qr-printing .app-header,
+  body.qr-printing .hero,
+  body.qr-printing .field.card,
+  body.qr-printing .demo-banner,
+  body.qr-printing .qr-card:not(.print-target) {
+    display: none !important;
+  }
+
+  body.qr-printing .container,
+  body.qr-printing .qr-grid {
+    display: block !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body.qr-printing .qr-card.print-target {
+    display: block !important;
+    width: 80mm;
+    margin: 0 auto !important;
+    padding: 8mm 5mm;
+    border: 0;
+    box-shadow: none;
+    page-break-inside: avoid;
+  }
+
+  body.qr-printing .qr-card.print-target button {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .menu-search {
+    max-width: none;
+  }
+}
