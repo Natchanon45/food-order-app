@@ -9,7 +9,6 @@
 </head>
 <body>
   <div id="demoBanner"></div>
-
   <header class="app-header no-print">
     <div class="brand"><span class="brand-mark">FO</span>พิมพ์ใบเสร็จ</div>
     <a class="btn btn-sm" href="/cashier">ย้อนกลับ</a>
@@ -27,48 +26,34 @@
     </div>
 
     <section class="receipt" id="receipt">
-      <div class="receipt-header">
-        <h1>ใบเสร็จรับเงิน</h1>
-        <div>Food Order QR</div>
-      </div>
-
+      <div class="receipt-header"><h1 id="receiptTitle">ใบเสร็จรับเงิน</h1><div>Food Order QR</div></div>
       <hr class="receipt-rule">
-
-      <div class="receipt-row"><span>โต๊ะ</span><strong id="receiptTable">-</strong></div>
+      <div class="receipt-row"><span id="receiptTypeLabel">โต๊ะ</span><strong id="receiptTable">-</strong></div>
       <div class="receipt-row"><span>เลขที่บิล</span><span id="receiptNumber">-</span></div>
       <div class="receipt-row"><span>วันที่</span><span id="receiptDate">-</span></div>
+      <div class="receipt-row"><span>การชำระเงิน</span><strong id="receiptPayment">-</strong></div>
+
+      <div id="deliveryInfo" hidden>
+        <hr class="receipt-rule">
+        <div><strong>ชื่อผู้รับ:</strong> <span id="receiptRecipient">-</span></div>
+        <div><strong>โทร:</strong> <span id="receiptPhone">-</span></div>
+        <div><strong>ที่อยู่:</strong> <span id="receiptAddress">-</span></div>
+      </div>
 
       <hr class="receipt-rule">
-
       <table class="receipt-items">
-        <thead>
-          <tr>
-            <th>รายการ</th>
-            <th class="num">จำนวน</th>
-            <th class="num">รวม</th>
-          </tr>
-        </thead>
+        <thead><tr><th>รายการ</th><th class="num">จำนวน</th><th class="num">รวม</th></tr></thead>
         <tbody id="receiptItems"></tbody>
       </table>
-
       <hr class="receipt-rule">
-
-      <div class="receipt-row receipt-total">
-        <span>ยอดสุทธิ</span>
-        <span><span id="receiptTotal">0.00</span> บาท</span>
-      </div>
+      <div class="receipt-row receipt-total"><span>ยอดสุทธิ</span><span><span id="receiptTotal">0.00</span> บาท</span></div>
 
       <div id="receiptNoteWrap" class="receipt-note" hidden>
-        <hr class="receipt-rule">
-        <strong>หมายเหตุ</strong>
-        <div id="receiptNote"></div>
+        <hr class="receipt-rule"><strong>หมายเหตุ</strong><div id="receiptNote"></div>
       </div>
 
       <hr class="receipt-rule">
-
-      <div class="receipt-header">
-        <div>ขอบคุณที่ใช้บริการ</div>
-      </div>
+      <div class="receipt-header"><div>ขอบคุณที่ใช้บริการ</div></div>
     </section>
   </main>
 
