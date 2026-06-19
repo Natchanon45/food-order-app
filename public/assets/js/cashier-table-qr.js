@@ -6,6 +6,9 @@ if (usingDemoMode) {
 }
 
 const availableTables = document.querySelector("#availableTables");
+const occupiedTables = document.querySelector("#occupiedTables");
+const availableCount = document.querySelector("#availableCount");
+const occupiedCount = document.querySelector("#occupiedCount");
 const issuedQrWrap = document.querySelector("#issuedQrWrap");
 const issuedQr = document.querySelector("#issuedQr");
 let tables = [];
@@ -16,10 +19,20 @@ function buildQrImageUrl(value) {
 
 async function loadTables() {
   tables = await dataService.listTables();
+
   const available = tables.filter(table =>
     table.active !== false &&
     (!table.status || table.status === "available")
   );
+
+  const occupied = tables.filter(table =>
+    table.active !== false &&
+    table.status === "occupied" &&
+    table.orderToken
+  );
+
+  availableCount.textContent = `${available.length} โต๊ะ`;
+  occupiedCount.textContent = `${occupied.length} โต๊ะ`;
 
   availableTables.innerHTML = available.length ? available.map(table => `
     <article class="card">
@@ -30,9 +43,22 @@ async function loadTables() {
       </button>
     </article>
   `).join("") : '<div class="card empty">ขณะนี้ไม่มีโต๊ะว่าง</div>';
+
+  occupiedTables.innerHTML = occupied.length ? occupied.map(table => `
+    <article class="card order-card">
+      <h2 style="margin-top:0">${table.name}</h2>
+      <div class="badge warning">ออก QR แล้ว</div>
+      <p class="menu-category" style="margin-bottom:0">
+        สามารถพิมพ์ซ้ำได้โดยใช้ QR เดิม ไม่สร้าง Token ใหม่
+      </p>
+      <button class="btn btn-dark" data-reprint-table="${table.id}" style="width:100%;margin-top:14px">
+        พิมพ์ QR ซ้ำ
+      </button>
+    </article>
+  `).join("") : '<div class="card empty">ยังไม่มีโต๊ะที่ออก QR</div>';
 }
 
-function renderTicket(table, token) {
+function renderTicket(table, token, autoPrint = true) {
   const orderUrl = `${location.origin}/order/?table=${encodeURIComponent(table.code)}&token=${encodeURIComponent(token)}`;
   const qrUrl = buildQrImageUrl(orderUrl);
 
@@ -64,8 +90,11 @@ function renderTicket(table, token) {
   `;
 
   issuedQrWrap.hidden = false;
-  document.body.classList.add("qr-printing");
+  issuedQrWrap.scrollIntoView({ behavior: "smooth", block: "start" });
 
+  if (!autoPrint) return;
+
+  document.body.classList.add("qr-printing");
   const image = issuedQr.querySelector("img");
   const printNow = () => requestAnimationFrame(() => window.print());
   if (image.complete) printNow();
@@ -83,18 +112,54 @@ availableTables.addEventListener("click", async event => {
   button.textContent = "กำลังออก QR...";
 
   try {
+    const latestTable = await dataService.getTable(table.id);
+    if (!latestTable || (latestTable.status && latestTable.status !== "available")) {
+      toast("โต๊ะนี้ไม่ว่างแล้ว กรุณารีเฟรชรายการ", "error");
+      await loadTables();
+      return;
+    }
+
     const token = crypto.randomUUID();
     await dataService.updateTable(table.id, {
       status: "occupied",
       orderToken: token,
       sessionStartedAt: new Date().toISOString()
     });
-    renderTicket(table, token);
+
+    renderTicket(table, token, true);
     toast(`ออก QR สำหรับ ${table.name} แล้ว`);
     await loadTables();
   } catch (error) {
     console.error(error);
     toast("ออก QR ไม่สำเร็จ", "error");
+    button.disabled = false;
+    button.textContent = "ออก QR และพิมพ์";
+  }
+});
+
+occupiedTables.addEventListener("click", async event => {
+  const button = event.target.closest("[data-reprint-table]");
+  if (!button) return;
+
+  button.disabled = true;
+  button.textContent = "กำลังเตรียม QR...";
+
+  try {
+    const table = await dataService.getTable(button.dataset.reprintTable);
+    if (!table || table.status !== "occupied" || !table.orderToken) {
+      toast("QR ของโต๊ะนี้หมดอายุหรือโต๊ะถูกปิดแล้ว", "error");
+      await loadTables();
+      return;
+    }
+
+    renderTicket(table, table.orderToken, true);
+    toast(`พิมพ์ QR เดิมของ ${table.name} ซ้ำ`);
+  } catch (error) {
+    console.error(error);
+    toast("เตรียม QR สำหรับพิมพ์ซ้ำไม่สำเร็จ", "error");
+  } finally {
+    button.disabled = false;
+    button.textContent = "พิมพ์ QR ซ้ำ";
   }
 });
 
