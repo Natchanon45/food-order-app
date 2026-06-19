@@ -24,6 +24,7 @@ const paymentSlipFileName = document.querySelector("#paymentSlipFileName");
 const paymentSlipFileSize = document.querySelector("#paymentSlipFileSize");
 const paymentSlipError = document.querySelector("#paymentSlipError");
 const removePaymentSlip = document.querySelector("#removePaymentSlip");
+const submitOrderButton = document.querySelector("#submitOrder");
 const cart = new Map();
 let menus = [];
 let activeCategory = "ทั้งหมด";
@@ -31,6 +32,7 @@ let storeSettings = {};
 let currentTotal = 0;
 let selectedSlipFile = null;
 let selectedSlipObjectUrl = "";
+let isSubmitting = false;
 
 function categories() {
   return ["ทั้งหมด", ...new Set(menus.filter(x => x.active !== false).map(x => x.category || "อื่น ๆ"))];
@@ -95,7 +97,7 @@ function updateCart() {
   currentTotal = items.reduce((sum, x) => sum + x.qty * Number(x.price), 0);
   document.querySelector("#cartCount").textContent = `${totalQty} รายการ`;
   document.querySelector("#cartTotal").textContent = money(currentTotal);
-  document.querySelector("#submitOrder").disabled = !items.length;
+  submitOrderButton.disabled = isSubmitting || !items.length;
   renderPromptPay();
 }
 
@@ -158,11 +160,21 @@ async function uploadSlip(file, orderId) {
   if (!file) return { url: "", path: "" };
   if (file.size > 8 * 1024 * 1024) throw new Error("SLIP_TOO_LARGE");
   if (!storage) throw new Error("STORAGE_NOT_READY");
-  const extension = (file.name.split(".").pop() || "jpg").replace(/[^a-zA-Z0-9]/g, "");
+  const extension = (file.name.split(".").pop() || "jpg").replace(/[^a-zA-Z0-9]/g, "") || "jpg";
   const path = `payment-slips/${orderId}/${Date.now()}.${extension}`;
   const fileRef = ref(storage, path);
   await uploadBytes(fileRef, file, { contentType: file.type || "image/jpeg" });
   return { url: await getDownloadURL(fileRef), path };
+}
+
+function submitErrorMessage(error) {
+  const code = String(error?.code || error?.message || "");
+  if (code.includes("SLIP_TOO_LARGE")) return "สลิปต้องมีขนาดไม่เกิน 8 MB";
+  if (code.includes("storage/unauthorized")) return "ระบบไม่มีสิทธิ์อัปโหลดสลิป กรุณา Deploy Storage Rules";
+  if (code.includes("storage/retry-limit-exceeded")) return "อัปโหลดสลิปไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่";
+  if (code.includes("storage/canceled")) return "การอัปโหลดสลิปถูกยกเลิก";
+  if (code.includes("STORAGE_NOT_READY")) return "ระบบจัดเก็บสลิปยังไม่พร้อมใช้งาน";
+  return "ส่งคำสั่งซื้อไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
 }
 
 paymentSlip.addEventListener("change", event => selectSlipFile(event.target.files?.[0] || null));
@@ -219,7 +231,9 @@ cartList.addEventListener("input", event => {
   cart.set(id, item);
 });
 
-document.querySelector("#submitOrder").addEventListener("click", async () => {
+submitOrderButton.addEventListener("click", async () => {
+  if (isSubmitting) return;
+
   const recipientName = document.querySelector("#recipientName").value.trim();
   const recipientPhone = document.querySelector("#recipientPhone").value.trim();
   const deliveryAddress = document.querySelector("#deliveryAddress").value.trim();
@@ -240,14 +254,25 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
     return;
   }
 
-  const button = document.querySelector("#submitOrder");
   const items = [...cart.values()].map(({ id, name, price, qty, note }) => ({ menuId: id, name, price: Number(price), qty, note: note || "", cancelled: false }));
-  const totalAmount = items.reduce((sum, x) => sum + x.price * x.qty, 0);
+  if (!items.length) return;
 
-  button.disabled = true;
-  button.textContent = "กำลังส่ง...";
+  const totalAmount = items.reduce((sum, x) => sum + x.price * x.qty, 0);
+  const orderId = crypto.randomUUID();
+  const slipFile = selectedSlipFile;
+
+  isSubmitting = true;
+  submitOrderButton.disabled = true;
+  submitOrderButton.textContent = method === "promptpay" ? "กำลังอัปโหลดสลิป..." : "กำลังส่ง...";
+
   try {
-    const result = await dataService.createOrder({
+    let slip = { url: "", path: "" };
+    if (method === "promptpay") {
+      slip = await uploadSlip(slipFile, orderId);
+      submitOrderButton.textContent = "กำลังสร้างออเดอร์...";
+    }
+
+    await dataService.createOrderWithId(orderId, {
       orderType: "delivery",
       tableCode: "DELIVERY",
       recipientName,
@@ -255,28 +280,24 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
       deliveryAddress,
       paymentMethod: method,
       paymentStatus: method === "promptpay" ? "pending_verification" : "unpaid",
+      paymentSlipUrl: slip.url,
+      paymentSlipPath: slip.path,
       status: "pending",
       totalAmount,
       note: document.querySelector("#orderNote").value.trim(),
       items
     });
 
-    if (method === "promptpay" && result?.id) {
-      const slip = await uploadSlip(selectedSlipFile, result.id);
-      await dataService.updateOrder(result.id, { paymentSlipUrl: slip.url, paymentSlipPath: slip.path });
-    }
-
     cart.clear();
     clearSlipSelection();
-    updateCart();
     toast("ส่งคำสั่งซื้อ Delivery เรียบร้อย");
-    if (result?.id) location.href = `/delivery/success/?order=${encodeURIComponent(result.id)}`;
+    location.href = `/delivery/success/?order=${encodeURIComponent(orderId)}`;
   } catch (error) {
     console.error(error);
-    const message = error.message === "SLIP_TOO_LARGE" ? "สลิปต้องมีขนาดไม่เกิน 8 MB" : "ส่งคำสั่งซื้อไม่สำเร็จ";
-    toast(message, "error");
+    toast(submitErrorMessage(error), "error");
   } finally {
-    button.textContent = "ยืนยันการสั่ง";
+    isSubmitting = false;
+    submitOrderButton.textContent = "ยืนยันการสั่ง";
     updateCart();
   }
 });
