@@ -27,8 +27,14 @@ function paymentText(order) {
   return "ยังไม่ชำระเงิน";
 }
 
-function render(order) {
+async function render(order) {
+  const settings = await dataService.getStoreSettings();
   const isDelivery = order.orderType === "delivery";
+  const verifyUrl = `${location.origin}/verify/?order=${encodeURIComponent(order.id || orderId)}`;
+
+  document.querySelector("#shopName").textContent = settings.shopName || "Food Order QR";
+  document.querySelector("#shopAddress").textContent = settings.shopAddress || "";
+  document.querySelector("#shopPhone").textContent = settings.shopPhone ? `โทร ${settings.shopPhone}` : "";
   document.querySelector("#receiptTitle").textContent = isDelivery ? "ใบสั่งซื้อ Delivery" : "ใบเสร็จรับเงิน";
   document.querySelector("#receiptTypeLabel").textContent = isDelivery ? "ประเภท" : "โต๊ะ";
   document.querySelector("#receiptTable").textContent = isDelivery ? "Delivery" : (order.tableCode || "-");
@@ -48,6 +54,7 @@ function render(order) {
     <tr>
       <td>${item.name}${item.note ? `<div style="font-size:.85em">${item.note}</div>` : ""}</td>
       <td class="num">${item.qty}</td>
+      <td class="num">${money(Number(item.price))}</td>
       <td class="num">${money(Number(item.qty) * Number(item.price))}</td>
     </tr>
   `).join("");
@@ -56,6 +63,9 @@ function render(order) {
     document.querySelector("#receiptNoteWrap").hidden = false;
     document.querySelector("#receiptNote").textContent = order.note;
   }
+
+  document.querySelector("#verifyQr").src = `https://quickchart.io/qr?text=${encodeURIComponent(verifyUrl)}&size=180&margin=1`;
+  document.querySelector("#verifyCode").textContent = `ตรวจสอบ: ${(order.id || orderId).slice(0, 12).toUpperCase()}`;
 }
 
 async function loadReceipt() {
@@ -70,7 +80,7 @@ async function loadReceipt() {
       receipt.innerHTML = '<div class="empty">ไม่พบข้อมูลใบเสร็จนี้</div>';
       return;
     }
-    render(order);
+    await render(order);
   } catch (error) {
     console.error(error);
     receipt.innerHTML = '<div class="empty">โหลดใบเสร็จไม่สำเร็จ</div>';
