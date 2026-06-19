@@ -1,9 +1,7 @@
 import { dataService, usingDemoMode } from "./data-service.js";
 import { money, formatTime } from "./ui.js";
 
-if (usingDemoMode) {
-  document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner no-print">โหมดตัวอย่าง</div>';
-}
+if (usingDemoMode) document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner no-print">โหมดตัวอย่าง</div>';
 
 const orderId = new URLSearchParams(location.search).get("order") || "";
 const receipt = document.querySelector("#receipt");
@@ -48,6 +46,10 @@ async function render(order) {
     document.querySelector("#receiptRecipient").textContent = order.recipientName || "-";
     document.querySelector("#receiptPhone").textContent = order.recipientPhone || "-";
     document.querySelector("#receiptAddress").textContent = order.deliveryAddress || "-";
+    document.querySelector("#receiptDeliveryZone").textContent = order.deliveryZoneLabel || "-";
+    document.querySelector("#receiptDeliverySummary").hidden = false;
+    document.querySelector("#receiptSubtotal").textContent = money(order.subtotalAmount ?? (Number(order.totalAmount || 0) - Number(order.deliveryFee || 0)));
+    document.querySelector("#receiptDeliveryFee").textContent = money(order.deliveryFee || 0);
   }
 
   document.querySelector("#receiptItems").innerHTML = (order.items || []).map(item => `
@@ -68,17 +70,10 @@ async function render(order) {
 }
 
 async function loadReceipt() {
-  if (!orderId) {
-    receipt.innerHTML = '<div class="empty">ไม่พบเลขที่ออเดอร์</div>';
-    return;
-  }
-
+  if (!orderId) return void (receipt.innerHTML = '<div class="empty">ไม่พบเลขที่ออเดอร์</div>');
   try {
     const order = await dataService.getOrder(orderId);
-    if (!order) {
-      receipt.innerHTML = '<div class="empty">ไม่พบข้อมูลใบเสร็จนี้</div>';
-      return;
-    }
+    if (!order) return void (receipt.innerHTML = '<div class="empty">ไม่พบข้อมูลใบเสร็จนี้</div>');
     await render(order);
   } catch (error) {
     console.error(error);
