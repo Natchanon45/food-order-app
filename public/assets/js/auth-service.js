@@ -49,7 +49,10 @@ export async function requireRole(allowedRoles = []) {
   if (header && !header.querySelector("[data-logout]")) {
     const box = document.createElement("div");
     box.className = "auth-user";
-    box.innerHTML = `<span class="badge dark">${profile.displayName || profile.email}</span><button type="button" class="btn btn-sm" data-logout>ออกจากระบบ</button>`;
+    const manageUsersLink = profile.role === "super_admin" && location.pathname.startsWith("/admin") && !location.pathname.startsWith("/admin/users")
+      ? '<a class="btn btn-primary btn-sm" href="/admin/users">ผู้ใช้งาน</a>'
+      : "";
+    box.innerHTML = `${manageUsersLink}<span class="badge dark">${profile.displayName || profile.email}</span><button type="button" class="btn btn-sm" data-logout>ออกจากระบบ</button>`;
     header.appendChild(box);
     box.querySelector("[data-logout]").addEventListener("click", async () => {
       await signOut(auth);
