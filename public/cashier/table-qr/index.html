@@ -1,1 +1,48 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#159447"><link rel="stylesheet" href="/assets/css/app.css"><link rel="stylesheet" href="/assets/css/menu-qr.css"><link rel="stylesheet" href="/assets/css/cashier-qr-print.css"><title>ออก QR โต๊ะ</title></head><body><div id="demoBanner"></div><header class="app-header"><div class="brand"><span class="brand-mark">FO</span>ออก QR โต๊ะ</div><a class="btn btn-sm" href="/cashier">ย้อนกลับ</a></header><main class="container"><section class="hero"><h1>เลือกโต๊ะว่าง</h1><p>แคชเชียร์ออก QR ใหม่ให้ลูกค้าเมื่อเข้าร้าน QR เดิมจะใช้ซ้ำไม่ได้</p></section><div id="availableTables" class="grid grid-3"></div><section id="issuedQrWrap" hidden style="margin-top:18px"><div id="issuedQr"></div></section></main><script type="module" src="/assets/js/cashier-table-qr.js"></script></body></html>
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#159447">
+  <link rel="stylesheet" href="/assets/css/app.css">
+  <link rel="stylesheet" href="/assets/css/menu-qr.css">
+  <link rel="stylesheet" href="/assets/css/cashier-qr-print.css">
+  <title>ออก QR โต๊ะ</title>
+</head>
+<body>
+  <div id="demoBanner"></div>
+  <header class="app-header">
+    <div class="brand"><span class="brand-mark">FO</span>ออก QR โต๊ะ</div>
+    <a class="btn btn-sm" href="/cashier">ย้อนกลับ</a>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1>จัดการ QR โต๊ะ</h1>
+      <p>ออก QR ใหม่เฉพาะโต๊ะว่าง และพิมพ์ QR เดิมซ้ำได้หากกระดาษหมดหรือปิดหน้าจอไปก่อน</p>
+    </section>
+
+    <section>
+      <div class="section-title">
+        <h2>โต๊ะว่าง</h2>
+        <span class="badge" id="availableCount">0 โต๊ะ</span>
+      </div>
+      <div id="availableTables" class="grid grid-3"></div>
+    </section>
+
+    <section style="margin-top:22px">
+      <div class="section-title">
+        <h2>โต๊ะที่ออก QR แล้ว</h2>
+        <span class="badge warning" id="occupiedCount">0 โต๊ะ</span>
+      </div>
+      <div id="occupiedTables" class="grid grid-3"></div>
+    </section>
+
+    <section id="issuedQrWrap" hidden style="margin-top:18px">
+      <div id="issuedQr"></div>
+    </section>
+  </main>
+
+  <script type="module" src="/assets/js/cashier-table-qr.js"></script>
+</body>
+</html>
