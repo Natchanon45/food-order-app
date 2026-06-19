@@ -9,16 +9,23 @@
   <link rel="stylesheet" href="/assets/css/customer-rounds.css">
   <title>สั่งอาหาร</title>
 </head>
-<body>
+<body class="table-order-page">
   <div id="demoBanner"></div>
 
   <header class="app-header">
     <div class="brand"><span class="brand-mark">FO</span><span>สั่งอาหาร</span></div>
-    <span class="badge" id="tableBadge">กำลังตรวจสอบโต๊ะ</span>
   </header>
 
-  <main class="container">
-    <section class="hero">
+  <nav class="order-sticky-nav" aria-label="โต๊ะและหมวดหมู่อาหาร">
+    <div class="order-table-row">
+      <span class="order-table-label">โต๊ะ</span>
+      <strong class="order-table-code" id="tableBadge">กำลังตรวจสอบ</strong>
+    </div>
+    <div class="category-tabs" id="categoryTabs" role="tablist" aria-label="หมวดหมู่อาหาร"></div>
+  </nav>
+
+  <main class="container order-container">
+    <section class="hero order-hero">
       <h1 id="tableTitle">เมนูอาหาร</h1>
       <p>เลือกเมนู ใส่หมายเหตุ และกดยืนยันได้ทันที</p>
     </section>
@@ -31,8 +38,7 @@
       <div id="previousOrdersList" class="previous-orders-list"></div>
     </section>
 
-    <div class="menu-filter-area">
-      <div class="category-tabs" id="categoryTabs" role="tablist" aria-label="หมวดหมู่อาหาร"></div>
+    <div class="menu-filter-area order-search-area">
       <input class="input menu-search" id="searchInput" placeholder="ค้นหาเมนู...">
     </div>
 
