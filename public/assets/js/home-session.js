@@ -1,31 +1,22 @@
-import { auth, signOut } from "./firebase-config.js";
-import { waitForAuth, getUserProfile } from "./auth-service.js";
+import { waitForAuth, getUserProfile, mountUserMenu, STAFF_ROLES } from "./auth-service.js";
 
+const dashboard = document.querySelector("#staffDashboard");
 const user = await waitForAuth();
+
 if (!user) {
-  document.querySelector("#staffLoginLink")?.removeAttribute("hidden");
+  location.replace("/delivery");
 } else {
   const profile = await getUserProfile(user);
-  const header = document.querySelector(".app-header");
-  const loginLink = document.querySelector("#staffLoginLink");
-  const staffManagementCard = document.querySelector("#staffManagementCard");
 
-  if (loginLink) loginLink.hidden = true;
-  if (staffManagementCard) staffManagementCard.hidden = profile?.role !== "super_admin";
-
-  if (header && profile && !header.querySelector("[data-home-logout]")) {
-    const account = document.createElement("div");
-    account.className = "auth-user";
-    account.innerHTML = `
-      <span class="badge dark">${profile.displayName || profile.email} • ${profile.role}</span>
-      ${profile.role === "super_admin" ? '<a class="btn btn-primary btn-sm" href="/admin/users">จัดการพนักงาน</a>' : ""}
-      <button type="button" class="btn btn-sm" data-home-logout>ออกจากระบบ</button>
-    `;
-    header.appendChild(account);
-
-    account.querySelector("[data-home-logout]").addEventListener("click", async () => {
-      await signOut(auth);
-      location.replace("/login");
+  if (!profile || profile.active === false || !STAFF_ROLES.includes(profile.role)) {
+    location.replace("/delivery");
+  } else {
+    document.querySelectorAll("[data-dashboard-role]").forEach(card => {
+      const roles = card.dataset.dashboardRole.split(",").map(role => role.trim());
+      card.hidden = !roles.includes(profile.role);
     });
+
+    mountUserMenu(profile);
+    dashboard.hidden = false;
   }
 }
