@@ -1,4 +1,4 @@
-import { db, isFirebaseConfigured, collection, addDoc, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp } from "./firebase-config.js";
+import { db, isFirebaseConfigured, collection, addDoc, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, runTransaction } from "./firebase-config.js";
 import { demoStore } from "./demo-store.js";
 
 export const usingDemoMode = !isFirebaseConfigured;
@@ -37,7 +37,7 @@ export const dataService = {
   async saveTable(table) {
     if (usingDemoMode) return demoStore.tables.save(table);
     const id = table.id || table.code;
-    const payload = { status: "available", orderToken: "", ...table };
+    const payload = { status: "available", orderToken: "", currentRound: 0, ...table };
     delete payload.id;
     return setDoc(doc(db, "tables", id), payload, { merge: true });
   },
@@ -47,10 +47,7 @@ export const dataService = {
       if (!table) return;
       return demoStore.tables.save({ ...table, ...patch, id: table.id });
     }
-    return updateDoc(doc(db, "tables", id), {
-      ...patch,
-      updatedAt: serverTimestamp()
-    });
+    return updateDoc(doc(db, "tables", id), { ...patch, updatedAt: serverTimestamp() });
   },
   async deleteTable(id) {
     if (usingDemoMode) return demoStore.tables.remove(id);
@@ -58,32 +55,49 @@ export const dataService = {
   },
   async createOrder(order) {
     if (usingDemoMode) return demoStore.orders.add(order);
-    return addDoc(collection(db, "orders"), {
-      ...order,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
+    return addDoc(collection(db, "orders"), { ...order, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+  },
+  async createTableOrder(order) {
+    if (usingDemoMode) {
+      const table = await this.getTable(order.tableCode);
+      if (!table || table.status !== "occupied" || table.orderToken !== order.tableToken) throw new Error("INVALID_TABLE_SESSION");
+      const roundNumber = Number(table.currentRound || 0) + 1;
+      await this.updateTable(table.id, { currentRound: roundNumber });
+      return demoStore.orders.add({ ...order, roundNumber });
+    }
+
+    const tableRef = doc(db, "tables", order.tableCode);
+    const orderRef = doc(collection(db, "orders"));
+
+    await runTransaction(db, async transaction => {
+      const tableSnapshot = await transaction.get(tableRef);
+      if (!tableSnapshot.exists()) throw new Error("INVALID_TABLE_SESSION");
+      const table = tableSnapshot.data();
+      if (table.status !== "occupied" || table.orderToken !== order.tableToken) throw new Error("INVALID_TABLE_SESSION");
+
+      const roundNumber = Number(table.currentRound || 0) + 1;
+      transaction.update(tableRef, { currentRound: roundNumber, updatedAt: serverTimestamp() });
+      transaction.set(orderRef, {
+        ...order,
+        roundNumber,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
     });
+
+    return { id: orderRef.id };
   },
   async getOrder(id) {
-    if (usingDemoMode) {
-      return demoStore.orders.list().find(item => item.id === id) || null;
-    }
+    if (usingDemoMode) return demoStore.orders.list().find(item => item.id === id) || null;
     const snapshot = await getDoc(doc(db, "orders", id));
     return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
   },
   async updateOrder(id, patch) {
     if (usingDemoMode) return demoStore.orders.update(id, patch);
-    return updateDoc(doc(db, "orders", id), {
-      ...patch,
-      updatedAt: serverTimestamp()
-    });
+    return updateDoc(doc(db, "orders", id), { ...patch, updatedAt: serverTimestamp() });
   },
   async getStoreSettings() {
-    const fallback = {
-      shopName: "Food Order QR",
-      shopAddress: "",
-      shopPhone: ""
-    };
+    const fallback = { shopName: "Food Order QR", shopAddress: "", shopPhone: "" };
     if (usingDemoMode) {
       const saved = localStorage.getItem("food_order_store_settings");
       return saved ? { ...fallback, ...JSON.parse(saved) } : fallback;
@@ -96,10 +110,7 @@ export const dataService = {
       localStorage.setItem("food_order_store_settings", JSON.stringify(settings));
       return settings;
     }
-    return setDoc(doc(db, "settings", "store"), {
-      ...settings,
-      updatedAt: serverTimestamp()
-    }, { merge: true });
+    return setDoc(doc(db, "settings", "store"), { ...settings, updatedAt: serverTimestamp() }, { merge: true });
   },
   subscribeOrders(callback) {
     if (usingDemoMode) {
@@ -115,7 +126,6 @@ export const dataService = {
         window.removeEventListener("demo-store-change", handler);
       };
     }
-
     const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
     return onSnapshot(q, snap => callback(mapDocs(snap)));
   }
