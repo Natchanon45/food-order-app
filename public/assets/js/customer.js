@@ -4,6 +4,8 @@ import { money, toast, getTableCode, formatTime } from "./ui.js";
 const tableCode = getTableCode();
 const tableToken = new URLSearchParams(location.search).get("token") || "";
 const menuGrid = document.querySelector("#menuGrid");
+const menuPagination = document.querySelector("#menuPagination");
+const menuListStart = document.querySelector("#menuListStart");
 const cartList = document.querySelector("#cartList");
 const categoryTabs = document.querySelector("#categoryTabs");
 const previousOrdersSection = document.querySelector("#previousOrdersSection");
@@ -16,6 +18,7 @@ let sessionOrders = [];
 let activeCategory = "ทั้งหมด";
 let tableSessionValid = false;
 let unsubscribeOrders = null;
+let currentPage = 1;
 
 if (usingDemoMode) {
   document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง: ยังไม่ได้ใส่ Firebase Config ข้อมูลจะเก็บในเบราว์เซอร์นี้</div>';
@@ -24,6 +27,10 @@ if (usingDemoMode) {
 document.querySelector("#tableBadge").textContent = tableCode ? `โต๊ะ ${tableCode}` : "ไม่พบรหัสโต๊ะ";
 document.querySelector("#tableTitle").textContent = tableCode ? `เมนูสำหรับโต๊ะ ${tableCode}` : "กรุณาสแกน QR ของโต๊ะ";
 document.querySelector("#submitOrder").disabled = true;
+
+function pageSize() {
+  return window.matchMedia("(max-width: 480px)").matches ? 6 : 9;
+}
 
 function categories() {
   return ["ทั้งหมด", ...new Set(menus.filter(item => item.active !== false).map(item => item.category || "อื่น ๆ"))];
@@ -38,18 +45,52 @@ function renderCategoryTabs() {
   `).join("");
 }
 
-function renderMenus() {
-  if (!tableSessionValid) return;
+function getFilteredMenus() {
   const keyword = document.querySelector("#searchInput").value.trim().toLowerCase();
-  const filtered = menus.filter(item =>
+  return menus.filter(item =>
     item.active !== false &&
     (!keyword || item.name.toLowerCase().includes(keyword)) &&
     (activeCategory === "ทั้งหมด" || (item.category || "อื่น ๆ") === activeCategory)
   );
+}
 
-  menuGrid.innerHTML = filtered.length ? filtered.map(item => `
+function visiblePageNumbers(totalPages) {
+  if (totalPages <= 5) return Array.from({ length: totalPages }, (_, index) => index + 1);
+  const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
+  return Array.from({ length: 5 }, (_, index) => start + index);
+}
+
+function renderPagination(totalItems) {
+  const size = pageSize();
+  const totalPages = Math.max(1, Math.ceil(totalItems / size));
+  currentPage = Math.min(currentPage, totalPages);
+  menuPagination.hidden = totalPages <= 1;
+
+  if (totalPages <= 1) {
+    menuPagination.innerHTML = "";
+    return;
+  }
+
+  menuPagination.innerHTML = `
+    <button type="button" class="menu-page-button" data-page="${currentPage - 1}" ${currentPage === 1 ? "disabled" : ""} aria-label="หน้าก่อนหน้า">‹</button>
+    ${visiblePageNumbers(totalPages).map(page => `<button type="button" class="menu-page-button${page === currentPage ? " active" : ""}" data-page="${page}" aria-label="หน้า ${page}" aria-current="${page === currentPage ? "page" : "false"}">${page}</button>`).join("")}
+    <button type="button" class="menu-page-button" data-page="${currentPage + 1}" ${currentPage === totalPages ? "disabled" : ""} aria-label="หน้าถัดไป">›</button>
+    <div class="menu-page-summary">หน้า ${currentPage} จาก ${totalPages} • ${totalItems} เมนู</div>
+  `;
+}
+
+function renderMenus() {
+  if (!tableSessionValid) return;
+  const filtered = getFilteredMenus();
+  const size = pageSize();
+  const totalPages = Math.max(1, Math.ceil(filtered.length / size));
+  currentPage = Math.min(currentPage, totalPages);
+  const start = (currentPage - 1) * size;
+  const pageItems = filtered.slice(start, start + size);
+
+  menuGrid.innerHTML = pageItems.length ? pageItems.map(item => `
     <article class="card menu-card">
-      <div class="menu-image">${item.image ? `<img src="${item.image}" alt="${item.name}">` : "🍲"}</div>
+      <div class="menu-image"><img src="${item.image}" alt="${item.name}"></div>
       <div class="menu-name">${item.name}</div>
       <div class="menu-category">${item.category || "อื่น ๆ"}</div>
       <div class="menu-footer">
@@ -58,6 +99,18 @@ function renderMenus() {
       </div>
     </article>
   `).join("") : '<div class="card empty">ไม่พบเมนูในหมวดหมู่นี้</div>';
+
+  renderPagination(filtered.length);
+}
+
+function resetMenuPage() {
+  currentPage = 1;
+  renderMenus();
+}
+
+function scrollToMenuList() {
+  const top = menuListStart.getBoundingClientRect().top + window.scrollY - 145;
+  window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
 }
 
 function timestampValue(value) {
@@ -143,7 +196,15 @@ categoryTabs.addEventListener("click", event => {
   if (!button) return;
   activeCategory = button.dataset.category;
   renderCategoryTabs();
+  resetMenuPage();
+});
+
+menuPagination.addEventListener("click", event => {
+  const button = event.target.closest("[data-page]");
+  if (!button || button.disabled) return;
+  currentPage = Number(button.dataset.page);
   renderMenus();
+  scrollToMenuList();
 });
 
 menuGrid.addEventListener("click", event => {
@@ -176,7 +237,11 @@ cartList.addEventListener("input", event => {
   cart.set(id, item);
 });
 
-document.querySelector("#searchInput").addEventListener("input", renderMenus);
+document.querySelector("#searchInput").addEventListener("input", resetMenuPage);
+window.addEventListener("resize", () => {
+  currentPage = 1;
+  renderMenus();
+});
 
 document.querySelector("#submitOrder").addEventListener("click", async () => {
   const button = document.querySelector("#submitOrder");
@@ -229,6 +294,7 @@ try {
     document.querySelector("#tableTitle").textContent = "QR นี้ไม่สามารถใช้งานได้";
     categoryTabs.innerHTML = "";
     menuGrid.innerHTML = '<div class="card empty">กรุณาติดต่อแคชเชียร์เพื่อรับ QR สำหรับโต๊ะของคุณ</div>';
+    menuPagination.hidden = true;
     document.querySelector("#searchInput").disabled = true;
   } else {
     menus = await dataService.listMenus();
