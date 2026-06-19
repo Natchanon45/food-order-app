@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#159447">
   <link rel="stylesheet" href="/assets/css/app.css">
   <link rel="stylesheet" href="/assets/css/admin-upload.css">
+  <link rel="stylesheet" href="/assets/css/menu-pagination.css">
   <title>จัดการระบบ</title>
 </head>
 <body data-roles="admin">
@@ -45,11 +46,29 @@
       <section class="card"><div class="section-title"><h2>เพิ่มโต๊ะ</h2><a href="/admin/qr" class="btn btn-dark btn-sm">สร้าง QR</a></div><form id="tableForm" class="grid"><input type="hidden" id="tableId"><div class="field"><label>รหัสโต๊ะ</label><input class="input" id="tableCode" placeholder="A01" required></div><div class="field"><label>ชื่อโต๊ะ</label><input class="input" id="tableName" placeholder="โต๊ะ A01" required></div><label><input type="checkbox" id="tableActive" checked> เปิดใช้งาน</label><button class="btn btn-primary">บันทึกโต๊ะ</button></form></section>
     </div>
 
-    <section class="card" style="margin-top:16px"><div class="section-title"><h2>รายการเมนู</h2></div><div style="overflow:auto"><table class="table-list"><thead><tr><th>รูป</th><th>เมนู</th><th>หมวด</th><th>ราคา</th><th>สถานะ</th><th></th></tr></thead><tbody id="menuRows"></tbody></table></div></section>
-    <section class="card" style="margin-top:16px"><div class="section-title"><h2>รายการโต๊ะ</h2></div><div style="overflow:auto"><table class="table-list"><thead><tr><th>รหัส</th><th>ชื่อ</th><th>สถานะ</th><th></th></tr></thead><tbody id="tableRows"></tbody></table></div></section>
+    <section class="card" style="margin-top:16px">
+      <div class="section-title"><h2>รายการสินค้า/อาหาร</h2></div>
+      <div class="grid grid-2" style="margin-bottom:12px">
+        <input class="input" id="menuListSearch" placeholder="ค้นหาชื่อเมนูหรือหมวดหมู่...">
+        <select class="input" id="menuListStatus"><option value="all">ทุกสถานะ</option><option value="active">เปิดขาย</option><option value="inactive">ปิดขาย</option></select>
+      </div>
+      <div style="overflow:auto"><table class="table-list"><thead><tr><th>รูป</th><th>เมนู</th><th>หมวด</th><th>ราคา</th><th>สถานะ</th><th></th></tr></thead><tbody id="menuRows"></tbody></table></div>
+      <nav id="menuListPagination" class="menu-pagination" aria-label="แบ่งหน้ารายการสินค้า" hidden></nav>
+    </section>
+
+    <section class="card" style="margin-top:16px">
+      <div class="section-title"><h2>จัดการโต๊ะ</h2><a href="/cashier/table-qr" class="btn btn-dark btn-sm">ไปออก QR</a></div>
+      <div class="grid grid-2" style="margin-bottom:12px">
+        <input class="input" id="tableListSearch" placeholder="ค้นหารหัสหรือชื่อโต๊ะ...">
+        <select class="input" id="tableListStatus"><option value="all">ทุกสถานะ</option><option value="active">เปิดใช้งาน</option><option value="inactive">ปิดใช้งาน</option></select>
+      </div>
+      <div style="overflow:auto"><table class="table-list"><thead><tr><th>รหัส</th><th>ชื่อ</th><th>สถานะ</th><th></th></tr></thead><tbody id="tableRows"></tbody></table></div>
+      <nav id="tableListPagination" class="menu-pagination" aria-label="แบ่งหน้ารายการโต๊ะ" hidden></nav>
+    </section>
   </main>
   <script type="module" src="/assets/js/page-guard.js"></script>
   <script type="module" src="/assets/js/admin.js"></script>
   <script type="module" src="/assets/js/admin-payment.js"></script>
+  <script type="module" src="/assets/js/admin-list-pagination.js"></script>
 </body>
 </html>
