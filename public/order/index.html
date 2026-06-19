@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/assets/css/menu-qr.css">
   <link rel="stylesheet" href="/assets/css/customer-rounds.css">
   <link rel="stylesheet" href="/assets/css/order-sticky.css">
+  <link rel="stylesheet" href="/assets/css/menu-pagination.css">
   <title>สั่งอาหาร</title>
 </head>
 <body class="table-order-page">
@@ -39,11 +40,12 @@
       <div id="previousOrdersList" class="previous-orders-list"></div>
     </section>
 
-    <div class="menu-filter-area order-search-area">
+    <div class="menu-filter-area order-search-area" id="menuListStart">
       <input class="input menu-search" id="searchInput" placeholder="ค้นหาเมนู...">
     </div>
 
     <div id="menuGrid" class="grid grid-3"></div>
+    <nav id="menuPagination" class="menu-pagination" aria-label="เปลี่ยนหน้ารายการอาหาร" hidden></nav>
 
     <section id="cartSection" class="card current-round" style="margin-top:18px">
       <div class="section-title">
