@@ -12,8 +12,9 @@
       { "source": "/order/**", "destination": "/order/index.html" },
       { "source": "/kitchen/**", "destination": "/kitchen/index.html" },
       { "source": "/cashier/receipt/**", "destination": "/cashier/receipt/index.html" },
+      { "source": "/cashier/table-qr/**", "destination": "/cashier/table-qr/index.html" },
       { "source": "/cashier/**", "destination": "/cashier/index.html" },
-      { "source": "/admin/qr/**", "destination": "/admin/qr/index.html" },
+      { "source": "/admin/qr/**", "destination": "/cashier/table-qr/index.html" },
       { "source": "/admin/**", "destination": "/admin/index.html" }
     ]
   },
