@@ -13,6 +13,13 @@ function buildQrImageUrl(value) {
   return `https://quickchart.io/qr?text=${encoded}&size=220&margin=1`;
 }
 
+function clearPrintTarget() {
+  document.body.classList.remove("qr-printing");
+  document.querySelectorAll(".qr-card.print-target").forEach(card => {
+    card.classList.remove("print-target");
+  });
+}
+
 async function render() {
   root.innerHTML = '<div class="card empty">กำลังสร้าง QR...</div>';
 
@@ -34,7 +41,7 @@ async function render() {
           <h2>${table.name}</h2>
           <img src="${qrUrl}" width="220" height="220" alt="QR ${table.name}">
           <small style="display:block;overflow-wrap:anywhere">${orderUrl}</small>
-          <button class="btn btn-dark btn-sm" data-print-card style="margin-top:10px">พิมพ์</button>
+          <button class="btn btn-dark btn-sm" data-print-card style="margin-top:10px">พิมพ์เฉพาะโต๊ะนี้</button>
         </article>
       `;
     }).join("");
@@ -45,11 +52,17 @@ async function render() {
 }
 
 root.addEventListener("click", event => {
-  if (!event.target.matches("[data-print-card]")) return;
-  const card = event.target.closest(".qr-card");
-  document.querySelectorAll(".qr-card").forEach(item => item.classList.toggle("print-target", item === card));
-  window.print();
+  const button = event.target.closest("[data-print-card]");
+  if (!button) return;
+
+  clearPrintTarget();
+  const card = button.closest(".qr-card");
+  card.classList.add("print-target");
+  document.body.classList.add("qr-printing");
+
+  requestAnimationFrame(() => window.print());
 });
 
+window.addEventListener("afterprint", clearPrintTarget);
 baseUrl.addEventListener("change", render);
 await render();
