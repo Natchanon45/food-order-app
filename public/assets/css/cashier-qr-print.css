@@ -1,6 +1,5 @@
 @media print {
   @page {
-    size: 80mm auto;
     margin: 0;
   }
 
@@ -24,9 +23,11 @@
   body.qr-printing main.container,
   body.qr-printing #issuedQrWrap,
   body.qr-printing #issuedQr {
-    display: block !important;
-    width: 80mm !important;
-    max-width: 80mm !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    width: 100% !important;
+    max-width: none !important;
     margin: 0 !important;
     padding: 0 !important;
     background: #fff !important;
@@ -34,9 +35,7 @@
 
   body.qr-printing .qr-card.print-target {
     display: block !important;
-    width: 80mm !important;
-    max-width: 80mm !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     border: 0 !important;
     border-radius: 0 !important;
@@ -45,12 +44,51 @@
 
   body.qr-printing .qr-ticket {
     display: block !important;
-    width: 80mm !important;
-    max-width: 80mm !important;
-    margin: 0 !important;
-    padding: 7mm 5mm !important;
+    margin: 0 auto !important;
     border: 0 !important;
     box-shadow: none !important;
+  }
+
+  body.qr-printing.qr-size-80 .qr-card.print-target,
+  body.qr-printing.qr-size-80 .qr-ticket {
+    width: 80mm !important;
+    max-width: 80mm !important;
+  }
+
+  body.qr-printing.qr-size-80 .qr-ticket {
+    padding: 7mm 5mm !important;
+  }
+
+  body.qr-printing.qr-size-58 .qr-card.print-target,
+  body.qr-printing.qr-size-58 .qr-ticket {
+    width: 58mm !important;
+    max-width: 58mm !important;
+  }
+
+  body.qr-printing.qr-size-58 .qr-ticket {
+    padding: 5mm 3mm !important;
+    font-size: 16px !important;
+  }
+
+  body.qr-printing.qr-size-58 .qr-ticket-code img {
+    width: 46mm !important;
+    height: 46mm !important;
+  }
+
+  body.qr-printing.qr-size-a4 .qr-card.print-target {
+    width: 210mm !important;
+    max-width: 210mm !important;
+    min-height: 297mm !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    padding-top: 18mm !important;
+  }
+
+  body.qr-printing.qr-size-a4 .qr-ticket {
+    width: 80mm !important;
+    max-width: 80mm !important;
+    padding: 7mm 5mm !important;
   }
 
   body.qr-printing .qr-card.print-target button,
