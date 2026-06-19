@@ -41,6 +41,85 @@
   max-width: 420px;
 }
 
+.qr-card {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.qr-ticket {
+  width: 80mm;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 8mm 5mm;
+  background: #fff;
+  color: #000;
+  font-family: "TH Sarabun New", "Sarabun", sans-serif;
+  font-size: 20px;
+  line-height: 1.15;
+  border: 1px dashed #aaa;
+}
+
+.qr-ticket-header,
+.qr-ticket-footer {
+  text-align: center;
+}
+
+.qr-ticket-brand {
+  font-size: 1em;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.qr-ticket-title {
+  margin-top: 3px;
+  font-size: 1.35em;
+  font-weight: 700;
+}
+
+.qr-ticket-table {
+  margin-top: 5px;
+  font-size: 1.7em;
+  font-weight: 700;
+}
+
+.qr-ticket-rule {
+  border-top: 1px dashed #000;
+  margin: 9px 0;
+}
+
+.qr-ticket-code {
+  display: grid;
+  place-items: center;
+}
+
+.qr-ticket-code img {
+  width: 58mm;
+  height: 58mm;
+  max-width: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  margin: 0;
+}
+
+.qr-ticket-steps {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+}
+
+.qr-ticket-footer {
+  margin-top: 10px;
+  font-size: .95em;
+}
+
+.qr-ticket-url {
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  text-align: center;
+}
+
 @media print {
   body.qr-printing .app-header,
   body.qr-printing .hero,
@@ -48,6 +127,10 @@
   body.qr-printing .demo-banner,
   body.qr-printing .qr-card:not(.print-target) {
     display: none !important;
+  }
+
+  body.qr-printing {
+    background: #fff;
   }
 
   body.qr-printing .container,
@@ -63,12 +146,28 @@
     display: block !important;
     width: 80mm;
     margin: 0 auto !important;
-    padding: 8mm 5mm;
+    padding: 0;
     border: 0;
     box-shadow: none;
     page-break-inside: avoid;
   }
 
+  body.qr-printing .qr-ticket {
+    width: 80mm;
+    margin: 0;
+    padding: 7mm 5mm;
+    border: 0;
+    box-shadow: none;
+    font-family: "TH Sarabun New", "Sarabun", sans-serif;
+    font-size: 19px;
+  }
+
+  body.qr-printing .qr-ticket-code img {
+    width: 58mm;
+    height: 58mm;
+  }
+
+  body.qr-printing .qr-ticket-url,
   body.qr-printing .qr-card.print-target button {
     display: none !important;
   }
@@ -77,5 +176,9 @@
 @media (max-width: 480px) {
   .menu-search {
     max-width: none;
+  }
+
+  .qr-ticket {
+    width: 100%;
   }
 }
