@@ -10,64 +10,29 @@
 </head>
 <body>
   <div id="demoBanner"></div>
-  <header class="app-header">
-    <div class="brand"><span class="brand-mark">FO</span><span>Delivery</span></div>
-    <span class="badge">จัดส่งถึงบ้าน</span>
-  </header>
-
+  <header class="app-header"><div class="brand"><span class="brand-mark">FO</span><span>Delivery</span></div><span class="badge">จัดส่งถึงบ้าน</span></header>
   <main class="container">
-    <section class="hero">
-      <h1>สั่งอาหาร Delivery</h1>
-      <p>เลือกเมนู กรอกข้อมูลจัดส่ง และยืนยันคำสั่งซื้อได้ทันที</p>
-    </section>
-
-    <div class="menu-filter-area">
-      <div class="category-tabs" id="categoryTabs" role="tablist" aria-label="หมวดหมู่อาหาร"></div>
-      <input class="input menu-search" id="searchInput" placeholder="ค้นหาเมนู...">
-    </div>
-
+    <section class="hero"><h1>สั่งอาหาร Delivery</h1><p>เลือกเมนู กรอกข้อมูลจัดส่ง และยืนยันคำสั่งซื้อได้ทันที</p></section>
+    <div class="menu-filter-area"><div class="category-tabs" id="categoryTabs" role="tablist" aria-label="หมวดหมู่อาหาร"></div><input class="input menu-search" id="searchInput" placeholder="ค้นหาเมนู..."></div>
     <div id="menuGrid" class="grid grid-3"></div>
-
-    <section class="card" style="margin-top:18px">
-      <div class="section-title"><h2>ตะกร้าอาหาร</h2><span id="cartCount" class="badge">0 รายการ</span></div>
-      <div id="cartList" class="cart-list"></div>
-    </section>
-
+    <section class="card" style="margin-top:18px"><div class="section-title"><h2>ตะกร้าอาหาร</h2><span id="cartCount" class="badge">0 รายการ</span></div><div id="cartList" class="cart-list"></div></section>
     <section class="card" style="margin-top:18px">
       <div class="section-title"><h2>ข้อมูลจัดส่ง</h2></div>
-      <div class="grid grid-2">
-        <div class="field">
-          <label>ชื่อผู้รับ *</label>
-          <input class="input" id="recipientName" required maxlength="120">
-        </div>
-        <div class="field">
-          <label>เบอร์โทรศัพท์ *</label>
-          <input class="input" id="recipientPhone" type="tel" inputmode="tel" required maxlength="20">
-        </div>
-      </div>
-      <div class="field" style="margin-top:12px">
-        <label>ที่อยู่จัดส่ง *</label>
-        <textarea class="input" id="deliveryAddress" required maxlength="500" placeholder="บ้านเลขที่ ถนน แขวง/ตำบล เขต/อำเภอ จังหวัด รหัสไปรษณีย์"></textarea>
-      </div>
-      <div class="field" style="margin-top:12px">
-        <label>หมายเหตุถึงร้าน</label>
-        <textarea class="input" id="orderNote" maxlength="300" placeholder="เช่น โทรก่อนถึง ไม่ใส่ผัก"></textarea>
-      </div>
-      <div class="field" style="margin-top:12px">
-        <label>วิธีชำระเงิน *</label>
-        <select class="input" id="paymentMethod">
-          <option value="paid">ชำระเงินแล้ว</option>
-          <option value="cod">เก็บเงินปลายทาง</option>
-        </select>
+      <div class="grid grid-2"><div class="field"><label>ชื่อผู้รับ *</label><input class="input" id="recipientName" required maxlength="120"></div><div class="field"><label>เบอร์โทรศัพท์ *</label><input class="input" id="recipientPhone" type="tel" inputmode="tel" required maxlength="20"></div></div>
+      <div class="field" style="margin-top:12px"><label>ที่อยู่จัดส่ง *</label><textarea class="input" id="deliveryAddress" required maxlength="500"></textarea></div>
+      <div class="field" style="margin-top:12px"><label>หมายเหตุถึงร้าน</label><textarea class="input" id="orderNote" maxlength="300"></textarea></div>
+      <div class="field" style="margin-top:12px"><label>วิธีชำระเงิน *</label><select class="input" id="paymentMethod"><option value="promptpay">พร้อมเพย์/โอนเงิน</option><option value="cod">เก็บเงินปลายทาง</option></select></div>
+      <div id="promptPaySection" class="card" style="margin-top:12px;text-align:center">
+        <h3 style="margin-top:0">สแกน QR พร้อมเพย์</h3>
+        <img id="promptPayQr" width="220" height="220" alt="QR พร้อมเพย์">
+        <div><strong id="promptPayAmount">0.00 บาท</strong></div>
+        <div id="promptPayName" class="menu-category"></div>
+        <div class="field" style="margin-top:12px;text-align:left"><label>แนบสลิปหรือหลักฐานการชำระ *</label><input class="input" id="paymentSlip" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif"></div>
+        <small class="menu-category">ระบบรับหลักฐานไว้ให้ร้านตรวจสอบ แต่ไม่ได้ตรวจสอบกับธนาคารอัตโนมัติ</small>
       </div>
     </section>
   </main>
-
-  <div class="cart-bar">
-    <div><small>ยอดรวม</small><div style="font-size:20px;font-weight:800"><span id="cartTotal">0.00</span> บาท</div></div>
-    <button class="btn btn-primary" id="submitOrder">ยืนยันการสั่ง</button>
-  </div>
-
+  <div class="cart-bar"><div><small>ยอดรวม</small><div style="font-size:20px;font-weight:800"><span id="cartTotal">0.00</span> บาท</div></div><button class="btn btn-primary" id="submitOrder">ยืนยันการสั่ง</button></div>
   <script type="module" src="/assets/js/delivery.js"></script>
 </body>
 </html>
