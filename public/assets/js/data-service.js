@@ -2,15 +2,23 @@ import { db, isFirebaseConfigured, collection, addDoc, doc, getDoc, getDocs, set
 import { demoStore } from "./demo-store.js";
 
 export const usingDemoMode = !isFirebaseConfigured;
+const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
 
 function mapDocs(snapshot) {
   return snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
 }
 
+function normalizeMenu(menu) {
+  return {
+    ...menu,
+    image: menu.image || DEFAULT_FOOD_IMAGE
+  };
+}
+
 export const dataService = {
   async listMenus() {
-    if (usingDemoMode) return demoStore.menus.list();
-    return mapDocs(await getDocs(collection(db, "menus")));
+    if (usingDemoMode) return demoStore.menus.list().map(normalizeMenu);
+    return mapDocs(await getDocs(collection(db, "menus"))).map(normalizeMenu);
   },
   async saveMenu(menu) {
     if (usingDemoMode) return demoStore.menus.save(menu);
