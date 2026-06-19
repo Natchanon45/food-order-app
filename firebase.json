@@ -9,6 +9,7 @@
     "cleanUrls": true,
     "trailingSlash": false,
     "rewrites": [
+      { "source": "/delivery/**", "destination": "/delivery/index.html" },
       { "source": "/order/**", "destination": "/order/index.html" },
       { "source": "/kitchen/**", "destination": "/kitchen/index.html" },
       { "source": "/cashier/receipt/**", "destination": "/cashier/receipt/index.html" },
