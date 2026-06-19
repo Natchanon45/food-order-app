@@ -53,7 +53,7 @@ async function render(order) {
   document.querySelector("#receiptItems").innerHTML = (order.items || []).map(item => `
     <tr>
       <td class="receipt-item-name">${item.name}${item.note ? `<div class="receipt-item-note">${item.note}</div>` : ""}</td>
-      <td class="num receipt-unit">${money(Number(item.price))} x ${item.qty}</td>
+      <td class="num receipt-unit">${money(Number(item.price))}x${item.qty}</td>
       <td class="num receipt-line-total">${money(Number(item.qty) * Number(item.price))}</td>
     </tr>
   `).join("");
