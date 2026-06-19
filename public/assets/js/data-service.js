@@ -9,10 +9,15 @@ function mapDocs(snapshot) {
 }
 
 function normalizeMenu(menu) {
-  return {
-    ...menu,
-    image: menu.image || DEFAULT_FOOD_IMAGE
-  };
+  return { ...menu, image: menu.image || DEFAULT_FOOD_IMAGE };
+}
+
+async function phoneKey(phone) {
+  const normalized = String(phone || "").replace(/\D/g, "");
+  if (!normalized) throw new Error("INVALID_PHONE");
+  const bytes = new TextEncoder().encode(normalized);
+  const hash = await crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(hash)].map(byte => byte.toString(16).padStart(2, "0")).join("");
 }
 
 export const dataService = {
@@ -36,9 +41,7 @@ export const dataService = {
     return mapDocs(await getDocs(collection(db, "tables")));
   },
   async getTable(id) {
-    if (usingDemoMode) {
-      return demoStore.tables.list().find(item => item.id === id || item.code === id) || null;
-    }
+    if (usingDemoMode) return demoStore.tables.list().find(item => item.id === id || item.code === id) || null;
     const snapshot = await getDoc(doc(db, "tables", id));
     return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
   },
@@ -76,23 +79,15 @@ export const dataService = {
 
     const tableRef = doc(db, "tables", order.tableCode);
     const orderRef = doc(collection(db, "orders"));
-
     await runTransaction(db, async transaction => {
       const tableSnapshot = await transaction.get(tableRef);
       if (!tableSnapshot.exists()) throw new Error("INVALID_TABLE_SESSION");
       const table = tableSnapshot.data();
       if (table.status !== "occupied" || table.orderToken !== order.tableToken) throw new Error("INVALID_TABLE_SESSION");
-
       const roundNumber = Number(table.currentRound || 0) + 1;
       transaction.update(tableRef, { currentRound: roundNumber, updatedAt: serverTimestamp() });
-      transaction.set(orderRef, {
-        ...order,
-        roundNumber,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
+      transaction.set(orderRef, { ...order, roundNumber, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
     });
-
     return { id: orderRef.id };
   },
   async getOrder(id) {
@@ -120,6 +115,27 @@ export const dataService = {
     }
     return setDoc(doc(db, "settings", "store"), { ...settings, updatedAt: serverTimestamp() }, { merge: true });
   },
+  async getDeliveryCustomer(phone) {
+    const normalizedPhone = String(phone || "").replace(/\D/g, "");
+    if (!normalizedPhone) return null;
+    const key = await phoneKey(normalizedPhone);
+    if (usingDemoMode) {
+      const saved = localStorage.getItem(`delivery_customer_${key}`);
+      return saved ? JSON.parse(saved) : null;
+    }
+    const snapshot = await getDoc(doc(db, "deliveryCustomers", key));
+    return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
+  },
+  async saveDeliveryCustomer(phone, profile) {
+    const normalizedPhone = String(phone || "").replace(/\D/g, "");
+    const key = await phoneKey(normalizedPhone);
+    const payload = { ...profile, phone: normalizedPhone, addresses: (profile.addresses || []).slice(0, 5) };
+    if (usingDemoMode) {
+      localStorage.setItem(`delivery_customer_${key}`, JSON.stringify(payload));
+      return payload;
+    }
+    return setDoc(doc(db, "deliveryCustomers", key), { ...payload, updatedAt: serverTimestamp() }, { merge: true });
+  },
   subscribeOrders(callback) {
     if (usingDemoMode) {
       const emit = () => callback(demoStore.orders.list());
@@ -128,11 +144,7 @@ export const dataService = {
       window.addEventListener("storage", handler);
       window.addEventListener("demo-store-change", handler);
       const timer = setInterval(emit, 1500);
-      return () => {
-        clearInterval(timer);
-        window.removeEventListener("storage", handler);
-        window.removeEventListener("demo-store-change", handler);
-      };
+      return () => { clearInterval(timer); window.removeEventListener("storage", handler); window.removeEventListener("demo-store-change", handler); };
     }
     const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
     return onSnapshot(q, snap => callback(mapDocs(snap)));
