@@ -12,7 +12,18 @@ export function watchCustomerAuth(callback) {
   return onAuthStateChanged(auth, callback);
 }
 
+export async function getStaffSession(user = auth.currentUser) {
+  if (!user) return null;
+  const snapshot = await getDoc(doc(db, "users", user.uid));
+  if (!snapshot.exists()) return null;
+  const profile = snapshot.data();
+  return profile?.role ? { uid: user.uid, email: user.email, ...profile } : null;
+}
+
 export async function loginCustomerWithGoogle() {
+  const staff = await getStaffSession();
+  if (staff) throw new Error("STAFF_SESSION_ACTIVE");
+
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
   return signInWithPopup(auth, provider);
@@ -46,6 +57,9 @@ export async function saveCustomerProfile(profile, user = auth.currentUser) {
     localStorage.setItem(GUEST_KEY, JSON.stringify(payload));
     return payload;
   }
+
+  const staff = await getStaffSession(user);
+  if (staff) throw new Error("STAFF_SESSION_ACTIVE");
 
   await setDoc(doc(db, "customerProfiles", user.uid), {
     ...payload,
