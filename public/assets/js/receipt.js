@@ -21,11 +21,29 @@ setPaperSize(paperSize.value);
 paperSize.addEventListener("change", () => setPaperSize(paperSize.value));
 document.querySelector("#printButton").addEventListener("click", () => window.print());
 
+function paymentText(order) {
+  if (order.paymentStatus === "paid") return "ชำระเงินแล้ว";
+  if (order.paymentMethod === "cod") return "เก็บเงินปลายทาง";
+  return "ยังไม่ชำระเงิน";
+}
+
 function render(order) {
-  document.querySelector("#receiptTable").textContent = order.tableCode || "-";
+  const isDelivery = order.orderType === "delivery";
+  document.querySelector("#receiptTitle").textContent = isDelivery ? "ใบสั่งซื้อ Delivery" : "ใบเสร็จรับเงิน";
+  document.querySelector("#receiptTypeLabel").textContent = isDelivery ? "ประเภท" : "โต๊ะ";
+  document.querySelector("#receiptTable").textContent = isDelivery ? "Delivery" : (order.tableCode || "-");
   document.querySelector("#receiptNumber").textContent = (order.id || orderId).slice(0, 12).toUpperCase();
   document.querySelector("#receiptDate").textContent = formatTime(order.createdAt);
+  document.querySelector("#receiptPayment").textContent = paymentText(order);
   document.querySelector("#receiptTotal").textContent = money(order.totalAmount);
+
+  if (isDelivery) {
+    document.querySelector("#deliveryInfo").hidden = false;
+    document.querySelector("#receiptRecipient").textContent = order.recipientName || "-";
+    document.querySelector("#receiptPhone").textContent = order.recipientPhone || "-";
+    document.querySelector("#receiptAddress").textContent = order.deliveryAddress || "-";
+  }
+
   document.querySelector("#receiptItems").innerHTML = (order.items || []).map(item => `
     <tr>
       <td>${item.name}${item.note ? `<div style="font-size:.85em">${item.note}</div>` : ""}</td>
