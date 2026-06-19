@@ -26,9 +26,7 @@ document.querySelector("#tableTitle").textContent = tableCode ? `เมนูส
 document.querySelector("#submitOrder").disabled = true;
 
 function categories() {
-  return ["ทั้งหมด", ...new Set(
-    menus.filter(item => item.active !== false).map(item => item.category || "อื่น ๆ")
-  )];
+  return ["ทั้งหมด", ...new Set(menus.filter(item => item.active !== false).map(item => item.category || "อื่น ๆ"))];
 }
 
 function renderCategoryTabs() {
@@ -70,15 +68,16 @@ function timestampValue(value) {
 }
 
 function renderPreviousOrders() {
-  const sorted = [...sessionOrders].sort((a, b) => timestampValue(a.createdAt) - timestampValue(b.createdAt));
-  currentRoundLabel.textContent = `รอบที่ ${sorted.length + 1}`;
+  const sorted = [...sessionOrders].sort((a, b) => Number(a.roundNumber || 0) - Number(b.roundNumber || 0) || timestampValue(a.createdAt) - timestampValue(b.createdAt));
+  const highestRound = sorted.reduce((max, order) => Math.max(max, Number(order.roundNumber || 0)), 0);
+  currentRoundLabel.textContent = `รอบที่ ${highestRound + 1}`;
   previousRoundCount.textContent = `${sorted.length} รอบ`;
   previousOrdersSection.hidden = sorted.length === 0;
 
-  previousOrdersList.innerHTML = sorted.map((order, index) => `
+  previousOrdersList.innerHTML = sorted.map(order => `
     <article class="previous-round">
       <div class="previous-round-head">
-        <div class="previous-round-title">รอบที่ ${index + 1}</div>
+        <div class="previous-round-title">รอบที่ ${order.roundNumber || 1}</div>
         <small>${formatTime(order.createdAt)}</small>
       </div>
       <div class="previous-round-items">
@@ -124,12 +123,7 @@ function updateCart() {
 async function validateTableSession() {
   if (!tableCode || !tableToken) return false;
   const table = await dataService.getTable(tableCode);
-  return Boolean(
-    table &&
-    table.active !== false &&
-    table.status === "occupied" &&
-    table.orderToken === tableToken
-  );
+  return Boolean(table && table.active !== false && table.status === "occupied" && table.orderToken === tableToken);
 }
 
 function startSharedOrderFeed() {
@@ -138,8 +132,7 @@ function startSharedOrderFeed() {
     sessionOrders = orders.filter(order =>
       order.orderType !== "delivery" &&
       order.tableCode === tableCode &&
-      order.tableToken === tableToken &&
-      !["paid", "cancelled"].includes(order.status)
+      order.tableToken === tableToken
     );
     renderPreviousOrders();
   });
@@ -203,16 +196,14 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
     note: note || ""
   }));
   const totalAmount = items.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const roundNumber = sessionOrders.length + 1;
 
   button.disabled = true;
   button.textContent = "กำลังส่ง...";
 
   try {
-    await dataService.createOrder({
+    await dataService.createTableOrder({
       tableCode,
       tableToken,
-      roundNumber,
       status: "pending",
       totalAmount,
       note: document.querySelector("#orderNote").value.trim(),
@@ -221,10 +212,10 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
     cart.clear();
     document.querySelector("#orderNote").value = "";
     updateCart();
-    toast(`ส่งรายการรอบที่ ${roundNumber} เข้าครัวแล้ว`);
+    toast("ส่งรายการเข้าครัวแล้ว");
   } catch (error) {
     console.error(error);
-    toast("ส่งออเดอร์ไม่สำเร็จ", "error");
+    toast(error.message === "INVALID_TABLE_SESSION" ? "QR นี้หมดอายุแล้ว กรุณาติดต่อแคชเชียร์" : "ส่งออเดอร์ไม่สำเร็จ", "error");
   } finally {
     button.textContent = "ยืนยันการสั่ง";
     updateCart();
