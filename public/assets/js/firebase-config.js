@@ -5,12 +5,13 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "PUT_YOUR_API_KEY_HERE",
-  authDomain: "PUT_YOUR_PROJECT.firebaseapp.com",
-  projectId: "PUT_YOUR_PROJECT_ID_HERE",
-  storageBucket: "PUT_YOUR_PROJECT.firebasestorage.app",
-  messagingSenderId: "PUT_YOUR_MESSAGING_SENDER_ID_HERE",
-  appId: "PUT_YOUR_APP_ID_HERE"
+  apiKey: "AIzaSyAT2YIuk4A0ibSBXpMA_3Im54gj9s4WRW8",
+  authDomain: "project-987b9bba-eddc-4459-bdb.firebaseapp.com",
+  projectId: "project-987b9bba-eddc-4459-bdb",
+  storageBucket: "project-987b9bba-eddc-4459-bdb.firebasestorage.app",
+  messagingSenderId: "298432652014",
+  appId: "1:298432652014:web:787620331c0de816f489ff",
+  measurementId: "G-4SLNZRLR5E"
 };
 
 export const isFirebaseConfigured = !firebaseConfig.apiKey.startsWith("PUT_") && !firebaseConfig.projectId.startsWith("PUT_");
