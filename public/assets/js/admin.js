@@ -1,6 +1,6 @@
 import { dataService, usingDemoMode } from "./data-service.js";
 import { storage, ref, uploadBytes, getDownloadURL } from "./firebase-config.js";
-import { money, toast } from "./ui.js";
+import { money, toast, DEFAULT_FOOD_IMAGE } from "./ui.js";
 
 if (usingDemoMode) {
   document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง: ข้อมูลอยู่ในเบราว์เซอร์นี้</div>';
@@ -9,7 +9,6 @@ if (usingDemoMode) {
 let menus = [];
 let tables = [];
 let selectedImageFile = null;
-let previewObjectUrl = "";
 
 const menuImage = document.querySelector("#menuImage");
 const menuImagePath = document.querySelector("#menuImagePath");
@@ -34,25 +33,22 @@ function setImageError(message = "") {
   imageError.hidden = !message;
 }
 
-function clearPreviewObjectUrl() {
-  if (previewObjectUrl) URL.revokeObjectURL(previewObjectUrl);
-  previewObjectUrl = "";
-}
-
 function showPreview(src, name = "รูปอาหารเดิม", sizeText = "") {
-  clearPreviewObjectUrl();
-
   if (!src) {
+    preview.src = DEFAULT_FOOD_IMAGE;
     previewWrap.hidden = true;
     dropzoneContent.hidden = false;
     dropzone.classList.remove("has-image");
     removeImageButton.hidden = true;
-    preview.removeAttribute("src");
     fileName.textContent = "-";
     fileSize.textContent = "-";
     return;
   }
 
+  preview.onerror = () => {
+    preview.onerror = null;
+    preview.src = DEFAULT_FOOD_IMAGE;
+  };
   preview.src = src;
   previewWrap.hidden = false;
   dropzoneContent.hidden = true;
@@ -63,25 +59,34 @@ function showPreview(src, name = "รูปอาหารเดิม", sizeTex
 }
 
 function validateImageFile(file) {
-  if (!file) return;
+  if (!file) throw new Error("NO_IMAGE_FILE");
   if (file.size > 8 * 1024 * 1024) throw new Error("IMAGE_TOO_LARGE");
   const allowed = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
   if (file.type && !allowed.includes(file.type)) throw new Error("INVALID_IMAGE_TYPE");
 }
 
-function selectImageFile(file) {
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("IMAGE_PREVIEW_FAILED"));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function selectImageFile(file) {
   try {
     validateImageFile(file);
+    const previewUrl = await readFileAsDataUrl(file);
     selectedImageFile = file;
     setImageError("");
-    previewObjectUrl = URL.createObjectURL(file);
-    showPreview(previewObjectUrl, file.name || "รูปอาหาร", formatFileSize(file.size));
+    showPreview(previewUrl, file.name || "รูปอาหาร", formatFileSize(file.size));
   } catch (error) {
     selectedImageFile = null;
     fileInput.value = "";
-    const message = error.message === "IMAGE_TOO_LARGE"
-      ? "รูปต้องมีขนาดไม่เกิน 8 MB"
-      : "รองรับเฉพาะไฟล์ JPG, PNG, WebP และ HEIC";
+    let message = "ไม่สามารถอ่านไฟล์รูปนี้ได้";
+    if (error.message === "IMAGE_TOO_LARGE") message = "รูปต้องมีขนาดไม่เกิน 8 MB";
+    if (error.message === "INVALID_IMAGE_TYPE") message = "รองรับเฉพาะไฟล์ JPG, PNG, WebP และ HEIC";
     setImageError(message);
     toast(message, "error");
   }
@@ -152,7 +157,7 @@ async function load() {
 
   document.querySelector("#menuRows").innerHTML = menus.map(item => `
     <tr>
-      <td>${item.image ? `<img src="${item.image}" alt="${item.name}" style="width:58px;height:46px;object-fit:cover;border-radius:8px" onerror="this.replaceWith('-')">` : "-"}</td>
+      <td><img src="${item.image || DEFAULT_FOOD_IMAGE}" alt="${item.name}" data-food-image style="width:58px;height:46px;object-fit:cover;border-radius:8px"></td>
       <td><strong>${item.name}</strong></td>
       <td>${item.category || "-"}</td>
       <td>${money(item.price)}</td>
@@ -256,9 +261,9 @@ document.querySelector("#menuForm").addEventListener("submit", async event => {
     let message = "บันทึกเมนูไม่สำเร็จ";
     if (error.message === "IMAGE_TOO_LARGE") message = "รูปต้องมีขนาดไม่เกิน 8 MB";
     if (error.message === "INVALID_IMAGE_TYPE") message = "ชนิดไฟล์รูปไม่รองรับ";
-    if (["IMAGE_DECODE_FAILED", "IMAGE_CONVERT_FAILED"].includes(error.message)) message = "มือถือหรือเบราว์เซอร์นี้อ่านรูปไม่ได้ กรุณาเลือก JPG, PNG หรือ WebP";
+    if (["IMAGE_DECODE_FAILED", "IMAGE_CONVERT_FAILED"].includes(error.message)) message = "เบราว์เซอร์อ่านรูปนี้ไม่ได้ กรุณาใช้ JPG, PNG หรือ WebP";
     if (error.message === "STORAGE_NOT_READY" || error.code === "storage/unknown" || error.code === "storage/unauthorized") {
-      message = "Firebase Storage ยังไม่พร้อมใช้งาน กรุณาเปิด Storage และ Deploy storage rules ก่อน";
+      message = "Firebase Storage ยังไม่พร้อมใช้งาน กรุณาตรวจสอบ Storage rules";
     }
     setImageError(message);
     toast(message, "error");
@@ -295,13 +300,13 @@ document.body.addEventListener("click", async event => {
     document.querySelector("#menuName").value = item.name;
     document.querySelector("#menuCategory").value = item.category || "";
     document.querySelector("#menuPrice").value = item.price;
-    menuImage.value = item.image || "";
+    menuImage.value = item.image && item.image !== DEFAULT_FOOD_IMAGE ? item.image : "";
     menuImagePath.value = item.imagePath || "";
     document.querySelector("#menuActive").checked = item.active !== false;
     selectedImageFile = null;
     fileInput.value = "";
     setImageError("");
-    showPreview(item.image || "", "รูปอาหารเดิม", "");
+    showPreview(item.image || DEFAULT_FOOD_IMAGE, "รูปอาหารเดิม", "");
     scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -327,4 +332,5 @@ document.body.addEventListener("click", async event => {
   }
 });
 
+showPreview("");
 await load();
