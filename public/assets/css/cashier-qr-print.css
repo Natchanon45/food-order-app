@@ -1,0 +1,33 @@
+@media print {
+  body.qr-printing .app-header,
+  body.qr-printing .hero,
+  body.qr-printing .demo-banner,
+  body.qr-printing #availableTables {
+    display: none !important;
+  }
+
+  body.qr-printing,
+  body.qr-printing .container,
+  body.qr-printing #issuedQrWrap,
+  body.qr-printing #issuedQr {
+    display: block !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  body.qr-printing .qr-card.print-target {
+    display: block !important;
+    width: 80mm !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  body.qr-printing .qr-card.print-target button {
+    display: none !important;
+  }
+}
