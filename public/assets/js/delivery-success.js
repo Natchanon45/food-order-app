@@ -27,6 +27,9 @@ async function load() {
   document.querySelector("#receiptRecipient").textContent = order.recipientName || "-";
   document.querySelector("#receiptPhone").textContent = order.recipientPhone || "-";
   document.querySelector("#receiptAddress").textContent = order.deliveryAddress || "-";
+  document.querySelector("#receiptDeliveryZone").textContent = order.deliveryZoneLabel || "-";
+  document.querySelector("#receiptSubtotal").textContent = money(order.subtotalAmount ?? (Number(order.totalAmount || 0) - Number(order.deliveryFee || 0)));
+  document.querySelector("#receiptDeliveryFee").textContent = money(order.deliveryFee || 0);
   document.querySelector("#receiptTotal").textContent = money(order.totalAmount);
   document.querySelector("#receiptItems").innerHTML = (order.items || []).map(item => `
     <tr>
@@ -46,11 +49,7 @@ async function load() {
 }
 
 async function createReceiptFile() {
-  const canvas = await html2canvas(receipt, {
-    scale: 2,
-    backgroundColor: "#ffffff",
-    useCORS: true
-  });
+  const canvas = await html2canvas(receipt, { scale: 2, backgroundColor: "#ffffff", useCORS: true });
   const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png", 1));
   return new File([blob], `delivery-${orderId.slice(0, 12)}.png`, { type: "image/png" });
 }
@@ -59,15 +58,10 @@ document.querySelector("#saveImageButton").addEventListener("click", async event
   const button = event.currentTarget;
   button.disabled = true;
   button.textContent = "กำลังสร้างรูป...";
-
   try {
     const file = await createReceiptFile();
     if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({
-        title: "คำสั่งซื้อ Delivery",
-        text: `เลขที่ ${orderId.slice(0, 12).toUpperCase()}`,
-        files: [file]
-      });
+      await navigator.share({ title: "คำสั่งซื้อ Delivery", text: `เลขที่ ${orderId.slice(0, 12).toUpperCase()}`, files: [file] });
     } else {
       const url = URL.createObjectURL(file);
       const link = document.createElement("a");
