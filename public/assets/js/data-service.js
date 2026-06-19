@@ -9,7 +9,23 @@ function mapDocs(snapshot) {
 }
 
 function normalizeMenu(menu) {
-  return { ...menu, image: menu.image || DEFAULT_FOOD_IMAGE };
+  return { ...menu, image: menu.image || DEFAULT_FOOD_IMAGE, sortOrder: Number(menu.sortOrder || 9999) };
+}
+
+function sortMenus(menus, categoryOrder = []) {
+  const rank = new Map(categoryOrder.map((name, index) => [name, index]));
+  return [...menus].sort((a, b) => {
+    const categoryA = a.category || "อื่น ๆ";
+    const categoryB = b.category || "อื่น ๆ";
+    const categoryRankA = rank.has(categoryA) ? rank.get(categoryA) : 9999;
+    const categoryRankB = rank.has(categoryB) ? rank.get(categoryB) : 9999;
+    if (categoryRankA !== categoryRankB) return categoryRankA - categoryRankB;
+    if (categoryA !== categoryB) return categoryA.localeCompare(categoryB, "th");
+    const itemRankA = Number(a.sortOrder || 9999);
+    const itemRankB = Number(b.sortOrder || 9999);
+    if (itemRankA !== itemRankB) return itemRankA - itemRankB;
+    return String(a.name || "").localeCompare(String(b.name || ""), "th");
+  });
 }
 
 async function phoneKey(phone) {
@@ -22,8 +38,17 @@ async function phoneKey(phone) {
 
 export const dataService = {
   async listMenus() {
-    if (usingDemoMode) return demoStore.menus.list().map(normalizeMenu);
-    return mapDocs(await getDocs(collection(db, "menus"))).map(normalizeMenu);
+    if (usingDemoMode) {
+      const saved = localStorage.getItem("food_order_store_settings");
+      const settings = saved ? JSON.parse(saved) : {};
+      return sortMenus(demoStore.menus.list().map(normalizeMenu), settings.categoryOrder || []);
+    }
+    const [menuSnapshot, settingsSnapshot] = await Promise.all([
+      getDocs(collection(db, "menus")),
+      getDoc(doc(db, "settings", "store"))
+    ]);
+    const settings = settingsSnapshot.exists() ? settingsSnapshot.data() : {};
+    return sortMenus(mapDocs(menuSnapshot).map(normalizeMenu), settings.categoryOrder || []);
   },
   async saveMenu(menu) {
     if (usingDemoMode) return demoStore.menus.save(menu);
@@ -76,7 +101,6 @@ export const dataService = {
       await this.updateTable(table.id, { currentRound: roundNumber });
       return demoStore.orders.add({ ...order, roundNumber });
     }
-
     const tableRef = doc(db, "tables", order.tableCode);
     const orderRef = doc(collection(db, "orders"));
     await runTransaction(db, async transaction => {
@@ -100,7 +124,7 @@ export const dataService = {
     return updateDoc(doc(db, "orders", id), { ...patch, updatedAt: serverTimestamp() });
   },
   async getStoreSettings() {
-    const fallback = { shopName: "Food Order QR", shopAddress: "", shopPhone: "" };
+    const fallback = { shopName: "Food Order QR", shopAddress: "", shopPhone: "", categoryOrder: [] };
     if (usingDemoMode) {
       const saved = localStorage.getItem("food_order_store_settings");
       return saved ? { ...fallback, ...JSON.parse(saved) } : fallback;
@@ -110,8 +134,10 @@ export const dataService = {
   },
   async saveStoreSettings(settings) {
     if (usingDemoMode) {
-      localStorage.setItem("food_order_store_settings", JSON.stringify(settings));
-      return settings;
+      const current = JSON.parse(localStorage.getItem("food_order_store_settings") || "{}");
+      const merged = { ...current, ...settings };
+      localStorage.setItem("food_order_store_settings", JSON.stringify(merged));
+      return merged;
     }
     return setDoc(doc(db, "settings", "store"), { ...settings, updatedAt: serverTimestamp() }, { merge: true });
   },
