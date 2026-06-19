@@ -10,7 +10,7 @@ baseUrl.value = location.origin === "null" ? "https://chat-45754.web.app" : loca
 
 function buildQrImageUrl(value) {
   const encoded = encodeURIComponent(value);
-  return `https://quickchart.io/qr?text=${encoded}&size=220&margin=1`;
+  return `https://quickchart.io/qr?text=${encoded}&size=320&margin=1`;
 }
 
 function clearPrintTarget() {
@@ -38,10 +38,35 @@ async function render() {
 
       return `
         <article class="card qr-card">
-          <h2>${table.name}</h2>
-          <img src="${qrUrl}" width="220" height="220" alt="QR ${table.name}">
-          <small style="display:block;overflow-wrap:anywhere">${orderUrl}</small>
-          <button class="btn btn-dark btn-sm" data-print-card style="margin-top:10px">พิมพ์เฉพาะโต๊ะนี้</button>
+          <div class="qr-ticket">
+            <div class="qr-ticket-header">
+              <div class="qr-ticket-brand">FOOD ORDER QR</div>
+              <div class="qr-ticket-title">สแกนเพื่อสั่งอาหาร</div>
+              <div class="qr-ticket-table">${table.name}</div>
+            </div>
+
+            <div class="qr-ticket-rule"></div>
+
+            <div class="qr-ticket-code">
+              <img src="${qrUrl}" width="260" height="260" alt="QR ${table.name}">
+            </div>
+
+            <div class="qr-ticket-rule"></div>
+
+            <div class="qr-ticket-steps">
+              <div>1. เปิดกล้องโทรศัพท์</div>
+              <div>2. สแกน QR Code</div>
+              <div>3. เลือกเมนูและยืนยันออเดอร์</div>
+            </div>
+
+            <div class="qr-ticket-footer">
+              กรุณาตรวจสอบเลขโต๊ะก่อนสั่งอาหาร<br>
+              ขอบคุณที่ใช้บริการ
+            </div>
+          </div>
+
+          <small class="qr-ticket-url">${orderUrl}</small>
+          <button class="btn btn-dark btn-sm" data-print-card>พิมพ์สำหรับวางที่โต๊ะ</button>
         </article>
       `;
     }).join("");
