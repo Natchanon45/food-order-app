@@ -2,10 +2,60 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // DEVELOPMENT ONLY: เปิดเพื่อให้ทดสอบ Version 1 ได้ทันที
-    // ก่อนใช้งานจริงต้องเปลี่ยนเป็น Firebase Authentication + Role
-    match /{document=**} {
-      allow read, write: if true;
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function hasRole(roles) {
+      return signedIn() && profile().active == true && profile().role in roles;
+    }
+
+    function adminRole() {
+      return hasRole(['admin', 'super_admin']);
+    }
+
+    function cashierRole() {
+      return hasRole(['cashier', 'super_admin']);
+    }
+
+    function kitchenRole() {
+      return hasRole(['kitchen', 'super_admin']);
+    }
+
+    match /menus/{menuId} {
+      allow read: if true;
+      allow create, update, delete: if adminRole();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow create, update, delete: if adminRole();
+    }
+
+    match /tables/{tableId} {
+      allow read: if true;
+      allow create, delete: if adminRole();
+      allow update: if adminRole() || cashierRole() || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentRound', 'updatedAt']) &&
+        resource.data.status == 'occupied' &&
+        request.resource.data.orderToken == resource.data.orderToken
+      );
+    }
+
+    match /orders/{orderId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if cashierRole() || kitchenRole() || adminRole();
+      allow delete: if hasRole(['super_admin']);
+    }
+
+    match /users/{userId} {
+      allow read: if signedIn() && (request.auth.uid == userId || hasRole(['super_admin']));
+      allow create, update, delete: if hasRole(['super_admin']);
     }
   }
 }
