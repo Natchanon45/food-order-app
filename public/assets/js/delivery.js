@@ -11,6 +11,7 @@ const categoryTabs = document.querySelector("#categoryTabs");
 const paymentMethod = document.querySelector("#paymentMethod");
 const promptPaySection = document.querySelector("#promptPaySection");
 const promptPayQr = document.querySelector("#promptPayQr");
+const promptPayPlaceholder = document.querySelector("#promptPayPlaceholder");
 const promptPayAmount = document.querySelector("#promptPayAmount");
 const promptPayName = document.querySelector("#promptPayName");
 const paymentSlip = document.querySelector("#paymentSlip");
@@ -34,6 +35,13 @@ function renderMenus() {
   menuGrid.innerHTML = filtered.length ? filtered.map(item => `<article class="card menu-card"><div class="menu-image"><img src="${item.image}" alt="${item.name}"></div><div class="menu-name">${item.name}</div><div class="menu-category">${item.category || "อื่น ๆ"}</div><div class="menu-footer"><span class="price">${money(item.price)} บาท</span><button class="btn btn-primary btn-sm" data-add="${item.id}">เพิ่ม</button></div></article>`).join("") : '<div class="card empty">ไม่พบเมนู</div>';
 }
 
+function showPromptPayPlaceholder(message) {
+  promptPayQr.hidden = true;
+  promptPayQr.removeAttribute("src");
+  promptPayPlaceholder.hidden = false;
+  promptPayPlaceholder.textContent = message;
+}
+
 function renderPromptPay() {
   const isPromptPay = paymentMethod.value === "promptpay";
   promptPaySection.hidden = !isPromptPay;
@@ -42,18 +50,25 @@ function renderPromptPay() {
   promptPayAmount.textContent = `${money(currentTotal)} บาท`;
   promptPayName.textContent = storeSettings.promptPayName || storeSettings.bankAccountName || "";
 
-  if (!storeSettings.promptPayId || currentTotal <= 0) {
-    promptPayQr.removeAttribute("src");
-    promptPayQr.alt = "ยังไม่พร้อมสร้าง QR";
+  if (!storeSettings.promptPayId) {
+    showPromptPayPlaceholder("ร้านยังไม่ได้ตั้งค่าเลขพร้อมเพย์");
+    return;
+  }
+
+  if (currentTotal <= 0) {
+    showPromptPayPlaceholder("เพิ่มรายการอาหารเพื่อสร้าง QR ตามยอดสุทธิ");
     return;
   }
 
   try {
     const payload = generatePromptPayPayload(storeSettings.promptPayId, currentTotal);
+    promptPayPlaceholder.hidden = true;
+    promptPayQr.hidden = false;
     promptPayQr.src = `https://quickchart.io/qr?text=${encodeURIComponent(payload)}&size=320&margin=1`;
+    promptPayQr.onerror = () => showPromptPayPlaceholder("สร้าง QR ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
   } catch (error) {
     console.error(error);
-    promptPayQr.removeAttribute("src");
+    showPromptPayPlaceholder("เลขพร้อมเพย์ไม่ถูกต้อง กรุณาติดต่อร้าน");
   }
 }
 
