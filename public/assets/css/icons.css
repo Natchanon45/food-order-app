@@ -1,0 +1,45 @@
+.app-icon {
+  width: 1.25em;
+  height: 1.25em;
+  flex: 0 0 auto;
+  display: inline-block;
+  vertical-align: -.18em;
+  color: currentColor;
+}
+
+.nav-card .app-icon {
+  width: 34px;
+  height: 34px;
+  margin-bottom: 8px;
+}
+
+.google-login-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 0 18px;
+  border: 1px solid #d0d5dd;
+  border-radius: 10px;
+  background: #fff;
+  color: #1f2937;
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(16,24,40,.05);
+}
+
+.google-login-button:hover {
+  background: #f9fafb;
+  border-color: #b8bec8;
+}
+
+.google-login-button:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+.google-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+}
