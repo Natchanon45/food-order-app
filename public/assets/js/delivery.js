@@ -89,7 +89,7 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
     cart.clear();
     updateCart();
     toast("ส่งคำสั่งซื้อ Delivery เรียบร้อย");
-    if (result?.id) location.href = `/cashier/receipt/?order=${encodeURIComponent(result.id)}`;
+    if (result?.id) location.href = `/delivery/success/?order=${encodeURIComponent(result.id)}`;
   } catch (error) {
     console.error(error);
     toast("ส่งคำสั่งซื้อไม่สำเร็จ", "error");
