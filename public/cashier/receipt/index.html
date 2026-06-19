@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#159447">
+  <link rel="stylesheet" href="/assets/css/app.css">
+  <title>พิมพ์ใบเสร็จ</title>
+</head>
+<body>
+  <div id="demoBanner"></div>
+
+  <header class="app-header no-print">
+    <div class="brand"><span class="brand-mark">FO</span>พิมพ์ใบเสร็จ</div>
+    <a class="btn btn-sm" href="/cashier">ย้อนกลับ</a>
+  </header>
+
+  <main class="receipt-page">
+    <div class="receipt-toolbar no-print">
+      <label for="paperSize">ขนาดกระดาษ</label>
+      <select class="input" id="paperSize" style="width:auto;min-width:130px">
+        <option value="80">80 มม.</option>
+        <option value="58">58 มม.</option>
+        <option value="a4">A4</option>
+      </select>
+      <button class="btn btn-primary" id="printButton">พิมพ์ใบเสร็จ</button>
+    </div>
+
+    <section class="receipt" id="receipt">
+      <div class="receipt-header">
+        <h1>ใบเสร็จรับเงิน</h1>
+        <div>Food Order QR</div>
+      </div>
+
+      <hr class="receipt-rule">
+
+      <div class="receipt-row"><span>โต๊ะ</span><strong id="receiptTable">-</strong></div>
+      <div class="receipt-row"><span>เลขที่บิล</span><span id="receiptNumber">-</span></div>
+      <div class="receipt-row"><span>วันที่</span><span id="receiptDate">-</span></div>
+
+      <hr class="receipt-rule">
+
+      <table class="receipt-items">
+        <thead>
+          <tr>
+            <th>รายการ</th>
+            <th class="num">จำนวน</th>
+            <th class="num">รวม</th>
+          </tr>
+        </thead>
+        <tbody id="receiptItems"></tbody>
+      </table>
+
+      <hr class="receipt-rule">
+
+      <div class="receipt-row receipt-total">
+        <span>ยอดสุทธิ</span>
+        <span><span id="receiptTotal">0.00</span> บาท</span>
+      </div>
+
+      <div id="receiptNoteWrap" class="receipt-note" hidden>
+        <hr class="receipt-rule">
+        <strong>หมายเหตุ</strong>
+        <div id="receiptNote"></div>
+      </div>
+
+      <hr class="receipt-rule">
+
+      <div class="receipt-header">
+        <div>ขอบคุณที่ใช้บริการ</div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/assets/js/receipt.js"></script>
+</body>
+</html>
