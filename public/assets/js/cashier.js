@@ -20,7 +20,9 @@ function render(orders) {
 
   grid.innerHTML = active.length ? active.map(order => {
     const isDelivery = order.orderType === "delivery";
-    const title = isDelivery ? `Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}` : `โต๊ะ ${order.tableCode}`;
+    const title = isDelivery
+      ? `Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}`
+      : `โต๊ะ ${order.tableCode} • รอบที่ ${order.roundNumber || 1}`;
     const paymentAction = isDelivery && order.paymentStatus !== "paid"
       ? `<button class="btn btn-primary" data-payment-id="${order.id}">บันทึกชำระเงินแล้ว</button>`
       : "";
@@ -66,13 +68,23 @@ grid.addEventListener("click", async event => {
 
   try {
     await dataService.updateOrder(id, { status });
+
     if ((status === "paid" || status === "cancelled") && order?.orderType !== "delivery" && order?.tableCode) {
-      const table = await dataService.getTable(order.tableCode);
-      if (table && (!order.tableToken || table.orderToken === order.tableToken)) {
-        await dataService.updateTable(table.id, { status: "available", orderToken: "", sessionStartedAt: null });
+      const hasOtherActiveRounds = currentOrders.some(item =>
+        item.id !== id &&
+        item.tableToken === order.tableToken &&
+        !["paid", "cancelled"].includes(item.status)
+      );
+
+      if (!hasOtherActiveRounds) {
+        const table = await dataService.getTable(order.tableCode);
+        if (table && (!order.tableToken || table.orderToken === order.tableToken)) {
+          await dataService.updateTable(table.id, { status: "available", orderToken: "", sessionStartedAt: null });
+        }
       }
     }
-    toast(status === "paid" ? "ปิดบิลและคืนสถานะโต๊ะว่างแล้ว" : "ยกเลิกรายการแล้ว");
+
+    toast(status === "paid" ? "บันทึกการชำระเงินรอบนี้แล้ว" : "ยกเลิกรายการแล้ว");
   } catch (error) {
     console.error(error);
     toast("อัปเดตสถานะไม่สำเร็จ", "error");
