@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/assets/css/app.css">
   <link rel="stylesheet" href="/assets/css/menu-qr.css">
   <link rel="stylesheet" href="/assets/css/payment-slip.css">
+  <link rel="stylesheet" href="/assets/css/menu-pagination.css">
   <title>สั่งอาหาร Delivery</title>
 </head>
 <body>
@@ -14,8 +15,9 @@
   <header class="app-header"><div class="brand"><span class="brand-mark">FO</span><span>Delivery</span></div><span class="badge">จัดส่งถึงบ้าน</span></header>
   <main class="container">
     <section class="hero"><h1>สั่งอาหาร Delivery</h1><p>เลือกเมนู กรอกข้อมูลจัดส่ง และยืนยันคำสั่งซื้อได้ทันที</p></section>
-    <div class="menu-filter-area"><div class="category-tabs" id="categoryTabs" role="tablist" aria-label="หมวดหมู่อาหาร"></div><input class="input menu-search" id="searchInput" placeholder="ค้นหาเมนู..."></div>
+    <div class="menu-filter-area" id="menuListStart"><div class="category-tabs" id="categoryTabs" role="tablist" aria-label="หมวดหมู่อาหาร"></div><input class="input menu-search" id="searchInput" placeholder="ค้นหาเมนู..."></div>
     <div id="menuGrid" class="grid grid-3"></div>
+    <nav id="menuPagination" class="menu-pagination" aria-label="เปลี่ยนหน้ารายการอาหาร" hidden></nav>
     <section class="card" style="margin-top:18px"><div class="section-title"><h2>ตะกร้าอาหาร</h2><span id="cartCount" class="badge">0 รายการ</span></div><div id="cartList" class="cart-list"></div></section>
     <section class="card" style="margin-top:18px">
       <div class="section-title"><h2>ข้อมูลจัดส่ง</h2></div>
