@@ -19,9 +19,10 @@ function render(orders) {
   currentOrders = orders;
   const active = orders.filter(x => activeStatuses.includes(x.status));
   grid.innerHTML = active.length ? active.map(order => {
-    const roundText = order.orderType === "delivery" ? "" : ` • รอบที่ ${order.roundNumber || 1}`;
-    const title = order.orderType === "delivery" ? `Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}` : `โต๊ะ ${order.tableCode}${roundText}`;
-    const paymentBadge = order.orderType === "delivery"
+    const isDelivery = order.orderType === "delivery";
+    const roundText = isDelivery ? "" : ` • รอบที่ ${order.roundNumber || 1}`;
+    const title = isDelivery ? `Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}` : `โต๊ะ ${order.tableCode}${roundText}`;
+    const paymentBadge = isDelivery
       ? `<p><span class="badge ${order.paymentStatus === "paid" ? "" : "warning"}">${order.paymentStatus === "paid" ? "ชำระเงินแล้ว" : "ยังไม่ชำระเงิน"}</span><br><strong>โทร:</strong> ${order.recipientPhone || "-"}<br><strong>ที่อยู่:</strong> ${order.deliveryAddress || "-"}</p>`
       : "";
     const itemRows = (order.items || []).map((item, index) => `
@@ -30,13 +31,20 @@ function render(orders) {
         ${item.cancelled ? '<br><small>ยกเลิกแล้ว</small>' : `<button class="btn btn-danger btn-sm" style="float:right" data-cancel-item="${order.id}" data-item-index="${index}">ของหมด/ยกเลิกรายการ</button>`}
       </li>
     `).join("");
+    const deliverySummary = isDelivery ? `
+      <div class="card" style="margin-top:10px;padding:10px 12px;box-shadow:none;background:#f8fbf9">
+        <div class="receipt-row"><span>พื้นที่จัดส่ง</span><strong>${order.deliveryZoneLabel || "-"}</strong></div>
+        <div class="receipt-row"><span>ค่าอาหาร</span><strong>${money(order.subtotalAmount ?? (Number(order.totalAmount || 0) - Number(order.deliveryFee || 0)))} บาท</strong></div>
+        <div class="receipt-row"><span>ค่าจัดส่ง</span><strong>${money(order.deliveryFee || 0)} บาท</strong></div>
+      </div>` : "";
 
     return `<article class="card order-card">
       <div class="order-head"><div><h2 style="margin:0">${title}</h2><small>${formatTime(order.createdAt)}</small></div><span class="badge">${statusLabel(order.status)}</span></div>
       ${paymentBadge}
       <ul class="order-items">${itemRows}</ul>
+      ${deliverySummary}
       ${order.note ? `<p><strong>หมายเหตุรวม:</strong> ${order.note}</p>` : ""}
-      <div class="order-head"><strong>รวม ${money(order.totalAmount)} บาท</strong></div>
+      <div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div>
       <div class="order-actions" style="margin-top:12px">
         ${nextActions(order.status, order.orderType).map(([status,label,cls]) => `<button class="btn ${cls}" data-id="${order.id}" data-status="${status}">${label}</button>`).join("")}
         <button class="btn btn-danger" data-cancel-order="${order.id}">ยกเลิกทั้งออเดอร์</button>
@@ -56,18 +64,20 @@ grid.addEventListener("click", async event => {
     if (!confirm(`ยกเลิกเฉพาะรายการ ${selectedItem.name} ใช่หรือไม่?`)) return;
 
     const items = order.items.map((item, index) => index === itemIndex ? { ...item, cancelled: true, cancelledReason: "out_of_stock", cancelledAt: new Date().toISOString() } : item);
-    const totalAmount = items.filter(item => !item.cancelled).reduce((sum, item) => sum + Number(item.qty) * Number(item.price), 0);
-    const patch = { items, totalAmount };
-    if (totalAmount <= 0) patch.status = "cancelled";
+    const subtotalAmount = items.filter(item => !item.cancelled).reduce((sum, item) => sum + Number(item.qty) * Number(item.price), 0);
+    const deliveryFee = order.orderType === "delivery" && subtotalAmount > 0 ? Number(order.deliveryFee || 0) : 0;
+    const totalAmount = subtotalAmount + deliveryFee;
+    const patch = { items, subtotalAmount, totalAmount };
+    if (subtotalAmount <= 0) patch.status = "cancelled";
     await dataService.updateOrder(order.id, patch);
-    toast(totalAmount <= 0 ? "ยกเลิกทั้งออเดอร์แล้ว เพราะไม่มีรายการเหลือ" : "ยกเลิกรายการและคำนวณยอดใหม่แล้ว");
+    toast(subtotalAmount <= 0 ? "ยกเลิกทั้งออเดอร์แล้ว เพราะไม่มีรายการเหลือ" : "ยกเลิกรายการและคำนวณยอดใหม่แล้ว");
     return;
   }
 
   const cancelOrderButton = event.target.closest("[data-cancel-order]");
   if (cancelOrderButton) {
     if (!confirm("ยืนยันยกเลิกทุกรายการในออเดอร์นี้?")) return;
-    await dataService.updateOrder(cancelOrderButton.dataset.cancelOrder, { status: "cancelled", totalAmount: 0, cancelledAt: new Date().toISOString() });
+    await dataService.updateOrder(cancelOrderButton.dataset.cancelOrder, { status: "cancelled", subtotalAmount: 0, deliveryFee: 0, totalAmount: 0, cancelledAt: new Date().toISOString() });
     toast("ยกเลิกทั้งออเดอร์แล้ว");
     return;
   }
@@ -84,11 +94,8 @@ grid.addEventListener("click", async event => {
       patch.status = "paid";
       patch.completedAt = new Date().toISOString();
     }
-
     await dataService.updateOrder(id, patch);
-    toast(patch.status === "paid"
-      ? "ส่งให้ไรเดอร์และปิดออเดอร์ Delivery แล้ว"
-      : `เปลี่ยนสถานะเป็น ${statusLabel(status)} แล้ว`);
+    toast(patch.status === "paid" ? "ส่งให้ไรเดอร์และปิดออเดอร์ Delivery แล้ว" : `เปลี่ยนสถานะเป็น ${statusLabel(status)} แล้ว`);
   } catch (error) {
     console.error(error);
     toast("อัปเดตสถานะไม่สำเร็จ", "error");
