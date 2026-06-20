@@ -64,24 +64,34 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/tables/$(resource.data.tableCode)).data.orderToken == resource.data.tableToken;
     }
 
-    function validShopTableOrder(shopId) {
+    function tenantPayloadMatches(tenantId) {
+      return request.resource.data.tenantId == tenantId
+        || request.resource.data.shopId == tenantId;
+    }
+
+    function tenantResourceMatches(tenantId) {
+      return resource.data.tenantId == tenantId
+        || resource.data.shopId == tenantId;
+    }
+
+    function validTenantTableOrder(tenantId) {
       return validOrderBase()
-        && request.resource.data.shopId == shopId
+        && tenantPayloadMatches(tenantId)
         && request.resource.data.tableCode is string
         && request.resource.data.tableToken is string
-        && get(/databases/$(database)/documents/shops/$(shopId)/tables/$(request.resource.data.tableCode)).data.status == 'occupied'
-        && get(/databases/$(database)/documents/shops/$(shopId)/tables/$(request.resource.data.tableCode)).data.orderToken == request.resource.data.tableToken;
+        && get(/databases/$(database)/documents/tenants/$(tenantId)/tables/$(request.resource.data.tableCode)).data.status == 'occupied'
+        && get(/databases/$(database)/documents/tenants/$(tenantId)/tables/$(request.resource.data.tableCode)).data.orderToken == request.resource.data.tableToken;
     }
 
-    function activeShopTableOrder(shopId) {
-      return resource.data.shopId == shopId
+    function activeTenantTableOrder(tenantId) {
+      return tenantResourceMatches(tenantId)
         && resource.data.tableCode is string
         && resource.data.tableToken is string
-        && get(/databases/$(database)/documents/shops/$(shopId)/tables/$(resource.data.tableCode)).data.status == 'occupied'
-        && get(/databases/$(database)/documents/shops/$(shopId)/tables/$(resource.data.tableCode)).data.orderToken == resource.data.tableToken;
+        && get(/databases/$(database)/documents/tenants/$(tenantId)/tables/$(resource.data.tableCode)).data.status == 'occupied'
+        && get(/databases/$(database)/documents/tenants/$(tenantId)/tables/$(resource.data.tableCode)).data.orderToken == resource.data.tableToken;
     }
 
-    // Legacy single-store paths stay available during the transition.
+    // Legacy single-store paths remain available during transition.
     match /menus/{menuId} {
       allow read: if true;
       allow create, update, delete: if adminRole();
@@ -128,7 +138,12 @@ service cloud.firestore {
       allow create, update, delete: if superAdminRole();
     }
 
-    match /shops/{shopId} {
+    match /tenantSlugs/{slug} {
+      allow read: if true;
+      allow write: if superAdminRole();
+    }
+
+    match /tenants/{tenantId} {
       allow read: if true;
       allow create, update, delete: if superAdminRole();
 
@@ -146,7 +161,7 @@ service cloud.firestore {
         allow read: if true;
         allow create, delete: if adminRole();
         allow update: if adminRole() || cashierRole() || (
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentRound', 'updatedAt', 'shopId']) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentRound', 'updatedAt', 'tenantId', 'shopId']) &&
           resource.data.status == 'occupied' &&
           request.resource.data.orderToken == resource.data.orderToken
         );
@@ -154,10 +169,10 @@ service cloud.firestore {
 
       match /orders/{orderId} {
         allow get: if true;
-        allow list: if staffRole() || activeShopTableOrder(shopId);
+        allow list: if staffRole() || activeTenantTableOrder(tenantId);
         allow create: if (
-          request.resource.data.shopId == shopId && validDeliveryOrder()
-        ) || validShopTableOrder(shopId);
+          tenantPayloadMatches(tenantId) && validDeliveryOrder()
+        ) || validTenantTableOrder(tenantId);
         allow update: if cashierRole() || kitchenRole() || adminRole();
         allow delete: if superAdminRole();
       }
@@ -166,10 +181,16 @@ service cloud.firestore {
         allow read, write: if adminRole();
       }
 
-      match /staff/{userId} {
+      match /memberships/{userId} {
         allow read: if signedIn() && (request.auth.uid == userId || superAdminRole());
         allow create, update, delete: if superAdminRole();
       }
+    }
+
+    // Keep the temporary shops path readable until verification is complete.
+    match /shops/{shopId}/{document=**} {
+      allow read: if superAdminRole();
+      allow write: if false;
     }
   }
 }
