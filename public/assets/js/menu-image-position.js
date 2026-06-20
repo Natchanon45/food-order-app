@@ -1,5 +1,12 @@
 import { dataService } from "./data-service.js";
 
+if (!document.querySelector('link[href="/assets/css/pos-refresh.css"]')) {
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "/assets/css/pos-refresh.css";
+  document.head.appendChild(link);
+}
+
 let menuMap = new Map();
 
 function menuKey(value = "") {
@@ -16,9 +23,7 @@ function applyPositions(root = document) {
   });
 }
 
-if (location.pathname.startsWith("/delivery") && document.querySelector("#menuGrid")) {
-  import("./delivery-pos-layout.js");
-}
+if (location.pathname.startsWith("/delivery") && document.querySelector("#menuGrid")) import("./delivery-pos-layout.js");
 
 try {
   const menus = await dataService.listMenus();
