@@ -88,15 +88,13 @@ const buttonIconRules = [
 ];
 
 function decorateButton(button) {
-  if (!(button instanceof HTMLElement) || button.dataset.iconMounted === "true") return;
-  if (!button.matches("button, a.btn")) return;
-  if (button.querySelector(".app-icon")) { button.dataset.iconMounted = "true"; return; }
+  if (!(button instanceof HTMLElement) || !button.matches("button, a.btn")) return;
+  if (button.querySelector(".app-icon")) return;
   const text = button.textContent?.trim() || "";
   let icon = button.dataset.inc ? "add" : button.dataset.dec ? "minus" : "";
   if (!icon) icon = buttonIconRules.find(([pattern]) => pattern.test(text))?.[1] || "";
   if (!icon) return;
   button.insertAdjacentHTML("afterbegin", iconMarkup(icon));
-  button.dataset.iconMounted = "true";
 }
 
 function decorateButtons(root = document) {
@@ -118,6 +116,7 @@ function initializeUi() {
   decorateButtons();
   new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(node => {
     if (node.nodeType === Node.ELEMENT_NODE) decorateButtons(node);
+    else if (node.parentElement) decorateButton(node.parentElement);
   }))).observe(document.body, { childList: true, subtree: true });
   if (document.querySelector("#menuGrid")) import("./menu-image-position.js");
   mountVersion();
