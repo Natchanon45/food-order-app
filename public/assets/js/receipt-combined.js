@@ -4,6 +4,10 @@ import { money, formatTime } from "./ui.js";
 const params = new URLSearchParams(location.search);
 const ids = (params.get("orders") || "").split(",").map(v => v.trim()).filter(Boolean);
 
+function receiptItemName(item) {
+  return `<div class="receipt-item-line"><span class="receipt-item-text" title="${item.name}">${item.name}</span><span class="receipt-item-qty">x ${item.qty} ชิ้น</span></div>${item.note ? `<div class="receipt-item-note">${item.note}</div>` : ""}`;
+}
+
 if (!ids.length) {
   await import("./receipt.js");
 } else {
@@ -43,7 +47,7 @@ if (!ids.length) {
     document.querySelector("#receiptItems").innerHTML = orders.map(order => `
       <tr><td colspan="3"><strong>รอบที่ ${order.roundNumber || 1}</strong></td></tr>
       ${(order.items || []).filter(item => !item.cancelled).map(item => `
-        <tr><td class="receipt-item-name">${item.name} x ${item.qty}${item.note ? `<div class="receipt-item-note">${item.note}</div>` : ""}</td><td class="num receipt-unit">${money(Number(item.price))}</td><td class="num receipt-line-total">${money(Number(item.qty) * Number(item.price))}</td></tr>
+        <tr><td class="receipt-item-name">${receiptItemName(item)}</td><td class="num receipt-unit">${money(Number(item.price))}</td><td class="num receipt-line-total">${money(Number(item.qty) * Number(item.price))}</td></tr>
       `).join("")}
     `).join("");
 
