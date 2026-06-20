@@ -10,12 +10,13 @@ function paymentText(order) {
   return "ยังไม่ชำระเงิน";
 }
 
+function receiptItemName(item) {
+  return `<div class="receipt-item-line"><span class="receipt-item-text" title="${item.name}">${item.name}</span><span class="receipt-item-qty">x ${item.qty} ชิ้น</span></div>${item.note ? `<div class="receipt-item-note">${item.note}</div>` : ""}`;
+}
+
 async function load() {
   if (!orderId) throw new Error("ไม่พบเลขที่คำสั่งซื้อ");
-  const [order, settings] = await Promise.all([
-    dataService.getOrder(orderId),
-    dataService.getStoreSettings()
-  ]);
+  const [order, settings] = await Promise.all([dataService.getOrder(orderId), dataService.getStoreSettings()]);
   if (!order) throw new Error("ไม่พบคำสั่งซื้อ");
 
   document.querySelector("#shopName").textContent = settings.shopName || "Food Order QR";
@@ -33,7 +34,7 @@ async function load() {
   document.querySelector("#receiptTotal").textContent = money(order.totalAmount);
   document.querySelector("#receiptItems").innerHTML = (order.items || []).map(item => `
     <tr>
-      <td class="receipt-item-name">${item.name} x ${item.qty}${item.note ? `<div class="receipt-item-note">${item.note}</div>` : ""}</td>
+      <td class="receipt-item-name">${receiptItemName(item)}</td>
       <td class="num receipt-unit">${money(Number(item.price))}</td>
       <td class="num receipt-line-total">${money(Number(item.qty) * Number(item.price))}</td>
     </tr>
