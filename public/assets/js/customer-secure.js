@@ -3,6 +3,7 @@ await import("./table-qr-resolver.js");
 import { dataService, usingDemoMode } from "./data-service.js";
 import { db, collection, onSnapshot, query, where } from "./firebase-config.js";
 import { demoStore } from "./demo-store.js";
+import { shopCollectionPath, resolveShopContext } from "./tenant-context.js";
 
 function currentTableSession() {
   const params = new URLSearchParams(location.search);
@@ -12,9 +13,6 @@ function currentTableSession() {
   };
 }
 
-// หน้าโต๊ะต้องอ่านเฉพาะออเดอร์ของโต๊ะและรอบเดียวกันเท่านั้น
-// เพื่อให้หลายเครื่องเห็นรายการที่สั่งแบบ Real-time โดยไม่ดึงออเดอร์ Delivery
-// หรือออเดอร์ของโต๊ะอื่นทั้งระบบลงมาที่ Browser
 dataService.subscribeOrders = callback => {
   const { tableCode, tableToken } = currentTableSession();
 
@@ -41,8 +39,9 @@ dataService.subscribeOrders = callback => {
     };
   }
 
+  const ordersPath = shopCollectionPath("orders", resolveShopContext());
   const tableOrdersQuery = query(
-    collection(db, "orders"),
+    collection(db, ...ordersPath),
     where("tableCode", "==", tableCode),
     where("tableToken", "==", tableToken)
   );
