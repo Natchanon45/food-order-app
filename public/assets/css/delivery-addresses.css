@@ -1,16 +1,36 @@
 .delivery-contact-grid {
+  position: relative;
   align-items: start;
+  padding-bottom: 22px;
 }
 
 .delivery-contact-grid .field {
   align-self: start;
   align-content: start;
-  grid-template-rows: auto 44px 18px;
+  grid-template-rows: auto 44px;
 }
 
 .delivery-contact-grid .input {
   min-height: 44px;
   height: 44px;
+}
+
+.delivery-contact-grid .address-lookup-status[aria-hidden="true"] {
+  display: none;
+}
+
+#addressLookupStatus {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  min-height: 18px;
+  margin: 0;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .card:has(#customerModeText) > .grid.grid-2 {
@@ -212,10 +232,6 @@
 }
 
 @media (max-width: 760px) {
-  .delivery-contact-grid .field {
-    grid-template-rows: auto 44px auto;
-  }
-
   .address-book {
     padding: 14px;
   }
