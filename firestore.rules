@@ -26,6 +26,20 @@ service cloud.firestore {
       return hasRole(['kitchen', 'super_admin']);
     }
 
+    function staffRole() {
+      return hasRole(['admin', 'super_admin', 'cashier', 'kitchen']);
+    }
+
+    function validNewOrder() {
+      return request.resource.data.status == 'pending'
+        && request.resource.data.items is list
+        && request.resource.data.items.size() > 0
+        && request.resource.data.items.size() <= 100
+        && request.resource.data.totalAmount is number
+        && request.resource.data.totalAmount >= 0
+        && request.resource.data.paymentStatus in ['unpaid', 'pending_verification'];
+    }
+
     match /menus/{menuId} {
       allow read: if true;
       allow create, update, delete: if adminRole();
@@ -47,8 +61,14 @@ service cloud.firestore {
     }
 
     match /orders/{orderId} {
-      allow read: if true;
-      allow create: if true;
+      // ลูกค้าเปิดดูใบยืนยันได้เฉพาะเมื่อทราบ Order ID โดยตรง
+      // การอ่านรายการออเดอร์ทั้งหมดสงวนไว้สำหรับพนักงาน
+      allow get: if true;
+      allow list: if staffRole();
+
+      // Guest สร้างได้เฉพาะออเดอร์ใหม่ที่อยู่สถานะรอดำเนินการ
+      allow create: if validNewOrder();
+
       allow update: if cashierRole() || kitchenRole() || adminRole();
       allow delete: if hasRole(['super_admin']);
     }
