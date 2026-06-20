@@ -12,6 +12,8 @@ let categoryOrder = [];
 let selectedCategory = "";
 let categorySortable = null;
 let itemSortable = null;
+let savingCategoryOrder = false;
+let savingItemOrder = false;
 
 function categoryNames() {
   return [...new Set(menus.map(item => item.category || "อื่น ๆ"))];
@@ -31,13 +33,61 @@ function refreshOrderBadges(container) {
   });
 }
 
+function setButtonBusy(button, busy, busyText, normalText) {
+  button.disabled = busy;
+  button.innerHTML = busy ? `⏳ ${busyText}` : `💾 ${normalText}`;
+}
+
+async function persistCategoryOrder({ silent = false } = {}) {
+  if (savingCategoryOrder) return;
+  const nextOrder = [...categoryList.querySelectorAll("[data-category]")].map(item => item.dataset.category);
+  if (!nextOrder.length) return;
+
+  savingCategoryOrder = true;
+  categoryOrder = [...nextOrder];
+  refreshOrderBadges(categoryList);
+  setButtonBusy(saveCategoryOrderButton, true, "กำลังบันทึก...", "บันทึกลำดับหมวด");
+  try {
+    await dataService.saveStoreSettings({ categoryOrder: nextOrder });
+    if (!silent) toast("บันทึกลำดับหมวดหมู่แล้ว");
+  } catch (error) {
+    console.error(error);
+    toast("บันทึกลำดับหมวดหมู่ไม่สำเร็จ", "error");
+  } finally {
+    savingCategoryOrder = false;
+    setButtonBusy(saveCategoryOrderButton, false, "กำลังบันทึก...", "บันทึกลำดับหมวด");
+  }
+}
+
+async function persistItemOrder({ silent = false } = {}) {
+  if (savingItemOrder) return;
+  const ids = [...itemList.querySelectorAll("[data-menu-id]")].map(item => item.dataset.menuId);
+  if (!ids.length) return;
+
+  savingItemOrder = true;
+  refreshOrderBadges(itemList);
+  menus = menus.map(item => {
+    const index = ids.indexOf(item.id);
+    return index >= 0 ? { ...item, sortOrder: index + 1 } : item;
+  });
+  setButtonBusy(saveItemOrderButton, true, "กำลังบันทึก...", "บันทึกลำดับเมนู");
+  try {
+    await Promise.all(ids.map((id, index) => dataService.saveMenu({ id, sortOrder: index + 1 })));
+    if (!silent) toast(`บันทึกลำดับเมนูในหมวด ${selectedCategory} แล้ว`);
+  } catch (error) {
+    console.error(error);
+    toast("บันทึกลำดับเมนูไม่สำเร็จ", "error");
+  } finally {
+    savingItemOrder = false;
+    setButtonBusy(saveItemOrderButton, false, "กำลังบันทึก...", "บันทึกลำดับเมนู");
+  }
+}
+
 function renderCategories() {
   const categories = orderedCategories();
   categoryOrder = [...categories];
 
-  if (!selectedCategory || !categories.includes(selectedCategory)) {
-    selectedCategory = categories[0] || "";
-  }
+  if (!selectedCategory || !categories.includes(selectedCategory)) selectedCategory = categories[0] || "";
 
   categoryList.innerHTML = categories.length ? categories.map((category, index) => `
     <div class="sort-item${category === selectedCategory ? " active-category" : ""}" data-category="${category}">
@@ -58,7 +108,11 @@ function renderCategories() {
       delay: 120,
       delayOnTouchOnly: true,
       touchStartThreshold: 4,
-      onEnd: () => refreshOrderBadges(categoryList)
+      onEnd: async () => {
+        categoryOrder = [...categoryList.querySelectorAll("[data-category]")].map(item => item.dataset.category);
+        refreshOrderBadges(categoryList);
+        await persistCategoryOrder({ silent: true });
+      }
     });
   }
 
@@ -74,10 +128,7 @@ function renderItems() {
   itemList.innerHTML = items.length ? items.map((item, index) => `
     <div class="sort-item" data-menu-id="${item.id}">
       <span class="sort-handle" aria-hidden="true">⋮⋮</span>
-      <div>
-        <strong>${item.name}</strong>
-        <div class="menu-category">${item.active !== false ? "เปิดขาย" : "ปิดขาย"} • ${Number(item.price || 0).toLocaleString("th-TH")} บาท</div>
-      </div>
+      <div><strong>${item.name}</strong><div class="menu-category">${item.active !== false ? "เปิดขาย" : "ปิดขาย"} • ${Number(item.price || 0).toLocaleString("th-TH")} บาท</div></div>
       <span class="sort-order-badge">${index + 1}</span>
     </div>
   `).join("") : '<div class="sort-empty">ยังไม่มีเมนูในหมวดนี้</div>';
@@ -93,7 +144,10 @@ function renderItems() {
       delay: 120,
       delayOnTouchOnly: true,
       touchStartThreshold: 4,
-      onEnd: () => refreshOrderBadges(itemList)
+      onEnd: async () => {
+        refreshOrderBadges(itemList);
+        await persistItemOrder({ silent: true });
+      }
     });
   }
 }
@@ -105,52 +159,11 @@ categoryList.addEventListener("click", event => {
   renderCategories();
 });
 
-saveCategoryOrderButton.addEventListener("click", async () => {
-  const nextOrder = [...categoryList.querySelectorAll("[data-category]")].map(item => item.dataset.category);
-  if (!nextOrder.length) return;
-
-  saveCategoryOrderButton.disabled = true;
-  saveCategoryOrderButton.textContent = "กำลังบันทึก...";
-  try {
-    await dataService.saveStoreSettings({ categoryOrder: nextOrder });
-    categoryOrder = nextOrder;
-    toast("บันทึกลำดับหมวดหมู่แล้ว");
-  } catch (error) {
-    console.error(error);
-    toast("บันทึกลำดับหมวดหมู่ไม่สำเร็จ", "error");
-  } finally {
-    saveCategoryOrderButton.disabled = false;
-    saveCategoryOrderButton.textContent = "บันทึกลำดับหมวด";
-  }
-});
-
-saveItemOrderButton.addEventListener("click", async () => {
-  const ids = [...itemList.querySelectorAll("[data-menu-id]")].map(item => item.dataset.menuId);
-  if (!ids.length) return;
-
-  saveItemOrderButton.disabled = true;
-  saveItemOrderButton.textContent = "กำลังบันทึก...";
-  try {
-    await Promise.all(ids.map((id, index) => dataService.saveMenu({ id, sortOrder: index + 1 })));
-    menus = menus.map(item => {
-      const index = ids.indexOf(item.id);
-      return index >= 0 ? { ...item, sortOrder: index + 1 } : item;
-    });
-    toast(`บันทึกลำดับเมนูในหมวด ${selectedCategory} แล้ว`);
-  } catch (error) {
-    console.error(error);
-    toast("บันทึกลำดับเมนูไม่สำเร็จ", "error");
-  } finally {
-    saveItemOrderButton.disabled = false;
-    saveItemOrderButton.textContent = "บันทึกลำดับเมนู";
-  }
-});
+saveCategoryOrderButton.addEventListener("click", () => persistCategoryOrder());
+saveItemOrderButton.addEventListener("click", () => persistItemOrder());
 
 async function loadSortManager() {
-  const [menuData, settings] = await Promise.all([
-    dataService.listMenus(),
-    dataService.getStoreSettings()
-  ]);
+  const [menuData, settings] = await Promise.all([dataService.listMenus(), dataService.getStoreSettings()]);
   menus = menuData;
   categoryOrder = Array.isArray(settings.categoryOrder) ? settings.categoryOrder : [];
   renderCategories();
