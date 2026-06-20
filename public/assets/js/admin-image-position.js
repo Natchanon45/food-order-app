@@ -27,10 +27,13 @@ function render() {
   positionX = clamp(positionX);
   positionY = clamp(positionY);
   if (preview) {
+    preview.draggable = false;
     preview.style.objectFit = "cover";
     preview.style.objectPosition = `${positionX}% ${positionY}%`;
-    preview.style.cursor = "grab";
+    preview.style.cursor = dragging ? "grabbing" : "grab";
     preview.style.touchAction = "none";
+    preview.style.userSelect = "none";
+    preview.style.webkitUserDrag = "none";
   }
   if (valueLabel) valueLabel.textContent = `${positionX}%, ${positionY}%`;
   controls.hidden = Boolean(previewWrap?.hidden);
@@ -38,17 +41,19 @@ function render() {
 
 function pointerStart(event) {
   if (!preview || previewWrap?.hidden) return;
+  event.preventDefault();
   dragging = true;
   startX = event.clientX;
   startY = event.clientY;
   startPositionX = positionX;
   startPositionY = positionY;
   preview.setPointerCapture?.(event.pointerId);
-  preview.style.cursor = "grabbing";
+  render();
 }
 
 function pointerMove(event) {
   if (!dragging || !preview) return;
+  event.preventDefault();
   const rect = preview.getBoundingClientRect();
   positionX = startPositionX - ((event.clientX - startX) / Math.max(rect.width, 1)) * 100;
   positionY = startPositionY - ((event.clientY - startY) / Math.max(rect.height, 1)) * 100;
@@ -57,15 +62,21 @@ function pointerMove(event) {
 
 function pointerEnd(event) {
   if (!dragging) return;
+  event.preventDefault();
   dragging = false;
-  preview?.releasePointerCapture?.(event.pointerId);
-  if (preview) preview.style.cursor = "grab";
+  try { preview?.releasePointerCapture?.(event.pointerId); } catch (_) {}
+  render();
 }
 
-preview?.addEventListener("pointerdown", pointerStart);
-preview?.addEventListener("pointermove", pointerMove);
-preview?.addEventListener("pointerup", pointerEnd);
-preview?.addEventListener("pointercancel", pointerEnd);
+preview?.addEventListener("dragstart", event => event.preventDefault());
+preview?.addEventListener("pointerdown", pointerStart, { passive: false });
+preview?.addEventListener("pointermove", pointerMove, { passive: false });
+preview?.addEventListener("pointerup", pointerEnd, { passive: false });
+preview?.addEventListener("pointercancel", pointerEnd, { passive: false });
+preview?.addEventListener("lostpointercapture", () => {
+  dragging = false;
+  render();
+});
 resetButton?.addEventListener("click", () => setMenuImagePosition(50, 50));
 removeButton?.addEventListener("click", () => setMenuImagePosition(50, 50));
 
