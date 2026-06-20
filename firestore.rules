@@ -30,6 +30,10 @@ service cloud.firestore {
       return hasRole(['admin', 'super_admin', 'cashier', 'kitchen']);
     }
 
+    function superAdminRole() {
+      return hasRole(['super_admin']);
+    }
+
     function validOrderBase() {
       return request.resource.data.status == 'pending'
         && request.resource.data.items is list
@@ -60,6 +64,7 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/tables/$(resource.data.tableCode)).data.orderToken == resource.data.tableToken;
     }
 
+    // Legacy single-store paths remain available while the SaaS branch migrates data.
     match /menus/{menuId} {
       allow read: if true;
       allow create, update, delete: if adminRole();
@@ -85,7 +90,7 @@ service cloud.firestore {
       allow list: if staffRole() || activeTableOrder();
       allow create: if validDeliveryOrder() || validTableOrder();
       allow update: if cashierRole() || kitchenRole() || adminRole();
-      allow delete: if hasRole(['super_admin']);
+      allow delete: if superAdminRole();
     }
 
     match /customerProfiles/{userId} {
@@ -102,8 +107,39 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if signedIn() && (request.auth.uid == userId || hasRole(['super_admin']));
-      allow create, update, delete: if hasRole(['super_admin']);
+      allow read: if signedIn() && (request.auth.uid == userId || superAdminRole());
+      allow create, update, delete: if superAdminRole();
+    }
+
+    // SaaS foundation. During migration only super_admin can create or modify shops.
+    match /shops/{shopId} {
+      allow read: if true;
+      allow create, update, delete: if superAdminRole();
+
+      match /menus/{menuId} {
+        allow read: if true;
+        allow create, update, delete: if adminRole();
+      }
+
+      match /settings/{settingId} {
+        allow read: if true;
+        allow create, update, delete: if adminRole();
+      }
+
+      match /tables/{tableId} {
+        allow read: if true;
+        allow create, update, delete: if adminRole() || cashierRole();
+      }
+
+      match /orders/{orderId} {
+        allow read: if staffRole();
+        allow create, update, delete: if superAdminRole();
+      }
+
+      match /staff/{userId} {
+        allow read: if signedIn() && (request.auth.uid == userId || superAdminRole());
+        allow create, update, delete: if superAdminRole();
+      }
     }
   }
 }
