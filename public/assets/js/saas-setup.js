@@ -1,4 +1,4 @@
-import { inspectLegacyData, migrateLegacyStore } from "./saas-migration-service.js";
+import { inspectLegacyData, migrateLegacyStore } from "./saas-migration-service.js?v=20260621-2";
 import { toast } from "./ui.js";
 
 const state = document.querySelector("#migrationState");
@@ -25,11 +25,11 @@ async function refreshSummary() {
     tableCount.textContent = `${summary.tables} โต๊ะ`;
     orderCount.textContent = `${summary.orders} ออเดอร์`;
     settingCount.textContent = summary.settings ? "พบข้อมูล" : "ไม่พบข้อมูล";
-    state.textContent = summary.shopExists ? "สร้างร้านแล้ว" : "พร้อมเริ่ม";
+    state.textContent = summary.tenantExists ? "พบ Tenant แล้ว" : "พร้อมเริ่ม";
   } catch (error) {
     console.error(error);
     state.textContent = "ตรวจสอบไม่สำเร็จ";
-    toast("ตรวจสอบข้อมูลเดิมไม่สำเร็จ", "error");
+    toast("ตรวจสอบข้อมูลต้นทางไม่สำเร็จ", "error");
   } finally {
     refreshButton.disabled = false;
   }
@@ -40,14 +40,14 @@ refreshButton.addEventListener("click", refreshSummary);
 startButton.addEventListener("click", async () => {
   const overwrite = overwriteData.checked;
   const confirmed = confirm(overwrite
-    ? "ยืนยันย้ายข้อมูลและเขียนทับข้อมูล SaaS ที่มีอยู่?"
-    : "ยืนยันสร้างร้านเริ่มต้นและคัดลอกข้อมูลเดิม? ข้อมูลเดิมจะไม่ถูกลบ");
+    ? "ยืนยันย้ายข้อมูลและเขียนทับข้อมูลใน Tenant ร้านส้มตำตัวเฮีย?"
+    : "ยืนยันคัดลอกข้อมูลจาก default-shop เข้า Tenant ร้านส้มตำตัวเฮีย? ข้อมูลต้นทางจะไม่ถูกลบ");
   if (!confirmed) return;
 
   startButton.disabled = true;
   refreshButton.disabled = true;
   log.textContent = "";
-  appendLog("เริ่มกระบวนการย้ายข้อมูล...");
+  appendLog("เริ่มกระบวนการย้ายข้อมูลเข้า Tenant...");
 
   try {
     const results = await migrateLegacyStore({
@@ -60,7 +60,7 @@ startButton.addEventListener("click", async () => {
     }
 
     state.textContent = "ย้ายสำเร็จ";
-    toast("ย้ายข้อมูลเข้าร้านเริ่มต้นแล้ว");
+    toast("ย้ายข้อมูลเข้า Tenant ร้านแรกแล้ว");
     await refreshSummary();
   } catch (error) {
     console.error(error);
