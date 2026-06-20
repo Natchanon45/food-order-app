@@ -222,10 +222,25 @@ cartList.addEventListener("click", event => {
   const dec = event.target.dataset.dec;
   const id = inc || dec;
   if (!id) return;
+
   const item = cart.get(id);
-  item.qty += inc ? 1 : -1;
-  if (item.qty <= 0) cart.delete(id);
-  else cart.set(id, item);
+  if (!item) return;
+
+  if (inc) {
+    item.qty += 1;
+    cart.set(id, item);
+    updateCart();
+    return;
+  }
+
+  if (item.qty <= 1) {
+    if (!confirm(`ลบ ${item.name} ออกจากรายการสั่งซื้อใช่หรือไม่?`)) return;
+    cart.delete(id);
+  } else {
+    item.qty -= 1;
+    cart.set(id, item);
+  }
+
   updateCart();
 });
 
