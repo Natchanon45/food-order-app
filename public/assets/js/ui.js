@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.6.9";
+export const APP_VERSION = "1.6.10";
 export const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
 
 export const money = (value = 0) => new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value) || 0);
@@ -87,14 +87,48 @@ const buttonIconRules = [
   [/ออกจากระบบ|logout/i, "logout"]
 ];
 
+function visibleButtonText(button) {
+  return [...button.childNodes]
+    .filter(node => node.nodeType === Node.TEXT_NODE)
+    .map(node => node.nodeValue || "")
+    .join("")
+    .trim();
+}
+
+function makeIconOnly(button, icon, label) {
+  button.innerHTML = iconMarkup(icon);
+  button.classList.add("btn-icon-only");
+  button.setAttribute("aria-label", label);
+  button.title = label;
+}
+
 function decorateButton(button) {
   if (!(button instanceof HTMLElement) || !button.matches("button, a.btn")) return;
-  if (button.querySelector(".app-icon")) return;
-  const text = button.textContent?.trim() || "";
-  let icon = button.dataset.inc ? "add" : button.dataset.dec ? "minus" : "";
-  if (!icon) icon = buttonIconRules.find(([pattern]) => pattern.test(text))?.[1] || "";
-  if (!icon) return;
-  button.insertAdjacentHTML("afterbegin", iconMarkup(icon));
+
+  if (button.dataset.inc) {
+    makeIconOnly(button, "add", "เพิ่มจำนวน");
+    return;
+  }
+
+  if (button.dataset.dec) {
+    makeIconOnly(button, "minus", "ลดจำนวน");
+    return;
+  }
+
+  const originalText = button.textContent?.trim() || "";
+  if (!button.querySelector(".app-icon")) {
+    const icon = buttonIconRules.find(([pattern]) => pattern.test(originalText))?.[1] || "";
+    if (icon) button.insertAdjacentHTML("afterbegin", iconMarkup(icon));
+  }
+
+  const hasIcon = Boolean(button.querySelector(".app-icon"));
+  const hasText = Boolean(visibleButtonText(button));
+  button.classList.toggle("btn-icon-only", hasIcon && !hasText);
+
+  if (hasIcon && !hasText && !button.getAttribute("aria-label")) {
+    const fallbackLabel = button.title || "ปุ่มคำสั่ง";
+    button.setAttribute("aria-label", fallbackLabel);
+  }
 }
 
 function decorateButtons(root = document) {
