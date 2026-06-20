@@ -65,10 +65,24 @@ export const dataService = {
     if (usingDemoMode) return demoStore.tables.list();
     return mapDocs(await getDocs(collection(db, "tables")));
   },
-  async getTable(id) {
-    if (usingDemoMode) return demoStore.tables.list().find(item => item.id === id || item.code === id) || null;
-    const snapshot = await getDoc(doc(db, "tables", id));
-    return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
+  async getTable(idOrCode) {
+    const lookup = String(idOrCode || "").trim().toUpperCase();
+    if (!lookup) return null;
+    if (usingDemoMode) {
+      return demoStore.tables.list().find(item =>
+        String(item.id || "").toUpperCase() === lookup ||
+        String(item.code || "").toUpperCase() === lookup
+      ) || null;
+    }
+
+    const direct = await getDoc(doc(db, "tables", idOrCode));
+    if (direct.exists()) return { id: direct.id, ...direct.data() };
+
+    const tables = mapDocs(await getDocs(collection(db, "tables")));
+    return tables.find(item =>
+      String(item.id || "").toUpperCase() === lookup ||
+      String(item.code || "").toUpperCase() === lookup
+    ) || null;
   },
   async saveTable(table) {
     if (usingDemoMode) return demoStore.tables.save(table);
@@ -107,14 +121,16 @@ export const dataService = {
       await this.updateTable(table.id, { currentRound: roundNumber });
       return demoStore.orders.add({ ...order, roundNumber });
     }
-    const tableRef = doc(db, "tables", order.tableCode);
+    const table = await this.getTable(order.tableCode);
+    if (!table) throw new Error("INVALID_TABLE_SESSION");
+    const tableRef = doc(db, "tables", table.id);
     const orderRef = doc(collection(db, "orders"));
     await runTransaction(db, async transaction => {
       const tableSnapshot = await transaction.get(tableRef);
       if (!tableSnapshot.exists()) throw new Error("INVALID_TABLE_SESSION");
-      const table = tableSnapshot.data();
-      if (table.status !== "occupied" || table.orderToken !== order.tableToken) throw new Error("INVALID_TABLE_SESSION");
-      const roundNumber = Number(table.currentRound || 0) + 1;
+      const tableData = tableSnapshot.data();
+      if (tableData.status !== "occupied" || tableData.orderToken !== order.tableToken) throw new Error("INVALID_TABLE_SESSION");
+      const roundNumber = Number(tableData.currentRound || 0) + 1;
       transaction.update(tableRef, { currentRound: roundNumber, updatedAt: serverTimestamp() });
       transaction.set(orderRef, { ...order, roundNumber, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
     });
