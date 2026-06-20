@@ -15,9 +15,9 @@
 
 .address-book {
   margin-top: 14px;
-  padding: 14px;
+  padding: 16px;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 18px;
   background: #f8fbf9;
 }
 
@@ -27,11 +27,45 @@
 }
 
 .address-book-head {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.address-book-head > div:first-child {
+  min-width: 0;
+}
+
+.address-book-head > div:first-child > strong {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+.address-book-head > div:last-child {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  flex-wrap: nowrap !important;
+}
+
+.address-book-head #addressCount {
+  flex: 0 0 auto;
+  min-width: 58px;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.15;
+}
+
+.address-book-head #addAddressButton {
+  flex: 0 0 auto;
+  min-height: 42px;
+  padding-inline: 14px;
+  white-space: nowrap;
 }
 
 .address-list {
@@ -124,8 +158,24 @@
     grid-template-rows: auto 44px auto;
   }
 
+  .address-book {
+    padding: 14px;
+  }
+
   .address-book-head {
-    align-items: flex-start;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .address-book-head > div:last-child {
+    width: 100%;
+    justify-content: space-between !important;
+  }
+
+  .address-book-head #addAddressButton {
+    min-height: 40px;
+    padding-inline: 13px;
   }
 
   .address-card-actions .btn {
