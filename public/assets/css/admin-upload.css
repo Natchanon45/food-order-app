@@ -42,6 +42,11 @@
   cursor: pointer;
 }
 
+/* เมื่อมีรูปแล้ว ให้ pointer ส่งถึงรูปเพื่อใช้ลากตำแหน่ง */
+.upload-dropzone.has-image input[type="file"] {
+  pointer-events: none;
+}
+
 .upload-dropzone-content {
   position: relative;
   z-index: 2;
@@ -66,7 +71,7 @@
 
 .upload-preview {
   position: relative;
-  z-index: 2;
+  z-index: 4;
   display: grid;
   gap: 10px;
   width: 100%;
