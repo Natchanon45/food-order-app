@@ -13,6 +13,24 @@
   height: 44px;
 }
 
+.card:has(#customerModeText) > .grid.grid-2 {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch !important;
+  gap: 12px;
+}
+
+.card:has(#customerModeText) > .grid.grid-2 > div:last-child {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr);
+  justify-content: stretch !important;
+  gap: 8px !important;
+}
+
+#customerModeText {
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
 .address-book {
   container-type: inline-size;
   margin-top: 14px;
@@ -164,8 +182,15 @@
   width: 100%;
   min-height: 44px;
   justify-content: center;
-  white-space: nowrap;
+  padding-inline: 14px;
+  white-space: nowrap !important;
   line-height: 1.2;
+  font-size: 14px;
+}
+
+#googleLoginButton span,
+#customerLogoutButton span {
+  white-space: nowrap !important;
 }
 
 @container (max-width: 460px) {
