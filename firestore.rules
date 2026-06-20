@@ -64,7 +64,24 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/tables/$(resource.data.tableCode)).data.orderToken == resource.data.tableToken;
     }
 
-    // Legacy single-store paths remain available while the SaaS branch migrates data.
+    function validShopTableOrder(shopId) {
+      return validOrderBase()
+        && request.resource.data.shopId == shopId
+        && request.resource.data.tableCode is string
+        && request.resource.data.tableToken is string
+        && get(/databases/$(database)/documents/shops/$(shopId)/tables/$(request.resource.data.tableCode)).data.status == 'occupied'
+        && get(/databases/$(database)/documents/shops/$(shopId)/tables/$(request.resource.data.tableCode)).data.orderToken == request.resource.data.tableToken;
+    }
+
+    function activeShopTableOrder(shopId) {
+      return resource.data.shopId == shopId
+        && resource.data.tableCode is string
+        && resource.data.tableToken is string
+        && get(/databases/$(database)/documents/shops/$(shopId)/tables/$(resource.data.tableCode)).data.status == 'occupied'
+        && get(/databases/$(database)/documents/shops/$(shopId)/tables/$(resource.data.tableCode)).data.orderToken == resource.data.tableToken;
+    }
+
+    // Legacy single-store paths stay available during the transition.
     match /menus/{menuId} {
       allow read: if true;
       allow create, update, delete: if adminRole();
@@ -111,7 +128,6 @@ service cloud.firestore {
       allow create, update, delete: if superAdminRole();
     }
 
-    // SaaS foundation. During migration only super_admin can create or modify shops.
     match /shops/{shopId} {
       allow read: if true;
       allow create, update, delete: if superAdminRole();
@@ -128,12 +144,26 @@ service cloud.firestore {
 
       match /tables/{tableId} {
         allow read: if true;
-        allow create, update, delete: if adminRole() || cashierRole();
+        allow create, delete: if adminRole();
+        allow update: if adminRole() || cashierRole() || (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentRound', 'updatedAt', 'shopId']) &&
+          resource.data.status == 'occupied' &&
+          request.resource.data.orderToken == resource.data.orderToken
+        );
       }
 
       match /orders/{orderId} {
-        allow read: if staffRole();
-        allow create, update, delete: if superAdminRole();
+        allow get: if true;
+        allow list: if staffRole() || activeShopTableOrder(shopId);
+        allow create: if (
+          request.resource.data.shopId == shopId && validDeliveryOrder()
+        ) || validShopTableOrder(shopId);
+        allow update: if cashierRole() || kitchenRole() || adminRole();
+        allow delete: if superAdminRole();
+      }
+
+      match /deliveryCustomers/{customerId} {
+        allow read, write: if adminRole();
       }
 
       match /staff/{userId} {
