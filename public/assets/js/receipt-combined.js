@@ -22,13 +22,13 @@ if (!ids.length) {
   document.querySelector("#printButton").addEventListener("click", () => window.print());
 
   try {
-    const orders = (await Promise.all(ids.map(id => dataService.getOrder(id)))).filter(Boolean)
-      .sort((a, b) => Number(a.roundNumber || 0) - Number(b.roundNumber || 0));
+    const orders = (await Promise.all(ids.map(id => dataService.getOrder(id)))).filter(Boolean).sort((a, b) => Number(a.roundNumber || 0) - Number(b.roundNumber || 0));
     if (!orders.length) throw new Error("NOT_FOUND");
 
     const settings = await dataService.getStoreSettings();
     const first = orders[0];
     const total = orders.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0);
+    const verifyUrl = `${location.origin}/verify/?orders=${encodeURIComponent(ids.join(","))}`;
 
     document.querySelector("#shopName").textContent = settings.shopName || "Food Order QR";
     document.querySelector("#shopAddress").textContent = settings.shopAddress || "";
@@ -43,11 +43,7 @@ if (!ids.length) {
     document.querySelector("#receiptItems").innerHTML = orders.map(order => `
       <tr><td colspan="3"><strong>รอบที่ ${order.roundNumber || 1}</strong></td></tr>
       ${(order.items || []).filter(item => !item.cancelled).map(item => `
-        <tr>
-          <td class="receipt-item-name">${item.name} x ${item.qty}${item.note ? `<div class="receipt-item-note">${item.note}</div>` : ""}</td>
-          <td class="num receipt-unit">${money(Number(item.price))}</td>
-          <td class="num receipt-line-total">${money(Number(item.qty) * Number(item.price))}</td>
-        </tr>
+        <tr><td class="receipt-item-name">${item.name} x ${item.qty}${item.note ? `<div class="receipt-item-note">${item.note}</div>` : ""}</td><td class="num receipt-unit">${money(Number(item.price))}</td><td class="num receipt-line-total">${money(Number(item.qty) * Number(item.price))}</td></tr>
       `).join("")}
     `).join("");
 
@@ -57,7 +53,9 @@ if (!ids.length) {
       document.querySelector("#receiptNote").textContent = notes.join(" / ");
     }
 
-    document.querySelector("#verifyQr").hidden = true;
+    const qr = document.querySelector("#verifyQr");
+    qr.hidden = false;
+    qr.src = `https://quickchart.io/qr?text=${encodeURIComponent(verifyUrl)}&size=180&margin=1`;
     document.querySelector("#verifyCode").textContent = `${orders.length} รอบ • รวมบิลโต๊ะ ${first.tableCode || "-"}`;
   } catch (error) {
     console.error(error);
