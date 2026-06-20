@@ -2,9 +2,55 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // DEVELOPMENT ONLY
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function staffProfile() {
+      return firestore.get(
+        /databases/(default)/documents/users/$(request.auth.uid)
+      ).data;
+    }
+
+    function hasRole(roles) {
+      return signedIn()
+        && staffProfile().active == true
+        && staffProfile().role in roles;
+    }
+
+    function adminRole() {
+      return hasRole(['admin', 'super_admin']);
+    }
+
+    function staffRole() {
+      return hasRole(['admin', 'super_admin', 'cashier', 'kitchen']);
+    }
+
+    function validImage(maxBytes) {
+      return request.resource != null
+        && request.resource.size <= maxBytes
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // รูปเมนู: ลูกค้าอ่านได้ แต่ Admin เท่านั้นที่เพิ่ม แก้ไข หรือลบได้
+    match /menu-images/{menuId}/{fileName} {
+      allow read: if true;
+      allow create, update: if adminRole() && validImage(8 * 1024 * 1024);
+      allow delete: if adminRole();
+    }
+
+    // สลิป: Guest อัปโหลดรูปได้ครั้งเดียว แต่เขียนทับหรือลบไม่ได้
+    // พนักงานที่มีสิทธิ์เท่านั้นจึงอ่านผ่าน Firebase Storage SDK ได้
+    match /payment-slips/{orderId}/{fileName} {
+      allow create: if validImage(8 * 1024 * 1024);
+      allow read: if staffRole();
+      allow update: if false;
+      allow delete: if hasRole(['super_admin']);
+    }
+
+    // ปฏิเสธไฟล์และโฟลเดอร์อื่นทั้งหมด
     match /{allPaths=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }
