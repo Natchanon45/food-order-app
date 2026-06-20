@@ -29,19 +29,23 @@ function applyStaffDeliveryState(staff) {
   if (googleLoginButton) {
     googleLoginButton.hidden = true;
     googleLoginButton.disabled = true;
+    googleLoginButton.style.display = "none";
   }
-  if (customerLogoutButton) customerLogoutButton.hidden = true;
+  if (customerLogoutButton) {
+    customerLogoutButton.hidden = true;
+    customerLogoutButton.style.display = "none";
+  }
   if (customerAccount) customerAccount.hidden = false;
   if (customerAccountName) customerAccountName.textContent = `${staff.displayName || staff.email} • ${staff.role}`;
   if (customerModeText) {
-    customerModeText.textContent = "กำลังใช้งานด้วยบัญชีพนักงาน ระบบจะใช้ที่อยู่แบบ Guest เฉพาะอุปกรณ์นี้ และไม่อนุญาตให้ Login Google ซ้อน";
+    customerModeText.textContent = "กำลังใช้บัญชีพนักงาน ที่อยู่ Delivery จะบันทึกเฉพาะอุปกรณ์นี้";
   }
 }
 
 export function watchCustomerAuth(callback) {
   return onAuthStateChanged(auth, async user => {
     const staff = await getStaffSession(user).catch(() => null);
-    await callback(user);
+    await callback(staff ? null : user, staff);
     applyStaffDeliveryState(staff);
   });
 }
