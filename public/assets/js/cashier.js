@@ -182,6 +182,14 @@ grid.addEventListener("click", async event => {
   if (!button) return;
   const { id, status } = button.dataset;
   const order = currentOrders.find(item => item.id === id);
+
+  if (status === "cancelled") {
+    const targetLabel = order?.orderType === "delivery"
+      ? `ออเดอร์ Delivery ของ ${order.recipientName || "ลูกค้า"}`
+      : `ออเดอร์โต๊ะ ${order?.tableCode || "-"} รอบที่ ${order?.roundNumber || 1}`;
+    if (!confirm(`ยืนยันยกเลิก ${targetLabel} ใช่หรือไม่?\n\nการดำเนินการนี้จะนำรายการออกจากบิลทันที`)) return;
+  }
+
   button.disabled = true;
 
   try {
