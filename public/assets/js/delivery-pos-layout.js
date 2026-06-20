@@ -23,3 +23,13 @@ if (main && menuGrid && cartList && !main.querySelector(".delivery-pos")) {
   shell.append(menuColumn, sideColumn);
   main.appendChild(shell);
 }
+
+const categoryTabs = document.querySelector("#categoryTabs");
+if (categoryTabs) {
+  categoryTabs.addEventListener("wheel", event => {
+    if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+    if (categoryTabs.scrollWidth <= categoryTabs.clientWidth) return;
+    event.preventDefault();
+    categoryTabs.scrollLeft += event.deltaY;
+  }, { passive: false });
+}
