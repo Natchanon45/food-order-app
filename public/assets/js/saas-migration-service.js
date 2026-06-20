@@ -1,18 +1,24 @@
 import {
   auth, db, collection, doc, getDocs, getDoc, setDoc, serverTimestamp
 } from "./firebase-config.js";
-import { DEFAULT_SHOP, setActiveShop } from "./tenant-context.js";
 
-const LEGACY_COLLECTIONS = ["menus", "tables", "orders"];
+const SOURCE_SHOP_ID = "default-shop";
+const TARGET_TENANT = Object.freeze({
+  id: "ff897699-de82-4370-a360-35b22cc74c85",
+  slug: "tuahere-somtam",
+  name: "ส้มตำตัวเฮีย"
+});
+const COLLECTIONS = ["menus", "tables", "orders", "deliveryCustomers"];
 
-async function copyCollection(sourceName, targetName, { overwrite = false } = {}) {
-  const sourceSnapshot = await getDocs(collection(db, sourceName));
+async function copyCollection(name, { overwrite = false } = {}) {
+  const sourceSnapshot = await getDocs(collection(db, "shops", SOURCE_SHOP_ID, name));
   let copied = 0;
   let skipped = 0;
 
   for (const sourceDoc of sourceSnapshot.docs) {
-    const targetRef = doc(db, "shops", DEFAULT_SHOP.id, targetName, sourceDoc.id);
+    const targetRef = doc(db, "tenants", TARGET_TENANT.id, name, sourceDoc.id);
     const targetSnapshot = await getDoc(targetRef);
+
     if (targetSnapshot.exists() && !overwrite) {
       skipped += 1;
       continue;
@@ -21,95 +27,116 @@ async function copyCollection(sourceName, targetName, { overwrite = false } = {}
     await setDoc(targetRef, {
       ...sourceDoc.data(),
       legacyId: sourceDoc.id,
-      shopId: DEFAULT_SHOP.id,
+      tenantId: TARGET_TENANT.id,
       migratedAt: serverTimestamp()
     }, { merge: true });
     copied += 1;
   }
 
-  return { sourceName, targetName, total: sourceSnapshot.size, copied, skipped };
+  return {
+    sourceName: `shops/${SOURCE_SHOP_ID}/${name}`,
+    targetName: `tenants/${TARGET_TENANT.id}/${name}`,
+    total: sourceSnapshot.size,
+    copied,
+    skipped
+  };
 }
 
 async function copyStoreSettings({ overwrite = false } = {}) {
-  const sourceRef = doc(db, "settings", "store");
+  const sourceRef = doc(db, "shops", SOURCE_SHOP_ID, "settings", "store");
   const sourceSnapshot = await getDoc(sourceRef);
-  if (!sourceSnapshot.exists()) return { sourceName: "settings/store", total: 0, copied: 0, skipped: 0 };
+  if (!sourceSnapshot.exists()) {
+    return { sourceName: `shops/${SOURCE_SHOP_ID}/settings/store`, total: 0, copied: 0, skipped: 0 };
+  }
 
-  const targetRef = doc(db, "shops", DEFAULT_SHOP.id, "settings", "store");
+  const targetRef = doc(db, "tenants", TARGET_TENANT.id, "settings", "store");
   const targetSnapshot = await getDoc(targetRef);
   if (targetSnapshot.exists() && !overwrite) {
-    return { sourceName: "settings/store", total: 1, copied: 0, skipped: 1 };
+    return { sourceName: `shops/${SOURCE_SHOP_ID}/settings/store`, total: 1, copied: 0, skipped: 1 };
   }
 
   await setDoc(targetRef, {
     ...sourceSnapshot.data(),
-    shopId: DEFAULT_SHOP.id,
+    tenantId: TARGET_TENANT.id,
     migratedAt: serverTimestamp()
   }, { merge: true });
-  return { sourceName: "settings/store", total: 1, copied: 1, skipped: 0 };
+
+  return { sourceName: `shops/${SOURCE_SHOP_ID}/settings/store`, total: 1, copied: 1, skipped: 0 };
 }
 
-async function createDefaultShop() {
+async function ensureTenant() {
   const user = auth.currentUser;
-  const shopRef = doc(db, "shops", DEFAULT_SHOP.id);
-  const shopSnapshot = await getDoc(shopRef);
+  const tenantRef = doc(db, "tenants", TARGET_TENANT.id);
+  const tenantSnapshot = await getDoc(tenantRef);
+  const existing = tenantSnapshot.exists() ? tenantSnapshot.data() : {};
 
-  await setDoc(shopRef, {
-    id: DEFAULT_SHOP.id,
-    slug: DEFAULT_SHOP.slug,
-    name: DEFAULT_SHOP.name,
-    status: "active",
-    plan: "development",
-    ownerId: shopSnapshot.data()?.ownerId || user?.uid || "",
+  await setDoc(tenantRef, {
+    id: TARGET_TENANT.id,
+    slug: TARGET_TENANT.slug,
+    name: TARGET_TENANT.name,
+    status: existing.status || "active",
+    plan: existing.plan || "development",
+    ownerId: existing.ownerId || user?.uid || "",
     updatedAt: serverTimestamp(),
-    ...(shopSnapshot.exists() ? {} : { createdAt: serverTimestamp() })
+    ...(tenantSnapshot.exists() ? {} : { createdAt: serverTimestamp() })
+  }, { merge: true });
+
+  await setDoc(doc(db, "tenantSlugs", TARGET_TENANT.slug), {
+    tenantId: TARGET_TENANT.id,
+    slug: TARGET_TENANT.slug,
+    name: TARGET_TENANT.name,
+    active: true,
+    updatedAt: serverTimestamp()
   }, { merge: true });
 
   if (user) {
-    await setDoc(doc(db, "shops", DEFAULT_SHOP.id, "staff", user.uid), {
+    await setDoc(doc(db, "tenants", TARGET_TENANT.id, "memberships", user.uid), {
       uid: user.uid,
       email: user.email || "",
       displayName: user.displayName || user.email || "Owner",
-      role: "shop_owner",
+      role: "owner",
       active: true,
       updatedAt: serverTimestamp()
     }, { merge: true });
   }
-
-  setActiveShop(DEFAULT_SHOP);
 }
 
 export async function inspectLegacyData() {
   const collectionCounts = {};
-  for (const name of LEGACY_COLLECTIONS) {
-    const snapshot = await getDocs(collection(db, name));
+  for (const name of COLLECTIONS) {
+    const snapshot = await getDocs(collection(db, "shops", SOURCE_SHOP_ID, name));
     collectionCounts[name] = snapshot.size;
   }
-  const settingsSnapshot = await getDoc(doc(db, "settings", "store"));
-  const shopSnapshot = await getDoc(doc(db, "shops", DEFAULT_SHOP.id));
+
+  const settingsSnapshot = await getDoc(doc(db, "shops", SOURCE_SHOP_ID, "settings", "store"));
+  const tenantSnapshot = await getDoc(doc(db, "tenants", TARGET_TENANT.id));
 
   return {
-    shopExists: shopSnapshot.exists(),
+    tenantExists: tenantSnapshot.exists(),
+    shopExists: tenantSnapshot.exists(),
+    tenantId: TARGET_TENANT.id,
+    tenantSlug: TARGET_TENANT.slug,
     settings: settingsSnapshot.exists() ? 1 : 0,
     ...collectionCounts
   };
 }
 
 export async function migrateLegacyStore({ overwrite = false, onProgress = () => {} } = {}) {
-  await createDefaultShop();
-  onProgress({ step: "shop", message: "สร้างร้านเริ่มต้นแล้ว" });
+  await ensureTenant();
+  onProgress({ step: "tenant", message: "เตรียม Tenant ร้านแรกแล้ว" });
 
   const results = [];
-  for (const name of LEGACY_COLLECTIONS) {
+  for (const name of COLLECTIONS) {
     onProgress({ step: name, message: `กำลังย้าย ${name}...` });
-    results.push(await copyCollection(name, name, { overwrite }));
+    results.push(await copyCollection(name, { overwrite }));
   }
 
   onProgress({ step: "settings", message: "กำลังย้ายการตั้งค่าร้าน..." });
   results.push(await copyStoreSettings({ overwrite }));
 
-  await setDoc(doc(db, "shops", DEFAULT_SHOP.id), {
+  await setDoc(doc(db, "tenants", TARGET_TENANT.id), {
     migration: {
+      sourceShopId: SOURCE_SHOP_ID,
       legacyCompleted: true,
       completedAt: serverTimestamp(),
       overwrite
@@ -117,6 +144,6 @@ export async function migrateLegacyStore({ overwrite = false, onProgress = () =>
     updatedAt: serverTimestamp()
   }, { merge: true });
 
-  onProgress({ step: "done", message: "ย้ายข้อมูลร้านเริ่มต้นสำเร็จ" });
+  onProgress({ step: "done", message: "ย้ายข้อมูลเข้า Tenant ร้านแรกสำเร็จ" });
   return results;
 }
