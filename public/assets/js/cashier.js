@@ -16,49 +16,145 @@ function paymentLabel(order) {
   return "รอชำระเงิน";
 }
 
-function render(orders) {
-  currentOrders = orders;
-  const active = orders.filter(order => !["paid", "cancelled"].includes(order.status));
+function activeOrders(orders) {
+  return orders.filter(order => !["paid", "cancelled"].includes(order.status));
+}
 
-  grid.innerHTML = active.length ? active.map(order => {
-    const isDelivery = order.orderType === "delivery";
-    const title = isDelivery ? `Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}` : `โต๊ะ ${order.tableCode} • รอบที่ ${order.roundNumber || 1}`;
-    const paymentAction = isDelivery && order.paymentStatus !== "paid"
-      ? `<button class="btn btn-primary" data-payment-id="${order.id}">ตรวจสอบแล้ว/รับชำระแล้ว</button>`
-      : "";
-    const slipAction = order.paymentSlipUrl
-      ? `<a class="btn btn-warning" href="${order.paymentSlipUrl}" target="_blank" rel="noopener">ดูสลิป</a>`
-      : "";
-    const itemRows = (order.items || []).map(item => `
+function tableGroupKey(order) {
+  return order.tableToken || `table:${order.tableCode}`;
+}
+
+function renderDelivery(order) {
+  const paymentAction = order.paymentStatus !== "paid"
+    ? `<button class="btn btn-primary" data-payment-id="${order.id}">ตรวจสอบแล้ว/รับชำระแล้ว</button>`
+    : "";
+  const slipAction = order.paymentSlipUrl
+    ? `<a class="btn btn-warning" href="${order.paymentSlipUrl}" target="_blank" rel="noopener">ดูสลิป</a>`
+    : "";
+  const itemRows = (order.items || []).map(item => `
+    <li style="${item.cancelled ? "opacity:.5;text-decoration:line-through" : ""}">
+      ${item.qty} × ${item.name}
+      <strong style="float:right">${item.cancelled ? "ยกเลิก" : money(item.qty * item.price)}</strong>
+    </li>
+  `).join("");
+
+  return `<article class="card order-card">
+    <div class="order-head"><div><h2 style="margin:0">Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}</h2><small>${formatTime(order.createdAt)}</small></div><span class="badge">${statusLabel(order.status)}</span></div>
+    <p><span class="badge ${order.paymentStatus === "paid" ? "" : "warning"}">${paymentLabel(order)}</span><br><strong>โทร:</strong> ${order.recipientPhone || "-"}<br><strong>ที่อยู่:</strong> ${order.deliveryAddress || "-"}</p>
+    <ul class="order-items">${itemRows}</ul>
+    <div class="card" style="margin-top:10px;padding:10px 12px;box-shadow:none;background:#f8fbf9">
+      <div class="receipt-row"><span>พื้นที่จัดส่ง</span><strong>${order.deliveryZoneLabel || "-"}</strong></div>
+      <div class="receipt-row"><span>ค่าอาหาร</span><strong>${money(order.subtotalAmount ?? (Number(order.totalAmount || 0) - Number(order.deliveryFee || 0)))} บาท</strong></div>
+      <div class="receipt-row"><span>ค่าจัดส่ง</span><strong>${money(order.deliveryFee || 0)} บาท</strong></div>
+    </div>
+    <div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div>
+    <div class="order-actions" style="margin-top:12px">
+      <a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">พิมพ์ใบเสร็จ</a>
+      ${slipAction}${paymentAction}
+      <button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">ยกเลิก</button>
+    </div>
+  </article>`;
+}
+
+function renderTableBill(group) {
+  const sorted = [...group].sort((a, b) => Number(a.roundNumber || 0) - Number(b.roundNumber || 0));
+  const first = sorted[0];
+  const total = sorted.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0);
+  const ids = sorted.map(order => order.id).join(",");
+  const key = tableGroupKey(first);
+
+  const rounds = sorted.map(order => {
+    const items = (order.items || []).map(item => `
       <li style="${item.cancelled ? "opacity:.5;text-decoration:line-through" : ""}">
         ${item.qty} × ${item.name}
         <strong style="float:right">${item.cancelled ? "ยกเลิก" : money(item.qty * item.price)}</strong>
       </li>
     `).join("");
-    const deliverySummary = isDelivery ? `
-      <div class="card" style="margin-top:10px;padding:10px 12px;box-shadow:none;background:#f8fbf9">
-        <div class="receipt-row"><span>พื้นที่จัดส่ง</span><strong>${order.deliveryZoneLabel || "-"}</strong></div>
-        <div class="receipt-row"><span>ค่าอาหาร</span><strong>${money(order.subtotalAmount ?? (Number(order.totalAmount || 0) - Number(order.deliveryFee || 0)))} บาท</strong></div>
-        <div class="receipt-row"><span>ค่าจัดส่ง</span><strong>${money(order.deliveryFee || 0)} บาท</strong></div>
-      </div>` : "";
 
-    return `<article class="card order-card">
-      <div class="order-head"><div><h2 style="margin:0">${title}</h2><small>${formatTime(order.createdAt)}</small></div><span class="badge">${statusLabel(order.status)}</span></div>
-      ${isDelivery ? `<p><span class="badge ${order.paymentStatus === "paid" ? "" : "warning"}">${paymentLabel(order)}</span><br><strong>โทร:</strong> ${order.recipientPhone || "-"}<br><strong>ที่อยู่:</strong> ${order.deliveryAddress || "-"}</p>` : ""}
-      <ul class="order-items">${itemRows}</ul>
-      ${deliverySummary}
-      <div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div>
-      <div class="order-actions" style="margin-top:12px">
-        <a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">พิมพ์ใบเสร็จ</a>
-        ${slipAction}${paymentAction}
-        ${isDelivery ? "" : `<button class="btn btn-primary" data-id="${order.id}" data-status="paid">รับชำระแล้ว</button>`}
-        <button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">ยกเลิก</button>
+    return `<section class="card" style="padding:12px;margin-top:10px;box-shadow:none;background:#f8fbf9">
+      <div class="order-head"><strong>รอบที่ ${order.roundNumber || 1}</strong><small>${formatTime(order.createdAt)}</small></div>
+      <ul class="order-items">${items}</ul>
+      <div class="order-head" style="margin-top:8px"><span>รวมรอบนี้</span><strong>${money(order.totalAmount)} บาท</strong></div>
+      <div class="order-actions" style="margin-top:8px">
+        <button class="btn btn-danger btn-sm" data-id="${order.id}" data-status="cancelled">ยกเลิกรอบนี้</button>
       </div>
-    </article>`;
-  }).join("") : '<div class="card empty">ไม่มีบิลที่รอดำเนินการ</div>';
+    </section>`;
+  }).join("");
+
+  return `<article class="card order-card">
+    <div class="order-head">
+      <div><h2 style="margin:0">โต๊ะ ${first.tableCode}</h2><small>${sorted.length} รอบที่ยังไม่คิดเงิน</small></div>
+      <span class="badge warning">รวมบิล</span>
+    </div>
+    ${rounds}
+    <div class="order-head" style="margin-top:14px;padding-top:12px;border-top:2px solid #dfe8e2">
+      <strong>ยอดรวมทั้งโต๊ะ</strong><strong class="price">${money(total)} บาท</strong>
+    </div>
+    <div class="order-actions" style="margin-top:12px">
+      <a class="btn btn-dark" href="/cashier/receipt/?orders=${encodeURIComponent(ids)}" target="_blank" rel="noopener">พิมพ์ใบเสร็จรวม</a>
+      <button class="btn btn-primary" data-table-payment="${key}">รับชำระทั้งโต๊ะ</button>
+    </div>
+  </article>`;
+}
+
+function render(orders) {
+  currentOrders = orders;
+  const active = activeOrders(orders);
+  const deliveries = active.filter(order => order.orderType === "delivery");
+  const tableOrders = active.filter(order => order.orderType !== "delivery");
+  const groups = new Map();
+
+  tableOrders.forEach(order => {
+    const key = tableGroupKey(order);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(order);
+  });
+
+  const cards = [
+    ...Array.from(groups.values()).map(renderTableBill),
+    ...deliveries.map(renderDelivery)
+  ];
+
+  grid.innerHTML = cards.length ? cards.join("") : '<div class="card empty">ไม่มีบิลที่รอดำเนินการ</div>';
+}
+
+async function closeTableAfterPayment(orders) {
+  const first = orders[0];
+  if (!first?.tableCode) return;
+  const table = await dataService.getTable(first.tableCode);
+  if (table && (!first.tableToken || table.orderToken === first.tableToken)) {
+    await dataService.updateTable(table.id, { status: "available", orderToken: "", sessionStartedAt: null, currentRound: 0 });
+  }
 }
 
 grid.addEventListener("click", async event => {
+  const tablePaymentButton = event.target.closest("[data-table-payment]");
+  if (tablePaymentButton) {
+    const key = tablePaymentButton.dataset.tablePayment;
+    const rounds = activeOrders(currentOrders).filter(order => order.orderType !== "delivery" && tableGroupKey(order) === key);
+    if (!rounds.length) return;
+    const total = rounds.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0);
+    if (!confirm(`รับชำระเงินทั้งโต๊ะ ${rounds[0].tableCode} จำนวน ${money(total)} บาท ใช่หรือไม่?`)) return;
+
+    tablePaymentButton.disabled = true;
+    try {
+      const now = new Date().toISOString();
+      await Promise.all(rounds.map(order => dataService.updateOrder(order.id, {
+        status: "paid",
+        paymentStatus: "paid",
+        paidAt: now,
+        completedAt: now
+      })));
+      await closeTableAfterPayment(rounds);
+      toast(`รับชำระและปิดบิลโต๊ะ ${rounds[0].tableCode} เรียบร้อย`);
+    } catch (error) {
+      console.error(error);
+      toast("รับชำระรวมบิลไม่สำเร็จ", "error");
+      tablePaymentButton.disabled = false;
+    }
+    return;
+  }
+
   const paymentButton = event.target.closest("[data-payment-id]");
   if (paymentButton) {
     if (!confirm("ตรวจสอบสลิปหรือรับเงินเรียบร้อยแล้วใช่หรือไม่?")) return;
@@ -90,16 +186,11 @@ grid.addEventListener("click", async event => {
 
   try {
     await dataService.updateOrder(id, { status });
-    if ((status === "paid" || status === "cancelled") && order?.orderType !== "delivery" && order?.tableCode) {
+    if (status === "cancelled" && order?.orderType !== "delivery" && order?.tableCode) {
       const hasOtherActiveRounds = currentOrders.some(item => item.id !== id && item.tableToken === order.tableToken && !["paid", "cancelled"].includes(item.status));
-      if (!hasOtherActiveRounds) {
-        const table = await dataService.getTable(order.tableCode);
-        if (table && (!order.tableToken || table.orderToken === order.tableToken)) {
-          await dataService.updateTable(table.id, { status: "available", orderToken: "", sessionStartedAt: null, currentRound: 0 });
-        }
-      }
+      if (!hasOtherActiveRounds) await closeTableAfterPayment([order]);
     }
-    toast(status === "paid" ? "บันทึกการชำระเงินรอบนี้แล้ว" : "ยกเลิกรายการแล้ว");
+    toast("ยกเลิกรายการแล้ว");
   } catch (error) {
     console.error(error);
     toast("อัปเดตสถานะไม่สำเร็จ", "error");
