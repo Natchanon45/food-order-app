@@ -38,7 +38,8 @@ function refreshOrderBadges(container) {
 
 function setButtonBusy(button, busy, busyText, normalText) {
   button.disabled = busy;
-  button.innerHTML = busy ? `⏳ ${busyText}` : `💾 ${normalText}`;
+  button.classList.toggle("is-loading", busy);
+  button.textContent = busy ? busyText : normalText;
 }
 
 async function persistCategoryOrder({ silent = false } = {}) {
