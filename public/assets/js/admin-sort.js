@@ -6,6 +6,7 @@ const itemList = document.querySelector("#itemSortList");
 const selectedCategoryLabel = document.querySelector("#selectedSortCategory");
 const saveCategoryOrderButton = document.querySelector("#saveCategoryOrder");
 const saveItemOrderButton = document.querySelector("#saveItemOrder");
+const menuRows = document.querySelector("#menuRows");
 
 let menus = [];
 let categoryOrder = [];
@@ -14,6 +15,8 @@ let categorySortable = null;
 let itemSortable = null;
 let savingCategoryOrder = false;
 let savingItemOrder = false;
+let refreshTimer = null;
+let sortManagerReady = false;
 
 function categoryNames() {
   return [...new Set(menus.map(item => item.category || "อื่น ๆ"))];
@@ -42,7 +45,6 @@ async function persistCategoryOrder({ silent = false } = {}) {
   if (savingCategoryOrder) return;
   const nextOrder = [...categoryList.querySelectorAll("[data-category]")].map(item => item.dataset.category);
   if (!nextOrder.length) return;
-
   savingCategoryOrder = true;
   categoryOrder = [...nextOrder];
   refreshOrderBadges(categoryList);
@@ -63,7 +65,6 @@ async function persistItemOrder({ silent = false } = {}) {
   if (savingItemOrder) return;
   const ids = [...itemList.querySelectorAll("[data-menu-id]")].map(item => item.dataset.menuId);
   if (!ids.length) return;
-
   savingItemOrder = true;
   refreshOrderBadges(itemList);
   menus = menus.map(item => {
@@ -86,9 +87,7 @@ async function persistItemOrder({ silent = false } = {}) {
 function renderCategories() {
   const categories = orderedCategories();
   categoryOrder = [...categories];
-
   if (!selectedCategory || !categories.includes(selectedCategory)) selectedCategory = categories[0] || "";
-
   categoryList.innerHTML = categories.length ? categories.map((category, index) => `
     <div class="sort-item${category === selectedCategory ? " active-category" : ""}" data-category="${category}">
       <span class="sort-handle" aria-hidden="true">⋮⋮</span>
@@ -115,7 +114,6 @@ function renderCategories() {
       }
     });
   }
-
   renderItems();
 }
 
@@ -163,10 +161,28 @@ saveCategoryOrderButton.addEventListener("click", () => persistCategoryOrder());
 saveItemOrderButton.addEventListener("click", () => persistItemOrder());
 
 async function loadSortManager() {
+  const previousMenuIds = new Set(menus.map(item => item.id));
   const [menuData, settings] = await Promise.all([dataService.listMenus(), dataService.getStoreSettings()]);
+  const newMenu = menuData.find(item => !previousMenuIds.has(item.id));
   menus = menuData;
   categoryOrder = Array.isArray(settings.categoryOrder) ? settings.categoryOrder : [];
+  if (newMenu) selectedCategory = newMenu.category || "อื่น ๆ";
   renderCategories();
+  sortManagerReady = true;
 }
 
+function scheduleSortRefresh() {
+  if (!sortManagerReady) return;
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(() => loadSortManager().catch(error => {
+    console.error(error);
+    toast("อัปเดตรายการจัดลำดับไม่สำเร็จ", "error");
+  }), 80);
+}
+
+if (menuRows) {
+  new MutationObserver(scheduleSortRefresh).observe(menuRows, { childList: true });
+}
+
+window.addEventListener("menu-data-changed", scheduleSortRefresh);
 await loadSortManager();
