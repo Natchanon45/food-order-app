@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#159447">
+  <link rel="stylesheet" href="/assets/css/app.css">
+  <link rel="stylesheet" href="/assets/css/icons.css">
+  <title>เริ่มระบบ SaaS</title>
+</head>
+<body data-roles="super_admin">
+  <header class="app-header">
+    <div class="brand"><span class="brand-mark">FO</span><span>SaaS Setup</span></div>
+    <a class="btn btn-sm" href="/">กลับหน้าหลัก</a>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1>ย้ายข้อมูลร้านเดิมเข้าสู่ระบบ SaaS</h1>
+      <p>สร้างร้านเริ่มต้นและคัดลอกข้อมูลเดิมเข้าโครงสร้างหลายร้าน โดยไม่ลบข้อมูลชุดเดิม</p>
+    </section>
+
+    <section class="card">
+      <div class="section-title"><h2>ข้อมูลที่จะย้าย</h2><span class="badge" id="migrationState">กำลังตรวจสอบ</span></div>
+      <div class="grid grid-2" id="migrationSummary">
+        <div class="card" style="box-shadow:none"><strong>เมนู</strong><div class="price" id="menuCount">-</div></div>
+        <div class="card" style="box-shadow:none"><strong>โต๊ะ</strong><div class="price" id="tableCount">-</div></div>
+        <div class="card" style="box-shadow:none"><strong>ออเดอร์</strong><div class="price" id="orderCount">-</div></div>
+        <div class="card" style="box-shadow:none"><strong>การตั้งค่าร้าน</strong><div class="price" id="settingCount">-</div></div>
+      </div>
+
+      <div class="card" style="margin-top:16px;box-shadow:none;background:#f8fbf9">
+        <strong>ร้านเริ่มต้น</strong>
+        <div class="menu-category">ID: default-shop • Slug: default</div>
+      </div>
+
+      <label style="display:flex;align-items:center;gap:8px;margin-top:16px">
+        <input type="checkbox" id="overwriteData">
+        เขียนทับข้อมูลที่เคยย้ายแล้ว
+      </label>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+        <button class="btn" id="refreshMigration">ตรวจสอบอีกครั้ง</button>
+        <button class="btn btn-primary" id="startMigration">เริ่มย้ายข้อมูล</button>
+      </div>
+
+      <div id="migrationLog" class="card" style="margin-top:16px;box-shadow:none;white-space:pre-line" hidden></div>
+    </section>
+  </main>
+
+  <script type="module" src="/assets/js/page-guard.js"></script>
+  <script type="module" src="/assets/js/saas-setup.js"></script>
+</body>
+</html>
