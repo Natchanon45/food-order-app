@@ -2,7 +2,6 @@ const ACTIVE_TENANT_KEY = "food_order_active_tenant";
 const LEGACY_ACTIVE_SHOP_KEY = "food_order_active_shop";
 
 // Existing production tenant for the original restaurant.
-// Slug lookup can replace this value when a /s/{slug} URL is used.
 const DEFAULT_TENANT = Object.freeze({
   id: "ff897699-de82-4370-a360-35b22cc74c85",
   slug: "tuahere-somtam",
@@ -10,8 +9,12 @@ const DEFAULT_TENANT = Object.freeze({
 });
 
 function normalizeTenant(value = {}) {
+  const hasExplicitId = Object.prototype.hasOwnProperty.call(value, "id")
+    || Object.prototype.hasOwnProperty.call(value, "tenantId");
+  const rawId = Object.prototype.hasOwnProperty.call(value, "id") ? value.id : value.tenantId;
+
   return {
-    id: String(value.id || value.tenantId || DEFAULT_TENANT.id).trim(),
+    id: String(hasExplicitId ? (rawId ?? "") : DEFAULT_TENANT.id).trim(),
     slug: String(value.slug || DEFAULT_TENANT.slug).trim().toLowerCase(),
     name: String(value.name || DEFAULT_TENANT.name).trim()
   };
@@ -35,6 +38,7 @@ export function getStoredTenant() {
 
 export function setActiveTenant(tenant) {
   const normalized = normalizeTenant(tenant);
+  if (!normalized.id) throw new Error("TENANT_ID_REQUIRED");
   localStorage.setItem(ACTIVE_TENANT_KEY, JSON.stringify(normalized));
   localStorage.removeItem(LEGACY_ACTIVE_SHOP_KEY);
   return normalized;
@@ -53,8 +57,7 @@ export function resolveTenantContext() {
     if (stored?.slug === pathSlug) return stored;
     if (pathSlug === DEFAULT_TENANT.slug) return DEFAULT_TENANT;
 
-    // A non-default slug must first be resolved by tenantSlugs and stored.
-    // Keeping an empty id prevents accidentally reading another tenant.
+    // A non-default slug must be resolved through tenantSlugs before data access.
     return normalizeTenant({ id: "", slug: pathSlug, name: pathSlug });
   }
 
