@@ -30,14 +30,27 @@ service cloud.firestore {
       return hasRole(['admin', 'super_admin', 'cashier', 'kitchen']);
     }
 
-    function validNewOrder() {
+    function validOrderBase() {
       return request.resource.data.status == 'pending'
         && request.resource.data.items is list
         && request.resource.data.items.size() > 0
         && request.resource.data.items.size() <= 100
         && request.resource.data.totalAmount is number
-        && request.resource.data.totalAmount >= 0
+        && request.resource.data.totalAmount >= 0;
+    }
+
+    function validDeliveryOrder() {
+      return validOrderBase()
+        && request.resource.data.orderType == 'delivery'
         && request.resource.data.paymentStatus in ['unpaid', 'pending_verification'];
+    }
+
+    function validTableOrder() {
+      return validOrderBase()
+        && request.resource.data.tableCode is string
+        && request.resource.data.tableToken is string
+        && get(/databases/$(database)/documents/tables/$(request.resource.data.tableCode)).data.status == 'occupied'
+        && get(/databases/$(database)/documents/tables/$(request.resource.data.tableCode)).data.orderToken == request.resource.data.tableToken;
     }
 
     match /menus/{menuId} {
@@ -66,8 +79,8 @@ service cloud.firestore {
       allow get: if true;
       allow list: if staffRole();
 
-      // Guest สร้างได้เฉพาะออเดอร์ใหม่ที่อยู่สถานะรอดำเนินการ
-      allow create: if validNewOrder();
+      // รองรับทั้งออเดอร์ Delivery และออเดอร์จาก QR โต๊ะ
+      allow create: if validDeliveryOrder() || validTableOrder();
 
       allow update: if cashierRole() || kitchenRole() || adminRole();
       allow delete: if hasRole(['super_admin']);
