@@ -1,5 +1,5 @@
 import { dataService, usingDemoMode } from "./data-service.js";
-import { db, collection, onSnapshot, query, where, orderBy } from "./firebase-config.js";
+import { db, collection, onSnapshot, query, where } from "./firebase-config.js";
 import { demoStore } from "./demo-store.js";
 
 function currentTableSession() {
@@ -42,8 +42,7 @@ dataService.subscribeOrders = callback => {
   const tableOrdersQuery = query(
     collection(db, "orders"),
     where("tableCode", "==", tableCode),
-    where("tableToken", "==", tableToken),
-    orderBy("createdAt", "asc")
+    where("tableToken", "==", tableToken)
   );
 
   return onSnapshot(tableOrdersQuery, snapshot => {
