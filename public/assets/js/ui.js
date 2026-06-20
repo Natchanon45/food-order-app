@@ -95,6 +95,16 @@ function visibleButtonText(button) {
     .trim();
 }
 
+function stripDuplicateLeadingSymbol(button) {
+  for (const node of button.childNodes) {
+    if (node.nodeType !== Node.TEXT_NODE) continue;
+    const text = node.nodeValue || "";
+    const cleaned = text.replace(/^\s*[+＋]\s*/, "");
+    if (cleaned !== text) node.nodeValue = cleaned;
+    break;
+  }
+}
+
 function makeIconOnly(button, icon, label) {
   button.innerHTML = iconMarkup(icon);
   button.classList.add("btn-icon-only");
@@ -116,8 +126,11 @@ function decorateButton(button) {
   }
 
   const originalText = button.textContent?.trim() || "";
+  if (/^\s*[+＋]\s*(เพิ่ม|add)/i.test(originalText)) stripDuplicateLeadingSymbol(button);
+
   if (!button.querySelector(".app-icon")) {
-    const icon = buttonIconRules.find(([pattern]) => pattern.test(originalText))?.[1] || "";
+    const normalizedText = button.textContent?.trim() || "";
+    const icon = buttonIconRules.find(([pattern]) => pattern.test(normalizedText))?.[1] || "";
     if (icon) button.insertAdjacentHTML("afterbegin", iconMarkup(icon));
   }
 
