@@ -102,6 +102,19 @@ function decorateButtons(root = document) {
   root.querySelectorAll?.("button, a.btn").forEach(decorateButton);
 }
 
+function decorateCartHeading(heading) {
+  if (!(heading instanceof HTMLElement) || heading.querySelector(".app-icon")) return;
+  const text = heading.textContent?.trim() || "";
+  if (!/ตะกร้าอาหาร|รายการรอบปัจจุบัน/i.test(text)) return;
+  heading.insertAdjacentHTML("afterbegin", iconMarkup("cart"));
+  heading.classList.add("has-heading-icon");
+}
+
+function decorateCartHeadings(root = document) {
+  if (root instanceof HTMLElement && root.matches(".section-title h2")) decorateCartHeading(root);
+  root.querySelectorAll?.(".section-title h2").forEach(decorateCartHeading);
+}
+
 function mountVersion() {
   if (document.querySelector(".app-version")) return;
   const footer = document.createElement("footer");
@@ -114,9 +127,15 @@ function initializeUi() {
   mountIconStyles();
   replaceSystemEmoji();
   decorateButtons();
+  decorateCartHeadings();
   new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(node => {
-    if (node.nodeType === Node.ELEMENT_NODE) decorateButtons(node);
-    else if (node.parentElement) decorateButton(node.parentElement);
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      decorateButtons(node);
+      decorateCartHeadings(node);
+    } else if (node.parentElement) {
+      decorateButton(node.parentElement);
+      decorateCartHeading(node.parentElement.closest?.(".section-title h2"));
+    }
   }))).observe(document.body, { childList: true, subtree: true });
   if (document.querySelector("#menuGrid")) import("./menu-image-position.js");
   mountVersion();
