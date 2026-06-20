@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.6.8";
+export const APP_VERSION = "1.6.9";
 export const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
 
 export const money = (value = 0) => new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value) || 0);
@@ -38,41 +38,24 @@ function mountIconStyles() {
 }
 
 function replaceSystemEmoji() {
-  const replacements = new Map([
-    ["🛵", "delivery"],
-    ["👨‍🍳", "kitchen"],
-    ["🧾", "receipt"],
-    ["⚙️", "settings"],
-    ["👥", "users"]
-  ]);
-
+  const replacements = new Map([["🛵", "delivery"], ["👨‍🍳", "kitchen"], ["🧾", "receipt"], ["⚙️", "settings"], ["👥", "users"]]);
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   const nodes = [];
   while (walker.nextNode()) nodes.push(walker.currentNode);
-
   nodes.forEach(node => {
     if (node.parentElement?.closest("script, style, textarea, input")) return;
     let text = node.nodeValue || "";
     const found = [...replacements.keys()].find(emoji => text.includes(emoji));
     if (!found) return;
-
     const fragment = document.createDocumentFragment();
     while (text) {
       let nearestIndex = -1;
       let nearestEmoji = "";
       for (const emoji of replacements.keys()) {
         const index = text.indexOf(emoji);
-        if (index >= 0 && (nearestIndex < 0 || index < nearestIndex)) {
-          nearestIndex = index;
-          nearestEmoji = emoji;
-        }
+        if (index >= 0 && (nearestIndex < 0 || index < nearestIndex)) { nearestIndex = index; nearestEmoji = emoji; }
       }
-
-      if (nearestIndex < 0) {
-        fragment.append(document.createTextNode(text));
-        break;
-      }
-
+      if (nearestIndex < 0) { fragment.append(document.createTextNode(text)); break; }
       if (nearestIndex > 0) fragment.append(document.createTextNode(text.slice(0, nearestIndex)));
       const wrapper = document.createElement("span");
       wrapper.innerHTML = iconMarkup(replacements.get(nearestEmoji));
@@ -81,6 +64,37 @@ function replaceSystemEmoji() {
     }
     node.replaceWith(fragment);
   });
+}
+
+const buttonIconRules = [
+  [/ลบ|delete|remove/i, "delete"],
+  [/แก้ไข|edit/i, "edit"],
+  [/บันทึก|save/i, "save"],
+  [/เพิ่ม|add/i, "add"],
+  [/ยืนยัน|confirm|ชำระ|เสร็จ|รับออเดอร์/i, "check"],
+  [/ยกเลิก|cancel|ปิด/i, "close"],
+  [/พิมพ์|print/i, "print"],
+  [/ย้อนกลับ|กลับ|back/i, "back"],
+  [/qr/i, "qr"],
+  [/ค้นหา|search/i, "search"],
+  [/ออกจากระบบ|logout/i, "logout"]
+];
+
+function decorateButton(button) {
+  if (!(button instanceof HTMLElement) || button.dataset.iconMounted === "true") return;
+  if (!button.matches("button, a.btn")) return;
+  if (button.querySelector(".app-icon")) { button.dataset.iconMounted = "true"; return; }
+  const text = button.textContent?.trim() || "";
+  let icon = button.dataset.inc ? "add" : button.dataset.dec ? "minus" : "";
+  if (!icon) icon = buttonIconRules.find(([pattern]) => pattern.test(text))?.[1] || "";
+  if (!icon) return;
+  button.insertAdjacentHTML("afterbegin", iconMarkup(icon));
+  button.dataset.iconMounted = "true";
+}
+
+function decorateButtons(root = document) {
+  if (root instanceof HTMLElement && root.matches("button, a.btn")) decorateButton(root);
+  root.querySelectorAll?.("button, a.btn").forEach(decorateButton);
 }
 
 function mountVersion() {
@@ -94,6 +108,11 @@ function mountVersion() {
 function initializeUi() {
   mountIconStyles();
   replaceSystemEmoji();
+  decorateButtons();
+  new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(node => {
+    if (node.nodeType === Node.ELEMENT_NODE) decorateButtons(node);
+  }))).observe(document.body, { childList: true, subtree: true });
+  if (document.querySelector("#menuGrid")) import("./menu-image-position.js");
   mountVersion();
 }
 
@@ -105,7 +124,6 @@ document.addEventListener("error", event => {
   if (!(image instanceof HTMLImageElement)) return;
   if (!image.closest(".menu-image") && !image.matches("[data-food-image]") && image.id !== "menuImagePreview") return;
   if (image.dataset.defaultApplied === "true") return;
-
   image.dataset.defaultApplied = "true";
   image.src = DEFAULT_FOOD_IMAGE;
 }, true);
