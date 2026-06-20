@@ -2,6 +2,14 @@
   "projects": {
     "default": "chat-45754"
   },
-  "targets": {},
+  "targets": {
+    "chat-45754": {
+      "hosting": {
+        "foodapp": [
+          "natchanon-food-order-delivery"
+        ]
+      }
+    }
+  },
   "etags": {}
 }
