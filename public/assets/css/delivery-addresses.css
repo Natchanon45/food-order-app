@@ -14,6 +14,7 @@
 }
 
 .address-book {
+  container-type: inline-size;
   margin-top: 14px;
   padding: 16px;
   border: 1px solid var(--line);
@@ -22,7 +23,10 @@
 }
 
 .address-book[hidden],
-.address-form[hidden] {
+.address-form[hidden],
+#customerAccount[hidden],
+#googleLoginButton[hidden],
+#customerLogoutButton[hidden] {
   display: none !important;
 }
 
@@ -30,7 +34,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   margin-bottom: 14px;
 }
 
@@ -40,7 +44,7 @@
 
 .address-book-head > div:first-child > strong {
   display: block;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
   font-size: 17px;
   line-height: 1.25;
 }
@@ -55,10 +59,11 @@
 
 .address-book-head #addressCount {
   flex: 0 0 auto;
-  min-width: 58px;
+  min-width: 62px;
   justify-content: center;
   text-align: center;
   line-height: 1.15;
+  white-space: nowrap;
 }
 
 .address-book-head #addAddressButton {
@@ -76,7 +81,7 @@
 .address-card {
   position: relative;
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 10px;
   padding: 13px;
   border: 1px solid var(--line);
@@ -111,6 +116,7 @@
   font-size: 13px;
   line-height: 1.5;
   white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 
 .address-card-actions {
@@ -153,15 +159,16 @@
   line-height: 18px;
 }
 
-@media (max-width: 480px) {
-  .delivery-contact-grid .field {
-    grid-template-rows: auto 44px auto;
-  }
+#googleLoginButton,
+#customerLogoutButton {
+  width: 100%;
+  min-height: 44px;
+  justify-content: center;
+  white-space: nowrap;
+  line-height: 1.2;
+}
 
-  .address-book {
-    padding: 14px;
-  }
-
+@container (max-width: 460px) {
   .address-book-head {
     grid-template-columns: 1fr;
     align-items: stretch;
@@ -176,6 +183,16 @@
   .address-book-head #addAddressButton {
     min-height: 40px;
     padding-inline: 13px;
+  }
+}
+
+@media (max-width: 760px) {
+  .delivery-contact-grid .field {
+    grid-template-rows: auto 44px auto;
+  }
+
+  .address-book {
+    padding: 14px;
   }
 
   .address-card-actions .btn {
