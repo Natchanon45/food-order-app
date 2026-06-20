@@ -53,6 +53,13 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/tables/$(request.resource.data.tableCode)).data.orderToken == request.resource.data.tableToken;
     }
 
+    function activeTableOrder() {
+      return resource.data.tableCode is string
+        && resource.data.tableToken is string
+        && get(/databases/$(database)/documents/tables/$(resource.data.tableCode)).data.status == 'occupied'
+        && get(/databases/$(database)/documents/tables/$(resource.data.tableCode)).data.orderToken == resource.data.tableToken;
+    }
+
     match /menus/{menuId} {
       allow read: if true;
       allow create, update, delete: if adminRole();
@@ -74,14 +81,9 @@ service cloud.firestore {
     }
 
     match /orders/{orderId} {
-      // ลูกค้าเปิดดูใบยืนยันได้เฉพาะเมื่อทราบ Order ID โดยตรง
-      // การอ่านรายการออเดอร์ทั้งหมดสงวนไว้สำหรับพนักงาน
       allow get: if true;
-      allow list: if staffRole();
-
-      // รองรับทั้งออเดอร์ Delivery และออเดอร์จาก QR โต๊ะ
+      allow list: if staffRole() || activeTableOrder();
       allow create: if validDeliveryOrder() || validTableOrder();
-
       allow update: if cashierRole() || kitchenRole() || adminRole();
       allow delete: if hasRole(['super_admin']);
     }
