@@ -37,8 +37,12 @@
   .delivery-pos{width:min(1280px,100%);margin-inline:auto;display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:24px;align-items:start}
   .delivery-pos .delivery-menu-column{min-width:0}
   .delivery-pos .delivery-side-column{position:sticky;top:80px;max-height:calc(100vh - 100px);overflow:auto;padding-bottom:90px}
-  .delivery-pos .menu-filter-area{width:100%;max-width:none}
+  .delivery-pos .menu-filter-area{width:100%;max-width:none;min-width:0}
   .delivery-pos .menu-filter-area .menu-search{width:100%;max-width:none}
+  .delivery-pos .category-tabs{width:100%;max-width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;scrollbar-width:thin;scrollbar-color:var(--green) transparent;padding-bottom:10px;overscroll-behavior-inline:contain}
+  .delivery-pos .category-tabs::-webkit-scrollbar{display:block;height:6px}
+  .delivery-pos .category-tabs::-webkit-scrollbar-track{background:transparent}
+  .delivery-pos .category-tabs::-webkit-scrollbar-thumb{background:var(--green);border-radius:999px}
   .delivery-pos #menuGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
   .delivery-pos .menu-card{grid-template-columns:88px minmax(0,1fr)}
   .delivery-pos .menu-image{width:88px;height:88px}
