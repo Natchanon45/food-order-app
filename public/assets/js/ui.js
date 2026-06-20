@@ -114,6 +114,7 @@ function makeIconOnly(button, icon, label) {
 
 function decorateButton(button) {
   if (!(button instanceof HTMLElement) || !button.matches("button, a.btn")) return;
+  if (button.closest(".user-menu")) return;
 
   if (button.dataset.inc) {
     makeIconOnly(button, "add", "เพิ่มจำนวน");
