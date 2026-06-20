@@ -1,6 +1,12 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const admin = require("firebase-admin");
+const { initializeApp, cert, getApps } = require("firebase-admin/app");
+const {
+  getFirestore,
+  Timestamp,
+  GeoPoint,
+  DocumentReference
+} = require("firebase-admin/firestore");
 
 const serviceAccountPath = path.join(__dirname, "service-account.json");
 
@@ -9,18 +15,18 @@ if (!fs.existsSync(serviceAccountPath)) {
   process.exit(1);
 }
 
-admin.initializeApp({
-  credential: admin.credential.cert(require(serviceAccountPath))
+const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, "utf8"));
+const app = getApps()[0] || initializeApp({
+  credential: cert(serviceAccount)
 });
-
-const db = admin.firestore();
+const db = getFirestore(app);
 
 function detectType(value) {
   if (value === null) return "null";
   if (Array.isArray(value)) return "array";
-  if (value instanceof admin.firestore.Timestamp) return "timestamp";
-  if (value instanceof admin.firestore.GeoPoint) return "geopoint";
-  if (value instanceof admin.firestore.DocumentReference) return "document-reference";
+  if (value instanceof Timestamp) return "timestamp";
+  if (value instanceof GeoPoint) return "geopoint";
+  if (value instanceof DocumentReference) return "document-reference";
   if (Buffer.isBuffer(value)) return "bytes";
   return typeof value;
 }
@@ -94,7 +100,7 @@ async function main() {
 
   const rootCollections = await db.listCollections();
   const structure = {
-    projectId: admin.app().options.projectId,
+    projectId: app.options.projectId,
     generatedAt: new Date().toISOString(),
     collections: {}
   };
