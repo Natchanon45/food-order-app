@@ -30,11 +30,18 @@ function iconMarkup(name) {
 }
 
 function mountIconStyles() {
-  if (document.querySelector('link[href="/assets/css/icons.css"]')) return;
-  const link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href = "/assets/css/icons.css";
-  document.head.appendChild(link);
+  if (!document.querySelector('link[href="/assets/css/icons.css"]')) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "/assets/css/icons.css";
+    document.head.appendChild(link);
+  }
+  if (!document.querySelector("#receiptCompactStyles")) {
+    const style = document.createElement("style");
+    style.id = "receiptCompactStyles";
+    style.textContent = ".receipt-item-name{max-width:42mm;font-size:.82em;line-height:1.05;vertical-align:top}.receipt-item-line{display:flex;align-items:flex-end;gap:3px;min-width:0}.receipt-item-text{min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}.receipt-item-qty{flex:0 0 auto;white-space:nowrap;font-weight:600}.receipt-item-note{font-size:.78em;color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}";
+    document.head.appendChild(style);
+  }
 }
 
 function replaceSystemEmoji() {
