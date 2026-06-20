@@ -16,6 +16,10 @@ function applyPositions(root = document) {
   });
 }
 
+if (location.pathname.startsWith("/delivery") && document.querySelector("#menuGrid")) {
+  import("./delivery-pos-layout.js");
+}
+
 try {
   const menus = await dataService.listMenus();
   menuMap = new Map(menus.map(item => [menuKey(item.name), item]));
