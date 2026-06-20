@@ -48,7 +48,7 @@ dataService.subscribeOrders = callback => {
   );
 
   return onSnapshot(tableOrdersQuery, snapshot => {
-    callback(snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+    callback(snapshot.docs.map(item => ({ id: item.id, ...item.data() })));
   });
 };
 
