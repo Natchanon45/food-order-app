@@ -6,18 +6,18 @@
   <meta name="theme-color" content="#159447">
   <link rel="stylesheet" href="/assets/css/app.css">
   <link rel="stylesheet" href="/assets/css/icons.css">
-  <title>เริ่มระบบ SaaS</title>
+  <title>เริ่มระบบ Tenant</title>
 </head>
 <body data-roles="super_admin">
   <header class="app-header">
-    <div class="brand"><span class="brand-mark">FO</span><span>SaaS Setup</span></div>
+    <div class="brand"><span class="brand-mark">FO</span><span>Tenant Setup</span></div>
     <a class="btn btn-sm" href="/">กลับหน้าหลัก</a>
   </header>
 
   <main class="container">
     <section class="hero">
-      <h1>ย้ายข้อมูลร้านเดิมเข้าสู่ระบบ SaaS</h1>
-      <p>สร้างร้านเริ่มต้นและคัดลอกข้อมูลเดิมเข้าโครงสร้างหลายร้าน โดยไม่ลบข้อมูลชุดเดิม</p>
+      <h1>ย้ายร้านแรกเข้าสู่ระบบ Tenant</h1>
+      <p>คัดลอกข้อมูลจาก shops/default-shop ไปยัง Tenant ร้านส้มตำตัวเฮีย โดยไม่ลบข้อมูลต้นทาง</p>
     </section>
 
     <section class="card">
@@ -30,25 +30,27 @@
       </div>
 
       <div class="card" style="margin-top:16px;box-shadow:none;background:#f8fbf9">
-        <strong>ร้านเริ่มต้น</strong>
-        <div class="menu-category">ID: default-shop • Slug: default</div>
+        <strong>Tenant ร้านแรก</strong>
+        <div class="menu-category">ชื่อ: ส้มตำตัวเฮีย</div>
+        <div class="menu-category">Slug: tuahere-somtam</div>
+        <div class="menu-category">ID: ff897699-de82-4370-a360-35b22cc74c85</div>
       </div>
 
       <label style="display:flex;align-items:center;gap:8px;margin-top:16px">
         <input type="checkbox" id="overwriteData">
-        เขียนทับข้อมูลที่เคยย้ายแล้ว
+        เขียนทับข้อมูลใน Tenant ที่มีอยู่แล้ว
       </label>
 
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
         <button class="btn" id="refreshMigration">ตรวจสอบอีกครั้ง</button>
-        <button class="btn btn-primary" id="startMigration">เริ่มย้ายข้อมูล</button>
+        <button class="btn btn-primary" id="startMigration">เริ่มย้ายเข้า Tenant</button>
       </div>
 
       <div id="migrationLog" class="card" style="margin-top:16px;box-shadow:none;white-space:pre-line" hidden></div>
     </section>
   </main>
 
-  <script type="module" src="/assets/js/page-guard.js"></script>
-  <script type="module" src="/assets/js/saas-setup.js"></script>
+  <script type="module" src="/assets/js/page-guard.js?v=20260621-2"></script>
+  <script type="module" src="/assets/js/saas-setup.js?v=20260621-2"></script>
 </body>
 </html>
