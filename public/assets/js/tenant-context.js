@@ -1,22 +1,15 @@
-const ACTIVE_TENANT_KEY = "food_order_active_tenant";
-const LEGACY_ACTIVE_SHOP_KEY = "food_order_active_shop";
-
-// Existing production tenant for the original restaurant.
-const DEFAULT_TENANT = Object.freeze({
-  id: "ff897699-de82-4370-a360-35b22cc74c85",
-  slug: "tuahere-somtam",
-  name: "ส้มตำตัวเฮีย"
+const ACTIVE_SHOP_KEY = "food_order_active_shop";
+const DEFAULT_SHOP = Object.freeze({
+  id: "default-shop",
+  slug: "default",
+  name: "Food Order QR"
 });
 
-function normalizeTenant(value = {}) {
-  const hasExplicitId = Object.prototype.hasOwnProperty.call(value, "id")
-    || Object.prototype.hasOwnProperty.call(value, "tenantId");
-  const rawId = Object.prototype.hasOwnProperty.call(value, "id") ? value.id : value.tenantId;
-
+function normalizeShop(value = {}) {
   return {
-    id: String(hasExplicitId ? (rawId ?? "") : DEFAULT_TENANT.id).trim(),
-    slug: String(value.slug || DEFAULT_TENANT.slug).trim().toLowerCase(),
-    name: String(value.name || DEFAULT_TENANT.name).trim()
+    id: String(value.id || DEFAULT_SHOP.id).trim(),
+    slug: String(value.slug || DEFAULT_SHOP.slug).trim().toLowerCase(),
+    name: String(value.name || DEFAULT_SHOP.name).trim()
   };
 }
 
@@ -25,63 +18,49 @@ function slugFromPath(pathname = location.pathname) {
   return match ? decodeURIComponent(match[1]).trim().toLowerCase() : "";
 }
 
-export function getStoredTenant() {
+export function getStoredShop() {
   try {
-    const saved = localStorage.getItem(ACTIVE_TENANT_KEY)
-      || localStorage.getItem(LEGACY_ACTIVE_SHOP_KEY);
-    return saved ? normalizeTenant(JSON.parse(saved)) : null;
+    const saved = localStorage.getItem(ACTIVE_SHOP_KEY);
+    return saved ? normalizeShop(JSON.parse(saved)) : null;
   } catch (error) {
-    console.warn("Unable to read active tenant", error);
+    console.warn("Unable to read active shop", error);
     return null;
   }
 }
 
-export function setActiveTenant(tenant) {
-  const normalized = normalizeTenant(tenant);
-  if (!normalized.id) throw new Error("TENANT_ID_REQUIRED");
-  localStorage.setItem(ACTIVE_TENANT_KEY, JSON.stringify(normalized));
-  localStorage.removeItem(LEGACY_ACTIVE_SHOP_KEY);
+export function setActiveShop(shop) {
+  const normalized = normalizeShop(shop);
+  localStorage.setItem(ACTIVE_SHOP_KEY, JSON.stringify(normalized));
   return normalized;
 }
 
-export function clearActiveTenant() {
-  localStorage.removeItem(ACTIVE_TENANT_KEY);
-  localStorage.removeItem(LEGACY_ACTIVE_SHOP_KEY);
+export function clearActiveShop() {
+  localStorage.removeItem(ACTIVE_SHOP_KEY);
 }
 
-export function resolveTenantContext() {
+export function resolveShopContext() {
   const pathSlug = slugFromPath();
-  const stored = getStoredTenant();
+  const stored = getStoredShop();
 
   if (pathSlug) {
-    if (stored?.slug === pathSlug) return stored;
-    if (pathSlug === DEFAULT_TENANT.slug) return DEFAULT_TENANT;
-
-    // A non-default slug must be resolved through tenantSlugs before data access.
-    return normalizeTenant({ id: "", slug: pathSlug, name: pathSlug });
+    return normalizeShop({
+      id: stored?.slug === pathSlug ? stored.id : pathSlug,
+      slug: pathSlug,
+      name: stored?.slug === pathSlug ? stored.name : pathSlug
+    });
   }
 
-  return stored || DEFAULT_TENANT;
+  return stored || DEFAULT_SHOP;
 }
 
-export function tenantCollectionPath(collectionName, tenant = resolveTenantContext()) {
+export function shopCollectionPath(collectionName, shop = resolveShopContext()) {
   if (!collectionName) throw new Error("COLLECTION_NAME_REQUIRED");
-  if (!tenant?.id) throw new Error("TENANT_NOT_RESOLVED");
-  return ["tenants", tenant.id, collectionName];
+  return ["shops", shop.id, collectionName];
 }
 
-export function tenantDocumentPath(collectionName, documentId, tenant = resolveTenantContext()) {
+export function shopDocumentPath(collectionName, documentId, shop = resolveShopContext()) {
   if (!documentId) throw new Error("DOCUMENT_ID_REQUIRED");
-  return [...tenantCollectionPath(collectionName, tenant), documentId];
+  return [...shopCollectionPath(collectionName, shop), documentId];
 }
 
-// Temporary compatibility aliases while remaining pages are migrated.
-export const getStoredShop = getStoredTenant;
-export const setActiveShop = setActiveTenant;
-export const clearActiveShop = clearActiveTenant;
-export const resolveShopContext = resolveTenantContext;
-export const shopCollectionPath = tenantCollectionPath;
-export const shopDocumentPath = tenantDocumentPath;
-export const DEFAULT_SHOP = DEFAULT_TENANT;
-
-export { DEFAULT_TENANT };
+export { DEFAULT_SHOP };
