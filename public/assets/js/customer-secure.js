@@ -1,3 +1,5 @@
+await import("./table-qr-resolver.js");
+
 import { dataService, usingDemoMode } from "./data-service.js";
 import { db, collection, onSnapshot, query, where } from "./firebase-config.js";
 import { demoStore } from "./demo-store.js";
@@ -46,7 +48,7 @@ dataService.subscribeOrders = callback => {
   );
 
   return onSnapshot(tableOrdersQuery, snapshot => {
-    callback(snapshot.docs.map(item => ({ id: item.id, ...item.data() })));
+    callback(snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
   });
 };
 
