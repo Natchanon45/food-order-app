@@ -54,10 +54,15 @@
   padding: 8mm 5mm;
   background: #fff;
   color: #000;
-  font-family: "TH Sarabun New", "Sarabun", sans-serif;
+  font-family: "TH Sarabun PSK Local", "TH Sarabun New", "Sarabun", sans-serif;
   font-size: 20px;
   line-height: 1.15;
   border: 1px dashed #aaa;
+}
+
+.qr-ticket,
+.qr-ticket * {
+  font-family: "TH Sarabun PSK Local", "TH Sarabun New", "Sarabun", sans-serif;
 }
 
 .qr-ticket-header,
@@ -152,13 +157,17 @@
     page-break-inside: avoid;
   }
 
+  body.qr-printing .qr-ticket,
+  body.qr-printing .qr-ticket * {
+    font-family: "TH Sarabun PSK Local", "TH Sarabun New", "Sarabun", sans-serif !important;
+  }
+
   body.qr-printing .qr-ticket {
     width: 80mm;
     margin: 0;
     padding: 7mm 5mm;
     border: 0;
     box-shadow: none;
-    font-family: "TH Sarabun New", "Sarabun", sans-serif;
     font-size: 19px;
   }
 
