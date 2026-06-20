@@ -211,7 +211,32 @@ document.querySelector("#searchInput").addEventListener("input", renderMenus);
 paymentMethod.addEventListener("change", renderPromptPay);
 deliveryZone.addEventListener("change", updateCart);
 menuGrid.addEventListener("click", event => { const id = event.target.dataset.add; if (!id) return; const menu = menus.find(x => x.id === id); const current = cart.get(id); cart.set(id, current ? { ...current, qty: current.qty + 1 } : { ...menu, qty: 1, note: "" }); updateCart(); toast(`เพิ่ม ${menu.name} แล้ว`); });
-cartList.addEventListener("click", event => { const id = event.target.dataset.inc || event.target.dataset.dec; if (!id) return; const item = cart.get(id); item.qty += event.target.dataset.inc ? 1 : -1; if (item.qty <= 0) cart.delete(id); else cart.set(id, item); updateCart(); });
+cartList.addEventListener("click", event => {
+  const inc = event.target.dataset.inc;
+  const dec = event.target.dataset.dec;
+  const id = inc || dec;
+  if (!id) return;
+
+  const item = cart.get(id);
+  if (!item) return;
+
+  if (inc) {
+    item.qty += 1;
+    cart.set(id, item);
+    updateCart();
+    return;
+  }
+
+  if (item.qty <= 1) {
+    if (!confirm(`ลบ ${item.name} ออกจากตะกร้าใช่หรือไม่?`)) return;
+    cart.delete(id);
+  } else {
+    item.qty -= 1;
+    cart.set(id, item);
+  }
+
+  updateCart();
+});
 cartList.addEventListener("input", event => { const id = event.target.dataset.note; if (!id) return; const item = cart.get(id); item.note = event.target.value; cart.set(id, item); });
 
 submitOrderButton.addEventListener("click", async () => {
