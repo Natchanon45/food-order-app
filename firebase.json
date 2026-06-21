@@ -14,6 +14,7 @@
         "destination": "/delivery/success/index.html"
       },
       { "source": "/delivery/**", "destination": "/delivery/index.html" },
+      { "source": "/s/**", "destination": "/delivery/index.html" },
       { "source": "/verify/**", "destination": "/verify/index.html" },
       { "source": "/order/**", "destination": "/order/index.html" },
       { "source": "/kitchen/**", "destination": "/kitchen/index.html" },
