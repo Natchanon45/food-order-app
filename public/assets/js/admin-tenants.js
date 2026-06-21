@@ -7,6 +7,8 @@ import {
 const functions = getFunctions(app, "asia-southeast1");
 const listTenants = httpsCallable(functions, "listTenants");
 const createTenant = httpsCallable(functions, "createTenant");
+const updateTenant = httpsCallable(functions, "updateTenant");
+const deleteTenant = httpsCallable(functions, "deleteTenant");
 
 const form = document.getElementById("tenantForm");
 const nameField = document.getElementById("tenantName");
@@ -17,6 +19,17 @@ const submitButton = document.getElementById("createTenantButton");
 const errorBox = document.getElementById("tenantError");
 const tenantList = document.getElementById("tenantList");
 const tenantCount = document.getElementById("tenantCount");
+const formTitle = form.closest(".card")?.querySelector(".section-title h2");
+
+let tenants = [];
+let editingTenantId = "";
+
+const cancelEditButton = document.createElement("button");
+cancelEditButton.type = "button";
+cancelEditButton.className = "btn";
+cancelEditButton.textContent = "ยกเลิกแก้ไข";
+cancelEditButton.hidden = true;
+submitButton.insertAdjacentElement("afterend", cancelEditButton);
 
 function sanitizeSlugTyping(value = "") {
   return String(value)
@@ -54,9 +67,34 @@ function showError(message = "") {
   errorBox.hidden = !message;
 }
 
-function renderTenants(tenants = []) {
-  tenantCount.textContent = `${tenants.length} ร้าน`;
-  tenantList.innerHTML = tenants.length ? tenants.map(tenant => `
+function resetForm() {
+  editingTenantId = "";
+  form.reset();
+  slugField.dataset.edited = "false";
+  submitButton.textContent = "สร้างร้าน";
+  cancelEditButton.hidden = true;
+  if (formTitle) formTitle.textContent = "สร้างร้านใหม่";
+  showError("");
+}
+
+function beginEdit(tenant) {
+  editingTenantId = tenant.id;
+  nameField.value = tenant.name || "";
+  slugField.value = tenant.slug || "";
+  phoneField.value = tenant.shopPhone || tenant.phone || "";
+  addressField.value = tenant.shopAddress || tenant.address || "";
+  slugField.dataset.edited = "true";
+  submitButton.textContent = "บันทึกการแก้ไข";
+  cancelEditButton.hidden = false;
+  if (formTitle) formTitle.textContent = "แก้ไขร้านค้า";
+  form.scrollIntoView({ behavior: "smooth", block: "start" });
+  nameField.focus();
+}
+
+function renderTenants(items = []) {
+  tenants = items;
+  tenantCount.textContent = `${items.length} ร้าน`;
+  tenantList.innerHTML = items.length ? items.map(tenant => `
     <article class="card" style="box-shadow:none;background:#f8fbf9">
       <div class="section-title" style="margin:0">
         <div>
@@ -68,6 +106,8 @@ function renderTenants(tenants = []) {
       <div style="margin-top:12px;word-break:break-all"><strong>Tenant ID:</strong> ${escapeHtml(tenant.id)}</div>
       <div class="order-actions" style="margin-top:12px">
         <a class="btn btn-dark btn-sm" style="display:inline-flex;align-items:center;gap:6px" href="/s/${encodeURIComponent(tenant.slug || "")}/delivery" target="_blank" rel="noopener noreferrer">${storefrontIcon()}<span>เปิดหน้าร้าน</span></a>
+        <button class="btn btn-sm" type="button" data-edit-tenant="${escapeHtml(tenant.id)}">แก้ไข</button>
+        <button class="btn btn-danger btn-sm" type="button" data-delete-tenant="${escapeHtml(tenant.id)}">ลบ</button>
       </div>
     </article>
   `).join("") : '<div class="empty">ยังไม่มีร้านค้า</div>';
@@ -103,38 +143,80 @@ slugField.addEventListener("blur", () => {
   slugField.value = normalizeSlug(slugField.value);
 });
 
+cancelEditButton.addEventListener("click", resetForm);
+
+tenantList.addEventListener("click", async event => {
+  const editButton = event.target.closest("[data-edit-tenant]");
+  if (editButton) {
+    const tenant = tenants.find(item => item.id === editButton.dataset.editTenant);
+    if (tenant) beginEdit(tenant);
+    return;
+  }
+
+  const deleteButton = event.target.closest("[data-delete-tenant]");
+  if (!deleteButton) return;
+  const tenant = tenants.find(item => item.id === deleteButton.dataset.deleteTenant);
+  if (!tenant) return;
+
+  if (!confirm(`ยืนยันลบร้าน ${tenant.name || tenant.id} ใช่หรือไม่?\n\nลบได้เฉพาะร้านที่ยังไม่มีเมนู โต๊ะ ออเดอร์ หรือพนักงาน`)) return;
+
+  deleteButton.disabled = true;
+  deleteButton.textContent = "กำลังลบ...";
+  try {
+    await deleteTenant({ tenantId: tenant.id });
+    if (editingTenantId === tenant.id) resetForm();
+    toast("ลบร้านเรียบร้อยแล้ว");
+    await loadTenants();
+  } catch (error) {
+    console.error(error);
+    let message = "ลบร้านไม่สำเร็จ";
+    if (error.code === "functions/failed-precondition") message = "ร้านนี้มีข้อมูลใช้งานแล้ว จึงไม่อนุญาตให้ลบ";
+    if (error.code === "functions/permission-denied") message = "บัญชีนี้ไม่มีสิทธิ์ลบร้าน";
+    toast(message, "error");
+    deleteButton.disabled = false;
+    deleteButton.textContent = "ลบ";
+  }
+});
+
 form.addEventListener("submit", async event => {
   event.preventDefault();
   showError("");
   submitButton.disabled = true;
-  submitButton.textContent = "กำลังสร้างร้าน...";
+  cancelEditButton.disabled = true;
+  submitButton.textContent = editingTenantId ? "กำลังบันทึก..." : "กำลังสร้างร้าน...";
 
   try {
     const normalizedSlug = normalizeSlug(slugField.value);
     slugField.value = normalizedSlug;
-
-    const result = await createTenant({
+    const payload = {
       name: nameField.value.trim(),
       slug: normalizedSlug,
       phone: phoneField.value.trim(),
       address: addressField.value.trim()
-    });
+    };
 
-    form.reset();
-    slugField.dataset.edited = "false";
-    toast(`สร้างร้าน ${result.data?.tenant?.name || "ใหม่"} เรียบร้อยแล้ว`);
+    if (editingTenantId) {
+      await updateTenant({ tenantId: editingTenantId, ...payload });
+      toast("บันทึกการแก้ไขร้านเรียบร้อยแล้ว");
+    } else {
+      const result = await createTenant(payload);
+      toast(`สร้างร้าน ${result.data?.tenant?.name || "ใหม่"} เรียบร้อยแล้ว`);
+    }
+
+    resetForm();
     await loadTenants();
   } catch (error) {
     console.error(error);
-    let message = "สร้างร้านไม่สำเร็จ";
+    let message = editingTenantId ? "แก้ไขร้านไม่สำเร็จ" : "สร้างร้านไม่สำเร็จ";
     if (error.code === "functions/already-exists") message = "Slug นี้ถูกใช้งานแล้ว";
     if (error.code === "functions/invalid-argument") message = error.message || "ข้อมูลร้านไม่ถูกต้อง";
-    if (error.code === "functions/permission-denied") message = "บัญชีนี้ไม่มีสิทธิ์สร้างร้าน";
+    if (error.code === "functions/permission-denied") message = "บัญชีนี้ไม่มีสิทธิ์ดำเนินการ";
     showError(message);
     toast(message, "error");
   } finally {
     submitButton.disabled = false;
-    submitButton.textContent = "สร้างร้าน";
+    cancelEditButton.disabled = false;
+    submitButton.textContent = editingTenantId ? "บันทึกการแก้ไข" : "สร้างร้าน";
   }
 });
 
