@@ -5,6 +5,7 @@
 .category-tab.active{color:var(--green-dark);border-bottom-color:var(--green);background:#edf8f1}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .menu-card{min-height:0;padding:10px;display:grid;grid-template-columns:92px minmax(0,1fr);grid-template-rows:auto auto 1fr;column-gap:10px;align-items:start;min-width:0;overflow:hidden}
+.menu-card[hidden]{display:none!important}
 .menu-image{grid-row:1/4;width:92px;height:92px;border-radius:12px;overflow:hidden}
 .menu-image img{width:100%;height:100%;object-fit:cover}
 .menu-name{margin:0;min-width:0;font-size:15px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
