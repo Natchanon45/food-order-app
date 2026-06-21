@@ -198,6 +198,39 @@ exports.createTenantOwner = onCall(
   }
 );
 
+exports.updateTenantOwner = onCall(
+  { region: "asia-southeast1" },
+  async request => {
+    await assertSuperAdmin(request.auth);
+
+    const tenantId = String(request.data?.tenantId || "").trim();
+    const displayName = String(request.data?.displayName || "").trim();
+    if (!tenantId) throw new HttpsError("invalid-argument", "Tenant ID is required");
+    if (displayName.length < 2 || displayName.length > 120) {
+      throw new HttpsError("invalid-argument", "Owner name must contain 2-120 characters");
+    }
+
+    const db = getFirestore();
+    const tenantRef = db.collection("tenants").doc(tenantId);
+    const tenantSnapshot = await tenantRef.get();
+    if (!tenantSnapshot.exists) throw new HttpsError("not-found", "Tenant not found");
+
+    const tenant = tenantSnapshot.data();
+    const ownerUid = String(tenant.ownerUid || "").trim();
+    if (!ownerUid) throw new HttpsError("failed-precondition", "Tenant owner is not configured");
+
+    await getAuth().updateUser(ownerUid, { displayName });
+    const now = FieldValue.serverTimestamp();
+    const batch = db.batch();
+    batch.set(db.collection("users").doc(ownerUid), { displayName, updatedAt: now }, { merge: true });
+    batch.set(tenantRef.collection("memberships").doc(ownerUid), { displayName, updatedAt: now }, { merge: true });
+    batch.set(tenantRef, { ownerDisplayName: displayName, updatedAt: now }, { merge: true });
+    await batch.commit();
+
+    return { ok: true, owner: { uid: ownerUid, displayName, email: tenant.ownerEmail || "", tenantId } };
+  }
+);
+
 exports.updateTenant = onCall(
   { region: "asia-southeast1" },
   async request => {
