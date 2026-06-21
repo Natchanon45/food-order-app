@@ -57,7 +57,8 @@ async function phoneKey(phone) {
 }
 
 function withShop(payload = {}) {
-  return { ...payload, shopId: activeShop().id };
+  const tenantId = activeShop().id;
+  return { ...payload, tenantId };
 }
 
 export const dataService = {
