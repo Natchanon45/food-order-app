@@ -20,20 +20,35 @@ const errorBox = document.getElementById("tenantError");
 const tenantList = document.getElementById("tenantList");
 const tenantCount = document.getElementById("tenantCount");
 const formTitle = form.closest(".card")?.querySelector(".section-title h2");
-const formTitleBar = form.closest(".card")?.querySelector(".section-title");
 
 let tenants = [];
 let editingTenantId = "";
 
+function xIcon() {
+  return `
+    <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" style="display:block;flex:0 0 auto">
+      <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>`;
+}
+
+function storefrontIcon() {
+  return `
+    <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" style="display:block;flex:0 0 auto">
+      <path d="M4 10h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M5 10V6.5L7 4h10l2 2.5V10" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M6 10v9h12v-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M9 19v-5h6v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+    </svg>`;
+}
+
 const cancelEditButton = document.createElement("button");
 cancelEditButton.type = "button";
-cancelEditButton.className = "tenant-edit-close";
-cancelEditButton.innerHTML = "&times;";
+cancelEditButton.className = "btn";
+cancelEditButton.innerHTML = `${xIcon()}<span>ยกเลิกแก้ไข</span>`;
 cancelEditButton.setAttribute("aria-label", "ยกเลิกการแก้ไข");
-cancelEditButton.title = "ยกเลิกการแก้ไข";
-cancelEditButton.style.cssText = "width:34px;height:34px;padding:0;border:1px solid #d7ded9;border-radius:50%;background:#fff;color:#69726c;display:grid;place-items:center;font-size:26px;line-height:1;flex:0 0 auto;";
+cancelEditButton.style.cssText = "display:flex;align-items:center;justify-content:center;gap:7px;width:100%;border-radius:12px;";
 cancelEditButton.hidden = true;
-formTitleBar?.appendChild(cancelEditButton);
+submitButton.insertAdjacentElement("afterend", cancelEditButton);
 
 function sanitizeSlugTyping(value = "") {
   return String(value)
@@ -55,16 +70,6 @@ function escapeHtml(value = "") {
     "'": "&#39;",
     '"': "&quot;"
   })[character]);
-}
-
-function storefrontIcon() {
-  return `
-    <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" style="display:block;flex:0 0 auto">
-      <path d="M4 10h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      <path d="M5 10V6.5L7 4h10l2 2.5V10" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M6 10v9h12v-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M9 19v-5h6v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-    </svg>`;
 }
 
 function showError(message = "") {
@@ -110,7 +115,7 @@ function renderTenants(items = []) {
       </div>
       <div style="margin-top:12px;word-break:break-all"><strong>Tenant ID:</strong> ${escapeHtml(tenant.id)}</div>
       <div class="order-actions" style="margin-top:12px;align-items:center">
-        <a class="btn btn-primary btn-sm tenant-storefront-link" style="display:inline-flex;align-items:center;justify-content:center;gap:7px;min-width:122px;white-space:nowrap" href="/s/${encodeURIComponent(tenant.slug || "")}/delivery" target="_blank" rel="noopener noreferrer">${storefrontIcon()}<span>เปิดหน้าร้าน</span></a>
+        <a class="btn btn-dark btn-sm" style="display:inline-flex;align-items:center;justify-content:center;gap:7px;min-width:122px;padding:8px 12px;border-radius:10px;white-space:nowrap" href="/s/${encodeURIComponent(tenant.slug || "")}/delivery" target="_blank" rel="noopener noreferrer">${storefrontIcon()}<span>เปิดหน้าร้าน</span></a>
         <button class="btn btn-sm" type="button" data-edit-tenant="${escapeHtml(tenant.id)}">แก้ไข</button>
         <button class="btn btn-danger btn-sm" type="button" data-delete-tenant="${escapeHtml(tenant.id)}">ลบ</button>
       </div>
