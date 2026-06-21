@@ -1,11 +1,15 @@
-.tenant-action-row {
+.tenant-action-row,
+#tenantList .order-actions {
   display: flex !important;
   align-items: center !important;
   flex-wrap: wrap !important;
   gap: 8px !important;
 }
 
-.tenant-action-button {
+.tenant-action-button,
+#tenantList .order-actions > a.btn,
+#tenantList [data-edit-tenant],
+#tenantList [data-delete-tenant] {
   width: auto !important;
   height: 38px !important;
   min-width: max-content !important;
@@ -19,9 +23,13 @@
   aspect-ratio: auto !important;
   white-space: nowrap !important;
   line-height: 1 !important;
+  flex: 0 0 auto !important;
 }
 
-.tenant-action-button > span {
+.tenant-action-button > span,
+#tenantList .order-actions > a.btn > span,
+#tenantList [data-edit-tenant] > span,
+#tenantList [data-delete-tenant] > span {
   display: inline !important;
   width: auto !important;
   height: auto !important;
@@ -31,7 +39,8 @@
   white-space: nowrap !important;
 }
 
-.tenant-action-button .app-icon {
+.tenant-action-button .app-icon,
+#tenantList .order-actions .app-icon {
   width: 17px !important;
   height: 17px !important;
   flex: 0 0 17px !important;
@@ -39,7 +48,9 @@
 }
 
 @media (max-width: 480px) {
-  .tenant-action-button {
+  #tenantList .order-actions > a.btn,
+  #tenantList [data-edit-tenant],
+  #tenantList [data-delete-tenant] {
     width: auto !important;
     height: 38px !important;
     min-width: max-content !important;
