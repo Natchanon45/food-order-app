@@ -1,4 +1,50 @@
 @media (max-width: 768px) {
+  html,
+  body {
+    min-height: 100%;
+    height: auto !important;
+    overflow-x: hidden;
+    overflow-y: auto !important;
+    overscroll-behavior-y: auto;
+  }
+
+  body.delivery-page,
+  body.table-order-page {
+    min-height: 100dvh;
+    padding-bottom: calc(120px + env(safe-area-inset-bottom));
+  }
+
+  body.delivery-page .container,
+  body.table-order-page .container {
+    padding-bottom: calc(180px + env(safe-area-inset-bottom)) !important;
+    overflow: visible !important;
+  }
+
+  .delivery-pos,
+  .delivery-menu-column,
+  .delivery-side-column,
+  .table-order-page .order-container,
+  .table-order-page #cartSection {
+    display: block !important;
+    position: static !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    overscroll-behavior: auto !important;
+  }
+
+  .delivery-side-column {
+    padding-bottom: 0 !important;
+  }
+
+  .cart-bar {
+    bottom: max(12px, env(safe-area-inset-bottom)) !important;
+  }
+
   #menuPagination {
     display: none !important;
   }
