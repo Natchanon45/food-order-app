@@ -1,4 +1,7 @@
 import { money, toast } from "./ui.js";
+import {
+  registerPushNotifications, restorePushNotifications, pushEnabled, pushErrorMessage
+} from "./push-notification-service.js";
 
 const ENABLED_KEY = "food_order_delivery_alerts_enabled";
 const originalTitle = document.title;
@@ -30,7 +33,6 @@ async function unlockAudio() {
 function playTone(frequency, start, duration, volume = 0.18) {
   const context = ensureAudioContext();
   if (!context || context.state !== "running") return;
-
   const oscillator = context.createOscillator();
   const gain = context.createGain();
   oscillator.type = "sine";
@@ -55,12 +57,10 @@ function flashTitle(count) {
   let showAlert = true;
   const alertTitle = count > 1 ? `มี Delivery ใหม่ ${count} รายการ` : "มี Delivery ใหม่";
   document.title = alertTitle;
-
   titleTimer = setInterval(() => {
     document.title = showAlert ? originalTitle : alertTitle;
     showAlert = !showAlert;
   }, 900);
-
   setTimeout(() => {
     clearInterval(titleTimer);
     document.title = originalTitle;
@@ -69,13 +69,10 @@ function flashTitle(count) {
 
 function showDesktopNotification(order, count) {
   if (!("Notification" in window) || Notification.permission !== "granted") return;
+  if (pushEnabled()) return;
   const title = count > 1 ? `มีออเดอร์ Delivery ใหม่ ${count} รายการ` : "มีออเดอร์ Delivery ใหม่";
   const body = `${order.recipientName || "ลูกค้า"} • ${money(order.totalAmount || 0)} บาท`;
-  const notification = new Notification(title, {
-    body,
-    tag: `delivery-${order.id}`,
-    renotify: true
-  });
+  const notification = new Notification(title, { body, tag: `delivery-${order.id}`, renotify: true });
   notification.onclick = () => {
     window.focus();
     notification.close();
@@ -84,24 +81,28 @@ function showDesktopNotification(order, count) {
 
 async function enableNotifications(button) {
   try {
+    button.disabled = true;
+    button.textContent = "กำลังเปิดแจ้งเตือน...";
     await unlockAudio();
-    if ("Notification" in window && Notification.permission === "default") {
-      await Notification.requestPermission();
-    }
     setEnabled(true);
+    await registerPushNotifications();
     updateButton(button);
     playDeliverySound();
-    toast("เปิดเสียงแจ้งเตือน Delivery แล้ว");
+    toast("เปิดเสียงและ Push Notification แล้ว");
   } catch (error) {
     console.error("Unable to enable Delivery notifications", error);
-    toast("เปิดเสียงแจ้งเตือนไม่สำเร็จ", "error");
+    setEnabled(false);
+    updateButton(button);
+    toast(pushErrorMessage(error), "error");
+  } finally {
+    button.disabled = false;
   }
 }
 
 function updateButton(button) {
   if (!button) return;
-  const enabled = isEnabled();
-  button.textContent = enabled ? "เสียงแจ้งเตือน: เปิด" : "เปิดเสียงแจ้งเตือน";
+  const enabled = isEnabled() && pushEnabled();
+  button.textContent = enabled ? "แจ้งเตือน Delivery: เปิด" : "เปิดแจ้งเตือน Delivery";
   button.classList.toggle("btn-primary", enabled);
   button.classList.toggle("btn-dark", !enabled);
 }
@@ -118,11 +119,8 @@ function installEnableButton() {
   header.appendChild(button);
 
   if (isEnabled()) {
-    const unlockOnce = async () => {
-      await unlockAudio();
-      document.removeEventListener("pointerdown", unlockOnce);
-      document.removeEventListener("keydown", unlockOnce);
-    };
+    restorePushNotifications().then(() => updateButton(button));
+    const unlockOnce = async () => { await unlockAudio(); };
     document.addEventListener("pointerdown", unlockOnce, { once: true });
     document.addEventListener("keydown", unlockOnce, { once: true });
   }
@@ -133,7 +131,6 @@ export function observeDeliveryOrders(orders = []) {
     order.orderType === "delivery" && !["paid", "cancelled"].includes(order.status)
   );
   const currentIds = new Set(activeDeliveries.map(order => order.id));
-
   if (!initialized) {
     initialized = true;
     knownDeliveryIds = currentIds;
