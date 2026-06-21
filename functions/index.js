@@ -6,19 +6,40 @@ const { getMessaging } = require("firebase-admin/messaging");
 
 initializeApp();
 
-const DEFAULT_TENANT_ID = "ff897699-de82-4370-a360-35b22cc74c85";
+const DEFAULT_TENANT = Object.freeze({
+  id: "ff897699-de82-4370-a360-35b22cc74c85",
+  slug: "tuahere-somtam",
+  name: "ส้มตำตัวเฮีย"
+});
 const STAFF_ROLES = new Set(["admin", "cashier", "kitchen", "super_admin"]);
 
-function membershipPayload(uid, user = {}) {
+function tenantFromUser(user = {}) {
+  return {
+    id: String(user.tenantId || DEFAULT_TENANT.id).trim(),
+    slug: String(user.tenantSlug || DEFAULT_TENANT.slug).trim().toLowerCase(),
+    name: String(user.tenantName || DEFAULT_TENANT.name).trim()
+  };
+}
+
+function membershipPayload(uid, user = {}, tenant = tenantFromUser(user)) {
   return {
     uid,
     email: user.email || "",
     displayName: user.displayName || "",
     role: user.role || "",
     active: user.active !== false,
-    tenantId: DEFAULT_TENANT_ID,
+    tenantId: tenant.id,
+    tenantSlug: tenant.slug,
+    tenantName: tenant.name,
     updatedAt: FieldValue.serverTimestamp()
   };
+}
+
+async function deleteMembership(db, tenantId, uid) {
+  if (!tenantId) return;
+  await db.collection("tenants").doc(tenantId).collection("memberships").doc(uid).delete().catch(error => {
+    if (error.code !== 5) throw error;
+  });
 }
 
 async function assertSuperAdmin(auth) {
@@ -42,32 +63,32 @@ exports.syncTenantMembership = onDocumentWritten(
   },
   async event => {
     const { uid } = event.params;
+    const before = event.data?.before;
     const after = event.data?.after;
-    const membershipRef = getFirestore()
+    const db = getFirestore();
+    const beforeUser = before?.exists ? before.data() : null;
+    const afterUser = after?.exists ? after.data() : null;
+    const beforeTenant = beforeUser ? tenantFromUser(beforeUser) : null;
+    const afterTenant = afterUser ? tenantFromUser(afterUser) : null;
+
+    if (!afterUser || !STAFF_ROLES.has(afterUser.role)) {
+      await deleteMembership(db, beforeTenant?.id, uid);
+      return;
+    }
+
+    if (beforeTenant?.id && beforeTenant.id !== afterTenant.id) {
+      await deleteMembership(db, beforeTenant.id, uid);
+    }
+
+    await db
       .collection("tenants")
-      .doc(DEFAULT_TENANT_ID)
+      .doc(afterTenant.id)
       .collection("memberships")
-      .doc(uid);
-
-    if (!after?.exists) {
-      await membershipRef.delete().catch(error => {
-        if (error.code !== 5) throw error;
-      });
-      return;
-    }
-
-    const user = after.data();
-    if (!STAFF_ROLES.has(user.role)) {
-      await membershipRef.delete().catch(error => {
-        if (error.code !== 5) throw error;
-      });
-      return;
-    }
-
-    await membershipRef.set({
-      ...membershipPayload(uid, user),
-      createdAt: FieldValue.serverTimestamp()
-    }, { merge: true });
+      .doc(uid)
+      .set({
+        ...membershipPayload(uid, afterUser, afterTenant),
+        createdAt: FieldValue.serverTimestamp()
+      }, { merge: true });
   }
 );
 
@@ -76,34 +97,52 @@ exports.backfillTenantMemberships = onCall(
   async request => {
     await assertSuperAdmin(request.auth);
 
-    const tenantId = String(request.data?.tenantId || DEFAULT_TENANT_ID).trim();
-    if (tenantId !== DEFAULT_TENANT_ID) {
+    const tenantId = String(request.data?.tenantId || DEFAULT_TENANT.id).trim();
+    if (tenantId !== DEFAULT_TENANT.id) {
       throw new HttpsError("invalid-argument", "Unknown tenant");
     }
 
     const db = getFirestore();
     const usersSnapshot = await db.collection("users").get();
     const batch = db.batch();
-    let count = 0;
+    let membershipsCreated = 0;
+    let userProfilesUpdated = 0;
 
     usersSnapshot.docs.forEach(userDoc => {
       const user = userDoc.data();
       if (!STAFF_ROLES.has(user.role)) return;
+
+      const tenant = tenantFromUser(user);
+      const userPatch = {};
+      if (!user.tenantId) userPatch.tenantId = tenant.id;
+      if (!user.tenantSlug) userPatch.tenantSlug = tenant.slug;
+      if (!user.tenantName) userPatch.tenantName = tenant.name;
+
+      if (Object.keys(userPatch).length) {
+        userPatch.updatedAt = FieldValue.serverTimestamp();
+        batch.set(userDoc.ref, userPatch, { merge: true });
+        userProfilesUpdated += 1;
+      }
+
       const membershipRef = db
         .collection("tenants")
-        .doc(tenantId)
+        .doc(tenant.id)
         .collection("memberships")
         .doc(userDoc.id);
       batch.set(membershipRef, {
-        ...membershipPayload(userDoc.id, user),
-        tenantId,
+        ...membershipPayload(userDoc.id, user, tenant),
         createdAt: FieldValue.serverTimestamp()
       }, { merge: true });
-      count += 1;
+      membershipsCreated += 1;
     });
 
-    if (count) await batch.commit();
-    return { ok: true, tenantId, membershipsCreated: count };
+    if (membershipsCreated || userProfilesUpdated) await batch.commit();
+    return {
+      ok: true,
+      tenantId,
+      membershipsCreated,
+      userProfilesUpdated
+    };
   }
 );
 
