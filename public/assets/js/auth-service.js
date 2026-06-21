@@ -1,5 +1,5 @@
 import {
-  auth, functions,
+  auth, db, functions,
   signInWithEmailAndPassword, signOut, onAuthStateChanged,
   doc, getDoc, httpsCallable
 } from "./firebase-config.js";
@@ -28,13 +28,7 @@ function ensureIconStyles() {
 }
 
 function roleLabel(role) {
-  return ({
-    super_admin: "เจ้าของระบบ",
-    owner: "เจ้าของร้าน",
-    admin: "ผู้ดูแลระบบ",
-    cashier: "แคชเชียร์",
-    kitchen: "ครัว"
-  })[role] || role;
+  return ({ super_admin: "เจ้าของระบบ", owner: "เจ้าของร้าน", admin: "ผู้ดูแลระบบ", cashier: "แคชเชียร์", kitchen: "ครัว" })[role] || role;
 }
 
 function greetingName(profile) {
@@ -48,19 +42,9 @@ function greetingName(profile) {
 
 function roleMenuLinks(profile) {
   const links = [{ href: "/", icon: "home", label: "หน้าหลัก" }];
-
-  if (["owner", "cashier", "super_admin"].includes(profile.role)) {
-    links.push({ href: "/cashier/table-qr", icon: "table", label: "ออกโต๊ะ" });
-  }
-
-  if (["owner", "admin", "super_admin"].includes(profile.role)) {
-    links.push({ href: "/admin", icon: "settings", label: "จัดการระบบ" });
-  }
-
-  if (["owner", "super_admin"].includes(profile.role)) {
-    links.push({ href: "/admin/users", icon: "users", label: "จัดการพนักงาน" });
-  }
-
+  if (["owner", "cashier", "super_admin"].includes(profile.role)) links.push({ href: "/cashier/table-qr", icon: "table", label: "ออกโต๊ะ" });
+  if (["owner", "admin", "super_admin"].includes(profile.role)) links.push({ href: "/admin", icon: "settings", label: "จัดการระบบ" });
+  if (["owner", "super_admin"].includes(profile.role)) links.push({ href: "/admin/users", icon: "users", label: "จัดการพนักงาน" });
   return links;
 }
 
@@ -77,7 +61,6 @@ export function mountUserMenu(profile) {
   ensureIconStyles();
   const header = document.querySelector(".app-header");
   if (!header || header.querySelector("[data-user-menu]")) return;
-
   const menu = document.createElement("div");
   menu.className = "user-menu";
   menu.dataset.userMenu = "true";
@@ -88,67 +71,30 @@ export function mountUserMenu(profile) {
       ${icon("chevron-down", "app-icon user-menu-chevron")}
     </button>
     <div class="user-menu-panel" data-user-menu-panel role="menu" hidden>
-      <div class="user-menu-greeting">
-        สวัสดี ${greetingName(profile)}
-        <span class="user-menu-role">${roleLabel(profile.role)}</span>
-      </div>
-      ${roleMenuLinks(profile).map(item => `
-        <a class="user-menu-link" href="${item.href}" role="menuitem">
-          ${icon(item.icon)}
-          <span>${item.label}</span>
-        </a>
-      `).join("")}
-      <button type="button" class="user-menu-action danger" data-logout role="menuitem">
-        ${icon("logout")}
-        <span>ออกจากระบบ</span>
-      </button>
-    </div>
-  `;
+      <div class="user-menu-greeting">สวัสดี ${greetingName(profile)}<span class="user-menu-role">${roleLabel(profile.role)}</span></div>
+      ${roleMenuLinks(profile).map(item => `<a class="user-menu-link" href="${item.href}" role="menuitem">${icon(item.icon)}<span>${item.label}</span></a>`).join("")}
+      <button type="button" class="user-menu-action danger" data-logout role="menuitem">${icon("logout")}<span>ออกจากระบบ</span></button>
+    </div>`;
   header.appendChild(menu);
 
   const trigger = menu.querySelector("[data-user-menu-trigger]");
   const panel = menu.querySelector("[data-user-menu-panel]");
-
-  const closeMenu = () => {
-    panel.hidden = true;
-    menu.classList.remove("open");
-    trigger.setAttribute("aria-expanded", "false");
-  };
-
-  trigger.addEventListener("click", event => {
-    event.stopPropagation();
-    const nextOpen = panel.hidden;
-    panel.hidden = !nextOpen;
-    menu.classList.toggle("open", nextOpen);
-    trigger.setAttribute("aria-expanded", String(nextOpen));
-  });
-
-  document.addEventListener("click", event => {
-    if (!menu.contains(event.target)) closeMenu();
-  });
-
-  document.addEventListener("keydown", event => {
-    if (event.key === "Escape") closeMenu();
-  });
-
-  menu.querySelector("[data-logout]").addEventListener("click", async () => {
-    await signOut(auth);
-    location.replace("/login");
-  });
+  const closeMenu = () => { panel.hidden = true; menu.classList.remove("open"); trigger.setAttribute("aria-expanded", "false"); };
+  trigger.addEventListener("click", event => { event.stopPropagation(); const nextOpen = panel.hidden; panel.hidden = !nextOpen; menu.classList.toggle("open", nextOpen); trigger.setAttribute("aria-expanded", String(nextOpen)); });
+  document.addEventListener("click", event => { if (!menu.contains(event.target)) closeMenu(); });
+  document.addEventListener("keydown", event => { if (event.key === "Escape") closeMenu(); });
+  menu.querySelector("[data-logout]").addEventListener("click", async () => { await signOut(auth); location.replace("/login"); });
 }
 
 export function waitForAuth() {
   return new Promise(resolve => {
-    const stop = onAuthStateChanged(auth, user => {
-      stop();
-      resolve(user);
-    });
+    const stop = onAuthStateChanged(auth, user => { stop(); resolve(user); });
   });
 }
 
 export async function getUserProfile(user) {
   if (!user) return null;
-  const snapshot = await getDoc(doc(auth.app.options.projectId ? (await import("./firebase-config.js")).db : null, "users", user.uid));
+  const snapshot = await getDoc(doc(db, "users", user.uid));
   if (!snapshot.exists()) return null;
   const profile = { uid: user.uid, email: user.email, ...snapshot.data() };
   activateProfileTenant(profile);
@@ -163,7 +109,6 @@ export async function requireRole(allowedRoles = []) {
     location.replace(`/login/?next=${next}`);
     return new Promise(() => {});
   }
-
   const profile = await getUserProfile(user);
   const ownerAllowed = profile?.role === "owner" && allowedRoles.some(role => ["owner", "admin", "cashier", "kitchen"].includes(role));
   const permitted = profile?.role === "super_admin" || ownerAllowed || allowedRoles.includes(profile?.role);
@@ -171,7 +116,6 @@ export async function requireRole(allowedRoles = []) {
     location.replace(ROLE_HOME[profile?.role] || "/delivery");
     return new Promise(() => {});
   }
-
   document.documentElement.style.visibility = "";
   mountUserMenu(profile);
   return profile;
