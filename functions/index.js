@@ -236,3 +236,7 @@ exports.notifyNewDeliveryOrder = onDocumentCreated(
     await Promise.all(invalidWrites);
   }
 );
+
+const tenantAdmin = require("./tenant-admin");
+exports.listTenants = tenantAdmin.listTenants;
+exports.createTenant = tenantAdmin.createTenant;
