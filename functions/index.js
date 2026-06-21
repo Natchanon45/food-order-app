@@ -38,164 +38,102 @@ function membershipPayload(uid, user = {}, tenant = tenantFromUser(user)) {
 async function deleteMembership(db, tenantId, uid) {
   if (!tenantId) return;
   await db.collection("tenants").doc(tenantId).collection("memberships").doc(uid).delete().catch(error => {
-    if (error.code !== 5) throw error;
+    console.warn("Membership cleanup failed", { tenantId, uid, error: error.message });
   });
 }
 
-async function assertSuperAdmin(auth) {
-  if (!auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
-  const userSnapshot = await getFirestore().collection("users").doc(auth.uid).get();
-  const profile = userSnapshot.data();
-  if (!profile || profile.active === false || profile.role !== "super_admin") {
-    throw new HttpsError("permission-denied", "Super admin permission required");
-  }
-}
-
-exports.healthCheck = onCall(() => ({
-  ok: true,
-  service: "food-order-functions"
-}));
-
-exports.syncTenantMembership = onDocumentWritten(
-  {
-    document: "users/{uid}",
-    region: "asia-southeast1"
-  },
+exports.syncUserMembership = onDocumentWritten(
+  { document: "users/{uid}", region: "asia-southeast1" },
   async event => {
-    const { uid } = event.params;
-    const before = event.data?.before;
-    const after = event.data?.after;
     const db = getFirestore();
-    const beforeUser = before?.exists ? before.data() : null;
-    const afterUser = after?.exists ? after.data() : null;
-    const beforeTenant = beforeUser ? tenantFromUser(beforeUser) : null;
-    const afterTenant = afterUser ? tenantFromUser(afterUser) : null;
+    const uid = event.params.uid;
+    const before = event.data?.before?.exists ? event.data.before.data() : null;
+    const after = event.data?.after?.exists ? event.data.after.data() : null;
 
-    if (!afterUser || !STAFF_ROLES.has(afterUser.role)) {
-      await deleteMembership(db, beforeTenant?.id, uid);
+    if (before?.tenantId && before.tenantId !== after?.tenantId) {
+      await deleteMembership(db, before.tenantId, uid);
+    }
+
+    if (!after) {
+      if (before?.tenantId) await deleteMembership(db, before.tenantId, uid);
       return;
     }
 
-    if (beforeTenant?.id && beforeTenant.id !== afterTenant.id) {
-      await deleteMembership(db, beforeTenant.id, uid);
+    if (!STAFF_ROLES.has(after.role)) {
+      if (after.tenantId) await deleteMembership(db, after.tenantId, uid);
+      return;
     }
 
-    await db
-      .collection("tenants")
-      .doc(afterTenant.id)
-      .collection("memberships")
-      .doc(uid)
-      .set({
-        ...membershipPayload(uid, afterUser, afterTenant),
-        createdAt: FieldValue.serverTimestamp()
-      }, { merge: true });
+    const tenant = tenantFromUser(after);
+    await db.collection("tenants").doc(tenant.id).collection("memberships").doc(uid).set(
+      membershipPayload(uid, after, tenant),
+      { merge: true }
+    );
   }
 );
 
-exports.backfillTenantMemberships = onCall(
+exports.migrateCurrentUsersToSaaS = onCall(
   { region: "asia-southeast1" },
   async request => {
-    await assertSuperAdmin(request.auth);
-
-    const tenantId = String(request.data?.tenantId || DEFAULT_TENANT.id).trim();
-    if (tenantId !== DEFAULT_TENANT.id) {
-      throw new HttpsError("invalid-argument", "Unknown tenant");
-    }
+    if (!request.auth) throw new HttpsError("unauthenticated", "Authentication required");
 
     const db = getFirestore();
+    const callerSnapshot = await db.collection("users").doc(request.auth.uid).get();
+    const caller = callerSnapshot.data();
+    if (!caller || caller.active === false || caller.role !== "super_admin") {
+      throw new HttpsError("permission-denied", "Super admin permission required");
+    }
+
     const usersSnapshot = await db.collection("users").get();
     const batch = db.batch();
-    let membershipsCreated = 0;
-    let userProfilesUpdated = 0;
+    let migrated = 0;
 
     usersSnapshot.docs.forEach(userDoc => {
       const user = userDoc.data();
-      if (!STAFF_ROLES.has(user.role)) return;
-
+      if (user.role === "super_admin") return;
       const tenant = tenantFromUser(user);
-      const userPatch = {};
-      if (!user.tenantId) userPatch.tenantId = tenant.id;
-      if (!user.tenantSlug) userPatch.tenantSlug = tenant.slug;
-      if (!user.tenantName) userPatch.tenantName = tenant.name;
-
-      if (Object.keys(userPatch).length) {
-        userPatch.updatedAt = FieldValue.serverTimestamp();
-        batch.set(userDoc.ref, userPatch, { merge: true });
-        userProfilesUpdated += 1;
-      }
-
-      const membershipRef = db
-        .collection("tenants")
-        .doc(tenant.id)
-        .collection("memberships")
-        .doc(userDoc.id);
-      batch.set(membershipRef, {
-        ...membershipPayload(userDoc.id, user, tenant),
-        createdAt: FieldValue.serverTimestamp()
+      batch.set(userDoc.ref, {
+        tenantId: tenant.id,
+        tenantSlug: tenant.slug,
+        tenantName: tenant.name,
+        updatedAt: FieldValue.serverTimestamp()
       }, { merge: true });
-      membershipsCreated += 1;
+      batch.set(db.collection("tenants").doc(tenant.id).collection("memberships").doc(userDoc.id), membershipPayload(userDoc.id, user, tenant), { merge: true });
+      migrated += 1;
     });
 
-    if (membershipsCreated || userProfilesUpdated) await batch.commit();
-    return {
-      ok: true,
-      tenantId,
-      membershipsCreated,
-      userProfilesUpdated
-    };
+    await batch.commit();
+    return { ok: true, migrated };
   }
 );
 
-exports.notifyNewDeliveryOrder = onDocumentCreated(
-  {
-    document: "tenants/{tenantId}/orders/{orderId}",
-    region: "asia-southeast1",
-    retry: true
-  },
+exports.notifyDeliveryOrderCreated = onDocumentCreated(
+  { document: "tenants/{tenantId}/orders/{orderId}", region: "asia-southeast1" },
   async event => {
-    const snapshot = event.data;
-    if (!snapshot) return;
-
-    const order = snapshot.data();
-    if (order.orderType !== "delivery") return;
+    const order = event.data?.data();
+    if (!order || order.orderType !== "delivery") return;
 
     const { tenantId, orderId } = event.params;
     const db = getFirestore();
-    const tokenSnapshot = await db
-      .collection("tenants")
-      .doc(tenantId)
-      .collection("notificationTokens")
+    const tokenSnapshot = await db.collection("tenants").doc(tenantId).collection("notificationTokens")
       .where("active", "==", true)
+      .where("role", "in", ["owner", "cashier"])
       .get();
 
-    const tokenDocs = tokenSnapshot.docs.filter(doc => {
-      const role = doc.data().role;
-      return ["owner", "admin", "cashier", "kitchen", "super_admin"].includes(role);
-    });
-
+    const tokenDocs = tokenSnapshot.docs;
     const tokens = tokenDocs.map(doc => doc.data().token).filter(Boolean);
-    if (!tokens.length) {
-      console.log("No active FCM tokens", { tenantId, orderId });
-      return;
-    }
-
-    const recipient = order.recipientName || "ลูกค้า";
-    const total = Number(order.totalAmount || 0).toLocaleString("th-TH", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
+    if (!tokens.length) return;
 
     const message = {
-      tokens: tokens.slice(0, 500),
+      tokens,
       notification: {
         title: "มีออเดอร์ Delivery ใหม่",
-        body: `${recipient} • ยอด ${total} บาท`
+        body: `${order.recipientName || "ลูกค้า"} • ${Number(order.totalAmount || 0).toLocaleString("th-TH", { minimumFractionDigits: 2 })} บาท`
       },
       data: {
-        type: "delivery_order_created",
+        type: "delivery_order",
         tenantId,
-        orderId,
-        url: `/cashier/?order=${encodeURIComponent(orderId)}`
+        orderId
       },
       webpush: {
         fcmOptions: {
@@ -241,6 +179,7 @@ const tenantAdmin = require("./tenant-admin");
 exports.listTenants = tenantAdmin.listTenants;
 exports.createTenant = tenantAdmin.createTenant;
 exports.createTenantOwner = tenantAdmin.createTenantOwner;
+exports.updateTenantOwner = tenantAdmin.updateTenantOwner;
 exports.updateTenant = tenantAdmin.updateTenant;
 exports.deleteTenant = tenantAdmin.deleteTenant;
 
