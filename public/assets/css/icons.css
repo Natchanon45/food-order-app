@@ -31,6 +31,33 @@
   margin: 0;
 }
 
+/* ปุ่มที่มีทั้งไอคอนและข้อความต้องเป็นปุ่มสี่เหลี่ยมมน ไม่ใช่วงกลม */
+body[data-roles="cashier"] .order-actions .btn {
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 40px !important;
+  padding: 9px 12px !important;
+  border-radius: 10px !important;
+  aspect-ratio: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  line-height: 1.2 !important;
+  white-space: nowrap;
+}
+
+body[data-roles="cashier"] .order-actions .btn .app-icon {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
+body[data-roles="cashier"] .order-actions .btn span {
+  display: inline !important;
+}
+
 .qty {
   display: grid !important;
   grid-template-columns: 38px minmax(18px, auto) 38px;
@@ -147,6 +174,12 @@
     height: 36px !important;
     min-width: 36px !important;
     min-height: 36px !important;
+  }
+
+  body[data-roles="cashier"] .order-actions .btn {
+    min-height: 38px !important;
+    padding: 8px 10px !important;
+    border-radius: 9px !important;
   }
 
   .qty {
