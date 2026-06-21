@@ -16,6 +16,20 @@ function receiptItemName(item) {
   return `<div class="receipt-item-line"><span class="receipt-item-text" title="${item.name}">${item.name}</span><span class="receipt-item-qty">x ${item.qty}</span></div>${item.note ? `<div class="receipt-item-note">${item.note}</div>` : ""}`;
 }
 
+function renderVerificationQr(order) {
+  const tenant = dataService.getActiveShop();
+  const verifyUrl = `${location.origin}/verify/?tenant=${encodeURIComponent(tenant.slug || "")}&order=${encodeURIComponent(order.id || orderId)}`;
+  const target = document.querySelector("#verifyQr");
+  target.innerHTML = "";
+  new QRCode(target, {
+    text: verifyUrl,
+    width: 120,
+    height: 120,
+    correctLevel: QRCode.CorrectLevel.H
+  });
+  document.querySelector("#verifyLatestLink").href = verifyUrl;
+}
+
 async function load() {
   if (!orderId) throw new Error("ไม่พบเลขที่คำสั่งซื้อ");
   const [order, settings] = await Promise.all([dataService.getOrder(orderId), dataService.getStoreSettings()]);
@@ -34,7 +48,7 @@ async function load() {
   document.querySelector("#receiptSubtotal").textContent = money(order.subtotalAmount ?? (Number(order.totalAmount || 0) - Number(order.deliveryFee || 0)));
   document.querySelector("#receiptDeliveryFee").textContent = money(order.deliveryFee || 0);
   document.querySelector("#receiptTotal").textContent = money(order.totalAmount);
-  document.querySelector("#receiptItems").innerHTML = (order.items || []).map(item => `
+  document.querySelector("#receiptItems").innerHTML = (order.items || []).filter(item => !item.cancelled).map(item => `
     <tr>
       <td class="receipt-item-name">${receiptItemName(item)}</td>
       <td class="num receipt-unit">${money(Number(item.price))}</td>
@@ -47,23 +61,12 @@ async function load() {
     document.querySelector("#receiptNote").textContent = order.note;
   }
 
-  const verifyUrl = `${location.origin}/verify/?order=${encodeURIComponent(orderId)}`;
-  const verifyQr = document.querySelector("#verifyQr");
-  verifyQr.crossOrigin = "anonymous";
-  verifyQr.src = `https://quickchart.io/qr?text=${encodeURIComponent(verifyUrl)}&size=180&margin=1`;
+  renderVerificationQr(order);
 }
 
 async function waitForReceiptReady() {
   if (document.fonts?.ready) await document.fonts.ready;
-  const images = [...receipt.querySelectorAll("img")];
-  await Promise.all(images.map(image => {
-    if (image.complete) return Promise.resolve();
-    return new Promise(resolve => {
-      image.addEventListener("load", resolve, { once: true });
-      image.addEventListener("error", resolve, { once: true });
-      setTimeout(resolve, 3000);
-    });
-  }));
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 }
 
 async function createReceiptBlob() {
@@ -73,9 +76,7 @@ async function createReceiptBlob() {
     backgroundColor: "#ffffff",
     useCORS: true,
     allowTaint: false,
-    logging: false,
-    imageTimeout: 4000,
-    ignoreElements: element => element.id === "verifyQr"
+    logging: false
   });
   return await new Promise((resolve, reject) => {
     canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("RECEIPT_IMAGE_FAILED")), "image/png", 1);
