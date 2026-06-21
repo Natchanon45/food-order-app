@@ -3,12 +3,12 @@ const menuGrid = document.querySelector("#menuGrid");
 const categoryTabs = document.querySelector("#categoryTabs");
 const pagination = document.querySelector("#menuPagination");
 
-let grouping = false;
+let normalizing = false;
 let scrollFrame = 0;
+let browsingAll = true;
 
-function isAllSelected() {
-  const selected = categoryTabs?.querySelector('.category-tab[aria-selected="true"], .category-tab.active');
-  return !selected || selected.dataset.category === "ทั้งหมด";
+function categoryOf(card) {
+  return card.dataset.menuCategory || card.querySelector(".menu-category")?.textContent?.trim() || "อื่น ๆ";
 }
 
 function setActiveTab(category) {
@@ -26,55 +26,55 @@ function setActiveTab(category) {
   target.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
 }
 
-function groupDeliveryCards() {
-  if (!mobileQuery.matches || !menuGrid || grouping || !document.body.classList.contains("delivery-page")) return;
-  if (!isAllSelected()) return;
-  if (menuGrid.querySelector("[data-menu-category-section]")) return;
+function flattenMenuCards() {
+  if (!mobileQuery.matches || !menuGrid || normalizing) return;
 
-  const cards = [...menuGrid.querySelectorAll(":scope > .menu-card")];
-  if (!cards.length) return;
-
-  grouping = true;
-  const groups = new Map();
-  cards.forEach(card => {
-    const category = card.querySelector(".menu-category")?.textContent?.trim() || "อื่น ๆ";
-    if (!groups.has(category)) groups.set(category, []);
-    groups.get(category).push(card);
-  });
-
-  const fragment = document.createDocumentFragment();
-  groups.forEach((items, category) => {
-    const section = document.createElement("section");
-    section.dataset.menuCategorySection = category;
-    section.className = "mobile-menu-category-section";
-    section.innerHTML = `<div class="section-title mobile-category-heading"><h2>${category}</h2><span class="badge">${items.length} เมนู</span></div>`;
-    const grid = document.createElement("div");
-    grid.className = "grid grid-3";
-    items.forEach(card => {
+  const sections = [...menuGrid.querySelectorAll(":scope > [data-menu-category-section]")];
+  if (!sections.length) {
+    [...menuGrid.querySelectorAll(":scope > .menu-card")].forEach(card => {
       card.hidden = false;
-      grid.appendChild(card);
+      card.dataset.menuCategory = categoryOf(card);
     });
-    section.appendChild(grid);
-    fragment.appendChild(section);
-  });
+    return;
+  }
 
+  normalizing = true;
+  const fragment = document.createDocumentFragment();
+  sections.forEach(section => {
+    const sectionCategory = section.dataset.menuCategorySection || "อื่น ๆ";
+    section.querySelectorAll(".menu-card").forEach(card => {
+      card.hidden = false;
+      card.dataset.menuCategory = sectionCategory || categoryOf(card);
+      fragment.appendChild(card);
+    });
+  });
   menuGrid.replaceChildren(fragment);
-  grouping = false;
-  updateActiveFromScroll();
+  normalizing = false;
+}
+
+function categoryAnchors() {
+  const cards = [...menuGrid.querySelectorAll(":scope > .menu-card")];
+  const firstByCategory = new Map();
+  cards.forEach(card => {
+    const category = categoryOf(card);
+    card.dataset.menuCategory = category;
+    if (!firstByCategory.has(category)) firstByCategory.set(category, card);
+  });
+  return [...firstByCategory.entries()].map(([category, card]) => ({ category, card }));
 }
 
 function updateActiveFromScroll() {
-  if (!mobileQuery.matches || !menuGrid || !categoryTabs || !isAllSelected()) return;
-  const sections = [...menuGrid.querySelectorAll("[data-menu-category-section]")];
-  if (!sections.length) return;
+  if (!mobileQuery.matches || !menuGrid || !categoryTabs || !browsingAll) return;
+  const anchors = categoryAnchors();
+  if (!anchors.length) return;
 
-  const stickyOffset = document.body.classList.contains("delivery-page") ? 150 : 165;
-  let current = sections[0];
-  for (const section of sections) {
-    if (section.getBoundingClientRect().top <= stickyOffset) current = section;
+  const stickyOffset = document.body.classList.contains("delivery-page") ? 160 : 170;
+  let current = anchors[0];
+  for (const anchor of anchors) {
+    if (anchor.card.getBoundingClientRect().top <= stickyOffset) current = anchor;
     else break;
   }
-  setActiveTab(current.dataset.menuCategorySection);
+  setActiveTab(current.category);
 }
 
 function scheduleScrollUpdate() {
@@ -91,19 +91,22 @@ function refreshMobileMenu() {
 
   if (!mobileQuery.matches) return;
   requestAnimationFrame(() => {
-    groupDeliveryCards();
+    flattenMenuCards();
     updateActiveFromScroll();
   });
 }
 
 if (menuGrid) {
   new MutationObserver(() => {
-    if (grouping) return;
+    if (normalizing) return;
     refreshMobileMenu();
-  }).observe(menuGrid, { childList: true });
+  }).observe(menuGrid, { childList: true, subtree: false });
 }
 
-categoryTabs?.addEventListener("click", () => {
+categoryTabs?.addEventListener("click", event => {
+  const button = event.target.closest("[data-category]");
+  if (!button) return;
+  browsingAll = button.dataset.category === "ทั้งหมด";
   setTimeout(refreshMobileMenu, 0);
 });
 
