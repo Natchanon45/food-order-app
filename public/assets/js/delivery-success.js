@@ -3,15 +3,17 @@ import { money, formatTime, toast } from "./ui.js";
 
 const orderId = new URLSearchParams(location.search).get("order") || "";
 const receipt = document.querySelector("#customerReceipt");
+const saveButton = document.querySelector("#saveImageButton");
 
 function paymentText(order) {
   if (order.paymentStatus === "paid") return "ชำระเงินแล้ว";
   if (order.paymentMethod === "cod") return "เก็บเงินปลายทาง";
+  if (order.paymentStatus === "pending_verification") return "ส่งหลักฐานแล้ว รอร้านตรวจสอบ";
   return "ยังไม่ชำระเงิน";
 }
 
 function receiptItemName(item) {
-  return `<div class="receipt-item-line"><span class="receipt-item-text" title="${item.name}">${item.name}</span><span class="receipt-item-qty">x ${item.qty} ชิ้น</span></div>${item.note ? `<div class="receipt-item-note">${item.note}</div>` : ""}`;
+  return `<div class="receipt-item-line"><span class="receipt-item-text" title="${item.name}">${item.name}</span><span class="receipt-item-qty">x ${item.qty}</span></div>${item.note ? `<div class="receipt-item-note">${item.note}</div>` : ""}`;
 }
 
 async function load() {
@@ -19,7 +21,7 @@ async function load() {
   const [order, settings] = await Promise.all([dataService.getOrder(orderId), dataService.getStoreSettings()]);
   if (!order) throw new Error("ไม่พบคำสั่งซื้อ");
 
-  document.querySelector("#shopName").textContent = settings.shopName || "Food Order QR";
+  document.querySelector("#shopName").textContent = settings.shopName || "Food Order/Delivery With QR";
   document.querySelector("#shopAddress").textContent = settings.shopAddress || "";
   document.querySelector("#shopPhone").textContent = settings.shopPhone ? `โทร ${settings.shopPhone}` : "";
   document.querySelector("#receiptNumber").textContent = orderId.slice(0, 12).toUpperCase();
@@ -46,40 +48,65 @@ async function load() {
   }
 
   const verifyUrl = `${location.origin}/verify/?order=${encodeURIComponent(orderId)}`;
-  document.querySelector("#verifyQr").src = `https://quickchart.io/qr?text=${encodeURIComponent(verifyUrl)}&size=180&margin=1`;
+  const verifyQr = document.querySelector("#verifyQr");
+  verifyQr.crossOrigin = "anonymous";
+  verifyQr.src = `https://quickchart.io/qr?text=${encodeURIComponent(verifyUrl)}&size=180&margin=1`;
 }
 
-async function createReceiptFile() {
-  const canvas = await html2canvas(receipt, { scale: 2, backgroundColor: "#ffffff", useCORS: true });
-  const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png", 1));
-  return new File([blob], `delivery-${orderId.slice(0, 12)}.png`, { type: "image/png" });
+async function waitForReceiptReady() {
+  if (document.fonts?.ready) await document.fonts.ready;
+  const images = [...receipt.querySelectorAll("img")];
+  await Promise.all(images.map(image => {
+    if (image.complete) return Promise.resolve();
+    return new Promise(resolve => {
+      image.addEventListener("load", resolve, { once: true });
+      image.addEventListener("error", resolve, { once: true });
+      setTimeout(resolve, 3000);
+    });
+  }));
 }
 
-document.querySelector("#saveImageButton").addEventListener("click", async event => {
-  const button = event.currentTarget;
-  button.disabled = true;
-  button.textContent = "กำลังสร้างรูป...";
+async function createReceiptBlob() {
+  await waitForReceiptReady();
+  const canvas = await html2canvas(receipt, {
+    scale: Math.min(3, Math.max(2, window.devicePixelRatio || 1)),
+    backgroundColor: "#ffffff",
+    useCORS: true,
+    allowTaint: false,
+    logging: false,
+    imageTimeout: 4000,
+    ignoreElements: element => element.id === "verifyQr"
+  });
+  return await new Promise((resolve, reject) => {
+    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("RECEIPT_IMAGE_FAILED")), "image/png", 1);
+  });
+}
+
+async function downloadReceipt() {
+  const blob = await createReceiptBlob();
+  const fileName = `delivery-order-${orderId.slice(0, 12).toUpperCase()}.png`;
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+saveButton.addEventListener("click", async () => {
+  saveButton.disabled = true;
+  saveButton.textContent = "กำลังสร้างรูปใบสั่งซื้อ...";
   try {
-    const file = await createReceiptFile();
-    if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ title: "คำสั่งซื้อ Delivery", text: `เลขที่ ${orderId.slice(0, 12).toUpperCase()}`, files: [file] });
-    } else {
-      const url = URL.createObjectURL(file);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = file.name;
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      toast("บันทึกรูปคำสั่งซื้อแล้ว");
-    }
+    await downloadReceipt();
+    toast("ดาวน์โหลดใบสั่งซื้อแล้ว");
   } catch (error) {
-    if (error.name !== "AbortError") {
-      console.error(error);
-      toast("บันทึกรูปไม่สำเร็จ", "error");
-    }
+    console.error(error);
+    toast("ดาวน์โหลดใบสั่งซื้อไม่สำเร็จ กรุณาลองใหม่", "error");
   } finally {
-    button.disabled = false;
-    button.textContent = "บันทึก/แชร์เป็นรูป";
+    saveButton.disabled = false;
+    saveButton.textContent = "ดาวน์โหลดใบสั่งซื้อ";
   }
 });
 
@@ -88,4 +115,5 @@ try {
 } catch (error) {
   console.error(error);
   receipt.innerHTML = `<div class="empty">${error.message}</div>`;
+  saveButton.disabled = true;
 }
