@@ -12,7 +12,7 @@ let currentOrders = [];
 let slipUrls = new Map();
 
 function icon(name) {
-  return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg#icon-${name}"></use></svg>`;
+  return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260621-2#icon-${name}"></use></svg>`;
 }
 
 function paymentLabel(order) {
