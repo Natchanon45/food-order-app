@@ -56,7 +56,9 @@ async function loadTables() {
 }
 
 function renderTicket(table, token, autoPrint = true) {
-  const orderUrl = `${location.origin}/order/?table=${encodeURIComponent(table.code)}&token=${encodeURIComponent(token)}`;
+  const tenant = dataService.getActiveShop();
+  const tenantSlug = encodeURIComponent(tenant.slug || "");
+  const orderUrl = `${location.origin}/s/${tenantSlug}/order/?table=${encodeURIComponent(table.code)}&token=${encodeURIComponent(token)}`;
   const qrUrl = buildQrImageUrl(orderUrl);
 
   issuedQr.innerHTML = `
