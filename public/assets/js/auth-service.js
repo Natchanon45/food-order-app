@@ -4,6 +4,7 @@ import {
   createUserWithEmailAndPassword,
   collection, doc, getDoc, getDocs, setDoc, updateDoc, serverTimestamp
 } from "./firebase-config.js";
+import { DEFAULT_TENANT, resolveTenantContext, setActiveTenant } from "./tenant-context.js";
 
 export const ROLE_HOME = {
   super_admin: "/",
@@ -59,6 +60,15 @@ function roleMenuLinks(profile) {
   }
 
   return links;
+}
+
+function activateProfileTenant(profile = {}) {
+  const fallback = resolveTenantContext();
+  return setActiveTenant({
+    id: profile.tenantId || fallback.id || DEFAULT_TENANT.id,
+    slug: profile.tenantSlug || fallback.slug || DEFAULT_TENANT.slug,
+    name: profile.tenantName || fallback.name || DEFAULT_TENANT.name
+  });
 }
 
 export function mountUserMenu(profile) {
@@ -137,7 +147,10 @@ export function waitForAuth() {
 export async function getUserProfile(user) {
   if (!user) return null;
   const snapshot = await getDoc(doc(db, "users", user.uid));
-  return snapshot.exists() ? { uid: user.uid, email: user.email, ...snapshot.data() } : null;
+  if (!snapshot.exists()) return null;
+  const profile = { uid: user.uid, email: user.email, ...snapshot.data() };
+  activateProfileTenant(profile);
+  return profile;
 }
 
 export async function requireRole(allowedRoles = []) {
@@ -179,6 +192,7 @@ export async function listStaffUsers() {
 
 export async function createStaffUser({ email, password, displayName, role, active }) {
   if (!STAFF_ROLES.includes(role)) throw new Error("INVALID_ROLE");
+  const tenant = resolveTenantContext();
   const secondaryApp = initializeApp(firebaseConfig, `staff-create-${Date.now()}`);
   const secondaryAuth = getAuth(secondaryApp);
 
@@ -189,6 +203,9 @@ export async function createStaffUser({ email, password, displayName, role, acti
       displayName,
       role,
       active: Boolean(active),
+      tenantId: tenant.id,
+      tenantSlug: tenant.slug,
+      tenantName: tenant.name,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     });
