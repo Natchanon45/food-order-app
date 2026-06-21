@@ -10,8 +10,8 @@ const DEFAULT_TENANT = Object.freeze({
 function normalizeTenant(value = {}) {
   return {
     id: String(value.id || value.tenantId || DEFAULT_TENANT.id).trim(),
-    slug: String(value.slug || DEFAULT_TENANT.slug).trim().toLowerCase(),
-    name: String(value.name || DEFAULT_TENANT.name).trim()
+    slug: String(value.slug || value.tenantSlug || DEFAULT_TENANT.slug).trim().toLowerCase(),
+    name: String(value.name || value.tenantName || DEFAULT_TENANT.name).trim()
   };
 }
 
@@ -57,7 +57,12 @@ export function resolveTenantContext() {
   const pathSlug = slugFromPath();
   const stored = getStoredTenant();
 
-  if (!pathSlug || pathSlug === DEFAULT_TENANT.slug) {
+  // Staff routes such as /admin, /cashier and /kitchen do not contain a
+  // tenant slug. They must therefore use the tenant selected from the
+  // authenticated user's profile instead of falling back to the default shop.
+  if (!pathSlug) return stored || DEFAULT_TENANT;
+
+  if (pathSlug === DEFAULT_TENANT.slug) {
     return stored?.slug === DEFAULT_TENANT.slug ? stored : DEFAULT_TENANT;
   }
 
