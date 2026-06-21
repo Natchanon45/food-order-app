@@ -243,3 +243,8 @@ exports.createTenant = tenantAdmin.createTenant;
 exports.createTenantOwner = tenantAdmin.createTenantOwner;
 exports.updateTenant = tenantAdmin.updateTenant;
 exports.deleteTenant = tenantAdmin.deleteTenant;
+
+const staffAdmin = require("./staff-admin");
+exports.listTenantStaff = staffAdmin.listTenantStaff;
+exports.createTenantStaff = staffAdmin.createTenantStaff;
+exports.updateTenantStaff = staffAdmin.updateTenantStaff;
