@@ -24,38 +24,35 @@ const formTitle = form.closest(".card")?.querySelector(".section-title h2");
 let tenants = [];
 let editingTenantId = "";
 
-function xIcon() {
-  return `
-    <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" style="display:block;flex:0 0 auto">
-      <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-    </svg>`;
+function icon(name) {
+  return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg#icon-${name}"></use></svg>`;
 }
 
-function storefrontIcon() {
-  return `
-    <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" style="display:block;flex:0 0 auto">
-      <path d="M4 10h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      <path d="M5 10V6.5L7 4h10l2 2.5V10" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M6 10v9h12v-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M9 19v-5h6v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-    </svg>`;
+function setSubmitContent(mode = "create") {
+  const states = {
+    create: `${icon("add")}<span>สร้างร้าน</span>`,
+    creating: `<span>กำลังสร้างร้าน...</span>`,
+    edit: `${icon("save")}<span>บันทึกการแก้ไข</span>`,
+    saving: `<span>กำลังบันทึก...</span>`
+  };
+  submitButton.innerHTML = states[mode] || states.create;
 }
+
+submitButton.style.cssText = "display:flex;align-items:center;justify-content:center;gap:8px;width:100%;";
+setSubmitContent("create");
 
 const cancelEditButton = document.createElement("button");
 cancelEditButton.type = "button";
 cancelEditButton.className = "btn tenant-cancel-edit";
-cancelEditButton.innerHTML = `${xIcon()}<span>ยกเลิกแก้ไข</span>`;
+cancelEditButton.textContent = "ยกเลิกแก้ไข";
 cancelEditButton.setAttribute("aria-label", "ยกเลิกการแก้ไข");
 cancelEditButton.style.setProperty("display", "none", "important");
-cancelEditButton.style.setProperty("align-items", "center", "important");
-cancelEditButton.style.setProperty("justify-content", "center", "important");
-cancelEditButton.style.setProperty("gap", "7px", "important");
 cancelEditButton.style.setProperty("width", "100%", "important");
 cancelEditButton.style.setProperty("border-radius", "12px", "important");
 submitButton.insertAdjacentElement("afterend", cancelEditButton);
 
 function setCancelVisible(visible) {
-  cancelEditButton.style.setProperty("display", visible ? "flex" : "none", "important");
+  cancelEditButton.style.setProperty("display", visible ? "block" : "none", "important");
 }
 
 function sanitizeSlugTyping(value = "") {
@@ -89,7 +86,7 @@ function resetForm() {
   editingTenantId = "";
   form.reset();
   slugField.dataset.edited = "false";
-  submitButton.textContent = "สร้างร้าน";
+  setSubmitContent("create");
   setCancelVisible(false);
   if (formTitle) formTitle.textContent = "สร้างร้านใหม่";
   showError("");
@@ -102,7 +99,7 @@ function beginEdit(tenant) {
   phoneField.value = tenant.shopPhone || tenant.phone || "";
   addressField.value = tenant.shopAddress || tenant.address || "";
   slugField.dataset.edited = "true";
-  submitButton.textContent = "บันทึกการแก้ไข";
+  setSubmitContent("edit");
   setCancelVisible(true);
   if (formTitle) formTitle.textContent = "แก้ไขร้านค้า";
   form.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -123,9 +120,9 @@ function renderTenants(items = []) {
       </div>
       <div style="margin-top:12px;word-break:break-all"><strong>Tenant ID:</strong> ${escapeHtml(tenant.id)}</div>
       <div class="order-actions" style="margin-top:12px;align-items:center">
-        <a class="btn btn-dark btn-sm tenant-storefront-button" style="display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;min-width:122px!important;padding:8px 12px!important;border-radius:10px!important;white-space:nowrap!important;width:auto!important;height:auto!important;aspect-ratio:auto!important" href="/s/${encodeURIComponent(tenant.slug || "")}/delivery" target="_blank" rel="noopener noreferrer">${storefrontIcon()}<span>เปิดหน้าร้าน</span></a>
-        <button class="btn btn-sm" type="button" data-edit-tenant="${escapeHtml(tenant.id)}">แก้ไข</button>
-        <button class="btn btn-danger btn-sm" type="button" data-delete-tenant="${escapeHtml(tenant.id)}">ลบ</button>
+        <a class="btn btn-dark btn-sm" style="display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;min-width:122px!important;padding:8px 12px!important;border-radius:10px!important;white-space:nowrap!important;width:auto!important;height:auto!important;aspect-ratio:auto!important" href="/s/${encodeURIComponent(tenant.slug || "")}/delivery" target="_blank" rel="noopener noreferrer">${icon("home")}<span>เปิดหน้าร้าน</span></a>
+        <button class="btn btn-sm" style="display:inline-flex;align-items:center;gap:6px" type="button" data-edit-tenant="${escapeHtml(tenant.id)}">${icon("edit")}<span>แก้ไข</span></button>
+        <button class="btn btn-danger btn-sm" style="display:inline-flex;align-items:center;gap:6px" type="button" data-delete-tenant="${escapeHtml(tenant.id)}">${icon("delete")}<span>ลบ</span></button>
       </div>
     </article>
   `).join("") : '<div class="empty">ยังไม่มีร้านค้า</div>';
@@ -179,7 +176,7 @@ tenantList.addEventListener("click", async event => {
   if (!confirm(`ยืนยันลบร้าน ${tenant.name || tenant.id} ใช่หรือไม่?\n\nลบได้เฉพาะร้านที่ยังไม่มีเมนู โต๊ะ ออเดอร์ หรือพนักงาน`)) return;
 
   deleteButton.disabled = true;
-  deleteButton.textContent = "กำลังลบ...";
+  deleteButton.innerHTML = "<span>กำลังลบ...</span>";
   try {
     await deleteTenant({ tenantId: tenant.id });
     if (editingTenantId === tenant.id) resetForm();
@@ -192,7 +189,7 @@ tenantList.addEventListener("click", async event => {
     if (error.code === "functions/permission-denied") message = "บัญชีนี้ไม่มีสิทธิ์ลบร้าน";
     toast(message, "error");
     deleteButton.disabled = false;
-    deleteButton.textContent = "ลบ";
+    deleteButton.innerHTML = `${icon("delete")}<span>ลบ</span>`;
   }
 });
 
@@ -201,7 +198,7 @@ form.addEventListener("submit", async event => {
   showError("");
   submitButton.disabled = true;
   cancelEditButton.disabled = true;
-  submitButton.textContent = editingTenantId ? "กำลังบันทึก..." : "กำลังสร้างร้าน...";
+  setSubmitContent(editingTenantId ? "saving" : "creating");
 
   try {
     const normalizedSlug = normalizeSlug(slugField.value);
@@ -234,7 +231,7 @@ form.addEventListener("submit", async event => {
   } finally {
     submitButton.disabled = false;
     cancelEditButton.disabled = false;
-    submitButton.textContent = editingTenantId ? "บันทึกการแก้ไข" : "สร้างร้าน";
+    setSubmitContent(editingTenantId ? "edit" : "create");
   }
 });
 
