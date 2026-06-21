@@ -10,6 +10,38 @@
   pointer-events: none;
 }
 
+.btn-standard-action {
+  width: auto !important;
+  min-width: max-content !important;
+  min-height: 38px !important;
+  padding: 8px 12px !important;
+  border-radius: 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  aspect-ratio: auto !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+}
+
+.btn-standard-action .app-icon {
+  width: 17px !important;
+  height: 17px !important;
+  flex: 0 0 17px !important;
+  margin: 0 !important;
+}
+
+.btn-standard-action > span {
+  display: inline !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+  clip: auto !important;
+  position: static !important;
+  white-space: nowrap !important;
+}
+
 .btn-icon-only:not(.user-menu-trigger):not(.user-menu-action) {
   width: 38px !important;
   height: 38px !important;
@@ -31,7 +63,6 @@
   margin: 0;
 }
 
-/* ปุ่มที่มีทั้งไอคอนและข้อความต้องเป็นปุ่มสี่เหลี่ยมมน ไม่ใช่วงกลม */
 body[data-roles="cashier"] .order-actions .btn {
   width: auto !important;
   height: auto !important;
@@ -169,6 +200,12 @@ body[data-roles="cashier"] .order-actions .btn span {
 .section-title h2.has-heading-icon .app-icon { width: 1.15em; height: 1.15em; color: var(--green-dark); }
 
 @media (max-width: 480px) {
+  .btn-standard-action {
+    min-height: 36px !important;
+    padding: 7px 10px !important;
+    border-radius: 9px !important;
+  }
+
   .btn-icon-only:not(.user-menu-trigger):not(.user-menu-action) {
     width: 36px !important;
     height: 36px !important;
