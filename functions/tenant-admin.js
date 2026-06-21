@@ -1,5 +1,6 @@
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+const { getAuth } = require("firebase-admin/auth");
 const { randomUUID } = require("crypto");
 
 function normalizeSlug(value = "") {
@@ -93,6 +94,107 @@ exports.createTenant = onCall(
 
     await batch.commit();
     return { ok: true, tenant: { id: tenantId, slug, name, active: true } };
+  }
+);
+
+exports.createTenantOwner = onCall(
+  { region: "asia-southeast1" },
+  async request => {
+    await assertSuperAdmin(request.auth);
+
+    const tenantId = String(request.data?.tenantId || "").trim();
+    const displayName = String(request.data?.displayName || "").trim();
+    const email = String(request.data?.email || "").trim().toLowerCase();
+    const password = String(request.data?.password || "");
+
+    if (!tenantId) throw new HttpsError("invalid-argument", "Tenant ID is required");
+    if (displayName.length < 2 || displayName.length > 120) {
+      throw new HttpsError("invalid-argument", "Owner name must contain 2-120 characters");
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      throw new HttpsError("invalid-argument", "Owner email is invalid");
+    }
+    if (password.length < 8) {
+      throw new HttpsError("invalid-argument", "Password must contain at least 8 characters");
+    }
+
+    const db = getFirestore();
+    const tenantRef = db.collection("tenants").doc(tenantId);
+    const tenantSnapshot = await tenantRef.get();
+    if (!tenantSnapshot.exists) throw new HttpsError("not-found", "Tenant not found");
+
+    const tenant = tenantSnapshot.data();
+    if (tenant.active === false) throw new HttpsError("failed-precondition", "Tenant is inactive");
+
+    const existingOwner = await tenantRef
+      .collection("memberships")
+      .where("role", "==", "owner")
+      .where("active", "==", true)
+      .limit(1)
+      .get();
+    if (!existingOwner.empty) {
+      throw new HttpsError("already-exists", "This tenant already has an active owner");
+    }
+
+    let authUser;
+    try {
+      authUser = await getAuth().createUser({
+        email,
+        password,
+        displayName,
+        disabled: false,
+        emailVerified: false
+      });
+    } catch (error) {
+      if (error.code === "auth/email-already-exists") {
+        throw new HttpsError("already-exists", "This email is already registered");
+      }
+      if (error.code === "auth/invalid-password" || error.code === "auth/invalid-email") {
+        throw new HttpsError("invalid-argument", error.message);
+      }
+      throw error;
+    }
+
+    const now = FieldValue.serverTimestamp();
+    const userProfile = {
+      uid: authUser.uid,
+      email,
+      displayName,
+      role: "owner",
+      active: true,
+      tenantId,
+      tenantSlug: tenant.slug || "",
+      tenantName: tenant.name || "",
+      createdAt: now,
+      updatedAt: now
+    };
+
+    try {
+      const batch = db.batch();
+      batch.set(db.collection("users").doc(authUser.uid), userProfile);
+      batch.set(tenantRef.collection("memberships").doc(authUser.uid), userProfile);
+      batch.set(tenantRef, {
+        ownerUid: authUser.uid,
+        ownerEmail: email,
+        ownerDisplayName: displayName,
+        updatedAt: now
+      }, { merge: true });
+      await batch.commit();
+    } catch (error) {
+      await getAuth().deleteUser(authUser.uid).catch(() => {});
+      throw error;
+    }
+
+    return {
+      ok: true,
+      owner: {
+        uid: authUser.uid,
+        email,
+        displayName,
+        role: "owner",
+        tenantId
+      }
+    };
   }
 );
 
