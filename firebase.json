@@ -25,7 +25,7 @@
       { "source": "/cashier/**", "destination": "/cashier/index.html" },
       {
         "source": "/admin/qr/**",
-        "destination": "/cashier/table-qr/index.html"
+        "destination": "/admin/qr/index.html"
       },
       { "source": "/admin/**", "destination": "/admin/index.html" }
     ]
