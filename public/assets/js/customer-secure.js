@@ -1,4 +1,5 @@
-await import("./table-qr-resolver.js?v=20260621-1");
+await import("./public-tenant-resolver.js?v=20260621-2");
+await import("./table-qr-resolver.js?v=20260621-2");
 
 import { dataService, usingDemoMode } from "./data-service.js";
 import { db, collection, onSnapshot, query, where } from "./firebase-config.js";
@@ -51,4 +52,4 @@ dataService.subscribeOrders = callback => {
   });
 };
 
-await import("./customer.js?v=20260621-2");
+await import("./customer.js?v=20260621-3");
