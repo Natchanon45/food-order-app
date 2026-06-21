@@ -12,8 +12,7 @@ let users = [];
 const roleOptions = [
   ["admin", "Admin"],
   ["cashier", "Cashier"],
-  ["kitchen", "Kitchen"],
-  ["super_admin", "Super Admin"]
+  ["kitchen", "Kitchen"]
 ];
 
 function showError(message = "") {
@@ -22,40 +21,50 @@ function showError(message = "") {
 }
 
 function roleSelect(user) {
-  return `<select class="input" data-role-uid="${user.uid}" ${user.uid === auth.currentUser?.uid ? "disabled" : ""}>
+  return `<select class="input" data-role-uid="${user.uid}">
     ${roleOptions.map(([value, label]) => `<option value="${value}" ${user.role === value ? "selected" : ""}>${label}</option>`).join("")}
   </select>`;
 }
 
 function renderUsers() {
   userCount.textContent = `${users.length} คน`;
-  userRows.innerHTML = users.map(user => {
-    const isCurrentUser = user.uid === auth.currentUser?.uid;
-    return `
-      <tr>
-        <td>
-          <input class="input" data-name-uid="${user.uid}" value="${user.displayName || ""}" maxlength="100">
-          ${isCurrentUser ? '<div class="menu-category">บัญชีที่กำลังใช้งาน</div>' : ""}
-        </td>
-        <td>${user.email || "-"}</td>
-        <td>${roleSelect(user)}</td>
-        <td style="text-align:center">
-          <input type="checkbox" data-active-uid="${user.uid}" ${user.active !== false ? "checked" : ""} ${isCurrentUser ? "disabled" : ""}>
-        </td>
-        <td><button class="btn btn-primary btn-sm" data-save-user="${user.uid}">บันทึก</button></td>
-      </tr>
-    `;
-  }).join("");
+  userRows.innerHTML = users.length ? users.map(user => `
+    <tr>
+      <td><input class="input" data-name-uid="${user.uid}" value="${user.displayName || ""}" maxlength="100"></td>
+      <td>${user.email || "-"}</td>
+      <td>${roleSelect(user)}</td>
+      <td style="text-align:center"><input type="checkbox" data-active-uid="${user.uid}" ${user.active !== false ? "checked" : ""}></td>
+      <td><button class="btn btn-primary btn-sm" data-save-user="${user.uid}">บันทึก</button></td>
+    </tr>
+  `).join("") : '<tr><td colspan="5"><div class="empty">ยังไม่มีพนักงานในร้าน</div></td></tr>';
 }
 
 async function loadUsers() {
-  users = await listStaffUsers();
-  renderUsers();
+  try {
+    users = await listStaffUsers();
+    renderUsers();
+  } catch (error) {
+    console.error(error);
+    showError("โหลดรายการพนักงานไม่สำเร็จ");
+    toast("โหลดรายการพนักงานไม่สำเร็จ", "error");
+  }
 }
 
 userForm.addEventListener("submit", async event => {
   event.preventDefault();
   showError("");
+
+  const password = document.getElementById("password").value;
+  const confirmPassword = document.getElementById("confirmPassword").value;
+  if (password.length < 8) {
+    showError("รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร");
+    return;
+  }
+  if (password !== confirmPassword) {
+    showError("รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน");
+    return;
+  }
+
   createUserButton.disabled = true;
   createUserButton.textContent = "กำลังสร้าง...";
 
@@ -63,22 +72,22 @@ userForm.addEventListener("submit", async event => {
     await createStaffUser({
       displayName: document.getElementById("displayName").value.trim(),
       email: document.getElementById("email").value.trim().toLowerCase(),
-      password: document.getElementById("password").value,
+      password,
       role: document.getElementById("role").value,
       active: document.getElementById("active").checked
     });
 
     userForm.reset();
     document.getElementById("active").checked = true;
-    toast("สร้างผู้ใช้งานเรียบร้อยแล้ว");
+    toast("สร้างพนักงานเรียบร้อยแล้ว");
     await loadUsers();
   } catch (error) {
     console.error(error);
-    let message = "สร้างผู้ใช้งานไม่สำเร็จ";
-    if (error.code === "auth/email-already-in-use") message = "อีเมลนี้ถูกใช้งานแล้ว";
-    if (error.code === "auth/invalid-email") message = "รูปแบบอีเมลไม่ถูกต้อง";
-    if (error.code === "auth/weak-password") message = "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร";
-    if (error.code === "auth/operation-not-allowed") message = "กรุณาเปิด Email/Password ใน Firebase Authentication ก่อน";
+    const code = String(error?.code || error?.message || "");
+    let message = "สร้างพนักงานไม่สำเร็จ";
+    if (code.includes("already-exists") || code.includes("email-already-exists")) message = "อีเมลนี้ถูกใช้งานแล้ว";
+    if (code.includes("invalid-argument")) message = "กรุณาตรวจสอบข้อมูลพนักงาน";
+    if (code.includes("permission-denied")) message = "บัญชีนี้ไม่มีสิทธิ์จัดการพนักงาน";
     showError(message);
     toast(message, "error");
   } finally {
@@ -93,27 +102,21 @@ userRows.addEventListener("click", async event => {
 
   const uid = button.dataset.saveUser;
   const user = users.find(item => item.uid === uid);
-  if (!user) return;
+  if (!user || uid === auth.currentUser?.uid) return;
 
   button.disabled = true;
   button.textContent = "กำลังบันทึก...";
 
   try {
     const displayName = document.querySelector(`[data-name-uid="${uid}"]`).value.trim();
-    const roleField = document.querySelector(`[data-role-uid="${uid}"]`);
-    const activeField = document.querySelector(`[data-active-uid="${uid}"]`);
-
-    await updateStaffUser(uid, {
-      displayName,
-      role: roleField ? roleField.value : user.role,
-      active: activeField ? activeField.checked : user.active !== false
-    });
-
-    toast("บันทึกข้อมูลผู้ใช้งานแล้ว");
+    const role = document.querySelector(`[data-role-uid="${uid}"]`).value;
+    const active = document.querySelector(`[data-active-uid="${uid}"]`).checked;
+    await updateStaffUser(uid, { displayName, role, active });
+    toast("บันทึกข้อมูลพนักงานแล้ว");
     await loadUsers();
   } catch (error) {
     console.error(error);
-    toast("บันทึกผู้ใช้งานไม่สำเร็จ", "error");
+    toast("บันทึกพนักงานไม่สำเร็จ", "error");
     button.disabled = false;
     button.textContent = "บันทึก";
   }
