@@ -2,15 +2,38 @@ const mobileQuery = window.matchMedia("(max-width: 899px)");
 const menuGrid = document.querySelector("#menuGrid");
 const categoryTabs = document.querySelector("#categoryTabs");
 const pagination = document.querySelector("#menuPagination");
+const menuListStart = document.querySelector("#menuListStart");
+const orderStickyNav = document.querySelector(".table-order-page .order-sticky-nav");
 
 let normalizing = false;
 let scrollFrame = 0;
 let browsingAll = true;
 let userHasScrolled = false;
 let lastWindowY = window.scrollY;
+let originalSearchParent = menuListStart?.parentNode || null;
+let originalSearchNextSibling = menuListStart?.nextSibling || null;
 
 function categoryOf(card) {
   return card.dataset.menuCategory || card.querySelector(".menu-category")?.textContent?.trim() || "อื่น ๆ";
+}
+
+function placeSearchForViewport() {
+  if (!menuListStart || !orderStickyNav) return;
+
+  if (mobileQuery.matches) {
+    menuListStart.classList.add("order-sticky-search");
+    if (menuListStart.parentNode !== orderStickyNav) orderStickyNav.appendChild(menuListStart);
+    return;
+  }
+
+  menuListStart.classList.remove("order-sticky-search");
+  if (!originalSearchParent || menuListStart.parentNode === originalSearchParent) return;
+
+  if (originalSearchNextSibling?.parentNode === originalSearchParent) {
+    originalSearchParent.insertBefore(menuListStart, originalSearchNextSibling);
+  } else {
+    originalSearchParent.appendChild(menuListStart);
+  }
 }
 
 function centerTabHorizontally(target) {
@@ -71,12 +94,19 @@ function categoryAnchors() {
   return [...firstByCategory.entries()].map(([category, card]) => ({ category, card }));
 }
 
+function stickyControlsHeight() {
+  const sticky = document.body.classList.contains("delivery-page")
+    ? document.querySelector(".delivery-page .menu-filter-area")
+    : orderStickyNav;
+  return Math.max(120, Math.round(sticky?.getBoundingClientRect().height || 0) + 12);
+}
+
 function updateActiveFromScroll() {
   if (!mobileQuery.matches || !menuGrid || !categoryTabs || !browsingAll || !userHasScrolled) return;
   const anchors = categoryAnchors();
   if (!anchors.length) return;
 
-  const stickyOffset = document.body.classList.contains("delivery-page") ? 160 : 170;
+  const stickyOffset = stickyControlsHeight();
   const firstTop = anchors[0].card.getBoundingClientRect().top;
 
   if (firstTop > stickyOffset) {
@@ -101,6 +131,8 @@ function scheduleScrollUpdate() {
 }
 
 function refreshMobileMenu() {
+  placeSearchForViewport();
+
   if (pagination) {
     pagination.hidden = mobileQuery.matches;
     if (mobileQuery.matches) pagination.style.setProperty("display", "none", "important");
