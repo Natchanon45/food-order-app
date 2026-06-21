@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.6.13";
+export const APP_VERSION = "1.6.14";
 export const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
 
 export const money = (value = 0) => new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value) || 0);
@@ -12,7 +12,7 @@ export function toast(message, type = "success") {
   el.setAttribute("aria-live", "polite");
   el.innerHTML = `
     <span class="app-toast-icon" aria-hidden="true">
-      <svg class="app-icon"><use href="/assets/images/app-icons.svg?v=20260621-2#icon-${iconName}"></use></svg>
+      <svg class="app-icon"><use href="/assets/images/app-icons.svg?v=20260621-3#icon-${iconName}"></use></svg>
     </span>
     <span class="app-toast-message"></span>
   `;
@@ -39,7 +39,7 @@ export function formatTime(value) {
 }
 
 function iconMarkup(name) {
-  return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260621-2#icon-${name}"></use></svg>`;
+  return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260621-3#icon-${name}"></use></svg>`;
 }
 
 function mountIconStyles() {
@@ -86,17 +86,20 @@ function replaceSystemEmoji() {
   });
 }
 
+const STANDARD_ACTIONS = [
+  { pattern: /^\s*[+＋]?\s*สร้าง/i, label: "สร้าง", icon: "plus" },
+  { pattern: /^\s*[+＋]?\s*เพิ่ม/i, label: "เพิ่ม", icon: "plus" },
+  { pattern: /^\s*แก้ไข/i, label: "แก้ไข", icon: "pencil" },
+  { pattern: /^\s*ลบ/i, label: "ลบ", icon: "trash" },
+  { pattern: /^\s*ยกเลิก/i, label: "ยกเลิก", icon: "x-circle" }
+];
+
 const buttonIconRules = [
-  [/ยกเลิกแก้ไข|cancel edit/i, "close"],
   [/เปิดใช้งานอีกครั้ง|reactivate|activate again/i, "check-circle"],
   [/ระงับบัญชี|suspend/i, "times-circle"],
-  [/ต่ออายุ|renew|extend/i, "add"],
-  [/ลบ|delete|remove/i, "delete"],
-  [/แก้ไข|edit/i, "edit"],
+  [/ต่ออายุ|renew|extend/i, "plus"],
   [/บันทึก|save/i, "save"],
-  [/เพิ่ม|add/i, "add"],
   [/ยืนยัน|confirm|ชำระ|เสร็จ|รับออเดอร์/i, "check"],
-  [/ยกเลิก|cancel|ปิด/i, "close"],
   [/พิมพ์|print/i, "print"],
   [/ย้อนกลับ|กลับ|back/i, "back"],
   [/qr/i, "qr"],
@@ -110,14 +113,24 @@ function visibleButtonText(button) {
   return (clone.textContent || "").replace(/\s+/g, " ").trim();
 }
 
-function stripDuplicateLeadingSymbol(button) {
-  for (const node of button.childNodes) {
-    if (node.nodeType !== Node.TEXT_NODE) continue;
-    const text = node.nodeValue || "";
-    const cleaned = text.replace(/^\s*[+＋]\s*/, "");
-    if (cleaned !== text) node.nodeValue = cleaned;
-    break;
+function standardActionFor(button) {
+  const text = visibleButtonText(button);
+  if (!text || /^(กำลัง|โปรดรอ)/i.test(text)) return null;
+  return STANDARD_ACTIONS.find(action => action.pattern.test(text)) || null;
+}
+
+function applyStandardAction(button, action) {
+  const use = button.querySelector("use");
+  const href = use?.getAttribute("href") || use?.getAttribute("xlink:href") || "";
+  const alreadyStandard = visibleButtonText(button) === action.label && href.includes(`#icon-${action.icon}`);
+  if (!alreadyStandard) {
+    button.innerHTML = `${iconMarkup(action.icon)}<span>${action.label}</span>`;
   }
+  button.classList.add("btn-standard-action");
+  button.classList.remove("btn-icon-only");
+  button.removeAttribute("aria-label");
+  button.removeAttribute("title");
+  return true;
 }
 
 function makeIconOnly(button, icon, label) {
@@ -132,7 +145,7 @@ function decorateButton(button) {
   if (button.closest(".user-menu")) return;
 
   if (button.dataset.inc) {
-    makeIconOnly(button, "add", "เพิ่มจำนวน");
+    makeIconOnly(button, "plus", "เพิ่มจำนวน");
     return;
   }
 
@@ -141,8 +154,8 @@ function decorateButton(button) {
     return;
   }
 
-  const originalText = button.textContent?.trim() || "";
-  if (/^\s*[+＋]\s*(เพิ่ม|add)/i.test(originalText)) stripDuplicateLeadingSymbol(button);
+  const standardAction = standardActionFor(button);
+  if (standardAction && applyStandardAction(button, standardAction)) return;
 
   if (!button.querySelector(".app-icon")) {
     const normalizedText = button.textContent?.trim() || "";
@@ -196,12 +209,13 @@ function initializeUi() {
   replaceSystemEmoji();
   decorateButtons();
   decorateCartHeadings();
-  new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(node => {
+  new MutationObserver(records => records.forEach(record => records && record.addedNodes.forEach(node => {
     if (node.nodeType === Node.ELEMENT_NODE) {
       decorateButtons(node);
+      if (node.parentElement?.matches("button, a.btn")) decorateButton(node.parentElement);
       decorateCartHeadings(node);
     } else if (node.parentElement) {
-      decorateButton(node.parentElement);
+      decorateButton(node.parentElement.closest?.("button, a.btn"));
       decorateCartHeading(node.parentElement.closest?.(".section-title h2"));
     }
   }))).observe(document.body, { childList: true, subtree: true });
