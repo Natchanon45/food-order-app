@@ -11,7 +11,7 @@ const DEFAULT_TENANT = Object.freeze({
   slug: "tuahere-somtam",
   name: "ส้มตำตัวเฮีย"
 });
-const STAFF_ROLES = new Set(["admin", "cashier", "kitchen", "super_admin"]);
+const STAFF_ROLES = new Set(["owner", "admin", "cashier", "kitchen", "super_admin"]);
 
 function tenantFromUser(user = {}) {
   return {
@@ -240,5 +240,6 @@ exports.notifyNewDeliveryOrder = onDocumentCreated(
 const tenantAdmin = require("./tenant-admin");
 exports.listTenants = tenantAdmin.listTenants;
 exports.createTenant = tenantAdmin.createTenant;
+exports.createTenantOwner = tenantAdmin.createTenantOwner;
 exports.updateTenant = tenantAdmin.updateTenant;
 exports.deleteTenant = tenantAdmin.deleteTenant;
