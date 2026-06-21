@@ -1,0 +1,21 @@
+[data-edit-tenant],
+[data-delete-tenant] {
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 7px 10px !important;
+  border-radius: 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  aspect-ratio: auto !important;
+  white-space: nowrap !important;
+}
+
+[data-edit-tenant] .app-icon,
+[data-delete-tenant] .app-icon {
+  width: 16px;
+  height: 16px;
+}
