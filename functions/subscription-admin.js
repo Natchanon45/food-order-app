@@ -5,7 +5,6 @@ const { getFirestore, FieldValue, Timestamp } = require("firebase-admin/firestor
 
 const DEFAULT_TERM_DAYS = 30;
 const DEFAULT_GRACE_DAYS = 3;
-const VALID_STATUSES = new Set(["active", "grace", "expired", "suspended"]);
 
 async function assertSuperAdmin(auth) {
   if (!auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
@@ -37,7 +36,7 @@ function effectiveStatus(tenant, now = new Date()) {
   return "expired";
 }
 
-async function mirrorSubscription(batch, db, tenantId, tenant, patch) {
+async function mirrorSubscription(batch, db, tenant, patch) {
   const slug = String(tenant.slug || "").trim();
   if (!slug) return;
   batch.set(db.collection("tenantSlugs").doc(slug), {
@@ -49,6 +48,18 @@ async function mirrorSubscription(batch, db, tenantId, tenant, patch) {
   }, { merge: true });
 }
 
+function defaultPatch(now = new Date()) {
+  return {
+    planCode: "monthly",
+    subscriptionStatus: "active",
+    subscriptionStartedAt: Timestamp.fromDate(now),
+    subscriptionExpiresAt: Timestamp.fromDate(addDays(now, DEFAULT_TERM_DAYS)),
+    gracePeriodDays: DEFAULT_GRACE_DAYS,
+    active: true,
+    updatedAt: FieldValue.serverTimestamp()
+  };
+}
+
 exports.initializeTenantSubscription = onDocumentCreated(
   { document: "tenants/{tenantId}", region: "asia-southeast1" },
   async event => {
@@ -56,23 +67,33 @@ exports.initializeTenantSubscription = onDocumentCreated(
     if (!snapshot) return;
     const tenant = snapshot.data();
     if (tenant.subscriptionExpiresAt) return;
-
-    const now = new Date();
-    const expiresAt = addDays(now, DEFAULT_TERM_DAYS);
     const db = getFirestore();
     const batch = db.batch();
-    const patch = {
-      planCode: "monthly",
-      subscriptionStatus: "active",
-      subscriptionStartedAt: Timestamp.fromDate(now),
-      subscriptionExpiresAt: Timestamp.fromDate(expiresAt),
-      gracePeriodDays: DEFAULT_GRACE_DAYS,
-      active: true,
-      updatedAt: FieldValue.serverTimestamp()
-    };
+    const patch = defaultPatch();
     batch.set(snapshot.ref, patch, { merge: true });
-    await mirrorSubscription(batch, db, event.params.tenantId, tenant, patch);
+    await mirrorSubscription(batch, db, tenant, patch);
     await batch.commit();
+  }
+);
+
+exports.backfillTenantSubscriptions = onCall(
+  { region: "asia-southeast1" },
+  async request => {
+    await assertSuperAdmin(request.auth);
+    const db = getFirestore();
+    const snapshot = await db.collection("tenants").get();
+    let updated = 0;
+    for (const tenantDoc of snapshot.docs) {
+      const tenant = tenantDoc.data();
+      if (tenant.subscriptionExpiresAt) continue;
+      const batch = db.batch();
+      const patch = defaultPatch();
+      batch.set(tenantDoc.ref, patch, { merge: true });
+      await mirrorSubscription(batch, db, tenant, patch);
+      await batch.commit();
+      updated += 1;
+    }
+    return { ok: true, updated };
   }
 );
 
@@ -138,7 +159,7 @@ exports.updateTenantSubscription = onCall(
 
     const batch = db.batch();
     batch.set(tenantRef, patch, { merge: true });
-    await mirrorSubscription(batch, db, tenantId, tenant, patch);
+    await mirrorSubscription(batch, db, tenant, patch);
     await batch.commit();
     return { ok: true, tenantId, status, active, expiresAt: expiresAt.toISOString(), gracePeriodDays };
   }
@@ -150,22 +171,28 @@ exports.syncExpiredTenants = onSchedule(
     const db = getFirestore();
     const snapshot = await db.collection("tenants").get();
     let changed = 0;
-
-    for (const doc of snapshot.docs) {
-      const tenant = doc.data();
+    for (const tenantDoc of snapshot.docs) {
+      const tenant = tenantDoc.data();
+      if (!tenant.subscriptionExpiresAt) {
+        const batch = db.batch();
+        const patch = defaultPatch();
+        batch.set(tenantDoc.ref, patch, { merge: true });
+        await mirrorSubscription(batch, db, tenant, patch);
+        await batch.commit();
+        changed += 1;
+        continue;
+      }
       if (tenant.subscriptionStatus === "suspended") continue;
       const status = effectiveStatus(tenant);
       const active = status === "active" || status === "grace";
       if (status === tenant.subscriptionStatus && active === (tenant.active !== false)) continue;
-
       const patch = { subscriptionStatus: status, active, updatedAt: FieldValue.serverTimestamp() };
       const batch = db.batch();
-      batch.set(doc.ref, patch, { merge: true });
-      await mirrorSubscription(batch, db, doc.id, tenant, { ...patch, subscriptionExpiresAt: tenant.subscriptionExpiresAt || null, gracePeriodDays: tenant.gracePeriodDays ?? DEFAULT_GRACE_DAYS });
+      batch.set(tenantDoc.ref, patch, { merge: true });
+      await mirrorSubscription(batch, db, tenant, { ...patch, subscriptionExpiresAt: tenant.subscriptionExpiresAt, gracePeriodDays: tenant.gracePeriodDays ?? DEFAULT_GRACE_DAYS });
       await batch.commit();
       changed += 1;
     }
-
     console.log("Tenant subscription sync completed", { changed });
   }
 );
