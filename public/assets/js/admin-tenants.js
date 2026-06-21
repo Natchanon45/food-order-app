@@ -43,12 +43,20 @@ function storefrontIcon() {
 
 const cancelEditButton = document.createElement("button");
 cancelEditButton.type = "button";
-cancelEditButton.className = "btn";
+cancelEditButton.className = "btn tenant-cancel-edit";
 cancelEditButton.innerHTML = `${xIcon()}<span>ยกเลิกแก้ไข</span>`;
 cancelEditButton.setAttribute("aria-label", "ยกเลิกการแก้ไข");
-cancelEditButton.style.cssText = "display:flex;align-items:center;justify-content:center;gap:7px;width:100%;border-radius:12px;";
-cancelEditButton.hidden = true;
+cancelEditButton.style.setProperty("display", "none", "important");
+cancelEditButton.style.setProperty("align-items", "center", "important");
+cancelEditButton.style.setProperty("justify-content", "center", "important");
+cancelEditButton.style.setProperty("gap", "7px", "important");
+cancelEditButton.style.setProperty("width", "100%", "important");
+cancelEditButton.style.setProperty("border-radius", "12px", "important");
 submitButton.insertAdjacentElement("afterend", cancelEditButton);
+
+function setCancelVisible(visible) {
+  cancelEditButton.style.setProperty("display", visible ? "flex" : "none", "important");
+}
 
 function sanitizeSlugTyping(value = "") {
   return String(value)
@@ -82,7 +90,7 @@ function resetForm() {
   form.reset();
   slugField.dataset.edited = "false";
   submitButton.textContent = "สร้างร้าน";
-  cancelEditButton.hidden = true;
+  setCancelVisible(false);
   if (formTitle) formTitle.textContent = "สร้างร้านใหม่";
   showError("");
 }
@@ -95,7 +103,7 @@ function beginEdit(tenant) {
   addressField.value = tenant.shopAddress || tenant.address || "";
   slugField.dataset.edited = "true";
   submitButton.textContent = "บันทึกการแก้ไข";
-  cancelEditButton.hidden = false;
+  setCancelVisible(true);
   if (formTitle) formTitle.textContent = "แก้ไขร้านค้า";
   form.scrollIntoView({ behavior: "smooth", block: "start" });
   nameField.focus();
@@ -115,7 +123,7 @@ function renderTenants(items = []) {
       </div>
       <div style="margin-top:12px;word-break:break-all"><strong>Tenant ID:</strong> ${escapeHtml(tenant.id)}</div>
       <div class="order-actions" style="margin-top:12px;align-items:center">
-        <a class="btn btn-dark btn-sm" style="display:inline-flex;align-items:center;justify-content:center;gap:7px;min-width:122px;padding:8px 12px;border-radius:10px;white-space:nowrap" href="/s/${encodeURIComponent(tenant.slug || "")}/delivery" target="_blank" rel="noopener noreferrer">${storefrontIcon()}<span>เปิดหน้าร้าน</span></a>
+        <a class="btn btn-dark btn-sm tenant-storefront-button" style="display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;min-width:122px!important;padding:8px 12px!important;border-radius:10px!important;white-space:nowrap!important;width:auto!important;height:auto!important;aspect-ratio:auto!important" href="/s/${encodeURIComponent(tenant.slug || "")}/delivery" target="_blank" rel="noopener noreferrer">${storefrontIcon()}<span>เปิดหน้าร้าน</span></a>
         <button class="btn btn-sm" type="button" data-edit-tenant="${escapeHtml(tenant.id)}">แก้ไข</button>
         <button class="btn btn-danger btn-sm" type="button" data-delete-tenant="${escapeHtml(tenant.id)}">ลบ</button>
       </div>
