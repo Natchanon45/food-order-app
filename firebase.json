@@ -30,6 +30,10 @@
         "source": "/admin/qr/**",
         "destination": "/admin/qr/index.html"
       },
+      {
+        "source": "/admin/tenants/**",
+        "destination": "/admin/tenants/index.html"
+      },
       { "source": "/admin/**", "destination": "/admin/index.html" }
     ]
   },
