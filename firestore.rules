@@ -15,19 +15,19 @@ service cloud.firestore {
     }
 
     function adminRole() {
-      return hasRole(['admin', 'super_admin']);
+      return hasRole(['owner', 'admin', 'super_admin']);
     }
 
     function cashierRole() {
-      return hasRole(['cashier', 'super_admin']);
+      return hasRole(['owner', 'cashier', 'super_admin']);
     }
 
     function kitchenRole() {
-      return hasRole(['kitchen', 'super_admin']);
+      return hasRole(['owner', 'kitchen', 'super_admin']);
     }
 
     function staffRole() {
-      return hasRole(['admin', 'super_admin', 'cashier', 'kitchen']);
+      return hasRole(['owner', 'admin', 'super_admin', 'cashier', 'kitchen']);
     }
 
     function superAdminRole() {
@@ -50,19 +50,19 @@ service cloud.firestore {
     }
 
     function tenantAdminRole(tenantId) {
-      return superAdminRole() || tenantHasRole(tenantId, ['admin', 'super_admin']);
+      return superAdminRole() || tenantHasRole(tenantId, ['owner', 'admin', 'super_admin']);
     }
 
     function tenantCashierRole(tenantId) {
-      return superAdminRole() || tenantHasRole(tenantId, ['cashier', 'super_admin']);
+      return superAdminRole() || tenantHasRole(tenantId, ['owner', 'cashier', 'super_admin']);
     }
 
     function tenantKitchenRole(tenantId) {
-      return superAdminRole() || tenantHasRole(tenantId, ['kitchen', 'super_admin']);
+      return superAdminRole() || tenantHasRole(tenantId, ['owner', 'kitchen', 'super_admin']);
     }
 
     function tenantStaffRole(tenantId) {
-      return superAdminRole() || tenantHasRole(tenantId, ['admin', 'super_admin', 'cashier', 'kitchen']);
+      return superAdminRole() || tenantHasRole(tenantId, ['owner', 'admin', 'super_admin', 'cashier', 'kitchen']);
     }
 
     function validOrderBase() {
@@ -198,7 +198,7 @@ service cloud.firestore {
           tenantPayloadMatches(tenantId) && validDeliveryOrder()
         ) || validTenantTableOrder(tenantId);
         allow update: if tenantCashierRole(tenantId) || tenantKitchenRole(tenantId) || tenantAdminRole(tenantId);
-        allow delete: if superAdminRole() || tenantHasRole(tenantId, ['super_admin']);
+        allow delete: if superAdminRole() || tenantHasRole(tenantId, ['owner', 'super_admin']);
       }
 
       match /deliveryCustomers/{customerId} {
