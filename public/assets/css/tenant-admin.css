@@ -6,9 +6,34 @@
   gap: 8px !important;
 }
 
+/* Keep all fields in the create/edit tenant form aligned from the top.
+   Fields with helper text must not push neighbouring inputs down. */
+#tenantForm .grid-2 {
+  align-items: start;
+}
+
+#tenantForm .field {
+  align-content: start;
+  align-self: start;
+}
+
+#tenantForm .field > label {
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+}
+
+#tenantForm .field > .input {
+  min-height: 46px;
+}
+
+/* Owner accounts are managed only from /platform/owners. */
+#tenantList [data-create-owner] {
+  display: none !important;
+}
+
 .tenant-action-button,
 #tenantList .order-actions > a.btn,
-#tenantList [data-create-owner],
 #tenantList [data-edit-tenant],
 #tenantList [data-delete-tenant] {
   width: auto !important;
@@ -30,7 +55,6 @@
 
 .tenant-action-button > span,
 #tenantList .order-actions > a.btn > span,
-#tenantList [data-create-owner] > span,
 #tenantList [data-edit-tenant] > span,
 #tenantList [data-delete-tenant] > span {
   display: inline !important;
@@ -248,7 +272,6 @@ body.owner-modal-open {
 
 @media (max-width: 480px) {
   #tenantList .order-actions > a.btn,
-  #tenantList [data-create-owner],
   #tenantList [data-edit-tenant],
   #tenantList [data-delete-tenant] {
     width: auto !important;
