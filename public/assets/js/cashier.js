@@ -1,5 +1,6 @@
 import { dataService, usingDemoMode } from "./data-service.js";
 import { money, statusLabel, formatTime, toast } from "./ui.js";
+import { observeDeliveryOrders } from "./delivery-notifier.js";
 
 if (usingDemoMode) {
   document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง: ข้อมูลอยู่ในเบราว์เซอร์นี้</div>';
@@ -206,4 +207,7 @@ grid.addEventListener("click", async event => {
   }
 });
 
-dataService.subscribeOrders(render);
+dataService.subscribeOrders(orders => {
+  observeDeliveryOrders(orders);
+  render(orders);
+});
