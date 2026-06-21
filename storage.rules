@@ -19,11 +19,11 @@ service firebase.storage {
     }
 
     function adminRole() {
-      return hasRole(['admin', 'super_admin']);
+      return hasRole(['owner', 'admin', 'super_admin']);
     }
 
     function staffRole() {
-      return hasRole(['admin', 'super_admin', 'cashier', 'kitchen']);
+      return hasRole(['owner', 'admin', 'super_admin', 'cashier', 'kitchen']);
     }
 
     function validImage(maxBytes) {
@@ -32,7 +32,7 @@ service firebase.storage {
         && request.resource.contentType.matches('image/.*');
     }
 
-    // รูปเมนู: ลูกค้าอ่านได้ แต่ Admin เท่านั้นที่เพิ่ม แก้ไข หรือลบได้
+    // รูปเมนู: ลูกค้าอ่านได้ แต่ Owner/Admin เท่านั้นที่เพิ่ม แก้ไข หรือลบได้
     match /menu-images/{menuId}/{fileName} {
       allow read: if true;
       allow create, update: if adminRole() && validImage(8 * 1024 * 1024);
@@ -45,10 +45,9 @@ service firebase.storage {
       allow create: if validImage(8 * 1024 * 1024);
       allow read: if staffRole();
       allow update: if false;
-      allow delete: if hasRole(['super_admin']);
+      allow delete: if hasRole(['owner', 'super_admin']);
     }
 
-    // ปฏิเสธไฟล์และโฟลเดอร์อื่นทั้งหมด
     match /{allPaths=**} {
       allow read, write: if false;
     }
