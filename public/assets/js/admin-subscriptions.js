@@ -4,6 +4,7 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
 
 const functions = getFunctions(app, "asia-southeast1");
 const listTenants = httpsCallable(functions, "listTenants");
+const backfillTenantSubscriptions = httpsCallable(functions, "backfillTenantSubscriptions");
 const updateTenantSubscription = httpsCallable(functions, "updateTenantSubscription");
 const tenantList = document.querySelector("#tenantList");
 let tenants = [];
@@ -94,7 +95,6 @@ async function performAction(button) {
   try {
     await updateTenantSubscription(payload);
     toast("อัปเดตอายุสมาชิกเรียบร้อยแล้ว");
-    tenants = [];
     location.reload();
   } catch (error) {
     console.error(error);
@@ -109,4 +109,12 @@ tenantList.addEventListener("click", event => {
 });
 
 new MutationObserver(() => decorateTenantCards().catch(console.error)).observe(tenantList, { childList: true });
+
+try {
+  const result = await backfillTenantSubscriptions({});
+  if (result.data?.updated) toast(`กำหนดอายุเริ่มต้นให้ ${result.data.updated} ร้านแล้ว`);
+} catch (error) {
+  console.error("Subscription backfill failed", error);
+}
+
 await decorateTenantCards();
