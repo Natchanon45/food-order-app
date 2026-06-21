@@ -11,6 +11,15 @@ function normalizeSlug(value = "") {
     .replace(/^-|-$/g, "");
 }
 
+function validateTenant(name, slug) {
+  if (name.length < 2 || name.length > 120) {
+    throw new HttpsError("invalid-argument", "Tenant name must contain 2-120 characters");
+  }
+  if (!/^[a-z0-9][a-z0-9-]{1,48}[a-z0-9]$/.test(slug)) {
+    throw new HttpsError("invalid-argument", "Slug must contain 3-50 lowercase letters, numbers, or hyphens");
+  }
+}
+
 async function assertSuperAdmin(auth) {
   if (!auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
   const profileSnapshot = await getFirestore().collection("users").doc(auth.uid).get();
@@ -41,13 +50,7 @@ exports.createTenant = onCall(
     const slug = normalizeSlug(request.data?.slug || "");
     const phone = String(request.data?.phone || "").trim();
     const address = String(request.data?.address || "").trim();
-
-    if (name.length < 2 || name.length > 120) {
-      throw new HttpsError("invalid-argument", "Tenant name must contain 2-120 characters");
-    }
-    if (!/^[a-z0-9][a-z0-9-]{1,48}[a-z0-9]$/.test(slug)) {
-      throw new HttpsError("invalid-argument", "Slug must contain 3-50 lowercase letters, numbers, or hyphens");
-    }
+    validateTenant(name, slug);
 
     const db = getFirestore();
     const slugRef = db.collection("tenantSlugs").doc(slug);
@@ -73,7 +76,8 @@ exports.createTenant = onCall(
       slug,
       name,
       active: true,
-      createdAt: FieldValue.serverTimestamp()
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp()
     });
     batch.set(settingsRef, {
       tenantId,
@@ -89,5 +93,101 @@ exports.createTenant = onCall(
 
     await batch.commit();
     return { ok: true, tenant: { id: tenantId, slug, name, active: true } };
+  }
+);
+
+exports.updateTenant = onCall(
+  { region: "asia-southeast1" },
+  async request => {
+    await assertSuperAdmin(request.auth);
+
+    const tenantId = String(request.data?.tenantId || "").trim();
+    const name = String(request.data?.name || "").trim();
+    const slug = normalizeSlug(request.data?.slug || "");
+    const phone = String(request.data?.phone || "").trim();
+    const address = String(request.data?.address || "").trim();
+    if (!tenantId) throw new HttpsError("invalid-argument", "Tenant ID is required");
+    validateTenant(name, slug);
+
+    const db = getFirestore();
+    const tenantRef = db.collection("tenants").doc(tenantId);
+    const tenantSnapshot = await tenantRef.get();
+    if (!tenantSnapshot.exists) throw new HttpsError("not-found", "Tenant not found");
+
+    const current = tenantSnapshot.data();
+    const oldSlug = String(current.slug || "").trim();
+    const slugRef = db.collection("tenantSlugs").doc(slug);
+    if (slug !== oldSlug) {
+      const existingSlug = await slugRef.get();
+      if (existingSlug.exists && existingSlug.data().tenantId !== tenantId) {
+        throw new HttpsError("already-exists", "This slug is already in use");
+      }
+    }
+
+    const batch = db.batch();
+    batch.set(tenantRef, {
+      name,
+      slug,
+      updatedAt: FieldValue.serverTimestamp()
+    }, { merge: true });
+    batch.set(tenantRef.collection("settings").doc("store"), {
+      shopName: name,
+      shopPhone: phone,
+      shopAddress: address,
+      updatedAt: FieldValue.serverTimestamp()
+    }, { merge: true });
+    batch.set(slugRef, {
+      tenantId,
+      slug,
+      name,
+      active: current.active !== false,
+      updatedAt: FieldValue.serverTimestamp()
+    }, { merge: true });
+    if (oldSlug && oldSlug !== slug) batch.delete(db.collection("tenantSlugs").doc(oldSlug));
+
+    const usersSnapshot = await db.collection("users").where("tenantId", "==", tenantId).get();
+    usersSnapshot.docs.forEach(userDoc => {
+      batch.set(userDoc.ref, {
+        tenantSlug: slug,
+        tenantName: name,
+        updatedAt: FieldValue.serverTimestamp()
+      }, { merge: true });
+      batch.set(tenantRef.collection("memberships").doc(userDoc.id), {
+        tenantSlug: slug,
+        tenantName: name,
+        updatedAt: FieldValue.serverTimestamp()
+      }, { merge: true });
+    });
+
+    await batch.commit();
+    return { ok: true, tenant: { id: tenantId, slug, name, active: current.active !== false } };
+  }
+);
+
+exports.deleteTenant = onCall(
+  { region: "asia-southeast1" },
+  async request => {
+    await assertSuperAdmin(request.auth);
+
+    const tenantId = String(request.data?.tenantId || "").trim();
+    if (!tenantId) throw new HttpsError("invalid-argument", "Tenant ID is required");
+
+    const db = getFirestore();
+    const tenantRef = db.collection("tenants").doc(tenantId);
+    const tenantSnapshot = await tenantRef.get();
+    if (!tenantSnapshot.exists) throw new HttpsError("not-found", "Tenant not found");
+
+    const protectedCollections = ["orders", "memberships", "menus", "tables", "notificationTokens", "deliveryCustomers"];
+    for (const collectionName of protectedCollections) {
+      const snapshot = await tenantRef.collection(collectionName).limit(1).get();
+      if (!snapshot.empty) {
+        throw new HttpsError("failed-precondition", `Tenant contains data in ${collectionName}`);
+      }
+    }
+
+    const slug = String(tenantSnapshot.data().slug || "").trim();
+    if (slug) await db.collection("tenantSlugs").doc(slug).delete().catch(() => {});
+    await db.recursiveDelete(tenantRef);
+    return { ok: true, tenantId };
   }
 );
