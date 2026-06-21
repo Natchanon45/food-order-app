@@ -1,4 +1,4 @@
-@media (max-width: 768px) {
+@media (max-width: 899px) {
   html,
   body {
     min-height: 100%;
@@ -16,7 +16,7 @@
 
   body.delivery-page .container,
   body.table-order-page .container {
-    padding-bottom: calc(180px + env(safe-area-inset-bottom)) !important;
+    padding-bottom: calc(220px + env(safe-area-inset-bottom)) !important;
     overflow: visible !important;
   }
 
@@ -35,6 +35,7 @@
     min-height: 0 !important;
     overflow: visible !important;
     overscroll-behavior: auto !important;
+    contain: none !important;
   }
 
   .delivery-side-column {
@@ -47,19 +48,6 @@
 
   #menuPagination {
     display: none !important;
-  }
-
-  .mobile-menu-category-section {
-    grid-column: 1 / -1;
-    scroll-margin-top: 165px;
-  }
-
-  .mobile-menu-category-section > .grid {
-    grid-template-columns: 1fr;
-  }
-
-  .mobile-category-heading {
-    margin: 8px 0 10px;
   }
 
   .delivery-page .menu-filter-area {
