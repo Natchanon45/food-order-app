@@ -1,4 +1,4 @@
-const mobileQuery = window.matchMedia("(max-width: 768px)");
+const mobileQuery = window.matchMedia("(max-width: 899px)");
 const menuGrid = document.querySelector("#menuGrid");
 const categoryTabs = document.querySelector("#categoryTabs");
 const pagination = document.querySelector("#menuPagination");
@@ -6,12 +6,20 @@ const pagination = document.querySelector("#menuPagination");
 let normalizing = false;
 let scrollFrame = 0;
 let browsingAll = true;
+let userHasScrolled = false;
+let lastWindowY = window.scrollY;
 
 function categoryOf(card) {
   return card.dataset.menuCategory || card.querySelector(".menu-category")?.textContent?.trim() || "อื่น ๆ";
 }
 
-function setActiveTab(category) {
+function centerTabHorizontally(target) {
+  if (!categoryTabs || !target) return;
+  const left = target.offsetLeft - (categoryTabs.clientWidth / 2) + (target.clientWidth / 2);
+  categoryTabs.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+}
+
+function setActiveTab(category, { center = true } = {}) {
   if (!categoryTabs || !category) return;
   const buttons = [...categoryTabs.querySelectorAll("[data-category]")];
   const target = buttons.find(button => button.dataset.category === category);
@@ -23,7 +31,7 @@ function setActiveTab(category) {
     button.setAttribute("aria-selected", String(active));
   });
 
-  target.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
+  if (center) centerTabHorizontally(target);
 }
 
 function flattenMenuCards() {
@@ -64,11 +72,18 @@ function categoryAnchors() {
 }
 
 function updateActiveFromScroll() {
-  if (!mobileQuery.matches || !menuGrid || !categoryTabs || !browsingAll) return;
+  if (!mobileQuery.matches || !menuGrid || !categoryTabs || !browsingAll || !userHasScrolled) return;
   const anchors = categoryAnchors();
   if (!anchors.length) return;
 
   const stickyOffset = document.body.classList.contains("delivery-page") ? 160 : 170;
+  const firstTop = anchors[0].card.getBoundingClientRect().top;
+
+  if (firstTop > stickyOffset) {
+    setActiveTab("ทั้งหมด");
+    return;
+  }
+
   let current = anchors[0];
   for (const anchor of anchors) {
     if (anchor.card.getBoundingClientRect().top <= stickyOffset) current = anchor;
@@ -78,6 +93,9 @@ function updateActiveFromScroll() {
 }
 
 function scheduleScrollUpdate() {
+  const currentY = window.scrollY;
+  if (Math.abs(currentY - lastWindowY) > 2) userHasScrolled = true;
+  lastWindowY = currentY;
   cancelAnimationFrame(scrollFrame);
   scrollFrame = requestAnimationFrame(updateActiveFromScroll);
 }
@@ -92,7 +110,8 @@ function refreshMobileMenu() {
   if (!mobileQuery.matches) return;
   requestAnimationFrame(() => {
     flattenMenuCards();
-    updateActiveFromScroll();
+    if (browsingAll && !userHasScrolled) setActiveTab("ทั้งหมด", { center: false });
+    else updateActiveFromScroll();
   });
 }
 
@@ -106,12 +125,19 @@ if (menuGrid) {
 categoryTabs?.addEventListener("click", event => {
   const button = event.target.closest("[data-category]");
   if (!button) return;
+
   browsingAll = button.dataset.category === "ทั้งหมด";
+  userHasScrolled = false;
+  setActiveTab(button.dataset.category, { center: true });
   setTimeout(refreshMobileMenu, 0);
 });
 
 window.addEventListener("scroll", scheduleScrollUpdate, { passive: true });
 window.addEventListener("resize", refreshMobileMenu);
-mobileQuery.addEventListener?.("change", refreshMobileMenu);
+mobileQuery.addEventListener?.("change", () => {
+  userHasScrolled = false;
+  browsingAll = true;
+  refreshMobileMenu();
+});
 
 refreshMobileMenu();
