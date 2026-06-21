@@ -34,6 +34,37 @@ service cloud.firestore {
       return hasRole(['super_admin']);
     }
 
+    function tenantMembershipPath(tenantId) {
+      return /databases/$(database)/documents/tenants/$(tenantId)/memberships/$(request.auth.uid);
+    }
+
+    function tenantMember(tenantId) {
+      return signedIn()
+        && exists(tenantMembershipPath(tenantId))
+        && get(tenantMembershipPath(tenantId)).data.active == true;
+    }
+
+    function tenantHasRole(tenantId, roles) {
+      return tenantMember(tenantId)
+        && get(tenantMembershipPath(tenantId)).data.role in roles;
+    }
+
+    function tenantAdminRole(tenantId) {
+      return superAdminRole() || tenantHasRole(tenantId, ['admin', 'super_admin']);
+    }
+
+    function tenantCashierRole(tenantId) {
+      return superAdminRole() || tenantHasRole(tenantId, ['cashier', 'super_admin']);
+    }
+
+    function tenantKitchenRole(tenantId) {
+      return superAdminRole() || tenantHasRole(tenantId, ['kitchen', 'super_admin']);
+    }
+
+    function tenantStaffRole(tenantId) {
+      return superAdminRole() || tenantHasRole(tenantId, ['admin', 'super_admin', 'cashier', 'kitchen']);
+    }
+
     function validOrderBase() {
       return request.resource.data.status == 'pending'
         && request.resource.data.items is list
@@ -142,18 +173,18 @@ service cloud.firestore {
 
       match /menus/{menuId} {
         allow read: if true;
-        allow create, update, delete: if adminRole();
+        allow create, update, delete: if tenantAdminRole(tenantId);
       }
 
       match /settings/{settingId} {
         allow read: if true;
-        allow create, update, delete: if adminRole();
+        allow create, update, delete: if tenantAdminRole(tenantId);
       }
 
       match /tables/{tableId} {
         allow read: if true;
-        allow create, delete: if adminRole();
-        allow update: if adminRole() || cashierRole() || (
+        allow create, delete: if tenantAdminRole(tenantId);
+        allow update: if tenantAdminRole(tenantId) || tenantCashierRole(tenantId) || (
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentRound', 'updatedAt', 'tenantId', 'shopId']) &&
           resource.data.status == 'occupied' &&
           request.resource.data.orderToken == resource.data.orderToken
@@ -162,20 +193,22 @@ service cloud.firestore {
 
       match /orders/{orderId} {
         allow get: if true;
-        allow list: if staffRole() || activeTenantTableOrder(tenantId);
+        allow list: if tenantStaffRole(tenantId) || activeTenantTableOrder(tenantId);
         allow create: if superAdminRole() || (
           tenantPayloadMatches(tenantId) && validDeliveryOrder()
         ) || validTenantTableOrder(tenantId);
-        allow update: if cashierRole() || kitchenRole() || adminRole();
-        allow delete: if superAdminRole();
+        allow update: if tenantCashierRole(tenantId) || tenantKitchenRole(tenantId) || tenantAdminRole(tenantId);
+        allow delete: if superAdminRole() || tenantHasRole(tenantId, ['super_admin']);
       }
 
       match /deliveryCustomers/{customerId} {
-        allow read, write: if adminRole();
+        allow read, write: if tenantAdminRole(tenantId);
       }
 
       match /memberships/{userId} {
-        allow read: if signedIn() && (request.auth.uid == userId || superAdminRole());
+        allow read: if signedIn() && (
+          request.auth.uid == userId || superAdminRole() || tenantAdminRole(tenantId)
+        );
         allow create, update, delete: if superAdminRole();
       }
 
@@ -183,12 +216,12 @@ service cloud.firestore {
         allow read: if superAdminRole() || (
           signedIn() && resource.data.uid == request.auth.uid
         );
-        allow create: if signedIn()
+        allow create: if tenantMember(tenantId)
           && request.resource.data.uid == request.auth.uid
           && request.resource.data.tenantId == tenantId
           && request.resource.data.token is string
           && request.resource.data.active == true;
-        allow update: if signedIn()
+        allow update: if tenantMember(tenantId)
           && resource.data.uid == request.auth.uid
           && request.resource.data.uid == request.auth.uid
           && request.resource.data.tenantId == tenantId;
