@@ -240,3 +240,5 @@ exports.notifyNewDeliveryOrder = onDocumentCreated(
 const tenantAdmin = require("./tenant-admin");
 exports.listTenants = tenantAdmin.listTenants;
 exports.createTenant = tenantAdmin.createTenant;
+exports.updateTenant = tenantAdmin.updateTenant;
+exports.deleteTenant = tenantAdmin.deleteTenant;
