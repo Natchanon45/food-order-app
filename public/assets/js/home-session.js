@@ -25,16 +25,6 @@ if (!user) {
     if (profile.role === "owner") {
       if (heroTitle) heroTitle.textContent = "ระบบจัดการร้าน";
       if (heroSubtitle) heroSubtitle.textContent = profile.tenantName || "ร้านของคุณ";
-
-      const navCards = dashboard.querySelector(".nav-cards");
-      if (navCards && !navCards.querySelector('[data-owner-table-qr]')) {
-        const tableQrCard = document.createElement("a");
-        tableQrCard.className = "card nav-card";
-        tableQrCard.href = "/cashier/table-qr";
-        tableQrCard.dataset.ownerTableQr = "true";
-        tableQrCard.innerHTML = '<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg#icon-table"></use></svg><span>ออกโต๊ะและ QR</span>';
-        navCards.appendChild(tableQrCard);
-      }
     }
 
     mountUserMenu(profile);
