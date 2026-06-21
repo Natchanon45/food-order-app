@@ -1,4 +1,5 @@
 import { dataService, usingDemoMode } from "./data-service.js";
+import { storage, ref, getDownloadURL } from "./firebase-config.js";
 import { money, statusLabel, formatTime, toast } from "./ui.js";
 import { observeDeliveryOrders } from "./delivery-notifier.js";
 
@@ -8,6 +9,7 @@ if (usingDemoMode) {
 
 const grid = document.querySelector("#orderGrid");
 let currentOrders = [];
+let slipUrls = new Map();
 
 function paymentLabel(order) {
   if (order.paymentStatus === "paid" && order.status === "served") return "ชำระแล้ว รอระบบปิดออเดอร์";
@@ -25,13 +27,27 @@ function tableGroupKey(order) {
   return order.tableToken || `table:${order.tableCode}`;
 }
 
+async function resolveSlipUrls(orders) {
+  if (!storage) return;
+  const targets = orders.filter(order => order.orderType === "delivery" && order.paymentSlipPath && !order.paymentSlipUrl && !slipUrls.has(order.id));
+  await Promise.all(targets.map(async order => {
+    try {
+      const url = await getDownloadURL(ref(storage, order.paymentSlipPath));
+      if (url) slipUrls.set(order.id, url);
+    } catch (error) {
+      console.error("Unable to load payment slip", order.id, error);
+    }
+  }));
+}
+
 function renderDelivery(order) {
   const paymentAction = order.paymentStatus !== "paid"
     ? `<button class="btn btn-primary" data-payment-id="${order.id}">ตรวจสอบแล้ว/รับชำระแล้ว</button>`
     : "";
-  const slipAction = order.paymentSlipUrl
-    ? `<a class="btn btn-warning" href="${order.paymentSlipUrl}" target="_blank" rel="noopener">ดูสลิป</a>`
-    : "";
+  const slipUrl = order.paymentSlipUrl || slipUrls.get(order.id) || "";
+  const slipAction = slipUrl
+    ? `<a class="btn btn-warning" href="${slipUrl}" target="_blank" rel="noopener">ดูสลิป</a>`
+    : (order.paymentSlipPath ? '<button class="btn btn-warning" disabled>กำลังโหลดสลิป...</button>' : "");
   const itemRows = (order.items || []).map(item => `
     <li style="${item.cancelled ? "opacity:.5;text-decoration:line-through" : ""}">
       ${item.qty} × ${item.name}
@@ -207,7 +223,10 @@ grid.addEventListener("click", async event => {
   }
 });
 
-dataService.subscribeOrders(orders => {
+dataService.subscribeOrders(async orders => {
   observeDeliveryOrders(orders);
+  currentOrders = orders;
+  render(orders);
+  await resolveSlipUrls(orders);
   render(orders);
 });
