@@ -10,6 +10,8 @@ if (!user) {
 
   if (!profile || profile.active === false || !STAFF_ROLES.includes(profile.role)) {
     location.replace("/delivery");
+  } else if (profile.role === "super_admin") {
+    location.replace("/platform");
   } else {
     const ownerRoleAliases = new Set(["owner", "admin", "cashier", "kitchen"]);
 
