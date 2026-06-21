@@ -18,13 +18,16 @@ const errorBox = document.getElementById("tenantError");
 const tenantList = document.getElementById("tenantList");
 const tenantCount = document.getElementById("tenantCount");
 
-function normalizeSlug(value = "") {
+function sanitizeSlugTyping(value = "") {
   return String(value)
-    .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
     .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
+    .replace(/^-+/g, "");
+}
+
+function normalizeSlug(value = "") {
+  return sanitizeSlugTyping(value).replace(/-+$/g, "");
 }
 
 function escapeHtml(value = "") {
@@ -35,6 +38,15 @@ function escapeHtml(value = "") {
     "'": "&#39;",
     '"': "&quot;"
   })[character]);
+}
+
+function storefrontIcon() {
+  return `
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="display:block;flex:0 0 auto">
+      <path d="M14 5h5v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M10 14L19 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M19 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
 }
 
 function showError(message = "") {
@@ -55,7 +67,7 @@ function renderTenants(tenants = []) {
       </div>
       <div style="margin-top:12px;word-break:break-all"><strong>Tenant ID:</strong> ${escapeHtml(tenant.id)}</div>
       <div class="order-actions" style="margin-top:12px">
-        <a class="btn btn-dark btn-sm" href="/s/${encodeURIComponent(tenant.slug || "")}/delivery" target="_blank" rel="noopener">เปิดหน้าร้าน</a>
+        <a class="btn btn-dark btn-sm" style="display:inline-flex;align-items:center;gap:6px" href="/s/${encodeURIComponent(tenant.slug || "")}/delivery" target="_blank" rel="noopener noreferrer">${storefrontIcon()}<span>เปิดหน้าร้าน</span></a>
       </div>
     </article>
   `).join("") : '<div class="empty">ยังไม่มีร้านค้า</div>';
@@ -79,6 +91,15 @@ nameField.addEventListener("input", () => {
 
 slugField.addEventListener("input", () => {
   slugField.dataset.edited = "true";
+  const cursorPosition = slugField.selectionStart;
+  const originalLength = slugField.value.length;
+  slugField.value = sanitizeSlugTyping(slugField.value);
+  const removedCount = originalLength - slugField.value.length;
+  const nextPosition = Math.max(0, cursorPosition - removedCount);
+  slugField.setSelectionRange(nextPosition, nextPosition);
+});
+
+slugField.addEventListener("blur", () => {
   slugField.value = normalizeSlug(slugField.value);
 });
 
@@ -89,9 +110,12 @@ form.addEventListener("submit", async event => {
   submitButton.textContent = "กำลังสร้างร้าน...";
 
   try {
+    const normalizedSlug = normalizeSlug(slugField.value);
+    slugField.value = normalizedSlug;
+
     const result = await createTenant({
       name: nameField.value.trim(),
-      slug: normalizeSlug(slugField.value),
+      slug: normalizedSlug,
       phone: phoneField.value.trim(),
       address: addressField.value.trim()
     });
