@@ -1,21 +1,51 @@
-[data-edit-tenant],
-[data-delete-tenant] {
+.tenant-action-row {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+
+.tenant-action-button {
   width: auto !important;
-  height: auto !important;
-  min-width: 0 !important;
-  min-height: 0 !important;
-  padding: 7px 10px !important;
+  height: 38px !important;
+  min-width: max-content !important;
+  min-height: 38px !important;
+  padding: 0 12px !important;
   border-radius: 10px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 6px !important;
+  gap: 7px !important;
   aspect-ratio: auto !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+}
+
+.tenant-action-button > span {
+  display: inline !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+  clip: auto !important;
+  position: static !important;
   white-space: nowrap !important;
 }
 
-[data-edit-tenant] .app-icon,
-[data-delete-tenant] .app-icon {
-  width: 16px;
-  height: 16px;
+.tenant-action-button .app-icon {
+  width: 17px !important;
+  height: 17px !important;
+  flex: 0 0 17px !important;
+  margin: 0 !important;
+}
+
+@media (max-width: 480px) {
+  .tenant-action-button {
+    width: auto !important;
+    height: 38px !important;
+    min-width: max-content !important;
+    min-height: 38px !important;
+    padding: 0 11px !important;
+    border-radius: 10px !important;
+    aspect-ratio: auto !important;
+  }
 }
