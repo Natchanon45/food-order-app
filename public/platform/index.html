@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#159447">
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260621-36">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260621-36">
+  <title>ระบบกลาง FOD</title>
+</head>
+<body data-roles="super_admin">
+  <header class="app-header">
+    <div class="brand"><span class="brand-mark">FOD</span>ระบบกลาง</div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1>Super Admin Control Center</h1>
+      <p>จัดการร้านค้าและสถานะระบบจากส่วนกลาง โดยแยกออกจากระบบปฏิบัติการของแต่ละร้าน</p>
+    </section>
+
+    <section class="nav-cards platform-cards">
+      <a class="card nav-card" href="/admin/tenants">
+        <svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260621-2#icon-settings"></use></svg>
+        <strong>จัดการร้านค้า</strong>
+        <small>สร้างร้าน กำหนด Owner เปิดหรือระงับบัญชี</small>
+      </a>
+      <a class="card nav-card" href="/admin/tenants">
+        <svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260621-2#icon-users"></use></svg>
+        <strong>บัญชีเจ้าของร้าน</strong>
+        <small>ตรวจสอบ Owner ของแต่ละ Tenant</small>
+      </a>
+    </section>
+
+    <section class="card" style="margin-top:16px">
+      <div class="section-title"><h2>ขอบเขตระบบกลาง</h2></div>
+      <p class="menu-category" style="font-size:14px;line-height:1.7;margin:0">
+        Super Admin ใช้สำหรับจัดการ Tenant และสถานะบริการเท่านั้น ไม่เข้าสู่หน้าครัว แคชเชียร์ เมนู โต๊ะ หรือข้อมูลปฏิบัติการของร้านโดยอัตโนมัติ
+      </p>
+    </section>
+  </main>
+
+  <style>
+    .platform-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .platform-cards .nav-card{display:grid;justify-items:start;text-align:left;gap:8px}
+    .platform-cards .nav-card .app-icon{width:32px;height:32px;margin:0;color:var(--green-dark)}
+    .platform-cards .nav-card strong{font-size:18px}
+    .platform-cards .nav-card small{color:var(--muted);font-weight:500;line-height:1.5}
+    @media(max-width:640px){.platform-cards{grid-template-columns:1fr}}
+  </style>
+
+  <script type="module" src="/assets/js/page-guard.js?v=20260621-36"></script>
+</body>
+</html>
