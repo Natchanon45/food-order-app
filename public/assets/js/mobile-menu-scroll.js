@@ -12,6 +12,12 @@ let userHasScrolled = false;
 let lastWindowY = window.scrollY;
 let originalSearchParent = menuListStart?.parentNode || null;
 let originalSearchNextSibling = menuListStart?.nextSibling || null;
+let controlsPlaceholder = null;
+let controlsTop = 0;
+
+function mobileControls() {
+  return document.body.classList.contains("delivery-page") ? menuListStart : orderStickyNav;
+}
 
 function categoryOf(card) {
   return card.dataset.menuCategory || card.querySelector(".menu-category")?.textContent?.trim() || "อื่น ๆ";
@@ -33,6 +39,42 @@ function placeSearchForViewport() {
     originalSearchParent.insertBefore(menuListStart, originalSearchNextSibling);
   } else {
     originalSearchParent.appendChild(menuListStart);
+  }
+}
+
+function ensureControlsPlaceholder() {
+  const controls = mobileControls();
+  if (!controls || controlsPlaceholder) return;
+  controlsPlaceholder = document.createElement("div");
+  controlsPlaceholder.className = "mobile-controls-placeholder";
+  controlsPlaceholder.hidden = true;
+  controls.insertAdjacentElement("beforebegin", controlsPlaceholder);
+}
+
+function measureControlsPosition() {
+  const controls = mobileControls();
+  if (!controls || controls.classList.contains("mobile-controls-fixed")) return;
+  controlsTop = controls.getBoundingClientRect().top + window.scrollY;
+}
+
+function updateControlsPinning() {
+  const controls = mobileControls();
+  if (!controls || !mobileQuery.matches) return;
+  ensureControlsPlaceholder();
+
+  const shouldFix = window.scrollY >= controlsTop;
+  if (shouldFix === controls.classList.contains("mobile-controls-fixed")) return;
+
+  if (shouldFix) {
+    controlsPlaceholder.style.height = `${controls.getBoundingClientRect().height}px`;
+    controlsPlaceholder.hidden = false;
+    controls.classList.add("mobile-controls-fixed");
+    document.body.classList.add("mobile-menu-controls-fixed");
+  } else {
+    controls.classList.remove("mobile-controls-fixed");
+    document.body.classList.remove("mobile-menu-controls-fixed");
+    controlsPlaceholder.hidden = true;
+    controlsPlaceholder.style.height = "0px";
   }
 }
 
@@ -94,11 +136,8 @@ function categoryAnchors() {
   return [...firstByCategory.entries()].map(([category, card]) => ({ category, card }));
 }
 
-function stickyControlsHeight() {
-  const sticky = document.body.classList.contains("delivery-page")
-    ? document.querySelector(".delivery-page .menu-filter-area")
-    : orderStickyNav;
-  return Math.max(120, Math.round(sticky?.getBoundingClientRect().height || 0) + 12);
+function controlsHeight() {
+  return Math.max(110, Math.round(mobileControls()?.getBoundingClientRect().height || 0) + 10);
 }
 
 function updateActiveFromScroll() {
@@ -106,17 +145,17 @@ function updateActiveFromScroll() {
   const anchors = categoryAnchors();
   if (!anchors.length) return;
 
-  const stickyOffset = stickyControlsHeight();
+  const offset = controlsHeight();
   const firstTop = anchors[0].card.getBoundingClientRect().top;
 
-  if (firstTop > stickyOffset) {
+  if (firstTop > offset) {
     setActiveTab("ทั้งหมด");
     return;
   }
 
   let current = anchors[0];
   for (const anchor of anchors) {
-    if (anchor.card.getBoundingClientRect().top <= stickyOffset) current = anchor;
+    if (anchor.card.getBoundingClientRect().top <= offset) current = anchor;
     else break;
   }
   setActiveTab(current.category);
@@ -127,7 +166,24 @@ function scheduleScrollUpdate() {
   if (Math.abs(currentY - lastWindowY) > 2) userHasScrolled = true;
   lastWindowY = currentY;
   cancelAnimationFrame(scrollFrame);
-  scrollFrame = requestAnimationFrame(updateActiveFromScroll);
+  scrollFrame = requestAnimationFrame(() => {
+    updateControlsPinning();
+    updateActiveFromScroll();
+  });
+}
+
+function resetControlsPinning() {
+  const controls = mobileControls();
+  controls?.classList.remove("mobile-controls-fixed");
+  document.body.classList.remove("mobile-menu-controls-fixed");
+  if (controlsPlaceholder) {
+    controlsPlaceholder.hidden = true;
+    controlsPlaceholder.style.height = "0px";
+  }
+  requestAnimationFrame(() => {
+    measureControlsPosition();
+    updateControlsPinning();
+  });
 }
 
 function refreshMobileMenu() {
@@ -139,8 +195,15 @@ function refreshMobileMenu() {
     else pagination.style.removeProperty("display");
   }
 
-  if (!mobileQuery.matches) return;
+  if (!mobileQuery.matches) {
+    resetControlsPinning();
+    return;
+  }
+
   requestAnimationFrame(() => {
+    ensureControlsPlaceholder();
+    measureControlsPosition();
+    updateControlsPinning();
     flattenMenuCards();
     if (browsingAll && !userHasScrolled) setActiveTab("ทั้งหมด", { center: false });
     else updateActiveFromScroll();
@@ -165,10 +228,14 @@ categoryTabs?.addEventListener("click", event => {
 });
 
 window.addEventListener("scroll", scheduleScrollUpdate, { passive: true });
-window.addEventListener("resize", refreshMobileMenu);
+window.addEventListener("resize", () => {
+  resetControlsPinning();
+  refreshMobileMenu();
+});
 mobileQuery.addEventListener?.("change", () => {
   userHasScrolled = false;
   browsingAll = true;
+  resetControlsPinning();
   refreshMobileMenu();
 });
 
