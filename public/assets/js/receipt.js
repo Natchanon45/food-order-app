@@ -15,7 +15,7 @@ function setPaperSize(value) {
 }
 
 function receiptItemName(item) {
-  return `<div class="receipt-item-line"><span class="receipt-item-text" title="${item.name}">${item.name}</span><span class="receipt-item-qty">x ${item.qty} ชิ้น</span></div>${item.note ? `<div class="receipt-item-note">${item.note}</div>` : ""}`;
+  return `<div class="receipt-item-line"><span class="receipt-item-text" title="${item.name}">${item.name}</span><span class="receipt-item-qty">x ${item.qty}</span></div>${item.note ? `<div class="receipt-item-note">${item.note}</div>` : ""}`;
 }
 
 paperSize.value = localStorage.getItem("receipt_paper_size") || "80";
