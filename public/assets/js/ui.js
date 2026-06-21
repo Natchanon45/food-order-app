@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.6.12";
+export const APP_VERSION = "1.6.13";
 export const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
 
 export const money = (value = 0) => new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value) || 0);
@@ -87,6 +87,10 @@ function replaceSystemEmoji() {
 }
 
 const buttonIconRules = [
+  [/ยกเลิกแก้ไข|cancel edit/i, "close"],
+  [/เปิดใช้งานอีกครั้ง|reactivate|activate again/i, "check-circle"],
+  [/ระงับบัญชี|suspend/i, "times-circle"],
+  [/ต่ออายุ|renew|extend/i, "add"],
   [/ลบ|delete|remove/i, "delete"],
   [/แก้ไข|edit/i, "edit"],
   [/บันทึก|save/i, "save"],
