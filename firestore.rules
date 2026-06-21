@@ -163,7 +163,7 @@ service cloud.firestore {
       match /orders/{orderId} {
         allow get: if true;
         allow list: if staffRole() || activeTenantTableOrder(tenantId);
-        allow create: if (
+        allow create: if superAdminRole() || (
           tenantPayloadMatches(tenantId) && validDeliveryOrder()
         ) || validTenantTableOrder(tenantId);
         allow update: if cashierRole() || kitchenRole() || adminRole();
