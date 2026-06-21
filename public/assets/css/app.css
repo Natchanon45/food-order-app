@@ -137,7 +137,48 @@ textarea.input { min-height: 82px; resize: vertical; }
 .auth-card { width: min(420px, 100%); }
 .auth-user { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 @media (max-width: 760px) { .grid-2, .grid-3, .nav-cards, .qr-grid { grid-template-columns: 1fr 1fr; } .table-list { font-size: 13px; } }
-@media (max-width: 480px) { .grid-2, .grid-3, .nav-cards, .qr-grid { grid-template-columns: 1fr; } .container { padding-inline: 10px; } .hero { border-radius: 18px; } .app-header { padding-inline: 12px; } .receipt { max-width: 100%; } }
+@media (max-width: 480px) {
+  .grid-2, .grid-3, .nav-cards, .qr-grid { grid-template-columns: 1fr; }
+  .container { padding-inline: 10px; }
+  .hero { border-radius: 18px; }
+  .app-header { padding-inline: 12px; }
+  .receipt { max-width: 100%; }
+
+  #userRows { display: grid; gap: 12px; }
+  #userRows tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px 12px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #fff;
+  }
+  #userRows td { display: block; min-width: 0; padding: 0; border: 0; }
+  #userRows td:nth-child(1) { grid-column: 1 / -1; }
+  #userRows td:nth-child(2) { grid-column: 1 / -1; overflow-wrap: anywhere; color: var(--muted); }
+  #userRows td:nth-child(3) { grid-column: 1; }
+  #userRows td:nth-child(4) { grid-column: 2; display: flex; align-items: center; justify-content: center; min-width: 54px; }
+  #userRows td:nth-child(5) { grid-column: 1 / -1; }
+  #userRows td:nth-child(1)::before,
+  #userRows td:nth-child(2)::before,
+  #userRows td:nth-child(3)::before,
+  #userRows td:nth-child(4)::before {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+  }
+  #userRows td:nth-child(1)::before { content: "ชื่อ"; }
+  #userRows td:nth-child(2)::before { content: "อีเมล"; }
+  #userRows td:nth-child(3)::before { content: "สิทธิ์"; }
+  #userRows td:nth-child(4)::before { content: "Active"; margin-right: 8px; margin-bottom: 0; }
+  #userRows .input { min-height: 40px; }
+  #userRows td:nth-child(5) .btn { width: 100%; }
+  .table-list:has(#userRows) thead { display: none; }
+  .table-list:has(#userRows) { display: block; }
+}
 @media print {
   @page { margin: 0; }
   html, body, body * { font-family: var(--print-font) !important; }
