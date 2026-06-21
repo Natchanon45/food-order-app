@@ -11,6 +11,10 @@ const grid = document.querySelector("#orderGrid");
 let currentOrders = [];
 let slipUrls = new Map();
 
+function icon(name) {
+  return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg#icon-${name}"></use></svg>`;
+}
+
 function paymentLabel(order) {
   if (order.paymentStatus === "paid" && order.status === "served") return "ชำระแล้ว รอระบบปิดออเดอร์";
   if (order.paymentStatus === "paid") return "ตรวจสอบและรับชำระแล้ว";
@@ -42,12 +46,12 @@ async function resolveSlipUrls(orders) {
 
 function renderDelivery(order) {
   const paymentAction = order.paymentStatus !== "paid"
-    ? `<button class="btn btn-primary" data-payment-id="${order.id}">ตรวจสอบแล้ว/รับชำระแล้ว</button>`
+    ? `<button class="btn btn-primary" data-payment-id="${order.id}">${icon("check-circle")}<span>ตรวจแล้ว/ชำระแล้ว</span></button>`
     : "";
   const slipUrl = order.paymentSlipUrl || slipUrls.get(order.id) || "";
   const slipAction = slipUrl
-    ? `<a class="btn btn-warning" href="${slipUrl}" target="_blank" rel="noopener">ดูสลิป</a>`
-    : (order.paymentSlipPath ? '<button class="btn btn-warning" disabled>กำลังโหลดสลิป...</button>' : "");
+    ? `<a class="btn btn-warning" href="${slipUrl}" target="_blank" rel="noopener">${icon("view")}<span>ดูสลิป</span></a>`
+    : (order.paymentSlipPath ? `<button class="btn btn-warning" disabled>${icon("view")}<span>กำลังโหลดสลิป...</span></button>` : "");
   const itemRows = (order.items || []).map(item => `
     <li style="${item.cancelled ? "opacity:.5;text-decoration:line-through" : ""}">
       ${item.qty} × ${item.name}
@@ -66,9 +70,9 @@ function renderDelivery(order) {
     </div>
     <div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div>
     <div class="order-actions" style="margin-top:12px">
-      <a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">พิมพ์ใบเสร็จ</a>
+      <a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>
       ${slipAction}${paymentAction}
-      <button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">ยกเลิก</button>
+      <button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button>
     </div>
   </article>`;
 }
@@ -93,7 +97,7 @@ function renderTableBill(group) {
       <ul class="order-items">${items}</ul>
       <div class="order-head" style="margin-top:8px"><span>รวมรอบนี้</span><strong>${money(order.totalAmount)} บาท</strong></div>
       <div class="order-actions" style="margin-top:8px">
-        <button class="btn btn-danger btn-sm" data-id="${order.id}" data-status="cancelled">ยกเลิกรอบนี้</button>
+        <button class="btn btn-danger btn-sm" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button>
       </div>
     </section>`;
   }).join("");
@@ -108,8 +112,8 @@ function renderTableBill(group) {
       <strong>ยอดรวมทั้งโต๊ะ</strong><strong class="price">${money(total)} บาท</strong>
     </div>
     <div class="order-actions" style="margin-top:12px">
-      <a class="btn btn-dark" href="/cashier/receipt/?orders=${encodeURIComponent(ids)}" target="_blank" rel="noopener">พิมพ์ใบเสร็จรวม</a>
-      <button class="btn btn-primary" data-table-payment="${key}">รับชำระทั้งโต๊ะ</button>
+      <a class="btn btn-dark" href="/cashier/receipt/?orders=${encodeURIComponent(ids)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>
+      <button class="btn btn-primary" data-table-payment="${key}">${icon("check-circle")}<span>ตรวจแล้ว/ชำระแล้ว</span></button>
     </div>
   </article>`;
 }
