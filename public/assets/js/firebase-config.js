@@ -4,7 +4,7 @@ import {
   deleteDoc, onSnapshot, query, where, orderBy, serverTimestamp, runTransaction
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 import {
-  getStorage, ref, uploadBytes, getDownloadURL, deleteObject
+  getStorage, ref, uploadBytes, getDownloadURL as firebaseGetDownloadURL, deleteObject
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-storage.js";
 import {
   getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
@@ -40,11 +40,21 @@ if (isFirebaseConfigured) {
   functions = getFunctions(app, "asia-southeast1");
 }
 
+export async function getDownloadURL(fileRef) {
+  try {
+    return await firebaseGetDownloadURL(fileRef);
+  } catch (error) {
+    const isPrivatePaymentSlip = String(fileRef?.fullPath || "").includes("/payment-slips/");
+    if (isPrivatePaymentSlip && error?.code === "storage/unauthorized") return "";
+    throw error;
+  }
+}
+
 export {
   initializeApp, getAuth,
   collection, addDoc, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc,
   onSnapshot, query, where, orderBy, serverTimestamp, runTransaction,
-  ref, uploadBytes, getDownloadURL, deleteObject,
+  ref, uploadBytes, deleteObject,
   signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword,
   getFunctions, httpsCallable
 };
