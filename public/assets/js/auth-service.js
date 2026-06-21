@@ -8,12 +8,13 @@ import { DEFAULT_TENANT, resolveTenantContext, setActiveTenant } from "./tenant-
 
 export const ROLE_HOME = {
   super_admin: "/",
+  owner: "/admin",
   admin: "/admin",
   cashier: "/cashier",
   kitchen: "/kitchen"
 };
 
-export const STAFF_ROLES = ["admin", "cashier", "kitchen", "super_admin"];
+export const STAFF_ROLES = ["owner", "admin", "cashier", "kitchen", "super_admin"];
 
 function icon(name, className = "app-icon") {
   return `<svg class="${className}" aria-hidden="true"><use href="/assets/images/app-icons.svg#icon-${name}"></use></svg>`;
@@ -30,6 +31,7 @@ function ensureIconStyles() {
 function roleLabel(role) {
   return ({
     super_admin: "เจ้าของระบบ",
+    owner: "เจ้าของร้าน",
     admin: "ผู้ดูแลระบบ",
     cashier: "แคชเชียร์",
     kitchen: "ครัว"
@@ -40,6 +42,7 @@ function greetingName(profile) {
   if (profile.role === "cashier") return "แคชเชียร์";
   if (profile.role === "kitchen") return "Kitchen";
   if (profile.role === "admin") return "Admin";
+  if (profile.role === "owner") return profile.displayName || "Owner";
   if (profile.role === "super_admin") return "Owner";
   return profile.displayName || roleLabel(profile.role);
 }
@@ -47,15 +50,15 @@ function greetingName(profile) {
 function roleMenuLinks(profile) {
   const links = [{ href: "/", icon: "home", label: "หน้าหลัก" }];
 
-  if (["cashier", "super_admin"].includes(profile.role)) {
+  if (["owner", "cashier", "super_admin"].includes(profile.role)) {
     links.push({ href: "/cashier/table-qr", icon: "table", label: "ออกโต๊ะ" });
   }
 
-  if (["admin", "super_admin"].includes(profile.role)) {
+  if (["owner", "admin", "super_admin"].includes(profile.role)) {
     links.push({ href: "/admin", icon: "settings", label: "จัดการระบบ" });
   }
 
-  if (profile.role === "super_admin") {
+  if (["owner", "super_admin"].includes(profile.role)) {
     links.push({ href: "/admin/users", icon: "users", label: "จัดการพนักงาน" });
   }
 
@@ -191,7 +194,7 @@ export async function listStaffUsers() {
 }
 
 export async function createStaffUser({ email, password, displayName, role, active }) {
-  if (!STAFF_ROLES.includes(role)) throw new Error("INVALID_ROLE");
+  if (!STAFF_ROLES.includes(role) || ["owner", "super_admin"].includes(role)) throw new Error("INVALID_ROLE");
   const tenant = resolveTenantContext();
   const secondaryApp = initializeApp(firebaseConfig, `staff-create-${Date.now()}`);
   const secondaryAuth = getAuth(secondaryApp);
@@ -217,6 +220,6 @@ export async function createStaffUser({ email, password, displayName, role, acti
 
 export async function updateStaffUser(uid, patch) {
   const nextPatch = { ...patch, updatedAt: serverTimestamp() };
-  if (nextPatch.role && !STAFF_ROLES.includes(nextPatch.role)) throw new Error("INVALID_ROLE");
+  if (nextPatch.role && (!STAFF_ROLES.includes(nextPatch.role) || ["owner", "super_admin"].includes(nextPatch.role))) throw new Error("INVALID_ROLE");
   await updateDoc(doc(db, "users", uid), nextPatch);
 }
