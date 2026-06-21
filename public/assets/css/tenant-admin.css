@@ -8,12 +8,14 @@
 
 .tenant-action-button,
 #tenantList .order-actions > a.btn,
+#tenantList [data-create-owner],
 #tenantList [data-edit-tenant],
 #tenantList [data-delete-tenant] {
   width: auto !important;
   height: 38px !important;
   min-width: max-content !important;
   min-height: 38px !important;
+  max-width: none !important;
   padding: 0 12px !important;
   border-radius: 10px !important;
   display: inline-flex !important;
@@ -28,6 +30,7 @@
 
 .tenant-action-button > span,
 #tenantList .order-actions > a.btn > span,
+#tenantList [data-create-owner] > span,
 #tenantList [data-edit-tenant] > span,
 #tenantList [data-delete-tenant] > span {
   display: inline !important;
@@ -49,12 +52,14 @@
 
 @media (max-width: 480px) {
   #tenantList .order-actions > a.btn,
+  #tenantList [data-create-owner],
   #tenantList [data-edit-tenant],
   #tenantList [data-delete-tenant] {
     width: auto !important;
     height: 38px !important;
     min-width: max-content !important;
     min-height: 38px !important;
+    max-width: none !important;
     padding: 0 11px !important;
     border-radius: 10px !important;
     aspect-ratio: auto !important;
