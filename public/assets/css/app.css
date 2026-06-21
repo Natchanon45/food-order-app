@@ -52,7 +52,8 @@ button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
 .app-header { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; min-height: 62px; padding: 10px 16px; background: rgba(255,255,255,.96); border-bottom: 1px solid var(--line); backdrop-filter: blur(10px); }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; }
-.brand-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: var(--green); color: white; }
+.brand-mark { min-width: 46px; height: 38px; padding: 0 8px; display: grid; place-items: center; border-radius: 12px; background: var(--green); color: white; font-size: 0; }
+.brand-mark::after { content: "FOD"; font-size: 13px; line-height: 1; font-weight: 800; }
 .container { width: min(1120px, 100%); margin: auto; padding: 18px 14px 100px; }
 .hero { padding: 22px; border-radius: 24px; color: white; background: linear-gradient(135deg, var(--black), var(--green-dark)); margin-bottom: 18px; }
 .hero h1 { margin: 0 0 6px; font-size: clamp(24px, 5vw, 36px); }
@@ -117,9 +118,7 @@ textarea.input { min-height: 82px; resize: vertical; }
 .document-page,
 .print-page,
 .invoice,
-.quotation {
-  font-family: var(--print-font);
-}
+.quotation { font-family: var(--print-font); }
 .receipt { width: 80mm; min-height: 80mm; margin: auto; padding: 7mm 5mm; background: white; color: #000; font-size: 20px; line-height: 1.15; box-shadow: 0 8px 30px rgba(0,0,0,.12); }
 .receipt.size-58 { width: 58mm; padding: 5mm 3mm; font-size: 17px; }
 .receipt.size-a4 { width: 210mm; min-height: 297mm; padding: 18mm; font-size: 22px; }
@@ -143,17 +142,8 @@ textarea.input { min-height: 82px; resize: vertical; }
   .hero { border-radius: 18px; }
   .app-header { padding-inline: 12px; }
   .receipt { max-width: 100%; }
-
   #userRows { display: grid; gap: 12px; }
-  #userRows tr {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 10px 12px;
-    padding: 14px;
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    background: #fff;
-  }
+  #userRows tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 12px; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
   #userRows td { display: block; min-width: 0; padding: 0; border: 0; }
   #userRows td:nth-child(1) { grid-column: 1 / -1; }
   #userRows td:nth-child(2) { grid-column: 1 / -1; overflow-wrap: anywhere; color: var(--muted); }
@@ -163,13 +153,7 @@ textarea.input { min-height: 82px; resize: vertical; }
   #userRows td:nth-child(1)::before,
   #userRows td:nth-child(2)::before,
   #userRows td:nth-child(3)::before,
-  #userRows td:nth-child(4)::before {
-    display: block;
-    margin-bottom: 5px;
-    color: var(--muted);
-    font-size: 11px;
-    font-weight: 700;
-  }
+  #userRows td:nth-child(4)::before { display: block; margin-bottom: 5px; color: var(--muted); font-size: 11px; font-weight: 700; }
   #userRows td:nth-child(1)::before { content: "ชื่อ"; }
   #userRows td:nth-child(2)::before { content: "อีเมล"; }
   #userRows td:nth-child(3)::before { content: "สิทธิ์"; }
@@ -182,10 +166,8 @@ textarea.input { min-height: 82px; resize: vertical; }
 @media print {
   @page { margin: 0; }
   html, body, body * { font-family: var(--print-font) !important; }
-  body { background: #fff; }
-  .no-print, .app-header, .demo-banner, .app-version { display: none !important; }
+  .no-print, .app-header, .cart-bar, .app-toast, .demo-banner { display: none !important; }
+  body { background: white; }
   .receipt-page { width: auto; margin: 0; padding: 0; }
-  .receipt { width: 80mm; min-height: auto; margin: 0 auto; padding: 5mm 4mm; box-shadow: none; font-size: 18px; }
-  .receipt.size-58 { width: 58mm; padding: 4mm 3mm; font-size: 16px; }
-  .receipt.size-a4 { width: 210mm; min-height: 297mm; padding: 18mm; font-size: 22px; }
+  .receipt { box-shadow: none; margin: 0 auto; }
 }
