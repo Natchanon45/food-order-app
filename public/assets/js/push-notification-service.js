@@ -8,7 +8,7 @@ import {
 
 const PUSH_ENABLED_KEY = "food_order_push_enabled";
 const DEVICE_ID_KEY = "food_order_push_device_id";
-const VAPID_KEY = "";
+const VAPID_KEY = "BO08woSr5mK0mGRi8ZGynOyw6w9kfb4XCESQCOiNq4TZ9j0a7Kkn0jaz1DiM5W2mMnS0-iGRr8RA9qD_v2i1sAc";
 let foregroundListenerInstalled = false;
 
 function getDeviceId() {
