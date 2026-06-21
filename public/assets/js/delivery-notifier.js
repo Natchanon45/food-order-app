@@ -1,6 +1,10 @@
 import { money, toast } from "./ui.js";
 import {
-  registerPushNotifications, restorePushNotifications, pushEnabled, pushErrorMessage
+  registerPushNotifications,
+  restorePushNotifications,
+  disablePushNotifications,
+  pushEnabled,
+  pushErrorMessage
 } from "./push-notification-service.js";
 
 const ENABLED_KEY = "food_order_delivery_alerts_enabled";
@@ -79,10 +83,28 @@ function showDesktopNotification(order, count) {
   };
 }
 
+function bellIcon(enabled) {
+  return `
+    <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
+      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" fill="none" stroke="#159447" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M10 21h4" fill="none" stroke="#159447" stroke-width="2" stroke-linecap="round"/>
+      ${enabled ? "" : '<path d="M4 4l16 16" fill="none" stroke="#9aa39d" stroke-width="2.2" stroke-linecap="round"/>'}
+    </svg>`;
+}
+
+function updateButton(button) {
+  if (!button) return;
+  const enabled = isEnabled() && pushEnabled();
+  button.innerHTML = bellIcon(enabled);
+  button.dataset.enabled = enabled ? "true" : "false";
+  button.setAttribute("aria-pressed", String(enabled));
+  button.setAttribute("aria-label", enabled ? "ปิดการแจ้งเตือน Delivery" : "เปิดการแจ้งเตือน Delivery");
+  button.title = enabled ? "ปิดการแจ้งเตือน Delivery" : "เปิดการแจ้งเตือน Delivery";
+}
+
 async function enableNotifications(button) {
   try {
     button.disabled = true;
-    button.textContent = "กำลังเปิดแจ้งเตือน...";
     await unlockAudio();
     setEnabled(true);
     await registerPushNotifications();
@@ -99,23 +121,40 @@ async function enableNotifications(button) {
   }
 }
 
-function updateButton(button) {
-  if (!button) return;
-  const enabled = isEnabled() && pushEnabled();
-  button.textContent = enabled ? "แจ้งเตือน Delivery: เปิด" : "เปิดแจ้งเตือน Delivery";
-  button.classList.toggle("btn-primary", enabled);
-  button.classList.toggle("btn-dark", !enabled);
+async function disableNotifications(button) {
+  try {
+    button.disabled = true;
+    await disablePushNotifications();
+    setEnabled(false);
+    updateButton(button);
+    toast("ปิดการแจ้งเตือน Delivery แล้ว");
+  } catch (error) {
+    console.error("Unable to disable Delivery notifications", error);
+    toast("ปิดการแจ้งเตือนไม่สำเร็จ", "error");
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function toggleNotifications(button) {
+  if (isEnabled() && pushEnabled()) {
+    await disableNotifications(button);
+  } else {
+    await enableNotifications(button);
+  }
 }
 
 function installEnableButton() {
   const header = document.querySelector(".app-header");
   if (!header || document.querySelector("#deliveryAlertButton")) return;
+
   const button = document.createElement("button");
   button.type = "button";
   button.id = "deliveryAlertButton";
-  button.className = "btn btn-dark btn-sm";
+  button.className = "delivery-alert-toggle";
+  button.style.cssText = "width:36px;height:36px;padding:0;border:1px solid #d9e5dc;border-radius:50%;background:#fff;display:grid;place-items:center;flex:0 0 auto;";
   updateButton(button);
-  button.addEventListener("click", () => enableNotifications(button));
+  button.addEventListener("click", () => toggleNotifications(button));
   header.appendChild(button);
 
   if (isEnabled()) {
