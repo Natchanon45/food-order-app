@@ -7,6 +7,7 @@ import {
 const functions = getFunctions(app, "asia-southeast1");
 const listTenants = httpsCallable(functions, "listTenants");
 const createTenant = httpsCallable(functions, "createTenant");
+const createTenantOwner = httpsCallable(functions, "createTenantOwner");
 const updateTenant = httpsCallable(functions, "updateTenant");
 const deleteTenant = httpsCallable(functions, "deleteTenant");
 
@@ -118,9 +119,11 @@ function renderTenants(items = []) {
         </div>
         <span class="badge ${tenant.active === false ? "warning" : ""}">${tenant.active === false ? "ปิดใช้งาน" : "ใช้งาน"}</span>
       </div>
+      <div style="margin-top:10px"><span class="badge ${tenant.ownerUid ? "" : "warning"}">${tenant.ownerUid ? `Owner: ${escapeHtml(tenant.ownerDisplayName || tenant.ownerEmail || "มีแล้ว")}` : "ยังไม่มี Owner"}</span></div>
       <div style="margin-top:12px;word-break:break-all"><strong>Tenant ID:</strong> ${escapeHtml(tenant.id)}</div>
       <div class="order-actions" style="margin-top:12px;align-items:center">
         <a class="btn btn-dark btn-sm" style="display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;min-width:122px!important;padding:8px 12px!important;border-radius:10px!important;white-space:nowrap!important;width:auto!important;height:auto!important;aspect-ratio:auto!important" href="/s/${encodeURIComponent(tenant.slug || "")}/delivery" target="_blank" rel="noopener noreferrer">${icon("home")}<span>เปิดหน้าร้าน</span></a>
+        ${tenant.ownerUid ? "" : `<button class="btn btn-primary btn-sm" style="display:inline-flex;align-items:center;gap:6px" type="button" data-create-owner="${escapeHtml(tenant.id)}">${icon("user")}<span>สร้าง Owner</span></button>`}
         <button class="btn btn-sm" style="display:inline-flex;align-items:center;gap:6px" type="button" data-edit-tenant="${escapeHtml(tenant.id)}">${icon("edit")}<span>แก้ไข</span></button>
         <button class="btn btn-danger btn-sm" style="display:inline-flex;align-items:center;gap:6px" type="button" data-delete-tenant="${escapeHtml(tenant.id)}">${icon("delete")}<span>ลบ</span></button>
       </div>
@@ -161,6 +164,37 @@ slugField.addEventListener("blur", () => {
 cancelEditButton.addEventListener("click", resetForm);
 
 tenantList.addEventListener("click", async event => {
+  const ownerButton = event.target.closest("[data-create-owner]");
+  if (ownerButton) {
+    const tenant = tenants.find(item => item.id === ownerButton.dataset.createOwner);
+    if (!tenant) return;
+
+    const displayName = window.prompt(`ชื่อเจ้าของร้าน ${tenant.name}`, "")?.trim();
+    if (!displayName) return;
+    const email = window.prompt("อีเมลสำหรับเข้าสู่ระบบ", "")?.trim().toLowerCase();
+    if (!email) return;
+    const password = window.prompt("รหัสผ่านเริ่มต้นอย่างน้อย 8 ตัวอักษร", "");
+    if (!password) return;
+
+    ownerButton.disabled = true;
+    ownerButton.innerHTML = "<span>กำลังสร้าง Owner...</span>";
+    try {
+      await createTenantOwner({ tenantId: tenant.id, displayName, email, password });
+      toast(`สร้าง Owner ${displayName} เรียบร้อยแล้ว`);
+      await loadTenants();
+    } catch (error) {
+      console.error(error);
+      let message = "สร้าง Owner ไม่สำเร็จ";
+      if (error.code === "functions/already-exists") message = error.message || "ร้านนี้มี Owner แล้ว หรืออีเมลถูกใช้งานแล้ว";
+      if (error.code === "functions/invalid-argument") message = error.message || "ข้อมูล Owner ไม่ถูกต้อง";
+      if (error.code === "functions/permission-denied") message = "บัญชีนี้ไม่มีสิทธิ์สร้าง Owner";
+      toast(message, "error");
+      ownerButton.disabled = false;
+      ownerButton.innerHTML = `${icon("user")}<span>สร้าง Owner</span>`;
+    }
+    return;
+  }
+
   const editButton = event.target.closest("[data-edit-tenant]");
   if (editButton) {
     const tenant = tenants.find(item => item.id === editButton.dataset.editTenant);
