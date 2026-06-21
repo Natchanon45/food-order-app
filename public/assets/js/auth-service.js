@@ -1,8 +1,7 @@
 import {
-  auth, db, firebaseConfig, initializeApp, getAuth,
+  auth, functions,
   signInWithEmailAndPassword, signOut, onAuthStateChanged,
-  createUserWithEmailAndPassword,
-  collection, doc, getDoc, getDocs, setDoc, updateDoc, serverTimestamp
+  doc, getDoc, httpsCallable
 } from "./firebase-config.js";
 import { DEFAULT_TENANT, resolveTenantContext, setActiveTenant } from "./tenant-context.js";
 
@@ -149,7 +148,7 @@ export function waitForAuth() {
 
 export async function getUserProfile(user) {
   if (!user) return null;
-  const snapshot = await getDoc(doc(db, "users", user.uid));
+  const snapshot = await getDoc(doc(auth.app.options.projectId ? (await import("./firebase-config.js")).db : null, "users", user.uid));
   if (!snapshot.exists()) return null;
   const profile = { uid: user.uid, email: user.email, ...snapshot.data() };
   activateProfileTenant(profile);
@@ -188,40 +187,21 @@ export async function login(email, password) {
   return profile;
 }
 
-export async function listStaffUsers() {
-  const snapshot = await getDocs(collection(db, "users"));
-  return snapshot.docs
-    .map(item => ({ uid: item.id, ...item.data() }))
-    .sort((a, b) => String(a.displayName || a.email || "").localeCompare(String(b.displayName || b.email || ""), "th"));
+function callFunction(name) {
+  if (!functions) throw new Error("FUNCTIONS_NOT_READY");
+  return httpsCallable(functions, name);
 }
 
-export async function createStaffUser({ email, password, displayName, role, active }) {
-  if (!STAFF_ROLES.includes(role) || ["owner", "super_admin"].includes(role)) throw new Error("INVALID_ROLE");
-  const tenant = resolveTenantContext();
-  const secondaryApp = initializeApp(firebaseConfig, `staff-create-${Date.now()}`);
-  const secondaryAuth = getAuth(secondaryApp);
+export async function listStaffUsers() {
+  const result = await callFunction("listTenantStaff")({});
+  return result.data?.users || [];
+}
 
-  try {
-    const credential = await createUserWithEmailAndPassword(secondaryAuth, email, password);
-    await setDoc(doc(db, "users", credential.user.uid), {
-      email,
-      displayName,
-      role,
-      active: Boolean(active),
-      tenantId: tenant.id,
-      tenantSlug: tenant.slug,
-      tenantName: tenant.name,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
-    return credential.user.uid;
-  } finally {
-    await signOut(secondaryAuth).catch(() => {});
-  }
+export async function createStaffUser(payload) {
+  const result = await callFunction("createTenantStaff")(payload);
+  return result.data?.uid;
 }
 
 export async function updateStaffUser(uid, patch) {
-  const nextPatch = { ...patch, updatedAt: serverTimestamp() };
-  if (nextPatch.role && (!STAFF_ROLES.includes(nextPatch.role) || ["owner", "super_admin"].includes(nextPatch.role))) throw new Error("INVALID_ROLE");
-  await updateDoc(doc(db, "users", uid), nextPatch);
+  await callFunction("updateTenantStaff")({ uid, ...patch });
 }
