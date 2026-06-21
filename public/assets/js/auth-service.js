@@ -166,7 +166,9 @@ export async function requireRole(allowedRoles = []) {
   }
 
   const profile = await getUserProfile(user);
-  if (!profile || profile.active === false || (profile.role !== "super_admin" && !allowedRoles.includes(profile.role))) {
+  const ownerAllowed = profile?.role === "owner" && allowedRoles.some(role => ["owner", "admin", "cashier", "kitchen"].includes(role));
+  const permitted = profile?.role === "super_admin" || ownerAllowed || allowedRoles.includes(profile?.role);
+  if (!profile || profile.active === false || !permitted) {
     location.replace(ROLE_HOME[profile?.role] || "/delivery");
     return new Promise(() => {});
   }
