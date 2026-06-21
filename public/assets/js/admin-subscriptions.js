@@ -9,6 +9,10 @@ const updateTenantSubscription = httpsCallable(functions, "updateTenantSubscript
 const tenantList = document.querySelector("#tenantList");
 let tenants = [];
 
+function icon(name) {
+  return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260621-2#icon-${name}"></use></svg>`;
+}
+
 function toDate(value) {
   if (!value) return null;
   if (typeof value.toDate === "function") return value.toDate();
@@ -53,10 +57,10 @@ function subscriptionHtml(tenant) {
         <div class="field"><label>แพ็กเกจ</label><select class="input" data-plan-code><option value="monthly" ${tenant.planCode !== "yearly" ? "selected" : ""}>รายเดือน</option><option value="yearly" ${tenant.planCode === "yearly" ? "selected" : ""}>รายปี</option></select></div>
       </div>
       <div class="order-actions" style="margin-top:10px">
-        <button class="btn btn-primary btn-sm" type="button" data-subscription-action="extend" data-days="30">ต่ออายุ 30 วัน</button>
-        <button class="btn btn-primary btn-sm" type="button" data-subscription-action="extend" data-days="365">ต่ออายุ 1 ปี</button>
-        <button class="btn btn-sm" type="button" data-subscription-action="set-expiry">บันทึกวันหมดอายุ</button>
-        ${status === "suspended" ? '<button class="btn btn-primary btn-sm" type="button" data-subscription-action="activate">เปิดใช้งานอีกครั้ง</button>' : '<button class="btn btn-danger btn-sm" type="button" data-subscription-action="suspend">ระงับบัญชี</button>'}
+        <button class="btn btn-primary btn-sm" type="button" data-subscription-action="extend" data-days="30">${icon("add")}<span>ต่ออายุ 30 วัน</span></button>
+        <button class="btn btn-primary btn-sm" type="button" data-subscription-action="extend" data-days="365">${icon("add")}<span>ต่ออายุ 1 ปี</span></button>
+        <button class="btn btn-sm" type="button" data-subscription-action="set-expiry">${icon("save")}<span>บันทึกวันหมดอายุ</span></button>
+        ${status === "suspended" ? `<button class="btn btn-primary btn-sm" type="button" data-subscription-action="activate">${icon("check-circle")}<span>เปิดใช้งานอีกครั้ง</span></button>` : `<button class="btn btn-danger btn-sm" type="button" data-subscription-action="suspend">${icon("times-circle")}<span>ระงับบัญชี</span></button>`}
       </div>
     </section>`;
 }
