@@ -20,16 +20,20 @@ const errorBox = document.getElementById("tenantError");
 const tenantList = document.getElementById("tenantList");
 const tenantCount = document.getElementById("tenantCount");
 const formTitle = form.closest(".card")?.querySelector(".section-title h2");
+const formTitleBar = form.closest(".card")?.querySelector(".section-title");
 
 let tenants = [];
 let editingTenantId = "";
 
 const cancelEditButton = document.createElement("button");
 cancelEditButton.type = "button";
-cancelEditButton.className = "btn";
-cancelEditButton.textContent = "ยกเลิกแก้ไข";
+cancelEditButton.className = "tenant-edit-close";
+cancelEditButton.innerHTML = "&times;";
+cancelEditButton.setAttribute("aria-label", "ยกเลิกการแก้ไข");
+cancelEditButton.title = "ยกเลิกการแก้ไข";
+cancelEditButton.style.cssText = "width:34px;height:34px;padding:0;border:1px solid #d7ded9;border-radius:50%;background:#fff;color:#69726c;display:grid;place-items:center;font-size:26px;line-height:1;flex:0 0 auto;";
 cancelEditButton.hidden = true;
-submitButton.insertAdjacentElement("afterend", cancelEditButton);
+formTitleBar?.appendChild(cancelEditButton);
 
 function sanitizeSlugTyping(value = "") {
   return String(value)
@@ -55,10 +59,11 @@ function escapeHtml(value = "") {
 
 function storefrontIcon() {
   return `
-    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="display:block;flex:0 0 auto">
-      <path d="M14 5h5v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M10 14L19 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      <path d="M19 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" style="display:block;flex:0 0 auto">
+      <path d="M4 10h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M5 10V6.5L7 4h10l2 2.5V10" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M6 10v9h12v-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M9 19v-5h6v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
     </svg>`;
 }
 
@@ -104,8 +109,8 @@ function renderTenants(items = []) {
         <span class="badge ${tenant.active === false ? "warning" : ""}">${tenant.active === false ? "ปิดใช้งาน" : "ใช้งาน"}</span>
       </div>
       <div style="margin-top:12px;word-break:break-all"><strong>Tenant ID:</strong> ${escapeHtml(tenant.id)}</div>
-      <div class="order-actions" style="margin-top:12px">
-        <a class="btn btn-dark btn-sm" style="display:inline-flex;align-items:center;gap:6px" href="/s/${encodeURIComponent(tenant.slug || "")}/delivery" target="_blank" rel="noopener noreferrer">${storefrontIcon()}<span>เปิดหน้าร้าน</span></a>
+      <div class="order-actions" style="margin-top:12px;align-items:center">
+        <a class="btn btn-primary btn-sm tenant-storefront-link" style="display:inline-flex;align-items:center;justify-content:center;gap:7px;min-width:122px;white-space:nowrap" href="/s/${encodeURIComponent(tenant.slug || "")}/delivery" target="_blank" rel="noopener noreferrer">${storefrontIcon()}<span>เปิดหน้าร้าน</span></a>
         <button class="btn btn-sm" type="button" data-edit-tenant="${escapeHtml(tenant.id)}">แก้ไข</button>
         <button class="btn btn-danger btn-sm" type="button" data-delete-tenant="${escapeHtml(tenant.id)}">ลบ</button>
       </div>
