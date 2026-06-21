@@ -178,6 +178,24 @@ service cloud.firestore {
         allow read: if signedIn() && (request.auth.uid == userId || superAdminRole());
         allow create, update, delete: if superAdminRole();
       }
+
+      match /notificationTokens/{tokenId} {
+        allow read: if superAdminRole() || (
+          signedIn() && resource.data.uid == request.auth.uid
+        );
+        allow create: if signedIn()
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.tenantId == tenantId
+          && request.resource.data.token is string
+          && request.resource.data.active == true;
+        allow update: if signedIn()
+          && resource.data.uid == request.auth.uid
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.tenantId == tenantId;
+        allow delete: if signedIn() && (
+          resource.data.uid == request.auth.uid || superAdminRole()
+        );
+      }
     }
 
     match /shops/{shopId}/{document=**} {
