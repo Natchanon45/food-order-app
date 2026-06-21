@@ -123,7 +123,6 @@ availableTables.addEventListener("click", async event => {
     });
 
     renderTicket(table, token, true);
-    toast(`ออก QR สำหรับ ${table.name} แล้ว`);
     await loadTables();
   } catch (error) {
     console.error(error);
@@ -175,7 +174,6 @@ occupiedTables.addEventListener("click", async event => {
       return;
     }
     renderTicket(table, table.orderToken, true);
-    toast(`พิมพ์ QR เดิมของ ${table.name} ซ้ำ`);
   } catch (error) {
     console.error(error);
     toast("เตรียม QR สำหรับพิมพ์ซ้ำไม่สำเร็จ", "error");
