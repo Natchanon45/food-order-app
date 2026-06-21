@@ -1,15 +1,28 @@
-export const APP_VERSION = "1.6.10";
+export const APP_VERSION = "1.6.11";
 export const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
 
 export const money = (value = 0) => new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value) || 0);
 
 export function toast(message, type = "success") {
+  const normalizedType = type === "error" ? "error" : "success";
+  const iconName = normalizedType === "error" ? "x-circle" : "check-circle";
   const el = document.createElement("div");
-  el.className = `app-toast ${type}`;
-  el.textContent = message;
+  el.className = `app-toast ${normalizedType}`;
+  el.setAttribute("role", normalizedType === "error" ? "alert" : "status");
+  el.setAttribute("aria-live", "polite");
+  el.innerHTML = `
+    <span class="app-toast-icon" aria-hidden="true">
+      <svg class="app-icon"><use href="/assets/images/app-icons.svg#icon-${iconName}"></use></svg>
+    </span>
+    <span class="app-toast-message"></span>
+  `;
+  el.querySelector(".app-toast-message").textContent = String(message || "");
   document.body.appendChild(el);
   requestAnimationFrame(() => el.classList.add("show"));
-  setTimeout(() => { el.classList.remove("show"); setTimeout(() => el.remove(), 250); }, 2400);
+  setTimeout(() => {
+    el.classList.remove("show");
+    setTimeout(() => el.remove(), 250);
+  }, 3200);
 }
 
 export function getTableCode() {
