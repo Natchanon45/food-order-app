@@ -10,6 +10,9 @@ import {
   getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
   createUserWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+import {
+  getFunctions, httpsCallable
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-functions.js";
 
 export const firebaseConfig = {
   apiKey: "AIzaSyAX4e6-nbiS9Y8tpqW8rKbMkryAwZXSmCo",
@@ -27,12 +30,14 @@ export let app = null;
 export let db = null;
 export let storage = null;
 export let auth = null;
+export let functions = null;
 
 if (isFirebaseConfigured) {
   app = initializeApp(firebaseConfig);
   db = getFirestore(app);
   storage = getStorage(app);
   auth = getAuth(app);
+  functions = getFunctions(app, "asia-southeast1");
 }
 
 export {
@@ -40,5 +45,6 @@ export {
   collection, addDoc, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc,
   onSnapshot, query, where, orderBy, serverTimestamp, runTransaction,
   ref, uploadBytes, getDownloadURL, deleteObject,
-  signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword
+  signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword,
+  getFunctions, httpsCallable
 };
