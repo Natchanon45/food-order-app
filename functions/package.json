@@ -1,7 +1,7 @@
 {
   "name": "functions",
   "private": true,
-  "main": "index.js",
+  "main": "bootstrap.js",
   "engines": { "node": "22" },
   "scripts": {
     "serve": "firebase emulators:start --only functions",

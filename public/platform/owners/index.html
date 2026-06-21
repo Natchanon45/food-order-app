@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#159447">
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260621-39">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260621-39">
+  <title>บัญชีเจ้าของร้าน</title>
+</head>
+<body data-roles="super_admin">
+  <header class="app-header">
+    <div class="brand"><span class="brand-mark">FOD</span>บัญชีเจ้าของร้าน</div>
+    <a class="btn btn-sm" href="/platform">กลับระบบกลาง</a>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1>บัญชี Owner ของแต่ละร้าน</h1>
+      <p>ตรวจสอบร้านที่มี Owner แล้ว และสร้างบัญชีให้ร้านที่ยังไม่มีเจ้าของร้าน</p>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h2>รายการบัญชีเจ้าของร้าน</h2>
+        <span class="badge" id="ownerCount">0 บัญชี</span>
+      </div>
+      <div class="grid grid-2" style="margin-bottom:14px">
+        <input class="input" id="ownerSearch" placeholder="ค้นหาชื่อร้าน ชื่อ Owner หรืออีเมล...">
+        <select class="input" id="ownerStatusFilter">
+          <option value="all">ทุกสถานะ</option>
+          <option value="has-owner">มี Owner แล้ว</option>
+          <option value="no-owner">ยังไม่มี Owner</option>
+          <option value="inactive">ร้านถูกระงับ</option>
+        </select>
+      </div>
+      <div id="ownerList" class="grid"></div>
+    </section>
+  </main>
+
+  <script type="module" src="/assets/js/page-guard.js?v=20260621-39"></script>
+  <script type="module" src="/assets/js/platform-owners.js?v=20260621-39"></script>
+</body>
+</html>

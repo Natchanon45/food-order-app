@@ -16,9 +16,11 @@ const cart = new Map();
 let menus = [];
 let sessionOrders = [];
 let activeCategory = "ทั้งหมด";
+let highlightedCategory = "ทั้งหมด";
 let tableSessionValid = false;
 let unsubscribeOrders = null;
 let currentPage = 1;
+let categoryObserver = null;
 
 if (usingDemoMode) {
   document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง: ยังไม่ได้ใส่ Firebase Config ข้อมูลจะเก็บในเบราว์เซอร์นี้</div>';
@@ -28,21 +30,33 @@ document.querySelector("#tableBadge").textContent = tableCode ? `โต๊ะ ${
 document.querySelector("#tableTitle").textContent = tableCode ? `เมนูสำหรับโต๊ะ ${tableCode}` : "กรุณาสแกน QR ของโต๊ะ";
 document.querySelector("#submitOrder").disabled = true;
 
+function isMobileMenu() {
+  return window.matchMedia("(max-width: 480px)").matches;
+}
+
 function pageSize() {
-  return window.matchMedia("(max-width: 480px)").matches ? 6 : 9;
+  return isMobileMenu() ? Number.MAX_SAFE_INTEGER : 9;
 }
 
 function categories() {
   return ["ทั้งหมด", ...new Set(menus.filter(item => item.active !== false).map(item => item.category || "อื่น ๆ"))];
 }
 
+function currentTabCategory() {
+  return activeCategory === "ทั้งหมด" && isMobileMenu() ? highlightedCategory : activeCategory;
+}
+
 function renderCategoryTabs() {
+  const selected = currentTabCategory();
   categoryTabs.innerHTML = categories().map(category => `
-    <button type="button" class="category-tab${category === activeCategory ? " active" : ""}"
-      data-category="${category}" role="tab" aria-selected="${category === activeCategory}">
+    <button type="button" class="category-tab${category === selected ? " active" : ""}"
+      data-category="${category}" role="tab" aria-selected="${category === selected}">
       ${category}
     </button>
   `).join("");
+
+  const activeTab = categoryTabs.querySelector(".category-tab.active");
+  activeTab?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
 }
 
 function getFilteredMenus() {
@@ -61,6 +75,12 @@ function visiblePageNumbers(totalPages) {
 }
 
 function renderPagination(totalItems) {
+  if (isMobileMenu()) {
+    menuPagination.hidden = true;
+    menuPagination.innerHTML = "";
+    return;
+  }
+
   const size = pageSize();
   const totalPages = Math.max(1, Math.ceil(totalItems / size));
   currentPage = Math.min(currentPage, totalPages);
@@ -79,16 +99,8 @@ function renderPagination(totalItems) {
   `;
 }
 
-function renderMenus() {
-  if (!tableSessionValid) return;
-  const filtered = getFilteredMenus();
-  const size = pageSize();
-  const totalPages = Math.max(1, Math.ceil(filtered.length / size));
-  currentPage = Math.min(currentPage, totalPages);
-  const start = (currentPage - 1) * size;
-  const pageItems = filtered.slice(start, start + size);
-
-  menuGrid.innerHTML = pageItems.length ? pageItems.map(item => `
+function menuCard(item) {
+  return `
     <article class="card menu-card">
       <div class="menu-image"><img src="${item.image}" alt="${item.name}"></div>
       <div class="menu-name">${item.name}</div>
@@ -97,9 +109,90 @@ function renderMenus() {
         <span class="price">${money(item.price)} บาท</span>
         <button class="btn btn-primary btn-sm" data-add="${item.id}">เพิ่ม</button>
       </div>
-    </article>
-  `).join("") : '<div class="card empty">ไม่พบเมนูในหมวดหมู่นี้</div>';
+    </article>`;
+}
 
+function disconnectCategoryObserver() {
+  categoryObserver?.disconnect();
+  categoryObserver = null;
+}
+
+function observeCategorySections() {
+  disconnectCategoryObserver();
+  if (!isMobileMenu() || activeCategory !== "ทั้งหมด") return;
+
+  const sections = [...menuGrid.querySelectorAll("[data-menu-category-section]")];
+  if (!sections.length) return;
+
+  categoryObserver = new IntersectionObserver(entries => {
+    const visible = entries
+      .filter(entry => entry.isIntersecting)
+      .sort((a, b) => Math.abs(a.boundingClientRect.top - 165) - Math.abs(b.boundingClientRect.top - 165));
+    if (!visible.length) return;
+
+    const nextCategory = visible[0].target.dataset.menuCategorySection;
+    if (!nextCategory || nextCategory === highlightedCategory) return;
+    highlightedCategory = nextCategory;
+    renderCategoryTabs();
+  }, {
+    root: null,
+    rootMargin: "-150px 0px -62% 0px",
+    threshold: [0, 0.05, 0.2]
+  });
+
+  sections.forEach(section => categoryObserver.observe(section));
+}
+
+function renderMobileGroupedMenus(filtered) {
+  if (!filtered.length) {
+    menuGrid.innerHTML = '<div class="card empty">ไม่พบเมนูในหมวดหมู่นี้</div>';
+    disconnectCategoryObserver();
+    return;
+  }
+
+  if (activeCategory !== "ทั้งหมด") {
+    menuGrid.innerHTML = filtered.map(menuCard).join("");
+    disconnectCategoryObserver();
+    return;
+  }
+
+  const grouped = new Map();
+  filtered.forEach(item => {
+    const category = item.category || "อื่น ๆ";
+    if (!grouped.has(category)) grouped.set(category, []);
+    grouped.get(category).push(item);
+  });
+
+  menuGrid.innerHTML = [...grouped.entries()].map(([category, items]) => `
+    <section data-menu-category-section="${category}" style="grid-column:1/-1;scroll-margin-top:155px">
+      <div class="section-title" style="margin:8px 0 10px"><h2>${category}</h2><span class="badge">${items.length} เมนู</span></div>
+      <div class="grid grid-3">${items.map(menuCard).join("")}</div>
+    </section>
+  `).join("");
+
+  requestAnimationFrame(observeCategorySections);
+}
+
+function renderMenus() {
+  if (!tableSessionValid) return;
+  const filtered = getFilteredMenus();
+
+  if (isMobileMenu()) {
+    currentPage = 1;
+    renderMobileGroupedMenus(filtered);
+    renderPagination(filtered.length);
+    return;
+  }
+
+  disconnectCategoryObserver();
+  highlightedCategory = "ทั้งหมด";
+  const size = pageSize();
+  const totalPages = Math.max(1, Math.ceil(filtered.length / size));
+  currentPage = Math.min(currentPage, totalPages);
+  const start = (currentPage - 1) * size;
+  const pageItems = filtered.slice(start, start + size);
+
+  menuGrid.innerHTML = pageItems.length ? pageItems.map(menuCard).join("") : '<div class="card empty">ไม่พบเมนูในหมวดหมู่นี้</div>';
   renderPagination(filtered.length);
 }
 
@@ -195,8 +288,10 @@ categoryTabs.addEventListener("click", event => {
   const button = event.target.closest("[data-category]");
   if (!button) return;
   activeCategory = button.dataset.category;
+  highlightedCategory = activeCategory === "ทั้งหมด" ? "ทั้งหมด" : activeCategory;
   renderCategoryTabs();
   resetMenuPage();
+  scrollToMenuList();
 });
 
 menuPagination.addEventListener("click", event => {
@@ -222,10 +317,25 @@ cartList.addEventListener("click", event => {
   const dec = event.target.dataset.dec;
   const id = inc || dec;
   if (!id) return;
+
   const item = cart.get(id);
-  item.qty += inc ? 1 : -1;
-  if (item.qty <= 0) cart.delete(id);
-  else cart.set(id, item);
+  if (!item) return;
+
+  if (inc) {
+    item.qty += 1;
+    cart.set(id, item);
+    updateCart();
+    return;
+  }
+
+  if (item.qty <= 1) {
+    if (!confirm(`ลบ ${item.name} ออกจากรายการสั่งซื้อใช่หรือไม่?`)) return;
+    cart.delete(id);
+  } else {
+    item.qty -= 1;
+    cart.set(id, item);
+  }
+
   updateCart();
 });
 
@@ -237,9 +347,15 @@ cartList.addEventListener("input", event => {
   cart.set(id, item);
 });
 
-document.querySelector("#searchInput").addEventListener("input", resetMenuPage);
+document.querySelector("#searchInput").addEventListener("input", () => {
+  highlightedCategory = "ทั้งหมด";
+  resetMenuPage();
+});
+
 window.addEventListener("resize", () => {
   currentPage = 1;
+  highlightedCategory = "ทั้งหมด";
+  renderCategoryTabs();
   renderMenus();
 });
 

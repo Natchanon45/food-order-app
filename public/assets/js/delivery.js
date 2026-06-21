@@ -1,5 +1,5 @@
 import { dataService, usingDemoMode } from "./data-service.js";
-import { storage, ref, uploadBytes, getDownloadURL } from "./firebase-config.js";
+import { storage, ref, uploadBytes } from "./firebase-config.js";
 import { money, toast } from "./ui.js";
 import { generatePromptPayPayload } from "./promptpay.js";
 
@@ -80,7 +80,7 @@ function renderPromptPay() {
   const isPromptPay = paymentMethod.value === "promptpay";
   promptPaySection.hidden = !isPromptPay;
   paymentSlipWrap.hidden = !isPromptPay;
-  paymentSlip.required = isPromptPay;
+  paymentSlip.required = false;
   if (!isPromptPay) {
     clearSlipSelection();
     return;
@@ -155,18 +155,23 @@ function clearSlipSelection() {
 function selectSlipFile(file) {
   if (!file) return;
   const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+  const extension = String(file.name || "").split(".").pop()?.toLowerCase() || "";
+  const allowedExtension = ["jpg", "jpeg", "png", "webp", "heic", "heif"].includes(extension);
+
   if (file.size > 8 * 1024 * 1024) {
     clearSlipSelection();
     setSlipError("สลิปต้องมีขนาดไม่เกิน 8 MB");
     toast("สลิปต้องมีขนาดไม่เกิน 8 MB", "error");
     return;
   }
-  if (file.type && !allowedTypes.includes(file.type)) {
+
+  if ((file.type && !allowedTypes.includes(file.type)) || (!file.type && !allowedExtension)) {
     clearSlipSelection();
     setSlipError("รองรับเฉพาะไฟล์รูปภาพ JPG, PNG, WebP และ HEIC");
     toast("ชนิดไฟล์สลิปไม่รองรับ", "error");
     return;
   }
+
   if (selectedSlipObjectUrl) URL.revokeObjectURL(selectedSlipObjectUrl);
   selectedSlipFile = file;
   selectedSlipObjectUrl = URL.createObjectURL(file);
@@ -178,40 +183,64 @@ function selectSlipFile(file) {
   removePaymentSlip.hidden = false;
   paymentSlipDropzone.classList.add("has-file");
   setSlipError("");
+  toast("แนบสลิปเรียบร้อยแล้ว");
 }
 
 async function uploadSlip(file, orderId) {
-  if (!file) return { url: "", path: "" };
+  if (!file) return { path: "" };
   if (file.size > 8 * 1024 * 1024) throw new Error("SLIP_TOO_LARGE");
   if (!storage) throw new Error("STORAGE_NOT_READY");
+
+  const tenant = dataService.getActiveShop();
+  if (!tenant?.id) throw new Error("TENANT_NOT_READY");
   const extension = (file.name.split(".").pop() || "jpg").replace(/[^a-zA-Z0-9]/g, "") || "jpg";
-  const path = `payment-slips/${orderId}/${Date.now()}.${extension}`;
+  const path = `tenants/${tenant.id}/payment-slips/${orderId}/${Date.now()}.${extension}`;
   const fileRef = ref(storage, path);
-  await uploadBytes(fileRef, file, { contentType: file.type || "image/jpeg" });
-  return { url: await getDownloadURL(fileRef), path };
+  const contentType = file.type && file.type.startsWith("image/") ? file.type : "image/jpeg";
+  await uploadBytes(fileRef, file, { contentType, customMetadata: { tenantId: tenant.id, orderId } });
+  return { path };
 }
 
 function submitErrorMessage(error) {
   const code = String(error?.code || error?.message || "");
   if (code.includes("SLIP_TOO_LARGE")) return "สลิปต้องมีขนาดไม่เกิน 8 MB";
-  if (code.includes("storage/unauthorized")) return "ระบบไม่มีสิทธิ์อัปโหลดสลิป กรุณา Deploy Storage Rules";
+  if (code.includes("TENANT_NOT_READY")) return "ไม่พบข้อมูลร้าน กรุณาเปิดหน้า Delivery จาก QR ของร้านอีกครั้ง";
+  if (code.includes("storage/unauthorized")) return "ระบบไม่มีสิทธิ์บันทึกสลิป กรุณาตรวจสอบ Storage Rules";
   if (code.includes("storage/retry-limit-exceeded")) return "อัปโหลดสลิปไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่";
   if (code.includes("storage/canceled")) return "การอัปโหลดสลิปถูกยกเลิก";
   if (code.includes("STORAGE_NOT_READY")) return "ระบบจัดเก็บสลิปยังไม่พร้อมใช้งาน";
   return "ส่งคำสั่งซื้อไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
 }
 
+paymentSlip.addEventListener("click", event => event.stopPropagation());
 paymentSlip.addEventListener("change", event => selectSlipFile(event.target.files?.[0] || null));
+paymentSlipDropzone.addEventListener("click", () => paymentSlip.click());
 for (const eventName of ["dragenter", "dragover"]) paymentSlipDropzone.addEventListener(eventName, event => { event.preventDefault(); paymentSlipDropzone.classList.add("is-dragover"); });
 for (const eventName of ["dragleave", "drop"]) paymentSlipDropzone.addEventListener(eventName, event => { event.preventDefault(); paymentSlipDropzone.classList.remove("is-dragover"); });
 paymentSlipDropzone.addEventListener("drop", event => selectSlipFile(event.dataTransfer?.files?.[0] || null));
-removePaymentSlip.addEventListener("click", clearSlipSelection);
+removePaymentSlip.addEventListener("click", event => { event.stopPropagation(); clearSlipSelection(); });
 categoryTabs.addEventListener("click", event => { const button = event.target.closest("[data-category]"); if (!button) return; activeCategory = button.dataset.category; renderTabs(); renderMenus(); });
 document.querySelector("#searchInput").addEventListener("input", renderMenus);
 paymentMethod.addEventListener("change", renderPromptPay);
 deliveryZone.addEventListener("change", updateCart);
 menuGrid.addEventListener("click", event => { const id = event.target.dataset.add; if (!id) return; const menu = menus.find(x => x.id === id); const current = cart.get(id); cart.set(id, current ? { ...current, qty: current.qty + 1 } : { ...menu, qty: 1, note: "" }); updateCart(); toast(`เพิ่ม ${menu.name} แล้ว`); });
-cartList.addEventListener("click", event => { const id = event.target.dataset.inc || event.target.dataset.dec; if (!id) return; const item = cart.get(id); item.qty += event.target.dataset.inc ? 1 : -1; if (item.qty <= 0) cart.delete(id); else cart.set(id, item); updateCart(); });
+cartList.addEventListener("click", event => {
+  const inc = event.target.dataset.inc;
+  const dec = event.target.dataset.dec;
+  const id = inc || dec;
+  if (!id) return;
+  const item = cart.get(id);
+  if (!item) return;
+  if (inc) { item.qty += 1; cart.set(id, item); updateCart(); return; }
+  if (item.qty <= 1) {
+    if (!confirm(`ลบ ${item.name} ออกจากตะกร้าใช่หรือไม่?`)) return;
+    cart.delete(id);
+  } else {
+    item.qty -= 1;
+    cart.set(id, item);
+  }
+  updateCart();
+});
 cartList.addEventListener("input", event => { const id = event.target.dataset.note; if (!id) return; const item = cart.get(id); item.note = event.target.value; cart.set(id, item); });
 
 submitOrderButton.addEventListener("click", async () => {
@@ -230,16 +259,19 @@ submitOrderButton.addEventListener("click", async () => {
   const slipFile = selectedSlipFile;
   isSubmitting = true;
   submitOrderButton.disabled = true;
-  submitOrderButton.textContent = method === "promptpay" ? "กำลังอัปโหลดสลิป..." : "กำลังส่ง...";
+  submitOrderButton.textContent = method === "promptpay" ? "กำลังบันทึกสลิป..." : "กำลังส่ง...";
   try {
-    let slip = { url: "", path: "" };
-    if (method === "promptpay") { slip = await uploadSlip(slipFile, orderId); submitOrderButton.textContent = "กำลังสร้างออเดอร์..."; }
+    let slip = { path: "" };
+    if (method === "promptpay") {
+      slip = await uploadSlip(slipFile, orderId);
+      submitOrderButton.textContent = "กำลังสร้างออเดอร์...";
+    }
     await dataService.createOrderWithId(orderId, {
       orderType: "delivery", tableCode: "DELIVERY", recipientName, recipientPhone, deliveryAddress,
       deliveryZone: zone.id, deliveryZoneLabel: zone.label, deliveryFee: zone.fee,
       subtotalAmount: currentSubtotal, totalAmount: currentTotal,
       paymentMethod: method, paymentStatus: method === "promptpay" ? "pending_verification" : "unpaid",
-      paymentSlipUrl: slip.url, paymentSlipPath: slip.path,
+      paymentSlipUrl: "", paymentSlipPath: slip.path,
       status: "pending", note: document.querySelector("#orderNote").value.trim(), items
     });
     cart.clear(); clearSlipSelection(); toast("ส่งคำสั่งซื้อ Delivery เรียบร้อย"); location.href = `/delivery/success/?order=${encodeURIComponent(orderId)}`;

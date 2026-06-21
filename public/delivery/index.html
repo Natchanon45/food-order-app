@@ -4,51 +4,59 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#159447">
-  <link rel="stylesheet" href="/assets/css/app.css">
-  <link rel="stylesheet" href="/assets/css/menu-qr.css">
-  <link rel="stylesheet" href="/assets/css/payment-slip.css">
-  <link rel="stylesheet" href="/assets/css/menu-pagination.css">
-  <link rel="stylesheet" href="/assets/css/delivery-addresses.css">
-  <link rel="stylesheet" href="/assets/css/icons.css">
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260621-30">
+  <link rel="stylesheet" href="/assets/css/menu-qr.css?v=20260621-30">
+  <link rel="stylesheet" href="/assets/css/payment-slip.css?v=20260621-30">
+  <link rel="stylesheet" href="/assets/css/menu-pagination.css?v=20260621-30">
+  <link rel="stylesheet" href="/assets/css/delivery-addresses.css?v=20260621-30">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260621-30">
+  <link rel="stylesheet" href="/assets/css/pos-refresh.css?v=20260621-30">
+  <link rel="stylesheet" href="/assets/css/mobile-menu-scroll.css?v=20260621-30">
   <title>สั่งอาหาร Delivery</title>
 </head>
-<body>
+<body class="delivery-page">
   <div id="demoBanner"></div>
   <header class="app-header"><div class="brand"><span class="brand-mark">FO</span><span>Delivery</span></div><span class="badge">จัดส่งถึงบ้าน</span></header>
   <main class="container">
     <section class="hero"><h1>สั่งอาหาร Delivery</h1><p>เลือกเมนู กรอกข้อมูลจัดส่ง และยืนยันคำสั่งซื้อได้ทันที</p></section>
-    <div class="menu-filter-area" id="menuListStart"><div class="category-tabs" id="categoryTabs" role="tablist" aria-label="หมวดหมู่อาหาร"></div><input class="input menu-search" id="searchInput" placeholder="ค้นหาเมนู..."></div>
-    <div id="menuGrid" class="grid grid-3"></div>
-    <nav id="menuPagination" class="menu-pagination" aria-label="เปลี่ยนหน้ารายการอาหาร" hidden></nav>
-    <section class="card" style="margin-top:18px"><div class="section-title"><h2>ตะกร้าอาหาร</h2><span id="cartCount" class="badge">0 รายการ</span></div><div id="cartList" class="cart-list"></div></section>
-
-    <section class="card" style="margin-top:18px">
-      <div class="section-title"><h2>บัญชีและที่อยู่จัดส่ง</h2></div>
-      <div class="grid grid-2" style="align-items:center">
-        <div><div id="customerAccount" hidden><strong id="customerAccountName"></strong></div><div id="customerModeText" class="menu-category">โหมด Guest: ที่อยู่จะจำเฉพาะอุปกรณ์และเบราว์เซอร์นี้</div></div>
-        <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button type="button" class="google-login-button" id="googleLoginButton"><span id="googleLoginLabel">เข้าสู่ระบบด้วย Google</span></button><button type="button" class="btn" id="customerLogoutButton" hidden>ออกจากระบบลูกค้า</button></div>
+    <div class="delivery-pos">
+      <div class="delivery-menu-column">
+        <div class="menu-filter-area" id="menuListStart"><div class="category-tabs" id="categoryTabs" role="tablist" aria-label="หมวดหมู่อาหาร"></div><input class="input menu-search" id="searchInput" placeholder="ค้นหาเมนู..."></div>
+        <div id="menuGrid" class="grid grid-3"></div>
+        <nav id="menuPagination" class="menu-pagination" aria-label="เปลี่ยนหน้ารายการอาหาร" hidden></nav>
       </div>
-    </section>
-
-    <section class="card" style="margin-top:18px">
-      <div class="section-title"><h2>ข้อมูลจัดส่ง</h2></div>
-      <div class="grid grid-2 delivery-contact-grid">
-        <div class="field"><label>ชื่อผู้รับ *</label><input class="input" id="recipientName" required maxlength="120"><div class="address-lookup-status" aria-hidden="true">&nbsp;</div></div>
-        <div class="field"><label>เบอร์โทรศัพท์ *</label><input class="input" id="recipientPhone" type="tel" inputmode="tel" required maxlength="20"><div id="addressLookupStatus" class="address-lookup-status"></div></div>
+      <div class="delivery-side-column">
+        <section class="card"><div class="section-title"><h2>ตะกร้าอาหาร</h2><span id="cartCount" class="badge">0 รายการ</span></div><div id="cartList" class="cart-list"></div></section>
+        <section class="card" style="margin-top:18px">
+          <div class="section-title"><h2>บัญชีและที่อยู่จัดส่ง</h2></div>
+          <div class="grid grid-2" style="align-items:center">
+            <div><div id="customerAccount" hidden><strong id="customerAccountName"></strong></div><div id="customerModeText" class="menu-category">โหมด Guest: ที่อยู่จะจำเฉพาะอุปกรณ์และเบราว์เซอร์นี้</div></div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button type="button" class="google-login-button" id="googleLoginButton"><span id="googleLoginLabel">เข้าสู่ระบบด้วย Google</span></button><button type="button" class="btn" id="customerLogoutButton" hidden>ออกจากระบบลูกค้า</button></div>
+          </div>
+        </section>
+        <section class="card" style="margin-top:18px">
+          <div class="section-title"><h2>ข้อมูลจัดส่ง</h2></div>
+          <div class="grid grid-2 delivery-contact-grid">
+            <div class="field"><label>ชื่อผู้รับ *</label><input class="input" id="recipientName" required maxlength="120"><div class="address-lookup-status" aria-hidden="true">&nbsp;</div></div>
+            <div class="field"><label>เบอร์โทรศัพท์ *</label><input class="input" id="recipientPhone" type="tel" inputmode="tel" required maxlength="20"><div id="addressLookupStatus" class="address-lookup-status"></div></div>
+          </div>
+          <section id="addressBook" class="address-book" hidden><div class="address-book-head"><div><strong>ที่อยู่จัดส่งของฉัน</strong><div class="menu-category">เลือกที่อยู่ที่ต้องการให้จัดส่ง</div></div><div style="display:flex;align-items:center;gap:8px"><span id="addressCount" class="badge">0/5 ที่อยู่</span><button type="button" class="btn btn-primary btn-sm" id="addAddressButton">+ เพิ่มที่อยู่</button></div></div><div id="addressList" class="address-list"></div><div id="addressForm" class="address-form" hidden><div class="grid grid-2"><div class="field"><label>ชื่อที่อยู่ *</label><input class="input" id="addressLabel" maxlength="50" placeholder="เช่น บ้าน, ที่ทำงาน"></div><div class="field"><label>ชื่อผู้รับ *</label><input class="input" id="addressRecipient" maxlength="120"></div></div><div class="field" style="margin-top:10px"><label>รายละเอียดที่อยู่ *</label><textarea class="input" id="addressText" maxlength="500"></textarea></div><label style="display:block;margin-top:10px"><input type="checkbox" id="addressDefault"> ตั้งเป็นที่อยู่หลัก</label><div class="address-form-actions"><button type="button" class="btn" id="cancelAddressButton">ยกเลิก</button><button type="button" class="btn btn-primary" id="saveAddressButton">บันทึกที่อยู่</button></div></div></section>
+          <div class="field" style="margin-top:12px"><label>ที่อยู่จัดส่ง *</label><textarea class="input" id="deliveryAddress" required maxlength="500"></textarea></div>
+          <div class="field" style="margin-top:12px"><label>พื้นที่จัดส่ง *</label><select class="input" id="deliveryZone" required></select></div>
+          <div class="card" style="margin-top:12px;box-shadow:none;background:#f8fbf9"><div class="receipt-row"><span>ค่าอาหาร</span><strong><span id="deliverySubtotal">0.00</span> บาท</strong></div><div class="receipt-row"><span>ค่าจัดส่ง</span><strong><span id="deliveryFeeDisplay">0.00</span> บาท</strong></div></div>
+          <div class="field" style="margin-top:12px"><label>หมายเหตุถึงร้าน</label><textarea class="input" id="orderNote" maxlength="300"></textarea></div>
+          <div class="field" style="margin-top:12px"><label>วิธีชำระเงิน *</label><select class="input" id="paymentMethod"><option value="promptpay">ชำระแล้วด้วยพร้อมเพย์/โอนเงิน</option><option value="cod">เก็บเงินปลายทาง</option></select></div>
+          <div id="promptPaySection" class="card" style="margin-top:12px;text-align:center"><h3 style="margin-top:0">สแกน QR พร้อมเพย์</h3><div id="promptPayPlaceholder" class="empty" style="padding:24px 12px">เพิ่มรายการอาหารเพื่อสร้าง QR ตามยอดสุทธิ</div><img id="promptPayQr" width="220" height="220" alt="QR พร้อมเพย์" hidden><div><strong id="promptPayAmount">0.00 บาท</strong></div><div id="promptPayName" class="menu-category"></div><div id="paymentSlipWrap" class="payment-slip-wrap" style="margin-top:14px;text-align:left"><label style="font-size:13px;font-weight:700;color:var(--muted)">แนบสลิปหรือหลักฐานการชำระ *</label><div class="payment-slip-dropzone" id="paymentSlipDropzone"><input id="paymentSlip" type="file" accept="image/*,.heic,.heif"><div class="payment-slip-content" id="paymentSlipContent"><div class="payment-slip-icon">+</div><div class="payment-slip-title">แตะเพื่อแนบสลิป หรือลากไฟล์มาวาง</div><div class="payment-slip-help">รองรับรูปจากกล้องและคลังรูป • ไม่เกิน 8 MB</div></div><div class="payment-slip-preview" id="paymentSlipPreviewWrap" hidden><img id="paymentSlipPreview" alt="ตัวอย่างสลิป"><div class="payment-slip-meta"><span id="paymentSlipFileName">-</span><span id="paymentSlipFileSize">-</span></div></div></div><div class="payment-slip-error" id="paymentSlipError" hidden></div><button type="button" class="btn btn-danger btn-sm" id="removePaymentSlip" hidden style="margin-top:8px">ลบสลิป</button></div><small class="menu-category">** ระบบรับหลักฐานการชำระไว้ให้ร้านตรวจสอบเท่านั้น</small></div>
+        </section>
       </div>
-      <section id="addressBook" class="address-book" hidden><div class="address-book-head"><div><strong>ที่อยู่จัดส่งของฉัน</strong><div class="menu-category">เลือกที่อยู่ที่ต้องการให้จัดส่ง</div></div><div style="display:flex;align-items:center;gap:8px"><span id="addressCount" class="badge">0/5 ที่อยู่</span><button type="button" class="btn btn-primary btn-sm" id="addAddressButton">+ เพิ่มที่อยู่</button></div></div><div id="addressList" class="address-list"></div><div id="addressForm" class="address-form" hidden><div class="grid grid-2"><div class="field"><label>ชื่อที่อยู่ *</label><input class="input" id="addressLabel" maxlength="50" placeholder="เช่น บ้าน, ที่ทำงาน"></div><div class="field"><label>ชื่อผู้รับ *</label><input class="input" id="addressRecipient" maxlength="120"></div></div><div class="field" style="margin-top:10px"><label>รายละเอียดที่อยู่ *</label><textarea class="input" id="addressText" maxlength="500"></textarea></div><label style="display:block;margin-top:10px"><input type="checkbox" id="addressDefault"> ตั้งเป็นที่อยู่หลัก</label><div class="address-form-actions"><button type="button" class="btn" id="cancelAddressButton">ยกเลิก</button><button type="button" class="btn btn-primary" id="saveAddressButton">บันทึกที่อยู่</button></div></div></section>
-      <div class="field" style="margin-top:12px"><label>ที่อยู่จัดส่ง *</label><textarea class="input" id="deliveryAddress" required maxlength="500"></textarea></div>
-      <div class="field" style="margin-top:12px"><label>พื้นที่จัดส่ง *</label><select class="input" id="deliveryZone" required></select></div>
-      <div class="card" style="margin-top:12px;box-shadow:none;background:#f8fbf9"><div class="receipt-row"><span>ค่าอาหาร</span><strong><span id="deliverySubtotal">0.00</span> บาท</strong></div><div class="receipt-row"><span>ค่าจัดส่ง</span><strong><span id="deliveryFeeDisplay">0.00</span> บาท</strong></div></div>
-      <div class="field" style="margin-top:12px"><label>หมายเหตุถึงร้าน</label><textarea class="input" id="orderNote" maxlength="300"></textarea></div>
-      <div class="field" style="margin-top:12px"><label>วิธีชำระเงิน *</label><select class="input" id="paymentMethod"><option value="promptpay">ชำระแล้วด้วยพร้อมเพย์/โอนเงิน</option><option value="cod">เก็บเงินปลายทาง</option></select></div>
-      <div id="promptPaySection" class="card" style="margin-top:12px;text-align:center"><h3 style="margin-top:0">สแกน QR พร้อมเพย์</h3><div id="promptPayPlaceholder" class="empty" style="padding:24px 12px">เพิ่มรายการอาหารเพื่อสร้าง QR ตามยอดสุทธิ</div><img id="promptPayQr" width="220" height="220" alt="QR พร้อมเพย์" hidden><div><strong id="promptPayAmount">0.00 บาท</strong></div><div id="promptPayName" class="menu-category"></div><div id="paymentSlipWrap" class="payment-slip-wrap" style="margin-top:14px;text-align:left"><label style="font-size:13px;font-weight:700;color:var(--muted)">แนบสลิปหรือหลักฐานการชำระ *</label><div class="payment-slip-dropzone" id="paymentSlipDropzone"><input id="paymentSlip" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" required><div class="payment-slip-content" id="paymentSlipContent"><div class="payment-slip-icon">+</div><div class="payment-slip-title">แตะเพื่อแนบสลิป หรือลากไฟล์มาวาง</div><div class="payment-slip-help">รองรับรูปจากกล้องและคลังรูป • ไม่เกิน 8 MB</div></div><div class="payment-slip-preview" id="paymentSlipPreviewWrap" hidden><img id="paymentSlipPreview" alt="ตัวอย่างสลิป"><div class="payment-slip-meta"><span id="paymentSlipFileName">-</span><span id="paymentSlipFileSize">-</span></div></div></div><div class="payment-slip-error" id="paymentSlipError" hidden></div><button type="button" class="btn btn-danger btn-sm" id="removePaymentSlip" hidden style="margin-top:8px">ลบสลิป</button></div><small class="menu-category">** ระบบรับหลักฐานการชำระไว้ให้ร้านตรวจสอบเท่านั้น</small></div>
-    </section>
+    </div>
   </main>
   <div class="cart-bar"><div><small>ยอดรวมพร้อมค่าส่ง</small><div style="font-size:20px;font-weight:800"><span id="cartTotal">0.00</span> บาท</div></div><button class="btn btn-primary" id="submitOrder">ยืนยันการสั่ง</button></div>
-  <script type="module" src="/assets/js/delivery-addresses.js"></script>
-  <script type="module" src="/assets/js/delivery-address-status-sync.js"></script>
-  <script type="module" src="/assets/js/delivery.js"></script>
-  <script type="module" src="/assets/js/dom-menu-pagination.js"></script>
+  <script type="module" src="/assets/js/public-tenant-resolver.js?v=20260621-3"></script>
+  <script type="module" src="/assets/js/delivery-addresses.js?v=20260621-30"></script>
+  <script type="module" src="/assets/js/delivery-address-status-sync.js?v=20260621-30"></script>
+  <script type="module" src="/assets/js/delivery.js?v=20260621-30"></script>
+  <script type="module" src="/assets/js/dom-menu-pagination.js?v=20260621-30"></script>
+  <script type="module" src="/assets/js/mobile-menu-scroll.js?v=20260621-30"></script>
 </body>
 </html>

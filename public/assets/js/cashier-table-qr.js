@@ -49,14 +49,19 @@ async function loadTables() {
     <article class="card order-card">
       <h2 style="margin-top:0">${table.name}</h2>
       <div class="badge warning">ออก QR แล้ว</div>
-      <p class="menu-category" style="margin-bottom:0">สามารถพิมพ์ซ้ำได้โดยใช้ QR เดิม ไม่สร้าง Token ใหม่</p>
-      <button class="btn btn-dark" data-reprint-table="${table.id}" style="width:100%;margin-top:14px">พิมพ์ QR ซ้ำ</button>
+      <p class="menu-category" style="margin-bottom:0">สามารถพิมพ์ซ้ำได้โดยใช้ QR เดิม หรือปิดโต๊ะเพื่อยกเลิก QR นี้</p>
+      <div class="order-actions" style="margin-top:14px">
+        <button class="btn btn-dark" data-reprint-table="${table.id}">พิมพ์ QR ซ้ำ</button>
+        <button class="btn btn-danger" data-close-table="${table.id}">ปิดโต๊ะ</button>
+      </div>
     </article>
   `).join("") : '<div class="card empty">ยังไม่มีโต๊ะที่ออก QR</div>';
 }
 
 function renderTicket(table, token, autoPrint = true) {
-  const orderUrl = `${location.origin}/order/?table=${encodeURIComponent(table.code)}&token=${encodeURIComponent(token)}`;
+  const tenant = dataService.getActiveShop();
+  const tenantSlug = encodeURIComponent(tenant.slug || "");
+  const orderUrl = `${location.origin}/s/${tenantSlug}/order/?table=${encodeURIComponent(table.code)}&token=${encodeURIComponent(token)}`;
   const qrUrl = buildQrImageUrl(orderUrl);
 
   issuedQr.innerHTML = `
@@ -118,7 +123,6 @@ availableTables.addEventListener("click", async event => {
     });
 
     renderTicket(table, token, true);
-    toast(`ออก QR สำหรับ ${table.name} แล้ว`);
     await loadTables();
   } catch (error) {
     console.error(error);
@@ -129,6 +133,34 @@ availableTables.addEventListener("click", async event => {
 });
 
 occupiedTables.addEventListener("click", async event => {
+  const closeButton = event.target.closest("[data-close-table]");
+  if (closeButton) {
+    const table = tables.find(item => item.id === closeButton.dataset.closeTable);
+    if (!table) return;
+
+    if (!confirm(`ยืนยันปิด ${table.name} ใช่หรือไม่?\n\nQR ใบเดิมจะใช้งานไม่ได้ และโต๊ะจะกลับเป็นโต๊ะว่าง`)) return;
+
+    closeButton.disabled = true;
+    closeButton.textContent = "กำลังปิดโต๊ะ...";
+
+    try {
+      await dataService.updateTable(table.id, {
+        status: "available",
+        orderToken: "",
+        sessionStartedAt: null,
+        currentRound: 0
+      });
+      toast(`ปิด ${table.name} เรียบร้อยแล้ว`);
+      await loadTables();
+    } catch (error) {
+      console.error(error);
+      toast("ปิดโต๊ะไม่สำเร็จ", "error");
+      closeButton.disabled = false;
+      closeButton.textContent = "ปิดโต๊ะ";
+    }
+    return;
+  }
+
   const button = event.target.closest("[data-reprint-table]");
   if (!button) return;
   button.disabled = true;
@@ -142,7 +174,6 @@ occupiedTables.addEventListener("click", async event => {
       return;
     }
     renderTicket(table, table.orderToken, true);
-    toast(`พิมพ์ QR เดิมของ ${table.name} ซ้ำ`);
   } catch (error) {
     console.error(error);
     toast("เตรียม QR สำหรับพิมพ์ซ้ำไม่สำเร็จ", "error");

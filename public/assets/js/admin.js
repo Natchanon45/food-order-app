@@ -1,3 +1,4 @@
+import "./admin-delivery-qr.js?v=20260621-1";
 import { dataService, usingDemoMode } from "./data-service.js";
 import { storage, ref, uploadBytes, getDownloadURL } from "./firebase-config.js";
 import { money, toast, DEFAULT_FOOD_IMAGE } from "./ui.js";
@@ -176,16 +177,7 @@ document.querySelector("#menuForm").addEventListener("submit", async event => {
       image = uploaded.url;
       imagePath = uploaded.path;
     }
-    await dataService.saveMenu({
-      id,
-      name: document.querySelector("#menuName").value.trim(),
-      category: document.querySelector("#menuCategory").value.trim(),
-      price: Number(document.querySelector("#menuPrice").value),
-      image,
-      imagePath,
-      ...getMenuImagePosition(),
-      active: document.querySelector("#menuActive").checked
-    });
+    await dataService.saveMenu({ id, name: document.querySelector("#menuName").value.trim(), category: document.querySelector("#menuCategory").value.trim(), price: Number(document.querySelector("#menuPrice").value), image, imagePath, ...getMenuImagePosition(), active: document.querySelector("#menuActive").checked });
     event.target.reset();
     document.querySelector("#menuId").value = "";
     menuImage.value = "";

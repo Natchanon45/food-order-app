@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#159447">
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260621-41">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260621-41">
+  <link rel="stylesheet" href="/assets/css/tenant-admin.css?v=20260621-41">
+  <title>จัดการร้านค้า</title>
+</head>
+<body data-roles="super_admin">
+  <header class="app-header">
+    <div class="brand"><span class="brand-mark">FOD</span>จัดการร้านค้า</div>
+    <a class="btn btn-sm" href="/platform">กลับระบบกลาง</a>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1>Tenant / ร้านค้า</h1>
+      <p>สร้างร้านใหม่ กำหนด Owner ควบคุมสถานะ และกำหนดวันหมดอายุสมาชิก</p>
+    </section>
+
+    <section class="card">
+      <div class="section-title"><h2>สร้างร้านใหม่</h2></div>
+      <form id="tenantForm" class="grid">
+        <div class="grid grid-2">
+          <div class="field">
+            <label>ชื่อร้าน</label>
+            <input class="input" id="tenantName" maxlength="120" required placeholder="เช่น ร้านอาหารบ้านสวน">
+          </div>
+          <div class="field">
+            <label>Slug สำหรับ URL</label>
+            <input class="input" id="tenantSlug" maxlength="50" required placeholder="เช่น baan-suan">
+            <small>ใช้ตัวอักษรอังกฤษเล็ก ตัวเลข และขีดกลางเท่านั้น</small>
+          </div>
+        </div>
+        <div class="grid grid-2">
+          <div class="field">
+            <label>เบอร์โทรร้าน</label>
+            <input class="input" id="tenantPhone" type="tel" maxlength="30">
+          </div>
+          <div class="field">
+            <label>ที่อยู่ร้าน</label>
+            <input class="input" id="tenantAddress" maxlength="300">
+          </div>
+        </div>
+        <button class="btn btn-primary" id="createTenantButton">สร้างร้าน</button>
+        <div class="upload-error" id="tenantError" hidden></div>
+      </form>
+    </section>
+
+    <section class="card" style="margin-top:16px">
+      <div class="section-title"><h2>รายการร้านค้า</h2><span class="badge" id="tenantCount">0 ร้าน</span></div>
+      <div id="tenantList" class="grid"></div>
+    </section>
+  </main>
+
+  <script type="module" src="/assets/js/page-guard.js?v=20260621-41"></script>
+  <script type="module" src="/assets/js/admin-tenants.js?v=20260621-41"></script>
+  <script type="module" src="/assets/js/admin-subscriptions.js?v=20260621-41"></script>
+</body>
+</html>

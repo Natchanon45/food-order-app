@@ -1,15 +1,28 @@
-export const APP_VERSION = "1.6.10";
+export const APP_VERSION = "1.6.12";
 export const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
 
 export const money = (value = 0) => new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value) || 0);
 
 export function toast(message, type = "success") {
+  const normalizedType = type === "error" ? "error" : "success";
+  const iconName = normalizedType === "error" ? "x-circle" : "check-circle";
   const el = document.createElement("div");
-  el.className = `app-toast ${type}`;
-  el.textContent = message;
+  el.className = `app-toast ${normalizedType}`;
+  el.setAttribute("role", normalizedType === "error" ? "alert" : "status");
+  el.setAttribute("aria-live", "polite");
+  el.innerHTML = `
+    <span class="app-toast-icon" aria-hidden="true">
+      <svg class="app-icon"><use href="/assets/images/app-icons.svg?v=20260621-2#icon-${iconName}"></use></svg>
+    </span>
+    <span class="app-toast-message"></span>
+  `;
+  el.querySelector(".app-toast-message").textContent = String(message || "");
   document.body.appendChild(el);
   requestAnimationFrame(() => el.classList.add("show"));
-  setTimeout(() => { el.classList.remove("show"); setTimeout(() => el.remove(), 250); }, 2400);
+  setTimeout(() => {
+    el.classList.remove("show");
+    setTimeout(() => el.remove(), 250);
+  }, 3200);
 }
 
 export function getTableCode() {
@@ -26,14 +39,14 @@ export function formatTime(value) {
 }
 
 function iconMarkup(name) {
-  return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg#icon-${name}"></use></svg>`;
+  return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260621-2#icon-${name}"></use></svg>`;
 }
 
 function mountIconStyles() {
-  if (!document.querySelector('link[href="/assets/css/icons.css"]')) {
+  if (!document.querySelector('link[href^="/assets/css/icons.css"]')) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "/assets/css/icons.css";
+    link.href = "/assets/css/icons.css?v=20260621-34";
     document.head.appendChild(link);
   }
   if (!document.querySelector("#receiptCompactStyles")) {
@@ -88,11 +101,9 @@ const buttonIconRules = [
 ];
 
 function visibleButtonText(button) {
-  return [...button.childNodes]
-    .filter(node => node.nodeType === Node.TEXT_NODE)
-    .map(node => node.nodeValue || "")
-    .join("")
-    .trim();
+  const clone = button.cloneNode(true);
+  clone.querySelectorAll("svg, .app-icon").forEach(node => node.remove());
+  return (clone.textContent || "").replace(/\s+/g, " ").trim();
 }
 
 function stripDuplicateLeadingSymbol(button) {
@@ -139,6 +150,11 @@ function decorateButton(button) {
   const hasText = Boolean(visibleButtonText(button));
   button.classList.toggle("btn-icon-only", hasIcon && !hasText);
 
+  if (hasIcon && hasText) {
+    button.removeAttribute("aria-label");
+    button.removeAttribute("title");
+  }
+
   if (hasIcon && !hasText && !button.getAttribute("aria-label")) {
     const fallbackLabel = button.title || "ปุ่มคำสั่ง";
     button.setAttribute("aria-label", fallbackLabel);
@@ -167,7 +183,7 @@ function mountVersion() {
   if (document.querySelector(".app-version")) return;
   const footer = document.createElement("footer");
   footer.className = "app-version";
-  footer.textContent = `Food Order QR • Version ${APP_VERSION}`;
+  footer.textContent = `Food Order/Delivery With QR • Version ${APP_VERSION}`;
   document.body.appendChild(footer);
 }
 

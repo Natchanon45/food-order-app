@@ -1,11 +1,14 @@
 const menuGrid = document.querySelector("#menuGrid");
 const pagination = document.querySelector("#menuPagination");
-const menuListStart = document.querySelector("#menuListStart");
 let currentPage = 1;
 let rendering = false;
 
+function isMobileLayout() {
+  return window.matchMedia("(max-width: 899px)").matches;
+}
+
 function pageSize() {
-  return window.matchMedia("(max-width: 480px)").matches ? 6 : 9;
+  return 9;
 }
 
 function visiblePageNumbers(totalPages) {
@@ -19,9 +22,18 @@ function renderPagination() {
   rendering = true;
 
   const cards = [...menuGrid.querySelectorAll(":scope > .menu-card")];
+
+  if (isMobileLayout()) {
+    cards.forEach(card => { card.hidden = false; });
+    pagination.hidden = true;
+    pagination.innerHTML = "";
+    rendering = false;
+    return;
+  }
+
   const size = pageSize();
   const totalPages = Math.max(1, Math.ceil(cards.length / size));
-  currentPage = Math.min(currentPage, totalPages);
+  currentPage = Math.max(1, Math.min(currentPage, totalPages));
   const start = (currentPage - 1) * size;
   const end = start + size;
 
@@ -53,13 +65,9 @@ function resetPagination() {
 
 pagination?.addEventListener("click", event => {
   const button = event.target.closest("[data-page]");
-  if (!button || button.disabled) return;
+  if (!button || button.disabled || isMobileLayout()) return;
   currentPage = Number(button.dataset.page);
   renderPagination();
-  if (menuListStart) {
-    const top = menuListStart.getBoundingClientRect().top + window.scrollY - 90;
-    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
-  }
 });
 
 if (menuGrid) {
@@ -70,7 +78,10 @@ if (menuGrid) {
 let resizeTimer;
 window.addEventListener("resize", () => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(resetPagination, 120);
+  resizeTimer = setTimeout(() => {
+    currentPage = 1;
+    renderPagination();
+  }, 120);
 });
 
 document.querySelector("#searchInput")?.addEventListener("input", resetPagination);

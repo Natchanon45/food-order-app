@@ -1,0 +1,268 @@
+.tenant-action-row,
+#tenantList .order-actions {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+
+.tenant-action-button,
+#tenantList .order-actions > a.btn,
+#tenantList [data-create-owner],
+#tenantList [data-edit-tenant],
+#tenantList [data-delete-tenant] {
+  width: auto !important;
+  height: 38px !important;
+  min-width: max-content !important;
+  min-height: 38px !important;
+  max-width: none !important;
+  padding: 0 12px !important;
+  border-radius: 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  aspect-ratio: auto !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  flex: 0 0 auto !important;
+}
+
+.tenant-action-button > span,
+#tenantList .order-actions > a.btn > span,
+#tenantList [data-create-owner] > span,
+#tenantList [data-edit-tenant] > span,
+#tenantList [data-delete-tenant] > span {
+  display: inline !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+  clip: auto !important;
+  position: static !important;
+  white-space: nowrap !important;
+}
+
+.tenant-action-button .app-icon,
+#tenantList .order-actions .app-icon {
+  width: 17px !important;
+  height: 17px !important;
+  flex: 0 0 17px !important;
+  margin: 0 !important;
+}
+
+body.owner-modal-open {
+  overflow: hidden;
+}
+
+.owner-modal[hidden] {
+  display: none !important;
+}
+
+.owner-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.owner-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 18, 13, .58);
+  backdrop-filter: blur(5px);
+}
+
+.owner-modal-card {
+  position: relative;
+  z-index: 1;
+  width: min(620px, 100%);
+  max-height: calc(100dvh - 36px);
+  overflow-y: auto;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .28);
+}
+
+.owner-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 20px 15px;
+  border-bottom: 1px solid var(--line);
+}
+
+.owner-modal-head > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.owner-modal-icon {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: #e8f3ec;
+  color: var(--green-dark);
+}
+
+.owner-modal-icon .app-icon {
+  width: 23px;
+  height: 23px;
+}
+
+.owner-modal-head h2 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.owner-modal-head p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.owner-modal-close {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: #eef2ef;
+  color: var(--black);
+}
+
+.owner-modal-close .app-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.owner-modal-form {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+}
+
+.owner-modal-form small {
+  color: var(--muted);
+}
+
+.owner-modal-form .input:invalid:not(:placeholder-shown) {
+  border-color: var(--danger);
+}
+
+.owner-form-error {
+  margin: 0;
+}
+
+.owner-modal-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  padding-top: 4px;
+}
+
+.owner-modal-actions > .btn,
+#ownerSubmitButton,
+.owner-modal-actions > [data-owner-close] {
+  width: auto !important;
+  height: 42px !important;
+  min-width: max-content !important;
+  min-height: 42px !important;
+  max-width: none !important;
+  padding: 0 16px !important;
+  border-radius: 11px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  aspect-ratio: auto !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  flex: 0 0 auto !important;
+}
+
+.owner-modal-actions > .btn > span,
+#ownerSubmitButton > span,
+.owner-modal-actions > [data-owner-close] > span {
+  display: inline !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+  clip: auto !important;
+  position: static !important;
+  white-space: nowrap !important;
+}
+
+#ownerSubmitButton .app-icon {
+  width: 17px !important;
+  height: 17px !important;
+  flex: 0 0 17px !important;
+  margin: 0 !important;
+}
+
+@media (max-width: 600px) {
+  .owner-modal {
+    align-items: end;
+    padding: 0;
+  }
+
+  .owner-modal-card {
+    width: 100%;
+    max-height: calc(100dvh - env(safe-area-inset-top));
+    border-radius: 22px 22px 0 0;
+    border-bottom: 0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .owner-password-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .owner-modal-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .owner-modal-actions > .btn,
+  #ownerSubmitButton,
+  .owner-modal-actions > [data-owner-close] {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    border-radius: 11px !important;
+    aspect-ratio: auto !important;
+  }
+}
+
+@media (max-width: 480px) {
+  #tenantList .order-actions > a.btn,
+  #tenantList [data-create-owner],
+  #tenantList [data-edit-tenant],
+  #tenantList [data-delete-tenant] {
+    width: auto !important;
+    height: 38px !important;
+    min-width: max-content !important;
+    min-height: 38px !important;
+    max-width: none !important;
+    padding: 0 11px !important;
+    border-radius: 10px !important;
+    aspect-ratio: auto !important;
+  }
+
+  .owner-modal-head,
+  .owner-modal-form {
+    padding-inline: 16px;
+  }
+}

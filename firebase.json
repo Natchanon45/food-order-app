@@ -1,4 +1,7 @@
 {
+  "functions": {
+    "source": "functions"
+  },
   "hosting": {
     "target": "foodapp",
     "public": "public",
@@ -11,6 +14,8 @@
         "destination": "/delivery/success/index.html"
       },
       { "source": "/delivery/**", "destination": "/delivery/index.html" },
+      { "source": "/s/:slug/order/**", "destination": "/order/index.html" },
+      { "source": "/s/**", "destination": "/delivery/index.html" },
       { "source": "/verify/**", "destination": "/verify/index.html" },
       { "source": "/order/**", "destination": "/order/index.html" },
       { "source": "/kitchen/**", "destination": "/kitchen/index.html" },
@@ -23,9 +28,15 @@
         "destination": "/cashier/table-qr/index.html"
       },
       { "source": "/cashier/**", "destination": "/cashier/index.html" },
+      { "source": "/platform/owners/**", "destination": "/platform/owners/index.html" },
+      { "source": "/platform/**", "destination": "/platform/index.html" },
       {
         "source": "/admin/qr/**",
-        "destination": "/cashier/table-qr/index.html"
+        "destination": "/admin/qr/index.html"
+      },
+      {
+        "source": "/admin/tenants/**",
+        "destination": "/admin/tenants/index.html"
       },
       { "source": "/admin/**", "destination": "/admin/index.html" }
     ]

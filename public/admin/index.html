@@ -4,15 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#159447">
-  <link rel="stylesheet" href="/assets/css/app.css">
-  <link rel="stylesheet" href="/assets/css/admin-upload.css">
-  <link rel="stylesheet" href="/assets/css/menu-pagination.css">
-  <link rel="stylesheet" href="/assets/css/admin-sort.css">
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260621-35">
+  <link rel="stylesheet" href="/assets/css/admin-upload.css?v=20260621-35">
+  <link rel="stylesheet" href="/assets/css/menu-pagination.css?v=20260621-35">
+  <link rel="stylesheet" href="/assets/css/admin-sort.css?v=20260621-35">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260621-35">
   <title>จัดการระบบ</title>
 </head>
 <body data-roles="admin">
   <div id="demoBanner"></div>
-  <header class="app-header"><div class="brand"><span class="brand-mark">FO</span>จัดการระบบ</div></header>
+  <header class="app-header"><div class="brand"><span class="brand-mark">FOD</span>จัดการระบบ</div></header>
   <main class="container">
     <section class="hero"><h1>จัดการร้าน</h1><p>ตั้งค่าร้าน การรับชำระ ค่าจัดส่ง เมนู รูปอาหาร และโต๊ะ</p></section>
 
@@ -81,17 +82,17 @@
     </section>
 
     <section class="card" style="margin-top:16px">
-      <div class="section-title"><h2>จัดการโต๊ะ</h2><a href="/cashier/table-qr" class="btn btn-dark btn-sm">ไปออก QR</a></div>
+      <div class="section-title"><h2>จัดการโต๊ะ</h2></div>
       <div class="grid grid-2" style="margin-bottom:12px"><input class="input" id="tableListSearch" placeholder="ค้นหารหัสหรือชื่อโต๊ะ..."><select class="input" id="tableListStatus"><option value="all">ทุกสถานะ</option><option value="active">เปิดใช้งาน</option><option value="inactive">ปิดใช้งาน</option></select></div>
       <div style="overflow:auto"><table class="table-list"><thead><tr><th>รหัส</th><th>ชื่อ</th><th>สถานะ</th><th></th></tr></thead><tbody id="tableRows"></tbody></table></div>
       <nav id="tableListPagination" class="menu-pagination" aria-label="แบ่งหน้ารายการโต๊ะ" hidden></nav>
     </section>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
-  <script type="module" src="/assets/js/page-guard.js"></script>
-  <script type="module" src="/assets/js/admin.js"></script>
-  <script type="module" src="/assets/js/admin-payment.js"></script>
-  <script type="module" src="/assets/js/admin-list-pagination.js"></script>
-  <script type="module" src="/assets/js/admin-sort.js"></script>
+  <script type="module" src="/assets/js/page-guard.js?v=20260621-35"></script>
+  <script type="module" src="/assets/js/admin.js?v=20260621-35"></script>
+  <script type="module" src="/assets/js/admin-payment.js?v=20260621-35"></script>
+  <script type="module" src="/assets/js/admin-list-pagination.js?v=20260621-35"></script>
+  <script type="module" src="/assets/js/admin-sort.js?v=20260621-35"></script>
 </body>
 </html>
