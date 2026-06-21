@@ -6,7 +6,23 @@ function storefrontSlug(pathname = location.pathname) {
   return match ? decodeURIComponent(match[1]).trim().toLowerCase() : "";
 }
 
-function showUnavailableStorefront() {
+function asDate(value) {
+  if (!value) return null;
+  if (typeof value.toDate === "function") return value.toDate();
+  if (value.seconds) return new Date(value.seconds * 1000);
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function tenantCanUseStorefront(tenant) {
+  if (tenant.active === false || ["expired", "suspended"].includes(tenant.subscriptionStatus)) return false;
+  const expiry = asDate(tenant.subscriptionExpiresAt);
+  if (!expiry) return true;
+  const graceDays = Number(tenant.gracePeriodDays ?? 3);
+  return Date.now() <= expiry.getTime() + graceDays * 86400000;
+}
+
+function showUnavailableStorefront(reason = "ร้านไม่พร้อมให้บริการ") {
   document.documentElement.innerHTML = `
     <head>
       <meta charset="utf-8">
@@ -18,19 +34,24 @@ function showUnavailableStorefront() {
         h1{margin:0 0 10px;font-size:24px}p{margin:0;color:#6b746f;line-height:1.6}
       </style>
     </head>
-    <body><main><h1>ร้านไม่พร้อมให้บริการ</h1><p>บัญชีร้านนี้ถูกระงับหรือปิดใช้งานชั่วคราว กรุณาติดต่อร้านค้า</p></main></body>`;
+    <body><main><h1>${reason}</h1><p>บัญชีร้านนี้หมดอายุ ถูกระงับ หรือปิดใช้งานชั่วคราว กรุณาติดต่อร้านค้า</p></main></body>`;
 }
 
 const slug = storefrontSlug();
 
 if (slug) {
   const slugSnapshot = await getDoc(doc(db, "tenantSlugs", slug));
-  if (!slugSnapshot.exists() || slugSnapshot.data().active === false) {
-    showUnavailableStorefront();
-    throw new Error(`TENANT_INACTIVE:${slug}`);
+  if (!slugSnapshot.exists()) {
+    showUnavailableStorefront("ไม่พบร้านค้า");
+    throw new Error(`TENANT_NOT_FOUND:${slug}`);
   }
 
   const tenant = slugSnapshot.data();
+  if (!tenantCanUseStorefront(tenant)) {
+    showUnavailableStorefront(tenant.subscriptionStatus === "expired" ? "บัญชีร้านหมดอายุ" : "ร้านไม่พร้อมให้บริการ");
+    throw new Error(`TENANT_INACTIVE:${slug}`);
+  }
+
   setActiveTenant({
     id: tenant.tenantId,
     slug: tenant.slug || slug,
