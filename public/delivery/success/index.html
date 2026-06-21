@@ -4,15 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#159447">
-  <link rel="stylesheet" href="/assets/css/app.css?v=20260621-38">
-  <link rel="stylesheet" href="/assets/css/receipt-layout.css?v=20260621-38">
-  <link rel="stylesheet" href="/assets/css/icons.css?v=20260621-38">
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260621-40">
+  <link rel="stylesheet" href="/assets/css/receipt-layout.css?v=20260621-40">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260621-40">
   <title>บันทึกคำสั่งซื้อ</title>
 </head>
 <body>
   <header class="app-header"><div class="brand"><span class="brand-mark">FOD</span>คำสั่งซื้อ Delivery</div><a class="btn btn-sm" href="/delivery">สั่งเพิ่ม</a></header>
   <main class="receipt-page">
-    <div class="receipt-toolbar"><button class="btn btn-primary" id="saveImageButton">ดาวน์โหลดใบสั่งซื้อ</button><a class="btn" href="/">กลับหน้าหลัก</a></div>
+    <div class="receipt-toolbar"><button class="btn btn-primary" id="saveImageButton">ดาวน์โหลดใบสั่งซื้อ</button><a class="btn" id="verifyLatestLink" href="#" target="_blank" rel="noopener">ดูยอดล่าสุด</a></div>
     <section class="receipt" id="customerReceipt">
       <div class="receipt-header"><h1 id="shopName">Food Order/Delivery With QR</h1><div id="shopAddress"></div><div id="shopPhone"></div><strong>หลักฐานคำสั่งซื้อ Delivery</strong></div>
       <hr class="receipt-rule">
@@ -24,10 +24,11 @@
       <hr class="receipt-rule">
       <div class="receipt-row"><span>ค่าอาหาร</span><span><span id="receiptSubtotal">0.00</span> บาท</span></div><div class="receipt-row"><span>ค่าจัดส่ง</span><span><span id="receiptDeliveryFee">0.00</span> บาท</span></div><div class="receipt-row receipt-total"><span>ยอดสุทธิ</span><span><span id="receiptTotal">0.00</span> บาท</span></div>
       <div id="receiptNoteWrap" hidden><hr class="receipt-rule"><strong>หมายเหตุ</strong><div id="receiptNote"></div></div>
-      <hr class="receipt-rule"><div class="receipt-header"><img id="verifyQr" width="120" height="120" alt="QR ตรวจสอบรายการ"><div>สแกนเพื่อตรวจสอบรายการจริง</div></div>
+      <hr class="receipt-rule"><div class="receipt-header"><div id="verifyQr" style="width:120px;height:120px;margin:0 auto"></div><div>สแกนเพื่อตรวจสอบยอดล่าสุดจากระบบ</div><small>ยอดในระบบอาจเปลี่ยนแปลงได้ หากร้านยกเลิกรายการ</small></div>
     </section>
   </main>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <script type="module" src="/assets/js/delivery-success.js?v=20260621-38"></script>
+  <script type="module" src="/assets/js/delivery-success.js?v=20260621-40"></script>
 </body>
 </html>
