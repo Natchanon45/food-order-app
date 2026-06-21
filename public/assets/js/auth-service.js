@@ -6,7 +6,7 @@ import {
 import { DEFAULT_TENANT, resolveTenantContext, setActiveTenant } from "./tenant-context.js";
 
 export const ROLE_HOME = {
-  super_admin: "/",
+  super_admin: "/platform",
   owner: "/admin",
   admin: "/admin",
   cashier: "/cashier",
@@ -16,14 +16,14 @@ export const ROLE_HOME = {
 export const STAFF_ROLES = ["owner", "admin", "cashier", "kitchen", "super_admin"];
 
 function icon(name, className = "app-icon") {
-  return `<svg class="${className}" aria-hidden="true"><use href="/assets/images/app-icons.svg#icon-${name}"></use></svg>`;
+  return `<svg class="${className}" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260621-2#icon-${name}"></use></svg>`;
 }
 
 function ensureIconStyles() {
-  if (document.querySelector('link[href="/assets/css/icons.css"]')) return;
+  if (document.querySelector('link[href^="/assets/css/icons.css"]')) return;
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "/assets/css/icons.css";
+  link.href = "/assets/css/icons.css?v=20260621-36";
   document.head.appendChild(link);
 }
 
@@ -36,19 +36,27 @@ function greetingName(profile) {
   if (profile.role === "kitchen") return "Kitchen";
   if (profile.role === "admin") return "Admin";
   if (profile.role === "owner") return profile.displayName || "Owner";
-  if (profile.role === "super_admin") return "Owner";
+  if (profile.role === "super_admin") return profile.displayName || "Super Admin";
   return profile.displayName || roleLabel(profile.role);
 }
 
 function roleMenuLinks(profile) {
+  if (profile.role === "super_admin") {
+    return [
+      { href: "/platform", icon: "home", label: "ระบบกลาง" },
+      { href: "/admin/tenants", icon: "settings", label: "จัดการร้านค้า" }
+    ];
+  }
+
   const links = [{ href: "/", icon: "home", label: "หน้าหลัก" }];
-  if (["owner", "cashier", "super_admin"].includes(profile.role)) links.push({ href: "/cashier/table-qr", icon: "table", label: "ออกโต๊ะ" });
-  if (["owner", "admin", "super_admin"].includes(profile.role)) links.push({ href: "/admin", icon: "settings", label: "จัดการระบบ" });
-  if (["owner", "super_admin"].includes(profile.role)) links.push({ href: "/admin/users", icon: "users", label: "จัดการพนักงาน" });
+  if (["owner", "cashier"].includes(profile.role)) links.push({ href: "/cashier/table-qr", icon: "table", label: "ออกโต๊ะ" });
+  if (["owner", "admin"].includes(profile.role)) links.push({ href: "/admin", icon: "settings", label: "จัดการระบบร้าน" });
+  if (profile.role === "owner") links.push({ href: "/admin/users", icon: "users", label: "จัดการพนักงาน" });
   return links;
 }
 
 function activateProfileTenant(profile = {}) {
+  if (profile.role === "super_admin") return null;
   const fallback = resolveTenantContext();
   return setActiveTenant({
     id: profile.tenantId || fallback.id || DEFAULT_TENANT.id,
@@ -109,13 +117,16 @@ export async function requireRole(allowedRoles = []) {
     location.replace(`/login/?next=${next}`);
     return new Promise(() => {});
   }
+
   const profile = await getUserProfile(user);
   const ownerAllowed = profile?.role === "owner" && allowedRoles.some(role => ["owner", "admin", "cashier", "kitchen"].includes(role));
-  const permitted = profile?.role === "super_admin" || ownerAllowed || allowedRoles.includes(profile?.role);
+  const permitted = ownerAllowed || allowedRoles.includes(profile?.role);
+
   if (!profile || profile.active === false || !permitted) {
     location.replace(ROLE_HOME[profile?.role] || "/delivery");
     return new Promise(() => {});
   }
+
   document.documentElement.style.visibility = "";
   mountUserMenu(profile);
   return profile;
