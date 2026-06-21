@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.6.14";
+export const APP_VERSION = "1.6.15";
 export const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
 
 export const money = (value = 0) => new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value) || 0);
@@ -91,14 +91,14 @@ const STANDARD_ACTIONS = [
   { pattern: /^\s*[+＋]?\s*เพิ่ม/i, label: "เพิ่ม", icon: "plus" },
   { pattern: /^\s*แก้ไข/i, label: "แก้ไข", icon: "pencil" },
   { pattern: /^\s*ลบ/i, label: "ลบ", icon: "trash" },
-  { pattern: /^\s*ยกเลิก/i, label: "ยกเลิก", icon: "x-circle" }
+  { pattern: /^\s*ยกเลิก/i, label: "ยกเลิก", icon: "x-circle" },
+  { pattern: /^\s*บันทึก/i, label: "บันทึก", icon: "save" }
 ];
 
 const buttonIconRules = [
   [/เปิดใช้งานอีกครั้ง|reactivate|activate again/i, "check-circle"],
   [/ระงับบัญชี|suspend/i, "times-circle"],
   [/ต่ออายุ|renew|extend/i, "plus"],
-  [/บันทึก|save/i, "save"],
   [/ยืนยัน|confirm|ชำระ|เสร็จ|รับออเดอร์/i, "check"],
   [/พิมพ์|print/i, "print"],
   [/ย้อนกลับ|กลับ|back/i, "back"],
