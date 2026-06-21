@@ -148,6 +148,15 @@ function installEnableButton() {
   const header = document.querySelector(".app-header");
   if (!header || document.querySelector("#deliveryAlertButton")) return;
 
+  const userMenu = header.querySelector("[data-user-menu]");
+  let actions = header.querySelector("[data-header-actions]");
+  if (!actions) {
+    actions = document.createElement("div");
+    actions.dataset.headerActions = "true";
+    actions.style.cssText = "display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-left:auto;flex:0 0 auto;";
+    header.appendChild(actions);
+  }
+
   const button = document.createElement("button");
   button.type = "button";
   button.id = "deliveryAlertButton";
@@ -155,7 +164,9 @@ function installEnableButton() {
   button.style.cssText = "width:36px;height:36px;padding:0;border:1px solid #d9e5dc;border-radius:50%;background:#fff;display:grid;place-items:center;flex:0 0 auto;";
   updateButton(button);
   button.addEventListener("click", () => toggleNotifications(button));
-  header.appendChild(button);
+  actions.appendChild(button);
+
+  if (userMenu) actions.appendChild(userMenu);
 
   if (isEnabled()) {
     restorePushNotifications().then(() => updateButton(button));
