@@ -51,4 +51,4 @@ dataService.subscribeOrders = callback => {
   });
 };
 
-await import("./customer.js?v=20260621-1");
+await import("./customer.js?v=20260621-2");
