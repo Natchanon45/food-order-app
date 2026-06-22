@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.6.15";
+export const APP_VERSION = "1.6.16";
 export const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
 
 export const money = (value = 0) => new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value) || 0);
@@ -134,8 +134,15 @@ function applyStandardAction(button, action) {
 }
 
 function makeIconOnly(button, icon, label) {
-  button.innerHTML = iconMarkup(icon);
+  const use = button.querySelector("use");
+  const href = use?.getAttribute("href") || use?.getAttribute("xlink:href") || "";
+  const alreadyDecorated = button.classList.contains("btn-icon-only") && href.includes(`#icon-${icon}`);
+
+  if (!alreadyDecorated) {
+    button.innerHTML = iconMarkup(icon);
+  }
   button.classList.add("btn-icon-only");
+  button.classList.remove("btn-standard-action");
   button.setAttribute("aria-label", label);
   button.title = label;
 }
@@ -209,7 +216,7 @@ function initializeUi() {
   replaceSystemEmoji();
   decorateButtons();
   decorateCartHeadings();
-  new MutationObserver(records => records.forEach(record => records && record.addedNodes.forEach(node => {
+  new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(node => {
     if (node.nodeType === Node.ELEMENT_NODE) {
       decorateButtons(node);
       if (node.parentElement?.matches("button, a.btn")) decorateButton(node.parentElement);
