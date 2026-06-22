@@ -1,3 +1,5 @@
+@import url("./system-controls.css?v=20260622-1");
+
 .app-toast {
   position: fixed !important;
   left: 50% !important;
