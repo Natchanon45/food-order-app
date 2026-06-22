@@ -7,6 +7,11 @@ if (usingDemoMode) document.querySelector("#demoBanner").innerHTML = '<div class
 const grid = document.querySelector("#orderGrid");
 const activeStatuses = ["pending", "accepted", "cooking", "ready", "served"];
 let currentOrders = [];
+let availableMenus = [];
+
+function icon(name) {
+  return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260622-8#icon-${name}"></use></svg>`;
+}
 
 function nextActions(status, orderType) {
   if (status === "pending") return [["accepted", "รับออเดอร์", "btn-primary"]];
@@ -16,9 +21,15 @@ function nextActions(status, orderType) {
   return [];
 }
 
+function recalculateOrder(order, items) {
+  const subtotalAmount = items.filter(item => !item.cancelled).reduce((sum, item) => sum + Number(item.qty) * Number(item.price), 0);
+  const deliveryFee = order.orderType === "delivery" && subtotalAmount > 0 ? Number(order.deliveryFee || 0) : 0;
+  return { subtotalAmount, deliveryFee, totalAmount: subtotalAmount + deliveryFee };
+}
+
 function render(orders) {
   currentOrders = orders;
-  const active = orders.filter(x => activeStatuses.includes(x.status));
+  const active = orders.filter(order => activeStatuses.includes(order.status));
   grid.innerHTML = active.length ? active.map(order => {
     const isDelivery = order.orderType === "delivery";
     const roundText = isDelivery ? "" : ` • รอบที่ ${order.roundNumber || 1}`;
@@ -26,12 +37,19 @@ function render(orders) {
     const paymentBadge = isDelivery
       ? `<p><span class="badge ${order.paymentStatus === "paid" ? "" : "warning"}">${order.paymentStatus === "paid" ? "ชำระเงินแล้ว" : "ยังไม่ชำระเงิน"}</span><br><strong>โทร:</strong> ${order.recipientPhone || "-"}<br><strong>ที่อยู่:</strong> ${order.deliveryAddress || "-"}</p>`
       : "";
+
     const itemRows = (order.items || []).map((item, index) => `
       <li style="${item.cancelled ? "opacity:.48;text-decoration:line-through" : ""}">
         <strong>${item.qty} × ${item.name}</strong>${item.note ? `<br><small>หมายเหตุ: ${item.note}</small>` : ""}
-        ${item.cancelled ? '<br><small>ยกเลิกแล้ว</small>' : `<button class="btn btn-danger btn-sm" style="float:right" data-cancel-item="${order.id}" data-item-index="${index}">ของหมด/ยกเลิกรายการ</button>`}
+        ${item.replacedFromName ? `<br><small>เปลี่ยนจาก: ${item.replacedFromName}</small>` : ""}
+        ${item.cancelled ? '<br><small>ยกเลิกแล้ว</small>' : `
+          <div class="kitchen-item-actions">
+            <button class="btn btn-sm" data-edit-item="${order.id}" data-item-index="${index}">${icon("pencil")}<span>แก้ไข</span></button>
+            <button class="btn btn-danger btn-sm" data-cancel-item="${order.id}" data-item-index="${index}">${icon("x-circle")}<span>ยกเลิก</span></button>
+          </div>`}
       </li>
     `).join("");
+
     const deliverySummary = isDelivery ? `
       <div class="card" style="margin-top:10px;padding:10px 12px;box-shadow:none;background:#f8fbf9">
         <div class="receipt-row"><span>พื้นที่จัดส่ง</span><strong>${order.deliveryZoneLabel || "-"}</strong></div>
@@ -54,7 +72,89 @@ function render(orders) {
   }).join("") : '<div class="card empty">ยังไม่มีออเดอร์ที่รอดำเนินการ</div>';
 }
 
+function closeEditor() {
+  document.querySelector(".kitchen-item-editor-backdrop")?.remove();
+}
+
+function openEditor(order, itemIndex) {
+  const item = order.items?.[itemIndex];
+  if (!item || item.cancelled) return;
+
+  const maxQty = Math.max(1, Number(item.originalQty || item.qty || 1));
+  const activeMenus = availableMenus.filter(menu => menu.active !== false);
+  const options = activeMenus.map(menu => `<option value="${menu.id}" ${menu.id === item.menuId ? "selected" : ""}>${menu.name} — ${money(menu.price)} บาท</option>`).join("");
+
+  const backdrop = document.createElement("div");
+  backdrop.className = "kitchen-item-editor-backdrop";
+  backdrop.innerHTML = `
+    <section class="kitchen-item-editor" role="dialog" aria-modal="true" aria-labelledby="kitchenEditorTitle">
+      <h2 id="kitchenEditorTitle">แก้ไขรายการ</h2>
+      <div class="editor-grid">
+        <div class="field"><label>เมนู</label><select class="input" id="kitchenReplacementMenu">${options}</select></div>
+        <div class="field"><label>จำนวนที่ทำได้</label><input class="input" id="kitchenReplacementQty" type="number" min="1" max="${maxQty}" step="1" value="${Math.min(Number(item.qty || 1), maxQty)}"><div class="editor-help">ลดจำนวนได้สูงสุดไม่เกินจำนวนเดิม ${maxQty} รายการ</div></div>
+        <div class="field"><label>หมายเหตุ</label><input class="input" id="kitchenReplacementNote" value="${item.note || ""}" maxlength="200"></div>
+      </div>
+      <div class="editor-actions"><button type="button" class="btn" data-close-editor>ยกเลิก</button><button type="button" class="btn btn-primary" data-save-editor>บันทึกการแก้ไข</button></div>
+    </section>`;
+
+  backdrop.addEventListener("click", async event => {
+    if (event.target === backdrop || event.target.closest("[data-close-editor]")) {
+      closeEditor();
+      return;
+    }
+
+    if (!event.target.closest("[data-save-editor]")) return;
+    const selectedMenuId = backdrop.querySelector("#kitchenReplacementMenu").value;
+    const selectedMenu = activeMenus.find(menu => menu.id === selectedMenuId);
+    const nextQty = Number(backdrop.querySelector("#kitchenReplacementQty").value);
+    const nextNote = backdrop.querySelector("#kitchenReplacementNote").value.trim();
+
+    if (!selectedMenu || !Number.isInteger(nextQty) || nextQty < 1 || nextQty > maxQty) {
+      toast("กรุณาตรวจสอบเมนูและจำนวน", "error");
+      return;
+    }
+
+    const items = order.items.map((row, index) => {
+      if (index !== itemIndex) return row;
+      const replacing = selectedMenu.id !== row.menuId;
+      return {
+        ...row,
+        originalQty: row.originalQty || row.qty,
+        menuId: selectedMenu.id,
+        name: selectedMenu.name,
+        price: Number(selectedMenu.price),
+        qty: nextQty,
+        note: nextNote,
+        replacedFromName: replacing ? (row.replacedFromName || row.name) : row.replacedFromName || "",
+        updatedByKitchenAt: new Date().toISOString()
+      };
+    });
+
+    const totals = recalculateOrder(order, items);
+    event.target.closest("button").disabled = true;
+    try {
+      await dataService.updateOrder(order.id, { items, ...totals, kitchenAdjustedAt: new Date().toISOString() });
+      closeEditor();
+      toast("อัปเดตรายการและคำนวณยอดใหม่แล้ว");
+    } catch (error) {
+      console.error(error);
+      toast("แก้ไขรายการไม่สำเร็จ", "error");
+      event.target.closest("button").disabled = false;
+    }
+  });
+
+  document.body.appendChild(backdrop);
+}
+
 grid.addEventListener("click", async event => {
+  const editItemButton = event.target.closest("[data-edit-item]");
+  if (editItemButton) {
+    const order = currentOrders.find(item => item.id === editItemButton.dataset.editItem);
+    const itemIndex = Number(editItemButton.dataset.itemIndex);
+    if (order && Number.isInteger(itemIndex)) openEditor(order, itemIndex);
+    return;
+  }
+
   const cancelItemButton = event.target.closest("[data-cancel-item]");
   if (cancelItemButton) {
     const order = currentOrders.find(item => item.id === cancelItemButton.dataset.cancelItem);
@@ -65,13 +165,11 @@ grid.addEventListener("click", async event => {
     if (!confirm(`ยกเลิกเฉพาะรายการ ${selectedItem.name} ใช่หรือไม่?`)) return;
 
     const items = order.items.map((item, index) => index === itemIndex ? { ...item, cancelled: true, cancelledReason: "out_of_stock", cancelledAt: new Date().toISOString() } : item);
-    const subtotalAmount = items.filter(item => !item.cancelled).reduce((sum, item) => sum + Number(item.qty) * Number(item.price), 0);
-    const deliveryFee = order.orderType === "delivery" && subtotalAmount > 0 ? Number(order.deliveryFee || 0) : 0;
-    const totalAmount = subtotalAmount + deliveryFee;
-    const patch = { items, subtotalAmount, totalAmount };
-    if (subtotalAmount <= 0) patch.status = "cancelled";
+    const totals = recalculateOrder(order, items);
+    const patch = { items, ...totals };
+    if (totals.subtotalAmount <= 0) patch.status = "cancelled";
     await dataService.updateOrder(order.id, patch);
-    toast(subtotalAmount <= 0 ? "ยกเลิกทั้งออเดอร์แล้ว เพราะไม่มีรายการเหลือ" : "ยกเลิกรายการและคำนวณยอดใหม่แล้ว");
+    toast(totals.subtotalAmount <= 0 ? "ยกเลิกทั้งออเดอร์แล้ว เพราะไม่มีรายการเหลือ" : "ยกเลิกรายการและคำนวณยอดใหม่แล้ว");
     return;
   }
 
@@ -103,6 +201,12 @@ grid.addEventListener("click", async event => {
     button.disabled = false;
   }
 });
+
+try {
+  availableMenus = await dataService.listMenus();
+} catch (error) {
+  console.error("Unable to load menus for kitchen editor", error);
+}
 
 dataService.subscribeOrders(orders => {
   observeDeliveryOrders(orders);
