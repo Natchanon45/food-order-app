@@ -15,6 +15,18 @@ function icon(name) {
   return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260621-2#icon-${name}"></use></svg>`;
 }
 
+function itemDetails(item) {
+  const parts = [];
+  if (item.note) parts.push(`<small><strong>หมายเหตุ:</strong> ${item.note}</small>`);
+  if (item.replacedFromName) parts.push(`<small><strong>เปลี่ยนจาก:</strong> ${item.replacedFromName}</small>`);
+  if (item.originalQty && Number(item.originalQty) !== Number(item.qty)) parts.push(`<small><strong>จำนวนเดิม:</strong> ${item.originalQty}</small>`);
+  return parts.length ? `<div class="menu-category" style="margin-top:3px;line-height:1.35">${parts.join("<br>")}</div>` : "";
+}
+
+function orderNote(order) {
+  return order.note ? `<div class="card" style="margin-top:10px;padding:10px 12px;box-shadow:none;background:#fff8e8"><strong>หมายเหตุรวมถึงร้าน</strong><div style="margin-top:4px">${order.note}</div></div>` : "";
+}
+
 function paymentLabel(order) {
   if (order.paymentStatus === "paid" && order.status === "served") return "ชำระแล้ว รอระบบปิดออเดอร์";
   if (order.paymentStatus === "paid") return "ตรวจสอบและรับชำระแล้ว";
@@ -54,8 +66,8 @@ function renderDelivery(order) {
     : (order.paymentSlipPath ? `<button class="btn btn-warning" disabled>${icon("view")}<span>กำลังโหลดสลิป...</span></button>` : "");
   const itemRows = (order.items || []).map(item => `
     <li style="${item.cancelled ? "opacity:.5;text-decoration:line-through" : ""}">
-      ${item.qty} × ${item.name}
-      <strong style="float:right">${item.cancelled ? "ยกเลิก" : money(item.qty * item.price)}</strong>
+      <div>${item.qty} × ${item.name}<strong style="float:right">${item.cancelled ? "ยกเลิก" : money(item.qty * item.price)}</strong></div>
+      ${itemDetails(item)}
     </li>
   `).join("");
 
@@ -63,6 +75,7 @@ function renderDelivery(order) {
     <div class="order-head"><div><h2 style="margin:0">Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}</h2><small>${formatTime(order.createdAt)}</small></div><span class="badge">${statusLabel(order.status)}</span></div>
     <p><span class="badge ${order.paymentStatus === "paid" ? "" : "warning"}">${paymentLabel(order)}</span><br><strong>โทร:</strong> ${order.recipientPhone || "-"}<br><strong>ที่อยู่:</strong> ${order.deliveryAddress || "-"}</p>
     <ul class="order-items">${itemRows}</ul>
+    ${orderNote(order)}
     <div class="card" style="margin-top:10px;padding:10px 12px;box-shadow:none;background:#f8fbf9">
       <div class="receipt-row"><span>พื้นที่จัดส่ง</span><strong>${order.deliveryZoneLabel || "-"}</strong></div>
       <div class="receipt-row"><span>ค่าอาหาร</span><strong>${money(order.subtotalAmount ?? (Number(order.totalAmount || 0) - Number(order.deliveryFee || 0)))} บาท</strong></div>
@@ -87,14 +100,15 @@ function renderTableBill(group) {
   const rounds = sorted.map(order => {
     const items = (order.items || []).map(item => `
       <li style="${item.cancelled ? "opacity:.5;text-decoration:line-through" : ""}">
-        ${item.qty} × ${item.name}
-        <strong style="float:right">${item.cancelled ? "ยกเลิก" : money(item.qty * item.price)}</strong>
+        <div>${item.qty} × ${item.name}<strong style="float:right">${item.cancelled ? "ยกเลิก" : money(item.qty * item.price)}</strong></div>
+        ${itemDetails(item)}
       </li>
     `).join("");
 
     return `<section class="card" style="padding:12px;margin-top:10px;box-shadow:none;background:#f8fbf9">
       <div class="order-head"><strong>รอบที่ ${order.roundNumber || 1}</strong><small>${formatTime(order.createdAt)}</small></div>
       <ul class="order-items">${items}</ul>
+      ${orderNote(order)}
       <div class="order-head" style="margin-top:8px"><span>รวมรอบนี้</span><strong>${money(order.totalAmount)} บาท</strong></div>
       <div class="order-actions" style="margin-top:8px">
         <button class="btn btn-danger btn-sm" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button>
