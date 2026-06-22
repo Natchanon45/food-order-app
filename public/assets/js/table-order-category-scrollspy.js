@@ -1,6 +1,7 @@
 const menuGrid = document.querySelector("#menuGrid");
 const categoryTabs = document.querySelector("#categoryTabs");
 const filterArea = document.querySelector("#menuListStart");
+const mobileQuery = window.matchMedia("(max-width: 899px)");
 
 let frame = 0;
 let lastCategory = "";
@@ -32,7 +33,7 @@ function setActiveCategory(category) {
 
 function updateFromScroll() {
   frame = 0;
-  if (!menuGrid || !categoryTabs || !filterArea) return;
+  if (!mobileQuery.matches || !menuGrid || !categoryTabs || !filterArea) return;
   if (!browsingAll || !userHasScrolled || performance.now() < suppressUntil) return;
 
   const cards = [...menuGrid.querySelectorAll(":scope > .menu-card")].filter(card => !card.hidden);
@@ -61,6 +62,7 @@ function updateFromScroll() {
 }
 
 function scheduleUpdate() {
+  if (!mobileQuery.matches) return;
   const currentY = window.scrollY;
   if (Math.abs(currentY - lastWindowY) > 3) userHasScrolled = true;
   lastWindowY = currentY;
@@ -69,7 +71,24 @@ function scheduleUpdate() {
 }
 
 window.addEventListener("scroll", scheduleUpdate, { passive: true });
-window.addEventListener("resize", scheduleUpdate);
+window.addEventListener("resize", () => {
+  if (!mobileQuery.matches) {
+    userHasScrolled = false;
+    browsingAll = true;
+    lastCategory = "";
+    requestAnimationFrame(() => setActiveCategory("ทั้งหมด"));
+    return;
+  }
+  scheduleUpdate();
+});
+
+mobileQuery.addEventListener?.("change", event => {
+  userHasScrolled = false;
+  browsingAll = true;
+  lastWindowY = window.scrollY;
+  lastCategory = "";
+  if (!event.matches) requestAnimationFrame(() => setActiveCategory("ทั้งหมด"));
+});
 
 categoryTabs?.addEventListener("click", event => {
   const button = event.target.closest("[data-category]");
@@ -80,7 +99,7 @@ categoryTabs?.addEventListener("click", event => {
   userHasScrolled = false;
   suppressUntil = performance.now() + 350;
   lastWindowY = window.scrollY;
-  lastCategory = category;
+  lastCategory = "";
   setActiveCategory(category);
 });
 
@@ -89,7 +108,7 @@ if (menuGrid) {
     if (!browsingAll) return;
     suppressUntil = performance.now() + 250;
     lastWindowY = window.scrollY;
-    requestAnimationFrame(() => setActiveCategory("ทั้งหมด"));
+    if (mobileQuery.matches) requestAnimationFrame(() => setActiveCategory("ทั้งหมด"));
   }).observe(menuGrid, { childList: true });
 }
 
