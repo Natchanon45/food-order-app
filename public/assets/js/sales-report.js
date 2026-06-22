@@ -1,0 +1,412 @@
+import { dataService, usingDemoMode } from "./data-service.js";
+import { money, formatTime } from "./ui.js";
+
+if (usingDemoMode) {
+  const banner = document.querySelector("#demoBanner");
+  if (banner) banner.innerHTML = '<div class="demo-banner">โหมดตัวอย่าง: รายงานจากข้อมูลในเบราว์เซอร์นี้</div>';
+}
+
+const state = {
+  period: "daily",
+  orders: [],
+  receipts: [],
+  filteredReceipts: [],
+  page: 1,
+  pageSize: 20
+};
+
+const els = {
+  reportDate: document.querySelector("#reportDate"),
+  reportMonth: document.querySelector("#reportMonth"),
+  reportYear: document.querySelector("#reportYear"),
+  startDate: document.querySelector("#startDate"),
+  endDate: document.querySelector("#endDate"),
+  orderType: document.querySelector("#orderTypeFilter"),
+  paymentMethod: document.querySelector("#paymentMethodFilter"),
+  search: document.querySelector("#receiptSearch"),
+  totalSales: document.querySelector("#totalSales"),
+  receiptCount: document.querySelector("#receiptCount"),
+  averageReceipt: document.querySelector("#averageReceipt"),
+  soldItemCount: document.querySelector("#soldItemCount"),
+  orderTypeSummary: document.querySelector("#orderTypeSummary"),
+  paymentSummary: document.querySelector("#paymentSummary"),
+  chartTitle: document.querySelector("#chartTitle"),
+  chartSubtitle: document.querySelector("#chartSubtitle"),
+  salesChart: document.querySelector("#salesChart"),
+  topItems: document.querySelector("#topItems"),
+  bestPeriod: document.querySelector("#bestPeriod"),
+  receiptRows: document.querySelector("#receiptRows"),
+  receiptResultCount: document.querySelector("#receiptResultCount"),
+  receiptRangeLabel: document.querySelector("#receiptRangeLabel"),
+  pagination: document.querySelector("#receiptPagination"),
+  dialog: document.querySelector("#receiptDialog"),
+  detail: document.querySelector("#receiptDetail")
+};
+
+function toDate(value) {
+  if (!value) return null;
+  if (typeof value.toDate === "function") return value.toDate();
+  if (value.seconds) return new Date(value.seconds * 1000);
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function localDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function monthKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function startOfDay(value) {
+  const date = new Date(`${value}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function endOfDay(value) {
+  const date = new Date(`${value}T23:59:59.999`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function escapeHtml(value = "") {
+  return String(value).replace(/[&<>"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[char]);
+}
+
+function paidDate(order) {
+  return toDate(order.paidAt) || toDate(order.completedAt) || toDate(order.updatedAt) || toDate(order.createdAt);
+}
+
+function isPaidOrder(order) {
+  return order?.paymentStatus === "paid" || order?.status === "paid";
+}
+
+function isCancelledItem(item) {
+  return item?.cancelled === true;
+}
+
+function orderNet(order) {
+  if (Number.isFinite(Number(order.totalAmount))) return Number(order.totalAmount || 0);
+  return (order.items || []).filter(item => !isCancelledItem(item)).reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || 0), 0) + Number(order.deliveryFee || 0);
+}
+
+function paymentMethodKey(order) {
+  const value = String(order.paymentMethod || "").toLowerCase();
+  if (["cash", "เงินสด"].includes(value)) return "cash";
+  if (["promptpay", "transfer", "bank", "qr"].includes(value)) return "promptpay";
+  if (value === "cod") return "cod";
+  return "other";
+}
+
+function paymentMethodLabel(key) {
+  return ({ cash: "เงินสด", promptpay: "พร้อมเพย์/โอนเงิน", cod: "เก็บเงินปลายทาง", other: "อื่น ๆ" })[key] || "อื่น ๆ";
+}
+
+function orderTypeKey(order) {
+  return order.orderType === "delivery" ? "delivery" : "table";
+}
+
+function orderTypeLabel(key) {
+  return key === "delivery" ? "Delivery" : "หน้าร้าน";
+}
+
+function receiptGroupKey(order) {
+  if (order.receiptNumber) return `receipt:${order.receiptNumber}`;
+  if (order.billId) return `bill:${order.billId}`;
+  if (order.paymentGroupId) return `group:${order.paymentGroupId}`;
+  if (order.orderType !== "delivery" && order.tableToken && order.paidAt) return `table:${order.tableToken}:${String(order.paidAt)}`;
+  return `order:${order.id}`;
+}
+
+function receiptCode(receipt) {
+  const explicit = receipt.orders.find(order => order.receiptNumber)?.receiptNumber;
+  if (explicit) return String(explicit);
+  const date = receipt.paidAt || new Date();
+  const stamp = `${String(date.getFullYear()).slice(-2)}${String(date.getMonth() + 1).padStart(2, "0")}${String(date.getDate()).padStart(2, "0")}`;
+  return `R${stamp}-${String(receipt.orders[0]?.id || "").slice(-6).toUpperCase()}`;
+}
+
+function buildReceipts(orders) {
+  const groups = new Map();
+  orders.filter(isPaidOrder).forEach(order => {
+    const key = receiptGroupKey(order);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(order);
+  });
+
+  return [...groups.values()].map(group => {
+    const sorted = [...group].sort((a, b) => (paidDate(a)?.getTime() || 0) - (paidDate(b)?.getTime() || 0));
+    const first = sorted[0];
+    const items = sorted.flatMap(order => (order.items || []).filter(item => !isCancelledItem(item)).map(item => ({ ...item, orderId: order.id })));
+    const subtotal = sorted.reduce((sum, order) => sum + Number(order.subtotalAmount ?? (orderNet(order) - Number(order.deliveryFee || 0))), 0);
+    const deliveryFee = sorted.reduce((sum, order) => sum + Number(order.deliveryFee || 0), 0);
+    const discount = sorted.reduce((sum, order) => sum + Number(order.discountAmount || order.discount || 0), 0);
+    const total = sorted.reduce((sum, order) => sum + orderNet(order), 0);
+    const paidAt = paidDate(sorted[sorted.length - 1]) || paidDate(first) || new Date();
+    const type = sorted.some(order => order.orderType === "delivery") ? "delivery" : "table";
+    const customer = type === "delivery" ? (first.recipientName || "ลูกค้า Delivery") : `โต๊ะ ${first.tableCode || "-"}`;
+    const paymentKey = paymentMethodKey(first);
+    const itemCount = items.reduce((sum, item) => sum + Number(item.qty || 0), 0);
+    const receipt = { key: receiptGroupKey(first), orders: sorted, items, subtotal, deliveryFee, discount, total, paidAt, type, customer, paymentKey, itemCount };
+    receipt.code = receiptCode(receipt);
+    return receipt;
+  }).sort((a, b) => b.paidAt - a.paidAt);
+}
+
+function selectedRange() {
+  const now = new Date();
+  if (state.period === "daily") {
+    const value = els.reportDate.value || localDateKey(now);
+    return { start: startOfDay(value), end: endOfDay(value), label: new Date(`${value}T12:00:00`).toLocaleDateString("th-TH", { dateStyle: "long" }) };
+  }
+  if (state.period === "monthly") {
+    const value = els.reportMonth.value || monthKey(now);
+    const [year, month] = value.split("-").map(Number);
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 0, 23, 59, 59, 999);
+    return { start, end, label: start.toLocaleDateString("th-TH", { month: "long", year: "numeric" }) };
+  }
+  if (state.period === "yearly") {
+    const year = Number(els.reportYear.value || now.getFullYear());
+    return { start: new Date(year, 0, 1), end: new Date(year, 11, 31, 23, 59, 59, 999), label: `ปี ${year + 543}` };
+  }
+  const startValue = els.startDate.value || localDateKey(now);
+  const endValue = els.endDate.value || startValue;
+  return { start: startOfDay(startValue), end: endOfDay(endValue), label: `${new Date(`${startValue}T12:00:00`).toLocaleDateString("th-TH")} – ${new Date(`${endValue}T12:00:00`).toLocaleDateString("th-TH")}` };
+}
+
+function applyFilters() {
+  const range = selectedRange();
+  const keyword = els.search.value.trim().toLowerCase();
+  state.filteredReceipts = state.receipts.filter(receipt => {
+    if (receipt.paidAt < range.start || receipt.paidAt > range.end) return false;
+    if (els.orderType.value !== "all" && receipt.type !== els.orderType.value) return false;
+    if (els.paymentMethod.value !== "all" && receipt.paymentKey !== els.paymentMethod.value) return false;
+    if (keyword) {
+      const haystack = [receipt.code, receipt.customer, ...receipt.orders.map(order => order.id), ...receipt.items.map(item => item.name)].join(" ").toLowerCase();
+      if (!haystack.includes(keyword)) return false;
+    }
+    return true;
+  });
+  state.page = 1;
+  renderAll(range);
+}
+
+function summaryTotals(receipts) {
+  return {
+    total: receipts.reduce((sum, receipt) => sum + receipt.total, 0),
+    count: receipts.length,
+    items: receipts.reduce((sum, receipt) => sum + receipt.itemCount, 0)
+  };
+}
+
+function renderSummary() {
+  const totals = summaryTotals(state.filteredReceipts);
+  els.totalSales.textContent = money(totals.total);
+  els.receiptCount.textContent = totals.count.toLocaleString("th-TH");
+  els.averageReceipt.textContent = money(totals.count ? totals.total / totals.count : 0);
+  els.soldItemCount.textContent = totals.items.toLocaleString("th-TH");
+}
+
+function renderBreakdown(container, entries) {
+  const max = Math.max(0, ...entries.map(entry => entry.value));
+  container.innerHTML = entries.map(entry => `
+    <div class="breakdown-row">
+      <span class="breakdown-label">${escapeHtml(entry.label)}</span>
+      <div class="breakdown-track"><div class="breakdown-fill" style="width:${max ? (entry.value / max) * 100 : 0}%"></div></div>
+      <span class="breakdown-value">${money(entry.value)} บาท</span>
+    </div>`).join("") || '<div class="empty-report">ยังไม่มียอดขาย</div>';
+}
+
+function renderBreakdowns() {
+  const typeTotals = { table: 0, delivery: 0 };
+  const paymentTotals = { cash: 0, promptpay: 0, cod: 0, other: 0 };
+  state.filteredReceipts.forEach(receipt => {
+    typeTotals[receipt.type] += receipt.total;
+    paymentTotals[receipt.paymentKey] += receipt.total;
+  });
+  renderBreakdown(els.orderTypeSummary, Object.entries(typeTotals).map(([key, value]) => ({ label: orderTypeLabel(key), value })));
+  renderBreakdown(els.paymentSummary, Object.entries(paymentTotals).map(([key, value]) => ({ label: paymentMethodLabel(key), value })));
+}
+
+function chartBuckets(range) {
+  if (state.period === "daily") {
+    els.chartTitle.textContent = "ยอดขายรายชั่วโมง";
+    const buckets = Array.from({ length: 24 }, (_, hour) => ({ key: hour, label: `${String(hour).padStart(2, "0")}:00`, value: 0 }));
+    state.filteredReceipts.forEach(receipt => { buckets[receipt.paidAt.getHours()].value += receipt.total; });
+    return buckets;
+  }
+  if (state.period === "yearly") {
+    els.chartTitle.textContent = "ยอดขายแยกรายเดือน";
+    const year = range.start.getFullYear();
+    const buckets = Array.from({ length: 12 }, (_, month) => ({ key: month, label: new Date(year, month, 1).toLocaleDateString("th-TH", { month: "short" }), value: 0 }));
+    state.filteredReceipts.forEach(receipt => { buckets[receipt.paidAt.getMonth()].value += receipt.total; });
+    return buckets;
+  }
+  els.chartTitle.textContent = "ยอดขายแยกรายวัน";
+  const buckets = [];
+  const cursor = new Date(range.start);
+  while (cursor <= range.end) {
+    const key = localDateKey(cursor);
+    buckets.push({ key, label: cursor.toLocaleDateString("th-TH", { day: "numeric", month: "short" }), value: 0 });
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  const index = new Map(buckets.map(bucket => [bucket.key, bucket]));
+  state.filteredReceipts.forEach(receipt => { const bucket = index.get(localDateKey(receipt.paidAt)); if (bucket) bucket.value += receipt.total; });
+  return buckets;
+}
+
+function renderChart(range) {
+  const buckets = chartBuckets(range);
+  const max = Math.max(0, ...buckets.map(bucket => bucket.value));
+  els.chartSubtitle.textContent = range.label;
+  els.salesChart.innerHTML = buckets.map(bucket => `
+    <div class="chart-column" title="${escapeHtml(bucket.label)}: ${money(bucket.value)} บาท">
+      <div class="chart-value">${bucket.value ? money(bucket.value) : ""}</div>
+      <div class="chart-bar-wrap"><div class="chart-bar" style="height:${max ? Math.max(2, (bucket.value / max) * 100) : 2}%"></div></div>
+      <div class="chart-label">${escapeHtml(bucket.label)}</div>
+    </div>`).join("");
+}
+
+function renderTopItems() {
+  const totals = new Map();
+  state.filteredReceipts.forEach(receipt => receipt.items.forEach(item => {
+    const key = String(item.name || "ไม่ระบุชื่อ");
+    const current = totals.get(key) || { qty: 0, value: 0 };
+    current.qty += Number(item.qty || 0);
+    current.value += Number(item.qty || 0) * Number(item.price || 0);
+    totals.set(key, current);
+  }));
+  const ranked = [...totals.entries()].sort((a, b) => b[1].qty - a[1].qty || b[1].value - a[1].value).slice(0, 10);
+  els.topItems.innerHTML = ranked.map(([name, value], index) => `
+    <div class="rank-row"><span class="rank-number">${index + 1}</span><div><div class="rank-name">${escapeHtml(name)}</div><div class="rank-meta">${value.qty.toLocaleString("th-TH")} ชิ้น</div></div><div class="rank-value">${money(value.value)} บาท</div></div>`).join("") || '<div class="empty-report">ยังไม่มีข้อมูลเมนูขายดี</div>';
+}
+
+function renderBestPeriod(range) {
+  const daily = new Map();
+  const monthly = new Map();
+  state.filteredReceipts.forEach(receipt => {
+    const day = localDateKey(receipt.paidAt);
+    const month = monthKey(receipt.paidAt);
+    daily.set(day, (daily.get(day) || 0) + receipt.total);
+    monthly.set(month, (monthly.get(month) || 0) + receipt.total);
+  });
+  const bestDay = [...daily.entries()].sort((a, b) => b[1] - a[1])[0];
+  const bestMonth = [...monthly.entries()].sort((a, b) => b[1] - a[1])[0];
+  const dayLabel = bestDay ? new Date(`${bestDay[0]}T12:00:00`).toLocaleDateString("th-TH", { dateStyle: "long" }) : "-";
+  const monthLabel = bestMonth ? new Date(`${bestMonth[0]}-01T12:00:00`).toLocaleDateString("th-TH", { month: "long", year: "numeric" }) : "-";
+  els.bestPeriod.innerHTML = `
+    <div class="best-period-card"><span class="menu-category">วันที่ขายดีที่สุด</span><strong>${escapeHtml(dayLabel)}</strong><div>${money(bestDay?.[1] || 0)} บาท</div></div>
+    <div class="best-period-card"><span class="menu-category">เดือนที่ขายดีที่สุด</span><strong>${escapeHtml(monthLabel)}</strong><div>${money(bestMonth?.[1] || 0)} บาท</div></div>
+    <div class="best-period-card"><span class="menu-category">ช่วงรายงาน</span><strong>${escapeHtml(range.label)}</strong><div>${state.filteredReceipts.length.toLocaleString("th-TH")} ใบเสร็จ</div></div>`;
+}
+
+function printUrl(receipt) {
+  const ids = receipt.orders.map(order => order.id);
+  return ids.length > 1 ? `/cashier/receipt/?orders=${encodeURIComponent(ids.join(","))}` : `/cashier/receipt/?order=${encodeURIComponent(ids[0])}`;
+}
+
+function renderReceipts(range) {
+  const start = (state.page - 1) * state.pageSize;
+  const pageRows = state.filteredReceipts.slice(start, start + state.pageSize);
+  els.receiptRows.innerHTML = pageRows.map(receipt => `
+    <tr>
+      <td><span class="receipt-code">${escapeHtml(receipt.code)}</span></td>
+      <td>${escapeHtml(formatTime(receipt.paidAt))}</td>
+      <td>${escapeHtml(orderTypeLabel(receipt.type))}</td>
+      <td>${escapeHtml(receipt.customer)}</td>
+      <td>${escapeHtml(paymentMethodLabel(receipt.paymentKey))}</td>
+      <td>${receipt.itemCount.toLocaleString("th-TH")}</td>
+      <td class="number">${money(receipt.total)}</td>
+      <td><div style="display:flex;gap:6px;justify-content:flex-end"><button type="button" class="btn btn-sm" data-view-receipt="${escapeHtml(receipt.key)}">ดู</button><a class="btn btn-dark btn-sm" href="${printUrl(receipt)}" target="_blank" rel="noopener">พิมพ์</a></div></td>
+    </tr>`).join("") || '<tr><td colspan="8"><div class="empty-report">ไม่พบใบเสร็จในช่วงเวลานี้</div></td></tr>';
+  els.receiptResultCount.textContent = `${state.filteredReceipts.length.toLocaleString("th-TH")} ใบ`;
+  els.receiptRangeLabel.textContent = range.label;
+  renderPagination();
+}
+
+function renderPagination() {
+  const pages = Math.ceil(state.filteredReceipts.length / state.pageSize);
+  els.pagination.hidden = pages <= 1;
+  if (pages <= 1) { els.pagination.innerHTML = ""; return; }
+  const buttons = [];
+  for (let page = 1; page <= pages; page += 1) {
+    if (pages > 9 && page > 2 && page < pages - 1 && Math.abs(page - state.page) > 1) {
+      if (buttons.at(-1) !== "ellipsis") buttons.push("ellipsis");
+      continue;
+    }
+    buttons.push(page);
+  }
+  els.pagination.innerHTML = buttons.map(value => value === "ellipsis" ? '<span>…</span>' : `<button type="button" class="${value === state.page ? "active" : ""}" data-page="${value}">${value}</button>`).join("");
+}
+
+function renderReceiptDetail(receipt) {
+  const itemRows = receipt.items.map(item => `
+    <div class="receipt-item-row"><div><strong>${escapeHtml(item.name || "รายการ")}</strong><div class="menu-category">${Number(item.qty || 0).toLocaleString("th-TH")} × ${money(item.price || 0)}</div></div><strong>${money(Number(item.qty || 0) * Number(item.price || 0))}</strong></div>`).join("");
+  els.detail.innerHTML = `
+    <div class="receipt-detail-head"><div><div class="receipt-code">${escapeHtml(receipt.code)}</div><div class="receipt-detail-meta">${escapeHtml(formatTime(receipt.paidAt))}<br>${escapeHtml(orderTypeLabel(receipt.type))} • ${escapeHtml(receipt.customer)}<br>${escapeHtml(paymentMethodLabel(receipt.paymentKey))}</div></div><a class="btn btn-dark" href="${printUrl(receipt)}" target="_blank" rel="noopener">พิมพ์</a></div>
+    <div class="receipt-item-list">${itemRows || '<div class="empty-report">ไม่มีรายละเอียดสินค้า</div>'}</div>
+    <div class="receipt-totals">
+      <div class="receipt-total-row"><span>ยอดสินค้า</span><strong>${money(receipt.subtotal)}</strong></div>
+      ${receipt.discount ? `<div class="receipt-total-row"><span>ส่วนลด</span><strong>-${money(receipt.discount)}</strong></div>` : ""}
+      ${receipt.deliveryFee ? `<div class="receipt-total-row"><span>ค่าจัดส่ง</span><strong>${money(receipt.deliveryFee)}</strong></div>` : ""}
+      <div class="receipt-total-row grand"><span>ยอดสุทธิ</span><strong>${money(receipt.total)} บาท</strong></div>
+    </div>`;
+  els.dialog.showModal();
+}
+
+function renderAll(range) {
+  renderSummary();
+  renderBreakdowns();
+  renderChart(range);
+  renderTopItems();
+  renderBestPeriod(range);
+  renderReceipts(range);
+}
+
+function setPeriod(period) {
+  state.period = period;
+  document.querySelectorAll("[data-period]").forEach(button => button.classList.toggle("active", button.dataset.period === period));
+  document.querySelectorAll("[data-control]").forEach(control => { control.hidden = control.dataset.control !== period; });
+  applyFilters();
+}
+
+function initializeDates() {
+  const now = new Date();
+  const today = localDateKey(now);
+  els.reportDate.value = today;
+  els.reportMonth.value = monthKey(now);
+  els.startDate.value = today;
+  els.endDate.value = today;
+  const currentYear = now.getFullYear();
+  els.reportYear.innerHTML = Array.from({ length: 7 }, (_, index) => currentYear - 5 + index).reverse().map(year => `<option value="${year}"${year === currentYear ? " selected" : ""}>${year + 543}</option>`).join("");
+}
+
+document.querySelectorAll("[data-period]").forEach(button => button.addEventListener("click", () => setPeriod(button.dataset.period)));
+[els.reportDate, els.reportMonth, els.reportYear, els.startDate, els.endDate, els.orderType, els.paymentMethod].forEach(input => input.addEventListener("change", applyFilters));
+els.search.addEventListener("input", applyFilters);
+els.pagination.addEventListener("click", event => {
+  const button = event.target.closest("[data-page]");
+  if (!button) return;
+  state.page = Number(button.dataset.page || 1);
+  renderReceipts(selectedRange());
+  document.querySelector(".receipt-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+els.receiptRows.addEventListener("click", event => {
+  const button = event.target.closest("[data-view-receipt]");
+  if (!button) return;
+  const receipt = state.filteredReceipts.find(item => item.key === button.dataset.viewReceipt);
+  if (receipt) renderReceiptDetail(receipt);
+});
+document.querySelector("#closeReceiptDialog").addEventListener("click", () => els.dialog.close());
+els.dialog.addEventListener("click", event => { if (event.target === els.dialog) els.dialog.close(); });
+
+initializeDates();
+dataService.subscribeOrders(orders => {
+  state.orders = orders;
+  state.receipts = buildReceipts(orders);
+  applyFilters();
+});
