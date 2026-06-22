@@ -1,13 +1,43 @@
+.receipt {
+  color: #000;
+  font-weight: 500;
+  line-height: 1.28;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.receipt-header,
+.receipt-row,
+.receipt-items,
+.receipt-note {
+  color: #000;
+}
+
+.receipt-header h1 {
+  font-weight: 700;
+  line-height: 1.12;
+}
+
+.receipt-rule {
+  border-top-color: #000;
+}
+
 .receipt-items-3col {
   width: 100%;
   table-layout: fixed;
-  font-size: .92em;
+  font-size: .98em;
 }
 
 .receipt-items-3col th,
 .receipt-items-3col td {
-  padding: 5px 0;
+  padding: 6px 0;
   vertical-align: top;
+  color: #000;
+  line-height: 1.25;
+}
+
+.receipt-items-3col th {
+  font-weight: 700;
 }
 
 .receipt-items-3col th:first-child,
@@ -22,65 +52,133 @@
   padding-left: 5px;
   padding-right: 8px;
   white-space: nowrap;
-  font-size: .8em;
-  font-weight: 400;
-  letter-spacing: -.01em;
+  font-size: .9em;
+  font-weight: 500;
+  letter-spacing: 0;
 }
 
 .receipt-items-3col .receipt-line-total {
   width: 26%;
   padding-left: 9px;
   white-space: nowrap;
-  font-size: 1.06em;
-  font-weight: 800;
+  font-size: 1.04em;
+  font-weight: 700;
 }
 
 .receipt-item-name {
   overflow-wrap: anywhere;
-  line-height: 1.2;
+  line-height: 1.28;
+  font-weight: 600;
 }
 
 .receipt-item-note {
-  margin-top: 2px;
-  color: #444;
-  font-size: .78em;
-  font-weight: 400;
-  line-height: 1.15;
+  margin-top: 3px;
+  color: #000;
+  font-size: .88em;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.receipt-total {
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.receipt.size-58 {
+  font-size: 18px;
+  line-height: 1.3;
 }
 
 .receipt.size-58 .receipt-items-3col {
-  font-size: .8em;
+  font-size: .94em;
 }
 
 .receipt.size-58 .receipt-items-3col th:first-child,
 .receipt.size-58 .receipt-items-3col td:first-child {
-  width: 48%;
-  padding-right: 4px;
+  width: 50%;
+  padding-right: 5px;
 }
 
 .receipt.size-58 .receipt-items-3col .receipt-unit {
-  width: 23%;
+  width: 22%;
   padding-left: 3px;
   padding-right: 4px;
-  font-size: .74em;
+  font-size: .88em;
+  font-weight: 500;
 }
 
 .receipt.size-58 .receipt-items-3col .receipt-line-total {
-  width: 29%;
+  width: 28%;
   padding-left: 5px;
   font-size: 1em;
+  font-weight: 700;
+}
+
+.receipt.size-58 .receipt-item-note {
+  font-size: .86em;
+  line-height: 1.24;
 }
 
 .receipt.size-a4 .receipt-items-3col {
-  font-size: .98em;
+  font-size: 1em;
 }
 
 @media print {
+  .receipt {
+    color: #000 !important;
+    font-weight: 500 !important;
+    line-height: 1.3 !important;
+    text-rendering: optimizeLegibility;
+  }
+
+  .receipt,
+  .receipt * {
+    color: #000 !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
   .receipt-items-3col {
+    font-size: .98em;
+  }
+
+  .receipt-items-3col th,
+  .receipt-items-3col td {
+    padding-top: 6px;
+    padding-bottom: 6px;
+    line-height: 1.28;
+  }
+
+  .receipt-items-3col .receipt-unit {
     font-size: .9em;
+    font-weight: 500;
+  }
+
+  .receipt-item-note {
+    font-size: .88em;
+    font-weight: 500;
+  }
+
+  .receipt.size-58 {
+    font-size: 18px !important;
   }
 
   .receipt.size-58 .receipt-items-3col {
-    font-size: .78em;
+    font-size: .94em;
+  }
+
+  .receipt.size-58 .receipt-items-3col .receipt-unit {
+    font-size: .88em;
+    font-weight: 500;
+  }
+
+  .receipt.size-58 .receipt-item-note {
+    font-size: .86em;
+  }
+
+  #verifyQr {
+    width: 112px !important;
+    height: 112px !important;
+    image-rendering: crisp-edges;
   }
 }
