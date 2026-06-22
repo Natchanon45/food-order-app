@@ -1,8 +1,2 @@
-document.addEventListener("click", event => {
-  const actionButton = event.target.closest?.("#menuGrid [data-add], #cartList [data-inc], #cartList [data-dec]");
-  if (!actionButton || event.target === actionButton) return;
-
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  actionButton.click();
-}, true);
+// Delivery buttons use their native click handlers.
+// Recursive click forwarding was removed because it could freeze the page.
