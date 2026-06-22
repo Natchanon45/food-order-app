@@ -10,7 +10,7 @@ let currentOrders = [];
 let availableMenus = [];
 
 function icon(name) {
-  return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260622-8#icon-${name}"></use></svg>`;
+  return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260622-9#icon-${name}"></use></svg>`;
 }
 
 function nextActions(status, orderType) {
@@ -41,7 +41,7 @@ function render(orders) {
     const itemRows = (order.items || []).map((item, index) => `
       <li style="${item.cancelled ? "opacity:.48;text-decoration:line-through" : ""}">
         <strong>${item.qty} × ${item.name}</strong>${item.note ? `<br><small>หมายเหตุ: ${item.note}</small>` : ""}
-        ${item.replacedFromName ? `<br><small>เปลี่ยนจาก: ${item.replacedFromName}</small>` : ""}
+        ${item.originalQty && (Number(item.originalQty) !== Number(item.qty) || item.originalName) ? `<br><small>ลูกค้าสั่งเดิม: ${item.originalName || item.replacedFromName || item.name} × ${item.originalQty}</small>` : ""}
         ${item.cancelled ? '<br><small>ยกเลิกแล้ว</small>' : `
           <div class="kitchen-item-actions">
             <button class="btn btn-sm" data-edit-item="${order.id}" data-item-index="${index}">${icon("pencil")}<span>แก้ไข</span></button>
@@ -81,6 +81,7 @@ function openEditor(order, itemIndex) {
   if (!item || item.cancelled) return;
 
   const maxQty = Math.max(1, Number(item.originalQty || item.qty || 1));
+  const originalName = item.originalName || item.replacedFromName || item.name;
   const activeMenus = availableMenus.filter(menu => menu.active !== false);
   const options = activeMenus.map(menu => `<option value="${menu.id}" ${menu.id === item.menuId ? "selected" : ""}>${menu.name} — ${money(menu.price)} บาท</option>`).join("");
 
@@ -91,8 +92,8 @@ function openEditor(order, itemIndex) {
       <h2 id="kitchenEditorTitle">แก้ไขรายการ</h2>
       <div class="editor-grid">
         <div class="field"><label>เมนู</label><select class="input" id="kitchenReplacementMenu">${options}</select></div>
-        <div class="field"><label>จำนวนที่ทำได้</label><input class="input" id="kitchenReplacementQty" type="number" min="1" max="${maxQty}" step="1" value="${Math.min(Number(item.qty || 1), maxQty)}"><div class="editor-help">ลดจำนวนได้สูงสุดไม่เกินจำนวนเดิม ${maxQty} รายการ</div></div>
-        <div class="field"><label>หมายเหตุ</label><input class="input" id="kitchenReplacementNote" value="${item.note || ""}" maxlength="200"></div>
+        <div class="field"><label>จำนวนที่ทำได้</label><input class="input" id="kitchenReplacementQty" type="number" min="1" max="${maxQty}" step="1" value="${Math.min(Number(item.qty || 1), maxQty)}"><div class="editor-help">จำนวนเดิมที่ลูกค้าสั่ง: ${originalName} × ${maxQty}</div></div>
+        <div class="field"><label>หมายเหตุการแก้ไข *</label><input class="input" id="kitchenReplacementNote" value="${item.note || ""}" maxlength="200" placeholder="เช่น วัตถุดิบไม่พอ ลูกค้ายินยอมให้ลดจำนวน"><div class="editor-help">ต้องระบุเหตุผลก่อนลดจำนวนหรือเปลี่ยนเมนู</div></div>
       </div>
       <div class="editor-actions"><button type="button" class="btn" data-close-editor>ยกเลิก</button><button type="button" class="btn btn-primary" data-save-editor>บันทึกการแก้ไข</button></div>
     </section>`;
@@ -103,7 +104,8 @@ function openEditor(order, itemIndex) {
       return;
     }
 
-    if (!event.target.closest("[data-save-editor]")) return;
+    const saveButton = event.target.closest("[data-save-editor]");
+    if (!saveButton) return;
     const selectedMenuId = backdrop.querySelector("#kitchenReplacementMenu").value;
     const selectedMenu = activeMenus.find(menu => menu.id === selectedMenuId);
     const nextQty = Number(backdrop.querySelector("#kitchenReplacementQty").value);
@@ -114,12 +116,21 @@ function openEditor(order, itemIndex) {
       return;
     }
 
+    const changingQty = nextQty !== Number(item.qty);
+    const changingMenu = selectedMenu.id !== item.menuId;
+    if ((changingQty || changingMenu) && !nextNote) {
+      toast("กรุณาระบุหมายเหตุก่อนแก้ไขจำนวนหรือเปลี่ยนเมนู", "error");
+      backdrop.querySelector("#kitchenReplacementNote").focus();
+      return;
+    }
+
     const items = order.items.map((row, index) => {
       if (index !== itemIndex) return row;
       const replacing = selectedMenu.id !== row.menuId;
       return {
         ...row,
         originalQty: row.originalQty || row.qty,
+        originalName: row.originalName || row.replacedFromName || row.name,
         menuId: selectedMenu.id,
         name: selectedMenu.name,
         price: Number(selectedMenu.price),
@@ -131,7 +142,7 @@ function openEditor(order, itemIndex) {
     });
 
     const totals = recalculateOrder(order, items);
-    event.target.closest("button").disabled = true;
+    saveButton.disabled = true;
     try {
       await dataService.updateOrder(order.id, { items, ...totals, kitchenAdjustedAt: new Date().toISOString() });
       closeEditor();
@@ -139,7 +150,7 @@ function openEditor(order, itemIndex) {
     } catch (error) {
       console.error(error);
       toast("แก้ไขรายการไม่สำเร็จ", "error");
-      event.target.closest("button").disabled = false;
+      saveButton.disabled = false;
     }
   });
 
