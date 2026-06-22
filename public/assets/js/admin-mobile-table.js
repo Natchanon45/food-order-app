@@ -1,4 +1,4 @@
-const ICONS = "/assets/images/app-icons.svg?v=20260622-6";
+const ICONS = "/assets/images/app-icons.svg?v=20260622-7";
 
 function icon(name) {
   return `<svg class="app-icon" aria-hidden="true"><use href="${ICONS}#icon-${name}"></use></svg>`;
@@ -8,10 +8,16 @@ function decorateStatusCell(row) {
   const cells = row.children;
   if (!cells.length) return;
   const statusCell = cells[cells.length - 2];
-  if (!statusCell || statusCell.querySelector(".admin-status-icon")) return;
+  if (!statusCell) return;
 
-  const text = statusCell.textContent.trim();
-  const active = /เปิดขาย|ใช้งาน/.test(text);
+  if (row.dataset.active !== "true" && row.dataset.active !== "false") {
+    const text = statusCell.textContent.trim();
+    row.dataset.active = /เปิดขาย|ใช้งาน/.test(text) ? "true" : "false";
+  }
+
+  if (statusCell.querySelector(".admin-status-icon")) return;
+
+  const active = row.dataset.active === "true";
   statusCell.innerHTML = `<span class="admin-status-icon${active ? "" : " is-inactive"}" role="img" aria-label="${active ? "เปิดใช้งาน" : "ปิดใช้งาน"}" title="${active ? "เปิดใช้งาน" : "ปิดใช้งาน"}">${icon(active ? "check" : "times-circle")}</span>`;
 }
 
