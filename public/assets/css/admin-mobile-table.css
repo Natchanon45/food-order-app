@@ -1,0 +1,114 @@
+#menuRows .admin-status-icon,
+#tableRows .admin-status-icon {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #e8f5ec;
+  color: var(--green-dark);
+}
+
+#menuRows .admin-status-icon.is-inactive,
+#tableRows .admin-status-icon.is-inactive {
+  background: #f1f3f2;
+  color: var(--muted);
+}
+
+#menuRows .admin-status-icon .app-icon,
+#tableRows .admin-status-icon .app-icon {
+  width: 17px;
+  height: 17px;
+  margin: 0;
+}
+
+#menuRows td:last-child,
+#tableRows td:last-child {
+  white-space: nowrap;
+}
+
+#menuRows .admin-row-actions,
+#tableRows .admin-row-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+#menuRows .admin-icon-button,
+#tableRows .admin-icon-button {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+}
+
+#menuRows .admin-icon-button .app-icon,
+#tableRows .admin-icon-button .app-icon {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+body[data-roles="admin"] #menuListPagination,
+body[data-roles="admin"] #tableListPagination {
+  position: static !important;
+  inset: auto !important;
+  width: auto !important;
+  max-width: none !important;
+  margin: 14px 0 4px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+@media (max-width: 480px) {
+  #menuRows .badge,
+  #tableRows .badge {
+    display: none !important;
+  }
+
+  #menuRows td,
+  #tableRows td {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+
+  #menuRows .admin-row-actions,
+  #tableRows .admin-row-actions {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  #menuRows .admin-icon-button,
+  #tableRows .admin-icon-button {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    min-height: 34px !important;
+  }
+
+  body[data-roles="admin"] #menuListPagination,
+  body[data-roles="admin"] #tableListPagination {
+    justify-content: center;
+    gap: 5px;
+  }
+
+  body[data-roles="admin"] #menuListPagination .menu-page-button,
+  body[data-roles="admin"] #tableListPagination .menu-page-button {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 6px 9px;
+    border-radius: 10px;
+  }
+}
