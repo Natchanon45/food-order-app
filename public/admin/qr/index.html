@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#159447">
-  <link rel="stylesheet" href="/assets/css/app.css">
-  <link rel="stylesheet" href="/assets/css/menu-qr.css">
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260623-9">
+  <link rel="stylesheet" href="/assets/css/menu-qr.css?v=20260623-9">
   <title>QR โต๊ะ</title>
 </head>
 <body>
@@ -20,11 +20,11 @@
       <p>พิมพ์และติดไว้ที่โต๊ะ ลูกค้าสแกนแล้วระบบรู้รหัสโต๊ะทันที</p>
     </section>
     <div class="field card" style="margin-bottom:16px">
-      <label>โดเมนร้าน</label>
-      <input class="input" id="baseUrl">
+      <label>โดเมนร้านตาม slug</label>
+      <input class="input" id="baseUrl" readonly>
     </div>
     <div id="qrGrid" class="qr-grid"></div>
   </main>
-  <script type="module" src="/assets/js/qr.js"></script>
+  <script type="module" src="/assets/js/qr.js?v=20260623-2"></script>
 </body>
 </html>
