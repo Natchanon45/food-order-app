@@ -3,10 +3,13 @@
 .app-toast {
   position: fixed !important;
   left: 50% !important;
-  bottom: max(24px, env(safe-area-inset-bottom)) !important;
+  top: 68vh !important;
+  bottom: auto !important;
   z-index: 300 !important;
   width: min(520px, calc(100% - 28px)) !important;
   min-height: 56px !important;
+  height: auto !important;
+  max-height: 96px !important;
   display: grid !important;
   grid-template-columns: 28px minmax(0, 1fr) !important;
   align-items: center !important;
@@ -17,15 +20,16 @@
   background: #111 !important;
   color: #fff !important;
   box-shadow: 0 16px 42px rgba(0, 0, 0, .34) !important;
-  transform: translate(-50%, 22px) scale(.98) !important;
+  transform: translate(-50%, calc(-50% + 22px)) scale(.98) !important;
   opacity: 0 !important;
   transition: opacity .2s ease, transform .2s ease !important;
   pointer-events: none !important;
+  overflow: hidden !important;
 }
 
 .app-toast.show {
   opacity: 1 !important;
-  transform: translate(-50%, 0) scale(1) !important;
+  transform: translate(-50%, -50%) scale(1) !important;
 }
 
 .app-toast.success,
@@ -78,9 +82,12 @@
 
 @media (max-width: 480px) {
   .app-toast {
+    top: 66vh !important;
+    bottom: auto !important;
     width: calc(100% - 20px) !important;
     min-height: 54px !important;
-    bottom: max(14px, env(safe-area-inset-bottom)) !important;
+    height: auto !important;
+    max-height: 88px !important;
     padding: 11px 13px !important;
     grid-template-columns: 26px minmax(0, 1fr) !important;
     gap: 10px !important;

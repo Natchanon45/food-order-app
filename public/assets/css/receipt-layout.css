@@ -124,6 +124,13 @@
 }
 
 @media print {
+  .receipt,
+  .receipt *,
+  .receipt *::before,
+  .receipt *::after {
+    font-family: "TH Sarabun PSK Local" !important;
+  }
+
   .receipt {
     color: #000 !important;
     font-weight: 500 !important;

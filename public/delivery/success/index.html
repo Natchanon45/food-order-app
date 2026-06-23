@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#159447">
-  <link rel="stylesheet" href="/assets/css/app.css?v=20260621-40">
-  <link rel="stylesheet" href="/assets/css/receipt-layout.css?v=20260621-40">
-  <link rel="stylesheet" href="/assets/css/icons.css?v=20260621-40">
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260623-4">
+  <link rel="stylesheet" href="/assets/css/receipt-layout.css?v=20260623-4">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260623-4">
   <title>บันทึกคำสั่งซื้อ</title>
 </head>
 <body>
-  <header class="app-header"><div class="brand"><span class="brand-mark">FOD</span>คำสั่งซื้อ Delivery</div><a class="btn btn-sm" href="/delivery">สั่งเพิ่ม</a></header>
+  <header class="app-header"><div class="brand"><span class="brand-mark">FOD</span>คำสั่งซื้อ Delivery</div><a class="btn btn-sm" id="orderAgainLink" href="#">สั่งเพิ่ม</a></header>
   <main class="receipt-page">
     <div class="receipt-toolbar"><button class="btn btn-primary" id="saveImageButton">ดาวน์โหลดใบสั่งซื้อ</button><a class="btn" id="verifyLatestLink" href="#" target="_blank" rel="noopener">ดูยอดล่าสุด</a></div>
     <section class="receipt" id="customerReceipt">
@@ -29,6 +29,7 @@
   </main>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <script type="module" src="/assets/js/delivery-success.js?v=20260621-40"></script>
+  <script type="module" src="/assets/js/public-tenant-resolver.js?v=20260623-4"></script>
+  <script type="module" src="/assets/js/delivery-success.js?v=20260623-4"></script>
 </body>
 </html>

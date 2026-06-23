@@ -4,6 +4,7 @@ import { money, formatTime, toast } from "./ui.js";
 const orderId = new URLSearchParams(location.search).get("order") || "";
 const receipt = document.querySelector("#customerReceipt");
 const saveButton = document.querySelector("#saveImageButton");
+const orderAgainLink = document.querySelector("#orderAgainLink");
 
 function paymentText(order) {
   if (order.paymentStatus === "paid") return "ชำระเงินแล้ว";
@@ -28,6 +29,7 @@ function renderVerificationQr(order) {
     correctLevel: QRCode.CorrectLevel.H
   });
   document.querySelector("#verifyLatestLink").href = verifyUrl;
+  orderAgainLink.href = `/s/${encodeURIComponent(tenant.slug)}/delivery`;
 }
 
 async function load() {

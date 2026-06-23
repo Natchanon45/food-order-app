@@ -98,8 +98,8 @@ textarea.input { min-height: 82px; resize: vertical; }
 .qty { display: flex; align-items: center; gap: 7px; }
 .qty button { width: 30px; height: 30px; border: 0; border-radius: 9px; }
 .empty { text-align: center; padding: 38px 20px; color: var(--muted); }
-.app-toast { position: fixed; left: 50%; bottom: 24px; z-index: 100; transform: translate(-50%, 20px); opacity: 0; background: var(--black); color: white; padding: 12px 18px; border-radius: 999px; transition: .2s ease; }
-.app-toast.show { opacity: 1; transform: translate(-50%, 0); }
+.app-toast { position: fixed; left: 50%; top: 68vh; bottom: auto; z-index: 300; width: min(560px, calc(100% - 24px)); display: flex; align-items: center; justify-content: center; gap: 10px; transform: translate(-50%, calc(-50% + 20px)); opacity: 0; background: var(--black); color: white; padding: 12px 18px; border-radius: 999px; text-align: center; box-shadow: 0 14px 36px rgba(0,0,0,.28); transition: .2s ease; }
+.app-toast.show { opacity: 1; transform: translate(-50%, -50%); }
 .app-toast.error { background: var(--danger); }
 .demo-banner { background: #fff2c9; color: #725000; padding: 8px 14px; text-align: center; font-size: 13px; }
 .table-list { width: 100%; border-collapse: collapse; }
@@ -142,6 +142,7 @@ textarea.input { min-height: 82px; resize: vertical; }
   .hero { border-radius: 18px; }
   .app-header { padding-inline: 12px; }
   .receipt { max-width: 100%; }
+  .app-toast { top: 66vh; bottom: auto; }
   #userRows { display: grid; gap: 12px; }
   #userRows tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 12px; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
   #userRows td { display: block; min-width: 0; padding: 0; border: 0; }
@@ -167,7 +168,4 @@ textarea.input { min-height: 82px; resize: vertical; }
   @page { margin: 0; }
   html, body, body * { font-family: var(--print-font) !important; }
   .no-print, .app-header, .cart-bar, .app-toast, .demo-banner { display: none !important; }
-  body { background: white; }
-  .receipt-page { width: auto; margin: 0; padding: 0; }
-  .receipt { box-shadow: none; margin: 0 auto; }
 }

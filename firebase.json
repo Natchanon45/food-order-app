@@ -9,35 +9,24 @@
     "cleanUrls": true,
     "trailingSlash": false,
     "rewrites": [
-      {
-        "source": "/delivery/success/**",
-        "destination": "/delivery/success/index.html"
-      },
+      { "source": "/delivery/success", "destination": "/delivery/success/index.html" },
+      { "source": "/delivery/success/**", "destination": "/delivery/success/index.html" },
+      { "source": "/s/*/delivery/success", "destination": "/delivery/success/index.html" },
+      { "source": "/s/*/delivery/success/**", "destination": "/delivery/success/index.html" },
+      { "source": "/s/*/order", "destination": "/order/index.html" },
+      { "source": "/s/*/order/**", "destination": "/order/index.html" },
       { "source": "/delivery/**", "destination": "/delivery/index.html" },
-      { "source": "/s/:slug/order/**", "destination": "/order/index.html" },
       { "source": "/s/**", "destination": "/delivery/index.html" },
       { "source": "/verify/**", "destination": "/verify/index.html" },
       { "source": "/order/**", "destination": "/order/index.html" },
       { "source": "/kitchen/**", "destination": "/kitchen/index.html" },
-      {
-        "source": "/cashier/receipt/**",
-        "destination": "/cashier/receipt/index.html"
-      },
-      {
-        "source": "/cashier/table-qr/**",
-        "destination": "/cashier/table-qr/index.html"
-      },
+      { "source": "/cashier/receipt/**", "destination": "/cashier/receipt/index.html" },
+      { "source": "/cashier/table-qr/**", "destination": "/cashier/table-qr/index.html" },
       { "source": "/cashier/**", "destination": "/cashier/index.html" },
       { "source": "/platform/owners/**", "destination": "/platform/owners/index.html" },
       { "source": "/platform/**", "destination": "/platform/index.html" },
-      {
-        "source": "/admin/qr/**",
-        "destination": "/admin/qr/index.html"
-      },
-      {
-        "source": "/admin/tenants/**",
-        "destination": "/admin/tenants/index.html"
-      },
+      { "source": "/admin/qr/**", "destination": "/admin/qr/index.html" },
+      { "source": "/admin/tenants/**", "destination": "/admin/tenants/index.html" },
       { "source": "/admin/**", "destination": "/admin/index.html" }
     ]
   },
@@ -45,5 +34,13 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
-  "storage": { "rules": "storage.rules" }
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "emulators": {
+    "hosting": {
+      "host": "0.0.0.0",
+      "port": 5002
+    }
+  }
 }

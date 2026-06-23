@@ -28,6 +28,32 @@ function buildQrImageUrl(value) {
   return `https://quickchart.io/qr?text=${encodeURIComponent(value)}&size=320&margin=1`;
 }
 
+function createOrderToken() {
+  if (typeof crypto?.randomUUID === "function") return crypto.randomUUID();
+
+  const bytes = new Uint8Array(16);
+  if (typeof crypto?.getRandomValues === "function") {
+    crypto.getRandomValues(bytes);
+  } else {
+    for (let index = 0; index < bytes.length; index += 1) {
+      bytes[index] = Math.floor(Math.random() * 256);
+    }
+  }
+
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = [...bytes].map(value => value.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+function qrErrorMessage(error) {
+  const code = String(error?.code || error?.message || "UNKNOWN_ERROR");
+  if (code.includes("permission-denied")) return "ไม่มีสิทธิ์อัปเดตโต๊ะ กรุณา Deploy Firestore Rules ล่าสุด";
+  if (code.includes("TENANT_CONTEXT_REQUIRED") || code.includes("TENANT_NOT_RESOLVED")) return "ไม่พบข้อมูลร้าน กรุณาออกจากระบบแล้วเข้าสู่ระบบใหม่";
+  if (code.includes("not-found")) return "ไม่พบข้อมูลโต๊ะ กรุณารีเฟรชหน้าแล้วลองใหม่";
+  return `ออก QR ไม่สำเร็จ (${code})`;
+}
+
 async function loadTables() {
   tables = await dataService.listTables();
 
@@ -114,7 +140,7 @@ availableTables.addEventListener("click", async event => {
       return;
     }
 
-    const token = crypto.randomUUID();
+    const token = createOrderToken();
     await dataService.updateTable(table.id, {
       status: "occupied",
       orderToken: token,
@@ -125,8 +151,8 @@ availableTables.addEventListener("click", async event => {
     renderTicket(table, token, true);
     await loadTables();
   } catch (error) {
-    console.error(error);
-    toast("ออก QR ไม่สำเร็จ", "error");
+    console.error("TABLE_QR_ISSUE_FAILED", error);
+    toast(qrErrorMessage(error), "error");
     button.disabled = false;
     button.textContent = "ออก QR และพิมพ์";
   }
@@ -153,8 +179,8 @@ occupiedTables.addEventListener("click", async event => {
       toast(`ปิด ${table.name} เรียบร้อยแล้ว`);
       await loadTables();
     } catch (error) {
-      console.error(error);
-      toast("ปิดโต๊ะไม่สำเร็จ", "error");
+      console.error("TABLE_CLOSE_FAILED", error);
+      toast(qrErrorMessage(error), "error");
       closeButton.disabled = false;
       closeButton.textContent = "ปิดโต๊ะ";
     }
@@ -175,8 +201,8 @@ occupiedTables.addEventListener("click", async event => {
     }
     renderTicket(table, table.orderToken, true);
   } catch (error) {
-    console.error(error);
-    toast("เตรียม QR สำหรับพิมพ์ซ้ำไม่สำเร็จ", "error");
+    console.error("TABLE_QR_REPRINT_FAILED", error);
+    toast(qrErrorMessage(error), "error");
   } finally {
     button.disabled = false;
     button.textContent = "พิมพ์ QR ซ้ำ";

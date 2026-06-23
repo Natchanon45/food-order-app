@@ -3,6 +3,13 @@
     margin: 0;
   }
 
+  body.qr-printing,
+  body.qr-printing *,
+  body.qr-printing *::before,
+  body.qr-printing *::after {
+    font-family: "TH Sarabun PSK Local" !important;
+  }
+
   body.qr-printing {
     margin: 0 !important;
     padding: 0 !important;
