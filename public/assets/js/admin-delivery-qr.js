@@ -104,10 +104,30 @@ async function generateQr() {
   preview.hidden = false;
 }
 
+function legacyCopy(value) {
+  linkInput.focus();
+  linkInput.select();
+  linkInput.setSelectionRange(0, value.length);
+  const copied = document.execCommand("copy");
+  window.getSelection()?.removeAllRanges();
+  if (!copied) throw new Error("CLIPBOARD_COPY_FAILED");
+}
+
 async function copyLink() {
   if (!linkInput.value) await generateQr();
-  await navigator.clipboard.writeText(linkInput.value);
-  toast("คัดลอกลิงก์ Delivery แล้ว");
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(linkInput.value);
+    } else {
+      legacyCopy(linkInput.value);
+    }
+    toast("คัดลอกลิงก์ Delivery แล้ว");
+  } catch (error) {
+    console.error(error);
+    linkInput.focus();
+    linkInput.select();
+    toast("เลือกข้อความลิงก์แล้ว กรุณากด Command + C", "error");
+  }
 }
 
 async function downloadQr() {
