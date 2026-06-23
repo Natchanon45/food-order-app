@@ -34,6 +34,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: 7px;
+  flex-wrap: nowrap;
 }
 
 #menuRows .admin-icon-button,
@@ -84,10 +85,18 @@ body[data-roles="admin"] #tableListPagination {
     padding-right: 5px;
   }
 
+  #menuRows td:last-child,
+  #tableRows td:last-child {
+    min-width: 78px;
+  }
+
   #menuRows .admin-row-actions,
   #tableRows .admin-row-actions {
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
     gap: 5px;
+    flex-wrap: nowrap;
   }
 
   #menuRows .admin-icon-button,
