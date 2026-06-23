@@ -1,1 +1,168 @@
-.admin-card-toggle{width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;padding:0!important;border-radius:50%!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 36px}.admin-card-toggle .app-icon{width:17px;height:17px;transition:transform .18s ease}.admin-collapsible-card.admin-card-collapsed>.admin-card-body{display:none!important}.admin-collapsible-card.admin-card-collapsed>.section-title .admin-card-toggle .app-icon{transform:rotate(-90deg)}.admin-collapsible-card>.section-title{align-items:center;gap:10px}.admin-collapsible-card>.section-title>.admin-card-heading{min-width:0;flex:1}.admin-edit-modal-backdrop{position:fixed;inset:0;z-index:260;display:grid;place-items:center;padding:18px;background:rgba(6,24,15,.52);backdrop-filter:blur(5px)}.admin-edit-modal-backdrop[hidden]{display:none!important}.admin-edit-modal{width:min(720px,100%);max-height:min(90vh,860px);overflow:auto;border-radius:20px;background:#fff;box-shadow:0 26px 80px rgba(0,0,0,.3)}.admin-edit-modal-head{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.98);backdrop-filter:blur(10px)}.admin-edit-modal-head h2{margin:0;font-size:20px}.admin-edit-modal-close{width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important;padding:0!important;border-radius:50%!important}.admin-edit-modal-body{padding:16px}.admin-edit-modal-body>.card{margin:0!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important}.admin-edit-modal-body>.card>.section-title{display:none!important}.admin-edit-modal-body .admin-card-body{display:block!important}.admin-edit-placeholder{display:none}.admin-modal-open{overflow:hidden!important}@media(max-width:600px){.admin-edit-modal-backdrop{padding:0;align-items:end}.admin-edit-modal{width:100%;max-height:94dvh;border-radius:20px 20px 0 0}.admin-edit-modal-head{padding:12px 14px}.admin-edit-modal-body{padding:14px}.admin-card-toggle{width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important}}
+.admin-card-toggle {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 36px;
+}
+
+.admin-card-toggle .app-icon {
+  width: 17px;
+  height: 17px;
+  transition: transform .18s ease;
+}
+
+.admin-collapsible-card.admin-card-collapsed > .admin-card-body {
+  display: none !important;
+}
+
+.admin-collapsible-card.admin-card-collapsed > .section-title .admin-card-toggle .app-icon {
+  transform: rotate(-90deg);
+}
+
+.admin-collapsible-card > .section-title {
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-collapsible-card > .section-title > .admin-card-heading {
+  min-width: 0;
+  flex: 1;
+}
+
+.admin-edit-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 260;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(6, 24, 15, 0);
+  backdrop-filter: blur(0);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .22s ease, background-color .22s ease, backdrop-filter .22s ease, visibility 0s linear .22s;
+}
+
+.admin-edit-modal-backdrop.is-open {
+  background: rgba(6, 24, 15, .52);
+  backdrop-filter: blur(5px);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+.admin-edit-modal {
+  width: min(720px, calc(100vw - 36px));
+  max-height: min(88dvh, 860px);
+  overflow: auto;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 26px 80px rgba(0, 0, 0, .3);
+  opacity: 0;
+  transform: translateY(18px) scale(.97);
+  transition: opacity .22s ease, transform .22s ease;
+}
+
+.admin-edit-modal-backdrop.is-open .admin-edit-modal {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.admin-edit-modal-head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, .98);
+  backdrop-filter: blur(10px);
+}
+
+.admin-edit-modal-head h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.admin-edit-modal-close {
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  min-height: 38px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+}
+
+.admin-edit-modal-body {
+  padding: 16px;
+}
+
+.admin-edit-modal-body > .card {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.admin-edit-modal-body > .card > .section-title {
+  display: none !important;
+}
+
+.admin-edit-modal-body .admin-card-body {
+  display: block !important;
+}
+
+.admin-edit-placeholder {
+  display: none;
+}
+
+.admin-modal-open {
+  overflow: hidden !important;
+}
+
+@media (max-width: 600px) {
+  .admin-edit-modal-backdrop {
+    place-items: center;
+    padding: 12px;
+  }
+
+  .admin-edit-modal {
+    width: min(100%, calc(100vw - 24px));
+    max-height: 88dvh;
+    border-radius: 18px;
+  }
+
+  .admin-edit-modal-head {
+    padding: 12px 14px;
+  }
+
+  .admin-edit-modal-body {
+    padding: 14px;
+  }
+
+  .admin-card-toggle {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    min-height: 34px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-edit-modal-backdrop,
+  .admin-edit-modal {
+    transition: none !important;
+  }
+}
