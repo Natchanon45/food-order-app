@@ -6,7 +6,15 @@ if (usingDemoMode) {
 
 const baseUrl = document.querySelector("#baseUrl");
 const root = document.querySelector("#qrGrid");
-baseUrl.value = location.origin === "null" ? "https://chat-45754.web.app" : location.origin;
+
+function tenantBaseUrl() {
+  const tenant = dataService.getActiveShop();
+  if (!tenant?.slug) throw new Error("TENANT_SLUG_MISSING");
+  return `${location.origin}/s/${encodeURIComponent(tenant.slug)}/`;
+}
+
+baseUrl.value = tenantBaseUrl();
+baseUrl.readOnly = true;
 
 function buildQrImageUrl(value) {
   const encoded = encodeURIComponent(value);
@@ -32,8 +40,11 @@ async function render() {
       return;
     }
 
+    const shopRoot = tenantBaseUrl();
+    baseUrl.value = shopRoot;
+
     root.innerHTML = activeTables.map(table => {
-      const orderUrl = `${baseUrl.value.replace(/\/$/, "")}/order/?table=${encodeURIComponent(table.code)}`;
+      const orderUrl = `${shopRoot}order/?table=${encodeURIComponent(table.code)}`;
       const qrUrl = buildQrImageUrl(orderUrl);
 
       return `
@@ -72,7 +83,7 @@ async function render() {
     }).join("");
   } catch (error) {
     console.error(error);
-    root.innerHTML = '<div class="card empty">สร้าง QR ไม่สำเร็จ กรุณาตรวจสอบ Firebase Config และลองใหม่</div>';
+    root.innerHTML = '<div class="card empty">สร้าง QR ไม่สำเร็จ กรุณาตรวจสอบข้อมูลร้านและ slug แล้วลองใหม่</div>';
   }
 }
 
@@ -89,5 +100,4 @@ root.addEventListener("click", event => {
 });
 
 window.addEventListener("afterprint", clearPrintTarget);
-baseUrl.addEventListener("change", render);
 await render();
