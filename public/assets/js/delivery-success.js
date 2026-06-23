@@ -17,9 +17,15 @@ function receiptItemName(item) {
   return `<div class="receipt-item-line"><span class="receipt-item-text" title="${item.name}">${item.name}</span><span class="receipt-item-qty">x ${item.qty}</span></div>${item.note ? `<div class="receipt-item-note">${item.note}</div>` : ""}`;
 }
 
+function clearDeliveryDraft(tenantSlug = "") {
+  if (!tenantSlug) return;
+  sessionStorage.removeItem(`delivery_checkout_draft:${tenantSlug}`);
+}
+
 function renderVerificationQr(order) {
   const tenant = dataService.getActiveShop();
-  const verifyUrl = `${location.origin}/verify/?tenant=${encodeURIComponent(tenant.slug || "")}&order=${encodeURIComponent(order.id || orderId)}`;
+  const tenantSlug = tenant.slug || "";
+  const verifyUrl = `${location.origin}/verify/?tenant=${encodeURIComponent(tenantSlug)}&order=${encodeURIComponent(order.id || orderId)}`;
   const target = document.querySelector("#verifyQr");
   target.innerHTML = "";
   new QRCode(target, {
@@ -29,7 +35,8 @@ function renderVerificationQr(order) {
     correctLevel: QRCode.CorrectLevel.H
   });
   document.querySelector("#verifyLatestLink").href = verifyUrl;
-  orderAgainLink.href = `/s/${encodeURIComponent(tenant.slug)}/delivery`;
+  orderAgainLink.href = `/s/${encodeURIComponent(tenantSlug)}/delivery`;
+  clearDeliveryDraft(tenantSlug);
 }
 
 async function load() {
