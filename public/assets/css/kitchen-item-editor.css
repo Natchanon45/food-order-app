@@ -1,1 +1,130 @@
-.kitchen-item-actions{display:flex;justify-content:flex-end;gap:7px;flex-wrap:wrap;margin-top:8px}.kitchen-item-actions .btn{min-height:36px}.kitchen-item-editor-backdrop{position:fixed;inset:0;z-index:220;display:grid;place-items:center;padding:16px;background:rgba(0,0,0,.45)}.kitchen-item-editor-backdrop[hidden]{display:none!important}.kitchen-item-editor{width:min(460px,100%);max-height:min(82vh,720px);overflow:auto;padding:18px;border-radius:18px;background:#fff;box-shadow:0 22px 60px rgba(0,0,0,.28)}.kitchen-item-editor h2{margin:0 0 14px}.kitchen-item-editor .editor-grid{display:grid;gap:12px}.kitchen-item-editor .editor-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.kitchen-item-editor .editor-help{margin-top:5px;color:var(--muted);font-size:12px;line-height:1.4}@media(max-width:480px){.kitchen-item-actions{justify-content:flex-start}.kitchen-item-editor{padding:15px;border-radius:16px}.kitchen-item-editor .editor-actions{display:grid;grid-template-columns:1fr 1fr}.kitchen-item-editor .editor-actions .btn{width:100%}}
+.order-items > li {
+  position: relative;
+  min-height: 44px;
+  padding-right: 170px;
+}
+
+.kitchen-item-actions {
+  position: absolute;
+  top: 5px;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.kitchen-item-actions .btn {
+  min-height: 36px;
+}
+
+.kitchen-item-editor-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(0,0,0,.45);
+}
+
+.kitchen-item-editor-backdrop[hidden] {
+  display: none !important;
+}
+
+.kitchen-item-editor {
+  width: min(460px,100%);
+  max-height: min(82vh,720px);
+  overflow: auto;
+  padding: 18px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 22px 60px rgba(0,0,0,.28);
+}
+
+.kitchen-item-editor h2 {
+  margin: 0 0 14px;
+}
+
+.kitchen-item-editor .editor-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.kitchen-item-editor .editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.kitchen-item-editor .editor-help {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+@media (max-width: 760px) {
+  .order-items > li {
+    padding-right: 92px;
+  }
+
+  .kitchen-item-actions {
+    top: 4px;
+    gap: 6px;
+  }
+
+  .kitchen-item-actions .btn {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    gap: 0 !important;
+  }
+
+  .kitchen-item-actions .btn > span {
+    display: none !important;
+  }
+
+  .kitchen-item-actions .btn .app-icon {
+    width: 18px !important;
+    height: 18px !important;
+    margin: 0 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .order-items > li {
+    padding-right: 82px;
+  }
+
+  .kitchen-item-actions {
+    gap: 5px;
+  }
+
+  .kitchen-item-actions .btn {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+  }
+
+  .kitchen-item-editor {
+    padding: 15px;
+    border-radius: 16px;
+  }
+
+  .kitchen-item-editor .editor-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .kitchen-item-editor .editor-actions .btn {
+    width: 100%;
+  }
+}
