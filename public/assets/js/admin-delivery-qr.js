@@ -17,7 +17,7 @@ function mountQrSection() {
     <div class="section-title" style="margin-top:0">
       <div>
         <h2>QR สำหรับสั่ง Delivery</h2>
-        <div class="menu-category">สร้าง QR ประจำร้านสำหรับส่งให้ลูกค้าสแกนสั่ง Delivery</div>
+        <div class="menu-category">QR ประจำร้านจะสร้างให้อัตโนมัติตาม slug ของร้าน</div>
       </div>
     </div>
     <div class="delivery-qr-manager">
@@ -36,7 +36,6 @@ function mountQrSection() {
           <input class="input" id="deliveryQrLink" readonly>
         </div>
         <div class="order-actions">
-          <button type="button" class="btn btn-primary" id="generateDeliveryQr">${icon("qr")}<span>สร้าง QR</span></button>
           <button type="button" class="btn" id="copyDeliveryQrLink"><span>คัดลอกลิงก์</span></button>
           <button type="button" class="btn btn-dark" id="downloadDeliveryQr"><span>ดาวน์โหลด QR</span></button>
           <button type="button" class="btn" id="printDeliveryQr">${icon("print")}<span>พิมพ์</span></button>
@@ -78,7 +77,6 @@ mountQrSection();
 const preview = document.querySelector("#deliveryQrPreview");
 const image = document.querySelector("#deliveryQrImage");
 const linkInput = document.querySelector("#deliveryQrLink");
-const generateButton = document.querySelector("#generateDeliveryQr");
 const copyButton = document.querySelector("#copyDeliveryQrLink");
 const downloadButton = document.querySelector("#downloadDeliveryQr");
 const printButton = document.querySelector("#printDeliveryQr");
@@ -160,7 +158,6 @@ function printQr() {
   else image.addEventListener("load", printNow, { once: true });
 }
 
-generateButton?.addEventListener("click", generateQr);
 copyButton?.addEventListener("click", copyLink);
 downloadButton?.addEventListener("click", downloadQr);
 printButton?.addEventListener("click", printQr);
