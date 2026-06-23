@@ -1,13 +1,22 @@
-const ICONS = "/assets/images/app-icons.svg?v=20260623-1";
+const ICONS = "/assets/images/app-icons.svg?v=20260623-2";
 const STORAGE_KEY = "admin_collapsed_cards_v1";
+const MODAL_TRANSITION_MS = 220;
 
 function icon(name) {
   return `<svg class="app-icon" aria-hidden="true"><use href="${ICONS}#icon-${name}"></use></svg>`;
 }
 
+function headingText(card) {
+  return card.querySelector(":scope > .section-title h2")?.textContent?.trim() || "";
+}
+
+function isNonCollapsibleCard(card) {
+  return headingText(card) === "รายงานยอดขาย";
+}
+
 function cardKey(card, index = 0) {
   if (card.dataset.adminCardKey) return card.dataset.adminCardKey;
-  const heading = card.querySelector(":scope > .section-title h2")?.textContent?.trim() || `card-${index}`;
+  const heading = headingText(card) || `card-${index}`;
   const key = heading.replace(/\s+/g, "-").replace(/[^\p{L}\p{N}-]/gu, "").toLowerCase() || `card-${index}`;
   card.dataset.adminCardKey = key;
   return key;
@@ -45,8 +54,7 @@ function ensureCardBody(card, title) {
 function decorateCard(card, index = 0) {
   if (!(card instanceof HTMLElement) || card.dataset.adminCollapsible === "true") return;
   const title = card.querySelector(":scope > .section-title");
-  if (!title) return;
-  if (card.closest(".admin-edit-modal")) return;
+  if (!title || card.closest(".admin-edit-modal") || isNonCollapsibleCard(card)) return;
 
   const key = cardKey(card, index);
   const state = collapsedState();
@@ -92,7 +100,7 @@ function decorateCards(root = document) {
 function createModal() {
   const backdrop = document.createElement("div");
   backdrop.className = "admin-edit-modal-backdrop";
-  backdrop.hidden = true;
+  backdrop.setAttribute("aria-hidden", "true");
   backdrop.innerHTML = `
     <section class="admin-edit-modal" role="dialog" aria-modal="true" aria-labelledby="adminEditModalTitle">
       <header class="admin-edit-modal-head">
@@ -110,8 +118,10 @@ const modalBody = modal.querySelector(".admin-edit-modal-body");
 const modalTitle = modal.querySelector("#adminEditModalTitle");
 let activeCard = null;
 let placeholder = null;
+let closeTimer = 0;
+let modalOpen = false;
 
-function closeModal() {
+function restoreActiveCard() {
   if (activeCard && placeholder?.parentNode) {
     placeholder.parentNode.insertBefore(activeCard, placeholder);
     placeholder.remove();
@@ -119,13 +129,24 @@ function closeModal() {
   }
   activeCard = null;
   placeholder = null;
-  modal.hidden = true;
   modalBody.replaceChildren();
+}
+
+function closeModal({ immediate = false } = {}) {
+  if (!modalOpen && !activeCard) return;
+  clearTimeout(closeTimer);
+  modalOpen = false;
+  modal.classList.remove("is-open");
+  modal.setAttribute("aria-hidden", "true");
   document.body.classList.remove("admin-modal-open");
+
+  const finish = () => restoreActiveCard();
+  if (immediate) finish();
+  else closeTimer = window.setTimeout(finish, MODAL_TRANSITION_MS);
 }
 
 function openModal(card, titleText) {
-  closeModal();
+  closeModal({ immediate: true });
   placeholder = document.createElement("div");
   placeholder.className = "admin-edit-placeholder";
   card.parentNode.insertBefore(placeholder, card);
@@ -133,9 +154,14 @@ function openModal(card, titleText) {
   card.classList.remove("admin-card-collapsed");
   modalTitle.textContent = titleText;
   modalBody.appendChild(card);
-  modal.hidden = false;
+  modal.setAttribute("aria-hidden", "false");
   document.body.classList.add("admin-modal-open");
-  requestAnimationFrame(() => card.querySelector("input:not([type=hidden]), select, textarea")?.focus());
+  modalOpen = true;
+
+  requestAnimationFrame(() => {
+    modal.classList.add("is-open");
+    requestAnimationFrame(() => card.querySelector("input:not([type=hidden]), select, textarea")?.focus());
+  });
 }
 
 modal.addEventListener("click", event => {
@@ -143,7 +169,7 @@ modal.addEventListener("click", event => {
 });
 
 document.addEventListener("keydown", event => {
-  if (event.key === "Escape" && !modal.hidden) closeModal();
+  if (event.key === "Escape" && modalOpen) closeModal();
 });
 
 let savedScrollY = 0;
@@ -168,11 +194,11 @@ document.addEventListener("click", event => {
 }, true);
 
 document.querySelector("#menuForm")?.addEventListener("reset", () => {
-  if (!modal.hidden && activeCard?.querySelector("#menuForm")) setTimeout(closeModal, 0);
+  if (modalOpen && activeCard?.querySelector("#menuForm")) setTimeout(() => closeModal(), 0);
 });
 
 document.querySelector("#tableForm")?.addEventListener("reset", () => {
-  if (!modal.hidden && activeCard?.querySelector("#tableForm")) setTimeout(closeModal, 0);
+  if (modalOpen && activeCard?.querySelector("#tableForm")) setTimeout(() => closeModal(), 0);
 });
 
 decorateCards();
