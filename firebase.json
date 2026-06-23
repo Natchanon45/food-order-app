@@ -13,6 +13,10 @@
         "source": "/delivery/success/**",
         "destination": "/delivery/success/index.html"
       },
+      {
+        "source": "/s/:slug/delivery/success/**",
+        "destination": "/delivery/success/index.html"
+      },
       { "source": "/delivery/**", "destination": "/delivery/index.html" },
       { "source": "/s/:slug/order/**", "destination": "/order/index.html" },
       { "source": "/s/**", "destination": "/delivery/index.html" },
