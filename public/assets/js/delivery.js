@@ -223,7 +223,7 @@ categoryTabs.addEventListener("click", event => { const button = event.target.cl
 document.querySelector("#searchInput").addEventListener("input", renderMenus);
 paymentMethod.addEventListener("change", renderPromptPay);
 deliveryZone.addEventListener("change", updateCart);
-menuGrid.addEventListener("click", event => { const id = event.target.dataset.add; if (!id) return; const menu = menus.find(x => x.id === id); const current = cart.get(id); cart.set(id, current ? { ...current, qty: current.qty + 1 } : { ...menu, qty: 1, note: "" }); updateCart(); toast(`เพิ่ม ${menu.name} แล้ว`); });
+menuGrid.addEventListener("click", event => { const id = event.target.dataset.add; if (!id) return; const menu = menus.find(x => x.id === id); const current = cart.get(id); cart.set(id, current ? { ...current, qty: current.qty + 1 } : { ...menu, qty: 1, note: "" }); updateCart(); });
 cartList.addEventListener("click", event => {
   const inc = event.target.dataset.inc;
   const dec = event.target.dataset.dec;
@@ -274,16 +274,25 @@ submitOrderButton.addEventListener("click", async () => {
       paymentSlipUrl: "", paymentSlipPath: slip.path,
       status: "pending", note: document.querySelector("#orderNote").value.trim(), items
     });
-    cart.clear(); clearSlipSelection(); toast("ส่งคำสั่งซื้อ Delivery เรียบร้อย"); location.href = `/delivery/success/?order=${encodeURIComponent(orderId)}`;
+    const tenant = dataService.getActiveShop();
+    const slug = encodeURIComponent(tenant.slug);
+    cart.clear();
+    clearSlipSelection();
+    toast("ส่งคำสั่งซื้อ Delivery เรียบร้อย");
+    location.href = `/s/${slug}/delivery/success/?order=${encodeURIComponent(orderId)}`;
   } catch (error) {
     console.error(error); toast(submitErrorMessage(error), "error");
   } finally {
-    isSubmitting = false; submitOrderButton.textContent = "ยืนยันการสั่ง"; updateCart();
+    isSubmitting = false;
+    submitOrderButton.textContent = "ยืนยันการสั่ง";
+    updateCart();
   }
 });
 
-[menus, storeSettings] = await Promise.all([dataService.listMenus(), dataService.getStoreSettings()]);
-renderDeliveryZones();
-renderTabs();
-renderMenus();
-updateCart();
+try {
+  [menus, storeSettings] = await Promise.all([dataService.listMenus(), dataService.getStoreSettings()]);
+  renderTabs(); renderMenus(); renderDeliveryZones(); updateCart();
+} catch (error) {
+  console.error(error);
+  menuGrid.innerHTML = '<div class="card empty">โหลดเมนูไม่สำเร็จ</div>';
+}
