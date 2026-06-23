@@ -17,8 +17,11 @@
         "regex": "^/s/[^/]+/delivery/success(?:/.*)?$",
         "destination": "/delivery/success/index.html"
       },
+      {
+        "regex": "^/s/[^/]+/order(?:/.*)?$",
+        "destination": "/order/index.html"
+      },
       { "source": "/delivery/**", "destination": "/delivery/index.html" },
-      { "source": "/s/:slug/order/**", "destination": "/order/index.html" },
       { "source": "/s/**", "destination": "/delivery/index.html" },
       { "source": "/verify/**", "destination": "/verify/index.html" },
       { "source": "/order/**", "destination": "/order/index.html" },
