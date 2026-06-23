@@ -38,15 +38,34 @@ service cloud.firestore {
       return /databases/$(database)/documents/tenants/$(tenantId)/memberships/$(request.auth.uid);
     }
 
-    function tenantMember(tenantId) {
+    function profileTenantMember(tenantId) {
       return signedIn()
-        && exists(tenantMembershipPath(tenantId))
-        && get(tenantMembershipPath(tenantId)).data.active == true;
+        && profile().active == true
+        && profile().tenantId == tenantId;
+    }
+
+    function tenantMember(tenantId) {
+      return signedIn() && (
+        (
+          exists(tenantMembershipPath(tenantId))
+          && get(tenantMembershipPath(tenantId)).data.active == true
+        )
+        || profileTenantMember(tenantId)
+      );
     }
 
     function tenantHasRole(tenantId, roles) {
-      return tenantMember(tenantId)
-        && get(tenantMembershipPath(tenantId)).data.role in roles;
+      return signedIn() && (
+        (
+          exists(tenantMembershipPath(tenantId))
+          && get(tenantMembershipPath(tenantId)).data.active == true
+          && get(tenantMembershipPath(tenantId)).data.role in roles
+        )
+        || (
+          profileTenantMember(tenantId)
+          && profile().role in roles
+        )
+      );
     }
 
     function tenantAdminRole(tenantId) {
