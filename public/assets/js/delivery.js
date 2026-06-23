@@ -37,6 +37,24 @@ let selectedSlipFile = null;
 let selectedSlipObjectUrl = "";
 let isSubmitting = false;
 
+function createOrderId() {
+  if (typeof crypto?.randomUUID === "function") return crypto.randomUUID();
+
+  const bytes = new Uint8Array(16);
+  if (typeof crypto?.getRandomValues === "function") {
+    crypto.getRandomValues(bytes);
+  } else {
+    for (let index = 0; index < bytes.length; index += 1) {
+      bytes[index] = Math.floor(Math.random() * 256);
+    }
+  }
+
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = [...bytes].map(value => value.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
 function categories() {
   return ["ทั้งหมด", ...new Set(menus.filter(x => x.active !== false).map(x => x.category || "อื่น ๆ"))];
 }
@@ -209,7 +227,7 @@ function submitErrorMessage(error) {
   if (code.includes("storage/retry-limit-exceeded")) return "อัปโหลดสลิปไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่";
   if (code.includes("storage/canceled")) return "การอัปโหลดสลิปถูกยกเลิก";
   if (code.includes("STORAGE_NOT_READY")) return "ระบบจัดเก็บสลิปยังไม่พร้อมใช้งาน";
-  return "ส่งคำสั่งซื้อไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
+  return `ส่งคำสั่งซื้อไม่สำเร็จ (${code || "UNKNOWN_ERROR"})`;
 }
 
 paymentSlip.addEventListener("click", event => event.stopPropagation());
@@ -255,7 +273,7 @@ submitOrderButton.addEventListener("click", async () => {
   const items = [...cart.values()].map(({ id, name, price, qty, note }) => ({ menuId: id, name, price: Number(price), qty, note: note || "", cancelled: false }));
   if (!items.length) return;
   const zone = selectedZone();
-  const orderId = crypto.randomUUID();
+  const orderId = createOrderId();
   const slipFile = selectedSlipFile;
   isSubmitting = true;
   submitOrderButton.disabled = true;
@@ -281,7 +299,8 @@ submitOrderButton.addEventListener("click", async () => {
     toast("ส่งคำสั่งซื้อ Delivery เรียบร้อย");
     location.href = `/s/${slug}/delivery/success/?order=${encodeURIComponent(orderId)}`;
   } catch (error) {
-    console.error(error); toast(submitErrorMessage(error), "error");
+    console.error("DELIVERY_ORDER_FAILED", error);
+    toast(submitErrorMessage(error), "error");
   } finally {
     isSubmitting = false;
     submitOrderButton.textContent = "ยืนยันการสั่ง";
