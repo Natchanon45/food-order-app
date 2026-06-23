@@ -3,7 +3,7 @@ import {
   signInWithEmailAndPassword, signOut, onAuthStateChanged,
   doc, getDoc, httpsCallable
 } from "./firebase-config.js";
-import { DEFAULT_TENANT, resolveTenantContext, setActiveTenant } from "./tenant-context.js";
+import { clearActiveTenant, setActiveTenant } from "./tenant-context.js";
 
 export const ROLE_HOME = {
   super_admin: "/platform",
@@ -55,14 +55,32 @@ function roleMenuLinks(profile) {
   return links;
 }
 
-function activateProfileTenant(profile = {}) {
-  if (profile.role === "super_admin") return null;
-  const fallback = resolveTenantContext();
-  return setActiveTenant({
-    id: profile.tenantId || fallback.id || DEFAULT_TENANT.id,
-    slug: profile.tenantSlug || fallback.slug || DEFAULT_TENANT.slug,
-    name: profile.tenantName || fallback.name || DEFAULT_TENANT.name
+async function activateProfileTenant(profile = {}) {
+  if (profile.role === "super_admin") return true;
+  if (!profile.tenantId) {
+    clearActiveTenant();
+    return false;
+  }
+
+  const tenantSnapshot = await getDoc(doc(db, "tenants", profile.tenantId));
+  if (!tenantSnapshot.exists()) {
+    clearActiveTenant();
+    return false;
+  }
+
+  const tenant = tenantSnapshot.data();
+  const slug = String(profile.tenantSlug || tenant.slug || "").trim().toLowerCase();
+  if (!slug) {
+    clearActiveTenant();
+    return false;
+  }
+
+  setActiveTenant({
+    id: profile.tenantId,
+    slug,
+    name: profile.tenantName || tenant.name || slug
   });
+  return true;
 }
 
 export function mountUserMenu(profile) {
@@ -105,7 +123,7 @@ export async function getUserProfile(user) {
   const snapshot = await getDoc(doc(db, "users", user.uid));
   if (!snapshot.exists()) return null;
   const profile = { uid: user.uid, email: user.email, ...snapshot.data() };
-  activateProfileTenant(profile);
+  profile.tenantReady = await activateProfileTenant(profile);
   return profile;
 }
 
@@ -122,8 +140,8 @@ export async function requireRole(allowedRoles = []) {
   const ownerAllowed = profile?.role === "owner" && allowedRoles.some(role => ["owner", "admin", "cashier", "kitchen"].includes(role));
   const permitted = ownerAllowed || allowedRoles.includes(profile?.role);
 
-  if (!profile || profile.active === false || !permitted) {
-    location.replace(ROLE_HOME[profile?.role] || "/delivery");
+  if (!profile || profile.active === false || !permitted || profile.tenantReady === false) {
+    location.replace(profile?.tenantReady === false ? "/login/?error=tenant" : (ROLE_HOME[profile?.role] || "/login"));
     return new Promise(() => {});
   }
 
@@ -135,9 +153,10 @@ export async function requireRole(allowedRoles = []) {
 export async function login(email, password) {
   const credential = await signInWithEmailAndPassword(auth, email, password);
   const profile = await getUserProfile(credential.user);
-  if (!profile || profile.active === false) {
+  if (!profile || profile.active === false || profile.tenantReady === false) {
     await signOut(auth);
-    throw new Error("ACCOUNT_NOT_ALLOWED");
+    clearActiveTenant();
+    throw new Error(profile?.tenantReady === false ? "TENANT_NOT_ASSIGNED" : "ACCOUNT_NOT_ALLOWED");
   }
   return profile;
 }

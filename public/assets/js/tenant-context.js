@@ -8,11 +8,15 @@ const DEFAULT_TENANT = Object.freeze({
 });
 
 function normalizeTenant(value = {}) {
-  return {
-    id: String(value.id || value.tenantId || DEFAULT_TENANT.id).trim(),
-    slug: String(value.slug || value.tenantSlug || DEFAULT_TENANT.slug).trim().toLowerCase(),
-    name: String(value.name || value.tenantName || DEFAULT_TENANT.name).trim()
+  const tenant = {
+    id: String(value.id || value.tenantId || "").trim(),
+    slug: String(value.slug || value.tenantSlug || "").trim().toLowerCase(),
+    name: String(value.name || value.tenantName || value.slug || value.tenantSlug || "").trim()
   };
+
+  if (!tenant.id) throw new Error("TENANT_ID_REQUIRED");
+  if (!tenant.slug) throw new Error("TENANT_SLUG_REQUIRED");
+  return tenant;
 }
 
 function slugFromPath(pathname = location.pathname) {
@@ -23,20 +27,10 @@ function slugFromPath(pathname = location.pathname) {
 export function getStoredTenant() {
   try {
     const saved = localStorage.getItem(ACTIVE_TENANT_KEY);
-    if (saved) return normalizeTenant(JSON.parse(saved));
-
-    const legacy = localStorage.getItem(LEGACY_ACTIVE_SHOP_KEY);
-    if (legacy) {
-      const parsed = JSON.parse(legacy);
-      if (parsed?.slug === DEFAULT_TENANT.slug || parsed?.id === "default-shop") {
-        localStorage.removeItem(LEGACY_ACTIVE_SHOP_KEY);
-        localStorage.setItem(ACTIVE_TENANT_KEY, JSON.stringify(DEFAULT_TENANT));
-        return DEFAULT_TENANT;
-      }
-    }
-    return null;
+    return saved ? normalizeTenant(JSON.parse(saved)) : null;
   } catch (error) {
     console.warn("Unable to read active tenant", error);
+    clearActiveTenant();
     return null;
   }
 }
@@ -57,17 +51,13 @@ export function resolveTenantContext() {
   const pathSlug = slugFromPath();
   const stored = getStoredTenant();
 
-  // Staff routes such as /admin, /cashier and /kitchen do not contain a
-  // tenant slug. They must therefore use the tenant selected from the
-  // authenticated user's profile instead of falling back to the default shop.
-  if (!pathSlug) return stored || DEFAULT_TENANT;
-
-  if (pathSlug === DEFAULT_TENANT.slug) {
-    return stored?.slug === DEFAULT_TENANT.slug ? stored : DEFAULT_TENANT;
+  if (pathSlug) {
+    if (stored?.slug === pathSlug) return stored;
+    throw new Error(`TENANT_NOT_RESOLVED:${pathSlug}`);
   }
 
-  if (stored?.slug === pathSlug) return stored;
-  throw new Error(`TENANT_NOT_RESOLVED:${pathSlug}`);
+  if (stored?.id && stored?.slug) return stored;
+  throw new Error("TENANT_CONTEXT_REQUIRED");
 }
 
 export function tenantCollectionPath(collectionName, tenant = resolveTenantContext()) {
