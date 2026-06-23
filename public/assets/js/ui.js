@@ -203,6 +203,19 @@ function decorateCartHeadings(root = document) {
   root.querySelectorAll?.(".section-title h2").forEach(decorateCartHeading);
 }
 
+function mountDeliveryAddToast() {
+  const isDeliveryPage = /^\/s\/[^/]+\/delivery\/?$/i.test(location.pathname) || /^\/delivery\/?$/i.test(location.pathname);
+  if (!isDeliveryPage || document.body.dataset.deliveryAddToastMounted === "true") return;
+  document.body.dataset.deliveryAddToastMounted = "true";
+
+  document.addEventListener("click", event => {
+    const button = event.target.closest("[data-add]");
+    if (!button) return;
+    const name = button.closest(".menu-card")?.querySelector(".menu-name")?.textContent?.trim() || "เมนู";
+    setTimeout(() => toast(`เพิ่ม ${name} แล้ว`), 0);
+  });
+}
+
 function mountVersion() {
   if (document.querySelector(".app-version")) return;
   const footer = document.createElement("footer");
@@ -216,6 +229,7 @@ function initializeUi() {
   replaceSystemEmoji();
   decorateButtons();
   decorateCartHeadings();
+  mountDeliveryAddToast();
   new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(node => {
     if (node.nodeType === Node.ELEMENT_NODE) {
       decorateButtons(node);
