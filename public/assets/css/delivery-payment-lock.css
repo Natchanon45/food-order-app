@@ -1,0 +1,66 @@
+.delivery-payment-unlocked #promptPayQr,
+.delivery-payment-unlocked #paymentSlipWrap,
+.delivery-payment-unlocked #downloadPaymentQr,
+.delivery-payment-unlocked #editLockedOrder,
+.delivery-payment-unlocked #paymentLockSummary {
+  display: none !important;
+}
+
+.delivery-payment-locked [data-add],
+.delivery-payment-locked [data-inc],
+.delivery-payment-locked [data-dec],
+.delivery-payment-locked [data-note],
+.delivery-payment-locked #deliveryZone,
+.delivery-payment-locked #paymentMethod {
+  pointer-events: none !important;
+  opacity: .45 !important;
+}
+
+.payment-lock-panel {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #f8fbf9;
+  text-align: left;
+}
+
+.payment-lock-state {
+  display: grid;
+  gap: 4px;
+}
+
+.payment-lock-state span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.payment-lock-summary {
+  display: grid;
+  gap: 8px;
+}
+
+.payment-lock-summary > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.payment-lock-total {
+  padding-top: 9px;
+  border-top: 1px dashed var(--line);
+  font-size: 18px;
+}
+
+.payment-lock-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.payment-lock-actions .btn {
+  flex: 1 1 190px;
+}
