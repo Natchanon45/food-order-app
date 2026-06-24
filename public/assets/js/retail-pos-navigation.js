@@ -29,11 +29,24 @@ export const MENU_GROUPS=[
   ]}
 ];
 
-const ALL_PERMISSIONS=MENU_GROUPS.flatMap(group=>group.items.map(item=>item.key));
+export const ACTION_GROUPS=[
+  {id:"product_actions",label:"การจัดการสินค้าและสต็อก",items:[
+    {key:"pos.products.create",label:"เพิ่มสินค้า"},
+    {key:"pos.products.edit",label:"แก้ไขสินค้า"},
+    {key:"pos.products.delete",label:"ลบสินค้า"},
+    {key:"pos.products.adjust_stock",label:"ปรับสต็อก"},
+    {key:"pos.products.view_cost",label:"ดูราคาทุน"},
+    {key:"pos.products.clear_history",label:"ล้างประวัติสต็อก"}
+  ]}
+];
+
+const MENU_PERMISSIONS=MENU_GROUPS.flatMap(group=>group.items.map(item=>item.key));
+const ACTION_PERMISSIONS=ACTION_GROUPS.flatMap(group=>group.items.map(item=>item.key));
+const ALL_PERMISSIONS=[...MENU_PERMISSIONS,...ACTION_PERMISSIONS];
 const DEFAULT_ROLES=[
   {id:"owner",name:"เจ้าของร้าน",permissions:[...ALL_PERMISSIONS],locked:true},
   {id:"cashier",name:"พนักงานขาย",permissions:["pos.sale","pos.sales","pos.returns","pos.customers","pos.shifts"],locked:false},
-  {id:"stock",name:"พนักงานสต็อก",permissions:["pos.products","pos.stock_movements","pos.stock_counts","pos.purchases","pos.suppliers"],locked:false},
+  {id:"stock",name:"พนักงานสต็อก",permissions:["pos.products","pos.stock_movements","pos.stock_counts","pos.purchases","pos.suppliers","pos.products.adjust_stock"],locked:false},
   {id:"manager",name:"ผู้จัดการร้าน",permissions:ALL_PERMISSIONS.filter(key=>key!=="pos.backup"&&key!=="pos.users"),locked:false}
 ];
 
@@ -41,13 +54,25 @@ function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fa
 function write(key,value){localStorage.setItem(key,JSON.stringify(value))}
 function esc(value){return String(value??"").replace(/[&<>'"]/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"})[char])}
 function normalizePath(value){const url=new URL(value,location.origin);let path=url.pathname.replace(/\/index\.html$/,"/");if(!path.endsWith("/"))path+="/";return path}
+function migrateRoles(roles){
+  let changed=false;
+  const migrated=roles.map(role=>{
+    const permissions=new Set(role.permissions||[]);
+    if(role.id==="owner")ACTION_PERMISSIONS.forEach(key=>{if(!permissions.has(key)){permissions.add(key);changed=true}});
+    if(role.id==="manager")ACTION_PERMISSIONS.forEach(key=>{if(!permissions.has(key)){permissions.add(key);changed=true}});
+    if(role.id==="stock"&&!permissions.has("pos.products.adjust_stock")){permissions.add("pos.products.adjust_stock");changed=true}
+    return{...role,permissions:[...permissions]};
+  });
+  if(changed)write(ROLE_KEY,migrated);
+  return migrated;
+}
 
 export function ensureAccessData(){
   const roles=read(ROLE_KEY,[]);
-  if(!roles.length)write(ROLE_KEY,DEFAULT_ROLES);
+  if(!roles.length)write(ROLE_KEY,DEFAULT_ROLES);else migrateRoles(roles);
   ensureAuthUsers();
 }
-export function getRoles(){ensureAccessData();return read(ROLE_KEY,DEFAULT_ROLES)}
+export function getRoles(){ensureAccessData();return migrateRoles(read(ROLE_KEY,DEFAULT_ROLES))}
 export function getUsers(){ensureAccessData();return getAuthUsers()}
 export function getCurrentUser(){ensureAccessData();return getSessionUser()}
 export function getCurrentRole(){ensureAccessData();return sessionRole()}
@@ -105,9 +130,7 @@ function renderMenu(){
     if(event.target.closest("[data-close-menu]"))close();
     const groupButton=event.target.closest("[data-menu-group]");
     if(groupButton)groupButton.closest(".pos-menu-group")?.classList.toggle("is-open");
-    if(event.target.closest("[data-logout]")){
-      if(confirm("ต้องการออกจากระบบหรือไม่?")){logout();location.replace("/pos/login/")}
-    }
+    if(event.target.closest("[data-logout]")){if(confirm("ต้องการออกจากระบบหรือไม่?")){logout();location.replace("/pos/login/")}}
   });
   document.addEventListener("keydown",event=>{if(event.key==="Escape")close()});
 }
