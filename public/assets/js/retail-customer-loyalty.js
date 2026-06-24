@@ -7,11 +7,6 @@ if(grid){
   dialog.innerHTML=`<div class="loyalty-history-dialog"><div class="dialog-head"><h2 id="loyaltyHistoryTitle">ประวัติแต้ม</h2><button id="closeLoyaltyHistory" class="icon-btn" type="button">×</button></div><div id="loyaltyHistoryList" class="loyalty-history-list"></div></div>`;
   document.body.appendChild(dialog);
 
-  function customerByCard(card){
-    const code=card.querySelector(".customer-card-head>div>span")?.textContent.replace("สมาชิก","").trim();
-    return read(CUSTOMER_KEY,[]).find(c=>(c.customerCode||c.id)===code);
-  }
-
   function decorate(){
     const customers=read(CUSTOMER_KEY,[]);
     [...grid.querySelectorAll(".customer-card")].forEach(card=>{
@@ -31,21 +26,44 @@ if(grid){
     });
   }
 
+  function ledgerValues(row){
+    if(row.type==="return"){
+      const restored=Number(row.pointsUsedRestored||0);
+      const deducted=Number(row.pointsEarnedDeducted||0);
+      return{
+        title:`คืนสินค้า ${row.returnId||""}`.trim(),
+        detail:`อ้างอิง ${row.saleId||"-"}`,
+        positive:restored,
+        negative:deducted
+      };
+    }
+    return{
+      title:row.saleId||"ปรับแต้ม",
+      detail:"รายการขาย",
+      positive:Number(row.pointsEarned||0),
+      negative:Number(row.pointsUsed||0)
+    };
+  }
+
   function openHistory(id){
     const customer=read(CUSTOMER_KEY,[]).find(c=>c.id===id);
     if(!customer)return;
     document.querySelector("#loyaltyHistoryTitle").textContent=`ประวัติแต้ม: ${customer.customerCode} • ${customer.name}`;
-    const rows=read(LEDGER_KEY,[]).filter(x=>x.customerId===id);
-    document.querySelector("#loyaltyHistoryList").innerHTML=rows.map(x=>`<article class="loyalty-history-item"><div><strong>${esc(x.saleId||"ปรับแต้ม")}</strong><span>${new Date(x.createdAt).toLocaleString("th-TH")}</span></div><div><strong class="${Number(x.pointsEarned)>0?"loyalty-positive":""}">+${Number(x.pointsEarned||0).toLocaleString("th-TH")}</strong><strong class="${Number(x.pointsUsed)>0?"loyalty-negative":""}">-${Number(x.pointsUsed||0).toLocaleString("th-TH")}</strong><span>คงเหลือ ${Number(x.balanceAfter||0).toLocaleString("th-TH")}</span></div></article>`).join("")||'<div class="empty-state">ยังไม่มีประวัติแต้ม</div>';
+    const rows=read(LEDGER_KEY,[]).filter(row=>row.customerId===id);
+    document.querySelector("#loyaltyHistoryList").innerHTML=rows.map(row=>{
+      const values=ledgerValues(row);
+      return`<article class="loyalty-history-item"><div><strong>${esc(values.title)}</strong><span>${esc(values.detail)} • ${new Date(row.createdAt).toLocaleString("th-TH")}</span></div><div><strong class="${values.positive>0?"loyalty-positive":""}">+${values.positive.toLocaleString("th-TH")}</strong><strong class="${values.negative>0?"loyalty-negative":""}">-${values.negative.toLocaleString("th-TH")}</strong><span>คงเหลือ ${Number(row.balanceAfter||0).toLocaleString("th-TH")}</span></div></article>`;
+    }).join("")||'<div class="empty-state">ยังไม่มีประวัติแต้ม</div>';
     dialog.showModal();
   }
 
-  grid.addEventListener("click",e=>{
-    const button=e.target.closest("[data-loyalty-customer-id]");
+  grid.addEventListener("click",event=>{
+    const button=event.target.closest("[data-loyalty-customer-id]");
     if(button)openHistory(button.dataset.loyaltyCustomerId);
   });
   document.querySelector("#closeLoyaltyHistory")?.addEventListener("click",()=>dialog.close());
   new MutationObserver(()=>requestAnimationFrame(decorate)).observe(grid,{childList:true});
   window.addEventListener("storage",decorate);
+  window.addEventListener("pos:loyalty-updated",decorate);
   decorate();
 }
