@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#159447">
+<title>ผู้ใช้และสิทธิ์</title>
+<link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260624-6">
+<link rel="stylesheet" href="/assets/css/retail-pos-navigation.css?v=20260624-1">
+</head>
+<body>
+<header class="pos-header"><div><strong>ผู้ใช้และสิทธิ์</strong><small>กำหนดบทบาทและสิทธิ์เข้าถึงเมนู POS</small></div><div class="header-actions"><a href="/pos/" class="btn btn-secondary header-link">หน้าขาย</a></div></header>
+<main class="permission-container">
+<section class="permission-current"><strong id="currentUserText">ผู้ใช้งานปัจจุบัน</strong></section>
+<section class="permission-grid">
+<section class="panel permission-panel"><div class="section-heading"><div><h2>บทบาท</h2><p>ชุดสิทธิ์ที่นำไปใช้กับผู้ใช้</p></div><button id="newRoleBtn" class="btn btn-pay" type="button">เพิ่มบทบาท</button></div><div id="roleList" class="permission-list"></div></section>
+<section class="panel permission-panel"><form id="roleForm"><input id="roleId" type="hidden"><div class="permission-form-grid"><label class="full">ชื่อบทบาท<input id="roleName" maxlength="80" required></label></div><h3 class="permission-section-title">สิทธิ์เข้าถึงเมนู</h3><div id="permissionCheckboxes" class="permission-checkboxes"></div><p id="roleError" class="error-text"></p><div class="dialog-actions"><button id="deleteRoleBtn" class="btn btn-danger" type="button">ลบบทบาท</button><button class="btn btn-pay" type="submit">บันทึกบทบาท</button></div></form></section>
+</section>
+<section class="panel permission-panel"><div class="section-heading"><div><h2>ผู้ใช้งาน</h2><p>เลือกบทบาทและเปิดหรือปิดการใช้งาน</p></div><button id="newUserBtn" class="btn btn-pay" type="button">เพิ่มผู้ใช้</button></div><div id="userList" class="permission-list"></div></section>
+</main>
+<dialog id="userDialog"><form id="userForm" class="payment-form"><div class="dialog-head"><h2 id="userDialogTitle">เพิ่มผู้ใช้</h2><button id="closeUserDialog" class="icon-btn" type="button">×</button></div><input id="userId" type="hidden"><div class="permission-form-grid"><label>ชื่อผู้ใช้<input id="userName" maxlength="100" required></label><label>ชื่อสำหรับเข้าสู่ระบบ<input id="userUsername" maxlength="60" required></label><label>บทบาท<select id="userRole" required></select></label><label>สถานะ<select id="userActive"><option value="1">เปิดใช้งาน</option><option value="0">ระงับใช้งาน</option></select></label></div><p id="userError" class="error-text"></p><div class="dialog-actions"><button id="cancelUserBtn" class="btn btn-secondary" type="button">ยกเลิก</button><button class="btn btn-pay" type="submit">บันทึกผู้ใช้</button></div></form></dialog>
+<div id="toast" class="toast" role="status"></div>
+<script type="module" src="/assets/js/retail-pos-users.js?v=20260624-1"></script>
+<script type="module" src="/assets/js/retail-pos-navigation.js?v=20260624-1"></script>
+</body>
+</html>
