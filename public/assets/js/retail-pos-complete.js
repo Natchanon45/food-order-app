@@ -1,10 +1,11 @@
 const SALES_KEY = "retail_pos_sales_v1";
 const PRINT_MODE_KEY = "retail_pos_print_mode_v1";
-const STORE_SETTINGS_KEY = "food_order_store_settings";
+const STORE_SETTINGS_KEY = "retail_pos_store_settings_v1";
+const LEGACY_STORE_SETTINGS_KEY = "food_order_store_settings";
 
 const styleLink = document.createElement("link");
 styleLink.rel = "stylesheet";
-styleLink.href = "/assets/css/retail-pos-complete.css?v=20260624-3";
+styleLink.href = "/assets/css/retail-pos-complete.css?v=20260624-4";
 document.head.appendChild(styleLink);
 
 document.body.insertAdjacentHTML("beforeend", `
@@ -65,8 +66,8 @@ document.body.insertAdjacentHTML("beforeend", `
       <div class="change"><span>เงินทอน</span><strong id="printChange">0.00</strong></div>
     </div>
     <hr class="print-rule">
-    <p class="print-thanks">ขอบคุณที่ใช้บริการ</p>
-    <p class="print-warning">เอกสารฉบับนี้ออกโดยระบบของร้านตามข้อมูลด้านบน</p>
+    <p id="printThanks" class="print-thanks">ขอบคุณที่ใช้บริการ</p>
+    <p id="printFooter" class="print-warning">เอกสารฉบับนี้ออกโดยระบบของร้านตามข้อมูลด้านบน</p>
   </section>
 `);
 
@@ -94,12 +95,15 @@ function readSales() {
 }
 
 function getStoreSettings() {
+  const legacy = readJson(LEGACY_STORE_SETTINGS_KEY, {});
   const settings = readJson(STORE_SETTINGS_KEY, {});
   return {
-    shopName: settings.shopName || "POS ร้านค้าปลีก",
-    shopAddress: settings.shopAddress || "",
-    shopPhone: settings.shopPhone || "",
-    taxId: settings.taxId || settings.shopTaxId || ""
+    shopName: settings.shopName || legacy.shopName || "POS ร้านค้าปลีก",
+    shopAddress: settings.shopAddress || legacy.shopAddress || "",
+    shopPhone: settings.shopPhone || legacy.shopPhone || "",
+    taxId: settings.taxId || legacy.taxId || legacy.shopTaxId || "",
+    receiptThanks: settings.receiptThanks || "ขอบคุณที่ใช้บริการ",
+    receiptFooter: settings.receiptFooter || "เอกสารฉบับนี้ออกโดยระบบของร้านตามข้อมูลด้านบน"
   };
 }
 
@@ -123,6 +127,8 @@ function populateReceipt(sale) {
   document.querySelector("#printShopAddress").textContent = settings.shopAddress;
   document.querySelector("#printShopPhone").textContent = settings.shopPhone ? `โทร ${settings.shopPhone}` : "";
   document.querySelector("#printShopTaxId").textContent = settings.taxId ? `เลขประจำตัวผู้เสียภาษี ${settings.taxId}` : "";
+  document.querySelector("#printThanks").textContent = settings.receiptThanks;
+  document.querySelector("#printFooter").textContent = settings.receiptFooter;
   document.querySelector("#printSaleId").textContent = sale.id;
   document.querySelector("#printSaleDate").textContent = new Date(sale.createdAt).toLocaleString("th-TH");
   document.querySelector("#printCashier").textContent = sale.cashierName || "-";
