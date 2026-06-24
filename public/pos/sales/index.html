@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ประวัติการขาย</title>
+<link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260624-3">
+<link rel="stylesheet" href="/assets/css/retail-sales.css?v=20260624-1">
+</head>
+<body>
+<header class="pos-header no-print">
+<div><strong>ประวัติการขาย</strong><small>POS ร้านค้าปลีก</small></div>
+<div class="header-actions"><a href="/pos" class="btn btn-secondary header-link">หน้าขาย</a><a href="/pos/products" class="btn btn-secondary header-link">สินค้าและสต็อก</a></div>
+</header>
+<main class="sales-container no-print">
+<section class="sales-stats">
+<article class="stat-card"><span>จำนวนบิล</span><strong id="saleCount">0</strong></article>
+<article class="stat-card"><span>ยอดขายรวม</span><strong id="saleTotal">0.00</strong></article>
+<article class="stat-card"><span>ส่วนลดรวม</span><strong id="discountTotal">0.00</strong></article>
+<article class="stat-card"><span>ยอดเงินสด</span><strong id="cashTotal">0.00</strong></article>
+</section>
+<section class="panel sales-panel">
+<div class="sales-toolbar">
+<input id="saleSearch" placeholder="ค้นหาเลขที่บิลหรือชื่อสินค้า">
+<input id="dateFrom" type="date"><input id="dateTo" type="date">
+<select id="paymentFilter"><option value="all">ทุกช่องทางชำระ</option><option value="cash">เงินสด</option><option value="promptpay">PromptPay / โอนเงิน</option></select>
+<button id="todayBtn" class="btn btn-secondary" type="button">วันนี้</button><button id="clearFilterBtn" class="btn btn-secondary" type="button">ล้างตัวกรอง</button>
+</div>
+<div class="table-wrap"><table class="sales-table"><thead><tr><th>เลขที่บิล</th><th>วันและเวลา</th><th class="number">จำนวน</th><th>ชำระโดย</th><th class="number">ส่วนลด</th><th class="number">ยอดสุทธิ</th><th></th></tr></thead><tbody id="salesTableBody"></tbody></table></div>
+<div id="salesEmpty" class="empty-state" hidden>ไม่พบประวัติการขาย</div>
+</section>
+</main>
+<dialog id="saleDialog" class="sale-dialog"><div class="sale-dialog-content">
+<div class="dialog-head no-print"><h2>รายละเอียดบิล</h2><button id="closeSaleDialog" class="icon-btn" type="button">×</button></div>
+<section id="receiptArea" class="receipt">
+<div class="receipt-header"><h1>POS ร้านค้าปลีก</h1><p>ใบเสร็จรับเงิน</p></div>
+<div class="receipt-meta"><div><span>เลขที่บิล</span><strong id="receiptSaleId">-</strong></div><div><span>วันที่</span><strong id="receiptDate">-</strong></div><div><span>การชำระเงิน</span><strong id="receiptPayment">-</strong></div></div>
+<table class="receipt-table"><thead><tr><th>รายการ</th><th class="number">จำนวน</th><th class="number">ราคา</th><th class="number">รวม</th></tr></thead><tbody id="receiptItems"></tbody></table>
+<div class="receipt-summary"><div><span>รวมสินค้า</span><strong id="receiptSubtotal">0.00</strong></div><div><span>ส่วนลด</span><strong id="receiptDiscount">0.00</strong></div><div class="receipt-grand"><span>ยอดสุทธิ</span><strong id="receiptTotal">0.00</strong></div><div id="receiptReceivedRow"><span>รับเงิน</span><strong id="receiptReceived">0.00</strong></div><div id="receiptChangeRow"><span>เงินทอน</span><strong id="receiptChange">0.00</strong></div></div>
+<p class="receipt-thanks">ขอบคุณที่ใช้บริการ</p>
+</section>
+<div class="dialog-actions no-print"><button id="closeSaleBtn" class="btn btn-secondary" type="button">ปิด</button><button id="printReceiptBtn" class="btn btn-pay" type="button">พิมพ์ใบเสร็จ</button></div>
+</div></dialog>
+<script type="module" src="/assets/js/retail-sales.js?v=20260624-1"></script>
+</body>
+</html>
