@@ -37,6 +37,15 @@ export const ACTION_GROUPS=[
     {key:"pos.sale.clear",label:"ล้างบิลปัจจุบัน"},
     {key:"pos.sale.seed",label:"โหลดสินค้าตัวอย่าง"}
   ]},
+  {id:"sales_history_actions",label:"ประวัติการขาย",items:[
+    {key:"pos.sales.view_bill",label:"ดูรายละเอียดบิล"},
+    {key:"pos.sales.print_bill",label:"พิมพ์ใบเสร็จย้อนหลัง"},
+    {key:"pos.sales.export",label:"ส่งออกข้อมูลการขาย CSV"}
+  ]},
+  {id:"return_actions",label:"คืนสินค้า",items:[
+    {key:"pos.returns.create",label:"ยืนยันคืนสินค้าและคืนเงิน"},
+    {key:"pos.returns.print",label:"ดูและพิมพ์ใบรับคืน"}
+  ]},
   {id:"product_actions",label:"การจัดการสินค้าและสต็อก",items:[
     {key:"pos.products.create",label:"เพิ่มสินค้า"},
     {key:"pos.products.edit",label:"แก้ไขสินค้า"},
@@ -51,9 +60,11 @@ const MENU_PERMISSIONS=MENU_GROUPS.flatMap(group=>group.items.map(item=>item.key
 const ACTION_PERMISSIONS=ACTION_GROUPS.flatMap(group=>group.items.map(item=>item.key));
 const ALL_PERMISSIONS=[...MENU_PERMISSIONS,...ACTION_PERMISSIONS];
 const SALE_ACTIONS=ACTION_GROUPS.find(group=>group.id==="sale_actions").items.map(item=>item.key);
+const SALES_HISTORY_ACTIONS=ACTION_GROUPS.find(group=>group.id==="sales_history_actions").items.map(item=>item.key);
+const RETURN_ACTIONS=ACTION_GROUPS.find(group=>group.id==="return_actions").items.map(item=>item.key);
 const DEFAULT_ROLES=[
   {id:"owner",name:"เจ้าของร้าน",permissions:[...ALL_PERMISSIONS],locked:true},
-  {id:"cashier",name:"พนักงานขาย",permissions:["pos.sale","pos.sales","pos.returns","pos.customers","pos.shifts",...SALE_ACTIONS.filter(key=>key!=="pos.sale.seed")],locked:false},
+  {id:"cashier",name:"พนักงานขาย",permissions:["pos.sale","pos.sales","pos.returns","pos.customers","pos.shifts",...SALE_ACTIONS.filter(key=>key!=="pos.sale.seed"),...SALES_HISTORY_ACTIONS.filter(key=>key!=="pos.sales.export"),...RETURN_ACTIONS],locked:false},
   {id:"stock",name:"พนักงานสต็อก",permissions:["pos.products","pos.stock_movements","pos.stock_counts","pos.purchases","pos.suppliers","pos.products.adjust_stock"],locked:false},
   {id:"manager",name:"ผู้จัดการร้าน",permissions:ALL_PERMISSIONS.filter(key=>key!=="pos.backup"&&key!=="pos.users"),locked:false}
 ];
@@ -66,9 +77,14 @@ function migrateRoles(roles){
   let changed=false;
   const migrated=roles.map(role=>{
     const permissions=new Set(role.permissions||[]);
-    if(role.id==="owner"||role.id==="manager")ACTION_PERMISSIONS.forEach(key=>{if(!permissions.has(key)){permissions.add(key);changed=true}});
-    if(role.id==="cashier")SALE_ACTIONS.filter(key=>key!=="pos.sale.seed").forEach(key=>{if(!permissions.has(key)){permissions.add(key);changed=true}});
-    if(role.id==="stock"&&!permissions.has("pos.products.adjust_stock")){permissions.add("pos.products.adjust_stock");changed=true}
+    const add=key=>{if(!permissions.has(key)){permissions.add(key);changed=true}};
+    if(role.id==="owner"||role.id==="manager")ACTION_PERMISSIONS.forEach(add);
+    if(role.id==="cashier"){
+      SALE_ACTIONS.filter(key=>key!=="pos.sale.seed").forEach(add);
+      SALES_HISTORY_ACTIONS.filter(key=>key!=="pos.sales.export").forEach(add);
+      RETURN_ACTIONS.forEach(add);
+    }
+    if(role.id==="stock")add("pos.products.adjust_stock");
     return{...role,permissions:[...permissions]};
   });
   if(changed)write(ROLE_KEY,migrated);
