@@ -1,0 +1,123 @@
+const HOLD_KEY = "retail_pos_held_bills_v1";
+
+const holdBtn = document.querySelector("#holdBillBtn");
+const heldBtn = document.querySelector("#heldBillsBtn");
+const heldCount = document.querySelector("#heldBillsCount");
+const heldDialog = document.querySelector("#heldBillsDialog");
+const heldList = document.querySelector("#heldBillsList");
+const closeHeldDialog = document.querySelector("#closeHeldDialog");
+const discountInput = document.querySelector("#discountInput");
+
+function readHolds() {
+  try { return JSON.parse(localStorage.getItem(HOLD_KEY)) || []; }
+  catch { return []; }
+}
+
+function writeHolds(items) {
+  localStorage.setItem(HOLD_KEY, JSON.stringify(items.slice(0, 100)));
+  renderHeldCount();
+}
+
+function safeId() {
+  if (globalThis.crypto && typeof globalThis.crypto.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
+  return `hold-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function money(value) {
+  return Number(value || 0).toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function currentCartFromDom() {
+  return [...document.querySelectorAll("#cartList .cart-row")].map(row => {
+    const button = row.querySelector("[data-id]");
+    const qty = Number(row.querySelector(".qty-tools strong")?.textContent || 0);
+    return button?.dataset.id && qty > 0 ? { id: button.dataset.id, qty } : null;
+  }).filter(Boolean);
+}
+
+function clearCurrentBill() {
+  document.querySelector("#clearSaleBtn")?.click();
+}
+
+function renderHeldCount() {
+  const count = readHolds().length;
+  if (heldCount) heldCount.textContent = count;
+  if (heldBtn) heldBtn.classList.toggle("has-held", count > 0);
+}
+
+function holdCurrentBill() {
+  const items = currentCartFromDom();
+  if (!items.length) {
+    alert("ยังไม่มีสินค้าในบิลสำหรับพักไว้");
+    return;
+  }
+  const note = prompt("ระบุชื่อบิลพัก เช่น ลูกค้าเสื้อแดง หรือ คิว 1", "") ?? "";
+  const products = JSON.parse(localStorage.getItem("retail_pos_products_v1") || "[]");
+  const productMap = new Map(products.map(item => [item.id, item]));
+  const total = items.reduce((sum, item) => sum + Number(productMap.get(item.id)?.price || 0) * item.qty, 0) - Number(discountInput?.value || 0);
+  const holds = readHolds();
+  holds.unshift({ id: safeId(), note: note.trim(), items, discount: Number(discountInput?.value || 0), total: Math.max(0, total), createdAt: new Date().toISOString() });
+  writeHolds(holds);
+  clearCurrentBill();
+  alert("พักบิลเรียบร้อยแล้ว");
+}
+
+function renderHeldBills() {
+  const holds = readHolds();
+  heldList.innerHTML = holds.length ? holds.map(item => `
+    <article class="held-bill-card">
+      <div>
+        <strong>${item.note || "บิลพัก"}</strong>
+        <div>${new Date(item.createdAt).toLocaleString("th-TH")} • ${item.items.reduce((sum, row) => sum + row.qty, 0)} รายการ</div>
+      </div>
+      <div class="held-bill-side">
+        <strong>${money(item.total)} บาท</strong>
+        <div>
+          <button type="button" data-resume-id="${item.id}">เรียกบิล</button>
+          <button type="button" class="danger" data-delete-id="${item.id}">ลบ</button>
+        </div>
+      </div>
+    </article>`).join("") : '<div class="empty-state">ไม่มีบิลที่พักไว้</div>';
+}
+
+function resumeBill(id) {
+  const holds = readHolds();
+  const hold = holds.find(item => item.id === id);
+  if (!hold) return;
+  if (currentCartFromDom().length && !confirm("บิลปัจจุบันยังมีสินค้า ต้องการล้างแล้วเรียกบิลพักหรือไม่?")) return;
+  clearCurrentBill();
+  setTimeout(() => {
+    hold.items.forEach(item => {
+      const card = document.querySelector(`[data-product-id="${CSS.escape(item.id)}"]`);
+      for (let index = 0; index < item.qty; index += 1) card?.click();
+    });
+    if (discountInput) {
+      discountInput.value = hold.discount || 0;
+      discountInput.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    writeHolds(holds.filter(item => item.id !== id));
+    heldDialog.close();
+  }, 30);
+}
+
+function deleteHeldBill(id) {
+  const holds = readHolds();
+  const hold = holds.find(item => item.id === id);
+  if (!hold || !confirm(`ลบบิลพัก “${hold.note || "บิลพัก"}” หรือไม่?`)) return;
+  writeHolds(holds.filter(item => item.id !== id));
+  renderHeldBills();
+}
+
+holdBtn?.addEventListener("click", holdCurrentBill);
+heldBtn?.addEventListener("click", () => { renderHeldBills(); heldDialog.showModal(); });
+closeHeldDialog?.addEventListener("click", () => heldDialog.close());
+heldList?.addEventListener("click", event => {
+  const resume = event.target.closest("[data-resume-id]");
+  const remove = event.target.closest("[data-delete-id]");
+  if (resume) resumeBill(resume.dataset.resumeId);
+  if (remove) deleteHeldBill(remove.dataset.deleteId);
+});
+
+renderHeldCount();
