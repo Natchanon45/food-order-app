@@ -1,3 +1,5 @@
+import { deleteProductImage, getProductImageUrl, saveProductImage } from "./retail-product-image-store.js?v=20260624-1";
+
 const PRODUCT_KEY = "retail_pos_products_v1";
 const form = document.querySelector("#productForm");
 const editingId = document.querySelector("#editingProductId");
@@ -6,7 +8,7 @@ const productTableBody = document.querySelector("#productTableBody");
 
 const style = document.createElement("link");
 style.rel = "stylesheet";
-style.href = "/assets/css/retail-product-merchandising.css?v=20260624-3";
+style.href = "/assets/css/retail-product-merchandising.css?v=20260624-4";
 document.head.appendChild(style);
 
 const section = document.createElement("section");
@@ -21,24 +23,36 @@ section.innerHTML = `
     <label>ลำดับการแสดง
       <input id="productSortOrder" type="number" min="0" step="1" value="999">
     </label>
-    <label class="full">URL รูปสินค้า
+    <label class="full">อัปโหลดรูปสินค้า
+      <input id="productImageFile" type="file" accept="image/*">
+    </label>
+    <label class="full">หรือ URL รูปสินค้า
       <input id="productImageUrl" type="url" maxlength="1000" placeholder="https://... หรือ /assets/images/products/สินค้า.webp">
     </label>
-    <div class="full product-image-preview" id="productImagePreview">ยังไม่มีรูป</div>
+    <div class="full image-editor-row">
+      <div class="product-image-preview" id="productImagePreview">ยังไม่มีรูป</div>
+      <button id="removeProductImage" class="btn btn-danger" type="button">ลบรูป</button>
+    </div>
   </div>
   <div class="merch-options">
     <label><input id="productShowOnPos" type="checkbox" checked> แสดงบนหน้าขาย</label>
   </div>
-  <p class="product-sub">หมวด “ขายดี” คำนวณอัตโนมัติจากจำนวนสินค้าที่ขายสะสมทั้งหมด</p>
+  <p class="product-sub">รูปที่อัปโหลดจะถูกย่ออัตโนมัติและเก็บในเครื่องนี้ ส่วนหมวด “ขายดี” คำนวณจากยอดขายสะสมทั้งหมด</p>
 `;
 form.querySelector(".form-grid")?.appendChild(section);
 
 const categoryInput = document.querySelector("#productCategory");
 const categoryList = document.querySelector("#productCategoryList");
 const sortOrderInput = document.querySelector("#productSortOrder");
+const imageFileInput = document.querySelector("#productImageFile");
 const imageUrlInput = document.querySelector("#productImageUrl");
 const imagePreview = document.querySelector("#productImagePreview");
+const removeImageBtn = document.querySelector("#removeProductImage");
 const showOnPosInput = document.querySelector("#productShowOnPos");
+
+let selectedImageFile = null;
+let removeSavedImage = false;
+let previewObjectUrl = "";
 
 function readProducts() {
   try { return JSON.parse(localStorage.getItem(PRODUCT_KEY)) || []; }
@@ -59,13 +73,12 @@ function initials(name) {
   return String(name || "สินค้า").trim().slice(0, 2).toUpperCase();
 }
 
-function updateCategoryList() {
-  const categories = [...new Set(readProducts().map(item => item.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, "th"));
-  categoryList.innerHTML = categories.map(name => `<option value="${escapeHtml(name)}"></option>`).join("");
+function clearPreviewObjectUrl() {
+  if (previewObjectUrl) URL.revokeObjectURL(previewObjectUrl);
+  previewObjectUrl = "";
 }
 
-function updatePreview() {
-  const url = imageUrlInput.value.trim();
+function showPreview(url) {
   if (!url) {
     imagePreview.textContent = initials(nameInput.value);
     return;
@@ -73,41 +86,73 @@ function updatePreview() {
   imagePreview.innerHTML = `<img src="${escapeHtml(url)}" alt="ตัวอย่างรูปสินค้า" onerror="this.parentElement.textContent='โหลดรูปไม่สำเร็จ'">`;
 }
 
-function resetMerchFields() {
-  categoryInput.value = "ทั่วไป";
-  sortOrderInput.value = "999";
-  imageUrlInput.value = "";
-  showOnPosInput.checked = true;
-  updatePreview();
+function updateCategoryList() {
+  const categories = [...new Set(readProducts().map(item => item.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, "th"));
+  categoryList.innerHTML = categories.map(name => `<option value="${escapeHtml(name)}"></option>`).join("");
 }
 
-function loadMerchFields(id) {
+async function updatePreviewFromSaved(product) {
+  if (!product) return showPreview("");
+  if (product.imageKey) {
+    const localUrl = await getProductImageUrl(product.imageKey);
+    if (localUrl) return showPreview(localUrl);
+  }
+  showPreview(product.imageUrl || "");
+}
+
+function resetMerchFields() {
+  clearPreviewObjectUrl();
+  selectedImageFile = null;
+  removeSavedImage = false;
+  categoryInput.value = "ทั่วไป";
+  sortOrderInput.value = "999";
+  imageFileInput.value = "";
+  imageUrlInput.value = "";
+  showOnPosInput.checked = true;
+  showPreview("");
+}
+
+async function loadMerchFields(id) {
+  clearPreviewObjectUrl();
+  selectedImageFile = null;
+  removeSavedImage = false;
+  imageFileInput.value = "";
   const product = readProducts().find(item => item.id === id);
   if (!product) return resetMerchFields();
   categoryInput.value = product.category || "ทั่วไป";
   sortOrderInput.value = Number(product.sortOrder ?? 999);
   imageUrlInput.value = product.imageUrl || "";
   showOnPosInput.checked = product.showOnPos !== false;
-  updatePreview();
+  await updatePreviewFromSaved(product);
 }
 
-function enrichSavedProduct(snapshot) {
-  setTimeout(() => {
-    const products = readProducts();
-    const index = products.findIndex(item => item.id === snapshot.id);
-    if (index < 0) return;
-    products[index] = {
-      ...products[index],
-      category: snapshot.category || "ทั่วไป",
-      sortOrder: snapshot.sortOrder,
-      imageUrl: snapshot.imageUrl,
-      showOnPos: snapshot.showOnPos
-    };
-    delete products[index].quickSale;
-    writeProducts(products);
-    updateCategoryList();
-    document.querySelector("#productSearch")?.dispatchEvent(new Event("input", { bubbles: true }));
-  }, 40);
+async function enrichSavedProduct(snapshot) {
+  await new Promise(resolve => setTimeout(resolve, 50));
+  const products = readProducts();
+  const index = products.findIndex(item => item.id === snapshot.id);
+  if (index < 0) return;
+
+  let imageKey = products[index].imageKey || "";
+  if (snapshot.removeSavedImage && imageKey) {
+    await deleteProductImage(imageKey);
+    imageKey = "";
+  }
+  if (snapshot.imageFile) {
+    imageKey = await saveProductImage(snapshot.id, snapshot.imageFile);
+  }
+
+  products[index] = {
+    ...products[index],
+    category: snapshot.category || "ทั่วไป",
+    sortOrder: snapshot.sortOrder,
+    imageUrl: snapshot.imageUrl,
+    imageKey,
+    showOnPos: snapshot.showOnPos
+  };
+  delete products[index].quickSale;
+  writeProducts(products);
+  updateCategoryList();
+  document.querySelector("#productSearch")?.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
 form.addEventListener("submit", () => {
@@ -117,8 +162,10 @@ form.addEventListener("submit", () => {
     category: categoryInput.value.trim(),
     sortOrder: Number(sortOrderInput.value || 999),
     imageUrl: imageUrlInput.value.trim(),
+    imageFile: selectedImageFile,
+    removeSavedImage,
     showOnPos: showOnPosInput.checked
-  });
+  }).catch(error => alert(error.message || "บันทึกรูปสินค้าไม่สำเร็จ"));
 }, { capture: true });
 
 document.querySelector("#addProductBtn")?.addEventListener("click", () => setTimeout(() => {
@@ -132,8 +179,41 @@ productTableBody?.addEventListener("click", event => {
   setTimeout(() => loadMerchFields(button.dataset.id), 0);
 });
 
-imageUrlInput.addEventListener("input", updatePreview);
-nameInput.addEventListener("input", () => { if (!imageUrlInput.value.trim()) updatePreview(); });
+imageFileInput.addEventListener("change", () => {
+  clearPreviewObjectUrl();
+  selectedImageFile = imageFileInput.files?.[0] || null;
+  removeSavedImage = false;
+  if (!selectedImageFile) return;
+  previewObjectUrl = URL.createObjectURL(selectedImageFile);
+  showPreview(previewObjectUrl);
+});
+
+imageUrlInput.addEventListener("input", () => {
+  if (!selectedImageFile) showPreview(imageUrlInput.value.trim());
+});
+
+removeImageBtn.addEventListener("click", () => {
+  clearPreviewObjectUrl();
+  selectedImageFile = null;
+  removeSavedImage = true;
+  imageFileInput.value = "";
+  imageUrlInput.value = "";
+  showPreview("");
+});
+
+nameInput.addEventListener("input", () => {
+  if (!selectedImageFile && !imageUrlInput.value.trim()) showPreview("");
+});
+
+async function setRowImage(container, product) {
+  if (container.dataset.imageReady === "1") return;
+  container.dataset.imageReady = "1";
+  let url = "";
+  if (product.imageKey) url = await getProductImageUrl(product.imageKey);
+  if (!url) url = product.imageUrl || "";
+  if (!url) return;
+  container.innerHTML = `<img src="${escapeHtml(url)}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="this.parentElement.textContent='${escapeHtml(initials(product.name))}'">`;
+}
 
 function decorateProductRows() {
   const products = readProducts();
@@ -144,15 +224,13 @@ function decorateProductRows() {
     if (!product || !cell || cell.querySelector(".product-cell")) return;
 
     const original = cell.innerHTML;
-    const image = product.imageUrl
-      ? `<img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="this.parentElement.textContent='${escapeHtml(initials(product.name))}'">`
-      : escapeHtml(initials(product.name));
     const tags = [
       product.category ? `<span class="merch-tag">${escapeHtml(product.category)}</span>` : "",
       product.showOnPos === false ? '<span class="merch-tag hidden">ซ่อนจากหน้าขาย</span>' : ""
     ].join("");
 
-    cell.innerHTML = `<div class="product-cell"><div class="product-thumb">${image}</div><div>${original}<div class="merch-tags">${tags}</div></div></div>`;
+    cell.innerHTML = `<div class="product-cell"><div class="product-thumb">${escapeHtml(initials(product.name))}</div><div>${original}<div class="merch-tags">${tags}</div></div></div>`;
+    setRowImage(cell.querySelector(".product-thumb"), product);
   });
 }
 
