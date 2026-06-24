@@ -12,23 +12,27 @@ function deny(message="คุณไม่มีสิทธิ์ดำเนิ
   alert(message);
 }
 
+function setHidden(element,hidden){
+  if(element&&element.hidden!==hidden)element.hidden=hidden;
+}
+
 function applyVisibility(){
-  const addButton=document.querySelector("#addProductBtn");
-  if(addButton)addButton.hidden=!hasPermission(ACTIONS.create);
+  setHidden(document.querySelector("#addProductBtn"),!hasPermission(ACTIONS.create));
+  setHidden(document.querySelector("#clearMovementBtn"),!hasPermission(ACTIONS.clearHistory));
 
-  const clearButton=document.querySelector("#clearMovementBtn");
-  if(clearButton)clearButton.hidden=!hasPermission(ACTIONS.clearHistory);
+  document.querySelectorAll('[data-action="edit"]').forEach(button=>setHidden(button,!hasPermission(ACTIONS.edit)));
+  document.querySelectorAll('[data-action="delete"]').forEach(button=>setHidden(button,!hasPermission(ACTIONS.delete)));
+  document.querySelectorAll('[data-action="stock"]').forEach(button=>setHidden(button,!hasPermission(ACTIONS.stock)));
 
-  document.querySelectorAll('[data-action="edit"]').forEach(button=>button.hidden=!hasPermission(ACTIONS.edit));
-  document.querySelectorAll('[data-action="delete"]').forEach(button=>button.hidden=!hasPermission(ACTIONS.delete));
-  document.querySelectorAll('[data-action="stock"]').forEach(button=>button.hidden=!hasPermission(ACTIONS.stock));
+  const canViewCost=hasPermission("pos.products.view_cost");
+  const costInput=document.querySelector("#productCost")?.closest("label");
+  setHidden(costInput,!canViewCost);
 
-  if(!hasPermission("pos.products.view_cost")){
+  if(!canViewCost){
     document.querySelectorAll(".product-sub").forEach(element=>{
-      element.textContent=element.textContent.replace(/\s*•\s*ทุน\s*[\d,.]+|\s*•\s*ยังไม่กำหนดทุน/g,"");
+      const cleaned=element.textContent.replace(/\s*•\s*ทุน\s*[\d,.]+|\s*•\s*ยังไม่กำหนดทุน/g,"");
+      if(cleaned!==element.textContent)element.textContent=cleaned;
     });
-    const costInput=document.querySelector("#productCost")?.closest("label");
-    if(costInput)costInput.hidden=true;
   }
 }
 
@@ -66,5 +70,18 @@ document.addEventListener("submit",event=>{
   }
 },true);
 
-new MutationObserver(applyVisibility).observe(document.body,{childList:true,subtree:true});
+const tableBody=document.querySelector("#productTableBody");
+if(tableBody){
+  let scheduled=false;
+  new MutationObserver(()=>{
+    if(scheduled)return;
+    scheduled=true;
+    requestAnimationFrame(()=>{
+      scheduled=false;
+      applyVisibility();
+    });
+  }).observe(tableBody,{childList:true});
+}
+
 applyVisibility();
+setTimeout(applyVisibility,0);
