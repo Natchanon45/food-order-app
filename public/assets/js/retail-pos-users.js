@@ -1,18 +1,46 @@
-import {MENU_GROUPS,getRoles,getUsers,getCurrentUser,getCurrentRole} from "./retail-pos-navigation.js?v=20260624-1";
-const ROLE_KEY="retail_pos_roles_v1",USER_KEY="retail_pos_users_v1",CURRENT_USER_KEY="retail_pos_current_user_v1";
-const $=s=>document.querySelector(s);let roles=getRoles(),users=getUsers(),toastTimer;
-function write(k,v){localStorage.setItem(k,JSON.stringify(v))}
-function esc(v){return String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"})[c])}
+import {MENU_GROUPS,getRoles,getUsers,getCurrentUser,getCurrentRole} from "./retail-pos-navigation.js?v=20260624-4";
+import {createPasswordRecord} from "./retail-pos-auth.js?v=20260624-1";
+
+const ROLE_KEY="retail_pos_roles_v1",USER_KEY="retail_pos_users_v1";
+const $=selector=>document.querySelector(selector);
+let roles=getRoles(),users=getUsers(),toastTimer;
+
+function write(key,value){localStorage.setItem(key,JSON.stringify(value))}
+function esc(value){return String(value??"").replace(/[&<>'"]/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"})[char])}
 function uid(prefix){return globalThis.crypto?.randomUUID?`${prefix}-${crypto.randomUUID()}`:`${prefix}-${Date.now()}`}
-function toast(m){clearTimeout(toastTimer);$("#toast").textContent=m;$("#toast").classList.add("show");toastTimer=setTimeout(()=>$("#toast").classList.remove("show"),1800)}
-function renderCurrent(){const u=getCurrentUser(),r=getCurrentRole();$("#currentUserText").textContent=`ผู้ใช้งานปัจจุบัน: ${u?.name||"-"} • ${r?.name||"-"}`}
-function renderPermissions(selected=[]){$("#permissionCheckboxes").innerHTML=MENU_GROUPS.map(g=>`<section class="full"><strong>${esc(g.label)}</strong>${g.items.map(i=>`<label class="permission-checkbox"><input type="checkbox" value="${esc(i.key)}" ${selected.includes(i.key)?"checked":""}><span>${esc(i.label)}</span></label>`).join("")}</section>`).join("")}
-function renderRoles(){$("#roleList").innerHTML=roles.map(r=>`<article class="permission-card"><div><strong>${esc(r.name)}</strong><span>${r.permissions.length} สิทธิ์${r.locked?" • บทบาทหลัก":""}</span></div><div class="permission-actions"><button type="button" data-role-id="${esc(r.id)}">แก้ไข</button></div></article>`).join("");$("#userRole").innerHTML=roles.map(r=>`<option value="${esc(r.id)}">${esc(r.name)}</option>`).join("")}
-function renderUsers(){$("#userList").innerHTML=users.map(u=>{const role=roles.find(r=>r.id===u.roleId);return`<article class="permission-card"><div><strong>${esc(u.name)}</strong><span>${esc(u.username)} • ${esc(role?.name||"ไม่พบบทบาท")} • ${u.active===false?"ระงับใช้งาน":"ใช้งาน"}</span></div><div class="permission-actions"><button type="button" data-switch-user="${esc(u.id)}" ${u.active===false?"disabled":""}>สลับผู้ใช้</button><button type="button" data-user-id="${esc(u.id)}">แก้ไข</button></div></article>`}).join("")}
-function openRole(id){const r=roles.find(x=>x.id===id);$("#roleId").value=r?.id||"";$("#roleName").value=r?.name||"";renderPermissions(r?.permissions||[]);$("#deleteRoleBtn").hidden=!r||r.locked;$("#roleError").textContent=""}
-function saveRole(e){e.preventDefault();const id=$("#roleId").value||uid("role"),name=$("#roleName").value.trim(),permissions=[...$("#permissionCheckboxes").querySelectorAll("input:checked")].map(x=>x.value);if(!name)return $("#roleError").textContent="กรุณากรอกชื่อบทบาท";const old=roles.find(r=>r.id===id);roles=old?roles.map(r=>r.id===id?{...r,name,permissions}:r):[...roles,{id,name,permissions,locked:false}];write(ROLE_KEY,roles);renderRoles();renderUsers();openRole(id);toast("บันทึกบทบาทแล้ว")}
-function deleteRole(){const id=$("#roleId").value,r=roles.find(x=>x.id===id);if(!r||r.locked)return;if(users.some(u=>u.roleId===id))return alert("ยังมีผู้ใช้ที่ใช้บทบาทนี้อยู่");if(!confirm(`ลบบทบาท “${r.name}” หรือไม่?`))return;roles=roles.filter(x=>x.id!==id);write(ROLE_KEY,roles);renderRoles();openRole(roles[0]?.id||"")}
-function openUser(id){const u=users.find(x=>x.id===id);$("#userId").value=u?.id||"";$("#userDialogTitle").textContent=u?"แก้ไขผู้ใช้":"เพิ่มผู้ใช้";$("#userName").value=u?.name||"";$("#userUsername").value=u?.username||"";$("#userRole").value=u?.roleId||roles[0]?.id||"";$("#userActive").value=u?.active===false?"0":"1";$("#userError").textContent="";$("#userDialog").showModal()}
-function saveUser(e){e.preventDefault();const id=$("#userId").value||uid("user"),name=$("#userName").value.trim(),username=$("#userUsername").value.trim(),roleId=$("#userRole").value,active=$("#userActive").value==="1";if(!name||!username)return $("#userError").textContent="กรุณากรอกชื่อและชื่อเข้าสู่ระบบ";if(users.some(u=>u.username.toLowerCase()===username.toLowerCase()&&u.id!==id))return $("#userError").textContent="ชื่อเข้าสู่ระบบซ้ำ";const old=users.find(u=>u.id===id);users=old?users.map(u=>u.id===id?{...u,name,username,roleId,active}:u):[...users,{id,name,username,roleId,active,locked:false}];write(USER_KEY,users);$("#userDialog").close();renderUsers();toast("บันทึกผู้ใช้แล้ว")}
-function switchUser(id){const u=users.find(x=>x.id===id&&x.active!==false);if(!u)return;write(CURRENT_USER_KEY,id);toast(`สลับเป็น ${u.name} แล้ว`);setTimeout(()=>location.href="/pos/",500)}
-$("#newRoleBtn").addEventListener("click",()=>openRole(""));$("#roleForm").addEventListener("submit",saveRole);$("#deleteRoleBtn").addEventListener("click",deleteRole);$("#roleList").addEventListener("click",e=>{const b=e.target.closest("[data-role-id]");if(b)openRole(b.dataset.roleId)});$("#newUserBtn").addEventListener("click",()=>openUser(""));$("#userForm").addEventListener("submit",saveUser);$("#closeUserDialog").addEventListener("click",()=>$("#userDialog").close());$("#cancelUserBtn").addEventListener("click",()=>$("#userDialog").close());$("#userList").addEventListener("click",e=>{const edit=e.target.closest("[data-user-id]"),sw=e.target.closest("[data-switch-user]");if(edit)openUser(edit.dataset.userId);if(sw)switchUser(sw.dataset.switchUser)});renderCurrent();renderRoles();renderUsers();openRole(roles[0]?.id||"");
+function toast(message){clearTimeout(toastTimer);$("#toast").textContent=message;$("#toast").classList.add("show");toastTimer=setTimeout(()=>$("#toast").classList.remove("show"),1800)}
+function renderCurrent(){const user=getCurrentUser(),role=getCurrentRole();$("#currentUserText").textContent=`ผู้ใช้งานปัจจุบัน: ${user?.name||"-"} • ${role?.name||"-"}`}
+function renderPermissions(selected=[]){$("#permissionCheckboxes").innerHTML=MENU_GROUPS.map(group=>`<section class="full"><strong>${esc(group.label)}</strong>${group.items.map(item=>`<label class="permission-checkbox"><input type="checkbox" value="${esc(item.key)}" ${selected.includes(item.key)?"checked":""}><span>${esc(item.label)}</span></label>`).join("")}</section>`).join("")}
+function renderRoles(){$("#roleList").innerHTML=roles.map(role=>`<article class="permission-card"><div><strong>${esc(role.name)}</strong><span>${role.permissions.length} สิทธิ์${role.locked?" • บทบาทหลัก":""}</span></div><div class="permission-actions"><button type="button" data-role-id="${esc(role.id)}">แก้ไข</button></div></article>`).join("");$("#userRole").innerHTML=roles.map(role=>`<option value="${esc(role.id)}">${esc(role.name)}</option>`).join("")}
+function renderUsers(){$("#userList").innerHTML=users.map(user=>{const role=roles.find(item=>item.id===user.roleId),passwordState=user.passwordHash?"ตั้งรหัสผ่านแล้ว":"ยังไม่ได้ตั้งรหัสผ่าน";return`<article class="permission-card"><div><strong>${esc(user.name)}</strong><span>${esc(user.username)} • ${esc(role?.name||"ไม่พบบทบาท")} • ${user.active===false?"ระงับใช้งาน":"ใช้งาน"} • ${passwordState}</span></div><div class="permission-actions"><button type="button" data-user-id="${esc(user.id)}">แก้ไข</button></div></article>`}).join("")}
+function openRole(id){const role=roles.find(item=>item.id===id);$("#roleId").value=role?.id||"";$("#roleName").value=role?.name||"";renderPermissions(role?.permissions||[]);$("#deleteRoleBtn").hidden=!role||role.locked;$("#roleError").textContent=""}
+function saveRole(event){event.preventDefault();const id=$("#roleId").value||uid("role"),name=$("#roleName").value.trim(),permissions=[...$("#permissionCheckboxes").querySelectorAll("input:checked")].map(input=>input.value);if(!name)return $("#roleError").textContent="กรุณากรอกชื่อบทบาท";const old=roles.find(role=>role.id===id);roles=old?roles.map(role=>role.id===id?{...role,name,permissions}:role):[...roles,{id,name,permissions,locked:false}];write(ROLE_KEY,roles);renderRoles();renderUsers();openRole(id);toast("บันทึกบทบาทแล้ว")}
+function deleteRole(){const id=$("#roleId").value,role=roles.find(item=>item.id===id);if(!role||role.locked)return;if(users.some(user=>user.roleId===id))return alert("ยังมีผู้ใช้ที่ใช้บทบาทนี้อยู่");if(!confirm(`ลบบทบาท “${role.name}” หรือไม่?`))return;roles=roles.filter(item=>item.id!==id);write(ROLE_KEY,roles);renderRoles();openRole(roles[0]?.id||"")}
+function openUser(id){const user=users.find(item=>item.id===id);$("#userId").value=user?.id||"";$("#userDialogTitle").textContent=user?"แก้ไขผู้ใช้":"เพิ่มผู้ใช้";$("#userName").value=user?.name||"";$("#userUsername").value=user?.username||"";$("#userPassword").value="";$("#userPasswordConfirm").value="";$("#userRole").value=user?.roleId||roles[0]?.id||"";$("#userActive").value=user?.active===false?"0":"1";$("#passwordHint").textContent=user?"เว้นว่างหากไม่ต้องการเปลี่ยนรหัสผ่าน":"ผู้ใช้ใหม่ต้องกำหนดรหัสผ่านอย่างน้อย 4 ตัวอักษร";$("#userError").textContent="";$("#userDialog").showModal()}
+async function saveUser(event){
+  event.preventDefault();
+  const id=$("#userId").value||uid("user"),name=$("#userName").value.trim(),username=$("#userUsername").value.trim(),password=$("#userPassword").value,passwordConfirm=$("#userPasswordConfirm").value,roleId=$("#userRole").value,active=$("#userActive").value==="1",old=users.find(user=>user.id===id);
+  $("#userError").textContent="";
+  if(!name||!username)return $("#userError").textContent="กรุณากรอกชื่อและชื่อเข้าสู่ระบบ";
+  if(users.some(user=>user.username.toLowerCase()===username.toLowerCase()&&user.id!==id))return $("#userError").textContent="ชื่อเข้าสู่ระบบซ้ำ";
+  if(!old&&!password)return $("#userError").textContent="ผู้ใช้ใหม่ต้องกำหนดรหัสผ่าน";
+  if(password&&password.length<4)return $("#userError").textContent="รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร";
+  if(password!==passwordConfirm)return $("#userError").textContent="ยืนยันรหัสผ่านไม่ตรงกัน";
+  let passwordRecord={};
+  if(password)passwordRecord=await createPasswordRecord(password);
+  const record=old?{...old,name,username,roleId,active,...passwordRecord}:{id,name,username,roleId,active,locked:false,...passwordRecord};
+  users=old?users.map(user=>user.id===id?record:user):[...users,record];
+  write(USER_KEY,users);$("#userDialog").close();renderUsers();toast(password?"บันทึกผู้ใช้และรหัสผ่านแล้ว":"บันทึกผู้ใช้แล้ว");
+}
+
+$("#newRoleBtn").addEventListener("click",()=>openRole(""));
+$("#roleForm").addEventListener("submit",saveRole);
+$("#deleteRoleBtn").addEventListener("click",deleteRole);
+$("#roleList").addEventListener("click",event=>{const button=event.target.closest("[data-role-id]");if(button)openRole(button.dataset.roleId)});
+$("#newUserBtn").addEventListener("click",()=>openUser(""));
+$("#userForm").addEventListener("submit",saveUser);
+$("#closeUserDialog").addEventListener("click",()=>$("#userDialog").close());
+$("#cancelUserBtn").addEventListener("click",()=>$("#userDialog").close());
+$("#userList").addEventListener("click",event=>{const button=event.target.closest("[data-user-id]");if(button)openUser(button.dataset.userId)});
+
+renderCurrent();renderRoles();renderUsers();openRole(roles[0]?.id||"");
