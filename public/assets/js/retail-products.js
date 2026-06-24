@@ -62,6 +62,11 @@ function saveMovements() {
   localStorage.setItem(MOVEMENT_KEY, JSON.stringify(movements.slice(0, 500)));
 }
 
+function safeId() {
+  if (globalThis.crypto && typeof globalThis.crypto.randomUUID === "function") return globalThis.crypto.randomUUID();
+  return `movement-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>'"]/g, char => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
@@ -183,6 +188,15 @@ function openEditProduct(id) {
   els.productDialog.showModal();
 }
 
+function readMerchandisingFields(existingProduct = {}) {
+  return {
+    category: document.querySelector("#productCategory")?.value.trim() || existingProduct.category || "ทั่วไป",
+    sortOrder: Number(document.querySelector("#productSortOrder")?.value || existingProduct.sortOrder || 999),
+    imageUrl: document.querySelector("#productImageUrl")?.value.trim() || "",
+    showOnPos: document.querySelector("#productShowOnPos")?.checked !== false
+  };
+}
+
 function submitProduct(event) {
   event.preventDefault();
   const editingId = els.editingProductId.value;
@@ -207,9 +221,21 @@ function submitProduct(event) {
     return;
   }
 
-  const product = { id, barcode, name, price, stock, minStock, unit };
+  const old = editingId ? products.find(item => item.id === editingId) : null;
+  const product = {
+    ...(old || {}),
+    id,
+    barcode,
+    name,
+    price,
+    stock,
+    minStock,
+    unit,
+    ...readMerchandisingFields(old || {})
+  };
+  delete product.quickSale;
+
   if (editingId) {
-    const old = products.find(item => item.id === editingId);
     products = products.map(item => item.id === editingId ? product : item);
     if (old && Number(old.stock) !== stock) addMovement(product, Number(old.stock), stock, "แก้ไขยอดจากข้อมูลสินค้า");
   } else {
@@ -249,7 +275,7 @@ function openStock(id) {
 
 function addMovement(product, before, after, note) {
   movements.unshift({
-    id: crypto.randomUUID(),
+    id: safeId(),
     productId: product.id,
     productName: product.name,
     before,
