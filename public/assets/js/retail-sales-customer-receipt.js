@@ -1,3 +1,4 @@
+const privacyStyle=document.createElement("link");privacyStyle.rel="stylesheet";privacyStyle.href="/assets/css/retail-print-privacy.css?v=20260624-1";document.head.appendChild(privacyStyle);
 const SALES_KEY="retail_pos_sales_v1",CUSTOMER_KEY="retail_pos_customers_v1";
 const receiptMeta=document.querySelector(".receipt-meta"),salesBody=document.querySelector("#salesTableBody");
 function read(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}
