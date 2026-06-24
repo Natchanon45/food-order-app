@@ -5,6 +5,7 @@ const DATA_KEYS = [
   "retail_pos_products_v1",
   "retail_pos_sales_v1",
   "retail_pos_purchases_v1",
+  "retail_pos_suppliers_v1",
   "retail_pos_stock_movements_v1",
   "retail_pos_held_bills_v1",
   "retail_pos_print_mode_v1",
@@ -66,12 +67,14 @@ function renderCurrentStats() {
   const products = readJson("retail_pos_products_v1", []);
   const sales = readJson("retail_pos_sales_v1", []);
   const purchases = readJson("retail_pos_purchases_v1", []);
+  const suppliers = readJson("retail_pos_suppliers_v1", []);
   const images = products.filter(item => item?.imageKey).length;
   const shifts = readJson("retail_pos_shift_history_v1", []);
   els.backupStats.innerHTML = `
     <div class="backup-stat"><span>สินค้า</span><strong>${formatNumber(products.length)}</strong></div>
     <div class="backup-stat"><span>ประวัติการขาย</span><strong>${formatNumber(sales.length)}</strong></div>
     <div class="backup-stat"><span>ใบซื้อ</span><strong>${formatNumber(purchases.length)}</strong></div>
+    <div class="backup-stat"><span>ผู้จำหน่าย</span><strong>${formatNumber(suppliers.length)}</strong></div>
     <div class="backup-stat"><span>รูปสินค้า</span><strong>${formatNumber(images)}</strong></div>
     <div class="backup-stat"><span>กะที่ปิดแล้ว</span><strong>${formatNumber(shifts.length)}</strong></div>
   `;
@@ -155,6 +158,7 @@ function renderRestoreSummary(data) {
   const products = parseStoredArray(data, "retail_pos_products_v1");
   const sales = parseStoredArray(data, "retail_pos_sales_v1");
   const purchases = parseStoredArray(data, "retail_pos_purchases_v1");
+  const suppliers = parseStoredArray(data, "retail_pos_suppliers_v1");
   const shifts = parseStoredArray(data, "retail_pos_shift_history_v1");
   const images = Array.isArray(data.productImages) ? data.productImages : [];
   els.restoreSummary.innerHTML = `
@@ -162,6 +166,7 @@ function renderRestoreSummary(data) {
     <div><span>สินค้า</span><strong>${formatNumber(products.length)}</strong></div>
     <div><span>ยอดขาย</span><strong>${formatNumber(sales.length)}</strong></div>
     <div><span>ใบซื้อ</span><strong>${formatNumber(purchases.length)}</strong></div>
+    <div><span>ผู้จำหน่าย</span><strong>${formatNumber(suppliers.length)}</strong></div>
     <div><span>รูปสินค้า</span><strong>${formatNumber(images.length)}</strong></div>
     <div><span>กะที่ปิดแล้ว</span><strong>${formatNumber(shifts.length)}</strong></div>
     <div><span>เวอร์ชันไฟล์</span><strong>${formatNumber(data.version)}</strong></div>
