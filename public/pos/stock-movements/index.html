@@ -6,11 +6,11 @@
 <meta name="theme-color" content="#159447">
 <title>รายงานความเคลื่อนไหวสต็อก</title>
 <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260624-6">
-<link rel="stylesheet" href="/assets/css/retail-stock-movements.css?v=20260624-1">
+<link rel="stylesheet" href="/assets/css/retail-stock-movements.css?v=20260624-2">
 </head>
 <body>
 <header class="pos-header">
-<div><strong>รายงานความเคลื่อนไหวสต็อก</strong><small>ตรวจสอบรับเข้า จ่ายออก ปรับยอด และตรวจนับ</small></div>
+<div><strong>รายงานความเคลื่อนไหวสต็อก</strong><small>ตรวจสอบรับเข้า ขาย คืนสินค้า ปรับยอด และตรวจนับ</small></div>
 <div class="header-actions"><a href="/pos/" class="btn btn-secondary header-link">หน้าขาย</a><a href="/pos/products/" class="btn btn-secondary header-link">สินค้าและสต็อก</a><button id="exportMovementCsv" class="btn btn-pay" type="button">ส่งออก CSV</button></div>
 </header>
 <main class="movement-container">
@@ -23,6 +23,7 @@
 <option value="all">ทุกประเภท</option>
 <option value="purchase">รับสินค้าเข้า</option>
 <option value="sale">ขายสินค้า</option>
+<option value="return">คืนสินค้า</option>
 <option value="count">ตรวจนับสต็อก</option>
 <option value="adjustment">ปรับสต็อก</option>
 </select>
@@ -43,6 +44,6 @@
 <div id="movementEmpty" class="empty-state">ไม่พบความเคลื่อนไหวสต็อก</div>
 </section>
 </main>
-<script type="module" src="/assets/js/retail-stock-movements.js?v=20260624-1"></script>
+<script type="module" src="/assets/js/retail-stock-movements.js?v=20260624-2"></script>
 </body>
 </html>
