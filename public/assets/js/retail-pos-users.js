@@ -1,4 +1,4 @@
-import {MENU_GROUPS,getRoles,getUsers,getCurrentUser,getCurrentRole} from "./retail-pos-navigation.js?v=20260624-4";
+import {MENU_GROUPS,ACTION_GROUPS,getRoles,getUsers,getCurrentUser,getCurrentRole} from "./retail-pos-navigation.js?v=20260624-5";
 import {createPasswordRecord} from "./retail-pos-auth.js?v=20260624-1";
 
 const ROLE_KEY="retail_pos_roles_v1",USER_KEY="retail_pos_users_v1";
@@ -10,7 +10,12 @@ function esc(value){return String(value??"").replace(/[&<>'"]/g,char=>({"&":"&am
 function uid(prefix){return globalThis.crypto?.randomUUID?`${prefix}-${crypto.randomUUID()}`:`${prefix}-${Date.now()}`}
 function toast(message){clearTimeout(toastTimer);$("#toast").textContent=message;$("#toast").classList.add("show");toastTimer=setTimeout(()=>$("#toast").classList.remove("show"),1800)}
 function renderCurrent(){const user=getCurrentUser(),role=getCurrentRole();$("#currentUserText").textContent=`ผู้ใช้งานปัจจุบัน: ${user?.name||"-"} • ${role?.name||"-"}`}
-function renderPermissions(selected=[]){$("#permissionCheckboxes").innerHTML=MENU_GROUPS.map(group=>`<section class="full"><strong>${esc(group.label)}</strong>${group.items.map(item=>`<label class="permission-checkbox"><input type="checkbox" value="${esc(item.key)}" ${selected.includes(item.key)?"checked":""}><span>${esc(item.label)}</span></label>`).join("")}</section>`).join("")}
+function groupHtml(group,selected){return`<section class="full"><strong>${esc(group.label)}</strong>${group.items.map(item=>`<label class="permission-checkbox"><input type="checkbox" value="${esc(item.key)}" ${selected.includes(item.key)?"checked":""}><span>${esc(item.label)}</span></label>`).join("")}</section>`}
+function renderPermissions(selected=[]){
+  const menuHtml=MENU_GROUPS.map(group=>groupHtml(group,selected)).join("");
+  const actionHtml=ACTION_GROUPS.map(group=>groupHtml(group,selected)).join("");
+  $("#permissionCheckboxes").innerHTML=`<div class="permission-subheading">สิทธิ์เข้าเมนู</div>${menuHtml}<div class="permission-subheading">สิทธิ์การทำงานภายในเมนู</div>${actionHtml}`;
+}
 function renderRoles(){$("#roleList").innerHTML=roles.map(role=>`<article class="permission-card"><div><strong>${esc(role.name)}</strong><span>${role.permissions.length} สิทธิ์${role.locked?" • บทบาทหลัก":""}</span></div><div class="permission-actions"><button type="button" data-role-id="${esc(role.id)}">แก้ไข</button></div></article>`).join("");$("#userRole").innerHTML=roles.map(role=>`<option value="${esc(role.id)}">${esc(role.name)}</option>`).join("")}
 function renderUsers(){$("#userList").innerHTML=users.map(user=>{const role=roles.find(item=>item.id===user.roleId),passwordState=user.passwordHash?"ตั้งรหัสผ่านแล้ว":"ยังไม่ได้ตั้งรหัสผ่าน";return`<article class="permission-card"><div><strong>${esc(user.name)}</strong><span>${esc(user.username)} • ${esc(role?.name||"ไม่พบบทบาท")} • ${user.active===false?"ระงับใช้งาน":"ใช้งาน"} • ${passwordState}</span></div><div class="permission-actions"><button type="button" data-user-id="${esc(user.id)}">แก้ไข</button></div></article>`}).join("")}
 function openRole(id){const role=roles.find(item=>item.id===id);$("#roleId").value=role?.id||"";$("#roleName").value=role?.name||"";renderPermissions(role?.permissions||[]);$("#deleteRoleBtn").hidden=!role||role.locked;$("#roleError").textContent=""}
