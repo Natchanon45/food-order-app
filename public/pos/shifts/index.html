@@ -7,6 +7,7 @@
   <title>เปิดกะและปิดกะ</title>
   <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260624-6">
   <link rel="stylesheet" href="/assets/css/retail-shifts.css?v=20260624-1">
+  <link rel="stylesheet" href="/assets/css/retail-pos-navigation.css?v=20260624-2">
 </head>
 <body>
   <header class="pos-header">
@@ -24,29 +25,17 @@
         <span class="status-badge closed">ปิดกะ</span>
       </div>
       <form id="openShiftForm" class="shift-form">
-        <label>ชื่อพนักงาน
-          <input id="cashierName" required maxlength="100" placeholder="เช่น สมชาย">
-        </label>
-        <label>รหัสเครื่อง POS
-          <input id="terminalCode" required maxlength="50" value="POS-01">
-        </label>
-        <label>เงินสดเริ่มต้น
-          <input id="openingCash" required type="number" min="0" step="0.01" value="0">
-        </label>
-        <label class="full">หมายเหตุ
-          <input id="openNote" maxlength="200" placeholder="ไม่บังคับ">
-        </label>
+        <label>ชื่อพนักงาน<input id="cashierName" required maxlength="100" placeholder="เช่น สมชาย"></label>
+        <label>รหัสเครื่อง POS<input id="terminalCode" required maxlength="50" value="POS-01"></label>
+        <label>เงินสดเริ่มต้น<input id="openingCash" required type="number" min="0" step="0.01" value="0"></label>
+        <label class="full">หมายเหตุ<input id="openNote" maxlength="200" placeholder="ไม่บังคับ"></label>
         <p id="openShiftError" class="error-text full"></p>
         <button class="btn btn-pay full" type="submit">เปิดกะและเริ่มขาย</button>
       </form>
     </section>
 
     <section id="activeShiftPanel" class="panel shift-card" hidden>
-      <div class="shift-heading">
-        <div><h1>กะกำลังเปิดใช้งาน</h1><p id="activeShiftMeta">-</p></div>
-        <span class="status-badge open">เปิดกะ</span>
-      </div>
-
+      <div class="shift-heading"><div><h1>กะกำลังเปิดใช้งาน</h1><p id="activeShiftMeta">-</p></div><span class="status-badge open">เปิดกะ</span></div>
       <section class="shift-stats">
         <article><span>เงินสดเริ่มต้น</span><strong id="openingCashDisplay">0.00</strong></article>
         <article><span>ยอดขายทั้งหมด</span><strong id="shiftSalesTotal">0.00</strong></article>
@@ -55,18 +44,10 @@
         <article><span>จำนวนบิล</span><strong id="shiftBillCount">0</strong></article>
         <article><span>เงินสดที่ควรมี</span><strong id="expectedCash">0.00</strong></article>
       </section>
-
       <form id="closeShiftForm" class="close-shift-form">
-        <label>เงินสดนับจริง
-          <input id="actualCash" required type="number" min="0" step="0.01">
-        </label>
-        <label>หมายเหตุปิดกะ
-          <input id="closeNote" maxlength="200" placeholder="ไม่บังคับ">
-        </label>
-        <div class="difference-box">
-          <span>ผลต่างเงินสด</span>
-          <strong id="cashDifference">0.00</strong>
-        </div>
+        <label>เงินสดนับจริง<input id="actualCash" required type="number" min="0" step="0.01"></label>
+        <label>หมายเหตุปิดกะ<input id="closeNote" maxlength="200" placeholder="ไม่บังคับ"></label>
+        <div class="difference-box"><span>ผลต่างเงินสด</span><strong id="cashDifference">0.00</strong></div>
         <p id="closeShiftError" class="error-text"></p>
         <button class="btn btn-danger" type="submit">ยืนยันปิดกะ</button>
       </form>
@@ -81,5 +62,6 @@
 
   <div id="toast" class="toast"></div>
   <script type="module" src="/assets/js/retail-shifts.js?v=20260624-1"></script>
+  <script type="module" src="/assets/js/retail-pos-navigation.js?v=20260624-1"></script>
 </body>
 </html>
