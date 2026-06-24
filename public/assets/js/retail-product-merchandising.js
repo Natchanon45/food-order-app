@@ -1,13 +1,12 @@
 const PRODUCT_KEY = "retail_pos_products_v1";
 const form = document.querySelector("#productForm");
-const dialog = document.querySelector("#productDialog");
 const editingId = document.querySelector("#editingProductId");
 const nameInput = document.querySelector("#productName");
 const productTableBody = document.querySelector("#productTableBody");
 
 const style = document.createElement("link");
 style.rel = "stylesheet";
-style.href = "/assets/css/retail-product-merchandising.css?v=20260624-1";
+style.href = "/assets/css/retail-product-merchandising.css?v=20260624-2";
 document.head.appendChild(style);
 
 const section = document.createElement("section");
@@ -29,8 +28,8 @@ section.innerHTML = `
   </div>
   <div class="merch-options">
     <label><input id="productShowOnPos" type="checkbox" checked> แสดงบนหน้าขาย</label>
-    <label><input id="productQuickSale" type="checkbox"> สินค้าขายด่วน / ขายดี</label>
   </div>
+  <p class="product-sub">หมวด “ขายดี” คำนวณอัตโนมัติจากจำนวนสินค้าที่ขายสะสมทั้งหมด</p>
 `;
 form.querySelector(".form-grid")?.appendChild(section);
 
@@ -40,7 +39,6 @@ const sortOrderInput = document.querySelector("#productSortOrder");
 const imageUrlInput = document.querySelector("#productImageUrl");
 const imagePreview = document.querySelector("#productImagePreview");
 const showOnPosInput = document.querySelector("#productShowOnPos");
-const quickSaleInput = document.querySelector("#productQuickSale");
 
 function readProducts() {
   try { return JSON.parse(localStorage.getItem(PRODUCT_KEY)) || []; }
@@ -80,7 +78,6 @@ function resetMerchFields() {
   sortOrderInput.value = "999";
   imageUrlInput.value = "";
   showOnPosInput.checked = true;
-  quickSaleInput.checked = false;
   updatePreview();
 }
 
@@ -91,24 +88,22 @@ function loadMerchFields(id) {
   sortOrderInput.value = Number(product.sortOrder ?? 999);
   imageUrlInput.value = product.imageUrl || "";
   showOnPosInput.checked = product.showOnPos !== false;
-  quickSaleInput.checked = product.quickSale === true;
   updatePreview();
 }
 
 function enrichSavedProduct(snapshot) {
   setTimeout(() => {
     const products = readProducts();
-    const targetId = snapshot.id;
-    const index = products.findIndex(item => item.id === targetId);
+    const index = products.findIndex(item => item.id === snapshot.id);
     if (index < 0) return;
     products[index] = {
       ...products[index],
       category: snapshot.category || "ทั่วไป",
       sortOrder: snapshot.sortOrder,
       imageUrl: snapshot.imageUrl,
-      showOnPos: snapshot.showOnPos,
-      quickSale: snapshot.quickSale
+      showOnPos: snapshot.showOnPos
     };
+    delete products[index].quickSale;
     writeProducts(products);
     updateCategoryList();
     document.querySelector("#productSearch")?.dispatchEvent(new Event("input", { bubbles: true }));
@@ -122,8 +117,7 @@ form.addEventListener("submit", () => {
     category: categoryInput.value.trim(),
     sortOrder: Number(sortOrderInput.value || 999),
     imageUrl: imageUrlInput.value.trim(),
-    showOnPos: showOnPosInput.checked,
-    quickSale: quickSaleInput.checked
+    showOnPos: showOnPosInput.checked
   });
 }, { capture: true });
 
@@ -154,7 +148,6 @@ const observer = new MutationObserver(() => {
       : escapeHtml(initials(product.name));
     const tags = [
       product.category ? `<span class="merch-tag">${escapeHtml(product.category)}</span>` : "",
-      product.quickSale ? '<span class="merch-tag quick">ขายด่วน</span>' : "",
       product.showOnPos === false ? '<span class="merch-tag hidden">ซ่อนจากหน้าขาย</span>' : ""
     ].join("");
     cell.innerHTML = `<div class="product-cell"><div class="product-thumb">${image}</div><div>${original}<div class="merch-tags">${tags}</div></div></div>`;
