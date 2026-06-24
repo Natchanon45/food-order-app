@@ -118,6 +118,13 @@ function escapeHtml(value) {
   })[char]);
 }
 
+function maskPhone(value) {
+  const digits = String(value || "").replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.length < 6) return `${digits.slice(0, 2)}***${digits.slice(-2)}`;
+  return `${digits.slice(0, 3)}-xxx-xx${digits.slice(-2)}`;
+}
+
 function paymentName(method) {
   return method === "cash" ? "เงินสด" : "PromptPay / โอนเงิน";
 }
@@ -140,7 +147,7 @@ function populateReceipt(sourceSale) {
   document.querySelector("#printCashier").textContent = sale.cashierName || "-";
   document.querySelector("#printTerminal").textContent = sale.terminalCode || "-";
   const customerRow = document.querySelector("#printCustomerRow");
-  const customerText = [sale.customerCode, sale.customerName, sale.customerPhone].filter(Boolean).join(" • ");
+  const customerText = [sale.customerCode, sale.customerName, maskPhone(sale.customerPhone)].filter(Boolean).join(" • ");
   customerRow.hidden = !customerText;
   document.querySelector("#printCustomer").textContent = customerText || "-";
   document.querySelector("#printPaymentMethod").textContent = paymentName(sale.payment?.method);
