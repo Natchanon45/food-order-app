@@ -107,3 +107,78 @@ export async function deleteProductImage(productId) {
   if (url) URL.revokeObjectURL(url);
   objectUrls.delete(key);
 }
+
+function enhanceProductImageDropzone() {
+  const input = document.querySelector("#productImageFile");
+  if (!input || input.dataset.dropzoneReady === "1") return;
+
+  const label = input.closest("label");
+  if (!label) return;
+
+  input.dataset.dropzoneReady = "1";
+  label.classList.add("product-upload-dropzone");
+
+  const content = document.createElement("div");
+  content.className = "product-upload-content";
+  content.innerHTML = `
+    <div class="product-upload-icon">⇧</div>
+    <div class="product-upload-title">ลากรูปมาวางที่นี่</div>
+    <div class="product-upload-help">หรือคลิกเพื่อเลือกรูปจากเครื่อง</div>
+    <div class="product-upload-file" hidden></div>
+  `;
+
+  label.insertBefore(content, input);
+
+  const fileText = content.querySelector(".product-upload-file");
+  const title = content.querySelector(".product-upload-title");
+
+  function updateState() {
+    const file = input.files?.[0];
+    label.classList.toggle("has-file", Boolean(file));
+    if (file) {
+      title.textContent = "เลือกรูปแล้ว";
+      fileText.textContent = file.name;
+      fileText.hidden = false;
+    } else {
+      title.textContent = "ลากรูปมาวางที่นี่";
+      fileText.textContent = "";
+      fileText.hidden = true;
+    }
+  }
+
+  function acceptFiles(files) {
+    const file = [...files].find(item => String(item.type || "").startsWith("image/"));
+    if (!file) return;
+    const transfer = new DataTransfer();
+    transfer.items.add(file);
+    input.files = transfer.files;
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+    updateState();
+  }
+
+  ["dragenter", "dragover"].forEach(type => {
+    label.addEventListener(type, event => {
+      event.preventDefault();
+      label.classList.add("is-dragover");
+    });
+  });
+
+  ["dragleave", "drop"].forEach(type => {
+    label.addEventListener(type, event => {
+      event.preventDefault();
+      label.classList.remove("is-dragover");
+    });
+  });
+
+  label.addEventListener("drop", event => acceptFiles(event.dataTransfer?.files || []));
+  input.addEventListener("change", updateState);
+  document.querySelector("#removeProductImage")?.addEventListener("click", () => setTimeout(updateState, 0));
+  document.querySelector("#addProductBtn")?.addEventListener("click", () => setTimeout(updateState, 0));
+  document.querySelector("#productTableBody")?.addEventListener("click", event => {
+    if (event.target.closest('[data-action="edit"]')) setTimeout(updateState, 0);
+  });
+
+  updateState();
+}
+
+setTimeout(enhanceProductImageDropzone, 0);
