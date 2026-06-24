@@ -10,13 +10,13 @@
 <link rel="stylesheet" href="/assets/css/retail-purchases-report.css?v=20260624-1">
 </head>
 <body>
-<header class="pos-header"><div><strong>รับสินค้าเข้าและใบซื้อ</strong><small>เพิ่มสต็อกและคำนวณต้นทุนเฉลี่ย</small></div><div class="header-actions"><a href="/pos/" class="btn btn-secondary header-link">หน้าขาย</a><a href="/pos/products/" class="btn btn-secondary header-link">สินค้าและสต็อก</a></div></header>
+<header class="pos-header"><div><strong>รับสินค้าเข้าและใบซื้อ</strong><small>เพิ่มสต็อกและคำนวณต้นทุนเฉลี่ย</small></div><div class="header-actions"><a href="/pos/" class="btn btn-secondary header-link">หน้าขาย</a><a href="/pos/products/" class="btn btn-secondary header-link">สินค้าและสต็อก</a><a href="/pos/suppliers/" class="btn btn-secondary header-link">ผู้จำหน่าย</a></div></header>
 <main class="purchase-container">
 <section class="panel purchase-form-panel">
 <div class="section-heading"><div><h1>บันทึกรับสินค้าเข้า</h1><p>ต้นทุนใหม่คำนวณแบบเฉลี่ยถ่วงน้ำหนัก</p></div></div>
 <form id="purchaseForm">
 <div class="purchase-meta-grid">
-<label>ผู้จำหน่าย<input id="supplierName" maxlength="120" required></label>
+<label>ผู้จำหน่าย<input id="supplierName" maxlength="120" required list="supplierList" autocomplete="off"><datalist id="supplierList"></datalist><small id="supplierHint">เลือกจากทะเบียนผู้จำหน่าย หรือพิมพ์ชื่อใหม่ได้</small></label>
 <label>เลขที่ใบซื้อ / ใบส่งของ<input id="purchaseInvoice" maxlength="80"></label>
 <label>วันที่รับสินค้า<input id="purchaseDate" type="date" required></label>
 <label>หมายเหตุ<input id="purchaseNote" maxlength="200"></label>
@@ -34,7 +34,7 @@
 </section>
 </main>
 <div id="toast" class="toast" role="status"></div>
-<script type="module" src="/assets/js/retail-purchases.js?v=20260624-2"></script>
+<script type="module" src="/assets/js/retail-purchases.js?v=20260624-3"></script>
 <script type="module" src="/assets/js/retail-purchases-report.js?v=20260624-1"></script>
 </body>
 </html>
