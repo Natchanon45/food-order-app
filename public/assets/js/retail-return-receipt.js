@@ -1,3 +1,5 @@
+import "./retail-sales-returns-permissions.js?v=20260625-1";
+
 const RETURN_KEY="retail_pos_returns_v1",SETTINGS_KEY="retail_pos_store_settings_v1";
 const history=document.querySelector("#returnHistory");
 function read(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}
