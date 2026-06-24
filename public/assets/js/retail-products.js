@@ -120,10 +120,11 @@ function renderProducts() {
   els.tableEmpty.hidden = rows.length > 0;
   els.productTableBody.innerHTML = rows.map(product => {
     const klass = stockClass(product);
+    const costText = Number.isFinite(Number(product.cost)) ? ` • ทุน ${money(product.cost)}` : " • ยังไม่กำหนดทุน";
     return `
       <tr>
         <td>${escapeHtml(product.id)}</td>
-        <td><div class="product-name">${escapeHtml(product.name)}</div><div class="product-sub">แจ้งเตือนเมื่อเหลือ ${Number(product.minStock || 0)}</div></td>
+        <td><div class="product-name">${escapeHtml(product.name)}</div><div class="product-sub">แจ้งเตือนเมื่อเหลือ ${Number(product.minStock || 0)}${costText}</div></td>
         <td>${escapeHtml(product.barcode)}</td>
         <td class="number">${money(product.price)}</td>
         <td class="number"><span class="stock-badge ${klass}">${Number(product.stock || 0).toLocaleString("th-TH")}</span></td>
@@ -189,11 +190,14 @@ function openEditProduct(id) {
 }
 
 function readMerchandisingFields(existingProduct = {}) {
+  const costInput = document.querySelector("#productCost");
+  const parsedCost = costInput && costInput.value !== "" ? Number(costInput.value) : existingProduct.cost;
   return {
     category: document.querySelector("#productCategory")?.value.trim() || existingProduct.category || "ทั่วไป",
     sortOrder: Number(document.querySelector("#productSortOrder")?.value || existingProduct.sortOrder || 999),
     imageUrl: document.querySelector("#productImageUrl")?.value.trim() || "",
-    showOnPos: document.querySelector("#productShowOnPos")?.checked !== false
+    showOnPos: document.querySelector("#productShowOnPos")?.checked !== false,
+    cost: Number.isFinite(Number(parsedCost)) && Number(parsedCost) >= 0 ? Number(parsedCost) : null
   };
 }
 
@@ -207,8 +211,9 @@ function submitProduct(event) {
   const stock = Number(els.productStock.value);
   const minStock = Number(els.productMinStock.value);
   const unit = els.productUnit.value.trim();
+  const costValue = document.querySelector("#productCost")?.value ?? "";
 
-  if (!id || !barcode || !name || !unit || price < 0 || stock < 0 || minStock < 0) {
+  if (!id || !barcode || !name || !unit || price < 0 || stock < 0 || minStock < 0 || (costValue !== "" && Number(costValue) < 0)) {
     els.productFormError.textContent = "กรุณากรอกข้อมูลสินค้าให้ครบและถูกต้อง";
     return;
   }
