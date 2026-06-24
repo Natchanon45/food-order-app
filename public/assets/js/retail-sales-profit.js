@@ -32,7 +32,7 @@ profitPanel.innerHTML = `
   <div class="section-heading">
     <div>
       <h2>สินค้าที่ทำกำไรสูงสุด</h2>
-      <p>คำนวณจากราคาขายลบต้นทุนในช่วงที่เลือก</p>
+      <p>คำนวณจากยอดขายสุทธิหลังหักส่วนลด ลบต้นทุนสินค้า</p>
     </div>
   </div>
   <div id="profitRankingList" class="ranking-list"></div>
@@ -112,6 +112,10 @@ function calculateProfit(rows) {
   let missingItemCount = 0;
 
   rows.forEach(sale => {
+    const subtotal = Number(sale.subtotal || 0);
+    const netTotal = Number(sale.total || subtotal);
+    const discountFactor = subtotal > 0 ? Math.max(0, netTotal / subtotal) : 1;
+
     (sale.items || []).forEach(item => {
       const qty = Number(item.qty || 0);
       const price = Number(item.price || 0);
@@ -122,7 +126,7 @@ function calculateProfit(rows) {
       }
 
       const cost = Number(item.cost);
-      const revenue = price * qty;
+      const revenue = price * qty * discountFactor;
       const totalCost = cost * qty;
       const profit = revenue - totalCost;
       costTotal += totalCost;
@@ -172,7 +176,7 @@ function renderProfit() {
       </div>
       <div class="ranking-total">
         <strong>กำไร ${money(item.profit)}</strong>
-        <span>ยอดขาย ${money(item.revenue)} • ทุน ${money(item.cost)}</span>
+        <span>ยอดขายสุทธิ ${money(item.revenue)} • ทุน ${money(item.cost)}</span>
       </div>
     </article>
   `).join("");
