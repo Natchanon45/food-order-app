@@ -129,29 +129,37 @@ export async function deleteProductImage(productId) {
 
 export async function exportProductImages() {
   const db = await openDb();
-  return new Promise((resolve, reject) => {
+  const records = await new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, "readonly");
     const store = tx.objectStore(STORE_NAME);
-    const request = store.openCursor();
-    const images = [];
+    const keysRequest = store.getAllKeys();
+    const valuesRequest = store.getAll();
+    let keys;
+    let values;
 
-    request.onsuccess = async () => {
-      const cursor = request.result;
-      if (!cursor) return;
-      try {
-        images.push({ key: String(cursor.key), dataUrl: await blobToDataUrl(cursor.value) });
-        cursor.continue();
-      } catch (error) {
-        reject(error);
-      }
+    function finishIfReady() {
+      if (!keys || !values) return;
+      resolve(keys.map((key, index) => ({ key: String(key), blob: values[index] })));
+    }
+
+    keysRequest.onsuccess = () => {
+      keys = keysRequest.result || [];
+      finishIfReady();
     };
-    request.onerror = () => reject(request.error);
-    tx.oncomplete = () => {
-      db.close();
-      resolve(images);
+    valuesRequest.onsuccess = () => {
+      values = valuesRequest.result || [];
+      finishIfReady();
     };
+    keysRequest.onerror = () => reject(keysRequest.error);
+    valuesRequest.onerror = () => reject(valuesRequest.error);
     tx.onerror = () => reject(tx.error);
+    tx.oncomplete = () => db.close();
   });
+
+  return Promise.all(records.map(async record => ({
+    key: record.key,
+    dataUrl: await blobToDataUrl(record.blob)
+  })));
 }
 
 export async function importProductImages(images, { clearExisting = true } = {}) {
