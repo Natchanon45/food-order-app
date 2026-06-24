@@ -9,6 +9,7 @@ const paymentFilter = document.querySelector("#paymentFilter");
 const todayBtn = document.querySelector("#todayBtn");
 const monthBtn = document.querySelector("#monthBtn");
 const clearFilterBtn = document.querySelector("#clearFilterBtn");
+const salesTableBody = document.querySelector("#salesTableBody");
 
 salesStats?.insertAdjacentHTML("beforeend", `
   <article class="stat-card profit-stat">
@@ -40,13 +41,24 @@ profitPanel.innerHTML = `
 `;
 reportGrid?.insertAdjacentElement("afterend", profitPanel);
 
+document.querySelector(".receipt-summary")?.insertAdjacentHTML("beforeend", `
+  <div id="receiptProfitRow" class="receipt-profit-row" hidden>
+    <span>กำไรขั้นต้น</span>
+    <strong id="receiptGrossProfit">0.00</strong>
+  </div>
+  <p id="receiptProfitNote" class="receipt-profit-note" hidden></p>
+`);
+
 const els = {
   costOfGoodsTotal: document.querySelector("#costOfGoodsTotal"),
   grossProfitTotal: document.querySelector("#grossProfitTotal"),
   grossMarginPercent: document.querySelector("#grossMarginPercent"),
   profitRankingList: document.querySelector("#profitRankingList"),
   profitRankingEmpty: document.querySelector("#profitRankingEmpty"),
-  missingCostNote: document.querySelector("#missingCostNote")
+  missingCostNote: document.querySelector("#missingCostNote"),
+  receiptProfitRow: document.querySelector("#receiptProfitRow"),
+  receiptGrossProfit: document.querySelector("#receiptGrossProfit"),
+  receiptProfitNote: document.querySelector("#receiptProfitNote")
 };
 
 function readSales() {
@@ -171,10 +183,27 @@ function renderProfit() {
     : "";
 }
 
+function renderSaleProfit(saleId) {
+  const sale = readSales().find(item => item.id === saleId);
+  if (!sale) return;
+  const result = calculateProfit([sale]);
+  const hasCoveredItems = result.ranking.length > 0;
+  els.receiptProfitRow.hidden = !hasCoveredItems;
+  els.receiptGrossProfit.textContent = money(result.grossProfit);
+  els.receiptProfitNote.hidden = result.missingItemCount <= 0;
+  els.receiptProfitNote.textContent = result.missingItemCount > 0
+    ? `บิลนี้มี ${result.missingItemCount.toLocaleString("th-TH")} ชิ้นที่ไม่มีข้อมูลต้นทุน`
+    : "";
+}
+
 [saleSearch, dateFrom, dateTo, paymentFilter].forEach(element => {
   element?.addEventListener(element.tagName === "INPUT" ? "input" : "change", renderProfit);
 });
 [todayBtn, monthBtn, clearFilterBtn].forEach(button => button?.addEventListener("click", () => setTimeout(renderProfit, 0)));
+salesTableBody?.addEventListener("click", event => {
+  const button = event.target.closest("[data-sale-id]");
+  if (button) renderSaleProfit(button.dataset.saleId);
+}, true);
 window.addEventListener("storage", renderProfit);
 
 renderProfit();
