@@ -1,4 +1,4 @@
-import { exportProductImages, importProductImages } from "./retail-product-image-store.js?v=20260624-2";
+import { exportProductImages, importProductImages } from "./retail-product-image-store.js?v=20260624-3";
 
 const BACKUP_VERSION = 1;
 const DATA_KEYS = [
@@ -37,11 +37,6 @@ function readJson(key, fallback) {
   catch { return fallback; }
 }
 
-function count(key) {
-  const value = readJson(key, []);
-  return Array.isArray(value) ? value.length : value ? 1 : 0;
-}
-
 function formatNumber(value) {
   return Number(value || 0).toLocaleString("th-TH");
 }
@@ -56,6 +51,14 @@ function showToast(message) {
   els.toast.textContent = message;
   els.toast.classList.add("show");
   toastTimer = setTimeout(() => els.toast.classList.remove("show"), 2200);
+}
+
+function withTimeout(promise, milliseconds, message) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(message)), milliseconds);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
 function renderCurrentStats() {
@@ -105,7 +108,11 @@ async function exportBackup() {
   els.exportBtn.disabled = true;
   els.exportProgress.hidden = false;
   try {
-    const images = await exportProductImages();
+    const images = await withTimeout(
+      exportProductImages(),
+      15000,
+      "การรวบรวมรูปสินค้าใช้เวลานานเกินไป กรุณารีเฟรชหน้าแล้วลองใหม่"
+    );
     const backup = {
       app: "retail-pos",
       version: BACKUP_VERSION,
@@ -206,7 +213,11 @@ async function restoreBackup() {
   els.restoreProgress.hidden = false;
   try {
     applyLocalStorageData(selectedBackup);
-    await importProductImages(selectedBackup.productImages || [], { clearExisting: true });
+    await withTimeout(
+      importProductImages(selectedBackup.productImages || [], { clearExisting: true }),
+      15000,
+      "การกู้คืนรูปสินค้าใช้เวลานานเกินไป กรุณาลองใหม่"
+    );
     showToast("กู้คืนข้อมูลเรียบร้อยแล้ว");
     setTimeout(() => location.replace("/pos/"), 900);
   } catch (error) {
