@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#159447">
+<title>เจ้าหนี้ผู้จำหน่าย</title>
+<link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260624-6">
+<link rel="stylesheet" href="/assets/css/retail-payables.css?v=20260624-1">
+</head>
+<body>
+<header class="pos-header"><div><strong>เจ้าหนี้ผู้จำหน่าย</strong><small>ติดตามยอดค้างและวันครบกำหนด</small></div><div class="header-actions"><a href="/pos/" class="btn btn-secondary header-link">หน้าขาย</a><a href="/pos/purchases/" class="btn btn-secondary header-link">รับสินค้าเข้า</a><a href="/pos/suppliers/" class="btn btn-secondary header-link">ผู้จำหน่าย</a></div></header>
+<main class="payable-container">
+<section class="payable-stats">
+<article><span>เจ้าหนี้คงเหลือ</span><strong id="payableOutstanding">0.00</strong></article>
+<article><span>ใบซื้อค้างชำระ</span><strong id="payableOpenCount">0</strong></article>
+<article class="warning"><span>ครบกำหนดภายใน 7 วัน</span><strong id="payableDueSoon">0.00</strong></article>
+<article class="danger"><span>เกินกำหนด</span><strong id="payableOverdue">0.00</strong></article>
+</section>
+<section class="panel payable-panel">
+<div class="payable-toolbar"><input id="payableSearch" placeholder="ค้นหาผู้จำหน่าย เลขที่ใบซื้อ หรือเลขที่รับสินค้า"><select id="payableStatusFilter"><option value="open">ยังมียอดค้าง</option><option value="all">ทั้งหมด</option><option value="unpaid">ยังไม่ชำระ</option><option value="partial">ชำระบางส่วน</option><option value="paid">ชำระครบ</option><option value="overdue">เกินกำหนด</option></select></div>
+<div id="supplierPayableSummary" class="supplier-payable-summary"></div>
+<div class="table-wrap"><table class="payable-table"><thead><tr><th>ผู้จำหน่าย</th><th>เลขที่ใบซื้อ</th><th>วันที่ซื้อ</th><th>ครบกำหนด</th><th class="number">ยอดซื้อ</th><th class="number">ชำระแล้ว</th><th class="number">คงเหลือ</th><th>สถานะ</th><th></th></tr></thead><tbody id="payableTableBody"></tbody></table></div>
+<div id="payableEmpty" class="empty-state">ไม่พบรายการเจ้าหนี้</div>
+</section>
+</main>
+<dialog id="paymentDialog">
+<form id="supplierPaymentForm" class="payment-form">
+<div class="dialog-head"><h2>บันทึกชำระเจ้าหนี้</h2><button id="closePaymentDialog" type="button" class="icon-btn">×</button></div>
+<input id="paymentPurchaseId" type="hidden">
+<div id="paymentPurchaseInfo" class="payment-purchase-info"></div>
+<label>วันที่ชำระ<input id="supplierPaymentDate" type="date" required></label>
+<label>จำนวนเงิน<input id="supplierPaymentAmount" type="number" min="0.01" step="0.01" required></label>
+<label>ช่องทางชำระ<select id="supplierPaymentMethod"><option value="cash">เงินสด</option><option value="transfer">โอนเงิน</option><option value="cheque">เช็ค</option><option value="other">อื่น ๆ</option></select></label>
+<label>เลขที่อ้างอิง<input id="supplierPaymentReference" maxlength="100"></label>
+<label>หมายเหตุ<input id="supplierPaymentNote" maxlength="200"></label>
+<p id="supplierPaymentError" class="error-text"></p>
+<div class="dialog-actions"><button id="cancelPaymentBtn" type="button" class="btn btn-secondary">ยกเลิก</button><button type="submit" class="btn btn-pay">บันทึกการชำระ</button></div>
+</form>
+</dialog>
+<div id="toast" class="toast" role="status"></div>
+<script type="module" src="/assets/js/retail-payables.js?v=20260624-1"></script>
+</body>
+</html>
