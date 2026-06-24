@@ -64,6 +64,14 @@ function firstAllowedPage(userId){
 function guardPage(){
   const permission=permissionForPath();
   if(!permission||hasPermission(permission))return true;
+  const user=getCurrentUser();
+  const allowedPage=firstAllowedPage(user?.id);
+  const currentPath=normalizePath(location.pathname);
+  const allowedPath=normalizePath(allowedPage);
+  if(allowedPage!=="/pos/forbidden/"&&allowedPath!==currentPath){
+    location.replace(`${allowedPage}?from=permission`);
+    return false;
+  }
   const next=encodeURIComponent(location.pathname+location.search);
   location.replace(`/pos/forbidden/?permission=${encodeURIComponent(permission)}&next=${next}`);
   return false;
