@@ -54,6 +54,13 @@ export function getCurrentRole(){const user=getCurrentUser();return getRoles().f
 export function hasPermission(permission){const role=getCurrentRole();return Boolean(role?.permissions?.includes(permission))}
 export function permissionForPath(pathname=location.pathname){const current=normalizePath(pathname);for(const group of MENU_GROUPS){for(const item of group.items){if(normalizePath(item.href)===current)return item.key}}return null}
 
+function firstAllowedPage(userId){
+  const user=getUsers().find(item=>item.id===userId&&item.active!==false);
+  const role=getRoles().find(item=>item.id===user?.roleId);
+  const permissions=new Set(role?.permissions||[]);
+  return MENU_GROUPS.flatMap(group=>group.items).find(item=>permissions.has(item.key))?.href||"/pos/forbidden/";
+}
+
 function guardPage(){
   const permission=permissionForPath();
   if(!permission||hasPermission(permission))return true;
@@ -65,6 +72,22 @@ function guardPage(){
 function removeLegacyMenuLinks(header){
   const known=new Set(MENU_GROUPS.flatMap(group=>group.items.map(item=>normalizePath(item.href))));
   [...header.querySelectorAll("a[href]")].forEach(link=>{if(known.has(normalizePath(link.href)))link.remove()});
+}
+
+function renderUserSwitcher(currentUser){
+  const roles=getRoles();
+  const users=getUsers().filter(user=>user.active!==false);
+  return `<section id="posUserSwitcher" class="pos-user-switcher" hidden>
+    <div class="pos-user-switcher-head"><strong>สลับผู้ใช้งาน</strong><button type="button" class="icon-btn" data-close-user-switcher>×</button></div>
+    <div class="pos-user-switcher-list">${users.map(user=>{
+      const role=roles.find(item=>item.id===user.roleId);
+      const current=user.id===currentUser?.id;
+      return `<button type="button" class="pos-user-switch-item ${current?"is-current":""}" data-switch-user-id="${esc(user.id)}" ${current?"disabled":""}>
+        <span><strong>${esc(user.name)}</strong><small>${esc(role?.name||"ไม่ระบุบทบาท")} • ${esc(user.username||"")}</small></span>
+        <b>${current?"กำลังใช้งาน":"เลือก"}</b>
+      </button>`;
+    }).join("")}</div>
+  </section>`;
 }
 
 function renderMenu(){
@@ -82,11 +105,24 @@ function renderMenu(){
     const open=items.some(item=>normalizePath(item.href)===current);
     return`<section class="pos-menu-group ${open?"is-open":""}"><button type="button" data-menu-group="${esc(group.id)}">${esc(group.label)}</button><div class="pos-menu-links">${items.map(item=>`<a class="pos-menu-link ${normalizePath(item.href)===current?"is-current":""}" href="${esc(item.href)}"><span>${esc(item.label)}</span></a>`).join("")}</div></section>`;
   }).join("")||'<div class="pos-menu-empty">ไม่มีเมนูที่ได้รับอนุญาต</div>';
-  popover.innerHTML=`<div class="pos-menu-backdrop" data-close-menu></div><aside class="pos-menu-panel"><div class="pos-menu-head"><h2>เมนู POS</h2><button class="icon-btn" type="button" data-close-menu>×</button></div><div class="pos-menu-user"><strong>${esc(user?.name||"-")}</strong><span>${esc(role?.name||"ไม่ระบุสิทธิ์")}</span></div><div class="pos-menu-groups">${groups}</div><div class="pos-menu-footer"><a class="btn btn-secondary header-link" href="/pos/">หน้าขาย</a>${hasPermission("pos.users")?'<a class="btn btn-secondary header-link" href="/pos/users/">จัดการสิทธิ์</a>':""}</div></aside>`;
+  popover.innerHTML=`<div class="pos-menu-backdrop" data-close-menu></div><aside class="pos-menu-panel"><div class="pos-menu-head"><h2>เมนู POS</h2><button class="icon-btn" type="button" data-close-menu>×</button></div><div class="pos-menu-user"><strong>${esc(user?.name||"-")}</strong><span>${esc(role?.name||"ไม่ระบุสิทธิ์")}</span></div><div class="pos-menu-groups">${groups}</div><div class="pos-menu-footer"><button class="btn btn-secondary" type="button" data-open-user-switcher>สลับผู้ใช้</button>${hasPermission("pos.users")?'<a class="btn btn-secondary header-link" href="/pos/users/">จัดการสิทธิ์</a>':""}</div>${renderUserSwitcher(user)}</aside>`;
   document.body.appendChild(popover);
-  const close=()=>popover.classList.remove("is-open");
+  const switcher=popover.querySelector("#posUserSwitcher");
+  const close=()=>{popover.classList.remove("is-open");if(switcher)switcher.hidden=true};
   trigger.addEventListener("click",()=>popover.classList.add("is-open"));
-  popover.addEventListener("click",event=>{if(event.target.closest("[data-close-menu]"))close();const groupButton=event.target.closest("[data-menu-group]");if(groupButton)groupButton.closest(".pos-menu-group")?.classList.toggle("is-open")});
+  popover.addEventListener("click",event=>{
+    if(event.target.closest("[data-close-menu]"))close();
+    const groupButton=event.target.closest("[data-menu-group]");
+    if(groupButton)groupButton.closest(".pos-menu-group")?.classList.toggle("is-open");
+    if(event.target.closest("[data-open-user-switcher]")&&switcher)switcher.hidden=false;
+    if(event.target.closest("[data-close-user-switcher]")&&switcher)switcher.hidden=true;
+    const userButton=event.target.closest("[data-switch-user-id]");
+    if(userButton&&!userButton.disabled){
+      const userId=userButton.dataset.switchUserId;
+      write(CURRENT_USER_KEY,userId);
+      location.href=firstAllowedPage(userId);
+    }
+  });
   document.addEventListener("keydown",event=>{if(event.key==="Escape")close()});
 }
 
