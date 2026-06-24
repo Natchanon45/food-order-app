@@ -7,6 +7,7 @@
 <title>เจ้าหนี้ผู้จำหน่าย</title>
 <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260624-6">
 <link rel="stylesheet" href="/assets/css/retail-payables.css?v=20260624-1">
+<link rel="stylesheet" href="/assets/css/retail-pos-navigation.css?v=20260624-2">
 </head>
 <body>
 <header class="pos-header"><div><strong>เจ้าหนี้ผู้จำหน่าย</strong><small>ติดตามยอดค้างและวันครบกำหนด</small></div><div class="header-actions"><a href="/pos/" class="btn btn-secondary header-link">หน้าขาย</a><a href="/pos/purchases/" class="btn btn-secondary header-link">รับสินค้าเข้า</a><a href="/pos/suppliers/" class="btn btn-secondary header-link">ผู้จำหน่าย</a></div></header>
@@ -24,21 +25,9 @@
 <div id="payableEmpty" class="empty-state">ไม่พบรายการเจ้าหนี้</div>
 </section>
 </main>
-<dialog id="paymentDialog">
-<form id="supplierPaymentForm" class="payment-form">
-<div class="dialog-head"><h2>บันทึกชำระเจ้าหนี้</h2><button id="closePaymentDialog" type="button" class="icon-btn">×</button></div>
-<input id="paymentPurchaseId" type="hidden">
-<div id="paymentPurchaseInfo" class="payment-purchase-info"></div>
-<label>วันที่ชำระ<input id="supplierPaymentDate" type="date" required></label>
-<label>จำนวนเงิน<input id="supplierPaymentAmount" type="number" min="0.01" step="0.01" required></label>
-<label>ช่องทางชำระ<select id="supplierPaymentMethod"><option value="cash">เงินสด</option><option value="transfer">โอนเงิน</option><option value="cheque">เช็ค</option><option value="other">อื่น ๆ</option></select></label>
-<label>เลขที่อ้างอิง<input id="supplierPaymentReference" maxlength="100"></label>
-<label>หมายเหตุ<input id="supplierPaymentNote" maxlength="200"></label>
-<p id="supplierPaymentError" class="error-text"></p>
-<div class="dialog-actions"><button id="cancelPaymentBtn" type="button" class="btn btn-secondary">ยกเลิก</button><button type="submit" class="btn btn-pay">บันทึกการชำระ</button></div>
-</form>
-</dialog>
+<dialog id="paymentDialog"><form id="supplierPaymentForm" class="payment-form"><div class="dialog-head"><h2>บันทึกชำระเจ้าหนี้</h2><button id="closePaymentDialog" type="button" class="icon-btn">×</button></div><input id="paymentPurchaseId" type="hidden"><div id="paymentPurchaseInfo" class="payment-purchase-info"></div><label>วันที่ชำระ<input id="supplierPaymentDate" type="date" required></label><label>จำนวนเงิน<input id="supplierPaymentAmount" type="number" min="0.01" step="0.01" required></label><label>ช่องทางชำระ<select id="supplierPaymentMethod"><option value="cash">เงินสด</option><option value="transfer">โอนเงิน</option><option value="cheque">เช็ค</option><option value="other">อื่น ๆ</option></select></label><label>เลขที่อ้างอิง<input id="supplierPaymentReference" maxlength="100"></label><label>หมายเหตุ<input id="supplierPaymentNote" maxlength="200"></label><p id="supplierPaymentError" class="error-text"></p><div class="dialog-actions"><button id="cancelPaymentBtn" type="button" class="btn btn-secondary">ยกเลิก</button><button type="submit" class="btn btn-pay">บันทึกการชำระ</button></div></form></dialog>
 <div id="toast" class="toast" role="status"></div>
 <script type="module" src="/assets/js/retail-payables.js?v=20260624-1"></script>
+<script type="module" src="/assets/js/retail-pos-navigation.js?v=20260624-1"></script>
 </body>
 </html>
