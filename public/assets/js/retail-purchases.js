@@ -1,0 +1,1 @@
+const PRODUCT_KEY="retail_pos_products_v1";
