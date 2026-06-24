@@ -1,5 +1,6 @@
 const PRODUCT_KEY = "retail_pos_products_v1";
 const SALES_KEY = "retail_pos_sales_v1";
+const MOVEMENT_KEY = "retail_pos_stock_movements_v1";
 
 const sampleProducts = [
   { id: "P001", barcode: "8850000000011", name: "น้ำดื่ม 600 มล.", price: 10, cost: 6, stock: 48, unit: "ขวด" },
@@ -49,6 +50,11 @@ function readJson(key, fallback) {
 
 function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
+}
+
+function safeId(prefix) {
+  if (globalThis.crypto?.randomUUID) return `${prefix}-${crypto.randomUUID()}`;
+  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
 function money(value) {
@@ -181,9 +187,10 @@ function confirmPayment() {
   }
 
   const saleId = `SALE-${Date.now()}`;
+  const createdAt = new Date().toISOString();
   const sale = {
     id: saleId,
-    createdAt: new Date().toISOString(),
+    createdAt,
     items: cart.map(({ id, barcode, name, price, cost, qty, unit }) => ({
       id,
       barcode,
@@ -199,14 +206,29 @@ function confirmPayment() {
     payment: { method, received, change: Math.max(0, received - totals.total) }
   };
 
+  const movements = readJson(MOVEMENT_KEY, []);
   products = products.map(product => {
     const sold = cart.find(item => item.id === product.id)?.qty || 0;
-    return sold ? { ...product, stock: product.stock - sold } : product;
+    if (!sold) return product;
+    const before = Number(product.stock || 0);
+    const after = before - sold;
+    movements.unshift({
+      id: safeId("movement"),
+      productId: product.id,
+      productName: product.name,
+      before,
+      after,
+      note: `ขายสินค้า ${saleId}`,
+      createdAt
+    });
+    return { ...product, stock: after };
   });
+
   const sales = readJson(SALES_KEY, []);
   sales.unshift(sale);
   writeJson(PRODUCT_KEY, products);
   writeJson(SALES_KEY, sales.slice(0, 500));
+  writeJson(MOVEMENT_KEY, movements.slice(0, 500));
 
   els.paymentDialog.close();
   renderProducts();
