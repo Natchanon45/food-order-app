@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260624-6">
 <link rel="stylesheet" href="/assets/css/retail-sales.css?v=20260624-3">
 <link rel="stylesheet" href="/assets/css/retail-sales-profit.css?v=20260624-1">
+<link rel="stylesheet" href="/assets/css/retail-sales-returns.css?v=20260624-1">
 </head>
 <body>
 <header class="pos-header no-print">
@@ -24,22 +25,22 @@
 </section>
 <section class="sales-stats">
 <article class="stat-card"><span>จำนวนบิล</span><strong id="saleCount">0</strong></article>
-<article class="stat-card"><span>ยอดขายรวม</span><strong id="saleTotal">0.00</strong></article>
-<article class="stat-card"><span>ยอดเงินสด</span><strong id="cashTotal">0.00</strong></article>
-<article class="stat-card"><span>ยอดโอน / PromptPay</span><strong id="transferTotal">0.00</strong></article>
+<article class="stat-card"><span>ยอดขายสุทธิ</span><strong id="saleTotal">0.00</strong></article>
+<article class="stat-card"><span>ยอดเงินสดสุทธิ</span><strong id="cashTotal">0.00</strong></article>
+<article class="stat-card"><span>ยอดโอน / PromptPay สุทธิ</span><strong id="transferTotal">0.00</strong></article>
 <article class="stat-card"><span>ส่วนลดรวม</span><strong id="discountTotal">0.00</strong></article>
-<article class="stat-card"><span>จำนวนสินค้าที่ขาย</span><strong id="itemQtyTotal">0</strong></article>
+<article class="stat-card"><span>จำนวนสินค้าที่ขายสุทธิ</span><strong id="itemQtyTotal">0</strong></article>
 <article class="stat-card"><span>ยอดเฉลี่ยต่อบิล</span><strong id="averageSale">0.00</strong></article>
 <article class="stat-card"><span>บิลสูงสุด</span><strong id="highestSale">0.00</strong></article>
 </section>
 <section class="report-grid">
 <section class="panel ranking-panel">
-<div class="section-heading"><div><h2>สินค้าขายดี</h2><p>เรียงตามจำนวนขายในช่วงที่เลือก</p></div></div>
+<div class="section-heading"><div><h2>สินค้าขายดี</h2><p>เรียงตามจำนวนขายสุทธิหลังหักคืนสินค้า</p></div></div>
 <div id="bestSellerList" class="ranking-list"></div>
 <div id="bestSellerEmpty" class="empty-state" hidden>ยังไม่มีข้อมูลสินค้าในช่วงนี้</div>
 </section>
 <section class="panel payment-panel">
-<div class="section-heading"><div><h2>สัดส่วนการชำระเงิน</h2><p>สรุปยอดตามช่องทางชำระ</p></div></div>
+<div class="section-heading"><div><h2>สัดส่วนการชำระเงิน</h2><p>สรุปยอดสุทธิตามช่องทางรับชำระเดิม</p></div></div>
 <div class="payment-summary-list">
 <div><span>เงินสด</span><strong id="cashPercent">0%</strong></div>
 <div class="payment-bar"><i id="cashBar"></i></div>
@@ -50,7 +51,7 @@
 </section>
 <section class="panel sales-panel">
 <div class="section-heading"><div><h2>รายการขาย</h2><p id="reportPeriodText">ข้อมูลทั้งหมด</p></div></div>
-<div class="table-wrap"><table class="sales-table"><thead><tr><th>เลขที่บิล</th><th>วันและเวลา</th><th class="number">จำนวน</th><th>ชำระโดย</th><th class="number">ส่วนลด</th><th class="number">ยอดสุทธิ</th><th></th></tr></thead><tbody id="salesTableBody"></tbody></table></div>
+<div class="table-wrap"><table class="sales-table"><thead><tr><th>เลขที่บิล</th><th>วันและเวลา</th><th class="number">จำนวนสุทธิ</th><th>ชำระโดย</th><th class="number">ส่วนลด</th><th class="number">ยอดขายสุทธิ</th><th></th></tr></thead><tbody id="salesTableBody"></tbody></table></div>
 <div id="salesEmpty" class="empty-state" hidden>ไม่พบประวัติการขาย</div>
 </section>
 </main>
@@ -67,8 +68,8 @@
 </div>
 </div>
 <div class="receipt-meta"><div><span>เลขที่บิล</span><strong id="receiptSaleId">-</strong></div><div><span>วันที่</span><strong id="receiptDate">-</strong></div><div><span>การชำระเงิน</span><strong id="receiptPayment">-</strong></div></div>
-<table class="receipt-table"><thead><tr><th>รายการ</th><th class="number">จำนวน</th><th class="number">ราคา</th><th class="number">รวม</th></tr></thead><tbody id="receiptItems"></tbody></table>
-<div class="receipt-summary"><div><span>รวมสินค้า</span><strong id="receiptSubtotal">0.00</strong></div><div><span>ส่วนลด</span><strong id="receiptDiscount">0.00</strong></div><div class="receipt-grand"><span>ยอดสุทธิ</span><strong id="receiptTotal">0.00</strong></div><div id="receiptReceivedRow"><span>รับเงิน</span><strong id="receiptReceived">0.00</strong></div><div id="receiptChangeRow"><span>เงินทอน</span><strong id="receiptChange">0.00</strong></div></div>
+<table class="receipt-table"><thead><tr><th>รายการ</th><th class="number">จำนวนสุทธิ</th><th class="number">ราคา</th><th class="number">รวม</th></tr></thead><tbody id="receiptItems"></tbody></table>
+<div class="receipt-summary"><div><span>รวมสินค้า</span><strong id="receiptSubtotal">0.00</strong></div><div><span>ส่วนลด</span><strong id="receiptDiscount">0.00</strong></div><div class="receipt-grand"><span>ยอดเดิม</span><strong id="receiptTotal">0.00</strong></div><div id="receiptReceivedRow"><span>รับเงิน</span><strong id="receiptReceived">0.00</strong></div><div id="receiptChangeRow"><span>เงินทอน</span><strong id="receiptChange">0.00</strong></div></div>
 <p id="receiptThanks" class="receipt-thanks">ขอบคุณที่ใช้บริการ</p>
 <p id="receiptFooter" class="receipt-footer"></p>
 </section>
@@ -77,5 +78,7 @@
 <script type="module" src="/assets/js/retail-sales.js?v=20260624-2"></script>
 <script type="module" src="/assets/js/retail-sales-receipt-settings.js?v=20260624-1"></script>
 <script type="module" src="/assets/js/retail-sales-profit.js?v=20260624-1"></script>
+<script type="module" src="/assets/js/retail-sales-returns-adjustment.js?v=20260624-1"></script>
+<script type="module" src="/assets/js/retail-sales-return-profit.js?v=20260624-1"></script>
 </body>
 </html>
