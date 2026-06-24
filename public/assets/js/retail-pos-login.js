@@ -1,14 +1,32 @@
-import {login,isLoggedIn} from "./retail-pos-auth.js?v=20260624-1";
-import {MENU_GROUPS,getRoles,getUsers} from "./retail-pos-navigation.js?v=20260624-4";
+import {login,isLoggedIn} from "./retail-pos-auth.js?v=20260624-2";
 
+const ROLE_KEY="retail_pos_roles_v1";
+const MENU_ITEMS=[
+  {key:"pos.sale",href:"/pos/"},
+  {key:"pos.sales",href:"/pos/sales/"},
+  {key:"pos.returns",href:"/pos/returns/"},
+  {key:"pos.shifts",href:"/pos/shifts/"},
+  {key:"pos.products",href:"/pos/products/"},
+  {key:"pos.stock_movements",href:"/pos/stock-movements/"},
+  {key:"pos.stock_counts",href:"/pos/stock-counts/"},
+  {key:"pos.purchases",href:"/pos/purchases/"},
+  {key:"pos.payables",href:"/pos/payables/"},
+  {key:"pos.suppliers",href:"/pos/suppliers/"},
+  {key:"pos.customers",href:"/pos/customers/"},
+  {key:"pos.settings",href:"/pos/settings/"},
+  {key:"pos.backup",href:"/pos/backup/"},
+  {key:"pos.users",href:"/pos/users/"}
+];
 const $=selector=>document.querySelector(selector);
 const form=$("#loginForm"),username=$("#loginUsername"),password=$("#loginPassword"),error=$("#loginError"),submit=$("#loginSubmitBtn"),toggle=$("#togglePasswordBtn");
 
+function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}}
 function firstAllowedPage(user){
-  const role=getRoles().find(item=>item.id===user?.roleId);
+  const role=read(ROLE_KEY,[]).find(item=>item.id===user?.roleId);
   const permissions=new Set(role?.permissions||[]);
-  return MENU_GROUPS.flatMap(group=>group.items).find(item=>permissions.has(item.key))?.href||"/pos/forbidden/";
+  return MENU_ITEMS.find(item=>permissions.has(item.key))?.href||"/pos/forbidden/";
 }
+function resetButton(){submit.disabled=false;submit.textContent="เข้าสู่ระบบ"}
 
 if(isLoggedIn())location.replace("/pos/");
 
@@ -23,14 +41,15 @@ form.addEventListener("submit",async event=>{
   error.textContent="";
   submit.disabled=true;
   submit.innerHTML='<span class="login-loading">กำลังเข้าสู่ระบบ</span>';
+  const timeout=setTimeout(()=>{error.textContent="การเข้าสู่ระบบใช้เวลานานเกินไป กรุณาลองใหม่";resetButton()},7000);
   try{
     const result=await login(username.value,password.value);
     if(!result.ok){error.textContent=result.message;return}
-    location.replace(firstAllowedPage(result.user));
+    location.href=firstAllowedPage(result.user);
   }catch(err){
     error.textContent=err?.message||"ไม่สามารถเข้าสู่ระบบได้";
   }finally{
-    submit.disabled=false;
-    submit.textContent="เข้าสู่ระบบ";
+    clearTimeout(timeout);
+    resetButton();
   }
 });
