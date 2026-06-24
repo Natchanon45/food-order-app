@@ -4,7 +4,7 @@ const STORE_SETTINGS_KEY = "food_order_store_settings";
 
 const styleLink = document.createElement("link");
 styleLink.rel = "stylesheet";
-styleLink.href = "/assets/css/retail-pos-complete.css?v=20260624-2";
+styleLink.href = "/assets/css/retail-pos-complete.css?v=20260624-3";
 document.head.appendChild(styleLink);
 
 document.body.insertAdjacentHTML("beforeend", `
@@ -148,11 +148,22 @@ function closeCompleteDialog() {
   setTimeout(() => barcodeInput?.focus(), 50);
 }
 
+async function waitForReceiptFont() {
+  if (!document.fonts) return;
+  try {
+    await document.fonts.load('20px "TH Sarabun PSK Local"', "ทดสอบใบเสร็จรับเงิน");
+    await document.fonts.load('700 24px "TH Sarabun PSK Local"', "ยอดรวม รับเงิน เงินทอน");
+    await document.fonts.ready;
+  } catch (error) {
+    console.warn("โหลดฟอนต์ใบเสร็จไม่สำเร็จ ใช้ฟอนต์สำรองแทน", error);
+  }
+}
+
 async function printReceipt() {
   if (!activeSale) return;
   populateReceipt(activeSale);
-  if (document.fonts?.ready) await document.fonts.ready;
-  setTimeout(() => window.print(), 80);
+  await waitForReceiptFont();
+  requestAnimationFrame(() => requestAnimationFrame(() => window.print()));
 }
 
 function showComplete(sale) {
