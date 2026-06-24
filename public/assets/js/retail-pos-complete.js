@@ -1,9 +1,10 @@
 const SALES_KEY = "retail_pos_sales_v1";
 const PRINT_MODE_KEY = "retail_pos_print_mode_v1";
+const STORE_SETTINGS_KEY = "food_order_store_settings";
 
 const styleLink = document.createElement("link");
 styleLink.rel = "stylesheet";
-styleLink.href = "/assets/css/retail-pos-complete.css?v=20260624-1";
+styleLink.href = "/assets/css/retail-pos-complete.css?v=20260624-2";
 document.head.appendChild(styleLink);
 
 document.body.insertAdjacentHTML("beforeend", `
@@ -29,25 +30,43 @@ document.body.insertAdjacentHTML("beforeend", `
       </div>
     </div>
   </dialog>
+
   <section id="posPrintReceipt" class="pos-print-receipt">
-    <div class="print-head"><h1>POS ร้านค้าปลีก</h1><p>ใบเสร็จรับเงิน</p></div>
+    <div class="print-head">
+      <h1 id="printShopName">ชื่อร้าน</h1>
+      <p>ใบเสร็จรับเงิน</p>
+    </div>
+    <div class="print-shop-info">
+      <div id="printShopAddress"></div>
+      <div id="printShopPhone"></div>
+      <div id="printShopTaxId"></div>
+    </div>
+    <hr class="print-rule">
     <div class="print-meta">
       <div><span>เลขที่บิล</span><strong id="printSaleId">-</strong></div>
       <div><span>วันที่</span><strong id="printSaleDate">-</strong></div>
+      <div><span>พนักงาน</span><strong id="printCashier">-</strong></div>
+      <div><span>เครื่อง POS</span><strong id="printTerminal">-</strong></div>
       <div><span>ชำระโดย</span><strong id="printPaymentMethod">-</strong></div>
     </div>
+    <hr class="print-rule">
+    <div class="print-section-title">รายการสินค้า</div>
     <table class="print-items">
       <thead><tr><th>รายการ</th><th class="num">จำนวน</th><th class="num">ราคา</th><th class="num">รวม</th></tr></thead>
       <tbody id="printItems"></tbody>
     </table>
+    <hr class="print-rule">
+    <div class="print-section-title">สรุปยอด</div>
     <div class="print-summary">
       <div><span>รวมสินค้า</span><strong id="printSubtotal">0.00</strong></div>
       <div><span>ส่วนลด</span><strong id="printDiscount">0.00</strong></div>
-      <div class="grand"><span>ยอดสุทธิ</span><strong id="printTotal">0.00</strong></div>
-      <div><span>รับเงิน</span><strong id="printReceived">0.00</strong></div>
-      <div><span>เงินทอน</span><strong id="printChange">0.00</strong></div>
+      <div class="grand"><span>ยอดรวม</span><strong id="printTotal">0.00</strong></div>
+      <div class="received"><span>รับเงิน</span><strong id="printReceived">0.00</strong></div>
+      <div class="change"><span>เงินทอน</span><strong id="printChange">0.00</strong></div>
     </div>
+    <hr class="print-rule">
     <p class="print-thanks">ขอบคุณที่ใช้บริการ</p>
+    <p class="print-warning">เอกสารฉบับนี้ออกโดยระบบของร้านตามข้อมูลด้านบน</p>
   </section>
 `);
 
@@ -65,9 +84,23 @@ const barcodeInput = document.querySelector("#barcodeInput");
 let saleBeforeConfirm = null;
 let activeSale = null;
 
+function readJson(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+  catch { return fallback; }
+}
+
 function readSales() {
-  try { return JSON.parse(localStorage.getItem(SALES_KEY)) || []; }
-  catch { return []; }
+  return readJson(SALES_KEY, []);
+}
+
+function getStoreSettings() {
+  const settings = readJson(STORE_SETTINGS_KEY, {});
+  return {
+    shopName: settings.shopName || "POS ร้านค้าปลีก",
+    shopAddress: settings.shopAddress || "",
+    shopPhone: settings.shopPhone || "",
+    taxId: settings.taxId || settings.shopTaxId || ""
+  };
 }
 
 function money(value) {
@@ -85,11 +118,23 @@ function paymentName(method) {
 }
 
 function populateReceipt(sale) {
+  const settings = getStoreSettings();
+  document.querySelector("#printShopName").textContent = settings.shopName;
+  document.querySelector("#printShopAddress").textContent = settings.shopAddress;
+  document.querySelector("#printShopPhone").textContent = settings.shopPhone ? `โทร ${settings.shopPhone}` : "";
+  document.querySelector("#printShopTaxId").textContent = settings.taxId ? `เลขประจำตัวผู้เสียภาษี ${settings.taxId}` : "";
   document.querySelector("#printSaleId").textContent = sale.id;
   document.querySelector("#printSaleDate").textContent = new Date(sale.createdAt).toLocaleString("th-TH");
+  document.querySelector("#printCashier").textContent = sale.cashierName || "-";
+  document.querySelector("#printTerminal").textContent = sale.terminalCode || "-";
   document.querySelector("#printPaymentMethod").textContent = paymentName(sale.payment?.method);
   document.querySelector("#printItems").innerHTML = (sale.items || []).map(item => `
-    <tr><td>${escapeHtml(item.name)}</td><td class="num">${Number(item.qty || 0).toLocaleString("th-TH")}</td><td class="num">${money(item.price)}</td><td class="num">${money(Number(item.price || 0) * Number(item.qty || 0))}</td></tr>
+    <tr>
+      <td class="item-name">${escapeHtml(item.name)}</td>
+      <td class="num">${Number(item.qty || 0).toLocaleString("th-TH")}</td>
+      <td class="num">${money(item.price)}</td>
+      <td class="num">${money(Number(item.price || 0) * Number(item.qty || 0))}</td>
+    </tr>
   `).join("");
   document.querySelector("#printSubtotal").textContent = money(sale.subtotal);
   document.querySelector("#printDiscount").textContent = money(sale.discount);
@@ -103,10 +148,11 @@ function closeCompleteDialog() {
   setTimeout(() => barcodeInput?.focus(), 50);
 }
 
-function printReceipt() {
+async function printReceipt() {
   if (!activeSale) return;
   populateReceipt(activeSale);
-  window.print();
+  if (document.fonts?.ready) await document.fonts.ready;
+  setTimeout(() => window.print(), 80);
 }
 
 function showComplete(sale) {
