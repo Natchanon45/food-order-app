@@ -1,3 +1,4 @@
+const styleLink=document.createElement("link");styleLink.rel="stylesheet";styleLink.href="/assets/css/retail-customer-receipt.css?v=20260624-1";document.head.appendChild(styleLink);
 const SALES_KEY="retail_pos_sales_v1",SETTINGS_KEY="retail_pos_store_settings_v1",LEGACY_SETTINGS_KEY="food_order_store_settings";
 const historyList=document.querySelector("#customerHistoryList");
 function read(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}
