@@ -1,4 +1,6 @@
-const ROLE_KEY="retail_pos_roles_v1",USER_KEY="retail_pos_users_v1",CURRENT_USER_KEY="retail_pos_current_user_v1";
+import {ensureAuthUsers,getAuthUsers,getSessionUser,logout,sessionRole} from "./retail-pos-auth.js?v=20260624-1";
+
+const ROLE_KEY="retail_pos_roles_v1";
 
 export const MENU_GROUPS=[
   {id:"sales",label:"ขายหน้าร้าน",items:[
@@ -34,7 +36,6 @@ const DEFAULT_ROLES=[
   {id:"stock",name:"พนักงานสต็อก",permissions:["pos.products","pos.stock_movements","pos.stock_counts","pos.purchases","pos.suppliers"],locked:false},
   {id:"manager",name:"ผู้จัดการร้าน",permissions:ALL_PERMISSIONS.filter(key=>key!=="pos.backup"&&key!=="pos.users"),locked:false}
 ];
-const DEFAULT_USERS=[{id:"owner",name:"เจ้าของร้าน",username:"owner",roleId:"owner",active:true,locked:true}];
 
 function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}}
 function write(key,value){localStorage.setItem(key,JSON.stringify(value))}
@@ -42,36 +43,35 @@ function esc(value){return String(value??"").replace(/[&<>'"]/g,char=>({"&":"&am
 function normalizePath(value){const url=new URL(value,location.origin);let path=url.pathname.replace(/\/index\.html$/,"/");if(!path.endsWith("/"))path+="/";return path}
 
 export function ensureAccessData(){
-  const roles=read(ROLE_KEY,[]),users=read(USER_KEY,[]);
+  const roles=read(ROLE_KEY,[]);
   if(!roles.length)write(ROLE_KEY,DEFAULT_ROLES);
-  if(!users.length)write(USER_KEY,DEFAULT_USERS);
-  if(!localStorage.getItem(CURRENT_USER_KEY))write(CURRENT_USER_KEY,"owner");
+  ensureAuthUsers();
 }
 export function getRoles(){ensureAccessData();return read(ROLE_KEY,DEFAULT_ROLES)}
-export function getUsers(){ensureAccessData();return read(USER_KEY,DEFAULT_USERS)}
-export function getCurrentUser(){ensureAccessData();const id=read(CURRENT_USER_KEY,"owner");return getUsers().find(user=>user.id===id&&user.active!==false)||getUsers().find(user=>user.id==="owner")||null}
-export function getCurrentRole(){const user=getCurrentUser();return getRoles().find(role=>role.id===user?.roleId)||null}
+export function getUsers(){ensureAccessData();return getAuthUsers()}
+export function getCurrentUser(){ensureAccessData();return getSessionUser()}
+export function getCurrentRole(){ensureAccessData();return sessionRole()}
 export function hasPermission(permission){const role=getCurrentRole();return Boolean(role?.permissions?.includes(permission))}
 export function permissionForPath(pathname=location.pathname){const current=normalizePath(pathname);for(const group of MENU_GROUPS){for(const item of group.items){if(normalizePath(item.href)===current)return item.key}}return null}
-
-function firstAllowedPage(userId){
-  const user=getUsers().find(item=>item.id===userId&&item.active!==false);
+export function firstAllowedPage(user=getCurrentUser()){
   const role=getRoles().find(item=>item.id===user?.roleId);
   const permissions=new Set(role?.permissions||[]);
   return MENU_GROUPS.flatMap(group=>group.items).find(item=>permissions.has(item.key))?.href||"/pos/forbidden/";
 }
 
+function requireLogin(){
+  if(getCurrentUser())return true;
+  const next=encodeURIComponent(location.pathname+location.search);
+  location.replace(`/pos/login/?next=${next}`);
+  return false;
+}
+
 function guardPage(){
   const permission=permissionForPath();
   if(!permission||hasPermission(permission))return true;
-  const user=getCurrentUser();
-  const allowedPage=firstAllowedPage(user?.id);
+  const allowedPage=firstAllowedPage();
   const currentPath=normalizePath(location.pathname);
-  const allowedPath=normalizePath(allowedPage);
-  if(allowedPage!=="/pos/forbidden/"&&allowedPath!==currentPath){
-    location.replace(`${allowedPage}?from=permission`);
-    return false;
-  }
+  if(allowedPage!=="/pos/forbidden/"&&normalizePath(allowedPage)!==currentPath){location.replace(`${allowedPage}?from=permission`);return false}
   const next=encodeURIComponent(location.pathname+location.search);
   location.replace(`/pos/forbidden/?permission=${encodeURIComponent(permission)}&next=${next}`);
   return false;
@@ -80,22 +80,6 @@ function guardPage(){
 function removeLegacyMenuLinks(header){
   const known=new Set(MENU_GROUPS.flatMap(group=>group.items.map(item=>normalizePath(item.href))));
   [...header.querySelectorAll("a[href]")].forEach(link=>{if(known.has(normalizePath(link.href)))link.remove()});
-}
-
-function renderUserSwitcher(currentUser){
-  const roles=getRoles();
-  const users=getUsers().filter(user=>user.active!==false);
-  return `<section id="posUserSwitcher" class="pos-user-switcher" hidden>
-    <div class="pos-user-switcher-head"><strong>สลับผู้ใช้งาน</strong><button type="button" class="icon-btn" data-close-user-switcher>×</button></div>
-    <div class="pos-user-switcher-list">${users.map(user=>{
-      const role=roles.find(item=>item.id===user.roleId);
-      const current=user.id===currentUser?.id;
-      return `<button type="button" class="pos-user-switch-item ${current?"is-current":""}" data-switch-user-id="${esc(user.id)}" ${current?"disabled":""}>
-        <span><strong>${esc(user.name)}</strong><small>${esc(role?.name||"ไม่ระบุบทบาท")} • ${esc(user.username||"")}</small></span>
-        <b>${current?"กำลังใช้งาน":"เลือก"}</b>
-      </button>`;
-    }).join("")}</div>
-  </section>`;
 }
 
 function renderMenu(){
@@ -113,28 +97,23 @@ function renderMenu(){
     const open=items.some(item=>normalizePath(item.href)===current);
     return`<section class="pos-menu-group ${open?"is-open":""}"><button type="button" data-menu-group="${esc(group.id)}">${esc(group.label)}</button><div class="pos-menu-links">${items.map(item=>`<a class="pos-menu-link ${normalizePath(item.href)===current?"is-current":""}" href="${esc(item.href)}"><span>${esc(item.label)}</span></a>`).join("")}</div></section>`;
   }).join("")||'<div class="pos-menu-empty">ไม่มีเมนูที่ได้รับอนุญาต</div>';
-  popover.innerHTML=`<div class="pos-menu-backdrop" data-close-menu></div><aside class="pos-menu-panel"><div class="pos-menu-head"><h2>เมนู POS</h2><button class="icon-btn" type="button" data-close-menu>×</button></div><div class="pos-menu-user"><strong>${esc(user?.name||"-")}</strong><span>${esc(role?.name||"ไม่ระบุสิทธิ์")}</span></div><div class="pos-menu-groups">${groups}</div><div class="pos-menu-footer"><button class="btn btn-secondary" type="button" data-open-user-switcher>สลับผู้ใช้</button>${hasPermission("pos.users")?'<a class="btn btn-secondary header-link" href="/pos/users/">จัดการสิทธิ์</a>':""}</div>${renderUserSwitcher(user)}</aside>`;
+  popover.innerHTML=`<div class="pos-menu-backdrop" data-close-menu></div><aside class="pos-menu-panel"><div class="pos-menu-head"><h2>เมนู POS</h2><button class="icon-btn" type="button" data-close-menu>×</button></div><div class="pos-menu-user"><strong>${esc(user?.name||"-")}</strong><span>${esc(role?.name||"ไม่ระบุสิทธิ์")} • ${esc(user?.username||"")}</span></div><div class="pos-menu-groups">${groups}</div><div class="pos-menu-footer"><button class="btn btn-danger" type="button" data-logout>ออกจากระบบ</button>${hasPermission("pos.users")?'<a class="btn btn-secondary header-link" href="/pos/users/">จัดการสิทธิ์</a>':""}</div></aside>`;
   document.body.appendChild(popover);
-  const switcher=popover.querySelector("#posUserSwitcher");
-  const close=()=>{popover.classList.remove("is-open");if(switcher)switcher.hidden=true};
+  const close=()=>popover.classList.remove("is-open");
   trigger.addEventListener("click",()=>popover.classList.add("is-open"));
   popover.addEventListener("click",event=>{
     if(event.target.closest("[data-close-menu]"))close();
     const groupButton=event.target.closest("[data-menu-group]");
     if(groupButton)groupButton.closest(".pos-menu-group")?.classList.toggle("is-open");
-    if(event.target.closest("[data-open-user-switcher]")&&switcher)switcher.hidden=false;
-    if(event.target.closest("[data-close-user-switcher]")&&switcher)switcher.hidden=true;
-    const userButton=event.target.closest("[data-switch-user-id]");
-    if(userButton&&!userButton.disabled){
-      const userId=userButton.dataset.switchUserId;
-      write(CURRENT_USER_KEY,userId);
-      location.href=firstAllowedPage(userId);
+    if(event.target.closest("[data-logout]")){
+      if(confirm("ต้องการออกจากระบบหรือไม่?")){logout();location.replace("/pos/login/")}
     }
   });
   document.addEventListener("keydown",event=>{if(event.key==="Escape")close()});
 }
 
 ensureAccessData();
-if(guardPage()){
+const isLoginPage=normalizePath(location.pathname)==="/pos/login/";
+if(!isLoginPage&&requireLogin()&&guardPage()){
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",renderMenu);else renderMenu();
 }
