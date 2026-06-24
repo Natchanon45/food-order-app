@@ -8,7 +8,7 @@ const searchInput = document.querySelector("#searchInput");
 
 const style = document.createElement("link");
 style.rel = "stylesheet";
-style.href = "/assets/css/retail-pos-catalog.css?v=20260624-4";
+style.href = "/assets/css/retail-pos-catalog.css?v=20260624-5";
 document.head.appendChild(style);
 
 const tabs = document.createElement("div");
@@ -41,6 +41,13 @@ function escapeHtml(value) {
 
 function initials(name) {
   return String(name || "สินค้า").trim().slice(0, 2).toUpperCase();
+}
+
+function money(value) {
+  return Number(value || 0).toLocaleString("th-TH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
 }
 
 function categories(products) {
@@ -127,6 +134,49 @@ async function hydrateCardImage(container, product) {
   container.appendChild(image);
 }
 
+function setupProductInfo(card, product) {
+  const label = `${product.name || "สินค้า"} ราคา ${money(product.price)} บาท คงเหลือ ${Number(product.stock || 0).toLocaleString("th-TH")} ${product.unit || ""}`;
+  card.title = label;
+  card.setAttribute("aria-label", label);
+
+  let overlay = card.querySelector(".product-info-overlay");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.className = "product-info-overlay";
+    card.appendChild(overlay);
+  }
+  overlay.innerHTML = `<strong>${escapeHtml(product.name || "สินค้า")}</strong><span>${money(product.price)} บาท • เหลือ ${Number(product.stock || 0).toLocaleString("th-TH")} ${escapeHtml(product.unit || "")}</span>`;
+
+  if (card.dataset.longPressReady === "1") return;
+  card.dataset.longPressReady = "1";
+
+  let timer = null;
+  const clearTimer = () => {
+    if (timer) clearTimeout(timer);
+    timer = null;
+  };
+
+  card.addEventListener("pointerdown", event => {
+    if (event.pointerType === "mouse") return;
+    clearTimer();
+    timer = setTimeout(() => {
+      card.classList.add("show-info");
+      card.dataset.suppressClick = "1";
+      if (navigator.vibrate) navigator.vibrate(20);
+      setTimeout(() => card.classList.remove("show-info"), 2200);
+    }, 520);
+  });
+
+  ["pointerup", "pointercancel", "pointerleave"].forEach(type => card.addEventListener(type, clearTimer));
+
+  card.addEventListener("click", event => {
+    if (card.dataset.suppressClick !== "1") return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    delete card.dataset.suppressClick;
+  }, true);
+}
+
 function decorateCards() {
   if (decorating || !productGrid) return;
   decorating = true;
@@ -152,6 +202,7 @@ function decorateCards() {
         card.innerHTML = `<div class="product-image">${escapeHtml(initials(product.name))}</div><div class="product-card-body">${original}</div>`;
       }
       hydrateCardImage(card.querySelector(".product-image"), product);
+      setupProductInfo(card, product);
     });
 
     sortCards(cards, byId, ranking);
