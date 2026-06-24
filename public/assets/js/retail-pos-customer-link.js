@@ -1,0 +1,10 @@
+const CUSTOMER_KEY="retail_pos_customers_v1",SALES_KEY="retail_pos_sales_v1";
+const paymentForm=document.querySelector("#paymentDialog .payment-form"),method=document.querySelector("#paymentMethod"),confirmBtn=document.querySelector("#confirmPaymentBtn");
+function read(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}
+function esc(v){return String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"})[c])}
+if(paymentForm&&method&&!document.querySelector("#saleCustomerId")){const wrap=document.createElement("label");wrap.innerHTML=`ลูกค้า (ไม่บังคับ)<select id="saleCustomerId"><option value="">ลูกค้าทั่วไป / ไม่ระบุ</option></select>`;method.closest("label")?.insertAdjacentElement("beforebegin",wrap)}
+const select=document.querySelector("#saleCustomerId");
+function renderCustomers(){if(!select)return;const current=select.value,customers=read(CUSTOMER_KEY,[]);select.innerHTML='<option value="">ลูกค้าทั่วไป / ไม่ระบุ</option>'+customers.sort((a,b)=>String(a.name).localeCompare(String(b.name),"th")).map(c=>`<option value="${esc(c.id)}">${esc(c.name)}${c.phone?` • ${esc(c.phone)}`:""}</option>`).join("");select.value=customers.some(c=>c.id===current)?current:""}
+function tagLatestSale(customerId,startedAt){if(!customerId)return;const customers=read(CUSTOMER_KEY,[]),customer=customers.find(c=>c.id===customerId);if(!customer)return;const sales=read(SALES_KEY,[]),sale=sales.find(s=>new Date(s.createdAt).getTime()>=startedAt-5000&&!s.customerId);if(!sale)return;sale.customerId=customer.id;sale.customerName=customer.name;sale.customerPhone=customer.phone||"";localStorage.setItem(SALES_KEY,JSON.stringify(sales))}
+confirmBtn?.addEventListener("click",()=>{const customerId=select?.value||"",startedAt=Date.now();setTimeout(()=>tagLatestSale(customerId,startedAt),180)},true);
+document.querySelector("#paymentDialog")?.addEventListener("close",()=>{if(select)select.value=""});window.addEventListener("storage",renderCustomers);renderCustomers();
