@@ -6,7 +6,7 @@ const productTableBody = document.querySelector("#productTableBody");
 
 const style = document.createElement("link");
 style.rel = "stylesheet";
-style.href = "/assets/css/retail-product-merchandising.css?v=20260624-2";
+style.href = "/assets/css/retail-product-merchandising.css?v=20260624-3";
 document.head.appendChild(style);
 
 const section = document.createElement("section");
@@ -135,25 +135,30 @@ productTableBody?.addEventListener("click", event => {
 imageUrlInput.addEventListener("input", updatePreview);
 nameInput.addEventListener("input", () => { if (!imageUrlInput.value.trim()) updatePreview(); });
 
-const observer = new MutationObserver(() => {
+function decorateProductRows() {
   const products = readProducts();
   [...productTableBody.querySelectorAll("tr")].forEach(row => {
     const id = row.cells[0]?.textContent.trim();
     const product = products.find(item => item.id === id);
     const cell = row.cells[1];
     if (!product || !cell || cell.querySelector(".product-cell")) return;
+
     const original = cell.innerHTML;
     const image = product.imageUrl
-      ? `<img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.name)}" onerror="this.parentElement.textContent='${escapeHtml(initials(product.name))}'">`
+      ? `<img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="this.parentElement.textContent='${escapeHtml(initials(product.name))}'">`
       : escapeHtml(initials(product.name));
     const tags = [
       product.category ? `<span class="merch-tag">${escapeHtml(product.category)}</span>` : "",
       product.showOnPos === false ? '<span class="merch-tag hidden">ซ่อนจากหน้าขาย</span>' : ""
     ].join("");
+
     cell.innerHTML = `<div class="product-cell"><div class="product-thumb">${image}</div><div>${original}<div class="merch-tags">${tags}</div></div></div>`;
   });
-});
+}
+
+const observer = new MutationObserver(() => decorateProductRows());
 observer.observe(productTableBody, { childList: true, subtree: true });
 
 updateCategoryList();
 resetMerchFields();
+decorateProductRows();
