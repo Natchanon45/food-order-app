@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#159447">
+  <title>เปิดกะและปิดกะ</title>
+  <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260624-6">
+  <link rel="stylesheet" href="/assets/css/retail-shifts.css?v=20260624-1">
+</head>
+<body>
+  <header class="pos-header">
+    <div><strong>เปิดกะและปิดกะ</strong><small>POS ร้านค้าปลีก</small></div>
+    <div class="header-actions">
+      <a href="/pos" class="btn btn-secondary header-link">หน้าขาย</a>
+      <a href="/pos/sales" class="btn btn-secondary header-link">ประวัติการขาย</a>
+    </div>
+  </header>
+
+  <main class="shift-container">
+    <section id="noActiveShift" class="panel shift-card">
+      <div class="shift-heading">
+        <div><h1>ยังไม่ได้เปิดกะ</h1><p>กรอกข้อมูลพนักงานและเงินสดเริ่มต้นก่อนเริ่มขาย</p></div>
+        <span class="status-badge closed">ปิดกะ</span>
+      </div>
+      <form id="openShiftForm" class="shift-form">
+        <label>ชื่อพนักงาน
+          <input id="cashierName" required maxlength="100" placeholder="เช่น สมชาย">
+        </label>
+        <label>รหัสเครื่อง POS
+          <input id="terminalCode" required maxlength="50" value="POS-01">
+        </label>
+        <label>เงินสดเริ่มต้น
+          <input id="openingCash" required type="number" min="0" step="0.01" value="0">
+        </label>
+        <label class="full">หมายเหตุ
+          <input id="openNote" maxlength="200" placeholder="ไม่บังคับ">
+        </label>
+        <p id="openShiftError" class="error-text full"></p>
+        <button class="btn btn-pay full" type="submit">เปิดกะและเริ่มขาย</button>
+      </form>
+    </section>
+
+    <section id="activeShiftPanel" class="panel shift-card" hidden>
+      <div class="shift-heading">
+        <div><h1>กะกำลังเปิดใช้งาน</h1><p id="activeShiftMeta">-</p></div>
+        <span class="status-badge open">เปิดกะ</span>
+      </div>
+
+      <section class="shift-stats">
+        <article><span>เงินสดเริ่มต้น</span><strong id="openingCashDisplay">0.00</strong></article>
+        <article><span>ยอดขายทั้งหมด</span><strong id="shiftSalesTotal">0.00</strong></article>
+        <article><span>ยอดขายเงินสด</span><strong id="shiftCashSales">0.00</strong></article>
+        <article><span>ยอดโอน/พร้อมเพย์</span><strong id="shiftTransferSales">0.00</strong></article>
+        <article><span>จำนวนบิล</span><strong id="shiftBillCount">0</strong></article>
+        <article><span>เงินสดที่ควรมี</span><strong id="expectedCash">0.00</strong></article>
+      </section>
+
+      <form id="closeShiftForm" class="close-shift-form">
+        <label>เงินสดนับจริง
+          <input id="actualCash" required type="number" min="0" step="0.01">
+        </label>
+        <label>หมายเหตุปิดกะ
+          <input id="closeNote" maxlength="200" placeholder="ไม่บังคับ">
+        </label>
+        <div class="difference-box">
+          <span>ผลต่างเงินสด</span>
+          <strong id="cashDifference">0.00</strong>
+        </div>
+        <p id="closeShiftError" class="error-text"></p>
+        <button class="btn btn-danger" type="submit">ยืนยันปิดกะ</button>
+      </form>
+    </section>
+
+    <section class="panel history-card">
+      <div class="history-head"><div><h2>ประวัติกะ</h2><p>แสดง 30 กะล่าสุดในเครื่องนี้</p></div><button id="clearShiftHistory" class="btn btn-danger" type="button">ล้างประวัติ</button></div>
+      <div class="table-wrap"><table class="shift-table"><thead><tr><th>พนักงาน</th><th>เปิดกะ</th><th>ปิดกะ</th><th class="number">ยอดขาย</th><th class="number">เงินสดจริง</th><th class="number">ผลต่าง</th></tr></thead><tbody id="shiftHistoryBody"></tbody></table></div>
+      <div id="shiftHistoryEmpty" class="empty-state">ยังไม่มีประวัติกะ</div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <script type="module" src="/assets/js/retail-shifts.js?v=20260624-1"></script>
+</body>
+</html>
