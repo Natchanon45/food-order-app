@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0f766e">
   <title>POS ร้านค้าปลีก</title>
-  <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260624-2">
+  <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260624-4">
+  <link rel="stylesheet" href="/assets/css/retail-pos-hold.css?v=20260624-1">
 </head>
 <body>
   <header class="pos-header">
@@ -14,6 +15,7 @@
       <small>โหมดทดสอบ • เก็บข้อมูลในเครื่องนี้</small>
     </div>
     <div class="header-actions">
+      <a href="/pos/sales" class="btn btn-secondary header-link">ประวัติการขาย</a>
       <a href="/pos/products" class="btn btn-secondary header-link">สินค้าและสต็อก</a>
       <button id="seedBtn" class="btn btn-secondary" type="button">โหลดสินค้าตัวอย่าง</button>
       <button id="clearSaleBtn" class="btn btn-danger" type="button">ล้างบิล</button>
@@ -47,6 +49,10 @@
         <div class="grand-total"><span>ยอดสุทธิ</span><strong id="grandTotal">0.00</strong></div>
       </div>
 
+      <div class="cart-actions">
+        <button id="holdBillBtn" class="btn btn-secondary" type="button">พักบิล</button>
+        <button id="heldBillsBtn" class="btn btn-secondary" type="button">บิลพัก <span id="heldBillsCount" class="held-count">0</span></button>
+      </div>
       <button id="payBtn" class="btn btn-pay" type="button" disabled>รับชำระเงิน</button>
     </aside>
   </main>
@@ -79,7 +85,18 @@
     </form>
   </dialog>
 
+  <dialog id="heldBillsDialog" class="held-dialog">
+    <div class="held-dialog-content">
+      <div class="dialog-head">
+        <h2>บิลที่พักไว้</h2>
+        <button id="closeHeldDialog" class="icon-btn" type="button" aria-label="ปิด">×</button>
+      </div>
+      <div id="heldBillsList" class="held-bills-list"></div>
+    </div>
+  </dialog>
+
   <div id="toast" class="toast" role="status"></div>
   <script type="module" src="/assets/js/retail-pos.js?v=20260624-2"></script>
+  <script type="module" src="/assets/js/retail-pos-hold.js?v=20260624-1"></script>
 </body>
 </html>
