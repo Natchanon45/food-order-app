@@ -50,6 +50,25 @@ async function loadBitmap(file) {
   });
 }
 
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(reader.error || new Error("อ่านไฟล์รูปไม่สำเร็จ"));
+    reader.readAsDataURL(blob);
+  });
+}
+
+function dataUrlToBlob(dataUrl) {
+  const [header, encoded] = String(dataUrl || "").split(",");
+  if (!header || !encoded) throw new Error("ข้อมูลรูปไม่ถูกต้อง");
+  const mime = header.match(/data:([^;]+)/)?.[1] || "application/octet-stream";
+  const binary = atob(encoded);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+  return new Blob([bytes], { type: mime });
+}
+
 export async function compressProductImage(file, maxSize = 600) {
   if (!(file instanceof Blob) || !String(file.type).startsWith("image/")) {
     throw new Error("กรุณาเลือกไฟล์รูปภาพ");
@@ -106,6 +125,51 @@ export async function deleteProductImage(productId) {
   const url = objectUrls.get(key);
   if (url) URL.revokeObjectURL(url);
   objectUrls.delete(key);
+}
+
+export async function exportProductImages() {
+  const db = await openDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+    const request = store.openCursor();
+    const images = [];
+
+    request.onsuccess = async () => {
+      const cursor = request.result;
+      if (!cursor) return;
+      try {
+        images.push({ key: String(cursor.key), dataUrl: await blobToDataUrl(cursor.value) });
+        cursor.continue();
+      } catch (error) {
+        reject(error);
+      }
+    };
+    request.onerror = () => reject(request.error);
+    tx.oncomplete = () => {
+      db.close();
+      resolve(images);
+    };
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function importProductImages(images, { clearExisting = true } = {}) {
+  const db = await openDb();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    if (clearExisting) store.clear();
+    (Array.isArray(images) ? images : []).forEach(item => {
+      if (!item?.key || !item?.dataUrl) return;
+      store.put(dataUrlToBlob(item.dataUrl), String(item.key));
+    });
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+  db.close();
+  objectUrls.forEach(url => URL.revokeObjectURL(url));
+  objectUrls.clear();
 }
 
 function enhanceProductImageDropzone() {
