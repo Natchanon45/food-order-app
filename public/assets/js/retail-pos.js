@@ -2,12 +2,12 @@ const PRODUCT_KEY = "retail_pos_products_v1";
 const SALES_KEY = "retail_pos_sales_v1";
 
 const sampleProducts = [
-  { id: "P001", barcode: "8850000000011", name: "น้ำดื่ม 600 มล.", price: 10, stock: 48, unit: "ขวด" },
-  { id: "P002", barcode: "8850000000028", name: "บะหมี่กึ่งสำเร็จรูป", price: 8, stock: 60, unit: "ซอง" },
-  { id: "P003", barcode: "8850000000035", name: "นมกล่อง UHT", price: 15, stock: 36, unit: "กล่อง" },
-  { id: "P004", barcode: "8850000000042", name: "ขนมมันฝรั่ง", price: 20, stock: 25, unit: "ถุง" },
-  { id: "P005", barcode: "8850000000059", name: "สบู่ก้อน", price: 18, stock: 30, unit: "ก้อน" },
-  { id: "P006", barcode: "8850000000066", name: "น้ำยาล้างจาน", price: 35, stock: 18, unit: "ขวด" }
+  { id: "P001", barcode: "8850000000011", name: "น้ำดื่ม 600 มล.", price: 10, cost: 6, stock: 48, unit: "ขวด" },
+  { id: "P002", barcode: "8850000000028", name: "บะหมี่กึ่งสำเร็จรูป", price: 8, cost: 5.5, stock: 60, unit: "ซอง" },
+  { id: "P003", barcode: "8850000000035", name: "นมกล่อง UHT", price: 15, cost: 10, stock: 36, unit: "กล่อง" },
+  { id: "P004", barcode: "8850000000042", name: "ขนมมันฝรั่ง", price: 20, cost: 13, stock: 25, unit: "ถุง" },
+  { id: "P005", barcode: "8850000000059", name: "สบู่ก้อน", price: 18, cost: 12, stock: 30, unit: "ก้อน" },
+  { id: "P006", barcode: "8850000000066", name: "น้ำยาล้างจาน", price: 35, cost: 24, stock: 18, unit: "ขวด" }
 ];
 
 const els = {
@@ -184,7 +184,15 @@ function confirmPayment() {
   const sale = {
     id: saleId,
     createdAt: new Date().toISOString(),
-    items: cart.map(({ id, barcode, name, price, qty, unit }) => ({ id, barcode, name, price, qty, unit })),
+    items: cart.map(({ id, barcode, name, price, cost, qty, unit }) => ({
+      id,
+      barcode,
+      name,
+      price,
+      cost: Number.isFinite(Number(cost)) ? Number(cost) : null,
+      qty,
+      unit
+    })),
     subtotal: totals.subtotal,
     discount: totals.discount,
     total: totals.total,
