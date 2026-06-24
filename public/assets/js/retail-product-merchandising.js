@@ -8,14 +8,17 @@ const productTableBody = document.querySelector("#productTableBody");
 
 const style = document.createElement("link");
 style.rel = "stylesheet";
-style.href = "/assets/css/retail-product-merchandising.css?v=20260624-4";
+style.href = "/assets/css/retail-product-merchandising.css?v=20260624-5";
 document.head.appendChild(style);
 
 const section = document.createElement("section");
 section.className = "merch-form-section";
 section.innerHTML = `
-  <h3>การแสดงผลบนหน้าขาย</h3>
+  <h3>ต้นทุนและการแสดงผลบนหน้าขาย</h3>
   <div class="merch-grid">
+    <label>ราคาทุนต่อหน่วย
+      <input id="productCost" type="number" min="0" step="0.01" placeholder="เช่น 7.50">
+    </label>
     <label>หมวดสินค้า
       <input id="productCategory" maxlength="60" list="productCategoryList" placeholder="เช่น เครื่องดื่ม">
       <datalist id="productCategoryList"></datalist>
@@ -37,10 +40,11 @@ section.innerHTML = `
   <div class="merch-options">
     <label><input id="productShowOnPos" type="checkbox" checked> แสดงบนหน้าขาย</label>
   </div>
-  <p class="product-sub">รูปที่อัปโหลดจะถูกย่ออัตโนมัติและเก็บในเครื่องนี้ ส่วนหมวด “ขายดี” คำนวณจากยอดขายสะสมทั้งหมด</p>
+  <p class="product-sub">ราคาทุนใช้สำหรับคำนวณกำไรขั้นต้น โดยบันทึกติดไปกับบิล ณ เวลาขาย</p>
 `;
 form.querySelector(".form-grid")?.appendChild(section);
 
+const costInput = document.querySelector("#productCost");
 const categoryInput = document.querySelector("#productCategory");
 const categoryList = document.querySelector("#productCategoryList");
 const sortOrderInput = document.querySelector("#productSortOrder");
@@ -104,6 +108,7 @@ function resetMerchFields() {
   clearPreviewObjectUrl();
   selectedImageFile = null;
   removeSavedImage = false;
+  costInput.value = "";
   categoryInput.value = "ทั่วไป";
   sortOrderInput.value = "999";
   imageFileInput.value = "";
@@ -119,6 +124,7 @@ async function loadMerchFields(id) {
   imageFileInput.value = "";
   const product = readProducts().find(item => item.id === id);
   if (!product) return resetMerchFields();
+  costInput.value = Number.isFinite(Number(product.cost)) ? Number(product.cost) : "";
   categoryInput.value = product.category || "ทั่วไป";
   sortOrderInput.value = Number(product.sortOrder ?? 999);
   imageUrlInput.value = product.imageUrl || "";
@@ -143,6 +149,7 @@ async function enrichSavedProduct(snapshot) {
 
   products[index] = {
     ...products[index],
+    cost: snapshot.cost,
     category: snapshot.category || "ทั่วไป",
     sortOrder: snapshot.sortOrder,
     imageUrl: snapshot.imageUrl,
@@ -157,8 +164,10 @@ async function enrichSavedProduct(snapshot) {
 
 form.addEventListener("submit", () => {
   const id = (editingId.value || document.querySelector("#productId").value).trim().toUpperCase();
+  const cost = costInput.value === "" ? null : Number(costInput.value);
   enrichSavedProduct({
     id,
+    cost: Number.isFinite(cost) && cost >= 0 ? cost : null,
     category: categoryInput.value.trim(),
     sortOrder: Number(sortOrderInput.value || 999),
     imageUrl: imageUrlInput.value.trim(),
