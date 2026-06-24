@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#159447">
+  <title>สำรองและกู้คืนข้อมูล POS</title>
+  <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260624-6">
+  <link rel="stylesheet" href="/assets/css/retail-pos-backup.css?v=20260624-1">
+</head>
+<body>
+  <header class="pos-header">
+    <div>
+      <strong>สำรองและกู้คืนข้อมูล</strong>
+      <small>สินค้า ยอดขาย กะ รูปสินค้า และการตั้งค่าร้าน</small>
+    </div>
+    <div class="header-actions">
+      <a href="/pos/" class="btn btn-secondary header-link">กลับหน้าขาย</a>
+    </div>
+  </header>
+
+  <main class="backup-container">
+    <section class="panel backup-panel">
+      <div class="backup-heading">
+        <div>
+          <h1>สร้างไฟล์สำรอง</h1>
+          <p>บันทึกข้อมูล POS ใน Browser เครื่องนี้เป็นไฟล์ JSON หนึ่งไฟล์ รวมรูปสินค้าที่อัปโหลดไว้แล้ว</p>
+        </div>
+        <button id="exportBackupBtn" class="btn btn-pay" type="button">ดาวน์โหลดไฟล์สำรอง</button>
+      </div>
+
+      <div id="backupStats" class="backup-stats"></div>
+      <div id="exportProgress" class="backup-progress" hidden>
+        <span class="backup-spinner"></span>
+        <span>กำลังรวบรวมข้อมูลและรูปสินค้า...</span>
+      </div>
+    </section>
+
+    <section class="panel backup-panel restore-panel">
+      <div>
+        <h2>กู้คืนจากไฟล์สำรอง</h2>
+        <p>ลากไฟล์สำรองมาวาง หรือคลิกเพื่อเลือกไฟล์ ระบบจะตรวจสอบไฟล์ก่อนเขียนทับข้อมูลเดิม</p>
+      </div>
+
+      <label id="backupDropzone" class="backup-dropzone">
+        <input id="backupFile" type="file" accept="application/json,.json">
+        <div class="backup-dropzone-content">
+          <div class="backup-upload-icon">⇧</div>
+          <strong>ลากไฟล์สำรองมาวางที่นี่</strong>
+          <span>หรือคลิกเพื่อเลือกไฟล์ .json</span>
+          <small id="backupFileName" hidden></small>
+        </div>
+      </label>
+
+      <div id="restoreSummary" class="restore-summary" hidden></div>
+      <label class="confirm-row" id="replaceConfirmRow" hidden>
+        <input id="replaceConfirm" type="checkbox">
+        <span>ฉันเข้าใจว่าการกู้คืนจะเขียนทับข้อมูล POS ปัจจุบันในเครื่องนี้</span>
+      </label>
+      <p id="backupError" class="error-text"></p>
+      <div class="restore-actions">
+        <button id="clearSelectedBtn" class="btn btn-secondary" type="button" hidden>ยกเลิกไฟล์ที่เลือก</button>
+        <button id="restoreBackupBtn" class="btn btn-pay" type="button" disabled>เริ่มกู้คืนข้อมูล</button>
+      </div>
+      <div id="restoreProgress" class="backup-progress" hidden>
+        <span class="backup-spinner"></span>
+        <span>กำลังกู้คืนข้อมูล...</span>
+      </div>
+    </section>
+
+    <section class="panel backup-note">
+      <h2>ข้อมูลที่รวมอยู่ในไฟล์สำรอง</h2>
+      <div class="included-grid">
+        <span>สินค้าและสต็อก</span>
+        <span>รูปสินค้า</span>
+        <span>ประวัติการขาย</span>
+        <span>ประวัติปรับสต็อก</span>
+        <span>บิลพัก</span>
+        <span>ข้อมูลกะทำงาน</span>
+        <span>ตั้งค่าร้านและใบเสร็จ</span>
+        <span>รูปแบบการพิมพ์</span>
+      </div>
+      <p>ควรเก็บไฟล์สำรองไว้นอกเครื่อง POS เช่น Google Drive, Flash Drive หรือคอมพิวเตอร์อีกเครื่องหนึ่ง</p>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status"></div>
+  <script type="module" src="/assets/js/retail-pos-backup.js?v=20260624-1"></script>
+</body>
+</html>
