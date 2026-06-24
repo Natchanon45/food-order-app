@@ -48,7 +48,8 @@ document.body.insertAdjacentHTML("beforeend", `
       <div><span>วันที่</span><strong id="printSaleDate">-</strong></div>
       <div><span>พนักงาน</span><strong id="printCashier">-</strong></div>
       <div><span>เครื่อง POS</span><strong id="printTerminal">-</strong></div>
-      <div id="printCustomerRow" hidden><span>สมาชิก</span><strong id="printCustomer">-</strong></div>
+      <div id="printCustomerNameRow" hidden><span>สมาชิก</span><strong id="printCustomerName">-</strong></div>
+      <div id="printCustomerPhoneRow" hidden><span>เบอร์โทร</span><strong id="printCustomerPhone">-</strong></div>
       <div><span>ชำระโดย</span><strong id="printPaymentMethod">-</strong></div>
     </div>
     <hr class="print-rule">
@@ -146,10 +147,16 @@ function populateReceipt(sourceSale) {
   document.querySelector("#printSaleDate").textContent = new Date(sale.createdAt).toLocaleString("th-TH");
   document.querySelector("#printCashier").textContent = sale.cashierName || "-";
   document.querySelector("#printTerminal").textContent = sale.terminalCode || "-";
-  const customerRow = document.querySelector("#printCustomerRow");
-  const customerText = [sale.customerCode, sale.customerName, maskPhone(sale.customerPhone)].filter(Boolean).join(" • ");
-  customerRow.hidden = !customerText;
-  document.querySelector("#printCustomer").textContent = customerText || "-";
+
+  const memberName = [sale.customerCode, sale.customerName].filter(Boolean).join(" • ");
+  const memberPhone = maskPhone(sale.customerPhone);
+  const customerNameRow = document.querySelector("#printCustomerNameRow");
+  const customerPhoneRow = document.querySelector("#printCustomerPhoneRow");
+  customerNameRow.hidden = !memberName;
+  customerPhoneRow.hidden = !memberPhone;
+  document.querySelector("#printCustomerName").textContent = memberName || "-";
+  document.querySelector("#printCustomerPhone").textContent = memberPhone || "-";
+
   document.querySelector("#printPaymentMethod").textContent = paymentName(sale.payment?.method);
   document.querySelector("#printItems").innerHTML = (sale.items || []).map(item => `
     <tr>
