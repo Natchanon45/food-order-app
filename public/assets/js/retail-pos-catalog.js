@@ -1,11 +1,12 @@
 const PRODUCT_KEY = "retail_pos_products_v1";
+const SALES_KEY = "retail_pos_sales_v1";
 const productGrid = document.querySelector("#productGrid");
 const productPanel = document.querySelector(".product-panel");
 const searchInput = document.querySelector("#searchInput");
 
 const style = document.createElement("link");
 style.rel = "stylesheet";
-style.href = "/assets/css/retail-pos-catalog.css?v=20260624-2";
+style.href = "/assets/css/retail-pos-catalog.css?v=20260624-3";
 document.head.appendChild(style);
 
 const tabs = document.createElement("div");
@@ -17,9 +18,17 @@ let activeCategory = "quick";
 let decorating = false;
 let observer;
 
+function readJson(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+  catch { return fallback; }
+}
+
 function readProducts() {
-  try { return JSON.parse(localStorage.getItem(PRODUCT_KEY)) || []; }
-  catch { return []; }
+  return readJson(PRODUCT_KEY, []);
+}
+
+function readSales() {
+  return readJson(SALES_KEY, []);
 }
 
 function escapeHtml(value) {
@@ -37,6 +46,26 @@ function categories(products) {
     .sort((a, b) => a.localeCompare(b, "th"));
 }
 
+function buildSalesRanking() {
+  const ranking = new Map();
+
+  readSales().forEach(sale => {
+    (sale.items || []).forEach(item => {
+      const productId = String(item.id || "").trim();
+      if (!productId) return;
+
+      const current = ranking.get(productId) || { qty: 0, revenue: 0 };
+      const qty = Number(item.qty || 0);
+      const price = Number(item.price || 0);
+      current.qty += qty;
+      current.revenue += qty * price;
+      ranking.set(productId, current);
+    });
+  });
+
+  return ranking;
+}
+
 function renderTabs() {
   const products = readProducts();
   const tabItems = [
@@ -50,14 +79,44 @@ function renderTabs() {
   if (tabs.innerHTML !== html) tabs.innerHTML = html;
 }
 
-function shouldShow(product) {
+function shouldShow(product, ranking) {
   const searching = Boolean(searchInput?.value.trim());
   if (searching) return true;
   if (product.showOnPos === false) return false;
-  if (activeCategory === "quick") return product.quickSale === true;
+  if (activeCategory === "quick") return Number(ranking.get(product.id)?.qty || 0) > 0;
   if (activeCategory === "all") return true;
   if (activeCategory.startsWith("category:")) return (product.category || "ทั่วไป") === activeCategory.slice(9);
   return true;
+}
+
+function sortCards(cards, byId, ranking) {
+  const searching = Boolean(searchInput?.value.trim());
+  const sorted = [...cards].sort((a, b) => {
+    const productA = byId.get(a.dataset.productId);
+    const productB = byId.get(b.dataset.productId);
+
+    if (activeCategory === "quick" && !searching) {
+      const salesA = ranking.get(productA?.id) || { qty: 0, revenue: 0 };
+      const salesB = ranking.get(productB?.id) || { qty: 0, revenue: 0 };
+      return salesB.qty - salesA.qty || salesB.revenue - salesA.revenue || String(productA?.name || "").localeCompare(String(productB?.name || ""), "th");
+    }
+
+    return Number(productA?.sortOrder ?? 999) - Number(productB?.sortOrder ?? 999)
+      || String(productA?.name || "").localeCompare(String(productB?.name || ""), "th");
+  });
+
+  sorted.forEach(card => productGrid.appendChild(card));
+}
+
+function updateBestSellerBadge(card, product, ranking) {
+  card.querySelector(".quick-badge")?.remove();
+  const soldQty = Number(ranking.get(product.id)?.qty || 0);
+  if (activeCategory !== "quick" || soldQty <= 0) return;
+
+  const badge = document.createElement("span");
+  badge.className = "quick-badge";
+  badge.textContent = `ขายแล้ว ${soldQty.toLocaleString("th-TH")}`;
+  card.prepend(badge);
 }
 
 function decorateCards() {
@@ -67,15 +126,17 @@ function decorateCards() {
 
   try {
     const products = readProducts();
+    const ranking = buildSalesRanking();
     const byId = new Map(products.map(item => [item.id, item]));
+    const cards = [...productGrid.querySelectorAll(".product-card[data-product-id]")];
     let visibleCount = 0;
 
-    [...productGrid.querySelectorAll(".product-card[data-product-id]")].forEach(card => {
+    cards.forEach(card => {
       const product = byId.get(card.dataset.productId);
       if (!product) return;
 
       card.classList.add("visual-card");
-      const show = shouldShow(product);
+      const show = shouldShow(product, ranking);
       card.classList.toggle("catalog-hidden", !show);
       if (show) visibleCount += 1;
 
@@ -85,13 +146,17 @@ function decorateCards() {
           ? `<img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(name)}" loading="lazy" onerror="this.parentElement.textContent='${escapeHtml(initials(name))}'">`
           : escapeHtml(initials(name));
         const original = card.innerHTML;
-        card.innerHTML = `${product.quickSale ? '<span class="quick-badge">ขายดี</span>' : ''}<div class="product-image">${imageMarkup}</div><div class="product-card-body">${original}</div>`;
+        card.innerHTML = `<div class="product-image">${imageMarkup}</div><div class="product-card-body">${original}</div>`;
       }
+
+      updateBestSellerBadge(card, product, ranking);
     });
+
+    sortCards(cards, byId, ranking);
 
     let empty = productGrid.querySelector(".catalog-empty");
     if (!visibleCount && !searchInput?.value.trim()) {
-      const message = activeCategory === "quick" ? "ยังไม่ได้กำหนดสินค้าขายดี" : "ไม่มีสินค้าในหมวดนี้";
+      const message = activeCategory === "quick" ? "ยังไม่มีประวัติการขายสำหรับคำนวณสินค้าขายดี" : "ไม่มีสินค้าในหมวดนี้";
       if (!empty) {
         empty = document.createElement("div");
         empty.className = "catalog-empty";
