@@ -23,6 +23,7 @@
       { "source": "/cashier/receipt/**", "destination": "/cashier/receipt/index.html" },
       { "source": "/cashier/table-qr/**", "destination": "/cashier/table-qr/index.html" },
       { "source": "/cashier/**", "destination": "/cashier/index.html" },
+      { "source": "/pos/**", "destination": "/pos/index.html" },
       { "source": "/platform/owners/**", "destination": "/platform/owners/index.html" },
       { "source": "/platform/**", "destination": "/platform/index.html" },
       { "source": "/admin/qr/**", "destination": "/admin/qr/index.html" },
