@@ -16,6 +16,7 @@
     </div>
     <div class="header-actions">
       <a href="/pos/sales" class="btn btn-secondary header-link">ประวัติการขาย</a>
+      <a href="/pos/returns" class="btn btn-secondary header-link">คืนสินค้า</a>
       <a href="/pos/products" class="btn btn-secondary header-link">สินค้าและสต็อก</a>
       <a href="/pos/stock-movements" class="btn btn-secondary header-link">เคลื่อนไหวสต็อก</a>
       <a href="/pos/stock-counts" class="btn btn-secondary header-link">ตรวจนับสต็อก</a>
@@ -39,10 +40,7 @@
     </section>
 
     <aside class="panel cart-panel">
-      <div class="cart-title">
-        <h1>รายการขาย</h1>
-        <span id="itemCount">0 รายการ</span>
-      </div>
+      <div class="cart-title"><h1>รายการขาย</h1><span id="itemCount">0 รายการ</span></div>
       <div id="cartEmpty" class="empty-state">ยังไม่มีสินค้าในบิล</div>
       <div id="cartList" class="cart-list"></div>
       <div class="summary">
@@ -50,26 +48,12 @@
         <label><span>ส่วนลด</span><input id="discountInput" type="number" min="0" step="0.01" value="0"></label>
         <div class="grand-total"><span>ยอดสุทธิ</span><strong id="grandTotal">0.00</strong></div>
       </div>
-      <div class="cart-actions">
-        <button id="holdBillBtn" class="btn btn-secondary" type="button">พักบิล</button>
-        <button id="heldBillsBtn" class="btn btn-secondary" type="button">บิลพัก <span id="heldBillsCount" class="held-count">0</span></button>
-      </div>
+      <div class="cart-actions"><button id="holdBillBtn" class="btn btn-secondary" type="button">พักบิล</button><button id="heldBillsBtn" class="btn btn-secondary" type="button">บิลพัก <span id="heldBillsCount" class="held-count">0</span></button></div>
       <button id="payBtn" class="btn btn-pay" type="button" disabled>รับชำระเงิน</button>
     </aside>
   </main>
 
-  <dialog id="paymentDialog">
-    <form method="dialog" class="payment-form">
-      <div class="dialog-head"><h2>รับชำระเงิน</h2><button value="cancel" class="icon-btn" aria-label="ปิด">×</button></div>
-      <div class="payment-total"><span>ยอดที่ต้องชำระ</span><strong id="paymentTotal">0.00 บาท</strong></div>
-      <label>ช่องทางชำระเงิน<select id="paymentMethod"><option value="cash">เงินสด</option><option value="promptpay">PromptPay / โอนเงิน</option></select></label>
-      <label id="receivedWrap">รับเงินมา<input id="receivedInput" type="number" min="0" step="0.01" inputmode="decimal"></label>
-      <div class="change-row"><span>เงินทอน</span><strong id="changeAmount">0.00 บาท</strong></div>
-      <p id="paymentError" class="error-text"></p>
-      <div class="dialog-actions"><button value="cancel" class="btn btn-secondary">ยกเลิก</button><button id="confirmPaymentBtn" value="default" class="btn btn-pay" type="button">ยืนยันการขาย</button></div>
-    </form>
-  </dialog>
-
+  <dialog id="paymentDialog"><form method="dialog" class="payment-form"><div class="dialog-head"><h2>รับชำระเงิน</h2><button value="cancel" class="icon-btn" aria-label="ปิด">×</button></div><div class="payment-total"><span>ยอดที่ต้องชำระ</span><strong id="paymentTotal">0.00 บาท</strong></div><label>ช่องทางชำระเงิน<select id="paymentMethod"><option value="cash">เงินสด</option><option value="promptpay">PromptPay / โอนเงิน</option></select></label><label id="receivedWrap">รับเงินมา<input id="receivedInput" type="number" min="0" step="0.01" inputmode="decimal"></label><div class="change-row"><span>เงินทอน</span><strong id="changeAmount">0.00 บาท</strong></div><p id="paymentError" class="error-text"></p><div class="dialog-actions"><button value="cancel" class="btn btn-secondary">ยกเลิก</button><button id="confirmPaymentBtn" value="default" class="btn btn-pay" type="button">ยืนยันการขาย</button></div></form></dialog>
   <dialog id="heldBillsDialog" class="held-dialog"><div class="held-dialog-content"><div class="dialog-head"><h2>บิลที่พักไว้</h2><button id="closeHeldDialog" class="icon-btn" type="button" aria-label="ปิด">×</button></div><div id="heldBillsList" class="held-bills-list"></div></div></dialog>
   <div id="toast" class="toast" role="status"></div>
   <script type="module" src="/assets/js/retail-pos.js?v=20260624-4"></script>
