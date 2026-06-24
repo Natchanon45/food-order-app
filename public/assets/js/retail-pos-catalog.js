@@ -5,7 +5,7 @@ const searchInput = document.querySelector("#searchInput");
 
 const style = document.createElement("link");
 style.rel = "stylesheet";
-style.href = "/assets/css/retail-pos-catalog.css?v=20260624-1";
+style.href = "/assets/css/retail-pos-catalog.css?v=20260624-2";
 document.head.appendChild(style);
 
 const tabs = document.createElement("div");
@@ -15,6 +15,7 @@ productPanel?.insertBefore(tabs, productGrid);
 
 let activeCategory = "quick";
 let decorating = false;
+let observer;
 
 function readProducts() {
   try { return JSON.parse(localStorage.getItem(PRODUCT_KEY)) || []; }
@@ -43,9 +44,10 @@ function renderTabs() {
     ...categories(products).map(name => ({ id: `category:${name}`, label: name })),
     { id: "all", label: "ทั้งหมด" }
   ];
-  tabs.innerHTML = tabItems.map(item => `
+  const html = tabItems.map(item => `
     <button type="button" class="catalog-tab ${activeCategory === item.id ? "active" : ""}" data-category="${escapeHtml(item.id)}">${escapeHtml(item.label)}</button>
   `).join("");
+  if (tabs.innerHTML !== html) tabs.innerHTML = html;
 }
 
 function shouldShow(product) {
@@ -59,42 +61,52 @@ function shouldShow(product) {
 }
 
 function decorateCards() {
-  if (decorating) return;
+  if (decorating || !productGrid) return;
   decorating = true;
-  const products = readProducts();
-  const byId = new Map(products.map(item => [item.id, item]));
-  let visibleCount = 0;
+  observer?.disconnect();
 
-  [...productGrid.querySelectorAll(".product-card[data-product-id]")].forEach(card => {
-    const product = byId.get(card.dataset.productId);
-    if (!product) return;
-    card.classList.add("visual-card");
-    const show = shouldShow(product);
-    card.classList.toggle("catalog-hidden", !show);
-    if (show) visibleCount += 1;
+  try {
+    const products = readProducts();
+    const byId = new Map(products.map(item => [item.id, item]));
+    let visibleCount = 0;
 
-    if (!card.querySelector(".product-image")) {
-      const name = product.name || "สินค้า";
-      const imageMarkup = product.imageUrl
-        ? `<img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(name)}" loading="lazy" onerror="this.parentElement.textContent='${escapeHtml(initials(name))}'">`
-        : escapeHtml(initials(name));
-      const original = card.innerHTML;
-      card.innerHTML = `${product.quickSale ? '<span class="quick-badge">ขายดี</span>' : ''}<div class="product-image">${imageMarkup}</div><div class="product-card-body">${original}</div>`;
+    [...productGrid.querySelectorAll(".product-card[data-product-id]")].forEach(card => {
+      const product = byId.get(card.dataset.productId);
+      if (!product) return;
+
+      card.classList.add("visual-card");
+      const show = shouldShow(product);
+      card.classList.toggle("catalog-hidden", !show);
+      if (show) visibleCount += 1;
+
+      if (!card.querySelector(".product-image")) {
+        const name = product.name || "สินค้า";
+        const imageMarkup = product.imageUrl
+          ? `<img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(name)}" loading="lazy" onerror="this.parentElement.textContent='${escapeHtml(initials(name))}'">`
+          : escapeHtml(initials(name));
+        const original = card.innerHTML;
+        card.innerHTML = `${product.quickSale ? '<span class="quick-badge">ขายดี</span>' : ''}<div class="product-image">${imageMarkup}</div><div class="product-card-body">${original}</div>`;
+      }
+    });
+
+    let empty = productGrid.querySelector(".catalog-empty");
+    if (!visibleCount && !searchInput?.value.trim()) {
+      const message = activeCategory === "quick" ? "ยังไม่ได้กำหนดสินค้าขายดี" : "ไม่มีสินค้าในหมวดนี้";
+      if (!empty) {
+        empty = document.createElement("div");
+        empty.className = "catalog-empty";
+        empty.textContent = message;
+        productGrid.appendChild(empty);
+      } else if (empty.textContent !== message) {
+        empty.textContent = message;
+      }
+    } else if (empty) {
+      empty.remove();
     }
-  });
-
-  let empty = productGrid.querySelector(".catalog-empty");
-  if (!visibleCount && !searchInput?.value.trim()) {
-    if (!empty) {
-      empty = document.createElement("div");
-      empty.className = "catalog-empty";
-      productGrid.appendChild(empty);
-    }
-    empty.textContent = activeCategory === "quick" ? "ยังไม่ได้กำหนดสินค้าขายดี" : "ไม่มีสินค้าในหมวดนี้";
-  } else {
-    empty?.remove();
+  } finally {
+    decorating = false;
+    observer?.observe(productGrid, { childList: true, subtree: true });
   }
-  decorating = false;
 }
 
 function refreshCatalog() {
@@ -109,11 +121,11 @@ tabs.addEventListener("click", event => {
   refreshCatalog();
 });
 
-searchInput?.addEventListener("input", () => setTimeout(decorateCards, 0));
+searchInput?.addEventListener("input", () => requestAnimationFrame(decorateCards));
 window.addEventListener("storage", refreshCatalog);
 
-const observer = new MutationObserver(() => {
-  if (!decorating) decorateCards();
+observer = new MutationObserver(() => {
+  if (!decorating) requestAnimationFrame(decorateCards);
 });
 observer.observe(productGrid, { childList: true, subtree: true });
 
