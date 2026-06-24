@@ -3,29 +3,52 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ประวัติการขาย</title>
-<link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260624-3">
-<link rel="stylesheet" href="/assets/css/retail-sales.css?v=20260624-1">
+<title>รายงานและประวัติการขาย</title>
+<link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260624-6">
+<link rel="stylesheet" href="/assets/css/retail-sales.css?v=20260624-2">
 </head>
 <body>
 <header class="pos-header no-print">
-<div><strong>ประวัติการขาย</strong><small>POS ร้านค้าปลีก</small></div>
-<div class="header-actions"><a href="/pos" class="btn btn-secondary header-link">หน้าขาย</a><a href="/pos/products" class="btn btn-secondary header-link">สินค้าและสต็อก</a></div>
+<div><strong>รายงานและประวัติการขาย</strong><small>POS ร้านค้าปลีก</small></div>
+<div class="header-actions"><a href="/pos" class="btn btn-secondary header-link">หน้าขาย</a><a href="/pos/products" class="btn btn-secondary header-link">สินค้าและสต็อก</a><button id="exportCsvBtn" class="btn btn-pay" type="button">ส่งออก CSV</button></div>
 </header>
 <main class="sales-container no-print">
-<section class="sales-stats">
-<article class="stat-card"><span>จำนวนบิล</span><strong id="saleCount">0</strong></article>
-<article class="stat-card"><span>ยอดขายรวม</span><strong id="saleTotal">0.00</strong></article>
-<article class="stat-card"><span>ส่วนลดรวม</span><strong id="discountTotal">0.00</strong></article>
-<article class="stat-card"><span>ยอดเงินสด</span><strong id="cashTotal">0.00</strong></article>
-</section>
-<section class="panel sales-panel">
+<section class="panel report-filter-panel">
 <div class="sales-toolbar">
 <input id="saleSearch" placeholder="ค้นหาเลขที่บิลหรือชื่อสินค้า">
 <input id="dateFrom" type="date"><input id="dateTo" type="date">
 <select id="paymentFilter"><option value="all">ทุกช่องทางชำระ</option><option value="cash">เงินสด</option><option value="promptpay">PromptPay / โอนเงิน</option></select>
-<button id="todayBtn" class="btn btn-secondary" type="button">วันนี้</button><button id="clearFilterBtn" class="btn btn-secondary" type="button">ล้างตัวกรอง</button>
+<button id="todayBtn" class="btn btn-secondary" type="button">วันนี้</button><button id="monthBtn" class="btn btn-secondary" type="button">เดือนนี้</button><button id="clearFilterBtn" class="btn btn-secondary" type="button">ทั้งหมด</button>
 </div>
+</section>
+<section class="sales-stats">
+<article class="stat-card"><span>จำนวนบิล</span><strong id="saleCount">0</strong></article>
+<article class="stat-card"><span>ยอดขายรวม</span><strong id="saleTotal">0.00</strong></article>
+<article class="stat-card"><span>ยอดเงินสด</span><strong id="cashTotal">0.00</strong></article>
+<article class="stat-card"><span>ยอดโอน / PromptPay</span><strong id="transferTotal">0.00</strong></article>
+<article class="stat-card"><span>ส่วนลดรวม</span><strong id="discountTotal">0.00</strong></article>
+<article class="stat-card"><span>จำนวนสินค้าที่ขาย</span><strong id="itemQtyTotal">0</strong></article>
+<article class="stat-card"><span>ยอดเฉลี่ยต่อบิล</span><strong id="averageSale">0.00</strong></article>
+<article class="stat-card"><span>บิลสูงสุด</span><strong id="highestSale">0.00</strong></article>
+</section>
+<section class="report-grid">
+<section class="panel ranking-panel">
+<div class="section-heading"><div><h2>สินค้าขายดี</h2><p>เรียงตามจำนวนขายในช่วงที่เลือก</p></div></div>
+<div id="bestSellerList" class="ranking-list"></div>
+<div id="bestSellerEmpty" class="empty-state" hidden>ยังไม่มีข้อมูลสินค้าในช่วงนี้</div>
+</section>
+<section class="panel payment-panel">
+<div class="section-heading"><div><h2>สัดส่วนการชำระเงิน</h2><p>สรุปยอดตามช่องทางชำระ</p></div></div>
+<div class="payment-summary-list">
+<div><span>เงินสด</span><strong id="cashPercent">0%</strong></div>
+<div class="payment-bar"><i id="cashBar"></i></div>
+<div><span>PromptPay / โอนเงิน</span><strong id="transferPercent">0%</strong></div>
+<div class="payment-bar"><i id="transferBar"></i></div>
+</div>
+</section>
+</section>
+<section class="panel sales-panel">
+<div class="section-heading"><div><h2>รายการขาย</h2><p id="reportPeriodText">ข้อมูลทั้งหมด</p></div></div>
 <div class="table-wrap"><table class="sales-table"><thead><tr><th>เลขที่บิล</th><th>วันและเวลา</th><th class="number">จำนวน</th><th>ชำระโดย</th><th class="number">ส่วนลด</th><th class="number">ยอดสุทธิ</th><th></th></tr></thead><tbody id="salesTableBody"></tbody></table></div>
 <div id="salesEmpty" class="empty-state" hidden>ไม่พบประวัติการขาย</div>
 </section>
@@ -41,6 +64,6 @@
 </section>
 <div class="dialog-actions no-print"><button id="closeSaleBtn" class="btn btn-secondary" type="button">ปิด</button><button id="printReceiptBtn" class="btn btn-pay" type="button">พิมพ์ใบเสร็จ</button></div>
 </div></dialog>
-<script type="module" src="/assets/js/retail-sales.js?v=20260624-1"></script>
+<script type="module" src="/assets/js/retail-sales.js?v=20260624-2"></script>
 </body>
 </html>
