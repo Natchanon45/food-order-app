@@ -5,7 +5,7 @@ const LEGACY_STORE_SETTINGS_KEY = "food_order_store_settings";
 
 const styleLink = document.createElement("link");
 styleLink.rel = "stylesheet";
-styleLink.href = "/assets/css/retail-pos-complete.css?v=20260624-4";
+styleLink.href = "/assets/css/retail-pos-complete.css?v=20260624-5";
 document.head.appendChild(styleLink);
 
 document.body.insertAdjacentHTML("beforeend", `
@@ -48,6 +48,7 @@ document.body.insertAdjacentHTML("beforeend", `
       <div><span>วันที่</span><strong id="printSaleDate">-</strong></div>
       <div><span>พนักงาน</span><strong id="printCashier">-</strong></div>
       <div><span>เครื่อง POS</span><strong id="printTerminal">-</strong></div>
+      <div id="printCustomerRow" hidden><span>สมาชิก</span><strong id="printCustomer">-</strong></div>
       <div><span>ชำระโดย</span><strong id="printPaymentMethod">-</strong></div>
     </div>
     <hr class="print-rule">
@@ -121,7 +122,12 @@ function paymentName(method) {
   return method === "cash" ? "เงินสด" : "PromptPay / โอนเงิน";
 }
 
-function populateReceipt(sale) {
+function latestSaleSnapshot(sale) {
+  return readSales().find(item => item.id === sale?.id) || sale;
+}
+
+function populateReceipt(sourceSale) {
+  const sale = latestSaleSnapshot(sourceSale);
   const settings = getStoreSettings();
   document.querySelector("#printShopName").textContent = settings.shopName;
   document.querySelector("#printShopAddress").textContent = settings.shopAddress;
@@ -133,6 +139,10 @@ function populateReceipt(sale) {
   document.querySelector("#printSaleDate").textContent = new Date(sale.createdAt).toLocaleString("th-TH");
   document.querySelector("#printCashier").textContent = sale.cashierName || "-";
   document.querySelector("#printTerminal").textContent = sale.terminalCode || "-";
+  const customerRow = document.querySelector("#printCustomerRow");
+  const customerText = [sale.customerCode, sale.customerName, sale.customerPhone].filter(Boolean).join(" • ");
+  customerRow.hidden = !customerText;
+  document.querySelector("#printCustomer").textContent = customerText || "-";
   document.querySelector("#printPaymentMethod").textContent = paymentName(sale.payment?.method);
   document.querySelector("#printItems").innerHTML = (sale.items || []).map(item => `
     <tr>
@@ -167,17 +177,18 @@ async function waitForReceiptFont() {
 
 async function printReceipt() {
   if (!activeSale) return;
+  activeSale = latestSaleSnapshot(activeSale);
   populateReceipt(activeSale);
   await waitForReceiptFont();
   requestAnimationFrame(() => requestAnimationFrame(() => window.print()));
 }
 
 function showComplete(sale) {
-  activeSale = sale;
-  completeSaleId.textContent = sale.id;
-  completeTotal.textContent = `${money(sale.total)} บาท`;
-  completeReceived.textContent = `${money(sale.payment?.received)} บาท`;
-  completeChange.textContent = `${money(sale.payment?.change)} บาท`;
+  activeSale = latestSaleSnapshot(sale);
+  completeSaleId.textContent = activeSale.id;
+  completeTotal.textContent = `${money(activeSale.total)} บาท`;
+  completeReceived.textContent = `${money(activeSale.payment?.received)} บาท`;
+  completeChange.textContent = `${money(activeSale.payment?.change)} บาท`;
   completeDialog.showModal();
   if (printMode.value === "auto") setTimeout(printReceipt, 350);
 }
