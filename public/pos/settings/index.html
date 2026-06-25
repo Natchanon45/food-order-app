@@ -1,32 +1,29 @@
 <!doctype html>
 <html lang="th">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#159447">
-  <title>ตั้งค่าร้านค้าปลีก</title>
-  <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260624-6">
-  <link rel="stylesheet" href="/assets/css/retail-pos-settings.css?v=20260624-1">
-  <link rel="stylesheet" href="/assets/css/retail-loyalty.css?v=20260624-1">
-  <link rel="stylesheet" href="/assets/css/retail-pos-navigation.css?v=20260624-2">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#159447">
+<title>ตั้งค่าร้านค้าปลีก</title>
+<link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260624-6">
+<link rel="stylesheet" href="/assets/css/retail-pos-settings.css?v=20260624-1">
+<link rel="stylesheet" href="/assets/css/retail-loyalty.css?v=20260624-1">
+<link rel="stylesheet" href="/assets/css/retail-pos-navigation.css?v=20260624-2">
 </head>
 <body>
-  <header class="pos-header">
-    <div><strong>ตั้งค่าร้านค้าปลีก</strong><small>ข้อมูลร้าน รูปแบบใบเสร็จ และระบบสมาชิก</small></div>
-    <div class="header-actions"><a href="/pos/" class="btn btn-secondary header-link">กลับหน้าขาย</a></div>
-  </header>
-  <main class="settings-container">
-    <form id="storeSettingsForm" class="panel settings-panel">
-      <section><h1>ข้อมูลร้าน</h1><p>ข้อมูลส่วนนี้จะแสดงบนใบเสร็จรับเงินทุกใบ</p><div class="settings-grid"><label class="full">ชื่อร้าน<input id="shopName" maxlength="120" required placeholder="เช่น ร้านสมใจมาร์ท"></label><label class="full">ที่อยู่ร้าน<textarea id="shopAddress" maxlength="500" rows="3" placeholder="เลขที่ ถนน ตำบล/แขวง อำเภอ/เขต จังหวัด รหัสไปรษณีย์"></textarea></label><label>เบอร์โทรศัพท์<input id="shopPhone" maxlength="30" inputmode="tel" placeholder="เช่น 081-234-5678"></label><label>เลขประจำตัวผู้เสียภาษี<input id="taxId" maxlength="20" inputmode="numeric" placeholder="13 หลัก"></label></div></section>
-      <section><h2>ข้อความบนใบเสร็จ</h2><div class="settings-grid"><label class="full">ข้อความขอบคุณ<input id="receiptThanks" maxlength="150" placeholder="ขอบคุณที่ใช้บริการ"></label><label class="full">ข้อความท้ายใบเสร็จ<textarea id="receiptFooter" maxlength="300" rows="3" placeholder="เช่น สินค้าซื้อแล้วไม่รับเปลี่ยนหรือคืน"></textarea></label></div></section>
-      <section><h2>ตัวอย่างข้อมูลบนใบเสร็จ</h2><div class="receipt-preview"><strong id="previewShopName">POS ร้านค้าปลีก</strong><span id="previewShopAddress"></span><span id="previewShopPhone"></span><span id="previewTaxId"></span><hr><span id="previewThanks">ขอบคุณที่ใช้บริการ</span><small id="previewFooter"></small></div></section>
-      <p id="settingsError" class="error-text"></p>
-      <div class="settings-actions"><button id="resetSettingsBtn" class="btn btn-secondary" type="button">คืนค่าเริ่มต้น</button><button class="btn btn-pay" type="submit">บันทึกการตั้งค่า</button></div>
-    </form>
-  </main>
-  <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="/assets/js/retail-pos-settings.js?v=20260624-1"></script>
-  <script type="module" src="/assets/js/retail-loyalty-settings.js?v=20260624-1"></script>
-  <script type="module" src="/assets/js/retail-pos-navigation.js?v=20260624-1"></script>
+<header class="pos-header"><div><strong>ตั้งค่าร้านค้าปลีก</strong><small>ข้อมูลร้าน รูปแบบใบเสร็จ และระบบสมาชิก</small></div><div class="header-actions"><a href="/pos/" class="btn btn-secondary header-link">กลับหน้าขาย</a></div></header>
+<main class="settings-container">
+<form id="storeSettingsForm" class="panel settings-panel">
+<section><h1>ข้อมูลร้าน</h1><p>ข้อมูลส่วนนี้จะแสดงบนใบเสร็จรับเงินทุกใบ</p><div class="settings-grid"><label class="full">ชื่อร้าน<input id="shopName" maxlength="120" required placeholder="เช่น ร้านสมใจมาร์ท"></label><label class="full">ที่อยู่ร้าน<textarea id="shopAddress" maxlength="500" rows="3" placeholder="เลขที่ ถนน ตำบล/แขวง อำเภอ/เขต จังหวัด รหัสไปรษณีย์"></textarea></label><label>เบอร์โทรศัพท์<input id="shopPhone" maxlength="30" inputmode="tel" placeholder="เช่น 081-234-5678"></label><label>เลขประจำตัวผู้เสียภาษี<input id="taxId" maxlength="20" inputmode="numeric" placeholder="13 หลัก"></label></div></section>
+<section><h2>ข้อความบนใบเสร็จ</h2><div class="settings-grid"><label class="full">ข้อความขอบคุณ<input id="receiptThanks" maxlength="150" placeholder="ขอบคุณที่ใช้บริการ"></label><label class="full">ข้อความท้ายใบเสร็จ<textarea id="receiptFooter" maxlength="300" rows="3" placeholder="เช่น สินค้าซื้อแล้วไม่รับเปลี่ยนหรือคืน"></textarea></label></div></section>
+<section><h2>ตัวอย่างข้อมูลบนใบเสร็จ</h2><div class="receipt-preview"><strong id="previewShopName">POS ร้านค้าปลีก</strong><span id="previewShopAddress"></span><span id="previewShopPhone"></span><span id="previewTaxId"></span><hr><span id="previewThanks">ขอบคุณที่ใช้บริการ</span><small id="previewFooter"></small></div></section>
+<p id="settingsError" class="error-text"></p><div class="settings-actions"><button id="resetSettingsBtn" class="btn btn-secondary" type="button">คืนค่าเริ่มต้น</button><button class="btn btn-pay" type="submit">บันทึกการตั้งค่า</button></div>
+</form>
+</main>
+<div id="toast" class="toast" role="status"></div>
+<script type="module" src="/assets/js/retail-pos-settings.js?v=20260624-1"></script>
+<script type="module" src="/assets/js/retail-loyalty-settings.js?v=20260624-1"></script>
+<script type="module" src="/assets/js/retail-pos-navigation.js?v=20260625-12"></script>
+<script type="module" src="/assets/js/retail-system-permissions.js?v=20260625-1"></script>
 </body>
 </html>
