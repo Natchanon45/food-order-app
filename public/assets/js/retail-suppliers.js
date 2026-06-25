@@ -1,3 +1,4 @@
+import "./retail-purchasing-permissions.js?v=20260625-1";
 const SUPPLIER_KEY="retail_pos_suppliers_v1",PURCHASE_KEY="retail_pos_purchases_v1";
 const $=s=>document.querySelector(s),els={total:$("#supplierTotal"),active:$("#activeSupplierTotal"),purchaseTotal:$("#supplierPurchaseTotal"),purchaseCount:$("#supplierPurchaseCount"),search:$("#supplierSearch"),filter:$("#supplierFilter"),grid:$("#supplierGrid"),empty:$("#supplierEmpty"),add:$("#addSupplierBtn"),dialog:$("#supplierDialog"),form:$("#supplierForm"),title:$("#supplierDialogTitle"),editId:$("#editingSupplierId"),name:$("#supplierName"),contact:$("#supplierContact"),phone:$("#supplierPhone"),email:$("#supplierEmail"),taxId:$("#supplierTaxId"),credit:$("#supplierCreditDays"),address:$("#supplierAddress"),note:$("#supplierNote"),error:$("#supplierFormError"),close:$("#closeSupplierDialog"),cancel:$("#cancelSupplierBtn"),toast:$("#toast")};
 let suppliers=read(SUPPLIER_KEY,[]),toastTimer;
