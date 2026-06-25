@@ -1,7 +1,7 @@
 import {ensureAuthUsers,getAuthUsers,getSessionUser,logout,sessionRole} from "./retail-pos-auth.js?v=20260624-1";
 
 const ROLE_KEY="retail_pos_roles_v1";
-const MIGRATION_KEY="retail_pos_permission_schema_v6";
+const MIGRATION_KEY="retail_pos_permission_schema_v7";
 
 export const MENU_GROUPS=[
   {id:"sales",label:"ขายหน้าร้าน",items:[{key:"pos.sale",label:"หน้าขาย",href:"/pos/"},{key:"pos.sales",label:"ประวัติการขาย",href:"/pos/sales/"},{key:"pos.returns",label:"คืนสินค้า",href:"/pos/returns/"},{key:"pos.shifts",label:"กะพนักงาน",href:"/pos/shifts/"}]},
@@ -15,33 +15,37 @@ export const ACTION_GROUPS=[
   {id:"sale_actions",label:"การขายหน้าร้าน",items:[{key:"pos.sale.checkout",label:"ยืนยันการขาย"},{key:"pos.sale.discount",label:"ให้ส่วนลด"},{key:"pos.sale.hold",label:"พักและเรียกบิล"},{key:"pos.sale.clear",label:"ล้างบิลปัจจุบัน"},{key:"pos.sale.seed",label:"โหลดสินค้าตัวอย่าง"}]},
   {id:"sales_history_actions",label:"ประวัติการขาย",items:[{key:"pos.sales.view_bill",label:"ดูรายละเอียดบิล"},{key:"pos.sales.print_bill",label:"พิมพ์ใบเสร็จย้อนหลัง"},{key:"pos.sales.export",label:"ส่งออกข้อมูลการขาย CSV"}]},
   {id:"return_actions",label:"คืนสินค้า",items:[{key:"pos.returns.create",label:"ยืนยันคืนสินค้าและคืนเงิน"},{key:"pos.returns.print",label:"ดูและพิมพ์ใบรับคืน"}]},
+  {id:"shift_actions",label:"กะพนักงาน",items:[{key:"pos.shifts.open",label:"เปิดกะ"},{key:"pos.shifts.close",label:"ปิดกะ"},{key:"pos.shifts.view_amount",label:"ดูยอดเงินและผลต่าง"},{key:"pos.shifts.view_history",label:"ดูประวัติกะ"},{key:"pos.shifts.clear_history",label:"ล้างประวัติกะ"}]},
   {id:"product_actions",label:"การจัดการสินค้าและสต็อก",items:[{key:"pos.products.create",label:"เพิ่มสินค้า"},{key:"pos.products.edit",label:"แก้ไขสินค้า"},{key:"pos.products.delete",label:"ลบสินค้า"},{key:"pos.products.adjust_stock",label:"ปรับสต็อก"},{key:"pos.products.view_cost",label:"ดูราคาทุน"},{key:"pos.products.clear_history",label:"ล้างประวัติสต็อก"}]},
   {id:"stock_count_actions",label:"ตรวจนับสต็อก",items:[{key:"pos.stock_counts.perform",label:"กรอกและยืนยันตรวจนับ"},{key:"pos.stock_counts.view_value",label:"ดูต้นทุนและมูลค่าผลต่าง"},{key:"pos.stock_counts.view_history",label:"ดูประวัติการตรวจนับ"}]},
   {id:"stock_movement_actions",label:"ความเคลื่อนไหวสต็อก",items:[{key:"pos.stock_movements.view_quantity",label:"ดูยอดก่อน–หลังและจำนวนเปลี่ยนแปลง"},{key:"pos.stock_movements.export",label:"ส่งออกความเคลื่อนไหว CSV"}]},
   {id:"purchase_actions",label:"รับสินค้าเข้า",items:[{key:"pos.purchases.create",label:"บันทึกรับสินค้าเข้า"},{key:"pos.purchases.view_cost",label:"ดูราคาทุนและยอดซื้อ"}]},
   {id:"payable_actions",label:"เจ้าหนี้",items:[{key:"pos.payables.pay",label:"บันทึกชำระเจ้าหนี้"},{key:"pos.payables.view_amount",label:"ดูยอดเจ้าหนี้"}]},
   {id:"supplier_actions",label:"ผู้จำหน่าย",items:[{key:"pos.suppliers.create",label:"เพิ่มผู้จำหน่าย"},{key:"pos.suppliers.edit",label:"แก้ไขผู้จำหน่าย"},{key:"pos.suppliers.delete",label:"ลบผู้จำหน่าย"},{key:"pos.suppliers.view_purchase",label:"ดูยอดซื้อสะสม"}]},
-  {id:"customer_actions",label:"ลูกค้าและสมาชิก",items:[{key:"pos.customers.create",label:"เพิ่มลูกค้า"},{key:"pos.customers.edit",label:"แก้ไขลูกค้า"},{key:"pos.customers.delete",label:"ลบลูกค้า"},{key:"pos.customers.view_history",label:"ดูประวัติการซื้อ"},{key:"pos.customers.view_points",label:"ดูคะแนนและประวัติแต้ม"},{key:"pos.customers.view_sales",label:"ดูยอดซื้อสะสม"}]}
+  {id:"customer_actions",label:"ลูกค้าและสมาชิก",items:[{key:"pos.customers.create",label:"เพิ่มลูกค้า"},{key:"pos.customers.edit",label:"แก้ไขลูกค้า"},{key:"pos.customers.delete",label:"ลบลูกค้า"},{key:"pos.customers.view_history",label:"ดูประวัติการซื้อ"},{key:"pos.customers.view_points",label:"ดูคะแนนและประวัติแต้ม"},{key:"pos.customers.view_sales",label:"ดูยอดซื้อสะสม"}]},
+  {id:"settings_actions",label:"ตั้งค่าร้าน",items:[{key:"pos.settings.edit_store",label:"แก้ไขข้อมูลร้านและใบเสร็จ"},{key:"pos.settings.edit_loyalty",label:"แก้ไขระบบคะแนนสมาชิก"},{key:"pos.settings.reset",label:"คืนค่าการตั้งค่าเริ่มต้น"}]},
+  {id:"backup_actions",label:"สำรองและกู้คืน",items:[{key:"pos.backup.export",label:"ดาวน์โหลดไฟล์สำรอง"},{key:"pos.backup.restore",label:"กู้คืนและเขียนทับข้อมูล"}]},
+  {id:"user_actions",label:"ผู้ใช้และสิทธิ์",items:[{key:"pos.users.manage_roles",label:"เพิ่ม แก้ไข และลบบทบาท"},{key:"pos.users.manage_users",label:"เพิ่มและแก้ไขบัญชีผู้ใช้"}]}
 ];
 
 const MENU_PERMISSIONS=MENU_GROUPS.flatMap(group=>group.items.map(item=>item.key));
 const ACTION_PERMISSIONS=ACTION_GROUPS.flatMap(group=>group.items.map(item=>item.key));
 const ALL_PERMISSIONS=[...MENU_PERMISSIONS,...ACTION_PERMISSIONS];
 const actionKeys=id=>ACTION_GROUPS.find(group=>group.id===id)?.items.map(item=>item.key)||[];
-const SALE_ACTIONS=actionKeys("sale_actions"),SALES_HISTORY_ACTIONS=actionKeys("sales_history_actions"),RETURN_ACTIONS=actionKeys("return_actions"),STOCK_COUNT_ACTIONS=actionKeys("stock_count_actions"),STOCK_MOVEMENT_ACTIONS=actionKeys("stock_movement_actions"),PURCHASE_ACTIONS=actionKeys("purchase_actions"),SUPPLIER_ACTIONS=actionKeys("supplier_actions"),CUSTOMER_ACTIONS=actionKeys("customer_actions");
+const SALE_ACTIONS=actionKeys("sale_actions"),SALES_HISTORY_ACTIONS=actionKeys("sales_history_actions"),RETURN_ACTIONS=actionKeys("return_actions"),SHIFT_ACTIONS=actionKeys("shift_actions"),STOCK_COUNT_ACTIONS=actionKeys("stock_count_actions"),STOCK_MOVEMENT_ACTIONS=actionKeys("stock_movement_actions"),PURCHASE_ACTIONS=actionKeys("purchase_actions"),SUPPLIER_ACTIONS=actionKeys("supplier_actions"),CUSTOMER_ACTIONS=actionKeys("customer_actions");
 
 const DEFAULT_ROLES=[
   {id:"owner",name:"เจ้าของร้าน",permissions:[...ALL_PERMISSIONS],locked:true},
-  {id:"cashier",name:"พนักงานขาย",permissions:["pos.sale","pos.sales","pos.returns","pos.customers","pos.shifts",...SALE_ACTIONS.filter(key=>key!=="pos.sale.seed"),...SALES_HISTORY_ACTIONS.filter(key=>key!=="pos.sales.export"),...RETURN_ACTIONS,...CUSTOMER_ACTIONS.filter(key=>key!=="pos.customers.delete")],locked:false},
+  {id:"cashier",name:"พนักงานขาย",permissions:["pos.sale","pos.sales","pos.returns","pos.customers","pos.shifts",...SALE_ACTIONS.filter(key=>key!=="pos.sale.seed"),...SALES_HISTORY_ACTIONS.filter(key=>key!=="pos.sales.export"),...RETURN_ACTIONS,...SHIFT_ACTIONS.filter(key=>key!=="pos.shifts.clear_history"),...CUSTOMER_ACTIONS.filter(key=>key!=="pos.customers.delete")],locked:false},
   {id:"stock",name:"พนักงานสต็อก",permissions:["pos.products","pos.stock_movements","pos.stock_counts","pos.purchases","pos.suppliers","pos.products.adjust_stock",...STOCK_COUNT_ACTIONS,...STOCK_MOVEMENT_ACTIONS,"pos.purchases.create","pos.purchases.view_cost","pos.suppliers.create","pos.suppliers.edit"],locked:false},
-  {id:"manager",name:"ผู้จัดการร้าน",permissions:ALL_PERMISSIONS.filter(key=>key!=="pos.backup"&&key!=="pos.users"),locked:false}
+  {id:"manager",name:"ผู้จัดการร้าน",permissions:ALL_PERMISSIONS.filter(key=>key!=="pos.backup"&&key!=="pos.users"&&key!=="pos.backup.restore"),locked:false}
 ];
 
 function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}}
 function write(key,value){localStorage.setItem(key,JSON.stringify(value))}
 function esc(value){return String(value??"").replace(/[&<>'"]/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"})[char])}
 function normalizePath(value){const url=new URL(value,location.origin);let path=url.pathname.replace(/\/index\.html$/,"/");if(!path.endsWith("/"))path+="/";return path}
-function migrateRolesOnce(roles){if(localStorage.getItem(MIGRATION_KEY)==="1")return roles;const migrated=roles.map(role=>{const permissions=new Set(role.permissions||[]),add=key=>permissions.add(key);if(role.id==="owner"||role.id==="manager")ACTION_PERMISSIONS.forEach(add);if(role.id==="cashier"){SALE_ACTIONS.filter(key=>key!=="pos.sale.seed").forEach(add);SALES_HISTORY_ACTIONS.filter(key=>key!=="pos.sales.export").forEach(add);RETURN_ACTIONS.forEach(add);CUSTOMER_ACTIONS.filter(key=>key!=="pos.customers.delete").forEach(add)}if(role.id==="stock"){add("pos.products.adjust_stock");STOCK_COUNT_ACTIONS.forEach(add);STOCK_MOVEMENT_ACTIONS.forEach(add);PURCHASE_ACTIONS.forEach(add);SUPPLIER_ACTIONS.filter(key=>key!=="pos.suppliers.delete"&&key!=="pos.suppliers.view_purchase").forEach(add)}return{...role,permissions:[...permissions]}});write(ROLE_KEY,migrated);localStorage.setItem(MIGRATION_KEY,"1");return migrated}
+function migrateRolesOnce(roles){if(localStorage.getItem(MIGRATION_KEY)==="1")return roles;const migrated=roles.map(role=>{const permissions=new Set(role.permissions||[]),add=key=>permissions.add(key);if(role.id==="owner")ACTION_PERMISSIONS.forEach(add);if(role.id==="manager")ACTION_PERMISSIONS.filter(key=>key!=="pos.backup.restore").forEach(add);if(role.id==="cashier"){SALE_ACTIONS.filter(key=>key!=="pos.sale.seed").forEach(add);SALES_HISTORY_ACTIONS.filter(key=>key!=="pos.sales.export").forEach(add);RETURN_ACTIONS.forEach(add);SHIFT_ACTIONS.filter(key=>key!=="pos.shifts.clear_history").forEach(add);CUSTOMER_ACTIONS.filter(key=>key!=="pos.customers.delete").forEach(add)}if(role.id==="stock"){add("pos.products.adjust_stock");STOCK_COUNT_ACTIONS.forEach(add);STOCK_MOVEMENT_ACTIONS.forEach(add);PURCHASE_ACTIONS.forEach(add);SUPPLIER_ACTIONS.filter(key=>key!=="pos.suppliers.delete"&&key!=="pos.suppliers.view_purchase").forEach(add)}return{...role,permissions:[...permissions]}});write(ROLE_KEY,migrated);localStorage.setItem(MIGRATION_KEY,"1");return migrated}
 export function ensureAccessData(){const roles=read(ROLE_KEY,[]);if(!roles.length){write(ROLE_KEY,DEFAULT_ROLES);localStorage.setItem(MIGRATION_KEY,"1")}else migrateRolesOnce(roles);ensureAuthUsers()}
 export function getRoles(){ensureAccessData();return read(ROLE_KEY,DEFAULT_ROLES)}
 export function getUsers(){ensureAccessData();return getAuthUsers()}
