@@ -1,4 +1,4 @@
-import {MENU_GROUPS,ACTION_GROUPS,getRoles,getUsers,getCurrentUser,getCurrentRole} from "./retail-pos-navigation.js?v=20260625-9";
+import {MENU_GROUPS,ACTION_GROUPS,getRoles,getUsers,getCurrentUser,getCurrentRole} from "./retail-pos-navigation.js?v=20260625-10";
 import {createPasswordRecord} from "./retail-pos-auth.js?v=20260624-1";
 
 const ROLE_KEY="retail_pos_roles_v1",USER_KEY="retail_pos_users_v1";
