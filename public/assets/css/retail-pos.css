@@ -43,6 +43,9 @@ button { cursor: pointer; }
 .pos-header > div:first-child { min-width: 0; }
 .pos-header strong { display: block; font-size: 1.15rem; }
 .pos-header small { display: block; margin-top: 3px; opacity: .82; }
+.app-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.app-badge { flex: 0 0 auto; width: 38px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: #159447; color: #fff; font-size: .78rem; font-weight: 800; letter-spacing: .02em; }
+.app-title > div { min-width: 0; }
 .header-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: flex-end; margin-left: auto; }
 .header-actions:has(.btn:only-child), .header-actions:has(.header-link:only-child) { justify-content: flex-end; }
 .header-link { text-decoration: none; }
@@ -108,6 +111,8 @@ dialog::backdrop { background: #0f172a99; }
   .pos-header > div:first-child { flex: 1 1 auto; }
   .header-actions { width: auto; flex: 0 0 auto; justify-content: flex-end; align-self: flex-start; }
   .header-actions .btn { flex: 0 0 auto; white-space: nowrap; }
+  .app-title { gap: 8px; }
+  .app-badge { width: 34px; height: 30px; border-radius: 9px; font-size: .72rem; }
   .pos-layout { padding: 8px; gap: 8px; }
   .search-row { grid-template-columns: 1fr; }
   .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
