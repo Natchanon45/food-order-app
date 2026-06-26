@@ -40,9 +40,11 @@ button { cursor: pointer; }
   justify-content: space-between; gap: 12px; background: linear-gradient(135deg, var(--black), var(--green-dark)); color: #fff;
   position: sticky; top: 0; z-index: 20; box-shadow: 0 2px 12px #0002;
 }
+.pos-header > div:first-child { min-width: 0; }
 .pos-header strong { display: block; font-size: 1.15rem; }
 .pos-header small { display: block; margin-top: 3px; opacity: .82; }
-.header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.header-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: flex-end; margin-left: auto; }
+.header-actions:has(.btn:only-child), .header-actions:has(.header-link:only-child) { justify-content: flex-end; }
 .header-link { text-decoration: none; }
 .pos-layout { display: grid; grid-template-columns: minmax(0, 1fr) 390px; gap: 14px; padding: 14px; min-height: calc(100vh - 72px); }
 .panel { background: var(--card); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 8px 26px rgba(16,35,23,.05); }
@@ -102,11 +104,18 @@ dialog::backdrop { background: #0f172a99; }
   .cart-panel { min-height: 520px; }
 }
 @media (max-width: 600px) {
-  .pos-header { align-items: flex-start; flex-direction: column; }
-  .header-actions { width: 100%; }
-  .header-actions .btn { flex: 1; }
+  .pos-header { align-items: flex-start; flex-direction: row; }
+  .pos-header > div:first-child { flex: 1 1 auto; }
+  .header-actions { width: auto; flex: 0 0 auto; justify-content: flex-end; align-self: flex-start; }
+  .header-actions .btn { flex: 0 0 auto; white-space: nowrap; }
   .pos-layout { padding: 8px; gap: 8px; }
   .search-row { grid-template-columns: 1fr; }
   .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .product-card { min-height: 120px; }
+}
+@media (max-width: 420px) {
+  .pos-header { padding: 10px 12px; gap: 8px; }
+  .pos-header strong { font-size: 1rem; }
+  .pos-header small { font-size: .72rem; }
+  .header-actions .btn { min-height: 38px; padding: 8px 11px; font-size: .85rem; }
 }
