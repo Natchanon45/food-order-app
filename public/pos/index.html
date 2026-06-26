@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#159447">
   <title>POS ร้านค้าปลีก</title>
-  <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260624-6">
+  <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260626-6">
   <link rel="stylesheet" href="/assets/css/retail-pos-hold.css?v=20260624-1">
   <link rel="stylesheet" href="/assets/css/retail-pos-customer-search.css?v=20260624-1">
   <link rel="stylesheet" href="/assets/css/retail-loyalty.css?v=20260624-1">
@@ -13,14 +13,11 @@
 </head>
 <body>
   <header class="pos-header">
-    <div><strong>POS ร้านค้าปลีก</strong><small>โหมดทดสอบ • เก็บข้อมูลในเครื่องนี้</small></div>
-    <div class="header-actions">
-      <button id="seedBtn" class="btn btn-secondary" type="button">โหลดสินค้าตัวอย่าง</button>
-      <button id="clearSaleBtn" class="btn btn-danger" type="button">ล้างบิล</button>
-    </div>
+    <div class="app-title"><span class="app-badge">FOD</span><div><strong>POS ร้านค้าปลีก</strong><small>โหมดทดสอบ • เก็บข้อมูลในเครื่องนี้</small></div></div>
+    <div class="header-actions"></div>
   </header>
   <main class="pos-layout">
-    <section class="panel product-panel"><div class="search-row"><input id="barcodeInput" autocomplete="off" inputmode="numeric" placeholder="สแกนบาร์โค้ด หรือพิมพ์รหัสสินค้า แล้วกด Enter"><input id="searchInput" autocomplete="off" placeholder="ค้นหาชื่อสินค้า"></div><div id="productGrid" class="product-grid"></div></section>
+    <section class="panel product-panel"><div class="section-heading"><div><h2>สินค้า</h2><p>สแกนบาร์โค้ดหรือเลือกสินค้าเพื่อเพิ่มลงบิล</p></div><div class="section-actions"><button id="seedBtn" class="btn btn-secondary" type="button">โหลดตัวอย่าง</button><button id="clearSaleBtn" class="btn btn-danger" type="button">ล้างบิล</button></div></div><div class="search-row"><input id="barcodeInput" autocomplete="off" inputmode="numeric" placeholder="สแกนบาร์โค้ด หรือพิมพ์รหัสสินค้า แล้วกด Enter"><input id="searchInput" autocomplete="off" placeholder="ค้นหาชื่อสินค้า"></div><div id="productGrid" class="product-grid"></div></section>
     <aside class="panel cart-panel"><div class="cart-title"><h1>รายการขาย</h1><span id="itemCount">0 รายการ</span></div><div id="cartEmpty" class="empty-state">ยังไม่มีสินค้าในบิล</div><div id="cartList" class="cart-list"></div><div class="summary"><div><span>รวมสินค้า</span><strong id="subtotal">0.00</strong></div><label><span>ส่วนลด</span><input id="discountInput" type="number" min="0" step="0.01" value="0"></label><div class="grand-total"><span>ยอดสุทธิ</span><strong id="grandTotal">0.00</strong></div></div><div class="cart-actions"><button id="holdBillBtn" class="btn btn-secondary" type="button">พักบิล</button><button id="heldBillsBtn" class="btn btn-secondary" type="button">บิลพัก <span id="heldBillsCount" class="held-count">0</span></button></div><button id="payBtn" class="btn btn-pay" type="button" disabled>รับชำระเงิน</button></aside>
   </main>
   <dialog id="paymentDialog"><form method="dialog" class="payment-form"><div class="dialog-head"><h2>รับชำระเงิน</h2><button value="cancel" class="icon-btn" aria-label="ปิด">×</button></div><div class="payment-total"><span>ยอดที่ต้องชำระ</span><strong id="paymentTotal">0.00 บาท</strong></div><label>ช่องทางชำระเงิน<select id="paymentMethod"><option value="cash">เงินสด</option><option value="promptpay">PromptPay / โอนเงิน</option></select></label><label id="receivedWrap">รับเงินมา<input id="receivedInput" type="number" min="0" step="0.01" inputmode="decimal"></label><div class="change-row"><span>เงินทอน</span><strong id="changeAmount">0.00 บาท</strong></div><p id="paymentError" class="error-text"></p><div class="dialog-actions"><button value="cancel" class="btn btn-secondary">ยกเลิก</button><button id="confirmPaymentBtn" value="default" class="btn btn-pay" type="button">ยืนยันการขาย</button></div></form></dialog>
