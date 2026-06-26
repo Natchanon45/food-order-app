@@ -1,0 +1,78 @@
+@media (max-width: 600px) {
+  .sales-table tr {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 12px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, .035);
+  }
+
+  .sales-table td {
+    width: 100%;
+    line-height: 1.35;
+  }
+
+  .sales-table td.sale-id {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: .95rem;
+    font-weight: 800;
+    word-break: break-word;
+  }
+
+  .sales-table td.sale-date {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #64748b;
+    font-size: .82rem;
+    text-align: right;
+  }
+
+  .sales-table td.sale-date::before {
+    display: inline;
+    content: "วันที่";
+    color: var(--muted);
+    font-size: .78rem;
+    font-weight: 700;
+  }
+
+  .sales-table td:not(.sale-id):not(.sale-date):not(.sale-actions) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    text-align: right;
+  }
+
+  .sales-table td:not(.sale-id):not(.sale-date):not(.sale-actions)::before {
+    flex: 0 0 auto;
+  }
+
+  .sales-table td.number,
+  .sales-table td.sale-total,
+  .sales-table td.sale-discount {
+    font-weight: 800;
+  }
+
+  .sales-table td.sale-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 8px;
+    border-top: 1px dashed #e3ebe6;
+  }
+
+  .sales-table .view-sale {
+    min-height: 42px;
+    min-width: 72px;
+    padding: 8px 12px;
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 390px) {
+  .sales-table tr { padding: 10px; }
+  .sales-table td { font-size: .9rem; }
+  .sales-table td.sale-id { font-size: .9rem; }
+}
