@@ -5,15 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#159447">
 <title>ตรวจนับสต็อก</title>
-<link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260624-6">
+<link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260626-5">
 <link rel="stylesheet" href="/assets/css/retail-stock-counts.css?v=20260625-2">
 <link rel="stylesheet" href="/assets/css/retail-pos-navigation.css?v=20260625-12">
 </head>
 <body>
-<header class="pos-header"><div><strong>ตรวจนับสต็อก</strong><small>เปรียบเทียบยอดตามระบบกับยอดนับจริง</small></div><div class="header-actions"><a href="/pos/" class="btn btn-secondary header-link">หน้าขาย</a><a href="/pos/products/" class="btn btn-secondary header-link">สินค้าและสต็อก</a></div></header>
+<header class="pos-header"><div class="app-title"><span class="app-badge">FOD</span><div><strong>ตรวจนับสต็อก</strong><small>เปรียบเทียบยอดตามระบบกับยอดนับจริง</small></div></div><div class="header-actions"></div></header>
 <main class="count-container">
 <section class="panel count-panel">
-<div class="count-heading"><div><h1>รอบตรวจนับใหม่</h1><p>กรอกยอดนับจริง แล้วตรวจสอบผลต่างก่อนยืนยันปรับสต็อก</p></div><div class="count-actions-top"><button id="fillSystemBtn" class="btn btn-secondary" type="button">ใส่ยอดตามระบบทั้งหมด</button><button id="clearActualBtn" class="btn btn-secondary" type="button">ล้างยอดนับจริง</button></div></div>
+<div class="count-heading section-heading"><div><h1>รอบตรวจนับใหม่</h1><p>กรอกยอดนับจริง แล้วตรวจสอบผลต่างก่อนยืนยันปรับสต็อก</p></div><div class="count-actions-top"><button id="fillSystemBtn" class="btn btn-secondary" type="button">ใส่ยอดตามระบบทั้งหมด</button><button id="clearActualBtn" class="btn btn-secondary" type="button">ล้างยอดนับจริง</button></div></div>
 <div class="count-meta"><label>ชื่อรอบตรวจนับ<input id="countName" maxlength="120" placeholder="เช่น ตรวจนับสิ้นเดือน"></label><label>วันที่ตรวจนับ<input id="countDate" type="date"></label><label>ผู้ตรวจนับ<input id="countedBy" maxlength="100"></label><label>หมายเหตุ<input id="countNote" maxlength="200"></label></div>
 <div class="count-toolbar"><input id="countSearch" placeholder="ค้นหาชื่อสินค้า รหัส หรือบาร์โค้ด"><select id="countFilter"><option value="all">สินค้าทั้งหมด</option><option value="difference">เฉพาะที่มีผลต่าง</option><option value="uncounted">ยังไม่กรอกยอดจริง</option></select></div>
 <div class="table-wrap"><table class="count-table"><thead><tr><th>สินค้า</th><th class="number">ยอดตามระบบ</th><th class="number">ยอดนับจริง</th><th class="number">ผลต่าง</th><th class="number">มูลค่าผลต่าง</th></tr></thead><tbody id="countTableBody"></tbody></table></div>
@@ -22,7 +22,7 @@
 <p id="countError" class="error-text"></p>
 <div class="count-footer-actions"><button id="resetCountBtn" class="btn btn-secondary" type="button">เริ่มใหม่</button><button id="confirmCountBtn" class="btn btn-pay" type="button">ยืนยันและปรับสต็อก</button></div>
 </section>
-<section class="panel count-history-panel"><div class="section-heading"><div><h2>ประวัติการตรวจนับ</h2><p>แสดงรอบตรวจนับล่าสุดในเครื่องนี้</p></div><input id="historySearch" placeholder="ค้นหาชื่อรอบหรือผู้ตรวจนับ"></div><div id="countHistory" class="count-history"></div><div id="countHistoryEmpty" class="empty-state">ยังไม่มีประวัติการตรวจนับ</div></section>
+<section class="panel count-history-panel"><div class="section-heading"><div><h2>ประวัติการตรวจนับ</h2><p>แสดงรอบตรวจนับล่าสุดในเครื่องนี้</p></div></div><label class="count-history-search">ค้นหารายการ<input id="historySearch" placeholder="ค้นหาชื่อรอบหรือผู้ตรวจนับ"></label><div id="countHistory" class="count-history"></div><div id="countHistoryEmpty" class="empty-state">ยังไม่มีประวัติการตรวจนับ</div></section>
 </main>
 <div id="toast" class="toast" role="status"></div>
 <script type="module" src="/assets/js/retail-stock-counts.js?v=20260625-2"></script>
