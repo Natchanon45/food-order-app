@@ -23,7 +23,7 @@
 .row-actions button { border: 1px solid #cfd9dc; background: #fff; border-radius: 8px; padding: 7px 9px; white-space: nowrap; }
 .row-actions .stock { color: #0f766e; min-width: 86px; }
 .row-actions .delete { color: #b42318; }
-.section-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; }
+.section-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
 .section-heading h2 { margin: 0; font-size: 1.05rem; }
 .section-heading p { margin: 3px 0 0; color: #64748b; font-size: .82rem; }
 .movement-list { display: grid; gap: 8px; }
@@ -54,5 +54,4 @@
   .row-actions .stock { min-width: 92px; }
   .form-grid { grid-template-columns: 1fr; }
   .form-grid .full { grid-column: auto; }
-  .section-heading { align-items: flex-start; flex-direction: column; }
 }
