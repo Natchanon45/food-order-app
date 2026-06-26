@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#159447">
 <title>รายงานความเคลื่อนไหวสต็อก</title>
-<link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260624-6">
+<link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260626-5">
 <link rel="stylesheet" href="/assets/css/retail-stock-movements.css?v=20260625-3">
 <link rel="stylesheet" href="/assets/css/retail-pos-navigation.css?v=20260625-12">
 </head>
 <body>
-<header class="pos-header"><div><strong>รายงานความเคลื่อนไหวสต็อก</strong><small>ตรวจสอบรับเข้า ขาย คืนสินค้า ปรับยอด และตรวจนับ</small></div><div class="header-actions"><a href="/pos/" class="btn btn-secondary header-link">หน้าขาย</a><a href="/pos/products/" class="btn btn-secondary header-link">สินค้าและสต็อก</a><button id="exportMovementCsv" class="btn btn-pay" type="button">ส่งออก CSV</button></div></header>
+<header class="pos-header"><div class="app-title"><span class="app-badge">FOD</span><div><strong>รายงานความเคลื่อนไหวสต็อก</strong><small>ตรวจสอบรับเข้า ขาย คืนสินค้า ปรับยอด และตรวจนับ</small></div></div><div class="header-actions"></div></header>
 <main class="movement-container">
 <section class="panel movement-filter-panel"><div class="movement-toolbar"><input id="movementSearch" placeholder="ค้นหาชื่อสินค้า รหัสสินค้า หรือหมายเหตุ"><input id="movementDateFrom" type="date"><input id="movementDateTo" type="date"><select id="movementTypeFilter"><option value="all">ทุกประเภท</option><option value="purchase">รับสินค้าเข้า</option><option value="sale">ขายสินค้า</option><option value="return">คืนสินค้า</option><option value="count">ตรวจนับสต็อก</option><option value="adjustment">ปรับสต็อก</option></select><button id="movementTodayBtn" class="btn btn-secondary" type="button">วันนี้</button><button id="movementMonthBtn" class="btn btn-secondary" type="button">เดือนนี้</button><button id="movementAllBtn" class="btn btn-secondary" type="button">ทั้งหมด</button></div></section>
 <section class="movement-stats"><article><span>จำนวนรายการ</span><strong id="movementCount">0</strong></article><article><span>รับเข้า</span><strong id="movementIn">0</strong></article><article><span>จ่ายออก</span><strong id="movementOut">0</strong></article><article><span>ผลต่างสุทธิ</span><strong id="movementNet">0</strong></article></section>
-<section class="panel movement-report-panel"><div class="movement-report-heading"><div><h1>รายการความเคลื่อนไหว</h1><p id="movementPeriodText">ข้อมูลทั้งหมด</p></div><select id="movementProductFilter"><option value="all">สินค้าทั้งหมด</option></select></div><div class="table-wrap"><table class="movement-table"><thead><tr><th>วันที่และเวลา</th><th>สินค้า</th><th>ประเภท</th><th>หมายเหตุ</th><th class="number">ก่อน</th><th class="number">เปลี่ยนแปลง</th><th class="number">หลัง</th></tr></thead><tbody id="movementTableBody"></tbody></table></div><div id="movementEmpty" class="empty-state movement-empty">ไม่พบความเคลื่อนไหวสต็อก</div></section>
+<section class="panel movement-report-panel"><div class="movement-report-heading section-heading"><div><h1>รายการความเคลื่อนไหว</h1><p id="movementPeriodText">ข้อมูลทั้งหมด</p></div><button id="exportMovementCsv" class="btn btn-pay" type="button">ส่งออก CSV</button></div><select id="movementProductFilter"><option value="all">สินค้าทั้งหมด</option></select><div class="table-wrap"><table class="movement-table"><thead><tr><th>วันที่และเวลา</th><th>สินค้า</th><th>ประเภท</th><th>หมายเหตุ</th><th class="number">ก่อน</th><th class="number">เปลี่ยนแปลง</th><th class="number">หลัง</th></tr></thead><tbody id="movementTableBody"></tbody></table></div><div id="movementEmpty" class="empty-state movement-empty">ไม่พบความเคลื่อนไหวสต็อก</div></section>
 </main>
 <script type="module" src="/assets/js/retail-stock-movements.js?v=20260625-3"></script>
 <script type="module" src="/assets/js/retail-pos-navigation.js?v=20260625-12"></script>
