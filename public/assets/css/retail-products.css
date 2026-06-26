@@ -8,7 +8,7 @@
 .stat-card.danger strong { color: #b42318; }
 .management-panel, .movement-panel { padding: 14px; }
 .movement-panel { margin-top: 14px; }
-.toolbar { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 10px; margin-bottom: 12px; }
+.toolbar { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 10px; margin-bottom: 14px; }
 .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .product-table { width: 100%; border-collapse: collapse; min-width: 850px; }
 .product-table th, .product-table td { padding: 12px 10px; border-bottom: 1px solid #edf1f2; text-align: left; vertical-align: middle; }
@@ -23,7 +23,7 @@
 .row-actions button { border: 1px solid #cfd9dc; background: #fff; border-radius: 8px; padding: 7px 9px; white-space: nowrap; }
 .row-actions .stock { color: #0f766e; min-width: 86px; }
 .row-actions .delete { color: #b42318; }
-.section-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+.section-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
 .section-heading h2 { margin: 0; font-size: 1.05rem; }
 .section-heading p { margin: 3px 0 0; color: #64748b; font-size: .82rem; }
 .movement-list { display: grid; gap: 8px; }
@@ -43,15 +43,22 @@
 }
 @media (max-width: 520px) {
   .management-container { padding: 8px; }
-  .stats-grid { gap: 8px; }
-  .stat-card { padding: 12px; }
-  .stat-card strong { font-size: 1.35rem; }
-  .management-panel { padding: 10px; }
+  .stats-grid { gap: 8px; margin-bottom: 10px; }
+  .stat-card { padding: 12px; border-radius: 12px; }
+  .stat-card span { font-size: .74rem; }
+  .stat-card strong { font-size: 1.2rem; }
+  .management-panel,.movement-panel { padding: 10px; border-radius: 14px; }
+  .product-list-heading,.movement-panel .section-heading { align-items: flex-start; flex-direction: row; gap: 10px; }
+  .product-list-heading .btn,.movement-panel .section-heading .btn { flex: 0 0 auto; align-self: flex-start; white-space: nowrap; padding: 8px 12px; }
+  .toolbar { gap: 8px; margin-bottom: 16px; }
   .table-wrap { overflow-x: auto; overflow-y: visible; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
+  .table-wrap::after { content: "เลื่อนซ้าย-ขวาเพื่อดูข้อมูลทั้งหมด"; display: block; margin-top: 6px; color: #64748b; font-size: .72rem; text-align: center; }
   .product-table { width: max-content; min-width: 850px; }
   .row-actions { min-width: 190px; }
   .row-actions button { padding: 7px 10px; }
   .row-actions .stock { min-width: 92px; }
   .form-grid { grid-template-columns: 1fr; }
   .form-grid .full { grid-column: auto; }
+  .movement-list { gap: 9px; }
+  .movement-item { border-radius: 12px; padding: 12px; }
 }
