@@ -1,4 +1,4 @@
-import {hasPermission} from "./retail-pos-navigation.js?v=20260625-9";
+import {hasPermission} from "./retail-pos-navigation.js?v=20260625-12";
 
 const P={
   purchaseCreate:"pos.purchases.create",
