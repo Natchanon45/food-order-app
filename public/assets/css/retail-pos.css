@@ -133,3 +133,4 @@ dialog::backdrop { background: #0f172a99; }
   .header-actions .btn { min-height: 38px; padding: 8px 11px; font-size: .85rem; }
   .section-heading .btn { padding: 8px 10px; font-size: .86rem; }
 }
+.pos-header{position:sticky!important;top:0!important;z-index:100!important}
