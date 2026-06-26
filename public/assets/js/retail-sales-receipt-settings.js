@@ -1,4 +1,4 @@
-import "./retail-sales-returns-permissions.js?v=20260625-1";
+import "./retail-sales-returns-permissions.js?v=20260625-2";
 
 const STORE_SETTINGS_KEY = "retail_pos_store_settings_v1";
 const LEGACY_STORE_SETTINGS_KEY = "food_order_store_settings";
