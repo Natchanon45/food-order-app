@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#159447">
 <title>คืนสินค้าและคืนเงิน</title>
-<link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260626-5">
-<link rel="stylesheet" href="/assets/css/retail-returns.css?v=20260626-1">
+<link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260626-6">
+<link rel="stylesheet" href="/assets/css/retail-returns.css?v=20260626-2">
 <link rel="stylesheet" href="/assets/css/retail-returns-mobile.css?v=20260625-1">
 <link rel="stylesheet" href="/assets/css/retail-return-receipt.css?v=20260624-1">
 <link rel="stylesheet" href="/assets/css/retail-pos-navigation.css?v=20260625-12">
@@ -25,7 +25,7 @@
 <div class="return-form-grid"><label>วันที่คืนสินค้า<input id="returnDate" type="date" required></label><label>ช่องทางคืนเงิน<select id="refundMethod"><option value="cash">เงินสด</option><option value="transfer">โอนเงิน</option><option value="original">ช่องทางเดิม</option><option value="credit">เครดิตร้าน</option></select></label><label class="full">เหตุผลการคืน<input id="returnReason" maxlength="200" required placeholder="เช่น สินค้าชำรุด / ลูกค้าซื้อผิด"></label><label class="full">หมายเหตุ<input id="returnNote" maxlength="300"></label></div>
 <div class="return-summary"><span>ยอดคืนรวม</span><strong id="returnTotal">0.00 บาท</strong></div><p id="returnError" class="error-text"></p><div class="return-actions"><button id="confirmReturnBtn" class="btn btn-pay" type="button">ยืนยันคืนสินค้าและคืนเงิน</button></div>
 </section>
-<section class="panel return-history-panel"><div class="section-heading"><div><h2>ประวัติการคืนสินค้า</h2><p>รายการคืนล่าสุดในเครื่องนี้</p></div><input id="returnHistorySearch" placeholder="ค้นหาเลขที่คืน บิลเดิม หรือเหตุผล"></div><div id="returnHistory" class="return-history"></div><div id="returnHistoryEmpty" class="empty-state">ยังไม่มีประวัติการคืนสินค้า</div></section>
+<section class="panel return-history-panel"><div class="section-heading"><div><h2>ประวัติการคืนสินค้า</h2><p>รายการคืนล่าสุดในเครื่องนี้</p></div></div><label class="return-history-search">ค้นหารายการ<input id="returnHistorySearch" placeholder="ค้นหาเลขที่คืน บิลเดิม หรือเหตุผล"></label><div id="returnHistory" class="return-history"></div><div id="returnHistoryEmpty" class="empty-state">ยังไม่มีประวัติการคืนสินค้า</div></section>
 </main>
 <div id="toast" class="toast" role="status"></div>
 <script type="module" src="/assets/js/retail-returns.js?v=20260624-2"></script>
