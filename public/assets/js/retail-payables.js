@@ -1,4 +1,4 @@
-import "./retail-purchasing-permissions.js?v=20260625-1";
+import "./retail-purchasing-permissions.js?v=20260625-2";
 const PURCHASE_KEY="retail_pos_purchases_v1",SUPPLIER_KEY="retail_pos_suppliers_v1";
 const $=s=>document.querySelector(s),els={outstanding:$("#payableOutstanding"),openCount:$("#payableOpenCount"),dueSoon:$("#payableDueSoon"),overdue:$("#payableOverdue"),search:$("#payableSearch"),filter:$("#payableStatusFilter"),supplierSummary:$("#supplierPayableSummary"),body:$("#payableTableBody"),empty:$("#payableEmpty"),dialog:$("#paymentDialog"),form:$("#supplierPaymentForm"),purchaseId:$("#paymentPurchaseId"),purchaseInfo:$("#paymentPurchaseInfo"),date:$("#supplierPaymentDate"),amount:$("#supplierPaymentAmount"),method:$("#supplierPaymentMethod"),reference:$("#supplierPaymentReference"),note:$("#supplierPaymentNote"),error:$("#supplierPaymentError"),close:$("#closePaymentDialog"),cancel:$("#cancelPaymentBtn"),toast:$("#toast")};
 let purchases=read(PURCHASE_KEY,[]),toastTimer;
