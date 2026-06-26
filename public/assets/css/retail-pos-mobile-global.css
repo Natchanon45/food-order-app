@@ -13,13 +13,30 @@
   dialog { width: calc(100% - 16px); max-width: 460px; }
   .toast { bottom: calc(12px + env(safe-area-inset-bottom)); }
 
+  .pos-menu-popover {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
   .pos-menu-panel {
-    width: 100vw;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
     max-width: none;
+    height: auto;
     padding: calc(14px + env(safe-area-inset-top)) 12px calc(18px + env(safe-area-inset-bottom));
     border-radius: 0;
     box-shadow: none;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
+
   .pos-menu-head,
   .pos-user-switcher-head {
     position: sticky;
