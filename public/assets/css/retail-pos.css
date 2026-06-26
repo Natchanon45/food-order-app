@@ -51,6 +51,11 @@ button { cursor: pointer; }
 .header-link { text-decoration: none; }
 .pos-layout { display: grid; grid-template-columns: minmax(0, 1fr) 390px; gap: 14px; padding: 14px; min-height: calc(100vh - 72px); }
 .panel { background: var(--card); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 8px 26px rgba(16,35,23,.05); }
+.section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.section-heading > div { min-width: 0; }
+.section-heading h2 { margin: 0; line-height: 1.25; }
+.section-heading p { margin: 5px 0 0; color: var(--muted); font-size: .84rem; line-height: 1.35; }
+.section-heading .btn { flex: 0 0 auto; align-self: flex-start; white-space: nowrap; }
 .product-panel { padding: 14px; }
 .search-row { display: grid; grid-template-columns: 1.25fr 1fr; gap: 10px; margin-bottom: 14px; }
 input, select { width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; background: #fff; }
@@ -113,6 +118,9 @@ dialog::backdrop { background: #0f172a99; }
   .header-actions .btn { flex: 0 0 auto; white-space: nowrap; }
   .app-title { gap: 8px; }
   .app-badge { width: 34px; height: 30px; border-radius: 9px; font-size: .72rem; }
+  .section-heading { align-items: flex-start; flex-direction: row; gap: 10px; }
+  .section-heading h2 { font-size: 1.25rem; }
+  .section-heading .btn { min-height: 38px; padding: 8px 12px; }
   .pos-layout { padding: 8px; gap: 8px; }
   .search-row { grid-template-columns: 1fr; }
   .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -123,4 +131,5 @@ dialog::backdrop { background: #0f172a99; }
   .pos-header strong { font-size: 1rem; }
   .pos-header small { font-size: .72rem; }
   .header-actions .btn { min-height: 38px; padding: 8px 11px; font-size: .85rem; }
+  .section-heading .btn { padding: 8px 10px; font-size: .86rem; }
 }
