@@ -5,21 +5,22 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#159447">
 <title>คืนสินค้าและคืนเงิน</title>
-<link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260624-6">
-<link rel="stylesheet" href="/assets/css/retail-returns.css?v=20260624-2">
+<link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260626-5">
+<link rel="stylesheet" href="/assets/css/retail-returns.css?v=20260626-1">
 <link rel="stylesheet" href="/assets/css/retail-returns-mobile.css?v=20260625-1">
 <link rel="stylesheet" href="/assets/css/retail-return-receipt.css?v=20260624-1">
 <link rel="stylesheet" href="/assets/css/retail-pos-navigation.css?v=20260625-12">
 </head>
 <body>
-<header class="pos-header"><div><strong>คืนสินค้าและคืนเงิน</strong><small>อ้างอิงจากบิลขายเดิมและนำสินค้ากลับเข้าสต็อก</small></div><div class="header-actions"><a href="/pos/" class="btn btn-secondary header-link">หน้าขาย</a><a href="/pos/sales/" class="btn btn-secondary header-link">ประวัติการขาย</a></div></header>
+<header class="pos-header"><div class="app-title"><span class="app-badge">FOD</span><div><strong>คืนสินค้าและคืนเงิน</strong><small>อ้างอิงจากบิลขายเดิมและนำสินค้ากลับเข้าสต็อก</small></div></div><div class="header-actions"></div></header>
 <main class="return-container">
 <section class="panel return-search-panel">
+<div class="section-heading"><div><h2>ค้นหาบิลขาย</h2><p>ค้นหาเลขที่บิลหรือข้อมูลสินค้าเพื่อเริ่มคืนสินค้า</p></div></div>
 <div class="return-search-row"><input id="returnSaleSearch" placeholder="ค้นหาเลขที่บิล ชื่อสินค้า รหัส หรือบาร์โค้ด"><button id="returnSearchBtn" class="btn btn-pay" type="button">ค้นหาบิล</button></div>
 <div id="returnSaleResults" class="return-sale-results"></div><div id="returnSaleEmpty" class="empty-state">ค้นหาบิลที่ต้องการคืนสินค้า</div>
 </section>
 <section id="returnEditorPanel" class="panel return-editor-panel" hidden>
-<div class="return-editor-head"><div><h1 id="returnSaleId">-</h1><p id="returnSaleMeta">-</p></div><button id="clearSelectedSale" class="btn btn-secondary" type="button">เลือกบิลใหม่</button></div>
+<div class="return-editor-head section-heading"><div><h1 id="returnSaleId">-</h1><p id="returnSaleMeta">-</p></div><button id="clearSelectedSale" class="btn btn-secondary" type="button">เลือกบิลใหม่</button></div>
 <div class="table-wrap"><table class="return-table"><thead><tr><th>สินค้า</th><th class="number">ขายแล้ว</th><th class="number">คืนแล้ว</th><th class="number">คืนครั้งนี้</th><th class="number">ราคาต่อหน่วย</th><th class="number">ยอดคืน</th></tr></thead><tbody id="returnItemsBody"></tbody></table></div>
 <div class="return-form-grid"><label>วันที่คืนสินค้า<input id="returnDate" type="date" required></label><label>ช่องทางคืนเงิน<select id="refundMethod"><option value="cash">เงินสด</option><option value="transfer">โอนเงิน</option><option value="original">ช่องทางเดิม</option><option value="credit">เครดิตร้าน</option></select></label><label class="full">เหตุผลการคืน<input id="returnReason" maxlength="200" required placeholder="เช่น สินค้าชำรุด / ลูกค้าซื้อผิด"></label><label class="full">หมายเหตุ<input id="returnNote" maxlength="300"></label></div>
 <div class="return-summary"><span>ยอดคืนรวม</span><strong id="returnTotal">0.00 บาท</strong></div><p id="returnError" class="error-text"></p><div class="return-actions"><button id="confirmReturnBtn" class="btn btn-pay" type="button">ยืนยันคืนสินค้าและคืนเงิน</button></div>
