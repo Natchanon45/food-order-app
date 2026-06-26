@@ -105,8 +105,8 @@ dialog::backdrop { background: #0f172a99; }
 .error-text { min-height: 20px; color: var(--danger); margin: 8px 0 0; }
 .dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
 .toast { position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 18px) scale(.98); background: #111; color: #fff; width: min(520px, calc(100% - 28px)); min-height: 62px; max-height: min(136px, 44vh); display: grid; grid-template-columns: 30px minmax(0,1fr); align-items: center; gap: 12px; padding: 14px 16px; border-radius: 14px; opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease; z-index: 3000; box-shadow: 0 18px 46px rgba(0,0,0,.36); overflow: hidden; }
-.toast::before { content: "✓"; width: 30px; height: 30px; display: grid; place-items: center; border: 2px solid #22c55e; border-radius: 999px; color: #22c55e; font-weight: 900; font-size: 18px; line-height: 1; }
-.toast.error::before,.toast.is-error::before { content: "×"; border-color: #ef4444; color: #ef4444; font-size: 22px; }
+.toast::before { content: ""; width: 30px; height: 30px; display: block; background: #22c55e; -webkit-mask: url("/assets/images/app-icons.svg?v=20260621-3#icon-check-circle") center/contain no-repeat; mask: url("/assets/images/app-icons.svg?v=20260621-3#icon-check-circle") center/contain no-repeat; }
+.toast.error::before,.toast.is-error::before { background: #ef4444; -webkit-mask-image: url("/assets/images/app-icons.svg?v=20260621-3#icon-x-circle"); mask-image: url("/assets/images/app-icons.svg?v=20260621-3#icon-x-circle"); }
 .toast.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
 .receipt { font-family: var(--print-font); }
 @media (max-width: 900px) {
@@ -130,8 +130,7 @@ dialog::backdrop { background: #0f172a99; }
 }
 @media (max-width: 480px) {
   .toast { bottom: max(18px, env(safe-area-inset-bottom)); width: calc(100% - 20px); min-height: 60px; max-height: min(126px, 44vh); grid-template-columns: 28px minmax(0,1fr); gap: 11px; padding: 13px 14px; }
-  .toast::before { width: 26px; height: 26px; font-size: 16px; }
-  .toast.error::before,.toast.is-error::before { font-size: 20px; }
+  .toast::before { width: 26px; height: 26px; }
 }
 @media (max-width: 420px) {
   .pos-header { padding: 10px 12px; gap: 8px; }
