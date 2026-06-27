@@ -1,3 +1,4 @@
+import './retail-barcode-scan-tools.js?v=20260627-1';
 const PRODUCT_KEY="retail_pos_products_v1",COUNT_KEY="retail_pos_stock_counts_v1",MOVEMENT_KEY="retail_pos_stock_movements_v1";
 const $=s=>document.querySelector(s),els={name:$("#countName"),date:$("#countDate"),by:$("#countedBy"),note:$("#countNote"),search:$("#countSearch"),filter:$("#countFilter"),body:$("#countTableBody"),empty:$("#countEmpty"),counted:$("#countedItems"),short:$("#shortQty"),over:$("#overQty"),value:$("#varianceValue"),error:$("#countError"),fill:$("#fillSystemBtn"),clear:$("#clearActualBtn"),reset:$("#resetCountBtn"),confirm:$("#confirmCountBtn"),historySearch:$("#historySearch"),history:$("#countHistory"),historyEmpty:$("#countHistoryEmpty"),toast:$("#toast")};
 let products=read(PRODUCT_KEY,[]),counts=read(COUNT_KEY,[]),actuals=new Map(),toastTimer;
