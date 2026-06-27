@@ -1,12 +1,13 @@
 import { db, isFirebaseConfigured, collection, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp } from './firebase-config.js';
 
 const POS_TENANT_KEY='retail_pos_tenant_id';
-const DEFAULT_TENANT_ID='demo-store';
+const DEFAULT_TENANT_ID='main';
+const LEGACY_TENANT_ID='demo-store';
 const LOCAL_PREFIX='retail_db_cache_';
 
 export function getTenantId(){
   const saved=localStorage.getItem(POS_TENANT_KEY);
-  if(saved)return saved;
+  if(saved&&saved!==LEGACY_TENANT_ID)return saved;
   localStorage.setItem(POS_TENANT_KEY,DEFAULT_TENANT_ID);
   return DEFAULT_TENANT_ID;
 }
@@ -18,12 +19,21 @@ export function setTenantId(tenantId){
 }
 
 function localKey(collectionName){return LOCAL_PREFIX+getTenantId()+'_'+collectionName}
-function readLocal(collectionName){try{return JSON.parse(localStorage.getItem(localKey(collectionName)))||[]}catch{return []}}
+function legacyLocalKey(collectionName){return LOCAL_PREFIX+LEGACY_TENANT_ID+'_'+collectionName}
+function readLocal(collectionName){
+  try{
+    const current=JSON.parse(localStorage.getItem(localKey(collectionName)))||[];
+    if(current.length)return current;
+    const legacy=JSON.parse(localStorage.getItem(legacyLocalKey(collectionName)))||[];
+    if(legacy.length){writeLocal(collectionName,legacy);return legacy}
+    return [];
+  }catch{return []}
+}
 function writeLocal(collectionName,rows){localStorage.setItem(localKey(collectionName),JSON.stringify(rows||[]))}
 function normalizeId(row){return String(row?.id||row?.code||crypto.randomUUID?.()||Date.now())}
 function path(collectionName){return collection(db,'retailTenants',getTenantId(),collectionName)}
 function ref(collectionName,id){return doc(db,'retailTenants',getTenantId(),collectionName,String(id))}
-function withMeta(row){return {...row,updatedAt:Date.now(),updatedAtServer:isFirebaseConfigured?serverTimestamp():null}}
+function withMeta(row){return {...row,tenantId:getTenantId(),updatedAt:Date.now(),updatedAtServer:isFirebaseConfigured?serverTimestamp():null}}
 
 export async function listRecords(collectionName,{sortBy='updatedAt',direction='desc'}={}){
   if(!isFirebaseConfigured||!db)return readLocal(collectionName);
@@ -103,6 +113,7 @@ export function watchRecords(collectionName,callback,{sortBy='updatedAt',directi
 }
 
 export const RetailCollections={
+  tenants:'tenants',
   products:'products',
   sales:'sales',
   purchases:'purchases',
@@ -110,6 +121,7 @@ export const RetailCollections={
   suppliers:'suppliers',
   customers:'customers',
   users:'users',
+  roles:'roles',
   settings:'settings'
 };
 
