@@ -38,6 +38,11 @@ service cloud.firestore {
       return /databases/$(database)/documents/tenants/$(tenantId)/memberships/$(request.auth.uid);
     }
 
+    function tenantOwner(tenantId) {
+      return signedIn()
+        && get(/databases/$(database)/documents/tenants/$(tenantId)).data.ownerUid == request.auth.uid;
+    }
+
     function profileTenantMember(tenantId) {
       return signedIn()
         && profile().active == true
@@ -46,7 +51,8 @@ service cloud.firestore {
 
     function tenantMember(tenantId) {
       return signedIn() && (
-        (
+        tenantOwner(tenantId)
+        || (
           exists(tenantMembershipPath(tenantId))
           && get(tenantMembershipPath(tenantId)).data.active == true
         )
@@ -56,7 +62,8 @@ service cloud.firestore {
 
     function tenantHasRole(tenantId, roles) {
       return signedIn() && (
-        (
+        tenantOwner(tenantId)
+        || (
           exists(tenantMembershipPath(tenantId))
           && get(tenantMembershipPath(tenantId)).data.active == true
           && get(tenantMembershipPath(tenantId)).data.role in roles
@@ -117,6 +124,11 @@ service cloud.firestore {
     function tenantPayloadMatches(tenantId) {
       return request.resource.data.tenantId == tenantId
         || request.resource.data.shopId == tenantId;
+    }
+
+    function tenantResourceMatches(tenantId) {
+      return resource.data.tenantId == tenantId
+        || resource.data.shopId == tenantId;
     }
 
     function validTenantTableOrder(tenantId) {
@@ -198,6 +210,12 @@ service cloud.firestore {
       match /settings/{settingId} {
         allow read: if true;
         allow create, update, delete: if tenantAdminRole(tenantId);
+      }
+
+      match /products/{productId} {
+        allow read: if true;
+        allow create, update: if tenantAdminRole(tenantId) && tenantPayloadMatches(tenantId);
+        allow delete: if tenantAdminRole(tenantId) && tenantResourceMatches(tenantId);
       }
 
       match /tables/{tableId} {
