@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#159447">
-  <link rel="stylesheet" href="/assets/css/app.css?v=20260622-9">
-  <link rel="stylesheet" href="/assets/css/icons.css?v=20260622-9">
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260628-1">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260628-1">
   <title>หน้าแคชเชียร์</title>
 </head>
 <body data-roles="cashier">
@@ -14,11 +14,14 @@
     <div class="brand"><span class="brand-mark">FO</span>หน้าแคชเชียร์</div>
   </header>
   <main class="container">
-    <section class="hero"><h1>หน้าแคชเชียร์</h1><p>ออก QR ให้ลูกค้า ตรวจสอบยอดรวม และปิดบิล</p></section>
+    <section class="hero">
+      <div><h1>หน้าแคชเชียร์</h1><p>ขายหน้าร้าน ออก QR ตรวจสอบยอดรวม และปิดบิล</p></div>
+      <a class="btn btn-primary" href="/cashier/pos"><svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260623-3#icon-cart"></use></svg><span>ขายหน้าร้าน</span></a>
+    </section>
     <div id="orderGrid" class="grid grid-2"></div>
   </main>
-  <script type="module" src="/assets/js/page-guard.js?v=20260622-9"></script>
-  <script type="module" src="/assets/js/cashier.js?v=20260622-9"></script>
+  <script type="module" src="/assets/js/page-guard.js?v=20260628-1"></script>
+  <script type="module" src="/assets/js/cashier.js?v=20260628-1"></script>
   <script type="module" src="/assets/js/cashier-original-order.js?v=20260622-1"></script>
 </body>
 </html>
