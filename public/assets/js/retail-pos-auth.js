@@ -82,10 +82,10 @@ export function getSessionUser(){
 }
 export function getSessionTenantId(){return normalizeTenantId(getSession()?.tenantId||getTenantId())}
 export function isLoggedIn(){return Boolean(getSessionUser())}
-export function logout(){
+export async function logout(){
   localStorage.removeItem(SESSION_KEY);
   localStorage.removeItem(LEGACY_CURRENT_USER_KEY);
-  if(auth)signOut(auth).catch(()=>{});
+  try{if(auth)await signOut(auth)}catch(error){console.warn('[retail-auth] sign out failed',error)}
 }
 
 export async function login(email,password){
