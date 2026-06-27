@@ -251,7 +251,7 @@ service cloud.firestore {
 
       match /sales/{saleId} {
         allow read: if tenantStaffRole(tenantId);
-        allow create: if tenantCashierRole(tenantId) && validRetailSale(tenantId);
+        allow create: if (tenantCashierRole(tenantId) || tenantAdminRole(tenantId)) && validRetailSale(tenantId);
         allow update, delete: if superAdminRole() || tenantHasRole(tenantId, ['owner', 'super_admin']);
       }
 
