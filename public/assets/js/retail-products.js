@@ -1,4 +1,4 @@
-import { RetailCollections, listRecords, saveRecord, moveRecord, deleteRecord, migrateLocalArray } from './retail-db.js?v=20260627-2';
+import { RetailCollections, listRecords, watchRecords, saveRecord, moveRecord, deleteRecord, migrateLocalArray } from './retail-db.js?v=20260627-2';
 import { deleteProductImage } from './retail-product-image-store.js?v=20260627-2';
 
 const PRODUCT_KEY = "retail_pos_products_v1";
@@ -48,6 +48,7 @@ const els = {
 let products = readJson(PRODUCT_KEY, []).map(product => ({ minStock: 5, ...product }));
 let movements = readJson(MOVEMENT_KEY, []);
 let toastTimer;
+let stopProductWatch;
 
 function readJson(key, fallback) {
   try {
@@ -68,15 +69,26 @@ function saveMovements() {
 
 async function loadProductsFromDb() {
   try {
-    if (products.length) await migrateLocalArray(PRODUCT_KEY, RetailCollections.products);
-    const rows = await listRecords(RetailCollections.products, { sortBy: "updatedAt", direction: "desc" });
-    if (rows.length) {
-      products = rows.map(product => ({ minStock: 5, ...product }));
-      saveProducts();
+    let rows = await listRecords(RetailCollections.products, { sortBy: "updatedAt", direction: "desc" });
+    if (!rows.length && products.length) {
+      await migrateLocalArray(PRODUCT_KEY, RetailCollections.products);
+      rows = await listRecords(RetailCollections.products, { sortBy: "updatedAt", direction: "desc" });
     }
+    applyProductsFromDb(rows);
+    stopProductWatch?.();
+    stopProductWatch = watchRecords(RetailCollections.products, applyProductsFromDb, {
+      sortBy: "updatedAt",
+      direction: "desc"
+    });
   } catch (error) {
     console.warn("[retail-products] database load failed", error);
+    renderProducts();
   }
+}
+
+function applyProductsFromDb(rows) {
+  products = (rows || []).map(product => ({ minStock: 5, ...product }));
+  saveProducts();
   renderProducts();
 }
 
