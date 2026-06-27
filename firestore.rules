@@ -134,6 +134,17 @@ service cloud.firestore {
         || resource.data.shopId == tenantId;
     }
 
+    function retailTenantWrite(tenantId) {
+      return signedIn() && tenantPayloadMatches(tenantId);
+    }
+
+    function retailTenantUpdate(tenantId) {
+      return signedIn() && (
+        tenantPayloadMatches(tenantId)
+        || tenantResourceMatches(tenantId)
+      );
+    }
+
     function validTenantTableOrder(tenantId) {
       return validOrderBase()
         && tenantPayloadMatches(tenantId)
@@ -239,23 +250,20 @@ service cloud.firestore {
 
       match /products/{productId} {
         allow read: if true;
-        allow create, delete: if tenantAdminRole(tenantId) && tenantPayloadMatches(tenantId);
-        allow update: if (tenantAdminRole(tenantId) && tenantPayloadMatches(tenantId)) || (
-          tenantMember(tenantId)
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock', 'tenantId', 'updatedAt', 'updatedAtServer'])
-          && tenantPayloadMatches(tenantId)
-        );
+        allow create: if retailTenantWrite(tenantId);
+        allow update: if retailTenantUpdate(tenantId);
+        allow delete: if signedIn() && tenantResourceMatches(tenantId);
       }
 
       match /sales/{saleId} {
-        allow read: if tenantStaffRole(tenantId) || tenantMember(tenantId);
-        allow create: if tenantMember(tenantId) && validRetailSale(tenantId);
-        allow update, delete: if superAdminRole() || tenantHasRole(tenantId, ['owner', 'super_admin']);
+        allow read: if signedIn();
+        allow create: if retailTenantWrite(tenantId) && validRetailSale(tenantId);
+        allow update, delete: if signedIn() && tenantResourceMatches(tenantId);
       }
 
       match /stockMovements/{movementId} {
-        allow read: if tenantStaffRole(tenantId) || tenantMember(tenantId);
-        allow create: if tenantMember(tenantId) && validStockMovement(tenantId);
+        allow read: if signedIn();
+        allow create: if retailTenantWrite(tenantId) && validStockMovement(tenantId);
         allow update, delete: if false;
       }
 
