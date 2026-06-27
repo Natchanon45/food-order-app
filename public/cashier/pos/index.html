@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#159447">
   <link rel="stylesheet" href="/assets/css/app.css?v=20260628-1">
   <link rel="stylesheet" href="/assets/css/icons.css?v=20260628-1">
-  <link rel="stylesheet" href="/assets/css/pos.css?v=20260628-1">
+  <link rel="stylesheet" href="/assets/css/pos.css?v=20260628-2">
   <title>ขายหน้าร้าน</title>
 </head>
 <body data-roles="cashier">
@@ -19,7 +19,10 @@
     <section class="pos-products">
       <div class="hero pos-hero">
         <div><h1>ขายหน้าร้าน</h1><p>เลือกสินค้า รับชำระ และตัดสต็อกแบบ Transaction</p></div>
-        <a class="btn" href="/cashier">กลับหน้าบิล</a>
+        <div class="pos-actions">
+          <button class="btn" id="refreshButton" type="button">รีเฟรช</button>
+          <a class="btn" href="/cashier">กลับหน้าบิล</a>
+        </div>
       </div>
 
       <div class="card pos-filter">
@@ -27,6 +30,11 @@
         <select class="input" id="categoryFilter"><option value="">ทุกหมวดหมู่</option></select>
       </div>
       <div id="productGrid" class="pos-product-grid"></div>
+
+      <section class="card pos-sales-panel">
+        <div class="section-title"><h2>ประวัติการขายล่าสุด</h2></div>
+        <div id="salesRows" class="pos-sales-rows"></div>
+      </section>
     </section>
 
     <aside class="card pos-cart">
@@ -48,6 +56,6 @@
   </main>
 
   <script type="module" src="/assets/js/page-guard.js?v=20260628-1"></script>
-  <script type="module" src="/assets/js/pos.js?v=20260628-1"></script>
+  <script type="module" src="/assets/js/pos.js?v=20260628-2"></script>
 </body>
 </html>
