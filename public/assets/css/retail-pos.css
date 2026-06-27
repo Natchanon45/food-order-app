@@ -105,8 +105,11 @@ dialog::backdrop { background: #0f172a99; }
 .error-text { min-height: 20px; color: var(--danger); margin: 8px 0 0; }
 .dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
 .toast { position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 18px) scale(.98); background: #111; color: #fff; width: min(520px, calc(100% - 28px)); min-height: 62px; max-height: min(136px, 44vh); display: grid; grid-template-columns: 30px minmax(0,1fr); align-items: center; gap: 12px; padding: 14px 16px; border-radius: 14px; opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease; z-index: 3000; box-shadow: 0 18px 46px rgba(0,0,0,.36); overflow: hidden; }
-.toast::before { content: "✓"; width: 30px; height: 30px; display: grid; place-items: center; border: 2px solid #22c55e; border-radius: 999px; color: #22c55e; font-weight: 900; font-size: 18px; line-height: 1; }
-.toast.error::before,.toast.is-error::before { content: "×"; border-color: #ef4444; color: #ef4444; font-size: 22px; }
+.toast::before { content: none!important; display: none!important; }
+.toast-icon { width: 30px; height: 30px; display: grid; place-items: center; color: #22c55e; }
+.toast.error .toast-icon,.toast.is-error .toast-icon,.toast-icon-error { color: #ef4444; }
+.toast-svg { width: 28px; height: 28px; display: block; fill: none; stroke: currentColor; stroke-width: 2.35; stroke-linecap: round; stroke-linejoin: round; }
+.toast-message { min-width: 0; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-height: 1.42; font-size: 15px; font-weight: 700; overflow-wrap: anywhere; }
 .toast.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
 .receipt { font-family: var(--print-font); }
 @media (max-width: 900px) {
@@ -130,8 +133,9 @@ dialog::backdrop { background: #0f172a99; }
 }
 @media (max-width: 480px) {
   .toast { bottom: max(18px, env(safe-area-inset-bottom)); width: calc(100% - 20px); min-height: 60px; max-height: min(126px, 44vh); grid-template-columns: 28px minmax(0,1fr); gap: 11px; padding: 13px 14px; }
-  .toast::before { width: 26px; height: 26px; font-size: 16px; }
-  .toast.error::before,.toast.is-error::before { font-size: 20px; }
+  .toast-icon { width: 28px; height: 28px; }
+  .toast-svg { width: 26px; height: 26px; }
+  .toast-message { font-size: 14px; }
 }
 @media (max-width: 420px) {
   .pos-header { padding: 10px 12px; gap: 8px; }
