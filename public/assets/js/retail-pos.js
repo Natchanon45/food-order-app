@@ -1,3 +1,6 @@
+import { auth, db, isFirebaseConfigured, collection, doc, query, orderBy, getDocs, runTransaction, serverTimestamp } from './firebase-config.js';
+import { getTenantId, RetailCollections, listRecords } from './retail-db.js';
+
 const PRODUCT_KEY = "retail_pos_products_v1";
 const SALES_KEY = "retail_pos_sales_v1";
 const MOVEMENT_KEY = "retail_pos_stock_movements_v1";
@@ -38,6 +41,7 @@ const els = {
 let products = readJson(PRODUCT_KEY, []);
 let cart = [];
 let toastTimer;
+let savingSale = false;
 
 function readJson(key, fallback) {
   try {
@@ -55,6 +59,21 @@ function writeJson(key, value) {
 function safeId(prefix) {
   if (globalThis.crypto?.randomUUID) return `${prefix}-${crypto.randomUUID()}`;
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function saleNumber() {
+  const now = new Date();
+  const date = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, "0"), String(now.getDate()).padStart(2, "0")].join("");
+  const time = [String(now.getHours()).padStart(2, "0"), String(now.getMinutes()).padStart(2, "0"), String(now.getSeconds()).padStart(2, "0")].join("");
+  return `POS-${date}-${time}-${crypto.randomUUID?.().slice(0, 4).toUpperCase() || Math.random().toString(16).slice(2, 6).toUpperCase()}`;
+}
+
+function tenantCollection(name) {
+  return collection(db, 'tenants', getTenantId(), name);
+}
+
+function tenantDoc(name, id) {
+  return doc(db, 'tenants', getTenantId(), name, String(id));
 }
 
 function money(value) {
@@ -77,6 +96,20 @@ function showToast(message) {
   toastTimer = setTimeout(() => els.toast.classList.remove("show"), 1800);
 }
 
+function normalizeProduct(product = {}) {
+  return {
+    ...product,
+    id: String(product.id || product.code || ""),
+    barcode: String(product.barcode || ""),
+    name: product.name || "ไม่ระบุชื่อ",
+    price: Number(product.price || 0),
+    cost: Number.isFinite(Number(product.cost)) ? Number(product.cost) : null,
+    stock: Number(product.stock ?? product.qty ?? 0),
+    unit: product.unit || "ชิ้น",
+    showOnPos: product.showOnPos !== false
+  };
+}
+
 function getTotals() {
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
   const discount = Math.max(0, Math.min(subtotal, Number(els.discountInput.value || 0)));
@@ -86,14 +119,15 @@ function getTotals() {
 function renderProducts() {
   const keyword = els.searchInput.value.trim().toLowerCase();
   const filtered = products.filter(product => {
-    return !keyword || product.name.toLowerCase().includes(keyword) || product.id.toLowerCase().includes(keyword) || product.barcode.includes(keyword);
+    const searchText = `${product.name || ""} ${product.id || ""} ${product.barcode || ""}`.toLowerCase();
+    return product.showOnPos !== false && (!keyword || searchText.includes(keyword));
   });
 
   els.productGrid.innerHTML = filtered.length ? filtered.map(product => `
     <button class="product-card" type="button" data-product-id="${escapeHtml(product.id)}" ${product.stock <= 0 ? "disabled" : ""}>
       <span class="name">${escapeHtml(product.name)}</span>
       <span class="code">${escapeHtml(product.id)} • ${escapeHtml(product.barcode)}</span>
-      <span class="stock">คงเหลือ ${product.stock} ${escapeHtml(product.unit)}</span>
+      <span class="stock">คงเหลือ ${Number(product.stock || 0).toLocaleString("th-TH")} ${escapeHtml(product.unit)}</span>
       <span class="price">${money(product.price)} บาท</span>
     </button>
   `).join("") : '<div class="empty-state">ไม่พบสินค้า</div>';
@@ -122,7 +156,7 @@ function renderCart() {
   els.itemCount.textContent = `${qty} รายการ`;
   els.subtotal.textContent = money(totals.subtotal);
   els.grandTotal.textContent = money(totals.total);
-  els.payBtn.disabled = cart.length === 0 || totals.total <= 0;
+  els.payBtn.disabled = cart.length === 0 || totals.total <= 0 || savingSale;
 }
 
 function addProduct(productId) {
@@ -177,7 +211,136 @@ function updatePaymentUi() {
   els.changeAmount.textContent = `${money(Math.max(0, received - totals.total))} บาท`;
 }
 
-function confirmPayment() {
+function saveLocalSale(sale, nextProducts, movements) {
+  const sales = readJson(SALES_KEY, []);
+  writeJson(PRODUCT_KEY, nextProducts);
+  writeJson(SALES_KEY, [sale, ...sales].slice(0, 500));
+  writeJson(MOVEMENT_KEY, [...movements, ...readJson(MOVEMENT_KEY, [])].slice(0, 500));
+}
+
+async function completeSaleOffline({ method, received, totals, number, createdAt }) {
+  const movementRows = [];
+  const nextProducts = products.map(product => {
+    const sold = cart.find(item => item.id === product.id)?.qty || 0;
+    if (!sold) return product;
+    const before = Number(product.stock || 0);
+    const after = before - sold;
+    movementRows.push({
+      id: safeId("movement"),
+      tenantId: getTenantId(),
+      productId: product.id,
+      productName: product.name,
+      type: "sale",
+      direction: "out",
+      qty: sold,
+      before,
+      after,
+      note: `ขายสินค้า ${number}`,
+      referenceType: "sale",
+      referenceId: number,
+      referenceNumber: number,
+      createdAt
+    });
+    return { ...product, stock: after };
+  });
+  const sale = buildSale({ id: number, number, method, received, totals, createdAt });
+  saveLocalSale(sale, nextProducts, movementRows);
+  products = nextProducts;
+  return sale;
+}
+
+function buildSale({ id, number, method, received, totals, createdAt }) {
+  return {
+    id,
+    saleNumber: number,
+    tenantId: getTenantId(),
+    channel: "retail-pos",
+    status: "completed",
+    createdAt,
+    items: cart.map(({ id, barcode, name, price, cost, qty, unit }) => ({
+      id,
+      productId: id,
+      barcode,
+      name,
+      price,
+      cost: Number.isFinite(Number(cost)) ? Number(cost) : null,
+      qty,
+      unit,
+      lineTotal: Number(price || 0) * Number(qty || 0)
+    })),
+    totalQty: cart.reduce((sum, item) => sum + item.qty, 0),
+    subtotal: totals.subtotal,
+    discount: totals.discount,
+    total: totals.total,
+    totalAmount: totals.total,
+    payment: { method, received, change: Math.max(0, received - totals.total) },
+    paymentMethod: method,
+    receivedAmount: received,
+    changeAmount: Math.max(0, received - totals.total),
+    cashierId: auth?.currentUser?.uid || ""
+  };
+}
+
+async function completeSaleFirestore({ method, received, totals, number, createdAt }) {
+  const saleRef = doc(tenantCollection(RetailCollections.sales));
+  let committedSale = null;
+  const localMovements = [];
+  await runTransaction(db, async transaction => {
+    const rows = [];
+    for (const cartItem of cart) {
+      const productRef = tenantDoc(RetailCollections.products, cartItem.id);
+      const snapshot = await transaction.get(productRef);
+      if (!snapshot.exists()) throw new Error(`PRODUCT_NOT_FOUND:${cartItem.name}`);
+      const product = normalizeProduct({ id: snapshot.id, ...snapshot.data() });
+      if (Number(product.stock || 0) < Number(cartItem.qty || 0)) throw new Error(`INSUFFICIENT_STOCK:${product.name}`);
+      rows.push({ cartItem, productRef, product });
+    }
+
+    const sale = buildSale({ id: saleRef.id, number, method, received, totals, createdAt });
+    committedSale = { ...sale, id: saleRef.id };
+    transaction.set(saleRef, { ...sale, id: saleRef.id, createdAtServer: serverTimestamp(), updatedAt: Date.now(), updatedAtServer: serverTimestamp() });
+
+    rows.forEach(({ cartItem, productRef, product }) => {
+      const before = Number(product.stock || 0);
+      const after = before - Number(cartItem.qty || 0);
+      transaction.update(productRef, { stock: after, tenantId: getTenantId(), updatedAt: Date.now(), updatedAtServer: serverTimestamp() });
+      const movementRef = doc(tenantCollection('stockMovements'));
+      const movement = {
+        id: movementRef.id,
+        tenantId: getTenantId(),
+        productId: product.id,
+        productName: product.name,
+        type: "sale",
+        direction: "out",
+        qty: Number(cartItem.qty || 0),
+        before,
+        after,
+        stockBefore: before,
+        stockAfter: after,
+        note: `ขายสินค้า ${number}`,
+        referenceType: "sale",
+        referenceId: saleRef.id,
+        referenceNumber: number,
+        createdBy: auth?.currentUser?.uid || "",
+        createdAt,
+        createdAtServer: serverTimestamp()
+      };
+      transaction.set(movementRef, movement);
+      localMovements.push({ ...movement, createdAtServer: null });
+    });
+  });
+
+  const nextProducts = products.map(product => {
+    const sold = cart.find(item => item.id === product.id)?.qty || 0;
+    return sold ? { ...product, stock: Number(product.stock || 0) - sold } : product;
+  });
+  saveLocalSale(committedSale, nextProducts, localMovements);
+  products = nextProducts;
+  return committedSale;
+}
+
+async function confirmPayment() {
+  if (savingSale) return;
   const totals = getTotals();
   const method = els.paymentMethod.value;
   const received = method === "cash" ? Number(els.receivedInput.value || 0) : totals.total;
@@ -186,54 +349,47 @@ function confirmPayment() {
     return;
   }
 
-  const saleId = `SALE-${Date.now()}`;
+  savingSale = true;
+  els.confirmPaymentBtn.disabled = true;
+  els.confirmPaymentBtn.textContent = "กำลังบันทึก...";
+  renderCart();
+
+  const number = saleNumber();
   const createdAt = new Date().toISOString();
-  const sale = {
-    id: saleId,
-    createdAt,
-    items: cart.map(({ id, barcode, name, price, cost, qty, unit }) => ({
-      id,
-      barcode,
-      name,
-      price,
-      cost: Number.isFinite(Number(cost)) ? Number(cost) : null,
-      qty,
-      unit
-    })),
-    subtotal: totals.subtotal,
-    discount: totals.discount,
-    total: totals.total,
-    payment: { method, received, change: Math.max(0, received - totals.total) }
-  };
+  try {
+    const sale = isFirebaseConfigured && db
+      ? await completeSaleFirestore({ method, received, totals, number, createdAt })
+      : await completeSaleOffline({ method, received, totals, number, createdAt });
+    els.paymentDialog.close();
+    renderProducts();
+    resetSale();
+    showToast(`บันทึกการขาย ${sale.saleNumber || sale.id} สำเร็จ`);
+  } catch (error) {
+    console.error("[retail-pos] sale failed", error);
+    const message = String(error?.message || error);
+    if (message.startsWith("INSUFFICIENT_STOCK:")) els.paymentError.textContent = `สต็อก ${message.split(":").slice(1).join(":")} ไม่พอ`;
+    else if (message.startsWith("PRODUCT_NOT_FOUND:")) els.paymentError.textContent = `ไม่พบสินค้า ${message.split(":").slice(1).join(":")}`;
+    else els.paymentError.textContent = "บันทึกการขายไม่สำเร็จ กรุณาลองใหม่";
+  } finally {
+    savingSale = false;
+    els.confirmPaymentBtn.disabled = false;
+    els.confirmPaymentBtn.textContent = "ยืนยันการขาย";
+    renderCart();
+  }
+}
 
-  const movements = readJson(MOVEMENT_KEY, []);
-  products = products.map(product => {
-    const sold = cart.find(item => item.id === product.id)?.qty || 0;
-    if (!sold) return product;
-    const before = Number(product.stock || 0);
-    const after = before - sold;
-    movements.unshift({
-      id: safeId("movement"),
-      productId: product.id,
-      productName: product.name,
-      before,
-      after,
-      note: `ขายสินค้า ${saleId}`,
-      createdAt
-    });
-    return { ...product, stock: after };
-  });
-
-  const sales = readJson(SALES_KEY, []);
-  sales.unshift(sale);
-  writeJson(PRODUCT_KEY, products);
-  writeJson(SALES_KEY, sales.slice(0, 500));
-  writeJson(MOVEMENT_KEY, movements.slice(0, 500));
-
-  els.paymentDialog.close();
+async function loadProducts() {
+  try {
+    const rows = await listRecords(RetailCollections.products, { sortBy: "updatedAt", direction: "desc" });
+    if (rows.length) products = rows.map(normalizeProduct);
+    else if (!products.length) products = structuredClone(sampleProducts).map(normalizeProduct);
+    writeJson(PRODUCT_KEY, products);
+  } catch (error) {
+    console.warn("[retail-pos] load products fallback", error);
+    if (!products.length) products = structuredClone(sampleProducts).map(normalizeProduct);
+  }
   renderProducts();
-  resetSale();
-  showToast(`บันทึกการขาย ${saleId} สำเร็จ`);
+  renderCart();
 }
 
 els.productGrid.addEventListener("click", event => {
@@ -271,17 +427,12 @@ els.receivedInput.addEventListener("input", updatePaymentUi);
 els.confirmPaymentBtn.addEventListener("click", confirmPayment);
 els.seedBtn.addEventListener("click", () => {
   if (products.length && !confirm("แทนที่ข้อมูลสินค้าปัจจุบันด้วยข้อมูลตัวอย่างหรือไม่?")) return;
-  products = structuredClone(sampleProducts);
+  products = structuredClone(sampleProducts).map(normalizeProduct);
   writeJson(PRODUCT_KEY, products);
   resetSale();
   renderProducts();
   showToast("โหลดสินค้าตัวอย่างแล้ว");
 });
 
-if (!products.length) {
-  products = structuredClone(sampleProducts);
-  writeJson(PRODUCT_KEY, products);
-}
-renderProducts();
-renderCart();
+await loadProducts();
 els.barcodeInput.focus();
