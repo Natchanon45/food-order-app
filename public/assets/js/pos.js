@@ -1,5 +1,5 @@
 import { posService, usingDemoMode } from "./pos-service.js";
-import { money, toast } from "./ui.js";
+import { money, toast, formatTime } from "./ui.js";
 
 if (usingDemoMode) document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง: การขายจะถูกบันทึกในเบราว์เซอร์นี้</div>';
 
@@ -11,13 +11,20 @@ const paymentMethod = document.querySelector("#paymentMethod");
 const receivedField = document.querySelector("#receivedField");
 const receivedAmount = document.querySelector("#receivedAmount");
 const checkoutButton = document.querySelector("#checkoutButton");
+const salesRows = document.querySelector("#salesRows");
+const refreshButton = document.querySelector("#refreshButton");
+
 let products = [];
 const cart = new Map();
 
 const productStock = product => Math.max(0, Number(product.stock ?? product.qty ?? 0));
+
 function totals() {
   const rows = [...cart.values()];
-  return { qty: rows.reduce((sum, row) => sum + row.qty, 0), total: rows.reduce((sum, row) => sum + row.qty * Number(row.product.price || 0), 0) };
+  return {
+    qty: rows.reduce((sum, row) => sum + row.qty, 0),
+    total: rows.reduce((sum, row) => sum + row.qty * Number(row.product.price || 0), 0)
+  };
 }
 
 function renderProducts() {
@@ -44,6 +51,14 @@ function renderCart() {
   updateChange();
 }
 
+function renderSales(sales = []) {
+  salesRows.innerHTML = sales.length ? sales.map(sale => {
+    const itemsText = (sale.items || []).slice(0, 3).map(item => `${item.name || item.productName || "สินค้า"} x${item.qty || item.quantity || 0}`).join(" • ");
+    const more = (sale.items || []).length > 3 ? ` +${(sale.items || []).length - 3} รายการ` : "";
+    return `<div class="pos-sale-row"><div><strong>${sale.saleNumber || sale.id || "-"}</strong><span>${formatTime(sale.createdAt)}</span><small>${itemsText}${more}</small></div><div class="pos-sale-total">${money(sale.totalAmount || 0)} บาท</div></div>`;
+  }).join("") : '<div class="empty">ยังไม่มีประวัติการขาย</div>';
+}
+
 function addProduct(id) {
   const product = products.find(item => item.id === id);
   if (!product) return;
@@ -61,7 +76,30 @@ function updateChange() {
   document.querySelector("#changeAmount").textContent = money(Math.max(0, received - total));
 }
 
-productGrid.addEventListener("click", event => { const button = event.target.closest("[data-add-product]"); if (button) addProduct(button.dataset.addProduct); });
+async function refreshData() {
+  refreshButton.disabled = true;
+  try {
+    products = await posService.listProducts();
+    const categories = [...new Set(products.map(item => item.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, "th"));
+    const currentCategory = categoryFilter.value;
+    categoryFilter.innerHTML = '<option value="">ทุกหมวดหมู่</option>' + categories.map(name => `<option value="${name}">${name}</option>`).join("");
+    if (categories.includes(currentCategory)) categoryFilter.value = currentCategory;
+    renderProducts();
+    renderCart();
+    renderSales(await posService.listSales(10));
+  } catch (error) {
+    console.error(error);
+    toast("โหลดข้อมูล POS ไม่สำเร็จ", "error");
+  } finally {
+    refreshButton.disabled = false;
+  }
+}
+
+productGrid.addEventListener("click", event => {
+  const button = event.target.closest("[data-add-product]");
+  if (button) addProduct(button.dataset.addProduct);
+});
+
 cartRows.addEventListener("click", event => {
   const remove = event.target.closest("[data-remove-product]");
   const decrease = event.target.closest("[data-decrease-product]");
@@ -69,7 +107,11 @@ cartRows.addEventListener("click", event => {
   const id = remove?.dataset.removeProduct || decrease?.dataset.decreaseProduct || increase?.dataset.increaseProduct;
   if (!id || !cart.has(id)) return;
   if (remove) cart.delete(id);
-  if (decrease) { const row = cart.get(id); row.qty -= 1; if (row.qty <= 0) cart.delete(id); }
+  if (decrease) {
+    const row = cart.get(id);
+    row.qty -= 1;
+    if (row.qty <= 0) cart.delete(id);
+  }
   if (increase) addProduct(id);
   renderCart();
 });
@@ -79,37 +121,44 @@ searchInput.addEventListener("input", renderProducts);
 categoryFilter.addEventListener("change", renderProducts);
 paymentMethod.addEventListener("change", updateChange);
 receivedAmount.addEventListener("input", updateChange);
+refreshButton.addEventListener("click", refreshData);
 
 checkoutButton.addEventListener("click", async () => {
   const rows = [...cart.values()];
   const summary = totals();
   if (!rows.length) return;
-  if (paymentMethod.value === "cash" && Number(receivedAmount.value || 0) < summary.total) { toast("จำนวนเงินที่รับมายังไม่ครบ", "error"); receivedAmount.focus(); return; }
+  if (paymentMethod.value === "cash" && Number(receivedAmount.value || 0) < summary.total) {
+    toast("จำนวนเงินที่รับมายังไม่ครบ", "error");
+    receivedAmount.focus();
+    return;
+  }
   if (!confirm(`ยืนยันการขาย ${summary.qty} ชิ้น ยอด ${money(summary.total)} บาท ใช่หรือไม่?`)) return;
   checkoutButton.disabled = true;
   checkoutButton.textContent = "กำลังบันทึกการขาย...";
   try {
-    const result = await posService.completeSale({ items: rows.map(row => ({ productId: row.product.id, qty: row.qty })), paymentMethod: paymentMethod.value, receivedAmount: paymentMethod.value === "cash" ? Number(receivedAmount.value || 0) : summary.total });
+    const result = await posService.completeSale({
+      items: rows.map(row => ({ productId: row.product.id, qty: row.qty })),
+      paymentMethod: paymentMethod.value,
+      receivedAmount: paymentMethod.value === "cash" ? Number(receivedAmount.value || 0) : summary.total
+    });
     toast(`บันทึกการขาย ${result.saleNumber || result.id} เรียบร้อย`);
     cart.clear();
     receivedAmount.value = "";
-    products = await posService.listProducts();
-    renderProducts();
-    renderCart();
+    await refreshData();
   } catch (error) {
     console.error(error);
-    toast(error.message === "INSUFFICIENT_STOCK" ? `สต็อก ${error.productName || "สินค้า"} ไม่เพียงพอ` : "บันทึกการขายไม่สำเร็จ", "error");
+    const message = error.message === "INSUFFICIENT_STOCK"
+      ? `สต็อก ${error.productName || "สินค้า"} ไม่เพียงพอ`
+      : error.message === "PRODUCT_NOT_FOUND"
+        ? `ไม่พบสินค้า ${error.productName || ""}`
+        : error.message === "SALE_ITEMS_REQUIRED"
+          ? "กรุณาเลือกสินค้าอย่างน้อย 1 รายการ"
+          : "บันทึกการขายไม่สำเร็จ";
+    toast(message, "error");
   } finally {
     checkoutButton.textContent = "ยืนยันการขาย";
     checkoutButton.disabled = cart.size === 0;
   }
 });
 
-async function load() {
-  products = await posService.listProducts();
-  const categories = [...new Set(products.map(item => item.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, "th"));
-  categoryFilter.innerHTML = '<option value="">ทุกหมวดหมู่</option>' + categories.map(name => `<option value="${name}">${name}</option>`).join("");
-  renderProducts();
-  renderCart();
-}
-await load();
+await refreshData();
