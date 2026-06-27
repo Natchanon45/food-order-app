@@ -2,14 +2,15 @@ const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { getAuth } = require("firebase-admin/auth");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
-const ALLOWED_STAFF_ROLES = new Set(["admin", "cashier", "kitchen"]);
+const ALLOWED_STAFF_ROLES = new Set(["cashier", "stock", "manager", "admin"]);
+const STAFF_MANAGER_ROLES = new Set(["owner", "super_admin", "cashier"]);
 
 async function getCallerProfile(auth) {
   if (!auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
   const snapshot = await getFirestore().collection("users").doc(auth.uid).get();
   const profile = snapshot.data();
-  if (!profile || profile.active === false || !["owner", "super_admin"].includes(profile.role)) {
-    throw new HttpsError("permission-denied", "Owner permission required");
+  if (!profile || profile.active === false || !STAFF_MANAGER_ROLES.has(profile.role)) {
+    throw new HttpsError("permission-denied", "Staff management permission required");
   }
   return { uid: auth.uid, ...profile };
 }
