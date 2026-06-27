@@ -160,8 +160,7 @@ service cloud.firestore {
         && request.resource.data.totalQty is number
         && request.resource.data.totalQty > 0
         && request.resource.data.totalAmount is number
-        && request.resource.data.totalAmount >= 0
-        && request.resource.data.cashierId == request.auth.uid;
+        && request.resource.data.totalAmount >= 0;
     }
 
     function validStockMovement(tenantId) {
@@ -170,8 +169,7 @@ service cloud.firestore {
         && request.resource.data.type in ['sale', 'purchase', 'adjustment', 'return']
         && request.resource.data.direction in ['in', 'out']
         && request.resource.data.qty is number
-        && request.resource.data.qty > 0
-        && request.resource.data.createdBy == request.auth.uid;
+        && request.resource.data.qty > 0;
     }
 
     match /menus/{menuId} {
@@ -243,21 +241,21 @@ service cloud.firestore {
         allow read: if true;
         allow create, delete: if tenantAdminRole(tenantId) && tenantPayloadMatches(tenantId);
         allow update: if (tenantAdminRole(tenantId) && tenantPayloadMatches(tenantId)) || (
-          tenantCashierRole(tenantId)
+          tenantMember(tenantId)
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock', 'tenantId', 'updatedAt', 'updatedAtServer'])
           && tenantPayloadMatches(tenantId)
         );
       }
 
       match /sales/{saleId} {
-        allow read: if tenantStaffRole(tenantId);
-        allow create: if (tenantCashierRole(tenantId) || tenantAdminRole(tenantId)) && validRetailSale(tenantId);
+        allow read: if tenantStaffRole(tenantId) || tenantMember(tenantId);
+        allow create: if tenantMember(tenantId) && validRetailSale(tenantId);
         allow update, delete: if superAdminRole() || tenantHasRole(tenantId, ['owner', 'super_admin']);
       }
 
       match /stockMovements/{movementId} {
-        allow read: if tenantStaffRole(tenantId);
-        allow create: if (tenantCashierRole(tenantId) || tenantAdminRole(tenantId)) && validStockMovement(tenantId);
+        allow read: if tenantStaffRole(tenantId) || tenantMember(tenantId);
+        allow create: if tenantMember(tenantId) && validStockMovement(tenantId);
         allow update, delete: if false;
       }
 
