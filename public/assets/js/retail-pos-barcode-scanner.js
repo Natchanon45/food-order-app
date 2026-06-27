@@ -5,6 +5,8 @@ let stream=null;
 let raf=0;
 let detector=null;
 
+const BARCODE_ICON='<svg class="scan-barcode-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5v14"></path><path d="M7 5v14"></path><path d="M10 5v14"></path><path d="M14 5v14"></path><path d="M17 5v14"></path><path d="M21 5v14"></path></svg>';
+
 function showScanToast(message,type='success'){
   if(!toast)return;
   toast.textContent=message;
@@ -20,7 +22,9 @@ function addStyles(){
   const style=document.createElement('style');
   style.id='posScanStyles';
   style.textContent=`
-  .scan-barcode-btn{min-height:46px;white-space:nowrap}
+  .scan-barcode-btn{min-height:54px;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;background:#000!important;color:#fff!important;border-radius:14px!important;box-shadow:0 8px 18px rgba(0,0,0,.18)}
+  .scan-barcode-btn:hover{background:#111!important}
+  .scan-barcode-icon{width:24px;height:24px;display:block;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
   .pos-scan-dialog{width:min(520px,calc(100% - 18px));border:0;border-radius:18px;padding:0;overflow:hidden;background:#111;color:#fff;box-shadow:0 22px 70px rgba(0,0,0,.45)}
   .pos-scan-dialog::backdrop{background:rgba(15,23,42,.76)}
   .pos-scan-sheet{display:grid;gap:12px;padding:14px}
@@ -118,9 +122,9 @@ if(input&&row){
   addStyles();
   const btn=document.createElement('button');
   btn.id='scanBarcodeBtn';
-  btn.className='btn btn-pay scan-barcode-btn';
+  btn.className='btn scan-barcode-btn';
   btn.type='button';
-  btn.textContent='สแกน';
+  btn.innerHTML=BARCODE_ICON+'<span>สแกน</span>';
   row.insertBefore(btn,input.nextSibling);
   btn.addEventListener('click',startScanner);
 }
