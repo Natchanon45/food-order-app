@@ -31,8 +31,8 @@ function readLocal(collectionName){
 }
 function writeLocal(collectionName,rows){localStorage.setItem(localKey(collectionName),JSON.stringify(rows||[]))}
 function normalizeId(row){return String(row?.id||row?.code||crypto.randomUUID?.()||Date.now())}
-function path(collectionName){return collection(db,'retailTenants',getTenantId(),collectionName)}
-function ref(collectionName,id){return doc(db,'retailTenants',getTenantId(),collectionName,String(id))}
+function path(collectionName){return collection(db,'tenants',getTenantId(),collectionName)}
+function ref(collectionName,id){return doc(db,'tenants',getTenantId(),collectionName,String(id))}
 function withMeta(row){return {...row,tenantId:getTenantId(),updatedAt:Date.now(),updatedAtServer:isFirebaseConfigured?serverTimestamp():null}}
 
 export async function listRecords(collectionName,{sortBy='updatedAt',direction='desc'}={}){
@@ -113,7 +113,6 @@ export function watchRecords(collectionName,callback,{sortBy='updatedAt',directi
 }
 
 export const RetailCollections={
-  tenants:'tenants',
   products:'products',
   sales:'sales',
   purchases:'purchases',
