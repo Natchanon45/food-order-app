@@ -144,7 +144,11 @@ async function prepareProduct(product) {
     await deleteProductImage(nextProduct);
     nextProduct = { ...nextProduct, imageUrl: "", imagePath: "", imageKey: "" };
   } else if (selectedImageFile) {
+    const previousImagePath = nextProduct.imagePath;
     const uploaded = await saveProductImage(product.id, selectedImageFile);
+    if (previousImagePath && previousImagePath !== uploaded.imagePath) {
+      await deleteProductImage({ imagePath: previousImagePath });
+    }
     nextProduct = { ...nextProduct, ...uploaded };
   } else if (nextProduct.imagePath && nextProduct.imageUrl !== product.imageUrl) {
     await deleteProductImage(nextProduct);

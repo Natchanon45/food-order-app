@@ -82,6 +82,20 @@ export async function saveRecords(collectionName,records){
   return saved;
 }
 
+export async function moveRecord(collectionName,previousId,row){
+  const id=normalizeId(row);
+  const oldId=String(previousId||'');
+  const data=withMeta({...row,id});
+  if(isFirebaseConfigured&&db){
+    await setDoc(ref(collectionName,id),data,{merge:true});
+    if(oldId&&oldId!==String(id))await deleteDoc(ref(collectionName,oldId));
+  }
+  const rows=readLocal(collectionName).filter(item=>![oldId,String(id)].includes(String(item.id)));
+  rows.push({...data,updatedAtServer:null});
+  writeLocal(collectionName,rows);
+  return {...data,updatedAtServer:null};
+}
+
 export async function deleteRecord(collectionName,id){
   const rows=readLocal(collectionName).filter(item=>String(item.id)!==String(id));
   writeLocal(collectionName,rows);

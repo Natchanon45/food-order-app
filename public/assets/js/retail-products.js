@@ -1,4 +1,4 @@
-import { RetailCollections, listRecords, saveRecord, deleteRecord, migrateLocalArray } from './retail-db.js';
+import { RetailCollections, listRecords, saveRecord, moveRecord, deleteRecord, migrateLocalArray } from './retail-db.js?v=20260627-2';
 import { deleteProductImage } from './retail-product-image-store.js?v=20260627-2';
 
 const PRODUCT_KEY = "retail_pos_products_v1";
@@ -205,7 +205,7 @@ function openEditProduct(id) {
   els.editingProductId.value = product.id;
   els.productDialogTitle.textContent = "แก้ไขสินค้า";
   els.productId.value = product.id;
-  els.productId.disabled = true;
+  els.productId.disabled = false;
   els.productBarcode.value = product.barcode;
   els.productName.value = product.name;
   els.productPrice.value = product.price;
@@ -244,7 +244,7 @@ async function submitProduct(event) {
     els.productFormError.textContent = "กรุณากรอกข้อมูลสินค้าให้ครบและถูกต้อง";
     return;
   }
-  if (!editingId && products.some(item => item.id.toUpperCase() === id)) {
+  if (products.some(item => item.id.toUpperCase() === id && item.id !== editingId)) {
     els.productFormError.textContent = "รหัสสินค้านี้มีอยู่แล้ว";
     return;
   }
@@ -276,6 +276,17 @@ async function submitProduct(event) {
     return;
   }
 
+  const idChanged = Boolean(editingId && editingId !== id);
+  if (idChanged) {
+    try {
+      await moveRecord(RetailCollections.products, editingId, product);
+    } catch (error) {
+      console.warn("[retail-products] product id change failed", error);
+      els.productFormError.textContent = "เปลี่ยนรหัสสินค้าใน Firebase ไม่สำเร็จ กรุณาลองอีกครั้ง";
+      return;
+    }
+  }
+
   if (editingId) {
     products = products.map(item => item.id === editingId ? product : item);
     if (old && Number(old.stock) !== stock) addMovement(product, Number(old.stock), stock, "แก้ไขยอดจากข้อมูลสินค้า");
@@ -289,7 +300,7 @@ async function submitProduct(event) {
   renderMovements();
   els.productDialog.close();
   showToast(editingId ? "แก้ไขสินค้าแล้ว" : "เพิ่มสินค้าแล้ว");
-  await saveProductToDb(product);
+  if (!idChanged) await saveProductToDb(product);
 }
 
 async function deleteProduct(id) {
