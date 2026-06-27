@@ -1,4 +1,4 @@
-import { RetailCollections, listRecords, watchRecords, saveRecord, moveRecord, deleteRecord, migrateLocalArray } from './retail-db.js?v=20260627-2';
+import { RetailCollections, listRecords, watchRecords, saveRecord, moveRecord, deleteRecord, migrateLocalArray } from './retail-db.js?v=20260627-3';
 import { deleteProductImage } from './retail-product-image-store.js?v=20260627-2';
 
 const PRODUCT_KEY = "retail_pos_products_v1";
@@ -49,6 +49,7 @@ let products = readJson(PRODUCT_KEY, []).map(product => ({ minStock: 5, ...produ
 let movements = readJson(MOVEMENT_KEY, []);
 let toastTimer;
 let stopProductWatch;
+let editingDocumentId = "";
 
 function readJson(key, fallback) {
   try {
@@ -87,7 +88,29 @@ async function loadProductsFromDb() {
 }
 
 function applyProductsFromDb(rows) {
-  products = (rows || []).map(product => ({ minStock: 5, ...product }));
+  const byProductId = new Map();
+  for (const row of rows || []) {
+    const product = { minStock: 5, ...row };
+    const id = String(product.id || product._documentId || "");
+    if (!id) continue;
+    const current = byProductId.get(id);
+    if (!current) {
+      byProductId.set(id, { ...product, id, _documentIds: [product._documentId || id] });
+      continue;
+    }
+    const documentIds = [...new Set([
+      ...(current._documentIds || []),
+      product._documentId || id
+    ])];
+    const currentIsCanonical = current._documentId === id;
+    const productIsCanonical = product._documentId === id;
+    const currentUpdatedAt = Number(current.updatedAt || current.updatedAtServer?.seconds || 0);
+    const productUpdatedAt = Number(product.updatedAt || product.updatedAtServer?.seconds || 0);
+    const preferProduct = (productIsCanonical && !currentIsCanonical)
+      || (productIsCanonical === currentIsCanonical && productUpdatedAt > currentUpdatedAt);
+    byProductId.set(id, { ...(preferProduct ? product : current), id, _documentIds: documentIds });
+  }
+  products = [...byProductId.values()];
   saveProducts();
   renderProducts();
 }
@@ -203,6 +226,7 @@ function renderMovements() {
 function openAddProduct() {
   els.productForm.reset();
   els.editingProductId.value = "";
+  editingDocumentId = "";
   els.productDialogTitle.textContent = "เพิ่มสินค้า";
   els.productId.disabled = false;
   els.productMinStock.value = "5";
@@ -216,6 +240,7 @@ function openEditProduct(id) {
   const product = products.find(item => item.id === id);
   if (!product) return;
   els.editingProductId.value = product.id;
+  editingDocumentId = product._documentId || product.id;
   els.productDialogTitle.textContent = "แก้ไขสินค้า";
   els.productId.value = product.id;
   els.productId.disabled = true;
@@ -293,10 +318,13 @@ async function submitProduct(event) {
     return;
   }
 
-  const idChanged = Boolean(editingId && editingId !== id);
+  const sourceDocumentId = editingDocumentId || editingId;
+  const idChanged = Boolean(editingId && sourceDocumentId !== id);
   if (idChanged) {
     try {
-      await moveRecord(RetailCollections.products, editingId, product);
+      await moveRecord(RetailCollections.products, sourceDocumentId, product);
+      product._documentId = id;
+      product._documentIds = [id];
     } catch (error) {
       console.warn("[retail-products] product id change failed", error);
       els.productFormError.textContent = "เปลี่ยนรหัสสินค้าใน Firebase ไม่สำเร็จ กรุณาลองอีกครั้ง";
@@ -330,7 +358,8 @@ async function deleteProduct(id) {
   saveProducts();
   renderProducts();
   showToast("ลบสินค้าแล้ว");
-  await deleteProductFromDb(id);
+  const documentIds = [...new Set(product._documentIds || [product._documentId || id])];
+  await Promise.all(documentIds.map(deleteProductFromDb));
 }
 
 function openStock(id) {

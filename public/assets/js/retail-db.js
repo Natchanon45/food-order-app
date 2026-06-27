@@ -35,14 +35,21 @@ function writeLocal(collectionName,rows){localStorage.setItem(localKey(collectio
 function normalizeId(row){return String(row?.id||row?.code||crypto.randomUUID?.()||Date.now())}
 function path(collectionName){return collection(db,'tenants',getTenantId(),collectionName)}
 function ref(collectionName,id){return doc(db,'tenants',getTenantId(),collectionName,String(id))}
-function withMeta(row){return {...row,tenantId:getTenantId(),updatedAt:Date.now(),updatedAtServer:isFirebaseConfigured?serverTimestamp():null}}
+function withMeta(row){
+  const {_documentId,_documentIds,...data}=row||{};
+  return {...data,tenantId:getTenantId(),updatedAt:Date.now(),updatedAtServer:isFirebaseConfigured?serverTimestamp():null};
+}
+function fromSnapshot(snapshot){
+  const data=snapshot.data();
+  return {...data,id:String(data.id||snapshot.id),_documentId:snapshot.id};
+}
 
 export async function listRecords(collectionName,{sortBy='updatedAt',direction='desc'}={}){
   if(!isFirebaseConfigured||!db)return readLocal(collectionName);
   try{
     const q=query(path(collectionName),orderBy(sortBy,direction));
     const snap=await getDocs(q);
-    const rows=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const rows=snap.docs.map(fromSnapshot);
     writeLocal(collectionName,rows);
     return rows;
   }catch(error){
@@ -56,7 +63,7 @@ export async function getRecord(collectionName,id){
   if(!isFirebaseConfigured||!db)return readLocal(collectionName).find(row=>String(row.id)===String(id))||null;
   try{
     const snap=await getDoc(ref(collectionName,id));
-    return snap.exists()?{id:snap.id,...snap.data()}:null;
+    return snap.exists()?fromSnapshot(snap):null;
   }catch(error){
     console.warn('[retail-db] get fallback',collectionName,id,error);
     return readLocal(collectionName).find(row=>String(row.id)===String(id))||null;
@@ -90,14 +97,14 @@ export async function moveRecord(collectionName,previousId,row){
     await setDoc(ref(collectionName,id),data,{merge:true});
     if(oldId&&oldId!==String(id))await deleteDoc(ref(collectionName,oldId));
   }
-  const rows=readLocal(collectionName).filter(item=>![oldId,String(id)].includes(String(item.id)));
+  const rows=readLocal(collectionName).filter(item=>![oldId,String(id)].includes(String(item._documentId||item.id)));
   rows.push({...data,updatedAtServer:null});
   writeLocal(collectionName,rows);
   return {...data,updatedAtServer:null};
 }
 
 export async function deleteRecord(collectionName,id){
-  const rows=readLocal(collectionName).filter(item=>String(item.id)!==String(id));
+  const rows=readLocal(collectionName).filter(item=>String(item._documentId||item.id)!==String(id));
   writeLocal(collectionName,rows);
   if(isFirebaseConfigured&&db){
     try{await deleteDoc(ref(collectionName,id))}
@@ -114,7 +121,7 @@ export function watchRecords(collectionName,callback,{sortBy='updatedAt',directi
   try{
     const q=query(path(collectionName),orderBy(sortBy,direction));
     return onSnapshot(q,snap=>{
-      const rows=snap.docs.map(d=>({id:d.id,...d.data()}));
+      const rows=snap.docs.map(fromSnapshot);
       writeLocal(collectionName,rows);
       callback(rows);
     },error=>{
