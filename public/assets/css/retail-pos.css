@@ -25,15 +25,21 @@
   --muted: #6b746f;
   --line: #dde5df;
   --danger: #c83434;
+  --control-height: 46px;
+  --dialog-width: 680px;
+  --dialog-wide-width: 760px;
+  --dialog-radius: 18px;
+  --form-gap: 12px;
   --print-font: "TH Sarabun PSK Local", "TH Sarabun New", "Sarabun", sans-serif;
   font-family: "Kanit", sans-serif;
   color: var(--black);
   background: var(--bg);
 }
 * { box-sizing: border-box; }
-body { margin: 0; min-height: 100vh; font-family: "Kanit", sans-serif; background: var(--bg); color: var(--black); }
+html { scroll-padding-top: 88px; }
+body { margin: 0; min-height: 100vh; overflow-y: auto; font-family: "Kanit", sans-serif; background: var(--bg); color: var(--black); }
 a { color: inherit; }
-button, input, select { font: inherit; }
+button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
 .pos-header {
   min-height: 72px; padding: 12px 18px; display: flex; align-items: center;
@@ -58,8 +64,9 @@ button { cursor: pointer; }
 .section-heading .btn { flex: 0 0 auto; align-self: flex-start; white-space: nowrap; }
 .product-panel { padding: 14px; }
 .search-row { display: grid; grid-template-columns: 1.25fr 1fr; gap: 10px; margin-bottom: 14px; }
-input, select { width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; background: #fff; }
-input:focus, select:focus { outline: 3px solid #15944722; border-color: var(--green); }
+input, select, textarea { width: 100%; min-height: var(--control-height); border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; background: #fff; color: var(--black); }
+textarea { min-height: 96px; resize: vertical; }
+input:focus, select:focus, textarea:focus { outline: 3px solid #15944722; border-color: var(--green); }
 .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
 .product-card { min-height: 132px; border: 1px solid var(--line); border-radius: 14px; padding: 12px; background: #fff; text-align: left; display: flex; flex-direction: column; gap: 6px; }
 .product-card:hover { border-color: var(--green); transform: translateY(-1px); box-shadow: 0 8px 22px #15944714; }
@@ -92,18 +99,23 @@ input:focus, select:focus { outline: 3px solid #15944722; border-color: var(--gr
 .btn-pay:hover { background: var(--green-dark); }
 .btn-pay:disabled { opacity: .45; cursor: not-allowed; }
 .cart-panel > .btn-pay { margin-top: 10px; min-height: 52px; font-size: 1.05rem; }
-dialog { width: min(440px, calc(100% - 24px)); border: 0; border-radius: 16px; padding: 0; box-shadow: 0 22px 70px #0005; }
+dialog { width: min(440px, calc(100% - 24px)); max-height: calc(100dvh - 32px); border: 0; border-radius: var(--dialog-radius); padding: 0; overflow: auto; overscroll-behavior: contain; box-shadow: 0 22px 70px #0005; }
+dialog:has(> form.payment-form) { width: min(var(--dialog-width), calc(100% - 32px)); }
 dialog::backdrop { background: #0f172a99; }
-.payment-form { padding: 18px; }
-.dialog-head { display: flex; justify-content: space-between; align-items: center; }
+.payment-form { padding: 22px; }
+.dialog-head { position: sticky; top: 0; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: -2px 0 14px; padding: 2px 0 12px; border-bottom: 1px solid var(--line); background: #fff; }
 .dialog-head h2 { margin: 0; font-size: 1.2rem; }
-.icon-btn { border: 0; background: transparent; font-size: 1.7rem; }
-.payment-form label { display: block; margin-top: 14px; }
-.payment-form label input, .payment-form label select { margin-top: 6px; }
+.icon-btn { flex: 0 0 auto; width: 42px; min-height: 42px; border: 0; border-radius: 12px; background: transparent; font-size: 1.7rem; line-height: 1; }
+.icon-btn:hover { background: #eef3f0; }
+.payment-form label { display: grid; gap: 7px; margin-top: 14px; font-weight: 600; }
+.payment-form label input, .payment-form label select, .payment-form label textarea { margin-top: 0; font-weight: 400; }
+.payment-form :is(.form-grid,.customer-form-grid,.supplier-form-grid,.permission-form-grid) { gap: var(--form-gap); }
 .payment-total { margin-top: 14px; padding: 14px; background: #e8f3ec; border-radius: 12px; display: flex; justify-content: space-between; gap: 12px; }
 .change-row { display: flex; justify-content: space-between; margin-top: 14px; font-size: 1.05rem; }
 .error-text { min-height: 20px; color: var(--danger); margin: 8px 0 0; }
-.dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+dialog .dialog-actions { position: sticky; bottom: 0; z-index: 2; margin: 16px -2px -2px; padding: 14px 2px 2px; border-top: 1px solid var(--line); background: #fff; }
+.dialog-actions .btn { min-height: var(--control-height); }
 .toast { position: fixed; left: 50%; top: 68vh; bottom: auto; transform: translate(-50%, calc(-50% + 20px)); opacity: 0; z-index: 3000; width: min(560px, calc(100% - 24px)); min-height: 54px; display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--black); color: #fff; padding: 12px 18px; border: 0; border-radius: 999px; outline: 0; text-align: center; box-shadow: 0 14px 36px rgba(0,0,0,.28); transition: .2s ease; pointer-events: none; overflow: hidden; font-weight: 700; }
 .toast::before { content: "✓"; flex: 0 0 auto; width: 24px; height: 24px; display: grid; place-items: center; border: 2px solid #22c55e; border-radius: 999px; color: #22c55e; font-weight: 900; font-size: 14px; line-height: 1; }
 .toast.error,.toast.is-error { background: var(--danger); }
@@ -128,6 +140,10 @@ dialog::backdrop { background: #0f172a99; }
   .search-row { grid-template-columns: 1fr; }
   .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .product-card { min-height: 120px; }
+  dialog, dialog:has(> form.payment-form) { width: calc(100% - 16px); max-height: calc(100dvh - 16px); border-radius: 14px; }
+  .payment-form { padding: 14px; }
+  .dialog-head { margin-bottom: 12px; }
+  .dialog-actions { grid-template-columns: 1fr; }
 }
 @media (max-width: 480px) {
   .toast { top: 66vh; width: calc(100% - 24px); min-height: 52px; padding: 11px 16px; }
