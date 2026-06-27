@@ -14,16 +14,16 @@
 <body class="login-page">
 <main class="login-shell">
 <section class="login-card">
-<div class="login-brand"><div class="login-logo">POS</div><h1>เข้าสู่ระบบร้านค้าปลีก</h1><p>กรอกชื่อผู้ใช้และรหัสผ่านเพื่อเข้าใช้งาน</p></div>
+<div class="login-brand"><div class="login-logo">POS</div><h1>เข้าสู่ระบบร้านค้าปลีก</h1><p>กรอกอีเมลและรหัสผ่านเพื่อเข้าใช้งาน</p></div>
 <form id="loginForm" class="login-form">
-<label>ชื่อผู้ใช้<input id="loginUsername" autocomplete="username" maxlength="60" required autofocus></label>
+<label>อีเมล<input id="loginUsername" type="email" autocomplete="username" maxlength="100" required autofocus></label>
 <label>รหัสผ่าน<div class="login-password-wrap"><input id="loginPassword" type="password" autocomplete="current-password" maxlength="100" required><button id="togglePasswordBtn" type="button">แสดง</button></div></label>
 <p id="loginError" class="login-error"></p>
 <button id="loginSubmitBtn" class="btn btn-pay login-submit" type="submit">เข้าสู่ระบบ</button>
 </form>
 </section>
 </main>
-<script type="module" src="/assets/js/retail-pos-login.js?v=20260627-1"></script>
+<script type="module" src="/assets/js/retail-pos-login.js?v=20260627-2"></script>
 <script>window.addEventListener('error',function(){var e=document.getElementById('loginError'),b=document.getElementById('loginSubmitBtn');if(e)e.textContent='โหลดระบบเข้าสู่ระบบไม่สำเร็จ กรุณารีเฟรชหน้า';if(b){b.disabled=false;b.textContent='เข้าสู่ระบบ'}});window.addEventListener('unhandledrejection',function(){var e=document.getElementById('loginError'),b=document.getElementById('loginSubmitBtn');if(e)e.textContent='ระบบเข้าสู่ระบบเกิดข้อผิดพลาด กรุณาลองใหม่';if(b){b.disabled=false;b.textContent='เข้าสู่ระบบ'}});</script>
 </body>
 </html>
