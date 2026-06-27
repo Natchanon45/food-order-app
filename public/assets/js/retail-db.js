@@ -1,13 +1,13 @@
 import { db, isFirebaseConfigured, collection, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp } from './firebase-config.js';
 
 const POS_TENANT_KEY='retail_pos_tenant_id';
-const DEFAULT_TENANT_ID='main';
-const LEGACY_TENANT_ID='demo-store';
+const DEFAULT_TENANT_ID='13c9bb08-927b-4f9c-a2ef-b320ef7eed99';
+const LEGACY_TENANT_IDS=new Set(['demo-store','main']);
 const LOCAL_PREFIX='retail_db_cache_';
 
 export function getTenantId(){
   const saved=localStorage.getItem(POS_TENANT_KEY);
-  if(saved&&saved!==LEGACY_TENANT_ID)return saved;
+  if(saved&&!LEGACY_TENANT_IDS.has(saved))return saved;
   localStorage.setItem(POS_TENANT_KEY,DEFAULT_TENANT_ID);
   return DEFAULT_TENANT_ID;
 }
@@ -19,13 +19,15 @@ export function setTenantId(tenantId){
 }
 
 function localKey(collectionName){return LOCAL_PREFIX+getTenantId()+'_'+collectionName}
-function legacyLocalKey(collectionName){return LOCAL_PREFIX+LEGACY_TENANT_ID+'_'+collectionName}
+function legacyLocalKeys(collectionName){return [...LEGACY_TENANT_IDS].map(id=>LOCAL_PREFIX+id+'_'+collectionName)}
 function readLocal(collectionName){
   try{
     const current=JSON.parse(localStorage.getItem(localKey(collectionName)))||[];
     if(current.length)return current;
-    const legacy=JSON.parse(localStorage.getItem(legacyLocalKey(collectionName)))||[];
-    if(legacy.length){writeLocal(collectionName,legacy);return legacy}
+    for(const key of legacyLocalKeys(collectionName)){
+      const legacy=JSON.parse(localStorage.getItem(key))||[];
+      if(legacy.length){writeLocal(collectionName,legacy);return legacy}
+    }
     return [];
   }catch{return []}
 }
