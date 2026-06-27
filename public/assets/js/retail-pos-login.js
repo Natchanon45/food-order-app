@@ -1,4 +1,4 @@
-import {login,isLoggedIn} from "./retail-pos-auth.js?v=20260624-1";
+import {login,isLoggedIn} from "./retail-pos-auth.js?v=20260627-2";
 
 const ROLE_KEY="retail_pos_roles_v1";
 const MENU_ITEMS=[
@@ -24,7 +24,7 @@ function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fa
 function firstAllowedPage(user){
   const role=read(ROLE_KEY,[]).find(item=>item.id===user?.roleId);
   const permissions=new Set(role?.permissions||[]);
-  return MENU_ITEMS.find(item=>permissions.has(item.key))?.href||"/pos/forbidden/";
+  return MENU_ITEMS.find(item=>permissions.has(item.key))?.href||"/pos/";
 }
 function resetButton(){submit.disabled=false;submit.textContent="เข้าสู่ระบบ"}
 
@@ -41,7 +41,7 @@ form.addEventListener("submit",async event=>{
   error.textContent="";
   submit.disabled=true;
   submit.innerHTML='<span class="login-loading">กำลังเข้าสู่ระบบ</span>';
-  const timeout=setTimeout(()=>{error.textContent="การเข้าสู่ระบบใช้เวลานานเกินไป กรุณาลองใหม่";resetButton()},7000);
+  const timeout=setTimeout(()=>{error.textContent="การเข้าสู่ระบบใช้เวลานานเกินไป กรุณาลองใหม่";resetButton()},10000);
   try{
     const result=await login(username.value,password.value);
     if(!result.ok){error.textContent=result.message;return}
