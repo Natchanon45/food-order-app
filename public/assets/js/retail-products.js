@@ -3,6 +3,7 @@ import { deleteProductImage } from './retail-product-image-store.js?v=20260627-2
 
 const PRODUCT_KEY = "retail_pos_products_v1";
 const MOVEMENT_KEY = "retail_pos_stock_movements_v1";
+const PRODUCT_CODE_PATTERN = /^P\d{9}$/;
 
 const els = {
   productCount: document.querySelector("#productCount"),
@@ -205,7 +206,7 @@ function openEditProduct(id) {
   els.editingProductId.value = product.id;
   els.productDialogTitle.textContent = "แก้ไขสินค้า";
   els.productId.value = product.id;
-  els.productId.disabled = false;
+  els.productId.disabled = true;
   els.productBarcode.value = product.barcode;
   els.productName.value = product.name;
   els.productPrice.value = product.price;
@@ -242,6 +243,10 @@ async function submitProduct(event) {
 
   if (!id || !barcode || !name || !unit || price < 0 || stock < 0 || minStock < 0 || (costValue !== "" && Number(costValue) < 0)) {
     els.productFormError.textContent = "กรุณากรอกข้อมูลสินค้าให้ครบและถูกต้อง";
+    return;
+  }
+  if (!editingId && !PRODUCT_CODE_PATTERN.test(id)) {
+    els.productFormError.textContent = "รหัสสินค้าต้องเป็น P ตามด้วยตัวเลข 9 หลัก เช่น P000000001";
     return;
   }
   if (products.some(item => item.id.toUpperCase() === id && item.id !== editingId)) {
@@ -371,6 +376,9 @@ async function submitStock(event) {
 }
 
 els.addProductBtn.addEventListener("click", openAddProduct);
+els.productId.addEventListener("input", () => {
+  if (!els.editingProductId.value) els.productId.value = els.productId.value.toUpperCase();
+});
 els.productForm.addEventListener("submit", submitProduct);
 els.closeProductDialog.addEventListener("click", () => els.productDialog.close());
 els.cancelProductBtn.addEventListener("click", () => els.productDialog.close());
