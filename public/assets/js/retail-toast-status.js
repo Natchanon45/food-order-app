@@ -9,7 +9,7 @@ if(!document.getElementById(styleId)){
 .toast.error,.toast.is-error{z-index:2147483647!important;border-radius:14px!important;font-weight:400!important}
 .toast.error::before,.toast.is-error::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.35' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m9 9 6 6'/%3E%3Cpath d='m15 9-6 6'/%3E%3C/svg%3E")!important}
 .toast:popover-open{display:flex!important;opacity:1!important;transform:translate(-50%,-50%)!important}
-.pos-svg-status-icon{display:inline-grid!important;place-items:center!important;width:58px!important;height:58px!important;border-radius:999px!important;background:#e8f3ec!important;color:#159447!important;font-size:0!important;line-height:0!important}
+.pos-svg-status-icon{display:grid!important;place-items:center!important;width:58px!important;height:58px!important;margin:0 auto 18px!important;border-radius:999px!important;background:#e8f3ec!important;color:#159447!important;font-size:0!important;line-height:0!important;text-align:center!important}
 .pos-svg-status-icon svg{width:34px!important;height:34px!important;display:block!important;fill:none!important;stroke:currentColor!important;stroke-width:2.6!important;stroke-linecap:round!important;stroke-linejoin:round!important}
 `;
   document.head.appendChild(style);
@@ -38,9 +38,12 @@ function setupToastTopLayer(){
 function replaceLooseStatusIcons(root=document){
   const symbols=new Set(['✓','✔','✅']);
   root.querySelectorAll('dialog *,.modal *,.payment-success *,.success-modal *').forEach(el=>{
-    if(el.dataset.svgStatusIcon==='1')return;
     const text=(el.textContent||'').trim();
     if(!symbols.has(text))return;
+    if(el.dataset.svgStatusIcon==='1'){
+      el.classList.add('pos-svg-status-icon');
+      return;
+    }
     if(el.children.length>0&&el.querySelector('svg'))return;
     el.dataset.svgStatusIcon='1';
     el.classList.add('pos-svg-status-icon');
