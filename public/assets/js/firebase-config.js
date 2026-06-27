@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 import {
   getFirestore, collection, addDoc, doc, getDoc, getDocs, setDoc, updateDoc,
-  deleteDoc, onSnapshot, query, where, orderBy, serverTimestamp, runTransaction
+  deleteDoc, onSnapshot, query, where, orderBy, limit, serverTimestamp, runTransaction
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 import {
   getStorage, ref, uploadBytes, getDownloadURL as firebaseGetDownloadURL, deleteObject
@@ -53,7 +53,7 @@ export async function getDownloadURL(fileRef) {
 export {
   initializeApp, getAuth,
   collection, addDoc, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc,
-  onSnapshot, query, where, orderBy, serverTimestamp, runTransaction,
+  onSnapshot, query, where, orderBy, limit, serverTimestamp, runTransaction,
   ref, uploadBytes, deleteObject,
   signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword,
   getFunctions, httpsCallable
