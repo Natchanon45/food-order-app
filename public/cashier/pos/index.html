@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#159447">
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260628-1">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260628-1">
+  <link rel="stylesheet" href="/assets/css/pos.css?v=20260628-1">
+  <title>ขายหน้าร้าน</title>
+</head>
+<body data-roles="cashier">
+  <div id="demoBanner"></div>
+  <header class="app-header">
+    <div class="brand"><span class="brand-mark">POS</span>ขายหน้าร้าน</div>
+  </header>
+
+  <main class="container pos-layout">
+    <section class="pos-products">
+      <div class="hero pos-hero">
+        <div><h1>ขายหน้าร้าน</h1><p>เลือกสินค้า รับชำระ และตัดสต็อกแบบ Transaction</p></div>
+        <a class="btn" href="/cashier">กลับหน้าบิล</a>
+      </div>
+
+      <div class="card pos-filter">
+        <input class="input" id="productSearch" placeholder="ค้นหาชื่อสินค้า หรือรหัสสินค้า..." autocomplete="off">
+        <select class="input" id="categoryFilter"><option value="">ทุกหมวดหมู่</option></select>
+      </div>
+      <div id="productGrid" class="pos-product-grid"></div>
+    </section>
+
+    <aside class="card pos-cart">
+      <div class="section-title"><h2>รายการขาย</h2><button class="btn btn-sm" id="clearCart" type="button">ล้าง</button></div>
+      <div id="cartRows" class="pos-cart-rows"></div>
+
+      <div class="pos-summary">
+        <div><span>จำนวน</span><strong id="totalQty">0</strong></div>
+        <div class="pos-grand-total"><span>ยอดสุทธิ</span><strong><span id="grandTotal">0.00</span> บาท</strong></div>
+      </div>
+
+      <div class="grid">
+        <div class="field"><label>วิธีชำระเงิน</label><select class="input" id="paymentMethod"><option value="cash">เงินสด</option><option value="promptpay">พร้อมเพย์</option><option value="transfer">โอนเงิน</option><option value="card">บัตร</option></select></div>
+        <div class="field" id="receivedField"><label>รับเงินมา</label><input class="input" id="receivedAmount" type="number" min="0" step="0.01" inputmode="decimal"></div>
+        <div class="pos-change"><span>เงินทอน</span><strong><span id="changeAmount">0.00</span> บาท</strong></div>
+        <button class="btn btn-primary pos-checkout" id="checkoutButton" type="button" disabled>ยืนยันการขาย</button>
+      </div>
+    </aside>
+  </main>
+
+  <script type="module" src="/assets/js/page-guard.js?v=20260628-1"></script>
+  <script type="module" src="/assets/js/pos.js?v=20260628-1"></script>
+</body>
+</html>
