@@ -104,7 +104,7 @@ dialog::backdrop { background: #0f172a99; }
 .change-row { display: flex; justify-content: space-between; margin-top: 14px; font-size: 1.05rem; }
 .error-text { min-height: 20px; color: var(--danger); margin: 8px 0 0; }
 .dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
-.toast { position: fixed; left: 50%; top: 68vh; bottom: auto; transform: translate(-50%, calc(-50% + 20px)); opacity: 0; z-index: 3000; width: min(560px, calc(100% - 24px)); min-height: 54px; display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--black); color: #fff; padding: 12px 18px; border-radius: 999px; text-align: center; box-shadow: 0 14px 36px rgba(0,0,0,.28); transition: .2s ease; pointer-events: none; overflow: hidden; font-weight: 700; }
+.toast { position: fixed; left: 50%; top: 68vh; bottom: auto; transform: translate(-50%, calc(-50% + 20px)); opacity: 0; z-index: 3000; width: min(560px, calc(100% - 24px)); min-height: 54px; display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--black); color: #fff; padding: 12px 18px; border: 0; border-radius: 999px; outline: 0; text-align: center; box-shadow: 0 14px 36px rgba(0,0,0,.28); transition: .2s ease; pointer-events: none; overflow: hidden; font-weight: 700; }
 .toast::before { content: "✓"; flex: 0 0 auto; width: 24px; height: 24px; display: grid; place-items: center; border: 2px solid #22c55e; border-radius: 999px; color: #22c55e; font-weight: 900; font-size: 14px; line-height: 1; }
 .toast.error,.toast.is-error { background: var(--danger); }
 .toast.error::before,.toast.is-error::before { content: "×"; border-color: #fff; color: #fff; font-size: 18px; }

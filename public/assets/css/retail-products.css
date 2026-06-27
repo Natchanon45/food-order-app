@@ -37,6 +37,9 @@
 .form-grid label { margin-top: 0; }
 .form-grid .full { grid-column: 1 / -1; }
 .stock-product-name { margin: 14px 0 4px; padding: 12px; border-radius: 10px; background: #e8f7f4; font-weight: 700; }
+@media (min-width: 801px) {
+  #productDialog { width: min(760px, calc(100% - 48px)); }
+}
 @media (max-width: 800px) {
   .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .toolbar { grid-template-columns: 1fr; }
