@@ -4,6 +4,8 @@ const toast=document.querySelector('#toast');
 let stream=null;
 let raf=0;
 let detector=null;
+let zxingReader=null;
+let zxingControls=null;
 
 const BARCODE_ICON='<svg class="scan-barcode-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5v14"></path><path d="M7 5v14"></path><path d="M10 5v14"></path><path d="M14 5v14"></path><path d="M17 5v14"></path><path d="M21 5v14"></path></svg>';
 
@@ -15,6 +17,20 @@ function showScanToast(message,type='success'){
   toast.classList.add('show');
   clearTimeout(showScanToast.timer);
   showScanToast.timer=setTimeout(()=>toast.classList.remove('show'),2200);
+}
+
+function loadZxing(){
+  if(window.ZXing)return Promise.resolve(window.ZXing);
+  return new Promise((resolve,reject)=>{
+    const existing=document.querySelector('script[data-zxing="1"]');
+    if(existing){existing.addEventListener('load',()=>resolve(window.ZXing));existing.addEventListener('error',reject);return;}
+    const script=document.createElement('script');
+    script.dataset.zxing='1';
+    script.src='https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js';
+    script.onload=()=>window.ZXing?resolve(window.ZXing):reject(new Error('ZXing not available'));
+    script.onerror=reject;
+    document.head.appendChild(script);
+  });
 }
 
 function addStyles(){
@@ -62,11 +78,6 @@ function addProductByCode(code){
 
 async function startScanner(){
   if(!input)return;
-  if(!('BarcodeDetector'in window)){
-    showScanToast('Browser นี้ยังไม่รองรับการสแกนบาร์โค้ดด้วยกล้อง','error');
-    input.focus();
-    return;
-  }
   if(!navigator.mediaDevices?.getUserMedia){
     showScanToast('อุปกรณ์นี้ไม่สามารถเปิดกล้องได้','error');
     input.focus();
@@ -76,13 +87,29 @@ async function startScanner(){
   const video=dialog.querySelector('#posScanVideo');
   const status=dialog.querySelector('#posScanStatus');
   try{
-    detector=new BarcodeDetector({formats:['ean_13','ean_8','code_128','code_39','upc_a','upc_e','qr_code']});
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
-    video.srcObject=stream;
-    await video.play();
     if(!dialog.open)dialog.showModal();
+    if('BarcodeDetector'in window){
+      detector=new BarcodeDetector({formats:['ean_13','ean_8','code_128','code_39','upc_a','upc_e','qr_code']});
+      stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+      video.srcObject=stream;
+      await video.play();
+      status.textContent='กำลังสแกน...';
+      scanLoop(video,status);
+      return;
+    }
+    status.textContent='กำลังโหลดตัวอ่านบาร์โค้ด...';
+    const ZXing=await loadZxing();
+    zxingReader=new ZXing.BrowserMultiFormatReader();
     status.textContent='กำลังสแกน...';
-    scanLoop(video,status);
+    zxingControls=await zxingReader.decodeFromVideoDevice(null,video,(result)=>{
+      if(!result)return;
+      const value=String(result.getText?.()||result.text||'').trim();
+      if(!value)return;
+      status.textContent='พบรหัส: '+value;
+      addProductByCode(value);
+      showScanToast('สแกนบาร์โค้ดสำเร็จ');
+      stopScanner();
+    });
   }catch(err){
     stopScanner();
     showScanToast('เปิดกล้องไม่สำเร็จ กรุณาอนุญาตการใช้งานกล้อง','error');
@@ -110,6 +137,10 @@ async function scanLoop(video,status){
 function stopScanner(){
   cancelAnimationFrame(raf);
   raf=0;
+  try{zxingControls?.stop?.()}catch{}
+  try{zxingReader?.reset?.()}catch{}
+  zxingControls=null;
+  zxingReader=null;
   if(stream){stream.getTracks().forEach(track=>track.stop());stream=null;}
   const dialog=document.getElementById('posScanDialog');
   const video=dialog?.querySelector('#posScanVideo');
