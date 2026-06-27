@@ -1,3 +1,5 @@
+import { RetailCollections, listRecords, saveRecord, deleteRecord, migrateLocalArray } from './retail-db.js';
+
 const PRODUCT_KEY = "retail_pos_products_v1";
 const MOVEMENT_KEY = "retail_pos_stock_movements_v1";
 
@@ -60,6 +62,30 @@ function saveProducts() {
 
 function saveMovements() {
   localStorage.setItem(MOVEMENT_KEY, JSON.stringify(movements.slice(0, 500)));
+}
+
+async function loadProductsFromDb() {
+  try {
+    if (products.length) await migrateLocalArray(PRODUCT_KEY, RetailCollections.products);
+    const rows = await listRecords(RetailCollections.products, { sortBy: "updatedAt", direction: "desc" });
+    if (rows.length) {
+      products = rows.map(product => ({ minStock: 5, ...product }));
+      saveProducts();
+    }
+  } catch (error) {
+    console.warn("[retail-products] database load failed", error);
+  }
+  renderProducts();
+}
+
+async function saveProductToDb(product) {
+  try { await saveRecord(RetailCollections.products, product); }
+  catch (error) { console.warn("[retail-products] database save failed", error); }
+}
+
+async function deleteProductFromDb(id) {
+  try { await deleteRecord(RetailCollections.products, id); }
+  catch (error) { console.warn("[retail-products] database delete failed", error); }
 }
 
 function safeId() {
@@ -201,7 +227,7 @@ function readMerchandisingFields(existingProduct = {}) {
   };
 }
 
-function submitProduct(event) {
+async function submitProduct(event) {
   event.preventDefault();
   const editingId = els.editingProductId.value;
   const id = (editingId || els.productId.value).trim().toUpperCase();
@@ -253,9 +279,10 @@ function submitProduct(event) {
   renderMovements();
   els.productDialog.close();
   showToast(editingId ? "แก้ไขสินค้าแล้ว" : "เพิ่มสินค้าแล้ว");
+  await saveProductToDb(product);
 }
 
-function deleteProduct(id) {
+async function deleteProduct(id) {
   const product = products.find(item => item.id === id);
   if (!product) return;
   if (!confirm(`ลบสินค้า “${product.name}” หรือไม่?\nประวัติการขายเดิมจะไม่ถูกลบ`)) return;
@@ -263,6 +290,7 @@ function deleteProduct(id) {
   saveProducts();
   renderProducts();
   showToast("ลบสินค้าแล้ว");
+  await deleteProductFromDb(id);
 }
 
 function openStock(id) {
@@ -291,7 +319,7 @@ function addMovement(product, before, after, note) {
   saveMovements();
 }
 
-function submitStock(event) {
+async function submitStock(event) {
   event.preventDefault();
   const product = products.find(item => item.id === els.stockProductId.value);
   if (!product) return;
@@ -316,6 +344,7 @@ function submitStock(event) {
   renderMovements();
   els.stockDialog.close();
   showToast("ปรับสต็อกแล้ว");
+  await saveProductToDb(product);
 }
 
 els.addProductBtn.addEventListener("click", openAddProduct);
@@ -345,3 +374,4 @@ els.clearMovementBtn.addEventListener("click", () => {
 saveProducts();
 renderProducts();
 renderMovements();
+loadProductsFromDb();
