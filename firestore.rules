@@ -40,7 +40,10 @@ service cloud.firestore {
 
     function tenantOwner(tenantId) {
       return signedIn()
-        && get(/databases/$(database)/documents/tenants/$(tenantId)).data.ownerUid == request.auth.uid;
+        && (
+          get(/databases/$(database)/documents/tenants/$(tenantId)).data.ownerUid == request.auth.uid
+          || get(/databases/$(database)/documents/tenants/$(tenantId)).data.ownerEmail == request.auth.token.email
+        );
     }
 
     function profileTenantMember(tenantId) {
