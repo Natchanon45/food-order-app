@@ -32,10 +32,33 @@ service firebase.storage {
         && request.resource.contentType.matches('image/.*');
     }
 
+    function tenantOwner(tenantId) {
+      return signedIn()
+        && (
+          firestore.get(/databases/(default)/documents/tenants/$(tenantId)).data.ownerUid == request.auth.uid
+          || firestore.get(/databases/(default)/documents/tenants/$(tenantId)).data.ownerEmail == request.auth.token.email
+        );
+    }
+
+    function tenantProductAdmin(tenantId) {
+      return tenantOwner(tenantId) || (
+        signedIn()
+        && firestore.exists(/databases/(default)/documents/tenants/$(tenantId)/memberships/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/tenants/$(tenantId)/memberships/$(request.auth.uid)).data.active == true
+        && firestore.get(/databases/(default)/documents/tenants/$(tenantId)/memberships/$(request.auth.uid)).data.role in ['owner', 'admin', 'super_admin']
+      );
+    }
+
     match /menu-images/{menuId}/{fileName} {
       allow read: if true;
       allow create, update: if adminRole() && validImage(8 * 1024 * 1024);
       allow delete: if adminRole();
+    }
+
+    match /tenants/{tenantId}/product-images/{productId}/{fileName} {
+      allow read: if true;
+      allow create, update: if tenantProductAdmin(tenantId) && validImage(5 * 1024 * 1024);
+      allow delete: if tenantProductAdmin(tenantId);
     }
 
     match /payment-slips/{orderId}/{fileName} {

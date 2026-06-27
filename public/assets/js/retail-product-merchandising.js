@@ -1,4 +1,4 @@
-import { deleteProductImage, getProductImageUrl, saveProductImage } from "./retail-product-image-store.js?v=20260624-1";
+import { deleteProductImage, getProductImageUrl, saveProductImage } from "./retail-product-image-store.js?v=20260627-2";
 
 const PRODUCT_KEY = "retail_pos_products_v1";
 const form = document.querySelector("#productForm");
@@ -132,50 +132,29 @@ async function loadMerchFields(id) {
   await updatePreviewFromSaved(product);
 }
 
-async function enrichSavedProduct(snapshot) {
-  await new Promise(resolve => setTimeout(resolve, 50));
-  const products = readProducts();
-  const index = products.findIndex(item => item.id === snapshot.id);
-  if (index < 0) return;
-
-  let imageKey = products[index].imageKey || "";
-  if (snapshot.removeSavedImage && imageKey) {
-    await deleteProductImage(imageKey);
-    imageKey = "";
-  }
-  if (snapshot.imageFile) {
-    imageKey = await saveProductImage(snapshot.id, snapshot.imageFile);
-  }
-
-  products[index] = {
-    ...products[index],
-    cost: snapshot.cost,
-    category: snapshot.category || "ทั่วไป",
-    sortOrder: snapshot.sortOrder,
-    imageUrl: snapshot.imageUrl,
-    imageKey,
-    showOnPos: snapshot.showOnPos
+async function prepareProduct(product) {
+  let nextProduct = {
+    ...product,
+    imageUrl: imageUrlInput.value.trim(),
+    imagePath: product.imagePath || "",
+    imageKey: product.imageKey || ""
   };
-  delete products[index].quickSale;
-  writeProducts(products);
-  updateCategoryList();
-  document.querySelector("#productSearch")?.dispatchEvent(new Event("input", { bubbles: true }));
+
+  if (removeSavedImage) {
+    await deleteProductImage(nextProduct);
+    nextProduct = { ...nextProduct, imageUrl: "", imagePath: "", imageKey: "" };
+  } else if (selectedImageFile) {
+    const uploaded = await saveProductImage(product.id, selectedImageFile);
+    nextProduct = { ...nextProduct, ...uploaded };
+  } else if (nextProduct.imagePath && nextProduct.imageUrl !== product.imageUrl) {
+    await deleteProductImage(nextProduct);
+    nextProduct = { ...nextProduct, imagePath: "", imageKey: "" };
+  }
+
+  return nextProduct;
 }
 
-form.addEventListener("submit", () => {
-  const id = (editingId.value || document.querySelector("#productId").value).trim().toUpperCase();
-  const cost = costInput.value === "" ? null : Number(costInput.value);
-  enrichSavedProduct({
-    id,
-    cost: Number.isFinite(cost) && cost >= 0 ? cost : null,
-    category: categoryInput.value.trim(),
-    sortOrder: Number(sortOrderInput.value || 999),
-    imageUrl: imageUrlInput.value.trim(),
-    imageFile: selectedImageFile,
-    removeSavedImage,
-    showOnPos: showOnPosInput.checked
-  }).catch(error => alert(error.message || "บันทึกรูปสินค้าไม่สำเร็จ"));
-}, { capture: true });
+globalThis.retailProductMerchandising = { prepareProduct };
 
 document.querySelector("#addProductBtn")?.addEventListener("click", () => setTimeout(() => {
   resetMerchFields();

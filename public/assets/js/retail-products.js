@@ -1,4 +1,5 @@
 import { RetailCollections, listRecords, saveRecord, deleteRecord, migrateLocalArray } from './retail-db.js';
+import { deleteProductImage } from './retail-product-image-store.js?v=20260627-2';
 
 const PRODUCT_KEY = "retail_pos_products_v1";
 const MOVEMENT_KEY = "retail_pos_stock_movements_v1";
@@ -253,7 +254,7 @@ async function submitProduct(event) {
   }
 
   const old = editingId ? products.find(item => item.id === editingId) : null;
-  const product = {
+  let product = {
     ...(old || {}),
     id,
     barcode,
@@ -265,6 +266,15 @@ async function submitProduct(event) {
     ...readMerchandisingFields(old || {})
   };
   delete product.quickSale;
+
+  try {
+    if (globalThis.retailProductMerchandising?.prepareProduct) {
+      product = await globalThis.retailProductMerchandising.prepareProduct(product);
+    }
+  } catch (error) {
+    els.productFormError.textContent = error?.message || "อัปโหลดรูปสินค้าไม่สำเร็จ";
+    return;
+  }
 
   if (editingId) {
     products = products.map(item => item.id === editingId ? product : item);
@@ -286,6 +296,8 @@ async function deleteProduct(id) {
   const product = products.find(item => item.id === id);
   if (!product) return;
   if (!confirm(`ลบสินค้า “${product.name}” หรือไม่?\nประวัติการขายเดิมจะไม่ถูกลบ`)) return;
+  try { await deleteProductImage(product); }
+  catch (error) { console.warn("[retail-products] image delete failed", error); }
   products = products.filter(item => item.id !== id);
   saveProducts();
   renderProducts();

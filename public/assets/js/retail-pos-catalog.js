@@ -1,4 +1,4 @@
-import { getProductImageUrl } from "./retail-product-image-store.js?v=20260624-1";
+import { getProductImageUrl } from "./retail-product-image-store.js?v=20260627-2";
 
 const PRODUCT_KEY = "retail_pos_products_v1";
 const SALES_KEY = "retail_pos_sales_v1";

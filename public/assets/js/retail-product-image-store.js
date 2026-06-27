@@ -1,3 +1,6 @@
+import { storage, ref, uploadBytes, getDownloadURL, deleteObject } from "./firebase-config.js";
+import { getTenantId } from "./retail-db.js";
+
 const DB_NAME = "retail_pos_media_v1";
 const STORE_NAME = "product_images";
 const DB_VERSION = 1;
@@ -96,15 +99,38 @@ export async function compressProductImage(file, maxSize = 600) {
   }
 }
 
-export async function saveProductImage(productId, file) {
+function firebaseImagePath(productId) {
+  const safeProductId = encodeURIComponent(String(productId || "").trim());
+  return `tenants/${getTenantId()}/product-images/${safeProductId}/product.webp`;
+}
+
+async function saveLocalProductImage(productId, blob) {
   const key = String(productId || "").trim();
   if (!key) throw new Error("ไม่พบรหัสสินค้า");
-  const blob = await compressProductImage(file);
   await transaction("readwrite", store => store.put(blob, key));
   const oldUrl = objectUrls.get(key);
   if (oldUrl) URL.revokeObjectURL(oldUrl);
   objectUrls.delete(key);
   return key;
+}
+
+export async function saveProductImage(productId, file) {
+  const key = String(productId || "").trim();
+  if (!key) throw new Error("ไม่พบรหัสสินค้า");
+  if (!storage) throw new Error("ยังไม่ได้เชื่อมต่อ Firebase Storage");
+
+  const blob = await compressProductImage(file);
+  const imagePath = firebaseImagePath(key);
+  const imageRef = ref(storage, imagePath);
+  await uploadBytes(imageRef, blob, {
+    contentType: blob.type || "image/webp",
+    cacheControl: "public,max-age=3600"
+  });
+  const imageUrl = await getDownloadURL(imageRef);
+
+  // Keep a local copy as an offline fallback without making it the source of truth.
+  await saveLocalProductImage(key, blob);
+  return { imageKey: key, imagePath, imageUrl };
 }
 
 export async function getProductImageUrl(productId) {
@@ -118,8 +144,18 @@ export async function getProductImageUrl(productId) {
   return url;
 }
 
-export async function deleteProductImage(productId) {
-  const key = String(productId || "").trim();
+export async function deleteProductImage(productOrKey) {
+  const product = typeof productOrKey === "object" && productOrKey ? productOrKey : {};
+  const key = String(product.imageKey || (typeof productOrKey === "string" ? productOrKey : "")).trim();
+  const imagePath = String(product.imagePath || "").trim();
+
+  if (imagePath && storage) {
+    try {
+      await deleteObject(ref(storage, imagePath));
+    } catch (error) {
+      if (error?.code !== "storage/object-not-found") throw error;
+    }
+  }
   if (!key) return;
   await transaction("readwrite", store => store.delete(key));
   const url = objectUrls.get(key);

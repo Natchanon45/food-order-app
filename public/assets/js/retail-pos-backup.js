@@ -1,4 +1,4 @@
-import { exportProductImages, importProductImages } from "./retail-product-image-store.js?v=20260624-3";
+import { exportProductImages, importProductImages } from "./retail-product-image-store.js?v=20260627-2";
 
 const BACKUP_VERSION = 1;
 const DATA_KEYS = [
