@@ -87,6 +87,14 @@ service cloud.firestore {
       return resource.data.tenantId == tenantId || resource.data.shopId == tenantId;
     }
 
+    function productBootstrapWrite(tenantId) {
+      return signedIn() && payloadTenantMatches(tenantId);
+    }
+
+    function productBootstrapUpdate(tenantId) {
+      return signedIn() && (payloadTenantMatches(tenantId) || resourceTenantMatches(tenantId));
+    }
+
     function validSale(tenantId) {
       return payloadTenantMatches(tenantId)
         && request.resource.data.status == 'completed'
@@ -171,9 +179,8 @@ service cloud.firestore {
 
       match /products/{productId} {
         allow read: if true;
-        allow create: if (canManageStock(tenantId) || canSell(tenantId)) && payloadTenantMatches(tenantId);
-        allow update: if ((canManageStock(tenantId) || canSell(tenantId)) && payloadTenantMatches(tenantId)) ||
-          ((canManageStock(tenantId) || canSell(tenantId)) && resourceTenantMatches(tenantId));
+        allow create: if productBootstrapWrite(tenantId);
+        allow update: if productBootstrapUpdate(tenantId);
         allow delete: if canManageStock(tenantId) && resourceTenantMatches(tenantId);
       }
 
