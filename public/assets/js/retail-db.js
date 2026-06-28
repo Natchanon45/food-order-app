@@ -138,6 +138,7 @@ export function watchRecords(collectionName,callback,{sortBy='updatedAt',directi
 export const RetailCollections={
   products:'products',
   sales:'sales',
+  stockMovements:'stockMovements',
   purchases:'purchases',
   stockCounts:'stockCounts',
   suppliers:'suppliers',

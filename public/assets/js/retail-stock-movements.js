@@ -1,3 +1,5 @@
+import { watchRecords, RetailCollections } from './retail-db.js?v=20260628-4';
+
 const MOVEMENT_KEY="retail_pos_stock_movements_v1",PRODUCT_KEY="retail_pos_products_v1";
 const $=s=>document.querySelector(s),els={search:$("#movementSearch"),from:$("#movementDateFrom"),to:$("#movementDateTo"),type:$("#movementTypeFilter"),product:$("#movementProductFilter"),today:$("#movementTodayBtn"),month:$("#movementMonthBtn"),all:$("#movementAllBtn"),export:$("#exportMovementCsv"),count:$("#movementCount"),incoming:$("#movementIn"),outgoing:$("#movementOut"),net:$("#movementNet"),period:$("#movementPeriodText"),body:$("#movementTableBody"),empty:$("#movementEmpty")};
 function read(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}
@@ -15,3 +17,10 @@ function setMonth(){const n=new Date(),f=new Date(n.getFullYear(),n.getMonth(),1
 function csvCell(v){return `"${String(v??"").replace(/"/g,'""')}"`}
 function exportCsv(){const rows=filtered();if(!rows.length)return alert("ไม่มีข้อมูลสำหรับส่งออก");const lines=[["วันที่และเวลา","รหัสสินค้า","สินค้า","ประเภท","หมายเหตุ","ยอดก่อน","เปลี่ยนแปลง","ยอดหลัง"]];rows.forEach(x=>lines.push([new Date(x.createdAt).toLocaleString("th-TH"),x.productId,x.productName,typeName(x.type),x.note,x.before,x.delta,x.after]));const blob=new Blob(["\uFEFF"+lines.map(r=>r.map(csvCell).join(",")).join("\r\n")],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`retail-stock-movements-${els.from.value||"all"}-${els.to.value||"all"}.csv`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 [els.search,els.from,els.to].forEach(x=>x.addEventListener("input",render));[els.type,els.product].forEach(x=>x.addEventListener("change",render));els.today.addEventListener("click",setToday);els.month.addEventListener("click",setMonth);els.all.addEventListener("click",()=>{els.search.value="";els.from.value="";els.to.value="";els.type.value="all";els.product.value="all";render()});els.export.addEventListener("click",exportCsv);window.addEventListener("storage",()=>{renderProducts();render()});renderProducts();render();
+
+const stopMovementWatch=watchRecords(RetailCollections.stockMovements,rows=>{
+  localStorage.setItem(MOVEMENT_KEY,JSON.stringify(rows));
+  document.documentElement.dataset.movementsSource="firestore";
+  window.dispatchEvent(new Event("storage"));
+},{sortBy:"createdAt",direction:"desc"});
+window.addEventListener("beforeunload",stopMovementWatch,{once:true});
