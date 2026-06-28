@@ -293,12 +293,12 @@ async function confirmReturn(){
 function renderHistory(){
   returns=read(RETURN_KEY,[]);
   const query=els.historySearch.value.trim().toLowerCase();
-  const rows=returns.filter(record=>!query||[record.id,record.saleId,record.reason,record.note,(record.items||[]).map(item=>`${item.productName} ${item.productId}`).join(" ")].some(value=>String(value||"").toLowerCase().includes(query)));
+  const rows=returns.filter(record=>!query||[record.id,record.saleNumber,record.saleId,record.reason,record.note,(record.items||[]).map(item=>`${item.productName} ${item.productId}`).join(" ")].some(value=>String(value||"").toLowerCase().includes(query)));
   els.historyEmpty.hidden=rows.length>0;
   els.history.innerHTML=rows.map(record=>{
     const adjustment=record.loyaltyAdjustment;
     const loyaltyText=adjustment?`<div class="return-history-loyalty">${adjustment.pointsEarnedDeducted>0?`หักแต้ม ${adjustment.pointsEarnedDeducted}`:""}${adjustment.pointsEarnedDeducted>0&&adjustment.pointsUsedRestored>0?" • ":""}${adjustment.pointsUsedRestored>0?`คืนแต้ม ${adjustment.pointsUsedRestored}`:""} • คงเหลือ ${adjustment.pointsAfter}</div>`:"";
-    return`<article class="return-history-item"><div class="return-history-head"><div><strong>${esc(record.id)}</strong><span>อ้างอิง ${esc(record.saleId)} • ${new Date(`${record.returnDate}T00:00:00`).toLocaleDateString("th-TH")}</span></div><div class="return-history-total"><strong>${money(record.refundTotal)} บาท</strong><span>${esc(record.refundMethod||"")}</span></div></div><div class="return-history-meta">${esc(record.reason)}${record.note?` • ${esc(record.note)}`:""}</div>${loyaltyText}<div class="return-history-lines">${(record.items||[]).map(item=>`<div class="return-history-line"><span>${esc(item.productName)} × ${Number(item.qty).toLocaleString("th-TH")}</span><strong>${money(item.lineTotal)}</strong></div>`).join("")}</div></article>`;
+    return`<article class="return-history-item"><div class="return-history-head"><div><strong>${esc(record.id)}</strong><span>อ้างอิง ${esc(record.saleNumber||record.saleId)} • ${new Date(`${record.returnDate}T00:00:00`).toLocaleDateString("th-TH")}</span></div><div class="return-history-total"><strong>${money(record.refundTotal)} บาท</strong><span>${esc(record.refundMethod||"")}</span></div></div><div class="return-history-meta">${esc(record.reason)}${record.note?` • ${esc(record.note)}`:""}</div>${loyaltyText}<div class="return-history-lines">${(record.items||[]).map(item=>`<div class="return-history-line"><span>${esc(item.productName)} × ${Number(item.qty).toLocaleString("th-TH")}</span><strong>${money(item.lineTotal)}</strong></div>`).join("")}</div></article>`;
   }).join("");
 }
 
