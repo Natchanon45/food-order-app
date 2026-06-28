@@ -1,3 +1,5 @@
+import './retail-barcode-workflow.js?v=20260628-015';
+
 const styleId = 'retailSkeletonLoadingStyle';
 const skeletonFlag = 'data-retail-skeleton-ready';
 
