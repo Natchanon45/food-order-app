@@ -115,6 +115,20 @@ function waitForAuthUser(timeout = 3000) {
   });
 }
 
+function shouldFallbackToOffline(error) {
+  if (navigator.onLine === false) return true;
+  const text = String(error?.code || error?.message || error || "").toLowerCase();
+  return [
+    "network",
+    "offline",
+    "unavailable",
+    "timeout",
+    "deadline-exceeded",
+    "failed to fetch",
+    "firebaseerror"
+  ].some(part => text.includes(part));
+}
+
 function normalizeProduct(product = {}) {
   return {
     ...product,
@@ -292,6 +306,7 @@ function buildSale({ id, number, method, received, totals, createdAt, saleItems 
     tenantId: getTenantId(),
     channel: "retail-pos",
     status: "completed",
+    syncStatus: navigator.onLine === false ? "pending" : "synced",
     createdAt,
     items: saleItems.map(({ id, barcode, name, price, cost, qty, unit }) => ({
       id,
@@ -340,8 +355,8 @@ async function completeSaleFirestore({ method, received, totals, number, created
     }
 
     const sale = buildSale({ id: saleRef.id, number, method, received, totals, createdAt, saleItems, cashierId: user.uid });
-    committedSale = { ...sale, id: saleRef.id };
-    transaction.set(saleRef, { ...sale, id: saleRef.id, createdAtServer: serverTimestamp(), updatedAt: Date.now(), updatedAtServer: serverTimestamp() });
+    committedSale = { ...sale, id: saleRef.id, syncStatus: "synced" };
+    transaction.set(saleRef, { ...sale, id: saleRef.id, syncStatus: "synced", createdAtServer: serverTimestamp(), updatedAt: Date.now(), updatedAtServer: serverTimestamp() });
 
     rows.forEach(({ cartItem, productRef, product }) => {
       const before = Number(product.stock || 0);
@@ -382,6 +397,20 @@ async function completeSaleFirestore({ method, received, totals, number, created
   return committedSale;
 }
 
+async function saveSaleWithFallback({ method, received, totals, number, createdAt, saleItems }) {
+  const payload = { method, received, totals, number, createdAt, saleItems };
+  if (!isFirebaseConfigured || !db || navigator.onLine === false) {
+    return { sale: await completeSaleOffline(payload), offline: true };
+  }
+  try {
+    return { sale: await completeSaleFirestore(payload), offline: false };
+  } catch (error) {
+    if (!shouldFallbackToOffline(error)) throw error;
+    console.warn("[retail-pos] firebase unavailable, saved sale offline", error);
+    return { sale: await completeSaleOffline(payload), offline: true };
+  }
+}
+
 async function confirmPayment() {
   if (savingSale) return;
   const totals = getTotals();
@@ -401,13 +430,11 @@ async function confirmPayment() {
   const createdAt = new Date().toISOString();
   const saleItems = cart.map(item => ({ ...item }));
   try {
-    const sale = isFirebaseConfigured && db
-      ? await completeSaleFirestore({ method, received, totals, number, createdAt, saleItems })
-      : await completeSaleOffline({ method, received, totals, number, createdAt, saleItems });
+    const { sale, offline } = await saveSaleWithFallback({ method, received, totals, number, createdAt, saleItems });
     els.paymentDialog.close();
     renderProducts();
     resetSale();
-    showToast(`บันทึกการขาย ${sale.saleNumber || sale.id} สำเร็จ`);
+    showToast(offline ? `บันทึกการขาย ${sale.saleNumber || sale.id} แบบออฟไลน์แล้ว` : `บันทึกการขาย ${sale.saleNumber || sale.id} สำเร็จ`);
   } catch (error) {
     console.error("[retail-pos] sale failed", error);
     const message = String(error?.message || error);
