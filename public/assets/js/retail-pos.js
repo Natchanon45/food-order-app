@@ -1,4 +1,4 @@
-import { auth, db, isFirebaseConfigured, collection, doc, query, orderBy, getDocs, runTransaction, serverTimestamp } from './firebase-config.js';
+import { auth, db, isFirebaseConfigured, collection, doc, query, orderBy, getDocs, runTransaction, serverTimestamp } from './firebase-config.js?v=20260628-1';
 import { getTenantId, RetailCollections, listRecords } from './retail-db.js?v=20260627-3';
 
 const PRODUCT_KEY = "retail_pos_products_v1";
@@ -392,6 +392,7 @@ async function confirmPayment() {
     savingSale = false;
     els.confirmPaymentBtn.disabled = false;
     els.confirmPaymentBtn.textContent = "ยืนยันการขาย";
+    renderProducts();
     renderCart();
   }
 }
