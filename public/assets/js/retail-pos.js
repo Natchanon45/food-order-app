@@ -1,4 +1,4 @@
-import { auth, db, isFirebaseConfigured, collection, doc, query, orderBy, getDocs, runTransaction, serverTimestamp } from './firebase-config.js?v=20260628-1';
+import { auth, db, isFirebaseConfigured, collection, doc, query, orderBy, getDocs, runTransaction, serverTimestamp, onAuthStateChanged } from './firebase-config.js?v=20260628-1';
 import { getTenantId, RetailCollections, listRecords, watchRecords } from './retail-db.js?v=20260628-6';
 
 const PRODUCT_KEY = "retail_pos_products_v1";
@@ -95,6 +95,24 @@ function showToast(message) {
   els.toast.textContent = message;
   els.toast.classList.add("show");
   toastTimer = setTimeout(() => els.toast.classList.remove("show"), 1800);
+}
+
+function waitForAuthUser(timeout = 3000) {
+  if (!isFirebaseConfigured || !auth) return Promise.resolve(null);
+  if (auth.currentUser) return Promise.resolve(auth.currentUser);
+  return new Promise(resolve => {
+    let settled = false;
+    let unsubscribe = () => {};
+    const finish = user => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      unsubscribe();
+      resolve(user || auth.currentUser || null);
+    };
+    const timer = setTimeout(() => finish(auth.currentUser || null), timeout);
+    unsubscribe = onAuthStateChanged(auth, finish, () => finish(null));
+  });
 }
 
 function normalizeProduct(product = {}) {
@@ -266,7 +284,7 @@ async function completeSaleOffline({ method, received, totals, number, createdAt
   return sale;
 }
 
-function buildSale({ id, number, method, received, totals, createdAt, saleItems = cart }) {
+function buildSale({ id, number, method, received, totals, createdAt, saleItems = cart, cashierId = auth?.currentUser?.uid || "" }) {
   const shift = readJson(SHIFT_KEY, null);
   return {
     id,
@@ -295,7 +313,7 @@ function buildSale({ id, number, method, received, totals, createdAt, saleItems 
     paymentMethod: method,
     receivedAmount: received,
     changeAmount: Math.max(0, received - totals.total),
-    cashierId: auth?.currentUser?.uid || "",
+    cashierId,
     shiftId: shift?.id || "",
     cashierName: shift?.cashierName || "",
     terminalCode: shift?.terminalCode || ""
@@ -303,6 +321,9 @@ function buildSale({ id, number, method, received, totals, createdAt, saleItems 
 }
 
 async function completeSaleFirestore({ method, received, totals, number, createdAt, saleItems }) {
+  const user = await waitForAuthUser();
+  if (!user?.uid) throw new Error("AUTH_REQUIRED");
+
   const saleRef = doc(tenantCollection(RetailCollections.sales));
   let committedSale = null;
   const localMovements = [];
@@ -318,7 +339,7 @@ async function completeSaleFirestore({ method, received, totals, number, created
       rows.push({ cartItem, productRef, product });
     }
 
-    const sale = buildSale({ id: saleRef.id, number, method, received, totals, createdAt, saleItems });
+    const sale = buildSale({ id: saleRef.id, number, method, received, totals, createdAt, saleItems, cashierId: user.uid });
     committedSale = { ...sale, id: saleRef.id };
     transaction.set(saleRef, { ...sale, id: saleRef.id, createdAtServer: serverTimestamp(), updatedAt: Date.now(), updatedAtServer: serverTimestamp() });
 
@@ -343,7 +364,7 @@ async function completeSaleFirestore({ method, received, totals, number, created
         referenceType: "sale",
         referenceId: saleRef.id,
         referenceNumber: number,
-        createdBy: auth?.currentUser?.uid || "",
+        createdBy: user.uid,
         createdAt,
         createdAtServer: serverTimestamp()
       };
@@ -392,6 +413,7 @@ async function confirmPayment() {
     const message = String(error?.message || error);
     if (message.startsWith("INSUFFICIENT_STOCK:")) els.paymentError.textContent = `สต็อก ${message.split(":").slice(1).join(":")} ไม่พอ`;
     else if (message.startsWith("PRODUCT_NOT_FOUND:")) els.paymentError.textContent = `ไม่พบสินค้า ${message.split(":").slice(1).join(":")}`;
+    else if (message === "AUTH_REQUIRED") els.paymentError.textContent = "กรุณาเข้าสู่ระบบก่อนบันทึกการขาย";
     else els.paymentError.textContent = "บันทึกการขายไม่สำเร็จ กรุณาลองใหม่";
   } finally {
     savingSale = false;
