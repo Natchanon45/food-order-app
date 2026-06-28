@@ -1,3 +1,6 @@
+import { auth, db, isFirebaseConfigured, collection, doc, runTransaction, serverTimestamp } from './firebase-config.js?v=20260628-1';
+import { getTenantId, watchRecords, RetailCollections } from './retail-db.js?v=20260628-5';
+
 const SALES_KEY="retail_pos_sales_v1";
 const RETURN_KEY="retail_pos_returns_v1";
 const PRODUCT_KEY="retail_pos_products_v1";
@@ -15,7 +18,7 @@ const els={
   history:$("#returnHistory"),historyEmpty:$("#returnHistoryEmpty"),toast:$("#toast")
 };
 
-let sales=read(SALES_KEY,[]),returns=read(RETURN_KEY,[]),products=read(PRODUCT_KEY,[]),selectedSale=null,toastTimer;
+let sales=read(SALES_KEY,[]),returns=read(RETURN_KEY,[]),products=read(PRODUCT_KEY,[]),selectedSale=null,toastTimer,savingReturn=false;
 
 function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}}
 function write(key,value){localStorage.setItem(key,JSON.stringify(value))}
@@ -23,11 +26,14 @@ function money(value){return Number(value||0).toLocaleString("th-TH",{minimumFra
 function esc(value){return String(value??"").replace(/[&<>'"]/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"})[char])}
 function today(){const date=new Date();return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`}
 function uid(prefix){return globalThis.crypto?.randomUUID?`${prefix}-${crypto.randomUUID()}`:`${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`}
+function tenantCollection(name){return collection(db,"tenants",getTenantId(),name)}
+function tenantDoc(name,id){return doc(db,"tenants",getTenantId(),name,String(id))}
 function toast(message){clearTimeout(toastTimer);els.toast.textContent=message;els.toast.classList.add("show");toastTimer=setTimeout(()=>els.toast.classList.remove("show"),1800)}
 function loyaltySettings(){return{enabled:true,spendPerPoint:10,pointValue:1,...read(LOYALTY_SETTINGS_KEY,{})}}
 function saleReturns(saleId){return returns.filter(record=>record.saleId===saleId)}
 function returnedQty(saleId,item){return saleReturns(saleId).flatMap(record=>record.items||[]).filter(row=>String(row.productId)===String(item.id)).reduce((sum,row)=>sum+Number(row.qty||0),0)}
 function remainingQty(sale,item){return Math.max(0,Number(item.qty||0)-returnedQty(sale.id,item))}
+function saleNumberOf(sale){return String(sale?.saleNumber||sale?.number||sale?.id||"")}
 
 function ensureLoyaltyPreview(){
   if($("#returnLoyaltyPreview"))return;
@@ -124,20 +130,20 @@ function searchSales(){
   const query=els.search.value.trim().toLowerCase();
   const rows=sales.filter(sale=>{
     const itemText=(sale.items||[]).map(item=>`${item.name||""} ${item.id||""} ${item.barcode||""}`).join(" ").toLowerCase();
-    return(!query||String(sale.id||"").toLowerCase().includes(query)||itemText.includes(query))&&(sale.items||[]).some(item=>remainingQty(sale,item)>0);
+    return(!query||saleNumberOf(sale).toLowerCase().includes(query)||String(sale.id||"").toLowerCase().includes(query)||itemText.includes(query))&&(sale.items||[]).some(item=>remainingQty(sale,item)>0);
   }).slice(0,30);
   els.resultsEmpty.hidden=rows.length>0;
   els.resultsEmpty.textContent=query?"ไม่พบบิลที่ยังมีสินค้าคืนได้":"ค้นหาบิลที่ต้องการคืนสินค้า";
   els.results.innerHTML=rows.map(sale=>{
     const available=(sale.items||[]).reduce((sum,item)=>sum+remainingQty(sale,item),0);
-    return`<article class="return-sale-card"><div><strong>${esc(sale.id)}</strong><span>${new Date(sale.createdAt).toLocaleString("th-TH")} • คืนได้ ${available.toLocaleString("th-TH")} ชิ้น</span></div><div class="return-sale-total"><strong>${money(sale.total)} บาท</strong><span>${(sale.items||[]).length} รายการ</span></div><button type="button" data-sale-id="${esc(sale.id)}">เลือกบิล</button></article>`;
+    return`<article class="return-sale-card"><div><strong>${esc(saleNumberOf(sale))}</strong><span>${new Date(sale.createdAt).toLocaleString("th-TH")} • คืนได้ ${available.toLocaleString("th-TH")} ชิ้น</span></div><div class="return-sale-total"><strong>${money(sale.total)} บาท</strong><span>${(sale.items||[]).length} รายการ</span></div><button type="button" data-sale-id="${esc(sale.id)}">เลือกบิล</button></article>`;
   }).join("");
 }
 
 function openSale(id){
   selectedSale=sales.find(sale=>sale.id===id)||null;
   if(!selectedSale)return;
-  els.saleId.textContent=selectedSale.id;
+  els.saleId.textContent=saleNumberOf(selectedSale);
   const member=selectedSale.customerName?` • สมาชิก ${selectedSale.customerCode||""} ${selectedSale.customerName}`:"";
   els.saleMeta.textContent=`${new Date(selectedSale.createdAt).toLocaleString("th-TH")} • ${selectedSale.payment?.method==="cash"?"เงินสด":"PromptPay / โอนเงิน"}${member}`;
   els.date.value=today();els.reason.value="";els.note.value="";els.error.textContent="";
@@ -172,7 +178,8 @@ function collectItems(){
   }).filter(item=>item.qty>0);
 }
 
-function confirmReturn(){
+async function confirmReturn(){
+  if(savingReturn)return;
   els.error.textContent="";
   if(!selectedSale){els.error.textContent="กรุณาเลือกบิล";return}
   const items=collectItems();
@@ -186,35 +193,101 @@ function confirmReturn(){
     ?`\nปรับแต้ม: ${planned.pointsEarnedToDeduct>0?`หัก ${planned.pointsEarnedToDeduct} แต้ม`:""}${planned.pointsEarnedToDeduct>0&&planned.pointsUsedToRestore>0?" / ":""}${planned.pointsUsedToRestore>0?`คืน ${planned.pointsUsedToRestore} แต้ม`:""}`:"";
   if(!confirm(`ยืนยันคืนสินค้า ${items.reduce((sum,item)=>sum+item.qty,0).toLocaleString("th-TH")} ชิ้น และคืนเงิน ${money(refundTotal)} บาทหรือไม่?${pointMessage}`))return;
 
-  const id=`RETURN-${Date.now()}`,createdAt=new Date().toISOString(),movements=read(MOVEMENT_KEY,[]);
-  items.forEach(item=>{
-    let product=products.find(entry=>String(entry.id)===String(item.productId));
-    if(!product){product={id:item.productId,barcode:item.barcode,name:item.productName,price:item.price,cost:item.cost,stock:0,unit:item.unit||"ชิ้น",minStock:0,showOnPos:true};products.push(product)}
-    const before=Number(product.stock||0),after=before+item.qty;product.stock=after;
-    movements.unshift({id:uid("movement"),productId:product.id,productName:product.name,before,after,note:`คืนสินค้า ${id} จาก ${selectedSale.id}`,createdAt});
-  });
+  const id=`RETURN-${crypto.randomUUID?.()||Date.now()}`,createdAt=new Date().toISOString();
+  const baseRecord={
+    id,saleId:selectedSale.id,saleNumber:selectedSale.saleNumber||selectedSale.number||selectedSale.id,
+    returnDate:els.date.value,createdAt,refundMethod:els.method.value,reason:els.reason.value.trim(),
+    note:els.note.value.trim(),refundTotal,items,tenantId:getTenantId(),createdBy:auth?.currentUser?.uid||""
+  };
 
-  const loyaltyAdjustment=applyLoyaltyAdjustment(selectedSale,id,refundTotal,createdAt);
-  const record={id,saleId:selectedSale.id,returnDate:els.date.value,createdAt,refundMethod:els.method.value,reason:els.reason.value.trim(),note:els.note.value.trim(),refundTotal,items,loyaltyAdjustment};
-  returns.unshift(record);
+  savingReturn=true;
+  els.confirm.disabled=true;
+  els.confirm.textContent="กำลังบันทึกการคืน...";
+  try{
+    const movementRows=[];
+    const nextProducts=products.map(product=>({...product}));
+    if(isFirebaseConfigured&&db){
+      const saleRef=tenantDoc(RetailCollections.sales,selectedSale._documentId||selectedSale.id);
+      const returnRef=tenantDoc(RetailCollections.returns,id);
+      await runTransaction(db,async transaction=>{
+        const saleSnapshot=await transaction.get(saleRef);
+        if(!saleSnapshot.exists())throw new Error("SALE_NOT_FOUND");
+        const saleData=saleSnapshot.data();
+        const previousReturns=Array.isArray(saleData.returns)?saleData.returns:[];
+        const productRows=[];
+        for(const item of items){
+          const cached=products.find(product=>String(product.id)===String(item.productId));
+          const productRef=tenantDoc(RetailCollections.products,cached?._documentId||item.productId);
+          const productSnapshot=await transaction.get(productRef);
+          if(!productSnapshot.exists())throw new Error(`PRODUCT_NOT_FOUND:${item.productName}`);
+          const soldItem=(saleData.items||[]).find(row=>String(row.id||row.productId)===String(item.productId));
+          const alreadyReturned=previousReturns.flatMap(row=>row.items||[]).filter(row=>String(row.productId)===String(item.productId)).reduce((sum,row)=>sum+Number(row.qty||0),0);
+          if(!soldItem||Number(item.qty||0)>Math.max(0,Number(soldItem.qty||0)-alreadyReturned))throw new Error(`RETURN_QTY_EXCEEDED:${item.productName}`);
+          productRows.push({item,cached,productRef,productData:productSnapshot.data()});
+        }
 
-  const saleIndex=sales.findIndex(sale=>sale.id===selectedSale.id);
-  if(saleIndex>=0){
-    const saleReturnList=Array.isArray(sales[saleIndex].returns)?sales[saleIndex].returns:[];
-    const currentLoyalty=sales[saleIndex].loyalty||null;
-    const updatedLoyalty=currentLoyalty&&loyaltyAdjustment?{
-      ...currentLoyalty,
-      pointsEarnedReversed:Number(currentLoyalty.pointsEarnedReversed||0)+Number(loyaltyAdjustment.pointsEarnedDeducted||0),
-      pointsUsedRestored:Number(currentLoyalty.pointsUsedRestored||0)+Number(loyaltyAdjustment.pointsUsedRestored||0),
-      pointsAfterReturns:loyaltyAdjustment.pointsAfter
-    }:currentLoyalty;
-    sales[saleIndex]={...sales[saleIndex],loyalty:updatedLoyalty,returns:[...saleReturnList,{id,refundTotal,createdAt,loyaltyAdjustment}],refundTotal:Number(sales[saleIndex].refundTotal||0)+refundTotal};
+        const returnSummary={id,refundTotal,createdAt,items:items.map(item=>({productId:item.productId,qty:item.qty}))};
+        transaction.set(returnRef,{...baseRecord,createdAtServer:serverTimestamp(),updatedAt:Date.now(),updatedAtServer:serverTimestamp()});
+        transaction.update(saleRef,{
+          returns:[...previousReturns,returnSummary],
+          refundTotal:Number(saleData.refundTotal||0)+refundTotal,
+          updatedAt:Date.now(),updatedAtServer:serverTimestamp()
+        });
+        productRows.forEach(({item,cached,productRef,productData})=>{
+          const before=Number(productData.stock||0),after=before+Number(item.qty||0);
+          transaction.update(productRef,{stock:after,tenantId:getTenantId(),updatedAt:Date.now(),updatedAtServer:serverTimestamp()});
+          const movementRef=doc(tenantCollection(RetailCollections.stockMovements));
+          const movement={
+            id:movementRef.id,tenantId:getTenantId(),productId:item.productId,productName:item.productName,
+            type:"return",direction:"in",qty:Number(item.qty||0),before,after,stockBefore:before,stockAfter:after,
+            note:`คืนสินค้า ${id} จาก ${baseRecord.saleNumber}`,referenceType:"return",referenceId:id,
+            referenceNumber:id,createdBy:auth?.currentUser?.uid||"",createdAt,createdAtServer:serverTimestamp()
+          };
+          transaction.set(movementRef,movement);
+          movementRows.push({...movement,createdAtServer:null});
+          const local=nextProducts.find(product=>String(product.id)===String(item.productId));
+          if(local)local.stock=after;
+          else nextProducts.push({id:item.productId,barcode:item.barcode,name:item.productName,price:item.price,cost:item.cost,stock:after,unit:item.unit||"ชิ้น",minStock:0,showOnPos:true,_documentId:cached?._documentId});
+        });
+      });
+    }else{
+      items.forEach(item=>{
+        let product=nextProducts.find(entry=>String(entry.id)===String(item.productId));
+        if(!product){product={id:item.productId,barcode:item.barcode,name:item.productName,price:item.price,cost:item.cost,stock:0,unit:item.unit||"ชิ้น",minStock:0,showOnPos:true};nextProducts.push(product)}
+        const before=Number(product.stock||0),after=before+item.qty;product.stock=after;
+        movementRows.push({id:uid("movement"),productId:product.id,productName:product.name,type:"return",direction:"in",qty:item.qty,before,after,note:`คืนสินค้า ${id} จาก ${baseRecord.saleNumber}`,referenceType:"return",referenceId:id,referenceNumber:id,createdAt});
+      });
+    }
+
+    products=nextProducts;
+    const loyaltyAdjustment=applyLoyaltyAdjustment(selectedSale,id,refundTotal,createdAt);
+    const record={...baseRecord,loyaltyAdjustment};
+    returns=[record,...returns.filter(row=>row.id!==id)];
+    const saleIndex=sales.findIndex(sale=>sale.id===selectedSale.id);
+    if(saleIndex>=0){
+      const saleReturnList=Array.isArray(sales[saleIndex].returns)?sales[saleIndex].returns:[];
+      const returnAlreadySynced=saleReturnList.some(row=>row.id===id);
+      const currentLoyalty=sales[saleIndex].loyalty||null;
+      const updatedLoyalty=currentLoyalty&&loyaltyAdjustment?{...currentLoyalty,pointsEarnedReversed:Number(currentLoyalty.pointsEarnedReversed||0)+Number(loyaltyAdjustment.pointsEarnedDeducted||0),pointsUsedRestored:Number(currentLoyalty.pointsUsedRestored||0)+Number(loyaltyAdjustment.pointsUsedRestored||0),pointsAfterReturns:loyaltyAdjustment.pointsAfter}:currentLoyalty;
+      sales[saleIndex]={...sales[saleIndex],loyalty:updatedLoyalty,returns:[...saleReturnList.filter(row=>row.id!==id),{id,refundTotal,createdAt,items:items.map(item=>({productId:item.productId,qty:item.qty})),loyaltyAdjustment}],refundTotal:Number(sales[saleIndex].refundTotal||0)+(returnAlreadySynced?0:refundTotal)};
+    }
+    const movements=[...movementRows,...read(MOVEMENT_KEY,[]).filter(row=>row.referenceId!==id)];
+    write(RETURN_KEY,returns.slice(0,500));write(SALES_KEY,sales);write(PRODUCT_KEY,products);write(MOVEMENT_KEY,movements.slice(0,500));
+    renderHistory();searchSales();clearSelected();
+    const pointResult=loyaltyAdjustment?` • แต้มคงเหลือ ${loyaltyAdjustment.pointsAfter}`:"";
+    toast(`บันทึกการคืนสินค้า ${id} แล้ว${pointResult}`);
+  }catch(error){
+    console.error("[retail-returns] return failed",error);
+    const message=String(error?.message||error);
+    if(message.startsWith("RETURN_QTY_EXCEEDED:"))els.error.textContent=`จำนวนคืนของ ${message.split(":").slice(1).join(":")} มากกว่าจำนวนที่คืนได้`;
+    else if(message.startsWith("PRODUCT_NOT_FOUND:"))els.error.textContent=`ไม่พบสินค้า ${message.split(":").slice(1).join(":")}`;
+    else if(message==="SALE_NOT_FOUND")els.error.textContent="ไม่พบบิลขายใน Firebase";
+    else els.error.textContent="บันทึกการคืนสินค้าไม่สำเร็จ กรุณาลองใหม่";
+  }finally{
+    savingReturn=false;
+    els.confirm.disabled=false;
+    els.confirm.textContent="ยืนยันคืนสินค้าและคืนเงิน";
   }
-
-  write(RETURN_KEY,returns.slice(0,500));write(SALES_KEY,sales);write(PRODUCT_KEY,products);write(MOVEMENT_KEY,movements.slice(0,500));
-  renderHistory();searchSales();clearSelected();
-  const pointResult=loyaltyAdjustment?` • แต้มคงเหลือ ${loyaltyAdjustment.pointsAfter}`:"";
-  toast(`บันทึกการคืนสินค้า ${id} แล้ว${pointResult}`);
 }
 
 function renderHistory(){
@@ -239,3 +312,8 @@ els.confirm.addEventListener("click",confirmReturn);
 els.historySearch.addEventListener("input",renderHistory);
 window.addEventListener("storage",()=>{sales=read(SALES_KEY,[]);returns=read(RETURN_KEY,[]);products=read(PRODUCT_KEY,[]);searchSales();renderHistory()});
 renderHistory();
+
+const stopSalesWatch=watchRecords(RetailCollections.sales,rows=>{write(SALES_KEY,rows);document.documentElement.dataset.returnsSalesSource="firestore";window.dispatchEvent(new Event("storage"))},{sortBy:"createdAt",direction:"desc"});
+const stopReturnsWatch=watchRecords(RetailCollections.returns,rows=>{write(RETURN_KEY,rows);document.documentElement.dataset.returnsSource="firestore";window.dispatchEvent(new Event("storage"))},{sortBy:"createdAt",direction:"desc"});
+const stopProductsWatch=watchRecords(RetailCollections.products,rows=>{write(PRODUCT_KEY,rows);document.documentElement.dataset.returnsProductsSource="firestore";window.dispatchEvent(new Event("storage"))},{sortBy:"updatedAt",direction:"desc"});
+window.addEventListener("beforeunload",()=>{stopSalesWatch();stopReturnsWatch();stopProductsWatch()},{once:true});
