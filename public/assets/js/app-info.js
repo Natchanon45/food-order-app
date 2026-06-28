@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order App',
   product: 'Retail POS',
-  version: '0.9.0',
-  build: '2026.06.28.015',
+  version: '0.9.1',
+  build: '2026.06.28.016',
   branch: 'feature/retail-pos',
-  commit: '2989d52',
+  commit: '0eae79e',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P6-B001 Professional Barcode Workflow',
-  updatedAt: '2026-06-28T20:32:00+07:00',
+  milestone: 'P6-B002 Offline Cashier/POS Scope',
+  updatedAt: '2026-06-28T22:15:00+07:00',
   whatsNew: [
-    'เพิ่มระบบ focus กลับช่อง Barcode อัตโนมัติหลังเพิ่มสินค้า',
-    'เพิ่ม scan feedback แบบ flash เขียวเมื่อสินค้าเข้าบิล',
-    'กัน focus หลุดระหว่างยิงบาร์โค้ดต่อเนื่อง',
-    'หลังปิด dialog หรือกลับหน้า POS จะพร้อมยิงบาร์โค้ดต่อทันที'
+    'เพิ่ม Offline Data Layer สำหรับฝั่งแคชเชียร์ / POS',
+    'เพิ่ม IndexedDB store และ sync queue สำหรับข้อมูลขายหน้าร้าน',
+    'คงหน้าสั่งอาหารโต๊ะให้ Online เท่านั้นเพื่อเห็นออเดอร์ร่วมและออเดอร์ก่อนหน้าแบบสด',
+    'คง Delivery ให้ Online เท่านั้นตาม workflow เดิม'
   ]
 };
 
