@@ -1,3 +1,4 @@
+import './retail-mobile-cart-bar.js?v=20260628-009';
 import { APP_INFO, appVersionText } from './app-info.js?v=20260628-003';
 
 function ensureStyles() {
