@@ -3,33 +3,52 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Retail Catalog Import</title>
+  <title>นำเข้าสินค้าพื้นฐาน</title>
   <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260627-2">
-  <link rel="stylesheet" href="/assets/css/retail-products.css?v=20260627-1">
+  <link rel="stylesheet" href="/assets/css/retail-catalog-import.css?v=20260628-1">
 </head>
 <body>
   <header class="pos-header">
     <div class="app-title"><span class="app-badge">FOD</span><div><strong>นำเข้าสินค้าพื้นฐาน</strong><small>Retail Master Catalog Thailand</small></div></div>
     <div class="header-actions"><a class="btn btn-secondary" href="/pos/products/">กลับหน้าสินค้า</a></div>
   </header>
-  <main class="management-container">
-    <section class="stats-grid">
-      <article class="stat-card"><span>สินค้าใน Catalog</span><strong id="totalProducts">0</strong></article>
-      <article class="stat-card"><span>สินค้าในร้านนี้</span><strong id="currentProducts">0</strong></article>
-      <article class="stat-card warning"><span>Barcode</span><strong>รอตรวจสอบ</strong></article>
-      <article class="stat-card"><span>เวอร์ชัน</span><strong>RMCT A</strong></article>
-    </section>
-    <section class="panel management-panel">
-      <div class="section-heading product-list-heading">
-        <div><h2>Retail Master Catalog Thailand</h2><p>ชุดสินค้าพื้นฐานสำหรับร้านของชำ/มินิมาร์ทไทย</p></div>
-        <button id="importButton" class="btn btn-pay" type="button">นำเข้าสินค้าพื้นฐาน</button>
+
+  <main class="catalog-shell">
+    <section class="catalog-hero">
+      <div>
+        <h1>เริ่มร้านได้เร็วขึ้นด้วยชุดสินค้าพื้นฐาน</h1>
+        <p>นำเข้าสินค้ายอดนิยมสำหรับร้านของชำและมินิมาร์ทไทย พร้อม SKU ระบบ หมวดสินค้า แบรนด์ ราคาแนะนำ และคำค้นหา</p>
       </div>
-      <label style="display:flex;gap:8px;align-items:center;margin-bottom:12px"><input type="checkbox" id="skipExisting" checked>ข้ามสินค้าที่มี SKU เดิมอยู่แล้ว</label>
-      <div class="empty-state" style="text-align:left">ไม่ใส่บาร์โค้ดและรูปสินค้า หากยังไม่ได้ตรวจสอบจากสินค้าจริงหรือแหล่งที่อนุญาต</div>
-      <p id="importResult" class="error-text"></p>
-      <div class="table-wrap"><table class="product-table"><thead><tr><th>SKU</th><th>สินค้า</th><th>หมวด</th><th>แบรนด์</th><th class="number">ราคาแนะนำ</th><th>Barcode</th></tr></thead><tbody id="previewRows"></tbody></table></div>
+      <div class="catalog-actions">
+        <button id="importButton" class="btn primary" type="button">นำเข้าสินค้าที่ยังไม่มี</button>
+        <a class="btn secondary" href="/pos/products/">ดูสินค้าร้านนี้</a>
+      </div>
+    </section>
+
+    <div class="catalog-note"><strong>หมายเหตุ</strong><span>ระบบยังไม่ใส่บาร์โค้ดและรูปสินค้า หากยังไม่ได้ตรวจสอบจากสินค้าจริงหรือแหล่งที่ได้รับอนุญาต</span></div>
+
+    <section class="catalog-stats">
+      <article class="catalog-stat"><span>สินค้าใน Catalog</span><strong id="totalProducts">0</strong></article>
+      <article class="catalog-stat"><span>สินค้าในร้านนี้</span><strong id="currentProducts">0</strong></article>
+      <article class="catalog-stat"><span>รอ Barcode จริง</span><strong id="barcodePending">0</strong></article>
+      <article class="catalog-stat"><span>เวอร์ชัน</span><strong>RMCT A</strong></article>
+    </section>
+
+    <section class="catalog-panel">
+      <div class="panel-head">
+        <div><h2>หมวดสินค้าที่จะนำเข้า</h2><p class="preview-muted">เลือกนำเข้าทั้งชุดก่อน แล้วปรับราคา/บาร์โค้ดภายหลังได้จากหน้าสินค้า</p></div>
+        <div class="import-options"><label><input type="checkbox" id="skipExisting" checked> ข้าม SKU ที่มีอยู่แล้ว</label></div>
+      </div>
+      <div id="categoryGrid" class="catalog-grid"></div>
+      <div id="importResult" class="result-box"></div>
+    </section>
+
+    <section class="catalog-panel">
+      <div class="panel-head"><div><h2>ตัวอย่างสินค้า</h2><p class="preview-muted">แสดงเพียงบางรายการเพื่อให้หน้าจออ่านง่าย</p></div><span class="pill">Preview</span></div>
+      <div class="table-wrap"><table class="catalog-table"><thead><tr><th>SKU</th><th>สินค้า</th><th>หมวด</th><th>แบรนด์</th><th class="number">ราคาแนะนำ</th><th>Barcode</th></tr></thead><tbody id="previewRows"></tbody></table></div>
     </section>
   </main>
-  <script type="module" src="/assets/js/retail-catalog-import.js?v=20260628-1"></script>
+
+  <script type="module" src="/assets/js/retail-catalog-import.js?v=20260628-2"></script>
 </body>
 </html>
