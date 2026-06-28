@@ -1,7 +1,13 @@
-const SOURCE_NOTE = 'ราคาเป็นราคาแนะนำ ต้องยืนยันกับร้านหรือผู้ผลิตก่อนใช้งานจริง บาร์โค้ดต้องเป็นเลขบนสินค้าจริงเท่านั้น รูปสินค้ายังไม่ถูกนำเข้าอัตโนมัติ';
+const SOURCE_NOTE = 'ราคาเป็นราคาแนะนำ ต้องยืนยันกับร้านหรือผู้ผลิตก่อนใช้งานจริง บาร์โค้ดต้องเป็นเลขบนสินค้าจริงเท่านั้น รูปสินค้าสามารถใช้ได้เมื่อเป็นรูปแพ็กสินค้าจริงและไม่มีลายน้ำร้านค้าปลีก';
 
 const VERIFIED_BARCODES = new Map([
   ['Chang|น้ำดื่ม 600 มล.', '8851993338012']
+]);
+
+const VERIFIED_IMAGES = new Map([
+  // รูปสินค้าจริงแบบ packshot ไม่มีลายน้ำร้านค้าปลีกเท่านั้น
+  // ตัวอย่างรูปแบบข้อมูล:
+  // ['Chang|น้ำดื่ม 600 มล.', { imageUrl: 'https://...', thumbnailUrl: 'https://...', imageSource: 'brand_or_distributor' }]
 ]);
 
 const GROUPS = [
@@ -20,7 +26,9 @@ const GROUPS = [
 ];
 
 function uniq(values) { return [...new Set(values.filter(Boolean))]; }
-function verifiedBarcode(brand, variant) { return VERIFIED_BARCODES.get(`${brand}|${variant}`) || ''; }
+function productKey(brand, variant) { return `${brand}|${variant}`; }
+function verifiedBarcode(brand, variant) { return VERIFIED_BARCODES.get(productKey(brand, variant)) || ''; }
+function verifiedImage(brand, variant) { return VERIFIED_IMAGES.get(productKey(brand, variant)) || {}; }
 
 export function buildRetailMasterCatalogThailand() {
   const products = [];
@@ -35,6 +43,7 @@ export function buildRetailMasterCatalogThailand() {
       const masterProductId = `RMCT${String(sku).padStart(6, '0')}`;
       const name = `${brandTh} ${variant}`;
       const barcode = verifiedBarcode(brand, variant);
+      const image = verifiedImage(brand, variant);
       products.push({
         id, sku: id, masterProductId, barcode,
         barcodeStatus: barcode ? 'verified_real_product' : 'missing_real_barcode', barcodeType: barcode ? 'ean13_real' : '',
@@ -42,7 +51,10 @@ export function buildRetailMasterCatalogThailand() {
         brand, brandTh, categoryId: group.categoryId, category: group.category, unit: group.unit,
         cost: Number((price * 0.72).toFixed(2)), price, suggestedPrice: price,
         priceType: 'suggested_market_price_thb', vatType: 'VAT', stock: 0,
-        minStock: price < 30 ? 10 : 5, imageUrl: '', thumbnailUrl: '',
+        minStock: price < 30 ? 10 : 5,
+        imageUrl: image.imageUrl || '', thumbnailUrl: image.thumbnailUrl || image.imageUrl || '',
+        imageSource: image.imageSource || '', imageStatus: image.imageUrl ? 'verified_product_packshot' : 'missing_product_image',
+        imagePolicy: 'packshot_only_no_retail_watermark',
         keywords: uniq([brandTh, brand, group.category, variant, name, barcode]),
         status: 'active', showOnPos: true,
         sourceStatus: barcode ? 'verified_barcode_catalog' : 'catalog_needs_real_barcode', sourceNote: SOURCE_NOTE
@@ -52,7 +64,7 @@ export function buildRetailMasterCatalogThailand() {
   }
   return {
     version: 'RMCT-TH-1.0-A', country: 'TH', currency: 'THB', productCount: products.length,
-    dataPolicy: 'บาร์โค้ดต้องเป็นเลขจริงบนสินค้าเท่านั้น รายการที่ยังไม่ได้ตรวจสอบจะเว้น barcode ว่างไว้ รูปสินค้ายังไม่ถูกนำเข้าอัตโนมัติ',
+    dataPolicy: 'บาร์โค้ดต้องเป็นเลขจริงบนสินค้าเท่านั้น รูปสินค้าใช้ได้เมื่อเป็น packshot ไม่มีลายน้ำร้านค้าปลีก และสามารถ cache เข้า Storage ภายหลังได้',
     products
   };
 }
