@@ -145,28 +145,30 @@ dialog .dialog-actions { position: sticky; bottom: 0; z-index: 2; margin: 16px -
 }
 @media (max-width: 600px) {
   :root { --control-height: 44px; }
-  html { scroll-padding-top: 74px; }
-  body { background: #edf4ef; }
-  .pos-header { min-height: 64px; padding: 10px 12px; align-items: center; flex-direction: row; gap: 8px; }
-  .pos-header > div:first-child { flex: 1 1 auto; }
+  html { width: 100%; max-width: 100%; overflow-x: hidden; scroll-padding-top: 74px; }
+  body { width: 100%; max-width: 100%; overflow-x: hidden; background: #edf4ef; }
+  .pos-header { width: 100%; max-width: 100%; min-height: 64px; padding: 10px 12px; align-items: center; flex-direction: row; gap: 8px; overflow: hidden; }
+  .pos-header > div:first-child { flex: 1 1 auto; min-width: 0; }
   .pos-header strong { font-size: 1rem; line-height: 1.1; }
   .pos-header small { margin-top: 2px; font-size: .68rem; line-height: 1.15; }
-  .header-actions { width: auto; flex: 0 0 auto; justify-content: flex-end; align-self: center; }
+  .header-actions { width: auto; flex: 0 0 auto; justify-content: flex-end; align-self: center; min-width: 0; }
   .header-actions .btn { flex: 0 0 auto; min-height: 36px; padding: 8px 10px; font-size: .84rem; white-space: nowrap; border-radius: 11px; }
-  .app-title { gap: 8px; }
+  .app-title { gap: 8px; min-width: 0; overflow: hidden; }
+  .app-title > div { min-width: 0; overflow: hidden; }
   .app-badge { width: 32px; height: 28px; border-radius: 9px; font-size: .68rem; }
-  .pos-layout { padding: 8px; gap: 8px; min-height: auto; }
-  .panel { border-radius: 16px; box-shadow: 0 5px 16px rgba(16,35,23,.04); }
+  .pos-layout { width: 100%; max-width: 100%; overflow-x: hidden; padding: 8px; gap: 8px; min-height: auto; }
+  .panel { width: 100%; max-width: 100%; min-width: 0; overflow: hidden; border-radius: 16px; box-shadow: 0 5px 16px rgba(16,35,23,.04); }
   .product-panel,.cart-panel { padding: 10px; }
   .cart-panel { min-height: 0; }
-  .section-heading { align-items: flex-start; flex-direction: row; gap: 10px; margin-bottom: 10px; }
+  .section-heading { min-width: 0; align-items: flex-start; flex-direction: row; gap: 10px; margin-bottom: 10px; }
+  .section-heading > div { min-width: 0; }
   .section-heading h2 { font-size: 1.18rem; }
   .section-heading p { font-size: .76rem; }
   .section-heading .btn { min-height: 38px; padding: 8px 10px; font-size: .85rem; }
-  .search-row { grid-template-columns: 1fr; gap: 8px; margin-bottom: 10px; }
-  input, select, textarea { border-radius: 11px; padding: 10px 11px; font-size: .9rem; }
-  .product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
-  .product-card { min-height: 86px; border-radius: 11px; }
+  .search-row { width: 100%; min-width: 0; grid-template-columns: minmax(0, 1fr); gap: 8px; margin-bottom: 10px; }
+  input, select, textarea { min-width: 0; border-radius: 11px; padding: 10px 11px; font-size: .9rem; }
+  .product-grid { width: 100%; min-width: 0; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; overflow: hidden; }
+  .product-card { min-width: 0; min-height: 86px; border-radius: 11px; }
   .cart-title { padding-bottom: 8px; }
   .cart-title h1 { font-size: 1rem; }
   .cart-list { max-height: 42vh; }
