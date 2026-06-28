@@ -1,5 +1,5 @@
 import { RetailCollections, saveRecordsStrict, listRecords } from './retail-db.js?v=20260628-7';
-import { buildRetailMasterCatalogThailand, validateRetailMasterCatalogThailand } from './rmct.js?v=20260628-4';
+import { buildRetailMasterCatalogThailand, validateRetailMasterCatalogThailand } from './rmct.js?v=20260628-7';
 
 const categorySvg = [
   '<svg viewBox="0 0 24 24"><path d="M12 3c3 4 5 7 5 10a5 5 0 0 1-10 0c0-3 2-6 5-10z"/></svg>',
@@ -91,7 +91,12 @@ function isExisting(item, keys = existingKeys()) {
 }
 
 function selectedProducts({ publishedOnly = false } = {}) {
-  return catalog.products.filter(item => selectedCategoryIds.has(item.categoryId) && (!publishedOnly || item.catalogStatus === 'published'));
+  return catalog.products
+    .filter(item => selectedCategoryIds.has(item.categoryId) && (!publishedOnly || item.catalogStatus === 'published'))
+    .sort((left, right) => {
+      const statusOrder = Number(right.catalogStatus === 'published') - Number(left.catalogStatus === 'published');
+      return statusOrder || String(left.categoryId).localeCompare(String(right.categoryId)) || String(left.name).localeCompare(String(right.name), 'th');
+    });
 }
 
 function importRows() {
