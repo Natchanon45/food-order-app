@@ -2,18 +2,18 @@ export const APP_INFO = {
   name: 'Food Order App',
   product: 'Retail POS',
   version: '0.9.0',
-  build: '2026.06.28.012',
+  build: '2026.06.28.013',
   branch: 'feature/retail-pos',
-  commit: '62ad377',
+  commit: '348f70c',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P4-B003R Developer Dot Polish',
-  updatedAt: '2026-06-28T19:34:00+07:00',
+  milestone: 'P4-B003S Developer Dot Center Fix',
+  updatedAt: '2026-06-28T20:03:00+07:00',
   whatsNew: [
-    'แก้ Developer Dot ให้เป็นจุดกลมล้วน ไม่มีคำว่า DEV โผล่',
-    'ขยับตำแหน่ง Dot ให้อยู่ใน Safe Area บนมือถือ',
-    'ลดขนาดและความทึบของ Dot เพื่อไม่รบกวนยอดรวม/ปุ่มขาย',
+    'ล็อก padding ของ Developer Dot เป็น 0 ด้วย !important',
+    'ล็อกขนาด Dot และจุดขาวด้านในให้กึ่งกลางทั้ง Desktop/Mobile',
+    'กัน CSS badge เก่าทับตำแหน่งและ padding',
     'ยังคงกด Dot เพื่อเปิด Developer Panel ได้เหมือนเดิม'
   ]
 };
