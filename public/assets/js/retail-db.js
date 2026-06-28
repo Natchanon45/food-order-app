@@ -90,6 +90,26 @@ export async function saveRecords(collectionName,records){
   return saved;
 }
 
+export async function saveRecordStrict(collectionName,row){
+  const id=normalizeId(row);
+  const data=withMeta({...row,id});
+  if(isFirebaseConfigured&&db)await setDoc(ref(collectionName,id),data,{merge:true});
+  const rows=readLocal(collectionName).filter(item=>String(item.id)!==String(id));
+  rows.push({...data,updatedAtServer:null});
+  writeLocal(collectionName,rows);
+  return {...data,updatedAtServer:null};
+}
+
+export async function saveRecordsStrict(collectionName,records,{onProgress}={}){
+  const rows=records||[];
+  const saved=[];
+  for(let index=0;index<rows.length;index+=1){
+    saved.push(await saveRecordStrict(collectionName,rows[index]));
+    if(typeof onProgress==='function')onProgress({completed:index+1,total:rows.length});
+  }
+  return saved;
+}
+
 export async function moveRecord(collectionName,previousId,row){
   const id=normalizeId(row);
   const oldId=String(previousId||'');

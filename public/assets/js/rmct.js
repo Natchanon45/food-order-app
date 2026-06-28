@@ -1,7 +1,11 @@
 const SOURCE_NOTE = 'ราคาเป็นราคาแนะนำ ต้องยืนยันกับร้านหรือผู้ผลิตก่อนใช้งานจริง บาร์โค้ดต้องเป็นเลขบนสินค้าจริงเท่านั้น รูปสินค้าสามารถใช้ได้เมื่อเป็นรูปแพ็กสินค้าจริงและไม่มีลายน้ำร้านค้าปลีก';
 
-const VERIFIED_BARCODES = new Map([
-  ['Chang|น้ำดื่ม 600 มล.', '8851993338012']
+const VERIFIED_PRODUCTS = new Map([
+  ['Chang|น้ำดื่ม 600 มล.', {
+    barcode: '8851993338012',
+    verificationSource: 'existing_verified_catalog',
+    verifiedAt: '2026-06-28'
+  }]
 ]);
 
 const VERIFIED_IMAGES = new Map([
@@ -27,25 +31,37 @@ const GROUPS = [
 
 function uniq(values) { return [...new Set(values.filter(Boolean))]; }
 function productKey(brand, variant) { return `${brand}|${variant}`; }
-function verifiedBarcode(brand, variant) { return VERIFIED_BARCODES.get(productKey(brand, variant)) || ''; }
+function verifiedProduct(brand, variant) { return VERIFIED_PRODUCTS.get(productKey(brand, variant)) || {}; }
 function verifiedImage(brand, variant) { return VERIFIED_IMAGES.get(productKey(brand, variant)) || {}; }
+
+function isValidEan13(value) {
+  if (!/^\d{13}$/.test(String(value || ''))) return false;
+  const digits = [...String(value)].map(Number);
+  const sum = digits.slice(0, 12).reduce((total, digit, index) => total + digit * (index % 2 ? 3 : 1), 0);
+  return (10 - (sum % 10)) % 10 === digits[12];
+}
 
 export function buildRetailMasterCatalogThailand() {
   const products = [];
+  const seenProducts = new Set();
   let sku = 1;
   for (const group of GROUPS) {
     for (let i = 0; i < group.count; i += 1) {
       const [brand, brandTh] = group.brands[i % group.brands.length];
       const variantIndex = Math.floor(i / group.brands.length) % group.variants.length;
       const variant = group.variants[variantIndex];
+      const logicalKey = productKey(brand, variant);
+      if (seenProducts.has(logicalKey)) continue;
+      seenProducts.add(logicalKey);
       const price = Number(group.prices[variantIndex] + (i % 3));
-      const id = `P${String(sku).padStart(9, '0')}`;
       const masterProductId = `RMCT${String(sku).padStart(6, '0')}`;
       const name = `${brandTh} ${variant}`;
-      const barcode = verifiedBarcode(brand, variant);
+      const verification = verifiedProduct(brand, variant);
+      const barcode = verification.barcode || '';
       const image = verifiedImage(brand, variant);
+      const published = Boolean(barcode && isValidEan13(barcode));
       products.push({
-        id, sku: id, masterProductId, barcode,
+        id: masterProductId, sku: masterProductId, masterProductId, barcode,
         barcodeStatus: barcode ? 'verified_real_product' : 'missing_real_barcode', barcodeType: barcode ? 'ean13_real' : '',
         name, nameTh: name, nameEn: `${brand} ${variant}`,
         brand, brandTh, categoryId: group.categoryId, category: group.category, unit: group.unit,
@@ -56,15 +72,41 @@ export function buildRetailMasterCatalogThailand() {
         imageSource: image.imageSource || '', imageStatus: image.imageUrl ? 'verified_product_packshot' : 'missing_product_image',
         imagePolicy: 'packshot_only_no_retail_watermark',
         keywords: uniq([brandTh, brand, group.category, variant, name, barcode]),
-        status: 'active', showOnPos: true,
-        sourceStatus: barcode ? 'verified_barcode_catalog' : 'catalog_needs_real_barcode', sourceNote: SOURCE_NOTE
+        status: 'active', showOnPos: false,
+        catalogStatus: published ? 'published' : 'draft', sellReady: published,
+        activationStatus: 'setup_required', catalogVersion: 'RMCT-TH-1.1-A',
+        verificationSource: verification.verificationSource || '', verifiedAt: verification.verifiedAt || '',
+        sourceStatus: published ? 'verified_barcode_catalog' : 'catalog_needs_review', sourceNote: SOURCE_NOTE
       });
       sku += 1;
     }
   }
   return {
-    version: 'RMCT-TH-1.0-A', country: 'TH', currency: 'THB', productCount: products.length,
+    version: 'RMCT-TH-1.1-A', country: 'TH', currency: 'THB', productCount: products.length,
+    publishedCount: products.filter(item => item.catalogStatus === 'published').length,
+    draftCount: products.filter(item => item.catalogStatus === 'draft').length,
     dataPolicy: 'บาร์โค้ดต้องเป็นเลขจริงบนสินค้าเท่านั้น รูปสินค้าใช้ได้เมื่อเป็น packshot ไม่มีลายน้ำร้านค้าปลีก และสามารถ cache เข้า Storage ภายหลังได้',
     products
   };
+}
+
+export function validateRetailMasterCatalogThailand(catalog = buildRetailMasterCatalogThailand()) {
+  const productIds = new Set();
+  const logicalKeys = new Set();
+  const barcodes = new Set();
+  const errors = [];
+  for (const item of catalog.products || []) {
+    const logicalKey = productKey(item.brand, item.nameTh || item.name);
+    if (productIds.has(item.masterProductId)) errors.push(`duplicate_master_id:${item.masterProductId}`);
+    if (logicalKeys.has(logicalKey)) errors.push(`duplicate_product:${logicalKey}`);
+    productIds.add(item.masterProductId);
+    logicalKeys.add(logicalKey);
+    if (item.barcode) {
+      if (!isValidEan13(item.barcode)) errors.push(`invalid_ean13:${item.masterProductId}`);
+      if (barcodes.has(item.barcode)) errors.push(`duplicate_barcode:${item.barcode}`);
+      barcodes.add(item.barcode);
+    }
+    if (item.catalogStatus === 'published' && !item.barcode) errors.push(`published_without_barcode:${item.masterProductId}`);
+  }
+  return { valid: errors.length === 0, errors, productCount: productIds.size, barcodeCount: barcodes.size };
 }

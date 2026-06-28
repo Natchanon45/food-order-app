@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>นำเข้าสินค้าพื้นฐาน</title>
   <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260627-2">
-  <link rel="stylesheet" href="/assets/css/retail-catalog-import.css?v=20260628-1">
+  <link rel="stylesheet" href="/assets/css/retail-catalog-import.css?v=20260628-2">
 </head>
 <body>
   <header class="pos-header">
@@ -20,23 +20,23 @@
         <p>นำเข้าสินค้ายอดนิยมสำหรับร้านของชำและมินิมาร์ทไทย พร้อม SKU ระบบ หมวดสินค้า แบรนด์ ราคาแนะนำ และคำค้นหา</p>
       </div>
       <div class="catalog-actions">
-        <button id="importButton" class="btn primary" type="button">นำเข้าสินค้าที่ยังไม่มี</button>
+        <button id="importButton" class="btn primary" type="button">กำลังตรวจ Catalog...</button>
         <a class="btn secondary" href="/pos/products/">ดูสินค้าร้านนี้</a>
       </div>
     </section>
 
-    <div class="catalog-note"><strong>หมายเหตุ</strong><span>ระบบยังไม่ใส่บาร์โค้ดและรูปสินค้า หากยังไม่ได้ตรวจสอบจากสินค้าจริงหรือแหล่งที่ได้รับอนุญาต</span></div>
+    <div class="catalog-note"><strong>นำเข้าอย่างปลอดภัย</strong><span>ระบบจะนำเข้าเฉพาะรายการสถานะ “พร้อมนำเข้า” ที่มีบาร์โค้ดจริงผ่านการตรวจสอบ รายการฉบับร่างจะไม่ถูกบันทึกเข้าร้าน</span></div>
 
     <section class="catalog-stats">
-      <article class="catalog-stat"><span>สินค้าใน Catalog</span><strong id="totalProducts">0</strong></article>
+      <article class="catalog-stat"><span>รายการไม่ซ้ำใน Catalog</span><strong id="totalProducts">0</strong></article>
+      <article class="catalog-stat ready"><span>พร้อมนำเข้า</span><strong id="readyProducts">0</strong></article>
       <article class="catalog-stat"><span>สินค้าในร้านนี้</span><strong id="currentProducts">0</strong></article>
-      <article class="catalog-stat"><span>รอ Barcode จริง</span><strong id="barcodePending">0</strong></article>
-      <article class="catalog-stat"><span>เวอร์ชัน</span><strong>RMCT A</strong></article>
+      <article class="catalog-stat warning"><span>รอตรวจสอบ</span><strong id="reviewPending">0</strong></article>
     </section>
 
     <section class="catalog-panel">
       <div class="panel-head">
-        <div><h2>หมวดสินค้าที่จะนำเข้า</h2><p class="preview-muted">เลือกนำเข้าทั้งชุดก่อน แล้วปรับราคา/บาร์โค้ดภายหลังได้จากหน้าสินค้า</p></div>
+        <div><h2>เลือกหมวดสินค้า</h2><p class="preview-muted">เลือกหมวดที่ต้องการ ระบบจะนำเข้าเฉพาะรายการที่ผ่านการตรวจสอบแล้ว</p></div>
         <div class="import-options"><label><input type="checkbox" id="skipExisting" checked> ข้าม SKU ที่มีอยู่แล้ว</label></div>
       </div>
       <div id="categoryGrid" class="catalog-grid"></div>
@@ -44,11 +44,24 @@
     </section>
 
     <section class="catalog-panel">
-      <div class="panel-head"><div><h2>ตัวอย่างสินค้า</h2><p class="preview-muted">แสดงเพียงบางรายการเพื่อให้หน้าจออ่านง่าย</p></div><span class="pill">Preview</span></div>
-      <div class="table-wrap"><table class="catalog-table"><thead><tr><th>SKU</th><th>สินค้า</th><th>หมวด</th><th>แบรนด์</th><th class="number">ราคาแนะนำ</th><th>Barcode</th></tr></thead><tbody id="previewRows"></tbody></table></div>
+      <div class="panel-head"><div><h2>ตรวจรายการก่อนนำเข้า</h2><p id="previewSummary" class="preview-muted">กำลังตรวจ Catalog...</p></div><span class="pill">Preview 20 รายการ</span></div>
+      <div class="table-wrap"><table class="catalog-table"><thead><tr><th>Master ID</th><th>สินค้า</th><th>หมวด</th><th>แบรนด์</th><th class="number">ราคาแนะนำ</th><th>Barcode</th><th>สถานะ</th></tr></thead><tbody id="previewRows"></tbody></table></div>
     </section>
   </main>
 
-  <script type="module" src="/assets/js/retail-catalog-import.js?v=20260628-2"></script>
+  <dialog id="importDialog" class="catalog-dialog">
+    <div class="catalog-dialog-body">
+      <div class="catalog-dialog-icon" aria-hidden="true">✓</div>
+      <h2>ยืนยันนำเข้าสินค้า</h2>
+      <p>ระบบจะนำเข้าสินค้าที่ผ่านการตรวจสอบ <strong id="importDialogCount">0</strong> รายการ โดยตั้งสต็อกเป็น 0 และยังไม่แสดงบนหน้าขาย</p>
+      <p class="preview-muted">หลังนำเข้า ให้ตรวจราคา ตั้งสต็อก และเปิดแสดงบน POS จากหน้าสินค้า</p>
+      <div class="catalog-dialog-actions">
+        <button id="cancelImport" class="btn secondary" type="button">ยกเลิก</button>
+        <button id="confirmImport" class="btn primary" type="button">ยืนยันนำเข้า</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script type="module" src="/assets/js/retail-catalog-import.js?v=20260628-4"></script>
 </body>
 </html>
