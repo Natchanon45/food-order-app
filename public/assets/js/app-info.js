@@ -2,19 +2,19 @@ export const APP_INFO = {
   name: 'Food Order App',
   product: 'Retail POS',
   version: '0.9.0',
-  build: '2026.06.28.011',
+  build: '2026.06.28.012',
   branch: 'feature/retail-pos',
-  commit: '3b9be64',
+  commit: '62ad377',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P4-B003 Developer Dot',
-  updatedAt: '2026-06-28T19:16:00+07:00',
+  milestone: 'P4-B003R Developer Dot Polish',
+  updatedAt: '2026-06-28T19:34:00+07:00',
   whatsNew: [
-    'เปลี่ยน Version Badge ยาวเป็น Developer Dot ขนาดเล็ก',
-    'ลดการบัง Bottom Cart และยอดรวมบนมือถือ',
-    'กด Dot เพื่อเปิด Developer Panel ได้เหมือนเดิม',
-    'เตรียมรองรับสี Dot ตาม Environment: production, staging, local'
+    'แก้ Developer Dot ให้เป็นจุดกลมล้วน ไม่มีคำว่า DEV โผล่',
+    'ขยับตำแหน่ง Dot ให้อยู่ใน Safe Area บนมือถือ',
+    'ลดขนาดและความทึบของ Dot เพื่อไม่รบกวนยอดรวม/ปุ่มขาย',
+    'ยังคงกด Dot เพื่อเปิด Developer Panel ได้เหมือนเดิม'
   ]
 };
 
