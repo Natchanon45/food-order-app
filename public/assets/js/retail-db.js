@@ -37,7 +37,8 @@ function path(collectionName){return collection(db,'tenants',getTenantId(),colle
 function ref(collectionName,id){return doc(db,'tenants',getTenantId(),collectionName,String(id))}
 function withMeta(row){
   const {_documentId,_documentIds,...data}=row||{};
-  return {...data,tenantId:getTenantId(),updatedAt:Date.now(),updatedAtServer:isFirebaseConfigured?serverTimestamp():null};
+  const tenantId=getTenantId();
+  return {...data,tenantId,shopId:data.shopId||tenantId,updatedAt:Date.now(),updatedAtServer:isFirebaseConfigured?serverTimestamp():null};
 }
 function fromSnapshot(snapshot){
   const data=snapshot.data();
@@ -78,7 +79,7 @@ export async function saveRecord(collectionName,row){
   writeLocal(collectionName,rows);
   if(isFirebaseConfigured&&db){
     try{await setDoc(ref(collectionName,id),data,{merge:true})}
-    catch(error){console.warn('[retail-db] save firebase failed',collectionName,id,error)}
+    catch(error){console.warn('[retail-db] save firebase failed',collectionName,id,{tenantId:getTenantId(),error})}
   }
   return {...data,updatedAtServer:null};
 }
@@ -135,20 +136,7 @@ export function watchRecords(collectionName,callback,{sortBy='updatedAt',directi
   }
 }
 
-export const RetailCollections={
-  products:'products',
-  sales:'sales',
-  returns:'returns',
-  shifts:'shifts',
-  stockMovements:'stockMovements',
-  purchases:'purchases',
-  stockCounts:'stockCounts',
-  suppliers:'suppliers',
-  customers:'customers',
-  users:'users',
-  roles:'roles',
-  settings:'settings'
-};
+export const RetailCollections={products:'products',sales:'sales',returns:'returns',shifts:'shifts',stockMovements:'stockMovements',purchases:'purchases',stockCounts:'stockCounts',suppliers:'suppliers',customers:'customers',users:'users',roles:'roles',settings:'settings'};
 
 export async function migrateLocalArray(localStorageKey,collectionName){
   let rows=[];
