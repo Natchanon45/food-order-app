@@ -1,3 +1,5 @@
+import './app-version-badge.js?v=20260628-002';
+
 const styleId='retailToastMainStyle';
 if(!document.getElementById(styleId)){
   const style=document.createElement('style');
@@ -11,6 +13,9 @@ if(!document.getElementById(styleId)){
 .toast:popover-open{display:flex!important;opacity:1!important;transform:translate(-50%,-50%)!important}
 .pos-svg-status-icon{display:grid!important;place-items:center!important;width:58px!important;height:58px!important;margin:0 auto 18px!important;border-radius:999px!important;background:#e8f3ec!important;color:#159447!important;font-size:0!important;line-height:0!important;text-align:center!important}
 .pos-svg-status-icon svg{width:34px!important;height:34px!important;display:block!important;fill:none!important;stroke:currentColor!important;stroke-width:2.6!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+.app-version-badge{position:fixed;right:14px;bottom:14px;z-index:9999;border:0;border-radius:999px;background:rgba(15,23,42,.88);color:#fff;font-size:12px;font-weight:800;line-height:1;padding:9px 12px;box-shadow:0 10px 28px rgba(15,23,42,.24);backdrop-filter:blur(10px);cursor:pointer}
+.app-version-badge:hover{background:rgba(15,23,42,.96)}
+@media(max-width:640px){.app-version-badge{right:10px;bottom:10px;font-size:11px;padding:8px 10px}}
 `;
   document.head.appendChild(style);
 }
