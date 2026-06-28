@@ -2,19 +2,19 @@ export const APP_INFO = {
   name: 'Food Order App',
   product: 'Retail POS',
   version: '0.9.0',
-  build: '2026.06.28.005',
+  build: '2026.06.28.006',
   branch: 'feature/retail-pos',
-  commit: '44c3a72',
+  commit: '47a6710',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'M3-B005R POS Layout Rollback',
-  updatedAt: '2026-06-28T17:52:00+07:00',
+  milestone: 'M3-B006 Compact POS Polish',
+  updatedAt: '2026-06-28T18:05:00+07:00',
   whatsNew: [
-    'ถอด Desktop Force Mobile Shell ที่ทำให้ Layout เพี้ยนออก',
-    'คืนโครงสร้าง Desktop POS ให้กลับมาเป็น 2 คอลัมน์ใช้งานได้',
-    'คง Product Grid แบบ Compact Card เดิมไว้',
-    'เตรียมปรับ Layout รอบถัดไปแบบไม่ใช้ CSS Override หนัก'
+    'ปรับ Product Grid บน Desktop ให้ compact และไม่ยืดใหญ่เกิน',
+    'คง Desktop Layout 2 คอลัมน์เพื่อให้ Cart อยู่ด้านขวาใช้งานง่าย',
+    'ลดขนาดตัวอักษร placeholder ของสินค้าที่ไม่มีรูป',
+    'หลีกเลี่ยง CSS force-mobile ที่ทำให้ Layout เพี้ยน'
   ]
 };
 
