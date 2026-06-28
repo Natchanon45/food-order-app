@@ -1,5 +1,15 @@
 import { APP_INFO, appVersionText } from './app-info.js?v=20260628-003';
 
+function ensureStyles() {
+  if (document.getElementById('appVersionPanelStyle')) return;
+  const style = document.createElement('style');
+  style.id = 'appVersionPanelStyle';
+  style.textContent = `
+.app-dev-panel[hidden]{display:none}.app-dev-panel{position:fixed;inset:0;z-index:2147483646}.app-dev-backdrop{position:absolute;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(4px)}.app-dev-card{position:absolute;right:18px;bottom:58px;width:min(520px,calc(100vw - 24px));max-height:min(760px,calc(100vh - 90px));overflow:auto;border-radius:22px;background:#fff;color:#0f172a;box-shadow:0 24px 80px rgba(15,23,42,.32);padding:18px}.app-dev-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.app-dev-head small{display:block;color:#64748b;font-weight:800;text-transform:uppercase;letter-spacing:.08em}.app-dev-head h2{margin:2px 0 0;font-size:22px}.app-dev-close{border:0;border-radius:999px;width:36px;height:36px;background:#f1f5f9;color:#0f172a;font-size:24px;line-height:1;cursor:pointer}.app-dev-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.app-dev-row{border:1px solid #e2e8f0;border-radius:14px;padding:10px;background:#f8fafc}.app-dev-row span{display:block;color:#64748b;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.app-dev-row strong{display:block;margin-top:5px;font-size:13px;word-break:break-word}.app-dev-section{margin-top:12px;border:1px solid #e2e8f0;border-radius:14px;padding:12px;background:#fff}.app-dev-section h3{margin:0 0 8px;font-size:14px}.app-dev-section ul{margin:0;padding-left:20px}.app-dev-section li{margin:4px 0}.app-dev-section p{margin:8px 0 0;color:#475569;font-size:12px;word-break:break-word}.app-dev-section summary{font-weight:800;cursor:pointer}@media(max-width:640px){.app-dev-card{right:10px;bottom:48px;padding:14px}.app-dev-grid{grid-template-columns:1fr}}
+`;
+  document.head.appendChild(style);
+}
+
 function readJson(key) {
   try { return JSON.parse(localStorage.getItem(key)); } catch { return null; }
 }
@@ -42,6 +52,7 @@ function ensurePanel() {
 }
 
 function renderPanel() {
+  ensureStyles();
   const info = collectRuntimeInfo();
   const panel = ensurePanel();
   panel.innerHTML = `
@@ -93,6 +104,7 @@ function closeDeveloperPanel() {
 }
 
 function renderVersionBadge() {
+  ensureStyles();
   if (document.querySelector('[data-app-version-badge]')) return;
   const badge = document.createElement('button');
   badge.type = 'button';
