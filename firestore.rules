@@ -135,14 +135,16 @@ service cloud.firestore {
     }
 
     function retailTenantWrite(tenantId) {
-      return signedIn() && tenantPayloadMatches(tenantId);
+      return signedIn()
+        && tenantHasRole(tenantId, ['owner', 'admin', 'manager', 'cashier', 'super_admin'])
+        && tenantPayloadMatches(tenantId);
     }
 
-    function retailTenantUpdate(tenantId) {
-      return signedIn() && (
-        tenantPayloadMatches(tenantId)
-        || tenantResourceMatches(tenantId)
-      );
+    function retailStockUpdate(tenantId) {
+      return retailTenantWrite(tenantId)
+        && tenantResourceMatches(tenantId)
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['stock', 'tenantId', 'updatedAt', 'updatedAtServer']);
     }
 
     function validTenantTableOrder(tenantId) {
@@ -171,7 +173,8 @@ service cloud.firestore {
         && request.resource.data.totalQty is number
         && request.resource.data.totalQty > 0
         && request.resource.data.totalAmount is number
-        && request.resource.data.totalAmount >= 0;
+        && request.resource.data.totalAmount >= 0
+        && request.resource.data.cashierId == request.auth.uid;
     }
 
     function validStockMovement(tenantId) {
@@ -180,7 +183,8 @@ service cloud.firestore {
         && request.resource.data.type in ['sale', 'purchase', 'adjustment', 'return']
         && request.resource.data.direction in ['in', 'out']
         && request.resource.data.qty is number
-        && request.resource.data.qty > 0;
+        && request.resource.data.qty > 0
+        && request.resource.data.createdBy == request.auth.uid;
     }
 
     match /menus/{menuId} {
@@ -250,19 +254,23 @@ service cloud.firestore {
 
       match /products/{productId} {
         allow read: if true;
-        allow create: if retailTenantWrite(tenantId);
-        allow update: if retailTenantUpdate(tenantId);
-        allow delete: if signedIn() && tenantResourceMatches(tenantId);
+        allow create: if tenantAdminRole(tenantId) && tenantPayloadMatches(tenantId);
+        allow update: if (
+          tenantAdminRole(tenantId)
+          && tenantPayloadMatches(tenantId)
+          && tenantResourceMatches(tenantId)
+        ) || retailStockUpdate(tenantId);
+        allow delete: if tenantAdminRole(tenantId) && tenantResourceMatches(tenantId);
       }
 
       match /sales/{saleId} {
-        allow read: if signedIn();
+        allow read: if tenantMember(tenantId);
         allow create: if retailTenantWrite(tenantId) && validRetailSale(tenantId);
-        allow update, delete: if signedIn() && tenantResourceMatches(tenantId);
+        allow update, delete: if tenantAdminRole(tenantId) && tenantResourceMatches(tenantId);
       }
 
       match /stockMovements/{movementId} {
-        allow read: if signedIn();
+        allow read: if tenantMember(tenantId);
         allow create: if retailTenantWrite(tenantId) && validStockMovement(tenantId);
         allow update, delete: if false;
       }

@@ -1,5 +1,5 @@
 import { auth, db, isFirebaseConfigured, collection, doc, query, orderBy, getDocs, runTransaction, serverTimestamp } from './firebase-config.js';
-import { getTenantId, RetailCollections, listRecords } from './retail-db.js';
+import { getTenantId, RetailCollections, listRecords } from './retail-db.js?v=20260627-3';
 
 const PRODUCT_KEY = "retail_pos_products_v1";
 const SALES_KEY = "retail_pos_sales_v1";
@@ -110,6 +110,22 @@ function normalizeProduct(product = {}) {
   };
 }
 
+function normalizeProducts(rows = []) {
+  const byId = new Map();
+  rows.map(normalizeProduct).forEach(product => {
+    if (!product.id) return;
+    const current = byId.get(product.id);
+    const productIsCanonical = product._documentId === product.id;
+    const currentIsCanonical = current?._documentId === current?.id;
+    if (!current
+      || (productIsCanonical && !currentIsCanonical)
+      || (productIsCanonical === currentIsCanonical && Number(product.updatedAt || 0) > Number(current.updatedAt || 0))) {
+      byId.set(product.id, product);
+    }
+  });
+  return [...byId.values()];
+}
+
 function getTotals() {
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
   const discount = Math.max(0, Math.min(subtotal, Number(els.discountInput.value || 0)));
@@ -124,7 +140,7 @@ function renderProducts() {
   });
 
   els.productGrid.innerHTML = filtered.length ? filtered.map(product => `
-    <button class="product-card" type="button" data-product-id="${escapeHtml(product.id)}" ${product.stock <= 0 ? "disabled" : ""}>
+    <button class="product-card" type="button" data-product-id="${escapeHtml(product.id)}" ${savingSale || product.stock <= 0 ? "disabled" : ""}>
       <span class="name">${escapeHtml(product.name)}</span>
       <span class="code">${escapeHtml(product.id)} • ${escapeHtml(product.barcode)}</span>
       <span class="stock">คงเหลือ ${Number(product.stock || 0).toLocaleString("th-TH")} ${escapeHtml(product.unit)}</span>
@@ -141,10 +157,10 @@ function renderCart() {
         <div class="cart-name">${escapeHtml(item.name)}</div>
         <div class="cart-meta">${money(item.price)} บาท / ${escapeHtml(item.unit)}</div>
         <div class="qty-tools">
-          <button type="button" data-action="decrease" data-id="${escapeHtml(item.id)}">−</button>
+          <button type="button" data-action="decrease" data-id="${escapeHtml(item.id)}" ${savingSale ? "disabled" : ""}>−</button>
           <strong>${item.qty}</strong>
-          <button type="button" data-action="increase" data-id="${escapeHtml(item.id)}">+</button>
-          <button type="button" class="remove" data-action="remove" data-id="${escapeHtml(item.id)}">ลบ</button>
+          <button type="button" data-action="increase" data-id="${escapeHtml(item.id)}" ${savingSale ? "disabled" : ""}>+</button>
+          <button type="button" class="remove" data-action="remove" data-id="${escapeHtml(item.id)}" ${savingSale ? "disabled" : ""}>ลบ</button>
         </div>
       </div>
       <div class="line-total">${money(item.price * item.qty)}</div>
@@ -218,10 +234,10 @@ function saveLocalSale(sale, nextProducts, movements) {
   writeJson(MOVEMENT_KEY, [...movements, ...readJson(MOVEMENT_KEY, [])].slice(0, 500));
 }
 
-async function completeSaleOffline({ method, received, totals, number, createdAt }) {
+async function completeSaleOffline({ method, received, totals, number, createdAt, saleItems }) {
   const movementRows = [];
   const nextProducts = products.map(product => {
-    const sold = cart.find(item => item.id === product.id)?.qty || 0;
+    const sold = saleItems.find(item => item.id === product.id)?.qty || 0;
     if (!sold) return product;
     const before = Number(product.stock || 0);
     const after = before - sold;
@@ -243,13 +259,13 @@ async function completeSaleOffline({ method, received, totals, number, createdAt
     });
     return { ...product, stock: after };
   });
-  const sale = buildSale({ id: number, number, method, received, totals, createdAt });
+  const sale = buildSale({ id: number, number, method, received, totals, createdAt, saleItems });
   saveLocalSale(sale, nextProducts, movementRows);
   products = nextProducts;
   return sale;
 }
 
-function buildSale({ id, number, method, received, totals, createdAt }) {
+function buildSale({ id, number, method, received, totals, createdAt, saleItems = cart }) {
   return {
     id,
     saleNumber: number,
@@ -257,7 +273,7 @@ function buildSale({ id, number, method, received, totals, createdAt }) {
     channel: "retail-pos",
     status: "completed",
     createdAt,
-    items: cart.map(({ id, barcode, name, price, cost, qty, unit }) => ({
+    items: saleItems.map(({ id, barcode, name, price, cost, qty, unit }) => ({
       id,
       productId: id,
       barcode,
@@ -268,7 +284,7 @@ function buildSale({ id, number, method, received, totals, createdAt }) {
       unit,
       lineTotal: Number(price || 0) * Number(qty || 0)
     })),
-    totalQty: cart.reduce((sum, item) => sum + item.qty, 0),
+    totalQty: saleItems.reduce((sum, item) => sum + item.qty, 0),
     subtotal: totals.subtotal,
     discount: totals.discount,
     total: totals.total,
@@ -281,14 +297,15 @@ function buildSale({ id, number, method, received, totals, createdAt }) {
   };
 }
 
-async function completeSaleFirestore({ method, received, totals, number, createdAt }) {
+async function completeSaleFirestore({ method, received, totals, number, createdAt, saleItems }) {
   const saleRef = doc(tenantCollection(RetailCollections.sales));
   let committedSale = null;
   const localMovements = [];
   await runTransaction(db, async transaction => {
+    localMovements.length = 0;
     const rows = [];
-    for (const cartItem of cart) {
-      const productRef = tenantDoc(RetailCollections.products, cartItem.id);
+    for (const cartItem of saleItems) {
+      const productRef = tenantDoc(RetailCollections.products, cartItem._documentId || cartItem.id);
       const snapshot = await transaction.get(productRef);
       if (!snapshot.exists()) throw new Error(`PRODUCT_NOT_FOUND:${cartItem.name}`);
       const product = normalizeProduct({ id: snapshot.id, ...snapshot.data() });
@@ -296,7 +313,7 @@ async function completeSaleFirestore({ method, received, totals, number, created
       rows.push({ cartItem, productRef, product });
     }
 
-    const sale = buildSale({ id: saleRef.id, number, method, received, totals, createdAt });
+    const sale = buildSale({ id: saleRef.id, number, method, received, totals, createdAt, saleItems });
     committedSale = { ...sale, id: saleRef.id };
     transaction.set(saleRef, { ...sale, id: saleRef.id, createdAtServer: serverTimestamp(), updatedAt: Date.now(), updatedAtServer: serverTimestamp() });
 
@@ -331,7 +348,7 @@ async function completeSaleFirestore({ method, received, totals, number, created
   });
 
   const nextProducts = products.map(product => {
-    const sold = cart.find(item => item.id === product.id)?.qty || 0;
+    const sold = saleItems.find(item => item.id === product.id)?.qty || 0;
     return sold ? { ...product, stock: Number(product.stock || 0) - sold } : product;
   });
   saveLocalSale(committedSale, nextProducts, localMovements);
@@ -356,10 +373,11 @@ async function confirmPayment() {
 
   const number = saleNumber();
   const createdAt = new Date().toISOString();
+  const saleItems = cart.map(item => ({ ...item }));
   try {
     const sale = isFirebaseConfigured && db
-      ? await completeSaleFirestore({ method, received, totals, number, createdAt })
-      : await completeSaleOffline({ method, received, totals, number, createdAt });
+      ? await completeSaleFirestore({ method, received, totals, number, createdAt, saleItems })
+      : await completeSaleOffline({ method, received, totals, number, createdAt, saleItems });
     els.paymentDialog.close();
     renderProducts();
     resetSale();
@@ -381,23 +399,26 @@ async function confirmPayment() {
 async function loadProducts() {
   try {
     const rows = await listRecords(RetailCollections.products, { sortBy: "updatedAt", direction: "desc" });
-    if (rows.length) products = rows.map(normalizeProduct);
-    else if (!products.length) products = structuredClone(sampleProducts).map(normalizeProduct);
+    if (rows.length) products = normalizeProducts(rows);
+    else if (isFirebaseConfigured && db) products = [];
+    else if (!products.length) products = normalizeProducts(structuredClone(sampleProducts));
     writeJson(PRODUCT_KEY, products);
   } catch (error) {
     console.warn("[retail-pos] load products fallback", error);
-    if (!products.length) products = structuredClone(sampleProducts).map(normalizeProduct);
+    if (!products.length) products = normalizeProducts(structuredClone(sampleProducts));
   }
   renderProducts();
   renderCart();
 }
 
 els.productGrid.addEventListener("click", event => {
+  if (savingSale) return;
   const button = event.target.closest("[data-product-id]");
   if (button) addProduct(button.dataset.productId);
 });
 
 els.cartList.addEventListener("click", event => {
+  if (savingSale) return;
   const button = event.target.closest("button[data-action]");
   if (!button) return;
   if (button.dataset.action === "increase") changeQty(button.dataset.id, 1);
@@ -434,5 +455,6 @@ els.seedBtn.addEventListener("click", () => {
   showToast("โหลดสินค้าตัวอย่างแล้ว");
 });
 
+els.seedBtn.hidden = Boolean(isFirebaseConfigured && db);
 await loadProducts();
 els.barcodeInput.focus();
