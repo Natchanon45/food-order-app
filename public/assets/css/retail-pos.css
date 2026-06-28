@@ -44,7 +44,7 @@ button { cursor: pointer; }
 .pos-header {
   min-height: 72px; padding: 12px 18px; display: flex; align-items: center;
   justify-content: space-between; gap: 12px; background: linear-gradient(135deg, var(--black), var(--green-dark)); color: #fff;
-  position: sticky; top: 0; z-index: 20; box-shadow: 0 2px 12px #0002;
+  position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px #0002;
 }
 .pos-header > div:first-child { min-width: 0; }
 .pos-header strong { display: block; font-size: 1.15rem; }
@@ -144,19 +144,39 @@ dialog .dialog-actions { position: sticky; bottom: 0; z-index: 2; margin: 16px -
   .cart-panel { min-height: 520px; }
 }
 @media (max-width: 600px) {
-  .pos-header { align-items: flex-start; flex-direction: row; }
+  :root { --control-height: 44px; }
+  html { scroll-padding-top: 74px; }
+  body { background: #edf4ef; }
+  .pos-header { min-height: 64px; padding: 10px 12px; align-items: center; flex-direction: row; gap: 8px; }
   .pos-header > div:first-child { flex: 1 1 auto; }
-  .header-actions { width: auto; flex: 0 0 auto; justify-content: flex-end; align-self: flex-start; }
-  .header-actions .btn { flex: 0 0 auto; white-space: nowrap; }
+  .pos-header strong { font-size: 1rem; line-height: 1.1; }
+  .pos-header small { margin-top: 2px; font-size: .68rem; line-height: 1.15; }
+  .header-actions { width: auto; flex: 0 0 auto; justify-content: flex-end; align-self: center; }
+  .header-actions .btn { flex: 0 0 auto; min-height: 36px; padding: 8px 10px; font-size: .84rem; white-space: nowrap; border-radius: 11px; }
   .app-title { gap: 8px; }
-  .app-badge { width: 34px; height: 30px; border-radius: 9px; font-size: .72rem; }
-  .section-heading { align-items: flex-start; flex-direction: row; gap: 10px; }
-  .section-heading h2 { font-size: 1.25rem; }
-  .section-heading .btn { min-height: 38px; padding: 8px 12px; }
-  .pos-layout { padding: 8px; gap: 8px; }
-  .search-row { grid-template-columns: 1fr; }
-  .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .product-card { min-height: 120px; }
+  .app-badge { width: 32px; height: 28px; border-radius: 9px; font-size: .68rem; }
+  .pos-layout { padding: 8px; gap: 8px; min-height: auto; }
+  .panel { border-radius: 16px; box-shadow: 0 5px 16px rgba(16,35,23,.04); }
+  .product-panel,.cart-panel { padding: 10px; }
+  .cart-panel { min-height: 0; }
+  .section-heading { align-items: flex-start; flex-direction: row; gap: 10px; margin-bottom: 10px; }
+  .section-heading h2 { font-size: 1.18rem; }
+  .section-heading p { font-size: .76rem; }
+  .section-heading .btn { min-height: 38px; padding: 8px 10px; font-size: .85rem; }
+  .search-row { grid-template-columns: 1fr; gap: 8px; margin-bottom: 10px; }
+  input, select, textarea { border-radius: 11px; padding: 10px 11px; font-size: .9rem; }
+  .product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .product-card { min-height: 86px; border-radius: 11px; }
+  .cart-title { padding-bottom: 8px; }
+  .cart-title h1 { font-size: 1rem; }
+  .cart-list { max-height: 42vh; }
+  .cart-row { padding: 10px 0; }
+  .qty-tools button { width: 32px; height: 32px; }
+  .summary { margin-top: 6px; padding-top: 8px; }
+  .summary > div, .summary > label { min-height: 38px; }
+  .summary input { max-width: 104px; min-height: 38px; }
+  .grand-total { font-size: 1.08rem; }
+  .cart-panel > .btn-pay { min-height: 48px; font-size: 1rem; }
   dialog, dialog:has(> form.payment-form), dialog:has(.payment-form), #productDialog, #userDialog, #customerDialog, #supplierDialog { width: calc(100% - 16px); max-height: calc(100dvh - 16px); border-radius: 14px; }
   .payment-form { padding: 0 14px 14px; max-height: calc(100dvh - 16px); }
   .dialog-head { margin: 0 -14px 12px; padding: 14px; border-radius: 14px 14px 0 0; }
@@ -168,10 +188,9 @@ dialog .dialog-actions { position: sticky; bottom: 0; z-index: 2; margin: 16px -
   .toast.error::before,.toast.is-error::before { font-size: 17px; }
 }
 @media (max-width: 420px) {
-  .pos-header { padding: 10px 12px; gap: 8px; }
-  .pos-header strong { font-size: 1rem; }
-  .pos-header small { font-size: .72rem; }
-  .header-actions .btn { min-height: 38px; padding: 8px 11px; font-size: .85rem; }
-  .section-heading .btn { padding: 8px 10px; font-size: .86rem; }
+  .pos-header { padding: 9px 10px; gap: 7px; }
+  .pos-header strong { font-size: .95rem; }
+  .pos-header small { font-size: .66rem; }
+  .header-actions .btn { min-height: 34px; padding: 7px 9px; font-size: .8rem; }
+  .section-heading .btn { padding: 8px 9px; font-size: .82rem; }
 }
-.pos-header{position:sticky!important;top:0!important;z-index:100!important}
