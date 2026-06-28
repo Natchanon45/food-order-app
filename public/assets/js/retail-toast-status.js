@@ -13,9 +13,10 @@ if(!document.getElementById(styleId)){
 .toast:popover-open{display:flex!important;opacity:1!important;transform:translate(-50%,-50%)!important}
 .pos-svg-status-icon{display:grid!important;place-items:center!important;width:58px!important;height:58px!important;margin:0 auto 18px!important;border-radius:999px!important;background:#e8f3ec!important;color:#159447!important;font-size:0!important;line-height:0!important;text-align:center!important}
 .pos-svg-status-icon svg{width:34px!important;height:34px!important;display:block!important;fill:none!important;stroke:currentColor!important;stroke-width:2.6!important;stroke-linecap:round!important;stroke-linejoin:round!important}
-.app-version-badge{position:fixed;right:14px;bottom:14px;z-index:9999;border:0;border-radius:999px;background:rgba(15,23,42,.88);color:#fff;font-size:12px;font-weight:800;line-height:1;padding:9px 12px;box-shadow:0 10px 28px rgba(15,23,42,.24);backdrop-filter:blur(10px);cursor:pointer}
-.app-version-badge:hover{background:rgba(15,23,42,.96)}
-@media(max-width:640px){.app-version-badge{right:10px;bottom:10px;font-size:11px;padding:8px 10px}}
+.app-version-badge{box-sizing:border-box!important;position:fixed!important;right:14px!important;bottom:14px!important;z-index:9999!important;width:26px!important;height:26px!important;min-width:26px!important;min-height:26px!important;max-width:26px!important;max-height:26px!important;padding:0!important;margin:0!important;border:0!important;border-radius:999px!important;background:rgba(21,148,71,.82)!important;color:transparent!important;font-size:0!important;line-height:0!important;display:grid!important;place-items:center!important;box-shadow:0 8px 22px rgba(15,23,42,.18)!important;backdrop-filter:blur(10px);cursor:pointer!important;opacity:.68!important;overflow:hidden!important;text-indent:-9999px!important}
+.app-version-badge::before{content:""!important;width:8px!important;height:8px!important;border-radius:999px!important;background:#fff!important;grid-area:1/1!important;display:block!important;margin:0!important;padding:0!important;box-shadow:0 0 0 4px rgba(255,255,255,.16)!important}
+.app-version-badge:hover{opacity:1!important}
+@media(max-width:640px){.app-version-badge{right:14px!important;bottom:calc(92px + env(safe-area-inset-bottom,0px))!important;width:22px!important;height:22px!important;min-width:22px!important;min-height:22px!important;max-width:22px!important;max-height:22px!important;padding:0!important}.app-version-badge::before{width:7px!important;height:7px!important;box-shadow:0 0 0 3px rgba(255,255,255,.16)!important}}
 `;
   document.head.appendChild(style);
 }
