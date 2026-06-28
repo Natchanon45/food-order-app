@@ -1,9 +1,10 @@
 import { auth, db, isFirebaseConfigured, collection, doc, query, orderBy, getDocs, runTransaction, serverTimestamp } from './firebase-config.js?v=20260628-1';
-import { getTenantId, RetailCollections, listRecords } from './retail-db.js?v=20260627-3';
+import { getTenantId, RetailCollections, listRecords, watchRecords } from './retail-db.js?v=20260628-6';
 
 const PRODUCT_KEY = "retail_pos_products_v1";
 const SALES_KEY = "retail_pos_sales_v1";
 const MOVEMENT_KEY = "retail_pos_stock_movements_v1";
+const SHIFT_KEY = "retail_pos_active_shift_v1";
 
 const sampleProducts = [
   { id: "P001", barcode: "8850000000011", name: "น้ำดื่ม 600 มล.", price: 10, cost: 6, stock: 48, unit: "ขวด" },
@@ -266,6 +267,7 @@ async function completeSaleOffline({ method, received, totals, number, createdAt
 }
 
 function buildSale({ id, number, method, received, totals, createdAt, saleItems = cart }) {
+  const shift = readJson(SHIFT_KEY, null);
   return {
     id,
     saleNumber: number,
@@ -293,7 +295,10 @@ function buildSale({ id, number, method, received, totals, createdAt, saleItems 
     paymentMethod: method,
     receivedAmount: received,
     changeAmount: Math.max(0, received - totals.total),
-    cashierId: auth?.currentUser?.uid || ""
+    cashierId: auth?.currentUser?.uid || "",
+    shiftId: shift?.id || "",
+    cashierName: shift?.cashierName || "",
+    terminalCode: shift?.terminalCode || ""
   };
 }
 
@@ -458,4 +463,12 @@ els.seedBtn.addEventListener("click", () => {
 
 els.seedBtn.hidden = Boolean(isFirebaseConfigured && db);
 await loadProducts();
+const stopShiftWatch=watchRecords(RetailCollections.shifts,rows=>{
+  const uid=auth?.currentUser?.uid||"";
+  const active=rows.find(row=>row.status==="open"&&(!uid||row.createdBy===uid))||null;
+  if(active)writeJson(SHIFT_KEY,active);else localStorage.removeItem(SHIFT_KEY);
+  document.documentElement.dataset.shiftSource="firestore";
+  window.dispatchEvent(new Event("storage"));
+},{sortBy:"updatedAt",direction:"desc"});
+window.addEventListener("beforeunload",stopShiftWatch,{once:true});
 els.barcodeInput.focus();

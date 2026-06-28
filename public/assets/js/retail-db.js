@@ -139,6 +139,7 @@ export const RetailCollections={
   products:'products',
   sales:'sales',
   returns:'returns',
+  shifts:'shifts',
   stockMovements:'stockMovements',
   purchases:'purchases',
   stockCounts:'stockCounts',

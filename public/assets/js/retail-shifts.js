@@ -1,3 +1,6 @@
+import { auth, db, doc, setDoc, serverTimestamp } from './firebase-config.js?v=20260628-1';
+import { getTenantId, watchRecords, RetailCollections } from './retail-db.js?v=20260628-6';
+
 const SHIFT_KEY = "retail_pos_active_shift_v1";
 const SHIFT_HISTORY_KEY = "retail_pos_shift_history_v1";
 const SALES_KEY = "retail_pos_sales_v1";
@@ -105,7 +108,7 @@ function updateDifference() {
   els.differenceBox.classList.toggle("negative", difference < 0);
 }
 
-function openShift(event) {
+async function openShift(event) {
   event.preventDefault();
   if (activeShift()) {
     els.openShiftError.textContent = "มีกะที่เปิดใช้งานอยู่แล้ว";
@@ -125,9 +128,21 @@ function openShift(event) {
     openingCash,
     openNote: els.openNote.value.trim(),
     openedAt: new Date().toISOString(),
-    status: "open"
+    status: "open",
+    tenantId: getTenantId(),
+    createdBy: auth?.currentUser?.uid || "",
+    updatedAt: Date.now()
   };
-  writeJson(SHIFT_KEY, shift);
+  try {
+    await setDoc(doc(db, "tenants", getTenantId(), RetailCollections.shifts, shift.id), {
+      ...shift, openedAtServer: serverTimestamp(), updatedAtServer: serverTimestamp()
+    });
+    writeJson(SHIFT_KEY, shift);
+  } catch (error) {
+    console.error("[retail-shifts] open failed", error);
+    els.openShiftError.textContent = "เปิดกะใน Firebase ไม่สำเร็จ กรุณาลองใหม่";
+    return;
+  }
   els.openShiftForm.reset();
   els.terminalCode.value = "POS-01";
   els.openingCash.value = "0";
@@ -136,7 +151,7 @@ function openShift(event) {
   showToast("เปิดกะเรียบร้อยแล้ว");
 }
 
-function closeShift(event) {
+async function closeShift(event) {
   event.preventDefault();
   const shift = activeShift();
   if (!shift) return;
@@ -157,8 +172,19 @@ function closeShift(event) {
     transferSales: totals.transfer,
     expectedCash: totals.expectedCash,
     actualCash,
-    cashDifference: actualCash - totals.expectedCash
+    cashDifference: actualCash - totals.expectedCash,
+    updatedAt: Date.now(),
+    closedBy: auth?.currentUser?.uid || ""
   };
+  try {
+    await setDoc(doc(db, "tenants", getTenantId(), RetailCollections.shifts, shift._documentId || shift.id), {
+      ...closed, closedAtServer: serverTimestamp(), updatedAtServer: serverTimestamp()
+    }, { merge: true });
+  } catch (error) {
+    console.error("[retail-shifts] close failed", error);
+    els.closeShiftError.textContent = "ปิดกะใน Firebase ไม่สำเร็จ กรุณาลองใหม่";
+    return;
+  }
   const history = readJson(SHIFT_HISTORY_KEY, []);
   history.unshift(closed);
   writeJson(SHIFT_HISTORY_KEY, history.slice(0, 100));
@@ -200,3 +226,20 @@ els.clearShiftHistory.addEventListener("click", () => {
 window.addEventListener("storage", () => { renderActiveShift(); renderHistory(); });
 renderActiveShift();
 renderHistory();
+
+const stopSalesWatch = watchRecords(RetailCollections.sales, rows => {
+  writeJson(SALES_KEY, rows);
+  document.documentElement.dataset.shiftSalesSource = "firestore";
+  window.dispatchEvent(new Event("storage"));
+}, { sortBy: "createdAt", direction: "desc" });
+const stopShiftsWatch = watchRecords(RetailCollections.shifts, rows => {
+  const uid = auth?.currentUser?.uid || "";
+  const active = rows.find(row => row.status === "open" && (!uid || row.createdBy === uid)) || null;
+  const history = rows.filter(row => row.status === "closed");
+  if (active) writeJson(SHIFT_KEY, active); else localStorage.removeItem(SHIFT_KEY);
+  writeJson(SHIFT_HISTORY_KEY, history);
+  document.documentElement.dataset.shiftsSource = "firestore";
+  renderActiveShift();
+  renderHistory();
+}, { sortBy: "updatedAt", direction: "desc" });
+window.addEventListener("beforeunload", () => { stopSalesWatch(); stopShiftsWatch(); }, { once: true });
