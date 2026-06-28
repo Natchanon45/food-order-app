@@ -106,6 +106,12 @@ service cloud.firestore {
         && request.resource.data.totalAmount >= 0;
     }
 
+    function validPosSale(tenantId) {
+      return signedIn()
+        && validSale(tenantId)
+        && request.resource.data.cashierId == request.auth.uid;
+    }
+
     function validMovement(tenantId) {
       return payloadTenantMatches(tenantId)
         && request.resource.data.productId is string
@@ -113,6 +119,14 @@ service cloud.firestore {
         && request.resource.data.direction in ['in', 'out']
         && request.resource.data.qty is number
         && request.resource.data.qty > 0;
+    }
+
+    function validPosSaleMovement(tenantId) {
+      return signedIn()
+        && validMovement(tenantId)
+        && request.resource.data.type == 'sale'
+        && request.resource.data.direction == 'out'
+        && request.resource.data.createdBy == request.auth.uid;
     }
 
     function validReturn(tenantId) {
@@ -185,8 +199,8 @@ service cloud.firestore {
       }
 
       match /sales/{saleId} {
-        allow read: if tenantMember(tenantId);
-        allow create: if canSell(tenantId) && validSale(tenantId);
+        allow read: if tenantMember(tenantId) || signedIn();
+        allow create: if (canSell(tenantId) && validSale(tenantId)) || validPosSale(tenantId);
         allow update: if (canManageStore(tenantId) && resourceTenantMatches(tenantId)) ||
           (canSell(tenantId) && payloadTenantMatches(tenantId));
         allow delete: if canManageEverything(tenantId) && resourceTenantMatches(tenantId);
@@ -199,8 +213,8 @@ service cloud.firestore {
       }
 
       match /stockMovements/{movementId} {
-        allow read: if tenantMember(tenantId);
-        allow create: if (canManageStock(tenantId) || canSell(tenantId)) && validMovement(tenantId);
+        allow read: if tenantMember(tenantId) || signedIn();
+        allow create: if ((canManageStock(tenantId) || canSell(tenantId)) && validMovement(tenantId)) || validPosSaleMovement(tenantId);
         allow update, delete: if false;
       }
 
