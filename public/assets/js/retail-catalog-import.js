@@ -1,5 +1,5 @@
 import { RetailCollections, saveRecords, listRecords } from './retail-db.js?v=20260627-3';
-import { buildRetailMasterCatalogThailand } from './rmct.js?v=20260628-1';
+import { buildRetailMasterCatalogThailand } from './rmct.js?v=20260628-2';
 
 const categorySvg = [
   '<svg viewBox="0 0 24 24"><path d="M12 3c3 4 5 7 5 10a5 5 0 0 1-10 0c0-3 2-6 5-10z"/></svg>',
@@ -28,25 +28,6 @@ const els = {
 
 function money(value) {
   return Number(value || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function ean13FromSku(item) {
-  const digits = String(item.sku || item.id || '').replace(/\D/g, '').slice(-9).padStart(9, '0');
-  const base = `8859${digits}`.slice(0, 12);
-  const sum = base.split('').reduce((total, digit, index) => total + Number(digit) * (index % 2 === 0 ? 1 : 3), 0);
-  const check = (10 - (sum % 10)) % 10;
-  return `${base}${check}`;
-}
-
-function withSystemBarcode(item) {
-  const barcode = String(item.barcode || '').trim() || ean13FromSku(item);
-  return {
-    ...item,
-    barcode,
-    barcodeStatus: item.barcode ? (item.barcodeStatus || 'verified') : 'thai_ean13_generated',
-    barcodeType: item.barcode ? (item.barcodeType || 'ean13') : 'ean13_generated_885',
-    sourceNote: `${item.sourceNote || ''} ใช้ EAN-13 ขึ้นต้น 885 สำหรับสแกนภายในร้าน รูปสินค้ายังไม่ถูกนำเข้าอัตโนมัติ`.trim()
-  };
 }
 
 function setResult(message, tone = '') {
@@ -78,13 +59,19 @@ function renderCategories(products) {
   `).join('');
 }
 
+function barcodeCell(item) {
+  return item.barcode ? `<span class="pill">${item.barcode}</span>` : '<span class="pill muted">รอเติมบาร์โค้ดจริง</span>';
+}
+
 async function loadPreview() {
   const catalog = buildRetailMasterCatalogThailand();
-  const products = catalog.products.map(withSystemBarcode);
+  const products = catalog.products;
   const existing = await listRecords(RetailCollections.products);
+  const verified = products.filter(item => item.barcode).length;
+  const missing = products.length - verified;
   els.totalProducts.textContent = catalog.productCount.toLocaleString('th-TH');
   els.currentProducts.textContent = existing.length.toLocaleString('th-TH');
-  els.barcodePending.textContent = products.length.toLocaleString('th-TH');
+  els.barcodePending.textContent = missing.toLocaleString('th-TH');
   renderCategories(products);
   els.previewRows.innerHTML = products.slice(0, 12).map(item => `
     <tr>
@@ -93,14 +80,14 @@ async function loadPreview() {
       <td>${item.category}</td>
       <td>${item.brandTh || item.brand}</td>
       <td class="number">${money(item.price)}</td>
-      <td><span class="pill">${item.barcode}</span></td>
+      <td>${barcodeCell(item)}</td>
     </tr>
   `).join('');
 }
 
 async function importCatalog() {
   const catalog = buildRetailMasterCatalogThailand();
-  const products = catalog.products.map(withSystemBarcode);
+  const products = catalog.products;
   const existing = await listRecords(RetailCollections.products);
   const existingIds = new Set(existing.map(item => String(item.id)));
   const rows = els.skipExisting.checked ? products.filter(item => !existingIds.has(String(item.id))) : products;
