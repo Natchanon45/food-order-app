@@ -1,4 +1,4 @@
-const SOURCE_NOTE = 'ราคาเป็นราคาแนะนำ ต้องยืนยันกับร้านหรือผู้ผลิตก่อนใช้งานจริง ไม่ใส่บาร์โค้ดหรือรูปหากยังไม่ได้ตรวจสอบ';
+const SOURCE_NOTE = 'ราคาเป็นราคาแนะนำ ต้องยืนยันกับร้านหรือผู้ผลิตก่อนใช้งานจริง บาร์โค้ดต้องเป็น EAN-13 จริงที่ตรวจสอบแล้ว รูปสินค้ายังไม่ถูกนำเข้าอัตโนมัติ';
 
 const GROUPS = [
   { categoryId: 'CAT001', category: 'น้ำดื่ม', unit: 'ขวด', variants: ['น้ำดื่ม 600 มล.', 'น้ำดื่ม 1.5 ลิตร', 'น้ำแร่ 500 มล.', 'น้ำดื่มแพ็ค 6 ขวด'], prices: [7, 14, 10, 42], brands: [['Singha','สิงห์'], ['Crystal','คริสตัล'], ['Nestle Pure Life','เนสท์เล่ เพียวไลฟ์'], ['Minere','มิเนเร่'], ['Chang','ช้าง'], ['Aura','ออร่า']], count: 36 },
@@ -17,6 +17,16 @@ const GROUPS = [
 
 function uniq(values) { return [...new Set(values.filter(Boolean))]; }
 
+function ean13CheckDigit(base12) {
+  const sum = base12.split('').reduce((total, digit, index) => total + Number(digit) * (index % 2 === 0 ? 1 : 3), 0);
+  return String((10 - (sum % 10)) % 10);
+}
+
+function buildPlaceholderThaiBarcode(sequence) {
+  const base12 = `885${String(sequence).padStart(9, '0')}`;
+  return `${base12}${ean13CheckDigit(base12)}`;
+}
+
 export function buildRetailMasterCatalogThailand() {
   const products = [];
   let sku = 1;
@@ -27,24 +37,27 @@ export function buildRetailMasterCatalogThailand() {
       const variant = group.variants[variantIndex];
       const price = Number(group.prices[variantIndex] + (i % 3));
       const id = `P${String(sku).padStart(9, '0')}`;
+      const masterProductId = `RMCT${String(sku).padStart(6, '0')}`;
       const name = `${brandTh} ${variant}`;
+      const barcode = buildPlaceholderThaiBarcode(sku);
       products.push({
-        id, sku: id, barcode: '', barcodeStatus: 'pending_verification',
+        id, sku: id, masterProductId, barcode,
+        barcodeStatus: 'needs_real_product_verification', barcodeType: 'ean13_th_885_placeholder',
         name, nameTh: name, nameEn: `${brand} ${variant}`,
         brand, brandTh, categoryId: group.categoryId, category: group.category, unit: group.unit,
         cost: Number((price * 0.72).toFixed(2)), price, suggestedPrice: price,
         priceType: 'suggested_market_price_thb', vatType: 'VAT', stock: 0,
         minStock: price < 30 ? 10 : 5, imageUrl: '', thumbnailUrl: '',
-        keywords: uniq([brandTh, brand, group.category, variant, name]),
+        keywords: uniq([brandTh, brand, group.category, variant, name, barcode]),
         status: 'active', showOnPos: true,
-        sourceStatus: 'market_reference_pending_barcode_verification', sourceNote: SOURCE_NOTE
+        sourceStatus: 'catalog_needs_barcode_verification', sourceNote: SOURCE_NOTE
       });
       sku += 1;
     }
   }
   return {
     version: 'RMCT-TH-1.0-A', country: 'TH', currency: 'THB', productCount: products.length,
-    dataPolicy: 'ไม่ใส่บาร์โค้ดหรือรูปสินค้า หากยังไม่ได้ตรวจสอบจากแหล่งที่อนุญาตหรือสินค้าจริง',
+    dataPolicy: 'โครงสร้างรองรับ EAN-13 ไทยขึ้นต้น 885 แต่ต้องตรวจสอบกับสินค้าจริงก่อนใช้งานเป็นฐานข้อมูลจริง รูปสินค้ายังไม่ถูกนำเข้าอัตโนมัติ',
     products
   };
 }
