@@ -2,19 +2,19 @@ export const APP_INFO = {
   name: 'Food Order App',
   product: 'Retail POS',
   version: '0.9.0',
-  build: '2026.06.28.013',
+  build: '2026.06.28.014',
   branch: 'feature/retail-pos',
-  commit: '348f70c',
+  commit: '7ebc32b',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P4-B003S Developer Dot Center Fix',
-  updatedAt: '2026-06-28T20:03:00+07:00',
+  milestone: 'P5-B001 Skeleton Loading',
+  updatedAt: '2026-06-28T20:15:00+07:00',
   whatsNew: [
-    'ล็อก padding ของ Developer Dot เป็น 0 ด้วย !important',
-    'ล็อกขนาด Dot และจุดขาวด้านในให้กึ่งกลางทั้ง Desktop/Mobile',
-    'กัน CSS badge เก่าทับตำแหน่งและ padding',
-    'ยังคงกด Dot เพื่อเปิด Developer Panel ได้เหมือนเดิม'
+    'เพิ่ม Skeleton Loading ให้ Product Grid ระหว่างโหลดสินค้า',
+    'แสดง placeholder แบบ shimmer แทนพื้นที่ว่าง',
+    'ซ่อน skeleton อัตโนมัติเมื่อสินค้าโหลดเสร็จ',
+    'รองรับ Mobile/Desktop และลด animation ตาม prefers-reduced-motion'
   ]
 };
 
