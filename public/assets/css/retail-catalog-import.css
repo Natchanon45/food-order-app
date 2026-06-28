@@ -38,6 +38,8 @@
 .catalog-table .number{text-align:right}
 .pill{display:inline-flex;padding:5px 10px;border-radius:999px;background:#eef8f1;color:#0b6b3d;font-size:12px;font-weight:800}
 .pill.muted{background:#f1f5f9;color:#64748b}
+.source-link{display:inline-block;max-width:220px;color:#0b6b3d;font-size:12px;font-weight:700;white-space:normal;line-height:1.4;text-decoration:underline;text-underline-offset:2px}
+.source-empty{color:#94a3b8}
 .import-options{display:flex;gap:10px;align-items:center;flex-wrap:wrap;color:#475569}
 .import-options label{display:flex;gap:8px;align-items:center;font-size:14px}
 .import-options input[type="checkbox"]{width:16px;height:16px;min-width:16px;accent-color:#159447}

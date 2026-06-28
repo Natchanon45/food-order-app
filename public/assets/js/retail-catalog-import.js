@@ -1,5 +1,5 @@
 import { RetailCollections, saveRecordsStrict, listRecords } from './retail-db.js?v=20260628-7';
-import { buildRetailMasterCatalogThailand, validateRetailMasterCatalogThailand } from './rmct.js?v=20260628-3';
+import { buildRetailMasterCatalogThailand, validateRetailMasterCatalogThailand } from './rmct.js?v=20260628-4';
 
 const categorySvg = [
   '<svg viewBox="0 0 24 24"><path d="M12 3c3 4 5 7 5 10a5 5 0 0 1-10 0c0-3 2-6 5-10z"/></svg>',
@@ -111,6 +111,14 @@ function statusCell(item) {
     : '<span class="pill muted">ฉบับร่าง</span>';
 }
 
+function sourceCell(item) {
+  const sources = item.verificationSources || [];
+  if (!sources.length) return '<span class="source-empty">—</span>';
+  const first = sources[0];
+  const suffix = sources.length > 1 ? ` +${sources.length - 1}` : '';
+  return `<a class="source-link" href="${escapeHtml(first.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(first.name)}${suffix}</a>`;
+}
+
 function renderPreview() {
   const rows = selectedProducts();
   const published = rows.filter(item => item.catalogStatus === 'published').length;
@@ -124,6 +132,7 @@ function renderPreview() {
       <td class="number">${money(item.price)}</td>
       <td>${barcodeCell(item)}</td>
       <td>${statusCell(item)}</td>
+      <td>${sourceCell(item)}</td>
     </tr>
   `).join('');
 }

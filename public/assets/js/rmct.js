@@ -1,10 +1,42 @@
 const SOURCE_NOTE = 'ราคาเป็นราคาแนะนำ ต้องยืนยันกับร้านหรือผู้ผลิตก่อนใช้งานจริง บาร์โค้ดต้องเป็นเลขบนสินค้าจริงเท่านั้น รูปสินค้าสามารถใช้ได้เมื่อเป็นรูปแพ็กสินค้าจริงและไม่มีลายน้ำร้านค้าปลีก';
 
-const VERIFIED_PRODUCTS = new Map([
+const PRODUCT_VERIFICATIONS = new Map([
+  ['Crystal|น้ำดื่ม 600 มล.', {
+    barcode: '8851952350161',
+    catalogStatus: 'published',
+    verifiedAt: '2026-06-28',
+    verificationSources: [{
+      name: 'สำนักงานคณะกรรมการกลางอิสลามแห่งประเทศไทย',
+      url: 'https://www.halalthai.or.th/th/product/detail/724880',
+      supports: ['brand', 'name', 'size', 'barcode']
+    }]
+  }],
+  ['Nestle Pure Life|น้ำดื่ม 600 มล.', {
+    barcode: '8850124003850',
+    catalogStatus: 'published',
+    verifiedAt: '2026-06-28',
+    verificationSources: [
+      {
+        name: 'Nestlé Pure Life Thailand',
+        url: 'https://www.nestlepurelife.com/th/th-th/nestle-purelife-06l',
+        supports: ['brand', 'name', 'size']
+      },
+      {
+        name: 'Toys R Us Thailand',
+        url: 'https://www.toysrus.co.th/th-th/nestle-pure-life-drinking-water-600ml-1087948.html',
+        supports: ['brand', 'name', 'size', 'barcode']
+      }
+    ]
+  }],
   ['Chang|น้ำดื่ม 600 มล.', {
     barcode: '8851993338012',
-    verificationSource: 'existing_verified_catalog',
-    verifiedAt: '2026-06-28'
+    catalogStatus: 'published',
+    verifiedAt: '2026-06-28',
+    verificationSources: [{
+      name: 'Priceza product index',
+      url: 'https://www.priceza.com/p/%E0%B8%8A%E0%B9%89%E0%B8%B2%E0%B8%87-%E0%B8%99%E0%B9%89%E0%B8%B3%E0%B8%94%E0%B8%B7%E0%B9%88%E0%B8%A1-600-%E0%B8%A1%E0%B8%A5-chang-drinking-water-600ml-533324688',
+      supports: ['brand', 'name', 'size', 'barcode']
+    }]
   }]
 ]);
 
@@ -31,7 +63,7 @@ const GROUPS = [
 
 function uniq(values) { return [...new Set(values.filter(Boolean))]; }
 function productKey(brand, variant) { return `${brand}|${variant}`; }
-function verifiedProduct(brand, variant) { return VERIFIED_PRODUCTS.get(productKey(brand, variant)) || {}; }
+function productVerification(brand, variant) { return PRODUCT_VERIFICATIONS.get(productKey(brand, variant)) || {}; }
 function verifiedImage(brand, variant) { return VERIFIED_IMAGES.get(productKey(brand, variant)) || {}; }
 
 function isValidEan13(value) {
@@ -56,10 +88,10 @@ export function buildRetailMasterCatalogThailand() {
       const price = Number(group.prices[variantIndex] + (i % 3));
       const masterProductId = `RMCT${String(sku).padStart(6, '0')}`;
       const name = `${brandTh} ${variant}`;
-      const verification = verifiedProduct(brand, variant);
+      const verification = productVerification(brand, variant);
       const barcode = verification.barcode || '';
       const image = verifiedImage(brand, variant);
-      const published = Boolean(barcode && isValidEan13(barcode));
+      const published = verification.catalogStatus === 'published' && Boolean(barcode && isValidEan13(barcode));
       products.push({
         id: masterProductId, sku: masterProductId, masterProductId, barcode,
         barcodeStatus: barcode ? 'verified_real_product' : 'missing_real_barcode', barcodeType: barcode ? 'ean13_real' : '',
@@ -74,15 +106,15 @@ export function buildRetailMasterCatalogThailand() {
         keywords: uniq([brandTh, brand, group.category, variant, name, barcode]),
         status: 'active', showOnPos: false,
         catalogStatus: published ? 'published' : 'draft', sellReady: published,
-        activationStatus: 'setup_required', catalogVersion: 'RMCT-TH-1.1-A',
-        verificationSource: verification.verificationSource || '', verifiedAt: verification.verifiedAt || '',
+        activationStatus: 'setup_required', catalogVersion: 'RMCT-TH-1.2-A',
+        verificationSources: verification.verificationSources || [], verifiedAt: verification.verifiedAt || '',
         sourceStatus: published ? 'verified_barcode_catalog' : 'catalog_needs_review', sourceNote: SOURCE_NOTE
       });
       sku += 1;
     }
   }
   return {
-    version: 'RMCT-TH-1.1-A', country: 'TH', currency: 'THB', productCount: products.length,
+    version: 'RMCT-TH-1.2-A', country: 'TH', currency: 'THB', productCount: products.length,
     publishedCount: products.filter(item => item.catalogStatus === 'published').length,
     draftCount: products.filter(item => item.catalogStatus === 'draft').length,
     dataPolicy: 'บาร์โค้ดต้องเป็นเลขจริงบนสินค้าเท่านั้น รูปสินค้าใช้ได้เมื่อเป็น packshot ไม่มีลายน้ำร้านค้าปลีก และสามารถ cache เข้า Storage ภายหลังได้',
@@ -107,6 +139,9 @@ export function validateRetailMasterCatalogThailand(catalog = buildRetailMasterC
       barcodes.add(item.barcode);
     }
     if (item.catalogStatus === 'published' && !item.barcode) errors.push(`published_without_barcode:${item.masterProductId}`);
+    if (item.catalogStatus === 'published' && !(item.verificationSources || []).some(source => source.url && source.supports?.includes('barcode'))) {
+      errors.push(`published_without_barcode_source:${item.masterProductId}`);
+    }
   }
   return { valid: errors.length === 0, errors, productCount: productIds.size, barcodeCount: barcodes.size };
 }
