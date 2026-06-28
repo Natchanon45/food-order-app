@@ -10,95 +10,92 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    function userActive() {
-      return signedIn() && profile().active == true;
+    function hasRole(roles) {
+      return signedIn() && profile().active == true && profile().role in roles;
     }
 
-    function hasRole(roles) {
-      return userActive() && profile().role in roles;
+    function adminRole() {
+      return hasRole(['owner', 'admin', 'super_admin']);
+    }
+
+    function cashierRole() {
+      return hasRole(['owner', 'cashier', 'super_admin']);
+    }
+
+    function kitchenRole() {
+      return hasRole(['owner', 'kitchen', 'super_admin']);
+    }
+
+    function staffRole() {
+      return hasRole(['owner', 'admin', 'super_admin', 'cashier', 'kitchen']);
     }
 
     function superAdminRole() {
       return hasRole(['super_admin']);
     }
 
-    function tenantDoc(tenantId) {
-      return get(/databases/$(database)/documents/tenants/$(tenantId)).data;
-    }
-
-    function memberPath(tenantId) {
+    function tenantMembershipPath(tenantId) {
       return /databases/$(database)/documents/tenants/$(tenantId)/memberships/$(request.auth.uid);
     }
 
-    function memberData(tenantId) {
-      return get(memberPath(tenantId)).data;
+    function tenantOwner(tenantId) {
+      return signedIn()
+        && (
+          get(/databases/$(database)/documents/tenants/$(tenantId)).data.ownerUid == request.auth.uid
+          || get(/databases/$(database)/documents/tenants/$(tenantId)).data.ownerEmail == request.auth.token.email
+        );
     }
 
-    function tenantOwner(tenantId) {
-      return signedIn() && (
-        tenantDoc(tenantId).ownerUid == request.auth.uid ||
-        tenantDoc(tenantId).ownerEmail == request.auth.token.email
-      );
+    function profileTenantMember(tenantId) {
+      return signedIn()
+        && profile().active == true
+        && profile().tenantId == tenantId;
     }
 
     function tenantMember(tenantId) {
       return signedIn() && (
-        tenantOwner(tenantId) ||
-        superAdminRole() ||
-        (exists(memberPath(tenantId)) && memberData(tenantId).active == true) ||
-        (userActive() && profile().tenantId == tenantId)
+        tenantOwner(tenantId)
+        || (
+          exists(tenantMembershipPath(tenantId))
+          && get(tenantMembershipPath(tenantId)).data.active == true
+        )
+        || profileTenantMember(tenantId)
       );
     }
 
-    function tenantRole(tenantId) {
-      return tenantOwner(tenantId) ? 'owner' :
-        (exists(memberPath(tenantId)) && memberData(tenantId).active == true ? memberData(tenantId).role : profile().role);
-    }
-
     function tenantHasRole(tenantId, roles) {
-      return tenantMember(tenantId) && (superAdminRole() || tenantRole(tenantId) in roles);
+      return signedIn() && (
+        tenantOwner(tenantId)
+        || (
+          exists(tenantMembershipPath(tenantId))
+          && get(tenantMembershipPath(tenantId)).data.active == true
+          && get(tenantMembershipPath(tenantId)).data.role in roles
+        )
+        || (
+          profileTenantMember(tenantId)
+          && profile().role in roles
+        )
+      );
     }
 
-    function canManageEverything(tenantId) {
-      return tenantHasRole(tenantId, ['owner']);
+    function tenantAdminRole(tenantId) {
+      return superAdminRole() || tenantHasRole(tenantId, ['owner', 'admin', 'super_admin']);
     }
 
-    function canManageStore(tenantId) {
-      return tenantHasRole(tenantId, ['owner', 'manager', 'admin']);
+    function tenantCashierRole(tenantId) {
+      return superAdminRole() || tenantHasRole(tenantId, ['owner', 'cashier', 'super_admin']);
     }
 
-    function canSell(tenantId) {
-      return tenantHasRole(tenantId, ['owner', 'manager', 'admin', 'cashier']);
+    function tenantKitchenRole(tenantId) {
+      return superAdminRole() || tenantHasRole(tenantId, ['owner', 'kitchen', 'super_admin']);
     }
 
-    function canManageStock(tenantId) {
-      return tenantHasRole(tenantId, ['owner', 'manager', 'admin', 'stock']);
+    function tenantStaffRole(tenantId) {
+      return superAdminRole() || tenantHasRole(tenantId, ['owner', 'admin', 'super_admin', 'cashier', 'kitchen']);
     }
 
-    function canManageMembers(tenantId) {
-      return tenantHasRole(tenantId, ['owner', 'cashier']);
-    }
-
-    function payloadTenantMatches(tenantId) {
-      return request.resource.data.tenantId == tenantId || request.resource.data.shopId == tenantId;
-    }
-
-    function resourceTenantMatches(tenantId) {
-      return resource.data.tenantId == tenantId || resource.data.shopId == tenantId;
-    }
-
-    function productBootstrapWrite(tenantId) {
-      return signedIn() && payloadTenantMatches(tenantId);
-    }
-
-    function productBootstrapUpdate(tenantId) {
-      return signedIn() && (payloadTenantMatches(tenantId) || resourceTenantMatches(tenantId));
-    }
-
-    function validSale(tenantId) {
-      return payloadTenantMatches(tenantId)
-        && request.resource.data.status == 'completed'
-        && request.resource.data.channel == 'retail-pos'
+    function validOrderBase() {
+      return request.resource.data.status == 'pending'
         && request.resource.data.items is list
         && request.resource.data.items.size() > 0
         && request.resource.data.items.size() <= 100
@@ -106,36 +103,129 @@ service cloud.firestore {
         && request.resource.data.totalAmount >= 0;
     }
 
-    function validPosSale(tenantId) {
+    function validDeliveryOrder() {
+      return validOrderBase()
+        && request.resource.data.orderType == 'delivery'
+        && request.resource.data.paymentStatus in ['unpaid', 'pending_verification'];
+    }
+
+    function validTableOrder() {
+      return validOrderBase()
+        && request.resource.data.tableCode is string
+        && request.resource.data.tableToken is string
+        && get(/databases/$(database)/documents/tables/$(request.resource.data.tableCode)).data.status == 'occupied'
+        && get(/databases/$(database)/documents/tables/$(request.resource.data.tableCode)).data.orderToken == request.resource.data.tableToken;
+    }
+
+    function activeTableOrder() {
+      return resource.data.tableCode is string
+        && resource.data.tableToken is string
+        && get(/databases/$(database)/documents/tables/$(resource.data.tableCode)).data.status == 'occupied'
+        && get(/databases/$(database)/documents/tables/$(resource.data.tableCode)).data.orderToken == resource.data.tableToken;
+    }
+
+    function tenantPayloadMatches(tenantId) {
+      return request.resource.data.tenantId == tenantId
+        || request.resource.data.shopId == tenantId;
+    }
+
+    function tenantResourceMatches(tenantId) {
+      return resource.data.tenantId == tenantId
+        || resource.data.shopId == tenantId;
+    }
+
+    function retailTenantWrite(tenantId) {
       return signedIn()
-        && validSale(tenantId)
+        && tenantHasRole(tenantId, ['owner', 'admin', 'manager', 'cashier', 'super_admin'])
+        && tenantPayloadMatches(tenantId);
+    }
+
+    function retailStockUpdate(tenantId) {
+      return retailTenantWrite(tenantId)
+        && tenantResourceMatches(tenantId)
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['stock', 'tenantId', 'updatedAt', 'updatedAtServer']);
+    }
+
+    function validTenantTableOrder(tenantId) {
+      return validOrderBase()
+        && tenantPayloadMatches(tenantId)
+        && request.resource.data.tableCode is string
+        && request.resource.data.tableToken is string
+        && get(/databases/$(database)/documents/tenants/$(tenantId)/tables/$(request.resource.data.tableCode)).data.status == 'occupied'
+        && get(/databases/$(database)/documents/tenants/$(tenantId)/tables/$(request.resource.data.tableCode)).data.orderToken == request.resource.data.tableToken;
+    }
+
+    function activeTenantTableOrder(tenantId) {
+      return resource.data.tableCode is string
+        && resource.data.tableToken is string
+        && get(/databases/$(database)/documents/tenants/$(tenantId)/tables/$(resource.data.tableCode)).data.status == 'occupied'
+        && get(/databases/$(database)/documents/tenants/$(tenantId)/tables/$(resource.data.tableCode)).data.orderToken == resource.data.tableToken;
+    }
+
+    function validRetailSale(tenantId) {
+      return tenantPayloadMatches(tenantId)
+        && request.resource.data.status == 'completed'
+        && request.resource.data.channel == 'retail-pos'
+        && request.resource.data.items is list
+        && request.resource.data.items.size() > 0
+        && request.resource.data.items.size() <= 100
+        && request.resource.data.totalQty is number
+        && request.resource.data.totalQty > 0
+        && request.resource.data.totalAmount is number
+        && request.resource.data.totalAmount >= 0
         && request.resource.data.cashierId == request.auth.uid;
     }
 
-    function validMovement(tenantId) {
-      return payloadTenantMatches(tenantId)
+    function validStockMovement(tenantId) {
+      return tenantPayloadMatches(tenantId)
         && request.resource.data.productId is string
-        && request.resource.data.type in ['sale', 'purchase', 'adjustment', 'return', 'import']
+        && request.resource.data.type in ['sale', 'purchase', 'adjustment', 'return']
         && request.resource.data.direction in ['in', 'out']
         && request.resource.data.qty is number
-        && request.resource.data.qty > 0;
-    }
-
-    function validPosSaleMovement(tenantId) {
-      return signedIn()
-        && validMovement(tenantId)
-        && request.resource.data.type == 'sale'
-        && request.resource.data.direction == 'out'
+        && request.resource.data.qty > 0
         && request.resource.data.createdBy == request.auth.uid;
     }
 
-    function validReturn(tenantId) {
-      return payloadTenantMatches(tenantId)
-        && request.resource.data.saleId is string
-        && request.resource.data.items is list
-        && request.resource.data.items.size() > 0
-        && request.resource.data.refundTotal is number
-        && request.resource.data.refundTotal > 0;
+    match /menus/{menuId} {
+      allow read: if true;
+      allow create, update, delete: if adminRole();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow create, update, delete: if adminRole();
+    }
+
+    match /tables/{tableId} {
+      allow read: if true;
+      allow create, delete: if adminRole();
+      allow update: if adminRole() || cashierRole() || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentRound', 'updatedAt']) &&
+        resource.data.status == 'occupied' &&
+        request.resource.data.orderToken == resource.data.orderToken
+      );
+    }
+
+    match /orders/{orderId} {
+      allow get: if true;
+      allow list: if staffRole() || activeTableOrder();
+      allow create: if validDeliveryOrder() || validTableOrder();
+      allow update: if cashierRole() || kitchenRole() || adminRole();
+      allow delete: if superAdminRole();
+    }
+
+    match /customerProfiles/{userId} {
+      allow read, create, update, delete: if signedIn()
+        && request.auth.uid == userId
+        && (request.method == 'delete' || (
+          request.resource.data.addresses is list
+          && request.resource.data.addresses.size() <= 5
+        ));
+    }
+
+    match /deliveryCustomers/{customerId} {
+      allow read, write: if adminRole();
     }
 
     match /users/{userId} {
@@ -148,132 +238,90 @@ service cloud.firestore {
       allow write: if superAdminRole();
     }
 
-    match /menus/{menuId} {
-      allow read: if true;
-      allow write: if hasRole(['owner', 'admin', 'manager', 'super_admin']);
-    }
-
-    match /settings/{settingId} {
-      allow read: if true;
-      allow write: if hasRole(['owner', 'admin', 'manager', 'super_admin']);
-    }
-
-    match /tables/{tableId} {
-      allow read: if true;
-      allow write: if hasRole(['owner', 'admin', 'manager', 'cashier', 'super_admin']);
-    }
-
-    match /orders/{orderId} {
-      allow get: if true;
-      allow list, create, update: if hasRole(['owner', 'admin', 'manager', 'cashier', 'kitchen', 'super_admin']);
-      allow delete: if hasRole(['owner', 'super_admin']);
-    }
-
-    match /customerProfiles/{userId} {
-      allow read, create, update, delete: if signedIn() && request.auth.uid == userId;
-    }
-
-    match /deliveryCustomers/{customerId} {
-      allow read, write: if hasRole(['owner', 'admin', 'manager', 'super_admin']);
-    }
-
     match /tenants/{tenantId} {
       allow read: if true;
       allow create, update, delete: if superAdminRole();
 
       match /menus/{menuId} {
         allow read: if true;
-        allow write: if canManageStore(tenantId);
+        allow create, update, delete: if tenantAdminRole(tenantId);
       }
 
       match /settings/{settingId} {
         allow read: if true;
-        allow write: if canManageStore(tenantId);
+        allow create, update, delete: if tenantAdminRole(tenantId);
       }
 
       match /products/{productId} {
         allow read: if true;
-        allow create: if productBootstrapWrite(tenantId);
-        allow update: if productBootstrapUpdate(tenantId);
-        allow delete: if canManageStock(tenantId) && resourceTenantMatches(tenantId);
+        allow create: if tenantAdminRole(tenantId) && tenantPayloadMatches(tenantId);
+        allow update: if (
+          tenantAdminRole(tenantId)
+          && tenantPayloadMatches(tenantId)
+          && tenantResourceMatches(tenantId)
+        ) || retailStockUpdate(tenantId);
+        allow delete: if tenantAdminRole(tenantId) && tenantResourceMatches(tenantId);
       }
 
       match /sales/{saleId} {
-        allow read: if tenantMember(tenantId) || signedIn();
-        allow create: if (canSell(tenantId) && validSale(tenantId)) || validPosSale(tenantId);
-        allow update: if (canManageStore(tenantId) && resourceTenantMatches(tenantId)) ||
-          (canSell(tenantId) && payloadTenantMatches(tenantId));
-        allow delete: if canManageEverything(tenantId) && resourceTenantMatches(tenantId);
-      }
-
-      match /returns/{returnId} {
         allow read: if tenantMember(tenantId);
-        allow create: if canSell(tenantId) && validReturn(tenantId);
-        allow update, delete: if false;
+        allow create: if retailTenantWrite(tenantId) && validRetailSale(tenantId);
+        allow update, delete: if tenantAdminRole(tenantId) && tenantResourceMatches(tenantId);
       }
 
       match /stockMovements/{movementId} {
-        allow read: if tenantMember(tenantId) || signedIn();
-        allow create: if ((canManageStock(tenantId) || canSell(tenantId)) && validMovement(tenantId)) || validPosSaleMovement(tenantId);
+        allow read: if tenantMember(tenantId);
+        allow create: if retailTenantWrite(tenantId) && validStockMovement(tenantId);
         allow update, delete: if false;
-      }
-
-      match /purchases/{purchaseId} {
-        allow read: if tenantMember(tenantId);
-        allow create, update: if canManageStock(tenantId) && payloadTenantMatches(tenantId);
-        allow delete: if canManageEverything(tenantId) && resourceTenantMatches(tenantId);
-      }
-
-      match /suppliers/{supplierId} {
-        allow read: if tenantMember(tenantId);
-        allow create, update: if canManageStock(tenantId) && payloadTenantMatches(tenantId);
-        allow delete: if canManageEverything(tenantId) && resourceTenantMatches(tenantId);
-      }
-
-      match /stockCounts/{countId} {
-        allow read: if tenantMember(tenantId);
-        allow create, update: if canManageStock(tenantId) && payloadTenantMatches(tenantId);
-        allow delete: if canManageEverything(tenantId) && resourceTenantMatches(tenantId);
-      }
-
-      match /shifts/{shiftId} {
-        allow read: if tenantMember(tenantId);
-        allow create, update: if canSell(tenantId) && payloadTenantMatches(tenantId);
-        allow delete: if canManageStore(tenantId) && resourceTenantMatches(tenantId);
-      }
-
-      match /customers/{customerId} {
-        allow read: if tenantMember(tenantId);
-        allow create, update: if canSell(tenantId) && payloadTenantMatches(tenantId);
-        allow delete: if canManageStore(tenantId) && resourceTenantMatches(tenantId);
-      }
-
-      match /memberships/{userId} {
-        allow read: if tenantMember(tenantId) || request.auth.uid == userId;
-        allow create, update, delete: if canManageMembers(tenantId);
-      }
-
-      match /notificationTokens/{tokenId} {
-        allow read: if tenantMember(tenantId);
-        allow create, update: if tenantMember(tenantId) && request.resource.data.uid == request.auth.uid;
-        allow delete: if signedIn() && (resource.data.uid == request.auth.uid || canManageStore(tenantId));
-      }
-
-      match /deliveryCustomers/{customerId} {
-        allow read, write: if canManageStore(tenantId);
       }
 
       match /tables/{tableId} {
         allow read: if true;
-        allow write: if canSell(tenantId) || canManageStore(tenantId);
+        allow create, delete: if tenantAdminRole(tenantId);
+        allow update: if tenantAdminRole(tenantId) || tenantCashierRole(tenantId) || (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentRound', 'updatedAt', 'tenantId', 'shopId']) &&
+          resource.data.status == 'occupied' &&
+          request.resource.data.orderToken == resource.data.orderToken
+        );
       }
 
       match /orders/{orderId} {
         allow get: if true;
-        allow list: if tenantMember(tenantId);
-        allow create: if payloadTenantMatches(tenantId) || tenantMember(tenantId);
-        allow update: if canSell(tenantId) || canManageStore(tenantId);
-        allow delete: if canManageEverything(tenantId);
+        allow list: if tenantStaffRole(tenantId) || activeTenantTableOrder(tenantId);
+        allow create: if superAdminRole() || (
+          tenantPayloadMatches(tenantId) && validDeliveryOrder()
+        ) || validTenantTableOrder(tenantId);
+        allow update: if tenantCashierRole(tenantId) || tenantKitchenRole(tenantId) || tenantAdminRole(tenantId);
+        allow delete: if superAdminRole() || tenantHasRole(tenantId, ['owner', 'super_admin']);
+      }
+
+      match /deliveryCustomers/{customerId} {
+        allow read, write: if tenantAdminRole(tenantId);
+      }
+
+      match /memberships/{userId} {
+        allow read: if signedIn() && (
+          request.auth.uid == userId || superAdminRole() || tenantAdminRole(tenantId)
+        );
+        allow create, update, delete: if superAdminRole();
+      }
+
+      match /notificationTokens/{tokenId} {
+        allow read: if superAdminRole() || (
+          signedIn() && resource.data.uid == request.auth.uid
+        );
+        allow create: if tenantMember(tenantId)
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.tenantId == tenantId
+          && request.resource.data.token is string
+          && request.resource.data.active == true;
+        allow update: if tenantMember(tenantId)
+          && resource.data.uid == request.auth.uid
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.tenantId == tenantId;
+        allow delete: if signedIn() && (
+          resource.data.uid == request.auth.uid || superAdminRole()
+        );
       }
     }
 
