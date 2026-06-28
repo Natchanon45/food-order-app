@@ -1,20 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order App',
   product: 'Retail POS',
-  version: '0.9.1',
-  build: '2026.06.28.016',
+  version: '0.9.2',
+  build: '2026.06.28.017',
   branch: 'feature/retail-pos',
-  commit: '0eae79e',
+  commit: '26fe613',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P6-B002 Offline Cashier/POS Scope',
-  updatedAt: '2026-06-28T22:15:00+07:00',
+  milestone: 'P6-B003 Offline Sale Fallback',
+  updatedAt: '2026-06-28T22:30:00+07:00',
   whatsNew: [
-    'เพิ่ม Offline Data Layer สำหรับฝั่งแคชเชียร์ / POS',
-    'เพิ่ม IndexedDB store และ sync queue สำหรับข้อมูลขายหน้าร้าน',
-    'คงหน้าสั่งอาหารโต๊ะให้ Online เท่านั้นเพื่อเห็นออเดอร์ร่วมและออเดอร์ก่อนหน้าแบบสด',
-    'คง Delivery ให้ Online เท่านั้นตาม workflow เดิม'
+    'แก้ POS ให้บันทึกการขายแบบออฟไลน์เมื่อปิดอินเทอร์เน็ต',
+    'Firebase network fail จะ fallback ไป local sale อัตโนมัติ',
+    'หน้าสั่งอาหารโต๊ะและ Delivery ยังเป็น Online เท่านั้น'
   ]
 };
 
