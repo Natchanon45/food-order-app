@@ -1,6 +1,6 @@
-import './retail-mobile-cart-bar.js?v=20260628-009';
+import './retail-mobile-cart-bar.js?v=20260629-020';
 import './retail-skeleton-loading.js?v=20260628-014';
-import { APP_INFO, appVersionText } from './app-info.js?v=20260629-018';
+import { APP_INFO, appVersionText } from './app-info.js?v=20260629-020';
 
 function readJson(key) {
   try { return JSON.parse(localStorage.getItem(key)); } catch { return null; }
