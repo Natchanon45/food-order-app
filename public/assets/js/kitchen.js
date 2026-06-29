@@ -1,6 +1,14 @@
+import "./sweet-dialog.js?v=20260629-048";
 import { dataService, usingDemoMode } from "./data-service.js";
 import { money, statusLabel, formatTime, toast } from "./ui.js";
 import { observeDeliveryOrders } from "./delivery-notifier.js";
+
+if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "/assets/css/sweet-dialog.css?v=20260629-048";
+  document.head.appendChild(link);
+}
 
 if (usingDemoMode) document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง</div>';
 
@@ -8,6 +16,11 @@ const grid = document.querySelector("#orderGrid");
 const activeStatuses = ["pending", "accepted", "cooking", "ready", "served"];
 let currentOrders = [];
 let availableMenus = [];
+
+async function askConfirm(message, options = {}) {
+  if (typeof window.sweetConfirm === "function") return await window.sweetConfirm(message, options);
+  return confirm(message);
+}
 
 function icon(name) {
   return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260622-9#icon-${name}"></use></svg>`;
@@ -173,7 +186,8 @@ grid.addEventListener("click", async event => {
     if (!order || !Number.isInteger(itemIndex)) return;
     const selectedItem = order.items?.[itemIndex];
     if (!selectedItem || selectedItem.cancelled) return;
-    if (!confirm(`ยกเลิกเฉพาะรายการ ${selectedItem.name} ใช่หรือไม่?`)) return;
+    const ok = await askConfirm(`ยกเลิกเฉพาะรายการ ${selectedItem.name} ใช่หรือไม่?`, { title: "ยกเลิกรายการ", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" });
+    if (!ok) return;
 
     const items = order.items.map((item, index) => index === itemIndex ? { ...item, cancelled: true, cancelledReason: "out_of_stock", cancelledAt: new Date().toISOString() } : item);
     const totals = recalculateOrder(order, items);
@@ -186,7 +200,8 @@ grid.addEventListener("click", async event => {
 
   const cancelOrderButton = event.target.closest("[data-cancel-order]");
   if (cancelOrderButton) {
-    if (!confirm("ยืนยันยกเลิกทุกรายการในออเดอร์นี้?")) return;
+    const ok = await askConfirm("ยืนยันยกเลิกทุกรายการในออเดอร์นี้?", { title: "ยกเลิกทั้งออเดอร์", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" });
+    if (!ok) return;
     await dataService.updateOrder(cancelOrderButton.dataset.cancelOrder, { status: "cancelled", subtotalAmount: 0, deliveryFee: 0, totalAmount: 0, cancelledAt: new Date().toISOString() });
     toast("ยกเลิกทั้งออเดอร์แล้ว");
     return;
