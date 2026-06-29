@@ -1,5 +1,13 @@
+import "./sweet-dialog.js?v=20260629-048";
 import { inspectLegacyData, migrateLegacyStore } from "./saas-migration-service.js?v=20260621-2";
 import { toast } from "./ui.js";
+
+if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "/assets/css/sweet-dialog.css?v=20260629-048";
+  document.head.appendChild(link);
+}
 
 const state = document.querySelector("#migrationState");
 const menuCount = document.querySelector("#menuCount");
@@ -10,6 +18,11 @@ const overwriteData = document.querySelector("#overwriteData");
 const refreshButton = document.querySelector("#refreshMigration");
 const startButton = document.querySelector("#startMigration");
 const log = document.querySelector("#migrationLog");
+
+async function askConfirm(message, options = {}) {
+  if (typeof window.sweetConfirm === "function") return await window.sweetConfirm(message, options);
+  return false;
+}
 
 function appendLog(message) {
   log.hidden = false;
@@ -39,9 +52,14 @@ refreshButton.addEventListener("click", refreshSummary);
 
 startButton.addEventListener("click", async () => {
   const overwrite = overwriteData.checked;
-  const confirmed = confirm(overwrite
+  const confirmed = await askConfirm(overwrite
     ? "ยืนยันย้ายข้อมูลและเขียนทับข้อมูลใน Tenant ร้านส้มตำตัวเฮีย?"
-    : "ยืนยันคัดลอกข้อมูลจาก default-shop เข้า Tenant ร้านส้มตำตัวเฮีย? ข้อมูลต้นทางจะไม่ถูกลบ");
+    : "ยืนยันคัดลอกข้อมูลจาก default-shop เข้า Tenant ร้านส้มตำตัวเฮีย? ข้อมูลต้นทางจะไม่ถูกลบ", {
+      title: "ยืนยันย้ายข้อมูล",
+      confirmText: "ตกลง",
+      cancelText: "ยกเลิก",
+      type: "warning"
+    });
   if (!confirmed) return;
 
   startButton.disabled = true;
