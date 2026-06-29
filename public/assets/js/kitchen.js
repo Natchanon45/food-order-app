@@ -35,6 +35,17 @@ function nextActions(status, orderType) {
   return [];
 }
 
+function isKitchenLocked(order) {
+  return ["served", "paid", "cancelled"].includes(order?.status);
+}
+
+function lockedItemLabel(order) {
+  if (order?.orderType === "delivery" && order?.status === "served") return "ส่งให้ไรเดอร์แล้ว";
+  if (order?.status === "served") return "เสิร์ฟแล้ว";
+  if (order?.status === "paid") return "ชำระเงินแล้ว";
+  return "ล็อกแล้ว";
+}
+
 function recalculateOrder(order, items) {
   const subtotalAmount = items.filter(item => !item.cancelled).reduce((sum, item) => sum + Number(item.qty) * Number(item.price), 0);
   const deliveryFee = order.orderType === "delivery" && subtotalAmount > 0 ? Number(order.deliveryFee || 0) : 0;
@@ -46,6 +57,7 @@ function render(orders) {
   const active = orders.filter(order => activeStatuses.includes(order.status));
   grid.innerHTML = active.length ? active.map(order => {
     const isDelivery = order.orderType === "delivery";
+    const locked = isKitchenLocked(order);
     const roundText = isDelivery ? "" : ` • รอบที่ ${order.roundNumber || 1}`;
     const title = isDelivery ? `Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}` : `โต๊ะ ${order.tableCode}${roundText}`;
     const paymentBadge = isDelivery
@@ -56,7 +68,7 @@ function render(orders) {
       <li style="${item.cancelled ? "opacity:.48;text-decoration:line-through" : ""}">
         <strong>${item.qty} × ${item.name}</strong>${item.note ? `<br><small>หมายเหตุ: ${item.note}</small>` : ""}
         ${item.originalQty && (Number(item.originalQty) !== Number(item.qty) || item.originalName) ? `<br><small>ลูกค้าสั่งเดิม: ${item.originalName || item.replacedFromName || item.name} × ${item.originalQty}</small>` : ""}
-        ${item.cancelled ? '<br><small>ยกเลิกแล้ว</small>' : `
+        ${item.cancelled ? '<br><small>ยกเลิกแล้ว</small>' : locked ? `<div class="kitchen-item-actions"><span class="badge">${lockedItemLabel(order)}</span></div>` : `
           <div class="kitchen-item-actions">
             <button class="btn btn-sm" data-edit-item="${order.id}" data-item-index="${index}">${icon("pencil")}<span>แก้ไข</span></button>
             <button class="btn btn-danger btn-sm" data-cancel-item="${order.id}" data-item-index="${index}">${icon("x-circle")}<span>ยกเลิก</span></button>
@@ -80,7 +92,7 @@ function render(orders) {
       <div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div>
       <div class="order-actions" style="margin-top:12px">
         ${nextActions(order.status, order.orderType).map(([status,label,cls]) => `<button class="btn ${cls}" data-id="${order.id}" data-status="${status}">${label}</button>`).join("")}
-        <button class="btn btn-danger" data-cancel-order="${order.id}">ยกเลิกทั้งออเดอร์</button>
+        ${locked ? "" : `<button class="btn btn-danger" data-cancel-order="${order.id}">ยกเลิกทั้งออเดอร์</button>`}
       </div>
     </article>`;
   }).join("") : '<div class="card empty">ยังไม่มีออเดอร์ที่รอดำเนินการ</div>';
@@ -92,7 +104,7 @@ function closeEditor() {
 
 function openEditor(order, itemIndex) {
   const item = order.items?.[itemIndex];
-  if (!item || item.cancelled) return;
+  if (!item || item.cancelled || isKitchenLocked(order)) return;
 
   const maxQty = Math.max(1, Number(item.originalQty || item.qty || 1));
   const originalName = item.originalName || item.replacedFromName || item.name;
@@ -119,7 +131,7 @@ function openEditor(order, itemIndex) {
     }
 
     const saveButton = event.target.closest("[data-save-editor]");
-    if (!saveButton) return;
+    if (!saveButton || isKitchenLocked(order)) return;
     const selectedMenuId = backdrop.querySelector("#kitchenReplacementMenu").value;
     const selectedMenu = activeMenus.find(menu => menu.id === selectedMenuId);
     const nextQty = Number(backdrop.querySelector("#kitchenReplacementQty").value);
@@ -176,7 +188,7 @@ grid.addEventListener("click", async event => {
   if (editItemButton) {
     const order = currentOrders.find(item => item.id === editItemButton.dataset.editItem);
     const itemIndex = Number(editItemButton.dataset.itemIndex);
-    if (order && Number.isInteger(itemIndex)) openEditor(order, itemIndex);
+    if (order && Number.isInteger(itemIndex) && !isKitchenLocked(order)) openEditor(order, itemIndex);
     return;
   }
 
@@ -184,7 +196,7 @@ grid.addEventListener("click", async event => {
   if (cancelItemButton) {
     const order = currentOrders.find(item => item.id === cancelItemButton.dataset.cancelItem);
     const itemIndex = Number(cancelItemButton.dataset.itemIndex);
-    if (!order || !Number.isInteger(itemIndex)) return;
+    if (!order || !Number.isInteger(itemIndex) || isKitchenLocked(order)) return;
     const selectedItem = order.items?.[itemIndex];
     if (!selectedItem || selectedItem.cancelled) return;
     const ok = await askConfirm(`ยกเลิกเฉพาะรายการ ${selectedItem.name} ใช่หรือไม่?`, { title: "ยกเลิกรายการ", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" });
@@ -201,6 +213,8 @@ grid.addEventListener("click", async event => {
 
   const cancelOrderButton = event.target.closest("[data-cancel-order]");
   if (cancelOrderButton) {
+    const order = currentOrders.find(item => item.id === cancelOrderButton.dataset.cancelOrder);
+    if (isKitchenLocked(order)) return;
     const ok = await askConfirm("ยืนยันยกเลิกทุกรายการในออเดอร์นี้?", { title: "ยกเลิกทั้งออเดอร์", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" });
     if (!ok) return;
     await dataService.updateOrder(cancelOrderButton.dataset.cancelOrder, { status: "cancelled", subtotalAmount: 0, deliveryFee: 0, totalAmount: 0, cancelledAt: new Date().toISOString() });
@@ -216,6 +230,7 @@ grid.addEventListener("click", async event => {
 
   try {
     const patch = { status };
+    if (status === "served") patch.servedAt = new Date().toISOString();
     if (order?.orderType === "delivery" && status === "served" && order.paymentStatus === "paid") {
       patch.status = "paid";
       patch.completedAt = new Date().toISOString();
