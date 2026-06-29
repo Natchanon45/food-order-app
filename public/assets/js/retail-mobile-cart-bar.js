@@ -19,6 +19,8 @@ function ensureMobileCartStyle() {
   .mobile-cart-title{font-size:.76rem;font-weight:700;opacity:.84;line-height:1.1}
   .mobile-cart-meta{font-size:.98rem;font-weight:800;line-height:1.12;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .mobile-cart-pay{border-radius:999px;background:#fff;color:#0d6f34;padding:8px 11px;font-size:.84rem;font-weight:900;white-space:nowrap}
+  .mobile-cart-bar.is-checkout{background:linear-gradient(135deg,#0d6f34,#159447)}
+  .mobile-cart-bar.is-checkout .mobile-cart-pay{background:#fff;color:#159447}
   .mobile-cart-backdrop{position:fixed;inset:0;z-index:9996;background:rgba(15,23,42,.52);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .18s ease;display:block}
   .mobile-cart-backdrop.open{opacity:1;pointer-events:auto}
   .mobile-cart-drawer{position:fixed;left:0;right:0;bottom:0;z-index:9997;display:flex;flex-direction:column;max-height:78dvh;min-height:310px;padding:8px 12px calc(14px + env(safe-area-inset-bottom,0px));border-radius:24px 24px 0 0;background:#fff;color:#151515;box-shadow:0 -24px 70px rgba(15,23,42,.34);transform:translateY(105%);transition:transform .22s ease;overflow:hidden}
@@ -59,8 +61,8 @@ function createBar() {
   bar.innerHTML = `
     <span class="mobile-cart-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 8.5a2 2 0 0 1-2 1.5H9a2 2 0 0 1-2-1.6L5 3H2"></path><circle cx="9" cy="20" r="1.5"></circle><circle cx="18" cy="20" r="1.5"></circle></svg></span>
     <span class="mobile-cart-main"><span class="mobile-cart-title">ตะกร้าขาย</span><span class="mobile-cart-meta" data-mobile-cart-meta>0 รายการ • 0.00 บาท</span></span>
-    <span class="mobile-cart-pay">ดูบิล</span>`;
-  bar.addEventListener('click', openDrawer);
+    <span class="mobile-cart-pay" data-mobile-cart-action-label>ดูบิล</span>`;
+  bar.addEventListener('click', handleBarClick);
   document.body.appendChild(bar);
   return bar;
 }
@@ -89,10 +91,7 @@ function createDrawer() {
       <button type="button" class="mobile-cart-checkout" data-mobile-cart-checkout>รับชำระเงิน</button>
     </footer>`;
   drawer.querySelectorAll('[data-mobile-cart-close]').forEach(el => el.addEventListener('click', closeDrawer));
-  drawer.querySelector('[data-mobile-cart-checkout]')?.addEventListener('click', () => {
-    closeDrawer();
-    document.querySelector('#payBtn')?.click();
-  });
+  drawer.querySelector('[data-mobile-cart-checkout]')?.addEventListener('click', checkoutFromMobileCart);
   drawer.addEventListener('touchstart', event => { touchStartY = event.touches?.[0]?.clientY || 0; }, { passive: true });
   drawer.addEventListener('touchend', event => {
     const endY = event.changedTouches?.[0]?.clientY || 0;
@@ -122,6 +121,8 @@ function updateMobileCartBar() {
   const rows = getCartRows();
 
   bar.querySelector('[data-mobile-cart-meta]').textContent = `${itemCount} • ${totalText} บาท`;
+  bar.querySelector('[data-mobile-cart-action-label]').textContent = drawerOpen ? 'รับชำระเงิน' : 'ดูบิล';
+  bar.classList.toggle('is-checkout', drawerOpen);
   bar.hidden = total <= 0;
 
   drawer.querySelector('[data-mobile-cart-drawer-meta]').textContent = itemCount;
@@ -134,13 +135,25 @@ function updateMobileCartBar() {
   if (total <= 0) closeDrawer();
 }
 
+function handleBarClick() {
+  if (readNumber(document.querySelector('#grandTotal')?.textContent) <= 0) return;
+  if (drawerOpen) checkoutFromMobileCart();
+  else openDrawer();
+}
+
+function checkoutFromMobileCart() {
+  if (readNumber(document.querySelector('#grandTotal')?.textContent) <= 0) return;
+  closeDrawer();
+  document.querySelector('#payBtn')?.click();
+}
+
 function openDrawer() {
-  updateMobileCartBar();
   if (readNumber(document.querySelector('#grandTotal')?.textContent) <= 0) return;
   drawerOpen = true;
   document.body.classList.add('mobile-cart-drawer-open');
   document.querySelector('[data-mobile-cart-backdrop]')?.classList.add('open');
   document.querySelector('[data-mobile-cart-drawer]')?.classList.add('open');
+  updateMobileCartBar();
 }
 
 function closeDrawer() {
@@ -148,6 +161,7 @@ function closeDrawer() {
   document.body.classList.remove('mobile-cart-drawer-open');
   document.querySelector('[data-mobile-cart-backdrop]')?.classList.remove('open');
   document.querySelector('[data-mobile-cart-drawer]')?.classList.remove('open');
+  updateMobileCartBar();
 }
 
 function startMobileCartBar() {
