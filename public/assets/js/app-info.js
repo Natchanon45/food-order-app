@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order App',
   product: 'Retail POS',
-  version: '0.10.8',
-  build: '2026.06.29.035',
+  version: '0.10.9',
+  build: '2026.06.29.036',
   branch: 'feature/retail-pos',
-  commit: 'db6b9dc',
+  commit: 'f8604f1',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P7-B012 POS Final Data Audit',
-  updatedAt: '2026-06-29T15:15:00+07:00',
+  milestone: 'P7-B013 POS Role Fallback',
+  updatedAt: '2026-06-29T15:35:00+07:00',
   whatsNew: [
-    'ถอด loader ใบเสร็จซ้ำที่ยัง hardcode ข้อมูลร้าน',
-    'hydrate POS roles จาก tenants/{tenantId}/roles ตอน login',
-    'ตรวจ catalog, receipt loyalty และ permission guard แล้วว่าไม่เขียน business data ใหม่'
+    'ปรับการโหลดสิทธิ์ POS จาก Firebase',
+    'เพิ่ม fallback settings roles',
+    'คง localStorage เป็น cache'
   ]
 };
 
