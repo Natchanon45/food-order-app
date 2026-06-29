@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order App',
   product: 'Retail POS',
-  version: '0.9.8',
-  build: '2026.06.29.023',
+  version: '0.9.9',
+  build: '2026.06.29.024',
   branch: 'feature/retail-pos',
-  commit: 'e6ca9a0',
+  commit: '28429b7',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P7-B002 POS Receipt Restore',
-  updatedAt: '2026-06-29T08:00:00+07:00',
+  milestone: 'P7-B003 TH Sarabun Receipt Font',
+  updatedAt: '2026-06-29T08:15:00+07:00',
   whatsNew: [
-    'คืนหน้าพิมพ์บิลหลังบันทึกขายสำเร็จ',
-    'เพิ่มปุ่มพิมพ์บิลใน modal หลังขาย',
-    'รองรับบิล offline ระหว่างรอ Sync Firebase'
+    'เปลี่ยนใบเสร็จ POS เป็น TH Sarabun PSK Local',
+    'ใช้ฟอนต์จาก assets/fonts/THSarabun.ttf และ THSarabun-Bold.ttf',
+    'ปรับขนาดตัวอักษรใบเสร็จให้เหมาะกับ thermal print'
   ]
 };
 
