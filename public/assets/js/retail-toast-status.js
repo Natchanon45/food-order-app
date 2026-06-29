@@ -1,4 +1,4 @@
-import './app-version-badge.js?v=20260629-019';
+import './app-version-badge.js?v=20260629-021';
 
 const styleId='retailToastMainStyle';
 if(!document.getElementById(styleId)){
@@ -21,6 +21,12 @@ if(!document.getElementById(styleId)){
   document.head.appendChild(style);
 }
 
+function cleanToastText(toast){
+  const text=toast.textContent||'';
+  const cleaned=text.replace(/^[\s✅✔✓☑️]+/u,'').trimStart();
+  if(cleaned!==text)toast.textContent=cleaned;
+}
+
 function setupToastTopLayer(){
   document.querySelectorAll('.toast').forEach(toast=>{
     if(toast.dataset.topLayerReady==='1')return;
@@ -28,6 +34,7 @@ function setupToastTopLayer(){
     try{toast.setAttribute('popover','manual')}catch{}
     const sync=()=>{
       try{
+        cleanToastText(toast);
         if(toast.classList.contains('show')){
           if(toast.matches(':popover-open'))toast.hidePopover();
           toast.showPopover();
@@ -36,7 +43,7 @@ function setupToastTopLayer(){
         }
       }catch{}
     };
-    new MutationObserver(sync).observe(toast,{attributes:true,attributeFilter:['class']});
+    new MutationObserver(sync).observe(toast,{attributes:true,childList:true,subtree:true,characterData:true,attributeFilter:['class']});
     sync();
   });
 }
