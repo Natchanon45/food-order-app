@@ -1,6 +1,14 @@
+import "./sweet-dialog.js?v=20260629-048";
 import { dataService, usingDemoMode } from "./data-service.js";
 import { ensureTenantContext } from "./tenant-context.js";
 import { money, toast, getTableCode, formatTime } from "./ui.js";
+
+if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "/assets/css/sweet-dialog.css?v=20260629-048";
+  document.head.appendChild(link);
+}
 
 const tableCode = getTableCode();
 const tableToken = new URLSearchParams(location.search).get("token") || "";
@@ -31,12 +39,17 @@ document.querySelector("#tableBadge").textContent = tableCode ? `โต๊ะ ${
 document.querySelector("#tableTitle").textContent = tableCode ? `เมนูสำหรับโต๊ะ ${tableCode}` : "กรุณาสแกน QR ของโต๊ะ";
 document.querySelector("#submitOrder").disabled = true;
 
+async function askConfirm(message, options = {}) {
+  if (typeof window.sweetConfirm === "function") return await window.sweetConfirm(message, options);
+  return confirm(message);
+}
+
 function isMobileMenu() {
   return window.matchMedia("(max-width: 480px)").matches;
 }
 
 function pageSize() {
-  return isMobileMenu() ? Number.MAX_SAFE_INTEGER : 9;
+  return isMobileMenu() ? Number.MAX_SAFE_INTEGER : 10;
 }
 
 function categories() {
@@ -313,7 +326,7 @@ menuGrid.addEventListener("click", event => {
   toast(`เพิ่ม ${menu.name} แล้ว`);
 });
 
-cartList.addEventListener("click", event => {
+cartList.addEventListener("click", async event => {
   const inc = event.target.dataset.inc;
   const dec = event.target.dataset.dec;
   const id = inc || dec;
@@ -330,7 +343,8 @@ cartList.addEventListener("click", event => {
   }
 
   if (item.qty <= 1) {
-    if (!confirm(`ลบ ${item.name} ออกจากรายการสั่งซื้อใช่หรือไม่?`)) return;
+    const ok = await askConfirm(`ลบ ${item.name} ออกจากรายการสั่งซื้อใช่หรือไม่?`, { title: "ลบรายการอาหาร", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" });
+    if (!ok) return;
     cart.delete(id);
   } else {
     item.qty -= 1;
