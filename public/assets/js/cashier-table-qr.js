@@ -1,5 +1,13 @@
+import "./sweet-dialog.js?v=20260629-048";
 import { dataService, usingDemoMode } from "./data-service.js";
 import { toast } from "./ui.js";
+
+if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "/assets/css/sweet-dialog.css?v=20260629-048";
+  document.head.appendChild(link);
+}
 
 if (usingDemoMode) {
   document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง</div>';
