@@ -8,7 +8,7 @@ const searchInput = document.querySelector("#searchInput");
 
 const style = document.createElement("link");
 style.rel = "stylesheet";
-style.href = "/assets/css/retail-pos-catalog.css?v=20260624-5";
+style.href = "/assets/css/retail-pos-catalog.css?v=20260629-043";
 document.head.appendChild(style);
 
 const tabs = document.createElement("div");
@@ -239,12 +239,9 @@ tabs.addEventListener("click", event => {
   refreshCatalog();
 });
 
-searchInput?.addEventListener("input", () => requestAnimationFrame(decorateCards));
+searchInput?.addEventListener("input", decorateCards);
 window.addEventListener("storage", refreshCatalog);
 
-observer = new MutationObserver(() => {
-  if (!decorating) requestAnimationFrame(decorateCards);
-});
-observer.observe(productGrid, { childList: true, subtree: true });
-
+observer = new MutationObserver(decorateCards);
+if (productGrid) observer.observe(productGrid, { childList: true, subtree: true });
 refreshCatalog();
