@@ -61,6 +61,10 @@ function withShop(payload = {}) {
   return { ...payload, tenantId };
 }
 
+function isUnpaidTableOrder(order) {
+  return order?.orderType !== "delivery" && !["paid", "cancelled"].includes(order?.status) && order?.paymentStatus !== "paid";
+}
+
 export const dataService = {
   getActiveShop() {
     return activeShop();
@@ -206,6 +210,101 @@ export const dataService = {
   async updateOrder(id, patch) {
     if (usingDemoMode) return demoStore.orders.update(id, patch);
     return updateDoc(shopDocument("orders", id), withShop({ ...patch, updatedAt: serverTimestamp() }));
+  },
+
+  async moveTableSession({ fromTableCode, fromTableToken, toTableId, orders = [] }) {
+    const orderIds = [...new Set((orders || []).map(order => String(order?.id || "").trim()).filter(Boolean))];
+    if (!fromTableCode || !fromTableToken || !toTableId || !orderIds.length) throw new Error("INVALID_TABLE_MOVE_REQUEST");
+
+    const fromTable = await this.getTable(fromTableCode);
+    const toTable = await this.getTable(toTableId);
+    if (!fromTable || fromTable.status !== "occupied" || fromTable.orderToken !== fromTableToken) throw new Error("SOURCE_TABLE_NOT_ACTIVE");
+    if (!toTable || toTable.active === false || (toTable.status && toTable.status !== "available")) throw new Error("TARGET_TABLE_NOT_AVAILABLE");
+    if (String(fromTable.id) === String(toTable.id)) throw new Error("SAME_TABLE_MOVE");
+
+    const movedAt = new Date().toISOString();
+    const targetCode = toTable.code || toTable.id;
+    const targetName = toTable.name || `โต๊ะ ${targetCode}`;
+    const maxRound = Math.max(Number(fromTable.currentRound || 0), ...orders.map(order => Number(order?.roundNumber || 0)));
+
+    if (usingDemoMode) {
+      const latestOrders = demoStore.orders.list().filter(order => orderIds.includes(String(order.id)));
+      if (latestOrders.length !== orderIds.length) throw new Error("MOVE_ORDER_NOT_FOUND");
+      latestOrders.forEach(order => {
+        if (!isUnpaidTableOrder(order) || order.tableToken !== fromTableToken || String(order.tableCode) !== String(fromTable.code || fromTable.id)) {
+          throw new Error("MOVE_ORDER_NOT_UNPAID");
+        }
+      });
+      await this.updateTable(fromTable.id, { status: "available", orderToken: "", sessionStartedAt: null, currentRound: 0 });
+      await this.updateTable(toTable.id, {
+        status: "occupied",
+        orderToken: fromTableToken,
+        sessionStartedAt: fromTable.sessionStartedAt || movedAt,
+        currentRound: maxRound,
+        movedFromTableCode: fromTable.code || fromTable.id,
+        movedAt
+      });
+      latestOrders.forEach(order => demoStore.orders.update(order.id, {
+        tableCode: targetCode,
+        tableName: targetName,
+        movedFromTableCode: fromTable.code || fromTable.id,
+        tableMovedAt: movedAt
+      }));
+      return { fromTable, toTable: { ...toTable, code: targetCode, name: targetName }, movedOrders: latestOrders.length };
+    }
+
+    const fromTableRef = shopDocument("tables", fromTable.id);
+    const toTableRef = shopDocument("tables", toTable.id);
+    const orderRefs = orderIds.map(id => shopDocument("orders", id));
+
+    await runTransaction(db, async transaction => {
+      const fromSnapshot = await transaction.get(fromTableRef);
+      const toSnapshot = await transaction.get(toTableRef);
+      const orderSnapshots = [];
+      for (const orderRef of orderRefs) orderSnapshots.push(await transaction.get(orderRef));
+
+      if (!fromSnapshot.exists()) throw new Error("SOURCE_TABLE_NOT_ACTIVE");
+      if (!toSnapshot.exists()) throw new Error("TARGET_TABLE_NOT_AVAILABLE");
+
+      const latestFromTable = { id: fromSnapshot.id, ...fromSnapshot.data() };
+      const latestToTable = { id: toSnapshot.id, ...toSnapshot.data() };
+      if (latestFromTable.status !== "occupied" || latestFromTable.orderToken !== fromTableToken) throw new Error("SOURCE_TABLE_NOT_ACTIVE");
+      if (latestToTable.active === false || (latestToTable.status && latestToTable.status !== "available")) throw new Error("TARGET_TABLE_NOT_AVAILABLE");
+
+      orderSnapshots.forEach(snapshot => {
+        if (!snapshot.exists()) throw new Error("MOVE_ORDER_NOT_FOUND");
+        const order = { id: snapshot.id, ...snapshot.data() };
+        if (!isUnpaidTableOrder(order) || order.tableToken !== fromTableToken || String(order.tableCode) !== String(latestFromTable.code || latestFromTable.id)) {
+          throw new Error("MOVE_ORDER_NOT_UNPAID");
+        }
+      });
+
+      transaction.update(fromTableRef, withShop({
+        status: "available",
+        orderToken: "",
+        sessionStartedAt: null,
+        currentRound: 0,
+        updatedAt: serverTimestamp()
+      }));
+      transaction.update(toTableRef, withShop({
+        status: "occupied",
+        orderToken: fromTableToken,
+        sessionStartedAt: latestFromTable.sessionStartedAt || movedAt,
+        currentRound: maxRound,
+        movedFromTableCode: latestFromTable.code || latestFromTable.id,
+        movedAt,
+        updatedAt: serverTimestamp()
+      }));
+      orderRefs.forEach(orderRef => transaction.update(orderRef, withShop({
+        tableCode: targetCode,
+        tableName: targetName,
+        movedFromTableCode: latestFromTable.code || latestFromTable.id,
+        tableMovedAt: movedAt,
+        updatedAt: serverTimestamp()
+      })));
+    });
+
+    return { fromTable, toTable: { ...toTable, code: targetCode, name: targetName }, movedOrders: orderIds.length };
   },
 
   async getStoreSettings() {
