@@ -5,6 +5,10 @@ function icon(name) {
   return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260621-2#icon-${name}"></use></svg>`;
 }
 
+function downloadIcon() {
+  return `<svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>`;
+}
+
 function mountQrSection() {
   const main = document.querySelector("main.container");
   if (!main || document.querySelector("#deliveryQrSection")) return;
@@ -37,7 +41,7 @@ function mountQrSection() {
         </div>
         <div class="order-actions">
           <button type="button" class="btn" id="copyDeliveryQrLink"><span>คัดลอกลิงก์</span></button>
-          <button type="button" class="btn btn-dark" id="downloadDeliveryQr"><span>ดาวน์โหลด QR</span></button>
+          <button type="button" class="btn btn-dark" id="downloadDeliveryQr">${downloadIcon()}<span>ดาวน์โหลด QR</span></button>
           <button type="button" class="btn" id="printDeliveryQr">${icon("print")}<span>พิมพ์</span></button>
         </div>
         <div class="menu-category">เมื่อร้านถูกระงับ QR นี้จะเปิดหน้าสั่งซื้อไม่ได้โดยอัตโนมัติ</div>
