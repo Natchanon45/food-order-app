@@ -1,18 +1,18 @@
 export const APP_INFO = {
   name: 'Food Order App',
   product: 'Retail POS',
-  version: '0.10.0',
-  build: '2026.06.29.025',
+  version: '0.10.1',
+  build: '2026.06.29.026',
   branch: 'feature/retail-pos',
-  commit: '794166f',
+  commit: '2a51bda',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P7-B004 Public Tenant Resolver',
-  updatedAt: '2026-06-29T08:30:00+07:00',
+  milestone: 'P7-B005 Tenant Customer Profiles',
+  updatedAt: '2026-06-29T08:45:00+07:00',
   whatsNew: [
-    'เพิ่ม fallback resolver สำหรับ public tenant slug',
-    'รองรับ tenantSlugs และ tenants slug query',
+    'ย้าย customerProfiles ไปใต้ tenants/{tenantId}',
+    'ตรวจ push token, QR โต๊ะ และ receipt ว่าใช้ tenant path แล้ว',
     'ไม่แตะ layout หรือ CSS ของ frontend'
   ]
 };
