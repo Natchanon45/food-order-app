@@ -221,7 +221,7 @@ grid.addEventListener("click", async event => {
       patch.completedAt = new Date().toISOString();
     }
     await dataService.updateOrder(id, patch);
-    toast(patch.status === "paid" ? "ส่งให้ไรเดอร์และปิดออเดอร์ Delivery แล้ว" : `เปลี่ยนสถานะเป็น ${statusLabel(status)} แล้ว`);
+    toast(patch.status === "paid" ? "ส่งให้ไรเดอร์และปิดออเดอร์ Delivery แล้ว" : `เปลี่ยนสถานะเป็น ${statusLabel(patch.status)}`);
   } catch (error) {
     console.error(error);
     toast("อัปเดตสถานะไม่สำเร็จ", "error");
