@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order App',
   product: 'Retail POS',
-  version: '0.10.5',
-  build: '2026.06.29.032',
+  version: '0.10.6',
+  build: '2026.06.29.033',
   branch: 'feature/retail-pos',
-  commit: 'bb1951e',
+  commit: '3a575bc',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P7-B009 Tenant Operational Records',
-  updatedAt: '2026-06-29T14:10:00+07:00',
+  milestone: 'P7-B010 POS Receipt Store Settings',
+  updatedAt: '2026-06-29T14:35:00+07:00',
   whatsNew: [
-    'บันทึกบิลพักที่ tenants/{tenantId}/heldBills แบบ strict',
-    'บันทึกกะพนักงานที่ tenants/{tenantId}/shifts',
-    'บันทึกคืนสินค้าและปรับ loyalty ใน Firebase transaction เดียวกัน'
+    'ใบเสร็จ POS อ่าน settings จาก tenants/{tenantId}/settings/receipt',
+    'fallback ไป tenants/{tenantId}/settings/store และ cache ในเครื่อง',
+    'localStorage สำหรับข้อมูลร้านเหลือเป็น cache เท่านั้น'
   ]
 };
 
