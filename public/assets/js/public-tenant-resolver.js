@@ -1,4 +1,4 @@
-import { db, doc, getDoc } from "./firebase-config.js";
+import { db, doc, getDoc, collection, getDocs, query, where } from "./firebase-config.js";
 import { setActiveTenant } from "./tenant-context.js";
 
 function storefrontSlug(pathname = location.pathname) {
@@ -40,6 +40,30 @@ function showUnavailableStorefront(
     <body><main><h1>${reason}</h1><p>${detail}</p></main></body>`;
 }
 
+async function getTenantBySlug(slug) {
+  const slugSnapshot = await getDoc(doc(db, "tenantSlugs", slug));
+  if (slugSnapshot.exists()) {
+    const data = slugSnapshot.data();
+    return {
+      id: data.tenantId,
+      slug: data.slug || slug,
+      name: data.name || data.shopName || slug,
+      raw: data
+    };
+  }
+
+  const tenantSnapshot = await getDocs(query(collection(db, "tenants"), where("slug", "==", slug)));
+  if (tenantSnapshot.empty) return null;
+  const item = tenantSnapshot.docs[0];
+  const data = item.data();
+  return {
+    id: item.id,
+    slug: data.slug || slug,
+    name: data.name || data.shopName || slug,
+    raw: data
+  };
+}
+
 const slug = storefrontSlug();
 const isPublicOrderingRoute =
   location.pathname.startsWith("/delivery") ||
@@ -55,21 +79,20 @@ if (isPublicOrderingRoute && !slug) {
 }
 
 if (slug) {
-  const slugSnapshot = await getDoc(doc(db, "tenantSlugs", slug));
-  if (!slugSnapshot.exists()) {
+  const tenant = await getTenantBySlug(slug);
+  if (!tenant?.id) {
     showUnavailableStorefront("ไม่พบร้านค้า", "ไม่พบชื่อร้านจากลิงก์นี้ กรุณาตรวจสอบลิงก์หรือสแกน QR ใหม่");
     throw new Error(`TENANT_NOT_FOUND:${slug}`);
   }
 
-  const tenant = slugSnapshot.data();
-  if (!tenantCanUseStorefront(tenant)) {
-    showUnavailableStorefront(tenant.subscriptionStatus === "expired" ? "บัญชีร้านหมดอายุ" : "ร้านไม่พร้อมให้บริการ");
+  if (!tenantCanUseStorefront(tenant.raw || tenant)) {
+    showUnavailableStorefront(tenant.raw?.subscriptionStatus === "expired" ? "บัญชีร้านหมดอายุ" : "ร้านไม่พร้อมให้บริการ");
     throw new Error(`TENANT_INACTIVE:${slug}`);
   }
 
   setActiveTenant({
-    id: tenant.tenantId,
-    slug: tenant.slug || slug,
-    name: tenant.name || slug
+    id: tenant.id,
+    slug: tenant.slug,
+    name: tenant.name
   });
 }
