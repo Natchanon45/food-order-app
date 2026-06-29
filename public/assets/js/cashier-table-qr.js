@@ -1,5 +1,5 @@
 import "./sweet-dialog.js?v=20260629-048";
-import "./cashier-table-close-guard.js?v=20260630-056";
+import "./cashier-table-close-guard.js?v=20260630-059";
 import { dataService, usingDemoMode } from "./data-service.js";
 import { toast } from "./ui.js";
 
