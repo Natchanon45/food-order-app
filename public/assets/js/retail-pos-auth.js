@@ -25,6 +25,17 @@ function normalizeUser(user){
   };
 }
 
+async function sha256(value){
+  const bytes=new TextEncoder().encode(value);
+  const hash=await crypto.subtle.digest('SHA-256',bytes);
+  return [...new Uint8Array(hash)].map(byte=>byte.toString(16).padStart(2,'0')).join('');
+}
+
+export async function createPasswordRecord(password){
+  const salt=globalThis.crypto?.randomUUID?.()||String(Date.now());
+  return {passwordHash:await sha256(`${salt}:${password}`),passwordSalt:salt,passwordUpdatedAt:new Date().toISOString()};
+}
+
 function normalizeTenantRole(role){
   if(!role)return null;
   const id=String(role.id||role.roleId||"").trim();
