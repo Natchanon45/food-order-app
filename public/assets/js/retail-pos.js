@@ -1,10 +1,11 @@
-import { auth, db, isFirebaseConfigured, collection, doc, query, orderBy, getDocs, runTransaction, serverTimestamp, onAuthStateChanged } from './firebase-config.js?v=20260628-1';
-import { getTenantId, RetailCollections, listRecords, watchRecords } from './retail-db.js?v=20260628-6';
+import { auth, db, isFirebaseConfigured, collection, doc, query, orderBy, getDocs, runTransaction, serverTimestamp, onAuthStateChanged } from './firebase-config.js?v=20260629-030';
+import { getTenantId, RetailCollections, listRecords, watchRecords } from './retail-db.js?v=20260629-030';
 
 const PRODUCT_KEY = "retail_pos_products_v1";
 const SALES_KEY = "retail_pos_sales_v1";
 const MOVEMENT_KEY = "retail_pos_stock_movements_v1";
 const SHIFT_KEY = "retail_pos_active_shift_v1";
+const CUSTOMER_KEY = "retail_pos_customers_v1";
 
 const sampleProducts = [
   { id: "P001", barcode: "8850000000011", name: "น้ำดื่ม 600 มล.", price: 10, cost: 6, stock: 48, unit: "ขวด" },
@@ -300,6 +301,8 @@ async function completeSaleOffline({ method, received, totals, number, createdAt
 
 function buildSale({ id, number, method, received, totals, createdAt, saleItems = cart, cashierId = auth?.currentUser?.uid || "" }) {
   const shift = readJson(SHIFT_KEY, null);
+  const selectedCustomerId = document.querySelector("#paymentDialog")?.dataset.customerId || "";
+  const customer = readJson(CUSTOMER_KEY, []).find(item => String(item.id) === String(selectedCustomerId));
   return {
     id,
     saleNumber: number,
@@ -329,6 +332,10 @@ function buildSale({ id, number, method, received, totals, createdAt, saleItems 
     receivedAmount: received,
     changeAmount: Math.max(0, received - totals.total),
     cashierId,
+    customerId: customer?.id || "",
+    customerCode: customer?.customerCode || "",
+    customerName: customer?.name || "",
+    customerPhone: customer?.phone || "",
     shiftId: shift?.id || "",
     cashierName: shift?.cashierName || "",
     terminalCode: shift?.terminalCode || ""

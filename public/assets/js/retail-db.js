@@ -1,4 +1,4 @@
-import { db, isFirebaseConfigured, collection, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp } from './firebase-config.js';
+import { db, isFirebaseConfigured, collection, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, writeBatch } from './firebase-config.js?v=20260629-030';
 
 const POS_TENANT_KEY='retail_pos_tenant_id';
 const DEFAULT_TENANT_ID='13c9bb08-927b-4f9c-a2ef-b320ef7eed99';
@@ -110,6 +110,24 @@ export async function saveRecordsStrict(collectionName,records,{onProgress}={}){
   return saved;
 }
 
+export async function commitTenantRecordsStrict(records){
+  const rows=(records||[]).map(item=>{
+    const id=normalizeId(item.row);
+    return {collectionName:item.collectionName,id,data:withMeta({...item.row,id})};
+  });
+  if(isFirebaseConfigured&&db){
+    const batch=writeBatch(db);
+    rows.forEach(item=>batch.set(ref(item.collectionName,item.id),item.data,{merge:true}));
+    await batch.commit();
+  }
+  rows.forEach(item=>{
+    const cached=readLocal(item.collectionName).filter(row=>String(row.id)!==String(item.id));
+    cached.push({...item.data,updatedAtServer:null});
+    writeLocal(item.collectionName,cached);
+  });
+  return rows.map(item=>({...item.data,updatedAtServer:null}));
+}
+
 export async function moveRecord(collectionName,previousId,row){
   const id=normalizeId(row);
   const oldId=String(previousId||'');
@@ -131,6 +149,13 @@ export async function deleteRecord(collectionName,id){
     try{await deleteDoc(ref(collectionName,id))}
     catch(error){console.warn('[retail-db] delete firebase failed',collectionName,id,error)}
   }
+  return true;
+}
+
+export async function deleteRecordStrict(collectionName,id){
+  if(isFirebaseConfigured&&db)await deleteDoc(ref(collectionName,id));
+  const rows=readLocal(collectionName).filter(item=>String(item._documentId||item.id)!==String(id));
+  writeLocal(collectionName,rows);
   return true;
 }
 

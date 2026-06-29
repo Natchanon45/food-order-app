@@ -1,4 +1,5 @@
-import { RetailCollections, watchRecords, saveRecord, migrateLocalArray } from './retail-db.js?v=20260629-029';
+import { auth } from './firebase-config.js?v=20260629-030';
+import { RetailCollections, listRecords, saveRecordsStrict, watchRecords, commitTenantRecordsStrict } from './retail-db.js?v=20260629-030';
 
 const SETTINGS_KEY = "retail_pos_loyalty_settings_v1";
 const CUSTOMER_KEY = "retail_pos_customers_v1";
@@ -169,6 +170,7 @@ async function applyLedgerToSale(saleId, customerId, pointsUsed) {
     customerName: customer.name || "",
     saleId: sale.id,
     saleNumber: sale.saleNumber || sale.id,
+    createdBy: auth?.currentUser?.uid || "",
     createdAt: new Date().toISOString(),
     pointsUsed: safeUsed,
     pointsEarned: earned,
@@ -200,10 +202,10 @@ async function applyLedgerToSale(saleId, customerId, pointsUsed) {
   write(LEDGER_KEY, ledger);
 
   try {
-    await Promise.all([
-      saveRecord(RetailCollections.customers, updatedCustomer),
-      saveRecord(RetailCollections.sales, updatedSale),
-      saveRecord(RetailCollections.loyaltyLedger, entry)
+    await commitTenantRecordsStrict([
+      { collectionName: RetailCollections.customers, row: updatedCustomer },
+      { collectionName: RetailCollections.sales, row: updatedSale },
+      { collectionName: RetailCollections.loyaltyLedger, row: entry }
     ]);
   } catch (error) {
     console.warn('[retail-pos-loyalty] firebase save failed', error);
@@ -241,7 +243,11 @@ confirmBtn?.addEventListener("click", () => {
 
 customers = read(CUSTOMER_KEY, []);
 ledger = read(LEDGER_KEY, []);
-migrateLocalArray(LEDGER_KEY, RetailCollections.loyaltyLedger).catch(error => console.warn('[retail-pos-loyalty] migrate ledger failed', error));
+const remoteLedger = await listRecords(RetailCollections.loyaltyLedger, { sortBy: 'createdAt', direction: 'desc' });
+if (!remoteLedger.length && ledger.length) {
+  const createdBy = auth?.currentUser?.uid || "";
+  await saveRecordsStrict(RetailCollections.loyaltyLedger, ledger.map(entry => ({ ...entry, createdBy: entry.createdBy || createdBy })));
+}
 const stopCustomers = watchRecords(RetailCollections.customers, rows => {
   customers = rows.map(normalizeCustomer).filter(Boolean);
   write(CUSTOMER_KEY, customers);

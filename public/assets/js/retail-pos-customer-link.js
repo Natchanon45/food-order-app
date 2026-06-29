@@ -1,4 +1,4 @@
-import { RetailCollections, watchRecords, saveRecord } from './retail-db.js?v=20260629-027';
+import { RetailCollections, listRecords, saveRecordsStrict, watchRecords, saveRecordStrict } from './retail-db.js?v=20260629-030';
 
 const CUSTOMER_KEY = "retail_pos_customers_v1";
 const SALES_KEY = "retail_pos_sales_v1";
@@ -99,7 +99,7 @@ async function tagLatestSale(customerIdValue, startedAt) {
   };
   const next = sales.map(item => String(item.id || item.saleNumber) === String(sale.id || sale.saleNumber) ? patch : item);
   write(SALES_KEY, next);
-  try { await saveRecord(RetailCollections.sales, patch); }
+  try { await saveRecordStrict(RetailCollections.sales, patch); }
   catch (error) { console.warn('[retail-pos-customer-link] sale customer tag firebase failed', error); }
 }
 
@@ -133,6 +133,9 @@ confirmBtn?.addEventListener("click", () => {
 }, true);
 paymentDialog?.addEventListener("close", () => selectCustomer(""));
 
-syncCustomers(read(CUSTOMER_KEY, []));
+const localCustomers = read(CUSTOMER_KEY, []);
+const remoteCustomers = await listRecords(RetailCollections.customers, { sortBy: 'updatedAt', direction: 'desc' });
+if (!remoteCustomers.length && localCustomers.length) await saveRecordsStrict(RetailCollections.customers, localCustomers);
+syncCustomers(remoteCustomers.length ? remoteCustomers : localCustomers);
 const stopCustomersWatch = watchRecords(RetailCollections.customers, syncCustomers, { sortBy: 'updatedAt', direction: 'desc' });
 window.addEventListener('beforeunload', stopCustomersWatch, { once: true });

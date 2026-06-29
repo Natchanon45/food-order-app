@@ -209,6 +209,52 @@ service cloud.firestore {
         && request.resource.data.direction == 'out';
     }
 
+    function validRetailCustomer(tenantId) {
+      return tenantPayloadMatches(tenantId)
+        && request.resource.data.id is string
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 120
+        && (!('points' in request.resource.data) || (
+          request.resource.data.points is number
+          && request.resource.data.points >= 0
+        ));
+    }
+
+    function validRetailSaleEnrichment(tenantId) {
+      return tenantPayloadMatches(tenantId)
+        && tenantResourceMatches(tenantId)
+        && resource.data.channel == 'retail-pos'
+        && resource.data.status == 'completed'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'customerId',
+          'customerCode',
+          'customerName',
+          'customerPhone',
+          'loyalty',
+          'shopId',
+          'tenantId',
+          'updatedAt',
+          'updatedAtServer'
+        ]);
+    }
+
+    function validLoyaltyLedgerEntry(tenantId) {
+      return tenantPayloadMatches(tenantId)
+        && request.resource.data.id is string
+        && request.resource.data.customerId is string
+        && request.resource.data.saleId is string
+        && request.resource.data.pointsUsed is number
+        && request.resource.data.pointsUsed >= 0
+        && request.resource.data.pointsEarned is number
+        && request.resource.data.pointsEarned >= 0
+        && request.resource.data.balanceBefore is number
+        && request.resource.data.balanceBefore >= 0
+        && request.resource.data.balanceAfter is number
+        && request.resource.data.balanceAfter >= 0
+        && request.resource.data.createdBy == request.auth.uid;
+    }
+
     match /menus/{menuId} {
       allow read: if true;
       allow create, update, delete: if adminRole();
@@ -289,13 +335,39 @@ service cloud.firestore {
         allow read: if tenantMember(tenantId);
         allow create: if (retailTenantWrite(tenantId) && validRetailSale(tenantId))
           || validPosSale(tenantId);
-        allow update, delete: if tenantAdminRole(tenantId) && tenantResourceMatches(tenantId);
+        allow update: if (
+          tenantAdminRole(tenantId)
+          && tenantResourceMatches(tenantId)
+        ) || (
+          retailTenantWrite(tenantId)
+          && validRetailSaleEnrichment(tenantId)
+        );
+        allow delete: if tenantAdminRole(tenantId) && tenantResourceMatches(tenantId);
       }
 
       match /stockMovements/{movementId} {
         allow read: if tenantMember(tenantId);
         allow create: if (retailTenantWrite(tenantId) && validStockMovement(tenantId))
           || validPosSaleMovement(tenantId);
+        allow update, delete: if false;
+      }
+
+      match /customers/{customerId} {
+        allow read: if tenantMember(tenantId);
+        allow create: if retailTenantWrite(tenantId)
+          && validRetailCustomer(tenantId);
+        allow update: if retailTenantWrite(tenantId)
+          && tenantResourceMatches(tenantId)
+          && request.resource.data.id == resource.data.id
+          && validRetailCustomer(tenantId);
+        allow delete: if tenantHasRole(tenantId, ['owner', 'admin', 'manager', 'super_admin'])
+          && tenantResourceMatches(tenantId);
+      }
+
+      match /loyaltyLedger/{entryId} {
+        allow read: if tenantMember(tenantId);
+        allow create: if retailTenantWrite(tenantId)
+          && validLoyaltyLedgerEntry(tenantId);
         allow update, delete: if false;
       }
 
