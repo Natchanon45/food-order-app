@@ -1,3 +1,5 @@
+import { RetailCollections, listRecords, saveRecord, deleteRecord, watchRecords, migrateLocalArray } from './retail-db.js?v=20260629-027';
+
 const HOLD_KEY = "retail_pos_held_bills_v1";
 const holdBtn = document.querySelector("#holdBillBtn");
 const heldBtn = document.querySelector("#heldBillsBtn");
@@ -6,15 +8,15 @@ const heldDialog = document.querySelector("#heldBillsDialog");
 const heldList = document.querySelector("#heldBillsList");
 const closeHeldDialog = document.querySelector("#closeHeldDialog");
 const discountInput = document.querySelector("#discountInput");
+let holds = [];
 
-function readHolds() {
+function readLegacyHolds() {
   try { return JSON.parse(localStorage.getItem(HOLD_KEY)) || []; }
   catch { return []; }
 }
 
-function writeHolds(items) {
-  localStorage.setItem(HOLD_KEY, JSON.stringify(items.slice(0, 100)));
-  renderHeldCount();
+function cacheLegacyHolds(items) {
+  localStorage.setItem(HOLD_KEY, JSON.stringify((items || []).slice(0, 100)));
 }
 
 function safeId() {
@@ -39,27 +41,12 @@ function clearCurrentBill() {
 }
 
 function renderHeldCount() {
-  const count = readHolds().length;
+  const count = holds.length;
   if (heldCount) heldCount.textContent = count;
   if (heldBtn) heldBtn.classList.toggle("has-held", count > 0);
 }
 
-function holdCurrentBill() {
-  const items = currentCartFromDom();
-  if (!items.length) return alert("ยังไม่มีสินค้าในบิลสำหรับพักไว้");
-  const note = prompt("ระบุชื่อบิลพัก เช่น ลูกค้าเสื้อแดง หรือ คิว 1", "") ?? "";
-  const products = JSON.parse(localStorage.getItem("retail_pos_products_v1") || "[]");
-  const productMap = new Map(products.map(item => [item.id, item]));
-  const total = items.reduce((sum, item) => sum + Number(productMap.get(item.id)?.price || 0) * item.qty, 0) - Number(discountInput?.value || 0);
-  const holds = readHolds();
-  holds.unshift({ id: safeId(), note: note.trim(), items, discount: Number(discountInput?.value || 0), total: Math.max(0, total), createdAt: new Date().toISOString() });
-  writeHolds(holds);
-  clearCurrentBill();
-  alert("พักบิลเรียบร้อยแล้ว");
-}
-
 function renderHeldBills() {
-  const holds = readHolds();
   heldList.innerHTML = holds.length ? holds.map(item => `
     <article class="held-bill-card">
       <div><strong>${item.note || "บิลพัก"}</strong><div>${new Date(item.createdAt).toLocaleString("th-TH")} • ${item.items.reduce((sum, row) => sum + row.qty, 0)} รายการ</div></div>
@@ -67,13 +54,41 @@ function renderHeldBills() {
     </article>`).join("") : '<div class="empty-state">ไม่มีบิลที่พักไว้</div>';
 }
 
-function resumeBill(id) {
-  const holds = readHolds();
-  const hold = holds.find(item => item.id === id);
+async function refreshHeldBills() {
+  try {
+    holds = await listRecords(RetailCollections.heldBills, { sortBy: 'createdAt', direction: 'desc' });
+  } catch {
+    holds = readLegacyHolds();
+  }
+  cacheLegacyHolds(holds);
+  renderHeldCount();
+  if (heldDialog?.open) renderHeldBills();
+}
+
+async function holdCurrentBill() {
+  const items = currentCartFromDom();
+  if (!items.length) return alert("ยังไม่มีสินค้าในบิลสำหรับพักไว้");
+  const note = prompt("ระบุชื่อบิลพัก เช่น ลูกค้าเสื้อแดง หรือ คิว 1", "") ?? "";
+  const products = JSON.parse(localStorage.getItem("retail_pos_products_v1") || "[]");
+  const productMap = new Map(products.map(item => [item.id, item]));
+  const total = items.reduce((sum, item) => sum + Number(productMap.get(item.id)?.price || 0) * item.qty, 0) - Number(discountInput?.value || 0);
+  const hold = { id: safeId(), note: note.trim(), items, discount: Number(discountInput?.value || 0), total: Math.max(0, total), createdAt: new Date().toISOString(), status: 'held' };
+  holds = [hold, ...holds].slice(0, 100);
+  cacheLegacyHolds(holds);
+  renderHeldCount();
+  clearCurrentBill();
+  try { await saveRecord(RetailCollections.heldBills, hold); }
+  catch (error) { console.warn('[retail-pos-hold] save firebase failed', error); }
+  alert("พักบิลเรียบร้อยแล้ว");
+  await refreshHeldBills();
+}
+
+async function resumeBill(id) {
+  const hold = holds.find(item => String(item.id) === String(id));
   if (!hold) return;
   if (currentCartFromDom().length && !confirm("บิลปัจจุบันยังมีสินค้า ต้องการล้างแล้วเรียกบิลพักหรือไม่?")) return;
   clearCurrentBill();
-  setTimeout(() => {
+  setTimeout(async () => {
     hold.items.forEach(item => {
       const card = document.querySelector(`[data-product-id="${CSS.escape(item.id)}"]`);
       for (let index = 0; index < item.qty; index += 1) card?.click();
@@ -82,21 +97,28 @@ function resumeBill(id) {
       discountInput.value = hold.discount || 0;
       discountInput.dispatchEvent(new Event("input", { bubbles: true }));
     }
-    writeHolds(holds.filter(item => item.id !== id));
+    holds = holds.filter(item => String(item.id) !== String(id));
+    cacheLegacyHolds(holds);
+    renderHeldCount();
+    try { await deleteRecord(RetailCollections.heldBills, id); }
+    catch (error) { console.warn('[retail-pos-hold] delete firebase failed', error); }
     heldDialog.close();
   }, 30);
 }
 
-function deleteHeldBill(id) {
-  const holds = readHolds();
-  const hold = holds.find(item => item.id === id);
+async function deleteHeldBill(id) {
+  const hold = holds.find(item => String(item.id) === String(id));
   if (!hold || !confirm(`ลบบิลพัก “${hold.note || "บิลพัก"}” หรือไม่?`)) return;
-  writeHolds(holds.filter(item => item.id !== id));
+  holds = holds.filter(item => String(item.id) !== String(id));
+  cacheLegacyHolds(holds);
+  renderHeldCount();
   renderHeldBills();
+  try { await deleteRecord(RetailCollections.heldBills, id); }
+  catch (error) { console.warn('[retail-pos-hold] delete firebase failed', error); }
 }
 
 holdBtn?.addEventListener("click", holdCurrentBill);
-heldBtn?.addEventListener("click", () => { renderHeldBills(); heldDialog.showModal(); });
+heldBtn?.addEventListener("click", async () => { await refreshHeldBills(); renderHeldBills(); heldDialog.showModal(); });
 closeHeldDialog?.addEventListener("click", () => heldDialog.close());
 heldList?.addEventListener("click", event => {
   const resume = event.target.closest("[data-resume-id]");
@@ -104,4 +126,13 @@ heldList?.addEventListener("click", event => {
   if (resume) resumeBill(resume.dataset.resumeId);
   if (remove) deleteHeldBill(remove.dataset.deleteId);
 });
-renderHeldCount();
+
+migrateLocalArray(HOLD_KEY, RetailCollections.heldBills).catch(error => console.warn('[retail-pos-hold] migrate local holds failed', error));
+const stopWatch = watchRecords(RetailCollections.heldBills, rows => {
+  holds = rows;
+  cacheLegacyHolds(holds);
+  renderHeldCount();
+  if (heldDialog?.open) renderHeldBills();
+}, { sortBy: 'createdAt', direction: 'desc' });
+window.addEventListener('beforeunload', stopWatch, { once: true });
+await refreshHeldBills();
