@@ -1,4 +1,5 @@
 import { dataService, usingDemoMode } from "./data-service.js";
+import { ensureTenantContext } from "./tenant-context.js";
 import { money, toast, getTableCode, formatTime } from "./ui.js";
 
 const tableCode = getTableCode();
@@ -404,6 +405,7 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
 });
 
 try {
+  await ensureTenantContext();
   tableSessionValid = await validateTableSession();
   if (!tableSessionValid) {
     document.querySelector("#tableBadge").textContent = "QR หมดอายุ";
@@ -420,7 +422,9 @@ try {
   }
 } catch (error) {
   console.error(error);
-  menuGrid.innerHTML = '<div class="card empty">ตรวจสอบ QR ไม่สำเร็จ กรุณาติดต่อพนักงาน</div>';
+  document.querySelector("#tableBadge").textContent = "ไม่พบร้าน";
+  document.querySelector("#tableTitle").textContent = "ไม่สามารถโหลดข้อมูลร้านได้";
+  categoryTabs.innerHTML = "";
+  menuGrid.innerHTML = '<div class="card empty">ไม่พบข้อมูลร้านหรือร้านถูกปิดใช้งาน</div>';
+  menuPagination.hidden = true;
 }
-
-updateCart();
