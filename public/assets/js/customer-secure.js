@@ -52,4 +52,4 @@ dataService.subscribeOrders = callback => {
   });
 };
 
-await import("./customer-smooth.js?v=20260622-1");
+await import("./customer-smooth.js?v=20260630-050");
