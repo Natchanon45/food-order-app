@@ -257,4 +257,8 @@ const stopLedger = watchRecords(RetailCollections.loyaltyLedger, rows => {
   ledger = rows;
   write(LEDGER_KEY, ledger.slice(0, 2000));
 }, { sortBy: 'createdAt', direction: 'desc' });
-window.addEventListener('beforeunload', () => { stopCustomers(); stopLedger(); }, { once: true });
+const stopSettings = watchRecords(RetailCollections.settings, rows => {
+  const remoteSettings = rows.find(row => String(row.id) === 'loyalty');
+  if (remoteSettings) write(SETTINGS_KEY, { ...defaults, ...remoteSettings });
+}, { sortBy: 'updatedAt', direction: 'desc' });
+window.addEventListener('beforeunload', () => { stopCustomers(); stopLedger(); stopSettings(); }, { once: true });

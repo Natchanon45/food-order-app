@@ -1,5 +1,5 @@
-import { auth, db, isFirebaseConfigured, collection, doc, runTransaction, serverTimestamp } from './firebase-config.js?v=20260628-1';
-import { getTenantId, watchRecords, RetailCollections } from './retail-db.js?v=20260628-5';
+import { auth, db, isFirebaseConfigured, collection, doc, runTransaction, serverTimestamp } from './firebase-config.js?v=20260629-031';
+import { getTenantId, watchRecords, RetailCollections } from './retail-db.js?v=20260629-031';
 
 const SALES_KEY="retail_pos_sales_v1";
 const RETURN_KEY="retail_pos_returns_v1";
@@ -316,4 +316,5 @@ renderHistory();
 const stopSalesWatch=watchRecords(RetailCollections.sales,rows=>{write(SALES_KEY,rows);document.documentElement.dataset.returnsSalesSource="firestore";window.dispatchEvent(new Event("storage"))},{sortBy:"createdAt",direction:"desc"});
 const stopReturnsWatch=watchRecords(RetailCollections.returns,rows=>{write(RETURN_KEY,rows);document.documentElement.dataset.returnsSource="firestore";window.dispatchEvent(new Event("storage"))},{sortBy:"createdAt",direction:"desc"});
 const stopProductsWatch=watchRecords(RetailCollections.products,rows=>{write(PRODUCT_KEY,rows);document.documentElement.dataset.returnsProductsSource="firestore";window.dispatchEvent(new Event("storage"))},{sortBy:"updatedAt",direction:"desc"});
-window.addEventListener("beforeunload",()=>{stopSalesWatch();stopReturnsWatch();stopProductsWatch()},{once:true});
+const stopSettingsWatch=watchRecords(RetailCollections.settings,rows=>{const settings=rows.find(row=>String(row.id)==="loyalty");if(settings)write(LOYALTY_SETTINGS_KEY,settings)},{sortBy:"updatedAt",direction:"desc"});
+window.addEventListener("beforeunload",()=>{stopSalesWatch();stopReturnsWatch();stopProductsWatch();stopSettingsWatch()},{once:true});

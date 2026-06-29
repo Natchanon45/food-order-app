@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order App',
   product: 'Retail POS',
-  version: '0.10.3',
-  build: '2026.06.29.030',
+  version: '0.10.4',
+  build: '2026.06.29.031',
   branch: 'feature/retail-pos',
-  commit: 'cdfc6e1',
+  commit: 'a64f312',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P7-B007 Tenant Customer Loyalty',
-  updatedAt: '2026-06-29T10:10:00+07:00',
+  milestone: 'P7-B008 Tenant Loyalty Settings',
+  updatedAt: '2026-06-29T13:35:00+07:00',
   whatsNew: [
-    'บันทึกทะเบียนลูกค้าที่ tenants/{tenantId}/customers แบบ Firestore-first',
-    'บันทึก customer tag ลง sale ตั้งแต่ transaction ปิดการขาย',
-    'บันทึกลูกค้า sale และ loyalty ledger เป็น atomic batch'
+    'บันทึกกติกาแต้มที่ tenants/{tenantId}/settings/loyalty',
+    'ซิงก์กติกาแต้มให้ทุกเครื่อง POS แบบ realtime',
+    'ใช้กติกากลางเดียวกันเมื่อขายและคืนสินค้า'
   ]
 };
 
