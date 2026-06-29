@@ -29,7 +29,11 @@ function localSaleId(sale) {
 
 function isConflictError(error) {
   const message = String(error?.message || error || '');
-  return message.startsWith('INSUFFICIENT_STOCK:') || message.startsWith('PRODUCT_NOT_FOUND:') || message.startsWith('INVALID_PRODUCT_ID') || message.startsWith('INVALID_QTY:');
+  return message.startsWith('TENANT_MISMATCH:')
+    || message.startsWith('INSUFFICIENT_STOCK:')
+    || message.startsWith('PRODUCT_NOT_FOUND:')
+    || message.startsWith('INVALID_PRODUCT_ID')
+    || message.startsWith('INVALID_QTY:');
 }
 
 function saleNeedsSync(sale) {
@@ -85,6 +89,8 @@ function markFailed(id, error, status = 'failed') {
 async function syncOneSale(sale) {
   const saleId = localSaleId(sale);
   const tenantId = getTenantId();
+  if (sale.tenantId && String(sale.tenantId) !== String(tenantId)) throw new Error(`TENANT_MISMATCH:${saleId}`);
+
   const userId = auth?.currentUser?.uid || sale.cashierId || '';
   const saleRef = tenantDoc(RetailCollections.sales, saleId);
   const items = Array.isArray(sale.items) ? sale.items : [];
