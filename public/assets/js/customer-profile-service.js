@@ -1,4 +1,5 @@
 import { auth, db, doc, getDoc, setDoc, serverTimestamp } from "./firebase-config.js";
+import { tenantDocumentPath, resolveTenantContext } from "./tenant-context.js";
 import {
   GoogleAuthProvider,
   signInWithPopup,
@@ -16,6 +17,10 @@ function getGuestProfile() {
 function saveGuestProfile(payload) {
   localStorage.setItem(GUEST_KEY, JSON.stringify(payload));
   return payload;
+}
+
+function customerProfileDoc(uid) {
+  return doc(db, ...tenantDocumentPath("customerProfiles", uid, resolveTenantContext()));
 }
 
 function applyStaffDeliveryState(staff) {
@@ -77,14 +82,16 @@ export async function getCustomerProfile(user = auth.currentUser) {
   const staff = await getStaffSession(user);
   if (staff) return getGuestProfile();
 
-  const snapshot = await getDoc(doc(db, "customerProfiles", user.uid));
+  const snapshot = await getDoc(customerProfileDoc(user.uid));
   return snapshot.exists()
     ? { id: snapshot.id, ...snapshot.data() }
     : { displayName: user.displayName || "", email: user.email || "", phone: "", addresses: [] };
 }
 
 export async function saveCustomerProfile(profile, user = auth.currentUser) {
+  const tenant = resolveTenantContext();
   const payload = {
+    tenantId: tenant.id,
     displayName: profile.displayName || "",
     email: user?.email || profile.email || "",
     phone: profile.phone || "",
@@ -96,7 +103,7 @@ export async function saveCustomerProfile(profile, user = auth.currentUser) {
   const staff = await getStaffSession(user);
   if (staff) return saveGuestProfile({ ...payload, email: "" });
 
-  await setDoc(doc(db, "customerProfiles", user.uid), {
+  await setDoc(customerProfileDoc(user.uid), {
     ...payload,
     updatedAt: serverTimestamp()
   }, { merge: true });
