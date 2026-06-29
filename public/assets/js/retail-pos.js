@@ -63,6 +63,10 @@ function safeId(prefix) {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
+function movementId(saleId, productId) {
+  return `${saleId}_${productId}`.replace(/[^a-zA-Z0-9_-]/g, "_");
+}
+
 function saleNumber() {
   const now = new Date();
   const date = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, "0"), String(now.getDate()).padStart(2, "0")].join("");
@@ -268,15 +272,16 @@ function saveLocalSale(sale, nextProducts, movements) {
   writeJson(MOVEMENT_KEY, [...movements, ...readJson(MOVEMENT_KEY, [])].slice(0, 500));
 }
 
-async function completeSaleOffline({ method, received, totals, number, createdAt, saleItems }) {
+async function completeSaleOffline({ saleId, method, received, totals, number, createdAt, saleItems }) {
   const movementRows = [];
   const nextProducts = products.map(product => {
     const sold = saleItems.find(item => item.id === product.id)?.qty || 0;
     if (!sold) return product;
     const before = Number(product.stock || 0);
     const after = before - sold;
+    const id = movementId(saleId, product.id);
     movementRows.push({
-      id: safeId("movement"),
+      id,
       tenantId: getTenantId(),
       productId: product.id,
       productName: product.name,
@@ -285,21 +290,23 @@ async function completeSaleOffline({ method, received, totals, number, createdAt
       qty: sold,
       before,
       after,
+      stockBefore: before,
+      stockAfter: after,
       note: `ขายสินค้า ${number}`,
       referenceType: "sale",
-      referenceId: number,
+      referenceId: saleId,
       referenceNumber: number,
       createdAt
     });
     return { ...product, stock: after };
   });
-  const sale = buildSale({ id: number, number, method, received, totals, createdAt, saleItems });
+  const sale = buildSale({ id: saleId, number, method, received, totals, createdAt, saleItems, syncStatus: "pending" });
   saveLocalSale(sale, nextProducts, movementRows);
   products = nextProducts;
   return sale;
 }
 
-function buildSale({ id, number, method, received, totals, createdAt, saleItems = cart, cashierId = auth?.currentUser?.uid || "" }) {
+function buildSale({ id, number, method, received, totals, createdAt, saleItems = cart, cashierId = auth?.currentUser?.uid || "", syncStatus = "synced" }) {
   const shift = readJson(SHIFT_KEY, null);
   const selectedCustomerId = document.querySelector("#paymentDialog")?.dataset.customerId || "";
   const customer = readJson(CUSTOMER_KEY, []).find(item => String(item.id) === String(selectedCustomerId));
@@ -307,9 +314,11 @@ function buildSale({ id, number, method, received, totals, createdAt, saleItems 
     id,
     saleNumber: number,
     tenantId: getTenantId(),
+    shopId: getTenantId(),
     channel: "retail-pos",
+    orderType: "pos",
     status: "completed",
-    syncStatus: navigator.onLine === false ? "pending" : "synced",
+    syncStatus,
     createdAt,
     items: saleItems.map(({ id, barcode, name, price, cost, qty, unit }) => ({
       id,
@@ -342,15 +351,21 @@ function buildSale({ id, number, method, received, totals, createdAt, saleItems 
   };
 }
 
-async function completeSaleFirestore({ method, received, totals, number, createdAt, saleItems }) {
+async function completeSaleFirestore({ saleId, method, received, totals, number, createdAt, saleItems }) {
   const user = await waitForAuthUser();
   if (!user?.uid) throw new Error("AUTH_REQUIRED");
 
-  const saleRef = doc(tenantCollection(RetailCollections.sales));
+  const saleRef = tenantDoc(RetailCollections.sales, saleId);
   let committedSale = null;
   const localMovements = [];
   await runTransaction(db, async transaction => {
     localMovements.length = 0;
+    const existingSale = await transaction.get(saleRef);
+    if (existingSale.exists()) {
+      committedSale = { id: saleRef.id, ...existingSale.data(), syncStatus: "synced" };
+      return;
+    }
+
     const rows = [];
     for (const cartItem of saleItems) {
       const productRef = tenantDoc(RetailCollections.products, cartItem._documentId || cartItem.id);
@@ -361,18 +376,20 @@ async function completeSaleFirestore({ method, received, totals, number, created
       rows.push({ cartItem, productRef, product });
     }
 
-    const sale = buildSale({ id: saleRef.id, number, method, received, totals, createdAt, saleItems, cashierId: user.uid });
-    committedSale = { ...sale, id: saleRef.id, syncStatus: "synced" };
-    transaction.set(saleRef, { ...sale, id: saleRef.id, syncStatus: "synced", createdAtServer: serverTimestamp(), updatedAt: Date.now(), updatedAtServer: serverTimestamp() });
+    const sale = buildSale({ id: saleId, number, method, received, totals, createdAt, saleItems, cashierId: user.uid, syncStatus: "synced" });
+    committedSale = { ...sale, id: saleId, syncStatus: "synced" };
+    transaction.set(saleRef, { ...sale, id: saleId, syncStatus: "synced", createdAtServer: serverTimestamp(), updatedAt: Date.now(), updatedAtServer: serverTimestamp() });
 
     rows.forEach(({ cartItem, productRef, product }) => {
       const before = Number(product.stock || 0);
       const after = before - Number(cartItem.qty || 0);
-      transaction.update(productRef, { stock: after, tenantId: getTenantId(), updatedAt: Date.now(), updatedAtServer: serverTimestamp() });
-      const movementRef = doc(tenantCollection('stockMovements'));
+      transaction.update(productRef, { stock: after, tenantId: getTenantId(), shopId: getTenantId(), updatedAt: Date.now(), updatedAtServer: serverTimestamp() });
+      const id = movementId(saleId, product.id);
+      const movementRef = tenantDoc(RetailCollections.stockMovements, id);
       const movement = {
-        id: movementRef.id,
+        id,
         tenantId: getTenantId(),
+        shopId: getTenantId(),
         productId: product.id,
         productName: product.name,
         type: "sale",
@@ -384,13 +401,13 @@ async function completeSaleFirestore({ method, received, totals, number, created
         stockAfter: after,
         note: `ขายสินค้า ${number}`,
         referenceType: "sale",
-        referenceId: saleRef.id,
+        referenceId: saleId,
         referenceNumber: number,
         createdBy: user.uid,
         createdAt,
         createdAtServer: serverTimestamp()
       };
-      transaction.set(movementRef, movement);
+      transaction.set(movementRef, movement, { merge: true });
       localMovements.push({ ...movement, createdAtServer: null });
     });
   });
@@ -404,8 +421,8 @@ async function completeSaleFirestore({ method, received, totals, number, created
   return committedSale;
 }
 
-async function saveSaleWithFallback({ method, received, totals, number, createdAt, saleItems }) {
-  const payload = { method, received, totals, number, createdAt, saleItems };
+async function saveSaleWithFallback({ saleId, method, received, totals, number, createdAt, saleItems }) {
+  const payload = { saleId, method, received, totals, number, createdAt, saleItems };
   if (!isFirebaseConfigured || !db || navigator.onLine === false) {
     return { sale: await completeSaleOffline(payload), offline: true };
   }
@@ -433,11 +450,12 @@ async function confirmPayment() {
   els.confirmPaymentBtn.textContent = "กำลังบันทึก...";
   renderCart();
 
+  const saleId = safeId("sale");
   const number = saleNumber();
   const createdAt = new Date().toISOString();
   const saleItems = cart.map(item => ({ ...item }));
   try {
-    const { sale, offline } = await saveSaleWithFallback({ method, received, totals, number, createdAt, saleItems });
+    const { sale, offline } = await saveSaleWithFallback({ saleId, method, received, totals, number, createdAt, saleItems });
     els.paymentDialog.close();
     renderProducts();
     resetSale();
