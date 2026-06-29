@@ -1,26 +1,18 @@
 import './sweet-dialog.js?v=20260629-048';
 import { dataService } from './data-service.js';
 import { toast } from './ui.js';
+import { db, isFirebaseConfigured, collection, getDocs } from './firebase-config.js';
+import { shopCollectionPath } from './tenant-context.js';
 
 const occupiedTables = document.querySelector('#occupiedTables');
 let currentOrders = [];
 
-function latestOrders() {
-  return new Promise(resolve => {
-    let done = false;
-    let unsubscribe = null;
-    const finish = orders => {
-      if (done) return;
-      done = true;
-      try { unsubscribe?.(); } catch {}
-      resolve((orders && orders.length ? orders : currentOrders) || []);
-    };
-    unsubscribe = dataService.subscribeOrders(orders => {
-      currentOrders = orders || [];
-      finish(currentOrders);
-    });
-    setTimeout(() => finish(currentOrders), 3000);
-  });
+async function latestOrders() {
+  if (isFirebaseConfigured && db) {
+    const snapshot = await getDocs(collection(db, ...shopCollectionPath('orders', dataService.getActiveShop())));
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  }
+  return currentOrders;
 }
 
 function isUnpaidTableOrder(order) {
