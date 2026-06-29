@@ -21,6 +21,7 @@ const issuedQrWrap = document.querySelector("#issuedQrWrap");
 const issuedQr = document.querySelector("#issuedQr");
 const qrPaperSize = document.querySelector("#qrPaperSize");
 let tables = [];
+let currentOrders = [];
 
 async function askConfirm(message, options = {}) {
   if (typeof window.sweetConfirm === "function") return await window.sweetConfirm(message, options);
@@ -65,6 +66,19 @@ function qrErrorMessage(error) {
   if (code.includes("TENANT_CONTEXT_REQUIRED") || code.includes("TENANT_NOT_RESOLVED")) return "ไม่พบข้อมูลร้าน กรุณาออกจากระบบแล้วเข้าสู่ระบบใหม่";
   if (code.includes("not-found")) return "ไม่พบข้อมูลโต๊ะ กรุณารีเฟรชหน้าแล้วลองใหม่";
   return `ออก QR ไม่สำเร็จ (${code})`;
+}
+
+function hasUnpaidTableOrders(table) {
+  const tableCode = String(table?.code || table?.id || "");
+  const tableToken = String(table?.orderToken || "");
+  return currentOrders.some(order => {
+    if (order?.orderType === "delivery") return false;
+    if (["paid", "cancelled"].includes(order?.status)) return false;
+    if (order?.paymentStatus === "paid") return false;
+    const sameToken = tableToken && String(order?.tableToken || "") === tableToken;
+    const sameTable = tableCode && String(order?.tableCode || "") === tableCode;
+    return sameToken || sameTable;
+  });
 }
 
 async function loadTables() {
@@ -177,6 +191,13 @@ occupiedTables.addEventListener("click", async event => {
     const table = tables.find(item => item.id === closeButton.dataset.closeTable);
     if (!table) return;
 
+    const latestTable = await dataService.getTable(table.id);
+    const targetTable = latestTable || table;
+    if (hasUnpaidTableOrders(targetTable)) {
+      toast("ยังมีออเดอร์หรือยังไม่ได้ชำระเงิน ไม่สามารถปิดโต๊ะได้", "error");
+      return;
+    }
+
     const ok = await askConfirm(`ยืนยันปิด ${table.name} ใช่หรือไม่?\n\nQR ใบเดิมจะใช้งานไม่ได้ และโต๊ะจะกลับเป็นโต๊ะว่าง`, {
       title: "ปิดโต๊ะ",
       confirmText: "ตกลง",
@@ -235,5 +256,9 @@ issuedQr.addEventListener("click", event => {
 });
 
 window.addEventListener("afterprint", () => document.body.classList.remove("qr-printing"));
+
+dataService.subscribeOrders(orders => {
+  currentOrders = orders || [];
+});
 
 await loadTables();
