@@ -1,7 +1,15 @@
+import "./sweet-dialog.js?v=20260629-048";
 import { dataService, usingDemoMode } from "./data-service.js";
 import { storage, ref, getDownloadURL } from "./firebase-config.js";
 import { money, statusLabel, formatTime, toast } from "./ui.js";
 import { observeDeliveryOrders } from "./delivery-notifier.js";
+
+if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "/assets/css/sweet-dialog.css?v=20260629-048";
+  document.head.appendChild(link);
+}
 
 if (usingDemoMode) {
   document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง: ข้อมูลอยู่ในเบราว์เซอร์นี้</div>';
@@ -10,6 +18,11 @@ if (usingDemoMode) {
 const grid = document.querySelector("#orderGrid");
 let currentOrders = [];
 let slipUrls = new Map();
+
+async function askConfirm(message, options = {}) {
+  if (typeof window.sweetConfirm === "function") return await window.sweetConfirm(message, options);
+  return confirm(message);
+}
 
 function icon(name) {
   return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260621-2#icon-${name}"></use></svg>`;
@@ -169,7 +182,8 @@ grid.addEventListener("click", async event => {
     const rounds = activeOrders(currentOrders).filter(order => order.orderType !== "delivery" && tableGroupKey(order) === key);
     if (!rounds.length) return;
     const total = rounds.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0);
-    if (!confirm(`รับชำระเงินทั้งโต๊ะ ${rounds[0].tableCode} จำนวน ${money(total)} บาท ใช่หรือไม่?`)) return;
+    const ok = await askConfirm(`รับชำระเงินทั้งโต๊ะ ${rounds[0].tableCode} จำนวน ${money(total)} บาท ใช่หรือไม่?`, { title: "รับชำระเงิน", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" });
+    if (!ok) return;
 
     tablePaymentButton.disabled = true;
     try {
@@ -192,7 +206,8 @@ grid.addEventListener("click", async event => {
 
   const paymentButton = event.target.closest("[data-payment-id]");
   if (paymentButton) {
-    if (!confirm("ตรวจสอบสลิปหรือรับเงินเรียบร้อยแล้วใช่หรือไม่?")) return;
+    const ok = await askConfirm("ตรวจสอบสลิปหรือรับเงินเรียบร้อยแล้วใช่หรือไม่?", { title: "ยืนยันการชำระเงิน", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" });
+    if (!ok) return;
     paymentButton.disabled = true;
     const order = currentOrders.find(item => item.id === paymentButton.dataset.paymentId);
 
@@ -222,7 +237,8 @@ grid.addEventListener("click", async event => {
     const targetLabel = order?.orderType === "delivery"
       ? `ออเดอร์ Delivery ของ ${order.recipientName || "ลูกค้า"}`
       : `ออเดอร์โต๊ะ ${order?.tableCode || "-"} รอบที่ ${order?.roundNumber || 1}`;
-    if (!confirm(`ยืนยันยกเลิก ${targetLabel} ใช่หรือไม่?\n\nการดำเนินการนี้จะนำรายการออกจากบิลทันที`)) return;
+    const ok = await askConfirm(`ยืนยันยกเลิก ${targetLabel} ใช่หรือไม่?\n\nการดำเนินการนี้จะนำรายการออกจากบิลทันที`, { title: "ยกเลิกออเดอร์", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" });
+    if (!ok) return;
   }
 
   button.disabled = true;
