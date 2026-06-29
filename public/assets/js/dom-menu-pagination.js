@@ -8,7 +8,7 @@ function isMobileLayout() {
 }
 
 function pageSize() {
-  return 9;
+  return isMobileLayout() ? Infinity : 10;
 }
 
 function visiblePageNumbers(totalPages) {
