@@ -1,3 +1,5 @@
+import { RetailCollections, getRecord } from './retail-db.js?v=20260629-032';
+
 const SALES_KEY = "retail_pos_sales_v1";
 const PRINT_MODE_KEY = "retail_pos_print_mode_v1";
 const STORE_SETTINGS_KEY = "retail_pos_store_settings_v1";
@@ -86,27 +88,54 @@ const barcodeInput = document.querySelector("#barcodeInput");
 
 let saleBeforeConfirm = null;
 let activeSale = null;
+let storeSettingsCache = null;
 
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
   catch { return fallback; }
 }
 
+function writeJson(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
 function readSales() {
   return readJson(SALES_KEY, []);
 }
 
-function getStoreSettings() {
-  const legacy = readJson(LEGACY_STORE_SETTINGS_KEY, {});
-  const settings = readJson(STORE_SETTINGS_KEY, {});
+function normalizeSettings(settings = {}, receipt = {}, legacy = {}) {
   return {
-    shopName: settings.shopName || legacy.shopName || "POS ร้านค้าปลีก",
-    shopAddress: settings.shopAddress || legacy.shopAddress || "",
-    shopPhone: settings.shopPhone || legacy.shopPhone || "",
-    taxId: settings.taxId || legacy.taxId || legacy.shopTaxId || "",
-    receiptThanks: settings.receiptThanks || "ขอบคุณที่ใช้บริการ",
-    receiptFooter: settings.receiptFooter || "เอกสารฉบับนี้ออกโดยระบบของร้านตามข้อมูลด้านบน"
+    shopName: receipt.shopName || settings.shopName || settings.name || legacy.shopName || "POS ร้านค้าปลีก",
+    shopAddress: receipt.shopAddress || settings.shopAddress || settings.address || legacy.shopAddress || "",
+    shopPhone: receipt.shopPhone || settings.shopPhone || settings.phone || legacy.shopPhone || "",
+    taxId: receipt.taxId || receipt.shopTaxId || settings.taxId || settings.shopTaxId || legacy.taxId || legacy.shopTaxId || "",
+    receiptThanks: receipt.receiptThanks || settings.receiptThanks || legacy.receiptThanks || "ขอบคุณที่ใช้บริการ",
+    receiptFooter: receipt.receiptFooter || settings.receiptFooter || legacy.receiptFooter || "เอกสารฉบับนี้ออกโดยระบบของร้านตามข้อมูลด้านบน"
   };
+}
+
+function fallbackStoreSettings() {
+  const legacy = readJson(LEGACY_STORE_SETTINGS_KEY, {});
+  const cached = readJson(STORE_SETTINGS_KEY, {});
+  return normalizeSettings(cached, cached, legacy);
+}
+
+async function loadStoreSettings() {
+  const fallback = fallbackStoreSettings();
+  try {
+    const [store, receipt] = await Promise.all([
+      getRecord(RetailCollections.settings, 'store'),
+      getRecord(RetailCollections.settings, 'receipt')
+    ]);
+    const settings = normalizeSettings(store || {}, receipt || {}, fallback);
+    storeSettingsCache = settings;
+    writeJson(STORE_SETTINGS_KEY, settings);
+    return settings;
+  } catch (error) {
+    console.warn('[retail-pos-complete] receipt settings fallback', error);
+    storeSettingsCache = fallback;
+    return fallback;
+  }
 }
 
 function money(value) {
@@ -114,8 +143,8 @@ function money(value) {
 }
 
 function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>'"]/g, char => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
+  return String(value ?? "").replace(/[&<>']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;"
   })[char]);
 }
 
@@ -134,9 +163,9 @@ function latestSaleSnapshot(sale) {
   return readSales().find(item => item.id === sale?.id) || sale;
 }
 
-function populateReceipt(sourceSale) {
+async function populateReceipt(sourceSale) {
   const sale = latestSaleSnapshot(sourceSale);
-  const settings = getStoreSettings();
+  const settings = storeSettingsCache || await loadStoreSettings();
   document.querySelector("#printShopName").textContent = settings.shopName;
   document.querySelector("#printShopAddress").textContent = settings.shopAddress;
   document.querySelector("#printShopPhone").textContent = settings.shopPhone ? `โทร ${settings.shopPhone}` : "";
@@ -192,7 +221,7 @@ async function waitForReceiptFont() {
 async function printReceipt() {
   if (!activeSale) return;
   activeSale = latestSaleSnapshot(activeSale);
-  populateReceipt(activeSale);
+  await populateReceipt(activeSale);
   await waitForReceiptFont();
   requestAnimationFrame(() => requestAnimationFrame(() => window.print()));
 }
@@ -216,6 +245,7 @@ confirmPaymentBtn?.addEventListener("click", () => {
   }, 120);
 }, { capture: true });
 
+loadStoreSettings();
 printMode.value = localStorage.getItem(PRINT_MODE_KEY) || "ask";
 printMode.addEventListener("change", () => localStorage.setItem(PRINT_MODE_KEY, printMode.value));
 printAndNewBtn.addEventListener("click", printReceipt);
