@@ -22,6 +22,11 @@ const fileSize = document.querySelector("#menuImageFileSize");
 const removeImageButton = document.querySelector("#removeMenuImage");
 const imageError = document.querySelector("#menuImageError");
 
+async function askConfirm(message, options = {}) {
+  if (typeof window.sweetConfirm === "function") return await window.sweetConfirm(message, options);
+  return confirm(message);
+}
+
 function formatFileSize(bytes = 0) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -234,7 +239,10 @@ document.body.addEventListener("click", async event => {
     showPreview(item.image || DEFAULT_FOOD_IMAGE, "รูปอาหารเดิม", "");
     scrollTo({ top: 0, behavior: "smooth" });
   }
-  if (deleteMenu && confirm("ยืนยันลบเมนูนี้?")) { await dataService.deleteMenu(deleteMenu); toast("ลบเมนูแล้ว"); await load(); }
+  if (deleteMenu) {
+    const ok = await askConfirm("ยืนยันลบเมนูนี้?", { title: "ลบเมนู", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" });
+    if (ok) { await dataService.deleteMenu(deleteMenu); toast("ลบเมนูแล้ว"); await load(); }
+  }
   if (editTable) {
     const item = tables.find(row => row.id === editTable);
     document.querySelector("#tableId").value = item.id;
@@ -243,7 +251,10 @@ document.body.addEventListener("click", async event => {
     document.querySelector("#tableActive").checked = item.active !== false;
     scrollTo({ top: 0, behavior: "smooth" });
   }
-  if (deleteTable && confirm("ยืนยันลบโต๊ะนี้?")) { await dataService.deleteTable(deleteTable); toast("ลบโต๊ะแล้ว"); await load(); }
+  if (deleteTable) {
+    const ok = await askConfirm("ยืนยันลบโต๊ะนี้?", { title: "ลบโต๊ะ", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" });
+    if (ok) { await dataService.deleteTable(deleteTable); toast("ลบโต๊ะแล้ว"); await load(); }
+  }
 });
 
 setMenuImagePosition(50, 50);
