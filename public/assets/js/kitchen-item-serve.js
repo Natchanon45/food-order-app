@@ -9,12 +9,29 @@ function activeItems(items) {
 }
 
 function canServe(order, item) {
-  return order && order.orderType !== 'delivery' && ['ready', 'served'].includes(order.status) && item && !item.cancelled && item.served !== true;
+  return order && order.orderType !== 'delivery' && order.status === 'ready' && item && !item.cancelled && item.served !== true;
 }
 
 function allServed(order, items) {
   const rows = activeItems(items);
   return order.orderType !== 'delivery' && rows.length > 0 && rows.every(item => item.served === true);
+}
+
+function showServedBadge(actions) {
+  actions.innerHTML = '<span class="badge">เสิร์ฟแล้ว</span>';
+}
+
+async function syncServedOrder(order) {
+  if (!order || order.orderType === 'delivery' || order.status !== 'served') return;
+  const activeRows = activeItems(order.items);
+  if (!activeRows.length || activeRows.every(item => item.served === true)) return;
+  const now = order.servedAt || new Date().toISOString();
+  const items = (order.items || []).map(item => item.cancelled ? item : { ...item, served: true, servedAt: item.servedAt || now });
+  try {
+    await dataService.updateOrder(order.id, { items, servedAt: now });
+  } catch (error) {
+    console.error('SYNC_SERVED_ITEMS_FAILED', error);
+  }
 }
 
 function installButtons() {
@@ -25,7 +42,14 @@ function installButtons() {
     const order = currentOrders.find(row => row.id === orderId);
     const item = order && order.items ? order.items[itemIndex] : null;
     const actions = editButton.closest('.kitchen-item-actions');
-    if (!actions || !canServe(order, item)) return;
+    if (!actions) return;
+
+    if (order?.orderType !== 'delivery' && (order.status === 'served' || item?.served === true)) {
+      showServedBadge(actions);
+      return;
+    }
+
+    if (!canServe(order, item)) return;
     if (actions.querySelector('[data-serve-item]')) return;
     const button = document.createElement('button');
     button.type = 'button';
@@ -73,6 +97,7 @@ if (grid) {
 
 dataService.subscribeOrders(orders => {
   currentOrders = orders || [];
+  currentOrders.filter(order => order?.orderType !== 'delivery' && order?.status === 'served').forEach(syncServedOrder);
   setTimeout(installButtons, 0);
 });
 
