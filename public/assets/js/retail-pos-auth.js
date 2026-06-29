@@ -33,11 +33,26 @@ function normalizeTenantRole(role){
   return {id,name:role.name||id,permissions,locked:Boolean(role.locked),tenantId:role.tenantId||getTenantId()};
 }
 
+async function readRolesFromCollection(tenantId){
+  const snap=await getDocs(collection(db,'tenants',tenantId,'roles'));
+  return snap.docs.map(item=>normalizeTenantRole({id:item.id,...item.data()})).filter(Boolean);
+}
+
+async function readRolesFromSettings(tenantId){
+  const snap=await getDoc(doc(db,'tenants',tenantId,'settings','roles'));
+  if(!snap.exists())return [];
+  const data=snap.data();
+  const rows=Array.isArray(data.roles)?data.roles:Array.isArray(data.items)?data.items:[];
+  return rows.map(normalizeTenantRole).filter(Boolean);
+}
+
 async function hydrateTenantRoles(tenantId=getTenantId()){
   if(!db||!tenantId)return read(ROLE_KEY,[]);
   try{
-    const snap=await getDocs(collection(db,'tenants',tenantId,'roles'));
-    const roles=snap.docs.map(item=>normalizeTenantRole({id:item.id,...item.data()})).filter(Boolean);
+    let roles=[];
+    try{roles=await readRolesFromCollection(tenantId)}
+    catch(error){console.warn('[retail-auth] tenant roles collection denied, trying settings fallback',error)}
+    if(!roles.length)roles=await readRolesFromSettings(tenantId);
     if(roles.length)write(ROLE_KEY,roles);
     return roles.length?roles:read(ROLE_KEY,[]);
   }catch(error){
