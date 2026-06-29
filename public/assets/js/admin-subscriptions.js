@@ -1,6 +1,14 @@
+import "./sweet-dialog.js?v=20260629-048";
 import { app } from "./firebase-config.js";
 import { toast } from "./ui.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-functions.js";
+
+if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "/assets/css/sweet-dialog.css?v=20260629-048";
+  document.head.appendChild(link);
+}
 
 const functions = getFunctions(app, "asia-southeast1");
 const listTenants = httpsCallable(functions, "listTenants");
@@ -8,6 +16,11 @@ const backfillTenantSubscriptions = httpsCallable(functions, "backfillTenantSubs
 const updateTenantSubscription = httpsCallable(functions, "updateTenantSubscription");
 const tenantList = document.querySelector("#tenantList");
 let tenants = [];
+
+async function askConfirm(message, options = {}) {
+  if (typeof window.sweetConfirm === "function") return await window.sweetConfirm(message, options);
+  return confirm(message);
+}
 
 function icon(name) {
   return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260621-2#icon-${name}"></use></svg>`;
@@ -84,7 +97,15 @@ async function performAction(button) {
   const tenantId = section?.dataset.subscriptionTenant;
   if (!tenantId) return;
   const action = button.dataset.subscriptionAction;
-  if (action === "suspend" && !confirm("ยืนยันระงับบัญชีร้านนี้ใช่หรือไม่? QR และระบบร้านจะหยุดใช้งานทันที")) return;
+  if (action === "suspend") {
+    const ok = await askConfirm("ยืนยันระงับบัญชีร้านนี้ใช่หรือไม่? QR และระบบร้านจะหยุดใช้งานทันที", {
+      title: "ระงับบัญชีร้าน",
+      confirmText: "ตกลง",
+      cancelText: "ยกเลิก",
+      type: "warning"
+    });
+    if (!ok) return;
+  }
 
   const payload = {
     tenantId,
