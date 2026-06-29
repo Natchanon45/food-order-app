@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order App',
   product: 'Retail POS',
-  version: '0.10.6',
-  build: '2026.06.29.033',
+  version: '0.10.7',
+  build: '2026.06.29.034',
   branch: 'feature/retail-pos',
-  commit: '3a575bc',
+  commit: '127a8b6',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P7-B010 POS Receipt Store Settings',
-  updatedAt: '2026-06-29T14:35:00+07:00',
+  milestone: 'P7-B011 POS Offline Queue Hardening',
+  updatedAt: '2026-06-29T14:55:00+07:00',
   whatsNew: [
-    'ใบเสร็จ POS อ่าน settings จาก tenants/{tenantId}/settings/receipt',
-    'fallback ไป tenants/{tenantId}/settings/store และ cache ในเครื่อง',
-    'localStorage สำหรับข้อมูลร้านเหลือเป็น cache เท่านั้น'
+    'เพิ่มสถานะ offline sale queue: pending, syncing, synced, failed, conflict',
+    'เพิ่ม syncAttemptCount, syncLockId และ lastSyncAttemptAt',
+    'กัน sync ซ้ำเมื่อพบ sale เดิมใน Firebase'
   ]
 };
 
