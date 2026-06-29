@@ -4,7 +4,7 @@ export const APP_INFO = {
   version: '0.9.5',
   build: '2026.06.29.020',
   branch: 'feature/retail-pos',
-  commit: '05f7003',
+  commit: '57441d1',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
