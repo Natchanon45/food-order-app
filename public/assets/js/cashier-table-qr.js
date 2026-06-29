@@ -1,5 +1,5 @@
 import "./sweet-dialog.js?v=20260629-048";
-import "./cashier-table-close-guard.js?v=20260630-054";
+import "./cashier-table-close-guard.js?v=20260630-056";
 import { dataService, usingDemoMode } from "./data-service.js";
 import { toast } from "./ui.js";
 
@@ -63,6 +63,7 @@ function createOrderToken() {
 
 function qrErrorMessage(error) {
   const code = String(error?.code || error?.message || "UNKNOWN_ERROR");
+  if (code.includes("TABLE_HAS_UNPAID_ORDERS")) return "ยังมีออเดอร์หรือยังไม่ได้ชำระเงิน ไม่สามารถปิดโต๊ะได้";
   if (code.includes("permission-denied")) return "ไม่มีสิทธิ์อัปเดตโต๊ะ กรุณา Deploy Firestore Rules ล่าสุด";
   if (code.includes("TENANT_CONTEXT_REQUIRED") || code.includes("TENANT_NOT_RESOLVED")) return "ไม่พบข้อมูลร้าน กรุณาออกจากระบบแล้วเข้าสู่ระบบใหม่";
   if (code.includes("not-found")) return "ไม่พบข้อมูลโต๊ะ กรุณารีเฟรชหน้าแล้วลองใหม่";
