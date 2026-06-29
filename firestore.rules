@@ -255,6 +255,59 @@ service cloud.firestore {
         && request.resource.data.createdBy == request.auth.uid;
     }
 
+    function validHeldBill(tenantId) {
+      return tenantPayloadMatches(tenantId)
+        && request.resource.data.id is string
+        && request.resource.data.status == 'held'
+        && request.resource.data.items is list
+        && request.resource.data.items.size() > 0
+        && request.resource.data.items.size() <= 100
+        && request.resource.data.total is number
+        && request.resource.data.total >= 0
+        && request.resource.data.createdBy == request.auth.uid;
+    }
+
+    function validRetailShift(tenantId) {
+      return tenantPayloadMatches(tenantId)
+        && request.resource.data.id is string
+        && request.resource.data.cashierName is string
+        && request.resource.data.terminalCode is string
+        && request.resource.data.openingCash is number
+        && request.resource.data.openingCash >= 0
+        && request.resource.data.status in ['open', 'closed']
+        && request.resource.data.createdBy == request.auth.uid
+        && (
+          request.resource.data.status == 'open'
+          || request.resource.data.closedBy == request.auth.uid
+        );
+    }
+
+    function validRetailReturn(tenantId) {
+      return tenantPayloadMatches(tenantId)
+        && request.resource.data.id is string
+        && request.resource.data.saleId is string
+        && request.resource.data.items is list
+        && request.resource.data.items.size() > 0
+        && request.resource.data.items.size() <= 100
+        && request.resource.data.refundTotal is number
+        && request.resource.data.refundTotal >= 0
+        && request.resource.data.createdBy == request.auth.uid;
+    }
+
+    function validRetailReturnSaleUpdate(tenantId) {
+      return tenantPayloadMatches(tenantId)
+        && tenantResourceMatches(tenantId)
+        && resource.data.channel == 'retail-pos'
+        && resource.data.status == 'completed'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'returns',
+          'refundTotal',
+          'loyalty',
+          'updatedAt',
+          'updatedAtServer'
+        ]);
+    }
+
     match /menus/{menuId} {
       allow read: if true;
       allow create, update, delete: if adminRole();
@@ -341,6 +394,9 @@ service cloud.firestore {
         ) || (
           retailTenantWrite(tenantId)
           && validRetailSaleEnrichment(tenantId)
+        ) || (
+          retailTenantWrite(tenantId)
+          && validRetailReturnSaleUpdate(tenantId)
         );
         allow delete: if tenantAdminRole(tenantId) && tenantResourceMatches(tenantId);
       }
@@ -368,6 +424,32 @@ service cloud.firestore {
         allow read: if tenantMember(tenantId);
         allow create: if retailTenantWrite(tenantId)
           && validLoyaltyLedgerEntry(tenantId);
+        allow update, delete: if false;
+      }
+
+      match /heldBills/{heldBillId} {
+        allow read: if tenantMember(tenantId);
+        allow create, update: if retailTenantWrite(tenantId)
+          && validHeldBill(tenantId);
+        allow delete: if tenantHasRole(tenantId, ['owner', 'admin', 'manager', 'cashier', 'super_admin'])
+          && tenantResourceMatches(tenantId);
+      }
+
+      match /shifts/{shiftId} {
+        allow read: if tenantMember(tenantId);
+        allow create: if retailTenantWrite(tenantId)
+          && validRetailShift(tenantId);
+        allow update: if retailTenantWrite(tenantId)
+          && tenantResourceMatches(tenantId)
+          && request.resource.data.id == resource.data.id
+          && validRetailShift(tenantId);
+        allow delete: if false;
+      }
+
+      match /returns/{returnId} {
+        allow read: if tenantMember(tenantId);
+        allow create: if retailTenantWrite(tenantId)
+          && validRetailReturn(tenantId);
         allow update, delete: if false;
       }
 

@@ -1,4 +1,5 @@
-import { RetailCollections, listRecords, saveRecord, deleteRecord, watchRecords, migrateLocalArray } from './retail-db.js?v=20260629-027';
+import { auth } from './firebase-config.js?v=20260629-032';
+import { RetailCollections, listRecords, saveRecordStrict, saveRecordsStrict, deleteRecordStrict, watchRecords } from './retail-db.js?v=20260629-032';
 
 const HOLD_KEY = "retail_pos_held_bills_v1";
 const holdBtn = document.querySelector("#holdBillBtn");
@@ -72,14 +73,19 @@ async function holdCurrentBill() {
   const products = JSON.parse(localStorage.getItem("retail_pos_products_v1") || "[]");
   const productMap = new Map(products.map(item => [item.id, item]));
   const total = items.reduce((sum, item) => sum + Number(productMap.get(item.id)?.price || 0) * item.qty, 0) - Number(discountInput?.value || 0);
-  const hold = { id: safeId(), note: note.trim(), items, discount: Number(discountInput?.value || 0), total: Math.max(0, total), createdAt: new Date().toISOString(), status: 'held' };
+  const hold = { id: safeId(), note: note.trim(), items, discount: Number(discountInput?.value || 0), total: Math.max(0, total), createdAt: new Date().toISOString(), status: 'held', createdBy: auth?.currentUser?.uid || '' };
+  try {
+    await saveRecordStrict(RetailCollections.heldBills, hold);
+  } catch (error) {
+    console.error('[retail-pos-hold] save firebase failed', error);
+    alert("พักบิลใน Firebase ไม่สำเร็จ กรุณาลองใหม่");
+    return;
+  }
   holds = [hold, ...holds].slice(0, 100);
   cacheLegacyHolds(holds);
   renderHeldCount();
   clearCurrentBill();
-  try { await saveRecord(RetailCollections.heldBills, hold); }
-  catch (error) { console.warn('[retail-pos-hold] save firebase failed', error); }
-  alert("พักบิลเรียบร้อยแล้ว");
+  alert("พักบิลใน Firebase เรียบร้อยแล้ว");
   await refreshHeldBills();
 }
 
@@ -87,8 +93,14 @@ async function resumeBill(id) {
   const hold = holds.find(item => String(item.id) === String(id));
   if (!hold) return;
   if (currentCartFromDom().length && !confirm("บิลปัจจุบันยังมีสินค้า ต้องการล้างแล้วเรียกบิลพักหรือไม่?")) return;
+  try { await deleteRecordStrict(RetailCollections.heldBills, id); }
+  catch (error) {
+    console.error('[retail-pos-hold] delete firebase failed', error);
+    alert("เรียกบิลพักไม่สำเร็จ เพราะลบสถานะพักใน Firebase ไม่ได้");
+    return;
+  }
   clearCurrentBill();
-  setTimeout(async () => {
+  setTimeout(() => {
     hold.items.forEach(item => {
       const card = document.querySelector(`[data-product-id="${CSS.escape(item.id)}"]`);
       for (let index = 0; index < item.qty; index += 1) card?.click();
@@ -100,8 +112,6 @@ async function resumeBill(id) {
     holds = holds.filter(item => String(item.id) !== String(id));
     cacheLegacyHolds(holds);
     renderHeldCount();
-    try { await deleteRecord(RetailCollections.heldBills, id); }
-    catch (error) { console.warn('[retail-pos-hold] delete firebase failed', error); }
     heldDialog.close();
   }, 30);
 }
@@ -109,12 +119,16 @@ async function resumeBill(id) {
 async function deleteHeldBill(id) {
   const hold = holds.find(item => String(item.id) === String(id));
   if (!hold || !confirm(`ลบบิลพัก “${hold.note || "บิลพัก"}” หรือไม่?`)) return;
+  try { await deleteRecordStrict(RetailCollections.heldBills, id); }
+  catch (error) {
+    console.error('[retail-pos-hold] delete firebase failed', error);
+    alert("ลบบิลพักใน Firebase ไม่สำเร็จ กรุณาลองใหม่");
+    return;
+  }
   holds = holds.filter(item => String(item.id) !== String(id));
   cacheLegacyHolds(holds);
   renderHeldCount();
   renderHeldBills();
-  try { await deleteRecord(RetailCollections.heldBills, id); }
-  catch (error) { console.warn('[retail-pos-hold] delete firebase failed', error); }
 }
 
 holdBtn?.addEventListener("click", holdCurrentBill);
@@ -127,7 +141,12 @@ heldList?.addEventListener("click", event => {
   if (remove) deleteHeldBill(remove.dataset.deleteId);
 });
 
-migrateLocalArray(HOLD_KEY, RetailCollections.heldBills).catch(error => console.warn('[retail-pos-hold] migrate local holds failed', error));
+const legacyHolds = readLegacyHolds();
+const remoteHolds = await listRecords(RetailCollections.heldBills, { sortBy: 'createdAt', direction: 'desc' });
+if (!remoteHolds.length && legacyHolds.length) {
+  const createdBy = auth?.currentUser?.uid || '';
+  await saveRecordsStrict(RetailCollections.heldBills, legacyHolds.map(hold => ({ ...hold, status: 'held', createdBy: hold.createdBy || createdBy })));
+}
 const stopWatch = watchRecords(RetailCollections.heldBills, rows => {
   holds = rows;
   cacheLegacyHolds(holds);

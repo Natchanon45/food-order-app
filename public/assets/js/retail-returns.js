@@ -91,14 +91,8 @@ function updateLoyaltyPreview(refundTotal){
   preview.hidden=false;
 }
 
-function applyLoyaltyAdjustment(sale,returnId,refundTotal,createdAt){
-  const planned=calculateLoyaltyAdjustment(sale,refundTotal);
-  if(!planned)return null;
-  const customers=read(CUSTOMER_KEY,[]);
-  const customerIndex=customers.findIndex(customer=>customer.id===planned.customerId);
-  if(customerIndex<0)return null;
-
-  const customer=customers[customerIndex];
+function buildLoyaltyReturnBundle(planned,customer,sale,returnId,refundTotal,createdAt,createdBy=""){
+  if(!planned||!customer)return null;
   const pointsBefore=Math.max(0,Math.floor(Number(customer.points||0)));
   const pointsUsedRestored=Math.max(0,planned.pointsUsedToRestore);
   const availableAfterRestore=pointsBefore+pointsUsedRestored;
@@ -106,22 +100,36 @@ function applyLoyaltyAdjustment(sale,returnId,refundTotal,createdAt){
   const deductionShortfall=Math.max(0,planned.pointsEarnedToDeduct-pointsEarnedDeducted);
   const pointsAfter=Math.max(0,availableAfterRestore-pointsEarnedDeducted);
 
-  customers[customerIndex]={...customer,points:pointsAfter,updatedAt:createdAt};
-  const ledger=read(LOYALTY_LEDGER_KEY,[]);
-  ledger.unshift({
+  const updatedCustomer={...customer,points:pointsAfter,updatedAt:createdAt};
+  const ledgerEntry={
     id:uid("point-return"),type:"return",returnId,saleId:sale.id,customerId:customer.id,
     customerCode:customer.customerCode||sale.customerCode||"",customerName:customer.name||sale.customerName||"",
     createdAt,pointsEarned:0,pointsUsed:0,pointsEarnedDeducted,pointsUsedRestored,
-    deductionShortfall,balanceBefore:pointsBefore,balanceAfter:pointsAfter,refundTotal
-  });
-
-  write(CUSTOMER_KEY,customers);
-  write(LOYALTY_LEDGER_KEY,ledger.slice(0,2000));
-
-  return{
+    deductionShortfall,balanceBefore:pointsBefore,balanceAfter:pointsAfter,refundTotal,
+    tenantId:getTenantId(),createdBy
+  };
+  const adjustment={
     customerId:customer.id,customerCode:customer.customerCode||sale.customerCode||"",customerName:customer.name||sale.customerName||"",
     pointsBefore,pointsEarnedDeducted,pointsUsedRestored,deductionShortfall,pointsAfter
   };
+  return{updatedCustomer,ledgerEntry,adjustment};
+}
+
+function cacheLoyaltyReturnBundle(bundle){
+  if(!bundle)return;
+  const customers=read(CUSTOMER_KEY,[]),customerIndex=customers.findIndex(customer=>customer.id===bundle.adjustment.customerId);
+  if(customerIndex>=0){customers[customerIndex]=bundle.updatedCustomer;write(CUSTOMER_KEY,customers)}
+  const ledger=read(LOYALTY_LEDGER_KEY,[]);
+  write(LOYALTY_LEDGER_KEY,[bundle.ledgerEntry,...ledger.filter(row=>row.id!==bundle.ledgerEntry.id)].slice(0,2000));
+}
+
+function applyLocalLoyaltyAdjustment(sale,returnId,refundTotal,createdAt){
+  const planned=calculateLoyaltyAdjustment(sale,refundTotal);
+  if(!planned)return null;
+  const customer=read(CUSTOMER_KEY,[]).find(row=>row.id===planned.customerId);
+  const bundle=buildLoyaltyReturnBundle(planned,customer,sale,returnId,refundTotal,createdAt,auth?.currentUser?.uid||"");
+  cacheLoyaltyReturnBundle(bundle);
+  return bundle;
 }
 
 function searchSales(){
@@ -205,11 +213,14 @@ async function confirmReturn(){
   els.confirm.textContent="กำลังบันทึกการคืน...";
   try{
     const movementRows=[];
-    const nextProducts=products.map(product=>({...product}));
+    let nextProducts=products.map(product=>({...product}));
+    let committedLoyaltyBundle=null;
     if(isFirebaseConfigured&&db){
       const saleRef=tenantDoc(RetailCollections.sales,selectedSale._documentId||selectedSale.id);
       const returnRef=tenantDoc(RetailCollections.returns,id);
-      await runTransaction(db,async transaction=>{
+      committedLoyaltyBundle=await runTransaction(db,async transaction=>{
+        movementRows.length=0;
+        nextProducts=products.map(product=>({...product}));
         const saleSnapshot=await transaction.get(saleRef);
         if(!saleSnapshot.exists())throw new Error("SALE_NOT_FOUND");
         const saleData=saleSnapshot.data();
@@ -226,11 +237,31 @@ async function confirmReturn(){
           productRows.push({item,cached,productRef,productData:productSnapshot.data()});
         }
 
-        const returnSummary={id,refundTotal,createdAt,items:items.map(item=>({productId:item.productId,qty:item.qty}))};
-        transaction.set(returnRef,{...baseRecord,createdAtServer:serverTimestamp(),updatedAt:Date.now(),updatedAtServer:serverTimestamp()});
+        let loyaltyBundle=null;
+        if(planned?.customerId){
+          const cachedCustomer=read(CUSTOMER_KEY,[]).find(customer=>String(customer.id)===String(planned.customerId));
+          const customerRef=tenantDoc(RetailCollections.customers,cachedCustomer?._documentId||planned.customerId);
+          const customerSnapshot=await transaction.get(customerRef);
+          if(customerSnapshot.exists()){
+            const customer={id:customerSnapshot.data().id||customerSnapshot.id,...customerSnapshot.data()};
+            loyaltyBundle=buildLoyaltyReturnBundle(planned,customer,{...selectedSale,...saleData},id,refundTotal,createdAt,auth?.currentUser?.uid||"");
+            if(loyaltyBundle){
+              transaction.set(customerRef,{...loyaltyBundle.updatedCustomer,tenantId:getTenantId(),shopId:getTenantId(),updatedAt:Date.now(),updatedAtServer:serverTimestamp()},{merge:true});
+              const ledgerRef=tenantDoc(RetailCollections.loyaltyLedger,loyaltyBundle.ledgerEntry.id);
+              transaction.set(ledgerRef,{...loyaltyBundle.ledgerEntry,shopId:getTenantId(),updatedAt:Date.now(),updatedAtServer:serverTimestamp()});
+            }
+          }
+        }
+
+        const loyaltyAdjustment=loyaltyBundle?.adjustment||null;
+        const returnSummary={id,refundTotal,createdAt,items:items.map(item=>({productId:item.productId,qty:item.qty})),loyaltyAdjustment};
+        const currentLoyalty=saleData.loyalty||null;
+        const updatedLoyalty=currentLoyalty&&loyaltyAdjustment?{...currentLoyalty,pointsEarnedReversed:Number(currentLoyalty.pointsEarnedReversed||0)+Number(loyaltyAdjustment.pointsEarnedDeducted||0),pointsUsedRestored:Number(currentLoyalty.pointsUsedRestored||0)+Number(loyaltyAdjustment.pointsUsedRestored||0),pointsAfterReturns:loyaltyAdjustment.pointsAfter}:currentLoyalty;
+        transaction.set(returnRef,{...baseRecord,loyaltyAdjustment,createdAtServer:serverTimestamp(),updatedAt:Date.now(),updatedAtServer:serverTimestamp()});
         transaction.update(saleRef,{
           returns:[...previousReturns,returnSummary],
           refundTotal:Number(saleData.refundTotal||0)+refundTotal,
+          loyalty:updatedLoyalty,
           updatedAt:Date.now(),updatedAtServer:serverTimestamp()
         });
         productRows.forEach(({item,cached,productRef,productData})=>{
@@ -249,6 +280,7 @@ async function confirmReturn(){
           if(local)local.stock=after;
           else nextProducts.push({id:item.productId,barcode:item.barcode,name:item.productName,price:item.price,cost:item.cost,stock:after,unit:item.unit||"ชิ้น",minStock:0,showOnPos:true,_documentId:cached?._documentId});
         });
+        return loyaltyBundle;
       });
     }else{
       items.forEach(item=>{
@@ -260,7 +292,9 @@ async function confirmReturn(){
     }
 
     products=nextProducts;
-    const loyaltyAdjustment=applyLoyaltyAdjustment(selectedSale,id,refundTotal,createdAt);
+    const loyaltyBundle=isFirebaseConfigured&&db?committedLoyaltyBundle:applyLocalLoyaltyAdjustment(selectedSale,id,refundTotal,createdAt);
+    if(isFirebaseConfigured&&db)cacheLoyaltyReturnBundle(loyaltyBundle);
+    const loyaltyAdjustment=loyaltyBundle?.adjustment||null;
     const record={...baseRecord,loyaltyAdjustment};
     returns=[record,...returns.filter(row=>row.id!==id)];
     const saleIndex=sales.findIndex(sale=>sale.id===selectedSale.id);

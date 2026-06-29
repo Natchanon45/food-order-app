@@ -1,5 +1,5 @@
-import { auth, db, doc, setDoc, serverTimestamp } from './firebase-config.js?v=20260628-1';
-import { getTenantId, watchRecords, RetailCollections } from './retail-db.js?v=20260628-6';
+import { auth, db, doc, setDoc, serverTimestamp } from './firebase-config.js?v=20260629-032';
+import { getTenantId, watchRecords, RetailCollections } from './retail-db.js?v=20260629-032';
 
 const SHIFT_KEY = "retail_pos_active_shift_v1";
 const SHIFT_HISTORY_KEY = "retail_pos_shift_history_v1";
