@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order App',
   product: 'Retail POS',
-  version: '0.11.8',
-  build: '2026.06.29.046',
+  version: '0.11.9',
+  build: '2026.06.29.047',
   branch: 'feature/retail-pos',
-  commit: 'a4f93d3',
+  commit: '018238d',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P7-B021 Order Delivery UX',
-  updatedAt: '2026-06-29T22:05:00+07:00',
+  milestone: 'P7-B022 Delivery Sweet Dialog',
+  updatedAt: '2026-06-29T23:05:00+07:00',
   whatsNew: [
-    'Order and Delivery show 10 items per desktop page',
-    'Tighten menu card price and add button layout',
-    'Add sweet dialog alert helper and QR download icon'
+    'Fix real PromptPay QR download icon',
+    'Use sweetConfirm for delivery edit locked order',
+    'Use sweetConfirm for cart item and address delete'
   ]
 };
 
