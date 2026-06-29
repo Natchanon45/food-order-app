@@ -37,6 +37,11 @@ let selectedSlipFile = null;
 let selectedSlipObjectUrl = "";
 let isSubmitting = false;
 
+async function askConfirm(message, options = {}) {
+  if (typeof window.sweetConfirm === "function") return await window.sweetConfirm(message, options);
+  return confirm(message);
+}
+
 function createOrderId() {
   if (typeof crypto?.randomUUID === "function") return crypto.randomUUID();
 
@@ -242,7 +247,7 @@ document.querySelector("#searchInput").addEventListener("input", renderMenus);
 paymentMethod.addEventListener("change", renderPromptPay);
 deliveryZone.addEventListener("change", updateCart);
 menuGrid.addEventListener("click", event => { const id = event.target.dataset.add; if (!id) return; const menu = menus.find(x => x.id === id); const current = cart.get(id); cart.set(id, current ? { ...current, qty: current.qty + 1 } : { ...menu, qty: 1, note: "" }); updateCart(); });
-cartList.addEventListener("click", event => {
+cartList.addEventListener("click", async event => {
   const inc = event.target.dataset.inc;
   const dec = event.target.dataset.dec;
   const id = inc || dec;
@@ -251,7 +256,13 @@ cartList.addEventListener("click", event => {
   if (!item) return;
   if (inc) { item.qty += 1; cart.set(id, item); updateCart(); return; }
   if (item.qty <= 1) {
-    if (!confirm(`ลบ ${item.name} ออกจากตะกร้าใช่หรือไม่?`)) return;
+    const ok = await askConfirm(`ลบ ${item.name} ออกจากตะกร้าใช่หรือไม่?`, {
+      title: "ลบรายการอาหาร",
+      confirmText: "ตกลง",
+      cancelText: "ยกเลิก",
+      type: "warning"
+    });
+    if (!ok) return;
     cart.delete(id);
   } else {
     item.qty -= 1;
