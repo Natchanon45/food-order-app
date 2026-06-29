@@ -1,6 +1,14 @@
+import "./sweet-dialog.js?v=20260629-048";
 import { app } from "./firebase-config.js";
 import { toast } from "./ui.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-functions.js";
+
+if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "/assets/css/sweet-dialog.css?v=20260629-048";
+  document.head.appendChild(link);
+}
 
 const functions = getFunctions(app, "asia-southeast1");
 const listTenants = httpsCallable(functions, "listTenants");
@@ -23,6 +31,11 @@ const formTitle = form.closest(".card")?.querySelector(".section-title h2");
 let tenants = [];
 let editingTenantId = "";
 let selectedOwnerTenant = null;
+
+async function askConfirm(message, options = {}) {
+  if (typeof window.sweetConfirm === "function") return await window.sweetConfirm(message, options);
+  return confirm(message);
+}
 
 function icon(name) {
   return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg#icon-${name}"></use></svg>`;
@@ -119,31 +132,14 @@ ownerModal.innerHTML = `
       <button type="button" class="owner-modal-close" data-owner-close aria-label="ปิด">${icon("close")}</button>
     </div>
     <form id="ownerForm" class="owner-modal-form">
-      <div class="field">
-        <label for="ownerDisplayName">ชื่อเจ้าของร้าน</label>
-        <input class="input" id="ownerDisplayName" maxlength="120" autocomplete="name" required>
-      </div>
-      <div class="field">
-        <label for="ownerEmail">อีเมลสำหรับเข้าสู่ระบบ</label>
-        <input class="input" id="ownerEmail" type="email" maxlength="160" autocomplete="username" required>
-      </div>
+      <div class="field"><label for="ownerDisplayName">ชื่อเจ้าของร้าน</label><input class="input" id="ownerDisplayName" maxlength="120" autocomplete="name" required></div>
+      <div class="field"><label for="ownerEmail">อีเมลสำหรับเข้าสู่ระบบ</label><input class="input" id="ownerEmail" type="email" maxlength="160" autocomplete="username" required></div>
       <div class="grid grid-2 owner-password-grid">
-        <div class="field">
-          <label for="ownerPassword">รหัสผ่านเริ่มต้น</label>
-          <input class="input" id="ownerPassword" type="password" minlength="8" autocomplete="new-password" required>
-          <small>อย่างน้อย 8 ตัวอักษร</small>
-        </div>
-        <div class="field">
-          <label for="ownerPasswordConfirm">ยืนยันรหัสผ่าน</label>
-          <input class="input" id="ownerPasswordConfirm" type="password" minlength="8" autocomplete="new-password" required>
-          <small>ต้องตรงกับรหัสผ่านด้านซ้าย</small>
-        </div>
+        <div class="field"><label for="ownerPassword">รหัสผ่านเริ่มต้น</label><input class="input" id="ownerPassword" type="password" minlength="8" autocomplete="new-password" required><small>อย่างน้อย 8 ตัวอักษร</small></div>
+        <div class="field"><label for="ownerPasswordConfirm">ยืนยันรหัสผ่าน</label><input class="input" id="ownerPasswordConfirm" type="password" minlength="8" autocomplete="new-password" required><small>ต้องตรงกับรหัสผ่านด้านซ้าย</small></div>
       </div>
       <div class="upload-error owner-form-error" id="ownerFormError" hidden></div>
-      <div class="owner-modal-actions">
-        <button type="button" class="btn" data-owner-close>ยกเลิก</button>
-        <button type="submit" class="btn btn-primary" id="ownerSubmitButton">${icon("save")}<span>สร้างบัญชี Owner</span></button>
-      </div>
+      <div class="owner-modal-actions"><button type="button" class="btn" data-owner-close>ยกเลิก</button><button type="submit" class="btn btn-primary" id="ownerSubmitButton">${icon("save")}<span>สร้างบัญชี Owner</span></button></div>
     </form>
   </section>`;
 document.body.appendChild(ownerModal);
@@ -190,11 +186,8 @@ document.addEventListener("keydown", event => {
 });
 
 ownerPasswordConfirm.addEventListener("input", () => {
-  if (!ownerPasswordConfirm.value || ownerPasswordConfirm.value === ownerPassword.value) {
-    ownerPasswordConfirm.setCustomValidity("");
-  } else {
-    ownerPasswordConfirm.setCustomValidity("รหัสผ่านไม่ตรงกัน");
-  }
+  if (!ownerPasswordConfirm.value || ownerPasswordConfirm.value === ownerPassword.value) ownerPasswordConfirm.setCustomValidity("");
+  else ownerPasswordConfirm.setCustomValidity("รหัสผ่านไม่ตรงกัน");
 });
 
 ownerPassword.addEventListener("input", () => {
@@ -204,12 +197,10 @@ ownerPassword.addEventListener("input", () => {
 ownerForm.addEventListener("submit", async event => {
   event.preventDefault();
   if (!selectedOwnerTenant) return;
-
   const displayName = ownerDisplayName.value.trim();
   const email = ownerEmail.value.trim().toLowerCase();
   const password = ownerPassword.value;
   const confirmPassword = ownerPasswordConfirm.value;
-
   setOwnerFormError("");
   if (password !== confirmPassword) {
     ownerPasswordConfirm.setCustomValidity("รหัสผ่านไม่ตรงกัน");
@@ -219,7 +210,6 @@ ownerForm.addEventListener("submit", async event => {
   }
   ownerPasswordConfirm.setCustomValidity("");
   if (!ownerForm.reportValidity()) return;
-
   ownerSubmitButton.disabled = true;
   ownerSubmitButton.innerHTML = "<span>กำลังสร้างบัญชี...</span>";
   try {
@@ -247,10 +237,7 @@ function renderTenants(items = []) {
   tenantCount.textContent = `${items.length} ร้าน`;
   tenantList.innerHTML = items.length ? items.map(tenant => `
     <article class="card" style="box-shadow:none;background:#f8fbf9">
-      <div class="section-title" style="margin:0">
-        <div><h2 style="margin:0">${escapeHtml(tenant.name || "ไม่ระบุชื่อร้าน")}</h2><div class="menu-category">/${escapeHtml(tenant.slug || "-")}</div></div>
-        <span class="badge ${tenant.active === false ? "warning" : ""}">${tenant.active === false ? "ปิดใช้งาน" : "ใช้งาน"}</span>
-      </div>
+      <div class="section-title" style="margin:0"><div><h2 style="margin:0">${escapeHtml(tenant.name || "ไม่ระบุชื่อร้าน")}</h2><div class="menu-category">/${escapeHtml(tenant.slug || "-")}</div></div><span class="badge ${tenant.active === false ? "warning" : ""}">${tenant.active === false ? "ปิดใช้งาน" : "ใช้งาน"}</span></div>
       <div style="margin-top:10px"><span class="badge ${tenant.ownerUid ? "" : "warning"}">${tenant.ownerUid ? `Owner: ${escapeHtml(tenant.ownerDisplayName || tenant.ownerEmail || "มีแล้ว")}` : "ยังไม่มี Owner"}</span></div>
       <div style="margin-top:12px;word-break:break-all"><strong>Tenant ID:</strong> ${escapeHtml(tenant.id)}</div>
       <div class="order-actions" style="margin-top:12px;align-items:center">
@@ -276,7 +263,6 @@ async function loadTenants() {
 nameField.addEventListener("input", () => {
   if (slugField.dataset.edited !== "true") slugField.value = normalizeSlug(nameField.value);
 });
-
 slugField.addEventListener("input", () => {
   slugField.dataset.edited = "true";
   const cursorPosition = slugField.selectionStart;
@@ -285,7 +271,6 @@ slugField.addEventListener("input", () => {
   const nextPosition = Math.max(0, cursorPosition - (originalLength - slugField.value.length));
   slugField.setSelectionRange(nextPosition, nextPosition);
 });
-
 slugField.addEventListener("blur", () => { slugField.value = normalizeSlug(slugField.value); });
 cancelEditButton.addEventListener("click", resetForm);
 
@@ -296,19 +281,23 @@ tenantList.addEventListener("click", async event => {
     if (tenant) openOwnerModal(tenant);
     return;
   }
-
   const editButton = event.target.closest("[data-edit-tenant]");
   if (editButton) {
     const tenant = tenants.find(item => item.id === editButton.dataset.editTenant);
     if (tenant) beginEdit(tenant);
     return;
   }
-
   const deleteButton = event.target.closest("[data-delete-tenant]");
   if (!deleteButton) return;
   const tenant = tenants.find(item => item.id === deleteButton.dataset.deleteTenant);
-  if (!tenant || !confirm(`ยืนยันลบร้าน ${tenant.name || tenant.id} ใช่หรือไม่?\n\nลบได้เฉพาะร้านที่ยังไม่มีเมนู โต๊ะ ออเดอร์ หรือพนักงาน`)) return;
-
+  if (!tenant) return;
+  const ok = await askConfirm(`ยืนยันลบร้าน ${tenant.name || tenant.id} ใช่หรือไม่?\n\nลบได้เฉพาะร้านที่ยังไม่มีเมนู โต๊ะ ออเดอร์ หรือพนักงาน`, {
+    title: "ลบร้านค้า",
+    confirmText: "ตกลง",
+    cancelText: "ยกเลิก",
+    type: "warning"
+  });
+  if (!ok) return;
   deleteButton.disabled = true;
   deleteButton.innerHTML = "<span>กำลังลบ...</span>";
   try {
@@ -333,7 +322,6 @@ form.addEventListener("submit", async event => {
   submitButton.disabled = true;
   cancelEditButton.disabled = true;
   setSubmitContent(editingTenantId ? "saving" : "creating");
-
   try {
     const normalizedSlug = normalizeSlug(slugField.value);
     slugField.value = normalizedSlug;
