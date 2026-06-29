@@ -1,3 +1,5 @@
+import { db, isFirebaseConfigured, collection, getDocs, query, where } from './firebase-config.js';
+
 const ACTIVE_TENANT_KEY = "food_order_active_tenant";
 const LEGACY_ACTIVE_SHOP_KEY = "food_order_active_shop";
 
@@ -47,6 +49,36 @@ export function clearActiveTenant() {
   localStorage.removeItem(LEGACY_ACTIVE_SHOP_KEY);
 }
 
+async function fetchTenantBySlug(slug) {
+  if (!isFirebaseConfigured || !db || !slug) return null;
+  const snapshot = await getDocs(query(collection(db, "tenants"), where("slug", "==", slug)));
+  if (snapshot.empty) return null;
+  const docSnapshot = snapshot.docs[0];
+  const data = docSnapshot.data();
+  if (data.active === false || ["expired", "suspended"].includes(data.subscriptionStatus)) {
+    throw new Error(`TENANT_INACTIVE:${slug}`);
+  }
+  return setActiveTenant({
+    id: docSnapshot.id,
+    slug: data.slug || slug,
+    name: data.name || data.shopName || slug
+  });
+}
+
+export async function ensureTenantContext() {
+  const pathSlug = slugFromPath();
+  const stored = getStoredTenant();
+  if (!pathSlug) {
+    if (stored?.id && stored?.slug) return stored;
+    throw new Error("TENANT_CONTEXT_REQUIRED");
+  }
+  if (stored?.slug === pathSlug) return stored;
+  const tenant = await fetchTenantBySlug(pathSlug);
+  if (tenant) return tenant;
+  clearActiveTenant();
+  throw new Error(`TENANT_NOT_RESOLVED:${pathSlug}`);
+}
+
 export function resolveTenantContext() {
   const pathSlug = slugFromPath();
   const stored = getStoredTenant();
@@ -77,6 +109,7 @@ export const clearActiveShop = clearActiveTenant;
 export const resolveShopContext = resolveTenantContext;
 export const shopCollectionPath = tenantCollectionPath;
 export const shopDocumentPath = tenantDocumentPath;
+export const ensureShopContext = ensureTenantContext;
 export const DEFAULT_SHOP = DEFAULT_TENANT;
 
 export { DEFAULT_TENANT };
