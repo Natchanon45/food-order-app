@@ -1,19 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order App',
   product: 'Retail POS',
-  version: '0.12.4',
-  build: '2026.06.30.052',
+  version: '0.12.5',
+  build: '2026.06.30.061',
   branch: 'feature/retail-pos',
-  commit: '4901a02',
+  commit: 'b7695d3',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P7-B027 Table Move',
-  updatedAt: '2026-06-30T01:25:00+07:00',
+  milestone: 'P8-B001 Retail POS Offline Sync Safe',
+  updatedAt: '2026-06-30T03:45:00+07:00',
   whatsNew: [
-    'Add cashier table move action for unpaid table orders',
-    'Move active table session only to available tables',
-    'Close old table and keep unpaid orders on the new table'
+    'Use stable sale IDs for POS online and offline sales',
+    'Make offline POS sync tenant-safe to prevent cross-tenant sync',
+    'Use deterministic stock movement IDs to prevent duplicate stock deduction',
+    'Lock Delivery kitchen editing after rider handoff'
   ]
 };
 
