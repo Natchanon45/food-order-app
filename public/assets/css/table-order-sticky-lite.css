@@ -49,6 +49,18 @@
   .table-order-page .menu-filter-area .menu-search {
     min-height: 42px;
   }
+
+  .table-order-page .delivery-menu-column {
+    margin-bottom: 26px;
+  }
+
+  .table-order-page .delivery-side-column {
+    margin-top: 26px;
+  }
+
+  .table-order-page #cartSection {
+    margin-top: 0;
+  }
 }
 
 @media (max-width: 480px) {
