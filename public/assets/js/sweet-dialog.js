@@ -1,6 +1,9 @@
 let activeResolve = null;
-const nativeAlert = window.alert?.bind(window);
-const nativeConfirm = window.confirm?.bind(window);
+
+function whenBodyReady() {
+  if (document.body) return Promise.resolve();
+  return new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve, { once: true }));
+}
 
 function ensureDialog() {
   let root = document.querySelector('#sweetDialogRoot');
@@ -25,8 +28,8 @@ function closeDialog(value) {
   setTimeout(() => resolve?.(value), 120);
 }
 
-export function sweetAlert(message, options = {}) {
-  if (!document.body) { nativeAlert?.(message); return Promise.resolve(true); }
+export async function sweetAlert(message, options = {}) {
+  await whenBodyReady();
   const root = ensureDialog();
   const title = root.querySelector('#sweetDialogTitle');
   const msg = root.querySelector('#sweetDialogMessage');
@@ -46,8 +49,8 @@ export function sweetAlert(message, options = {}) {
   return new Promise(resolve => { activeResolve = resolve; });
 }
 
-export function sweetConfirm(message, options = {}) {
-  if (!document.body) return Promise.resolve(nativeConfirm ? nativeConfirm(message) : false);
+export async function sweetConfirm(message, options = {}) {
+  await whenBodyReady();
   const root = ensureDialog();
   const title = root.querySelector('#sweetDialogTitle');
   const msg = root.querySelector('#sweetDialogMessage');
@@ -71,3 +74,5 @@ export function sweetConfirm(message, options = {}) {
 window.sweetAlert = sweetAlert;
 window.sweetConfirm = sweetConfirm;
 window.alert = message => { sweetAlert(message); };
+window.confirm = message => { sweetConfirm(message); return false; };
+window.prompt = message => { sweetAlert(message, { title: 'กรุณาตรวจสอบ', type: 'warning', iconText: '!' }); return null; };
