@@ -1,4 +1,4 @@
-import {login,isLoggedIn} from "./retail-pos-auth.js?v=20260629-035";
+import {login,isLoggedIn} from "./retail-pos-auth.js?v=20260629-036";
 
 const ROLE_KEY="retail_pos_roles_v1";
 const MENU_ITEMS=[
