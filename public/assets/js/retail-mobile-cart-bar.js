@@ -1,6 +1,7 @@
 const styleId = 'retailMobileCartBarStyle';
 let drawerOpen = false;
 let touchStartY = 0;
+let syncingCartBar = false;
 
 function ensureMobileCartStyle() {
   if (document.getElementById(styleId)) return;
@@ -73,7 +74,7 @@ function createDrawer() {
   const backdrop = document.createElement('div');
   backdrop.className = 'mobile-cart-backdrop';
   backdrop.dataset.mobileCartBackdrop = 'true';
-  backdrop.addEventListener('click', closeDrawer);
+  backdrop.addEventListener('click', () => closeDrawer());
   document.body.appendChild(backdrop);
 
   drawer = document.createElement('section');
@@ -90,7 +91,7 @@ function createDrawer() {
       <div class="mobile-cart-total"><span>ยอดสุทธิ</span><strong data-mobile-cart-drawer-total>0.00 บาท</strong></div>
       <button type="button" class="mobile-cart-checkout" data-mobile-cart-checkout>รับชำระเงิน</button>
     </footer>`;
-  drawer.querySelectorAll('[data-mobile-cart-close]').forEach(el => el.addEventListener('click', closeDrawer));
+  drawer.querySelectorAll('[data-mobile-cart-close]').forEach(el => el.addEventListener('click', () => closeDrawer()));
   drawer.querySelector('[data-mobile-cart-checkout]')?.addEventListener('click', checkoutFromMobileCart);
   drawer.addEventListener('touchstart', event => { touchStartY = event.touches?.[0]?.clientY || 0; }, { passive: true });
   drawer.addEventListener('touchend', event => {
@@ -112,27 +113,33 @@ function getCartRows() {
 }
 
 function updateMobileCartBar() {
-  ensureMobileCartStyle();
-  const bar = createBar();
-  const drawer = createDrawer();
-  const itemCount = document.querySelector('#itemCount')?.textContent || '0 รายการ';
-  const totalText = document.querySelector('#grandTotal')?.textContent || '0.00';
-  const total = readNumber(totalText);
-  const rows = getCartRows();
+  if (syncingCartBar) return;
+  syncingCartBar = true;
+  try {
+    ensureMobileCartStyle();
+    const bar = createBar();
+    const drawer = createDrawer();
+    const itemCount = document.querySelector('#itemCount')?.textContent || '0 รายการ';
+    const totalText = document.querySelector('#grandTotal')?.textContent || '0.00';
+    const total = readNumber(totalText);
+    const rows = getCartRows();
 
-  bar.querySelector('[data-mobile-cart-meta]').textContent = `${itemCount} • ${totalText} บาท`;
-  bar.querySelector('[data-mobile-cart-action-label]').textContent = drawerOpen ? 'รับชำระเงิน' : 'ดูบิล';
-  bar.classList.toggle('is-checkout', drawerOpen);
-  bar.hidden = total <= 0;
+    if (total <= 0 && drawerOpen) closeDrawer(false);
 
-  drawer.querySelector('[data-mobile-cart-drawer-meta]').textContent = itemCount;
-  drawer.querySelector('[data-mobile-cart-drawer-total]').textContent = `${totalText} บาท`;
-  drawer.querySelector('[data-mobile-cart-checkout]').disabled = total <= 0;
-  drawer.querySelector('[data-mobile-cart-items]').innerHTML = rows.length
-    ? rows.map(row => `<div class="mobile-cart-row"><div><strong>${row.name}</strong><span>${row.meta} • x${row.qty}</span></div><b>${row.total}</b></div>`).join('')
-    : '<div class="mobile-cart-empty">ยังไม่มีสินค้าในบิล</div>';
+    bar.querySelector('[data-mobile-cart-meta]').textContent = `${itemCount} • ${totalText} บาท`;
+    bar.querySelector('[data-mobile-cart-action-label]').textContent = drawerOpen ? 'รับชำระเงิน' : 'ดูบิล';
+    bar.classList.toggle('is-checkout', drawerOpen);
+    bar.hidden = total <= 0;
 
-  if (total <= 0) closeDrawer();
+    drawer.querySelector('[data-mobile-cart-drawer-meta]').textContent = itemCount;
+    drawer.querySelector('[data-mobile-cart-drawer-total]').textContent = `${totalText} บาท`;
+    drawer.querySelector('[data-mobile-cart-checkout]').disabled = total <= 0;
+    drawer.querySelector('[data-mobile-cart-items]').innerHTML = rows.length
+      ? rows.map(row => `<div class="mobile-cart-row"><div><strong>${row.name}</strong><span>${row.meta} • x${row.qty}</span></div><b>${row.total}</b></div>`).join('')
+      : '<div class="mobile-cart-empty">ยังไม่มีสินค้าในบิล</div>';
+  } finally {
+    syncingCartBar = false;
+  }
 }
 
 function handleBarClick() {
@@ -143,7 +150,7 @@ function handleBarClick() {
 
 function checkoutFromMobileCart() {
   if (readNumber(document.querySelector('#grandTotal')?.textContent) <= 0) return;
-  closeDrawer();
+  closeDrawer(false);
   document.querySelector('#payBtn')?.click();
 }
 
@@ -156,12 +163,12 @@ function openDrawer() {
   updateMobileCartBar();
 }
 
-function closeDrawer() {
+function closeDrawer(sync = true) {
   drawerOpen = false;
   document.body.classList.remove('mobile-cart-drawer-open');
   document.querySelector('[data-mobile-cart-backdrop]')?.classList.remove('open');
   document.querySelector('[data-mobile-cart-drawer]')?.classList.remove('open');
-  updateMobileCartBar();
+  if (sync) updateMobileCartBar();
 }
 
 function startMobileCartBar() {
