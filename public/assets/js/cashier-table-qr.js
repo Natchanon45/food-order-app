@@ -14,6 +14,11 @@ const issuedQr = document.querySelector("#issuedQr");
 const qrPaperSize = document.querySelector("#qrPaperSize");
 let tables = [];
 
+async function askConfirm(message, options = {}) {
+  if (typeof window.sweetConfirm === "function") return await window.sweetConfirm(message, options);
+  return confirm(message);
+}
+
 function setPaperSize(value) {
   document.body.classList.remove("qr-size-58", "qr-size-80", "qr-size-a4");
   document.body.classList.add(value === "58" ? "qr-size-58" : value === "a4" ? "qr-size-a4" : "qr-size-80");
@@ -164,7 +169,13 @@ occupiedTables.addEventListener("click", async event => {
     const table = tables.find(item => item.id === closeButton.dataset.closeTable);
     if (!table) return;
 
-    if (!confirm(`ยืนยันปิด ${table.name} ใช่หรือไม่?\n\nQR ใบเดิมจะใช้งานไม่ได้ และโต๊ะจะกลับเป็นโต๊ะว่าง`)) return;
+    const ok = await askConfirm(`ยืนยันปิด ${table.name} ใช่หรือไม่?\n\nQR ใบเดิมจะใช้งานไม่ได้ และโต๊ะจะกลับเป็นโต๊ะว่าง`, {
+      title: "ปิดโต๊ะ",
+      confirmText: "ตกลง",
+      cancelText: "ยกเลิก",
+      type: "warning"
+    });
+    if (!ok) return;
 
     closeButton.disabled = true;
     closeButton.textContent = "กำลังปิดโต๊ะ...";
