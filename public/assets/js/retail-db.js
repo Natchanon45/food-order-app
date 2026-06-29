@@ -156,7 +156,7 @@ export function watchRecords(collectionName,callback,{sortBy='updatedAt',directi
   }
 }
 
-export const RetailCollections={products:'products',sales:'sales',returns:'returns',shifts:'shifts',stockMovements:'stockMovements',purchases:'purchases',stockCounts:'stockCounts',suppliers:'suppliers',customers:'customers',users:'users',roles:'roles',settings:'settings',heldBills:'heldBills'};
+export const RetailCollections={products:'products',sales:'sales',returns:'returns',shifts:'shifts',stockMovements:'stockMovements',purchases:'purchases',stockCounts:'stockCounts',suppliers:'suppliers',customers:'customers',users:'users',roles:'roles',settings:'settings',heldBills:'heldBills',loyaltyLedger:'loyaltyLedger'};
 
 export async function migrateLocalArray(localStorageKey,collectionName){
   let rows=[];
