@@ -17,6 +17,15 @@ let lockedSnapshot = null;
 let restoringDraft = false;
 let saveTimer = null;
 
+function downloadIcon() {
+  return `<svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>`;
+}
+
+async function askConfirm(message, options = {}) {
+  if (typeof window.sweetConfirm === "function") return await window.sweetConfirm(message, options);
+  return confirm(message);
+}
+
 function amountValue(selector) {
   return Number(String(document.querySelector(selector)?.textContent || "0").replace(/,/g, "")) || 0;
 }
@@ -76,7 +85,7 @@ function mountPanel() {
       <div class="payment-lock-total"><span>ยอดที่ล็อกแล้ว</span><strong id="lockedTotal">0.00 บาท</strong></div>
     </div>
     <div class="payment-lock-actions">
-      <button type="button" class="btn btn-dark" id="downloadPaymentQr" hidden>ดาวน์โหลด QR ชำระเงิน</button>
+      <button type="button" class="btn btn-dark" id="downloadPaymentQr" hidden>${downloadIcon()}<span>ดาวน์โหลด QR ชำระเงิน</span></button>
       <button type="button" class="btn" id="editLockedOrder" hidden>แก้ไขรายการอาหาร</button>
     </div>`;
   promptPaySection?.insertBefore(panel, paymentSlipWrap || null);
@@ -139,8 +148,14 @@ function lockPayment() {
   toast(`ล็อกยอด ${lockedSnapshot.total.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาทแล้ว`);
 }
 
-function unlockPayment() {
-  if (!confirm("การแก้ไขรายการจะยกเลิก QR และสลิปที่แนบไว้\nต้องการแก้ไขรายการหรือไม่?")) return;
+async function unlockPayment() {
+  const ok = await askConfirm("การแก้ไขรายการจะยกเลิก QR และสลิปที่แนบไว้\nต้องการแก้ไขรายการหรือไม่?", {
+    title: "แก้ไขรายการอาหาร",
+    confirmText: "ตกลง",
+    cancelText: "ยกเลิก",
+    type: "warning"
+  });
+  if (!ok) return;
   paymentLocked = false;
   lockedSnapshot = null;
   if (removePaymentSlip && !removePaymentSlip.hidden) removePaymentSlip.click();
