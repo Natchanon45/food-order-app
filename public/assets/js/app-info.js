@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order App',
   product: 'Retail POS',
-  version: '0.12.3',
-  build: '2026.06.30.051',
+  version: '0.12.4',
+  build: '2026.06.30.052',
   branch: 'feature/retail-pos',
-  commit: 'd4d9701',
+  commit: '4901a02',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P7-B026 Browser Dialog Elimination',
-  updatedAt: '2026-06-30T01:05:00+07:00',
+  milestone: 'P7-B027 Table Move',
+  updatedAt: '2026-06-30T01:25:00+07:00',
   whatsNew: [
-    'Disable native browser alert confirm prompt in sweet dialog runtime',
-    'Use Sweet Dialog for SaaS setup migration confirm',
-    'Refresh SaaS setup and tenant sweet dialog cache'
+    'Add cashier table move action for unpaid table orders',
+    'Move active table session only to available tables',
+    'Close old table and keep unpaid orders on the new table'
   ]
 };
 
