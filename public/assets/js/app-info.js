@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order App',
   product: 'Retail POS',
-  version: '0.9.5',
-  build: '2026.06.29.020',
+  version: '0.9.7',
+  build: '2026.06.29.022',
   branch: 'feature/retail-pos',
-  commit: '57441d1',
+  commit: '407a5b3',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P6-B006 Mobile Cart Checkout Action',
-  updatedAt: '2026-06-29T07:20:00+07:00',
+  milestone: 'P7-B001 Tenant Firebase Sync',
+  updatedAt: '2026-06-29T07:45:00+07:00',
   whatsNew: [
-    'หลังเปิดดูบิลแล้ว ปุ่มตะกร้าล่างเปลี่ยนเป็นรับชำระเงิน',
-    'กดปุ่มเดียวกันซ้ำเพื่อเปิดหน้ารับชำระเงินทันที',
-    'ไม่ต้องเลื่อนหา footer ชำระเงินใน drawer'
+    'เพิ่ม sync รายการขาย offline กลับ tenant Firebase',
+    'บันทึก sales และ stockMovements ใต้ tenants/{tenantId}',
+    'คง localStorage เป็น fallback/cache เท่านั้น'
   ]
 };
 
