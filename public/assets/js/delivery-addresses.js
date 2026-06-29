@@ -35,6 +35,11 @@ let selectedAddressId = "";
 let editingAddressId = "";
 let bypassSubmitCapture = false;
 
+async function askConfirm(message, options = {}) {
+  if (typeof window.sweetConfirm === "function") return await window.sweetConfirm(message, options);
+  return confirm(message);
+}
+
 function normalizePhone(value) {
   return String(value || "").replace(/\D/g, "");
 }
@@ -245,7 +250,13 @@ addressList.addEventListener("click", async event => {
   const deleteButton = event.target.closest("[data-delete-address]");
   if (deleteButton) {
     event.preventDefault();
-    if (!confirm("ยืนยันลบที่อยู่นี้?")) return;
+    const ok = await askConfirm("ยืนยันลบที่อยู่นี้?", {
+      title: "ลบที่อยู่จัดส่ง",
+      confirmText: "ตกลง",
+      cancelText: "ยกเลิก",
+      type: "warning"
+    });
+    if (!ok) return;
     const id = deleteButton.dataset.deleteAddress;
     currentProfile.addresses = currentProfile.addresses.filter(item => item.id !== id);
     if (currentProfile.addresses.length && !currentProfile.addresses.some(item => item.isDefault)) currentProfile.addresses[0].isDefault = true;
