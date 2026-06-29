@@ -8,22 +8,33 @@ function maxScrollLeft(element) {
   return Math.max(0, element.scrollWidth - element.clientWidth);
 }
 
+function clampScrollLeft(element, value) {
+  return Math.max(0, Math.min(maxScrollLeft(element), value));
+}
+
+function scrollByDelta(element, delta) {
+  if (!delta || !canScrollX(element)) return false;
+  const before = element.scrollLeft;
+  const next = clampScrollLeft(element, before + delta);
+  if (next === before) return false;
+  element.scrollLeft = next;
+  return true;
+}
+
 function bindHorizontalWheel(element) {
   if (!element || element.dataset.horizontalWheelBound === '1') return;
   element.dataset.horizontalWheelBound = '1';
   element.classList.add('horizontal-scroll-ready');
   element.style.overflowX = element.style.overflowX || 'auto';
+  element.style.overflowY = element.style.overflowY || 'hidden';
   element.style.overscrollBehaviorX = element.style.overscrollBehaviorX || 'contain';
 
   element.addEventListener('wheel', event => {
     if (!canScrollX(element)) return;
-    const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+    const dominantHorizontal = Math.abs(event.deltaX) > Math.abs(event.deltaY);
+    const delta = dominantHorizontal ? event.deltaX : event.deltaY;
     if (!delta) return;
-    const before = element.scrollLeft;
-    const next = Math.max(0, Math.min(maxScrollLeft(element), before + delta));
-    if (next === before) return;
-    element.scrollLeft = next;
-    event.preventDefault();
+    if (scrollByDelta(element, delta)) event.preventDefault();
   }, { passive: false });
 }
 
@@ -37,6 +48,7 @@ function bindMouseDrag(element) {
 
   element.addEventListener('pointerdown', event => {
     if (event.pointerType !== 'mouse' || event.button !== 0 || !canScrollX(element)) return;
+    if (event.target.closest('button,a,input,select,textarea,[role="button"]')) return;
     dragging = true;
     moved = false;
     startX = event.clientX;
@@ -48,7 +60,7 @@ function bindMouseDrag(element) {
     if (!dragging) return;
     const diff = event.clientX - startX;
     if (Math.abs(diff) > 3) moved = true;
-    element.scrollLeft = Math.max(0, Math.min(maxScrollLeft(element), startLeft - diff));
+    element.scrollLeft = clampScrollLeft(element, startLeft - diff);
   });
 
   element.addEventListener('click', event => {
