@@ -1,5 +1,5 @@
-import { getTenantId, setTenantId } from './retail-db.js';
-import { auth, db, signInWithEmailAndPassword, signOut, collection, doc, getDoc, getDocs, query, where } from './firebase-config.js';
+import { getTenantId, setTenantId } from './retail-db.js?v=20260629-032';
+import { auth, db, signInWithEmailAndPassword, signOut, collection, doc, getDoc, getDocs, query, where } from './firebase-config.js?v=20260629-032';
 
 const ROLE_KEY="retail_pos_roles_v1";
 const SESSION_KEY="retail_pos_session_v1";
@@ -23,6 +23,27 @@ function normalizeUser(user){
     role:normalizeRole(user?.role||user?.roleId),
     active:user?.active!==false
   };
+}
+
+function normalizeTenantRole(role){
+  if(!role)return null;
+  const id=String(role.id||role.roleId||"").trim();
+  if(!id)return null;
+  const permissions=Array.isArray(role.permissions)?role.permissions.filter(Boolean):[];
+  return {id,name:role.name||id,permissions,locked:Boolean(role.locked),tenantId:role.tenantId||getTenantId()};
+}
+
+async function hydrateTenantRoles(tenantId=getTenantId()){
+  if(!db||!tenantId)return read(ROLE_KEY,[]);
+  try{
+    const snap=await getDocs(collection(db,'tenants',tenantId,'roles'));
+    const roles=snap.docs.map(item=>normalizeTenantRole({id:item.id,...item.data()})).filter(Boolean);
+    if(roles.length)write(ROLE_KEY,roles);
+    return roles.length?roles:read(ROLE_KEY,[]);
+  }catch(error){
+    console.warn('[retail-auth] tenant roles hydration failed',error);
+    return read(ROLE_KEY,[]);
+  }
 }
 
 async function findTenantByOwnerUid(uid){
@@ -98,6 +119,7 @@ export async function login(email,password){
     if(!profile||profile.active===false)return{ok:false,message:"บัญชีนี้ถูกปิดใช้งานหรือไม่พบข้อมูลร้าน"};
     const tenantId=normalizeTenantId(profile.tenantId);
     setTenantId(tenantId);
+    await hydrateTenantRoles(tenantId);
     write(SESSION_KEY,{
       tenantId,
       userId:profile.id||credential.user.uid,
@@ -119,5 +141,6 @@ export async function login(email,password){
 
 export function sessionRole(){
   const user=getSessionUser();
+  if(user)hydrateTenantRoles(user.tenantId);
   return read(ROLE_KEY,[]).find(role=>role.id===user?.roleId)||{id:user?.roleId||'owner',name:user?.role||'owner',permissions:[]};
 }
