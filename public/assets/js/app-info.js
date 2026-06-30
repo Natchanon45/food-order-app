@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.8',
-  build: '2026.06.30.074',
+  version: '0.12.9',
+  build: '2026.06.30.075',
   branch: 'feature/retail-pos',
-  commit: 'P9-B002',
+  commit: 'P9-B002.1',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P9-B002 Running Number',
-  updatedAt: '2026-06-30T14:10:00+07:00',
+  milestone: 'P9-B002.1 Firestore Rules for Running Number',
+  updatedAt: '2026-06-30T16:40:00+07:00',
   whatsNew: [
-    'Add counter-based POS running number POS-YYYYMMDD-00001',
-    'Assign official saleNumber inside online Firestore transaction',
-    'Assign official saleNumber during offline sale sync',
-    'Keep stable saleId and duplicate/stock movement protection'
+    'Allow POS counter reads/writes for Running Number transactions',
+    'Add Firestore rules for saleItems, dailySummary and syncQueue',
+    'Prepare auditLogs rules for future POS audit milestone',
+    'Keep tenant payload validation for POS foundation writes'
   ]
 };
 
