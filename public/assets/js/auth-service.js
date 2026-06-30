@@ -17,7 +17,7 @@ export const ROLE_HOME = {
 export const STAFF_ROLES = ["owner", "admin", "cashier", "kitchen", "super_admin"];
 
 function icon(name, className = "app-icon") {
-  return `<svg class="${className}" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260621-2#icon-${name}"></use></svg>`;
+  return `<svg class="${className}" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-063#icon-${name}"></use></svg>`;
 }
 
 function ensureIconStyles() {
@@ -76,7 +76,7 @@ function roleMenuLinks(profile) {
   if (["owner", "admin"].includes(profile.role)) links.push({ href: "/admin", icon: "settings", label: "จัดการระบบร้าน" });
   if (profile.role === "owner") {
     links.push({ href: "/admin/users", icon: "users", label: "จัดการพนักงาน" });
-    links.push({ action: "change-password", icon: "settings", label: "เปลี่ยนรหัสผ่าน" });
+    links.push({ action: "change-password", icon: "key", label: "เปลี่ยนรหัสผ่าน" });
   }
   return links;
 }
