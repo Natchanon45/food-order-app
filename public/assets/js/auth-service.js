@@ -48,6 +48,12 @@ function ensureIconStyles() {
     link.href = "/assets/css/icons.css?v=20260630-067";
     document.head.appendChild(link);
   }
+  if (!document.querySelector('link[href^="/assets/css/font-awesome-icons.css"]')) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "/assets/css/font-awesome-icons.css?v=20260630-067";
+    document.head.appendChild(link);
+  }
 }
 
 function ensurePasswordDialogStyles() {
