@@ -1,4 +1,4 @@
-export const POS_FIRESTORE_VERSION = 'P9-B001';
+export const POS_FIRESTORE_VERSION = 'P9-B002';
 
 export const POS_COLLECTIONS = Object.freeze({
   sales: 'sales',
@@ -13,8 +13,10 @@ export const POS_COLLECTIONS = Object.freeze({
 
 export const POS_CHANNEL = 'retail-pos';
 export const POS_ORDER_TYPE = 'pos';
+export const POS_RUNNING_PREFIX = 'POS';
+export const POS_RUNNING_PAD_LENGTH = 5;
 
-export function padRunning(value, length = 5) {
+export function padRunning(value, length = POS_RUNNING_PAD_LENGTH) {
   return String(Math.max(0, Number(value || 0))).padStart(length, '0');
 }
 
@@ -32,7 +34,11 @@ export function monthKeyFrom(value = new Date()) {
   return dateKeyFrom(value).slice(0, 6);
 }
 
-export function buildRunningNumber({ prefix = 'POS', dateKey = dateKeyFrom(), running = 0 } = {}) {
+export function counterIdForDate(dateKey = dateKeyFrom()) {
+  return `${POS_RUNNING_PREFIX}_${dateKey}`;
+}
+
+export function buildRunningNumber({ prefix = POS_RUNNING_PREFIX, dateKey = dateKeyFrom(), running = 0 } = {}) {
   return `${prefix}-${dateKey}-${padRunning(running)}`;
 }
 
