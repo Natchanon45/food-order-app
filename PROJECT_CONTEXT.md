@@ -16,10 +16,10 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.17`
-- Build: `2026.06.30.083`
+- Version: `0.12.18`
+- Build: `2026.06.30.084`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B005.2 POS Receipt Data Hydration & Print Cleanup`
+- Milestone: `P9-B005.3 POS Receipt Settings Restore & Loyalty Calculation Fix`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -39,39 +39,41 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 - P9-B005 Repository Layer เสร็จเบื้องต้น
 - P9-B005.1 POS Receipt Print Fix เสร็จ
 - P9-B005.2 POS Receipt Data Hydration & Print Cleanup เสร็จ
+- P9-B005.3 POS Receipt Settings Restore & Loyalty Calculation Fix เสร็จ
 
-## รายละเอียด P9-B005.2
+## รายละเอียด P9-B005.3
 
-ตรวจจากไฟล์จริงพบว่าใบเสร็จ POS หลังบันทึกขายเปิดจาก `retail_pos_sales_v1` ใน localStorage และยังใช้ header/footer แบบ hardcode ทำให้ข้อมูลร้าน, ลูกค้า/สมาชิก, แต้ม และท้ายบิลไม่ตรงกับค่าที่บันทึกไว้
+ตรวจหลัง P9-B005.2 พบว่ายังมี 3 จุดไม่ครบตาม workflow เดิม: ตัวเลือกขนาดใบเสร็จ 58/80/A4 หาย, ตัวเลือกถามก่อนพิมพ์/พิมพ์ทันทีหาย, ชื่อร้านยังไม่ยึดค่าที่บันทึกในหน้าตั้งค่า และแต้มยังไม่คำนวณทันในบิลที่เปิดหลังขาย
 
 แก้แล้ว:
 
-- ปรับ `retail-pos-receipt-modal.js` ให้ hydrate ข้อมูลร้านจาก settings `store` และ `receipt` ผ่าน `retail-db.js`
-- รองรับ fallback จาก `retail_pos_store_settings_v1` และ `food_order_store_settings` สำหรับ offline/local mode
-- แสดงชื่อร้าน, ที่อยู่, เบอร์โทร, เลขผู้เสียภาษี และโลโก้ร้านถ้ามี
-- แสดงข้อมูลลูกค้า/สมาชิกจาก sale snapshot หรือ local customer cache
-- แสดง loyalty summary บนใบเสร็จ ได้แก่ แต้มก่อนซื้อ, ใช้แต้ม, แต้มที่ได้รับ และแต้มคงเหลือ
-- ดึง `receiptThanks` และ `receiptFooter` มาใช้ท้ายบิลแทนข้อความ hardcode
-- ซ่อน toast, alert, notification และ snackbar ระหว่าง print
-- เพิ่ม listener `pos:loyalty-updated` เพื่อ refresh ใบเสร็จที่เปิดอยู่หลัง loyalty module update sale
-- `/pos/index.html` bump cache เป็น `retail-pos-receipt-modal.js?v=20260630-083`
+- เพิ่มตัวเลือก `receiptPaperSize` ใน `/pos/settings`: 58mm, 80mm, A4
+- เพิ่มตัวเลือก `receiptPrintMode` ใน `/pos/settings`: ถามก่อนพิมพ์, พิมพ์ทันที
+- บันทึก receipt settings ลง localStorage และ Firestore settings `store`/`receipt`
+- ปรับ receipt modal ให้ใช้ local saved settings เป็นหลัก เพื่อให้ชื่อร้านตรงกับค่าที่บันทึกบนเครื่อง
+- ปรับ receipt modal ให้กำหนดกระดาษตาม setting 58/80/A4
+- ปรับ receipt modal ให้พิมพ์ทันทีเฉพาะเมื่อ `receiptPrintMode = auto`; ถ้า `ask` ให้เปิดใบเสร็จแล้วรอกดพิมพ์
+- เพิ่มการคำนวณ loyalty fallback ทันทีบนใบเสร็จจาก customer cache + loyalty settings + points used ใน payment dialog
+- `/pos/index.html` bump cache เป็น `retail-pos-receipt-modal.js?v=20260630-084`
+- `/pos/settings/index.html` bump cache เป็น `retail-pos-settings.js?v=20260630-084`
 
 ## Current Milestone
 
-`P9-B005.2 POS Receipt Data Hydration & Print Cleanup`
+`P9-B005.3 POS Receipt Settings Restore & Loyalty Calculation Fix`
 
 ## Regression Tests สำคัญ
 
-1. เปิด `/pos`
-2. ขาย online 1 บิล หลังบันทึกสำเร็จต้องเปิดใบเสร็จและเรียก print dialog
-3. หัวบิลต้องใช้ข้อมูลร้านจาก settings หรือ local fallback
-4. ถ้าเลือกลูกค้า ต้องแสดงชื่อ/รหัสสมาชิก/เบอร์โทรบนใบเสร็จ
-5. ถ้ามี loyalty ต้องแสดงแต้มก่อนซื้อ/ใช้แต้ม/แต้มที่ได้รับ/แต้มคงเหลือ
-6. ท้ายบิลต้องใช้ `receiptThanks` และ `receiptFooter` ที่บันทึกไว้
-7. Toast/alert/notification ต้องไม่ติดในใบเสร็จตอนพิมพ์
-8. ขาย offline 1 บิล ต้องยังเปิดใบเสร็จและใช้ snapshot/fallback ได้
-9. sync offline ภายหลังต้องไม่เปิดใบเสร็จซ้ำ
-10. sync ซ้ำต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
+1. เปิด `/pos/settings`
+2. เปลี่ยนชื่อร้าน แล้วบันทึก ต้องเห็นชื่อร้านใหม่บนใบเสร็จ POS
+3. เลือกขนาดใบเสร็จ 58mm แล้วขาย 1 บิล ใบเสร็จต้องพิมพ์ขนาด 58mm
+4. เลือกขนาดใบเสร็จ 80mm แล้วขาย 1 บิล ใบเสร็จต้องพิมพ์ขนาด 80mm
+5. เลือกขนาดใบเสร็จ A4 แล้วขาย 1 บิล ใบเสร็จต้องพิมพ์ขนาด A4
+6. เลือก `ถามก่อนพิมพ์` หลังบันทึกขายต้องเปิดใบเสร็จแต่ยังไม่เรียก print dialog อัตโนมัติ
+7. เลือก `พิมพ์ทันที` หลังบันทึกขายต้องเรียก print dialog อัตโนมัติ
+8. ถ้าเลือกลูกค้า ต้องแสดงชื่อ/รหัสสมาชิก/เบอร์โทรบนใบเสร็จ
+9. ถ้ามีระบบแต้ม ต้องคำนวณแต้มก่อนซื้อ/ใช้แต้ม/แต้มที่ได้รับ/แต้มคงเหลือในบิล
+10. Toast/alert/notification ต้องไม่ติดในใบเสร็จตอนพิมพ์
+11. sync ซ้ำต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
 
 ## งานถัดไป
 
