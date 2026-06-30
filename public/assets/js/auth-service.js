@@ -1,7 +1,8 @@
 import {
   auth, db, functions,
   signInWithEmailAndPassword, signOut, onAuthStateChanged,
-  doc, getDoc, httpsCallable
+  doc, getDoc, httpsCallable,
+  EmailAuthProvider, reauthenticateWithCredential, updatePassword
 } from "./firebase-config.js";
 import { clearActiveTenant, setActiveTenant } from "./tenant-context.js";
 
@@ -25,6 +26,28 @@ function ensureIconStyles() {
   link.rel = "stylesheet";
   link.href = "/assets/css/icons.css?v=20260621-36";
   document.head.appendChild(link);
+}
+
+function ensurePasswordDialogStyles() {
+  if (document.querySelector("#owner-password-dialog-styles")) return;
+  const style = document.createElement("style");
+  style.id = "owner-password-dialog-styles";
+  style.textContent = `
+    .owner-password-backdrop{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:18px;background:rgba(8,18,14,.48);backdrop-filter:blur(8px)}
+    .owner-password-dialog{width:min(460px,100%);border-radius:22px;background:#fff;box-shadow:0 24px 70px rgba(10,25,18,.28);padding:22px;color:#111827}
+    .owner-password-dialog h2{margin:0 0 6px;font-size:24px}
+    .owner-password-dialog p{margin:0 0 18px;color:#64748b;font-weight:600}
+    .owner-password-field{display:grid;gap:7px;margin-top:12px;font-weight:800;color:#334155}
+    .owner-password-field input{width:100%;box-sizing:border-box;border:1px solid #d8e2dc;border-radius:14px;padding:13px 14px;font:inherit;font-weight:700;outline:none}
+    .owner-password-field input:focus{border-color:#159447;box-shadow:0 0 0 4px rgba(21,148,71,.12)}
+    .owner-password-error{min-height:20px;margin-top:12px;color:#d33;font-weight:800}
+    .owner-password-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+    .owner-password-actions button{border:0;border-radius:14px;padding:12px 16px;font-weight:900;cursor:pointer}
+    .owner-password-cancel{background:#eef3ef;color:#111827}
+    .owner-password-submit{background:#159447;color:#fff}
+    .owner-password-submit:disabled{opacity:.65;cursor:wait}
+  `;
+  document.head.appendChild(style);
 }
 
 function roleLabel(role) {
@@ -51,7 +74,10 @@ function roleMenuLinks(profile) {
   const links = [{ href: "/", icon: "home", label: "หน้าหลัก" }];
   if (["owner", "cashier"].includes(profile.role)) links.push({ href: "/cashier/table-qr", icon: "table", label: "ออกโต๊ะ" });
   if (["owner", "admin"].includes(profile.role)) links.push({ href: "/admin", icon: "settings", label: "จัดการระบบร้าน" });
-  if (profile.role === "owner") links.push({ href: "/admin/users", icon: "users", label: "จัดการพนักงาน" });
+  if (profile.role === "owner") {
+    links.push({ href: "/admin/users", icon: "users", label: "จัดการพนักงาน" });
+    links.push({ action: "change-password", icon: "settings", label: "เปลี่ยนรหัสผ่าน" });
+  }
   return links;
 }
 
@@ -83,6 +109,91 @@ async function activateProfileTenant(profile = {}) {
   return true;
 }
 
+function renderMenuItem(item) {
+  if (item.action) return `<button type="button" class="user-menu-link" data-menu-action="${item.action}" role="menuitem">${icon(item.icon)}<span>${item.label}</span></button>`;
+  return `<a class="user-menu-link" href="${item.href}" role="menuitem">${icon(item.icon)}<span>${item.label}</span></a>`;
+}
+
+function passwordErrorText(error) {
+  const code = String(error?.code || error?.message || "");
+  if (code.includes("auth/invalid-credential") || code.includes("auth/wrong-password")) return "รหัสผ่านเดิมไม่ถูกต้อง";
+  if (code.includes("auth/weak-password")) return "รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร";
+  if (code.includes("auth/requires-recent-login")) return "กรุณาออกจากระบบแล้วเข้าสู่ระบบใหม่ก่อนเปลี่ยนรหัสผ่าน";
+  return "เปลี่ยนรหัสผ่านไม่สำเร็จ กรุณาลองใหม่";
+}
+
+function showOwnerPasswordDialog() {
+  ensurePasswordDialogStyles();
+  const user = auth?.currentUser;
+  const email = user?.email || "";
+  if (!user || !email) return;
+
+  document.querySelector(".owner-password-backdrop")?.remove();
+  const backdrop = document.createElement("div");
+  backdrop.className = "owner-password-backdrop";
+  backdrop.innerHTML = `
+    <form class="owner-password-dialog" data-owner-password-form>
+      <h2>เปลี่ยนรหัสผ่าน</h2>
+      <p>สำหรับเจ้าของร้านเท่านั้น กรุณากรอกรหัสผ่านเดิมเพื่อยืนยันตัวตน</p>
+      <label class="owner-password-field">รหัสผ่านเดิม<input type="password" name="currentPassword" autocomplete="current-password" required></label>
+      <label class="owner-password-field">รหัสผ่านใหม่<input type="password" name="newPassword" autocomplete="new-password" minlength="6" required></label>
+      <label class="owner-password-field">ยืนยันรหัสผ่านใหม่<input type="password" name="confirmPassword" autocomplete="new-password" minlength="6" required></label>
+      <div class="owner-password-error" data-password-error></div>
+      <div class="owner-password-actions">
+        <button class="owner-password-cancel" type="button" data-close-password-dialog>ยกเลิก</button>
+        <button class="owner-password-submit" type="submit">เปลี่ยนรหัสผ่าน</button>
+      </div>
+    </form>`;
+
+  const close = () => backdrop.remove();
+  backdrop.addEventListener("click", event => {
+    if (event.target === backdrop || event.target.closest("[data-close-password-dialog]")) close();
+  });
+
+  backdrop.querySelector("[data-owner-password-form]").addEventListener("submit", async event => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const errorBox = form.querySelector("[data-password-error]");
+    const button = form.querySelector(".owner-password-submit");
+    const currentPassword = form.currentPassword.value;
+    const newPassword = form.newPassword.value;
+    const confirmPassword = form.confirmPassword.value;
+
+    errorBox.textContent = "";
+    if (newPassword !== confirmPassword) {
+      errorBox.textContent = "รหัสผ่านใหม่และยืนยันรหัสผ่านใหม่ไม่ตรงกัน";
+      form.confirmPassword.focus();
+      return;
+    }
+    if (newPassword.length < 6) {
+      errorBox.textContent = "รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร";
+      form.newPassword.focus();
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = "กำลังตรวจสอบ...";
+    try {
+      const credential = EmailAuthProvider.credential(email, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+      button.textContent = "กำลังเปลี่ยนรหัสผ่าน...";
+      await updatePassword(user, newPassword);
+      errorBox.style.color = "#0f8a3b";
+      errorBox.textContent = "เปลี่ยนรหัสผ่านเรียบร้อยแล้ว";
+      setTimeout(close, 900);
+    } catch (error) {
+      console.error("OWNER_PASSWORD_CHANGE_FAILED", error);
+      errorBox.style.color = "#d33";
+      errorBox.textContent = passwordErrorText(error);
+      button.disabled = false;
+      button.textContent = "เปลี่ยนรหัสผ่าน";
+    }
+  });
+
+  document.body.appendChild(backdrop);
+  setTimeout(() => backdrop.querySelector('input[name="currentPassword"]')?.focus(), 30);
+}
+
 export function mountUserMenu(profile) {
   ensureIconStyles();
   const header = document.querySelector(".app-header");
@@ -98,7 +209,7 @@ export function mountUserMenu(profile) {
     </button>
     <div class="user-menu-panel" data-user-menu-panel role="menu" hidden>
       <div class="user-menu-greeting">สวัสดี ${greetingName(profile)}<span class="user-menu-role">${roleLabel(profile.role)}</span></div>
-      ${roleMenuLinks(profile).map(item => `<a class="user-menu-link" href="${item.href}" role="menuitem">${icon(item.icon)}<span>${item.label}</span></a>`).join("")}
+      ${roleMenuLinks(profile).map(renderMenuItem).join("")}
       <button type="button" class="user-menu-action danger" data-logout role="menuitem">${icon("logout")}<span>ออกจากระบบ</span></button>
     </div>`;
   header.appendChild(menu);
@@ -109,6 +220,7 @@ export function mountUserMenu(profile) {
   trigger.addEventListener("click", event => { event.stopPropagation(); const nextOpen = panel.hidden; panel.hidden = !nextOpen; menu.classList.toggle("open", nextOpen); trigger.setAttribute("aria-expanded", String(nextOpen)); });
   document.addEventListener("click", event => { if (!menu.contains(event.target)) closeMenu(); });
   document.addEventListener("keydown", event => { if (event.key === "Escape") closeMenu(); });
+  menu.querySelector('[data-menu-action="change-password"]')?.addEventListener("click", () => { closeMenu(); showOwnerPasswordDialog(); });
   menu.querySelector("[data-logout]").addEventListener("click", async () => { await signOut(auth); location.replace("/login"); });
 }
 
