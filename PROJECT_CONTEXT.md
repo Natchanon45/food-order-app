@@ -21,10 +21,10 @@ firebase deploy --only hosting
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.10`
-- Build: `2026.06.30.076`
+- Version: `0.12.11`
+- Build: `2026.06.30.077`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B002.2 POS Auth Warning Cleanup`
+- Milestone: `P9-B003 Counter`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -112,13 +112,20 @@ firebase deploy --only hosting
 - bump cache `retail-pos-auth`, `retail-pos-navigation`, `retail-pos-sale-permissions`
 - เพิ่ม favicon link ใน `/pos` เพื่อลด `favicon.ico 404`
 
+ทำแล้วใน P9-B003:
+
+- แก้ hamburger icon ซ้ำบนปุ่มเมนู POS โดยให้ JS แสดงเฉพาะคำว่า `เมนู` และให้ CSS `::before` เป็น icon จุดเดียว
+- เพิ่ม `buildCounterRow()` ใน `retail-pos-firestore-foundation.js`
+- Counter doc มี metadata มาตรฐาน: `counterType`, `channel`, `orderType`, `monthKey`, `lastRunning`, `lastSaleId`, `schemaVersion`
+- Online sale และ Offline sync ใช้ helper counter เดียวกัน
+- bump cache `retail-pos`, `retail-offline-sale-sync`, `retail-pos-navigation`, `retail-pos-sale-permissions`
+
 ## เรื่องที่ยังควรทำต่อ / ยังไม่เสร็จสมบูรณ์
 
 ### Priority 1 — P9 POS Firestore Foundation
 
 - Deploy Firestore Rules และ Hosting
-- ทดสอบ online sale ว่า running number เพิ่มต่อเนื่องต่อวัน
-- ทดสอบ POS auth warning cleanup ว่าไม่มี `tenant roles collection denied` ซ้ำ
+- ทดสอบ online sale ว่า running number/counter เพิ่มต่อเนื่องต่อวัน
 - ทดสอบ offline sale > online sync > refresh/sync ซ้ำ ว่าไม่เกิดบิลซ้ำและไม่ตัด stock ซ้ำ
 - ทดสอบ tenant mismatch ว่าเข้า conflict จริง
 - เพิ่ม Offline Queue Worker + Retry + Conflict Resolver
@@ -128,25 +135,16 @@ firebase deploy --only hosting
 
 ## Regression Tests สำคัญ
 
-### POS Online Sale + Running Number
+### POS Counter Online
 
 1. เปิด `/pos` online
 2. ขายสินค้า 2 บิลในวันเดียวกัน
-3. ต้องสร้าง `tenants/{tenantId}/sales/{saleId}` อย่างละ 1 เอกสาร
-4. ต้องได้เลขบิลเรียง `POS-YYYYMMDD-00001`, `POS-YYYYMMDD-00002`
-5. ต้องอัปเดต `tenants/{tenantId}/counters/POS_{YYYYMMDD}.current`
-6. ต้องสร้าง `saleItems` ตามจำนวนรายการสินค้า
-7. ต้องสร้าง `stockMovements` deterministic id `${saleId}_${productId}`
-8. ต้อง update `dailySummary/{dateKey}` billCount/totalAmount/payment method
-9. ต้องเขียน `syncQueue/{saleId}` เป็น `synced`
-10. refresh แล้วขายใหม่ได้ตามปกติ
-
-### POS Auth Warning Smoke Test
-
-1. เปิด `/pos`
-2. Console ไม่ควรมี warning ซ้ำ `tenant roles collection denied`
-3. Developer Panel ต้องแสดง `0.12.10 / 2026.06.30.076`
-4. เมนู POS และ permission ยังทำงานตาม role เดิม
+3. ต้องได้เลขบิลเรียง `POS-YYYYMMDD-00001`, `POS-YYYYMMDD-00002`
+4. `tenants/{tenantId}/counters/POS_{YYYYMMDD}.current` ต้องเพิ่มตามจำนวนบิล
+5. `lastRunning` ต้องเท่ากับ `current`
+6. `lastSaleId` ต้องเป็น saleId ล่าสุด
+7. `lastNumber` ต้องเป็น saleNumber ล่าสุด
+8. ปุ่มเมนู POS ต้องมี hamburger icon แค่ตัวเดียว
 
 ### POS Offline Sync
 
@@ -154,21 +152,13 @@ firebase deploy --only hosting
 2. ตัดเน็ต
 3. ขายสินค้า 1 บิล
 4. local sale ต้องเป็น `syncStatus: pending`
-5. header ต้องแสดง `รอ Sync 1`
-6. local sale ต้องมี stable `saleId` เดิม
-7. ต่อเน็ต
-8. กด `Sync` หรือรอ auto sync
-9. sync ต้องสร้าง sale ใน Firestore 1 ใบเท่านั้น
-10. sale ที่ sync แล้วต้องได้เลขบิลจริง `POS-YYYYMMDD-xxxxx`
-11. stock ต้องลด 1 ครั้งเท่านั้น
-12. refresh แล้ว sync ซ้ำ ต้องไม่สร้างบิลซ้ำ/ไม่ลด stock ซ้ำ
-
-### Firestore Rules Smoke Test
-
-1. Deploy rules แล้วเปิด `/pos`
-2. ขายสินค้า online 1 บิล
-3. Console ต้องไม่ขึ้น `permission-denied` ที่ `counters/POS_{YYYYMMDD}`
-4. ต้องสร้าง/อัปเดต `counters`, `sales`, `saleItems`, `stockMovements`, `dailySummary`, `syncQueue`
+5. ต่อเน็ต
+6. กด `Sync` หรือรอ auto sync
+7. sync ต้องสร้าง sale ใน Firestore 1 ใบเท่านั้น
+8. sale ที่ sync แล้วต้องได้เลขบิลจริง `POS-YYYYMMDD-xxxxx`
+9. counter ต้องเพิ่ม 1 ครั้งเท่านั้น
+10. stock ต้องลด 1 ครั้งเท่านั้น
+11. refresh แล้ว sync ซ้ำ ต้องไม่สร้างบิลซ้ำ/ไม่ลด stock ซ้ำ
 
 ## ข้อควรระวัง
 
@@ -182,12 +172,12 @@ firebase deploy --only hosting
 
 ## Current Milestone
 
-`P9-B002.2 POS Auth Warning Cleanup`
+`P9-B003 Counter`
 
 Scope:
 
-1. Prefer tenant role settings before roles collection lookup
-2. Reduce noisy console warning during POS load
-3. Bump auth/navigation permission cache versions
-4. Add POS favicon link
-5. Preserve existing role fallback behavior
+1. Standardized POS counter document shape
+2. Counter metadata for online and offline sync
+3. Keep stable saleId and duplicate protection
+4. Keep Firestore transaction read-before-write order
+5. Fix duplicate POS menu hamburger icon
