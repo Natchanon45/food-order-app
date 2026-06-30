@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `P9-B005.2 POS Receipt Data Hydration & Print Cleanup`
-- Developer Panel version/build ปัจจุบัน: `0.12.17` / `2026.06.30.083`
+- Current milestone: `P9-B005.3 POS Receipt Settings Restore & Loyalty Calculation Fix`
+- Developer Panel version/build ปัจจุบัน: `0.12.18` / `2026.06.30.084`
 
 ## Retail POS Status
 
@@ -21,28 +21,31 @@
 - แก้เมนู POS เปิดได้และปรับระยะห่าง PC/Mobile แล้ว
 - เพิ่ม OfflineQueueWorker สำหรับ retry อัตโนมัติ
 - โหลด `retail-pos-receipt-modal.js` ในหน้า `/pos`
-- เปิดและสั่งพิมพ์ใบเสร็จหลังบันทึกการขายสำเร็จ
+- เปิดใบเสร็จหลังบันทึกการขายสำเร็จ
 - แก้ print CSS root ของ receipt modal เพื่อให้ fallback print ไม่ว่าง
-- ดึงข้อมูลร้าน/ตั้งค่าใบเสร็จมาแสดงบนใบเสร็จ POS
+- ดึงข้อมูลร้าน/ตั้งค่าใบเสร็จมาแสดงบนใบเสร็จ POS โดยใช้ local settings เป็นค่าหลัก
 - แสดงข้อมูลลูกค้า/สมาชิกและแต้มสะสมบนใบเสร็จ POS
 - ซ่อน toast/alert/notification ระหว่างพิมพ์ใบเสร็จ POS
+- กู้ตัวเลือกขนาดใบเสร็จ 58mm / 80mm / A4
+- กู้ตัวเลือกถามก่อนพิมพ์ / พิมพ์ทันที
 
 ## Current Milestone
 
-`P9-B005.2 POS Receipt Data Hydration & Print Cleanup`
+`P9-B005.3 POS Receipt Settings Restore & Loyalty Calculation Fix`
 
 ## Regression Tests
 
-1. เปิด `/pos`
-2. ขายสินค้า online 1 บิล
-3. หลังบันทึกสำเร็จ ต้องเปิดใบเสร็จและเรียก print dialog
-4. หัวบิลต้องใช้ข้อมูลร้านจาก settings `store`/`receipt` หรือ fallback จาก localStorage
-5. ถ้าเลือกลูกค้า ต้องแสดงชื่อ/รหัสสมาชิก/เบอร์โทรบนใบเสร็จ
-6. ถ้ามี loyalty ต้องแสดงแต้มก่อนซื้อ/ใช้แต้ม/แต้มที่ได้รับ/แต้มคงเหลือ
-7. ท้ายบิลต้องใช้ข้อความขอบคุณและ footer จาก receipt settings
-8. Toast หรือ alert ต้องไม่แสดงบนหน้า print
-9. ขาย offline 1 บิล ต้องยังเปิดใบเสร็จและใช้ข้อมูล snapshot/fallback ได้
-10. sync ซ้ำต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
+1. เปิด `/pos/settings`
+2. เปลี่ยนชื่อร้าน แล้วบันทึก ต้องเห็นชื่อร้านใหม่บนใบเสร็จ POS
+3. เลือกขนาดใบเสร็จ 58mm แล้วขาย 1 บิล ใบเสร็จต้องพิมพ์ขนาด 58mm
+4. เลือกขนาดใบเสร็จ 80mm แล้วขาย 1 บิล ใบเสร็จต้องพิมพ์ขนาด 80mm
+5. เลือกขนาดใบเสร็จ A4 แล้วขาย 1 บิล ใบเสร็จต้องพิมพ์ขนาด A4
+6. เลือก `ถามก่อนพิมพ์` หลังบันทึกขายต้องเปิดใบเสร็จแต่ยังไม่เรียก print dialog อัตโนมัติ
+7. เลือก `พิมพ์ทันที` หลังบันทึกขายต้องเรียก print dialog อัตโนมัติ
+8. ถ้าเลือกลูกค้า ต้องแสดงชื่อ/รหัสสมาชิก/เบอร์โทรบนใบเสร็จ
+9. ถ้ามีระบบแต้ม ต้องคำนวณแต้มก่อนซื้อ/ใช้แต้ม/แต้มที่ได้รับ/แต้มคงเหลือในบิล
+10. Toast หรือ alert ต้องไม่แสดงบนหน้า print
+11. sync ซ้ำต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
 
 ## Next Tasks
 
