@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `P9-B005 Repository Layer`
-- Developer Panel version/build ปัจจุบัน: `0.12.15` / `2026.06.30.081`
+- Current milestone: `P9-B005.1 POS Receipt Print Fix`
+- Developer Panel version/build ปัจจุบัน: `0.12.16` / `2026.06.30.082`
 
 ## Retail POS Status
 
@@ -17,25 +17,26 @@
 - กัน duplicate ด้วย sale document id
 - กันตัด stock ซ้ำด้วย deterministic stock movement id
 - เพิ่ม Running Number `POS-YYYYMMDD-00001`
-- เพิ่ม Counter metadata helper
+- เพิ่ม Repository Layer เบื้องต้น `retail-pos-repository.js`
 - แก้เมนู POS เปิดได้และปรับระยะห่าง PC/Mobile แล้ว
 - เพิ่ม OfflineQueueWorker สำหรับ retry อัตโนมัติ
-- เพิ่ม Repository Layer เบื้องต้น `retail-pos-repository.js`
-- route offline sale sync และ sync status ผ่าน repository helper
+- โหลด `retail-pos-receipt-modal.js` ในหน้า `/pos`
+- เปิดและสั่งพิมพ์ใบเสร็จหลังบันทึกการขายสำเร็จ
+- แก้ print CSS root ของ receipt modal เพื่อให้ fallback print ไม่ว่าง
 
 ## Current Milestone
 
-`P9-B005 Repository Layer`
+`P9-B005.1 POS Receipt Print Fix`
 
 ## Regression Tests
 
-1. เปิด `/pos` แล้วเมนูต้องเปิดได้ตามปกติ
-2. ขาย offline 1 บิล แล้ว local sale ต้องเป็น `pending`
-3. header sync status ต้องเห็นรายการ pending ผ่าน repository helper
-4. ต่อเน็ตแล้ว worker ต้อง sync อัตโนมัติ
-5. กด Retry แล้ว failed queue ต้องกลับไป sync ได้
-6. sync สำเร็จแล้วต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
-7. product/sale local storage เดิมต้องยังอ่านได้ตามปกติ
+1. เปิด `/pos`
+2. ขายสินค้า online 1 บิล
+3. หลังบันทึกสำเร็จ ต้องเปิดใบเสร็จและเรียก print dialog
+4. ขาย offline 1 บิล ต้องเปิดใบเสร็จและเรียก print dialog เช่นกัน
+5. ถ้า browser ไม่ยอมเปิดหน้าต่างใหม่ ต้องยังพิมพ์ผ่าน same-window receipt modal ได้
+6. บิลที่ sync ภายหลังต้องไม่เปิดใบเสร็จซ้ำ
+7. sync ซ้ำต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
 
 ## Next Tasks
 
