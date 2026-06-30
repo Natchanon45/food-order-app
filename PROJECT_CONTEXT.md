@@ -16,10 +16,10 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.12`
-- Build: `2026.06.30.078`
+- Version: `0.12.13`
+- Build: `2026.06.30.079`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B003.1 POS Menu Open Fix`
+- Milestone: `P9-B004 Offline Queue Worker + Retry + Conflict Resolver`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -33,38 +33,44 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 - P9-B002.1 Firestore Rules for Running Number เสร็จ
 - P9-B002.2 POS Auth Warning Cleanup เสร็จ
 - P9-B003 Counter เสร็จ
-- P9-B003.1 แก้ POS menu ไม่เปิดเสร็จ
+- P9-B003.1 POS Menu Open Fix เสร็จ
+- P9-B004 Offline Queue Worker + Retry + Conflict Resolver เสร็จ
 
-## รายละเอียด P9-B003.1
+## รายละเอียด P9-B004
 
-จากไฟล์จริงพบว่า `retail-pos-navigation.js` เพิ่ม class `open` ตอนกดปุ่มเมนู แต่ `retail-pos-navigation.css` แสดงผลเฉพาะ `.is-open` ทำให้กดปุ่มแล้ว panel ไม่เปิด
+แก้จากไฟล์จริง `retail-offline-sale-sync.js` และ `retail-pos-sync-status.js`
 
-แก้แล้ว:
+ทำแล้ว:
 
-- `retail-pos-navigation.css` รองรับทั้ง `.pos-menu-popover.is-open` และ `.pos-menu-popover.open`
-- `/pos/index.html` bump CSS cache เป็น `retail-pos-navigation.css?v=20260630-078`
-- app info bump เป็น `0.12.12 / 2026.06.30.078`
+- เพิ่ม `OfflineQueueWorker` สำหรับ sync queue อัตโนมัติ
+- เพิ่ม retry delay/backoff สำหรับรายการ `failed`
+- เพิ่ม stale syncing recovery เพื่อ retry รายการที่ค้าง `syncing`
+- เพิ่ม conflict metadata เช่น `conflictType`, `conflictResolution`
+- เพิ่ม helper `getOfflineSyncQueue()`, `retryFailedOfflineSales()`, `resolveOfflineSaleConflict()`
+- ปุ่ม Sync manual จะ retry รายการ failed ได้
+- `/pos/index.html` bump cache เป็น `retail-offline-sale-sync.js?v=20260630-079` และ `retail-pos-sync-status.js?v=20260630-079`
 
 ## Current Milestone
 
-`P9-B003.1 POS Menu Open Fix`
+`P9-B004 Offline Queue Worker + Retry + Conflict Resolver`
 
 ## Regression Tests สำคัญ
 
-1. เปิด `/pos`
-2. ปุ่มเมนูต้องมี hamburger icon แค่ตัวเดียว
-3. กดปุ่มเมนูแล้ว panel ต้องเปิด
-4. กด backdrop หรือปุ่ม X แล้ว panel ต้องปิด
-5. ขาย online 2 บิลในวันเดียวกัน counter ต้องเพิ่มต่อเนื่อง
-6. offline sync ต้องได้เลขจริงและไม่ตัด stock ซ้ำ
+1. ขาย offline 1 บิล แล้วสถานะต้องเป็น `pending`
+2. ต่อเน็ตแล้ว worker ต้อง sync อัตโนมัติ
+3. ถ้า sync fail ต้องเป็น `failed` พร้อม `nextRetryAt`
+4. เมื่อถึงเวลา retry ต้องกลับไป sync ใหม่ได้
+5. ถ้า conflict เช่น stock ไม่พอ ต้องเป็น `conflict` พร้อม `conflictType`
+6. กดปุ่ม Sync ต้อง retry รายการ failed ได้
+7. sync สำเร็จแล้วต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
 
 ## งานถัดไป
 
-1. P9-B004 Offline Queue Worker + Retry + Conflict Resolver
-2. P9-B005 Repository Layer
-3. P9-B006 Firestore Composite Index
-4. P9-B007 Audit Log
-5. P9-B008 Shift Opening / Closing
+1. P9-B005 Repository Layer
+2. P9-B006 Firestore Composite Index
+3. P9-B007 Audit Log
+4. P9-B008 Shift Opening / Closing
+5. P9-B009 Refund / Return / Void
 
 ## ข้อควรระวัง
 
