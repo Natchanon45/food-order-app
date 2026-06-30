@@ -1,22 +1,13 @@
-import { syncOfflineSalesToFirebase, retryFailedOfflineSales } from './retail-offline-sale-sync.js?v=20260630-079';
+import { syncOfflineSalesToFirebase, retryFailedOfflineSales } from './retail-offline-sale-sync.js?v=20260630-081';
+import { listLocalSales } from './retail-pos-repository.js?v=20260630-081';
 
-const SALES_KEY = 'retail_pos_sales_v1';
 const SYNC_EVENT = 'retail-offline-sales-synced';
 let syncButton;
 let syncText;
 let syncTimer;
 
-function readSales() {
-  try {
-    const rows = JSON.parse(localStorage.getItem(SALES_KEY));
-    return Array.isArray(rows) ? rows : [];
-  } catch {
-    return [];
-  }
-}
-
 function countSyncStatus() {
-  const rows = readSales();
+  const rows = listLocalSales();
   return rows.reduce((acc, sale) => {
     const status = String(sale?.syncStatus || '').toLowerCase();
     if (status === 'pending') acc.pending += 1;
@@ -106,9 +97,8 @@ function mount() {
 window.addEventListener(SYNC_EVENT, scheduleRender);
 window.addEventListener('online', scheduleRender);
 window.addEventListener('offline', scheduleRender);
-window.addEventListener('storage', event => {
-  if (!event.key || event.key === SALES_KEY) scheduleRender();
-});
+window.addEventListener('storage', scheduleRender);
+window.addEventListener('retail-pos-repository-change', scheduleRender);
 window.addEventListener('focus', scheduleRender);
 
 mount();
