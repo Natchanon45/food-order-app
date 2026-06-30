@@ -6,7 +6,7 @@
 
 - Branch: `feature/retail-pos`
 - Current milestone: `P8-B001 Retail POS Offline Sync Safe`
-- Developer Panel version/build ปัจจุบัน: `0.12.4` / `2026.06.30.052`
+- Developer Panel version/build ปัจจุบัน: `0.12.5` / `2026.06.30.061`
 
 ## Main Modules
 
@@ -34,14 +34,14 @@
 - ใช้ sale document id: `tenants/{tenantId}/sales/{saleId}`
 - ใช้ stock movement id แบบ deterministic: `${saleId}_${productId}`
 - เช็ก sale เดิมก่อน sync เพื่อกันบิลซ้ำและกันตัด stock ซ้ำ
+- แสดงสถานะบิล offline ที่ `pending`, `failed`, `syncing`, `conflict` บน header ของ POS
+- มีปุ่ม manual `Sync` สำหรับ retry บิล offline ที่ยัง sync ได้
 
 ### ยังต้องทำต่อ
 
-- เพิ่ม UI แสดงจำนวนบิล pending sync / conflict
-- เพิ่มปุ่ม manual retry sync
 - ทดสอบ offline sale > online sync > refresh/sync ซ้ำ ว่าไม่เกิดบิลซ้ำและไม่ตัด stock ซ้ำ
 - ทดสอบ tenant mismatch ว่าเข้า conflict จริง
-- อัปเดต `public/assets/js/app-info.js` ให้ Developer Panel แสดง milestone/build ล่าสุด
+- อัปเดต `public/assets/js/app-info.js` ถ้าต้องการตัด Version/Build ใหม่
 - พิจารณาเพิ่ม `CHANGELOG.md`
 
 ## Kitchen / Delivery Status
@@ -68,10 +68,12 @@
 2. ตัดเน็ต
 3. ขายสินค้า 1 บิล
 4. local sale ต้องเป็น `syncStatus: pending`
-5. ต่อเน็ต
-6. sync ต้องสร้าง sale ใน Firestore 1 ใบเท่านั้น
-7. stock ต้องลด 1 ครั้งเท่านั้น
-8. refresh แล้ว sync ซ้ำ ต้องไม่สร้างบิลซ้ำ/ไม่ลด stock ซ้ำ
+5. header ต้องแสดง `รอ Sync 1`
+6. ต่อเน็ต
+7. กด `Sync` หรือรอ auto sync
+8. sync ต้องสร้าง sale ใน Firestore 1 ใบเท่านั้น
+9. stock ต้องลด 1 ครั้งเท่านั้น
+10. refresh แล้ว sync ซ้ำ ต้องไม่สร้างบิลซ้ำ/ไม่ลด stock ซ้ำ
 
 ### POS Tenant Safety
 
@@ -79,6 +81,7 @@
 2. เปลี่ยน context เป็น tenant B
 3. sync ต้องไม่ข้ามร้าน
 4. local sale ต้องเป็น `syncStatus: conflict`
+5. header ต้องแสดง `Conflict 1`
 
 ### Delivery Kitchen Lock
 
