@@ -1,5 +1,6 @@
 import { auth, db, isFirebaseConfigured, doc, runTransaction, serverTimestamp } from './firebase-config.js?v=20260630-073';
 import { getTenantId, RetailCollections } from './retail-db.js?v=20260629-032';
+import { listLocalSales, saveLocalSales, updateLocalSale, localSaleId } from './retail-pos-repository.js?v=20260630-081';
 import {
   POS_COLLECTIONS,
   POS_FIRESTORE_VERSION,
@@ -21,27 +22,11 @@ let syncRunning = false;
 
 function nowIso() { return new Date().toISOString(); }
 function nowMs() { return Date.now(); }
-
-function readSales() {
-  try {
-    const rows = JSON.parse(localStorage.getItem(SALES_KEY));
-    return Array.isArray(rows) ? rows : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeSales(rows) {
-  localStorage.setItem(SALES_KEY, JSON.stringify(rows || []));
-  window.dispatchEvent(new StorageEvent('storage', { key: SALES_KEY }));
-}
+function readSales() { return listLocalSales(); }
+function writeSales(rows) { return saveLocalSales(rows || []); }
 
 function tenantDoc(collectionName, id) {
   return doc(db, 'tenants', getTenantId(), collectionName, String(id));
-}
-
-function localSaleId(sale) {
-  return String(sale?.id || sale?.saleNumber || '').trim();
 }
 
 function errorMessage(error) {
@@ -86,9 +71,7 @@ function saleNeedsSync(sale) {
 }
 
 function markSale(id, patch) {
-  const rows = readSales();
-  const next = rows.map(sale => localSaleId(sale) === id ? { ...sale, ...patch } : sale);
-  writeSales(next);
+  updateLocalSale(id, patch);
 }
 
 function markSyncing(sale, lockId) {
