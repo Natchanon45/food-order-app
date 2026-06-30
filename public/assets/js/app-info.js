@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.12',
-  build: '2026.06.30.078',
+  version: '0.12.13',
+  build: '2026.06.30.079',
   branch: 'feature/retail-pos',
-  commit: 'P9-B003.1',
+  commit: 'P9-B004',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P9-B003.1 POS Menu Open Fix',
-  updatedAt: '2026-06-30T19:35:00+07:00',
+  milestone: 'P9-B004 Offline Queue Worker + Retry + Conflict Resolver',
+  updatedAt: '2026-06-30T19:50:00+07:00',
   whatsNew: [
-    'Fix POS hamburger menu not opening by supporting existing open class',
-    'Keep duplicate hamburger icon cleanup from P9-B003',
-    'Continue stable POS counter document metadata',
-    'Add POS navigation CSS cache update note'
+    'Add OfflineQueueWorker for automatic POS sync retries',
+    'Add exponential retry delay for failed offline sales',
+    'Add conflict metadata and resolver helpers for offline sales',
+    'Wire manual Sync button to retry failed queue items'
   ]
 };
 
