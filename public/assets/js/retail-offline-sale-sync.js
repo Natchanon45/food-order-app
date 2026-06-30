@@ -1,5 +1,16 @@
 import { auth, db, isFirebaseConfigured, doc, runTransaction, serverTimestamp } from './firebase-config.js?v=20260630-073';
 import { getTenantId, RetailCollections } from './retail-db.js?v=20260629-032';
+import {
+  POS_COLLECTIONS,
+  POS_FIRESTORE_VERSION,
+  buildRunningNumber,
+  counterIdForDate,
+  dateKeyFrom,
+  monthKeyFrom,
+  applySaleToDailySummary,
+  buildSaleItemRows,
+  buildSyncQueueRow
+} from './retail-pos-firestore-foundation.js?v=20260630-074';
 
 const SALES_KEY = 'retail_pos_sales_v1';
 const SYNC_EVENT = 'retail-offline-sales-synced';
@@ -86,6 +97,32 @@ function markFailed(id, error, status = 'failed') {
   });
 }
 
+function normalizeOfflineSale(sale, { saleId, tenantId, userId, saleNumber }) {
+  const createdAt = sale.createdAt || new Date().toISOString();
+  const dateKey = sale.dateKey || dateKeyFrom(createdAt);
+  const monthKey = sale.monthKey || monthKeyFrom(createdAt);
+  return {
+    ...sale,
+    id: saleId,
+    saleNumber,
+    tenantId,
+    shopId: tenantId,
+    schemaVersion: POS_FIRESTORE_VERSION,
+    channel: sale.channel || 'retail-pos',
+    orderType: sale.orderType || 'pos',
+    dateKey,
+    monthKey,
+    deleted: false,
+    syncStatus: 'synced',
+    syncedFromOffline: true,
+    syncedAt: new Date().toISOString(),
+    syncedBy: userId,
+    paymentStatus: sale.paymentStatus || 'paid',
+    status: sale.status || 'completed',
+    updatedAt: Date.now()
+  };
+}
+
 async function syncOneSale(sale) {
   const saleId = localSaleId(sale);
   const tenantId = getTenantId();
@@ -95,13 +132,21 @@ async function syncOneSale(sale) {
   const saleRef = tenantDoc(RetailCollections.sales, saleId);
   const items = Array.isArray(sale.items) ? sale.items : [];
   let alreadyExists = false;
+  let syncedSaleNumber = sale.saleNumber || saleId;
 
   await runTransaction(db, async transaction => {
     const existingSale = await transaction.get(saleRef);
     if (existingSale.exists()) {
       alreadyExists = true;
+      syncedSaleNumber = existingSale.data()?.saleNumber || syncedSaleNumber;
       return;
     }
+
+    const saleDateKey = sale.dateKey || dateKeyFrom(sale.createdAt || new Date());
+    const counterRef = tenantDoc(POS_COLLECTIONS.counters, counterIdForDate(saleDateKey));
+    const counterSnapshot = await transaction.get(counterRef);
+    const summaryRef = tenantDoc(POS_COLLECTIONS.dailySummary, saleDateKey);
+    const summarySnapshot = await transaction.get(summaryRef);
 
     const productRows = [];
     for (const item of items) {
@@ -118,19 +163,42 @@ async function syncOneSale(sale) {
       productRows.push({ item, product, productId, productRef, before, qty, after: before - qty });
     }
 
-    transaction.set(saleRef, {
-      ...sale,
-      id: saleId,
+    const nextRunning = Number(counterSnapshot.exists() ? counterSnapshot.data().current || 0 : 0) + 1;
+    syncedSaleNumber = buildRunningNumber({ dateKey: saleDateKey, running: nextRunning });
+    const normalizedSale = normalizeOfflineSale(sale, { saleId, tenantId, userId, saleNumber: syncedSaleNumber });
+    const nextSummary = applySaleToDailySummary(summarySnapshot.exists() ? summarySnapshot.data() : {}, normalizedSale);
+
+    transaction.set(counterRef, {
+      id: counterIdForDate(saleDateKey),
       tenantId,
-      shopId: sale.shopId || tenantId,
-      syncStatus: 'synced',
-      syncedFromOffline: true,
-      syncedAt: new Date().toISOString(),
-      syncedBy: userId,
-      createdAtServer: serverTimestamp(),
+      shopId: tenantId,
+      prefix: 'POS',
+      dateKey: saleDateKey,
+      current: nextRunning,
+      lastNumber: syncedSaleNumber,
+      updatedBy: userId,
       updatedAt: Date.now(),
       updatedAtServer: serverTimestamp()
     }, { merge: true });
+
+    transaction.set(saleRef, {
+      ...normalizedSale,
+      createdAtServer: serverTimestamp(),
+      updatedAtServer: serverTimestamp()
+    }, { merge: true });
+
+    buildSaleItemRows(normalizedSale).forEach(item => transaction.set(tenantDoc(POS_COLLECTIONS.saleItems, item.id), {
+      ...item,
+      saleNumber: syncedSaleNumber,
+      createdBy: userId,
+      updatedBy: userId,
+      deviceId: normalizedSale.deviceId || '',
+      schemaVersion: POS_FIRESTORE_VERSION,
+      deleted: false,
+      createdAtServer: serverTimestamp(),
+      updatedAt: Date.now(),
+      updatedAtServer: serverTimestamp()
+    }, { merge: true }));
 
     productRows.forEach(({ item, product, productId, productRef, before, qty, after }) => {
       transaction.update(productRef, {
@@ -147,6 +215,11 @@ async function syncOneSale(sale) {
         id: movementId,
         tenantId,
         shopId: product.shopId || tenantId,
+        deviceId: normalizedSale.deviceId || '',
+        schemaVersion: POS_FIRESTORE_VERSION,
+        deleted: false,
+        dateKey: saleDateKey,
+        monthKey: monthKeyFrom(saleDateKey),
         productId,
         productName: item.name || product.name || productId,
         type: 'sale',
@@ -156,18 +229,24 @@ async function syncOneSale(sale) {
         after,
         stockBefore: before,
         stockAfter: after,
-        note: `ขายสินค้า ${sale.saleNumber || saleId}`,
+        note: `ขายสินค้า ${syncedSaleNumber}`,
         referenceType: 'sale',
         referenceId: saleId,
-        referenceNumber: sale.saleNumber || saleId,
+        referenceNumber: syncedSaleNumber,
         createdBy: userId,
+        updatedBy: userId,
         createdAt: sale.createdAt || new Date().toISOString(),
-        createdAtServer: serverTimestamp()
+        createdAtServer: serverTimestamp(),
+        updatedAt: Date.now(),
+        updatedAtServer: serverTimestamp()
       }, { merge: true });
     });
+
+    transaction.set(summaryRef, { ...nextSummary, updatedBy: userId, updatedAtServer: serverTimestamp() }, { merge: true });
+    transaction.set(tenantDoc(POS_COLLECTIONS.syncQueue, saleId), { ...buildSyncQueueRow(normalizedSale, { status: 'synced' }), createdBy: userId, updatedBy: userId, updatedAtServer: serverTimestamp() }, { merge: true });
   });
 
-  markSynced(saleId, alreadyExists ? { syncNote: 'sale already existed in Firebase' } : {});
+  markSynced(saleId, alreadyExists ? { saleNumber: syncedSaleNumber, syncNote: 'sale already existed in Firebase' } : { saleNumber: syncedSaleNumber });
   return saleId;
 }
 
