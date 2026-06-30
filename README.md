@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `P9-B002.2 POS Auth Warning Cleanup`
-- Developer Panel version/build ปัจจุบัน: `0.12.10` / `2026.06.30.076`
+- Current milestone: `P9-B003 Counter`
+- Developer Panel version/build ปัจจุบัน: `0.12.11` / `2026.06.30.077`
 
 ## Main Modules
 
@@ -39,6 +39,8 @@
 - เพิ่ม counter-based running number รูปแบบ `POS-YYYYMMDD-00001`
 - เพิ่ม Firestore Rules สำหรับ POS foundation collections ที่ Running Number transaction ใช้งาน
 - ลด warning จาก POS auth โดยอ่าน role จาก tenant settings ก่อน collection fallback
+- แก้ปุ่มเมนู POS ไม่ให้มี hamburger icon ซ้ำ
+- เพิ่ม helper มาตรฐานสำหรับ counter document ของ POS
 
 ### POS Firestore Foundation
 
@@ -61,37 +63,28 @@
 - เมื่อ offline sync สำเร็จ จะออกเลขบิลจริงจาก counter ของวันที่ขาย
 - ยังคงกัน duplicate ด้วย `sales/{saleId}` และ deterministic stock movement id `${saleId}_${productId}`
 
-### Firestore Rules Fix
+### Counter
 
-เพิ่มใน P9-B002.1:
+เพิ่มใน P9-B003:
 
-- อนุญาต POS transaction อ่าน/เขียน `tenants/{tenantId}/counters/{counterId}` สำหรับ Running Number
-- เพิ่ม rules สำหรับ `saleItems`, `dailySummary`, `syncQueue`
-- เตรียม rules สำหรับ `auditLogs` ตาม milestone ถัดไป
-- ทุก write ยังต้องมี `tenantId` หรือ `shopId` ตรงกับ tenant path
-
-### POS Auth Warning Cleanup
-
-เพิ่มใน P9-B002.2:
-
-- `retail-pos-auth.js` อ่าน roles จาก `tenants/{tenantId}/settings/roles` ก่อน
-- ถ้า settings ไม่มีข้อมูล จึง fallback ไป `tenants/{tenantId}/roles`
-- ลด console warning `tenant roles collection denied` ระหว่างโหลด POS
-- bump cache `retail-pos-auth`, `retail-pos-navigation`, `retail-pos-sale-permissions`
-- เพิ่ม favicon link ใน `/pos` เพื่อลด `favicon.ico 404`
+- เพิ่ม `buildCounterRow()` ใน `retail-pos-firestore-foundation.js`
+- Counter doc มี metadata มาตรฐาน: `counterType`, `channel`, `orderType`, `monthKey`, `lastRunning`, `lastSaleId`, `schemaVersion`
+- Online sale ใช้ helper เดียวกันตอน update `counters/POS_{YYYYMMDD}`
+- Offline sync ใช้ helper เดียวกันตอนออกเลขบิลจริง
+- ยังคง read counter ก่อน write ใน Firestore transaction
+- แก้ hamburger icon ซ้ำบนปุ่มเมนู POS
 
 ### ยังต้องทำต่อ
 
 - Deploy Firestore Rules และ Hosting
-- ทดสอบ online sale ว่า running number เพิ่มต่อเนื่องต่อวัน
-- ทดสอบ offline sale > online sync ว่าได้เลขบิลจริงและไม่ซ้ำ
+- ทดสอบ online sale ว่า counter เพิ่มต่อเนื่องต่อวัน
+- ทดสอบ offline sale > online sync ว่า counter ไม่ซ้ำ
 - ทดสอบ refresh/sync ซ้ำ ว่าไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
 - ทดสอบ tenant mismatch ว่าเข้า conflict จริง
 - เพิ่ม Offline Queue Worker + Retry + Conflict Resolver
 - เพิ่ม Repository Layer
 - เพิ่ม Firestore Composite Index
 - เพิ่ม Audit Log สำหรับ sale/refund/void
-- เพิ่ม shift opening/closing
 
 ## Firestore POS Structure
 
@@ -110,25 +103,15 @@ tenants/{tenantId}
 
 ## Important Regression Tests
 
-### POS Online Sale + Running Number
+### POS Counter Online
 
 1. เปิด POS online ให้โหลดสินค้า
 2. ขายสินค้า 2 บิลในวันเดียวกัน
-3. ต้องสร้าง `sales/{saleId}` อย่างละ 1 เอกสาร
-4. บิลแรกต้องได้ `POS-YYYYMMDD-00001`
-5. บิลที่สองต้องได้ `POS-YYYYMMDD-00002`
-6. ต้องอัปเดต `counters/POS_{YYYYMMDD}.current`
-7. ต้องสร้าง `saleItems/{saleId_productId}` ตามรายการสินค้า
-8. ต้องสร้าง `stockMovements/{saleId_productId}` และลด stock 1 ครั้ง
-9. ต้อง update `dailySummary/{YYYYMMDD}`
-10. ต้องสร้าง/อัปเดต `syncQueue/{saleId}` เป็น `synced`
-
-### POS Auth Warning Smoke Test
-
-1. เปิด `/pos`
-2. Console ไม่ควรมี warning ซ้ำ `tenant roles collection denied`
-3. Developer Panel ต้องแสดง `0.12.10 / 2026.06.30.076`
-4. เมนู POS และ permission ยังทำงานตาม role เดิม
+3. `counters/POS_{YYYYMMDD}.current` ต้องเพิ่มจาก 1 เป็น 2
+4. `lastRunning` ต้องเท่ากับ `current`
+5. `lastSaleId` ต้องตรงกับบิลล่าสุด
+6. `lastNumber` ต้องตรงกับ `saleNumber` ล่าสุด
+7. ปุ่มเมนูต้องแสดง icon เดียว ไม่ซ้ำ
 
 ### POS Offline Sync
 
@@ -136,20 +119,10 @@ tenants/{tenantId}
 2. ตัดเน็ต
 3. ขายสินค้า 1 บิล
 4. local sale ต้องเป็น `syncStatus: pending`
-5. header ต้องแสดง `รอ Sync 1`
-6. ต่อเน็ต
-7. กด `Sync` หรือรอ auto sync
-8. sync ต้องสร้าง sale ใน Firestore 1 ใบเท่านั้น
-9. sale ที่ sync แล้วต้องได้เลขจริง `POS-YYYYMMDD-xxxxx`
-10. stock ต้องลด 1 ครั้งเท่านั้น
-11. refresh แล้ว sync ซ้ำ ต้องไม่สร้างบิลซ้ำ/ไม่ลด stock ซ้ำ
-
-### Firestore Rules Smoke Test
-
-1. หลัง deploy rules แล้ว เปิด `/pos`
-2. ขายสินค้า online 1 บิล
-3. Console ต้องไม่ขึ้น `permission-denied` ที่ `counters/POS_{YYYYMMDD}`
-4. Firestore ต้องมี `sales`, `saleItems`, `stockMovements`, `dailySummary`, `syncQueue`, `counters`
+5. ต่อเน็ตแล้ว sync
+6. sale ที่ sync แล้วต้องได้เลขจริง `POS-YYYYMMDD-xxxxx`
+7. counter ต้องเพิ่มครั้งเดียว
+8. refresh แล้ว sync ซ้ำ ต้องไม่สร้างบิลซ้ำ/ไม่ลด stock ซ้ำ
 
 ## Deploy
 
