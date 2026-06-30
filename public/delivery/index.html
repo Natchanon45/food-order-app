@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#159447">
+  <meta name="description" content="Natchanon Food Order Delivery is an online food ordering and delivery application for browsing menus, placing orders, entering delivery details, and making payments.">
   <link rel="stylesheet" href="/assets/css/app.css?v=20260623-7">
   <link rel="stylesheet" href="/assets/css/menu-qr.css?v=20260623-7">
   <link rel="stylesheet" href="/assets/css/payment-slip.css?v=20260623-7">
@@ -14,13 +15,13 @@
   <link rel="stylesheet" href="/assets/css/mobile-menu-scroll.css?v=20260623-7">
   <link rel="stylesheet" href="/assets/css/delivery-payment-lock.css?v=20260623-1">
   <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260629-046">
-  <title>สั่งอาหาร Delivery</title>
+  <title>Natchanon Food Order Delivery</title>
 </head>
 <body class="delivery-page">
   <div id="demoBanner"></div>
-  <header class="app-header"><div class="brand"><span class="brand-mark">FO</span><span>Delivery</span></div><span class="badge">จัดส่งถึงบ้าน</span></header>
+  <header class="app-header"><div class="brand"><span class="brand-mark">FOD</span><span>Natchanon Food Order Delivery</span></div><span class="badge">จัดส่งถึงบ้าน</span></header>
   <main class="container">
-    <section class="hero"><h1>สั่งอาหาร Delivery</h1><p>เลือกเมนู กรอกข้อมูลจัดส่ง และยืนยันคำสั่งซื้อได้ทันที</p></section>
+    <section class="hero"><h1>Natchanon Food Order Delivery</h1><p>แอปพลิเคชันสั่งอาหารและบริการจัดส่งออนไลน์ สำหรับเลือกเมนู กรอกข้อมูลจัดส่ง ยืนยันคำสั่งซื้อ และชำระเงิน</p></section>
     <div class="delivery-pos">
       <div class="delivery-menu-column">
         <div class="menu-filter-area" id="menuListStart"><div class="category-tabs" id="categoryTabs" role="tablist" aria-label="หมวดหมู่อาหาร"></div><input class="input menu-search" id="searchInput" placeholder="ค้นหาเมนู..."></div>
@@ -48,7 +49,7 @@
           <div class="card" style="margin-top:12px;box-shadow:none;background:#f8fbf9"><div class="receipt-row"><span>ค่าอาหาร</span><strong><span id="deliverySubtotal">0.00</span> บาท</strong></div><div class="receipt-row"><span>ค่าจัดส่ง</span><strong><span id="deliveryFeeDisplay">0.00</span> บาท</strong></div></div>
           <div class="field" style="margin-top:12px"><label>หมายเหตุถึงร้าน</label><textarea class="input" id="orderNote" maxlength="300"></textarea></div>
           <div class="field" style="margin-top:12px"><label>วิธีชำระเงิน *</label><select class="input" id="paymentMethod"><option value="promptpay">ชำระแล้วด้วยพร้อมเพย์/โอนเงิน</option><option value="cod">เก็บเงินปลายทาง</option></select></div>
-          <div id="promptPaySection" class="card" style="margin-top:12px;text-align:center"><h3 style="margin-top:0">สแกน QR พร้อมเพย์</h3><div id="promptPayPlaceholder" class="empty" style="padding:24px 12px">เพิ่มรายการอาหารเพื่อสร้าง QR ตามยอดสุทธิ</div><img id="promptPayQr" width="220" height="220" alt="QR พร้อมเพย์" hidden><div><strong id="promptPayAmount">0.00 บาท</strong></div><div id="promptPayName" class="menu-category"></div><div id="paymentSlipWrap" class="payment-slip-wrap" style="margin-top:14px;text-align:left"><label style="font-size:13px;font-weight:700;color:var(--muted)">แนบสลิปหรือหลักฐานการชำระ *</label><div class="payment-slip-dropzone" id="paymentSlipDropzone"><input id="paymentSlip" type="file" accept="image/*,.heic,.heif"><div class="payment-slip-content" id="paymentSlipContent"><div class="payment-slip-icon">+</div><div class="payment-slip-title">แตะเพื่อแนบสลิป หรือลากไฟล์มาวาง</div><div class="payment-slip-help">รองรับรูปจากกล้องและคลังรูป • ไม่เกิน 8 MB</div></div><div class="payment-slip-preview" id="paymentSlipPreviewWrap" hidden><img id="paymentSlipPreview" alt="ตัวอย่างสลิป"><div class="payment-slip-meta"><span id="paymentSlipFileName">-</span><span id="paymentSlipFileSize">-</span></div></div></div><div class="payment-slip-error" id="paymentSlipError" hidden></div><button type="button" class="btn btn-danger btn-sm" id="removePaymentSlip" hidden style="margin-top:8px">ลบสลิป</button></div><small class="menu-category">** ระบบรับหลักฐานการชำระไว้ให้ร้านตรวจสอบเท่านั้น</small></div>
+          <div id="promptPaySection" class="card" style="margin-top:12px;text-align:center"><h3 style="margin-top:0">สแกน QR พร้อมเพย์</h3><div id="promptPayPlaceholder" class="empty" style="padding:24px 12px">เพิ่มรายการอาหารเพื่อสร้าง QR ตามยอดสุทธิ</div><img id="promptPayQr" width="220" height="220" alt="QR พร้อมเพย์" hidden><div><strong id="promptPayAmount">0.00 บาท</strong></div><div id="promptPayName" class="menu-category"></div><div class="payment-slip-wrap" id="paymentSlipWrap" style="margin-top:14px;text-align:left"><label style="font-size:13px;font-weight:700;color:var(--muted)">แนบสลิปหรือหลักฐานการชำระ *</label><div class="payment-slip-dropzone" id="paymentSlipDropzone"><input id="paymentSlip" type="file" accept="image/*,.heic,.heif"><div class="payment-slip-content" id="paymentSlipContent"><div class="payment-slip-icon">+</div><div class="payment-slip-title">แตะเพื่อแนบสลิป หรือลากไฟล์มาวาง</div><div class="payment-slip-help">รองรับรูปจากกล้องและคลังรูป • ไม่เกิน 8 MB</div></div><div class="payment-slip-preview" id="paymentSlipPreviewWrap" hidden><img id="paymentSlipPreview" alt="ตัวอย่างสลิป"><div class="payment-slip-meta"><span id="paymentSlipFileName">-</span><span id="paymentSlipFileSize">-</span></div></div></div><div class="payment-slip-error" id="paymentSlipError" hidden></div><button type="button" class="btn btn-danger btn-sm" id="removePaymentSlip" hidden style="margin-top:8px">ลบสลิป</button></div><small class="menu-category">** ระบบรับหลักฐานการชำระไว้ให้ร้านตรวจสอบเท่านั้น</small></div>
         </section>
       </div>
     </div>
