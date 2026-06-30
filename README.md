@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `P9-B003.1 POS Menu Open Fix`
-- Developer Panel version/build ปัจจุบัน: `0.12.12` / `2026.06.30.078`
+- Current milestone: `P9-B004 Offline Queue Worker`
+- Developer Panel version/build ปัจจุบัน: `0.12.13` / `2026.06.30.079`
 
 ## Retail POS Status
 
@@ -14,33 +14,36 @@
 
 - POS รองรับ online/offline/sync/tenant
 - ใช้ stable `saleId` เดียวกันทั้ง online/offline
-- กัน duplicate ด้วย `sales/{saleId}`
-- กันตัด stock ซ้ำด้วย deterministic stock movement id `${saleId}_${productId}`
+- กัน duplicate ด้วย sale document id
+- กันตัด stock ซ้ำด้วย deterministic stock movement id
 - เพิ่ม Running Number `POS-YYYYMMDD-00001`
-- เพิ่ม Counter metadata helper `buildCounterRow()`
-- แก้ hamburger icon ซ้ำ
-- แก้ปุ่มเมนู POS กดแล้วไม่เปิด โดยให้ CSS รองรับ class `open` และ `is-open`
-- bump CSS cache ของ `/pos/index.html` เป็น `20260630-078`
+- เพิ่ม Counter metadata helper
+- แก้เมนู POS เปิดได้แล้ว
+- เพิ่ม OfflineQueueWorker สำหรับ retry อัตโนมัติ
+- เพิ่ม retry delay ให้รายการ sync failed
+- เพิ่ม conflict metadata และ helper สำหรับ retry/resolve
 
 ## Current Milestone
 
-`P9-B003.1 POS Menu Open Fix`
+`P9-B004 Offline Queue Worker`
 
 ## Regression Tests
 
-1. เปิด `/pos`
-2. ปุ่มเมนูต้องมี hamburger icon แค่ 1 จุด
-3. กดปุ่มเมนูแล้ว panel ต้องเปิด
-4. กด backdrop หรือปุ่มปิดแล้ว panel ต้องปิด
-5. ขาย online 2 บิลแล้ว counter ต้องเพิ่มต่อเนื่อง
-6. offline sync ต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
+1. เปิด `/pos` แล้วเมนูต้องเปิดได้ตามปกติ
+2. ขาย offline 1 บิล แล้ว local sale ต้องเป็น `pending`
+3. ต่อเน็ตแล้ว worker ต้อง sync อัตโนมัติ
+4. ถ้า sync fail ต้องเป็น `failed` พร้อม `nextRetryAt`
+5. กดปุ่ม `Retry` ต้องนำ failed กลับไป sync ใหม่
+6. ถ้า tenant mismatch หรือ stock ไม่พอ ต้องเป็น `conflict`
+7. conflict ต้องไม่ retry เองจนกว่าจะ resolve/retry manual
+8. sync ซ้ำต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
 
 ## Next Tasks
 
-1. P9-B004 Offline Queue Worker + Retry + Conflict Resolver
-2. P9-B005 Repository Layer
-3. P9-B006 Firestore Composite Index
-4. P9-B007 Audit Log
+1. P9-B005 Repository Layer
+2. P9-B006 Firestore Composite Index
+3. P9-B007 Audit Log
+4. P9-B008 Shift Opening / Closing
 
 ## Deploy
 
