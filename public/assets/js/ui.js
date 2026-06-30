@@ -1,6 +1,6 @@
 export const APP_VERSION = "1.6.16";
 export const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
-const ICON_VERSION = "20260630-077";
+const ICON_VERSION = "20260630-079";
 
 export const money = (value = 0) => new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value) || 0);
 

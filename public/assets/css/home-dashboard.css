@@ -74,12 +74,12 @@ body.staff-home .nav-card-icon {
   display: grid !important;
   place-items: center;
   margin: 0 !important;
-  border-radius: 20px;
-  background: #f5faf7;
+  border-radius: 0;
+  background: transparent;
   color: #101713;
 }
 
-body.staff-home .nav-card-icon .app-icon { width: 43px; height: 43px; flex-basis: 43px; }
+body.staff-home .nav-card-icon .app-icon { width: 47px; height: 47px; flex-basis: 47px; }
 body.staff-home .nav-card-label { display: block !important; margin: 0 !important; }
 
 body.staff-home .user-menu-trigger {
