@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `P8-B001 Retail POS Offline Sync Safe`
-- Developer Panel version/build ปัจจุบัน: `0.12.5` / `2026.06.30.061`
+- Current milestone: `P9-B001 POS Firestore Foundation`
+- Developer Panel version/build ปัจจุบัน: `0.12.7` / `2026.06.30.073`
 
 ## Main Modules
 
@@ -37,12 +37,48 @@
 - แสดงสถานะบิล offline ที่ `pending`, `failed`, `syncing`, `conflict` บน header ของ POS
 - มีปุ่ม manual `Sync` สำหรับ retry บิล offline ที่ยัง sync ได้
 
+### POS Firestore Foundation
+
+เพิ่มใน P9-B001:
+
+- เพิ่มไฟล์ `public/assets/js/retail-pos-firestore-foundation.js`
+- กำหนด collection มาตรฐานสำหรับ POS:
+  - `sales`
+  - `saleItems`
+  - `stockMovements`
+  - `shifts`
+  - `counters`
+  - `dailySummary`
+  - `syncQueue`
+  - `auditLogs`
+- sale online มี metadata เพิ่ม: `schemaVersion`, `deviceId`, `dateKey`, `monthKey`, `deleted`, `createdBy`, `updatedBy`
+- online transaction เขียน `sales`, `saleItems`, `stockMovements`, `dailySummary`, `syncQueue` ใน transaction เดียว
+- แก้ลำดับ transaction ให้อ่านเอกสารทั้งหมดก่อน write ตามข้อกำหนด Firestore
+
 ### ยังต้องทำต่อ
 
+- ทดสอบ online sale หลังเพิ่ม `saleItems`, `dailySummary`, `syncQueue`
 - ทดสอบ offline sale > online sync > refresh/sync ซ้ำ ว่าไม่เกิดบิลซ้ำและไม่ตัด stock ซ้ำ
 - ทดสอบ tenant mismatch ว่าเข้า conflict จริง
-- อัปเดต `public/assets/js/app-info.js` ถ้าต้องการตัด Version/Build ใหม่
+- เพิ่ม counter-based running number: `POS-YYYYMMDD-00001`
+- เพิ่ม shift opening/closing
+- เพิ่ม audit log สำหรับ sale/refund/void
 - พิจารณาเพิ่ม `CHANGELOG.md`
+
+## Firestore POS Structure
+
+```text
+tenants/{tenantId}
+  products/{productId}
+  sales/{saleId}
+  saleItems/{saleId_productId}
+  stockMovements/{saleId_productId}
+  dailySummary/{YYYYMMDD}
+  syncQueue/{saleId}
+  shifts/{shiftId}
+  counters/{counterId}
+  auditLogs/{auditId}
+```
 
 ## Kitchen / Delivery Status
 
@@ -61,6 +97,17 @@
 - ห้ามปิดโต๊ะถ้ายังมีออเดอร์ค้างหรือยังไม่ชำระ
 
 ## Important Regression Tests
+
+### POS Online Sale + Firestore Foundation
+
+1. เปิด POS online ให้โหลดสินค้า
+2. ขายสินค้า 1 บิล
+3. ต้องสร้าง `sales/{saleId}` 1 เอกสาร
+4. ต้องสร้าง `saleItems/{saleId_productId}` ตามรายการสินค้า
+5. ต้องสร้าง `stockMovements/{saleId_productId}` และลด stock 1 ครั้ง
+6. ต้อง update `dailySummary/{YYYYMMDD}`
+7. ต้องสร้าง/อัปเดต `syncQueue/{saleId}` เป็น `synced`
+8. refresh แล้วขายบิลใหม่ได้ตามปกติ
 
 ### POS Offline Sync
 
@@ -124,3 +171,4 @@ python3 -m http.server 8080 --directory public
 - ทุก record สำคัญต้องมี `tenantId`
 - ห้าม sync POS ข้าม tenant
 - ถ้าแก้ JS/CSS ที่ import ใน HTML ต้อง bump query string เพื่อกัน browser cache
+- Firestore transaction ต้อง read เอกสารทั้งหมดก่อน write
