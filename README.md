@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `P9-B001 POS Firestore Foundation`
-- Developer Panel version/build ปัจจุบัน: `0.12.7` / `2026.06.30.073`
+- Current milestone: `P9-B002 Running Number`
+- Developer Panel version/build ปัจจุบัน: `0.12.8` / `2026.06.30.074`
 
 ## Main Modules
 
@@ -36,6 +36,7 @@
 - เช็ก sale เดิมก่อน sync เพื่อกันบิลซ้ำและกันตัด stock ซ้ำ
 - แสดงสถานะบิล offline ที่ `pending`, `failed`, `syncing`, `conflict` บน header ของ POS
 - มีปุ่ม manual `Sync` สำหรับ retry บิล offline ที่ยัง sync ได้
+- เพิ่ม counter-based running number รูปแบบ `POS-YYYYMMDD-00001`
 
 ### POS Firestore Foundation
 
@@ -55,14 +56,28 @@
 - online transaction เขียน `sales`, `saleItems`, `stockMovements`, `dailySummary`, `syncQueue` ใน transaction เดียว
 - แก้ลำดับ transaction ให้อ่านเอกสารทั้งหมดก่อน write ตามข้อกำหนด Firestore
 
+### Running Number
+
+เพิ่มใน P9-B002:
+
+- Online POS transaction อ่าน/อัปเดต `tenants/{tenantId}/counters/POS_{YYYYMMDD}`
+- เลขบิลจริงใช้รูปแบบ `POS-YYYYMMDD-00001`
+- ใช้ counter เพิ่มทีละ 1 ภายใน Firestore transaction เดียวกับ sale/stock/summary
+- Offline sale ยังใช้ stable `saleId` เดิมและเลขชั่วคราวแบบ `PENDING`
+- เมื่อ offline sync สำเร็จ จะออกเลขบิลจริงจาก counter ของวันที่ขาย
+- ยังคงกัน duplicate ด้วย `sales/{saleId}` และ deterministic stock movement id `${saleId}_${productId}`
+
 ### ยังต้องทำต่อ
 
-- ทดสอบ online sale หลังเพิ่ม `saleItems`, `dailySummary`, `syncQueue`
-- ทดสอบ offline sale > online sync > refresh/sync ซ้ำ ว่าไม่เกิดบิลซ้ำและไม่ตัด stock ซ้ำ
+- ทดสอบ online sale ว่า running number เพิ่มต่อเนื่องต่อวัน
+- ทดสอบ offline sale > online sync ว่าได้เลขบิลจริงและไม่ซ้ำ
+- ทดสอบ refresh/sync ซ้ำ ว่าไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
 - ทดสอบ tenant mismatch ว่าเข้า conflict จริง
-- เพิ่ม counter-based running number: `POS-YYYYMMDD-00001`
+- เพิ่ม Offline Queue Worker + Retry + Conflict Resolver
+- เพิ่ม Repository Layer
+- เพิ่ม Firestore Composite Index
+- เพิ่ม Audit Log สำหรับ sale/refund/void
 - เพิ่ม shift opening/closing
-- เพิ่ม audit log สำหรับ sale/refund/void
 - พิจารณาเพิ่ม `CHANGELOG.md`
 
 ## Firestore POS Structure
@@ -76,7 +91,7 @@ tenants/{tenantId}
   dailySummary/{YYYYMMDD}
   syncQueue/{saleId}
   shifts/{shiftId}
-  counters/{counterId}
+  counters/POS_{YYYYMMDD}
   auditLogs/{auditId}
 ```
 
@@ -98,16 +113,18 @@ tenants/{tenantId}
 
 ## Important Regression Tests
 
-### POS Online Sale + Firestore Foundation
+### POS Online Sale + Running Number
 
 1. เปิด POS online ให้โหลดสินค้า
-2. ขายสินค้า 1 บิล
-3. ต้องสร้าง `sales/{saleId}` 1 เอกสาร
-4. ต้องสร้าง `saleItems/{saleId_productId}` ตามรายการสินค้า
-5. ต้องสร้าง `stockMovements/{saleId_productId}` และลด stock 1 ครั้ง
-6. ต้อง update `dailySummary/{YYYYMMDD}`
-7. ต้องสร้าง/อัปเดต `syncQueue/{saleId}` เป็น `synced`
-8. refresh แล้วขายบิลใหม่ได้ตามปกติ
+2. ขายสินค้า 2 บิลในวันเดียวกัน
+3. ต้องสร้าง `sales/{saleId}` อย่างละ 1 เอกสาร
+4. บิลแรกต้องได้ `POS-YYYYMMDD-00001`
+5. บิลที่สองต้องได้ `POS-YYYYMMDD-00002`
+6. ต้องอัปเดต `counters/POS_{YYYYMMDD}.current`
+7. ต้องสร้าง `saleItems/{saleId_productId}` ตามรายการสินค้า
+8. ต้องสร้าง `stockMovements/{saleId_productId}` และลด stock 1 ครั้ง
+9. ต้อง update `dailySummary/{YYYYMMDD}`
+10. ต้องสร้าง/อัปเดต `syncQueue/{saleId}` เป็น `synced`
 
 ### POS Offline Sync
 
@@ -119,8 +136,9 @@ tenants/{tenantId}
 6. ต่อเน็ต
 7. กด `Sync` หรือรอ auto sync
 8. sync ต้องสร้าง sale ใน Firestore 1 ใบเท่านั้น
-9. stock ต้องลด 1 ครั้งเท่านั้น
-10. refresh แล้ว sync ซ้ำ ต้องไม่สร้างบิลซ้ำ/ไม่ลด stock ซ้ำ
+9. sale ที่ sync แล้วต้องได้เลขจริง `POS-YYYYMMDD-xxxxx`
+10. stock ต้องลด 1 ครั้งเท่านั้น
+11. refresh แล้ว sync ซ้ำ ต้องไม่สร้างบิลซ้ำ/ไม่ลด stock ซ้ำ
 
 ### POS Tenant Safety
 
