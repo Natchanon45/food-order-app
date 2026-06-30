@@ -1,6 +1,7 @@
 const SALES_KEY = 'retail_pos_sales_v1';
 const styleId = 'retailPosReceiptModalStyle';
 let lastShownSaleId = '';
+let autoPrintTimer = 0;
 
 const receiptFontFace = `@font-face{font-family:'TH Sarabun PSK Local';src:url('/assets/fonts/THSarabun.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap}@font-face{font-family:'TH Sarabun PSK Local';src:url('/assets/fonts/THSarabun-Bold.ttf') format('truetype');font-style:normal;font-weight:700;font-display:swap}`;
 const receiptFontStack = `'TH Sarabun PSK Local','TH Sarabun New',Sarabun,sans-serif`;
@@ -33,7 +34,7 @@ function ensureStyle() {
   style.textContent = `
 ${receiptFontFace}
 .receipt-modal[hidden]{display:none!important}.receipt-modal{position:fixed;inset:0;z-index:2147483645;display:grid;place-items:center;padding:16px}.receipt-modal-backdrop{position:absolute;inset:0;background:rgba(15,23,42,.58);backdrop-filter:blur(3px)}.receipt-modal-card{position:relative;width:min(420px,100%);max-height:calc(100dvh - 28px);overflow:auto;border-radius:22px;background:#fff;color:#111827;box-shadow:0 28px 80px rgba(15,23,42,.35);padding:16px}.receipt-modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.receipt-modal-head h2{margin:0;font-size:22px}.receipt-close{border:0;border-radius:999px;width:34px;height:34px;background:#eef3f0;font-size:22px;line-height:1}.receipt-paper{font-family:${receiptFontStack};font-size:20px;line-height:1.05;border:1px dashed #cbd5e1;border-radius:14px;padding:14px;background:#fbfbfb}.receipt-center{text-align:center}.receipt-shop{font-weight:700;font-size:26px;line-height:1}.receipt-muted{color:#64748b;font-size:18px}.receipt-rule{border:0;border-top:1px dashed #cbd5e1;margin:9px 0}.receipt-row{display:flex;justify-content:space-between;gap:10px;margin:3px 0}.receipt-item{display:grid;grid-template-columns:1fr auto;gap:8px;margin:5px 0}.receipt-item strong{font-weight:700}.receipt-item small{display:block;color:#64748b;font-size:18px}.receipt-total{font-size:24px;font-weight:700}.receipt-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.receipt-actions button{border:0;border-radius:14px;min-height:46px;font-weight:900}.receipt-print{background:#159447;color:#fff}.receipt-secondary{background:#eef3f0;color:#111827}@media(max-width:640px){.receipt-modal{align-items:end;padding:10px}.receipt-modal-card{border-radius:22px 22px 0 0;width:100%;max-height:88dvh}.receipt-actions{grid-template-columns:1fr}.receipt-print{order:-1}}
-@media print{body>*:not(.receipt-print-root){display:none!important}.receipt-print-root{display:block!important}.receipt-paper{border:0!important}.receipt-actions,.receipt-modal-head{display:none!important}}
+@media print{body>*:not(.receipt-print-root){display:none!important}.receipt-print-root{display:block!important;position:static!important;inset:auto!important;padding:0!important;background:#fff!important}.receipt-modal-backdrop,.receipt-actions,.receipt-modal-head{display:none!important}.receipt-modal-card{box-shadow:none!important;border-radius:0!important;width:80mm!important;max-height:none!important;overflow:visible!important;padding:0!important}.receipt-paper{border:0!important;border-radius:0!important;background:#fff!important;width:80mm!important;max-width:100%!important}}
 `;
   document.head.appendChild(style);
 }
@@ -68,7 +69,7 @@ function ensureModal() {
   let modal = document.querySelector('[data-pos-receipt-modal]');
   if (modal) return modal;
   modal = document.createElement('div');
-  modal.className = 'receipt-modal';
+  modal.className = 'receipt-modal receipt-print-root';
   modal.dataset.posReceiptModal = 'true';
   modal.hidden = true;
   modal.innerHTML = `
@@ -84,7 +85,7 @@ function ensureModal() {
   return modal;
 }
 
-function showReceipt(sale) {
+function showReceipt(sale, { autoPrint = false } = {}) {
   if (!sale) return;
   const id = saleId(sale);
   if (!id) return;
@@ -92,6 +93,10 @@ function showReceipt(sale) {
   const modal = ensureModal();
   modal.querySelector('[data-receipt-content]').innerHTML = receiptHtml(sale);
   modal.hidden = false;
+  if (autoPrint) {
+    clearTimeout(autoPrintTimer);
+    autoPrintTimer = setTimeout(printCurrentReceipt, 350);
+  }
 }
 
 function closeReceipt() {
@@ -102,19 +107,15 @@ function closeReceipt() {
 function printCurrentReceipt() {
   const sale = readSales().find(item => saleId(item) === lastShownSaleId) || readSales()[0];
   if (!sale) return;
-  const popup = window.open('', '_blank', 'width=420,height=720');
-  if (!popup) {
-    window.print();
-    return;
-  }
-  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>พิมพ์บิล</title><style>${receiptFontFace}body{font-family:${receiptFontStack};font-size:20px;line-height:1.05;margin:0;padding:10px;color:#111}.receipt-paper{width:80mm;max-width:100%;margin:0 auto}.receipt-center{text-align:center}.receipt-shop{font-weight:700;font-size:26px;line-height:1}.receipt-muted{color:#555;font-size:18px}.receipt-rule{border:0;border-top:1px dashed #999;margin:9px 0}.receipt-row{display:flex;justify-content:space-between;gap:10px;margin:3px 0}.receipt-item{display:grid;grid-template-columns:1fr auto;gap:8px;margin:5px 0}.receipt-item strong{font-weight:700}.receipt-item small{display:block;color:#555;font-size:18px}.receipt-total{font-size:24px;font-weight:700}@media print{body{padding:0}.receipt-paper{width:80mm}}</style></head><body>${receiptHtml(sale)}<script>window.onload=()=>{window.focus();window.print();setTimeout(()=>window.close(),500)}<\/script></body></html>`);
-  popup.document.close();
+  const modal = ensureModal();
+  modal.hidden = false;
+  window.print();
 }
 
 function maybeShowLatestSale(previousFirstId = '') {
   const latest = readSales()[0];
   const id = saleId(latest);
-  if (id && id !== previousFirstId && id !== lastShownSaleId) showReceipt(latest);
+  if (id && id !== previousFirstId && id !== lastShownSaleId) showReceipt(latest, { autoPrint: true });
 }
 
 const originalSetItem = localStorage.setItem.bind(localStorage);
@@ -128,4 +129,4 @@ window.addEventListener('retail-offline-sales-synced', () => {
   // Sync event should not reopen old receipt.
 });
 
-export {};
+export { showReceipt, printCurrentReceipt };
