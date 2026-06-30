@@ -115,11 +115,23 @@ body[data-roles="cashier"] .order-actions .btn span {
   transform: scale(.94);
 }
 
-.nav-card .app-icon {
-  width: 34px;
-  height: 34px;
-  margin-bottom: 8px;
+.nav-card {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  text-align: left !important;
+  line-height: 1.15 !important;
 }
+
+.nav-card .app-icon {
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  flex: 0 0 32px;
+}
+
+.nav-card span { display: inline !important; margin: 0 !important; font-size: inherit !important; }
 
 .google-login-button {
   display: inline-flex;
@@ -223,6 +235,9 @@ body[data-roles="cashier"] .order-actions .btn span {
   .qty {
     grid-template-columns: 36px minmax(18px, auto) 36px;
   }
+
+  .nav-card { gap: 10px !important; }
+  .nav-card .app-icon { width: 30px; height: 30px; flex-basis: 30px; }
 
   .user-menu-trigger-label { display: none; }
   .user-menu-trigger {
