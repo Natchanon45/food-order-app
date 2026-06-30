@@ -1,0 +1,44 @@
+.app-icon.fa-solid {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25em;
+  height: 1.25em;
+  flex: 0 0 auto;
+  font-size: 1em;
+  line-height: 1;
+  vertical-align: -.1em;
+  color: currentColor;
+  pointer-events: none;
+}
+
+.nav-card .app-icon.fa-solid {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 10px;
+  font-size: 34px;
+}
+
+.user-menu-avatar .app-icon.fa-solid {
+  width: 18px;
+  height: 18px;
+  font-size: 17px;
+}
+
+.user-menu-trigger .user-menu-chevron.fa-solid {
+  width: 16px;
+  height: 16px;
+  font-size: 12px;
+}
+
+.user-menu-link .app-icon.fa-solid,
+.user-menu-action .app-icon.fa-solid {
+  width: 21px;
+  height: 21px;
+  flex: 0 0 21px;
+  font-size: 19px;
+}
+
+.user-menu-link .fa-key {
+  font-size: 20px;
+}
