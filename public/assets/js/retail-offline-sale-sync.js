@@ -4,12 +4,13 @@ import {
   POS_COLLECTIONS,
   POS_FIRESTORE_VERSION,
   buildRunningNumber,
+  buildCounterRow,
   counterIdForDate,
   dateKeyFrom,
   applySaleToDailySummary,
   buildSaleItemRows,
   buildSyncQueueRow
-} from './retail-pos-firestore-foundation.js?v=20260630-074';
+} from './retail-pos-firestore-foundation.js?v=20260630-077';
 
 const SALES_KEY = 'retail_pos_sales_v1';
 const SYNC_EVENT = 'retail-offline-sales-synced';
@@ -168,15 +169,7 @@ async function syncOneSale(sale) {
     const nextSummary = applySaleToDailySummary(summarySnapshot.exists() ? summarySnapshot.data() : {}, normalizedSale);
 
     transaction.set(counterRef, {
-      id: counterIdForDate(saleDateKey),
-      tenantId,
-      shopId: tenantId,
-      prefix: 'POS',
-      dateKey: saleDateKey,
-      current: nextRunning,
-      lastNumber: syncedSaleNumber,
-      updatedBy: userId,
-      updatedAt: Date.now(),
+      ...buildCounterRow({ tenantId, dateKey: saleDateKey, running: nextRunning, saleId, saleNumber: syncedSaleNumber, userId }),
       updatedAtServer: serverTimestamp()
     }, { merge: true });
 
