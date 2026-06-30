@@ -6,7 +6,6 @@ import {
   buildRunningNumber,
   counterIdForDate,
   dateKeyFrom,
-  monthKeyFrom,
   applySaleToDailySummary,
   buildSaleItemRows,
   buildSyncQueueRow
@@ -100,7 +99,7 @@ function markFailed(id, error, status = 'failed') {
 function normalizeOfflineSale(sale, { saleId, tenantId, userId, saleNumber }) {
   const createdAt = sale.createdAt || new Date().toISOString();
   const dateKey = sale.dateKey || dateKeyFrom(createdAt);
-  const monthKey = sale.monthKey || monthKeyFrom(createdAt);
+  const monthKey = sale.monthKey || dateKey.slice(0, 6);
   return {
     ...sale,
     id: saleId,
@@ -219,7 +218,7 @@ async function syncOneSale(sale) {
         schemaVersion: POS_FIRESTORE_VERSION,
         deleted: false,
         dateKey: saleDateKey,
-        monthKey: monthKeyFrom(saleDateKey),
+        monthKey: saleDateKey.slice(0, 6),
         productId,
         productName: item.name || product.name || productId,
         type: 'sale',
