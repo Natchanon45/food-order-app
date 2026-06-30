@@ -16,16 +16,38 @@ export const ROLE_HOME = {
 
 export const STAFF_ROLES = ["owner", "admin", "cashier", "kitchen", "super_admin"];
 
+const FONT_AWESOME_ICONS = {
+  home: "fa-house",
+  table: "fa-table",
+  settings: "fa-sliders",
+  users: "fa-users",
+  key: "fa-key",
+  user: "fa-user",
+  "chevron-down": "fa-chevron-down",
+  logout: "fa-arrow-right-from-bracket"
+};
+
 function icon(name, className = "app-icon") {
-  return `<svg class="${className}" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-066#icon-${name}"></use></svg>`;
+  const faIcon = FONT_AWESOME_ICONS[name] || "fa-circle";
+  return `<i class="fa-solid ${faIcon} ${className}" aria-hidden="true"></i>`;
 }
 
 function ensureIconStyles() {
-  if (document.querySelector('link[href^="/assets/css/icons.css"]')) return;
-  const link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href = "/assets/css/icons.css?v=20260621-36";
-  document.head.appendChild(link);
+  if (!document.querySelector('link[data-font-awesome]')) {
+    const fontAwesome = document.createElement("link");
+    fontAwesome.rel = "stylesheet";
+    fontAwesome.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css";
+    fontAwesome.crossOrigin = "anonymous";
+    fontAwesome.referrerPolicy = "no-referrer";
+    fontAwesome.dataset.fontAwesome = "true";
+    document.head.appendChild(fontAwesome);
+  }
+  if (!document.querySelector('link[href^="/assets/css/icons.css"]')) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "/assets/css/icons.css?v=20260630-067";
+    document.head.appendChild(link);
+  }
 }
 
 function ensurePasswordDialogStyles() {
