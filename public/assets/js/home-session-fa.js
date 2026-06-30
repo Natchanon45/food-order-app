@@ -1,18 +1,15 @@
 import { waitForAuth, getUserProfile, mountUserMenu, STAFF_ROLES } from "./auth-service.js?v=20260630-067";
 
 const dashboard = document.querySelector("#staffDashboard");
+const publicLanding = document.querySelector("#publicLanding");
 const user = await waitForAuth();
 
-if (!user) {
-  location.replace("/delivery");
-} else {
+if (user) {
   const profile = await getUserProfile(user);
 
-  if (!profile || profile.active === false || !STAFF_ROLES.includes(profile.role)) {
-    location.replace("/delivery");
-  } else if (profile.role === "super_admin") {
+  if (profile?.active !== false && profile?.role === "super_admin") {
     location.replace("/platform");
-  } else {
+  } else if (profile?.active !== false && STAFF_ROLES.includes(profile?.role)) {
     const ownerRoleAliases = new Set(["owner", "admin", "cashier", "kitchen"]);
 
     document.querySelectorAll("[data-dashboard-role]").forEach(card => {
@@ -30,6 +27,7 @@ if (!user) {
     }
 
     mountUserMenu(profile);
+    publicLanding.hidden = true;
     dashboard.hidden = false;
   }
 }

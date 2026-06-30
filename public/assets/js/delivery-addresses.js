@@ -158,7 +158,16 @@ googleLoginButton.addEventListener("click", async () => {
     await loginCustomerWithGoogle();
   } catch (error) {
     console.error(error);
-    if (error.code !== "auth/popup-closed-by-user") toast("เข้าสู่ระบบ Google ไม่สำเร็จ", "error");
+    const messages = {
+      "auth/unauthorized-domain": "โดเมนนี้ยังไม่ได้รับอนุญาตใน Firebase Authentication",
+      "auth/operation-not-allowed": "ยังไม่ได้เปิดใช้งานการเข้าสู่ระบบด้วย Google",
+      "auth/popup-blocked": "เบราว์เซอร์บล็อกหน้าต่าง Google กรุณาอนุญาตป๊อปอัปแล้วลองใหม่",
+      "auth/network-request-failed": "เชื่อมต่อ Google ไม่สำเร็จ กรุณาตรวจอินเทอร์เน็ตแล้วลองใหม่",
+      "auth/cancelled-popup-request": "มีหน้าต่างเข้าสู่ระบบ Google เปิดอยู่แล้ว"
+    };
+    if (error.code !== "auth/popup-closed-by-user") {
+      toast(messages[error.code] || "เข้าสู่ระบบ Google ไม่สำเร็จ กรุณาติดต่อผู้ดูแลระบบ", "error");
+    }
   } finally {
     googleLoginButton.disabled = false;
     googleLoginButton.textContent = "เข้าสู่ระบบด้วย Google";
