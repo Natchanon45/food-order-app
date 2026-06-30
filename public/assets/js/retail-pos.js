@@ -134,29 +134,11 @@ function waitForAuthUser(timeout = 3000) {
 function shouldFallbackToOffline(error) {
   if (navigator.onLine === false) return true;
   const text = String(error?.code || error?.message || error || "").toLowerCase();
-  return [
-    "network",
-    "offline",
-    "unavailable",
-    "timeout",
-    "deadline-exceeded",
-    "failed to fetch",
-    "firebaseerror"
-  ].some(part => text.includes(part));
+  return ["network", "offline", "unavailable", "timeout", "deadline-exceeded", "failed to fetch", "firebaseerror"].some(part => text.includes(part));
 }
 
 function normalizeProduct(product = {}) {
-  return {
-    ...product,
-    id: String(product.id || product.code || ""),
-    barcode: String(product.barcode || ""),
-    name: product.name || "ไม่ระบุชื่อ",
-    price: Number(product.price || 0),
-    cost: Number.isFinite(Number(product.cost)) ? Number(product.cost) : null,
-    stock: Number(product.stock ?? product.qty ?? 0),
-    unit: product.unit || "ชิ้น",
-    showOnPos: product.showOnPos !== false
-  };
+  return { ...product, id: String(product.id || product.code || ""), barcode: String(product.barcode || ""), name: product.name || "ไม่ระบุชื่อ", price: Number(product.price || 0), cost: Number.isFinite(Number(product.cost)) ? Number(product.cost) : null, stock: Number(product.stock ?? product.qty ?? 0), unit: product.unit || "ชิ้น", showOnPos: product.showOnPos !== false };
 }
 
 function normalizeProducts(rows = []) {
@@ -166,11 +148,7 @@ function normalizeProducts(rows = []) {
     const current = byId.get(product.id);
     const productIsCanonical = product._documentId === product.id;
     const currentIsCanonical = current?._documentId === current?.id;
-    if (!current
-      || (productIsCanonical && !currentIsCanonical)
-      || (productIsCanonical === currentIsCanonical && Number(product.updatedAt || 0) > Number(current.updatedAt || 0))) {
-      byId.set(product.id, product);
-    }
+    if (!current || (productIsCanonical && !currentIsCanonical) || (productIsCanonical === currentIsCanonical && Number(product.updatedAt || 0) > Number(current.updatedAt || 0))) byId.set(product.id, product);
   });
   return [...byId.values()];
 }
@@ -187,35 +165,12 @@ function renderProducts() {
     const searchText = `${product.name || ""} ${product.id || ""} ${product.barcode || ""}`.toLowerCase();
     return product.showOnPos !== false && (!keyword || searchText.includes(keyword));
   });
-
-  els.productGrid.innerHTML = filtered.length ? filtered.map(product => `
-    <button class="product-card" type="button" data-product-id="${escapeHtml(product.id)}" ${savingSale || product.stock <= 0 ? "disabled" : ""}>
-      <span class="name">${escapeHtml(product.name)}</span>
-      <span class="code">${escapeHtml(product.id)} • ${escapeHtml(product.barcode)}</span>
-      <span class="stock">คงเหลือ ${Number(product.stock || 0).toLocaleString("th-TH")} ${escapeHtml(product.unit)}</span>
-      <span class="price">${money(product.price)} บาท</span>
-    </button>
-  `).join("") : '<div class="empty-state">ไม่พบสินค้า</div>';
+  els.productGrid.innerHTML = filtered.length ? filtered.map(product => `<button class="product-card" type="button" data-product-id="${escapeHtml(product.id)}" ${savingSale || product.stock <= 0 ? "disabled" : ""}><span class="name">${escapeHtml(product.name)}</span><span class="code">${escapeHtml(product.id)} • ${escapeHtml(product.barcode)}</span><span class="stock">คงเหลือ ${Number(product.stock || 0).toLocaleString("th-TH")} ${escapeHtml(product.unit)}</span><span class="price">${money(product.price)} บาท</span></button>`).join("") : '<div class="empty-state">ไม่พบสินค้า</div>';
 }
 
 function renderCart() {
   els.cartEmpty.hidden = cart.length > 0;
-  els.cartList.innerHTML = cart.map(item => `
-    <div class="cart-row">
-      <div>
-        <div class="cart-name">${escapeHtml(item.name)}</div>
-        <div class="cart-meta">${money(item.price)} บาท / ${escapeHtml(item.unit)}</div>
-        <div class="qty-tools">
-          <button type="button" data-action="decrease" data-id="${escapeHtml(item.id)}" ${savingSale ? "disabled" : ""}>−</button>
-          <strong>${item.qty}</strong>
-          <button type="button" data-action="increase" data-id="${escapeHtml(item.id)}" ${savingSale ? "disabled" : ""}>+</button>
-          <button type="button" class="remove" data-action="remove" data-id="${escapeHtml(item.id)}" ${savingSale ? "disabled" : ""}>ลบ</button>
-        </div>
-      </div>
-      <div class="line-total">${money(item.price * item.qty)}</div>
-    </div>
-  `).join("");
-
+  els.cartList.innerHTML = cart.map(item => `<div class="cart-row"><div><div class="cart-name">${escapeHtml(item.name)}</div><div class="cart-meta">${money(item.price)} บาท / ${escapeHtml(item.unit)}</div><div class="qty-tools"><button type="button" data-action="decrease" data-id="${escapeHtml(item.id)}" ${savingSale ? "disabled" : ""}>−</button><strong>${item.qty}</strong><button type="button" data-action="increase" data-id="${escapeHtml(item.id)}" ${savingSale ? "disabled" : ""}>+</button><button type="button" class="remove" data-action="remove" data-id="${escapeHtml(item.id)}" ${savingSale ? "disabled" : ""}>ลบ</button></div></div><div class="line-total">${money(item.price * item.qty)}</div></div>`).join("");
   const qty = cart.reduce((sum, item) => sum + item.qty, 0);
   const totals = getTotals();
   els.itemCount.textContent = `${qty} รายการ`;
@@ -229,12 +184,8 @@ function addProduct(productId) {
   if (!product || product.stock <= 0) return;
   const current = cart.find(item => item.id === productId);
   const currentQty = current?.qty || 0;
-  if (currentQty >= product.stock) {
-    showToast("จำนวนในบิลเกินสต็อกคงเหลือ");
-    return;
-  }
-  if (current) current.qty += 1;
-  else cart.push({ ...product, qty: 1 });
+  if (currentQty >= product.stock) return showToast("จำนวนในบิลเกินสต็อกคงเหลือ");
+  if (current) current.qty += 1; else cart.push({ ...product, qty: 1 });
   renderCart();
 }
 
@@ -244,17 +195,11 @@ function changeQty(id, delta) {
   if (!item || !product) return;
   const next = item.qty + delta;
   if (next > product.stock) return showToast("จำนวนในบิลเกินสต็อกคงเหลือ");
-  if (next <= 0) cart = cart.filter(entry => entry.id !== id);
-  else item.qty = next;
+  if (next <= 0) cart = cart.filter(entry => entry.id !== id); else item.qty = next;
   renderCart();
 }
 
-function resetSale() {
-  cart = [];
-  els.discountInput.value = "0";
-  renderCart();
-  els.barcodeInput.focus();
-}
+function resetSale() { cart = []; els.discountInput.value = "0"; renderCart(); els.barcodeInput.focus(); }
 
 function openPayment() {
   const totals = getTotals();
@@ -291,24 +236,7 @@ async function completeSaleOffline({ saleId, method, received, totals, number, c
     const before = Number(product.stock || 0);
     const after = before - sold;
     const id = movementId(saleId, product.id);
-    movementRows.push({
-      id,
-      tenantId: getTenantId(),
-      productId: product.id,
-      productName: product.name,
-      type: "sale",
-      direction: "out",
-      qty: sold,
-      before,
-      after,
-      stockBefore: before,
-      stockAfter: after,
-      note: `ขายสินค้า ${number}`,
-      referenceType: "sale",
-      referenceId: saleId,
-      referenceNumber: number,
-      createdAt
-    });
+    movementRows.push({ id, tenantId: getTenantId(), productId: product.id, productName: product.name, type: "sale", direction: "out", qty: sold, before, after, stockBefore: before, stockAfter: after, note: `ขายสินค้า ${number}`, referenceType: "sale", referenceId: saleId, referenceNumber: number, createdAt });
     return { ...product, stock: after };
   });
   const sale = buildSale({ id: saleId, number, method, received, totals, createdAt, saleItems, syncStatus: "pending" });
@@ -325,57 +253,12 @@ function buildSale({ id, number, method, received, totals, createdAt, saleItems 
   const deviceId = getDeviceId();
   const dateKey = dateKeyFrom(createdAt);
   const monthKey = monthKeyFrom(createdAt);
-  return {
-    id,
-    saleNumber: number,
-    tenantId,
-    shopId: tenantId,
-    deviceId,
-    schemaVersion: POS_FIRESTORE_VERSION,
-    deleted: false,
-    dateKey,
-    monthKey,
-    channel: "retail-pos",
-    orderType: "pos",
-    status: "completed",
-    paymentStatus: "paid",
-    syncStatus,
-    createdAt,
-    items: saleItems.map(({ id, barcode, name, price, cost, qty, unit }) => ({
-      id,
-      productId: id,
-      barcode,
-      name,
-      price,
-      cost: Number.isFinite(Number(cost)) ? Number(cost) : null,
-      qty,
-      unit,
-      lineTotal: Number(price || 0) * Number(qty || 0)
-    })),
-    totalQty: saleItems.reduce((sum, item) => sum + item.qty, 0),
-    subtotal: totals.subtotal,
-    discount: totals.discount,
-    total: totals.total,
-    totalAmount: totals.total,
-    payment: { method, received, change: Math.max(0, received - totals.total) },
-    paymentMethod: method,
-    receivedAmount: received,
-    changeAmount: Math.max(0, received - totals.total),
-    cashierId,
-    customerId: customer?.id || "",
-    customerCode: customer?.customerCode || "",
-    customerName: customer?.name || "",
-    customerPhone: customer?.phone || "",
-    shiftId: shift?.id || "",
-    cashierName: shift?.cashierName || "",
-    terminalCode: shift?.terminalCode || ""
-  };
+  return { id, saleNumber: number, tenantId, shopId: tenantId, deviceId, schemaVersion: POS_FIRESTORE_VERSION, deleted: false, dateKey, monthKey, channel: "retail-pos", orderType: "pos", status: "completed", paymentStatus: "paid", syncStatus, createdAt, items: saleItems.map(({ id, barcode, name, price, cost, qty, unit }) => ({ id, productId: id, barcode, name, price, cost: Number.isFinite(Number(cost)) ? Number(cost) : null, qty, unit, lineTotal: Number(price || 0) * Number(qty || 0) })), totalQty: saleItems.reduce((sum, item) => sum + item.qty, 0), subtotal: totals.subtotal, discount: totals.discount, total: totals.total, totalAmount: totals.total, payment: { method, received, change: Math.max(0, received - totals.total) }, paymentMethod: method, receivedAmount: received, changeAmount: Math.max(0, received - totals.total), cashierId, customerId: customer?.id || "", customerCode: customer?.customerCode || "", customerName: customer?.name || "", customerPhone: customer?.phone || "", shiftId: shift?.id || "", cashierName: shift?.cashierName || "", terminalCode: shift?.terminalCode || "" };
 }
 
 async function completeSaleFirestore({ saleId, method, received, totals, number, createdAt, saleItems }) {
   const user = await waitForAuthUser();
   if (!user?.uid) throw new Error("AUTH_REQUIRED");
-
   const tenantId = getTenantId();
   const saleRef = tenantDoc(RetailCollections.sales, saleId);
   let committedSale = null;
@@ -383,11 +266,7 @@ async function completeSaleFirestore({ saleId, method, received, totals, number,
   await runTransaction(db, async transaction => {
     localMovements.length = 0;
     const existingSale = await transaction.get(saleRef);
-    if (existingSale.exists()) {
-      committedSale = { id: saleRef.id, ...existingSale.data(), syncStatus: "synced" };
-      return;
-    }
-
+    if (existingSale.exists()) { committedSale = { id: saleRef.id, ...existingSale.data(), syncStatus: "synced" }; return; }
     const rows = [];
     for (const cartItem of saleItems) {
       const productRef = tenantDoc(RetailCollections.products, cartItem._documentId || cartItem.id);
@@ -397,78 +276,27 @@ async function completeSaleFirestore({ saleId, method, received, totals, number,
       if (Number(product.stock || 0) < Number(cartItem.qty || 0)) throw new Error(`INSUFFICIENT_STOCK:${product.name}`);
       rows.push({ cartItem, productRef, product });
     }
-
     const sale = buildSale({ id: saleId, number, method, received, totals, createdAt, saleItems, cashierId: user.uid, syncStatus: "synced" });
     const normalizedSale = normalizeSaleForFirestore(sale, { tenantId, userId: user.uid, deviceId: sale.deviceId });
+    const summaryRef = tenantDoc(POS_COLLECTIONS.dailySummary, normalizedSale.dateKey);
+    const summarySnapshot = await transaction.get(summaryRef);
+    const nextSummary = applySaleToDailySummary(summarySnapshot.exists() ? summarySnapshot.data() : {}, normalizedSale);
     committedSale = { ...normalizedSale, id: saleId, syncStatus: "synced" };
     transaction.set(saleRef, { ...normalizedSale, id: saleId, syncStatus: "synced", createdAtServer: serverTimestamp(), updatedAt: Date.now(), updatedAtServer: serverTimestamp() });
-
-    buildSaleItemRows(normalizedSale).forEach(item => {
-      transaction.set(tenantDoc(POS_COLLECTIONS.saleItems, item.id), {
-        ...item,
-        createdBy: user.uid,
-        updatedBy: user.uid,
-        deviceId: normalizedSale.deviceId,
-        schemaVersion: POS_FIRESTORE_VERSION,
-        deleted: false,
-        createdAtServer: serverTimestamp(),
-        updatedAt: Date.now(),
-        updatedAtServer: serverTimestamp()
-      }, { merge: true });
-    });
-
+    buildSaleItemRows(normalizedSale).forEach(item => transaction.set(tenantDoc(POS_COLLECTIONS.saleItems, item.id), { ...item, createdBy: user.uid, updatedBy: user.uid, deviceId: normalizedSale.deviceId, schemaVersion: POS_FIRESTORE_VERSION, deleted: false, createdAtServer: serverTimestamp(), updatedAt: Date.now(), updatedAtServer: serverTimestamp() }, { merge: true }));
     rows.forEach(({ cartItem, productRef, product }) => {
       const before = Number(product.stock || 0);
       const after = before - Number(cartItem.qty || 0);
       transaction.update(productRef, { stock: after, tenantId: getTenantId(), shopId: getTenantId(), updatedAt: Date.now(), updatedAtServer: serverTimestamp() });
       const id = movementId(saleId, product.id);
       const movementRef = tenantDoc(RetailCollections.stockMovements, id);
-      const movement = {
-        id,
-        tenantId: getTenantId(),
-        shopId: getTenantId(),
-        deviceId: normalizedSale.deviceId,
-        schemaVersion: POS_FIRESTORE_VERSION,
-        deleted: false,
-        dateKey: normalizedSale.dateKey,
-        monthKey: normalizedSale.monthKey,
-        productId: product.id,
-        productName: product.name,
-        type: "sale",
-        direction: "out",
-        qty: Number(cartItem.qty || 0),
-        before,
-        after,
-        stockBefore: before,
-        stockAfter: after,
-        note: `ขายสินค้า ${number}`,
-        referenceType: "sale",
-        referenceId: saleId,
-        referenceNumber: number,
-        createdBy: user.uid,
-        updatedBy: user.uid,
-        createdAt,
-        createdAtServer: serverTimestamp(),
-        updatedAt: Date.now(),
-        updatedAtServer: serverTimestamp()
-      };
+      const movement = { id, tenantId: getTenantId(), shopId: getTenantId(), deviceId: normalizedSale.deviceId, schemaVersion: POS_FIRESTORE_VERSION, deleted: false, dateKey: normalizedSale.dateKey, monthKey: normalizedSale.monthKey, productId: product.id, productName: product.name, type: "sale", direction: "out", qty: Number(cartItem.qty || 0), before, after, stockBefore: before, stockAfter: after, note: `ขายสินค้า ${number}`, referenceType: "sale", referenceId: saleId, referenceNumber: number, createdBy: user.uid, updatedBy: user.uid, createdAt, createdAtServer: serverTimestamp(), updatedAt: Date.now(), updatedAtServer: serverTimestamp() };
       transaction.set(movementRef, movement, { merge: true });
       localMovements.push({ ...movement, createdAtServer: null, updatedAtServer: null });
     });
-
-    const summaryRef = tenantDoc(POS_COLLECTIONS.dailySummary, normalizedSale.dateKey);
-    const summarySnapshot = await transaction.get(summaryRef);
-    const nextSummary = applySaleToDailySummary(summarySnapshot.exists() ? summarySnapshot.data() : {}, normalizedSale);
     transaction.set(summaryRef, { ...nextSummary, updatedBy: user.uid, updatedAtServer: serverTimestamp() }, { merge: true });
-
-    transaction.set(tenantDoc(POS_COLLECTIONS.syncQueue, saleId), {
-      ...buildSyncQueueRow(normalizedSale, { status: "synced" }),
-      createdBy: user.uid,
-      updatedBy: user.uid,
-      updatedAtServer: serverTimestamp()
-    }, { merge: true });
+    transaction.set(tenantDoc(POS_COLLECTIONS.syncQueue, saleId), { ...buildSyncQueueRow(normalizedSale, { status: "synced" }), createdBy: user.uid, updatedBy: user.uid, updatedAtServer: serverTimestamp() }, { merge: true });
   });
-
   const nextProducts = products.map(product => {
     const sold = saleItems.find(item => item.id === product.id)?.qty || 0;
     return sold ? { ...product, stock: Number(product.stock || 0) - sold } : product;
@@ -480,16 +308,9 @@ async function completeSaleFirestore({ saleId, method, received, totals, number,
 
 async function saveSaleWithFallback({ saleId, method, received, totals, number, createdAt, saleItems }) {
   const payload = { saleId, method, received, totals, number, createdAt, saleItems };
-  if (!isFirebaseConfigured || !db || navigator.onLine === false) {
-    return { sale: await completeSaleOffline(payload), offline: true };
-  }
-  try {
-    return { sale: await completeSaleFirestore(payload), offline: false };
-  } catch (error) {
-    if (!shouldFallbackToOffline(error)) throw error;
-    console.warn("[retail-pos] firebase unavailable, saved sale offline", error);
-    return { sale: await completeSaleOffline(payload), offline: true };
-  }
+  if (!isFirebaseConfigured || !db || navigator.onLine === false) return { sale: await completeSaleOffline(payload), offline: true };
+  try { return { sale: await completeSaleFirestore(payload), offline: false }; }
+  catch (error) { if (!shouldFallbackToOffline(error)) throw error; console.warn("[retail-pos] firebase unavailable, saved sale offline", error); return { sale: await completeSaleOffline(payload), offline: true }; }
 }
 
 async function confirmPayment() {
@@ -497,40 +318,18 @@ async function confirmPayment() {
   const totals = getTotals();
   const method = els.paymentMethod.value;
   const received = method === "cash" ? Number(els.receivedInput.value || 0) : totals.total;
-  if (received < totals.total) {
-    els.paymentError.textContent = "จำนวนเงินที่รับมายังไม่ครบ";
-    return;
-  }
-
+  if (received < totals.total) { els.paymentError.textContent = "จำนวนเงินที่รับมายังไม่ครบ"; return; }
   savingSale = true;
   els.confirmPaymentBtn.disabled = true;
   els.confirmPaymentBtn.textContent = "กำลังบันทึก...";
   renderCart();
-
   const saleId = safeId("sale");
   const number = saleNumber();
   const createdAt = new Date().toISOString();
   const saleItems = cart.map(item => ({ ...item }));
-  try {
-    const { sale, offline } = await saveSaleWithFallback({ saleId, method, received, totals, number, createdAt, saleItems });
-    els.paymentDialog.close();
-    renderProducts();
-    resetSale();
-    showToast(offline ? `บันทึกการขาย ${sale.saleNumber || sale.id} แบบออฟไลน์แล้ว` : `บันทึกการขาย ${sale.saleNumber || sale.id} สำเร็จ`);
-  } catch (error) {
-    console.error("[retail-pos] sale failed", error);
-    const message = String(error?.message || error);
-    if (message.startsWith("INSUFFICIENT_STOCK:")) els.paymentError.textContent = `สต็อก ${message.split(":").slice(1).join(":")} ไม่พอ`;
-    else if (message.startsWith("PRODUCT_NOT_FOUND:")) els.paymentError.textContent = `ไม่พบสินค้า ${message.split(":").slice(1).join(":")}`;
-    else if (message === "AUTH_REQUIRED") els.paymentError.textContent = "กรุณาเข้าสู่ระบบก่อนบันทึกการขาย";
-    else els.paymentError.textContent = "บันทึกการขายไม่สำเร็จ กรุณาลองใหม่";
-  } finally {
-    savingSale = false;
-    els.confirmPaymentBtn.disabled = false;
-    els.confirmPaymentBtn.textContent = "ยืนยันการขาย";
-    renderProducts();
-    renderCart();
-  }
+  try { const { sale, offline } = await saveSaleWithFallback({ saleId, method, received, totals, number, createdAt, saleItems }); els.paymentDialog.close(); renderProducts(); resetSale(); showToast(offline ? `บันทึกการขาย ${sale.saleNumber || sale.id} แบบออฟไลน์แล้ว` : `บันทึกการขาย ${sale.saleNumber || sale.id} สำเร็จ`); }
+  catch (error) { console.error("[retail-pos] sale failed", error); const message = String(error?.message || error); if (message.startsWith("INSUFFICIENT_STOCK:")) els.paymentError.textContent = `สต็อก ${message.split(":").slice(1).join(":")} ไม่พอ`; else if (message.startsWith("PRODUCT_NOT_FOUND:")) els.paymentError.textContent = `ไม่พบสินค้า ${message.split(":").slice(1).join(":")}`; else if (message === "AUTH_REQUIRED") els.paymentError.textContent = "กรุณาเข้าสู่ระบบก่อนบันทึกการขาย"; else els.paymentError.textContent = "บันทึกการขายไม่สำเร็จ กรุณาลองใหม่"; }
+  finally { savingSale = false; els.confirmPaymentBtn.disabled = false; els.confirmPaymentBtn.textContent = "ยืนยันการขาย"; renderProducts(); renderCart(); }
 }
 
 async function loadProducts() {
@@ -540,42 +339,14 @@ async function loadProducts() {
     else if (isFirebaseConfigured && db) products = [];
     else if (!products.length) products = normalizeProducts(structuredClone(sampleProducts));
     writeJson(PRODUCT_KEY, products);
-  } catch (error) {
-    console.warn("[retail-pos] load products fallback", error);
-    if (!products.length) products = normalizeProducts(structuredClone(sampleProducts));
-  }
+  } catch (error) { console.warn("[retail-pos] load products fallback", error); if (!products.length) products = normalizeProducts(structuredClone(sampleProducts)); }
   renderProducts();
   renderCart();
 }
 
-els.productGrid.addEventListener("click", event => {
-  if (savingSale) return;
-  const button = event.target.closest("[data-product-id]");
-  if (button) addProduct(button.dataset.productId);
-});
-
-els.cartList.addEventListener("click", event => {
-  if (savingSale) return;
-  const button = event.target.closest("button[data-action]");
-  if (!button) return;
-  if (button.dataset.action === "increase") changeQty(button.dataset.id, 1);
-  if (button.dataset.action === "decrease") changeQty(button.dataset.id, -1);
-  if (button.dataset.action === "remove") {
-    cart = cart.filter(item => item.id !== button.dataset.id);
-    renderCart();
-  }
-});
-
-els.barcodeInput.addEventListener("keydown", event => {
-  if (event.key !== "Enter") return;
-  event.preventDefault();
-  const code = els.barcodeInput.value.trim();
-  const product = products.find(item => item.barcode === code || item.id.toLowerCase() === code.toLowerCase());
-  if (product) addProduct(product.id);
-  else showToast("ไม่พบบาร์โค้ดหรือรหัสสินค้านี้");
-  els.barcodeInput.value = "";
-});
-
+els.productGrid.addEventListener("click", event => { if (savingSale) return; const button = event.target.closest("[data-product-id]"); if (button) addProduct(button.dataset.productId); });
+els.cartList.addEventListener("click", event => { if (savingSale) return; const button = event.target.closest("button[data-action]"); if (!button) return; if (button.dataset.action === "increase") changeQty(button.dataset.id, 1); if (button.dataset.action === "decrease") changeQty(button.dataset.id, -1); if (button.dataset.action === "remove") { cart = cart.filter(item => item.id !== button.dataset.id); renderCart(); } });
+els.barcodeInput.addEventListener("keydown", event => { if (event.key !== "Enter") return; event.preventDefault(); const code = els.barcodeInput.value.trim(); const product = products.find(item => item.barcode === code || item.id.toLowerCase() === code.toLowerCase()); if (product) addProduct(product.id); else showToast("ไม่พบบาร์โค้ดหรือรหัสสินค้านี้"); els.barcodeInput.value = ""; });
 els.searchInput.addEventListener("input", renderProducts);
 els.discountInput.addEventListener("input", renderCart);
 els.clearSaleBtn.addEventListener("click", resetSale);
@@ -583,23 +354,9 @@ els.payBtn.addEventListener("click", openPayment);
 els.paymentMethod.addEventListener("change", updatePaymentUi);
 els.receivedInput.addEventListener("input", updatePaymentUi);
 els.confirmPaymentBtn.addEventListener("click", confirmPayment);
-els.seedBtn.addEventListener("click", () => {
-  if (products.length && !confirm("แทนที่ข้อมูลสินค้าปัจจุบันด้วยข้อมูลตัวอย่างหรือไม่?")) return;
-  products = structuredClone(sampleProducts).map(normalizeProduct);
-  writeJson(PRODUCT_KEY, products);
-  resetSale();
-  renderProducts();
-  showToast("โหลดสินค้าตัวอย่างแล้ว");
-});
-
+els.seedBtn.addEventListener("click", () => { if (products.length && !confirm("แทนที่ข้อมูลสินค้าปัจจุบันด้วยข้อมูลตัวอย่างหรือไม่?")) return; products = structuredClone(sampleProducts).map(normalizeProduct); writeJson(PRODUCT_KEY, products); resetSale(); renderProducts(); showToast("โหลดสินค้าตัวอย่างแล้ว"); });
 els.seedBtn.hidden = Boolean(isFirebaseConfigured && db);
 await loadProducts();
-const stopShiftWatch=watchRecords(RetailCollections.shifts,rows=>{
-  const uid=auth?.currentUser?.uid||"";
-  const active=rows.find(row=>row.status==="open"&&(!uid||row.createdBy===uid))||null;
-  if(active)writeJson(SHIFT_KEY,active);else localStorage.removeItem(SHIFT_KEY);
-  document.documentElement.dataset.shiftSource="firestore";
-  window.dispatchEvent(new Event("storage"));
-},{sortBy:"updatedAt",direction:"desc"});
+const stopShiftWatch=watchRecords(RetailCollections.shifts,rows=>{ const uid=auth?.currentUser?.uid||""; const active=rows.find(row=>row.status==="open"&&(!uid||row.createdBy===uid))||null; if(active)writeJson(SHIFT_KEY,active);else localStorage.removeItem(SHIFT_KEY); document.documentElement.dataset.shiftSource="firestore"; window.dispatchEvent(new Event("storage")); },{sortBy:"updatedAt",direction:"desc"});
 window.addEventListener("beforeunload",stopShiftWatch,{once:true});
 els.barcodeInput.focus();
