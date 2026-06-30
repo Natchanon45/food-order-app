@@ -21,120 +21,117 @@ firebase deploy --only hosting
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.5`
-- Build: `2026.06.30.061`
+- Version: `0.12.7`
+- Build: `2026.06.30.073`
 - Branch: `feature/retail-pos`
-- Milestone: `P8-B001 Retail POS Offline Sync Safe`
-
-หมายเหตุ: ถ้ามีการตัด build ใหม่ ควรอัปเดต `public/assets/js/app-info.js` ให้ Developer Panel ตรงกับงานล่าสุด
+- Milestone: `P9-B001 POS Firestore Foundation`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
-### 1. Table Order / QR Order
+### Table Order / QR Order
 
 - ลูกค้าสั่งอาหารจาก QR ของโต๊ะ
-- มีตะกร้าและรายการรอบปัจจุบัน
-- แสดงรายการที่โต๊ะนี้เคยสั่งแล้ว
 - รองรับการสั่งหลายรอบจากโต๊ะเดียว
+- แสดงรายการที่โต๊ะเคยสั่งแล้ว
 - ปรับ mobile spacing ระหว่างรายการอาหารกับตะกร้าแล้ว
 
-### 2. Kitchen
+### Kitchen
 
-- ครัวรับออเดอร์แบบ realtime
-- เปลี่ยนสถานะออเดอร์ได้: รอรับออเดอร์, ครัวรับแล้ว, กำลังทำ, พร้อมเสิร์ฟ, เสิร์ฟแล้ว
-- แก้ไขรายการอาหารรายตัวได้ เช่น ลดจำนวน เปลี่ยนเมนู เพิ่มหมายเหตุ
-- ยกเลิกรายการรายตัวได้ก่อนล็อกสถานะ
-- ยกเลิกทั้งออเดอร์ได้ก่อนล็อกสถานะ
-- เพิ่มปุ่มเสิร์ฟรายตัวเฉพาะออเดอร์โต๊ะในร้าน
-- ถ้ากดเสิร์ฟทั้งออเดอร์แล้ว ปุ่มเสิร์ฟรายตัวจะไม่แสดงซ้ำ
-- แก้ Toast ไม่ให้ขึ้นข้อความซ้ำแบบ `เสิร์ฟแล้ว แล้ว`
-- Delivery เมื่อกด `ส่งให้ไรเดอร์แล้ว` จะล็อกเหมือนโต๊ะที่เสิร์ฟแล้ว: แก้ไข/ยกเลิกรายการ/ยกเลิกทั้งออเดอร์ไม่ได้
+- ครัวรับออเดอร์ realtime
+- เปลี่ยนสถานะออเดอร์ได้ตาม flow
+- เสิร์ฟรายตัวเฉพาะออเดอร์โต๊ะในร้านได้
+- Delivery เมื่อกด `ส่งให้ไรเดอร์แล้ว` จะล็อกเหมือนออเดอร์ที่เสิร์ฟแล้ว
 
-### 3. Cashier
+### Cashier / Table Move
 
-- แสดงบิลรวมตามโต๊ะ
-- แสดงยอดรวมทั้งโต๊ะ
+- แสดงยอดรวมตามโต๊ะ
 - รับชำระเงินและปิดบิลได้
-- พิมพ์ใบเสร็จได้
-- ดูรายละเอียดออเดอร์เดิม/รายการเดิมได้
-- เพิ่มระบบเปลี่ยนโต๊ะแล้ว
+- เปลี่ยนโต๊ะได้โดยย้ายออเดอร์ที่ยังไม่ชำระไปโต๊ะใหม่
+- ห้ามปิดโต๊ะถ้ายังมีออเดอร์ค้างหรือยังไม่ชำระ
 
-### 4. Table Move
+### POS Retail
 
-เงื่อนไขที่ทำไว้:
-
-- โต๊ะเดิมต้องยัง active / occupied
-- โต๊ะใหม่ต้องว่างเท่านั้น
-- ย้ายเฉพาะออเดอร์โต๊ะที่ยังไม่ชำระ
-- โต๊ะเก่าถูกปิดเป็นว่าง
-- โต๊ะใหม่ถูกเปิดด้วย token เดิม
-- ออเดอร์เดิมย้าย `tableCode/tableName` ไปโต๊ะใหม่
-
-### 5. POS Retail
-
-มีหน้า `/pos` แล้ว และใช้ไฟล์หลัก:
+ไฟล์หลัก:
 
 - `public/assets/js/retail-pos.js`
+- `public/assets/js/retail-pos-firestore-foundation.js`
 - `public/assets/js/retail-offline-sale-sync.js`
 - `public/assets/js/retail-pos-sync-status.js`
 - `public/assets/js/retail-pos-hold.js`
 - `public/assets/js/retail-pos-customer-link.js`
 - `public/assets/js/retail-pos-loyalty.js`
 
-งานที่ทำล่าสุดใน P8-B001:
+ทำแล้วใน P8-B001:
 
 - Offline sale sync ใช้ tenant ปัจจุบันเท่านั้น
 - ถ้า `sale.tenantId` ไม่ตรงกับ `getTenantId()` จะไม่ sync ข้ามร้าน และ mark เป็น `conflict`
 - POS online/offline ใช้ stable `saleId` เดียวกันตั้งแต่กดยืนยันขาย
-- Online sale ใช้ path `tenants/{tenantId}/sales/{saleId}` ไม่ใช้ auto id แล้ว
-- Offline sale ใช้ `syncStatus: "pending"` เสมอ
-- Online sale ใช้ `syncStatus: "synced"` เสมอ
-- Stock movement ใช้ deterministic id `${saleId}_${productId}` ทั้ง online และ offline
-- Online transaction เช็ก sale เดิมก่อน ถ้ามีอยู่แล้วจะไม่ตัด stock ซ้ำ
+- Online sale ใช้ path `tenants/{tenantId}/sales/{saleId}`
+- Offline sale ใช้ `syncStatus: "pending"`
+- Online sale ใช้ `syncStatus: "synced"`
+- Stock movement ใช้ deterministic id `${saleId}_${productId}`
+- Online transaction เช็ก sale เดิมก่อน เพื่อกันบิลซ้ำและกันตัด stock ซ้ำ
 - POS records มี `tenantId`, `shopId`, `channel: "retail-pos"`, `orderType: "pos"`
-- เพิ่ม UI แสดงจำนวนบิล `pending`, `failed`, `conflict`, `syncing` บน header ของ POS
-- เพิ่มปุ่ม manual `Sync` สำหรับ retry บิล offline ที่ยัง sync ได้
+- UI header แสดงบิล `pending`, `failed`, `conflict`, `syncing`
+- มีปุ่ม manual `Sync`
+
+ทำแล้วใน P9-B001:
+
+- เพิ่ม `retail-pos-firestore-foundation.js` เป็น helper กลางของ POS Firestore
+- กำหนด collection มาตรฐาน: `sales`, `saleItems`, `stockMovements`, `shifts`, `counters`, `dailySummary`, `syncQueue`, `auditLogs`
+- เพิ่ม schema metadata: `schemaVersion`, `deviceId`, `dateKey`, `monthKey`, `deleted`, `createdBy`, `updatedBy`
+- Online POS transaction เขียนเพิ่ม `saleItems` แยกรายการสินค้า
+- Online POS transaction update `dailySummary/{dateKey}` ใน transaction เดียวกับ sale/stock movement
+- Online POS transaction เขียน `syncQueue/{saleId}` เป็น `synced`
+- แก้ transaction ให้ read เอกสารทั้งหมดก่อน write ตามข้อกำหนด Firestore
 
 ## เรื่องที่ยังควรทำต่อ / ยังไม่เสร็จสมบูรณ์
 
-### Priority 1 — P8-B001 Retail POS Offline Sync Safe
+### Priority 1 — P9 POS Firestore Foundation
 
-เหลือ:
+- ทดสอบ online sale หลังเพิ่ม `saleItems`, `dailySummary`, `syncQueue`
+- เพิ่ม Firestore indexes สำหรับ report/query POS
+- เพิ่ม Running Number ผ่าน counter document ให้ได้ `POS-YYYYMMDD-00001`
+- เพิ่ม audit log สำหรับ POS sale/refund/void
+- ปรับ offline sync ให้ใช้ helper เดียวกับ online transaction
 
-- ทดสอบ offline sale > online sync > refresh/sync ซ้ำ ว่าไม่บิลซ้ำ/ไม่ตัด stock ซ้ำ
-- ทดสอบ tenant mismatch ว่าเข้า conflict จริง
-- อัปเดต `app-info.js` ถ้าต้องการตัด Version/Build ใหม่
-- พิจารณาเพิ่ม `CHANGELOG.md`
+### Priority 2 — Shift / Closing
 
-### Priority 2 — POS Payment / Receipt
+- Open Shift
+- Close Shift
+- Cash Count
+- Cash Diff
+- Print shift summary
 
-- เพิ่มช่องทางชำระเงินเพิ่มเติมถ้าต้องใช้
-- ปรับใบเสร็จ POS ให้ครบข้อมูลร้าน/ผู้ขาย/ช่องทางชำระเงิน
-- ตรวจ flow พักบิลกับลูกค้า/แต้มสะสมหลัง stable sale id
+### Priority 3 — Return / Void / Refund
 
-### Priority 3 — Sales Report
+- Return ทั้งบิล
+- Return รายการย่อย
+- Void ก่อนปิดรอบ
+- Refund permission
 
-- รายงานยอดขายรายวัน
-- แยกยอดตามวิธีชำระเงิน
-- แยกยอดตามช่องทาง: โต๊ะ, POS, Delivery
-- สรุปจำนวนบิล / ยอดรวม / ส่วนลด / ยอดสุทธิ
-- Export CSV หรือพิมพ์รายงานได้ในอนาคต
+### Priority 4 — Inventory
 
-### Priority 4 — README หลักยังเก่า
-
-`README.md` ยังเป็น Version 1 และยังไม่สะท้อนระบบ Retail POS / tenant / delivery / kitchen item edit / table move จึงควรปรับในภายหลัง
-
-หัวข้อที่ควรเพิ่มใน README หลัก:
-
-- โครงสร้างระบบปัจจุบัน
-- URL สำคัญ
-- วิธี deploy ที่ถูกต้อง
-- วิธีทดสอบ flow หลัก
-- Known issues / Regression tests
+- Stock Adjustment
+- Stock Count
+- Purchase Receive
+- Supplier
+- Lot / Expire ในอนาคต
 
 ## Regression Tests สำคัญ
 
-### A. POS Offline Sync
+### POS Online Sale + Firestore Foundation
+
+1. เปิด `/pos` online
+2. ขายสินค้า 1 บิล
+3. ต้องสร้าง `tenants/{tenantId}/sales/{saleId}` 1 เอกสาร
+4. ต้องสร้าง `saleItems` ตามจำนวนรายการสินค้า
+5. ต้องสร้าง `stockMovements` deterministic id `${saleId}_${productId}`
+6. ต้อง update `dailySummary/{dateKey}` billCount/totalAmount/payment method
+7. ต้องเขียน `syncQueue/{saleId}` เป็น `synced`
+8. refresh แล้วขายใหม่ได้ตามปกติ
+
+### POS Offline Sync
 
 1. เปิด POS online ให้โหลดสินค้า
 2. ตัดเน็ต
@@ -147,16 +144,7 @@ firebase deploy --only hosting
 9. stock ต้องลด 1 ครั้งเท่านั้น
 10. refresh แล้ว sync ซ้ำ ต้องไม่สร้างบิลซ้ำ/ไม่ลด stock ซ้ำ
 
-### B. POS Online Sale
-
-1. ขายตอน online
-2. สร้าง sale ใน Firestore ด้วย `saleId` ที่ stable
-3. ลด stock ทันที
-4. สร้าง stock movement id แบบ `${saleId}_${productId}`
-5. local sale ต้องเป็น `syncStatus: synced`
-6. header sync status ต้องไม่แสดงบิลค้าง
-
-### C. POS Conflict / Tenant
+### POS Tenant Safety
 
 1. สร้าง local sale ของ tenant A
 2. เปลี่ยน context เป็น tenant B
@@ -164,26 +152,7 @@ firebase deploy --only hosting
 4. local sale ต้องเป็น `syncStatus: conflict`
 5. header ต้องแสดง `Conflict 1`
 
-### D. สั่งอาหารที่โต๊ะ
-
-1. เปิด QR โต๊ะ
-2. ลูกค้าสั่ง 1 รอบ
-3. ครัวรับออเดอร์ > เริ่มทำ > พร้อมเสิร์ฟ
-4. เสิร์ฟรายตัว
-5. ถ้าเสิร์ฟครบ ต้องกลายเป็น `served`
-6. แคชเชียร์คิดเงิน
-7. โต๊ะกลับว่าง
-
-### E. Delivery Kitchen Lock
-
-1. สั่ง Delivery
-2. ครัวรับ > เริ่มทำ > พร้อมจัดส่ง
-3. กด `ส่งให้ไรเดอร์แล้ว`
-4. รายการต้องแก้ไขไม่ได้
-5. รายการต้องยกเลิกไม่ได้
-6. ยกเลิกทั้งออเดอร์ไม่ได้
-
-### F. ย้ายโต๊ะ
+### Table Move
 
 1. เปิดโต๊ะ 4
 2. สั่งอาหาร 1 รอบ
@@ -202,16 +171,17 @@ firebase deploy --only hosting
 - ฟีเจอร์ที่เกี่ยวกับการชำระเงินต้องแยก `status` กับ `paymentStatus` ให้ชัด
 - POS ต้องใช้ `tenantId` และห้าม sync ข้าม tenant
 - POS ควรใช้ `channel: "retail-pos"` และ `orderType: "pos"` เพื่อไม่ปนกับ `delivery` และ table order
+- Firestore transaction ต้อง read เอกสารทั้งหมดก่อน write
 
 ## Current Milestone
 
-`P8-B001 Retail POS Offline Sync Safe`
+`P9-B001 POS Firestore Foundation`
 
 Scope:
 
-1. Stable sale id
-2. Tenant-safe offline sync
-3. Idempotent Firestore sale sync
-4. No duplicate bill
-5. No duplicate stock deduction
-6. Pending/conflict sync status UI
+1. POS Firestore helper/schema foundation
+2. Sale metadata standardization
+3. Sale item subcollection/collection records
+4. Daily summary update
+5. Sync queue foundation
+6. Prepare for counter-based running number and shift closing
