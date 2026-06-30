@@ -10,7 +10,6 @@
   <symbol id="icon-table" viewBox="0 0 24 24"><path d="M4.3 7.2h15.4M6.1 7.2v11.6M17.9 7.2v11.6M3.8 5.2h16.4v4H3.8v-4Z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="icon-logout" viewBox="0 0 24 24"><path d="M10 4.6H5.6v14.8H10M14 8.3l3.7 3.7-3.7 3.7M8.7 12h9" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="icon-chevron-down" viewBox="0 0 24 24"><path d="m7.5 9.5 4.5 4.5 4.5-4.5" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="icon-menu" viewBox="0 0 24 24"><path d="M4 6.5h16M4 12h16M4 17.5h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
   <symbol id="icon-add" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round"/></symbol>
   <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round"/></symbol>
   <symbol id="icon-save" viewBox="0 0 24 24"><path d="M5 3h12l2 2v16H5V3Zm3 0v6h8V3M8 21v-7h8v7" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/></symbol>

@@ -5,15 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#159447">
   <link rel="stylesheet" href="/assets/css/app.css?v=20260630-068">
-  <link rel="stylesheet" href="/assets/css/icons.css?v=20260630-071">
-  <link rel="stylesheet" href="/assets/css/home-dashboard.css?v=20260630-076">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260630-077">
+  <link rel="stylesheet" href="/assets/css/home-dashboard.css?v=20260630-077">
   <title>Food Order Delivery</title>
 </head>
 <body>
   <header class="app-header">
-    <button class="home-mobile-menu" type="button" data-mobile-menu-trigger aria-label="เปิดเมนู" aria-expanded="false" hidden>
-      <svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-076#icon-menu"></use></svg>
-    </button>
     <div class="brand"><span class="brand-mark">FOD</span><span class="brand-label">Food Order Delivery</span></div>
   </header>
   <main class="container" id="publicLanding">
@@ -29,7 +26,7 @@
     <section class="card" style="margin-top:18px">
       <h2 style="margin-top:0">เกี่ยวกับแอปพลิเคชัน</h2>
       <p>Food Order Delivery เชื่อมต่อร้านอาหารกับลูกค้าเพื่อให้การสั่งอาหาร การชำระเงิน และการจัดส่งเป็นเรื่องง่าย บัญชี Google ใช้สำหรับยืนยันตัวตนลูกค้าและบันทึกข้อมูลโปรไฟล์กับที่อยู่จัดส่งตามที่ลูกค้าเลือกให้ระบบเข้าถึง</p>
-      <p><a class="btn btn-primary" href="/login">เข้าสู่ระบบสำหรับพนักงาน</a></p>
+      <p class="staff-login-action"><a class="btn btn-primary" href="/login">เข้าสู่ระบบสำหรับพนักงาน</a></p>
       <p class="menu-category">ติดต่อฝ่ายสนับสนุน: <a href="mailto:sripleng.natchanon@gmail.com">sripleng.natchanon@gmail.com</a></p>
       <p class="menu-category"><a href="/privacy">นโยบายความเป็นส่วนตัว</a> · <a href="/terms">ข้อกำหนดการใช้งาน</a></p>
     </section>
@@ -37,13 +34,13 @@
   <main class="container" id="staffDashboard" hidden>
     <section class="hero staff-hero"><h1>Food Order Delivery</h1><p>ระบบสั่งอาหาร จัดส่ง และจัดการร้านอาหารออนไลน์</p></section>
     <section class="nav-cards" aria-label="เมนูระบบร้าน">
-      <a class="card nav-card" href="/kitchen" data-dashboard-role="kitchen,super_admin" hidden><span class="nav-card-icon"><svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-076#icon-kitchen"></use></svg></span><span class="nav-card-label">หน้าครัว</span></a>
-      <a class="card nav-card" href="/cashier" data-dashboard-role="cashier,super_admin" hidden><span class="nav-card-icon"><svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-076#icon-receipt"></use></svg></span><span class="nav-card-label">แคชเชียร์</span></a>
-      <a class="card nav-card" href="/admin" data-dashboard-role="admin,super_admin" hidden><span class="nav-card-icon"><svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-076#icon-settings"></use></svg></span><span class="nav-card-label">จัดการระบบ</span></a>
-      <a class="card nav-card" href="/admin/users" data-dashboard-role="super_admin" hidden><span class="nav-card-icon"><svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-076#icon-users"></use></svg></span><span class="nav-card-label">จัดการพนักงาน</span></a>
+      <a class="card nav-card" href="/kitchen" data-dashboard-role="kitchen,super_admin" hidden><span class="nav-card-icon"><svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-077#icon-kitchen"></use></svg></span><span class="nav-card-label">หน้าครัว</span></a>
+      <a class="card nav-card" href="/cashier" data-dashboard-role="cashier,super_admin" hidden><span class="nav-card-icon"><svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-077#icon-receipt"></use></svg></span><span class="nav-card-label">แคชเชียร์</span></a>
+      <a class="card nav-card" href="/admin" data-dashboard-role="admin,super_admin" hidden><span class="nav-card-icon"><svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-077#icon-settings"></use></svg></span><span class="nav-card-label">จัดการระบบ</span></a>
+      <a class="card nav-card" href="/admin/users" data-dashboard-role="owner,super_admin" hidden><span class="nav-card-icon"><svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-077#icon-users"></use></svg></span><span class="nav-card-label">จัดการพนักงาน</span></a>
     </section>
   </main>
-  <script type="module" src="/assets/js/ui.js?v=20260630-076"></script>
-  <script type="module" src="/assets/js/home-session-fa.js?v=20260630-076"></script>
+  <script type="module" src="/assets/js/ui.js?v=20260630-077"></script>
+  <script type="module" src="/assets/js/home-session-fa.js?v=20260630-077"></script>
 </body>
 </html>

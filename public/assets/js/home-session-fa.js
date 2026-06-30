@@ -1,4 +1,4 @@
-import { waitForAuth, getUserProfile, mountUserMenu, STAFF_ROLES } from "./auth-service.js?v=20260630-076";
+import { waitForAuth, getUserProfile, mountUserMenu, STAFF_ROLES } from "./auth-service.js?v=20260630-077";
 
 const dashboard = document.querySelector("#staffDashboard");
 const publicLanding = document.querySelector("#publicLanding");
@@ -14,8 +14,6 @@ if (user) {
     document.body.dataset.roles = profile.role;
     const brandLabel = document.querySelector(".brand-label");
     if (brandLabel) brandLabel.textContent = "Food Order/Delivery With QR";
-    const mobileMenu = document.querySelector("[data-mobile-menu-trigger]");
-    if (mobileMenu) mobileMenu.hidden = false;
     const ownerRoleAliases = new Set(["owner", "admin", "cashier", "kitchen"]);
 
     document.querySelectorAll("[data-dashboard-role]").forEach(card => {

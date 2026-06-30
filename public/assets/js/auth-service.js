@@ -17,14 +17,14 @@ export const ROLE_HOME = {
 export const STAFF_ROLES = ["owner", "admin", "cashier", "kitchen", "super_admin"];
 
 function icon(name, className = "app-icon") {
-  return `<svg class="${className}" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-076#icon-${name}"></use></svg>`;
+  return `<svg class="${className}" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-077#icon-${name}"></use></svg>`;
 }
 
 function ensureIconStyles() {
   if (!document.querySelector('link[href^="/assets/css/icons.css"]')) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "/assets/css/icons.css?v=20260630-076";
+    link.href = "/assets/css/icons.css?v=20260630-077";
     document.head.appendChild(link);
   }
 }
@@ -217,16 +217,13 @@ export function mountUserMenu(profile) {
 
   const trigger = menu.querySelector("[data-user-menu-trigger]");
   const panel = menu.querySelector("[data-user-menu-panel]");
-  const mobileTrigger = document.querySelector("[data-mobile-menu-trigger]");
   const setMenuOpen = open => {
     panel.hidden = !open;
     menu.classList.toggle("open", open);
     trigger.setAttribute("aria-expanded", String(open));
-    mobileTrigger?.setAttribute("aria-expanded", String(open));
   };
   const closeMenu = () => setMenuOpen(false);
   trigger.addEventListener("click", event => { event.stopPropagation(); setMenuOpen(panel.hidden); });
-  mobileTrigger?.addEventListener("click", event => { event.stopPropagation(); setMenuOpen(panel.hidden); });
   document.addEventListener("click", event => { if (!menu.contains(event.target)) closeMenu(); });
   document.addEventListener("keydown", event => { if (event.key === "Escape") closeMenu(); });
   menu.querySelector('[data-menu-action="change-password"]')?.addEventListener("click", () => { closeMenu(); showOwnerPasswordDialog(); });
