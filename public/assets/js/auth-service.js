@@ -17,7 +17,7 @@ export const ROLE_HOME = {
 export const STAFF_ROLES = ["owner", "admin", "cashier", "kitchen", "super_admin"];
 
 function icon(name, className = "app-icon") {
-  return `<svg class="${className}" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-079#icon-${name}"></use></svg>`;
+  return `<svg class="${className}" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-080#icon-${name}"></use></svg>`;
 }
 
 function ensureIconStyles() {
