@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `P9-B004.1 POS Menu Spacing`
-- Developer Panel version/build ปัจจุบัน: `0.12.14` / `2026.06.30.080`
+- Current milestone: `P9-B005 Repository Layer`
+- Developer Panel version/build ปัจจุบัน: `0.12.15` / `2026.06.30.081`
 
 ## Retail POS Status
 
@@ -18,32 +18,31 @@
 - กันตัด stock ซ้ำด้วย deterministic stock movement id
 - เพิ่ม Running Number `POS-YYYYMMDD-00001`
 - เพิ่ม Counter metadata helper
-- แก้เมนู POS เปิดได้แล้ว
-- ปรับระยะห่างเมนู POS ทั้ง PC และ Mobile ให้โปร่งขึ้น
+- แก้เมนู POS เปิดได้และปรับระยะห่าง PC/Mobile แล้ว
 - เพิ่ม OfflineQueueWorker สำหรับ retry อัตโนมัติ
-- เพิ่ม retry delay ให้รายการ sync failed
-- เพิ่ม conflict metadata และ helper สำหรับ retry/resolve
+- เพิ่ม Repository Layer เบื้องต้น `retail-pos-repository.js`
+- route offline sale sync และ sync status ผ่าน repository helper
 
 ## Current Milestone
 
-`P9-B004.1 POS Menu Spacing`
+`P9-B005 Repository Layer`
 
 ## Regression Tests
 
 1. เปิด `/pos` แล้วเมนูต้องเปิดได้ตามปกติ
-2. ระยะห่างกลุ่มเมนูต้องไม่ชิดกันทั้ง PC และ Mobile
-3. ปุ่มเมนูย่อยต้องกดง่ายขึ้น และมี touch target ประมาณ 44px ขึ้นไป
-4. ปุ่มออกจากระบบต้องไม่ชิดรายการเมนูสุดท้าย
-5. ขาย offline 1 บิล แล้ว local sale ต้องเป็น `pending`
-6. ต่อเน็ตแล้ว worker ต้อง sync อัตโนมัติ
-7. sync ซ้ำต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
+2. ขาย offline 1 บิล แล้ว local sale ต้องเป็น `pending`
+3. header sync status ต้องเห็นรายการ pending ผ่าน repository helper
+4. ต่อเน็ตแล้ว worker ต้อง sync อัตโนมัติ
+5. กด Retry แล้ว failed queue ต้องกลับไป sync ได้
+6. sync สำเร็จแล้วต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
+7. product/sale local storage เดิมต้องยังอ่านได้ตามปกติ
 
 ## Next Tasks
 
-1. P9-B005 Repository Layer
-2. P9-B006 Firestore Composite Index
-3. P9-B007 Audit Log
-4. P9-B008 Shift Opening / Closing
+1. P9-B006 Firestore Composite Index
+2. P9-B007 Audit Log
+3. P9-B008 Shift Opening / Closing
+4. P9-B009 Refund / Return / Void
 
 ## Deploy
 
