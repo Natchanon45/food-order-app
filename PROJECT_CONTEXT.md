@@ -16,10 +16,10 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.19`
-- Build: `2026.06.30.085`
+- Version: `0.12.20`
+- Build: `2026.06.30.086`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B005.4 POS Receipt Loyalty Fix`
+- Milestone: `P9-B006 Firestore Composite Index`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -41,42 +41,43 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 - P9-B005.2 POS Receipt Data Hydration & Print Cleanup เสร็จ
 - P9-B005.3 POS Receipt Settings Restore & Loyalty Calculation Fix เสร็จ
 - P9-B005.4 POS Receipt Loyalty Fix เสร็จ
+- P9-B006 Firestore Composite Index เสร็จ
 
-## รายละเอียด P9-B005.4
+## รายละเอียด P9-B006
 
-ตรวจหลัง P9-B005.3 พบว่าใบเสร็จแสดงร้านและลูกค้าแล้ว แต่แต้มยังไม่ขึ้นครบ เพราะใบเสร็จเปิดจาก local sale ก่อนที่ customer-link/loyalty module จะ patch sale เสร็จ
+เพิ่ม Firestore composite indexes สำหรับ Retail POS collections ที่ใช้ query แบบ filter + sort และเตรียมรองรับรายงาน/ประวัติ/queue ใน Milestone ถัดไป
 
 แก้แล้ว:
 
-- ปรับ receipt modal ให้ใช้ `paymentDialog.dataset.customerId` เป็น fallback เมื่อ sale ยังไม่มี `customerId`
-- คำนวณ loyalty จากลูกค้าที่เลือก + customer cache + loyalty settings + ยอดสุทธิของบิล
-- แสดงแต้มก่อนซื้อ, ใช้แต้ม, แต้มที่ได้รับ และแต้มคงเหลือทันทีบนใบเสร็จ
-- ยังรองรับ sale ที่มี `sale.loyalty` อยู่แล้ว โดยใช้ข้อมูลจริงจาก sale ก่อน fallback
-- `/pos/index.html` bump cache เป็น `retail-pos-receipt-modal.js?v=20260630-085`
+- เพิ่ม indexes สำหรับ `sales`: status/dateKey/monthKey/customerId/paymentMethod + createdAt และ syncStatus + updatedAt
+- เพิ่ม indexes สำหรับ `saleItems`: saleId/productId/dateKey + createdAt
+- เพิ่ม indexes สำหรับ `stockMovements`: productId/dateKey/referenceId + createdAt
+- เพิ่ม index สำหรับ `syncQueue`: syncStatus + updatedAt
+- เพิ่ม index สำหรับ `loyaltyLedger`: customerId + createdAt
+- เพิ่ม indexes สำหรับ `shifts`: status + updatedAt และ createdBy + status + updatedAt
+- คง index เดิมของ `orders` ไว้
 
 ## Current Milestone
 
-`P9-B005.4 POS Receipt Loyalty Fix`
+`P9-B006 Firestore Composite Index`
 
 ## Regression Tests สำคัญ
 
-1. เปิด `/pos`
-2. เลือกลูกค้าที่มีรหัสสมาชิก
-3. ขายสินค้า 1 บิล
-4. ใบเสร็จต้องแสดงชื่อ/รหัส/เบอร์ลูกค้า
-5. ใบเสร็จต้องแสดงแต้มก่อนซื้อ, ใช้แต้ม, แต้มที่ได้รับ และแต้มคงเหลือ
-6. ถ้าไม่ใช้แต้ม ต้องแสดงใช้แต้มเป็น 0 และยังคำนวณแต้มที่ได้รับ
-7. ถ้า sale มี `sale.loyalty` แล้ว ต้องใช้ค่าจาก sale เป็นหลัก
-8. Toast/alert/notification ต้องไม่ติดในใบเสร็จตอนพิมพ์
-9. sync ซ้ำต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
+1. `firestore.indexes.json` ต้องเป็น JSON valid
+2. `firebase.json` ต้องยังอ้าง `firestore.indexes.json`
+3. เปิด `/pos` แล้วขายได้ตามเดิม
+4. เปิด `/pos/sales` แล้วโหลด sales ด้วย `createdAt desc` ได้ตามเดิม
+5. Deploy indexes ด้วย `firebase deploy --only firestore:indexes`
+6. Hosting deploy เดิมยังใช้ `firebase deploy --only hosting`
+7. Firestore rules เดิมไม่ถูกแก้
+8. sync ซ้ำต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
 
 ## งานถัดไป
 
-1. P9-B006 Firestore Composite Index
-2. P9-B007 Audit Log
-3. P9-B008 Shift Opening / Closing
-4. P9-B009 Refund / Return / Void
-5. P9-B010 Performance
+1. P9-B007 Audit Log
+2. P9-B008 Shift Opening / Closing
+3. P9-B009 Refund / Return / Void
+4. P9-B010 Performance
 
 ## ข้อควรระวัง
 
