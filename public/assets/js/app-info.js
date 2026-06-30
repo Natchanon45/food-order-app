@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.11',
-  build: '2026.06.30.077',
+  version: '0.12.12',
+  build: '2026.06.30.078',
   branch: 'feature/retail-pos',
-  commit: 'P9-B003',
+  commit: 'P9-B003.1',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P9-B003 Counter',
-  updatedAt: '2026-06-30T19:25:00+07:00',
+  milestone: 'P9-B003.1 POS Menu Open Fix',
+  updatedAt: '2026-06-30T19:35:00+07:00',
   whatsNew: [
-    'Remove duplicate hamburger icon from POS menu button',
-    'Standardize POS counter document metadata for online sale',
-    'Standardize POS counter document metadata for offline sync',
-    'Bump POS counter cache versions'
+    'Fix POS hamburger menu not opening by supporting existing open class',
+    'Keep duplicate hamburger icon cleanup from P9-B003',
+    'Continue stable POS counter document metadata',
+    'Add POS navigation CSS cache update note'
   ]
 };
 
