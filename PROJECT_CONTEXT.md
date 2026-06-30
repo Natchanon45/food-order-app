@@ -16,10 +16,10 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.14`
-- Build: `2026.06.30.080`
+- Version: `0.12.15`
+- Build: `2026.06.30.081`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B004.1 POS Menu Spacing`
+- Milestone: `P9-B005 Repository Layer`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -36,40 +36,40 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 - P9-B003.1 POS Menu Open Fix เสร็จ
 - P9-B004 Offline Queue Worker + Retry + Conflict Resolver เสร็จ
 - P9-B004.1 POS Menu Spacing เสร็จ
+- P9-B005 Repository Layer เสร็จเบื้องต้น
 
-## รายละเอียด P9-B004.1
+## รายละเอียด P9-B005
 
-แก้จากไฟล์จริง `retail-pos-navigation.css`
+แก้แล้ว:
 
-ทำแล้ว:
-
-- เพิ่ม padding ของ drawer ทั้ง PC และ Mobile
-- เพิ่มระยะห่างระหว่างกล่องข้อมูลผู้ใช้กับเมนูแรก
-- เพิ่มระยะห่างระหว่างกลุ่มเมนู POS
-- เพิ่มความสูงขั้นต่ำของ accordion header และ link ให้กดง่ายขึ้น
-- เพิ่มระยะห่างก่อนปุ่มออกจากระบบ
-- `/pos/index.html` bump cache เป็น `retail-pos-navigation.css?v=20260630-080`
+- เพิ่ม `public/assets/js/retail-pos-repository.js`
+- เพิ่ม local repository helper สำหรับ sales, products, stock movements
+- เพิ่ม wrapper สำหรับ POS product/sale repository ที่ต่อกับ `retail-db.js`
+- route `retail-offline-sale-sync.js` ให้อ่าน/เขียน local sale queue ผ่าน repository
+- route `retail-pos-sync-status.js` ให้อ่าน local sale queue ผ่าน repository
+- `/pos/index.html` bump cache เป็น `retail-offline-sale-sync.js?v=20260630-081` และ `retail-pos-sync-status.js?v=20260630-081`
 
 ## Current Milestone
 
-`P9-B004.1 POS Menu Spacing`
+`P9-B005 Repository Layer`
 
 ## Regression Tests สำคัญ
 
 1. เปิด `/pos`
-2. กดปุ่มเมนูแล้ว panel ต้องเปิดได้
-3. ระยะห่างกลุ่มเมนูต้องโปร่งขึ้นทั้ง PC และ Mobile
-4. ปุ่มเมนูย่อยต้องกดง่ายขึ้น
-5. ปุ่มออกจากระบบต้องไม่ชิดรายการเมนูสุดท้าย
-6. offline sync ยังต้องทำงานตาม P9-B004
+2. ขาย offline 1 บิล แล้ว local sale ต้องเป็น `pending`
+3. sync status header ต้องอ่าน pending ผ่าน repository ได้
+4. ต่อเน็ตแล้ว worker ต้อง sync อัตโนมัติ
+5. manual Retry ต้องยังทำงาน
+6. sync สำเร็จแล้วต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
+7. local storage key เดิมต้องยังใช้ร่วมกับข้อมูลเก่าได้
 
 ## งานถัดไป
 
-1. P9-B005 Repository Layer
-2. P9-B006 Firestore Composite Index
-3. P9-B007 Audit Log
-4. P9-B008 Shift Opening / Closing
-5. P9-B009 Refund / Return / Void
+1. P9-B006 Firestore Composite Index
+2. P9-B007 Audit Log
+3. P9-B008 Shift Opening / Closing
+4. P9-B009 Refund / Return / Void
+5. P9-B010 Performance
 
 ## ข้อควรระวัง
 
