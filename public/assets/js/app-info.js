@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.14',
-  build: '2026.06.30.080',
+  version: '0.12.15',
+  build: '2026.06.30.081',
   branch: 'feature/retail-pos',
-  commit: 'P9-B004.1',
+  commit: 'P9-B005',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P9-B004.1 POS Menu Spacing',
-  updatedAt: '2026-06-30T20:30:00+07:00',
+  milestone: 'P9-B005 Repository Layer',
+  updatedAt: '2026-06-30T20:45:00+07:00',
   whatsNew: [
-    'Increase POS drawer padding on desktop and mobile',
-    'Increase spacing between POS menu groups',
-    'Improve touch target height for POS accordion links',
-    'Bump POS navigation CSS cache version'
+    'Add POS repository layer for local and Firestore access',
+    'Route offline sale sync queue through repository helpers',
+    'Route POS sync status through repository helpers',
+    'Bump POS repository cache versions'
   ]
 };
 
