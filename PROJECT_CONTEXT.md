@@ -16,10 +16,10 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.20`
-- Build: `2026.06.30.086`
+- Version: `0.12.21`
+- Build: `2026.06.30.087`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B006 Firestore Composite Index`
+- Milestone: `P9-B007 Audit Log`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -42,42 +42,42 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 - P9-B005.3 POS Receipt Settings Restore & Loyalty Calculation Fix เสร็จ
 - P9-B005.4 POS Receipt Loyalty Fix เสร็จ
 - P9-B006 Firestore Composite Index เสร็จ
+- P9-B007 Audit Log เสร็จ
 
-## รายละเอียด P9-B006
+## รายละเอียด P9-B007
 
-เพิ่ม Firestore composite indexes สำหรับ Retail POS collections ที่ใช้ query แบบ filter + sort และเตรียมรองรับรายงาน/ประวัติ/queue ใน Milestone ถัดไป
+เพิ่ม audit log สำหรับการขาย POS ที่บันทึกสำเร็จใน Firestore transaction เพื่อให้ตรวจสอบย้อนหลังได้ว่าใครขายบิลไหน ยอดเท่าไร อุปกรณ์ใด และสถานะ sync เป็นอะไร
 
 แก้แล้ว:
 
-- เพิ่ม indexes สำหรับ `sales`: status/dateKey/monthKey/customerId/paymentMethod + createdAt และ syncStatus + updatedAt
-- เพิ่ม indexes สำหรับ `saleItems`: saleId/productId/dateKey + createdAt
-- เพิ่ม indexes สำหรับ `stockMovements`: productId/dateKey/referenceId + createdAt
-- เพิ่ม index สำหรับ `syncQueue`: syncStatus + updatedAt
-- เพิ่ม index สำหรับ `loyaltyLedger`: customerId + createdAt
-- เพิ่ม indexes สำหรับ `shifts`: status + updatedAt และ createdBy + status + updatedAt
-- คง index เดิมของ `orders` ไว้
+- เพิ่ม helper ใน `retail-pos.js` สำหรับสร้าง deterministic audit log id
+- เขียน audit log ลง `tenants/{tenantId}/auditLogs/{pos_sale_completed_saleId}` ภายใน transaction เดียวกับ sale
+- Audit log มี tenantId, shopId, deviceId, schemaVersion, createdBy, action, entityType, entityId, entityNumber
+- Audit summary มี saleNumber, totalAmount, totalQty, paymentMethod, customerId, shiftId และ syncStatus
+- ใช้ deterministic audit id เพื่อกัน audit ซ้ำเมื่อ saleId เดิมถูก retry
+- `/pos/index.html` bump cache เป็น `retail-pos.js?v=20260630-087`
 
 ## Current Milestone
 
-`P9-B006 Firestore Composite Index`
+`P9-B007 Audit Log`
 
 ## Regression Tests สำคัญ
 
-1. `firestore.indexes.json` ต้องเป็น JSON valid
-2. `firebase.json` ต้องยังอ้าง `firestore.indexes.json`
-3. เปิด `/pos` แล้วขายได้ตามเดิม
-4. เปิด `/pos/sales` แล้วโหลด sales ด้วย `createdAt desc` ได้ตามเดิม
-5. Deploy indexes ด้วย `firebase deploy --only firestore:indexes`
-6. Hosting deploy เดิมยังใช้ `firebase deploy --only hosting`
-7. Firestore rules เดิมไม่ถูกแก้
-8. sync ซ้ำต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
+1. เปิด `/pos`
+2. ขาย online 1 บิล
+3. Firestore ต้องมี sale document ตาม stable `saleId`
+4. Firestore ต้องมี audit log ใน `tenants/{tenantId}/auditLogs/{pos_sale_completed_saleId}`
+5. Audit log ต้องมี tenantId และ action `pos_sale_completed`
+6. Audit log summary ต้องมี saleNumber, totalAmount, totalQty, paymentMethod, customerId, shiftId, syncStatus
+7. ขายซ้ำด้วย saleId เดิมต้องไม่สร้าง audit log ซ้ำ
+8. Offline fallback ต้องยังทำงานได้
+9. Transaction ยัง read เอกสารทั้งหมดก่อน write
 
 ## งานถัดไป
 
-1. P9-B007 Audit Log
-2. P9-B008 Shift Opening / Closing
-3. P9-B009 Refund / Return / Void
-4. P9-B010 Performance
+1. P9-B008 Shift Opening / Closing
+2. P9-B009 Refund / Return / Void
+3. P9-B010 Performance
 
 ## ข้อควรระวัง
 
