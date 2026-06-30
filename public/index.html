@@ -4,8 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#159447">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
   <link rel="stylesheet" href="/assets/css/app.css?v=20260621-34">
   <link rel="stylesheet" href="/assets/css/icons.css?v=20260621-34">
+  <link rel="stylesheet" href="/assets/css/font-awesome-icons.css?v=20260630-067">
   <title>Food Order/Delivery With QR</title>
 </head>
 <body>
@@ -15,13 +17,13 @@
   <main class="container" id="staffDashboard" hidden>
     <section class="hero"><h1>ระบบจัดการร้าน</h1><p>เมนูจะแสดงตามสิทธิ์ของผู้ใช้งาน</p></section>
     <section class="nav-cards">
-      <a class="card nav-card" href="/kitchen" data-dashboard-role="kitchen,super_admin" hidden><span>👨‍🍳</span>หน้าครัว</a>
-      <a class="card nav-card" href="/cashier" data-dashboard-role="cashier,super_admin" hidden><span>🧾</span>แคชเชียร์</a>
-      <a class="card nav-card" href="/admin" data-dashboard-role="admin,super_admin" hidden><span>⚙️</span>จัดการระบบ</a>
-      <a class="card nav-card" href="/admin/users" data-dashboard-role="super_admin" hidden><span>👥</span>จัดการพนักงาน</a>
+      <a class="card nav-card" href="/kitchen" data-dashboard-role="kitchen,super_admin" hidden><i class="fa-solid fa-bell-concierge app-icon" aria-hidden="true"></i>หน้าครัว</a>
+      <a class="card nav-card" href="/cashier" data-dashboard-role="cashier,super_admin" hidden><i class="fa-solid fa-receipt app-icon" aria-hidden="true"></i>แคชเชียร์</a>
+      <a class="card nav-card" href="/admin" data-dashboard-role="admin,super_admin" hidden><i class="fa-solid fa-right-left app-icon" aria-hidden="true"></i>จัดการระบบ</a>
+      <a class="card nav-card" href="/admin/users" data-dashboard-role="super_admin" hidden><i class="fa-solid fa-users app-icon" aria-hidden="true"></i>จัดการพนักงาน</a>
     </section>
   </main>
   <script type="module" src="/assets/js/ui.js?v=20260621-34"></script>
-  <script type="module" src="/assets/js/home-session.js?v=20260630-066"></script>
+  <script type="module" src="/assets/js/home-session.js?v=20260630-067"></script>
 </body>
 </html>
