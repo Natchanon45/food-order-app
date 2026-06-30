@@ -6,6 +6,8 @@ body.staff-home {
 }
 
 .staff-login-action { display: flex; justify-content: flex-end; }
+.public-support { margin-top: 18px; text-align: center; }
+.public-support p { margin: 6px 0; }
 
 body.staff-home .app-header {
   position: relative;
@@ -24,19 +26,19 @@ body.staff-home #staffDashboard {
 }
 
 body.staff-home .staff-hero {
-  width: min(742px, calc(100% - 310px));
-  min-height: 188px;
+  width: 100%;
+  min-height: 132px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 38px 42px;
-  margin-bottom: 34px;
-  border-radius: 30px;
+  padding: 24px 30px;
+  margin-bottom: 24px;
+  border-radius: 22px;
   background: linear-gradient(135deg, #062b21 0%, #064f2e 56%, #0a7a3b 100%);
 }
 
-body.staff-home .staff-hero h1 { font-size: clamp(32px, 4.3vw, 50px); margin-bottom: 14px; }
-body.staff-home .staff-hero p { font-size: 18px; opacity: .95; }
+body.staff-home .staff-hero h1 { font-size: clamp(28px, 3vw, 38px); margin-bottom: 8px; }
+body.staff-home .staff-hero p { font-size: 16px; opacity: .95; }
 
 body.staff-home .nav-cards {
   width: 100%;
@@ -151,8 +153,8 @@ body.staff-home .app-version { margin-top: auto; padding-bottom: 34px; font-size
   body.staff-home .user-menu-link .app-icon,
   body.staff-home .user-menu-action .app-icon { width: 16px; height: 16px; }
   body.staff-home #staffDashboard { padding: 20px 14px 62px; }
-  body.staff-home .staff-hero { width: 100%; min-height: 178px; padding: 30px 24px; margin-bottom: 20px; border-radius: 25px; }
-  body.staff-home .staff-hero h1 { font-size: 32px; }
+  body.staff-home .staff-hero { width: 100%; min-height: 120px; padding: 22px 20px; margin-bottom: 18px; border-radius: 18px; }
+  body.staff-home .staff-hero h1 { font-size: 28px; }
   body.staff-home .nav-cards { width: 100%; grid-template-columns: 1fr; gap: 14px; }
   body.staff-home .nav-card { min-height: 132px; flex-direction: row; justify-content: flex-start !important; padding: 22px; text-align: left !important; }
 }
