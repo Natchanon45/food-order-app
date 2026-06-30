@@ -1,4 +1,4 @@
-export const POS_FIRESTORE_VERSION = 'P9-B002';
+export const POS_FIRESTORE_VERSION = 'P9-B003';
 
 export const POS_COLLECTIONS = Object.freeze({
   sales: 'sales',
@@ -15,6 +15,7 @@ export const POS_CHANNEL = 'retail-pos';
 export const POS_ORDER_TYPE = 'pos';
 export const POS_RUNNING_PREFIX = 'POS';
 export const POS_RUNNING_PAD_LENGTH = 5;
+export const POS_COUNTER_TYPE = 'daily-sale-number';
 
 export function padRunning(value, length = POS_RUNNING_PAD_LENGTH) {
   return String(Math.max(0, Number(value || 0))).padStart(length, '0');
@@ -40,6 +41,37 @@ export function counterIdForDate(dateKey = dateKeyFrom()) {
 
 export function buildRunningNumber({ prefix = POS_RUNNING_PREFIX, dateKey = dateKeyFrom(), running = 0 } = {}) {
   return `${prefix}-${dateKey}-${padRunning(running)}`;
+}
+
+export function buildCounterRow({
+  tenantId,
+  dateKey = dateKeyFrom(),
+  running = 0,
+  saleId = '',
+  saleNumber = '',
+  userId = '',
+  now = Date.now()
+} = {}) {
+  const id = counterIdForDate(dateKey);
+  const number = saleNumber || buildRunningNumber({ dateKey, running });
+  return {
+    id,
+    tenantId,
+    shopId: tenantId,
+    counterType: POS_COUNTER_TYPE,
+    channel: POS_CHANNEL,
+    orderType: POS_ORDER_TYPE,
+    prefix: POS_RUNNING_PREFIX,
+    dateKey,
+    monthKey: String(dateKey).slice(0, 6),
+    current: Number(running || 0),
+    lastRunning: Number(running || 0),
+    lastNumber: number,
+    lastSaleId: saleId,
+    schemaVersion: POS_FIRESTORE_VERSION,
+    updatedBy: userId,
+    updatedAt: now
+  };
 }
 
 export function getDeviceId(storage = localStorage) {
