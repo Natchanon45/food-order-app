@@ -16,10 +16,10 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.16`
-- Build: `2026.06.30.082`
+- Version: `0.12.17`
+- Build: `2026.06.30.083`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B005.1 POS Receipt Print Fix`
+- Milestone: `P9-B005.2 POS Receipt Data Hydration & Print Cleanup`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -38,31 +38,40 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 - P9-B004.1 POS Menu Spacing เสร็จ
 - P9-B005 Repository Layer เสร็จเบื้องต้น
 - P9-B005.1 POS Receipt Print Fix เสร็จ
+- P9-B005.2 POS Receipt Data Hydration & Print Cleanup เสร็จ
 
-## รายละเอียด P9-B005.1
+## รายละเอียด P9-B005.2
 
-ตรวจจากไฟล์จริงพบว่า `/pos/index.html` ยังไม่ได้โหลด `retail-pos-receipt-modal.js` ทำให้ตัวดัก localStorage sale ใหม่ไม่ทำงานหลังบันทึกขาย
+ตรวจจากไฟล์จริงพบว่าใบเสร็จ POS หลังบันทึกขายเปิดจาก `retail_pos_sales_v1` ใน localStorage และยังใช้ header/footer แบบ hardcode ทำให้ข้อมูลร้าน, ลูกค้า/สมาชิก, แต้ม และท้ายบิลไม่ตรงกับค่าที่บันทึกไว้
 
 แก้แล้ว:
 
-- เพิ่ม script `retail-pos-receipt-modal.js?v=20260630-082` ใน `/pos/index.html`
-- โหลด receipt modal ก่อน `retail-pos.js` เพื่อให้ patch `localStorage.setItem` ทันก่อนมีการบันทึก sale
-- ปรับ receipt modal ให้เปิดใบเสร็จและเรียก same-window print หลัง sale save
-- เพิ่ม `.receipt-print-root` ให้ modal เพื่อให้ fallback print ไม่พิมพ์หน้าว่าง
-- Sync event ภายหลังจะไม่เปิดบิลเก่าซ้ำ
+- ปรับ `retail-pos-receipt-modal.js` ให้ hydrate ข้อมูลร้านจาก settings `store` และ `receipt` ผ่าน `retail-db.js`
+- รองรับ fallback จาก `retail_pos_store_settings_v1` และ `food_order_store_settings` สำหรับ offline/local mode
+- แสดงชื่อร้าน, ที่อยู่, เบอร์โทร, เลขผู้เสียภาษี และโลโก้ร้านถ้ามี
+- แสดงข้อมูลลูกค้า/สมาชิกจาก sale snapshot หรือ local customer cache
+- แสดง loyalty summary บนใบเสร็จ ได้แก่ แต้มก่อนซื้อ, ใช้แต้ม, แต้มที่ได้รับ และแต้มคงเหลือ
+- ดึง `receiptThanks` และ `receiptFooter` มาใช้ท้ายบิลแทนข้อความ hardcode
+- ซ่อน toast, alert, notification และ snackbar ระหว่าง print
+- เพิ่ม listener `pos:loyalty-updated` เพื่อ refresh ใบเสร็จที่เปิดอยู่หลัง loyalty module update sale
+- `/pos/index.html` bump cache เป็น `retail-pos-receipt-modal.js?v=20260630-083`
 
 ## Current Milestone
 
-`P9-B005.1 POS Receipt Print Fix`
+`P9-B005.2 POS Receipt Data Hydration & Print Cleanup`
 
 ## Regression Tests สำคัญ
 
 1. เปิด `/pos`
 2. ขาย online 1 บิล หลังบันทึกสำเร็จต้องเปิดใบเสร็จและเรียก print dialog
-3. ขาย offline 1 บิล หลังบันทึกสำเร็จต้องเปิดใบเสร็จและเรียก print dialog
-4. print fallback ต้องไม่เป็นหน้าว่าง
-5. sync offline ภายหลังต้องไม่เปิดใบเสร็จซ้ำ
-6. sync ซ้ำต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
+3. หัวบิลต้องใช้ข้อมูลร้านจาก settings หรือ local fallback
+4. ถ้าเลือกลูกค้า ต้องแสดงชื่อ/รหัสสมาชิก/เบอร์โทรบนใบเสร็จ
+5. ถ้ามี loyalty ต้องแสดงแต้มก่อนซื้อ/ใช้แต้ม/แต้มที่ได้รับ/แต้มคงเหลือ
+6. ท้ายบิลต้องใช้ `receiptThanks` และ `receiptFooter` ที่บันทึกไว้
+7. Toast/alert/notification ต้องไม่ติดในใบเสร็จตอนพิมพ์
+8. ขาย offline 1 บิล ต้องยังเปิดใบเสร็จและใช้ snapshot/fallback ได้
+9. sync offline ภายหลังต้องไม่เปิดใบเสร็จซ้ำ
+10. sync ซ้ำต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
 
 ## งานถัดไป
 
