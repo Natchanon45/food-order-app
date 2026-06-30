@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0");
+
 .app-icon.fa-solid {
   display: inline-flex;
   align-items: center;
@@ -5,12 +7,40 @@
   width: 1.25em;
   height: 1.25em;
   flex: 0 0 auto;
-  font-size: 1em;
   line-height: 1;
   vertical-align: -.1em;
   color: currentColor;
   pointer-events: none;
 }
+
+.app-icon.fa-solid::before {
+  font-family: "Material Symbols Outlined";
+  font-weight: 300;
+  font-style: normal;
+  font-size: 1em;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "liga";
+}
+
+.fa-house::before { content: "home" !important; }
+.fa-table::before { content: "table_restaurant" !important; }
+.fa-sliders::before { content: "tune" !important; }
+.fa-users::before { content: "groups" !important; }
+.fa-key::before { content: "key" !important; }
+.fa-user::before { content: "person" !important; }
+.fa-chevron-down::before { content: "keyboard_arrow_down" !important; }
+.fa-arrow-right-from-bracket::before { content: "logout" !important; }
+.fa-bell-concierge::before { content: "room_service" !important; }
+.fa-receipt::before { content: "receipt_long" !important; }
+.fa-right-left::before { content: "sync_alt" !important; }
 
 .nav-card .app-icon.fa-solid {
   width: 36px;
@@ -22,23 +52,23 @@
 .user-menu-avatar .app-icon.fa-solid {
   width: 18px;
   height: 18px;
-  font-size: 17px;
+  font-size: 18px;
 }
 
 .user-menu-trigger .user-menu-chevron.fa-solid {
   width: 16px;
   height: 16px;
-  font-size: 12px;
+  font-size: 16px;
 }
 
 .user-menu-link .app-icon.fa-solid,
 .user-menu-action .app-icon.fa-solid {
-  width: 21px;
-  height: 21px;
-  flex: 0 0 21px;
-  font-size: 19px;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  font-size: 22px;
 }
 
 .user-menu-link .fa-key {
-  font-size: 20px;
+  font-size: 22px;
 }
