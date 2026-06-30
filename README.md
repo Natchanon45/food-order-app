@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `P9-B006 Firestore Composite Index`
-- Developer Panel version/build ปัจจุบัน: `0.12.20` / `2026.06.30.086`
+- Current milestone: `P9-B007 Audit Log`
+- Developer Panel version/build ปัจจุบัน: `0.12.21` / `2026.06.30.087`
 
 ## Retail POS Status
 
@@ -30,29 +30,29 @@
 - กู้ตัวเลือกถามก่อนพิมพ์ / พิมพ์ทันที
 - แก้ให้ใบเสร็จคำนวณแต้มจากลูกค้าที่เลือกได้ทันที แม้ sale customer patch จะยังไม่เสร็จ
 - เพิ่ม Firestore composite indexes สำหรับ Retail POS collections
+- เพิ่ม audit log สำหรับการขาย POS ที่บันทึกสำเร็จบน Firestore
 
 ## Current Milestone
 
-`P9-B006 Firestore Composite Index`
+`P9-B007 Audit Log`
 
 ## Regression Tests
 
-1. เปิด `/pos` แล้วโหลดรายการสินค้า/ขายได้ตามเดิม
-2. เปิด `/pos/sales` แล้วโหลด sales ด้วย `createdAt desc` ได้ตามเดิม
-3. Query รายงาน sales ด้วย `status/dateKey/monthKey/customerId/paymentMethod + createdAt` ต้องมี index รองรับ
-4. Query saleItems ด้วย `saleId/productId/dateKey + createdAt` ต้องมี index รองรับ
-5. Query stockMovements ด้วย `productId/dateKey/referenceId + createdAt` ต้องมี index รองรับ
-6. Query syncQueue ด้วย `syncStatus + updatedAt` ต้องมี index รองรับ
-7. Query loyaltyLedger ด้วย `customerId + createdAt` ต้องมี index รองรับ
-8. Query shifts ด้วย `status/createdBy + updatedAt` ต้องมี index รองรับ
-9. Deploy indexes ต้องไม่กระทบ hosting และ Firestore rules เดิม
+1. เปิด `/pos` แล้วขาย online 1 บิล
+2. Firestore ต้องมี sale document ตาม stable `saleId`
+3. Firestore ต้องมี audit log ใน `tenants/{tenantId}/auditLogs/{pos_sale_completed_saleId}`
+4. Audit log ต้องมี `tenantId`, `shopId`, `deviceId`, `createdBy`, `action`, `entityType`, `entityId`, `entityNumber`
+5. Audit log summary ต้องมี saleNumber, totalAmount, totalQty, paymentMethod, customerId, shiftId, syncStatus
+6. ขายซ้ำด้วย saleId เดิมต้องไม่สร้าง audit log ซ้ำ เพราะใช้ deterministic audit id
+7. Offline sale ต้องยัง fallback ได้และไม่ทำให้ sync/duplicate protection เสีย
+8. Firestore transaction ยัง read เอกสารทั้งหมดก่อน write
+9. ถ้าแก้ JS ที่ import ใน HTML ต้อง bump cache แล้ว
 
 ## Next Tasks
 
-1. P9-B007 Audit Log
-2. P9-B008 Shift Opening / Closing
-3. P9-B009 Refund / Return / Void
-4. P9-B010 Performance
+1. P9-B008 Shift Opening / Closing
+2. P9-B009 Refund / Return / Void
+3. P9-B010 Performance
 
 ## Deploy
 
