@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.9',
-  build: '2026.06.30.075',
+  version: '0.12.10',
+  build: '2026.06.30.076',
   branch: 'feature/retail-pos',
-  commit: 'P9-B002.1',
+  commit: 'P9-B002.2',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P9-B002.1 Firestore Rules for Running Number',
-  updatedAt: '2026-06-30T16:40:00+07:00',
+  milestone: 'P9-B002.2 POS Auth Warning Cleanup',
+  updatedAt: '2026-06-30T17:05:00+07:00',
   whatsNew: [
-    'Allow POS counter reads/writes for Running Number transactions',
-    'Add Firestore rules for saleItems, dailySummary and syncQueue',
-    'Prepare auditLogs rules for future POS audit milestone',
-    'Keep tenant payload validation for POS foundation writes'
+    'Prefer tenant role settings before roles collection lookup',
+    'Stop noisy tenant roles collection warning during POS load',
+    'Bump POS auth/navigation cache versions',
+    'Add POS favicon link to avoid favicon.ico 404'
   ]
 };
 
