@@ -21,12 +21,12 @@ firebase deploy --only hosting
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.4`
-- Build: `2026.06.30.052`
+- Version: `0.12.5`
+- Build: `2026.06.30.061`
 - Branch: `feature/retail-pos`
-- Milestone ใน panel ยังเก่า: `P7-B027 Table Move`
+- Milestone: `P8-B001 Retail POS Offline Sync Safe`
 
-หมายเหตุ: ควรอัปเดต `public/assets/js/app-info.js` หลังจบชุด P8-B001 ให้ panel ตรงกับงาน POS ล่าสุด
+หมายเหตุ: ถ้ามีการตัด build ใหม่ ควรอัปเดต `public/assets/js/app-info.js` ให้ Developer Panel ตรงกับงานล่าสุด
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -76,6 +76,7 @@ firebase deploy --only hosting
 
 - `public/assets/js/retail-pos.js`
 - `public/assets/js/retail-offline-sale-sync.js`
+- `public/assets/js/retail-pos-sync-status.js`
 - `public/assets/js/retail-pos-hold.js`
 - `public/assets/js/retail-pos-customer-link.js`
 - `public/assets/js/retail-pos-loyalty.js`
@@ -91,6 +92,8 @@ firebase deploy --only hosting
 - Stock movement ใช้ deterministic id `${saleId}_${productId}` ทั้ง online และ offline
 - Online transaction เช็ก sale เดิมก่อน ถ้ามีอยู่แล้วจะไม่ตัด stock ซ้ำ
 - POS records มี `tenantId`, `shopId`, `channel: "retail-pos"`, `orderType: "pos"`
+- เพิ่ม UI แสดงจำนวนบิล `pending`, `failed`, `conflict`, `syncing` บน header ของ POS
+- เพิ่มปุ่ม manual `Sync` สำหรับ retry บิล offline ที่ยัง sync ได้
 
 ## เรื่องที่ยังควรทำต่อ / ยังไม่เสร็จสมบูรณ์
 
@@ -98,11 +101,9 @@ firebase deploy --only hosting
 
 เหลือ:
 
-- เพิ่ม UI แสดงจำนวนบิล pending sync / conflict
-- เพิ่มปุ่ม manual retry sync
 - ทดสอบ offline sale > online sync > refresh/sync ซ้ำ ว่าไม่บิลซ้ำ/ไม่ตัด stock ซ้ำ
 - ทดสอบ tenant mismatch ว่าเข้า conflict จริง
-- อัปเดต `app-info.js` ให้ milestone เป็น `P8-B001 Retail POS Offline Sync Safe`
+- อัปเดต `app-info.js` ถ้าต้องการตัด Version/Build ใหม่
 - พิจารณาเพิ่ม `CHANGELOG.md`
 
 ### Priority 2 — POS Payment / Receipt
@@ -139,10 +140,12 @@ firebase deploy --only hosting
 2. ตัดเน็ต
 3. ขายสินค้า 1 บิล
 4. local sale ต้องเป็น `syncStatus: pending`
-5. ต่อเน็ต
-6. sync ต้องสร้าง sale ใน Firestore 1 ใบเท่านั้น
-7. stock ต้องลด 1 ครั้งเท่านั้น
-8. refresh แล้ว sync ซ้ำ ต้องไม่สร้างบิลซ้ำ/ไม่ลด stock ซ้ำ
+5. header ต้องแสดง `รอ Sync 1`
+6. ต่อเน็ต
+7. กด `Sync` หรือรอ auto sync
+8. sync ต้องสร้าง sale ใน Firestore 1 ใบเท่านั้น
+9. stock ต้องลด 1 ครั้งเท่านั้น
+10. refresh แล้ว sync ซ้ำ ต้องไม่สร้างบิลซ้ำ/ไม่ลด stock ซ้ำ
 
 ### B. POS Online Sale
 
@@ -151,6 +154,7 @@ firebase deploy --only hosting
 3. ลด stock ทันที
 4. สร้าง stock movement id แบบ `${saleId}_${productId}`
 5. local sale ต้องเป็น `syncStatus: synced`
+6. header sync status ต้องไม่แสดงบิลค้าง
 
 ### C. POS Conflict / Tenant
 
@@ -158,6 +162,7 @@ firebase deploy --only hosting
 2. เปลี่ยน context เป็น tenant B
 3. sync ต้องไม่ข้ามร้าน
 4. local sale ต้องเป็น `syncStatus: conflict`
+5. header ต้องแสดง `Conflict 1`
 
 ### D. สั่งอาหารที่โต๊ะ
 
