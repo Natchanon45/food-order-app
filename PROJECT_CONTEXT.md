@@ -21,10 +21,10 @@ firebase deploy --only hosting
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.9`
-- Build: `2026.06.30.075`
+- Version: `0.12.10`
+- Build: `2026.06.30.076`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B002.1 Firestore Rules for Running Number`
+- Milestone: `P9-B002.2 POS Auth Warning Cleanup`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -60,6 +60,8 @@ firebase deploy --only hosting
 - `public/assets/js/retail-pos-hold.js`
 - `public/assets/js/retail-pos-customer-link.js`
 - `public/assets/js/retail-pos-loyalty.js`
+- `public/assets/js/retail-pos-auth.js`
+- `public/assets/js/retail-pos-navigation.js`
 
 ทำแล้วใน P8-B001:
 
@@ -102,41 +104,27 @@ firebase deploy --only hosting
 - เตรียม rules สำหรับ `auditLogs` เพื่อรองรับ P9-B007
 - POS foundation writes ยังต้องมี `tenantId` หรือ `shopId` ตรงกับ tenant path
 
+ทำแล้วใน P9-B002.2:
+
+- อ่าน `retail-pos-auth.js` จริงและพบว่า warning มาจากการอ่าน `tenants/{tenantId}/roles` ก่อน fallback ไป settings
+- ปรับให้ POS auth อ่าน `tenants/{tenantId}/settings/roles` ก่อน
+- ถ้า settings ไม่มีข้อมูลจึง fallback ไป `tenants/{tenantId}/roles` แบบ `console.debug`
+- bump cache `retail-pos-auth`, `retail-pos-navigation`, `retail-pos-sale-permissions`
+- เพิ่ม favicon link ใน `/pos` เพื่อลด `favicon.ico 404`
+
 ## เรื่องที่ยังควรทำต่อ / ยังไม่เสร็จสมบูรณ์
 
 ### Priority 1 — P9 POS Firestore Foundation
 
 - Deploy Firestore Rules และ Hosting
 - ทดสอบ online sale ว่า running number เพิ่มต่อเนื่องต่อวัน
+- ทดสอบ POS auth warning cleanup ว่าไม่มี `tenant roles collection denied` ซ้ำ
 - ทดสอบ offline sale > online sync > refresh/sync ซ้ำ ว่าไม่เกิดบิลซ้ำและไม่ตัด stock ซ้ำ
 - ทดสอบ tenant mismatch ว่าเข้า conflict จริง
 - เพิ่ม Offline Queue Worker + Retry + Conflict Resolver
 - เพิ่ม Repository Layer
 - เพิ่ม Firestore indexes สำหรับ report/query POS
 - เพิ่ม audit log สำหรับ POS sale/refund/void
-
-### Priority 2 — Shift / Closing
-
-- Open Shift
-- Close Shift
-- Cash Count
-- Cash Diff
-- Print shift summary
-
-### Priority 3 — Return / Void / Refund
-
-- Return ทั้งบิล
-- Return รายการย่อย
-- Void ก่อนปิดรอบ
-- Refund permission
-
-### Priority 4 — Inventory
-
-- Stock Adjustment
-- Stock Count
-- Purchase Receive
-- Supplier
-- Lot / Expire ในอนาคต
 
 ## Regression Tests สำคัญ
 
@@ -152,6 +140,13 @@ firebase deploy --only hosting
 8. ต้อง update `dailySummary/{dateKey}` billCount/totalAmount/payment method
 9. ต้องเขียน `syncQueue/{saleId}` เป็น `synced`
 10. refresh แล้วขายใหม่ได้ตามปกติ
+
+### POS Auth Warning Smoke Test
+
+1. เปิด `/pos`
+2. Console ไม่ควรมี warning ซ้ำ `tenant roles collection denied`
+3. Developer Panel ต้องแสดง `0.12.10 / 2026.06.30.076`
+4. เมนู POS และ permission ยังทำงานตาม role เดิม
 
 ### POS Offline Sync
 
@@ -175,25 +170,6 @@ firebase deploy --only hosting
 3. Console ต้องไม่ขึ้น `permission-denied` ที่ `counters/POS_{YYYYMMDD}`
 4. ต้องสร้าง/อัปเดต `counters`, `sales`, `saleItems`, `stockMovements`, `dailySummary`, `syncQueue`
 
-### POS Tenant Safety
-
-1. สร้าง local sale ของ tenant A
-2. เปลี่ยน context เป็น tenant B
-3. sync ต้องไม่ข้ามร้าน
-4. local sale ต้องเป็น `syncStatus: conflict`
-5. header ต้องแสดง `Conflict 1`
-
-### Table Move
-
-1. เปิดโต๊ะ 4
-2. สั่งอาหาร 1 รอบ
-3. ย้ายไปโต๊ะ 2
-4. ออเดอร์ต้องย้ายไปโต๊ะ 2
-5. โต๊ะ 4 ต้องว่าง
-6. โต๊ะ 2 ต้อง occupied
-7. ยังไม่ชำระ ต้องปิดโต๊ะ 2 ไม่ได้
-8. ชำระแล้ว จึงปิดโต๊ะ 2 ได้
-
 ## ข้อควรระวัง
 
 - อย่าแก้ไฟล์ใหญ่ถ้าไม่จำเป็น ให้เพิ่ม helper เฉพาะจุดก่อน
@@ -206,12 +182,12 @@ firebase deploy --only hosting
 
 ## Current Milestone
 
-`P9-B002.1 Firestore Rules for Running Number`
+`P9-B002.2 POS Auth Warning Cleanup`
 
 Scope:
 
-1. Allow POS counter read/write for Running Number transaction
-2. Add rules for saleItems, dailySummary, syncQueue
-3. Prepare auditLogs rules for future audit milestone
-4. Preserve tenant payload validation
-5. Keep P9-B002 stable saleId and duplicate protection
+1. Prefer tenant role settings before roles collection lookup
+2. Reduce noisy console warning during POS load
+3. Bump auth/navigation permission cache versions
+4. Add POS favicon link
+5. Preserve existing role fallback behavior
