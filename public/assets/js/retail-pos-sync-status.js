@@ -1,4 +1,4 @@
-import { syncOfflineSalesToFirebase } from './retail-offline-sale-sync.js?v=20260630-060';
+import { syncOfflineSalesToFirebase, retryFailedOfflineSales } from './retail-offline-sale-sync.js?v=20260630-079';
 
 const SALES_KEY = 'retail_pos_sales_v1';
 const SYNC_EVENT = 'retail-offline-sales-synced';
@@ -48,7 +48,7 @@ function buildLabel(counts) {
   const parts = [];
   if (counts.pending) parts.push(`รอ Sync ${counts.pending}`);
   if (counts.syncing) parts.push(`กำลัง Sync ${counts.syncing}`);
-  if (counts.failed) parts.push(`ล้มเหลว ${counts.failed}`);
+  if (counts.failed) parts.push(`รอ Retry ${counts.failed}`);
   if (counts.conflict) parts.push(`Conflict ${counts.conflict}`);
   return parts.join(' • ');
 }
@@ -65,7 +65,7 @@ function renderSyncStatus() {
   wrapper.classList.toggle('is-danger', counts.conflict > 0);
   syncText.textContent = buildLabel(counts) || 'Sync ปกติ';
   syncButton.disabled = counts.syncing > 0 || navigator.onLine === false;
-  syncButton.textContent = navigator.onLine === false ? 'Offline' : 'Sync';
+  syncButton.textContent = navigator.onLine === false ? 'Offline' : (counts.failed ? 'Retry' : 'Sync');
 }
 
 async function manualSync() {
@@ -73,7 +73,8 @@ async function manualSync() {
   syncButton.disabled = true;
   syncButton.textContent = 'กำลัง Sync...';
   try {
-    await syncOfflineSalesToFirebase();
+    retryFailedOfflineSales();
+    await syncOfflineSalesToFirebase({ forceRetry: true });
   } catch (error) {
     console.warn('[retail-pos-sync-status] manual sync failed', error);
   } finally {
