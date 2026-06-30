@@ -81,6 +81,16 @@ function movementId(saleId, productId) {
   return `${saleId}_${productId}`.replace(/[^a-zA-Z0-9_-]/g, "_");
 }
 
+function auditLogId(action, entityId) {
+  return `${action}_${entityId}`.replace(/[^a-zA-Z0-9_-]/g, "_");
+}
+
+function auditLogRow({ action, entityType = "sale", entityId, entityNumber = "", userId = "", deviceId = "", summary = {}, createdAt = new Date().toISOString() }) {
+  const tenantId = getTenantId();
+  const id = auditLogId(action, entityId);
+  return { id, tenantId, shopId: tenantId, deviceId, schemaVersion: POS_FIRESTORE_VERSION, deleted: false, action, entityType, entityId, entityNumber, channel: "retail-pos", createdBy: userId, updatedBy: userId, createdAt, updatedAt: Date.now(), summary };
+}
+
 function pendingSaleNumber(createdAt, saleId) {
   const dateKey = dateKeyFrom(createdAt);
   const suffix = String(saleId || "").replace(/[^a-zA-Z0-9]/g, "").slice(-6).toUpperCase() || Math.random().toString(16).slice(2, 8).toUpperCase();
@@ -304,6 +314,8 @@ async function completeSaleFirestore({ saleId, method, received, totals, created
       transaction.set(movementRef, movement, { merge: true });
       localMovements.push({ ...movement, createdAtServer: null, updatedAtServer: null });
     });
+    const audit = auditLogRow({ action: "pos_sale_completed", entityId: saleId, entityNumber: number, userId: user.uid, deviceId: normalizedSale.deviceId, createdAt, summary: { saleNumber: number, totalAmount: normalizedSale.totalAmount, totalQty: normalizedSale.totalQty, paymentMethod: normalizedSale.paymentMethod, customerId: normalizedSale.customerId || "", shiftId: normalizedSale.shiftId || "", syncStatus: "synced" } });
+    transaction.set(tenantDoc(POS_COLLECTIONS.auditLogs, audit.id), { ...audit, createdAtServer: serverTimestamp(), updatedAtServer: serverTimestamp() }, { merge: true });
     transaction.set(summaryRef, { ...nextSummary, updatedBy: user.uid, updatedAtServer: serverTimestamp() }, { merge: true });
     transaction.set(tenantDoc(POS_COLLECTIONS.syncQueue, saleId), { ...buildSyncQueueRow(normalizedSale, { status: "synced" }), createdBy: user.uid, updatedBy: user.uid, updatedAtServer: serverTimestamp() }, { merge: true });
   });
