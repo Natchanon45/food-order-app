@@ -7,12 +7,13 @@ import {
   dateKeyFrom,
   monthKeyFrom,
   buildRunningNumber,
+  buildCounterRow,
   counterIdForDate,
   normalizeSaleForFirestore,
   buildSaleItemRows,
   applySaleToDailySummary,
   buildSyncQueueRow
-} from './retail-pos-firestore-foundation.js?v=20260630-074';
+} from './retail-pos-firestore-foundation.js?v=20260630-077';
 
 const PRODUCT_KEY = "retail_pos_products_v1";
 const SALES_KEY = "retail_pos_sales_v1";
@@ -290,7 +291,7 @@ async function completeSaleFirestore({ saleId, method, received, totals, created
     const summarySnapshot = await transaction.get(summaryRef);
     const nextSummary = applySaleToDailySummary(summarySnapshot.exists() ? summarySnapshot.data() : {}, normalizedSale);
     committedSale = { ...normalizedSale, id: saleId, syncStatus: "synced" };
-    transaction.set(counterRef, { id: counterIdForDate(dateKey), tenantId, shopId: tenantId, prefix: "POS", dateKey, current: nextRunning, lastNumber: number, updatedBy: user.uid, updatedAt: Date.now(), updatedAtServer: serverTimestamp() }, { merge: true });
+    transaction.set(counterRef, { ...buildCounterRow({ tenantId, dateKey, running: nextRunning, saleId, saleNumber: number, userId: user.uid }), updatedAtServer: serverTimestamp() }, { merge: true });
     transaction.set(saleRef, { ...normalizedSale, id: saleId, syncStatus: "synced", createdAtServer: serverTimestamp(), updatedAt: Date.now(), updatedAtServer: serverTimestamp() });
     buildSaleItemRows(normalizedSale).forEach(item => transaction.set(tenantDoc(POS_COLLECTIONS.saleItems, item.id), { ...item, createdBy: user.uid, updatedBy: user.uid, deviceId: normalizedSale.deviceId, schemaVersion: POS_FIRESTORE_VERSION, deleted: false, createdAtServer: serverTimestamp(), updatedAt: Date.now(), updatedAtServer: serverTimestamp() }, { merge: true }));
     rows.forEach(({ cartItem, productRef, product }) => {
@@ -352,7 +353,7 @@ async function loadProducts() {
   renderCart();
 }
 
-els.productGrid.addEventListener("click", event => { if (savingSale) return; const button = event.target.closest("[data-product-id]"); if (button) addProduct(button.dataset.productId); });
+els.productGrid.addEventListener("click", event => { if (savingSale) return; const button = event.target.closest("[data-product-id]"); if (button) addProduct(button.datasetProductId || button.dataset.productId); });
 els.cartList.addEventListener("click", event => { if (savingSale) return; const button = event.target.closest("button[data-action]"); if (!button) return; if (button.dataset.action === "increase") changeQty(button.dataset.id, 1); if (button.dataset.action === "decrease") changeQty(button.dataset.id, -1); if (button.dataset.action === "remove") { cart = cart.filter(item => item.id !== button.dataset.id); renderCart(); } });
 els.barcodeInput.addEventListener("keydown", event => { if (event.key !== "Enter") return; event.preventDefault(); const code = els.barcodeInput.value.trim(); const product = products.find(item => item.barcode === code || item.id.toLowerCase() === code.toLowerCase()); if (product) addProduct(product.id); else showToast("ไม่พบบาร์โค้ดหรือรหัสสินค้านี้"); els.barcodeInput.value = ""; });
 els.searchInput.addEventListener("input", renderProducts);
