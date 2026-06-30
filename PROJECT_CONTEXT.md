@@ -16,10 +16,10 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.13`
-- Build: `2026.06.30.079`
+- Version: `0.12.14`
+- Build: `2026.06.30.080`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B004 Offline Queue Worker + Retry + Conflict Resolver`
+- Milestone: `P9-B004.1 POS Menu Spacing`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -35,34 +35,33 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 - P9-B003 Counter เสร็จ
 - P9-B003.1 POS Menu Open Fix เสร็จ
 - P9-B004 Offline Queue Worker + Retry + Conflict Resolver เสร็จ
+- P9-B004.1 POS Menu Spacing เสร็จ
 
-## รายละเอียด P9-B004
+## รายละเอียด P9-B004.1
 
-แก้จากไฟล์จริง `retail-offline-sale-sync.js` และ `retail-pos-sync-status.js`
+แก้จากไฟล์จริง `retail-pos-navigation.css`
 
 ทำแล้ว:
 
-- เพิ่ม `OfflineQueueWorker` สำหรับ sync queue อัตโนมัติ
-- เพิ่ม retry delay/backoff สำหรับรายการ `failed`
-- เพิ่ม stale syncing recovery เพื่อ retry รายการที่ค้าง `syncing`
-- เพิ่ม conflict metadata เช่น `conflictType`, `conflictResolution`
-- เพิ่ม helper `getOfflineSyncQueue()`, `retryFailedOfflineSales()`, `resolveOfflineSaleConflict()`
-- ปุ่ม Sync manual จะ retry รายการ failed ได้
-- `/pos/index.html` bump cache เป็น `retail-offline-sale-sync.js?v=20260630-079` และ `retail-pos-sync-status.js?v=20260630-079`
+- เพิ่ม padding ของ drawer ทั้ง PC และ Mobile
+- เพิ่มระยะห่างระหว่างกล่องข้อมูลผู้ใช้กับเมนูแรก
+- เพิ่มระยะห่างระหว่างกลุ่มเมนู POS
+- เพิ่มความสูงขั้นต่ำของ accordion header และ link ให้กดง่ายขึ้น
+- เพิ่มระยะห่างก่อนปุ่มออกจากระบบ
+- `/pos/index.html` bump cache เป็น `retail-pos-navigation.css?v=20260630-080`
 
 ## Current Milestone
 
-`P9-B004 Offline Queue Worker + Retry + Conflict Resolver`
+`P9-B004.1 POS Menu Spacing`
 
 ## Regression Tests สำคัญ
 
-1. ขาย offline 1 บิล แล้วสถานะต้องเป็น `pending`
-2. ต่อเน็ตแล้ว worker ต้อง sync อัตโนมัติ
-3. ถ้า sync fail ต้องเป็น `failed` พร้อม `nextRetryAt`
-4. เมื่อถึงเวลา retry ต้องกลับไป sync ใหม่ได้
-5. ถ้า conflict เช่น stock ไม่พอ ต้องเป็น `conflict` พร้อม `conflictType`
-6. กดปุ่ม Sync ต้อง retry รายการ failed ได้
-7. sync สำเร็จแล้วต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
+1. เปิด `/pos`
+2. กดปุ่มเมนูแล้ว panel ต้องเปิดได้
+3. ระยะห่างกลุ่มเมนูต้องโปร่งขึ้นทั้ง PC และ Mobile
+4. ปุ่มเมนูย่อยต้องกดง่ายขึ้น
+5. ปุ่มออกจากระบบต้องไม่ชิดรายการเมนูสุดท้าย
+6. offline sync ยังต้องทำงานตาม P9-B004
 
 ## งานถัดไป
 
