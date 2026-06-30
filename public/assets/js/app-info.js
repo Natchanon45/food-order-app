@@ -1,20 +1,20 @@
 export const APP_INFO = {
-  name: 'Food Order App',
-  product: 'Retail POS',
-  version: '0.12.5',
-  build: '2026.06.30.061',
+  name: 'Food Order Delivery',
+  product: 'Food Order Delivery',
+  version: '0.12.6',
+  build: '2026.06.30.072',
   branch: 'feature/retail-pos',
-  commit: 'b7695d3',
+  commit: 'c1d7913',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P8-B001 Retail POS Offline Sync Safe',
-  updatedAt: '2026-06-30T03:45:00+07:00',
+  milestone: 'P8-B002 OAuth Public Pages And Icon Polish',
+  updatedAt: '2026-06-30T12:30:00+07:00',
   whatsNew: [
-    'Use stable sale IDs for POS online and offline sales',
-    'Make offline POS sync tenant-safe to prevent cross-tenant sync',
-    'Use deterministic stock movement IDs to prevent duplicate stock deduction',
-    'Lock Delivery kitchen editing after rider handoff'
+    'Polish dashboard and user-menu SVG icons',
+    'Add public landing, privacy policy, and terms pages for Google OAuth readiness',
+    'Improve Google Login error messages for customer delivery flow',
+    'Keep POS offline sync safeguards and tenant-safe sale records'
   ]
 };
 
