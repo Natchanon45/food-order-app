@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `P9-B002.1 Firestore Rules for Running Number`
-- Developer Panel version/build ปัจจุบัน: `0.12.9` / `2026.06.30.075`
+- Current milestone: `P9-B002.2 POS Auth Warning Cleanup`
+- Developer Panel version/build ปัจจุบัน: `0.12.10` / `2026.06.30.076`
 
 ## Main Modules
 
@@ -38,21 +38,14 @@
 - มีปุ่ม manual `Sync` สำหรับ retry บิล offline ที่ยัง sync ได้
 - เพิ่ม counter-based running number รูปแบบ `POS-YYYYMMDD-00001`
 - เพิ่ม Firestore Rules สำหรับ POS foundation collections ที่ Running Number transaction ใช้งาน
+- ลด warning จาก POS auth โดยอ่าน role จาก tenant settings ก่อน collection fallback
 
 ### POS Firestore Foundation
 
 เพิ่มใน P9-B001:
 
 - เพิ่มไฟล์ `public/assets/js/retail-pos-firestore-foundation.js`
-- กำหนด collection มาตรฐานสำหรับ POS:
-  - `sales`
-  - `saleItems`
-  - `stockMovements`
-  - `shifts`
-  - `counters`
-  - `dailySummary`
-  - `syncQueue`
-  - `auditLogs`
+- กำหนด collection มาตรฐานสำหรับ POS: `sales`, `saleItems`, `stockMovements`, `shifts`, `counters`, `dailySummary`, `syncQueue`, `auditLogs`
 - sale online มี metadata เพิ่ม: `schemaVersion`, `deviceId`, `dateKey`, `monthKey`, `deleted`, `createdBy`, `updatedBy`
 - online transaction เขียน `sales`, `saleItems`, `stockMovements`, `dailySummary`, `syncQueue` ใน transaction เดียว
 - แก้ลำดับ transaction ให้อ่านเอกสารทั้งหมดก่อน write ตามข้อกำหนด Firestore
@@ -77,6 +70,16 @@
 - เตรียม rules สำหรับ `auditLogs` ตาม milestone ถัดไป
 - ทุก write ยังต้องมี `tenantId` หรือ `shopId` ตรงกับ tenant path
 
+### POS Auth Warning Cleanup
+
+เพิ่มใน P9-B002.2:
+
+- `retail-pos-auth.js` อ่าน roles จาก `tenants/{tenantId}/settings/roles` ก่อน
+- ถ้า settings ไม่มีข้อมูล จึง fallback ไป `tenants/{tenantId}/roles`
+- ลด console warning `tenant roles collection denied` ระหว่างโหลด POS
+- bump cache `retail-pos-auth`, `retail-pos-navigation`, `retail-pos-sale-permissions`
+- เพิ่ม favicon link ใน `/pos` เพื่อลด `favicon.ico 404`
+
 ### ยังต้องทำต่อ
 
 - Deploy Firestore Rules และ Hosting
@@ -89,7 +92,6 @@
 - เพิ่ม Firestore Composite Index
 - เพิ่ม Audit Log สำหรับ sale/refund/void
 - เพิ่ม shift opening/closing
-- พิจารณาเพิ่ม `CHANGELOG.md`
 
 ## Firestore POS Structure
 
@@ -106,22 +108,6 @@ tenants/{tenantId}
   auditLogs/{auditId}
 ```
 
-## Kitchen / Delivery Status
-
-- ครัวเปลี่ยนสถานะออเดอร์ได้ตาม flow
-- ออเดอร์โต๊ะในร้านเสิร์ฟรายตัวได้
-- เมื่อเสิร์ฟครบ จะเปลี่ยนสถานะเป็น `served`
-- Delivery เมื่อกด `ส่งให้ไรเดอร์แล้ว` จะล็อกเหมือนออเดอร์ที่เสิร์ฟแล้ว
-- หลังล็อก ครัวจะแก้ไขรายการ/ยกเลิกรายการ/ยกเลิกทั้งออเดอร์ไม่ได้
-
-## Table Order / Cashier Status
-
-- เปิดโต๊ะด้วย QR
-- สั่งหลายรอบจากโต๊ะเดียว
-- แคชเชียร์คิดเงินรวมตามโต๊ะ
-- เปลี่ยนโต๊ะได้ โดยย้ายออเดอร์ที่ยังไม่ชำระไปโต๊ะใหม่
-- ห้ามปิดโต๊ะถ้ายังมีออเดอร์ค้างหรือยังไม่ชำระ
-
 ## Important Regression Tests
 
 ### POS Online Sale + Running Number
@@ -136,6 +122,13 @@ tenants/{tenantId}
 8. ต้องสร้าง `stockMovements/{saleId_productId}` และลด stock 1 ครั้ง
 9. ต้อง update `dailySummary/{YYYYMMDD}`
 10. ต้องสร้าง/อัปเดต `syncQueue/{saleId}` เป็น `synced`
+
+### POS Auth Warning Smoke Test
+
+1. เปิด `/pos`
+2. Console ไม่ควรมี warning ซ้ำ `tenant roles collection denied`
+3. Developer Panel ต้องแสดง `0.12.10 / 2026.06.30.076`
+4. เมนู POS และ permission ยังทำงานตาม role เดิม
 
 ### POS Offline Sync
 
@@ -158,34 +151,6 @@ tenants/{tenantId}
 3. Console ต้องไม่ขึ้น `permission-denied` ที่ `counters/POS_{YYYYMMDD}`
 4. Firestore ต้องมี `sales`, `saleItems`, `stockMovements`, `dailySummary`, `syncQueue`, `counters`
 
-### POS Tenant Safety
-
-1. สร้าง local sale ของ tenant A
-2. เปลี่ยน context เป็น tenant B
-3. sync ต้องไม่ข้ามร้าน
-4. local sale ต้องเป็น `syncStatus: conflict`
-5. header ต้องแสดง `Conflict 1`
-
-### Delivery Kitchen Lock
-
-1. สั่ง Delivery
-2. ครัวรับ > เริ่มทำ > พร้อมจัดส่ง
-3. กด `ส่งให้ไรเดอร์แล้ว`
-4. ต้องแก้ไขรายการไม่ได้
-5. ต้องยกเลิกรายการไม่ได้
-6. ต้องยกเลิกทั้งออเดอร์ไม่ได้
-
-### Table Move
-
-1. เปิดโต๊ะ 4
-2. สั่งอาหาร 1 รอบ
-3. ย้ายไปโต๊ะ 2
-4. ออเดอร์ต้องย้ายไปโต๊ะ 2
-5. โต๊ะ 4 ต้องว่าง
-6. โต๊ะ 2 ต้อง occupied
-7. ยังไม่ชำระ ต้องปิดโต๊ะ 2 ไม่ได้
-8. ชำระแล้ว จึงปิดโต๊ะ 2 ได้
-
 ## Deploy
 
 ```bash
@@ -198,8 +163,6 @@ firebase deploy --only hosting
 ```bash
 python3 -m http.server 8080 --directory public
 ```
-
-หรือใช้ Firebase emulator/serve ตาม environment ที่ตั้งค่าไว้
 
 ## Notes
 
