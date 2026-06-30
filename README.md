@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `P9-B005.4 POS Receipt Loyalty Fix`
-- Developer Panel version/build ปัจจุบัน: `0.12.19` / `2026.06.30.085`
+- Current milestone: `P9-B006 Firestore Composite Index`
+- Developer Panel version/build ปัจจุบัน: `0.12.20` / `2026.06.30.086`
 
 ## Retail POS Status
 
@@ -29,34 +29,36 @@
 - กู้ตัวเลือกขนาดใบเสร็จ 58mm / 80mm / A4
 - กู้ตัวเลือกถามก่อนพิมพ์ / พิมพ์ทันที
 - แก้ให้ใบเสร็จคำนวณแต้มจากลูกค้าที่เลือกได้ทันที แม้ sale customer patch จะยังไม่เสร็จ
+- เพิ่ม Firestore composite indexes สำหรับ Retail POS collections
 
 ## Current Milestone
 
-`P9-B005.4 POS Receipt Loyalty Fix`
+`P9-B006 Firestore Composite Index`
 
 ## Regression Tests
 
-1. เปิด `/pos/settings`
-2. เปลี่ยนชื่อร้าน แล้วบันทึก ต้องเห็นชื่อร้านใหม่บนใบเสร็จ POS
-3. เลือกขนาดใบเสร็จ 58mm / 80mm / A4 แล้วใบเสร็จต้องใช้ขนาดที่เลือก
-4. เลือก `ถามก่อนพิมพ์` หลังบันทึกขายต้องเปิดใบเสร็จแต่ยังไม่เรียก print dialog อัตโนมัติ
-5. เลือก `พิมพ์ทันที` หลังบันทึกขายต้องเรียก print dialog อัตโนมัติ
-6. ถ้าเลือกลูกค้า ต้องแสดงชื่อ/รหัสสมาชิก/เบอร์โทรบนใบเสร็จ
-7. ถ้ามีระบบแต้ม ต้องแสดงแต้มก่อนซื้อ/ใช้แต้ม/แต้มที่ได้รับ/แต้มคงเหลือในบิลทันที
-8. Toast หรือ alert ต้องไม่แสดงบนหน้า print
-9. sync ซ้ำต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
+1. เปิด `/pos` แล้วโหลดรายการสินค้า/ขายได้ตามเดิม
+2. เปิด `/pos/sales` แล้วโหลด sales ด้วย `createdAt desc` ได้ตามเดิม
+3. Query รายงาน sales ด้วย `status/dateKey/monthKey/customerId/paymentMethod + createdAt` ต้องมี index รองรับ
+4. Query saleItems ด้วย `saleId/productId/dateKey + createdAt` ต้องมี index รองรับ
+5. Query stockMovements ด้วย `productId/dateKey/referenceId + createdAt` ต้องมี index รองรับ
+6. Query syncQueue ด้วย `syncStatus + updatedAt` ต้องมี index รองรับ
+7. Query loyaltyLedger ด้วย `customerId + createdAt` ต้องมี index รองรับ
+8. Query shifts ด้วย `status/createdBy + updatedAt` ต้องมี index รองรับ
+9. Deploy indexes ต้องไม่กระทบ hosting และ Firestore rules เดิม
 
 ## Next Tasks
 
-1. P9-B006 Firestore Composite Index
-2. P9-B007 Audit Log
-3. P9-B008 Shift Opening / Closing
-4. P9-B009 Refund / Return / Void
+1. P9-B007 Audit Log
+2. P9-B008 Shift Opening / Closing
+3. P9-B009 Refund / Return / Void
+4. P9-B010 Performance
 
 ## Deploy
 
 git pull --rebase origin feature/retail-pos
 firebase deploy --only hosting
+firebase deploy --only firestore:indexes
 
 ## Notes
 
