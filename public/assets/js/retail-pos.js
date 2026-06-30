@@ -1,5 +1,16 @@
 import { auth, db, isFirebaseConfigured, collection, doc, query, orderBy, getDocs, runTransaction, serverTimestamp, onAuthStateChanged } from './firebase-config.js?v=20260630-073';
 import { getTenantId, RetailCollections, listRecords, watchRecords } from './retail-db.js?v=20260629-030';
+import {
+  POS_COLLECTIONS,
+  POS_FIRESTORE_VERSION,
+  getDeviceId,
+  dateKeyFrom,
+  monthKeyFrom,
+  normalizeSaleForFirestore,
+  buildSaleItemRows,
+  applySaleToDailySummary,
+  buildSyncQueueRow
+} from './retail-pos-firestore-foundation.js?v=20260630-073';
 
 const PRODUCT_KEY = "retail_pos_products_v1";
 const SALES_KEY = "retail_pos_sales_v1";
@@ -310,14 +321,24 @@ function buildSale({ id, number, method, received, totals, createdAt, saleItems 
   const shift = readJson(SHIFT_KEY, null);
   const selectedCustomerId = document.querySelector("#paymentDialog")?.dataset.customerId || "";
   const customer = readJson(CUSTOMER_KEY, []).find(item => String(item.id) === String(selectedCustomerId));
+  const tenantId = getTenantId();
+  const deviceId = getDeviceId();
+  const dateKey = dateKeyFrom(createdAt);
+  const monthKey = monthKeyFrom(createdAt);
   return {
     id,
     saleNumber: number,
-    tenantId: getTenantId(),
-    shopId: getTenantId(),
+    tenantId,
+    shopId: tenantId,
+    deviceId,
+    schemaVersion: POS_FIRESTORE_VERSION,
+    deleted: false,
+    dateKey,
+    monthKey,
     channel: "retail-pos",
     orderType: "pos",
     status: "completed",
+    paymentStatus: "paid",
     syncStatus,
     createdAt,
     items: saleItems.map(({ id, barcode, name, price, cost, qty, unit }) => ({
@@ -355,6 +376,7 @@ async function completeSaleFirestore({ saleId, method, received, totals, number,
   const user = await waitForAuthUser();
   if (!user?.uid) throw new Error("AUTH_REQUIRED");
 
+  const tenantId = getTenantId();
   const saleRef = tenantDoc(RetailCollections.sales, saleId);
   let committedSale = null;
   const localMovements = [];
@@ -377,8 +399,23 @@ async function completeSaleFirestore({ saleId, method, received, totals, number,
     }
 
     const sale = buildSale({ id: saleId, number, method, received, totals, createdAt, saleItems, cashierId: user.uid, syncStatus: "synced" });
-    committedSale = { ...sale, id: saleId, syncStatus: "synced" };
-    transaction.set(saleRef, { ...sale, id: saleId, syncStatus: "synced", createdAtServer: serverTimestamp(), updatedAt: Date.now(), updatedAtServer: serverTimestamp() });
+    const normalizedSale = normalizeSaleForFirestore(sale, { tenantId, userId: user.uid, deviceId: sale.deviceId });
+    committedSale = { ...normalizedSale, id: saleId, syncStatus: "synced" };
+    transaction.set(saleRef, { ...normalizedSale, id: saleId, syncStatus: "synced", createdAtServer: serverTimestamp(), updatedAt: Date.now(), updatedAtServer: serverTimestamp() });
+
+    buildSaleItemRows(normalizedSale).forEach(item => {
+      transaction.set(tenantDoc(POS_COLLECTIONS.saleItems, item.id), {
+        ...item,
+        createdBy: user.uid,
+        updatedBy: user.uid,
+        deviceId: normalizedSale.deviceId,
+        schemaVersion: POS_FIRESTORE_VERSION,
+        deleted: false,
+        createdAtServer: serverTimestamp(),
+        updatedAt: Date.now(),
+        updatedAtServer: serverTimestamp()
+      }, { merge: true });
+    });
 
     rows.forEach(({ cartItem, productRef, product }) => {
       const before = Number(product.stock || 0);
@@ -390,6 +427,11 @@ async function completeSaleFirestore({ saleId, method, received, totals, number,
         id,
         tenantId: getTenantId(),
         shopId: getTenantId(),
+        deviceId: normalizedSale.deviceId,
+        schemaVersion: POS_FIRESTORE_VERSION,
+        deleted: false,
+        dateKey: normalizedSale.dateKey,
+        monthKey: normalizedSale.monthKey,
         productId: product.id,
         productName: product.name,
         type: "sale",
@@ -404,12 +446,27 @@ async function completeSaleFirestore({ saleId, method, received, totals, number,
         referenceId: saleId,
         referenceNumber: number,
         createdBy: user.uid,
+        updatedBy: user.uid,
         createdAt,
-        createdAtServer: serverTimestamp()
+        createdAtServer: serverTimestamp(),
+        updatedAt: Date.now(),
+        updatedAtServer: serverTimestamp()
       };
       transaction.set(movementRef, movement, { merge: true });
-      localMovements.push({ ...movement, createdAtServer: null });
+      localMovements.push({ ...movement, createdAtServer: null, updatedAtServer: null });
     });
+
+    const summaryRef = tenantDoc(POS_COLLECTIONS.dailySummary, normalizedSale.dateKey);
+    const summarySnapshot = await transaction.get(summaryRef);
+    const nextSummary = applySaleToDailySummary(summarySnapshot.exists() ? summarySnapshot.data() : {}, normalizedSale);
+    transaction.set(summaryRef, { ...nextSummary, updatedBy: user.uid, updatedAtServer: serverTimestamp() }, { merge: true });
+
+    transaction.set(tenantDoc(POS_COLLECTIONS.syncQueue, saleId), {
+      ...buildSyncQueueRow(normalizedSale, { status: "synced" }),
+      createdBy: user.uid,
+      updatedBy: user.uid,
+      updatedAtServer: serverTimestamp()
+    }, { merge: true });
   });
 
   const nextProducts = products.map(product => {
