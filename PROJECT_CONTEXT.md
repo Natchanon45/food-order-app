@@ -21,10 +21,10 @@ firebase deploy --only hosting
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.8`
-- Build: `2026.06.30.074`
+- Version: `0.12.9`
+- Build: `2026.06.30.075`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B002 Running Number`
+- Milestone: `P9-B002.1 Firestore Rules for Running Number`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -94,10 +94,19 @@ firebase deploy --only hosting
 - Offline sync ยังเช็ก `sales/{saleId}` ก่อน write เพื่อกันบิลซ้ำและกันตัด stock ซ้ำ
 - `saleItems`, `stockMovements`, `dailySummary`, `syncQueue` ใช้ saleNumber จริงหลัง sync
 
+ทำแล้วใน P9-B002.1:
+
+- อ่าน `firestore.rules` จริงและพบว่ายังไม่มี rules สำหรับ `counters`, `saleItems`, `dailySummary`, `syncQueue`, `auditLogs`
+- เพิ่ม rules สำหรับ `tenants/{tenantId}/counters/{counterId}` เพื่อให้ Running Number transaction อ่าน/เขียน counter ได้
+- เพิ่ม rules สำหรับ `saleItems`, `dailySummary`, `syncQueue`
+- เตรียม rules สำหรับ `auditLogs` เพื่อรองรับ P9-B007
+- POS foundation writes ยังต้องมี `tenantId` หรือ `shopId` ตรงกับ tenant path
+
 ## เรื่องที่ยังควรทำต่อ / ยังไม่เสร็จสมบูรณ์
 
 ### Priority 1 — P9 POS Firestore Foundation
 
+- Deploy Firestore Rules และ Hosting
 - ทดสอบ online sale ว่า running number เพิ่มต่อเนื่องต่อวัน
 - ทดสอบ offline sale > online sync > refresh/sync ซ้ำ ว่าไม่เกิดบิลซ้ำและไม่ตัด stock ซ้ำ
 - ทดสอบ tenant mismatch ว่าเข้า conflict จริง
@@ -159,6 +168,13 @@ firebase deploy --only hosting
 11. stock ต้องลด 1 ครั้งเท่านั้น
 12. refresh แล้ว sync ซ้ำ ต้องไม่สร้างบิลซ้ำ/ไม่ลด stock ซ้ำ
 
+### Firestore Rules Smoke Test
+
+1. Deploy rules แล้วเปิด `/pos`
+2. ขายสินค้า online 1 บิล
+3. Console ต้องไม่ขึ้น `permission-denied` ที่ `counters/POS_{YYYYMMDD}`
+4. ต้องสร้าง/อัปเดต `counters`, `sales`, `saleItems`, `stockMovements`, `dailySummary`, `syncQueue`
+
 ### POS Tenant Safety
 
 1. สร้าง local sale ของ tenant A
@@ -190,12 +206,12 @@ firebase deploy --only hosting
 
 ## Current Milestone
 
-`P9-B002 Running Number`
+`P9-B002.1 Firestore Rules for Running Number`
 
 Scope:
 
-1. Counter-based POS running number
-2. Online sale number `POS-YYYYMMDD-00001`
-3. Offline pending number before sync
-4. Assign official running number during offline sync
-5. Preserve stable saleId and duplicate protection
+1. Allow POS counter read/write for Running Number transaction
+2. Add rules for saleItems, dailySummary, syncQueue
+3. Prepare auditLogs rules for future audit milestone
+4. Preserve tenant payload validation
+5. Keep P9-B002 stable saleId and duplicate protection
