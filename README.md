@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `P9-B004 Offline Queue Worker`
-- Developer Panel version/build ปัจจุบัน: `0.12.13` / `2026.06.30.079`
+- Current milestone: `P9-B004.1 POS Menu Spacing`
+- Developer Panel version/build ปัจจุบัน: `0.12.14` / `2026.06.30.080`
 
 ## Retail POS Status
 
@@ -19,24 +19,24 @@
 - เพิ่ม Running Number `POS-YYYYMMDD-00001`
 - เพิ่ม Counter metadata helper
 - แก้เมนู POS เปิดได้แล้ว
+- ปรับระยะห่างเมนู POS ทั้ง PC และ Mobile ให้โปร่งขึ้น
 - เพิ่ม OfflineQueueWorker สำหรับ retry อัตโนมัติ
 - เพิ่ม retry delay ให้รายการ sync failed
 - เพิ่ม conflict metadata และ helper สำหรับ retry/resolve
 
 ## Current Milestone
 
-`P9-B004 Offline Queue Worker`
+`P9-B004.1 POS Menu Spacing`
 
 ## Regression Tests
 
 1. เปิด `/pos` แล้วเมนูต้องเปิดได้ตามปกติ
-2. ขาย offline 1 บิล แล้ว local sale ต้องเป็น `pending`
-3. ต่อเน็ตแล้ว worker ต้อง sync อัตโนมัติ
-4. ถ้า sync fail ต้องเป็น `failed` พร้อม `nextRetryAt`
-5. กดปุ่ม `Retry` ต้องนำ failed กลับไป sync ใหม่
-6. ถ้า tenant mismatch หรือ stock ไม่พอ ต้องเป็น `conflict`
-7. conflict ต้องไม่ retry เองจนกว่าจะ resolve/retry manual
-8. sync ซ้ำต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
+2. ระยะห่างกลุ่มเมนูต้องไม่ชิดกันทั้ง PC และ Mobile
+3. ปุ่มเมนูย่อยต้องกดง่ายขึ้น และมี touch target ประมาณ 44px ขึ้นไป
+4. ปุ่มออกจากระบบต้องไม่ชิดรายการเมนูสุดท้าย
+5. ขาย offline 1 บิล แล้ว local sale ต้องเป็น `pending`
+6. ต่อเน็ตแล้ว worker ต้อง sync อัตโนมัติ
+7. sync ซ้ำต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
 
 ## Next Tasks
 
