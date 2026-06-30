@@ -60,10 +60,11 @@ async function readRolesFromSettings(tenantId){
 async function hydrateTenantRoles(tenantId=getTenantId()){
   if(!db||!tenantId)return read(ROLE_KEY,[]);
   try{
-    let roles=[];
-    try{roles=await readRolesFromCollection(tenantId)}
-    catch(error){console.warn('[retail-auth] tenant roles collection denied, trying settings fallback',error)}
-    if(!roles.length)roles=await readRolesFromSettings(tenantId);
+    let roles=await readRolesFromSettings(tenantId);
+    if(!roles.length){
+      try{roles=await readRolesFromCollection(tenantId)}
+      catch(error){console.debug('[retail-auth] tenant roles collection unavailable, using local fallback',error)}
+    }
     if(roles.length)write(ROLE_KEY,roles);
     return roles.length?roles:read(ROLE_KEY,[]);
   }catch(error){
