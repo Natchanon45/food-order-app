@@ -21,10 +21,10 @@ firebase deploy --only hosting
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.7`
-- Build: `2026.06.30.073`
+- Version: `0.12.8`
+- Build: `2026.06.30.074`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B001 POS Firestore Foundation`
+- Milestone: `P9-B002 Running Number`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -85,15 +85,26 @@ firebase deploy --only hosting
 - Online POS transaction เขียน `syncQueue/{saleId}` เป็น `synced`
 - แก้ transaction ให้ read เอกสารทั้งหมดก่อน write ตามข้อกำหนด Firestore
 
+ทำแล้วใน P9-B002:
+
+- เพิ่ม counter helper `counterIdForDate(dateKey)` และใช้เลขบิลรูปแบบ `POS-YYYYMMDD-00001`
+- Online sale อ่าน/อัปเดต `counters/POS_{YYYYMMDD}` ใน Firestore transaction เดียวกับ sale/stock/summary
+- Offline sale ยังใช้ stable `saleId` เดิม และใช้เลขชั่วคราวแบบ `POS-YYYYMMDD-PENDING-xxxxxx`
+- Offline sync ออกเลขบิลจริงจาก counter เมื่อต่ออินเทอร์เน็ตและ sync สำเร็จ
+- Offline sync ยังเช็ก `sales/{saleId}` ก่อน write เพื่อกันบิลซ้ำและกันตัด stock ซ้ำ
+- `saleItems`, `stockMovements`, `dailySummary`, `syncQueue` ใช้ saleNumber จริงหลัง sync
+
 ## เรื่องที่ยังควรทำต่อ / ยังไม่เสร็จสมบูรณ์
 
 ### Priority 1 — P9 POS Firestore Foundation
 
-- ทดสอบ online sale หลังเพิ่ม `saleItems`, `dailySummary`, `syncQueue`
+- ทดสอบ online sale ว่า running number เพิ่มต่อเนื่องต่อวัน
+- ทดสอบ offline sale > online sync > refresh/sync ซ้ำ ว่าไม่เกิดบิลซ้ำและไม่ตัด stock ซ้ำ
+- ทดสอบ tenant mismatch ว่าเข้า conflict จริง
+- เพิ่ม Offline Queue Worker + Retry + Conflict Resolver
+- เพิ่ม Repository Layer
 - เพิ่ม Firestore indexes สำหรับ report/query POS
-- เพิ่ม Running Number ผ่าน counter document ให้ได้ `POS-YYYYMMDD-00001`
 - เพิ่ม audit log สำหรับ POS sale/refund/void
-- ปรับ offline sync ให้ใช้ helper เดียวกับ online transaction
 
 ### Priority 2 — Shift / Closing
 
@@ -120,16 +131,18 @@ firebase deploy --only hosting
 
 ## Regression Tests สำคัญ
 
-### POS Online Sale + Firestore Foundation
+### POS Online Sale + Running Number
 
 1. เปิด `/pos` online
-2. ขายสินค้า 1 บิล
-3. ต้องสร้าง `tenants/{tenantId}/sales/{saleId}` 1 เอกสาร
-4. ต้องสร้าง `saleItems` ตามจำนวนรายการสินค้า
-5. ต้องสร้าง `stockMovements` deterministic id `${saleId}_${productId}`
-6. ต้อง update `dailySummary/{dateKey}` billCount/totalAmount/payment method
-7. ต้องเขียน `syncQueue/{saleId}` เป็น `synced`
-8. refresh แล้วขายใหม่ได้ตามปกติ
+2. ขายสินค้า 2 บิลในวันเดียวกัน
+3. ต้องสร้าง `tenants/{tenantId}/sales/{saleId}` อย่างละ 1 เอกสาร
+4. ต้องได้เลขบิลเรียง `POS-YYYYMMDD-00001`, `POS-YYYYMMDD-00002`
+5. ต้องอัปเดต `tenants/{tenantId}/counters/POS_{YYYYMMDD}.current`
+6. ต้องสร้าง `saleItems` ตามจำนวนรายการสินค้า
+7. ต้องสร้าง `stockMovements` deterministic id `${saleId}_${productId}`
+8. ต้อง update `dailySummary/{dateKey}` billCount/totalAmount/payment method
+9. ต้องเขียน `syncQueue/{saleId}` เป็น `synced`
+10. refresh แล้วขายใหม่ได้ตามปกติ
 
 ### POS Offline Sync
 
@@ -138,11 +151,13 @@ firebase deploy --only hosting
 3. ขายสินค้า 1 บิล
 4. local sale ต้องเป็น `syncStatus: pending`
 5. header ต้องแสดง `รอ Sync 1`
-6. ต่อเน็ต
-7. กด `Sync` หรือรอ auto sync
-8. sync ต้องสร้าง sale ใน Firestore 1 ใบเท่านั้น
-9. stock ต้องลด 1 ครั้งเท่านั้น
-10. refresh แล้ว sync ซ้ำ ต้องไม่สร้างบิลซ้ำ/ไม่ลด stock ซ้ำ
+6. local sale ต้องมี stable `saleId` เดิม
+7. ต่อเน็ต
+8. กด `Sync` หรือรอ auto sync
+9. sync ต้องสร้าง sale ใน Firestore 1 ใบเท่านั้น
+10. sale ที่ sync แล้วต้องได้เลขบิลจริง `POS-YYYYMMDD-xxxxx`
+11. stock ต้องลด 1 ครั้งเท่านั้น
+12. refresh แล้ว sync ซ้ำ ต้องไม่สร้างบิลซ้ำ/ไม่ลด stock ซ้ำ
 
 ### POS Tenant Safety
 
@@ -175,13 +190,12 @@ firebase deploy --only hosting
 
 ## Current Milestone
 
-`P9-B001 POS Firestore Foundation`
+`P9-B002 Running Number`
 
 Scope:
 
-1. POS Firestore helper/schema foundation
-2. Sale metadata standardization
-3. Sale item subcollection/collection records
-4. Daily summary update
-5. Sync queue foundation
-6. Prepare for counter-based running number and shift closing
+1. Counter-based POS running number
+2. Online sale number `POS-YYYYMMDD-00001`
+3. Offline pending number before sync
+4. Assign official running number during offline sync
+5. Preserve stable saleId and duplicate protection
