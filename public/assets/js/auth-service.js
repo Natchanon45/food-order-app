@@ -16,42 +16,15 @@ export const ROLE_HOME = {
 
 export const STAFF_ROLES = ["owner", "admin", "cashier", "kitchen", "super_admin"];
 
-const FONT_AWESOME_ICONS = {
-  home: "fa-house",
-  table: "fa-table",
-  settings: "fa-sliders",
-  users: "fa-users",
-  key: "fa-key",
-  user: "fa-user",
-  "chevron-down": "fa-chevron-down",
-  logout: "fa-arrow-right-from-bracket"
-};
-
 function icon(name, className = "app-icon") {
-  const faIcon = FONT_AWESOME_ICONS[name] || "fa-circle";
-  return `<i class="fa-solid ${faIcon} ${className}" aria-hidden="true"></i>`;
+  return `<svg class="${className}" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-076#icon-${name}"></use></svg>`;
 }
 
 function ensureIconStyles() {
-  if (!document.querySelector('link[data-font-awesome]')) {
-    const fontAwesome = document.createElement("link");
-    fontAwesome.rel = "stylesheet";
-    fontAwesome.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css";
-    fontAwesome.crossOrigin = "anonymous";
-    fontAwesome.referrerPolicy = "no-referrer";
-    fontAwesome.dataset.fontAwesome = "true";
-    document.head.appendChild(fontAwesome);
-  }
   if (!document.querySelector('link[href^="/assets/css/icons.css"]')) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "/assets/css/icons.css?v=20260630-067";
-    document.head.appendChild(link);
-  }
-  if (!document.querySelector('link[href^="/assets/css/font-awesome-icons.css"]')) {
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "/assets/css/font-awesome-icons.css?v=20260630-067";
+    link.href = "/assets/css/icons.css?v=20260630-076";
     document.head.appendChild(link);
   }
 }
@@ -244,8 +217,16 @@ export function mountUserMenu(profile) {
 
   const trigger = menu.querySelector("[data-user-menu-trigger]");
   const panel = menu.querySelector("[data-user-menu-panel]");
-  const closeMenu = () => { panel.hidden = true; menu.classList.remove("open"); trigger.setAttribute("aria-expanded", "false"); };
-  trigger.addEventListener("click", event => { event.stopPropagation(); const nextOpen = panel.hidden; panel.hidden = !nextOpen; menu.classList.toggle("open", nextOpen); trigger.setAttribute("aria-expanded", String(nextOpen)); });
+  const mobileTrigger = document.querySelector("[data-mobile-menu-trigger]");
+  const setMenuOpen = open => {
+    panel.hidden = !open;
+    menu.classList.toggle("open", open);
+    trigger.setAttribute("aria-expanded", String(open));
+    mobileTrigger?.setAttribute("aria-expanded", String(open));
+  };
+  const closeMenu = () => setMenuOpen(false);
+  trigger.addEventListener("click", event => { event.stopPropagation(); setMenuOpen(panel.hidden); });
+  mobileTrigger?.addEventListener("click", event => { event.stopPropagation(); setMenuOpen(panel.hidden); });
   document.addEventListener("click", event => { if (!menu.contains(event.target)) closeMenu(); });
   document.addEventListener("keydown", event => { if (event.key === "Escape") closeMenu(); });
   menu.querySelector('[data-menu-action="change-password"]')?.addEventListener("click", () => { closeMenu(); showOwnerPasswordDialog(); });

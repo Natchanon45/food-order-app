@@ -6,11 +6,15 @@
   <meta name="theme-color" content="#159447">
   <link rel="stylesheet" href="/assets/css/app.css?v=20260630-068">
   <link rel="stylesheet" href="/assets/css/icons.css?v=20260630-071">
+  <link rel="stylesheet" href="/assets/css/home-dashboard.css?v=20260630-076">
   <title>Food Order Delivery</title>
 </head>
 <body>
   <header class="app-header">
-    <div class="brand"><span class="brand-mark">FOD</span> Food Order Delivery</div>
+    <button class="home-mobile-menu" type="button" data-mobile-menu-trigger aria-label="เปิดเมนู" aria-expanded="false" hidden>
+      <svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-076#icon-menu"></use></svg>
+    </button>
+    <div class="brand"><span class="brand-mark">FOD</span><span class="brand-label">Food Order Delivery</span></div>
   </header>
   <main class="container" id="publicLanding">
     <section class="hero">
@@ -31,15 +35,15 @@
     </section>
   </main>
   <main class="container" id="staffDashboard" hidden>
-    <section class="hero"><h1>Food Order Delivery</h1><p>ระบบสั่งอาหาร จัดส่ง และจัดการร้านอาหารออนไลน์</p></section>
-    <section class="nav-cards">
-      <a class="card nav-card" href="/kitchen" data-dashboard-role="kitchen,super_admin" hidden><svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-071#icon-kitchen"></use></svg>หน้าครัว</a>
-      <a class="card nav-card" href="/cashier" data-dashboard-role="cashier,super_admin" hidden><svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-071#icon-receipt"></use></svg>แคชเชียร์</a>
-      <a class="card nav-card" href="/admin" data-dashboard-role="admin,super_admin" hidden><svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-071#icon-settings"></use></svg>จัดการระบบ</a>
-      <a class="card nav-card" href="/admin/users" data-dashboard-role="super_admin" hidden><svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-071#icon-users"></use></svg>จัดการพนักงาน</a>
+    <section class="hero staff-hero"><h1>Food Order Delivery</h1><p>ระบบสั่งอาหาร จัดส่ง และจัดการร้านอาหารออนไลน์</p></section>
+    <section class="nav-cards" aria-label="เมนูระบบร้าน">
+      <a class="card nav-card" href="/kitchen" data-dashboard-role="kitchen,super_admin" hidden><span class="nav-card-icon"><svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-076#icon-kitchen"></use></svg></span><span class="nav-card-label">หน้าครัว</span></a>
+      <a class="card nav-card" href="/cashier" data-dashboard-role="cashier,super_admin" hidden><span class="nav-card-icon"><svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-076#icon-receipt"></use></svg></span><span class="nav-card-label">แคชเชียร์</span></a>
+      <a class="card nav-card" href="/admin" data-dashboard-role="admin,super_admin" hidden><span class="nav-card-icon"><svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-076#icon-settings"></use></svg></span><span class="nav-card-label">จัดการระบบ</span></a>
+      <a class="card nav-card" href="/admin/users" data-dashboard-role="super_admin" hidden><span class="nav-card-icon"><svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-076#icon-users"></use></svg></span><span class="nav-card-label">จัดการพนักงาน</span></a>
     </section>
   </main>
-  <script type="module" src="/assets/js/ui.js?v=20260630-071"></script>
-  <script type="module" src="/assets/js/home-session-fa.js?v=20260630-072"></script>
+  <script type="module" src="/assets/js/ui.js?v=20260630-076"></script>
+  <script type="module" src="/assets/js/home-session-fa.js?v=20260630-076"></script>
 </body>
 </html>
