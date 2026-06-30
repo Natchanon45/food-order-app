@@ -1,4 +1,4 @@
-import { db, isFirebaseConfigured, collection, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, writeBatch } from './firebase-config.js?v=20260629-030';
+import { db, isFirebaseConfigured, collection, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, writeBatch } from './firebase-config.js?v=20260630-073';
 
 const POS_TENANT_KEY='retail_pos_tenant_id';
 const DEFAULT_TENANT_ID='13c9bb08-927b-4f9c-a2ef-b320ef7eed99';

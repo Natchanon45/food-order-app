@@ -1,4 +1,4 @@
-import { db, isFirebaseConfigured, collection, getDocs, query, where } from './firebase-config.js';
+import { db, isFirebaseConfigured, collection, getDocs, query, where } from './firebase-config.js?v=20260630-073';
 
 const ACTIVE_TENANT_KEY = "food_order_active_tenant";
 const LEGACY_ACTIVE_SHOP_KEY = "food_order_active_shop";

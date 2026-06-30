@@ -1,4 +1,4 @@
-import { auth } from "./firebase-config.js";
+import { auth } from "./firebase-config.js?v=20260630-073";
 import { createStaffUser, listStaffUsers, updateStaffUser } from "./auth-service.js";
 import { toast } from "./ui.js";
 

@@ -1,4 +1,4 @@
-import { auth } from './firebase-config.js?v=20260629-032';
+import { auth } from './firebase-config.js?v=20260630-073';
 import { RetailCollections, listRecords, saveRecordStrict, saveRecordsStrict, deleteRecordStrict, watchRecords } from './retail-db.js?v=20260629-032';
 
 const HOLD_KEY = "retail_pos_held_bills_v1";

@@ -1,4 +1,4 @@
-import { auth, db, isFirebaseConfigured, collection, doc, runTransaction, serverTimestamp } from './firebase-config.js?v=20260629-031';
+import { auth, db, isFirebaseConfigured, collection, doc, runTransaction, serverTimestamp } from './firebase-config.js?v=20260630-073';
 import { getTenantId, watchRecords, RetailCollections } from './retail-db.js?v=20260629-031';
 
 const SALES_KEY="retail_pos_sales_v1";

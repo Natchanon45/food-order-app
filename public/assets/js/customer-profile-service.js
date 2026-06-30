@@ -1,4 +1,4 @@
-import { auth, db, doc, getDoc, setDoc, serverTimestamp } from "./firebase-config.js";
+import { auth, db, doc, getDoc, setDoc, serverTimestamp } from "./firebase-config.js?v=20260630-073";
 import { tenantDocumentPath, resolveTenantContext } from "./tenant-context.js";
 import {
   GoogleAuthProvider,

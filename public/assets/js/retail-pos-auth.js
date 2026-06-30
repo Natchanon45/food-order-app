@@ -1,5 +1,5 @@
 import { getTenantId, setTenantId } from './retail-db.js?v=20260629-032';
-import { auth, db, signInWithEmailAndPassword, signOut, collection, doc, getDoc, getDocs, query, where } from './firebase-config.js?v=20260629-032';
+import { auth, db, signInWithEmailAndPassword, signOut, collection, doc, getDoc, getDocs, query, where } from './firebase-config.js?v=20260630-073';
 
 const ROLE_KEY="retail_pos_roles_v1";
 const SESSION_KEY="retail_pos_session_v1";

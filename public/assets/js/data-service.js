@@ -1,7 +1,7 @@
 import {
   db, isFirebaseConfigured, collection, addDoc, doc, getDoc, getDocs, setDoc,
   updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, runTransaction
-} from "./firebase-config.js";
+} from "./firebase-config.js?v=20260630-073";
 import { demoStore } from "./demo-store.js";
 import { resolveShopContext, shopCollectionPath, shopDocumentPath } from "./tenant-context.js";
 

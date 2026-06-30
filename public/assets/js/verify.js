@@ -1,4 +1,4 @@
-import { db, doc, getDoc } from "./firebase-config.js";
+import { db, doc, getDoc } from "./firebase-config.js?v=20260630-073";
 import { setActiveTenant } from "./tenant-context.js";
 
 const params = new URLSearchParams(location.search);

@@ -1,6 +1,6 @@
 import "./admin-delivery-qr.js?v=20260629-046";
 import { dataService, usingDemoMode } from "./data-service.js";
-import { storage, ref, uploadBytes, getDownloadURL } from "./firebase-config.js";
+import { storage, ref, uploadBytes, getDownloadURL } from "./firebase-config.js?v=20260630-073";
 import { money, toast, DEFAULT_FOOD_IMAGE } from "./ui.js";
 import { getMenuImagePosition, setMenuImagePosition } from "./admin-image-position.js";
 

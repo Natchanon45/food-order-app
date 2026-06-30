@@ -1,4 +1,4 @@
-import { db, doc, getDoc, collection, getDocs, query, where } from "./firebase-config.js";
+import { db, doc, getDoc, collection, getDocs, query, where } from "./firebase-config.js?v=20260630-073";
 import { setActiveTenant } from "./tenant-context.js";
 
 function storefrontSlug(pathname = location.pathname) {

@@ -2,7 +2,7 @@ await import("./public-tenant-resolver.js?v=20260622-3");
 await import("./table-qr-resolver.js?v=20260622-3");
 
 import { dataService, usingDemoMode } from "./data-service.js";
-import { db, collection, onSnapshot, query, where } from "./firebase-config.js";
+import { db, collection, onSnapshot, query, where } from "./firebase-config.js?v=20260630-073";
 import { demoStore } from "./demo-store.js";
 import { shopCollectionPath, resolveShopContext } from "./tenant-context.js";
 

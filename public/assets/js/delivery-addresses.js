@@ -4,7 +4,7 @@ import {
   logoutCustomer,
   getCustomerProfile,
   saveCustomerProfile
-} from "./customer-profile-service.js";
+} from "./customer-profile-service.js?v=20260630-074";
 import { toast } from "./ui.js";
 
 const phoneInput = document.querySelector("#recipientPhone");

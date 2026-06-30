@@ -1,4 +1,4 @@
-import { auth, onAuthStateChanged } from "./firebase-config.js";
+import { auth, onAuthStateChanged } from "./firebase-config.js?v=20260630-073";
 import { getStaffSession } from "./customer-profile-service.js";
 
 const googleLoginButton = document.querySelector("#googleLoginButton");

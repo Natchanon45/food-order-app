@@ -1,5 +1,5 @@
 import { requireRole } from "./auth-service.js?v=20260630-066";
-import { db, doc, getDoc } from "./firebase-config.js";
+import { db, doc, getDoc } from "./firebase-config.js?v=20260630-073";
 
 const roles = (document.body.dataset.roles || "")
   .split(",")

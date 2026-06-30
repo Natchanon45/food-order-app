@@ -1,4 +1,4 @@
-import { auth } from './firebase-config.js?v=20260629-030';
+import { auth } from './firebase-config.js?v=20260630-073';
 import { RetailCollections, listRecords, saveRecordsStrict, watchRecords, commitTenantRecordsStrict } from './retail-db.js?v=20260629-030';
 
 const SETTINGS_KEY = "retail_pos_loyalty_settings_v1";

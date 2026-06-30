@@ -1,4 +1,4 @@
-import { app } from "./firebase-config.js";
+import { app } from "./firebase-config.js?v=20260630-073";
 import { toast } from "./ui.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-functions.js";
 

@@ -3,7 +3,7 @@ import {
   signInWithEmailAndPassword, signOut, onAuthStateChanged,
   doc, getDoc, httpsCallable,
   EmailAuthProvider, reauthenticateWithCredential, updatePassword
-} from "./firebase-config.js";
+} from "./firebase-config.js?v=20260630-073";
 import { clearActiveTenant, setActiveTenant } from "./tenant-context.js";
 
 export const ROLE_HOME = {

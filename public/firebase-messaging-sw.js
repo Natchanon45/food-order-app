@@ -3,7 +3,7 @@ importScripts("https://www.gstatic.com/firebasejs/12.0.0/firebase-messaging-comp
 
 firebase.initializeApp({
   apiKey: "AIzaSyAX4e6-nbiS9Y8tpqW8rKbMkryAwZXSmCo",
-  authDomain: "chat-45754.firebaseapp.com",
+  authDomain: "natchanon-food-order-delivery.web.app",
   projectId: "chat-45754",
   storageBucket: "chat-45754.firebasestorage.app",
   messagingSenderId: "1046915702525",

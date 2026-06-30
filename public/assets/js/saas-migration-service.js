@@ -1,6 +1,6 @@
 import {
   auth, db, collection, doc, getDocs, getDoc, setDoc, serverTimestamp
-} from "./firebase-config.js";
+} from "./firebase-config.js?v=20260630-073";
 
 const SOURCE_SHOP_ID = "default-shop";
 const TARGET_TENANT = Object.freeze({

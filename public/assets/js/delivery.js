@@ -1,5 +1,5 @@
 import { dataService, usingDemoMode } from "./data-service.js";
-import { storage, ref, uploadBytes } from "./firebase-config.js";
+import { storage, ref, uploadBytes } from "./firebase-config.js?v=20260630-073";
 import { money, toast } from "./ui.js";
 import { generatePromptPayPayload } from "./promptpay.js";
 

@@ -1,5 +1,5 @@
 import { dataService, usingDemoMode } from "./data-service.js";
-import { db, collection, doc, getDocs, setDoc, updateDoc, onSnapshot, query, orderBy, serverTimestamp } from "./firebase-config.js";
+import { db, collection, doc, getDocs, setDoc, updateDoc, onSnapshot, query, orderBy, serverTimestamp } from "./firebase-config.js?v=20260630-073";
 import { offlineStore } from "./offline-store.js";
 import { resolveShopContext, shopCollectionPath, shopDocumentPath } from "./tenant-context.js";
 

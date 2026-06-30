@@ -1,4 +1,4 @@
-import { storage, ref, uploadBytes, getDownloadURL, deleteObject } from "./firebase-config.js";
+import { storage, ref, uploadBytes, getDownloadURL, deleteObject } from "./firebase-config.js?v=20260630-073";
 import { getTenantId } from "./retail-db.js";
 
 const DB_NAME = "retail_pos_media_v1";

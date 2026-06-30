@@ -1,4 +1,4 @@
-import { auth, db, isFirebaseConfigured, collection, doc, query, orderBy, getDocs, runTransaction, serverTimestamp, onAuthStateChanged } from './firebase-config.js?v=20260629-030';
+import { auth, db, isFirebaseConfigured, collection, doc, query, orderBy, getDocs, runTransaction, serverTimestamp, onAuthStateChanged } from './firebase-config.js?v=20260630-073';
 import { getTenantId, RetailCollections, listRecords, watchRecords } from './retail-db.js?v=20260629-030';
 
 const PRODUCT_KEY = "retail_pos_products_v1";

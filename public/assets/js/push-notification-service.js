@@ -1,4 +1,4 @@
-import { app, auth, db, doc, setDoc, serverTimestamp } from "./firebase-config.js";
+import { app, auth, db, doc, setDoc, serverTimestamp } from "./firebase-config.js?v=20260630-073";
 import { getUserProfile, waitForAuth } from "./auth-service.js";
 import { resolveTenantContext } from "./tenant-context.js";
 import { toast } from "./ui.js";
