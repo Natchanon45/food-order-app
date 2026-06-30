@@ -1,5 +1,6 @@
 export const APP_VERSION = "1.6.16";
 export const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
+const ICON_VERSION = "20260630-070";
 
 export const money = (value = 0) => new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value) || 0);
 
@@ -12,7 +13,7 @@ export function toast(message, type = "success") {
   el.setAttribute("aria-live", "polite");
   el.innerHTML = `
     <span class="app-toast-icon" aria-hidden="true">
-      <svg class="app-icon"><use href="/assets/images/app-icons.svg?v=20260630-069#icon-${iconName}"></use></svg>
+      <svg class="app-icon"><use href="/assets/images/app-icons.svg?v=${ICON_VERSION}#icon-${iconName}"></use></svg>
     </span>
     <span class="app-toast-message"></span>
   `;
@@ -39,14 +40,23 @@ export function formatTime(value) {
 }
 
 function iconMarkup(name, extraClass = "") {
-  return `<svg class="app-icon ${extraClass}" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-069#icon-${name}"></use></svg>`;
+  return `<svg class="app-icon ${extraClass}" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=${ICON_VERSION}#icon-${name}"></use></svg>`;
+}
+
+function bumpExistingIconSprite(root = document) {
+  root.querySelectorAll?.('use[href*="/assets/images/app-icons.svg"], use[xlink\\:href*="/assets/images/app-icons.svg"]').forEach(use => {
+    const attrName = use.getAttribute("href") ? "href" : "xlink:href";
+    const current = use.getAttribute(attrName) || "";
+    const iconHash = current.includes("#") ? current.slice(current.indexOf("#")) : "";
+    if (iconHash) use.setAttribute(attrName, `/assets/images/app-icons.svg?v=${ICON_VERSION}${iconHash}`);
+  });
 }
 
 function mountIconStyles() {
   if (!document.querySelector('link[href^="/assets/css/icons.css"]')) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "/assets/css/icons.css?v=20260630-069";
+    link.href = `/assets/css/icons.css?v=${ICON_VERSION}`;
     document.head.appendChild(link);
   }
   if (!document.querySelector("#receiptCompactStyles")) {
@@ -86,6 +96,7 @@ function restoreSvgIconFromLibrary(node) {
 function restoreSvgIcons(root = document) {
   if (root instanceof HTMLElement) restoreSvgIconFromLibrary(root);
   root.querySelectorAll?.("i.fa-solid.app-icon, i.fa-solid.user-menu-chevron").forEach(restoreSvgIconFromLibrary);
+  bumpExistingIconSprite(root);
 }
 
 function replaceSystemEmoji() {
