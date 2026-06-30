@@ -147,9 +147,6 @@ service cloud.firestore {
           .hasOnly(['stock', 'tenantId', 'updatedAt', 'updatedAtServer']);
     }
 
-    // Retail POS users are authenticated by Firebase Auth, but older stores may
-    // not have a profile or membership document yet. Keep checkout narrowly
-    // scoped to stock-only updates and validated sale/movement payloads.
     function validPosStockUpdate(tenantId) {
       return signedIn()
         && tenantPayloadMatches(tenantId)
@@ -207,6 +204,51 @@ service cloud.firestore {
         && validStockMovement(tenantId)
         && request.resource.data.type == 'sale'
         && request.resource.data.direction == 'out';
+    }
+
+    function validPosSaleItem(tenantId) {
+      return signedIn()
+        && tenantPayloadMatches(tenantId)
+        && request.resource.data.saleId is string
+        && request.resource.data.productId is string
+        && request.resource.data.channel == 'retail-pos'
+        && request.resource.data.orderType == 'pos'
+        && request.resource.data.qty is number
+        && request.resource.data.qty > 0;
+    }
+
+    function validPosCounter(tenantId) {
+      return signedIn()
+        && tenantPayloadMatches(tenantId)
+        && request.resource.data.prefix == 'POS'
+        && request.resource.data.dateKey is string
+        && request.resource.data.current is number
+        && request.resource.data.current >= 0;
+    }
+
+    function validPosDailySummary(tenantId) {
+      return signedIn()
+        && tenantPayloadMatches(tenantId)
+        && request.resource.data.dateKey is string
+        && request.resource.data.channel == 'retail-pos'
+        && request.resource.data.totalAmount is number
+        && request.resource.data.billCount is number;
+    }
+
+    function validPosSyncQueue(tenantId) {
+      return signedIn()
+        && tenantPayloadMatches(tenantId)
+        && request.resource.data.saleId is string
+        && request.resource.data.channel == 'retail-pos'
+        && request.resource.data.orderType == 'pos'
+        && request.resource.data.syncStatus in ['pending', 'syncing', 'synced', 'failed', 'conflict'];
+    }
+
+    function validPosAuditLog(tenantId) {
+      return signedIn()
+        && tenantPayloadMatches(tenantId)
+        && request.resource.data.action is string
+        && request.resource.data.createdBy == request.auth.uid;
     }
 
     function validRetailCustomer(tenantId) {
@@ -401,10 +443,40 @@ service cloud.firestore {
         allow delete: if tenantAdminRole(tenantId) && tenantResourceMatches(tenantId);
       }
 
+      match /saleItems/{itemId} {
+        allow read: if tenantMember(tenantId);
+        allow create: if validPosSaleItem(tenantId);
+        allow update, delete: if false;
+      }
+
       match /stockMovements/{movementId} {
         allow read: if tenantMember(tenantId);
         allow create: if (retailTenantWrite(tenantId) && validStockMovement(tenantId))
           || validPosSaleMovement(tenantId);
+        allow update, delete: if false;
+      }
+
+      match /counters/{counterId} {
+        allow read: if signedIn();
+        allow create, update: if validPosCounter(tenantId);
+        allow delete: if false;
+      }
+
+      match /dailySummary/{summaryId} {
+        allow read: if tenantMember(tenantId);
+        allow create, update: if validPosDailySummary(tenantId);
+        allow delete: if false;
+      }
+
+      match /syncQueue/{queueId} {
+        allow read: if signedIn();
+        allow create, update: if validPosSyncQueue(tenantId);
+        allow delete: if false;
+      }
+
+      match /auditLogs/{auditId} {
+        allow read: if tenantAdminRole(tenantId);
+        allow create: if validPosAuditLog(tenantId);
         allow update, delete: if false;
       }
 
