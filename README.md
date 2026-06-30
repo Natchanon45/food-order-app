@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `P9-B002 Running Number`
-- Developer Panel version/build ปัจจุบัน: `0.12.8` / `2026.06.30.074`
+- Current milestone: `P9-B002.1 Firestore Rules for Running Number`
+- Developer Panel version/build ปัจจุบัน: `0.12.9` / `2026.06.30.075`
 
 ## Main Modules
 
@@ -37,6 +37,7 @@
 - แสดงสถานะบิล offline ที่ `pending`, `failed`, `syncing`, `conflict` บน header ของ POS
 - มีปุ่ม manual `Sync` สำหรับ retry บิล offline ที่ยัง sync ได้
 - เพิ่ม counter-based running number รูปแบบ `POS-YYYYMMDD-00001`
+- เพิ่ม Firestore Rules สำหรับ POS foundation collections ที่ Running Number transaction ใช้งาน
 
 ### POS Firestore Foundation
 
@@ -67,8 +68,18 @@
 - เมื่อ offline sync สำเร็จ จะออกเลขบิลจริงจาก counter ของวันที่ขาย
 - ยังคงกัน duplicate ด้วย `sales/{saleId}` และ deterministic stock movement id `${saleId}_${productId}`
 
+### Firestore Rules Fix
+
+เพิ่มใน P9-B002.1:
+
+- อนุญาต POS transaction อ่าน/เขียน `tenants/{tenantId}/counters/{counterId}` สำหรับ Running Number
+- เพิ่ม rules สำหรับ `saleItems`, `dailySummary`, `syncQueue`
+- เตรียม rules สำหรับ `auditLogs` ตาม milestone ถัดไป
+- ทุก write ยังต้องมี `tenantId` หรือ `shopId` ตรงกับ tenant path
+
 ### ยังต้องทำต่อ
 
+- Deploy Firestore Rules และ Hosting
 - ทดสอบ online sale ว่า running number เพิ่มต่อเนื่องต่อวัน
 - ทดสอบ offline sale > online sync ว่าได้เลขบิลจริงและไม่ซ้ำ
 - ทดสอบ refresh/sync ซ้ำ ว่าไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
@@ -139,6 +150,13 @@ tenants/{tenantId}
 9. sale ที่ sync แล้วต้องได้เลขจริง `POS-YYYYMMDD-xxxxx`
 10. stock ต้องลด 1 ครั้งเท่านั้น
 11. refresh แล้ว sync ซ้ำ ต้องไม่สร้างบิลซ้ำ/ไม่ลด stock ซ้ำ
+
+### Firestore Rules Smoke Test
+
+1. หลัง deploy rules แล้ว เปิด `/pos`
+2. ขายสินค้า online 1 บิล
+3. Console ต้องไม่ขึ้น `permission-denied` ที่ `counters/POS_{YYYYMMDD}`
+4. Firestore ต้องมี `sales`, `saleItems`, `stockMovements`, `dailySummary`, `syncQueue`, `counters`
 
 ### POS Tenant Safety
 
