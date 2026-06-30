@@ -16,10 +16,10 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.15`
-- Build: `2026.06.30.081`
+- Version: `0.12.16`
+- Build: `2026.06.30.082`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B005 Repository Layer`
+- Milestone: `P9-B005.1 POS Receipt Print Fix`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -37,31 +37,32 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 - P9-B004 Offline Queue Worker + Retry + Conflict Resolver เสร็จ
 - P9-B004.1 POS Menu Spacing เสร็จ
 - P9-B005 Repository Layer เสร็จเบื้องต้น
+- P9-B005.1 POS Receipt Print Fix เสร็จ
 
-## รายละเอียด P9-B005
+## รายละเอียด P9-B005.1
+
+ตรวจจากไฟล์จริงพบว่า `/pos/index.html` ยังไม่ได้โหลด `retail-pos-receipt-modal.js` ทำให้ตัวดัก localStorage sale ใหม่ไม่ทำงานหลังบันทึกขาย
 
 แก้แล้ว:
 
-- เพิ่ม `public/assets/js/retail-pos-repository.js`
-- เพิ่ม local repository helper สำหรับ sales, products, stock movements
-- เพิ่ม wrapper สำหรับ POS product/sale repository ที่ต่อกับ `retail-db.js`
-- route `retail-offline-sale-sync.js` ให้อ่าน/เขียน local sale queue ผ่าน repository
-- route `retail-pos-sync-status.js` ให้อ่าน local sale queue ผ่าน repository
-- `/pos/index.html` bump cache เป็น `retail-offline-sale-sync.js?v=20260630-081` และ `retail-pos-sync-status.js?v=20260630-081`
+- เพิ่ม script `retail-pos-receipt-modal.js?v=20260630-082` ใน `/pos/index.html`
+- โหลด receipt modal ก่อน `retail-pos.js` เพื่อให้ patch `localStorage.setItem` ทันก่อนมีการบันทึก sale
+- ปรับ receipt modal ให้เปิดใบเสร็จและเรียก same-window print หลัง sale save
+- เพิ่ม `.receipt-print-root` ให้ modal เพื่อให้ fallback print ไม่พิมพ์หน้าว่าง
+- Sync event ภายหลังจะไม่เปิดบิลเก่าซ้ำ
 
 ## Current Milestone
 
-`P9-B005 Repository Layer`
+`P9-B005.1 POS Receipt Print Fix`
 
 ## Regression Tests สำคัญ
 
 1. เปิด `/pos`
-2. ขาย offline 1 บิล แล้ว local sale ต้องเป็น `pending`
-3. sync status header ต้องอ่าน pending ผ่าน repository ได้
-4. ต่อเน็ตแล้ว worker ต้อง sync อัตโนมัติ
-5. manual Retry ต้องยังทำงาน
-6. sync สำเร็จแล้วต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
-7. local storage key เดิมต้องยังใช้ร่วมกับข้อมูลเก่าได้
+2. ขาย online 1 บิล หลังบันทึกสำเร็จต้องเปิดใบเสร็จและเรียก print dialog
+3. ขาย offline 1 บิล หลังบันทึกสำเร็จต้องเปิดใบเสร็จและเรียก print dialog
+4. print fallback ต้องไม่เป็นหน้าว่าง
+5. sync offline ภายหลังต้องไม่เปิดใบเสร็จซ้ำ
+6. sync ซ้ำต้องไม่สร้างบิลซ้ำและไม่ตัด stock ซ้ำ
 
 ## งานถัดไป
 
