@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Cashier Icons`
-- Developer Panel version/build ปัจจุบัน: `0.12.33` / `2026.07.01.015`
+- Current milestone: `Cashier Load Fix`
+- Developer Panel version/build ปัจจุบัน: `0.12.34` / `2026.07.01.016`
 
 ## Food Order Status
 
@@ -22,14 +22,15 @@
 - หน้า Cashier ปุ่ม `ตรวจแล้ว/ชำระแล้ว` ใช้ icon `check-circle`
 - เมนู User ด้านขวาบน รายการ `ออกโต๊ะ` ใช้ icon `bi-easel2`
 - ปุ่ม `เปลี่ยนโต๊ะ` ใช้ icon `bi-easel2`
+- Hotfix: แก้หน้า Cashier ค้างจาก observer loop ของ icon hotfix
 
 ## Current Milestone
 
-`Cashier Icons`
+`Cashier Load Fix`
 
 ## Regression Tests
 
-1. เปิด Cashier
+1. เปิด Cashier ต้องไม่ค้าง
 2. ปุ่ม `ตรวจแล้ว/ชำระแล้ว` ต้องใช้ `check-circle`
 3. เมนู User ด้านขวาบน รายการ `ออกโต๊ะ` ต้องใช้ `bi-easel2`
 4. ปุ่ม `เปลี่ยนโต๊ะ` ต้องใช้ `bi-easel2`
