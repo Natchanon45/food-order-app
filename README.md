@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `P9-B003 Counter`
-- Developer Panel version/build ปัจจุบัน: `0.12.49` / `2026.07.02.003`
+- Current milestone: `P9-B004 Offline Queue Worker + Retry + Conflict Resolver`
+- Developer Panel version/build ปัจจุบัน: `0.12.50` / `2026.07.02.004`
 
 ## Food Order Status
 
@@ -26,44 +26,46 @@
 - P9-B001 POS Firestore Foundation
 - P9-B002 Running Number
 - P9-B003 Counter
+- P9-B004 Offline Queue Worker + Retry + Conflict Resolver
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
-- Counter แยกตาม tenant, document type และ reset period
+- Offline Sync ใช้ Counter Service กลางจาก P9-B003
 
 ## Current Milestone
 
-`P9-B003 Counter`
+`P9-B004 Offline Queue Worker + Retry + Conflict Resolver`
 
-## Counter Service
+## Offline Queue Worker
 
-- เพิ่ม `public/assets/js/retail-pos-counter.js`
-- รองรับ `counterScope()` สำหรับหา scope ของเลขเอกสาร
-- รองรับ `counterRef()` สำหรับอ้างอิง Firestore counter
-- รองรับ `nextCounterSnapshot()` สำหรับคำนวณเลขถัดไปหลังอ่าน counter แล้ว
-- รองรับ `buildCounterCommit()` สำหรับสร้าง payload update counter
-- รองรับ `reserveRunningNumber()` สำหรับใช้ใน Firestore Transaction
-- รองรับ `pendingDocumentNumber()` สำหรับ Offline/PENDING
+- `retail-offline-sale-sync.js` ใช้ `reserveRunningNumber()` จาก `retail-pos-counter.js`
+- Offline Sale ยังใช้เลข PENDING ตอนไม่มีอินเทอร์เน็ต
+- เมื่อกลับมา Online จะ Sync อัตโนมัติและจองเลขจริงจาก Counter Service
+- Retry ใช้ backoff ตามจำนวนครั้งที่ล้มเหลว
+- Conflict แยกประเภท เช่น tenant mismatch, stock ไม่พอ, product not found, invalid qty
+- มี event `retail-offline-queue-worker` สำหรับอ่าน state ล่าสุด
+- มี helper `getOfflineQueueWorkerSnapshot()` สำหรับโมดูลถัดไปใช้แสดงสถานะ
 
 ## Regression Tests
 
-1. เปิด POS แล้วขายสินค้าออนไลน์ 1 บิล ต้องบันทึกบิลได้ตามเดิม
-2. เลขบิลออนไลน์ยังต้องเป็น `POS-YYYYMMDD-xxxxx`
-3. ขายหลายบิลวันเดียวกัน เลขต้องต่อเนื่อง ไม่ซ้ำ
-4. ปิดเน็ตแล้วขาย Offline ต้องได้เลข PENDING และยังคง Stable `saleId`
-5. เปิดเน็ตให้ Sync ต้องจองเลขจริงผ่าน counter เดิม ไม่ซ้ำกับ Online Sale
-6. ตรวจ counter document ต้องมี `documentType`, `periodKey`, `lastDocumentId`, `lastDocumentNumber`
-7. Retry sync บิลเดิมซ้ำ ต้องไม่ตัด Stock ซ้ำ
-8. ตรวจว่า record สำคัญยังมี `tenantId`
+1. เปิด POS แล้วขาย Online 1 บิล ต้องบันทึกและตัด Stock ได้ตามเดิม
+2. ปิดเน็ตแล้วขาย Offline 1 บิล ต้องบันทึกในเครื่องและแสดงเลข PENDING
+3. เปิดเน็ตแล้ว Offline Queue Worker ต้อง Sync อัตโนมัติ
+4. บิล Offline หลัง Sync ต้องได้เลขจริงจาก Counter Service เช่น `POS-YYYYMMDD-xxxxx`
+5. Retry บิลเดิมซ้ำ ต้องไม่สร้าง sale ซ้ำ และไม่ตัด Stock ซ้ำ
+6. ถ้า Stock ไม่พอหลัง Offline ต้องขึ้น `syncStatus: conflict` และ `conflictType: insufficient_stock`
+7. เรียก retry conflict ต้องกลับเป็น `pending`
+8. เรียก discard conflict ต้องเป็น `discarded`
+9. ตรวจ event `retail-offline-queue-worker` ต้องมี state ล่าสุด
+10. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## Next Tasks
 
-1. P9-B004 Offline Queue Worker + Retry + Conflict Resolver
-2. P9-B005 Repository Layer
-3. P9-B006 Firestore Composite Index
-4. P9-B007 Audit Log
-5. P9-B008 Shift Opening / Closing
-6. P9-B009 Refund / Return / Void
-7. P9-B010 Performance (Cache / Virtual List / Search)
+1. P9-B005 Repository Layer
+2. P9-B006 Firestore Composite Index
+3. P9-B007 Audit Log
+4. P9-B008 Shift Opening / Closing
+5. P9-B009 Refund / Return / Void
+6. P9-B010 Performance (Cache / Virtual List / Search)
 
 ## Deploy
 
