@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.28',
-  build: '2026.07.01.009',
+  version: '0.12.29',
+  build: '2026.07.01.010',
   branch: 'feature/retail-pos',
-  commit: 'HOTFIX-O1-T001.4',
+  commit: 'HOTFIX-O1-T001.5',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'HOTFIX Delivery Order Take Away Recovery',
-  updatedAt: '2026-07-01T11:45:00+07:00',
+  milestone: 'HOTFIX Take Away Kitchen Submit & Mobile UX',
+  updatedAt: '2026-07-01T12:45:00+07:00',
   whatsNew: [
-    'Restore getStoreSettings in data service for Delivery menu loading',
-    'Force Delivery, Table Order, and Take Away to load data-service cache v20260701-009',
-    'Keep Take Away submit on public order create without counter transaction',
-    'Keep QR display and cashier Take Away order button'
+    'Allow public tenant Take Away order create through Firestore rules',
+    'Clone table QR sticky category and mobile scrollspy behavior to Take Away',
+    'Force toast alerts to top layer above cart bars and overlays',
+    'Bump Take Away and app CSS cache versions'
   ]
 };
 
