@@ -62,7 +62,26 @@ function withShop(payload = {}) {
 }
 
 function isUnpaidTableOrder(order) {
-  return order?.orderType !== "delivery" && !["paid", "cancelled"].includes(order?.status) && order?.paymentStatus !== "paid";
+  return order?.orderType !== "delivery" && order?.orderType !== "takeaway" && !["paid", "cancelled"].includes(order?.status) && order?.paymentStatus !== "paid";
+}
+
+function dateKeyFrom(value = new Date()) {
+  const date = value instanceof Date ? value : new Date(value || Date.now());
+  return `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function takeawayCounterId(dateKey = dateKeyFrom()) {
+  return `takeaway_${dateKey}`;
+}
+
+function takeawayQueueNo(running = 0) {
+  return `TA-${String(Math.max(0, Number(running || 0))).padStart(3, "0")}`;
+}
+
+function demoTakeawayQueueNo() {
+  const dateKey = dateKeyFrom();
+  const count = demoStore.orders.list().filter(order => order.orderType === "takeaway" && String(order.dateKey || "") === dateKey).length + 1;
+  return takeawayQueueNo(count);
 }
 
 export const dataService = {
@@ -166,6 +185,45 @@ export const dataService = {
     return { id };
   },
 
+  async createTakeawayOrder(order) {
+    const customerName = String(order.customerName || "").trim();
+    const customerPhone = String(order.customerPhone || "").trim();
+    if (!customerName && !customerPhone) throw new Error("TAKEAWAY_CUSTOMER_REQUIRED");
+    const createdAtIso = new Date().toISOString();
+    const dateKey = dateKeyFrom(createdAtIso);
+    const baseOrder = {
+      ...order,
+      orderType: "takeaway",
+      tableCode: "",
+      tableToken: "",
+      tableName: "",
+      customerName,
+      customerPhone,
+      pickupStatus: "waiting",
+      paymentStatus: order.paymentStatus || "unpaid",
+      status: order.status || "pending",
+      dateKey
+    };
+
+    if (usingDemoMode) {
+      const queueNo = demoTakeawayQueueNo();
+      return demoStore.orders.add({ ...baseOrder, queueNo, createdAt: createdAtIso, updatedAt: createdAtIso });
+    }
+
+    const counterRef = shopDocument("counters", takeawayCounterId(dateKey));
+    const orderRef = doc(shopCollection("orders"));
+    let queueNo = "";
+    await runTransaction(db, async transaction => {
+      const counterSnapshot = await transaction.get(counterRef);
+      const current = Number(counterSnapshot.exists() ? counterSnapshot.data().current || 0 : 0);
+      const next = current + 1;
+      queueNo = takeawayQueueNo(next);
+      transaction.set(counterRef, withShop({ id: takeawayCounterId(dateKey), counterType: "takeaway", dateKey, current: next, lastQueueNo: queueNo, updatedAt: serverTimestamp() }), { merge: true });
+      transaction.set(orderRef, withShop({ ...baseOrder, queueNo, createdAt: serverTimestamp(), updatedAt: serverTimestamp() }));
+    });
+    return { id: orderRef.id, queueNo };
+  },
+
   async createTableOrder(order) {
     if (usingDemoMode) {
       const table = await this.getTable(order.tableCode);
@@ -258,47 +316,41 @@ export const dataService = {
     const orderRefs = orderIds.map(id => shopDocument("orders", id));
 
     await runTransaction(db, async transaction => {
-      const fromSnapshot = await transaction.get(fromTableRef);
-      const toSnapshot = await transaction.get(toTableRef);
-      const orderSnapshots = [];
-      for (const orderRef of orderRefs) orderSnapshots.push(await transaction.get(orderRef));
+      const [fromSnapshot, toSnapshot, ...orderSnapshots] = await Promise.all([
+        transaction.get(fromTableRef),
+        transaction.get(toTableRef),
+        ...orderRefs.map(ref => transaction.get(ref))
+      ]);
 
       if (!fromSnapshot.exists()) throw new Error("SOURCE_TABLE_NOT_ACTIVE");
+      const source = fromSnapshot.data();
+      if (source.status !== "occupied" || source.orderToken !== fromTableToken) throw new Error("SOURCE_TABLE_NOT_ACTIVE");
       if (!toSnapshot.exists()) throw new Error("TARGET_TABLE_NOT_AVAILABLE");
-
-      const latestFromTable = { id: fromSnapshot.id, ...fromSnapshot.data() };
-      const latestToTable = { id: toSnapshot.id, ...toSnapshot.data() };
-      if (latestFromTable.status !== "occupied" || latestFromTable.orderToken !== fromTableToken) throw new Error("SOURCE_TABLE_NOT_ACTIVE");
-      if (latestToTable.active === false || (latestToTable.status && latestToTable.status !== "available")) throw new Error("TARGET_TABLE_NOT_AVAILABLE");
+      const target = toSnapshot.data();
+      if (target.active === false || (target.status && target.status !== "available")) throw new Error("TARGET_TABLE_NOT_AVAILABLE");
 
       orderSnapshots.forEach(snapshot => {
         if (!snapshot.exists()) throw new Error("MOVE_ORDER_NOT_FOUND");
-        const order = { id: snapshot.id, ...snapshot.data() };
-        if (!isUnpaidTableOrder(order) || order.tableToken !== fromTableToken || String(order.tableCode) !== String(latestFromTable.code || latestFromTable.id)) {
+        const order = snapshot.data();
+        if (!isUnpaidTableOrder(order) || order.tableToken !== fromTableToken || String(order.tableCode) !== String(source.code || fromTableCode)) {
           throw new Error("MOVE_ORDER_NOT_UNPAID");
         }
       });
 
-      transaction.update(fromTableRef, withShop({
-        status: "available",
-        orderToken: "",
-        sessionStartedAt: null,
-        currentRound: 0,
-        updatedAt: serverTimestamp()
-      }));
+      transaction.update(fromTableRef, withShop({ status: "available", orderToken: "", sessionStartedAt: null, currentRound: 0, updatedAt: serverTimestamp() }));
       transaction.update(toTableRef, withShop({
         status: "occupied",
         orderToken: fromTableToken,
-        sessionStartedAt: latestFromTable.sessionStartedAt || movedAt,
+        sessionStartedAt: source.sessionStartedAt || movedAt,
         currentRound: maxRound,
-        movedFromTableCode: latestFromTable.code || latestFromTable.id,
+        movedFromTableCode: source.code || fromTableCode,
         movedAt,
         updatedAt: serverTimestamp()
       }));
-      orderRefs.forEach(orderRef => transaction.update(orderRef, withShop({
+      orderRefs.forEach(ref => transaction.update(ref, withShop({
         tableCode: targetCode,
         tableName: targetName,
-        movedFromTableCode: latestFromTable.code || latestFromTable.id,
+        movedFromTableCode: source.code || fromTableCode,
         tableMovedAt: movedAt,
         updatedAt: serverTimestamp()
       })));
@@ -307,62 +359,9 @@ export const dataService = {
     return { fromTable, toTable: { ...toTable, code: targetCode, name: targetName }, movedOrders: orderIds.length };
   },
 
-  async getStoreSettings() {
-    const fallback = {
-      shopName: activeShop().name || "Food Order QR",
-      shopAddress: "",
-      shopPhone: "",
-      categoryOrder: []
-    };
-    if (usingDemoMode) {
-      const saved = localStorage.getItem("food_order_store_settings");
-      return saved ? { ...fallback, ...JSON.parse(saved) } : fallback;
-    }
-    const snapshot = await getDoc(shopDocument("settings", "store"));
-    return snapshot.exists() ? { ...fallback, ...snapshot.data() } : fallback;
-  },
-
-  async saveStoreSettings(settings) {
-    if (usingDemoMode) {
-      const current = JSON.parse(localStorage.getItem("food_order_store_settings") || "{}");
-      const merged = { ...current, ...settings };
-      localStorage.setItem("food_order_store_settings", JSON.stringify(merged));
-      return merged;
-    }
-    return setDoc(shopDocument("settings", "store"), withShop({
-      ...settings,
-      updatedAt: serverTimestamp()
-    }), { merge: true });
-  },
-
-  async getDeliveryCustomer(phone) {
-    const normalizedPhone = String(phone || "").replace(/\D/g, "");
-    if (!normalizedPhone) return null;
-    const key = await phoneKey(normalizedPhone);
-    if (usingDemoMode) {
-      const saved = localStorage.getItem(`delivery_customer_${activeShop().id}_${key}`);
-      return saved ? JSON.parse(saved) : null;
-    }
-    const snapshot = await getDoc(shopDocument("deliveryCustomers", key));
-    return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
-  },
-
-  async saveDeliveryCustomer(phone, profile) {
-    const normalizedPhone = String(phone || "").replace(/\D/g, "");
-    const key = await phoneKey(normalizedPhone);
-    const payload = withShop({
-      ...profile,
-      phone: normalizedPhone,
-      addresses: (profile.addresses || []).slice(0, 5)
-    });
-    if (usingDemoMode) {
-      localStorage.setItem(`delivery_customer_${activeShop().id}_${key}`, JSON.stringify(payload));
-      return payload;
-    }
-    return setDoc(shopDocument("deliveryCustomers", key), {
-      ...payload,
-      updatedAt: serverTimestamp()
-    }, { merge: true });
+  async createDeliveryOrder(order) {
+    const id = `DELIVERY-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    return this.createOrderWithId(id, { ...order, orderType: "delivery", status: "pending" });
   },
 
   subscribeOrders(callback) {
@@ -379,7 +378,6 @@ export const dataService = {
         window.removeEventListener("demo-store-change", handler);
       };
     }
-    const ordersQuery = query(shopCollection("orders"), orderBy("createdAt", "desc"));
-    return onSnapshot(ordersQuery, snapshot => callback(mapDocs(snapshot)));
+    return onSnapshot(query(shopCollection("orders"), orderBy("createdAt", "desc")), snapshot => callback(mapDocs(snapshot)));
   }
 };
