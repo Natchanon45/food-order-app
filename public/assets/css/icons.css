@@ -1,4 +1,5 @@
 @import url("./toast-system.css?v=20260629-040");
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css");
 
 .app-icon {
   width: 1.25em;
@@ -9,6 +10,9 @@
   color: currentColor;
   pointer-events: none;
 }
+
+i.app-icon { align-items: center; justify-content: center; font-style: normal; font-size: 1.25em; line-height: 1; }
+i.app-icon::before { display: block; line-height: 1; }
 
 .btn-standard-action {
   width: auto !important;
@@ -30,6 +34,7 @@
   height: 17px !important;
   flex: 0 0 17px !important;
   margin: 0 !important;
+  font-size: 17px !important;
 }
 
 .btn-standard-action > span {
@@ -62,6 +67,7 @@
   width: 18px;
   height: 18px;
   margin: 0;
+  font-size: 18px;
 }
 
 body[data-roles="cashier"] .order-actions .btn {
@@ -129,6 +135,7 @@ body[data-roles="cashier"] .order-actions .btn span {
   height: 32px;
   margin: 0;
   flex: 0 0 32px;
+  font-size: 32px;
 }
 
 .nav-card span { display: inline !important; margin: 0 !important; font-size: inherit !important; }
@@ -175,6 +182,7 @@ body[data-roles="cashier"] .order-actions .btn span {
 }
 .user-menu-avatar { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: #e8f3ec; color: var(--green-dark); }
 .user-menu-avatar .app-icon { width: 18px; height: 18px; }
+.user-menu-avatar i.app-icon { font-size: 18px; }
 .user-menu-trigger .user-menu-chevron { width: 16px; height: 16px; transition: transform .18s ease; }
 .user-menu.open .user-menu-chevron { transform: rotate(180deg); }
 .user-menu-panel { position: absolute; top: calc(100% + 8px); right: 0; z-index: 80; min-width: 230px; padding: 8px; border: 1px solid var(--line); border-radius: 16px; background: #fff; box-shadow: 0 18px 45px rgba(16,35,23,.16); }
@@ -206,6 +214,8 @@ body[data-roles="cashier"] .order-actions .btn span {
 .user-menu-action.danger { color: var(--danger); }
 .user-menu-action .app-icon,
 .user-menu-link .app-icon { width: 20px; height: 20px; }
+.user-menu-action i.app-icon,
+.user-menu-link i.app-icon { font-size: 20px; }
 .user-menu-link span,
 .user-menu-action span { display: inline !important; }
 

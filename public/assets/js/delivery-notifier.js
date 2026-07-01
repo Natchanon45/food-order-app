@@ -1,4 +1,4 @@
-import { money, toast } from "./ui.js";
+import { money, toast } from "./ui.js?v=20260701-001";
 import {
   registerPushNotifications,
   restorePushNotifications,
@@ -84,12 +84,7 @@ function showDesktopNotification(order, count) {
 }
 
 function bellIcon(enabled) {
-  return `
-    <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
-      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" fill="none" stroke="#159447" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M10 21h4" fill="none" stroke="#159447" stroke-width="2" stroke-linecap="round"/>
-      ${enabled ? "" : '<path d="M4 4l16 16" fill="none" stroke="#9aa39d" stroke-width="2.2" stroke-linecap="round"/>'}
-    </svg>`;
+  return `<i class="bi bi-${enabled ? "bell-fill" : "bell-slash"} app-icon" aria-hidden="true"></i>`;
 }
 
 function updateButton(button) {

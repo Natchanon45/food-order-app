@@ -4,7 +4,7 @@ function read(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{retur
 function esc(v){return String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"})[c])}
 if(grid){
   const dialog=document.createElement("dialog");
-  dialog.innerHTML=`<div class="loyalty-history-dialog"><div class="dialog-head"><h2 id="loyaltyHistoryTitle">ประวัติแต้ม</h2><button id="closeLoyaltyHistory" class="icon-btn" type="button">×</button></div><div id="loyaltyHistoryList" class="loyalty-history-list"></div></div>`;
+  dialog.innerHTML=`<div class="loyalty-history-dialog"><div class="dialog-head"><h2 id="loyaltyHistoryTitle">ประวัติแต้ม</h2><button id="closeLoyaltyHistory" class="icon-btn" type="button"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div><div id="loyaltyHistoryList" class="loyalty-history-list"></div></div>`;
   document.body.appendChild(dialog);
 
   function decorate(){

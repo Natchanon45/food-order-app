@@ -24,7 +24,7 @@
 .category-card small{display:block;color:#64748b;font-size:12px;line-height:1.4}
 .category-card.has-ready small{color:#0b6b3d;font-weight:700}
 .category-icon{width:44px;height:44px;min-width:44px;border-radius:16px;background:#eef8f1;color:#0b6b3d;display:grid;place-items:center}
-.category-icon svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.category-icon .bi{font-size:24px;line-height:1}
 .catalog-panel{background:#fff;border:1px solid #dbe7df;border-radius:26px;padding:20px;margin-top:18px;box-shadow:0 8px 24px rgba(30,60,45,.06)}
 .panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
 .panel-head h2{margin:0;font-size:20px}

@@ -13,7 +13,7 @@ document.head.appendChild(styleLink);
 document.body.insertAdjacentHTML("beforeend", `
   <dialog id="paymentCompleteDialog" class="complete-dialog">
     <div class="complete-content">
-      <div class="complete-icon">✓</div>
+      <div class="complete-icon"><i class="bi bi-check-circle" aria-hidden="true"></i></div>
       <h2 class="complete-title">รับชำระเงินสำเร็จ</h2>
       <p id="completeSaleId" class="complete-sale-id">-</p>
       <div class="complete-money">

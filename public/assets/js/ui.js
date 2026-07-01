@@ -1,6 +1,7 @@
+import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
+
 export const APP_VERSION = "1.6.16";
 export const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
-const ICON_VERSION = "20260630-082";
 
 export const money = (value = 0) => new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value) || 0);
 
@@ -13,7 +14,7 @@ export function toast(message, type = "success") {
   el.setAttribute("aria-live", "polite");
   el.innerHTML = `
     <span class="app-toast-icon" aria-hidden="true">
-      <svg class="app-icon"><use href="/assets/images/app-icons.svg?v=${ICON_VERSION}#icon-${iconName}"></use></svg>
+      ${iconMarkup(iconName)}
     </span>
     <span class="app-toast-message"></span>
   `;
@@ -39,24 +40,11 @@ export function formatTime(value) {
   return date.toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" });
 }
 
-function iconMarkup(name, extraClass = "") {
-  return `<svg class="app-icon ${extraClass}" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=${ICON_VERSION}#icon-${name}"></use></svg>`;
-}
-
-function bumpExistingIconSprite(root = document) {
-  root.querySelectorAll?.('use[href*="/assets/images/app-icons.svg"], use[xlink\\:href*="/assets/images/app-icons.svg"]').forEach(use => {
-    const attrName = use.getAttribute("href") ? "href" : "xlink:href";
-    const current = use.getAttribute(attrName) || "";
-    const iconHash = current.includes("#") ? current.slice(current.indexOf("#")) : "";
-    if (iconHash) use.setAttribute(attrName, `/assets/images/app-icons.svg?v=${ICON_VERSION}${iconHash}`);
-  });
-}
-
 function mountIconStyles() {
   if (!document.querySelector('link[href^="/assets/css/icons.css"]')) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = `/assets/css/icons.css?v=${ICON_VERSION}`;
+    link.href = "/assets/css/icons.css?v=20260701-001";
     document.head.appendChild(link);
   }
   if (!document.querySelector("#receiptCompactStyles")) {
@@ -65,67 +53,6 @@ function mountIconStyles() {
     style.textContent = ".receipt-item-name{max-width:42mm;font-size:.82em;line-height:1.05;vertical-align:top}.receipt-item-line{display:flex;align-items:flex-end;gap:3px;min-width:0}.receipt-item-text{min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}.receipt-item-qty{flex:0 0 auto;white-space:nowrap;font-weight:600}.receipt-item-note{font-size:.78em;color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}";
     document.head.appendChild(style);
   }
-}
-
-const LIBRARY_ICON_MAP = [
-  ["fa-house", "home"],
-  ["fa-table", "table"],
-  ["fa-sliders", "settings"],
-  ["fa-users", "users"],
-  ["fa-key", "key"],
-  ["fa-user", "user"],
-  ["fa-chevron-down", "chevron-down"],
-  ["fa-arrow-right-from-bracket", "logout"],
-  ["fa-bell-concierge", "kitchen"],
-  ["fa-receipt", "receipt"],
-  ["fa-right-left", "settings"]
-];
-
-function restoreSvgIconFromLibrary(node) {
-  if (!(node instanceof HTMLElement)) return;
-  if (!node.matches("i.fa-solid.app-icon, i.fa-solid.user-menu-chevron")) return;
-  const found = LIBRARY_ICON_MAP.find(([className]) => node.classList.contains(className));
-  if (!found) return;
-  const [, iconName] = found;
-  const className = node.classList.contains("user-menu-chevron") ? "app-icon user-menu-chevron" : "app-icon";
-  const wrapper = document.createElement("span");
-  wrapper.innerHTML = iconMarkup(iconName, className.replace("app-icon", "").trim());
-  node.replaceWith(wrapper.firstElementChild);
-}
-
-function restoreSvgIcons(root = document) {
-  if (root instanceof HTMLElement) restoreSvgIconFromLibrary(root);
-  root.querySelectorAll?.("i.fa-solid.app-icon, i.fa-solid.user-menu-chevron").forEach(restoreSvgIconFromLibrary);
-  bumpExistingIconSprite(root);
-}
-
-function replaceSystemEmoji() {
-  const replacements = new Map([["🛵", "delivery"], ["👨‍🍳", "kitchen"], ["🧾", "receipt"], ["⚙️", "settings"], ["👥", "users"]]);
-  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-  const nodes = [];
-  while (walker.nextNode()) nodes.push(walker.currentNode);
-  nodes.forEach(node => {
-    if (node.parentElement?.closest("script, style, textarea, input")) return;
-    let text = node.nodeValue || "";
-    const found = [...replacements.keys()].find(emoji => text.includes(emoji));
-    if (!found) return;
-    const fragment = document.createDocumentFragment();
-    while (text) {
-      let nearestIndex = -1;
-      let nearestEmoji = "";
-      for (const emoji of replacements.keys()) {
-        const index = text.indexOf(emoji);
-        if (index >= 0 && (nearestIndex < 0 || index < nearestIndex)) { nearestIndex = index; nearestEmoji = emoji; }
-      }
-      if (nearestIndex < 0) { fragment.append(document.createTextNode(text)); break; }
-      if (nearestIndex > 0) fragment.append(document.createTextNode(text.slice(0, nearestIndex)));
-      const wrapper = document.createElement("span");
-      wrapper.innerHTML = iconMarkup(replacements.get(nearestEmoji));
-      fragment.append(wrapper.firstElementChild);
-      text = text.slice(nearestIndex + nearestEmoji.length);
-    }
-    node.replaceWith(fragment);
-  });
 }
 
 const STANDARD_ACTIONS = [
@@ -268,19 +195,15 @@ function mountVersion() {
 
 function initializeUi() {
   mountIconStyles();
-  restoreSvgIcons();
-  replaceSystemEmoji();
   decorateButtons();
   decorateCartHeadings();
   mountDeliveryAddToast();
   new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(node => {
     if (node.nodeType === Node.ELEMENT_NODE) {
-      restoreSvgIcons(node);
       decorateButtons(node);
       if (node.parentElement?.matches("button, a.btn")) decorateButton(node.parentElement);
       decorateCartHeadings(node);
     } else if (node.parentElement) {
-      restoreSvgIcons(node.parentElement);
       decorateButton(node.parentElement.closest?.("button, a.btn"));
       decorateCartHeading(node.parentElement.closest?.(".section-title h2"));
     }

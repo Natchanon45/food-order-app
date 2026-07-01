@@ -1,5 +1,7 @@
+import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
+
 function icon(name) {
-  return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260621-2#icon-${name}"></use></svg>`;
+  return iconMarkup(name);
 }
 
 function fixCancelEditButton() {

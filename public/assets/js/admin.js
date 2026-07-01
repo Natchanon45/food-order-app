@@ -1,7 +1,7 @@
 import "./admin-delivery-qr.js?v=20260629-046";
 import { dataService, usingDemoMode } from "./data-service.js";
 import { storage, ref, uploadBytes, getDownloadURL } from "./firebase-config.js?v=20260630-073";
-import { money, toast, DEFAULT_FOOD_IMAGE } from "./ui.js";
+import { money, toast, DEFAULT_FOOD_IMAGE } from "./ui.js?v=20260701-001";
 import { getMenuImagePosition, setMenuImagePosition } from "./admin-image-position.js";
 
 if (usingDemoMode) document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง: ข้อมูลอยู่ในเบราว์เซอร์นี้</div>';

@@ -1,6 +1,6 @@
 import { dataService, usingDemoMode } from "./data-service.js";
 import { storage, ref, uploadBytes } from "./firebase-config.js?v=20260630-073";
-import { money, toast } from "./ui.js";
+import { money, toast } from "./ui.js?v=20260701-001";
 import { generatePromptPayPayload } from "./promptpay.js";
 
 if (usingDemoMode) document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง</div>';

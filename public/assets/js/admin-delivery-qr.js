@@ -1,12 +1,13 @@
 import { dataService } from "./data-service.js";
-import { toast } from "./ui.js";
+import { toast } from "./ui.js?v=20260701-001";
+import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 
 function icon(name) {
-  return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260621-2#icon-${name}"></use></svg>`;
+  return iconMarkup(name);
 }
 
 function downloadIcon() {
-  return `<svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>`;
+  return iconMarkup("download");
 }
 
 function mountQrSection() {

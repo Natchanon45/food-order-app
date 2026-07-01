@@ -35,7 +35,7 @@ function syncCustomers(rows = []) {
 if (paymentForm && method && !document.querySelector("#saleCustomerSearch")) {
   const wrap = document.createElement("div");
   wrap.className = "customer-picker";
-  wrap.innerHTML = `<span>สมาชิก / ลูกค้า (ไม่บังคับ)</span><div class="customer-search-wrap"><input id="saleCustomerSearch" class="customer-search-input" autocomplete="off" placeholder="ค้นหารหัสสมาชิก ชื่อ หรือเบอร์โทร"><button id="clearSaleCustomer" class="customer-clear-btn" type="button" aria-label="ล้างลูกค้า">×</button><div id="saleCustomerResults" class="customer-search-results" hidden></div></div><small id="saleCustomerSelectedNote" class="customer-selected-note">ลูกค้าทั่วไป / ไม่ระบุ</small>`;
+  wrap.innerHTML = `<span>สมาชิก / ลูกค้า (ไม่บังคับ)</span><div class="customer-search-wrap"><input id="saleCustomerSearch" class="customer-search-input" autocomplete="off" placeholder="ค้นหารหัสสมาชิก ชื่อ หรือเบอร์โทร"><button id="clearSaleCustomer" class="customer-clear-btn" type="button" aria-label="ล้างลูกค้า"><i class="bi bi-x-lg" aria-hidden="true"></i></button><div id="saleCustomerResults" class="customer-search-results" hidden></div></div><small id="saleCustomerSelectedNote" class="customer-selected-note">ลูกค้าทั่วไป / ไม่ระบุ</small>`;
   method.closest("label")?.insertAdjacentElement("beforebegin", wrap);
 }
 

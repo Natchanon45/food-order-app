@@ -1,5 +1,5 @@
 import { dataService, usingDemoMode } from "./data-service.js";
-import { money, formatTime } from "./ui.js";
+import { money, formatTime } from "./ui.js?v=20260701-001";
 
 if (usingDemoMode) document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner no-print">โหมดตัวอย่าง</div>';
 

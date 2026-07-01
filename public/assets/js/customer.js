@@ -1,7 +1,7 @@
 import "./sweet-dialog.js?v=20260629-048";
 import { dataService, usingDemoMode } from "./data-service.js";
 import { ensureTenantContext } from "./tenant-context.js";
-import { money, toast, getTableCode, formatTime } from "./ui.js";
+import { money, toast, getTableCode, formatTime } from "./ui.js?v=20260701-001";
 
 if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
   const link = document.createElement("link");

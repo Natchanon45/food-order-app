@@ -1,20 +1,7 @@
 import { RetailCollections, saveRecordsStrict, listRecords } from './retail-db.js?v=20260628-7';
 import { buildRetailMasterCatalogThailand, validateRetailMasterCatalogThailand } from './rmct.js?v=20260628-7';
 
-const categorySvg = [
-  '<svg viewBox="0 0 24 24"><path d="M12 3c3 4 5 7 5 10a5 5 0 0 1-10 0c0-3 2-6 5-10z"/></svg>',
-  '<svg viewBox="0 0 24 24"><path d="M8 4h8l-1 16H9L8 4z"/><path d="M7 8h10"/></svg>',
-  '<svg viewBox="0 0 24 24"><path d="M6 9h10v5a5 5 0 0 1-10 0V9z"/><path d="M16 10h2a2 2 0 0 1 0 4h-2"/></svg>',
-  '<svg viewBox="0 0 24 24"><path d="M7 8h10v7a5 5 0 0 1-10 0V8z"/><path d="M6 19h12"/></svg>',
-  '<svg viewBox="0 0 24 24"><path d="M13 2 5 13h6l-1 9 9-13h-6l0-7z"/></svg>',
-  '<svg viewBox="0 0 24 24"><path d="M8 3h8l1 4v13H7V7l1-4z"/><path d="M8 8h8"/></svg>',
-  '<svg viewBox="0 0 24 24"><path d="M5 7h14v10H5z"/><path d="M8 7v10M16 7v10"/></svg>',
-  '<svg viewBox="0 0 24 24"><path d="M5 8h14l-2 11H7L5 8z"/><path d="M8 5h8"/></svg>',
-  '<svg viewBox="0 0 24 24"><path d="M7 8h10v8H7z"/><path d="M3 12h4M17 12h4"/></svg>',
-  '<svg viewBox="0 0 24 24"><path d="M8 5h8v4H8z"/><path d="M7 9h10v11H7z"/></svg>',
-  '<svg viewBox="0 0 24 24"><path d="M6 10h12v9H6z"/><path d="M9 6h6v4H9z"/></svg>',
-  '<svg viewBox="0 0 24 24"><path d="M8 4h8v16H8z"/><path d="M10 8h4M10 12h4"/></svg>'
-];
+const categoryIcons = ["droplet", "cup-straw", "cup-hot", "cup", "lightning-charge", "box-seam", "grid-3x3-gap", "basket", "bag", "archive", "box2", "bookshelf"];
 
 const els = {
   totalProducts: document.querySelector('#totalProducts'),
@@ -70,7 +57,7 @@ function renderCategories() {
   els.categoryGrid.innerHTML = categorySummary(catalog.products).map((item, index) => `
     <label class="category-card ${item.published ? 'has-ready' : ''}">
       <input type="checkbox" data-category-id="${escapeHtml(item.id)}" ${selectedCategoryIds.has(item.id) ? 'checked' : ''}>
-      <span class="category-icon" aria-hidden="true">${categorySvg[index % categorySvg.length]}</span>
+      <span class="category-icon" aria-hidden="true"><i class="bi bi-${categoryIcons[index % categoryIcons.length]}"></i></span>
       <span>
         <strong>${escapeHtml(item.name)}</strong>
         <small>${item.count.toLocaleString('th-TH')} รายการ • พร้อมนำเข้า ${item.published.toLocaleString('th-TH')}</small>

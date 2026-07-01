@@ -128,9 +128,9 @@ dialog::backdrop { background: #0f172a99; }
 dialog .dialog-actions { position: sticky; bottom: 0; z-index: 2; margin: 16px -22px -22px; padding: 14px 22px 18px; border-top: 1px solid var(--line); background: #fff; border-radius: 0 0 var(--dialog-radius) var(--dialog-radius); }
 .dialog-actions .btn { min-height: var(--control-height); }
 .toast { position: fixed; left: 50%; top: 68vh; bottom: auto; transform: translate(-50%, calc(-50% + 20px)); opacity: 0; z-index: 2147483647; width: min(560px, calc(100% - 24px)); min-height: 54px; display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--black); color: #fff; padding: 12px 18px; border: 0; border-radius: 14px; outline: 0; text-align: center; box-shadow: 0 14px 36px rgba(0,0,0,.28); transition: .2s ease; pointer-events: none; overflow: hidden; font-weight: 400; }
-.toast::before { content: "✓"; flex: 0 0 auto; width: 24px; height: 24px; display: grid; place-items: center; border: 0; border-radius: 0; color: #22c55e; font-weight: 400; font-size: 14px; line-height: 1; }
+.toast::before { content: "\f26b"; flex: 0 0 auto; width: 24px; height: 24px; display: grid; place-items: center; border: 0; border-radius: 0; color: #22c55e; font-family: "bootstrap-icons"; font-weight: 400; font-size: 20px; line-height: 1; }
 .toast.error,.toast.is-error { background: var(--danger); }
-.toast.error::before,.toast.is-error::before { content: "×"; color: #fff; font-size: 18px; }
+.toast.error::before,.toast.is-error::before { content: "\f623"; color: #fff; font-size: 20px; }
 .toast.show { opacity: 1; transform: translate(-50%, -50%); }
 .receipt { font-family: var(--print-font); }
 @media (min-width: 1200px) {
@@ -196,3 +196,4 @@ dialog .dialog-actions { position: sticky; bottom: 0; z-index: 2; margin: 16px -
   .header-actions .btn { min-height: 34px; padding: 7px 9px; font-size: .8rem; }
   .section-heading .btn { padding: 8px 9px; font-size: .82rem; }
 }
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css");

@@ -1,6 +1,7 @@
 import { app } from "./firebase-config.js?v=20260630-073";
-import { toast } from "./ui.js";
+import { toast } from "./ui.js?v=20260701-001";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-functions.js";
+import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 
 const functions = getFunctions(app, "asia-southeast1");
 const listTenants = httpsCallable(functions, "listTenants");
@@ -9,7 +10,7 @@ const tenantList = document.querySelector("#tenantList");
 let tenants = [];
 
 function icon(name) {
-  return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260621-2#icon-${name}"></use></svg>`;
+  return iconMarkup(name);
 }
 
 function escapeHtml(value = "") {

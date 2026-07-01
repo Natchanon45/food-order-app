@@ -1,5 +1,5 @@
 import { dataService } from "./data-service.js";
-import { money, formatTime } from "./ui.js";
+import { money, formatTime } from "./ui.js?v=20260701-001";
 
 const params = new URLSearchParams(location.search);
 const ids = (params.get("orders") || "").split(",").map(v => v.trim()).filter(Boolean);

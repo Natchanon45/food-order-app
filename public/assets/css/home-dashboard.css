@@ -80,6 +80,7 @@ body.staff-home .nav-card-icon {
 }
 
 body.staff-home .nav-card-icon .app-icon { width: 47px; height: 47px; flex-basis: 47px; }
+body.staff-home .nav-card-icon i.app-icon { font-size: 42px; }
 body.staff-home .nav-card-label { display: block !important; margin: 0 !important; }
 
 body.staff-home .user-menu-trigger {
@@ -92,6 +93,7 @@ body.staff-home .user-menu-trigger {
 
 body.staff-home .user-menu-avatar { width: 40px; height: 40px; }
 body.staff-home .user-menu-avatar .app-icon { width: 23px; height: 23px; }
+body.staff-home .user-menu-avatar i.app-icon { font-size: 23px; }
 body.staff-home .user-menu-panel {
   min-width: 308px;
   padding: 10px;
@@ -105,6 +107,8 @@ body.staff-home .user-menu-link,
 body.staff-home .user-menu-action { min-height: 54px !important; padding: 13px 15px !important; font-size: 16px; }
 body.staff-home .user-menu-link .app-icon,
 body.staff-home .user-menu-action .app-icon { width: 23px; height: 23px; }
+body.staff-home .user-menu-link i.app-icon,
+body.staff-home .user-menu-action i.app-icon { font-size: 23px; }
 body.staff-home .user-menu-action.danger { margin-top: 7px; padding-top: 17px !important; border-top: 1px solid var(--line) !important; border-radius: 0 0 12px 12px !important; }
 body.staff-home .app-version { margin-top: auto; padding-bottom: 34px; font-size: 13px; }
 
@@ -136,6 +140,7 @@ body.staff-home .app-version { margin-top: auto; padding-bottom: 34px; font-size
   body.staff-home .user-menu-trigger .user-menu-chevron { display: none !important; }
   body.staff-home .user-menu-avatar { width: 30px; height: 30px; }
   body.staff-home .user-menu-avatar .app-icon { width: 19px; height: 19px; }
+  body.staff-home .user-menu-avatar i.app-icon { font-size: 19px; }
   body.staff-home .user-menu-panel {
     position: absolute;
     top: calc(100% + 8px);
@@ -152,6 +157,8 @@ body.staff-home .app-version { margin-top: auto; padding-bottom: 34px; font-size
   body.staff-home .user-menu-action { min-height: 40px !important; padding: 8px 9px !important; gap: 8px !important; font-size: 12px; }
   body.staff-home .user-menu-link .app-icon,
   body.staff-home .user-menu-action .app-icon { width: 16px; height: 16px; }
+  body.staff-home .user-menu-link i.app-icon,
+  body.staff-home .user-menu-action i.app-icon { font-size: 16px; }
   body.staff-home #staffDashboard { padding: 20px 14px 62px; }
   body.staff-home .staff-hero { width: 100%; min-height: 120px; padding: 22px 20px; margin-bottom: 18px; border-radius: 18px; }
   body.staff-home .staff-hero h1 { font-size: 28px; }

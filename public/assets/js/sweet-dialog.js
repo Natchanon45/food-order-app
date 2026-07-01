@@ -11,13 +11,18 @@ function ensureDialog() {
   root = document.createElement('div');
   root.id = 'sweetDialogRoot';
   root.className = 'sweet-dialog-backdrop';
-  root.innerHTML = `<div class="sweet-dialog" role="dialog" aria-modal="true" aria-labelledby="sweetDialogTitle" aria-describedby="sweetDialogMessage"><div id="sweetDialogIcon" class="sweet-dialog-icon">✓</div><h2 id="sweetDialogTitle" class="sweet-dialog-title">แจ้งเตือน</h2><p id="sweetDialogMessage" class="sweet-dialog-message"></p><div id="sweetDialogActions" class="sweet-dialog-actions"><button id="sweetDialogCancel" class="sweet-dialog-button sweet-dialog-cancel" type="button">ยกเลิก</button><button id="sweetDialogConfirm" class="sweet-dialog-button sweet-dialog-confirm" type="button">ตกลง</button></div></div>`;
+  root.innerHTML = `<div class="sweet-dialog" role="dialog" aria-modal="true" aria-labelledby="sweetDialogTitle" aria-describedby="sweetDialogMessage"><div id="sweetDialogIcon" class="sweet-dialog-icon"><i class="bi bi-check-circle" aria-hidden="true"></i></div><h2 id="sweetDialogTitle" class="sweet-dialog-title">แจ้งเตือน</h2><p id="sweetDialogMessage" class="sweet-dialog-message"></p><div id="sweetDialogActions" class="sweet-dialog-actions"><button id="sweetDialogCancel" class="sweet-dialog-button sweet-dialog-cancel" type="button">ยกเลิก</button><button id="sweetDialogConfirm" class="sweet-dialog-button sweet-dialog-confirm" type="button">ตกลง</button></div></div>`;
   document.body.appendChild(root);
   root.querySelector('#sweetDialogConfirm').addEventListener('click', () => closeDialog(true));
   root.querySelector('#sweetDialogCancel').addEventListener('click', () => closeDialog(false));
   root.addEventListener('click', event => { if (event.target === root) closeDialog(false); });
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && root.classList.contains('show')) closeDialog(false); });
   return root;
+}
+
+function setDialogIcon(icon, type = "success") {
+  const iconName = type === "warning" ? "exclamation-triangle" : type === "error" ? "x-circle" : "check-circle";
+  icon.innerHTML = `<i class="bi bi-${iconName}" aria-hidden="true"></i>`;
 }
 
 function closeDialog(value) {
@@ -39,8 +44,8 @@ export async function sweetAlert(message, options = {}) {
   const confirm = root.querySelector('#sweetDialogConfirm');
   title.textContent = options.title || 'แจ้งเตือน';
   msg.textContent = String(message ?? '');
-  icon.textContent = options.iconText || '✓';
   icon.className = `sweet-dialog-icon ${options.type || ''}`.trim();
+  setDialogIcon(icon, options.type || 'success');
   confirm.textContent = options.confirmText || 'ตกลง';
   cancel.hidden = true;
   actions.classList.remove('has-cancel');
@@ -60,8 +65,8 @@ export async function sweetConfirm(message, options = {}) {
   const confirm = root.querySelector('#sweetDialogConfirm');
   title.textContent = options.title || 'ยืนยันการทำรายการ';
   msg.textContent = String(message ?? '');
-  icon.textContent = options.iconText || '!';
   icon.className = `sweet-dialog-icon ${options.type || 'warning'}`.trim();
+  setDialogIcon(icon, options.type || 'warning');
   confirm.textContent = options.confirmText || 'ยืนยัน';
   cancel.textContent = options.cancelText || 'ยกเลิก';
   cancel.hidden = false;

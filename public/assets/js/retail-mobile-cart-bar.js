@@ -15,7 +15,7 @@ function ensureMobileCartStyle() {
   .mobile-cart-bar{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:9998;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;min-height:56px;padding:9px 12px;border:0;border-radius:18px;background:linear-gradient(135deg,#151515,#0d6f34);color:#fff;box-shadow:0 18px 42px rgba(15,23,42,.28);text-align:left;cursor:pointer}
   .mobile-cart-bar[hidden]{display:none!important}
   .mobile-cart-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,.13)}
-  .mobile-cart-icon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+  .mobile-cart-icon .bi{font-size:22px;line-height:1}
   .mobile-cart-main{min-width:0;display:grid;gap:2px}
   .mobile-cart-title{font-size:.76rem;font-weight:700;opacity:.84;line-height:1.1}
   .mobile-cart-meta{font-size:.98rem;font-weight:800;line-height:1.12;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -60,7 +60,7 @@ function createBar() {
   bar.className = 'mobile-cart-bar';
   bar.dataset.mobileCartBar = 'true';
   bar.innerHTML = `
-    <span class="mobile-cart-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 8.5a2 2 0 0 1-2 1.5H9a2 2 0 0 1-2-1.6L5 3H2"></path><circle cx="9" cy="20" r="1.5"></circle><circle cx="18" cy="20" r="1.5"></circle></svg></span>
+    <span class="mobile-cart-icon" aria-hidden="true"><i class="bi bi-cart3"></i></span>
     <span class="mobile-cart-main"><span class="mobile-cart-title">ตะกร้าขาย</span><span class="mobile-cart-meta" data-mobile-cart-meta>0 รายการ • 0.00 บาท</span></span>
     <span class="mobile-cart-pay" data-mobile-cart-action-label>ดูบิล</span>`;
   bar.addEventListener('click', handleBarClick);
@@ -84,7 +84,7 @@ function createDrawer() {
     <div class="mobile-cart-handle" data-mobile-cart-close></div>
     <header class="mobile-cart-drawer-head">
       <div><h3>รายการขาย</h3><small data-mobile-cart-drawer-meta>0 รายการ</small></div>
-      <button type="button" class="mobile-cart-close" data-mobile-cart-close aria-label="ปิด">×</button>
+      <button type="button" class="mobile-cart-close" data-mobile-cart-close aria-label="ปิด"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
     </header>
     <div class="mobile-cart-items" data-mobile-cart-items></div>
     <footer class="mobile-cart-footer">

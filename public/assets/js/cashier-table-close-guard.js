@@ -1,6 +1,6 @@
 import './sweet-dialog.js?v=20260629-048';
 import { dataService } from './data-service.js';
-import { toast } from './ui.js';
+import { toast } from './ui.js?v=20260701-001';
 import { db, isFirebaseConfigured, collection, getDocs } from './firebase-config.js?v=20260630-073';
 import { shopCollectionPath } from './tenant-context.js';
 

@@ -1,9 +1,10 @@
-const ICONS = "/assets/images/app-icons.svg?v=20260623-2";
+import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
+
 const STORAGE_KEY = "admin_collapsed_cards_v1";
 const MODAL_TRANSITION_MS = 220;
 
 function icon(name) {
-  return `<svg class="app-icon" aria-hidden="true"><use href="${ICONS}#icon-${name}"></use></svg>`;
+  return iconMarkup(name);
 }
 
 function headingText(card) {

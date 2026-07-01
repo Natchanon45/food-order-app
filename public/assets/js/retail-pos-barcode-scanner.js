@@ -7,7 +7,7 @@ let detector=null;
 let zxingReader=null;
 let zxingControls=null;
 
-const BARCODE_ICON='<svg class="scan-barcode-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5v14"></path><path d="M7 5v14"></path><path d="M10 5v14"></path><path d="M14 5v14"></path><path d="M17 5v14"></path><path d="M21 5v14"></path></svg>';
+const BARCODE_ICON='<i class="bi bi-upc-scan scan-barcode-icon" aria-hidden="true"></i>';
 
 function showScanToast(message,type='success'){
   if(!toast)return;
@@ -40,7 +40,7 @@ function addStyles(){
   style.textContent=`
   .scan-barcode-btn{min-height:54px;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;background:#000!important;color:#fff!important;border-radius:14px!important;box-shadow:0 8px 18px rgba(0,0,0,.18)}
   .scan-barcode-btn:hover{background:#111!important}
-  .scan-barcode-icon{width:24px;height:24px;display:block;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
+  .scan-barcode-icon{width:24px;height:24px;display:grid;place-items:center;font-size:24px;line-height:1}
   .pos-scan-dialog{width:min(520px,calc(100% - 18px));border:0;border-radius:18px;padding:0;overflow:hidden;background:#111;color:#fff;box-shadow:0 22px 70px rgba(0,0,0,.45)}
   .pos-scan-dialog::backdrop{background:rgba(15,23,42,.76)}
   .pos-scan-sheet{display:grid;gap:12px;padding:14px}
@@ -63,7 +63,7 @@ function ensureDialog(){
   dialog=document.createElement('dialog');
   dialog.id='posScanDialog';
   dialog.className='pos-scan-dialog';
-  dialog.innerHTML=`<div class="pos-scan-sheet"><div class="pos-scan-head"><div><h2>สแกนบาร์โค้ด</h2><p>วางบาร์โค้ดให้อยู่ในกรอบสีเขียว</p></div><button class="pos-scan-close" type="button" aria-label="ปิด">×</button></div><div class="pos-scan-view"><video id="posScanVideo" playsinline muted></video><div class="pos-scan-guide"></div><div class="pos-scan-line"></div></div><p id="posScanStatus" class="pos-scan-status">กำลังเตรียมกล้อง...</p></div>`;
+  dialog.innerHTML=`<div class="pos-scan-sheet"><div class="pos-scan-head"><div><h2>สแกนบาร์โค้ด</h2><p>วางบาร์โค้ดให้อยู่ในกรอบสีเขียว</p></div><button class="pos-scan-close" type="button" aria-label="ปิด"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div><div class="pos-scan-view"><video id="posScanVideo" playsinline muted></video><div class="pos-scan-guide"></div><div class="pos-scan-line"></div></div><p id="posScanStatus" class="pos-scan-status">กำลังเตรียมกล้อง...</p></div>`;
   document.body.appendChild(dialog);
   dialog.querySelector('.pos-scan-close').addEventListener('click',stopScanner);
   dialog.addEventListener('close',stopScanner);

@@ -5,6 +5,7 @@ import {
   EmailAuthProvider, reauthenticateWithCredential, updatePassword
 } from "./firebase-config.js?v=20260630-073";
 import { clearActiveTenant, setActiveTenant } from "./tenant-context.js";
+import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 
 export const ROLE_HOME = {
   super_admin: "/platform",
@@ -17,14 +18,14 @@ export const ROLE_HOME = {
 export const STAFF_ROLES = ["owner", "admin", "cashier", "kitchen", "super_admin"];
 
 function icon(name, className = "app-icon") {
-  return `<svg class="${className}" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260630-082#icon-${name}"></use></svg>`;
+  return iconMarkup(name, className.replace(/\bapp-icon\b/g, "").trim());
 }
 
 function ensureIconStyles() {
   if (!document.querySelector('link[href^="/assets/css/icons.css"]')) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "/assets/css/icons.css?v=20260630-079";
+    link.href = "/assets/css/icons.css?v=20260701-001";
     document.head.appendChild(link);
   }
 }

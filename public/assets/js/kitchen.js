@@ -1,8 +1,9 @@
 import "./sweet-dialog.js?v=20260629-048";
 import "./kitchen-item-serve.js?v=20260630-058";
 import { dataService, usingDemoMode } from "./data-service.js";
-import { money, statusLabel, formatTime, toast } from "./ui.js";
+import { money, statusLabel, formatTime, toast } from "./ui.js?v=20260701-001";
 import { observeDeliveryOrders } from "./delivery-notifier.js";
+import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 
 if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
   const link = document.createElement("link");
@@ -24,7 +25,7 @@ async function askConfirm(message, options = {}) {
 }
 
 function icon(name) {
-  return `<svg class="app-icon" aria-hidden="true"><use href="/assets/images/app-icons.svg?v=20260622-9#icon-${name}"></use></svg>`;
+  return iconMarkup(name);
 }
 
 function nextActions(status, orderType) {

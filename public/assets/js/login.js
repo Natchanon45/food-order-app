@@ -1,5 +1,5 @@
 import { login, ROLE_HOME, waitForAuth, getUserProfile } from "./auth-service.js";
-import { toast } from "./ui.js";
+import { toast } from "./ui.js?v=20260701-001";
 
 const existingUser = await waitForAuth();
 if (existingUser) {
