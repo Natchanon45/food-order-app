@@ -46,6 +46,18 @@ export const dataService = {
     return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : {};
   },
 
+  async saveStoreSettings(settings = {}) {
+    if (usingDemoMode) {
+      const current = await this.getStoreSettings();
+      const next = { ...current, ...settings };
+      localStorage.setItem("food_order_store_settings", JSON.stringify(next));
+      return next;
+    }
+    const payload = withShop({ ...settings, updatedAt: serverTimestamp() });
+    delete payload.id;
+    return setDoc(shopDocument("settings", "store"), payload, { merge: true });
+  },
+
   async listMenus() {
     if (usingDemoMode) {
       const settings = await this.getStoreSettings();
