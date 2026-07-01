@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `HOTFIX Take Away Recovery`
-- Developer Panel version/build ปัจจุบัน: `0.12.27` / `2026.07.01.008`
+- Current milestone: `HOTFIX Delivery Order Take Away Recovery`
+- Developer Panel version/build ปัจจุบัน: `0.12.28` / `2026.07.01.009`
 
 ## Food Order Status
 
@@ -22,13 +22,14 @@
 - Take Away ส่งเข้าครัวด้วย orderType `takeaway`
 - Cashier แยกการ์ด Take Away ออกจากโต๊ะและ Delivery
 - Cashier กดเรียกรับของและกดส่งมอบแล้วได้
-- Hotfix: เพิ่ม route `/s/{tenantSlug}/delivery/` กลับให้ชัดเจนก่อน fallback `/s/**`
+- Hotfix: คืน `getStoreSettings()` ใน `data-service.js` เพื่อให้ Delivery โหลดเมนูและ settings ได้
 - Hotfix: Take Away ส่งออเดอร์โดยไม่ใช้ public counter transaction
-- Hotfix: bump cache `takeaway-order.js?v=20260701-008` และ `cashier.js?v=20260701-009`
+- Hotfix: บังคับ Delivery, Table Order และ Take Away โหลด `data-service.js?v=20260701-009`
+- Hotfix: bump cache `delivery.js?v=20260701-009`, `takeaway-order.js?v=20260701-009`, `customer-secure.js?v=20260701-009`
 
 ## Current Milestone
 
-`HOTFIX Take Away Recovery`
+`HOTFIX Delivery Order Take Away Recovery`
 
 ## Regression Tests
 
@@ -36,7 +37,7 @@
 2. เปิด `/s/{tenantSlug}/delivery/` ต้องโหลดเมนู Delivery ได้
 3. เปิด `/s/{tenantSlug}/order/` ต้องเห็นออเดอร์โต๊ะเดิมตาม table token
 4. เปิด `/s/{tenantSlug}/takeaway/` ต้องเห็นหน้า `สั่งกลับบ้าน`
-5. กรอกชื่อหรือเบอร์โทรอย่างน้อย 1 อย่าง
+5. Take Away ต้องไม่เขียน `counters/takeaway_...` ใน Console
 6. เลือกเมนูและส่งออเดอร์ ต้องได้เลขคิว `TA-xxx`
 7. หน้า Cashier ต้องเห็น QR Take Away และปุ่มสั่งกลับบ้าน
 8. กด QR Take Away ต้องแสดง QR สำหรับลูกค้าสแกน
