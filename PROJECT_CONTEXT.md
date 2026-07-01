@@ -16,48 +16,55 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.47`
-- Build: `2026.07.01.030`
+- Version: `0.12.48`
+- Build: `2026.07.02.002`
 - Branch: `feature/retail-pos`
-- Milestone: `Customer Previous Orders Table Code Fix`
+- Milestone: `P9-B002 Running Number`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
-- QR Table Order เสร็จ
-- Take Away / Kitchen / Cashier / Delivery เสร็จขั้นหลัก
+- QR Table Order / Take Away / Kitchen / Cashier / Delivery เสร็จแล้ว
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
-- Admin Users แสดงเฉพาะพนักงาน ไม่แสดง Owner
-- หน้า Order ลูกค้านั่งทานที่ร้านโหลด previous rounds จาก `tableCode`, `tableToken`, และ `movedFromTableCode`
-- หน้า Admin รายการสินค้า/อาหารและโต๊ะใช้ icon ล้วนสำหรับสถานะ ไม่มีตัวหนังสือ
+- POS Firestore Foundation (P9-B001) เสร็จแล้ว
+- P9-B002 Running Number เสร็จแกนกลางแล้ว
+- Running Number รองรับ SALE / RECEIPT / TAX / REFUND / VOID / SHIFT / PURCHASE / STOCK / TRANSFER
+- Running Number แยกตาม `tenantId`, document type และ reset period
+- POS Sale เดิมยังใช้ `saleId` เดิมเป็น Stable ID และใช้เลขเอกสารจาก counter กลาง
 
 ## Current Milestone
 
-`Customer Previous Orders Table Code Fix`
+`P9-B002 Running Number`
 
 ## แก้แล้วรอบนี้
 
-- `customer-table-token-orders.js` เพิ่ม query จาก `tableCode` เพื่อให้โต๊ะเดิมเห็นออเดอร์เก่าก่อนทดสอบย้ายโต๊ะ
-- `/order/index.html` bump `customer-table-token-orders.js?v=20260701-030`
-- `admin-status-icons.js` แสดงเฉพาะ icon `bi-check-square` หรือ `bi-square`
-- `/admin/index.html` bump `admin-status-icons.js?v=20260701-030`
-- Developer Panel เป็น Version `0.12.47` Build `2026.07.01.030`
+- `retail-pos-firestore-foundation.js` เพิ่ม `RUNNING_NUMBER_TYPES`
+- เพิ่ม helper กลาง `runningNumberConfig`, `periodKeyFrom`, `counterIdForRunningNumber`, `buildDocumentNumber`
+- ปรับ `buildCounterRow` ให้รองรับ document type / prefix / reset / periodKey / lastDocumentId / lastDocumentNumber
+- คง backward compatibility ของ `buildRunningNumber`, `counterIdForDate`, และ `buildCounterRow` สำหรับ POS Sale เดิม
+- เพิ่ม `POS_COLLECTIONS.runningNumbers` สำหรับ Milestone ถัดไปที่ต้องแยก counter/setting เพิ่มเติม
+- Developer Panel เป็น Version `0.12.48` Build `2026.07.02.002`
 
 ## Regression Tests สำคัญ
 
-1. เปิดโต๊ะ A แล้วสั่งอาหารจาก QR
-2. ลูกค้าคนเดิมหรืออีกเครื่องเปิด QR โต๊ะ A ต้องเห็นรายการที่เคยสั่ง
-3. รอบการสั่งถัดไปต้องต่อจากรอบเดิม
-4. Cashier เปลี่ยนโต๊ะ A ไปโต๊ะ B
-5. ลูกค้าสแกน QR เดิมของโต๊ะ A ต้องยังเห็นรายการเดิม
-6. ลูกค้าสั่งเพิ่มจาก QR เดิม ต้องเข้าโต๊ะ B ที่ active อยู่
-7. หน้า Admin สถานะใช้งานต้องเป็น icon `bi-check-square` สีเขียว ไม่มีตัวหนังสือ
-8. หน้า Admin สถานะไม่ได้ใช้งานต้องเป็น icon `bi-square` สีเทา ไม่มีตัวหนังสือ
+1. เปิด POS แล้วขายสินค้าออนไลน์ 1 บิล ต้องได้เลขบิลรูปแบบ `POS-YYYYMMDD-00001`
+2. ขายออนไลน์บิลถัดไปวันเดียวกัน ต้องได้เลขต่อเนื่อง ไม่ซ้ำ
+3. ปิดเน็ตแล้วขาย Offline ต้องได้เลข `PENDING` เดิมและไม่กระทบ Stable `saleId`
+4. เปิดเน็ตให้ Offline Sync ต้องจองเลขจริงผ่าน Firestore transaction และไม่ซ้ำกับบิลออนไลน์
+5. ตรวจ Firestore counter ของ tenant ต้องมี `documentType: SALE`, `periodKey`, `lastDocumentNumber`
+6. ตรวจว่าสินค้าถูกตัดสต็อกครั้งเดียวต่อ `saleId`
+7. Retry sync บิลเดิมซ้ำ ต้องไม่สร้าง sale หรือ stock movement ซ้ำ
+8. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
 
-1. O1-T002 Pickup Screen / Counter Display
-2. O1-T003 Kitchen Take Away Visual Badge
-3. P9-B010 Performance phase 2
+1. P9-B003 Counter
+2. P9-B004 Offline Queue Worker + Retry + Conflict Resolver
+3. P9-B005 Repository Layer
+4. P9-B006 Firestore Composite Index
+5. P9-B007 Audit Log
+6. P9-B008 Shift Opening / Closing
+7. P9-B009 Refund / Return / Void
+8. P9-B010 Performance (Cache / Virtual List / Search)
 
 ## ข้อควรระวัง
 
