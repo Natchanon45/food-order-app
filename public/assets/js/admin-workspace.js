@@ -1,3 +1,4 @@
+import "./active-status-icons.js?v=20260701-028";
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 
 const STORAGE_KEY = "admin_collapsed_cards_v1";
