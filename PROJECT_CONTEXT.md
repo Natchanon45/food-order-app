@@ -16,10 +16,10 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.42`
-- Build: `2026.07.01.024`
+- Version: `0.12.43`
+- Build: `2026.07.01.025`
 - Branch: `feature/retail-pos`
-- Milestone: `Table Move Customer Session Fix`
+- Milestone: `Hide Owner From Staff List`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -36,36 +36,35 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Order Completion: ออเดอร์ที่ `served` และ `paymentStatus = paid` จะปิดเป็น `paid` อัตโนมัติและไม่ค้างใน Cashier/Kitchen
 - Receipt Print: พิมพ์เฉพาะข้อมูลใบเสร็จ ไม่ติด UI/toolbar/footer/version ของระบบ
 - Kitchen Visual Cues: ปุ่มรับออเดอร์/เริ่มทำ/พร้อมเสิร์ฟมี animation เบา ๆ และออเดอร์รอนานเกิน 15 นาทีมี highlight
-- Admin Users: Owner เห็นรายการพนักงานของร้านตัวเองจาก tenant memberships แล้ว
-- Table Move Customer Session: หลัง Cashier เปลี่ยนโต๊ะ หน้าลูกค้ายังเห็นรายการเดิมด้วย stable `tableToken` และสั่งรอบถัดไปต่อเนื่อง
+- Admin Users: แสดงเฉพาะพนักงาน role `admin/cashier/kitchen` และไม่แสดง Owner ของร้าน
+- Table Move Customer Session: ลูกค้าใช้ QR เดิมหลัง Cashier เปลี่ยนโต๊ะได้ เพราะระบบตาม session ด้วย stable tableToken
 
 ## Current Milestone
 
-`Table Move Customer Session Fix`
+`Hide Owner From Staff List`
 
-## รายละเอียด Table Move Customer Session Fix
+## รายละเอียด Hide Owner From Staff List
 
-แก้ปัญหา Cashier เปลี่ยนโต๊ะแล้ว Kitchen/Cashier เห็นรายการถูกต้อง แต่หน้าลูกค้าไม่เห็นรายการเดิมและรอบการสั่งกลับเป็นรอบที่ 1
+แก้ปัญหา `/admin/users` แสดง Owner ของร้านเป็นรายการพนักงาน เพราะ service เดิม fallback role ที่ไม่รู้จักเป็น `cashier` ทำให้ Owner ถูกแสดงผิด
 
 แก้แล้ว:
 
-- `customer-secure.js` ใช้ stable `tableToken` เป็นตัวตาม session หลังย้ายโต๊ะ
-- `customer-secure.js` fallback หาโต๊ะ active ใหม่จาก `orderToken` เดิม ถ้า URL ยังเป็นโต๊ะเดิม
-- `customer-secure.js` patch `createTableOrder()` ให้ส่ง order ใหม่เข้าโต๊ะ active ล่าสุดของ token นั้น
-- `customer-secure.js` subscribe order ด้วย `tableToken` เพื่อให้รายการเดิมยังแสดงหลังย้ายโต๊ะ
-- `/order/index.html` bump `customer-secure.js?v=20260701-024`
-- Developer Panel เป็น Version `0.12.42` Build `2026.07.01.024`
+- `admin-staff-service.js` เก็บ role ตามจริง ไม่ fallback owner เป็น cashier
+- `listStaffUsers()` filter ก่อน normalize และรับเฉพาะ role `admin`, `cashier`, `kitchen`
+- `/admin/users/index.html` bump `admin-users.js?v=20260701-025`
+- ยืนยันแนวทาง QR เดิมหลังย้ายโต๊ะ: `/order` ใช้ stable tableToken จาก QR เดิมเพื่อโหลดรายการและส่งออเดอร์ต่อเข้าโต๊ะ active ใหม่
+- Developer Panel เป็น Version `0.12.43` Build `2026.07.01.025`
 
 ## Regression Tests สำคัญ
 
 1. Deploy hosting ใหม่
 2. เปิดโต๊ะ A แล้วสั่งอาหารจาก QR
-3. Kitchen/Cashier ต้องเห็นออเดอร์โต๊ะ A
-4. Cashier เปลี่ยนโต๊ะ A ไปโต๊ะ B
-5. หน้า Cashier/Kitchen ต้องยังเห็นรายการเดิมภายใต้โต๊ะใหม่
-6. หน้าลูกค้าต้องยังเห็นรายการที่สั่งแล้วจาก session เดิม
-7. รอบการสั่งถัดไปต้องต่อจากรอบเดิม ไม่กลับเป็นรอบที่ 1
-8. กดสั่งเพิ่มหลังย้ายโต๊ะแล้วออเดอร์ใหม่ต้องเข้าโต๊ะที่ active ใหม่
+3. Cashier เปลี่ยนโต๊ะ A ไปโต๊ะ B
+4. ลูกค้าสแกน QR เดิมของโต๊ะ A ต้องยังเห็นรายการเดิมและสั่งเพิ่มได้
+5. รอบการสั่งถัดไปต้องต่อจากรอบเดิม ไม่กลับเป็นรอบที่ 1
+6. เปิด `/admin/users` ด้วย Owner
+7. รายการพนักงานต้องไม่แสดง Owner ของร้าน
+8. ต้องแสดงเฉพาะ role `admin`, `cashier`, `kitchen`
 
 ## งานถัดไป
 
