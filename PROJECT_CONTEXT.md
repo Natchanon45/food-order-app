@@ -16,50 +16,54 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.29`
-- Build: `2026.07.01.010`
+- Version: `0.12.30`
+- Build: `2026.07.01.012`
 - Branch: `feature/retail-pos`
-- Milestone: `Admin Take Away QR Poster`
+- Milestone: `Take Away Kitchen Served Flow`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
 - QR Table Order เสร็จ
 - Take Away Order / Pickup Queue เสร็จขั้นแรก
 - Kitchen แสดง Take Away ด้วยเลขคิว ไม่ปนกับโต๊ะจริง
+- Kitchen Take Away มีปุ่ม `เสิร์ฟแล้ว` หลังสถานะพร้อมเสิร์ฟ
+- Take Away ที่เป็นสถานะ `served` แล้วจะแก้ไขหรือยกเลิกไม่ได้ เหมือนออเดอร์นั่งทานที่ร้าน
 - Delivery Lock เสร็จ
 - Cashier ย้ายโต๊ะเสร็จ
 - หน้า Admin มี QR สำหรับ Delivery และ QR สำหรับสั่งกลับบ้าน
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - P9-B001 ถึง P9-B009 เสร็จแล้ว
 
-## รายละเอียด Admin Take Away QR Poster
+## รายละเอียด Take Away Kitchen Served Flow
 
-เพิ่ม QR สำหรับสั่งกลับบ้านในหน้า Admin เพื่อให้เจ้าของร้านพิมพ์ไปแปะหน้า Counter Cashier สำหรับลูกค้า Walk-in
+ปรับหน้าครัวให้ Take Away ใช้ workflow เหมือนการสั่งผ่าน QR โต๊ะ เมื่อครัวทำอาหารเสร็จและกดเสิร์ฟแล้ว รายการจะไม่สามารถแก้ไขหรือลบได้อีก
 
 แก้แล้ว:
 
-- ปรับ `admin-delivery-qr.js` ให้สร้าง QR ได้ 2 ชุด: Delivery และ Take Away
-- Take Away QR ใช้ลิงก์ `/s/{tenantSlug}/takeaway`
-- เพิ่มปุ่มคัดลอกลิงก์ / ดาวน์โหลด QR / พิมพ์ สำหรับ QR สั่งกลับบ้าน
-- ข้อความบนป้าย QR คือ `สแกนเพื่อสั่งกลับบ้าน`
-- รองรับกรณี browser ยัง cache module QR Delivery เก่า โดย module ใหม่จะเติมเฉพาะบล็อก Take Away เพิ่มได้
-- `/admin/index.html` bump cache เป็น `admin.js?v=20260701-012` และโหลด `admin-delivery-qr.js?v=20260701-012`
+- `kitchen.js` เพิ่ม action `ready -> served` สำหรับ Take Away
+- ปุ่มหลังทำเสร็จแสดง `เสิร์ฟแล้ว`
+- เมื่อกด `เสิร์ฟแล้ว` จะอัปเดต `status = served` และ `servedAt`
+- สำหรับ Take Away จะตั้ง `pickupStatus = served`
+- เมื่อ `status = served` แล้ว `isKitchenLocked()` จะซ่อนปุ่มแก้ไขและยกเลิกทั้งหมด
+- `/kitchen/index.html` bump cache เป็น `kitchen.js?v=20260701-012`
+- Developer Panel เป็น Version `0.12.30` Build `2026.07.01.012`
 
 ## Current Milestone
 
-`Admin Take Away QR Poster`
+`Take Away Kitchen Served Flow`
 
 ## Regression Tests สำคัญ
 
 1. Deploy hosting ใหม่
-2. เปิด `/admin`
-3. ต้องเห็น `QR สำหรับสั่ง Delivery`
-4. ต้องเห็น `QR สำหรับสั่งกลับบ้าน`
-5. QR สั่งกลับบ้านต้องชี้ไป `/s/{tenantSlug}/takeaway`
-6. ปุ่มคัดลอกลิงก์ / ดาวน์โหลด QR / พิมพ์ ของสั่งกลับบ้านต้องทำงาน
-7. เปิด QR สั่งกลับบ้านแล้วต้องเข้า Take Away ไม่ใช่ Delivery
-8. ส่ง Take Away แล้วต้องเข้า Kitchen เป็น `Take Away: TA-xxx`
-9. QR Delivery เดิมต้องยังทำงาน
+2. เปิด `/s/{tenantSlug}/takeaway`
+3. ส่ง Take Away ให้เข้า Kitchen
+4. หน้า Kitchen ต้องแสดง `Take Away: TA-xxx`
+5. กดรับออเดอร์ > เริ่มทำ > พร้อมเสิร์ฟ
+6. หลังพร้อมเสิร์ฟต้องเห็นปุ่ม `เสิร์ฟแล้ว`
+7. กด `เสิร์ฟแล้ว` แล้วรายการต้องเป็นสถานะ `served`
+8. หลัง served ต้องไม่มีปุ่มแก้ไขรายการ
+9. หลัง served ต้องไม่มีปุ่มยกเลิกรายการหรือยกเลิกทั้งออเดอร์
+10. QR โต๊ะนั่งทานที่ร้านต้องยังทำงานเหมือนเดิม
 
 ## งานถัดไป
 
