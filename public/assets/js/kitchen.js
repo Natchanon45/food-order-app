@@ -1,5 +1,5 @@
 import "./sweet-dialog.js?v=20260629-048";
-import "./kitchen-item-serve.js?v=20260630-058";
+import "./kitchen-item-serve.js?v=20260701-014";
 import { dataService, usingDemoMode } from "./data-service.js?v=20260701-009";
 import { money, statusLabel, formatTime, toast } from "./ui.js?v=20260701-010";
 import { observeDeliveryOrders } from "./delivery-notifier.js";
