@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Admin Take Away QR Poster`
-- Developer Panel version/build ปัจจุบัน: `0.12.29` / `2026.07.01.010`
+- Current milestone: `Take Away Kitchen Served Flow`
+- Developer Panel version/build ปัจจุบัน: `0.12.30` / `2026.07.01.012`
 
 ## Food Order Status
 
@@ -17,31 +17,28 @@
 - Delivery Lock เสร็จ
 - Cashier ย้ายโต๊ะเสร็จ
 - เพิ่ม Take Away Order โดยไม่ต้องเปิดโต๊ะจริง
-- ลูกค้าสั่ง Take Away ผ่าน `/takeaway/` หรือ `/s/{tenantSlug}/takeaway/` และกรอกชื่อหรือเบอร์โทร
-- หน้า Cashier มีปุ่ม QR Take Away และปุ่มสั่งกลับบ้านสำหรับ Cashier สั่งแทนลูกค้า
-- หน้า Admin มี QR สำหรับสั่ง Delivery และ QR สำหรับสั่งกลับบ้าน เพื่อพิมพ์แปะหน้าร้าน/หน้า Counter
-- Take Away ส่งเข้าครัวด้วย orderType `takeaway`
-- Cashier แยกการ์ด Take Away ออกจากโต๊ะและ Delivery
-- Cashier กดเรียกรับของและกดส่งมอบแล้วได้
-- Hotfix: หน้าครัวแสดง Take Away ด้วยเลขคิว ไม่ปนกับโต๊ะจริง
-- Hotfix: อัปเดต Firestore Rules ให้ public tenant Take Away create order ได้
-- Hotfix: โคลน sticky category และ mobile scrollspy จากหน้า QR โต๊ะมาหน้า Take Away
-- Hotfix: toast alert ถูกบังคับเป็น top layer เหนือ cart bar และ overlay ทุกกรณี
+- ลูกค้าสั่ง Take Away ผ่าน `/takeaway/` หรือ `/s/{tenantSlug}/takeaway/`
+- หน้า Admin มี QR สำหรับสั่ง Delivery และ QR สำหรับสั่งกลับบ้าน
+- Take Away ส่งเข้าครัวด้วย `orderType = takeaway`
+- หน้าครัวแสดง Take Away ด้วยเลขคิว ไม่ปนกับโต๊ะจริง
+- หน้าครัว Take Away มีปุ่ม `เสิร์ฟแล้ว` เหมือน QR โต๊ะ
+- เมื่อ Take Away เป็นสถานะ `served` แล้ว รายการจะแก้ไขหรือยกเลิกไม่ได้ เหมือนออเดอร์นั่งทานที่ร้าน
 
 ## Current Milestone
 
-`Admin Take Away QR Poster`
+`Take Away Kitchen Served Flow`
 
 ## Regression Tests
 
-1. เปิด `/admin`
-2. ต้องเห็น `QR สำหรับสั่ง Delivery`
-3. ต้องเห็น `QR สำหรับสั่งกลับบ้าน`
-4. QR สั่งกลับบ้านต้องชี้ไป `/s/{tenantSlug}/takeaway`
-5. ปุ่มคัดลอกลิงก์ / ดาวน์โหลด QR / พิมพ์ ของสั่งกลับบ้านต้องทำงาน
-6. เปิด QR สั่งกลับบ้านแล้วต้องเข้า Take Away ไม่ใช่ Delivery
-7. ส่ง Take Away แล้วต้องเข้า Kitchen เป็น `Take Away: TA-xxx`
-8. QR Delivery เดิมต้องยังทำงาน
+1. เปิด `/s/{tenantSlug}/takeaway`
+2. ส่ง Take Away ให้เข้า Kitchen
+3. หน้า Kitchen ต้องแสดง `Take Away: TA-xxx`
+4. กดรับออเดอร์ > เริ่มทำ > พร้อมเสิร์ฟ
+5. หลังพร้อมเสิร์ฟต้องเห็นปุ่ม `เสิร์ฟแล้ว`
+6. กด `เสิร์ฟแล้ว` แล้วรายการต้องเป็นสถานะ `served`
+7. หลัง served ต้องไม่มีปุ่มแก้ไขรายการ
+8. หลัง served ต้องไม่มีปุ่มยกเลิกรายการหรือยกเลิกทั้งออเดอร์
+9. QR โต๊ะนั่งทานที่ร้านต้องยังทำงานเหมือนเดิม
 
 ## Next Tasks
 
