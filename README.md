@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `O1-T001.3 Take Away Hotfix`
-- Developer Panel version/build ปัจจุบัน: `0.12.26` / `2026.07.01.007`
+- Current milestone: `HOTFIX Take Away Recovery`
+- Developer Panel version/build ปัจจุบัน: `0.12.27` / `2026.07.01.008`
 
 ## Food Order Status
 
@@ -17,30 +17,29 @@
 - Delivery Lock เสร็จ
 - Cashier ย้ายโต๊ะเสร็จ
 - เพิ่ม Take Away Order โดยไม่ต้องเปิดโต๊ะจริง
-- Take Away ใช้เลขคิว `TA-001`, `TA-002`, ... รายวัน
 - ลูกค้าสั่ง Take Away ผ่าน `/takeaway/` หรือ `/s/{tenantSlug}/takeaway/` และกรอกชื่อหรือเบอร์โทร
-- หน้า Cashier มีปุ่ม QR Take Away, คัดลอกลิงก์ และปุ่มสั่งกลับบ้านสำหรับ Cashier สั่งแทนลูกค้า
+- หน้า Cashier มีปุ่ม QR Take Away และปุ่มสั่งกลับบ้านสำหรับ Cashier สั่งแทนลูกค้า
 - Take Away ส่งเข้าครัวด้วย orderType `takeaway`
 - Cashier แยกการ์ด Take Away ออกจากโต๊ะและ Delivery
 - Cashier กดเรียกรับของและกดส่งมอบแล้วได้
-- แก้ Firestore Rules ให้ public Take Away สร้าง order และ queue counter ได้
-- แก้ Cashier ไม่ให้แสดง `Invalid Date` เมื่อ order ใช้ Firestore server timestamp หรือข้อมูลวันที่ไม่สมบูรณ์
-- แก้ Firebase Hosting route ให้ `/s/{tenantSlug}/takeaway/` เปิดหน้า Take Away ไม่ตกไปหน้า Delivery
+- Hotfix: เพิ่ม route `/s/{tenantSlug}/delivery/` กลับให้ชัดเจนก่อน fallback `/s/**`
+- Hotfix: Take Away ส่งออเดอร์โดยไม่ใช้ public counter transaction
+- Hotfix: bump cache `takeaway-order.js?v=20260701-008` และ `cashier.js?v=20260701-009`
 
 ## Current Milestone
 
-`O1-T001.3 Take Away Hotfix`
+`HOTFIX Take Away Recovery`
 
 ## Regression Tests
 
-1. Deploy hosting และ firestore rules ใหม่
+1. Deploy hosting ใหม่
 2. เปิด `/s/{tenantSlug}/delivery/` ต้องโหลดเมนู Delivery ได้
 3. เปิด `/s/{tenantSlug}/order/` ต้องเห็นออเดอร์โต๊ะเดิมตาม table token
 4. เปิด `/s/{tenantSlug}/takeaway/` ต้องเห็นหน้า `สั่งกลับบ้าน`
 5. กรอกชื่อหรือเบอร์โทรอย่างน้อย 1 อย่าง
-6. เลือกเมนูและส่งออเดอร์ ต้องได้เลขคิว `TA-xxx` และไม่ติด permission denied
-7. หน้า Cashier ต้องเห็น QR Take Away, คัดลอกลิงก์ และปุ่มสั่งกลับบ้าน
-8. กด QR Take Away ต้องเปิด modal QR สำหรับลูกค้าสแกน
+6. เลือกเมนูและส่งออเดอร์ ต้องได้เลขคิว `TA-xxx`
+7. หน้า Cashier ต้องเห็น QR Take Away และปุ่มสั่งกลับบ้าน
+8. กด QR Take Away ต้องแสดง QR สำหรับลูกค้าสแกน
 9. Cashier กดรับชำระเงิน เรียกรับของ และส่งมอบแล้วได้
 10. QR Table Order และ Delivery ต้องยังทำงานตามเดิม
 
@@ -53,8 +52,6 @@
 
 git pull --rebase origin feature/retail-pos
 firebase deploy --only hosting
-firebase deploy --only firestore:rules
-firebase deploy --only firestore:indexes
 
 ## Notes
 
