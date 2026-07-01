@@ -4,21 +4,21 @@ import { listLocalSales, saveLocalSales, updateLocalSale, localSaleId } from './
 import {
   POS_COLLECTIONS,
   POS_FIRESTORE_VERSION,
-  buildRunningNumber,
-  buildCounterRow,
-  counterIdForDate,
   dateKeyFrom,
   applySaleToDailySummary,
   buildSaleItemRows,
   buildSyncQueueRow
-} from './retail-pos-firestore-foundation.js?v=20260630-077';
+} from './retail-pos-firestore-foundation.js?v=20260702-002';
+import { reserveRunningNumber } from './retail-pos-counter.js?v=20260702-003';
 
 const SALES_KEY = 'retail_pos_sales_v1';
 const SYNC_EVENT = 'retail-offline-sales-synced';
+const WORKER_EVENT = 'retail-offline-queue-worker';
 const MAX_RETRY_PER_RUN = 5;
 const SYNCING_STALE_MS = 30000;
 const RETRY_DELAYS_MS = [0, 5000, 15000, 30000, 60000, 120000, 300000];
 let syncRunning = false;
+let workerSnapshot = { state: 'idle', lastRunAt: '', lastResult: { synced: 0, failed: 0, conflict: 0, skipped: 0 }, queueSize: 0, nextRunAt: '' };
 
 function nowIso() { return new Date().toISOString(); }
 function nowMs() { return Date.now(); }
@@ -120,6 +120,17 @@ function markFailed(id, error, status = 'failed') {
   });
 }
 
+function updateWorkerSnapshot(patch = {}) {
+  workerSnapshot = { ...workerSnapshot, queueSize: getOfflineSyncQueue().length, ...patch };
+  document.documentElement.dataset.offlineQueueState = workerSnapshot.state;
+  window.dispatchEvent(new CustomEvent(WORKER_EVENT, { detail: workerSnapshot }));
+  return workerSnapshot;
+}
+
+export function getOfflineQueueWorkerSnapshot() {
+  return { ...workerSnapshot, queueSize: getOfflineSyncQueue().length };
+}
+
 function normalizeOfflineSale(sale, { saleId, tenantId, userId, saleNumber }) {
   const createdAt = sale.createdAt || nowIso();
   const dateKey = sale.dateKey || dateKeyFrom(createdAt);
@@ -165,9 +176,8 @@ async function syncOneSale(sale) {
       return;
     }
 
-    const saleDateKey = sale.dateKey || dateKeyFrom(sale.createdAt || new Date());
-    const counterRef = tenantDoc(POS_COLLECTIONS.counters, counterIdForDate(saleDateKey));
-    const counterSnapshot = await transaction.get(counterRef);
+    const saleDateValue = sale.createdAt || new Date();
+    const saleDateKey = sale.dateKey || dateKeyFrom(saleDateValue);
     const summaryRef = tenantDoc(POS_COLLECTIONS.dailySummary, saleDateKey);
     const summarySnapshot = await transaction.get(summaryRef);
 
@@ -186,15 +196,10 @@ async function syncOneSale(sale) {
       productRows.push({ item, product, productId, productRef, before, qty, after: before - qty });
     }
 
-    const nextRunning = Number(counterSnapshot.exists() ? counterSnapshot.data().current || 0 : 0) + 1;
-    syncedSaleNumber = buildRunningNumber({ dateKey: saleDateKey, running: nextRunning });
+    const reserved = await reserveRunningNumber(transaction, db, { type: 'SALE', value: saleDateValue, tenantId, documentId: saleId, userId });
+    syncedSaleNumber = reserved.documentNumber;
     const normalizedSale = normalizeOfflineSale(sale, { saleId, tenantId, userId, saleNumber: syncedSaleNumber });
     const nextSummary = applySaleToDailySummary(summarySnapshot.exists() ? summarySnapshot.data() : {}, normalizedSale);
-
-    transaction.set(counterRef, {
-      ...buildCounterRow({ tenantId, dateKey: saleDateKey, running: nextRunning, saleId, saleNumber: syncedSaleNumber, userId }),
-      updatedAtServer: serverTimestamp()
-    }, { merge: true });
 
     transaction.set(saleRef, { ...normalizedSale, createdAtServer: serverTimestamp(), updatedAtServer: serverTimestamp() }, { merge: true });
 
@@ -268,7 +273,10 @@ export function retryFailedOfflineSales({ includeConflicts = false } = {}) {
     }
     return sale;
   });
-  if (changed) writeSales(next);
+  if (changed) {
+    writeSales(next);
+    updateWorkerSnapshot({ state: 'retry_queued' });
+  }
   return changed;
 }
 
@@ -283,7 +291,10 @@ export function resolveOfflineSaleConflict(saleId, resolution = 'discard') {
     if (resolution === 'retry') return { ...sale, syncStatus: 'pending', syncError: '', nextRetryAt: '', conflictResolution: 'retry_requested' };
     return { ...sale, syncStatus: 'discarded', syncError: '', conflictResolution: 'discarded_local_sale', resolvedAt: nowIso() };
   });
-  if (changed) writeSales(next);
+  if (changed) {
+    writeSales(next);
+    updateWorkerSnapshot({ state: resolution === 'retry' ? 'conflict_retry_queued' : 'conflict_discarded' });
+  }
   return changed;
 }
 
@@ -295,6 +306,7 @@ export async function syncOfflineSalesToFirebase({ forceRetry = false } = {}) {
   let failed = 0;
   let conflict = 0;
   let skipped = 0;
+  updateWorkerSnapshot({ state: 'syncing', lastRunAt: nowIso() });
   try {
     if (forceRetry) retryFailedOfflineSales();
     const pending = readSales().filter(saleNeedsSync).slice(0, MAX_RETRY_PER_RUN);
@@ -317,8 +329,10 @@ export async function syncOfflineSalesToFirebase({ forceRetry = false } = {}) {
         continue;
       }
     }
-    if (synced || failed || conflict || skipped) window.dispatchEvent(new CustomEvent(SYNC_EVENT, { detail: { synced, failed, conflict, skipped } }));
-    return { synced, failed, conflict, skipped };
+    const result = { synced, failed, conflict, skipped };
+    updateWorkerSnapshot({ state: conflict ? 'conflict' : failed ? 'failed' : 'idle', lastResult: result });
+    if (synced || failed || conflict || skipped) window.dispatchEvent(new CustomEvent(SYNC_EVENT, { detail: result }));
+    return result;
   } finally {
     syncRunning = false;
   }
@@ -338,6 +352,7 @@ class OfflineQueueWorker {
   }
   schedule(delay = this.delay) {
     clearTimeout(this.timer);
+    updateWorkerSnapshot({ state: navigator.onLine === false ? 'offline' : 'scheduled', nextRunAt: new Date(nowMs() + delay).toISOString() });
     this.timer = setTimeout(async () => {
       const result = await syncOfflineSalesToFirebase();
       const hasFailed = result.failed > 0 || getOfflineSyncQueue().some(sale => sale.syncStatus === 'failed' && retryDue(sale));
