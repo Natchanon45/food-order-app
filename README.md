@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Cashier Load Fix`
-- Developer Panel version/build ปัจจุบัน: `0.12.34` / `2026.07.01.016`
+- Current milestone: `Delivery Category Scroll & Admin Sort Fix`
+- Developer Panel version/build ปัจจุบัน: `0.12.35` / `2026.07.01.017`
 
 ## Food Order Status
 
@@ -16,25 +16,20 @@
 - Kitchen เสร็จ
 - Delivery Lock เสร็จ
 - Cashier ย้ายโต๊ะเสร็จ
-- Take Away ส่งเข้าครัวด้วย `orderType = takeaway`
-- ปุ่ม `เสิร์ฟรายการนี้` ใช้ icon `bi-send-check` และบน Mobile แสดงเฉพาะ icon
-- ปุ่ม `เสิร์ฟแล้ว` ทั้งออเดอร์ยังแสดงข้อความทั้ง PC และ Mobile
-- หน้า Cashier ปุ่ม `ตรวจแล้ว/ชำระแล้ว` ใช้ icon `check-circle`
-- เมนู User ด้านขวาบน รายการ `ออกโต๊ะ` ใช้ icon `bi-easel2`
-- ปุ่ม `เปลี่ยนโต๊ะ` ใช้ icon `bi-easel2`
-- Hotfix: แก้หน้า Cashier ค้างจาก observer loop ของ icon hotfix
+- หน้า Delivery PC เลื่อนหมวดหมู่ซ้าย-ขวาหลังคลิกหมวดได้ต่อเนื่อง
+- Admin จัดลำดับหมวดหมู่หลังเปลี่ยนชื่อหมวดแล้วบันทึกได้
 
 ## Current Milestone
 
-`Cashier Load Fix`
+`Delivery Category Scroll & Admin Sort Fix`
 
 ## Regression Tests
 
-1. เปิด Cashier ต้องไม่ค้าง
-2. ปุ่ม `ตรวจแล้ว/ชำระแล้ว` ต้องใช้ `check-circle`
-3. เมนู User ด้านขวาบน รายการ `ออกโต๊ะ` ต้องใช้ `bi-easel2`
-4. ปุ่ม `เปลี่ยนโต๊ะ` ต้องใช้ `bi-easel2`
-5. Workflow Cashier ต้องยังทำงานเหมือนเดิม
+1. เปิด Delivery บน PC
+2. คลิกหมวดลำดับ 2 หรือ 3 แล้วต้องยังเลื่อนหมวดหมู่ซ้าย-ขวาได้
+3. เปิด Admin แล้วเปลี่ยนชื่อหมวดหมู่เมนู
+4. จัดลำดับหมวดหมู่ใหม่แล้วต้องบันทึกสำเร็จ
+5. เมนูหน้า Delivery/Take Away ต้องเรียงตามลำดับหมวดใหม่
 
 ## Next Tasks
 
@@ -51,5 +46,5 @@ firebase deploy --only hosting
 - ต้องอ่าน `PROJECT_CONTEXT.md` ก่อนเริ่มงานทุกครั้ง
 - ทุก record สำคัญต้องมี `tenantId`
 - ห้าม sync POS ข้าม tenant
-- ถ้าแก้ JS/CSS ที่ import ใน HTML ต้อง bump query string หรือกำหนด no-cache เฉพาะไฟล์
+- ถ้าแก้ JS/CSS ที่ import ใน HTML ต้อง bump query string
 - Firestore transaction ต้อง read เอกสารทั้งหมดก่อน write
