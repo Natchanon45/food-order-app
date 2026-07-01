@@ -2,7 +2,7 @@ function icon(active) {
   const cls = active ? 'bi-check-square' : 'bi-square';
   const color = active ? '#159447' : '#8a9490';
   const label = active ? 'ใช้งาน' : 'ไม่ได้ใช้งาน';
-  return '<span class="admin-status-icon" style="color:' + color + ';display:inline-flex;align-items:center;gap:6px;font-weight:800"><i class="bi ' + cls + ' app-icon" aria-hidden="true"></i><span>' + label + '</span></span>';
+  return '<i class="bi ' + cls + ' app-icon" style="color:' + color + ';width:22px;height:22px;background:transparent;border-radius:0;box-shadow:none" title="' + label + '" aria-label="' + label + '"></i>';
 }
 function apply() {
   document.querySelectorAll('#menuRows tr').forEach(row => {
