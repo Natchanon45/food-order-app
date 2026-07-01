@@ -16,10 +16,10 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.36`
-- Build: `2026.07.01.018`
+- Version: `0.12.37`
+- Build: `2026.07.01.019`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B010 POS Performance`
+- Milestone: `POS Payment Focus UX`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -32,38 +32,34 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Admin จัดลำดับหมวดหมู่หลังเปลี่ยนชื่อหมวดแล้วบันทึกได้
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - P9-B010 เริ่มแล้ว: POS catalog ใช้ virtual batch rendering, debounce search, cache search data และ lazy image
+- POS Payment UX: ช่อง `รับเงินมา` select ตัวเลขทั้งหมดเมื่อเปิด modal หรือคลิกกลับเข้าช่อง เพื่อพิมพ์ทับได้ทันที
 
 ## Current Milestone
 
-`P9-B010 POS Performance`
+`POS Payment Focus UX`
 
-## รายละเอียด P9-B010 POS Performance phase 1
+## รายละเอียด POS Payment Focus UX
 
-โฟกัสที่หน้า `/pos` เพื่อลดอาการหน่วงเมื่อมีสินค้าจำนวนมาก โดยไม่เปลี่ยน workflow การขายและไม่แตะ Firestore transaction
+แก้เฉพาะ UX ในหน้า `/pos` เพื่อให้ cashier พิมพ์ยอดรับเงินใหม่ได้เร็วขึ้น หลังจากเลือกสมาชิกหรือคลิกจุดอื่นใน modal รับชำระเงิน
 
 แก้แล้ว:
 
-- `retail-pos-catalog.js` เปลี่ยนเป็น catalog controller แบบ virtual batch rendering
-- แสดงสินค้าเป็นชุดแรก 96 รายการ และใช้ปุ่ม `แสดงเพิ่ม` แทนการ render ทั้งหมดทีเดียว
-- search สินค้า debounce 80ms และใช้ search text cache จาก localStorage
-- cache product/sales stamp เพื่อลดการ parse และจัด ranking ซ้ำโดยไม่จำเป็น
-- lazy load รูปเฉพาะสินค้าที่แสดงจริงชุดแรก
-- `retail-pos-catalog.css` เพิ่ม style สำหรับ result count และปุ่มแสดงเพิ่ม
-- `retail-pos-hold.js` bump import `retail-pos-catalog.js?v=20260701-018`
-- `/pos/index.html` bump `retail-pos-hold.js?v=20260701-018`
-- Developer Panel เป็น Version `0.12.36` Build `2026.07.01.018`
+- เพิ่ม `retail-pos-payment-focus.js`
+- เมื่อเปิด payment modal จะ focus และ select ช่อง `รับเงินมา`
+- เมื่อคลิกกลับเข้าช่อง `รับเงินมา` จะ select ตัวเลขทั้งหมดอีกครั้ง
+- `/pos/index.html` เพิ่ม `retail-pos-payment-focus.js?v=20260701-019`
+- ไม่แตะ logic การขาย, stock, Offline, Sync หรือ Firestore transaction
+- Developer Panel เป็น Version `0.12.37` Build `2026.07.01.019`
 
 ## Regression Tests สำคัญ
 
 1. Deploy hosting ใหม่
 2. เปิด `/pos`
-3. สินค้าใน POS ต้องโหลดเร็วขึ้นและไม่ render ทั้งหมดในครั้งเดียว
-4. ถ้าสินค้ามีจำนวนมาก ต้องเห็นปุ่ม `แสดงเพิ่ม`
-5. ค้นหาสินค้าด้วยชื่อ/รหัส/บาร์โค้ดต้องยังทำงาน
-6. คลิกสินค้าเพื่อเพิ่มลงบิลต้องยังทำงาน
-7. สแกนบาร์โค้ดแล้วยังเพิ่มสินค้าได้
-8. ขายสินค้าและตัดสต็อกต้องยังทำงานทั้ง Online/Offline
-9. รูปสินค้าต้อง lazy load เฉพาะรายการที่แสดง
+3. เพิ่มสินค้าลงบิล
+4. กดรับชำระเงินแล้วช่อง `รับเงินมา` ต้องถูกคลุมตัวเลขทั้งหมด
+5. เลือก/ค้นหาสมาชิกหรือคลิกจุดอื่นใน modal แล้วคลิกกลับมาที่ช่อง `รับเงินมา` ต้อง select ตัวเลขทั้งหมดอีกครั้ง
+6. พิมพ์ตัวเลขใหม่ต้องแทนค่าของเดิมทันที
+7. ยืนยันการขายต้องยังทำงานและตัดสต็อกเหมือนเดิม
 
 ## งานถัดไป
 
