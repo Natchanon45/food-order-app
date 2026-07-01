@@ -16,10 +16,10 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.21`
-- Build: `2026.06.30.087`
+- Version: `0.12.22`
+- Build: `2026.07.01.003`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B007 Audit Log`
+- Milestone: `P9-B008 Shift Opening / Closing`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -43,41 +43,41 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 - P9-B005.4 POS Receipt Loyalty Fix เสร็จ
 - P9-B006 Firestore Composite Index เสร็จ
 - P9-B007 Audit Log เสร็จ
+- P9-B008 Shift Opening / Closing เสร็จ
 
-## รายละเอียด P9-B007
+## รายละเอียด P9-B008
 
-เพิ่ม audit log สำหรับการขาย POS ที่บันทึกสำเร็จใน Firestore transaction เพื่อให้ตรวจสอบย้อนหลังได้ว่าใครขายบิลไหน ยอดเท่าไร อุปกรณ์ใด และสถานะ sync เป็นอะไร
+ปรับระบบเปิดกะ/ปิดกะของ Retail POS ให้เสถียรขึ้นทั้ง Firestore และ local fallback โดยต่อจาก HEAD ล่าสุดของผู้ใช้
 
 แก้แล้ว:
 
-- เพิ่ม helper ใน `retail-pos.js` สำหรับสร้าง deterministic audit log id
-- เขียน audit log ลง `tenants/{tenantId}/auditLogs/{pos_sale_completed_saleId}` ภายใน transaction เดียวกับ sale
-- Audit log มี tenantId, shopId, deviceId, schemaVersion, createdBy, action, entityType, entityId, entityNumber
-- Audit summary มี saleNumber, totalAmount, totalQty, paymentMethod, customerId, shiftId และ syncStatus
-- ใช้ deterministic audit id เพื่อกัน audit ซ้ำเมื่อ saleId เดิมถูก retry
-- `/pos/index.html` bump cache เป็น `retail-pos.js?v=20260630-087`
+- ปรับ `retail-shifts.js` ให้ใช้ `saveRecord` แทนการเขียน Firestore ตรง เพื่อรองรับ local fallback
+- เปิดกะโดยบันทึก tenantId, shopId, deviceId, schemaVersion, cashierName, terminalCode, openingCash, openedAt และ createdBy
+- ปิดกะโดยสรุปยอดขาย, ยอดเงินสด, ยอดโอน, จำนวนบิล, เงินสดที่ควรมี, เงินสดนับจริง และผลต่างเงินสด
+- ประวัติกะแสดงกะปิดล่าสุดจาก Firestore/local cache
+- POS หน้า `/pos` ยังใช้ active shift ผ่าน `retail_pos_active_shift_v1` ตามเดิม จึงผูก `shiftId` ใน sale ได้ต่อเนื่อง
+- `/pos/shifts/index.html` bump cache เป็น `retail-shifts.js?v=20260701-003`
+- อัปเดต Developer Panel เป็น Version `0.12.22` Build `2026.07.01.003`
 
 ## Current Milestone
 
-`P9-B007 Audit Log`
+`P9-B008 Shift Opening / Closing`
 
 ## Regression Tests สำคัญ
 
-1. เปิด `/pos`
-2. ขาย online 1 บิล
-3. Firestore ต้องมี sale document ตาม stable `saleId`
-4. Firestore ต้องมี audit log ใน `tenants/{tenantId}/auditLogs/{pos_sale_completed_saleId}`
-5. Audit log ต้องมี tenantId และ action `pos_sale_completed`
-6. Audit log summary ต้องมี saleNumber, totalAmount, totalQty, paymentMethod, customerId, shiftId, syncStatus
-7. ขายซ้ำด้วย saleId เดิมต้องไม่สร้าง audit log ซ้ำ
-8. Offline fallback ต้องยังทำงานได้
-9. Transaction ยัง read เอกสารทั้งหมดก่อน write
+1. เปิด `/pos/shifts`
+2. เปิดกะด้วยชื่อพนักงาน, รหัสเครื่อง POS และเงินสดเริ่มต้น
+3. ต้องเห็น active shift และบันทึกลง Firestore หรือ local fallback ได้
+4. เปิด `/pos` แล้วขาย 1 บิล ต้องผูก shiftId กับ active shift ถ้ามีกะเปิดอยู่
+5. กลับ `/pos/shifts` ต้องเห็นยอดขายรวม, ยอดเงินสด, ยอดโอน, จำนวนบิล และเงินสดที่ควรมี
+6. ปิดกะด้วยเงินสดนับจริง ต้องบันทึก actualCash และ cashDifference
+7. ประวัติกะต้องแสดงกะที่ปิดแล้ว
+8. Offline/local fallback ต้องไม่ทำให้ POS sale flow เสีย
 
 ## งานถัดไป
 
-1. P9-B008 Shift Opening / Closing
-2. P9-B009 Refund / Return / Void
-3. P9-B010 Performance
+1. P9-B009 Refund / Return / Void
+2. P9-B010 Performance
 
 ## ข้อควรระวัง
 
