@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `O1-T001.1 Take Away Cashier Fix`
-- Developer Panel version/build ปัจจุบัน: `0.12.25` / `2026.07.01.006`
+- Current milestone: `O1-T001.2 Tenant Take Away Route Fix`
+- Developer Panel version/build ปัจจุบัน: `0.12.26` / `2026.07.01.007`
 
 ## Food Order Status
 
@@ -18,12 +18,13 @@
 - Cashier ย้ายโต๊ะเสร็จ
 - เพิ่ม Take Away Order โดยไม่ต้องเปิดโต๊ะจริง
 - Take Away ใช้เลขคิว `TA-001`, `TA-002`, ... รายวัน
-- ลูกค้าสั่ง Take Away ผ่าน `/takeaway/` และกรอกชื่อหรือเบอร์โทร
+- ลูกค้าสั่ง Take Away ผ่าน `/takeaway/` หรือ `/s/{tenantSlug}/takeaway/` และกรอกชื่อหรือเบอร์โทร
 - หน้า Cashier มีปุ่มเปิดลิงก์ Take Away และคัดลอกลิงก์ให้ลูกค้า Walk-in
 - Take Away ส่งเข้าครัวด้วย orderType `takeaway`
 - Cashier แยกการ์ด Take Away ออกจากโต๊ะและ Delivery
 - Cashier กดเรียกรับของและกดส่งมอบแล้วได้
 - แก้ Cashier ไม่ให้แสดง `Invalid Date` เมื่อ order ใช้ Firestore server timestamp หรือข้อมูลวันที่ไม่สมบูรณ์
+- แก้ Firebase Hosting route ให้ `/s/{tenantSlug}/takeaway/` เปิดหน้า Take Away ไม่ตกไปหน้า Delivery
 
 ## Retail POS Status
 
@@ -43,19 +44,19 @@
 
 ## Current Milestone
 
-`O1-T001.1 Take Away Cashier Fix`
+`O1-T001.2 Tenant Take Away Route Fix`
 
 ## Regression Tests
 
 1. เปิด `/cashier/`
 2. ต้องเห็นปุ่ม `เปิด QR Take Away` และ `คัดลอกลิงก์`
 3. กดเปิด QR Take Away ต้องไปที่ `/s/{tenantSlug}/takeaway/` ถ้ามี tenant slug หรือ `/takeaway/` เป็น fallback
-4. เปิด `/takeaway/`
-5. กรอกชื่อหรือเบอร์โทรอย่างน้อย 1 อย่าง
-6. เลือกเมนูและส่งออเดอร์ ต้องได้เลขคิว `TA-xxx`
-7. หน้า Cashier ต้องแสดงวันที่/เวลา ไม่ใช่ `Invalid Date`
-8. ออเดอร์ Take Away ต้องเข้า Kitchen ได้เหมือนออเดอร์ทั่วไป
-9. Cashier กดรับชำระเงิน เรียกรับของ และส่งมอบแล้วได้
+4. เปิด `/s/{tenantSlug}/takeaway/` ต้องเห็นหน้า `สั่งกลับบ้าน` ไม่ใช่หน้า Delivery
+5. เปิด `/takeaway/` ต้องยังใช้งานได้
+6. กรอกชื่อหรือเบอร์โทรอย่างน้อย 1 อย่าง
+7. เลือกเมนูและส่งออเดอร์ ต้องได้เลขคิว `TA-xxx`
+8. หน้า Cashier ต้องแสดงวันที่/เวลา ไม่ใช่ `Invalid Date`
+9. ออเดอร์ Take Away ต้องเข้า Kitchen ได้เหมือนออเดอร์ทั่วไป
 10. QR Table Order และ Delivery ต้องยังทำงานตามเดิม
 
 ## Next Tasks
