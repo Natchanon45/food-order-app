@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Delivery Category Scroll & Admin Sort Fix`
-- Developer Panel version/build ปัจจุบัน: `0.12.35` / `2026.07.01.017`
+- Current milestone: `P9-B010 POS Performance`
+- Developer Panel version/build ปัจจุบัน: `0.12.36` / `2026.07.01.018`
 
 ## Food Order Status
 
@@ -18,23 +18,27 @@
 - Cashier ย้ายโต๊ะเสร็จ
 - หน้า Delivery PC เลื่อนหมวดหมู่ซ้าย-ขวาหลังคลิกหมวดได้ต่อเนื่อง
 - Admin จัดลำดับหมวดหมู่หลังเปลี่ยนชื่อหมวดแล้วบันทึกได้
+- P9-B010 เริ่มแล้ว: Retail POS ใช้ virtual batch rendering, debounce search, cache search data และ lazy image สำหรับสินค้า
 
 ## Current Milestone
 
-`Delivery Category Scroll & Admin Sort Fix`
+`P9-B010 POS Performance`
 
 ## Regression Tests
 
-1. เปิด Delivery บน PC
-2. คลิกหมวดลำดับ 2 หรือ 3 แล้วต้องยังเลื่อนหมวดหมู่ซ้าย-ขวาได้
-3. เปิด Admin แล้วเปลี่ยนชื่อหมวดหมู่เมนู
-4. จัดลำดับหมวดหมู่ใหม่แล้วต้องบันทึกสำเร็จ
-5. เมนูหน้า Delivery/Take Away ต้องเรียงตามลำดับหมวดใหม่
+1. เปิด `/pos`
+2. สินค้าใน POS ต้องโหลดเร็วขึ้นและไม่ render ทั้งหมดในครั้งเดียว
+3. ถ้าสินค้ามีจำนวนมาก ต้องเห็นปุ่ม `แสดงเพิ่ม`
+4. ค้นหาสินค้าด้วยชื่อ/รหัส/บาร์โค้ดต้องยังทำงาน
+5. คลิกสินค้าเพื่อเพิ่มลงบิลต้องยังทำงาน
+6. สแกนบาร์โค้ดแล้วยังเพิ่มสินค้าได้
+7. ขายสินค้าและตัดสต็อกต้องยังทำงานทั้ง Online/Offline
+8. รูปสินค้าต้อง lazy load เฉพาะรายการที่แสดง
 
 ## Next Tasks
 
 1. O1-T002 Pickup Screen / Counter Display
-2. P9-B010 Performance
+2. P9-B010 Performance phase 2: product data watch/cache cleanup และ search index สำหรับ barcode lookup
 
 ## Deploy
 
