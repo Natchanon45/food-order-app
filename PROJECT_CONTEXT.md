@@ -16,10 +16,10 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.40`
-- Build: `2026.07.01.022`
+- Version: `0.12.41`
+- Build: `2026.07.01.023`
 - Branch: `feature/retail-pos`
-- Milestone: `Kitchen Visual Cues`
+- Milestone: `Owner Staff List Fix`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -36,37 +36,35 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Order Completion: ออเดอร์ที่ `served` และ `paymentStatus = paid` จะปิดเป็น `paid` อัตโนมัติและไม่ค้างใน Cashier/Kitchen
 - Receipt Print: พิมพ์เฉพาะข้อมูลใบเสร็จ ไม่ติด UI/toolbar/footer/version ของระบบ
 - Kitchen Visual Cues: ปุ่มรับออเดอร์/เริ่มทำ/พร้อมเสิร์ฟมี animation เบา ๆ และออเดอร์รอนานเกิน 15 นาทีมี highlight
+- Admin Users: Owner เห็นรายการพนักงานของร้านตัวเองจาก tenant memberships แล้ว
 
 ## Current Milestone
 
-`Kitchen Visual Cues`
+`Owner Staff List Fix`
 
-## รายละเอียด Kitchen Visual Cues
+## รายละเอียด Owner Staff List Fix
 
-แก้เฉพาะ UI ของหน้าครัว เพื่อให้พนักงานมองสถานะและ action สำคัญได้เร็วขึ้น โดยไม่เปลี่ยน workflow สถานะออเดอร์หรือ Firestore logic
+แก้ปัญหา Owner เปิดหน้า `/admin/users` แล้วรายการพนักงานเป็น `0 คน` ทั้งที่มีพนักงานในร้าน เพราะหน้าเดิมอิง staff helper เก่าและไม่ได้ fallback ไปอ่าน `tenants/{tenantId}/memberships`
 
 แก้แล้ว:
 
-- `kitchen.js` เพิ่ม class `kitchen-accept-action`, `kitchen-start-action`, `kitchen-ready-action`
-- `kitchen.js` เพิ่มการตรวจออเดอร์รอนานเกิน 15 นาทีสำหรับสถานะ `pending`, `accepted`, `cooking`
-- `kitchen-item-editor.css` เพิ่ม pulse animation ให้ปุ่ม `รับออเดอร์`
-- `kitchen-item-editor.css` คง hourglass animation ของปุ่ม `เริ่มทำ`
-- `kitchen-item-editor.css` เพิ่ม check pop animation ให้ปุ่ม `พร้อมเสิร์ฟ/พร้อมจัดส่ง`
-- `kitchen-item-editor.css` เพิ่ม highlight สีส้มอ่อนและ badge `รอนาน xx นาที` สำหรับออเดอร์รอนาน
-- รองรับ `prefers-reduced-motion` โดยปิด animation ถ้าผู้ใช้ตั้งค่าลด motion
-- `/kitchen/index.html` bump `kitchen.js?v=20260701-022`
-- `/kitchen/index.html` bump `kitchen-item-editor.css?v=20260701-022`
-- Developer Panel เป็น Version `0.12.40` Build `2026.07.01.022`
+- เพิ่ม `admin-staff-service.js`
+- `listStaffUsers()` เรียก callable `listStaffUsers` ก่อน และ fallback ไปอ่าน tenant memberships ของ tenant ปัจจุบัน
+- `createStaffUser()` และ `updateStaffUser()` ส่ง `tenantId`/`tenantSlug` ไป callable เพื่อคง scope tenant
+- `admin-users.js` เปลี่ยนไปใช้ `admin-staff-service.js?v=20260701-023`
+- `/admin/users/index.html` bump `admin-users.js?v=20260701-023`
+- `/admin/users/index.html` bump `page-guard.js?v=20260701-015`
+- Developer Panel เป็น Version `0.12.41` Build `2026.07.01.023`
 
 ## Regression Tests สำคัญ
 
 1. Deploy hosting ใหม่
-2. เปิด Kitchen
-3. ออเดอร์สถานะ `pending` ต้องแสดงปุ่ม `รับออเดอร์` พร้อม pulse เบา ๆ
-4. ออเดอร์สถานะ `accepted` ต้องแสดงปุ่ม `เริ่มทำ` พร้อม hourglass animation
-5. ออเดอร์สถานะ `cooking` ต้องแสดงปุ่ม `พร้อมเสิร์ฟ/พร้อมจัดส่ง` พร้อม check animation
-6. ออเดอร์ที่รอนานเกิน 15 นาทีต้องมี badge `รอนาน xx นาที` และ highlight สีส้มอ่อน
-7. กดปุ่มสถานะทั้งหมดแล้ว workflow ต้องยังทำงานเหมือนเดิม
+2. Login ด้วย Owner
+3. เปิด `/admin/users`
+4. รายการพนักงานต้องแสดงพนักงานของ tenant ปัจจุบัน ไม่ใช่ `0 คน` หากมี membership อยู่แล้ว
+5. สร้างพนักงานใหม่แล้ว refresh รายการต้องแสดงทันที
+6. รายการต้องไม่ข้าม tenant
+7. หน้า Kitchen/Cashier/POS ต้องไม่เปลี่ยน behavior
 
 ## งานถัดไป
 
