@@ -70,7 +70,7 @@ function renderTableBill(group) {
   return `<article class="card order-card"><div class="order-head"><div><h2 style="margin:0">โต๊ะ ${first.tableCode}</h2><small>${sorted.length} รอบที่ยังไม่ปิดบิล • เสิร์ฟแล้ว ${servedCount}/${sorted.length} รอบ</small></div>${paymentBadge}</div>${rounds}<div class="order-head" style="margin-top:14px;padding-top:12px;border-top:2px solid #dfe8e2"><strong>ยอดรวมทั้งโต๊ะ</strong><strong class="price">${money(total)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?orders=${encodeURIComponent(ids)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>${paymentAction}</div></article>`;
 }
 function render(orders) { currentOrders = orders; const active = activeOrders(orders); const deliveries = active.filter(order => order.orderType === "delivery"); const takeaways = active.filter(order => order.orderType === "takeaway"); const tableOrders = active.filter(order => order.orderType !== "delivery" && order.orderType !== "takeaway"); const groups = new Map(); tableOrders.forEach(order => { const key = tableGroupKey(order); if (!groups.has(key)) groups.set(key, []); groups.get(key).push(order); }); const cards = [...Array.from(groups.values()).map(renderTableBill), ...takeaways.map(renderTakeaway), ...deliveries.map(renderDelivery)]; grid.innerHTML = cards.length ? cards.join("") : '<div class="card empty">ไม่มีบิลที่รอดำเนินการ</div>'; }
-async function closeTableAfterPayment(orders) { const first = orders[0]; if (!first?.tableCode || first?.orderType === "takeaway") return; const table = await dataService.getTable(first.tableCode); if (table && (!first.tableToken || table.orderToken === first.tableToken)) await dataService.updateTable(table.id, { status: "available", orderToken: "", sessionStartedAt: null, currentRound: 0 }); }
+async function closeTableAfterPayment(orders) { const first = orders[0]; if (!first?.tableCode || first?.orderType === "takeaway") return; const table = await dataService.getTable(first.tableCode); if (table && (!first.tableToken || table.orderToken === first.tableToken)) await dataService.updateTable(table.id, { status: "available", orderToken: "", sessionStartedAt: null, currentRound: 0, orderIds: [] }); }
 
 grid.addEventListener("click", async event => {
   const tablePaymentButton = event.target.closest("[data-table-payment]");
@@ -83,5 +83,28 @@ grid.addEventListener("click", async event => {
   const button = event.target.closest("[data-id][data-status]"); if (!button) return; const { id, status } = button.dataset; const order = currentOrders.find(item => item.id === id); if (status === "cancelled") { const targetLabel = order?.orderType === "delivery" ? `ออเดอร์ Delivery ของ ${order.recipientName || "ลูกค้า"}` : order?.orderType === "takeaway" ? `ออเดอร์ Take Away ${order.queueNo || ""}` : `ออเดอร์โต๊ะ ${order?.tableCode || "-"} รอบที่ ${order?.roundNumber || 1}`; const ok = await askConfirm(`ยืนยันยกเลิก ${targetLabel} ใช่หรือไม่?\n\nการดำเนินการนี้จะนำรายการออกจากบิลทันที`, { title: "ยกเลิกออเดอร์", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" }); if (!ok) return; } button.disabled = true; try { await dataService.updateOrder(id, { status }); if (status === "cancelled" && order?.orderType !== "delivery" && order?.orderType !== "takeaway" && order?.tableCode) { const hasOtherActiveRounds = currentOrders.some(item => item.id !== id && item.tableToken === order.tableToken && !["paid", "cancelled"].includes(item.status)); if (!hasOtherActiveRounds) await closeTableAfterPayment([order]); } toast("ยกเลิกรายการแล้ว"); } catch (error) { console.error(error); toast("อัปเดตสถานะไม่สำเร็จ", "error"); button.disabled = false; }
 });
 
-dataService.subscribeOrders(async orders => { observeDeliveryOrders(orders); currentOrders = orders; render(orders); await resolveSlipUrls(orders); render(orders); });
+async function syncActiveTableOrderIds(orders) {
+  const byToken = new Map();
+  orders.filter(order => isTableOrder(order) && !["paid", "cancelled"].includes(order.status) && order.tableToken).forEach(order => {
+    if (!byToken.has(order.tableToken)) byToken.set(order.tableToken, []);
+    byToken.get(order.tableToken).push(order);
+  });
+  const tables = await dataService.listTables();
+  await Promise.all(tables.filter(table => table.status === "occupied" && table.orderToken).map(async table => {
+    const ids = (byToken.get(table.orderToken) || []).map(order => order.id).filter(Boolean).sort();
+    const current = (table.orderIds || []).map(String).sort();
+    if (ids.length && ids.join("|") !== current.join("|")) await dataService.updateTable(table.id, { orderIds: ids });
+  }));
+}
+
+dataService.subscribeOrders(async orders => {
+  observeDeliveryOrders(orders);
+  currentOrders = orders.map(order => order.orderType === "takeaway" && order.status === "served" && order.pickupStatus !== "picked_up"
+    ? { ...order, status: "ready", pickupStatus: order.pickupStatus === "served" ? "ready" : order.pickupStatus }
+    : order);
+  render(currentOrders);
+  await resolveSlipUrls(currentOrders);
+  render(currentOrders);
+  syncActiveTableOrderIds(orders).catch(error => console.error("Unable to sync table order ids", error));
+});
 mountTakeawayQrTools();

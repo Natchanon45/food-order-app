@@ -46,7 +46,7 @@ async function closeTableIfSessionComplete(order, orders) {
   if (hasOpenRound) return;
   const table = await dataService.getTable(order.tableCode);
   if (table && table.orderToken === order.tableToken) {
-    await dataService.updateTable(table.id, { status: 'available', orderToken: '', sessionStartedAt: null, currentRound: 0 });
+    await dataService.updateTable(table.id, { status: 'available', orderToken: '', sessionStartedAt: null, currentRound: 0, orderIds: [] });
   }
 }
 

@@ -116,7 +116,7 @@ async function loadTables() {
 function renderTicket(table, token, autoPrint = true) {
   const tenant = dataService.getActiveShop();
   const tenantSlug = encodeURIComponent(tenant.slug || "");
-  const orderUrl = `${location.origin}/s/${tenantSlug}/order/?table=${encodeURIComponent(table.code)}&token=${encodeURIComponent(token)}`;
+  const orderUrl = `${location.origin}/s/${tenantSlug}/order/?table=${encodeURIComponent(table.code)}`;
   const qrUrl = buildQrImageUrl(orderUrl);
 
   issuedQr.innerHTML = `
@@ -174,6 +174,7 @@ availableTables.addEventListener("click", async event => {
       status: "occupied",
       orderToken: token,
       currentRound: 0,
+      orderIds: [],
       sessionStartedAt: new Date().toISOString()
     });
 
@@ -216,7 +217,8 @@ occupiedTables.addEventListener("click", async event => {
         status: "available",
         orderToken: "",
         sessionStartedAt: null,
-        currentRound: 0
+        currentRound: 0,
+        orderIds: []
       });
       toast(`ปิด ${table.name} เรียบร้อยแล้ว`);
       await loadTables();

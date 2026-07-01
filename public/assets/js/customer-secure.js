@@ -1,10 +1,8 @@
 await import("./public-tenant-resolver.js?v=20260629-025");
-await import("./table-qr-resolver.js?v=20260622-5");
+await import("./table-qr-resolver.js?v=20260702-002");
 
 import { dataService, usingDemoMode } from "./data-service.js";
-import { db, collection, onSnapshot, query, where } from "./firebase-config.js?v=20260630-073";
 import { demoStore } from "./demo-store.js";
-import { shopCollectionPath, resolveShopContext } from "./tenant-context.js";
 
 function tableSession() {
   const params = new URLSearchParams(location.search);
@@ -56,26 +54,25 @@ dataService.subscribeOrders = callback => {
     return () => { clearInterval(timer); window.removeEventListener("storage", handler); window.removeEventListener("demo-store-change", handler); };
   }
 
-  const ordersPath = shopCollectionPath("orders", resolveShopContext());
-  const ordersRef = collection(db, ...ordersPath);
-  let byToken = [];
-  let byMovedFrom = [];
-  const flush = () => {
-    const merged = new Map();
-    [...byToken, ...byMovedFrom].forEach(order => merged.set(order.id, order));
-    emit([...merged.values()]);
+  let stopped = false;
+  let lastSignature = "";
+  const refresh = async () => {
+    try {
+      const table = await activeTableForToken(session.tableToken);
+      const orderIds = [...new Set((table?.orderIds || []).map(String).filter(Boolean))];
+      const rows = (await Promise.all(orderIds.map(id => dataService.getOrder(id)))).filter(Boolean);
+      const signature = rows.map(order => `${order.id}:${order.updatedAt?.seconds || order.updatedAt || ""}`).join("|");
+      if (!stopped && signature !== lastSignature) {
+        lastSignature = signature;
+        emit(rows);
+      }
+    } catch (error) {
+      console.error("Unable to refresh table session orders", error);
+    }
   };
-
-  const unsubToken = onSnapshot(query(ordersRef, where("tableToken", "==", session.tableToken)), snapshot => {
-    byToken = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
-    flush();
-  });
-  const unsubMoved = onSnapshot(query(ordersRef, where("movedFromTableCode", "==", session.tableCode)), snapshot => {
-    byMovedFrom = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
-    flush();
-  });
-
-  return () => { unsubToken(); unsubMoved(); };
+  refresh();
+  const timer = setInterval(refresh, 1500);
+  return () => { stopped = true; clearInterval(timer); };
 };
 
-await import("./customer.js?v=20260702-001");
+await import("./customer.js?v=20260702-002");

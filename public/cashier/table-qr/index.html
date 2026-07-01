@@ -1,30 +1,65 @@
 <!doctype html>
 <html lang="th">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#159447">
-  <link rel="stylesheet" href="/assets/css/app.css?v=20260701-001">
-  <link rel="stylesheet" href="/assets/css/menu-qr.css?v=20260621-26">
-  <link rel="stylesheet" href="/assets/css/cashier-qr-print.css?v=20260621-26">
-  <link rel="stylesheet" href="/assets/css/icons.css?v=20260701-001">
-  <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260629-048">
-  <title>ออก QR โต๊ะ</title>
-</head>
-<body data-roles="cashier,admin">
-  <div id="demoBanner"></div>
-  <header class="app-header">
-    <div class="brand"><span class="brand-mark">FO</span>ออก QR โต๊ะ</div>
-    <a class="btn btn-sm" href="/cashier">ย้อนกลับ</a>
-  </header>
-  <main class="container">
-    <section class="hero"><h1>จัดการ QR โต๊ะ</h1><p>ออก QR ใหม่เฉพาะโต๊ะว่าง และพิมพ์ QR เดิมซ้ำได้</p></section>
-    <section class="card" style="margin-bottom:18px"><div class="field"><label for="qrPaperSize">ขนาดกระดาษสำหรับพิมพ์ QR</label><select class="input" id="qrPaperSize"><option value="80">80 มม.</option><option value="58">58 มม.</option><option value="a4">A4</option></select></div></section>
-    <section><div class="section-title"><h2>โต๊ะว่าง</h2><span class="badge" id="availableCount">0 โต๊ะ</span></div><div id="availableTables" class="grid grid-3"></div></section>
-    <section style="margin-top:22px"><div class="section-title"><h2>โต๊ะที่ออก QR แล้ว</h2><span class="badge warning" id="occupiedCount">0 โต๊ะ</span></div><div id="occupiedTables" class="grid grid-3"></div></section>
-    <section id="issuedQrWrap" hidden style="margin-top:18px"><div id="issuedQr"></div></section>
-  </main>
-  <script type="module" src="/assets/js/page-guard.js?v=20260621-26"></script>
-  <script type="module" src="/assets/js/cashier-table-qr.js?v=20260630-050"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#159447" />
+    <link rel="stylesheet" href="/assets/css/app.css?v=20260701-001" />
+    <link rel="stylesheet" href="/assets/css/menu-qr.css?v=20260621-26" />
+    <link
+      rel="stylesheet"
+      href="/assets/css/cashier-qr-print.css?v=20260621-26"
+    />
+    <link rel="stylesheet" href="/assets/css/icons.css?v=20260701-001" />
+    <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260629-048" />
+    <title>ออก QR โต๊ะ</title>
+  </head>
+  <body data-roles="cashier,admin">
+    <div id="demoBanner"></div>
+    <header class="app-header">
+      <div class="brand"><span class="brand-mark">FO</span>ออก QR โต๊ะ</div>
+      <a class="btn btn-sm" href="/cashier">ย้อนกลับ</a>
+    </header>
+    <main class="container">
+      <section class="hero">
+        <h1>จัดการ QR โต๊ะ</h1>
+        <p>ออก QR ใหม่เฉพาะโต๊ะว่าง และพิมพ์ QR เดิมซ้ำได้</p>
+      </section>
+      <section class="card" style="margin-bottom: 18px">
+        <div class="field">
+          <label for="qrPaperSize">ขนาดกระดาษสำหรับพิมพ์ QR</label
+          ><select class="input" id="qrPaperSize">
+            <option value="80">80 มม.</option>
+            <option value="58">58 มม.</option>
+            <option value="a4">A4</option>
+          </select>
+        </div>
+      </section>
+      <section>
+        <div class="section-title">
+          <h2>โต๊ะว่าง</h2>
+          <span class="badge" id="availableCount">0 โต๊ะ</span>
+        </div>
+        <div id="availableTables" class="grid grid-3"></div>
+      </section>
+      <section style="margin-top: 22px">
+        <div class="section-title">
+          <h2>โต๊ะที่ออก QR แล้ว</h2>
+          <span class="badge warning" id="occupiedCount">0 โต๊ะ</span>
+        </div>
+        <div id="occupiedTables" class="grid grid-3"></div>
+      </section>
+      <section id="issuedQrWrap" hidden style="margin-top: 18px">
+        <div id="issuedQr"></div>
+      </section>
+    </main>
+    <script type="module" src="/assets/js/page-guard.js?v=20260621-26"></script>
+    <script
+      type="module"
+      src="/assets/js/cashier-table-qr.js?v=20260702-002"
+    ></script>
+  </body>
 </html>

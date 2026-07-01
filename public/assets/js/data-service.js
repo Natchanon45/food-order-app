@@ -106,8 +106,9 @@ export const dataService = {
       const table = await this.getTable(order.tableCode);
       if (!table || table.status !== "occupied" || table.orderToken !== order.tableToken) throw new Error("INVALID_TABLE_SESSION");
       const roundNumber = Number(table.currentRound || 0) + 1;
-      await this.updateTable(table.id, { currentRound: roundNumber });
-      return demoStore.orders.add({ ...order, roundNumber });
+      const created = demoStore.orders.add({ ...order, roundNumber });
+      await this.updateTable(table.id, { currentRound: roundNumber, orderIds: [...new Set([...(table.orderIds || []), created.id])] });
+      return created;
     }
     const table = await this.getTable(order.tableCode);
     if (!table) throw new Error("INVALID_TABLE_SESSION");
@@ -119,7 +120,7 @@ export const dataService = {
       const tableData = tableSnapshot.data();
       if (tableData.status !== "occupied" || tableData.orderToken !== order.tableToken) throw new Error("INVALID_TABLE_SESSION");
       const roundNumber = Number(tableData.currentRound || 0) + 1;
-      transaction.update(tableRef, withShop({ currentRound: roundNumber, updatedAt: serverTimestamp() }));
+      transaction.update(tableRef, withShop({ currentRound: roundNumber, orderIds: [...new Set([...(tableData.orderIds || []), orderRef.id])], updatedAt: serverTimestamp() }));
       transaction.set(orderRef, withShop({ ...order, roundNumber, createdAt: serverTimestamp(), updatedAt: serverTimestamp() }));
     });
     return { id: orderRef.id };
@@ -145,8 +146,8 @@ export const dataService = {
       const latestOrders = demoStore.orders.list().filter(order => orderIds.includes(String(order.id)));
       if (latestOrders.length !== orderIds.length) throw new Error("MOVE_ORDER_NOT_FOUND");
       latestOrders.forEach(order => { if (!isUnpaidTableOrder(order) || order.tableToken !== fromTableToken || String(order.tableCode) !== String(fromTable.code || fromTable.id)) throw new Error("MOVE_ORDER_NOT_UNPAID"); });
-      await this.updateTable(fromTable.id, { status: "available", orderToken: "", sessionStartedAt: null, currentRound: 0 });
-      await this.updateTable(toTable.id, { status: "occupied", orderToken: fromTableToken, sessionStartedAt: fromTable.sessionStartedAt || movedAt, currentRound: maxRound, movedFromTableCode: fromTable.code || fromTable.id, movedAt });
+      await this.updateTable(fromTable.id, { status: "available", orderToken: "", sessionStartedAt: null, currentRound: 0, orderIds: [] });
+      await this.updateTable(toTable.id, { status: "occupied", orderToken: fromTableToken, sessionStartedAt: fromTable.sessionStartedAt || movedAt, currentRound: maxRound, orderIds, movedFromTableCode: fromTable.code || fromTable.id, movedAt });
       latestOrders.forEach(order => demoStore.orders.update(order.id, { tableCode: targetCode, tableName: targetName, movedFromTableCode: fromTable.code || fromTable.id, tableMovedAt: movedAt }));
       return { fromTable, toTable: { ...toTable, code: targetCode, name: targetName }, movedOrders: latestOrders.length };
     }
@@ -163,8 +164,8 @@ export const dataService = {
       const target = toSnapshot.data();
       if (target.active === false || (target.status && target.status !== "available")) throw new Error("TARGET_TABLE_NOT_AVAILABLE");
       orderSnapshots.forEach(snapshot => { if (!snapshot.exists()) throw new Error("MOVE_ORDER_NOT_FOUND"); const order = snapshot.data(); if (!isUnpaidTableOrder(order) || order.tableToken !== fromTableToken || String(order.tableCode) !== String(source.code || fromTableCode)) throw new Error("MOVE_ORDER_NOT_UNPAID"); });
-      transaction.update(fromTableRef, withShop({ status: "available", orderToken: "", sessionStartedAt: null, currentRound: 0, updatedAt: serverTimestamp() }));
-      transaction.update(toTableRef, withShop({ status: "occupied", orderToken: fromTableToken, sessionStartedAt: source.sessionStartedAt || movedAt, currentRound: maxRound, movedFromTableCode: source.code || fromTableCode, movedAt, updatedAt: serverTimestamp() }));
+      transaction.update(fromTableRef, withShop({ status: "available", orderToken: "", sessionStartedAt: null, currentRound: 0, orderIds: [], updatedAt: serverTimestamp() }));
+      transaction.update(toTableRef, withShop({ status: "occupied", orderToken: fromTableToken, sessionStartedAt: source.sessionStartedAt || movedAt, currentRound: maxRound, orderIds, movedFromTableCode: source.code || fromTableCode, movedAt, updatedAt: serverTimestamp() }));
       orderRefs.forEach(ref => transaction.update(ref, withShop({ tableCode: targetCode, tableName: targetName, movedFromTableCode: source.code || fromTableCode, tableMovedAt: movedAt, updatedAt: serverTimestamp() })));
     });
     return { fromTable, toTable: { ...toTable, code: targetCode, name: targetName }, movedOrders: orderIds.length };
