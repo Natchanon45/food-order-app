@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `P9-B007 Audit Log`
-- Developer Panel version/build ปัจจุบัน: `0.12.54` / `2026.07.02.008`
+- Current milestone: `P9-B008 Shift Opening / Closing`
+- Developer Panel version/build ปัจจุบัน: `0.12.55` / `2026.07.02.009`
 
 ## Food Order Status
 
@@ -30,37 +30,39 @@
 - P9-B005 Repository Layer
 - P9-B006 Firestore Composite Index
 - P9-B007 Audit Log
+- P9-B008 Shift Opening / Closing
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
 
 ## Current Milestone
 
-`P9-B007 Audit Log`
+`P9-B008 Shift Opening / Closing`
 
-## Audit Log Service
+## Shift Service
 
-- เพิ่ม `public/assets/js/retail-pos-audit-log.js`
-- รองรับ `POS_AUDIT_ACTIONS` สำหรับ sale, sync, shift, refund, return, void และ stock
-- รองรับ `buildAuditLogRow()` สำหรับสร้าง audit row พร้อม tenant metadata
-- รองรับ `setAuditLogInTransaction()` สำหรับใช้ใน Firestore Transaction
-- รองรับ `writeAuditLog()` สำหรับเขียน audit log แบบ async
-- รองรับ `saleAuditSummary()` สำหรับสรุป sale ใน audit log
+- เพิ่ม `public/assets/js/retail-pos-shift.js`
+- รองรับ `openShift()` สำหรับเปิดกะ
+- รองรับ `closeShift()` สำหรับปิดกะ
+- รองรับ `getActiveShiftLocal()` สำหรับอ่านกะที่เปิดอยู่
+- รองรับเลข Shift จาก Running Number กลาง
+- เขียน Audit Log ตอนเปิดกะและปิดกะ
 
 ## Regression Tests
 
 1. เปิด POS แล้วขาย Online ได้ตามเดิม
-2. ตรวจ auditLogs ใน Firestore หลังขาย Online ต้องยังมีรายการ `pos_sale_completed` จาก flow เดิม
-3. Audit row ต้องมี `tenantId`, `shopId`, `createdBy`, `action`, `entityId`
-4. `buildAuditLogRow()` ต้องแจ้ง error ถ้าไม่มี action หรือ entityId
-5. ตรวจว่าไม่กระทบ Offline Sync
-6. ตรวจว่าไม่กระทบ Food Order / Delivery
-7. ตรวจว่า record สำคัญยังมี `tenantId`
+2. Offline Sync ต้องทำงานได้ตามเดิม
+3. เรียก `openShift()` ต้องสร้างเอกสารใน `shifts` พร้อม `tenantId`, `status: open`, `openingCash`
+4. เปิดกะแล้ว localStorage ต้องมี `retail_pos_active_shift_v1`
+5. เรียก `closeShift()` ต้องอัปเดต `status: closed`, `closingCash`, `expectedCash`, `cashDifference`
+6. ปิดกะแล้ว localStorage ต้องล้าง active shift
+7. ตรวจ auditLogs ต้องมี `pos_shift_opened` และ `pos_shift_closed`
+8. ตรวจว่าไม่กระทบ Food Order / Delivery
+9. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## Next Tasks
 
-1. P9-B008 Shift Opening / Closing
-2. P9-B009 Refund / Return / Void
-3. P9-B010 Performance (Cache / Virtual List / Search)
+1. P9-B009 Refund / Return / Void
+2. P9-B010 Performance (Cache / Virtual List / Search)
 
 ## Deploy
 
