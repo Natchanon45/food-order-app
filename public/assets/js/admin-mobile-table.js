@@ -4,6 +4,11 @@ function icon(name) {
   return iconMarkup(name);
 }
 
+function statusIcon(active) {
+  const label = active ? "เปิดใช้งาน" : "ไม่ได้ใช้งาน";
+  return `<i class="bi bi-${active ? "check-square" : "square"} admin-status-icon" role="img" aria-label="${label}" title="${label}"></i>`;
+}
+
 function decorateStatusCell(row) {
   const cells = row.children;
   if (!cells.length) return;
@@ -18,7 +23,7 @@ function decorateStatusCell(row) {
   if (statusCell.querySelector(".admin-status-icon")) return;
 
   const active = row.dataset.active === "true";
-  statusCell.innerHTML = `<span class="admin-status-icon${active ? "" : " is-inactive"}" role="img" aria-label="${active ? "เปิดใช้งาน" : "ปิดใช้งาน"}" title="${active ? "เปิดใช้งาน" : "ปิดใช้งาน"}">${icon(active ? "check" : "times-circle")}</span>`;
+  statusCell.innerHTML = statusIcon(active);
 }
 
 function decorateActionCell(row) {

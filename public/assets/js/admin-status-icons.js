@@ -1,8 +1,8 @@
 function icon(active) {
-  const cls = active ? 'bi-check-square' : 'bi-square';
-  const color = active ? '#159447' : '#8a9490';
-  const label = active ? 'ใช้งาน' : 'ไม่ได้ใช้งาน';
-  return '<i class="bi ' + cls + ' app-icon" style="color:' + color + ';width:22px;height:22px;background:transparent;border-radius:0;box-shadow:none" title="' + label + '" aria-label="' + label + '"></i>';
+  const cls = active ? "bi-check-square" : "bi-square";
+  const color = active ? "#159447" : "#8a9490";
+  const label = active ? "เปิดใช้งาน" : "ไม่ได้ใช้งาน";
+  return `<i class="bi ${cls} admin-status-icon" style="color:${color}" role="img" title="${label}" aria-label="${label}"></i>`;
 }
 function apply() {
   document.querySelectorAll('#menuRows tr').forEach(row => {
