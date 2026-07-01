@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.52',
-  build: '2026.07.02.006',
+  version: '0.12.53',
+  build: '2026.07.02.007',
   branch: 'feature/retail-pos',
-  commit: 'POS-SALE-RULES-HOTFIX-006',
+  commit: 'POS-COMPOSITE-INDEX-006',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P9-B005 Repository Layer Hotfix',
+  milestone: 'P9-B006 Firestore Composite Index',
   updatedAt: '2026-07-02T00:00:00+07:00',
   whatsNew: [
-    'Fix POS sale transaction permission denied when checking stable saleId',
-    'Allow POS transaction to read a not-yet-created sale document for duplicate protection',
-    'Keep existing sale read restricted to tenant members or the cashier that created the sale',
-    'No POS UI flow change required'
+    'Add POS Firestore composite indexes for sales reporting and filters',
+    'Add POS indexes for stock movements by product, date, and reference',
+    'Add POS indexes for sync queue, audit logs, shifts, and returns',
+    'Prepare Audit Log, Shift, Refund, and Performance milestones'
   ]
 };
 
