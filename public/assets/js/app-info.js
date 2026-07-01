@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.43',
-  build: '2026.07.01.025',
+  version: '0.12.44',
+  build: '2026.07.01.027',
   branch: 'feature/retail-pos',
-  commit: 'ADMIN-USERS-025',
+  commit: 'TABLE-MOVE-027',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Hide Owner From Staff List',
-  updatedAt: '2026-07-01T22:10:00+07:00',
+  milestone: 'Customer Old QR Table Move Fix',
+  updatedAt: '2026-07-01T22:25:00+07:00',
   whatsNew: [
-    'Hide owner accounts from Admin Users staff list',
-    'Keep Admin Users list limited to admin, cashier, and kitchen roles',
-    'Prevent owner role from falling back to cashier display',
-    'Confirm table QR keeps working after table move by stable tableToken'
+    'Patch customer order page on the same data-service module used by customer.js',
+    'Load previous table orders by stable tableToken after table move',
+    'Normalize moved-table orders for the old QR view',
+    'Bump customer order page cache version'
   ]
 };
 
