@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Kitchen Start Action Icon Animation`
-- Developer Panel version/build ปัจจุบัน: `0.12.39` / `2026.07.01.021`
+- Current milestone: `Kitchen Visual Cues`
+- Developer Panel version/build ปัจจุบัน: `0.12.40` / `2026.07.01.022`
 
 ## Food Order Status
 
@@ -20,20 +20,23 @@
 - เมื่อออเดอร์เป็น `served` และ `paymentStatus = paid` ระบบจะปิดเป็น `paid` อัตโนมัติ
 - ออเดอร์ที่เสิร์ฟครบและชำระแล้วจะไม่ค้างในหน้า Cashier/Kitchen
 - หน้า Print Receipt พิมพ์เฉพาะข้อมูลใบเสร็จ ไม่ดึง UI/ข้อความระบบ/เวอร์ชันด้านล่างติดไปด้วย
-- หน้าครัวปุ่ม `เริ่มทำ` ใช้ icon `bi-hourglass-split` พร้อม animation เบา ๆ
+- หน้าครัวปุ่ม `รับออเดอร์` มี pulse animation เบา ๆ
+- หน้าครัวปุ่ม `เริ่มทำ` ใช้ icon `bi-hourglass-split` พร้อม animation
+- หน้าครัวปุ่ม `พร้อมเสิร์ฟ/พร้อมจัดส่ง` มี check animation เบา ๆ
+- ออเดอร์ที่รอนานเกิน 15 นาทีจะแสดง badge และ highlight สีส้มอ่อน
 
 ## Current Milestone
 
-`Kitchen Start Action Icon Animation`
+`Kitchen Visual Cues`
 
 ## Regression Tests
 
 1. เปิด Kitchen
-2. ออเดอร์สถานะ `รับออเดอร์แล้ว/accepted` ต้องแสดงปุ่ม `เริ่มทำ`
-3. ปุ่ม `เริ่มทำ` ต้องใช้ icon `bi-hourglass-split`
-4. icon ต้องมี animation หมุนแบบ hourglass เบา ๆ
-5. กด `เริ่มทำ` แล้วสถานะต้องเปลี่ยนเป็น `cooking` เหมือนเดิม
-6. ปุ่มสถานะอื่นใน Kitchen ต้องไม่เปลี่ยน behavior
+2. ออเดอร์สถานะ `pending` ต้องแสดงปุ่ม `รับออเดอร์` พร้อม pulse เบา ๆ
+3. ออเดอร์สถานะ `accepted` ต้องแสดงปุ่ม `เริ่มทำ` พร้อม hourglass animation
+4. ออเดอร์สถานะ `cooking` ต้องแสดงปุ่ม `พร้อมเสิร์ฟ/พร้อมจัดส่ง` พร้อม check animation
+5. ออเดอร์ที่รอนานเกิน 15 นาทีต้องมี badge `รอนาน xx นาที` และ highlight สีส้มอ่อน
+6. กดปุ่มสถานะทั้งหมดแล้ว workflow ต้องยังทำงานเหมือนเดิม
 
 ## Next Tasks
 
