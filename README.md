@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `P9-B005 Repository Layer`
-- Developer Panel version/build ปัจจุบัน: `0.12.51` / `2026.07.02.005`
+- Current milestone: `P9-B005 Repository Layer Hotfix`
+- Developer Panel version/build ปัจจุบัน: `0.12.52` / `2026.07.02.006`
 
 ## Food Order Status
 
@@ -28,35 +28,31 @@
 - P9-B003 Counter
 - P9-B004 Offline Queue Worker + Retry + Conflict Resolver
 - P9-B005 Repository Layer
+- Hotfix POS sale transaction permission
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
 
 ## Current Milestone
 
-`P9-B005 Repository Layer`
+`P9-B005 Repository Layer Hotfix`
 
-## Repository Layer
+## Hotfix
 
-- `retail-pos-repository.js` เป็นชั้นกลางสำหรับ Local/Firebase access ของ POS
-- รองรับ `createTenantRepository()` สำหรับสร้าง repository ตาม collection
-- รองรับ `withTenantMeta()` เพื่อเติม tenant metadata อัตโนมัติ
-- รองรับ `assertTenantRow()` เพื่อกันข้อมูลข้าม tenant
-- มี repository กลาง: products, sales, stockMovements, shifts, returns, syncQueue, auditLogs, counters
-- มี `POS_REPOSITORIES` สำหรับโมดูลถัดไปเรียกใช้จากจุดเดียว
-- Local sale APIs เดิมยัง backward compatible
+- แก้ `firestore.rules` สำหรับ POS sale transaction
+- Transaction สามารถอ่าน sale document ที่ยังไม่ถูกสร้าง เพื่อทำ Duplicate Protection ด้วย stable `saleId`
+- ถ้า sale document มีอยู่แล้ว ยังจำกัดการอ่านไว้ที่ tenant member หรือ cashier เจ้าของบิล
+- ต้อง deploy Firestore rules ด้วย
 
 ## Regression Tests
 
-1. เปิด POS แล้วขาย Online ได้ตามเดิม
-2. ปิดเน็ตแล้วขาย Offline ได้ตามเดิม
-3. เปิดเน็ตแล้ว Sync ได้ตามเดิม
-4. Local sale APIs เดิม `listLocalSales`, `saveLocalSales`, `updateLocalSale`, `localSaleId` ยังใช้ได้
-5. `posSalesRepository.tenantId()` ต้องคืน tenant ปัจจุบัน
-6. Repository save ต้องเติม `tenantId` และ `shopId`
-7. ถ้าส่ง row ที่มี `tenantId` ไม่ตรง tenant ต้องแจ้ง error `POS_REPOSITORY_TENANT_MISMATCH`
-8. `POS_REPOSITORIES` ต้องมี products, sales, stockMovements, shifts, returns, syncQueue, auditLogs, counters
-9. ตรวจว่าไม่กระทบ Food Order / Delivery
-10. ตรวจว่า record สำคัญยังมี `tenantId`
+1. Deploy rules แล้วเปิด POS
+2. ขาย Online 1 บิล ต้องบันทึกสำเร็จ ไม่มี permission denied ที่ `sales/sale-*`
+3. เลขบิลต้องออกตามเดิม
+4. Stock ต้องถูกตัดครั้งเดียว
+5. ปิดเน็ตขาย Offline ได้ตามเดิม
+6. เปิดเน็ตแล้ว Sync ได้ตามเดิม
+7. ตรวจว่าไม่กระทบ Food Order / Delivery
+8. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## Next Tasks
 
@@ -69,7 +65,7 @@
 ## Deploy
 
 git pull --rebase origin feature/retail-pos
-firebase deploy --only hosting
+firebase deploy --only firestore:rules,hosting
 
 ## Notes
 
