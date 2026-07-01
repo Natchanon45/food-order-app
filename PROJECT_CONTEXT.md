@@ -16,10 +16,10 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.31`
-- Build: `2026.07.01.013`
+- Version: `0.12.32`
+- Build: `2026.07.01.014`
 - Branch: `feature/retail-pos`
-- Milestone: `Mobile Kitchen Icon & QR Print Font`
+- Milestone: `Kitchen Serve Item & Cashier Table Icons`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -27,43 +27,47 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Take Away Order / Pickup Queue เสร็จขั้นแรก
 - Kitchen แสดง Take Away ด้วยเลขคิว ไม่ปนกับโต๊ะจริง
 - Kitchen Take Away มีปุ่ม `เสิร์ฟแล้ว` หลังสถานะพร้อมเสิร์ฟ
-- Mobile หน้าครัวปุ่ม `เสิร์ฟแล้ว` แสดงเฉพาะ icon
+- ปุ่ม `เสิร์ฟรายการนี้` ใช้ icon `bi-send-check` และบน Mobile แสดงเฉพาะ icon
+- ปุ่ม `เสิร์ฟแล้ว` ทั้งออเดอร์ยังแสดงข้อความทั้ง PC และ Mobile
 - Take Away ที่เป็นสถานะ `served` แล้วจะแก้ไขหรือยกเลิกไม่ได้ เหมือนออเดอร์นั่งทานที่ร้าน
 - Delivery Lock เสร็จ
 - Cashier ย้ายโต๊ะเสร็จ
+- หน้า Cashier ปุ่มออกโต๊ะ/รับชำระโต๊ะและปุ่มเปลี่ยนโต๊ะใช้ icon `bi-easel2`
 - หน้า Admin มี QR สำหรับ Delivery และ QR สำหรับสั่งกลับบ้าน
 - หน้า Admin ตอนพิมพ์ QR Delivery และ QR สั่งกลับบ้านใช้ `TH Sarabun PSK Local`
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - P9-B001 ถึง P9-B009 เสร็จแล้ว
 
-## รายละเอียด Mobile Kitchen Icon & QR Print Font
+## รายละเอียด Kitchen Serve Item & Cashier Table Icons
 
-ปรับ UI ตามการทดสอบจริง: ปุ่ม `เสิร์ฟแล้ว` บน mobile ของหน้าครัวต้องเหลือเฉพาะ icon เพื่อไม่ให้ชนกับปุ่มอื่น และงานพิมพ์ QR ใน Admin ต้องใช้ฟอนต์พิมพ์เอกสารท้องถิ่น
+ปรับ UI ตามที่ทดสอบจริง: ปุ่มที่ต้องเป็น icon-only บน mobile คือปุ่ม `เสิร์ฟรายการนี้` ของแต่ละรายการอาหารเท่านั้น ส่วนปุ่ม `เสิร์ฟแล้ว` ทั้งออเดอร์ต้องยังแสดงข้อความเหมือนเดิม
 
 แก้แล้ว:
 
-- `kitchen.js` เพิ่ม icon ในปุ่มสถานะของครัว
-- `kitchen-item-editor.css` ซ่อนข้อความของปุ่ม `เสิร์ฟแล้ว` เฉพาะ mobile
-- Desktop ยังแสดงข้อความปุ่มตามเดิม
-- `/kitchen/index.html` bump cache เป็น `kitchen.js?v=20260701-013` และ `kitchen-item-editor.css?v=20260701-013`
-- `admin-delivery-qr.js` บังคับ print style ของ QR Delivery และ QR Take Away ให้ใช้ `TH Sarabun PSK Local`
-- `/admin/index.html` bump cache เป็น `admin-delivery-qr.js?v=20260701-013`
-- Developer Panel เป็น Version `0.12.31` Build `2026.07.01.013`
+- `kitchen-item-serve.js` เปลี่ยนปุ่ม `data-serve-item` เป็น icon `bi-send-check` พร้อมข้อความ `เสิร์ฟรายการนี้`
+- `kitchen-item-editor.css` ซ่อนข้อความเฉพาะปุ่ม `data-serve-item` บน mobile
+- ยกเลิกการซ่อนข้อความของปุ่ม `.kitchen-served-action` บน mobile
+- `kitchen.js` bump import `kitchen-item-serve.js?v=20260701-014`
+- `/kitchen/index.html` bump cache เป็น `kitchen.js?v=20260701-014` และ `kitchen-item-editor.css?v=20260701-014`
+- `cashier-table-move.js` เปลี่ยนปุ่ม `เปลี่ยนโต๊ะ` เป็น icon `bi-easel2`
+- `cashier.js` เปลี่ยนปุ่มออกโต๊ะ/รับชำระโต๊ะเป็น icon `bi-easel2` และ bump import `cashier-table-move.js?v=20260701-014`
+- `/cashier/index.html` bump cache เป็น `cashier.js?v=20260701-014`
+- Developer Panel เป็น Version `0.12.32` Build `2026.07.01.014`
 
 ## Current Milestone
 
-`Mobile Kitchen Icon & QR Print Font`
+`Kitchen Serve Item & Cashier Table Icons`
 
 ## Regression Tests สำคัญ
 
 1. Deploy hosting ใหม่
 2. เปิด Kitchen บน mobile
-3. ออเดอร์ Take Away ที่พร้อมเสิร์ฟต้องเห็นปุ่ม `เสิร์ฟแล้ว` เป็น icon-only
-4. Desktop ยังแสดงข้อความปุ่มได้ตามเดิม
-5. เปิด `/admin`
-6. กดพิมพ์ QR Delivery ต้องใช้ฟอนต์ `TH Sarabun PSK Local`
-7. กดพิมพ์ QR สั่งกลับบ้านต้องใช้ฟอนต์ `TH Sarabun PSK Local`
-8. QR โต๊ะนั่งทานที่ร้านต้องยังทำงานเหมือนเดิม
+3. ปุ่ม `เสิร์ฟรายการนี้` ต้องเห็นเฉพาะ icon `bi-send-check`
+4. เปิด Kitchen บน desktop ปุ่ม `เสิร์ฟรายการนี้` ต้องเห็น icon + ข้อความ
+5. ปุ่ม `เสิร์ฟแล้ว` ทั้งออเดอร์ต้องยังแสดงข้อความบน mobile และ desktop
+6. เปิด Cashier แล้วปุ่มออกโต๊ะ/รับชำระโต๊ะต้องใช้ `bi-easel2`
+7. ปุ่มเปลี่ยนโต๊ะต้องใช้ `bi-easel2`
+8. Workflow ครัวและ Cashier ต้องยังทำงานเหมือนเดิม
 
 ## งานถัดไป
 
