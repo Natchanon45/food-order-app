@@ -6,50 +6,49 @@ import { db, collection, onSnapshot, query, where } from "./firebase-config.js?v
 import { demoStore } from "./demo-store.js";
 import { shopCollectionPath, resolveShopContext } from "./tenant-context.js";
 
-function currentTableSession() {
+function tableSession() {
   const params = new URLSearchParams(location.search);
-  return {
-    tableCode: params.get("table") || params.get("code") || "",
-    tableToken: params.get("token") || ""
-  };
+  return { tableCode: params.get("table") || params.get("code") || "", tableToken: params.get("token") || "" };
 }
 
-dataService.subscribeOrders = callback => {
-  const { tableCode, tableToken } = currentTableSession();
+async function activeTableForToken(token) {
+  if (!token) return null;
+  const tables = await dataService.listTables();
+  return tables.find(table => table?.active !== false && table.status === "occupied" && table.orderToken === token) || null;
+}
 
-  if (!tableCode || !tableToken) {
-    callback([]);
-    return () => {};
-  }
+const baseGetTable = dataService.getTable.bind(dataService);
+const baseCreateTableOrder = dataService.createTableOrder.bind(dataService);
 
-  if (usingDemoMode) {
-    const emit = () => callback(
-      demoStore.orders.list().filter(order =>
-        order.tableCode === tableCode && order.tableToken === tableToken
-      )
-    );
-    emit();
-    const handler = () => emit();
-    window.addEventListener("storage", handler);
-    window.addEventListener("demo-store-change", handler);
-    const timer = setInterval(emit, 1500);
-    return () => {
-      clearInterval(timer);
-      window.removeEventListener("storage", handler);
-      window.removeEventListener("demo-store-change", handler);
-    };
-  }
-
-  const ordersPath = shopCollectionPath("orders", resolveShopContext());
-  const tableOrdersQuery = query(
-    collection(db, ...ordersPath),
-    where("tableCode", "==", tableCode),
-    where("tableToken", "==", tableToken)
-  );
-
-  return onSnapshot(tableOrdersQuery, snapshot => {
-    callback(snapshot.docs.map(item => ({ id: item.id, ...item.data() })));
-  });
+dataService.getTable = async value => {
+  const session = tableSession();
+  const table = await baseGetTable(value);
+  if (table?.active !== false && table?.status === "occupied" && table?.orderToken === session.tableToken) return table;
+  if (String(value || "").toUpperCase() === String(session.tableCode || "").toUpperCase()) return await activeTableForToken(session.tableToken) || table;
+  return table;
 };
 
-await import("./customer-smooth.js?v=20260701-009");
+dataService.createTableOrder = async order => {
+  const table = await activeTableForToken(order.tableToken);
+  return baseCreateTableOrder({ ...order, tableCode: table?.code || table?.id || order.tableCode });
+};
+
+dataService.subscribeOrders = callback => {
+  const session = tableSession();
+  if (!session.tableCode || !session.tableToken) { callback([]); return () => {}; }
+  const emit = rows => callback((rows || []).map(order => order.tableToken === session.tableToken ? { ...order, tableCode: session.tableCode } : order));
+  if (usingDemoMode) {
+    const send = () => emit(demoStore.orders.list().filter(order => order.tableToken === session.tableToken));
+    send();
+    const handler = () => send();
+    window.addEventListener("storage", handler);
+    window.addEventListener("demo-store-change", handler);
+    const timer = setInterval(send, 1500);
+    return () => { clearInterval(timer); window.removeEventListener("storage", handler); window.removeEventListener("demo-store-change", handler); };
+  }
+  const ordersPath = shopCollectionPath("orders", resolveShopContext());
+  const tableOrdersQuery = query(collection(db, ...ordersPath), where("tableToken", "==", session.tableToken));
+  return onSnapshot(tableOrdersQuery, snapshot => emit(snapshot.docs.map(item => ({ id: item.id, ...item.data() }))));
+};
+
+await import("./customer.js?v=20260701-024");
