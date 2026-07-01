@@ -36,7 +36,7 @@ function installButtons(){
     button.type='button';
     button.className='btn btn-warning';
     button.dataset.tableMove=key;
-    button.innerHTML=`${icon('table')}<span>เปลี่ยนโต๊ะ</span>`;
+    button.innerHTML=`${icon('easel2')}<span>เปลี่ยนโต๊ะ</span>`;
     actions.insertBefore(button,paymentButton);
   });
 }
