@@ -2,14 +2,16 @@ import { getProductImageUrl } from "./retail-product-image-store.js?v=20260627-2
 
 const PRODUCT_KEY = "retail_pos_products_v1";
 const SALES_KEY = "retail_pos_sales_v1";
+const INITIAL_LIMIT = 96;
+const LOAD_STEP = 96;
 const productGrid = document.querySelector("#productGrid");
 const productPanel = document.querySelector(".product-panel");
 const searchInput = document.querySelector("#searchInput");
 
 const style = document.createElement("link");
 style.rel = "stylesheet";
-style.href = "/assets/css/retail-pos-catalog.css?v=20260629-043";
-document.head.appendChild(style);
+style.href = "/assets/css/retail-pos-catalog.css?v=20260701-018";
+(document.head || document.documentElement).appendChild(style);
 
 const tabs = document.createElement("div");
 tabs.className = "catalog-tabs";
@@ -17,231 +19,149 @@ tabs.id = "catalogTabs";
 productPanel?.insertBefore(tabs, productGrid);
 
 let activeCategory = "quick";
-let decorating = false;
-let observer;
+let products = [];
+let productsStamp = "";
+let salesStamp = "";
+let ranking = new Map();
+let searchTimer = null;
+let renderLimit = INITIAL_LIMIT;
+let rendering = false;
+let observer = null;
 
-function readJson(key, fallback) {
-  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
-  catch { return fallback; }
-}
+function readRaw(key) { return localStorage.getItem(key) || "[]"; }
+function readJson(key, fallback) { try { return JSON.parse(readRaw(key)) ?? fallback; } catch { return fallback; } }
+function escapeHtml(value) { return String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]); }
+function initials(name) { return String(name || "สินค้า").trim().slice(0, 2).toUpperCase(); }
+function money(value) { return Number(value || 0).toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function productSearchText(product) { return `${product.name || ""} ${product.id || ""} ${product.barcode || ""} ${product.category || ""}`.toLowerCase(); }
+function activeProducts() { return products.filter(item => item.showOnPos !== false); }
+function categories() { return [...new Set(activeProducts().map(item => item.category || "ทั่วไป"))].sort((a, b) => a.localeCompare(b, "th")); }
 
-function readProducts() {
-  return readJson(PRODUCT_KEY, []);
-}
-
-function readSales() {
-  return readJson(SALES_KEY, []);
-}
-
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>'"]/g, char => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
-  })[char]);
-}
-
-function initials(name) {
-  return String(name || "สินค้า").trim().slice(0, 2).toUpperCase();
-}
-
-function money(value) {
-  return Number(value || 0).toLocaleString("th-TH", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
-}
-
-function categories(products) {
-  return [...new Set(products.filter(item => item.showOnPos !== false).map(item => item.category || "ทั่วไป"))]
-    .sort((a, b) => a.localeCompare(b, "th"));
-}
-
-function buildSalesRanking() {
-  const ranking = new Map();
-  readSales().forEach(sale => {
-    (sale.items || []).forEach(item => {
-      const productId = String(item.id || "").trim();
+function refreshProductCache() {
+  const raw = readRaw(PRODUCT_KEY);
+  if (raw !== productsStamp) {
+    productsStamp = raw;
+    products = readJson(PRODUCT_KEY, []).map(item => ({ ...item, id: String(item.id || item.code || ""), barcode: String(item.barcode || ""), searchText: productSearchText(item) })).filter(item => item.id);
+  }
+  const rawSales = readRaw(SALES_KEY);
+  if (rawSales !== salesStamp) {
+    salesStamp = rawSales;
+    ranking = new Map();
+    readJson(SALES_KEY, []).forEach(sale => (sale.items || []).forEach(item => {
+      const productId = String(item.id || item.productId || "").trim();
       if (!productId) return;
       const current = ranking.get(productId) || { qty: 0, revenue: 0 };
       const qty = Number(item.qty || 0);
-      const price = Number(item.price || 0);
       current.qty += qty;
-      current.revenue += qty * price;
+      current.revenue += qty * Number(item.price || 0);
       ranking.set(productId, current);
-    });
-  });
-  return ranking;
+    }));
+  }
 }
 
 function renderTabs() {
-  const products = readProducts();
-  const tabItems = [
+  const items = [
     { id: "quick", label: "ขายดี" },
-    ...categories(products).map(name => ({ id: `category:${name}`, label: name })),
+    ...categories().map(name => ({ id: `category:${name}`, label: name })),
     { id: "all", label: "ทั้งหมด" }
   ];
-  const html = tabItems.map(item => `
-    <button type="button" class="catalog-tab ${activeCategory === item.id ? "active" : ""}" data-category="${escapeHtml(item.id)}">${escapeHtml(item.label)}</button>
-  `).join("");
-  if (tabs.innerHTML !== html) tabs.innerHTML = html;
+  tabs.innerHTML = items.map(item => `<button type="button" class="catalog-tab ${activeCategory === item.id ? "active" : ""}" data-category="${escapeHtml(item.id)}">${escapeHtml(item.label)}</button>`).join("");
 }
 
-function shouldShow(product, ranking) {
-  const searching = Boolean(searchInput?.value.trim());
-  if (searching) return true;
+function shouldShow(product) {
+  const keyword = searchInput?.value.trim().toLowerCase() || "";
   if (product.showOnPos === false) return false;
+  if (keyword) return product.searchText.includes(keyword);
   if (activeCategory === "quick") return Number(ranking.get(product.id)?.qty || 0) > 0;
   if (activeCategory === "all") return true;
   if (activeCategory.startsWith("category:")) return (product.category || "ทั่วไป") === activeCategory.slice(9);
   return true;
 }
 
-function sortCards(cards, byId, ranking) {
+function sortProducts(rows) {
   const searching = Boolean(searchInput?.value.trim());
-  const sorted = [...cards].sort((a, b) => {
-    const productA = byId.get(a.dataset.productId);
-    const productB = byId.get(b.dataset.productId);
+  return [...rows].sort((a, b) => {
     if (activeCategory === "quick" && !searching) {
-      const salesA = ranking.get(productA?.id) || { qty: 0, revenue: 0 };
-      const salesB = ranking.get(productB?.id) || { qty: 0, revenue: 0 };
-      return salesB.qty - salesA.qty || salesB.revenue - salesA.revenue || String(productA?.name || "").localeCompare(String(productB?.name || ""), "th");
+      const salesA = ranking.get(a.id) || { qty: 0, revenue: 0 };
+      const salesB = ranking.get(b.id) || { qty: 0, revenue: 0 };
+      return salesB.qty - salesA.qty || salesB.revenue - salesA.revenue || String(a.name || "").localeCompare(String(b.name || ""), "th");
     }
-    return Number(productA?.sortOrder ?? 999) - Number(productB?.sortOrder ?? 999)
-      || String(productA?.name || "").localeCompare(String(productB?.name || ""), "th");
+    return Number(a.sortOrder ?? 9999) - Number(b.sortOrder ?? 9999) || String(a.name || "").localeCompare(String(b.name || ""), "th");
   });
-  sorted.forEach(card => productGrid.appendChild(card));
 }
 
-async function hydrateCardImage(container, product) {
-  if (!container || container.dataset.imageState === "loading" || container.dataset.imageState === "ready") return;
-  container.dataset.imageState = "loading";
-  let url = "";
-  if (product.imageKey) url = await getProductImageUrl(product.imageKey);
-  if (!url) url = product.imageUrl || "";
-  if (!url) {
-    container.dataset.imageState = "ready";
-    return;
+function productCard(product) {
+  const disabled = Number(product.stock || 0) <= 0;
+  return `<button class="product-card visual-card" type="button" data-product-id="${escapeHtml(product.id)}" ${disabled ? "disabled" : ""} title="${escapeHtml(product.name || "สินค้า")}"><div class="product-image" data-image-key="${escapeHtml(product.imageKey || "")}" data-image-url="${escapeHtml(product.imageUrl || "")}" data-product-name="${escapeHtml(product.name || "สินค้า")}">${escapeHtml(initials(product.name))}</div><div class="product-card-body"><span class="name">${escapeHtml(product.name)}</span><span class="code">${escapeHtml(product.id)} • ${escapeHtml(product.barcode)}</span><span class="stock">คงเหลือ ${Number(product.stock || 0).toLocaleString("th-TH")} ${escapeHtml(product.unit || "")}</span><span class="price">${money(product.price)} บาท</span></div><div class="product-info-overlay"><strong>${escapeHtml(product.name || "สินค้า")}</strong><span>${money(product.price)} บาท • เหลือ ${Number(product.stock || 0).toLocaleString("th-TH")} ${escapeHtml(product.unit || "")}</span></div></button>`;
+}
+
+async function hydrateVisibleImages() {
+  const images = [...productGrid.querySelectorAll(".product-image:not([data-image-state])")].slice(0, 80);
+  for (const container of images) {
+    container.dataset.imageState = "loading";
+    let url = "";
+    if (container.dataset.imageKey) url = await getProductImageUrl(container.dataset.imageKey);
+    if (!url) url = container.dataset.imageUrl || "";
+    if (!url) { container.dataset.imageState = "ready"; continue; }
+    const image = document.createElement("img");
+    image.src = url;
+    image.alt = container.dataset.productName || "สินค้า";
+    image.loading = "lazy";
+    image.decoding = "async";
+    image.onload = () => { container.dataset.imageState = "ready"; };
+    image.onerror = () => { container.dataset.imageState = "ready"; };
+    container.textContent = "";
+    container.appendChild(image);
   }
-  const image = document.createElement("img");
-  image.src = url;
-  image.alt = product.name || "สินค้า";
-  image.loading = "lazy";
-  image.onload = () => { container.dataset.imageState = "ready"; };
-  image.onerror = () => {
-    container.textContent = initials(product.name);
-    container.dataset.imageState = "ready";
-  };
-  container.textContent = "";
-  container.appendChild(image);
 }
 
-function setupProductInfo(card, product) {
-  const label = `${product.name || "สินค้า"} ราคา ${money(product.price)} บาท คงเหลือ ${Number(product.stock || 0).toLocaleString("th-TH")} ${product.unit || ""}`;
-  card.title = label;
-  card.setAttribute("aria-label", label);
-
-  let overlay = card.querySelector(".product-info-overlay");
-  if (!overlay) {
-    overlay = document.createElement("div");
-    overlay.className = "product-info-overlay";
-    card.appendChild(overlay);
-  }
-  overlay.innerHTML = `<strong>${escapeHtml(product.name || "สินค้า")}</strong><span>${money(product.price)} บาท • เหลือ ${Number(product.stock || 0).toLocaleString("th-TH")} ${escapeHtml(product.unit || "")}</span>`;
-
-  if (card.dataset.longPressReady === "1") return;
-  card.dataset.longPressReady = "1";
-
-  let timer = null;
-  const clearTimer = () => {
-    if (timer) clearTimeout(timer);
-    timer = null;
-  };
-
-  card.addEventListener("pointerdown", event => {
-    if (event.pointerType === "mouse") return;
-    clearTimer();
-    timer = setTimeout(() => {
-      card.classList.add("show-info");
-      card.dataset.suppressClick = "1";
-      if (navigator.vibrate) navigator.vibrate(20);
-      setTimeout(() => card.classList.remove("show-info"), 2200);
-    }, 520);
-  });
-
-  ["pointerup", "pointercancel", "pointerleave"].forEach(type => card.addEventListener(type, clearTimer));
-
-  card.addEventListener("click", event => {
-    if (card.dataset.suppressClick !== "1") return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    delete card.dataset.suppressClick;
-  }, true);
-}
-
-function decorateCards() {
-  if (decorating || !productGrid) return;
-  decorating = true;
+function renderCatalog() {
+  if (!productGrid || rendering) return;
+  rendering = true;
   observer?.disconnect();
-
-  try {
-    const products = readProducts();
-    const ranking = buildSalesRanking();
-    const byId = new Map(products.map(item => [item.id, item]));
-    const cards = [...productGrid.querySelectorAll(".product-card[data-product-id]")];
-    let visibleCount = 0;
-
-    cards.forEach(card => {
-      const product = byId.get(card.dataset.productId);
-      if (!product) return;
-      card.classList.add("visual-card");
-      const show = shouldShow(product, ranking);
-      card.classList.toggle("catalog-hidden", !show);
-      if (show) visibleCount += 1;
-
-      if (!card.querySelector(".product-image")) {
-        const original = card.innerHTML;
-        card.innerHTML = `<div class="product-image">${escapeHtml(initials(product.name))}</div><div class="product-card-body">${original}</div>`;
-      }
-      hydrateCardImage(card.querySelector(".product-image"), product);
-      setupProductInfo(card, product);
-    });
-
-    sortCards(cards, byId, ranking);
-
-    let empty = productGrid.querySelector(".catalog-empty");
-    if (!visibleCount && !searchInput?.value.trim()) {
-      const message = activeCategory === "quick" ? "ยังไม่มีประวัติการขายสำหรับคำนวณสินค้าขายดี" : "ไม่มีสินค้าในหมวดนี้";
-      if (!empty) {
-        empty = document.createElement("div");
-        empty.className = "catalog-empty";
-        empty.textContent = message;
-        productGrid.appendChild(empty);
-      } else if (empty.textContent !== message) {
-        empty.textContent = message;
-      }
-    } else if (empty) {
-      empty.remove();
-    }
-  } finally {
-    decorating = false;
-    observer?.observe(productGrid, { childList: true, subtree: true });
-  }
+  refreshProductCache();
+  renderTabs();
+  const matched = sortProducts(products.filter(shouldShow));
+  const visible = matched.slice(0, renderLimit);
+  const keyword = searchInput?.value.trim() || "";
+  let html = visible.length ? visible.map(productCard).join("") : `<div class="catalog-empty">${keyword ? "ไม่พบสินค้า" : activeCategory === "quick" ? "ยังไม่มีประวัติการขายสำหรับคำนวณสินค้าขายดี" : "ไม่มีสินค้าในหมวดนี้"}</div>`;
+  if (matched.length > visible.length) html += `<button type="button" class="catalog-load-more" id="catalogLoadMore">แสดงเพิ่ม ${Math.min(LOAD_STEP, matched.length - visible.length).toLocaleString("th-TH")} รายการ <small>จากทั้งหมด ${matched.length.toLocaleString("th-TH")}</small></button>`;
+  else if (matched.length) html += `<div class="catalog-result-count">แสดง ${matched.length.toLocaleString("th-TH")} รายการ</div>`;
+  productGrid.innerHTML = html;
+  hydrateVisibleImages();
+  rendering = false;
+  observer?.observe(productGrid, { childList: true });
 }
 
-function refreshCatalog() {
-  renderTabs();
-  decorateCards();
+function scheduleRender({ resetLimit = false } = {}) {
+  if (resetLimit) renderLimit = INITIAL_LIMIT;
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(renderCatalog, 80);
 }
 
 tabs.addEventListener("click", event => {
   const button = event.target.closest("[data-category]");
   if (!button) return;
   activeCategory = button.dataset.category;
-  refreshCatalog();
+  scheduleRender({ resetLimit: true });
 });
 
-searchInput?.addEventListener("input", decorateCards);
-window.addEventListener("storage", refreshCatalog);
+productGrid?.addEventListener("click", event => {
+  const loadMore = event.target.closest("#catalogLoadMore");
+  if (!loadMore) return;
+  event.preventDefault();
+  event.stopPropagation();
+  renderLimit += LOAD_STEP;
+  renderCatalog();
+});
 
-observer = new MutationObserver(decorateCards);
-if (productGrid) observer.observe(productGrid, { childList: true, subtree: true });
-refreshCatalog();
+searchInput?.addEventListener("input", event => {
+  event.stopImmediatePropagation();
+  scheduleRender({ resetLimit: true });
+}, true);
+
+window.addEventListener("storage", () => scheduleRender({ resetLimit: true }));
+window.addEventListener("retail-pos-products-changed", () => scheduleRender({ resetLimit: true }));
+observer = new MutationObserver(() => { if (!rendering) scheduleRender(); });
+if (productGrid) observer.observe(productGrid, { childList: true });
+renderCatalog();
