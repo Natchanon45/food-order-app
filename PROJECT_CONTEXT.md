@@ -10,7 +10,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 2. เช็ก HEAD ล่าสุดของ `feature/retail-pos` ก่อนแก้ไขทุกครั้ง
 3. แจ้ง Version / Build / HEAD ทุกครั้งหลังแก้
 4. แก้แบบเล็กและเฉพาะจุด เพื่อลดผลกระทบกับระบบที่ใช้งานได้แล้ว
-5. ถ้าแก้ JS/CSS ที่ import ใน HTML ต้อง bump query string กัน browser cache
+5. ถ้าแก้ JS/CSS ที่ import ใน HTML ต้อง bump query string หรือกำหนด no-cache เฉพาะไฟล์
 6. หลังแก้ต้องแจ้งไฟล์ที่แก้, สิ่งที่เสร็จ, สิ่งที่เหลือ, regression test
 7. แจ้งคำสั่ง deploy ทุกครั้ง
 
@@ -19,7 +19,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Version: `0.12.26`
 - Build: `2026.07.01.007`
 - Branch: `feature/retail-pos`
-- Milestone: `O1-T001.2 Tenant Take Away Route Fix`
+- Milestone: `O1-T001.3 Take Away Hotfix`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -29,45 +29,36 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Delivery Lock เสร็จ
 - Cashier ย้ายโต๊ะเสร็จ
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
-- POS Firestore Foundation P9-B001 เสร็จ
-- P9-B002 Running Number เสร็จ
-- P9-B003 Counter เสร็จ
-- P9-B004 Offline Queue Worker + Retry + Conflict Resolver เสร็จ
-- P9-B005 Repository Layer เสร็จเบื้องต้น
-- P9-B006 Firestore Composite Index เสร็จ
-- P9-B007 Audit Log เสร็จ
-- P9-B008 Shift Opening / Closing เสร็จ
-- P9-B009 Refund / Return / Void เสร็จ
+- P9-B001 ถึง P9-B009 เสร็จแล้ว
 
-## รายละเอียด O1-T001.2
+## รายละเอียด O1-T001.3
 
-แก้ปัญหา tenant URL `/s/{tenantSlug}/takeaway/` ถูก Firebase Hosting rewrite ไปหน้า Delivery เพราะ rule `/s/**` อยู่ก่อนและไม่มี rule เฉพาะ Take Away
+แก้ hotfix หลัง Take Away public order ติด permission denied และหน้า Cashier ยังต้องมี QR ให้ลูกค้าสแกน
 
 แก้แล้ว:
 
-- เพิ่ม rewrite `/s/*/takeaway` ไป `takeaway/index.html`
-- เพิ่ม rewrite `/s/*/takeaway/**` ไป `takeaway/index.html`
-- เพิ่ม rewrite `/takeaway` และ `/takeaway/**` ไป `takeaway/index.html`
-- วาง rule Take Away ก่อน fallback `/s/**` เพื่อไม่ให้ตกไปหน้า Delivery
-- คง route Delivery success, Delivery, QR Table Order และ Cashier เดิม
-- อัปเดต Developer Panel เป็น Version `0.12.26` Build `2026.07.01.007`
+- เพิ่ม Firestore Rules สำหรับ public Take Away order
+- เพิ่ม Firestore Rules สำหรับ public Take Away counter
+- คง route Delivery, QR Table Order และ Cashier เดิม
+- เพิ่ม modal QR Take Away บนหน้า Cashier ผ่าน `cashier-original-order.js`
+- เพิ่มปุ่ม `สั่งกลับบ้าน` สำหรับกรณี Cashier สั่งแทนลูกค้า
+- เพิ่ม no-cache ให้ `cashier-original-order.js`
 
 ## Current Milestone
 
-`O1-T001.2 Tenant Take Away Route Fix`
+`O1-T001.3 Take Away Hotfix`
 
 ## Regression Tests สำคัญ
 
-1. Deploy hosting ใหม่
-2. เปิด `/s/{tenantSlug}/takeaway/`
-3. ต้องเห็นหน้า `สั่งกลับบ้าน` ไม่ใช่หน้า Delivery
-4. เปิด `/takeaway/` ต้องยังเห็นหน้า Take Away
-5. เปิด `/s/{tenantSlug}/delivery/` หรือ Delivery เดิมต้องยังทำงาน
-6. เปิด `/s/{tenantSlug}/order/` ต้องยังเข้า QR Table Order ได้
-7. หน้า Cashier ปุ่ม `เปิด QR Take Away` ต้องเปิด URL tenant Take Away ถูกหน้า
-8. ส่งออเดอร์ Take Away ต้องได้เลขคิว `TA-xxx`
-9. หน้า Cashier ต้องแสดงวันที่/เวลา ไม่ใช่ `Invalid Date`
-10. QR Table Order และ Delivery ต้องยังทำงานตามเดิม
+1. Deploy hosting และ firestore rules ใหม่
+2. เปิด `/s/{tenantSlug}/delivery/` ต้องโหลดเมนู Delivery ได้
+3. เปิด `/s/{tenantSlug}/order/` ต้องเห็นออเดอร์โต๊ะเดิมตาม table token
+4. เปิด `/s/{tenantSlug}/takeaway/` ต้องเห็นหน้า `สั่งกลับบ้าน`
+5. ส่งออเดอร์ Take Away ต้องได้เลขคิว `TA-xxx` และไม่ติด permission denied
+6. หน้า Cashier ต้องเห็น QR Take Away, คัดลอกลิงก์ และปุ่มสั่งกลับบ้าน
+7. กด QR Take Away ต้องเปิด modal QR สำหรับลูกค้าสแกน
+8. Cashier กดรับชำระเงิน เรียกรับของ และส่งมอบแล้วได้
+9. QR Table Order และ Delivery ต้องยังทำงานตามเดิม
 
 ## งานถัดไป
 
@@ -81,4 +72,4 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - ห้าม sync POS ข้าม tenant
 - ใช้ stable sale/order id เดิมทั้ง online/offline
 - Firestore transaction ต้อง read เอกสารทั้งหมดก่อน write
-- ถ้าแก้ JS/CSS ที่ import ใน HTML ต้อง bump query string
+- ถ้าแก้ JS/CSS ที่ import ใน HTML ต้อง bump query string หรือกำหนด no-cache เฉพาะไฟล์
