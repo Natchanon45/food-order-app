@@ -16,10 +16,10 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.26`
-- Build: `2026.07.01.007`
+- Version: `0.12.27`
+- Build: `2026.07.01.008`
 - Branch: `feature/retail-pos`
-- Milestone: `O1-T001.3 Take Away Hotfix`
+- Milestone: `HOTFIX Take Away Recovery`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -31,32 +31,34 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - P9-B001 ถึง P9-B009 เสร็จแล้ว
 
-## รายละเอียด O1-T001.3
+## รายละเอียด HOTFIX Take Away Recovery
 
-แก้ hotfix หลัง Take Away public order ติด permission denied และหน้า Cashier ยังต้องมี QR ให้ลูกค้าสแกน
+แก้ด่วนหลัง Take Away กระทบ route และ flow เดิม โดยเน้นกู้ Delivery, QR Table Order และให้ Take Away สั่งได้ก่อน
 
 แก้แล้ว:
 
-- เพิ่ม Firestore Rules สำหรับ public Take Away order
-- เพิ่ม Firestore Rules สำหรับ public Take Away counter
-- คง route Delivery, QR Table Order และ Cashier เดิม
-- เพิ่ม modal QR Take Away บนหน้า Cashier ผ่าน `cashier-original-order.js`
+- เพิ่ม route `/s/{tenantSlug}/delivery/` ให้ชัดเจนก่อน fallback `/s/**`
+- คง route `/s/{tenantSlug}/order/` และ `/s/{tenantSlug}/takeaway/`
+- ปรับ Take Away ให้สร้าง order ตรง ไม่ใช้ public counter transaction
+- เลขคิว Take Away ใช้รูปแบบ `TA-HHMMSS` ชั่วคราวเพื่อตัดปัญหา submit ล้ม
+- เพิ่ม QR Take Away จริงบนหน้า Cashier
 - เพิ่มปุ่ม `สั่งกลับบ้าน` สำหรับกรณี Cashier สั่งแทนลูกค้า
-- เพิ่ม no-cache ให้ `cashier-original-order.js`
+- bump cache `takeaway-order.js?v=20260701-008`
+- bump cache `cashier.js?v=20260701-009`
 
 ## Current Milestone
 
-`O1-T001.3 Take Away Hotfix`
+`HOTFIX Take Away Recovery`
 
 ## Regression Tests สำคัญ
 
-1. Deploy hosting และ firestore rules ใหม่
+1. Deploy hosting ใหม่
 2. เปิด `/s/{tenantSlug}/delivery/` ต้องโหลดเมนู Delivery ได้
 3. เปิด `/s/{tenantSlug}/order/` ต้องเห็นออเดอร์โต๊ะเดิมตาม table token
 4. เปิด `/s/{tenantSlug}/takeaway/` ต้องเห็นหน้า `สั่งกลับบ้าน`
-5. ส่งออเดอร์ Take Away ต้องได้เลขคิว `TA-xxx` และไม่ติด permission denied
-6. หน้า Cashier ต้องเห็น QR Take Away, คัดลอกลิงก์ และปุ่มสั่งกลับบ้าน
-7. กด QR Take Away ต้องเปิด modal QR สำหรับลูกค้าสแกน
+5. ส่งออเดอร์ Take Away ต้องได้เลขคิว `TA-xxx`
+6. หน้า Cashier ต้องเห็น QR Take Away และปุ่มสั่งกลับบ้าน
+7. กด QR Take Away ต้องแสดง QR สำหรับลูกค้าสแกน
 8. Cashier กดรับชำระเงิน เรียกรับของ และส่งมอบแล้วได้
 9. QR Table Order และ Delivery ต้องยังทำงานตามเดิม
 
