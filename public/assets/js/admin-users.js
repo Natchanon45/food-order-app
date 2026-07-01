@@ -1,5 +1,5 @@
 import { auth } from "./firebase-config.js?v=20260630-073";
-import { createStaffUser, listStaffUsers, updateStaffUser } from "./auth-service.js";
+import { createStaffUser, listStaffUsers, updateStaffUser } from "./admin-staff-service.js?v=20260701-023";
 import { toast } from "./ui.js?v=20260701-002";
 
 const userForm = document.getElementById("userForm");
