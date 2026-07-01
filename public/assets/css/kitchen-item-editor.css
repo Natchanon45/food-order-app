@@ -26,6 +26,22 @@
   gap: 7px;
 }
 
+.kitchen-start-action .app-icon {
+  animation: kitchen-hourglass-flip 1.15s ease-in-out infinite;
+  transform-origin: 50% 50%;
+}
+
+@keyframes kitchen-hourglass-flip {
+  0%, 35% { transform: rotate(0deg); }
+  55%, 100% { transform: rotate(180deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kitchen-start-action .app-icon {
+    animation: none;
+  }
+}
+
 .kitchen-serve-item-action {
   display: inline-flex;
   align-items: center;
