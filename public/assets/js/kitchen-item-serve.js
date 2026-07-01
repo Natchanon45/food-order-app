@@ -53,10 +53,11 @@ function installButtons() {
     if (actions.querySelector('[data-serve-item]')) return;
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'btn btn-dark btn-sm';
+    button.className = 'btn btn-dark btn-sm kitchen-serve-item-action';
     button.dataset.serveItem = orderId;
     button.dataset.itemIndex = String(itemIndex);
-    button.textContent = 'เสิร์ฟรายการนี้';
+    button.setAttribute('aria-label', 'เสิร์ฟรายการนี้');
+    button.innerHTML = '<i class="bi bi-send-check app-icon" aria-hidden="true"></i><span>เสิร์ฟรายการนี้</span>';
     actions.appendChild(button);
   });
 }
