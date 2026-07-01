@@ -1,7 +1,7 @@
-await import("./public-tenant-resolver.js?v=20260622-3");
-await import("./table-qr-resolver.js?v=20260622-3");
+await import("./public-tenant-resolver.js?v=20260629-025");
+await import("./table-qr-resolver.js?v=20260622-5");
 
-import { dataService, usingDemoMode } from "./data-service.js";
+import { dataService, usingDemoMode } from "./data-service.js?v=20260701-008";
 import { db, collection, onSnapshot, query, where } from "./firebase-config.js?v=20260630-073";
 import { demoStore } from "./demo-store.js";
 import { shopCollectionPath, resolveShopContext } from "./tenant-context.js";
@@ -52,4 +52,4 @@ dataService.subscribeOrders = callback => {
   });
 };
 
-await import("./customer-smooth.js?v=20260630-050");
+await import("./customer-smooth.js?v=20260701-009");
