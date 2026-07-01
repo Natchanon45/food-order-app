@@ -36,7 +36,16 @@ dataService.createTableOrder = async order => {
 dataService.subscribeOrders = callback => {
   const session = tableSession();
   if (!session.tableCode || !session.tableToken) { callback([]); return () => {}; }
-  const emit = rows => callback((rows || []).filter(order => order.tableToken === session.tableToken).map(order => ({ ...order, tableCode: session.tableCode })));
+
+  const normalize = order => ({ ...order, tableCode: session.tableCode, tableToken: order.tableToken || session.tableToken });
+  const isSameSession = order => {
+    if (order?.orderType === "delivery" || order?.orderType === "takeaway") return false;
+    if (order?.tableToken && order.tableToken === session.tableToken) return true;
+    if (String(order?.movedFromTableCode || "").toUpperCase() === String(session.tableCode || "").toUpperCase()) return true;
+    return false;
+  };
+  const emit = rows => callback((rows || []).filter(isSameSession).map(normalize));
+
   if (usingDemoMode) {
     const send = () => emit(demoStore.orders.list());
     send();
@@ -46,9 +55,27 @@ dataService.subscribeOrders = callback => {
     const timer = setInterval(send, 1500);
     return () => { clearInterval(timer); window.removeEventListener("storage", handler); window.removeEventListener("demo-store-change", handler); };
   }
+
   const ordersPath = shopCollectionPath("orders", resolveShopContext());
-  const tableOrdersQuery = query(collection(db, ...ordersPath), where("tableToken", "==", session.tableToken));
-  return onSnapshot(tableOrdersQuery, snapshot => emit(snapshot.docs.map(item => ({ id: item.id, ...item.data() }))));
+  const ordersRef = collection(db, ...ordersPath);
+  let byToken = [];
+  let byMovedFrom = [];
+  const flush = () => {
+    const merged = new Map();
+    [...byToken, ...byMovedFrom].forEach(order => merged.set(order.id, order));
+    emit([...merged.values()]);
+  };
+
+  const unsubToken = onSnapshot(query(ordersRef, where("tableToken", "==", session.tableToken)), snapshot => {
+    byToken = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+    flush();
+  });
+  const unsubMoved = onSnapshot(query(ordersRef, where("movedFromTableCode", "==", session.tableCode)), snapshot => {
+    byMovedFrom = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+    flush();
+  });
+
+  return () => { unsubToken(); unsubMoved(); };
 };
 
-await import("./customer.js?v=20260701-027");
+await import("./customer.js?v=20260701-029");
