@@ -2,9 +2,10 @@ import { usingDemoMode } from './data-service.js';
 import { db, collection, onSnapshot, query, where } from './firebase-config.js?v=20260630-073';
 import { demoStore } from './demo-store.js';
 import { shopCollectionPath, resolveShopContext } from './tenant-context.js';
-import { money, formatTime } from './ui.js?v=20260701-001';
+import { money, formatTime, getTableCode } from './ui.js?v=20260701-001';
 
 const token = new URLSearchParams(location.search).get('token') || '';
+const tableCode = getTableCode();
 const section = document.querySelector('#previousOrdersSection');
 const list = document.querySelector('#previousOrdersList');
 const count = document.querySelector('#previousRoundCount');
@@ -18,14 +19,21 @@ function timeValue(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function isSameSession(order) {
+  if (!order || order.orderType === 'delivery' || order.orderType === 'takeaway') return false;
+  if (token && order.tableToken === token) return true;
+  if (tableCode && String(order.movedFromTableCode || '').toUpperCase() === String(tableCode).toUpperCase()) return true;
+  return false;
+}
+
 function rowHtml(order) {
   const items = (order.items || []).map(item => '<div class="previous-round-item"><span>' + item.qty + ' × ' + item.name + (item.note ? '<br><small>' + item.note + '</small>' : '') + '</span><strong>' + money(Number(item.qty) * Number(item.price)) + '</strong></div>').join('');
   return '<article class="previous-round"><div class="previous-round-head"><div class="previous-round-title">รอบที่ ' + (order.roundNumber || 1) + '</div><small>' + formatTime(order.createdAt || order.createdAtText) + '</small></div><div class="previous-round-items">' + items + '</div><div class="previous-round-head" style="margin-top:8px;margin-bottom:0"><small>ยืนยันแล้ว</small><strong>' + money(order.totalAmount) + ' บาท</strong></div></article>';
 }
 
 function render(orders) {
-  if (!section || !list || !token) return;
-  const rows = (orders || []).filter(order => order.tableToken === token && order.orderType !== 'delivery' && order.orderType !== 'takeaway').sort((a, b) => Number(a.roundNumber || 0) - Number(b.roundNumber || 0) || timeValue(a.createdAt || a.createdAtText) - timeValue(b.createdAt || b.createdAtText));
+  if (!section || !list || (!token && !tableCode)) return;
+  const rows = (orders || []).filter(isSameSession).sort((a, b) => Number(a.roundNumber || 0) - Number(b.roundNumber || 0) || timeValue(a.createdAt || a.createdAtText) - timeValue(b.createdAt || b.createdAtText));
   const highest = rows.reduce((max, order) => Math.max(max, Number(order.roundNumber || 0)), 0);
   if (roundLabel) roundLabel.textContent = 'รอบที่ ' + (highest + 1);
   if (count) count.textContent = rows.length + ' รอบ';
@@ -33,7 +41,7 @@ function render(orders) {
   list.innerHTML = rows.map(rowHtml).join('');
 }
 
-if (token) {
+if (token || tableCode) {
   if (usingDemoMode) {
     const emit = () => render(demoStore.orders.list());
     emit();
@@ -42,6 +50,15 @@ if (token) {
     setInterval(emit, 1500);
   } else {
     const ordersPath = shopCollectionPath('orders', resolveShopContext());
-    onSnapshot(query(collection(db, ...ordersPath), where('tableToken', '==', token)), snapshot => render(snapshot.docs.map(item => ({ id: item.id, ...item.data() }))));
+    const ordersRef = collection(db, ...ordersPath);
+    let byToken = [];
+    let byMovedFrom = [];
+    const flush = () => {
+      const merged = new Map();
+      [...byToken, ...byMovedFrom].forEach(order => merged.set(order.id, order));
+      render([...merged.values()]);
+    };
+    if (token) onSnapshot(query(ordersRef, where('tableToken', '==', token)), snapshot => { byToken = snapshot.docs.map(item => ({ id: item.id, ...item.data() })); flush(); });
+    if (tableCode) onSnapshot(query(ordersRef, where('movedFromTableCode', '==', tableCode)), snapshot => { byMovedFrom = snapshot.docs.map(item => ({ id: item.id, ...item.data() })); flush(); });
   }
 }
