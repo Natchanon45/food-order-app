@@ -24,6 +24,7 @@ const currentRoundLabel = document.querySelector("#currentRoundLabel");
 const cart = new Map();
 let menus = [];
 let sessionOrders = [];
+let activeTable = null;
 let activeCategory = "ทั้งหมด";
 let highlightedCategory = "ทั้งหมด";
 let tableSessionValid = false;
@@ -35,8 +36,21 @@ if (usingDemoMode) {
   document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง: ยังไม่ได้ใส่ Firebase Config ข้อมูลจะเก็บในเบราว์เซอร์นี้</div>';
 }
 
-document.querySelector("#tableBadge").textContent = tableCode ? `โต๊ะ ${tableCode}` : "ไม่พบรหัสโต๊ะ";
-document.querySelector("#tableTitle").textContent = tableCode ? `เมนูสำหรับโต๊ะ ${tableCode}` : "กรุณาสแกน QR ของโต๊ะ";
+function activeTableCode() {
+  return activeTable?.code || activeTable?.id || tableCode;
+}
+
+function activeTableName() {
+  return activeTable?.name || (activeTableCode() ? `โต๊ะ ${activeTableCode()}` : "");
+}
+
+function updateTableHeader() {
+  const label = activeTableName();
+  document.querySelector("#tableBadge").textContent = label || "ไม่พบรหัสโต๊ะ";
+  document.querySelector("#tableTitle").textContent = label ? `เมนูสำหรับ${label}` : "กรุณาสแกน QR ของโต๊ะ";
+}
+
+updateTableHeader();
 document.querySelector("#submitOrder").disabled = true;
 
 async function askConfirm(message, options = {}) {
@@ -227,11 +241,30 @@ function timestampValue(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function isVisibleSessionOrder(order) {
+  return order?.orderType !== "delivery" &&
+    order?.orderType !== "takeaway" &&
+    order?.tableToken === tableToken &&
+    !["paid", "cancelled"].includes(order?.status) &&
+    order?.paymentStatus !== "paid";
+}
+
 function renderPreviousOrders() {
   const sorted = [...sessionOrders].sort((a, b) => Number(a.roundNumber || 0) - Number(b.roundNumber || 0) || timestampValue(a.createdAt) - timestampValue(b.createdAt));
+  const latestTableOrder = [...sorted].reverse().find(order => order.tableCode || order.tableName);
+  if (latestTableOrder?.tableCode && latestTableOrder.tableCode !== activeTableCode()) {
+    activeTable = {
+      ...(activeTable || {}),
+      code: latestTableOrder.tableCode,
+      id: latestTableOrder.tableCode,
+      name: latestTableOrder.tableName || `โต๊ะ ${latestTableOrder.tableCode}`
+    };
+    updateTableHeader();
+  }
   const highestRound = sorted.reduce((max, order) => Math.max(max, Number(order.roundNumber || 0)), 0);
   currentRoundLabel.textContent = `รอบที่ ${highestRound + 1}`;
   previousRoundCount.textContent = `${sorted.length} รอบ`;
+  previousOrdersSection.querySelector("h2").textContent = activeTableName() ? `รายการที่${activeTableName()}สั่งแล้ว` : "รายการที่โต๊ะนี้สั่งแล้ว";
   previousOrdersSection.hidden = sorted.length === 0;
 
   previousOrdersList.innerHTML = sorted.map(order => `
@@ -283,17 +316,16 @@ function updateCart() {
 async function validateTableSession() {
   if (!tableCode || !tableToken) return false;
   const table = await dataService.getTable(tableCode);
-  return Boolean(table && table.active !== false && table.status === "occupied" && table.orderToken === tableToken);
+  const valid = Boolean(table && table.active !== false && table.status === "occupied" && table.orderToken === tableToken);
+  activeTable = valid ? table : null;
+  updateTableHeader();
+  return valid;
 }
 
 function startSharedOrderFeed() {
   if (unsubscribeOrders) unsubscribeOrders();
   unsubscribeOrders = dataService.subscribeOrders(orders => {
-    sessionOrders = orders.filter(order =>
-      order.orderType !== "delivery" &&
-      order.tableCode === tableCode &&
-      order.tableToken === tableToken
-    );
+    sessionOrders = orders.filter(isVisibleSessionOrder);
     renderPreviousOrders();
   });
 }
@@ -398,7 +430,8 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
 
   try {
     await dataService.createTableOrder({
-      tableCode,
+      tableCode: activeTableCode(),
+      tableName: activeTableName(),
       tableToken,
       status: "pending",
       totalAmount,

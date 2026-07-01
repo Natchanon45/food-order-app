@@ -21,6 +21,7 @@ function timeValue(value) {
 }
 function isSameSession(order) {
   if (!order || order.orderType === 'delivery' || order.orderType === 'takeaway') return false;
+  if (['paid', 'cancelled'].includes(order.status) || order.paymentStatus === 'paid') return false;
   return Boolean((token && order.tableToken === token) || (tableCode && sameCode(order.tableCode, tableCode)) || (tableCode && sameCode(order.movedFromTableCode, tableCode)));
 }
 function rowHtml(order) {
@@ -30,9 +31,12 @@ function rowHtml(order) {
 function render(orders) {
   if (!section || !list || (!token && !tableCode)) return;
   const rows = (orders || []).filter(isSameSession).sort((a, b) => Number(a.roundNumber || 0) - Number(b.roundNumber || 0) || timeValue(a.createdAt || a.createdAtText) - timeValue(b.createdAt || b.createdAtText));
+  const currentTable = [...rows].reverse().find(order => order.tableCode)?.tableName || [...rows].reverse().find(order => order.tableCode)?.tableCode || '';
   const highest = rows.reduce((max, order) => Math.max(max, Number(order.roundNumber || 0)), 0);
   if (roundLabel) roundLabel.textContent = 'รอบที่ ' + (highest + 1);
   if (count) count.textContent = rows.length + ' รอบ';
+  const heading = section.querySelector('h2');
+  if (heading) heading.textContent = currentTable ? 'รายการที่' + (String(currentTable).startsWith('โต๊ะ') ? currentTable : 'โต๊ะ ' + currentTable) + 'สั่งแล้ว' : 'รายการที่โต๊ะนี้สั่งแล้ว';
   section.hidden = rows.length === 0;
   list.innerHTML = rows.map(rowHtml).join('');
 }

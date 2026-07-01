@@ -37,7 +37,7 @@ dataService.subscribeOrders = callback => {
   const session = tableSession();
   if (!session.tableCode || !session.tableToken) { callback([]); return () => {}; }
 
-  const normalize = order => ({ ...order, tableCode: session.tableCode, tableToken: order.tableToken || session.tableToken });
+  const normalize = order => ({ ...order, tableToken: order.tableToken || session.tableToken });
   const isSameSession = order => {
     if (order?.orderType === "delivery" || order?.orderType === "takeaway") return false;
     if (order?.tableToken && order.tableToken === session.tableToken) return true;
@@ -78,4 +78,4 @@ dataService.subscribeOrders = callback => {
   return () => { unsubToken(); unsubMoved(); };
 };
 
-await import("./customer.js?v=20260701-029");
+await import("./customer.js?v=20260702-001");
