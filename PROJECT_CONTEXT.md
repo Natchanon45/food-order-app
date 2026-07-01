@@ -16,10 +16,10 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.27`
-- Build: `2026.07.01.008`
+- Version: `0.12.28`
+- Build: `2026.07.01.009`
 - Branch: `feature/retail-pos`
-- Milestone: `HOTFIX Take Away Recovery`
+- Milestone: `HOTFIX Delivery Order Take Away Recovery`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -31,24 +31,23 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - P9-B001 ถึง P9-B009 เสร็จแล้ว
 
-## รายละเอียด HOTFIX Take Away Recovery
+## รายละเอียด HOTFIX Delivery Order Take Away Recovery
 
-แก้ด่วนหลัง Take Away กระทบ route และ flow เดิม โดยเน้นกู้ Delivery, QR Table Order และให้ Take Away สั่งได้ก่อน
+แก้ด่วนต่อจาก HOTFIX รอบแรก เพราะยังพบว่า Delivery/Order/Take Away โหลด `data-service.js` เก่าหรือขาด `getStoreSettings()` ทำให้ Delivery โหลดเมนูไม่ได้ และ Take Away ยังเสี่ยงใช้ flow เก่า
 
 แก้แล้ว:
 
-- เพิ่ม route `/s/{tenantSlug}/delivery/` ให้ชัดเจนก่อน fallback `/s/**`
-- คง route `/s/{tenantSlug}/order/` และ `/s/{tenantSlug}/takeaway/`
-- ปรับ Take Away ให้สร้าง order ตรง ไม่ใช้ public counter transaction
-- เลขคิว Take Away ใช้รูปแบบ `TA-HHMMSS` ชั่วคราวเพื่อตัดปัญหา submit ล้ม
-- เพิ่ม QR Take Away จริงบนหน้า Cashier
-- เพิ่มปุ่ม `สั่งกลับบ้าน` สำหรับกรณี Cashier สั่งแทนลูกค้า
-- bump cache `takeaway-order.js?v=20260701-008`
-- bump cache `cashier.js?v=20260701-009`
+- คืน `getStoreSettings()` ใน `data-service.js`
+- คง Take Away ให้สร้าง order ตรง ไม่ใช้ public counter transaction
+- เลขคิว Take Away ใช้รูปแบบ `TA-HHMMSS-XXX` ชั่วคราวเพื่อตัดปัญหา submit ล้ม
+- บังคับ Delivery ใช้ `data-service.js?v=20260701-009`
+- บังคับ Table Order ใช้ `customer-secure.js?v=20260701-009` และ `data-service.js?v=20260701-009`
+- บังคับ Take Away ใช้ `takeaway-order.js?v=20260701-009` และ `data-service.js?v=20260701-009`
+- หน้า Cashier ยังมี QR Take Away และปุ่ม `สั่งกลับบ้าน`
 
 ## Current Milestone
 
-`HOTFIX Take Away Recovery`
+`HOTFIX Delivery Order Take Away Recovery`
 
 ## Regression Tests สำคัญ
 
@@ -56,11 +55,12 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 2. เปิด `/s/{tenantSlug}/delivery/` ต้องโหลดเมนู Delivery ได้
 3. เปิด `/s/{tenantSlug}/order/` ต้องเห็นออเดอร์โต๊ะเดิมตาม table token
 4. เปิด `/s/{tenantSlug}/takeaway/` ต้องเห็นหน้า `สั่งกลับบ้าน`
-5. ส่งออเดอร์ Take Away ต้องได้เลขคิว `TA-xxx`
-6. หน้า Cashier ต้องเห็น QR Take Away และปุ่มสั่งกลับบ้าน
-7. กด QR Take Away ต้องแสดง QR สำหรับลูกค้าสแกน
-8. Cashier กดรับชำระเงิน เรียกรับของ และส่งมอบแล้วได้
-9. QR Table Order และ Delivery ต้องยังทำงานตามเดิม
+5. Console ต้องไม่ยิง `counters/takeaway_...` จากหน้า Take Away
+6. ส่งออเดอร์ Take Away ต้องได้เลขคิว `TA-xxx`
+7. หน้า Cashier ต้องเห็น QR Take Away และปุ่มสั่งกลับบ้าน
+8. กด QR Take Away ต้องแสดง QR สำหรับลูกค้าสแกน
+9. Cashier กดรับชำระเงิน เรียกรับของ และส่งมอบแล้วได้
+10. QR Table Order และ Delivery ต้องยังทำงานตามเดิม
 
 ## งานถัดไป
 
