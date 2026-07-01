@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `HOTFIX Delivery Order Take Away Recovery`
-- Developer Panel version/build ปัจจุบัน: `0.12.28` / `2026.07.01.009`
+- Current milestone: `HOTFIX Take Away Kitchen Submit & Mobile UX`
+- Developer Panel version/build ปัจจุบัน: `0.12.29` / `2026.07.01.010`
 
 ## Food Order Status
 
@@ -24,24 +24,26 @@
 - Cashier กดเรียกรับของและกดส่งมอบแล้วได้
 - Hotfix: คืน `getStoreSettings()` ใน `data-service.js` เพื่อให้ Delivery โหลดเมนูและ settings ได้
 - Hotfix: Take Away ส่งออเดอร์โดยไม่ใช้ public counter transaction
-- Hotfix: บังคับ Delivery, Table Order และ Take Away โหลด `data-service.js?v=20260701-009`
-- Hotfix: bump cache `delivery.js?v=20260701-009`, `takeaway-order.js?v=20260701-009`, `customer-secure.js?v=20260701-009`
+- Hotfix: อัปเดต Firestore Rules ให้ public tenant Take Away create order ได้
+- Hotfix: โคลน sticky category และ mobile scrollspy จากหน้า QR โต๊ะมาหน้า Take Away
+- Hotfix: toast alert ถูกบังคับเป็น top layer เหนือ cart bar และ overlay ทุกกรณี
+- Hotfix: bump cache `app.css?v=20260701-010`, `takeaway-order.js?v=20260701-010`, `takeaway/index.html`
 
 ## Current Milestone
 
-`HOTFIX Delivery Order Take Away Recovery`
+`HOTFIX Take Away Kitchen Submit & Mobile UX`
 
 ## Regression Tests
 
-1. Deploy hosting ใหม่
-2. เปิด `/s/{tenantSlug}/delivery/` ต้องโหลดเมนู Delivery ได้
-3. เปิด `/s/{tenantSlug}/order/` ต้องเห็นออเดอร์โต๊ะเดิมตาม table token
-4. เปิด `/s/{tenantSlug}/takeaway/` ต้องเห็นหน้า `สั่งกลับบ้าน`
-5. Take Away ต้องไม่เขียน `counters/takeaway_...` ใน Console
-6. เลือกเมนูและส่งออเดอร์ ต้องได้เลขคิว `TA-xxx`
-7. หน้า Cashier ต้องเห็น QR Take Away และปุ่มสั่งกลับบ้าน
-8. กด QR Take Away ต้องแสดง QR สำหรับลูกค้าสแกน
-9. Cashier กดรับชำระเงิน เรียกรับของ และส่งมอบแล้วได้
+1. Deploy hosting และ firestore rules ใหม่
+2. เปิด `/s/{tenantSlug}/takeaway/` ต้องเห็นหน้า `สั่งกลับบ้าน`
+3. Console ต้องไม่ยิง `counters/takeaway_...` จากหน้า Take Away
+4. เลือกเมนูและส่งออเดอร์ ต้องได้เลขคิว `TA-xxx`
+5. ออเดอร์ Take Away ต้องเข้า Kitchen
+6. หน้า Take Away mobile ต้องมี sticky หมวดหมู่เหมือนหน้า QR โต๊ะ
+7. เลื่อนเมนูบน mobile แล้วหมวดหมู่ active ต้องเปลี่ยนตามรายการที่เลื่อนถึง
+8. toast alert ต้องอยู่ layer บนสุด ไม่โดน cart bar บัง
+9. หน้า Cashier ต้องเห็น QR Take Away และปุ่มสั่งกลับบ้าน
 10. QR Table Order และ Delivery ต้องยังทำงานตามเดิม
 
 ## Next Tasks
@@ -53,6 +55,7 @@
 
 git pull --rebase origin feature/retail-pos
 firebase deploy --only hosting
+firebase deploy --only firestore:rules
 
 ## Notes
 
