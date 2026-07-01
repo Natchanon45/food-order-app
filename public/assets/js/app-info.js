@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.53',
-  build: '2026.07.02.007',
+  version: '0.12.54',
+  build: '2026.07.02.008',
   branch: 'feature/retail-pos',
-  commit: 'POS-COMPOSITE-INDEX-006',
+  commit: 'POS-AUDIT-LOG-007',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P9-B006 Firestore Composite Index',
+  milestone: 'P9-B007 Audit Log',
   updatedAt: '2026-07-02T00:00:00+07:00',
   whatsNew: [
-    'Add POS Firestore composite indexes for sales reporting and filters',
-    'Add POS indexes for stock movements by product, date, and reference',
-    'Add POS indexes for sync queue, audit logs, shifts, and returns',
-    'Prepare Audit Log, Shift, Refund, and Performance milestones'
+    'Add central POS audit log service',
+    'Add standard audit actions for sale, sync, shift, refund, return, void, and stock adjustment',
+    'Support transaction-safe audit log writes',
+    'Prepare Shift Opening/Closing and Refund/Return/Void milestones'
   ]
 };
 
