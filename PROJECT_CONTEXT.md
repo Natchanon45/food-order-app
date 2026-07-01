@@ -16,10 +16,10 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.30`
-- Build: `2026.07.01.012`
+- Version: `0.12.31`
+- Build: `2026.07.01.013`
 - Branch: `feature/retail-pos`
-- Milestone: `Take Away Kitchen Served Flow`
+- Milestone: `Mobile Kitchen Icon & QR Print Font`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -27,43 +27,43 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Take Away Order / Pickup Queue เสร็จขั้นแรก
 - Kitchen แสดง Take Away ด้วยเลขคิว ไม่ปนกับโต๊ะจริง
 - Kitchen Take Away มีปุ่ม `เสิร์ฟแล้ว` หลังสถานะพร้อมเสิร์ฟ
+- Mobile หน้าครัวปุ่ม `เสิร์ฟแล้ว` แสดงเฉพาะ icon
 - Take Away ที่เป็นสถานะ `served` แล้วจะแก้ไขหรือยกเลิกไม่ได้ เหมือนออเดอร์นั่งทานที่ร้าน
 - Delivery Lock เสร็จ
 - Cashier ย้ายโต๊ะเสร็จ
 - หน้า Admin มี QR สำหรับ Delivery และ QR สำหรับสั่งกลับบ้าน
+- หน้า Admin ตอนพิมพ์ QR Delivery และ QR สั่งกลับบ้านใช้ `TH Sarabun PSK Local`
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - P9-B001 ถึง P9-B009 เสร็จแล้ว
 
-## รายละเอียด Take Away Kitchen Served Flow
+## รายละเอียด Mobile Kitchen Icon & QR Print Font
 
-ปรับหน้าครัวให้ Take Away ใช้ workflow เหมือนการสั่งผ่าน QR โต๊ะ เมื่อครัวทำอาหารเสร็จและกดเสิร์ฟแล้ว รายการจะไม่สามารถแก้ไขหรือลบได้อีก
+ปรับ UI ตามการทดสอบจริง: ปุ่ม `เสิร์ฟแล้ว` บน mobile ของหน้าครัวต้องเหลือเฉพาะ icon เพื่อไม่ให้ชนกับปุ่มอื่น และงานพิมพ์ QR ใน Admin ต้องใช้ฟอนต์พิมพ์เอกสารท้องถิ่น
 
 แก้แล้ว:
 
-- `kitchen.js` เพิ่ม action `ready -> served` สำหรับ Take Away
-- ปุ่มหลังทำเสร็จแสดง `เสิร์ฟแล้ว`
-- เมื่อกด `เสิร์ฟแล้ว` จะอัปเดต `status = served` และ `servedAt`
-- สำหรับ Take Away จะตั้ง `pickupStatus = served`
-- เมื่อ `status = served` แล้ว `isKitchenLocked()` จะซ่อนปุ่มแก้ไขและยกเลิกทั้งหมด
-- `/kitchen/index.html` bump cache เป็น `kitchen.js?v=20260701-012`
-- Developer Panel เป็น Version `0.12.30` Build `2026.07.01.012`
+- `kitchen.js` เพิ่ม icon ในปุ่มสถานะของครัว
+- `kitchen-item-editor.css` ซ่อนข้อความของปุ่ม `เสิร์ฟแล้ว` เฉพาะ mobile
+- Desktop ยังแสดงข้อความปุ่มตามเดิม
+- `/kitchen/index.html` bump cache เป็น `kitchen.js?v=20260701-013` และ `kitchen-item-editor.css?v=20260701-013`
+- `admin-delivery-qr.js` บังคับ print style ของ QR Delivery และ QR Take Away ให้ใช้ `TH Sarabun PSK Local`
+- `/admin/index.html` bump cache เป็น `admin-delivery-qr.js?v=20260701-013`
+- Developer Panel เป็น Version `0.12.31` Build `2026.07.01.013`
 
 ## Current Milestone
 
-`Take Away Kitchen Served Flow`
+`Mobile Kitchen Icon & QR Print Font`
 
 ## Regression Tests สำคัญ
 
 1. Deploy hosting ใหม่
-2. เปิด `/s/{tenantSlug}/takeaway`
-3. ส่ง Take Away ให้เข้า Kitchen
-4. หน้า Kitchen ต้องแสดง `Take Away: TA-xxx`
-5. กดรับออเดอร์ > เริ่มทำ > พร้อมเสิร์ฟ
-6. หลังพร้อมเสิร์ฟต้องเห็นปุ่ม `เสิร์ฟแล้ว`
-7. กด `เสิร์ฟแล้ว` แล้วรายการต้องเป็นสถานะ `served`
-8. หลัง served ต้องไม่มีปุ่มแก้ไขรายการ
-9. หลัง served ต้องไม่มีปุ่มยกเลิกรายการหรือยกเลิกทั้งออเดอร์
-10. QR โต๊ะนั่งทานที่ร้านต้องยังทำงานเหมือนเดิม
+2. เปิด Kitchen บน mobile
+3. ออเดอร์ Take Away ที่พร้อมเสิร์ฟต้องเห็นปุ่ม `เสิร์ฟแล้ว` เป็น icon-only
+4. Desktop ยังแสดงข้อความปุ่มได้ตามเดิม
+5. เปิด `/admin`
+6. กดพิมพ์ QR Delivery ต้องใช้ฟอนต์ `TH Sarabun PSK Local`
+7. กดพิมพ์ QR สั่งกลับบ้านต้องใช้ฟอนต์ `TH Sarabun PSK Local`
+8. QR โต๊ะนั่งทานที่ร้านต้องยังทำงานเหมือนเดิม
 
 ## งานถัดไป
 
