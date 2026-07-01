@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Table Order Previous Rounds Fix`
-- Developer Panel version/build ปัจจุบัน: `0.12.45` / `2026.07.01.028`
+- Current milestone: `Old QR Moved Orders & Admin Status Icons`
+- Developer Panel version/build ปัจจุบัน: `0.12.46` / `2026.07.01.029`
 
 ## Food Order Status
 
@@ -17,12 +17,13 @@
 - Delivery Lock เสร็จ
 - Cashier ย้ายโต๊ะเสร็จ
 - Take Away ส่งเข้าครัวและ Cashier แล้ว
-- หลัง Cashier เปลี่ยนโต๊ะ ลูกค้าใช้ QR เดิมได้ต่อ และเห็นรายการเดิมจาก `tableToken`
+- หลัง Cashier เปลี่ยนโต๊ะ ลูกค้าใช้ QR เดิมได้ต่อ และเห็นรายการเดิมจาก `tableToken` หรือ `movedFromTableCode`
+- ลูกค้าสั่งเพิ่มจาก QR เดิมแล้วออเดอร์ใหม่เข้าโต๊ะ active ล่าสุด
 - หน้า Admin รายการสินค้า/อาหารและโต๊ะมี icon สถานะใช้งานแล้ว
 
 ## Current Milestone
 
-`Table Order Previous Rounds Fix`
+`Old QR Moved Orders & Admin Status Icons`
 
 ## Regression Tests
 
@@ -31,8 +32,8 @@
 3. ลูกค้าสแกน QR เดิมของโต๊ะ A ต้องยังเห็นรายการเดิม
 4. ลูกค้าสั่งเพิ่มจาก QR เดิม ต้องเข้าโต๊ะ B ที่ active อยู่
 5. รอบการสั่งถัดไปต้องต่อจากรอบเดิม
-6. หน้า Admin สถานะใช้งานต้องเป็น icon check-square สีเขียว
-7. หน้า Admin สถานะไม่ได้ใช้งานต้องเป็น icon square สีเทา
+6. หน้า Admin สถานะใช้งานต้องเป็น icon `bi-check-square` สีเขียว
+7. หน้า Admin สถานะไม่ได้ใช้งานต้องเป็น icon `bi-square` สีเทา
 
 ## Next Tasks
 
