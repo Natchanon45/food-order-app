@@ -16,10 +16,10 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.37`
-- Build: `2026.07.01.019`
+- Version: `0.12.38`
+- Build: `2026.07.01.020`
 - Branch: `feature/retail-pos`
-- Milestone: `POS Payment Focus UX`
+- Milestone: `Order Completion & Receipt Print Fix`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -33,33 +33,38 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - P9-B010 เริ่มแล้ว: POS catalog ใช้ virtual batch rendering, debounce search, cache search data และ lazy image
 - POS Payment UX: ช่อง `รับเงินมา` select ตัวเลขทั้งหมดเมื่อเปิด modal หรือคลิกกลับเข้าช่อง เพื่อพิมพ์ทับได้ทันที
+- Order Completion: ออเดอร์ที่ `served` และ `paymentStatus = paid` จะปิดเป็น `paid` อัตโนมัติและไม่ค้างใน Cashier/Kitchen
+- Receipt Print: พิมพ์เฉพาะข้อมูลใบเสร็จ ไม่ติด UI/toolbar/footer/version ของระบบ
 
 ## Current Milestone
 
-`POS Payment Focus UX`
+`Order Completion & Receipt Print Fix`
 
-## รายละเอียด POS Payment Focus UX
+## รายละเอียด Order Completion & Receipt Print Fix
 
-แก้เฉพาะ UX ในหน้า `/pos` เพื่อให้ cashier พิมพ์ยอดรับเงินใหม่ได้เร็วขึ้น หลังจากเลือกสมาชิกหรือคลิกจุดอื่นใน modal รับชำระเงิน
+แก้ปัญหา Take Away/Order ที่เสิร์ฟครบและรับชำระแล้วแต่ยังค้างในหน้า Cashier/Kitchen และแก้ print preview ของใบเสร็จที่มี UI หรือข้อความระบบติดไปในงานพิมพ์
 
 แก้แล้ว:
 
-- เพิ่ม `retail-pos-payment-focus.js`
-- เมื่อเปิด payment modal จะ focus และ select ช่อง `รับเงินมา`
-- เมื่อคลิกกลับเข้าช่อง `รับเงินมา` จะ select ตัวเลขทั้งหมดอีกครั้ง
-- `/pos/index.html` เพิ่ม `retail-pos-payment-focus.js?v=20260701-019`
-- ไม่แตะ logic การขาย, stock, Offline, Sync หรือ Firestore transaction
-- Developer Panel เป็น Version `0.12.37` Build `2026.07.01.019`
+- เพิ่ม `order-completion-finalizer.js`
+- ถ้า order มี `status = served` และ `paymentStatus = paid` จะอัปเดตเป็น `status = paid`
+- สำหรับ Take Away จะตั้ง `pickupStatus = picked_up` และ `pickedUpAt`
+- `/cashier/index.html` โหลด `order-completion-finalizer.js?v=20260701-020`
+- `/kitchen/index.html` โหลด `order-completion-finalizer.js?v=20260701-020`
+- `receipt-layout.css` เพิ่ม print isolation ให้พิมพ์เฉพาะ `#receipt`
+- `/cashier/receipt/index.html` bump `receipt-layout.css?v=20260701-020`
+- Developer Panel เป็น Version `0.12.38` Build `2026.07.01.020`
 
 ## Regression Tests สำคัญ
 
 1. Deploy hosting ใหม่
-2. เปิด `/pos`
-3. เพิ่มสินค้าลงบิล
-4. กดรับชำระเงินแล้วช่อง `รับเงินมา` ต้องถูกคลุมตัวเลขทั้งหมด
-5. เลือก/ค้นหาสมาชิกหรือคลิกจุดอื่นใน modal แล้วคลิกกลับมาที่ช่อง `รับเงินมา` ต้อง select ตัวเลขทั้งหมดอีกครั้ง
-6. พิมพ์ตัวเลขใหม่ต้องแทนค่าของเดิมทันที
-7. ยืนยันการขายต้องยังทำงานและตัดสต็อกเหมือนเดิม
+2. เปิด Take Away แล้วส่งเข้าครัว
+3. ครัวกดเสิร์ฟครบทุก/ทั้งออเดอร์
+4. Cashier รับชำระเงิน
+5. ออเดอร์ต้องหายจากหน้า Cashier
+6. ออเดอร์ต้องหายจากหน้า Kitchen
+7. เปิดพิมพ์ใบเสร็จแล้วใน print preview ต้องเห็นเฉพาะข้อมูลใบเสร็จ
+8. Header/toolbar/version/footer ของระบบต้องไม่ติดไปในงานพิมพ์
 
 ## งานถัดไป
 
