@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Table Move Customer Session Fix`
-- Developer Panel version/build ปัจจุบัน: `0.12.42` / `2026.07.01.024`
+- Current milestone: `Hide Owner From Staff List`
+- Developer Panel version/build ปัจจุบัน: `0.12.43` / `2026.07.01.025`
 
 ## Food Order Status
 
@@ -21,22 +21,22 @@
 - ออเดอร์ที่เสิร์ฟครบและชำระแล้วจะไม่ค้างในหน้า Cashier/Kitchen
 - หน้า Print Receipt พิมพ์เฉพาะข้อมูลใบเสร็จ ไม่ดึง UI/ข้อความระบบ/เวอร์ชันด้านล่างติดไปด้วย
 - หน้าครัวมี visual cue สำหรับปุ่มสถานะและออเดอร์รอนาน
-- หน้า `Admin > จัดการพนักงาน` Owner เห็นรายการพนักงานของร้านตัวเองจาก tenant memberships แล้ว
-- หลัง Cashier เปลี่ยนโต๊ะ หน้าลูกค้ายังเห็นรายการเดิมด้วย stable `tableToken` และรอบถัดไปไม่เริ่มใหม่ผิด
+- หน้า `Admin > จัดการพนักงาน` แสดงเฉพาะพนักงาน role `admin/cashier/kitchen` และไม่แสดง Owner
+- หลัง Cashier เปลี่ยนโต๊ะ ลูกค้าใช้ QR เดิมได้ต่อด้วย stable `tableToken`
 
 ## Current Milestone
 
-`Table Move Customer Session Fix`
+`Hide Owner From Staff List`
 
 ## Regression Tests
 
 1. เปิดโต๊ะ A แล้วสั่งอาหารจาก QR
-2. Kitchen/Cashier ต้องเห็นออเดอร์โต๊ะ A
-3. Cashier เปลี่ยนโต๊ะ A ไปโต๊ะ B
-4. หน้า Cashier/Kitchen ต้องยังเห็นรายการเดิมภายใต้โต๊ะใหม่
-5. หน้าลูกค้าต้องยังเห็นรายการที่สั่งแล้วจาก session เดิม
-6. รอบการสั่งถัดไปต้องต่อจากรอบเดิม ไม่กลับเป็นรอบที่ 1
-7. กดสั่งเพิ่มหลังย้ายโต๊ะแล้วออเดอร์ใหม่ต้องเข้าโต๊ะที่ active ใหม่
+2. Cashier เปลี่ยนโต๊ะ A ไปโต๊ะ B
+3. ลูกค้าสแกน QR เดิมของโต๊ะ A ต้องยังเห็นรายการเดิมและสั่งเพิ่มได้
+4. รอบการสั่งถัดไปต้องต่อจากรอบเดิม ไม่กลับเป็นรอบที่ 1
+5. เปิด `/admin/users` ด้วย Owner
+6. รายการพนักงานต้องไม่แสดง Owner ของร้าน
+7. ต้องแสดงเฉพาะ role `admin`, `cashier`, `kitchen`
 
 ## Next Tasks
 
