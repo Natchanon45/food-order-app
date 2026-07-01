@@ -1,4 +1,4 @@
-import { requireRole } from "./auth-service.js?v=20260630-066";
+import { requireRole } from "./auth-service.js?v=20260701-015";
 import { db, doc, getDoc } from "./firebase-config.js?v=20260630-073";
 
 const roles = (document.body.dataset.roles || "")
@@ -39,7 +39,6 @@ if (profile?.role !== "super_admin" && profile?.tenantId) {
           h1{margin:0 0 10px;font-size:25px}p{margin:0;color:#6b746f;line-height:1.7}a{display:inline-block;margin-top:18px;padding:10px 16px;border-radius:10px;background:#151515;color:#fff;text-decoration:none;font-weight:700}
         </style>
       </head>
-      <body><main><h1>บัญชีร้านหมดอายุหรือถูกระงับ</h1><p>กรุณาติดต่อผู้ดูแลระบบเพื่อต่ออายุสมาชิก ร้านค้าและ QR จะกลับมาใช้งานได้ทันทีหลังเปิดใช้งานอีกครั้ง</p><a href="/login">กลับหน้าเข้าสู่ระบบ</a></main></body>`;
-    throw new Error("TENANT_SUBSCRIPTION_INACTIVE");
+      <body><main><h1>บัญชีร้านถูกระงับหรือหมดอายุ</h1><p>กรุณาติดต่อเจ้าของระบบเพื่อต่ออายุหรือเปิดใช้งานร้านอีกครั้ง</p></main></body>`;
   }
 }
