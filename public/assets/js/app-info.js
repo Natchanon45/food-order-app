@@ -1,20 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.44',
-  build: '2026.07.01.027',
+  version: '0.12.45',
+  build: '2026.07.01.028',
   branch: 'feature/retail-pos',
-  commit: 'TABLE-MOVE-027',
+  commit: 'TABLE-MOVE-028',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Customer Old QR Table Move Fix',
-  updatedAt: '2026-07-01T22:25:00+07:00',
+  milestone: 'Table Order Previous Rounds Fix',
+  updatedAt: '2026-07-01T22:45:00+07:00',
   whatsNew: [
-    'Patch customer order page on the same data-service module used by customer.js',
-    'Load previous table orders by stable tableToken after table move',
-    'Normalize moved-table orders for the old QR view',
-    'Bump customer order page cache version'
+    'Add tableToken renderer for customer previous rounds',
+    'Keep old table QR showing previous orders after table move',
+    'Add admin active status icons for menu and table lists'
   ]
 };
 
