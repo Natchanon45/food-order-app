@@ -36,7 +36,7 @@ dataService.createTableOrder = async order => {
 dataService.subscribeOrders = callback => {
   const session = tableSession();
   if (!session.tableCode || !session.tableToken) { callback([]); return () => {}; }
-  const emit = rows => callback((rows || []).filter(order => order.tableToken === session.tableToken));
+  const emit = rows => callback((rows || []).filter(order => order.tableToken === session.tableToken).map(order => ({ ...order, tableCode: session.tableCode })));
   if (usingDemoMode) {
     const send = () => emit(demoStore.orders.list());
     send();
@@ -51,4 +51,4 @@ dataService.subscribeOrders = callback => {
   return onSnapshot(tableOrdersQuery, snapshot => emit(snapshot.docs.map(item => ({ id: item.id, ...item.data() }))));
 };
 
-await import("./customer.js?v=20260701-026");
+await import("./customer.js?v=20260701-027");
