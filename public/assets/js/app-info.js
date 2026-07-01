@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.49',
-  build: '2026.07.02.003',
+  version: '0.12.50',
+  build: '2026.07.02.004',
   branch: 'feature/retail-pos',
-  commit: 'POS-COUNTER-003',
+  commit: 'POS-OFFLINE-QUEUE-004',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P9-B003 Counter',
+  milestone: 'P9-B004 Offline Queue Worker + Retry + Conflict Resolver',
   updatedAt: '2026-07-02T00:00:00+07:00',
   whatsNew: [
-    'Add central POS counter service for Firestore transaction usage',
-    'Expose counter scope, counter ref, next counter snapshot, and counter commit helpers',
-    'Support reusable reserveRunningNumber for SALE, RECEIPT, TAX, REFUND, VOID, SHIFT, PURCHASE, STOCK, and TRANSFER',
-    'Prepare Offline Queue Worker and Repository Layer to share one counter workflow'
+    'Upgrade POS offline sale sync to use the central counter service',
+    'Add offline queue worker state events for scheduled, syncing, failed, conflict, and offline states',
+    'Keep Stable saleId and duplicate protection when retrying offline sync',
+    'Improve conflict retry/discard resolver metadata for local offline sales'
   ]
 };
 
