@@ -1,6 +1,6 @@
 import "./sweet-dialog.js?v=20260629-048";
 import { dataService, usingDemoMode } from "./data-service.js?v=20260701-009";
-import { money, toast } from "./ui.js?v=20260701-003";
+import { money, toast } from "./ui.js?v=20260701-010";
 
 if (usingDemoMode) document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง: ข้อมูลอยู่ในเบราว์เซอร์นี้</div>';
 
@@ -19,7 +19,6 @@ function isMobile() { return window.matchMedia("(max-width: 899px)").matches; }
 function pageSize() { return isMobile() ? Number.MAX_SAFE_INTEGER : 10; }
 function categories() { return ["ทั้งหมด", ...new Set(menus.filter(item => item.active !== false).map(item => item.category || "อื่น ๆ"))]; }
 function escapeHtml(value) { return String(value ?? "").replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]); }
-
 function renderTabs() { categoryTabs.innerHTML = categories().map(category => `<button type="button" class="category-tab${category === activeCategory ? " active" : ""}" data-category="${escapeHtml(category)}" role="tab" aria-selected="${category === activeCategory}">${escapeHtml(category)}</button>`).join(""); }
 function filteredMenus() { const keyword = document.querySelector("#searchInput").value.trim().toLowerCase(); return menus.filter(item => item.active !== false && (!keyword || String(item.name || "").toLowerCase().includes(keyword)) && (activeCategory === "ทั้งหมด" || (item.category || "อื่น ๆ") === activeCategory)); }
 function menuCard(item) { return `<article class="card menu-card"><div class="menu-image"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}"></div><div class="menu-name">${escapeHtml(item.name)}</div><div class="menu-category">${escapeHtml(item.category || "อื่น ๆ")}</div><div class="menu-footer"><span class="price">${money(item.price)} บาท</span><button class="btn btn-primary btn-sm" data-add="${escapeHtml(item.id)}">เพิ่ม</button></div></article>`; }
