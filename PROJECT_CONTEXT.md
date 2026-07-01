@@ -16,10 +16,10 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.22`
-- Build: `2026.07.01.003`
+- Version: `0.12.23`
+- Build: `2026.07.01.004`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B008 Shift Opening / Closing`
+- Milestone: `P9-B009 Refund / Return / Void`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -30,54 +30,50 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Firestore Foundation P9-B001 เสร็จ
 - P9-B002 Running Number เสร็จ
-- P9-B002.1 Firestore Rules for Running Number เสร็จ
-- P9-B002.2 POS Auth Warning Cleanup เสร็จ
 - P9-B003 Counter เสร็จ
-- P9-B003.1 POS Menu Open Fix เสร็จ
 - P9-B004 Offline Queue Worker + Retry + Conflict Resolver เสร็จ
-- P9-B004.1 POS Menu Spacing เสร็จ
 - P9-B005 Repository Layer เสร็จเบื้องต้น
-- P9-B005.1 POS Receipt Print Fix เสร็จ
-- P9-B005.2 POS Receipt Data Hydration & Print Cleanup เสร็จ
-- P9-B005.3 POS Receipt Settings Restore & Loyalty Calculation Fix เสร็จ
-- P9-B005.4 POS Receipt Loyalty Fix เสร็จ
 - P9-B006 Firestore Composite Index เสร็จ
 - P9-B007 Audit Log เสร็จ
 - P9-B008 Shift Opening / Closing เสร็จ
+- P9-B009 Refund / Return / Void เสร็จ
 
-## รายละเอียด P9-B008
+## รายละเอียด P9-B009
 
-ปรับระบบเปิดกะ/ปิดกะของ Retail POS ให้เสถียรขึ้นทั้ง Firestore และ local fallback โดยต่อจาก HEAD ล่าสุดของผู้ใช้
+ต่อจาก HEAD ล่าสุดของผู้ใช้ `fix: invalidate stale admin UI modules` โดยไม่แก้ไฟล์ hotfix/admin/delivery ที่ผู้ใช้เพิ่งแก้ และปรับระบบคืนสินค้า/คืนเงิน/VOID ของ Retail POS
 
 แก้แล้ว:
 
-- ปรับ `retail-shifts.js` ให้ใช้ `saveRecord` แทนการเขียน Firestore ตรง เพื่อรองรับ local fallback
-- เปิดกะโดยบันทึก tenantId, shopId, deviceId, schemaVersion, cashierName, terminalCode, openingCash, openedAt และ createdBy
-- ปิดกะโดยสรุปยอดขาย, ยอดเงินสด, ยอดโอน, จำนวนบิล, เงินสดที่ควรมี, เงินสดนับจริง และผลต่างเงินสด
-- ประวัติกะแสดงกะปิดล่าสุดจาก Firestore/local cache
-- POS หน้า `/pos` ยังใช้ active shift ผ่าน `retail_pos_active_shift_v1` ตามเดิม จึงผูก `shiftId` ใน sale ได้ต่อเนื่อง
-- `/pos/shifts/index.html` bump cache เป็น `retail-shifts.js?v=20260701-003`
-- อัปเดต Developer Panel เป็น Version `0.12.22` Build `2026.07.01.003`
+- เพิ่มปุ่ม `คืนทั้งบิล / VOID` ใน `/pos/returns`
+- VOID จะใส่จำนวนคืนเต็มตามสินค้าที่ยังคืนได้ และตั้งเหตุผลเป็น `ยกเลิกบิล / VOID`
+- Return/VOID บันทึก tenantId, shopId, deviceId, schemaVersion, dateKey และ monthKey
+- ใช้ stock movement id แบบ deterministic จาก returnId + productId เพื่อลดปัญหา movement ซ้ำ
+- Firestore transaction อ่าน sale, return และ product ก่อน write ตามข้อกำหนด Firestore
+- อัปเดต sale ด้วย refundTotal, refundStatus และ status `voided` เมื่อคืนทั้งบิล
+- บันทึก audit log สำหรับ return และ void
+- ยังคง logic ปรับแต้มสมาชิกจากยอดคืนและ cache local fallback
+- `/pos/returns/index.html` bump cache เป็น `retail-returns.js?v=20260701-004`
 
 ## Current Milestone
 
-`P9-B008 Shift Opening / Closing`
+`P9-B009 Refund / Return / Void`
 
 ## Regression Tests สำคัญ
 
-1. เปิด `/pos/shifts`
-2. เปิดกะด้วยชื่อพนักงาน, รหัสเครื่อง POS และเงินสดเริ่มต้น
-3. ต้องเห็น active shift และบันทึกลง Firestore หรือ local fallback ได้
-4. เปิด `/pos` แล้วขาย 1 บิล ต้องผูก shiftId กับ active shift ถ้ามีกะเปิดอยู่
-5. กลับ `/pos/shifts` ต้องเห็นยอดขายรวม, ยอดเงินสด, ยอดโอน, จำนวนบิล และเงินสดที่ควรมี
-6. ปิดกะด้วยเงินสดนับจริง ต้องบันทึก actualCash และ cashDifference
-7. ประวัติกะต้องแสดงกะที่ปิดแล้ว
-8. Offline/local fallback ต้องไม่ทำให้ POS sale flow เสีย
+1. เปิด `/pos/returns`
+2. ค้นหาบิลขายที่ยังมีสินค้าคืนได้
+3. คืนสินค้าบางรายการ ต้องเพิ่ม stock กลับและบันทึก return record
+4. กด `คืนทั้งบิล / VOID` ต้องกรอกจำนวนคืนเต็มที่เหลือ
+5. VOID ต้องบันทึก sale status เป็น `voided`
+6. Return/VOID ต้องสร้าง stock movement id แบบ stable ต่อ returnId + productId
+7. Firestore ต้องมี audit log สำหรับ return หรือ void
+8. ถ้ามีสมาชิกและแต้ม ต้องปรับแต้มตามยอดคืน
+9. จำนวนคืนต้องไม่เกินจำนวนที่ขายลบจำนวนที่คืนแล้ว
+10. Local fallback ต้องยังบันทึก return, movement, product cache และ loyalty cache ได้
 
 ## งานถัดไป
 
-1. P9-B009 Refund / Return / Void
-2. P9-B010 Performance
+1. P9-B010 Performance
 
 ## ข้อควรระวัง
 
