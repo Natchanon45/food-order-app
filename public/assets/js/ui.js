@@ -89,11 +89,12 @@ function standardActionFor(button) {
 }
 
 function applyStandardAction(button, action) {
-  const use = button.querySelector("use");
-  const href = use?.getAttribute("href") || use?.getAttribute("xlink:href") || "";
-  const alreadyStandard = visibleButtonText(button) === action.label && href.includes(`#icon-${action.icon}`);
+  const alreadyStandard = visibleButtonText(button) === action.label
+    && button.dataset.appIcon === action.icon
+    && Boolean(button.querySelector(".app-icon"));
   if (!alreadyStandard) {
     button.innerHTML = `${iconMarkup(action.icon)}<span>${action.label}</span>`;
+    button.dataset.appIcon = action.icon;
   }
   button.classList.add("btn-standard-action");
   button.classList.remove("btn-icon-only");
@@ -103,12 +104,13 @@ function applyStandardAction(button, action) {
 }
 
 function makeIconOnly(button, icon, label) {
-  const use = button.querySelector("use");
-  const href = use?.getAttribute("href") || use?.getAttribute("xlink:href") || "";
-  const alreadyDecorated = button.classList.contains("btn-icon-only") && href.includes(`#icon-${icon}`);
+  const alreadyDecorated = button.classList.contains("btn-icon-only")
+    && button.dataset.appIcon === icon
+    && Boolean(button.querySelector(".app-icon"));
 
   if (!alreadyDecorated) {
     button.innerHTML = iconMarkup(icon);
+    button.dataset.appIcon = icon;
   }
   button.classList.add("btn-icon-only");
   button.classList.remove("btn-standard-action");
