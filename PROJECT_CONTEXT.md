@@ -16,10 +16,10 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.41`
-- Build: `2026.07.01.023`
+- Version: `0.12.42`
+- Build: `2026.07.01.024`
 - Branch: `feature/retail-pos`
-- Milestone: `Owner Staff List Fix`
+- Milestone: `Table Move Customer Session Fix`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -37,34 +37,35 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Receipt Print: พิมพ์เฉพาะข้อมูลใบเสร็จ ไม่ติด UI/toolbar/footer/version ของระบบ
 - Kitchen Visual Cues: ปุ่มรับออเดอร์/เริ่มทำ/พร้อมเสิร์ฟมี animation เบา ๆ และออเดอร์รอนานเกิน 15 นาทีมี highlight
 - Admin Users: Owner เห็นรายการพนักงานของร้านตัวเองจาก tenant memberships แล้ว
+- Table Move Customer Session: หลัง Cashier เปลี่ยนโต๊ะ หน้าลูกค้ายังเห็นรายการเดิมด้วย stable `tableToken` และสั่งรอบถัดไปต่อเนื่อง
 
 ## Current Milestone
 
-`Owner Staff List Fix`
+`Table Move Customer Session Fix`
 
-## รายละเอียด Owner Staff List Fix
+## รายละเอียด Table Move Customer Session Fix
 
-แก้ปัญหา Owner เปิดหน้า `/admin/users` แล้วรายการพนักงานเป็น `0 คน` ทั้งที่มีพนักงานในร้าน เพราะหน้าเดิมอิง staff helper เก่าและไม่ได้ fallback ไปอ่าน `tenants/{tenantId}/memberships`
+แก้ปัญหา Cashier เปลี่ยนโต๊ะแล้ว Kitchen/Cashier เห็นรายการถูกต้อง แต่หน้าลูกค้าไม่เห็นรายการเดิมและรอบการสั่งกลับเป็นรอบที่ 1
 
 แก้แล้ว:
 
-- เพิ่ม `admin-staff-service.js`
-- `listStaffUsers()` เรียก callable `listStaffUsers` ก่อน และ fallback ไปอ่าน tenant memberships ของ tenant ปัจจุบัน
-- `createStaffUser()` และ `updateStaffUser()` ส่ง `tenantId`/`tenantSlug` ไป callable เพื่อคง scope tenant
-- `admin-users.js` เปลี่ยนไปใช้ `admin-staff-service.js?v=20260701-023`
-- `/admin/users/index.html` bump `admin-users.js?v=20260701-023`
-- `/admin/users/index.html` bump `page-guard.js?v=20260701-015`
-- Developer Panel เป็น Version `0.12.41` Build `2026.07.01.023`
+- `customer-secure.js` ใช้ stable `tableToken` เป็นตัวตาม session หลังย้ายโต๊ะ
+- `customer-secure.js` fallback หาโต๊ะ active ใหม่จาก `orderToken` เดิม ถ้า URL ยังเป็นโต๊ะเดิม
+- `customer-secure.js` patch `createTableOrder()` ให้ส่ง order ใหม่เข้าโต๊ะ active ล่าสุดของ token นั้น
+- `customer-secure.js` subscribe order ด้วย `tableToken` เพื่อให้รายการเดิมยังแสดงหลังย้ายโต๊ะ
+- `/order/index.html` bump `customer-secure.js?v=20260701-024`
+- Developer Panel เป็น Version `0.12.42` Build `2026.07.01.024`
 
 ## Regression Tests สำคัญ
 
 1. Deploy hosting ใหม่
-2. Login ด้วย Owner
-3. เปิด `/admin/users`
-4. รายการพนักงานต้องแสดงพนักงานของ tenant ปัจจุบัน ไม่ใช่ `0 คน` หากมี membership อยู่แล้ว
-5. สร้างพนักงานใหม่แล้ว refresh รายการต้องแสดงทันที
-6. รายการต้องไม่ข้าม tenant
-7. หน้า Kitchen/Cashier/POS ต้องไม่เปลี่ยน behavior
+2. เปิดโต๊ะ A แล้วสั่งอาหารจาก QR
+3. Kitchen/Cashier ต้องเห็นออเดอร์โต๊ะ A
+4. Cashier เปลี่ยนโต๊ะ A ไปโต๊ะ B
+5. หน้า Cashier/Kitchen ต้องยังเห็นรายการเดิมภายใต้โต๊ะใหม่
+6. หน้าลูกค้าต้องยังเห็นรายการที่สั่งแล้วจาก session เดิม
+7. รอบการสั่งถัดไปต้องต่อจากรอบเดิม ไม่กลับเป็นรอบที่ 1
+8. กดสั่งเพิ่มหลังย้ายโต๊ะแล้วออเดอร์ใหม่ต้องเข้าโต๊ะที่ active ใหม่
 
 ## งานถัดไป
 
