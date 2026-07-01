@@ -3,12 +3,20 @@ import { resolveTenantContext } from './tenant-context.js';
 
 const STAFF_ROLES = new Set(['admin', 'cashier', 'kitchen']);
 
+function rawRole(data = {}) {
+  return String(data.role || '').trim().toLowerCase();
+}
+
+function staffOnly(row) {
+  return STAFF_ROLES.has(rawRole(row));
+}
+
 function normalizeUser(uid, data = {}) {
   return {
     uid: uid || data.uid || data.userId || '',
     displayName: data.displayName || data.name || '',
     email: data.email || '',
-    role: STAFF_ROLES.has(data.role) ? data.role : 'cashier',
+    role: rawRole(data),
     active: data.active !== false,
     tenantId: data.tenantId || '',
     tenantSlug: data.tenantSlug || ''
@@ -44,14 +52,11 @@ export async function listStaffUsers() {
   try {
     const data = await callStaffFunction('listStaffUsers', { tenantId: tenant.id, tenantSlug: tenant.slug });
     const rows = Array.isArray(data?.users) ? data.users : Array.isArray(data) ? data : [];
-    return rows.map(row => normalizeUser(row.uid || row.id, { ...row, tenantId: row.tenantId || tenant.id, tenantSlug: row.tenantSlug || tenant.slug })).filter(row => STAFF_ROLES.has(row.role));
+    return rows.filter(staffOnly).map(row => normalizeUser(row.uid || row.id, { ...row, tenantId: row.tenantId || tenant.id, tenantSlug: row.tenantSlug || tenant.slug })).sort((a, b) => String(a.displayName || a.email).localeCompare(String(b.displayName || b.email), 'th'));
   } catch (error) {
     console.warn('LIST_STAFF_CALLABLE_FALLBACK', error);
     const snapshot = await getDocs(collection(db, 'tenants', tenant.id, 'memberships'));
-    return snapshot.docs
-      .map(item => normalizeUser(item.id, { ...item.data(), tenantId: tenant.id, tenantSlug: tenant.slug }))
-      .filter(row => STAFF_ROLES.has(row.role))
-      .sort((a, b) => String(a.displayName || a.email).localeCompare(String(b.displayName || b.email), 'th'));
+    return snapshot.docs.filter(item => staffOnly(item.data())).map(item => normalizeUser(item.id, { ...item.data(), tenantId: tenant.id, tenantSlug: tenant.slug })).sort((a, b) => String(a.displayName || a.email).localeCompare(String(b.displayName || b.email), 'th'));
   }
 }
 
