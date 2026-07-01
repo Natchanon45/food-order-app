@@ -20,6 +20,12 @@
   min-height: 36px;
 }
 
+.kitchen-status-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
 .kitchen-item-editor-backdrop {
   position: fixed;
   inset: 0;
@@ -96,6 +102,27 @@
     height: 18px !important;
     margin: 0 !important;
   }
+
+  .kitchen-order-actions .kitchen-served-action {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    justify-content: center !important;
+    gap: 0 !important;
+  }
+
+  .kitchen-order-actions .kitchen-served-action > span {
+    display: none !important;
+  }
+
+  .kitchen-order-actions .kitchen-served-action .app-icon {
+    width: 20px !important;
+    height: 20px !important;
+    margin: 0 !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -112,6 +139,13 @@
     height: 36px !important;
     min-width: 36px !important;
     min-height: 36px !important;
+  }
+
+  .kitchen-order-actions .kitchen-served-action {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
   }
 
   .kitchen-item-editor {
