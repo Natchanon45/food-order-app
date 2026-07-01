@@ -16,10 +16,10 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.54`
-- Build: `2026.07.02.008`
+- Version: `0.12.55`
+- Build: `2026.07.02.009`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B007 Audit Log`
+- Milestone: `P9-B008 Shift Opening / Closing`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -32,38 +32,40 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - P9-B005 Repository Layer เสร็จแล้ว
 - P9-B006 Firestore Composite Index เสร็จแล้ว
 - P9-B007 Audit Log เสร็จแล้ว
+- P9-B008 Shift Opening / Closing เสร็จแกนกลางแล้ว
 
 ## Current Milestone
 
-`P9-B007 Audit Log`
+`P9-B008 Shift Opening / Closing`
 
 ## แก้แล้วรอบนี้
 
-- เพิ่ม `retail-pos-audit-log.js` เป็น Audit Log Service กลางของ POS
-- เพิ่ม `POS_AUDIT_ACTIONS` สำหรับ sale / sync / shift / refund / return / void / stock
-- เพิ่ม `buildAuditLogRow()` สำหรับสร้าง audit row พร้อม tenant metadata
-- เพิ่ม `setAuditLogInTransaction()` สำหรับเขียน audit log ใน Firestore Transaction
-- เพิ่ม `writeAuditLog()` สำหรับเขียน audit log แบบ async ทั่วไป
-- เพิ่ม `saleAuditSummary()` สำหรับสรุปข้อมูล sale ที่ใช้ใน audit log
-- เตรียมฐานให้ P9-B008 Shift Opening / Closing และ P9-B009 Refund / Return / Void
-- Developer Panel เป็น Version `0.12.54` Build `2026.07.02.008`
+- เพิ่ม `retail-pos-shift.js` เป็น Shift Service กลางของ POS
+- เพิ่ม `openShift()` สำหรับเปิดกะผ่าน Firestore Transaction
+- เพิ่ม `closeShift()` สำหรับปิดกะผ่าน Firestore Transaction
+- เพิ่ม `getActiveShiftLocal()` เพื่ออ่านกะที่เปิดอยู่จาก localStorage
+- เพิ่ม `buildOpenShiftRow()` และ `buildClosedShiftRow()`
+- ใช้ `reserveRunningNumber()` สร้างเลข Shift แบบ Stable
+- เขียน Audit Log ด้วย `POS_AUDIT_ACTIONS.SHIFT_OPENED` และ `SHIFT_CLOSED`
+- เตรียมฐานให้ P9-B009 Refund / Return / Void ใช้ active shift ต่อ
+- Developer Panel เป็น Version `0.12.55` Build `2026.07.02.009`
 
 ## Regression Tests สำคัญ
 
 1. เปิด POS แล้วขาย Online ได้ตามเดิม
-2. ตรวจ auditLogs ใน Firestore หลังขาย Online ต้องยังมีรายการ `pos_sale_completed` จาก flow เดิม
-3. เปิด Console แล้ว import/use Audit Service ต้องสร้าง row ที่มี `tenantId`, `shopId`, `createdBy`, `action`, `entityId`
-4. `buildAuditLogRow()` ต้อง throw ถ้าไม่มี action หรือ entityId
-5. `setAuditLogInTransaction()` ต้องใช้ได้ใน transaction ของโมดูลถัดไป
-6. ตรวจว่าไม่กระทบ Offline Sync
-7. ตรวจว่าไม่กระทบ Food Order / Delivery
-8. ตรวจว่า record สำคัญยังมี `tenantId`
+2. Offline Sync ต้องทำงานได้ตามเดิม
+3. เรียก `openShift()` ต้องสร้างเอกสารใน `shifts` พร้อม `tenantId`, `status: open`, `openingCash`
+4. เปิดกะแล้ว localStorage ต้องมี `retail_pos_active_shift_v1`
+5. เรียก `closeShift()` ต้องอัปเดต `status: closed`, `closingCash`, `expectedCash`, `cashDifference`
+6. ปิดกะแล้ว localStorage ต้องล้าง active shift
+7. ตรวจ auditLogs ต้องมี `pos_shift_opened` และ `pos_shift_closed`
+8. ตรวจว่าไม่กระทบ Food Order / Delivery
+9. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
 
-1. P9-B008 Shift Opening / Closing
-2. P9-B009 Refund / Return / Void
-3. P9-B010 Performance (Cache / Virtual List / Search)
+1. P9-B009 Refund / Return / Void
+2. P9-B010 Performance (Cache / Virtual List / Search)
 
 ## ข้อควรระวัง
 
