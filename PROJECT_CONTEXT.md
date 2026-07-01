@@ -16,58 +16,50 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.32`
-- Build: `2026.07.01.014`
+- Version: `0.12.33`
+- Build: `2026.07.01.015`
 - Branch: `feature/retail-pos`
-- Milestone: `Kitchen Serve Item & Cashier Table Icons`
+- Milestone: `Cashier Icons`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
 - QR Table Order เสร็จ
 - Take Away Order / Pickup Queue เสร็จขั้นแรก
 - Kitchen แสดง Take Away ด้วยเลขคิว ไม่ปนกับโต๊ะจริง
-- Kitchen Take Away มีปุ่ม `เสิร์ฟแล้ว` หลังสถานะพร้อมเสิร์ฟ
 - ปุ่ม `เสิร์ฟรายการนี้` ใช้ icon `bi-send-check` และบน Mobile แสดงเฉพาะ icon
 - ปุ่ม `เสิร์ฟแล้ว` ทั้งออเดอร์ยังแสดงข้อความทั้ง PC และ Mobile
-- Take Away ที่เป็นสถานะ `served` แล้วจะแก้ไขหรือยกเลิกไม่ได้ เหมือนออเดอร์นั่งทานที่ร้าน
-- Delivery Lock เสร็จ
 - Cashier ย้ายโต๊ะเสร็จ
-- หน้า Cashier ปุ่มออกโต๊ะ/รับชำระโต๊ะและปุ่มเปลี่ยนโต๊ะใช้ icon `bi-easel2`
+- หน้า Cashier ปุ่ม `ตรวจแล้ว/ชำระแล้ว` ใช้ icon `check-circle`
+- เมนู User ด้านขวาบน รายการ `ออกโต๊ะ` ใช้ icon `bi-easel2`
+- ปุ่ม `เปลี่ยนโต๊ะ` ใช้ icon `bi-easel2`
 - หน้า Admin มี QR สำหรับ Delivery และ QR สำหรับสั่งกลับบ้าน
-- หน้า Admin ตอนพิมพ์ QR Delivery และ QR สั่งกลับบ้านใช้ `TH Sarabun PSK Local`
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
-- P9-B001 ถึง P9-B009 เสร็จแล้ว
 
-## รายละเอียด Kitchen Serve Item & Cashier Table Icons
+## รายละเอียด Cashier Icons
 
-ปรับ UI ตามที่ทดสอบจริง: ปุ่มที่ต้องเป็น icon-only บน mobile คือปุ่ม `เสิร์ฟรายการนี้` ของแต่ละรายการอาหารเท่านั้น ส่วนปุ่ม `เสิร์ฟแล้ว` ทั้งออเดอร์ต้องยังแสดงข้อความเหมือนเดิม
+แก้จุดที่สับสนจากรอบก่อน: ปุ่มรับชำระของ Cashier ต้องคง icon check-circle ส่วน icon easel2 ใช้กับเมนูออกโต๊ะด้านขวาบนและปุ่มเปลี่ยนโต๊ะเท่านั้น
 
 แก้แล้ว:
 
-- `kitchen-item-serve.js` เปลี่ยนปุ่ม `data-serve-item` เป็น icon `bi-send-check` พร้อมข้อความ `เสิร์ฟรายการนี้`
-- `kitchen-item-editor.css` ซ่อนข้อความเฉพาะปุ่ม `data-serve-item` บน mobile
-- ยกเลิกการซ่อนข้อความของปุ่ม `.kitchen-served-action` บน mobile
-- `kitchen.js` bump import `kitchen-item-serve.js?v=20260701-014`
-- `/kitchen/index.html` bump cache เป็น `kitchen.js?v=20260701-014` และ `kitchen-item-editor.css?v=20260701-014`
-- `cashier-table-move.js` เปลี่ยนปุ่ม `เปลี่ยนโต๊ะ` เป็น icon `bi-easel2`
-- `cashier.js` เปลี่ยนปุ่มออกโต๊ะ/รับชำระโต๊ะเป็น icon `bi-easel2` และ bump import `cashier-table-move.js?v=20260701-014`
-- `/cashier/index.html` bump cache เป็น `cashier.js?v=20260701-014`
-- Developer Panel เป็น Version `0.12.32` Build `2026.07.01.014`
+- เพิ่ม `cashier-icon-hotfix.js` เพื่อบังคับปุ่ม `data-table-payment` เป็น `check-circle`
+- `auth-service.js` เปลี่ยนเมนู User รายการ `ออกโต๊ะ` เป็น icon `bi-easel2`
+- `page-guard.js` bump import `auth-service.js?v=20260701-015`
+- `/cashier/index.html` bump `page-guard.js?v=20260701-015`
+- `/cashier/index.html` โหลด `cashier-icon-hotfix.js?v=20260701-015`
+- Developer Panel เป็น Version `0.12.33` Build `2026.07.01.015`
 
 ## Current Milestone
 
-`Kitchen Serve Item & Cashier Table Icons`
+`Cashier Icons`
 
 ## Regression Tests สำคัญ
 
 1. Deploy hosting ใหม่
-2. เปิด Kitchen บน mobile
-3. ปุ่ม `เสิร์ฟรายการนี้` ต้องเห็นเฉพาะ icon `bi-send-check`
-4. เปิด Kitchen บน desktop ปุ่ม `เสิร์ฟรายการนี้` ต้องเห็น icon + ข้อความ
-5. ปุ่ม `เสิร์ฟแล้ว` ทั้งออเดอร์ต้องยังแสดงข้อความบน mobile และ desktop
-6. เปิด Cashier แล้วปุ่มออกโต๊ะ/รับชำระโต๊ะต้องใช้ `bi-easel2`
-7. ปุ่มเปลี่ยนโต๊ะต้องใช้ `bi-easel2`
-8. Workflow ครัวและ Cashier ต้องยังทำงานเหมือนเดิม
+2. เปิด Cashier
+3. ปุ่ม `ตรวจแล้ว/ชำระแล้ว` ต้องใช้ `check-circle`
+4. เมนู User ด้านขวาบน รายการ `ออกโต๊ะ` ต้องใช้ `bi-easel2`
+5. ปุ่ม `เปลี่ยนโต๊ะ` ต้องใช้ `bi-easel2`
+6. Workflow Cashier ต้องยังทำงานเหมือนเดิม
 
 ## งานถัดไป
 
