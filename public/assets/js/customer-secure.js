@@ -1,7 +1,7 @@
 await import("./public-tenant-resolver.js?v=20260629-025");
 await import("./table-qr-resolver.js?v=20260622-5");
 
-import { dataService, usingDemoMode } from "./data-service.js?v=20260701-009";
+import { dataService, usingDemoMode } from "./data-service.js";
 import { db, collection, onSnapshot, query, where } from "./firebase-config.js?v=20260630-073";
 import { demoStore } from "./demo-store.js";
 import { shopCollectionPath, resolveShopContext } from "./tenant-context.js";
@@ -36,9 +36,9 @@ dataService.createTableOrder = async order => {
 dataService.subscribeOrders = callback => {
   const session = tableSession();
   if (!session.tableCode || !session.tableToken) { callback([]); return () => {}; }
-  const emit = rows => callback((rows || []).map(order => order.tableToken === session.tableToken ? { ...order, tableCode: session.tableCode } : order));
+  const emit = rows => callback((rows || []).filter(order => order.tableToken === session.tableToken));
   if (usingDemoMode) {
-    const send = () => emit(demoStore.orders.list().filter(order => order.tableToken === session.tableToken));
+    const send = () => emit(demoStore.orders.list());
     send();
     const handler = () => send();
     window.addEventListener("storage", handler);
@@ -51,4 +51,4 @@ dataService.subscribeOrders = callback => {
   return onSnapshot(tableOrdersQuery, snapshot => emit(snapshot.docs.map(item => ({ id: item.id, ...item.data() }))));
 };
 
-await import("./customer.js?v=20260701-024");
+await import("./customer.js?v=20260701-026");
