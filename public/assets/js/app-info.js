@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.23',
-  build: '2026.07.01.004',
+  version: '0.12.24',
+  build: '2026.07.01.005',
   branch: 'feature/retail-pos',
-  commit: 'P9-B009',
+  commit: 'O1-T001',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P9-B009 Refund / Return / Void',
-  updatedAt: '2026-07-01T10:05:00+07:00',
+  milestone: 'O1-T001 Take Away Order / Pickup Queue',
+  updatedAt: '2026-07-01T10:35:00+07:00',
   whatsNew: [
-    'Update POS return and refund transaction flow',
-    'Add full bill VOID action from the return screen',
-    'Use stable stock movement ids for return records',
-    'Add return and void audit logs with tenant and device metadata'
+    'Add Take Away ordering page without opening a table',
+    'Create daily TA queue number for pickup orders',
+    'Add cashier pickup call and picked-up workflow',
+    'Keep table QR, delivery, and POS flows separate'
   ]
 };
 
