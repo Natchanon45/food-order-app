@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Take Away Kitchen Served Flow`
-- Developer Panel version/build ปัจจุบัน: `0.12.30` / `2026.07.01.012`
+- Current milestone: `Mobile Kitchen Icon & QR Print Font`
+- Developer Panel version/build ปัจจุบัน: `0.12.31` / `2026.07.01.013`
 
 ## Food Order Status
 
@@ -22,23 +22,23 @@
 - Take Away ส่งเข้าครัวด้วย `orderType = takeaway`
 - หน้าครัวแสดง Take Away ด้วยเลขคิว ไม่ปนกับโต๊ะจริง
 - หน้าครัว Take Away มีปุ่ม `เสิร์ฟแล้ว` เหมือน QR โต๊ะ
+- Mobile หน้าครัวปุ่ม `เสิร์ฟแล้ว` แสดงเฉพาะ icon เพื่อลดการชนกันของปุ่ม
 - เมื่อ Take Away เป็นสถานะ `served` แล้ว รายการจะแก้ไขหรือยกเลิกไม่ได้ เหมือนออเดอร์นั่งทานที่ร้าน
+- หน้า Admin ตอนพิมพ์ QR Delivery และ QR สั่งกลับบ้านใช้ `TH Sarabun PSK Local`
 
 ## Current Milestone
 
-`Take Away Kitchen Served Flow`
+`Mobile Kitchen Icon & QR Print Font`
 
 ## Regression Tests
 
-1. เปิด `/s/{tenantSlug}/takeaway`
-2. ส่ง Take Away ให้เข้า Kitchen
-3. หน้า Kitchen ต้องแสดง `Take Away: TA-xxx`
-4. กดรับออเดอร์ > เริ่มทำ > พร้อมเสิร์ฟ
-5. หลังพร้อมเสิร์ฟต้องเห็นปุ่ม `เสิร์ฟแล้ว`
-6. กด `เสิร์ฟแล้ว` แล้วรายการต้องเป็นสถานะ `served`
-7. หลัง served ต้องไม่มีปุ่มแก้ไขรายการ
-8. หลัง served ต้องไม่มีปุ่มยกเลิกรายการหรือยกเลิกทั้งออเดอร์
-9. QR โต๊ะนั่งทานที่ร้านต้องยังทำงานเหมือนเดิม
+1. เปิด Kitchen บน mobile
+2. ออเดอร์ Take Away ที่พร้อมเสิร์ฟต้องเห็นปุ่ม `เสิร์ฟแล้ว` เป็น icon-only
+3. Desktop ยังแสดงข้อความปุ่มได้ตามเดิม
+4. เปิด `/admin`
+5. กดพิมพ์ QR Delivery ต้องใช้ฟอนต์ `TH Sarabun PSK Local`
+6. กดพิมพ์ QR สั่งกลับบ้านต้องใช้ฟอนต์ `TH Sarabun PSK Local`
+7. QR โต๊ะนั่งทานที่ร้านต้องยังทำงานเหมือนเดิม
 
 ## Next Tasks
 
