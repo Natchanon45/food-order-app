@@ -23,12 +23,15 @@ function icon(name) { return iconMarkup(name); }
 function isDelivery(order) { return order?.orderType === "delivery"; }
 function isTakeaway(order) { return order?.orderType === "takeaway"; }
 function displayTime(order) { return order.createdAt || order.createdAtText || order.updatedAt; }
+function valueToDate(value) { if (!value) return null; if (typeof value.toDate === "function") return value.toDate(); if (value.seconds) return new Date(value.seconds * 1000); const date = value instanceof Date ? value : new Date(value); return Number.isNaN(date.getTime()) ? null : date; }
+function orderAgeMinutes(order) { const date = valueToDate(displayTime(order)); return date ? Math.floor((Date.now() - date.getTime()) / 60000) : 0; }
+function isOverdue(order) { return ["pending", "accepted", "cooking"].includes(order?.status) && orderAgeMinutes(order) >= 15; }
 function orderTitle(order) { if (isDelivery(order)) return `Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}`; if (isTakeaway(order)) return `Take Away: ${order.queueNo || order.tableCode || "TA"}`; return `โต๊ะ ${order.tableCode}${order.roundNumber ? ` • รอบที่ ${order.roundNumber}` : " • รอบที่ 1"}`; }
 function nextActions(status, orderType) {
-  if (status === "pending") return [["accepted", "รับออเดอร์", "btn-primary", "check"]];
-  if (status === "accepted") return [["cooking", "เริ่มทำ", "btn-warning", "hourglass-split"]];
-  if (status === "cooking") return [["ready", orderType === "delivery" ? "พร้อมจัดส่ง" : "พร้อมเสิร์ฟ", "btn-primary", "check-circle"]];
-  if (status === "ready") return [["served", orderType === "delivery" ? "ส่งให้ไรเดอร์แล้ว" : "เสิร์ฟแล้ว", "btn-dark", "check-circle"]];
+  if (status === "pending") return [["accepted", "รับออเดอร์", "btn-primary", "check", "kitchen-accept-action"]];
+  if (status === "accepted") return [["cooking", "เริ่มทำ", "btn-warning", "hourglass-split", "kitchen-start-action"]];
+  if (status === "cooking") return [["ready", orderType === "delivery" ? "พร้อมจัดส่ง" : "พร้อมเสิร์ฟ", "btn-primary", "check-circle", "kitchen-ready-action"]];
+  if (status === "ready") return [["served", orderType === "delivery" ? "ส่งให้ไรเดอร์แล้ว" : "เสิร์ฟแล้ว", "btn-dark", "check-circle", "kitchen-served-action"]];
   return [];
 }
 function isKitchenLocked(order) { return ["served", "paid", "cancelled"].includes(order?.status); }
@@ -41,10 +44,12 @@ function render(orders) {
   const active = orders.filter(order => activeStatuses.includes(order.status));
   grid.innerHTML = active.length ? active.map(order => {
     const locked = isKitchenLocked(order);
+    const overdue = isOverdue(order);
     const itemRows = (order.items || []).map((item, index) => `<li style="${item.cancelled ? "opacity:.48;text-decoration:line-through" : ""}"><strong>${item.qty} × ${item.name}</strong>${item.note ? `<br><small>หมายเหตุ: ${item.note}</small>` : ""}${item.cancelled ? '<br><small>ยกเลิกแล้ว</small>' : locked ? `<div class="kitchen-item-actions"><span class="badge">${lockedItemLabel(order)}</span></div>` : `<div class="kitchen-item-actions"><button class="btn btn-sm" data-edit-item="${order.id}" data-item-index="${index}">${icon("pencil")}<span>แก้ไข</span></button><button class="btn btn-danger btn-sm" data-cancel-item="${order.id}" data-item-index="${index}">${icon("x-circle")}<span>ยกเลิก</span></button></div>`}</li>`).join("");
     const statusText = isTakeaway(order) && order.status === "ready" ? "พร้อมเสิร์ฟ" : statusLabel(order.status);
-    const actionButtons = nextActions(order.status, order.orderType).map(([status,label,cls,iconName]) => `<button class="btn ${cls} kitchen-status-action${status === "served" ? " kitchen-served-action" : ""}${status === "cooking" ? " kitchen-start-action" : ""}" data-id="${order.id}" data-status="${status}" aria-label="${label}">${icon(iconName)}<span>${label}</span></button>`).join("");
-    return `<article class="card order-card${isTakeaway(order) ? " takeaway-kitchen-card" : ""}"><div class="order-head"><div><h2 style="margin:0">${orderTitle(order)}</h2><small>${formatTime(displayTime(order))}</small></div><span class="badge ${isTakeaway(order) ? "warning" : ""}">${statusText}</span></div>${orderInfo(order)}<ul class="order-items">${itemRows}</ul>${orderSummary(order)}${order.note ? `<p><strong>หมายเหตุรวม:</strong> ${order.note}</p>` : ""}<div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions kitchen-order-actions" style="margin-top:12px">${actionButtons}${locked ? "" : `<button class="btn btn-danger" data-cancel-order="${order.id}">ยกเลิกทั้งออเดอร์</button>`}</div></article>`;
+    const overdueBadge = overdue ? `<span class="badge warning kitchen-overdue-badge">รอนาน ${orderAgeMinutes(order)} นาที</span>` : "";
+    const actionButtons = nextActions(order.status, order.orderType).map(([status,label,cls,iconName,actionClass]) => `<button class="btn ${cls} kitchen-status-action ${actionClass || ""}" data-id="${order.id}" data-status="${status}" aria-label="${label}">${icon(iconName)}<span>${label}</span></button>`).join("");
+    return `<article class="card order-card${isTakeaway(order) ? " takeaway-kitchen-card" : ""}${overdue ? " kitchen-order-overdue" : ""}"><div class="order-head"><div><h2 style="margin:0">${orderTitle(order)}</h2><small>${formatTime(displayTime(order))}</small></div><span class="badge ${isTakeaway(order) ? "warning" : ""}">${statusText}</span></div>${overdueBadge}${orderInfo(order)}<ul class="order-items">${itemRows}</ul>${orderSummary(order)}${order.note ? `<p><strong>หมายเหตุรวม:</strong> ${order.note}</p>` : ""}<div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions kitchen-order-actions" style="margin-top:12px">${actionButtons}${locked ? "" : `<button class="btn btn-danger" data-cancel-order="${order.id}">ยกเลิกทั้งออเดอร์</button>`}</div></article>`;
   }).join("") : '<div class="card empty">ยังไม่มีออเดอร์ที่รอดำเนินการ</div>';
 }
 function closeEditor() { document.querySelector(".kitchen-item-editor-backdrop")?.remove(); }
