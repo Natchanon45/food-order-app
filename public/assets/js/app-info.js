@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.21',
-  build: '2026.06.30.087',
+  version: '0.12.22',
+  build: '2026.07.01.003',
   branch: 'feature/retail-pos',
-  commit: 'P9-B007',
+  commit: 'P9-B008',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P9-B007 Audit Log',
-  updatedAt: '2026-06-30T23:25:00+07:00',
+  milestone: 'P9-B008 Shift Opening / Closing',
+  updatedAt: '2026-07-01T09:40:00+07:00',
   whatsNew: [
-    'Add POS sale audit log on successful Firestore transaction',
-    'Record audit log with tenant, device, user, sale number, amount, and sync status',
-    'Use deterministic audit log id to avoid duplicate audit records',
-    'Bump POS page cache for audit logging change'
+    'Stabilize POS shift opening and closing flow',
+    'Save shifts with tenant, device, user, opening cash, closing cash, and cash difference',
+    'Support Firestore with local fallback for shift records',
+    'Bump shift page cache after shift workflow update'
   ]
 };
 
