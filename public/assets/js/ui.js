@@ -35,7 +35,7 @@ export function statusLabel(status) {
   return ({ pending: "รอรับออเดอร์", accepted: "ครัวรับแล้ว", cooking: "กำลังทำ", ready: "พร้อมเสิร์ฟ", served: "เสิร์ฟแล้ว", paid: "ชำระแล้ว", cancelled: "ยกเลิก" })[status] || status;
 }
 
-function normalizeDateValue(value) {
+function normalizedDate(value) {
   if (!value) return new Date();
   if (value?.toDate) return value.toDate();
   if (typeof value === "object" && Number.isFinite(Number(value.seconds))) return new Date(Number(value.seconds) * 1000);
@@ -44,7 +44,7 @@ function normalizeDateValue(value) {
 }
 
 export function formatTime(value) {
-  return normalizeDateValue(value).toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" });
+  return normalizedDate(value).toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" });
 }
 
 function mountIconStyles() {
@@ -125,4 +125,110 @@ function makeIconOnly(button, icon, label) {
   button.title = label;
 }
 
-mountIconStyles();
+function decorateButton(button) {
+  if (!(button instanceof HTMLElement) || !button.matches("button, a.btn")) return;
+  if (button.closest(".user-menu")) return;
+
+  if (button.dataset.inc) {
+    makeIconOnly(button, "plus", "เพิ่มจำนวน");
+    return;
+  }
+
+  if (button.dataset.dec) {
+    makeIconOnly(button, "minus", "ลดจำนวน");
+    return;
+  }
+
+  const standardAction = standardActionFor(button);
+  if (standardAction && applyStandardAction(button, standardAction)) return;
+
+  if (!button.querySelector(".app-icon")) {
+    const normalizedText = button.textContent?.trim() || "";
+    const icon = buttonIconRules.find(([pattern]) => pattern.test(normalizedText))?.[1] || "";
+    if (icon) button.insertAdjacentHTML("afterbegin", iconMarkup(icon));
+  }
+
+  const hasIcon = Boolean(button.querySelector(".app-icon"));
+  const hasText = Boolean(visibleButtonText(button));
+  button.classList.toggle("btn-icon-only", hasIcon && !hasText);
+
+  if (hasIcon && hasText) {
+    button.removeAttribute("aria-label");
+    button.removeAttribute("title");
+  }
+
+  if (hasIcon && !hasText && !button.getAttribute("aria-label")) {
+    const fallbackLabel = button.title || "ปุ่มคำสั่ง";
+    button.setAttribute("aria-label", fallbackLabel);
+  }
+}
+
+function decorateButtons(root = document) {
+  if (root instanceof HTMLElement && root.matches("button, a.btn")) decorateButton(root);
+  root.querySelectorAll?.("button, a.btn").forEach(decorateButton);
+}
+
+function decorateCartHeading(heading) {
+  if (!(heading instanceof HTMLElement) || heading.querySelector(".app-icon")) return;
+  const text = heading.textContent?.trim() || "";
+  if (!/ตะกร้าอาหาร|รายการรอบปัจจุบัน/i.test(text)) return;
+  heading.insertAdjacentHTML("afterbegin", iconMarkup("cart"));
+  heading.classList.add("has-heading-icon");
+}
+
+function decorateCartHeadings(root = document) {
+  if (root instanceof HTMLElement && root.matches(".section-title h2")) decorateCartHeading(root);
+  root.querySelectorAll?.(".section-title h2").forEach(decorateCartHeading);
+}
+
+function mountDeliveryAddToast() {
+  const isDeliveryPage = /^\/s\/[^/]+\/delivery\/?$/i.test(location.pathname) || /^\/delivery\/?$/i.test(location.pathname);
+  if (!isDeliveryPage || document.body.dataset.deliveryAddToastMounted === "true") return;
+  document.body.dataset.deliveryAddToastMounted = "true";
+
+  document.addEventListener("click", event => {
+    const button = event.target.closest("[data-add]");
+    if (!button) return;
+    const name = button.closest(".menu-card")?.querySelector(".menu-name")?.textContent?.trim() || "เมนู";
+    setTimeout(() => toast(`เพิ่ม ${name} แล้ว`), 0);
+  });
+}
+
+function mountVersion() {
+  if (document.querySelector(".app-version")) return;
+  const footer = document.createElement("footer");
+  footer.className = "app-version";
+  footer.textContent = `Food Order/Delivery With QR • Version ${APP_VERSION}`;
+  document.body.appendChild(footer);
+}
+
+function initializeUi() {
+  mountIconStyles();
+  decorateButtons();
+  decorateCartHeadings();
+  mountDeliveryAddToast();
+  new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(node => {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      decorateButtons(node);
+      if (node.parentElement?.matches("button, a.btn")) decorateButton(node.parentElement);
+      decorateCartHeadings(node);
+    } else if (node.parentElement) {
+      decorateButton(node.parentElement.closest?.("button, a.btn"));
+      decorateCartHeading(node.parentElement.closest?.(".section-title h2"));
+    }
+  }))).observe(document.body, { childList: true, subtree: true });
+  if (document.querySelector("#menuGrid")) import("./menu-image-position.js");
+  mountVersion();
+}
+
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initializeUi);
+else initializeUi();
+
+document.addEventListener("error", event => {
+  const image = event.target;
+  if (!(image instanceof HTMLImageElement)) return;
+  if (!image.closest(".menu-image") && !image.matches("[data-food-image]") && image.id !== "menuImagePreview") return;
+  if (image.dataset.defaultApplied === "true") return;
+  image.dataset.defaultApplied = "true";
+  image.src = DEFAULT_FOOD_IMAGE;
+}, true);
