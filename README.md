@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Customer Previous Orders Table Code Fix`
-- Developer Panel version/build ปัจจุบัน: `0.12.47` / `2026.07.01.030`
+- Current milestone: `P9-B002 Running Number`
+- Developer Panel version/build ปัจจุบัน: `0.12.48` / `2026.07.02.002`
 
 ## Food Order Status
 
@@ -17,30 +17,53 @@
 - Delivery Lock เสร็จ
 - Cashier ย้ายโต๊ะเสร็จ
 - Take Away ส่งเข้าครัวและ Cashier แล้ว
-- หน้า Order ลูกค้านั่งทานที่ร้านเห็นรายการที่โต๊ะเคยสั่งจาก `tableCode` แล้ว
-- หลัง Cashier เปลี่ยนโต๊ะ ลูกค้าใช้ QR เดิมได้ต่อ และมี fallback จาก `tableToken` / `movedFromTableCode`
-- ลูกค้าสั่งเพิ่มจาก QR เดิมแล้วออเดอร์ใหม่เข้าโต๊ะ active ล่าสุด
-- หน้า Admin รายการสินค้า/อาหารและโต๊ะใช้ icon สถานะอย่างเดียว ไม่มีตัวหนังสือ
+- Food Order ปิดครบแล้ว
+
+## Retail POS Status
+
+ทำแล้ว:
+
+- P9-B001 POS Firestore Foundation
+- P9-B002 Running Number
+- Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
+- POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+- Running Number แยกตาม tenant และ document type
 
 ## Current Milestone
 
-`Customer Previous Orders Table Code Fix`
+`P9-B002 Running Number`
+
+## Running Number Foundation
+
+- Counter แยกตาม `tenantId`
+- Counter แยกตาม document type
+- รองรับชนิดเอกสาร: `SALE`, `RECEIPT`, `TAX`, `REFUND`, `VOID`, `SHIFT`, `PURCHASE`, `STOCK`, `TRANSFER`
+- รองรับ reset period: daily / monthly / yearly / none
+- POS Sale เดิมยังใช้ `saleId` เป็น Stable ID
+- Online Sale จองเลขผ่าน Firestore Transaction
+- Offline Sale ใช้เลข PENDING ก่อน และรับเลขจริงตอน Sync
 
 ## Regression Tests
 
-1. เปิดโต๊ะ A แล้วสั่งอาหารจาก QR
-2. ลูกค้าคนเดิมหรืออีกเครื่องเปิด QR โต๊ะ A ต้องเห็นรายการที่เคยสั่ง
-3. รอบการสั่งถัดไปต้องต่อจากรอบเดิม
-4. Cashier เปลี่ยนโต๊ะ A ไปโต๊ะ B
-5. ลูกค้าสแกน QR เดิมของโต๊ะ A ต้องยังเห็นรายการเดิม
-6. ลูกค้าสั่งเพิ่มจาก QR เดิม ต้องเข้าโต๊ะ B ที่ active อยู่
-7. หน้า Admin สถานะใช้งานต้องเป็น icon `bi-check-square` สีเขียว ไม่มีตัวหนังสือ
-8. หน้า Admin สถานะไม่ได้ใช้งานต้องเป็น icon `bi-square` สีเทา ไม่มีตัวหนังสือ
+1. เปิด POS แล้วขายสินค้าออนไลน์ 1 บิล ต้องได้เลขบิลรูปแบบ `POS-YYYYMMDD-00001`
+2. ขายออนไลน์บิลถัดไปวันเดียวกัน ต้องได้เลขต่อเนื่อง ไม่ซ้ำ
+3. ปิดเน็ตแล้วขาย Offline ต้องได้เลข `PENDING` เดิมและไม่กระทบ Stable `saleId`
+4. เปิดเน็ตให้ Offline Sync ต้องจองเลขจริงผ่าน Firestore transaction และไม่ซ้ำกับบิลออนไลน์
+5. ตรวจ Firestore counter ของ tenant ต้องมี `documentType: SALE`, `periodKey`, `lastDocumentNumber`
+6. ตรวจว่าสินค้าถูกตัดสต็อกครั้งเดียวต่อ `saleId`
+7. Retry sync บิลเดิมซ้ำ ต้องไม่สร้าง sale หรือ stock movement ซ้ำ
+8. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## Next Tasks
 
-1. O1-T002 Pickup Screen / Counter Display
-2. P9-B010 Performance phase 2
+1. P9-B003 Counter
+2. P9-B004 Offline Queue Worker + Retry + Conflict Resolver
+3. P9-B005 Repository Layer
+4. P9-B006 Firestore Composite Index
+5. P9-B007 Audit Log
+6. P9-B008 Shift Opening / Closing
+7. P9-B009 Refund / Return / Void
+8. P9-B010 Performance (Cache / Virtual List / Search)
 
 ## Deploy
 
