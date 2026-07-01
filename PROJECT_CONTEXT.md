@@ -16,10 +16,10 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.43`
-- Build: `2026.07.01.025`
+- Version: `0.12.46`
+- Build: `2026.07.01.029`
 - Branch: `feature/retail-pos`
-- Milestone: `Hide Owner From Staff List`
+- Milestone: `Old QR Moved Orders & Admin Status Icons`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -37,40 +37,44 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Receipt Print: พิมพ์เฉพาะข้อมูลใบเสร็จ ไม่ติด UI/toolbar/footer/version ของระบบ
 - Kitchen Visual Cues: ปุ่มรับออเดอร์/เริ่มทำ/พร้อมเสิร์ฟมี animation เบา ๆ และออเดอร์รอนานเกิน 15 นาทีมี highlight
 - Admin Users: แสดงเฉพาะพนักงาน role `admin/cashier/kitchen` และไม่แสดง Owner ของร้าน
-- Table Move Customer Session: ลูกค้าใช้ QR เดิมหลัง Cashier เปลี่ยนโต๊ะได้ เพราะระบบตาม session ด้วย stable tableToken
+- Table Move Customer Session: ลูกค้าใช้ QR เดิมหลัง Cashier เปลี่ยนโต๊ะได้ โดยโหลด previous rounds จาก `tableToken` และ fallback `movedFromTableCode`
+- Admin Status Icons: รายการสินค้า/อาหารและโต๊ะใช้ `bi-check-square` สีเขียวเมื่อใช้งาน และ `bi-square` สีเทาเมื่อไม่ได้ใช้งาน
 
 ## Current Milestone
 
-`Hide Owner From Staff List`
+`Old QR Moved Orders & Admin Status Icons`
 
-## รายละเอียด Hide Owner From Staff List
+## รายละเอียด Old QR Moved Orders & Admin Status Icons
 
-แก้ปัญหา `/admin/users` แสดง Owner ของร้านเป็นรายการพนักงาน เพราะ service เดิม fallback role ที่ไม่รู้จักเป็น `cashier` ทำให้ Owner ถูกแสดงผิด
+แก้กรณีลูกค้าใช้ QR เดิมหลัง Cashier เปลี่ยนโต๊ะแล้วไม่เห็นรายการที่เคยสั่ง โดยเพิ่ม fallback จาก `movedFromTableCode` นอกเหนือจาก `tableToken` และเพิ่ม icon สถานะใช้งานในหน้า Admin
 
 แก้แล้ว:
 
-- `admin-staff-service.js` เก็บ role ตามจริง ไม่ fallback owner เป็น cashier
-- `listStaffUsers()` filter ก่อน normalize และรับเฉพาะ role `admin`, `cashier`, `kitchen`
-- `/admin/users/index.html` bump `admin-users.js?v=20260701-025`
-- ยืนยันแนวทาง QR เดิมหลังย้ายโต๊ะ: `/order` ใช้ stable tableToken จาก QR เดิมเพื่อโหลดรายการและส่งออเดอร์ต่อเข้าโต๊ะ active ใหม่
-- Developer Panel เป็น Version `0.12.43` Build `2026.07.01.025`
+- `customer-secure.js` subscribe orders จากทั้ง `tableToken` และ `movedFromTableCode`
+- `customer-secure.js` normalize order ให้ตรงกับ QR เดิมในมุมลูกค้า
+- `customer-table-token-orders.js` แสดง previous rounds จากทั้ง `tableToken` และ `movedFromTableCode`
+- `/order/index.html` bump `customer-secure.js?v=20260701-029`
+- `/order/index.html` bump `customer-table-token-orders.js?v=20260701-029`
+- เพิ่ม `admin-status-icons.js`
+- `/admin/index.html` โหลด `admin-status-icons.js?v=20260701-029`
+- Developer Panel เป็น Version `0.12.46` Build `2026.07.01.029`
 
 ## Regression Tests สำคัญ
 
 1. Deploy hosting ใหม่
 2. เปิดโต๊ะ A แล้วสั่งอาหารจาก QR
 3. Cashier เปลี่ยนโต๊ะ A ไปโต๊ะ B
-4. ลูกค้าสแกน QR เดิมของโต๊ะ A ต้องยังเห็นรายการเดิมและสั่งเพิ่มได้
-5. รอบการสั่งถัดไปต้องต่อจากรอบเดิม ไม่กลับเป็นรอบที่ 1
-6. เปิด `/admin/users` ด้วย Owner
-7. รายการพนักงานต้องไม่แสดง Owner ของร้าน
-8. ต้องแสดงเฉพาะ role `admin`, `cashier`, `kitchen`
+4. ลูกค้าสแกน QR เดิมของโต๊ะ A ต้องยังเห็นรายการเดิม
+5. ลูกค้าสั่งเพิ่มจาก QR เดิม ต้องเข้าโต๊ะ B ที่ active อยู่
+6. รอบการสั่งถัดไปต้องต่อจากรอบเดิม
+7. หน้า Admin สถานะใช้งานต้องเป็น icon `bi-check-square` สีเขียว
+8. หน้า Admin สถานะไม่ได้ใช้งานต้องเป็น icon `bi-square` สีเทา
 
 ## งานถัดไป
 
 1. O1-T002 Pickup Screen / Counter Display
 2. O1-T003 Kitchen Take Away Visual Badge
-3. P9-B010 Performance phase 2: product data watch/cache cleanup และ search index สำหรับ barcode lookup
+3. P9-B010 Performance phase 2
 
 ## ข้อควรระวัง
 
