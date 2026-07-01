@@ -16,10 +16,10 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.24`
-- Build: `2026.07.01.005`
+- Version: `0.12.25`
+- Build: `2026.07.01.006`
 - Branch: `feature/retail-pos`
-- Milestone: `O1-T001 Take Away Order / Pickup Queue`
+- Milestone: `O1-T001.1 Take Away Cashier Fix`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -39,38 +39,35 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - P9-B008 Shift Opening / Closing เสร็จ
 - P9-B009 Refund / Return / Void เสร็จ
 
-## รายละเอียด O1-T001
+## รายละเอียด O1-T001.1
 
-พัก POS roadmap ชั่วคราวเพื่อเพิ่มระบบ Take Away สำหรับลูกค้าที่มาสั่งหน้าร้านแต่ไม่นั่งโต๊ะ โดยไม่ต้องเปิดโต๊ะจริง และใช้ flow ครัว/แคชเชียร์เดิมให้มากที่สุด
+แก้ปัญหาหลังทดสอบ Take Away รอบแรก: ลูกค้า Walk-in ยังไม่มีจุดให้เปิดลิงก์/QR สั่งกลับบ้านจากหน้าร้าน และหน้า Cashier แสดง `Invalid Date` บนการ์ดออเดอร์
 
 แก้แล้ว:
 
-- เพิ่มหน้า `/takeaway/` สำหรับลูกค้าสั่งกลับบ้าน
-- ลูกค้าต้องกรอกชื่อหรือเบอร์โทรอย่างน้อย 1 อย่าง
-- เพิ่ม `dataService.createTakeawayOrder()` เพื่อสร้าง orderType `takeaway`
-- สร้างเลขคิวรายวันรูปแบบ `TA-001`, `TA-002`, ... ผ่าน Firestore transaction counter
-- Take Away order มี `queueNo`, `customerName`, `customerPhone`, `pickupStatus`, `dateKey`
-- หน้า Cashier แยกการ์ด Take Away ออกจาก Table และ Delivery
-- Cashier สามารถรับชำระเงิน, เรียกรับของ และกดส่งมอบแล้ว
-- เมื่อส่งมอบแล้วจะตั้ง `pickupStatus = picked_up` และปิด order เป็น paid
-- `/takeaway/index.html` โหลด `takeaway-order.js?v=20260701-005`
-- `/cashier/index.html` bump cache เป็น `cashier.js?v=20260701-005`
+- เพิ่มเครื่องมือบนหน้า `/cashier/` สำหรับเปิดลิงก์ Take Away และคัดลอกลิงก์ให้ลูกค้า Walk-in
+- ถ้ามี tenant slug จะเปิดเป็น `/s/{tenantSlug}/takeaway/` ถ้าไม่มีจะ fallback เป็น `/takeaway/`
+- แก้ `formatTime()` ให้รองรับ Firestore Timestamp, object ที่มี seconds, ISO string และ fallback เป็นเวลาปัจจุบันเมื่อข้อมูลวันที่ไม่สมบูรณ์
+- ปรับ cashier ให้ใช้ fallback `createdAt || createdAtText || updatedAt` ก่อน format เวลา
+- `/cashier/index.html` bump cache เป็น `cashier.js?v=20260701-006`
+- `cashier.js` import `ui.js?v=20260701-003`
+- อัปเดต Developer Panel เป็น Version `0.12.25` Build `2026.07.01.006`
 
 ## Current Milestone
 
-`O1-T001 Take Away Order / Pickup Queue`
+`O1-T001.1 Take Away Cashier Fix`
 
 ## Regression Tests สำคัญ
 
-1. เปิด `/takeaway/`
-2. กรอกชื่อหรือเบอร์โทรอย่างน้อย 1 อย่าง
-3. เลือกเมนูและส่งออเดอร์ ต้องได้เลขคิว `TA-xxx`
-4. Firestore order ต้องมี `orderType = takeaway`, `queueNo`, `customerName`, `customerPhone`, `pickupStatus`
-5. ออเดอร์ Take Away ต้องเข้า Kitchen ได้เหมือนออเดอร์ทั่วไป
-6. หน้า Cashier ต้องแสดงการ์ด Take Away แยกจากโต๊ะและ Delivery
-7. Cashier กดรับชำระเงินได้
-8. เมื่อ Kitchen ทำเสร็จเป็น `ready` แล้ว Cashier ต้องกดเรียกรับของได้
-9. Cashier กดส่งมอบแล้ว ต้องอัปเดต `pickupStatus = picked_up` และปิดออเดอร์เป็น paid
+1. เปิด `/cashier/`
+2. ต้องเห็นปุ่ม `เปิด QR Take Away` และ `คัดลอกลิงก์`
+3. กดเปิด QR Take Away ต้องไปที่ `/s/{tenantSlug}/takeaway/` ถ้ามี tenant slug หรือ `/takeaway/` เป็น fallback
+4. เปิด `/takeaway/`
+5. กรอกชื่อหรือเบอร์โทรอย่างน้อย 1 อย่าง
+6. เลือกเมนูและส่งออเดอร์ ต้องได้เลขคิว `TA-xxx`
+7. หน้า Cashier ต้องแสดงวันที่/เวลา ไม่ใช่ `Invalid Date`
+8. ออเดอร์ Take Away ต้องเข้า Kitchen ได้เหมือนออเดอร์ทั่วไป
+9. Cashier กดรับชำระเงิน เรียกรับของ และส่งมอบแล้วได้
 10. QR Table Order และ Delivery ต้องยังทำงานตามเดิม
 
 ## งานถัดไป
