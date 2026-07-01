@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Mobile Kitchen Icon & QR Print Font`
-- Developer Panel version/build ปัจจุบัน: `0.12.31` / `2026.07.01.013`
+- Current milestone: `Kitchen Serve Item & Cashier Table Icons`
+- Developer Panel version/build ปัจจุบัน: `0.12.32` / `2026.07.01.014`
 
 ## Food Order Status
 
@@ -21,24 +21,24 @@
 - หน้า Admin มี QR สำหรับสั่ง Delivery และ QR สำหรับสั่งกลับบ้าน
 - Take Away ส่งเข้าครัวด้วย `orderType = takeaway`
 - หน้าครัวแสดง Take Away ด้วยเลขคิว ไม่ปนกับโต๊ะจริง
-- หน้าครัว Take Away มีปุ่ม `เสิร์ฟแล้ว` เหมือน QR โต๊ะ
-- Mobile หน้าครัวปุ่ม `เสิร์ฟแล้ว` แสดงเฉพาะ icon เพื่อลดการชนกันของปุ่ม
+- ปุ่ม `เสิร์ฟรายการนี้` ใช้ icon `bi-send-check` และบน Mobile แสดงเฉพาะ icon
+- ปุ่ม `เสิร์ฟแล้ว` ทั้งออเดอร์ยังแสดงข้อความทั้ง PC และ Mobile
 - เมื่อ Take Away เป็นสถานะ `served` แล้ว รายการจะแก้ไขหรือยกเลิกไม่ได้ เหมือนออเดอร์นั่งทานที่ร้าน
-- หน้า Admin ตอนพิมพ์ QR Delivery และ QR สั่งกลับบ้านใช้ `TH Sarabun PSK Local`
+- หน้า Cashier ปุ่มออกโต๊ะ/เปลี่ยนโต๊ะใช้ icon `bi-easel2`
 
 ## Current Milestone
 
-`Mobile Kitchen Icon & QR Print Font`
+`Kitchen Serve Item & Cashier Table Icons`
 
 ## Regression Tests
 
 1. เปิด Kitchen บน mobile
-2. ออเดอร์ Take Away ที่พร้อมเสิร์ฟต้องเห็นปุ่ม `เสิร์ฟแล้ว` เป็น icon-only
-3. Desktop ยังแสดงข้อความปุ่มได้ตามเดิม
-4. เปิด `/admin`
-5. กดพิมพ์ QR Delivery ต้องใช้ฟอนต์ `TH Sarabun PSK Local`
-6. กดพิมพ์ QR สั่งกลับบ้านต้องใช้ฟอนต์ `TH Sarabun PSK Local`
-7. QR โต๊ะนั่งทานที่ร้านต้องยังทำงานเหมือนเดิม
+2. ปุ่ม `เสิร์ฟรายการนี้` ต้องเห็นเฉพาะ icon `bi-send-check`
+3. เปิด Kitchen บน desktop ปุ่ม `เสิร์ฟรายการนี้` ต้องเห็น icon + ข้อความ
+4. ปุ่ม `เสิร์ฟแล้ว` ทั้งออเดอร์ต้องยังแสดงข้อความบน mobile และ desktop
+5. เปิด Cashier แล้วปุ่มออกโต๊ะ/รับชำระโต๊ะต้องใช้ `bi-easel2`
+6. ปุ่มเปลี่ยนโต๊ะต้องใช้ `bi-easel2`
+7. Workflow ครัวและ Cashier ต้องยังทำงานเหมือนเดิม
 
 ## Next Tasks
 
