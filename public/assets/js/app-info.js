@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.32',
-  build: '2026.07.01.014',
+  version: '0.12.33',
+  build: '2026.07.01.015',
   branch: 'feature/retail-pos',
-  commit: 'HOTFIX-O1-T001.9',
+  commit: 'UI-ICONS-015',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Kitchen Serve Item & Cashier Table Icons',
-  updatedAt: '2026-07-01T15:20:00+07:00',
+  milestone: 'Cashier Icons',
+  updatedAt: '2026-07-01T16:25:00+07:00',
   whatsNew: [
-    'Use bi-send-check for Kitchen serve item action',
-    'Make only serve item action icon-only on mobile',
-    'Keep whole-order served button text visible on mobile and desktop',
-    'Use bi-easel2 for Cashier table checkout and table move actions'
+    'Cashier table payment uses check-circle',
+    'User menu table QR uses easel2',
+    'Table move uses easel2',
+    'Cache versions updated'
   ]
 };
 
