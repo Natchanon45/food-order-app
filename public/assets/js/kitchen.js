@@ -26,7 +26,7 @@ function displayTime(order) { return order.createdAt || order.createdAtText || o
 function orderTitle(order) { if (isDelivery(order)) return `Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}`; if (isTakeaway(order)) return `Take Away: ${order.queueNo || order.tableCode || "TA"}`; return `โต๊ะ ${order.tableCode}${order.roundNumber ? ` • รอบที่ ${order.roundNumber}` : " • รอบที่ 1"}`; }
 function nextActions(status, orderType) {
   if (status === "pending") return [["accepted", "รับออเดอร์", "btn-primary", "check"]];
-  if (status === "accepted") return [["cooking", "เริ่มทำ", "btn-warning", "pencil"]];
+  if (status === "accepted") return [["cooking", "เริ่มทำ", "btn-warning", "hourglass-split"]];
   if (status === "cooking") return [["ready", orderType === "delivery" ? "พร้อมจัดส่ง" : "พร้อมเสิร์ฟ", "btn-primary", "check-circle"]];
   if (status === "ready") return [["served", orderType === "delivery" ? "ส่งให้ไรเดอร์แล้ว" : "เสิร์ฟแล้ว", "btn-dark", "check-circle"]];
   return [];
@@ -43,7 +43,7 @@ function render(orders) {
     const locked = isKitchenLocked(order);
     const itemRows = (order.items || []).map((item, index) => `<li style="${item.cancelled ? "opacity:.48;text-decoration:line-through" : ""}"><strong>${item.qty} × ${item.name}</strong>${item.note ? `<br><small>หมายเหตุ: ${item.note}</small>` : ""}${item.cancelled ? '<br><small>ยกเลิกแล้ว</small>' : locked ? `<div class="kitchen-item-actions"><span class="badge">${lockedItemLabel(order)}</span></div>` : `<div class="kitchen-item-actions"><button class="btn btn-sm" data-edit-item="${order.id}" data-item-index="${index}">${icon("pencil")}<span>แก้ไข</span></button><button class="btn btn-danger btn-sm" data-cancel-item="${order.id}" data-item-index="${index}">${icon("x-circle")}<span>ยกเลิก</span></button></div>`}</li>`).join("");
     const statusText = isTakeaway(order) && order.status === "ready" ? "พร้อมเสิร์ฟ" : statusLabel(order.status);
-    const actionButtons = nextActions(order.status, order.orderType).map(([status,label,cls,iconName]) => `<button class="btn ${cls} kitchen-status-action${status === "served" ? " kitchen-served-action" : ""}" data-id="${order.id}" data-status="${status}" aria-label="${label}">${icon(iconName)}<span>${label}</span></button>`).join("");
+    const actionButtons = nextActions(order.status, order.orderType).map(([status,label,cls,iconName]) => `<button class="btn ${cls} kitchen-status-action${status === "served" ? " kitchen-served-action" : ""}${status === "cooking" ? " kitchen-start-action" : ""}" data-id="${order.id}" data-status="${status}" aria-label="${label}">${icon(iconName)}<span>${label}</span></button>`).join("");
     return `<article class="card order-card${isTakeaway(order) ? " takeaway-kitchen-card" : ""}"><div class="order-head"><div><h2 style="margin:0">${orderTitle(order)}</h2><small>${formatTime(displayTime(order))}</small></div><span class="badge ${isTakeaway(order) ? "warning" : ""}">${statusText}</span></div>${orderInfo(order)}<ul class="order-items">${itemRows}</ul>${orderSummary(order)}${order.note ? `<p><strong>หมายเหตุรวม:</strong> ${order.note}</p>` : ""}<div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions kitchen-order-actions" style="margin-top:12px">${actionButtons}${locked ? "" : `<button class="btn btn-danger" data-cancel-order="${order.id}">ยกเลิกทั้งออเดอร์</button>`}</div></article>`;
   }).join("") : '<div class="card empty">ยังไม่มีออเดอร์ที่รอดำเนินการ</div>';
 }
