@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.48',
-  build: '2026.07.02.002',
+  version: '0.12.49',
+  build: '2026.07.02.003',
   branch: 'feature/retail-pos',
-  commit: 'POS-RUNNING-NUMBER-002',
+  commit: 'POS-COUNTER-003',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P9-B002 Running Number',
+  milestone: 'P9-B003 Counter',
   updatedAt: '2026-07-02T00:00:00+07:00',
   whatsNew: [
-    'Add central POS running number foundation for SALE, RECEIPT, TAX, REFUND, VOID, SHIFT, PURCHASE, STOCK, and TRANSFER',
-    'Keep existing POS sale number API backward compatible',
-    'Store running number metadata per tenant, document type, and reset period',
-    'Prepare POS milestones for Counter, Offline Queue Worker, Audit Log, Shift, Refund, and Performance phases'
+    'Add central POS counter service for Firestore transaction usage',
+    'Expose counter scope, counter ref, next counter snapshot, and counter commit helpers',
+    'Support reusable reserveRunningNumber for SALE, RECEIPT, TAX, REFUND, VOID, SHIFT, PURCHASE, STOCK, and TRANSFER',
+    'Prepare Offline Queue Worker and Repository Layer to share one counter workflow'
   ]
 };
 
