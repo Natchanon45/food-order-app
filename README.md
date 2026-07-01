@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Kitchen Visual Cues`
-- Developer Panel version/build ปัจจุบัน: `0.12.40` / `2026.07.01.022`
+- Current milestone: `Owner Staff List Fix`
+- Developer Panel version/build ปัจจุบัน: `0.12.41` / `2026.07.01.023`
 
 ## Food Order Status
 
@@ -20,23 +20,21 @@
 - เมื่อออเดอร์เป็น `served` และ `paymentStatus = paid` ระบบจะปิดเป็น `paid` อัตโนมัติ
 - ออเดอร์ที่เสิร์ฟครบและชำระแล้วจะไม่ค้างในหน้า Cashier/Kitchen
 - หน้า Print Receipt พิมพ์เฉพาะข้อมูลใบเสร็จ ไม่ดึง UI/ข้อความระบบ/เวอร์ชันด้านล่างติดไปด้วย
-- หน้าครัวปุ่ม `รับออเดอร์` มี pulse animation เบา ๆ
-- หน้าครัวปุ่ม `เริ่มทำ` ใช้ icon `bi-hourglass-split` พร้อม animation
-- หน้าครัวปุ่ม `พร้อมเสิร์ฟ/พร้อมจัดส่ง` มี check animation เบา ๆ
-- ออเดอร์ที่รอนานเกิน 15 นาทีจะแสดง badge และ highlight สีส้มอ่อน
+- หน้าครัวมี visual cue สำหรับปุ่มสถานะและออเดอร์รอนาน
+- หน้า `Admin > จัดการพนักงาน` Owner เห็นรายการพนักงานของร้านตัวเองจาก tenant memberships แล้ว
 
 ## Current Milestone
 
-`Kitchen Visual Cues`
+`Owner Staff List Fix`
 
 ## Regression Tests
 
-1. เปิด Kitchen
-2. ออเดอร์สถานะ `pending` ต้องแสดงปุ่ม `รับออเดอร์` พร้อม pulse เบา ๆ
-3. ออเดอร์สถานะ `accepted` ต้องแสดงปุ่ม `เริ่มทำ` พร้อม hourglass animation
-4. ออเดอร์สถานะ `cooking` ต้องแสดงปุ่ม `พร้อมเสิร์ฟ/พร้อมจัดส่ง` พร้อม check animation
-5. ออเดอร์ที่รอนานเกิน 15 นาทีต้องมี badge `รอนาน xx นาที` และ highlight สีส้มอ่อน
-6. กดปุ่มสถานะทั้งหมดแล้ว workflow ต้องยังทำงานเหมือนเดิม
+1. Login ด้วย Owner
+2. เปิด `/admin/users`
+3. รายการพนักงานต้องแสดงพนักงานของ tenant ปัจจุบัน ไม่ใช่ `0 คน` หากมี membership อยู่แล้ว
+4. สร้างพนักงานใหม่แล้ว refresh รายการต้องแสดงทันที
+5. รายการต้องไม่ข้าม tenant
+6. หน้า Kitchen/Cashier/POS ต้องไม่เปลี่ยน behavior
 
 ## Next Tasks
 
