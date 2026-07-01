@@ -109,6 +109,19 @@ service cloud.firestore {
         && request.resource.data.paymentStatus in ['unpaid', 'pending_verification'];
     }
 
+    function validTakeawayOrder() {
+      return validOrderBase()
+        && request.resource.data.orderType == 'takeaway'
+        && request.resource.data.queueNo is string
+        && request.resource.data.pickupStatus == 'waiting'
+        && request.resource.data.paymentStatus in ['unpaid', 'pending_verification']
+        && request.resource.data.dateKey is string
+        && (
+          (request.resource.data.customerName is string && request.resource.data.customerName.size() > 0)
+          || (request.resource.data.customerPhone is string && request.resource.data.customerPhone.size() > 0)
+        );
+    }
+
     function validTableOrder() {
       return validOrderBase()
         && request.resource.data.tableCode is string
@@ -224,6 +237,15 @@ service cloud.firestore {
         && request.resource.data.dateKey is string
         && request.resource.data.current is number
         && request.resource.data.current >= 0;
+    }
+
+    function validTakeawayCounter(tenantId) {
+      return tenantPayloadMatches(tenantId)
+        && request.resource.data.counterType == 'takeaway'
+        && request.resource.data.dateKey is string
+        && request.resource.data.current is number
+        && request.resource.data.current >= 0
+        && request.resource.data.lastQueueNo is string;
     }
 
     function validPosDailySummary(tenantId) {
@@ -373,7 +395,7 @@ service cloud.firestore {
     match /orders/{orderId} {
       allow get: if true;
       allow list: if staffRole() || activeTableOrder();
-      allow create: if validDeliveryOrder() || validTableOrder();
+      allow create: if validDeliveryOrder() || validTableOrder() || validTakeawayOrder();
       allow update: if cashierRole() || kitchenRole() || adminRole();
       allow delete: if superAdminRole();
     }
@@ -457,8 +479,8 @@ service cloud.firestore {
       }
 
       match /counters/{counterId} {
-        allow read: if signedIn();
-        allow create, update: if validPosCounter(tenantId);
+        allow read: if signedIn() || counterId.matches('takeaway_.*');
+        allow create, update: if validPosCounter(tenantId) || validTakeawayCounter(tenantId);
         allow delete: if false;
       }
 
@@ -540,6 +562,8 @@ service cloud.firestore {
         allow list: if tenantStaffRole(tenantId) || activeTenantTableOrder(tenantId);
         allow create: if superAdminRole() || (
           tenantPayloadMatches(tenantId) && validDeliveryOrder()
+        ) || (
+          tenantPayloadMatches(tenantId) && validTakeawayOrder()
         ) || validTenantTableOrder(tenantId);
         allow update: if tenantCashierRole(tenantId) || tenantKitchenRole(tenantId) || tenantAdminRole(tenantId);
         allow delete: if superAdminRole() || tenantHasRole(tenantId, ['owner', 'super_admin']);
