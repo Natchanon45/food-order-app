@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Customer Old QR Table Move Fix`
-- Developer Panel version/build ปัจจุบัน: `0.12.44` / `2026.07.01.027`
+- Current milestone: `Table Order Previous Rounds Fix`
+- Developer Panel version/build ปัจจุบัน: `0.12.45` / `2026.07.01.028`
 
 ## Food Order Status
 
@@ -17,16 +17,12 @@
 - Delivery Lock เสร็จ
 - Cashier ย้ายโต๊ะเสร็จ
 - Take Away ส่งเข้าครัวและ Cashier แล้ว
-- เมื่อออเดอร์เป็น `served` และ `paymentStatus = paid` ระบบจะปิดเป็น `paid` อัตโนมัติ
-- ออเดอร์ที่เสิร์ฟครบและชำระแล้วจะไม่ค้างในหน้า Cashier/Kitchen
-- หน้า Print Receipt พิมพ์เฉพาะข้อมูลใบเสร็จ ไม่ดึง UI/ข้อความระบบ/เวอร์ชันด้านล่างติดไปด้วย
-- หน้าครัวมี visual cue สำหรับปุ่มสถานะและออเดอร์รอนาน
-- หน้า `Admin > จัดการพนักงาน` แสดงเฉพาะพนักงาน role `admin/cashier/kitchen` และไม่แสดง Owner
-- หลัง Cashier เปลี่ยนโต๊ะ ลูกค้าใช้ QR เดิมได้ต่อ และเห็นรายการเดิมด้วย stable `tableToken`
+- หลัง Cashier เปลี่ยนโต๊ะ ลูกค้าใช้ QR เดิมได้ต่อ และเห็นรายการเดิมจาก `tableToken`
+- หน้า Admin รายการสินค้า/อาหารและโต๊ะมี icon สถานะใช้งานแล้ว
 
 ## Current Milestone
 
-`Customer Old QR Table Move Fix`
+`Table Order Previous Rounds Fix`
 
 ## Regression Tests
 
@@ -34,13 +30,14 @@
 2. Cashier เปลี่ยนโต๊ะ A ไปโต๊ะ B
 3. ลูกค้าสแกน QR เดิมของโต๊ะ A ต้องยังเห็นรายการเดิม
 4. ลูกค้าสั่งเพิ่มจาก QR เดิม ต้องเข้าโต๊ะ B ที่ active อยู่
-5. รอบการสั่งถัดไปต้องต่อจากรอบเดิม ไม่กลับเป็นรอบที่ 1
-6. Kitchen/Cashier ต้องยังเห็นรายการถูกต้อง
+5. รอบการสั่งถัดไปต้องต่อจากรอบเดิม
+6. หน้า Admin สถานะใช้งานต้องเป็น icon check-square สีเขียว
+7. หน้า Admin สถานะไม่ได้ใช้งานต้องเป็น icon square สีเทา
 
 ## Next Tasks
 
 1. O1-T002 Pickup Screen / Counter Display
-2. P9-B010 Performance phase 2: product data watch/cache cleanup และ search index สำหรับ barcode lookup
+2. P9-B010 Performance phase 2
 
 ## Deploy
 
