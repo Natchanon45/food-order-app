@@ -1,24 +1,13 @@
 {
-  "functions": {
-    "source": "functions"
-  },
+  "functions": { "source": "functions" },
   "hosting": {
     "target": "foodapp",
     "public": "public",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "headers": [
-      {
-        "source": "/assets/js/firebase-config.js",
-        "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
-      },
-      {
-        "source": "/assets/js/cashier-original-order.js",
-        "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
-      },
-      {
-        "source": "/firebase-messaging-sw.js",
-        "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
-      }
+      { "source": "/assets/js/firebase-config.js", "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }] },
+      { "source": "/assets/js/cashier-original-order.js", "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }] },
+      { "source": "/firebase-messaging-sw.js", "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }] }
     ],
     "cleanUrls": true,
     "trailingSlash": false,
@@ -27,6 +16,8 @@
       { "source": "/delivery/success/**", "destination": "/delivery/success/index.html" },
       { "source": "/s/*/delivery/success", "destination": "/delivery/success/index.html" },
       { "source": "/s/*/delivery/success/**", "destination": "/delivery/success/index.html" },
+      { "source": "/s/*/delivery", "destination": "/delivery/index.html" },
+      { "source": "/s/*/delivery/**", "destination": "/delivery/index.html" },
       { "source": "/s/*/takeaway", "destination": "/takeaway/index.html" },
       { "source": "/s/*/takeaway/**", "destination": "/takeaway/index.html" },
       { "source": "/takeaway", "destination": "/takeaway/index.html" },
@@ -51,17 +42,7 @@
       { "source": "/admin/**", "destination": "/admin/index.html" }
     ]
   },
-  "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
-  },
-  "storage": {
-    "rules": "storage.rules"
-  },
-  "emulators": {
-    "hosting": {
-      "host": "0.0.0.0",
-      "port": 5002
-    }
-  }
+  "firestore": { "rules": "firestore.rules", "indexes": "firestore.indexes.json" },
+  "storage": { "rules": "storage.rules" },
+  "emulators": { "hosting": { "host": "0.0.0.0", "port": 5002 } }
 }
