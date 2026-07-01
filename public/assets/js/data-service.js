@@ -28,13 +28,6 @@ function sortMenus(menus, categoryOrder = []) {
     return String(a.name || "").localeCompare(String(b.name || ""), "th");
   });
 }
-async function phoneKey(phone) {
-  const normalized = String(phone || "").replace(/\D/g, "");
-  if (!normalized) throw new Error("INVALID_PHONE");
-  const bytes = new TextEncoder().encode(normalized);
-  const hash = await crypto.subtle.digest("SHA-256", bytes);
-  return [...new Uint8Array(hash)].map(byte => byte.toString(16).padStart(2, "0")).join("");
-}
 function withShop(payload = {}) { const tenantId = activeShop().id; return { ...payload, tenantId }; }
 function isUnpaidTableOrder(order) { return order?.orderType !== "delivery" && order?.orderType !== "takeaway" && !["paid", "cancelled"].includes(order?.status) && order?.paymentStatus !== "paid"; }
 function dateKeyFrom(value = new Date()) { const date = value instanceof Date ? value : new Date(value || Date.now()); return `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}${String(date.getDate()).padStart(2, "0")}`; }
@@ -44,10 +37,18 @@ function demoTakeawayQueueNo() { const dateKey = dateKeyFrom(); const count = de
 export const dataService = {
   getActiveShop() { return activeShop(); },
 
-  async listMenus() {
+  async getStoreSettings() {
     if (usingDemoMode) {
       const saved = localStorage.getItem("food_order_store_settings");
-      const settings = saved ? JSON.parse(saved) : {};
+      return saved ? JSON.parse(saved) : {};
+    }
+    const snapshot = await getDoc(shopDocument("settings", "store"));
+    return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : {};
+  },
+
+  async listMenus() {
+    if (usingDemoMode) {
+      const settings = await this.getStoreSettings();
       return sortMenus(demoStore.menus.list().map(normalizeMenu), settings.categoryOrder || []);
     }
     const [menuSnapshot, settingsSnapshot] = await Promise.all([getDocs(shopCollection("menus")), getDoc(shopDocument("settings", "store"))]);
