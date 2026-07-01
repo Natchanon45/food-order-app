@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.35',
-  build: '2026.07.01.017',
+  version: '0.12.36',
+  build: '2026.07.01.018',
   branch: 'feature/retail-pos',
-  commit: 'UI-017',
+  commit: 'P9-B010.1',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Delivery Category Scroll & Admin Sort Fix',
-  updatedAt: '2026-07-01T17:20:00+07:00',
+  milestone: 'P9-B010 POS Performance',
+  updatedAt: '2026-07-01T17:45:00+07:00',
   whatsNew: [
-    'Fix Delivery PC category horizontal scroll after category click',
-    'Add saveStoreSettings support for Admin category order',
-    'Fix Admin sort save after category rename',
-    'Bump Delivery and Admin sort cache versions'
+    'Add virtual batch rendering for Retail POS product catalog',
+    'Debounce POS product search to reduce re-render cost',
+    'Cache product and sales search data in catalog controller',
+    'Lazy load product images only for visible POS items'
   ]
 };
 
