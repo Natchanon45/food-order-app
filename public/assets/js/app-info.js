@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.50',
-  build: '2026.07.02.004',
+  version: '0.12.51',
+  build: '2026.07.02.005',
   branch: 'feature/retail-pos',
-  commit: 'POS-OFFLINE-QUEUE-004',
+  commit: 'POS-REPOSITORY-LAYER-005',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P9-B004 Offline Queue Worker + Retry + Conflict Resolver',
+  milestone: 'P9-B005 Repository Layer',
   updatedAt: '2026-07-02T00:00:00+07:00',
   whatsNew: [
-    'Upgrade POS offline sale sync to use the central counter service',
-    'Add offline queue worker state events for scheduled, syncing, failed, conflict, and offline states',
-    'Keep Stable saleId and duplicate protection when retrying offline sync',
-    'Improve conflict retry/discard resolver metadata for local offline sales'
+    'Expand POS Repository Layer with tenant-aware repository factory',
+    'Add shared repositories for products, sales, stock movements, shifts, returns, sync queue, audit logs, and counters',
+    'Add tenant metadata and tenant mismatch guard helpers',
+    'Keep existing offline sync and local sale APIs backward compatible'
   ]
 };
 
