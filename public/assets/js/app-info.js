@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.47',
-  build: '2026.07.01.030',
+  version: '0.12.48',
+  build: '2026.07.02.002',
   branch: 'feature/retail-pos',
-  commit: 'TABLE-ORDER-030',
+  commit: 'POS-RUNNING-NUMBER-002',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Customer Previous Orders Table Code Fix',
-  updatedAt: '2026-07-01T23:40:00+07:00',
+  milestone: 'P9-B002 Running Number',
+  updatedAt: '2026-07-02T00:00:00+07:00',
   whatsNew: [
-    'Show customer previous orders from the current tableCode, tableToken, and movedFromTableCode',
-    'Restore normal dine-in table previous rounds before table-move testing',
-    'Keep old QR moved-table previous rounds fallback',
-    'Show Admin menu/table active status as icon-only check-square or square'
+    'Add central POS running number foundation for SALE, RECEIPT, TAX, REFUND, VOID, SHIFT, PURCHASE, STOCK, and TRANSFER',
+    'Keep existing POS sale number API backward compatible',
+    'Store running number metadata per tenant, document type, and reset period',
+    'Prepare POS milestones for Counter, Offline Queue Worker, Audit Log, Shift, Refund, and Performance phases'
   ]
 };
 
