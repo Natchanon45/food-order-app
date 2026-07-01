@@ -26,9 +26,36 @@
   gap: 7px;
 }
 
+.kitchen-accept-action {
+  animation: kitchen-accept-pulse 1.55s ease-in-out infinite;
+}
+
 .kitchen-start-action .app-icon {
   animation: kitchen-hourglass-flip 1.15s ease-in-out infinite;
   transform-origin: 50% 50%;
+}
+
+.kitchen-ready-action .app-icon {
+  animation: kitchen-ready-pop 1.25s ease-in-out infinite;
+  transform-origin: 50% 50%;
+}
+
+.kitchen-order-overdue {
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 0 1px rgba(245,158,11,.22), 0 14px 34px rgba(245,158,11,.12) !important;
+  animation: kitchen-overdue-glow 2.4s ease-in-out infinite;
+}
+
+.kitchen-overdue-badge {
+  display: inline-flex;
+  margin: 6px 0 2px;
+  background: #fff4d8 !important;
+  color: #92400e !important;
+}
+
+@keyframes kitchen-accept-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(21,148,71,.28); transform: translateY(0); }
+  50% { box-shadow: 0 0 0 7px rgba(21,148,71,0); transform: translateY(-1px); }
 }
 
 @keyframes kitchen-hourglass-flip {
@@ -36,8 +63,21 @@
   55%, 100% { transform: rotate(180deg); }
 }
 
+@keyframes kitchen-ready-pop {
+  0%, 100% { transform: scale(1); }
+  45% { transform: scale(1.16); }
+}
+
+@keyframes kitchen-overdue-glow {
+  0%, 100% { background: #fff; }
+  50% { background: #fffaf0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .kitchen-start-action .app-icon {
+  .kitchen-accept-action,
+  .kitchen-start-action .app-icon,
+  .kitchen-ready-action .app-icon,
+  .kitchen-order-overdue {
     animation: none;
   }
 }
