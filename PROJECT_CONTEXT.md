@@ -19,49 +19,47 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Version: `0.12.29`
 - Build: `2026.07.01.010`
 - Branch: `feature/retail-pos`
-- Milestone: `HOTFIX Take Away Kitchen Submit & Mobile UX`
+- Milestone: `Admin Take Away QR Poster`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
 - QR Table Order เสร็จ
 - Take Away Order / Pickup Queue เสร็จขั้นแรก
-- Kitchen เสร็จ
+- Kitchen แสดง Take Away ด้วยเลขคิว ไม่ปนกับโต๊ะจริง
 - Delivery Lock เสร็จ
 - Cashier ย้ายโต๊ะเสร็จ
+- หน้า Admin มี QR สำหรับ Delivery และ QR สำหรับสั่งกลับบ้าน
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - P9-B001 ถึง P9-B009 เสร็จแล้ว
 
-## รายละเอียด HOTFIX Take Away Kitchen Submit & Mobile UX
+## รายละเอียด Admin Take Away QR Poster
 
-แก้ต่อจากภาพทดสอบที่ Take Away ยังส่งเข้าครัวไม่ได้เพราะ Firestore Rules ยังปฏิเสธ public tenant order create และปรับ UX หน้า Take Away ให้เหมือนหน้า QR โต๊ะบนมือถือ
+เพิ่ม QR สำหรับสั่งกลับบ้านในหน้า Admin เพื่อให้เจ้าของร้านพิมพ์ไปแปะหน้า Counter Cashier สำหรับลูกค้า Walk-in
 
 แก้แล้ว:
 
-- อัปเดต `firestore.rules` ให้ public tenant Take Away create order ได้ผ่าน `validPublicTenantTakeaway(tenantId)`
-- คง Take Away ให้สร้าง order ตรง ไม่ใช้ public counter transaction
-- เลขคิว Take Away ใช้รูปแบบ `TA-HHMMSS-XXX` ชั่วคราวเพื่อตัดปัญหา submit ล้ม
-- หน้า Take Away ใช้ `table-order-sticky-lite.css` เหมือนหน้า QR โต๊ะ
-- หน้า Take Away โหลด `table-order-category-scrollspy.js` เพื่อให้ mobile scroll แล้ว active category เปลี่ยนตามตำแหน่งรายการ
-- `app.css` บังคับ `.app-toast` และ `.toast` เป็น top layer ด้วย `z-index: 2147483647 !important`
-- หน้า Take Away bump cache เป็น `takeaway-order.js?v=20260701-010`
-- หน้า Take Away bump app css เป็น `app.css?v=20260701-010`
+- ปรับ `admin-delivery-qr.js` ให้สร้าง QR ได้ 2 ชุด: Delivery และ Take Away
+- Take Away QR ใช้ลิงก์ `/s/{tenantSlug}/takeaway`
+- เพิ่มปุ่มคัดลอกลิงก์ / ดาวน์โหลด QR / พิมพ์ สำหรับ QR สั่งกลับบ้าน
+- ข้อความบนป้าย QR คือ `สแกนเพื่อสั่งกลับบ้าน`
+- รองรับกรณี browser ยัง cache module QR Delivery เก่า โดย module ใหม่จะเติมเฉพาะบล็อก Take Away เพิ่มได้
+- `/admin/index.html` bump cache เป็น `admin.js?v=20260701-012` และโหลด `admin-delivery-qr.js?v=20260701-012`
 
 ## Current Milestone
 
-`HOTFIX Take Away Kitchen Submit & Mobile UX`
+`Admin Take Away QR Poster`
 
 ## Regression Tests สำคัญ
 
-1. Deploy hosting และ firestore rules ใหม่
-2. เปิด `/s/{tenantSlug}/takeaway/` ต้องเห็นหน้า `สั่งกลับบ้าน`
-3. Console ต้องไม่ยิง `counters/takeaway_...` จากหน้า Take Away
-4. ส่งออเดอร์ Take Away ต้องได้เลขคิว `TA-xxx`
-5. ออเดอร์ Take Away ต้องเข้า Kitchen
-6. หน้า Take Away mobile ต้องมี sticky หมวดหมู่เหมือนหน้า QR โต๊ะ
-7. เลื่อนเมนูบน mobile แล้วหมวดหมู่ active ต้องเปลี่ยนตามรายการที่เลื่อนถึง
-8. toast alert ต้องอยู่ layer บนสุด ไม่โดน cart bar บัง
-9. หน้า Cashier ต้องเห็น QR Take Away และปุ่มสั่งกลับบ้าน
-10. QR Table Order และ Delivery ต้องยังทำงานตามเดิม
+1. Deploy hosting ใหม่
+2. เปิด `/admin`
+3. ต้องเห็น `QR สำหรับสั่ง Delivery`
+4. ต้องเห็น `QR สำหรับสั่งกลับบ้าน`
+5. QR สั่งกลับบ้านต้องชี้ไป `/s/{tenantSlug}/takeaway`
+6. ปุ่มคัดลอกลิงก์ / ดาวน์โหลด QR / พิมพ์ ของสั่งกลับบ้านต้องทำงาน
+7. เปิด QR สั่งกลับบ้านแล้วต้องเข้า Take Away ไม่ใช่ Delivery
+8. ส่ง Take Away แล้วต้องเข้า Kitchen เป็น `Take Away: TA-xxx`
+9. QR Delivery เดิมต้องยังทำงาน
 
 ## งานถัดไป
 
