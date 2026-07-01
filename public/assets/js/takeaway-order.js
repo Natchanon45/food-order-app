@@ -1,6 +1,6 @@
 import "./sweet-dialog.js?v=20260629-048";
 import { dataService, usingDemoMode } from "./data-service.js";
-import { money, toast } from "./ui.js?v=20260701-001";
+import { money, toast } from "./ui.js?v=20260701-003";
 
 if (usingDemoMode) document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง: ข้อมูลอยู่ในเบราว์เซอร์นี้</div>';
 
@@ -19,6 +19,8 @@ function isMobile() { return window.matchMedia("(max-width: 899px)").matches; }
 function pageSize() { return isMobile() ? Number.MAX_SAFE_INTEGER : 10; }
 function categories() { return ["ทั้งหมด", ...new Set(menus.filter(item => item.active !== false).map(item => item.category || "อื่น ๆ"))]; }
 function escapeHtml(value) { return String(value ?? "").replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]); }
+function dateKeyFrom(value = new Date()) { const date = value instanceof Date ? value : new Date(value || Date.now()); return `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}${String(date.getDate()).padStart(2, "0")}`; }
+function localQueueNo() { const d = new Date(); return `TA-${String(d.getHours()).padStart(2, "0")}${String(d.getMinutes()).padStart(2, "0")}${String(d.getSeconds()).padStart(2, "0")}`; }
 
 function renderTabs() {
   categoryTabs.innerHTML = categories().map(category => `<button type="button" class="category-tab${category === activeCategory ? " active" : ""}" data-category="${escapeHtml(category)}" role="tab" aria-selected="${category === activeCategory}">${escapeHtml(category)}</button>`).join("");
@@ -67,56 +69,11 @@ function updateCart() {
   submitButton.disabled = submitting || !items.length;
 }
 
-categoryTabs.addEventListener("click", event => {
-  const button = event.target.closest("[data-category]");
-  if (!button) return;
-  activeCategory = button.dataset.category;
-  currentPage = 1;
-  renderTabs();
-  renderMenus();
-});
-
-menuPagination.addEventListener("click", event => {
-  const button = event.target.closest("[data-page]");
-  if (!button || button.disabled) return;
-  currentPage = Number(button.dataset.page);
-  renderMenus();
-  document.querySelector("#menuListStart")?.scrollIntoView({ behavior: "smooth", block: "start" });
-});
-
-menuGrid.addEventListener("click", event => {
-  const id = event.target.closest("[data-add]")?.dataset.add;
-  if (!id) return;
-  const menu = menus.find(item => item.id === id);
-  if (!menu) return;
-  const current = cart.get(id);
-  cart.set(id, current ? { ...current, qty: current.qty + 1 } : { ...menu, qty: 1, note: "" });
-  updateCart();
-  toast(`เพิ่ม ${menu.name} แล้ว`);
-});
-
-cartList.addEventListener("click", event => {
-  const incButton = event.target.closest("[data-inc]");
-  const decButton = event.target.closest("[data-dec]");
-  const id = incButton?.dataset.inc || decButton?.dataset.dec;
-  if (!id) return;
-  const item = cart.get(id);
-  if (!item) return;
-  if (incButton) item.qty += 1;
-  if (decButton) item.qty -= 1;
-  if (item.qty <= 0) cart.delete(id); else cart.set(id, item);
-  updateCart();
-});
-
-cartList.addEventListener("input", event => {
-  const id = event.target.dataset.note;
-  if (!id) return;
-  const item = cart.get(id);
-  if (!item) return;
-  item.note = event.target.value;
-  cart.set(id, item);
-});
-
+categoryTabs.addEventListener("click", event => { const button = event.target.closest("[data-category]"); if (!button) return; activeCategory = button.dataset.category; currentPage = 1; renderTabs(); renderMenus(); });
+menuPagination.addEventListener("click", event => { const button = event.target.closest("[data-page]"); if (!button || button.disabled) return; currentPage = Number(button.dataset.page); renderMenus(); document.querySelector("#menuListStart")?.scrollIntoView({ behavior: "smooth", block: "start" }); });
+menuGrid.addEventListener("click", event => { const id = event.target.closest("[data-add]")?.dataset.add; if (!id) return; const menu = menus.find(item => item.id === id); if (!menu) return; const current = cart.get(id); cart.set(id, current ? { ...current, qty: current.qty + 1 } : { ...menu, qty: 1, note: "" }); updateCart(); toast(`เพิ่ม ${menu.name} แล้ว`); });
+cartList.addEventListener("click", event => { const incButton = event.target.closest("[data-inc]"); const decButton = event.target.closest("[data-dec]"); const id = incButton?.dataset.inc || decButton?.dataset.dec; if (!id) return; const item = cart.get(id); if (!item) return; if (incButton) item.qty += 1; if (decButton) item.qty -= 1; if (item.qty <= 0) cart.delete(id); else cart.set(id, item); updateCart(); });
+cartList.addEventListener("input", event => { const id = event.target.dataset.note; if (!id) return; const item = cart.get(id); if (!item) return; item.note = event.target.value; cart.set(id, item); });
 document.querySelector("#searchInput").addEventListener("input", () => { currentPage = 1; renderMenus(); });
 window.addEventListener("resize", () => { currentPage = 1; renderMenus(); });
 
@@ -127,19 +84,21 @@ submitButton.addEventListener("click", async () => {
   const items = [...cart.values()].map(({ id, name, price, qty, note }) => ({ menuId: id, name, price: Number(price), qty, note: note || "" }));
   if (!items.length) return;
   const totalAmount = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const createdAtText = new Date().toISOString();
+  const queueNo = localQueueNo();
   submitting = true;
   submitButton.textContent = "กำลังส่ง...";
   updateCart();
   try {
-    const result = await dataService.createTakeawayOrder({ customerName, customerPhone, status: "pending", totalAmount, subtotalAmount: totalAmount, note: document.querySelector("#orderNote").value.trim(), items });
+    const result = await dataService.createOrder({ customerName, customerPhone, orderType: "takeaway", tableCode: "", tableToken: "", tableName: "", queueNo, pickupStatus: "waiting", paymentStatus: "unpaid", status: "pending", dateKey: dateKeyFrom(createdAtText), createdAtText, totalAmount, subtotalAmount: totalAmount, note: document.querySelector("#orderNote").value.trim(), items });
     cart.clear();
     document.querySelector("#orderNote").value = "";
     updateCart();
-    toast(`ส่งรายการเข้าครัวแล้ว เลขคิว ${result?.queueNo || "Take Away"}`);
-    if (typeof window.sweetAlert === "function") window.sweetAlert(`เลขคิวของคุณคือ ${result?.queueNo || "Take Away"}`, { title: "สั่งกลับบ้านสำเร็จ", type: "success" });
+    toast(`ส่งรายการเข้าครัวแล้ว เลขคิว ${queueNo}`);
+    if (typeof window.sweetAlert === "function") window.sweetAlert(`เลขคิวของคุณคือ ${queueNo}`, { title: "สั่งกลับบ้านสำเร็จ", type: "success" });
   } catch (error) {
     console.error(error);
-    toast(error.message === "TAKEAWAY_CUSTOMER_REQUIRED" ? "กรุณากรอกชื่อหรือเบอร์โทร" : "ส่งออเดอร์ไม่สำเร็จ", "error");
+    toast("ส่งออเดอร์ไม่สำเร็จ กรุณาแจ้งพนักงาน", "error");
   } finally {
     submitting = false;
     submitButton.textContent = "ส่งรายการเข้าครัว";
@@ -147,12 +106,6 @@ submitButton.addEventListener("click", async () => {
   }
 });
 
-try {
-  menus = await dataService.listMenus();
-  renderTabs();
-  renderMenus();
-} catch (error) {
-  console.error(error);
-  menuGrid.innerHTML = '<div class="card empty">โหลดเมนูไม่สำเร็จ กรุณาติดต่อพนักงาน</div>';
-}
+try { menus = await dataService.listMenus(); renderTabs(); renderMenus(); }
+catch (error) { console.error(error); menuGrid.innerHTML = '<div class="card empty">โหลดเมนูไม่สำเร็จ กรุณาติดต่อพนักงาน</div>'; }
 updateCart();
