@@ -16,10 +16,10 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.49`
-- Build: `2026.07.02.003`
+- Version: `0.12.50`
+- Build: `2026.07.02.004`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B003 Counter`
+- Milestone: `P9-B004 Offline Queue Worker + Retry + Conflict Resolver`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -28,44 +28,47 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - POS Firestore Foundation (P9-B001) เสร็จแล้ว
 - P9-B002 Running Number เสร็จแล้ว
 - P9-B003 Counter service กลางเสร็จแล้ว
-- Counter รองรับ Firestore Transaction และยังรักษา Stable `saleId`
-- Counter แยกตาม `tenantId`, document type และ reset period
+- P9-B004 Offline Queue Worker + Retry + Conflict Resolver เสร็จแล้ว
+- Offline Sync ใช้ Counter Service กลาง และยังรักษา Stable `saleId`
+- Retry/Conflict ไม่ตัด Stock ซ้ำ เพราะตรวจ existing sale จาก `saleId` ก่อนเสมอ
 
 ## Current Milestone
 
-`P9-B003 Counter`
+`P9-B004 Offline Queue Worker + Retry + Conflict Resolver`
 
 ## แก้แล้วรอบนี้
 
-- เพิ่ม `retail-pos-counter.js` เป็น Counter Service กลางของ POS
-- เพิ่ม `counterScope()` เพื่อคำนวณ tenant / document type / dateKey / periodKey / counterId
-- เพิ่ม `counterRef()` สำหรับอ้างอิง Firestore counter ของ tenant ปัจจุบัน
-- เพิ่ม `nextCounterSnapshot()` เพื่อคำนวณเลขถัดไปจาก snapshot ที่อ่านแล้ว
-- เพิ่ม `buildCounterCommit()` เพื่อสร้าง payload สำหรับ commit counter
-- เพิ่ม `reserveRunningNumber()` สำหรับใช้ภายใน Firestore Transaction โดยบังคับ Read ก่อน Write
-- เพิ่ม `pendingDocumentNumber()` สำหรับเลข Offline/PENDING ที่ผูกกับ Stable ID
-- Developer Panel เป็น Version `0.12.49` Build `2026.07.02.003`
+- ปรับ `retail-offline-sale-sync.js` ให้ใช้ `reserveRunningNumber()` จาก `retail-pos-counter.js`
+- ย้ายการจองเลขจริงของ Offline Sync ให้ใช้ Counter Service กลางจาก P9-B003
+- คงกติกา Firestore Transaction: อ่าน sale / summary / product ก่อน แล้วจอง counter และ write หลังจากอ่านครบ
+- เพิ่ม Worker state snapshot และ event `retail-offline-queue-worker`
+- เพิ่ม state: `scheduled`, `syncing`, `failed`, `conflict`, `offline`, `retry_queued`, `conflict_retry_queued`, `conflict_discarded`
+- เพิ่ม `getOfflineQueueWorkerSnapshot()` สำหรับหน้าจอ/โมดูลถัดไปนำไปแสดงสถานะได้
+- ปรับ `retryFailedOfflineSales()` และ `resolveOfflineSaleConflict()` ให้ส่ง state metadata หลัง retry/discard
+- `/pos/index.html` bump `retail-offline-sale-sync.js?v=20260702-004`
+- Developer Panel เป็น Version `0.12.50` Build `2026.07.02.004`
 
 ## Regression Tests สำคัญ
 
-1. เปิด POS แล้วขายสินค้าออนไลน์ 1 บิล ต้องบันทึกบิลได้ตามเดิม
-2. เลขบิลออนไลน์ยังต้องเป็น `POS-YYYYMMDD-xxxxx`
-3. ขายหลายบิลวันเดียวกัน เลขต้องต่อเนื่อง ไม่ซ้ำ
-4. ปิดเน็ตแล้วขาย Offline ต้องได้เลข PENDING และยังคง Stable `saleId`
-5. เปิดเน็ตให้ Sync ต้องจองเลขจริงผ่าน counter เดิม ไม่ซ้ำกับ Online Sale
-6. ตรวจ counter document ต้องมี `documentType`, `periodKey`, `lastDocumentId`, `lastDocumentNumber`
-7. Retry sync บิลเดิมซ้ำ ต้องไม่ตัด Stock ซ้ำ
-8. ตรวจว่า record สำคัญยังมี `tenantId`
+1. เปิด POS แล้วขาย Online 1 บิล ต้องบันทึกและตัด Stock ได้ตามเดิม
+2. ปิดเน็ตแล้วขาย Offline 1 บิล ต้องบันทึกในเครื่องและแสดงเลข PENDING
+3. เปิดเน็ตแล้ว Offline Queue Worker ต้อง Sync อัตโนมัติ
+4. บิล Offline หลัง Sync ต้องได้เลขจริงจาก Counter Service เช่น `POS-YYYYMMDD-xxxxx`
+5. Retry บิลเดิมซ้ำ ต้องไม่สร้าง sale ซ้ำ และไม่ตัด Stock ซ้ำ
+6. ถ้า Stock ไม่พอหลัง Offline ต้องขึ้น `syncStatus: conflict` และ `conflictType: insufficient_stock`
+7. เรียก retry conflict ต้องกลับเป็น `pending`
+8. เรียก discard conflict ต้องเป็น `discarded`
+9. ตรวจ event `retail-offline-queue-worker` ต้องมี state ล่าสุด
+10. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
 
-1. P9-B004 Offline Queue Worker + Retry + Conflict Resolver
-2. P9-B005 Repository Layer
-3. P9-B006 Firestore Composite Index
-4. P9-B007 Audit Log
-5. P9-B008 Shift Opening / Closing
-6. P9-B009 Refund / Return / Void
-7. P9-B010 Performance (Cache / Virtual List / Search)
+1. P9-B005 Repository Layer
+2. P9-B006 Firestore Composite Index
+3. P9-B007 Audit Log
+4. P9-B008 Shift Opening / Closing
+5. P9-B009 Refund / Return / Void
+6. P9-B010 Performance (Cache / Virtual List / Search)
 
 ## ข้อควรระวัง
 
