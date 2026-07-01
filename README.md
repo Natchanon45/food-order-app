@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `P9-B007 Audit Log`
-- Developer Panel version/build ปัจจุบัน: `0.12.21` / `2026.06.30.087`
+- Current milestone: `P9-B008 Shift Opening / Closing`
+- Developer Panel version/build ปัจจุบัน: `0.12.22` / `2026.07.01.003`
 
 ## Retail POS Status
 
@@ -31,28 +31,28 @@
 - แก้ให้ใบเสร็จคำนวณแต้มจากลูกค้าที่เลือกได้ทันที แม้ sale customer patch จะยังไม่เสร็จ
 - เพิ่ม Firestore composite indexes สำหรับ Retail POS collections
 - เพิ่ม audit log สำหรับการขาย POS ที่บันทึกสำเร็จบน Firestore
+- ปรับระบบเปิดกะ/ปิดกะให้บันทึก tenantId, deviceId, user, เงินตั้งต้น, เงินนับจริง และผลต่างเงินสด
 
 ## Current Milestone
 
-`P9-B007 Audit Log`
+`P9-B008 Shift Opening / Closing`
 
 ## Regression Tests
 
-1. เปิด `/pos` แล้วขาย online 1 บิล
-2. Firestore ต้องมี sale document ตาม stable `saleId`
-3. Firestore ต้องมี audit log ใน `tenants/{tenantId}/auditLogs/{pos_sale_completed_saleId}`
-4. Audit log ต้องมี `tenantId`, `shopId`, `deviceId`, `createdBy`, `action`, `entityType`, `entityId`, `entityNumber`
-5. Audit log summary ต้องมี saleNumber, totalAmount, totalQty, paymentMethod, customerId, shiftId, syncStatus
-6. ขายซ้ำด้วย saleId เดิมต้องไม่สร้าง audit log ซ้ำ เพราะใช้ deterministic audit id
-7. Offline sale ต้องยัง fallback ได้และไม่ทำให้ sync/duplicate protection เสีย
-8. Firestore transaction ยัง read เอกสารทั้งหมดก่อน write
-9. ถ้าแก้ JS ที่ import ใน HTML ต้อง bump cache แล้ว
+1. เปิด `/pos/shifts`
+2. เปิดกะด้วยชื่อพนักงาน, รหัสเครื่อง POS และเงินสดเริ่มต้น
+3. Firestore/local cache ต้องมี shift ที่ `status = open` และมี `tenantId`
+4. ไปที่ `/pos` แล้วขาย 1 บิล ต้องผูก `shiftId` กับ active shift ถ้ามีกะเปิดอยู่
+5. กลับไป `/pos/shifts` ต้องเห็นยอดขายรวม, ยอดเงินสด, ยอดโอน, จำนวนบิล และเงินสดที่ควรมี
+6. ปิดกะด้วยเงินสดนับจริง ต้องบันทึก `status = closed`, `closedAt`, `actualCash`, `cashDifference`
+7. ประวัติกะต้องแสดงกะที่ปิดแล้ว
+8. Offline/local fallback ต้องยังเปิดกะและปิดกะได้โดยไม่กระทบการขาย
+9. Cache ของ shift page ต้องเป็น `retail-shifts.js?v=20260701-003`
 
 ## Next Tasks
 
-1. P9-B008 Shift Opening / Closing
-2. P9-B009 Refund / Return / Void
-3. P9-B010 Performance
+1. P9-B009 Refund / Return / Void
+2. P9-B010 Performance
 
 ## Deploy
 
