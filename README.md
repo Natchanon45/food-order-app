@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Hide Owner From Staff List`
-- Developer Panel version/build ปัจจุบัน: `0.12.43` / `2026.07.01.025`
+- Current milestone: `Customer Old QR Table Move Fix`
+- Developer Panel version/build ปัจจุบัน: `0.12.44` / `2026.07.01.027`
 
 ## Food Order Status
 
@@ -22,21 +22,20 @@
 - หน้า Print Receipt พิมพ์เฉพาะข้อมูลใบเสร็จ ไม่ดึง UI/ข้อความระบบ/เวอร์ชันด้านล่างติดไปด้วย
 - หน้าครัวมี visual cue สำหรับปุ่มสถานะและออเดอร์รอนาน
 - หน้า `Admin > จัดการพนักงาน` แสดงเฉพาะพนักงาน role `admin/cashier/kitchen` และไม่แสดง Owner
-- หลัง Cashier เปลี่ยนโต๊ะ ลูกค้าใช้ QR เดิมได้ต่อด้วย stable `tableToken`
+- หลัง Cashier เปลี่ยนโต๊ะ ลูกค้าใช้ QR เดิมได้ต่อ และเห็นรายการเดิมด้วย stable `tableToken`
 
 ## Current Milestone
 
-`Hide Owner From Staff List`
+`Customer Old QR Table Move Fix`
 
 ## Regression Tests
 
 1. เปิดโต๊ะ A แล้วสั่งอาหารจาก QR
 2. Cashier เปลี่ยนโต๊ะ A ไปโต๊ะ B
-3. ลูกค้าสแกน QR เดิมของโต๊ะ A ต้องยังเห็นรายการเดิมและสั่งเพิ่มได้
-4. รอบการสั่งถัดไปต้องต่อจากรอบเดิม ไม่กลับเป็นรอบที่ 1
-5. เปิด `/admin/users` ด้วย Owner
-6. รายการพนักงานต้องไม่แสดง Owner ของร้าน
-7. ต้องแสดงเฉพาะ role `admin`, `cashier`, `kitchen`
+3. ลูกค้าสแกน QR เดิมของโต๊ะ A ต้องยังเห็นรายการเดิม
+4. ลูกค้าสั่งเพิ่มจาก QR เดิม ต้องเข้าโต๊ะ B ที่ active อยู่
+5. รอบการสั่งถัดไปต้องต่อจากรอบเดิม ไม่กลับเป็นรอบที่ 1
+6. Kitchen/Cashier ต้องยังเห็นรายการถูกต้อง
 
 ## Next Tasks
 
