@@ -2,9 +2,10 @@ import "./sweet-dialog.js?v=20260629-048";
 import "./cashier-table-move.js?v=20260630-052";
 import { dataService, usingDemoMode } from "./data-service.js";
 import { storage, ref, getDownloadURL } from "./firebase-config.js?v=20260630-073";
-import { money, statusLabel, formatTime, toast } from "./ui.js?v=20260701-001";
+import { money, statusLabel, formatTime, toast } from "./ui.js?v=20260701-003";
 import { observeDeliveryOrders } from "./delivery-notifier.js";
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
+import { getStoredTenant } from "./tenant-context.js";
 
 if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
   const link = document.createElement("link");
@@ -25,6 +26,21 @@ async function askConfirm(message, options = {}) {
 }
 
 function icon(name) { return iconMarkup(name); }
+function takeawayUrl() {
+  const tenant = getStoredTenant?.();
+  const path = tenant?.slug ? `/s/${encodeURIComponent(tenant.slug)}/takeaway/` : "/takeaway/";
+  return new URL(path, location.origin).toString();
+}
+function mountTakeawayQrTools() {
+  const hero = document.querySelector(".hero");
+  if (!hero || document.querySelector("#takeawayQrTools")) return;
+  const url = takeawayUrl();
+  hero.insertAdjacentHTML("beforeend", `<div id="takeawayQrTools" class="order-actions" style="margin-top:14px"><a class="btn btn-primary" href="${url}" target="_blank" rel="noopener">${icon("qr")}<span>เปิด QR Take Away</span></a><button class="btn btn-warning" type="button" id="copyTakeawayUrl">${icon("copy")}<span>คัดลอกลิงก์</span></button><small style="display:block;width:100%;opacity:.75">ให้ลูกค้า Walk-in สแกน/เปิดลิงก์นี้เพื่อสั่งกลับบ้านโดยไม่ต้องเปิดโต๊ะ</small></div>`);
+  document.querySelector("#copyTakeawayUrl")?.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(url); toast("คัดลอกลิงก์ Take Away แล้ว"); }
+    catch { prompt("คัดลอกลิงก์ Take Away", url); }
+  });
+}
 function itemDetails(item) {
   const parts = [];
   if (item.note) parts.push(`<small><strong>หมายเหตุ:</strong> ${item.note}</small>`);
@@ -60,7 +76,7 @@ function renderDelivery(order) {
   const paymentAction = order.paymentStatus !== "paid" ? `<button class="btn btn-primary" data-payment-id="${order.id}">${icon("check-circle")}<span>ตรวจแล้ว/ชำระแล้ว</span></button>` : "";
   const slipUrl = order.paymentSlipUrl || slipUrls.get(order.id) || "";
   const slipAction = slipUrl ? `<a class="btn btn-warning" href="${slipUrl}" target="_blank" rel="noopener">${icon("view")}<span>ดูสลิป</span></a>` : (order.paymentSlipPath ? `<button class="btn btn-warning" disabled>${icon("view")}<span>กำลังโหลดสลิป...</span></button>` : "");
-  return `<article class="card order-card"><div class="order-head"><div><h2 style="margin:0">Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}</h2><small>${formatTime(order.createdAt)}</small></div><span class="badge">${statusLabel(order.status)}</span></div><p><span class="badge ${order.paymentStatus === "paid" ? "" : "warning"}">${paymentLabel(order)}</span><br><strong>โทร:</strong> ${order.recipientPhone || "-"}<br><strong>ที่อยู่:</strong> ${order.deliveryAddress || "-"}</p><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="card" style="margin-top:10px;padding:10px 12px;box-shadow:none;background:#f8fbf9"><div class="receipt-row"><span>พื้นที่จัดส่ง</span><strong>${order.deliveryZoneLabel || "-"}</strong></div><div class="receipt-row"><span>ค่าอาหาร</span><strong>${money(order.subtotalAmount ?? (Number(order.totalAmount || 0) - Number(order.deliveryFee || 0)))} บาท</strong></div><div class="receipt-row"><span>ค่าจัดส่ง</span><strong>${money(order.deliveryFee || 0)} บาท</strong></div></div><div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>${slipAction}${paymentAction}<button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button></div></article>`;
+  return `<article class="card order-card"><div class="order-head"><div><h2 style="margin:0">Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}</h2><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div><span class="badge">${statusLabel(order.status)}</span></div><p><span class="badge ${order.paymentStatus === "paid" ? "" : "warning"}">${paymentLabel(order)}</span><br><strong>โทร:</strong> ${order.recipientPhone || "-"}<br><strong>ที่อยู่:</strong> ${order.deliveryAddress || "-"}</p><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="card" style="margin-top:10px;padding:10px 12px;box-shadow:none;background:#f8fbf9"><div class="receipt-row"><span>พื้นที่จัดส่ง</span><strong>${order.deliveryZoneLabel || "-"}</strong></div><div class="receipt-row"><span>ค่าอาหาร</span><strong>${money(order.subtotalAmount ?? (Number(order.totalAmount || 0) - Number(order.deliveryFee || 0)))} บาท</strong></div><div class="receipt-row"><span>ค่าจัดส่ง</span><strong>${money(order.deliveryFee || 0)} บาท</strong></div></div><div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>${slipAction}${paymentAction}<button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button></div></article>`;
 }
 
 function renderTakeaway(order) {
@@ -70,7 +86,7 @@ function renderTakeaway(order) {
   const paymentAction = !paid ? `<button class="btn btn-primary" data-payment-id="${order.id}">${icon("check-circle")}<span>รับชำระแล้ว</span></button>` : "";
   const callAction = ready && order.pickupStatus !== "called" ? `<button class="btn btn-warning" data-pickup-call="${order.id}">${icon("receipt")}<span>เรียกรับของ</span></button>` : "";
   const doneAction = ready || order.pickupStatus === "called" ? `<button class="btn btn-dark" data-pickup-done="${order.id}">${icon("check-circle")}<span>${paid ? "ส่งมอบแล้ว" : "ชำระและส่งมอบแล้ว"}</span></button>` : "";
-  return `<article class="card order-card"><div class="order-head"><div><h2 style="margin:0">Take Away: ${queueNo}</h2><small>${formatTime(order.createdAt)}</small></div><span class="badge ${order.pickupStatus === "called" ? "warning" : ""}">${order.pickupStatus === "called" ? "เรียกคิวแล้ว" : statusLabel(order.status)}</span></div><p><strong>ลูกค้า:</strong> ${order.customerName || "-"}<br><strong>โทร:</strong> ${order.customerPhone || "-"}<br><span class="badge ${paid ? "" : "warning"}">${paid ? "ชำระเงินแล้ว" : "รอชำระเงิน"}</span></p><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>${paymentAction}${callAction}${doneAction}<button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button></div></article>`;
+  return `<article class="card order-card"><div class="order-head"><div><h2 style="margin:0">Take Away: ${queueNo}</h2><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div><span class="badge ${order.pickupStatus === "called" ? "warning" : ""}">${order.pickupStatus === "called" ? "เรียกคิวแล้ว" : statusLabel(order.status)}</span></div><p><strong>ลูกค้า:</strong> ${order.customerName || "-"}<br><strong>โทร:</strong> ${order.customerPhone || "-"}<br><span class="badge ${paid ? "" : "warning"}">${paid ? "ชำระเงินแล้ว" : "รอชำระเงิน"}</span></p><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>${paymentAction}${callAction}${doneAction}<button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button></div></article>`;
 }
 
 function renderTableBill(group) {
@@ -79,7 +95,7 @@ function renderTableBill(group) {
   const total = sorted.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0);
   const ids = sorted.map(order => order.id).join(",");
   const key = tableGroupKey(first);
-  const rounds = sorted.map(order => `<section class="card" style="padding:12px;margin-top:10px;box-shadow:none;background:#f8fbf9"><div class="order-head"><strong>รอบที่ ${order.roundNumber || 1}</strong><small>${formatTime(order.createdAt)}</small></div><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="order-head" style="margin-top:8px"><span>รวมรอบนี้</span><strong>${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:8px"><button class="btn btn-danger btn-sm" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button></div></section>`).join("");
+  const rounds = sorted.map(order => `<section class="card" style="padding:12px;margin-top:10px;box-shadow:none;background:#f8fbf9"><div class="order-head"><strong>รอบที่ ${order.roundNumber || 1}</strong><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="order-head" style="margin-top:8px"><span>รวมรอบนี้</span><strong>${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:8px"><button class="btn btn-danger btn-sm" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button></div></section>`).join("");
   return `<article class="card order-card"><div class="order-head"><div><h2 style="margin:0">โต๊ะ ${first.tableCode}</h2><small>${sorted.length} รอบที่ยังไม่คิดเงิน</small></div><span class="badge warning">รวมบิล</span></div>${rounds}<div class="order-head" style="margin-top:14px;padding-top:12px;border-top:2px solid #dfe8e2"><strong>ยอดรวมทั้งโต๊ะ</strong><strong class="price">${money(total)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?orders=${encodeURIComponent(ids)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a><button class="btn btn-primary" data-table-payment="${key}">${icon("check-circle")}<span>ตรวจแล้ว/ชำระแล้ว</span></button></div></article>`;
 }
 
@@ -155,3 +171,5 @@ dataService.subscribeOrders(async orders => {
   await resolveSlipUrls(orders);
   render(orders);
 });
+
+mountTakeawayQrTools();
