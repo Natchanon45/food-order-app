@@ -74,7 +74,7 @@ function roleMenuLinks(profile) {
   }
 
   const links = [{ href: "/", icon: "home", label: "หน้าหลัก" }];
-  if (["owner", "cashier"].includes(profile.role)) links.push({ href: "/cashier/table-qr", icon: "table", label: "ออกโต๊ะ" });
+  if (["owner", "cashier"].includes(profile.role)) links.push({ href: "/cashier/table-qr", icon: "easel2", label: "ออกโต๊ะ" });
   if (["owner", "admin"].includes(profile.role)) links.push({ href: "/admin", icon: "settings", label: "จัดการระบบร้าน" });
   if (profile.role === "owner") {
     links.push({ href: "/admin/users", icon: "users", label: "จัดการพนักงาน" });
@@ -259,8 +259,13 @@ export async function requireRole(allowedRoles = []) {
   const ownerAllowed = profile?.role === "owner" && allowedRoles.some(role => ["owner", "admin", "cashier", "kitchen"].includes(role));
   const permitted = ownerAllowed || allowedRoles.includes(profile?.role);
 
-  if (!profile || profile.active === false || !permitted || profile.tenantReady === false) {
-    location.replace(profile?.tenantReady === false ? "/login/?error=tenant" : (ROLE_HOME[profile?.role] || "/login"));
+  if (!permitted) {
+    location.replace(ROLE_HOME[profile?.role] || "/login");
+    return new Promise(() => {});
+  }
+
+  if (profile.role !== "super_admin" && profile.tenantReady === false) {
+    document.documentElement.innerHTML = `<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ยังไม่มีร้าน</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;font-family:system-ui,sans-serif;background:#f3f6f4;color:#151515}main{width:min(440px,100%);padding:26px;border-radius:20px;background:#fff;border:1px solid #dde5df;text-align:center}</style></head><body><main><h1>ยังไม่มีข้อมูลร้าน</h1><p>บัญชีนี้ยังไม่ได้ผูกกับร้าน กรุณาติดต่อผู้ดูแลระบบ</p></main></body>`;
     return new Promise(() => {});
   }
 
@@ -270,31 +275,14 @@ export async function requireRole(allowedRoles = []) {
 }
 
 export async function login(email, password) {
-  const credential = await signInWithEmailAndPassword(auth, email, password);
-  const profile = await getUserProfile(credential.user);
-  if (!profile || profile.active === false || profile.tenantReady === false) {
-    await signOut(auth);
-    clearActiveTenant();
-    throw new Error(profile?.tenantReady === false ? "TENANT_NOT_ASSIGNED" : "ACCOUNT_NOT_ALLOWED");
-  }
-  return profile;
+  return signInWithEmailAndPassword(auth, email, password);
 }
 
-function callFunction(name) {
-  if (!functions) throw new Error("FUNCTIONS_NOT_READY");
-  return httpsCallable(functions, name);
+export async function logout() {
+  await signOut(auth);
+  clearActiveTenant();
 }
 
-export async function listStaffUsers() {
-  const result = await callFunction("listTenantStaff")({});
-  return result.data?.users || [];
-}
-
-export async function createStaffUser(payload) {
-  const result = await callFunction("createTenantStaff")(payload);
-  return result.data?.uid;
-}
-
-export async function updateStaffUser(uid, patch) {
-  await callFunction("updateTenantStaff")({ uid, ...patch });
+export async function callCloud(name, payload = {}) {
+  return httpsCallable(functions, name)(payload);
 }
