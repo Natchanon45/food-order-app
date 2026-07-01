@@ -124,6 +124,55 @@
 }
 
 @media print {
+  @page {
+    margin: 0;
+  }
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .no-print,
+  .no-print *,
+  #demoBanner,
+  #demoBanner *,
+  .app-header,
+  .app-header *,
+  .receipt-toolbar,
+  .receipt-toolbar * {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  .receipt-page,
+  .receipt-page *,
+  #receipt,
+  #receipt * {
+    visibility: visible !important;
+  }
+
+  .receipt-page {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  #receipt {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    margin: 0 auto !important;
+    background: #fff !important;
+  }
+
   .receipt,
   .receipt *,
   .receipt *::before,
