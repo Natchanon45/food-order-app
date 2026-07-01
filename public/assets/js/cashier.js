@@ -13,163 +13,51 @@ if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
   link.href = "/assets/css/sweet-dialog.css?v=20260629-048";
   document.head.appendChild(link);
 }
-
 if (usingDemoMode) document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง: ข้อมูลอยู่ในเบราว์เซอร์นี้</div>';
 
 const grid = document.querySelector("#orderGrid");
 let currentOrders = [];
 let slipUrls = new Map();
-
-async function askConfirm(message, options = {}) {
-  if (typeof window.sweetConfirm === "function") return await window.sweetConfirm(message, options);
-  return confirm(message);
-}
-
+async function askConfirm(message, options = {}) { if (typeof window.sweetConfirm === "function") return await window.sweetConfirm(message, options); return confirm(message); }
 function icon(name) { return iconMarkup(name); }
-function takeawayUrl() {
-  const tenant = getStoredTenant?.();
-  const path = tenant?.slug ? `/s/${encodeURIComponent(tenant.slug)}/takeaway/` : "/takeaway/";
-  return new URL(path, location.origin).toString();
+function takeawayUrl() { const tenant = getStoredTenant?.(); const path = tenant?.slug ? `/s/${encodeURIComponent(tenant.slug)}/takeaway/` : "/takeaway/"; return new URL(path, location.origin).toString(); }
+function showTakeawayQr(url) {
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(url)}`;
+  if (typeof window.sweetAlert === "function") {
+    window.sweetAlert(`<div style="text-align:center"><img src="${qrSrc}" alt="QR Take Away" width="260" height="260" style="max-width:100%;border-radius:18px"><p style="word-break:break-all;font-size:13px">${url}</p></div>`, { title: "QR สั่งกลับบ้าน", type: "success", html: true });
+  } else {
+    window.open(url, "_blank", "noopener");
+  }
 }
 function mountTakeawayQrTools() {
   const hero = document.querySelector(".hero");
   if (!hero || document.querySelector("#takeawayQrTools")) return;
   const url = takeawayUrl();
-  hero.insertAdjacentHTML("beforeend", `<div id="takeawayQrTools" class="order-actions" style="margin-top:14px"><a class="btn btn-primary" href="${url}" target="_blank" rel="noopener">${icon("qr")}<span>เปิด QR Take Away</span></a><button class="btn btn-warning" type="button" id="copyTakeawayUrl">${icon("copy")}<span>คัดลอกลิงก์</span></button><small style="display:block;width:100%;opacity:.75">ให้ลูกค้า Walk-in สแกน/เปิดลิงก์นี้เพื่อสั่งกลับบ้านโดยไม่ต้องเปิดโต๊ะ</small></div>`);
-  document.querySelector("#copyTakeawayUrl")?.addEventListener("click", async () => {
-    try { await navigator.clipboard.writeText(url); toast("คัดลอกลิงก์ Take Away แล้ว"); }
-    catch { prompt("คัดลอกลิงก์ Take Away", url); }
-  });
+  hero.insertAdjacentHTML("beforeend", `<div id="takeawayQrTools" class="order-actions" style="margin-top:14px"><button class="btn btn-primary" type="button" id="showTakeawayQr">${icon("qr")}<span>QR Take Away</span></button><a class="btn btn-warning" href="${url}" target="_blank" rel="noopener">${icon("plus")}<span>สั่งกลับบ้าน</span></a><button class="btn" type="button" id="copyTakeawayUrl">${icon("copy")}<span>คัดลอกลิงก์</span></button><small style="display:block;width:100%;opacity:.75">QR สำหรับลูกค้า Walk-in สแกนเอง หรือกดสั่งกลับบ้านเพื่อให้ Cashier กรอกแทนลูกค้า</small></div>`);
+  document.querySelector("#showTakeawayQr")?.addEventListener("click", () => showTakeawayQr(url));
+  document.querySelector("#copyTakeawayUrl")?.addEventListener("click", async () => { try { await navigator.clipboard.writeText(url); toast("คัดลอกลิงก์ Take Away แล้ว"); } catch { prompt("คัดลอกลิงก์ Take Away", url); } });
 }
-function itemDetails(item) {
-  const parts = [];
-  if (item.note) parts.push(`<small><strong>หมายเหตุ:</strong> ${item.note}</small>`);
-  if (item.replacedFromName) parts.push(`<small><strong>เปลี่ยนจาก:</strong> ${item.replacedFromName}</small>`);
-  if (item.originalQty && Number(item.originalQty) !== Number(item.qty)) parts.push(`<small><strong>จำนวนเดิม:</strong> ${item.originalQty}</small>`);
-  return parts.length ? `<div class="menu-category" style="margin-top:3px;line-height:1.35">${parts.join("<br>")}</div>` : "";
-}
+function itemDetails(item) { const parts = []; if (item.note) parts.push(`<small><strong>หมายเหตุ:</strong> ${item.note}</small>`); if (item.replacedFromName) parts.push(`<small><strong>เปลี่ยนจาก:</strong> ${item.replacedFromName}</small>`); if (item.originalQty && Number(item.originalQty) !== Number(item.qty)) parts.push(`<small><strong>จำนวนเดิม:</strong> ${item.originalQty}</small>`); return parts.length ? `<div class="menu-category" style="margin-top:3px;line-height:1.35">${parts.join("<br>")}</div>` : ""; }
 function orderNote(order) { return order.note ? `<div class="card" style="margin-top:10px;padding:10px 12px;box-shadow:none;background:#fff8e8"><strong>หมายเหตุรวมถึงร้าน</strong><div style="margin-top:4px">${order.note}</div></div>` : ""; }
-function paymentLabel(order) {
-  if (order.paymentStatus === "paid" && order.status === "served") return "ชำระแล้ว รอระบบปิดออเดอร์";
-  if (order.paymentStatus === "paid") return "ตรวจสอบและรับชำระแล้ว";
-  if (order.paymentStatus === "pending_verification") return "มีสลิป รอตรวจสอบ";
-  if (order.paymentMethod === "cod") return "เก็บเงินปลายทาง";
-  return "รอชำระเงิน";
-}
+function paymentLabel(order) { if (order.paymentStatus === "paid" && order.status === "served") return "ชำระแล้ว รอระบบปิดออเดอร์"; if (order.paymentStatus === "paid") return "ตรวจสอบและรับชำระแล้ว"; if (order.paymentStatus === "pending_verification") return "มีสลิป รอตรวจสอบ"; if (order.paymentMethod === "cod") return "เก็บเงินปลายทาง"; return "รอชำระเงิน"; }
 function activeOrders(orders) { return orders.filter(order => !["paid", "cancelled"].includes(order.status)); }
 function tableGroupKey(order) { return order.tableToken || `table:${order.tableCode}`; }
-
-async function resolveSlipUrls(orders) {
-  if (!storage) return;
-  const targets = orders.filter(order => order.orderType === "delivery" && order.paymentSlipPath && !order.paymentSlipUrl && !slipUrls.has(order.id));
-  await Promise.all(targets.map(async order => {
-    try { const url = await getDownloadURL(ref(storage, order.paymentSlipPath)); if (url) slipUrls.set(order.id, url); }
-    catch (error) { console.error("Unable to load payment slip", order.id, error); }
-  }));
-}
-
-function itemRows(order) {
-  return (order.items || []).map(item => `<li style="${item.cancelled ? "opacity:.5;text-decoration:line-through" : ""}"><div>${item.qty} × ${item.name}<strong style="float:right">${item.cancelled ? "ยกเลิก" : money(item.qty * item.price)}</strong></div>${itemDetails(item)}</li>`).join("");
-}
-
-function renderDelivery(order) {
-  const paymentAction = order.paymentStatus !== "paid" ? `<button class="btn btn-primary" data-payment-id="${order.id}">${icon("check-circle")}<span>ตรวจแล้ว/ชำระแล้ว</span></button>` : "";
-  const slipUrl = order.paymentSlipUrl || slipUrls.get(order.id) || "";
-  const slipAction = slipUrl ? `<a class="btn btn-warning" href="${slipUrl}" target="_blank" rel="noopener">${icon("view")}<span>ดูสลิป</span></a>` : (order.paymentSlipPath ? `<button class="btn btn-warning" disabled>${icon("view")}<span>กำลังโหลดสลิป...</span></button>` : "");
-  return `<article class="card order-card"><div class="order-head"><div><h2 style="margin:0">Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}</h2><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div><span class="badge">${statusLabel(order.status)}</span></div><p><span class="badge ${order.paymentStatus === "paid" ? "" : "warning"}">${paymentLabel(order)}</span><br><strong>โทร:</strong> ${order.recipientPhone || "-"}<br><strong>ที่อยู่:</strong> ${order.deliveryAddress || "-"}</p><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="card" style="margin-top:10px;padding:10px 12px;box-shadow:none;background:#f8fbf9"><div class="receipt-row"><span>พื้นที่จัดส่ง</span><strong>${order.deliveryZoneLabel || "-"}</strong></div><div class="receipt-row"><span>ค่าอาหาร</span><strong>${money(order.subtotalAmount ?? (Number(order.totalAmount || 0) - Number(order.deliveryFee || 0)))} บาท</strong></div><div class="receipt-row"><span>ค่าจัดส่ง</span><strong>${money(order.deliveryFee || 0)} บาท</strong></div></div><div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>${slipAction}${paymentAction}<button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button></div></article>`;
-}
-
-function renderTakeaway(order) {
-  const queueNo = order.queueNo || order.tableCode || "TA";
-  const paid = order.paymentStatus === "paid";
-  const ready = order.status === "ready" || order.pickupStatus === "called";
-  const paymentAction = !paid ? `<button class="btn btn-primary" data-payment-id="${order.id}">${icon("check-circle")}<span>รับชำระแล้ว</span></button>` : "";
-  const callAction = ready && order.pickupStatus !== "called" ? `<button class="btn btn-warning" data-pickup-call="${order.id}">${icon("receipt")}<span>เรียกรับของ</span></button>` : "";
-  const doneAction = ready || order.pickupStatus === "called" ? `<button class="btn btn-dark" data-pickup-done="${order.id}">${icon("check-circle")}<span>${paid ? "ส่งมอบแล้ว" : "ชำระและส่งมอบแล้ว"}</span></button>` : "";
-  return `<article class="card order-card"><div class="order-head"><div><h2 style="margin:0">Take Away: ${queueNo}</h2><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div><span class="badge ${order.pickupStatus === "called" ? "warning" : ""}">${order.pickupStatus === "called" ? "เรียกคิวแล้ว" : statusLabel(order.status)}</span></div><p><strong>ลูกค้า:</strong> ${order.customerName || "-"}<br><strong>โทร:</strong> ${order.customerPhone || "-"}<br><span class="badge ${paid ? "" : "warning"}">${paid ? "ชำระเงินแล้ว" : "รอชำระเงิน"}</span></p><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>${paymentAction}${callAction}${doneAction}<button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button></div></article>`;
-}
-
-function renderTableBill(group) {
-  const sorted = [...group].sort((a, b) => Number(a.roundNumber || 0) - Number(b.roundNumber || 0));
-  const first = sorted[0];
-  const total = sorted.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0);
-  const ids = sorted.map(order => order.id).join(",");
-  const key = tableGroupKey(first);
-  const rounds = sorted.map(order => `<section class="card" style="padding:12px;margin-top:10px;box-shadow:none;background:#f8fbf9"><div class="order-head"><strong>รอบที่ ${order.roundNumber || 1}</strong><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="order-head" style="margin-top:8px"><span>รวมรอบนี้</span><strong>${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:8px"><button class="btn btn-danger btn-sm" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button></div></section>`).join("");
-  return `<article class="card order-card"><div class="order-head"><div><h2 style="margin:0">โต๊ะ ${first.tableCode}</h2><small>${sorted.length} รอบที่ยังไม่คิดเงิน</small></div><span class="badge warning">รวมบิล</span></div>${rounds}<div class="order-head" style="margin-top:14px;padding-top:12px;border-top:2px solid #dfe8e2"><strong>ยอดรวมทั้งโต๊ะ</strong><strong class="price">${money(total)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?orders=${encodeURIComponent(ids)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a><button class="btn btn-primary" data-table-payment="${key}">${icon("check-circle")}<span>ตรวจแล้ว/ชำระแล้ว</span></button></div></article>`;
-}
-
-function render(orders) {
-  currentOrders = orders;
-  const active = activeOrders(orders);
-  const deliveries = active.filter(order => order.orderType === "delivery");
-  const takeaways = active.filter(order => order.orderType === "takeaway");
-  const tableOrders = active.filter(order => order.orderType !== "delivery" && order.orderType !== "takeaway");
-  const groups = new Map();
-  tableOrders.forEach(order => { const key = tableGroupKey(order); if (!groups.has(key)) groups.set(key, []); groups.get(key).push(order); });
-  const cards = [...Array.from(groups.values()).map(renderTableBill), ...takeaways.map(renderTakeaway), ...deliveries.map(renderDelivery)];
-  grid.innerHTML = cards.length ? cards.join("") : '<div class="card empty">ไม่มีบิลที่รอดำเนินการ</div>';
-}
-
-async function closeTableAfterPayment(orders) {
-  const first = orders[0];
-  if (!first?.tableCode || first?.orderType === "takeaway") return;
-  const table = await dataService.getTable(first.tableCode);
-  if (table && (!first.tableToken || table.orderToken === first.tableToken)) await dataService.updateTable(table.id, { status: "available", orderToken: "", sessionStartedAt: null, currentRound: 0 });
-}
+async function resolveSlipUrls(orders) { if (!storage) return; const targets = orders.filter(order => order.orderType === "delivery" && order.paymentSlipPath && !order.paymentSlipUrl && !slipUrls.has(order.id)); await Promise.all(targets.map(async order => { try { const url = await getDownloadURL(ref(storage, order.paymentSlipPath)); if (url) slipUrls.set(order.id, url); } catch (error) { console.error("Unable to load payment slip", order.id, error); } })); }
+function itemRows(order) { return (order.items || []).map(item => `<li style="${item.cancelled ? "opacity:.5;text-decoration:line-through" : ""}"><div>${item.qty} × ${item.name}<strong style="float:right">${item.cancelled ? "ยกเลิก" : money(item.qty * item.price)}</strong></div>${itemDetails(item)}</li>`).join(""); }
+function renderDelivery(order) { const paymentAction = order.paymentStatus !== "paid" ? `<button class="btn btn-primary" data-payment-id="${order.id}">${icon("check-circle")}<span>ตรวจแล้ว/ชำระแล้ว</span></button>` : ""; const slipUrl = order.paymentSlipUrl || slipUrls.get(order.id) || ""; const slipAction = slipUrl ? `<a class="btn btn-warning" href="${slipUrl}" target="_blank" rel="noopener">${icon("view")}<span>ดูสลิป</span></a>` : (order.paymentSlipPath ? `<button class="btn btn-warning" disabled>${icon("view")}<span>กำลังโหลดสลิป...</span></button>` : ""); return `<article class="card order-card"><div class="order-head"><div><h2 style="margin:0">Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}</h2><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div><span class="badge">${statusLabel(order.status)}</span></div><p><span class="badge ${order.paymentStatus === "paid" ? "" : "warning"}">${paymentLabel(order)}</span><br><strong>โทร:</strong> ${order.recipientPhone || "-"}<br><strong>ที่อยู่:</strong> ${order.deliveryAddress || "-"}</p><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>${slipAction}${paymentAction}<button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button></div></article>`; }
+function renderTakeaway(order) { const queueNo = order.queueNo || order.tableCode || "TA"; const paid = order.paymentStatus === "paid"; const ready = order.status === "ready" || order.pickupStatus === "called"; const paymentAction = !paid ? `<button class="btn btn-primary" data-payment-id="${order.id}">${icon("check-circle")}<span>รับชำระแล้ว</span></button>` : ""; const callAction = ready && order.pickupStatus !== "called" ? `<button class="btn btn-warning" data-pickup-call="${order.id}">${icon("receipt")}<span>เรียกรับของ</span></button>` : ""; const doneAction = ready || order.pickupStatus === "called" ? `<button class="btn btn-dark" data-pickup-done="${order.id}">${icon("check-circle")}<span>${paid ? "ส่งมอบแล้ว" : "ชำระและส่งมอบแล้ว"}</span></button>` : ""; return `<article class="card order-card"><div class="order-head"><div><h2 style="margin:0">Take Away: ${queueNo}</h2><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div><span class="badge ${order.pickupStatus === "called" ? "warning" : ""}">${order.pickupStatus === "called" ? "เรียกคิวแล้ว" : statusLabel(order.status)}</span></div><p><strong>ลูกค้า:</strong> ${order.customerName || "-"}<br><strong>โทร:</strong> ${order.customerPhone || "-"}<br><span class="badge ${paid ? "" : "warning"}">${paid ? "ชำระเงินแล้ว" : "รอชำระเงิน"}</span></p><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>${paymentAction}${callAction}${doneAction}<button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button></div></article>`; }
+function renderTableBill(group) { const sorted = [...group].sort((a, b) => Number(a.roundNumber || 0) - Number(b.roundNumber || 0)); const first = sorted[0]; const total = sorted.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0); const ids = sorted.map(order => order.id).join(","); const key = tableGroupKey(first); const rounds = sorted.map(order => `<section class="card" style="padding:12px;margin-top:10px;box-shadow:none;background:#f8fbf9"><div class="order-head"><strong>รอบที่ ${order.roundNumber || 1}</strong><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="order-head" style="margin-top:8px"><span>รวมรอบนี้</span><strong>${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:8px"><button class="btn btn-danger btn-sm" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button></div></section>`).join(""); return `<article class="card order-card"><div class="order-head"><div><h2 style="margin:0">โต๊ะ ${first.tableCode}</h2><small>${sorted.length} รอบที่ยังไม่คิดเงิน</small></div><span class="badge warning">รวมบิล</span></div>${rounds}<div class="order-head" style="margin-top:14px;padding-top:12px;border-top:2px solid #dfe8e2"><strong>ยอดรวมทั้งโต๊ะ</strong><strong class="price">${money(total)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?orders=${encodeURIComponent(ids)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a><button class="btn btn-primary" data-table-payment="${key}">${icon("check-circle")}<span>ตรวจแล้ว/ชำระแล้ว</span></button></div></article>`; }
+function render(orders) { currentOrders = orders; const active = activeOrders(orders); const deliveries = active.filter(order => order.orderType === "delivery"); const takeaways = active.filter(order => order.orderType === "takeaway"); const tableOrders = active.filter(order => order.orderType !== "delivery" && order.orderType !== "takeaway"); const groups = new Map(); tableOrders.forEach(order => { const key = tableGroupKey(order); if (!groups.has(key)) groups.set(key, []); groups.get(key).push(order); }); const cards = [...Array.from(groups.values()).map(renderTableBill), ...takeaways.map(renderTakeaway), ...deliveries.map(renderDelivery)]; grid.innerHTML = cards.length ? cards.join("") : '<div class="card empty">ไม่มีบิลที่รอดำเนินการ</div>'; }
+async function closeTableAfterPayment(orders) { const first = orders[0]; if (!first?.tableCode || first?.orderType === "takeaway") return; const table = await dataService.getTable(first.tableCode); if (table && (!first.tableToken || table.orderToken === first.tableToken)) await dataService.updateTable(table.id, { status: "available", orderToken: "", sessionStartedAt: null, currentRound: 0 }); }
 
 grid.addEventListener("click", async event => {
   const tablePaymentButton = event.target.closest("[data-table-payment]");
-  if (tablePaymentButton) {
-    const key = tablePaymentButton.dataset.tablePayment;
-    const rounds = activeOrders(currentOrders).filter(order => order.orderType !== "delivery" && order.orderType !== "takeaway" && tableGroupKey(order) === key);
-    if (!rounds.length) return;
-    const total = rounds.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0);
-    const ok = await askConfirm(`รับชำระเงินทั้งโต๊ะ ${rounds[0].tableCode} จำนวน ${money(total)} บาท ใช่หรือไม่?`, { title: "รับชำระเงิน", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" });
-    if (!ok) return;
-    tablePaymentButton.disabled = true;
-    try { const now = new Date().toISOString(); await Promise.all(rounds.map(order => dataService.updateOrder(order.id, { status: "paid", paymentStatus: "paid", paidAt: now, completedAt: now }))); await closeTableAfterPayment(rounds); toast(`รับชำระและปิดบิลโต๊ะ ${rounds[0].tableCode} เรียบร้อย`); }
-    catch (error) { console.error(error); toast("รับชำระรวมบิลไม่สำเร็จ", "error"); tablePaymentButton.disabled = false; }
-    return;
-  }
-
-  const pickupCall = event.target.closest("[data-pickup-call]");
-  if (pickupCall) { const now = new Date().toISOString(); await dataService.updateOrder(pickupCall.dataset.pickupCall, { pickupStatus: "called", pickupCalledAt: now }); toast("เรียกคิวรับอาหารแล้ว"); return; }
-
-  const pickupDone = event.target.closest("[data-pickup-done]");
-  if (pickupDone) { const now = new Date().toISOString(); await dataService.updateOrder(pickupDone.dataset.pickupDone, { status: "paid", paymentStatus: "paid", paidAt: now, completedAt: now, pickupStatus: "picked_up", pickedUpAt: now }); toast("ส่งมอบออเดอร์ Take Away แล้ว"); return; }
-
-  const paymentButton = event.target.closest("[data-payment-id]");
-  if (paymentButton) {
-    const ok = await askConfirm("ตรวจสอบสลิปหรือรับเงินเรียบร้อยแล้วใช่หรือไม่?", { title: "ยืนยันการชำระเงิน", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" });
-    if (!ok) return;
-    paymentButton.disabled = true;
-    const order = currentOrders.find(item => item.id === paymentButton.dataset.paymentId);
-    try { const now = new Date().toISOString(); const patch = { paymentStatus: "paid", paidAt: now }; if (order?.orderType === "delivery" && order.status === "served") { patch.status = "paid"; patch.completedAt = now; } await dataService.updateOrder(paymentButton.dataset.paymentId, patch); toast(order?.orderType === "takeaway" ? "บันทึกการชำระเงิน Take Away แล้ว" : (patch.status === "paid" ? "ชำระเงินและปิดออเดอร์ Delivery แล้ว" : "บันทึกการชำระเงินแล้ว รอครัวส่งให้ไรเดอร์")); }
-    catch (error) { console.error(error); toast("บันทึกการชำระเงินไม่สำเร็จ", "error"); paymentButton.disabled = false; }
-    return;
-  }
-
-  const button = event.target.closest("[data-id][data-status]");
-  if (!button) return;
-  const { id, status } = button.dataset;
-  const order = currentOrders.find(item => item.id === id);
-  if (status === "cancelled") {
-    const targetLabel = order?.orderType === "delivery" ? `ออเดอร์ Delivery ของ ${order.recipientName || "ลูกค้า"}` : order?.orderType === "takeaway" ? `ออเดอร์ Take Away ${order.queueNo || ""}` : `ออเดอร์โต๊ะ ${order?.tableCode || "-"} รอบที่ ${order?.roundNumber || 1}`;
-    const ok = await askConfirm(`ยืนยันยกเลิก ${targetLabel} ใช่หรือไม่?\n\nการดำเนินการนี้จะนำรายการออกจากบิลทันที`, { title: "ยกเลิกออเดอร์", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" });
-    if (!ok) return;
-  }
-  button.disabled = true;
-  try { await dataService.updateOrder(id, { status }); if (status === "cancelled" && order?.orderType !== "delivery" && order?.orderType !== "takeaway" && order?.tableCode) { const hasOtherActiveRounds = currentOrders.some(item => item.id !== id && item.tableToken === order.tableToken && !["paid", "cancelled"].includes(item.status)); if (!hasOtherActiveRounds) await closeTableAfterPayment([order]); } toast("ยกเลิกรายการแล้ว"); }
-  catch (error) { console.error(error); toast("อัปเดตสถานะไม่สำเร็จ", "error"); button.disabled = false; }
+  if (tablePaymentButton) { const key = tablePaymentButton.dataset.tablePayment; const rounds = activeOrders(currentOrders).filter(order => order.orderType !== "delivery" && order.orderType !== "takeaway" && tableGroupKey(order) === key); if (!rounds.length) return; const total = rounds.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0); const ok = await askConfirm(`รับชำระเงินทั้งโต๊ะ ${rounds[0].tableCode} จำนวน ${money(total)} บาท ใช่หรือไม่?`, { title: "รับชำระเงิน", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" }); if (!ok) return; tablePaymentButton.disabled = true; try { const now = new Date().toISOString(); await Promise.all(rounds.map(order => dataService.updateOrder(order.id, { status: "paid", paymentStatus: "paid", paidAt: now, completedAt: now }))); await closeTableAfterPayment(rounds); toast(`รับชำระและปิดบิลโต๊ะ ${rounds[0].tableCode} เรียบร้อย`); } catch (error) { console.error(error); toast("รับชำระรวมบิลไม่สำเร็จ", "error"); tablePaymentButton.disabled = false; } return; }
+  const pickupCall = event.target.closest("[data-pickup-call]"); if (pickupCall) { const now = new Date().toISOString(); await dataService.updateOrder(pickupCall.dataset.pickupCall, { pickupStatus: "called", pickupCalledAt: now }); toast("เรียกคิวรับอาหารแล้ว"); return; }
+  const pickupDone = event.target.closest("[data-pickup-done]"); if (pickupDone) { const now = new Date().toISOString(); await dataService.updateOrder(pickupDone.dataset.pickupDone, { status: "paid", paymentStatus: "paid", paidAt: now, completedAt: now, pickupStatus: "picked_up", pickedUpAt: now }); toast("ส่งมอบออเดอร์ Take Away แล้ว"); return; }
+  const paymentButton = event.target.closest("[data-payment-id]"); if (paymentButton) { const ok = await askConfirm("ตรวจสอบสลิปหรือรับเงินเรียบร้อยแล้วใช่หรือไม่?", { title: "ยืนยันการชำระเงิน", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" }); if (!ok) return; paymentButton.disabled = true; const order = currentOrders.find(item => item.id === paymentButton.dataset.paymentId); try { const now = new Date().toISOString(); const patch = { paymentStatus: "paid", paidAt: now }; if (order?.orderType === "delivery" && order.status === "served") { patch.status = "paid"; patch.completedAt = now; } await dataService.updateOrder(paymentButton.dataset.paymentId, patch); toast(order?.orderType === "takeaway" ? "บันทึกการชำระเงิน Take Away แล้ว" : (patch.status === "paid" ? "ชำระเงินและปิดออเดอร์ Delivery แล้ว" : "บันทึกการชำระเงินแล้ว รอครัวส่งให้ไรเดอร์")); } catch (error) { console.error(error); toast("บันทึกการชำระเงินไม่สำเร็จ", "error"); paymentButton.disabled = false; } return; }
+  const button = event.target.closest("[data-id][data-status]"); if (!button) return; const { id, status } = button.dataset; const order = currentOrders.find(item => item.id === id); if (status === "cancelled") { const targetLabel = order?.orderType === "delivery" ? `ออเดอร์ Delivery ของ ${order.recipientName || "ลูกค้า"}` : order?.orderType === "takeaway" ? `ออเดอร์ Take Away ${order.queueNo || ""}` : `ออเดอร์โต๊ะ ${order?.tableCode || "-"} รอบที่ ${order?.roundNumber || 1}`; const ok = await askConfirm(`ยืนยันยกเลิก ${targetLabel} ใช่หรือไม่?\n\nการดำเนินการนี้จะนำรายการออกจากบิลทันที`, { title: "ยกเลิกออเดอร์", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" }); if (!ok) return; } button.disabled = true; try { await dataService.updateOrder(id, { status }); if (status === "cancelled" && order?.orderType !== "delivery" && order?.orderType !== "takeaway" && order?.tableCode) { const hasOtherActiveRounds = currentOrders.some(item => item.id !== id && item.tableToken === order.tableToken && !["paid", "cancelled"].includes(item.status)); if (!hasOtherActiveRounds) await closeTableAfterPayment([order]); } toast("ยกเลิกรายการแล้ว"); } catch (error) { console.error(error); toast("อัปเดตสถานะไม่สำเร็จ", "error"); button.disabled = false; }
 });
 
-dataService.subscribeOrders(async orders => {
-  observeDeliveryOrders(orders);
-  currentOrders = orders;
-  render(orders);
-  await resolveSlipUrls(orders);
-  render(orders);
-});
-
+dataService.subscribeOrders(async orders => { observeDeliveryOrders(orders); currentOrders = orders; render(orders); await resolveSlipUrls(orders); render(orders); });
 mountTakeawayQrTools();
