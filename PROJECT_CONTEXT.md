@@ -2,7 +2,7 @@
 
 Repository: `Natchanon45/food-order-app`  
 Branch: `feature/retail-pos`  
-Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
+Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail POS
 
 ## Workflow ที่ต้องยึดทุกครั้ง
 
@@ -16,14 +16,15 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.23`
-- Build: `2026.07.01.004`
+- Version: `0.12.24`
+- Build: `2026.07.01.005`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B009 Refund / Return / Void`
+- Milestone: `O1-T001 Take Away Order / Pickup Queue`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
 - QR Table Order เสร็จ
+- Take Away Order / Pickup Queue เสร็จขั้นแรก
 - Kitchen เสร็จ
 - Delivery Lock เสร็จ
 - Cashier ย้ายโต๊ะเสร็จ
@@ -38,47 +39,50 @@ Main product: QR Table Order + Kitchen + Cashier + Delivery + Retail POS
 - P9-B008 Shift Opening / Closing เสร็จ
 - P9-B009 Refund / Return / Void เสร็จ
 
-## รายละเอียด P9-B009
+## รายละเอียด O1-T001
 
-ต่อจาก HEAD ล่าสุดของผู้ใช้ `fix: invalidate stale admin UI modules` โดยไม่แก้ไฟล์ hotfix/admin/delivery ที่ผู้ใช้เพิ่งแก้ และปรับระบบคืนสินค้า/คืนเงิน/VOID ของ Retail POS
+พัก POS roadmap ชั่วคราวเพื่อเพิ่มระบบ Take Away สำหรับลูกค้าที่มาสั่งหน้าร้านแต่ไม่นั่งโต๊ะ โดยไม่ต้องเปิดโต๊ะจริง และใช้ flow ครัว/แคชเชียร์เดิมให้มากที่สุด
 
 แก้แล้ว:
 
-- เพิ่มปุ่ม `คืนทั้งบิล / VOID` ใน `/pos/returns`
-- VOID จะใส่จำนวนคืนเต็มตามสินค้าที่ยังคืนได้ และตั้งเหตุผลเป็น `ยกเลิกบิล / VOID`
-- Return/VOID บันทึก tenantId, shopId, deviceId, schemaVersion, dateKey และ monthKey
-- ใช้ stock movement id แบบ deterministic จาก returnId + productId เพื่อลดปัญหา movement ซ้ำ
-- Firestore transaction อ่าน sale, return และ product ก่อน write ตามข้อกำหนด Firestore
-- อัปเดต sale ด้วย refundTotal, refundStatus และ status `voided` เมื่อคืนทั้งบิล
-- บันทึก audit log สำหรับ return และ void
-- ยังคง logic ปรับแต้มสมาชิกจากยอดคืนและ cache local fallback
-- `/pos/returns/index.html` bump cache เป็น `retail-returns.js?v=20260701-004`
+- เพิ่มหน้า `/takeaway/` สำหรับลูกค้าสั่งกลับบ้าน
+- ลูกค้าต้องกรอกชื่อหรือเบอร์โทรอย่างน้อย 1 อย่าง
+- เพิ่ม `dataService.createTakeawayOrder()` เพื่อสร้าง orderType `takeaway`
+- สร้างเลขคิวรายวันรูปแบบ `TA-001`, `TA-002`, ... ผ่าน Firestore transaction counter
+- Take Away order มี `queueNo`, `customerName`, `customerPhone`, `pickupStatus`, `dateKey`
+- หน้า Cashier แยกการ์ด Take Away ออกจาก Table และ Delivery
+- Cashier สามารถรับชำระเงิน, เรียกรับของ และกดส่งมอบแล้ว
+- เมื่อส่งมอบแล้วจะตั้ง `pickupStatus = picked_up` และปิด order เป็น paid
+- `/takeaway/index.html` โหลด `takeaway-order.js?v=20260701-005`
+- `/cashier/index.html` bump cache เป็น `cashier.js?v=20260701-005`
 
 ## Current Milestone
 
-`P9-B009 Refund / Return / Void`
+`O1-T001 Take Away Order / Pickup Queue`
 
 ## Regression Tests สำคัญ
 
-1. เปิด `/pos/returns`
-2. ค้นหาบิลขายที่ยังมีสินค้าคืนได้
-3. คืนสินค้าบางรายการ ต้องเพิ่ม stock กลับและบันทึก return record
-4. กด `คืนทั้งบิล / VOID` ต้องกรอกจำนวนคืนเต็มที่เหลือ
-5. VOID ต้องบันทึก sale status เป็น `voided`
-6. Return/VOID ต้องสร้าง stock movement id แบบ stable ต่อ returnId + productId
-7. Firestore ต้องมี audit log สำหรับ return หรือ void
-8. ถ้ามีสมาชิกและแต้ม ต้องปรับแต้มตามยอดคืน
-9. จำนวนคืนต้องไม่เกินจำนวนที่ขายลบจำนวนที่คืนแล้ว
-10. Local fallback ต้องยังบันทึก return, movement, product cache และ loyalty cache ได้
+1. เปิด `/takeaway/`
+2. กรอกชื่อหรือเบอร์โทรอย่างน้อย 1 อย่าง
+3. เลือกเมนูและส่งออเดอร์ ต้องได้เลขคิว `TA-xxx`
+4. Firestore order ต้องมี `orderType = takeaway`, `queueNo`, `customerName`, `customerPhone`, `pickupStatus`
+5. ออเดอร์ Take Away ต้องเข้า Kitchen ได้เหมือนออเดอร์ทั่วไป
+6. หน้า Cashier ต้องแสดงการ์ด Take Away แยกจากโต๊ะและ Delivery
+7. Cashier กดรับชำระเงินได้
+8. เมื่อ Kitchen ทำเสร็จเป็น `ready` แล้ว Cashier ต้องกดเรียกรับของได้
+9. Cashier กดส่งมอบแล้ว ต้องอัปเดต `pickupStatus = picked_up` และปิดออเดอร์เป็น paid
+10. QR Table Order และ Delivery ต้องยังทำงานตามเดิม
 
 ## งานถัดไป
 
-1. P9-B010 Performance
+1. O1-T002 Pickup Screen / Counter Display
+2. O1-T003 Kitchen Take Away Visual Badge
+3. P9-B010 Performance
 
 ## ข้อควรระวัง
 
 - ทุก record สำคัญต้องมี `tenantId`
 - ห้าม sync POS ข้าม tenant
-- ใช้ stable `saleId` เดิมทั้ง online/offline
+- ใช้ stable sale/order id เดิมทั้ง online/offline
 - Firestore transaction ต้อง read เอกสารทั้งหมดก่อน write
 - ถ้าแก้ JS/CSS ที่ import ใน HTML ต้อง bump query string
