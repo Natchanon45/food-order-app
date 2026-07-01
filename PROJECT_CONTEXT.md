@@ -16,10 +16,10 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.51`
-- Build: `2026.07.02.005`
+- Version: `0.12.52`
+- Build: `2026.07.02.006`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B005 Repository Layer`
+- Milestone: `P9-B005 Repository Layer Hotfix`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -30,37 +30,30 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - P9-B003 Counter service กลางเสร็จแล้ว
 - P9-B004 Offline Queue Worker + Retry + Conflict Resolver เสร็จแล้ว
 - P9-B005 Repository Layer เสร็จแล้ว
-- Repository Layer แยก Local/Firebase access ให้เรียกผ่าน repository กลาง
+- Hotfix: แก้ POS sale transaction permission denied ตอนอ่าน stable saleId ก่อน create
 
 ## Current Milestone
 
-`P9-B005 Repository Layer`
+`P9-B005 Repository Layer Hotfix`
 
 ## แก้แล้วรอบนี้
 
-- ขยาย `retail-pos-repository.js` ให้เป็น Repository Layer กลางของ POS
-- เพิ่ม `createTenantRepository()` สำหรับสร้าง repository ของ collection ภายใต้ tenant
-- เพิ่ม `withTenantMeta()` เพื่อเติม `tenantId`, `shopId`, `schemaVersion`, `updatedAt`
-- เพิ่ม `assertTenantRow()` เพื่อป้องกันบันทึกข้อมูลข้าม tenant
-- เพิ่ม `normalizeRepositoryId()` สำหรับหา stable id ของ row
-- เพิ่ม local repository สำหรับ `syncQueue`
-- เพิ่ม repository กลาง: products, sales, stockMovements, shifts, returns, syncQueue, auditLogs, counters
-- เพิ่ม `POS_REPOSITORIES` สำหรับโมดูลถัดไปนำไปใช้จากจุดเดียว
-- เพิ่ม `upsertLocalSale()` และ `listPendingLocalSales()` สำหรับ Offline Queue Worker รุ่นถัดไป
-- Developer Panel เป็น Version `0.12.51` Build `2026.07.02.005`
+- แก้ `firestore.rules` เฉพาะ `tenants/{tenantId}/sales/{saleId}`
+- อนุญาตให้ POS Transaction อ่าน sale document ที่ยังไม่ถูกสร้าง เพื่อทำ Duplicate Protection ด้วย stable `saleId`
+- ถ้า sale document มีอยู่แล้ว ยังจำกัดการอ่านไว้ที่ tenant member หรือ cashier เจ้าของบิล
+- ไม่เปลี่ยน POS UI flow
+- Developer Panel เป็น Version `0.12.52` Build `2026.07.02.006`
 
 ## Regression Tests สำคัญ
 
-1. เปิด POS แล้วขาย Online ได้ตามเดิม
-2. ปิดเน็ตแล้วขาย Offline ได้ตามเดิม
-3. เปิดเน็ตแล้ว Sync ได้ตามเดิม
-4. Local sale APIs เดิม `listLocalSales`, `saveLocalSales`, `updateLocalSale`, `localSaleId` ยังใช้ได้
-5. `posSalesRepository.tenantId()` ต้องคืน tenant ปัจจุบัน
-6. Repository save ต้องเติม `tenantId` และ `shopId`
-7. ถ้าส่ง row ที่มี `tenantId` ไม่ตรง tenant ต้องแจ้ง error `POS_REPOSITORY_TENANT_MISMATCH`
-8. `POS_REPOSITORIES` ต้องมี products, sales, stockMovements, shifts, returns, syncQueue, auditLogs, counters
-9. ตรวจว่าไม่กระทบ Food Order / Delivery
-10. ตรวจว่า record สำคัญยังมี `tenantId`
+1. Deploy rules แล้วเปิด POS
+2. ขาย Online 1 บิล ต้องบันทึกสำเร็จ ไม่มี permission denied ที่ `sales/sale-*`
+3. เลขบิลต้องออกตามเดิม
+4. Stock ต้องถูกตัดครั้งเดียว
+5. ปิดเน็ตขาย Offline ได้ตามเดิม
+6. เปิดเน็ตแล้ว Sync ได้ตามเดิม
+7. ตรวจว่าไม่กระทบ Food Order / Delivery
+8. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
 
