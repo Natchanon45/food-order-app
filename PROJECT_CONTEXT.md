@@ -16,10 +16,10 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.38`
-- Build: `2026.07.01.020`
+- Version: `0.12.39`
+- Build: `2026.07.01.021`
 - Branch: `feature/retail-pos`
-- Milestone: `Order Completion & Receipt Print Fix`
+- Milestone: `Kitchen Start Action Icon Animation`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -35,36 +35,35 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - POS Payment UX: ช่อง `รับเงินมา` select ตัวเลขทั้งหมดเมื่อเปิด modal หรือคลิกกลับเข้าช่อง เพื่อพิมพ์ทับได้ทันที
 - Order Completion: ออเดอร์ที่ `served` และ `paymentStatus = paid` จะปิดเป็น `paid` อัตโนมัติและไม่ค้างใน Cashier/Kitchen
 - Receipt Print: พิมพ์เฉพาะข้อมูลใบเสร็จ ไม่ติด UI/toolbar/footer/version ของระบบ
+- Kitchen UI: ปุ่ม `เริ่มทำ` ใช้ icon `bi-hourglass-split` พร้อม animation เบา ๆ
 
 ## Current Milestone
 
-`Order Completion & Receipt Print Fix`
+`Kitchen Start Action Icon Animation`
 
-## รายละเอียด Order Completion & Receipt Print Fix
+## รายละเอียด Kitchen Start Action Icon Animation
 
-แก้ปัญหา Take Away/Order ที่เสิร์ฟครบและรับชำระแล้วแต่ยังค้างในหน้า Cashier/Kitchen และแก้ print preview ของใบเสร็จที่มี UI หรือข้อความระบบติดไปในงานพิมพ์
+แก้เฉพาะ UI ของปุ่ม `เริ่มทำ` ในหน้าครัว โดยไม่เปลี่ยน workflow สถานะออเดอร์
 
 แก้แล้ว:
 
-- เพิ่ม `order-completion-finalizer.js`
-- ถ้า order มี `status = served` และ `paymentStatus = paid` จะอัปเดตเป็น `status = paid`
-- สำหรับ Take Away จะตั้ง `pickupStatus = picked_up` และ `pickedUpAt`
-- `/cashier/index.html` โหลด `order-completion-finalizer.js?v=20260701-020`
-- `/kitchen/index.html` โหลด `order-completion-finalizer.js?v=20260701-020`
-- `receipt-layout.css` เพิ่ม print isolation ให้พิมพ์เฉพาะ `#receipt`
-- `/cashier/receipt/index.html` bump `receipt-layout.css?v=20260701-020`
-- Developer Panel เป็น Version `0.12.38` Build `2026.07.01.020`
+- `kitchen.js` เปลี่ยน icon ของ action `accepted -> cooking` จาก `pencil` เป็น `hourglass-split`
+- เพิ่ม class `kitchen-start-action` ให้ปุ่ม `เริ่มทำ`
+- `kitchen-item-editor.css` เพิ่ม animation หมุนแบบ hourglass สำหรับ icon ปุ่ม `เริ่มทำ`
+- รองรับ `prefers-reduced-motion` โดยปิด animation ถ้าผู้ใช้ตั้งค่าลด motion
+- `/kitchen/index.html` bump `kitchen.js?v=20260701-021`
+- `/kitchen/index.html` bump `kitchen-item-editor.css?v=20260701-021`
+- Developer Panel เป็น Version `0.12.39` Build `2026.07.01.021`
 
 ## Regression Tests สำคัญ
 
 1. Deploy hosting ใหม่
-2. เปิด Take Away แล้วส่งเข้าครัว
-3. ครัวกดเสิร์ฟครบทุก/ทั้งออเดอร์
-4. Cashier รับชำระเงิน
-5. ออเดอร์ต้องหายจากหน้า Cashier
-6. ออเดอร์ต้องหายจากหน้า Kitchen
-7. เปิดพิมพ์ใบเสร็จแล้วใน print preview ต้องเห็นเฉพาะข้อมูลใบเสร็จ
-8. Header/toolbar/version/footer ของระบบต้องไม่ติดไปในงานพิมพ์
+2. เปิด Kitchen
+3. ออเดอร์สถานะ `accepted` ต้องแสดงปุ่ม `เริ่มทำ`
+4. ปุ่ม `เริ่มทำ` ต้องใช้ icon `bi-hourglass-split`
+5. icon ต้องมี animation หมุนแบบ hourglass เบา ๆ
+6. กด `เริ่มทำ` แล้วสถานะต้องเปลี่ยนเป็น `cooking` เหมือนเดิม
+7. ปุ่มสถานะอื่นใน Kitchen ต้องไม่เปลี่ยน behavior
 
 ## งานถัดไป
 
