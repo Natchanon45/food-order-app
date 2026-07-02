@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `POS Hardening 001`
-- Developer Panel version/build ปัจจุบัน: `0.12.61` / `2026.07.02.015`
+- Current milestone: `POS Hardening 002`
+- Developer Panel version/build ปัจจุบัน: `0.12.62` / `2026.07.02.016`
 
 ## Retail POS Status
 
@@ -24,35 +24,35 @@
 - P9-B010 Performance
 - Hotfix Manual Sync
 - POS Hardening 001
+- POS Hardening 002
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
 
-## POS Hardening 001
+## POS Hardening 002
 
-- เพิ่ม `public/assets/js/retail-pos-hardening.js`
-- เพิ่ม multi-tab leader heartbeat
-- recover offline sale ที่ค้าง `syncStatus: syncing` เกิน 2 นาที
-- cleanup local sale ที่ sync แล้วและเก่าเกิน 45 วัน หรือเกิน 500 รายการล่าสุด
-- preserve queue สำคัญ: `pending`, `syncing`, `failed`, `conflict`
-- รองรับ browser sleep/wake ผ่าน `visibilitychange`, `pageshow`, `focus`, `online`
-- `/pos/index.html` โหลด `retail-pos-hardening.js?v=20260702-015`
+- อัปเกรด `public/assets/js/retail-pos-hardening.js` เป็น `HARDENING-002`
+- เพิ่ม `window.retailPosHardening.diagnostics()` สำหรับตรวจ long session ผ่าน Console
+- เก็บ queue summary, localStorage usage, uptime, maintenance count และ event counters
+- เก็บ multi-tab leader state และ browser visibility/online state
+- เก็บ memory snapshot ถ้า browser รองรับ `performance.memory`
+- `/pos/index.html` โหลด `retail-pos-hardening.js?v=20260702-016`
 
 ## Regression Tests
 
 1. เปิด POS แล้วขาย Online ได้ตามเดิม
 2. ปิดเน็ตขาย Offline ได้ตามเดิม
 3. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
-4. เปิด Console แล้ว `window.retailPosHardening.version` ต้องเป็น `HARDENING-001`
-5. เปิด POS 2 แท็บ แล้วต้องไม่มี error จาก hardening layer
-6. ปิดจอ/ปล่อย browser sleep แล้วกลับมา หน้า POS ต้องยังทำงานและ sync ต่อได้
-7. pending/failed/conflict queue ต้องไม่ถูกลบจาก localStorage
-8. synced sale เก่าใน localStorage ถูก cleanup เฉพาะรายการที่ปลอดภัย
+4. Console: `window.retailPosHardening.version` ต้องเป็น `HARDENING-002`
+5. Console: `window.retailPosHardening.diagnostics()` ต้องคืน object diagnostics
+6. เปิด POS 2 แท็บ แล้ว diagnostics ต้องมี `isLeader` แค่แท็บใดแท็บหนึ่งในช่วงเวลาเดียวกัน
+7. ปิดจอ/ปล่อย browser sleep แล้วกลับมา diagnostics ต้องยัง update ได้
+8. pending/failed/conflict queue ต้องไม่ถูกลบจาก localStorage
 9. ตรวจว่าไม่กระทบ Order / Delivery
 10. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## Next Tasks
 
-- POS Hardening 002: ตรวจ listener/snapshot leak เพิ่มเติม และ diagnostics สำหรับ long session
+- POS Hardening 003: ตรวจ/ลด event listener ซ้ำและ snapshot unsubscribe patterns ในโมดูลที่มี listener จริง
 - Test รวม / Stabilization / UI เชื่อม service ที่เป็นแกนกลางเข้าหน้าจอจริงเพิ่มเติม
 
 ## Deploy
