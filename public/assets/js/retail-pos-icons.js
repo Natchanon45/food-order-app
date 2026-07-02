@@ -39,6 +39,7 @@ const ICON_RULES = [
 ];
 
 const ACTION_ICON_RULES = [
+  [/เปิดกะ(?:และเริ่มขาย)?|เริ่มขาย/i, "play-circle"],
   [/เพิ่ม|สร้าง|ใหม่|add|create/i, "plus-lg"],
   [/บันทึก|save/i, "floppy"],
   [/คืนค่าเริ่มต้น|รีเซ็ต|รีเฟรช|โหลดใหม่|reload|refresh|reset/i, "arrow-clockwise"],

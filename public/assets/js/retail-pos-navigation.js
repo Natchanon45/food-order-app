@@ -1,5 +1,5 @@
 import {getSessionUser,logout,sessionRole} from "./retail-pos-auth.js?v=20260630-076";
-import "./retail-pos-icons.js?v=20260702-005";
+import "./retail-pos-icons.js?v=20260703-001";
 
 const ROLE_KEY="retail_pos_roles_v1";
 const MIGRATION_KEY="retail_pos_permission_schema_v7";
