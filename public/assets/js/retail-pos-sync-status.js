@@ -1,10 +1,12 @@
-import { syncOfflineSalesToFirebase, retryFailedOfflineSales } from './retail-offline-sale-sync.js?v=20260630-081';
-import { listLocalSales } from './retail-pos-repository.js?v=20260630-081';
+import { syncOfflineSalesToFirebase, retryFailedOfflineSales, getOfflineQueueWorkerSnapshot } from './retail-offline-sale-sync.js?v=20260702-004';
+import { listLocalSales } from './retail-pos-repository.js?v=20260702-005';
 
 const SYNC_EVENT = 'retail-offline-sales-synced';
+const WORKER_EVENT = 'retail-offline-queue-worker';
 let syncButton;
 let syncText;
 let syncTimer;
+let manualSyncRunning = false;
 
 function countSyncStatus() {
   const rows = listLocalSales();
@@ -35,10 +37,10 @@ function ensureStyles() {
   document.head.appendChild(style);
 }
 
-function buildLabel(counts) {
+function buildLabel(counts, worker) {
   const parts = [];
   if (counts.pending) parts.push(`รอ Sync ${counts.pending}`);
-  if (counts.syncing) parts.push(`กำลัง Sync ${counts.syncing}`);
+  if (counts.syncing || worker?.state === 'syncing') parts.push(`กำลัง Sync ${counts.syncing || ''}`.trim());
   if (counts.failed) parts.push(`รอ Retry ${counts.failed}`);
   if (counts.conflict) parts.push(`Conflict ${counts.conflict}`);
   return parts.join(' • ');
@@ -47,6 +49,7 @@ function buildLabel(counts) {
 function renderSyncStatus() {
   if (!syncButton || !syncText) return;
   const counts = countSyncStatus();
+  const worker = typeof getOfflineQueueWorkerSnapshot === 'function' ? getOfflineQueueWorkerSnapshot() : null;
   const total = counts.pending + counts.syncing + counts.failed + counts.conflict;
   const wrapper = syncButton.closest('.pos-sync-status');
   if (!wrapper) return;
@@ -54,21 +57,29 @@ function renderSyncStatus() {
   wrapper.hidden = total <= 0;
   wrapper.classList.toggle('is-warning', counts.pending + counts.syncing + counts.failed > 0 && counts.conflict === 0);
   wrapper.classList.toggle('is-danger', counts.conflict > 0);
-  syncText.textContent = buildLabel(counts) || 'Sync ปกติ';
-  syncButton.disabled = counts.syncing > 0 || navigator.onLine === false;
-  syncButton.textContent = navigator.onLine === false ? 'Offline' : (counts.failed ? 'Retry' : 'Sync');
+  syncText.textContent = buildLabel(counts, worker) || 'Sync ปกติ';
+
+  const offline = navigator.onLine === false;
+  const syncing = manualSyncRunning || counts.syncing > 0 || worker?.state === 'syncing';
+  syncButton.disabled = syncing || offline;
+  syncButton.textContent = offline ? 'Offline' : syncing ? 'กำลัง Sync...' : (counts.failed || counts.conflict ? 'Retry' : 'Sync');
 }
 
-async function manualSync() {
-  if (!syncButton) return;
+async function manualSync(event) {
+  event?.preventDefault?.();
+  event?.stopPropagation?.();
+  if (!syncButton || manualSyncRunning || navigator.onLine === false) return;
+  manualSyncRunning = true;
   syncButton.disabled = true;
   syncButton.textContent = 'กำลัง Sync...';
   try {
-    retryFailedOfflineSales();
-    await syncOfflineSalesToFirebase({ forceRetry: true });
+    retryFailedOfflineSales({ includeConflicts: false });
+    const result = await syncOfflineSalesToFirebase({ forceRetry: true });
+    window.dispatchEvent(new CustomEvent(SYNC_EVENT, { detail: result }));
   } catch (error) {
     console.warn('[retail-pos-sync-status] manual sync failed', error);
   } finally {
+    manualSyncRunning = false;
     renderSyncStatus();
   }
 }
@@ -95,6 +106,7 @@ function mount() {
 }
 
 window.addEventListener(SYNC_EVENT, scheduleRender);
+window.addEventListener(WORKER_EVENT, scheduleRender);
 window.addEventListener('online', scheduleRender);
 window.addEventListener('offline', scheduleRender);
 window.addEventListener('storage', scheduleRender);
@@ -102,4 +114,4 @@ window.addEventListener('retail-pos-repository-change', scheduleRender);
 window.addEventListener('focus', scheduleRender);
 
 mount();
-setInterval(renderSyncStatus, 15000);
+setInterval(renderSyncStatus, 5000);
