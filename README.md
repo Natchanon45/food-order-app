@@ -5,19 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `P9-B010 Manual Sync Hotfix`
-- Developer Panel version/build ปัจจุบัน: `0.12.58` / `2026.07.02.012`
-
-## Food Order Status
-
-ทำแล้ว:
-
-- QR Table Order เสร็จ
-- Kitchen เสร็จ
-- Delivery Lock เสร็จ
-- Cashier ย้ายโต๊ะเสร็จ
-- Take Away ส่งเข้าครัวและ Cashier แล้ว
-- Food Order ปิดครบแล้ว
+- Current milestone: `POS Hardening 001`
+- Developer Panel version/build ปัจจุบัน: `0.12.61` / `2026.07.02.015`
 
 ## Retail POS Status
 
@@ -34,48 +23,39 @@
 - P9-B009 Refund / Return / Void
 - P9-B010 Performance
 - Hotfix Manual Sync
+- POS Hardening 001
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
 
-## Current Milestone
+## POS Hardening 001
 
-`P9-B010 Manual Sync Hotfix`
-
-## Manual Sync Hotfix
-
-- แก้ `retail-pos-sync-status.js` ให้ใช้ Offline Queue Worker version ล่าสุด
-- แก้ `retail-pos-sync-status.js` ให้ใช้ Repository Layer version ล่าสุด
-- เพิ่มการฟัง event `retail-offline-queue-worker`
-- ปุ่ม Manual Sync เรียก Worker ล่าสุดโดยตรง
-- `/pos/index.html` โหลด `retail-pos-sync-status.js?v=20260702-012`
+- เพิ่ม `public/assets/js/retail-pos-hardening.js`
+- เพิ่ม multi-tab leader heartbeat
+- recover offline sale ที่ค้าง `syncStatus: syncing` เกิน 2 นาที
+- cleanup local sale ที่ sync แล้วและเก่าเกิน 45 วัน หรือเกิน 500 รายการล่าสุด
+- preserve queue สำคัญ: `pending`, `syncing`, `failed`, `conflict`
+- รองรับ browser sleep/wake ผ่าน `visibilitychange`, `pageshow`, `focus`, `online`
+- `/pos/index.html` โหลด `retail-pos-hardening.js?v=20260702-015`
 
 ## Regression Tests
 
-1. เปิด POS แล้วต้องเห็น Badge `รอ Sync 1` ถ้ามี pending sale
-2. ขณะ Online ปุ่ม `Sync` ต้องกดได้
-3. กด `Sync` แล้วปุ่มต้องเปลี่ยนเป็น `กำลัง Sync...`
-4. Sync สำเร็จแล้ว Badge ต้องหายหรือจำนวน pending ลดลง
-5. ขณะ Offline ปุ่มต้องขึ้น `Offline` และกดไม่ได้
-6. Failed sale ต้องขึ้นปุ่ม `Retry`
-7. ขาย Online ได้ตามเดิม
-8. ขาย Offline และกลับมา Sync ได้ตามเดิม
-9. ตรวจว่าไม่กระทบ Order / Delivery commit `167dd48`
+1. เปิด POS แล้วขาย Online ได้ตามเดิม
+2. ปิดเน็ตขาย Offline ได้ตามเดิม
+3. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
+4. เปิด Console แล้ว `window.retailPosHardening.version` ต้องเป็น `HARDENING-001`
+5. เปิด POS 2 แท็บ แล้วต้องไม่มี error จาก hardening layer
+6. ปิดจอ/ปล่อย browser sleep แล้วกลับมา หน้า POS ต้องยังทำงานและ sync ต่อได้
+7. pending/failed/conflict queue ต้องไม่ถูกลบจาก localStorage
+8. synced sale เก่าใน localStorage ถูก cleanup เฉพาะรายการที่ปลอดภัย
+9. ตรวจว่าไม่กระทบ Order / Delivery
 10. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## Next Tasks
 
-- POS Roadmap P9-B001 ถึง P9-B010 เสร็จครบแล้ว
-- งานถัดไปควรเป็นรอบ Test รวม / Stabilization / UI เชื่อม service ที่เป็นแกนกลางเข้าหน้าจอจริงเพิ่มเติม
+- POS Hardening 002: ตรวจ listener/snapshot leak เพิ่มเติม และ diagnostics สำหรับ long session
+- Test รวม / Stabilization / UI เชื่อม service ที่เป็นแกนกลางเข้าหน้าจอจริงเพิ่มเติม
 
 ## Deploy
 
 git pull --rebase origin feature/retail-pos
 firebase deploy --only hosting
-
-## Notes
-
-- ต้องอ่าน `PROJECT_CONTEXT.md` ก่อนเริ่มงานทุกครั้ง
-- ทุก record สำคัญต้องมี `tenantId`
-- ห้าม sync POS ข้าม tenant
-- ถ้าแก้ JS/CSS ที่ import ใน HTML ต้อง bump query string
-- Firestore transaction ต้อง read เอกสารทั้งหมดก่อน write
