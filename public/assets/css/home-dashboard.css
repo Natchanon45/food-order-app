@@ -17,6 +17,7 @@ body.staff-home {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
+.quick-link-grid-single { grid-template-columns: minmax(0, 1fr); }
 .quick-link {
   display: flex;
   flex-direction: column;
