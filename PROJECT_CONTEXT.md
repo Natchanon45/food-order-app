@@ -16,8 +16,8 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.69`
-- Build: `2026.07.02.023`
+- Version: `0.12.70`
+- Build: `2026.07.02.024`
 - Branch: `feature/retail-pos`
 - Milestone: `POS Hardening 002`
 
@@ -36,7 +36,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - POS Payment UX Update เสร็จแล้ว
 - Retail Category/Product Sort Manager เสร็จแล้ว
 - Product Image Storage Rules Fix เสร็จแล้ว
-- POS Display Order Hotfix เสร็จแล้ว
+- POS Display Order Hard Rollback เสร็จแล้ว
 
 ## Current Milestone
 
@@ -44,15 +44,16 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## แก้แล้วรอบนี้
 
-- ถอด `retail-pos-display-order.js` ออกจาก `/pos/index.html` ชั่วคราว เพื่อให้หน้าขาย POS กลับมาใช้งานได้ก่อน
-- ตัวจัดลำดับหมวดหมู่/สินค้าใน `/pos/products/` ยังอยู่ แต่ยังไม่ apply การเรียงบนหน้าขาย `/pos` จนกว่าจะทดสอบแยกปลอดภัย
+- ลบไฟล์ `public/assets/js/retail-pos-display-order.js` ออกจาก repo แล้ว
+- `/pos/index.html` ไม่โหลดสคริปต์จัดลำดับสินค้าอีก
+- ตัวจัดลำดับหมวดหมู่/สินค้าใน `/pos/products/` ยังอยู่ แต่ยังไม่ apply การเรียงบนหน้าขาย `/pos`
 - ไม่มีการแตะ logic ขาย, Online/Offline, Sync, Stable `saleId` หรือ Stock Transaction
-- Developer Panel เป็น Version `0.12.69` Build `2026.07.02.023`
+- Developer Panel เป็น Version `0.12.70` Build `2026.07.02.024`
 
 ## Regression Tests สำคัญ
 
 1. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
-2. หน้า `/pos` ต้องไม่โหลด `retail-pos-display-order.js`
+2. Network/Console ต้องไม่มี request ไป `retail-pos-display-order.js`
 3. เปิด POS แล้วขาย Online ได้ตามเดิม
 4. ปิดเน็ตขาย Offline ได้ตามเดิม
 5. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
