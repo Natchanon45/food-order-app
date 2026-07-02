@@ -15,7 +15,7 @@ export const ROLE_HOME = {
   kitchen: "/kitchen"
 };
 
-export const STAFF_ROLES = ["owner", "admin", "cashier", "kitchen", "super_admin"];
+export const STAFF_ROLES = ["owner", "admin", "cashier", "kitchen", "manager", "super_admin"];
 
 function icon(name, className = "app-icon") {
   return iconMarkup(name, className.replace(/\bapp-icon\b/g, "").trim());
@@ -53,12 +53,13 @@ function ensurePasswordDialogStyles() {
 }
 
 function roleLabel(role) {
-  return ({ super_admin: "เจ้าของระบบ", owner: "เจ้าของร้าน", admin: "ผู้ดูแลระบบ", cashier: "แคชเชียร์", kitchen: "ครัว" })[role] || role;
+  return ({ super_admin: "เจ้าของระบบ", owner: "เจ้าของร้าน", admin: "ผู้ดูแลระบบ", manager: "ผู้จัดการ", cashier: "แคชเชียร์", kitchen: "ครัว" })[role] || role;
 }
 
 function greetingName(profile) {
   if (profile.role === "cashier") return "แคชเชียร์";
   if (profile.role === "kitchen") return "Kitchen";
+  if (profile.role === "manager") return "Manager";
   if (profile.role === "admin") return "Admin";
   if (profile.role === "owner") return profile.displayName || "Owner";
   if (profile.role === "super_admin") return profile.displayName || "Super Admin";
@@ -196,6 +197,12 @@ function showOwnerPasswordDialog() {
   setTimeout(() => backdrop.querySelector('input[name="currentPassword"]')?.focus(), 30);
 }
 
+async function logoutToLogin() {
+  await signOut(auth);
+  clearActiveTenant();
+  location.replace("/login");
+}
+
 export function mountUserMenu(profile) {
   ensureIconStyles();
   const header = document.querySelector(".app-header");
@@ -228,7 +235,7 @@ export function mountUserMenu(profile) {
   document.addEventListener("click", event => { if (!menu.contains(event.target)) closeMenu(); });
   document.addEventListener("keydown", event => { if (event.key === "Escape") closeMenu(); });
   menu.querySelector('[data-menu-action="change-password"]')?.addEventListener("click", () => { closeMenu(); showOwnerPasswordDialog(); });
-  menu.querySelector("[data-logout]").addEventListener("click", async () => { await signOut(auth); location.replace("/login"); });
+  menu.querySelector("[data-logout]").addEventListener("click", async () => { await logoutToLogin(); });
 }
 
 export function waitForAuth() {
@@ -256,7 +263,7 @@ export async function requireRole(allowedRoles = []) {
   }
 
   const profile = await getUserProfile(user);
-  const ownerAllowed = profile?.role === "owner" && allowedRoles.some(role => ["owner", "admin", "cashier", "kitchen"].includes(role));
+  const ownerAllowed = profile?.role === "owner" && allowedRoles.some(role => ["owner", "admin", "cashier", "kitchen", "manager"].includes(role));
   const permitted = ownerAllowed || allowedRoles.includes(profile?.role);
 
   if (!permitted) {
@@ -279,8 +286,7 @@ export async function login(email, password) {
 }
 
 export async function logout() {
-  await signOut(auth);
-  clearActiveTenant();
+  await logoutToLogin();
 }
 
 export async function callCloud(name, payload = {}) {
