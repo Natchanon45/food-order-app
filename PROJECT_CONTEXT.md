@@ -16,10 +16,10 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.56`
-- Build: `2026.07.02.010`
+- Version: `0.12.57`
+- Build: `2026.07.02.011`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B009 Refund / Return / Void`
+- Milestone: `P9-B010 Performance (Cache / Virtual List / Search)`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -34,39 +34,39 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - P9-B007 Audit Log เสร็จแล้ว
 - P9-B008 Shift Opening / Closing เสร็จแกนกลางแล้ว
 - P9-B009 Refund / Return / Void เสร็จแกนกลางแล้ว
+- P9-B010 Performance เสร็จแล้ว
 
 ## Current Milestone
 
-`P9-B009 Refund / Return / Void`
+`P9-B010 Performance (Cache / Virtual List / Search)`
 
 ## แก้แล้วรอบนี้
 
-- เพิ่ม `retail-pos-return.js` เป็น Service กลางสำหรับ Return / Refund / Void
-- เพิ่ม `createReturn()`, `createRefund()`, `createVoid()`
-- อ่าน Sale และ Product ก่อน แล้วค่อยจองเลขเอกสารและ Write ตามกติกา Firestore Transaction
-- คืน Stock ด้วย stock movement แบบ `type: return`, `direction: in`
-- อัปเดต Sale ด้วย `returns` และ `refundTotal` เพื่อกันคืนซ้ำ
-- ใช้ Running Number กลางสำหรับ REFUND และ VOID
-- เขียน Audit Log สำหรับ return / void
-- ผูก active shift จาก `retail-pos-shift.js` ถ้ามีกะเปิดอยู่
-- Developer Panel เป็น Version `0.12.56` Build `2026.07.02.010`
+- เพิ่ม `retail-pos-performance.js` เป็น Performance Layer ของ POS
+- เพิ่ม debounce search input เพื่อลดการ render ซ้ำระหว่างพิมพ์ค้นหา
+- จำกัดจำนวน product card ที่แสดงบน DOM ครั้งละ 96 รายการ เพื่อให้หน้า POS เร็วขึ้นเมื่อสินค้าจำนวนมาก
+- เพิ่มข้อความแจ้งให้ค้นหาเมื่อผลลัพธ์เกินจำนวนที่แสดง
+- เพิ่ม performance snapshot ลง `sessionStorage` สำหรับตรวจ cache diagnostics
+- `/pos/index.html` โหลด `retail-pos-performance.js?v=20260702-011`
+- Developer Panel เป็น Version `0.12.57` Build `2026.07.02.011`
 
 ## Regression Tests สำคัญ
 
-1. เปิด POS แล้วขาย Online ได้ตามเดิม
-2. เรียก `createReturn({ saleId, items })` ต้องสร้างเอกสารใน `returns`
-3. Stock ของสินค้าที่คืนต้องเพิ่มกลับตามจำนวนคืน
-4. Sale ต้นทางต้องมี `returns` และ `refundTotal`
-5. คืนสินค้าซ้ำเกินจำนวนขายต้องแจ้ง error `RETURN_QTY_EXCEEDS_REMAINING`
-6. ตรวจ stockMovements ต้องมีรายการ `direction: in`
-7. ตรวจ auditLogs ต้องมีรายการ return หรือ void
-8. Offline Sync ต้องทำงานได้ตามเดิม
-9. ตรวจว่าไม่กระทบ Food Order / Delivery
+1. เปิด POS แล้วโหลดสินค้าต้องเร็วขึ้นเมื่อมีสินค้าจำนวนมาก
+2. ถ้ามีสินค้ามากกว่า 96 รายการ ต้องเห็นข้อความแนะนำให้ค้นหา
+3. ค้นหาสินค้าด้วยชื่อ / รหัส / บาร์โค้ด ต้องเจอสินค้าเดิม
+4. กดเพิ่มสินค้าเข้าตะกร้าได้ตามเดิม
+5. สแกนบาร์โค้ดแล้วเพิ่มสินค้าได้ตามเดิม
+6. ขาย Online ได้ตามเดิม
+7. ขาย Offline และ Sync ได้ตามเดิม
+8. ตรวจ `window.retailPosPerformance.version` ต้องเป็น `P9-B010`
+9. ตรวจว่าไม่กระทบ Order / Delivery ที่คุณแก้ใน commit `5c96d34` และ `4c0984d`
 10. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
 
-1. P9-B010 Performance (Cache / Virtual List / Search)
+- POS Roadmap P9-B001 ถึง P9-B010 เสร็จครบแล้ว
+- งานถัดไปควรเป็นรอบ Test รวม / Stabilization / UI เชื่อม service ที่เป็นแกนกลางเข้าหน้าจอจริงเพิ่มเติม
 
 ## ข้อควรระวัง
 
