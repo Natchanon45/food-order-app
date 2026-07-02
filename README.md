@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `P9-B009 Refund / Return / Void`
-- Developer Panel version/build ปัจจุบัน: `0.12.56` / `2026.07.02.010`
+- Current milestone: `P9-B010 Performance (Cache / Virtual List / Search)`
+- Developer Panel version/build ปัจจุบัน: `0.12.57` / `2026.07.02.011`
 
 ## Food Order Status
 
@@ -32,39 +32,40 @@
 - P9-B007 Audit Log
 - P9-B008 Shift Opening / Closing
 - P9-B009 Refund / Return / Void
+- P9-B010 Performance
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
 
 ## Current Milestone
 
-`P9-B009 Refund / Return / Void`
+`P9-B010 Performance (Cache / Virtual List / Search)`
 
-## Return Service
+## Performance Layer
 
-- เพิ่ม `public/assets/js/retail-pos-return.js`
-- รองรับ `createReturn()`
-- รองรับ `createRefund()`
-- รองรับ `createVoid()`
-- คืน Stock ด้วย stock movement แบบ `direction: in`
-- อัปเดต Sale ต้นทางด้วย `returns` และ `refundTotal`
-- เขียน Audit Log สำหรับ return / void
+- เพิ่ม `public/assets/js/retail-pos-performance.js`
+- Debounce การค้นหาสินค้า
+- จำกัด product card ที่แสดงบน DOM ครั้งละ 96 รายการ
+- แสดงข้อความแนะนำให้ค้นหาเมื่อผลลัพธ์มากเกินไป
+- เพิ่ม performance snapshot ใน `sessionStorage`
+- `/pos/index.html` โหลด `retail-pos-performance.js?v=20260702-011`
 
 ## Regression Tests
 
-1. เปิด POS แล้วขาย Online ได้ตามเดิม
-2. เรียก `createReturn({ saleId, items })` ต้องสร้างเอกสารใน `returns`
-3. Stock ของสินค้าที่คืนต้องเพิ่มกลับตามจำนวนคืน
-4. Sale ต้นทางต้องมี `returns` และ `refundTotal`
-5. คืนสินค้าซ้ำเกินจำนวนขายต้องแจ้ง error `RETURN_QTY_EXCEEDS_REMAINING`
-6. ตรวจ stockMovements ต้องมีรายการ `direction: in`
-7. ตรวจ auditLogs ต้องมีรายการ return หรือ void
-8. Offline Sync ต้องทำงานได้ตามเดิม
-9. ตรวจว่าไม่กระทบ Food Order / Delivery
+1. เปิด POS แล้วโหลดสินค้าต้องเร็วขึ้นเมื่อมีสินค้าจำนวนมาก
+2. ถ้ามีสินค้ามากกว่า 96 รายการ ต้องเห็นข้อความแนะนำให้ค้นหา
+3. ค้นหาสินค้าด้วยชื่อ / รหัส / บาร์โค้ด ต้องเจอสินค้าเดิม
+4. กดเพิ่มสินค้าเข้าตะกร้าได้ตามเดิม
+5. สแกนบาร์โค้ดแล้วเพิ่มสินค้าได้ตามเดิม
+6. ขาย Online ได้ตามเดิม
+7. ขาย Offline และ Sync ได้ตามเดิม
+8. ตรวจ `window.retailPosPerformance.version` ต้องเป็น `P9-B010`
+9. ตรวจว่าไม่กระทบ Order / Delivery commit `5c96d34` และ `4c0984d`
 10. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## Next Tasks
 
-1. P9-B010 Performance (Cache / Virtual List / Search)
+- POS Roadmap P9-B001 ถึง P9-B010 เสร็จครบแล้ว
+- งานถัดไปควรเป็นรอบ Test รวม / Stabilization / UI เชื่อม service ที่เป็นแกนกลางเข้าหน้าจอจริงเพิ่มเติม
 
 ## Deploy
 
