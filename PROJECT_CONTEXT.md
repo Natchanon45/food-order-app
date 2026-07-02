@@ -16,8 +16,8 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.63`
-- Build: `2026.07.02.017`
+- Version: `0.12.64`
+- Build: `2026.07.02.018`
 - Branch: `feature/retail-pos`
 - Milestone: `POS Hardening 002`
 
@@ -31,6 +31,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - POS Hardening 001 เสร็จแล้ว
 - POS Hardening 002 เสร็จแล้ว
 - Unified Order / Delivery / POS Menu เสร็จแล้ว
+- Dashboard Tenant-safe Link Correction เสร็จแล้ว
 
 ## Current Milestone
 
@@ -38,30 +39,33 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## แก้แล้วรอบนี้
 
-- ปรับหน้า `/` ให้เป็นเมนูกลางรวม Order / Delivery / POS
-- เพิ่ม Public quick links สำหรับ `/order`, `/delivery`, `/login`
-- จัด Staff Dashboard เป็น 2 กลุ่ม: `Order / Delivery` และ `Retail POS`
-- เพิ่มลิงก์ Staff Dashboard: `/order`, `/delivery`, `/kitchen`, `/cashier`, `/pos`, `/admin`, `/admin/users`
-- เพิ่ม CSS สำหรับ quick links, dashboard section, POS featured card และ mobile responsive
-- `/` bump `home-dashboard.css?v=20260702-017`
-- Developer Panel เป็น Version `0.12.63` Build `2026.07.02.017`
+- บังคับ logout redirect ไป `/login` เท่านั้น
+- Public Landing เหลือ quick link ไป `/login` เท่านั้น ไม่ปล่อย `/order` หรือ `/delivery` แบบไม่มี tenant
+- ตัด Staff Dashboard card `QR / Table Order` และ `Delivery Order` ออก เพราะลิงก์ที่ถูกต้องต้องมี tenant slug เช่น `/s/saas-test-shop/order` และ `/s/saas-test-shop/delivery`
+- Staff Dashboard เหลือเมนูพนักงานตามสิทธิ์: ครัว, แคชเชียร์ร้านอาหาร, Retail POS, จัดการระบบ, จัดการพนักงาน
+- เพิ่ม module guard เบื้องต้นให้ POS card ตรวจ `module`, `modules`, `allowedModules`, `tenantType`, `businessType` ถ้ามีข้อมูลใน profile
+- เพิ่ม role `manager` ใน `STAFF_ROLES` เพื่อให้ dashboard/POS ตรวจสิทธิ์สอดคล้องกับ `/pos`
+- `/` bump `home-dashboard.css?v=20260702-018`
+- `/` bump `home-session-fa.js?v=20260702-018`
+- Developer Panel เป็น Version `0.12.64` Build `2026.07.02.018`
 
 ## Regression Tests สำคัญ
 
-1. เปิด `/` แล้วเห็นลิงก์ด่วน Order / Delivery / Login
-2. Login เป็น Staff แล้วเห็น Staff Dashboard รวมเมนู Order / Delivery / POS
-3. คลิก `/order`, `/delivery`, `/kitchen`, `/cashier`, `/pos`, `/admin`, `/admin/users` แล้วไปหน้าถูกต้องตามสิทธิ์
-4. ตรวจ role visibility ของ card ไม่ให้ผู้ใช้ที่ไม่มีสิทธิ์เห็นเมนูเกินสิทธิ์
-5. เปิด POS แล้วขาย Online ได้ตามเดิม
-6. ปิดเน็ตขาย Offline ได้ตามเดิม
-7. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
-8. ตรวจว่าไม่กระทบ Order / Delivery
-9. ตรวจว่า record สำคัญยังมี `tenantId`
-10. ตรวจ mobile dashboard ว่า card ไม่ล้นจอและกดได้ง่าย
+1. กดออกจากระบบแล้ว URL ต้องเป็น `/login` เท่านั้น
+2. เปิด `/` แบบยังไม่ login แล้ว quick link ต้องไป `/login` เท่านั้น
+3. Login เป็น Staff แล้ว Staff Dashboard ต้องไม่แสดง `QR / Table Order` และ `Delivery Order` แบบ `/order`, `/delivery`
+4. Login เป็น Staff แล้วเมนูต้องแสดงตามสิทธิ์และไม่ข้าม tenant
+5. Login เป็น cashier ร้านอาหาร ตรวจว่าใช้เมนูแคชเชียร์ร้านอาหารได้
+6. Login เป็น cashier ร้านค้า ตรวจว่าเห็น Retail POS เฉพาะเมื่อ profile module/tenant type อนุญาต
+7. เปิด POS แล้วขาย Online ได้ตามเดิม
+8. ปิดเน็ตขาย Offline ได้ตามเดิม
+9. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
+10. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
 
 - POS Hardening 003: ตรวจ/ลด event listener ซ้ำและ snapshot unsubscribe patterns ในโมดูลที่มี listener จริง
+- พิจารณาแยกบทบาท cashier ร้านอาหาร / cashier ร้านค้า แบบถาวร หากต้องการ role คนละชุด เช่น `restaurant_cashier` และ `retail_cashier`
 - Test รวม / Stabilization / UI เชื่อม service ที่เป็นแกนกลางเข้าหน้าจอจริงเพิ่มเติม
 
 ## ข้อควรระวัง
