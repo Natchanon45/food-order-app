@@ -25,13 +25,14 @@
 .category-card.has-ready small{color:#0b6b3d;font-weight:700}
 .category-icon{width:44px;height:44px;min-width:44px;border-radius:16px;background:#eef8f1;color:#0b6b3d;display:grid;place-items:center}
 .category-icon .bi{font-size:24px;line-height:1}
-.catalog-panel{background:#fff;border:1px solid #dbe7df;border-radius:26px;padding:20px;margin-top:18px;box-shadow:0 8px 24px rgba(30,60,45,.06)}
+.catalog-panel{min-width:0;background:#fff;border:1px solid #dbe7df;border-radius:26px;padding:20px;margin-top:18px;box-shadow:0 8px 24px rgba(30,60,45,.06);overflow:hidden}
 .panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
 .panel-head h2{margin:0;font-size:20px}
 .result-box{border-radius:16px;padding:13px 15px;margin:12px 0;background:#eef8f1;color:#0b6b3d;font-weight:700;min-height:22px}
 .result-box[data-tone="error"]{background:#fff1f2;color:#b42318}
 .result-box:empty{display:none}
-.catalog-table{width:100%;border-collapse:collapse}
+.catalog-panel .table-wrap{display:block;width:100%;max-width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+.catalog-table{width:100%;min-width:1060px;border-collapse:collapse}
 .catalog-table th,.catalog-table td{padding:13px 10px;border-bottom:1px solid #edf2f0;text-align:left;white-space:nowrap}
 .catalog-table td:nth-child(2){white-space:normal;min-width:220px}
 .catalog-table th{font-size:13px;color:#64748b;background:#f8faf9}
@@ -55,4 +56,4 @@
 .catalog-dialog-actions .primary{border:0;background:#159447;color:#fff}
 .catalog-dialog-actions .secondary{background:#fff;color:#334155;border:1px solid #cbd5e1}
 @media(max-width:900px){.catalog-hero{grid-template-columns:1fr}.catalog-actions{justify-content:flex-start}.catalog-stats,.catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.catalog-shell{padding:16px 12px 32px}.catalog-hero{padding:22px;border-radius:22px}.catalog-stats,.catalog-grid{grid-template-columns:1fr}.panel-head{align-items:flex-start;flex-direction:column}.catalog-table{font-size:13px}}
+@media(max-width:560px){.catalog-shell{padding:16px 12px 32px}.catalog-hero{padding:22px;border-radius:22px}.catalog-stats,.catalog-grid{grid-template-columns:1fr}.panel-head{align-items:flex-start;flex-direction:column}.catalog-panel{padding:16px}.catalog-panel .table-wrap{padding-bottom:8px}.catalog-table{font-size:13px}}
