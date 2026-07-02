@@ -16,10 +16,10 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.57`
-- Build: `2026.07.02.011`
+- Version: `0.12.58`
+- Build: `2026.07.02.012`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B010 Performance (Cache / Virtual List / Search)`
+- Milestone: `P9-B010 Manual Sync Hotfix`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
@@ -35,32 +35,33 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - P9-B008 Shift Opening / Closing เสร็จแกนกลางแล้ว
 - P9-B009 Refund / Return / Void เสร็จแกนกลางแล้ว
 - P9-B010 Performance เสร็จแล้ว
+- Hotfix: Manual Sync ใช้ Offline Queue Worker และ Repository version ล่าสุดแล้ว
 
 ## Current Milestone
 
-`P9-B010 Performance (Cache / Virtual List / Search)`
+`P9-B010 Manual Sync Hotfix`
 
 ## แก้แล้วรอบนี้
 
-- เพิ่ม `retail-pos-performance.js` เป็น Performance Layer ของ POS
-- เพิ่ม debounce search input เพื่อลดการ render ซ้ำระหว่างพิมพ์ค้นหา
-- จำกัดจำนวน product card ที่แสดงบน DOM ครั้งละ 96 รายการ เพื่อให้หน้า POS เร็วขึ้นเมื่อสินค้าจำนวนมาก
-- เพิ่มข้อความแจ้งให้ค้นหาเมื่อผลลัพธ์เกินจำนวนที่แสดง
-- เพิ่ม performance snapshot ลง `sessionStorage` สำหรับตรวจ cache diagnostics
-- `/pos/index.html` โหลด `retail-pos-performance.js?v=20260702-011`
-- Developer Panel เป็น Version `0.12.57` Build `2026.07.02.011`
+- แก้ `retail-pos-sync-status.js` ให้ import `retail-offline-sale-sync.js?v=20260702-004`
+- แก้ `retail-pos-sync-status.js` ให้ import `retail-pos-repository.js?v=20260702-005`
+- เพิ่มการฟัง event `retail-offline-queue-worker`
+- Manual Sync เรียก `retryFailedOfflineSales()` และ `syncOfflineSalesToFirebase({ forceRetry: true })` จาก Worker ล่าสุด
+- ปรับสถานะปุ่มให้แยก `Offline`, `กำลัง Sync...`, `Retry`, `Sync`
+- `/pos/index.html` bump `retail-pos-sync-status.js?v=20260702-012`
+- Developer Panel เป็น Version `0.12.58` Build `2026.07.02.012`
 
 ## Regression Tests สำคัญ
 
-1. เปิด POS แล้วโหลดสินค้าต้องเร็วขึ้นเมื่อมีสินค้าจำนวนมาก
-2. ถ้ามีสินค้ามากกว่า 96 รายการ ต้องเห็นข้อความแนะนำให้ค้นหา
-3. ค้นหาสินค้าด้วยชื่อ / รหัส / บาร์โค้ด ต้องเจอสินค้าเดิม
-4. กดเพิ่มสินค้าเข้าตะกร้าได้ตามเดิม
-5. สแกนบาร์โค้ดแล้วเพิ่มสินค้าได้ตามเดิม
-6. ขาย Online ได้ตามเดิม
-7. ขาย Offline และ Sync ได้ตามเดิม
-8. ตรวจ `window.retailPosPerformance.version` ต้องเป็น `P9-B010`
-9. ตรวจว่าไม่กระทบ Order / Delivery ที่คุณแก้ใน commit `5c96d34` และ `4c0984d`
+1. เปิด POS แล้วต้องเห็น Badge `รอ Sync 1` ถ้ามี pending sale
+2. ขณะ Online ปุ่ม `Sync` ต้องกดได้
+3. กด `Sync` แล้วปุ่มต้องเปลี่ยนเป็น `กำลัง Sync...`
+4. Sync สำเร็จแล้ว Badge ต้องหายหรือจำนวน pending ลดลง
+5. ขณะ Offline ปุ่มต้องขึ้น `Offline` และกดไม่ได้
+6. Failed sale ต้องขึ้นปุ่ม `Retry`
+7. ขาย Online ได้ตามเดิม
+8. ขาย Offline และกลับมา Sync ได้ตามเดิม
+9. ตรวจว่าไม่กระทบ Order / Delivery commit `167dd48`
 10. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
