@@ -6,7 +6,7 @@
 
 - Branch: `feature/retail-pos`
 - Current milestone: `POS Hardening 002`
-- Developer Panel version/build ปัจจุบัน: `0.12.67` / `2026.07.02.021`
+- Developer Panel version/build ปัจจุบัน: `0.12.68` / `2026.07.02.022`
 
 ## Retail POS Status
 
@@ -30,8 +30,17 @@
 - Dashboard Final Grouping
 - POS Payment UX Update
 - Retail Category/Product Sort Manager
+- Product Image Storage Rules Fix
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Product Image Storage Rules Fix
+
+- แก้ `storage.rules` สำหรับ path `tenants/{tenantId}/product-images/{productId}/{fileName}`
+- เพิ่ม function `userTenantProductAdmin(tenantId)` ให้ตรวจสิทธิ์จาก `users/{uid}`
+- อนุญาต role `owner`, `admin`, `super_admin` ที่ `active == true` และ `tenantId` ตรงกัน อัปโหลด/ลบรูปสินค้าได้
+- ยังจำกัดไฟล์เป็นรูปภาพ และขนาดไม่เกิน 5 MB เหมือนเดิม
+- ต้อง deploy Storage Rules ด้วยคำสั่ง `firebase deploy --only storage`
 
 ## Retail Category/Product Sort Manager
 
@@ -85,14 +94,14 @@
 
 ## Regression Tests
 
-1. เปิด `/pos/products/` แล้วเห็น panel `จัดลำดับหมวดหมู่และสินค้า`
-2. ขยับหมวดสินค้าแล้วกดบันทึก ต้องบันทึก `categoryOrder` กลับ Firestore/local cache
-3. เลือกหมวดทั่วไปแล้วขยับสินค้า ต้องบันทึก `sortOrder` กลับ Firestore/local cache
-4. เลือกหมวด `ขายดี` แล้วปุ่มขยับสินค้าต้อง disabled และไม่เปลี่ยน `sortOrder` ของสินค้าในหมวดนั้น
-5. เปิด `/pos` แล้วสินค้าต้องเรียงตาม `categoryOrder` และ `sortOrder`
-6. สินค้าในหมวดขายดีต้องไม่ถูก reorder จากเครื่องมือใหม่นี้
-7. หน้า `/pos` ต้องไม่เห็นปุ่ม `โหลดตัวอย่าง`
-8. กด Enter ใน modal รับเงินแล้วยืนยันการขายได้ตามเดิม
+1. Deploy Storage Rules แล้วอัปโหลดรูปสินค้าใน `/pos/products/` ต้องไม่เจอ 403
+2. รูปสินค้าต้องถูกอัปโหลดไป path `tenants/{tenantId}/product-images/{productId}/product.webp`
+3. ผู้ใช้ role `owner`, `admin`, `super_admin` ที่ `active == true` และ `tenantId` ตรงกันต้องอัปโหลดรูปได้
+4. ผู้ใช้ tenant อื่นต้องอัปโหลดรูปข้าม tenant ไม่ได้
+5. ไฟล์ที่ไม่ใช่รูปภาพหรือใหญ่กว่า 5 MB ต้องถูกปฏิเสธ
+6. เปิด `/pos/products/` แล้วเห็น panel `จัดลำดับหมวดหมู่และสินค้า`
+7. เลือกหมวด `ขายดี` แล้วปุ่มขยับสินค้าต้อง disabled และไม่เปลี่ยน `sortOrder` ของสินค้าในหมวดนั้น
+8. เปิด `/pos` แล้วสินค้าต้องเรียงตาม `categoryOrder` และ `sortOrder`
 9. เปิด POS แล้วขาย Online/Offline ได้ตามเดิม
 10. ตรวจว่า record สำคัญยังมี `tenantId`
 
@@ -105,4 +114,5 @@
 ## Deploy
 
 git pull --rebase origin feature/retail-pos
+firebase deploy --only storage
 firebase deploy --only hosting
