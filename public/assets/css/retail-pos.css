@@ -64,6 +64,7 @@ h1 > .pos-context-icon, h2 > .pos-context-icon, h3 > .pos-context-icon, .app-tit
 .pos-menu-footer > * { width: 100%; text-decoration: none; }
 .pos-menu-panel .pos-menu-footer #posLogoutBtn { margin-top: 0; }
 .return-actions { gap: 12px; }
+.movement-product-filter { width: 100%; margin-bottom: 10px; }
 @media (max-width: 700px) {
   .return-actions { display: grid !important; grid-template-columns: 1fr; gap: 10px; }
 }
