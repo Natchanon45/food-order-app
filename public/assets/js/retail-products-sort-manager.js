@@ -115,7 +115,6 @@ function sortProductTableRows() {
 }
 
 root?.addEventListener("click", event => { const id = event.target.closest("[data-select-category]")?.dataset.selectCategory; if (id) { selectedCategory = id; render(); } if (event.target.closest("[data-save-order]")) saveAll(); });
-if (productTableBody) new MutationObserver(sortProductTableRows).observe(productTableBody, { childList: true });
 window.addEventListener("storage", event => { if (!event.key || [PRODUCT_KEY, ORDER_KEY].includes(event.key)) { configuredOrder = readJson(ORDER_KEY, []); render(); } });
 window.addEventListener("retail-pos-products-changed", render);
 
