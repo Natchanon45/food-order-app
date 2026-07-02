@@ -6,7 +6,7 @@
 
 - Branch: `feature/retail-pos`
 - Current milestone: `POS Hardening 002`
-- Developer Panel version/build ปัจจุบัน: `0.12.62` / `2026.07.02.016`
+- Developer Panel version/build ปัจจุบัน: `0.12.63` / `2026.07.02.017`
 
 ## Retail POS Status
 
@@ -25,8 +25,17 @@
 - Hotfix Manual Sync
 - POS Hardening 001
 - POS Hardening 002
+- Unified Order / Delivery / POS Menu
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Unified Order / Delivery / POS Menu
+
+- ปรับหน้า `/` ให้เป็นศูนย์รวมลิงก์เข้าใช้งาน Order / Delivery / POS
+- เพิ่มลิงก์ด่วนฝั่ง Public Landing: `/order`, `/delivery`, `/login`
+- จัด Staff Dashboard เป็น 2 กลุ่มหลัก: `Order / Delivery` และ `Retail POS`
+- เพิ่มลิงก์ Staff Dashboard ไปยัง `/order`, `/delivery`, `/kitchen`, `/cashier`, `/pos`, `/admin`, `/admin/users`
+- `/` bump `home-dashboard.css?v=20260702-017`
 
 ## POS Hardening 002
 
@@ -39,14 +48,14 @@
 
 ## Regression Tests
 
-1. เปิด POS แล้วขาย Online ได้ตามเดิม
-2. ปิดเน็ตขาย Offline ได้ตามเดิม
-3. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
-4. Console: `window.retailPosHardening.version` ต้องเป็น `HARDENING-002`
-5. Console: `window.retailPosHardening.diagnostics()` ต้องคืน object diagnostics
-6. เปิด POS 2 แท็บ แล้ว diagnostics ต้องมี `isLeader` แค่แท็บใดแท็บหนึ่งในช่วงเวลาเดียวกัน
-7. ปิดจอ/ปล่อย browser sleep แล้วกลับมา diagnostics ต้องยัง update ได้
-8. pending/failed/conflict queue ต้องไม่ถูกลบจาก localStorage
+1. เปิด `/` แล้วเห็นลิงก์ด่วน Order / Delivery / Login
+2. Login เป็น Staff แล้วเห็น Staff Dashboard แยกกลุ่ม Order / Delivery และ Retail POS
+3. ลิงก์ `/order`, `/delivery`, `/kitchen`, `/cashier`, `/pos`, `/admin`, `/admin/users` ยังไปหน้าถูกต้องตามสิทธิ์
+4. เปิด POS แล้วขาย Online ได้ตามเดิม
+5. ปิดเน็ตขาย Offline ได้ตามเดิม
+6. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
+7. Console: `window.retailPosHardening.version` ต้องเป็น `HARDENING-002`
+8. Console: `window.retailPosHardening.diagnostics()` ต้องคืน object diagnostics
 9. ตรวจว่าไม่กระทบ Order / Delivery
 10. ตรวจว่า record สำคัญยังมี `tenantId`
 
