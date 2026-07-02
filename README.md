@@ -6,7 +6,7 @@
 
 - Branch: `feature/retail-pos`
 - Current milestone: `POS Hardening 002`
-- Developer Panel version/build ปัจจุบัน: `0.12.68` / `2026.07.02.022`
+- Developer Panel version/build ปัจจุบัน: `0.12.69` / `2026.07.02.023`
 
 ## Retail POS Status
 
@@ -31,8 +31,15 @@
 - POS Payment UX Update
 - Retail Category/Product Sort Manager
 - Product Image Storage Rules Fix
+- POS Display Order Hotfix
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## POS Display Order Hotfix
+
+- ถอด `retail-pos-display-order.js` ออกจาก `/pos/index.html` ชั่วคราว เพื่อให้หน้าขาย POS กลับมาใช้งานได้ก่อน
+- ตัวจัดลำดับหมวดหมู่/สินค้าใน `/pos/products/` ยังอยู่ แต่ยังไม่ apply การเรียงบนหน้าขาย `/pos` จนกว่าจะทดสอบแยกปลอดภัย
+- ไม่มีการแตะ logic ขาย, Online/Offline, Sync, Stable `saleId` หรือ Stock Transaction
 
 ## Product Image Storage Rules Fix
 
@@ -50,9 +57,7 @@
 - บันทึกลำดับหมวดด้วย field `categoryOrder`
 - บันทึกลำดับสินค้าในหมวดด้วย field `sortOrder`
 - ล็อกไม่ให้ขยับลำดับสินค้าในหมวด `ขายดี`, `สินค้าขายดี`, `bestseller`, `popular`
-- เพิ่มไฟล์ `public/assets/js/retail-pos-display-order.js` เพื่อให้หน้าขาย `/pos` แสดงสินค้าตาม `categoryOrder` และ `sortOrder`
 - `/pos/products/index.html` bump `retail-products-sort-manager.css?v=20260702-021` และ `retail-products-sort-manager.js?v=20260702-021`
-- `/pos/index.html` bump `retail-pos-display-order.js?v=20260702-021`
 
 ## POS Payment UX Update
 
@@ -70,49 +75,27 @@
 - จำกัดสิทธิ์ `POS Catalog` ให้เห็นเฉพาะ `owner` และ `super_admin`
 - `/` bump `home-dashboard.css?v=20260702-019`
 
-## Dashboard Tenant-safe Link Correction
-
-- บังคับ logout redirect ไป `/login` เท่านั้น
-- Public Landing เหลือลิงก์พนักงานไป `/login` เท่านั้น ไม่แสดง `/order` หรือ `/delivery` แบบไม่มี tenant
-- ตัด Staff Dashboard card `QR / Table Order` และ `Delivery Order` ออก เพราะลิงก์ที่ถูกต้องต้องเป็น tenant slug เช่น `/s/saas-test-shop/order` และ `/s/saas-test-shop/delivery`
-- เพิ่ม module guard เบื้องต้นให้ POS card ตรวจ `module`, `modules`, `allowedModules`, `tenantType`, `businessType` ถ้ามีข้อมูลใน profile
-- `/` bump `home-session-fa.js?v=20260702-018`
-
-## Unified Order / Delivery / POS Menu
-
-- ปรับหน้า `/` ให้เป็นศูนย์รวมลิงก์เข้าใช้งาน Order / Delivery / POS
-- จัด Staff Dashboard เป็น 2 กลุ่มหลัก: `Order / Delivery` และ `Retail POS`
-
-## POS Hardening 002
-
-- อัปเกรด `public/assets/js/retail-pos-hardening.js` เป็น `HARDENING-002`
-- เพิ่ม `window.retailPosHardening.diagnostics()` สำหรับตรวจ long session ผ่าน Console
-- เก็บ queue summary, localStorage usage, uptime, maintenance count และ event counters
-- เก็บ multi-tab leader state และ browser visibility/online state
-- เก็บ memory snapshot ถ้า browser รองรับ `performance.memory`
-- `/pos/index.html` โหลด `retail-pos-hardening.js?v=20260702-016`
-
 ## Regression Tests
 
-1. Deploy Storage Rules แล้วอัปโหลดรูปสินค้าใน `/pos/products/` ต้องไม่เจอ 403
-2. รูปสินค้าต้องถูกอัปโหลดไป path `tenants/{tenantId}/product-images/{productId}/product.webp`
-3. ผู้ใช้ role `owner`, `admin`, `super_admin` ที่ `active == true` และ `tenantId` ตรงกันต้องอัปโหลดรูปได้
-4. ผู้ใช้ tenant อื่นต้องอัปโหลดรูปข้าม tenant ไม่ได้
-5. ไฟล์ที่ไม่ใช่รูปภาพหรือใหญ่กว่า 5 MB ต้องถูกปฏิเสธ
-6. เปิด `/pos/products/` แล้วเห็น panel `จัดลำดับหมวดหมู่และสินค้า`
-7. เลือกหมวด `ขายดี` แล้วปุ่มขยับสินค้าต้อง disabled และไม่เปลี่ยน `sortOrder` ของสินค้าในหมวดนั้น
-8. เปิด `/pos` แล้วสินค้าต้องเรียงตาม `categoryOrder` และ `sortOrder`
-9. เปิด POS แล้วขาย Online/Offline ได้ตามเดิม
+1. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
+2. หน้า `/pos` ต้องไม่โหลด `retail-pos-display-order.js`
+3. เปิด POS แล้วขาย Online ได้ตามเดิม
+4. ปิดเน็ตขาย Offline ได้ตามเดิม
+5. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
+6. กด Enter ใน modal รับเงินแล้วยืนยันการขายได้ตามเดิม
+7. หน้า `/pos` ต้องไม่เห็นปุ่ม `โหลดตัวอย่าง`
+8. Deploy Storage Rules แล้วอัปโหลดรูปสินค้าใน `/pos/products/` ต้องไม่เจอ 403
+9. เปิด `/pos/products/` แล้วเห็น panel `จัดลำดับหมวดหมู่และสินค้า`
 10. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## Next Tasks
 
 - POS Hardening 003: ตรวจ/ลด event listener ซ้ำและ snapshot unsubscribe patterns ในโมดูลที่มี listener จริง
+- ทดสอบการ apply ลำดับสินค้าใน `/pos` แบบปลอดภัยก่อนเปิดใช้อีกครั้ง
 - แยกบทบาท cashier ร้านอาหาร / cashier ร้านค้า แบบถาวร หากต้องการ role คนละชุด เช่น `restaurant_cashier` และ `retail_cashier`
-- Test รวม / Stabilization / UI เชื่อม service ที่เป็นแกนกลางเข้าหน้าจอจริงเพิ่มเติม
 
 ## Deploy
 
 git pull --rebase origin feature/retail-pos
-firebase deploy --only storage
 firebase deploy --only hosting
+firebase deploy --only storage
