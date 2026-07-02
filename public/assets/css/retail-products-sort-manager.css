@@ -1,0 +1,23 @@
+.sort-manager-panel { margin-top: 18px; }
+.sort-manager-root { display: grid; grid-template-columns: minmax(260px, 360px) minmax(0, 1fr); gap: 16px; }
+.sort-column { border: 1px solid #e5eee8; border-radius: 18px; background: #fbfffc; overflow: hidden; }
+.sort-column-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px; border-bottom: 1px solid #e5eee8; }
+.sort-column-head h3 { margin: 0; font-size: 17px; }
+.sort-column-head span { color: #647067; font-size: 13px; }
+.sort-list { display: grid; gap: 8px; padding: 12px; }
+.sort-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 11px 12px; border: 1px solid #e6eee8; border-radius: 14px; background: #fff; }
+.sort-row.active { border-color: #159447; box-shadow: 0 0 0 3px rgba(21, 148, 71, .1); }
+.sort-row.best-seller { background: #fff9ec; border-color: #f2d699; }
+.sort-row-main { min-width: 0; }
+.sort-row-title { font-weight: 900; color: #152017; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sort-row-meta { margin-top: 3px; color: #68766d; font-size: 12px; }
+.sort-actions { display: flex; gap: 5px; }
+.sort-actions button, .sort-select-btn { min-width: 34px; min-height: 34px; border: 0; border-radius: 10px; background: #eef5f0; color: #122018; font-weight: 900; cursor: pointer; }
+.sort-actions button:disabled { opacity: .35; cursor: not-allowed; }
+.sort-select-btn { padding: 0 10px; }
+.sort-footer { display: flex; justify-content: space-between; gap: 10px; padding: 12px; border-top: 1px solid #e5eee8; }
+.sort-note { margin: 0; color: #647067; font-size: 13px; line-height: 1.45; }
+.sort-empty { padding: 18px; color: #647067; text-align: center; }
+.sort-save { border: 0; border-radius: 12px; padding: 11px 15px; background: #159447; color: #fff; font-weight: 900; cursor: pointer; }
+.sort-save:disabled { opacity: .55; cursor: wait; }
+@media (max-width: 760px) { .sort-manager-root { grid-template-columns: 1fr; } .sort-row { grid-template-columns: 1fr; } .sort-actions { justify-content: flex-start; } .sort-footer { display: grid; } }
