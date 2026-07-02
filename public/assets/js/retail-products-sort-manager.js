@@ -43,7 +43,7 @@ function renderCategories(ids) {
     const count = category ? products.filter(item => categoryName(item) === category).length : id === ALL_ID ? products.length : 0;
     return `<div class="sort-row${id === selectedCategory ? " active" : ""}${id === QUICK_ID ? " best-seller" : ""}" data-category-id="${escapeHtml(id)}">
       <span class="sort-handle" aria-label="ลากเพื่อจัดลำดับ"><i class="bi bi-grip-vertical" aria-hidden="true"></i></span>
-      <button class="sort-row-main" type="button" data-select-category="${escapeHtml(id)}"><span class="sort-row-title">${escapeHtml(categoryLabel(id))}</span><span class="sort-row-meta">${id === QUICK_ID ? "เรียงสินค้าตามยอดขายอัตโนมัติ" : `${count.toLocaleString("th-TH")} รายการ`}</span></button>
+      <button class="sort-row-main" type="button" data-select-category="${escapeHtml(id)}"><span class="sort-row-title">${escapeHtml(categoryLabel(id))}</span>${id === QUICK_ID ? "" : `<span class="sort-row-meta">${count.toLocaleString("th-TH")} รายการ</span>`}</button>
       <span class="sort-order-badge">${index + 1}</span>
     </div>`;
   }).join("");

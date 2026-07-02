@@ -66,7 +66,7 @@ function addIcon(element, fallback) {
   const authoredIcon = element.querySelector(".bi:not(.pos-context-icon)");
   if (authoredIcon && generatedIcon) generatedIcon.remove();
   if (authoredIcon || generatedIcon || !visibleText(element)) return;
-  if (element.matches(".icon-btn, .product-card, .catalog-tab, .app-version-badge, .mobile-cart-bar, .qty-tools button, [data-mobile-cart-close]")) return;
+  if (element.matches(".icon-btn, .product-card, .catalog-tab, .sort-row-main, .app-version-badge, .mobile-cart-bar, .qty-tools button, [data-mobile-cart-close]")) return;
   const icon = document.createElement("i");
   icon.className = `bi bi-${iconFor(element, fallback)} pos-context-icon`;
   icon.setAttribute("aria-hidden", "true");

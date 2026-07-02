@@ -1,6 +1,9 @@
 @import url("./toast-system.css?v=20260629-040");
 @import url("/assets/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1.13.1");
 
+/* Use one edit symbol consistently across Order, Delivery, Admin and POS. */
+.bi-pencil::before { content: "\f4ca" !important; }
+
 .app-icon {
   width: 1.25em;
   height: 1.25em;
