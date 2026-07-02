@@ -16,58 +16,53 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.58`
-- Build: `2026.07.02.012`
+- Version: `0.12.61`
+- Build: `2026.07.02.015`
 - Branch: `feature/retail-pos`
-- Milestone: `P9-B010 Manual Sync Hotfix`
+- Milestone: `POS Hardening 001`
 
 ## สถานะล่าสุดของระบบที่ทำไปแล้ว
 
 - QR Table Order / Take Away / Kitchen / Cashier / Delivery เสร็จแล้ว
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
-- POS Firestore Foundation (P9-B001) เสร็จแล้ว
-- P9-B002 Running Number เสร็จแล้ว
-- P9-B003 Counter service กลางเสร็จแล้ว
-- P9-B004 Offline Queue Worker + Retry + Conflict Resolver เสร็จแล้ว
-- P9-B005 Repository Layer เสร็จแล้ว
-- P9-B006 Firestore Composite Index เสร็จแล้ว
-- P9-B007 Audit Log เสร็จแล้ว
-- P9-B008 Shift Opening / Closing เสร็จแกนกลางแล้ว
-- P9-B009 Refund / Return / Void เสร็จแกนกลางแล้ว
-- P9-B010 Performance เสร็จแล้ว
-- Hotfix: Manual Sync ใช้ Offline Queue Worker และ Repository version ล่าสุดแล้ว
+- POS Roadmap P9-B001 ถึง P9-B010 เสร็จครบแล้ว
+- Manual Sync Hotfix เสร็จแล้ว
+- commit ฐานล่าสุดจากผู้ใช้: `927047f`
+- POS Hardening 001 เสร็จแล้ว
 
 ## Current Milestone
 
-`P9-B010 Manual Sync Hotfix`
+`POS Hardening 001`
 
 ## แก้แล้วรอบนี้
 
-- แก้ `retail-pos-sync-status.js` ให้ import `retail-offline-sale-sync.js?v=20260702-004`
-- แก้ `retail-pos-sync-status.js` ให้ import `retail-pos-repository.js?v=20260702-005`
-- เพิ่มการฟัง event `retail-offline-queue-worker`
-- Manual Sync เรียก `retryFailedOfflineSales()` และ `syncOfflineSalesToFirebase({ forceRetry: true })` จาก Worker ล่าสุด
-- ปรับสถานะปุ่มให้แยก `Offline`, `กำลัง Sync...`, `Retry`, `Sync`
-- `/pos/index.html` bump `retail-pos-sync-status.js?v=20260702-012`
-- Developer Panel เป็น Version `0.12.58` Build `2026.07.02.012`
+- เพิ่ม `retail-pos-hardening.js` เป็น Stability Layer สำหรับ POS
+- เพิ่ม multi-tab leader heartbeat ผ่าน localStorage/sessionStorage
+- เพิ่ม maintenance snapshot สำหรับตรวจสถานะ hardening
+- recover offline sale ที่ค้าง `syncStatus: syncing` เกิน 2 นาทีให้กลับเป็น `failed` เพื่อ retry ได้
+- cleanup local sale ที่ sync แล้วและเก่าเกิน 45 วัน หรือเกิน 500 รายการล่าสุด
+- preserve queue สำคัญ: `pending`, `syncing`, `failed`, `conflict`
+- รองรับ browser sleep/wake ผ่าน `visibilitychange`, `pageshow`, `focus`, `online`
+- `/pos/index.html` โหลด `retail-pos-hardening.js?v=20260702-015`
+- Developer Panel เป็น Version `0.12.61` Build `2026.07.02.015`
 
 ## Regression Tests สำคัญ
 
-1. เปิด POS แล้วต้องเห็น Badge `รอ Sync 1` ถ้ามี pending sale
-2. ขณะ Online ปุ่ม `Sync` ต้องกดได้
-3. กด `Sync` แล้วปุ่มต้องเปลี่ยนเป็น `กำลัง Sync...`
-4. Sync สำเร็จแล้ว Badge ต้องหายหรือจำนวน pending ลดลง
-5. ขณะ Offline ปุ่มต้องขึ้น `Offline` และกดไม่ได้
-6. Failed sale ต้องขึ้นปุ่ม `Retry`
-7. ขาย Online ได้ตามเดิม
-8. ขาย Offline และกลับมา Sync ได้ตามเดิม
-9. ตรวจว่าไม่กระทบ Order / Delivery commit `167dd48`
+1. เปิด POS แล้วขาย Online ได้ตามเดิม
+2. ปิดเน็ตขาย Offline ได้ตามเดิม
+3. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
+4. เปิด Console แล้ว `window.retailPosHardening.version` ต้องเป็น `HARDENING-001`
+5. เปิด POS 2 แท็บ แล้วต้องไม่มี error จาก hardening layer
+6. ปิดจอ/ปล่อย browser sleep แล้วกลับมา หน้า POS ต้องยังทำงานและ sync ต่อได้
+7. pending/failed/conflict queue ต้องไม่ถูกลบจาก localStorage
+8. synced sale เก่าใน localStorage ถูก cleanup เฉพาะรายการที่ปลอดภัย
+9. ตรวจว่าไม่กระทบ Order / Delivery
 10. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
 
-- POS Roadmap P9-B001 ถึง P9-B010 เสร็จครบแล้ว
-- งานถัดไปควรเป็นรอบ Test รวม / Stabilization / UI เชื่อม service ที่เป็นแกนกลางเข้าหน้าจอจริงเพิ่มเติม
+- POS Hardening 002: ตรวจ listener/snapshot leak เพิ่มเติม และ diagnostics สำหรับ long session
+- Test รวม / Stabilization / UI เชื่อม service ที่เป็นแกนกลางเข้าหน้าจอจริงเพิ่มเติม
 
 ## ข้อควรระวัง
 
