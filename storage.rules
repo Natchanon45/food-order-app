@@ -40,13 +40,24 @@ service firebase.storage {
         );
     }
 
-    function tenantProductAdmin(tenantId) {
-      return tenantOwner(tenantId) || (
-        signedIn()
+    function userTenantProductAdmin(tenantId) {
+      return signedIn()
+        && staffProfile().active == true
+        && staffProfile().tenantId == tenantId
+        && staffProfile().role in ['owner', 'admin', 'super_admin'];
+    }
+
+    function membershipTenantProductAdmin(tenantId) {
+      return signedIn()
         && firestore.exists(/databases/(default)/documents/tenants/$(tenantId)/memberships/$(request.auth.uid))
         && firestore.get(/databases/(default)/documents/tenants/$(tenantId)/memberships/$(request.auth.uid)).data.active == true
-        && firestore.get(/databases/(default)/documents/tenants/$(tenantId)/memberships/$(request.auth.uid)).data.role in ['owner', 'admin', 'super_admin']
-      );
+        && firestore.get(/databases/(default)/documents/tenants/$(tenantId)/memberships/$(request.auth.uid)).data.role in ['owner', 'admin', 'super_admin'];
+    }
+
+    function tenantProductAdmin(tenantId) {
+      return tenantOwner(tenantId)
+        || userTenantProductAdmin(tenantId)
+        || membershipTenantProductAdmin(tenantId);
     }
 
     match /menu-images/{menuId}/{fileName} {
