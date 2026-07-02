@@ -63,6 +63,10 @@ h1 > .pos-context-icon, h2 > .pos-context-icon, h3 > .pos-context-icon, .app-tit
 .pos-menu-panel .pos-menu-footer { display: grid !important; flex-direction: initial !important; gap: 10px; margin-top: auto; padding-top: 24px; }
 .pos-menu-footer > * { width: 100%; text-decoration: none; }
 .pos-menu-panel .pos-menu-footer #posLogoutBtn { margin-top: 0; }
+.return-actions { gap: 12px; }
+@media (max-width: 700px) {
+  .return-actions { display: grid !important; grid-template-columns: 1fr; gap: 10px; }
+}
 .pos-header {
   min-height: 72px; padding: 12px 18px; display: flex; align-items: center;
   justify-content: space-between; gap: 12px; background: linear-gradient(135deg, var(--black), var(--green-dark)); color: #fff;
