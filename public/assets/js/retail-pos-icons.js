@@ -46,6 +46,8 @@ const GROUP_ICONS = {
   system: "gear",
 };
 
+const ICON_TARGET_SELECTOR = "button, a.btn, a.header-link, .pos-menu-link, h1, h2, h3, .app-title > div > strong";
+
 function visibleText(element) {
   return (element.getAttribute("aria-label") || element.textContent || "").replace(/\s+/g, " ").trim();
 }
@@ -60,7 +62,7 @@ function iconFor(element, fallback = "circle") {
 }
 
 function addIcon(element, fallback) {
-  if (element.querySelector(":scope > .pos-context-icon")) return;
+  if (element.querySelector(":scope > .bi")) return;
   if (element.matches(".icon-btn") || (!visibleText(element) && element.querySelector(".bi"))) return;
   const icon = document.createElement("i");
   icon.className = `bi bi-${iconFor(element, fallback)} pos-context-icon`;
@@ -71,7 +73,9 @@ function addIcon(element, fallback) {
 
 function enhance(root = document) {
   if (root.nodeType !== Node.ELEMENT_NODE && root.nodeType !== Node.DOCUMENT_NODE) return;
-  const scope = root.nodeType === Node.ELEMENT_NODE ? [root, ...root.querySelectorAll("button, a.btn, a.header-link, .pos-menu-link, h1, h2, h3, .app-title > div > strong")] : [...root.querySelectorAll("button, a.btn, a.header-link, .pos-menu-link, h1, h2, h3, .app-title > div > strong")];
+  const scope = root.nodeType === Node.ELEMENT_NODE
+    ? [...(root.matches(ICON_TARGET_SELECTOR) ? [root] : []), ...root.querySelectorAll(ICON_TARGET_SELECTOR)]
+    : [...root.querySelectorAll(ICON_TARGET_SELECTOR)];
   scope.forEach(element => {
     if (element.matches("button, a.btn, a.header-link, .pos-menu-link")) addIcon(element, "cursor");
     else addIcon(element, "bookmark-star");
