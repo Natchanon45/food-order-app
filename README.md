@@ -6,7 +6,7 @@
 
 - Branch: `feature/retail-pos`
 - Current milestone: `POS Hardening 002`
-- Developer Panel version/build ปัจจุบัน: `0.12.65` / `2026.07.02.019`
+- Developer Panel version/build ปัจจุบัน: `0.12.66` / `2026.07.02.020`
 
 ## Retail POS Status
 
@@ -28,8 +28,17 @@
 - Unified Order / Delivery / POS Menu
 - Dashboard Tenant-safe Link Correction
 - Dashboard Final Grouping
+- POS Payment UX Update
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## POS Payment UX Update
+
+- ซ่อนปุ่ม `โหลดตัวอย่าง` ออกจากหน้าขาย POS
+- เพิ่มไฟล์ `public/assets/js/retail-pos-payment-enter.js`
+- เมื่ออยู่ใน Modal รับชำระเงิน และ cursor อยู่ในช่อง `รับเงินมา` สามารถกด Enter เพื่อยืนยันการขายได้
+- Enter-to-confirm ใช้วิธี click ปุ่ม `ยืนยันการขาย` เดิม จึงยังใช้ validation และ logic การบันทึกเดิมทั้งหมด
+- `/pos/index.html` โหลด `retail-pos-payment-enter.js?v=20260702-020`
 
 ## Dashboard Final Grouping
 
@@ -63,15 +72,15 @@
 
 ## Regression Tests
 
-1. กดออกจากระบบแล้ว URL ต้องเป็น `/login` เท่านั้น
-2. เปิด `/` แบบยังไม่ login แล้ว quick link ต้องไป `/login` เท่านั้น
-3. Login เป็น Staff แล้วกลุ่ม Order / Delivery ต้องมี 4 การ์ดตามสิทธิ์: หน้าครัว, แคชเชียร์ร้านอาหาร, จัดการระบบ, จัดการพนักงาน
-4. Login เป็น Staff แล้วกลุ่ม Retail POS ต้องแยกจาก Order / Delivery
-5. Login เป็น owner แล้วเห็นลิงก์ `/pos/catalog`
-6. Login เป็น role ที่ไม่ใช่ owner/super_admin แล้วต้องไม่เห็น `POS Catalog`
-7. Login เป็น Staff แล้วเมนูต้องแสดงตามสิทธิ์และไม่ข้าม tenant
-8. เปิด POS แล้วขาย Online ได้ตามเดิม
-9. ปิดเน็ตขาย Offline ได้ตามเดิม
+1. หน้า `/pos` ต้องไม่เห็นปุ่ม `โหลดตัวอย่าง`
+2. เปิด Modal รับชำระเงิน ใส่จำนวนเงินในช่อง `รับเงินมา` แล้วกด Enter ต้องเท่ากับกดปุ่ม `ยืนยันการขาย`
+3. ถ้ารับเงินไม่ครบ กด Enter แล้วต้องขึ้น validation `จำนวนเงินที่รับมายังไม่ครบ`
+4. ถ้ารับเงินครบ กด Enter แล้วขาย Online ได้ตามเดิม
+5. ปิดเน็ตขาย Offline แล้วกด Enter เพื่อยืนยันการขายได้ตามเดิม
+6. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
+7. กดออกจากระบบแล้ว URL ต้องเป็น `/login` เท่านั้น
+8. Login เป็น owner แล้วเห็นลิงก์ `/pos/catalog`
+9. Login เป็น role ที่ไม่ใช่ owner/super_admin แล้วต้องไม่เห็น `POS Catalog`
 10. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## Next Tasks
