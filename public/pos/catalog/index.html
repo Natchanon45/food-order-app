@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>นำเข้าสินค้าพื้นฐาน</title>
   <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260702-002">
-  <link rel="stylesheet" href="/assets/css/retail-catalog-import.css?v=20260702-027">
+  <link rel="stylesheet" href="/assets/css/retail-catalog-import.css?v=20260702-028">
 </head>
 <body>
   <header class="pos-header">
@@ -43,6 +43,24 @@
       <div id="importResult" class="result-box"></div>
     </section>
 
+    <section class="catalog-panel excel-import-panel">
+      <div class="panel-head">
+        <div><h2>นำเข้าสินค้าจาก Excel</h2><p class="preview-muted">สำหรับเจ้าของร้าน ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับเข้าระบบ</p></div>
+        <a class="btn excel-download" href="/assets/templates/pos-product-import-template.xlsx" download><i class="bi bi-file-earmark-arrow-down" aria-hidden="true"></i> ดาวน์โหลดแบบฟอร์มตัวอย่าง</a>
+      </div>
+      <label class="excel-dropzone" id="excelDropzone">
+        <input id="excelFile" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+        <i class="bi bi-file-earmark-excel" aria-hidden="true"></i>
+        <strong>เลือกหรือลากไฟล์ Excel มาวาง</strong>
+        <span>รองรับไฟล์ .xlsx ตามแบบฟอร์มตัวอย่าง • สูงสุด 1,000 รายการ</span>
+      </label>
+      <div id="excelImportResult" class="result-box"></div>
+      <div id="excelPreview" hidden>
+        <div class="excel-preview-head"><strong id="excelPreviewSummary">-</strong><button id="excelImportButton" class="btn excel-import-button" type="button" disabled>นำเข้าสินค้าจาก Excel</button></div>
+        <div class="table-wrap"><table class="catalog-table excel-preview-table"><thead><tr><th>แถว</th><th>รหัสสินค้า</th><th>สินค้า</th><th>หมวด</th><th class="number">ราคา</th><th>สถานะ</th></tr></thead><tbody id="excelPreviewRows"></tbody></table></div>
+      </div>
+    </section>
+
     <section class="catalog-panel">
       <div class="panel-head"><div><h2>ตรวจรายการก่อนนำเข้า</h2><p id="previewSummary" class="preview-muted">กำลังตรวจ Catalog...</p></div><span class="pill">Preview 20 รายการ</span></div>
       <div class="table-wrap"><table class="catalog-table"><thead><tr><th>Master ID</th><th>สินค้า</th><th>หมวด</th><th>แบรนด์</th><th class="number">ราคาแนะนำ</th><th>Barcode</th><th>สถานะ</th><th>แหล่งตรวจสอบ</th></tr></thead><tbody id="previewRows"></tbody></table></div>
@@ -62,6 +80,8 @@
     </div>
   </dialog>
 
-  <script type="module" src="/assets/js/retail-catalog-import.js?v=20260628-8"></script>
+  <script src="/assets/vendor/sheetjs/xlsx.full.min.js"></script>
+  <script type="module" src="/assets/js/retail-catalog-import.js?v=20260702-028"></script>
+  <script type="module" src="/assets/js/retail-catalog-excel-import.js?v=20260702-028"></script>
 </body>
 </html>

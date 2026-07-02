@@ -44,6 +44,13 @@
 .import-options{display:flex;gap:10px;align-items:center;flex-wrap:wrap;color:#475569}
 .import-options label{display:flex;gap:8px;align-items:center;font-size:14px}
 .import-options input[type="checkbox"]{width:16px;height:16px;min-width:16px;accent-color:#159447}
+.excel-download,.excel-import-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:14px;padding:11px 14px;background:#159447;color:#fff;text-decoration:none;font-weight:800;white-space:nowrap}
+.excel-download{background:#eef8f1;color:#0b6b3d;border:1px solid #b8ddc4}
+.excel-dropzone{position:relative;display:grid;justify-items:center;gap:7px;padding:28px 18px;border:2px dashed #b8d3c1;border-radius:18px;background:#f8fcf9;text-align:center;cursor:pointer;transition:.18s ease}
+.excel-dropzone:hover,.excel-dropzone.is-dragover{border-color:#159447;background:#eef8f1;transform:translateY(-1px)}
+.excel-dropzone input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.excel-dropzone .bi{font-size:36px;color:#159447}.excel-dropzone strong{font-size:16px}.excel-dropzone span{color:#64748b;font-size:12px}
+.excel-preview-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0 10px}.excel-preview-table{min-width:760px}.excel-row-error{color:#b42318;font-weight:700}.excel-row-ready{color:#0b6b3d;font-weight:700}.excel-import-button:disabled{opacity:.5;cursor:not-allowed}
 .preview-muted{color:#64748b;font-size:13px}
 .catalog-dialog{width:min(460px,calc(100% - 24px));border:0;border-radius:24px;padding:0;box-shadow:0 24px 70px rgba(15,23,42,.25)}
 .catalog-dialog::backdrop{background:rgba(15,23,42,.58)}
@@ -56,4 +63,4 @@
 .catalog-dialog-actions .primary{border:0;background:#159447;color:#fff}
 .catalog-dialog-actions .secondary{background:#fff;color:#334155;border:1px solid #cbd5e1}
 @media(max-width:900px){.catalog-hero{grid-template-columns:1fr}.catalog-actions{justify-content:flex-start}.catalog-stats,.catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.catalog-shell{padding:16px 12px 32px}.catalog-hero{padding:22px;border-radius:22px}.catalog-stats,.catalog-grid{grid-template-columns:1fr}.panel-head{align-items:flex-start;flex-direction:column}.catalog-panel{padding:16px}.catalog-panel .table-wrap{padding-bottom:8px}.catalog-table{font-size:13px}}
+@media(max-width:560px){.catalog-shell{padding:16px 12px 32px}.catalog-hero{padding:22px;border-radius:22px}.catalog-stats,.catalog-grid{grid-template-columns:1fr}.panel-head,.excel-preview-head{align-items:stretch;flex-direction:column}.catalog-panel{padding:16px}.catalog-panel .table-wrap{padding-bottom:8px}.catalog-table{font-size:13px}.excel-download,.excel-import-button{width:100%}.excel-dropzone{padding:22px 12px}}

@@ -1,5 +1,8 @@
 import { RetailCollections, saveRecordsStrict, listRecords } from './retail-db.js?v=20260628-7';
 import { buildRetailMasterCatalogThailand, validateRetailMasterCatalogThailand } from './rmct.js?v=20260628-7';
+import { requireRole } from './auth-service.js?v=20260630-067';
+
+await requireRole(['owner']);
 
 const categoryIcons = ["droplet", "cup-straw", "cup-hot", "cup", "lightning-charge", "box-seam", "grid-3x3-gap", "basket", "bag", "archive", "box2", "bookshelf"];
 
