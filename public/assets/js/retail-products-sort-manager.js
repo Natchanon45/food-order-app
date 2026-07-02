@@ -104,11 +104,14 @@ function sortProductTableRows() {
   if (!productTableBody) return;
   const map = new Map(products.map(item => [String(item.id), item]));
   const categoryRank = new Map(allCategoryIds().filter(id => id.startsWith("category:")).map((id, index) => [actualCategory(id), index]));
-  [...productTableBody.querySelectorAll("tr")].sort((a, b) => {
+  const currentRows = [...productTableBody.querySelectorAll("tr")];
+  const orderedRows = [...currentRows].sort((a, b) => {
     const pa = map.get(a.cells[0]?.textContent.trim()), pb = map.get(b.cells[0]?.textContent.trim());
     if (!pa || !pb) return 0;
     return (categoryRank.get(categoryName(pa)) ?? 9999) - (categoryRank.get(categoryName(pb)) ?? 9999) || Number(pa.sortOrder ?? 9999) - Number(pb.sortOrder ?? 9999);
-  }).forEach(row => productTableBody.appendChild(row));
+  });
+  const changed = orderedRows.some((row, index) => row !== currentRows[index]);
+  if (changed) orderedRows.forEach(row => productTableBody.appendChild(row));
 }
 
 root?.addEventListener("click", event => { const id = event.target.closest("[data-select-category]")?.dataset.selectCategory; if (id) { selectedCategory = id; render(); } if (event.target.closest("[data-save-order]")) saveAll(); });
