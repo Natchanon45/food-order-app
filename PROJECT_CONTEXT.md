@@ -16,8 +16,8 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.67`
-- Build: `2026.07.02.021`
+- Version: `0.12.68`
+- Build: `2026.07.02.022`
 - Branch: `feature/retail-pos`
 - Milestone: `POS Hardening 002`
 
@@ -35,6 +35,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Dashboard Final Grouping เสร็จแล้ว
 - POS Payment UX Update เสร็จแล้ว
 - Retail Category/Product Sort Manager เสร็จแล้ว
+- Product Image Storage Rules Fix เสร็จแล้ว
 
 ## Current Milestone
 
@@ -42,27 +43,23 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## แก้แล้วรอบนี้
 
-- เพิ่ม panel `จัดลำดับหมวดหมู่และสินค้า` ใน `/pos/products/`
-- เพิ่มไฟล์ `public/assets/js/retail-products-sort-manager.js`
-- เพิ่มไฟล์ `public/assets/css/retail-products-sort-manager.css`
-- บันทึกลำดับหมวดด้วย field `categoryOrder`
-- บันทึกลำดับสินค้าในหมวดด้วย field `sortOrder`
-- ล็อกไม่ให้ขยับลำดับสินค้าในหมวด `ขายดี`, `สินค้าขายดี`, `bestseller`, `popular`
-- เพิ่มไฟล์ `public/assets/js/retail-pos-display-order.js` เพื่อให้หน้าขาย `/pos` แสดงสินค้าตาม `categoryOrder` และ `sortOrder`
-- `/pos/products/index.html` bump `retail-products-sort-manager.css?v=20260702-021` และ `retail-products-sort-manager.js?v=20260702-021`
-- `/pos/index.html` bump `retail-pos-display-order.js?v=20260702-021`
-- Developer Panel เป็น Version `0.12.67` Build `2026.07.02.021`
+- แก้ `storage.rules` สำหรับ path `tenants/{tenantId}/product-images/{productId}/{fileName}`
+- เพิ่ม function `userTenantProductAdmin(tenantId)` ให้ตรวจสิทธิ์จาก `users/{uid}`
+- อนุญาต role `owner`, `admin`, `super_admin` ที่ `active == true` และ `tenantId` ตรงกัน อัปโหลด/ลบรูปสินค้าได้
+- ยังจำกัดไฟล์เป็นรูปภาพ และขนาดไม่เกิน 5 MB เหมือนเดิม
+- ต้อง deploy Storage Rules ด้วยคำสั่ง `firebase deploy --only storage`
+- Developer Panel เป็น Version `0.12.68` Build `2026.07.02.022`
 
 ## Regression Tests สำคัญ
 
-1. เปิด `/pos/products/` แล้วเห็น panel `จัดลำดับหมวดหมู่และสินค้า`
-2. ขยับหมวดสินค้าแล้วกดบันทึก ต้องบันทึก `categoryOrder` กลับ Firestore/local cache
-3. เลือกหมวดทั่วไปแล้วขยับสินค้า ต้องบันทึก `sortOrder` กลับ Firestore/local cache
-4. เลือกหมวด `ขายดี` แล้วปุ่มขยับสินค้าต้อง disabled และไม่เปลี่ยน `sortOrder` ของสินค้าในหมวดนั้น
-5. เปิด `/pos` แล้วสินค้าต้องเรียงตาม `categoryOrder` และ `sortOrder`
-6. สินค้าในหมวดขายดีต้องไม่ถูก reorder จากเครื่องมือใหม่นี้
-7. หน้า `/pos` ต้องไม่เห็นปุ่ม `โหลดตัวอย่าง`
-8. กด Enter ใน modal รับเงินแล้วยืนยันการขายได้ตามเดิม
+1. Deploy Storage Rules แล้วอัปโหลดรูปสินค้าใน `/pos/products/` ต้องไม่เจอ 403
+2. รูปสินค้าต้องถูกอัปโหลดไป path `tenants/{tenantId}/product-images/{productId}/product.webp`
+3. ผู้ใช้ role `owner`, `admin`, `super_admin` ที่ `active == true` และ `tenantId` ตรงกันต้องอัปโหลดรูปได้
+4. ผู้ใช้ tenant อื่นต้องอัปโหลดรูปข้าม tenant ไม่ได้
+5. ไฟล์ที่ไม่ใช่รูปภาพหรือใหญ่กว่า 5 MB ต้องถูกปฏิเสธ
+6. เปิด `/pos/products/` แล้วเห็น panel `จัดลำดับหมวดหมู่และสินค้า`
+7. เลือกหมวด `ขายดี` แล้วปุ่มขยับสินค้าต้อง disabled และไม่เปลี่ยน `sortOrder` ของสินค้าในหมวดนั้น
+8. เปิด `/pos` แล้วสินค้าต้องเรียงตาม `categoryOrder` และ `sortOrder`
 9. เปิด POS แล้วขาย Online/Offline ได้ตามเดิม
 10. ตรวจว่า record สำคัญยังมี `tenantId`
 
@@ -79,3 +76,4 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - ใช้ stable sale/order id เดิมทั้ง online/offline
 - Firestore transaction ต้อง read เอกสารทั้งหมดก่อน write
 - ถ้าแก้ JS/CSS ที่ import ใน HTML ต้อง bump query string
+- ถ้าแก้ `storage.rules` ต้อง deploy ด้วย `firebase deploy --only storage`
