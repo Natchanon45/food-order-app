@@ -16,8 +16,8 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.66`
-- Build: `2026.07.02.020`
+- Version: `0.12.67`
+- Build: `2026.07.02.021`
 - Branch: `feature/retail-pos`
 - Milestone: `POS Hardening 002`
 
@@ -34,6 +34,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Dashboard Tenant-safe Link Correction เสร็จแล้ว
 - Dashboard Final Grouping เสร็จแล้ว
 - POS Payment UX Update เสร็จแล้ว
+- Retail Category/Product Sort Manager เสร็จแล้ว
 
 ## Current Milestone
 
@@ -41,24 +42,28 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## แก้แล้วรอบนี้
 
-- ซ่อนปุ่ม `โหลดตัวอย่าง` ออกจากหน้าขาย POS
-- เพิ่มไฟล์ `public/assets/js/retail-pos-payment-enter.js`
-- เมื่ออยู่ใน Modal รับชำระเงิน และ cursor อยู่ในช่อง `รับเงินมา` สามารถกด Enter เพื่อยืนยันการขายได้
-- Enter-to-confirm ใช้วิธี click ปุ่ม `ยืนยันการขาย` เดิม จึงยังใช้ validation และ logic การบันทึกเดิมทั้งหมด
-- `/pos/index.html` โหลด `retail-pos-payment-enter.js?v=20260702-020`
-- Developer Panel เป็น Version `0.12.66` Build `2026.07.02.020`
+- เพิ่ม panel `จัดลำดับหมวดหมู่และสินค้า` ใน `/pos/products/`
+- เพิ่มไฟล์ `public/assets/js/retail-products-sort-manager.js`
+- เพิ่มไฟล์ `public/assets/css/retail-products-sort-manager.css`
+- บันทึกลำดับหมวดด้วย field `categoryOrder`
+- บันทึกลำดับสินค้าในหมวดด้วย field `sortOrder`
+- ล็อกไม่ให้ขยับลำดับสินค้าในหมวด `ขายดี`, `สินค้าขายดี`, `bestseller`, `popular`
+- เพิ่มไฟล์ `public/assets/js/retail-pos-display-order.js` เพื่อให้หน้าขาย `/pos` แสดงสินค้าตาม `categoryOrder` และ `sortOrder`
+- `/pos/products/index.html` bump `retail-products-sort-manager.css?v=20260702-021` และ `retail-products-sort-manager.js?v=20260702-021`
+- `/pos/index.html` bump `retail-pos-display-order.js?v=20260702-021`
+- Developer Panel เป็น Version `0.12.67` Build `2026.07.02.021`
 
 ## Regression Tests สำคัญ
 
-1. หน้า `/pos` ต้องไม่เห็นปุ่ม `โหลดตัวอย่าง`
-2. เปิด Modal รับชำระเงิน ใส่จำนวนเงินในช่อง `รับเงินมา` แล้วกด Enter ต้องเท่ากับกดปุ่ม `ยืนยันการขาย`
-3. ถ้ารับเงินไม่ครบ กด Enter แล้วต้องขึ้น validation `จำนวนเงินที่รับมายังไม่ครบ`
-4. ถ้ารับเงินครบ กด Enter แล้วขาย Online ได้ตามเดิม
-5. ปิดเน็ตขาย Offline แล้วกด Enter เพื่อยืนยันการขายได้ตามเดิม
-6. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
-7. กดออกจากระบบแล้ว URL ต้องเป็น `/login` เท่านั้น
-8. Login เป็น owner แล้วเห็นลิงก์ `/pos/catalog`
-9. Login เป็น role ที่ไม่ใช่ owner/super_admin แล้วต้องไม่เห็น `POS Catalog`
+1. เปิด `/pos/products/` แล้วเห็น panel `จัดลำดับหมวดหมู่และสินค้า`
+2. ขยับหมวดสินค้าแล้วกดบันทึก ต้องบันทึก `categoryOrder` กลับ Firestore/local cache
+3. เลือกหมวดทั่วไปแล้วขยับสินค้า ต้องบันทึก `sortOrder` กลับ Firestore/local cache
+4. เลือกหมวด `ขายดี` แล้วปุ่มขยับสินค้าต้อง disabled และไม่เปลี่ยน `sortOrder` ของสินค้าในหมวดนั้น
+5. เปิด `/pos` แล้วสินค้าต้องเรียงตาม `categoryOrder` และ `sortOrder`
+6. สินค้าในหมวดขายดีต้องไม่ถูก reorder จากเครื่องมือใหม่นี้
+7. หน้า `/pos` ต้องไม่เห็นปุ่ม `โหลดตัวอย่าง`
+8. กด Enter ใน modal รับเงินแล้วยืนยันการขายได้ตามเดิม
+9. เปิด POS แล้วขาย Online/Offline ได้ตามเดิม
 10. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
