@@ -16,8 +16,8 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.68`
-- Build: `2026.07.02.022`
+- Version: `0.12.69`
+- Build: `2026.07.02.023`
 - Branch: `feature/retail-pos`
 - Milestone: `POS Hardening 002`
 
@@ -36,6 +36,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - POS Payment UX Update เสร็จแล้ว
 - Retail Category/Product Sort Manager เสร็จแล้ว
 - Product Image Storage Rules Fix เสร็จแล้ว
+- POS Display Order Hotfix เสร็จแล้ว
 
 ## Current Milestone
 
@@ -43,31 +44,29 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## แก้แล้วรอบนี้
 
-- แก้ `storage.rules` สำหรับ path `tenants/{tenantId}/product-images/{productId}/{fileName}`
-- เพิ่ม function `userTenantProductAdmin(tenantId)` ให้ตรวจสิทธิ์จาก `users/{uid}`
-- อนุญาต role `owner`, `admin`, `super_admin` ที่ `active == true` และ `tenantId` ตรงกัน อัปโหลด/ลบรูปสินค้าได้
-- ยังจำกัดไฟล์เป็นรูปภาพ และขนาดไม่เกิน 5 MB เหมือนเดิม
-- ต้อง deploy Storage Rules ด้วยคำสั่ง `firebase deploy --only storage`
-- Developer Panel เป็น Version `0.12.68` Build `2026.07.02.022`
+- ถอด `retail-pos-display-order.js` ออกจาก `/pos/index.html` ชั่วคราว เพื่อให้หน้าขาย POS กลับมาใช้งานได้ก่อน
+- ตัวจัดลำดับหมวดหมู่/สินค้าใน `/pos/products/` ยังอยู่ แต่ยังไม่ apply การเรียงบนหน้าขาย `/pos` จนกว่าจะทดสอบแยกปลอดภัย
+- ไม่มีการแตะ logic ขาย, Online/Offline, Sync, Stable `saleId` หรือ Stock Transaction
+- Developer Panel เป็น Version `0.12.69` Build `2026.07.02.023`
 
 ## Regression Tests สำคัญ
 
-1. Deploy Storage Rules แล้วอัปโหลดรูปสินค้าใน `/pos/products/` ต้องไม่เจอ 403
-2. รูปสินค้าต้องถูกอัปโหลดไป path `tenants/{tenantId}/product-images/{productId}/product.webp`
-3. ผู้ใช้ role `owner`, `admin`, `super_admin` ที่ `active == true` และ `tenantId` ตรงกันต้องอัปโหลดรูปได้
-4. ผู้ใช้ tenant อื่นต้องอัปโหลดรูปข้าม tenant ไม่ได้
-5. ไฟล์ที่ไม่ใช่รูปภาพหรือใหญ่กว่า 5 MB ต้องถูกปฏิเสธ
-6. เปิด `/pos/products/` แล้วเห็น panel `จัดลำดับหมวดหมู่และสินค้า`
-7. เลือกหมวด `ขายดี` แล้วปุ่มขยับสินค้าต้อง disabled และไม่เปลี่ยน `sortOrder` ของสินค้าในหมวดนั้น
-8. เปิด `/pos` แล้วสินค้าต้องเรียงตาม `categoryOrder` และ `sortOrder`
-9. เปิด POS แล้วขาย Online/Offline ได้ตามเดิม
+1. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
+2. หน้า `/pos` ต้องไม่โหลด `retail-pos-display-order.js`
+3. เปิด POS แล้วขาย Online ได้ตามเดิม
+4. ปิดเน็ตขาย Offline ได้ตามเดิม
+5. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
+6. กด Enter ใน modal รับเงินแล้วยืนยันการขายได้ตามเดิม
+7. หน้า `/pos` ต้องไม่เห็นปุ่ม `โหลดตัวอย่าง`
+8. Deploy Storage Rules แล้วอัปโหลดรูปสินค้าใน `/pos/products/` ต้องไม่เจอ 403
+9. เปิด `/pos/products/` แล้วเห็น panel `จัดลำดับหมวดหมู่และสินค้า`
 10. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
 
 - POS Hardening 003: ตรวจ/ลด event listener ซ้ำและ snapshot unsubscribe patterns ในโมดูลที่มี listener จริง
+- ทดสอบการ apply ลำดับสินค้าใน `/pos` แบบปลอดภัยก่อนเปิดใช้อีกครั้ง
 - พิจารณาแยกบทบาท cashier ร้านอาหาร / cashier ร้านค้า แบบถาวร หากต้องการ role คนละชุด เช่น `restaurant_cashier` และ `retail_cashier`
-- Test รวม / Stabilization / UI เชื่อม service ที่เป็นแกนกลางเข้าหน้าจอจริงเพิ่มเติม
 
 ## ข้อควรระวัง
 
