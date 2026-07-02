@@ -1,0 +1,28 @@
+{
+  "name": "food-order-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ระบบร้านอาหารและร้านค้าปลีกบน Firebase รองรับ QR Table Order, Take Away, Delivery, Kitchen, Cashier และ Retail POS",
+  "main": "retail-pos.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "dependencies": {
+    "bootstrap-icons": "1.13.1"
+  },
+  "scripts": {
+    "sync:bootstrap-icons": "mkdir -p public/assets/vendor/bootstrap-icons/fonts && cp node_modules/bootstrap-icons/font/bootstrap-icons.min.css public/assets/vendor/bootstrap-icons/bootstrap-icons.min.css && cp node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff* public/assets/vendor/bootstrap-icons/fonts/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Natchanon45/food-order-app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Natchanon45/food-order-app/issues"
+  },
+  "homepage": "https://github.com/Natchanon45/food-order-app#readme"
+}

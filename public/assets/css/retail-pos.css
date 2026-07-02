@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap");
+@import url("/assets/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1.13.1");
 
 @font-face {
   font-family: "TH Sarabun PSK Local";
@@ -196,4 +197,3 @@ dialog .dialog-actions { position: sticky; bottom: 0; z-index: 2; margin: 16px -
   .header-actions .btn { min-height: 34px; padding: 7px 9px; font-size: .8rem; }
   .section-heading .btn { padding: 8px 9px; font-size: .82rem; }
 }
-@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css");
