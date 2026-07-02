@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `P9-B008 Shift Opening / Closing`
-- Developer Panel version/build ปัจจุบัน: `0.12.55` / `2026.07.02.009`
+- Current milestone: `P9-B009 Refund / Return / Void`
+- Developer Panel version/build ปัจจุบัน: `0.12.56` / `2026.07.02.010`
 
 ## Food Order Status
 
@@ -31,38 +31,40 @@
 - P9-B006 Firestore Composite Index
 - P9-B007 Audit Log
 - P9-B008 Shift Opening / Closing
+- P9-B009 Refund / Return / Void
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
 
 ## Current Milestone
 
-`P9-B008 Shift Opening / Closing`
+`P9-B009 Refund / Return / Void`
 
-## Shift Service
+## Return Service
 
-- เพิ่ม `public/assets/js/retail-pos-shift.js`
-- รองรับ `openShift()` สำหรับเปิดกะ
-- รองรับ `closeShift()` สำหรับปิดกะ
-- รองรับ `getActiveShiftLocal()` สำหรับอ่านกะที่เปิดอยู่
-- รองรับเลข Shift จาก Running Number กลาง
-- เขียน Audit Log ตอนเปิดกะและปิดกะ
+- เพิ่ม `public/assets/js/retail-pos-return.js`
+- รองรับ `createReturn()`
+- รองรับ `createRefund()`
+- รองรับ `createVoid()`
+- คืน Stock ด้วย stock movement แบบ `direction: in`
+- อัปเดต Sale ต้นทางด้วย `returns` และ `refundTotal`
+- เขียน Audit Log สำหรับ return / void
 
 ## Regression Tests
 
 1. เปิด POS แล้วขาย Online ได้ตามเดิม
-2. Offline Sync ต้องทำงานได้ตามเดิม
-3. เรียก `openShift()` ต้องสร้างเอกสารใน `shifts` พร้อม `tenantId`, `status: open`, `openingCash`
-4. เปิดกะแล้ว localStorage ต้องมี `retail_pos_active_shift_v1`
-5. เรียก `closeShift()` ต้องอัปเดต `status: closed`, `closingCash`, `expectedCash`, `cashDifference`
-6. ปิดกะแล้ว localStorage ต้องล้าง active shift
-7. ตรวจ auditLogs ต้องมี `pos_shift_opened` และ `pos_shift_closed`
-8. ตรวจว่าไม่กระทบ Food Order / Delivery
-9. ตรวจว่า record สำคัญยังมี `tenantId`
+2. เรียก `createReturn({ saleId, items })` ต้องสร้างเอกสารใน `returns`
+3. Stock ของสินค้าที่คืนต้องเพิ่มกลับตามจำนวนคืน
+4. Sale ต้นทางต้องมี `returns` และ `refundTotal`
+5. คืนสินค้าซ้ำเกินจำนวนขายต้องแจ้ง error `RETURN_QTY_EXCEEDS_REMAINING`
+6. ตรวจ stockMovements ต้องมีรายการ `direction: in`
+7. ตรวจ auditLogs ต้องมีรายการ return หรือ void
+8. Offline Sync ต้องทำงานได้ตามเดิม
+9. ตรวจว่าไม่กระทบ Food Order / Delivery
+10. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## Next Tasks
 
-1. P9-B009 Refund / Return / Void
-2. P9-B010 Performance (Cache / Virtual List / Search)
+1. P9-B010 Performance (Cache / Virtual List / Search)
 
 ## Deploy
 
