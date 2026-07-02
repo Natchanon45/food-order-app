@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#159447">
   <link rel="stylesheet" href="/assets/css/app.css?v=20260702-002">
   <link rel="stylesheet" href="/assets/css/icons.css?v=20260702-002">
-  <link rel="stylesheet" href="/assets/css/home-dashboard.css?v=20260702-017">
+  <link rel="stylesheet" href="/assets/css/home-dashboard.css?v=20260702-018">
   <title>Food Order Delivery</title>
 </head>
 <body>
@@ -26,12 +26,10 @@
     <section class="card quick-menu-card" aria-label="ลิงก์เข้าใช้งานด่วน">
       <div class="quick-menu-head">
         <h2>เข้าใช้งานด่วน</h2>
-        <p>รวมลิงก์ Order / Delivery / POS ไว้ในหน้าเดียว ไม่ต้องจำ URL</p>
+        <p>สำหรับพนักงานให้เข้าสู่ระบบก่อน เพื่อให้ระบบเลือก tenant และสิทธิ์เมนูให้ถูกต้อง</p>
       </div>
-      <div class="quick-link-grid">
-        <a class="quick-link" href="/order"><strong>Order หน้าร้าน</strong><span>ลูกค้าสแกน QR / สั่งอาหารที่โต๊ะ</span></a>
-        <a class="quick-link" href="/delivery"><strong>Delivery</strong><span>ลูกค้าสั่งอาหารสำหรับจัดส่ง</span></a>
-        <a class="quick-link" href="/login"><strong>พนักงาน / POS</strong><span>เข้าสู่ระบบเพื่อใช้งานครัว แคชเชียร์ และ POS</span></a>
+      <div class="quick-link-grid quick-link-grid-single">
+        <a class="quick-link" href="/login"><strong>เข้าสู่ระบบพนักงาน / POS</strong><span>เข้าสู่ระบบเพื่อใช้งานครัว แคชเชียร์ จัดการร้าน และ POS ตามสิทธิ์</span></a>
       </div>
     </section>
     <section class="card" style="margin-top:18px">
@@ -49,13 +47,11 @@
     <section class="dashboard-section" aria-labelledby="frontServiceTitle">
       <div class="dashboard-section-head">
         <h2 id="frontServiceTitle">Order / Delivery</h2>
-        <p>งานรับออเดอร์อาหาร โต๊ะ หน้าครัว แคชเชียร์ และจัดส่ง</p>
+        <p>เมนูสำหรับพนักงานร้านอาหารเท่านั้น ไม่ใช้ลิงก์ public ที่ไม่มี tenant</p>
       </div>
       <div class="nav-cards" aria-label="เมนู Order และ Delivery">
-        <a class="card nav-card" href="/order" data-dashboard-role="owner,admin,cashier,kitchen,super_admin" hidden><span class="nav-card-icon"><i class="bi bi-qr-code-scan app-icon" aria-hidden="true"></i></span><span class="nav-card-label">QR / Table Order</span></a>
-        <a class="card nav-card" href="/delivery" data-dashboard-role="owner,admin,cashier,kitchen,super_admin" hidden><span class="nav-card-icon"><i class="bi bi-truck app-icon" aria-hidden="true"></i></span><span class="nav-card-label">Delivery Order</span></a>
         <a class="card nav-card" href="/kitchen" data-dashboard-role="kitchen,super_admin" hidden><span class="nav-card-icon"><i class="bi bi-fork-knife app-icon" aria-hidden="true"></i></span><span class="nav-card-label">หน้าครัว</span></a>
-        <a class="card nav-card" href="/cashier" data-dashboard-role="cashier,super_admin" hidden><span class="nav-card-icon"><i class="bi bi-receipt app-icon" aria-hidden="true"></i></span><span class="nav-card-label">แคชเชียร์</span></a>
+        <a class="card nav-card" href="/cashier" data-dashboard-role="cashier,super_admin" hidden><span class="nav-card-icon"><i class="bi bi-receipt app-icon" aria-hidden="true"></i></span><span class="nav-card-label">แคชเชียร์ร้านอาหาร</span></a>
       </div>
     </section>
     <section class="dashboard-section" aria-labelledby="retailPosTitle">
@@ -64,13 +60,13 @@
         <p>ขายหน้าร้านแบบ Online / Offline / Sync พร้อมใช้ Stable saleId เดิม</p>
       </div>
       <div class="nav-cards" aria-label="เมนู Retail POS">
-        <a class="card nav-card nav-card-feature" href="/pos" data-dashboard-role="owner,admin,manager,cashier,super_admin" hidden><span class="nav-card-icon"><i class="bi bi-shop app-icon" aria-hidden="true"></i></span><span class="nav-card-label">POS ร้านค้าปลีก</span></a>
+        <a class="card nav-card nav-card-feature" href="/pos" data-dashboard-role="owner,admin,manager,cashier,super_admin" data-dashboard-module="retail-pos" hidden><span class="nav-card-icon"><i class="bi bi-shop app-icon" aria-hidden="true"></i></span><span class="nav-card-label">POS ร้านค้าปลีก</span></a>
         <a class="card nav-card" href="/admin" data-dashboard-role="admin,super_admin" hidden><span class="nav-card-icon"><i class="bi bi-arrow-left-right app-icon" aria-hidden="true"></i></span><span class="nav-card-label">จัดการระบบ</span></a>
         <a class="card nav-card" href="/admin/users" data-dashboard-role="owner,super_admin" hidden><span class="nav-card-icon"><i class="bi bi-people app-icon" aria-hidden="true"></i></span><span class="nav-card-label">จัดการพนักงาน</span></a>
       </div>
     </section>
   </main>
   <script type="module" src="/assets/js/ui.js?v=20260701-002"></script>
-  <script type="module" src="/assets/js/home-session-fa.js?v=20260630-082"></script>
+  <script type="module" src="/assets/js/home-session-fa.js?v=20260702-018"></script>
 </body>
 </html>
