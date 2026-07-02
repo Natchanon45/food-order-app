@@ -42,6 +42,14 @@ body { margin: 0; min-height: 100vh; overflow-y: auto; font-family: "Kanit", san
 a { color: inherit; }
 button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
+.pos-context-icon { display: inline-block; flex: 0 0 auto; margin-right: .42em; font-size: .95em; line-height: 1; vertical-align: -.08em; }
+button:has(> .pos-context-icon), a:has(> .pos-context-icon) { display: inline-flex; align-items: center; justify-content: center; gap: 0; }
+h1 > .pos-context-icon, h2 > .pos-context-icon, h3 > .pos-context-icon, .app-title strong > .pos-context-icon { color: var(--green); margin-right: .5em; }
+.pos-header .app-title strong > .pos-context-icon { color: #72e59d; }
+.pos-menu-user-icon { grid-row: 1 / span 2; align-self: center; color: var(--green); font-size: 1.65rem; margin-right: 8px; }
+.pos-menu-user { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; }
+.pos-menu-user strong, .pos-menu-user span { grid-column: 2; }
+.pos-menu-trigger::before { display: none !important; }
 .pos-header {
   min-height: 72px; padding: 12px 18px; display: flex; align-items: center;
   justify-content: space-between; gap: 12px; background: linear-gradient(135deg, var(--black), var(--green-dark)); color: #fff;
