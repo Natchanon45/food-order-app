@@ -38,6 +38,18 @@ const ICON_RULES = [
   [/รายละเอียด|ดู|แสดง|ซ่อน|view/i, "eye"],
 ];
 
+const ACTION_ICON_RULES = [
+  [/เพิ่ม|สร้าง|ใหม่|add|create/i, "plus-lg"],
+  [/บันทึก|save/i, "floppy"],
+  [/คืนค่าเริ่มต้น|รีเซ็ต|รีเฟรช|โหลดใหม่|reload|refresh|reset/i, "arrow-clockwise"],
+  [/ค้นหา|search/i, "search"],
+  [/เดือนนี้|วันนี้|เลือกวันที่|ช่วงวันที่/i, "calendar3"],
+  [/ทั้งหมด/i, "x-circle"],
+  [/ล้าง|ยกเลิก|ปิด|clear|cancel|close/i, "x-lg"],
+  [/ลบ|delete/i, "trash3"],
+  [/แก้ไข|edit/i, "pencil-square"],
+];
+
 const GROUP_ICONS = {
   sales: "cart3",
   stock: "boxes",
@@ -55,6 +67,10 @@ function visibleText(element) {
 function iconFor(element, fallback = "circle") {
   const explicit = element.dataset.posIcon;
   if (explicit) return explicit;
+  if (element.matches("button, a.btn, a.header-link, .pos-menu-link")) {
+    const actionIcon = ACTION_ICON_RULES.find(([pattern]) => pattern.test(visibleText(element)))?.[1];
+    if (actionIcon) return actionIcon;
+  }
   const group = element.dataset.menuGroup;
   if (group && GROUP_ICONS[group]) return GROUP_ICONS[group];
   const haystack = `${element.id || ""} ${visibleText(element)}`;

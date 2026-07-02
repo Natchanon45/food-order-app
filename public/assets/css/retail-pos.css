@@ -53,6 +53,9 @@ h1 > .pos-context-icon, h2 > .pos-context-icon, h3 > .pos-context-icon, .app-tit
 .pos-menu-user strong, .pos-menu-user span { grid-column: 2; }
 .pos-menu-panel > .pos-central-home { width: 100%; min-height: 44px; margin: -12px 0 22px; text-decoration: none; }
 .pos-menu-trigger::before { display: none !important; }
+.return-search-input { position: relative; min-width: 0; }
+.return-search-input > i { position: absolute; left: 14px; top: 50%; z-index: 1; transform: translateY(-50%); color: var(--green); font-size: 1.15rem; pointer-events: none; }
+.return-search-input > input { padding-left: 44px; }
 .pos-menu-group > button { display: grid !important; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; justify-content: normal !important; column-gap: .65rem; text-align: left !important; }
 .pos-menu-group > button::after { grid-column: 3; }
 .pos-menu-group-label { grid-column: 2; min-width: 0; text-align: left; }
