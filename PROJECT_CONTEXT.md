@@ -16,8 +16,8 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.62`
-- Build: `2026.07.02.016`
+- Version: `0.12.63`
+- Build: `2026.07.02.017`
 - Branch: `feature/retail-pos`
 - Milestone: `POS Hardening 002`
 
@@ -30,6 +30,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - commit ฐานล่าสุดจากผู้ใช้: `927047f`
 - POS Hardening 001 เสร็จแล้ว
 - POS Hardening 002 เสร็จแล้ว
+- Unified Order / Delivery / POS Menu เสร็จแล้ว
 
 ## Current Milestone
 
@@ -37,30 +38,26 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## แก้แล้วรอบนี้
 
-- อัปเกรด `retail-pos-hardening.js` เป็น `HARDENING-002`
-- เพิ่ม diagnostics สำหรับ long session
-- เพิ่ม `window.retailPosHardening.diagnostics()` สำหรับตรวจสถานะด้วย Console
-- เก็บ queue summary: pending / syncing / failed / conflict / synced / other
-- เก็บ localStorage usage ของ sales / leader / snapshot
-- เก็บ uptime, maintenance count, visibility state, online state
-- เก็บ event counters: online / focus / visibility / pageshow / storage
-- เก็บ memory snapshot ถ้า browser รองรับ `performance.memory`
-- ส่ง event `retail-pos-diagnostics`
-- `/pos/index.html` bump `retail-pos-hardening.js?v=20260702-016`
-- Developer Panel เป็น Version `0.12.62` Build `2026.07.02.016`
+- ปรับหน้า `/` ให้เป็นเมนูกลางรวม Order / Delivery / POS
+- เพิ่ม Public quick links สำหรับ `/order`, `/delivery`, `/login`
+- จัด Staff Dashboard เป็น 2 กลุ่ม: `Order / Delivery` และ `Retail POS`
+- เพิ่มลิงก์ Staff Dashboard: `/order`, `/delivery`, `/kitchen`, `/cashier`, `/pos`, `/admin`, `/admin/users`
+- เพิ่ม CSS สำหรับ quick links, dashboard section, POS featured card และ mobile responsive
+- `/` bump `home-dashboard.css?v=20260702-017`
+- Developer Panel เป็น Version `0.12.63` Build `2026.07.02.017`
 
 ## Regression Tests สำคัญ
 
-1. เปิด POS แล้วขาย Online ได้ตามเดิม
-2. ปิดเน็ตขาย Offline ได้ตามเดิม
-3. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
-4. Console: `window.retailPosHardening.version` ต้องเป็น `HARDENING-002`
-5. Console: `window.retailPosHardening.diagnostics()` ต้องคืน object diagnostics
-6. เปิด POS 2 แท็บ แล้ว diagnostics ต้องมี `isLeader` แค่แท็บใดแท็บหนึ่งในช่วงเวลาเดียวกัน
-7. ปิดจอ/ปล่อย browser sleep แล้วกลับมา diagnostics ต้องยัง update ได้
-8. pending/failed/conflict queue ต้องไม่ถูกลบจาก localStorage
-9. ตรวจว่าไม่กระทบ Order / Delivery
-10. ตรวจว่า record สำคัญยังมี `tenantId`
+1. เปิด `/` แล้วเห็นลิงก์ด่วน Order / Delivery / Login
+2. Login เป็น Staff แล้วเห็น Staff Dashboard รวมเมนู Order / Delivery / POS
+3. คลิก `/order`, `/delivery`, `/kitchen`, `/cashier`, `/pos`, `/admin`, `/admin/users` แล้วไปหน้าถูกต้องตามสิทธิ์
+4. ตรวจ role visibility ของ card ไม่ให้ผู้ใช้ที่ไม่มีสิทธิ์เห็นเมนูเกินสิทธิ์
+5. เปิด POS แล้วขาย Online ได้ตามเดิม
+6. ปิดเน็ตขาย Offline ได้ตามเดิม
+7. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
+8. ตรวจว่าไม่กระทบ Order / Delivery
+9. ตรวจว่า record สำคัญยังมี `tenantId`
+10. ตรวจ mobile dashboard ว่า card ไม่ล้นจอและกดได้ง่าย
 
 ## งานถัดไป
 
