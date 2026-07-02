@@ -62,6 +62,7 @@ function readJson(key, fallback) {
 
 function saveProducts() {
   localStorage.setItem(PRODUCT_KEY, JSON.stringify(products));
+  window.dispatchEvent(new CustomEvent("retail-pos-products-changed"));
 }
 
 function saveMovements() {

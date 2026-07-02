@@ -8,10 +8,12 @@
     "doc": "docs"
   },
   "dependencies": {
-    "bootstrap-icons": "1.13.1"
+    "bootstrap-icons": "1.13.1",
+    "sortablejs": "1.15.6"
   },
   "scripts": {
-    "sync:bootstrap-icons": "mkdir -p public/assets/vendor/bootstrap-icons/fonts && cp node_modules/bootstrap-icons/font/bootstrap-icons.min.css public/assets/vendor/bootstrap-icons/bootstrap-icons.min.css && cp node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff* public/assets/vendor/bootstrap-icons/fonts/"
+    "sync:bootstrap-icons": "mkdir -p public/assets/vendor/bootstrap-icons/fonts && cp node_modules/bootstrap-icons/font/bootstrap-icons.min.css public/assets/vendor/bootstrap-icons/bootstrap-icons.min.css && cp node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff* public/assets/vendor/bootstrap-icons/fonts/",
+    "sync:sortablejs": "mkdir -p public/assets/vendor/sortablejs && cp node_modules/sortablejs/Sortable.min.js public/assets/vendor/sortablejs/Sortable.min.js"
   },
   "repository": {
     "type": "git",

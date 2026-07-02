@@ -4,8 +4,7 @@ const PERMISSIONS={
   checkout:"pos.sale.checkout",
   discount:"pos.sale.discount",
   hold:"pos.sale.hold",
-  clear:"pos.sale.clear",
-  seed:"pos.sale.seed"
+  clear:"pos.sale.clear"
 };
 
 function deny(message="คุณไม่มีสิทธิ์ดำเนินการนี้"){
@@ -32,7 +31,6 @@ function applyPermissions(){
   setHidden(document.querySelector("#holdBillBtn"),!hasPermission(PERMISSIONS.hold));
   setHidden(document.querySelector("#heldBillsBtn"),!hasPermission(PERMISSIONS.hold));
   setHidden(document.querySelector("#clearSaleBtn"),!hasPermission(PERMISSIONS.clear));
-  setHidden(document.querySelector("#seedBtn"),!hasPermission(PERMISSIONS.seed));
 
   const payButton=document.querySelector("#payBtn");
   if(payButton&&!hasPermission(PERMISSIONS.checkout)){
@@ -44,7 +42,6 @@ function permissionForClick(target){
   if(target.closest("#confirmPaymentBtn")||target.closest("#payBtn"))return PERMISSIONS.checkout;
   if(target.closest("#holdBillBtn")||target.closest("#heldBillsBtn")||target.closest("[data-resume-id]")||target.closest("[data-delete-id]"))return PERMISSIONS.hold;
   if(target.closest("#clearSaleBtn"))return PERMISSIONS.clear;
-  if(target.closest("#seedBtn"))return PERMISSIONS.seed;
   return null;
 }
 

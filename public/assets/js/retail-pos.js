@@ -21,15 +21,6 @@ const MOVEMENT_KEY = "retail_pos_stock_movements_v1";
 const SHIFT_KEY = "retail_pos_active_shift_v1";
 const CUSTOMER_KEY = "retail_pos_customers_v1";
 
-const sampleProducts = [
-  { id: "P001", barcode: "8850000000011", name: "น้ำดื่ม 600 มล.", price: 10, cost: 6, stock: 48, unit: "ขวด" },
-  { id: "P002", barcode: "8850000000028", name: "บะหมี่กึ่งสำเร็จรูป", price: 8, cost: 5.5, stock: 60, unit: "ซอง" },
-  { id: "P003", barcode: "8850000000035", name: "นมกล่อง UHT", price: 15, cost: 10, stock: 36, unit: "กล่อง" },
-  { id: "P004", barcode: "8850000000042", name: "ขนมมันฝรั่ง", price: 20, cost: 13, stock: 25, unit: "ถุง" },
-  { id: "P005", barcode: "8850000000059", name: "สบู่ก้อน", price: 18, cost: 12, stock: 30, unit: "ก้อน" },
-  { id: "P006", barcode: "8850000000066", name: "น้ำยาล้างจาน", price: 35, cost: 24, stock: 18, unit: "ขวด" }
-];
-
 const els = {
   barcodeInput: document.querySelector("#barcodeInput"),
   searchInput: document.querySelector("#searchInput"),
@@ -42,7 +33,6 @@ const els = {
   grandTotal: document.querySelector("#grandTotal"),
   payBtn: document.querySelector("#payBtn"),
   clearSaleBtn: document.querySelector("#clearSaleBtn"),
-  seedBtn: document.querySelector("#seedBtn"),
   paymentDialog: document.querySelector("#paymentDialog"),
   paymentTotal: document.querySelector("#paymentTotal"),
   paymentMethod: document.querySelector("#paymentMethod"),
@@ -358,9 +348,8 @@ async function loadProducts() {
     const rows = await listRecords(RetailCollections.products, { sortBy: "updatedAt", direction: "desc" });
     if (rows.length) products = normalizeProducts(rows);
     else if (isFirebaseConfigured && db) products = [];
-    else if (!products.length) products = normalizeProducts(structuredClone(sampleProducts));
     writeJson(PRODUCT_KEY, products);
-  } catch (error) { console.warn("[retail-pos] load products fallback", error); if (!products.length) products = normalizeProducts(structuredClone(sampleProducts)); }
+  } catch (error) { console.warn("[retail-pos] load products failed", error); }
   renderProducts();
   renderCart();
 }
@@ -375,8 +364,6 @@ els.payBtn.addEventListener("click", openPayment);
 els.paymentMethod.addEventListener("change", updatePaymentUi);
 els.receivedInput.addEventListener("input", updatePaymentUi);
 els.confirmPaymentBtn.addEventListener("click", confirmPayment);
-els.seedBtn.addEventListener("click", () => { if (products.length && !confirm("แทนที่ข้อมูลสินค้าปัจจุบันด้วยข้อมูลตัวอย่างหรือไม่?")) return; products = structuredClone(sampleProducts).map(normalizeProduct); writeJson(PRODUCT_KEY, products); resetSale(); renderProducts(); showToast("โหลดสินค้าตัวอย่างแล้ว"); });
-els.seedBtn.hidden = Boolean(isFirebaseConfigured && db);
 await loadProducts();
 const stopShiftWatch=watchRecords(RetailCollections.shifts,rows=>{ const uid=auth?.currentUser?.uid||""; const active=rows.find(row=>row.status==="open"&&(!uid||row.createdBy===uid))||null; if(active)writeJson(SHIFT_KEY,active);else localStorage.removeItem(SHIFT_KEY); document.documentElement.dataset.shiftSource="firestore"; window.dispatchEvent(new Event("storage")); },{sortBy:"updatedAt",direction:"desc"});
 window.addEventListener("beforeunload",stopShiftWatch,{once:true});

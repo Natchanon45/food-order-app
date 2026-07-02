@@ -1,4 +1,4 @@
 import "./retail-pos-hold-core.js?v=20260629-032";
 import "./retail-pos-complete.js?v=20260629-033";
 import "./retail-pos-shift-link.js?v=20260624-1";
-import "./retail-pos-catalog.js?v=20260701-018";
+import "./retail-pos-catalog.js?v=20260702-023";
