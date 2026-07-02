@@ -16,6 +16,11 @@ let activeCategory = "ทั้งหมด";
 let currentPage = 1;
 let submitting = false;
 
+async function askConfirm(message, options = {}) {
+  if (typeof window.sweetConfirm === "function") return await window.sweetConfirm(message, options);
+  return confirm(message);
+}
+
 function isMobile() { return window.matchMedia("(max-width: 899px)").matches; }
 function pageSize() { return isMobile() ? Number.MAX_SAFE_INTEGER : 10; }
 function categories() { return ["ทั้งหมด", ...new Set(menus.filter(item => item.active !== false).map(item => item.category || "อื่น ๆ"))]; }
@@ -31,7 +36,34 @@ function updateCart() { const items = [...cart.values()]; cartList.innerHTML = i
 categoryTabs.addEventListener("click", event => { const button = event.target.closest("[data-category]"); if (!button) return; activeCategory = button.dataset.category; currentPage = 1; renderTabs(); renderMenus(); });
 menuPagination.addEventListener("click", event => { const button = event.target.closest("[data-page]"); if (!button || button.disabled) return; currentPage = Number(button.dataset.page); renderMenus(); document.querySelector("#menuListStart")?.scrollIntoView({ behavior: "smooth", block: "start" }); });
 menuGrid.addEventListener("click", event => { const id = event.target.closest("[data-add]")?.dataset.add; if (!id) return; const menu = menus.find(item => item.id === id); if (!menu) return; const current = cart.get(id); cart.set(id, current ? { ...current, qty: current.qty + 1 } : { ...menu, qty: 1, note: "" }); updateCart(); toast(`เพิ่ม ${menu.name} แล้ว`); });
-cartList.addEventListener("click", event => { const incButton = event.target.closest("[data-inc]"); const decButton = event.target.closest("[data-dec]"); const id = incButton?.dataset.inc || decButton?.dataset.dec; if (!id) return; const item = cart.get(id); if (!item) return; if (incButton) item.qty += 1; if (decButton) item.qty -= 1; if (item.qty <= 0) cart.delete(id); else cart.set(id, item); updateCart(); });
+cartList.addEventListener("click", async event => {
+  const incButton = event.target.closest("[data-inc]");
+  const decButton = event.target.closest("[data-dec]");
+  const id = incButton?.dataset.inc || decButton?.dataset.dec;
+  if (!id) return;
+  const item = cart.get(id);
+  if (!item) return;
+  if (incButton) {
+    item.qty += 1;
+    cart.set(id, item);
+    updateCart();
+    return;
+  }
+  if (item.qty <= 1) {
+    const ok = await askConfirm(`ลบ ${item.name} ออกจากรายการสั่งซื้อใช่หรือไม่?`, {
+      title: "ลบรายการอาหาร",
+      confirmText: "ตกลง",
+      cancelText: "ยกเลิก",
+      type: "warning"
+    });
+    if (!ok) return;
+    cart.delete(id);
+  } else {
+    item.qty -= 1;
+    cart.set(id, item);
+  }
+  updateCart();
+});
 cartList.addEventListener("input", event => { const id = event.target.dataset.note; if (!id) return; const item = cart.get(id); if (!item) return; item.note = event.target.value; cart.set(id, item); });
 document.querySelector("#searchInput").addEventListener("input", () => { currentPage = 1; renderMenus(); });
 window.addEventListener("resize", () => { currentPage = 1; renderMenus(); });
