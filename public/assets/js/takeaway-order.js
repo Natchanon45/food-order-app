@@ -1,4 +1,5 @@
 import "./sweet-dialog.js?v=20260629-048";
+import "./cart-item-layout.js?v=20260702-002";
 import { dataService, usingDemoMode } from "./data-service.js?v=20260701-009";
 import { money, toast } from "./ui.js?v=20260701-010";
 

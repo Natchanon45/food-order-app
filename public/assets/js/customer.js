@@ -1,4 +1,5 @@
 import "./sweet-dialog.js?v=20260629-048";
+import "./cart-item-layout.js?v=20260702-002";
 import { dataService, usingDemoMode } from "./data-service.js";
 import { ensureTenantContext } from "./tenant-context.js";
 import { money, toast, getTableCode, formatTime } from "./ui.js?v=20260701-001";
