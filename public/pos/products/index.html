@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#159447">
   <title>จัดการสินค้าและสต็อก</title>
-  <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260702-003">
+  <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260702-004">
   <link rel="stylesheet" href="/assets/css/retail-products.css?v=20260627-1">
   <link rel="stylesheet" href="/assets/css/retail-products-sort-manager.css?v=20260702-026">
   <link rel="stylesheet" href="/assets/css/retail-pos-navigation.css?v=20260627-3">
@@ -25,13 +25,13 @@
   <dialog id="stockDialog"><form id="stockForm" class="payment-form"><div class="dialog-head"><h2>ปรับสต็อก</h2><button type="button" id="closeStockDialog" class="icon-btn" aria-label="ปิด"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div><input id="stockProductId" type="hidden"><div class="stock-product-name" id="stockProductName"></div><label>ประเภทการปรับ<select id="stockAction"><option value="add">เพิ่มสต็อก</option><option value="remove">ลดสต็อก</option><option value="set">กำหนดยอดใหม่</option></select></label><label>จำนวน<input id="stockQuantity" required type="number" min="0" step="1" value="1"></label><label>หมายเหตุ<input id="stockNote" maxlength="150" placeholder="เช่น รับสินค้าเข้า / ของเสีย / ตรวจนับ"></label><p id="stockFormError" class="error-text"></p><div class="dialog-actions"><button type="button" id="cancelStockBtn" class="btn btn-secondary">ยกเลิก</button><button type="submit" class="btn btn-pay">ยืนยันปรับสต็อก</button></div></form></dialog>
   <div id="toast" class="toast" role="status"></div>
   <script src="/assets/vendor/sortablejs/Sortable.min.js"></script>
-  <script type="module" src="/assets/js/retail-toast-status.js?v=20260627-2"></script>
+  <script type="module" src="/assets/js/retail-toast-status.js?v=20260702-001"></script>
   <script type="module" src="/assets/js/retail-products.js?v=20260702-022"></script>
   <script type="module" src="/assets/js/retail-products-firestore-status.js?v=20260627-1"></script>
   <script type="module" src="/assets/js/retail-barcode-scan-tools.js?v=20260627-2"></script>
   <script type="module" src="/assets/js/retail-product-merchandising.js?v=20260627-4"></script>
   <script type="module" src="/assets/js/retail-products-sort-manager.js?v=20260702-025"></script>
-  <script type="module" src="/assets/js/retail-pos-navigation.js?v=20260702-002"></script>
+  <script type="module" src="/assets/js/retail-pos-navigation.js?v=20260702-003"></script>
   <script type="module" src="/assets/js/retail-products-permissions.js?v=20260625-3"></script>
 </body>
 </html>

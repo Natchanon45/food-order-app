@@ -42,14 +42,24 @@ body { margin: 0; min-height: 100vh; overflow-y: auto; font-family: "Kanit", san
 a { color: inherit; }
 button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
-.pos-context-icon { display: inline-block; flex: 0 0 auto; margin-right: .42em; font-size: .95em; line-height: 1; vertical-align: -.08em; }
-button:has(> .pos-context-icon), a:has(> .pos-context-icon) { display: inline-flex; align-items: center; justify-content: center; gap: 0; }
+.pos-context-icon { display: inline-block; flex: 0 0 auto; margin: 0; font-size: .95em; line-height: 1; vertical-align: -.08em; }
+button:has(> .pos-context-icon), a:has(> .pos-context-icon) { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; }
 h1 > .pos-context-icon, h2 > .pos-context-icon, h3 > .pos-context-icon, .app-title strong > .pos-context-icon { color: var(--green); margin-right: .5em; }
 .pos-header .app-title strong > .pos-context-icon { color: #72e59d; }
 .pos-menu-user-icon { grid-row: 1 / span 2; align-self: center; color: var(--green); font-size: 1.65rem; margin-right: 8px; }
 .pos-menu-user { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; }
 .pos-menu-user strong, .pos-menu-user span { grid-column: 2; }
 .pos-menu-trigger::before { display: none !important; }
+.pos-menu-group > button { display: grid !important; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; justify-content: normal !important; column-gap: .65rem; text-align: left !important; }
+.pos-menu-group > button::after { grid-column: 3; }
+.pos-menu-group-label { grid-column: 2; min-width: 0; text-align: left; }
+.pos-menu-links { list-style: none; margin: 0; padding-left: 12px !important; padding-right: 12px !important; }
+.pos-menu-links > li { display: block; margin: 0; padding: 0; }
+.pos-menu-link { display: grid !important; grid-template-columns: auto minmax(0, 1fr); align-items: center; justify-content: start !important; gap: .65rem !important; text-align: left !important; }
+.pos-menu-link > span { min-width: 0; text-align: left; }
+.pos-menu-panel .pos-menu-footer { display: grid !important; flex-direction: initial !important; gap: 10px; margin-top: auto; padding-top: 24px; }
+.pos-menu-footer > * { width: 100%; text-decoration: none; }
+.pos-menu-panel .pos-menu-footer #posLogoutBtn { margin-top: 0; }
 .pos-header {
   min-height: 72px; padding: 12px 18px; display: flex; align-items: center;
   justify-content: space-between; gap: 12px; background: linear-gradient(135deg, var(--black), var(--green-dark)); color: #fff;

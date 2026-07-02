@@ -172,6 +172,7 @@ function closeDrawer(sync = true) {
 }
 
 function startMobileCartBar() {
+  if (!document.querySelector('#cartList') || !document.querySelector('#grandTotal') || !document.querySelector('#payBtn')) return;
   ensureMobileCartStyle();
   updateMobileCartBar();
   const targets = ['#itemCount', '#grandTotal', '#cartList'].map(selector => document.querySelector(selector)).filter(Boolean);
