@@ -6,7 +6,7 @@
 
 - Branch: `feature/retail-pos`
 - Current milestone: `POS Hardening 002`
-- Developer Panel version/build ปัจจุบัน: `0.12.66` / `2026.07.02.020`
+- Developer Panel version/build ปัจจุบัน: `0.12.67` / `2026.07.02.021`
 
 ## Retail POS Status
 
@@ -29,8 +29,21 @@
 - Dashboard Tenant-safe Link Correction
 - Dashboard Final Grouping
 - POS Payment UX Update
+- Retail Category/Product Sort Manager
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Retail Category/Product Sort Manager
+
+- เพิ่ม panel `จัดลำดับหมวดหมู่และสินค้า` ใน `/pos/products/`
+- เพิ่มไฟล์ `public/assets/js/retail-products-sort-manager.js`
+- เพิ่มไฟล์ `public/assets/css/retail-products-sort-manager.css`
+- บันทึกลำดับหมวดด้วย field `categoryOrder`
+- บันทึกลำดับสินค้าในหมวดด้วย field `sortOrder`
+- ล็อกไม่ให้ขยับลำดับสินค้าในหมวด `ขายดี`, `สินค้าขายดี`, `bestseller`, `popular`
+- เพิ่มไฟล์ `public/assets/js/retail-pos-display-order.js` เพื่อให้หน้าขาย `/pos` แสดงสินค้าตาม `categoryOrder` และ `sortOrder`
+- `/pos/products/index.html` bump `retail-products-sort-manager.css?v=20260702-021` และ `retail-products-sort-manager.js?v=20260702-021`
+- `/pos/index.html` bump `retail-pos-display-order.js?v=20260702-021`
 
 ## POS Payment UX Update
 
@@ -72,15 +85,15 @@
 
 ## Regression Tests
 
-1. หน้า `/pos` ต้องไม่เห็นปุ่ม `โหลดตัวอย่าง`
-2. เปิด Modal รับชำระเงิน ใส่จำนวนเงินในช่อง `รับเงินมา` แล้วกด Enter ต้องเท่ากับกดปุ่ม `ยืนยันการขาย`
-3. ถ้ารับเงินไม่ครบ กด Enter แล้วต้องขึ้น validation `จำนวนเงินที่รับมายังไม่ครบ`
-4. ถ้ารับเงินครบ กด Enter แล้วขาย Online ได้ตามเดิม
-5. ปิดเน็ตขาย Offline แล้วกด Enter เพื่อยืนยันการขายได้ตามเดิม
-6. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
-7. กดออกจากระบบแล้ว URL ต้องเป็น `/login` เท่านั้น
-8. Login เป็น owner แล้วเห็นลิงก์ `/pos/catalog`
-9. Login เป็น role ที่ไม่ใช่ owner/super_admin แล้วต้องไม่เห็น `POS Catalog`
+1. เปิด `/pos/products/` แล้วเห็น panel `จัดลำดับหมวดหมู่และสินค้า`
+2. ขยับหมวดสินค้าแล้วกดบันทึก ต้องบันทึก `categoryOrder` กลับ Firestore/local cache
+3. เลือกหมวดทั่วไปแล้วขยับสินค้า ต้องบันทึก `sortOrder` กลับ Firestore/local cache
+4. เลือกหมวด `ขายดี` แล้วปุ่มขยับสินค้าต้อง disabled และไม่เปลี่ยน `sortOrder` ของสินค้าในหมวดนั้น
+5. เปิด `/pos` แล้วสินค้าต้องเรียงตาม `categoryOrder` และ `sortOrder`
+6. สินค้าในหมวดขายดีต้องไม่ถูก reorder จากเครื่องมือใหม่นี้
+7. หน้า `/pos` ต้องไม่เห็นปุ่ม `โหลดตัวอย่าง`
+8. กด Enter ใน modal รับเงินแล้วยืนยันการขายได้ตามเดิม
+9. เปิด POS แล้วขาย Online/Offline ได้ตามเดิม
 10. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## Next Tasks
