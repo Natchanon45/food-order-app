@@ -5,8 +5,8 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `P9-B010 Performance (Cache / Virtual List / Search)`
-- Developer Panel version/build ปัจจุบัน: `0.12.57` / `2026.07.02.011`
+- Current milestone: `P9-B010 Manual Sync Hotfix`
+- Developer Panel version/build ปัจจุบัน: `0.12.58` / `2026.07.02.012`
 
 ## Food Order Status
 
@@ -33,33 +33,33 @@
 - P9-B008 Shift Opening / Closing
 - P9-B009 Refund / Return / Void
 - P9-B010 Performance
+- Hotfix Manual Sync
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
 
 ## Current Milestone
 
-`P9-B010 Performance (Cache / Virtual List / Search)`
+`P9-B010 Manual Sync Hotfix`
 
-## Performance Layer
+## Manual Sync Hotfix
 
-- เพิ่ม `public/assets/js/retail-pos-performance.js`
-- Debounce การค้นหาสินค้า
-- จำกัด product card ที่แสดงบน DOM ครั้งละ 96 รายการ
-- แสดงข้อความแนะนำให้ค้นหาเมื่อผลลัพธ์มากเกินไป
-- เพิ่ม performance snapshot ใน `sessionStorage`
-- `/pos/index.html` โหลด `retail-pos-performance.js?v=20260702-011`
+- แก้ `retail-pos-sync-status.js` ให้ใช้ Offline Queue Worker version ล่าสุด
+- แก้ `retail-pos-sync-status.js` ให้ใช้ Repository Layer version ล่าสุด
+- เพิ่มการฟัง event `retail-offline-queue-worker`
+- ปุ่ม Manual Sync เรียก Worker ล่าสุดโดยตรง
+- `/pos/index.html` โหลด `retail-pos-sync-status.js?v=20260702-012`
 
 ## Regression Tests
 
-1. เปิด POS แล้วโหลดสินค้าต้องเร็วขึ้นเมื่อมีสินค้าจำนวนมาก
-2. ถ้ามีสินค้ามากกว่า 96 รายการ ต้องเห็นข้อความแนะนำให้ค้นหา
-3. ค้นหาสินค้าด้วยชื่อ / รหัส / บาร์โค้ด ต้องเจอสินค้าเดิม
-4. กดเพิ่มสินค้าเข้าตะกร้าได้ตามเดิม
-5. สแกนบาร์โค้ดแล้วเพิ่มสินค้าได้ตามเดิม
-6. ขาย Online ได้ตามเดิม
-7. ขาย Offline และ Sync ได้ตามเดิม
-8. ตรวจ `window.retailPosPerformance.version` ต้องเป็น `P9-B010`
-9. ตรวจว่าไม่กระทบ Order / Delivery commit `5c96d34` และ `4c0984d`
+1. เปิด POS แล้วต้องเห็น Badge `รอ Sync 1` ถ้ามี pending sale
+2. ขณะ Online ปุ่ม `Sync` ต้องกดได้
+3. กด `Sync` แล้วปุ่มต้องเปลี่ยนเป็น `กำลัง Sync...`
+4. Sync สำเร็จแล้ว Badge ต้องหายหรือจำนวน pending ลดลง
+5. ขณะ Offline ปุ่มต้องขึ้น `Offline` และกดไม่ได้
+6. Failed sale ต้องขึ้นปุ่ม `Retry`
+7. ขาย Online ได้ตามเดิม
+8. ขาย Offline และกลับมา Sync ได้ตามเดิม
+9. ตรวจว่าไม่กระทบ Order / Delivery commit `167dd48`
 10. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## Next Tasks
