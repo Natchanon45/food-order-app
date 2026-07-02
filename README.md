@@ -6,7 +6,7 @@
 
 - Branch: `feature/retail-pos`
 - Current milestone: `POS Hardening 002`
-- Developer Panel version/build ปัจจุบัน: `0.12.69` / `2026.07.02.023`
+- Developer Panel version/build ปัจจุบัน: `0.12.70` / `2026.07.02.024`
 
 ## Retail POS Status
 
@@ -31,14 +31,15 @@
 - POS Payment UX Update
 - Retail Category/Product Sort Manager
 - Product Image Storage Rules Fix
-- POS Display Order Hotfix
+- POS Display Order Hard Rollback
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
 
-## POS Display Order Hotfix
+## POS Display Order Hard Rollback
 
-- ถอด `retail-pos-display-order.js` ออกจาก `/pos/index.html` ชั่วคราว เพื่อให้หน้าขาย POS กลับมาใช้งานได้ก่อน
-- ตัวจัดลำดับหมวดหมู่/สินค้าใน `/pos/products/` ยังอยู่ แต่ยังไม่ apply การเรียงบนหน้าขาย `/pos` จนกว่าจะทดสอบแยกปลอดภัย
+- ลบไฟล์ `public/assets/js/retail-pos-display-order.js` ออกจาก repo แล้ว
+- `/pos/index.html` ไม่โหลดสคริปต์จัดลำดับสินค้าอีก
+- ตัวจัดลำดับหมวดหมู่/สินค้าใน `/pos/products/` ยังอยู่ แต่ยังไม่ apply การเรียงบนหน้าขาย `/pos`
 - ไม่มีการแตะ logic ขาย, Online/Offline, Sync, Stable `saleId` หรือ Stock Transaction
 
 ## Product Image Storage Rules Fix
@@ -67,18 +68,10 @@
 - Enter-to-confirm ใช้วิธี click ปุ่ม `ยืนยันการขาย` เดิม จึงยังใช้ validation และ logic การบันทึกเดิมทั้งหมด
 - `/pos/index.html` โหลด `retail-pos-payment-enter.js?v=20260702-020`
 
-## Dashboard Final Grouping
-
-- กลุ่ม `Order / Delivery` มี 4 การ์ด: หน้าครัว, แคชเชียร์ร้านอาหาร, จัดการระบบ, จัดการพนักงาน
-- กลุ่ม `Retail POS` แยกเดี่ยวออกจาก Order / Delivery เพราะ POS มีระบบจัดการพนักงานและสิทธิ์ในตัว
-- เพิ่มลิงก์ `/pos/catalog` เป็นการ์ด `POS Catalog`
-- จำกัดสิทธิ์ `POS Catalog` ให้เห็นเฉพาะ `owner` และ `super_admin`
-- `/` bump `home-dashboard.css?v=20260702-019`
-
 ## Regression Tests
 
 1. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
-2. หน้า `/pos` ต้องไม่โหลด `retail-pos-display-order.js`
+2. Network/Console ต้องไม่มี request ไป `retail-pos-display-order.js`
 3. เปิด POS แล้วขาย Online ได้ตามเดิม
 4. ปิดเน็ตขาย Offline ได้ตามเดิม
 5. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
