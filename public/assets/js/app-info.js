@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.61',
-  build: '2026.07.02.015',
+  version: '0.12.62',
+  build: '2026.07.02.016',
   branch: 'feature/retail-pos',
-  commit: 'POS-HARDENING-001',
+  commit: 'POS-HARDENING-002',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'POS Hardening 001',
+  milestone: 'POS Hardening 002',
   updatedAt: '2026-07-02T00:00:00+07:00',
   whatsNew: [
-    'Add POS stability hardening layer for long-running cashier sessions',
-    'Recover stale offline sync records after browser sleep or interrupted sync',
-    'Clean old synced local sales while preserving pending, failed, and conflict queue records',
-    'Add lightweight multi-tab leader heartbeat and maintenance snapshot'
+    'Add POS hardening diagnostics for long-running cashier sessions',
+    'Track queue summary, localStorage usage, uptime, event counters, and multi-tab leader state',
+    'Expose window.retailPosHardening.diagnostics() for manual inspection',
+    'Bump hardening script version to prevent stale browser cache'
   ]
 };
 
