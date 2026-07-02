@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.58',
-  build: '2026.07.02.012',
+  version: '0.12.61',
+  build: '2026.07.02.015',
   branch: 'feature/retail-pos',
-  commit: 'POS-MANUAL-SYNC-HOTFIX-012',
+  commit: 'POS-HARDENING-001',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'P9-B010 Manual Sync Hotfix',
+  milestone: 'POS Hardening 001',
   updatedAt: '2026-07-02T00:00:00+07:00',
   whatsNew: [
-    'Fix POS manual Sync button to use latest offline queue worker',
-    'Bump POS sync status script version to prevent stale browser cache',
-    'Show worker state from retail-offline-queue-worker events',
-    'Keep P9-B010 performance layer unchanged'
+    'Add POS stability hardening layer for long-running cashier sessions',
+    'Recover stale offline sync records after browser sleep or interrupted sync',
+    'Clean old synced local sales while preserving pending, failed, and conflict queue records',
+    'Add lightweight multi-tab leader heartbeat and maintenance snapshot'
   ]
 };
 
