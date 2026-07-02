@@ -16,8 +16,8 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## Version / Build ล่าสุดที่ Developer Panel แสดง
 
-- Version: `0.12.65`
-- Build: `2026.07.02.019`
+- Version: `0.12.66`
+- Build: `2026.07.02.020`
 - Branch: `feature/retail-pos`
 - Milestone: `POS Hardening 002`
 
@@ -33,6 +33,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Unified Order / Delivery / POS Menu เสร็จแล้ว
 - Dashboard Tenant-safe Link Correction เสร็จแล้ว
 - Dashboard Final Grouping เสร็จแล้ว
+- POS Payment UX Update เสร็จแล้ว
 
 ## Current Milestone
 
@@ -40,25 +41,24 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## แก้แล้วรอบนี้
 
-- ปรับกลุ่ม `Order / Delivery` ให้มี 4 การ์ดตามเดิม: หน้าครัว, แคชเชียร์ร้านอาหาร, จัดการระบบ, จัดการพนักงาน
-- แยกกลุ่ม `Retail POS` ออกจาก Order / Delivery เพราะ POS มีระบบจัดการพนักงานและสิทธิ์ในตัวเอง
-- เพิ่มการ์ด `POS Catalog` ลิงก์ `/pos/catalog`
-- จำกัดสิทธิ์ `POS Catalog` ให้เห็นเฉพาะ `owner` และ `super_admin`
-- เพิ่ม CSS ให้กลุ่ม POS แยกด้วยเส้นคั่นและจัด card แบบแยกเดี่ยว
-- `/` bump `home-dashboard.css?v=20260702-019`
-- Developer Panel เป็น Version `0.12.65` Build `2026.07.02.019`
+- ซ่อนปุ่ม `โหลดตัวอย่าง` ออกจากหน้าขาย POS
+- เพิ่มไฟล์ `public/assets/js/retail-pos-payment-enter.js`
+- เมื่ออยู่ใน Modal รับชำระเงิน และ cursor อยู่ในช่อง `รับเงินมา` สามารถกด Enter เพื่อยืนยันการขายได้
+- Enter-to-confirm ใช้วิธี click ปุ่ม `ยืนยันการขาย` เดิม จึงยังใช้ validation และ logic การบันทึกเดิมทั้งหมด
+- `/pos/index.html` โหลด `retail-pos-payment-enter.js?v=20260702-020`
+- Developer Panel เป็น Version `0.12.66` Build `2026.07.02.020`
 
 ## Regression Tests สำคัญ
 
-1. กดออกจากระบบแล้ว URL ต้องเป็น `/login` เท่านั้น
-2. เปิด `/` แบบยังไม่ login แล้ว quick link ต้องไป `/login` เท่านั้น
-3. Login เป็น Staff แล้วกลุ่ม Order / Delivery ต้องมี 4 การ์ดตามสิทธิ์: หน้าครัว, แคชเชียร์ร้านอาหาร, จัดการระบบ, จัดการพนักงาน
-4. Login เป็น Staff แล้วกลุ่ม Retail POS ต้องแยกจาก Order / Delivery
-5. Login เป็น owner แล้วเห็นลิงก์ `/pos/catalog`
-6. Login เป็น role ที่ไม่ใช่ owner/super_admin แล้วต้องไม่เห็น `POS Catalog`
-7. Login เป็น Staff แล้วเมนูต้องแสดงตามสิทธิ์และไม่ข้าม tenant
-8. เปิด POS แล้วขาย Online ได้ตามเดิม
-9. ปิดเน็ตขาย Offline ได้ตามเดิม
+1. หน้า `/pos` ต้องไม่เห็นปุ่ม `โหลดตัวอย่าง`
+2. เปิด Modal รับชำระเงิน ใส่จำนวนเงินในช่อง `รับเงินมา` แล้วกด Enter ต้องเท่ากับกดปุ่ม `ยืนยันการขาย`
+3. ถ้ารับเงินไม่ครบ กด Enter แล้วต้องขึ้น validation `จำนวนเงินที่รับมายังไม่ครบ`
+4. ถ้ารับเงินครบ กด Enter แล้วขาย Online ได้ตามเดิม
+5. ปิดเน็ตขาย Offline แล้วกด Enter เพื่อยืนยันการขายได้ตามเดิม
+6. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
+7. กดออกจากระบบแล้ว URL ต้องเป็น `/login` เท่านั้น
+8. Login เป็น owner แล้วเห็นลิงก์ `/pos/catalog`
+9. Login เป็น role ที่ไม่ใช่ owner/super_admin แล้วต้องไม่เห็น `POS Catalog`
 10. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
