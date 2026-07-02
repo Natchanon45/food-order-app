@@ -9,6 +9,28 @@ body.staff-home {
 .public-support { margin-top: 18px; text-align: center; }
 .public-support p { margin: 6px 0; }
 
+.quick-menu-card { margin-top: 18px; }
+.quick-menu-head h2 { margin: 0 0 6px; }
+.quick-menu-head p { margin: 0 0 16px; color: #5d6a61; }
+.quick-link-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.quick-link {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid #e4eee7;
+  border-radius: 18px;
+  color: #102317;
+  text-decoration: none;
+  background: #fbfffc;
+}
+.quick-link:hover { border-color: #9fd0b3; }
+.quick-link span { color: #5d6a61; font-size: 14px; line-height: 1.4; }
+
 body.staff-home .app-header {
   position: relative;
   min-height: 86px;
@@ -40,6 +62,32 @@ body.staff-home .staff-hero {
 body.staff-home .staff-hero h1 { font-size: clamp(28px, 3vw, 38px); margin-bottom: 8px; }
 body.staff-home .staff-hero p { font-size: 16px; opacity: .95; }
 
+body.staff-home .dashboard-section {
+  width: 100%;
+  margin-top: 22px;
+}
+
+body.staff-home .dashboard-section-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+body.staff-home .dashboard-section-head h2 {
+  margin: 0;
+  color: #102317;
+  font-size: 22px;
+}
+
+body.staff-home .dashboard-section-head p {
+  margin: 0;
+  color: #5d6a61;
+  font-size: 14px;
+  text-align: right;
+}
+
 body.staff-home .nav-cards {
   width: 100%;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -66,6 +114,11 @@ body.staff-home .nav-card:hover {
   transform: translateY(-4px);
   border-color: #b9ddc8;
   box-shadow: 0 18px 38px rgba(16, 75, 42, .13);
+}
+
+body.staff-home .nav-card-feature {
+  border-color: #badfc8;
+  background: linear-gradient(180deg, #ffffff 0%, #f0fbf4 100%);
 }
 
 body.staff-home .nav-card-icon {
@@ -117,6 +170,9 @@ body.staff-home .app-version { margin-top: auto; padding-bottom: 34px; font-size
 }
 
 @media (max-width: 760px) {
+  .quick-link-grid { grid-template-columns: 1fr; }
+  .quick-link { padding: 14px; }
+
   body.staff-home .app-header {
     display: flex;
     min-height: 62px;
@@ -162,6 +218,10 @@ body.staff-home .app-version { margin-top: auto; padding-bottom: 34px; font-size
   body.staff-home #staffDashboard { padding: 20px 14px 62px; }
   body.staff-home .staff-hero { width: 100%; min-height: 120px; padding: 22px 20px; margin-bottom: 18px; border-radius: 18px; }
   body.staff-home .staff-hero h1 { font-size: 28px; }
+  body.staff-home .dashboard-section { margin-top: 18px; }
+  body.staff-home .dashboard-section-head { display: block; margin-bottom: 10px; }
+  body.staff-home .dashboard-section-head h2 { font-size: 20px; }
+  body.staff-home .dashboard-section-head p { margin-top: 4px; text-align: left; }
   body.staff-home .nav-cards { width: 100%; grid-template-columns: 1fr; gap: 14px; }
   body.staff-home .nav-card { min-height: 132px; flex-direction: row; justify-content: flex-start !important; padding: 22px; text-align: left !important; }
 }
