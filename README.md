@@ -3,14 +3,13 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `POS Submenu Icon Polish`
+- Current milestone: `POS Display Update`
 - Version/Build: `0.12.70` / `2026.07.02.024`
 
 ## This Change
 
-- POS submenu icons now apply on PC and mobile.
-- Kept mobile clear bill button polish.
-- Bumped POS polish CSS to `v=20260705-002`.
+- Updated POS print display.
+- Updated script cache version.
 - UI-only change.
 
 ## Deploy
