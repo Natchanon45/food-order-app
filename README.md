@@ -29,15 +29,22 @@
 - Public Trial Signup Phase 1
 - Signup Email Verification Hotfix
 - Register Existing Auth Email + Layout Hotfix
+- Register Slug Pattern Hotfix
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Register Slug Pattern Hotfix
+
+- ลบ HTML pattern ของ slug ที่ทำให้ Chrome แสดง invalid regular expression
+- ใช้ JS normalize slug เป็นตัวหลักแทน
+- bump `/register/` script เป็น `public-register.js?v=20260704-004`
+- หากอีเมลยังอยู่ใน Firebase Authentication และรหัสไม่ตรง ต้องลบ user จาก Authentication > Users หรือใช้รหัสเดิมให้ถูกต้อง
 
 ## Register Existing Auth Email + Layout Hotfix
 
 - ถ้าอีเมลสมัครมีอยู่ใน Firebase Authentication แล้ว ระบบจะลอง sign in ด้วยรหัสที่กรอกและไปต่อ flow ยืนยันอีเมล
 - ถ้า sign in ไม่สำเร็จ จะแจ้งว่าต้องลบ user จาก Firebase Authentication Users หรือใช้รหัสเดิมให้ถูกต้อง
 - ปรับหน้า `/register/` ให้กว้างขึ้น อ่านง่ายขึ้น ช่องอีเมลเต็มแถว และลดความแน่นของการ์ดแพ็กเกจ
-- bump `/register/` script เป็น `public-register.js?v=20260704-003`
 
 ## Signup Email Verification Hotfix
 
