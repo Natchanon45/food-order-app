@@ -41,8 +41,17 @@
 - Login Footer + Legal Pages Polish
 - Public Landing Mobile Layout Polish
 - Public Landing Pricing CTA Design
+- Public Pricing Final Polish
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Public Pricing Final Polish
+
+- ปรับราคาแพ็กเกจหน้าแรกเป็น `ฟรี 0฿/Month`, `โปร 390฿/Month`, `พรีเมียม 590฿/Month`
+- เอาปุ่ม `ลงชื่อเข้าใช้` ตัวล่างใน section เกี่ยวกับแอปพลิเคชันออก
+- จัดรูปแบบอีเมลติดต่อและลิงก์ Privacy / Terms ให้ใกล้เคียงหน้า `/privacy` และ `/terms`
+- ปรับให้ลิงก์ด้านล่างดูไม่ขัดตาทั้ง PC และ Mobile
+- แก้เฉพาะ HTML/inline CSS ของหน้าแรก ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore, Tenant หรือ Stock Transaction
 
 ## Public Landing Pricing CTA Design
 
@@ -51,14 +60,6 @@
 - เปลี่ยนปุ่มเข้าสู่ระบบหน้า public landing เป็น `ลงชื่อเข้าใช้`
 - ปรับ responsive ของ pricing section ให้แสดงเป็น 1 คอลัมน์บน Mobile
 - แก้เฉพาะ HTML/inline CSS ของหน้าแรก ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore, Tenant หรือ Stock Transaction
-
-## Public Landing Mobile Layout Polish
-
-- ปรับหน้าแรก `/` บน Mobile ให้ card, heading, icon และ spacing เป็นสัดส่วนมากขึ้น
-- ปรับ hero, feature cards, quick link และ about card ให้แคบ/กระชับเหมาะกับจอมือถือ
-- ปรับลิงก์ Privacy / Terms เป็นปุ่มแยกบรรทัดบน Mobile ให้กดง่ายและมองเห็นชัด
-- ลดขนาด footer version บนหน้าแรก Mobile
-- แก้เฉพาะ inline CSS/HTML ของหน้าแรก ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore, Tenant หรือ Stock Transaction
 
 ## Next Tasks
 
