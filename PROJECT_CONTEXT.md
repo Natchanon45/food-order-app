@@ -19,7 +19,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
 - Branch: `feature/retail-pos`
-- Milestone: `Cashier Access Fix`
+- Milestone: `Unified Login Fix`
 
 ## Done
 
@@ -27,27 +27,30 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Retail POS supports Online / Offline / Sync / Tenant
 - Public Registration Phase 2 done
 - Cashier Access Fix done
+- Unified Login Fix done
 
 ## Current Milestone
 
-`Cashier Access Fix`
+`Unified Login Fix`
 
 ## This Change
 
-- Fixed shared cashier role behavior between restaurant cashier and retail POS cashier.
-- Main dashboard now checks business unit/module data before showing Retail POS cards.
-- `/pos` now uses module-aware guard.
-- POS login now rejects restaurant-only cashier accounts.
+- Unified staff login through `/login`.
+- `/login` clears old POS session before new sign-in.
+- `/login?next=/pos/` signs in once and prepares POS session.
+- `/pos/login` no longer shows the old POS login form.
+- Login form autocomplete is disabled.
+- Main page POS quick login is patched by `home-session-fa.js`.
 - No sale, stock, sync, or transaction logic changed.
 
 ## Regression Tests
 
 1. Deploy hosting.
-2. Log in as restaurant cashier and confirm Retail POS card is hidden.
-3. Confirm direct `/pos` access redirects away for restaurant cashier.
-4. Confirm `/pos/login` rejects restaurant cashier.
-5. Confirm restaurant cashier can still access restaurant cashier pages.
-6. Confirm owner or retail POS staff can still access Retail POS.
+2. Hard refresh `/login` and confirm fields are empty.
+3. Open `/login?next=/pos/` and confirm POS opens after one login.
+4. Open `/pos/login` and confirm the old form is gone.
+5. Confirm restaurant cashier still cannot enter POS.
+6. Confirm restaurant cashier pages still work.
 
 ## Next Tasks
 
