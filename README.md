@@ -3,16 +3,16 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Register Package Layout`
+- Current milestone: `Register Real Package Radios`
 - Version/Build: `0.12.70` / `2026.07.02.024`
 
 ## This Change
 
-- `/register` package section now uses card-style radio options.
-- Premium Trial is auto-selected and other package cards are disabled.
-- Updated labels and PC/mobile field layout.
-- Added required terms acceptance checkbox before submit.
-- Submit button is disabled until terms are accepted.
+- `/register` package cards now use real visible radio inputs.
+- Package cards are clickable and update selected state.
+- Replaced text check mark with Bootstrap icon.
+- JS reads selected package radio value for future package support.
+- Non-premium packages are selectable but blocked on submit for now.
 - UI/validation-only change.
 
 ## Deploy
