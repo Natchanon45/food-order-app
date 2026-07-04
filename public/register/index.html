@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#159447">
+<title>ลงทะเบียนเปิดร้าน</title>
+<link rel="stylesheet" href="/assets/css/app.css?v=20260702-002">
+<link rel="stylesheet" href="/assets/css/icons.css?v=20260702-003">
+<style>
+*{box-sizing:border-box}.register-page{min-height:100dvh;background:linear-gradient(145deg,#eef8f1,#f8fbf9);color:#102317}.register-shell{width:min(980px,100%);margin:0 auto;padding:18px 14px 72px}.register-hero{display:grid;gap:8px;margin:0 0 14px;padding:22px;border-radius:24px;background:linear-gradient(135deg,#0d2a1a,#159447);color:#fff}.register-hero h1{margin:0;font-size:30px}.register-hero p{margin:0;color:#e7f5eb}.register-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}.register-card{padding:18px;border:1px solid #dfeae3;border-radius:20px;background:#fff;box-shadow:0 16px 42px rgba(15,23,42,.08)}.register-form{display:grid;gap:13px}.register-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.register-form label{display:grid;gap:6px;font-weight:800;color:#1f2f27}.register-form input,.register-form select{width:100%;min-height:46px;border:1px solid #dde5df;border-radius:12px;padding:10px 12px;background:#fff;font:inherit}.register-form select:disabled{background:#f5f8f6;color:#57645e}.full{grid-column:1/-1}.slug-preview{padding:10px 12px;border:1px dashed #9fd0b3;border-radius:12px;background:#f6fbf8;color:#0d6f34;font-weight:800;word-break:break-all}.register-note{margin:0;color:#607068;font-size:13px;line-height:1.55}.register-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.register-actions .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px}.register-status{margin:0;padding:10px 12px;border-radius:12px;background:#f6fbf8;color:#0d6f34;font-weight:800}.register-status.error{background:#fff3f3;color:#b42318}.plan-card{display:grid;gap:10px}.plan-badge{width:max-content;padding:5px 9px;border-radius:999px;background:#e8f3ec;color:#0d6f34;font-weight:900;font-size:12px}.plan-card h2{margin:0;font-size:25px}.plan-price{margin:0;color:#0d6f34;font-size:28px;font-weight:900}.plan-card ul{display:grid;gap:8px;margin:0;padding:0;list-style:none}.plan-card li{display:flex;gap:8px;align-items:flex-start}.plan-card li .bi{color:#159447;margin-top:2px}.verify-box{display:none;gap:12px}.verify-box.show{display:grid}.hidden{display:none!important}@media(max-width:760px){.register-shell{padding:12px 10px 72px}.register-hero{padding:16px;border-radius:18px}.register-hero h1{font-size:22px}.register-grid,.register-form-grid{grid-template-columns:1fr}.register-card{padding:14px;border-radius:16px}.register-actions{display:grid}.register-actions .btn{width:100%}}
+</style>
+</head>
+<body class="register-page">
+<header class="app-header"><div class="brand"><span class="brand-mark">FOD</span><span>ลงทะเบียนเปิดร้าน</span></div><a class="btn btn-sm" href="/"><i class="bi bi-house-door app-icon" aria-hidden="true"></i><span>หน้าหลัก</span></a></header>
+<main class="register-shell">
+<section class="register-hero"><h1>เริ่มใช้งาน Premium ฟรี 1 เดือน</h1><p>สมัครร้านใหม่ ยืนยันอีเมล แล้วระบบจะเปิดสิทธิ์เจ้าของร้านให้อัตโนมัติ</p></section>
+<section class="register-grid">
+<section class="register-card">
+<form id="registerForm" class="register-form">
+<div class="register-form-grid">
+<label>แพ็กเกจ<select id="packageId" disabled><option value="premium" selected>Premium Trial ฟรี 1 เดือน</option></select></label>
+<label>เบอร์โทรศัพท์<input id="phone" type="tel" required maxlength="30" autocomplete="tel"></label>
+<label>ชื่อ-นามสกุล<input id="ownerName" required maxlength="120" autocomplete="name"></label>
+<label>อีเมลจริงสำหรับยืนยันตัวตน<input id="email" type="email" required maxlength="120" autocomplete="email"></label>
+<label>ชื่อร้าน Order/Delivery<input id="orderDeliveryShopName" required maxlength="120"></label>
+<label>ชื่อร้าน Retail POS<input id="retailPosShopName" required maxlength="120"></label>
+<label class="full">Slug ของร้าน<input id="slug" required maxlength="50" pattern="[a-z0-9-]{3,50}" placeholder="saas-test-shop" autocomplete="off"></label>
+<div class="full slug-preview" id="slugPreview">https://natchanon-food-order-delivery.web.app/s/saas-test-shop/</div>
+<label>รหัสเข้าใช้งาน<input id="secretA" type="password" required minlength="8" maxlength="100" autocomplete="new-password"></label>
+<label>ยืนยันรหัสเข้าใช้งาน<input id="secretB" type="password" required minlength="8" maxlength="100" autocomplete="new-password"></label>
+</div>
+<p class="register-note">หลังสมัคร ระบบจะส่งลิงก์ยืนยันไปที่อีเมล เมื่อยืนยันแล้วให้กลับมาหน้านี้เพื่อเปิดร้านและเริ่มนับ Premium Trial 1 เดือน</p>
+<p id="registerStatus" class="register-status hidden"></p>
+<div class="register-actions"><button id="submitRegister" class="btn btn-primary" type="submit"><i class="bi bi-send-check app-icon" aria-hidden="true"></i><span>สมัครและส่งอีเมลยืนยัน</span></button><a class="btn" href="/login"><i class="bi bi-box-arrow-in-right app-icon" aria-hidden="true"></i><span>ลงชื่อเข้าใช้</span></a></div>
+</form>
+<div id="verifyBox" class="verify-box"><h2>ตรวจสอบอีเมลของคุณ</h2><p class="register-note">กดลิงก์ยืนยันตัวตนในอีเมลแล้วกลับมาที่หน้านี้ จากนั้นกดปุ่มด้านล่างเพื่อเปิดร้าน</p><p id="verifyStatus" class="register-status">รอการยืนยันอีเมล</p><div class="register-actions"><button id="activateTrial" class="btn btn-primary" type="button"><i class="bi bi-patch-check app-icon" aria-hidden="true"></i><span>ฉันยืนยันอีเมลแล้ว เปิดร้าน</span></button><button id="resendEmail" class="btn" type="button"><i class="bi bi-envelope app-icon" aria-hidden="true"></i><span>ส่งอีเมลอีกครั้ง</span></button></div></div>
+</section>
+<aside class="register-card plan-card"><span class="plan-badge">Premium Trial</span><h2>ใช้งาน Premium ฟรี 1 เดือน</h2><p class="plan-price">0฿ <small>/ เดือนแรก</small></p><ul><li><i class="bi bi-check-circle" aria-hidden="true"></i><span>Order / Delivery / Kitchen / Cashier</span></li><li><i class="bi bi-check-circle" aria-hidden="true"></i><span>Retail POS พร้อม Online / Offline / Sync</span></li><li><i class="bi bi-check-circle" aria-hidden="true"></i><span>สิทธิ์เจ้าของร้านหลังยืนยันอีเมล</span></li><li><i class="bi bi-check-circle" aria-hidden="true"></i><span>เริ่มนับ trial หลังเปิดร้านสำเร็จ</span></li></ul></aside>
+</section>
+</main>
+<script type="module" src="/assets/js/public-register.js?v=20260704-001"></script>
+</body>
+</html>
