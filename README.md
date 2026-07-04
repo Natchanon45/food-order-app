@@ -32,8 +32,15 @@
 - Retail Category/Product Sort Manager
 - Product Image Storage Rules Fix
 - POS Display Order Hard Rollback
+- Admin Icon Theme Color Fix
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Admin Icon Theme Color Fix
+
+- แก้ `public/assets/js/admin-icon-polish.js` ให้ inject runtime style สำหรับ `.admin-heading-icon`
+- บังคับสี icon หัวข้อ Admin เป็นสีเขียวธีม `#159447`
+- แก้เฉพาะ UI polish ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore หรือ Stock Transaction
 
 ## POS Display Order Hard Rollback
 
@@ -70,15 +77,15 @@
 
 ## Regression Tests
 
-1. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
-2. Network/Console ต้องไม่มี request ไป `retail-pos-display-order.js`
-3. เปิด POS แล้วขาย Online ได้ตามเดิม
-4. ปิดเน็ตขาย Offline ได้ตามเดิม
-5. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
-6. กด Enter ใน modal รับเงินแล้วยืนยันการขายได้ตามเดิม
-7. หน้า `/pos` ต้องไม่เห็นปุ่ม `โหลดตัวอย่าง`
-8. Deploy Storage Rules แล้วอัปโหลดรูปสินค้าใน `/pos/products/` ต้องไม่เจอ 403
-9. เปิด `/pos/products/` แล้วเห็น panel `จัดลำดับหมวดหมู่และสินค้า`
+1. เปิด `/admin` แล้ว icon หัวข้อ เช่น `จัดการร้าน`, `รายงานยอดขาย`, `ข้อมูลร้านและการรับชำระ` ต้องกลับเป็นสีเขียวธีม
+2. เปิด `/admin/qr` แล้ว icon หัวข้อและปุ่มพิมพ์ยังแสดงตามเดิม
+3. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
+4. Network/Console ต้องไม่มี request ไป `retail-pos-display-order.js`
+5. เปิด POS แล้วขาย Online ได้ตามเดิม
+6. ปิดเน็ตขาย Offline ได้ตามเดิม
+7. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
+8. กด Enter ใน modal รับเงินแล้วยืนยันการขายได้ตามเดิม
+9. หน้า `/pos` ต้องไม่เห็นปุ่ม `โหลดตัวอย่าง`
 10. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## Next Tasks
@@ -89,6 +96,8 @@
 
 ## Deploy
 
+```bash
 git pull --rebase origin feature/retail-pos
 firebase deploy --only hosting
 firebase deploy --only storage
+```
