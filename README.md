@@ -3,14 +3,18 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `POS Keypad Layout`
+- Current milestone: `iOS Receipt Print Fix`
 - Version/Build: `0.12.70` / `2026.07.02.024`
 
 ## This Change
 
-- Updated PC-only POS keypad layout.
-- Mobile keeps native keyboard.
-- UI-only change.
+- Fixed iOS receipt print timing.
+- PC and Android keep the existing print flow.
+- Display/print-only change.
+
+## Note
+
+- Use hard refresh after deploy.
 
 ## Deploy
 
