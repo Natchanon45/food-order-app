@@ -43,6 +43,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Public Landing Icon Polish เสร็จแล้ว
 - Floating Login Input Icons เสร็จแล้ว
 - Login Input Spacing Balance เสร็จแล้ว
+- Login User Circle Icon Polish เสร็จแล้ว
 
 ## Current Milestone
 
@@ -50,24 +51,26 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## แก้แล้วรอบนี้
 
-- ปรับ spacing ช่อง email/password ใน `/login` ให้ข้อความอยู่กึ่งกลางสมดุลขึ้นทั้ง PC และ Mobile
-- คง floating icon behavior เดิมไว้
-- ปรับ line-height, height และ padding ของ input ให้ไม่ชิดขอบล่าง
+- ปรับ icon หัวข้อหน้า `/login` จาก `bi-person-badge` เป็น `bi-person-circle`
+- ใช้ icon ลักษณะ user-circle แทน icon แบบบัตร/การ์ด
+- คง layout card, spacing, input, password toggle และ login redirect logic เดิมไว้
+- ไม่ได้แก้ JS/CSS ที่ import ใน HTML จึงไม่ต้อง bump query string รอบนี้
 - ไม่แตะ logic ขาย, Online/Offline, Sync, Stable `saleId`, Firestore หรือ Stock Transaction
 - Developer Panel ยังเป็น Version `0.12.70` Build `2026.07.02.024`
 
 ## Regression Tests สำคัญ
 
-1. เปิด `/login` แล้วข้อความในช่อง email/password ต้องอยู่กึ่งกลางสมดุล ไม่ชิดขอบล่าง
-2. Focus หรือพิมพ์ในช่อง email/password แล้ว icon ต้องย่อและเลื่อนไปชิดขอบบนด้านใน input
-3. ปุ่มแสดง/ซ่อนรหัสผ่านยังทำงาน
-4. Login ด้วยบัญชีพนักงานยัง redirect ตาม role เดิม
-5. เปิด `/` ตอนยังไม่ login แล้ว Hero title ต้องชิดซ้าย และปุ่มพนักงานอยู่กึ่งกลาง
-6. เปิด `/pos/login` แล้วต้องยังใช้ logo `POS` และทำงานเดิม
-7. เปิด `/admin` แล้ว icon หัวข้อและปุ่ม action Desktop/Mobile ยังถูกต้อง
-8. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
-9. Network/Console ต้องไม่มี request ไป `retail-pos-display-order.js`
-10. ตรวจว่า record สำคัญยังมี `tenantId`
+1. เปิด `/login` แล้วหัวข้อ `เข้าสู่ระบบพนักงาน` ต้องใช้ icon user-circle ไม่ใช่ icon แบบบัตร/การ์ด
+2. เปิด `/login` แล้วข้อความในช่อง email/password ต้องอยู่กึ่งกลางสมดุล ไม่ชิดขอบล่าง
+3. Focus หรือพิมพ์ในช่อง email/password แล้ว icon ต้องย่อและเลื่อนไปชิดขอบบนด้านใน input
+4. ปุ่มแสดง/ซ่อนรหัสผ่านยังทำงาน
+5. Login ด้วยบัญชีพนักงานยัง redirect ตาม role เดิม
+6. เปิด `/` ตอนยังไม่ login แล้ว Hero title ต้องชิดซ้าย และปุ่มพนักงานอยู่กึ่งกลาง
+7. เปิด `/pos/login` แล้วต้องยังใช้ logo `POS` และทำงานเดิม
+8. เปิด `/admin` แล้ว icon หัวข้อและปุ่ม action Desktop/Mobile ยังถูกต้อง
+9. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
+10. Network/Console ต้องไม่มี request ไป `retail-pos-display-order.js`
+11. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
 
