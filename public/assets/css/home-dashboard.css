@@ -285,3 +285,125 @@ body.staff-home .user-menu-link .app-icon,
 body.staff-home .user-menu-action .app-icon { width: 23px; height: 23px; }
 body.staff-home .user-menu-link i.app-icon,
 body.staff-home .user-menu-action i.app-icon { font-size: 23px; }
+
+@media (max-width: 760px) {
+  body.staff-home .app-header {
+    min-height: 56px;
+    padding: 9px 12px;
+  }
+  body.staff-home .brand {
+    min-width: 0;
+    gap: 8px;
+    font-size: 12px;
+    line-height: 1.15;
+  }
+  body.staff-home .brand-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    flex: 0 0 34px;
+  }
+  body.staff-home .brand-label {
+    max-width: 235px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  body.staff-home .user-menu-trigger {
+    min-height: 38px !important;
+    padding: 6px !important;
+    font-size: 0;
+  }
+  body.staff-home .user-menu-avatar {
+    width: 28px;
+    height: 28px;
+  }
+  body.staff-home .user-menu-avatar .app-icon,
+  body.staff-home .user-menu-avatar i.app-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+  body.staff-home #staffDashboard {
+    width: min(430px, 100%);
+    padding: 14px 14px 64px;
+  }
+  body.staff-home .staff-hero {
+    min-height: 94px;
+    padding: 18px;
+    margin-bottom: 16px;
+    border-radius: 17px;
+  }
+  body.staff-home .staff-hero h1 {
+    font-size: 24px;
+    line-height: 1.15;
+    margin-bottom: 7px;
+  }
+  body.staff-home .staff-hero p {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+  body.staff-home .dashboard-section {
+    margin-top: 16px;
+  }
+  body.staff-home .dashboard-section-pos {
+    margin-top: 18px;
+    padding-top: 16px;
+  }
+  body.staff-home .dashboard-section-head {
+    display: grid;
+    grid-template-columns: minmax(92px, .8fr) minmax(0, 1.2fr);
+    align-items: end;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  body.staff-home .dashboard-section-head h2 {
+    font-size: 18px;
+    line-height: 1.15;
+  }
+  body.staff-home .dashboard-section-head p {
+    font-size: 10.5px;
+    line-height: 1.35;
+    text-align: right;
+  }
+  body.staff-home .nav-cards,
+  body.staff-home .nav-cards-pos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    justify-content: stretch;
+  }
+  body.staff-home .nav-card {
+    min-height: 132px;
+    padding: 18px 10px;
+    gap: 12px !important;
+    border-radius: 18px;
+    font-size: 14px;
+  }
+  body.staff-home .nav-card-icon {
+    width: 44px;
+    height: 44px;
+  }
+  body.staff-home .nav-card-icon .app-icon {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+  }
+  body.staff-home .nav-card-icon i.app-icon {
+    font-size: 30px;
+  }
+  body.staff-home .nav-card-label {
+    font-size: 14px;
+    line-height: 1.25;
+    overflow-wrap: break-word;
+  }
+  body.staff-home .nav-cards-pos .nav-card {
+    min-height: 142px;
+    padding: 20px 12px;
+  }
+  body.staff-home .user-menu-panel {
+    min-width: min(300px, calc(100vw - 24px));
+    right: 0;
+    border-radius: 18px;
+  }
+}
