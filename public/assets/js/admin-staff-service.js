@@ -2,13 +2,21 @@ import { auth, db, functions, collection, doc, getDoc, getDocs, httpsCallable } 
 import { resolveTenantContext } from './tenant-context.js';
 
 const STAFF_ROLES = new Set(['admin', 'cashier', 'kitchen']);
+const POS_SCOPE_VALUES = new Set(['pos', 'retail', 'retail_pos', 'retail-pos', 'retail_pos_staff']);
 
 function rawRole(data = {}) {
   return String(data.role || '').trim().toLowerCase();
 }
 
+function isPosScoped(row = {}) {
+  const values = [row.staffScope, row.scope, row.source, row.system, row.userType, row.appType]
+    .map(value => String(value || '').trim().toLowerCase())
+    .filter(Boolean);
+  return values.some(value => POS_SCOPE_VALUES.has(value));
+}
+
 function staffOnly(row) {
-  return STAFF_ROLES.has(rawRole(row));
+  return STAFF_ROLES.has(rawRole(row)) && !isPosScoped(row);
 }
 
 function normalizeUser(uid, data = {}) {
@@ -17,9 +25,12 @@ function normalizeUser(uid, data = {}) {
     displayName: data.displayName || data.name || '',
     email: data.email || '',
     role: rawRole(data),
+    roleId: data.roleId || '',
     active: data.active !== false,
     tenantId: data.tenantId || '',
-    tenantSlug: data.tenantSlug || ''
+    tenantSlug: data.tenantSlug || '',
+    staffScope: data.staffScope || data.scope || '',
+    source: data.source || data.system || data.userType || data.appType || ''
   };
 }
 
@@ -62,7 +73,7 @@ export async function listStaffUsers() {
 
 export async function createStaffUser(payload = {}) {
   const tenant = await currentTenant();
-  return callStaffFunction('createStaffUser', { ...payload, tenantId: tenant.id, tenantSlug: tenant.slug });
+  return callStaffFunction('createStaffUser', { ...payload, staffScope: 'restaurant', tenantId: tenant.id, tenantSlug: tenant.slug });
 }
 
 export async function updateStaffUser(uid, patch = {}) {
