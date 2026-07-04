@@ -16,6 +16,18 @@ const passwordInput = document.getElementById("password");
 const togglePasswordBtn = document.getElementById("togglePasswordBtn");
 const defaultButtonHtml = button.innerHTML;
 
+function syncFloatingIcon(input) {
+  const wrap = input.closest(".login-input-wrap");
+  if (!wrap) return;
+  wrap.classList.toggle("is-filled", Boolean(input.value));
+}
+
+document.querySelectorAll(".login-input-wrap input").forEach(input => {
+  syncFloatingIcon(input);
+  input.addEventListener("input", () => syncFloatingIcon(input));
+  input.addEventListener("change", () => syncFloatingIcon(input));
+});
+
 function setButtonLoading(isLoading) {
   button.disabled = isLoading;
   button.innerHTML = isLoading ? '<span class="login-loading">กำลังเข้าสู่ระบบ...</span>' : defaultButtonHtml;
@@ -45,6 +57,7 @@ togglePasswordBtn?.addEventListener("click", () => {
   const show = passwordInput.type === "password";
   passwordInput.type = show ? "text" : "password";
   togglePasswordBtn.textContent = show ? "ซ่อน" : "แสดง";
+  syncFloatingIcon(passwordInput);
 });
 
 form.addEventListener("submit", async event => {
