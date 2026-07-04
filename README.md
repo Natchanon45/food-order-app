@@ -28,15 +28,22 @@
 - Business Unit Staff Filter Fix
 - Public Trial Signup Phase 1
 - Signup Email Verification Hotfix
+- Register Existing Auth Email + Layout Hotfix
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Register Existing Auth Email + Layout Hotfix
+
+- ถ้าอีเมลสมัครมีอยู่ใน Firebase Authentication แล้ว ระบบจะลอง sign in ด้วยรหัสที่กรอกและไปต่อ flow ยืนยันอีเมล
+- ถ้า sign in ไม่สำเร็จ จะแจ้งว่าต้องลบ user จาก Firebase Authentication Users หรือใช้รหัสเดิมให้ถูกต้อง
+- ปรับหน้า `/register/` ให้กว้างขึ้น อ่านง่ายขึ้น ช่องอีเมลเต็มแถว และลดความแน่นของการ์ดแพ็กเกจ
+- bump `/register/` script เป็น `public-register.js?v=20260704-003`
 
 ## Signup Email Verification Hotfix
 
 - ปรับ `/register/` ให้ส่ง email verification ก่อนบันทึก pending signup
 - เพิ่มข้อความ error เฉพาะกรณีส่งอีเมลยืนยันไม่สำเร็จ
 - ปุ่มส่งอีเมลอีกครั้ง reload สถานะ user และแจ้งให้ตรวจ Inbox / Spam / Junk
-- bump `/register/` script เป็น `public-register.js?v=20260704-002`
 
 ## Public Trial Signup Phase 1
 
@@ -66,5 +73,5 @@
 
 ```bash
 git pull --rebase origin feature/retail-pos
-firebase deploy --only functions,hosting
+firebase deploy --only hosting
 ```
