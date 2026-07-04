@@ -5,7 +5,7 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Cashier Access Fix`
+- Current milestone: `Unified Login Fix`
 - Developer Panel version/build ปัจจุบัน: `0.12.70` / `2026.07.02.024`
 
 ## Retail POS Status
@@ -24,39 +24,33 @@
 - P9-B010 Performance
 - Public Registration Phase 2
 - Cashier Access Fix
+- Unified Login Fix
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
 
-## Cashier Access Fix
+## Unified Login Fix
 
-- แยกสิทธิ์ cashier ร้านอาหารออกจาก cashier Retail POS ด้วย business unit/module
-- หน้าแรกซ่อน Retail POS card สำหรับ cashier ร้านอาหาร
-- `/pos` ใช้ guard แบบตรวจ module เพิ่ม
-- `/pos/login` ไม่รับบัญชี cashier ร้านอาหาร
-- ไม่แตะ logic ขาย, สต็อก, sync หรือ transaction
-
-## Public Registration Phase 2
-
-- เปิดใช้งานปุ่ม `ลงทะเบียน` หน้าแรกให้ลิงก์ไป `/register/`
-- เปลี่ยน note หน้าแรกให้สื่อว่า Premium Trial สมัครใช้งานจริงหลังยืนยันอีเมล
+- ใช้ `/login` เป็นหน้าเข้าสู่ระบบหลัก
+- เคลียร์ POS session เก่าก่อนเข้าสู่ระบบใหม่
+- รองรับการเข้า POS ผ่าน `/login?next=/pos/` โดยไม่ต้องเข้าสู่ระบบซ้ำ
+- `/pos/login` ไม่แสดงฟอร์มเดิมแล้ว
+- ปิด autocomplete ของฟอร์ม login
+- ไม่แตะ logic ขาย สต็อก sync หรือ transaction
 
 ## Previous Fixes
 
+- Cashier Access Fix
+- Public Registration Phase 2
 - Register Slug Pattern Hotfix
-- Register Existing Auth Email + Layout Hotfix
 - Signup Email Verification Hotfix
 - Business Unit Staff Filter Fix
-- Restaurant Staff Role Function Fix
-- Admin Staff Callable Hotfix
 - POS User Visibility Fixes
-- Login Home Link
-- Sales Report Back Icon Duplication Fix
 
 ## Next Tasks
 
 - POS Hardening 003
-- ทดสอบการ apply ลำดับสินค้าใน `/pos` แบบปลอดภัยก่อนเปิดใช้อีกครั้ง
-- Package Selection Phase 3 หากต้องเปิดเลือก Free/Pro/Premium จริงในอนาคต
+- ทดสอบการ apply ลำดับสินค้าใน `/pos`
+- Package Selection Phase 3
 
 ## Deploy
 
