@@ -50,8 +50,16 @@
 - Sales Report Icon Polish
 - Sales Report Icon Hotfix
 - Sales Report Back Label Polish
+- Sales Report Back Icon Duplication Fix
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Sales Report Back Icon Duplication Fix
+
+- แก้ปุ่ม `ย้อนกลับ` หน้า `/admin/sales-report` ไม่ให้แสดงลูกศรซ้ำ 2 อัน
+- เพิ่ม class `.app-icon` ให้ icon ลูกศรเดิม เพื่อให้ `ui.js` ตรวจพบว่าเป็น icon ที่ decorate แล้วและไม่เติมซ้ำ
+- ปรับ `sales-report.js` query string เป็น `v=20260704-004` เพื่อกัน browser cache หลังแก้ HTML ที่อ้างอิง JS
+- แก้เฉพาะ UI ปุ่มย้อนกลับ ไม่แตะ logic รายงาน, การคำนวณ, Tenant, Firestore หรือ Stock Transaction
 
 ## Sales Report Back Label Polish
 
