@@ -14,6 +14,14 @@ function enablePublicRegisterCta() {
   if (registerNote) registerNote.textContent = "สมัคร Premium Trial ฟรี 1 เดือน หลังยืนยันอีเมลแล้วเริ่มเปิดร้านได้ทันที";
 }
 
+function routePublicLoginLinks() {
+  document.querySelectorAll('a[href="/login"],a[href="/login/"]').forEach(link => {
+    const text = link.textContent || "";
+    if (text.includes("POS")) link.href = "/login/?next=%2Fpos%2F";
+    else link.href = "/login/";
+  });
+}
+
 function lower(value) { return String(value || "").trim().toLowerCase(); }
 function profileSupportsModule(profile, moduleName) {
   if (!moduleName) return true;
@@ -40,6 +48,7 @@ function profileSupportsModule(profile, moduleName) {
 }
 
 enablePublicRegisterCta();
+routePublicLoginLinks();
 
 if (user) {
   const profile = await getUserProfile(user);
