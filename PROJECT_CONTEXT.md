@@ -7,19 +7,16 @@ Branch: `feature/retail-pos`
 
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
-- Milestone: `iOS Receipt Print Fix`
+- Milestone: `POS Keypad Input Polish`
 
 ## This Change
 
-- Fixed iOS receipt print gesture timing.
-- iOS now calls print directly from the receipt print button when the receipt is already rendered.
-- PC and Android keep the existing layout-ready print flow.
-- Display/print-only change.
-
-## Note
-
-- Receipt modal script was updated.
-- `/pos/index.html` cache version bump was blocked by the connector, so use hard refresh after deploy.
+- Polished PC-only POS keypad sizing.
+- Removed keypad icon decoration more aggressively.
+- Improved decimal input behavior.
+- Payment received input now selects all on focus/click before keypad entry.
+- Mobile keeps native OS keyboard.
+- UI-only change.
 
 ## Deploy
 
