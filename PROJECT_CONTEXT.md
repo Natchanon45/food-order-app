@@ -1,95 +1,67 @@
 # Food Order App — Project Context / POS Roadmap
 
-Repository: `Natchanon45/food-order-app`  
-Branch: `feature/retail-pos`  
+Repository: `Natchanon45/food-order-app`
+Branch: `feature/retail-pos`
 Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail POS
 
-## Workflow ที่ต้องยึดทุกครั้ง
+## Workflow
 
-1. อ่าน `PROJECT_CONTEXT.md` ก่อนเริ่มงาน
-2. เช็ก HEAD ล่าสุดของ `feature/retail-pos` ก่อนแก้ไขทุกครั้ง
-3. แจ้ง Version / Build / HEAD ทุกครั้งหลังแก้
-4. แก้แบบเล็กและเฉพาะจุด เพื่อลดผลกระทบกับระบบที่ใช้งานได้แล้ว
-5. ถ้าแก้ JS/CSS ที่ import ใน HTML ต้อง bump query string
-6. หลังแก้ต้องแจ้งไฟล์ที่แก้, สิ่งที่เสร็จ, สิ่งที่เหลือ, regression test
-7. แจ้งคำสั่ง deploy ทุกครั้ง
+1. Read `PROJECT_CONTEXT.md` before work.
+2. Check latest HEAD before editing.
+3. Report Version / Build / HEAD after work.
+4. Keep changes small.
+5. Bump query string when imported JS/CSS changes.
+6. Update README and context after code changes.
+7. Report deploy commands.
 
-## Version / Build ล่าสุดที่ Developer Panel แสดง
+## Version / Build
 
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
 - Branch: `feature/retail-pos`
 - Milestone: `POS Hardening 002`
 
-## สถานะล่าสุดของระบบที่ทำไปแล้ว
+## Done
 
-- QR Table Order / Take Away / Kitchen / Cashier / Delivery เสร็จแล้ว
-- Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
-- POS Roadmap P9-B001 ถึง P9-B010 เสร็จครบแล้ว
-- Manual Sync Hotfix เสร็จแล้ว
-- commit ฐานล่าสุดจากผู้ใช้: `927047f`
-- POS Hardening 001 เสร็จแล้ว
-- POS Hardening 002 เสร็จแล้ว
-- Unified Order / Delivery / POS Menu เสร็จแล้ว
-- Dashboard Tenant-safe Link Correction เสร็จแล้ว
-- Dashboard Final Grouping เสร็จแล้ว
-- POS Payment UX Update เสร็จแล้ว
-- Retail Category/Product Sort Manager เสร็จแล้ว
-- Product Image Storage Rules Fix เสร็จแล้ว
-- POS Display Order Hard Rollback เสร็จแล้ว
-- Admin Icon Theme Color Fix เสร็จแล้ว
-- Admin Action Button Desktop/Mobile Polish เสร็จแล้ว
-- Main Login UI Polish เสร็จแล้ว
-- Public Landing Icon Polish เสร็จแล้ว
-- Floating Login Input Icons เสร็จแล้ว
-- Login Input Spacing Balance เสร็จแล้ว
-- Login User Circle Icon Polish เสร็จแล้ว
-- Login Input Icon Color Polish เสร็จแล้ว
-- Login Footer + Legal Pages Polish เสร็จแล้ว
-- Public Landing Mobile Layout Polish เสร็จแล้ว
-- Public Landing Pricing CTA Design เสร็จแล้ว
-- Public Pricing Final Polish เสร็จแล้ว
-- Login Copy + Version Size Polish เสร็จแล้ว
-- Pricing Card Header Alignment Polish เสร็จแล้ว
-- Support Email Badge Polish เสร็จแล้ว
-- Legal Support Email Badge Polish เสร็จแล้ว
-- Badge Row Responsive Polish เสร็จแล้ว
-- Sales Report Icon Polish เสร็จแล้ว
-- Sales Report Icon Hotfix เสร็จแล้ว
+- QR Table Order / Take Away / Kitchen / Cashier / Delivery done
+- Retail POS supports Online / Offline / Sync / Tenant
+- POS Roadmap P9-B001 to P9-B010 done
+- POS Hardening 001 done
+- POS Hardening 002 done
+- Sales Report Icon Polish done
+- Sales Report Icon Hotfix done
+- Sales Report Back Label Polish done
 
 ## Current Milestone
 
 `POS Hardening 002`
 
-## แก้แล้วรอบนี้
+## This Change
 
-- แก้ปุ่ม `กลับ` หน้า `/admin/sales-report` ไม่ให้แสดง icon ซ้ำ
-- แก้หัวข้อกราฟให้มี icon ตลอด แม้ `sales-report.js` จะเปลี่ยนข้อความตามช่วงรายงาน
-- ปรับ `sales-report.js` query string เป็น `v=20260704-002` เพื่อกัน browser cache หลังแก้ JS
-- แก้เฉพาะ UI icon ของรายงานยอดขาย
-- ไม่แตะ logic รายงาน, การคำนวณ, Online/Offline, Sync, Stable `saleId`, Firestore หรือ Stock Transaction
-- Developer Panel ยังเป็น Version `0.12.70` Build `2026.07.02.024`
+- Updated `/admin/sales-report` back action label to `ย้อนกลับ`
+- Added one leading back symbol to the action
+- UI-only change for the sales report header
+- No changes to report logic, calculations, Online/Offline, Sync, stable `saleId`, Firestore, or Stock Transaction
+- Developer Panel remains Version `0.12.70` Build `2026.07.02.024`
 
-## Regression Tests สำคัญ
+## Regression Tests
 
-1. เปิด `/admin/sales-report` แล้วปุ่ม `กลับ` ต้องไม่มี icon ซ้ำ
-2. หัวข้อกราฟ `ยอดขายรายชั่วโมง` ต้องมี icon
-3. เปลี่ยน tab รายวัน/รายเดือน/รายปี/กำหนดช่วง แล้วหัวข้อกราฟยังต้องมี icon
-4. ปุ่มดู/พิมพ์ในตารางใบเสร็จต้องยังมี icon และทำงานเดิม
-5. รายงานยอดขายและตารางใบเสร็จต้องยังคำนวณเหมือนเดิม
-6. ตรวจว่า record สำคัญยังมี `tenantId`
+1. Open `/admin/sales-report` and confirm the back action displays `ย้อนกลับ`.
+2. Confirm the back action has only one leading symbol.
+3. Confirm the hourly sales chart title still has an icon.
+4. Confirm sales report calculations still work.
+5. Confirm important records still include `tenantId`.
 
-## งานถัดไป
+## Next Tasks
 
-- POS Hardening 003: ตรวจ/ลด event listener ซ้ำและ snapshot unsubscribe patterns ในโมดูลที่มี listener จริง
-- ทดสอบการ apply ลำดับสินค้าใน `/pos` แบบปลอดภัยก่อนเปิดใช้อีกครั้ง
-- พิจารณาแยกบทบาท cashier ร้านอาหาร / cashier ร้านค้า แบบถาวร หากต้องการ role คนละชุด เช่น `restaurant_cashier` และ `retail_cashier`
+- POS Hardening 003: check duplicate event listeners and snapshot unsubscribe patterns
+- Safely retest product display order in `/pos`
 
-## ข้อควรระวัง
+## Notes
 
-- ทุก record สำคัญต้องมี `tenantId`
-- ห้าม sync POS ข้าม tenant
-- ใช้ stable sale/order id เดิมทั้ง online/offline
-- Firestore transaction ต้อง read เอกสารทั้งหมดก่อน write
-- ถ้าแก้ JS/CSS ที่ import ใน HTML ต้อง bump query string
-- ถ้าแก้ `storage.rules` ต้อง deploy ด้วย `firebase deploy --only storage`
+- Every important record must include `tenantId`.
+- Do not sync POS across tenants.
+- Use the same stable sale/order id online and offline.
+- Firestore transactions must read all documents before writes.
+- If imported JS/CSS changes, bump query string.
+- If `storage.rules` changes, deploy with `firebase deploy --only storage`.
