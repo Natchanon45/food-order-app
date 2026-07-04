@@ -6,7 +6,7 @@ import {RetailCollections,listRecords,saveRecord,deleteRecord,getRecord} from ".
 const ROLE_KEY="retail_pos_roles_v1",USER_KEY="retail_pos_users_v1";
 const $=selector=>document.querySelector(selector);
 const upsertRetailPosStaff=httpsCallable(functions,"upsertRetailPosStaff");
-let roles=getRoles(),users=getUsers(),toastTimer;
+let roles=getRoles(),users=[],toastTimer;
 
 function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}}
 function write(key,value){localStorage.setItem(key,JSON.stringify(value))}
@@ -32,19 +32,19 @@ async function persistUsers(){
 }
 async function hydrateAccessData(){
   try{
-    const [roleRows,userRows,roleSettings,userSettings]=await Promise.all([
+    const [roleRows,userRows,roleSettings]=await Promise.all([
       listRecords(RetailCollections.roles).catch(()=>[]),
       listRecords(RetailCollections.users).catch(()=>[]),
-      getRecord(RetailCollections.settings,"roles").catch(()=>null),
-      getRecord(RetailCollections.settings,"users").catch(()=>null)
+      getRecord(RetailCollections.settings,"roles").catch(()=>null)
     ]);
     const nextRoles=(roleRows.length?roleRows:(roleSettings?.roles||roleSettings?.items||[])).map(roleRecord).filter(role=>role.id);
-    const nextUsers=(userRows.length?userRows:(userSettings?.users||userSettings?.items||[])).map(userRecord).filter(user=>user.id&&!isOwnerAccount(user));
+    const nextUsers=userRows.map(userRecord).filter(user=>user.id&&!isOwnerAccount(user));
     if(nextRoles.length)roles=nextRoles;
-    if(nextUsers.length)users=nextUsers;
+    users=nextUsers;
     write(ROLE_KEY,roles);
     write(USER_KEY,managedUsers());
-  }catch(error){console.warn("[pos-users] hydrate firebase access data failed",error)}
+    await saveRecord(RetailCollections.settings,{id:"users",users:managedUsers().map(userRecord),updatedAt:Date.now()}).catch(error=>console.warn("[pos-users] cleanup settings users failed",error));
+  }catch(error){console.warn("[pos-users] hydrate firebase access data failed",error);users=read(USER_KEY,[]).map(userRecord).filter(user=>user.id&&!isOwnerAccount(user))}
 }
 
 function renderCurrent(){const user=getCurrentUser(),role=getCurrentRole();$("#currentUserText").textContent=`ผู้ใช้งานปัจจุบัน: ${user?.name||"-"} • ${role?.name||"-"}`}
