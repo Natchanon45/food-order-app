@@ -7,16 +7,15 @@ Branch: `feature/retail-pos`
 
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
-- Milestone: `Register Form Polish`
+- Milestone: `Register Validation Stability`
 
 ## This Change
 
-- Updated `/register` input fields to use a light gray base background.
-- Phone field accepts digits only and formats to `x-xxxx-xxxx-x` after entry.
-- Checkbox validation text now says `กรุณายอมรับข้อตกลงและนโยบายการใช้งาน`.
-- Yearly old price uses a black 1px diagonal slash effect.
-- Bumped `public-register.js` to `v=20260705-006`.
-- UI/validation-only change.
+- Stabilized `/register` validation height by reserving error text space.
+- Input rows no longer jump when validation appears or clears.
+- Adjusted old yearly price: red text with black 1px slash at a softer angle.
+- Bumped `public-register.js` to `v=20260705-007`.
+- UI-only change.
 
 ## Deploy
 
