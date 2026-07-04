@@ -32,6 +32,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Sales Report Icon Hotfix done
 - Sales Report Back Label Polish done
 - Sales Report Back Icon Duplication Fix done
+- Login Home Link done
 
 ## Current Milestone
 
@@ -39,20 +40,20 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## This Change
 
-- Fixed duplicated left-arrow icon on `/admin/sales-report` back action.
-- Added `.app-icon` to the existing Bootstrap back icon so `ui.js` treats it as already decorated.
-- Bumped `sales-report.js` query string to `v=20260704-004` to prevent browser cache after the HTML import update.
-- UI-only change for the sales report header.
-- No changes to report logic, calculations, Online/Offline, Sync, stable `saleId`, Firestore, or Stock Transaction.
+- Added a `หน้าหลัก` link on `/login` to return users to `/`.
+- Placed the home link above the login card for both desktop and mobile.
+- Used a Bootstrap home icon with `.app-icon` to match the app icon standard.
+- UI-only change for the login page.
+- No changes to Auth logic, Tenant, Firestore, POS, Sync, stable `saleId`, or Stock Transaction.
 - Developer Panel remains Version `0.12.70` Build `2026.07.02.024`.
 
 ## Regression Tests
 
-1. Open `/admin/sales-report` and confirm the back action displays `ย้อนกลับ`.
-2. Confirm the back action has only one left-arrow icon.
-3. Confirm the hourly sales chart title still has an icon.
-4. Confirm sales report calculations still work.
-5. Confirm important records still include `tenantId`.
+1. Open `/login` and confirm the `หน้าหลัก` link is visible above the login card.
+2. Click `หน้าหลัก` and confirm it navigates to `/`.
+3. Confirm login form email/password and password toggle still work.
+4. Confirm login submit button and error fallback still work.
+5. Confirm no POS, Sync, Firestore, or Stock Transaction logic changed.
 
 ## Next Tasks
 
