@@ -7,24 +7,24 @@ Branch: `feature/retail-pos`
 
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
-- Milestone: `Register Package Layout`
+- Milestone: `Register Real Package Radios`
 
 ## This Change
 
-- Updated `/register` package section to card-style radio options.
-- Premium Trial is auto-selected; other package cards are disabled.
-- Adjusted form labels and PC/mobile field layout.
-- Added terms acceptance checkbox before submit.
-- Submit button is disabled until terms are accepted.
-- Bumped `public-register.js` to `v=20260705-001`.
+- Updated `/register` package cards to use real visible radio inputs.
+- Package cards are clickable and update selected state through real radio changes.
+- Replaced text check mark with Bootstrap icon.
+- `public-register.js` now reads the selected package radio value.
+- Non-premium packages are selectable for future support but blocked on submit for now.
+- Bumped `public-register.js` to `v=20260705-002`.
 - UI/validation-only change. No signup function, auth function, POS sale, stock, sync, or transaction logic changed.
 
 ## Test
 
 1. Deploy hosting.
 2. Hard refresh `/register`.
-3. Confirm package cards and form layout.
-4. Confirm submit is disabled until terms checkbox is checked.
+3. Click Free, Pro, and Premium package cards and confirm radio selection changes.
+4. Confirm only Premium can submit for now.
 5. Confirm signup flow still sends verification email.
 
 ## Deploy
