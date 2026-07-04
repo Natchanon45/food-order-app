@@ -37,6 +37,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Retail Category/Product Sort Manager เสร็จแล้ว
 - Product Image Storage Rules Fix เสร็จแล้ว
 - POS Display Order Hard Rollback เสร็จแล้ว
+- Admin Icon Theme Color Fix เสร็จแล้ว
 
 ## Current Milestone
 
@@ -44,23 +45,22 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## แก้แล้วรอบนี้
 
-- ลบไฟล์ `public/assets/js/retail-pos-display-order.js` ออกจาก repo แล้ว
-- `/pos/index.html` ไม่โหลดสคริปต์จัดลำดับสินค้าอีก
-- ตัวจัดลำดับหมวดหมู่/สินค้าใน `/pos/products/` ยังอยู่ แต่ยังไม่ apply การเรียงบนหน้าขาย `/pos`
-- ไม่มีการแตะ logic ขาย, Online/Offline, Sync, Stable `saleId` หรือ Stock Transaction
-- Developer Panel เป็น Version `0.12.70` Build `2026.07.02.024`
+- แก้ `public/assets/js/admin-icon-polish.js` ให้ inject runtime style สำหรับ `.admin-heading-icon`
+- บังคับสี icon หัวข้อ Admin เป็นสีเขียวธีม `#159447` แม้หน้า Admin จะโหลดเฉพาะ JS polish
+- ไม่แตะ logic ขาย, Online/Offline, Sync, Stable `saleId`, Firestore หรือ Stock Transaction
+- Developer Panel ยังเป็น Version `0.12.70` Build `2026.07.02.024`
 
 ## Regression Tests สำคัญ
 
-1. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
-2. Network/Console ต้องไม่มี request ไป `retail-pos-display-order.js`
-3. เปิด POS แล้วขาย Online ได้ตามเดิม
-4. ปิดเน็ตขาย Offline ได้ตามเดิม
-5. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
-6. กด Enter ใน modal รับเงินแล้วยืนยันการขายได้ตามเดิม
-7. หน้า `/pos` ต้องไม่เห็นปุ่ม `โหลดตัวอย่าง`
-8. Deploy Storage Rules แล้วอัปโหลดรูปสินค้าใน `/pos/products/` ต้องไม่เจอ 403
-9. เปิด `/pos/products/` แล้วเห็น panel `จัดลำดับหมวดหมู่และสินค้า`
+1. เปิด `/admin` แล้ว icon หัวข้อ เช่น `จัดการร้าน`, `รายงานยอดขาย`, `ข้อมูลร้านและการรับชำระ` ต้องกลับเป็นสีเขียวธีม
+2. เปิด `/admin/qr` แล้ว icon หัวข้อและปุ่มพิมพ์ยังแสดงตามเดิม
+3. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
+4. Network/Console ต้องไม่มี request ไป `retail-pos-display-order.js`
+5. เปิด POS แล้วขาย Online ได้ตามเดิม
+6. ปิดเน็ตขาย Offline ได้ตามเดิม
+7. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
+8. กด Enter ใน modal รับเงินแล้วยืนยันการขายได้ตามเดิม
+9. หน้า `/pos` ต้องไม่เห็นปุ่ม `โหลดตัวอย่าง`
 10. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
