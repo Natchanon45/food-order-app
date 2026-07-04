@@ -52,6 +52,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Login Copy + Version Size Polish เสร็จแล้ว
 - Pricing Card Header Alignment Polish เสร็จแล้ว
 - Support Email Badge Polish เสร็จแล้ว
+- Legal Support Email Badge Polish เสร็จแล้ว
 
 ## Current Milestone
 
@@ -59,22 +60,23 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## แก้แล้วรอบนี้
 
-- ปรับลิงก์อีเมลหน้าแรก `/` ให้เป็น badge แบบเดียวกับ `นโยบายความเป็นส่วนตัว` และ `ข้อกำหนดการใช้งาน`
+- ปรับหน้า `/privacy` และ `/terms` ให้ลิงก์อีเมลเป็น badge แบบเดียวกับหน้าแรก
 - แสดงเฉพาะ icon + ข้อความ `ติดต่อฝ่ายสนับสนุน`
 - ซ่อนอีเมลไม่ให้แสดงบนหน้าเว็บ แต่ยังคลิกเพื่อส่งอีเมลผ่าน `mailto:` ได้
-- แก้เฉพาะ HTML/inline CSS ของหน้าแรก
+- คงลิงก์กลับหน้าแรก, Privacy และ Terms เดิมไว้
+- แก้เฉพาะ HTML/inline CSS ของหน้า Privacy และ Terms
 - ไม่แตะ logic ขาย, Online/Offline, Sync, Stable `saleId`, Firestore หรือ Stock Transaction
 - Developer Panel ยังเป็น Version `0.12.70` Build `2026.07.02.024`
 
 ## Regression Tests สำคัญ
 
-1. เปิด `/` แล้วลิงก์อีเมลต้องแสดงเป็น badge `ติดต่อฝ่ายสนับสนุน`
-2. หน้าแรกต้องไม่แสดงอีเมลเป็นข้อความตรง ๆ
-3. คลิก badge `ติดต่อฝ่ายสนับสนุน` แล้วต้องเปิด mailto ได้
-4. ลิงก์ `นโยบายความเป็นส่วนตัว` และ `ข้อกำหนดการใช้งาน` ต้องยังทำงาน
-5. เปิด `/` บน Mobile แล้ว badge ทั้ง 3 รายการต้องเรียงอ่านง่าย ไม่ทับกัน
-6. เปิด `/login` แล้วระบบเข้าสู่ระบบเดิมต้องยังทำงาน
-7. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
+1. เปิด `/privacy` แล้วต้องไม่แสดงอีเมลเป็นข้อความตรง ๆ
+2. เปิด `/terms` แล้วต้องไม่แสดงอีเมลเป็นข้อความตรง ๆ
+3. badge `ติดต่อฝ่ายสนับสนุน` ใน `/privacy` ต้องคลิกเปิด mailto ได้
+4. badge `ติดต่อฝ่ายสนับสนุน` ใน `/terms` ต้องคลิกเปิด mailto ได้
+5. ลิงก์กลับหน้าแรก, Privacy และ Terms ต้องยังทำงาน
+6. เปิดบน Mobile แล้ว badge ต้องเต็มความกว้างและอ่านง่าย
+7. เปิด `/login` แล้วระบบเข้าสู่ระบบเดิมต้องยังทำงาน
 8. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
