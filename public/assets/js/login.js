@@ -1,20 +1,19 @@
-import { login, ROLE_HOME, waitForAuth, getUserProfile } from "./auth-service.js";
+import { login, ROLE_HOME } from "./auth-service.js?v=20260704-002";
+import { login as retailPosLogin } from "./retail-pos-auth.js?v=20260704-003";
 import { toast } from "./ui.js?v=20260701-001";
 
-const existingUser = await waitForAuth();
-if (existingUser) {
-  const profile = await getUserProfile(existingUser);
-  if (profile?.active !== false && profile?.role) {
-    location.replace(ROLE_HOME[profile.role] || "/");
-  }
-}
+localStorage.removeItem("retail_pos_session_v1");
+localStorage.removeItem("retail_pos_current_user_v1");
 
 const form = document.getElementById("loginForm");
 const button = document.getElementById("loginButton");
 const errorBox = document.getElementById("loginError");
+const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 const togglePasswordBtn = document.getElementById("togglePasswordBtn");
 const defaultButtonHtml = button.innerHTML;
+const next = new URLSearchParams(location.search).get("next") || "";
+const isPosNext = next.replace(/\/index\.html$/, "/").startsWith("/pos");
 
 function syncFloatingIcon(input) {
   const wrap = input.closest(".login-input-wrap");
@@ -65,12 +64,17 @@ form.addEventListener("submit", async event => {
   errorBox.hidden = true;
   setButtonLoading(true);
 
+  const email = emailInput.value.trim().toLowerCase();
+  const password = passwordInput.value;
+
   try {
-    const profile = await login(
-      document.getElementById("email").value.trim(),
-      passwordInput.value
-    );
-    const next = new URLSearchParams(location.search).get("next");
+    const profile = await login(email, password);
+    if (isPosNext) {
+      const posResult = await retailPosLogin(email, password);
+      if (!posResult.ok) throw new Error(posResult.message || "บัญชีนี้ไม่มีสิทธิ์ใช้งาน Retail POS");
+      location.replace(next || "/pos/");
+      return;
+    }
     location.replace(next || ROLE_HOME[profile.role] || "/");
   } catch (error) {
     console.error(error);
