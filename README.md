@@ -53,8 +53,17 @@
 - Sales Report Back Icon Duplication Fix
 - Login Home Link
 - POS User Visibility Fixes
+- Admin Staff Callable Hotfix
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Admin Staff Callable Hotfix
+
+- แก้ `/admin/users` ให้เรียก Callable Functions ที่มีอยู่จริง: `listTenantStaff`, `createTenantStaff`, `updateTenantStaff`
+- แก้ปัญหา CORS/failed request จากการเรียกชื่อเดิม `updateStaffUser`
+- เพิ่มตัวกรอง POS user เก่าที่ไม่มี marker แต่มีลักษณะ local POS user เช่น `username`, `passwordHash`, `passwordSalt`, id ขึ้นต้น `user-`, หรือ `roleId` แบบ POS
+- bump `/admin/users` script เป็น `admin-users.js?v=20260704-002` และ `admin-staff-service.js?v=20260704-002`
+- แก้เฉพาะ service/user-management UI ไม่แตะ logic การขาย, Sync, Firestore transaction, stable `saleId` หรือ Stock Transaction
 
 ## POS User Visibility Fixes
 
