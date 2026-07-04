@@ -148,10 +148,23 @@ function escapeHtml(value) {
   })[char]);
 }
 
+function maskNamePart(part = "") {
+  const text = String(part || "").trim();
+  if (!text) return "";
+  if (text.length <= 1) return "*";
+  if (text.length === 2) return `${text[0]}*`;
+  return `${text[0]}${"*".repeat(Math.min(text.length - 2, 4))}${text.slice(-1)}`;
+}
+
+function maskCustomerName(value) {
+  return String(value || "").trim().split(/\s+/).filter(Boolean).map(maskNamePart).join(" ");
+}
+
 function maskPhone(value) {
   const digits = String(value || "").replace(/\D/g, "");
   if (!digits) return "";
-  if (digits.length < 6) return `${digits.slice(0, 2)}***${digits.slice(-2)}`;
+  if (digits.length <= 4) return `${digits.slice(0, 1)}***`;
+  if (digits.length < 10) return `${digits.slice(0, 2)}xxx${digits.slice(-2)}`;
   return `${digits.slice(0, 3)}-xxx-xx${digits.slice(-2)}`;
 }
 
@@ -177,7 +190,8 @@ async function populateReceipt(sourceSale) {
   document.querySelector("#printCashier").textContent = sale.cashierName || "-";
   document.querySelector("#printTerminal").textContent = sale.terminalCode || "-";
 
-  const memberName = [sale.customerCode, sale.customerName].filter(Boolean).join(" • ");
+  const maskedCustomerName = maskCustomerName(sale.customerName);
+  const memberName = [sale.customerCode, maskedCustomerName].filter(Boolean).join(" • ");
   const memberPhone = maskPhone(sale.customerPhone);
   const customerNameRow = document.querySelector("#printCustomerNameRow");
   const customerPhoneRow = document.querySelector("#printCustomerPhoneRow");
