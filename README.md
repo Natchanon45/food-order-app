@@ -55,8 +55,18 @@
 - POS User Visibility Fixes
 - Admin Staff Callable Hotfix
 - Restaurant Staff Role Function Fix
+- Business Unit Staff Filter Fix
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Business Unit Staff Filter Fix
+
+- แก้ `functions/staff-admin.js` ให้ใช้ `businessUnit` เป็นตัวกรองหลักของ user management
+- ถ้า record มี `businessUnit: retail_pos` จะไม่ถูกส่งกลับมาแสดงที่ `/admin/users` ฝั่ง Order/Delivery
+- staff ที่สร้างจาก `/admin/users` จะถูกบันทึกเป็น `businessUnit: order_delivery`
+- `updateTenantStaff` จะไม่อนุญาตให้แก้ user ที่เป็น `businessUnit: retail_pos` ผ่านหน้า Order/Delivery
+- แก้เพื่อรองรับข้อมูลจริงใน Firebase ที่อาจมี `staffScope/source` ถูกเขียนเป็น Order/Delivery แต่ยังมี `businessUnit: retail_pos`
+- ต้อง deploy functions เพื่อให้ filter นี้มีผล
 
 ## Restaurant Staff Role Function Fix
 
