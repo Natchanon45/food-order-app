@@ -35,8 +35,17 @@
 - Admin Icon Theme Color Fix
 - Admin Action Button Desktop/Mobile Polish
 - Main Login UI Polish
+- Public Landing Icon Polish
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Public Landing Icon Polish
+
+- คืน icon ให้หัวข้อและปุ่มในหน้า `/` ตอนยังไม่ login
+- ย้ายปุ่ม `เข้าสู่ระบบสำหรับพนักงาน` ให้อยู่กึ่งกลาง
+- เพิ่ม icon ให้ quick link, contact, privacy และ terms ใน Public Landing
+- `/index.html` bump `home-dashboard.css` เป็น `v=20260704-020`
+- แก้เฉพาะ UI Public Landing ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore หรือ Stock Transaction
 
 ## Main Login UI Polish
 
@@ -91,11 +100,11 @@
 
 ## Regression Tests
 
-1. เปิด `/login` แล้วต้องใช้ layout card/gradient/spacing แบบ `/pos/login`
-2. `/login` logo ต้องเป็น `FOD` ไม่ใช่ `POS`
-3. `/login` ต้องมี icon ที่หัวข้อ, label input และปุ่มเข้าสู่ระบบ
-4. ปุ่มแสดง/ซ่อนรหัสผ่านใน `/login` ต้องทำงาน
-5. Login ด้วยบัญชีพนักงานยัง redirect ตาม role เดิม
+1. เปิด `/` ตอนยังไม่ login แล้วหัวข้อหลักและ card ต่าง ๆ ต้องมี icon สีเขียวธีม
+2. ปุ่ม `เข้าสู่ระบบสำหรับพนักงาน` ต้องอยู่กึ่งกลางและมี icon
+3. Quick link `เข้าสู่ระบบพนักงาน / POS` ต้องมี icon และยังลิงก์ไป `/login`
+4. ลิงก์ Privacy / Terms และอีเมล support ต้องยังใช้งานได้
+5. เปิด `/login` แล้วต้องยังใช้ layout card/gradient/spacing แบบ `/pos/login` และ logo `FOD`
 6. เปิด `/pos/login` แล้วต้องยังใช้ logo `POS` และทำงานเดิม
 7. เปิด `/admin` แล้ว icon หัวข้อและปุ่ม action Desktop/Mobile ยังถูกต้อง
 8. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
