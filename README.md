@@ -5,7 +5,7 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Public Registration Phase 1`
+- Current milestone: `Public Registration Phase 2`
 - Developer Panel version/build ปัจจุบัน: `0.12.70` / `2026.07.02.024`
 
 ## Retail POS Status
@@ -30,8 +30,17 @@
 - Signup Email Verification Hotfix
 - Register Existing Auth Email + Layout Hotfix
 - Register Slug Pattern Hotfix
+- Public Registration Phase 2
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Public Registration Phase 2
+
+- เปิดใช้งานปุ่ม `ลงทะเบียน` หน้าแรกให้ลิงก์ไป `/register/`
+- เปลี่ยน note หน้าแรกให้สื่อว่า Premium Trial สมัครใช้งานจริงหลังยืนยันอีเมล
+- เพิ่ม fallback ใน `home-session-fa.js` ให้ปรับ CTA ตอนโหลดหน้าเพื่อกัน cache/HTML เก่า
+- bump `home-session-fa.js` ใน `public/index.html` เป็น `v=20260704-001`
+- แก้เฉพาะ hosting/static ไม่แตะ tenant activation functions, POS sales, stock, sync หรือ Firestore transactions
 
 ## Register Slug Pattern Hotfix
 
@@ -59,7 +68,6 @@
 - Premium trial ถูกตั้งเป็นแผนเริ่มต้น 30 วัน
 - ระบบสร้าง tenant, owner profile, membership, store settings, POS settings และ subscription settings หลัง verify สำเร็จ
 - เพิ่ม Firebase Auth helpers สำหรับ email verification ใน frontend
-- ปุ่ม `ลงทะเบียน` หน้าแรกยังต้อง patch ต่อ เพราะไฟล์ landing เดิมเป็น one-line HTML และ GitHub block การอัปเดตไฟล์นั้นในรอบนี้
 
 ## Previous Fixes
 
@@ -72,9 +80,9 @@
 
 ## Next Tasks
 
-- Patch public landing `ลงทะเบียน` CTA to `/register/`
 - POS Hardening 003: ตรวจ/ลด event listener ซ้ำและ snapshot unsubscribe patterns ในโมดูลที่มี listener จริง
 - ทดสอบการ apply ลำดับสินค้าใน `/pos` แบบปลอดภัยก่อนเปิดใช้อีกครั้ง
+- Package Selection Phase 3 หากต้องเปิดเลือก Free/Pro/Premium จริงในอนาคต
 
 ## Deploy
 
