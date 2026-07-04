@@ -31,6 +31,13 @@ function setBusy(isBusy) {
   activateButton.disabled = isBusy;
   resendButton.disabled = isBusy;
 }
+function friendlyEmailError(error) {
+  const code = String(error?.code || error?.message || '');
+  if (code.includes('too-many-requests')) return 'ระบบส่งอีเมลบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่';
+  if (code.includes('unauthorized-continue-uri')) return 'โดเมนสำหรับลิงก์ยืนยันยังไม่ได้รับอนุญาตใน Firebase Auth Authorized domains';
+  if (code.includes('invalid-continue-uri')) return 'ลิงก์ยืนยันอีเมลไม่ถูกต้อง กรุณาตรวจสอบการตั้งค่า Firebase Auth';
+  return error?.message || 'ส่งอีเมลยืนยันไม่สำเร็จ';
+}
 function signupPayload() {
   const secretA = $('#secretA').value;
   const secretB = $('#secretB').value;
@@ -47,7 +54,11 @@ function signupPayload() {
   };
 }
 async function sendVerifyEmail(user) {
-  await sendEmailVerification(user, { url: `${location.origin}/register/?verify=1`, handleCodeInApp: false });
+  if (!user) throw new Error('ไม่พบบัญชีผู้สมัคร กรุณาสมัครใหม่อีกครั้ง');
+  await reload(user).catch(() => {});
+  if (auth.currentUser?.emailVerified) return { alreadyVerified: true };
+  await sendEmailVerification(auth.currentUser || user, { url: `${location.origin}/register/?verify=1`, handleCodeInApp: false });
+  return { alreadyVerified: false };
 }
 async function submitSignup(event) {
   event.preventDefault();
@@ -58,17 +69,18 @@ async function submitSignup(event) {
     slugInput.value = payload.slug;
     slugPreview.textContent = previewUrl(payload.slug);
     const credential = await createUserWithEmailAndPassword(auth, payload.email, payload.secret);
-    await requestSignup(payload);
     await sendVerifyEmail(credential.user);
+    await requestSignup(payload);
     form.classList.add('hidden');
     verifyBox.classList.add('show');
-    setVerify('ส่งอีเมลยืนยันแล้ว กรุณาตรวจสอบกล่องจดหมาย');
+    setVerify('ส่งอีเมลยืนยันแล้ว กรุณาตรวจสอบกล่องจดหมาย รวมถึง Spam/Junk');
   } catch (error) {
     const code = String(error?.code || error?.message || '');
     let message = error?.message || 'สมัครใช้งานไม่สำเร็จ';
     if (code.includes('email-already-in-use')) message = 'อีเมลนี้ถูกใช้งานแล้ว กรุณาใช้อีเมลอื่นหรือลงชื่อเข้าใช้';
     if (code.includes('already-exists')) message = 'Slug นี้ถูกใช้งานแล้ว กรุณาเปลี่ยน slug';
     if (code.includes('weak-password')) message = 'รหัสเข้าใช้งานต้องมีอย่างน้อย 8 ตัวอักษร';
+    if (code.includes('continue-uri') || code.includes('too-many-requests')) message = friendlyEmailError(error);
     setStatus(message, 'error');
   } finally {
     setBusy(false);
@@ -80,7 +92,7 @@ async function activateTrial() {
     const user = auth.currentUser;
     if (!user) throw new Error('กรุณาสมัครหรือลงชื่อเข้าใช้ก่อน');
     await reload(user);
-    if (!auth.currentUser.emailVerified) throw new Error('ยังไม่พบสถานะยืนยันอีเมล กรุณากดลิงก์ในอีเมลก่อน');
+    if (!auth.currentUser.emailVerified) throw new Error('ยังไม่พบสถานะยืนยันอีเมล กรุณากดลิงก์ในอีเมลก่อน หากไม่พบเมลให้กดส่งอีเมลอีกครั้งและตรวจสอบ Spam/Junk');
     const result = await activateSignup({});
     const slug = result.data?.slug || '';
     setVerify(`เปิดร้านสำเร็จแล้ว Premium Trial เริ่มใช้งานแล้ว`);
@@ -94,11 +106,10 @@ async function activateTrial() {
 async function resendVerification() {
   setBusy(true);
   try {
-    if (!auth.currentUser) throw new Error('ไม่พบบัญชีผู้สมัคร กรุณาสมัครใหม่อีกครั้ง');
-    await sendVerifyEmail(auth.currentUser);
-    setVerify('ส่งอีเมลยืนยันอีกครั้งแล้ว');
+    const result = await sendVerifyEmail(auth.currentUser);
+    setVerify(result.alreadyVerified ? 'อีเมลยืนยันแล้ว กดเปิดร้านได้เลย' : 'ส่งอีเมลยืนยันอีกครั้งแล้ว กรุณาตรวจสอบ Inbox และ Spam/Junk');
   } catch (error) {
-    setVerify(error?.message || 'ส่งอีเมลยืนยันไม่สำเร็จ', 'error');
+    setVerify(friendlyEmailError(error), 'error');
   } finally {
     setBusy(false);
   }
@@ -111,10 +122,11 @@ slugInput.addEventListener('input', () => {
 form.addEventListener('submit', submitSignup);
 activateButton.addEventListener('click', activateTrial);
 resendButton.addEventListener('click', resendVerification);
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth, async user => {
   if (user && location.search.includes('verify=1')) {
+    await reload(user).catch(() => {});
     form.classList.add('hidden');
     verifyBox.classList.add('show');
-    setVerify(user.emailVerified ? 'อีเมลยืนยันแล้ว กดเปิดร้านได้เลย' : 'กรุณากดลิงก์ยืนยันในอีเมลก่อน');
+    setVerify(auth.currentUser?.emailVerified ? 'อีเมลยืนยันแล้ว กดเปิดร้านได้เลย' : 'กรุณากดลิงก์ยืนยันในอีเมลก่อน หากไม่พบเมลให้กดส่งอีเมลอีกครั้ง');
   }
 });
