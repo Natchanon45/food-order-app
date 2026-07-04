@@ -3,16 +3,16 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Register Inline Validation`
+- Current milestone: `Register Validation Fix`
 - Version/Build: `0.12.70` / `2026.07.02.024`
 
 ## This Change
 
-- `/register` now shows red inline validation text under required fields.
-- Validation appears after submit attempt and clears while typing.
-- Terms checkbox also has inline validation.
-- Bumped `public-register.js` to `v=20260705-003`.
-- UI/validation-only change.
+- Fixed `/register` inline validation.
+- Disabled native browser validation so red messages under inputs can show.
+- Improved yearly price emphasis.
+- Bumped `public-register.js` to `v=20260705-004`.
+- UI-only change.
 
 ## Deploy
 
