@@ -7,22 +7,22 @@ Branch: `feature/retail-pos`
 
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
-- Milestone: `Unified Login POS Session`
+- Milestone: `POS Users Direct Firestore Source`
 
 ## This Change
 
-- `/login` now tries to prepare a Retail POS session after normal staff login.
-- Retail POS users can later open `/pos` without a second login.
-- If user has no POS permission, normal `/login` still succeeds.
-- `/login?next=/pos/` still requires POS session and shows an error if not allowed.
+- `/pos/users` now reads users directly from Firestore instead of localStorage fallback.
+- Sources are tenant users, tenant memberships, and root users for the active tenant.
+- The page filters only Retail POS staff records.
+- After load, it refreshes tenant users and local cache from Firestore data.
 - No POS sale, stock, sync, or transaction logic changed.
 
 ## Test
 
 1. Deploy hosting.
-2. Open `/login` and login with a Retail POS user.
-3. Open `/pos`; it should not ask for a second login.
-4. Login with non-POS user and confirm normal pages still work.
+2. Hard refresh `/pos/users`.
+3. Confirm Retail POS staff appears from Firestore.
+4. Confirm stale deleted users do not return from localStorage.
 
 ## Deploy
 
