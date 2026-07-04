@@ -1,0 +1,45 @@
+@media (max-width: 600px) {
+  .product-panel .section-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 8px;
+  }
+
+  .product-panel .section-actions {
+    justify-self: end;
+    align-self: start;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  #clearSaleBtn {
+    min-height: 30px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-size: .74rem;
+    line-height: 1;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 800px) {
+  .pos-menu-group > button::after {
+    content: "\F282" !important;
+    width: 22px;
+    height: 22px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 999px;
+    background: #f2f7f4;
+    color: #102317;
+    font-family: "bootstrap-icons" !important;
+    font-size: .86rem;
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  .pos-menu-group.is-open > button::after {
+    content: "\F286" !important;
+  }
+}
