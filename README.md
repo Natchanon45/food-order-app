@@ -3,15 +3,15 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `POS Logout Password Fix`
+- Current milestone: `POS Ghost User Cleanup`
 - Version/Build: `0.12.70` / `2026.07.02.024`
 
 ## This Change
 
-- `/pos/login` forwards to `/login?next=/pos/`.
-- POS user password changes now sync to Firebase Auth through a callable function.
-- POS logout has a fallback to unified login.
-- UI/auth fix only. No sale, stock, sync, or transaction logic changed.
+- POS users now use `tenants/{tenantId}/users` as the source of truth.
+- Removed fallback from stale `settings/users` array.
+- Page load rewrites `settings/users` from current POS users to clear stale entries.
+- Auth/session fix only. No sale, stock, sync, or transaction logic changed.
 
 ## Deploy
 
