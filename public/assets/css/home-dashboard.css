@@ -5,9 +5,66 @@ body.staff-home {
   background: #fbfcfb;
 }
 
-.staff-login-action { display: flex; justify-content: flex-end; }
+.public-landing-hero h1,
+.public-feature-card h2,
+.quick-menu-head h2,
+.public-about-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.public-landing-hero h1 {
+  justify-content: center;
+}
+
+.public-heading-icon {
+  width: 1.05em;
+  height: 1.05em;
+  color: #159447;
+  flex: 0 0 auto;
+}
+
+.public-landing-hero .public-heading-icon {
+  width: 1.1em;
+  height: 1.1em;
+}
+
+.public-inline-icon {
+  width: 16px;
+  height: 16px;
+  color: #159447;
+  vertical-align: -.12em;
+}
+
+.staff-login-action {
+  display: flex;
+  justify-content: center;
+  margin: 18px 0 4px;
+}
+
+.staff-login-action .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.staff-login-action .btn .app-icon {
+  width: 18px;
+  height: 18px;
+}
+
 .public-support { margin-top: 18px; text-align: center; }
 .public-support p { margin: 6px 0; }
+.public-support .menu-category,
+.public-support .menu-category a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
 
 .quick-menu-card { margin-top: 18px; }
 .quick-menu-head h2 { margin: 0 0 6px; }
@@ -20,8 +77,8 @@ body.staff-home {
 .quick-link-grid-single { grid-template-columns: minmax(0, 1fr); }
 .quick-link {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  gap: 12px;
   padding: 16px;
   border: 1px solid #e4eee7;
   border-radius: 18px;
@@ -31,6 +88,23 @@ body.staff-home {
 }
 .quick-link:hover { border-color: #9fd0b3; }
 .quick-link span { color: #5d6a61; font-size: 14px; line-height: 1.4; }
+.quick-link strong { display: block; color: #102317; }
+.quick-link-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: #e8f3ec;
+  color: #159447;
+  flex: 0 0 42px;
+}
+.quick-link-icon .app-icon { width: 23px; height: 23px; }
+.quick-link-content {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
 
 body.staff-home .app-header {
   position: relative;
@@ -184,6 +258,11 @@ body.staff-home .app-version { margin-top: auto; padding-bottom: 34px; font-size
 @media (max-width: 760px) {
   .quick-link-grid { grid-template-columns: 1fr; }
   .quick-link { padding: 14px; }
+  .public-landing-hero h1,
+  .public-feature-card h2,
+  .quick-menu-head h2,
+  .public-about-card h2 { gap: 8px; }
+  .public-heading-icon { width: 20px; height: 20px; }
 
   body.staff-home .app-header {
     display: flex;
