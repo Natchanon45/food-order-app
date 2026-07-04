@@ -31,6 +31,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Business Unit Staff Filter Fix done
 - Public Trial Signup Phase 1 done
 - Signup Email Verification Hotfix done
+- Register Existing Auth Email + Layout Hotfix done
 
 ## Current Milestone
 
@@ -38,21 +39,21 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## This Change
 
-- Improved `/register/` email verification handling.
-- The registration client now attempts to send the verification email before saving pending signup data.
-- Added clearer error messages for verification email issues such as unauthorized continue URL or too many requests.
-- Resend verification now reloads the current auth user and tells users to check Inbox and Spam/Junk.
-- Bumped `/register/` script to `public-register.js?v=20260704-002`.
-- Requires deploying hosting. If signup functions are not yet deployed, deploy functions too.
+- Improved `/register/` for existing Firebase Auth email cases.
+- If signup email already exists in Firebase Auth, the client tries to sign in with the entered credential and continue the verification flow.
+- If sign in fails, the UI explains that the account still exists in Firebase Authentication and must be removed from Authentication Users or retried with the original credential.
+- Improved `/register/` layout: wider shell, narrower plan card, compact hero, full-width email field, better mobile collapse, and less vertical crowding.
+- Bumped `/register/` script to `public-register.js?v=20260704-003`.
+- Requires deploying hosting. Functions do not need redeploy if already deployed for Public Registration Phase 1.
 
 ## Regression Tests
 
-1. Deploy `functions,hosting` if functions are not already current; otherwise deploy hosting.
-2. Open `/register/` directly with a fresh browser session.
-3. Register a new shop with a unique email and slug.
-4. Confirm the verification email send result is visible.
-5. If no email arrives, check the displayed error and Firebase Auth Authorized domains.
-6. Confirm activation still waits for email verification.
+1. Deploy hosting.
+2. Open `/register/` with hard refresh.
+3. Try a new email and confirm signup still sends verification.
+4. Try an email that exists only in Firebase Auth and confirm it continues if the credential matches.
+5. Try an existing Auth email with the wrong credential and confirm the message explains Firebase Authentication cleanup.
+6. Confirm the form is readable on desktop and mobile.
 7. Confirm existing POS, stock, sync, and tenants are unchanged.
 
 ## Next Tasks
