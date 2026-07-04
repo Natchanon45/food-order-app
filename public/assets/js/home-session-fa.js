@@ -22,6 +22,19 @@ function routePublicLoginLinks() {
   });
 }
 
+function fixQuickLinkIconAlignment() {
+  if (document.getElementById("quick-link-icon-align-fix")) return;
+  const style = document.createElement("style");
+  style.id = "quick-link-icon-align-fix";
+  style.textContent = `
+    #publicLanding .quick-link{align-items:center!important;}
+    #publicLanding .quick-link-icon{width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;align-self:center!important;flex:0 0 42px!important;padding:0!important;line-height:1!important;}
+    #publicLanding .quick-link-icon .app-icon,#publicLanding .quick-link-icon i.app-icon,#publicLanding .quick-link-icon .bi{width:20px!important;height:20px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;margin:0!important;padding:0!important;font-size:20px!important;line-height:1!important;vertical-align:middle!important;flex:0 0 20px!important;}
+    #publicLanding .quick-link-icon .bi::before,#publicLanding .quick-link-icon i.app-icon::before{display:block!important;line-height:1!important;margin:0!important;}
+  `;
+  document.head.appendChild(style);
+}
+
 function lower(value) { return String(value || "").trim().toLowerCase(); }
 function profileSupportsModule(profile, moduleName) {
   if (!moduleName) return true;
@@ -49,6 +62,7 @@ function profileSupportsModule(profile, moduleName) {
 
 enablePublicRegisterCta();
 routePublicLoginLinks();
+fixQuickLinkIconAlignment();
 
 if (user) {
   const profile = await getUserProfile(user);
