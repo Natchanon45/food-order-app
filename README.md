@@ -54,8 +54,18 @@
 - Login Home Link
 - POS User Visibility Fixes
 - Admin Staff Callable Hotfix
+- Restaurant Staff Role Function Fix
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Restaurant Staff Role Function Fix
+
+- แก้ `functions/staff-admin.js` ให้รองรับ role ร้านอาหารหลักเฉพาะ `admin`, `cashier`, `kitchen`
+- แก้ `createTenantStaff` / `updateTenantStaff` ให้ยอมรับ `kitchen` เพื่อแก้ `FirebaseError: Invalid staff role`
+- จำกัดผู้จัดการพนักงานฝั่ง functions ให้เป็น `owner` หรือ `super_admin`
+- บันทึกพนักงานร้านอาหารที่สร้างใหม่ด้วย marker `staffScope: restaurant` และ `source: order_delivery`
+- ปรับ filter หน้า `/admin/users` ให้ซ่อน POS legacy user เช่น `cashier01` โดยไม่ตัด restaurant cashier ปกติชื่อ `Cashier`
+- รอบนี้ต้อง deploy functions และ hosting เพื่อให้ callable function และ static cache ใช้งานตรงกัน
 
 ## Admin Staff Callable Hotfix
 
@@ -110,6 +120,5 @@
 
 ```bash
 git pull --rebase origin feature/retail-pos
-firebase deploy --only hosting
-firebase deploy --only storage
+firebase deploy --only functions,hosting
 ```
