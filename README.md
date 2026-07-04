@@ -3,16 +3,22 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Register Validation Stability`
+- Current milestone: `Staff Home Mobile Polish`
 - Version/Build: `0.12.70` / `2026.07.02.024`
 
 ## This Change
 
-- Stabilized `/register` validation height by reserving error text space.
-- Input rows no longer jump when validation appears or clears.
-- Adjusted old yearly price: red text with black 1px slash at a softer angle.
-- Bumped `public-register.js` to `v=20260705-007`.
+- Improved staff home mobile layout after login.
+- Mobile dashboard cards now use a 2-column layout instead of overly narrow 4 columns.
+- Reduced mobile header, hero, card, icon, and label sizes.
+- Improved Order/Delivery and Retail POS section headers on mobile.
 - UI-only change.
+
+## Note
+
+- `home-dashboard.css` changed directly.
+- `public/index.html` query string was not bumped because the file is compressed into very long lines and rewriting it would risk breaking the page.
+- After deploy, use hard refresh to clear cached CSS.
 
 ## Deploy
 
