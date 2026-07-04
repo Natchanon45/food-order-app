@@ -31,6 +31,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Sales Report Icon Polish done
 - Sales Report Icon Hotfix done
 - Sales Report Back Label Polish done
+- Sales Report Back Icon Duplication Fix done
 
 ## Current Milestone
 
@@ -38,16 +39,17 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## This Change
 
-- Updated `/admin/sales-report` back action label to `ย้อนกลับ`
-- Added one leading back symbol to the action
-- UI-only change for the sales report header
-- No changes to report logic, calculations, Online/Offline, Sync, stable `saleId`, Firestore, or Stock Transaction
-- Developer Panel remains Version `0.12.70` Build `2026.07.02.024`
+- Fixed duplicated left-arrow icon on `/admin/sales-report` back action.
+- Added `.app-icon` to the existing Bootstrap back icon so `ui.js` treats it as already decorated.
+- Bumped `sales-report.js` query string to `v=20260704-004` to prevent browser cache after the HTML import update.
+- UI-only change for the sales report header.
+- No changes to report logic, calculations, Online/Offline, Sync, stable `saleId`, Firestore, or Stock Transaction.
+- Developer Panel remains Version `0.12.70` Build `2026.07.02.024`.
 
 ## Regression Tests
 
 1. Open `/admin/sales-report` and confirm the back action displays `ย้อนกลับ`.
-2. Confirm the back action has only one leading symbol.
+2. Confirm the back action has only one left-arrow icon.
 3. Confirm the hourly sales chart title still has an icon.
 4. Confirm sales report calculations still work.
 5. Confirm important records still include `tenantId`.
