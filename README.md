@@ -3,15 +3,13 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Register Premium Pricing Copy`
+- Current milestone: `Register Terms Polish`
 - Version/Build: `0.12.70` / `2026.07.02.024`
 
 ## This Change
 
-- Updated `/register` premium pricing copy.
-- Premium shows free first month and 590 THB for next months.
-- Side card shows follow-up monthly price and yearly special price.
-- Free and Pro cards are disabled again for now.
+- Terms checkbox and text are aligned on one row on PC.
+- Yearly price now shows 7080 with strikethrough before 5900 THB/1 Year.
 - UI-only change.
 
 ## Deploy
