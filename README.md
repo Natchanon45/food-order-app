@@ -3,14 +3,13 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `POS Display Update`
+- Current milestone: `POS Cache Fix`
 - Version/Build: `0.12.70` / `2026.07.02.024`
 
 ## This Change
 
-- Updated POS print display.
-- Updated script cache version.
-- UI-only change.
+- Updated POS script cache chain.
+- Display-only change.
 
 ## Deploy
 
