@@ -5,6 +5,8 @@ const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const ALLOWED_STAFF_ROLES = new Set(["admin", "cashier", "kitchen"]);
 const STAFF_MANAGER_ROLES = new Set(["owner", "super_admin"]);
 const STAFF_SCOPE = "restaurant";
+const BUSINESS_UNIT = "order_delivery";
+const POS_BUSINESS_UNIT = "retail_pos";
 
 async function getCallerProfile(auth) {
   if (!auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
@@ -32,7 +34,12 @@ function normalizeRole(role) {
   return value;
 }
 
+function businessUnit(user = {}) {
+  return String(user.businessUnit || user.business_unit || "").trim().toLowerCase();
+}
+
 function isRestaurantStaff(user = {}) {
+  if (businessUnit(user) === POS_BUSINESS_UNIT) return false;
   const scope = String(user.staffScope || user.scope || "").trim().toLowerCase();
   if (scope && scope !== STAFF_SCOPE) return false;
   return ALLOWED_STAFF_ROLES.has(String(user.role || "").trim());
@@ -76,6 +83,7 @@ exports.createTenantStaff = onCall({ region: "asia-southeast1" }, async request 
     displayName,
     role,
     staffScope: STAFF_SCOPE,
+    businessUnit: BUSINESS_UNIT,
     source: "order_delivery",
     active,
     tenantId: tenant.id,
@@ -118,7 +126,7 @@ exports.updateTenantStaff = onCall({ region: "asia-southeast1" }, async request 
   if (!displayName) throw new HttpsError("invalid-argument", "Display name is required");
 
   await getAuth().updateUser(uid, { displayName, disabled: !active });
-  const patch = { displayName, role, staffScope: STAFF_SCOPE, source: "order_delivery", active, updatedAt: FieldValue.serverTimestamp(), updatedBy: caller.uid };
+  const patch = { displayName, role, staffScope: STAFF_SCOPE, businessUnit: BUSINESS_UNIT, source: "order_delivery", active, updatedAt: FieldValue.serverTimestamp(), updatedBy: caller.uid };
   const batch = db.batch();
   batch.set(userRef, patch, { merge: true });
   batch.set(db.collection("tenants").doc(tenant.id).collection("memberships").doc(uid), patch, { merge: true });
