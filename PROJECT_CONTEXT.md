@@ -19,50 +19,43 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
 - Branch: `feature/retail-pos`
-- Milestone: `Unified Login Fix`
+- Milestone: `Login Link Polish`
 
 ## Done
 
 - QR Table Order / Take Away / Kitchen / Cashier / Delivery done
 - Retail POS supports Online / Offline / Sync / Tenant
-- Public Registration Phase 2 done
-- Cashier Access Fix done
 - Unified Login Fix done
+- Login Link Polish done
 
 ## Current Milestone
 
-`Unified Login Fix`
+`Login Link Polish`
 
 ## This Change
 
-- Unified staff login through `/login`.
-- `/login` clears old POS session before new sign-in.
-- `/login?next=/pos/` signs in once and prepares POS session.
-- `/pos/login` no longer shows the old POS login form.
-- Login form autocomplete is disabled.
-- Main page POS quick login is patched by `home-session-fa.js`.
-- No sale, stock, sync, or transaction logic changed.
+- Moved `/login` home link below the login card.
+- Centered the home link.
+- Changed the home link badge to light green.
+- UI-only change. No auth, POS, sale, stock, sync, or transaction logic changed.
 
 ## Regression Tests
 
 1. Deploy hosting.
-2. Hard refresh `/login` and confirm fields are empty.
-3. Open `/login?next=/pos/` and confirm POS opens after one login.
-4. Open `/pos/login` and confirm the old form is gone.
-5. Confirm restaurant cashier still cannot enter POS.
-6. Confirm restaurant cashier pages still work.
+2. Hard refresh `/login`.
+3. Confirm home link is below and centered.
+4. Confirm login still works.
 
 ## Next Tasks
 
 - POS Hardening 003
-- Safely retest product display order in `/pos`
+- Retest product display order in `/pos`
 - Package Selection Phase 3
 
 ## Notes
 
 - Every important record must include `tenantId`.
 - Do not sync POS across tenants.
-- Use the same stable sale/order id online and offline.
-- Firestore transactions must read all documents before writes.
-- If imported JS/CSS changes, bump query string.
-- If `storage.rules` changes, deploy with `firebase deploy --only storage`.
+- Use stable sale/order id online and offline.
+- Firestore transactions must read before writes.
+- If JS/CSS changes, bump query string.
