@@ -49,22 +49,21 @@
 - Badge Row Responsive Polish
 - Sales Report Icon Polish
 - Sales Report Icon Hotfix
+- Sales Report Back Label Polish
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Sales Report Back Label Polish
+
+- ปรับปุ่มกลับหน้า `/admin/sales-report` จาก `กลับ` เป็น `ย้อนกลับ`
+- เพิ่ม icon ลูกศรซ้ายให้ปุ่ม `ย้อนกลับ` โดยไม่ใช้ class `.bi` เพื่อไม่ชนกับ hotfix ที่กัน icon ซ้ำ
+- แก้เฉพาะ UI ปุ่มย้อนกลับ ไม่แตะ logic รายงาน, การคำนวณ, Tenant, Firestore หรือ Stock Transaction
 
 ## Sales Report Icon Hotfix
 
 - แก้ปุ่ม `กลับ` หน้า `/admin/sales-report` ไม่ให้แสดง icon ซ้ำ
 - แก้หัวข้อกราฟให้มี icon ตลอด แม้ `sales-report.js` จะเปลี่ยนข้อความตามช่วงรายงาน
 - ปรับ `sales-report.js` query string เป็น `v=20260704-002` เพื่อกัน browser cache หลังแก้ JS
-- แก้เฉพาะ UI icon ของรายงานยอดขาย ไม่แตะ logic รายงาน, การคำนวณ, Tenant, Firestore หรือ Stock Transaction
-
-## Sales Report Icon Polish
-
-- ปรับหน้า `/admin/sales-report` ให้หัวข้อหลัก หัวข้อ section และปุ่มมี Bootstrap Icons กลับมาครบ
-- เพิ่ม icon ให้ปุ่มกลับ, tab ช่วงเวลา, ปุ่มดู, ปุ่มพิมพ์ และปุ่มปิด dialog
-- เพิ่ม icon ให้ dashboard summary cards โดยเลือก icon ไม่ซ้ำกันและเหมาะกับข้อมูลแต่ละใบ
-- ปรับ `sales-report.js` query string เป็น `v=20260704-001` เพื่อกัน browser cache หลังแก้ JS
 - แก้เฉพาะ UI icon ของรายงานยอดขาย ไม่แตะ logic รายงาน, การคำนวณ, Tenant, Firestore หรือ Stock Transaction
 
 ## Next Tasks
