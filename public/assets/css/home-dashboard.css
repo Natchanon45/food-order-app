@@ -100,16 +100,43 @@ body.staff-home {
 .quick-link span { color: #5d6a61; font-size: 14px; line-height: 1.4; }
 .quick-link strong { display: block; color: #102317; }
 .quick-link-icon {
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  min-height: 42px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: center !important;
+  padding: 0 !important;
   border-radius: 14px;
   background: #e8f3ec;
-  color: #159447;
-  flex: 0 0 42px;
+  color: #159447 !important;
+  flex: 0 0 42px !important;
+  line-height: 1 !important;
 }
-.quick-link-icon .app-icon { width: 23px; height: 23px; }
+.quick-link-icon .app-icon,
+.quick-link-icon i.app-icon,
+.quick-link-icon .bi {
+  width: 20px !important;
+  height: 20px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: currentColor !important;
+  font-size: 20px !important;
+  line-height: 1 !important;
+  vertical-align: middle !important;
+  flex: 0 0 20px !important;
+}
+.quick-link-icon .bi::before,
+.quick-link-icon i.app-icon::before {
+  display: block !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+}
 .quick-link-content {
   display: flex;
   flex-direction: column;
@@ -258,73 +285,3 @@ body.staff-home .user-menu-link .app-icon,
 body.staff-home .user-menu-action .app-icon { width: 23px; height: 23px; }
 body.staff-home .user-menu-link i.app-icon,
 body.staff-home .user-menu-action i.app-icon { font-size: 23px; }
-body.staff-home .user-menu-action.danger { margin-top: 7px; padding-top: 17px !important; border-top: 1px solid var(--line) !important; border-radius: 0 0 12px 12px !important; }
-body.staff-home .app-version { margin-top: auto; padding-bottom: 34px; font-size: 13px; }
-
-@media (min-width: 761px) {
-  body.staff-home .user-menu-panel { top: calc(100% + 10px); }
-}
-
-@media (max-width: 760px) {
-  .quick-link-grid { grid-template-columns: 1fr; }
-  .quick-link { padding: 14px; }
-  .public-landing-hero h1,
-  .public-feature-card h2,
-  .quick-menu-head h2,
-  .public-about-card h2 { gap: 8px; }
-  .public-heading-icon { width: 20px; height: 20px; }
-
-  body.staff-home .app-header {
-    display: flex;
-    min-height: 62px;
-    padding: 9px 12px;
-  }
-
-  body.staff-home .brand { min-width: 0; gap: 8px; font-size: 14px; line-height: 1.15; }
-  body.staff-home .brand-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  body.staff-home .brand-mark { width: 36px; height: 36px; flex: 0 0 36px; border-radius: 10px; }
-  body.staff-home .user-menu { width: auto; margin: 0 0 0 auto; }
-  body.staff-home .user-menu-trigger {
-    width: 42px !important;
-    height: 42px !important;
-    min-width: 42px !important;
-    min-height: 42px !important;
-    padding: 5px !important;
-    border-radius: 50% !important;
-    aspect-ratio: 1 / 1 !important;
-  }
-  body.staff-home .user-menu-trigger-label,
-  body.staff-home .user-menu-trigger .user-menu-chevron { display: none !important; }
-  body.staff-home .user-menu-avatar { width: 30px; height: 30px; }
-  body.staff-home .user-menu-avatar .app-icon { width: 19px; height: 19px; }
-  body.staff-home .user-menu-avatar i.app-icon { font-size: 19px; }
-  body.staff-home .user-menu-panel {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    width: min(230px, 56vw);
-    min-width: 0;
-    padding: 6px;
-    margin-top: 0;
-    border-radius: 15px;
-  }
-  body.staff-home .user-menu-greeting { padding: 10px 9px 12px; font-size: 12px; }
-  body.staff-home .user-menu-role { margin-top: 3px; font-size: 10px; }
-  body.staff-home .user-menu-link,
-  body.staff-home .user-menu-action { min-height: 40px !important; padding: 8px 9px !important; gap: 8px !important; font-size: 12px; }
-  body.staff-home .user-menu-link .app-icon,
-  body.staff-home .user-menu-action .app-icon { width: 16px; height: 16px; }
-  body.staff-home .user-menu-link i.app-icon,
-  body.staff-home .user-menu-action i.app-icon { font-size: 16px; }
-  body.staff-home #staffDashboard { padding: 20px 14px 62px; }
-  body.staff-home .staff-hero { width: 100%; min-height: 120px; padding: 22px 20px; margin-bottom: 18px; border-radius: 18px; }
-  body.staff-home .staff-hero h1 { font-size: 28px; }
-  body.staff-home .dashboard-section { margin-top: 18px; }
-  body.staff-home .dashboard-section-pos { margin-top: 24px; padding-top: 18px; }
-  body.staff-home .dashboard-section-head { display: block; margin-bottom: 10px; }
-  body.staff-home .dashboard-section-head h2 { font-size: 20px; }
-  body.staff-home .dashboard-section-head p { margin-top: 4px; text-align: left; }
-  body.staff-home .nav-cards,
-  body.staff-home .nav-cards-pos { width: 100%; grid-template-columns: 1fr; gap: 14px; }
-  body.staff-home .nav-card { min-height: 132px; flex-direction: row; justify-content: flex-start !important; padding: 22px; text-align: left !important; }
-}
