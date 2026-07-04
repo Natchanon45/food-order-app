@@ -7,22 +7,25 @@ Branch: `feature/retail-pos`
 
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
-- Milestone: `POS Logout Password Fix`
+- Milestone: `POS Ghost User Cleanup`
 
 ## This Change
 
-- Deprecated `/pos/login` now auto-forwards to `/login?next=/pos/`.
-- Added Retail POS staff callable for Firebase Auth password sync.
-- POS users save now calls the Firebase Auth sync function.
-- Added a POS logout capture fallback through POS icons script.
+- POS users page no longer falls back to stale `settings/users` array.
+- POS users page now uses `tenants/{tenantId}/users` as the source of truth.
+- When loaded, it rewrites `settings/users` from current POS users to clear stale entries.
+- Local `retail_pos_users_v1` cache is refreshed from current POS users.
 - No POS sale, stock, sync, or transaction logic changed.
 
-## Test
+## Manual Check
 
-1. Deploy functions and hosting.
-2. Logout from POS menu and confirm it goes to `/login?next=/pos/`.
-3. Change a POS user password in `/pos/users`.
-4. Login with the new password at `/login?next=/pos/`.
+If a POS user still appears, check:
+- Authentication > Users
+- Firestore `users/{uid}`
+- Firestore `tenants/{tenantId}/memberships/{uid}`
+- Firestore `tenants/{tenantId}/users/{uid}`
+- Firestore `tenants/{tenantId}/settings/users`
+- Browser localStorage keys `retail_pos_users_v1` and `retail_db_cache_<tenantId>_users`
 
 ## Deploy
 
