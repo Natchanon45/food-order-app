@@ -20,7 +20,7 @@ function addPadStyle() {
   if (document.querySelector("#posDesktopPadStyle")) return;
   const style = document.createElement("style");
   style.id = "posDesktopPadStyle";
-  style.textContent = `@media(min-width:801px){.payment-form.has-pos-pad{width:min(760px,calc(100vw - 48px));display:grid;grid-template-columns:minmax(0,1fr)250px;gap:16px;align-items:start}.payment-form.has-pos-pad .dialog-head,.payment-form.has-pos-pad .payment-total,.payment-form.has-pos-pad .dialog-actions,.payment-form.has-pos-pad #paymentError{grid-column:1/-1}.pos-number-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px;border:1px solid #dfeae3;border-radius:18px;background:#f8fcfa}.pos-number-pad-title{grid-column:1/-1;margin:0;color:#526259;font-size:12px;font-weight:900}.pos-number-pad button{min-height:48px;border:1px solid #dbe7df;border-radius:14px;background:#fff;color:#102317;font-size:18px;font-weight:900;touch-action:manipulation}.pos-number-pad button:hover{border-color:#9fd0b3;background:#effaf3}.pos-number-pad .is-action{color:#0d6f34;background:#eef8f1}.pos-number-pad .is-danger{color:#b42318;background:#fff3f3;border-color:#ffd0d0}.pos-number-pad .is-wide{grid-column:span 2}.pos-number-pad .is-primary{color:#fff;background:#159447;border-color:#159447}}@media(max-width:800px){.pos-number-pad{display:none!important}}`;
+  style.textContent = `@media(min-width:801px){.payment-form.has-pos-pad{width:min(880px,calc(100vw - 48px));display:grid;grid-template-columns:minmax(0,1fr)260px;grid-template-areas:"head head" "total pad" "customer pad" "method pad" "received pad" "change pad" "error error" "actions actions";gap:12px 16px;align-items:start}.payment-form.has-pos-pad .dialog-head{grid-area:head}.payment-form.has-pos-pad .payment-total{grid-area:total}.payment-form.has-pos-pad .customer-picker{grid-area:customer}.payment-form.has-pos-pad label:has(#paymentMethod){grid-area:method}.payment-form.has-pos-pad #receivedWrap{grid-area:received}.payment-form.has-pos-pad .change-row{grid-area:change}.payment-form.has-pos-pad #paymentError{grid-area:error}.payment-form.has-pos-pad .dialog-actions{grid-area:actions}.pos-number-pad{grid-area:pad;position:sticky;top:8px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px;border:1px solid #dfeae3;border-radius:18px;background:#f8fcfa;z-index:1}.pos-number-pad-title{grid-column:1/-1;margin:0 0 2px;color:#526259;font-size:12px;font-weight:900}.pos-number-pad button{min-height:48px;border:1px solid #dbe7df;border-radius:14px;background:#fff;color:#102317;font-size:18px;font-weight:900;touch-action:manipulation}.pos-number-pad button::before,.pos-number-pad button::after{content:none!important;display:none!important}.pos-number-pad button:hover{border-color:#9fd0b3;background:#effaf3}.pos-number-pad .is-action{color:#0d6f34;background:#eef8f1}.pos-number-pad .is-danger{color:#b42318;background:#fff3f3;border-color:#ffd0d0}.pos-number-pad .is-wide{grid-column:span 2}.pos-number-pad .is-primary{color:#fff;background:#159447;border-color:#159447}.payment-form.has-pos-pad .customer-search-results{z-index:20}}@media(max-width:800px){.pos-number-pad{display:none!important}}`;
   document.head.appendChild(style);
 }
 
@@ -63,7 +63,7 @@ function createPad() {
     if (button.dataset.action === "exact") exactAmount();
     if (button.dataset.action === "done") activePadInput?.blur?.();
   });
-  paymentForm.insertBefore(pad, paymentForm.querySelector(".dialog-actions"));
+  paymentForm.appendChild(pad);
 }
 
 function bindPadInput(input) {
