@@ -1,5 +1,5 @@
 import { login, ROLE_HOME } from "./auth-service.js?v=20260704-002";
-import { login as retailPosLogin } from "./retail-pos-auth.js?v=20260704-003";
+import { login as retailPosLogin } from "./retail-pos-auth.js?v=20260704-004";
 import { toast } from "./ui.js?v=20260701-001";
 
 localStorage.removeItem("retail_pos_session_v1");
@@ -52,6 +52,11 @@ function getLoginErrorMessage(error) {
   return "เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบอีเมลและรหัสผ่าน";
 }
 
+async function prepareRetailPosSession(email, password) {
+  const result = await retailPosLogin(email, password);
+  return result?.ok === true;
+}
+
 togglePasswordBtn?.addEventListener("click", () => {
   const show = passwordInput.type === "password";
   passwordInput.type = show ? "text" : "password";
@@ -69,12 +74,17 @@ form.addEventListener("submit", async event => {
 
   try {
     const profile = await login(email, password);
+    const posReady = await prepareRetailPosSession(email, password).catch(error => {
+      console.warn("POS_SESSION_PREPARE_SKIPPED", error);
+      return false;
+    });
+
     if (isPosNext) {
-      const posResult = await retailPosLogin(email, password);
-      if (!posResult.ok) throw new Error(posResult.message || "บัญชีนี้ไม่มีสิทธิ์ใช้งาน Retail POS");
+      if (!posReady) throw new Error("บัญชีนี้ไม่มีสิทธิ์ใช้งาน Retail POS หรือยังไม่ได้สร้าง POS session");
       location.replace(next || "/pos/");
       return;
     }
+
     location.replace(next || ROLE_HOME[profile.role] || "/");
   } catch (error) {
     console.error(error);
