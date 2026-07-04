@@ -7,23 +7,21 @@ Branch: `feature/retail-pos`
 
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
-- Milestone: `Register Premium Pricing Copy`
+- Milestone: `Register Terms Polish`
 
 ## This Change
 
-- Updated `/register` premium package price copy.
-- Premium now shows free first month and 590 THB for next months.
-- Side premium card now shows monthly follow-up price and yearly special price.
-- Free and Pro cards are disabled again for now.
-- Premium remains the only selectable package.
+- Updated `/register` terms checkbox layout.
+- Checkbox and terms text now stay on one row on PC.
+- Yearly price now shows the original 7080 price with strikethrough before 5900 THB/1 Year.
 - UI-only change. No signup function, auth function, POS sale, stock, sync, or transaction logic changed.
 
 ## Test
 
 1. Deploy hosting.
 2. Hard refresh `/register`.
-3. Confirm Free and Pro cards are disabled.
-4. Confirm Premium pricing text is correct.
+3. Confirm terms checkbox and text are on one row on PC.
+4. Confirm yearly price shows 7080 with strikethrough and 5900 THB/1 Year.
 
 ## Deploy
 
