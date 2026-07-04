@@ -7,14 +7,15 @@ Branch: `feature/retail-pos`
 
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
-- Milestone: `POS Receipt Print Polish`
+- Milestone: `POS Desktop Numeric Pad Trial`
 
 ## This Change
 
-- Polished POS receipt customer name display.
-- Improved mobile print timing for receipt modal.
-- Bumped receipt modal script to `v=20260705-002`.
-- Display/print-only change.
+- Added PC-only numeric keypad inside POS payment modal.
+- Keypad supports payment received input.
+- Keypad can target customer search input when available.
+- Mobile keeps native OS keyboard.
+- UI-only trial.
 
 ## Deploy
 
