@@ -10,8 +10,10 @@ const verifyStatus = $('#verifyStatus');
 const submitButton = $('#submitRegister');
 const activateButton = $('#activateTrial');
 const resendButton = $('#resendEmail');
+const termsAccepted = $('#termsAccepted');
 const requestSignup = httpsCallable(functions, 'requestTrialTenantSignup');
 const activateSignup = httpsCallable(functions, 'activateTrialTenantSignup');
+let busy = false;
 
 function cleanSlug(value = '') {
   return String(value || '').trim().toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
@@ -26,8 +28,12 @@ function setVerify(message = '', type = 'info') {
   verifyStatus.textContent = message;
   verifyStatus.classList.toggle('error', type === 'error');
 }
+function updateSubmitState() {
+  submitButton.disabled = busy || !termsAccepted?.checked;
+}
 function setBusy(isBusy) {
-  submitButton.disabled = isBusy;
+  busy = isBusy;
+  updateSubmitState();
   activateButton.disabled = isBusy;
   resendButton.disabled = isBusy;
 }
@@ -39,9 +45,10 @@ function friendlyEmailError(error) {
   return error?.message || 'ส่งอีเมลยืนยันไม่สำเร็จ';
 }
 function signupPayload() {
+  if (!termsAccepted?.checked) throw new Error('กรุณายอมรับข้อตกลงและนโยบายการใช้งานก่อนสมัครใช้บริการ');
   const secretA = $('#secretA').value;
   const secretB = $('#secretB').value;
-  if (secretA !== secretB) throw new Error('รหัสเข้าใช้งานและยืนยันรหัสไม่ตรงกัน');
+  if (secretA !== secretB) throw new Error('รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน');
   return {
     packageId: 'premium',
     ownerName: $('#ownerName').value.trim(),
@@ -91,7 +98,7 @@ async function submitSignup(event) {
     const code = String(error?.code || error?.message || '');
     let message = error?.message || 'สมัครใช้งานไม่สำเร็จ';
     if (code.includes('already-exists')) message = 'Slug นี้ถูกใช้งานแล้ว กรุณาเปลี่ยน slug';
-    if (code.includes('weak-password')) message = 'รหัสเข้าใช้งานต้องมีอย่างน้อย 8 ตัวอักษร';
+    if (code.includes('weak-password')) message = 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร';
     if (code.includes('continue-uri') || code.includes('too-many-requests')) message = friendlyEmailError(error);
     setStatus(message, 'error');
   } finally {
@@ -131,6 +138,8 @@ slugInput.addEventListener('input', () => {
   const slug = cleanSlug(slugInput.value);
   slugPreview.textContent = previewUrl(slug);
 });
+termsAccepted?.addEventListener('change', updateSubmitState);
+updateSubmitState();
 form.addEventListener('submit', submitSignup);
 activateButton.addEventListener('click', activateTrial);
 resendButton.addEventListener('click', resendVerification);
