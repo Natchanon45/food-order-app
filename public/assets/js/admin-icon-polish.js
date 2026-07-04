@@ -46,6 +46,8 @@ const buttonIcons = new Map([
   ["รายปี", "calendar3"],
   ["กำหนดช่วง", "calendar-range"],
   ["ดู", "eye"],
+  ["แก้ไข", "pencil-square"],
+  ["ลบ", "trash3"],
   ["พิมพ์", "printer"],
   ["ปิด", "x-lg"]
 ]);
@@ -65,8 +67,71 @@ function ensureThemeStyle() {
     .admin-heading-icon::before {
       color: #159447 !important;
     }
+    .table-list button[data-admin-button-icon] {
+      min-width: max-content !important;
+      width: auto !important;
+      height: auto !important;
+      min-height: 38px !important;
+      padding: 8px 12px !important;
+      border-radius: 10px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 7px !important;
+      line-height: 1 !important;
+      white-space: nowrap !important;
+      aspect-ratio: auto !important;
+    }
+    .table-list button[data-admin-button-icon] .admin-button-icon {
+      width: 17px !important;
+      height: 17px !important;
+      font-size: 17px !important;
+      flex: 0 0 17px !important;
+      margin: 0 !important;
+    }
+    .table-list button[data-admin-button-icon] .admin-button-label {
+      display: inline !important;
+      position: static !important;
+      width: auto !important;
+      height: auto !important;
+      overflow: visible !important;
+      clip: auto !important;
+      white-space: nowrap !important;
+    }
+    @media (max-width: 640px) {
+      .table-list button[data-admin-button-icon] {
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        min-height: 38px !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        gap: 0 !important;
+        aspect-ratio: 1 / 1 !important;
+      }
+      .table-list button[data-admin-button-icon] .admin-button-label {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        overflow: hidden !important;
+        clip: rect(0 0 0 0) !important;
+        white-space: nowrap !important;
+      }
+    }
   `;
   document.head.appendChild(style);
+}
+
+function labelText(button) {
+  return button.textContent.trim().replace(/\s+/g, " ");
+}
+
+function wrapButtonLabel(button, text) {
+  if (button.querySelector(".admin-button-label")) return;
+  [...button.childNodes].forEach(node => {
+    if (node.nodeType === Node.TEXT_NODE) node.remove();
+  });
+  button.insertAdjacentHTML("beforeend", `<span class="admin-button-label">${text}</span>`);
 }
 
 function decorate(root = document) {
@@ -83,13 +148,15 @@ function decorate(root = document) {
   });
 
   root.querySelectorAll("button,.btn").forEach(button => {
-    if (button.dataset.adminButtonIcon || button.querySelector(".admin-button-icon")) return;
+    if (button.dataset.adminButtonIcon || button.querySelector(".app-icon,.admin-button-icon")) return;
 
-    const name = buttonIcons.get(button.textContent.trim());
+    const text = labelText(button);
+    const name = buttonIcons.get(text);
     if (!name) return;
 
     button.dataset.adminButtonIcon = name;
     button.insertAdjacentHTML("afterbegin", iconMarkup(name, "admin-button-icon"));
+    wrapButtonLabel(button, text);
   });
 }
 
