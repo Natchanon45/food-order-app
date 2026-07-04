@@ -47,6 +47,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Login Input Icon Color Polish เสร็จแล้ว
 - Login Footer + Legal Pages Polish เสร็จแล้ว
 - Public Landing Mobile Layout Polish เสร็จแล้ว
+- Public Landing Pricing CTA Design เสร็จแล้ว
 
 ## Current Milestone
 
@@ -54,25 +55,24 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## แก้แล้วรอบนี้
 
-- ปรับหน้าแรก `/` บน Mobile ให้ card, heading, icon และ spacing เป็นสัดส่วนมากขึ้น
-- ปรับ hero, feature cards, quick link และ about card ให้กระชับเหมาะกับจอมือถือ
-- ปรับลิงก์ Privacy / Terms เป็นปุ่มแยกบรรทัดบน Mobile ให้กดง่ายและมองเห็นชัด
-- ลดขนาด footer version บนหน้าแรก Mobile
-- แก้เฉพาะ inline CSS/HTML ของหน้าแรก
+- เพิ่มหัวข้อแพ็กเกจ `ฟรี`, `โปร`, `พรีเมี่ยม` บนหน้าแรก `/`
+- เพิ่มปุ่ม `ลงทะเบียน` เป็น design-only ยังไม่ผูกกับการใช้งานจริง
+- เปลี่ยน CTA หน้า public landing เป็น `ลงชื่อเข้าใช้`
+- ปรับ pricing section ให้ responsive บน Mobile
+- แก้เฉพาะ HTML/inline CSS ของหน้าแรก
 - ไม่แตะ logic ขาย, Online/Offline, Sync, Stable `saleId`, Firestore หรือ Stock Transaction
 - Developer Panel ยังเป็น Version `0.12.70` Build `2026.07.02.024`
 
 ## Regression Tests สำคัญ
 
-1. เปิด `/` บน Mobile แล้ว card ต้องเรียงเป็นสัดส่วน อ่านง่าย ไม่อัดหรือเหลื่อม
-2. icon และหัวข้อใน hero/feature/quick/about ต้องอยู่แนวเดียวกัน ไม่ทับตัวหนังสือ
-3. ปุ่ม `เข้าสู่ระบบสำหรับพนักงาน` บน Mobile ต้องกว้างเต็ม card และกดง่าย
-4. ลิงก์ Privacy / Terms บน Mobile ต้องเป็นปุ่มแยกชัดเจน
-5. Footer version หน้าแรกบน Mobile ต้องเล็กลงและไม่เด่นเกินเนื้อหา
-6. เปิด `/login` แล้ว icon ช่องอีเมลและรหัสผ่านต้องเป็นสีเขียวทั้งตอนปกติ, focus และ floating
-7. เปิด `/pos/login` แล้วต้องยังใช้ logo `POS` และทำงานเดิม
-8. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
-9. ตรวจว่า record สำคัญยังมี `tenantId`
+1. เปิด `/` แล้วต้องเห็นแพ็กเกจ `ฟรี`, `โปร`, `พรีเมี่ยม`
+2. ปุ่ม `ลงทะเบียน` ต้องแสดงเป็น design-only และยังไม่ต้องผูก action จริง
+3. ปุ่ม `ลงชื่อเข้าใช้` ต้องลิงก์ไป `/login`
+4. เปิด `/` บน Mobile แล้ว pricing section ต้องเรียง 1 คอลัมน์ อ่านง่าย
+5. เปิด `/login` แล้วระบบเข้าสู่ระบบเดิมต้องยังทำงาน
+6. เปิด `/pos/login` แล้วต้องยังใช้ logo `POS` และทำงานเดิม
+7. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
+8. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
 
