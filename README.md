@@ -52,8 +52,18 @@
 - Sales Report Back Label Polish
 - Sales Report Back Icon Duplication Fix
 - Login Home Link
+- POS User Visibility Fixes
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## POS User Visibility Fixes
+
+- `/admin/users` กรอง user ที่มี marker เป็น POS/retail staff ไม่ให้ปะปนในหน้าจัดการพนักงานร้านหลัก
+- `/pos/users` ไม่แสดงบัญชีเจ้าของร้าน/current owner ในรายการบัญชีผู้ใช้งาน POS
+- `/pos/users` บันทึกพนักงาน POS พร้อม marker `staffScope: pos`, `source: pos`, `userType: retail_pos_staff`
+- ฟอร์มแก้ไขพนักงานใน `/pos/users` เปลี่ยน label เป็น `อีเมลสำหรับเข้าสู่ระบบ`
+- เมื่อแก้ไขพนักงานใน `/pos/users` ช่องอีเมลถูกตั้งเป็น read only และไม่ถูกเปลี่ยนตอนบันทึก
+- แก้เฉพาะ UI/data separation ของ user management ไม่แตะ logic การขาย, Sync, Firestore transaction, stable `saleId` หรือ Stock Transaction
 
 ## Login Home Link
 
