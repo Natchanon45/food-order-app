@@ -22,6 +22,26 @@ function esc(value) {
   return String(value ?? "").replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
 }
 
+function maskNamePart(part = "") {
+  const text = String(part || "").trim();
+  if (!text) return "";
+  if (text.length <= 1) return "*";
+  if (text.length === 2) return `${text[0]}*`;
+  return `${text[0]}${"*".repeat(Math.min(text.length - 2, 4))}${text.slice(-1)}`;
+}
+
+function maskCustomerName(value) {
+  return String(value || "").trim().split(/\s+/).filter(Boolean).map(maskNamePart).join(" ");
+}
+
+function maskPhone(value) {
+  const digits = String(value || "").replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.length <= 4) return `${digits.slice(0, 1)}***`;
+  if (digits.length < 10) return `${digits.slice(0, 2)}xxx${digits.slice(-2)}`;
+  return `${digits.slice(0, 3)}-xxx-xx${digits.slice(-2)}`;
+}
+
 function customerId(customer) {
   return String(customer?._documentId || customer?.id || "");
 }
@@ -95,7 +115,9 @@ async function tagLatestSale(customerIdValue, startedAt) {
     customerId: customer.id,
     customerCode: customer.customerCode || "",
     customerName: customer.name || "",
-    customerPhone: customer.phone || ""
+    customerPhone: customer.phone || "",
+    customerDisplayName: maskCustomerName(customer.name || ""),
+    customerDisplayPhone: maskPhone(customer.phone || "")
   };
   const next = sales.map(item => String(item.id || item.saleNumber) === String(sale.id || sale.saleNumber) ? patch : item);
   write(SALES_KEY, next);
