@@ -35,6 +35,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Login Home Link done
 - POS User Visibility Fixes done
 - Admin Staff Callable Hotfix done
+- Restaurant Staff Role Function Fix done
 
 ## Current Milestone
 
@@ -42,21 +43,23 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## This Change
 
-- Fixed `/admin/users` save failure caused by calling non-exported callable names.
-- `admin-staff-service.js` now calls existing functions: `listTenantStaff`, `createTenantStaff`, and `updateTenantStaff`.
-- Fixed CORS/failed request from old callable name `updateStaffUser`.
-- Added legacy POS-user filtering for records without POS markers but with local POS traits such as `username`, `passwordHash`, `passwordSalt`, `user-` ids, or POS-style `roleId`.
-- Bumped `/admin/users` script to `admin-users.js?v=20260704-002` and `admin-staff-service.js?v=20260704-002`.
-- User-management hotfix only; no changes to sales, payment, Online/Offline, Sync, stable `saleId`, Firestore transaction, or Stock Transaction logic.
+- Fixed restaurant/admin staff Cloud Function role rules.
+- `functions/staff-admin.js` now allows only restaurant staff roles: `admin`, `cashier`, `kitchen`.
+- `createTenantStaff` and `updateTenantStaff` now accept `kitchen`, fixing `FirebaseError: Invalid staff role`.
+- Newly created restaurant staff records are marked with `staffScope: restaurant` and `source: order_delivery`.
+- Tightened `/admin/users` legacy POS filter to hide records like `cashier01` while keeping normal restaurant cashier rows like `Cashier`.
+- This change requires deploying both functions and hosting.
+- No changes to sales, payment, Online/Offline, Sync, stable `saleId`, Firestore transaction, or Stock Transaction logic.
 - Developer Panel remains Version `0.12.70` Build `2026.07.02.024`.
 
 ## Regression Tests
 
-1. Open `/admin/users` and confirm old POS/local users such as `cashier01` no longer appear in restaurant/admin staff management.
-2. Edit a restaurant/admin staff row and confirm save succeeds without CORS error.
-3. Confirm `/admin/users` still lists restaurant staff roles `admin`, `cashier`, and `kitchen` when they are not POS scoped.
-4. Confirm `/pos/users` still hides owner/current owner and keeps email read only during edit.
-5. Confirm POS sale, payment, sync, stock, and tenant data are unchanged.
+1. Deploy `functions,hosting`.
+2. Open `/admin/users` and confirm `cashier01` no longer appears.
+3. Create a `Kitchen` staff user and confirm it succeeds without `Invalid staff role`.
+4. Save an existing restaurant/admin staff row and confirm save succeeds.
+5. Confirm normal restaurant rows such as `Admin`, `Cashier`, and `Kitchen` still appear when not POS scoped.
+6. Confirm POS sale, payment, sync, stock, and tenant data are unchanged.
 
 ## Next Tasks
 
