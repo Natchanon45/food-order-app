@@ -3,18 +3,14 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Quick Login Icon Fix`
+- Current milestone: `Shop Name Source Fix`
 - Version/Build: `0.12.70` / `2026.07.02.024`
-
-## Done
-
-- Quick Login Icon Fix
 
 ## This Change
 
-- Centered the icon inside the quick login badge on the public landing page.
-- Added a small style fallback in `home-session-fa.js`.
-- UI-only change.
+- Staff home now uses the shop name from store settings first.
+- Falls back to tenant profile name only if store settings are empty.
+- UI/display-only change.
 
 ## Deploy
 
