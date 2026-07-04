@@ -3,13 +3,14 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `POS Payment Modal UI`
+- Current milestone: `POS Payment Keypad Balance`
 - Version/Build: `0.12.70` / `2026.07.02.024`
 
 ## This Change
 
-- Updated PC payment modal display.
-- Balanced keypad size and spacing.
+- Balanced PC payment modal layout.
+- Expanded keypad width and spacing.
+- Right-aligned payment received input.
 - Mobile keeps native keyboard.
 - UI-only change.
 
