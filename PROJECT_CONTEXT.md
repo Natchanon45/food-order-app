@@ -34,6 +34,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Sales Report Back Icon Duplication Fix done
 - Login Home Link done
 - POS User Visibility Fixes done
+- Admin Staff Callable Hotfix done
 
 ## Current Milestone
 
@@ -41,23 +42,21 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## This Change
 
-- Fixed POS staff separation between `/admin/users` and `/pos/users`.
-- `/admin/users` now filters users marked as POS/retail scoped staff from the restaurant/admin staff list.
-- `/pos/users` hides owner/current owner accounts from the POS managed user list.
-- POS managed users are saved with POS markers: `staffScope: pos`, `source: pos`, `userType: retail_pos_staff`.
-- The `/pos/users` edit dialog label is now `อีเมลสำหรับเข้าสู่ระบบ`.
-- Existing POS user email is read only while editing and is preserved on save.
-- UI/data-separation change only; no changes to sales, payment, Online/Offline, Sync, stable `saleId`, Firestore transaction, or Stock Transaction logic.
+- Fixed `/admin/users` save failure caused by calling non-exported callable names.
+- `admin-staff-service.js` now calls existing functions: `listTenantStaff`, `createTenantStaff`, and `updateTenantStaff`.
+- Fixed CORS/failed request from old callable name `updateStaffUser`.
+- Added legacy POS-user filtering for records without POS markers but with local POS traits such as `username`, `passwordHash`, `passwordSalt`, `user-` ids, or POS-style `roleId`.
+- Bumped `/admin/users` script to `admin-users.js?v=20260704-002` and `admin-staff-service.js?v=20260704-002`.
+- User-management hotfix only; no changes to sales, payment, Online/Offline, Sync, stable `saleId`, Firestore transaction, or Stock Transaction logic.
 - Developer Panel remains Version `0.12.70` Build `2026.07.02.024`.
 
 ## Regression Tests
 
-1. Open `/admin/users` and confirm POS-scoped users are not listed in restaurant/admin staff management.
-2. Open `/pos/users` as owner and confirm the owner account/current owner is not listed as a managed employee.
-3. Add a POS user and confirm it appears in `/pos/users` with a non-owner role.
-4. Edit a POS user and confirm the label says `อีเมลสำหรับเข้าสู่ระบบ`.
-5. Confirm existing POS user email is read only during edit and remains unchanged after save.
-6. Confirm POS sale, payment, sync, stock, and tenant data are unchanged.
+1. Open `/admin/users` and confirm old POS/local users such as `cashier01` no longer appear in restaurant/admin staff management.
+2. Edit a restaurant/admin staff row and confirm save succeeds without CORS error.
+3. Confirm `/admin/users` still lists restaurant staff roles `admin`, `cashier`, and `kitchen` when they are not POS scoped.
+4. Confirm `/pos/users` still hides owner/current owner and keeps email read only during edit.
+5. Confirm POS sale, payment, sync, stock, and tenant data are unchanged.
 
 ## Next Tasks
 
