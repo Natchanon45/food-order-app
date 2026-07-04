@@ -27,8 +27,16 @@
 - POS Hardening 002
 - Business Unit Staff Filter Fix
 - Public Trial Signup Phase 1
+- Signup Email Verification Hotfix
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Signup Email Verification Hotfix
+
+- ปรับ `/register/` ให้ส่ง email verification ก่อนบันทึก pending signup
+- เพิ่มข้อความ error เฉพาะกรณีส่งอีเมลยืนยันไม่สำเร็จ
+- ปุ่มส่งอีเมลอีกครั้ง reload สถานะ user และแจ้งให้ตรวจ Inbox / Spam / Junk
+- bump `/register/` script เป็น `public-register.js?v=20260704-002`
 
 ## Public Trial Signup Phase 1
 
@@ -38,7 +46,6 @@
 - ระบบสร้าง tenant, owner profile, membership, store settings, POS settings และ subscription settings หลัง verify สำเร็จ
 - เพิ่ม Firebase Auth helpers สำหรับ email verification ใน frontend
 - ปุ่ม `ลงทะเบียน` หน้าแรกยังต้อง patch ต่อ เพราะไฟล์ landing เดิมเป็น one-line HTML และ GitHub block การอัปเดตไฟล์นั้นในรอบนี้
-- ต้อง deploy `functions,hosting`
 
 ## Previous Fixes
 
