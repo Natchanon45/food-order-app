@@ -54,6 +54,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Support Email Badge Polish เสร็จแล้ว
 - Legal Support Email Badge Polish เสร็จแล้ว
 - Badge Row Responsive Polish เสร็จแล้ว
+- Sales Report Icon Polish เสร็จแล้ว
 
 ## Current Milestone
 
@@ -61,23 +62,23 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## แก้แล้วรอบนี้
 
-- ปรับ badge ลิงก์ในหน้า `/`, `/privacy`, `/terms` ให้แสดงแถวเดียวกันในโหมด PC
-- ปรับ Mobile ให้ badge แยกเป็น 3 แถวเต็มความกว้าง
-- รวม badge ติดต่อฝ่ายสนับสนุนเข้ากับแถวลิงก์ของ Privacy และ Terms
-- คงการซ่อนอีเมลไว้ แต่ยังคลิกส่งอีเมลผ่าน `mailto:` ได้
-- แก้เฉพาะ HTML/inline CSS ของหน้า public/legal
-- ไม่แตะ logic ขาย, Online/Offline, Sync, Stable `saleId`, Firestore หรือ Stock Transaction
+- ปรับหน้า `/admin/sales-report` ให้หัวข้อหลัก หัวข้อ section และปุ่มมี Bootstrap Icons กลับมาครบ
+- เพิ่ม icon ให้ปุ่มกลับ, tab ช่วงเวลา, ปุ่มดู, ปุ่มพิมพ์ และปุ่มปิด dialog
+- เพิ่ม icon ให้ dashboard summary cards โดยเลือก icon ไม่ซ้ำกันและเหมาะกับข้อมูลแต่ละใบ
+- ปรับ `sales-report.js` query string เป็น `v=20260704-001` เพื่อกัน browser cache หลังแก้ JS
+- แก้เฉพาะ UI icon ของรายงานยอดขาย
+- ไม่แตะ logic รายงาน, การคำนวณ, Online/Offline, Sync, Stable `saleId`, Firestore หรือ Stock Transaction
 - Developer Panel ยังเป็น Version `0.12.70` Build `2026.07.02.024`
 
 ## Regression Tests สำคัญ
 
-1. เปิด `/` บน PC แล้ว badge ทั้ง 3 ต้องอยู่แถวเดียวกัน
-2. เปิด `/privacy` บน PC แล้ว badge ทั้ง 3 ต้องอยู่แถวเดียวกัน
-3. เปิด `/terms` บน PC แล้ว badge ทั้ง 3 ต้องอยู่แถวเดียวกัน
-4. เปิดทั้ง 3 หน้าบน Mobile แล้ว badge ต้องแยกเป็น 3 แถวเต็มความกว้าง
-5. badge `ติดต่อฝ่ายสนับสนุน` ต้องคลิกเปิด mailto ได้
-6. ลิงก์กลับหน้าแรก, Privacy และ Terms ต้องยังทำงาน
-7. เปิด `/login` แล้วระบบเข้าสู่ระบบเดิมต้องยังทำงาน
+1. เปิด `/admin/sales-report` แล้วหัวข้อหลักและ section ต้องมี icon
+2. ปุ่มกลับ, รายวัน, รายเดือน, รายปี, กำหนดช่วง ต้องมี icon
+3. Dashboard summary cards ต้องมี icon และไม่ซ้ำกัน
+4. ตารางใบเสร็จต้องยังแสดงปุ่มดูและพิมพ์พร้อม icon
+5. ปุ่มพิมพ์ใน dialog รายละเอียดใบเสร็จและปุ่มปิดต้องมี icon
+6. Filter รายวัน/รายเดือน/รายปี/กำหนดช่วงต้องยังทำงานเดิม
+7. รายงานยอดขายและตารางใบเสร็จต้องยังคำนวณเหมือนเดิม
 8. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
