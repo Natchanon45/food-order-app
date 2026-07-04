@@ -7,21 +7,24 @@ Branch: `feature/retail-pos`
 
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
-- Milestone: `Register Terms Polish`
+- Milestone: `Register Inline Validation`
 
 ## This Change
 
-- Updated `/register` terms checkbox layout.
-- Checkbox and terms text now stay on one row on PC.
-- Yearly price now shows the original 7080 price with strikethrough before 5900 THB/1 Year.
-- UI-only change. No signup function, auth function, POS sale, stock, sync, or transaction logic changed.
+- Added inline validation for required fields on `/register`.
+- Required fields now show red text under each input after submit attempt.
+- Validation also updates when the user types or changes a field.
+- Terms checkbox also shows an inline red error when not accepted.
+- Bumped `public-register.js` to `v=20260705-003`.
+- UI/validation-only change. No signup function, auth function, POS sale, stock, sync, or transaction logic changed.
 
 ## Test
 
 1. Deploy hosting.
 2. Hard refresh `/register`.
-3. Confirm terms checkbox and text are on one row on PC.
-4. Confirm yearly price shows 7080 with strikethrough and 5900 THB/1 Year.
+3. Click submit without filling fields.
+4. Confirm red validation text appears under each required input.
+5. Fill fields and confirm each error clears while typing.
 
 ## Deploy
 
