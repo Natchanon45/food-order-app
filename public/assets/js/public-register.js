@@ -1,4 +1,4 @@
-import { auth, functions, createUserWithEmailAndPassword, sendEmailVerification, reload, onAuthStateChanged, httpsCallable } from './firebase-config.js?v=20260704-003';
+import { auth, functions, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, reload, onAuthStateChanged, httpsCallable } from './firebase-config.js?v=20260704-003';
 
 const $ = selector => document.querySelector(selector);
 const form = $('#registerForm');
@@ -60,6 +60,19 @@ async function sendVerifyEmail(user) {
   await sendEmailVerification(auth.currentUser || user, { url: `${location.origin}/register/?verify=1`, handleCodeInApp: false });
   return { alreadyVerified: false };
 }
+async function getOrCreateSignupUser(payload) {
+  try {
+    return await createUserWithEmailAndPassword(auth, payload.email, payload.secret);
+  } catch (error) {
+    const code = String(error?.code || error?.message || '');
+    if (!code.includes('email-already-in-use')) throw error;
+    try {
+      return await signInWithEmailAndPassword(auth, payload.email, payload.secret);
+    } catch (signInError) {
+      throw new Error('อีเมลนี้ยังมีอยู่ใน Firebase Authentication หากต้องการสมัครใหม่ด้วยอีเมลเดิม ให้ลบผู้ใช้นี้ใน Authentication > Users หรือใช้รหัสเดิมให้ถูกต้อง');
+    }
+  }
+}
 async function submitSignup(event) {
   event.preventDefault();
   setStatus('');
@@ -68,7 +81,7 @@ async function submitSignup(event) {
     const payload = signupPayload();
     slugInput.value = payload.slug;
     slugPreview.textContent = previewUrl(payload.slug);
-    const credential = await createUserWithEmailAndPassword(auth, payload.email, payload.secret);
+    const credential = await getOrCreateSignupUser(payload);
     await sendVerifyEmail(credential.user);
     await requestSignup(payload);
     form.classList.add('hidden');
@@ -77,7 +90,6 @@ async function submitSignup(event) {
   } catch (error) {
     const code = String(error?.code || error?.message || '');
     let message = error?.message || 'สมัครใช้งานไม่สำเร็จ';
-    if (code.includes('email-already-in-use')) message = 'อีเมลนี้ถูกใช้งานแล้ว กรุณาใช้อีเมลอื่นหรือลงชื่อเข้าใช้';
     if (code.includes('already-exists')) message = 'Slug นี้ถูกใช้งานแล้ว กรุณาเปลี่ยน slug';
     if (code.includes('weak-password')) message = 'รหัสเข้าใช้งานต้องมีอย่างน้อย 8 ตัวอักษร';
     if (code.includes('continue-uri') || code.includes('too-many-requests')) message = friendlyEmailError(error);
