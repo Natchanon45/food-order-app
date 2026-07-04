@@ -19,7 +19,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
 - Branch: `feature/retail-pos`
-- Milestone: `Login Link Polish`
+- Milestone: `Quick Login Icon Fix`
 
 ## Done
 
@@ -27,24 +27,25 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Retail POS supports Online / Offline / Sync / Tenant
 - Unified Login Fix done
 - Login Link Polish done
+- Quick Login Icon Fix done
 
 ## Current Milestone
 
-`Login Link Polish`
+`Quick Login Icon Fix`
 
 ## This Change
 
-- Moved `/login` home link below the login card.
-- Centered the home link.
-- Changed the home link badge to light green.
+- Fixed quick login icon alignment on the public landing page.
+- Updated `.quick-link-icon` centering rules.
+- Added a small runtime style fallback in `home-session-fa.js`.
 - UI-only change. No auth, POS, sale, stock, sync, or transaction logic changed.
 
 ## Regression Tests
 
 1. Deploy hosting.
-2. Hard refresh `/login`.
-3. Confirm home link is below and centered.
-4. Confirm login still works.
+2. Hard refresh `/`.
+3. Confirm quick login icon is centered in the square badge.
+4. Confirm quick login still opens login.
 
 ## Next Tasks
 
