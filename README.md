@@ -51,8 +51,15 @@
 - Sales Report Icon Hotfix
 - Sales Report Back Label Polish
 - Sales Report Back Icon Duplication Fix
+- Login Home Link
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Login Home Link
+
+- เพิ่มปุ่ม `หน้าหลัก` บนหน้า `/login` เพื่อกลับไป `/`
+- ใช้ icon บ้านพร้อม class `.app-icon` และวางเหนือกล่อง Login ให้เห็นได้ทั้ง Desktop/Mobile
+- แก้เฉพาะ UI หน้า Login ไม่แตะ logic Auth, Tenant, Firestore, POS, Sync หรือ Stock Transaction
 
 ## Sales Report Back Icon Duplication Fix
 
