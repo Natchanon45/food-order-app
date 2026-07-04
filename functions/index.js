@@ -191,3 +191,6 @@ exports.updateTenantStaff = staffAdmin.updateTenantStaff;
 const publicSignup = require("./public-signup");
 exports.requestTrialTenantSignup = publicSignup.requestTrialTenantSignup;
 exports.activateTrialTenantSignup = publicSignup.activateTrialTenantSignup;
+
+const retailPosStaff = require("./retail-pos-staff");
+exports.upsertRetailPosStaff = retailPosStaff.upsertRetailPosStaff;
