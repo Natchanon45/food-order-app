@@ -7,20 +7,25 @@ Branch: `feature/retail-pos`
 
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
-- Milestone: `Register Owner Name Layout`
+- Milestone: `Register Package Layout`
 
 ## This Change
 
-- Updated `/register` layout.
-- The owner full name field now spans the full form width like the email field.
-- UI-only change.
-- No signup, auth, POS sale, stock, sync, or transaction logic changed.
+- Updated `/register` package section to card-style radio options.
+- Premium Trial is auto-selected; other package cards are disabled.
+- Adjusted form labels and PC/mobile field layout.
+- Added terms acceptance checkbox before submit.
+- Submit button is disabled until terms are accepted.
+- Bumped `public-register.js` to `v=20260705-001`.
+- UI/validation-only change. No signup function, auth function, POS sale, stock, sync, or transaction logic changed.
 
 ## Test
 
 1. Deploy hosting.
 2. Hard refresh `/register`.
-3. Confirm `ชื่อ-นามสกุล` width matches the email field.
+3. Confirm package cards and form layout.
+4. Confirm submit is disabled until terms checkbox is checked.
+5. Confirm signup flow still sends verification email.
 
 ## Deploy
 
