@@ -44,8 +44,16 @@
 - Public Pricing Final Polish
 - Login Copy + Version Size Polish
 - Pricing Card Header Alignment Polish
+- Support Email Badge Polish
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Support Email Badge Polish
+
+- ปรับลิงก์อีเมลหน้าแรก `/` ให้เป็น badge แบบเดียวกับ `นโยบายความเป็นส่วนตัว` และ `ข้อกำหนดการใช้งาน`
+- แสดงเฉพาะ icon + ข้อความ `ติดต่อฝ่ายสนับสนุน`
+- ซ่อนอีเมลไม่ให้แสดงบนหน้าเว็บ แต่ยังคลิกเพื่อส่งอีเมลผ่าน `mailto:` ได้
+- แก้เฉพาะ HTML/inline CSS ของหน้าแรก ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore, Tenant หรือ Stock Transaction
 
 ## Pricing Card Header Alignment Polish
 
@@ -53,13 +61,6 @@
 - ย้าย badge `เริ่มต้น`, `แนะนำ`, `เต็มระบบ` ไปมุมบนขวาของการ์ด
 - ลดขนาด badge ให้เล็กลงและไม่แย่งสายตาจากชื่อแพ็กเกจ/ราคา
 - แก้เฉพาะ HTML/inline CSS ของหน้าแรก ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore, Tenant หรือ Stock Transaction
-
-## Login Copy + Version Size Polish
-
-- ปรับข้อความใต้หัวข้อหน้า `/login` จาก `Admin • Cashier • Kitchen • Super Admin` เป็น `Order • Delivery • Retail POS`
-- ลดขนาด footer version หน้า `/login` ให้เล็กลงและสีอ่อนลง
-- แก้เฉพาะ inline CSS/HTML ของหน้า Login
-- ไม่แตะ logic Login, Firebase Auth, redirect, Online/Offline, Sync, Tenant หรือ Stock Transaction
 
 ## Next Tasks
 
