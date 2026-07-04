@@ -19,6 +19,7 @@ function cleanSlug(value = '') {
   return String(value || '').trim().toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 }
 function previewUrl(slug) { return `${location.origin}/s/${encodeURIComponent(slug || 'saas-test-shop')}/`; }
+function selectedPackageId() { return document.querySelector('input[name="packagePlan"]:checked')?.value || 'premium'; }
 function setStatus(message = '', type = 'info') {
   statusBox.textContent = message;
   statusBox.classList.toggle('hidden', !message);
@@ -27,6 +28,17 @@ function setStatus(message = '', type = 'info') {
 function setVerify(message = '', type = 'info') {
   verifyStatus.textContent = message;
   verifyStatus.classList.toggle('error', type === 'error');
+}
+function updatePackageCards() {
+  document.querySelectorAll('.package-option').forEach(card => {
+    const input = card.querySelector('input[type="radio"]');
+    card.classList.toggle('is-selected', Boolean(input?.checked));
+  });
+  if (selectedPackageId() !== 'premium') {
+    setStatus('แพ็กเกจนี้ยังไม่เปิดสมัครในขณะนี้ กรุณาเลือกพรีเมียมเพื่อทดลองใช้งานฟรี 1 เดือน', 'error');
+  } else if (statusBox.textContent.includes('แพ็กเกจนี้ยังไม่เปิดสมัคร')) {
+    setStatus('');
+  }
 }
 function updateSubmitState() {
   submitButton.disabled = busy || !termsAccepted?.checked;
@@ -46,11 +58,13 @@ function friendlyEmailError(error) {
 }
 function signupPayload() {
   if (!termsAccepted?.checked) throw new Error('กรุณายอมรับข้อตกลงและนโยบายการใช้งานก่อนสมัครใช้บริการ');
+  const packageId = selectedPackageId();
+  if (packageId !== 'premium') throw new Error('แพ็กเกจนี้ยังไม่เปิดสมัครในขณะนี้ กรุณาเลือกพรีเมียมเพื่อทดลองใช้งานฟรี 1 เดือน');
   const secretA = $('#secretA').value;
   const secretB = $('#secretB').value;
   if (secretA !== secretB) throw new Error('รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน');
   return {
-    packageId: 'premium',
+    packageId,
     ownerName: $('#ownerName').value.trim(),
     phone: $('#phone').value.trim(),
     orderDeliveryShopName: $('#orderDeliveryShopName').value.trim(),
@@ -138,7 +152,9 @@ slugInput.addEventListener('input', () => {
   const slug = cleanSlug(slugInput.value);
   slugPreview.textContent = previewUrl(slug);
 });
+document.querySelectorAll('input[name="packagePlan"]').forEach(input => input.addEventListener('change', updatePackageCards));
 termsAccepted?.addEventListener('change', updateSubmitState);
+updatePackageCards();
 updateSubmitState();
 form.addEventListener('submit', submitSignup);
 activateButton.addEventListener('click', activateTrial);
