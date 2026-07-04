@@ -3,18 +3,19 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Shop Name Source Fix`
+- Current milestone: `POS Logout Password Fix`
 - Version/Build: `0.12.70` / `2026.07.02.024`
 
 ## This Change
 
-- Staff home now uses the shop name from store settings first.
-- Falls back to tenant profile name only if store settings are empty.
-- UI/display-only change.
+- `/pos/login` forwards to `/login?next=/pos/`.
+- POS user password changes now sync to Firebase Auth through a callable function.
+- POS logout has a fallback to unified login.
+- UI/auth fix only. No sale, stock, sync, or transaction logic changed.
 
 ## Deploy
 
 ```bash
 git pull --rebase origin feature/retail-pos
-firebase deploy --only hosting
+firebase deploy --only functions,hosting
 ```
