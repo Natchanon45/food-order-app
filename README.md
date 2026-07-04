@@ -36,8 +36,17 @@
 - Admin Action Button Desktop/Mobile Polish
 - Main Login UI Polish
 - Public Landing Icon Polish
+- Login User Circle Icon Polish
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Login User Circle Icon Polish
+
+- ปรับ icon หัวข้อหน้า `/login` จาก `bi-person-badge` เป็น `bi-person-circle`
+- ใช้ icon ลักษณะ user-circle แทน icon แบบบัตร/การ์ด
+- ไม่แก้ layout card, spacing, input, password toggle หรือ login redirect logic
+- ไม่แก้ JS/CSS ที่ import ใน HTML จึงไม่ต้อง bump query string รอบนี้
+- แก้เฉพาะ UI Login ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore หรือ Stock Transaction
 
 ## Public Landing Icon Polish
 
@@ -100,16 +109,20 @@
 
 ## Regression Tests
 
-1. เปิด `/` ตอนยังไม่ login แล้วหัวข้อหลักและ card ต่าง ๆ ต้องมี icon สีเขียวธีม
-2. ปุ่ม `เข้าสู่ระบบสำหรับพนักงาน` ต้องอยู่กึ่งกลางและมี icon
-3. Quick link `เข้าสู่ระบบพนักงาน / POS` ต้องมี icon และยังลิงก์ไป `/login`
-4. ลิงก์ Privacy / Terms และอีเมล support ต้องยังใช้งานได้
-5. เปิด `/login` แล้วต้องยังใช้ layout card/gradient/spacing แบบ `/pos/login` และ logo `FOD`
-6. เปิด `/pos/login` แล้วต้องยังใช้ logo `POS` และทำงานเดิม
-7. เปิด `/admin` แล้ว icon หัวข้อและปุ่ม action Desktop/Mobile ยังถูกต้อง
-8. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
-9. Network/Console ต้องไม่มี request ไป `retail-pos-display-order.js`
-10. ตรวจว่า record สำคัญยังมี `tenantId`
+1. เปิด `/login` แล้วหัวข้อ `เข้าสู่ระบบพนักงาน` ต้องใช้ icon user-circle ไม่ใช่ icon แบบบัตร/การ์ด
+2. เปิด `/login` แล้วข้อความในช่อง email/password ต้องอยู่กึ่งกลางสมดุล ไม่ชิดขอบล่าง
+3. Focus หรือพิมพ์ในช่อง email/password แล้ว icon ต้องย่อและเลื่อนไปชิดขอบบนด้านใน input
+4. ปุ่มแสดง/ซ่อนรหัสผ่านยังทำงาน
+5. Login ด้วยบัญชีพนักงานยัง redirect ตาม role เดิม
+6. เปิด `/` ตอนยังไม่ login แล้วหัวข้อหลักและ card ต่าง ๆ ต้องมี icon สีเขียวธีม
+7. ปุ่ม `เข้าสู่ระบบสำหรับพนักงาน` ต้องอยู่กึ่งกลางและมี icon
+8. Quick link `เข้าสู่ระบบพนักงาน / POS` ต้องมี icon และยังลิงก์ไป `/login`
+9. ลิงก์ Privacy / Terms และอีเมล support ต้องยังใช้งานได้
+10. เปิด `/pos/login` แล้วต้องยังใช้ logo `POS` และทำงานเดิม
+11. เปิด `/admin` แล้ว icon หัวข้อและปุ่ม action Desktop/Mobile ยังถูกต้อง
+12. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
+13. Network/Console ต้องไม่มี request ไป `retail-pos-display-order.js`
+14. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## Next Tasks
 
