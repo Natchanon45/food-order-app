@@ -7,13 +7,15 @@ Branch: `feature/retail-pos`
 
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
-- Milestone: `Register Layout Validation Fix`
+- Milestone: `Register Form Polish`
 
 ## This Change
 
-- Fixed `/register` layout distortion from inline validation.
-- Field errors now stay inside their own label instead of becoming grid items.
-- Bumped `public-register.js` to `v=20260705-005`.
+- Updated `/register` input fields to use a light gray base background.
+- Phone field accepts digits only and formats to `x-xxxx-xxxx-x` after entry.
+- Checkbox validation text now says `กรุณายอมรับข้อตกลงและนโยบายการใช้งาน`.
+- Yearly old price uses a black 1px diagonal slash effect.
+- Bumped `public-register.js` to `v=20260705-006`.
 - UI/validation-only change.
 
 ## Deploy
