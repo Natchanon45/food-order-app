@@ -39,8 +39,17 @@
 - Login User Circle Icon Polish
 - Login Input Icon Color Polish
 - Login Footer + Legal Pages Polish
+- Public Landing Mobile Layout Polish
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Public Landing Mobile Layout Polish
+
+- ปรับหน้าแรก `/` บน Mobile ให้ card, heading, icon และ spacing เป็นสัดส่วนมากขึ้น
+- ปรับ hero, feature cards, quick link และ about card ให้แคบ/กระชับเหมาะกับจอมือถือ
+- ปรับลิงก์ Privacy / Terms เป็นปุ่มแยกบรรทัดบน Mobile ให้กดง่ายและมองเห็นชัด
+- ลดขนาด footer version บนหน้าแรก Mobile
+- แก้เฉพาะ inline CSS/HTML ของหน้าแรก ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore, Tenant หรือ Stock Transaction
 
 ## Login Footer + Legal Pages Polish
 
@@ -65,79 +74,6 @@
 - ไม่แก้ layout card, spacing, input, password toggle หรือ login redirect logic
 - ไม่แก้ JS/CSS ที่ import ใน HTML จึงไม่ต้อง bump query string รอบนี้
 - แก้เฉพาะ UI Login ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore หรือ Stock Transaction
-
-## Public Landing Icon Polish
-
-- คืน icon ให้หัวข้อและปุ่มในหน้า `/` ตอนยังไม่ login
-- ย้ายปุ่ม `เข้าสู่ระบบสำหรับพนักงาน` ให้อยู่กึ่งกลาง
-- เพิ่ม icon ให้ quick link, contact, privacy และ terms ใน Public Landing
-- `/index.html` bump `home-dashboard.css` เป็น `v=20260704-020`
-- แก้เฉพาะ UI Public Landing ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore หรือ Stock Transaction
-
-## Main Login UI Polish
-
-- ปรับ `/login` ให้ใช้ Design แบบเดียวกับ `/pos/login`
-- ใช้ logo `FOD` แทน `POS`
-- เพิ่ม icon ให้หัวข้อ, label อีเมล/รหัสผ่าน และปุ่มเข้าสู่ระบบ
-- เพิ่มปุ่มแสดง/ซ่อนรหัสผ่านให้ `/login`
-- `/login/index.html` bump `login.js` เป็น `v=20260704-001`
-- แก้เฉพาะ UI/Login UX ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore หรือ Stock Transaction
-
-## Admin Icon / Action Button Polish
-
-- แก้ `public/assets/js/admin-icon-polish.js` ให้ไม่เติม icon ซ้ำกับปุ่มที่มี `.app-icon` อยู่แล้ว
-- icon หัวข้อ Admin ใช้สีเขียวธีม `#159447`
-- เพิ่ม icon ให้ปุ่ม action ตาราง Admin เช่น `แก้ไข` / `ลบ`
-- Desktop แสดงปุ่ม action แบบ icon + ตัวหนังสือ
-- Mobile แสดงปุ่ม action แบบ icon-only เพื่อประหยัดพื้นที่
-- แก้เฉพาะ UI polish ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore หรือ Stock Transaction
-
-## POS Display Order Hard Rollback
-
-- ลบไฟล์ `public/assets/js/retail-pos-display-order.js` ออกจาก repo แล้ว
-- `/pos/index.html` ไม่โหลดสคริปต์จัดลำดับสินค้าอีก
-- ตัวจัดลำดับหมวดหมู่/สินค้าใน `/pos/products/` ยังอยู่ แต่ยังไม่ apply การเรียงบนหน้าขาย `/pos`
-- ไม่มีการแตะ logic ขาย, Online/Offline, Sync, Stable `saleId` หรือ Stock Transaction
-
-## Product Image Storage Rules Fix
-
-- แก้ `storage.rules` สำหรับ path `tenants/{tenantId}/product-images/{productId}/{fileName}`
-- เพิ่ม function `userTenantProductAdmin(tenantId)` ให้ตรวจสิทธิ์จาก `users/{uid}`
-- อนุญาต role `owner`, `admin`, `super_admin` ที่ `active == true` และ `tenantId` ตรงกัน อัปโหลด/ลบรูปสินค้าได้
-- ยังจำกัดไฟล์เป็นรูปภาพ และขนาดไม่เกิน 5 MB เหมือนเดิม
-- ต้อง deploy Storage Rules ด้วยคำสั่ง `firebase deploy --only storage`
-
-## Retail Category/Product Sort Manager
-
-- เพิ่ม panel `จัดลำดับหมวดหมู่และสินค้า` ใน `/pos/products/`
-- เพิ่มไฟล์ `public/assets/js/retail-products-sort-manager.js`
-- เพิ่มไฟล์ `public/assets/css/retail-products-sort-manager.css`
-- บันทึกลำดับหมวดด้วย field `categoryOrder`
-- บันทึกลำดับสินค้าในหมวดด้วย field `sortOrder`
-- ล็อกไม่ให้ขยับลำดับสินค้าในหมวด `ขายดี`, `สินค้าขายดี`, `bestseller`, `popular`
-- `/pos/products/index.html` bump `retail-products-sort-manager.css?v=20260702-021` และ `retail-products-sort-manager.js?v=20260702-021`
-
-## POS Payment UX Update
-
-- ซ่อนปุ่ม `โหลดตัวอย่าง` ออกจากหน้าขาย POS
-- เพิ่มไฟล์ `public/assets/js/retail-pos-payment-enter.js`
-- เมื่ออยู่ใน Modal รับชำระเงิน และ cursor อยู่ในช่อง `รับเงินมา` สามารถกด Enter เพื่อยืนยันการขายได้
-- Enter-to-confirm ใช้วิธี click ปุ่ม `ยืนยันการขาย` เดิม จึงยังใช้ validation และ logic การบันทึกเดิมทั้งหมด
-- `/pos/index.html` โหลด `retail-pos-payment-enter.js?v=20260702-020`
-
-## Regression Tests
-
-1. เปิด `/login` แล้ว footer version ต้องตัวเล็กลงและไม่เด่นเกิน card login
-2. เปิด `/privacy` แล้วต้องมี icon ประกอบหัวข้อ/section และลิงก์ต้องมองเห็นชัดเจน
-3. เปิด `/terms` แล้วต้องมี icon ประกอบหัวข้อ/section และลิงก์ต้องมองเห็นชัดเจน
-4. เปิด `/login` แล้ว icon ช่องอีเมลและรหัสผ่านต้องเป็นสีเขียวทั้งตอนปกติ, focus และ floating
-5. เปิด `/login` บน Mobile แล้ว icon ช่องอีเมลและรหัสผ่านต้องเป็นสีเขียวเหมือน Desktop
-6. เปิด `/login` แล้วหัวข้อ `เข้าสู่ระบบพนักงาน` ต้องใช้ icon user-circle ไม่ใช่ icon แบบบัตร/การ์ด
-7. ปุ่มแสดง/ซ่อนรหัสผ่านยังทำงาน
-8. Login ด้วยบัญชีพนักงานยัง redirect ตาม role เดิม
-9. เปิด `/pos/login` แล้วต้องยังใช้ logo `POS` และทำงานเดิม
-10. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
-11. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## Next Tasks
 
