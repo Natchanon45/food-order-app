@@ -46,10 +46,10 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## แก้แล้วรอบนี้
 
+- แก้ `public/assets/js/admin-mobile-table.js` ให้ปุ่ม action ตารางมี label สำหรับ Desktop
+- แก้ `public/assets/css/admin-mobile-table.css` ให้ Desktop แสดงปุ่ม action แบบ icon + ตัวหนังสือ และ Mobile ยังเป็น icon-only
+- `/admin/index.html` bump `admin-mobile-table.css/js` เป็น `v=20260704-007`
 - แก้ `public/assets/js/admin-icon-polish.js` ให้ไม่เติม icon ซ้ำกับปุ่มที่มี `.app-icon` อยู่แล้ว
-- เพิ่ม icon ให้ปุ่ม action ตาราง Admin เช่น `แก้ไข` / `ลบ`
-- Desktop แสดงปุ่ม action แบบ icon + ตัวหนังสือ
-- Mobile แสดงปุ่ม action แบบ icon-only เพื่อประหยัดพื้นที่
 - `/admin/qr/index.html` bump `admin-icon-polish.js` เป็น `v=20260704-006`
 - ไม่แตะ logic ขาย, Online/Offline, Sync, Stable `saleId`, Firestore หรือ Stock Transaction
 - Developer Panel ยังเป็น Version `0.12.70` Build `2026.07.02.024`
