@@ -19,7 +19,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
 - Branch: `feature/retail-pos`
-- Milestone: `Public Registration Phase 1`
+- Milestone: `Public Registration Phase 2`
 
 ## Done
 
@@ -33,33 +33,36 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Signup Email Verification Hotfix done
 - Register Existing Auth Email + Layout Hotfix done
 - Register Slug Pattern Hotfix done
+- Public Registration Phase 2 done
 
 ## Current Milestone
 
-`Public Registration Phase 1`
+`Public Registration Phase 2`
 
 ## This Change
 
-- Removed the invalid HTML slug pattern from `/register/` that caused Chrome to log a pattern regular-expression error.
-- Kept slug normalization in `public-register.js` as the source of truth.
-- Bumped `/register/` script to `public-register.js?v=20260704-004`.
-- Note: If an email still exists in Firebase Authentication and the entered credential does not match that Auth user, Firebase will reject sign-in. Delete the user from Authentication > Users or use the original credential.
-- Requires deploying hosting.
+- Enabled the public landing `ลงทะเบียน` CTA.
+- Updated `public/index.html` so the register button links directly to `/register/`.
+- Updated the public landing note to mention Premium Trial signup after email verification.
+- Added a defensive CTA patch in `home-session-fa.js` so the register link is corrected on page load.
+- Bumped `home-session-fa.js` import in `public/index.html` to `v=20260704-001`.
+- Hosting/static change only; no changes to tenant activation functions, POS sales, stock, sync, or Firestore transactions.
 
 ## Regression Tests
 
 1. Deploy hosting.
-2. Open `/register/` with hard refresh.
-3. Confirm there is no slug pattern error in Console.
-4. Test an existing Firebase Auth email with correct and incorrect credentials.
-5. Confirm the form remains readable on desktop and mobile.
-6. Confirm existing POS, stock, sync, and tenants are unchanged.
+2. Open `/` with hard refresh while logged out.
+3. Confirm the `ลงทะเบียน` button is enabled and opens `/register/`.
+4. Confirm the `ลงชื่อเข้าใช้` button still opens `/login`.
+5. Confirm logged-in staff still sees the staff dashboard and role-based menu.
+6. Confirm existing `/register/` signup flow remains unchanged.
+7. Confirm POS, stock, sync, and existing tenants are unchanged.
 
 ## Next Tasks
 
-- Patch public landing `ลงทะเบียน` CTA to `/register/`.
 - POS Hardening 003: check duplicate event listeners and snapshot unsubscribe patterns
 - Safely retest product display order in `/pos`
+- Consider package selection Phase 3 if Free/Pro/Premium plans need to become selectable beyond Premium Trial
 
 ## Notes
 
