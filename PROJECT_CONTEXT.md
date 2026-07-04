@@ -19,7 +19,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
 - Branch: `feature/retail-pos`
-- Milestone: `POS Hardening 002`
+- Milestone: `Public Registration Phase 1`
 
 ## Done
 
@@ -28,42 +28,37 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - POS Roadmap P9-B001 to P9-B010 done
 - POS Hardening 001 done
 - POS Hardening 002 done
-- Sales Report Icon Polish done
-- Sales Report Icon Hotfix done
-- Sales Report Back Label Polish done
-- Sales Report Back Icon Duplication Fix done
-- Login Home Link done
-- POS User Visibility Fixes done
-- Admin Staff Callable Hotfix done
-- Restaurant Staff Role Function Fix done
 - Business Unit Staff Filter Fix done
+- Public Trial Signup Phase 1 done
 
 ## Current Milestone
 
-`POS Hardening 002`
+`Public Registration Phase 1`
 
 ## This Change
 
-- Updated staff Cloud Functions to treat `businessUnit` as the primary separation field.
-- Records with `businessUnit: retail_pos` are excluded from `/admin/users` Order/Delivery staff management even if `staffScope/source` are inconsistent.
-- Restaurant staff created from `/admin/users` are saved with `businessUnit: order_delivery`.
-- `updateTenantStaff` rejects `businessUnit: retail_pos` users from Order/Delivery staff editing.
-- This fixes Firebase data where a POS user has `businessUnit: retail_pos` but incorrect `staffScope: restaurant` or `source: order_delivery`.
+- Added public Premium trial signup backend functions.
+- Added `/register/` page and public registration client flow.
+- Added email verification flow before tenant activation.
+- Activation creates tenant, owner profile, membership, store settings, POS settings, and trial subscription records.
+- Premium trial is currently fixed to 30 days.
+- Exported required Firebase Auth helpers from `firebase-config.js`.
+- Public landing CTA still needs a follow-up patch because GitHub blocked updating the existing one-line landing file.
 - Requires deploying functions and hosting.
-- No changes to sales, payment, Online/Offline, Sync, stable `saleId`, Firestore transaction, or Stock Transaction logic.
-- Developer Panel remains Version `0.12.70` Build `2026.07.02.024`.
 
 ## Regression Tests
 
 1. Deploy `functions,hosting`.
-2. Open `/admin/users` and confirm records with `businessUnit: retail_pos` no longer appear.
-3. Confirm `cashier01` with `businessUnit: retail_pos` is hidden from Order/Delivery staff management.
-4. Create a restaurant `Kitchen` staff user and confirm it succeeds and records `businessUnit: order_delivery`.
-5. Save existing Order/Delivery staff and confirm save succeeds.
-6. Confirm POS sale, payment, sync, stock, and tenant data are unchanged.
+2. Open `/register/` directly.
+3. Register a new shop with a unique email and slug.
+4. Confirm email verification is sent.
+5. Confirm activation waits for verification.
+6. After verification, confirm tenant and owner records are created.
+7. Confirm existing POS, stock, sync, and tenants are unchanged.
 
 ## Next Tasks
 
+- Patch public landing `ลงทะเบียน` CTA to `/register/`.
 - POS Hardening 003: check duplicate event listeners and snapshot unsubscribe patterns
 - Safely retest product display order in `/pos`
 
