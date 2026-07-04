@@ -10,6 +10,7 @@ function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fa
 function write(key,value){localStorage.setItem(key,JSON.stringify(value))}
 function normalizeTenantId(value){return String(value||DEFAULT_TENANT_ID).trim()||DEFAULT_TENANT_ID}
 function normalizeRole(value){return String(value||"owner").trim()||"owner"}
+function normalizeBusinessUnit(value){return String(value||"").trim().toLowerCase()}
 function normalizeUser(user){
   const tenantId=normalizeTenantId(user?.tenantId||user?.shopId||DEFAULT_TENANT_ID);
   return {
@@ -21,8 +22,15 @@ function normalizeUser(user){
     username:user?.username||user?.email||auth?.currentUser?.email||"",
     roleId:normalizeRole(user?.roleId||user?.role),
     role:normalizeRole(user?.role||user?.roleId),
+    businessUnit:normalizeBusinessUnit(user?.businessUnit||user?.business_unit),
+    businessUnits:Array.isArray(user?.businessUnits)?user.businessUnits.map(normalizeBusinessUnit):[],
     active:user?.active!==false
   };
+}
+function canUseRetailPos(profile){
+  if(!profile)return false;
+  if(profile.roleId==="owner"||profile.role==="owner")return !profile.businessUnits.length||profile.businessUnits.includes("retail_pos")||profile.businessUnits.includes("retail")||profile.businessUnits.includes("all");
+  return profile.businessUnit==="retail_pos"||profile.businessUnits.includes("retail_pos")||profile.businessUnits.includes("retail")||profile.businessUnits.includes("all");
 }
 
 async function sha256(value){
@@ -106,6 +114,7 @@ async function getFirebaseProfile(firebaseUser){
       username:firebaseUser.email||tenant.ownerEmail,
       role:'owner',
       roleId:'owner',
+      businessUnits:tenant.businessUnits||[],
       active:tenant.active!==false
     });
   }
@@ -125,6 +134,8 @@ export function getSessionUser(){
     username:session.email,
     role:session.role,
     roleId:session.roleId,
+    businessUnit:session.businessUnit,
+    businessUnits:session.businessUnits,
     active:true
   });
 }
@@ -144,6 +155,7 @@ export async function login(email,password){
     const credential=await signInWithEmailAndPassword(auth,normalizedEmail,password);
     const profile=await getFirebaseProfile(credential.user);
     if(!profile||profile.active===false)return{ok:false,message:"บัญชีนี้ถูกปิดใช้งานหรือไม่พบข้อมูลร้าน"};
+    if(!canUseRetailPos(profile))return{ok:false,message:"บัญชีนี้เป็นพนักงาน Order/Delivery ไม่สามารถเข้าใช้งาน Retail POS ได้"};
     const tenantId=normalizeTenantId(profile.tenantId);
     setTenantId(tenantId);
     await hydrateTenantRoles(tenantId);
@@ -155,6 +167,8 @@ export async function login(email,password){
       name:profile.name,
       role:profile.role,
       roleId:profile.roleId,
+      businessUnit:profile.businessUnit,
+      businessUnits:profile.businessUnits,
       loggedInAt:new Date().toISOString()
     });
     write(LEGACY_CURRENT_USER_KEY,profile.id||credential.user.uid);
