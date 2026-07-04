@@ -46,6 +46,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Login User Circle Icon Polish เสร็จแล้ว
 - Login Input Icon Color Polish เสร็จแล้ว
 - Login Footer + Legal Pages Polish เสร็จแล้ว
+- Public Landing Mobile Layout Polish เสร็จแล้ว
 
 ## Current Milestone
 
@@ -53,26 +54,25 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## แก้แล้วรอบนี้
 
-- ลดขนาดตัวหนังสือ footer version หน้า `/login` ให้เล็กลงทั้ง Desktop และ Mobile
-- ปรับหน้า `/privacy` ให้อ่านง่ายขึ้นด้วย icon, spacing, badge วันที่ และลิงก์ที่เห็นชัดเจน
-- ปรับหน้า `/terms` ให้อ่านง่ายขึ้นด้วย icon, spacing, badge วันที่ และลิงก์ที่เห็นชัดเจน
-- แก้เฉพาะ inline CSS/HTML ของหน้า Login, Privacy และ Terms
+- ปรับหน้าแรก `/` บน Mobile ให้ card, heading, icon และ spacing เป็นสัดส่วนมากขึ้น
+- ปรับ hero, feature cards, quick link และ about card ให้กระชับเหมาะกับจอมือถือ
+- ปรับลิงก์ Privacy / Terms เป็นปุ่มแยกบรรทัดบน Mobile ให้กดง่ายและมองเห็นชัด
+- ลดขนาด footer version บนหน้าแรก Mobile
+- แก้เฉพาะ inline CSS/HTML ของหน้าแรก
 - ไม่แตะ logic ขาย, Online/Offline, Sync, Stable `saleId`, Firestore หรือ Stock Transaction
 - Developer Panel ยังเป็น Version `0.12.70` Build `2026.07.02.024`
 
 ## Regression Tests สำคัญ
 
-1. เปิด `/login` แล้ว footer version ต้องตัวเล็กลงและไม่เด่นเกิน card login
-2. เปิด `/privacy` แล้วต้องมี icon ประกอบหัวข้อ/section และลิงก์ต้องมองเห็นชัดเจน
-3. เปิด `/terms` แล้วต้องมี icon ประกอบหัวข้อ/section และลิงก์ต้องมองเห็นชัดเจน
-4. เปิด `/login` แล้ว icon ช่องอีเมลและรหัสผ่านต้องเป็นสีเขียวทั้งตอนปกติ, focus และ floating
-5. เปิด `/login` บน Mobile แล้ว icon ช่องอีเมลและรหัสผ่านต้องเป็นสีเขียวเหมือน Desktop
-6. เปิด `/login` แล้วหัวข้อ `เข้าสู่ระบบพนักงาน` ต้องใช้ icon user-circle ไม่ใช่ icon แบบบัตร/การ์ด
-7. ปุ่มแสดง/ซ่อนรหัสผ่านยังทำงาน
-8. Login ด้วยบัญชีพนักงานยัง redirect ตาม role เดิม
-9. เปิด `/pos/login` แล้วต้องยังใช้ logo `POS` และทำงานเดิม
-10. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
-11. ตรวจว่า record สำคัญยังมี `tenantId`
+1. เปิด `/` บน Mobile แล้ว card ต้องเรียงเป็นสัดส่วน อ่านง่าย ไม่อัดหรือเหลื่อม
+2. icon และหัวข้อใน hero/feature/quick/about ต้องอยู่แนวเดียวกัน ไม่ทับตัวหนังสือ
+3. ปุ่ม `เข้าสู่ระบบสำหรับพนักงาน` บน Mobile ต้องกว้างเต็ม card และกดง่าย
+4. ลิงก์ Privacy / Terms บน Mobile ต้องเป็นปุ่มแยกชัดเจน
+5. Footer version หน้าแรกบน Mobile ต้องเล็กลงและไม่เด่นเกินเนื้อหา
+6. เปิด `/login` แล้ว icon ช่องอีเมลและรหัสผ่านต้องเป็นสีเขียวทั้งตอนปกติ, focus และ floating
+7. เปิด `/pos/login` แล้วต้องยังใช้ logo `POS` และทำงานเดิม
+8. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
+9. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
 
