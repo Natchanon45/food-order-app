@@ -42,8 +42,16 @@
 - Public Landing Mobile Layout Polish
 - Public Landing Pricing CTA Design
 - Public Pricing Final Polish
+- Login Copy + Version Size Polish
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Login Copy + Version Size Polish
+
+- ปรับข้อความใต้หัวข้อหน้า `/login` จาก `Admin • Cashier • Kitchen • Super Admin` เป็น `Order • Delivery • Retail POS`
+- ลดขนาด footer version หน้า `/login` ให้เล็กลงและสีอ่อนลง
+- แก้เฉพาะ inline CSS/HTML ของหน้า Login
+- ไม่แตะ logic Login, Firebase Auth, redirect, Online/Offline, Sync, Tenant หรือ Stock Transaction
 
 ## Public Pricing Final Polish
 
@@ -51,14 +59,6 @@
 - เอาปุ่ม `ลงชื่อเข้าใช้` ตัวล่างใน section เกี่ยวกับแอปพลิเคชันออก
 - จัดรูปแบบอีเมลติดต่อและลิงก์ Privacy / Terms ให้ใกล้เคียงหน้า `/privacy` และ `/terms`
 - ปรับให้ลิงก์ด้านล่างดูไม่ขัดตาทั้ง PC และ Mobile
-- แก้เฉพาะ HTML/inline CSS ของหน้าแรก ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore, Tenant หรือ Stock Transaction
-
-## Public Landing Pricing CTA Design
-
-- เพิ่ม section แพ็กเกจบนหน้าแรก `/` ได้แก่ `ฟรี`, `โปร`, `พรีเมี่ยม`
-- เพิ่มปุ่ม `ลงทะเบียน` เป็น design-only ยังไม่ผูกกับการใช้งานจริง
-- เปลี่ยนปุ่มเข้าสู่ระบบหน้า public landing เป็น `ลงชื่อเข้าใช้`
-- ปรับ responsive ของ pricing section ให้แสดงเป็น 1 คอลัมน์บน Mobile
 - แก้เฉพาะ HTML/inline CSS ของหน้าแรก ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore, Tenant หรือ Stock Transaction
 
 ## Next Tasks
