@@ -4,6 +4,16 @@ const dashboard = document.querySelector("#staffDashboard");
 const publicLanding = document.querySelector("#publicLanding");
 const user = await waitForAuth();
 
+function enablePublicRegisterCta() {
+  const registerLink = document.querySelector(".public-cta-row .btn-primary");
+  if (registerLink) {
+    registerLink.href = "/register/";
+    registerLink.removeAttribute("aria-disabled");
+  }
+  const registerNote = document.querySelector(".public-register-note");
+  if (registerNote) registerNote.textContent = "สมัคร Premium Trial ฟรี 1 เดือน หลังยืนยันอีเมลแล้วเริ่มเปิดร้านได้ทันที";
+}
+
 function profileSupportsModule(profile, moduleName) {
   if (!moduleName) return true;
   if (profile?.role === "super_admin") return true;
@@ -19,6 +29,8 @@ function profileSupportsModule(profile, moduleName) {
   if (!moduleList.length) return true;
   return moduleList.includes(moduleName) || moduleList.includes("all") || moduleList.includes("retail");
 }
+
+enablePublicRegisterCta();
 
 if (user) {
   const profile = await getUserProfile(user);
