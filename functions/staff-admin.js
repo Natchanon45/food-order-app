@@ -2,8 +2,9 @@ const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { getAuth } = require("firebase-admin/auth");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
-const ALLOWED_STAFF_ROLES = new Set(["cashier", "stock", "manager", "admin"]);
-const STAFF_MANAGER_ROLES = new Set(["owner", "super_admin", "cashier"]);
+const ALLOWED_STAFF_ROLES = new Set(["admin", "cashier", "kitchen"]);
+const STAFF_MANAGER_ROLES = new Set(["owner", "super_admin"]);
+const STAFF_SCOPE = "restaurant";
 
 async function getCallerProfile(auth) {
   if (!auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
@@ -31,6 +32,12 @@ function normalizeRole(role) {
   return value;
 }
 
+function isRestaurantStaff(user = {}) {
+  const scope = String(user.staffScope || user.scope || "").trim().toLowerCase();
+  if (scope && scope !== STAFF_SCOPE) return false;
+  return ALLOWED_STAFF_ROLES.has(String(user.role || "").trim());
+}
+
 exports.listTenantStaff = onCall({ region: "asia-southeast1" }, async request => {
   const caller = await getCallerProfile(request.auth);
   const tenant = tenantFromProfile(caller);
@@ -43,7 +50,7 @@ exports.listTenantStaff = onCall({ region: "asia-southeast1" }, async request =>
   return {
     users: snapshot.docs
       .map(doc => ({ uid: doc.id, ...doc.data() }))
-      .filter(user => ALLOWED_STAFF_ROLES.has(user.role))
+      .filter(isRestaurantStaff)
       .sort((a, b) => String(a.displayName || a.email || "").localeCompare(String(b.displayName || b.email || ""), "th"))
   };
 });
@@ -68,6 +75,8 @@ exports.createTenantStaff = onCall({ region: "asia-southeast1" }, async request 
     email,
     displayName,
     role,
+    staffScope: STAFF_SCOPE,
+    source: "order_delivery",
     active,
     tenantId: tenant.id,
     tenantSlug: tenant.slug,
@@ -99,7 +108,7 @@ exports.updateTenantStaff = onCall({ region: "asia-southeast1" }, async request 
   const userRef = db.collection("users").doc(uid);
   const userSnapshot = await userRef.get();
   const user = userSnapshot.data();
-  if (!user || user.tenantId !== tenant.id || !ALLOWED_STAFF_ROLES.has(user.role)) {
+  if (!user || user.tenantId !== tenant.id || !isRestaurantStaff(user)) {
     throw new HttpsError("permission-denied", "Staff account is outside this tenant");
   }
 
@@ -109,7 +118,7 @@ exports.updateTenantStaff = onCall({ region: "asia-southeast1" }, async request 
   if (!displayName) throw new HttpsError("invalid-argument", "Display name is required");
 
   await getAuth().updateUser(uid, { displayName, disabled: !active });
-  const patch = { displayName, role, active, updatedAt: FieldValue.serverTimestamp(), updatedBy: caller.uid };
+  const patch = { displayName, role, staffScope: STAFF_SCOPE, source: "order_delivery", active, updatedAt: FieldValue.serverTimestamp(), updatedBy: caller.uid };
   const batch = db.batch();
   batch.set(userRef, patch, { merge: true });
   batch.set(db.collection("tenants").doc(tenant.id).collection("memberships").doc(uid), patch, { merge: true });
