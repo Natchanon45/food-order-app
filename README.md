@@ -3,12 +3,12 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `POS Keypad Trial`
+- Current milestone: `POS Keypad Layout`
 - Version/Build: `0.12.70` / `2026.07.02.024`
 
 ## This Change
 
-- Added PC-only POS keypad trial.
+- Updated PC-only POS keypad layout.
 - Mobile keeps native keyboard.
 - UI-only change.
 
