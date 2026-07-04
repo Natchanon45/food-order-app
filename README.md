@@ -33,13 +33,17 @@
 - Product Image Storage Rules Fix
 - POS Display Order Hard Rollback
 - Admin Icon Theme Color Fix
+- Admin Action Button Desktop/Mobile Polish
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
 
-## Admin Icon Theme Color Fix
+## Admin Icon / Action Button Polish
 
-- แก้ `public/assets/js/admin-icon-polish.js` ให้ inject runtime style สำหรับ `.admin-heading-icon`
-- บังคับสี icon หัวข้อ Admin เป็นสีเขียวธีม `#159447`
+- แก้ `public/assets/js/admin-icon-polish.js` ให้ไม่เติม icon ซ้ำกับปุ่มที่มี `.app-icon` อยู่แล้ว
+- icon หัวข้อ Admin ใช้สีเขียวธีม `#159447`
+- เพิ่ม icon ให้ปุ่ม action ตาราง Admin เช่น `แก้ไข` / `ลบ`
+- Desktop แสดงปุ่ม action แบบ icon + ตัวหนังสือ
+- Mobile แสดงปุ่ม action แบบ icon-only เพื่อประหยัดพื้นที่
 - แก้เฉพาะ UI polish ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore หรือ Stock Transaction
 
 ## POS Display Order Hard Rollback
@@ -77,14 +81,14 @@
 
 ## Regression Tests
 
-1. เปิด `/admin` แล้ว icon หัวข้อ เช่น `จัดการร้าน`, `รายงานยอดขาย`, `ข้อมูลร้านและการรับชำระ` ต้องกลับเป็นสีเขียวธีม
-2. เปิด `/admin/qr` แล้ว icon หัวข้อและปุ่มพิมพ์ยังแสดงตามเดิม
-3. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
-4. Network/Console ต้องไม่มี request ไป `retail-pos-display-order.js`
-5. เปิด POS แล้วขาย Online ได้ตามเดิม
-6. ปิดเน็ตขาย Offline ได้ตามเดิม
-7. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
-8. กด Enter ใน modal รับเงินแล้วยืนยันการขายได้ตามเดิม
+1. เปิด `/admin` แล้ว icon หัวข้อ เช่น `จัดการร้าน`, `รายงานยอดขาย`, `ข้อมูลร้านและการรับชำระ` ต้องเป็นสีเขียวธีม
+2. เปิด `/admin` แล้วปุ่ม `รายงาน` ต้องไม่เกิด icon ซ้ำ
+3. Desktop: ปุ่ม action ตาราง `แก้ไข` / `ลบ` ต้องแสดง icon + ตัวหนังสือ
+4. Mobile: ปุ่ม action ตาราง `แก้ไข` / `ลบ` ต้องเป็น icon-only เหมือนเดิม
+5. เปิด `/admin/qr` แล้ว icon หัวข้อและปุ่มพิมพ์ยังแสดงตามเดิม
+6. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
+7. Network/Console ต้องไม่มี request ไป `retail-pos-display-order.js`
+8. เปิด POS แล้วขาย Online/Offline และ Manual Sync ได้ตามเดิม
 9. หน้า `/pos` ต้องไม่เห็นปุ่ม `โหลดตัวอย่าง`
 10. ตรวจว่า record สำคัญยังมี `tenantId`
 
