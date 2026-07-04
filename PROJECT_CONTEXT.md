@@ -45,6 +45,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Login Input Spacing Balance เสร็จแล้ว
 - Login User Circle Icon Polish เสร็จแล้ว
 - Login Input Icon Color Polish เสร็จแล้ว
+- Login Footer + Legal Pages Polish เสร็จแล้ว
 
 ## Current Milestone
 
@@ -52,28 +53,26 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## แก้แล้วรอบนี้
 
-- ปรับ icon ช่องอีเมลและรหัสผ่านในหน้า `/login` ให้เป็นสีเขียวธีม `#159447` ตลอดเวลา
-- ครอบคลุมสถานะปกติ, focus และ floating/is-filled ทั้ง PC และ Mobile
-- คง animation การย่อ/เลื่อนของ floating icon เดิมไว้
-- ไม่ได้แก้ JS/CSS ที่ import ใน HTML จึงไม่ต้อง bump query string รอบนี้
+- ลดขนาดตัวหนังสือ footer version หน้า `/login` ให้เล็กลงทั้ง Desktop และ Mobile
+- ปรับหน้า `/privacy` ให้อ่านง่ายขึ้นด้วย icon, spacing, badge วันที่ และลิงก์ที่เห็นชัดเจน
+- ปรับหน้า `/terms` ให้อ่านง่ายขึ้นด้วย icon, spacing, badge วันที่ และลิงก์ที่เห็นชัดเจน
+- แก้เฉพาะ inline CSS/HTML ของหน้า Login, Privacy และ Terms
 - ไม่แตะ logic ขาย, Online/Offline, Sync, Stable `saleId`, Firestore หรือ Stock Transaction
 - Developer Panel ยังเป็น Version `0.12.70` Build `2026.07.02.024`
 
 ## Regression Tests สำคัญ
 
-1. เปิด `/login` แล้ว icon ช่องอีเมลและรหัสผ่านต้องเป็นสีเขียวทั้งตอนปกติ, focus และ floating
-2. เปิด `/login` บน Mobile แล้ว icon ช่องอีเมลและรหัสผ่านต้องเป็นสีเขียวเหมือน Desktop
-3. เปิด `/login` แล้วหัวข้อ `เข้าสู่ระบบพนักงาน` ต้องใช้ icon user-circle ไม่ใช่ icon แบบบัตร/การ์ด
-4. เปิด `/login` แล้วข้อความในช่อง email/password ต้องอยู่กึ่งกลางสมดุล ไม่ชิดขอบล่าง
-5. Focus หรือพิมพ์ในช่อง email/password แล้ว icon ต้องย่อและเลื่อนไปชิดขอบบนด้านใน input
-6. ปุ่มแสดง/ซ่อนรหัสผ่านยังทำงาน
-7. Login ด้วยบัญชีพนักงานยัง redirect ตาม role เดิม
-8. เปิด `/` ตอนยังไม่ login แล้ว Hero title ต้องชิดซ้าย และปุ่มพนักงานอยู่กึ่งกลาง
+1. เปิด `/login` แล้ว footer version ต้องตัวเล็กลงและไม่เด่นเกิน card login
+2. เปิด `/privacy` แล้วต้องมี icon ประกอบหัวข้อ/section และลิงก์ต้องมองเห็นชัดเจน
+3. เปิด `/terms` แล้วต้องมี icon ประกอบหัวข้อ/section และลิงก์ต้องมองเห็นชัดเจน
+4. เปิด `/login` แล้ว icon ช่องอีเมลและรหัสผ่านต้องเป็นสีเขียวทั้งตอนปกติ, focus และ floating
+5. เปิด `/login` บน Mobile แล้ว icon ช่องอีเมลและรหัสผ่านต้องเป็นสีเขียวเหมือน Desktop
+6. เปิด `/login` แล้วหัวข้อ `เข้าสู่ระบบพนักงาน` ต้องใช้ icon user-circle ไม่ใช่ icon แบบบัตร/การ์ด
+7. ปุ่มแสดง/ซ่อนรหัสผ่านยังทำงาน
+8. Login ด้วยบัญชีพนักงานยัง redirect ตาม role เดิม
 9. เปิด `/pos/login` แล้วต้องยังใช้ logo `POS` และทำงานเดิม
-10. เปิด `/admin` แล้ว icon หัวข้อและปุ่ม action Desktop/Mobile ยังถูกต้อง
-11. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
-12. Network/Console ต้องไม่มี request ไป `retail-pos-display-order.js`
-13. ตรวจว่า record สำคัญยังมี `tenantId`
+10. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
+11. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
 
