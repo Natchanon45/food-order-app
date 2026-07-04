@@ -50,6 +50,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Public Landing Pricing CTA Design เสร็จแล้ว
 - Public Pricing Final Polish เสร็จแล้ว
 - Login Copy + Version Size Polish เสร็จแล้ว
+- Pricing Card Header Alignment Polish เสร็จแล้ว
 
 ## Current Milestone
 
@@ -57,21 +58,24 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## แก้แล้วรอบนี้
 
-- ปรับข้อความใต้หัวข้อหน้า `/login` จาก `Admin • Cashier • Kitchen • Super Admin` เป็น `Order • Delivery • Retail POS`
-- ลดขนาด footer version หน้า `/login` ให้เล็กลงและสีอ่อนลง
-- แก้เฉพาะ inline CSS/HTML ของหน้า Login
-- ไม่แตะ logic Login, Firebase Auth, redirect, Online/Offline, Sync, Stable `saleId`, Firestore หรือ Stock Transaction
+- ปรับชื่อแพ็กเกจและราคาของการ์ด `ฟรี`, `โปร`, `พรีเมียม` ให้อยู่กึ่งกลาง
+- ย้าย badge `เริ่มต้น`, `แนะนำ`, `เต็มระบบ` ไปมุมบนขวาของการ์ด
+- ลดขนาด badge ให้เล็กลงและไม่แย่งสายตาจากชื่อแพ็กเกจ/ราคา
+- แก้เฉพาะ HTML/inline CSS ของหน้าแรก
+- ไม่แตะ logic ขาย, Online/Offline, Sync, Stable `saleId`, Firestore หรือ Stock Transaction
 - Developer Panel ยังเป็น Version `0.12.70` Build `2026.07.02.024`
 
 ## Regression Tests สำคัญ
 
-1. เปิด `/login` แล้วข้อความใต้หัวข้อต้องเป็น `Order • Delivery • Retail POS`
-2. Footer version หน้า `/login` ต้องเล็กลงและไม่เด่นเกิน card login
-3. เปิด `/login` แล้วปุ่มแสดง/ซ่อนรหัสผ่านยังทำงาน
-4. Login ด้วยบัญชีพนักงานยัง redirect ตาม role เดิม
-5. เปิด `/pos/login` แล้วต้องยังใช้ logo `POS` และทำงานเดิม
-6. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
-7. ตรวจว่า record สำคัญยังมี `tenantId`
+1. เปิด `/` แล้วชื่อแพ็กเกจ `ฟรี`, `โปร`, `พรีเมียม` ต้องอยู่กึ่งกลางในการ์ด
+2. ราคาของทั้ง 3 แพ็กเกจต้องอยู่กึ่งกลางในการ์ด
+3. badge `เริ่มต้น`, `แนะนำ`, `เต็มระบบ` ต้องอยู่มุมบนขวาและขนาดเล็กลง
+4. เปิด `/` บน Mobile แล้วการ์ดแพ็กเกจต้องยังอ่านง่าย ไม่ทับกัน
+5. ปุ่ม `ลงทะเบียน` ต้องยังเป็น design-only และยังไม่ต้องผูก action จริง
+6. ปุ่ม `ลงชื่อเข้าใช้` ใน pricing section ต้องลิงก์ไป `/login`
+7. เปิด `/login` แล้วระบบเข้าสู่ระบบเดิมต้องยังทำงาน
+8. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
+9. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
 
