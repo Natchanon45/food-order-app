@@ -40,8 +40,17 @@
 - Login Input Icon Color Polish
 - Login Footer + Legal Pages Polish
 - Public Landing Mobile Layout Polish
+- Public Landing Pricing CTA Design
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Public Landing Pricing CTA Design
+
+- เพิ่ม section แพ็กเกจบนหน้าแรก `/` ได้แก่ `ฟรี`, `โปร`, `พรีเมี่ยม`
+- เพิ่มปุ่ม `ลงทะเบียน` เป็น design-only ยังไม่ผูกกับการใช้งานจริง
+- เปลี่ยนปุ่มเข้าสู่ระบบหน้า public landing เป็น `ลงชื่อเข้าใช้`
+- ปรับ responsive ของ pricing section ให้แสดงเป็น 1 คอลัมน์บน Mobile
+- แก้เฉพาะ HTML/inline CSS ของหน้าแรก ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore, Tenant หรือ Stock Transaction
 
 ## Public Landing Mobile Layout Polish
 
@@ -50,30 +59,6 @@
 - ปรับลิงก์ Privacy / Terms เป็นปุ่มแยกบรรทัดบน Mobile ให้กดง่ายและมองเห็นชัด
 - ลดขนาด footer version บนหน้าแรก Mobile
 - แก้เฉพาะ inline CSS/HTML ของหน้าแรก ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore, Tenant หรือ Stock Transaction
-
-## Login Footer + Legal Pages Polish
-
-- ลดขนาดตัวหนังสือ footer version หน้า `/login` ให้เล็กลงทั้ง Desktop และ Mobile
-- ปรับหน้า `/privacy` ให้อ่านง่ายขึ้นด้วย section icon, spacing, badge วันที่ และลิงก์แบบปุ่ม/ขีดเส้นใต้ชัดเจน
-- ปรับหน้า `/terms` ให้อ่านง่ายขึ้นด้วย section icon, spacing, badge วันที่ และลิงก์แบบปุ่ม/ขีดเส้นใต้ชัดเจน
-- แก้เฉพาะ inline CSS/HTML ของหน้า Login, Privacy และ Terms
-- ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore, Tenant หรือ Stock Transaction
-
-## Login Input Icon Color Polish
-
-- ปรับ icon ช่องอีเมลและรหัสผ่านในหน้า `/login` ให้เป็นสีเขียวธีม `#159447` ตลอดเวลา
-- ครอบคลุมสถานะปกติ, focus และ floating/is-filled ทั้ง PC และ Mobile
-- คง animation การย่อ/เลื่อนของ floating icon เดิมไว้
-- ไม่แก้ JS/CSS ที่ import ใน HTML จึงไม่ต้อง bump query string รอบนี้
-- แก้เฉพาะ inline CSS ของหน้า Login ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore หรือ Stock Transaction
-
-## Login User Circle Icon Polish
-
-- ปรับ icon หัวข้อหน้า `/login` จาก `bi-person-badge` เป็น `bi-person-circle`
-- ใช้ icon ลักษณะ user-circle แทน icon แบบบัตร/การ์ด
-- ไม่แก้ layout card, spacing, input, password toggle หรือ login redirect logic
-- ไม่แก้ JS/CSS ที่ import ใน HTML จึงไม่ต้อง bump query string รอบนี้
-- แก้เฉพาะ UI Login ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore หรือ Stock Transaction
 
 ## Next Tasks
 
