@@ -36,6 +36,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - POS User Visibility Fixes done
 - Admin Staff Callable Hotfix done
 - Restaurant Staff Role Function Fix done
+- Business Unit Staff Filter Fix done
 
 ## Current Milestone
 
@@ -43,22 +44,22 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## This Change
 
-- Fixed restaurant/admin staff Cloud Function role rules.
-- `functions/staff-admin.js` now allows only restaurant staff roles: `admin`, `cashier`, `kitchen`.
-- `createTenantStaff` and `updateTenantStaff` now accept `kitchen`, fixing `FirebaseError: Invalid staff role`.
-- Newly created restaurant staff records are marked with `staffScope: restaurant` and `source: order_delivery`.
-- Tightened `/admin/users` legacy POS filter to hide records like `cashier01` while keeping normal restaurant cashier rows like `Cashier`.
-- This change requires deploying both functions and hosting.
+- Updated staff Cloud Functions to treat `businessUnit` as the primary separation field.
+- Records with `businessUnit: retail_pos` are excluded from `/admin/users` Order/Delivery staff management even if `staffScope/source` are inconsistent.
+- Restaurant staff created from `/admin/users` are saved with `businessUnit: order_delivery`.
+- `updateTenantStaff` rejects `businessUnit: retail_pos` users from Order/Delivery staff editing.
+- This fixes Firebase data where a POS user has `businessUnit: retail_pos` but incorrect `staffScope: restaurant` or `source: order_delivery`.
+- Requires deploying functions and hosting.
 - No changes to sales, payment, Online/Offline, Sync, stable `saleId`, Firestore transaction, or Stock Transaction logic.
 - Developer Panel remains Version `0.12.70` Build `2026.07.02.024`.
 
 ## Regression Tests
 
 1. Deploy `functions,hosting`.
-2. Open `/admin/users` and confirm `cashier01` no longer appears.
-3. Create a `Kitchen` staff user and confirm it succeeds without `Invalid staff role`.
-4. Save an existing restaurant/admin staff row and confirm save succeeds.
-5. Confirm normal restaurant rows such as `Admin`, `Cashier`, and `Kitchen` still appear when not POS scoped.
+2. Open `/admin/users` and confirm records with `businessUnit: retail_pos` no longer appear.
+3. Confirm `cashier01` with `businessUnit: retail_pos` is hidden from Order/Delivery staff management.
+4. Create a restaurant `Kitchen` staff user and confirm it succeeds and records `businessUnit: order_delivery`.
+5. Save existing Order/Delivery staff and confirm save succeeds.
 6. Confirm POS sale, payment, sync, stock, and tenant data are unchanged.
 
 ## Next Tasks
