@@ -3,17 +3,16 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Register Real Package Radios`
+- Current milestone: `Register Premium Pricing Copy`
 - Version/Build: `0.12.70` / `2026.07.02.024`
 
 ## This Change
 
-- `/register` package cards now use real visible radio inputs.
-- Package cards are clickable and update selected state.
-- Replaced text check mark with Bootstrap icon.
-- JS reads selected package radio value for future package support.
-- Non-premium packages are selectable but blocked on submit for now.
-- UI/validation-only change.
+- Updated `/register` premium pricing copy.
+- Premium shows free first month and 590 THB for next months.
+- Side card shows follow-up monthly price and yearly special price.
+- Free and Pro cards are disabled again for now.
+- UI-only change.
 
 ## Deploy
 
