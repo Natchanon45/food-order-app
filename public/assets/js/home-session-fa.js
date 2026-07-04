@@ -1,4 +1,5 @@
 import { waitForAuth, getUserProfile, mountUserMenu, STAFF_ROLES } from "./auth-service.js?v=20260704-002";
+import { dataService } from "./data-service.js?v=20260704-001";
 
 const dashboard = document.querySelector("#staffDashboard");
 const publicLanding = document.querySelector("#publicLanding");
@@ -33,6 +34,17 @@ function fixQuickLinkIconAlignment() {
     #publicLanding .quick-link-icon .bi::before,#publicLanding .quick-link-icon i.app-icon::before{display:block!important;line-height:1!important;margin:0!important;}
   `;
   document.head.appendChild(style);
+}
+
+async function resolveDisplayShopName(profile) {
+  try {
+    const settings = await dataService.getStoreSettings();
+    const name = String(settings?.shopName || "").trim();
+    if (name) return name;
+  } catch (error) {
+    console.warn("STAFF_HOME_STORE_NAME_FALLBACK", error);
+  }
+  return profile.tenantName || "ร้านของคุณ";
 }
 
 function lower(value) { return String(value || "").trim().toLowerCase(); }
@@ -89,7 +101,7 @@ if (user) {
 
     if (profile.role === "owner") {
       if (heroTitle) heroTitle.textContent = "ระบบจัดการร้าน";
-      if (heroSubtitle) heroSubtitle.textContent = profile.tenantName || "ร้านของคุณ";
+      if (heroSubtitle) heroSubtitle.textContent = await resolveDisplayShopName(profile);
     }
 
     mountUserMenu(profile);
