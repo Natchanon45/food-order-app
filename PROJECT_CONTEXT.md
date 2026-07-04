@@ -30,6 +30,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - POS Hardening 002 done
 - Business Unit Staff Filter Fix done
 - Public Trial Signup Phase 1 done
+- Signup Email Verification Hotfix done
 
 ## Current Milestone
 
@@ -37,23 +38,21 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## This Change
 
-- Added public Premium trial signup backend functions.
-- Added `/register/` page and public registration client flow.
-- Added email verification flow before tenant activation.
-- Activation creates tenant, owner profile, membership, store settings, POS settings, and trial subscription records.
-- Premium trial is currently fixed to 30 days.
-- Exported required Firebase Auth helpers from `firebase-config.js`.
-- Public landing CTA still needs a follow-up patch because GitHub blocked updating the existing one-line landing file.
-- Requires deploying functions and hosting.
+- Improved `/register/` email verification handling.
+- The registration client now attempts to send the verification email before saving pending signup data.
+- Added clearer error messages for verification email issues such as unauthorized continue URL or too many requests.
+- Resend verification now reloads the current auth user and tells users to check Inbox and Spam/Junk.
+- Bumped `/register/` script to `public-register.js?v=20260704-002`.
+- Requires deploying hosting. If signup functions are not yet deployed, deploy functions too.
 
 ## Regression Tests
 
-1. Deploy `functions,hosting`.
-2. Open `/register/` directly.
+1. Deploy `functions,hosting` if functions are not already current; otherwise deploy hosting.
+2. Open `/register/` directly with a fresh browser session.
 3. Register a new shop with a unique email and slug.
-4. Confirm email verification is sent.
-5. Confirm activation waits for verification.
-6. After verification, confirm tenant and owner records are created.
+4. Confirm the verification email send result is visible.
+5. If no email arrives, check the displayed error and Firebase Auth Authorized domains.
+6. Confirm activation still waits for email verification.
 7. Confirm existing POS, stock, sync, and tenants are unchanged.
 
 ## Next Tasks
