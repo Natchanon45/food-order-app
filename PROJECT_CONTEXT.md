@@ -55,6 +55,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Legal Support Email Badge Polish เสร็จแล้ว
 - Badge Row Responsive Polish เสร็จแล้ว
 - Sales Report Icon Polish เสร็จแล้ว
+- Sales Report Icon Hotfix เสร็จแล้ว
 
 ## Current Milestone
 
@@ -62,24 +63,21 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## แก้แล้วรอบนี้
 
-- ปรับหน้า `/admin/sales-report` ให้หัวข้อหลัก หัวข้อ section และปุ่มมี Bootstrap Icons กลับมาครบ
-- เพิ่ม icon ให้ปุ่มกลับ, tab ช่วงเวลา, ปุ่มดู, ปุ่มพิมพ์ และปุ่มปิด dialog
-- เพิ่ม icon ให้ dashboard summary cards โดยเลือก icon ไม่ซ้ำกันและเหมาะกับข้อมูลแต่ละใบ
-- ปรับ `sales-report.js` query string เป็น `v=20260704-001` เพื่อกัน browser cache หลังแก้ JS
+- แก้ปุ่ม `กลับ` หน้า `/admin/sales-report` ไม่ให้แสดง icon ซ้ำ
+- แก้หัวข้อกราฟให้มี icon ตลอด แม้ `sales-report.js` จะเปลี่ยนข้อความตามช่วงรายงาน
+- ปรับ `sales-report.js` query string เป็น `v=20260704-002` เพื่อกัน browser cache หลังแก้ JS
 - แก้เฉพาะ UI icon ของรายงานยอดขาย
 - ไม่แตะ logic รายงาน, การคำนวณ, Online/Offline, Sync, Stable `saleId`, Firestore หรือ Stock Transaction
 - Developer Panel ยังเป็น Version `0.12.70` Build `2026.07.02.024`
 
 ## Regression Tests สำคัญ
 
-1. เปิด `/admin/sales-report` แล้วหัวข้อหลักและ section ต้องมี icon
-2. ปุ่มกลับ, รายวัน, รายเดือน, รายปี, กำหนดช่วง ต้องมี icon
-3. Dashboard summary cards ต้องมี icon และไม่ซ้ำกัน
-4. ตารางใบเสร็จต้องยังแสดงปุ่มดูและพิมพ์พร้อม icon
-5. ปุ่มพิมพ์ใน dialog รายละเอียดใบเสร็จและปุ่มปิดต้องมี icon
-6. Filter รายวัน/รายเดือน/รายปี/กำหนดช่วงต้องยังทำงานเดิม
-7. รายงานยอดขายและตารางใบเสร็จต้องยังคำนวณเหมือนเดิม
-8. ตรวจว่า record สำคัญยังมี `tenantId`
+1. เปิด `/admin/sales-report` แล้วปุ่ม `กลับ` ต้องไม่มี icon ซ้ำ
+2. หัวข้อกราฟ `ยอดขายรายชั่วโมง` ต้องมี icon
+3. เปลี่ยน tab รายวัน/รายเดือน/รายปี/กำหนดช่วง แล้วหัวข้อกราฟยังต้องมี icon
+4. ปุ่มดู/พิมพ์ในตารางใบเสร็จต้องยังมี icon และทำงานเดิม
+5. รายงานยอดขายและตารางใบเสร็จต้องยังคำนวณเหมือนเดิม
+6. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
 
