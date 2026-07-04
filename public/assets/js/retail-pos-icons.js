@@ -1,3 +1,5 @@
+import { logout } from "./retail-pos-auth.js?v=20260704-004";
+
 const ICON_RULES = [
   [/ออกจากระบบ|logout/i, "box-arrow-right"],
   [/เข้าสู่ระบบ|login/i, "box-arrow-in-right"],
@@ -102,7 +104,20 @@ function enhance(root = document) {
   });
 }
 
+function forceUnifiedLogout() {
+  document.addEventListener("click", async event => {
+    const logoutButton = event.target.closest("#posLogoutBtn");
+    if (!logoutButton) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    await logout();
+    location.replace("/login/?next=%2Fpos%2F");
+  }, true);
+}
+
 function start() {
+  forceUnifiedLogout();
   enhance();
   const observer = new MutationObserver(records => records.forEach(record => {
     enhance(record.target);
