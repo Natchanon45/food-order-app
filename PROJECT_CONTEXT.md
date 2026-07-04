@@ -1,62 +1,31 @@
-# Food Order App — Project Context / POS Roadmap
+# Food Order App — Project Context
 
 Repository: `Natchanon45/food-order-app`
 Branch: `feature/retail-pos`
-Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail POS
-
-## Workflow
-
-1. Read `PROJECT_CONTEXT.md` before work.
-2. Check latest HEAD before editing.
-3. Report Version / Build / HEAD after work.
-4. Keep changes small.
-5. Bump query string when imported JS/CSS changes.
-6. Update README and context after code changes.
-7. Report deploy commands.
 
 ## Version / Build
 
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
-- Branch: `feature/retail-pos`
-- Milestone: `Quick Login Icon Fix`
-
-## Done
-
-- QR Table Order / Take Away / Kitchen / Cashier / Delivery done
-- Retail POS supports Online / Offline / Sync / Tenant
-- Unified Login Fix done
-- Login Link Polish done
-- Quick Login Icon Fix done
-
-## Current Milestone
-
-`Quick Login Icon Fix`
+- Milestone: `Shop Name Source Fix`
 
 ## This Change
 
-- Fixed quick login icon alignment on the public landing page.
-- Updated `.quick-link-icon` centering rules.
-- Added a small runtime style fallback in `home-session-fa.js`.
-- UI-only change. No auth, POS, sale, stock, sync, or transaction logic changed.
+- Fixed staff home shop name source.
+- Staff home now reads store settings shop name before tenant profile name.
+- UI/display-only change.
+- No POS sale, stock, sync, or transaction logic changed.
 
-## Regression Tests
+## Test
 
 1. Deploy hosting.
-2. Hard refresh `/`.
-3. Confirm quick login icon is centered in the square badge.
-4. Confirm quick login still opens login.
+2. Change shop name in `/admin`.
+3. Hard refresh `/`.
+4. Confirm staff home shows the same shop name.
 
-## Next Tasks
+## Deploy
 
-- POS Hardening 003
-- Retest product display order in `/pos`
-- Package Selection Phase 3
-
-## Notes
-
-- Every important record must include `tenantId`.
-- Do not sync POS across tenants.
-- Use stable sale/order id online and offline.
-- Firestore transactions must read before writes.
-- If JS/CSS changes, bump query string.
+```bash
+git pull --rebase origin feature/retail-pos
+firebase deploy --only hosting
+```
