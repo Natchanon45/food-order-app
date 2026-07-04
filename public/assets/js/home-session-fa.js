@@ -1,4 +1,4 @@
-import { waitForAuth, getUserProfile, mountUserMenu, STAFF_ROLES } from "./auth-service.js?v=20260702-018";
+import { waitForAuth, getUserProfile, mountUserMenu, STAFF_ROLES } from "./auth-service.js?v=20260704-002";
 
 const dashboard = document.querySelector("#staffDashboard");
 const publicLanding = document.querySelector("#publicLanding");
@@ -14,6 +14,7 @@ function enablePublicRegisterCta() {
   if (registerNote) registerNote.textContent = "สมัคร Premium Trial ฟรี 1 เดือน หลังยืนยันอีเมลแล้วเริ่มเปิดร้านได้ทันที";
 }
 
+function lower(value) { return String(value || "").trim().toLowerCase(); }
 function profileSupportsModule(profile, moduleName) {
   if (!moduleName) return true;
   if (profile?.role === "super_admin") return true;
@@ -22,12 +23,20 @@ function profileSupportsModule(profile, moduleName) {
     profile?.module,
     profile?.tenantType,
     profile?.businessType,
+    profile?.businessUnit,
+    profile?.business_unit,
     ...(Array.isArray(profile?.modules) ? profile.modules : []),
+    ...(Array.isArray(profile?.businessUnits) ? profile.businessUnits : []),
     ...(Array.isArray(profile?.allowedModules) ? profile.allowedModules : [])
-  ].filter(Boolean).map(value => String(value).toLowerCase());
+  ].filter(Boolean).map(lower);
+
+  if (moduleName === "retail-pos") {
+    if (profile?.role === "owner") return !moduleList.length || moduleList.includes("retail_pos") || moduleList.includes("retail") || moduleList.includes("all");
+    return moduleList.includes("retail_pos") || moduleList.includes("retail") || moduleList.includes("all");
+  }
 
   if (!moduleList.length) return true;
-  return moduleList.includes(moduleName) || moduleList.includes("all") || moduleList.includes("retail");
+  return moduleList.includes(moduleName) || moduleList.includes("all");
 }
 
 enablePublicRegisterCta();
