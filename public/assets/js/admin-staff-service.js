@@ -12,7 +12,13 @@ function isPosScoped(row = {}) {
   const values = [row.staffScope, row.scope, row.source, row.system, row.userType, row.appType]
     .map(value => String(value || '').trim().toLowerCase())
     .filter(Boolean);
-  return values.some(value => POS_SCOPE_VALUES.has(value));
+  if (values.some(value => POS_SCOPE_VALUES.has(value))) return true;
+
+  const role = rawRole(row);
+  const roleId = String(row.roleId || '').trim().toLowerCase();
+  const hasLocalPosLogin = Boolean(row.username || row.passwordHash || row.passwordSalt);
+  const idLooksLocalPos = String(row.uid || row.id || row.userId || '').startsWith('user-');
+  return hasLocalPosLogin || idLooksLocalPos || (roleId && roleId === role && ['cashier', 'stock', 'manager'].includes(roleId));
 }
 
 function staffOnly(row) {
@@ -61,7 +67,7 @@ async function callStaffFunction(name, payload = {}) {
 export async function listStaffUsers() {
   const tenant = await currentTenant();
   try {
-    const data = await callStaffFunction('listStaffUsers', { tenantId: tenant.id, tenantSlug: tenant.slug });
+    const data = await callStaffFunction('listTenantStaff', { tenantId: tenant.id, tenantSlug: tenant.slug });
     const rows = Array.isArray(data?.users) ? data.users : Array.isArray(data) ? data : [];
     return rows.filter(staffOnly).map(row => normalizeUser(row.uid || row.id, { ...row, tenantId: row.tenantId || tenant.id, tenantSlug: row.tenantSlug || tenant.slug })).sort((a, b) => String(a.displayName || a.email).localeCompare(String(b.displayName || b.email), 'th'));
   } catch (error) {
@@ -73,10 +79,10 @@ export async function listStaffUsers() {
 
 export async function createStaffUser(payload = {}) {
   const tenant = await currentTenant();
-  return callStaffFunction('createStaffUser', { ...payload, staffScope: 'restaurant', tenantId: tenant.id, tenantSlug: tenant.slug });
+  return callStaffFunction('createTenantStaff', { ...payload, staffScope: 'restaurant', tenantId: tenant.id, tenantSlug: tenant.slug });
 }
 
 export async function updateStaffUser(uid, patch = {}) {
   const tenant = await currentTenant();
-  return callStaffFunction('updateStaffUser', { uid, userId: uid, tenantId: tenant.id, tenantSlug: tenant.slug, ...patch });
+  return callStaffFunction('updateTenantStaff', { uid, userId: uid, tenantId: tenant.id, tenantSlug: tenant.slug, ...patch });
 }
