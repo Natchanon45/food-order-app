@@ -42,6 +42,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Main Login UI Polish เสร็จแล้ว
 - Public Landing Icon Polish เสร็จแล้ว
 - Floating Login Input Icons เสร็จแล้ว
+- Login Input Spacing Balance เสร็จแล้ว
 
 ## Current Milestone
 
@@ -49,16 +50,15 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## แก้แล้วรอบนี้
 
-- ย้าย icon อีเมลและกุญแจเข้าไปอยู่ในช่อง input ของหน้า `/login`
-- เพิ่ม floating icon behavior: เมื่อ focus หรือมีค่า icon จะย่อและเลื่อนไปชิดขอบบนด้านใน input
-- ปรับ padding input ให้ไม่ชน icon และยังรองรับปุ่มแสดง/ซ่อนรหัสผ่าน
-- `/login/index.html` bump `login.js` เป็น `v=20260704-002`
+- ปรับ spacing ช่อง email/password ใน `/login` ให้ข้อความอยู่กึ่งกลางสมดุลขึ้นทั้ง PC และ Mobile
+- คง floating icon behavior เดิมไว้
+- ปรับ line-height, height และ padding ของ input ให้ไม่ชิดขอบล่าง
 - ไม่แตะ logic ขาย, Online/Offline, Sync, Stable `saleId`, Firestore หรือ Stock Transaction
 - Developer Panel ยังเป็น Version `0.12.70` Build `2026.07.02.024`
 
 ## Regression Tests สำคัญ
 
-1. เปิด `/login` แล้ว icon อีเมล/กุญแจต้องอยู่ภายใน input
+1. เปิด `/login` แล้วข้อความในช่อง email/password ต้องอยู่กึ่งกลางสมดุล ไม่ชิดขอบล่าง
 2. Focus หรือพิมพ์ในช่อง email/password แล้ว icon ต้องย่อและเลื่อนไปชิดขอบบนด้านใน input
 3. ปุ่มแสดง/ซ่อนรหัสผ่านยังทำงาน
 4. Login ด้วยบัญชีพนักงานยัง redirect ตาม role เดิม
