@@ -7,14 +7,13 @@ Branch: `feature/retail-pos`
 
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
-- Milestone: `POS Submenu Icon Polish`
+- Milestone: `POS Receipt Privacy`
 
 ## This Change
 
-- POS submenu icons now apply on PC and mobile.
-- Kept mobile clear bill button polish.
-- Bumped POS polish CSS to `v=20260705-002`.
-- UI-only change.
+- Updated POS receipt customer display privacy.
+- Bumped receipt script import to `v=20260705-001`.
+- Display/print-only change.
 
 ## Deploy
 
