@@ -49,6 +49,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Public Landing Mobile Layout Polish เสร็จแล้ว
 - Public Landing Pricing CTA Design เสร็จแล้ว
 - Public Pricing Final Polish เสร็จแล้ว
+- Login Copy + Version Size Polish เสร็จแล้ว
 
 ## Current Milestone
 
@@ -56,25 +57,21 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## แก้แล้วรอบนี้
 
-- ปรับราคาแพ็กเกจหน้าแรกเป็น `ฟรี 0฿/Month`, `โปร 390฿/Month`, `พรีเมียม 590฿/Month`
-- เอาปุ่ม `ลงชื่อเข้าใช้` ตัวล่างใน section เกี่ยวกับแอปพลิเคชันออก
-- จัดรูปแบบอีเมลติดต่อและลิงก์ Privacy / Terms ให้ใกล้เคียงหน้า `/privacy` และ `/terms`
-- ปรับให้ลิงก์ด้านล่างดูไม่ขัดตาทั้ง PC และ Mobile
-- แก้เฉพาะ HTML/inline CSS ของหน้าแรก
-- ไม่แตะ logic ขาย, Online/Offline, Sync, Stable `saleId`, Firestore หรือ Stock Transaction
+- ปรับข้อความใต้หัวข้อหน้า `/login` จาก `Admin • Cashier • Kitchen • Super Admin` เป็น `Order • Delivery • Retail POS`
+- ลดขนาด footer version หน้า `/login` ให้เล็กลงและสีอ่อนลง
+- แก้เฉพาะ inline CSS/HTML ของหน้า Login
+- ไม่แตะ logic Login, Firebase Auth, redirect, Online/Offline, Sync, Stable `saleId`, Firestore หรือ Stock Transaction
 - Developer Panel ยังเป็น Version `0.12.70` Build `2026.07.02.024`
 
 ## Regression Tests สำคัญ
 
-1. เปิด `/` แล้วราคาต้องแสดง `0฿/Month`, `390฿/Month`, `590฿/Month`
-2. หน้าแรกต้องไม่มีปุ่ม `ลงชื่อเข้าใช้` ตัวล่างใน section เกี่ยวกับแอปพลิเคชัน
-3. อีเมลติดต่อและลิงก์ Privacy / Terms ต้องดูชัดเจนทั้ง PC และ Mobile
-4. ปุ่ม `ลงทะเบียน` ต้องยังเป็น design-only และยังไม่ต้องผูก action จริง
-5. ปุ่ม `ลงชื่อเข้าใช้` ใน pricing section ต้องลิงก์ไป `/login`
-6. เปิด `/login` แล้วระบบเข้าสู่ระบบเดิมต้องยังทำงาน
-7. เปิด `/pos/login` แล้วต้องยังใช้ logo `POS` และทำงานเดิม
-8. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
-9. ตรวจว่า record สำคัญยังมี `tenantId`
+1. เปิด `/login` แล้วข้อความใต้หัวข้อต้องเป็น `Order • Delivery • Retail POS`
+2. Footer version หน้า `/login` ต้องเล็กลงและไม่เด่นเกิน card login
+3. เปิด `/login` แล้วปุ่มแสดง/ซ่อนรหัสผ่านยังทำงาน
+4. Login ด้วยบัญชีพนักงานยัง redirect ตาม role เดิม
+5. เปิด `/pos/login` แล้วต้องยังใช้ logo `POS` และทำงานเดิม
+6. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
+7. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## งานถัดไป
 
