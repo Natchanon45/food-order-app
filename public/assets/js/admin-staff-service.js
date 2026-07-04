@@ -3,9 +3,17 @@ import { resolveTenantContext } from './tenant-context.js';
 
 const STAFF_ROLES = new Set(['admin', 'cashier', 'kitchen']);
 const POS_SCOPE_VALUES = new Set(['pos', 'retail', 'retail_pos', 'retail-pos', 'retail_pos_staff']);
+const RESTAURANT_SCOPE_VALUES = new Set(['restaurant', 'order_delivery', 'order-delivery']);
 
 function rawRole(data = {}) {
   return String(data.role || '').trim().toLowerCase();
+}
+
+function isRestaurantScoped(row = {}) {
+  const values = [row.staffScope, row.scope, row.source, row.system, row.userType, row.appType]
+    .map(value => String(value || '').trim().toLowerCase())
+    .filter(Boolean);
+  return values.some(value => RESTAURANT_SCOPE_VALUES.has(value));
 }
 
 function isPosScoped(row = {}) {
@@ -13,12 +21,16 @@ function isPosScoped(row = {}) {
     .map(value => String(value || '').trim().toLowerCase())
     .filter(Boolean);
   if (values.some(value => POS_SCOPE_VALUES.has(value))) return true;
+  if (isRestaurantScoped(row)) return false;
 
   const role = rawRole(row);
   const roleId = String(row.roleId || '').trim().toLowerCase();
+  const displayName = String(row.displayName || row.name || '').trim().toLowerCase();
+  const email = String(row.email || '').trim().toLowerCase();
   const hasLocalPosLogin = Boolean(row.username || row.passwordHash || row.passwordSalt);
   const idLooksLocalPos = String(row.uid || row.id || row.userId || '').startsWith('user-');
-  return hasLocalPosLogin || idLooksLocalPos || (roleId && roleId === role && ['cashier', 'stock', 'manager'].includes(roleId));
+  const looksNamedPosUser = /^cashier\d+$/i.test(displayName) || /^pos[-_ ]?cashier/i.test(displayName) || email.includes('.pos') || email.includes('+pos');
+  return hasLocalPosLogin || idLooksLocalPos || looksNamedPosUser || (roleId && roleId === role && ['stock', 'manager'].includes(roleId));
 }
 
 function staffOnly(row) {
