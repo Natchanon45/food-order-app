@@ -33,6 +33,7 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 - Sales Report Back Label Polish done
 - Sales Report Back Icon Duplication Fix done
 - Login Home Link done
+- POS User Visibility Fixes done
 
 ## Current Milestone
 
@@ -40,20 +41,23 @@ Main product: QR Table Order + Take Away + Kitchen + Cashier + Delivery + Retail
 
 ## This Change
 
-- Added a `หน้าหลัก` link on `/login` to return users to `/`.
-- Placed the home link above the login card for both desktop and mobile.
-- Used a Bootstrap home icon with `.app-icon` to match the app icon standard.
-- UI-only change for the login page.
-- No changes to Auth logic, Tenant, Firestore, POS, Sync, stable `saleId`, or Stock Transaction.
+- Fixed POS staff separation between `/admin/users` and `/pos/users`.
+- `/admin/users` now filters users marked as POS/retail scoped staff from the restaurant/admin staff list.
+- `/pos/users` hides owner/current owner accounts from the POS managed user list.
+- POS managed users are saved with POS markers: `staffScope: pos`, `source: pos`, `userType: retail_pos_staff`.
+- The `/pos/users` edit dialog label is now `อีเมลสำหรับเข้าสู่ระบบ`.
+- Existing POS user email is read only while editing and is preserved on save.
+- UI/data-separation change only; no changes to sales, payment, Online/Offline, Sync, stable `saleId`, Firestore transaction, or Stock Transaction logic.
 - Developer Panel remains Version `0.12.70` Build `2026.07.02.024`.
 
 ## Regression Tests
 
-1. Open `/login` and confirm the `หน้าหลัก` link is visible above the login card.
-2. Click `หน้าหลัก` and confirm it navigates to `/`.
-3. Confirm login form email/password and password toggle still work.
-4. Confirm login submit button and error fallback still work.
-5. Confirm no POS, Sync, Firestore, or Stock Transaction logic changed.
+1. Open `/admin/users` and confirm POS-scoped users are not listed in restaurant/admin staff management.
+2. Open `/pos/users` as owner and confirm the owner account/current owner is not listed as a managed employee.
+3. Add a POS user and confirm it appears in `/pos/users` with a non-owner role.
+4. Edit a POS user and confirm the label says `อีเมลสำหรับเข้าสู่ระบบ`.
+5. Confirm existing POS user email is read only during edit and remains unchanged after save.
+6. Confirm POS sale, payment, sync, stock, and tenant data are unchanged.
 
 ## Next Tasks
 
