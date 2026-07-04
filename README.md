@@ -3,14 +3,17 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Register Owner Name Layout`
+- Current milestone: `Register Package Layout`
 - Version/Build: `0.12.70` / `2026.07.02.024`
 
 ## This Change
 
-- `/register` owner full name field is now full width.
-- It matches the email field width.
-- UI-only change.
+- `/register` package section now uses card-style radio options.
+- Premium Trial is auto-selected and other package cards are disabled.
+- Updated labels and PC/mobile field layout.
+- Added required terms acceptance checkbox before submit.
+- Submit button is disabled until terms are accepted.
+- UI/validation-only change.
 
 ## Deploy
 
