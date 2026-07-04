@@ -47,8 +47,17 @@
 - Support Email Badge Polish
 - Legal Support Email Badge Polish
 - Badge Row Responsive Polish
+- Sales Report Icon Polish
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Sales Report Icon Polish
+
+- ปรับหน้า `/admin/sales-report` ให้หัวข้อหลัก หัวข้อ section และปุ่มมี Bootstrap Icons กลับมาครบ
+- เพิ่ม icon ให้ปุ่มกลับ, tab ช่วงเวลา, ปุ่มดู, ปุ่มพิมพ์ และปุ่มปิด dialog
+- เพิ่ม icon ให้ dashboard summary cards โดยเลือก icon ไม่ซ้ำกันและเหมาะกับข้อมูลแต่ละใบ
+- ปรับ `sales-report.js` query string เป็น `v=20260704-001` เพื่อกัน browser cache หลังแก้ JS
+- แก้เฉพาะ UI icon ของรายงานยอดขาย ไม่แตะ logic รายงาน, การคำนวณ, Tenant, Firestore หรือ Stock Transaction
 
 ## Badge Row Responsive Polish
 
@@ -57,14 +66,6 @@
 - รวม badge ติดต่อฝ่ายสนับสนุนเข้ากับแถวลิงก์ของ Privacy และ Terms
 - คงการซ่อนอีเมลไว้ แต่ยังคลิกส่งอีเมลผ่าน `mailto:` ได้
 - แก้เฉพาะ HTML/inline CSS ของหน้า public/legal ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore, Tenant หรือ Stock Transaction
-
-## Legal Support Email Badge Polish
-
-- ปรับหน้า `/privacy` และ `/terms` ให้ลิงก์อีเมลเป็น badge แบบเดียวกับหน้าแรก
-- แสดงเฉพาะ icon + ข้อความ `ติดต่อฝ่ายสนับสนุน`
-- ซ่อนอีเมลไม่ให้แสดงบนหน้าเว็บ แต่ยังคลิกเพื่อส่งอีเมลผ่าน `mailto:` ได้
-- คงลิงก์กลับหน้าแรก, Privacy และ Terms เดิมไว้
-- แก้เฉพาะ HTML/inline CSS ของหน้า Privacy และ Terms ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore, Tenant หรือ Stock Transaction
 
 ## Next Tasks
 
