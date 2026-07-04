@@ -34,8 +34,18 @@
 - POS Display Order Hard Rollback
 - Admin Icon Theme Color Fix
 - Admin Action Button Desktop/Mobile Polish
+- Main Login UI Polish
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Main Login UI Polish
+
+- ปรับ `/login` ให้ใช้ Design แบบเดียวกับ `/pos/login`
+- ใช้ logo `FOD` แทน `POS`
+- เพิ่ม icon ให้หัวข้อ, label อีเมล/รหัสผ่าน และปุ่มเข้าสู่ระบบ
+- เพิ่มปุ่มแสดง/ซ่อนรหัสผ่านให้ `/login`
+- `/login/index.html` bump `login.js` เป็น `v=20260704-001`
+- แก้เฉพาะ UI/Login UX ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore หรือ Stock Transaction
 
 ## Admin Icon / Action Button Polish
 
@@ -81,15 +91,15 @@
 
 ## Regression Tests
 
-1. เปิด `/admin` แล้ว icon หัวข้อ เช่น `จัดการร้าน`, `รายงานยอดขาย`, `ข้อมูลร้านและการรับชำระ` ต้องเป็นสีเขียวธีม
-2. เปิด `/admin` แล้วปุ่ม `รายงาน` ต้องไม่เกิด icon ซ้ำ
-3. Desktop: ปุ่ม action ตาราง `แก้ไข` / `ลบ` ต้องแสดง icon + ตัวหนังสือ
-4. Mobile: ปุ่ม action ตาราง `แก้ไข` / `ลบ` ต้องเป็น icon-only เหมือนเดิม
-5. เปิด `/admin/qr` แล้ว icon หัวข้อและปุ่มพิมพ์ยังแสดงตามเดิม
-6. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
-7. Network/Console ต้องไม่มี request ไป `retail-pos-display-order.js`
-8. เปิด POS แล้วขาย Online/Offline และ Manual Sync ได้ตามเดิม
-9. หน้า `/pos` ต้องไม่เห็นปุ่ม `โหลดตัวอย่าง`
+1. เปิด `/login` แล้วต้องใช้ layout card/gradient/spacing แบบ `/pos/login`
+2. `/login` logo ต้องเป็น `FOD` ไม่ใช่ `POS`
+3. `/login` ต้องมี icon ที่หัวข้อ, label input และปุ่มเข้าสู่ระบบ
+4. ปุ่มแสดง/ซ่อนรหัสผ่านใน `/login` ต้องทำงาน
+5. Login ด้วยบัญชีพนักงานยัง redirect ตาม role เดิม
+6. เปิด `/pos/login` แล้วต้องยังใช้ logo `POS` และทำงานเดิม
+7. เปิด `/admin` แล้ว icon หัวข้อและปุ่ม action Desktop/Mobile ยังถูกต้อง
+8. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
+9. Network/Console ต้องไม่มี request ไป `retail-pos-display-order.js`
 10. ตรวจว่า record สำคัญยังมี `tenantId`
 
 ## Next Tasks
