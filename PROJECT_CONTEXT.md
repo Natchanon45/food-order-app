@@ -7,14 +7,12 @@ Branch: `feature/retail-pos`
 
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
-- Milestone: `POS Keypad Input Polish`
+- Milestone: `POS Payment Modal UI`
 
 ## This Change
 
-- Polished PC-only POS keypad sizing.
-- Removed keypad icon decoration more aggressively.
-- Improved decimal input behavior.
-- Payment received input now selects all on focus/click before keypad entry.
+- Updated PC payment modal display.
+- Balanced keypad size and spacing.
 - Mobile keeps native OS keyboard.
 - UI-only change.
 
