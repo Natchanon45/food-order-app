@@ -43,8 +43,16 @@
 - Public Landing Pricing CTA Design
 - Public Pricing Final Polish
 - Login Copy + Version Size Polish
+- Pricing Card Header Alignment Polish
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Pricing Card Header Alignment Polish
+
+- ปรับชื่อแพ็กเกจและราคาของการ์ด `ฟรี`, `โปร`, `พรีเมียม` ให้อยู่กึ่งกลาง
+- ย้าย badge `เริ่มต้น`, `แนะนำ`, `เต็มระบบ` ไปมุมบนขวาของการ์ด
+- ลดขนาด badge ให้เล็กลงและไม่แย่งสายตาจากชื่อแพ็กเกจ/ราคา
+- แก้เฉพาะ HTML/inline CSS ของหน้าแรก ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore, Tenant หรือ Stock Transaction
 
 ## Login Copy + Version Size Polish
 
@@ -52,14 +60,6 @@
 - ลดขนาด footer version หน้า `/login` ให้เล็กลงและสีอ่อนลง
 - แก้เฉพาะ inline CSS/HTML ของหน้า Login
 - ไม่แตะ logic Login, Firebase Auth, redirect, Online/Offline, Sync, Tenant หรือ Stock Transaction
-
-## Public Pricing Final Polish
-
-- ปรับราคาแพ็กเกจหน้าแรกเป็น `ฟรี 0฿/Month`, `โปร 390฿/Month`, `พรีเมียม 590฿/Month`
-- เอาปุ่ม `ลงชื่อเข้าใช้` ตัวล่างใน section เกี่ยวกับแอปพลิเคชันออก
-- จัดรูปแบบอีเมลติดต่อและลิงก์ Privacy / Terms ให้ใกล้เคียงหน้า `/privacy` และ `/terms`
-- ปรับให้ลิงก์ด้านล่างดูไม่ขัดตาทั้ง PC และ Mobile
-- แก้เฉพาะ HTML/inline CSS ของหน้าแรก ไม่แตะ logic ขาย, Online/Offline, Sync, Firestore, Tenant หรือ Stock Transaction
 
 ## Next Tasks
 
