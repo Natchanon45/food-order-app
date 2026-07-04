@@ -7,13 +7,14 @@ Branch: `feature/retail-pos`
 
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
-- Milestone: `POS Display Cache`
+- Milestone: `POS Receipt Print Polish`
 
 ## This Change
 
-- Updated POS display script cache.
-- Bumped related script to `v=20260705-001`.
-- Display-only change.
+- Polished POS receipt customer name display.
+- Improved mobile print timing for receipt modal.
+- Bumped receipt modal script to `v=20260705-002`.
+- Display/print-only change.
 
 ## Deploy
 
