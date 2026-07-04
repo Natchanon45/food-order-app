@@ -5,7 +5,7 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `Public Registration Phase 2`
+- Current milestone: `Cashier Access Fix`
 - Developer Panel version/build ปัจจุบัน: `0.12.70` / `2026.07.02.024`
 
 ## Retail POS Status
@@ -22,55 +22,29 @@
 - P9-B008 Shift Opening / Closing
 - P9-B009 Refund / Return / Void
 - P9-B010 Performance
-- Hotfix Manual Sync
-- POS Hardening 001
-- POS Hardening 002
-- Business Unit Staff Filter Fix
-- Public Trial Signup Phase 1
-- Signup Email Verification Hotfix
-- Register Existing Auth Email + Layout Hotfix
-- Register Slug Pattern Hotfix
 - Public Registration Phase 2
+- Cashier Access Fix
 - Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
 - POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
+
+## Cashier Access Fix
+
+- แยกสิทธิ์ cashier ร้านอาหารออกจาก cashier Retail POS ด้วย business unit/module
+- หน้าแรกซ่อน Retail POS card สำหรับ cashier ร้านอาหาร
+- `/pos` ใช้ guard แบบตรวจ module เพิ่ม
+- `/pos/login` ไม่รับบัญชี cashier ร้านอาหาร
+- ไม่แตะ logic ขาย, สต็อก, sync หรือ transaction
 
 ## Public Registration Phase 2
 
 - เปิดใช้งานปุ่ม `ลงทะเบียน` หน้าแรกให้ลิงก์ไป `/register/`
 - เปลี่ยน note หน้าแรกให้สื่อว่า Premium Trial สมัครใช้งานจริงหลังยืนยันอีเมล
-- เพิ่ม fallback ใน `home-session-fa.js` ให้ปรับ CTA ตอนโหลดหน้าเพื่อกัน cache/HTML เก่า
-- bump `home-session-fa.js` ใน `public/index.html` เป็น `v=20260704-001`
-- แก้เฉพาะ hosting/static ไม่แตะ tenant activation functions, POS sales, stock, sync หรือ Firestore transactions
-
-## Register Slug Pattern Hotfix
-
-- ลบ HTML pattern ของ slug ที่ทำให้ Chrome แสดง invalid regular expression
-- ใช้ JS normalize slug เป็นตัวหลักแทน
-- bump `/register/` script เป็น `public-register.js?v=20260704-004`
-- หากอีเมลยังอยู่ใน Firebase Authentication และรหัสไม่ตรง ต้องลบ user จาก Authentication > Users หรือใช้รหัสเดิมให้ถูกต้อง
-
-## Register Existing Auth Email + Layout Hotfix
-
-- ถ้าอีเมลสมัครมีอยู่ใน Firebase Authentication แล้ว ระบบจะลอง sign in ด้วยรหัสที่กรอกและไปต่อ flow ยืนยันอีเมล
-- ถ้า sign in ไม่สำเร็จ จะแจ้งว่าต้องลบ user จาก Firebase Authentication Users หรือใช้รหัสเดิมให้ถูกต้อง
-- ปรับหน้า `/register/` ให้กว้างขึ้น อ่านง่ายขึ้น ช่องอีเมลเต็มแถว และลดความแน่นของการ์ดแพ็กเกจ
-
-## Signup Email Verification Hotfix
-
-- ปรับ `/register/` ให้ส่ง email verification ก่อนบันทึก pending signup
-- เพิ่มข้อความ error เฉพาะกรณีส่งอีเมลยืนยันไม่สำเร็จ
-- ปุ่มส่งอีเมลอีกครั้ง reload สถานะ user และแจ้งให้ตรวจ Inbox / Spam / Junk
-
-## Public Trial Signup Phase 1
-
-- เพิ่มหน้า `/register/` สำหรับสมัครร้านใหม่
-- เพิ่ม Cloud Functions สำหรับบันทึกคำขอสมัครและ activate tenant หลังยืนยันอีเมล
-- Premium trial ถูกตั้งเป็นแผนเริ่มต้น 30 วัน
-- ระบบสร้าง tenant, owner profile, membership, store settings, POS settings และ subscription settings หลัง verify สำเร็จ
-- เพิ่ม Firebase Auth helpers สำหรับ email verification ใน frontend
 
 ## Previous Fixes
 
+- Register Slug Pattern Hotfix
+- Register Existing Auth Email + Layout Hotfix
+- Signup Email Verification Hotfix
 - Business Unit Staff Filter Fix
 - Restaurant Staff Role Function Fix
 - Admin Staff Callable Hotfix
@@ -80,7 +54,7 @@
 
 ## Next Tasks
 
-- POS Hardening 003: ตรวจ/ลด event listener ซ้ำและ snapshot unsubscribe patterns ในโมดูลที่มี listener จริง
+- POS Hardening 003
 - ทดสอบการ apply ลำดับสินค้าใน `/pos` แบบปลอดภัยก่อนเปิดใช้อีกครั้ง
 - Package Selection Phase 3 หากต้องเปิดเลือก Free/Pro/Premium จริงในอนาคต
 
