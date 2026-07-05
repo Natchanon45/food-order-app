@@ -1,10 +1,10 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: P11-B001 Customer Display Foundation
-Version: 0.12.89
-Build: 2026.07.06.009
+Milestone: Customer Display Layout Refinement
+Version: 0.12.90
+Build: 2026.07.06.010
 
-Change: removed the receipt logo/icon from the POS receipt header and added the first Customer Display foundation. Added a new /pos/customer-display page, display styles, realtime display viewer, and POS publisher that syncs current cart/customer/VAT totals to a tenant-scoped customerDisplays record with localStorage fallback. The POS page now loads the display publisher and bumps the receipt tax invoice cache.
+Change: refined the Customer Display layout to a clearer two-column design, with the customer card fitting the customer name/phone and the totals card directly below it. The product list stays on the right and now shows the latest added item at the top. Added a receipt logo cleanup helper and loaded it on POS and Sales receipt pages to remove icons/logos from receipt shop headers.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
