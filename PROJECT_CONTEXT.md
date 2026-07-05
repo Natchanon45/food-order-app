@@ -2,10 +2,10 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.12.71
-Build: 2026.07.05.001
-Milestone: Sales Report Print Icon Cleanup
+Version: 0.12.72
+Build: 2026.07.05.002
+Milestone: Sales Report Single Print Icon
 
-Change: fixed duplicate printer icon on admin sales report receipt table print button. UI-only change.
+Change: restored one printer icon on admin sales report receipt table print button without showing duplicate icons. UI-only change.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
