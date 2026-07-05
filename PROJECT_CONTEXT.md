@@ -7,14 +7,11 @@ Branch: `feature/retail-pos`
 
 - Version: `0.12.70`
 - Build: `2026.07.02.024`
-- Milestone: `POS Payment Keypad Balance`
+- Milestone: `POS Keypad OK Contrast`
 
 ## This Change
 
-- Balanced PC payment modal layout.
-- Expanded keypad width and spacing.
-- Right-aligned payment received input.
-- Mobile keeps native OS keyboard.
+- Improved OK button hover and active contrast on the PC POS keypad.
 - UI-only change.
 
 ## Deploy
