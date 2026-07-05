@@ -1,0 +1,1 @@
+.pos-header .header-actions{display:flex;align-items:center;gap:8px}.pos-header .header-actions a[href="/pos/customer-display"]{order:-1;white-space:nowrap}@media(max-width:640px){.pos-header .header-actions{gap:6px}.pos-header .header-actions a[href="/pos/customer-display"]{padding-inline:10px;font-size:.84rem}}
