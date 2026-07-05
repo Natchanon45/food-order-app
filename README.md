@@ -1,19 +1,10 @@
 # Food Order / Delivery / Retail POS
 
-## Current Branch
+Branch: feature/retail-pos
+Milestone: POS Category Scrollbar Theme
+Version: 0.12.70
+Build: 2026.07.02.024
 
-- Branch: `feature/retail-pos`
-- Current milestone: `POS Keypad OK Contrast`
-- Version/Build: `0.12.70` / `2026.07.02.024`
+Change: updated POS category scrollbar color. UI-only change.
 
-## This Change
-
-- Improved PC POS keypad OK button contrast.
-- UI-only change.
-
-## Deploy
-
-```bash
-git pull --rebase origin feature/retail-pos
-firebase deploy --only hosting
-```
+Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
