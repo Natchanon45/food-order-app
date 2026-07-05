@@ -2,10 +2,10 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.12.73
-Build: 2026.07.05.003
-Milestone: Sales Report Dialog Print Icon
+Version: 0.12.74
+Build: 2026.07.05.004
+Milestone: Toast Alert Visual Reset
 
-Change: fixed duplicate printer icon on admin sales report receipt detail dialog print button. UI-only change.
+Change: refined global app toast alert style for black card, 14px radius, 10px padding, lower-center position, normal text weight, and 8px icon spacing. UI-only change.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
