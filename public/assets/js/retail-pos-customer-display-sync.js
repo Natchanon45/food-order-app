@@ -44,13 +44,13 @@ function customerById(id) {
 }
 
 function readCartItems() {
-  return [...document.querySelectorAll('#cartList .cart-row')].map(row => {
+  return [...document.querySelectorAll('#cartList .cart-row')].map((row, index) => {
     const name = row.querySelector('.cart-name')?.textContent?.trim() || '-';
     const meta = row.querySelector('.cart-meta')?.textContent?.trim() || '';
     const qty = numberFromText(row.querySelector('.qty-tools strong')?.textContent || 0);
     const total = numberFromText(row.querySelector('.line-total')?.textContent || 0);
-    return { name, meta, qty, total };
-  });
+    return { name, meta, qty, total, sortIndex: index };
+  }).reverse();
 }
 
 function buildSnapshot(status = 'editing') {
