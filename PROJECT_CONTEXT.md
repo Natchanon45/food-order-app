@@ -2,10 +2,10 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.12.70
-Build: 2026.07.02.024
-Milestone: POS Product Grid Spacing
+Version: 0.12.71
+Build: 2026.07.05.001
+Milestone: Sales Report Print Icon Cleanup
 
-Change: adjusted POS product grid top spacing on desktop. UI-only change.
+Change: fixed duplicate printer icon on admin sales report receipt table print button. UI-only change.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
