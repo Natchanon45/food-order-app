@@ -6,6 +6,7 @@ const DISPLAY_KEY = 'retail_pos_customer_display_main';
 const CUSTOMER_KEY = 'retail_pos_customers_v1';
 
 const els = {
+  cartPanel: document.querySelector('.cart-panel'),
   cartList: document.querySelector('#cartList'),
   itemCount: document.querySelector('#itemCount'),
   subtotal: document.querySelector('#subtotal'),
@@ -88,10 +89,10 @@ async function publish(status = 'editing') {
 
 function schedule(status = 'editing') {
   clearTimeout(timer);
-  timer = setTimeout(() => publish(status), 120);
+  timer = setTimeout(() => publish(status), 180);
 }
 
-new MutationObserver(() => schedule('editing')).observe(document.body, { childList: true, subtree: true, characterData: true });
+if (els.cartPanel) new MutationObserver(() => schedule('editing')).observe(els.cartPanel, { childList: true, subtree: true, characterData: true });
 [els.discount, els.vatMode].forEach(element => element?.addEventListener('input', () => schedule('editing')));
 els.paymentDialog?.addEventListener('pos:customer-change', event => { currentCustomer = event.detail?.customer || null; schedule('editing'); });
 els.paymentDialog?.addEventListener('close', () => schedule('editing'));
