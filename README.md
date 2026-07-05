@@ -3,13 +3,12 @@
 ## Current Branch
 
 - Branch: `feature/retail-pos`
-- Current milestone: `POS Payment Alignment`
+- Current milestone: `POS Keypad OK Contrast`
 - Version/Build: `0.12.70` / `2026.07.02.024`
 
 ## This Change
 
-- Aligned PC payment total and keypad.
-- Centered keypad OK button.
+- Improved PC POS keypad OK button contrast.
 - UI-only change.
 
 ## Deploy
