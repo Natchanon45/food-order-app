@@ -51,19 +51,18 @@ async function enhanceReceipt() {
   const sale = currentSale();
   const settings = await getSettings();
   const area = document.querySelector('#receiptArea');
-  if (!area || !sale || !taxEnabled(sale, settings)) return;
+  if (!area) return;
   area.querySelectorAll('[data-vat-receipt-row="true"]').forEach(node => node.remove());
   const title = area.querySelector('.receipt-header p');
+  if (title) title.textContent = 'ใบเสร็จรับเงิน';
+  const branch = document.querySelector('#receiptTaxBranch');
+  if (branch) branch.textContent = '';
+  if (!sale || !taxEnabled(sale, settings)) return;
   if (title) title.textContent = 'ใบกำกับภาษีอย่างย่อ / ใบเสร็จรับเงิน';
   if (settings.taxInvoiceName) document.querySelector('#receiptShopName').textContent = settings.taxInvoiceName;
   if (settings.taxInvoiceAddress) document.querySelector('#receiptShopAddress').textContent = settings.taxInvoiceAddress;
-  let branch = document.querySelector('#receiptTaxBranch');
-  if (!branch) {
-    branch = document.createElement('span');
-    branch.id = 'receiptTaxBranch';
-    document.querySelector('#receiptTaxId')?.insertAdjacentElement('afterend', branch);
-  }
-  branch.textContent = branchText(settings);
+  const branchNode = document.querySelector('#receiptTaxBranch');
+  if (branchNode) branchNode.textContent = branchText(settings);
   const grand = area.querySelector('.receipt-grand');
   if (!grand) return;
   const rate = Number.isFinite(Number(sale.vatRate)) ? Number(sale.vatRate) : settings.vatRate;
