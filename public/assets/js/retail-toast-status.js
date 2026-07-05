@@ -20,6 +20,17 @@ if (!document.getElementById(styleId)) {
   document.head.appendChild(style);
 }
 
+function ensureToastElement() {
+  let toast = document.querySelector('#toast.toast') || document.querySelector('.toast');
+  if (toast) return toast;
+  toast = document.createElement('div');
+  toast.id = 'toast';
+  toast.className = 'toast';
+  toast.setAttribute('role', 'status');
+  document.body.appendChild(toast);
+  return toast;
+}
+
 function getToastText(toast) {
   const message = toast.querySelector('.retail-toast-message');
   if (message) return message.textContent.trim();
@@ -45,6 +56,7 @@ function renderToastContent(toast) {
 }
 
 function setupToast() {
+  ensureToastElement();
   document.querySelectorAll('.toast').forEach(toast => {
     if (toast.dataset.toastBootstrapReady === '1') return;
     toast.dataset.toastBootstrapReady = '1';
