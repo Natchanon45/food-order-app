@@ -100,8 +100,13 @@ function createRow(label, value) {
   return row;
 }
 
+function removeReceiptLogo(paper) {
+  paper?.querySelectorAll('.receipt-logo').forEach(node => node.remove());
+}
+
 async function enhancePaper(paper) {
   if (!paper || paper.dataset.taxInvoiceEnhanced === '1') return;
+  removeReceiptLogo(paper);
   const sale = findSaleForPaper(paper);
   const settings = await getSettings();
   if (!sale || !taxEnabled(sale, settings)) return;
@@ -133,7 +138,10 @@ async function enhancePaper(paper) {
 }
 
 function scan() {
-  document.querySelectorAll('.receipt-paper').forEach(paper => enhancePaper(paper));
+  document.querySelectorAll('.receipt-paper').forEach(paper => {
+    removeReceiptLogo(paper);
+    enhancePaper(paper);
+  });
 }
 
 new MutationObserver(scan).observe(document.body, { childList: true, subtree: true });
