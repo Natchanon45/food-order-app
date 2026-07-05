@@ -17,6 +17,21 @@
   content: "\F286" !important;
 }
 
+.cart-panel .summary #vatModeWrap {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(21, 148, 71, .18);
+}
+
+.cart-panel .summary #discountInput {
+  margin-bottom: 6px;
+}
+
+.cart-panel .summary #beforeVatWrap,
+.cart-panel .summary #vatAmountWrap {
+  margin-top: 4px;
+}
+
 @media (max-width: 600px) {
   .product-panel .section-heading {
     display: grid;
@@ -39,5 +54,10 @@
     font-size: .74rem;
     line-height: 1;
     white-space: nowrap;
+  }
+
+  .cart-panel .summary #vatModeWrap {
+    margin-top: 12px;
+    padding-top: 10px;
   }
 }
