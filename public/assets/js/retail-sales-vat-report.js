@@ -12,6 +12,9 @@ const els = {
   paymentFilter: document.querySelector('#paymentFilter')
 };
 
+let refreshTimer = 0;
+let isEnhancing = false;
+
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
   catch { return fallback; }
@@ -86,26 +89,35 @@ function findSaleByNumber(value) {
   return sales().find(sale => saleNumber(sale) === text || String(sale.id || '') === text) || null;
 }
 
-function cell(text, className = '') {
+function cell(text, className = '', label = '') {
   const td = document.createElement('td');
   if (className) td.className = className;
+  if (label) td.dataset.label = label;
   td.textContent = text;
   return td;
 }
 
 function enhanceRows() {
-  if (!els.table) return;
-  [...els.table.querySelectorAll('tr')].forEach(row => {
-    if (row.dataset.vatReportReady === '1') return;
-    const sale = findSaleByNumber(row.querySelector('.sale-id')?.textContent);
-    if (!sale) return;
-    row.dataset.vatReportReady = '1';
-    const paymentCell = row.children[3];
-    if (!paymentCell) return;
-    paymentCell.insertAdjacentElement('afterend', cell(vatMode(sale)));
-    paymentCell.nextElementSibling.insertAdjacentElement('afterend', cell(vatSale(sale) ? money(beforeVat(sale)) : '-', 'number'));
-    paymentCell.nextElementSibling.nextElementSibling.insertAdjacentElement('afterend', cell(vatSale(sale) ? money(sale.vatAmount) : '-', 'number'));
-  });
+  if (!els.table || isEnhancing) return;
+  isEnhancing = true;
+  try {
+    [...els.table.querySelectorAll('tr')].forEach(row => {
+      if (row.dataset.vatReportReady === '1') return;
+      const sale = findSaleByNumber(row.querySelector('.sale-id')?.textContent);
+      if (!sale) return;
+      row.dataset.vatReportReady = '1';
+      const paymentCell = row.children[3];
+      if (!paymentCell) return;
+      const modeCell = cell(vatMode(sale), '', 'VAT');
+      const beforeCell = cell(vatSale(sale) ? money(beforeVat(sale)) : '-', 'number', 'ยอดก่อน VAT');
+      const vatCell = cell(vatSale(sale) ? money(sale.vatAmount) : '-', 'number', 'VAT');
+      paymentCell.insertAdjacentElement('afterend', modeCell);
+      modeCell.insertAdjacentElement('afterend', beforeCell);
+      beforeCell.insertAdjacentElement('afterend', vatCell);
+    });
+  } finally {
+    isEnhancing = false;
+  }
 }
 
 function updateStats() {
@@ -163,7 +175,13 @@ function refresh() {
   updateStats();
 }
 
-new MutationObserver(refresh).observe(document.body, { childList: true, subtree: true });
+function scheduleRefresh() {
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(refresh, 80);
+}
+
+if (els.table) new MutationObserver(scheduleRefresh).observe(els.table, { childList: true });
+[els.saleSearch, els.dateFrom, els.dateTo, els.paymentFilter].forEach(element => element?.addEventListener(element.tagName === 'INPUT' ? 'input' : 'change', scheduleRefresh));
 els.exportCsvBtn?.addEventListener('click', exportVatCsv, true);
-window.addEventListener('storage', refresh);
-refresh();
+window.addEventListener('storage', scheduleRefresh);
+scheduleRefresh();
