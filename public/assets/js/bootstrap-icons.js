@@ -5,7 +5,7 @@ const ICON_NAMES = Object.freeze({
   edit: "pencil-square", pencil: "pencil-square", home: "house", key: "key", kitchen: "fork-knife",
   logout: "box-arrow-right", minus: "dash-lg", pencil: "pencil", plus: "plus-lg",
   print: "printer", qr: "qr-code", receipt: "receipt", save: "floppy",
-  search: "search", settings: "arrow-left-right", table: "table", "times-circle": "x-circle",
+  search: "search", settings: "arrow-left-right", table: "table", "time-circle": "x-circle", "times-circle": "x-circle",
   trash: "trash3", user: "person", users: "people", view: "eye", "x-circle": "x-circle"
 });
 
