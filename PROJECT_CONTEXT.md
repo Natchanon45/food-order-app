@@ -2,10 +2,10 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.12.79
-Build: 2026.07.05.009
-Milestone: Retail POS Toast Outline Icon
+Version: 0.12.80
+Build: 2026.07.05.010
+Milestone: Retail POS Bootstrap Toast Icons
 
-Change: changed Retail POS toast icons to outline circle style and kept top-layer behavior. UI-only change.
+Change: replaced Retail POS toast pseudo, emoji, and SVG icons with real Bootstrap Icons in the DOM using bi-check-circle for success and bi-x-circle for error. UI-only change.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
