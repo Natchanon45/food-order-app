@@ -17,7 +17,7 @@
 <body data-module="retail-pos">
   <header class="pos-header">
     <div class="app-title"><span class="app-badge">FOD</span><div><strong>POS ร้านค้าปลีก</strong><small>บันทึกยอดขายและตัดสต็อกด้วย Firebase</small></div></div>
-    <div class="header-actions"></div>
+    <div class="header-actions"><a class="btn btn-secondary" href="/pos/customer-display" target="_blank" rel="noopener">จอลูกค้า</a></div>
   </header>
   <main class="pos-layout">
     <section class="panel product-panel"><div class="section-heading"><div><h2>สินค้า</h2><p>สแกนบาร์โค้ดหรือเลือกสินค้าเพื่อเพิ่มลงบิล</p></div><div class="section-actions"><button id="clearSaleBtn" class="btn btn-danger" type="button">ล้างบิล</button></div></div><div class="search-row"><input id="barcodeInput" autocomplete="off" inputmode="numeric" placeholder="สแกนบาร์โค้ด หรือพิมพ์รหัสสินค้า แล้วกด Enter"><input id="searchInput" autocomplete="off" placeholder="ค้นหาชื่อสินค้า"></div><div id="productGrid" class="product-grid"></div></section>
@@ -43,7 +43,7 @@
   <script type="module" src="/assets/js/retail-pos-hold.js?v=20260705-001"></script>
   <script type="module" src="/assets/js/retail-pos-customer-link.js?v=20260705-001"></script>
   <script type="module" src="/assets/js/retail-pos-customer-display-sync.js?v=20260706-010"></script>
-  <script type="module" src="/assets/js/retail-pos-loyalty.js?v=20260706-012"></script>
+  <script type="module" src="/assets/js/retail-pos-loyalty.js?v=20260706-014"></script>
   <script type="module" src="/assets/js/retail-loyalty-receipt.js?v=20260624-1"></script>
   <script type="module" src="/assets/js/retail-pos-payment-focus.js?v=20260701-019"></script>
   <script type="module" src="/assets/js/retail-pos-payment-enter.js?v=20260702-020"></script>
