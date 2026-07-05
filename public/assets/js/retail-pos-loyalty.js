@@ -53,16 +53,22 @@ function loyaltyAnchor() {
   return document.querySelector(".customer-picker") || paymentMethod?.closest("label") || null;
 }
 
-if (paymentForm && paymentMethod && !document.querySelector("#loyaltyBox")) {
-  const boxEl = document.createElement("div");
-  boxEl.id = "loyaltyBox";
-  boxEl.className = "loyalty-box";
-  boxEl.hidden = true;
-  boxEl.innerHTML = `<div class="loyalty-head"><strong>แต้มสมาชิก</strong><span id="loyaltyBalance">คงเหลือ 0 แต้ม</span></div><div class="loyalty-controls"><input id="loyaltyRedeemInput" type="number" min="0" step="1" value="0" inputmode="numeric" placeholder="จำนวนแต้มที่ใช้"><button id="useAllPointsBtn" class="btn btn-secondary" type="button">ใช้สูงสุด</button></div><small id="loyaltyNote" class="loyalty-note">เลือกสมาชิกเพื่อใช้แต้ม</small>`;
-  loyaltyAnchor()?.insertAdjacentElement("afterend", boxEl);
+function ensureLoyaltyBox() {
+  if (!paymentForm || !paymentMethod) return null;
+  let boxEl = document.querySelector("#loyaltyBox");
+  if (!boxEl) {
+    boxEl = document.createElement("div");
+    boxEl.id = "loyaltyBox";
+    boxEl.className = "loyalty-box";
+    boxEl.hidden = true;
+    boxEl.innerHTML = `<div class="loyalty-head"><strong>แต้มสมาชิก</strong><span id="loyaltyBalance">คงเหลือ 0 แต้ม</span></div><div class="loyalty-controls"><input id="loyaltyRedeemInput" type="number" min="0" step="1" value="0" inputmode="numeric" placeholder="จำนวนแต้มที่ใช้"><button id="useAllPointsBtn" class="btn btn-secondary" type="button">ใช้สูงสุด</button></div><small id="loyaltyNote" class="loyalty-note">เลือกสมาชิกเพื่อใช้แต้ม</small>`;
+  }
+  const anchor = loyaltyAnchor();
+  if (anchor && anchor.nextElementSibling !== boxEl) anchor.insertAdjacentElement("afterend", boxEl);
+  return boxEl;
 }
 
-const box = document.querySelector("#loyaltyBox");
+const box = ensureLoyaltyBox();
 const balanceEl = document.querySelector("#loyaltyBalance");
 const redeemInput = document.querySelector("#loyaltyRedeemInput");
 const useAllBtn = document.querySelector("#useAllPointsBtn");
@@ -82,6 +88,7 @@ function maxRedeemablePoints() {
 }
 
 function updatePaymentNumbers() {
+  ensureLoyaltyBox();
   const config = settings();
   const max = maxRedeemablePoints();
   redeemPoints = Math.max(0, Math.min(Math.floor(Number(redeemInput?.value || 0)), max));
@@ -107,6 +114,7 @@ function resetBox() {
 }
 
 function loadCustomer(customer) {
+  ensureLoyaltyBox();
   selectedCustomer = normalizeCustomer(customer);
   const config = settings();
   if (!box) return;
@@ -126,6 +134,7 @@ function loadCustomer(customer) {
 }
 
 function prepareDialog() {
+  ensureLoyaltyBox();
   baseDiscount = Number(discountInput.value || 0);
   baseTotal = numberFromText(document.querySelector("#paymentTotal")?.textContent);
   redeemPoints = 0;
@@ -166,9 +175,7 @@ async function applyLedgerToSale(saleId, customerId, pointsUsed) {
   const before = Math.max(0, Math.floor(Number(customer.points || 0)));
   const safeUsed = Math.max(0, Math.min(Math.floor(Number(pointsUsed || 0)), before));
   const after = Math.max(0, before - safeUsed + earned);
-  const entry = {
-    id: uid(), customerId: customer.id, customerCode: customer.customerCode || "", customerName: customer.name || "", saleId: sale.id, saleNumber: sale.saleNumber || sale.id, createdBy: auth?.currentUser?.uid || "", createdAt: new Date().toISOString(), pointsUsed: safeUsed, pointsEarned: earned, balanceBefore: before, balanceAfter: after, redeemValue: safeUsed * Number(config.pointValue || 1)
-  };
+  const entry = { id: uid(), customerId: customer.id, customerCode: customer.customerCode || "", customerName: customer.name || "", saleId: sale.id, saleNumber: sale.saleNumber || sale.id, createdBy: auth?.currentUser?.uid || "", createdAt: new Date().toISOString(), pointsUsed: safeUsed, pointsEarned: earned, balanceBefore: before, balanceAfter: after, redeemValue: safeUsed * Number(config.pointValue || 1) };
   const updatedCustomer = { ...customer, points: after, updatedAt: Date.now() };
   const updatedSale = { ...sale, customerId: sale.customerId || customer.id, customerCode: sale.customerCode || customer.customerCode || "", customerName: sale.customerName || customer.name, customerPhone: sale.customerPhone || customer.phone || "", loyalty: { pointsBefore: before, pointsUsed: safeUsed, pointsEarned: earned, pointsAfter: after, redeemValue: entry.redeemValue } };
 
