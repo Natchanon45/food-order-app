@@ -2,10 +2,10 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.12.94
-Build: 2026.07.06.014
-Milestone: POS Sales Table + Receipt + Loyalty Fix
+Version: 0.12.95
+Build: 2026.07.06.015
+Milestone: POS Receipt Customer Display Polish
 
-Change: fixed Sales History rows to render all VAT columns directly from the main retail-sales.js renderer, bumped Sales JS/CSS cache, hid receipt header icons via receipt CSS rules, forced the POS loyalty points box to stay directly below the member/customer selector, and added a Customer Display button linking to /pos/customer-display from the POS header.
+Change: moved the Customer Display shortcut visually to the left of the menu button, strengthened the receipt enhancement helper to show short tax invoice title, VAT rows, customer information, and loyalty points, added a placement guard to keep the loyalty box directly below the member/customer selector, removed the customer-display footer instruction text, and changed the paid message to ขอบคุณที่ใช้บริการ.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
