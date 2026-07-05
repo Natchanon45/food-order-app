@@ -1,10 +1,10 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Retail POS Toast Outline Icon
-Version: 0.12.79
-Build: 2026.07.05.009
+Milestone: Retail POS Bootstrap Toast Icons
+Version: 0.12.80
+Build: 2026.07.05.010
 
-Change: changed Retail POS toast icons to outline circle style, kept green success/red error states, top-layer behavior, and increased toast padding. UI-only change.
+Change: replaced Retail POS toast pseudo/emoji/SVG icons with real Bootstrap Icons in the DOM using bi-check-circle for success and bi-x-circle for error, while preserving top-layer behavior and 20px padding. UI-only change.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
