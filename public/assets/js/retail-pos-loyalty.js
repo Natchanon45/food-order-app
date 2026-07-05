@@ -9,7 +9,6 @@ const defaults = { enabled: true, spendPerPoint: 10, pointValue: 1 };
 const paymentDialog = document.querySelector("#paymentDialog");
 const paymentForm = document.querySelector("#paymentDialog .payment-form");
 const paymentMethod = document.querySelector("#paymentMethod");
-const paymentTotal = document.querySelector("#paymentTotal");
 const receivedInput = document.querySelector("#receivedInput");
 const discountInput = document.querySelector("#discountInput");
 const confirmBtn = document.querySelector("#confirmPaymentBtn");
@@ -50,13 +49,17 @@ function normalizeCustomer(customer) {
   return customer ? { ...customer, id: String(customer._documentId || customer.id || "") } : null;
 }
 
+function loyaltyAnchor() {
+  return document.querySelector(".customer-picker") || paymentMethod?.closest("label") || null;
+}
+
 if (paymentForm && paymentMethod && !document.querySelector("#loyaltyBox")) {
   const boxEl = document.createElement("div");
   boxEl.id = "loyaltyBox";
   boxEl.className = "loyalty-box";
   boxEl.hidden = true;
   boxEl.innerHTML = `<div class="loyalty-head"><strong>แต้มสมาชิก</strong><span id="loyaltyBalance">คงเหลือ 0 แต้ม</span></div><div class="loyalty-controls"><input id="loyaltyRedeemInput" type="number" min="0" step="1" value="0" inputmode="numeric" placeholder="จำนวนแต้มที่ใช้"><button id="useAllPointsBtn" class="btn btn-secondary" type="button">ใช้สูงสุด</button></div><small id="loyaltyNote" class="loyalty-note">เลือกสมาชิกเพื่อใช้แต้ม</small>`;
-  paymentMethod.closest("label")?.insertAdjacentElement("beforebegin", boxEl);
+  loyaltyAnchor()?.insertAdjacentElement("afterend", boxEl);
 }
 
 const box = document.querySelector("#loyaltyBox");
@@ -87,7 +90,7 @@ function updatePaymentNumbers() {
   discountInput.value = (baseDiscount + redeemValue).toFixed(2);
   discountInput.dispatchEvent(new Event("input", { bubbles: true }));
   const total = Math.max(0, baseTotal - redeemValue);
-  paymentTotal.textContent = `${money(total)} บาท`;
+  document.querySelector("#paymentTotal").textContent = `${money(total)} บาท`;
   if (paymentMethod.value === "cash") {
     receivedInput.value = total.toFixed(2);
     changeAmount.textContent = "0.00 บาท";
@@ -124,7 +127,7 @@ function loadCustomer(customer) {
 
 function prepareDialog() {
   baseDiscount = Number(discountInput.value || 0);
-  baseTotal = numberFromText(paymentTotal.textContent);
+  baseTotal = numberFromText(document.querySelector("#paymentTotal")?.textContent);
   redeemPoints = 0;
   if (redeemInput) redeemInput.value = "0";
   if (selectedCustomer) loadCustomer(selectedCustomer);
@@ -158,41 +161,16 @@ async function applyLedgerToSale(saleId, customerId, pointsUsed) {
   const sale = sales.find(item => String(item.id) === String(saleId));
   if (!sale || sale.loyalty) return Boolean(sale?.loyalty);
 
-  const earned = config.enabled ? Math.floor(Number(sale.total || 0) / Math.max(0.01, Number(config.spendPerPoint || 10))) : 0;
+  const earned = config.enabled ? Math.floor(Number(sale.total || sale.totalAmount || 0) / Math.max(0.01, Number(config.spendPerPoint || 10))) : 0;
   const customer = customers[customerIndex];
   const before = Math.max(0, Math.floor(Number(customer.points || 0)));
   const safeUsed = Math.max(0, Math.min(Math.floor(Number(pointsUsed || 0)), before));
   const after = Math.max(0, before - safeUsed + earned);
   const entry = {
-    id: uid(),
-    customerId: customer.id,
-    customerCode: customer.customerCode || "",
-    customerName: customer.name || "",
-    saleId: sale.id,
-    saleNumber: sale.saleNumber || sale.id,
-    createdBy: auth?.currentUser?.uid || "",
-    createdAt: new Date().toISOString(),
-    pointsUsed: safeUsed,
-    pointsEarned: earned,
-    balanceBefore: before,
-    balanceAfter: after,
-    redeemValue: safeUsed * Number(config.pointValue || 1)
+    id: uid(), customerId: customer.id, customerCode: customer.customerCode || "", customerName: customer.name || "", saleId: sale.id, saleNumber: sale.saleNumber || sale.id, createdBy: auth?.currentUser?.uid || "", createdAt: new Date().toISOString(), pointsUsed: safeUsed, pointsEarned: earned, balanceBefore: before, balanceAfter: after, redeemValue: safeUsed * Number(config.pointValue || 1)
   };
   const updatedCustomer = { ...customer, points: after, updatedAt: Date.now() };
-  const updatedSale = {
-    ...sale,
-    customerId: sale.customerId || customer.id,
-    customerCode: sale.customerCode || customer.customerCode || "",
-    customerName: sale.customerName || customer.name,
-    customerPhone: sale.customerPhone || customer.phone || "",
-    loyalty: {
-      pointsBefore: before,
-      pointsUsed: safeUsed,
-      pointsEarned: earned,
-      pointsAfter: after,
-      redeemValue: entry.redeemValue
-    }
-  };
+  const updatedSale = { ...sale, customerId: sale.customerId || customer.id, customerCode: sale.customerCode || customer.customerCode || "", customerName: sale.customerName || customer.name, customerPhone: sale.customerPhone || customer.phone || "", loyalty: { pointsBefore: before, pointsUsed: safeUsed, pointsEarned: earned, pointsAfter: after, redeemValue: entry.redeemValue } };
 
   customers[customerIndex] = updatedCustomer;
   const nextSales = sales.map(item => String(item.id) === String(saleId) ? updatedSale : item);
@@ -207,38 +185,21 @@ async function applyLedgerToSale(saleId, customerId, pointsUsed) {
       { collectionName: RetailCollections.sales, row: updatedSale },
       { collectionName: RetailCollections.loyaltyLedger, row: entry }
     ]);
-  } catch (error) {
-    console.warn('[retail-pos-loyalty] firebase save failed', error);
-  }
+  } catch (error) { console.warn('[retail-pos-loyalty] firebase save failed', error); }
 
   window.dispatchEvent(new CustomEvent("pos:loyalty-updated", { detail: { customerId: customer.id, saleId: sale.id, pointsAfter: after } }));
   return true;
 }
 
 paymentDialog?.addEventListener("pos:customer-change", event => loadCustomer(event.detail?.customer || null));
-paymentDialog?.addEventListener("close", () => {
-  discountInput.value = baseDiscount.toFixed(2);
-  discountInput.dispatchEvent(new Event("input", { bubbles: true }));
-  resetBox();
-});
+paymentDialog?.addEventListener("close", () => { discountInput.value = baseDiscount.toFixed(2); discountInput.dispatchEvent(new Event("input", { bubbles: true })); resetBox(); });
 document.querySelector("#payBtn")?.addEventListener("click", () => setTimeout(prepareDialog, 0));
 redeemInput?.addEventListener("input", updatePaymentNumbers);
 useAllBtn?.addEventListener("click", () => { redeemInput.value = String(maxRedeemablePoints()); updatePaymentNumbers(); });
 paymentMethod?.addEventListener("change", updatePaymentNumbers);
 confirmBtn?.addEventListener("click", () => {
-  const startedAt = Date.now();
-  const customerId = selectedCustomer?.id || "";
-  const used = redeemPoints;
-  const previousSaleId = read(SALES_KEY, [])[0]?.id || "";
-  paymentDialog.dataset.loyaltyPoints = String(used);
-  if (!customerId) return;
-  waitForSavedSale(previousSaleId, startedAt).then(sale => {
-    if (!sale) {
-      console.error("ไม่พบบิลใหม่สำหรับบันทึกแต้ม");
-      return;
-    }
-    applyLedgerToSale(sale.id, customerId, used);
-  });
+  const startedAt = Date.now(); const customerId = selectedCustomer?.id || ""; const used = redeemPoints; const previousSaleId = read(SALES_KEY, [])[0]?.id || ""; paymentDialog.dataset.loyaltyPoints = String(used); if (!customerId) return;
+  waitForSavedSale(previousSaleId, startedAt).then(sale => { if (!sale) { console.error("ไม่พบบิลใหม่สำหรับบันทึกแต้ม"); return; } applyLedgerToSale(sale.id, customerId, used); });
 }, true);
 
 customers = read(CUSTOMER_KEY, []);
@@ -248,17 +209,7 @@ if (!remoteLedger.length && ledger.length) {
   const createdBy = auth?.currentUser?.uid || "";
   await saveRecordsStrict(RetailCollections.loyaltyLedger, ledger.map(entry => ({ ...entry, createdBy: entry.createdBy || createdBy })));
 }
-const stopCustomers = watchRecords(RetailCollections.customers, rows => {
-  customers = rows.map(normalizeCustomer).filter(Boolean);
-  write(CUSTOMER_KEY, customers);
-  if (selectedCustomer) loadCustomer(selectedCustomer);
-}, { sortBy: 'updatedAt', direction: 'desc' });
-const stopLedger = watchRecords(RetailCollections.loyaltyLedger, rows => {
-  ledger = rows;
-  write(LEDGER_KEY, ledger.slice(0, 2000));
-}, { sortBy: 'createdAt', direction: 'desc' });
-const stopSettings = watchRecords(RetailCollections.settings, rows => {
-  const remoteSettings = rows.find(row => String(row.id) === 'loyalty');
-  if (remoteSettings) write(SETTINGS_KEY, { ...defaults, ...remoteSettings });
-}, { sortBy: 'updatedAt', direction: 'desc' });
+const stopCustomers = watchRecords(RetailCollections.customers, rows => { customers = rows.map(normalizeCustomer).filter(Boolean); write(CUSTOMER_KEY, customers); if (selectedCustomer) loadCustomer(selectedCustomer); }, { sortBy: 'updatedAt', direction: 'desc' });
+const stopLedger = watchRecords(RetailCollections.loyaltyLedger, rows => { ledger = rows; write(LEDGER_KEY, ledger.slice(0, 2000)); }, { sortBy: 'createdAt', direction: 'desc' });
+const stopSettings = watchRecords(RetailCollections.settings, rows => { const remoteSettings = rows.find(row => String(row.id) === 'loyalty'); if (remoteSettings) write(SETTINGS_KEY, { ...defaults, ...remoteSettings }); }, { sortBy: 'updatedAt', direction: 'desc' });
 window.addEventListener('beforeunload', () => { stopCustomers(); stopLedger(); stopSettings(); }, { once: true });
