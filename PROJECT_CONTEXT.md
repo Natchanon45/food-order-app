@@ -2,10 +2,10 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.12.80
-Build: 2026.07.05.010
-Milestone: Retail POS Bootstrap Toast Icons
+Version: 0.12.81
+Build: 2026.07.06.001
+Milestone: Stock Movement Toast Fix
 
-Change: replaced Retail POS toast pseudo, emoji, and SVG icons with real Bootstrap Icons in the DOM using bi-check-circle for success and bi-x-circle for error. UI-only change.
+Change: fixed missing toast on the stock movements page by creating the Retail POS toast element when a page does not include one and bumped the stock movements toast cache version. UI-only change.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
