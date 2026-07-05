@@ -1,10 +1,10 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Customer Display Layout Refinement
-Version: 0.12.90
-Build: 2026.07.06.010
+Milestone: Customer Display Equal Height + Sales Stability
+Version: 0.12.91
+Build: 2026.07.06.011
 
-Change: refined the Customer Display layout to a clearer two-column design, with the customer card fitting the customer name/phone and the totals card directly below it. The product list stays on the right and now shows the latest added item at the top. Added a receipt logo cleanup helper and loaded it on POS and Sales receipt pages to remove icons/logos from receipt shop headers.
+Change: adjusted the Customer Display PC layout so the left customer/totals column and the right product list card align as a full-height two-column view. Stabilized Sales History by disabling the wide VAT report observer helper, replacing it with a lightweight non-observer VAT row patcher, and bumping Sales script cache versions.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
