@@ -87,29 +87,40 @@ body {
   background: rgba(5, 16, 10, .72);
   color: #f4fff7;
   box-shadow: 0 12px 26px rgba(0, 0, 0, .22);
-  cursor: pointer;
+  cursor: default;
 }
 
 .pairing-toggle:hover,
-.pairing-card.is-expanded .pairing-toggle {
+.pairing-card:hover .pairing-toggle,
+.pairing-card:focus-within .pairing-toggle {
   background: rgba(10, 37, 20, .92);
   border-color: rgba(185, 255, 208, .58);
 }
 
-.pairing-mini-qr {
+.pairing-mini-icon {
   display: grid;
   place-items: center;
   width: 42px;
   height: 42px;
   border-radius: 12px;
   background: #fff;
+  color: #0b6b32;
   overflow: hidden;
 }
 
-.pairing-mini-qr img {
-  width: 38px;
-  height: 38px;
-  object-fit: contain;
+.pairing-mini-icon .bi,
+.pairing-mini-icon::before {
+  display: inline-block;
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+.pairing-mini-icon::before {
+  content: "▦";
+}
+
+.pairing-mini-icon .bi + * {
+  display: none;
 }
 
 .pairing-toggle-copy {
@@ -143,6 +154,19 @@ body {
   background: linear-gradient(135deg, rgba(21, 148, 71, .22), rgba(9, 25, 18, .98));
   border: 1px solid rgba(115, 255, 172, .34);
   box-shadow: 0 28px 70px rgba(0, 0, 0, .42);
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transform: translateY(-8px) scale(.98);
+  transition: opacity .16s ease, transform .16s ease, visibility .16s ease;
+}
+
+.pairing-card:hover .pairing-panel,
+.pairing-card:focus-within .pairing-panel {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  transform: translateY(0) scale(1);
 }
 
 .pairing-panel::before {
@@ -322,15 +346,15 @@ body {
     border-radius: 15px;
   }
 
-  .pairing-mini-qr {
+  .pairing-mini-icon {
     width: 36px;
     height: 36px;
     border-radius: 10px;
   }
 
-  .pairing-mini-qr img {
-    width: 32px;
-    height: 32px;
+  .pairing-mini-icon .bi,
+  .pairing-mini-icon::before {
+    font-size: 1.3rem;
   }
 
   .pairing-toggle-copy strong {
