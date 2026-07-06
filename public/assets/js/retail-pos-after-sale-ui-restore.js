@@ -30,19 +30,12 @@ function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[ch]);
 }
 
-function productTitle(product = {}) {
-  const name = product.name || 'ไม่ระบุชื่อ';
-  const stock = Number(product.stock || 0).toLocaleString('th-TH');
-  const unit = product.unit || 'ชิ้น';
-  const price = money(product.price);
-  const code = [product.id || '', product.barcode || ''].filter(Boolean).join(' • ');
-  return `${name}\nสต๊อกคงเหลือ ${stock} ${unit}\nราคา ${price} บาท${code ? `\nรหัส ${code}` : ''}`;
+function productLabel(product = {}) {
+  return `${product.name || 'ไม่ระบุชื่อ'} ${money(product.price)} บาท`;
 }
 
 function hoverInfoHtml(product = {}) {
-  const stock = Number(product.stock || 0).toLocaleString('th-TH');
-  const unit = product.unit || 'ชิ้น';
-  return `<span class="pos-card-hover-info" aria-hidden="true"><strong>${escapeHtml(product.name || 'ไม่ระบุชื่อ')}</strong><span>สต๊อก ${stock} ${escapeHtml(unit)}</span><span>${money(product.price)} บาท</span></span>`;
+  return `<span class="pos-card-hover-info" aria-hidden="true"><strong>${escapeHtml(product.name || 'ไม่ระบุชื่อ')}</strong><span>${money(product.price)} บาท</span></span>`;
 }
 
 function soldOutHtml(product = {}) {
@@ -56,14 +49,13 @@ function restoreProductCards() {
     const product = map.get(String(card.dataset.productId || ''));
     if (!product) return;
     const src = String(imageUrl(product) || '').trim();
-    const title = productTitle(product);
     const soldOut = Number(product.stock || 0) <= 0;
-    card.setAttribute('title', title);
-    card.setAttribute('aria-label', title.replace(/\n/g, ' '));
+    card.removeAttribute('title');
+    card.setAttribute('aria-label', productLabel(product));
     card.classList.toggle('is-sold-out', soldOut);
     if (soldOut) card.setAttribute('aria-disabled', 'true'); else card.removeAttribute('aria-disabled');
     if (!src) return;
-    const stamp = `${product.id}|${product.updatedAt || ''}|${product.stock || 0}|${product.price || 0}|${src}`;
+    const stamp = `${product.id}|${product.updatedAt || ''}|${product.stock || 0}|${product.price || 0}|${src}|simple-hover`;
     if (card.dataset.posImageRestored === stamp) return;
     card.dataset.posImageRestored = stamp;
     card.classList.add('pos-product-card-image');
@@ -76,7 +68,12 @@ function restoreProductCards() {
 
 function setText(selector, value) {
   const node = document.querySelector(selector);
-  if (node) node.textContent = value;
+  if (node) textOrHtml(node, value);
+}
+
+function textOrHtml(node, value) {
+  if (node.id === 'cartList') node.innerHTML = value;
+  else node.textContent = value;
 }
 
 function setValue(selector, value) {
