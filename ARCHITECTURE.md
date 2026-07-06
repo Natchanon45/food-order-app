@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.20
-Build: 2026.07.06.040
-Milestone: P9-B004 Firestore Rules Hotfix
+Version: 0.13.21
+Build: 2026.07.06.041
+Milestone: P9-B004 Pending Number Helper Hotfix
 
 ## Scope
 
@@ -20,6 +20,7 @@ This branch contains Food Order, Delivery, Kitchen, Cashier, and Retail POS work
 - Use the same stable `saleId` for local sale and Firestore sync.
 - Firestore transactions must read required documents before writes.
 - Firestore Security Rules must allow every document read/write used by POS transactions.
+- Shared helper exports must stay compatible across POS modules.
 - Bump HTML `?v=` when referenced JS/CSS changes.
 
 ## Current Milestone State
@@ -40,32 +41,17 @@ Completed:
 - P9-B004 Offline Queue Worker + Retry + Conflict Resolver
 - Sync Timeout Hotfix
 - Firestore Rules Hotfix
+- Pending Number Helper Hotfix
 
-Current milestone: P9-B004 Firestore Rules Hotfix
+Current milestone: P9-B004 Pending Number Helper Hotfix
 
 Next task: P9-B005 Repository Layer
 
-## Firestore Rules for POS Sync
+## Pending Number Helper
 
-Tenant-scoped POS sync requires rules for:
-
-- `sales`
-- `saleItems`
-- `stockMovements`
-- `products` stock update
-- `counters`
-- `runningNumbers`
-- `dailySummary`
-- `syncQueue`
-- `customers`
-- `loyaltyLedger`
-- `customerDisplays`
-
-`runningNumbers` is required because P9-B003 uses an idempotent reservation ledger before writing the final sale.
+`retail-pos-safe-confirm.js` uses `pendingDocumentNumber()` from `retail-pos-firestore-foundation.js` to create a local pending SALE number before Firestore sync reserves the final number. This helper must remain exported from the shared foundation module.
 
 ## Deployment
-
-Rules changes require Firestore rules deploy:
 
 ```bash
 git pull --rebase origin feature/retail-pos
