@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.21
-Build: 2026.07.06.041
-Milestone: P9-B004 Pending Number Helper Hotfix
+Version: 0.13.22
+Build: 2026.07.06.042
+Milestone: P9-B004 Loyalty + Receipt Privacy Hotfix
 
 ## Scope
 
@@ -21,6 +21,7 @@ This branch contains Food Order, Delivery, Kitchen, Cashier, and Retail POS work
 - Firestore transactions must read required documents before writes.
 - Firestore Security Rules must allow every document read/write used by POS transactions.
 - Shared helper exports must stay compatible across POS modules.
+- Receipt output must mask customer name and phone by default.
 - Bump HTML `?v=` when referenced JS/CSS changes.
 
 ## Current Milestone State
@@ -42,14 +43,23 @@ Completed:
 - Sync Timeout Hotfix
 - Firestore Rules Hotfix
 - Pending Number Helper Hotfix
+- Loyalty + Receipt Privacy Hotfix
 
-Current milestone: P9-B004 Pending Number Helper Hotfix
+Current milestone: P9-B004 Loyalty + Receipt Privacy Hotfix
 
 Next task: P9-B005 Repository Layer
 
-## Pending Number Helper
+## Loyalty and Receipt Privacy
 
-`retail-pos-safe-confirm.js` uses `pendingDocumentNumber()` from `retail-pos-firestore-foundation.js` to create a local pending SALE number before Firestore sync reserves the final number. This helper must remain exported from the shared foundation module.
+Loyalty points are written after the `retail-pos-sale-saved` event. The loyalty module uses the saved sale customerId as fallback, updates local customer/sale/ledger first, then attempts Firestore sync.
+
+Receipts and sales receipt dialogs must show:
+
+- `ใบกำกับภาษีอย่างย่อ / ใบเสร็จรับเงิน` when VAT is present
+- VAT rows when applicable
+- Loyalty point summary when available
+- Masked customer name
+- Masked customer phone
 
 ## Deployment
 
