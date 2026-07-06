@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.16
-Build: 2026.07.06.036
-Milestone: P9-B002 Receipt Service
+Version: 0.13.17
+Build: 2026.07.06.037
+Milestone: P9-B003 Counter
 
 ## Scope
 
@@ -36,10 +36,11 @@ Completed:
 - P9-B002 Running Number alignment
 - Save Screen Hotfix
 - Receipt Service
+- P9-B003 Counter
 
-Current milestone: P9-B002 Receipt Service
+Current milestone: P9-B003 Counter
 
-Next task: P9-B003 Counter
+Next task: P9-B004 Offline Queue Worker + Retry + Conflict Resolver
 
 ## Retail POS Data Model
 
@@ -81,17 +82,19 @@ Sync flow:
 4. Reserve final number in transaction.
 5. Write sale, items, stock movements, summary, and sync queue.
 
+## P9-B003 Counter
+
+Counter reservation is idempotent. `reserveRunningNumber()` reads the counter document and the `runningNumbers` reservation before writing. A stable saleId can reserve only one number. Retry or duplicate sync with the same saleId returns the same document number and does not increment the counter again.
+
+Counter writes:
+
+- `counters/{type_periodKey}` stores the latest running value.
+- `runningNumbers/{type_periodKey_documentId}` stores the reservation ledger.
+- Reservation rows include tenantId, documentId, documentNumber, running, periodKey, and counterVersion.
+
 ## Receipt Service
 
 Receipt output uses `/pos/receipt/`. The POS screen saves and unlocks first. The receipt page reads the saved local sale by `saleId`, shows items, customer information, and loyalty point summary, then handles browser printing outside the main POS screen.
-
-Rules:
-
-- Do not block the main POS screen.
-- Do not use the old in-page receipt overlay after sale save.
-- Read receipt data from the saved sale.
-- Include customer data from sale.
-- Include loyalty data when available.
 
 ## Loyalty Flow
 
