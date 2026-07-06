@@ -12,6 +12,7 @@
     "cleanUrls": true,
     "trailingSlash": false,
     "rewrites": [
+      { "source": "/api/tax-buyer/lookup", "function": { "functionId": "lookupTaxBuyer", "region": "asia-southeast1" } },
       { "source": "/delivery/success", "destination": "/delivery/success/index.html" },
       { "source": "/delivery/success/**", "destination": "/delivery/success/index.html" },
       { "source": "/s/*/delivery/success", "destination": "/delivery/success/index.html" },
