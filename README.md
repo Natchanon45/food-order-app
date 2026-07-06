@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: P9-B006-11 DBD Address Append Fix
-Version: 0.13.53
-Build: 2026.07.06.073
+Milestone: P9-B006-12 Deep DBD Address Lookup
+Version: 0.13.54
+Build: 2026.07.06.074
 
-Change: fixed the tax buyer lookup address mapping after verifying the GitHub code. The function no longer returns early from the partial DBD `cd:Address` value. For namespaced DBD payloads it now uses `cd:Address` as the base and appends city subdivision, city, province, and postcode fields when available. Flattened `data.address.full` remains the first priority when present.
+Change: fixed the tax buyer lookup address mapping by reading DBD locality fields recursively inside the address object. The function now uses `cd:Address` as the base and deep-searches for city subdivision, city, province, and postcode fields before returning `buyerAddress`. Debug mode now includes `addressKeys` and `addressProbe` to show which address parts were detected.
 
 Existing full tax invoice creation, tax invoice history/reprint, receipt behavior, POS totals, VAT calculation, stock deduction, and offline sale sync are unchanged.
 
