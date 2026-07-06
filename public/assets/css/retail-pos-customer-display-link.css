@@ -21,23 +21,11 @@
   text-decoration: none !important;
 }
 
-.pos-header .header-actions a[href="/pos/customer-display"]::before {
-  content: "";
-  display: block;
-  width: 21px;
-  height: 16px;
-  border: 2.5px solid #0d6f34;
-  border-radius: 4px;
-}
-
-.pos-header .header-actions a[href="/pos/customer-display"]::after {
-  content: "";
-  display: block;
-  width: 14px;
-  height: 3px;
-  margin-top: -7px;
-  background: #0d6f34;
-  border-radius: 999px;
+.pos-header .header-actions a[href="/pos/customer-display"] i.bi-display {
+  display: inline-block !important;
+  color: #0d6f34 !important;
+  font-size: 1.28rem !important;
+  line-height: 1 !important;
 }
 
 .pos-header .header-actions a[href="/pos/customer-display"]:hover {
@@ -45,12 +33,8 @@
   border-color: #159447 !important;
 }
 
-.pos-header .header-actions a[href="/pos/customer-display"]:hover::before {
-  border-color: #159447;
-}
-
-.pos-header .header-actions a[href="/pos/customer-display"]:hover::after {
-  background: #159447;
+.pos-header .header-actions a[href="/pos/customer-display"]:hover i.bi-display {
+  color: #159447 !important;
 }
 
 @media (max-width: 640px) {
@@ -61,5 +45,8 @@
     min-width: 38px !important;
     min-height: 38px !important;
     border-radius: 11px !important;
+  }
+  .pos-header .header-actions a[href="/pos/customer-display"] i.bi-display {
+    font-size: 1.18rem !important;
   }
 }
