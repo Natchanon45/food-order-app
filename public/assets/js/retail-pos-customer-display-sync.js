@@ -20,6 +20,8 @@ const els = {
 
 let timer = 0;
 let currentCustomer = null;
+let cartSequence = 0;
+const cartActivity = new Map();
 
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -43,14 +45,44 @@ function customerById(id) {
   return readJson(CUSTOMER_KEY, []).find(row => String(row.id || row._documentId || '') === String(id)) || null;
 }
 
+function itemKey(row, name, meta) {
+  const id = row.querySelector('[data-id]')?.dataset?.id || '';
+  return String(id || `${name}|${meta}`).trim();
+}
+
+function touchCartItem(key, signature, index) {
+  const current = cartActivity.get(key);
+  if (!current || current.signature !== signature) {
+    const touchedAt = ++cartSequence;
+    cartActivity.set(key, { signature, touchedAt, index });
+    return touchedAt;
+  }
+  cartActivity.set(key, { ...current, index });
+  return current.touchedAt;
+}
+
+function pruneCartActivity(keys) {
+  const active = new Set(keys);
+  [...cartActivity.keys()].forEach(key => {
+    if (!active.has(key)) cartActivity.delete(key);
+  });
+}
+
 function readCartItems() {
-  return [...document.querySelectorAll('#cartList .cart-row')].map((row, index) => {
+  const activeKeys = [];
+  const items = [...document.querySelectorAll('#cartList .cart-row')].map((row, index) => {
     const name = row.querySelector('.cart-name')?.textContent?.trim() || '-';
     const meta = row.querySelector('.cart-meta')?.textContent?.trim() || '';
     const qty = numberFromText(row.querySelector('.qty-tools strong')?.textContent || 0);
     const total = numberFromText(row.querySelector('.line-total')?.textContent || 0);
-    return { name, meta, qty, total, sortIndex: index };
-  }).reverse();
+    const key = itemKey(row, name, meta);
+    const signature = `${qty}|${total}|${name}|${meta}`;
+    const touchedAt = touchCartItem(key, signature, index);
+    activeKeys.push(key);
+    return { name, meta, qty, total, sortIndex: index, touchedAt };
+  });
+  pruneCartActivity(activeKeys);
+  return items.sort((a, b) => (b.touchedAt || 0) - (a.touchedAt || 0) || (b.sortIndex || 0) - (a.sortIndex || 0));
 }
 
 function buildSnapshot(status = 'editing') {
