@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.19
-Build: 2026.07.06.039
-Milestone: P9-B004 Offline Queue Sync Timeout Hotfix
+Version: 0.13.20
+Build: 2026.07.06.040
+Milestone: P9-B004 Firestore Rules Hotfix
 
 ## Scope
 
@@ -19,6 +19,7 @@ This branch contains Food Order, Delivery, Kitchen, Cashier, and Retail POS work
 - Stock must not be deducted twice.
 - Use the same stable `saleId` for local sale and Firestore sync.
 - Firestore transactions must read required documents before writes.
+- Firestore Security Rules must allow every document read/write used by POS transactions.
 - Bump HTML `?v=` when referenced JS/CSS changes.
 
 ## Current Milestone State
@@ -38,60 +39,35 @@ Completed:
 - P9-B003 Counter
 - P9-B004 Offline Queue Worker + Retry + Conflict Resolver
 - Sync Timeout Hotfix
+- Firestore Rules Hotfix
 
-Current milestone: P9-B004 Offline Queue Sync Timeout Hotfix
+Current milestone: P9-B004 Firestore Rules Hotfix
 
 Next task: P9-B005 Repository Layer
 
-## Retail POS Data Model
+## Firestore Rules for POS Sync
 
-Tenant-scoped Firestore path:
-
-```text
-tenants/{tenantId}/{collectionName}/{documentId}
-```
-
-Known POS collections:
+Tenant-scoped POS sync requires rules for:
 
 - `sales`
 - `saleItems`
 - `stockMovements`
-- `shifts`
+- `products` stock update
 - `counters`
 - `runningNumbers`
 - `dailySummary`
 - `syncQueue`
-- `auditLogs`
+- `customers`
+- `loyaltyLedger`
+- `customerDisplays`
 
-## Sale Identity
-
-Retail POS creates one stable `saleId` before saving. The same `saleId` is used locally and during Firestore sync.
-
-Sync rules:
-
-1. Read sale by stable `saleId`.
-2. If it exists, do not create a duplicate and do not deduct stock again.
-3. Read summary and product docs before writes.
-4. Reserve final number in transaction.
-5. Write sale, items, stock movements, summary, and sync queue.
-
-## P9-B004 Offline Queue
-
-The offline queue worker manages local sales with `pending`, `syncing`, `failed`, and `conflict` states.
-
-Capabilities:
-
-- Detailed queue snapshot and status counts
-- Retry backoff with `nextRetryAt`
-- Stale `syncing` recovery
-- Per-sale sync timeout guard to prevent `กำลัง Sync...` from staying forever
-- Conflict detection for tenant mismatch, product not found, invalid product id, invalid quantity, and insufficient stock
-- Manual retry or discard conflict resolver
-- Diagnostic API exposed as `window.retailOfflineQueue`
+`runningNumbers` is required because P9-B003 uses an idempotent reservation ledger before writing the final sale.
 
 ## Deployment
 
+Rules changes require Firestore rules deploy:
+
 ```bash
 git pull --rebase origin feature/retail-pos
-firebase deploy --only hosting
+firebase deploy --only firestore:rules,hosting
 ```
