@@ -1,10 +1,10 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Save Timeout Fallback
-Version: 0.13.09
-Build: 2026.07.06.029
+Milestone: POS Save Freeze Guard
+Version: 0.13.10
+Build: 2026.07.06.030
 
-Change: added a POS Firestore save timeout fallback so the payment modal cannot stay stuck while preserving the stable saleId for offline sync.
+Change: removed the legacy after-sale localStorage hook that could repeatedly restore product cards during payment save and freeze the POS page.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting

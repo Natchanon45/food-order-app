@@ -1,9 +1,6 @@
 const PRODUCT_KEY = 'retail_pos_products_v1';
-const SALES_KEY = 'retail_pos_sales_v1';
 const grid = document.querySelector('#productGrid');
 const paymentDialog = document.querySelector('#paymentDialog');
-let lastReceiptSaleId = '';
-let receiptModulePromise = null;
 
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -12,19 +9,6 @@ function readJson(key, fallback) {
 
 function money(value) {
   return Number(value || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function latestSaleFromValue(value) {
-  try {
-    const rows = JSON.parse(value);
-    return Array.isArray(rows) ? rows[0] : null;
-  } catch {
-    return null;
-  }
-}
-
-function saleId(sale = {}) {
-  return String(sale.id || sale.saleNumber || '').trim();
 }
 
 function productsById() {
@@ -79,54 +63,6 @@ function hardUnlockPos() {
   restoreProductCards();
 }
 
-function receiptModule() {
-  if (!receiptModulePromise) receiptModulePromise = import('./retail-pos-receipt-modal.js?v=20260706-028');
-  return receiptModulePromise;
-}
-
-async function openReceiptAfterSale(sale) {
-  const id = saleId(sale);
-  if (!id || id === lastReceiptSaleId) return;
-  lastReceiptSaleId = id;
-  hardUnlockPos();
-  try {
-    const module = await receiptModule();
-    await module.showReceipt(sale, { autoPrint: false });
-    hardUnlockPos();
-    const modal = document.querySelector('[data-pos-receipt-modal]');
-    if (modal) {
-      modal.hidden = false;
-      modal.style.display = 'grid';
-      modal.style.pointerEvents = 'auto';
-      modal.style.zIndex = '2147483647';
-      modal.querySelectorAll('button,a,[role="button"]').forEach(el => {
-        el.disabled = false;
-        el.style.pointerEvents = 'auto';
-      });
-    }
-  } catch (error) {
-    console.error('[retail-pos-after-sale-ui-restore] receipt prompt failed', error);
-  }
-}
-
-function scheduleAfterSaleRestore(sale = null) {
-  [0, 60, 160, 350, 700, 1200, 2000].forEach(delay => setTimeout(hardUnlockPos, delay));
-  if (sale) [120, 360, 760].forEach(delay => setTimeout(() => openReceiptAfterSale(sale), delay));
-}
-
-const nativeSetItem = localStorage.setItem.bind(localStorage);
-if (!localStorage.__retailAfterSaleUiRestorePatched) {
-  Object.defineProperty(localStorage, '__retailAfterSaleUiRestorePatched', { value: true, configurable: true });
-  localStorage.setItem = function retailAfterSaleSetItem(key, value) {
-    const result = nativeSetItem(key, value);
-    if (key === SALES_KEY) scheduleAfterSaleRestore(latestSaleFromValue(value));
-    if (key === PRODUCT_KEY) scheduleAfterSaleRestore();
-    return result;
-  };
-}
-
 if (grid) new MutationObserver(() => requestAnimationFrame(restoreProductCards)).observe(grid, { childList: true, subtree: false });
-window.addEventListener('storage', () => scheduleAfterSaleRestore());
-window.addEventListener('pageshow', () => scheduleAfterSaleRestore());
-window.retailOpenReceiptAfterSale = openReceiptAfterSale;
+window.addEventListener('pageshow', () => setTimeout(hardUnlockPos, 0));
 restoreProductCards();

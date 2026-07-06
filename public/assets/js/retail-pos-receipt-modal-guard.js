@@ -1,6 +1,7 @@
 const SALES_KEY = 'retail_pos_sales_v1';
 const nativeSetItem = localStorage.setItem.bind(localStorage);
 let saleUnlockTimer = 0;
+let normalizeQueued = false;
 
 function receiptModal() {
   return document.querySelector('[data-pos-receipt-modal]');
@@ -39,13 +40,22 @@ function normalizeReceiptModal() {
   if (!isReceiptOpen(modal)) return;
   closeNativePaymentDialog();
   unlockPage();
-  modal.classList.add('receipt-print-root');
-  modal.style.display = 'grid';
-  modal.style.pointerEvents = 'auto';
-  modal.style.zIndex = '2147483647';
+  if (!modal.classList.contains('receipt-print-root')) modal.classList.add('receipt-print-root');
+  if (modal.style.display !== 'grid') modal.style.display = 'grid';
+  if (modal.style.pointerEvents !== 'auto') modal.style.pointerEvents = 'auto';
+  if (modal.style.zIndex !== '2147483647') modal.style.zIndex = '2147483647';
   modal.querySelectorAll('button,a,[role="button"],[data-close-receipt],[data-print-receipt]').forEach(el => {
-    el.style.pointerEvents = 'auto';
-    el.disabled = false;
+    if (el.style.pointerEvents !== 'auto') el.style.pointerEvents = 'auto';
+    if (el.disabled) el.disabled = false;
+  });
+}
+
+function scheduleNormalizeReceiptModal() {
+  if (normalizeQueued) return;
+  normalizeQueued = true;
+  requestAnimationFrame(() => {
+    normalizeQueued = false;
+    normalizeReceiptModal();
   });
 }
 
@@ -109,7 +119,7 @@ document.addEventListener('keydown', event => {
   }
 }, true);
 
-new MutationObserver(normalizeReceiptModal).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'open', 'class', 'style'] });
+new MutationObserver(scheduleNormalizeReceiptModal).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'open', 'class', 'style'] });
 window.addEventListener('afterprint', () => setTimeout(closeReceiptModal, 80));
 window.addEventListener('focus', normalizeReceiptModal);
 window.addEventListener('pageshow', normalizeReceiptModal);
