@@ -2,15 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.62
-Build: 2026.07.07.006
-Milestone: P9-B006-17 Customer Display QR Style
+Version: 0.13.63
+Build: 2026.07.07.007
+Milestone: P9-B006-18 POS Continuous Scanner
 
-Change: restyled the Customer Display pairing QR panel. The panel keeps the compact button behavior and shows only on hover or focus, with a larger QR image for easier scanning. The Customer Display CSS asset version was bumped to load the new style.
+Change: updated the POS sales barcode scanner to support continuous scanning. On the `/pos` sales barcode input, scanning a product now adds it to the bill and keeps the camera open until the user presses the close button. A short duplicate cooldown prevents the same code from firing repeatedly too fast. Other barcode scan flows keep their previous one-scan behavior.
 
-Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through Customer Display QR style polish.
+Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through POS continuous scanner support.
 
-Usage: open `/pos/customer-display?displayId=display-pc-01`, hover or focus the `เชื่อมอุปกรณ์` button, and verify the QR panel appears with a larger QR image.
+Usage: open `/pos` on mobile, press the barcode scanner button, scan products continuously, and press the X button only when finished. Hard refresh `/pos` after deploy if the browser still uses the cached scanner script.
 
 Deploy rules: use hosting-only deploy for `public/` asset changes. Deploy functions only when files under `functions/` or function rewrites/routes change. This build only needs hosting deploy.
 
