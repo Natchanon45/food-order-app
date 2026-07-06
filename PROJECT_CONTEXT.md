@@ -2,15 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.59
-Build: 2026.07.07.003
-Milestone: POS Payment Button Viewport Fit
+Version: 0.13.60
+Build: 2026.07.07.004
+Milestone: P9-B006-15 Customer Display Font Rollback
 
-Change: fixed the `/pos` cart panel viewport fit so the payment button stays visible on desktop-height screens, while the cart list scrolls and still reserves five sale rows on taller screens.
+Change: rolled back the unintended Customer Display font/layout override from the local print font CSS. Customer Display no longer loads `retail-pos-font-local.css`, and that shared CSS no longer targets `.display-shell` or related customer display elements. TH Sarabun PSK Local remains scoped to printable paper surfaces only: `.receipt` and `.tax-paper`.
 
-Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through print font scope polish.
+Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through customer display font rollback.
 
-Usage: open `/pos` on desktop and verify the payment button remains visible without page scrolling. On taller desktop screens, the cart list should still show at least five sale rows before scrolling.
+Usage: open `/pos/customer-display?displayId=display-pc-01` and verify the Customer Display layout returns to its original sizing. Receipt and full tax invoice paper should still use TH Sarabun PSK Local.
 
 Deploy rules: use hosting-only deploy for `public/` asset changes. Deploy functions only when files under `functions/` or function rewrites/routes change. This build only needs hosting deploy.
 
