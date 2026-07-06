@@ -2,15 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.60
-Build: 2026.07.07.004
-Milestone: P9-B006-15 Customer Display Font Rollback
+Version: 0.13.61
+Build: 2026.07.07.005
+Milestone: P9-B006-16 Customer Display Pairing Panel Fix
 
-Change: rolled back the unintended Customer Display font/layout override from the local print font CSS. Customer Display no longer loads `retail-pos-font-local.css`, and that shared CSS no longer targets `.display-shell` or related customer display elements. TH Sarabun PSK Local remains scoped to printable paper surfaces only: `.receipt` and `.tax-paper`.
+Change: fixed the Customer Display header layout after the font rollback. The pairing QR panel is now styled by the Customer Display CSS itself: the header shows a compact connection button, and the QR panel is hidden until hover/focus. The customer display CSS asset version was bumped to load the fix.
 
-Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through customer display font rollback.
+Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through customer display pairing panel fix.
 
-Usage: open `/pos/customer-display?displayId=display-pc-01` and verify the Customer Display layout returns to its original sizing. Receipt and full tax invoice paper should still use TH Sarabun PSK Local.
+Usage: open `/pos/customer-display?displayId=display-pc-01` and verify the header shows only the compact connection button. The QR panel should appear only when hovering or focusing the button.
 
 Deploy rules: use hosting-only deploy for `public/` asset changes. Deploy functions only when files under `functions/` or function rewrites/routes change. This build only needs hosting deploy.
 
