@@ -108,19 +108,15 @@ body {
   overflow: hidden;
 }
 
-.pairing-mini-icon .bi,
-.pairing-mini-icon::before {
+.pairing-mini-icon .bi {
   display: inline-block;
   font-size: 1.55rem;
   line-height: 1;
 }
 
-.pairing-mini-icon::before {
-  content: "▦";
-}
-
-.pairing-mini-icon .bi + * {
-  display: none;
+.pairing-mini-icon .bi::before {
+  display: block;
+  line-height: 1;
 }
 
 .pairing-toggle-copy {
@@ -352,8 +348,7 @@ body {
     border-radius: 10px;
   }
 
-  .pairing-mini-icon .bi,
-  .pairing-mini-icon::before {
+  .pairing-mini-icon .bi {
     font-size: 1.3rem;
   }
 
