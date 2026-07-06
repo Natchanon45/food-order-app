@@ -16,7 +16,19 @@ function money(value) { return Number(value || 0).toLocaleString('th-TH', { mini
 function numberText(value) { return Number(value || 0).toLocaleString('th-TH'); }
 function saleKey(sale) { return String(sale?.id || sale?.saleNumber || '').trim(); }
 function maskPhone(phone = '') { const digits = String(phone || '').replace(/\D/g, ''); if (digits.length < 7) return digits ? `${digits.slice(0, 2)}***` : ''; return `${digits.slice(0, 3)}-***-${digits.slice(-4)}`; }
-function maskName(name = '') { const text = String(name || '').trim(); if (!text) return ''; if (text.length <= 2) return `${text[0] || ''}*`; return `${text.slice(0, 2)}${'*'.repeat(Math.min(5, text.length - 2))}`; }
+function firstChars(text, count) { return Array.from(String(text || '')).slice(0, count).join(''); }
+function lastChars(text, count) { const chars = Array.from(String(text || '')); return chars.slice(Math.max(0, chars.length - count)).join(''); }
+function maskFirstName(name = '') { const chars = Array.from(String(name || '').trim()); if (!chars.length) return ''; return `${chars.slice(0, Math.min(5, chars.length)).join('')}*****`; }
+function maskLastName(name = '') { const chars = Array.from(String(name || '').trim()); if (!chars.length) return ''; return `*****${chars.slice(Math.max(0, chars.length - 3)).join('')}`; }
+function maskName(name = '') {
+  const text = String(name || '').replace(/\s+/g, ' ').trim();
+  if (!text) return '';
+  const parts = text.split(' ').filter(Boolean);
+  if (parts.length >= 2) return `${maskFirstName(parts[0])} ${maskLastName(parts.slice(1).join(' '))}`;
+  const chars = Array.from(text);
+  if (chars.length <= 5) return `${firstChars(text, chars.length)}*****`;
+  return `${firstChars(text, 5)}*****`;
+}
 function taxTitle(sale = {}) { return Number(sale.vatAmount || 0) > 0 || sale.vatRegistered ? 'ใบกำกับภาษีอย่างย่อ / ใบเสร็จรับเงิน' : 'ใบเสร็จรับเงิน'; }
 function settings() {
   const local = readJson(STORE_SETTINGS_KEY, {});
