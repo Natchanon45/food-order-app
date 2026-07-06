@@ -1,100 +1,19 @@
-# Food Order App — Architecture
+# Food Order App Architecture
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.28
-Build: 2026.07.06.048
-Milestone: P9-B005 Repository Layer / POS UX Hotfix
+Version: 0.13.30
+Build: 2026.07.06.050
+Milestone: P9-B005 Repository Layer and POS UX Hotfix
 
-## Scope
+Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
-This branch contains Food Order, Delivery, Kitchen, Cashier, and Retail POS workflows. Current work focuses on Retail POS, offline-first sale flow, running numbers, receipt output, customers, loyalty points, repository-layer consolidation, and POS cashier UX.
+Current UX rule: the customer display shortcut in the POS header is an icon-only button. It uses Bootstrap Icons display markup, a black button background, and a dark green display icon. The button keeps accessible label and title text and still opens the customer display page.
 
-## Core Rules
+Completed in this build: customer display Bootstrap display icon hotfix.
 
-- Every business document must include `tenantId`.
-- Retail POS must support online and offline sale save.
-- Offline sales must sync back to Firestore.
-- Duplicate bills are not allowed.
-- Stock must not be deducted twice.
-- Use the same stable `saleId` for local sale and Firestore sync.
-- Firestore transactions must read required documents before writes.
-- Firestore Security Rules must allow every document read/write used by POS transactions.
-- Shared helper exports must stay compatible across POS modules.
-- Receipt output must mask customer name and phone by default.
-- Bump HTML `?v=` when referenced JS/CSS changes.
+Next task: continue P9-B005 repository integration, then move to P9-B006 Firestore Composite Index.
 
-## Current Milestone State
-
-Completed:
-
-- QR Table Order
-- Kitchen workflow
-- Delivery Lock
-- Cashier table move
-- Paid-before-close guard
-- Retail POS Online / Offline / Sync / Tenant support
-- POS Firestore Foundation P9-B001
-- POS Safe Confirm Payment
-- P9-B002 Running Number alignment
-- Receipt Service
-- P9-B003 Counter
-- P9-B004 Offline Queue Worker + Retry + Conflict Resolver
-- Sync Timeout Hotfix
-- Firestore Rules Hotfix
-- Pending Number Helper Hotfix
-- Loyalty + Receipt Privacy Hotfix
-- P9-B005 Repository Layer foundation
-- POS UX Hotfix for product hover, sold-out cards, and bill reset after payment
-- Receipt privacy and simplified half-card product hover label hotfix
-- PC cart density hotfix for showing at least five selected rows
-- Receipt phone mask hotfix using `098-***-**81` format
-- Product card unified overlay hotfix for PC and Mobile
-
-Current milestone: P9-B005 Repository Layer / POS UX Hotfix
-
-Next task: Continue P9-B005 integration by replacing direct POS localStorage/tenant ref usage in runtime modules with repository helpers, then move to P9-B006 Firestore Composite Index.
-
-## Repository Layer
-
-The Retail POS repository layer is the preferred access point for shared POS data helpers. It now owns:
-
-- Tenant-scoped collection and document refs.
-- Tenant metadata validation and normalization.
-- Local JSON repositories for sales, products, stock movements, sync queue, and customers.
-- Local value repositories for active shift and store settings.
-- Tenant repositories for products, sales, stock movements, shifts, returns, customers, settings, sync queue, audit logs, and counters.
-
-Runtime POS modules should gradually replace direct localStorage keys and duplicate tenant ref helpers with `retail-pos-repository.js` exports. This keeps Online / Offline / Sync behavior centralized while preserving stable saleId and duplicate-protection rules.
-
-## POS UX Hotfix
-
-Retail POS product cards on PC should use a half-card bottom overlay on hover. The overlay should show product name, remaining stock, and price, fade in/out smoothly, and use a bottom-heavy black gradient that fades upward.
-
-Mobile product cards should keep the product image full-card and display product name, remaining stock, and price on the same dark gradient overlay style instead of a separate white text area.
-
-Sold-out products should be visually greyed out and marked with a sold-out badge.
-
-The PC cart panel should remain scrollable and compact enough to show at least five selected product rows in normal desktop use. Cart rows, summary controls, and checkout controls may use reduced font sizes and tighter spacing on PC only.
-
-After any successful payment flow or receipt close, the active bill must be cleared. The reset must clear cart rows, discount, payment input, customer/loyalty selection UI, totals, and return focus to the barcode input so the cashier can immediately start the next sale.
-
-## Loyalty and Receipt Privacy
-
-Loyalty points are written after the `retail-pos-sale-saved` event. The loyalty module uses the saved sale customerId as fallback, updates local customer/sale/ledger first, then attempts Firestore sync.
-
-Receipts and sales receipt dialogs must show:
-
-- `ใบกำกับภาษีอย่างย่อ / ใบเสร็จรับเงิน` when VAT is present
-- VAT rows when applicable
-- Loyalty point summary when available
-- Masked customer first name: first up to 5 characters followed by `*****`
-- Masked customer last name: `*****` followed by the last 3 characters
-- Masked customer phone in `098-***-**81` format
-
-## Deployment
-
-```bash
+Deploy commands:
 git pull --rebase origin feature/retail-pos
 firebase deploy --only hosting
-```
