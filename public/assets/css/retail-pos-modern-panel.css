@@ -82,7 +82,7 @@
     top: 84px;
     height: calc(100dvh - 100px);
     max-height: calc(100dvh - 100px);
-    min-height: 720px;
+    min-height: 0;
     padding: 14px !important;
     overflow: hidden;
     background: #fbfdfc;
@@ -125,7 +125,7 @@
 
   body[data-module="retail-pos"] .cart-list {
     flex: 1 1 auto !important;
-    min-height: 350px !important;
+    min-height: 0 !important;
     max-height: none !important;
     padding: 2px 5px 2px 0;
   }
@@ -181,21 +181,21 @@
   }
 
   body[data-module="retail-pos"] .summary {
-    margin-top: 10px !important;
-    padding: 10px 0 0 !important;
+    margin-top: 8px !important;
+    padding: 8px 0 0 !important;
     border-top: 1px solid rgba(148, 163, 184, .26) !important;
     background: transparent !important;
   }
 
   body[data-module="retail-pos"] .summary > div,
   body[data-module="retail-pos"] .summary > label {
-    min-height: 34px !important;
+    min-height: 32px !important;
   }
 
   body[data-module="retail-pos"] .grand-total {
-    min-height: 48px !important;
+    min-height: 44px !important;
     margin-top: 4px;
-    padding: 10px 12px;
+    padding: 8px 12px;
     border-radius: 12px;
     background: #eaf7ef;
     color: #0d6f34;
@@ -207,7 +207,7 @@
 
   body[data-module="retail-pos"] .cart-actions {
     gap: 9px !important;
-    margin-top: 11px !important;
+    margin-top: 8px !important;
   }
 
   body[data-module="retail-pos"] .cart-actions .btn,
@@ -216,24 +216,60 @@
   }
 
   body[data-module="retail-pos"] .cart-panel > .btn-pay {
-    min-height: 52px !important;
-    margin-top: 10px !important;
+    min-height: 48px !important;
+    margin-top: 8px !important;
     box-shadow: 0 12px 24px rgba(21, 148, 71, .22);
   }
 }
 
-@media (min-width: 901px) and (max-height: 820px) {
-  body[data-module="retail-pos"] .cart-panel {
-    min-height: 650px;
-  }
-
+@media (min-width: 901px) and (min-height: 860px) {
   body[data-module="retail-pos"] .cart-list {
-    min-height: 330px !important;
+    min-height: 350px !important;
+  }
+}
+
+@media (min-width: 901px) and (max-height: 820px) {
+  body[data-module="retail-pos"] .cart-title {
+    min-height: 42px;
+    margin-bottom: 8px;
+    padding-bottom: 9px !important;
   }
 
   body[data-module="retail-pos"] .cart-row {
-    min-height: 64px !important;
-    margin-bottom: 7px;
+    min-height: 52px !important;
+    margin-bottom: 5px;
+    padding: 6px 8px !important;
+  }
+
+  body[data-module="retail-pos"] .cart-name {
+    font-size: .84rem !important;
+    line-height: 1.08 !important;
+  }
+
+  body[data-module="retail-pos"] .cart-meta {
+    font-size: .74rem !important;
+  }
+
+  body[data-module="retail-pos"] .qty-tools {
+    gap: 4px;
+  }
+
+  body[data-module="retail-pos"] .qty-tools button {
+    width: 26px;
+    height: 26px;
+  }
+
+  body[data-module="retail-pos"] .summary > div,
+  body[data-module="retail-pos"] .summary > label {
+    min-height: 29px !important;
+  }
+
+  body[data-module="retail-pos"] .grand-total {
+    min-height: 40px !important;
+  }
+
+  body[data-module="retail-pos"] .cart-panel > .btn-pay {
+    min-height: 44px !important;
   }
 }
 

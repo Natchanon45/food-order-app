@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Modern Panel Polish
-Version: 0.13.58
-Build: 2026.07.07.002
+Milestone: POS Payment Button Viewport Fit
+Version: 0.13.59
+Build: 2026.07.07.003
 
-Change: polished the `/pos` modern panel layout by removing the extra cart title marker, tightening the product panel width around the image grid, and keeping the cart list sized for at least five sale rows.
+Change: fixed the `/pos` cart panel viewport fit so the payment button stays visible on desktop-height screens, while the cart list scrolls and still reserves five sale rows on taller screens.
 
 Existing tax buyer DBD lookup, tax invoice creation, tax invoice history/reprint, receipt behavior, POS totals, VAT calculation, stock deduction, and offline sale sync are unchanged.
 
