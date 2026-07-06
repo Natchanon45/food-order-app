@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: P9-B006-15 Customer Display Font Rollback
-Version: 0.13.60
-Build: 2026.07.07.004
+Milestone: P9-B006-16 Customer Display Pairing Panel Fix
+Version: 0.13.61
+Build: 2026.07.07.005
 
-Change: rolled back the unintended Customer Display font/layout override from the local print font CSS. Customer Display no longer loads `retail-pos-font-local.css`, and that shared CSS no longer targets `.display-shell` or related customer display elements. TH Sarabun PSK Local remains scoped to printable paper surfaces only: `.receipt` and `.tax-paper`.
+Change: fixed the Customer Display header layout after the font rollback. The pairing QR panel is now styled by the Customer Display CSS itself: the header shows a compact connection button, and the QR panel is hidden until hover/focus. The customer display CSS asset version was bumped to load the fix.
 
 Existing tax buyer DBD lookup, tax invoice creation, tax invoice history/reprint, receipt behavior, POS totals, VAT calculation, stock deduction, customer display data sync, and offline sale sync are unchanged.
 
