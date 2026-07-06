@@ -1,6 +1,9 @@
 const { onRequest } = require('firebase-functions/v2/https');
 
 const DBD_OPENAPI_BASE = 'https://openapi.dbd.go.th/api/v1/juristic_person';
+const CD = 'cd' + ':';
+const CR = 'cr' + ':';
+const TD = 'td' + ':';
 
 function cleanTaxId(value) {
   return String(value || '').replace(/\D/g, '').slice(0, 13);
@@ -23,77 +26,64 @@ function rootPayload(data = {}) {
 }
 
 function candidateObjects(value, output = []) {
-  if (!value || output.length > 40) return output;
-  if (Array.isArray(value)) {
-    value.forEach(item => candidateObjects(item, output));
-    return output;
-  }
-  if (typeof value === 'object') {
+  if (!value || output.length > 80) return output;
+  if (Array.isArray(value)) value.forEach(item => candidateObjects(item, output));
+  else if (typeof value === 'object') {
     output.push(value);
     Object.values(value).forEach(item => candidateObjects(item, output));
   }
   return output;
 }
 
+const TAX_ID_KEYS = ['buyerTaxId', 'taxId', 'juristicId', 'juristic_id', 'juristicPersonId', 'juristic_person_id', 'registrationNo', 'id', CD + 'OrganizationJuristicID'];
+const NAME_KEYS = ['buyerName', 'name', 'companyName', 'juristicNameTH', 'juristic_name_th', 'juristicPersonNameTH', 'juristic_person_name_th', 'nameTh', CD + 'OrganizationJuristicNameTH'];
+const ADDRESS_KEYS = ['buyerAddress', 'address', 'addressTh', 'fullAddress', 'juristic_person_address', CD + 'Address'];
+const BRANCH_KEYS = ['buyerBranchName', 'branchName', 'branch', TD + 'OrganizationJuristicBranchName'];
+
 function scoreCandidate(source = {}, taxId = '') {
   const blob = JSON.stringify(source || '');
-  let score = 0;
-  if (blob.includes(taxId)) score += 10;
-  if (pick(source, TAX_ID_KEYS)) score += 7;
-  if (pick(source, NAME_KEYS)) score += 5;
-  if (pick(source, ADDRESS_KEYS)) score += 4;
-  if (pick(source, BRANCH_KEYS)) score += 1;
-  return score;
+  return (blob.includes(taxId) ? 10 : 0) + (pick(source, TAX_ID_KEYS) ? 7 : 0) + (pick(source, NAME_KEYS) ? 5 : 0) + (pick(source, ADDRESS_KEYS) ? 4 : 0);
 }
 
 function bestSource(data = {}, taxId = '') {
-  const root = rootPayload(data);
-  const candidates = candidateObjects(root);
-  if (!candidates.length && root && typeof root === 'object') return root;
-  return candidates.sort((a, b) => scoreCandidate(b, taxId) - scoreCandidate(a, taxId))[0] || {};
+  return candidateObjects(rootPayload(data)).sort((a, b) => scoreCandidate(b, taxId) - scoreCandidate(a, taxId))[0] || {};
 }
 
-const TAX_ID_KEYS = [
-  'buyerTaxId', 'taxId', 'tax_id', 'juristicId', 'juristic_id', 'juristicID',
-  'juristicPersonId', 'juristic_person_id', 'juristic_person_no', 'juristicNo',
-  'registrationNo', 'registration_no', 'id'
-];
+function dbdAddressSource(source = {}) {
+  const address = source[CD + 'OrganizationJuristicAddress'];
+  if (!address || typeof address !== 'object') return null;
+  return address[CR + 'AddressType'] || address;
+}
 
-const NAME_KEYS = [
-  'buyerName', 'name', 'companyName', 'company_name', 'juristicNameTH', 'juristicNameTh',
-  'juristic_name_th', 'juristicPersonNameTH', 'juristic_person_name_th', 'juristic_person_name',
-  'juristicName', 'juristic_name', 'nameTh', 'titleName'
-];
-
-const ADDRESS_KEYS = [
-  'buyerAddress', 'address', 'addressTh', 'address_th', 'location', 'fullAddress',
-  'juristicPersonAddress', 'juristic_person_address', 'juristic_address', 'addressDetail'
-];
-
-const BRANCH_KEYS = ['buyerBranchName', 'branchName', 'branch_name', 'branch', 'branchNo', 'branch_no'];
+function dbdCapitalSource(source = {}) {
+  const capital = source[TD + 'JuristicOrganizationRegisterCapital'];
+  return capital && typeof capital === 'object' ? capital : null;
+}
 
 function flattenAddress(source = {}) {
-  const direct = pick(source, ADDRESS_KEYS);
+  const addressSource = dbdAddressSource(source) || source;
+  const direct = pick(addressSource, ADDRESS_KEYS) || pick(source, ADDRESS_KEYS);
   if (direct) return cleanText(direct);
   const parts = [
-    pick(source, ['houseNo', 'house_no', 'addressNo', 'address_no', 'buildingNo', 'building_no', 'roomNo']),
-    pick(source, ['moo', 'villageNo', 'village_no']),
-    pick(source, ['soi', 'soiName', 'soi_name']),
-    pick(source, ['road', 'street', 'roadName', 'road_name']),
-    pick(source, ['subDistrict', 'subdistrict', 'sub_district', 'tambon', 'districtSub']),
-    pick(source, ['district', 'amphur', 'amphoe', 'districtName']),
-    pick(source, ['province', 'provinceName']),
-    pick(source, ['postcode', 'postalCode', 'zipCode'])
+    pick(addressSource, [CD + 'AddressNo', 'addressNo', 'houseNo']),
+    pick(addressSource, [CD + 'Moo', 'moo']),
+    pick(addressSource, [CD + 'Soi', 'soi']),
+    pick(addressSource, [CD + 'Road', 'road']),
+    pick(addressSource, [CR + 'CitySubDivisionTextTH', 'subDistrict', 'tambon']),
+    pick(addressSource, [CR + 'CityTextTH', 'district', 'amphoe']),
+    pick(addressSource, [CR + 'CountrySubDivisionTextTH', 'province']),
+    pick(addressSource, [CD + 'PostCode', 'postcode'])
   ].filter(Boolean);
   return cleanText(parts.join(' '));
 }
 
 function normalize(data = {}, taxId = '') {
   const source = bestSource(data, taxId);
+  const capital = dbdCapitalSource(source) || {};
   const buyerTaxId = cleanTaxId(pick(source, TAX_ID_KEYS) || taxId);
   const buyerName = cleanText(pick(source, NAME_KEYS));
   const buyerAddress = flattenAddress(source);
-  const buyerBranchName = cleanText(pick(source, BRANCH_KEYS) || 'สำนักงานใหญ่') || 'สำนักงานใหญ่';
+  const buyerBranchName = cleanText(pick(capital, BRANCH_KEYS) || pick(source, BRANCH_KEYS) || 'สำนักงานใหญ่') || 'สำนักงานใหญ่';
   return { buyerTaxId, buyerName, buyerAddress, buyerBranchName };
 }
 
@@ -103,7 +93,7 @@ function safeDebugPayload(payload, rawText, normalized) {
   return {
     rootType: Array.isArray(root) ? 'array' : typeof root,
     topKeys: payload && typeof payload === 'object' ? Object.keys(payload).slice(0, 30) : [],
-    sourceKeys: source && typeof source === 'object' ? Object.keys(source).slice(0, 60) : [],
+    sourceKeys: source && typeof source === 'object' ? Object.keys(source).slice(0, 80) : [],
     normalized,
     rawPreview: String(rawText || '').slice(0, 1200)
   };
@@ -111,19 +101,9 @@ function safeDebugPayload(payload, rawText, normalized) {
 
 async function lookupFromDbdOpenApi(taxId, debug = false) {
   const url = `${DBD_OPENAPI_BASE}/${encodeURIComponent(taxId)}`;
-  const response = await fetch(url, {
-    headers: {
-      accept: 'application/json',
-      'user-agent': 'FoodOrderApp/1.0 (+https://natchanon-food-order-delivery.web.app)'
-    }
-  });
+  const response = await fetch(url, { headers: { accept: 'application/json' } });
   const rawText = await response.text();
-  const meta = {
-    url,
-    status: response.status,
-    ok: response.ok,
-    contentType: response.headers.get('content-type') || ''
-  };
+  const meta = { url, status: response.status, ok: response.ok, contentType: response.headers.get('content-type') || '' };
   if (!response.ok) {
     const error = new Error(`DBD OpenAPI returned ${response.status}`);
     error.debug = { ...meta, rawPreview: rawText.slice(0, 1200) };
@@ -168,14 +148,11 @@ exports.lookupTaxBuyer = onRequest(
       let result = null;
       try { result = await lookupFromDbdOpenApi(taxId, debug); }
       catch (openApiError) {
-        console.warn('DBD OpenAPI lookup failed, trying adapter', { taxId, error: openApiError.message });
         const adapterData = await lookupFromAdapter(taxId);
         result = { normalized: adapterData, debug: debug ? { openApiError: openApiError.debug || openApiError.message, adapterUsed: true } : undefined };
       }
       const data = result?.normalized;
-      if (!data || (!data.buyerName && !data.buyerAddress)) {
-        return res.status(404).json({ ok: false, error: 'not-found', taxId, debug: debug ? result?.debug : undefined });
-      }
+      if (!data || (!data.buyerName && !data.buyerAddress)) return res.status(404).json({ ok: false, error: 'not-found', taxId, debug: debug ? result?.debug : undefined });
       return res.json({ ok: true, taxId, data, debug: debug ? result?.debug : undefined });
     } catch (error) {
       return res.status(502).json({ ok: false, error: 'lookup-failed', message: error.message, taxId, debug: debug ? error.debug : undefined });
