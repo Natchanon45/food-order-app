@@ -1,4 +1,4 @@
-import { createFullTaxInvoiceFromSale, taxInvoiceUrl } from './retail-pos-full-tax-invoice.js?v=20260706-062';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, getExistingFullTaxInvoiceForSale, taxInvoiceUrl } from './retail-pos-full-tax-invoice.js?v=20260706-063';
 
 const SALES_KEY = 'retail_pos_sales_v1';
 const STORE_SETTINGS_KEY = 'retail_pos_store_settings_v1';
@@ -8,6 +8,14 @@ const root = document.querySelector('#receiptRoot');
 const printBtn = document.querySelector('#printBtn');
 const closeBtn = document.querySelector('#closeBtn');
 const taxInvoiceBtn = document.querySelector('#taxInvoiceBtn');
+const taxDialog = document.querySelector('#taxInvoiceDialog');
+const taxForm = document.querySelector('#taxInvoiceForm');
+const taxCancelBtn = document.querySelector('#taxInvoiceCancelBtn');
+const taxError = document.querySelector('#taxInvoiceError');
+const buyerNameInput = document.querySelector('#buyerNameInput');
+const buyerTaxIdInput = document.querySelector('#buyerTaxIdInput');
+const buyerAddressInput = document.querySelector('#buyerAddressInput');
+const buyerBranchInput = document.querySelector('#buyerBranchInput');
 const params = new URLSearchParams(location.search);
 const saleId = params.get('saleId') || '';
 const autoPrint = params.get('auto') === '1';
@@ -63,22 +71,47 @@ function render(sale) {
 }
 function rerenderLatest() { const sale = findSale(); if (sale) render(sale); return sale; }
 async function waitForLoyaltyAndRender() { let sale = findSale(); render(sale); const started = Date.now(); while (Date.now() - started < 2500) { await new Promise(resolve => setTimeout(resolve, 180)); sale = rerenderLatest(); if (sale?.loyalty) break; } if (autoPrint) setTimeout(() => window.print(), 250); }
-printBtn?.addEventListener('click', () => window.print());
-closeBtn?.addEventListener('click', () => window.close());
-taxInvoiceBtn?.addEventListener('click', async () => {
+function openInvoice(invoice) { window.open(taxInvoiceUrl(invoice, { autoPrint: false }), `pos_tax_invoice_${String(invoice.id).replace(/[^a-zA-Z0-9]/g, '_')}`, 'popup=yes,width=920,height=760,noopener,noreferrer'); }
+function showTaxDialog() {
+  if (!currentSale || !taxDialog) return;
+  const existing = getExistingFullTaxInvoiceForSale(currentSale);
+  if (existing) { openInvoice(existing); return; }
+  const defaults = defaultBuyerFromSale(currentSale);
+  buyerNameInput.value = defaults.buyerName || '';
+  buyerTaxIdInput.value = defaults.buyerTaxId || '';
+  buyerAddressInput.value = defaults.buyerAddress || '';
+  buyerBranchInput.value = defaults.buyerBranchName || 'สำนักงานใหญ่';
+  taxError.textContent = '';
+  taxDialog.showModal();
+  setTimeout(() => buyerNameInput?.focus(), 50);
+}
+async function submitTaxDialog() {
   if (!currentSale) return;
+  const buyer = {
+    buyerName: buyerNameInput.value,
+    buyerTaxId: buyerTaxIdInput.value,
+    buyerAddress: buyerAddressInput.value,
+    buyerBranchName: buyerBranchInput.value
+  };
+  taxError.textContent = '';
   taxInvoiceBtn.disabled = true;
-  taxInvoiceBtn.textContent = 'กำลังออกเอกสาร...';
   try {
-    const invoice = await createFullTaxInvoiceFromSale(currentSale);
-    if (invoice) window.open(taxInvoiceUrl(invoice, { autoPrint: false }), `pos_tax_invoice_${String(invoice.id).replace(/[^a-zA-Z0-9]/g, '_')}`, 'popup=yes,width=920,height=760,noopener,noreferrer');
+    const invoice = await createFullTaxInvoiceFromSale(currentSale, buyer);
+    if (invoice) {
+      taxDialog?.close();
+      openInvoice(invoice);
+    }
   } catch (error) {
-    alert(error?.message || 'ออกใบกำกับภาษีเต็มรูปแบบไม่สำเร็จ');
+    taxError.textContent = error?.message || 'ออกใบกำกับภาษีเต็มรูปแบบไม่สำเร็จ';
   } finally {
     taxInvoiceBtn.disabled = false;
-    taxInvoiceBtn.textContent = 'ใบกำกับภาษีเต็มรูปแบบ';
   }
-});
+}
+printBtn?.addEventListener('click', () => window.print());
+closeBtn?.addEventListener('click', () => window.close());
+taxInvoiceBtn?.addEventListener('click', showTaxDialog);
+taxCancelBtn?.addEventListener('click', () => taxDialog?.close());
+taxForm?.addEventListener('submit', event => { event.preventDefault(); submitTaxDialog(); });
 window.addEventListener('storage', event => { if (event.key === SALES_KEY) rerenderLatest(); });
 window.addEventListener('pos:loyalty-updated', rerenderLatest);
 waitForLoyaltyAndRender();
