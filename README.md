@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: P9-B006-07 Buyer Lookup OpenAPI
-Version: 0.13.49
-Build: 2026.07.06.069
+Milestone: P9-B006-08 Buyer Lookup Normalization
+Version: 0.13.50
+Build: 2026.07.06.070
 
-Change: updated the tax buyer lookup function to call the official buyer lookup OpenAPI by tax ID. The receipt modal continues calling `/api/tax-buyer/lookup`, and the function normalizes the response into buyer tax ID, buyer name, address, and branch fields for automatic form filling. Draft persistence and modal-safe fallback remain in place.
+Change: improved the tax buyer lookup function to support nested and array-based OpenAPI responses. The function now scans the payload for the best juristic record, supports more field aliases for tax ID, buyer name, address, and branch, and adds a debug mode at `/api/tax-buyer/lookup?taxId=...&debug=1` to inspect response status, content type, keys, and a safe preview.
 
 Existing full tax invoice creation, tax invoice history/reprint, receipt behavior, POS totals, VAT calculation, stock deduction, and offline sale sync are unchanged.
 
