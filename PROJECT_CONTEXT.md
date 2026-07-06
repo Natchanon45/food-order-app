@@ -2,15 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.54
-Build: 2026.07.06.074
-Milestone: P9-B006-12 Deep DBD Address Lookup
+Version: 0.13.55
+Build: 2026.07.06.075
+Milestone: P9-B006-13 Tax Invoice VAT Total Display
 
-Change: fixed the tax buyer lookup address mapping by reading DBD locality fields recursively inside the address object. The function now uses `cd:Address` as the base and deep-searches for city subdivision, city, province, and postcode fields before returning `buyerAddress`. Debug mode now includes `addressKeys` and `addressProbe` to show which address parts were detected.
+Change: fixed the Full Tax Invoice print view so the VAT summary row no longer displays a dash. The row now shows the calculated VAT-inclusive total from `totalAmount`, falling back to `beforeVat + vatAmount` when needed. The tax invoice page asset version was bumped to load the updated print script.
 
-Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through deep DBD address lookup.
+Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through VAT total display fix.
 
-Usage: open a receipt after sale, click `ใบกำกับภาษีเต็มรูปแบบ`, enter tax ID, then press `DBD`. For troubleshooting, open `/api/tax-buyer/lookup?taxId=0105528025574&debug=1` after deploying the function.
+Usage: open a receipt after sale, click `ใบกำกับภาษีเต็มรูปแบบ`, enter tax ID, press `DBD`, then create/print the full tax invoice. The buyer address should remain complete and the VAT total row should show the amount instead of `-`.
 
 Next Task: improve customer tax profile management, tax invoice running number counter, and void/cancel tax invoice support.
 
