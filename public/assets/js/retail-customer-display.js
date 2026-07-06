@@ -22,7 +22,7 @@ const els = {
   grandTotal: document.querySelector('#grandTotal'),
   paidState: document.querySelector('#paidState'),
   updatedAt: document.querySelector('#updatedAt'),
-  main: document.querySelector('.display-main')
+  header: document.querySelector('.display-header')
 };
 
 function safeId(value, fallback = DEFAULT_DISPLAY_ID) {
@@ -69,24 +69,50 @@ function qrImageUrl(value) {
 }
 
 function installPairingCard() {
-  if (!els.main || document.querySelector('#displayPairingCard')) return;
+  if (!els.header || document.querySelector('#displayPairingCard')) return;
   const url = posPairingUrl();
-  const card = document.createElement('section');
+  const card = document.createElement('div');
   card.id = 'displayPairingCard';
-  card.className = 'pairing-card';
+  card.className = 'pairing-card pairing-card-compact';
   card.innerHTML = `
-    <div class="pairing-copy">
-      <div class="pairing-label">เชื่อม iPhone เพื่อขายเข้าจอนี้</div>
-      <strong>สแกน QR ด้วย iPhone</strong>
-      <span>จอนี้: ${esc(requestedDisplayId)}</span>
-      <small>iPhone จะเปิด POS และจำจอนี้ไว้ให้อัตโนมัติ</small>
-      <a class="pairing-link" href="${esc(url)}" target="_blank" rel="noopener">เปิด POS สำหรับจอนี้</a>
-    </div>
-    <div class="pairing-qr-wrap">
-      <img class="pairing-qr" src="${esc(qrImageUrl(url))}" alt="QR เชื่อม iPhone กับจอลูกค้า ${esc(requestedDisplayId)}">
-      <div class="pairing-display-id">${esc(requestedDisplayId)}</div>
+    <button class="pairing-toggle" type="button" aria-expanded="false" aria-controls="pairingPanel">
+      <span class="pairing-mini-qr" aria-hidden="true"><img src="${esc(qrImageUrl(url))}" alt=""></span>
+      <span class="pairing-toggle-copy"><strong>เชื่อม iPhone</strong><small>แตะเพื่อขยาย QR</small></span>
+    </button>
+    <div id="pairingPanel" class="pairing-panel" hidden>
+      <div class="pairing-copy">
+        <div class="pairing-label">เชื่อม iPhone เพื่อขายเข้าจอนี้</div>
+        <strong>สแกน QR ด้วย iPhone</strong>
+        <span>จอนี้: ${esc(requestedDisplayId)}</span>
+        <small>iPhone จะเปิด POS และจำจอนี้ไว้ให้อัตโนมัติ</small>
+        <a class="pairing-link" href="${esc(url)}" target="_blank" rel="noopener">เปิด POS สำหรับจอนี้</a>
+      </div>
+      <div class="pairing-qr-wrap">
+        <img class="pairing-qr" src="${esc(qrImageUrl(url))}" alt="QR เชื่อม iPhone กับจอลูกค้า ${esc(requestedDisplayId)}">
+        <div class="pairing-display-id">${esc(requestedDisplayId)}</div>
+      </div>
     </div>`;
-  els.main.prepend(card);
+  const toggle = card.querySelector('.pairing-toggle');
+  const panel = card.querySelector('#pairingPanel');
+  toggle?.addEventListener('click', () => {
+    const expanded = card.classList.toggle('is-expanded');
+    toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    panel.hidden = !expanded;
+  });
+  document.addEventListener('click', event => {
+    if (!card.classList.contains('is-expanded') || card.contains(event.target)) return;
+    card.classList.remove('is-expanded');
+    toggle?.setAttribute('aria-expanded', 'false');
+    panel.hidden = true;
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape' || !card.classList.contains('is-expanded')) return;
+    card.classList.remove('is-expanded');
+    toggle?.setAttribute('aria-expanded', 'false');
+    panel.hidden = true;
+    toggle?.focus();
+  });
+  els.header.append(card);
 }
 
 function render(snapshot = {}) {
