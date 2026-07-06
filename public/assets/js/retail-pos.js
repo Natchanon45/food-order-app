@@ -20,6 +20,7 @@ const MOVEMENT_KEY = "retail_pos_stock_movements_v1";
 const SHIFT_KEY = "retail_pos_active_shift_v1";
 const CUSTOMER_KEY = "retail_pos_customers_v1";
 const SETTINGS_KEY = "retail_pos_store_settings_v1";
+const FIRESTORE_SAVE_TIMEOUT_MS = 10000;
 
 const DEFAULT_TAX_SETTINGS = Object.freeze({
   vatRegistered: "no",
@@ -304,9 +305,25 @@ function updatePaymentUi() {
 
 function saveLocalSale(sale, nextProducts, movements) {
   const sales = readJson(SALES_KEY, []);
+  const saleKey = String(sale?.id || sale?.saleNumber || "");
+  const existing = sales.filter(item => String(item?.id || item?.saleNumber || "") !== saleKey);
   writeJson(PRODUCT_KEY, nextProducts);
-  writeJson(SALES_KEY, [sale, ...sales].slice(0, 500));
+  writeJson(SALES_KEY, [sale, ...existing].slice(0, 500));
   writeJson(MOVEMENT_KEY, [...movements, ...readJson(MOVEMENT_KEY, [])].slice(0, 500));
+}
+
+function updateLocalSaleOnly(sale) {
+  const saleKey = String(sale?.id || sale?.saleNumber || "");
+  if (!saleKey) return false;
+  const sales = readJson(SALES_KEY, []);
+  let changed = false;
+  const next = sales.map(item => {
+    if (String(item?.id || item?.saleNumber || "") !== saleKey) return item;
+    changed = true;
+    return { ...item, ...sale };
+  });
+  if (changed) writeJson(SALES_KEY, next);
+  return changed;
 }
 
 async function completeSaleOffline({ saleId, method, received, totals, createdAt, saleItems }) {
@@ -385,6 +402,7 @@ async function completeSaleFirestore({ saleId, method, received, totals, created
     transaction.set(summaryRef, { ...nextSummary, updatedBy: user.uid, updatedAtServer: serverTimestamp() }, { merge: true });
     transaction.set(tenantDoc(POS_COLLECTIONS.syncQueue, saleId), { ...buildSyncQueueRow(normalizedSale, { status: "synced" }), createdBy: user.uid, updatedBy: user.uid, updatedAtServer: serverTimestamp() }, { merge: true });
   });
+  if (updateLocalSaleOnly(committedSale)) return committedSale;
   const nextProducts = products.map(product => {
     const sold = saleItems.find(item => item.id === product.id)?.qty || 0;
     return sold ? { ...product, stock: Number(product.stock || 0) - sold } : product;
@@ -394,10 +412,18 @@ async function completeSaleFirestore({ saleId, method, received, totals, created
   return committedSale;
 }
 
+function withTimeout(promise, ms = FIRESTORE_SAVE_TIMEOUT_MS) {
+  let timer = 0;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error("POS_FIRESTORE_SAVE_TIMEOUT")), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
 async function saveSaleWithFallback({ saleId, method, received, totals, createdAt, saleItems }) {
   const payload = { saleId, method, received, totals, createdAt, saleItems };
   if (!isFirebaseConfigured || !db || navigator.onLine === false) return { sale: await completeSaleOffline(payload), offline: true };
-  try { return { sale: await completeSaleFirestore(payload), offline: false }; }
+  try { return { sale: await withTimeout(completeSaleFirestore(payload)), offline: false }; }
   catch (error) { if (!shouldFallbackToOffline(error)) throw error; console.warn("[retail-pos] firebase unavailable, saved sale offline", error); return { sale: await completeSaleOffline(payload), offline: true }; }
 }
 
