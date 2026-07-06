@@ -1,3 +1,5 @@
+import { createFullTaxInvoiceFromSale, taxInvoiceUrl } from './retail-pos-full-tax-invoice.js?v=20260706-062';
+
 const SALES_KEY = 'retail_pos_sales_v1';
 const STORE_SETTINGS_KEY = 'retail_pos_store_settings_v1';
 const LEGACY_STORE_SETTINGS_KEY = 'food_order_store_settings';
@@ -5,6 +7,7 @@ const LEGACY_STORE_SETTINGS_KEY = 'food_order_store_settings';
 const root = document.querySelector('#receiptRoot');
 const printBtn = document.querySelector('#printBtn');
 const closeBtn = document.querySelector('#closeBtn');
+const taxInvoiceBtn = document.querySelector('#taxInvoiceBtn');
 const params = new URLSearchParams(location.search);
 const saleId = params.get('saleId') || '';
 const autoPrint = params.get('auto') === '1';
@@ -62,6 +65,20 @@ function rerenderLatest() { const sale = findSale(); if (sale) render(sale); ret
 async function waitForLoyaltyAndRender() { let sale = findSale(); render(sale); const started = Date.now(); while (Date.now() - started < 2500) { await new Promise(resolve => setTimeout(resolve, 180)); sale = rerenderLatest(); if (sale?.loyalty) break; } if (autoPrint) setTimeout(() => window.print(), 250); }
 printBtn?.addEventListener('click', () => window.print());
 closeBtn?.addEventListener('click', () => window.close());
+taxInvoiceBtn?.addEventListener('click', async () => {
+  if (!currentSale) return;
+  taxInvoiceBtn.disabled = true;
+  taxInvoiceBtn.textContent = 'กำลังออกเอกสาร...';
+  try {
+    const invoice = await createFullTaxInvoiceFromSale(currentSale);
+    if (invoice) window.open(taxInvoiceUrl(invoice, { autoPrint: false }), `pos_tax_invoice_${String(invoice.id).replace(/[^a-zA-Z0-9]/g, '_')}`, 'popup=yes,width=920,height=760,noopener,noreferrer');
+  } catch (error) {
+    alert(error?.message || 'ออกใบกำกับภาษีเต็มรูปแบบไม่สำเร็จ');
+  } finally {
+    taxInvoiceBtn.disabled = false;
+    taxInvoiceBtn.textContent = 'ใบกำกับภาษีเต็มรูปแบบ';
+  }
+});
 window.addEventListener('storage', event => { if (event.key === SALES_KEY) rerenderLatest(); });
 window.addEventListener('pos:loyalty-updated', rerenderLatest);
 waitForLoyaltyAndRender();
