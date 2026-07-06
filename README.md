@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: P9-B006-16 Customer Display Pairing Panel Fix
-Version: 0.13.61
-Build: 2026.07.07.005
+Milestone: P9-B006-17 Customer Display Liquid QR
+Version: 0.13.62
+Build: 2026.07.07.006
 
-Change: fixed the Customer Display header layout after the font rollback. The pairing QR panel is now styled by the Customer Display CSS itself: the header shows a compact connection button, and the QR panel is hidden until hover/focus. The customer display CSS asset version was bumped to load the fix.
+Change: restyled the Customer Display pairing QR panel with a black-green linear liquid/glass look. The QR panel remains hidden until hover/focus, while the real QR image is larger for easier scanning. The Customer Display CSS asset version was bumped to load the new style.
 
 Existing tax buyer DBD lookup, tax invoice creation, tax invoice history/reprint, receipt behavior, POS totals, VAT calculation, stock deduction, customer display data sync, and offline sale sync are unchanged.
 
