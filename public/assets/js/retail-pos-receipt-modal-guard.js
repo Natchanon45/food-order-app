@@ -1,3 +1,18 @@
+const nativeSetItem = Storage.prototype.setItem;
+
+function restoreNativeLocalStorageSetItem() {
+  try {
+    localStorage.setItem = function safeSetItem(key, value) {
+      nativeSetItem.call(localStorage, key, value);
+      if (key === 'retail_pos_store_settings_v1' || key === 'food_order_store_settings') {
+        window.dispatchEvent(new CustomEvent('retail-pos-receipt-settings-updated'));
+      }
+    };
+  } catch (error) {
+    console.warn('[retail-pos-receipt-modal-guard] unable to restore localStorage.setItem', error);
+  }
+}
+
 function receiptModal() {
   return document.querySelector('[data-pos-receipt-modal]');
 }
@@ -59,6 +74,10 @@ function closeReceiptModal() {
   unlockPage();
   document.querySelector('#barcodeInput')?.focus();
 }
+
+restoreNativeLocalStorageSetItem();
+window.addEventListener('retail-pos-safe-confirm-ready', restoreNativeLocalStorageSetItem);
+window.addEventListener('retail-pos-ready-for-next-sale', restoreNativeLocalStorageSetItem);
 
 document.addEventListener('click', event => {
   const modal = receiptModal();
