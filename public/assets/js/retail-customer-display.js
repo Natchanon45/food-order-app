@@ -21,7 +21,8 @@ const els = {
   vatMode: document.querySelector('#vatMode'),
   grandTotal: document.querySelector('#grandTotal'),
   paidState: document.querySelector('#paidState'),
-  updatedAt: document.querySelector('#updatedAt')
+  updatedAt: document.querySelector('#updatedAt'),
+  main: document.querySelector('.display-main')
 };
 
 function safeId(value, fallback = DEFAULT_DISPLAY_ID) {
@@ -50,9 +51,47 @@ function sortItems(items = []) {
   return [...items].sort((a, b) => (Number(b.touchedAt || 0) - Number(a.touchedAt || 0)) || (Number(b.sortIndex || 0) - Number(a.sortIndex || 0)));
 }
 
+function registerIdForMobile() {
+  const saved = readJson('retail_pos_register_config', {});
+  return safeId(params.get('registerId') || saved.registerId || 'iphone-01', 'iphone-01');
+}
+
+function posPairingUrl() {
+  const url = new URL('/pos', location.origin);
+  url.searchParams.set('registerId', registerIdForMobile());
+  url.searchParams.set('displayId', requestedDisplayId);
+  return url.href;
+}
+
+function qrImageUrl(value) {
+  const data = encodeURIComponent(value);
+  return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=10&data=${data}`;
+}
+
+function installPairingCard() {
+  if (!els.main || document.querySelector('#displayPairingCard')) return;
+  const url = posPairingUrl();
+  const card = document.createElement('section');
+  card.id = 'displayPairingCard';
+  card.className = 'pairing-card';
+  card.innerHTML = `
+    <div class="pairing-copy">
+      <div class="pairing-label">เชื่อม iPhone เพื่อขายเข้าจอนี้</div>
+      <strong>สแกน QR ด้วย iPhone</strong>
+      <span>จอนี้: ${esc(requestedDisplayId)}</span>
+      <small>iPhone จะเปิด POS และจำจอนี้ไว้ให้อัตโนมัติ</small>
+      <a class="pairing-link" href="${esc(url)}" target="_blank" rel="noopener">เปิด POS สำหรับจอนี้</a>
+    </div>
+    <div class="pairing-qr-wrap">
+      <img class="pairing-qr" src="${esc(qrImageUrl(url))}" alt="QR เชื่อม iPhone กับจอลูกค้า ${esc(requestedDisplayId)}">
+      <div class="pairing-display-id">${esc(requestedDisplayId)}</div>
+    </div>`;
+  els.main.prepend(card);
+}
+
 function render(snapshot = {}) {
   const items = sortItems(Array.isArray(snapshot.items) ? snapshot.items : []);
-  els.status.textContent = snapshot.updatedAt ? `เชื่อมต่อแล้ว • ${esc(snapshot.displayId || requestedDisplayId)}` : `รอข้อมูลจาก ${requestedDisplayId}`;
+  els.status.textContent = snapshot.updatedAt ? `เชื่อมต่อแล้ว • ${snapshot.displayId || requestedDisplayId}` : `รอข้อมูลจาก ${requestedDisplayId}`;
   els.customerName.textContent = snapshot.customerDisplayName || snapshot.customerName || 'ลูกค้าทั่วไป';
   els.customerPhone.textContent = snapshot.customerDisplayPhone || '';
   els.cartCount.textContent = `${Number(snapshot.itemCount || 0).toLocaleString('th-TH')} รายการ`;
@@ -75,6 +114,7 @@ function renderLocal() {
   render(localSnapshot());
 }
 
+installPairingCard();
 renderLocal();
 const stop = watchRecords(DISPLAY_COLLECTION, rows => {
   const snapshot = rows.find(row => String(row.id || row._documentId || row.displayId) === requestedDisplayId) || localSnapshot();
