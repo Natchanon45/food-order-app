@@ -1,12 +1,12 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: P9-B006-03 DBD Tax Buyer Lookup
-Version: 0.13.45
-Build: 2026.07.06.065
+Milestone: P9-B006-04 Tax Buyer Adapter
+Version: 0.13.46
+Build: 2026.07.06.066
 
-Change: improved the Full Tax Invoice buyer modal. The buyer tax ID field is now the first field, includes an inline `DBD` button, and prepares a DBD lookup flow. When a DBD lookup proxy endpoint is configured through `window.RETAIL_POS_DBD_LOOKUP_URL` or localStorage key `retail_pos_dbd_lookup_url`, the modal fetches buyer company data by tax ID and fills buyer name, address, branch, and tax ID. Without a proxy, the button opens the official DBD DataWarehouse+ juristic search page as a safe fallback.
+Change: added a Firebase Function adapter for buyer tax data. Hosting now routes `/api/tax-buyer/lookup` to `lookupTaxBuyer`, and the receipt tax invoice modal calls that route by default when pressing `DBD`. The function can connect to a configured upstream service through the Cloud Functions environment variable `TAX_BUYER_LOOKUP_URL` and normalizes JSON into buyer tax ID, buyer name, address, and branch. If the adapter is not configured or the request fails, the existing manual fallback still opens.
 
 Existing full tax invoice creation, tax invoice history/reprint, short tax invoice / receipt behavior, POS sale totals, VAT calculation, stock deduction, offline sale sync, and receipt printing logic are unchanged.
 
-Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
+Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only functions:lookupTaxBuyer,hosting
