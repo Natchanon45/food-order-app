@@ -1,8 +1,12 @@
 import { watchRecords } from './retail-db.js?v=20260629-032';
 
 const DISPLAY_COLLECTION = 'customerDisplays';
-const DISPLAY_ID = 'main-register';
-const DISPLAY_KEY = 'retail_pos_customer_display_main';
+const DEFAULT_DISPLAY_ID = 'main-register';
+const DISPLAY_KEY_PREFIX = 'retail_pos_customer_display';
+const LEGACY_DISPLAY_KEY = 'retail_pos_customer_display_main';
+
+const params = new URLSearchParams(location.search);
+const requestedDisplayId = safeId(params.get('displayId') || params.get('registerId') || DEFAULT_DISPLAY_ID);
 
 const els = {
   status: document.querySelector('#displayStatus'),
@@ -20,6 +24,15 @@ const els = {
   updatedAt: document.querySelector('#updatedAt')
 };
 
+function safeId(value, fallback = DEFAULT_DISPLAY_ID) {
+  const cleaned = String(value || '').trim().replace(/[^a-zA-Z0-9_-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  return cleaned || fallback;
+}
+
+function displayStorageKey(displayId) {
+  return displayId === DEFAULT_DISPLAY_ID ? LEGACY_DISPLAY_KEY : `${DISPLAY_KEY_PREFIX}_${displayId}`;
+}
+
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
   catch { return fallback; }
@@ -33,9 +46,13 @@ function esc(value) {
   return String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
 }
 
+function sortItems(items = []) {
+  return [...items].sort((a, b) => (Number(b.touchedAt || 0) - Number(a.touchedAt || 0)) || (Number(b.sortIndex || 0) - Number(a.sortIndex || 0)));
+}
+
 function render(snapshot = {}) {
-  const items = Array.isArray(snapshot.items) ? snapshot.items : [];
-  els.status.textContent = snapshot.updatedAt ? 'เชื่อมต่อแล้ว' : 'รอข้อมูลจาก POS';
+  const items = sortItems(Array.isArray(snapshot.items) ? snapshot.items : []);
+  els.status.textContent = snapshot.updatedAt ? `เชื่อมต่อแล้ว • ${esc(snapshot.displayId || requestedDisplayId)}` : `รอข้อมูลจาก ${requestedDisplayId}`;
   els.customerName.textContent = snapshot.customerDisplayName || snapshot.customerName || 'ลูกค้าทั่วไป';
   els.customerPhone.textContent = snapshot.customerDisplayPhone || '';
   els.cartCount.textContent = `${Number(snapshot.itemCount || 0).toLocaleString('th-TH')} รายการ`;
@@ -50,14 +67,18 @@ function render(snapshot = {}) {
   els.updatedAt.textContent = snapshot.updatedAt ? `อัปเดตล่าสุด ${new Date(snapshot.updatedAt).toLocaleTimeString('th-TH')}` : '';
 }
 
+function localSnapshot() {
+  return readJson(displayStorageKey(requestedDisplayId), requestedDisplayId === DEFAULT_DISPLAY_ID ? readJson(LEGACY_DISPLAY_KEY, {}) : {});
+}
+
 function renderLocal() {
-  render(readJson(DISPLAY_KEY, {}));
+  render(localSnapshot());
 }
 
 renderLocal();
 const stop = watchRecords(DISPLAY_COLLECTION, rows => {
-  const snapshot = rows.find(row => String(row.id || row._documentId) === DISPLAY_ID) || readJson(DISPLAY_KEY, {});
+  const snapshot = rows.find(row => String(row.id || row._documentId || row.displayId) === requestedDisplayId) || localSnapshot();
   render(snapshot);
 }, { sortBy: 'updatedAt', direction: 'desc' });
-window.addEventListener('storage', event => { if (!event.key || event.key === DISPLAY_KEY) renderLocal(); });
+window.addEventListener('storage', event => { if (!event.key || event.key === displayStorageKey(requestedDisplayId) || event.key === LEGACY_DISPLAY_KEY) renderLocal(); });
 window.addEventListener('beforeunload', stop, { once: true });
