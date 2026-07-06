@@ -2,8 +2,8 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.24
-Build: 2026.07.06.044
+Version: 0.13.25
+Build: 2026.07.06.045
 Milestone: P9-B005 Repository Layer / POS UX Hotfix
 
 ## Scope
@@ -46,6 +46,7 @@ Completed:
 - Loyalty + Receipt Privacy Hotfix
 - P9-B005 Repository Layer foundation
 - POS UX Hotfix for product hover, sold-out cards, and bill reset after payment
+- Receipt privacy and simplified half-card product hover label hotfix
 
 Current milestone: P9-B005 Repository Layer / POS UX Hotfix
 
@@ -65,7 +66,9 @@ Runtime POS modules should gradually replace direct localStorage keys and duplic
 
 ## POS UX Hotfix
 
-Retail POS product cards on PC should expose product name, stock balance, price, and product code on hover and browser tooltip. Sold-out products should be visually greyed out and marked with a sold-out badge.
+Retail POS product cards on PC should use a half-card bottom overlay on hover. The overlay should show only the product name and price, without a separate browser tooltip, so cashiers can read it quickly without covering nearby products.
+
+Sold-out products should be visually greyed out and marked with a sold-out badge.
 
 After any successful payment flow or receipt close, the active bill must be cleared. The reset must clear cart rows, discount, payment input, customer/loyalty selection UI, totals, and return focus to the barcode input so the cashier can immediately start the next sale.
 
@@ -78,7 +81,8 @@ Receipts and sales receipt dialogs must show:
 - `ใบกำกับภาษีอย่างย่อ / ใบเสร็จรับเงิน` when VAT is present
 - VAT rows when applicable
 - Loyalty point summary when available
-- Masked customer name
+- Masked customer first name: first up to 5 characters followed by `*****`
+- Masked customer last name: `*****` followed by the last 3 characters
 - Masked customer phone
 
 ## Deployment
