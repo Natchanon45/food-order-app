@@ -50,6 +50,12 @@ function listLocalInvoices() {
   return Array.isArray(rows) ? rows : [];
 }
 
+function existingInvoiceForSale(sale) {
+  const key = saleKey(sale);
+  if (!key) return null;
+  return listLocalInvoices().find(row => String(row.saleId || row.sourceSale?.id || row.sourceSale?.saleNumber || '') === key || String(row.saleNumber || '') === String(sale.saleNumber || '')) || null;
+}
+
 function saveLocalInvoice(invoice) {
   const rows = listLocalInvoices().filter(row => String(row.id) !== String(invoice.id));
   rows.push(invoice);
@@ -124,6 +130,8 @@ function buildInvoiceFromSale(sale, buyer) {
 
 export async function createFullTaxInvoiceFromSale(sale) {
   if (!sale) throw new Error('ไม่พบข้อมูลบิล');
+  const existing = existingInvoiceForSale(sale);
+  if (existing) return existing;
   const buyer = collectBuyerInput(sale);
   if (!buyer) return null;
   const invoice = buildInvoiceFromSale(sale, buyer);
