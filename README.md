@@ -1,10 +1,10 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: P9-B004 Firestore Rules Hotfix
-Version: 0.13.20
-Build: 2026.07.06.040
+Milestone: P9-B004 Pending Number Helper Hotfix
+Version: 0.13.21
+Build: 2026.07.06.041
 
-Change: updated Firestore Security Rules for Retail POS sync. Added tenant-scoped `runningNumbers` access, relaxed POS sale sync validation for offline sales without `cashierId`, allowed POS stock update with `shopId`, and added `customerDisplays` tenant rules. This fixes permission-denied errors during running number reservation and POS sync transactions.
+Change: added `pendingDocumentNumber()` export to `retail-pos-firestore-foundation.js` and bumped POS safe-confirm cache. This restores the sale save flow that depends on the shared pending SALE number helper, so the after-sale and loyalty point save path can continue.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only firestore:rules,hosting
