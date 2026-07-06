@@ -4,6 +4,7 @@ const SALES_KEY = 'retail_pos_sales_v1';
 const STORE_SETTINGS_KEY = 'retail_pos_store_settings_v1';
 const LEGACY_STORE_SETTINGS_KEY = 'food_order_store_settings';
 const DBD_LOOKUP_URL_KEY = 'retail_pos_dbd_lookup_url';
+const DEFAULT_TAX_BUYER_LOOKUP_URL = '/api/tax-buyer/lookup';
 const DBD_DATAWAREHOUSE_URL = 'https://datawarehouse.dbd.go.th/juristic';
 
 const root = document.querySelector('#receiptRoot');
@@ -112,7 +113,7 @@ async function submitTaxDialog() {
     taxInvoiceBtn.disabled = false;
   }
 }
-function dbdLookupEndpoint() { return window.RETAIL_POS_DBD_LOOKUP_URL || localStorage.getItem(DBD_LOOKUP_URL_KEY) || ''; }
+function dbdLookupEndpoint() { return window.RETAIL_POS_DBD_LOOKUP_URL || localStorage.getItem(DBD_LOOKUP_URL_KEY) || DEFAULT_TAX_BUYER_LOOKUP_URL; }
 function normalizeDbdProfile(data = {}) {
   const source = data.data || data.result || data.profile || data;
   return {
@@ -137,19 +138,15 @@ async function lookupDbd() {
   dbdLookupBtn.disabled = true;
   dbdLookupBtn.textContent = 'ค้นหา...';
   try {
-    if (endpoint) {
-      const url = new URL(endpoint, location.origin);
-      url.searchParams.set('taxId', taxId);
-      const response = await fetch(url.toString(), { headers: { accept: 'application/json' } });
-      if (!response.ok) throw new Error('DBD lookup failed');
-      const profile = normalizeDbdProfile(await response.json());
-      if (!profile.buyerName && !profile.buyerAddress) throw new Error('ไม่พบข้อมูลจาก DBD');
-      fillBuyerFromDbd(profile);
-      taxError.textContent = 'ดึงข้อมูลจาก DBD สำเร็จ กรุณาตรวจสอบก่อนออกเอกสาร';
-      return;
-    }
-    window.open(`${DBD_DATAWAREHOUSE_URL}?keyword=${encodeURIComponent(taxId)}`, '_blank', 'noopener,noreferrer');
-    taxError.textContent = 'เปิด DBD DataWarehouse+ แล้ว หากต้องการกรอกอัตโนมัติให้ตั้งค่า DBD lookup proxy ที่ retail_pos_dbd_lookup_url';
+    const url = new URL(endpoint, location.origin);
+    url.searchParams.set('taxId', taxId);
+    const response = await fetch(url.toString(), { headers: { accept: 'application/json' } });
+    if (!response.ok) throw new Error('DBD lookup failed');
+    const payload = await response.json();
+    const profile = normalizeDbdProfile(payload);
+    if (!profile.buyerName && !profile.buyerAddress) throw new Error('ไม่พบข้อมูลจาก DBD');
+    fillBuyerFromDbd(profile);
+    taxError.textContent = 'ดึงข้อมูลจาก DBD สำเร็จ กรุณาตรวจสอบก่อนออกเอกสาร';
   } catch (error) {
     window.open(`${DBD_DATAWAREHOUSE_URL}?keyword=${encodeURIComponent(taxId)}`, '_blank', 'noopener,noreferrer');
     taxError.textContent = 'ยังดึงข้อมูล DBD อัตโนมัติไม่ได้ จึงเปิดหน้า DBD ให้ตรวจสอบและกรอกข้อมูลต่อ';
