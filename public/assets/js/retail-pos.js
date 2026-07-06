@@ -6,14 +6,13 @@ import {
   getDeviceId,
   dateKeyFrom,
   monthKeyFrom,
-  buildRunningNumber,
-  buildCounterRow,
-  counterIdForDate,
   normalizeSaleForFirestore,
   buildSaleItemRows,
   applySaleToDailySummary,
   buildSyncQueueRow
-} from './retail-pos-firestore-foundation.js?v=20260630-077';
+} from './retail-pos-firestore-foundation.js?v=20260702-002';
+import { reserveRunningNumber } from './retail-pos-counter.js?v=20260702-003';
+import { showReceipt } from './retail-pos-receipt-modal.js?v=20260706-028';
 
 const PRODUCT_KEY = "retail_pos_products_v1";
 const SALES_KEY = "retail_pos_sales_v1";
@@ -281,6 +280,7 @@ function changeQty(id, delta) {
 }
 
 function resetSale() { cart = []; els.discountInput.value = "0"; renderCart(); els.barcodeInput.focus(); }
+function readyForNextSale() { resetSale(); setTimeout(() => els.barcodeInput?.focus(), 120); }
 
 function openPayment() {
   const totals = getTotals();
@@ -343,15 +343,12 @@ async function completeSaleFirestore({ saleId, method, received, totals, created
   if (!user?.uid) throw new Error("AUTH_REQUIRED");
   const tenantId = getTenantId();
   const saleRef = tenantDoc(RetailCollections.sales, saleId);
-  const dateKey = dateKeyFrom(createdAt);
-  const counterRef = tenantDoc(POS_COLLECTIONS.counters, counterIdForDate(dateKey));
   let committedSale = null;
   const localMovements = [];
   await runTransaction(db, async transaction => {
     localMovements.length = 0;
     const existingSale = await transaction.get(saleRef);
     if (existingSale.exists()) { committedSale = { id: saleRef.id, ...existingSale.data(), syncStatus: "synced" }; return; }
-    const counterSnapshot = await transaction.get(counterRef);
     const rows = [];
     for (const cartItem of saleItems) {
       const productRef = tenantDoc(RetailCollections.products, cartItem._documentId || cartItem.id);
@@ -361,16 +358,16 @@ async function completeSaleFirestore({ saleId, method, received, totals, created
       if (Number(product.stock || 0) < Number(cartItem.qty || 0)) throw new Error(`INSUFFICIENT_STOCK:${product.name}`);
       rows.push({ cartItem, productRef, product });
     }
-    const currentRunning = Number(counterSnapshot.exists() ? counterSnapshot.data().current || 0 : 0);
-    const nextRunning = currentRunning + 1;
-    const number = buildRunningNumber({ dateKey, running: nextRunning });
+    const saleDateValue = createdAt || new Date();
+    const saleDateKey = dateKeyFrom(saleDateValue);
+    const summaryRef = tenantDoc(POS_COLLECTIONS.dailySummary, saleDateKey);
+    const summarySnapshot = await transaction.get(summaryRef);
+    const reserved = await reserveRunningNumber(transaction, db, { type: "SALE", value: saleDateValue, tenantId, documentId: saleId, userId: user.uid });
+    const number = reserved.documentNumber;
     const sale = buildSale({ id: saleId, number, method, received, totals, createdAt, saleItems, cashierId: user.uid, syncStatus: "synced" });
     const normalizedSale = normalizeSaleForFirestore(sale, { tenantId, userId: user.uid, deviceId: sale.deviceId });
-    const summaryRef = tenantDoc(POS_COLLECTIONS.dailySummary, normalizedSale.dateKey);
-    const summarySnapshot = await transaction.get(summaryRef);
     const nextSummary = applySaleToDailySummary(summarySnapshot.exists() ? summarySnapshot.data() : {}, normalizedSale);
     committedSale = { ...normalizedSale, id: saleId, syncStatus: "synced" };
-    transaction.set(counterRef, { ...buildCounterRow({ tenantId, dateKey, running: nextRunning, saleId, saleNumber: number, userId: user.uid }), updatedAtServer: serverTimestamp() }, { merge: true });
     transaction.set(saleRef, { ...normalizedSale, id: saleId, syncStatus: "synced", createdAtServer: serverTimestamp(), updatedAt: Date.now(), updatedAtServer: serverTimestamp() });
     buildSaleItemRows(normalizedSale).forEach(item => transaction.set(tenantDoc(POS_COLLECTIONS.saleItems, item.id), { ...item, createdBy: user.uid, updatedBy: user.uid, deviceId: normalizedSale.deviceId, schemaVersion: POS_FIRESTORE_VERSION, deleted: false, createdAtServer: serverTimestamp(), updatedAt: Date.now(), updatedAtServer: serverTimestamp() }, { merge: true }));
     rows.forEach(({ cartItem, productRef, product }) => {
@@ -417,7 +414,14 @@ async function confirmPayment() {
   const saleId = safeId("sale");
   const createdAt = new Date().toISOString();
   const saleItems = cart.map(item => ({ ...item }));
-  try { const { sale, offline } = await saveSaleWithFallback({ saleId, method, received, totals, createdAt, saleItems }); els.paymentDialog.close(); renderProducts(); resetSale(); showToast(offline ? `บันทึกการขาย ${sale.saleNumber || sale.id} แบบออฟไลน์แล้ว` : `บันทึกการขาย ${sale.saleNumber || sale.id} สำเร็จ`); }
+  try {
+    const { sale, offline } = await saveSaleWithFallback({ saleId, method, received, totals, createdAt, saleItems });
+    els.paymentDialog.close();
+    renderProducts();
+    readyForNextSale();
+    showToast(offline ? `บันทึกการขาย ${sale.saleNumber || sale.id} แบบออฟไลน์แล้ว` : `บันทึกการขาย ${sale.saleNumber || sale.id} สำเร็จ`);
+    await showReceipt(sale, { autoPrint: false });
+  }
   catch (error) { console.error("[retail-pos] sale failed", error); const message = String(error?.message || error); if (message.startsWith("INSUFFICIENT_STOCK:")) els.paymentError.textContent = `สต็อก ${message.split(":").slice(1).join(":")} ไม่พอ`; else if (message.startsWith("PRODUCT_NOT_FOUND:")) els.paymentError.textContent = `ไม่พบสินค้า ${message.split(":").slice(1).join(":")}`; else if (message === "AUTH_REQUIRED") els.paymentError.textContent = "กรุณาเข้าสู่ระบบก่อนบันทึกการขาย"; else els.paymentError.textContent = "บันทึกการขายไม่สำเร็จ กรุณาลองใหม่"; }
   finally { savingSale = false; els.confirmPaymentBtn.disabled = false; els.confirmPaymentBtn.textContent = "ยืนยันการขาย"; renderProducts(); renderCart(); }
 }

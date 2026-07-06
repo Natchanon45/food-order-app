@@ -87,6 +87,8 @@ function closeReceiptModal() {
   }
   closeNativePaymentDialog();
   unlockPage();
+  document.querySelector('#barcodeInput')?.focus();
+  window.dispatchEvent(new CustomEvent('retail-pos-ready-for-next-sale'));
 }
 
 document.addEventListener('click', event => {
