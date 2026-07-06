@@ -51,6 +51,14 @@ function itemRows(items = []) {
   return items.map((item, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(item.name || item.productName || '-')}</td><td class="right">${Number(item.qty || 0).toLocaleString('th-TH')}</td><td class="right">${money(item.price)}</td><td class="right">${money(itemLineTotal(item))}</td></tr>`).join('');
 }
 
+function vatTotalAmount(invoice = {}) {
+  const total = Number(invoice.totalAmount || 0);
+  const beforeVat = Number(invoice.beforeVat || 0);
+  const vatAmount = Number(invoice.vatAmount || 0);
+  if (total) return total;
+  return beforeVat + vatAmount;
+}
+
 function render(invoice) {
   if (!invoice) {
     root.className = 'missing';
@@ -97,7 +105,7 @@ function render(invoice) {
       ${Number(invoice.pointDiscount || 0) ? `<div><span>ส่วนลดแต้ม</span><strong>${money(invoice.pointDiscount)}</strong></div>` : ''}
       <div><span>ยอดก่อน VAT</span><strong>${money(invoice.beforeVat)}</strong></div>
       <div><span>VAT ${Number(invoice.vatRate || 7).toLocaleString('th-TH')}%</span><strong>${money(invoice.vatAmount)}</strong></div>
-      <div><span>${invoice.vatMode === 'exclude' ? 'ราคาไม่รวม VAT' : 'ราคารวม VAT'}</span><strong>-</strong></div>
+      <div><span>${invoice.vatMode === 'exclude' ? 'ราคาไม่รวม VAT' : 'ราคารวม VAT'}</span><strong>${money(vatTotalAmount(invoice))}</strong></div>
       <div class="grand"><span>ยอดสุทธิ</span><strong>${money(invoice.totalAmount)}</strong></div>
     </section>
     <section class="signature-grid">
