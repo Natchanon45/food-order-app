@@ -62,6 +62,10 @@ function isReceiptCloseTarget(target) {
   return button.matches('.receipt-close,.receipt-secondary,[data-receipt-close],[data-close-receipt]') || text === 'ปิด' || label === 'ปิด';
 }
 
+function notifyReceiptClosed() {
+  window.dispatchEvent(new CustomEvent('retail-pos-receipt-closed'));
+}
+
 function closeReceiptModal() {
   const modal = receiptModal();
   if (modal) {
@@ -72,6 +76,7 @@ function closeReceiptModal() {
     modal.removeAttribute('open');
   }
   unlockPage();
+  notifyReceiptClosed();
   document.querySelector('#barcodeInput')?.focus();
 }
 
