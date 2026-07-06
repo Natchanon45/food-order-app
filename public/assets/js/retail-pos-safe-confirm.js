@@ -1,5 +1,5 @@
 import { getTenantId } from './retail-db.js?v=20260629-032';
-import { getDeviceId, dateKeyFrom, monthKeyFrom } from './retail-pos-firestore-foundation.js?v=20260702-002';
+import { getDeviceId, POS_FIRESTORE_VERSION, dateKeyFrom, monthKeyFrom, pendingDocumentNumber } from './retail-pos-firestore-foundation.js?v=20260706-033';
 import { showReceipt } from './retail-pos-receipt-modal.js?v=20260706-028';
 
 const PRODUCT_KEY = 'retail_pos_products_v1';
@@ -14,13 +14,7 @@ function readJson(key, fallback) {
 }
 function writeJson(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
 function round2(value) { return Math.round((Number(value || 0) + Number.EPSILON) * 100) / 100; }
-function money(value) { return Number(value || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 function safeId(prefix) { return globalThis.crypto?.randomUUID ? `${prefix}-${crypto.randomUUID()}` : `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`; }
-function pendingSaleNumber(createdAt, saleId) {
-  const dateKey = dateKeyFrom(createdAt);
-  const suffix = String(saleId || '').replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase() || Math.random().toString(16).slice(2, 8).toUpperCase();
-  return `POS-${dateKey}-PENDING-${suffix}`;
-}
 function localSaleKey(sale) { return String(sale?.id || sale?.saleNumber || ''); }
 function movementId(saleId, productId) { return `${saleId}_${productId}`.replace(/[^a-zA-Z0-9_-]/g, '_'); }
 function parseMoneyText(text) { return Number(String(text || '').replace(/[^\d.-]/g, '')) || 0; }
@@ -62,7 +56,7 @@ function buildSale({ saleId, number, method, received, totals, createdAt, items 
   const customerId = document.querySelector('#paymentDialog')?.dataset.customerId || '';
   const customer = readJson(CUSTOMER_KEY, []).find(item => String(item.id) === String(customerId));
   const shift = readJson(SHIFT_KEY, null);
-  return { id: saleId, saleNumber: number, tenantId, shopId: tenantId, deviceId: getDeviceId(), schemaVersion: 'P9-B001', deleted: false, dateKey: dateKeyFrom(createdAt), monthKey: monthKeyFrom(createdAt), channel: 'retail-pos', orderType: 'pos', status: 'completed', paymentStatus: 'paid', syncStatus: 'pending', createdAt, items: items.map(item => ({ id: item.id, productId: item.id, barcode: item.barcode || '', name: item.name, price: item.price, cost: item.cost, qty: item.qty, unit: item.unit, lineTotal: round2(item.price * item.qty) })), totalQty: items.reduce((sum, item) => sum + item.qty, 0), subtotal: totals.subtotal, discount: totals.discount, pointDiscount: 0, discountedBase: totals.discountedBase, taxableBase: totals.taxableBase, beforeVat: totals.beforeVat, vatAmount: totals.vatAmount, vatRate: totals.vatRate, vatMode: totals.vatMode, vatRegistered: totals.vatRegistered, vatCalculationBase: totals.vatCalculationBase, total: totals.total, totalAmount: totals.total, payment: { method, received, change: Math.max(0, received - totals.total) }, paymentMethod: method, receivedAmount: received, changeAmount: Math.max(0, received - totals.total), customerId: customer?.id || '', customerCode: customer?.customerCode || '', customerName: customer?.name || '', customerPhone: customer?.phone || '', shiftId: shift?.id || '', cashierName: shift?.cashierName || '', terminalCode: shift?.terminalCode || '' };
+  return { id: saleId, saleNumber: number, localSaleNumber: number, finalSaleNumber: '', runningNumberType: 'SALE', runningNumberStatus: 'pending_sync', tenantId, shopId: tenantId, deviceId: getDeviceId(), schemaVersion: POS_FIRESTORE_VERSION, deleted: false, dateKey: dateKeyFrom(createdAt), monthKey: monthKeyFrom(createdAt), channel: 'retail-pos', orderType: 'pos', status: 'completed', paymentStatus: 'paid', syncStatus: 'pending', createdAt, items: items.map(item => ({ id: item.id, productId: item.id, barcode: item.barcode || '', name: item.name, price: item.price, cost: item.cost, qty: item.qty, unit: item.unit, lineTotal: round2(item.price * item.qty) })), totalQty: items.reduce((sum, item) => sum + item.qty, 0), subtotal: totals.subtotal, discount: totals.discount, pointDiscount: 0, discountedBase: totals.discountedBase, taxableBase: totals.taxableBase, beforeVat: totals.beforeVat, vatAmount: totals.vatAmount, vatRate: totals.vatRate, vatMode: totals.vatMode, vatRegistered: totals.vatRegistered, vatCalculationBase: totals.vatCalculationBase, total: totals.total, totalAmount: totals.total, payment: { method, received, change: Math.max(0, received - totals.total) }, paymentMethod: method, receivedAmount: received, changeAmount: Math.max(0, received - totals.total), customerId: customer?.id || '', customerCode: customer?.customerCode || '', customerName: customer?.name || '', customerPhone: customer?.phone || '', shiftId: shift?.id || '', cashierName: shift?.cashierName || '', terminalCode: shift?.terminalCode || '' };
 }
 
 function saveLocalSale(sale, items) {
@@ -128,7 +122,8 @@ async function safeConfirmPayment(event) {
   try {
     const saleId = safeId('sale');
     const createdAt = new Date().toISOString();
-    const sale = buildSale({ saleId, number: pendingSaleNumber(createdAt, saleId), method, received, totals, createdAt, items });
+    const pendingNumber = pendingDocumentNumber({ type: 'SALE', value: createdAt, stableId: saleId });
+    const sale = buildSale({ saleId, number: pendingNumber, method, received, totals, createdAt, items });
     saveLocalSale(sale, items);
     unlockPage();
     resetCartUi();
