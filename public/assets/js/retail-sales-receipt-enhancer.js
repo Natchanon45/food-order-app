@@ -1,5 +1,14 @@
 const SALES_KEY = 'retail_pos_sales_v1';
 const CUSTOMER_KEY = 'retail_pos_customers_v1';
+const STORE_SETTINGS_KEY = 'retail_pos_store_settings_v1';
+
+const styleId = 'retailSalesReceiptEnhancerStyle';
+if (!document.getElementById(styleId)) {
+  const style = document.createElement('style');
+  style.id = styleId;
+  style.textContent = `.receipt [data-sales-receipt-extra="true"]{display:flex!important;justify-content:space-between!important;align-items:flex-start!important;gap:10px!important;padding:1px 0!important;font-size:19px!important;line-height:1.08!important}.receipt [data-sales-receipt-extra="true"] span:first-child{flex:0 0 auto!important;color:#000!important}.receipt [data-sales-receipt-extra="true"] span:last-child,.receipt [data-sales-receipt-extra="true"] strong:last-child{min-width:0!important;text-align:right!important;font-weight:700!important;color:#000!important;overflow-wrap:anywhere!important}.receipt .receipt-extra-rule{height:0!important;border:0!important;border-top:1px dashed #000!important;margin:6px 0!important}.receipt .receipt-customer-block{border-top:1px dashed #000!important;border-bottom:1px dashed #000!important;margin:6px 0!important;padding:4px 0!important}`;
+  document.head.appendChild(style);
+}
 
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -12,6 +21,10 @@ function money(value) {
 
 function numberText(value) {
   return Number(value || 0).toLocaleString('th-TH');
+}
+
+function settings() {
+  return readJson(STORE_SETTINGS_KEY, {});
 }
 
 function sales() {
@@ -47,11 +60,17 @@ function beforeVat(sale = {}) {
 }
 
 function vatRate(sale = {}) {
-  return Number.isFinite(Number(sale.vatRate)) ? Number(sale.vatRate) : 7;
+  const store = settings();
+  return Number.isFinite(Number(sale.vatRate)) ? Number(sale.vatRate) : Number(store.vatRate || 7);
 }
 
 function vatModeText(sale = {}) {
   return String(sale.vatMode || '').toLowerCase() === 'exclude' ? 'ราคาไม่รวม VAT' : 'ราคารวม VAT';
+}
+
+function shopName() {
+  const store = settings();
+  return store.taxInvoiceName || store.shopName || store.name || 'POS ร้านค้าปลีก';
 }
 
 function row(label, value, strong = false) {
@@ -59,8 +78,21 @@ function row(label, value, strong = false) {
   div.dataset.salesReceiptExtra = 'true';
   div.innerHTML = `<span></span><${strong ? 'strong' : 'span'}></${strong ? 'strong' : 'span'}>`;
   div.children[0].textContent = label;
-  div.children[1].textContent = value;
+  div.children[1].textContent = value || '-';
   return div;
+}
+
+function block(rows = []) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'receipt-customer-block';
+  wrapper.dataset.salesReceiptExtra = 'true';
+  rows.forEach(item => wrapper.append(item));
+  return wrapper;
+}
+
+function patchShop(area) {
+  const shop = area.querySelector('#receiptShopName');
+  if (shop) shop.textContent = shopName();
 }
 
 function patchCustomer(area, sale) {
@@ -71,10 +103,11 @@ function patchCustomer(area, sale) {
   const code = sale.customerCode || customer?.customerCode || '';
   const phone = sale.customerPhone || customer?.phone || '';
   if (!name && !code && !phone) return;
-  meta.insertAdjacentElement('afterend', row('ลูกค้า', name || '-', true));
-  let after = meta.nextElementSibling;
-  if (code) { after.insertAdjacentElement('afterend', row('สมาชิก', code)); after = after.nextElementSibling; }
-  if (phone) after.insertAdjacentElement('afterend', row('โทร', phone));
+  const rows = [];
+  if (name) rows.push(row('ลูกค้า', name, true));
+  if (code) rows.push(row('สมาชิก', code));
+  if (phone) rows.push(row('เบอร์โทร', phone));
+  meta.insertAdjacentElement('afterend', block(rows));
 }
 
 function patchVat(area, sale) {
@@ -88,8 +121,7 @@ function patchVat(area, sale) {
 }
 
 function loyaltyOf(sale = {}) {
-  if (sale.loyalty) return sale.loyalty;
-  return null;
+  return sale.loyalty || null;
 }
 
 function patchLoyalty(area, sale) {
@@ -98,10 +130,13 @@ function patchLoyalty(area, sale) {
   const thanks = area.querySelector('#receiptThanks') || area.querySelector('.receipt-thanks');
   const anchor = thanks || area.querySelector('.receipt-summary');
   if (!anchor) return;
-  anchor.insertAdjacentElement('beforebegin', row('แต้มก่อนซื้อ', numberText(loyalty.pointsBefore)));
-  anchor.insertAdjacentElement('beforebegin', row('ใช้แต้ม', numberText(loyalty.pointsUsed)));
-  anchor.insertAdjacentElement('beforebegin', row('แต้มที่ได้รับ', numberText(loyalty.pointsEarned)));
-  anchor.insertAdjacentElement('beforebegin', row('แต้มคงเหลือ', numberText(loyalty.pointsAfter), true));
+  const rows = [
+    row('แต้มก่อนซื้อ', numberText(loyalty.pointsBefore)),
+    row('ใช้แต้ม', numberText(loyalty.pointsUsed)),
+    row('แต้มที่ได้รับ', numberText(loyalty.pointsEarned)),
+    row('แต้มคงเหลือ', numberText(loyalty.pointsAfter), true)
+  ];
+  anchor.insertAdjacentElement('beforebegin', block(rows));
 }
 
 function enhanceReceipt() {
@@ -109,6 +144,7 @@ function enhanceReceipt() {
   if (!area) return;
   area.querySelectorAll('[data-sales-receipt-extra="true"]').forEach(node => node.remove());
   const sale = currentSale();
+  patchShop(area);
   const title = area.querySelector('.receipt-header p');
   if (title) title.textContent = sale && isVatSale(sale) ? 'ใบกำกับภาษีอย่างย่อ / ใบเสร็จรับเงิน' : 'ใบเสร็จรับเงิน';
   if (!sale) return;
