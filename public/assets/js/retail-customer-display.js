@@ -77,7 +77,7 @@ function installPairingCard() {
   card.innerHTML = `
     <button class="pairing-toggle" type="button" aria-label="แสดง QR เชื่อมอุปกรณ์" aria-controls="pairingPanel">
       <span class="pairing-mini-icon" aria-hidden="true"><i class="bi bi-qr-code"></i></span>
-      <span class="pairing-toggle-copy"><strong>เชื่อมอุปกรณ์</strong><small>Hover เพื่อแสดง QR</small></span>
+      <span class="pairing-toggle-copy"><strong>เชื่อมอุปกรณ์</strong></span>
     </button>
     <div id="pairingPanel" class="pairing-panel" aria-label="QR เชื่อมอุปกรณ์ขายเข้าจอนี้">
       <div class="pairing-copy">
