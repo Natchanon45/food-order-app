@@ -75,43 +75,23 @@ function installPairingCard() {
   card.id = 'displayPairingCard';
   card.className = 'pairing-card pairing-card-compact';
   card.innerHTML = `
-    <button class="pairing-toggle" type="button" aria-expanded="false" aria-controls="pairingPanel">
-      <span class="pairing-mini-qr" aria-hidden="true"><img src="${esc(qrImageUrl(url))}" alt=""></span>
-      <span class="pairing-toggle-copy"><strong>เชื่อม iPhone</strong><small>แตะเพื่อขยาย QR</small></span>
+    <button class="pairing-toggle" type="button" aria-label="แสดง QR เชื่อมอุปกรณ์" aria-controls="pairingPanel">
+      <span class="pairing-mini-icon" aria-hidden="true"><i class="bi bi-qr-code"></i></span>
+      <span class="pairing-toggle-copy"><strong>เชื่อมอุปกรณ์</strong><small>Hover เพื่อแสดง QR</small></span>
     </button>
-    <div id="pairingPanel" class="pairing-panel" hidden>
+    <div id="pairingPanel" class="pairing-panel" aria-label="QR เชื่อมอุปกรณ์ขายเข้าจอนี้">
       <div class="pairing-copy">
-        <div class="pairing-label">เชื่อม iPhone เพื่อขายเข้าจอนี้</div>
-        <strong>สแกน QR ด้วย iPhone</strong>
+        <div class="pairing-label">เชื่อมอุปกรณ์เพื่อขายเข้าจอนี้</div>
+        <strong>สแกน QR ด้วยอุปกรณ์</strong>
         <span>จอนี้: ${esc(requestedDisplayId)}</span>
-        <small>iPhone จะเปิด POS และจำจอนี้ไว้ให้อัตโนมัติ</small>
+        <small>อุปกรณ์จะเปิด POS และจำจอนี้ไว้ให้อัตโนมัติ</small>
         <a class="pairing-link" href="${esc(url)}" target="_blank" rel="noopener">เปิด POS สำหรับจอนี้</a>
       </div>
       <div class="pairing-qr-wrap">
-        <img class="pairing-qr" src="${esc(qrImageUrl(url))}" alt="QR เชื่อม iPhone กับจอลูกค้า ${esc(requestedDisplayId)}">
+        <img class="pairing-qr" src="${esc(qrImageUrl(url))}" alt="QR เชื่อมอุปกรณ์กับจอลูกค้า ${esc(requestedDisplayId)}">
         <div class="pairing-display-id">${esc(requestedDisplayId)}</div>
       </div>
     </div>`;
-  const toggle = card.querySelector('.pairing-toggle');
-  const panel = card.querySelector('#pairingPanel');
-  toggle?.addEventListener('click', () => {
-    const expanded = card.classList.toggle('is-expanded');
-    toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-    panel.hidden = !expanded;
-  });
-  document.addEventListener('click', event => {
-    if (!card.classList.contains('is-expanded') || card.contains(event.target)) return;
-    card.classList.remove('is-expanded');
-    toggle?.setAttribute('aria-expanded', 'false');
-    panel.hidden = true;
-  });
-  document.addEventListener('keydown', event => {
-    if (event.key !== 'Escape' || !card.classList.contains('is-expanded')) return;
-    card.classList.remove('is-expanded');
-    toggle?.setAttribute('aria-expanded', 'false');
-    panel.hidden = true;
-    toggle?.focus();
-  });
   els.header.append(card);
 }
 
