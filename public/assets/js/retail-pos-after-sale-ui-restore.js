@@ -31,11 +31,15 @@ function escapeHtml(value) {
 }
 
 function productLabel(product = {}) {
-  return `${product.name || 'ไม่ระบุชื่อ'} ${money(product.price)} บาท`;
+  const stock = Number(product.stock || 0).toLocaleString('th-TH');
+  const unit = product.unit || 'ชิ้น';
+  return `${product.name || 'ไม่ระบุชื่อ'} คงเหลือ ${stock} ${unit} ${money(product.price)} บาท`;
 }
 
 function hoverInfoHtml(product = {}) {
-  return `<span class="pos-card-hover-info" aria-hidden="true"><strong>${escapeHtml(product.name || 'ไม่ระบุชื่อ')}</strong><span>${money(product.price)} บาท</span></span>`;
+  const stock = Number(product.stock || 0).toLocaleString('th-TH');
+  const unit = product.unit || 'ชิ้น';
+  return `<span class="pos-card-hover-info" aria-hidden="true"><strong>${escapeHtml(product.name || 'ไม่ระบุชื่อ')}</strong><span class="pos-hover-stock">คงเหลือ ${stock} ${escapeHtml(unit)}</span><span class="pos-hover-price">${money(product.price)} บาท</span></span>`;
 }
 
 function soldOutHtml(product = {}) {
@@ -55,7 +59,7 @@ function restoreProductCards() {
     card.classList.toggle('is-sold-out', soldOut);
     if (soldOut) card.setAttribute('aria-disabled', 'true'); else card.removeAttribute('aria-disabled');
     if (!src) return;
-    const stamp = `${product.id}|${product.updatedAt || ''}|${product.stock || 0}|${product.price || 0}|${src}|simple-hover`;
+    const stamp = `${product.id}|${product.updatedAt || ''}|${product.stock || 0}|${product.price || 0}|${src}|stock-overlay`;
     if (card.dataset.posImageRestored === stamp) return;
     card.dataset.posImageRestored = stamp;
     card.classList.add('pos-product-card-image');
