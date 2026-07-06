@@ -18,40 +18,98 @@ function pick(source = {}, keys = []) {
   return '';
 }
 
+function rootPayload(data = {}) {
+  return data.data ?? data.result ?? data.results ?? data.profile ?? data.juristic_person ?? data.juristicPerson ?? data;
+}
+
+function candidateObjects(value, output = []) {
+  if (!value || output.length > 40) return output;
+  if (Array.isArray(value)) {
+    value.forEach(item => candidateObjects(item, output));
+    return output;
+  }
+  if (typeof value === 'object') {
+    output.push(value);
+    Object.values(value).forEach(item => candidateObjects(item, output));
+  }
+  return output;
+}
+
+function scoreCandidate(source = {}, taxId = '') {
+  const blob = JSON.stringify(source || '');
+  let score = 0;
+  if (blob.includes(taxId)) score += 10;
+  if (pick(source, TAX_ID_KEYS)) score += 7;
+  if (pick(source, NAME_KEYS)) score += 5;
+  if (pick(source, ADDRESS_KEYS)) score += 4;
+  if (pick(source, BRANCH_KEYS)) score += 1;
+  return score;
+}
+
+function bestSource(data = {}, taxId = '') {
+  const root = rootPayload(data);
+  const candidates = candidateObjects(root);
+  if (!candidates.length && root && typeof root === 'object') return root;
+  return candidates.sort((a, b) => scoreCandidate(b, taxId) - scoreCandidate(a, taxId))[0] || {};
+}
+
+const TAX_ID_KEYS = [
+  'buyerTaxId', 'taxId', 'tax_id', 'juristicId', 'juristic_id', 'juristicID',
+  'juristicPersonId', 'juristic_person_id', 'juristic_person_no', 'juristicNo',
+  'registrationNo', 'registration_no', 'id'
+];
+
+const NAME_KEYS = [
+  'buyerName', 'name', 'companyName', 'company_name', 'juristicNameTH', 'juristicNameTh',
+  'juristic_name_th', 'juristicPersonNameTH', 'juristic_person_name_th', 'juristic_person_name',
+  'juristicName', 'juristic_name', 'nameTh', 'titleName'
+];
+
+const ADDRESS_KEYS = [
+  'buyerAddress', 'address', 'addressTh', 'address_th', 'location', 'fullAddress',
+  'juristicPersonAddress', 'juristic_person_address', 'juristic_address', 'addressDetail'
+];
+
+const BRANCH_KEYS = ['buyerBranchName', 'branchName', 'branch_name', 'branch', 'branchNo', 'branch_no'];
+
 function flattenAddress(source = {}) {
-  const direct = pick(source, ['buyerAddress', 'address', 'addressTh', 'address_th', 'location', 'fullAddress']);
+  const direct = pick(source, ADDRESS_KEYS);
   if (direct) return cleanText(direct);
   const parts = [
-    pick(source, ['houseNo', 'house_no', 'addressNo', 'buildingNo']),
-    pick(source, ['moo']),
-    pick(source, ['soi']),
-    pick(source, ['road', 'street']),
-    pick(source, ['subDistrict', 'subdistrict', 'tambon', 'districtSub']),
-    pick(source, ['district', 'amphur', 'amphoe']),
-    pick(source, ['province']),
+    pick(source, ['houseNo', 'house_no', 'addressNo', 'address_no', 'buildingNo', 'building_no', 'roomNo']),
+    pick(source, ['moo', 'villageNo', 'village_no']),
+    pick(source, ['soi', 'soiName', 'soi_name']),
+    pick(source, ['road', 'street', 'roadName', 'road_name']),
+    pick(source, ['subDistrict', 'subdistrict', 'sub_district', 'tambon', 'districtSub']),
+    pick(source, ['district', 'amphur', 'amphoe', 'districtName']),
+    pick(source, ['province', 'provinceName']),
     pick(source, ['postcode', 'postalCode', 'zipCode'])
   ].filter(Boolean);
   return cleanText(parts.join(' '));
 }
 
 function normalize(data = {}, taxId = '') {
-  const source = data.data || data.result || data.profile || data.juristic_person || data.juristicPerson || data;
-  const buyerTaxId = cleanTaxId(pick(source, [
-    'buyerTaxId', 'taxId', 'tax_id', 'juristicId', 'juristic_id', 'juristicPersonId',
-    'juristic_person_id', 'registrationNo', 'registration_no', 'id'
-  ]) || taxId);
-  const buyerName = cleanText(pick(source, [
-    'buyerName', 'name', 'companyName', 'company_name', 'juristicNameTH', 'juristicNameTh',
-    'juristic_name_th', 'juristicPersonNameTH', 'juristic_person_name_th', 'nameTh'
-  ]));
+  const source = bestSource(data, taxId);
+  const buyerTaxId = cleanTaxId(pick(source, TAX_ID_KEYS) || taxId);
+  const buyerName = cleanText(pick(source, NAME_KEYS));
   const buyerAddress = flattenAddress(source);
-  const buyerBranchName = cleanText(pick(source, [
-    'buyerBranchName', 'branchName', 'branch_name', 'branch', 'branchNo', 'branch_no'
-  ]) || 'สำนักงานใหญ่') || 'สำนักงานใหญ่';
+  const buyerBranchName = cleanText(pick(source, BRANCH_KEYS) || 'สำนักงานใหญ่') || 'สำนักงานใหญ่';
   return { buyerTaxId, buyerName, buyerAddress, buyerBranchName };
 }
 
-async function lookupFromDbdOpenApi(taxId) {
+function safeDebugPayload(payload, rawText, normalized) {
+  const root = rootPayload(payload);
+  const source = bestSource(payload, normalized.buyerTaxId);
+  return {
+    rootType: Array.isArray(root) ? 'array' : typeof root,
+    topKeys: payload && typeof payload === 'object' ? Object.keys(payload).slice(0, 30) : [],
+    sourceKeys: source && typeof source === 'object' ? Object.keys(source).slice(0, 60) : [],
+    normalized,
+    rawPreview: String(rawText || '').slice(0, 1200)
+  };
+}
+
+async function lookupFromDbdOpenApi(taxId, debug = false) {
   const url = `${DBD_OPENAPI_BASE}/${encodeURIComponent(taxId)}`;
   const response = await fetch(url, {
     headers: {
@@ -60,11 +118,26 @@ async function lookupFromDbdOpenApi(taxId) {
     }
   });
   const rawText = await response.text();
-  if (!response.ok) throw new Error(`DBD OpenAPI returned ${response.status}`);
+  const meta = {
+    url,
+    status: response.status,
+    ok: response.ok,
+    contentType: response.headers.get('content-type') || ''
+  };
+  if (!response.ok) {
+    const error = new Error(`DBD OpenAPI returned ${response.status}`);
+    error.debug = { ...meta, rawPreview: rawText.slice(0, 1200) };
+    throw error;
+  }
   let payload;
   try { payload = rawText ? JSON.parse(rawText) : {}; }
-  catch { throw new Error('DBD OpenAPI returned non-JSON data'); }
-  return normalize(payload, taxId);
+  catch {
+    const error = new Error('DBD OpenAPI returned non-JSON data');
+    error.debug = { ...meta, rawPreview: rawText.slice(0, 1200) };
+    throw error;
+  }
+  const normalized = normalize(payload, taxId);
+  return debug ? { normalized, debug: { ...meta, ...safeDebugPayload(payload, rawText, normalized) } } : { normalized };
 }
 
 async function lookupFromAdapter(taxId) {
@@ -88,21 +161,24 @@ exports.lookupTaxBuyer = onRequest(
     if (req.method !== 'GET') return res.status(405).json({ ok: false, error: 'method-not-allowed' });
 
     const taxId = cleanTaxId(req.query.taxId || req.query.id || '');
+    const debug = String(req.query.debug || '') === '1';
     if (taxId.length !== 13) return res.status(400).json({ ok: false, error: 'invalid-tax-id' });
 
     try {
-      let data = null;
-      try { data = await lookupFromDbdOpenApi(taxId); }
+      let result = null;
+      try { result = await lookupFromDbdOpenApi(taxId, debug); }
       catch (openApiError) {
         console.warn('DBD OpenAPI lookup failed, trying adapter', { taxId, error: openApiError.message });
-        data = await lookupFromAdapter(taxId);
+        const adapterData = await lookupFromAdapter(taxId);
+        result = { normalized: adapterData, debug: debug ? { openApiError: openApiError.debug || openApiError.message, adapterUsed: true } : undefined };
       }
+      const data = result?.normalized;
       if (!data || (!data.buyerName && !data.buyerAddress)) {
-        return res.status(404).json({ ok: false, error: 'not-found', taxId });
+        return res.status(404).json({ ok: false, error: 'not-found', taxId, debug: debug ? result?.debug : undefined });
       }
-      return res.json({ ok: true, taxId, data });
+      return res.json({ ok: true, taxId, data, debug: debug ? result?.debug : undefined });
     } catch (error) {
-      return res.status(502).json({ ok: false, error: 'lookup-failed', message: error.message, taxId });
+      return res.status(502).json({ ok: false, error: 'lookup-failed', message: error.message, taxId, debug: debug ? error.debug : undefined });
     }
   }
 );
