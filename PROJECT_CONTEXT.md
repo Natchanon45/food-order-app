@@ -2,13 +2,13 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.53
-Build: 2026.07.06.073
-Milestone: P9-B006-11 DBD Address Append Fix
+Version: 0.13.54
+Build: 2026.07.06.074
+Milestone: P9-B006-12 Deep DBD Address Lookup
 
-Change: fixed the tax buyer lookup address mapping after verifying the GitHub code. The function no longer returns early from the partial DBD `cd:Address` value. For namespaced DBD payloads it now uses `cd:Address` as the base and appends city subdivision, city, province, and postcode fields when available. Flattened `data.address.full` remains the first priority when present.
+Change: fixed the tax buyer lookup address mapping by reading DBD locality fields recursively inside the address object. The function now uses `cd:Address` as the base and deep-searches for city subdivision, city, province, and postcode fields before returning `buyerAddress`. Debug mode now includes `addressKeys` and `addressProbe` to show which address parts were detected.
 
-Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through DBD address append fix.
+Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through deep DBD address lookup.
 
 Usage: open a receipt after sale, click `ใบกำกับภาษีเต็มรูปแบบ`, enter tax ID, then press `DBD`. For troubleshooting, open `/api/tax-buyer/lookup?taxId=0105528025574&debug=1` after deploying the function.
 
