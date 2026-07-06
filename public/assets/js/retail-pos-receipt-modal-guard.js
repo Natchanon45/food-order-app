@@ -1,3 +1,7 @@
+const SALES_KEY = 'retail_pos_sales_v1';
+const nativeSetItem = localStorage.setItem.bind(localStorage);
+let saleUnlockTimer = 0;
+
 function receiptModal() {
   return document.querySelector('[data-pos-receipt-modal]');
 }
@@ -22,9 +26,12 @@ function unlockPage() {
 
 function closeNativePaymentDialog() {
   const dialog = paymentDialog();
-  if (!dialog?.open) return;
-  try { dialog.close(); }
-  catch { dialog.removeAttribute('open'); }
+  if (!dialog) return;
+  if (dialog.open) {
+    try { dialog.close(); }
+    catch { dialog.removeAttribute('open'); }
+  }
+  dialog.removeAttribute('open');
 }
 
 function normalizeReceiptModal() {
@@ -41,6 +48,24 @@ function normalizeReceiptModal() {
     el.disabled = false;
   });
 }
+
+function unlockAfterSale() {
+  closeNativePaymentDialog();
+  unlockPage();
+  normalizeReceiptModal();
+}
+
+function scheduleSaleUnlock() {
+  clearTimeout(saleUnlockTimer);
+  [0, 80, 250, 700, 1200].forEach(delay => setTimeout(unlockAfterSale, delay));
+  saleUnlockTimer = setTimeout(unlockAfterSale, 1800);
+}
+
+localStorage.setItem = function guardedSetItem(key, value) {
+  const result = nativeSetItem(key, value);
+  if (key === SALES_KEY) scheduleSaleUnlock();
+  return result;
+};
 
 function isReceiptCloseTarget(target) {
   const button = target?.closest?.('button,a,[role="button"],[data-close-receipt]');
@@ -76,14 +101,13 @@ document.addEventListener('click', event => {
 }, true);
 
 document.addEventListener('keydown', event => {
-  if (event.key === 'Escape' && isReceiptOpen()) {
+  if (event.key === 'Escape' && (isReceiptOpen() || paymentDialog()?.open)) {
     event.preventDefault();
     closeReceiptModal();
   }
 }, true);
 
 new MutationObserver(normalizeReceiptModal).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'open', 'class', 'style'] });
-setInterval(normalizeReceiptModal, 500);
 window.addEventListener('afterprint', () => setTimeout(closeReceiptModal, 80));
 window.addEventListener('focus', normalizeReceiptModal);
 window.addEventListener('pageshow', normalizeReceiptModal);
