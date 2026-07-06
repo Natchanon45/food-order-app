@@ -2,8 +2,8 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.25
-Build: 2026.07.06.045
+Version: 0.13.26
+Build: 2026.07.06.046
 Milestone: P9-B005 Repository Layer / POS UX Hotfix
 
 ## Scope
@@ -47,6 +47,7 @@ Completed:
 - P9-B005 Repository Layer foundation
 - POS UX Hotfix for product hover, sold-out cards, and bill reset after payment
 - Receipt privacy and simplified half-card product hover label hotfix
+- PC cart density hotfix for showing at least five selected rows
 
 Current milestone: P9-B005 Repository Layer / POS UX Hotfix
 
@@ -66,9 +67,11 @@ Runtime POS modules should gradually replace direct localStorage keys and duplic
 
 ## POS UX Hotfix
 
-Retail POS product cards on PC should use a half-card bottom overlay on hover. The overlay should show only the product name and price, without a separate browser tooltip, so cashiers can read it quickly without covering nearby products.
+Retail POS product cards on PC should use a half-card bottom overlay on hover. The overlay should show only the product name and price, fade in/out smoothly, and use a bottom-heavy black gradient: darkest at the bottom edge and gradually fading upward.
 
 Sold-out products should be visually greyed out and marked with a sold-out badge.
+
+The PC cart panel should remain scrollable and compact enough to show at least five selected product rows in normal desktop use. Cart rows, summary controls, and checkout controls may use reduced font sizes and tighter spacing on PC only.
 
 After any successful payment flow or receipt close, the active bill must be cleared. The reset must clear cart rows, discount, payment input, customer/loyalty selection UI, totals, and return focus to the barcode input so the cashier can immediately start the next sale.
 
