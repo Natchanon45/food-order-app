@@ -8,6 +8,7 @@ const MOVEMENT_KEY = 'retail_pos_stock_movements_v1';
 const CUSTOMER_KEY = 'retail_pos_customers_v1';
 const SHIFT_KEY = 'retail_pos_active_shift_v1';
 let saving = false;
+let clearing = false;
 
 function readJson(key, fallback) { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } }
 function writeJson(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
@@ -84,14 +85,35 @@ function unlockPage() {
   document.documentElement.classList.remove('modal-open', 'receipt-modal-open', 'is-receipt-open');
 }
 
+function setText(selector, value) { const node = document.querySelector(selector); if (node) node.textContent = value; }
+function setValue(selector, value) { const node = document.querySelector(selector); if (node) node.value = value; }
+
 function resetCartUi() {
-  document.querySelector('#discountInput').value = '0';
-  document.querySelector('#cartList').innerHTML = '';
-  document.querySelector('#cartEmpty').hidden = false;
-  document.querySelector('#itemCount').textContent = '0 รายการ';
-  ['#subtotal', '#beforeVatAmount', '#vatAmount', '#grandTotal'].forEach(sel => { const node = document.querySelector(sel); if (node) node.textContent = '0.00'; });
-  const payBtn = document.querySelector('#payBtn');
-  if (payBtn) payBtn.disabled = true;
+  if (clearing) return;
+  clearing = true;
+  try {
+    const clearButton = document.querySelector('#clearSaleBtn');
+    if (clearButton && !clearButton.disabled) clearButton.click();
+    document.querySelector('#paymentDialog')?.removeAttribute('data-customer-id');
+    setValue('#discountInput', '0');
+    setValue('#receivedInput', '');
+    const cartList = document.querySelector('#cartList');
+    if (cartList) cartList.innerHTML = '';
+    const cartEmpty = document.querySelector('#cartEmpty');
+    if (cartEmpty) cartEmpty.hidden = false;
+    setText('#itemCount', '0 รายการ');
+    ['#subtotal', '#beforeVatAmount', '#vatAmount', '#grandTotal'].forEach(sel => setText(sel, '0.00'));
+    setText('#paymentTotal', '0.00 บาท');
+    setText('#changeAmount', '0.00 บาท');
+    setText('#paymentError', '');
+    const payBtn = document.querySelector('#payBtn');
+    if (payBtn) payBtn.disabled = true;
+    document.querySelectorAll('[data-selected-customer], .selected-customer, .loyalty-selected, .customer-selected').forEach(node => { node.textContent = ''; node.hidden = true; });
+    window.dispatchEvent(new CustomEvent('retail-pos-ready-for-next-sale'));
+    setTimeout(() => document.querySelector('#barcodeInput')?.focus(), 100);
+  } finally {
+    setTimeout(() => { clearing = false; }, 150);
+  }
 }
 
 async function safeConfirmPayment(event) {
@@ -130,3 +152,4 @@ async function safeConfirmPayment(event) {
 }
 
 document.addEventListener('click', safeConfirmPayment, true);
+window.addEventListener('retail-pos-receipt-closed', () => setTimeout(resetCartUi, 0));
