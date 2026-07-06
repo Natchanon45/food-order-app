@@ -2,8 +2,8 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.27
-Build: 2026.07.06.047
+Version: 0.13.28
+Build: 2026.07.06.048
 Milestone: P9-B005 Repository Layer / POS UX Hotfix
 
 ## Scope
@@ -49,6 +49,7 @@ Completed:
 - Receipt privacy and simplified half-card product hover label hotfix
 - PC cart density hotfix for showing at least five selected rows
 - Receipt phone mask hotfix using `098-***-**81` format
+- Product card unified overlay hotfix for PC and Mobile
 
 Current milestone: P9-B005 Repository Layer / POS UX Hotfix
 
@@ -68,7 +69,9 @@ Runtime POS modules should gradually replace direct localStorage keys and duplic
 
 ## POS UX Hotfix
 
-Retail POS product cards on PC should use a half-card bottom overlay on hover. The overlay should show only the product name and price, fade in/out smoothly, and use a bottom-heavy black gradient: darkest at the bottom edge and gradually fading upward.
+Retail POS product cards on PC should use a half-card bottom overlay on hover. The overlay should show product name, remaining stock, and price, fade in/out smoothly, and use a bottom-heavy black gradient that fades upward.
+
+Mobile product cards should keep the product image full-card and display product name, remaining stock, and price on the same dark gradient overlay style instead of a separate white text area.
 
 Sold-out products should be visually greyed out and marked with a sold-out badge.
 
