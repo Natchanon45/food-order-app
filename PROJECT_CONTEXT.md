@@ -2,15 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.49
-Build: 2026.07.06.069
-Milestone: P9-B006-07 Buyer Lookup OpenAPI
+Version: 0.13.50
+Build: 2026.07.06.070
+Milestone: P9-B006-08 Buyer Lookup Normalization
 
-Change: updated the tax buyer lookup function to call the official buyer lookup OpenAPI by tax ID. The receipt modal still calls `/api/tax-buyer/lookup`, and the function normalizes the response into buyer tax ID, buyer name, address, and branch fields for automatic form filling. Draft persistence and modal-safe fallback remain in place.
+Change: improved the tax buyer lookup function to support nested and array-based OpenAPI responses. The function now scans the payload for the best juristic record, supports more field aliases for tax ID, buyer name, address, and branch, and adds a debug mode at `/api/tax-buyer/lookup?taxId=...&debug=1` to inspect response status, content type, keys, and a safe preview.
 
-Completed: QR Table Order, Kitchen serving, Delivery Lock, Cashier table move, paid-before-close guard, Retail POS Online/Offline/Sync/Tenant support, P9-B005 Customer Display work, and P9-B006 Full Tax Invoice through buyer lookup OpenAPI.
+Completed: QR Table Order, Kitchen serving, Delivery Lock, Cashier table move, paid-before-close guard, Retail POS Online/Offline/Sync/Tenant support, P9-B005 Customer Display work, and P9-B006 Full Tax Invoice through buyer lookup normalization.
 
-Usage: open a receipt after sale, click `ใบกำกับภาษีเต็มรูปแบบ`, enter tax ID, then press `DBD`. The form will fill automatically when the OpenAPI returns buyer data.
+Usage: open a receipt after sale, click `ใบกำกับภาษีเต็มรูปแบบ`, enter tax ID, then press `DBD`. For troubleshooting, open `/api/tax-buyer/lookup?taxId=0105528025574&debug=1` after deploying the function.
 
 Next Task: improve customer tax profile management, tax invoice running number counter, and void/cancel tax invoice support.
 
