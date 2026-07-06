@@ -13,10 +13,14 @@ function cleanText(value) {
   return String(value || '').replace(/\s+/g, ' ').trim();
 }
 
+function isScalar(value) {
+  return ['string', 'number', 'boolean'].includes(typeof value);
+}
+
 function pick(source = {}, keys = []) {
   for (const key of keys) {
     const value = source?.[key];
-    if (value !== undefined && value !== null && String(value).trim()) return String(value).trim();
+    if (value !== undefined && value !== null && isScalar(value) && String(value).trim()) return String(value).trim();
   }
   return '';
 }
@@ -42,7 +46,7 @@ const BRANCH_KEYS = ['buyerBranchName', 'branchName', 'branch', TD + 'Organizati
 
 function scoreCandidate(source = {}, taxId = '') {
   const blob = JSON.stringify(source || '');
-  return (blob.includes(taxId) ? 10 : 0) + (pick(source, TAX_ID_KEYS) ? 7 : 0) + (pick(source, NAME_KEYS) ? 5 : 0) + (pick(source, ADDRESS_KEYS) ? 4 : 0);
+  return (blob.includes(taxId) ? 10 : 0) + (pick(source, TAX_ID_KEYS) ? 7 : 0) + (nameFromSource(source) ? 5 : 0) + (addressFromSource(source) ? 4 : 0);
 }
 
 function bestSource(data = {}, taxId = '') {
@@ -50,6 +54,7 @@ function bestSource(data = {}, taxId = '') {
 }
 
 function dbdAddressSource(source = {}) {
+  if (source.address && typeof source.address === 'object') return source.address;
   const address = source[CD + 'OrganizationJuristicAddress'];
   if (!address || typeof address !== 'object') return null;
   return address[CR + 'AddressType'] || address;
@@ -60,29 +65,33 @@ function dbdCapitalSource(source = {}) {
   return capital && typeof capital === 'object' ? capital : null;
 }
 
-function flattenAddress(source = {}) {
-  const addressSource = dbdAddressSource(source) || source;
-  const direct = pick(addressSource, ADDRESS_KEYS) || pick(source, ADDRESS_KEYS);
-  if (direct) return cleanText(direct);
-  const parts = [
-    pick(addressSource, [CD + 'AddressNo', 'addressNo', 'houseNo']),
-    pick(addressSource, [CD + 'Moo', 'moo']),
-    pick(addressSource, [CD + 'Soi', 'soi']),
-    pick(addressSource, [CD + 'Road', 'road']),
-    pick(addressSource, [CR + 'CitySubDivisionTextTH', 'subDistrict', 'tambon']),
-    pick(addressSource, [CR + 'CityTextTH', 'district', 'amphoe']),
-    pick(addressSource, [CR + 'CountrySubDivisionTextTH', 'province']),
-    pick(addressSource, [CD + 'PostCode', 'postcode'])
-  ].filter(Boolean);
-  return cleanText(parts.join(' '));
+function nameFromSource(source = {}) {
+  if (source.name && typeof source.name === 'object') return cleanText(source.name.th || source.name.TH || source.name.en || '');
+  return cleanText(pick(source, NAME_KEYS));
+}
+
+function addressFromSource(source = {}) {
+  const src = dbdAddressSource(source) || source;
+  const full = pick(src, ['full', 'Full', 'addressFull', 'address_full']) || pick(src, ADDRESS_KEYS) || pick(source, ADDRESS_KEYS);
+  if (full) return cleanText(full);
+  return cleanText([
+    pick(src, [CD + 'AddressNo', 'addressNo', 'houseNo']),
+    pick(src, [CD + 'Moo', 'moo']),
+    pick(src, [CD + 'Soi', 'soi']),
+    pick(src, [CD + 'Road', 'road']),
+    pick(src, [CR + 'CitySubDivisionTextTH', 'subDistrict', 'tambon']),
+    pick(src, [CR + 'CityTextTH', 'district', 'amphoe']),
+    pick(src, [CR + 'CountrySubDivisionTextTH', 'province']),
+    pick(src, [CD + 'PostCode', 'postcode', 'postalCode', 'zipCode'])
+  ].filter(Boolean).join(' '));
 }
 
 function normalize(data = {}, taxId = '') {
   const source = bestSource(data, taxId);
   const capital = dbdCapitalSource(source) || {};
   const buyerTaxId = cleanTaxId(pick(source, TAX_ID_KEYS) || taxId);
-  const buyerName = cleanText(pick(source, NAME_KEYS));
-  const buyerAddress = flattenAddress(source);
+  const buyerName = nameFromSource(source);
+  const buyerAddress = addressFromSource(source);
   const buyerBranchName = cleanText(pick(capital, BRANCH_KEYS) || pick(source, BRANCH_KEYS) || 'สำนักงานใหญ่') || 'สำนักงานใหญ่';
   return { buyerTaxId, buyerName, buyerAddress, buyerBranchName };
 }
