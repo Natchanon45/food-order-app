@@ -15,151 +15,188 @@
 }
 
 :root {
-  --pos-font-local: "TH Sarabun PSK Local", "TH Sarabun New", "Sarabun", sans-serif;
-  font-family: var(--pos-font-local) !important;
+  --customer-display-font-local: "TH Sarabun PSK Local", "TH Sarabun New", "Sarabun", sans-serif;
 }
 
-html,
 body,
-button,
-input,
-select,
-textarea,
-dialog,
-.pos-header,
-.pos-layout,
-.product-panel,
-.cart-panel,
-.payment-form,
 .display-shell,
 .display-header,
 .display-main,
-.display-footer {
-  font-family: var(--pos-font-local) !important;
+.display-footer,
+.display-shell button,
+.display-shell input,
+.display-shell select,
+.display-shell textarea {
+  font-family: var(--customer-display-font-local) !important;
 }
 
 body {
-  font-size: 1.28rem;
-  line-height: 1.12;
+  font-size: 2rem;
+  line-height: 1.06;
 }
 
-button,
-input,
-select,
-textarea {
-  font-size: 1.15rem;
-  line-height: 1.12;
+.display-header {
+  padding: 30px 40px !important;
 }
 
-.pos-header strong,
+.brand-badge {
+  width: 72px !important;
+  height: 72px !important;
+  border-radius: 22px !important;
+  font-size: 1.45rem !important;
+}
+
 .brand strong {
-  font-size: 1.55rem !important;
-  line-height: 1.05 !important;
+  font-size: 3.1rem !important;
+  line-height: .95 !important;
 }
 
-.pos-header small,
 .brand span,
-.section-heading p,
-.cart-title span,
-.cart-meta,
-.product-card .code,
-.product-card .stock,
 .display-status,
 .display-footer {
-  font-size: 1.05rem !important;
-  line-height: 1.08 !important;
+  font-size: 1.9rem !important;
+  line-height: 1.02 !important;
 }
 
-.section-heading h2,
-.cart-title h1,
-.dialog-head h2,
-.cart-head h1 {
-  font-size: 1.55rem !important;
-  line-height: 1.06 !important;
+.display-main {
+  gap: 28px !important;
+  padding: 28px 40px !important;
 }
 
-.product-card .name,
-.cart-name,
-.cart-item strong {
-  font-size: 1.18rem !important;
-  line-height: 1.08 !important;
+.welcome-card,
+.total-card {
+  padding: 34px 36px !important;
 }
 
-.product-card .price,
-.line-total,
-.cart-item-total {
-  font-size: 1.25rem !important;
-  line-height: 1.08 !important;
-}
-
-.summary,
-.total-card,
-.total-row,
 .customer-label,
-.promo-box {
-  font-size: 1.25rem !important;
-  line-height: 1.08 !important;
-}
-
-.grand-total,
-.grand-row {
-  font-size: 1.72rem !important;
-  line-height: 1.08 !important;
+.promo-box,
+.total-row,
+.cart-count {
+  font-size: 2.1rem !important;
+  line-height: 1.02 !important;
 }
 
 .customer-name {
-  font-size: 2.65rem !important;
+  font-size: 4.3rem !important;
+  line-height: .92 !important;
+}
+
+.customer-phone {
+  font-size: 2.5rem !important;
   line-height: .98 !important;
 }
 
-@media (max-width: 640px) {
+.promo-box,
+.paid-state {
+  padding: 24px 26px !important;
+  border-radius: 24px !important;
+}
+
+.cart-head {
+  padding: 28px 34px !important;
+}
+
+.cart-head h1 {
+  font-size: 3.2rem !important;
+  line-height: .98 !important;
+}
+
+.cart-item {
+  gap: 18px !important;
+  padding: 24px 34px !important;
+}
+
+.cart-item strong {
+  font-size: 2.7rem !important;
+  line-height: .98 !important;
+}
+
+.cart-item small {
+  font-size: 2rem !important;
+  line-height: 1 !important;
+}
+
+.cart-item-total {
+  font-size: 2.9rem !important;
+  line-height: .98 !important;
+}
+
+.cart-empty {
+  font-size: 2.8rem !important;
+  line-height: 1 !important;
+}
+
+.grand-row {
+  font-size: 4rem !important;
+  line-height: .95 !important;
+}
+
+.paid-state {
+  font-size: 4rem !important;
+  line-height: .95 !important;
+}
+
+@media (max-width: 900px) {
   body {
-    font-size: 1.18rem;
+    font-size: 1.8rem;
   }
 
-  button,
-  input,
-  select,
-  textarea {
-    font-size: 1.08rem;
+  .display-header {
+    padding: 24px 26px !important;
   }
 
-  .pos-header strong,
+  .brand-badge {
+    width: 62px !important;
+    height: 62px !important;
+    font-size: 1.25rem !important;
+  }
+
   .brand strong {
-    font-size: 1.32rem !important;
+    font-size: 2.6rem !important;
   }
 
-  .pos-header small,
   .brand span,
-  .section-heading p,
-  .cart-title span,
-  .cart-meta,
   .display-status,
   .display-footer {
-    font-size: .95rem !important;
+    font-size: 1.55rem !important;
   }
 
-  .section-heading h2,
-  .cart-title h1,
-  .dialog-head h2,
+  .display-main {
+    padding: 18px !important;
+    gap: 18px !important;
+  }
+
+  .welcome-card,
+  .total-card {
+    padding: 26px 28px !important;
+  }
+
+  .customer-name {
+    font-size: 3.6rem !important;
+  }
+
   .cart-head h1 {
-    font-size: 1.32rem !important;
+    font-size: 2.7rem !important;
   }
 
-  .product-card.pos-product-card-image .pos-card-hover-info strong,
-  .product-card.visual-card .product-info-overlay strong {
-    font-size: .86rem !important;
-    line-height: 1.02 !important;
+  .cart-item strong {
+    font-size: 2.25rem !important;
   }
 
-  .product-card.pos-product-card-image .pos-card-hover-info span,
-  .product-card.visual-card .product-info-overlay span {
-    font-size: .76rem !important;
-    line-height: 1 !important;
+  .cart-item small,
+  .customer-label,
+  .promo-box,
+  .total-row,
+  .cart-count {
+    font-size: 1.72rem !important;
   }
 
-  .product-card.pos-product-card-image .pos-card-hover-info .pos-hover-price,
-  .product-card.visual-card .product-info-overlay .pos-hover-price {
-    font-size: .86rem !important;
+  .cart-item-total {
+    font-size: 2.25rem !important;
+  }
+
+  .grand-row,
+  .paid-state {
+    font-size: 3.25rem !important;
   }
 }
