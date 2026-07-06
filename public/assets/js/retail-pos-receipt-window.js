@@ -15,7 +15,7 @@ function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, char
 function money(value) { return Number(value || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 function numberText(value) { return Number(value || 0).toLocaleString('th-TH'); }
 function saleKey(sale) { return String(sale?.id || sale?.saleNumber || '').trim(); }
-function maskPhone(phone = '') { const digits = String(phone || '').replace(/\D/g, ''); if (digits.length < 7) return digits ? `${digits.slice(0, 2)}***` : ''; return `${digits.slice(0, 3)}-***-${digits.slice(-4)}`; }
+function maskPhone(phone = '') { const digits = String(phone || '').replace(/\D/g, ''); if (!digits) return ''; if (digits.length < 10) return digits.length <= 2 ? digits : `${digits.slice(0, 2)}***`; return `${digits.slice(0, 3)}-***-**${digits.slice(-2)}`; }
 function firstChars(text, count) { return Array.from(String(text || '')).slice(0, count).join(''); }
 function lastChars(text, count) { const chars = Array.from(String(text || '')); return chars.slice(Math.max(0, chars.length - count)).join(''); }
 function maskFirstName(name = '') { const chars = Array.from(String(name || '').trim()); if (!chars.length) return ''; return `${chars.slice(0, Math.min(5, chars.length)).join('')}*****`; }
