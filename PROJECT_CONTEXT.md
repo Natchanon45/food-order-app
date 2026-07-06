@@ -2,13 +2,13 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.26
-Build: 2026.07.06.046
+Version: 0.13.27
+Build: 2026.07.06.047
 Milestone: P9-B005 Repository Layer / POS UX Hotfix
 
-Change: refined Retail POS PC cashier UX. Product hover now fades in/out with a bottom-heavy black gradient that is darkest at the lower edge and gradually fades upward. The PC cart panel is more compact, with smaller text, tighter rows, compact summary controls, and a scrollable cart area sized to show at least five selected product rows in normal desktop use.
+Change: updated Retail POS receipt phone privacy mask. Customer phone numbers on receipt output now display in the format `098-***-**81` instead of showing the last four digits.
 
-Completed: QR Table Order, Kitchen serving, Delivery Lock, Cashier table move, paid-before-close guard, Retail POS Online/Offline/Sync/Tenant support, POS Firestore Foundation P9-B001, Safe Confirm Payment, P9-B002 Running Number alignment, Receipt Service, P9-B003 Counter, P9-B004 Offline Queue Worker + Retry + Conflict Resolver, Sync Timeout Hotfix, Firestore Rules Hotfix, Pending Number Helper Hotfix, Loyalty + Receipt Privacy Hotfix, P9-B005 Repository Layer foundation, POS UX Hotfix for product hover and bill reset, receipt privacy + simplified hover label hotfix, and PC cart density hotfix.
+Completed: QR Table Order, Kitchen serving, Delivery Lock, Cashier table move, paid-before-close guard, Retail POS Online/Offline/Sync/Tenant support, POS Firestore Foundation P9-B001, Safe Confirm Payment, P9-B002 Running Number alignment, Receipt Service, P9-B003 Counter, P9-B004 Offline Queue Worker + Retry + Conflict Resolver, Sync Timeout Hotfix, Firestore Rules Hotfix, Pending Number Helper Hotfix, Loyalty + Receipt Privacy Hotfix, P9-B005 Repository Layer foundation, POS UX Hotfix for product hover and bill reset, receipt privacy + simplified hover label hotfix, PC cart density hotfix, and receipt phone mask hotfix.
 
 Next Task: Continue P9-B005 integration by replacing direct POS localStorage/tenant ref usage in runtime modules with repository helpers, then move to P9-B006 Firestore Composite Index.
 
