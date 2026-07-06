@@ -2,13 +2,13 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.22
-Build: 2026.07.06.042
-Milestone: P9-B004 Loyalty + Receipt Privacy Hotfix
+Version: 0.13.23
+Build: 2026.07.06.043
+Milestone: P9-B005 Repository Layer
 
 ## Scope
 
-This branch contains Food Order, Delivery, Kitchen, Cashier, and Retail POS workflows. Current work focuses on Retail POS, offline-first sale flow, running numbers, receipt output, customers, and loyalty points.
+This branch contains Food Order, Delivery, Kitchen, Cashier, and Retail POS workflows. Current work focuses on Retail POS, offline-first sale flow, running numbers, receipt output, customers, loyalty points, and repository-layer consolidation.
 
 ## Core Rules
 
@@ -44,10 +44,23 @@ Completed:
 - Firestore Rules Hotfix
 - Pending Number Helper Hotfix
 - Loyalty + Receipt Privacy Hotfix
+- P9-B005 Repository Layer foundation
 
-Current milestone: P9-B004 Loyalty + Receipt Privacy Hotfix
+Current milestone: P9-B005 Repository Layer
 
-Next task: P9-B005 Repository Layer
+Next task: Continue P9-B005 integration by replacing direct POS localStorage/tenant ref usage in runtime modules with repository helpers, then move to P9-B006 Firestore Composite Index.
+
+## Repository Layer
+
+The Retail POS repository layer is the preferred access point for shared POS data helpers. It now owns:
+
+- Tenant-scoped collection and document refs.
+- Tenant metadata validation and normalization.
+- Local JSON repositories for sales, products, stock movements, sync queue, and customers.
+- Local value repositories for active shift and store settings.
+- Tenant repositories for products, sales, stock movements, shifts, returns, customers, settings, sync queue, audit logs, and counters.
+
+Runtime POS modules should gradually replace direct localStorage keys and duplicate tenant ref helpers with `retail-pos-repository.js` exports. This keeps Online / Offline / Sync behavior centralized while preserving stable saleId and duplicate-protection rules.
 
 ## Loyalty and Receipt Privacy
 
@@ -65,5 +78,5 @@ Receipts and sales receipt dialogs must show:
 
 ```bash
 git pull --rebase origin feature/retail-pos
-firebase deploy --only firestore:rules,hosting
+firebase deploy --only hosting
 ```
