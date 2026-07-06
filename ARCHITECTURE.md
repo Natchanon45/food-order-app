@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.18
-Build: 2026.07.06.038
-Milestone: P9-B004 Offline Queue Worker + Retry + Conflict Resolver
+Version: 0.13.19
+Build: 2026.07.06.039
+Milestone: P9-B004 Offline Queue Sync Timeout Hotfix
 
 ## Scope
 
@@ -37,8 +37,9 @@ Completed:
 - Receipt Service
 - P9-B003 Counter
 - P9-B004 Offline Queue Worker + Retry + Conflict Resolver
+- Sync Timeout Hotfix
 
-Current milestone: P9-B004 Offline Queue Worker + Retry + Conflict Resolver
+Current milestone: P9-B004 Offline Queue Sync Timeout Hotfix
 
 Next task: P9-B005 Repository Layer
 
@@ -74,10 +75,6 @@ Sync rules:
 4. Reserve final number in transaction.
 5. Write sale, items, stock movements, summary, and sync queue.
 
-## P9-B003 Counter
-
-Counter reservation is idempotent. `reserveRunningNumber()` reads the counter document and the `runningNumbers` reservation before writing. A stable saleId can reserve only one number. Retry or duplicate sync with the same saleId returns the same document number and does not increment the counter again.
-
 ## P9-B004 Offline Queue
 
 The offline queue worker manages local sales with `pending`, `syncing`, `failed`, and `conflict` states.
@@ -87,29 +84,10 @@ Capabilities:
 - Detailed queue snapshot and status counts
 - Retry backoff with `nextRetryAt`
 - Stale `syncing` recovery
+- Per-sale sync timeout guard to prevent `กำลัง Sync...` from staying forever
 - Conflict detection for tenant mismatch, product not found, invalid product id, invalid quantity, and insufficient stock
 - Manual retry or discard conflict resolver
 - Diagnostic API exposed as `window.retailOfflineQueue`
-
-## Receipt Service
-
-Receipt output uses `/pos/receipt/`. The POS screen saves and unlocks first. The receipt page reads the saved local sale by `saleId`, shows items, customer information, and loyalty point summary, then handles browser printing outside the main POS screen.
-
-## Loyalty Flow
-
-The loyalty module waits for the saved sale and writes updated customer points, sale loyalty summary, and loyalty ledger row. The receipt page waits briefly so points can appear on the bill.
-
-## Files
-
-- `public/assets/js/retail-pos-firestore-foundation.js`
-- `public/assets/js/retail-pos-counter.js`
-- `public/assets/js/retail-offline-sale-sync.js`
-- `public/assets/js/retail-pos-safe-confirm.js`
-- `public/assets/js/retail-pos-receipt-modal.js`
-- `public/assets/js/retail-pos-receipt-window.js`
-- `public/assets/js/retail-pos-loyalty.js`
-- `public/pos/receipt/index.html`
-- `public/pos/index.html`
 
 ## Deployment
 
