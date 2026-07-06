@@ -1,10 +1,10 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Receipt Modal Close Guard
-Version: 0.12.99
-Build: 2026.07.06.019
+Milestone: POS Receipt Overlay Unlock
+Version: 0.13.00
+Build: 2026.07.06.020
 
-Change: added a POS receipt modal close guard to prevent the page from getting stuck after a successful sale. The guard closes the print-bill modal from the close button, backdrop click, Escape key, or after printing, and clears any stuck modal/inert state so the POS screen becomes clickable again. Bumped the POS receipt modal guard cache.
+Change: strengthened the POS receipt modal guard to fix the stuck overlay after a successful sale. The guard now proactively closes the native payment dialog when the custom receipt modal is visible, restores pointer events, clears inert/modal-open state, raises the receipt modal above other layers, and keeps close/print buttons clickable. Bumped the POS receipt modal guard cache.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
