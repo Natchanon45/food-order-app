@@ -1,10 +1,10 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: P9-B004 Loyalty + Receipt Privacy Hotfix
-Version: 0.13.22
-Build: 2026.07.06.042
+Milestone: P9-B005 Repository Layer
+Version: 0.13.23
+Build: 2026.07.06.043
 
-Change: improved POS loyalty saving and receipt privacy. Loyalty points now save from the sale-saved event instead of timing guesses, with customerId fallback from the saved sale. Receipt output and sales receipt dialog now show the correct tax title, VAT rows, loyalty point summary, and masked customer name/phone.
+Change: extended the Retail POS repository layer as the central access point for tenant document refs and local POS data. Added repository helpers for tenant-scoped collection/doc refs, local value storage for active shift and store settings, local customers/settings repositories, and local product/stock movement helpers while preserving offline sale queue behavior.
 
-Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only firestore:rules,hosting
+Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
