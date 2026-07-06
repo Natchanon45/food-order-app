@@ -2,15 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.57
-Build: 2026.07.07.001
-Milestone: POS Modern Panel Layout
+Version: 0.13.58
+Build: 2026.07.07.002
+Milestone: POS Modern Panel Polish
 
-Change: modernized the `/pos` working layout with cleaner product and cart panels, refreshed desktop card/list spacing, and reserved cart-list height for at least five sale rows.
+Change: polished the `/pos` modern panel layout by removing the extra cart title marker, tightening the product panel width around the image grid, and keeping the cart list sized for at least five sale rows.
 
 Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through print font scope polish.
 
-Usage: open `/pos` on desktop and verify the cart panel keeps enough vertical room for at least five sale rows while the totals and payment actions remain accessible.
+Usage: open `/pos` on desktop and verify the product panel sits close to the image grid, the cart title has no extra marker icon, and the cart panel keeps enough vertical room for at least five sale rows while totals and payment actions remain accessible.
 
 Deploy rules: use hosting-only deploy for `public/` asset changes. Deploy functions only when files under `functions/` or function rewrites/routes change. This build only needs hosting deploy.
 
