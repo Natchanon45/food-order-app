@@ -1,10 +1,10 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: P9-B002 Running Number — Save Screen Hotfix
-Version: 0.13.15
-Build: 2026.07.06.035
+Milestone: P9-B002 Receipt Service
+Version: 0.13.16
+Build: 2026.07.06.036
 
-Change: adjusted the POS after-sale flow so successful sale save no longer opens the receipt screen automatically. The app now closes any old receipt overlay, unlocks the POS page, and focuses the barcode input for the next sale. Sale saving, stable saleId, offline sync, duplicate protection, and stock deduction remain unchanged.
+Change: added a separate receipt page after POS sale save. The POS screen is unlocked first, then a receipt page shows sale items, customer data, and loyalty point summary from the saved sale. Loyalty code still updates customer points, sale loyalty data, and the loyalty ledger.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
