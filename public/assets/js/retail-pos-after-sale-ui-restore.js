@@ -1,5 +1,6 @@
 const PRODUCT_KEY = 'retail_pos_products_v1';
 const grid = document.querySelector('#productGrid');
+let clearingBill = false;
 
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -44,6 +45,10 @@ function hoverInfoHtml(product = {}) {
   return `<span class="pos-card-hover-info" aria-hidden="true"><strong>${escapeHtml(product.name || 'ไม่ระบุชื่อ')}</strong><span>สต๊อก ${stock} ${escapeHtml(unit)}</span><span>${money(product.price)} บาท</span></span>`;
 }
 
+function soldOutHtml(product = {}) {
+  return Number(product.stock || 0) <= 0 ? '<span class="pos-card-sold-out">สินค้าหมด</span>' : '';
+}
+
 function restoreProductCards() {
   if (!grid) return;
   const map = productsById();
@@ -52,8 +57,11 @@ function restoreProductCards() {
     if (!product) return;
     const src = String(imageUrl(product) || '').trim();
     const title = productTitle(product);
+    const soldOut = Number(product.stock || 0) <= 0;
     card.setAttribute('title', title);
     card.setAttribute('aria-label', title.replace(/\n/g, ' '));
+    card.classList.toggle('is-sold-out', soldOut);
+    if (soldOut) card.setAttribute('aria-disabled', 'true'); else card.removeAttribute('aria-disabled');
     if (!src) return;
     const stamp = `${product.id}|${product.updatedAt || ''}|${product.stock || 0}|${product.price || 0}|${src}`;
     if (card.dataset.posImageRestored === stamp) return;
@@ -62,11 +70,56 @@ function restoreProductCards() {
     const id = product.id || '';
     const barcode = product.barcode || '';
     const code = [id, barcode].filter(Boolean).join(' • ');
-    card.innerHTML = `<span class="pos-card-image-wrap"><img src="${escapeHtml(src)}" alt="${escapeHtml(product.name || '')}" loading="lazy" decoding="async"></span><span class="pos-card-title">${escapeHtml(product.name || 'ไม่ระบุชื่อ')}</span><span class="pos-card-code">${escapeHtml(code)}</span><span class="pos-card-stock">คงเหลือ ${Number(product.stock || 0).toLocaleString('th-TH')} ${escapeHtml(product.unit || 'ชิ้น')}</span><span class="pos-card-price">${money(product.price)} บาท</span>${hoverInfoHtml(product)}`;
+    card.innerHTML = `${soldOutHtml(product)}<span class="pos-card-image-wrap"><img src="${escapeHtml(src)}" alt="${escapeHtml(product.name || '')}" loading="lazy" decoding="async"></span><span class="pos-card-title">${escapeHtml(product.name || 'ไม่ระบุชื่อ')}</span><span class="pos-card-code">${escapeHtml(code)}</span><span class="pos-card-stock">คงเหลือ ${Number(product.stock || 0).toLocaleString('th-TH')} ${escapeHtml(product.unit || 'ชิ้น')}</span><span class="pos-card-price">${money(product.price)} บาท</span>${hoverInfoHtml(product)}`;
   });
+}
+
+function setText(selector, value) {
+  const node = document.querySelector(selector);
+  if (node) node.textContent = value;
+}
+
+function setValue(selector, value) {
+  const node = document.querySelector(selector);
+  if (node) node.value = value;
+}
+
+function clearCurrentBillUi() {
+  document.querySelector('#paymentDialog')?.removeAttribute('data-customer-id');
+  setValue('#discountInput', '0');
+  setValue('#receivedInput', '');
+  setText('#cartList', '');
+  const cartEmpty = document.querySelector('#cartEmpty');
+  if (cartEmpty) cartEmpty.hidden = false;
+  setText('#itemCount', '0 รายการ');
+  ['#subtotal', '#beforeVatAmount', '#vatAmount', '#grandTotal'].forEach(selector => setText(selector, '0.00'));
+  setText('#paymentTotal', '0.00 บาท');
+  setText('#changeAmount', '0.00 บาท');
+  setText('#paymentError', '');
+  const payBtn = document.querySelector('#payBtn');
+  if (payBtn) payBtn.disabled = true;
+  document.querySelectorAll('[data-selected-customer], .selected-customer, .loyalty-selected, .customer-selected').forEach(node => { node.textContent = ''; node.hidden = true; });
+  setTimeout(() => document.querySelector('#barcodeInput')?.focus(), 80);
+}
+
+function forceClearBill() {
+  if (clearingBill) return;
+  clearingBill = true;
+  try {
+    const clearButton = document.querySelector('#clearSaleBtn');
+    if (clearButton && !clearButton.disabled) clearButton.click();
+    clearCurrentBillUi();
+    window.dispatchEvent(new CustomEvent('retail-pos-bill-cleared'));
+  } finally {
+    setTimeout(() => { clearingBill = false; }, 120);
+  }
 }
 
 if (grid) new MutationObserver(() => requestAnimationFrame(restoreProductCards)).observe(grid, { childList: true, subtree: false });
 window.addEventListener('pageshow', () => setTimeout(restoreProductCards, 0));
 window.addEventListener('storage', event => { if (!event.key || event.key === PRODUCT_KEY) setTimeout(restoreProductCards, 0); });
+window.addEventListener('retail-pos-sale-saved', () => setTimeout(forceClearBill, 0));
+window.addEventListener('retail-pos-ready-for-next-sale', () => setTimeout(forceClearBill, 0));
+window.addEventListener('retail-pos-receipt-closed', () => setTimeout(forceClearBill, 0));
+window.retailPosForceClearBill = forceClearBill;
 restoreProductCards();
