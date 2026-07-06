@@ -1,23 +1,17 @@
 import { auth, db, isFirebaseConfigured, doc, runTransaction, serverTimestamp } from './firebase-config.js?v=20260630-073';
 import { getTenantId, RetailCollections } from './retail-db.js?v=20260629-032';
 import { listLocalSales, saveLocalSales, updateLocalSale, localSaleId } from './retail-pos-repository.js?v=20260630-081';
-import {
-  POS_COLLECTIONS,
-  POS_FIRESTORE_VERSION,
-  dateKeyFrom,
-  applySaleToDailySummary,
-  buildSaleItemRows,
-  buildSyncQueueRow
-} from './retail-pos-firestore-foundation.js?v=20260702-002';
+import { POS_COLLECTIONS, POS_FIRESTORE_VERSION, dateKeyFrom, applySaleToDailySummary, buildSaleItemRows, buildSyncQueueRow } from './retail-pos-firestore-foundation.js?v=20260702-002';
 import { reserveRunningNumber, POS_COUNTER_VERSION } from './retail-pos-counter.js?v=20260706-037';
 
-export const OFFLINE_QUEUE_VERSION = 'P9-B004';
+export const OFFLINE_QUEUE_VERSION = 'P9-B004.1';
 
 const SALES_KEY = 'retail_pos_sales_v1';
 const SYNC_EVENT = 'retail-offline-sales-synced';
 const WORKER_EVENT = 'retail-offline-queue-worker';
 const MAX_RETRY_PER_RUN = 5;
 const SYNCING_STALE_MS = 30000;
+const SYNC_ONE_TIMEOUT_MS = 18000;
 const RETRY_DELAYS_MS = [0, 5000, 15000, 30000, 60000, 120000, 300000];
 let syncRunning = false;
 let workerTimer = 0;
@@ -30,6 +24,14 @@ function writeSales(rows) { return saveLocalSales(rows || []); }
 function tenantDoc(collectionName, id) { return doc(db, 'tenants', getTenantId(), collectionName, String(id)); }
 function errorMessage(error) { return String(error?.message || error || 'SYNC_FAILED'); }
 function normalizeStatus(status = '') { return String(status || 'pending').toLowerCase(); }
+function timeoutError(label, ms) { const error = new Error(`${label}_TIMEOUT_${ms}MS`); error.code = 'SYNC_TIMEOUT'; return error; }
+function withTimeout(promise, ms, label = 'SYNC') {
+  let timer = 0;
+  return Promise.race([
+    promise.finally(() => clearTimeout(timer)),
+    new Promise((_, reject) => { timer = setTimeout(() => reject(timeoutError(label, ms)), ms); })
+  ]);
+}
 
 function conflictTypeFromError(error) {
   const message = errorMessage(error);
@@ -48,19 +50,8 @@ function getOfflineSyncQueue() { return readSales().filter(sale => queueStatuses
 
 export function getOfflineSyncQueueDetails() {
   const queue = getOfflineSyncQueue();
-  const counts = queue.reduce((acc, sale) => {
-    const status = normalizeStatus(sale.syncStatus);
-    acc[status] = Number(acc[status] || 0) + 1;
-    return acc;
-  }, {});
-  const conflicts = queue.filter(sale => normalizeStatus(sale.syncStatus) === 'conflict').map(sale => ({
-    id: localSaleId(sale),
-    saleNumber: sale.saleNumber || sale.localSaleNumber || '',
-    conflictType: sale.conflictType || '',
-    error: sale.syncError || '',
-    total: Number(sale.totalAmount ?? sale.total ?? 0),
-    createdAt: sale.createdAt || ''
-  }));
+  const counts = queue.reduce((acc, sale) => { const status = normalizeStatus(sale.syncStatus); acc[status] = Number(acc[status] || 0) + 1; return acc; }, {});
+  const conflicts = queue.filter(sale => normalizeStatus(sale.syncStatus) === 'conflict').map(sale => ({ id: localSaleId(sale), saleNumber: sale.saleNumber || sale.localSaleNumber || '', conflictType: sale.conflictType || '', error: sale.syncError || '', total: Number(sale.totalAmount ?? sale.total ?? 0), createdAt: sale.createdAt || '' }));
   const failed = queue.filter(sale => normalizeStatus(sale.syncStatus) === 'failed');
   const nextRetryAt = failed.map(sale => new Date(sale.nextRetryAt || 0).getTime()).filter(Boolean).sort((a, b) => a - b)[0] || 0;
   return { version: OFFLINE_QUEUE_VERSION, queueSize: queue.length, counts, conflicts, failedCount: failed.length, nextRetryAt: nextRetryAt ? new Date(nextRetryAt).toISOString() : '' };
@@ -74,7 +65,6 @@ function updateWorkerSnapshot(patch = {}) {
   window.dispatchEvent(new CustomEvent(WORKER_EVENT, { detail: workerSnapshot }));
   return workerSnapshot;
 }
-
 export function getOfflineQueueWorkerSnapshot() { return { ...workerSnapshot, ...getOfflineSyncQueueDetails() }; }
 
 function saleNeedsSync(sale) {
@@ -83,26 +73,13 @@ function saleNeedsSync(sale) {
   if (sale.firebaseSyncedAt || status === 'synced') return false;
   if (status === 'discarded' || status === 'conflict_resolved') return false;
   if (status === 'conflict') return false;
-  if (status === 'syncing') {
-    const started = new Date(sale.syncStartedAt || 0).getTime();
-    if (started && nowMs() - started < SYNCING_STALE_MS) return false;
-  }
+  if (status === 'syncing') { const started = new Date(sale.syncStartedAt || 0).getTime(); if (started && nowMs() - started < SYNCING_STALE_MS) return false; }
   if (status === 'failed' && !retryDue(sale)) return false;
   return Boolean(localSaleId(sale));
 }
-
 function markSale(id, patch) { updateLocalSale(id, { ...patch, queueVersion: OFFLINE_QUEUE_VERSION }); }
-
-function markSyncing(sale, lockId) {
-  const id = localSaleId(sale);
-  const attemptCount = Number(sale.syncAttemptCount || 0) + 1;
-  markSale(id, { syncStatus: 'syncing', syncLockId: lockId, syncStartedAt: nowIso(), lastSyncAttemptAt: nowIso(), syncAttemptCount: attemptCount, syncError: '', nextRetryAt: '', conflictType: '', queueVersion: OFFLINE_QUEUE_VERSION });
-}
-
-function markSynced(id, extra = {}) {
-  markSale(id, { syncStatus: 'synced', firebaseSyncedAt: nowIso(), syncError: '', syncLockId: '', syncStartedAt: '', nextRetryAt: '', conflictType: '', conflictResolution: '', queueVersion: OFFLINE_QUEUE_VERSION, ...extra });
-}
-
+function markSyncing(sale, lockId) { const id = localSaleId(sale); const attemptCount = Number(sale.syncAttemptCount || 0) + 1; markSale(id, { syncStatus: 'syncing', syncLockId: lockId, syncStartedAt: nowIso(), lastSyncAttemptAt: nowIso(), syncAttemptCount: attemptCount, syncError: '', nextRetryAt: '', conflictType: '', queueVersion: OFFLINE_QUEUE_VERSION }); }
+function markSynced(id, extra = {}) { markSale(id, { syncStatus: 'synced', firebaseSyncedAt: nowIso(), syncError: '', syncLockId: '', syncStartedAt: '', nextRetryAt: '', conflictType: '', conflictResolution: '', queueVersion: OFFLINE_QUEUE_VERSION, ...extra }); }
 function markFailed(id, error, status = 'failed') {
   const current = readSales().find(sale => localSaleId(sale) === id) || {};
   const attemptCount = Number(current.syncAttemptCount || 0);
@@ -111,19 +88,16 @@ function markFailed(id, error, status = 'failed') {
   markSale(id, { syncStatus: status, syncError: errorMessage(error), syncLockId: '', syncStartedAt: '', lastSyncAttemptAt: nowIso(), nextRetryAt: isConflict ? '' : new Date(nowMs() + delay).toISOString(), conflictType: isConflict ? conflictTypeFromError(error) : '', conflictResolution: isConflict ? 'manual_required' : '', retryDelayMs: delay, queueVersion: OFFLINE_QUEUE_VERSION });
 }
 
-export function recoverStaleSyncingSales() {
+export function recoverStaleSyncingSales({ force = false } = {}) {
   let changed = 0;
   const next = readSales().map(sale => {
     if (normalizeStatus(sale.syncStatus) !== 'syncing') return sale;
     const started = new Date(sale.syncStartedAt || 0).getTime();
-    if (started && nowMs() - started < SYNCING_STALE_MS) return sale;
+    if (!force && started && nowMs() - started < SYNCING_STALE_MS) return sale;
     changed += 1;
-    return { ...sale, syncStatus: 'pending', syncError: 'RECOVERED_STALE_SYNCING', syncLockId: '', syncStartedAt: '', nextRetryAt: '', recoveredAt: nowIso(), queueVersion: OFFLINE_QUEUE_VERSION };
+    return { ...sale, syncStatus: 'failed', syncError: 'RECOVERED_STALE_SYNCING', syncLockId: '', syncStartedAt: '', nextRetryAt: new Date(nowMs() + 5000).toISOString(), recoveredAt: nowIso(), queueVersion: OFFLINE_QUEUE_VERSION };
   });
-  if (changed) {
-    writeSales(next);
-    updateWorkerSnapshot({ state: 'stale_recovered' });
-  }
+  if (changed) { writeSales(next); updateWorkerSnapshot({ state: 'stale_recovered' }); }
   return changed;
 }
 
@@ -144,14 +118,9 @@ async function syncOneSale(sale) {
   let alreadyExists = false;
   let syncedSaleNumber = sale.saleNumber || saleId;
   let alreadyReserved = false;
-
   await runTransaction(db, async transaction => {
     const existingSale = await transaction.get(saleRef);
-    if (existingSale.exists()) {
-      alreadyExists = true;
-      syncedSaleNumber = existingSale.data()?.saleNumber || syncedSaleNumber;
-      return;
-    }
+    if (existingSale.exists()) { alreadyExists = true; syncedSaleNumber = existingSale.data()?.saleNumber || syncedSaleNumber; return; }
     const saleDateValue = sale.createdAt || new Date();
     const saleDateKey = sale.dateKey || dateKeyFrom(saleDateValue);
     const summaryRef = tenantDoc(POS_COLLECTIONS.dailySummary, saleDateKey);
@@ -185,11 +154,9 @@ async function syncOneSale(sale) {
     transaction.set(summaryRef, { ...nextSummary, updatedBy: userId, updatedAtServer: serverTimestamp() }, { merge: true });
     transaction.set(tenantDoc(POS_COLLECTIONS.syncQueue, saleId), { ...buildSyncQueueRow(normalizedSale, { status: 'synced' }), queueVersion: OFFLINE_QUEUE_VERSION, createdBy: userId, updatedBy: userId, updatedAtServer: serverTimestamp() }, { merge: true });
   });
-
   markSynced(saleId, alreadyExists ? { saleNumber: syncedSaleNumber, syncNote: 'sale already existed in Firebase' } : { saleNumber: syncedSaleNumber, finalSaleNumber: syncedSaleNumber, runningNumberStatus: 'reserved', counterVersion: POS_COUNTER_VERSION, counterAlreadyReserved: alreadyReserved });
   return saleId;
 }
-
 export { getOfflineSyncQueue };
 
 export function retryFailedOfflineSales({ includeConflicts = false, saleId = '' } = {}) {
@@ -199,17 +166,10 @@ export function retryFailedOfflineSales({ includeConflicts = false, saleId = '' 
     const id = localSaleId(sale);
     const status = normalizeStatus(sale.syncStatus);
     const matchTarget = !targetId || id === targetId;
-    if (matchTarget && (status === 'failed' || (includeConflicts && status === 'conflict'))) {
-      changed += 1;
-      return { ...sale, syncStatus: 'pending', syncError: '', nextRetryAt: '', syncLockId: '', syncStartedAt: '', conflictResolution: includeConflicts ? 'retry_requested' : sale.conflictResolution || '', retryRequestedAt: nowIso(), queueVersion: OFFLINE_QUEUE_VERSION };
-    }
+    if (matchTarget && (status === 'failed' || (includeConflicts && status === 'conflict'))) { changed += 1; return { ...sale, syncStatus: 'pending', syncError: '', nextRetryAt: '', syncLockId: '', syncStartedAt: '', conflictResolution: includeConflicts ? 'retry_requested' : sale.conflictResolution || '', retryRequestedAt: nowIso(), queueVersion: OFFLINE_QUEUE_VERSION }; }
     return sale;
   });
-  if (changed) {
-    writeSales(next);
-    updateWorkerSnapshot({ state: 'retry_queued' });
-    scheduleOfflineQueueRun(600);
-  }
+  if (changed) { writeSales(next); updateWorkerSnapshot({ state: 'retry_queued' }); scheduleOfflineQueueRun(600); }
   return changed;
 }
 
@@ -223,20 +183,14 @@ export function resolveOfflineSaleConflict(saleId, resolution = 'discard') {
     if (resolution === 'retry') return { ...sale, syncStatus: 'pending', syncError: '', nextRetryAt: '', conflictResolution: 'retry_requested', retryRequestedAt: nowIso(), queueVersion: OFFLINE_QUEUE_VERSION };
     return { ...sale, syncStatus: 'discarded', syncError: '', conflictResolution: 'discarded_local_sale', resolvedAt: nowIso(), queueVersion: OFFLINE_QUEUE_VERSION };
   });
-  if (changed) {
-    writeSales(next);
-    updateWorkerSnapshot({ state: resolution === 'retry' ? 'conflict_retry_queued' : 'conflict_discarded' });
-    if (resolution === 'retry') scheduleOfflineQueueRun(600);
-  }
+  if (changed) { writeSales(next); updateWorkerSnapshot({ state: resolution === 'retry' ? 'conflict_retry_queued' : 'conflict_discarded' }); if (resolution === 'retry') scheduleOfflineQueueRun(600); }
   return changed;
 }
-
-export function resolveAllOfflineSaleConflicts(resolution = 'discard') {
-  return getOfflineSyncQueueDetails().conflicts.reduce((count, item) => count + (resolveOfflineSaleConflict(item.id, resolution) ? 1 : 0), 0);
-}
+export function resolveAllOfflineSaleConflicts(resolution = 'discard') { return getOfflineSyncQueueDetails().conflicts.reduce((count, item) => count + (resolveOfflineSaleConflict(item.id, resolution) ? 1 : 0), 0); }
 
 export async function syncOfflineSalesToFirebase({ forceRetry = false } = {}) {
-  if (!isFirebaseConfigured || !db || navigator.onLine === false || syncRunning) return { synced: 0, failed: 0, conflict: 0, skipped: 0 };
+  if (!isFirebaseConfigured || !db || navigator.onLine === false) { updateWorkerSnapshot({ state: navigator.onLine === false ? 'offline' : 'disabled' }); return { synced: 0, failed: 0, conflict: 0, skipped: 0 }; }
+  if (syncRunning) return { synced: 0, failed: 0, conflict: 0, skipped: getOfflineSyncQueue().length };
   syncRunning = true;
   recoverStaleSyncingSales();
   const runId = `sync-${nowMs()}-${Math.random().toString(16).slice(2)}`;
@@ -248,18 +202,26 @@ export async function syncOfflineSalesToFirebase({ forceRetry = false } = {}) {
     skipped = Math.max(0, getOfflineSyncQueue().length - pending.length);
     for (const sale of pending) {
       const id = localSaleId(sale);
-      try { markSyncing(sale, runId); await syncOneSale({ ...sale, syncStatus: 'syncing' }); synced += 1; }
-      catch (error) {
+      try {
+        markSyncing(sale, runId);
+        await withTimeout(syncOneSale({ ...sale, syncStatus: 'syncing' }), SYNC_ONE_TIMEOUT_MS, `SYNC_SALE_${id}`);
+        synced += 1;
+      } catch (error) {
         console.warn('[retail-offline-sale-sync] sync failed', id, error);
         if (isConflictError(error)) { conflict += 1; markFailed(id, error, 'conflict'); continue; }
-        failed += 1; markFailed(id, error, 'failed');
+        failed += 1;
+        markFailed(id, error, 'failed');
       }
     }
     const result = { synced, failed, conflict, skipped };
-    updateWorkerSnapshot({ state: conflict ? 'conflict' : failed ? 'failed' : 'idle', lastResult: result });
+    updateWorkerSnapshot({ state: conflict ? 'conflict' : failed ? 'failed' : 'idle', lastResult: result, finishedAt: nowIso() });
     if (synced || failed || conflict || skipped) window.dispatchEvent(new CustomEvent(SYNC_EVENT, { detail: result }));
     return result;
-  } finally { syncRunning = false; }
+  } finally {
+    syncRunning = false;
+    const details = getOfflineSyncQueueDetails();
+    if (!details.counts.syncing) updateWorkerSnapshot({ state: details.queueSize ? (details.counts.conflict ? 'conflict' : details.counts.failed ? 'failed' : 'idle') : 'idle', finishedAt: nowIso() });
+  }
 }
 
 export function scheduleOfflineQueueRun(delay = 1200) {
@@ -274,24 +236,12 @@ export function scheduleOfflineQueueRun(delay = 1200) {
 }
 
 function exposeQueueApi() {
-  window.retailOfflineQueue = Object.freeze({
-    version: OFFLINE_QUEUE_VERSION,
-    snapshot: getOfflineQueueWorkerSnapshot,
-    details: getOfflineSyncQueueDetails,
-    sync: syncOfflineSalesToFirebase,
-    retryFailed: retryFailedOfflineSales,
-    retryConflict: saleId => resolveOfflineSaleConflict(saleId, 'retry'),
-    discardConflict: saleId => resolveOfflineSaleConflict(saleId, 'discard'),
-    resolveAllConflicts: resolveAllOfflineSaleConflicts,
-    recoverStale: recoverStaleSyncingSales,
-    schedule: scheduleOfflineQueueRun
-  });
+  window.retailOfflineQueue = Object.freeze({ version: OFFLINE_QUEUE_VERSION, snapshot: getOfflineQueueWorkerSnapshot, details: getOfflineSyncQueueDetails, sync: syncOfflineSalesToFirebase, retryFailed: retryFailedOfflineSales, retryConflict: saleId => resolveOfflineSaleConflict(saleId, 'retry'), discardConflict: saleId => resolveOfflineSaleConflict(saleId, 'discard'), resolveAllConflicts: resolveAllOfflineSaleConflicts, recoverStale: recoverStaleSyncingSales, recoverNow: () => recoverStaleSyncingSales({ force: true }), schedule: scheduleOfflineQueueRun });
 }
-
 class OfflineQueueWorker {
   start() {
     exposeQueueApi();
-    recoverStaleSyncingSales();
+    recoverStaleSyncingSales({ force: true });
     scheduleOfflineQueueRun(1200);
     window.addEventListener('online', () => scheduleOfflineQueueRun(800));
     window.addEventListener('visibilitychange', () => { if (!document.hidden) scheduleOfflineQueueRun(1000); });
@@ -299,5 +249,4 @@ class OfflineQueueWorker {
     window.addEventListener('storage', event => { if (!event.key || event.key === SALES_KEY) scheduleOfflineQueueRun(1000); });
   }
 }
-
 new OfflineQueueWorker().start();
