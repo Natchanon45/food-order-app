@@ -6,8 +6,8 @@ function paymentDialog() {
   return document.querySelector('#paymentDialog');
 }
 
-function isReceiptVisible(modal = receiptModal()) {
-  return Boolean(modal && !modal.hidden && modal.style.display !== 'none');
+function isReceiptOpen(modal = receiptModal()) {
+  return Boolean(modal && modal.hidden === false);
 }
 
 function unlockPage() {
@@ -24,21 +24,21 @@ function closeNativePaymentDialog() {
   const dialog = paymentDialog();
   if (!dialog?.open) return;
   try { dialog.close(); }
-  catch {
-    dialog.removeAttribute('open');
-  }
+  catch { dialog.removeAttribute('open'); }
 }
 
 function normalizeReceiptModal() {
   const modal = receiptModal();
-  if (!isReceiptVisible(modal)) return;
+  if (!isReceiptOpen(modal)) return;
   closeNativePaymentDialog();
   unlockPage();
   modal.classList.add('receipt-print-root');
+  modal.style.display = 'grid';
   modal.style.pointerEvents = 'auto';
   modal.style.zIndex = '2147483647';
   modal.querySelectorAll('button,a,[role="button"],[data-close-receipt],[data-print-receipt]').forEach(el => {
     el.style.pointerEvents = 'auto';
+    el.disabled = false;
   });
 }
 
@@ -54,8 +54,9 @@ function closeReceiptModal() {
   const modal = receiptModal();
   if (modal) {
     modal.hidden = true;
-    modal.style.display = 'none';
-    modal.style.pointerEvents = 'none';
+    modal.style.display = '';
+    modal.style.pointerEvents = '';
+    modal.style.zIndex = '';
     modal.classList.remove('show', 'open');
     modal.removeAttribute('open');
   }
@@ -66,7 +67,7 @@ function closeReceiptModal() {
 document.addEventListener('click', event => {
   normalizeReceiptModal();
   const modal = receiptModal();
-  if (!isReceiptVisible(modal)) return;
+  if (!isReceiptOpen(modal)) return;
   if (isReceiptCloseTarget(event.target) || event.target.closest?.('.receipt-modal-backdrop')) {
     event.preventDefault();
     event.stopPropagation();
@@ -75,7 +76,7 @@ document.addEventListener('click', event => {
 }, true);
 
 document.addEventListener('keydown', event => {
-  if (event.key === 'Escape' && isReceiptVisible()) {
+  if (event.key === 'Escape' && isReceiptOpen()) {
     event.preventDefault();
     closeReceiptModal();
   }
