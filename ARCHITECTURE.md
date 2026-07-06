@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.17
-Build: 2026.07.06.037
-Milestone: P9-B003 Counter
+Version: 0.13.18
+Build: 2026.07.06.038
+Milestone: P9-B004 Offline Queue Worker + Retry + Conflict Resolver
 
 ## Scope
 
@@ -34,13 +34,13 @@ Completed:
 - POS Firestore Foundation P9-B001
 - POS Safe Confirm Payment
 - P9-B002 Running Number alignment
-- Save Screen Hotfix
 - Receipt Service
 - P9-B003 Counter
+- P9-B004 Offline Queue Worker + Retry + Conflict Resolver
 
-Current milestone: P9-B003 Counter
+Current milestone: P9-B004 Offline Queue Worker + Retry + Conflict Resolver
 
-Next task: P9-B004 Offline Queue Worker + Retry + Conflict Resolver
+Next task: P9-B005 Repository Layer
 
 ## Retail POS Data Model
 
@@ -66,15 +66,7 @@ Known POS collections:
 
 Retail POS creates one stable `saleId` before saving. The same `saleId` is used locally and during Firestore sync.
 
-Local sale flow:
-
-1. Create stable `saleId`.
-2. Assign pending SALE number.
-3. Save local sale with `syncStatus: pending`.
-4. Deduct local stock once.
-5. Keep sale for offline sync.
-
-Sync flow:
+Sync rules:
 
 1. Read sale by stable `saleId`.
 2. If it exists, do not create a duplicate and do not deduct stock again.
@@ -86,11 +78,18 @@ Sync flow:
 
 Counter reservation is idempotent. `reserveRunningNumber()` reads the counter document and the `runningNumbers` reservation before writing. A stable saleId can reserve only one number. Retry or duplicate sync with the same saleId returns the same document number and does not increment the counter again.
 
-Counter writes:
+## P9-B004 Offline Queue
 
-- `counters/{type_periodKey}` stores the latest running value.
-- `runningNumbers/{type_periodKey_documentId}` stores the reservation ledger.
-- Reservation rows include tenantId, documentId, documentNumber, running, periodKey, and counterVersion.
+The offline queue worker manages local sales with `pending`, `syncing`, `failed`, and `conflict` states.
+
+Capabilities:
+
+- Detailed queue snapshot and status counts
+- Retry backoff with `nextRetryAt`
+- Stale `syncing` recovery
+- Conflict detection for tenant mismatch, product not found, invalid product id, invalid quantity, and insufficient stock
+- Manual retry or discard conflict resolver
+- Diagnostic API exposed as `window.retailOfflineQueue`
 
 ## Receipt Service
 
