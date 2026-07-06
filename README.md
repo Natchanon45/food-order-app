@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: P9-B006-08 Buyer Lookup Normalization
-Version: 0.13.50
-Build: 2026.07.06.070
+Milestone: P9-B006-09 DBD Namespaced Payload Mapping
+Version: 0.13.51
+Build: 2026.07.06.071
 
-Change: improved the tax buyer lookup function to support nested and array-based OpenAPI responses. The function now scans the payload for the best juristic record, supports more field aliases for tax ID, buyer name, address, and branch, and adds a debug mode at `/api/tax-buyer/lookup?taxId=...&debug=1` to inspect response status, content type, keys, and a safe preview.
+Change: updated the tax buyer lookup function to map the actual DBD OpenAPI namespaced payload shown in production. The function now extracts buyer tax ID, Thai company name, branch name, and address from the DBD `cd`, `cr`, and `td` namespace-style fields and keeps debug mode available at `/api/tax-buyer/lookup?taxId=...&debug=1`.
 
 Existing full tax invoice creation, tax invoice history/reprint, receipt behavior, POS totals, VAT calculation, stock deduction, and offline sale sync are unchanged.
 
