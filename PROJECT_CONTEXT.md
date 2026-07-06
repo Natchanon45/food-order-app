@@ -2,13 +2,13 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.51
-Build: 2026.07.06.071
-Milestone: P9-B006-09 Buyer Lookup Field Mapping
+Version: 0.13.52
+Build: 2026.07.06.072
+Milestone: P9-B006-10 DBD Address Full Mapping
 
-Change: updated the tax buyer lookup function to map the actual OpenAPI payload shape seen in production. The function now extracts buyer tax ID, Thai company name, branch name, and address from the namespaced juristic response fields and keeps debug mode available at `/api/tax-buyer/lookup?taxId=...&debug=1`.
+Change: updated the tax buyer lookup function to support the flattened DBD OpenAPI schema. The function now reads `data.address.full` first and falls back to composing the address from `addressNo`, `road`, `subDistrict`, `district`, `province`, and postcode fields when available. It also avoids treating nested address/name objects as string values.
 
-Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through production buyer lookup field mapping.
+Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through DBD address full mapping.
 
 Usage: open a receipt after sale, click `ใบกำกับภาษีเต็มรูปแบบ`, enter tax ID, then press `DBD`. For troubleshooting, open `/api/tax-buyer/lookup?taxId=0105528025574&debug=1` after deploying the function.
 
