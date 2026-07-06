@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: P9-B006-17 Customer Display Liquid QR
-Version: 0.13.62
-Build: 2026.07.07.006
+Milestone: P9-B006-18 POS Continuous Scanner
+Version: 0.13.63
+Build: 2026.07.07.007
 
-Change: restyled the Customer Display pairing QR panel with a black-green linear liquid/glass look. The QR panel remains hidden until hover/focus, while the real QR image is larger for easier scanning. The Customer Display CSS asset version was bumped to load the new style.
+Change: updated the POS sales barcode scanner to support continuous scanning. On the `/pos` sales barcode input, scanning a product now adds it to the bill and keeps the camera open until the user presses the close button. A short duplicate cooldown prevents the same code from firing repeatedly too fast. Other barcode scan flows keep their previous one-scan behavior.
+
+Note: the scanner script was updated, but the POS HTML asset-version bump was blocked by the GitHub connector safety check. After deploy, hard refresh `/pos` if the browser still uses the cached scanner script.
 
 Existing tax buyer DBD lookup, tax invoice creation, tax invoice history/reprint, receipt behavior, POS totals, VAT calculation, stock deduction, customer display data sync, and offline sale sync are unchanged.
 
