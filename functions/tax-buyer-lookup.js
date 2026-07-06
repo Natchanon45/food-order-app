@@ -25,6 +25,25 @@ function pick(source = {}, keys = []) {
   return '';
 }
 
+function deepPick(value, keys = [], depth = 0) {
+  if (!value || depth > 8) return '';
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const found = deepPick(item, keys, depth + 1);
+      if (found) return found;
+    }
+    return '';
+  }
+  if (typeof value !== 'object') return '';
+  const direct = pick(value, keys);
+  if (direct) return direct;
+  for (const item of Object.values(value)) {
+    const found = deepPick(item, keys, depth + 1);
+    if (found) return found;
+  }
+  return '';
+}
+
 function rootPayload(data = {}) {
   return data.data ?? data.result ?? data.results ?? data.profile ?? data.juristic_person ?? data.juristicPerson ?? data;
 }
@@ -43,6 +62,14 @@ const TAX_ID_KEYS = ['buyerTaxId', 'taxId', 'juristicId', 'juristic_id', 'jurist
 const NAME_KEYS = ['buyerName', 'name', 'companyName', 'juristicNameTH', 'juristic_name_th', 'juristicPersonNameTH', 'juristic_person_name_th', 'nameTh', CD + 'OrganizationJuristicNameTH'];
 const ADDRESS_KEYS = ['buyerAddress', 'addressTh', 'fullAddress', 'juristic_person_address'];
 const BRANCH_KEYS = ['buyerBranchName', 'branchName', 'branch', TD + 'OrganizationJuristicBranchName'];
+const ADDRESS_NO_KEYS = [CD + 'AddressNo', 'addressNo', 'houseNo'];
+const MOO_KEYS = [CD + 'Moo', 'moo'];
+const SOI_KEYS = [CD + 'Soi', 'soi'];
+const ROAD_KEYS = [CD + 'Road', 'road'];
+const SUB_DISTRICT_KEYS = [CR + 'CitySubDivisionTextTH', 'subDistrict', 'tambon'];
+const DISTRICT_KEYS = [CR + 'CityTextTH', 'district', 'amphoe'];
+const PROVINCE_KEYS = [CR + 'CountrySubDivisionTextTH', 'province'];
+const POSTCODE_KEYS = [CD + 'PostCode', 'postcode', 'postalCode', 'zipCode'];
 
 function scoreCandidate(source = {}, taxId = '') {
   const blob = JSON.stringify(source || '');
@@ -75,19 +102,23 @@ function joinAddressParts(parts = []) {
   return cleanText([...new Set(cleaned)].join(' '));
 }
 
+function addressPart(src, keys) {
+  return pick(src, keys) || deepPick(src, keys);
+}
+
 function addressFromSource(source = {}) {
   const src = dbdAddressSource(source) || source;
-  const explicitFull = pick(src, ['full', 'Full', 'addressFull', 'address_full']);
+  const explicitFull = addressPart(src, ['full', 'Full', 'addressFull', 'address_full']);
   if (explicitFull) return cleanText(explicitFull);
 
-  const dbdBase = pick(src, [CD + 'Address']);
+  const dbdBase = addressPart(src, [CD + 'Address']);
   if (dbdBase) {
     return joinAddressParts([
       dbdBase,
-      pick(src, [CR + 'CitySubDivisionTextTH']),
-      pick(src, [CR + 'CityTextTH']),
-      pick(src, [CR + 'CountrySubDivisionTextTH']),
-      pick(src, [CD + 'PostCode', 'postcode', 'postalCode', 'zipCode'])
+      addressPart(src, SUB_DISTRICT_KEYS),
+      addressPart(src, DISTRICT_KEYS),
+      addressPart(src, PROVINCE_KEYS),
+      addressPart(src, POSTCODE_KEYS)
     ]);
   }
 
@@ -95,14 +126,14 @@ function addressFromSource(source = {}) {
   if (direct) return cleanText(direct);
 
   return joinAddressParts([
-    pick(src, [CD + 'AddressNo', 'addressNo', 'houseNo']),
-    pick(src, [CD + 'Moo', 'moo']),
-    pick(src, [CD + 'Soi', 'soi']),
-    pick(src, [CD + 'Road', 'road']),
-    pick(src, [CR + 'CitySubDivisionTextTH', 'subDistrict', 'tambon']),
-    pick(src, [CR + 'CityTextTH', 'district', 'amphoe']),
-    pick(src, [CR + 'CountrySubDivisionTextTH', 'province']),
-    pick(src, [CD + 'PostCode', 'postcode', 'postalCode', 'zipCode'])
+    addressPart(src, ADDRESS_NO_KEYS),
+    addressPart(src, MOO_KEYS),
+    addressPart(src, SOI_KEYS),
+    addressPart(src, ROAD_KEYS),
+    addressPart(src, SUB_DISTRICT_KEYS),
+    addressPart(src, DISTRICT_KEYS),
+    addressPart(src, PROVINCE_KEYS),
+    addressPart(src, POSTCODE_KEYS)
   ]);
 }
 
@@ -119,12 +150,21 @@ function normalize(data = {}, taxId = '') {
 function safeDebugPayload(payload, rawText, normalized) {
   const root = rootPayload(payload);
   const source = bestSource(payload, normalized.buyerTaxId);
+  const addressSource = dbdAddressSource(source) || source;
   return {
     rootType: Array.isArray(root) ? 'array' : typeof root,
     topKeys: payload && typeof payload === 'object' ? Object.keys(payload).slice(0, 30) : [],
     sourceKeys: source && typeof source === 'object' ? Object.keys(source).slice(0, 80) : [],
+    addressKeys: addressSource && typeof addressSource === 'object' ? Object.keys(addressSource).slice(0, 80) : [],
+    addressProbe: {
+      base: addressPart(addressSource, [CD + 'Address']),
+      subDistrict: addressPart(addressSource, SUB_DISTRICT_KEYS),
+      district: addressPart(addressSource, DISTRICT_KEYS),
+      province: addressPart(addressSource, PROVINCE_KEYS),
+      postcode: addressPart(addressSource, POSTCODE_KEYS)
+    },
     normalized,
-    rawPreview: String(rawText || '').slice(0, 1200)
+    rawPreview: String(rawText || '').slice(0, 1600)
   };
 }
 
