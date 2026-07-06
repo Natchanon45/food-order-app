@@ -2,13 +2,13 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.14
-Build: 2026.07.06.034
-Milestone: P9-B002 Running Number — Receipt Freeze Hotfix
+Version: 0.13.15
+Build: 2026.07.06.035
+Milestone: P9-B002 Running Number — Save Screen Hotfix
 
-Change: fixed the POS screen freeze after a successful sale by disabling the receipt modal auto-save hook that patched `localStorage.setItem`. Local sale save no longer opens a second receipt/auto-print flow. Safe Confirm remains the single receipt-opening path after saving, preserving stable saleId, offline sync, duplicate protection, and no double stock deduction.
+Change: adjusted the POS after-sale flow so a successful sale save no longer opens the receipt screen automatically. The app closes any old receipt overlay, unlocks the POS page, and focuses the barcode input for the next sale. Sale saving, stable saleId, offline sync, duplicate protection, and stock deduction remain unchanged.
 
-Completed: QR Table Order, Kitchen serving, Delivery Lock, Cashier table move, paid-before-close guard, Retail POS Online/Offline/Sync/Tenant support, POS Firestore Foundation P9-B001, Safe Confirm Payment, P9-B002 Running Number alignment, and Receipt Freeze Hotfix.
+Completed: QR Table Order, Kitchen serving, Delivery Lock, Cashier table move, paid-before-close guard, Retail POS Online/Offline/Sync/Tenant support, POS Firestore Foundation P9-B001, Safe Confirm Payment, P9-B002 Running Number alignment, Receipt Freeze Hotfix, and Save Screen Hotfix.
 
 Next Task: P9-B003 Counter
 
