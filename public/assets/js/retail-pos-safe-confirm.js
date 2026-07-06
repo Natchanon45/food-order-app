@@ -9,9 +9,7 @@ const CUSTOMER_KEY = 'retail_pos_customers_v1';
 const SHIFT_KEY = 'retail_pos_active_shift_v1';
 let saving = false;
 
-function readJson(key, fallback) {
-  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
-}
+function readJson(key, fallback) { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } }
 function writeJson(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
 function round2(value) { return Math.round((Number(value || 0) + Number.EPSILON) * 100) / 100; }
 function safeId(prefix) { return globalThis.crypto?.randomUUID ? `${prefix}-${crypto.randomUUID()}` : `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`; }
@@ -41,22 +39,17 @@ function currentTotals(items) {
   let beforeVat = discountedBase;
   let vatAmount = 0;
   let total = discountedBase;
-  if (vatMode === 'include' && vatRate > 0) {
-    vatAmount = round2(discountedBase * vatRate / (100 + vatRate));
-    beforeVat = round2(discountedBase - vatAmount);
-  } else if (vatMode === 'exclude' && vatRate > 0) {
-    vatAmount = round2(discountedBase * vatRate / 100);
-    total = round2(discountedBase + vatAmount);
-  }
+  if (vatMode === 'include' && vatRate > 0) { vatAmount = round2(discountedBase * vatRate / (100 + vatRate)); beforeVat = round2(discountedBase - vatAmount); }
+  else if (vatMode === 'exclude' && vatRate > 0) { vatAmount = round2(discountedBase * vatRate / 100); total = round2(discountedBase + vatAmount); }
   return { subtotal, discount, pointDiscount: 0, discountedBase, taxableBase: beforeVat, beforeVat, vatAmount, vatRate, vatMode, vatRegistered: vatMode !== 'none', vatCalculationBase: 'after_discount_and_points', total };
 }
 
 function buildSale({ saleId, number, method, received, totals, createdAt, items }) {
   const tenantId = getTenantId();
   const customerId = document.querySelector('#paymentDialog')?.dataset.customerId || '';
-  const customer = readJson(CUSTOMER_KEY, []).find(item => String(item.id) === String(customerId));
+  const customer = readJson(CUSTOMER_KEY, []).find(item => String(item.id || item._documentId || '') === String(customerId));
   const shift = readJson(SHIFT_KEY, null);
-  return { id: saleId, saleNumber: number, localSaleNumber: number, finalSaleNumber: '', runningNumberType: 'SALE', runningNumberStatus: 'pending_sync', tenantId, shopId: tenantId, deviceId: getDeviceId(), schemaVersion: POS_FIRESTORE_VERSION, deleted: false, dateKey: dateKeyFrom(createdAt), monthKey: monthKeyFrom(createdAt), channel: 'retail-pos', orderType: 'pos', status: 'completed', paymentStatus: 'paid', syncStatus: 'pending', createdAt, items: items.map(item => ({ id: item.id, productId: item.id, barcode: item.barcode || '', name: item.name, price: item.price, cost: item.cost, qty: item.qty, unit: item.unit, lineTotal: round2(item.price * item.qty) })), totalQty: items.reduce((sum, item) => sum + item.qty, 0), subtotal: totals.subtotal, discount: totals.discount, pointDiscount: 0, discountedBase: totals.discountedBase, taxableBase: totals.taxableBase, beforeVat: totals.beforeVat, vatAmount: totals.vatAmount, vatRate: totals.vatRate, vatMode: totals.vatMode, vatRegistered: totals.vatRegistered, vatCalculationBase: totals.vatCalculationBase, total: totals.total, totalAmount: totals.total, payment: { method, received, change: Math.max(0, received - totals.total) }, paymentMethod: method, receivedAmount: received, changeAmount: Math.max(0, received - totals.total), customerId: customer?.id || '', customerCode: customer?.customerCode || '', customerName: customer?.name || '', customerPhone: customer?.phone || '', shiftId: shift?.id || '', cashierName: shift?.cashierName || '', terminalCode: shift?.terminalCode || '' };
+  return { id: saleId, saleNumber: number, localSaleNumber: number, finalSaleNumber: '', runningNumberType: 'SALE', runningNumberStatus: 'pending_sync', tenantId, shopId: tenantId, deviceId: getDeviceId(), schemaVersion: POS_FIRESTORE_VERSION, deleted: false, dateKey: dateKeyFrom(createdAt), monthKey: monthKeyFrom(createdAt), channel: 'retail-pos', orderType: 'pos', status: 'completed', paymentStatus: 'paid', syncStatus: 'pending', createdAt, items: items.map(item => ({ id: item.id, productId: item.id, barcode: item.barcode || '', name: item.name, price: item.price, cost: item.cost, qty: item.qty, unit: item.unit, lineTotal: round2(item.price * item.qty) })), totalQty: items.reduce((sum, item) => sum + item.qty, 0), subtotal: totals.subtotal, discount: totals.discount, pointDiscount: 0, discountedBase: totals.discountedBase, taxableBase: totals.taxableBase, beforeVat: totals.beforeVat, vatAmount: totals.vatAmount, vatRate: totals.vatRate, vatMode: totals.vatMode, vatRegistered: totals.vatRegistered, vatCalculationBase: totals.vatCalculationBase, total: totals.total, totalAmount: totals.total, payment: { method, received, change: Math.max(0, received - totals.total) }, paymentMethod: method, receivedAmount: received, changeAmount: Math.max(0, received - totals.total), customerId: customer?.id || customer?._documentId || '', customerCode: customer?.customerCode || '', customerName: customer?.name || '', customerPhone: customer?.phone || '', shiftId: shift?.id || '', cashierName: shift?.cashierName || '', terminalCode: shift?.terminalCode || '' };
 }
 
 function saveLocalSale(sale, items) {
@@ -77,6 +70,7 @@ function saveLocalSale(sale, items) {
   writeJson(PRODUCT_KEY, nextProducts);
   writeJson(SALES_KEY, [sale, ...sales].slice(0, 500));
   writeJson(MOVEMENT_KEY, [...movements, ...readJson(MOVEMENT_KEY, [])].slice(0, 500));
+  window.dispatchEvent(new CustomEvent('retail-pos-sale-saved', { detail: { sale } }));
   return sale;
 }
 
@@ -111,11 +105,7 @@ async function safeConfirmPayment(event) {
   const totals = currentTotals(items);
   const method = document.querySelector('#paymentMethod')?.value || 'cash';
   const received = method === 'cash' ? Number(document.querySelector('#receivedInput')?.value || 0) : totals.total;
-  if (received < totals.total) {
-    const error = document.querySelector('#paymentError');
-    if (error) error.textContent = 'จำนวนเงินที่รับมายังไม่ครบ';
-    return;
-  }
+  if (received < totals.total) { const error = document.querySelector('#paymentError'); if (error) error.textContent = 'จำนวนเงินที่รับมายังไม่ครบ'; return; }
   saving = true;
   button.disabled = true;
   button.textContent = 'กำลังบันทึก...';
