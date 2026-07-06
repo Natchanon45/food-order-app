@@ -194,3 +194,6 @@ exports.activateTrialTenantSignup = publicSignup.activateTrialTenantSignup;
 
 const retailPosStaff = require("./retail-pos-staff");
 exports.upsertRetailPosStaff = retailPosStaff.upsertRetailPosStaff;
+
+const taxBuyerLookup = require("./tax-buyer-lookup");
+exports.lookupTaxBuyer = taxBuyerLookup.lookupTaxBuyer;
