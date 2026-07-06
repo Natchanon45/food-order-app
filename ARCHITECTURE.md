@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.13
-Build: 2026.07.06.033
-Milestone: P9-B002 Running Number
+Version: 0.13.14
+Build: 2026.07.06.034
+Milestone: P9-B002 Running Number — Receipt Freeze Hotfix
 
 ## Scope
 
@@ -34,10 +34,11 @@ Completed:
 - POS Firestore Foundation P9-B001
 - POS Safe Confirm Payment
 - P9-B002 Running Number alignment
+- Receipt Freeze Hotfix
 
 Current milestone:
 
-- P9-B002 Running Number
+- P9-B002 Running Number — Receipt Freeze Hotfix
 
 Next task:
 
@@ -108,6 +109,17 @@ Example final number:
 POS-YYYYMMDD-00001
 ```
 
+## Receipt Modal and Print Flow
+
+Safe Confirm is the only path that should open the receipt immediately after a POS sale is saved. Receipt rendering must not hook or patch sale `localStorage` writes to auto-open another receipt or auto-print dialog.
+
+Important receipt rules:
+
+- Do not open more than one receipt modal for one sale save.
+- Do not auto-print from local sale save hooks.
+- Browser print must only run from explicit print action or a controlled receipt setting.
+- Closing receipt must unlock the page and focus the barcode input for the next sale.
+
 ## Offline Queue and Conflict Handling
 
 The offline worker scans local sales with pending, syncing, failed, or conflict states. It retries failed syncs using delay/backoff rules and marks conflict cases for manual handling when needed.
@@ -126,6 +138,8 @@ Known conflict examples:
 - `public/assets/js/retail-pos-counter.js`
 - `public/assets/js/retail-offline-sale-sync.js`
 - `public/assets/js/retail-pos-safe-confirm.js`
+- `public/assets/js/retail-pos-receipt-modal.js`
+- `public/assets/js/retail-pos-receipt-modal-guard.js`
 - `public/assets/js/retail-pos-repository.js`
 - `public/pos/index.html`
 
