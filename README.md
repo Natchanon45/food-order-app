@@ -1,10 +1,10 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: P9-B002 Receipt Service
-Version: 0.13.16
-Build: 2026.07.06.036
+Milestone: P9-B003 Counter
+Version: 0.13.17
+Build: 2026.07.06.037
 
-Change: added a separate receipt page after POS sale save. The POS screen is unlocked first, then a receipt page shows sale items, customer data, and loyalty point summary from the saved sale. Loyalty code still updates customer points, sale loyalty data, and the loyalty ledger.
+Change: implemented idempotent POS counter reservation. `reserveRunningNumber()` now reads counter and running-number reservation before writing. Each saleId gets one reservation row in `runningNumbers`, so retry/sync with the same stable saleId returns the same document number and does not increment the counter again.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
