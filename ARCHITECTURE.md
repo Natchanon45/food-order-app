@@ -2,13 +2,13 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.23
-Build: 2026.07.06.043
-Milestone: P9-B005 Repository Layer
+Version: 0.13.24
+Build: 2026.07.06.044
+Milestone: P9-B005 Repository Layer / POS UX Hotfix
 
 ## Scope
 
-This branch contains Food Order, Delivery, Kitchen, Cashier, and Retail POS workflows. Current work focuses on Retail POS, offline-first sale flow, running numbers, receipt output, customers, loyalty points, and repository-layer consolidation.
+This branch contains Food Order, Delivery, Kitchen, Cashier, and Retail POS workflows. Current work focuses on Retail POS, offline-first sale flow, running numbers, receipt output, customers, loyalty points, repository-layer consolidation, and POS cashier UX.
 
 ## Core Rules
 
@@ -45,8 +45,9 @@ Completed:
 - Pending Number Helper Hotfix
 - Loyalty + Receipt Privacy Hotfix
 - P9-B005 Repository Layer foundation
+- POS UX Hotfix for product hover, sold-out cards, and bill reset after payment
 
-Current milestone: P9-B005 Repository Layer
+Current milestone: P9-B005 Repository Layer / POS UX Hotfix
 
 Next task: Continue P9-B005 integration by replacing direct POS localStorage/tenant ref usage in runtime modules with repository helpers, then move to P9-B006 Firestore Composite Index.
 
@@ -61,6 +62,12 @@ The Retail POS repository layer is the preferred access point for shared POS dat
 - Tenant repositories for products, sales, stock movements, shifts, returns, customers, settings, sync queue, audit logs, and counters.
 
 Runtime POS modules should gradually replace direct localStorage keys and duplicate tenant ref helpers with `retail-pos-repository.js` exports. This keeps Online / Offline / Sync behavior centralized while preserving stable saleId and duplicate-protection rules.
+
+## POS UX Hotfix
+
+Retail POS product cards on PC should expose product name, stock balance, price, and product code on hover and browser tooltip. Sold-out products should be visually greyed out and marked with a sold-out badge.
+
+After any successful payment flow or receipt close, the active bill must be cleared. The reset must clear cart rows, discount, payment input, customer/loyalty selection UI, totals, and return focus to the barcode input so the cashier can immediately start the next sale.
 
 ## Loyalty and Receipt Privacy
 
