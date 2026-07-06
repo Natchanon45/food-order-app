@@ -1,6 +1,5 @@
 const PRODUCT_KEY = 'retail_pos_products_v1';
 const grid = document.querySelector('#productGrid');
-const paymentDialog = document.querySelector('#paymentDialog');
 
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -45,24 +44,10 @@ function restoreProductCards() {
     const id = product.id || '';
     const barcode = product.barcode || '';
     const code = [id, barcode].filter(Boolean).join(' • ');
-    card.innerHTML = `<span class="pos-card-image-wrap"><img src="${escapeHtml(src)}" alt="${escapeHtml(product.name || '')}" loading="lazy" decoding="async"></span><span class="pos-card-title">${escapeHtml(product.name || 'ไม่ระบุชื่อ')}</span><span class="pos-card-code">${escapeHtml(code)}</span><span class="pos-card-stock">คงเหลือ ${Number(product.stock || 0).toLocaleString('th-TH')} ${escapeHtml(product.unit || 'ชิ้น')}</span><span class="pos-card-price">${money(product.price)} บาท</span><span class="pos-card-hover-info"><strong>${escapeHtml(product.name || 'ไม่ระบุชื่อ')}</strong><span>${money(product.price)} บาท • เหลือ ${Number(product.stock || 0).toLocaleString('th-TH')} ${escapeHtml(product.unit || 'ชิ้น')}</span></span>`;
+    card.innerHTML = `<span class="pos-card-image-wrap"><img src="${escapeHtml(src)}" alt="${escapeHtml(product.name || '')}" loading="lazy" decoding="async"></span><span class="pos-card-title">${escapeHtml(product.name || 'ไม่ระบุชื่อ')}</span><span class="pos-card-code">${escapeHtml(code)}</span><span class="pos-card-stock">คงเหลือ ${Number(product.stock || 0).toLocaleString('th-TH')} ${escapeHtml(product.unit || 'ชิ้น')}</span><span class="pos-card-price">${money(product.price)} บาท</span>`;
   });
-}
-
-function hardUnlockPos() {
-  try { if (paymentDialog?.open) paymentDialog.close(); } catch { paymentDialog?.removeAttribute('open'); }
-  paymentDialog?.removeAttribute('open');
-  document.body.classList.remove('modal-open', 'receipt-modal-open', 'is-receipt-open');
-  document.documentElement.classList.remove('modal-open', 'receipt-modal-open', 'is-receipt-open');
-  document.body.style.pointerEvents = '';
-  document.documentElement.style.pointerEvents = '';
-  document.body.style.overflow = '';
-  document.querySelectorAll('[inert]').forEach(node => {
-    if (!node.closest?.('[data-pos-receipt-modal]')) node.removeAttribute('inert');
-  });
-  restoreProductCards();
 }
 
 if (grid) new MutationObserver(() => requestAnimationFrame(restoreProductCards)).observe(grid, { childList: true, subtree: false });
-window.addEventListener('pageshow', () => setTimeout(hardUnlockPos, 0));
+window.addEventListener('pageshow', () => setTimeout(restoreProductCards, 0));
 restoreProductCards();
