@@ -41,7 +41,7 @@ function candidateObjects(value, output = []) {
 
 const TAX_ID_KEYS = ['buyerTaxId', 'taxId', 'juristicId', 'juristic_id', 'juristicPersonId', 'juristic_person_id', 'registrationNo', 'id', CD + 'OrganizationJuristicID'];
 const NAME_KEYS = ['buyerName', 'name', 'companyName', 'juristicNameTH', 'juristic_name_th', 'juristicPersonNameTH', 'juristic_person_name_th', 'nameTh', CD + 'OrganizationJuristicNameTH'];
-const ADDRESS_KEYS = ['buyerAddress', 'address', 'addressTh', 'fullAddress', 'juristic_person_address', CD + 'Address'];
+const ADDRESS_KEYS = ['buyerAddress', 'addressTh', 'fullAddress', 'juristic_person_address'];
 const BRANCH_KEYS = ['buyerBranchName', 'branchName', 'branch', TD + 'OrganizationJuristicBranchName'];
 
 function scoreCandidate(source = {}, taxId = '') {
@@ -70,11 +70,31 @@ function nameFromSource(source = {}) {
   return cleanText(pick(source, NAME_KEYS));
 }
 
+function joinAddressParts(parts = []) {
+  const cleaned = parts.map(cleanText).filter(Boolean);
+  return cleanText([...new Set(cleaned)].join(' '));
+}
+
 function addressFromSource(source = {}) {
   const src = dbdAddressSource(source) || source;
-  const full = pick(src, ['full', 'Full', 'addressFull', 'address_full']) || pick(src, ADDRESS_KEYS) || pick(source, ADDRESS_KEYS);
-  if (full) return cleanText(full);
-  return cleanText([
+  const explicitFull = pick(src, ['full', 'Full', 'addressFull', 'address_full']);
+  if (explicitFull) return cleanText(explicitFull);
+
+  const dbdBase = pick(src, [CD + 'Address']);
+  if (dbdBase) {
+    return joinAddressParts([
+      dbdBase,
+      pick(src, [CR + 'CitySubDivisionTextTH']),
+      pick(src, [CR + 'CityTextTH']),
+      pick(src, [CR + 'CountrySubDivisionTextTH']),
+      pick(src, [CD + 'PostCode', 'postcode', 'postalCode', 'zipCode'])
+    ]);
+  }
+
+  const direct = pick(src, ADDRESS_KEYS) || pick(source, ADDRESS_KEYS);
+  if (direct) return cleanText(direct);
+
+  return joinAddressParts([
     pick(src, [CD + 'AddressNo', 'addressNo', 'houseNo']),
     pick(src, [CD + 'Moo', 'moo']),
     pick(src, [CD + 'Soi', 'soi']),
@@ -83,7 +103,7 @@ function addressFromSource(source = {}) {
     pick(src, [CR + 'CityTextTH', 'district', 'amphoe']),
     pick(src, [CR + 'CountrySubDivisionTextTH', 'province']),
     pick(src, [CD + 'PostCode', 'postcode', 'postalCode', 'zipCode'])
-  ].filter(Boolean).join(' '));
+  ]);
 }
 
 function normalize(data = {}, taxId = '') {
