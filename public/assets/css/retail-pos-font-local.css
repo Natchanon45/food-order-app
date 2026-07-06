@@ -31,7 +31,7 @@ body,
 }
 
 body {
-  font-size: 2rem;
+  font-size: 1.6rem;
   line-height: 1.06;
 }
 
@@ -43,18 +43,18 @@ body {
   width: 72px !important;
   height: 72px !important;
   border-radius: 22px !important;
-  font-size: 1.45rem !important;
+  font-size: 1.16rem !important;
 }
 
 .brand strong {
-  font-size: 3.1rem !important;
+  font-size: 2.48rem !important;
   line-height: .95 !important;
 }
 
 .brand span,
 .display-status,
 .display-footer {
-  font-size: 1.9rem !important;
+  font-size: 1.52rem !important;
   line-height: 1.02 !important;
 }
 
@@ -72,17 +72,17 @@ body {
 .promo-box,
 .total-row,
 .cart-count {
-  font-size: 2.1rem !important;
+  font-size: 1.68rem !important;
   line-height: 1.02 !important;
 }
 
 .customer-name {
-  font-size: 4.3rem !important;
+  font-size: 3.44rem !important;
   line-height: .92 !important;
 }
 
 .customer-phone {
-  font-size: 2.5rem !important;
+  font-size: 2rem !important;
   line-height: .98 !important;
 }
 
@@ -97,7 +97,7 @@ body {
 }
 
 .cart-head h1 {
-  font-size: 3.2rem !important;
+  font-size: 2.56rem !important;
   line-height: .98 !important;
 }
 
@@ -107,38 +107,38 @@ body {
 }
 
 .cart-item strong {
-  font-size: 2.7rem !important;
+  font-size: 2.16rem !important;
   line-height: .98 !important;
 }
 
 .cart-item small {
-  font-size: 2rem !important;
+  font-size: 1.6rem !important;
   line-height: 1 !important;
 }
 
 .cart-item-total {
-  font-size: 2.9rem !important;
+  font-size: 2.32rem !important;
   line-height: .98 !important;
 }
 
 .cart-empty {
-  font-size: 2.8rem !important;
+  font-size: 2.24rem !important;
   line-height: 1 !important;
 }
 
 .grand-row {
-  font-size: 4rem !important;
+  font-size: 3.2rem !important;
   line-height: .95 !important;
 }
 
 .paid-state {
-  font-size: 4rem !important;
+  font-size: 3.2rem !important;
   line-height: .95 !important;
 }
 
 @media (max-width: 900px) {
   body {
-    font-size: 1.8rem;
+    font-size: 1.44rem;
   }
 
   .display-header {
@@ -148,17 +148,17 @@ body {
   .brand-badge {
     width: 62px !important;
     height: 62px !important;
-    font-size: 1.25rem !important;
+    font-size: 1rem !important;
   }
 
   .brand strong {
-    font-size: 2.6rem !important;
+    font-size: 2.08rem !important;
   }
 
   .brand span,
   .display-status,
   .display-footer {
-    font-size: 1.55rem !important;
+    font-size: 1.24rem !important;
   }
 
   .display-main {
@@ -172,15 +172,15 @@ body {
   }
 
   .customer-name {
-    font-size: 3.6rem !important;
+    font-size: 2.88rem !important;
   }
 
   .cart-head h1 {
-    font-size: 2.7rem !important;
+    font-size: 2.16rem !important;
   }
 
   .cart-item strong {
-    font-size: 2.25rem !important;
+    font-size: 1.8rem !important;
   }
 
   .cart-item small,
@@ -188,15 +188,15 @@ body {
   .promo-box,
   .total-row,
   .cart-count {
-    font-size: 1.72rem !important;
+    font-size: 1.38rem !important;
   }
 
   .cart-item-total {
-    font-size: 2.25rem !important;
+    font-size: 1.8rem !important;
   }
 
   .grand-row,
   .paid-state {
-    font-size: 3.25rem !important;
+    font-size: 2.6rem !important;
   }
 }
