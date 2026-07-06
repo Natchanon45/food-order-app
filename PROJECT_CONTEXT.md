@@ -2,15 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.55
-Build: 2026.07.06.075
-Milestone: P9-B006-13 Tax Invoice VAT Total Display
+Version: 0.13.56
+Build: 2026.07.06.076
+Milestone: P9-B006-14 Print Font Scope Polish
 
-Change: fixed the Full Tax Invoice print view so the VAT summary row no longer displays a dash. The row now shows the calculated VAT-inclusive total from `totalAmount`, falling back to `beforeVat + vatAmount` when needed. The tax invoice page asset version was bumped to load the updated print script.
+Change: standardized local Thai font loading. TH Sarabun PSK Local is now defined in one shared CSS file and scoped to printed paper surfaces (`.receipt`, `.tax-paper`) plus the customer display shell. Receipt/tax invoice toolbars, headers, buttons, and tax buyer modal keep the normal app UI font so the popup controls look consistent.
 
-Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through VAT total display fix.
+Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through print font scope polish.
 
-Usage: open a receipt after sale, click `ใบกำกับภาษีเต็มรูปแบบ`, enter tax ID, press `DBD`, then create/print the full tax invoice. The buyer address should remain complete and the VAT total row should show the amount instead of `-`.
+Usage: open a receipt after sale. The popup toolbar and buyer modal should use the normal app UI font, while the printable receipt/tax invoice paper uses TH Sarabun PSK Local. Customer Display keeps the local Thai font scoped to its display shell.
 
 Deploy rules: use hosting-only deploy for `public/` asset changes. Deploy functions only when files under `functions/` or function rewrites/routes change. This build only needs hosting deploy.
 
