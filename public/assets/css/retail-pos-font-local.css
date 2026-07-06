@@ -1,0 +1,165 @@
+@font-face {
+  font-family: "TH Sarabun PSK Local";
+  src: url("/assets/fonts/THSarabun.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TH Sarabun PSK Local";
+  src: url("/assets/fonts/THSarabun-Bold.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --pos-font-local: "TH Sarabun PSK Local", "TH Sarabun New", "Sarabun", sans-serif;
+  font-family: var(--pos-font-local) !important;
+}
+
+html,
+body,
+button,
+input,
+select,
+textarea,
+dialog,
+.pos-header,
+.pos-layout,
+.product-panel,
+.cart-panel,
+.payment-form,
+.display-shell,
+.display-header,
+.display-main,
+.display-footer {
+  font-family: var(--pos-font-local) !important;
+}
+
+body {
+  font-size: 1.28rem;
+  line-height: 1.12;
+}
+
+button,
+input,
+select,
+textarea {
+  font-size: 1.15rem;
+  line-height: 1.12;
+}
+
+.pos-header strong,
+.brand strong {
+  font-size: 1.55rem !important;
+  line-height: 1.05 !important;
+}
+
+.pos-header small,
+.brand span,
+.section-heading p,
+.cart-title span,
+.cart-meta,
+.product-card .code,
+.product-card .stock,
+.display-status,
+.display-footer {
+  font-size: 1.05rem !important;
+  line-height: 1.08 !important;
+}
+
+.section-heading h2,
+.cart-title h1,
+.dialog-head h2,
+.cart-head h1 {
+  font-size: 1.55rem !important;
+  line-height: 1.06 !important;
+}
+
+.product-card .name,
+.cart-name,
+.cart-item strong {
+  font-size: 1.18rem !important;
+  line-height: 1.08 !important;
+}
+
+.product-card .price,
+.line-total,
+.cart-item-total {
+  font-size: 1.25rem !important;
+  line-height: 1.08 !important;
+}
+
+.summary,
+.total-card,
+.total-row,
+.customer-label,
+.promo-box {
+  font-size: 1.25rem !important;
+  line-height: 1.08 !important;
+}
+
+.grand-total,
+.grand-row {
+  font-size: 1.72rem !important;
+  line-height: 1.08 !important;
+}
+
+.customer-name {
+  font-size: 2.65rem !important;
+  line-height: .98 !important;
+}
+
+@media (max-width: 640px) {
+  body {
+    font-size: 1.18rem;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font-size: 1.08rem;
+  }
+
+  .pos-header strong,
+  .brand strong {
+    font-size: 1.32rem !important;
+  }
+
+  .pos-header small,
+  .brand span,
+  .section-heading p,
+  .cart-title span,
+  .cart-meta,
+  .display-status,
+  .display-footer {
+    font-size: .95rem !important;
+  }
+
+  .section-heading h2,
+  .cart-title h1,
+  .dialog-head h2,
+  .cart-head h1 {
+    font-size: 1.32rem !important;
+  }
+
+  .product-card.pos-product-card-image .pos-card-hover-info strong,
+  .product-card.visual-card .product-info-overlay strong {
+    font-size: .86rem !important;
+    line-height: 1.02 !important;
+  }
+
+  .product-card.pos-product-card-image .pos-card-hover-info span,
+  .product-card.visual-card .product-info-overlay span {
+    font-size: .76rem !important;
+    line-height: 1 !important;
+  }
+
+  .product-card.pos-product-card-image .pos-card-hover-info .pos-hover-price,
+  .product-card.visual-card .product-info-overlay .pos-hover-price {
+    font-size: .86rem !important;
+  }
+}
