@@ -2,8 +2,8 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.26
-Build: 2026.07.06.046
+Version: 0.13.27
+Build: 2026.07.06.047
 Milestone: P9-B005 Repository Layer / POS UX Hotfix
 
 ## Scope
@@ -48,6 +48,7 @@ Completed:
 - POS UX Hotfix for product hover, sold-out cards, and bill reset after payment
 - Receipt privacy and simplified half-card product hover label hotfix
 - PC cart density hotfix for showing at least five selected rows
+- Receipt phone mask hotfix using `098-***-**81` format
 
 Current milestone: P9-B005 Repository Layer / POS UX Hotfix
 
@@ -86,7 +87,7 @@ Receipts and sales receipt dialogs must show:
 - Loyalty point summary when available
 - Masked customer first name: first up to 5 characters followed by `*****`
 - Masked customer last name: `*****` followed by the last 3 characters
-- Masked customer phone
+- Masked customer phone in `098-***-**81` format
 
 ## Deployment
 
