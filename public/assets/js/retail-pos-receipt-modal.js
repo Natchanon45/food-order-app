@@ -24,8 +24,7 @@ function focusNextSale() {
 
 function receiptUrl(sale, { autoPrint = true } = {}) {
   const id = encodeURIComponent(sale?.id || sale?.saleNumber || '');
-  const auto = autoPrint ? '1' : '0';
-  return `${RECEIPT_PATH}?saleId=${id}&auto=${auto}`;
+  return `${RECEIPT_PATH}?saleId=${id}&auto=${autoPrint ? '1' : '0'}`;
 }
 
 function openReceiptWindow(sale, options = {}) {
@@ -38,34 +37,34 @@ function openReceiptWindow(sale, options = {}) {
   const left = Math.max(0, Math.round((screen.width - width) / 2));
   const top = Math.max(0, Math.round((screen.height - height) / 2));
   const features = `popup=yes,width=${width},height=${height},left=${left},top=${top},noopener,noreferrer`;
-  const url = receiptUrl(sale, options);
-  const popup = window.open(url, `pos_receipt_${saleId.replace(/[^a-zA-Z0-9]/g, '_')}`, features);
-  if (!popup) {
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  }
+  const popup = window.open(receiptUrl(sale, options), `pos_receipt_${saleId.replace(/[^a-zA-Z0-9]/g, '_')}`, features);
   window.dispatchEvent(new CustomEvent('retail-pos-receipt-window-opened', { detail: { saleId, saleNumber: sale.saleNumber || '' } }));
   return popup;
 }
 
-async function showReceipt(sale, options = {}) {
+async function showReceipt(sale) {
   closeExistingReceiptModal();
+  const popup = openReceiptWindow(sale, { autoPrint: true });
   focusNextSale();
-  setTimeout(() => openReceiptWindow(sale, { autoPrint: options.autoPrint !== false }), 120);
+  if (!popup) {
+    const url = receiptUrl(sale, { autoPrint: true });
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = 'เปิดใบเสร็จ';
+    link.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:2147483647;background:#159447;color:#fff;padding:12px 16px;border-radius:14px;font-weight:800;text-decoration:none';
+    document.body.appendChild(link);
+    setTimeout(() => link.remove(), 8000);
+  }
 }
 
 async function printCurrentReceipt() {
   const sales = (() => { try { return JSON.parse(localStorage.getItem('retail_pos_sales_v1')) || []; } catch { return []; } })();
   const sale = sales.find(row => String(row.id || row.saleNumber || '') === lastReceiptSaleId) || sales[0];
   closeExistingReceiptModal();
-  focusNextSale();
   if (sale) openReceiptWindow(sale, { autoPrint: true });
+  focusNextSale();
 }
 
 window.addEventListener('beforeprint', () => closeExistingReceiptModal());
