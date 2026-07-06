@@ -2,13 +2,13 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.50
-Build: 2026.07.06.070
-Milestone: P9-B006-08 Buyer Lookup Normalization
+Version: 0.13.51
+Build: 2026.07.06.071
+Milestone: P9-B006-09 Buyer Lookup Field Mapping
 
-Change: improved the tax buyer lookup function to support nested and array-based OpenAPI responses. The function now scans the payload for the best juristic record, supports more field aliases for tax ID, buyer name, address, and branch, and adds a debug mode at `/api/tax-buyer/lookup?taxId=...&debug=1` to inspect response status, content type, keys, and a safe preview.
+Change: updated the tax buyer lookup function to map the actual OpenAPI payload shape seen in production. The function now extracts buyer tax ID, Thai company name, branch name, and address from the namespaced juristic response fields and keeps debug mode available at `/api/tax-buyer/lookup?taxId=...&debug=1`.
 
-Completed: QR Table Order, Kitchen serving, Delivery Lock, Cashier table move, paid-before-close guard, Retail POS Online/Offline/Sync/Tenant support, P9-B005 Customer Display work, and P9-B006 Full Tax Invoice through buyer lookup normalization.
+Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through production buyer lookup field mapping.
 
 Usage: open a receipt after sale, click `ใบกำกับภาษีเต็มรูปแบบ`, enter tax ID, then press `DBD`. For troubleshooting, open `/api/tax-buyer/lookup?taxId=0105528025574&debug=1` after deploying the function.
 
