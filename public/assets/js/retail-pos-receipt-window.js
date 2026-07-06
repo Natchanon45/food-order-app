@@ -34,7 +34,6 @@ function normalizeTaxId(value) { return String(value || '').replace(/\D/g, '').s
 function normalizeText(value) { return String(value || '').replace(/\s+/g, ' ').trim(); }
 function maskPhone(phone = '') { const digits = String(phone || '').replace(/\D/g, ''); if (!digits) return ''; if (digits.length < 10) return digits.length <= 2 ? digits : `${digits.slice(0, 2)}***`; return `${digits.slice(0, 3)}-***-**${digits.slice(-2)}`; }
 function firstChars(text, count) { return Array.from(String(text || '')).slice(0, count).join(''); }
-function lastChars(text, count) { const chars = Array.from(String(text || '')); return chars.slice(Math.max(0, chars.length - count)).join(''); }
 function maskFirstName(name = '') { const chars = Array.from(String(name || '').trim()); if (!chars.length) return ''; return `${chars.slice(0, Math.min(5, chars.length)).join('')}*****`; }
 function maskLastName(name = '') { const chars = Array.from(String(name || '').trim()); if (!chars.length) return ''; return `*****${chars.slice(Math.max(0, chars.length - 3)).join('')}`; }
 function maskName(name = '') {
@@ -87,41 +86,25 @@ function showTaxDialog() {
   buyerTaxIdInput.value = defaults.buyerTaxId || '';
   buyerAddressInput.value = defaults.buyerAddress || '';
   buyerBranchInput.value = defaults.buyerBranchName || 'สำนักงานใหญ่';
-  taxError.textContent = '';
+  taxError.innerHTML = '';
   taxDialog.showModal();
   setTimeout(() => buyerTaxIdInput?.focus(), 50);
 }
 async function submitTaxDialog() {
   if (!currentSale) return;
-  const buyer = {
-    buyerName: buyerNameInput.value,
-    buyerTaxId: buyerTaxIdInput.value,
-    buyerAddress: buyerAddressInput.value,
-    buyerBranchName: buyerBranchInput.value
-  };
-  taxError.textContent = '';
+  const buyer = { buyerName: buyerNameInput.value, buyerTaxId: buyerTaxIdInput.value, buyerAddress: buyerAddressInput.value, buyerBranchName: buyerBranchInput.value };
+  taxError.innerHTML = '';
   taxInvoiceBtn.disabled = true;
   try {
     const invoice = await createFullTaxInvoiceFromSale(currentSale, buyer);
-    if (invoice) {
-      taxDialog?.close();
-      openInvoice(invoice);
-    }
-  } catch (error) {
-    taxError.textContent = error?.message || 'ออกใบกำกับภาษีเต็มรูปแบบไม่สำเร็จ';
-  } finally {
-    taxInvoiceBtn.disabled = false;
-  }
+    if (invoice) { taxDialog?.close(); openInvoice(invoice); }
+  } catch (error) { taxError.textContent = error?.message || 'ออกใบกำกับภาษีเต็มรูปแบบไม่สำเร็จ'; }
+  finally { taxInvoiceBtn.disabled = false; }
 }
 function dbdLookupEndpoint() { return window.RETAIL_POS_DBD_LOOKUP_URL || localStorage.getItem(DBD_LOOKUP_URL_KEY) || DEFAULT_TAX_BUYER_LOOKUP_URL; }
 function normalizeDbdProfile(data = {}) {
   const source = data.data || data.result || data.profile || data;
-  return {
-    buyerName: normalizeText(source.buyerName || source.juristicNameTH || source.juristicName || source.nameTh || source.name || source.companyName || ''),
-    buyerTaxId: normalizeTaxId(source.buyerTaxId || source.juristicId || source.registrationNo || source.taxId || source.id || buyerTaxIdInput.value),
-    buyerAddress: normalizeText(source.buyerAddress || source.addressTh || source.address || source.location || ''),
-    buyerBranchName: normalizeText(source.buyerBranchName || source.branchName || source.branch || 'สำนักงานใหญ่') || 'สำนักงานใหญ่'
-  };
+  return { buyerName: normalizeText(source.buyerName || source.juristicNameTH || source.juristicName || source.nameTh || source.name || source.companyName || ''), buyerTaxId: normalizeTaxId(source.buyerTaxId || source.juristicId || source.registrationNo || source.taxId || source.id || buyerTaxIdInput.value), buyerAddress: normalizeText(source.buyerAddress || source.addressTh || source.address || source.location || ''), buyerBranchName: normalizeText(source.buyerBranchName || source.branchName || source.branch || 'สำนักงานใหญ่') || 'สำนักงานใหญ่' };
 }
 function fillBuyerFromDbd(profile) {
   if (profile.buyerTaxId) buyerTaxIdInput.value = profile.buyerTaxId;
@@ -129,27 +112,29 @@ function fillBuyerFromDbd(profile) {
   if (profile.buyerAddress) buyerAddressInput.value = profile.buyerAddress;
   if (profile.buyerBranchName) buyerBranchInput.value = profile.buyerBranchName;
 }
+function manualDbdLink(taxId) { return `${DBD_DATAWAREHOUSE_URL}?keyword=${encodeURIComponent(taxId)}`; }
+function showManualDbdMessage(taxId) {
+  taxError.innerHTML = `ยังดึงข้อมูลอัตโนมัติไม่ได้ ฟอร์มนี้จะยังเปิดอยู่ กด <a href="${manualDbdLink(taxId)}" target="_blank" rel="noopener">เปิด DBD ในแท็บใหม่</a> แล้วคัดลอกข้อมูลมากรอกต่อได้`;
+}
 async function lookupDbd() {
   const taxId = normalizeTaxId(buyerTaxIdInput.value);
   buyerTaxIdInput.value = taxId;
-  taxError.textContent = '';
+  taxError.innerHTML = '';
   if (!taxId || taxId.length < 13) { taxError.textContent = 'กรุณากรอกเลขประจำตัวผู้เสียภาษี 13 หลักก่อนกด DBD'; return; }
-  const endpoint = dbdLookupEndpoint();
   dbdLookupBtn.disabled = true;
   dbdLookupBtn.textContent = 'ค้นหา...';
   try {
-    const url = new URL(endpoint, location.origin);
+    const url = new URL(dbdLookupEndpoint(), location.origin);
     url.searchParams.set('taxId', taxId);
     const response = await fetch(url.toString(), { headers: { accept: 'application/json' } });
     if (!response.ok) throw new Error('DBD lookup failed');
-    const payload = await response.json();
-    const profile = normalizeDbdProfile(payload);
+    const profile = normalizeDbdProfile(await response.json());
     if (!profile.buyerName && !profile.buyerAddress) throw new Error('ไม่พบข้อมูลจาก DBD');
     fillBuyerFromDbd(profile);
-    taxError.textContent = 'ดึงข้อมูลจาก DBD สำเร็จ กรุณาตรวจสอบก่อนออกเอกสาร';
+    taxError.textContent = 'ดึงข้อมูลสำเร็จ กรุณาตรวจสอบก่อนออกเอกสาร';
   } catch (error) {
-    window.open(`${DBD_DATAWAREHOUSE_URL}?keyword=${encodeURIComponent(taxId)}`, '_blank', 'noopener,noreferrer');
-    taxError.textContent = 'ยังดึงข้อมูล DBD อัตโนมัติไม่ได้ จึงเปิดหน้า DBD ให้ตรวจสอบและกรอกข้อมูลต่อ';
+    showManualDbdMessage(taxId);
+    buyerTaxIdInput.focus();
   } finally {
     dbdLookupBtn.disabled = false;
     dbdLookupBtn.textContent = 'DBD';
