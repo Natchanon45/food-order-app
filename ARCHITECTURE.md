@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.14
-Build: 2026.07.06.034
-Milestone: P9-B002 Running Number — Receipt Freeze Hotfix
+Version: 0.13.15
+Build: 2026.07.06.035
+Milestone: P9-B002 Running Number — Save Screen Hotfix
 
 ## Scope
 
@@ -35,10 +35,11 @@ Completed:
 - POS Safe Confirm Payment
 - P9-B002 Running Number alignment
 - Receipt Freeze Hotfix
+- Save Screen Hotfix
 
 Current milestone:
 
-- P9-B002 Running Number — Receipt Freeze Hotfix
+- P9-B002 Running Number — Save Screen Hotfix
 
 Next task:
 
@@ -109,16 +110,16 @@ Example final number:
 POS-YYYYMMDD-00001
 ```
 
-## Receipt Modal and Print Flow
+## Receipt Screen Flow
 
-Safe Confirm is the only path that should open the receipt immediately after a POS sale is saved. Receipt rendering must not hook or patch sale `localStorage` writes to auto-open another receipt or auto-print dialog.
+The receipt screen is temporarily disabled after successful POS sale saves to prevent the page from freezing. The save flow must close old overlays, unlock the POS page, and focus the barcode input for the next sale.
 
-Important receipt rules:
+Important rules:
 
-- Do not open more than one receipt modal for one sale save.
-- Do not auto-print from local sale save hooks.
-- Browser print must only run from explicit print action or a controlled receipt setting.
-- Closing receipt must unlock the page and focus the barcode input for the next sale.
+- Do not open a receipt screen automatically after saving.
+- Do not start browser print from the sale save flow.
+- Do not hook sale localStorage writes to show receipt UI.
+- The receipt/print feature should be rebuilt later as a separate lightweight flow.
 
 ## Offline Queue and Conflict Handling
 
