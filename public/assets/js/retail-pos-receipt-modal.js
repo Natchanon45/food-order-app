@@ -1,63 +1,46 @@
-import { RetailCollections, getRecord } from './retail-db.js?v=20260629-032';
+const DISABLED_REASON = 'Receipt modal and print flow are temporarily disabled to prevent POS freeze after successful sale.';
 
-const SALES_KEY = 'retail_pos_sales_v1';
-const CUSTOMER_KEY = 'retail_pos_customers_v1';
-const STORE_SETTINGS_KEY = 'retail_pos_store_settings_v1';
-const LEGACY_STORE_SETTINGS_KEY = 'food_order_store_settings';
-const LOYALTY_SETTINGS_KEY = 'retail_pos_loyalty_settings_v1';
-const styleId = 'retailPosReceiptModalStyle';
-const originalSetItem = localStorage.setItem.bind(localStorage);
-let lastShownSaleId = '', lastRenderedSale = null, autoPrintTimer = 0, settingsCache = null;
+function closeExistingReceiptModal() {
+  const modal = document.querySelector('[data-pos-receipt-modal]');
+  if (modal) {
+    modal.hidden = true;
+    modal.removeAttribute('open');
+    modal.style.display = '';
+    modal.style.pointerEvents = '';
+  }
+  document.body.classList.remove('modal-open', 'receipt-modal-open', 'is-receipt-open');
+  document.documentElement.classList.remove('modal-open', 'receipt-modal-open', 'is-receipt-open');
+  document.body.style.pointerEvents = '';
+  document.documentElement.style.pointerEvents = '';
+  document.body.style.overflow = '';
+  document.querySelectorAll('[inert]').forEach(node => node.removeAttribute('inert'));
+}
 
-const receiptFontFace = `@font-face{font-family:'TH Sarabun PSK Local';src:url('/assets/fonts/THSarabun.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap}@font-face{font-family:'TH Sarabun PSK Local';src:url('/assets/fonts/THSarabun-Bold.ttf') format('truetype');font-style:normal;font-weight:700;font-display:swap}`;
-const receiptFontStack = `'TH Sarabun PSK Local','TH Sarabun New',Sarabun,sans-serif`;
-const loyaltyDefaults = { enabled: true, spendPerPoint: 10, pointValue: 1 };
+function focusNextSale() {
+  document.querySelector('#barcodeInput')?.focus();
+  window.dispatchEvent(new CustomEvent('retail-pos-ready-for-next-sale'));
+}
 
-function readJson(k, f) { try { return JSON.parse(localStorage.getItem(k)) ?? f; } catch { return f; } }
-function readSales() { const r = readJson(SALES_KEY, []); return Array.isArray(r) ? r : []; }
-function readCustomers() { const r = readJson(CUSTOMER_KEY, []); return Array.isArray(r) ? r : []; }
-function money(v) { return Number(v || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-function numberText(v) { return Number(v || 0).toLocaleString('th-TH'); }
-function escapeHtml(v) { return String(v ?? '').replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[c])); }
-function saleId(s) { return String(s?.id || s?.saleNumber || '').trim(); }
-function paymentDialog() { return document.querySelector('#paymentDialog'); }
-function activeCustomerId(sale = {}) { return String(sale.customerId || sale.memberId || paymentDialog()?.dataset.customerId || ''); }
-function normalizePaperSize(v) { const s = String(v || '').toLowerCase().replace(/[^0-9a-z]/g, ''); if (s === '58' || s === '58mm') return '58'; if (s === 'a4') return 'a4'; return '80'; }
-function normalizePrintMode(v) { return String(v || '').toLowerCase() === 'auto' ? 'auto' : 'ask'; }
-function normalizeSettings(store = {}, receipt = {}, local = {}, legacy = {}) { const m = { ...legacy, ...store, ...receipt, ...local }; return { shopName: m.shopName || m.name || 'POS ร้านค้าปลีก', shopAddress: m.shopAddress || m.address || '', shopPhone: m.shopPhone || m.phone || '', taxId: m.taxId || m.shopTaxId || '', logoUrl: m.logoUrl || m.shopLogoUrl || '', receiptThanks: m.receiptThanks || 'ขอบคุณที่ใช้บริการ', receiptFooter: m.receiptFooter || '', receiptPaperSize: normalizePaperSize(m.receiptPaperSize || m.paperSize || '80'), receiptPrintMode: normalizePrintMode(m.receiptPrintMode || m.printMode || 'ask') }; }
-function fallbackStoreSettings() { return normalizeSettings({}, {}, readJson(STORE_SETTINGS_KEY, {}), readJson(LEGACY_STORE_SETTINGS_KEY, {})); }
-async function getStoreSettings() { if (settingsCache) return settingsCache; const fallback = fallbackStoreSettings(); try { const [store, receipt] = await Promise.all([getRecord(RetailCollections.settings, 'store'), getRecord(RetailCollections.settings, 'receipt')]); const local = readJson(STORE_SETTINGS_KEY, {}); settingsCache = normalizeSettings(store || {}, receipt || {}, local, fallback); originalSetItem(STORE_SETTINGS_KEY, JSON.stringify(settingsCache)); return settingsCache; } catch (e) { console.warn('[retail-pos-receipt-modal] settings fallback', e); settingsCache = fallback; return fallback; } }
-function customerIdOf(c = {}) { return String(c.id || c._documentId || ''); }
-function currentCustomerForSale(sale) { const id = activeCustomerId(sale); return readCustomers().find(c => customerIdOf(c) === id) || null; }
-function localSaleWithUpdates(baseSale) { const id = saleId(baseSale); return readSales().find(s => saleId(s) === id) || baseSale; }
-function loyaltySettings() { return { ...loyaltyDefaults, ...readJson(LOYALTY_SETTINGS_KEY, {}) }; }
+async function showReceipt(sale) {
+  closeExistingReceiptModal();
+  focusNextSale();
+  window.dispatchEvent(new CustomEvent('retail-pos-receipt-skipped', {
+    detail: {
+      reason: DISABLED_REASON,
+      saleId: sale?.id || '',
+      saleNumber: sale?.saleNumber || ''
+    }
+  }));
+}
 
-function maskFirstName(part = '') { const text = String(part || '').trim(); if (!text) return ''; const visible = Math.min(text.length, text.length >= 5 ? 5 : Math.max(1, text.length)); return `${text.slice(0, visible)}***`; }
-function maskLastName(part = '') { const text = String(part || '').trim(); if (!text) return ''; return `***${text.slice(-Math.min(3, text.length))}`; }
-function maskCustomerName(value) { const parts = String(value || '').trim().split(/\s+/).filter(Boolean); if (!parts.length) return ''; const [first, ...rest] = parts; return [maskFirstName(first), ...rest.map(maskLastName)].filter(Boolean).join(' '); }
-function maskPhone(value) { const digits = String(value || '').replace(/\D/g, ''); if (!digits) return ''; if (digits.length <= 4) return `${digits.slice(0, 1)}***`; if (digits.length < 10) return `${digits.slice(0, 2)}xxx${digits.slice(-2)}`; return `${digits.slice(0, 3)}-xxx-xx${digits.slice(-2)}`; }
-function nextPaint() { return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))); }
-function isIOSPrintDevice() { return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
+async function printCurrentReceipt() {
+  closeExistingReceiptModal();
+  focusNextSale();
+  console.warn('[retail-pos-receipt-modal] print disabled:', DISABLED_REASON);
+}
 
-function buildReceiptLoyalty(sale) { if (sale.loyalty && Number.isFinite(Number(sale.loyalty.pointsAfter))) return sale.loyalty; const cid = activeCustomerId(sale); if (!cid) return null; const cfg = loyaltySettings(); if (cfg.enabled === false) return null; const customer = currentCustomerForSale(sale); const before = Math.max(0, Math.floor(Number(customer?.points ?? sale.customerPoints ?? 0))); const used = Math.max(0, Math.floor(Number(paymentDialog()?.dataset.loyaltyPoints || sale.loyalty?.pointsUsed || 0))); const total = Number(sale.totalAmount ?? sale.total ?? 0); const earned = Math.max(0, Math.floor(total / Math.max(0.01, Number(cfg.spendPerPoint || 10)))); return { pointsBefore: before, pointsUsed: used, pointsEarned: earned, pointsAfter: Math.max(0, before - used + earned), redeemValue: used * Number(cfg.pointValue || 1) }; }
-function hydrateCustomer(sale) { const customer = currentCustomerForSale(sale); const cid = activeCustomerId(sale); const next = customer ? { ...sale, customerId: sale.customerId || cid, customerCode: sale.customerCode || customer.customerCode || customer.code || '', customerName: sale.customerName || customer.name || '', customerPhone: sale.customerPhone || customer.phone || '', customerEmail: sale.customerEmail || customer.email || '', customerDisplayName: maskCustomerName(sale.customerName || customer.name || ''), customerDisplayPhone: maskPhone(sale.customerPhone || customer.phone || ''), customerPoints: Number.isFinite(Number(sale.customerPoints)) ? sale.customerPoints : Number(customer.points || 0) } : { ...sale, customerId: sale.customerId || cid, customerDisplayName: maskCustomerName(sale.customerName || ''), customerDisplayPhone: maskPhone(sale.customerPhone || '') }; const loyalty = buildReceiptLoyalty(next); return loyalty ? { ...next, loyalty } : next; }
-async function hydrateReceiptSale(baseSale) { const current = hydrateCustomer(localSaleWithUpdates(baseSale)); const store = await getStoreSettings(); return { ...current, receiptStore: store }; }
+window.addEventListener('beforeprint', event => {
+  closeExistingReceiptModal();
+});
 
-function ensureStyle() { if (document.getElementById(styleId)) return; const style = document.createElement('style'); style.id = styleId; style.textContent = `${receiptFontFace}.receipt-modal[hidden]{display:none!important}.receipt-modal{position:fixed;inset:0;z-index:2147483645;display:grid;place-items:center;padding:16px}.receipt-modal-backdrop{position:absolute;inset:0;background:rgba(15,23,42,.58);backdrop-filter:blur(3px)}.receipt-modal-card{position:relative;width:min(420px,100%);max-height:calc(100dvh - 28px);overflow:auto;border-radius:22px;background:#fff;color:#111827;box-shadow:0 28px 80px rgba(15,23,42,.35);padding:16px}.receipt-modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.receipt-modal-head h2{margin:0;font-size:22px}.receipt-close{border:0;border-radius:999px;width:34px;height:34px;background:#eef3f0;font-size:22px;line-height:1}.receipt-paper{font-family:${receiptFontStack};font-size:20px;line-height:1.05;border:1px dashed #cbd5e1;border-radius:14px;padding:14px;background:#fbfbfb;margin:0 auto}.receipt-paper[data-paper-size="58"]{width:58mm}.receipt-paper[data-paper-size="80"]{width:80mm}.receipt-paper[data-paper-size="a4"]{width:min(190mm,100%);font-size:22px;line-height:1.15}.receipt-center{text-align:center}.receipt-shop{font-weight:700;font-size:26px;line-height:1}.receipt-logo{display:block;max-width:54px;max-height:54px;object-fit:contain;margin:0 auto 4px}.receipt-muted{color:#64748b;font-size:18px}.receipt-rule{border:0;border-top:1px dashed #cbd5e1;margin:9px 0}.receipt-row{display:flex;justify-content:space-between;gap:10px;margin:3px 0}.receipt-row span:last-child,.receipt-row strong:last-child{text-align:right}.receipt-block{margin:5px 0}.receipt-item{display:grid;grid-template-columns:1fr auto;gap:8px;margin:5px 0}.receipt-item strong{font-weight:700}.receipt-item small{display:block;color:#64748b;font-size:18px}.receipt-total{font-size:24px;font-weight:700}.receipt-footer{white-space:pre-line}.receipt-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.receipt-actions button{border:0;border-radius:14px;min-height:46px;font-weight:900}.receipt-print{background:#159447;color:#fff}.receipt-secondary{background:#eef3f0;color:#111827}@media(max-width:640px){.receipt-modal{align-items:end;padding:10px}.receipt-modal-card{border-radius:22px 22px 0 0;width:100%;max-height:88dvh}.receipt-actions{grid-template-columns:1fr}.receipt-print{order:-1}}@media print{#toast,.toast,.toast.show,.toast-container,.swal2-container,.notification,.alert,.snackbar{display:none!important;visibility:hidden!important}body>*:not(.receipt-print-root){display:none!important}.receipt-print-root{display:block!important;position:static!important;inset:auto!important;padding:0!important;background:#fff!important}.receipt-modal-backdrop,.receipt-actions,.receipt-modal-head{display:none!important}.receipt-modal-card{box-shadow:none!important;border-radius:0!important;width:auto!important;max-height:none!important;overflow:visible!important;padding:0!important}.receipt-paper{border:0!important;border-radius:0!important;background:#fff!important;max-width:100%!important}.receipt-paper[data-paper-size="58"]{width:58mm!important}.receipt-paper[data-paper-size="80"]{width:80mm!important}.receipt-paper[data-paper-size="a4"]{width:190mm!important}}`; document.head.appendChild(style); }
-function customerHtml(sale) { const displayName = maskCustomerName(sale.customerName) || sale.customerDisplayName || ''; const displayPhone = sale.customerDisplayPhone || maskPhone(sale.customerPhone); const name = displayName || sale.customerCode || displayPhone; if (!name) return ''; return `<hr class="receipt-rule"><div class="receipt-block"><div class="receipt-row"><span>ลูกค้า</span><strong>${escapeHtml(displayName || '-')}</strong></div>${sale.customerCode ? `<div class="receipt-row"><span>สมาชิก</span><span>${escapeHtml(sale.customerCode)}</span></div>` : ''}${displayPhone ? `<div class="receipt-row"><span>โทร</span><span>${escapeHtml(displayPhone)}</span></div>` : ''}</div>`; }
-function loyaltyHtml(sale) { const l = sale.loyalty; if (!l) return ''; return `<hr class="receipt-rule"><div class="receipt-row"><span>แต้มก่อนซื้อ</span><span>${numberText(l.pointsBefore)}</span></div><div class="receipt-row"><span>ใช้แต้ม</span><span>${numberText(l.pointsUsed)}</span></div><div class="receipt-row"><span>แต้มที่ได้รับ</span><span>${numberText(l.pointsEarned)}</span></div><div class="receipt-row"><span>แต้มคงเหลือ</span><strong>${numberText(l.pointsAfter)}</strong></div>`; }
-function receiptFooterHtml(store) { const thanks = store.receiptThanks || 'ขอบคุณที่ใช้บริการ', footer = store.receiptFooter || ''; return `<hr class="receipt-rule"><div class="receipt-center receipt-muted receipt-footer">${escapeHtml(thanks)}${footer ? `<br>${escapeHtml(footer)}` : ''}</div>`; }
-function receiptHtml(sale) { const items = Array.isArray(sale.items) ? sale.items : [], store = sale.receiptStore || fallbackStoreSettings(), paperSize = normalizePaperSize(store.receiptPaperSize); return `<div class="receipt-paper" data-paper-size="${escapeHtml(paperSize)}"><div class="receipt-center">${store.logoUrl ? `<img class="receipt-logo" src="${escapeHtml(store.logoUrl)}" alt="">` : ''}<div class="receipt-shop">${escapeHtml(store.shopName || 'POS ร้านค้าปลีก')}</div>${store.shopAddress ? `<div class="receipt-muted">${escapeHtml(store.shopAddress)}</div>` : ''}${store.shopPhone ? `<div class="receipt-muted">โทร ${escapeHtml(store.shopPhone)}</div>` : ''}${store.taxId ? `<div class="receipt-muted">เลขประจำตัวผู้เสียภาษี ${escapeHtml(store.taxId)}</div>` : ''}<div class="receipt-muted">ใบเสร็จรับเงิน</div></div><hr class="receipt-rule"><div class="receipt-row"><span>เลขที่</span><strong>${escapeHtml(sale.saleNumber || sale.id || '-')}</strong></div><div class="receipt-row"><span>วันที่</span><span>${escapeHtml(new Date(sale.createdAt || Date.now()).toLocaleString('th-TH'))}</span></div><div class="receipt-row"><span>ชำระเงิน</span><span>${escapeHtml(sale.paymentMethod || sale.payment?.method || '-')}</span></div>${customerHtml(sale)}<hr class="receipt-rule">${items.map(item => `<div class="receipt-item"><div><strong>${escapeHtml(item.name || item.productName || '-')}</strong><small>${money(item.price)} x ${Number(item.qty || 0).toLocaleString('th-TH')}</small></div><div>${money(item.lineTotal || Number(item.price || 0) * Number(item.qty || 0))}</div></div>`).join('')}<hr class="receipt-rule"><div class="receipt-row"><span>รวม</span><span>${money(sale.subtotal)}</span></div><div class="receipt-row"><span>ส่วนลด</span><span>${money(sale.discount)}</span></div><div class="receipt-row receipt-total"><span>สุทธิ</span><span>${money(sale.totalAmount || sale.total)}</span></div><div class="receipt-row"><span>รับเงิน</span><span>${money(sale.receivedAmount || sale.payment?.received || sale.totalAmount || sale.total)}</span></div><div class="receipt-row"><span>เงินทอน</span><span>${money(sale.changeAmount || sale.payment?.change || 0)}</span></div>${loyaltyHtml(sale)}${sale.syncStatus === 'pending' ? '<hr class="receipt-rule"><div class="receipt-center receipt-muted">บิลนี้บันทึกแบบออฟไลน์ รอ Sync Firebase</div>' : ''}${receiptFooterHtml(store)}</div>`; }
-function ensureModal() { ensureStyle(); let modal = document.querySelector('[data-pos-receipt-modal]'); if (modal) return modal; modal = document.createElement('div'); modal.className = 'receipt-modal receipt-print-root'; modal.dataset.posReceiptModal = 'true'; modal.hidden = true; modal.innerHTML = `<div class="receipt-modal-backdrop" data-close-receipt></div><section class="receipt-modal-card" role="dialog" aria-modal="true" aria-label="พิมพ์บิล"><header class="receipt-modal-head"><h2>พิมพ์บิล</h2><button type="button" class="receipt-close" data-close-receipt><i class="bi bi-x-lg" aria-hidden="true"></i></button></header><div data-receipt-content></div><div class="receipt-actions"><button type="button" class="receipt-secondary" data-close-receipt>ปิด</button><button type="button" class="receipt-print" data-print-receipt>พิมพ์บิล</button></div></section>`; modal.querySelectorAll('[data-close-receipt]').forEach(el => el.addEventListener('click', closeReceipt)); modal.querySelector('[data-print-receipt]').addEventListener('click', printCurrentReceipt); document.body.appendChild(modal); return modal; }
-function hideToastBeforePrint() { document.querySelectorAll('#toast,.toast,.toast-container,.swal2-container,.notification,.alert,.snackbar').forEach(el => { el.classList?.remove('show'); el.setAttribute('aria-hidden', 'true'); }); }
-function focusNextSale() { document.querySelector('#barcodeInput')?.focus(); window.dispatchEvent(new CustomEvent('retail-pos-ready-for-next-sale')); }
-async function renderReceipt(sale) { if (!sale) return null; const hydrated = await hydrateReceiptSale(sale); lastRenderedSale = hydrated; ensureModal().querySelector('[data-receipt-content]').innerHTML = receiptHtml(hydrated); return hydrated; }
-async function showReceipt(sale, { autoPrint = false } = {}) { if (!sale) return; const id = saleId(sale); if (!id) return; lastShownSaleId = id; const modal = ensureModal(); modal.hidden = false; const hydrated = await renderReceipt(sale); if (autoPrint && normalizePrintMode(hydrated?.receiptStore?.receiptPrintMode) === 'auto' && !isIOSPrintDevice()) { clearTimeout(autoPrintTimer); autoPrintTimer = setTimeout(printCurrentReceipt, 900); } }
-function closeReceipt() { const modal = document.querySelector('[data-pos-receipt-modal]'); if (modal) modal.hidden = true; focusNextSale(); }
-async function printCurrentReceipt() { const sale = localSaleWithUpdates(lastRenderedSale || readSales().find(s => saleId(s) === lastShownSaleId) || readSales()[0]); if (!sale) return; const modal = ensureModal(); modal.hidden = false; if (isIOSPrintDevice() && lastRenderedSale && saleId(lastRenderedSale) === saleId(sale)) { hideToastBeforePrint(); try { window.focus(); } catch (e) {} window.print(); return; } await renderReceipt(sale); hideToastBeforePrint(); await nextPaint(); setTimeout(() => window.print(), 180); }
-function maybeShowLatestSale(previousFirstId = '') { const latest = readSales()[0], id = saleId(latest); if (id && id !== previousFirstId && id !== lastShownSaleId) showReceipt(latest, { autoPrint: true }); }
-localStorage.setItem = function patchedSetItem(key, value) { const before = key === SALES_KEY ? saleId(readSales()[0]) : ''; originalSetItem(key, value); if (key === STORE_SETTINGS_KEY || key === LEGACY_STORE_SETTINGS_KEY) settingsCache = null; if (key === SALES_KEY) setTimeout(() => maybeShowLatestSale(before), 0); };
-window.addEventListener('pos:loyalty-updated', e => { const updatedSaleId = String(e.detail?.saleId || ''); if (updatedSaleId && updatedSaleId === lastShownSaleId) renderReceipt(localSaleWithUpdates(lastRenderedSale)); });
-window.addEventListener('beforeprint', hideToastBeforePrint);
-window.addEventListener('retail-offline-sales-synced', () => {});
 export { showReceipt, printCurrentReceipt };
