@@ -9,7 +9,7 @@ import {
   buildSaleItemRows,
   buildSyncQueueRow
 } from './retail-pos-firestore-foundation.js?v=20260702-002';
-import { reserveRunningNumber } from './retail-pos-counter.js?v=20260702-003';
+import { reserveRunningNumber, POS_COUNTER_VERSION } from './retail-pos-counter.js?v=20260706-037';
 
 const SALES_KEY = 'retail_pos_sales_v1';
 const SYNC_EVENT = 'retail-offline-sales-synced';
@@ -131,7 +131,7 @@ export function getOfflineQueueWorkerSnapshot() {
   return { ...workerSnapshot, queueSize: getOfflineSyncQueue().length };
 }
 
-function normalizeOfflineSale(sale, { saleId, tenantId, userId, saleNumber }) {
+function normalizeOfflineSale(sale, { saleId, tenantId, userId, saleNumber, counterReserved }) {
   const createdAt = sale.createdAt || nowIso();
   const dateKey = sale.dateKey || dateKeyFrom(createdAt);
   const monthKey = sale.monthKey || dateKey.slice(0, 6);
@@ -139,6 +139,11 @@ function normalizeOfflineSale(sale, { saleId, tenantId, userId, saleNumber }) {
     ...sale,
     id: saleId,
     saleNumber,
+    finalSaleNumber: saleNumber,
+    runningNumberStatus: 'reserved',
+    runningNumberType: 'SALE',
+    counterVersion: POS_COUNTER_VERSION,
+    counterReserved: Boolean(counterReserved),
     tenantId,
     shopId: tenantId,
     schemaVersion: POS_FIRESTORE_VERSION,
@@ -167,6 +172,7 @@ async function syncOneSale(sale) {
   const items = Array.isArray(sale.items) ? sale.items : [];
   let alreadyExists = false;
   let syncedSaleNumber = sale.saleNumber || saleId;
+  let alreadyReserved = false;
 
   await runTransaction(db, async transaction => {
     const existingSale = await transaction.get(saleRef);
@@ -198,7 +204,8 @@ async function syncOneSale(sale) {
 
     const reserved = await reserveRunningNumber(transaction, db, { type: 'SALE', value: saleDateValue, tenantId, documentId: saleId, userId });
     syncedSaleNumber = reserved.documentNumber;
-    const normalizedSale = normalizeOfflineSale(sale, { saleId, tenantId, userId, saleNumber: syncedSaleNumber });
+    alreadyReserved = Boolean(reserved.alreadyReserved);
+    const normalizedSale = normalizeOfflineSale(sale, { saleId, tenantId, userId, saleNumber: syncedSaleNumber, counterReserved: true });
     const nextSummary = applySaleToDailySummary(summarySnapshot.exists() ? summarySnapshot.data() : {}, normalizedSale);
 
     transaction.set(saleRef, { ...normalizedSale, createdAtServer: serverTimestamp(), updatedAtServer: serverTimestamp() }, { merge: true });
@@ -254,7 +261,7 @@ async function syncOneSale(sale) {
     transaction.set(tenantDoc(POS_COLLECTIONS.syncQueue, saleId), { ...buildSyncQueueRow(normalizedSale, { status: 'synced' }), createdBy: userId, updatedBy: userId, updatedAtServer: serverTimestamp() }, { merge: true });
   });
 
-  markSynced(saleId, alreadyExists ? { saleNumber: syncedSaleNumber, syncNote: 'sale already existed in Firebase' } : { saleNumber: syncedSaleNumber });
+  markSynced(saleId, alreadyExists ? { saleNumber: syncedSaleNumber, syncNote: 'sale already existed in Firebase' } : { saleNumber: syncedSaleNumber, finalSaleNumber: syncedSaleNumber, runningNumberStatus: 'reserved', counterVersion: POS_COUNTER_VERSION, counterAlreadyReserved: alreadyReserved });
   return saleId;
 }
 
