@@ -1,10 +1,10 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: P9-B002 Running Number — Receipt Freeze Hotfix
-Version: 0.13.14
-Build: 2026.07.06.034
+Milestone: P9-B002 Running Number — Save Screen Hotfix
+Version: 0.13.15
+Build: 2026.07.06.035
 
-Change: fixed the POS save freeze after successful payment by disabling the receipt modal auto-save hook that patched `localStorage.setItem` and opened an extra receipt/auto-print flow when local sales were saved. Safe Confirm is now the single path that opens the receipt after saving, preventing duplicate print dialogs and stuck UI while keeping the stable saleId/offline sync flow intact.
+Change: adjusted the POS after-sale flow so successful sale save no longer opens the receipt screen automatically. The app now closes any old receipt overlay, unlocks the POS page, and focuses the barcode input for the next sale. Sale saving, stable saleId, offline sync, duplicate protection, and stock deduction remain unchanged.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
