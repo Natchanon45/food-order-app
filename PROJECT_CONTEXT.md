@@ -2,13 +2,13 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.33
-Build: 2026.07.06.053
+Version: 0.13.34
+Build: 2026.07.06.054
 Milestone: P9-B005 Repository Layer / POS UX Hotfix
 
-Change: reduced the `/pos/customer-display` TH Sarabun PSK font sizing by 20% from the previous Customer Display scale. The font override remains scoped to Customer Display only and is not loaded by the main POS page.
+Change: updated Customer Display ordering so the most recently added or updated cart item is always shown at the top, even when the item already exists in the cart and only its quantity changes. This affects display ordering only and does not change sale totals, stock deduction, or cart calculation logic.
 
-Completed: QR Table Order, Kitchen serving, Delivery Lock, Cashier table move, paid-before-close guard, Retail POS Online/Offline/Sync/Tenant support, POS Firestore Foundation P9-B001, Safe Confirm Payment, P9-B002 Running Number alignment, Receipt Service, P9-B003 Counter, P9-B004 Offline Queue Worker + Retry + Conflict Resolver, Sync Timeout Hotfix, Firestore Rules Hotfix, Pending Number Helper Hotfix, Loyalty + Receipt Privacy Hotfix, P9-B005 Repository Layer foundation, POS UX Hotfix for product hover and bill reset, receipt privacy + simplified hover label hotfix, PC cart density hotfix, receipt phone mask hotfix, product card unified overlay hotfix, customer display icon button hotfix, Bootstrap display icon hotfix, customer-display-only TH Sarabun PSK font hotfix, and Customer Display font-size reduction hotfix.
+Completed: QR Table Order, Kitchen serving, Delivery Lock, Cashier table move, paid-before-close guard, Retail POS Online/Offline/Sync/Tenant support, POS Firestore Foundation P9-B001, Safe Confirm Payment, P9-B002 Running Number alignment, Receipt Service, P9-B003 Counter, P9-B004 Offline Queue Worker + Retry + Conflict Resolver, Sync Timeout Hotfix, Firestore Rules Hotfix, Pending Number Helper Hotfix, Loyalty + Receipt Privacy Hotfix, P9-B005 Repository Layer foundation, POS UX Hotfix for product hover and bill reset, receipt privacy + simplified hover label hotfix, PC cart density hotfix, receipt phone mask hotfix, product card unified overlay hotfix, customer display icon button hotfix, Bootstrap display icon hotfix, customer-display-only TH Sarabun PSK font hotfix, Customer Display font-size reduction hotfix, and Customer Display latest-item ordering hotfix.
 
 Next Task: Continue P9-B005 integration by replacing direct POS localStorage/tenant ref usage in runtime modules with repository helpers, then move to P9-B006 Firestore Composite Index.
 
