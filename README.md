@@ -2,9 +2,9 @@
 
 Branch: feature/retail-pos
 Milestone: P9-B005 Repository Layer / POS UX Hotfix
-Version: 0.13.24
-Build: 2026.07.06.044
+Version: 0.13.25
+Build: 2026.07.06.045
 
-Change: improved Retail POS PC product cards and after-payment cleanup. Product cards now show hover/tooltip details with product name, stock, price, and code, grey out sold-out items, and display a sold-out badge. After payment or receipt close, the POS now force-clears the active bill, discount, payment fields, selected customer/loyalty UI, totals, and focuses the barcode input for the next sale.
+Change: refined Retail POS receipt privacy and product-card hover behavior. Receipt customer names now mask first name as the first up to 5 characters plus `*****`, and last name as `*****` plus the last 3 characters. Product-card hover no longer shows the browser tooltip; it now displays a half-card bottom overlay with only product name and price for faster cashier reading.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
