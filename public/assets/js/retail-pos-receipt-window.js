@@ -3,11 +3,14 @@ import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, getExistingFullTaxI
 const SALES_KEY = 'retail_pos_sales_v1';
 const STORE_SETTINGS_KEY = 'retail_pos_store_settings_v1';
 const LEGACY_STORE_SETTINGS_KEY = 'food_order_store_settings';
+const DBD_LOOKUP_URL_KEY = 'retail_pos_dbd_lookup_url';
+const DBD_DATAWAREHOUSE_URL = 'https://datawarehouse.dbd.go.th/juristic';
 
 const root = document.querySelector('#receiptRoot');
 const printBtn = document.querySelector('#printBtn');
 const closeBtn = document.querySelector('#closeBtn');
 const taxInvoiceBtn = document.querySelector('#taxInvoiceBtn');
+const dbdLookupBtn = document.querySelector('#dbdLookupBtn');
 const taxDialog = document.querySelector('#taxInvoiceDialog');
 const taxForm = document.querySelector('#taxInvoiceForm');
 const taxCancelBtn = document.querySelector('#taxInvoiceCancelBtn');
@@ -26,6 +29,8 @@ function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, char
 function money(value) { return Number(value || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 function numberText(value) { return Number(value || 0).toLocaleString('th-TH'); }
 function saleKey(sale) { return String(sale?.id || sale?.saleNumber || '').trim(); }
+function normalizeTaxId(value) { return String(value || '').replace(/\D/g, '').slice(0, 13); }
+function normalizeText(value) { return String(value || '').replace(/\s+/g, ' ').trim(); }
 function maskPhone(phone = '') { const digits = String(phone || '').replace(/\D/g, ''); if (!digits) return ''; if (digits.length < 10) return digits.length <= 2 ? digits : `${digits.slice(0, 2)}***`; return `${digits.slice(0, 3)}-***-**${digits.slice(-2)}`; }
 function firstChars(text, count) { return Array.from(String(text || '')).slice(0, count).join(''); }
 function lastChars(text, count) { const chars = Array.from(String(text || '')); return chars.slice(Math.max(0, chars.length - count)).join(''); }
@@ -83,7 +88,7 @@ function showTaxDialog() {
   buyerBranchInput.value = defaults.buyerBranchName || 'สำนักงานใหญ่';
   taxError.textContent = '';
   taxDialog.showModal();
-  setTimeout(() => buyerNameInput?.focus(), 50);
+  setTimeout(() => buyerTaxIdInput?.focus(), 50);
 }
 async function submitTaxDialog() {
   if (!currentSale) return;
@@ -107,9 +112,56 @@ async function submitTaxDialog() {
     taxInvoiceBtn.disabled = false;
   }
 }
+function dbdLookupEndpoint() { return window.RETAIL_POS_DBD_LOOKUP_URL || localStorage.getItem(DBD_LOOKUP_URL_KEY) || ''; }
+function normalizeDbdProfile(data = {}) {
+  const source = data.data || data.result || data.profile || data;
+  return {
+    buyerName: normalizeText(source.buyerName || source.juristicNameTH || source.juristicName || source.nameTh || source.name || source.companyName || ''),
+    buyerTaxId: normalizeTaxId(source.buyerTaxId || source.juristicId || source.registrationNo || source.taxId || source.id || buyerTaxIdInput.value),
+    buyerAddress: normalizeText(source.buyerAddress || source.addressTh || source.address || source.location || ''),
+    buyerBranchName: normalizeText(source.buyerBranchName || source.branchName || source.branch || 'สำนักงานใหญ่') || 'สำนักงานใหญ่'
+  };
+}
+function fillBuyerFromDbd(profile) {
+  if (profile.buyerTaxId) buyerTaxIdInput.value = profile.buyerTaxId;
+  if (profile.buyerName) buyerNameInput.value = profile.buyerName;
+  if (profile.buyerAddress) buyerAddressInput.value = profile.buyerAddress;
+  if (profile.buyerBranchName) buyerBranchInput.value = profile.buyerBranchName;
+}
+async function lookupDbd() {
+  const taxId = normalizeTaxId(buyerTaxIdInput.value);
+  buyerTaxIdInput.value = taxId;
+  taxError.textContent = '';
+  if (!taxId || taxId.length < 13) { taxError.textContent = 'กรุณากรอกเลขประจำตัวผู้เสียภาษี 13 หลักก่อนกด DBD'; return; }
+  const endpoint = dbdLookupEndpoint();
+  dbdLookupBtn.disabled = true;
+  dbdLookupBtn.textContent = 'ค้นหา...';
+  try {
+    if (endpoint) {
+      const url = new URL(endpoint, location.origin);
+      url.searchParams.set('taxId', taxId);
+      const response = await fetch(url.toString(), { headers: { accept: 'application/json' } });
+      if (!response.ok) throw new Error('DBD lookup failed');
+      const profile = normalizeDbdProfile(await response.json());
+      if (!profile.buyerName && !profile.buyerAddress) throw new Error('ไม่พบข้อมูลจาก DBD');
+      fillBuyerFromDbd(profile);
+      taxError.textContent = 'ดึงข้อมูลจาก DBD สำเร็จ กรุณาตรวจสอบก่อนออกเอกสาร';
+      return;
+    }
+    window.open(`${DBD_DATAWAREHOUSE_URL}?keyword=${encodeURIComponent(taxId)}`, '_blank', 'noopener,noreferrer');
+    taxError.textContent = 'เปิด DBD DataWarehouse+ แล้ว หากต้องการกรอกอัตโนมัติให้ตั้งค่า DBD lookup proxy ที่ retail_pos_dbd_lookup_url';
+  } catch (error) {
+    window.open(`${DBD_DATAWAREHOUSE_URL}?keyword=${encodeURIComponent(taxId)}`, '_blank', 'noopener,noreferrer');
+    taxError.textContent = 'ยังดึงข้อมูล DBD อัตโนมัติไม่ได้ จึงเปิดหน้า DBD ให้ตรวจสอบและกรอกข้อมูลต่อ';
+  } finally {
+    dbdLookupBtn.disabled = false;
+    dbdLookupBtn.textContent = 'DBD';
+  }
+}
 printBtn?.addEventListener('click', () => window.print());
 closeBtn?.addEventListener('click', () => window.close());
 taxInvoiceBtn?.addEventListener('click', showTaxDialog);
+dbdLookupBtn?.addEventListener('click', lookupDbd);
 taxCancelBtn?.addEventListener('click', () => taxDialog?.close());
 taxForm?.addEventListener('submit', event => { event.preventDefault(); submitTaxDialog(); });
 window.addEventListener('storage', event => { if (event.key === SALES_KEY) rerenderLatest(); });
