@@ -6,7 +6,7 @@ const styleId = 'retailSalesReceiptEnhancerStyle';
 if (!document.getElementById(styleId)) {
   const style = document.createElement('style');
   style.id = styleId;
-  style.textContent = `.receipt [data-sales-receipt-extra="true"]{display:flex!important;justify-content:space-between!important;align-items:flex-start!important;gap:10px!important;padding:1px 0!important;font-size:19px!important;line-height:1.08!important}.receipt [data-sales-receipt-extra="true"] span:first-child{flex:0 0 auto!important;color:#000!important}.receipt [data-sales-receipt-extra="true"] span:last-child,.receipt [data-sales-receipt-extra="true"] strong:last-child{min-width:0!important;text-align:right!important;font-weight:700!important;color:#000!important;overflow-wrap:anywhere!important}.receipt .receipt-extra-rule{height:0!important;border:0!important;border-top:1px dashed #000!important;margin:6px 0!important}.receipt .receipt-customer-block{border-top:1px dashed #000!important;border-bottom:1px dashed #000!important;margin:6px 0!important;padding:4px 0!important}`;
+  style.textContent = `.receipt [data-sales-receipt-extra="true"]{display:flex!important;justify-content:space-between!important;align-items:flex-start!important;gap:10px!important;padding:1px 0!important;font-size:19px!important;line-height:1.08!important}.receipt [data-sales-receipt-extra="true"] span:first-child{flex:0 0 auto!important;color:#000!important}.receipt [data-sales-receipt-extra="true"] span:last-child,.receipt [data-sales-receipt-extra="true"] strong:last-child{min-width:0!important;text-align:right!important;font-weight:700!important;color:#000!important;overflow-wrap:anywhere!important}.receipt .receipt-extra-block{display:block!important;margin:5px 0!important;padding:4px 0!important;border-top:0!important;border-bottom:1px dashed #000!important}.receipt .receipt-extra-block [data-sales-receipt-extra="true"]{display:flex!important;width:100%!important}.receipt .receipt-extra-block [data-sales-receipt-extra="true"] span:first-child{min-width:54px!important}.receipt .receipt-extra-block [data-sales-receipt-extra="true"] span:last-child,.receipt .receipt-extra-block [data-sales-receipt-extra="true"] strong:last-child{text-align:right!important;flex:1 1 auto!important}.receipt .receipt-extra-block+.receipt-table{margin-top:6px!important}`;
   document.head.appendChild(style);
 }
 
@@ -84,8 +84,8 @@ function row(label, value, strong = false) {
 
 function block(rows = []) {
   const wrapper = document.createElement('div');
-  wrapper.className = 'receipt-customer-block';
-  wrapper.dataset.salesReceiptExtra = 'true';
+  wrapper.className = 'receipt-extra-block';
+  wrapper.dataset.salesReceiptBlock = 'true';
   rows.forEach(item => wrapper.append(item));
   return wrapper;
 }
@@ -142,7 +142,7 @@ function patchLoyalty(area, sale) {
 function enhanceReceipt() {
   const area = document.querySelector('#receiptArea');
   if (!area) return;
-  area.querySelectorAll('[data-sales-receipt-extra="true"]').forEach(node => node.remove());
+  area.querySelectorAll('[data-sales-receipt-extra="true"],[data-sales-receipt-block="true"]').forEach(node => node.remove());
   const sale = currentSale();
   patchShop(area);
   const title = area.querySelector('.receipt-header p');
