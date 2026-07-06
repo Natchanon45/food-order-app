@@ -1,12 +1,12 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: P9-B006 Full Tax Invoice
-Version: 0.13.43
-Build: 2026.07.06.063
+Milestone: P9-B006-02 Tax Invoice History / Reprint UI
+Version: 0.13.44
+Build: 2026.07.06.064
 
-Change: improved Full Tax Invoice phase 2. The receipt popup now uses a proper buyer tax information modal instead of browser prompts. The modal pre-fills buyer data from the sale or saved tax buyer profile, saves/reuses buyer tax profile data locally, creates/reuses one `taxInvoices` record per sale, and opens the A4 `/pos/tax-invoice/` print page.
+Change: added a Full Tax Invoice history and reprint page at `/pos/tax-invoices/`. The page merges locally cached full tax invoices with Firestore `taxInvoices`, supports search by invoice number, sale number, buyer name, buyer tax ID, address, and status, and opens `/pos/tax-invoice/?invoiceId=...` for A4 reprint.
 
-Existing short tax invoice / receipt behavior remains supported. POS sale totals, VAT calculation, stock deduction, offline sale sync, and receipt printing logic are unchanged.
+Existing full tax invoice creation, short tax invoice / receipt behavior, POS sale totals, VAT calculation, stock deduction, offline sale sync, and receipt printing logic are unchanged.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
