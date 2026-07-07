@@ -81,7 +81,7 @@ function iconFor(element, fallback = "circle") {
 }
 
 function shouldSkipIcon(element) {
-  if (element.matches(".icon-btn, .pos-menu-title, .pos-menu-head h2, .product-card, .catalog-tab, .sort-row-main, .app-version-badge, .mobile-cart-bar, .qty-tools button, [data-mobile-cart-close]")) return true;
+  if (element.matches(".icon-btn, .pos-menu-title, .pos-menu-head h2, .pos-menu-group > button, [data-menu-group], .product-card, .catalog-tab, .sort-row-main, .app-version-badge, .mobile-cart-bar, .qty-tools button, [data-mobile-cart-close]")) return true;
   return element.closest(".pos-menu-head") && visibleText(element) === "เมนู POS";
 }
 
@@ -91,6 +91,7 @@ function addIcon(element, fallback) {
   if (authoredIcon && generatedIcon) generatedIcon.remove();
   if (shouldSkipIcon(element)) {
     if (generatedIcon) generatedIcon.remove();
+    if (element.matches("[data-menu-group]")) element.removeAttribute("data-pos-icon");
     element.removeAttribute("data-pos-icon-ready");
     return;
   }

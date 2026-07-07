@@ -2,15 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.76
-Build: 2026.07.07.020
-Milestone: POS Menu Legacy Icon Guard
+Version: 0.13.77
+Build: 2026.07.07.021
+Milestone: POS Menu Group Chevron Cleanup
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
 Font rule: all web UI screens, including standalone POS pages, buttons, forms, dialogs, and Customer Display, use the shared `--app-ui-font` Thai sans/no-head stack with `Kanit Local` loaded from `/assets/fonts/` as the primary UI font. POS UI button text must stay at font-weight 500 or lighter, and form labels/inputs should use normal weight. Printable paper documents such as receipts, tax invoices, QR tickets, invoices, quotations, and print pages use `--paper-font-local` / `--print-font`, with `TH Sarabun PSK Local` loaded from `/assets/fonts/` as the primary paper font.
 
-Retail POS navigation rule: submenu expand/collapse controls must render Bootstrap Icons chevrons, not text carets such as `^`, `v`, `⌃`, or `⌄`. The drawer title `เมนู POS` must not receive an injected context icon, and the icon system/CSS must also clean or hide the legacy injected icon if an older cached navigation module renders `<h2 data-pos-icon="list">เมนู POS</h2>`.
+Retail POS navigation rule: submenu expand/collapse controls must render exactly one Bootstrap Icons chevron, not text carets such as `^`, `v`, `⌃`, or `⌄`, and not an additional context icon. Menu group buttons with `data-menu-group` must be skipped by the context icon injector, while menu links may still receive one context icon. The drawer title `เมนู POS` must not receive an injected context icon, and the icon system/CSS must also clean or hide the legacy injected icon if an older cached navigation module renders `<h2 data-pos-icon="list">เมนู POS</h2>`.
 
 Current Customer Display rule: POS machines publish Customer Display snapshots to `customerDisplays/{displayId}`. Each POS has local `retail_pos_register_config` with `registerId` and `displayId`, and each display snapshot includes `tenantId`, `registerId`, `displayId`, `sessionId`, `status`, `items`, totals, and `updatedAt`.
 
@@ -20,7 +20,7 @@ Tax Invoice History rule: `/pos/tax-invoices/` merges local `retail_pos_tax_invo
 
 DBD Lookup rule: the buyer tax ID field is the first input in the full tax invoice modal and includes an inline `DBD` button. The browser can fetch a configured DBD lookup proxy from `window.RETAIL_POS_DBD_LOOKUP_URL` or localStorage key `retail_pos_dbd_lookup_url`; the expected JSON can include `buyerName`, `buyerTaxId`, `buyerAddress`, `buyerBranchName`, or DBD-style aliases such as `juristicNameTH`, `juristicId`, `addressTh`, and `branchName`. If no proxy is configured or lookup fails, the flow opens the official DBD DataWarehouse+ juristic search page for manual verification. This flow does not change POS sale totals, VAT calculation, stock deduction, offline sale sync, or existing short tax invoice receipt behavior.
 
-Completed in this build: Retail POS legacy drawer title icon guard with navigation/icon/CSS cache bump and production browser verification.
+Completed in this build: Retail POS menu group chevron cleanup with navigation/icon/CSS cache bump and browser verification.
 
 Next task: improve P9-B006 with editable customer tax profile management and void/cancel tax invoice support.
 

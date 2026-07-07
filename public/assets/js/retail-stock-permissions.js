@@ -1,4 +1,4 @@
-import {hasPermission} from "./retail-pos-navigation.js?v=20260707-020";
+import {hasPermission} from "./retail-pos-navigation.js?v=20260707-021";
 
 const P={
   countPerform:"pos.stock_counts.perform",

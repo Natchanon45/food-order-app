@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Menu Legacy Icon Guard
-Version: 0.13.76
-Build: 2026.07.07.020
+Milestone: POS Menu Group Chevron Cleanup
+Version: 0.13.77
+Build: 2026.07.07.021
 
-Change: added a legacy DOM guard so the Retail POS drawer title cannot show an injected menu icon even when `/pos` has a cached navigation module, and bumped POS navigation/icon/CSS cache versions after production browser verification.
+Change: removed context icons from Retail POS menu group expand/collapse buttons so each group header shows only one Bootstrap chevron, with a legacy DOM guard and bumped POS navigation/icon/CSS cache versions.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
