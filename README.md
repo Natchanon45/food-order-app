@@ -1,15 +1,17 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS VAT Payment Totals Correction
-Version: 0.13.99
-Build: 2026.07.08.012
+Milestone: Customer Display Pairing QR Gradient Polish
+Version: 0.14.00
+Build: 2026.07.08.013
 
-Change: corrected `/pos` VAT/payment totals by applying the default 7% VAT rate whenever VAT registration is enabled but the saved rate is blank/zero, using consistent received-cash parsing for change calculation and safe-confirm sale saving, sending `none` VAT mode to Customer Display only when VAT controls are inactive, and reducing customer-picker name weight.
+Change: polished only the `/pos/customer-display/` device-pairing QR hover panel with a vertical green gradient fade, darker/opaque green at the top, translucent green toward the bottom, and a matching green opacity border while keeping the QR image surface white.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
 Existing PromptPay QR display, tax buyer DBD lookup, tax invoice creation duplicate protection, tax invoice history/reprint, later full tax invoice issuing from existing receipts, receipt behavior, stock deduction, offline sale sync, POS theme alignment, mobile product card overlay behavior, mobile button layout, payment modal visual tuning, and printable document fonts are unchanged.
+
+Customer Display pairing QR gradient workflow: hovering or focusing `เชื่อมอุปกรณ์` opens the device-pairing QR panel with a top-to-bottom green fade. The top edge and upper background are opaque/darker green, the lower edge and lower background become translucent, text stays readable over the darker area, and the QR code remains on a clean white scan surface.
 
 POS VAT/payment workflow: when the store is VAT registered, a blank or zero saved VAT rate falls back to 7% so include-VAT carts split totals correctly, for example 114.00 becomes before VAT 106.54, VAT 7.46, and net total 114.00. The payment modal and safe-confirm guard parse received cash the same way, so received 120.00 against 114.00 displays and saves a 6.00 change amount. Customer Display receives the corrected totals and only shows include/exclude VAT mode when POS VAT controls are active.
 
