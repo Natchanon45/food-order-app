@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS UI Font Weight Tuning
-Version: 0.13.74
-Build: 2026.07.07.018
+Milestone: POS Menu Header Icon Cleanup
+Version: 0.13.75
+Build: 2026.07.07.019
 
-Change: tuned POS UI font weights so buttons stay at 500 or lighter and form labels/inputs render with normal weight while preserving paper document font rules.
+Change: removed the injected icon from the Retail POS drawer title and bumped POS navigation/icon cache versions after browser verification.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
