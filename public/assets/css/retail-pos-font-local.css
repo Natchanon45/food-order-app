@@ -92,6 +92,26 @@ textarea {
   font: inherit;
 }
 
+.toolbar :is(button, .btn, a.btn),
+.tax-dialog :is(button, .btn, a.btn, .dbd-btn),
+.shell :is(button, .btn, a.btn),
+.page > :not(.receipt):not(.tax-paper) :is(button, .btn, a.btn) {
+  font-weight: 500 !important;
+}
+
+.toolbar :is(strong, b),
+.tax-dialog :is(strong, b, h1, h2),
+.shell :is(strong, b, h1, h2, .badge, .tax-doc-no),
+.page > :not(.receipt):not(.tax-paper) :is(strong, b, h1, h2) {
+  font-weight: 500 !important;
+}
+
+.tax-dialog :is(label, input, select, textarea, .tax-hint),
+.shell :is(label, input, select, textarea, .search),
+.page > :not(.receipt):not(.tax-paper) :is(label, input, select, textarea) {
+  font-weight: 400 !important;
+}
+
 .paper-font-local,
 .receipt,
 .tax-paper,

@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Local UI Font and Menu Icon Cleanup
-Version: 0.13.73
-Build: 2026.07.07.017
+Milestone: POS UI Font Weight Tuning
+Version: 0.13.74
+Build: 2026.07.07.018
 
-Change: added local Kanit UI font files for Thai sans/no-head rendering across POS screens and removed the duplicate menu icon on the Retail POS header button.
+Change: tuned POS UI font weights so buttons stay at 500 or lighter and form labels/inputs render with normal weight while preserving paper document font rules.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
