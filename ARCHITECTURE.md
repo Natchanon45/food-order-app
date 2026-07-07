@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.81
-Build: 2026.07.07.025
-Milestone: POS Mobile Button Layout
+Version: 0.13.82
+Build: 2026.07.07.026
+Milestone: POS Payment Modal Visual Tuning
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -26,7 +26,9 @@ Product card overlay rule: Retail POS image product cards show only product imag
 
 Mobile button layout rule: on small Retail POS screens, header actions should stay compact and predictable. The menu button may keep a short label, sync status should not expose a long status string in the header, and icon-only actions such as Customer Display should remain fixed-size. Receipt/tax print toolbars should avoid cramped wrapping by placing long actions on their own row and keeping secondary actions evenly sized.
 
-Completed in this build: mobile POS header action layout and receipt/tax print toolbar layout tuning with CSS cache bumps for changed assets.
+Payment modal visual rule: Retail POS payment modal numbers and numeric pad buttons should not exceed font-weight 500 in the web UI. The payment total should use the shared green accent softly, the change amount may use a restrained amber/red emphasis, and the layout must keep the same payment, VAT, stock, and offline sync behavior.
+
+Completed in this build: payment modal numeric weight reduction and green/amber visual accent tuning with JS cache bumps for changed assets.
 
 Next task: improve P9-B006 with editable customer tax profile management and void/cancel tax invoice support.
 
