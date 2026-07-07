@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.80
-Build: 2026.07.07.024
-Milestone: POS Mobile Product Card Overlay
+Version: 0.13.81
+Build: 2026.07.07.025
+Milestone: POS Mobile Button Layout
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -24,7 +24,9 @@ Theme rule: Retail POS UI screens should stay visually aligned with Order/Delive
 
 Product card overlay rule: Retail POS image product cards show only product images by default on both desktop and mobile. Desktop may reveal the overlay on hover/focus. Touch devices must keep name, stock, and price hidden by default and only reveal the overlay during active touch, focus, or an explicit `show-info` state. Overlay prices use dark green text while preserving readable contrast on the dark green product overlay.
 
-Completed in this build: mobile Retail POS product card overlay behavior and dark green overlay price styling with CSS cache bumps for changed assets.
+Mobile button layout rule: on small Retail POS screens, header actions should stay compact and predictable. The menu button may keep a short label, sync status should not expose a long status string in the header, and icon-only actions such as Customer Display should remain fixed-size. Receipt/tax print toolbars should avoid cramped wrapping by placing long actions on their own row and keeping secondary actions evenly sized.
+
+Completed in this build: mobile POS header action layout and receipt/tax print toolbar layout tuning with CSS cache bumps for changed assets.
 
 Next task: improve P9-B006 with editable customer tax profile management and void/cancel tax invoice support.
 
