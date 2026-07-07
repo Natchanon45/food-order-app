@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.94
-Build: 2026.07.08.007
-Milestone: Customer Display White Text Glass
+Version: 0.13.95
+Build: 2026.07.08.008
+Milestone: Customer Display Adaptive Text Contrast
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -46,13 +46,13 @@ Customer Display liquid-glass theme rule: Customer Display glass styling should 
 
 Customer Display green glass rule: the primary visual direction is green fading into clear glass, not a dark opaque wash. Use translucent bright glass panels, restrained deep green only for depth/edges, soft green highlights, and high contrast text. The hover/focus pairing QR panel should keep green glass depth, transparent highlights, and visible QR framing without making the screen feel too dark.
 
-Customer Display white text rule: main Customer Display text may use white with subtle shadow when panels have enough green translucency behind them. QR image surfaces must remain white/clean for scan readability, and the cart count badge must remain high contrast.
+Customer Display adaptive text contrast rule: light glass cards must use dark green or black-green text. White text is reserved for dark green surfaces such as the header, cart count badge, thank-you badge, and pairing QR hover panel. QR image surfaces must remain white/clean for scan readability, and the cart count badge must remain high contrast.
 
 Customer Display pairing QR layer rule: the `เชื่อมอุปกรณ์` hover/focus QR panel must render above the main display content on desktop and mobile widths. Keep the header and pairing panel in a higher stacking layer than the cart, total, and footer cards so the pairing QR is never hidden behind page content.
 
 Customer Display cart count contrast rule: the `รายการในบิล` header count badge must remain legible on liquid-glass backgrounds. Use high-contrast text, a defined chip shape, and enough separation from the header title so counts such as `11 รายการ` do not blend into the badge.
 
-Completed in this build: Customer Display white text tuning over lighter green liquid-glass panels while preserving pairing QR hover layer, cart count readability, centered stacked QR, account-name-only receiver text, and bottom-pinned one-line thank-you badge.
+Completed in this build: Customer Display adaptive text contrast tuning while preserving lighter green liquid-glass panels, pairing QR hover layer, cart count readability, centered stacked QR, account-name-only receiver text, and bottom-pinned one-line thank-you badge.
 
 Next task: deploy hosting and test the lighter green liquid-glass Customer Display theme, hover pairing QR panel, cart count badge contrast, and PromptPay presentation on real POS payment data, then continue validating tax profile and void workflow with synced Firestore data.
 

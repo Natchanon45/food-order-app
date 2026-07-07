@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Customer Display White Text Glass
-Version: 0.13.94
-Build: 2026.07.08.007
+Milestone: Customer Display Adaptive Text Contrast
+Version: 0.13.95
+Build: 2026.07.08.008
 
-Change: changed `/pos/customer-display/` to use readable white text over the green transparent-glass theme, with subtle text shadows and slightly greener translucent panels, while keeping the hover/focus pairing QR panel, cart count readability, PromptPay card layout, and bottom-pinned thank-you badge.
+Change: corrected `/pos/customer-display/` text contrast so light glass cards use dark green text, while dark surfaces such as the header, cart count badge, thank-you badge, and pairing QR hover panel keep white text.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -19,7 +19,7 @@ Customer Display cart count workflow: the `รายการในบิล` he
 
 Customer Display green glass workflow: the Customer Display visual theme uses green gradients fading into transparent glass, translucent bright card surfaces, soft green highlights, and a richer hover/focus pairing QR panel that keeps the QR visible above the page content without making the screen feel opaque.
 
-Customer Display white text workflow: main Customer Display text uses white with subtle shadow over green glass panels, while QR image surfaces remain white so scan reliability and visual clarity are preserved.
+Customer Display adaptive text workflow: light glass cards use dark green/black-green text, while dark green surfaces use white text. QR image surfaces remain white so scan reliability and visual clarity are preserved.
 
 Later tax invoice workflow: staff can open `/pos/tax-invoices/`, search the original POS sale number from an existing short tax invoice/receipt, review the source sale, enter buyer tax details, and issue or reopen the one full tax invoice allowed for that sale.
 
