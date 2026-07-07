@@ -1,17 +1,17 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Payment Modal Visual Tuning
-Version: 0.13.82
-Build: 2026.07.07.026
+Milestone: POS Later Tax Invoice Workflow
+Version: 0.13.83
+Build: 2026.07.07.027
 
-Change: refined the Retail POS payment modal by reducing numeric font weight, softening payment total/change emphasis, and adding subtle green and amber visual accents while keeping button text at font-weight 500 or lighter.
+Change: added a direct `/pos/tax-invoices/` workflow for issuing a full tax invoice later from an existing short tax invoice/receipt by searching the original POS sale number.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
-Existing tax buyer DBD lookup, tax invoice creation, tax invoice history/reprint, receipt behavior, POS totals, VAT calculation, stock deduction, customer display data sync, offline sale sync, POS theme alignment, mobile product card overlay behavior, mobile button layout, and printable document fonts are unchanged.
+Existing tax buyer DBD lookup, tax invoice creation duplicate protection, tax invoice history/reprint, receipt behavior, POS totals, VAT calculation, stock deduction, customer display data sync, offline sale sync, POS theme alignment, mobile product card overlay behavior, mobile button layout, payment modal visual tuning, and printable document fonts are unchanged.
 
-Planned tax invoice workflow: add a direct page/button for staff to issue a full tax invoice later when a customer brings back an existing short tax invoice/receipt, by searching the original POS sale number and reusing the existing one-invoice-per-sale duplicate protection.
+Later tax invoice workflow: staff can open `/pos/tax-invoices/`, search the original POS sale number from an existing short tax invoice/receipt, review the source sale, enter buyer tax details, and issue or reopen the one full tax invoice allowed for that sale.
 
 Deploy rules: use `firebase deploy --only hosting` for changes under `public/` only. Use `firebase deploy --only functions:<functionName>` when files under `functions/` change. Use `firebase deploy --only functions:<functionName>,hosting` only when both function code/routes and hosting assets change.
 

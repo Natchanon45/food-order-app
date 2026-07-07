@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.82
-Build: 2026.07.07.026
-Milestone: POS Payment Modal Visual Tuning
+Version: 0.13.83
+Build: 2026.07.07.027
+Milestone: POS Later Tax Invoice Workflow
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -16,9 +16,9 @@ Current Customer Display rule: POS machines publish Customer Display snapshots t
 
 Full Tax Invoice rule: full tax invoices are stored separately from sales in `taxInvoices/{taxInvoiceId}` and include `tenantId`, source sale reference, seller tax profile, buyer tax profile, line items, VAT summary, total, status, issued timestamp, and TAX running number metadata. The receipt popup can create/reuse one full tax invoice per sale and opens `/pos/tax-invoice/?invoiceId=...` for A4 printing. Buyer tax data is captured through a receipt-popup modal, prefilled from the sale or saved tax buyer profile, and saved locally for future reuse. When Firebase is online, issuing a full tax invoice must use a Firestore transaction that reads the existing invoice, counter, and running number reservation before writing the invoice and counter reservation.
 
-Tax Invoice History rule: `/pos/tax-invoices/` merges local `retail_pos_tax_invoices_v1` data with Firestore `taxInvoices`, supports search by invoice number, sale number, buyer name, buyer tax ID, address, and status, and opens `/pos/tax-invoice/?invoiceId=...` for reprint. The POS navigation menu must include a direct `ใบกำกับภาษี` entry for this history page.
+Tax Invoice History rule: `/pos/tax-invoices/` merges local `retail_pos_tax_invoices_v1` data with Firestore `taxInvoices`, supports search by invoice number, sale number, buyer name, buyer tax ID, address, and status, and opens `/pos/tax-invoice/?invoiceId=...` for reprint. The same page can search an original POS sale number from an existing short tax invoice/receipt, open a buyer tax profile modal, and issue or reopen the one full tax invoice allowed for that sale. The POS navigation menu must include a direct `ใบกำกับภาษี` entry for this history page.
 
-Planned later full tax invoice rule: staff should be able to issue a full tax invoice later when a customer brings an existing short tax invoice/receipt back to the shop. The workflow should search the original POS sale by sale number, open the same buyer tax profile modal, reuse the existing full-tax-invoice creation path, keep one full tax invoice per sale, and show the existing invoice instead of creating a duplicate when one already exists.
+Later full tax invoice rule: staff can issue a full tax invoice later when a customer brings an existing short tax invoice/receipt back to the shop. The workflow searches the original POS sale by sale number, opens a buyer tax profile modal, reuses the existing full-tax-invoice creation path, keeps one full tax invoice per sale, and shows the existing invoice instead of creating a duplicate when one already exists.
 
 DBD Lookup rule: the buyer tax ID field is the first input in the full tax invoice modal and includes an inline `DBD` button. The browser can fetch a configured DBD lookup proxy from `window.RETAIL_POS_DBD_LOOKUP_URL` or localStorage key `retail_pos_dbd_lookup_url`; the expected JSON can include `buyerName`, `buyerTaxId`, `buyerAddress`, `buyerBranchName`, or DBD-style aliases such as `juristicNameTH`, `juristicId`, `addressTh`, and `branchName`. If no proxy is configured or lookup fails, the flow opens the official DBD DataWarehouse+ juristic search page for manual verification. This flow does not change POS sale totals, VAT calculation, stock deduction, offline sale sync, or existing short tax invoice receipt behavior.
 
@@ -30,9 +30,9 @@ Mobile button layout rule: on small Retail POS screens, header actions should st
 
 Payment modal visual rule: Retail POS payment modal numbers and numeric pad buttons should not exceed font-weight 500 in the web UI. The payment total should use the shared green accent softly, the change amount may use a restrained amber/red emphasis, and the layout must keep the same payment, VAT, stock, and offline sync behavior.
 
-Completed in this build: payment modal numeric weight reduction and green/amber visual accent tuning with JS cache bumps for changed assets.
+Completed in this build: later full tax invoice issuing from an existing short tax invoice/receipt through `/pos/tax-invoices/`, with JS cache bumps for changed assets.
 
-Next task: improve P9-B006 with editable customer tax profile management, later full tax invoice issuing from an existing short tax invoice/receipt, and void/cancel tax invoice support.
+Next task: improve P9-B006 with editable customer tax profile management and void/cancel tax invoice support.
 
 Deploy commands:
 git pull --rebase origin feature/retail-pos
