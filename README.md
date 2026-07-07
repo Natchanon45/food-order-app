@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Full Tax Invoice Running Number
-Version: 0.13.69
-Build: 2026.07.07.013
+Milestone: POS Tax Invoice Menu Entry
+Version: 0.13.70
+Build: 2026.07.07.014
 
-Change: full tax invoices now reserve the TAX running number through the existing Firestore counter transaction when Firebase is online, reusing an existing invoice for the same sale before reserving a number. Offline/local fallback remains available and marks the invoice as local-only.
+Change: added a direct POS menu entry for full tax invoice history and added a history shortcut on the full tax invoice print page so issued tax invoices can be opened from the web UI without remembering the URL.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
