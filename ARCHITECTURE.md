@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.95
-Build: 2026.07.08.008
-Milestone: Customer Display Adaptive Text Contrast
+Version: 0.13.96
+Build: 2026.07.08.009
+Milestone: Customer Display Classic Green Theme
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -42,19 +42,15 @@ Customer Display PC layout rule: on PC widths, `/pos/customer-display/` keeps th
 
 Customer Display PromptPay visual rule: when PromptPay / transfer QR data is present, the Customer Display total card stacks the payment heading, baht amount, QR image, and account owner name vertically and centered. The QR should be as large as possible while preserving the total rows and thank-you badge on short PC screens. The thank-you badge stays pinned to the bottom edge of the total card, centered on one line, and must use font-weight 500 or lighter.
 
-Customer Display liquid-glass theme rule: Customer Display glass styling should stay within white, green, and black. Use translucent white cards, dark green/black contrast for primary emphasis, soft green highlights for secondary emphasis, glass-like borders/shadows, and readable text. Avoid returning to unrelated accent colors for the PromptPay panel and thank-you badge.
-
-Customer Display green glass rule: the primary visual direction is green fading into clear glass, not a dark opaque wash. Use translucent bright glass panels, restrained deep green only for depth/edges, soft green highlights, and high contrast text. The hover/focus pairing QR panel should keep green glass depth, transparent highlights, and visible QR framing without making the screen feel too dark.
-
-Customer Display adaptive text contrast rule: light glass cards must use dark green or black-green text. White text is reserved for dark green surfaces such as the header, cart count badge, thank-you badge, and pairing QR hover panel. QR image surfaces must remain white/clean for scan readability, and the cart count badge must remain high contrast.
+Customer Display classic green theme rule: Customer Display styling uses a white page background, solid green action bar, white cards, green text, green borders, and simple shadows only. Avoid gradient, glass, blur, and tinted overlay treatments for the cart, PromptPay QR panel, and pairing QR panel. QR image surfaces must remain white/clean for scan readability, and the cart count badge must remain high contrast.
 
 Customer Display pairing QR layer rule: the `เชื่อมอุปกรณ์` hover/focus QR panel must render above the main display content on desktop and mobile widths. Keep the header and pairing panel in a higher stacking layer than the cart, total, and footer cards so the pairing QR is never hidden behind page content.
 
-Customer Display cart count contrast rule: the `รายการในบิล` header count badge must remain legible on liquid-glass backgrounds. Use high-contrast text, a defined chip shape, and enough separation from the header title so counts such as `11 รายการ` do not blend into the badge.
+Customer Display cart count contrast rule: the `รายการในบิล` header count badge must remain legible on classic white/green backgrounds. Use high-contrast green text, a defined chip shape, and enough separation from the header title so counts such as `11 รายการ` do not blend into the badge.
 
-Completed in this build: Customer Display adaptive text contrast tuning while preserving lighter green liquid-glass panels, pairing QR hover layer, cart count readability, centered stacked QR, account-name-only receiver text, and bottom-pinned one-line thank-you badge.
+Completed in this build: Customer Display classic green theme restore while preserving pairing QR hover layer, cart count readability, centered stacked QR, account-name-only receiver text, and bottom-pinned one-line thank-you badge.
 
-Next task: deploy hosting and test the lighter green liquid-glass Customer Display theme, hover pairing QR panel, cart count badge contrast, and PromptPay presentation on real POS payment data, then continue validating tax profile and void workflow with synced Firestore data.
+Next task: deploy hosting and test the classic green Customer Display theme, pairing QR hover layer, cart count badge contrast, and PromptPay presentation on real POS payment data, then continue validating tax profile and void workflow with synced Firestore data.
 
 Deploy commands:
 git pull --rebase origin feature/retail-pos

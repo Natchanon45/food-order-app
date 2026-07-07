@@ -1,25 +1,23 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Customer Display Adaptive Text Contrast
-Version: 0.13.95
-Build: 2026.07.08.008
+Milestone: Customer Display Classic Green Theme
+Version: 0.13.96
+Build: 2026.07.08.009
 
-Change: corrected `/pos/customer-display/` text contrast so light glass cards use dark green text, while dark surfaces such as the header, cart count badge, thank-you badge, and pairing QR hover panel keep white text.
+Change: restored `/pos/customer-display/` to a classic green theme with white page background, solid green action bar, green text and borders, and no gradient/glass treatment for the cart, PromptPay QR panel, or pairing QR panel.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
 Existing PromptPay QR display, tax buyer DBD lookup, tax invoice creation duplicate protection, tax invoice history/reprint, later full tax invoice issuing from existing receipts, receipt behavior, POS totals, VAT calculation, stock deduction, customer display data sync, offline sale sync, POS theme alignment, mobile product card overlay behavior, mobile button layout, payment modal visual tuning, and printable document fonts are unchanged.
 
-Customer Display PromptPay workflow: `/pos/customer-display/` stacks `ชำระผ่าน PromptPay / โอนเงิน`, the total amount in baht, the enlarged centered QR, and the account owner name inside the total card. The presentation now uses a white/green/black glass style with dark and soft green layers. The `ขอบคุณที่ใช้บริการ` badge stays pinned to the bottom edge of the card, centered on one line, and uses font-weight 500 or lighter.
+Customer Display PromptPay workflow: `/pos/customer-display/` stacks `ชำระผ่าน PromptPay / โอนเงิน`, the total amount in baht, the enlarged centered QR, and the account owner name inside the total card. The presentation uses the classic white and green theme with green text and borders. The `ขอบคุณที่ใช้บริการ` badge stays pinned to the bottom edge of the card, centered on one line, and uses font-weight 500 or lighter.
 
 Customer Display pairing QR workflow: hovering or focusing `เชื่อมอุปกรณ์` opens the device-pairing QR panel above the cart and total cards so the QR remains fully visible on the top layer of the Customer Display page.
 
-Customer Display cart count workflow: the `รายการในบิล` header count badge uses high-contrast white text, a dark green glass background, and a defined chip shape so item counts remain readable.
+Customer Display cart count workflow: the `รายการในบิล` header count badge uses green text, a light green background, and a defined chip shape so item counts remain readable.
 
-Customer Display green glass workflow: the Customer Display visual theme uses green gradients fading into transparent glass, translucent bright card surfaces, soft green highlights, and a richer hover/focus pairing QR panel that keeps the QR visible above the page content without making the screen feel opaque.
-
-Customer Display adaptive text workflow: light glass cards use dark green/black-green text, while dark green surfaces use white text. QR image surfaces remain white so scan reliability and visual clarity are preserved.
+Customer Display classic green workflow: the Customer Display visual theme uses a white background, solid green action bar, white cards, green text, green borders, and no gradient/glass effects. QR image surfaces remain white so scan reliability and visual clarity are preserved.
 
 Later tax invoice workflow: staff can open `/pos/tax-invoices/`, search the original POS sale number from an existing short tax invoice/receipt, review the source sale, enter buyer tax details, and issue or reopen the one full tax invoice allowed for that sale.
 
