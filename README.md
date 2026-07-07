@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Menu Group Chevron Cleanup
-Version: 0.13.77
-Build: 2026.07.07.021
+Milestone: POS Menu Pseudo Chevron Cleanup
+Version: 0.13.78
+Build: 2026.07.07.022
 
-Change: removed context icons from Retail POS menu group expand/collapse buttons so each group header shows only one Bootstrap chevron, with a legacy DOM guard and bumped POS navigation/icon/CSS cache versions.
+Change: removed legacy pseudo chevrons from Retail POS menu group expand/collapse buttons so each group header renders only the single Bootstrap chevron, and bumped the shared POS CSS cache version.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 

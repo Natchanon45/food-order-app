@@ -2,13 +2,13 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.77
-Build: 2026.07.07.021
-Milestone: POS Menu Group Chevron Cleanup
+Version: 0.13.78
+Build: 2026.07.07.022
+Milestone: POS Menu Pseudo Chevron Cleanup
 
-Change: removed context icons from Retail POS menu group expand/collapse buttons so each group header shows only one Bootstrap chevron, with a legacy DOM guard and bumped POS navigation/icon/CSS cache versions.
+Change: removed legacy pseudo chevrons from Retail POS menu group expand/collapse buttons so each group header renders only the single Bootstrap chevron, and bumped the shared POS CSS cache version.
 
-Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through POS continuous scanner support, plus local POS UI font coverage, menu icon cleanup, UI font-weight tuning, POS drawer title icon cleanup, POS legacy drawer icon guard, and POS menu group chevron cleanup.
+Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through POS continuous scanner support, plus local POS UI font coverage, menu icon cleanup, UI font-weight tuning, POS drawer title icon cleanup, POS legacy drawer icon guard, POS menu group chevron cleanup, and POS menu pseudo-chevron cleanup.
 
 Usage: open POS web pages and verify buttons, forms, Customer Display, and tax invoice history use `Kanit Local` from `/assets/fonts/` with UI buttons at font-weight 500 or lighter and form labels/inputs at normal weight. Open the Retail POS menu on `/pos` and verify the header menu button has one Bootstrap icon, the drawer title `เมนู POS` has no leading injected icon even after reload/cache reuse, and each submenu group expand/collapse button shows exactly one Bootstrap chevron with no context icon. Open receipt and full tax invoice print pages and verify printable paper areas still use `TH Sarabun PSK Local` from `/assets/fonts/`.
 
