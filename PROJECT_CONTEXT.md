@@ -2,15 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.70
-Build: 2026.07.07.014
-Milestone: POS Tax Invoice Menu Entry
+Version: 0.13.71
+Build: 2026.07.07.015
+Milestone: POS Font Family Standard
 
-Change: added a direct POS menu entry for full tax invoice history and added a history shortcut on the full tax invoice print page so issued tax invoices can be opened from the web UI without remembering the URL.
+Change: standardized web UI fonts to a Thai sans/no-head stack and standardized printable receipt/tax documents to local TH Sarabun PSK via shared font variables.
 
-Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through POS continuous scanner support, plus POS tax invoice history navigation.
+Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through POS continuous scanner support, plus POS font family standardization.
 
-Usage: open `/pos/`, click the POS menu, and verify `ใบกำกับภาษี` opens `/pos/tax-invoices/`. From `/pos/tax-invoice/`, verify the `ประวัติ` shortcut opens the same history page.
+Usage: open POS web pages and verify screen UI uses the Thai sans/no-head stack. Open receipt and full tax invoice print pages and verify printable paper areas use `TH Sarabun PSK Local` from `/assets/fonts/`.
 
 Deploy rules: use hosting-only deploy for `public/` asset changes. Deploy functions only when files under `functions/` or function rewrites/routes change. This build only needs hosting deploy.
 
