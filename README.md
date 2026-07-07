@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Sticky Payment Footer
-Version: 0.13.66
-Build: 2026.07.07.010
+Milestone: POS Fixed Cart Footer Position
+Version: 0.13.67
+Build: 2026.07.07.011
 
-Change: changed the `/pos` cart layout so the payment button remains visible as a fixed cart footer, the cart item list scrolls at roughly 4-5 visible rows depending on screen height, and the desktop product grid fits 12 images per row on 1920px-wide screens.
+Change: fixed the `/pos` cart footer position so the payment button no longer moves upward when cart item count changes. The cart list remains scrollable at roughly 4-5 visible rows, and the desktop product grid still fits 12 images per row on 1920px-wide screens.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 

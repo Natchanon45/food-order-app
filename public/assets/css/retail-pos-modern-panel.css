@@ -81,7 +81,7 @@
   body[data-module="retail-pos"] .cart-panel {
     box-sizing: border-box;
     top: 84px;
-    height: auto;
+    height: calc(100dvh - 100px);
     max-height: calc(100dvh - 100px);
     min-height: 0;
     padding: 14px !important;
@@ -187,7 +187,7 @@
   }
 
   body[data-module="retail-pos"] .summary {
-    margin-top: 6px !important;
+    margin-top: auto !important;
     padding: 6px 0 0 !important;
     border-top: 1px solid rgba(148, 163, 184, .26) !important;
     background: transparent !important;
