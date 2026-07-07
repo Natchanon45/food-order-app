@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Font Coverage and Menu Icons
-Version: 0.13.72
-Build: 2026.07.07.016
+Milestone: POS Local UI Font and Menu Icon Cleanup
+Version: 0.13.73
+Build: 2026.07.07.017
 
-Change: expanded the Thai sans/no-head UI font standard to standalone POS buttons/forms and replaced Retail POS submenu expand/collapse text carets with Bootstrap Icons.
+Change: added local Kanit UI font files for Thai sans/no-head rendering across POS screens and removed the duplicate menu icon on the Retail POS header button.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
