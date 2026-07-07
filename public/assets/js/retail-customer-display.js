@@ -20,6 +20,11 @@ const els = {
   vatAmount: document.querySelector('#vatAmount'),
   vatMode: document.querySelector('#vatMode'),
   grandTotal: document.querySelector('#grandTotal'),
+  paymentQrPanel: document.querySelector('#paymentQrPanel'),
+  paymentQrAmount: document.querySelector('#paymentQrAmount'),
+  paymentQrVerify: document.querySelector('#paymentQrVerify'),
+  paymentQrImage: document.querySelector('#paymentQrImage'),
+  paymentQrError: document.querySelector('#paymentQrError'),
   paidState: document.querySelector('#paidState'),
   updatedAt: document.querySelector('#updatedAt'),
   header: document.querySelector('.display-header')
@@ -68,6 +73,35 @@ function qrImageUrl(value) {
   return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=10&data=${data}`;
 }
 
+function renderPaymentQr(snapshot = {}) {
+  const payment = snapshot.paymentQr || null;
+  if (!els.paymentQrPanel || !payment || snapshot.status === 'paid') {
+    if (els.paymentQrPanel) els.paymentQrPanel.hidden = true;
+    return;
+  }
+  els.paymentQrPanel.hidden = false;
+  if (els.paymentQrAmount) els.paymentQrAmount.textContent = `${money(payment.amount)} บาท`;
+  const sameOrigin = String(payment.sourceOrigin || '') === location.origin;
+  const verified = Boolean(payment.verified && sameOrigin && payment.tenantId && snapshot.tenantId === payment.tenantId);
+  if (els.paymentQrVerify) {
+    els.paymentQrVerify.textContent = payment.error
+      ? 'กรุณารอพนักงานตั้งค่าข้อมูล PromptPay ของร้าน'
+      : `${verified ? 'ตรวจสอบแล้ว' : 'โปรดตรวจสอบ'} • ร้าน ${payment.shopName || '-'} • ผู้รับ ${payment.accountName || '-'} • ${payment.promptPayMasked || '-'} • สร้างจาก ${payment.sourceOrigin || location.origin}`;
+    els.paymentQrVerify.dataset.verified = verified ? 'yes' : 'no';
+  }
+  if (payment.qrImageUrl && !payment.error) {
+    els.paymentQrImage.src = payment.qrImageUrl;
+    els.paymentQrImage.hidden = false;
+    els.paymentQrError.hidden = true;
+    els.paymentQrError.textContent = '';
+  } else {
+    els.paymentQrImage.removeAttribute('src');
+    els.paymentQrImage.hidden = true;
+    els.paymentQrError.hidden = false;
+    els.paymentQrError.textContent = payment.error || 'รอ QR จาก POS';
+  }
+}
+
 function installPairingCard() {
   if (!els.header || document.querySelector('#displayPairingCard')) return;
   const url = posPairingUrl();
@@ -108,6 +142,7 @@ function render(snapshot = {}) {
   els.vatAmount.textContent = money(snapshot.vatAmount);
   els.vatMode.textContent = snapshot.vatMode === 'exclude' ? 'ราคาไม่รวม VAT' : snapshot.vatMode === 'include' ? 'ราคารวม VAT' : '-';
   els.grandTotal.textContent = money(snapshot.total);
+  renderPaymentQr(snapshot);
   els.paidState.hidden = snapshot.status !== 'paid';
   els.updatedAt.textContent = snapshot.updatedAt ? `อัปเดตล่าสุด ${new Date(snapshot.updatedAt).toLocaleTimeString('th-TH')}` : '';
 }

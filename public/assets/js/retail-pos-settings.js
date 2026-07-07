@@ -17,7 +17,10 @@ const defaults = {
   receiptThanks: "ขอบคุณที่ใช้บริการ",
   receiptFooter: "เอกสารฉบับนี้ออกโดยระบบของร้านตามข้อมูลด้านบน",
   receiptPaperSize: "80",
-  receiptPrintMode: "ask"
+  receiptPrintMode: "ask",
+  promptPayEnabled: "no",
+  promptPayId: "",
+  promptPayAccountName: ""
 };
 
 const els = {
@@ -37,6 +40,9 @@ const els = {
   receiptFooter: document.querySelector("#receiptFooter"),
   receiptPaperSize: document.querySelector("#receiptPaperSize"),
   receiptPrintMode: document.querySelector("#receiptPrintMode"),
+  promptPayEnabled: document.querySelector("#promptPayEnabled"),
+  promptPayId: document.querySelector("#promptPayId"),
+  promptPayAccountName: document.querySelector("#promptPayAccountName"),
   previewShopName: document.querySelector("#previewShopName"),
   previewShopAddress: document.querySelector("#previewShopAddress"),
   previewShopPhone: document.querySelector("#previewShopPhone"),
@@ -48,6 +54,7 @@ const els = {
   previewFooter: document.querySelector("#previewFooter"),
   previewPaperSize: document.querySelector("#previewPaperSize"),
   previewPrintMode: document.querySelector("#previewPrintMode"),
+  previewPromptPay: document.querySelector("#previewPromptPay"),
   resetBtn: document.querySelector("#resetSettingsBtn"),
   error: document.querySelector("#settingsError"),
   toast: document.querySelector("#toast")
@@ -63,12 +70,13 @@ function readLocalSettings() {
 async function readSettings() {
   const local = readLocalSettings();
   try {
-    const [store, receipt, tax] = await Promise.all([
+    const [store, receipt, tax, payment] = await Promise.all([
       getRecord(RetailCollections.settings, "store"),
       getRecord(RetailCollections.settings, "receipt"),
-      getRecord(RetailCollections.settings, "tax")
+      getRecord(RetailCollections.settings, "tax"),
+      getRecord(RetailCollections.settings, "payment")
     ]);
-    return { ...defaults, ...(store || {}), ...(receipt || {}), ...(tax || {}), ...local };
+    return { ...defaults, ...(store || {}), ...(receipt || {}), ...(tax || {}), ...(payment || {}), ...local };
   } catch (error) {
     console.warn("[retail-pos-settings] firebase settings fallback", error);
     return local;
@@ -98,6 +106,14 @@ function normalizeVatRate(value) {
   return Math.min(100, Math.round(rate * 100) / 100);
 }
 
+function normalizePromptPayEnabled(value) {
+  return String(value || "no") === "yes" ? "yes" : "no";
+}
+
+function normalizePromptPayId(value) {
+  return String(value || "").replace(/[^\d]/g, "").slice(0, 13);
+}
+
 function normalizeBranchType(value) {
   return String(value || "headOffice") === "branch" ? "branch" : "headOffice";
 }
@@ -120,7 +136,10 @@ function collectSettings() {
     receiptThanks: els.receiptThanks.value.trim() || defaults.receiptThanks,
     receiptFooter: els.receiptFooter.value.trim() || defaults.receiptFooter,
     receiptPaperSize: normalizePaperSize(els.receiptPaperSize?.value),
-    receiptPrintMode: normalizePrintMode(els.receiptPrintMode?.value)
+    receiptPrintMode: normalizePrintMode(els.receiptPrintMode?.value),
+    promptPayEnabled: normalizePromptPayEnabled(els.promptPayEnabled?.value),
+    promptPayId: normalizePromptPayId(els.promptPayId?.value),
+    promptPayAccountName: els.promptPayAccountName?.value.trim() || ""
   };
 }
 
@@ -140,6 +159,9 @@ function fillForm(settings) {
   els.receiptFooter.value = settings.receiptFooter || defaults.receiptFooter;
   if (els.receiptPaperSize) els.receiptPaperSize.value = normalizePaperSize(settings.receiptPaperSize);
   if (els.receiptPrintMode) els.receiptPrintMode.value = normalizePrintMode(settings.receiptPrintMode);
+  if (els.promptPayEnabled) els.promptPayEnabled.value = normalizePromptPayEnabled(settings.promptPayEnabled);
+  if (els.promptPayId) els.promptPayId.value = normalizePromptPayId(settings.promptPayId);
+  if (els.promptPayAccountName) els.promptPayAccountName.value = settings.promptPayAccountName || "";
   updatePreview();
 }
 
@@ -158,6 +180,13 @@ function updatePreview() {
   els.previewFooter.textContent = settings.receiptFooter;
   if (els.previewPaperSize) els.previewPaperSize.textContent = `ขนาด: ${settings.receiptPaperSize === "a4" ? "A4" : `${settings.receiptPaperSize}mm`}`;
   if (els.previewPrintMode) els.previewPrintMode.textContent = settings.receiptPrintMode === "auto" ? "พิมพ์ทันทีหลังบันทึก" : "ถามก่อนพิมพ์";
+  if (els.previewPromptPay) {
+    const enabled = settings.promptPayEnabled === "yes";
+    const receiver = settings.promptPayAccountName || displayName;
+    els.previewPromptPay.textContent = enabled && settings.promptPayId
+      ? `PromptPay พร้อมใช้ • ผู้รับเงิน ${receiver} • ${settings.promptPayId}`
+      : "PromptPay / QR โอนเงินยังไม่เปิดใช้";
+  }
 }
 
 function showToast(message) {
@@ -182,11 +211,18 @@ async function saveSettings(settings) {
     vatCalculationBase: settings.vatCalculationBase,
     shortTaxInvoiceEnabled: settings.shortTaxInvoiceEnabled
   };
+  const paymentSettings = {
+    id: "payment",
+    promptPayEnabled: settings.promptPayEnabled,
+    promptPayId: settings.promptPayId,
+    promptPayAccountName: settings.promptPayAccountName
+  };
   try {
     await Promise.all([
       saveRecordStrict(RetailCollections.settings, { id: "store", shopName: settings.shopName, shopAddress: settings.shopAddress, shopPhone: settings.shopPhone, taxId: settings.taxId }),
       saveRecordStrict(RetailCollections.settings, { id: "receipt", receiptThanks: settings.receiptThanks, receiptFooter: settings.receiptFooter, receiptPaperSize: settings.receiptPaperSize, receiptPrintMode: settings.receiptPrintMode }),
-      saveRecordStrict(RetailCollections.settings, taxSettings)
+      saveRecordStrict(RetailCollections.settings, taxSettings),
+      saveRecordStrict(RetailCollections.settings, paymentSettings)
     ]);
   } catch (error) {
     console.warn("[retail-pos-settings] firebase save failed", error);
@@ -207,6 +243,16 @@ els.form.addEventListener("submit", async event => {
   if (settings.vatRegistered === "yes" && !settings.taxId) {
     els.error.textContent = "กรุณากรอกเลขประจำตัวผู้เสียภาษีเมื่อเปิดใช้ VAT";
     els.taxId.focus();
+    return;
+  }
+  if (settings.promptPayEnabled === "yes" && !settings.promptPayId) {
+    els.error.textContent = "กรุณากรอกเบอร์ PromptPay หรือเลขนิติบุคคลก่อนเปิดใช้ QR โอนเงิน";
+    els.promptPayId?.focus();
+    return;
+  }
+  if (settings.promptPayEnabled === "yes" && ![10, 13].includes(settings.promptPayId.length)) {
+    els.error.textContent = "PromptPay ต้องเป็นเบอร์โทร 10 หลัก หรือเลขนิติบุคคล/เลขภาษี 13 หลัก";
+    els.promptPayId?.focus();
     return;
   }
   els.error.textContent = "";

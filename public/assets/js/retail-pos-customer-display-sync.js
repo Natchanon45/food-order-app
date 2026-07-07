@@ -1,4 +1,5 @@
-import { getTenantId, saveRecord } from './retail-db.js?v=20260629-032';
+import { RetailCollections, getRecord, getTenantId, saveRecord } from './retail-db.js?v=20260629-032';
+import { generatePromptPayPayload } from './promptpay.js?v=20260622-1';
 
 const DISPLAY_COLLECTION = 'customerDisplays';
 const DEFAULT_DISPLAY_ID = 'main-register';
@@ -6,6 +7,7 @@ const DISPLAY_KEY_PREFIX = 'retail_pos_customer_display';
 const LEGACY_DISPLAY_KEY = 'retail_pos_customer_display_main';
 const REGISTER_CONFIG_KEY = 'retail_pos_register_config';
 const CUSTOMER_KEY = 'retail_pos_customers_v1';
+const SETTINGS_KEY = 'retail_pos_store_settings_v1';
 
 const els = {
   cartPanel: document.querySelector('.cart-panel'),
@@ -17,6 +19,8 @@ const els = {
   beforeVat: document.querySelector('#beforeVatAmount'),
   vatAmount: document.querySelector('#vatAmount'),
   grandTotal: document.querySelector('#grandTotal'),
+  paymentMethod: document.querySelector('#paymentMethod'),
+  paymentTotal: document.querySelector('#paymentTotal'),
   paymentDialog: document.querySelector('#paymentDialog'),
   customerDisplayLink: document.querySelector('a[href^="/pos/customer-display"]')
 };
@@ -25,6 +29,7 @@ let timer = 0;
 let currentCustomer = null;
 let cartSequence = 0;
 const cartActivity = new Map();
+let settingsCache = readJson(SETTINGS_KEY, {});
 
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -33,6 +38,20 @@ function readJson(key, fallback) {
 
 function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
+}
+
+async function refreshSettings() {
+  try {
+    const [store, payment] = await Promise.all([
+      getRecord(RetailCollections.settings, 'store'),
+      getRecord(RetailCollections.settings, 'payment')
+    ]);
+    settingsCache = { ...settingsCache, ...readJson(SETTINGS_KEY, {}), ...(store || {}), ...(payment || {}) };
+  } catch (error) {
+    settingsCache = { ...settingsCache, ...readJson(SETTINGS_KEY, {}) };
+    console.warn('[retail-pos-customer-display-sync] settings fallback', error);
+  }
+  schedule('editing');
 }
 
 function safeId(value, fallback = DEFAULT_DISPLAY_ID) {
@@ -87,6 +106,18 @@ function maskPhone(value) {
   return `${digits.slice(0, 3)}-xxx-xx${digits.slice(-2)}`;
 }
 
+function maskPromptPay(value) {
+  const digits = String(value || '').replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.length === 10) return `${digits.slice(0, 3)}-xxx-xx${digits.slice(-2)}`;
+  if (digits.length === 13) return `${digits.slice(0, 3)}xxxxxxx${digits.slice(-3)}`;
+  return `${digits.slice(0, 2)}xxx${digits.slice(-2)}`;
+}
+
+function qrImageUrl(payload) {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=320x320&margin=10&data=${encodeURIComponent(payload)}`;
+}
+
 function customerById(id) {
   if (!id) return null;
   return readJson(CUSTOMER_KEY, []).find(row => String(row.id || row._documentId || '') === String(id)) || null;
@@ -132,6 +163,39 @@ function readCartItems() {
   return items.sort((a, b) => (b.touchedAt || 0) - (a.touchedAt || 0) || (b.sortIndex || 0) - (a.sortIndex || 0));
 }
 
+function readPromptPayPayment(config) {
+  const method = els.paymentMethod?.value || 'cash';
+  const amount = numberFromText(els.paymentTotal?.textContent) || numberFromText(els.grandTotal?.textContent);
+  if (!els.paymentDialog?.open || method !== 'promptpay') return null;
+  const settings = settingsCache;
+  const shopName = settings.shopName || 'POS ร้านค้าปลีก';
+  const accountName = settings.promptPayAccountName || shopName;
+  const promptPayId = String(settings.promptPayId || '').replace(/\D/g, '');
+  const base = {
+    method,
+    amount,
+    shopName,
+    accountName,
+    promptPayMasked: maskPromptPay(promptPayId),
+    sourceOrigin: location.origin,
+    tenantId: getTenantId(),
+    registerId: config.registerId,
+    displayId: config.displayId,
+    verified: false,
+    updatedAt: Date.now()
+  };
+  if (String(settings.promptPayEnabled || 'no') !== 'yes' || !promptPayId) {
+    return { ...base, error: 'ยังไม่ได้ตั้งค่า PromptPay ของร้าน' };
+  }
+  if (amount <= 0) return { ...base, error: 'ยอดชำระไม่ถูกต้อง' };
+  try {
+    const payload = generatePromptPayPayload(promptPayId, amount);
+    return { ...base, payload, qrImageUrl: qrImageUrl(payload), verified: true };
+  } catch (error) {
+    return { ...base, error: error?.message || 'สร้าง QR PromptPay ไม่สำเร็จ' };
+  }
+}
+
 function buildSnapshot(status = 'editing') {
   const config = getRegisterConfig();
   updateDisplayLink(config);
@@ -159,6 +223,7 @@ function buildSnapshot(status = 'editing') {
     beforeVat: numberFromText(els.beforeVat?.textContent),
     vatAmount: numberFromText(els.vatAmount?.textContent),
     total: numberFromText(els.grandTotal?.textContent),
+    paymentQr: readPromptPayPayment(config),
     updatedAt: Date.now()
   };
 }
@@ -180,8 +245,19 @@ function schedule(status = 'editing') {
 updateDisplayLink(getRegisterConfig());
 if (els.cartPanel) new MutationObserver(() => schedule('editing')).observe(els.cartPanel, { childList: true, subtree: true, characterData: true });
 [els.discount, els.vatMode].forEach(element => element?.addEventListener('input', () => schedule('editing')));
+[els.paymentMethod].forEach(element => element?.addEventListener('change', () => schedule('editing')));
 els.paymentDialog?.addEventListener('pos:customer-change', event => { currentCustomer = event.detail?.customer || null; schedule('editing'); });
+els.paymentDialog?.addEventListener('pos:promptpay-payment-change', () => schedule('editing'));
 els.paymentDialog?.addEventListener('close', () => schedule('editing'));
 document.querySelector('#confirmPaymentBtn')?.addEventListener('click', () => schedule('paid'), true);
+if (els.paymentDialog) new MutationObserver(() => schedule('editing')).observe(els.paymentDialog, { attributes: true, attributeFilter: ['open'] });
+if (els.paymentTotal) new MutationObserver(() => schedule('editing')).observe(els.paymentTotal, { childList: true, subtree: true, characterData: true });
+window.addEventListener('storage', event => {
+  if (event.key === SETTINGS_KEY) {
+    settingsCache = { ...settingsCache, ...readJson(SETTINGS_KEY, {}) };
+    schedule('editing');
+  }
+});
 window.addEventListener('beforeunload', () => publish('idle'));
 schedule('editing');
+refreshSettings();
