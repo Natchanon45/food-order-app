@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Customer Display Pairing QR Hover Layer
-Version: 0.13.90
-Build: 2026.07.08.003
+Milestone: Customer Display Cart Count Contrast
+Version: 0.13.91
+Build: 2026.07.08.004
 
-Change: fixed `/pos/customer-display/` so the `เชื่อมอุปกรณ์` hover/focus QR panel renders above the display content, while keeping the white, green, and black liquid-glass PromptPay card and bottom-pinned single-line thank-you badge.
+Change: improved `/pos/customer-display/` cart count badge contrast so counts like `11 รายการ` stay readable against the liquid-glass cart header, while keeping the pairing QR layer, PromptPay card, and bottom-pinned thank-you badge.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -14,6 +14,8 @@ Existing PromptPay QR display, tax buyer DBD lookup, tax invoice creation duplic
 Customer Display PromptPay workflow: `/pos/customer-display/` stacks `ชำระผ่าน PromptPay / โอนเงิน`, the total amount in baht, the enlarged centered QR, and the account owner name inside the total card. The presentation now uses a white/green/black glass style with dark and soft green layers. The `ขอบคุณที่ใช้บริการ` badge stays pinned to the bottom edge of the card, centered on one line, and uses font-weight 500 or lighter.
 
 Customer Display pairing QR workflow: hovering or focusing `เชื่อมอุปกรณ์` opens the device-pairing QR panel above the cart and total cards so the QR remains fully visible on the top layer of the Customer Display page.
+
+Customer Display cart count workflow: the `รายการในบิล` header count badge uses high-contrast white text, a dark green glass background, and a defined chip shape so item counts remain readable.
 
 Later tax invoice workflow: staff can open `/pos/tax-invoices/`, search the original POS sale number from an existing short tax invoice/receipt, review the source sale, enter buyer tax details, and issue or reopen the one full tax invoice allowed for that sale.
 
