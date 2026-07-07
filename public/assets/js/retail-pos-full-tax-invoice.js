@@ -1,4 +1,7 @@
+import { auth, db, doc, isFirebaseConfigured, runTransaction, serverTimestamp } from './firebase-config.js?v=20260630-073';
 import { getTenantId, saveRecord } from './retail-db.js?v=20260629-032';
+import { dateKeyFrom, monthKeyFrom } from './retail-pos-firestore-foundation.js?v=20260707-001';
+import { reserveRunningNumber, POS_COUNTER_VERSION } from './retail-pos-counter.js?v=20260707-001';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -87,7 +90,11 @@ function buyerProfileForSale(sale = {}) {
   return listBuyerProfiles().find(row => String(row.id || row.customerKey) === key) || null;
 }
 
-function nextInvoiceNumber() {
+function tenantDoc(collectionName, id, tenantId = getTenantId()) {
+  return doc(db, 'tenants', tenantId, collectionName, String(id));
+}
+
+function nextLocalInvoiceNumber() {
   const ymd = new Date().toISOString().slice(0, 10).replace(/-/g, '');
   const prefix = `TAX-${ymd}-`;
   const max = listLocalInvoices()
@@ -117,9 +124,11 @@ function normalizeBuyer(buyer = {}) {
   };
 }
 
-function buildInvoiceFromSale(sale, buyer) {
+function buildInvoiceFromSale(sale, buyer, options = {}) {
   const store = settings();
   const id = `tax-${saleKey(sale) || Date.now()}`;
+  const issuedAt = options.issuedAt || Date.now();
+  const dateKey = dateKeyFrom(issuedAt);
   const vatRate = Number.isFinite(Number(sale.vatRate)) ? Number(sale.vatRate) : store.vatRate;
   const total = moneyNumber(sale.totalAmount ?? sale.total);
   const vatAmount = moneyNumber(sale.vatAmount || 0);
@@ -129,10 +138,16 @@ function buildInvoiceFromSale(sale, buyer) {
     tenantId: getTenantId(),
     saleId: saleKey(sale),
     saleNumber: sale.saleNumber || sale.number || '',
-    invoiceNumber: nextInvoiceNumber(),
+    invoiceNumber: options.invoiceNumber || nextLocalInvoiceNumber(),
     invoiceType: 'fullTaxInvoice',
+    runningNumberType: 'TAX',
+    runningNumberStatus: options.runningNumberStatus || 'local_only',
+    counterVersion: options.counterVersion || '',
+    counterReserved: Boolean(options.counterReserved),
+    dateKey,
+    monthKey: monthKeyFrom(issuedAt),
     status: 'issued',
-    issuedAt: Date.now(),
+    issuedAt,
     seller: store,
     buyer,
     items: Array.isArray(sale.items) ? sale.items : [],
@@ -153,6 +168,40 @@ function buildInvoiceFromSale(sale, buyer) {
   };
 }
 
+async function createInvoiceOnline(sale, buyer) {
+  if (!isFirebaseConfigured || !db || navigator.onLine === false) return null;
+  const tenantId = getTenantId();
+  const userId = auth?.currentUser?.uid || '';
+  const issuedAt = Date.now();
+  const invoiceId = `tax-${saleKey(sale) || issuedAt}`;
+  const invoiceRef = tenantDoc(TAX_INVOICE_COLLECTION, invoiceId, tenantId);
+  let committed = null;
+  try {
+    await runTransaction(db, async transaction => {
+      const invoiceSnapshot = await transaction.get(invoiceRef);
+      if (invoiceSnapshot.exists()) {
+        committed = { ...invoiceSnapshot.data(), id: invoiceSnapshot.data()?.id || invoiceSnapshot.id, _documentId: invoiceSnapshot.id };
+        return;
+      }
+      const reserved = await reserveRunningNumber(transaction, db, { type: 'TAX', value: issuedAt, tenantId, documentId: invoiceId, userId });
+      const invoice = buildInvoiceFromSale(sale, buyer, {
+        issuedAt,
+        invoiceNumber: reserved.documentNumber,
+        runningNumberStatus: 'reserved',
+        counterVersion: POS_COUNTER_VERSION,
+        counterReserved: true
+      });
+      committed = invoice;
+      transaction.set(invoiceRef, { ...invoice, createdBy: userId, updatedBy: userId, createdAtServer: serverTimestamp(), updatedAtServer: serverTimestamp() }, { merge: true });
+    });
+  } catch (error) {
+    console.warn('[retail-pos-full-tax-invoice] transaction fallback', error);
+    return null;
+  }
+  if (committed) saveLocalInvoice(committed);
+  return committed;
+}
+
 export function getExistingFullTaxInvoiceForSale(sale) {
   return existingInvoiceForSale(sale);
 }
@@ -163,6 +212,11 @@ export async function createFullTaxInvoiceFromSale(sale, buyerInput) {
   if (existing) return existing;
   const buyer = normalizeBuyer(buyerInput || defaultBuyerFromSale(sale));
   if (!buyer.buyerName) throw new Error('กรุณาระบุชื่อลูกค้า / บริษัท');
+  const onlineInvoice = await createInvoiceOnline(sale, buyer);
+  if (onlineInvoice) {
+    saveBuyerProfile(sale, buyer);
+    return onlineInvoice;
+  }
   const invoice = buildInvoiceFromSale(sale, buyer);
   saveBuyerProfile(sale, buyer);
   saveLocalInvoice(invoice);

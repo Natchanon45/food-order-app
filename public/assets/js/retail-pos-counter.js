@@ -8,7 +8,7 @@ import {
   dateKeyFrom,
   periodKeyFrom,
   runningNumberConfig
-} from './retail-pos-firestore-foundation.js?v=20260702-002';
+} from './retail-pos-firestore-foundation.js?v=20260707-001';
 
 export const POS_COUNTER_VERSION = 'P9-B003';
 

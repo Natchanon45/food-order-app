@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Expanded Cart Visible Rows
-Version: 0.13.68
-Build: 2026.07.07.012
+Milestone: Full Tax Invoice Running Number
+Version: 0.13.69
+Build: 2026.07.07.013
 
-Change: expanded the `/pos` cart list height so the sale panel can show about 1-2 more visible cart rows while keeping the payment button anchored at the bottom. The desktop product grid still fits 12 images per row on 1920px-wide screens.
+Change: full tax invoices now reserve the TAX running number through the existing Firestore counter transaction when Firebase is online, reusing an existing invoice for the same sale before reserving a number. Offline/local fallback remains available and marks the invoice as local-only.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 

@@ -21,7 +21,7 @@ export const POS_COUNTER_TYPE = 'daily-sale-number';
 export const RUNNING_NUMBER_TYPES = Object.freeze({
   SALE: Object.freeze({ type: 'SALE', prefix: POS_RUNNING_PREFIX, reset: 'daily', padLength: POS_RUNNING_PAD_LENGTH, collection: 'sales' }),
   RECEIPT: Object.freeze({ type: 'RECEIPT', prefix: 'RC', reset: 'daily', padLength: POS_RUNNING_PAD_LENGTH, collection: 'sales' }),
-  TAX: Object.freeze({ type: 'TAX', prefix: 'TAX', reset: 'monthly', padLength: POS_RUNNING_PAD_LENGTH, collection: 'sales' }),
+  TAX: Object.freeze({ type: 'TAX', prefix: 'TAX', reset: 'monthly', padLength: POS_RUNNING_PAD_LENGTH, collection: 'taxInvoices' }),
   REFUND: Object.freeze({ type: 'REFUND', prefix: 'RF', reset: 'daily', padLength: POS_RUNNING_PAD_LENGTH, collection: 'returns' }),
   VOID: Object.freeze({ type: 'VOID', prefix: 'VD', reset: 'daily', padLength: POS_RUNNING_PAD_LENGTH, collection: 'voids' }),
   SHIFT: Object.freeze({ type: 'SHIFT', prefix: 'SH', reset: 'daily', padLength: 4, collection: 'shifts' }),

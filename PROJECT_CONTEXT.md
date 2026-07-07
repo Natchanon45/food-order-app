@@ -2,18 +2,18 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.68
-Build: 2026.07.07.012
-Milestone: POS Expanded Cart Visible Rows
+Version: 0.13.69
+Build: 2026.07.07.013
+Milestone: Full Tax Invoice Running Number
 
-Change: expanded the `/pos` cart list height so the sale panel can show about 1-2 more visible cart rows while keeping the payment button anchored at the bottom. The desktop product grid still fits 12 images per row on 1920px-wide screens.
+Change: full tax invoices now reserve the TAX running number through the existing Firestore counter transaction when Firebase is online, reusing an existing invoice for the same sale before reserving a number. Offline/local fallback remains available and marks the invoice as local-only.
 
-Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through POS continuous scanner support, plus POS expanded cart visible rows polish.
+Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through POS continuous scanner support, plus full tax invoice running number reservation.
 
-Usage: open `/pos` on desktop and verify the payment button stays anchored at the bottom, the cart item list shows about 1-2 more rows than the previous build while still scrolling normally when full, and a 1920px-wide screen shows 12 product image cards per row. POS continuous scanner support remains unchanged.
+Usage: open a saved POS receipt, click full tax invoice, enter buyer data, and verify the issued invoice gets a TAX running number from `tenants/{tenantId}/counters` and `runningNumbers` when online. Reopening the same sale must reuse the existing invoice and not reserve another number.
 
 Deploy rules: use hosting-only deploy for `public/` asset changes. Deploy functions only when files under `functions/` or function rewrites/routes change. This build only needs hosting deploy.
 
-Next Task: improve customer tax profile management, tax invoice running number counter, and void/cancel tax invoice support.
+Next Task: improve customer tax profile management and void/cancel tax invoice support.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
