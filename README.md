@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Customer Display Classic Green Polish
-Version: 0.13.97
-Build: 2026.07.08.010
+Milestone: Customer Display Classic Layout Tuning
+Version: 0.13.98
+Build: 2026.07.08.011
 
-Change: polished `/pos/customer-display/` classic green theme by changing cart item separators to dashed lines and tightening the pairing QR hover panel so its text and action button remain readable without covering too much of the cart.
+Change: tuned `/pos/customer-display/` classic green layout by reducing empty space in the customer card, enlarging total amount numbers, protecting the full `ยอดสุทธิ` label, and restoring the wider two-column pairing QR hover panel.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -15,7 +15,7 @@ Customer Display PromptPay workflow: `/pos/customer-display/` stacks `ชำร�
 
 Customer Display pairing QR workflow: hovering or focusing `เชื่อมอุปกรณ์` opens the device-pairing QR panel above the cart and total cards so the QR remains fully visible on the top layer of the Customer Display page.
 
-Customer Display pairing QR polish: the pairing QR hover panel should stay compact, centered, readable, and white/green without gradient or glass effects.
+Customer Display pairing QR polish: the pairing QR hover panel should use the wider two-column layout on PC, extend left from the button, and stay readable in white/green without gradient or glass effects.
 
 Customer Display cart count workflow: the `รายการในบิล` header count badge uses green text, a light green background, and a defined chip shape so item counts remain readable.
 
