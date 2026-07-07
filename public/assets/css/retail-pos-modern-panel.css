@@ -79,9 +79,10 @@
   }
 
   body[data-module="retail-pos"] .cart-panel {
+    box-sizing: border-box;
     top: 84px;
-    height: calc(100dvh - 100px);
-    max-height: calc(100dvh - 100px);
+    height: calc(100dvh - 124px);
+    max-height: calc(100dvh - 124px);
     min-height: 0;
     padding: 14px !important;
     overflow: hidden;
@@ -138,7 +139,7 @@
     border-radius: 12px;
     background: #fff;
     box-shadow: 0 5px 14px rgba(15, 23, 42, .04);
-    align-items: center;
+    align-items: stretch;
   }
 
   body[data-module="retail-pos"] .cart-row > div:first-child {
@@ -170,9 +171,13 @@
   }
 
   body[data-module="retail-pos"] .line-total {
-    align-self: start;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
     color: #0f5132;
     font-size: .9rem !important;
+    min-height: 30px;
   }
 
   body[data-module="retail-pos"] .qty-tools button {
@@ -216,6 +221,7 @@
   }
 
   body[data-module="retail-pos"] .cart-panel > .btn-pay {
+    flex: 0 0 auto;
     min-height: 48px !important;
     margin-top: 8px !important;
     box-shadow: 0 12px 24px rgba(21, 148, 71, .22);
@@ -224,7 +230,7 @@
 
 @media (min-width: 901px) and (min-height: 860px) {
   body[data-module="retail-pos"] .cart-list {
-    min-height: 350px !important;
+    min-height: 310px !important;
   }
 }
 
@@ -236,18 +242,18 @@
   }
 
   body[data-module="retail-pos"] .cart-row {
-    min-height: 52px !important;
+    min-height: 48px !important;
     margin-bottom: 5px;
-    padding: 6px 8px !important;
+    padding: 5px 8px !important;
   }
 
   body[data-module="retail-pos"] .cart-name {
-    font-size: .84rem !important;
-    line-height: 1.08 !important;
+    font-size: .82rem !important;
+    line-height: 1.06 !important;
   }
 
   body[data-module="retail-pos"] .cart-meta {
-    font-size: .74rem !important;
+    font-size: .72rem !important;
   }
 
   body[data-module="retail-pos"] .qty-tools {
@@ -255,8 +261,8 @@
   }
 
   body[data-module="retail-pos"] .qty-tools button {
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
   }
 
   body[data-module="retail-pos"] .summary > div,

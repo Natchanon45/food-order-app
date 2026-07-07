@@ -2,15 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.63
-Build: 2026.07.07.007
-Milestone: P9-B006-18 POS Continuous Scanner
+Version: 0.13.64
+Build: 2026.07.07.008
+Milestone: POS Cart Footer Fit Polish
 
-Change: updated the POS sales barcode scanner to support continuous scanning. On the `/pos` sales barcode input, scanning a product now adds it to the bill and keeps the camera open until the user presses the close button. A short duplicate cooldown prevents the same code from firing repeatedly too fast. Other barcode scan flows keep their previous one-scan behavior.
+Change: polished the `/pos` cart panel footer fit so the payment button has extra bottom clearance on desktop screens, and aligned each line total with the quantity +/-/remove controls.
 
-Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through POS continuous scanner support.
+Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through POS continuous scanner support, plus POS cart footer fit polish.
 
-Usage: open `/pos` on mobile, press the barcode scanner button, scan products continuously, and press the X button only when finished. Hard refresh `/pos` after deploy if the browser still uses the cached scanner script.
+Usage: open `/pos` on desktop and verify the payment button is fully visible with bottom clearance, and each cart line total aligns vertically with the quantity +/-/remove controls. POS continuous scanner support remains unchanged.
 
 Deploy rules: use hosting-only deploy for `public/` asset changes. Deploy functions only when files under `functions/` or function rewrites/routes change. This build only needs hosting deploy.
 

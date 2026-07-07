@@ -1,13 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: P9-B006-18 POS Continuous Scanner
-Version: 0.13.63
-Build: 2026.07.07.007
+Milestone: POS Cart Footer Fit Polish
+Version: 0.13.64
+Build: 2026.07.07.008
 
-Change: updated the POS sales barcode scanner to support continuous scanning. On the `/pos` sales barcode input, scanning a product now adds it to the bill and keeps the camera open until the user presses the close button. A short duplicate cooldown prevents the same code from firing repeatedly too fast. Other barcode scan flows keep their previous one-scan behavior.
+Change: polished the `/pos` cart panel footer fit so the payment button has extra bottom clearance on desktop screens, and aligned each line total with the quantity +/-/remove controls.
 
-Note: the scanner script was updated, but the POS HTML asset-version bump was blocked by the GitHub connector safety check. After deploy, hard refresh `/pos` if the browser still uses the cached scanner script.
+Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
 Existing tax buyer DBD lookup, tax invoice creation, tax invoice history/reprint, receipt behavior, POS totals, VAT calculation, stock deduction, customer display data sync, and offline sale sync are unchanged.
 
