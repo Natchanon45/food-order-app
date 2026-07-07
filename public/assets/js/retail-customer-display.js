@@ -86,7 +86,7 @@ function renderPaymentQr(snapshot = {}) {
   if (els.paymentQrVerify) {
     els.paymentQrVerify.textContent = payment.error
       ? 'กรุณารอพนักงานตั้งค่าข้อมูล PromptPay ของร้าน'
-      : `${verified ? 'ตรวจสอบแล้ว' : 'โปรดตรวจสอบ'} • ร้าน ${payment.shopName || '-'} • ผู้รับ ${payment.accountName || '-'} • ${payment.promptPayMasked || '-'} • สร้างจาก ${payment.sourceOrigin || location.origin}`;
+      : `ผู้รับ ${payment.accountName || payment.shopName || '-'}`;
     els.paymentQrVerify.dataset.verified = verified ? 'yes' : 'no';
   }
   if (payment.qrImageUrl && !payment.error) {
@@ -143,7 +143,7 @@ function render(snapshot = {}) {
   els.vatMode.textContent = snapshot.vatMode === 'exclude' ? 'ราคาไม่รวม VAT' : snapshot.vatMode === 'include' ? 'ราคารวม VAT' : '-';
   els.grandTotal.textContent = money(snapshot.total);
   renderPaymentQr(snapshot);
-  els.paidState.hidden = snapshot.status !== 'paid';
+  els.paidState.hidden = false;
   els.updatedAt.textContent = snapshot.updatedAt ? `อัปเดตล่าสุด ${new Date(snapshot.updatedAt).toLocaleTimeString('th-TH')}` : '';
 }
 

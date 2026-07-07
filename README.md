@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Payment Customer and Display Layout Tuning
-Version: 0.13.85
-Build: 2026.07.07.030
+Milestone: POS Customer Display Compact PC Tuning
+Version: 0.13.86
+Build: 2026.07.07.031
 
-Change: fixed the Retail POS payment modal customer clear action and tuned the Customer Display PC layout so the customer card and total card stay stacked on the left while the cart card remains separate on the right.
+Change: tuned the Customer Display PC layout for shorter 1912x870 screens, kept the thank-you message visible in the total card, simplified the PromptPay QR panel, and made the POS customer clear button reopen the customer list immediately.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -15,7 +15,7 @@ Later tax invoice workflow: staff can open `/pos/tax-invoices/`, search the orig
 
 PromptPay QR workflow: staff can set PromptPay status, PromptPay ID, and the displayed account name in `/pos/settings/`. When the POS payment method is PromptPay / transfer, the payment modal shows a QR for the exact payable amount and Customer Display shows the same QR with amount, shop name, receiver, masked PromptPay ID, origin, and verified tenant/source context.
 
-Display layout workflow: in PC mode, `/pos/customer-display/` keeps the customer card and total/payment QR card stacked in the left column, keeps the cart card in a separate right column, and matches the combined left-column height to the cart card height.
+Display layout workflow: in PC mode, `/pos/customer-display/` keeps the customer card and total/payment QR card stacked in the left column, keeps the cart card in a separate right column, matches the combined left-column height to the cart card height, and keeps the thank-you message visible even on shorter PC screens.
 
 Deploy rules: use `firebase deploy --only hosting` for changes under `public/` only. Use `firebase deploy --only functions:<functionName>` when files under `functions/` change. Use `firebase deploy --only functions:<functionName>,hosting` only when both function code/routes and hosting assets change.
 

@@ -172,7 +172,7 @@ clearBtn?.addEventListener("pointerdown", event => event.preventDefault());
 clearBtn?.addEventListener("click", event => {
   event.preventDefault();
   event.stopPropagation();
-  clearCustomerSelection({ focus: false, showResults: false });
+  clearCustomerSelection({ focus: true, showResults: true });
 });
 confirmBtn?.addEventListener("click", () => {
   const startedAt = Date.now();

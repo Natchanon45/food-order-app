@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.85
-Build: 2026.07.07.030
-Milestone: POS Payment Customer and Display Layout Tuning
+Version: 0.13.86
+Build: 2026.07.07.031
+Milestone: POS Customer Display Compact PC Tuning
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -32,11 +32,11 @@ Payment modal visual rule: Retail POS payment modal numbers and numeric pad butt
 
 PromptPay payment QR rule: PromptPay / transfer account data belongs in Retail POS settings under `settings/payment` and local `retail_pos_store_settings_v1` fallback. The POS payment modal may render a PromptPay QR only when the method is `promptpay`, the store has enabled PromptPay, a valid PromptPay ID exists, and the payable amount is greater than zero. Customer Display snapshots may include `paymentQr` with `tenantId`, `registerId`, `displayId`, `shopName`, `accountName`, masked PromptPay ID, amount, source origin, QR payload, QR image URL, and verification state. The Customer Display must show the QR amount and source/shop verification context so customers can confirm the QR came from the shop's web app and tenant before scanning.
 
-Payment customer picker rule: the optional member/customer field in the POS payment modal must clear selected customer state completely when its X button is clicked. Clearing must remove the input value, reset `paymentDialog.dataset.customerId`, reset the selected customer note to the general-customer label, dispatch `pos:customer-change` with an empty customer, hide search results, and must not reopen the dropdown unintentionally.
+Payment customer picker rule: the optional member/customer field in the POS payment modal must clear selected customer state completely when its X button is clicked. Clearing must remove the input value, reset `paymentDialog.dataset.customerId`, reset the selected customer note to the general-customer label, dispatch `pos:customer-change` with an empty customer, focus the customer input, and immediately reopen the customer result list for the next selection.
 
-Customer Display PC layout rule: on PC widths, `/pos/customer-display/` keeps the customer card and total/payment QR card stacked in the left column, while the cart card remains a separate right column. The combined left column height must match the cart card height, the action/header area should stay compact, and the total card must not overflow when PromptPay QR details are visible.
+Customer Display PC layout rule: on PC widths, `/pos/customer-display/` keeps the customer card and total/payment QR card stacked in the left column, while the cart card remains a separate right column. The combined left column height must match the cart card height, the action/header area should stay compact, and the total card must not overflow when PromptPay QR details are visible. Short PC screens such as 1912x870 must still show the totals, compact PromptPay QR panel, and thank-you message inside the left total card.
 
-Completed in this build: POS payment modal customer clear hardening and Customer Display PC stacked-left layout tuning, with JS/CSS cache bumps for changed assets.
+Completed in this build: compact PC Customer Display tuning for shorter screens, simplified Customer Display PromptPay QR copy, and immediate customer-result reopening after clearing the POS payment customer field.
 
 Next task: improve P9-B006 with editable customer tax profile management and void/cancel tax invoice support.
 
