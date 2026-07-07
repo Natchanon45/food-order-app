@@ -2,15 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.64
-Build: 2026.07.07.008
-Milestone: POS Cart Footer Fit Polish
+Version: 0.13.65
+Build: 2026.07.07.009
+Milestone: POS Cart Footer Safe Area
 
-Change: polished the `/pos` cart panel footer fit so the payment button has extra bottom clearance on desktop screens, and aligned each line total with the quantity +/-/remove controls.
+Change: added a stronger `/pos` cart footer safe area so the payment button stays fully visible on desktop browser viewports, while keeping line totals aligned with the quantity +/-/remove controls.
 
-Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through POS continuous scanner support, plus POS cart footer fit polish.
+Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through POS continuous scanner support, plus POS cart footer safe-area polish.
 
-Usage: open `/pos` on desktop and verify the payment button is fully visible with bottom clearance, and each cart line total aligns vertically with the quantity +/-/remove controls. POS continuous scanner support remains unchanged.
+Usage: open `/pos` on desktop and verify the payment button is fully visible with bottom clearance even near the browser bottom edge, and each cart line total aligns vertically with the quantity +/-/remove controls. POS continuous scanner support remains unchanged.
 
 Deploy rules: use hosting-only deploy for `public/` asset changes. Deploy functions only when files under `functions/` or function rewrites/routes change. This build only needs hosting deploy.
 

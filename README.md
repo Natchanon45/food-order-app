@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Cart Footer Fit Polish
-Version: 0.13.64
-Build: 2026.07.07.008
+Milestone: POS Cart Footer Safe Area
+Version: 0.13.65
+Build: 2026.07.07.009
 
-Change: polished the `/pos` cart panel footer fit so the payment button has extra bottom clearance on desktop screens, and aligned each line total with the quantity +/-/remove controls.
+Change: added a stronger `/pos` cart footer safe area so the payment button stays fully visible on desktop browser viewports, while keeping line totals aligned with the quantity +/-/remove controls.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
