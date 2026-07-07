@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.79
-Build: 2026.07.07.023
-Milestone: POS Theme Alignment
+Version: 0.13.80
+Build: 2026.07.07.024
+Milestone: POS Mobile Product Card Overlay
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -22,7 +22,9 @@ DBD Lookup rule: the buyer tax ID field is the first input in the full tax invoi
 
 Theme rule: Retail POS UI screens should stay visually aligned with Order/Delivery by using the shared green/neutral palette, panel borders from `--line`, soft shadows comparable to `app.css`, and UI text/button weights of 500 or lighter. Printable paper documents remain excluded from this UI weight rule and continue to use `TH Sarabun PSK Local`.
 
-Completed in this build: Retail POS theme alignment across `/pos`, POS drawer menu, product hover cards, cart panel, and Customer Display with CSS cache bumps for changed assets.
+Product card overlay rule: Retail POS image product cards show only product images by default on both desktop and mobile. Desktop may reveal the overlay on hover/focus. Touch devices must keep name, stock, and price hidden by default and only reveal the overlay during active touch, focus, or an explicit `show-info` state. Overlay prices use dark green text while preserving readable contrast on the dark green product overlay.
+
+Completed in this build: mobile Retail POS product card overlay behavior and dark green overlay price styling with CSS cache bumps for changed assets.
 
 Next task: improve P9-B006 with editable customer tax profile management and void/cancel tax invoice support.
 
