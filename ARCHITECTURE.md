@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.96
-Build: 2026.07.08.009
-Milestone: Customer Display Classic Green Theme
+Version: 0.13.97
+Build: 2026.07.08.010
+Milestone: Customer Display Classic Green Polish
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -46,9 +46,11 @@ Customer Display classic green theme rule: Customer Display styling uses a white
 
 Customer Display pairing QR layer rule: the `เชื่อมอุปกรณ์` hover/focus QR panel must render above the main display content on desktop and mobile widths. Keep the header and pairing panel in a higher stacking layer than the cart, total, and footer cards so the pairing QR is never hidden behind page content.
 
-Customer Display cart count contrast rule: the `รายการในบิล` header count badge must remain legible on classic white/green backgrounds. Use high-contrast green text, a defined chip shape, and enough separation from the header title so counts such as `11 รายการ` do not blend into the badge.
+Customer Display pairing QR polish rule: the `เชื่อมอุปกรณ์` hover/focus QR panel should stay compact, readable, and white/green without gradient or glass effects. Its text and action button must remain visible against the panel background and it should avoid covering too much of the cart.
 
-Completed in this build: Customer Display classic green theme restore while preserving pairing QR hover layer, cart count readability, centered stacked QR, account-name-only receiver text, and bottom-pinned one-line thank-you badge.
+Customer Display cart list rule: cart item separators use dashed green lines in the classic green Customer Display theme. The `รายการในบิล` header count badge must remain legible on classic white/green backgrounds with high-contrast green text, a defined chip shape, and enough separation from the header title so counts such as `11 รายการ` do not blend into the badge.
+
+Completed in this build: Customer Display classic green polish with dashed cart separators and a compact readable pairing QR hover panel while preserving cart count readability, centered stacked QR, account-name-only receiver text, and bottom-pinned one-line thank-you badge.
 
 Next task: deploy hosting and test the classic green Customer Display theme, pairing QR hover layer, cart count badge contrast, and PromptPay presentation on real POS payment data, then continue validating tax profile and void workflow with synced Firestore data.
 

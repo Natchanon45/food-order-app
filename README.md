@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Customer Display Classic Green Theme
-Version: 0.13.96
-Build: 2026.07.08.009
+Milestone: Customer Display Classic Green Polish
+Version: 0.13.97
+Build: 2026.07.08.010
 
-Change: restored `/pos/customer-display/` to a classic green theme with white page background, solid green action bar, green text and borders, and no gradient/glass treatment for the cart, PromptPay QR panel, or pairing QR panel.
+Change: polished `/pos/customer-display/` classic green theme by changing cart item separators to dashed lines and tightening the pairing QR hover panel so its text and action button remain readable without covering too much of the cart.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -14,6 +14,8 @@ Existing PromptPay QR display, tax buyer DBD lookup, tax invoice creation duplic
 Customer Display PromptPay workflow: `/pos/customer-display/` stacks `ชำระผ่าน PromptPay / โอนเงิน`, the total amount in baht, the enlarged centered QR, and the account owner name inside the total card. The presentation uses the classic white and green theme with green text and borders. The `ขอบคุณที่ใช้บริการ` badge stays pinned to the bottom edge of the card, centered on one line, and uses font-weight 500 or lighter.
 
 Customer Display pairing QR workflow: hovering or focusing `เชื่อมอุปกรณ์` opens the device-pairing QR panel above the cart and total cards so the QR remains fully visible on the top layer of the Customer Display page.
+
+Customer Display pairing QR polish: the pairing QR hover panel should stay compact, centered, readable, and white/green without gradient or glass effects.
 
 Customer Display cart count workflow: the `รายการในบิล` header count badge uses green text, a light green background, and a defined chip shape so item counts remain readable.
 
