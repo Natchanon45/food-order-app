@@ -11,6 +11,8 @@ Previous build note: POS sales barcode scanner continuous scanning from P9-B006-
 
 Existing tax buyer DBD lookup, tax invoice creation, tax invoice history/reprint, receipt behavior, POS totals, VAT calculation, stock deduction, customer display data sync, offline sale sync, POS theme alignment, mobile product card overlay behavior, mobile button layout, and printable document fonts are unchanged.
 
+Planned tax invoice workflow: add a direct page/button for staff to issue a full tax invoice later when a customer brings back an existing short tax invoice/receipt, by searching the original POS sale number and reusing the existing one-invoice-per-sale duplicate protection.
+
 Deploy rules: use `firebase deploy --only hosting` for changes under `public/` only. Use `firebase deploy --only functions:<functionName>` when files under `functions/` change. Use `firebase deploy --only functions:<functionName>,hosting` only when both function code/routes and hosting assets change.
 
 Deploy for this build: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting

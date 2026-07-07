@@ -18,6 +18,8 @@ Full Tax Invoice rule: full tax invoices are stored separately from sales in `ta
 
 Tax Invoice History rule: `/pos/tax-invoices/` merges local `retail_pos_tax_invoices_v1` data with Firestore `taxInvoices`, supports search by invoice number, sale number, buyer name, buyer tax ID, address, and status, and opens `/pos/tax-invoice/?invoiceId=...` for reprint. The POS navigation menu must include a direct `ใบกำกับภาษี` entry for this history page.
 
+Planned later full tax invoice rule: staff should be able to issue a full tax invoice later when a customer brings an existing short tax invoice/receipt back to the shop. The workflow should search the original POS sale by sale number, open the same buyer tax profile modal, reuse the existing full-tax-invoice creation path, keep one full tax invoice per sale, and show the existing invoice instead of creating a duplicate when one already exists.
+
 DBD Lookup rule: the buyer tax ID field is the first input in the full tax invoice modal and includes an inline `DBD` button. The browser can fetch a configured DBD lookup proxy from `window.RETAIL_POS_DBD_LOOKUP_URL` or localStorage key `retail_pos_dbd_lookup_url`; the expected JSON can include `buyerName`, `buyerTaxId`, `buyerAddress`, `buyerBranchName`, or DBD-style aliases such as `juristicNameTH`, `juristicId`, `addressTh`, and `branchName`. If no proxy is configured or lookup fails, the flow opens the official DBD DataWarehouse+ juristic search page for manual verification. This flow does not change POS sale totals, VAT calculation, stock deduction, offline sale sync, or existing short tax invoice receipt behavior.
 
 Theme rule: Retail POS UI screens should stay visually aligned with Order/Delivery by using the shared green/neutral palette, panel borders from `--line`, soft shadows comparable to `app.css`, and UI text/button weights of 500 or lighter. Printable paper documents remain excluded from this UI weight rule and continue to use `TH Sarabun PSK Local`.
@@ -30,7 +32,7 @@ Payment modal visual rule: Retail POS payment modal numbers and numeric pad butt
 
 Completed in this build: payment modal numeric weight reduction and green/amber visual accent tuning with JS cache bumps for changed assets.
 
-Next task: improve P9-B006 with editable customer tax profile management and void/cancel tax invoice support.
+Next task: improve P9-B006 with editable customer tax profile management, later full tax invoice issuing from an existing short tax invoice/receipt, and void/cancel tax invoice support.
 
 Deploy commands:
 git pull --rebase origin feature/retail-pos

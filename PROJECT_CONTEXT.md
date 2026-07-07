@@ -14,6 +14,6 @@ Usage: open `/pos`, add products, open the payment modal, and verify the total, 
 
 Deploy rules: use hosting-only deploy for `public/` asset changes. Deploy functions only when files under `functions/` or function rewrites/routes change. This build only needs hosting deploy.
 
-Next Task: improve customer tax profile management and void/cancel tax invoice support.
+Next Task: improve customer tax profile management, add a direct back-office workflow to issue a full tax invoice later from an existing short tax invoice/receipt by searching the original sale number, and add void/cancel tax invoice support.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
