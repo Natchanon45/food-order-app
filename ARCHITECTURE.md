@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.78
-Build: 2026.07.07.022
-Milestone: POS Menu Pseudo Chevron Cleanup
+Version: 0.13.79
+Build: 2026.07.07.023
+Milestone: POS Theme Alignment
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -20,7 +20,9 @@ Tax Invoice History rule: `/pos/tax-invoices/` merges local `retail_pos_tax_invo
 
 DBD Lookup rule: the buyer tax ID field is the first input in the full tax invoice modal and includes an inline `DBD` button. The browser can fetch a configured DBD lookup proxy from `window.RETAIL_POS_DBD_LOOKUP_URL` or localStorage key `retail_pos_dbd_lookup_url`; the expected JSON can include `buyerName`, `buyerTaxId`, `buyerAddress`, `buyerBranchName`, or DBD-style aliases such as `juristicNameTH`, `juristicId`, `addressTh`, and `branchName`. If no proxy is configured or lookup fails, the flow opens the official DBD DataWarehouse+ juristic search page for manual verification. This flow does not change POS sale totals, VAT calculation, stock deduction, offline sale sync, or existing short tax invoice receipt behavior.
 
-Completed in this build: Retail POS menu group pseudo-chevron cleanup with shared POS CSS cache bump and browser verification.
+Theme rule: Retail POS UI screens should stay visually aligned with Order/Delivery by using the shared green/neutral palette, panel borders from `--line`, soft shadows comparable to `app.css`, and UI text/button weights of 500 or lighter. Printable paper documents remain excluded from this UI weight rule and continue to use `TH Sarabun PSK Local`.
+
+Completed in this build: Retail POS theme alignment across `/pos`, POS drawer menu, product hover cards, cart panel, and Customer Display with CSS cache bumps for changed assets.
 
 Next task: improve P9-B006 with editable customer tax profile management and void/cancel tax invoice support.
 

@@ -1,15 +1,15 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Menu Pseudo Chevron Cleanup
-Version: 0.13.78
-Build: 2026.07.07.022
+Milestone: POS Theme Alignment
+Version: 0.13.79
+Build: 2026.07.07.023
 
-Change: removed legacy pseudo chevrons from Retail POS menu group expand/collapse buttons so each group header renders only the single Bootstrap chevron, and bumped the shared POS CSS cache version.
+Change: aligned the Retail POS screen, POS drawer menu, product hover cards, cart panel, and Customer Display visual tone with the Order/Delivery UI palette, lighter shadows, and UI font weights of 500 or lighter.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
-Existing tax buyer DBD lookup, tax invoice creation, tax invoice history/reprint, receipt behavior, POS totals, VAT calculation, stock deduction, customer display data sync, and offline sale sync are unchanged.
+Existing tax buyer DBD lookup, tax invoice creation, tax invoice history/reprint, receipt behavior, POS totals, VAT calculation, stock deduction, customer display data sync, offline sale sync, and printable document fonts are unchanged.
 
 Deploy rules: use `firebase deploy --only hosting` for changes under `public/` only. Use `firebase deploy --only functions:<functionName>` when files under `functions/` change. Use `firebase deploy --only functions:<functionName>,hosting` only when both function code/routes and hosting assets change.
 

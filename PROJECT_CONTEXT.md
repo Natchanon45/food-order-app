@@ -2,15 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.78
-Build: 2026.07.07.022
-Milestone: POS Menu Pseudo Chevron Cleanup
+Version: 0.13.79
+Build: 2026.07.07.023
+Milestone: POS Theme Alignment
 
-Change: removed legacy pseudo chevrons from Retail POS menu group expand/collapse buttons so each group header renders only the single Bootstrap chevron, and bumped the shared POS CSS cache version.
+Change: aligned Retail POS visual tone with Order/Delivery by softening panel shadows, moving slate accents back to the shared green/neutral palette, and keeping POS UI headings, buttons, cart labels, menu labels, product hover text, and Customer Display UI weights at 500 or lighter.
 
-Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through POS continuous scanner support, plus local POS UI font coverage, menu icon cleanup, UI font-weight tuning, POS drawer title icon cleanup, POS legacy drawer icon guard, POS menu group chevron cleanup, and POS menu pseudo-chevron cleanup.
+Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through POS continuous scanner support, plus local POS UI font coverage, menu icon cleanup, UI font-weight tuning, POS drawer title icon cleanup, POS legacy drawer icon guard, POS menu group chevron cleanup, POS menu pseudo-chevron cleanup, and POS theme alignment with Order/Delivery.
 
-Usage: open POS web pages and verify buttons, forms, Customer Display, and tax invoice history use `Kanit Local` from `/assets/fonts/` with UI buttons at font-weight 500 or lighter and form labels/inputs at normal weight. Open the Retail POS menu on `/pos` and verify the header menu button has one Bootstrap icon, the drawer title `เมนู POS` has no leading injected icon even after reload/cache reuse, and each submenu group expand/collapse button shows exactly one Bootstrap chevron with no context icon. Open receipt and full tax invoice print pages and verify printable paper areas still use `TH Sarabun PSK Local` from `/assets/fonts/`.
+Usage: open `/pos` and verify the Retail POS header, panels, cart, product hover overlays, menu drawer, and Customer Display use the shared Order/Delivery green and neutral tone with lighter shadows and UI text weights of 500 or lighter. Verify buttons and forms still use `Kanit Local` from `/assets/fonts/`, form labels/inputs stay normal weight, POS menu group expand/collapse buttons still show exactly one Bootstrap chevron, and receipt/full tax invoice print pages still use `TH Sarabun PSK Local` from `/assets/fonts/`.
 
 Deploy rules: use hosting-only deploy for `public/` asset changes. Deploy functions only when files under `functions/` or function rewrites/routes change. This build only needs hosting deploy.
 

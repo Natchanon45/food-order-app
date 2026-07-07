@@ -57,11 +57,11 @@
   z-index: 3 !important;
   padding: 3px 7px !important;
   border-radius: 999px !important;
-  background: #334155 !important;
+  background: var(--black) !important;
   color: #fff !important;
   font-size: .68rem !important;
-  font-weight: 900 !important;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, .22) !important;
+  font-weight: 500 !important;
+  box-shadow: 0 6px 16px rgba(16, 35, 23, .18) !important;
 }
 
 .product-card.visual-card .product-card-body,
@@ -88,7 +88,7 @@
   justify-content: flex-end !important;
   gap: 3px !important;
   border-radius: 0 0 12px 12px !important;
-  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.34) 28%, rgba(0,0,0,.72) 62%, rgba(0,0,0,.96) 100%) !important;
+  background: linear-gradient(180deg, rgba(13,111,52,0) 0%, rgba(13,111,52,.34) 28%, rgba(13,111,52,.78) 64%, rgba(16,35,23,.96) 100%) !important;
   color: #fff !important;
   text-align: left !important;
   opacity: 0 !important;
@@ -114,7 +114,7 @@
   width: 100% !important;
   font-size: .74rem !important;
   line-height: 1.16 !important;
-  font-weight: 900 !important;
+  font-weight: 500 !important;
   overflow: hidden !important;
 }
 
@@ -123,15 +123,15 @@
 .product-card.pos-product-card-image .pos-card-hover-info span {
   font-size: .68rem !important;
   line-height: 1.08 !important;
-  font-weight: 800 !important;
-  color: #e2e8f0 !important;
+  font-weight: 400 !important;
+  color: #e7f5eb !important;
 }
 
 .product-card.visual-card .product-info-overlay .pos-hover-price,
 .product-card.pos-product-card-image .product-info-overlay .pos-hover-price,
 .product-card.pos-product-card-image .pos-card-hover-info .pos-hover-price {
   font-size: .78rem !important;
-  font-weight: 900 !important;
+  font-weight: 500 !important;
   color: #bbf7d0 !important;
 }
 
@@ -150,7 +150,7 @@
 @media (hover: hover) and (min-width: 901px) {
   .product-card.pos-product-card-image:hover,
   .product-card.visual-card:hover {
-    box-shadow: 0 12px 30px rgba(15, 23, 42, .18) !important;
+    box-shadow: 0 10px 26px rgba(16, 35, 23, .12) !important;
     border-color: #159447 !important;
   }
 
