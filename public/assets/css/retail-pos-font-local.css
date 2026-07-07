@@ -36,6 +36,22 @@
   --print-font: var(--paper-font-local);
 }
 
+html,
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--app-ui-font);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
 .paper-font-local,
 .receipt,
 .tax-paper,

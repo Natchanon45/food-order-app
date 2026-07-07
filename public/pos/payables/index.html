@@ -7,7 +7,7 @@
 <title>เจ้าหนี้ผู้จำหน่าย</title>
 <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260707-015">
 <link rel="stylesheet" href="/assets/css/retail-payables.css?v=20260626-2">
-<link rel="stylesheet" href="/assets/css/retail-pos-navigation.css?v=20260625-12">
+<link rel="stylesheet" href="/assets/css/retail-pos-navigation.css?v=20260707-016">
 </head>
 <body>
 <header class="pos-header"><div class="app-title"><span class="app-badge">FOD</span><div><strong>เจ้าหนี้ผู้จำหน่าย</strong><small>ติดตามยอดค้างและวันครบกำหนด</small></div></div><div class="header-actions"></div></header>
@@ -15,8 +15,8 @@
 <dialog id="paymentDialog"><form id="supplierPaymentForm" class="payment-form"><div class="dialog-head"><h2>บันทึกชำระเจ้าหนี้</h2><button id="closePaymentDialog" type="button" class="icon-btn"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div><input id="paymentPurchaseId" type="hidden"><div id="paymentPurchaseInfo" class="payment-purchase-info"></div><label>วันที่ชำระ<input id="supplierPaymentDate" type="date" required></label><label>จำนวนเงิน<input id="supplierPaymentAmount" type="number" min="0.01" step="0.01" required></label><label>ช่องทางชำระ<select id="supplierPaymentMethod"><option value="cash">เงินสด</option><option value="transfer">โอนเงิน</option><option value="cheque">เช็ค</option><option value="other">อื่น ๆ</option></select></label><label>เลขที่อ้างอิง<input id="supplierPaymentReference" maxlength="100"></label><label>หมายเหตุ<input id="supplierPaymentNote" maxlength="200"></label><p id="supplierPaymentError" class="error-text"></p><div class="dialog-actions"><button id="cancelPaymentBtn" type="button" class="btn btn-secondary">ยกเลิก</button><button type="submit" class="btn btn-pay">บันทึกการชำระ</button></div></form></dialog>
 <div id="toast" class="toast" role="status"></div>
 <script type="module" src="/assets/js/retail-toast-status.js?v=20260702-001"></script>
-<script type="module" src="/assets/js/retail-payables.js?v=20260624-2"></script>
-<script type="module" src="/assets/js/retail-pos-navigation.js?v=20260707-002"></script>
-<script type="module" src="/assets/js/retail-purchasing-permissions.js?v=20260625-2"></script>
+<script type="module" src="/assets/js/retail-payables.js?v=20260707-016"></script>
+<script type="module" src="/assets/js/retail-pos-navigation.js?v=20260707-016"></script>
+<script type="module" src="/assets/js/retail-purchasing-permissions.js?v=20260707-016"></script>
 </body>
 </html>

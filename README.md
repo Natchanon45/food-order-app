@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Font Family Standard
-Version: 0.13.71
-Build: 2026.07.07.015
+Milestone: POS Font Coverage and Menu Icons
+Version: 0.13.72
+Build: 2026.07.07.016
 
-Change: standardized web UI fonts to a Thai sans/no-head stack and standardized printable receipt/tax documents to local TH Sarabun PSK via shared font variables.
+Change: expanded the Thai sans/no-head UI font standard to standalone POS buttons/forms and replaced Retail POS submenu expand/collapse text carets with Bootstrap Icons.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 

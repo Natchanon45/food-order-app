@@ -2,13 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.71
-Build: 2026.07.07.015
-Milestone: POS Font Family Standard
+Version: 0.13.72
+Build: 2026.07.07.016
+Milestone: POS Font Coverage and Menu Icons
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
-Font rule: all web UI screens use the shared `--app-ui-font` Thai sans/no-head stack. Printable paper documents such as receipts, tax invoices, QR tickets, invoices, quotations, and print pages use `--paper-font-local` / `--print-font`, with `TH Sarabun PSK Local` loaded from `/assets/fonts/` as the primary font.
+Font rule: all web UI screens, including standalone POS pages, buttons, forms, dialogs, and Customer Display, use the shared `--app-ui-font` Thai sans/no-head stack. Printable paper documents such as receipts, tax invoices, QR tickets, invoices, quotations, and print pages use `--paper-font-local` / `--print-font`, with `TH Sarabun PSK Local` loaded from `/assets/fonts/` as the primary font.
+
+Retail POS navigation rule: submenu expand/collapse controls must render Bootstrap Icons chevrons, not text carets such as `^`, `v`, `⌃`, or `⌄`.
 
 Current Customer Display rule: POS machines publish Customer Display snapshots to `customerDisplays/{displayId}`. Each POS has local `retail_pos_register_config` with `registerId` and `displayId`, and each display snapshot includes `tenantId`, `registerId`, `displayId`, `sessionId`, `status`, `items`, totals, and `updatedAt`.
 
@@ -18,7 +20,7 @@ Tax Invoice History rule: `/pos/tax-invoices/` merges local `retail_pos_tax_invo
 
 DBD Lookup rule: the buyer tax ID field is the first input in the full tax invoice modal and includes an inline `DBD` button. The browser can fetch a configured DBD lookup proxy from `window.RETAIL_POS_DBD_LOOKUP_URL` or localStorage key `retail_pos_dbd_lookup_url`; the expected JSON can include `buyerName`, `buyerTaxId`, `buyerAddress`, `buyerBranchName`, or DBD-style aliases such as `juristicNameTH`, `juristicId`, `addressTh`, and `branchName`. If no proxy is configured or lookup fails, the flow opens the official DBD DataWarehouse+ juristic search page for manual verification. This flow does not change POS sale totals, VAT calculation, stock deduction, offline sale sync, or existing short tax invoice receipt behavior.
 
-Completed in this build: POS font family standardization for web UI and printable paper documents.
+Completed in this build: POS font coverage for standalone buttons/forms and Bootstrap Icon submenu chevrons.
 
 Next task: improve P9-B006 with editable customer tax profile management and void/cancel tax invoice support.
 
