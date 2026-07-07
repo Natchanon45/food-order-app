@@ -20,6 +20,40 @@ export const STAFF_ROLES = ["owner", "admin", "cashier", "kitchen", "manager", "
 function icon(name, className = "app-icon") {
   return iconMarkup(name, className.replace(/\bapp-icon\b/g, "").trim());
 }
+function lower(value) { return String(value || "").trim().toLowerCase(); }
+function moduleValues(profile = {}) {
+  return [
+    profile.module,
+    profile.tenantType,
+    profile.businessType,
+    profile.businessUnit,
+    profile.business_unit,
+    ...(Array.isArray(profile.modules) ? profile.modules : []),
+    ...(Array.isArray(profile.businessUnits) ? profile.businessUnits : []),
+    ...(Array.isArray(profile.allowedModules) ? profile.allowedModules : [])
+  ].filter(Boolean).map(lower);
+}
+function routeModule() {
+  const explicit = lower(document.body?.dataset?.module || "");
+  if (explicit) return explicit;
+  if (location.pathname.replace(/\/index\.html$/, "/").startsWith("/pos")) return "retail-pos";
+  return "";
+}
+function profileSupportsModule(profile = {}, moduleName = "") {
+  if (!moduleName) return true;
+  if (profile.role === "super_admin") return true;
+  const values = moduleValues(profile);
+  if (moduleName === "retail-pos") {
+    if (profile.role === "owner") return !values.length || values.includes("retail_pos") || values.includes("retail") || values.includes("all");
+    return values.includes("retail_pos") || values.includes("retail") || values.includes("all");
+  }
+  if (!values.length) return true;
+  return values.includes(moduleName) || values.includes("all");
+}
+function moduleHome(profile = {}) {
+  if (profile.role === "cashier" && lower(profile.businessUnit || profile.business_unit) === "order_delivery") return "/cashier";
+  return ROLE_HOME[profile.role] || "/login";
+}
 
 function ensureIconStyles() {
   if (!document.querySelector('link[href^="/assets/css/icons.css"]')) {
@@ -265,9 +299,10 @@ export async function requireRole(allowedRoles = []) {
   const profile = await getUserProfile(user);
   const ownerAllowed = profile?.role === "owner" && allowedRoles.some(role => ["owner", "admin", "cashier", "kitchen", "manager"].includes(role));
   const permitted = ownerAllowed || allowedRoles.includes(profile?.role);
+  const moduleAllowed = profileSupportsModule(profile, routeModule());
 
-  if (!permitted) {
-    location.replace(ROLE_HOME[profile?.role] || "/login");
+  if (!permitted || !moduleAllowed) {
+    location.replace(moduleHome(profile));
     return new Promise(() => {});
   }
 

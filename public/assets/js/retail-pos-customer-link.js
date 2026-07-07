@@ -22,6 +22,26 @@ function esc(value) {
   return String(value ?? "").replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
 }
 
+function maskNamePart(part = "") {
+  const text = String(part || "").trim();
+  if (!text) return "";
+  if (text.length <= 1) return "*";
+  if (text.length === 2) return `${text[0]}*`;
+  return `${text[0]}${"*".repeat(Math.min(text.length - 2, 4))}${text.slice(-1)}`;
+}
+
+function maskCustomerName(value) {
+  return String(value || "").trim().split(/\s+/).filter(Boolean).map(maskNamePart).join(" ");
+}
+
+function maskPhone(value) {
+  const digits = String(value || "").replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.length <= 4) return `${digits.slice(0, 1)}***`;
+  if (digits.length < 10) return `${digits.slice(0, 2)}xxx${digits.slice(-2)}`;
+  return `${digits.slice(0, 3)}-xxx-xx${digits.slice(-2)}`;
+}
+
 function customerId(customer) {
   return String(customer?._documentId || customer?.id || "");
 }
@@ -58,8 +78,8 @@ function filteredCustomers() {
 function renderResults() {
   if (!results) return;
   const rows = filteredCustomers();
-  results.innerHTML = `<button class="customer-search-option ${selectedCustomerId ? "" : "is-active"}" type="button" data-customer-id=""><span><strong>ลูกค้าทั่วไป / ไม่ระบุ</strong><span>ขายโดยไม่ผูกกับทะเบียนลูกค้า</span></span></button>` +
-    (rows.length ? rows.map(customer => `<button class="customer-search-option ${selectedCustomerId === customer.id ? "is-active" : ""}" type="button" data-customer-id="${esc(customer.id)}"><span><strong>${esc(customer.customerCode || "")} • ${esc(customer.name)}</strong><span>${esc([customer.phone, customer.email].filter(Boolean).join(" • ") || customer.id)}</span></span><small>${esc(customer.phone || "")}</small></button>`).join("") : '<div class="customer-search-empty">ไม่พบลูกค้าที่ค้นหา</div>');
+  results.innerHTML = `<button class="customer-search-option ${selectedCustomerId ? "" : "is-active"}" type="button" data-customer-id="" aria-pressed="${selectedCustomerId ? "false" : "true"}"><span class="customer-option-avatar"><i class="bi bi-person" aria-hidden="true"></i></span><span class="customer-option-body"><span class="customer-option-name">ลูกค้าทั่วไป <small>ไม่ระบุสมาชิก</small></span><span class="customer-option-contact">ขายโดยไม่ผูกกับทะเบียนลูกค้า</span></span><span class="customer-option-check"><i class="bi bi-check-lg" aria-hidden="true"></i></span></button>` +
+    (rows.length ? rows.map(customer => `<button class="customer-search-option ${selectedCustomerId === customer.id ? "is-active" : ""}" type="button" data-customer-id="${esc(customer.id)}" aria-pressed="${selectedCustomerId === customer.id ? "true" : "false"}"><span class="customer-option-avatar"><i class="bi bi-person" aria-hidden="true"></i></span><span class="customer-option-body"><span class="customer-option-name">${esc(customer.name)}${customer.customerCode ? `<small>${esc(customer.customerCode)}</small>` : ""}</span><span class="customer-option-contact">${customer.phone ? `<span><i class="bi bi-telephone" aria-hidden="true"></i>${esc(customer.phone)}</span>` : ""}${customer.email ? `<span><i class="bi bi-envelope" aria-hidden="true"></i>${esc(customer.email)}</span>` : ""}${!customer.phone && !customer.email ? `<span>${esc(customer.id)}</span>` : ""}</span></span><span class="customer-option-check"><i class="bi bi-check-lg" aria-hidden="true"></i></span></button>`).join("") : '<div class="customer-search-empty">ไม่พบลูกค้าที่ค้นหา</div>');
   results.hidden = false;
 }
 
@@ -95,7 +115,9 @@ async function tagLatestSale(customerIdValue, startedAt) {
     customerId: customer.id,
     customerCode: customer.customerCode || "",
     customerName: customer.name || "",
-    customerPhone: customer.phone || ""
+    customerPhone: customer.phone || "",
+    customerDisplayName: maskCustomerName(customer.name || ""),
+    customerDisplayPhone: maskPhone(customer.phone || "")
   };
   const next = sales.map(item => String(item.id || item.saleNumber) === String(sale.id || sale.saleNumber) ? patch : item);
   write(SALES_KEY, next);

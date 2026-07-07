@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#159447">
+<title>Customer Display</title>
+<link rel="stylesheet" href="/assets/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1.13.1">
+<link rel="stylesheet" href="/assets/css/retail-customer-display.css?v=20260707-018">
+</head>
+<body>
+<div class="display-shell">
+  <header class="display-header">
+    <div class="brand"><span class="brand-badge">FOD</span><div><strong>จอลูกค้า POS</strong><span>รายการสินค้าและยอดชำระแบบเรียลไทม์</span></div></div>
+    <div id="displayStatus" class="display-status">รอข้อมูลจาก POS</div>
+  </header>
+  <main class="display-main">
+    <section class="welcome-card">
+      <div><div class="customer-label">คุณลูกค้า</div><div id="customerName" class="customer-name">ลูกค้าทั่วไป</div><div id="customerPhone" class="customer-phone"></div></div>
+      <div class="promo-box">กรุณาตรวจสอบรายการสินค้าและยอดสุทธิก่อนชำระเงิน</div>
+    </section>
+    <section class="cart-card">
+      <div class="cart-head"><h1>รายการในบิล</h1><span id="cartCount" class="cart-count">0 รายการ</span></div>
+      <div id="cartList" class="cart-list"><div class="cart-empty">ยังไม่มีสินค้าในบิล</div></div>
+    </section>
+    <section class="total-card">
+      <div class="total-row"><span>รวมสินค้า</span><strong id="subtotal">0.00</strong></div>
+      <div class="total-row"><span>ส่วนลด</span><strong id="discount">0.00</strong></div>
+      <div class="total-row"><span>ยอดก่อน VAT</span><strong id="beforeVat">0.00</strong></div>
+      <div class="total-row"><span>VAT</span><strong id="vatAmount">0.00</strong></div>
+      <div class="total-row"><span>โหมด VAT</span><strong id="vatMode">-</strong></div>
+      <div class="total-row grand-row"><span>ยอดสุทธิ</span><strong id="grandTotal">0.00</strong></div>
+      <div id="paidState" class="paid-state" hidden>ขอบคุณที่ใช้บริการ</div>
+    </section>
+  </main>
+  <footer class="display-footer"><span></span><span id="updatedAt"></span></footer>
+</div>
+<script type="module" src="/assets/js/retail-customer-display.js?v=20260706-060"></script>
+</body>
+</html>

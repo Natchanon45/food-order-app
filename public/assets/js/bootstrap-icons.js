@@ -2,10 +2,10 @@ const ICON_NAMES = Object.freeze({
   add: "plus-lg", back: "arrow-left", barcode: "upc-scan", cart: "cart3",
   check: "check-lg", "check-circle": "check-circle", "chevron-down": "chevron-down",
   close: "x-lg", delete: "trash3", delivery: "scooter", download: "download",
-  edit: "pencil-square", home: "house", key: "key", kitchen: "fork-knife",
+  edit: "pencil-square", pencil: "pencil-square", home: "house", key: "key", kitchen: "fork-knife",
   logout: "box-arrow-right", minus: "dash-lg", pencil: "pencil", plus: "plus-lg",
   print: "printer", qr: "qr-code", receipt: "receipt", save: "floppy",
-  search: "search", settings: "arrow-left-right", table: "table", "times-circle": "x-circle",
+  search: "search", settings: "arrow-left-right", table: "table", "time-circle": "x-circle", "times-circle": "x-circle",
   trash: "trash3", user: "person", users: "people", view: "eye", "x-circle": "x-circle"
 });
 

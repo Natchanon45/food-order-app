@@ -1,21 +1,26 @@
 @import url("https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap");
 @import url("/assets/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1.13.1");
 
+@font-face { font-family: "Kanit Local"; src: url("/assets/fonts/Kanit-Regular.ttf") format("truetype"); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: "Kanit Local"; src: url("/assets/fonts/Kanit-SemiBold.ttf") format("truetype"); font-style: normal; font-weight: 600; font-display: swap; }
+@font-face { font-family: "Kanit Local"; src: url("/assets/fonts/Kanit-Bold.ttf") format("truetype"); font-style: normal; font-weight: 700; font-display: swap; }
+@font-face { font-family: "Kanit Local"; src: url("/assets/fonts/Kanit-ExtraBold.ttf") format("truetype"); font-style: normal; font-weight: 800; font-display: swap; }
+@font-face { font-family: "Kanit Local"; src: url("/assets/fonts/Kanit-Black.ttf") format("truetype"); font-style: normal; font-weight: 900; font-display: swap; }
 @font-face { font-family: "TH Sarabun PSK Local"; src: url("/assets/fonts/THSarabun.ttf") format("truetype"); font-style: normal; font-weight: 400; font-display: swap; }
 @font-face { font-family: "TH Sarabun PSK Local"; src: url("/assets/fonts/THSarabun-Bold.ttf") format("truetype"); font-style: normal; font-weight: 700; font-display: swap; }
 @font-face { font-family: "TH Sarabun PSK Local"; src: url("/assets/fonts/THSarabun-Italic.ttf") format("truetype"); font-style: italic; font-weight: 400; font-display: swap; }
 @font-face { font-family: "TH Sarabun PSK Local"; src: url("/assets/fonts/THSarabun-BoldItalic.ttf") format("truetype"); font-style: italic; font-weight: 700; font-display: swap; }
 
-:root { --green: #159447; --green-dark: #0d6f34; --black: #151515; --bg: #f3f6f4; --card: #ffffff; --muted: #6b746f; --line: #dde5df; --danger: #c83434; --warning: #c47b00; --radius: 18px; --print-font: "TH Sarabun PSK Local", "TH Sarabun New", "Sarabun", sans-serif; --top-layer-z: 2147483647; }
+:root { --green: #159447; --green-dark: #0d6f34; --black: #151515; --bg: #f3f6f4; --card: #ffffff; --muted: #6b746f; --line: #dde5df; --danger: #c83434; --warning: #c47b00; --radius: 18px; --app-ui-font: "Kanit Local", "Kanit", "Noto Sans Thai", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; --paper-font-local: "TH Sarabun PSK Local", "TH Sarabun PSK", "TH Sarabun New", serif; --print-font: var(--paper-font-local); --top-layer-z: 2147483647; }
 * { box-sizing: border-box; }
-body { margin: 0; font-family: "Kanit", sans-serif; color: var(--black); background: var(--bg); }
+body { margin: 0; font-family: var(--app-ui-font); color: var(--black); background: var(--bg); }
 a { color: inherit; text-decoration: none; }
 button, input, select, textarea { font: inherit; max-width: 100%; min-width: 0; }
 button { cursor: pointer; }
 .app-header { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; min-height: 62px; padding: 10px 16px; background: rgba(255,255,255,.96); border-bottom: 1px solid var(--line); backdrop-filter: blur(10px); }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 500; }
 .brand-mark { min-width: 46px; height: 38px; padding: 0 8px; display: grid; place-items: center; border-radius: 12px; background: var(--green); color: white; font-size: 0; }
-.brand-mark::after { content: "FOD"; font-size: 13px; line-height: 1; font-weight: 800; }
+.brand-mark::after { content: "FOD"; font-size: 13px; line-height: 1; font-weight: 500; }
 .container { width: min(1120px, 100%); margin: auto; padding: 18px 14px 100px; }
 .hero { padding: 22px; border-radius: 24px; color: white; background: linear-gradient(135deg, var(--black), var(--green-dark)); margin-bottom: 18px; }
 .hero h1 { margin: 0 0 6px; font-size: clamp(24px, 5vw, 36px); }
@@ -27,11 +32,11 @@ button { cursor: pointer; }
 .menu-card { display: flex; flex-direction: column; min-height: 180px; }
 .menu-image { height: 118px; border-radius: 14px; display: grid; place-items: center; background: #e8f3ec; color: var(--green-dark); font-size: 42px; overflow: hidden; }
 .menu-image img { width: 100%; height: 100%; object-fit: cover; }
-.menu-name { margin: 12px 0 4px; font-weight: 800; }
+.menu-name { margin: 12px 0 4px; font-weight: 500; }
 .menu-category { color: var(--muted); font-size: 13px; }
 .menu-footer { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 12px; }
-.price { font-size: 18px; font-weight: 800; color: var(--green-dark); }
-.btn { border: 0; border-radius: 12px; padding: 10px 14px; font-weight: 750; background: #e9eeeb; color: var(--black); }
+.price { font-size: 18px; font-weight: 500; color: var(--green-dark); }
+.btn { border: 0; border-radius: 12px; padding: 10px 14px; font-weight: 500; background: #e9eeeb; color: var(--black); }
 .btn-primary { color: white; background: var(--green); }
 .btn-dark { color: white; background: var(--black); }
 .btn-danger { color: white; background: var(--danger); }
@@ -39,7 +44,7 @@ button { cursor: pointer; }
 .btn-sm { padding: 7px 10px; border-radius: 10px; font-size: 13px; }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
 .field { display: grid; gap: 6px; min-width: 0; }
-.field label { font-size: 13px; font-weight: 700; color: var(--muted); }
+.field label { font-size: 13px; font-weight: 400; color: var(--muted); }
 .input { width: 100%; max-width: 100%; min-width: 0; min-height: 44px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: white; }
 input[type="date"], input[type="month"], input[type="week"], input[type="time"], input[type="datetime-local"], input[type="number"], input[data-year-input] { width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; -webkit-appearance: none; appearance: none; line-height: normal; }
 input[type="date"]::-webkit-date-and-time-value, input[type="month"]::-webkit-date-and-time-value, input[type="week"]::-webkit-date-and-time-value, input[type="time"]::-webkit-date-and-time-value, input[type="datetime-local"]::-webkit-date-and-time-value { text-align: left; min-height: 1.4em; }
@@ -48,7 +53,7 @@ textarea.input { min-height: 82px; resize: vertical; }
 .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px; }
 .section-title { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 18px 0 10px; }
 .section-title h2 { margin: 0; font-size: 20px; }
-.badge { display: inline-flex; padding: 5px 9px; border-radius: 999px; font-size: 12px; font-weight: 800; background: #e8f3ec; color: var(--green-dark); }
+.badge { display: inline-flex; padding: 5px 9px; border-radius: 999px; font-size: 12px; font-weight: 500; background: #e8f3ec; color: var(--green-dark); }
 .badge.warning { background: #fff0d7; color: #935900; }
 .badge.dark { background: #e7e7e7; color: #222; }
 .order-card { border-left: 5px solid var(--green); }
@@ -74,14 +79,14 @@ textarea.input { min-height: 82px; resize: vertical; }
 .table-list { width: 100%; border-collapse: collapse; }
 .table-list th, .table-list td { text-align: left; padding: 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
 .nav-cards { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
-.nav-card { padding: 22px 16px; text-align: center; font-weight: 800; }
+.nav-card { padding: 22px 16px; text-align: center; font-weight: 500; }
 .nav-card span { display: block; font-size: 32px; margin-bottom: 9px; }
 .qr-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; }
 .qr-card { text-align: center; }
 .qr-card canvas, .qr-card img { max-width: 100%; margin: 10px auto; }
 .receipt-page { width: min(100%, 210mm); margin: 18px auto; padding: 0 12px 90px; }
 .receipt-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px; }
-.receipt, .qr-ticket, .print-document, .document-page, .print-page, .invoice, .quotation { font-family: var(--print-font); }
+.receipt, .tax-paper, .qr-ticket, .print-document, .document-page, .print-page, .invoice, .quotation { font-family: var(--paper-font-local); }
 .receipt { width: 80mm; min-height: 80mm; margin: auto; padding: 7mm 5mm; background: white; color: #000; font-size: 20px; line-height: 1.15; box-shadow: 0 8px 30px rgba(0,0,0,.12); }
 .receipt.size-58 { width: 58mm; padding: 5mm 3mm; font-size: 17px; }
 .receipt.size-a4 { width: 210mm; min-height: 297mm; padding: 18mm; font-size: 22px; }
@@ -113,4 +118,7 @@ textarea.input { min-height: 82px; resize: vertical; }
   #userRows td:nth-child(2) { grid-column: 1 / -1; overflow-wrap: anywhere; color: var(--muted); }
   #userRows td:nth-child(3) { grid-column: 1; }
   #userRows td:nth-child(4) { grid-column: 2; display: flex; align-items: center; justify-content: center; min-width: 120px; }
+}
+@media print {
+  .receipt, .receipt *, .tax-paper, .tax-paper *, .qr-ticket, .qr-ticket *, .print-document, .print-document *, .document-page, .document-page *, .print-page, .print-page *, .invoice, .invoice *, .quotation, .quotation * { font-family: var(--paper-font-local) !important; }
 }

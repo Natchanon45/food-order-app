@@ -1,0 +1,318 @@
+@media (min-width: 901px) {
+  body[data-module="retail-pos"] {
+    background:
+      linear-gradient(180deg, #eef5f0 0, #f6f8f7 220px, #edf2ef 100%);
+  }
+
+  body[data-module="retail-pos"] .pos-header {
+    min-height: 68px;
+    padding: 11px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, .1);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, .14);
+  }
+
+  body[data-module="retail-pos"] .pos-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(390px, 420px) !important;
+    gap: 16px;
+    min-height: calc(100dvh - 68px);
+    padding: 16px;
+    align-items: start;
+  }
+
+  body[data-module="retail-pos"] .panel {
+    border: 1px solid rgba(148, 163, 184, .28);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, .96);
+    box-shadow: 0 14px 38px rgba(15, 23, 42, .08);
+  }
+
+  body[data-module="retail-pos"] .product-panel {
+    min-height: calc(100dvh - 100px);
+    padding: 14px;
+  }
+
+  body[data-module="retail-pos"] .product-panel .section-heading {
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+  }
+
+  body[data-module="retail-pos"] .product-panel .section-heading h2,
+  body[data-module="retail-pos"] .cart-title h1 {
+    letter-spacing: 0;
+  }
+
+  body[data-module="retail-pos"] .search-row {
+    grid-template-columns: minmax(320px, 1.2fr) minmax(220px, .8fr);
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  body[data-module="retail-pos"] input,
+  body[data-module="retail-pos"] select {
+    border-color: rgba(148, 163, 184, .34);
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  body[data-module="retail-pos"] .catalog-tabs {
+    margin-bottom: 10px;
+    padding: 2px 0 10px;
+  }
+
+  body[data-module="retail-pos"] .catalog-tab {
+    border-color: rgba(148, 163, 184, .36);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, .04);
+  }
+
+  body[data-module="retail-pos"] .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(106px, 1fr)) !important;
+    gap: 10px !important;
+    justify-content: stretch;
+  }
+
+  body[data-module="retail-pos"] .product-card.visual-card,
+  body[data-module="retail-pos"] .product-card.pos-product-card-image {
+    border-color: rgba(148, 163, 184, .32) !important;
+    background: #f8faf9 !important;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, .06) !important;
+  }
+
+  body[data-module="retail-pos"] .cart-panel {
+    box-sizing: border-box;
+    top: 84px;
+    height: calc(100dvh - 100px);
+    max-height: calc(100dvh - 100px);
+    min-height: 0;
+    padding: 14px !important;
+    overflow: hidden;
+    background: #fbfdfc;
+  }
+
+  body[data-module="retail-pos"] .cart-title {
+    min-height: 48px;
+    margin: -2px -2px 10px;
+    padding: 0 2px 12px !important;
+    border-bottom: 1px solid rgba(148, 163, 184, .24);
+  }
+
+  body[data-module="retail-pos"] .cart-title h1 {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    font-size: 1.08rem !important;
+    font-weight: 850;
+  }
+
+  body[data-module="retail-pos"] .cart-title h1::before {
+    content: none !important;
+    display: none !important;
+  }
+
+  body[data-module="retail-pos"] .cart-title span {
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #eef2f0;
+    color: #475569;
+    font-weight: 800;
+  }
+
+  body[data-module="retail-pos"] #cartEmpty {
+    min-height: 330px;
+    border: 1px dashed rgba(148, 163, 184, .38);
+    border-radius: 14px;
+    background: #f7faf8;
+  }
+
+  body[data-module="retail-pos"] .cart-list {
+    flex: 0 1 auto !important;
+    height: clamp(260px, calc(100dvh - 500px), 430px) !important;
+    min-height: 0 !important;
+    max-height: clamp(260px, calc(100dvh - 500px), 430px) !important;
+    padding: 2px 5px 0 0;
+  }
+
+  body[data-module="retail-pos"] .cart-row {
+    min-height: 62px !important;
+    margin-bottom: 8px;
+    padding: 8px 10px !important;
+    border: 1px solid rgba(148, 163, 184, .24) !important;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 5px 14px rgba(15, 23, 42, .04);
+    align-items: stretch;
+  }
+
+  body[data-module="retail-pos"] .cart-row > div:first-child {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    column-gap: 8px;
+    align-items: center;
+  }
+
+  body[data-module="retail-pos"] .cart-name {
+    grid-column: 1;
+    font-size: .9rem !important;
+    line-height: 1.14 !important;
+    font-weight: 850;
+  }
+
+  body[data-module="retail-pos"] .cart-meta {
+    grid-column: 1;
+    margin-top: 2px !important;
+    line-height: 1.1 !important;
+  }
+
+  body[data-module="retail-pos"] .qty-tools {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    margin-top: 0 !important;
+    align-self: center;
+  }
+
+  body[data-module="retail-pos"] .line-total {
+    align-self: center;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    color: #0f5132;
+    font-size: .9rem !important;
+    min-height: 30px;
+  }
+
+  body[data-module="retail-pos"] .qty-tools button {
+    border-color: rgba(148, 163, 184, .4) !important;
+    background: #f8faf9 !important;
+  }
+
+  body[data-module="retail-pos"] .summary {
+    margin-top: auto !important;
+    padding: 6px 0 0 !important;
+    border-top: 1px solid rgba(148, 163, 184, .26) !important;
+    background: transparent !important;
+  }
+
+  body[data-module="retail-pos"] .summary > div,
+  body[data-module="retail-pos"] .summary > label {
+    min-height: 32px !important;
+  }
+
+  body[data-module="retail-pos"] .grand-total {
+    min-height: 44px !important;
+    margin-top: 4px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: #eaf7ef;
+    color: #0d6f34;
+  }
+
+  body[data-module="retail-pos"] .grand-total strong {
+    font-size: 1.28rem;
+  }
+
+  body[data-module="retail-pos"] .cart-actions {
+    gap: 9px !important;
+    margin-top: 6px !important;
+  }
+
+  body[data-module="retail-pos"] .cart-actions .btn,
+  body[data-module="retail-pos"] .cart-panel > .btn-pay {
+    border-radius: 12px;
+  }
+
+  body[data-module="retail-pos"] .cart-panel > .btn-pay {
+    flex: 0 0 auto;
+    min-height: 48px !important;
+    margin-top: 8px !important;
+    margin-bottom: 0 !important;
+    box-shadow: 0 12px 24px rgba(21, 148, 71, .22);
+  }
+}
+
+@media (min-width: 901px) and (max-height: 900px) {
+  body[data-module="retail-pos"] .cart-list {
+    height: clamp(235px, calc(100dvh - 570px), 330px) !important;
+    max-height: clamp(235px, calc(100dvh - 570px), 330px) !important;
+  }
+
+  body[data-module="retail-pos"] .cart-title {
+    min-height: 42px;
+    margin-bottom: 8px;
+    padding-bottom: 9px !important;
+  }
+
+  body[data-module="retail-pos"] .cart-row {
+    min-height: 48px !important;
+    margin-bottom: 5px;
+    padding: 5px 8px !important;
+  }
+
+  body[data-module="retail-pos"] .cart-name {
+    font-size: .82rem !important;
+    line-height: 1.06 !important;
+  }
+
+  body[data-module="retail-pos"] .cart-meta {
+    font-size: .72rem !important;
+  }
+
+  body[data-module="retail-pos"] .qty-tools {
+    gap: 4px;
+  }
+
+  body[data-module="retail-pos"] .qty-tools button {
+    width: 24px;
+    height: 24px;
+  }
+
+  body[data-module="retail-pos"] .summary > div,
+  body[data-module="retail-pos"] .summary > label {
+    min-height: 27px !important;
+  }
+
+  body[data-module="retail-pos"] .grand-total {
+    min-height: 38px !important;
+  }
+
+  body[data-module="retail-pos"] .cart-panel > .btn-pay {
+    min-height: 42px !important;
+  }
+}
+
+@media (min-width: 901px) and (max-height: 820px) {
+  body[data-module="retail-pos"] .cart-list {
+    height: clamp(190px, calc(100dvh - 560px), 240px) !important;
+    max-height: clamp(190px, calc(100dvh - 560px), 240px) !important;
+  }
+
+  body[data-module="retail-pos"] .cart-row {
+    min-height: 44px !important;
+    margin-bottom: 4px;
+    padding: 4px 7px !important;
+  }
+
+  body[data-module="retail-pos"] .cart-name {
+    font-size: .8rem !important;
+  }
+
+  body[data-module="retail-pos"] .cart-meta {
+    font-size: .7rem !important;
+  }
+
+  body[data-module="retail-pos"] .qty-tools button {
+    width: 22px;
+    height: 22px;
+  }
+
+  body[data-module="retail-pos"] .line-total {
+    min-height: 24px;
+    font-size: .84rem !important;
+  }
+}
+
+@media (max-width: 900px) {
+  body[data-module="retail-pos"] .cart-list {
+    min-height: 350px;
+  }
+}

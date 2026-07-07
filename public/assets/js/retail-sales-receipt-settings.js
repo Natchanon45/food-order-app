@@ -1,4 +1,4 @@
-import "./retail-sales-returns-permissions.js?v=20260625-2";
+import "./retail-sales-returns-permissions.js?v=20260707-016";
 import { RetailCollections, getRecord } from "./retail-db.js?v=20260629-032";
 
 const STORE_SETTINGS_KEY = "retail_pos_store_settings_v1";

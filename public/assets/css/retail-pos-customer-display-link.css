@@ -1,0 +1,52 @@
+.pos-header .header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pos-header .header-actions a[href="/pos/customer-display"] {
+  order: -1;
+  display: inline-grid !important;
+  place-items: center !important;
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  min-height: 42px !important;
+  padding: 0 !important;
+  border-radius: 12px !important;
+  background: #050b08 !important;
+  color: #0d6f34 !important;
+  border: 1px solid #0d6f34 !important;
+  font-size: 0 !important;
+  text-decoration: none !important;
+}
+
+.pos-header .header-actions a[href="/pos/customer-display"] i.bi-display {
+  display: inline-block !important;
+  color: #0d6f34 !important;
+  font-size: 1.28rem !important;
+  line-height: 1 !important;
+}
+
+.pos-header .header-actions a[href="/pos/customer-display"]:hover {
+  background: #020403 !important;
+  border-color: #159447 !important;
+}
+
+.pos-header .header-actions a[href="/pos/customer-display"]:hover i.bi-display {
+  color: #159447 !important;
+}
+
+@media (max-width: 640px) {
+  .pos-header .header-actions { gap: 6px; }
+  .pos-header .header-actions a[href="/pos/customer-display"] {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+    border-radius: 11px !important;
+  }
+  .pos-header .header-actions a[href="/pos/customer-display"] i.bi-display {
+    font-size: 1.18rem !important;
+  }
+}

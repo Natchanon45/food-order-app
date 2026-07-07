@@ -40,16 +40,18 @@
 
 #menuRows .admin-icon-button,
 #tableRows .admin-icon-button {
-  width: 36px !important;
-  height: 36px !important;
-  min-width: 36px !important;
-  min-height: 36px !important;
-  padding: 0 !important;
-  border-radius: 50% !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: max-content !important;
+  min-height: 38px !important;
+  padding: 8px 12px !important;
+  border-radius: 10px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 0 !important;
+  gap: 7px !important;
+  aspect-ratio: auto !important;
+  white-space: nowrap;
 }
 
 #menuRows .admin-icon-button .app-icon,
@@ -57,6 +59,17 @@
   width: 16px;
   height: 16px;
   margin: 0;
+}
+
+#menuRows .admin-icon-button .admin-action-label,
+#tableRows .admin-icon-button .admin-action-label {
+  display: inline;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  position: static;
+  white-space: nowrap;
 }
 
 body[data-roles="admin"] #menuListPagination,
@@ -106,6 +119,20 @@ body[data-roles="admin"] #tableListPagination {
     height: 34px !important;
     min-width: 34px !important;
     min-height: 34px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    gap: 0 !important;
+    aspect-ratio: 1 / 1 !important;
+  }
+
+  #menuRows .admin-icon-button .admin-action-label,
+  #tableRows .admin-icon-button .admin-action-label {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    white-space: nowrap !important;
   }
 
   body[data-roles="admin"] #menuListPagination,

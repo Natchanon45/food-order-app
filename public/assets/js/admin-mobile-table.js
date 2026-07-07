@@ -4,6 +4,10 @@ function icon(name) {
   return iconMarkup(name);
 }
 
+function actionContent(name, label) {
+  return `${icon(name)}<span class="admin-action-label">${label}</span>`;
+}
+
 function statusIcon(active) {
   const label = active ? "เปิดใช้งาน" : "ไม่ได้ใช้งาน";
   return `<i class="bi bi-${active ? "check-square" : "square"} admin-status-icon" role="img" aria-label="${label}" title="${label}"></i>`;
@@ -38,7 +42,7 @@ function decorateActionCell(row) {
   wrap.className = "admin-row-actions";
 
   if (editButton) {
-    editButton.innerHTML = icon("pencil");
+    editButton.innerHTML = actionContent("pencil", "แก้ไข");
     editButton.classList.add("admin-icon-button", "btn-icon-only");
     editButton.setAttribute("aria-label", "แก้ไข");
     editButton.title = "แก้ไข";
@@ -46,7 +50,7 @@ function decorateActionCell(row) {
   }
 
   if (deleteButton) {
-    deleteButton.innerHTML = icon("trash");
+    deleteButton.innerHTML = actionContent("trash", "ลบ");
     deleteButton.classList.add("admin-icon-button", "btn-icon-only");
     deleteButton.setAttribute("aria-label", "ลบ");
     deleteButton.title = "ลบ";

@@ -1,94 +1,16 @@
 # Food Order / Delivery / Retail POS
 
-ระบบร้านอาหารและร้านค้าปลีกบน Firebase รองรับ QR Table Order, Take Away, Delivery, Kitchen, Cashier และ Retail POS
+Branch: feature/retail-pos
+Milestone: POS Menu Pseudo Chevron Cleanup
+Version: 0.13.78
+Build: 2026.07.07.022
 
-## Current Branch
+Change: removed legacy pseudo chevrons from Retail POS menu group expand/collapse buttons so each group header renders only the single Bootstrap chevron, and bumped the shared POS CSS cache version.
 
-- Branch: `feature/retail-pos`
-- Current milestone: `POS Hardening 002`
-- Developer Panel version/build ปัจจุบัน: `0.12.70` / `2026.07.02.024`
+Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
-## Retail POS Status
+Existing tax buyer DBD lookup, tax invoice creation, tax invoice history/reprint, receipt behavior, POS totals, VAT calculation, stock deduction, customer display data sync, and offline sale sync are unchanged.
 
-ทำแล้ว:
+Deploy rules: use `firebase deploy --only hosting` for changes under `public/` only. Use `firebase deploy --only functions:<functionName>` when files under `functions/` change. Use `firebase deploy --only functions:<functionName>,hosting` only when both function code/routes and hosting assets change.
 
-- P9-B001 POS Firestore Foundation
-- P9-B002 Running Number
-- P9-B003 Counter
-- P9-B004 Offline Queue Worker + Retry + Conflict Resolver
-- P9-B005 Repository Layer
-- P9-B006 Firestore Composite Index
-- P9-B007 Audit Log
-- P9-B008 Shift Opening / Closing
-- P9-B009 Refund / Return / Void
-- P9-B010 Performance
-- Hotfix Manual Sync
-- POS Hardening 001
-- POS Hardening 002
-- Unified Order / Delivery / POS Menu
-- Dashboard Tenant-safe Link Correction
-- Dashboard Final Grouping
-- POS Payment UX Update
-- Retail Category/Product Sort Manager
-- Product Image Storage Rules Fix
-- POS Display Order Hard Rollback
-- Retail POS รองรับ Online / Offline / Sync / Tenant แล้ว
-- POS Sale ใช้ Stable `saleId` เดิมทั้ง Online และ Offline
-
-## POS Display Order Hard Rollback
-
-- ลบไฟล์ `public/assets/js/retail-pos-display-order.js` ออกจาก repo แล้ว
-- `/pos/index.html` ไม่โหลดสคริปต์จัดลำดับสินค้าอีก
-- ตัวจัดลำดับหมวดหมู่/สินค้าใน `/pos/products/` ยังอยู่ แต่ยังไม่ apply การเรียงบนหน้าขาย `/pos`
-- ไม่มีการแตะ logic ขาย, Online/Offline, Sync, Stable `saleId` หรือ Stock Transaction
-
-## Product Image Storage Rules Fix
-
-- แก้ `storage.rules` สำหรับ path `tenants/{tenantId}/product-images/{productId}/{fileName}`
-- เพิ่ม function `userTenantProductAdmin(tenantId)` ให้ตรวจสิทธิ์จาก `users/{uid}`
-- อนุญาต role `owner`, `admin`, `super_admin` ที่ `active == true` และ `tenantId` ตรงกัน อัปโหลด/ลบรูปสินค้าได้
-- ยังจำกัดไฟล์เป็นรูปภาพ และขนาดไม่เกิน 5 MB เหมือนเดิม
-- ต้อง deploy Storage Rules ด้วยคำสั่ง `firebase deploy --only storage`
-
-## Retail Category/Product Sort Manager
-
-- เพิ่ม panel `จัดลำดับหมวดหมู่และสินค้า` ใน `/pos/products/`
-- เพิ่มไฟล์ `public/assets/js/retail-products-sort-manager.js`
-- เพิ่มไฟล์ `public/assets/css/retail-products-sort-manager.css`
-- บันทึกลำดับหมวดด้วย field `categoryOrder`
-- บันทึกลำดับสินค้าในหมวดด้วย field `sortOrder`
-- ล็อกไม่ให้ขยับลำดับสินค้าในหมวด `ขายดี`, `สินค้าขายดี`, `bestseller`, `popular`
-- `/pos/products/index.html` bump `retail-products-sort-manager.css?v=20260702-021` และ `retail-products-sort-manager.js?v=20260702-021`
-
-## POS Payment UX Update
-
-- ซ่อนปุ่ม `โหลดตัวอย่าง` ออกจากหน้าขาย POS
-- เพิ่มไฟล์ `public/assets/js/retail-pos-payment-enter.js`
-- เมื่ออยู่ใน Modal รับชำระเงิน และ cursor อยู่ในช่อง `รับเงินมา` สามารถกด Enter เพื่อยืนยันการขายได้
-- Enter-to-confirm ใช้วิธี click ปุ่ม `ยืนยันการขาย` เดิม จึงยังใช้ validation และ logic การบันทึกเดิมทั้งหมด
-- `/pos/index.html` โหลด `retail-pos-payment-enter.js?v=20260702-020`
-
-## Regression Tests
-
-1. เปิด `/pos` แล้วต้องโหลดหน้าขายได้ ไม่ค้างหรือหน้าขาว
-2. Network/Console ต้องไม่มี request ไป `retail-pos-display-order.js`
-3. เปิด POS แล้วขาย Online ได้ตามเดิม
-4. ปิดเน็ตขาย Offline ได้ตามเดิม
-5. เปิดเน็ตแล้ว Manual Sync ได้ตามเดิม
-6. กด Enter ใน modal รับเงินแล้วยืนยันการขายได้ตามเดิม
-7. หน้า `/pos` ต้องไม่เห็นปุ่ม `โหลดตัวอย่าง`
-8. Deploy Storage Rules แล้วอัปโหลดรูปสินค้าใน `/pos/products/` ต้องไม่เจอ 403
-9. เปิด `/pos/products/` แล้วเห็น panel `จัดลำดับหมวดหมู่และสินค้า`
-10. ตรวจว่า record สำคัญยังมี `tenantId`
-
-## Next Tasks
-
-- POS Hardening 003: ตรวจ/ลด event listener ซ้ำและ snapshot unsubscribe patterns ในโมดูลที่มี listener จริง
-- ทดสอบการ apply ลำดับสินค้าใน `/pos` แบบปลอดภัยก่อนเปิดใช้อีกครั้ง
-- แยกบทบาท cashier ร้านอาหาร / cashier ร้านค้า แบบถาวร หากต้องการ role คนละชุด เช่น `restaurant_cashier` และ `retail_cashier`
-
-## Deploy
-
-git pull --rebase origin feature/retail-pos
-firebase deploy --only hosting
-firebase deploy --only storage
+Deploy for this build: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting

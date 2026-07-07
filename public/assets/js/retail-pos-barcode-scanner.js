@@ -9,9 +9,18 @@ let zxingControls=null;
 
 const BARCODE_ICON='<i class="bi bi-upc-scan scan-barcode-icon" aria-hidden="true"></i>';
 
+function setToastMessage(message){
+  if(!toast)return;
+  toast.innerHTML='';
+  const span=document.createElement('span');
+  span.className='retail-toast-message';
+  span.textContent=String(message||'');
+  toast.appendChild(span);
+}
+
 function showScanToast(message,type='success'){
   if(!toast)return;
-  toast.textContent=message;
+  setToastMessage(message);
   toast.classList.toggle('error',type==='error');
   toast.classList.toggle('is-error',type==='error');
   toast.classList.add('show');

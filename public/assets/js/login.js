@@ -1,17 +1,42 @@
-import { login, ROLE_HOME, waitForAuth, getUserProfile } from "./auth-service.js";
+import { login, ROLE_HOME } from "./auth-service.js?v=20260704-002";
+import { login as retailPosLogin } from "./retail-pos-auth.js?v=20260704-004";
 import { toast } from "./ui.js?v=20260701-001";
 
-const existingUser = await waitForAuth();
-if (existingUser) {
-  const profile = await getUserProfile(existingUser);
-  if (profile?.active !== false && profile?.role) {
-    location.replace(ROLE_HOME[profile.role] || "/");
-  }
-}
+localStorage.removeItem("retail_pos_session_v1");
+localStorage.removeItem("retail_pos_current_user_v1");
 
 const form = document.getElementById("loginForm");
 const button = document.getElementById("loginButton");
 const errorBox = document.getElementById("loginError");
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const togglePasswordBtn = document.getElementById("togglePasswordBtn");
+const defaultButtonHtml = button.innerHTML;
+const next = new URLSearchParams(location.search).get("next") || "";
+const isPosNext = next.replace(/\/index\.html$/, "/").startsWith("/pos");
+
+function syncFloatingIcon(input) {
+  const wrap = input.closest(".login-input-wrap");
+  if (!wrap) return;
+  wrap.classList.toggle("is-filled", Boolean(input.value));
+}
+
+document.querySelectorAll(".login-input-wrap input").forEach(input => {
+  syncFloatingIcon(input);
+  input.addEventListener("input", () => syncFloatingIcon(input));
+  input.addEventListener("change", () => syncFloatingIcon(input));
+});
+
+function setButtonLoading(isLoading) {
+  button.disabled = isLoading;
+  button.innerHTML = isLoading ? '<span class="login-loading">กำลังเข้าสู่ระบบ...</span>' : defaultButtonHtml;
+}
+
+function showLoginError(message) {
+  errorBox.textContent = message;
+  errorBox.hidden = false;
+  toast(message, "error");
+}
 
 function getLoginErrorMessage(error) {
   const code = String(error?.code || error?.message || "");
@@ -27,24 +52,44 @@ function getLoginErrorMessage(error) {
   return "เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบอีเมลและรหัสผ่าน";
 }
 
+async function prepareRetailPosSession(email, password) {
+  const result = await retailPosLogin(email, password);
+  return result?.ok === true;
+}
+
+togglePasswordBtn?.addEventListener("click", () => {
+  const show = passwordInput.type === "password";
+  passwordInput.type = show ? "text" : "password";
+  togglePasswordBtn.textContent = show ? "ซ่อน" : "แสดง";
+  syncFloatingIcon(passwordInput);
+});
+
 form.addEventListener("submit", async event => {
   event.preventDefault();
   errorBox.hidden = true;
-  button.disabled = true;
-  button.textContent = "กำลังเข้าสู่ระบบ...";
+  setButtonLoading(true);
+
+  const email = emailInput.value.trim().toLowerCase();
+  const password = passwordInput.value;
 
   try {
-    const profile = await login(
-      document.getElementById("email").value.trim(),
-      document.getElementById("password").value
-    );
-    const next = new URLSearchParams(location.search).get("next");
+    const profile = await login(email, password);
+    const posReady = await prepareRetailPosSession(email, password).catch(error => {
+      console.warn("POS_SESSION_PREPARE_SKIPPED", error);
+      return false;
+    });
+
+    if (isPosNext) {
+      if (!posReady) throw new Error("บัญชีนี้ไม่มีสิทธิ์ใช้งาน Retail POS หรือยังไม่ได้สร้าง POS session");
+      location.replace(next || "/pos/");
+      return;
+    }
+
     location.replace(next || ROLE_HOME[profile.role] || "/");
   } catch (error) {
     console.error(error);
-    toast(getLoginErrorMessage(error), "error");
+    showLoginError(getLoginErrorMessage(error));
   } finally {
-    button.disabled = false;
-    button.textContent = "เข้าสู่ระบบ";
+    setButtonLoading(false);
   }
 });

@@ -8,7 +8,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-storage.js";
 import {
   getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
-  createUserWithEmailAndPassword, EmailAuthProvider, reauthenticateWithCredential, updatePassword
+  createUserWithEmailAndPassword, EmailAuthProvider, reauthenticateWithCredential, updatePassword,
+  sendEmailVerification, reload
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 import {
   getFunctions, httpsCallable
@@ -56,6 +57,6 @@ export {
   onSnapshot, query, where, orderBy, serverTimestamp, runTransaction, writeBatch,
   ref, uploadBytes, deleteObject,
   signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword,
-  EmailAuthProvider, reauthenticateWithCredential, updatePassword,
+  EmailAuthProvider, reauthenticateWithCredential, updatePassword, sendEmailVerification, reload,
   getFunctions, httpsCallable
 };

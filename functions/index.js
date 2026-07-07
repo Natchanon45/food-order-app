@@ -187,3 +187,13 @@ const staffAdmin = require("./staff-admin");
 exports.listTenantStaff = staffAdmin.listTenantStaff;
 exports.createTenantStaff = staffAdmin.createTenantStaff;
 exports.updateTenantStaff = staffAdmin.updateTenantStaff;
+
+const publicSignup = require("./public-signup");
+exports.requestTrialTenantSignup = publicSignup.requestTrialTenantSignup;
+exports.activateTrialTenantSignup = publicSignup.activateTrialTenantSignup;
+
+const retailPosStaff = require("./retail-pos-staff");
+exports.upsertRetailPosStaff = retailPosStaff.upsertRetailPosStaff;
+
+const taxBuyerLookup = require("./tax-buyer-lookup");
+exports.lookupTaxBuyer = taxBuyerLookup.lookupTaxBuyer;
