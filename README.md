@@ -1,15 +1,19 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Customer Display Classic Layout Tuning
-Version: 0.13.98
-Build: 2026.07.08.011
+Milestone: POS VAT Payment Totals Correction
+Version: 0.13.99
+Build: 2026.07.08.012
 
-Change: tuned `/pos/customer-display/` classic green layout by reducing empty space in the customer card, enlarging total amount numbers, protecting the full `ยอดสุทธิ` label, and restoring the wider two-column pairing QR hover panel.
+Change: corrected `/pos` VAT/payment totals by applying the default 7% VAT rate whenever VAT registration is enabled but the saved rate is blank/zero, using consistent received-cash parsing for change calculation and safe-confirm sale saving, sending `none` VAT mode to Customer Display only when VAT controls are inactive, and reducing customer-picker name weight.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
-Existing PromptPay QR display, tax buyer DBD lookup, tax invoice creation duplicate protection, tax invoice history/reprint, later full tax invoice issuing from existing receipts, receipt behavior, POS totals, VAT calculation, stock deduction, customer display data sync, offline sale sync, POS theme alignment, mobile product card overlay behavior, mobile button layout, payment modal visual tuning, and printable document fonts are unchanged.
+Existing PromptPay QR display, tax buyer DBD lookup, tax invoice creation duplicate protection, tax invoice history/reprint, later full tax invoice issuing from existing receipts, receipt behavior, stock deduction, offline sale sync, POS theme alignment, mobile product card overlay behavior, mobile button layout, payment modal visual tuning, and printable document fonts are unchanged.
+
+POS VAT/payment workflow: when the store is VAT registered, a blank or zero saved VAT rate falls back to 7% so include-VAT carts split totals correctly, for example 114.00 becomes before VAT 106.54, VAT 7.46, and net total 114.00. The payment modal and safe-confirm guard parse received cash the same way, so received 120.00 against 114.00 displays and saves a 6.00 change amount. Customer Display receives the corrected totals and only shows include/exclude VAT mode when POS VAT controls are active.
+
+Payment customer picker workflow: customer names in the payment modal result list use font-weight 500 or lighter so selected customers remain readable without looking overly bold.
 
 Customer Display PromptPay workflow: `/pos/customer-display/` stacks `ชำระผ่าน PromptPay / โอนเงิน`, the total amount in baht, the enlarged centered QR, and the account owner name inside the total card. The presentation uses the classic white and green theme with green text and borders. The `ขอบคุณที่ใช้บริการ` badge stays pinned to the bottom edge of the card, centered on one line, and uses font-weight 500 or lighter.
 

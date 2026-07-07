@@ -101,6 +101,7 @@ function normalizeVatMode(value) {
 }
 
 function normalizeVatRate(value) {
+  if (String(value ?? "").trim() === "") return defaults.vatRate;
   const rate = Number(value);
   if (!Number.isFinite(rate) || rate < 0) return defaults.vatRate;
   return Math.min(100, Math.round(rate * 100) / 100);
@@ -119,13 +120,15 @@ function normalizeBranchType(value) {
 }
 
 function collectSettings() {
+  const vatRegistered = normalizeVatRegistered(els.vatRegistered?.value);
+  const vatRate = normalizeVatRate(els.vatRate?.value);
   return {
     shopName: els.shopName.value.trim(),
     shopAddress: els.shopAddress.value.trim(),
     shopPhone: els.shopPhone.value.trim(),
     taxId: els.taxId.value.trim(),
-    vatRegistered: normalizeVatRegistered(els.vatRegistered?.value),
-    vatRate: normalizeVatRate(els.vatRate?.value),
+    vatRegistered,
+    vatRate: vatRegistered === "yes" && vatRate <= 0 ? defaults.vatRate : vatRate,
     defaultVatMode: normalizeVatMode(els.defaultVatMode?.value),
     taxBranchType: normalizeBranchType(els.taxBranchType?.value),
     taxBranchCode: els.taxBranchCode?.value.trim() || "",

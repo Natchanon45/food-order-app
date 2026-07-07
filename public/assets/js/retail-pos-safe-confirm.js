@@ -17,6 +17,7 @@ function safeId(prefix) { return globalThis.crypto?.randomUUID ? `${prefix}-${cr
 function localSaleKey(sale) { return String(sale?.id || sale?.saleNumber || ''); }
 function movementId(saleId, productId) { return `${saleId}_${productId}`.replace(/[^a-zA-Z0-9_-]/g, '_'); }
 function parseMoneyText(text) { return Number(String(text || '').replace(/[^\d.-]/g, '')) || 0; }
+function parseMoneyInput(value) { return Number(String(value || '').replace(/,/g, '').replace(/[^\d.-]/g, '')) || 0; }
 
 function currentCartItems() {
   const products = readJson(PRODUCT_KEY, []);
@@ -126,7 +127,8 @@ async function safeConfirmPayment(event) {
   if (!items.length) return;
   const totals = currentTotals(items);
   const method = document.querySelector('#paymentMethod')?.value || 'cash';
-  const received = method === 'cash' ? Number(document.querySelector('#receivedInput')?.value || 0) : totals.total;
+  const enteredReceived = parseMoneyInput(document.querySelector('#receivedInput')?.value);
+  const received = method === 'cash' || enteredReceived > 0 ? enteredReceived : totals.total;
   if (received < totals.total) { const error = document.querySelector('#paymentError'); if (error) error.textContent = 'จำนวนเงินที่รับมายังไม่ครบ'; return; }
   saving = true;
   button.disabled = true;

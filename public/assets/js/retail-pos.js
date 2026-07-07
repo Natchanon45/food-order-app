@@ -176,8 +176,13 @@ function normalizeProducts(rows = []) {
   return [...byId.values()];
 }
 
-function normalizeVatMode(value) {
-  return String(value || taxSettings.defaultVatMode || "include") === "exclude" ? "exclude" : "include";
+function normalizeVatMode(value, fallback = taxSettings.defaultVatMode || DEFAULT_TAX_SETTINGS.defaultVatMode) {
+  return String(value || fallback || DEFAULT_TAX_SETTINGS.defaultVatMode) === "exclude" ? "exclude" : "include";
+}
+
+function normalizeVatRegistered(value) {
+  const normalized = String(value ?? "no").trim().toLowerCase();
+  return value === true || ["yes", "true", "1", "registered", "enabled"].includes(normalized) ? "yes" : "no";
 }
 
 function normalizeVatRate(value) {
@@ -186,26 +191,37 @@ function normalizeVatRate(value) {
   return Math.min(100, round2(rate));
 }
 
+function normalizeTaxSettings(settings = {}) {
+  const vatRegistered = normalizeVatRegistered(settings.vatRegistered ?? settings.vatEnabled ?? settings.taxRegistered);
+  let vatRate = normalizeVatRate(settings.vatRate ?? settings.taxRate ?? settings.vatPercent);
+  if (vatRegistered === "yes" && vatRate <= 0) vatRate = DEFAULT_TAX_SETTINGS.vatRate;
+  return {
+    ...DEFAULT_TAX_SETTINGS,
+    ...settings,
+    vatRegistered,
+    vatRate,
+    defaultVatMode: normalizeVatMode(settings.defaultVatMode, DEFAULT_TAX_SETTINGS.defaultVatMode)
+  };
+}
+
 function isVatEnabled() {
-  return taxSettings.vatRegistered === "yes" && normalizeVatRate(taxSettings.vatRate) > 0;
+  return normalizeVatRegistered(taxSettings.vatRegistered) === "yes" && normalizeVatRate(taxSettings.vatRate) > 0;
 }
 
 function readLocalTaxSettings() {
   const local = readJson(SETTINGS_KEY, {});
-  return { ...DEFAULT_TAX_SETTINGS, ...local };
+  return normalizeTaxSettings({ ...DEFAULT_TAX_SETTINGS, ...local });
 }
 
 async function loadTaxSettings() {
   const local = readLocalTaxSettings();
   try {
     const tax = await getRecord(RetailCollections.settings, "tax");
-    taxSettings = { ...DEFAULT_TAX_SETTINGS, ...local, ...(tax || {}) };
+    taxSettings = normalizeTaxSettings({ ...DEFAULT_TAX_SETTINGS, ...local, ...(tax || {}) });
   } catch (error) {
     console.warn("[retail-pos] tax settings fallback", error);
     taxSettings = local;
   }
-  taxSettings.vatRate = normalizeVatRate(taxSettings.vatRate);
-  taxSettings.defaultVatMode = normalizeVatMode(taxSettings.defaultVatMode);
   if (els.vatMode) els.vatMode.value = taxSettings.defaultVatMode;
   renderVatControls();
 }
@@ -299,8 +315,13 @@ function updatePaymentUi() {
   const totals = getTotals();
   const cash = els.paymentMethod.value === "cash";
   els.receivedWrap.hidden = !cash;
-  const received = cash ? Number(els.receivedInput.value || 0) : totals.total;
+  const enteredReceived = moneyInputValue(els.receivedInput.value);
+  const received = cash || enteredReceived > 0 ? enteredReceived : totals.total;
   els.changeAmount.textContent = `${money(Math.max(0, received - totals.total))} บาท`;
+}
+
+function moneyInputValue(value) {
+  return Number(String(value || "").replace(/,/g, "").replace(/[^\d.-]/g, "")) || 0;
 }
 
 function saveLocalSale(sale, nextProducts, movements) {
@@ -431,7 +452,8 @@ async function confirmPayment() {
   if (savingSale) return;
   const totals = getTotals();
   const method = els.paymentMethod.value;
-  const received = method === "cash" ? Number(els.receivedInput.value || 0) : totals.total;
+  const enteredReceived = moneyInputValue(els.receivedInput.value);
+  const received = method === "cash" || enteredReceived > 0 ? enteredReceived : totals.total;
   if (received < totals.total) { els.paymentError.textContent = "จำนวนเงินที่รับมายังไม่ครบ"; return; }
   savingSale = true;
   els.confirmPaymentBtn.disabled = true;
@@ -473,6 +495,8 @@ els.clearSaleBtn.addEventListener("click", resetSale);
 els.payBtn.addEventListener("click", openPayment);
 els.paymentMethod.addEventListener("change", updatePaymentUi);
 els.receivedInput.addEventListener("input", updatePaymentUi);
+els.receivedInput.addEventListener("change", updatePaymentUi);
+els.receivedInput.addEventListener("keyup", updatePaymentUi);
 els.confirmPaymentBtn.addEventListener("click", confirmPayment);
 await loadTaxSettings();
 await loadProducts();

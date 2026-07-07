@@ -202,6 +202,7 @@ function buildSnapshot(status = 'editing') {
   const customerId = els.paymentDialog?.dataset.customerId || '';
   const customer = currentCustomer || customerById(customerId);
   const items = readCartItems();
+  const vatModeVisible = els.vatMode && !els.vatMode.closest('[hidden]');
   return {
     id: config.displayId,
     tenantId: getTenantId(),
@@ -219,7 +220,7 @@ function buildSnapshot(status = 'editing') {
     items,
     subtotal: numberFromText(els.subtotal?.textContent),
     discount: numberFromText(els.discount?.value),
-    vatMode: els.vatMode?.value || 'none',
+    vatMode: vatModeVisible ? (els.vatMode?.value || 'none') : 'none',
     beforeVat: numberFromText(els.beforeVat?.textContent),
     vatAmount: numberFromText(els.vatAmount?.textContent),
     total: numberFromText(els.grandTotal?.textContent),
