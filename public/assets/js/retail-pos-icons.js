@@ -80,12 +80,21 @@ function iconFor(element, fallback = "circle") {
   return ICON_RULES.find(([pattern]) => pattern.test(haystack))?.[1] || fallback;
 }
 
+function shouldSkipIcon(element) {
+  if (element.matches(".icon-btn, .pos-menu-title, .pos-menu-head h2, .product-card, .catalog-tab, .sort-row-main, .app-version-badge, .mobile-cart-bar, .qty-tools button, [data-mobile-cart-close]")) return true;
+  return element.closest(".pos-menu-head") && visibleText(element) === "เมนู POS";
+}
+
 function addIcon(element, fallback) {
   const generatedIcon = element.querySelector(":scope > .pos-context-icon");
   const authoredIcon = element.querySelector(".bi:not(.pos-context-icon)");
   if (authoredIcon && generatedIcon) generatedIcon.remove();
+  if (shouldSkipIcon(element)) {
+    if (generatedIcon) generatedIcon.remove();
+    element.removeAttribute("data-pos-icon-ready");
+    return;
+  }
   if (authoredIcon || generatedIcon || !visibleText(element)) return;
-  if (element.matches(".icon-btn, .pos-menu-title, .product-card, .catalog-tab, .sort-row-main, .app-version-badge, .mobile-cart-bar, .qty-tools button, [data-mobile-cart-close]")) return;
   const icon = document.createElement("i");
   icon.className = `bi bi-${iconFor(element, fallback)} pos-context-icon`;
   icon.setAttribute("aria-hidden", "true");

@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Menu Header Icon Cleanup
-Version: 0.13.75
-Build: 2026.07.07.019
+Milestone: POS Menu Legacy Icon Guard
+Version: 0.13.76
+Build: 2026.07.07.020
 
-Change: removed the injected icon from the Retail POS drawer title and bumped POS navigation/icon cache versions after browser verification.
+Change: added a legacy DOM guard so the Retail POS drawer title cannot show an injected menu icon even when `/pos` has a cached navigation module, and bumped POS navigation/icon/CSS cache versions after production browser verification.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
