@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Customer Display Cart Count Contrast
-Version: 0.13.91
-Build: 2026.07.08.004
+Milestone: Customer Display Deep Green Liquid Glass
+Version: 0.13.92
+Build: 2026.07.08.005
 
-Change: improved `/pos/customer-display/` cart count badge contrast so counts like `11 รายการ` stay readable against the liquid-glass cart header, while keeping the pairing QR layer, PromptPay card, and bottom-pinned thank-you badge.
+Change: retuned `/pos/customer-display/` to a deep-green-to-clear liquid-glass theme, with a richer hover/focus pairing QR panel, while keeping cart count readability, PromptPay card layout, and the bottom-pinned thank-you badge.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -16,6 +16,8 @@ Customer Display PromptPay workflow: `/pos/customer-display/` stacks `ชำร�
 Customer Display pairing QR workflow: hovering or focusing `เชื่อมอุปกรณ์` opens the device-pairing QR panel above the cart and total cards so the QR remains fully visible on the top layer of the Customer Display page.
 
 Customer Display cart count workflow: the `รายการในบิล` header count badge uses high-contrast white text, a dark green glass background, and a defined chip shape so item counts remain readable.
+
+Customer Display deep green glass workflow: the Customer Display visual theme uses dark green gradients fading into transparent glass, translucent card surfaces, soft green highlights, and a richer hover/focus pairing QR panel that keeps the QR visible above the page content.
 
 Later tax invoice workflow: staff can open `/pos/tax-invoices/`, search the original POS sale number from an existing short tax invoice/receipt, review the source sale, enter buyer tax details, and issue or reopen the one full tax invoice allowed for that sale.
 

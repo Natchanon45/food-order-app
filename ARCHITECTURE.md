@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.91
-Build: 2026.07.08.004
-Milestone: Customer Display Cart Count Contrast
+Version: 0.13.92
+Build: 2026.07.08.005
+Milestone: Customer Display Deep Green Liquid Glass
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -44,13 +44,15 @@ Customer Display PromptPay visual rule: when PromptPay / transfer QR data is pre
 
 Customer Display liquid-glass theme rule: Customer Display glass styling should stay within white, green, and black. Use translucent white cards, dark green/black contrast for primary emphasis, soft green highlights for secondary emphasis, glass-like borders/shadows, and readable text. Avoid returning to unrelated accent colors for the PromptPay panel and thank-you badge.
 
+Customer Display deep green glass rule: the primary visual direction is dark green fading into clear glass. Use deep green gradients, translucent glass panels, soft green highlights, and high contrast text. The hover/focus pairing QR panel should keep the richer early glass treatment with dark green depth, transparent highlights, and visible QR framing.
+
 Customer Display pairing QR layer rule: the `เชื่อมอุปกรณ์` hover/focus QR panel must render above the main display content on desktop and mobile widths. Keep the header and pairing panel in a higher stacking layer than the cart, total, and footer cards so the pairing QR is never hidden behind page content.
 
 Customer Display cart count contrast rule: the `รายการในบิล` header count badge must remain legible on liquid-glass backgrounds. Use high-contrast text, a defined chip shape, and enough separation from the header title so counts such as `11 รายการ` do not blend into the badge.
 
-Completed in this build: Customer Display cart count badge contrast tuning while preserving pairing QR hover layer, liquid-glass PromptPay styling, centered stacked QR, account-name-only receiver text, and bottom-pinned one-line thank-you badge.
+Completed in this build: Customer Display deep-green-to-clear liquid-glass retuning while preserving pairing QR hover layer, cart count readability, centered stacked QR, account-name-only receiver text, and bottom-pinned one-line thank-you badge.
 
-Next task: deploy hosting and test the Customer Display cart count badge contrast, pairing QR hover layer, and liquid-glass PromptPay theme on real POS payment data, then continue validating tax profile and void workflow with synced Firestore data.
+Next task: deploy hosting and test the deep-green liquid-glass Customer Display theme, hover pairing QR panel, cart count badge contrast, and PromptPay presentation on real POS payment data, then continue validating tax profile and void workflow with synced Firestore data.
 
 Deploy commands:
 git pull --rebase origin feature/retail-pos
