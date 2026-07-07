@@ -2,18 +2,18 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.86
-Build: 2026.07.07.031
-Milestone: POS Customer Display Compact PC Tuning
+Version: 0.13.88
+Build: 2026.07.08.001
+Milestone: Customer Display PromptPay Visual Refresh
 
-Change: tuned Customer Display PC layout for 1912x870 screens so the total area, PromptPay QR, and thank-you message remain visible. The PromptPay QR panel now shows only QR, amount, and receiver, and the POS customer clear button reopens the customer list immediately.
+Change: refreshed the Customer Display PromptPay and thank-you presentation. The PromptPay panel is centered in the total card, stacks the payment heading, total amount, enlarged QR, and account name in order, uses livelier mixed color accents, and keeps the thank-you badge pinned to the bottom edge of the card with single-line centered text at font-weight 500 or lighter.
 
-Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through POS continuous scanner support, plus local POS UI font coverage, menu icon cleanup, UI font-weight tuning, POS drawer title icon cleanup, POS legacy drawer icon guard, POS menu group chevron cleanup, POS menu pseudo-chevron cleanup, POS theme alignment with Order/Delivery, mobile product image-card overlay tuning, mobile POS button layout tuning, payment modal visual tuning, later full tax invoice issuing from an existing short tax invoice/receipt, PromptPay QR payment display for POS/customer screens, payment customer clear hardening, Customer Display PC stacked-left layout tuning, and compact PC Customer Display tuning.
+Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through POS continuous scanner support, plus local POS UI font coverage, menu icon cleanup, UI font-weight tuning, POS drawer title icon cleanup, POS legacy drawer icon guard, POS menu group chevron cleanup, POS menu pseudo-chevron cleanup, POS theme alignment with Order/Delivery, mobile product image-card overlay tuning, mobile POS button layout tuning, payment modal visual tuning, later full tax invoice issuing from an existing short tax invoice/receipt, PromptPay QR payment display for POS/customer screens, payment customer clear hardening, Customer Display PC stacked-left layout tuning, compact PC Customer Display tuning, editable full-tax buyer profiles, full-tax invoice void/cancel workflow, and Customer Display PromptPay visual refresh.
 
-Usage: open `/pos`, add items, open the payment modal, select a customer, and use the X in the customer search field to verify the field returns to general customer and the customer list opens again immediately. Open `/pos/customer-display/` at PC width, including 1912x870, to verify the customer and total/payment cards are stacked left, the cart card stays separate right, and the thank-you message is visible. Verify PromptPay QR, receipt behavior, tax invoice history/reprint, stock deduction, offline sync, and printable document fonts remain unchanged.
+Usage: open `/pos/customer-display/` with a PromptPay payment snapshot, including short PC screens such as 1912x870, and verify the total card shows `ชำระผ่าน PromptPay / โอนเงิน`, the total amount in baht, the largest centered QR that fits, and the account name below it. Verify the `ขอบคุณที่ใช้บริการ` badge stays at the bottom edge of the total card, remains centered on one line, and does not exceed font-weight 500. Verify receipt behavior, one-full-tax-invoice-per-sale duplicate protection, VAT totals, stock deduction, offline sale sync, Customer Display sync, and printable document fonts remain unchanged.
 
 Deploy rules: use hosting-only deploy for `public/` asset changes. Deploy functions only when files under `functions/` or function rewrites/routes change. This build only needs hosting deploy.
 
-Next Task: improve customer tax profile management and add void/cancel tax invoice support.
+Next Task: test Customer Display PromptPay on real POS payment data after deploy, then continue validating tax profile and void workflow with synced Firestore data.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting

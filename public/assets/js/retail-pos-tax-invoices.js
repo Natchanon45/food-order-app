@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, getExistingFullTaxInvoiceForSale, taxInvoiceUrl } from './retail-pos-full-tax-invoice.js?v=20260707-001';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260707-002';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -23,9 +23,30 @@ const lateBuyerAddressInput = document.querySelector('#lateBuyerAddressInput');
 const lateTaxInvoiceError = document.querySelector('#lateTaxInvoiceError');
 const lateTaxInvoiceCancelBtn = document.querySelector('#lateTaxInvoiceCancelBtn');
 const lateTaxInvoiceSubmitBtn = document.querySelector('#lateTaxInvoiceSubmitBtn');
+const profileBtn = document.querySelector('#taxProfileBtn');
+const profileDialog = document.querySelector('#taxProfileDialog');
+const profileListEl = document.querySelector('#taxProfileList');
+const profileForm = document.querySelector('#taxProfileForm');
+const profileIdInput = document.querySelector('#taxProfileIdInput');
+const profileNameInput = document.querySelector('#taxProfileNameInput');
+const profileTaxIdInput = document.querySelector('#taxProfileTaxIdInput');
+const profileBranchInput = document.querySelector('#taxProfileBranchInput');
+const profileAddressInput = document.querySelector('#taxProfileAddressInput');
+const profileError = document.querySelector('#taxProfileError');
+const profileNewBtn = document.querySelector('#taxProfileNewBtn');
+const profileCloseBtn = document.querySelector('#taxProfileCloseBtn');
+const profileDeleteBtn = document.querySelector('#taxProfileDeleteBtn');
+const voidDialog = document.querySelector('#voidTaxInvoiceDialog');
+const voidForm = document.querySelector('#voidTaxInvoiceForm');
+const voidText = document.querySelector('#voidTaxInvoiceText');
+const voidReasonInput = document.querySelector('#voidTaxInvoiceReasonInput');
+const voidError = document.querySelector('#voidTaxInvoiceError');
+const voidCancelBtn = document.querySelector('#voidTaxInvoiceCancelBtn');
+const voidSubmitBtn = document.querySelector('#voidTaxInvoiceSubmitBtn');
 let invoices = [];
 let salesCache = [];
 let currentSourceSale = null;
+let currentVoidInvoice = null;
 
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -42,6 +63,10 @@ function money(value) {
 
 function dateText(value) {
   return new Date(value || Date.now()).toLocaleString('th-TH');
+}
+
+function normalizeTaxId(value) {
+  return String(value || '').replace(/\D/g, '').slice(0, 13);
 }
 
 function localInvoices() {
@@ -127,6 +152,82 @@ function currentBuyer() {
     buyerAddress: lateBuyerAddressInput?.value || '',
     buyerBranchName: lateBuyerBranchInput?.value || ''
   };
+}
+
+function profileRows() {
+  return listTaxBuyerProfiles();
+}
+
+function resetProfileForm(profile = {}) {
+  if (profileIdInput) {
+    profileIdInput.value = profile.id || profile.customerKey || '';
+    profileIdInput.readOnly = Boolean(profile.id || profile.customerKey);
+  }
+  if (profileNameInput) profileNameInput.value = profile.buyerName || '';
+  if (profileTaxIdInput) profileTaxIdInput.value = profile.buyerTaxId || '';
+  if (profileAddressInput) profileAddressInput.value = profile.buyerAddress || '';
+  if (profileBranchInput) profileBranchInput.value = profile.buyerBranchName || 'สำนักงานใหญ่';
+  if (profileError) profileError.textContent = '';
+  if (profileDeleteBtn) profileDeleteBtn.hidden = !(profile.id || profile.customerKey);
+}
+
+function renderProfiles(selectedId = '') {
+  if (!profileListEl) return;
+  const rows = profileRows();
+  if (!rows.length) {
+    profileListEl.innerHTML = '<div class="profile-empty">ยังไม่มีโปรไฟล์ภาษีลูกค้า</div>';
+    resetProfileForm();
+    return;
+  }
+  profileListEl.innerHTML = rows.map(profile => {
+    const id = profile.id || profile.customerKey || '';
+    return `<button class="profile-row${String(id) === String(selectedId) ? ' is-active' : ''}" type="button" data-profile-id="${escapeHtml(id)}">
+      <strong>${escapeHtml(profile.buyerName || '-')}</strong>
+      <span>${escapeHtml(profile.buyerTaxId || '-')} • ${escapeHtml(profile.buyerBranchName || 'สำนักงานใหญ่')}</span>
+    </button>`;
+  }).join('');
+  const active = rows.find(row => String(row.id || row.customerKey || '') === String(selectedId)) || rows[0];
+  resetProfileForm(active);
+}
+
+function openProfileDialog() {
+  renderProfiles();
+  profileDialog?.showModal();
+  setTimeout(() => profileNameInput?.focus(), 50);
+}
+
+function selectedProfileId() {
+  return String(profileIdInput?.value || '').trim();
+}
+
+function currentProfileForm() {
+  return {
+    id: selectedProfileId() || normalizeTaxId(profileTaxIdInput?.value) || profileNameInput?.value || '',
+    customerKey: selectedProfileId() || normalizeTaxId(profileTaxIdInput?.value) || profileNameInput?.value || '',
+    buyerName: profileNameInput?.value || '',
+    buyerTaxId: profileTaxIdInput?.value || '',
+    buyerAddress: profileAddressInput?.value || '',
+    buyerBranchName: profileBranchInput?.value || ''
+  };
+}
+
+function saveProfileForm() {
+  if (profileError) profileError.textContent = '';
+  try {
+    const profile = saveTaxBuyerProfile(currentProfileForm());
+    renderProfiles(profile.id);
+  } catch (error) {
+    if (profileError) profileError.textContent = error?.message || 'บันทึกโปรไฟล์ภาษีไม่สำเร็จ';
+  }
+}
+
+function deleteProfileForm() {
+  const id = selectedProfileId();
+  if (!id) return;
+  const ok = window.confirm('ลบโปรไฟล์ภาษีลูกค้านี้หรือไม่');
+  if (!ok) return;
+  deleteTaxBuyerProfile(id);
+  renderProfiles();
 }
 
 function applyBuyer(buyer = {}) {
@@ -223,10 +324,38 @@ async function submitLateTaxInvoice() {
   }
 }
 
+function showVoidDialog(invoice) {
+  currentVoidInvoice = invoice;
+  if (voidText) voidText.textContent = `${invoice.invoiceNumber || invoice.id || '-'} • บิล ${invoice.saleNumber || invoice.saleId || '-'}`;
+  if (voidReasonInput) voidReasonInput.value = '';
+  if (voidError) voidError.textContent = '';
+  voidDialog?.showModal();
+  setTimeout(() => voidReasonInput?.focus(), 50);
+}
+
+async function submitVoidInvoice() {
+  if (!currentVoidInvoice) return;
+  voidSubmitBtn.disabled = true;
+  voidSubmitBtn.textContent = 'กำลังยกเลิก...';
+  if (voidError) voidError.textContent = '';
+  try {
+    await voidFullTaxInvoice(currentVoidInvoice, voidReasonInput?.value || '');
+    voidDialog?.close();
+    currentVoidInvoice = null;
+    await load();
+  } catch (error) {
+    if (voidError) voidError.textContent = error?.message || 'ยกเลิกใบกำกับภาษีไม่สำเร็จ';
+  } finally {
+    voidSubmitBtn.disabled = false;
+    voidSubmitBtn.textContent = 'ยืนยันยกเลิก';
+  }
+}
+
 function cardHtml(invoice) {
   const buyer = invoice.buyer || {};
   const seller = invoice.seller || {};
-  const status = invoice.status === 'void' ? 'ยกเลิก' : 'ออกเอกสารแล้ว';
+  const isVoid = invoice.status === 'void';
+  const status = isVoid ? 'ยกเลิก' : 'ออกเอกสารแล้ว';
   return `<article class="tax-card">
     <div class="tax-card-main">
       <div class="tax-doc-no">${escapeHtml(invoice.invoiceNumber || invoice.id || '-')}</div>
@@ -237,13 +366,14 @@ function cardHtml(invoice) {
         <span>${escapeHtml(dateText(invoice.issuedAt))}</span>
       </div>
       <p>${escapeHtml(buyer.buyerAddress || '')}</p>
-      <small>ผู้ขาย: ${escapeHtml(seller.sellerName || '-')} • ${escapeHtml(status)}</small>
+      <small>ผู้ขาย: ${escapeHtml(seller.sellerName || '-')} • ${escapeHtml(status)}${invoice.voidReason ? ` • เหตุผล: ${escapeHtml(invoice.voidReason)}` : ''}</small>
     </div>
     <div class="tax-card-side">
       <strong>${money(invoice.totalAmount)}</strong>
       <span>VAT ${money(invoice.vatAmount)}</span>
       <div class="tax-actions">
         <a class="btn btn-primary" href="${invoiceUrl(invoice)}" target="_blank" rel="noopener">เปิด/พิมพ์</a>
+        ${isVoid ? '' : `<button class="btn btn-danger" type="button" data-void-tax="${escapeHtml(keyOf(invoice))}">ยกเลิก</button>`}
       </div>
     </div>
   </article>`;
@@ -286,6 +416,29 @@ sourceSaleResult?.addEventListener('click', event => {
 });
 lateTaxInvoiceCancelBtn?.addEventListener('click', () => lateDialog?.close());
 lateForm?.addEventListener('submit', event => { event.preventDefault(); submitLateTaxInvoice(); });
+profileBtn?.addEventListener('click', openProfileDialog);
+profileCloseBtn?.addEventListener('click', () => profileDialog?.close());
+profileNewBtn?.addEventListener('click', () => {
+  resetProfileForm();
+  if (profileIdInput) profileIdInput.readOnly = false;
+  profileNameInput?.focus();
+});
+profileDeleteBtn?.addEventListener('click', deleteProfileForm);
+profileListEl?.addEventListener('click', event => {
+  const button = event.target.closest('[data-profile-id]');
+  if (!button) return;
+  const profile = profileRows().find(row => String(row.id || row.customerKey || '') === String(button.dataset.profileId || ''));
+  if (profile) renderProfiles(profile.id || profile.customerKey || '');
+});
+profileForm?.addEventListener('submit', event => { event.preventDefault(); saveProfileForm(); });
+listEl?.addEventListener('click', event => {
+  const button = event.target.closest('[data-void-tax]');
+  if (!button) return;
+  const invoice = invoices.find(row => keyOf(row) === String(button.dataset.voidTax || ''));
+  if (invoice) showVoidDialog(invoice);
+});
+voidCancelBtn?.addEventListener('click', () => voidDialog?.close());
+voidForm?.addEventListener('submit', event => { event.preventDefault(); submitVoidInvoice(); });
 window.addEventListener('storage', event => { if (!event.key || event.key === TAX_INVOICE_LOCAL_KEY) load(); });
 load();
 loadSalesForSearch();

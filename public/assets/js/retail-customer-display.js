@@ -86,7 +86,7 @@ function renderPaymentQr(snapshot = {}) {
   if (els.paymentQrVerify) {
     els.paymentQrVerify.textContent = payment.error
       ? 'กรุณารอพนักงานตั้งค่าข้อมูล PromptPay ของร้าน'
-      : `ผู้รับ ${payment.accountName || payment.shopName || '-'}`;
+      : (payment.accountName || payment.shopName || '-');
     els.paymentQrVerify.dataset.verified = verified ? 'yes' : 'no';
   }
   if (payment.qrImageUrl && !payment.error) {

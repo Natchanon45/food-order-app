@@ -60,7 +60,8 @@ function listLocalInvoices() {
 
 function listBuyerProfiles() {
   const rows = readJson(TAX_BUYER_PROFILE_KEY, []);
-  return Array.isArray(rows) ? rows : [];
+  const tenantId = getTenantId();
+  return (Array.isArray(rows) ? rows : []).filter(row => !row.tenantId || row.tenantId === tenantId);
 }
 
 function existingInvoiceForSale(sale) {
@@ -78,10 +79,49 @@ function saveLocalInvoice(invoice) {
 function saveBuyerProfile(sale, buyer) {
   const key = customerKey(sale);
   if (!key || !buyer?.buyerName) return;
-  const profile = { id: key, customerKey: key, ...buyer, updatedAt: Date.now() };
-  const rows = listBuyerProfiles().filter(row => String(row.id) !== key);
-  rows.push(profile);
-  writeJson(TAX_BUYER_PROFILE_KEY, rows);
+  writeBuyerProfile({ id: key, customerKey: key, ...buyer });
+}
+
+function writeBuyerProfile(profile) {
+  const normalized = normalizeBuyer(profile);
+  const id = normalizeText(profile.id || profile.customerKey || normalized.buyerTaxId || normalized.buyerName);
+  if (!id) throw new Error('ไม่พบรหัสโปรไฟล์ลูกค้า');
+  if (!normalized.buyerName) throw new Error('กรุณาระบุชื่อลูกค้า / บริษัท');
+  const tenantId = getTenantId();
+  const row = { id, customerKey: normalizeText(profile.customerKey || id), tenantId, ...normalized, updatedAt: Date.now() };
+  const rows = readJson(TAX_BUYER_PROFILE_KEY, []);
+  const kept = (Array.isArray(rows) ? rows : []).filter(item => {
+    const itemKey = String(item.id || item.customerKey || '').trim();
+    return itemKey !== id || (item.tenantId && item.tenantId !== tenantId);
+  });
+  kept.push(row);
+  writeJson(TAX_BUYER_PROFILE_KEY, kept);
+  return row;
+}
+
+function removeBuyerProfile(id) {
+  const key = String(id || '').trim();
+  if (!key) return false;
+  const tenantId = getTenantId();
+  const rows = readJson(TAX_BUYER_PROFILE_KEY, []);
+  const kept = (Array.isArray(rows) ? rows : []).filter(row => {
+    const rowKey = String(row.id || row.customerKey || '').trim();
+    return rowKey !== key || (row.tenantId && row.tenantId !== tenantId);
+  });
+  writeJson(TAX_BUYER_PROFILE_KEY, kept);
+  return true;
+}
+
+function updateLocalInvoice(invoicePatch) {
+  const key = String(invoicePatch.id || invoicePatch.invoiceNumber || invoicePatch._documentId || '').trim();
+  if (!key) throw new Error('ไม่พบรหัสใบกำกับภาษี');
+  const rows = listLocalInvoices();
+  const index = rows.findIndex(row => [row.id, row.invoiceNumber, row._documentId].some(value => String(value || '') === key));
+  if (index < 0) throw new Error('ไม่พบใบกำกับภาษีเต็มรูปแบบ');
+  const updated = { ...rows[index], ...invoicePatch, id: rows[index].id || invoicePatch.id || key, tenantId: rows[index].tenantId || getTenantId(), updatedAt: Date.now() };
+  rows[index] = updated;
+  writeJson(TAX_INVOICE_LOCAL_KEY, rows);
+  return updated;
 }
 
 function buyerProfileForSale(sale = {}) {
@@ -204,6 +244,68 @@ async function createInvoiceOnline(sale, buyer) {
 
 export function getExistingFullTaxInvoiceForSale(sale) {
   return existingInvoiceForSale(sale);
+}
+
+export function listTaxBuyerProfiles() {
+  return listBuyerProfiles().sort((a, b) => Number(b.updatedAt || 0) - Number(a.updatedAt || 0));
+}
+
+export function saveTaxBuyerProfile(profile) {
+  return writeBuyerProfile(profile);
+}
+
+export function deleteTaxBuyerProfile(id) {
+  return removeBuyerProfile(id);
+}
+
+export async function voidFullTaxInvoice(invoiceInput, reason = '') {
+  const invoiceId = String(invoiceInput?.id || invoiceInput?._documentId || invoiceInput?.invoiceNumber || '').trim();
+  if (!invoiceId) throw new Error('ไม่พบรหัสใบกำกับภาษี');
+  const tenantId = getTenantId();
+  const userId = auth?.currentUser?.uid || '';
+  const voidedAt = Date.now();
+  const voidReason = normalizeText(reason);
+  let committed = null;
+  if (isFirebaseConfigured && db && navigator.onLine !== false) {
+    const invoiceRef = tenantDoc(TAX_INVOICE_COLLECTION, invoiceId, tenantId);
+    try {
+      await runTransaction(db, async transaction => {
+        const snapshot = await transaction.get(invoiceRef);
+        if (!snapshot.exists()) throw new Error('ไม่พบใบกำกับภาษีเต็มรูปแบบ');
+        const current = { ...snapshot.data(), id: snapshot.data()?.id || snapshot.id, _documentId: snapshot.id };
+        if (current.status === 'void') {
+          committed = current;
+          return;
+        }
+        committed = { ...current, status: 'void', voidedAt, voidReason, voidedBy: userId, updatedAt: voidedAt };
+        transaction.set(invoiceRef, {
+          status: 'void',
+          voidedAt,
+          voidReason,
+          voidedBy: userId,
+          updatedAt: voidedAt,
+          updatedBy: userId,
+          updatedAtServer: serverTimestamp()
+        }, { merge: true });
+      });
+    } catch (error) {
+      console.warn('[retail-pos-full-tax-invoice] void transaction fallback', error);
+    }
+  }
+  if (!committed) {
+    committed = updateLocalInvoice({
+      id: invoiceInput.id || invoiceId,
+      invoiceNumber: invoiceInput.invoiceNumber || '',
+      status: 'void',
+      voidedAt,
+      voidReason,
+      voidedBy: userId,
+      syncStatus: navigator.onLine === false ? 'pending_void' : 'local_void'
+    });
+    return committed;
+  }
+  saveLocalInvoice(committed);
+  return committed;
 }
 
 export async function createFullTaxInvoiceFromSale(sale, buyerInput) {

@@ -68,8 +68,10 @@ function render(invoice) {
   const seller = invoice.seller || {};
   const buyer = invoice.buyer || {};
   const items = Array.isArray(invoice.items) ? invoice.items : [];
+  const isVoid = invoice.status === 'void';
   root.className = 'tax-paper';
   root.innerHTML = `
+    ${isVoid ? `<div class="void-stamp">ยกเลิก</div>` : ''}
     <section class="tax-title">
       <h1>ใบกำกับภาษีเต็มรูปแบบ</h1>
       <div>Tax Invoice</div>
@@ -86,8 +88,10 @@ function render(invoice) {
         <div><span>เลขที่</span><strong>${escapeHtml(invoice.invoiceNumber || invoice.id || '-')}</strong></div>
         <div><span>วันที่</span><strong>${escapeHtml(dateTime(invoice.issuedAt))}</strong></div>
         ${invoice.saleNumber ? `<div><span>อ้างอิงบิล</span><strong>${escapeHtml(invoice.saleNumber)}</strong></div>` : ''}
+        ${isVoid ? `<div><span>สถานะ</span><strong>ยกเลิก</strong></div>` : ''}
       </div>
     </section>
+    ${isVoid ? `<section class="void-note"><strong>เอกสารนี้ถูกยกเลิก</strong>${invoice.voidedAt ? ` เมื่อ ${escapeHtml(dateTime(invoice.voidedAt))}` : ''}${invoice.voidReason ? `<br>เหตุผล: ${escapeHtml(invoice.voidReason)}` : ''}</section>` : ''}
     <section class="buyer-box">
       <h2>ผู้ซื้อ / Customer</h2>
       <p><strong>${escapeHtml(buyer.buyerName || '-')}</strong></p>

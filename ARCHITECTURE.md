@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.86
-Build: 2026.07.07.031
-Milestone: POS Customer Display Compact PC Tuning
+Version: 0.13.88
+Build: 2026.07.08.001
+Milestone: Customer Display PromptPay Visual Refresh
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -19,6 +19,10 @@ Full Tax Invoice rule: full tax invoices are stored separately from sales in `ta
 Tax Invoice History rule: `/pos/tax-invoices/` merges local `retail_pos_tax_invoices_v1` data with Firestore `taxInvoices`, supports search by invoice number, sale number, buyer name, buyer tax ID, address, and status, and opens `/pos/tax-invoice/?invoiceId=...` for reprint. The same page can search an original POS sale number from an existing short tax invoice/receipt, open a buyer tax profile modal, and issue or reopen the one full tax invoice allowed for that sale. The POS navigation menu must include a direct `ใบกำกับภาษี` entry for this history page.
 
 Later full tax invoice rule: staff can issue a full tax invoice later when a customer brings an existing short tax invoice/receipt back to the shop. The workflow searches the original POS sale by sale number, opens a buyer tax profile modal, reuses the existing full-tax-invoice creation path, keeps one full tax invoice per sale, and shows the existing invoice instead of creating a duplicate when one already exists.
+
+Tax buyer profile management rule: saved full-tax buyer profiles are stored locally under the current tenant, include `tenantId`, and can be created, edited, or deleted from `/pos/tax-invoices/`. Profiles may prefill future full tax invoice dialogs but must not alter historical sales, VAT totals, payments, stock movements, or issued invoice totals.
+
+Tax invoice void rule: canceling a full tax invoice changes only the separate `taxInvoices/{taxInvoiceId}` document/status and local tax invoice cache. It must not create a replacement bill, must not reopen or duplicate the source sale, and must not deduct or restore stock. When Firebase is online, voiding must use a Firestore transaction that reads the invoice before writing `status: "void"`, void metadata, and updated timestamps. If sync is unavailable, the local invoice may be marked `pending_void`/`local_void` until a later hardening pass.
 
 DBD Lookup rule: the buyer tax ID field is the first input in the full tax invoice modal and includes an inline `DBD` button. The browser can fetch a configured DBD lookup proxy from `window.RETAIL_POS_DBD_LOOKUP_URL` or localStorage key `retail_pos_dbd_lookup_url`; the expected JSON can include `buyerName`, `buyerTaxId`, `buyerAddress`, `buyerBranchName`, or DBD-style aliases such as `juristicNameTH`, `juristicId`, `addressTh`, and `branchName`. If no proxy is configured or lookup fails, the flow opens the official DBD DataWarehouse+ juristic search page for manual verification. This flow does not change POS sale totals, VAT calculation, stock deduction, offline sale sync, or existing short tax invoice receipt behavior.
 
@@ -36,9 +40,11 @@ Payment customer picker rule: the optional member/customer field in the POS paym
 
 Customer Display PC layout rule: on PC widths, `/pos/customer-display/` keeps the customer card and total/payment QR card stacked in the left column, while the cart card remains a separate right column. The combined left column height must match the cart card height, the action/header area should stay compact, and the total card must not overflow when PromptPay QR details are visible. Short PC screens such as 1912x870 must still show the totals, compact PromptPay QR panel, and thank-you message inside the left total card.
 
-Completed in this build: compact PC Customer Display tuning for shorter screens, simplified Customer Display PromptPay QR copy, and immediate customer-result reopening after clearing the POS payment customer field.
+Customer Display PromptPay visual rule: when PromptPay / transfer QR data is present, the Customer Display total card stacks the payment heading, baht amount, QR image, and account owner name vertically and centered. The QR should be as large as possible while preserving the total rows and thank-you badge on short PC screens. The thank-you badge stays pinned to the bottom edge of the total card, centered on one line, and must use font-weight 500 or lighter.
 
-Next task: improve P9-B006 with editable customer tax profile management and void/cancel tax invoice support.
+Completed in this build: Customer Display PromptPay visual refresh with centered stacked QR, larger QR sizing, livelier color accents, account-name-only receiver text, and bottom-pinned one-line thank-you badge.
+
+Next task: test Customer Display PromptPay on real POS payment data after deploy, then continue validating tax profile and void workflow with synced Firestore data.
 
 Deploy commands:
 git pull --rebase origin feature/retail-pos
