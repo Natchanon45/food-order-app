@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.00
-Build: 2026.07.08.013
-Milestone: Customer Display Pairing QR Gradient Polish
+Version: 0.14.01
+Build: 2026.07.08.014
+Milestone: Customer Display Transparent Pairing QR Polish
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -50,7 +50,7 @@ Customer Display pairing QR layer rule: the `เชื่อมอุปกร�
 
 Customer Display pairing QR polish rule: the `เชื่อมอุปกรณ์` hover/focus QR panel should use a wider two-column layout on PC, extend left from the button, stay readable, and remain within the white/green Customer Display visual language. Its text and action button must remain visible against the panel background.
 
-Customer Display pairing QR gradient rule: the device-pairing QR hover panel may use a vertical green fade treatment, with the top background and border opaque/darker green and the lower background and border translucent. This styling applies only to the device-pairing panel; PromptPay payment QR surfaces must stay white/clean for scan reliability.
+Customer Display pairing QR gradient rule: the device-pairing QR hover panel may use a vertical green fade treatment, with the top background and border opaque/darker green and the lower background and border transparent enough for underlying page content to remain visible. Panel copy may use small translucent backplates but should stay solid green, while the POS action button stays green. This styling applies only to the device-pairing panel; PromptPay payment QR surfaces must stay white/clean for scan reliability.
 
 Customer Display classic layout rule: on PC, the customer card should not leave excessive empty space before the payment total card. Total amount numbers should be large enough to read at a distance, and the `ยอดสุทธิ` label must remain fully visible without clipping.
 
