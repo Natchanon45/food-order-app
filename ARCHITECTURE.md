@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.13.84
-Build: 2026.07.07.028
-Milestone: POS PromptPay QR Payment Display
+Version: 0.13.85
+Build: 2026.07.07.030
+Milestone: POS Payment Customer and Display Layout Tuning
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -32,7 +32,11 @@ Payment modal visual rule: Retail POS payment modal numbers and numeric pad butt
 
 PromptPay payment QR rule: PromptPay / transfer account data belongs in Retail POS settings under `settings/payment` and local `retail_pos_store_settings_v1` fallback. The POS payment modal may render a PromptPay QR only when the method is `promptpay`, the store has enabled PromptPay, a valid PromptPay ID exists, and the payable amount is greater than zero. Customer Display snapshots may include `paymentQr` with `tenantId`, `registerId`, `displayId`, `shopName`, `accountName`, masked PromptPay ID, amount, source origin, QR payload, QR image URL, and verification state. The Customer Display must show the QR amount and source/shop verification context so customers can confirm the QR came from the shop's web app and tenant before scanning.
 
-Completed in this build: PromptPay / transfer QR payment display in the POS payment modal and Customer Display, plus POS settings fields for PromptPay account configuration and JS/CSS cache bumps for changed assets.
+Payment customer picker rule: the optional member/customer field in the POS payment modal must clear selected customer state completely when its X button is clicked. Clearing must remove the input value, reset `paymentDialog.dataset.customerId`, reset the selected customer note to the general-customer label, dispatch `pos:customer-change` with an empty customer, hide search results, and must not reopen the dropdown unintentionally.
+
+Customer Display PC layout rule: on PC widths, `/pos/customer-display/` keeps the customer card and total/payment QR card stacked in the left column, while the cart card remains a separate right column. The combined left column height must match the cart card height, the action/header area should stay compact, and the total card must not overflow when PromptPay QR details are visible.
+
+Completed in this build: POS payment modal customer clear hardening and Customer Display PC stacked-left layout tuning, with JS/CSS cache bumps for changed assets.
 
 Next task: improve P9-B006 with editable customer tax profile management and void/cancel tax invoice support.
 

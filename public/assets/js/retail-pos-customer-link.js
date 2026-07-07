@@ -98,6 +98,27 @@ function selectCustomer(id) {
   if (results) results.hidden = true;
 }
 
+function clearCustomerSelection({ focus = false, showResults = false } = {}) {
+  selectedCustomerId = "";
+  if (input) input.value = "";
+  if (note) note.textContent = "ลูกค้าทั่วไป / ไม่ระบุ";
+  if (paymentDialog) {
+    paymentDialog.dataset.customerId = "";
+    paymentDialog.dispatchEvent(new CustomEvent("pos:customer-change", { detail: { customerId: "", customer: null } }));
+  }
+  if (results) {
+    if (showResults) renderResults();
+    else {
+      results.hidden = true;
+      results.innerHTML = "";
+    }
+  }
+  if (focus) setTimeout(() => {
+    input?.focus({ preventScroll: true });
+    if (!showResults && results) results.hidden = true;
+  }, 0);
+}
+
 function closeResultsSoon() {
   setTimeout(() => { if (results) results.hidden = true; }, 120);
 }
@@ -147,13 +168,18 @@ results?.addEventListener("mousedown", event => {
   const button = event.target.closest("[data-customer-id]");
   if (button) selectCustomer(button.dataset.customerId);
 });
-clearBtn?.addEventListener("click", () => { selectCustomer(""); input.focus(); renderResults(); });
+clearBtn?.addEventListener("pointerdown", event => event.preventDefault());
+clearBtn?.addEventListener("click", event => {
+  event.preventDefault();
+  event.stopPropagation();
+  clearCustomerSelection({ focus: false, showResults: false });
+});
 confirmBtn?.addEventListener("click", () => {
   const startedAt = Date.now();
   const customerIdValue = selectedCustomerId;
   setTimeout(() => tagLatestSale(customerIdValue, startedAt), 80);
 }, true);
-paymentDialog?.addEventListener("close", () => selectCustomer(""));
+paymentDialog?.addEventListener("close", () => clearCustomerSelection());
 
 const localCustomers = read(CUSTOMER_KEY, []);
 const remoteCustomers = await listRecords(RetailCollections.customers, { sortBy: 'updatedAt', direction: 'desc' });
