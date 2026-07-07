@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Customer Display Deep Green Liquid Glass
-Version: 0.13.92
-Build: 2026.07.08.005
+Milestone: Customer Display Light Green Glass
+Version: 0.13.93
+Build: 2026.07.08.006
 
-Change: retuned `/pos/customer-display/` to a deep-green-to-clear liquid-glass theme, with a richer hover/focus pairing QR panel, while keeping cart count readability, PromptPay card layout, and the bottom-pinned thank-you badge.
+Change: lightened `/pos/customer-display/` to a brighter green transparent-glass theme so the UI is less opaque, while keeping the richer hover/focus pairing QR panel, cart count readability, PromptPay card layout, and the bottom-pinned thank-you badge.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -17,7 +17,7 @@ Customer Display pairing QR workflow: hovering or focusing `เชื่อม�
 
 Customer Display cart count workflow: the `รายการในบิล` header count badge uses high-contrast white text, a dark green glass background, and a defined chip shape so item counts remain readable.
 
-Customer Display deep green glass workflow: the Customer Display visual theme uses dark green gradients fading into transparent glass, translucent card surfaces, soft green highlights, and a richer hover/focus pairing QR panel that keeps the QR visible above the page content.
+Customer Display green glass workflow: the Customer Display visual theme uses green gradients fading into transparent glass, translucent bright card surfaces, soft green highlights, and a richer hover/focus pairing QR panel that keeps the QR visible above the page content without making the screen feel opaque.
 
 Later tax invoice workflow: staff can open `/pos/tax-invoices/`, search the original POS sale number from an existing short tax invoice/receipt, review the source sale, enter buyer tax details, and issue or reopen the one full tax invoice allowed for that sale.
 
