@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.12
-Build: 2026.07.08.025
-Milestone: POS Developer Panel Tax Sync Build Alignment
+Version: 0.14.13
+Build: 2026.07.08.026
+Milestone: Full Tax Invoice Sync Error Visibility
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -23,6 +23,8 @@ Full Tax Invoice pending sync rule: local full tax invoices marked `pending_crea
 Full Tax Invoice offline void sync rule: when a local full tax invoice is voided before the original issue reaches Firestore, pending void sync must create the official invoice through the normal TAX running-number transaction path first, then void that invoice through the Firestore void transaction. This preserves one official document trail for the sale and prevents local void states from retrying forever when the remote invoice does not yet exist.
 
 Full Tax Invoice sync visibility rule: online create/reuse calls should retry pending full tax invoices before returning local fallback documents for the same sale. Tax invoice history must expose local fallback state with readable badges for pending sync, local-only invoices, local voids, and temporary local running numbers so staff can validate whether an invoice has reached Firestore without opening browser storage.
+
+Full Tax Invoice sync error visibility rule: pending local full tax invoice sync attempts must preserve retryable local state and record concise sync diagnostics when automatic create/void sync is skipped or fails. Tax invoice history must surface sync errors with a clear badge and searchable message without writing failed documents to Firestore outside the transaction path.
 
 Full Tax Invoice A4 print rule: `/pos/tax-invoice/` renders the printed title as `ใบกำกับภาษี` and the buyer box as `ผู้ซื้อ / ลูกค้า`. Document metadata rows must keep labels and values in separate columns so long sale references wrap only inside the value area. Printed A4 tax invoices must paginate item rows at 10 rows per page; continuation pages repeat the invoice header and buyer block, continue item numbering, and render totals/signatures only on the final page.
 

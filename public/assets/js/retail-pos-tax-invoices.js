@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260708-024';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260708-026';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -118,11 +118,12 @@ function mergeSales(...groups) {
 function invoiceSearchText(invoice = {}) {
   const buyer = invoice.buyer || {};
   const seller = invoice.seller || {};
-  return [invoice.invoiceNumber, invoice.saleNumber, invoice.saleId, buyer.buyerName, buyer.buyerTaxId, buyer.buyerAddress, seller.sellerName, invoice.status, invoice.syncStatus].join(' ').toLowerCase();
+  return [invoice.invoiceNumber, invoice.saleNumber, invoice.saleId, buyer.buyerName, buyer.buyerTaxId, buyer.buyerAddress, seller.sellerName, invoice.status, invoice.syncStatus, invoice.syncError].join(' ').toLowerCase();
 }
 
 function syncBadge(invoice = {}) {
   const status = String(invoice.syncStatus || '');
+  if (invoice.syncError) return '<span class="sync-badge is-error">Sync Error</span>';
   if (['pending_create', 'pending_void'].includes(status)) return '<span class="sync-badge is-pending">รอ Sync</span>';
   if (['local_only', 'local_void'].includes(status)) return '<span class="sync-badge is-local">เอกสารในเครื่อง</span>';
   if (invoice.runningNumberStatus === 'local_only') return '<span class="sync-badge is-local">เลขชั่วคราว</span>';
@@ -374,7 +375,7 @@ function cardHtml(invoice) {
         <span>${escapeHtml(dateText(invoice.issuedAt))}</span>
       </div>
       <p>${escapeHtml(buyer.buyerAddress || '')}</p>
-      <small>ผู้ขาย: ${escapeHtml(seller.sellerName || '-')} • ${escapeHtml(status)}${invoice.voidReason ? ` • เหตุผล: ${escapeHtml(invoice.voidReason)}` : ''}</small>
+      <small>ผู้ขาย: ${escapeHtml(seller.sellerName || '-')} • ${escapeHtml(status)}${invoice.voidReason ? ` • เหตุผล: ${escapeHtml(invoice.voidReason)}` : ''}${invoice.syncError ? ` • Sync: ${escapeHtml(invoice.syncError)}` : ''}</small>
     </div>
     <div class="tax-card-side">
       <strong>${money(invoice.totalAmount)}</strong>
