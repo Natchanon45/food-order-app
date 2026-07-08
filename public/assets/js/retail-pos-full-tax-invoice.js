@@ -1,5 +1,5 @@
 import { auth, db, doc, isFirebaseConfigured, runTransaction, serverTimestamp } from './firebase-config.js?v=20260630-073';
-import { getTenantId, saveRecord } from './retail-db.js?v=20260629-032';
+import { getRecord, getTenantId, listRecords } from './retail-db.js?v=20260629-032';
 import { dateKeyFrom, monthKeyFrom } from './retail-pos-firestore-foundation.js?v=20260707-001';
 import { reserveRunningNumber, POS_COUNTER_VERSION } from './retail-pos-counter.js?v=20260707-001';
 
@@ -67,7 +67,18 @@ function listBuyerProfiles() {
 function existingInvoiceForSale(sale) {
   const key = saleKey(sale);
   if (!key) return null;
-  return listLocalInvoices().find(row => String(row.saleId || row.sourceSale?.id || row.sourceSale?.saleNumber || '') === key || String(row.saleNumber || '') === String(sale.saleNumber || '')) || null;
+  return listLocalInvoices().find(row => invoiceMatchesSale(row, sale)) || null;
+}
+
+function invoiceMatchesSale(invoice = {}, sale = {}) {
+  const saleId = String(sale.id || '').trim();
+  const saleNumber = String(sale.saleNumber || sale.number || '').trim();
+  const key = saleKey(sale);
+  return Boolean(
+    (key && [invoice.saleId, invoice.sourceSale?.id, invoice.sourceSale?.saleNumber].some(value => String(value || '').trim() === key))
+    || (saleId && [invoice.saleId, invoice.sourceSale?.id].some(value => String(value || '').trim() === saleId))
+    || (saleNumber && [invoice.saleNumber, invoice.sourceSale?.saleNumber].some(value => String(value || '').trim() === saleNumber))
+  );
 }
 
 function saveLocalInvoice(invoice) {
@@ -242,6 +253,27 @@ async function createInvoiceOnline(sale, buyer) {
   return committed;
 }
 
+async function getExistingInvoiceOnlineForSale(sale) {
+  if (!isFirebaseConfigured || !db || navigator.onLine === false) return null;
+  const candidateIds = [...new Set([saleKey(sale), sale.id, sale.saleNumber, sale.number].filter(Boolean).map(value => `tax-${value}`))];
+  for (const id of candidateIds) {
+    const invoice = await getRecord(TAX_INVOICE_COLLECTION, id);
+    if (invoice && invoiceMatchesSale(invoice, sale)) {
+      saveLocalInvoice(invoice);
+      return invoice;
+    }
+  }
+  try {
+    const rows = await listRecords(TAX_INVOICE_COLLECTION, { sortBy: 'issuedAt', direction: 'desc' });
+    const invoice = rows.find(row => invoiceMatchesSale(row, sale)) || null;
+    if (invoice) saveLocalInvoice(invoice);
+    return invoice;
+  } catch (error) {
+    console.warn('[retail-pos-full-tax-invoice] existing invoice lookup failed', error);
+    return null;
+  }
+}
+
 export function getExistingFullTaxInvoiceForSale(sale) {
   return existingInvoiceForSale(sale);
 }
@@ -312,6 +344,8 @@ export async function createFullTaxInvoiceFromSale(sale, buyerInput) {
   if (!sale) throw new Error('ไม่พบข้อมูลบิล');
   const existing = existingInvoiceForSale(sale);
   if (existing) return existing;
+  const onlineExisting = await getExistingInvoiceOnlineForSale(sale);
+  if (onlineExisting) return onlineExisting;
   const buyer = normalizeBuyer(buyerInput || defaultBuyerFromSale(sale));
   if (!buyer.buyerName) throw new Error('กรุณาระบุชื่อลูกค้า / บริษัท');
   const onlineInvoice = await createInvoiceOnline(sale, buyer);
@@ -320,10 +354,9 @@ export async function createFullTaxInvoiceFromSale(sale, buyerInput) {
     return onlineInvoice;
   }
   const invoice = buildInvoiceFromSale(sale, buyer);
+  invoice.syncStatus = navigator.onLine === false ? 'pending_create' : 'local_only';
   saveBuyerProfile(sale, buyer);
   saveLocalInvoice(invoice);
-  try { await saveRecord(TAX_INVOICE_COLLECTION, invoice); }
-  catch (error) { console.warn('[retail-pos-full-tax-invoice] save firebase failed', error); }
   return invoice;
 }
 

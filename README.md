@@ -1,15 +1,17 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Customer Display Transparent Pairing QR Polish
-Version: 0.14.01
-Build: 2026.07.08.014
+Milestone: Full Tax Invoice Duplicate Hardening
+Version: 0.14.02
+Build: 2026.07.08.015
 
-Change: refined only the `/pos/customer-display/` device-pairing QR hover panel so it fades from dark green at the top to true transparency at the bottom, keeps all panel copy in solid green with small translucent text backplates, uses a green POS button, and keeps the QR image surface white.
+Change: hardened full tax invoice issuing so `/pos/receipt/` and `/pos/tax-invoices/` check Firestore for an existing full tax invoice before creating a new one, cache remote matches locally, and avoid non-transaction Firestore writes when the online transaction path is unavailable.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
-Existing PromptPay QR display, tax buyer DBD lookup, tax invoice creation duplicate protection, tax invoice history/reprint, later full tax invoice issuing from existing receipts, receipt behavior, stock deduction, offline sale sync, POS theme alignment, mobile product card overlay behavior, mobile button layout, payment modal visual tuning, and printable document fonts are unchanged.
+Existing PromptPay QR display, tax buyer DBD lookup, tax invoice history/reprint, later full tax invoice issuing from existing receipts, receipt behavior, stock deduction, offline sale sync, POS theme alignment, mobile product card overlay behavior, mobile button layout, payment modal visual tuning, and printable document fonts are unchanged.
+
+Full tax invoice duplicate workflow: issuing a full tax invoice first checks the local tax invoice cache, then checks Firestore by deterministic tax invoice IDs and loaded `taxInvoices` rows. If an existing invoice matches the sale ID or sale number, the app reuses and caches that invoice instead of creating a new document. If the Firestore transaction path cannot reserve/write the invoice, the fallback remains local/pending and does not write to Firestore outside a transaction.
 
 Customer Display pairing QR gradient workflow: hovering or focusing `เชื่อมอุปกรณ์` opens the device-pairing QR panel with a top-to-bottom green fade. The top edge and upper background are opaque/darker green, the lower edge and lower background become transparent enough to show underlying cart text, copy stays solid green on subtle translucent backplates, the POS button stays green, and the QR code remains on a clean white scan surface.
 

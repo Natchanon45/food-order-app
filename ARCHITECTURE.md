@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.01
-Build: 2026.07.08.014
-Milestone: Customer Display Transparent Pairing QR Polish
+Version: 0.14.02
+Build: 2026.07.08.015
+Milestone: Full Tax Invoice Duplicate Hardening
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -15,6 +15,8 @@ Retail POS navigation rule: submenu expand/collapse controls must render exactly
 Current Customer Display rule: POS machines publish Customer Display snapshots to `customerDisplays/{displayId}`. Each POS has local `retail_pos_register_config` with `registerId` and `displayId`, and each display snapshot includes `tenantId`, `registerId`, `displayId`, `sessionId`, `status`, `items`, totals, and `updatedAt`.
 
 Full Tax Invoice rule: full tax invoices are stored separately from sales in `taxInvoices/{taxInvoiceId}` and include `tenantId`, source sale reference, seller tax profile, buyer tax profile, line items, VAT summary, total, status, issued timestamp, and TAX running number metadata. The receipt popup can create/reuse one full tax invoice per sale and opens `/pos/tax-invoice/?invoiceId=...` for A4 printing. Buyer tax data is captured through a receipt-popup modal, prefilled from the sale or saved tax buyer profile, and saved locally for future reuse. When Firebase is online, issuing a full tax invoice must use a Firestore transaction that reads the existing invoice, counter, and running number reservation before writing the invoice and counter reservation.
+
+Full Tax Invoice duplicate protection rule: before creating a full tax invoice, the app checks local tax invoices and Firestore for any invoice matching the sale ID or sale number, including deterministic IDs such as `tax-{saleId}` and `tax-{saleNumber}`. Existing remote matches must be cached locally and reused. If the transaction path cannot complete online, fallback invoices may remain local/pending but must not be written to Firestore outside the transaction path.
 
 Tax Invoice History rule: `/pos/tax-invoices/` merges local `retail_pos_tax_invoices_v1` data with Firestore `taxInvoices`, supports search by invoice number, sale number, buyer name, buyer tax ID, address, and status, and opens `/pos/tax-invoice/?invoiceId=...` for reprint. The same page can search an original POS sale number from an existing short tax invoice/receipt, open a buyer tax profile modal, and issue or reopen the one full tax invoice allowed for that sale. The POS navigation menu must include a direct `ใบกำกับภาษี` entry for this history page.
 
