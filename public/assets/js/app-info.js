@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.62',
-  build: '2026.07.02.016',
+  version: '0.14.10',
+  build: '2026.07.08.023',
   branch: 'feature/retail-pos',
-  commit: 'POS-HARDENING-002',
+  commit: 'POS-APP-INFO-01410',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'POS Hardening 002',
-  updatedAt: '2026-07-02T00:00:00+07:00',
+  milestone: 'POS Developer Panel Build Alignment',
+  updatedAt: '2026-07-08T00:00:00+07:00',
   whatsNew: [
-    'Add POS hardening diagnostics for long-running cashier sessions',
-    'Track queue summary, localStorage usage, uptime, event counters, and multi-tab leader state',
-    'Expose window.retailPosHardening.diagnostics() for manual inspection',
-    'Bump hardening script version to prevent stale browser cache'
+    'Align Developer Panel version, build, milestone, and commit with current Retail POS build',
+    'Refresh app-info cache chain through the POS toast/status loader',
+    'Keep POS offline sync module alignment and local stock idempotency behavior unchanged',
+    'Bump POS toast status imports to prevent stale browser cache'
   ]
 };
 

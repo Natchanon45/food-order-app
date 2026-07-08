@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Offline Sync Module Alignment
-Version: 0.14.09
-Build: 2026.07.08.022
+Milestone: POS Developer Panel Build Alignment
+Version: 0.14.10
+Build: 2026.07.08.023
 
-Change: aligned the POS sync status module with the same offline sale sync worker and local sale repository versions loaded by `/pos`, reducing duplicate module instances from stale browser cache paths.
+Change: aligned the POS Developer Panel app info with the current Retail POS build and refreshed the app-info cache chain through the POS toast/status loader.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -26,6 +26,8 @@ POS receipt VAT mode workflow: `/pos/receipt/` prints VAT sales with `ยอด�
 POS local stock idempotency workflow: local POS checkout stores the sale before Firebase sync and deducts local stock once per stable saleId. If the same saleId is saved again because of a re-entrant click, retry, or cached script overlap, the app preserves the existing local sale, skips product stock changes, and avoids adding duplicate local stock movement rows.
 
 POS offline sync module workflow: `/pos` loads one active offline sale sync worker URL and the sync status chip imports that same worker URL, so manual Sync/Retry buttons operate on the same queue snapshot, retry timers, and worker state as the background offline sync process.
+
+POS Developer Panel workflow: all POS pages that load the shared toast/status module now receive the current `app-info` build chain, so the Developer Panel shows the current version, build, milestone, and commit instead of the older POS hardening metadata.
 
 Full tax invoice A4 pagination workflow: `/pos/tax-invoice/` prints as `ใบกำกับภาษี`, labels the buyer block `ผู้ซื้อ / ลูกค้า`, and keeps document metadata labels such as `อ้างอิงบิล` separated from long values. A4 print pages show at most 10 line items per page. When an invoice has more than 10 items, each continuation page repeats the invoice header and buyer block, item numbering continues from the previous page, and totals/signatures render only on the final page.
 
