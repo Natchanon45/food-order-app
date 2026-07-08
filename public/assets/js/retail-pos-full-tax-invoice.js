@@ -327,7 +327,13 @@ export async function syncPendingTaxInvoices() {
   });
   for (const invoice of pendingVoids) {
     try {
-      const voided = await voidFullTaxInvoice(invoice, invoice.voidReason || 'sync pending void');
+      const sale = saleFromInvoice(invoice);
+      let targetInvoice = await getExistingInvoiceOnlineForSale(sale);
+      if (!targetInvoice && saleKey(sale)) {
+        const buyer = normalizeBuyer(invoice.buyer || defaultBuyerFromSale(sale));
+        if (buyer.buyerName) targetInvoice = await createInvoiceOnline(sale, buyer);
+      }
+      const voided = await voidFullTaxInvoice(targetInvoice || invoice, invoice.voidReason || 'sync pending void');
       if (voided && !['pending_void', 'local_void'].includes(String(voided.syncStatus || ''))) synced.push(voided);
     } catch (error) {
       console.warn('[retail-pos-full-tax-invoice] pending void sync skipped', error);

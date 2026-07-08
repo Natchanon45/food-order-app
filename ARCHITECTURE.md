@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.10
-Build: 2026.07.08.023
-Milestone: POS Developer Panel Build Alignment
+Version: 0.14.11
+Build: 2026.07.08.024
+Milestone: Full Tax Invoice Offline Void Sync
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -19,6 +19,8 @@ Full Tax Invoice rule: full tax invoices are stored separately from sales in `ta
 Full Tax Invoice duplicate protection rule: before creating a full tax invoice, the app checks local tax invoices and Firestore for any invoice matching the sale ID or sale number, including deterministic IDs such as `tax-{saleId}` and `tax-{saleNumber}`. Existing remote matches must be cached locally and reused. If the transaction path cannot complete online, fallback invoices may remain local/pending but must not be written to Firestore outside the transaction path.
 
 Full Tax Invoice pending sync rule: local full tax invoices marked `pending_create` or `local_only` must retry through the same transaction-safe Firestore issue path before tax invoice history/receipt workflows create another invoice. The sync must first recheck Firestore for an existing invoice that matches the sale, cache that remote match when found, and only reserve/write TAX running numbers through the transaction path. Local void states marked `pending_void` or `local_void` may retry through the void transaction path and must not modify the source sale, payment, VAT summary, or stock data.
+
+Full Tax Invoice offline void sync rule: when a local full tax invoice is voided before the original issue reaches Firestore, pending void sync must create the official invoice through the normal TAX running-number transaction path first, then void that invoice through the Firestore void transaction. This preserves one official document trail for the sale and prevents local void states from retrying forever when the remote invoice does not yet exist.
 
 Full Tax Invoice sync visibility rule: online create/reuse calls should retry pending full tax invoices before returning local fallback documents for the same sale. Tax invoice history must expose local fallback state with readable badges for pending sync, local-only invoices, local voids, and temporary local running numbers so staff can validate whether an invoice has reached Firestore without opening browser storage.
 
