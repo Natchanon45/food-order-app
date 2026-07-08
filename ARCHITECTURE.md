@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.07
-Build: 2026.07.08.020
-Milestone: Full Tax Invoice Pending Sync Visibility
+Version: 0.14.08
+Build: 2026.07.08.021
+Milestone: POS Local Stock Deduction Idempotency
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -45,6 +45,8 @@ Payment modal visual rule: Retail POS payment modal numbers and numeric pad butt
 POS PromptPay payment modal compact rule: on PC viewports, the payment modal must keep the member picker, loyalty controls, payment method, PromptPay QR panel, received amount field, and change row visible without requiring vertical scrolling where practical. PromptPay modal verification copy should be concise and show only the receiver line; shop name and source URL remain available in Customer Display verification context but should not be repeated inside the cashier modal.
 
 POS VAT/payment totals rule: when `vatRegistered` is enabled, a blank or zero stored VAT rate should fall back to the default 7% rate before POS totals, sale persistence, and Customer Display snapshots are calculated. Received-cash parsing must strip formatting consistently across the visible payment UI and the safe-confirm guard so the displayed change amount and saved sale change amount match.
+
+POS local stock idempotency rule: local POS sale persistence must be idempotent by stable saleId. If a local sale with the same saleId already exists, checkout must not deduct product stock again and must not append duplicate local stock movement rows; Firestore offline sync remains responsible for transaction-safe remote sale creation and remote stock deduction.
 
 POS receipt VAT mode rule: `/pos/receipt/` must render VAT mode as an informational label/value row: `โหมด VAT` with `ราคารวม VAT` for include mode or `ราคาไม่รวม VAT` for exclude mode. It must not render the VAT mode text as the row label with `-` as a fake amount.
 

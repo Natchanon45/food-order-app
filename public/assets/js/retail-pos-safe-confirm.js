@@ -55,6 +55,16 @@ function buildSale({ saleId, number, method, received, totals, createdAt, items 
 }
 
 function saveLocalSale(sale, items) {
+  const saleKey = localSaleKey(sale);
+  const existingSales = readJson(SALES_KEY, []);
+  const existingSale = saleKey ? existingSales.find(item => localSaleKey(item) === saleKey) : null;
+  if (existingSale) {
+    const preservedSale = { ...sale, ...existingSale };
+    writeJson(SALES_KEY, [preservedSale, ...existingSales.filter(item => localSaleKey(item) !== saleKey)].slice(0, 500));
+    window.dispatchEvent(new CustomEvent('retail-pos-sale-saved', { detail: { sale: preservedSale, duplicateLocalSave: true } }));
+    return preservedSale;
+  }
+
   const products = readJson(PRODUCT_KEY, []);
   const itemMap = new Map(items.map(item => [String(item.id), item]));
   const movements = [];
@@ -67,13 +77,14 @@ function saveLocalSale(sale, items) {
     movements.push({ id, tenantId: sale.tenantId, productId: product.id || product.code, productName: product.name, type: 'sale', direction: 'out', qty: sold, before, after, stockBefore: before, stockAfter: after, note: `ขายสินค้า ${sale.saleNumber}`, referenceType: 'sale', referenceId: sale.id, referenceNumber: sale.saleNumber, createdAt: sale.createdAt });
     return { ...product, stock: after };
   });
-  const saleKey = localSaleKey(sale);
-  const sales = readJson(SALES_KEY, []).filter(item => localSaleKey(item) !== saleKey);
+  const saleWithStockMark = { ...sale, stockDeductedAt: sale.stockDeductedAt || new Date().toISOString(), stockDeductionStatus: 'deducted' };
+  const movementIds = new Set(movements.map(item => String(item.id || '')));
+  const existingMovements = readJson(MOVEMENT_KEY, []).filter(item => !movementIds.has(String(item.id || '')));
   writeJson(PRODUCT_KEY, nextProducts);
-  writeJson(SALES_KEY, [sale, ...sales].slice(0, 500));
-  writeJson(MOVEMENT_KEY, [...movements, ...readJson(MOVEMENT_KEY, [])].slice(0, 500));
-  window.dispatchEvent(new CustomEvent('retail-pos-sale-saved', { detail: { sale } }));
-  return sale;
+  writeJson(SALES_KEY, [saleWithStockMark, ...existingSales].slice(0, 500));
+  writeJson(MOVEMENT_KEY, [...movements, ...existingMovements].slice(0, 500));
+  window.dispatchEvent(new CustomEvent('retail-pos-sale-saved', { detail: { sale: saleWithStockMark } }));
+  return saleWithStockMark;
 }
 
 function unlockPage() {
@@ -138,10 +149,10 @@ async function safeConfirmPayment(event) {
     const createdAt = new Date().toISOString();
     const pendingNumber = pendingDocumentNumber({ type: 'SALE', value: createdAt, stableId: saleId });
     const sale = buildSale({ saleId, number: pendingNumber, method, received, totals, createdAt, items });
-    saveLocalSale(sale, items);
+    const savedSale = saveLocalSale(sale, items);
     unlockPage();
     resetCartUi();
-    await showReceipt(sale, { autoPrint: false });
+    await showReceipt(savedSale, { autoPrint: false });
   } catch (error) {
     console.error('[retail-pos-safe-confirm] save failed', error);
     const errorNode = document.querySelector('#paymentError');
