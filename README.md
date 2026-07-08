@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Local Stock Deduction Idempotency
-Version: 0.14.08
-Build: 2026.07.08.021
+Milestone: POS Offline Sync Module Alignment
+Version: 0.14.09
+Build: 2026.07.08.022
 
-Change: hardened local POS sale persistence so saving the same stable saleId again reuses the existing local sale and does not deduct local stock or append duplicate stock movement rows.
+Change: aligned the POS sync status module with the same offline sale sync worker and local sale repository versions loaded by `/pos`, reducing duplicate module instances from stale browser cache paths.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -24,6 +24,8 @@ POS VAT/payment workflow: when the store is VAT registered, a blank or zero save
 POS receipt VAT mode workflow: `/pos/receipt/` prints VAT sales with `ยอดก่อน VAT`, `VAT {rate}%`, and `โหมด VAT` whose value is `ราคารวม VAT` or `ราคาไม่รวม VAT`. The VAT mode row is informational and must not show a dash as an amount.
 
 POS local stock idempotency workflow: local POS checkout stores the sale before Firebase sync and deducts local stock once per stable saleId. If the same saleId is saved again because of a re-entrant click, retry, or cached script overlap, the app preserves the existing local sale, skips product stock changes, and avoids adding duplicate local stock movement rows.
+
+POS offline sync module workflow: `/pos` loads one active offline sale sync worker URL and the sync status chip imports that same worker URL, so manual Sync/Retry buttons operate on the same queue snapshot, retry timers, and worker state as the background offline sync process.
 
 Full tax invoice A4 pagination workflow: `/pos/tax-invoice/` prints as `ใบกำกับภาษี`, labels the buyer block `ผู้ซื้อ / ลูกค้า`, and keeps document metadata labels such as `อ้างอิงบิล` separated from long values. A4 print pages show at most 10 line items per page. When an invoice has more than 10 items, each continuation page repeats the invoice header and buyer block, item numbering continues from the previous page, and totals/signatures render only on the final page.
 

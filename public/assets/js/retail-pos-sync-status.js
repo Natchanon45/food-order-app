@@ -1,5 +1,5 @@
-import { syncOfflineSalesToFirebase, retryFailedOfflineSales, getOfflineQueueWorkerSnapshot } from './retail-offline-sale-sync.js?v=20260702-004';
-import { listLocalSales } from './retail-pos-repository.js?v=20260702-005';
+import { syncOfflineSalesToFirebase, retryFailedOfflineSales, getOfflineQueueWorkerSnapshot } from './retail-offline-sale-sync.js?v=20260706-039';
+import { listLocalSales } from './retail-pos-repository.js?v=20260630-081';
 
 const SYNC_EVENT = 'retail-offline-sales-synced';
 const WORKER_EVENT = 'retail-offline-queue-worker';
