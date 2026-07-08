@@ -57,8 +57,18 @@ function createOrderId() {
 function categories() { return ["ทั้งหมด", ...new Set(menus.filter(x => x.active !== false).map(x => x.category || "อื่น ๆ"))]; }
 function renderTabs() { categoryTabs.innerHTML = categories().map(category => `<button type="button" class="category-tab${category === activeCategory ? " active" : ""}" data-category="${category}">${category}</button>`).join(""); }
 function renderMenus() { const keyword = document.querySelector("#searchInput").value.trim().toLowerCase(); const filtered = menus.filter(item => item.active !== false && (!keyword || item.name.toLowerCase().includes(keyword)) && (activeCategory === "ทั้งหมด" || (item.category || "อื่น ๆ") === activeCategory)); menuGrid.innerHTML = filtered.length ? filtered.map(item => `<article class="card menu-card"><div class="menu-image"><img src="${item.image}" alt="${item.name}"></div><div class="menu-name">${item.name}</div><div class="menu-category">${item.category || "อื่น ๆ"}</div><div class="menu-footer"><span class="price">${money(item.price)} บาท</span><button class="btn btn-primary btn-sm" data-add="${item.id}">เพิ่ม</button></div></article>`).join("") : '<div class="card empty">ไม่พบเมนู</div>'; }
-function deliveryZones() { return [{ id: "nearby", label: "ในเขตใกล้ร้าน", fee: Number(storeSettings.deliveryFeeNearby ?? 0) }, { id: "general", label: "พื้นที่ทั่วไป", fee: Number(storeSettings.deliveryFeeGeneral ?? 30) }, { id: "far", label: "พื้นที่ห่างไกล", fee: Number(storeSettings.deliveryFeeFar ?? 50) }]; }
-function renderDeliveryZones() { const previous = deliveryZone.value || "nearby"; deliveryZone.innerHTML = deliveryZones().map(zone => `<option value="${zone.id}">${zone.label} • ${money(zone.fee)} บาท</option>`).join(""); deliveryZone.value = deliveryZones().some(zone => zone.id === previous) ? previous : "nearby"; }
+function escapeHtml(value = "") { return String(value).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char])); }
+function deliveryZones() {
+  const customOptions = Array.isArray(storeSettings.deliveryFeeOptions) ? storeSettings.deliveryFeeOptions : [];
+  const normalized = customOptions.map((option, index) => ({
+    id: String(option.id || option.key || `fee-${index + 1}`),
+    label: String(option.label || option.name || "").trim(),
+    fee: Math.max(0, Number(option.fee ?? option.amount ?? 0) || 0)
+  })).filter(option => option.label);
+  if (normalized.length) return normalized;
+  return [{ id: "nearby", label: "ในเขตใกล้ร้าน", fee: Number(storeSettings.deliveryFeeNearby ?? 0) }, { id: "general", label: "พื้นที่ทั่วไป", fee: Number(storeSettings.deliveryFeeGeneral ?? 30) }, { id: "far", label: "พื้นที่ห่างไกล", fee: Number(storeSettings.deliveryFeeFar ?? 50) }];
+}
+function renderDeliveryZones() { const zones = deliveryZones(); const previous = deliveryZone.value || zones[0]?.id || ""; deliveryZone.innerHTML = zones.map(zone => `<option value="${escapeHtml(zone.id)}">${escapeHtml(zone.label)} • ${money(zone.fee)} บาท</option>`).join(""); deliveryZone.value = zones.some(zone => zone.id === previous) ? previous : zones[0]?.id || ""; }
 function selectedZone() { return deliveryZones().find(zone => zone.id === deliveryZone.value) || deliveryZones()[0]; }
 function showPromptPayPlaceholder(message) { promptPayQr.hidden = true; promptPayQr.removeAttribute("src"); promptPayPlaceholder.hidden = false; promptPayPlaceholder.textContent = message; }
 function renderPromptPay() {

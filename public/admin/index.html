@@ -97,44 +97,19 @@
               <div>
                 <h2>ค่าจัดส่ง Delivery</h2>
                 <div class="menu-category">
-                  กำหนดราคาตามพื้นที่โดยไม่ต้องใช้แผนที่
+                  กำหนดชื่อตัวเลือกและราคาที่ลูกค้าเลือกเองในหน้า Delivery
                 </div>
               </div>
             </div>
-            <div class="grid grid-3">
-              <div class="field">
-                <label>ในเขตใกล้ร้าน (บาท)</label
-                ><input
-                  class="input"
-                  id="deliveryFeeNearby"
-                  type="number"
-                  min="0"
-                  step="1"
-                  value="0"
-                />
-              </div>
-              <div class="field">
-                <label>พื้นที่ทั่วไป (บาท)</label
-                ><input
-                  class="input"
-                  id="deliveryFeeGeneral"
-                  type="number"
-                  min="0"
-                  step="1"
-                  value="30"
-                />
-              </div>
-              <div class="field">
-                <label>พื้นที่ห่างไกล (บาท)</label
-                ><input
-                  class="input"
-                  id="deliveryFeeFar"
-                  type="number"
-                  min="0"
-                  step="1"
-                  value="50"
-                />
-              </div>
+            <div id="deliveryFeeOptionsList" class="delivery-fee-options"></div>
+            <div class="order-actions" style="margin-top: 12px">
+              <button
+                class="btn btn-sm"
+                id="addDeliveryFeeOption"
+                type="button"
+              >
+                เพิ่มตัวเลือกค่าส่ง
+              </button>
             </div>
           </div>
           <button class="btn btn-primary">บันทึกข้อมูลร้าน</button>
@@ -357,7 +332,7 @@
       type="module"
       src="/assets/js/sweet-dialog.js?v=20260629-048"
     ></script>
-    <script type="module" src="/assets/js/admin.js?v=20260708-027"></script>
+    <script type="module" src="/assets/js/admin.js?v=20260708-029"></script>
     <script
       type="module"
       src="/assets/js/admin-status-icons.js?v=20260701-031"
@@ -368,7 +343,7 @@
     ></script>
     <script
       type="module"
-      src="/assets/js/admin-payment.js?v=20260623-10"
+      src="/assets/js/admin-payment.js?v=20260708-029"
     ></script>
     <script
       type="module"

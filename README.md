@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Admin Report Card Action Fix
-Version: 0.14.15
-Build: 2026.07.08.028
+Milestone: Custom Delivery Fee Options
+Version: 0.14.16
+Build: 2026.07.08.029
 
-Change: kept the admin sales report card as a direct report action without a collapse/expand button, while preserving collapsed-on-load behavior for the other admin cards.
+Change: replaced fixed Delivery fee fields with editable delivery fee options whose labels and prices appear in the customer Delivery dropdown.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -14,6 +14,8 @@ Existing PromptPay QR display, tax buyer DBD lookup, tax invoice history/reprint
 Admin QR/collapse workflow: `/admin` Delivery and Takeaway QR copy buttons show a single `คัดลอกลิงก์` label with the clipboard icon. All collapsible admin cards are initialized as collapsed on every page load, and the legacy `admin_collapsed_cards_v1` browser state is cleared/ignored so old expanded sessions do not reopen cards automatically.
 
 Admin sales report card workflow: the `รายงานยอดขาย` card is not collapsible and should not render a chevron toggle. Staff open the sales report only through the eye/report button on that card.
+
+Custom Delivery fee workflow: `/admin` lets staff add, remove, rename, and price Delivery fee options such as `รับที่ร้าน` or `ระยะทาง 0-2 กิโลเมตร`. The options are saved to store settings as `deliveryFeeOptions` with tenant-scoped settings data, while the legacy `deliveryFeeNearby`, `deliveryFeeGeneral`, and `deliveryFeeFar` values remain populated for fallback compatibility. `/delivery` shows these custom options in the delivery-zone dropdown and saves the selected option ID, label, fee, subtotal, and total on the order.
 
 Full tax invoice duplicate workflow: issuing a full tax invoice first checks the local tax invoice cache, then checks Firestore by deterministic tax invoice IDs and loaded `taxInvoices` rows. If an existing invoice matches the sale ID or sale number, the app reuses and caches that invoice instead of creating a new document. If the Firestore transaction path cannot reserve/write the invoice, the fallback remains local/pending and does not write to Firestore outside a transaction.
 
