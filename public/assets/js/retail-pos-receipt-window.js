@@ -1,4 +1,4 @@
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, getExistingFullTaxInvoiceForSale, taxInvoiceUrl } from './retail-pos-full-tax-invoice.js?v=20260708-015';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, getExistingFullTaxInvoiceForSale, syncPendingTaxInvoices, taxInvoiceUrl } from './retail-pos-full-tax-invoice.js?v=20260708-016';
 
 const SALES_KEY = 'retail_pos_sales_v1';
 const STORE_SETTINGS_KEY = 'retail_pos_store_settings_v1';
@@ -85,16 +85,22 @@ function render(sale) {
 function rerenderLatest() { const sale = findSale(); if (sale) render(sale); return sale; }
 async function waitForLoyaltyAndRender() { let sale = findSale(); render(sale); const started = Date.now(); while (Date.now() - started < 2500) { await new Promise(resolve => setTimeout(resolve, 180)); sale = rerenderLatest(); if (sale?.loyalty) break; } if (autoPrint) setTimeout(() => window.print(), 250); }
 function openInvoice(invoice) { window.open(taxInvoiceUrl(invoice, { autoPrint: false }), `pos_tax_invoice_${String(invoice.id).replace(/[^a-zA-Z0-9]/g, '_')}`, 'popup=yes,width=920,height=760,noopener,noreferrer'); }
-function showTaxDialog() {
+async function showTaxDialog() {
   if (!currentSale || !taxDialog) return;
-  const existing = getExistingFullTaxInvoiceForSale(currentSale);
-  if (existing) { openInvoice(existing); return; }
-  const defaults = defaultBuyerFromSale(currentSale);
-  const draft = loadBuyerDraft();
-  applyBuyerData(draft || defaults);
-  taxError.innerHTML = '';
-  taxDialog.showModal();
-  setTimeout(() => buyerTaxIdInput?.focus(), 50);
+  taxInvoiceBtn.disabled = true;
+  try {
+    await syncPendingTaxInvoices();
+    const existing = getExistingFullTaxInvoiceForSale(currentSale);
+    if (existing) { openInvoice(existing); return; }
+    const defaults = defaultBuyerFromSale(currentSale);
+    const draft = loadBuyerDraft();
+    applyBuyerData(draft || defaults);
+    taxError.innerHTML = '';
+    taxDialog.showModal();
+    setTimeout(() => buyerTaxIdInput?.focus(), 50);
+  } finally {
+    taxInvoiceBtn.disabled = false;
+  }
 }
 async function submitTaxDialog() {
   if (!currentSale) return;

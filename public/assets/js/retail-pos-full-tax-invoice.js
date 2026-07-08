@@ -219,6 +219,27 @@ function buildInvoiceFromSale(sale, buyer, options = {}) {
   };
 }
 
+function saleFromInvoice(invoice = {}) {
+  return {
+    id: invoice.saleId || invoice.sourceSale?.id || '',
+    saleNumber: invoice.saleNumber || invoice.sourceSale?.saleNumber || '',
+    number: invoice.saleNumber || invoice.sourceSale?.saleNumber || '',
+    createdAt: invoice.sourceSale?.createdAt || invoice.issuedAt || invoice.createdAt || null,
+    items: Array.isArray(invoice.items) ? invoice.items : [],
+    subtotal: invoice.subtotal,
+    discount: invoice.discount,
+    pointDiscount: invoice.pointDiscount,
+    beforeVat: invoice.beforeVat,
+    taxableBase: invoice.beforeVat,
+    vatRate: invoice.vatRate,
+    vatAmount: invoice.vatAmount,
+    vatMode: invoice.vatMode,
+    totalAmount: invoice.totalAmount,
+    total: invoice.totalAmount,
+    paymentMethod: invoice.paymentMethod
+  };
+}
+
 async function createInvoiceOnline(sale, buyer) {
   if (!isFirebaseConfigured || !db || navigator.onLine === false) return null;
   const tenantId = getTenantId();
@@ -272,6 +293,47 @@ async function getExistingInvoiceOnlineForSale(sale) {
     console.warn('[retail-pos-full-tax-invoice] existing invoice lookup failed', error);
     return null;
   }
+}
+
+export async function syncPendingTaxInvoices() {
+  if (!isFirebaseConfigured || !db || navigator.onLine === false) return [];
+  const rows = listLocalInvoices();
+  const synced = [];
+  const pendingCreates = rows.filter(invoice => {
+    const status = String(invoice.syncStatus || '');
+    return invoice.status !== 'void'
+      && ['pending_create', 'local_only'].includes(status)
+      && saleKey(saleFromInvoice(invoice));
+  });
+  for (const invoice of pendingCreates) {
+    try {
+      const sale = saleFromInvoice(invoice);
+      const buyer = normalizeBuyer(invoice.buyer || defaultBuyerFromSale(sale));
+      if (!buyer.buyerName) continue;
+      const existing = await getExistingInvoiceOnlineForSale(sale);
+      if (existing) {
+        synced.push(existing);
+        continue;
+      }
+      const online = await createInvoiceOnline(sale, buyer);
+      if (online) synced.push(online);
+    } catch (error) {
+      console.warn('[retail-pos-full-tax-invoice] pending create sync skipped', error);
+    }
+  }
+  const pendingVoids = listLocalInvoices().filter(invoice => {
+    const status = String(invoice.syncStatus || '');
+    return invoice.status === 'void' && ['pending_void', 'local_void'].includes(status);
+  });
+  for (const invoice of pendingVoids) {
+    try {
+      const voided = await voidFullTaxInvoice(invoice, invoice.voidReason || 'sync pending void');
+      if (voided && !['pending_void', 'local_void'].includes(String(voided.syncStatus || ''))) synced.push(voided);
+    } catch (error) {
+      console.warn('[retail-pos-full-tax-invoice] pending void sync skipped', error);
+    }
+  }
+  return synced;
 }
 
 export function getExistingFullTaxInvoiceForSale(sale) {

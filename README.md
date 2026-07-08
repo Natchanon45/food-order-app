@@ -1,17 +1,19 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Full Tax Invoice Duplicate Hardening
-Version: 0.14.02
-Build: 2026.07.08.015
+Milestone: Full Tax Invoice Pending Sync Hardening
+Version: 0.14.03
+Build: 2026.07.08.016
 
-Change: hardened full tax invoice issuing so `/pos/receipt/` and `/pos/tax-invoices/` check Firestore for an existing full tax invoice before creating a new one, cache remote matches locally, and avoid non-transaction Firestore writes when the online transaction path is unavailable.
+Change: added a pending full tax invoice sync pass so locally queued full tax invoices and local/pending voids retry through the transaction-safe Firestore path from `/pos/receipt/` and `/pos/tax-invoices/`.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
 Existing PromptPay QR display, tax buyer DBD lookup, tax invoice history/reprint, later full tax invoice issuing from existing receipts, receipt behavior, stock deduction, offline sale sync, POS theme alignment, mobile product card overlay behavior, mobile button layout, payment modal visual tuning, and printable document fonts are unchanged.
 
 Full tax invoice duplicate workflow: issuing a full tax invoice first checks the local tax invoice cache, then checks Firestore by deterministic tax invoice IDs and loaded `taxInvoices` rows. If an existing invoice matches the sale ID or sale number, the app reuses and caches that invoice instead of creating a new document. If the Firestore transaction path cannot reserve/write the invoice, the fallback remains local/pending and does not write to Firestore outside a transaction.
+
+Full tax invoice pending sync workflow: opening `/pos/tax-invoices/`, returning online on that page, or opening the receipt popup's full tax invoice flow retries local `pending_create`/`local_only` invoices through the same Firestore transaction path used for online issuing. The sync first rechecks for an existing remote invoice for the sale, caches any match, and only creates through the transaction-safe running-number reservation path. Local `pending_void`/`local_void` cancellations are also retried through the transaction void path without changing the source sale, VAT totals, payment, or stock data.
 
 Customer Display pairing QR gradient workflow: hovering or focusing `เชื่อมอุปกรณ์` opens the device-pairing QR panel with a top-to-bottom green fade. The top edge and upper background are opaque/darker green, the lower edge and lower background become transparent enough to show underlying cart text, copy stays solid green on subtle translucent backplates, the POS button stays green, and the QR code remains on a clean white scan surface.
 

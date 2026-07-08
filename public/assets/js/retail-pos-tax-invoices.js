@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260708-015';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260708-016';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -390,6 +390,8 @@ async function load() {
   refreshBtn.disabled = true;
   refreshBtn.textContent = 'กำลังโหลด...';
   try {
+    try { await syncPendingTaxInvoices(); }
+    catch (error) { console.warn('[retail-pos-tax-invoices] pending sync skipped', error); }
     let remote = [];
     try { remote = await listRecords(TAX_INVOICE_COLLECTION, { sortBy: 'issuedAt', direction: 'desc' }); }
     catch (error) { console.warn('[retail-pos-tax-invoices] firebase/list fallback', error); }
@@ -440,5 +442,6 @@ listEl?.addEventListener('click', event => {
 voidCancelBtn?.addEventListener('click', () => voidDialog?.close());
 voidForm?.addEventListener('submit', event => { event.preventDefault(); submitVoidInvoice(); });
 window.addEventListener('storage', event => { if (!event.key || event.key === TAX_INVOICE_LOCAL_KEY) load(); });
+window.addEventListener('online', load);
 load();
 loadSalesForSearch();
