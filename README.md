@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Full Tax Invoice Pending Sync Hardening
-Version: 0.14.03
-Build: 2026.07.08.016
+Milestone: POS Receipt VAT Mode Label Polish
+Version: 0.14.04
+Build: 2026.07.08.017
 
-Change: added a pending full tax invoice sync pass so locally queued full tax invoices and local/pending voids retry through the transaction-safe Firestore path from `/pos/receipt/` and `/pos/tax-invoices/`.
+Change: clarified the POS receipt VAT mode row so include/exclude VAT prints as `โหมด VAT` with `ราคารวม VAT` or `ราคาไม่รวม VAT` as the value instead of showing a confusing dash.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -18,6 +18,8 @@ Full tax invoice pending sync workflow: opening `/pos/tax-invoices/`, returning 
 Customer Display pairing QR gradient workflow: hovering or focusing `เชื่อมอุปกรณ์` opens the device-pairing QR panel with a top-to-bottom green fade. The top edge and upper background are opaque/darker green, the lower edge and lower background become transparent enough to show underlying cart text, copy stays solid green on subtle translucent backplates, the POS button stays green, and the QR code remains on a clean white scan surface.
 
 POS VAT/payment workflow: when the store is VAT registered, a blank or zero saved VAT rate falls back to 7% so include-VAT carts split totals correctly, for example 114.00 becomes before VAT 106.54, VAT 7.46, and net total 114.00. The payment modal and safe-confirm guard parse received cash the same way, so received 120.00 against 114.00 displays and saves a 6.00 change amount. Customer Display receives the corrected totals and only shows include/exclude VAT mode when POS VAT controls are active.
+
+POS receipt VAT mode workflow: `/pos/receipt/` prints VAT sales with `ยอดก่อน VAT`, `VAT {rate}%`, and `โหมด VAT` whose value is `ราคารวม VAT` or `ราคาไม่รวม VAT`. The VAT mode row is informational and must not show a dash as an amount.
 
 Payment customer picker workflow: customer names in the payment modal result list use font-weight 500 or lighter so selected customers remain readable without looking overly bold.
 

@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.03
-Build: 2026.07.08.016
-Milestone: Full Tax Invoice Pending Sync Hardening
+Version: 0.14.04
+Build: 2026.07.08.017
+Milestone: POS Receipt VAT Mode Label Polish
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -39,6 +39,8 @@ Mobile button layout rule: on small Retail POS screens, header actions should st
 Payment modal visual rule: Retail POS payment modal numbers and numeric pad buttons should not exceed font-weight 500 in the web UI. The payment total should use the shared green accent softly, the change amount may use a restrained amber/red emphasis, and the layout must keep the same payment, VAT, stock, and offline sync behavior.
 
 POS VAT/payment totals rule: when `vatRegistered` is enabled, a blank or zero stored VAT rate should fall back to the default 7% rate before POS totals, sale persistence, and Customer Display snapshots are calculated. Received-cash parsing must strip formatting consistently across the visible payment UI and the safe-confirm guard so the displayed change amount and saved sale change amount match.
+
+POS receipt VAT mode rule: `/pos/receipt/` must render VAT mode as an informational label/value row: `โหมด VAT` with `ราคารวม VAT` for include mode or `ราคาไม่รวม VAT` for exclude mode. It must not render the VAT mode text as the row label with `-` as a fake amount.
 
 PromptPay payment QR rule: PromptPay / transfer account data belongs in Retail POS settings under `settings/payment` and local `retail_pos_store_settings_v1` fallback. The POS payment modal may render a PromptPay QR only when the method is `promptpay`, the store has enabled PromptPay, a valid PromptPay ID exists, and the payable amount is greater than zero. Customer Display snapshots may include `paymentQr` with `tenantId`, `registerId`, `displayId`, `shopName`, `accountName`, masked PromptPay ID, amount, source origin, QR payload, QR image URL, and verification state. The Customer Display must show the QR amount and source/shop verification context so customers can confirm the QR came from the shop's web app and tenant before scanning.
 

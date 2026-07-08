@@ -72,7 +72,7 @@ function itemsHtml(items) { return items.map(item => `<div class="item"><div><st
 function vatHtml(sale) {
   const vat = Number(sale.vatAmount || 0);
   if (!vat && !sale.vatRegistered) return '';
-  return `<div class="row"><span>ยอดก่อน VAT</span><span>${money(sale.beforeVat ?? sale.taxableBase ?? sale.discountedBase ?? 0)}</span></div><div class="row"><span>VAT ${Number(sale.vatRate || 7).toLocaleString('th-TH')}%</span><span>${money(vat)}</span></div><div class="row"><span>${String(sale.vatMode || 'include') === 'exclude' ? 'ราคาไม่รวม VAT' : 'ราคารวม VAT'}</span><span>-</span></div>`;
+  return `<div class="row"><span>ยอดก่อน VAT</span><span>${money(sale.beforeVat ?? sale.taxableBase ?? sale.discountedBase ?? 0)}</span></div><div class="row"><span>VAT ${Number(sale.vatRate || 7).toLocaleString('th-TH')}%</span><span>${money(vat)}</span></div><div class="row"><span>โหมด VAT</span><span>${String(sale.vatMode || 'include') === 'exclude' ? 'ราคาไม่รวม VAT' : 'ราคารวม VAT'}</span></div>`;
 }
 function render(sale) {
   if (!sale) { root.className = 'missing'; root.textContent = 'ไม่พบบิลที่ต้องการพิมพ์'; return; }
