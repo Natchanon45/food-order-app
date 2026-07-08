@@ -1,17 +1,19 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Admin QR Copy and Collapse Bugfix
-Version: 0.14.14
-Build: 2026.07.08.027
+Milestone: Admin Report Card Action Fix
+Version: 0.14.15
+Build: 2026.07.08.028
 
-Change: fixed duplicated copy-link labels on admin Delivery/Takeaway QR cards and made admin cards start collapsed on every page load instead of restoring the previous browser state.
+Change: kept the admin sales report card as a direct report action without a collapse/expand button, while preserving collapsed-on-load behavior for the other admin cards.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
 Existing PromptPay QR display, tax buyer DBD lookup, tax invoice history/reprint, later full tax invoice issuing from existing receipts, receipt behavior, stock deduction, offline sale sync, POS theme alignment, mobile product card overlay behavior, mobile button layout, payment modal visual tuning, and printable document fonts are unchanged.
 
 Admin QR/collapse workflow: `/admin` Delivery and Takeaway QR copy buttons show a single `คัดลอกลิงก์` label with the clipboard icon. All collapsible admin cards are initialized as collapsed on every page load, and the legacy `admin_collapsed_cards_v1` browser state is cleared/ignored so old expanded sessions do not reopen cards automatically.
+
+Admin sales report card workflow: the `รายงานยอดขาย` card is not collapsible and should not render a chevron toggle. Staff open the sales report only through the eye/report button on that card.
 
 Full tax invoice duplicate workflow: issuing a full tax invoice first checks the local tax invoice cache, then checks Firestore by deterministic tax invoice IDs and loaded `taxInvoices` rows. If an existing invoice matches the sale ID or sale number, the app reuses and caches that invoice instead of creating a new document. If the Firestore transaction path cannot reserve/write the invoice, the fallback remains local/pending and does not write to Firestore outside a transaction.
 

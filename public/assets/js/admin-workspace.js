@@ -16,6 +16,10 @@ function headingText(card) {
   return card.querySelector(":scope > .section-title h2")?.textContent?.trim() || "";
 }
 
+function isNonCollapsibleCard(card) {
+  return headingText(card) === "รายงานยอดขาย";
+}
+
 function cardKey(card, index = 0) {
   if (card.dataset.adminCardKey) return card.dataset.adminCardKey;
   const heading = headingText(card) || `card-${index}`;
@@ -40,7 +44,7 @@ function ensureCardBody(card, title) {
 function decorateCard(card, index = 0) {
   if (!(card instanceof HTMLElement) || card.dataset.adminCollapsible === "true") return;
   const title = card.querySelector(":scope > .section-title");
-  if (!title || card.closest(".admin-edit-modal")) return;
+  if (!title || card.closest(".admin-edit-modal") || isNonCollapsibleCard(card)) return;
 
   cardKey(card, index);
   const heading = document.createElement("div");
