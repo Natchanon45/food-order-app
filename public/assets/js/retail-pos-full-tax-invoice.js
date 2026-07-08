@@ -132,7 +132,7 @@ function updateLocalInvoice(invoicePatch) {
   if (!key) throw new Error('ไม่พบรหัสใบกำกับภาษี');
   const rows = listLocalInvoices();
   const index = rows.findIndex(row => [row.id, row.invoiceNumber, row._documentId].some(value => String(value || '') === key));
-  if (index < 0) throw new Error('ไม่พบใบกำกับภาษีเต็มรูปแบบ');
+  if (index < 0) throw new Error('ไม่พบใบกำกับภาษี');
   const updated = { ...rows[index], ...invoicePatch, id: rows[index].id || invoicePatch.id || key, tenantId: rows[index].tenantId || getTenantId(), updatedAt: Date.now() };
   rows[index] = updated;
   writeJson(TAX_INVOICE_LOCAL_KEY, rows);
@@ -398,7 +398,7 @@ export async function voidFullTaxInvoice(invoiceInput, reason = '') {
     try {
       await runTransaction(db, async transaction => {
         const snapshot = await transaction.get(invoiceRef);
-        if (!snapshot.exists()) throw new Error('ไม่พบใบกำกับภาษีเต็มรูปแบบ');
+        if (!snapshot.exists()) throw new Error('ไม่พบใบกำกับภาษี');
         const current = { ...snapshot.data(), id: snapshot.data()?.id || snapshot.id, _documentId: snapshot.id };
         if (current.status === 'void') {
           committed = current;

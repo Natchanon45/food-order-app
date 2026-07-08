@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#159447">
-  <title>ประวัติใบกำกับภาษีเต็มรูปแบบ</title>
+  <title>ประวัติใบกำกับภาษี</title>
   <link rel="icon" href="/assets/images/icon-192.png" type="image/png">
   <link rel="stylesheet" href="/assets/css/retail-pos-font-local.css?v=20260707-018">
   <style>
@@ -14,12 +14,12 @@
 <body>
   <main class="shell">
     <header class="page-head">
-      <div class="brand"><span class="badge">TAX</span><div><h1>ประวัติใบกำกับภาษีเต็มรูปแบบ</h1><p>ค้นหา เปิดดู และพิมพ์ซ้ำเอกสารภาษีจาก POS</p></div></div>
+      <div class="brand"><span class="badge">TAX</span><div><h1>ประวัติใบกำกับภาษี</h1><p>ค้นหา เปิดดู และพิมพ์ซ้ำเอกสารภาษีจาก POS</p></div></div>
       <div class="head-actions"><a class="btn btn-secondary" href="/pos/">กลับ POS</a><button id="refreshBtn" class="btn btn-primary" type="button">รีเฟรช</button></div>
     </header>
     <section class="panel issue-panel">
-      <h2>ออกใบกำกับเต็มจากบิลเดิม</h2>
-      <p>ใช้เมื่อลูกค้านำใบกำกับภาษีอย่างย่อ / ใบเสร็จรับเงินกลับมาออกเอกสารเต็มรูปแบบ</p>
+      <h2>ออกใบกำกับภาษีจากบิลเดิม</h2>
+      <p>ใช้เมื่อลูกค้านำใบกำกับภาษีอย่างย่อ / ใบเสร็จรับเงินกลับมาออกใบกำกับภาษี</p>
       <div class="issue-row">
         <label>เลขบิลเดิม / เลขใบเสร็จ<input id="sourceSaleSearch" autocomplete="off" placeholder="เช่น POS-20260707-00001 หรือ saleId"></label>
         <button id="findSourceSaleBtn" class="btn btn-primary" type="button">ค้นหาบิล</button>
@@ -30,12 +30,12 @@
       <div class="filter-row"><input id="taxInvoiceSearch" class="search" placeholder="ค้นหาเลขเอกสาร / เลขบิล / ชื่อลูกค้า / เลขภาษี"><button id="taxProfileBtn" class="btn btn-secondary" type="button">โปรไฟล์ภาษีลูกค้า</button><a class="btn btn-secondary" href="/pos/tax-invoice/" target="_blank" rel="noopener">เปิดหน้าพิมพ์เปล่า</a></div>
       <div id="summaryText" class="summary">กำลังโหลด...</div>
       <div id="taxInvoiceList" class="list"></div>
-      <div id="emptyState" class="empty" hidden>ยังไม่มีใบกำกับภาษีเต็มรูปแบบ หรือไม่พบรายการที่ค้นหา</div>
+      <div id="emptyState" class="empty" hidden>ยังไม่มีใบกำกับภาษี หรือไม่พบรายการที่ค้นหา</div>
     </section>
   </main>
   <dialog id="lateTaxInvoiceDialog" class="tax-dialog">
     <form id="lateTaxInvoiceForm" class="tax-form" method="dialog">
-      <div><h2>ข้อมูลผู้ซื้อสำหรับใบกำกับภาษีเต็มรูปแบบ</h2><p id="lateTaxInvoiceSaleText">-</p></div>
+      <div><h2>ข้อมูลผู้ซื้อสำหรับใบกำกับภาษี</h2><p id="lateTaxInvoiceSaleText">-</p></div>
       <label>เลขประจำตัวผู้เสียภาษี<input id="lateBuyerTaxIdInput" autocomplete="off" inputmode="numeric" maxlength="13"></label>
       <label>ชื่อผู้ซื้อ / บริษัท<input id="lateBuyerNameInput" autocomplete="name"></label>
       <label>สำนักงานใหญ่ / สาขา<input id="lateBuyerBranchInput" autocomplete="off"></label>
@@ -46,7 +46,7 @@
   </dialog>
   <dialog id="taxProfileDialog" class="tax-dialog">
     <form id="taxProfileForm" class="tax-form" method="dialog">
-      <div><h2>โปรไฟล์ภาษีลูกค้า</h2><p>แก้ไขข้อมูลที่ใช้เติมอัตโนมัติตอนออกใบกำกับภาษีเต็มรูปแบบ</p></div>
+      <div><h2>โปรไฟล์ภาษีลูกค้า</h2><p>แก้ไขข้อมูลที่ใช้เติมอัตโนมัติตอนออกใบกำกับภาษี</p></div>
       <div class="profile-grid">
         <div><div id="taxProfileList" class="profile-list"></div></div>
         <div class="tax-form">
@@ -63,13 +63,13 @@
   </dialog>
   <dialog id="voidTaxInvoiceDialog" class="tax-dialog">
     <form id="voidTaxInvoiceForm" class="tax-form" method="dialog">
-      <div><h2>ยกเลิกใบกำกับภาษีเต็มรูปแบบ</h2><p id="voidTaxInvoiceText">-</p></div>
+      <div><h2>ยกเลิกใบกำกับภาษี</h2><p id="voidTaxInvoiceText">-</p></div>
       <label>เหตุผลการยกเลิก<textarea id="voidTaxInvoiceReasonInput" placeholder="เช่น ออกข้อมูลผู้ซื้อผิด / ลูกค้าขอยกเลิกเอกสาร"></textarea></label>
       <div id="voidTaxInvoiceError" class="tax-error"></div>
       <div class="tax-dialog-actions"><button id="voidTaxInvoiceCancelBtn" class="btn btn-secondary" type="button">ไม่ยกเลิก</button><button id="voidTaxInvoiceSubmitBtn" class="btn btn-danger" type="submit">ยืนยันยกเลิก</button></div>
     </form>
   </dialog>
   <script type="module" src="/assets/js/retail-pos-navigation.js?v=20260707-021"></script>
-  <script type="module" src="/assets/js/retail-pos-tax-invoices.js?v=20260708-026"></script>
+  <script type="module" src="/assets/js/retail-pos-tax-invoices.js?v=20260708-031"></script>
 </body>
 </html>

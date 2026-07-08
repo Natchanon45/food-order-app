@@ -1,4 +1,4 @@
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, getExistingFullTaxInvoiceForSale, syncPendingTaxInvoices, taxInvoiceUrl } from './retail-pos-full-tax-invoice.js?v=20260708-026';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, getExistingFullTaxInvoiceForSale, syncPendingTaxInvoices, taxInvoiceUrl } from './retail-pos-full-tax-invoice.js?v=20260708-031';
 
 const SALES_KEY = 'retail_pos_sales_v1';
 const STORE_SETTINGS_KEY = 'retail_pos_store_settings_v1';
@@ -110,7 +110,7 @@ async function submitTaxDialog() {
   try {
     const invoice = await createFullTaxInvoiceFromSale(currentSale, buyer);
     if (invoice) { clearBuyerDraft(); taxDialog?.close(); openInvoice(invoice); }
-  } catch (error) { taxError.textContent = error?.message || 'ออกใบกำกับภาษีเต็มรูปแบบไม่สำเร็จ'; }
+  } catch (error) { taxError.textContent = error?.message || 'ออกใบกำกับภาษีไม่สำเร็จ'; }
   finally { taxInvoiceBtn.disabled = false; }
 }
 function dbdLookupEndpoint() { return window.RETAIL_POS_DBD_LOOKUP_URL || localStorage.getItem(DBD_LOOKUP_URL_KEY) || DEFAULT_TAX_BUYER_LOOKUP_URL; }

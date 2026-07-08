@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260708-026';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260708-031';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -306,7 +306,7 @@ async function findSourceSale() {
       openInvoice(existing);
       return;
     }
-    setSourceSaleMessage(sourceSaleCard(sale, '<button class="btn btn-primary" type="button" data-issue-late-tax="1">ออกใบกำกับเต็ม</button>'));
+    setSourceSaleMessage(sourceSaleCard(sale, '<button class="btn btn-primary" type="button" data-issue-late-tax="1">ออกใบกำกับภาษี</button>'));
     showLateTaxDialog(sale);
   } finally {
     findSourceSaleBtn.disabled = false;
@@ -326,7 +326,7 @@ async function submitLateTaxInvoice() {
     await load();
     setSourceSaleMessage(sourceSaleCard(currentSourceSale, `<a class="btn btn-primary" href="${invoiceUrl(invoice)}" target="_blank" rel="noopener">เปิด/พิมพ์</a>`));
   } catch (error) {
-    if (lateTaxInvoiceError) lateTaxInvoiceError.textContent = error?.message || 'ออกใบกำกับภาษีเต็มรูปแบบไม่สำเร็จ';
+    if (lateTaxInvoiceError) lateTaxInvoiceError.textContent = error?.message || 'ออกใบกำกับภาษีไม่สำเร็จ';
   } finally {
     lateTaxInvoiceSubmitBtn.disabled = false;
     lateTaxInvoiceSubmitBtn.textContent = 'ออกใบกำกับภาษี';

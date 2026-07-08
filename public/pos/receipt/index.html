@@ -13,13 +13,13 @@
   <main class="page">
     <div class="toolbar">
       <strong>พิมพ์บิล</strong>
-      <div class="actions"><button id="taxInvoiceBtn" class="btn btn-tax" type="button">ใบกำกับภาษีเต็มรูปแบบ</button><button id="printBtn" class="btn btn-primary" type="button">พิมพ์บิล</button><button id="closeBtn" class="btn btn-light" type="button">ปิด</button></div>
+      <div class="actions"><button id="taxInvoiceBtn" class="btn btn-tax" type="button">ใบกำกับภาษี</button><button id="printBtn" class="btn btn-primary" type="button">พิมพ์บิล</button><button id="closeBtn" class="btn btn-light" type="button">ปิด</button></div>
     </div>
     <div id="receiptRoot" class="loading">กำลังโหลดบิล...</div>
   </main>
   <dialog id="taxInvoiceDialog" class="tax-dialog">
     <form id="taxInvoiceForm" class="tax-form" method="dialog">
-      <div><h2>ข้อมูลผู้ซื้อสำหรับใบกำกับภาษีเต็มรูปแบบ</h2><p>ระบบจะจำข้อมูลนี้ไว้กับลูกค้า/บิล เพื่อใช้ซ้ำครั้งถัดไป</p></div>
+      <div><h2>ข้อมูลผู้ซื้อสำหรับใบกำกับภาษี</h2><p>ระบบจะจำข้อมูลนี้ไว้กับลูกค้า/บิล เพื่อใช้ซ้ำครั้งถัดไป</p></div>
       <div class="tax-grid">
         <label>เลขประจำตัวผู้เสียภาษี<div class="tax-id-control"><input id="buyerTaxIdInput" inputmode="numeric" maxlength="13" autocomplete="off"><button id="dbdLookupBtn" class="dbd-btn" type="button">DBD</button></div><small class="tax-hint">กด DBD เพื่อค้นหาข้อมูลนิติบุคคลจาก DBD DataWarehouse+</small></label>
         <label>ชื่อผู้ซื้อ / บริษัท<input id="buyerNameInput" autocomplete="organization" required></label>
@@ -30,6 +30,6 @@
       <div class="tax-dialog-actions"><button id="taxInvoiceCancelBtn" class="btn btn-light" type="button">ยกเลิก</button><button class="btn btn-tax" type="submit">ออกใบกำกับภาษี</button></div>
     </form>
   </dialog>
-  <script type="module" src="/assets/js/retail-pos-receipt-window.js?v=20260708-026"></script>
+  <script type="module" src="/assets/js/retail-pos-receipt-window.js?v=20260708-031"></script>
 </body>
 </html>

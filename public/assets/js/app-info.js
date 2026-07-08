@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.17',
-  build: '2026.07.08.030',
+  version: '0.14.18',
+  build: '2026.07.08.031',
   branch: 'feature/retail-pos',
-  commit: 'DELIVERY-FEE-UI-01417',
+  commit: 'TAX-INVOICE-LABELS-01418',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Custom Delivery Fee UI Polish',
+  milestone: 'Tax Invoice Label Consistency',
   updatedAt: '2026-07-08T00:00:00+07:00',
   whatsNew: [
-    'Move the add delivery fee option action to the card header',
-    'Style the add option action as the primary green button',
-    'Polish delivery fee option rows with clearer spacing and row numbers',
-    'Preserve custom delivery fee dropdown behavior and order totals'
+    'Use ใบกำกับภาษี consistently across POS receipt and tax invoice history',
+    'Shorten tax invoice buyer and void dialog titles',
+    'Keep tax invoice print title, history title, and receipt action wording aligned',
+    'Preserve existing tax invoice duplicate, sync, and void behavior'
   ]
 };
 
