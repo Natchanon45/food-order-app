@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Custom Delivery Fee Options
-Version: 0.14.16
-Build: 2026.07.08.029
+Milestone: Custom Delivery Fee UI Polish
+Version: 0.14.17
+Build: 2026.07.08.030
 
-Change: replaced fixed Delivery fee fields with editable delivery fee options whose labels and prices appear in the customer Delivery dropdown.
+Change: polished the custom Delivery fee option editor by moving the add button to the card header with a plus icon, making it green, aligning row number badges with the inputs, replacing the label field caption with a helpful placeholder, and changing remove actions to red X icon buttons.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -16,6 +16,8 @@ Admin QR/collapse workflow: `/admin` Delivery and Takeaway QR copy buttons show 
 Admin sales report card workflow: the `รายงานยอดขาย` card is not collapsible and should not render a chevron toggle. Staff open the sales report only through the eye/report button on that card.
 
 Custom Delivery fee workflow: `/admin` lets staff add, remove, rename, and price Delivery fee options such as `รับที่ร้าน` or `ระยะทาง 0-2 กิโลเมตร`. The options are saved to store settings as `deliveryFeeOptions` with tenant-scoped settings data, while the legacy `deliveryFeeNearby`, `deliveryFeeGeneral`, and `deliveryFeeFar` values remain populated for fallback compatibility. `/delivery` shows these custom options in the delivery-zone dropdown and saves the selected option ID, label, fee, subtotal, and total on the order.
+
+Custom Delivery fee UI workflow: the `เพิ่มตัวเลือกค่าส่ง` action sits in the upper-right of the Delivery fee card as a green primary button with a plus icon. Delivery fee rows use clearer spacing, input-aligned row number badges, placeholder examples for option names, fee inputs, and red X icon remove buttons while preserving the saved `deliveryFeeOptions` data shape.
 
 Full tax invoice duplicate workflow: issuing a full tax invoice first checks the local tax invoice cache, then checks Firestore by deterministic tax invoice IDs and loaded `taxInvoices` rows. If an existing invoice matches the sale ID or sale number, the app reuses and caches that invoice instead of creating a new document. If the Firestore transaction path cannot reserve/write the invoice, the fallback remains local/pending and does not write to Firestore outside a transaction.
 
