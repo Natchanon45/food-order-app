@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.04
-Build: 2026.07.08.017
-Milestone: POS Receipt VAT Mode Label Polish
+Version: 0.14.05
+Build: 2026.07.08.018
+Milestone: Full Tax Invoice A4 Pagination Polish
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -19,6 +19,8 @@ Full Tax Invoice rule: full tax invoices are stored separately from sales in `ta
 Full Tax Invoice duplicate protection rule: before creating a full tax invoice, the app checks local tax invoices and Firestore for any invoice matching the sale ID or sale number, including deterministic IDs such as `tax-{saleId}` and `tax-{saleNumber}`. Existing remote matches must be cached locally and reused. If the transaction path cannot complete online, fallback invoices may remain local/pending but must not be written to Firestore outside the transaction path.
 
 Full Tax Invoice pending sync rule: local full tax invoices marked `pending_create` or `local_only` must retry through the same transaction-safe Firestore issue path before tax invoice history/receipt workflows create another invoice. The sync must first recheck Firestore for an existing invoice that matches the sale, cache that remote match when found, and only reserve/write TAX running numbers through the transaction path. Local void states marked `pending_void` or `local_void` may retry through the void transaction path and must not modify the source sale, payment, VAT summary, or stock data.
+
+Full Tax Invoice A4 print rule: `/pos/tax-invoice/` renders the printed title as `ใบกำกับภาษี` and the buyer box as `ผู้ซื้อ / ลูกค้า`. Document metadata rows must keep labels and values in separate columns so long sale references wrap only inside the value area. Printed A4 tax invoices must paginate item rows at 10 rows per page; continuation pages repeat the invoice header and buyer block, continue item numbering, and render totals/signatures only on the final page.
 
 Tax Invoice History rule: `/pos/tax-invoices/` merges local `retail_pos_tax_invoices_v1` data with Firestore `taxInvoices`, supports search by invoice number, sale number, buyer name, buyer tax ID, address, and status, and opens `/pos/tax-invoice/?invoiceId=...` for reprint. The same page can search an original POS sale number from an existing short tax invoice/receipt, open a buyer tax profile modal, and issue or reopen the one full tax invoice allowed for that sale. The POS navigation menu must include a direct `ใบกำกับภาษี` entry for this history page.
 

@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Receipt VAT Mode Label Polish
-Version: 0.14.04
-Build: 2026.07.08.017
+Milestone: Full Tax Invoice A4 Pagination Polish
+Version: 0.14.05
+Build: 2026.07.08.018
 
-Change: clarified the POS receipt VAT mode row so include/exclude VAT prints as `โหมด VAT` with `ราคารวม VAT` or `ราคาไม่รวม VAT` as the value instead of showing a confusing dash.
+Change: polished the A4 tax invoice print layout by renaming the printed title to `ใบกำกับภาษี`, changing buyer copy to `ผู้ซื้อ / ลูกค้า`, keeping the sale reference label separate from long bill numbers, and paginating line items at 10 rows per A4 page with repeated headers and totals/signatures on the final page.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -20,6 +20,8 @@ Customer Display pairing QR gradient workflow: hovering or focusing `เชื�
 POS VAT/payment workflow: when the store is VAT registered, a blank or zero saved VAT rate falls back to 7% so include-VAT carts split totals correctly, for example 114.00 becomes before VAT 106.54, VAT 7.46, and net total 114.00. The payment modal and safe-confirm guard parse received cash the same way, so received 120.00 against 114.00 displays and saves a 6.00 change amount. Customer Display receives the corrected totals and only shows include/exclude VAT mode when POS VAT controls are active.
 
 POS receipt VAT mode workflow: `/pos/receipt/` prints VAT sales with `ยอดก่อน VAT`, `VAT {rate}%`, and `โหมด VAT` whose value is `ราคารวม VAT` or `ราคาไม่รวม VAT`. The VAT mode row is informational and must not show a dash as an amount.
+
+Full tax invoice A4 pagination workflow: `/pos/tax-invoice/` prints as `ใบกำกับภาษี`, labels the buyer block `ผู้ซื้อ / ลูกค้า`, and keeps document metadata labels such as `อ้างอิงบิล` separated from long values. A4 print pages show at most 10 line items per page. When an invoice has more than 10 items, each continuation page repeats the invoice header and buyer block, item numbering continues from the previous page, and totals/signatures render only on the final page.
 
 Payment customer picker workflow: customer names in the payment modal result list use font-weight 500 or lighter so selected customers remain readable without looking overly bold.
 
