@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Full Tax Invoice A4 Pagination Polish
-Version: 0.14.05
-Build: 2026.07.08.018
+Milestone: POS PromptPay Payment Modal Compact Polish
+Version: 0.14.06
+Build: 2026.07.08.019
 
-Change: polished the A4 tax invoice print layout by renaming the printed title to `ใบกำกับภาษี`, changing buyer copy to `ผู้ซื้อ / ลูกค้า`, keeping the sale reference label separate from long bill numbers, and paginating line items at 10 rows per A4 page with repeated headers and totals/signatures on the final page.
+Change: compacted the POS payment modal in PC mode so PromptPay QR details, member/loyalty controls, received amount, and change are visible without scrolling; the PromptPay confirmation copy now shows only the receiver instead of repeating shop name and source URL.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -40,6 +40,8 @@ Later tax invoice workflow: staff can open `/pos/tax-invoices/`, search the orig
 Tax profile and void workflow: staff can open `/pos/tax-invoices/`, manage saved buyer tax profiles from `โปรไฟล์ภาษีลูกค้า`, and cancel an issued full tax invoice with a reason. Online cancellation uses a Firestore transaction that reads the invoice before writing the void status. If transaction sync is unavailable, the local invoice is marked pending/local void without changing the source sale, VAT total, payment, or stock data.
 
 PromptPay QR workflow: staff can set PromptPay status, PromptPay ID, and the displayed account name in `/pos/settings/`. When the POS payment method is PromptPay / transfer, the payment modal shows a QR for the exact payable amount and Customer Display shows the same QR with amount, shop name, receiver, masked PromptPay ID, origin, and verified tenant/source context.
+
+POS PromptPay payment modal workflow: in PC mode, the POS payment modal keeps the member picker and loyalty controls compact enough that `รับเงินมา` and `เงินทอน` stay visible without scrolling. The PromptPay QR card shows the QR title, amount, QR image, and receiver line only; it does not repeat the shop name or source URL inside the modal.
 
 Display layout workflow: in PC mode, `/pos/customer-display/` keeps the customer card and total/payment QR card stacked in the left column, keeps the cart card in a separate right column, matches the combined left-column height to the cart card height, and keeps the thank-you message visible even on shorter PC screens.
 
