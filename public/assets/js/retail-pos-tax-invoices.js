@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260708-016';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260708-020';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -118,7 +118,15 @@ function mergeSales(...groups) {
 function invoiceSearchText(invoice = {}) {
   const buyer = invoice.buyer || {};
   const seller = invoice.seller || {};
-  return [invoice.invoiceNumber, invoice.saleNumber, invoice.saleId, buyer.buyerName, buyer.buyerTaxId, buyer.buyerAddress, seller.sellerName, invoice.status].join(' ').toLowerCase();
+  return [invoice.invoiceNumber, invoice.saleNumber, invoice.saleId, buyer.buyerName, buyer.buyerTaxId, buyer.buyerAddress, seller.sellerName, invoice.status, invoice.syncStatus].join(' ').toLowerCase();
+}
+
+function syncBadge(invoice = {}) {
+  const status = String(invoice.syncStatus || '');
+  if (['pending_create', 'pending_void'].includes(status)) return '<span class="sync-badge is-pending">รอ Sync</span>';
+  if (['local_only', 'local_void'].includes(status)) return '<span class="sync-badge is-local">เอกสารในเครื่อง</span>';
+  if (invoice.runningNumberStatus === 'local_only') return '<span class="sync-badge is-local">เลขชั่วคราว</span>';
+  return '';
 }
 
 function existingInvoiceForSale(sale = {}) {
@@ -358,7 +366,7 @@ function cardHtml(invoice) {
   const status = isVoid ? 'ยกเลิก' : 'ออกเอกสารแล้ว';
   return `<article class="tax-card">
     <div class="tax-card-main">
-      <div class="tax-doc-no">${escapeHtml(invoice.invoiceNumber || invoice.id || '-')}</div>
+      <div class="tax-card-badges"><div class="tax-doc-no">${escapeHtml(invoice.invoiceNumber || invoice.id || '-')}</div>${syncBadge(invoice)}</div>
       <h2>${escapeHtml(buyer.buyerName || '-')}</h2>
       <div class="tax-meta">
         <span>เลขภาษี: ${escapeHtml(buyer.buyerTaxId || '-')}</span>

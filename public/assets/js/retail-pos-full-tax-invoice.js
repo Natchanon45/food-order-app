@@ -404,6 +404,9 @@ export async function voidFullTaxInvoice(invoiceInput, reason = '') {
 
 export async function createFullTaxInvoiceFromSale(sale, buyerInput) {
   if (!sale) throw new Error('ไม่พบข้อมูลบิล');
+  if (isFirebaseConfigured && db && navigator.onLine !== false) {
+    await syncPendingTaxInvoices();
+  }
   const existing = existingInvoiceForSale(sale);
   if (existing) return existing;
   const onlineExisting = await getExistingInvoiceOnlineForSale(sale);
