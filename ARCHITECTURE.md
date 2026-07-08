@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.11
-Build: 2026.07.08.024
-Milestone: Full Tax Invoice Offline Void Sync
+Version: 0.14.12
+Build: 2026.07.08.025
+Milestone: POS Developer Panel Tax Sync Build Alignment
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -53,6 +53,8 @@ POS local stock idempotency rule: local POS sale persistence must be idempotent 
 POS offline sync module rule: the POS sync status UI must import the same versioned offline sale sync worker URL as `/pos` loads directly. This keeps manual Sync/Retry actions, background retry timers, worker snapshots, and queue events on one module instance instead of creating duplicate workers through mismatched cache-busted import URLs.
 
 POS Developer Panel app-info rule: shared POS pages that load `retail-toast-status.js` must receive the current `app-info.js` metadata through a bumped cache chain whenever version/build/milestone metadata changes. The Developer Panel should not show stale version, build, milestone, or commit labels after a hosting deploy and hard refresh.
+
+POS Developer Panel tax sync build rule: after tax invoice sync hardening changes, the shared POS Developer Panel metadata must be bumped with the same hosting deploy so operators can confirm the deployed browser cache includes the latest tax sync behavior.
 
 POS receipt VAT mode rule: `/pos/receipt/` must render VAT mode as an informational label/value row: `โหมด VAT` with `ราคารวม VAT` for include mode or `ราคาไม่รวม VAT` for exclude mode. It must not render the VAT mode text as the row label with `-` as a fake amount.
 

@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Full Tax Invoice Offline Void Sync
-Version: 0.14.11
-Build: 2026.07.08.024
+Milestone: POS Developer Panel Tax Sync Build Alignment
+Version: 0.14.12
+Build: 2026.07.08.025
 
-Change: hardened pending full-tax-invoice void sync so a locally issued-and-voided invoice can be created online first, then voided through the Firestore transaction path instead of staying local forever.
+Change: refreshed POS Developer Panel app-info metadata and cache chain so the panel reports the latest full-tax-invoice offline void sync build after hosting deploy.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -30,6 +30,8 @@ POS offline sync module workflow: `/pos` loads one active offline sale sync work
 POS Developer Panel workflow: all POS pages that load the shared toast/status module now receive the current `app-info` build chain, so the Developer Panel shows the current version, build, milestone, and commit instead of the older POS hardening metadata.
 
 Full tax invoice offline void sync workflow: if a full tax invoice was issued locally/offline and then voided before it reached Firestore, the pending sync flow creates the official invoice online through the transaction-safe TAX running-number path and immediately voids it through the Firestore void transaction. This keeps the document audit trail complete and prevents `local_void` documents from retrying forever when no remote invoice exists yet.
+
+POS Developer Panel tax sync build workflow: the Developer Panel metadata now follows the full tax invoice offline void sync milestone through the `retail-toast-status -> app-version-badge -> app-info` cache chain, so staff can verify the deployed POS pages are on the latest tax sync hardening build.
 
 Full tax invoice A4 pagination workflow: `/pos/tax-invoice/` prints as `ใบกำกับภาษี`, labels the buyer block `ผู้ซื้อ / ลูกค้า`, and keeps document metadata labels such as `อ้างอิงบิล` separated from long values. A4 print pages show at most 10 line items per page. When an invoice has more than 10 items, each continuation page repeats the invoice header and buyer block, item numbering continues from the previous page, and totals/signatures render only on the final page.
 
