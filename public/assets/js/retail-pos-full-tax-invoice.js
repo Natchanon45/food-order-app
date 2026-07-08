@@ -1,9 +1,10 @@
 import { auth, db, doc, isFirebaseConfigured, runTransaction, serverTimestamp } from './firebase-config.js?v=20260630-073';
-import { getRecord, getTenantId, listRecords } from './retail-db.js?v=20260629-032';
+import { deleteRecord, getRecord, getTenantId, listRecords, saveRecord } from './retail-db.js?v=20260629-032';
 import { dateKeyFrom, monthKeyFrom } from './retail-pos-firestore-foundation.js?v=20260707-001';
 import { reserveRunningNumber, POS_COUNTER_VERSION } from './retail-pos-counter.js?v=20260707-001';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
+const TAX_BUYER_PROFILE_COLLECTION = 'taxBuyerProfiles';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
 const TAX_BUYER_PROFILE_KEY = 'retail_pos_tax_buyer_profiles_v1';
 const STORE_SETTINGS_KEY = 'retail_pos_store_settings_v1';
@@ -68,6 +69,31 @@ function listBuyerProfiles() {
   return (Array.isArray(rows) ? rows : []).filter(row => !row.tenantId || row.tenantId === tenantId);
 }
 
+function writeTenantBuyerProfiles(profiles) {
+  const tenantId = getTenantId();
+  const rows = readJson(TAX_BUYER_PROFILE_KEY, []);
+  const kept = (Array.isArray(rows) ? rows : []).filter(row => row.tenantId && row.tenantId !== tenantId);
+  writeJson(TAX_BUYER_PROFILE_KEY, [...kept, ...profiles]);
+}
+
+function buyerProfileKey(profile = {}) {
+  return normalizeText(profile.id || profile.customerKey || profile.buyerTaxId || profile.buyerName);
+}
+
+function mergeBuyerProfiles(...groups) {
+  const tenantId = getTenantId();
+  const map = new Map();
+  groups.flat().forEach(profile => {
+    const key = buyerProfileKey(profile);
+    if (!key) return;
+    if (profile.tenantId && profile.tenantId !== tenantId) return;
+    const normalized = { id: key, customerKey: normalizeText(profile.customerKey || key), tenantId, ...normalizeBuyer(profile), updatedAt: Number(profile.updatedAt || 0) || Date.now() };
+    const existing = map.get(key);
+    if (!existing || Number(normalized.updatedAt || 0) >= Number(existing.updatedAt || 0)) map.set(key, normalized);
+  });
+  return [...map.values()].sort((a, b) => Number(b.updatedAt || 0) - Number(a.updatedAt || 0));
+}
+
 function existingInvoiceForSale(sale) {
   const key = saleKey(sale);
   if (!key) return null;
@@ -111,6 +137,11 @@ function writeBuyerProfile(profile) {
   });
   kept.push(row);
   writeJson(TAX_BUYER_PROFILE_KEY, kept);
+  if (isFirebaseConfigured && db && navigator.onLine !== false) {
+    saveRecord(TAX_BUYER_PROFILE_COLLECTION, row).catch(error => {
+      console.warn('[retail-pos-full-tax-invoice] save tax buyer profile failed', error);
+    });
+  }
   return row;
 }
 
@@ -124,6 +155,11 @@ function removeBuyerProfile(id) {
     return rowKey !== key || (row.tenantId && row.tenantId !== tenantId);
   });
   writeJson(TAX_BUYER_PROFILE_KEY, kept);
+  if (isFirebaseConfigured && db && navigator.onLine !== false) {
+    deleteRecord(TAX_BUYER_PROFILE_COLLECTION, key).catch(error => {
+      console.warn('[retail-pos-full-tax-invoice] delete tax buyer profile failed', error);
+    });
+  }
   return true;
 }
 
@@ -375,6 +411,23 @@ export function getExistingFullTaxInvoiceForSale(sale) {
 
 export function listTaxBuyerProfiles() {
   return listBuyerProfiles().sort((a, b) => Number(b.updatedAt || 0) - Number(a.updatedAt || 0));
+}
+
+export async function syncTaxBuyerProfiles() {
+  const local = listBuyerProfiles();
+  if (!isFirebaseConfigured || !db || navigator.onLine === false) return local;
+  try {
+    const remote = await listRecords(TAX_BUYER_PROFILE_COLLECTION, { sortBy: 'updatedAt', direction: 'desc' });
+    const merged = mergeBuyerProfiles(local, remote);
+    writeTenantBuyerProfiles(merged);
+    await Promise.all(merged.map(profile => saveRecord(TAX_BUYER_PROFILE_COLLECTION, profile).catch(error => {
+      console.warn('[retail-pos-full-tax-invoice] sync tax buyer profile failed', profile.id, error);
+    })));
+    return listTaxBuyerProfiles();
+  } catch (error) {
+    console.warn('[retail-pos-full-tax-invoice] tax buyer profile sync fallback', error);
+    return local;
+  }
 }
 
 export function saveTaxBuyerProfile(profile) {

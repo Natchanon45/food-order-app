@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260708-031';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260708-032';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -203,6 +203,9 @@ function openProfileDialog() {
   renderProfiles();
   profileDialog?.showModal();
   setTimeout(() => profileNameInput?.focus(), 50);
+  syncTaxBuyerProfiles()
+    .then(() => renderProfiles(selectedProfileId()))
+    .catch(error => console.warn('[retail-pos-tax-invoices] tax profile sync skipped', error));
 }
 
 function selectedProfileId() {
@@ -225,6 +228,9 @@ function saveProfileForm() {
   try {
     const profile = saveTaxBuyerProfile(currentProfileForm());
     renderProfiles(profile.id);
+    syncTaxBuyerProfiles()
+      .then(() => renderProfiles(profile.id))
+      .catch(error => console.warn('[retail-pos-tax-invoices] tax profile save sync skipped', error));
   } catch (error) {
     if (profileError) profileError.textContent = error?.message || 'บันทึกโปรไฟล์ภาษีไม่สำเร็จ';
   }
@@ -401,6 +407,8 @@ async function load() {
   try {
     try { await syncPendingTaxInvoices(); }
     catch (error) { console.warn('[retail-pos-tax-invoices] pending sync skipped', error); }
+    try { await syncTaxBuyerProfiles(); }
+    catch (error) { console.warn('[retail-pos-tax-invoices] tax profile sync skipped', error); }
     let remote = [];
     try { remote = await listRecords(TAX_INVOICE_COLLECTION, { sortBy: 'issuedAt', direction: 'desc' }); }
     catch (error) { console.warn('[retail-pos-tax-invoices] firebase/list fallback', error); }
