@@ -128,6 +128,15 @@ function labelText(button) {
 
 function wrapButtonLabel(button, text) {
   if (button.querySelector(".admin-button-label")) return;
+  const existingLabel = [...button.children].find(child =>
+    child.tagName === "SPAN" &&
+    !child.classList.contains("app-icon") &&
+    !child.classList.contains("admin-button-icon")
+  );
+  if (existingLabel) {
+    existingLabel.classList.add("admin-button-label");
+    return;
+  }
   [...button.childNodes].forEach(node => {
     if (node.nodeType === Node.TEXT_NODE) node.remove();
   });

@@ -4,6 +4,10 @@ import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 const STORAGE_KEY = "admin_collapsed_cards_v1";
 const MODAL_TRANSITION_MS = 220;
 
+try {
+  localStorage.removeItem(STORAGE_KEY);
+} catch {}
+
 function icon(name) {
   return iconMarkup(name);
 }
@@ -12,32 +16,12 @@ function headingText(card) {
   return card.querySelector(":scope > .section-title h2")?.textContent?.trim() || "";
 }
 
-function isNonCollapsibleCard(card) {
-  return headingText(card) === "รายงานยอดขาย";
-}
-
 function cardKey(card, index = 0) {
   if (card.dataset.adminCardKey) return card.dataset.adminCardKey;
   const heading = headingText(card) || `card-${index}`;
   const key = heading.replace(/\s+/g, "-").replace(/[^\p{L}\p{N}-]/gu, "").toLowerCase() || `card-${index}`;
   card.dataset.adminCardKey = key;
   return key;
-}
-
-function collapsedState() {
-  try {
-    return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"));
-  } catch {
-    return new Set();
-  }
-}
-
-function saveCollapsed(state) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify([...state]));
-}
-
-function defaultCollapsed(card) {
-  return Boolean(card.querySelector("#storeForm, #menuForm, #tableForm, .sort-manager")) || /QR สำหรับสั่ง Delivery/i.test(card.textContent || "");
 }
 
 function ensureCardBody(card, title) {
@@ -56,10 +40,9 @@ function ensureCardBody(card, title) {
 function decorateCard(card, index = 0) {
   if (!(card instanceof HTMLElement) || card.dataset.adminCollapsible === "true") return;
   const title = card.querySelector(":scope > .section-title");
-  if (!title || card.closest(".admin-edit-modal") || isNonCollapsibleCard(card)) return;
+  if (!title || card.closest(".admin-edit-modal")) return;
 
-  const key = cardKey(card, index);
-  const state = collapsedState();
+  cardKey(card, index);
   const heading = document.createElement("div");
   heading.className = "admin-card-heading";
 
@@ -78,17 +61,12 @@ function decorateCard(card, index = 0) {
   card.classList.add("admin-collapsible-card");
   card.dataset.adminCollapsible = "true";
 
-  const shouldCollapse = state.has(key) || (!localStorage.getItem(STORAGE_KEY) && defaultCollapsed(card));
-  card.classList.toggle("admin-card-collapsed", shouldCollapse);
-  toggle.setAttribute("aria-expanded", String(!shouldCollapse));
+  card.classList.add("admin-card-collapsed");
+  toggle.setAttribute("aria-expanded", "false");
 
   toggle.addEventListener("click", () => {
     const collapsed = card.classList.toggle("admin-card-collapsed");
     toggle.setAttribute("aria-expanded", String(!collapsed));
-    const nextState = collapsedState();
-    if (collapsed) nextState.add(key);
-    else nextState.delete(key);
-    saveCollapsed(nextState);
   });
 }
 

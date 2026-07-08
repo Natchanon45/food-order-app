@@ -1,4 +1,4 @@
-import "./admin-delivery-qr.js?v=20260701-003";
+import "./admin-delivery-qr.js?v=20260708-027";
 import { dataService, usingDemoMode } from "./data-service.js";
 import { storage, ref, uploadBytes, getDownloadURL } from "./firebase-config.js?v=20260630-073";
 import { money, toast, DEFAULT_FOOD_IMAGE } from "./ui.js?v=20260701-002";
