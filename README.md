@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Sync Diagnostic Visibility
-Version: 0.14.22
-Build: 2026.07.09.003
+Milestone: Tax Sync Retry Action
+Version: 0.14.23
+Build: 2026.07.09.004
 
-Change: tax invoice history now shows sync error details with attempt count and latest attempted time on invoice cards, making pending create/void retry diagnostics easier to read while preserving source sale, VAT, payment, stock, duplicate protection, and retry behavior.
+Change: tax invoice history cards with `Sync Error`, pending, or local-only sync state now show a direct `ลอง Sync` action. The action reuses the existing pending tax invoice and tax buyer profile sync flow, while preserving source sale, VAT, payment, stock, duplicate protection, and retry behavior.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -28,6 +28,8 @@ Tax buyer profile delete sync workflow: deleting a buyer tax profile hides it fr
 Tax void sync diagnostics workflow: if an online full tax invoice void transaction cannot complete and the app falls back to a local `local_void`/`pending_void` state, the invoice records `syncError`, `syncErrorAt`, `syncAttemptedAt`, and `syncAttemptCount`. `/pos/tax-invoices/` surfaces those diagnostics through the existing `Sync Error` badge and search text while preserving retry behavior and never mutating the source sale, VAT, payment, or stock data.
 
 Tax sync diagnostic visibility workflow: `/pos/tax-invoices/` renders sync diagnostics as readable card text when `syncError` exists, including the concise error, retry attempt count, and latest sync attempt time when available. This is display-only and does not change full tax invoice create, void, retry, VAT, payment, or stock behavior.
+
+Tax sync retry action workflow: `/pos/tax-invoices/` shows `ลอง Sync` on invoice cards that have `syncError`, `pending_create`, `pending_void`, `local_only`, or `local_void`. The action calls the same page refresh flow that runs pending tax invoice sync and tax buyer profile sync, and does not introduce a separate Firestore write path.
 
 Full tax invoice duplicate workflow: issuing a full tax invoice first checks the local tax invoice cache, then checks Firestore by deterministic tax invoice IDs and loaded `taxInvoices` rows. If an existing invoice matches the sale ID or sale number, the app reuses and caches that invoice instead of creating a new document. If the Firestore transaction path cannot reserve/write the invoice, the fallback remains local/pending and does not write to Firestore outside a transaction.
 

@@ -1,4 +1,4 @@
-import './app-version-badge.js?v=20260709-003';
+import './app-version-badge.js?v=20260709-004';
 
 const styleId = 'retailToastMainStyle';
 if (!document.getElementById(styleId)) {

@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260709-003';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260709-004';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -138,6 +138,11 @@ function syncDiagnosticText(invoice = {}) {
   const attemptedAt = Number(invoice.syncAttemptedAt || invoice.syncErrorAt || 0);
   if (attemptedAt > 0) parts.push(`ล่าสุด ${dateText(attemptedAt)}`);
   return parts.join(' • ');
+}
+
+function canRetrySync(invoice = {}) {
+  const status = String(invoice.syncStatus || '');
+  return Boolean(invoice.syncError || ['pending_create', 'pending_void', 'local_only', 'local_void'].includes(status));
 }
 
 function existingInvoiceForSale(sale = {}) {
@@ -399,6 +404,7 @@ function cardHtml(invoice) {
       <span>VAT ${money(invoice.vatAmount)}</span>
       <div class="tax-actions">
         <a class="btn btn-primary" href="${invoiceUrl(invoice)}" target="_blank" rel="noopener">เปิด/พิมพ์</a>
+        ${canRetrySync(invoice) ? '<button class="btn btn-secondary" type="button" data-retry-tax-sync="1">ลอง Sync</button>' : ''}
         ${isVoid ? '' : `<button class="btn btn-danger" type="button" data-void-tax="${escapeHtml(keyOf(invoice))}">ยกเลิก</button>`}
       </div>
     </div>
@@ -462,6 +468,11 @@ profileListEl?.addEventListener('click', event => {
 });
 profileForm?.addEventListener('submit', event => { event.preventDefault(); saveProfileForm(); });
 listEl?.addEventListener('click', event => {
+  const retryButton = event.target.closest('[data-retry-tax-sync]');
+  if (retryButton) {
+    load();
+    return;
+  }
   const button = event.target.closest('[data-void-tax]');
   if (!button) return;
   const invoice = invoices.find(row => keyOf(row) === String(button.dataset.voidTax || ''));
