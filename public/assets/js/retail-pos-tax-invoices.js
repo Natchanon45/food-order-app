@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260710-001';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260710-002';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -118,7 +118,7 @@ function mergeSales(...groups) {
 function invoiceSearchText(invoice = {}) {
   const buyer = invoice.buyer || {};
   const seller = invoice.seller || {};
-  return [invoice.invoiceNumber, invoice.saleNumber, invoice.saleId, buyer.buyerName, buyer.buyerTaxId, buyer.buyerAddress, seller.sellerName, invoice.status, invoice.syncStatus, invoice.syncError].join(' ').toLowerCase();
+  return [invoice.invoiceNumber, invoice.saleNumber, invoice.saleId, buyer.buyerName, buyer.buyerTaxId, buyer.buyerAddress, seller.sellerName, invoice.status, invoice.syncStatus, invoice.syncAction, invoice.syncPhase, invoice.syncTargetId, invoice.syncError].join(' ').toLowerCase();
 }
 
 function syncBadge(invoice = {}) {
@@ -133,6 +133,9 @@ function syncBadge(invoice = {}) {
 function syncDiagnosticText(invoice = {}) {
   if (!invoice.syncError) return '';
   const parts = [`Sync: ${invoice.syncError}`];
+  const action = String(invoice.syncAction || '').trim();
+  const phase = String(invoice.syncPhase || '').trim();
+  if (action || phase) parts.push(`งาน ${action || '-'}${phase ? ` / ${phase}` : ''}`);
   const count = Number(invoice.syncAttemptCount || 0);
   if (count > 0) parts.push(`พยายาม ${count.toLocaleString('th-TH')} ครั้ง`);
   const attemptedAt = Number(invoice.syncAttemptedAt || invoice.syncErrorAt || 0);

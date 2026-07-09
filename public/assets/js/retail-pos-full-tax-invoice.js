@@ -214,12 +214,15 @@ function updateLocalInvoice(invoicePatch) {
   return updated;
 }
 
-function markLocalInvoiceSyncError(invoice, error) {
+function markLocalInvoiceSyncError(invoice, error, context = {}) {
   try {
     return updateLocalInvoice({
       id: invoice.id || invoice._documentId || invoice.invoiceNumber || '',
       invoiceNumber: invoice.invoiceNumber || '',
       syncError: syncErrorMessage(error),
+      syncAction: normalizeText(context.action || invoice.syncAction || ''),
+      syncPhase: normalizeText(context.phase || invoice.syncPhase || ''),
+      syncTargetId: normalizeText(context.targetId || invoice.syncTargetId || invoice.id || invoice._documentId || invoice.invoiceNumber || ''),
       syncErrorAt: Date.now(),
       syncAttemptedAt: Date.now(),
       syncAttemptCount: Number(invoice.syncAttemptCount || 0) + 1
@@ -421,7 +424,7 @@ async function runPendingTaxInvoiceSync() {
       const sale = saleFromInvoice(invoice);
       const buyer = normalizeBuyer(invoice.buyer || defaultBuyerFromSale(sale));
       if (!buyer.buyerName) {
-        markLocalInvoiceSyncError(invoice, 'MISSING_BUYER_NAME');
+        markLocalInvoiceSyncError(invoice, 'MISSING_BUYER_NAME', { action: 'create', phase: 'pending_create' });
         continue;
       }
       const existing = await getExistingInvoiceOnlineForSale(sale);
@@ -431,9 +434,9 @@ async function runPendingTaxInvoiceSync() {
       }
       const online = await createInvoiceOnline(sale, buyer);
       if (online) synced.push(online);
-      else markLocalInvoiceSyncError(invoice, 'CREATE_ONLINE_FAILED');
+      else markLocalInvoiceSyncError(invoice, 'CREATE_ONLINE_FAILED', { action: 'create', phase: 'create_online' });
     } catch (error) {
-      markLocalInvoiceSyncError(invoice, error);
+      markLocalInvoiceSyncError(invoice, error, { action: 'create', phase: 'pending_create' });
       console.warn('[retail-pos-full-tax-invoice] pending create sync skipped', error);
     }
   }
@@ -451,9 +454,9 @@ async function runPendingTaxInvoiceSync() {
       }
       const voided = await voidFullTaxInvoice(targetInvoice || invoice, invoice.voidReason || 'sync pending void');
       if (voided && !['pending_void', 'local_void'].includes(String(voided.syncStatus || ''))) synced.push(voided);
-      else markLocalInvoiceSyncError(invoice, 'VOID_ONLINE_FAILED');
+      else markLocalInvoiceSyncError(invoice, 'VOID_ONLINE_FAILED', { action: 'void', phase: 'void_online', targetId: targetInvoice?.id || targetInvoice?._documentId || invoice.id });
     } catch (error) {
-      markLocalInvoiceSyncError(invoice, error);
+      markLocalInvoiceSyncError(invoice, error, { action: 'void', phase: 'pending_void', targetId: invoice.id || invoice._documentId || invoice.invoiceNumber });
       console.warn('[retail-pos-full-tax-invoice] pending void sync skipped', error);
     }
   }

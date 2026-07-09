@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Void Transaction Validation
-Version: 0.14.26
-Build: 2026.07.10.001
+Milestone: Tax Void Retry Diagnostics
+Version: 0.14.27
+Build: 2026.07.10.002
 
-Change: online full tax invoice void transactions now validate the Firestore document before writing `status: void`, confirming tenant, invoice number, and source sale identity when those fields are available. Validation mismatches stop the void instead of falling back to a local pending void, preserving source sale, VAT, payment, stock, duplicate protection, and Firestore read-before-write behavior.
+Change: pending full tax invoice sync diagnostics now record and display the failing sync action and phase, such as `create / pending_create` or `void / pending_void`, so staff can distinguish create retries from void retries without inspecting localStorage while preserving source sale, VAT, payment, stock, duplicate protection, and Firestore transaction behavior.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -36,6 +36,8 @@ Tax sync retry button state workflow: when staff click `ลอง Sync`, the but
 Tax sync single-flight workflow: `syncPendingTaxInvoices()` keeps one in-flight pending tax invoice sync promise per browser tab. If page load, online reconnect, receipt popup, or `ลอง Sync` calls it while a sync is already running, the later caller waits for the same create/void retry cycle instead of starting a second overlapping run. The create and void paths still use the existing duplicate checks and Firestore read-before-write transactions.
 
 Tax void transaction validation workflow: online full tax invoice voiding reads the target `taxInvoices/{taxInvoiceId}` document in a Firestore transaction, validates tenant ownership plus invoice number and source sale identity when present, then writes only the void status metadata. If validation detects a mismatched tenant, invoice number, or source sale, the operation fails and does not create a local pending-void fallback.
+
+Tax void retry diagnostics workflow: pending full tax invoice sync errors record `syncAction`, `syncPhase`, and `syncTargetId` in the local invoice cache. `/pos/tax-invoices/` shows the action/phase beside the existing sync error, attempt count, and latest attempt time, and the search box can find invoices by those diagnostic fields. This is display/diagnostic metadata only and does not change source sales, VAT totals, payments, stock movements, or issued invoice totals.
 
 Full tax invoice duplicate workflow: issuing a full tax invoice first checks the local tax invoice cache, then checks Firestore by deterministic tax invoice IDs and loaded `taxInvoices` rows. If an existing invoice matches the sale ID or sale number, the app reuses and caches that invoice instead of creating a new document. If the Firestore transaction path cannot reserve/write the invoice, the fallback remains local/pending and does not write to Firestore outside a transaction.
 
