@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Sync Retry Button State
-Version: 0.14.24
-Build: 2026.07.09.005
+Milestone: Tax Sync Single Flight
+Version: 0.14.25
+Build: 2026.07.09.006
 
-Change: the tax invoice history `ลอง Sync` action now disables itself and shows `กำลัง Sync...` while the existing pending tax invoice and tax buyer profile sync flow is running, reducing duplicate clicks while preserving source sale, VAT, payment, stock, duplicate protection, and retry behavior.
+Change: pending full tax invoice sync now runs as a single in-flight promise per browser tab, so overlapping calls from page load, online events, receipt popup, or `ลอง Sync` wait for the same create/void retry cycle while preserving source sale, VAT, payment, stock, duplicate protection, and Firestore transaction behavior.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -32,6 +32,8 @@ Tax sync diagnostic visibility workflow: `/pos/tax-invoices/` renders sync diagn
 Tax sync retry action workflow: `/pos/tax-invoices/` shows `ลอง Sync` on invoice cards that have `syncError`, `pending_create`, `pending_void`, `local_only`, or `local_void`. The action calls the same page refresh flow that runs pending tax invoice sync and tax buyer profile sync, and does not introduce a separate Firestore write path.
 
 Tax sync retry button state workflow: when staff click `ลอง Sync`, the button is disabled and changes to `กำลัง Sync...` until the existing tax invoice history refresh/sync flow finishes rendering. This prevents accidental duplicate clicks without adding a separate sync worker or Firestore write path.
+
+Tax sync single-flight workflow: `syncPendingTaxInvoices()` keeps one in-flight pending tax invoice sync promise per browser tab. If page load, online reconnect, receipt popup, or `ลอง Sync` calls it while a sync is already running, the later caller waits for the same create/void retry cycle instead of starting a second overlapping run. The create and void paths still use the existing duplicate checks and Firestore read-before-write transactions.
 
 Full tax invoice duplicate workflow: issuing a full tax invoice first checks the local tax invoice cache, then checks Firestore by deterministic tax invoice IDs and loaded `taxInvoices` rows. If an existing invoice matches the sale ID or sale number, the app reuses and caches that invoice instead of creating a new document. If the Firestore transaction path cannot reserve/write the invoice, the fallback remains local/pending and does not write to Firestore outside a transaction.
 

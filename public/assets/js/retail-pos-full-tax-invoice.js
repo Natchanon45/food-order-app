@@ -9,6 +9,7 @@ const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
 const TAX_BUYER_PROFILE_KEY = 'retail_pos_tax_buyer_profiles_v1';
 const STORE_SETTINGS_KEY = 'retail_pos_store_settings_v1';
 const LEGACY_STORE_SETTINGS_KEY = 'food_order_store_settings';
+let pendingTaxInvoiceSyncPromise = null;
 
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -383,7 +384,7 @@ async function getExistingInvoiceOnlineForSale(sale) {
   }
 }
 
-export async function syncPendingTaxInvoices() {
+async function runPendingTaxInvoiceSync() {
   if (!isFirebaseConfigured || !db || navigator.onLine === false) return [];
   const rows = listLocalInvoices();
   const synced = [];
@@ -435,6 +436,14 @@ export async function syncPendingTaxInvoices() {
     }
   }
   return synced;
+}
+
+export async function syncPendingTaxInvoices() {
+  if (pendingTaxInvoiceSyncPromise) return pendingTaxInvoiceSyncPromise;
+  pendingTaxInvoiceSyncPromise = runPendingTaxInvoiceSync().finally(() => {
+    pendingTaxInvoiceSyncPromise = null;
+  });
+  return pendingTaxInvoiceSyncPromise;
 }
 
 export function getExistingFullTaxInvoiceForSale(sale) {
