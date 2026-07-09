@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.20',
-  build: '2026.07.09.001',
+  version: '0.14.21',
+  build: '2026.07.09.002',
   branch: 'feature/retail-pos',
-  commit: 'TAX-PROFILE-DELETE-SYNC-01420',
+  commit: 'TAX-VOID-SYNC-DIAGNOSTICS-01421',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Tax Buyer Profile Delete Sync',
+  milestone: 'Tax Void Sync Diagnostics',
   updatedAt: '2026-07-09T00:00:00+07:00',
   whatsNew: [
-    'Remember deleted tax buyer profiles locally while offline',
-    'Sync pending tax buyer profile deletions to tenant-scoped Firestore when online',
-    'Prevent older remote tax buyer profiles from reappearing after local deletion',
+    'Record sync diagnostics when tax invoice void transactions fall back locally',
+    'Show void fallback sync errors in tax invoice history through existing Sync Error badges',
+    'Keep local void retry state visible without changing source sales or stock',
     'Preserve full tax invoice duplicate, sync, void, VAT, payment, and stock behavior'
   ]
 };

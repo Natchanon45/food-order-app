@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.20
-Build: 2026.07.09.001
-Milestone: Tax Buyer Profile Delete Sync
+Version: 0.14.21
+Build: 2026.07.09.002
+Milestone: Tax Void Sync Diagnostics
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -43,6 +43,8 @@ Tax buyer profile sync rule: saved full-tax buyer profiles must remain available
 Tax buyer profile delete sync rule: deleting a full-tax buyer profile must hide it locally immediately and preserve a tenant-scoped local tombstone if Firestore is unavailable. The next online sync must delete the matching `tenants/{tenantId}/taxBuyerProfiles/{profileId}` document and must not allow an older remote profile to reappear after the local delete. Tombstones must remain isolated from issued `taxInvoices`, source sales, VAT totals, payments, and stock data.
 
 Tax invoice void rule: canceling a full tax invoice changes only the separate `taxInvoices/{taxInvoiceId}` document/status and local tax invoice cache. It must not create a replacement bill, must not reopen or duplicate the source sale, and must not deduct or restore stock. When Firebase is online, voiding must use a Firestore transaction that reads the invoice before writing `status: "void"`, void metadata, and updated timestamps. If sync is unavailable, the local invoice may be marked `pending_void`/`local_void` until a later hardening pass.
+
+Tax invoice void diagnostics rule: if an online void transaction fails and the app falls back to a local `local_void` or `pending_void` state, the local invoice should record concise sync diagnostics (`syncError`, `syncErrorAt`, `syncAttemptedAt`, and `syncAttemptCount`) so `/pos/tax-invoices/` can show a `Sync Error` badge and searchable message. Diagnostics must not modify source sales, VAT totals, payments, stock movements, or issued invoice totals.
 
 DBD Lookup rule: the buyer tax ID field is the first input in the full tax invoice modal and includes an inline `DBD` button. The browser can fetch a configured DBD lookup proxy from `window.RETAIL_POS_DBD_LOOKUP_URL` or localStorage key `retail_pos_dbd_lookup_url`; the expected JSON can include `buyerName`, `buyerTaxId`, `buyerAddress`, `buyerBranchName`, or DBD-style aliases such as `juristicNameTH`, `juristicId`, `addressTh`, and `branchName`. If no proxy is configured or lookup fails, the flow opens the official DBD DataWarehouse+ juristic search page for manual verification. This flow does not change POS sale totals, VAT calculation, stock deduction, offline sale sync, or existing short tax invoice receipt behavior.
 

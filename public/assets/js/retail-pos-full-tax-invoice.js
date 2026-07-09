@@ -485,6 +485,7 @@ export async function voidFullTaxInvoice(invoiceInput, reason = '') {
   const voidedAt = Date.now();
   const voidReason = normalizeText(reason);
   let committed = null;
+  let transactionError = null;
   if (isFirebaseConfigured && db && navigator.onLine !== false) {
     const invoiceRef = tenantDoc(TAX_INVOICE_COLLECTION, invoiceId, tenantId);
     try {
@@ -508,6 +509,7 @@ export async function voidFullTaxInvoice(invoiceInput, reason = '') {
         }, { merge: true });
       });
     } catch (error) {
+      transactionError = error;
       console.warn('[retail-pos-full-tax-invoice] void transaction fallback', error);
     }
   }
@@ -519,7 +521,11 @@ export async function voidFullTaxInvoice(invoiceInput, reason = '') {
       voidedAt,
       voidReason,
       voidedBy: userId,
-      syncStatus: navigator.onLine === false ? 'pending_void' : 'local_void'
+      syncStatus: navigator.onLine === false ? 'pending_void' : 'local_void',
+      syncError: transactionError ? syncErrorMessage(transactionError) : '',
+      syncErrorAt: transactionError ? Date.now() : null,
+      syncAttemptedAt: transactionError ? Date.now() : null,
+      syncAttemptCount: transactionError ? Number(invoiceInput.syncAttemptCount || 0) + 1 : Number(invoiceInput.syncAttemptCount || 0)
     });
     return committed;
   }

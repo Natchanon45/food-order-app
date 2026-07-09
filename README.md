@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Buyer Profile Delete Sync
-Version: 0.14.20
-Build: 2026.07.09.001
+Milestone: Tax Void Sync Diagnostics
+Version: 0.14.21
+Build: 2026.07.09.002
 
-Change: deleted tax buyer profiles now leave a tenant-scoped local tombstone while offline so the deletion can sync to Firestore `taxBuyerProfiles` when online. This prevents older remote profiles from reappearing after a local delete and preserves existing full tax invoice duplicate protection, pending sync, void, VAT, payment, and stock behavior.
+Change: full tax invoice void fallback now records sync diagnostics when an online Firestore transaction fails and the invoice is marked local/pending void. Tax invoice history can show the existing `Sync Error` badge and concise error message immediately, while preserving source sale, VAT, payment, stock, duplicate protection, and retry behavior.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -24,6 +24,8 @@ Tax invoice label workflow: POS receipt and tax invoice history user-facing Thai
 Tax buyer profile sync workflow: saved buyer tax profiles from `/pos/tax-invoices/` are stored locally first for offline use and sync to `tenants/{tenantId}/taxBuyerProfiles` when Firebase is online. Opening the profile dialog or tax invoice history merges local and remote profiles by stable profile ID, keeps tenant boundaries intact, and does not alter issued invoices, source sales, VAT totals, payments, or stock data.
 
 Tax buyer profile delete sync workflow: deleting a buyer tax profile hides it from the local profile list immediately and stores a tenant-scoped delete tombstone when the browser is offline. The next online tax profile sync deletes the matching Firestore document from `tenants/{tenantId}/taxBuyerProfiles` and keeps older remote copies from being merged back into the local profile list.
+
+Tax void sync diagnostics workflow: if an online full tax invoice void transaction cannot complete and the app falls back to a local `local_void`/`pending_void` state, the invoice records `syncError`, `syncErrorAt`, `syncAttemptedAt`, and `syncAttemptCount`. `/pos/tax-invoices/` surfaces those diagnostics through the existing `Sync Error` badge and search text while preserving retry behavior and never mutating the source sale, VAT, payment, or stock data.
 
 Full tax invoice duplicate workflow: issuing a full tax invoice first checks the local tax invoice cache, then checks Firestore by deterministic tax invoice IDs and loaded `taxInvoices` rows. If an existing invoice matches the sale ID or sale number, the app reuses and caches that invoice instead of creating a new document. If the Firestore transaction path cannot reserve/write the invoice, the fallback remains local/pending and does not write to Firestore outside a transaction.
 
