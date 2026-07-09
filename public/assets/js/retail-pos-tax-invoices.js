@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260709-004';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260709-005';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -467,10 +467,19 @@ profileListEl?.addEventListener('click', event => {
   if (profile) renderProfiles(profile.id || profile.customerKey || '');
 });
 profileForm?.addEventListener('submit', event => { event.preventDefault(); saveProfileForm(); });
-listEl?.addEventListener('click', event => {
+listEl?.addEventListener('click', async event => {
   const retryButton = event.target.closest('[data-retry-tax-sync]');
   if (retryButton) {
-    load();
+    retryButton.disabled = true;
+    retryButton.textContent = 'กำลัง Sync...';
+    try {
+      await load();
+    } finally {
+      if (retryButton.isConnected) {
+        retryButton.disabled = false;
+        retryButton.textContent = 'ลอง Sync';
+      }
+    }
     return;
   }
   const button = event.target.closest('[data-void-tax]');
