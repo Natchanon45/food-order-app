@@ -44,6 +44,12 @@ function syncErrorMessage(error) {
   return normalizeText(error?.message || error || 'SYNC_FAILED').slice(0, 180);
 }
 
+function taxVoidValidationError(message) {
+  const error = new Error(message);
+  error.code = 'TAX_VOID_VALIDATION_FAILED';
+  return error;
+}
+
 function settings() {
   const legacy = readJson(LEGACY_STORE_SETTINGS_KEY, {});
   const local = readJson(STORE_SETTINGS_KEY, {});
@@ -329,6 +335,22 @@ function saleFromInvoice(invoice = {}) {
   };
 }
 
+function validateVoidTargetInvoice(current = {}, requested = {}, tenantId = getTenantId()) {
+  if (current.tenantId && current.tenantId !== tenantId) {
+    throw taxVoidValidationError('ใบกำกับภาษีนี้ไม่อยู่ในร้านปัจจุบัน');
+  }
+  const requestedInvoiceNumber = normalizeText(requested.invoiceNumber);
+  const currentInvoiceNumber = normalizeText(current.invoiceNumber);
+  if (requestedInvoiceNumber && currentInvoiceNumber && requestedInvoiceNumber !== currentInvoiceNumber) {
+    throw taxVoidValidationError('เลขที่ใบกำกับภาษีไม่ตรงกับเอกสารบนระบบ');
+  }
+  const requestedSale = saleFromInvoice(requested);
+  const currentSale = saleFromInvoice(current);
+  if (saleKey(requestedSale) && saleKey(currentSale) && !invoiceMatchesSale(current, requestedSale)) {
+    throw taxVoidValidationError('ข้อมูลบิลต้นทางไม่ตรงกับใบกำกับภาษีบนระบบ');
+  }
+}
+
 async function createInvoiceOnline(sale, buyer) {
   if (!isFirebaseConfigured || !db || navigator.onLine === false) return null;
   const tenantId = getTenantId();
@@ -502,6 +524,7 @@ export async function voidFullTaxInvoice(invoiceInput, reason = '') {
         const snapshot = await transaction.get(invoiceRef);
         if (!snapshot.exists()) throw new Error('ไม่พบใบกำกับภาษี');
         const current = { ...snapshot.data(), id: snapshot.data()?.id || snapshot.id, _documentId: snapshot.id };
+        validateVoidTargetInvoice(current, invoiceInput, tenantId);
         if (current.status === 'void') {
           committed = current;
           return;
@@ -518,6 +541,7 @@ export async function voidFullTaxInvoice(invoiceInput, reason = '') {
         }, { merge: true });
       });
     } catch (error) {
+      if (error?.code === 'TAX_VOID_VALIDATION_FAILED') throw error;
       transactionError = error;
       console.warn('[retail-pos-full-tax-invoice] void transaction fallback', error);
     }
