@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260709-002';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260709-003';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -128,6 +128,16 @@ function syncBadge(invoice = {}) {
   if (['local_only', 'local_void'].includes(status)) return '<span class="sync-badge is-local">เอกสารในเครื่อง</span>';
   if (invoice.runningNumberStatus === 'local_only') return '<span class="sync-badge is-local">เลขชั่วคราว</span>';
   return '';
+}
+
+function syncDiagnosticText(invoice = {}) {
+  if (!invoice.syncError) return '';
+  const parts = [`Sync: ${invoice.syncError}`];
+  const count = Number(invoice.syncAttemptCount || 0);
+  if (count > 0) parts.push(`พยายาม ${count.toLocaleString('th-TH')} ครั้ง`);
+  const attemptedAt = Number(invoice.syncAttemptedAt || invoice.syncErrorAt || 0);
+  if (attemptedAt > 0) parts.push(`ล่าสุด ${dateText(attemptedAt)}`);
+  return parts.join(' • ');
 }
 
 function existingInvoiceForSale(sale = {}) {
@@ -371,6 +381,7 @@ function cardHtml(invoice) {
   const seller = invoice.seller || {};
   const isVoid = invoice.status === 'void';
   const status = isVoid ? 'ยกเลิก' : 'ออกเอกสารแล้ว';
+  const syncText = syncDiagnosticText(invoice);
   return `<article class="tax-card">
     <div class="tax-card-main">
       <div class="tax-card-badges"><div class="tax-doc-no">${escapeHtml(invoice.invoiceNumber || invoice.id || '-')}</div>${syncBadge(invoice)}</div>
@@ -381,7 +392,7 @@ function cardHtml(invoice) {
         <span>${escapeHtml(dateText(invoice.issuedAt))}</span>
       </div>
       <p>${escapeHtml(buyer.buyerAddress || '')}</p>
-      <small>ผู้ขาย: ${escapeHtml(seller.sellerName || '-')} • ${escapeHtml(status)}${invoice.voidReason ? ` • เหตุผล: ${escapeHtml(invoice.voidReason)}` : ''}${invoice.syncError ? ` • Sync: ${escapeHtml(invoice.syncError)}` : ''}</small>
+      <small>ผู้ขาย: ${escapeHtml(seller.sellerName || '-')} • ${escapeHtml(status)}${invoice.voidReason ? ` • เหตุผล: ${escapeHtml(invoice.voidReason)}` : ''}${syncText ? ` • ${escapeHtml(syncText)}` : ''}</small>
     </div>
     <div class="tax-card-side">
       <strong>${money(invoice.totalAmount)}</strong>
