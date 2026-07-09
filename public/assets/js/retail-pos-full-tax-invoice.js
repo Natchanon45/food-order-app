@@ -63,10 +63,21 @@ function listLocalInvoices() {
   return Array.isArray(rows) ? rows : [];
 }
 
-function listBuyerProfiles() {
+function isDeletedBuyerProfile(profile = {}) {
+  const status = String(profile.syncStatus || '');
+  return Boolean(profile.deleted || status === 'pending_delete' || status === 'deleted');
+}
+
+function listBuyerProfileRows({ includeDeleted = false } = {}) {
   const rows = readJson(TAX_BUYER_PROFILE_KEY, []);
   const tenantId = getTenantId();
-  return (Array.isArray(rows) ? rows : []).filter(row => !row.tenantId || row.tenantId === tenantId);
+  return (Array.isArray(rows) ? rows : [])
+    .filter(row => !row.tenantId || row.tenantId === tenantId)
+    .filter(row => includeDeleted || !isDeletedBuyerProfile(row));
+}
+
+function listBuyerProfiles() {
+  return listBuyerProfileRows();
 }
 
 function writeTenantBuyerProfiles(profiles) {
@@ -87,7 +98,18 @@ function mergeBuyerProfiles(...groups) {
     const key = buyerProfileKey(profile);
     if (!key) return;
     if (profile.tenantId && profile.tenantId !== tenantId) return;
-    const normalized = { id: key, customerKey: normalizeText(profile.customerKey || key), tenantId, ...normalizeBuyer(profile), updatedAt: Number(profile.updatedAt || 0) || Date.now() };
+    const deleted = isDeletedBuyerProfile(profile);
+    const normalized = deleted
+      ? {
+          id: key,
+          customerKey: normalizeText(profile.customerKey || key),
+          tenantId,
+          deleted: true,
+          syncStatus: String(profile.syncStatus || 'pending_delete'),
+          deletedAt: Number(profile.deletedAt || profile.updatedAt || Date.now()),
+          updatedAt: Number(profile.updatedAt || profile.deletedAt || Date.now())
+        }
+      : { id: key, customerKey: normalizeText(profile.customerKey || key), tenantId, ...normalizeBuyer(profile), updatedAt: Number(profile.updatedAt || 0) || Date.now() };
     const existing = map.get(key);
     if (!existing || Number(normalized.updatedAt || 0) >= Number(existing.updatedAt || 0)) map.set(key, normalized);
   });
@@ -149,10 +171,20 @@ function removeBuyerProfile(id) {
   const key = String(id || '').trim();
   if (!key) return false;
   const tenantId = getTenantId();
+  const deletedAt = Date.now();
   const rows = readJson(TAX_BUYER_PROFILE_KEY, []);
   const kept = (Array.isArray(rows) ? rows : []).filter(row => {
     const rowKey = String(row.id || row.customerKey || '').trim();
     return rowKey !== key || (row.tenantId && row.tenantId !== tenantId);
+  });
+  kept.push({
+    id: key,
+    customerKey: key,
+    tenantId,
+    deleted: true,
+    deletedAt,
+    updatedAt: deletedAt,
+    syncStatus: navigator.onLine === false ? 'pending_delete' : 'deleted'
   });
   writeJson(TAX_BUYER_PROFILE_KEY, kept);
   if (isFirebaseConfigured && db && navigator.onLine !== false) {
@@ -414,15 +446,22 @@ export function listTaxBuyerProfiles() {
 }
 
 export async function syncTaxBuyerProfiles() {
-  const local = listBuyerProfiles();
+  const local = listBuyerProfileRows({ includeDeleted: true });
   if (!isFirebaseConfigured || !db || navigator.onLine === false) return local;
   try {
     const remote = await listRecords(TAX_BUYER_PROFILE_COLLECTION, { sortBy: 'updatedAt', direction: 'desc' });
     const merged = mergeBuyerProfiles(local, remote);
     writeTenantBuyerProfiles(merged);
-    await Promise.all(merged.map(profile => saveRecord(TAX_BUYER_PROFILE_COLLECTION, profile).catch(error => {
-      console.warn('[retail-pos-full-tax-invoice] sync tax buyer profile failed', profile.id, error);
-    })));
+    await Promise.all(merged.map(profile => {
+      if (isDeletedBuyerProfile(profile)) {
+        return deleteRecord(TAX_BUYER_PROFILE_COLLECTION, profile.id).catch(error => {
+          console.warn('[retail-pos-full-tax-invoice] sync delete tax buyer profile failed', profile.id, error);
+        });
+      }
+      return saveRecord(TAX_BUYER_PROFILE_COLLECTION, profile).catch(error => {
+        console.warn('[retail-pos-full-tax-invoice] sync tax buyer profile failed', profile.id, error);
+      });
+    }));
     return listTaxBuyerProfiles();
   } catch (error) {
     console.warn('[retail-pos-full-tax-invoice] tax buyer profile sync fallback', error);

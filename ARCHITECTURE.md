@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.19
-Build: 2026.07.08.032
-Milestone: Tax Buyer Profile Sync
+Version: 0.14.20
+Build: 2026.07.09.001
+Milestone: Tax Buyer Profile Delete Sync
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -39,6 +39,8 @@ Later full tax invoice rule: staff can issue a full tax invoice later when a cus
 Tax buyer profile management rule: saved full-tax buyer profiles are stored locally under the current tenant, include `tenantId`, and can be created, edited, or deleted from `/pos/tax-invoices/`. Profiles may prefill future full tax invoice dialogs but must not alter historical sales, VAT totals, payments, stock movements, or issued invoice totals.
 
 Tax buyer profile sync rule: saved full-tax buyer profiles must remain available locally for offline issuing and also sync to `tenants/{tenantId}/taxBuyerProfiles` when Firebase is online. The sync must merge local and remote profiles by stable profile ID, preserve tenant boundaries, and never mutate issued invoices, source sales, VAT totals, payments, stock movements, or existing `taxInvoices`.
+
+Tax buyer profile delete sync rule: deleting a full-tax buyer profile must hide it locally immediately and preserve a tenant-scoped local tombstone if Firestore is unavailable. The next online sync must delete the matching `tenants/{tenantId}/taxBuyerProfiles/{profileId}` document and must not allow an older remote profile to reappear after the local delete. Tombstones must remain isolated from issued `taxInvoices`, source sales, VAT totals, payments, and stock data.
 
 Tax invoice void rule: canceling a full tax invoice changes only the separate `taxInvoices/{taxInvoiceId}` document/status and local tax invoice cache. It must not create a replacement bill, must not reopen or duplicate the source sale, and must not deduct or restore stock. When Firebase is online, voiding must use a Firestore transaction that reads the invoice before writing `status: "void"`, void metadata, and updated timestamps. If sync is unavailable, the local invoice may be marked `pending_void`/`local_void` until a later hardening pass.
 

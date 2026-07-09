@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Buyer Profile Sync
-Version: 0.14.19
-Build: 2026.07.08.032
+Milestone: Tax Buyer Profile Delete Sync
+Version: 0.14.20
+Build: 2026.07.09.001
 
-Change: tax buyer profiles now merge and sync with tenant-scoped Firestore `taxBuyerProfiles` when online, while still saving local profiles immediately for offline full tax invoice issuing. This preserves existing full tax invoice duplicate protection, pending sync, void, VAT, payment, and stock behavior.
+Change: deleted tax buyer profiles now leave a tenant-scoped local tombstone while offline so the deletion can sync to Firestore `taxBuyerProfiles` when online. This prevents older remote profiles from reappearing after a local delete and preserves existing full tax invoice duplicate protection, pending sync, void, VAT, payment, and stock behavior.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -22,6 +22,8 @@ Custom Delivery fee UI workflow: the `เพิ่มตัวเลือกค
 Tax invoice label workflow: POS receipt and tax invoice history user-facing Thai labels use `ใบกำกับภาษี` consistently across the receipt action button, buyer data dialogs, tax invoice history title, late-issue panel, empty state, profile helper copy, and void dialog. This wording polish does not change `taxInvoices` data, duplicate protection, sync, or void transaction behavior.
 
 Tax buyer profile sync workflow: saved buyer tax profiles from `/pos/tax-invoices/` are stored locally first for offline use and sync to `tenants/{tenantId}/taxBuyerProfiles` when Firebase is online. Opening the profile dialog or tax invoice history merges local and remote profiles by stable profile ID, keeps tenant boundaries intact, and does not alter issued invoices, source sales, VAT totals, payments, or stock data.
+
+Tax buyer profile delete sync workflow: deleting a buyer tax profile hides it from the local profile list immediately and stores a tenant-scoped delete tombstone when the browser is offline. The next online tax profile sync deletes the matching Firestore document from `tenants/{tenantId}/taxBuyerProfiles` and keeps older remote copies from being merged back into the local profile list.
 
 Full tax invoice duplicate workflow: issuing a full tax invoice first checks the local tax invoice cache, then checks Firestore by deterministic tax invoice IDs and loaded `taxInvoices` rows. If an existing invoice matches the sale ID or sale number, the app reuses and caches that invoice instead of creating a new document. If the Firestore transaction path cannot reserve/write the invoice, the fallback remains local/pending and does not write to Firestore outside a transaction.
 
