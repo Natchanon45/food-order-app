@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260710-002';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260710-003';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -141,6 +141,41 @@ function syncDiagnosticText(invoice = {}) {
   const attemptedAt = Number(invoice.syncAttemptedAt || invoice.syncErrorAt || 0);
   if (attemptedAt > 0) parts.push(`ล่าสุด ${dateText(attemptedAt)}`);
   return parts.join(' • ');
+}
+
+function syncRecoveryText(invoice = {}) {
+  const buyer = invoice.buyer || {};
+  return [
+    'Food Order POS Tax Invoice Sync Error',
+    `Invoice ID: ${keyOf(invoice) || '-'}`,
+    `Invoice No: ${invoice.invoiceNumber || '-'}`,
+    `Sale: ${invoice.saleNumber || invoice.saleId || invoice.sourceSale?.saleNumber || invoice.sourceSale?.id || '-'}`,
+    `Buyer: ${buyer.buyerName || '-'}`,
+    `Status: ${invoice.status || '-'}`,
+    `Sync Status: ${invoice.syncStatus || '-'}`,
+    `Sync Action: ${invoice.syncAction || '-'}`,
+    `Sync Phase: ${invoice.syncPhase || '-'}`,
+    `Sync Target: ${invoice.syncTargetId || '-'}`,
+    `Sync Error: ${invoice.syncError || '-'}`,
+    `Attempts: ${Number(invoice.syncAttemptCount || 0)}`,
+    `Latest Attempt: ${invoice.syncAttemptedAt || invoice.syncErrorAt ? dateText(invoice.syncAttemptedAt || invoice.syncErrorAt) : '-'}`
+  ].join('\n');
+}
+
+async function copyText(value) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+  const textarea = document.createElement('textarea');
+  textarea.value = value;
+  textarea.setAttribute('readonly', '');
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand('copy');
+  textarea.remove();
 }
 
 function canRetrySync(invoice = {}) {
@@ -407,6 +442,7 @@ function cardHtml(invoice) {
       <span>VAT ${money(invoice.vatAmount)}</span>
       <div class="tax-actions">
         <a class="btn btn-primary" href="${invoiceUrl(invoice)}" target="_blank" rel="noopener">เปิด/พิมพ์</a>
+        ${invoice.syncError ? `<button class="btn btn-secondary" type="button" data-copy-tax-sync="${escapeHtml(keyOf(invoice))}">คัดลอก Sync</button>` : ''}
         ${canRetrySync(invoice) ? '<button class="btn btn-secondary" type="button" data-retry-tax-sync="1">ลอง Sync</button>' : ''}
         ${isVoid ? '' : `<button class="btn btn-danger" type="button" data-void-tax="${escapeHtml(keyOf(invoice))}">ยกเลิก</button>`}
       </div>
@@ -471,6 +507,28 @@ profileListEl?.addEventListener('click', event => {
 });
 profileForm?.addEventListener('submit', event => { event.preventDefault(); saveProfileForm(); });
 listEl?.addEventListener('click', async event => {
+  const copyButton = event.target.closest('[data-copy-tax-sync]');
+  if (copyButton) {
+    const invoice = invoices.find(row => keyOf(row) === String(copyButton.dataset.copyTaxSync || ''));
+    if (!invoice) return;
+    const originalText = copyButton.textContent;
+    copyButton.disabled = true;
+    try {
+      await copyText(syncRecoveryText(invoice));
+      copyButton.textContent = 'คัดลอกแล้ว';
+    } catch (error) {
+      console.warn('[retail-pos-tax-invoices] copy sync diagnostics failed', error);
+      copyButton.textContent = 'คัดลอกไม่สำเร็จ';
+    } finally {
+      setTimeout(() => {
+        if (copyButton.isConnected) {
+          copyButton.disabled = false;
+          copyButton.textContent = originalText || 'คัดลอก Sync';
+        }
+      }, 1200);
+    }
+    return;
+  }
   const retryButton = event.target.closest('[data-retry-tax-sync]');
   if (retryButton) {
     retryButton.disabled = true;

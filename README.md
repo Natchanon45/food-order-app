@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Void Retry Diagnostics
-Version: 0.14.27
-Build: 2026.07.10.002
+Milestone: Tax Sync Recovery Copy
+Version: 0.14.28
+Build: 2026.07.10.003
 
-Change: pending full tax invoice sync diagnostics now record and display the failing sync action and phase, such as `create / pending_create` or `void / pending_void`, so staff can distinguish create retries from void retries without inspecting localStorage while preserving source sale, VAT, payment, stock, duplicate protection, and Firestore transaction behavior.
+Change: tax invoice history cards with `Sync Error` now include a `คัดลอก Sync` operator recovery action that copies invoice, sale, buyer, sync status, action, phase, target ID, error, attempt count, and latest attempt time for support handoff while preserving source sale, VAT, payment, stock, duplicate protection, and Firestore transaction behavior.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -38,6 +38,8 @@ Tax sync single-flight workflow: `syncPendingTaxInvoices()` keeps one in-flight 
 Tax void transaction validation workflow: online full tax invoice voiding reads the target `taxInvoices/{taxInvoiceId}` document in a Firestore transaction, validates tenant ownership plus invoice number and source sale identity when present, then writes only the void status metadata. If validation detects a mismatched tenant, invoice number, or source sale, the operation fails and does not create a local pending-void fallback.
 
 Tax void retry diagnostics workflow: pending full tax invoice sync errors record `syncAction`, `syncPhase`, and `syncTargetId` in the local invoice cache. `/pos/tax-invoices/` shows the action/phase beside the existing sync error, attempt count, and latest attempt time, and the search box can find invoices by those diagnostic fields. This is display/diagnostic metadata only and does not change source sales, VAT totals, payments, stock movements, or issued invoice totals.
+
+Tax sync recovery copy workflow: `/pos/tax-invoices/` shows `คัดลอก Sync` on cards with `Sync Error`. The action copies a plain-text support package containing invoice ID/number, source sale, buyer, status, sync status, sync action, phase, target document, error, attempt count, and latest attempt time. It is client-side recovery metadata only and does not mutate tax invoices, source sales, VAT totals, payments, stock movements, or retry state.
 
 Full tax invoice duplicate workflow: issuing a full tax invoice first checks the local tax invoice cache, then checks Firestore by deterministic tax invoice IDs and loaded `taxInvoices` rows. If an existing invoice matches the sale ID or sale number, the app reuses and caches that invoice instead of creating a new document. If the Firestore transaction path cannot reserve/write the invoice, the fallback remains local/pending and does not write to Firestore outside a transaction.
 
