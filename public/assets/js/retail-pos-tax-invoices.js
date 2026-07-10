@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260710-005';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-001';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -154,7 +154,7 @@ function syncDiagnosticText(invoice = {}) {
 function syncRecoveryText(invoice = {}) {
   const buyer = invoice.buyer || {};
   return [
-    'Food Order POS Tax Invoice Sync Error',
+    'Food Order POS Tax Invoice Sync Recovery',
     `Invoice ID: ${keyOf(invoice) || '-'}`,
     `Invoice No: ${invoice.invoiceNumber || '-'}`,
     `Sale: ${invoice.saleNumber || invoice.saleId || invoice.sourceSale?.saleNumber || invoice.sourceSale?.id || '-'}`,
@@ -484,7 +484,7 @@ function cardHtml(invoice) {
       <span>VAT ${money(invoice.vatAmount)}</span>
       <div class="tax-actions">
         <a class="btn btn-primary" href="${invoiceUrl(invoice)}" target="_blank" rel="noopener">เปิด/พิมพ์</a>
-        ${invoice.syncError ? `<button class="btn btn-secondary" type="button" data-copy-tax-sync="${escapeHtml(keyOf(invoice))}">คัดลอก Sync</button>` : ''}
+        ${canRetrySync(invoice) ? `<button class="btn btn-secondary" type="button" data-copy-tax-sync="${escapeHtml(keyOf(invoice))}">คัดลอก Sync</button>` : ''}
         ${canRetrySync(invoice) ? '<button class="btn btn-secondary" type="button" data-retry-tax-sync="1">ลอง Sync</button>' : ''}
         ${isVoid ? '' : `<button class="btn btn-danger" type="button" data-void-tax="${escapeHtml(keyOf(invoice))}">ยกเลิก</button>`}
       </div>
