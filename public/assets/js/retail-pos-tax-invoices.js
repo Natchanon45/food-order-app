@@ -1,11 +1,12 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260710-004';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260710-005';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
 const SALES_KEY = 'retail_pos_sales_v1';
 
 const searchInput = document.querySelector('#taxInvoiceSearch');
+const syncFilterButtons = [...document.querySelectorAll('[data-tax-sync-filter]')];
 const refreshBtn = document.querySelector('#refreshBtn');
 const summaryEl = document.querySelector('#summaryText');
 const listEl = document.querySelector('#taxInvoiceList');
@@ -47,6 +48,7 @@ let invoices = [];
 let salesCache = [];
 let currentSourceSale = null;
 let currentVoidInvoice = null;
+let activeSyncFilter = 'all';
 
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -190,6 +192,40 @@ function canRetrySync(invoice = {}) {
   return Boolean(invoice.syncError || ['pending_create', 'pending_void', 'local_only', 'local_void'].includes(status));
 }
 
+function isPendingSync(invoice = {}) {
+  const status = String(invoice.syncStatus || '');
+  return Boolean(['pending_create', 'pending_void', 'local_only', 'local_void'].includes(status) || invoice.runningNumberStatus === 'local_only');
+}
+
+function invoiceMatchesSyncFilter(invoice = {}) {
+  if (activeSyncFilter === 'error') return Boolean(invoice.syncError);
+  if (activeSyncFilter === 'pending') return isPendingSync(invoice);
+  if (activeSyncFilter === 'support') return shouldEscalateSync(invoice);
+  return true;
+}
+
+function syncFilterLabel() {
+  if (activeSyncFilter === 'error') return 'Sync Error';
+  if (activeSyncFilter === 'pending') return 'รอ Sync';
+  if (activeSyncFilter === 'support') return 'ส่ง Support';
+  return 'ทั้งหมด';
+}
+
+function updateSyncFilterCounts() {
+  const counts = {
+    all: invoices.length,
+    error: invoices.filter(invoice => invoice.syncError).length,
+    pending: invoices.filter(isPendingSync).length,
+    support: invoices.filter(shouldEscalateSync).length
+  };
+  syncFilterButtons.forEach(button => {
+    const key = String(button.dataset.taxSyncFilter || 'all');
+    button.classList.toggle('is-active', key === activeSyncFilter);
+    const countEl = button.querySelector('[data-tax-sync-count]');
+    if (countEl) countEl.textContent = Number(counts[key] || 0).toLocaleString('th-TH');
+  });
+}
+
 function existingInvoiceForSale(sale = {}) {
   const key = String(sale.id || '').trim();
   const number = String(sale.saleNumber || sale.number || '').trim();
@@ -200,8 +236,7 @@ function existingInvoiceForSale(sale = {}) {
 
 function filteredInvoices() {
   const q = String(searchInput?.value || '').trim().toLowerCase();
-  if (!q) return invoices;
-  return invoices.filter(invoice => invoiceSearchText(invoice).includes(q));
+  return invoices.filter(invoice => invoiceMatchesSyncFilter(invoice) && (!q || invoiceSearchText(invoice).includes(q)));
 }
 
 function invoiceUrl(invoice) {
@@ -459,7 +494,8 @@ function cardHtml(invoice) {
 
 function render() {
   const rows = filteredInvoices();
-  summaryEl.textContent = `ทั้งหมด ${invoices.length.toLocaleString('th-TH')} เอกสาร • แสดง ${rows.length.toLocaleString('th-TH')} เอกสาร`;
+  updateSyncFilterCounts();
+  summaryEl.textContent = `ทั้งหมด ${invoices.length.toLocaleString('th-TH')} เอกสาร • กรอง ${syncFilterLabel()} • แสดง ${rows.length.toLocaleString('th-TH')} เอกสาร`;
   emptyEl.hidden = rows.length > 0;
   listEl.innerHTML = rows.map(cardHtml).join('');
 }
@@ -484,6 +520,12 @@ async function load() {
 }
 
 searchInput?.addEventListener('input', render);
+syncFilterButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    activeSyncFilter = String(button.dataset.taxSyncFilter || 'all');
+    render();
+  });
+});
 refreshBtn?.addEventListener('click', load);
 findSourceSaleBtn?.addEventListener('click', findSourceSale);
 sourceSaleSearch?.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); findSourceSale(); } });
