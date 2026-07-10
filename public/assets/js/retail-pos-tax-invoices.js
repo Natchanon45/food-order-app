@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260710-003';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260710-004';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -118,16 +118,21 @@ function mergeSales(...groups) {
 function invoiceSearchText(invoice = {}) {
   const buyer = invoice.buyer || {};
   const seller = invoice.seller || {};
-  return [invoice.invoiceNumber, invoice.saleNumber, invoice.saleId, buyer.buyerName, buyer.buyerTaxId, buyer.buyerAddress, seller.sellerName, invoice.status, invoice.syncStatus, invoice.syncAction, invoice.syncPhase, invoice.syncTargetId, invoice.syncError].join(' ').toLowerCase();
+  const escalation = shouldEscalateSync(invoice) ? 'ส่ง support ตรวจสอบ stuck sync retry' : '';
+  return [invoice.invoiceNumber, invoice.saleNumber, invoice.saleId, buyer.buyerName, buyer.buyerTaxId, buyer.buyerAddress, seller.sellerName, invoice.status, invoice.syncStatus, invoice.syncAction, invoice.syncPhase, invoice.syncTargetId, invoice.syncError, escalation].join(' ').toLowerCase();
 }
 
 function syncBadge(invoice = {}) {
   const status = String(invoice.syncStatus || '');
-  if (invoice.syncError) return '<span class="sync-badge is-error">Sync Error</span>';
+  if (invoice.syncError) return `<span class="sync-badge is-error">Sync Error</span>${shouldEscalateSync(invoice) ? '<span class="sync-badge is-pending">ส่ง Support</span>' : ''}`;
   if (['pending_create', 'pending_void'].includes(status)) return '<span class="sync-badge is-pending">รอ Sync</span>';
   if (['local_only', 'local_void'].includes(status)) return '<span class="sync-badge is-local">เอกสารในเครื่อง</span>';
   if (invoice.runningNumberStatus === 'local_only') return '<span class="sync-badge is-local">เลขชั่วคราว</span>';
   return '';
+}
+
+function shouldEscalateSync(invoice = {}) {
+  return Boolean(invoice.syncError && Number(invoice.syncAttemptCount || 0) >= 3);
 }
 
 function syncDiagnosticText(invoice = {}) {
@@ -140,6 +145,7 @@ function syncDiagnosticText(invoice = {}) {
   if (count > 0) parts.push(`พยายาม ${count.toLocaleString('th-TH')} ครั้ง`);
   const attemptedAt = Number(invoice.syncAttemptedAt || invoice.syncErrorAt || 0);
   if (attemptedAt > 0) parts.push(`ล่าสุด ${dateText(attemptedAt)}`);
+  if (shouldEscalateSync(invoice)) parts.push('แนะนำคัดลอก Sync ส่ง Support');
   return parts.join(' • ');
 }
 
@@ -158,6 +164,7 @@ function syncRecoveryText(invoice = {}) {
     `Sync Target: ${invoice.syncTargetId || '-'}`,
     `Sync Error: ${invoice.syncError || '-'}`,
     `Attempts: ${Number(invoice.syncAttemptCount || 0)}`,
+    `Escalation: ${shouldEscalateSync(invoice) ? 'ส่ง Support' : '-'}`,
     `Latest Attempt: ${invoice.syncAttemptedAt || invoice.syncErrorAt ? dateText(invoice.syncAttemptedAt || invoice.syncErrorAt) : '-'}`
   ].join('\n');
 }

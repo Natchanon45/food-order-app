@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Sync Recovery Copy
-Version: 0.14.28
-Build: 2026.07.10.003
+Milestone: Tax Sync Escalation Hint
+Version: 0.14.29
+Build: 2026.07.10.004
 
-Change: tax invoice history cards with `Sync Error` now include a `คัดลอก Sync` operator recovery action that copies invoice, sale, buyer, sync status, action, phase, target ID, error, attempt count, and latest attempt time for support handoff while preserving source sale, VAT, payment, stock, duplicate protection, and Firestore transaction behavior.
+Change: tax invoice history now highlights unresolved sync errors that have failed at least three times with a `ส่ง Support` badge and recovery hint, and the copied Sync package includes the escalation state while preserving source sale, VAT, payment, stock, duplicate protection, and Firestore transaction behavior.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -40,6 +40,8 @@ Tax void transaction validation workflow: online full tax invoice voiding reads 
 Tax void retry diagnostics workflow: pending full tax invoice sync errors record `syncAction`, `syncPhase`, and `syncTargetId` in the local invoice cache. `/pos/tax-invoices/` shows the action/phase beside the existing sync error, attempt count, and latest attempt time, and the search box can find invoices by those diagnostic fields. This is display/diagnostic metadata only and does not change source sales, VAT totals, payments, stock movements, or issued invoice totals.
 
 Tax sync recovery copy workflow: `/pos/tax-invoices/` shows `คัดลอก Sync` on cards with `Sync Error`. The action copies a plain-text support package containing invoice ID/number, source sale, buyer, status, sync status, sync action, phase, target document, error, attempt count, and latest attempt time. It is client-side recovery metadata only and does not mutate tax invoices, source sales, VAT totals, payments, stock movements, or retry state.
+
+Tax sync escalation hint workflow: `/pos/tax-invoices/` shows a `ส่ง Support` badge and recommendation when a `Sync Error` invoice has `syncAttemptCount >= 3`. The copied Sync support package includes `Escalation: ส่ง Support`, and search can match the escalation text. This remains display-only recovery guidance and does not mutate retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
 
 Full tax invoice duplicate workflow: issuing a full tax invoice first checks the local tax invoice cache, then checks Firestore by deterministic tax invoice IDs and loaded `taxInvoices` rows. If an existing invoice matches the sale ID or sale number, the app reuses and caches that invoice instead of creating a new document. If the Firestore transaction path cannot reserve/write the invoice, the fallback remains local/pending and does not write to Firestore outside a transaction.
 
