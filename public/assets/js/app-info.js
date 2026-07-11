@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.36',
-  build: '2026.07.11.006',
+  version: '0.14.37',
+  build: '2026.07.11.007',
   branch: 'feature/retail-pos',
-  commit: 'TAX-SYNC-QUALITY-HINTS-01436',
+  commit: 'TAX-SYNC-RECOVERY-ACTION-01437',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Tax Sync Quality Hints',
+  milestone: 'Tax Sync Recovery Action',
   updatedAt: '2026-07-11T00:00:00+07:00',
   whatsNew: [
-    'Add ตรวจข้อมูล quality hints for retryable tax invoice sync states',
-    'Show a live ตรวจข้อมูล filter count and searchable warning text',
-    'Include Quality Check in copied tax invoice sync recovery packages',
+    'Add คำแนะนำ recovery guidance for retryable tax invoice sync states',
+    'Include Recommended Action in copied tax invoice sync recovery packages',
+    'Keep recovery recommendations display-only without adding a Firestore write path',
     'Preserve full tax invoice duplicate, sync, void, VAT, payment, and stock behavior'
   ]
 };

@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-006';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-007';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -135,7 +135,8 @@ function invoiceSearchText(invoice = {}) {
   const escalation = shouldEscalateSync(invoice) ? 'ส่ง support ตรวจสอบ stuck sync retry' : '';
   const stale = shouldShowStaleSync(invoice) ? 'ค้าง sync เกิน 24 ชั่วโมง stuck pending local' : '';
   const quality = qualityWarnings(invoice).join(' ');
-  return [invoice.invoiceNumber, invoice.saleNumber, invoice.saleId, buyer.buyerName, buyer.buyerTaxId, buyer.buyerAddress, seller.sellerName, invoice.status, invoice.syncStatus, invoice.syncAction, invoice.syncPhase, invoice.syncTargetId, invoice.syncError, escalation, stale, quality].join(' ').toLowerCase();
+  const recommendation = recoveryRecommendation(invoice);
+  return [invoice.invoiceNumber, invoice.saleNumber, invoice.saleId, buyer.buyerName, buyer.buyerTaxId, buyer.buyerAddress, seller.sellerName, invoice.status, invoice.syncStatus, invoice.syncAction, invoice.syncPhase, invoice.syncTargetId, invoice.syncError, escalation, stale, quality, recommendation].join(' ').toLowerCase();
 }
 
 function syncBadge(invoice = {}) {
@@ -182,8 +183,20 @@ function needsQualityReview(invoice = {}) {
   return qualityWarnings(invoice).length > 0;
 }
 
+function recoveryRecommendation(invoice = {}) {
+  if (!canRetrySync(invoice)) return '';
+  if (shouldEscalateSync(invoice)) return 'คำแนะนำ: คัดลอก Sync ส่ง Support';
+  const warnings = qualityWarnings(invoice);
+  if (warnings.some(text => text.includes('ชื่อผู้ซื้อ') || text.includes('เลขภาษี'))) return 'คำแนะนำ: แก้ผู้ซื้อ แล้วลอง Sync';
+  if (warnings.some(text => text.includes('เลขบิลต้นทาง'))) return 'คำแนะนำ: ดูบิลต้นทางหรือคัดลอก Sync ให้ Support';
+  if (shouldShowStaleSync(invoice)) return 'คำแนะนำ: ลอง Sync อีกครั้ง ถ้ายังค้างให้คัดลอก Sync';
+  if (invoice.syncError) return 'คำแนะนำ: ลอง Sync หรือคัดลอก Sync';
+  return 'คำแนะนำ: ลอง Sync';
+}
+
 function syncDiagnosticText(invoice = {}) {
-  if (!invoice.syncError && !shouldShowStaleSync(invoice) && !needsQualityReview(invoice)) return '';
+  const recommendation = recoveryRecommendation(invoice);
+  if (!invoice.syncError && !shouldShowStaleSync(invoice) && !needsQualityReview(invoice) && !recommendation) return '';
   const parts = invoice.syncError ? [`Sync: ${invoice.syncError}`] : [];
   const action = String(invoice.syncAction || '').trim();
   const phase = String(invoice.syncPhase || '').trim();
@@ -195,6 +208,7 @@ function syncDiagnosticText(invoice = {}) {
   if (shouldShowStaleSync(invoice)) parts.push(`ค้าง Sync ประมาณ ${staleSyncHours(invoice).toLocaleString('th-TH')} ชม.`);
   if (needsQualityReview(invoice)) parts.push(`ตรวจข้อมูล: ${qualityWarnings(invoice).join(', ')}`);
   if (shouldEscalateSync(invoice)) parts.push('แนะนำคัดลอก Sync ส่ง Support');
+  if (recommendation) parts.push(recommendation);
   return parts.join(' • ');
 }
 
@@ -218,6 +232,7 @@ function syncRecoveryText(invoice = {}) {
     `Escalation: ${shouldEscalateSync(invoice) ? 'ส่ง Support' : '-'}`,
     `Stale Sync: ${shouldShowStaleSync(invoice) ? `${staleSyncHours(invoice)} hours` : '-'}`,
     `Quality Check: ${needsQualityReview(invoice) ? qualityWarnings(invoice).join(', ') : '-'}`,
+    `Recommended Action: ${recoveryRecommendation(invoice) || '-'}`,
     `Sync Reference: ${syncReferenceTime(invoice) ? dateText(syncReferenceTime(invoice)) : '-'}`,
     `Latest Attempt: ${invoice.syncAttemptedAt || invoice.syncErrorAt ? dateText(invoice.syncAttemptedAt || invoice.syncErrorAt) : '-'}`
   ].join('\n');
