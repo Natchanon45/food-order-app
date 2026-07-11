@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-002';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-003';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -222,6 +222,7 @@ function invoiceMatchesSyncFilter(invoice = {}) {
   if (activeSyncFilter === 'error') return Boolean(invoice.syncError);
   if (activeSyncFilter === 'pending') return isPendingSync(invoice);
   if (activeSyncFilter === 'support') return shouldEscalateSync(invoice);
+  if (activeSyncFilter === 'stale') return shouldShowStaleSync(invoice);
   return true;
 }
 
@@ -229,6 +230,7 @@ function syncFilterLabel() {
   if (activeSyncFilter === 'error') return 'Sync Error';
   if (activeSyncFilter === 'pending') return 'รอ Sync';
   if (activeSyncFilter === 'support') return 'ส่ง Support';
+  if (activeSyncFilter === 'stale') return 'ค้าง Sync';
   return 'ทั้งหมด';
 }
 
@@ -237,7 +239,8 @@ function updateSyncFilterCounts() {
     all: invoices.length,
     error: invoices.filter(invoice => invoice.syncError).length,
     pending: invoices.filter(isPendingSync).length,
-    support: invoices.filter(shouldEscalateSync).length
+    support: invoices.filter(shouldEscalateSync).length,
+    stale: invoices.filter(shouldShowStaleSync).length
   };
   syncFilterButtons.forEach(button => {
     const key = String(button.dataset.taxSyncFilter || 'all');
