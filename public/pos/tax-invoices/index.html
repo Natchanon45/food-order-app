@@ -76,7 +76,19 @@
       <div class="tax-dialog-actions"><button id="voidTaxInvoiceCancelBtn" class="btn btn-secondary" type="button">ไม่ยกเลิก</button><button id="voidTaxInvoiceSubmitBtn" class="btn btn-danger" type="submit">ยืนยันยกเลิก</button></div>
     </form>
   </dialog>
+  <dialog id="editTaxBuyerDialog" class="tax-dialog">
+    <form id="editTaxBuyerForm" class="tax-form" method="dialog">
+      <div><h2>แก้ข้อมูลผู้ซื้อ</h2><p id="editTaxBuyerText">-</p></div>
+      <p>ใช้สำหรับใบกำกับภาษีที่ยังค้าง Sync ในเครื่องเท่านั้น หลังบันทึกแล้วกด ลอง Sync อีกครั้ง</p>
+      <label>ชื่อผู้ซื้อ / บริษัท<input id="editBuyerNameInput" autocomplete="name" required></label>
+      <label>เลขประจำตัวผู้เสียภาษี<input id="editBuyerTaxIdInput" autocomplete="off" inputmode="numeric" maxlength="13"></label>
+      <label>สำนักงานใหญ่ / สาขา<input id="editBuyerBranchInput" autocomplete="off"></label>
+      <label>ที่อยู่สำหรับใบกำกับภาษี<textarea id="editBuyerAddressInput" autocomplete="street-address"></textarea></label>
+      <div id="editTaxBuyerError" class="tax-error"></div>
+      <div class="tax-dialog-actions"><button id="editTaxBuyerCancelBtn" class="btn btn-secondary" type="button">ยกเลิก</button><button id="editTaxBuyerSubmitBtn" class="btn btn-primary" type="submit">บันทึกข้อมูลผู้ซื้อ</button></div>
+    </form>
+  </dialog>
   <script type="module" src="/assets/js/retail-pos-navigation.js?v=20260707-021"></script>
-  <script type="module" src="/assets/js/retail-pos-tax-invoices.js?v=20260711-004"></script>
+  <script type="module" src="/assets/js/retail-pos-tax-invoices.js?v=20260711-005"></script>
 </body>
 </html>

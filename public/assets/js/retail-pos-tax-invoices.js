@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-004';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-005';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -45,10 +45,21 @@ const voidReasonInput = document.querySelector('#voidTaxInvoiceReasonInput');
 const voidError = document.querySelector('#voidTaxInvoiceError');
 const voidCancelBtn = document.querySelector('#voidTaxInvoiceCancelBtn');
 const voidSubmitBtn = document.querySelector('#voidTaxInvoiceSubmitBtn');
+const editBuyerDialog = document.querySelector('#editTaxBuyerDialog');
+const editBuyerForm = document.querySelector('#editTaxBuyerForm');
+const editBuyerText = document.querySelector('#editTaxBuyerText');
+const editBuyerNameInput = document.querySelector('#editBuyerNameInput');
+const editBuyerTaxIdInput = document.querySelector('#editBuyerTaxIdInput');
+const editBuyerBranchInput = document.querySelector('#editBuyerBranchInput');
+const editBuyerAddressInput = document.querySelector('#editBuyerAddressInput');
+const editBuyerError = document.querySelector('#editTaxBuyerError');
+const editBuyerCancelBtn = document.querySelector('#editTaxBuyerCancelBtn');
+const editBuyerSubmitBtn = document.querySelector('#editTaxBuyerSubmitBtn');
 let invoices = [];
 let salesCache = [];
 let currentSourceSale = null;
 let currentVoidInvoice = null;
+let currentEditBuyerInvoice = null;
 let activeSyncFilter = 'all';
 
 function readJson(key, fallback) {
@@ -213,6 +224,11 @@ async function copyText(value) {
 function canRetrySync(invoice = {}) {
   const status = String(invoice.syncStatus || '');
   return Boolean(invoice.syncError || ['pending_create', 'pending_void', 'local_only', 'local_void'].includes(status));
+}
+
+function canEditPendingBuyer(invoice = {}) {
+  const status = String(invoice.syncStatus || '');
+  return invoice.status !== 'void' && ['pending_create', 'local_only'].includes(status);
 }
 
 function isPendingSync(invoice = {}) {
@@ -497,6 +513,46 @@ async function submitVoidInvoice() {
   }
 }
 
+function showEditBuyerDialog(invoice) {
+  currentEditBuyerInvoice = invoice;
+  const buyer = invoice.buyer || {};
+  if (editBuyerText) editBuyerText.textContent = `${invoice.invoiceNumber || invoice.id || '-'} • บิล ${invoice.saleNumber || invoice.saleId || '-'}`;
+  if (editBuyerNameInput) editBuyerNameInput.value = buyer.buyerName || '';
+  if (editBuyerTaxIdInput) editBuyerTaxIdInput.value = buyer.buyerTaxId || '';
+  if (editBuyerBranchInput) editBuyerBranchInput.value = buyer.buyerBranchName || 'สำนักงานใหญ่';
+  if (editBuyerAddressInput) editBuyerAddressInput.value = buyer.buyerAddress || '';
+  if (editBuyerError) editBuyerError.textContent = '';
+  editBuyerDialog?.showModal();
+  setTimeout(() => editBuyerNameInput?.focus(), 50);
+}
+
+function currentEditBuyer() {
+  return {
+    buyerName: editBuyerNameInput?.value || '',
+    buyerTaxId: editBuyerTaxIdInput?.value || '',
+    buyerBranchName: editBuyerBranchInput?.value || '',
+    buyerAddress: editBuyerAddressInput?.value || ''
+  };
+}
+
+async function submitEditBuyer() {
+  if (!currentEditBuyerInvoice) return;
+  editBuyerSubmitBtn.disabled = true;
+  editBuyerSubmitBtn.textContent = 'กำลังบันทึก...';
+  if (editBuyerError) editBuyerError.textContent = '';
+  try {
+    updateLocalTaxInvoiceBuyer(currentEditBuyerInvoice, currentEditBuyer());
+    editBuyerDialog?.close();
+    currentEditBuyerInvoice = null;
+    await load();
+  } catch (error) {
+    if (editBuyerError) editBuyerError.textContent = error?.message || 'บันทึกข้อมูลผู้ซื้อไม่สำเร็จ';
+  } finally {
+    editBuyerSubmitBtn.disabled = false;
+    editBuyerSubmitBtn.textContent = 'บันทึกข้อมูลผู้ซื้อ';
+  }
+}
+
 function cardHtml(invoice) {
   const buyer = invoice.buyer || {};
   const seller = invoice.seller || {};
@@ -522,6 +578,7 @@ function cardHtml(invoice) {
       <div class="tax-actions">
         <a class="btn btn-primary" href="${invoiceUrl(invoice)}" target="_blank" rel="noopener">เปิด/พิมพ์</a>
         ${receiptUrl ? `<a class="btn btn-secondary" href="${escapeHtml(receiptUrl)}" target="_blank" rel="noopener">ดูบิลต้นทาง</a>` : ''}
+        ${canEditPendingBuyer(invoice) ? `<button class="btn btn-secondary" type="button" data-edit-tax-buyer="${escapeHtml(keyOf(invoice))}">แก้ผู้ซื้อ</button>` : ''}
         ${canRetrySync(invoice) ? `<button class="btn btn-secondary" type="button" data-copy-tax-sync="${escapeHtml(keyOf(invoice))}">คัดลอก Sync</button>` : ''}
         ${canRetrySync(invoice) ? '<button class="btn btn-secondary" type="button" data-retry-tax-sync="1">ลอง Sync</button>' : ''}
         ${isVoid ? '' : `<button class="btn btn-danger" type="button" data-void-tax="${escapeHtml(keyOf(invoice))}">ยกเลิก</button>`}
@@ -593,7 +650,15 @@ profileListEl?.addEventListener('click', event => {
   if (profile) renderProfiles(profile.id || profile.customerKey || '');
 });
 profileForm?.addEventListener('submit', event => { event.preventDefault(); saveProfileForm(); });
+editBuyerCancelBtn?.addEventListener('click', () => editBuyerDialog?.close());
+editBuyerForm?.addEventListener('submit', event => { event.preventDefault(); submitEditBuyer(); });
 listEl?.addEventListener('click', async event => {
+  const editBuyerButton = event.target.closest('[data-edit-tax-buyer]');
+  if (editBuyerButton) {
+    const invoice = invoices.find(row => keyOf(row) === String(editBuyerButton.dataset.editTaxBuyer || ''));
+    if (invoice) showEditBuyerDialog(invoice);
+    return;
+  }
   const copyButton = event.target.closest('[data-copy-tax-sync]');
   if (copyButton) {
     const invoice = invoices.find(row => keyOf(row) === String(copyButton.dataset.copyTaxSync || ''));

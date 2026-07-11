@@ -511,6 +511,19 @@ export function deleteTaxBuyerProfile(id) {
   return removeBuyerProfile(id);
 }
 
+export function updateLocalTaxInvoiceBuyer(invoiceInput = {}, buyerInput = {}) {
+  const invoiceId = String(invoiceInput?.id || invoiceInput?._documentId || invoiceInput?.invoiceNumber || '').trim();
+  if (!invoiceId) throw new Error('ไม่พบรหัสใบกำกับภาษี');
+  const buyer = normalizeBuyer(buyerInput);
+  if (!buyer.buyerName) throw new Error('กรุณาระบุชื่อผู้ซื้อ / บริษัท');
+  return updateLocalInvoice({
+    id: invoiceId,
+    invoiceNumber: invoiceInput.invoiceNumber || '',
+    buyer,
+    buyerRecoveryUpdatedAt: Date.now()
+  });
+}
+
 export async function voidFullTaxInvoice(invoiceInput, reason = '') {
   const invoiceId = String(invoiceInput?.id || invoiceInput?._documentId || invoiceInput?.invoiceNumber || '').trim();
   if (!invoiceId) throw new Error('ไม่พบรหัสใบกำกับภาษี');
