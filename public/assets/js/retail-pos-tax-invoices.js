@@ -1,9 +1,10 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-001';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-002';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
 const SALES_KEY = 'retail_pos_sales_v1';
+const STALE_SYNC_MS = 24 * 60 * 60 * 1000;
 
 const searchInput = document.querySelector('#taxInvoiceSearch');
 const syncFilterButtons = [...document.querySelectorAll('[data-tax-sync-filter]')];
@@ -121,32 +122,50 @@ function invoiceSearchText(invoice = {}) {
   const buyer = invoice.buyer || {};
   const seller = invoice.seller || {};
   const escalation = shouldEscalateSync(invoice) ? 'ส่ง support ตรวจสอบ stuck sync retry' : '';
-  return [invoice.invoiceNumber, invoice.saleNumber, invoice.saleId, buyer.buyerName, buyer.buyerTaxId, buyer.buyerAddress, seller.sellerName, invoice.status, invoice.syncStatus, invoice.syncAction, invoice.syncPhase, invoice.syncTargetId, invoice.syncError, escalation].join(' ').toLowerCase();
+  const stale = shouldShowStaleSync(invoice) ? 'ค้าง sync เกิน 24 ชั่วโมง stuck pending local' : '';
+  return [invoice.invoiceNumber, invoice.saleNumber, invoice.saleId, buyer.buyerName, buyer.buyerTaxId, buyer.buyerAddress, seller.sellerName, invoice.status, invoice.syncStatus, invoice.syncAction, invoice.syncPhase, invoice.syncTargetId, invoice.syncError, escalation, stale].join(' ').toLowerCase();
 }
 
 function syncBadge(invoice = {}) {
   const status = String(invoice.syncStatus || '');
-  if (invoice.syncError) return `<span class="sync-badge is-error">Sync Error</span>${shouldEscalateSync(invoice) ? '<span class="sync-badge is-pending">ส่ง Support</span>' : ''}`;
-  if (['pending_create', 'pending_void'].includes(status)) return '<span class="sync-badge is-pending">รอ Sync</span>';
-  if (['local_only', 'local_void'].includes(status)) return '<span class="sync-badge is-local">เอกสารในเครื่อง</span>';
-  if (invoice.runningNumberStatus === 'local_only') return '<span class="sync-badge is-local">เลขชั่วคราว</span>';
-  return '';
+  const staleBadge = shouldShowStaleSync(invoice) ? '<span class="sync-badge is-pending">ค้าง Sync</span>' : '';
+  if (invoice.syncError) return `<span class="sync-badge is-error">Sync Error</span>${shouldEscalateSync(invoice) ? '<span class="sync-badge is-pending">ส่ง Support</span>' : ''}${staleBadge}`;
+  if (['pending_create', 'pending_void'].includes(status)) return `<span class="sync-badge is-pending">รอ Sync</span>${staleBadge}`;
+  if (['local_only', 'local_void'].includes(status)) return `<span class="sync-badge is-local">เอกสารในเครื่อง</span>${staleBadge}`;
+  if (invoice.runningNumberStatus === 'local_only') return `<span class="sync-badge is-local">เลขชั่วคราว</span>${staleBadge}`;
+  return staleBadge;
 }
 
 function shouldEscalateSync(invoice = {}) {
   return Boolean(invoice.syncError && Number(invoice.syncAttemptCount || 0) >= 3);
 }
 
+function syncReferenceTime(invoice = {}) {
+  return Number(invoice.syncAttemptedAt || invoice.syncErrorAt || invoice.updatedAt || invoice.issuedAt || 0);
+}
+
+function staleSyncHours(invoice = {}) {
+  const startedAt = syncReferenceTime(invoice);
+  if (!startedAt) return 0;
+  return Math.floor((Date.now() - startedAt) / (60 * 60 * 1000));
+}
+
+function shouldShowStaleSync(invoice = {}) {
+  const startedAt = syncReferenceTime(invoice);
+  return Boolean(canRetrySync(invoice) && startedAt && Date.now() - startedAt >= STALE_SYNC_MS);
+}
+
 function syncDiagnosticText(invoice = {}) {
-  if (!invoice.syncError) return '';
-  const parts = [`Sync: ${invoice.syncError}`];
+  if (!invoice.syncError && !shouldShowStaleSync(invoice)) return '';
+  const parts = invoice.syncError ? [`Sync: ${invoice.syncError}`] : [];
   const action = String(invoice.syncAction || '').trim();
   const phase = String(invoice.syncPhase || '').trim();
   if (action || phase) parts.push(`งาน ${action || '-'}${phase ? ` / ${phase}` : ''}`);
   const count = Number(invoice.syncAttemptCount || 0);
   if (count > 0) parts.push(`พยายาม ${count.toLocaleString('th-TH')} ครั้ง`);
-  const attemptedAt = Number(invoice.syncAttemptedAt || invoice.syncErrorAt || 0);
+  const attemptedAt = syncReferenceTime(invoice);
   if (attemptedAt > 0) parts.push(`ล่าสุด ${dateText(attemptedAt)}`);
+  if (shouldShowStaleSync(invoice)) parts.push(`ค้าง Sync ประมาณ ${staleSyncHours(invoice).toLocaleString('th-TH')} ชม.`);
   if (shouldEscalateSync(invoice)) parts.push('แนะนำคัดลอก Sync ส่ง Support');
   return parts.join(' • ');
 }
@@ -167,6 +186,8 @@ function syncRecoveryText(invoice = {}) {
     `Sync Error: ${invoice.syncError || '-'}`,
     `Attempts: ${Number(invoice.syncAttemptCount || 0)}`,
     `Escalation: ${shouldEscalateSync(invoice) ? 'ส่ง Support' : '-'}`,
+    `Stale Sync: ${shouldShowStaleSync(invoice) ? `${staleSyncHours(invoice)} hours` : '-'}`,
+    `Sync Reference: ${syncReferenceTime(invoice) ? dateText(syncReferenceTime(invoice)) : '-'}`,
     `Latest Attempt: ${invoice.syncAttemptedAt || invoice.syncErrorAt ? dateText(invoice.syncAttemptedAt || invoice.syncErrorAt) : '-'}`
   ].join('\n');
 }

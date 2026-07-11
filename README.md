@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Sync Pending Copy
-Version: 0.14.31
-Build: 2026.07.11.001
+Milestone: Tax Sync Stale Hint
+Version: 0.14.32
+Build: 2026.07.11.002
 
-Change: tax invoice history now shows `คัดลอก Sync` on pending/local retryable tax invoice states even before a `Sync Error` appears, so staff can copy a recovery package for support handoff while preserving source sale, VAT, payment, stock, duplicate protection, and Firestore transaction behavior.
+Change: tax invoice history now labels retryable pending/local tax invoice sync states older than 24 hours as `ค้าง Sync`, shows stale age in diagnostics, and includes stale/reference time in the copied recovery package while preserving source sale, VAT, payment, stock, duplicate protection, and Firestore transaction behavior.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -46,6 +46,8 @@ Tax sync escalation hint workflow: `/pos/tax-invoices/` shows a `ส่ง Suppo
 Tax sync filter workflow: `/pos/tax-invoices/` provides filter chips for `ทั้งหมด`, `Sync Error`, `รอ Sync`, and `ส่ง Support` with live counts. Filtering combines with the existing search box and is UI-only, so it does not mutate retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
 
 Tax pending sync copy workflow: `/pos/tax-invoices/` shows `คัดลอก Sync` for retryable pending/local states such as `pending_create`, `pending_void`, `local_only`, and `local_void`, even when no `Sync Error` has been recorded yet. The copied recovery package includes invoice, sale, buyer, sync status/action/phase/target, error if any, attempt count, escalation state, and latest attempt time. This remains client-side recovery metadata only and does not mutate retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
+
+Tax stale sync hint workflow: `/pos/tax-invoices/` shows `ค้าง Sync` when a retryable pending/local tax invoice sync state is older than 24 hours based on sync attempt, sync error, updated, or issued time. Diagnostics show approximate stale hours, search can match stale sync text, and `คัดลอก Sync` includes `Stale Sync` plus `Sync Reference`. This is display-only recovery guidance and does not mutate retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
 
 Full tax invoice duplicate workflow: issuing a full tax invoice first checks the local tax invoice cache, then checks Firestore by deterministic tax invoice IDs and loaded `taxInvoices` rows. If an existing invoice matches the sale ID or sale number, the app reuses and caches that invoice instead of creating a new document. If the Firestore transaction path cannot reserve/write the invoice, the fallback remains local/pending and does not write to Firestore outside a transaction.
 

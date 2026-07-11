@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.31
-Build: 2026.07.11.001
-Milestone: Tax Sync Pending Copy
+Version: 0.14.32
+Build: 2026.07.11.002
+Milestone: Tax Sync Stale Hint
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -65,6 +65,8 @@ Tax invoice sync escalation hint rule: tax invoice history may label unresolved 
 Tax invoice sync filter rule: tax invoice history may provide UI-only filters for all invoices, sync errors, pending/local sync states, and support escalation cases. Filter counts and list filtering must be derived from loaded local/remote invoice rows only and must not mutate retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
 
 Tax invoice pending sync copy rule: tax invoice history may provide `คัดลอก Sync` for retryable pending/local states before a sync error exists. The copied recovery package must remain client-side support metadata only and must not mutate retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
+
+Tax invoice stale sync hint rule: tax invoice history may label retryable pending/local sync states as `ค้าง Sync` when their sync reference time is older than the UI threshold, currently 24 hours. The stale age, search text, badge, and copied stale/reference text are operator guidance only and must not mutate retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
 
 DBD Lookup rule: the buyer tax ID field is the first input in the full tax invoice modal and includes an inline `DBD` button. The browser can fetch a configured DBD lookup proxy from `window.RETAIL_POS_DBD_LOOKUP_URL` or localStorage key `retail_pos_dbd_lookup_url`; the expected JSON can include `buyerName`, `buyerTaxId`, `buyerAddress`, `buyerBranchName`, or DBD-style aliases such as `juristicNameTH`, `juristicId`, `addressTh`, and `branchName`. If no proxy is configured or lookup fails, the flow opens the official DBD DataWarehouse+ juristic search page for manual verification. This flow does not change POS sale totals, VAT calculation, stock deduction, offline sale sync, or existing short tax invoice receipt behavior.
 
