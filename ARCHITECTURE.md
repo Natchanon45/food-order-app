@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.37
-Build: 2026.07.11.007
-Milestone: Tax Sync Recovery Action
+Version: 0.14.38
+Build: 2026.07.11.008
+Milestone: Tax Sync Source Visibility
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -77,6 +77,8 @@ Tax invoice buyer recovery rule: tax invoice history may provide `แก้ผ�
 Tax invoice quality hint rule: tax invoice history may provide `ตรวจข้อมูล` hints and a filter for retryable sync states that are missing buyer name, buyer tax ID, or source sale reference. Quality hints, copied `Quality Check` text, search text, badges, and filter counts must be computed from loaded local/remote invoice rows only and must not mutate retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
 
 Tax invoice recovery action rule: tax invoice history may derive a display-only `คำแนะนำ` / `Recommended Action` from loaded retryable sync state, quality hints, stale age, and escalation count. Recommendations may guide staff to edit buyer data, retry sync, inspect the source receipt, copy diagnostics, or send support handoff, but must not mutate retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
+
+Tax invoice source visibility rule: tax invoice history may tag merged in-memory rows with display-only local/remote source flags so operators can see `แหล่งข้อมูล` as `Firestore`, `เครื่องนี้`, or `Firestore + เครื่องนี้`. These labels, search text, and copied `Data Source` diagnostics must be derived only from the loaded local cache and Firestore list results and must not mutate retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
 
 DBD Lookup rule: the buyer tax ID field is the first input in the full tax invoice modal and includes an inline `DBD` button. The browser can fetch a configured DBD lookup proxy from `window.RETAIL_POS_DBD_LOOKUP_URL` or localStorage key `retail_pos_dbd_lookup_url`; the expected JSON can include `buyerName`, `buyerTaxId`, `buyerAddress`, `buyerBranchName`, or DBD-style aliases such as `juristicNameTH`, `juristicId`, `addressTh`, and `branchName`. If no proxy is configured or lookup fails, the flow opens the official DBD DataWarehouse+ juristic search page for manual verification. This flow does not change POS sale totals, VAT calculation, stock deduction, offline sale sync, or existing short tax invoice receipt behavior.
 

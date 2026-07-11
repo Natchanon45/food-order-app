@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-007';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-008';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -107,6 +107,13 @@ function mergeInvoices(...groups) {
   return [...map.values()].sort((a, b) => Number(b.issuedAt || b.updatedAt || 0) - Number(a.issuedAt || a.updatedAt || 0));
 }
 
+function invoiceSourceText(invoice = {}) {
+  if (invoice._syncSourceLocal && invoice._syncSourceRemote) return 'Firestore + เครื่องนี้';
+  if (invoice._syncSourceRemote) return 'Firestore';
+  if (invoice._syncSourceLocal) return 'เครื่องนี้';
+  return 'ไม่ทราบแหล่งข้อมูล';
+}
+
 function saleKey(sale = {}) {
   return String(sale.saleNumber || sale.number || sale.id || '').trim();
 }
@@ -136,7 +143,8 @@ function invoiceSearchText(invoice = {}) {
   const stale = shouldShowStaleSync(invoice) ? 'ค้าง sync เกิน 24 ชั่วโมง stuck pending local' : '';
   const quality = qualityWarnings(invoice).join(' ');
   const recommendation = recoveryRecommendation(invoice);
-  return [invoice.invoiceNumber, invoice.saleNumber, invoice.saleId, buyer.buyerName, buyer.buyerTaxId, buyer.buyerAddress, seller.sellerName, invoice.status, invoice.syncStatus, invoice.syncAction, invoice.syncPhase, invoice.syncTargetId, invoice.syncError, escalation, stale, quality, recommendation].join(' ').toLowerCase();
+  const source = invoiceSourceText(invoice);
+  return [invoice.invoiceNumber, invoice.saleNumber, invoice.saleId, buyer.buyerName, buyer.buyerTaxId, buyer.buyerAddress, seller.sellerName, invoice.status, invoice.syncStatus, invoice.syncAction, invoice.syncPhase, invoice.syncTargetId, invoice.syncError, escalation, stale, quality, recommendation, source].join(' ').toLowerCase();
 }
 
 function syncBadge(invoice = {}) {
@@ -233,6 +241,7 @@ function syncRecoveryText(invoice = {}) {
     `Stale Sync: ${shouldShowStaleSync(invoice) ? `${staleSyncHours(invoice)} hours` : '-'}`,
     `Quality Check: ${needsQualityReview(invoice) ? qualityWarnings(invoice).join(', ') : '-'}`,
     `Recommended Action: ${recoveryRecommendation(invoice) || '-'}`,
+    `Data Source: ${invoiceSourceText(invoice)}`,
     `Sync Reference: ${syncReferenceTime(invoice) ? dateText(syncReferenceTime(invoice)) : '-'}`,
     `Latest Attempt: ${invoice.syncAttemptedAt || invoice.syncErrorAt ? dateText(invoice.syncAttemptedAt || invoice.syncErrorAt) : '-'}`
   ].join('\n');
@@ -601,6 +610,7 @@ function cardHtml(invoice) {
       <div class="tax-card-badges"><div class="tax-doc-no">${escapeHtml(invoice.invoiceNumber || invoice.id || '-')}</div>${syncBadge(invoice)}</div>
       <h2>${escapeHtml(buyer.buyerName || '-')}</h2>
       <div class="tax-meta">
+        <span>แหล่งข้อมูล: ${escapeHtml(invoiceSourceText(invoice))}</span>
         <span>เลขภาษี: ${escapeHtml(buyer.buyerTaxId || '-')}</span>
         <span>บิล: ${escapeHtml(invoice.saleNumber || invoice.saleId || '-')}</span>
         <span>${escapeHtml(dateText(invoice.issuedAt))}</span>
@@ -642,7 +652,9 @@ async function load() {
     let remote = [];
     try { remote = await listRecords(TAX_INVOICE_COLLECTION, { sortBy: 'issuedAt', direction: 'desc' }); }
     catch (error) { console.warn('[retail-pos-tax-invoices] firebase/list fallback', error); }
-    invoices = mergeInvoices(localInvoices(), remote);
+    const localRows = localInvoices().map(row => ({ ...row, _syncSourceLocal: true }));
+    const remoteRows = remote.map(row => ({ ...row, _syncSourceRemote: true }));
+    invoices = mergeInvoices(localRows, remoteRows);
     render();
   } finally {
     refreshBtn.disabled = false;
