@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-011';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260712-001';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -357,6 +357,17 @@ function filteredInvoices() {
   return invoices.filter(invoice => invoiceMatchesSyncFilter(invoice) && invoiceMatchesSourceFilter(invoice) && (!q || invoiceSearchText(invoice).includes(q)));
 }
 
+function hasActiveFilters() {
+  return Boolean(String(searchInput?.value || '').trim() || activeSyncFilter !== 'all' || activeSourceFilter !== 'all');
+}
+
+function resetFilters() {
+  if (searchInput) searchInput.value = '';
+  activeSyncFilter = 'all';
+  activeSourceFilter = 'all';
+  render();
+}
+
 function invoiceUrl(invoice) {
   const id = encodeURIComponent(invoice.id || invoice.invoiceNumber || invoice._documentId || '');
   return `/pos/tax-invoice/?invoiceId=${id}&auto=0`;
@@ -670,6 +681,9 @@ function render() {
   updateSourceFilterCounts();
   summaryEl.textContent = `ทั้งหมด ${invoices.length.toLocaleString('th-TH')} เอกสาร • สถานะ ${syncFilterLabel()} • แหล่งข้อมูล ${sourceFilterLabel()} • แสดง ${rows.length.toLocaleString('th-TH')} เอกสาร`;
   emptyEl.hidden = rows.length > 0;
+  emptyEl.innerHTML = hasActiveFilters()
+    ? 'ไม่พบรายการตามตัวกรองที่เลือก <button class="btn btn-secondary" type="button" data-clear-tax-filters="1">ล้างตัวกรอง</button>'
+    : 'ยังไม่มีใบกำกับภาษี หรือไม่พบรายการที่ค้นหา';
   listEl.innerHTML = rows.map(cardHtml).join('');
 }
 
@@ -706,6 +720,9 @@ sourceFilterButtons.forEach(button => {
     activeSourceFilter = String(button.dataset.taxSourceFilter || 'all');
     render();
   });
+});
+emptyEl?.addEventListener('click', event => {
+  if (event.target.closest('[data-clear-tax-filters]')) resetFilters();
 });
 refreshBtn?.addEventListener('click', load);
 findSourceSaleBtn?.addEventListener('click', findSourceSale);
