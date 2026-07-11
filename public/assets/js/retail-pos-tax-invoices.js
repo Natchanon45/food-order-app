@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-003';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-004';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -172,11 +172,13 @@ function syncDiagnosticText(invoice = {}) {
 
 function syncRecoveryText(invoice = {}) {
   const buyer = invoice.buyer || {};
+  const receiptUrl = sourceReceiptUrl(invoice);
   return [
     'Food Order POS Tax Invoice Sync Recovery',
     `Invoice ID: ${keyOf(invoice) || '-'}`,
     `Invoice No: ${invoice.invoiceNumber || '-'}`,
     `Sale: ${invoice.saleNumber || invoice.saleId || invoice.sourceSale?.saleNumber || invoice.sourceSale?.id || '-'}`,
+    `Source Receipt: ${receiptUrl || '-'}`,
     `Buyer: ${buyer.buyerName || '-'}`,
     `Status: ${invoice.status || '-'}`,
     `Sync Status: ${invoice.syncStatus || '-'}`,
@@ -266,6 +268,16 @@ function filteredInvoices() {
 function invoiceUrl(invoice) {
   const id = encodeURIComponent(invoice.id || invoice.invoiceNumber || invoice._documentId || '');
   return `/pos/tax-invoice/?invoiceId=${id}&auto=0`;
+}
+
+function sourceSaleKey(invoice = {}) {
+  return String(invoice.saleId || invoice.saleNumber || invoice.sourceSale?.id || invoice.sourceSale?.saleNumber || '').trim();
+}
+
+function sourceReceiptUrl(invoice = {}) {
+  const saleKeyValue = sourceSaleKey(invoice);
+  if (!saleKeyValue) return '';
+  return new URL(`/pos/receipt/?saleId=${encodeURIComponent(saleKeyValue)}&auto=0`, location.origin).toString();
 }
 
 function openInvoice(invoice) {
@@ -491,6 +503,7 @@ function cardHtml(invoice) {
   const isVoid = invoice.status === 'void';
   const status = isVoid ? 'ยกเลิก' : 'ออกเอกสารแล้ว';
   const syncText = syncDiagnosticText(invoice);
+  const receiptUrl = sourceReceiptUrl(invoice);
   return `<article class="tax-card">
     <div class="tax-card-main">
       <div class="tax-card-badges"><div class="tax-doc-no">${escapeHtml(invoice.invoiceNumber || invoice.id || '-')}</div>${syncBadge(invoice)}</div>
@@ -508,6 +521,7 @@ function cardHtml(invoice) {
       <span>VAT ${money(invoice.vatAmount)}</span>
       <div class="tax-actions">
         <a class="btn btn-primary" href="${invoiceUrl(invoice)}" target="_blank" rel="noopener">เปิด/พิมพ์</a>
+        ${receiptUrl ? `<a class="btn btn-secondary" href="${escapeHtml(receiptUrl)}" target="_blank" rel="noopener">ดูบิลต้นทาง</a>` : ''}
         ${canRetrySync(invoice) ? `<button class="btn btn-secondary" type="button" data-copy-tax-sync="${escapeHtml(keyOf(invoice))}">คัดลอก Sync</button>` : ''}
         ${canRetrySync(invoice) ? '<button class="btn btn-secondary" type="button" data-retry-tax-sync="1">ลอง Sync</button>' : ''}
         ${isVoid ? '' : `<button class="btn btn-danger" type="button" data-void-tax="${escapeHtml(keyOf(invoice))}">ยกเลิก</button>`}

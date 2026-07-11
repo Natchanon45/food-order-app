@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.33',
-  build: '2026.07.11.003',
+  version: '0.14.34',
+  build: '2026.07.11.004',
   branch: 'feature/retail-pos',
-  commit: 'TAX-SYNC-STALE-FILTER-01433',
+  commit: 'TAX-SYNC-SOURCE-RECEIPT-01434',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Tax Sync Stale Filter',
+  milestone: 'Tax Sync Source Receipt',
   updatedAt: '2026-07-11T00:00:00+07:00',
   whatsNew: [
-    'Add a ค้าง Sync filter chip for stale retryable tax invoice sync states',
-    'Show live stale sync counts beside the existing tax invoice sync filters',
-    'Keep stale sync filtering display-only without adding a new Firestore write path',
+    'Add ดูบิลต้นทาง on tax invoice history cards with source sale references',
+    'Include Source Receipt in copied tax invoice sync recovery packages',
+    'Keep source receipt recovery read-only without adding a new Firestore write path',
     'Preserve full tax invoice duplicate, sync, void, VAT, payment, and stock behavior'
   ]
 };
