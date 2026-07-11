@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-009';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-010';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -290,8 +290,8 @@ function invoiceMatchesSyncFilter(invoice = {}) {
 }
 
 function invoiceMatchesSourceFilter(invoice = {}) {
-  if (activeSourceFilter === 'remote') return Boolean(invoice._syncSourceRemote);
-  if (activeSourceFilter === 'local') return Boolean(invoice._syncSourceLocal);
+  if (activeSourceFilter === 'remote') return Boolean(invoice._syncSourceRemote && !invoice._syncSourceLocal);
+  if (activeSourceFilter === 'local') return Boolean(invoice._syncSourceLocal && !invoice._syncSourceRemote);
   if (activeSourceFilter === 'both') return Boolean(invoice._syncSourceLocal && invoice._syncSourceRemote);
   return true;
 }
@@ -332,8 +332,8 @@ function updateSyncFilterCounts() {
 function updateSourceFilterCounts() {
   const counts = {
     all: invoices.length,
-    remote: invoices.filter(invoice => invoice._syncSourceRemote).length,
-    local: invoices.filter(invoice => invoice._syncSourceLocal).length,
+    remote: invoices.filter(invoice => invoice._syncSourceRemote && !invoice._syncSourceLocal).length,
+    local: invoices.filter(invoice => invoice._syncSourceLocal && !invoice._syncSourceRemote).length,
     both: invoices.filter(invoice => invoice._syncSourceLocal && invoice._syncSourceRemote).length
   };
   sourceFilterButtons.forEach(button => {

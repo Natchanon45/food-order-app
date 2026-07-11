@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Sync Source Filters
-Version: 0.14.39
-Build: 2026.07.11.009
+Milestone: Tax Sync Source Filter Semantics
+Version: 0.14.40
+Build: 2026.07.11.010
 
-Change: tax invoice history now adds display-only source filter chips for `ทุกแหล่ง`, `Firestore`, `เครื่องนี้`, and `ทั้งสอง`, with live counts and combined search/sync filtering, so staff can isolate local-only, remote, or merged tax invoice rows without mutating source sale, VAT, payment, stock, duplicate protection, or Firestore transaction behavior.
+Change: tax invoice history source filter semantics now separate `Firestore` as remote-only rows, `เครื่องนี้` as local-only rows, and `ทั้งสอง` as rows found in both sources, keeping live counts and combined search/sync filtering display-only without mutating source sale, VAT, payment, stock, duplicate protection, or Firestore transaction behavior.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -61,7 +61,7 @@ Tax sync recovery action workflow: `/pos/tax-invoices/` adds `คำแนะน
 
 Tax sync source visibility workflow: `/pos/tax-invoices/` shows `แหล่งข้อมูล` on each invoice card to identify whether the merged row came from `Firestore`, `เครื่องนี้`, or `Firestore + เครื่องนี้`. Search can match that source text, and `คัดลอก Sync` includes `Data Source`. The source labels are derived only from the loaded local/remote lists and do not mutate retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
 
-Tax sync source filter workflow: `/pos/tax-invoices/` provides source filter chips for `ทุกแหล่ง`, `Firestore`, `เครื่องนี้`, and `ทั้งสอง`, each with live counts derived from loaded local/remote rows. Source filtering combines with the existing sync status filter and search box and remains UI-only, without mutating retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
+Tax sync source filter workflow: `/pos/tax-invoices/` provides source filter chips for `ทุกแหล่ง`, `Firestore`, `เครื่องนี้`, and `ทั้งสอง`, each with live counts derived from loaded local/remote rows. `Firestore` means remote-only rows, `เครื่องนี้` means local-only rows, and `ทั้งสอง` means rows found in both sources. Source filtering combines with the existing sync status filter and search box and remains UI-only, without mutating retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
 
 Full tax invoice duplicate workflow: issuing a full tax invoice first checks the local tax invoice cache, then checks Firestore by deterministic tax invoice IDs and loaded `taxInvoices` rows. If an existing invoice matches the sale ID or sale number, the app reuses and caches that invoice instead of creating a new document. If the Firestore transaction path cannot reserve/write the invoice, the fallback remains local/pending and does not write to Firestore outside a transaction.
 
