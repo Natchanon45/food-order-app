@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-010';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-011';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -306,8 +306,8 @@ function syncFilterLabel() {
 }
 
 function sourceFilterLabel() {
-  if (activeSourceFilter === 'remote') return 'Firestore';
-  if (activeSourceFilter === 'local') return 'เครื่องนี้';
+  if (activeSourceFilter === 'remote') return 'Firestore เท่านั้น';
+  if (activeSourceFilter === 'local') return 'เครื่องนี้เท่านั้น';
   if (activeSourceFilter === 'both') return 'ทั้งสอง';
   return 'ทุกแหล่ง';
 }

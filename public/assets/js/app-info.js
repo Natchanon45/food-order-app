@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.40',
-  build: '2026.07.11.010',
+  version: '0.14.41',
+  build: '2026.07.11.011',
   branch: 'feature/retail-pos',
-  commit: 'TAX-SYNC-SOURCE-FILTER-SEMANTICS-01440',
+  commit: 'TAX-SYNC-SOURCE-FILTER-LABELS-01441',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Tax Sync Source Filter Semantics',
+  milestone: 'Tax Sync Source Filter Labels',
   updatedAt: '2026-07-11T00:00:00+07:00',
   whatsNew: [
-    'Clarify tax invoice source filters as remote-only, local-only, and both-source',
-    'Keep source filter counts aligned with the displayed source groups',
-    'Preserve combined source, sync, and search filtering as UI-only',
+    'Rename source filter chips to Firestore เท่านั้น and เครื่องนี้เท่านั้น',
+    'Show the clearer source filter label in the tax invoice history summary',
+    'Keep source filter counts and behavior unchanged as UI-only',
     'Preserve full tax invoice duplicate, sync, void, VAT, payment, and stock behavior'
   ]
 };
