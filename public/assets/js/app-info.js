@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.38',
-  build: '2026.07.11.008',
+  version: '0.14.39',
+  build: '2026.07.11.009',
   branch: 'feature/retail-pos',
-  commit: 'TAX-SYNC-SOURCE-VISIBILITY-01438',
+  commit: 'TAX-SYNC-SOURCE-FILTERS-01439',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Tax Sync Source Visibility',
+  milestone: 'Tax Sync Source Filters',
   updatedAt: '2026-07-11T00:00:00+07:00',
   whatsNew: [
-    'Show แหล่งข้อมูล on tax invoice history cards',
-    'Include Data Source in copied tax invoice sync recovery packages',
-    'Keep source labels display-only from loaded local and Firestore rows',
+    'Add source filter chips to tax invoice history',
+    'Show live counts for Firestore, เครื่องนี้, and both-source invoice rows',
+    'Combine source filtering with existing sync filters and search',
     'Preserve full tax invoice duplicate, sync, void, VAT, payment, and stock behavior'
   ]
 };

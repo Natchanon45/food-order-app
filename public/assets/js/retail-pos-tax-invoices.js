@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-008';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-009';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -8,6 +8,7 @@ const STALE_SYNC_MS = 24 * 60 * 60 * 1000;
 
 const searchInput = document.querySelector('#taxInvoiceSearch');
 const syncFilterButtons = [...document.querySelectorAll('[data-tax-sync-filter]')];
+const sourceFilterButtons = [...document.querySelectorAll('[data-tax-source-filter]')];
 const refreshBtn = document.querySelector('#refreshBtn');
 const summaryEl = document.querySelector('#summaryText');
 const listEl = document.querySelector('#taxInvoiceList');
@@ -61,6 +62,7 @@ let currentSourceSale = null;
 let currentVoidInvoice = null;
 let currentEditBuyerInvoice = null;
 let activeSyncFilter = 'all';
+let activeSourceFilter = 'all';
 
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -287,6 +289,13 @@ function invoiceMatchesSyncFilter(invoice = {}) {
   return true;
 }
 
+function invoiceMatchesSourceFilter(invoice = {}) {
+  if (activeSourceFilter === 'remote') return Boolean(invoice._syncSourceRemote);
+  if (activeSourceFilter === 'local') return Boolean(invoice._syncSourceLocal);
+  if (activeSourceFilter === 'both') return Boolean(invoice._syncSourceLocal && invoice._syncSourceRemote);
+  return true;
+}
+
 function syncFilterLabel() {
   if (activeSyncFilter === 'error') return 'Sync Error';
   if (activeSyncFilter === 'pending') return 'รอ Sync';
@@ -294,6 +303,13 @@ function syncFilterLabel() {
   if (activeSyncFilter === 'stale') return 'ค้าง Sync';
   if (activeSyncFilter === 'review') return 'ตรวจข้อมูล';
   return 'ทั้งหมด';
+}
+
+function sourceFilterLabel() {
+  if (activeSourceFilter === 'remote') return 'Firestore';
+  if (activeSourceFilter === 'local') return 'เครื่องนี้';
+  if (activeSourceFilter === 'both') return 'ทั้งสอง';
+  return 'ทุกแหล่ง';
 }
 
 function updateSyncFilterCounts() {
@@ -313,6 +329,21 @@ function updateSyncFilterCounts() {
   });
 }
 
+function updateSourceFilterCounts() {
+  const counts = {
+    all: invoices.length,
+    remote: invoices.filter(invoice => invoice._syncSourceRemote).length,
+    local: invoices.filter(invoice => invoice._syncSourceLocal).length,
+    both: invoices.filter(invoice => invoice._syncSourceLocal && invoice._syncSourceRemote).length
+  };
+  sourceFilterButtons.forEach(button => {
+    const key = String(button.dataset.taxSourceFilter || 'all');
+    button.classList.toggle('is-active', key === activeSourceFilter);
+    const countEl = button.querySelector('[data-tax-source-count]');
+    if (countEl) countEl.textContent = Number(counts[key] || 0).toLocaleString('th-TH');
+  });
+}
+
 function existingInvoiceForSale(sale = {}) {
   const key = String(sale.id || '').trim();
   const number = String(sale.saleNumber || sale.number || '').trim();
@@ -323,7 +354,7 @@ function existingInvoiceForSale(sale = {}) {
 
 function filteredInvoices() {
   const q = String(searchInput?.value || '').trim().toLowerCase();
-  return invoices.filter(invoice => invoiceMatchesSyncFilter(invoice) && (!q || invoiceSearchText(invoice).includes(q)));
+  return invoices.filter(invoice => invoiceMatchesSyncFilter(invoice) && invoiceMatchesSourceFilter(invoice) && (!q || invoiceSearchText(invoice).includes(q)));
 }
 
 function invoiceUrl(invoice) {
@@ -636,7 +667,8 @@ function cardHtml(invoice) {
 function render() {
   const rows = filteredInvoices();
   updateSyncFilterCounts();
-  summaryEl.textContent = `ทั้งหมด ${invoices.length.toLocaleString('th-TH')} เอกสาร • กรอง ${syncFilterLabel()} • แสดง ${rows.length.toLocaleString('th-TH')} เอกสาร`;
+  updateSourceFilterCounts();
+  summaryEl.textContent = `ทั้งหมด ${invoices.length.toLocaleString('th-TH')} เอกสาร • สถานะ ${syncFilterLabel()} • แหล่งข้อมูล ${sourceFilterLabel()} • แสดง ${rows.length.toLocaleString('th-TH')} เอกสาร`;
   emptyEl.hidden = rows.length > 0;
   listEl.innerHTML = rows.map(cardHtml).join('');
 }
@@ -666,6 +698,12 @@ searchInput?.addEventListener('input', render);
 syncFilterButtons.forEach(button => {
   button.addEventListener('click', () => {
     activeSyncFilter = String(button.dataset.taxSyncFilter || 'all');
+    render();
+  });
+});
+sourceFilterButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    activeSourceFilter = String(button.dataset.taxSourceFilter || 'all');
     render();
   });
 });

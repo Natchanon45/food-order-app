@@ -36,6 +36,12 @@
         <button class="tax-sync-filter" type="button" data-tax-sync-filter="stale">ค้าง Sync <span data-tax-sync-count="stale">0</span></button>
         <button class="tax-sync-filter" type="button" data-tax-sync-filter="review">ตรวจข้อมูล <span data-tax-sync-count="review">0</span></button>
       </div>
+      <div class="tax-sync-filters" aria-label="กรองแหล่งข้อมูลใบกำกับภาษี">
+        <button class="tax-sync-filter is-active" type="button" data-tax-source-filter="all">ทุกแหล่ง <span data-tax-source-count="all">0</span></button>
+        <button class="tax-sync-filter" type="button" data-tax-source-filter="remote">Firestore <span data-tax-source-count="remote">0</span></button>
+        <button class="tax-sync-filter" type="button" data-tax-source-filter="local">เครื่องนี้ <span data-tax-source-count="local">0</span></button>
+        <button class="tax-sync-filter" type="button" data-tax-source-filter="both">ทั้งสอง <span data-tax-source-count="both">0</span></button>
+      </div>
       <div id="summaryText" class="summary">กำลังโหลด...</div>
       <div id="taxInvoiceList" class="list"></div>
       <div id="emptyState" class="empty" hidden>ยังไม่มีใบกำกับภาษี หรือไม่พบรายการที่ค้นหา</div>
@@ -90,6 +96,6 @@
     </form>
   </dialog>
   <script type="module" src="/assets/js/retail-pos-navigation.js?v=20260707-021"></script>
-  <script type="module" src="/assets/js/retail-pos-tax-invoices.js?v=20260711-008"></script>
+  <script type="module" src="/assets/js/retail-pos-tax-invoices.js?v=20260711-009"></script>
 </body>
 </html>
