@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-005';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260711-006';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -134,17 +134,19 @@ function invoiceSearchText(invoice = {}) {
   const seller = invoice.seller || {};
   const escalation = shouldEscalateSync(invoice) ? 'ส่ง support ตรวจสอบ stuck sync retry' : '';
   const stale = shouldShowStaleSync(invoice) ? 'ค้าง sync เกิน 24 ชั่วโมง stuck pending local' : '';
-  return [invoice.invoiceNumber, invoice.saleNumber, invoice.saleId, buyer.buyerName, buyer.buyerTaxId, buyer.buyerAddress, seller.sellerName, invoice.status, invoice.syncStatus, invoice.syncAction, invoice.syncPhase, invoice.syncTargetId, invoice.syncError, escalation, stale].join(' ').toLowerCase();
+  const quality = qualityWarnings(invoice).join(' ');
+  return [invoice.invoiceNumber, invoice.saleNumber, invoice.saleId, buyer.buyerName, buyer.buyerTaxId, buyer.buyerAddress, seller.sellerName, invoice.status, invoice.syncStatus, invoice.syncAction, invoice.syncPhase, invoice.syncTargetId, invoice.syncError, escalation, stale, quality].join(' ').toLowerCase();
 }
 
 function syncBadge(invoice = {}) {
   const status = String(invoice.syncStatus || '');
   const staleBadge = shouldShowStaleSync(invoice) ? '<span class="sync-badge is-pending">ค้าง Sync</span>' : '';
-  if (invoice.syncError) return `<span class="sync-badge is-error">Sync Error</span>${shouldEscalateSync(invoice) ? '<span class="sync-badge is-pending">ส่ง Support</span>' : ''}${staleBadge}`;
-  if (['pending_create', 'pending_void'].includes(status)) return `<span class="sync-badge is-pending">รอ Sync</span>${staleBadge}`;
-  if (['local_only', 'local_void'].includes(status)) return `<span class="sync-badge is-local">เอกสารในเครื่อง</span>${staleBadge}`;
-  if (invoice.runningNumberStatus === 'local_only') return `<span class="sync-badge is-local">เลขชั่วคราว</span>${staleBadge}`;
-  return staleBadge;
+  const qualityBadge = needsQualityReview(invoice) ? '<span class="sync-badge is-pending">ตรวจข้อมูล</span>' : '';
+  if (invoice.syncError) return `<span class="sync-badge is-error">Sync Error</span>${shouldEscalateSync(invoice) ? '<span class="sync-badge is-pending">ส่ง Support</span>' : ''}${staleBadge}${qualityBadge}`;
+  if (['pending_create', 'pending_void'].includes(status)) return `<span class="sync-badge is-pending">รอ Sync</span>${staleBadge}${qualityBadge}`;
+  if (['local_only', 'local_void'].includes(status)) return `<span class="sync-badge is-local">เอกสารในเครื่อง</span>${staleBadge}${qualityBadge}`;
+  if (invoice.runningNumberStatus === 'local_only') return `<span class="sync-badge is-local">เลขชั่วคราว</span>${staleBadge}${qualityBadge}`;
+  return `${staleBadge}${qualityBadge}`;
 }
 
 function shouldEscalateSync(invoice = {}) {
@@ -166,8 +168,22 @@ function shouldShowStaleSync(invoice = {}) {
   return Boolean(canRetrySync(invoice) && startedAt && Date.now() - startedAt >= STALE_SYNC_MS);
 }
 
+function qualityWarnings(invoice = {}) {
+  if (!canRetrySync(invoice)) return [];
+  const buyer = invoice.buyer || {};
+  const warnings = [];
+  if (canEditPendingBuyer(invoice) && !String(buyer.buyerName || '').trim()) warnings.push('ขาดชื่อผู้ซื้อ');
+  if (canEditPendingBuyer(invoice) && !normalizeTaxId(buyer.buyerTaxId)) warnings.push('ไม่มีเลขภาษีผู้ซื้อ');
+  if (!sourceSaleKey(invoice)) warnings.push('ไม่มีเลขบิลต้นทาง');
+  return warnings;
+}
+
+function needsQualityReview(invoice = {}) {
+  return qualityWarnings(invoice).length > 0;
+}
+
 function syncDiagnosticText(invoice = {}) {
-  if (!invoice.syncError && !shouldShowStaleSync(invoice)) return '';
+  if (!invoice.syncError && !shouldShowStaleSync(invoice) && !needsQualityReview(invoice)) return '';
   const parts = invoice.syncError ? [`Sync: ${invoice.syncError}`] : [];
   const action = String(invoice.syncAction || '').trim();
   const phase = String(invoice.syncPhase || '').trim();
@@ -177,6 +193,7 @@ function syncDiagnosticText(invoice = {}) {
   const attemptedAt = syncReferenceTime(invoice);
   if (attemptedAt > 0) parts.push(`ล่าสุด ${dateText(attemptedAt)}`);
   if (shouldShowStaleSync(invoice)) parts.push(`ค้าง Sync ประมาณ ${staleSyncHours(invoice).toLocaleString('th-TH')} ชม.`);
+  if (needsQualityReview(invoice)) parts.push(`ตรวจข้อมูล: ${qualityWarnings(invoice).join(', ')}`);
   if (shouldEscalateSync(invoice)) parts.push('แนะนำคัดลอก Sync ส่ง Support');
   return parts.join(' • ');
 }
@@ -200,6 +217,7 @@ function syncRecoveryText(invoice = {}) {
     `Attempts: ${Number(invoice.syncAttemptCount || 0)}`,
     `Escalation: ${shouldEscalateSync(invoice) ? 'ส่ง Support' : '-'}`,
     `Stale Sync: ${shouldShowStaleSync(invoice) ? `${staleSyncHours(invoice)} hours` : '-'}`,
+    `Quality Check: ${needsQualityReview(invoice) ? qualityWarnings(invoice).join(', ') : '-'}`,
     `Sync Reference: ${syncReferenceTime(invoice) ? dateText(syncReferenceTime(invoice)) : '-'}`,
     `Latest Attempt: ${invoice.syncAttemptedAt || invoice.syncErrorAt ? dateText(invoice.syncAttemptedAt || invoice.syncErrorAt) : '-'}`
   ].join('\n');
@@ -241,6 +259,7 @@ function invoiceMatchesSyncFilter(invoice = {}) {
   if (activeSyncFilter === 'pending') return isPendingSync(invoice);
   if (activeSyncFilter === 'support') return shouldEscalateSync(invoice);
   if (activeSyncFilter === 'stale') return shouldShowStaleSync(invoice);
+  if (activeSyncFilter === 'review') return needsQualityReview(invoice);
   return true;
 }
 
@@ -249,6 +268,7 @@ function syncFilterLabel() {
   if (activeSyncFilter === 'pending') return 'รอ Sync';
   if (activeSyncFilter === 'support') return 'ส่ง Support';
   if (activeSyncFilter === 'stale') return 'ค้าง Sync';
+  if (activeSyncFilter === 'review') return 'ตรวจข้อมูล';
   return 'ทั้งหมด';
 }
 
@@ -258,7 +278,8 @@ function updateSyncFilterCounts() {
     error: invoices.filter(invoice => invoice.syncError).length,
     pending: invoices.filter(isPendingSync).length,
     support: invoices.filter(shouldEscalateSync).length,
-    stale: invoices.filter(shouldShowStaleSync).length
+    stale: invoices.filter(shouldShowStaleSync).length,
+    review: invoices.filter(needsQualityReview).length
   };
   syncFilterButtons.forEach(button => {
     const key = String(button.dataset.taxSyncFilter || 'all');

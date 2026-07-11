@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Sync Buyer Recovery
-Version: 0.14.35
-Build: 2026.07.11.005
+Milestone: Tax Sync Quality Hints
+Version: 0.14.36
+Build: 2026.07.11.006
 
-Change: tax invoice history now lets staff edit buyer data on local/pending create tax invoices through `แก้ผู้ซื้อ`, storing the correction only in the local tax invoice cache so `ลอง Sync` can retry the existing transaction-safe path without mutating source sale, VAT, payment, stock, duplicate protection, or Firestore transaction behavior.
+Change: tax invoice history now adds a `ตรวจข้อมูล` quality hint badge/filter for retryable tax invoice sync states with missing buyer name, missing buyer tax ID, or missing source sale reference, while keeping the hint display-only and preserving source sale, VAT, payment, stock, duplicate protection, and Firestore transaction behavior.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -54,6 +54,8 @@ Tax stale sync filter workflow: `/pos/tax-invoices/` provides a dedicated `ค�
 Tax source receipt recovery workflow: `/pos/tax-invoices/` shows `ดูบิลต้นทาง` on invoice cards that have a source sale reference. The action opens `/pos/receipt/?saleId=...&auto=0` for read-only comparison, and `คัดลอก Sync` includes `Source Receipt` in the support package. This is operator recovery context only and does not mutate retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
 
 Tax buyer recovery workflow: `/pos/tax-invoices/` shows `แก้ผู้ซื้อ` on local/pending create invoices (`pending_create` or `local_only`). The dialog updates only the local tax invoice buyer payload and records `buyerRecoveryUpdatedAt`; it does not reset retry counters, create a Firestore write, change source sales, VAT totals, payments, or stock movements. Staff use the existing `ลอง Sync` action after saving to retry the normal transaction-safe tax invoice sync path.
+
+Tax sync quality hint workflow: `/pos/tax-invoices/` shows `ตรวจข้อมูล` on retryable invoice sync states that are missing buyer name, buyer tax ID, or source sale reference. The `ตรวจข้อมูล` filter chip has a live count, search can match the warning text, and `คัดลอก Sync` includes `Quality Check`. These hints are display-only and do not mutate retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
 
 Full tax invoice duplicate workflow: issuing a full tax invoice first checks the local tax invoice cache, then checks Firestore by deterministic tax invoice IDs and loaded `taxInvoices` rows. If an existing invoice matches the sale ID or sale number, the app reuses and caches that invoice instead of creating a new document. If the Firestore transaction path cannot reserve/write the invoice, the fallback remains local/pending and does not write to Firestore outside a transaction.
 
