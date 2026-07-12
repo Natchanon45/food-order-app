@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260712-003';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260712-004';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -393,6 +393,27 @@ function filteredInvoices() {
   return invoices.filter(invoice => invoiceMatchesSyncFilter(invoice) && invoiceMatchesSourceFilter(invoice) && (!q || invoiceSearchText(invoice).includes(q)));
 }
 
+function currentHistoryUrl() {
+  const url = new URL(location.href);
+  const q = String(searchInput?.value || '').trim();
+  if (q) url.searchParams.set('q', q);
+  else url.searchParams.delete('q');
+  if (activeSyncFilter !== 'all') url.searchParams.set('sync', activeSyncFilter);
+  else url.searchParams.delete('sync');
+  if (activeSourceFilter !== 'all') url.searchParams.set('source', activeSourceFilter);
+  else url.searchParams.delete('source');
+  return url;
+}
+
+function syncHistoryUrlState() {
+  if (!history.replaceState) return;
+  const url = currentHistoryUrl();
+  const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+  if (nextUrl !== `${location.pathname}${location.search}${location.hash}`) {
+    history.replaceState(null, '', nextUrl);
+  }
+}
+
 function hasActiveFilters() {
   return Boolean(String(searchInput?.value || '').trim() || activeSyncFilter !== 'all' || activeSourceFilter !== 'all');
 }
@@ -725,6 +746,7 @@ function cardHtml(invoice) {
 
 function render() {
   const rows = filteredInvoices();
+  syncHistoryUrlState();
   updateSyncFilterCounts();
   updateSourceFilterCounts();
   summaryEl.textContent = `ทั้งหมด ${invoices.length.toLocaleString('th-TH')} เอกสาร • สถานะ ${syncFilterLabel()} • แหล่งข้อมูล ${sourceFilterLabel()} • แสดง ${rows.length.toLocaleString('th-TH')} เอกสาร`;
