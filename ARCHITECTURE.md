@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.51
-Build: 2026.07.12.010
-Milestone: Tax Sync Health Shortcuts
+Version: 0.14.52
+Build: 2026.07.12.011
+Milestone: Tax Profile Sync Badges
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -39,6 +39,8 @@ Later full tax invoice rule: staff can issue a full tax invoice later when a cus
 Tax buyer profile management rule: saved full-tax buyer profiles are stored locally under the current tenant, include `tenantId`, and can be created, edited, or deleted from `/pos/tax-invoices/`. Profiles may prefill future full tax invoice dialogs but must not alter historical sales, VAT totals, payments, stock movements, or issued invoice totals.
 
 Tax buyer profile sync rule: saved full-tax buyer profiles must remain available locally for offline issuing and also sync to `tenants/{tenantId}/taxBuyerProfiles` when Firebase is online. The sync must merge local and remote profiles by stable profile ID, preserve tenant boundaries, and never mutate issued invoices, source sales, VAT totals, payments, stock movements, or existing `taxInvoices`.
+
+Tax buyer profile sync badge rule: buyer tax profile rows may store display-only sync metadata such as `syncStatus: "pending_sync"`, `syncStatus: "synced"`, and `firebaseSyncedAt` so `/pos/tax-invoices/` can show `รอ Sync`, `Sync แล้ว`, or `เครื่องนี้` badges in the profile dialog. These badges must not drive tax invoice duplicate protection, create transactions, void transactions, source sale mutations, VAT totals, payments, stock movements, or Firestore write paths outside the existing profile sync flow.
 
 Tax buyer profile delete sync rule: deleting a full-tax buyer profile must hide it locally immediately and preserve a tenant-scoped local tombstone if Firestore is unavailable. The next online sync must delete the matching `tenants/{tenantId}/taxBuyerProfiles/{profileId}` document and must not allow an older remote profile to reappear after the local delete. Tombstones must remain isolated from issued `taxInvoices`, source sales, VAT totals, payments, and stock data.
 

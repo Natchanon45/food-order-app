@@ -116,7 +116,15 @@ function mergeBuyerProfiles(...groups) {
           deletedAt: Number(profile.deletedAt || profile.updatedAt || Date.now()),
           updatedAt: Number(profile.updatedAt || profile.deletedAt || Date.now())
         }
-      : { id: key, customerKey: normalizeText(profile.customerKey || key), tenantId, ...normalizeBuyer(profile), updatedAt: Number(profile.updatedAt || 0) || Date.now() };
+      : {
+          id: key,
+          customerKey: normalizeText(profile.customerKey || key),
+          tenantId,
+          ...normalizeBuyer(profile),
+          syncStatus: normalizeText(profile.syncStatus || ''),
+          firebaseSyncedAt: Number(profile.firebaseSyncedAt || 0) || 0,
+          updatedAt: Number(profile.updatedAt || 0) || Date.now()
+        };
     const existing = map.get(key);
     if (!existing || Number(normalized.updatedAt || 0) >= Number(existing.updatedAt || 0)) map.set(key, normalized);
   });
@@ -158,7 +166,15 @@ function writeBuyerProfile(profile) {
   if (!id) throw new Error('ไม่พบรหัสโปรไฟล์ลูกค้า');
   if (!normalized.buyerName) throw new Error('กรุณาระบุชื่อลูกค้า / บริษัท');
   const tenantId = getTenantId();
-  const row = { id, customerKey: normalizeText(profile.customerKey || id), tenantId, ...normalized, updatedAt: Date.now() };
+  const row = {
+    id,
+    customerKey: normalizeText(profile.customerKey || id),
+    tenantId,
+    ...normalized,
+    syncStatus: 'pending_sync',
+    updatedAt: Date.now(),
+    firebaseSyncedAt: Number(profile.firebaseSyncedAt || 0) || 0
+  };
   const rows = readJson(TAX_BUYER_PROFILE_KEY, []);
   const kept = (Array.isArray(rows) ? rows : []).filter(item => {
     const itemKey = String(item.id || item.customerKey || '').trim();
@@ -486,16 +502,27 @@ export async function syncTaxBuyerProfiles() {
     const remote = await listRecords(TAX_BUYER_PROFILE_COLLECTION, { sortBy: 'updatedAt', direction: 'desc' });
     const merged = mergeBuyerProfiles(local, remote);
     writeTenantBuyerProfiles(merged);
+    const now = Date.now();
+    const syncedKeys = new Set();
     await Promise.all(merged.map(profile => {
       if (isDeletedBuyerProfile(profile)) {
         return deleteRecord(TAX_BUYER_PROFILE_COLLECTION, profile.id).catch(error => {
           console.warn('[retail-pos-full-tax-invoice] sync delete tax buyer profile failed', profile.id, error);
         });
       }
-      return saveRecord(TAX_BUYER_PROFILE_COLLECTION, profile).catch(error => {
+      return saveRecord(TAX_BUYER_PROFILE_COLLECTION, { ...profile, syncStatus: 'synced', firebaseSyncedAt: now }).then(() => {
+        syncedKeys.add(buyerProfileKey(profile));
+      }).catch(error => {
         console.warn('[retail-pos-full-tax-invoice] sync tax buyer profile failed', profile.id, error);
       });
     }));
+    if (syncedKeys.size) {
+      writeTenantBuyerProfiles(mergeBuyerProfiles(merged.map(profile => (
+        syncedKeys.has(buyerProfileKey(profile))
+          ? { ...profile, syncStatus: 'synced', firebaseSyncedAt: now }
+          : profile
+      ))));
+    }
     return listTaxBuyerProfiles();
   } catch (error) {
     console.warn('[retail-pos-full-tax-invoice] tax buyer profile sync fallback', error);

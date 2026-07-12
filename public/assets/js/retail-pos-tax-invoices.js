@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260712-010';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260712-011';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -556,6 +556,20 @@ function profileRows() {
   return listTaxBuyerProfiles();
 }
 
+function profileSyncState(profile = {}) {
+  const status = String(profile.syncStatus || '').trim();
+  if (status === 'pending_sync') return { className: 'is-pending', label: 'รอ Sync' };
+  if (status === 'synced' || profile.firebaseSyncedAt) return { className: 'is-synced', label: 'Sync แล้ว' };
+  return { className: 'is-local', label: 'เครื่องนี้' };
+}
+
+function profileSyncDetail(profile = {}) {
+  const syncedAt = Number(profile.firebaseSyncedAt || 0);
+  if (syncedAt) return ` • Sync ล่าสุด ${dateText(syncedAt)}`;
+  if (String(profile.syncStatus || '') === 'pending_sync') return ' • รอเชื่อม Firebase';
+  return '';
+}
+
 function resetProfileForm(profile = {}) {
   if (profileIdInput) {
     profileIdInput.value = profile.id || profile.customerKey || '';
@@ -579,9 +593,10 @@ function renderProfiles(selectedId = '') {
   }
   profileListEl.innerHTML = rows.map(profile => {
     const id = profile.id || profile.customerKey || '';
+    const state = profileSyncState(profile);
     return `<button class="profile-row${String(id) === String(selectedId) ? ' is-active' : ''}" type="button" data-profile-id="${escapeHtml(id)}">
-      <strong>${escapeHtml(profile.buyerName || '-')}</strong>
-      <span>${escapeHtml(profile.buyerTaxId || '-')} • ${escapeHtml(profile.buyerBranchName || 'สำนักงานใหญ่')}</span>
+      <strong>${escapeHtml(profile.buyerName || '-')} <span class="profile-sync-badge ${state.className}">${escapeHtml(state.label)}</span></strong>
+      <span>${escapeHtml(profile.buyerTaxId || '-')} • ${escapeHtml(profile.buyerBranchName || 'สำนักงานใหญ่')}${escapeHtml(profileSyncDetail(profile))}</span>
     </button>`;
   }).join('');
   const active = rows.find(row => String(row.id || row.customerKey || '') === String(selectedId)) || rows[0];
