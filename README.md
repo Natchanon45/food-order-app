@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Copy Link Clipboard Fallback
-Version: 0.14.47
-Build: 2026.07.12.006
+Milestone: Tax Profile Dialog Visual Refresh
+Version: 0.14.48
+Build: 2026.07.12.007
 
-Change: tax invoice history copy actions now fall back to the legacy textarea copy path when the browser exposes Clipboard API but blocks `writeText`, so `คัดลอกลิงก์มุมมอง` and `คัดลอก Sync` remain usable for support handoff without mutating source sale, VAT, payment, stock, duplicate protection, retry counters, or Firestore transaction behavior.
+Change: tax invoice history now has a refreshed white/green POS layout, clearer panels, and a wider two-column customer tax profile dialog with a profile sidebar, grouped buyer fields, and a cleaner action bar. This is visual-only and does not mutate source sale, VAT, payment, stock, duplicate protection, retry counters, tax buyer profile data shape, or Firestore transaction behavior.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -24,6 +24,8 @@ Tax invoice label workflow: POS receipt and tax invoice history user-facing Thai
 Tax buyer profile sync workflow: saved buyer tax profiles from `/pos/tax-invoices/` are stored locally first for offline use and sync to `tenants/{tenantId}/taxBuyerProfiles` when Firebase is online. Opening the profile dialog or tax invoice history merges local and remote profiles by stable profile ID, keeps tenant boundaries intact, and does not alter issued invoices, source sales, VAT totals, payments, or stock data.
 
 Tax buyer profile delete sync workflow: deleting a buyer tax profile hides it from the local profile list immediately and stores a tenant-scoped delete tombstone when the browser is offline. The next online tax profile sync deletes the matching Firestore document from `tenants/{tenantId}/taxBuyerProfiles` and keeps older remote copies from being merged back into the local profile list.
+
+Tax profile dialog visual workflow: `/pos/tax-invoices/` uses a refreshed white/green POS layout and the `โปรไฟล์ภาษีลูกค้า` dialog renders wider on desktop with saved profiles in a left sidebar and grouped buyer tax fields on the right. The dialog action bar is visually separated from the form, and the layout collapses to one column on small screens. This is visual-only and preserves the existing local/offline tax buyer profile storage and Firestore sync behavior.
 
 Tax void sync diagnostics workflow: if an online full tax invoice void transaction cannot complete and the app falls back to a local `local_void`/`pending_void` state, the invoice records `syncError`, `syncErrorAt`, `syncAttemptedAt`, and `syncAttemptCount`. `/pos/tax-invoices/` surfaces those diagnostics through the existing `Sync Error` badge and search text while preserving retry behavior and never mutating the source sale, VAT, payment, or stock data.
 
