@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260712-004';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260712-005';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -13,6 +13,7 @@ const refreshBtn = document.querySelector('#refreshBtn');
 const summaryEl = document.querySelector('#summaryText');
 const listEl = document.querySelector('#taxInvoiceList');
 const emptyEl = document.querySelector('#emptyState');
+const copyViewLinkBtn = document.querySelector('#copyTaxViewLinkBtn');
 const sourceSaleSearch = document.querySelector('#sourceSaleSearch');
 const findSourceSaleBtn = document.querySelector('#findSourceSaleBtn');
 const sourceSaleResult = document.querySelector('#sourceSaleResult');
@@ -425,6 +426,27 @@ function resetFilters() {
   render();
 }
 
+async function copyCurrentViewLink() {
+  if (!copyViewLinkBtn) return;
+  syncHistoryUrlState();
+  const originalText = copyViewLinkBtn.textContent;
+  copyViewLinkBtn.disabled = true;
+  try {
+    await copyText(currentHistoryUrl().toString());
+    copyViewLinkBtn.textContent = 'คัดลอกแล้ว';
+  } catch (error) {
+    console.warn('[retail-pos-tax-invoices] copy view link failed', error);
+    copyViewLinkBtn.textContent = 'คัดลอกไม่สำเร็จ';
+  } finally {
+    setTimeout(() => {
+      if (copyViewLinkBtn.isConnected) {
+        copyViewLinkBtn.disabled = false;
+        copyViewLinkBtn.textContent = originalText || 'คัดลอกลิงก์มุมมอง';
+      }
+    }, 1200);
+  }
+}
+
 function invoiceUrl(invoice) {
   const id = encodeURIComponent(invoice.id || invoice.invoiceNumber || invoice._documentId || '');
   return `/pos/tax-invoice/?invoiceId=${id}&auto=0`;
@@ -794,6 +816,7 @@ sourceFilterButtons.forEach(button => {
     render();
   });
 });
+copyViewLinkBtn?.addEventListener('click', copyCurrentViewLink);
 emptyEl?.addEventListener('click', event => {
   if (event.target.closest('[data-clear-tax-filters]')) resetFilters();
 });
