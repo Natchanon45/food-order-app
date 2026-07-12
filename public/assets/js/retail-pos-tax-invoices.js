@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260712-002';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260712-003';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -64,9 +64,23 @@ let currentEditBuyerInvoice = null;
 let activeSyncFilter = 'all';
 let activeSourceFilter = 'all';
 
-function initialSearchQuery() {
-  try { return new URLSearchParams(location.search).get('q') || ''; }
+function queryValue(key) {
+  try { return new URLSearchParams(location.search).get(key) || ''; }
   catch { return ''; }
+}
+
+function initialSearchQuery() {
+  return queryValue('q');
+}
+
+function initialSyncFilter() {
+  const value = queryValue('sync');
+  return ['all', 'error', 'pending', 'support', 'stale', 'review'].includes(value) ? value : 'all';
+}
+
+function initialSourceFilter() {
+  const value = queryValue('source');
+  return ['all', 'remote', 'local', 'both'].includes(value) ? value : 'all';
 }
 
 function readJson(key, fallback) {
@@ -318,6 +332,22 @@ function sourceFilterLabel() {
   return 'ทุกแหล่ง';
 }
 
+function syncFilterForInvoice(invoice = {}) {
+  if (shouldEscalateSync(invoice)) return 'support';
+  if (invoice.syncError) return 'error';
+  if (shouldShowStaleSync(invoice)) return 'stale';
+  if (needsQualityReview(invoice)) return 'review';
+  if (isPendingSync(invoice)) return 'pending';
+  return 'all';
+}
+
+function sourceFilterForInvoice(invoice = {}) {
+  if (invoice._syncSourceLocal && invoice._syncSourceRemote) return 'both';
+  if (invoice._syncSourceRemote) return 'remote';
+  if (invoice._syncSourceLocal) return 'local';
+  return 'all';
+}
+
 function updateSyncFilterCounts() {
   const counts = {
     all: invoices.length,
@@ -394,6 +424,10 @@ function historySearchUrl(invoice = {}) {
   if (!searchKey) return new URL('/pos/tax-invoices/', location.origin).toString();
   const url = new URL('/pos/tax-invoices/', location.origin);
   url.searchParams.set('q', searchKey);
+  const syncFilter = syncFilterForInvoice(invoice);
+  const sourceFilter = sourceFilterForInvoice(invoice);
+  if (syncFilter !== 'all') url.searchParams.set('sync', syncFilter);
+  if (sourceFilter !== 'all') url.searchParams.set('source', sourceFilter);
   return url.toString();
 }
 
@@ -723,6 +757,8 @@ async function load() {
 }
 
 if (searchInput && initialSearchQuery()) searchInput.value = initialSearchQuery();
+activeSyncFilter = initialSyncFilter();
+activeSourceFilter = initialSourceFilter();
 searchInput?.addEventListener('input', render);
 syncFilterButtons.forEach(button => {
   button.addEventListener('click', () => {
