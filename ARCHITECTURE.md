@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.48
-Build: 2026.07.12.007
-Milestone: Tax Profile Dialog Visual Refresh
+Version: 0.14.49
+Build: 2026.07.12.008
+Milestone: POS Offline Sync Synced Flag
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -107,6 +107,8 @@ POS VAT/payment totals rule: when `vatRegistered` is enabled, a blank or zero st
 POS local stock idempotency rule: local POS sale persistence must be idempotent by stable saleId. If a local sale with the same saleId already exists, checkout must not deduct product stock again and must not append duplicate local stock movement rows; Firestore offline sync remains responsible for transaction-safe remote sale creation and remote stock deduction.
 
 POS offline sync module rule: the POS sync status UI must import the same versioned offline sale sync worker URL as `/pos` loads directly. This keeps manual Sync/Retry actions, background retry timers, worker snapshots, and queue events on one module instance instead of creating duplicate workers through mismatched cache-busted import URLs.
+
+POS offline sync synced flag rule: local POS sales that have reached Firestore may store `offlineSyncHash` and `syncHashVersion` alongside `syncStatus: "synced"` / `firebaseSyncedAt`. The hash must be derived from stable sale payload fields that affect sync and must exclude volatile sync metadata and official sale-number changes. Offline queue and status badge logic should skip only rows with a matching synced flag/hash; if the local sale payload changes and the hash no longer matches, the worker must not blindly treat the row as already synced.
 
 POS Developer Panel app-info rule: shared POS pages that load `retail-toast-status.js` must receive the current `app-info.js` metadata through a bumped cache chain whenever version/build/milestone metadata changes. The Developer Panel should not show stale version, build, milestone, or commit labels after a hosting deploy and hard refresh.
 

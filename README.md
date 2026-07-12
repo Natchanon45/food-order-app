@@ -1,15 +1,17 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Profile Dialog Visual Refresh
-Version: 0.14.48
-Build: 2026.07.12.007
+Milestone: POS Offline Sync Synced Flag
+Version: 0.14.49
+Build: 2026.07.12.008
 
-Change: tax invoice history now has a refreshed white/green POS layout, clearer panels, and a wider two-column customer tax profile dialog with a profile sidebar, grouped buyer fields, and a cleaner action bar. This is visual-only and does not mutate source sale, VAT, payment, stock, duplicate protection, retry counters, tax buyer profile data shape, or Firestore transaction behavior.
+Change: POS offline sale sync now writes and backfills `offlineSyncHash` / `syncHashVersion` on local sales that have already reached Firestore, and the queue/status badge skips those synced rows unless the sale payload hash changes. This reduces repeated localStorage sync work while preserving stable saleId, duplicate protection, transaction read-before-write, VAT, payment, and stock behavior.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
 Existing PromptPay QR display, tax buyer DBD lookup, tax invoice history/reprint, later full tax invoice issuing from existing receipts, receipt behavior, stock deduction, offline sale sync, POS theme alignment, mobile product card overlay behavior, mobile button layout, payment modal visual tuning, and printable document fonts are unchanged.
+
+POS offline sync synced-flag workflow: `/pos` computes a stable `offlineSyncHash` from the local sale payload fields that matter for sync, excluding volatile sync metadata and official sale-number changes. Sales with `syncStatus: "synced"` or `firebaseSyncedAt` are backfilled with `offlineSyncHash`, `syncHashVersion`, and clean sync metadata, and the offline queue/status badge excludes them. If the sale payload changes later and the hash no longer matches, the worker can treat it as needing attention instead of blindly trusting a stale boolean flag.
 
 Admin QR/collapse workflow: `/admin` Delivery and Takeaway QR copy buttons show a single `คัดลอกลิงก์` label with the clipboard icon. All collapsible admin cards are initialized as collapsed on every page load, and the legacy `admin_collapsed_cards_v1` browser state is cleared/ignored so old expanded sessions do not reopen cards automatically.
 
