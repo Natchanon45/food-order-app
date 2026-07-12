@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260712-001';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260712-002';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -63,6 +63,11 @@ let currentVoidInvoice = null;
 let currentEditBuyerInvoice = null;
 let activeSyncFilter = 'all';
 let activeSourceFilter = 'all';
+
+function initialSearchQuery() {
+  try { return new URLSearchParams(location.search).get('q') || ''; }
+  catch { return ''; }
+}
 
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -230,6 +235,7 @@ function syncRecoveryText(invoice = {}) {
     `Invoice ID: ${keyOf(invoice) || '-'}`,
     `Invoice No: ${invoice.invoiceNumber || '-'}`,
     `Sale: ${invoice.saleNumber || invoice.saleId || invoice.sourceSale?.saleNumber || invoice.sourceSale?.id || '-'}`,
+    `Tax History: ${historySearchUrl(invoice)}`,
     `Source Receipt: ${receiptUrl || '-'}`,
     `Buyer: ${buyer.buyerName || '-'}`,
     `Status: ${invoice.status || '-'}`,
@@ -381,6 +387,14 @@ function sourceReceiptUrl(invoice = {}) {
   const saleKeyValue = sourceSaleKey(invoice);
   if (!saleKeyValue) return '';
   return new URL(`/pos/receipt/?saleId=${encodeURIComponent(saleKeyValue)}&auto=0`, location.origin).toString();
+}
+
+function historySearchUrl(invoice = {}) {
+  const searchKey = keyOf(invoice) || invoice.invoiceNumber || invoice.saleNumber || invoice.saleId || '';
+  if (!searchKey) return new URL('/pos/tax-invoices/', location.origin).toString();
+  const url = new URL('/pos/tax-invoices/', location.origin);
+  url.searchParams.set('q', searchKey);
+  return url.toString();
 }
 
 function openInvoice(invoice) {
@@ -708,6 +722,7 @@ async function load() {
   }
 }
 
+if (searchInput && initialSearchQuery()) searchInput.value = initialSearchQuery();
 searchInput?.addEventListener('input', render);
 syncFilterButtons.forEach(button => {
   button.addEventListener('click', () => {

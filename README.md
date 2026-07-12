@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Sync Clear Filters
-Version: 0.14.42
-Build: 2026.07.12.001
+Milestone: Tax Sync Recovery Deep Link
+Version: 0.14.43
+Build: 2026.07.12.002
 
-Change: tax invoice history now shows a `ล้างตัวกรอง` action in the empty state when search, sync status, or source filters hide all rows, resetting the page back to all invoices without mutating source sale, VAT, payment, stock, duplicate protection, or Firestore transaction behavior.
+Change: tax invoice history now supports `?q=` deep links and includes a `Tax History` URL in `คัดลอก Sync` recovery text so support can reopen the same invoice search directly, without mutating source sale, VAT, payment, stock, duplicate protection, retry counters, or Firestore transaction behavior.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -64,6 +64,8 @@ Tax sync source visibility workflow: `/pos/tax-invoices/` shows `แหล่ง
 Tax sync source filter workflow: `/pos/tax-invoices/` provides source filter chips for `ทุกแหล่ง`, `Firestore เท่านั้น`, `เครื่องนี้เท่านั้น`, and `ทั้งสอง`, each with live counts derived from loaded local/remote rows. `Firestore เท่านั้น` means remote-only rows, `เครื่องนี้เท่านั้น` means local-only rows, and `ทั้งสอง` means rows found in both sources. Source filtering combines with the existing sync status filter and search box and remains UI-only, without mutating retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
 
 Tax sync clear filter workflow: `/pos/tax-invoices/` shows `ล้างตัวกรอง` in the empty state only when search text, a sync status filter, or a source filter is active and the filtered list has no rows. Clicking it clears the search box and resets sync/source filters to `ทั้งหมด` / `ทุกแหล่ง`. This remains UI-only and does not mutate retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
+
+Tax sync recovery deep-link workflow: `/pos/tax-invoices/?q=...` preloads the tax invoice history search box and filters the loaded rows with the existing search logic. `คัดลอก Sync` includes a `Tax History` URL using the invoice ID/number as the search query so support can reopen the exact recovery context quickly. This remains client-side navigation/support metadata only and does not mutate retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
 
 Full tax invoice duplicate workflow: issuing a full tax invoice first checks the local tax invoice cache, then checks Firestore by deterministic tax invoice IDs and loaded `taxInvoices` rows. If an existing invoice matches the sale ID or sale number, the app reuses and caches that invoice instead of creating a new document. If the Firestore transaction path cannot reserve/write the invoice, the fallback remains local/pending and does not write to Firestore outside a transaction.
 
