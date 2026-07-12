@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Sync Copy View Link
-Version: 0.14.46
-Build: 2026.07.12.005
+Milestone: Tax Copy Link Clipboard Fallback
+Version: 0.14.47
+Build: 2026.07.12.006
 
-Change: tax invoice history now adds a `คัดลอกลิงก์มุมมอง` action that copies the current search/sync/source filter URL for support handoff, without mutating source sale, VAT, payment, stock, duplicate protection, retry counters, or Firestore transaction behavior.
+Change: tax invoice history copy actions now fall back to the legacy textarea copy path when the browser exposes Clipboard API but blocks `writeText`, so `คัดลอกลิงก์มุมมอง` and `คัดลอก Sync` remain usable for support handoff without mutating source sale, VAT, payment, stock, duplicate protection, retry counters, or Firestore transaction behavior.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -66,6 +66,8 @@ Tax sync source filter workflow: `/pos/tax-invoices/` provides source filter chi
 Tax sync clear filter workflow: `/pos/tax-invoices/` shows `ล้างตัวกรอง` in the empty state only when search text, a sync status filter, or a source filter is active and the filtered list has no rows. Clicking it clears the search box and resets sync/source filters to `ทั้งหมด` / `ทุกแหล่ง`. This remains UI-only and does not mutate retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
 
 Tax sync copy view link workflow: `/pos/tax-invoices/?q=...&sync=...&source=...` preloads the tax invoice history search box plus sync/source filters when values are valid, and the page updates the address bar with the current search/filter state using `history.replaceState` when staff type or click filters. Staff can click `คัดลอกลิงก์มุมมอง` to copy the current view URL, while `คัดลอก Sync` still includes a filtered `Tax History` URL for that row. This remains client-side navigation/support metadata only and does not mutate retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
+
+Tax copy link clipboard fallback workflow: `/pos/tax-invoices/` first attempts `navigator.clipboard.writeText` for `คัดลอกลิงก์มุมมอง` and `คัดลอก Sync`. If the browser blocks that API, the page retries the same text through the legacy hidden textarea copy path before showing a failure state. This remains client-side support metadata only and does not mutate retry counters, tax invoices, source sales, VAT totals, payments, stock movements, or Firestore documents.
 
 Full tax invoice duplicate workflow: issuing a full tax invoice first checks the local tax invoice cache, then checks Firestore by deterministic tax invoice IDs and loaded `taxInvoices` rows. If an existing invoice matches the sale ID or sale number, the app reuses and caches that invoice instead of creating a new document. If the Firestore transaction path cannot reserve/write the invoice, the fallback remains local/pending and does not write to Firestore outside a transaction.
 
