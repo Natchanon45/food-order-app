@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260712-008';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260712-009';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -11,6 +11,7 @@ const syncFilterButtons = [...document.querySelectorAll('[data-tax-sync-filter]'
 const sourceFilterButtons = [...document.querySelectorAll('[data-tax-source-filter]')];
 const refreshBtn = document.querySelector('#refreshBtn');
 const summaryEl = document.querySelector('#summaryText');
+const syncHealthEl = document.querySelector('#taxSyncHealth');
 const listEl = document.querySelector('#taxInvoiceList');
 const emptyEl = document.querySelector('#emptyState');
 const copyViewLinkBtn = document.querySelector('#copyTaxViewLinkBtn');
@@ -64,6 +65,7 @@ let currentVoidInvoice = null;
 let currentEditBuyerInvoice = null;
 let activeSyncFilter = 'all';
 let activeSourceFilter = 'all';
+let lastSyncHealth = { checkedAt: 0, pendingTaxOk: true, profileOk: true, remoteListOk: true, pendingTaxError: '', profileError: '', remoteListError: '' };
 
 function queryValue(key) {
   try { return new URLSearchParams(location.search).get(key) || ''; }
@@ -347,6 +349,10 @@ function syncFilterForInvoice(invoice = {}) {
   return 'all';
 }
 
+function conciseError(error) {
+  return String(error?.message || error || '').replace(/\s+/g, ' ').trim().slice(0, 90);
+}
+
 function sourceFilterForInvoice(invoice = {}) {
   if (invoice._syncSourceLocal && invoice._syncSourceRemote) return 'both';
   if (invoice._syncSourceRemote) return 'remote';
@@ -384,6 +390,51 @@ function updateSourceFilterCounts() {
     const countEl = button.querySelector('[data-tax-source-count]');
     if (countEl) countEl.textContent = Number(counts[key] || 0).toLocaleString('th-TH');
   });
+}
+
+function syncHealthCounts() {
+  return {
+    all: invoices.length,
+    error: invoices.filter(invoice => invoice.syncError).length,
+    pending: invoices.filter(isPendingSync).length,
+    support: invoices.filter(shouldEscalateSync).length,
+    stale: invoices.filter(shouldShowStaleSync).length,
+    review: invoices.filter(needsQualityReview).length,
+    remote: invoices.filter(invoice => invoice._syncSourceRemote && !invoice._syncSourceLocal).length,
+    local: invoices.filter(invoice => invoice._syncSourceLocal && !invoice._syncSourceRemote).length,
+    both: invoices.filter(invoice => invoice._syncSourceLocal && invoice._syncSourceRemote).length
+  };
+}
+
+function syncHealthChip(label, value, className = '') {
+  return `<span class="tax-sync-health-chip${className ? ` ${className}` : ''}">${escapeHtml(label)} <strong>${Number(value || 0).toLocaleString('th-TH')}</strong></span>`;
+}
+
+function renderSyncHealth() {
+  if (!syncHealthEl) return;
+  const counts = syncHealthCounts();
+  const loadErrors = [lastSyncHealth.pendingTaxError, lastSyncHealth.profileError, lastSyncHealth.remoteListError].filter(Boolean);
+  const hasErrors = counts.error > 0 || loadErrors.length > 0;
+  const hasWarnings = counts.pending > 0 || counts.stale > 0 || counts.review > 0 || counts.support > 0;
+  const stateClass = hasErrors ? 'is-error' : hasWarnings ? 'is-warning' : '';
+  const title = hasErrors ? 'ต้องตรวจ Sync' : hasWarnings ? 'มีรายการรอจัดการ' : 'Sync ปกติ';
+  const checkedText = lastSyncHealth.checkedAt ? dateText(lastSyncHealth.checkedAt) : 'ยังไม่ได้ตรวจ';
+  syncHealthEl.className = `tax-sync-health${stateClass ? ` ${stateClass}` : ''}`;
+  syncHealthEl.innerHTML = `
+    <div class="tax-sync-health-main">
+      <p class="tax-sync-health-title">${title}</p>
+      <p class="tax-sync-health-state">ตรวจล่าสุด <strong>${escapeHtml(checkedText)}</strong>${loadErrors.length ? ` • ${escapeHtml(loadErrors.join(' • '))}` : ''}</p>
+    </div>
+    <div class="tax-sync-health-grid">
+      ${syncHealthChip('ทั้งหมด', counts.all)}
+      ${syncHealthChip('Sync Error', counts.error, counts.error ? 'is-error' : '')}
+      ${syncHealthChip('รอ Sync', counts.pending, counts.pending ? 'is-warning' : '')}
+      ${syncHealthChip('ค้าง Sync', counts.stale, counts.stale ? 'is-warning' : '')}
+      ${syncHealthChip('ตรวจข้อมูล', counts.review, counts.review ? 'is-warning' : '')}
+      ${syncHealthChip('Firestore', counts.remote)}
+      ${syncHealthChip('เครื่องนี้', counts.local, counts.local ? 'is-muted' : '')}
+      ${syncHealthChip('ทั้งสอง', counts.both)}
+    </div>`;
 }
 
 function existingInvoiceForSale(sale = {}) {
@@ -776,6 +827,7 @@ function render() {
   syncHistoryUrlState();
   updateSyncFilterCounts();
   updateSourceFilterCounts();
+  renderSyncHealth();
   summaryEl.textContent = `ทั้งหมด ${invoices.length.toLocaleString('th-TH')} เอกสาร • สถานะ ${syncFilterLabel()} • แหล่งข้อมูล ${sourceFilterLabel()} • แสดง ${rows.length.toLocaleString('th-TH')} เอกสาร`;
   emptyEl.hidden = rows.length > 0;
   emptyEl.innerHTML = hasActiveFilters()
@@ -787,14 +839,27 @@ function render() {
 async function load() {
   refreshBtn.disabled = true;
   refreshBtn.textContent = 'กำลังโหลด...';
+  lastSyncHealth = { checkedAt: Date.now(), pendingTaxOk: true, profileOk: true, remoteListOk: true, pendingTaxError: '', profileError: '', remoteListError: '' };
   try {
     try { await syncPendingTaxInvoices(); }
-    catch (error) { console.warn('[retail-pos-tax-invoices] pending sync skipped', error); }
+    catch (error) {
+      lastSyncHealth.pendingTaxOk = false;
+      lastSyncHealth.pendingTaxError = `ใบกำกับ: ${conciseError(error) || 'sync skipped'}`;
+      console.warn('[retail-pos-tax-invoices] pending sync skipped', error);
+    }
     try { await syncTaxBuyerProfiles(); }
-    catch (error) { console.warn('[retail-pos-tax-invoices] tax profile sync skipped', error); }
+    catch (error) {
+      lastSyncHealth.profileOk = false;
+      lastSyncHealth.profileError = `โปรไฟล์: ${conciseError(error) || 'sync skipped'}`;
+      console.warn('[retail-pos-tax-invoices] tax profile sync skipped', error);
+    }
     let remote = [];
     try { remote = await listRecords(TAX_INVOICE_COLLECTION, { sortBy: 'issuedAt', direction: 'desc' }); }
-    catch (error) { console.warn('[retail-pos-tax-invoices] firebase/list fallback', error); }
+    catch (error) {
+      lastSyncHealth.remoteListOk = false;
+      lastSyncHealth.remoteListError = `Firestore: ${conciseError(error) || 'list fallback'}`;
+      console.warn('[retail-pos-tax-invoices] firebase/list fallback', error);
+    }
     const localRows = localInvoices().map(row => ({ ...row, _syncSourceLocal: true }));
     const remoteRows = remote.map(row => ({ ...row, _syncSourceRemote: true }));
     invoices = mergeInvoices(localRows, remoteRows);
