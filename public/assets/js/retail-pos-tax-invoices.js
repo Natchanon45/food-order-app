@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260712-009';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260712-010';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -406,8 +406,8 @@ function syncHealthCounts() {
   };
 }
 
-function syncHealthChip(label, value, className = '') {
-  return `<span class="tax-sync-health-chip${className ? ` ${className}` : ''}">${escapeHtml(label)} <strong>${Number(value || 0).toLocaleString('th-TH')}</strong></span>`;
+function syncHealthChip(label, value, className = '', attrs = '') {
+  return `<button class="tax-sync-health-chip${className ? ` ${className}` : ''}" type="button" ${attrs}>${escapeHtml(label)} <strong>${Number(value || 0).toLocaleString('th-TH')}</strong></button>`;
 }
 
 function renderSyncHealth() {
@@ -426,15 +426,23 @@ function renderSyncHealth() {
       <p class="tax-sync-health-state">ตรวจล่าสุด <strong>${escapeHtml(checkedText)}</strong>${loadErrors.length ? ` • ${escapeHtml(loadErrors.join(' • '))}` : ''}</p>
     </div>
     <div class="tax-sync-health-grid">
-      ${syncHealthChip('ทั้งหมด', counts.all)}
-      ${syncHealthChip('Sync Error', counts.error, counts.error ? 'is-error' : '')}
-      ${syncHealthChip('รอ Sync', counts.pending, counts.pending ? 'is-warning' : '')}
-      ${syncHealthChip('ค้าง Sync', counts.stale, counts.stale ? 'is-warning' : '')}
-      ${syncHealthChip('ตรวจข้อมูล', counts.review, counts.review ? 'is-warning' : '')}
-      ${syncHealthChip('Firestore', counts.remote)}
-      ${syncHealthChip('เครื่องนี้', counts.local, counts.local ? 'is-muted' : '')}
-      ${syncHealthChip('ทั้งสอง', counts.both)}
+      ${syncHealthChip('ทั้งหมด', counts.all, '', 'data-health-sync-filter="all" data-health-source-filter="all"')}
+      ${syncHealthChip('Sync Error', counts.error, counts.error ? 'is-error' : '', 'data-health-sync-filter="error"')}
+      ${syncHealthChip('รอ Sync', counts.pending, counts.pending ? 'is-warning' : '', 'data-health-sync-filter="pending"')}
+      ${syncHealthChip('ค้าง Sync', counts.stale, counts.stale ? 'is-warning' : '', 'data-health-sync-filter="stale"')}
+      ${syncHealthChip('ตรวจข้อมูล', counts.review, counts.review ? 'is-warning' : '', 'data-health-sync-filter="review"')}
+      ${syncHealthChip('Firestore', counts.remote, '', 'data-health-source-filter="remote"')}
+      ${syncHealthChip('เครื่องนี้', counts.local, counts.local ? 'is-muted' : '', 'data-health-source-filter="local"')}
+      ${syncHealthChip('ทั้งสอง', counts.both, '', 'data-health-source-filter="both"')}
     </div>`;
+}
+
+function applyHealthShortcut(button) {
+  const syncFilter = String(button?.dataset?.healthSyncFilter || '').trim();
+  const sourceFilter = String(button?.dataset?.healthSourceFilter || '').trim();
+  if (syncFilter) activeSyncFilter = syncFilter;
+  if (sourceFilter) activeSourceFilter = sourceFilter;
+  render();
 }
 
 function existingInvoiceForSale(sale = {}) {
@@ -887,6 +895,10 @@ sourceFilterButtons.forEach(button => {
   });
 });
 copyViewLinkBtn?.addEventListener('click', copyCurrentViewLink);
+syncHealthEl?.addEventListener('click', event => {
+  const button = event.target.closest('[data-health-sync-filter],[data-health-source-filter]');
+  if (button) applyHealthShortcut(button);
+});
 emptyEl?.addEventListener('click', event => {
   if (event.target.closest('[data-clear-tax-filters]')) resetFilters();
 });

@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Sync Health Panel
-Version: 0.14.50
-Build: 2026.07.12.009
+Milestone: Tax Sync Health Shortcuts
+Version: 0.14.51
+Build: 2026.07.12.010
 
-Change: tax invoice history now shows a `สถานะ Sync ใบกำกับภาษี` diagnostic panel after refresh, summarizing Sync Error, pending sync, stale sync, quality review, and local/Firestore source counts. The panel also records the latest load/sync check and concise pending tax invoice, buyer profile, or Firestore list errors without changing tax invoice create/void transactions, buyer profile data, source sales, VAT, payment, stock, or retry counters.
+Change: the tax invoice history `สถานะ Sync ใบกำกับภาษี` diagnostic panel now supports clickable shortcut chips for `Sync Error`, `รอ Sync`, `ค้าง Sync`, `ตรวจข้อมูล`, `Firestore`, `เครื่องนี้`, `ทั้งสอง`, and `ทั้งหมด`. Clicking a chip applies the matching sync/source filters immediately while remaining UI-only and preserving tax invoice create/void transactions, buyer profile data, source sales, VAT, payment, stock, and retry counters.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -14,6 +14,8 @@ Existing PromptPay QR display, tax buyer DBD lookup, tax invoice history/reprint
 POS offline sync synced-flag workflow: `/pos` computes a stable `offlineSyncHash` from the local sale payload fields that matter for sync, excluding volatile sync metadata and official sale-number changes. Sales with `syncStatus: "synced"` or `firebaseSyncedAt` are backfilled with `offlineSyncHash`, `syncHashVersion`, and clean sync metadata, and the offline queue/status badge excludes them. If the sale payload changes later and the hash no longer matches, the worker can treat it as needing attention instead of blindly trusting a stale boolean flag.
 
 Tax sync health panel workflow: `/pos/tax-invoices/` displays a diagnostic-only sync health panel after loading and refreshing tax invoices. It summarizes total invoices, Sync Error, pending sync, stale sync, quality review, Firestore-only, local-only, and both-source counts from the merged in-memory invoice list, plus concise load/sync errors from the existing pending invoice sync, tax buyer profile sync, or Firestore list calls. This does not add a Firestore write path and does not mutate retry counters, source sales, VAT totals, payments, stock movements, or issued invoice totals.
+
+Tax sync health shortcut workflow: the health panel chips on `/pos/tax-invoices/` are buttons that set the existing sync and source filters. `ทั้งหมด` resets both filter groups, status chips set only the sync filter, and source chips set only the source filter. This remains client-side filter state only and does not mutate tax invoices, buyer profiles, source sales, VAT totals, payments, stock movements, or retry counters.
 
 Admin QR/collapse workflow: `/admin` Delivery and Takeaway QR copy buttons show a single `คัดลอกลิงก์` label with the clipboard icon. All collapsible admin cards are initialized as collapsed on every page load, and the legacy `admin_collapsed_cards_v1` browser state is cleared/ignored so old expanded sessions do not reopen cards automatically.
 
