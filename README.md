@@ -1,15 +1,17 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Unified Green UI Icon Polish
-Version: 0.14.55
-Build: 2026.07.13.003
+Milestone: System UI Font Weight Tuning
+Version: 0.14.56
+Build: 2026.07.13.004
 
-Change: Order/Delivery and Retail POS now use a cleaner shared green, black, and white UI polish layer. Main headings and important action buttons use appropriate single Bootstrap Icons, Order table headings preserve their icon when runtime text changes, and the shared icon decorators prevent adjacent duplicate icons while skipping printable bill/tax document headers. This is presentation-only and preserves tenant data, orders, VAT, payments, stock, offline sync, duplicate protection, and tax invoice create/void transactions.
+Change: Order/Delivery and Retail POS now use lighter shared UI font weights for the local Kanit font so headings, cards, buttons, badges, and draggable sort rows read more comfortably across the system. Shared UI weight variables cap prominent web UI text at 600, most controls stay at 500, and `Kanit Local` maps 700-900 requests to the SemiBold face so older hardcoded heavy UI text no longer renders as ExtraBold/Black. Printable receipts, tax invoices, QR tickets, and paper documents keep their existing paper font behavior. This is presentation-only and preserves tenant data, orders, VAT, payments, stock, offline sync, duplicate protection, and tax invoice create/void transactions.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
 Existing PromptPay QR display, tax buyer DBD lookup, tax invoice history/reprint, later full tax invoice issuing from existing receipts, receipt behavior, stock deduction, offline sale sync, POS theme alignment, mobile product card overlay behavior, mobile button layout, payment modal visual tuning, and printable document fonts are unchanged.
+
+System UI font-weight workflow: `/delivery`, `/order`, and Retail POS pages use the shared Thai UI font stack with lighter weights after the local `Kanit Local` font change. Normal copy stays 400, most controls use 500, prominent UI labels/headings should generally stay at 600, and legacy 700-900 UI requests resolve to SemiBold instead of the heavier Kanit files. Printable paper documents remain excluded from this web UI weight rule.
 
 Unified green UI icon workflow: `/delivery`, `/order`, and Retail POS pages use the green/black/white visual system for app headers, hero panels, cards, focused inputs, and primary actions. Main headings and action buttons may show one Bootstrap Icon, but buttons/cards must not render adjacent duplicate icons, printable bill headers must stay text-only, and emoji must not be used in the UI.
 

@@ -11,19 +11,19 @@
 .sort-row.active { border-color: #159447; box-shadow: 0 0 0 3px rgba(21, 148, 71, .1); }
 .sort-row.best-seller { background: #fff9ec; border-color: #f2d699; }
 .sort-row-main { min-width: 0; display: grid; border: 0; padding: 0; background: transparent; text-align: left; cursor: pointer; }
-.sort-row-title { font-weight: 900; color: #152017; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sort-row-title { font-weight: var(--ui-weight-strong, 600); color: #152017; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sort-row-meta { margin-top: 3px; color: #68766d; font-size: 12px; }
 .sort-actions { display: flex; gap: 5px; }
-.sort-actions button, .sort-select-btn { min-width: 34px; min-height: 34px; border: 0; border-radius: 10px; background: #eef5f0; color: #122018; font-weight: 900; cursor: pointer; }
+.sort-actions button, .sort-select-btn { min-width: 34px; min-height: 34px; border: 0; border-radius: 10px; background: #eef5f0; color: #122018; font-weight: var(--ui-weight-medium, 500); cursor: pointer; }
 .sort-actions button:disabled { opacity: .35; cursor: not-allowed; }
 .sort-select-btn { padding: 0 10px; }
 .sort-footer { display: flex; justify-content: space-between; gap: 10px; padding: 12px; border-top: 1px solid #e5eee8; }
 .sort-note { margin: 0; color: #647067; font-size: 13px; line-height: 1.45; }
 .sort-empty { padding: 18px; color: #647067; text-align: center; }
-.sort-save { border: 0; border-radius: 12px; padding: 11px 15px; background: #159447; color: #fff; font-weight: 900; cursor: pointer; }
+.sort-save { border: 0; border-radius: 12px; padding: 11px 15px; background: #159447; color: #fff; font-weight: var(--ui-weight-medium, 500); cursor: pointer; }
 .sort-save:disabled { opacity: .55; cursor: wait; }
 .sort-handle { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; background: #edf3ef; color: #607067; font-size: 20px; cursor: grab; }
-.sort-order-badge { min-width: 30px; height: 30px; display: grid; place-items: center; border-radius: 999px; background: #e8f3ec; color: #0c7135; font-size: 12px; font-weight: 900; }
+.sort-order-badge { min-width: 30px; height: 30px; display: grid; place-items: center; border-radius: 999px; background: #e8f3ec; color: #0c7135; font-size: 12px; font-weight: var(--ui-weight-strong, 600); }
 .sort-ghost { opacity: .25; }
 .sort-chosen { border-color: #159447; box-shadow: 0 0 0 3px rgba(21,148,71,.12); }
 .sort-drag, .sort-fallback { opacity: .98 !important; transform: rotate(1deg); box-shadow: 0 16px 36px rgba(0,0,0,.2); background: #fff; }
