@@ -51,7 +51,7 @@ function mountIconStyles() {
   if (!document.querySelector('link[href^="/assets/css/icons.css"]')) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "/assets/css/icons.css?v=20260701-001";
+    link.href = "/assets/css/icons.css?v=20260713-005";
     document.head.appendChild(link);
   }
   if (!document.querySelector("#receiptCompactStyles")) {

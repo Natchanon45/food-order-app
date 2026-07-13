@@ -17,9 +17,9 @@ function ensureMobileCartStyle() {
   .mobile-cart-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,.13)}
   .mobile-cart-icon .bi{font-size:22px;line-height:1}
   .mobile-cart-main{min-width:0;display:grid;gap:2px}
-  .mobile-cart-title{font-size:.76rem;font-weight:700;opacity:.84;line-height:1.1}
-  .mobile-cart-meta{font-size:.98rem;font-weight:800;line-height:1.12;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .mobile-cart-pay{border-radius:999px;background:#fff;color:#0d6f34;padding:8px 11px;font-size:.84rem;font-weight:900;white-space:nowrap}
+  .mobile-cart-title{font-size:.76rem;font-weight:500;opacity:.84;line-height:1.1}
+  .mobile-cart-meta{font-size:.98rem;font-weight:600;line-height:1.12;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mobile-cart-pay{border-radius:999px;background:#fff;color:#0d6f34;padding:8px 11px;font-size:.84rem;font-weight:600;white-space:nowrap}
   .mobile-cart-bar.is-checkout{background:linear-gradient(135deg,#0d6f34,#159447)}
   .mobile-cart-bar.is-checkout .mobile-cart-pay{background:#fff;color:#159447}
   .mobile-cart-backdrop{position:fixed;inset:0;z-index:9996;background:rgba(15,23,42,.52);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .18s ease;display:block}
@@ -38,8 +38,8 @@ function ensureMobileCartStyle() {
   .mobile-cart-row span{display:block;margin-top:3px;color:#6b746f;font-size:.76rem;line-height:1.2}
   .mobile-cart-row b{font-size:.9rem;white-space:nowrap}
   .mobile-cart-footer{flex:0 0 auto;border-top:1px solid #dde5df;padding-top:10px;display:grid;gap:8px}
-  .mobile-cart-total{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:1.02rem;font-weight:900;color:#0d6f34}
-  .mobile-cart-checkout{border:0;border-radius:14px;min-height:48px;background:#159447;color:#fff;font-weight:900;font-size:1rem}
+  .mobile-cart-total{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:1.02rem;font-weight:600;color:#0d6f34}
+  .mobile-cart-checkout{border:0;border-radius:14px;min-height:48px;background:#159447;color:#fff;font-weight:600;font-size:1rem}
   .mobile-cart-checkout:disabled{opacity:.45}
   .app-version-badge{bottom:calc(78px + env(safe-area-inset-bottom,0px))!important}
 }

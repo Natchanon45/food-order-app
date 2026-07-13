@@ -12,11 +12,11 @@
 .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .product-table { width: 100%; border-collapse: collapse; min-width: 850px; }
 .product-table th, .product-table td { padding: 12px 10px; border-bottom: 1px solid #edf1f2; text-align: left; vertical-align: middle; }
-.product-table th { color: #64748b; font-size: .82rem; font-weight: 700; background: #f8fafb; position: sticky; top: 0; }
+.product-table th { color: #64748b; font-size: .82rem; font-weight: 500; background: #f8fafb; position: sticky; top: 0; }
 .product-table .number { text-align: right; }
-.product-name { font-weight: 700; }
+.product-name { font-weight: 500; }
 .product-sub { font-size: .78rem; color: #64748b; margin-top: 3px; }
-.stock-badge { display: inline-flex; min-width: 58px; justify-content: center; padding: 5px 8px; border-radius: 999px; background: #e8f7f4; color: #0f766e; font-weight: 700; }
+.stock-badge { display: inline-flex; min-width: 58px; justify-content: center; padding: 5px 8px; border-radius: 999px; background: #e8f7f4; color: #0f766e; font-weight: 500; }
 .stock-badge.low { background: #fff5db; color: #9a6700; }
 .stock-badge.out { background: #fee4e2; color: #b42318; }
 .row-actions { display: flex; justify-content: flex-end; gap: 6px; flex-wrap: nowrap; }
@@ -30,13 +30,13 @@
 .movement-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; padding: 11px 12px; border: 1px solid #e3e9eb; border-radius: 10px; }
 .movement-item strong { display: block; }
 .movement-meta { color: #64748b; font-size: .8rem; margin-top: 3px; }
-.movement-qty { font-weight: 800; }
+.movement-qty { font-weight: 600; }
 .movement-qty.plus { color: #0f766e; }
 .movement-qty.minus { color: #b42318; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-grid label { margin-top: 0; }
 .form-grid .full { grid-column: 1 / -1; }
-.stock-product-name { margin: 14px 0 4px; padding: 12px; border-radius: 10px; background: #e8f7f4; font-weight: 700; }
+.stock-product-name { margin: 14px 0 4px; padding: 12px; border-radius: 10px; background: #e8f7f4; font-weight: 500; }
 @media (min-width: 801px) {
   #productDialog { width: min(760px, calc(100% - 48px)); }
 }

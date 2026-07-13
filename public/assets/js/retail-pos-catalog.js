@@ -13,7 +13,7 @@ const searchInput = document.querySelector("#searchInput");
 
 const style = document.createElement("link");
 style.rel = "stylesheet";
-style.href = "/assets/css/retail-pos-catalog.css?v=20260701-018";
+style.href = "/assets/css/retail-pos-catalog.css?v=20260713-005";
 (document.head || document.documentElement).appendChild(style);
 
 const tabs = document.createElement("div");

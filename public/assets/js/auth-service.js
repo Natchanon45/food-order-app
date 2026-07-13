@@ -59,7 +59,7 @@ function ensureIconStyles() {
   if (!document.querySelector('link[href^="/assets/css/icons.css"]')) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "/assets/css/icons.css?v=20260701-001";
+    link.href = "/assets/css/icons.css?v=20260713-005";
     document.head.appendChild(link);
   }
 }
@@ -73,12 +73,12 @@ function ensurePasswordDialogStyles() {
     .owner-password-dialog{width:min(460px,100%);border-radius:22px;background:#fff;box-shadow:0 24px 70px rgba(10,25,18,.28);padding:22px;color:#111827}
     .owner-password-dialog h2{margin:0 0 6px;font-size:24px}
     .owner-password-dialog p{margin:0 0 18px;color:#64748b;font-weight:600}
-    .owner-password-field{display:grid;gap:7px;margin-top:12px;font-weight:800;color:#334155}
-    .owner-password-field input{width:100%;box-sizing:border-box;border:1px solid #d8e2dc;border-radius:14px;padding:13px 14px;font:inherit;font-weight:700;outline:none}
+    .owner-password-field{display:grid;gap:7px;margin-top:12px;font-weight:600;color:#334155}
+    .owner-password-field input{width:100%;box-sizing:border-box;border:1px solid #d8e2dc;border-radius:14px;padding:13px 14px;font:inherit;font-weight:500;outline:none}
     .owner-password-field input:focus{border-color:#159447;box-shadow:0 0 0 4px rgba(21,148,71,.12)}
-    .owner-password-error{min-height:20px;margin-top:12px;color:#d33;font-weight:800}
+    .owner-password-error{min-height:20px;margin-top:12px;color:#d33;font-weight:600}
     .owner-password-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
-    .owner-password-actions button{border:0;border-radius:14px;padding:12px 16px;font-weight:900;cursor:pointer}
+    .owner-password-actions button{border:0;border-radius:14px;padding:12px 16px;font-weight:600;cursor:pointer}
     .owner-password-cancel{background:#eef3ef;color:#111827}
     .owner-password-submit{background:#159447;color:#fff}
     .owner-password-submit:disabled{opacity:.65;cursor:wait}

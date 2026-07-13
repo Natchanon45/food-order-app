@@ -25,7 +25,7 @@ function ensureStyles() {
     #addDeliveryFeeOption:hover,#addDeliveryFeeOption:focus-visible{background:#0f7f3b;border-color:#0f7f3b}
     .delivery-fee-options{display:grid;gap:10px;margin-top:12px}
     .delivery-fee-row{display:grid;grid-template-columns:34px minmax(0,1fr) minmax(120px,180px) auto;gap:10px;align-items:end;padding:12px;border:1px solid #d8e8dd;border-radius:16px;background:linear-gradient(180deg,#fff,#fbfefc);box-shadow:0 8px 20px rgba(15,23,42,.04)}
-    .delivery-fee-index{width:34px;height:46px;border-radius:12px;background:#e8f6ed;color:#0d6f34;display:grid;place-items:center;font-weight:800;align-self:end}
+    .delivery-fee-index{width:34px;height:46px;border-radius:12px;background:#e8f6ed;color:#0d6f34;display:grid;place-items:center;font-weight:600;align-self:end}
     .delivery-fee-row .field{margin:0}
     .delivery-fee-name-field{padding-top:22px}
     .delivery-fee-remove{width:42px!important;height:46px!important;min-width:42px!important;min-height:46px!important;padding:0!important;border-radius:12px!important;background:#dc2626!important;border-color:#dc2626!important;color:#fff!important;display:inline-grid!important;place-items:center!important;box-shadow:0 8px 18px rgba(220,38,38,.18)}

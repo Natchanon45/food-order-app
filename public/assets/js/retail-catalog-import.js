@@ -1,6 +1,6 @@
 import { RetailCollections, saveRecordsStrict, listRecords } from './retail-db.js?v=20260628-7';
 import { buildRetailMasterCatalogThailand, validateRetailMasterCatalogThailand } from './rmct.js?v=20260628-7';
-import { requireRole } from './auth-service.js?v=20260630-067';
+import { requireRole } from './auth-service.js?v=20260713-005';
 
 await requireRole(['owner']);
 

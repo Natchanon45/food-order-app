@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.56
-Build: 2026.07.13.004
-Milestone: System UI Font Weight Tuning
+Version: 0.14.57
+Build: 2026.07.13.005
+Milestone: System UI Font Weight Sweep
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -12,7 +12,7 @@ Unified green UI icon rule: Order/Delivery and Retail POS web UI surfaces should
 
 Delivery fee options rule: store settings may include `deliveryFeeOptions`, an ordered list of tenant-scoped delivery choices with stable `id`, display `label`, and non-negative `fee`. Admin users can add, remove, rename, and price these options from `/admin`; the editor keeps the plus-icon add action in the card header, uses placeholder examples instead of a visible option-name caption, aligns row number badges with inputs, and uses red X icon buttons for row removal. The public `/delivery` page must render these labels and fees in the customer dropdown, apply the selected fee to totals, and persist `deliveryZone`, `deliveryZoneLabel`, and `deliveryFee` on the order. Legacy `deliveryFeeNearby`, `deliveryFeeGeneral`, and `deliveryFeeFar` values remain fallback-compatible when no custom option list exists.
 
-Font rule: all web UI screens, including standalone POS pages, buttons, forms, dialogs, and Customer Display, use the shared `--app-ui-font` Thai sans/no-head stack with `Kanit Local` loaded from `/assets/fonts/` as the primary UI font. The shared UI weight scale is regular 400, controls/secondary emphasis 500, and prominent UI headings/card labels 600; `Kanit Local` should map 700-900 UI requests to the SemiBold face so legacy hardcoded heavy weights do not render as ExtraBold/Black. Avoid reintroducing 700-900 weights for normal web UI text unless there is a specific accessibility or legal-document reason. POS UI button text must stay at font-weight 500 or lighter, and form labels/inputs should use normal weight. Printable paper documents such as receipts, tax invoices, QR tickets, invoices, quotations, and print pages use `--paper-font-local` / `--print-font`, with `TH Sarabun PSK Local` loaded from `/assets/fonts/` as the primary paper font and are excluded from the web UI weight cap.
+Font rule: all web UI screens, including standalone POS pages, buttons, forms, dialogs, and Customer Display, use the shared `--app-ui-font` Thai sans/no-head stack with `Kanit Local` loaded from `/assets/fonts/` as the primary UI font. The shared UI weight scale is regular 400, controls/secondary emphasis 500, and prominent UI headings/card labels 600; `Kanit Local` should map 700-900 UI requests to the SemiBold face or reduce runtime CSS/JS hardcoded weights to 500-600 so legacy heavy UI text does not render as ExtraBold/Black. Avoid reintroducing 700-900 weights for normal web UI text unless there is a specific accessibility or legal-document reason. POS UI button text must stay at font-weight 500 or lighter, and form labels/inputs should use normal weight. Printable paper documents such as receipts, tax invoices, QR tickets, invoices, quotations, and print pages use `--paper-font-local` / `--print-font`, with `TH Sarabun PSK Local` loaded from `/assets/fonts/` as the primary paper font and are excluded from the web UI weight cap.
 
 Retail POS navigation rule: submenu expand/collapse controls must render exactly one Bootstrap Icons chevron, not text carets such as `^`, `v`, `⌃`, or `⌄`, not CSS pseudo chevrons, and not an additional context icon. Menu group buttons with `data-menu-group` must be skipped by the context icon injector, while menu links may still receive one context icon. The drawer title `เมนู POS` must not receive an injected context icon, and the icon system/CSS must also clean or hide the legacy injected icon if an older cached navigation module renders `<h2 data-pos-icon="list">เมนู POS</h2>`.
 
