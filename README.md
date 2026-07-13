@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Profile Direct Sync
-Version: 0.14.53
-Build: 2026.07.13.001
+Milestone: Tax Profile Sync Diagnostics
+Version: 0.14.54
+Build: 2026.07.13.002
 
-Change: buyer tax profiles saved while Firebase is online now update their local profile sync badge immediately after the direct Firestore `saveRecord()` succeeds, including profiles created from receipt/full-tax flows outside the tax invoice history dialog. Failed or offline saves remain `รอ Sync` for the existing profile sync worker. This preserves issued tax invoices, source sales, VAT, payments, stock, duplicate protection, and full tax invoice create/void transactions.
+Change: buyer tax profile sync now records profile-level diagnostics when direct Firestore saves fail. Failed saves remain `รอ Sync` and store the concise sync error, latest attempt time, and attempt count; successful saves/syncs clear the error and record `firebaseSyncedAt`. The profile dialog displays the error and attempt count beside the profile row while preserving issued tax invoices, source sales, VAT, payments, stock, duplicate protection, and full tax invoice create/void transactions.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -32,6 +32,8 @@ Tax buyer profile sync workflow: saved buyer tax profiles from `/pos/tax-invoice
 Tax buyer profile sync badge workflow: `/pos/tax-invoices/` marks saved buyer tax profiles with `syncStatus: "pending_sync"` and updates successful Firestore profile sync rows to `syncStatus: "synced"` with `firebaseSyncedAt`. The profile dialog displays `รอ Sync`, `Sync แล้ว`, or `เครื่องนี้` badges for operator visibility only and does not alter issued invoices, source sales, VAT totals, payments, stock movements, duplicate protection, or tax invoice create/void transactions.
 
 Tax buyer profile direct sync workflow: when `saveTaxBuyerProfile()` writes a profile while Firebase is online, the direct Firestore save sends the row as `syncStatus: "synced"` and updates the local row with the same `firebaseSyncedAt` after the write succeeds. If the direct save fails, the local row stays `pending_sync` for the normal profile sync worker. This is badge metadata only and does not alter issued invoices, source sales, VAT totals, payments, stock movements, duplicate protection, or tax invoice create/void transactions.
+
+Tax buyer profile sync diagnostics workflow: direct buyer profile save failures record `syncError`, `syncAttemptedAt`, and `syncAttemptCount` on the local buyer profile row while keeping `syncStatus: "pending_sync"`. Successful direct saves and profile sync worker saves clear `syncError`, update `syncAttemptedAt`, and record `firebaseSyncedAt`. The profile dialog shows the concise error and attempt count as operator guidance only and does not alter issued invoices, source sales, VAT totals, payments, stock movements, duplicate protection, or tax invoice create/void transactions.
 
 Tax buyer profile delete sync workflow: deleting a buyer tax profile hides it from the local profile list immediately and stores a tenant-scoped delete tombstone when the browser is offline. The next online tax profile sync deletes the matching Firestore document from `tenants/{tenantId}/taxBuyerProfiles` and keeps older remote copies from being merged back into the local profile list.
 

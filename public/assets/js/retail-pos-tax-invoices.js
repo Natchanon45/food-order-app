@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260713-001';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260713-002';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -564,6 +564,12 @@ function profileSyncState(profile = {}) {
 }
 
 function profileSyncDetail(profile = {}) {
+  const error = String(profile.syncError || '').trim();
+  if (error) {
+    const count = Number(profile.syncAttemptCount || 0);
+    const attemptText = count > 0 ? ` • พยายาม ${count.toLocaleString('th-TH')} ครั้ง` : '';
+    return ` • Sync: ${error}${attemptText}`;
+  }
   const syncedAt = Number(profile.firebaseSyncedAt || 0);
   if (syncedAt) return ` • Sync ล่าสุด ${dateText(syncedAt)}`;
   if (String(profile.syncStatus || '') === 'pending_sync') return ' • รอเชื่อม Firebase';

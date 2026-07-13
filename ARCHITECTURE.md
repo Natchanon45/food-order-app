@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.53
-Build: 2026.07.13.001
-Milestone: Tax Profile Direct Sync
+Version: 0.14.54
+Build: 2026.07.13.002
+Milestone: Tax Profile Sync Diagnostics
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -43,6 +43,8 @@ Tax buyer profile sync rule: saved full-tax buyer profiles must remain available
 Tax buyer profile sync badge rule: buyer tax profile rows may store display-only sync metadata such as `syncStatus: "pending_sync"`, `syncStatus: "synced"`, and `firebaseSyncedAt` so `/pos/tax-invoices/` can show `รอ Sync`, `Sync แล้ว`, or `เครื่องนี้` badges in the profile dialog. These badges must not drive tax invoice duplicate protection, create transactions, void transactions, source sale mutations, VAT totals, payments, stock movements, or Firestore write paths outside the existing profile sync flow.
 
 Tax buyer profile direct sync rule: when a buyer tax profile is saved while Firebase is online, the direct profile write may mark the remote payload and matching local row as `syncStatus: "synced"` with `firebaseSyncedAt` after the Firestore save succeeds. If the direct write fails or the browser is offline, the local row must remain `pending_sync` for the existing profile sync flow. This metadata must not create a new tax invoice write path, alter duplicate protection, void/create transactions, source sales, VAT totals, payments, or stock movements.
+
+Tax buyer profile sync diagnostics rule: direct buyer profile save failures may record local-only diagnostics such as `syncError`, `syncAttemptedAt`, and `syncAttemptCount` while preserving `syncStatus: "pending_sync"`. Successful direct saves or profile sync worker writes should clear the error and update `firebaseSyncedAt`. These diagnostics are operator visibility metadata only and must not drive tax invoice duplicate protection, create/void transactions, source sale mutations, VAT totals, payments, stock movements, or new Firestore write paths outside the existing buyer profile sync flow.
 
 Tax buyer profile delete sync rule: deleting a full-tax buyer profile must hide it locally immediately and preserve a tenant-scoped local tombstone if Firestore is unavailable. The next online sync must delete the matching `tenants/{tenantId}/taxBuyerProfiles/{profileId}` document and must not allow an older remote profile to reappear after the local delete. Tombstones must remain isolated from issued `taxInvoices`, source sales, VAT totals, payments, and stock data.
 

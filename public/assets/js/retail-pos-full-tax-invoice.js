@@ -136,6 +136,9 @@ function mergeBuyerProfiles(...groups) {
           ...normalizeBuyer(profile),
           syncStatus: normalizeText(profile.syncStatus || ''),
           firebaseSyncedAt: Number(profile.firebaseSyncedAt || 0) || 0,
+          syncError: syncErrorMessage(profile.syncError || ''),
+          syncAttemptedAt: Number(profile.syncAttemptedAt || 0) || 0,
+          syncAttemptCount: Number(profile.syncAttemptCount || 0) || 0,
           updatedAt: Number(profile.updatedAt || 0) || Date.now()
         };
     const existing = map.get(key);
@@ -198,8 +201,14 @@ function writeBuyerProfile(profile) {
   if (isFirebaseConfigured && db && navigator.onLine !== false) {
     const syncedAt = Date.now();
     saveRecord(TAX_BUYER_PROFILE_COLLECTION, { ...row, syncStatus: 'synced', firebaseSyncedAt: syncedAt }).then(() => {
-      updateLocalBuyerProfileSyncState(id, { syncStatus: 'synced', firebaseSyncedAt: syncedAt });
+      updateLocalBuyerProfileSyncState(id, { syncStatus: 'synced', firebaseSyncedAt: syncedAt, syncError: '', syncAttemptedAt: syncedAt });
     }).catch(error => {
+      updateLocalBuyerProfileSyncState(id, {
+        syncStatus: 'pending_sync',
+        syncError: syncErrorMessage(error),
+        syncAttemptedAt: Date.now(),
+        syncAttemptCount: Number(row.syncAttemptCount || 0) + 1
+      });
       console.warn('[retail-pos-full-tax-invoice] save tax buyer profile failed', error);
     });
   }
@@ -526,7 +535,7 @@ export async function syncTaxBuyerProfiles() {
           console.warn('[retail-pos-full-tax-invoice] sync delete tax buyer profile failed', profile.id, error);
         });
       }
-      return saveRecord(TAX_BUYER_PROFILE_COLLECTION, { ...profile, syncStatus: 'synced', firebaseSyncedAt: now }).then(() => {
+      return saveRecord(TAX_BUYER_PROFILE_COLLECTION, { ...profile, syncStatus: 'synced', firebaseSyncedAt: now, syncError: '', syncAttemptedAt: now }).then(() => {
         syncedKeys.add(buyerProfileKey(profile));
       }).catch(error => {
         console.warn('[retail-pos-full-tax-invoice] sync tax buyer profile failed', profile.id, error);
@@ -535,7 +544,7 @@ export async function syncTaxBuyerProfiles() {
     if (syncedKeys.size) {
       writeTenantBuyerProfiles(mergeBuyerProfiles(merged.map(profile => (
         syncedKeys.has(buyerProfileKey(profile))
-          ? { ...profile, syncStatus: 'synced', firebaseSyncedAt: now }
+          ? { ...profile, syncStatus: 'synced', firebaseSyncedAt: now, syncError: '', syncAttemptedAt: now }
           : profile
       ))));
     }
