@@ -94,6 +94,19 @@ function writeTenantBuyerProfiles(profiles) {
   writeJson(TAX_BUYER_PROFILE_KEY, [...kept, ...profiles]);
 }
 
+function updateLocalBuyerProfileSyncState(id, patch = {}) {
+  const key = normalizeText(id);
+  if (!key) return;
+  const tenantId = getTenantId();
+  const rows = readJson(TAX_BUYER_PROFILE_KEY, []);
+  const updated = (Array.isArray(rows) ? rows : []).map(row => {
+    const rowKey = normalizeText(row.id || row.customerKey || '');
+    if (rowKey !== key || (row.tenantId && row.tenantId !== tenantId)) return row;
+    return { ...row, ...patch };
+  });
+  writeJson(TAX_BUYER_PROFILE_KEY, updated);
+}
+
 function buyerProfileKey(profile = {}) {
   return normalizeText(profile.id || profile.customerKey || profile.buyerTaxId || profile.buyerName);
 }
@@ -183,7 +196,10 @@ function writeBuyerProfile(profile) {
   kept.push(row);
   writeJson(TAX_BUYER_PROFILE_KEY, kept);
   if (isFirebaseConfigured && db && navigator.onLine !== false) {
-    saveRecord(TAX_BUYER_PROFILE_COLLECTION, row).catch(error => {
+    const syncedAt = Date.now();
+    saveRecord(TAX_BUYER_PROFILE_COLLECTION, { ...row, syncStatus: 'synced', firebaseSyncedAt: syncedAt }).then(() => {
+      updateLocalBuyerProfileSyncState(id, { syncStatus: 'synced', firebaseSyncedAt: syncedAt });
+    }).catch(error => {
       console.warn('[retail-pos-full-tax-invoice] save tax buyer profile failed', error);
     });
   }
