@@ -85,8 +85,18 @@ const buttonIconRules = [
 
 function visibleButtonText(button) {
   const clone = button.cloneNode(true);
-  clone.querySelectorAll("svg, .app-icon").forEach(node => node.remove());
+  clone.querySelectorAll("svg, i.bi, .app-icon, .pos-context-icon").forEach(node => node.remove());
   return (clone.textContent || "").replace(/\s+/g, " ").trim();
+}
+
+function isPrintableDocument(node) {
+  return Boolean(node?.closest?.(".receipt, .receipt-header, .tax-paper, .tax-title, .qr-ticket, .print-document, .document-page, .print-page, .invoice, .quotation, .customer-sale-receipt, .return-receipt"));
+}
+
+function normalizeButtonIcons(button) {
+  const icons = [...button.querySelectorAll(":scope > i.bi, :scope > .app-icon, :scope > .pos-context-icon")];
+  if (icons.length <= 1) return;
+  icons.slice(1).forEach(icon => icon.remove());
 }
 
 function standardActionFor(button) {
@@ -128,6 +138,7 @@ function makeIconOnly(button, icon, label) {
 function decorateButton(button) {
   if (!(button instanceof HTMLElement) || !button.matches("button, a.btn")) return;
   if (button.closest(".user-menu")) return;
+  if (isPrintableDocument(button)) return;
 
   if (button.dataset.inc) {
     makeIconOnly(button, "plus", "เพิ่มจำนวน");
@@ -161,6 +172,7 @@ function decorateButton(button) {
     const fallbackLabel = button.title || "ปุ่มคำสั่ง";
     button.setAttribute("aria-label", fallbackLabel);
   }
+  normalizeButtonIcons(button);
 }
 
 function decorateButtons(root = document) {
@@ -170,6 +182,7 @@ function decorateButtons(root = document) {
 
 function decorateCartHeading(heading) {
   if (!(heading instanceof HTMLElement) || heading.querySelector(".app-icon")) return;
+  if (isPrintableDocument(heading)) return;
   const text = heading.textContent?.trim() || "";
   if (!/ตะกร้าอาหาร|รายการรอบปัจจุบัน/i.test(text)) return;
   heading.insertAdjacentHTML("afterbegin", iconMarkup("cart"));

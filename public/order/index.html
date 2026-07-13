@@ -7,7 +7,7 @@
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <meta name="theme-color" content="#159447" />
-    <link rel="stylesheet" href="/assets/css/app.css?v=20260707-018" />
+    <link rel="stylesheet" href="/assets/css/app.css?v=20260713-003" />
     <link rel="stylesheet" href="/assets/css/menu-qr.css?v=20260622-5" />
     <link
       rel="stylesheet"
@@ -36,7 +36,7 @@
     </header>
     <main class="container">
       <section class="hero">
-        <h1 id="tableTitle">เมนูอาหาร</h1>
+        <h1 id="tableTitle" class="hero-title"><i class="bi bi-journal-text app-icon" aria-hidden="true"></i><span>เมนูอาหาร</span></h1>
         <p>เลือกเมนู ใส่หมายเหตุ และกดยืนยันได้ทันที</p>
       </section>
       <div class="delivery-pos">
@@ -66,7 +66,7 @@
           <section id="cartSection" class="card current-round">
             <div class="section-title">
               <h2>
-                รายการรอบปัจจุบัน
+                <i class="bi bi-cart3 app-icon" aria-hidden="true"></i><span>รายการรอบปัจจุบัน</span>
                 <span id="currentRoundLabel" class="round-label">รอบที่ 1</span>
               </h2>
               <span id="cartCount" class="badge">0 รายการ</span>
@@ -88,7 +88,7 @@
             hidden
           >
             <div class="section-title">
-              <h2>รายการที่โต๊ะนี้สั่งแล้ว</h2>
+              <h2><i class="bi bi-clock-history app-icon" aria-hidden="true"></i><span>รายการที่โต๊ะนี้สั่งแล้ว</span></h2>
               <span id="previousRoundCount" class="badge">0 รอบ</span>
             </div>
             <div id="previousOrdersList" class="previous-orders-list"></div>
@@ -103,7 +103,7 @@
           <span id="cartTotal">0.00</span> บาท
         </div>
       </div>
-      <button class="btn btn-primary" id="submitOrder">ยืนยันการสั่ง</button>
+      <button class="btn btn-primary" id="submitOrder"><i class="bi bi-check-lg app-icon" aria-hidden="true"></i><span>ยืนยันการสั่ง</span></button>
     </div>
     <script
       type="module"
@@ -119,7 +119,7 @@
     ></script>
     <script
       type="module"
-      src="/assets/js/customer-secure.js?v=20260702-004"
+      src="/assets/js/customer-secure.js?v=20260713-003"
     ></script>
     <script
       type="module"

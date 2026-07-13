@@ -1,6 +1,6 @@
 import "./sweet-dialog.js?v=20260629-048";
 import { dataService, usingDemoMode } from "./data-service.js?v=20260701-008";
-import { money, toast, getTableCode, formatTime } from "./ui.js?v=20260701-003";
+import { money, toast, getTableCode, formatTime } from "./ui.js?v=20260713-003";
 
 const tableCode = getTableCode();
 const tableToken = new URLSearchParams(location.search).get("token") || "";
@@ -21,9 +21,26 @@ let orders = [];
 let activeCategory = "ทั้งหมด";
 let validSession = false;
 
+function setIconHeading(selector, icon, text) {
+  const heading = document.querySelector(selector);
+  if (!heading) return;
+  let label = heading.querySelector(":scope > span");
+  if (!label) {
+    heading.innerHTML = `<i class="bi bi-${icon} app-icon" aria-hidden="true"></i><span></span>`;
+    label = heading.querySelector(":scope > span");
+  }
+  label.textContent = text;
+}
+
+function setSubmitButton(text, busy = false) {
+  submitButton.innerHTML = busy
+    ? `<i class="bi bi-hourglass-split app-icon" aria-hidden="true"></i><span>${text}</span>`
+    : `<i class="bi bi-check-lg app-icon" aria-hidden="true"></i><span>${text}</span>`;
+}
+
 if (usingDemoMode) document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง: ข้อมูลอยู่ในเบราว์เซอร์นี้</div>';
 document.querySelector("#tableBadge").textContent = tableCode ? `โต๊ะ ${tableCode}` : "ไม่พบรหัสโต๊ะ";
-document.querySelector("#tableTitle").textContent = tableCode ? `เมนูสำหรับโต๊ะ ${tableCode}` : "กรุณาสแกน QR ของโต๊ะ";
+setIconHeading("#tableTitle", "journal-text", tableCode ? `เมนูสำหรับโต๊ะ ${tableCode}` : "กรุณาสแกน QR ของโต๊ะ");
 
 function escapeHtml(value = "") {
   return String(value).replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
@@ -124,7 +141,7 @@ submitButton.addEventListener("click", async () => {
   const items = [...cart.values()].map(({ id, name, price, qty, note }) => ({ menuId: id, name, price: Number(price), qty, note: note || "" }));
   const totalAmount = items.reduce((sum, item) => sum + item.price * item.qty, 0);
   submitButton.disabled = true;
-  submitButton.textContent = "กำลังส่ง...";
+  setSubmitButton("กำลังส่ง...", true);
   try {
     await dataService.createTableOrder({ tableCode, tableToken, status: "pending", totalAmount, note: orderNote.value.trim(), items });
     cart.clear();
@@ -135,7 +152,7 @@ submitButton.addEventListener("click", async () => {
     console.error(error);
     toast(error.message === "INVALID_TABLE_SESSION" ? "QR นี้หมดอายุแล้ว กรุณาติดต่อแคชเชียร์" : "ส่งออเดอร์ไม่สำเร็จ", "error");
   } finally {
-    submitButton.textContent = "ยืนยันการสั่ง";
+    setSubmitButton("ยืนยันการสั่ง");
     renderCart();
   }
 });
@@ -144,7 +161,7 @@ try {
   validSession = await validateSession();
   if (!validSession) {
     document.querySelector("#tableBadge").textContent = "QR หมดอายุ";
-    document.querySelector("#tableTitle").textContent = "QR นี้ไม่สามารถใช้งานได้";
+    setIconHeading("#tableTitle", "journal-x", "QR นี้ไม่สามารถใช้งานได้");
     categoryTabs.innerHTML = "";
     menuGrid.innerHTML = '<div class="card empty">กรุณาติดต่อแคชเชียร์เพื่อรับ QR สำหรับโต๊ะของคุณ</div>';
     document.querySelector("#searchInput").disabled = true;

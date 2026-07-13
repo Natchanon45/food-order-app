@@ -11,7 +11,7 @@
       name="description"
       content="Food Order Delivery is an online food ordering and delivery application for browsing menus, placing orders, entering delivery details, and making payments."
     />
-    <link rel="stylesheet" href="/assets/css/app.css?v=20260707-018" />
+    <link rel="stylesheet" href="/assets/css/app.css?v=20260713-003" />
     <link rel="stylesheet" href="/assets/css/menu-qr.css?v=20260623-7" />
     <link rel="stylesheet" href="/assets/css/payment-slip.css?v=20260623-7" />
     <link
@@ -45,7 +45,7 @@
     </header>
     <main class="container">
       <section class="hero">
-        <h1>Food Order Delivery</h1>
+        <h1 class="hero-title"><i class="bi bi-scooter app-icon" aria-hidden="true"></i><span>Food Order Delivery</span></h1>
         <p>
           แอปพลิเคชันสั่งอาหารและบริการจัดส่งออนไลน์ สำหรับเลือกเมนู
           กรอกข้อมูลจัดส่ง ยืนยันคำสั่งซื้อ และชำระเงิน
@@ -77,13 +77,13 @@
         <div class="delivery-side-column">
           <section class="card">
             <div class="section-title">
-              <h2>ตะกร้าอาหาร</h2>
+              <h2><i class="bi bi-cart3 app-icon" aria-hidden="true"></i><span>ตะกร้าอาหาร</span></h2>
               <span id="cartCount" class="badge">0 รายการ</span>
             </div>
             <div id="cartList" class="cart-list"></div>
           </section>
           <section class="card" style="margin-top: 18px">
-            <div class="section-title"><h2>บัญชีและที่อยู่จัดส่ง</h2></div>
+            <div class="section-title"><h2><i class="bi bi-person-vcard app-icon" aria-hidden="true"></i><span>บัญชีและที่อยู่จัดส่ง</span></h2></div>
             <div class="grid grid-2" style="align-items: center">
               <div>
                 <div id="customerAccount" hidden>
@@ -121,7 +121,7 @@
             </div>
           </section>
           <section class="card" style="margin-top: 18px">
-            <div class="section-title"><h2>ข้อมูลจัดส่ง</h2></div>
+            <div class="section-title"><h2><i class="bi bi-truck app-icon" aria-hidden="true"></i><span>ข้อมูลจัดส่ง</span></h2></div>
             <div class="grid grid-2 delivery-contact-grid">
               <div class="field">
                 <label>ชื่อผู้รับ *</label
@@ -166,7 +166,7 @@
                     class="btn btn-primary btn-sm"
                     id="addAddressButton"
                   >
-                    + เพิ่มที่อยู่
+                    <i class="bi bi-plus-lg app-icon" aria-hidden="true"></i><span>เพิ่มที่อยู่</span>
                   </button>
                 </div>
               </div>
@@ -205,13 +205,13 @@
                 >
                 <div class="address-form-actions">
                   <button type="button" class="btn" id="cancelAddressButton">
-                    ยกเลิก</button
+                    <i class="bi bi-x-lg app-icon" aria-hidden="true"></i><span>ยกเลิก</span></button
                   ><button
                     type="button"
                     class="btn btn-primary"
                     id="saveAddressButton"
                   >
-                    บันทึกที่อยู่
+                    <i class="bi bi-floppy app-icon" aria-hidden="true"></i><span>บันทึกที่อยู่</span>
                   </button>
                 </div>
               </div>
@@ -262,7 +262,7 @@
               class="card"
               style="margin-top: 12px; text-align: center"
             >
-              <h3 style="margin-top: 0">สแกน QR พร้อมเพย์</h3>
+              <h3 style="margin-top: 0"><i class="bi bi-qr-code app-icon" aria-hidden="true"></i><span>สแกน QR พร้อมเพย์</span></h3>
               <div
                 id="promptPayPlaceholder"
                 class="empty"
@@ -327,7 +327,7 @@
                   hidden
                   style="margin-top: 8px"
                 >
-                  ลบสลิป
+                  <i class="bi bi-x-lg app-icon" aria-hidden="true"></i><span>ลบสลิป</span>
                 </button>
               </div>
               <small class="menu-category"
@@ -346,7 +346,7 @@
         </div>
       </div>
       <button class="btn btn-primary" id="submitOrder">
-        ตรวจสอบและชำระเงิน
+        <i class="bi bi-credit-card app-icon" aria-hidden="true"></i><span>ตรวจสอบและชำระเงิน</span>
       </button>
     </div>
     <script
@@ -357,7 +357,7 @@
       type="module"
       src="/assets/js/public-tenant-resolver.js?v=20260629-025"
     ></script>
-    <script type="module" src="/assets/js/ui.js?v=20260701-003"></script>
+    <script type="module" src="/assets/js/ui.js?v=20260713-003"></script>
     <script
       type="module"
       src="/assets/js/delivery-addresses.js?v=20260701-002"

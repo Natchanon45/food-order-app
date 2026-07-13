@@ -2,11 +2,13 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.54
-Build: 2026.07.13.002
-Milestone: Tax Profile Sync Diagnostics
+Version: 0.14.55
+Build: 2026.07.13.003
+Milestone: Unified Green UI Icon Polish
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
+
+Unified green UI icon rule: Order/Delivery and Retail POS web UI surfaces should use the shared green, black, and white visual language for app headers, panels, cards, inputs, and primary actions. Main headings and actionable buttons may include one appropriate Bootstrap Icon, but the UI must not render adjacent duplicate icons in a button/card, must not use emoji, and must not inject or display icons inside printable bill, receipt, return receipt, or tax invoice headers. This rule is presentation-only and must not change tenant data, order data, VAT, payments, stock, offline sync, duplicate protection, or tax invoice transactions.
 
 Delivery fee options rule: store settings may include `deliveryFeeOptions`, an ordered list of tenant-scoped delivery choices with stable `id`, display `label`, and non-negative `fee`. Admin users can add, remove, rename, and price these options from `/admin`; the editor keeps the plus-icon add action in the card header, uses placeholder examples instead of a visible option-name caption, aligns row number badges with inputs, and uses red X icon buttons for row removal. The public `/delivery` page must render these labels and fees in the customer dropdown, apply the selected fee to totals, and persist `deliveryZone`, `deliveryZoneLabel`, and `deliveryFee` on the order. Legacy `deliveryFeeNearby`, `deliveryFeeGeneral`, and `deliveryFeeFar` values remain fallback-compatible when no custom option list exists.
 

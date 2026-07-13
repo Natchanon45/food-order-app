@@ -81,8 +81,20 @@ function iconFor(element, fallback = "circle") {
 }
 
 function shouldSkipIcon(element) {
+  if (element.closest(".receipt, .receipt-header, .tax-paper, .tax-title, .qr-ticket, .print-document, .document-page, .print-page, .invoice, .quotation, .customer-sale-receipt, .return-receipt")) return true;
   if (element.matches(".icon-btn, .pos-menu-title, .pos-menu-head h2, .pos-menu-group > button, [data-menu-group], .product-card, .catalog-tab, .sort-row-main, .app-version-badge, .mobile-cart-bar, .qty-tools button, [data-mobile-cart-close]")) return true;
   return element.closest(".pos-menu-head") && visibleText(element) === "เมนู POS";
+}
+
+function normalizeIconStack(element) {
+  const generated = [...element.querySelectorAll(":scope > .pos-context-icon")];
+  if (generated.length > 1) generated.slice(1).forEach(icon => icon.remove());
+  const leadingIcons = [...element.querySelectorAll(":scope > i.bi, :scope > .app-icon, :scope > .pos-context-icon")];
+  if (leadingIcons.length > 1) {
+    const keepAuthored = leadingIcons.find(icon => !icon.classList.contains("pos-context-icon"));
+    if (keepAuthored) generated.forEach(icon => icon.remove());
+    else leadingIcons.slice(1).forEach(icon => icon.remove());
+  }
 }
 
 function addIcon(element, fallback) {
@@ -95,12 +107,16 @@ function addIcon(element, fallback) {
     element.removeAttribute("data-pos-icon-ready");
     return;
   }
-  if (authoredIcon || generatedIcon || !visibleText(element)) return;
+  if (authoredIcon || generatedIcon || !visibleText(element)) {
+    normalizeIconStack(element);
+    return;
+  }
   const icon = document.createElement("i");
   icon.className = `bi bi-${iconFor(element, fallback)} pos-context-icon`;
   icon.setAttribute("aria-hidden", "true");
   element.prepend(icon);
   element.dataset.posIconReady = "1";
+  normalizeIconStack(element);
 }
 
 function enhance(root = document) {

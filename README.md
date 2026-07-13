@@ -1,15 +1,17 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Profile Sync Diagnostics
-Version: 0.14.54
-Build: 2026.07.13.002
+Milestone: Unified Green UI Icon Polish
+Version: 0.14.55
+Build: 2026.07.13.003
 
-Change: buyer tax profile sync now records profile-level diagnostics when direct Firestore saves fail. Failed saves remain `รอ Sync` and store the concise sync error, latest attempt time, and attempt count; successful saves/syncs clear the error and record `firebaseSyncedAt`. The profile dialog displays the error and attempt count beside the profile row while preserving issued tax invoices, source sales, VAT, payments, stock, duplicate protection, and full tax invoice create/void transactions.
+Change: Order/Delivery and Retail POS now use a cleaner shared green, black, and white UI polish layer. Main headings and important action buttons use appropriate single Bootstrap Icons, Order table headings preserve their icon when runtime text changes, and the shared icon decorators prevent adjacent duplicate icons while skipping printable bill/tax document headers. This is presentation-only and preserves tenant data, orders, VAT, payments, stock, offline sync, duplicate protection, and tax invoice create/void transactions.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
 Existing PromptPay QR display, tax buyer DBD lookup, tax invoice history/reprint, later full tax invoice issuing from existing receipts, receipt behavior, stock deduction, offline sale sync, POS theme alignment, mobile product card overlay behavior, mobile button layout, payment modal visual tuning, and printable document fonts are unchanged.
+
+Unified green UI icon workflow: `/delivery`, `/order`, and Retail POS pages use the green/black/white visual system for app headers, hero panels, cards, focused inputs, and primary actions. Main headings and action buttons may show one Bootstrap Icon, but buttons/cards must not render adjacent duplicate icons, printable bill headers must stay text-only, and emoji must not be used in the UI.
 
 POS offline sync synced-flag workflow: `/pos` computes a stable `offlineSyncHash` from the local sale payload fields that matter for sync, excluding volatile sync metadata and official sale-number changes. Sales with `syncStatus: "synced"` or `firebaseSyncedAt` are backfilled with `offlineSyncHash`, `syncHashVersion`, and clean sync metadata, and the offline queue/status badge excludes them. If the sale payload changes later and the hash no longer matches, the worker can treat it as needing attention instead of blindly trusting a stale boolean flag.
 
