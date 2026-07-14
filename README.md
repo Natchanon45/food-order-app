@@ -1,17 +1,19 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: System UI Font Weight Sweep
-Version: 0.14.57
-Build: 2026.07.13.005
+Milestone: Tax Icons and POS Image Fallback
+Version: 0.14.58
+Build: 2026.07.15.001
 
-Change: Order/Delivery and Retail POS now sweep remaining hardcoded heavy UI font weights down to the shared 500-600 range so the local Kanit UI reads softer across mobile cart bars, admin dialogs, sales reports, POS catalog/product management, Customer Display, and shared icon/user-menu surfaces. Customer Display heavy local font requests no longer load the heavier Kanit files, and all touched CSS/JS references are cache-busted to `20260713-005`. Printable receipts, tax invoices, QR tickets, and paper documents keep their existing paper font behavior. This is presentation-only and preserves tenant data, orders, VAT, payments, stock, offline sync, duplicate protection, and tax invoice create/void transactions.
+Change: POS tax invoice history now loads the shared icon stylesheet so headings and action buttons render Bootstrap Icons through the existing POS icon enhancer. Retail POS product cards now remove broken `<img>` elements and restore the green initial fallback when image URLs fail or invalid image fields are encountered. The touched POS assets are cache-busted to `20260715-001`. This is presentation-only and preserves tenant data, orders, VAT, payments, stock, offline sync, duplicate protection, and tax invoice create/void transactions.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
 Existing PromptPay QR display, tax buyer DBD lookup, tax invoice history/reprint, later full tax invoice issuing from existing receipts, receipt behavior, stock deduction, offline sale sync, POS theme alignment, mobile product card overlay behavior, mobile button layout, payment modal visual tuning, and printable document fonts are unchanged.
 
 System UI font-weight workflow: `/delivery`, `/order`, and Retail POS pages use the shared Thai UI font stack with lighter weights after the local `Kanit Local` font change. Normal copy stays 400, most controls use 500, prominent UI labels/headings should generally stay at 600, and legacy 700-900 UI requests resolve to SemiBold or are reduced in runtime CSS/JS. Printable paper documents remain excluded from this web UI weight rule.
+
+POS product image fallback workflow: `/pos/` product cards can use local IndexedDB images or product image URLs, but the UI must never leave browser broken-image icons visible on product tiles. If a URL fails or a product image field is not a usable string URL, the card should restore the green initial fallback while keeping product selection, stock, VAT, payment, and offline sync behavior unchanged.
 
 Unified green UI icon workflow: `/delivery`, `/order`, and Retail POS pages use the green/black/white visual system for app headers, hero panels, cards, focused inputs, and primary actions. Main headings and action buttons may show one Bootstrap Icon, but buttons/cards must not render adjacent duplicate icons, printable bill headers must stay text-only, and emoji must not be used in the UI.
 

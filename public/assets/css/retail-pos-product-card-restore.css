@@ -26,6 +26,16 @@
   overflow: hidden !important;
 }
 
+.product-card .pos-card-image-fallback {
+  display: grid !important;
+  place-items: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  color: var(--green-dark) !important;
+  font-size: 1.45rem !important;
+  font-weight: 500 !important;
+}
+
 .product-card.visual-card .product-image img,
 .product-card .pos-card-image-wrap img {
   display: block !important;

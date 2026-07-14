@@ -38,6 +38,10 @@ function escapeHtml(value) { return String(value ?? "").replace(/[&<>"']/g, char
 function initials(name) { return String(name || "สินค้า").trim().slice(0, 2).toUpperCase(); }
 function money(value) { return Number(value || 0).toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 function productSearchText(product) { return `${product.name || ""} ${product.id || ""} ${product.barcode || ""} ${product.category || ""}`.toLowerCase(); }
+function restoreImageFallback(container) {
+  container.replaceChildren(document.createTextNode(initials(container.dataset.productName)));
+  container.dataset.imageState = "fallback";
+}
 function activeProducts() { return products.filter(item => item.showOnPos !== false); }
 function rawCategories() { return [...new Set(activeProducts().map(item => item.category || "ทั่วไป"))]; }
 function orderedTabIds() {
@@ -109,14 +113,14 @@ async function hydrateVisibleImages() {
     let url = "";
     if (container.dataset.imageKey) url = await getProductImageUrl(container.dataset.imageKey);
     if (!url) url = container.dataset.imageUrl || "";
-    if (!url) { container.dataset.imageState = "ready"; continue; }
+    if (!url) { restoreImageFallback(container); continue; }
     const image = document.createElement("img");
     image.src = url;
     image.alt = container.dataset.productName || "สินค้า";
     image.loading = "lazy";
     image.decoding = "async";
     image.onload = () => { container.dataset.imageState = "ready"; };
-    image.onerror = () => { container.dataset.imageState = "ready"; };
+    image.onerror = () => { restoreImageFallback(container); };
     container.textContent = "";
     container.appendChild(image);
   }
