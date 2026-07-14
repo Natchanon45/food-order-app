@@ -2,13 +2,13 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.60
-Build: 2026.07.15.003
-Milestone: Validation Feedback Under Fields
+Version: 0.14.61
+Build: 2026.07.15.004
+Milestone: Validation Text Only
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
-Bootstrap form validation rule: shared web form entry points should import `/assets/js/form-validation-ui.js` so inputs, selects, and textareas use Bootstrap-style validation states consistently across Order/Delivery, Admin, Register, and Retail POS. Required or native-invalid fields show red only after touch or submit, valid filled fields show green, and optional blank fields stay neutral. Invalid shared fields must show red feedback text directly under the field, and shared forms should suppress native browser validation bubbles. The validation layer must not add icons or emoji and must skip printable receipt/tax document surfaces. This presentation layer must not change tenant data, order data, VAT, payments, stock, offline sync, duplicate protection, or tax invoice transactions.
+Form validation text-only rule: shared web form entry points should import `/assets/js/form-validation-ui.js` so inputs, selects, and textareas show consistent inline validation copy across Order/Delivery, Admin, Register, and Retail POS. Required or native-invalid fields show only red feedback text directly under the field after touch or submit, valid fields hide feedback without adding green success styling, and optional blank fields stay neutral. The validation layer must suppress native browser validation bubbles and must not change field shape, border, background, shadow, label color, icons, or emoji. Printable receipt/tax document surfaces remain skipped. This presentation layer must not change tenant data, order data, VAT, payments, stock, offline sync, duplicate protection, or tax invoice transactions.
 
 Unified green UI icon rule: Order/Delivery and Retail POS web UI surfaces should use the shared green, black, and white visual language for app headers, panels, cards, inputs, and primary actions. Main headings and actionable buttons may include one appropriate Bootstrap Icon, but the UI must not render adjacent duplicate icons in a button/card, must not use emoji, and must not inject or display icons inside printable bill, receipt, return receipt, or tax invoice headers. This rule is presentation-only and must not change tenant data, order data, VAT, payments, stock, offline sync, duplicate protection, or tax invoice transactions.
 

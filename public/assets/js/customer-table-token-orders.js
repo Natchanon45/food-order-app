@@ -2,7 +2,7 @@ import { usingDemoMode } from './data-service.js';
 import { db, collection, onSnapshot, query, where } from './firebase-config.js?v=20260630-073';
 import { demoStore } from './demo-store.js';
 import { shopCollectionPath, resolveShopContext } from './tenant-context.js';
-import { money, formatTime, getTableCode } from './ui.js?v=20260715-003';
+import { money, formatTime, getTableCode } from './ui.js?v=20260715-004';
 
 const token = new URLSearchParams(location.search).get('token') || '';
 const tableCode = getTableCode();

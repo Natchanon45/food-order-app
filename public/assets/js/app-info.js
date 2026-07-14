@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.60',
-  build: '2026.07.15.003',
+  version: '0.14.61',
+  build: '2026.07.15.004',
   branch: 'feature/retail-pos',
-  commit: 'VALIDATION-FEEDBACK-01460',
+  commit: 'VALIDATION-TEXT-ONLY-01461',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Validation Feedback Under Fields',
-  updatedAt: '2026-07-15T02:55:00+07:00',
+  milestone: 'Validation Text Only',
+  updatedAt: '2026-07-15T03:25:00+07:00',
   whatsNew: [
-    'Show validation messages directly under invalid inputs, selects, and textareas in red across shared web forms',
-    'Disable native browser validation bubbles for shared forms so users see consistent inline feedback',
-    'Keep valid filled fields green, invalid fields red, optional empty fields neutral, and printable receipt/tax documents excluded',
+    'Show validation messages as red inline text directly under invalid inputs, selects, and textareas',
+    'Keep the original field shape, border, background, shadow, and label color unchanged during validation',
+    'Disable native browser validation bubbles for shared forms while keeping printable receipt/tax documents excluded',
     'Keep VAT, stock, payment, offline sync, tenant data, duplicate protection, and tax invoice transactions unchanged'
   ]
 };

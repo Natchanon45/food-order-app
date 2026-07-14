@@ -7,6 +7,7 @@ const CONTROL_SELECTOR = [
   "textarea"
 ].join(",");
 const SKIP_SELECTOR = [
+  "#registerForm",
   "[data-skip-validation-ui]",
   "[data-no-validation-ui]",
   ".receipt",
@@ -26,17 +27,8 @@ function ensureStyles() {
   const style = document.createElement("style");
   style.id = STYLE_ID;
   style.textContent = `
-    :root{--bs-form-valid:#198754;--bs-form-valid-bg:#f4fbf7;--bs-form-invalid:#dc3545;--bs-form-invalid-bg:#fff5f6;--bs-form-neutral:#d8e2dc}
-    input.is-valid,select.is-valid,textarea.is-valid,.input.is-valid,.form-control.is-valid,.form-select.is-valid{border-color:var(--bs-form-valid)!important;background-color:var(--bs-form-valid-bg)!important;box-shadow:0 0 0 .18rem rgba(25,135,84,.12)!important}
-    input.is-invalid,select.is-invalid,textarea.is-invalid,.input.is-invalid,.form-control.is-invalid,.form-select.is-invalid{border-color:var(--bs-form-invalid)!important;background-color:var(--bs-form-invalid-bg)!important;box-shadow:0 0 0 .18rem rgba(220,53,69,.12)!important}
-    input.is-valid:focus,select.is-valid:focus,textarea.is-valid:focus,.input.is-valid:focus,.form-control.is-valid:focus,.form-select.is-valid:focus{border-color:var(--bs-form-valid)!important;box-shadow:0 0 0 .24rem rgba(25,135,84,.18)!important}
-    input.is-invalid:focus,select.is-invalid:focus,textarea.is-invalid:focus,.input.is-invalid:focus,.form-control.is-invalid:focus,.form-select.is-invalid:focus{border-color:var(--bs-form-invalid)!important;box-shadow:0 0 0 .24rem rgba(220,53,69,.18)!important}
-    input[type="checkbox"].is-valid,input[type="radio"].is-valid{accent-color:var(--bs-form-valid);box-shadow:0 0 0 .16rem rgba(25,135,84,.12)!important}
-    input[type="checkbox"].is-invalid,input[type="radio"].is-invalid{accent-color:var(--bs-form-invalid);box-shadow:0 0 0 .16rem rgba(220,53,69,.12)!important}
-    label:has(> input.is-valid),label:has(> select.is-valid),label:has(> textarea.is-valid){color:#0f5132}
-    label:has(> input.is-invalid),label:has(> select.is-invalid),label:has(> textarea.is-invalid){color:#842029}
-    .was-validated input:invalid,.was-validated select:invalid,.was-validated textarea:invalid{border-color:var(--bs-form-invalid)!important;background-color:var(--bs-form-invalid-bg)!important}
-    .${FEEDBACK_CLASS}{display:none;margin:6px 0 0;color:var(--bs-form-invalid)!important;font-size:12px;font-weight:500;line-height:1.35}
+    :root{--bs-form-invalid:#dc3545}
+    .${FEEDBACK_CLASS}{display:none;width:100%;margin:6px 0 0;color:var(--bs-form-invalid)!important;font-size:12px;font-weight:500;line-height:1.35}
     .${FEEDBACK_CLASS}.show{display:block}
   `;
   document.head.appendChild(style);
@@ -71,6 +63,7 @@ function shouldValidate(control) {
 
 function clearState(control) {
   control.classList.remove("is-valid", "is-invalid");
+  delete control.dataset.validationState;
 }
 
 function validationMessage(control) {
@@ -112,8 +105,7 @@ function feedbackForControl(control) {
   feedback.id = `validation-feedback-${Math.random().toString(36).slice(2, 10)}`;
   feedback.setAttribute("role", "alert");
   feedback.setAttribute("aria-live", "polite");
-  if (control.closest("label")) control.insertAdjacentElement("afterend", feedback);
-  else host.insertAdjacentElement("afterend", feedback);
+  control.insertAdjacentElement("afterend", feedback);
   control.dataset.validationFeedbackId = feedback.id;
   const describedBy = new Set(String(control.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean));
   describedBy.add(feedback.id);
@@ -135,9 +127,9 @@ function updateControl(control, options = {}) {
   setFeedback(control);
   if (!shouldShowValidation(control, force)) return;
   if (!shouldValidate(control)) return;
-  if (control.checkValidity()) control.classList.add("is-valid");
+  if (control.checkValidity()) control.dataset.validationState = "valid";
   else {
-    control.classList.add("is-invalid");
+    control.dataset.validationState = "invalid";
     setFeedback(control, validationMessage(control));
   }
 }

@@ -1,17 +1,17 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Validation Feedback Under Fields
-Version: 0.14.60
-Build: 2026.07.15.003
+Milestone: Validation Text Only
+Version: 0.14.61
+Build: 2026.07.15.004
 
-Change: Updated the shared Bootstrap-style validation UI so invalid fields show red feedback text directly under the input/select/textarea instead of relying on the browser's native floating validation bubble. Required or invalid fields still turn red after touch or submit, valid filled fields turn green, optional empty fields stay neutral, and printable receipt/tax document surfaces are excluded. The touched entry assets are cache-busted to `20260715-003`. This is presentation-only and preserves tenant data, orders, VAT, payments, stock, offline sync, duplicate protection, and tax invoice create/void transactions.
+Change: Updated the shared validation UI so invalid fields show only red feedback text directly under the input/select/textarea instead of relying on the browser's native floating validation bubble. Validation no longer changes the field shape, border, background, shadow, label color, or green/red success styling, optional empty fields stay neutral, and printable receipt/tax document surfaces are excluded. The touched entry assets are cache-busted to `20260715-004`. This is presentation-only and preserves tenant data, orders, VAT, payments, stock, offline sync, duplicate protection, and tax invoice create/void transactions.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
 Existing PromptPay QR display, tax buyer DBD lookup, tax invoice history/reprint, later full tax invoice issuing from existing receipts, receipt behavior, stock deduction, offline sale sync, POS theme alignment, mobile product card overlay behavior, mobile button layout, payment modal visual tuning, and printable document fonts are unchanged.
 
-Bootstrap validation UI workflow: shared web form entry points import `/assets/js/form-validation-ui.js`. The module binds current and dynamically added inputs, selects, and textareas, using Bootstrap-style `is-valid`, `is-invalid`, and `was-validated` classes without adding icons. It validates required fields and native format rules such as email, pattern, min, max, and minlength after a field is touched or a form is submitted. Invalid fields show red feedback text directly under the field, shared forms suppress native browser validation bubbles, and optional blank fields remain neutral so forms stay calm before the user edits them.
+Validation text-only workflow: shared web form entry points import `/assets/js/form-validation-ui.js`. The module binds current and dynamically added inputs, selects, and textareas, suppresses native browser validation bubbles, and validates required fields plus native format rules such as email, pattern, min, max, and minlength after a field is touched or a form is submitted. Invalid fields show red feedback text directly under the field only; the input/select/textarea styling, shape, border, background, shadow, and label color must remain unchanged, and optional blank fields remain neutral so forms stay calm before the user edits them.
 
 System UI font-weight workflow: `/delivery`, `/order`, and Retail POS pages use the shared Thai UI font stack with lighter weights after the local `Kanit Local` font change. Normal copy stays 400, most controls use 500, prominent UI labels/headings should generally stay at 600, and legacy 700-900 UI requests resolve to SemiBold or are reduced in runtime CSS/JS. Printable paper documents remain excluded from this web UI weight rule.
 

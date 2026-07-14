@@ -1,5 +1,5 @@
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
-import "./form-validation-ui.js?v=20260715-003";
+import "./form-validation-ui.js?v=20260715-004";
 
 export const APP_VERSION = "1.6.17";
 export const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
