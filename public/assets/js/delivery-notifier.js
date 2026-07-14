@@ -1,4 +1,4 @@
-import { money, toast } from "./ui.js?v=20260715-002";
+import { money, toast } from "./ui.js?v=20260715-003";
 import {
   registerPushNotifications,
   restorePushNotifications,

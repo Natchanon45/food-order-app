@@ -19,6 +19,7 @@ const SKIP_SELECTOR = [
   ".document-page",
   ".qr-ticket"
 ].join(",");
+const FEEDBACK_CLASS = "bootstrap-invalid-feedback";
 
 function ensureStyles() {
   if (document.getElementById(STYLE_ID)) return;
@@ -35,6 +36,8 @@ function ensureStyles() {
     label:has(> input.is-valid),label:has(> select.is-valid),label:has(> textarea.is-valid){color:#0f5132}
     label:has(> input.is-invalid),label:has(> select.is-invalid),label:has(> textarea.is-invalid){color:#842029}
     .was-validated input:invalid,.was-validated select:invalid,.was-validated textarea:invalid{border-color:var(--bs-form-invalid)!important;background-color:var(--bs-form-invalid-bg)!important}
+    .${FEEDBACK_CLASS}{display:none;margin:6px 0 0;color:var(--bs-form-invalid)!important;font-size:12px;font-weight:500;line-height:1.35}
+    .${FEEDBACK_CLASS}.show{display:block}
   `;
   document.head.appendChild(style);
 }
@@ -70,14 +73,73 @@ function clearState(control) {
   control.classList.remove("is-valid", "is-invalid");
 }
 
+function validationMessage(control) {
+  const validity = control.validity;
+  if (!validity) return "กรุณาตรวจสอบข้อมูลในช่องนี้";
+  if (validity.valueMissing) return "กรุณากรอกข้อมูลในช่องนี้";
+  if (validity.typeMismatch) {
+    if (control.type === "email") return "กรุณากรอกอีเมลให้ถูกต้อง";
+    if (control.type === "url") return "กรุณากรอก URL ให้ถูกต้อง";
+    return "รูปแบบข้อมูลไม่ถูกต้อง";
+  }
+  if (validity.tooShort) return `กรุณากรอกอย่างน้อย ${control.minLength} ตัวอักษร`;
+  if (validity.tooLong) return `กรุณากรอกไม่เกิน ${control.maxLength} ตัวอักษร`;
+  if (validity.rangeUnderflow) return `กรุณากรอกค่าตั้งแต่ ${control.min} ขึ้นไป`;
+  if (validity.rangeOverflow) return `กรุณากรอกค่าไม่เกิน ${control.max}`;
+  if (validity.stepMismatch) return "กรุณากรอกตัวเลขตามรูปแบบที่กำหนด";
+  if (validity.patternMismatch) return control.title || "รูปแบบข้อมูลไม่ถูกต้อง";
+  if (validity.badInput) return "กรุณากรอกข้อมูลให้ถูกต้อง";
+  return "กรุณาตรวจสอบข้อมูลในช่องนี้";
+}
+
+function feedbackHost(control) {
+  if (control.closest("#registerForm")) return null;
+  if (control.type === "checkbox" || control.type === "radio") {
+    return control.closest("label") || control.parentElement;
+  }
+  return control.closest("label") || control.parentElement;
+}
+
+function feedbackForControl(control) {
+  const host = feedbackHost(control);
+  if (!host) return null;
+  let feedback = control.dataset.validationFeedbackId
+    ? document.getElementById(control.dataset.validationFeedbackId)
+    : null;
+  if (feedback) return feedback;
+  feedback = document.createElement("div");
+  feedback.className = FEEDBACK_CLASS;
+  feedback.id = `validation-feedback-${Math.random().toString(36).slice(2, 10)}`;
+  feedback.setAttribute("role", "alert");
+  feedback.setAttribute("aria-live", "polite");
+  if (control.closest("label")) control.insertAdjacentElement("afterend", feedback);
+  else host.insertAdjacentElement("afterend", feedback);
+  control.dataset.validationFeedbackId = feedback.id;
+  const describedBy = new Set(String(control.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean));
+  describedBy.add(feedback.id);
+  control.setAttribute("aria-describedby", [...describedBy].join(" "));
+  return feedback;
+}
+
+function setFeedback(control, message = "") {
+  const feedback = feedbackForControl(control);
+  if (!feedback) return;
+  feedback.textContent = message;
+  feedback.classList.toggle("show", Boolean(message));
+}
+
 function updateControl(control, options = {}) {
   if (!isControl(control) || isSkippable(control)) return;
   const force = Boolean(options.force);
   clearState(control);
+  setFeedback(control);
   if (!shouldShowValidation(control, force)) return;
   if (!shouldValidate(control)) return;
   if (control.checkValidity()) control.classList.add("is-valid");
-  else control.classList.add("is-invalid");
+  else {
+    control.classList.add("is-invalid");
+    setFeedback(control, validationMessage(control));
+  }
 }
 
 function markTouched(control) {
@@ -114,6 +176,7 @@ function shouldSkipSubmitValidation(event) {
 function bindForm(form) {
   if (!form || form.dataset[FORM_BOUND_KEY] === "1" || form.closest(SKIP_SELECTOR)) return;
   form.dataset[FORM_BOUND_KEY] = "1";
+  form.noValidate = true;
   form.addEventListener("submit", event => {
     if (shouldSkipSubmitValidation(event)) return;
     form.classList.add("was-validated");

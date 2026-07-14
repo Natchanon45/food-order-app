@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.59',
-  build: '2026.07.15.002',
+  version: '0.14.60',
+  build: '2026.07.15.003',
   branch: 'feature/retail-pos',
-  commit: 'BOOTSTRAP-FORM-VALIDATION-01459',
+  commit: 'VALIDATION-FEEDBACK-01460',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Bootstrap Form Validation UI',
-  updatedAt: '2026-07-15T02:10:00+07:00',
+  milestone: 'Validation Feedback Under Fields',
+  updatedAt: '2026-07-15T02:55:00+07:00',
   whatsNew: [
-    'Add shared Bootstrap-style validation UI for inputs, selects, and textareas across Order/Delivery, Admin, Register, and Retail POS pages',
-    'Show required or invalid fields in red after touch or submit, and show valid filled fields in green',
-    'Keep optional empty fields neutral and exclude printable receipt/tax document surfaces from validation styling',
+    'Show validation messages directly under invalid inputs, selects, and textareas in red across shared web forms',
+    'Disable native browser validation bubbles for shared forms so users see consistent inline feedback',
+    'Keep valid filled fields green, invalid fields red, optional empty fields neutral, and printable receipt/tax documents excluded',
     'Keep VAT, stock, payment, offline sync, tenant data, duplicate protection, and tax invoice transactions unchanged'
   ]
 };

@@ -1,4 +1,4 @@
-import {hasPermission} from "./retail-pos-navigation.js?v=20260715-002";
+import {hasPermission} from "./retail-pos-navigation.js?v=20260715-003";
 
 const P={
   shiftOpen:"pos.shifts.open",shiftClose:"pos.shifts.close",shiftAmount:"pos.shifts.view_amount",shiftHistory:"pos.shifts.view_history",shiftClear:"pos.shifts.clear_history",

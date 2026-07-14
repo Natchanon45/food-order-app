@@ -1,7 +1,7 @@
 import { app, auth, db, doc, setDoc, serverTimestamp } from "./firebase-config.js?v=20260630-073";
 import { getUserProfile, waitForAuth } from "./auth-service.js";
 import { resolveTenantContext } from "./tenant-context.js";
-import { toast } from "./ui.js?v=20260715-002";
+import { toast } from "./ui.js?v=20260715-003";
 import {
   getMessaging, getToken, isSupported, onMessage
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-messaging.js";
