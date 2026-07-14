@@ -1,4 +1,4 @@
-import {MENU_GROUPS,ACTION_GROUPS,getRoles,getCurrentUser,getCurrentRole} from "./retail-pos-navigation.js?v=20260713-003";
+import {MENU_GROUPS,ACTION_GROUPS,getRoles,getCurrentUser,getCurrentRole} from "./retail-pos-navigation.js?v=20260715-002";
 import {createPasswordRecord} from "./retail-pos-auth.js?v=20260704-004";
 import {db,functions,httpsCallable,collection,getDocs,query,where} from "./firebase-config.js?v=20260704-003";
 import {RetailCollections,listRecords,saveRecord,deleteRecord,getRecord,getTenantId} from "./retail-db.js?v=20260629-032";

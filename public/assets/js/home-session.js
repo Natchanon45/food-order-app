@@ -1,4 +1,4 @@
-import { waitForAuth, getUserProfile, mountUserMenu, STAFF_ROLES } from "./auth-service.js?v=20260713-005";
+import { waitForAuth, getUserProfile, mountUserMenu, STAFF_ROLES } from "./auth-service.js?v=20260715-002";
 
 const dashboard = document.querySelector("#staffDashboard");
 const user = await waitForAuth();

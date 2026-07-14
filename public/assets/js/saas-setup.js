@@ -1,6 +1,6 @@
 import "./sweet-dialog.js?v=20260629-048";
 import { inspectLegacyData, migrateLegacyStore } from "./saas-migration-service.js?v=20260621-2";
-import { toast } from "./ui.js?v=20260713-003";
+import { toast } from "./ui.js?v=20260715-002";
 
 if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
   const link = document.createElement("link");

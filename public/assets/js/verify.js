@@ -18,7 +18,7 @@ if (tenantSlug) {
 
 const [{ dataService }, { money, formatTime, statusLabel }] = await Promise.all([
   import("./data-service.js"),
-  import("./ui.js?v=20260713-003")
+  import("./ui.js?v=20260715-002")
 ]);
 
 function paymentText(order) {

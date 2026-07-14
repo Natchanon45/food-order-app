@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.58',
-  build: '2026.07.15.001',
+  version: '0.14.59',
+  build: '2026.07.15.002',
   branch: 'feature/retail-pos',
-  commit: 'TAX-ICONS-POS-IMAGE-FALLBACK-01458',
+  commit: 'BOOTSTRAP-FORM-VALIDATION-01459',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Tax Icons and POS Image Fallback',
-  updatedAt: '2026-07-15T01:45:00+07:00',
+  milestone: 'Bootstrap Form Validation UI',
+  updatedAt: '2026-07-15T02:10:00+07:00',
   whatsNew: [
-    'Load Bootstrap Icons on the POS tax invoice history page so headings and action buttons show icons again',
-    'Restore POS product card fallback display when product image URLs fail or invalid image fields are encountered',
-    'Refresh POS cache versions for the product image renderer and app metadata chain',
-    'Keep VAT, stock, payment, offline sync, and tax invoice data behavior unchanged'
+    'Add shared Bootstrap-style validation UI for inputs, selects, and textareas across Order/Delivery, Admin, Register, and Retail POS pages',
+    'Show required or invalid fields in red after touch or submit, and show valid filled fields in green',
+    'Keep optional empty fields neutral and exclude printable receipt/tax document surfaces from validation styling',
+    'Keep VAT, stock, payment, offline sync, tenant data, duplicate protection, and tax invoice transactions unchanged'
   ]
 };
 

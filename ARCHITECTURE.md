@@ -2,11 +2,13 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.58
-Build: 2026.07.15.001
-Milestone: Tax Icons and POS Image Fallback
+Version: 0.14.59
+Build: 2026.07.15.002
+Milestone: Bootstrap Form Validation UI
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
+
+Bootstrap form validation rule: shared web form entry points should import `/assets/js/form-validation-ui.js` so inputs, selects, and textareas use Bootstrap-style validation states consistently across Order/Delivery, Admin, Register, and Retail POS. Required or native-invalid fields show red only after touch or submit, valid filled fields show green, and optional blank fields stay neutral. The validation layer must not add icons or emoji, must not inject extra visible error text, and must skip printable receipt/tax document surfaces. This presentation layer must not change tenant data, order data, VAT, payments, stock, offline sync, duplicate protection, or tax invoice transactions.
 
 Unified green UI icon rule: Order/Delivery and Retail POS web UI surfaces should use the shared green, black, and white visual language for app headers, panels, cards, inputs, and primary actions. Main headings and actionable buttons may include one appropriate Bootstrap Icon, but the UI must not render adjacent duplicate icons in a button/card, must not use emoji, and must not inject or display icons inside printable bill, receipt, return receipt, or tax invoice headers. This rule is presentation-only and must not change tenant data, order data, VAT, payments, stock, offline sync, duplicate protection, or tax invoice transactions.
 

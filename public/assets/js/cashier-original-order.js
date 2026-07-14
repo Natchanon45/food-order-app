@@ -1,5 +1,5 @@
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
-import { toast } from "./ui.js?v=20260713-003";
+import { toast } from "./ui.js?v=20260715-002";
 import { getStoredTenant } from "./tenant-context.js";
 
 function textAfterLabel(container, label) {
