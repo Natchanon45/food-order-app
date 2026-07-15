@@ -148,6 +148,37 @@ function renderImportSummary() {
   `;
 }
 
+function previewStatusCounts(rows) {
+  const counts = { all: rows.length, importable: 0, ready: 0, existing: 0, draft: 0 };
+  for (const item of rows) {
+    const isReady = item.catalogStatus === 'published';
+    if (!isReady) {
+      counts.draft += 1;
+      continue;
+    }
+    counts.ready += 1;
+    const exists = isExisting(item);
+    if (exists) counts.existing += 1;
+    if (!els.skipExisting.checked || !exists) counts.importable += 1;
+  }
+  return counts;
+}
+
+function renderStatusFilterOptions(rows) {
+  const currentValue = els.catalogStatusFilter.value || 'all';
+  const counts = previewStatusCounts(rows);
+  const options = [
+    ['all', 'ทุกสถานะ', counts.all],
+    ['importable', 'นำเข้าได้ตอนนี้', counts.importable],
+    ['ready', 'พร้อมนำเข้า', counts.ready],
+    ['existing', 'มีในร้านแล้ว', counts.existing],
+    ['draft', 'รอตรวจสอบ', counts.draft]
+  ];
+  els.catalogStatusFilter.innerHTML = options.map(([value, label, count]) => (
+    `<option value="${value}" ${value === currentValue ? 'selected' : ''}>${label} (${count.toLocaleString('th-TH')})</option>`
+  )).join('');
+}
+
 function barcodeCell(item) {
   return item.barcode ? `<span class="pill">${escapeHtml(item.barcode)}</span>` : '<span class="pill muted">รอตรวจสอบ</span>';
 }
@@ -184,6 +215,7 @@ function sourceCell(item) {
 
 function renderPreview() {
   const rows = selectedProducts();
+  renderStatusFilterOptions(rows);
   const filteredRows = previewRows(rows);
   const published = rows.filter(item => item.catalogStatus === 'published').length;
   const importable = importBreakdown().importable;

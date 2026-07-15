@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Catalog Import Category Shortcuts
-Version: 0.14.73
-Build: 2026.07.15.016
+Milestone: Catalog Preview Filter Counts
+Version: 0.14.74
+Build: 2026.07.15.017
 
-Change: Added `/pos/catalog` category selection shortcuts for faster Retail Master Catalog review. Owners can choose all categories, only categories with verified ready rows, or clear the selection before importing, and the skip-existing toggle now refreshes preview/importable counts immediately. Catalog CSS/JS are cache-busted to `20260715-016`; this is category-selection UI only and does not alter import payloads, tenant product data, stock, VAT, payments, offline sale sync, duplicate protection, or tax invoice transactions.
+Change: Added live preview status counts to `/pos/catalog` so the status dropdown shows how many selected rows are in `ทุกสถานะ`, `นำเข้าได้ตอนนี้`, `พร้อมนำเข้า`, `มีในร้านแล้ว`, and `รอตรวจสอบ`. Counts refresh when owners change category shortcuts or toggle `ข้าม SKU ที่มีอยู่แล้ว`. Catalog CSS/JS are cache-busted to `20260715-017`; this is preview/filter UI only and does not alter import payloads, tenant product data, stock, VAT, payments, offline sale sync, duplicate protection, or tax invoice transactions.
+
+Previous build note: Catalog Import Category Shortcuts from build `2026.07.15.016` remains unchanged for selecting all categories, ready categories only, clearing the selection, and refreshing importable counts from the skip-existing toggle.
 
 Previous build note: Catalog Import Review Reasons from build `2026.07.15.015` remains unchanged for preview status explanations.
 

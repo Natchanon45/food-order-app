@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.73
-Build: 2026.07.15.016
-Milestone: Catalog Import Category Shortcuts
+Version: 0.14.74
+Build: 2026.07.15.017
+Milestone: Catalog Preview Filter Counts
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -17,6 +17,8 @@ Retail catalog import confirmation rule: before `/pos/catalog` writes imported p
 Retail catalog review reason rule: `/pos/catalog` may show display-only reason text below each preview status badge so owners understand why a catalog row is ready, skipped as already existing, or waiting for verification. Reason text must be derived from already-loaded catalog fields and tenant product keys only and must not write catalog data, product data, stock, sales, VAT, offline sync, duplicate-protection state, or tax invoice data.
 
 Retail catalog category shortcut rule: `/pos/catalog` may provide client-side category selection shortcuts such as select all, select categories with ready rows, and clear selection. These shortcuts may update selected category IDs, readiness counts, preview rows, and the import button state, but must not bypass the published-only import rule, duplicate skip rule, tenant product write path, stock values, stock movements, sales, offline sync, VAT, or tax invoice data.
+
+Retail catalog preview count rule: `/pos/catalog` may show live row counts inside the preview status dropdown for all selected rows, importable rows, ready rows, existing rows, and draft/review rows. These counts must be derived from the selected categories, loaded tenant product keys, catalog row status, and the duplicate skip toggle only. They may guide filtering and preview review, but must not create a separate import path, bypass published-only import, mutate duplicate skip behavior, write tenant products, or alter stock, sales, VAT, payments, offline sync, duplicate protection, or tax invoice data.
 
 POS offline sync remote reconcile rule: before retrying queued local POS sales, the offline sync worker should read `tenants/{tenantId}/sales/{saleId}` for each local queued sale that still lacks a valid synced flag. If the remote sale exists for the current tenant, the local row must be marked `syncStatus: "synced"` with `firebaseSyncedAt`, `offlineSyncHash`, `syncHashVersion`, and clean queue metadata, and the worker must not rewrite the sale, sale items, stock movements, product stock, or daily summary. This protects duplicate bills and duplicate stock cuts when a previous sync wrote Firestore successfully but the browser did not finish marking localStorage.
 
