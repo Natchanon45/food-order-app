@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Colorful Home Menu Icons
-Version: 0.14.67
-Build: 2026.07.15.010
+Milestone: Unified Icon Color System
+Version: 0.14.68
+Build: 2026.07.15.011
 
-Change: Added color-coded icon chips to the central staff dashboard menu cards for Order/Delivery and Retail POS, plus matching color accents in the user menu, so the system entry points are easier to remember. The home dashboard stylesheet and Developer Panel cache chain are cache-busted to `20260715-010`. The overall theme remains green, black, and white; no adjacent duplicate icons or emoji are introduced; printable receipt and tax invoice headers remain text-only; and tenant product data, stock, VAT, payments, offline sale sync, duplicate protection, and tax invoice transactions are unchanged.
+Change: Unified shared icon colors across Order/Delivery, Admin, table QR, staff user menus, and Retail POS entry surfaces. User menu icons now share the same color-coded chip mapping on every authenticated page, Admin heading icons injected by `admin-icon-polish.js` use the same visual language, and shared icon assets are cache-busted to `20260715-011`. The overall theme remains green, black, and white; no adjacent duplicate icons or emoji are introduced; printable receipt and tax invoice headers remain text-only; and tenant product data, stock, VAT, payments, offline sale sync, duplicate protection, and tax invoice transactions are unchanged.
+
+Previous build note: Colorful Home Menu Icons from build `2026.07.15.010` remains unchanged for the central `/` staff dashboard cards.
 
 Previous build note: Colorful Menu Icons from build `2026.07.15.009` remains unchanged for Retail POS drawer menu groups/menu links and primary Order/Delivery heading icons.
 

@@ -183,7 +183,7 @@ body[data-roles="cashier"] .order-actions .btn span {
   aspect-ratio: auto !important;
   white-space: nowrap;
 }
-.user-menu-avatar { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: #e8f3ec; color: var(--green-dark); }
+.user-menu-avatar { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: #d1fae5; color: #047857; }
 .user-menu-avatar .app-icon { width: 18px; height: 18px; }
 .user-menu-avatar i.app-icon { font-size: 18px; }
 .user-menu-trigger .user-menu-chevron { width: 16px; height: 16px; transition: transform .18s ease; }
@@ -216,9 +216,27 @@ body[data-roles="cashier"] .order-actions .btn span {
 .user-menu-link:hover, .user-menu-action:hover { background: #f1f5f2; }
 .user-menu-action.danger { color: var(--danger); }
 .user-menu-action .app-icon,
-.user-menu-link .app-icon { width: 20px; height: 20px; }
+.user-menu-link .app-icon {
+  --app-menu-icon-fg: #0d6f34;
+  --app-menu-icon-bg: #e8f3ec;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--app-menu-icon-bg);
+  color: var(--app-menu-icon-fg);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.5);
+}
 .user-menu-action i.app-icon,
-.user-menu-link i.app-icon { font-size: 20px; }
+.user-menu-link i.app-icon { font-size: 17px; line-height: 1; }
+.user-menu-link[href="/"] .app-icon { --app-menu-icon-bg: #d1fae5; --app-menu-icon-fg: #047857; }
+.user-menu-link[href="/cashier/table-qr"] .app-icon { --app-menu-icon-bg: #e0f2fe; --app-menu-icon-fg: #0369a1; }
+.user-menu-link[href="/admin"] .app-icon { --app-menu-icon-bg: #cffafe; --app-menu-icon-fg: #0e7490; }
+.user-menu-link[href="/admin/users"] .app-icon { --app-menu-icon-bg: #ede9fe; --app-menu-icon-fg: #6d28d9; }
+.user-menu-link[data-menu-action="change-password"] .app-icon { --app-menu-icon-bg: #fef3c7; --app-menu-icon-fg: #b45309; }
+.user-menu-action.danger .app-icon { --app-menu-icon-bg: #ffe4e6; --app-menu-icon-fg: #dc2626; }
 .user-menu-link span,
 .user-menu-action span { display: inline !important; }
 

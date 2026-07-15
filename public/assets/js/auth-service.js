@@ -60,7 +60,7 @@ function ensureIconStyles() {
   if (!document.querySelector('link[href^="/assets/css/icons.css"]')) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "/assets/css/icons.css?v=20260715-009";
+    link.href = "/assets/css/icons.css?v=20260715-011";
     document.head.appendChild(link);
   }
 }

@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.67
-Build: 2026.07.15.010
-Milestone: Colorful Home Menu Icons
+Version: 0.14.68
+Build: 2026.07.15.011
+Milestone: Unified Icon Color System
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -21,6 +21,8 @@ Form validation text-only rule: shared web form entry points should import `/ass
 Unified green UI icon rule: Order/Delivery and Retail POS web UI surfaces should use the shared green, black, and white visual language for app headers, panels, cards, inputs, and primary actions. Main headings and actionable buttons may include one appropriate Bootstrap Icon, but the UI must not render adjacent duplicate icons in a button/card, must not use emoji, and must not inject or display icons inside printable bill, receipt, return receipt, or tax invoice headers. This rule is presentation-only and must not change tenant data, order data, VAT, payments, stock, offline sync, duplicate protection, or tax invoice transactions.
 
 Central dashboard icon rule: the signed-in `/` staff dashboard may use color-coded Bootstrap Icon chips for Order/Delivery and Retail POS entry cards plus the user menu to improve recognition. Icon color is presentation-only and must stay within the green/black/white layout system, must not add adjacent duplicate icons, must not use emoji, and must not affect role permissions, routing, tenant data, order data, VAT, payments, stock, offline sync, duplicate protection, or tax invoice transactions.
+
+Shared icon color rule: authenticated user menus and Admin heading icons must use the shared color token mapping from `/assets/css/icons.css` and `admin-icon-polish.js` instead of page-local all-green or black-only overrides. The visual treatment is presentation-only, must keep one icon per menu row/button, must not add emoji, and must not alter role permissions, routing, tenant data, order data, VAT, payments, stock, offline sync, duplicate protection, or printable document headers.
 
 Delivery fee options rule: store settings may include `deliveryFeeOptions`, an ordered list of tenant-scoped delivery choices with stable `id`, display `label`, and non-negative `fee`. Admin users can add, remove, rename, and price these options from `/admin`; the editor keeps the plus-icon add action in the card header, uses placeholder examples instead of a visible option-name caption, aligns row number badges with inputs, and uses red X icon buttons for row removal. The public `/delivery` page must render these labels and fees in the customer dropdown, apply the selected fee to totals, and persist `deliveryZone`, `deliveryZoneLabel`, and `deliveryFee` on the order. Legacy `deliveryFeeNearby`, `deliveryFeeGeneral`, and `deliveryFeeFar` values remain fallback-compatible when no custom option list exists.
 

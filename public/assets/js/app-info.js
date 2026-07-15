@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.67',
-  build: '2026.07.15.010',
+  version: '0.14.68',
+  build: '2026.07.15.011',
   branch: 'feature/retail-pos',
-  commit: 'COLORFUL-HOME-MENU-ICONS-01467',
+  commit: 'UNIFIED-ICON-COLORS-01468',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Colorful Home Menu Icons',
-  updatedAt: '2026-07-15T18:58:00+07:00',
+  milestone: 'Unified Icon Color System',
+  updatedAt: '2026-07-15T19:26:00+07:00',
   whatsNew: [
-    'Add color-coded icon chips to the central Order/Delivery and Retail POS dashboard menu cards',
-    'Add matching color accents to the central user menu icons for faster recognition',
-    'Keep the overall green, black, and white theme while avoiding adjacent duplicate icons',
-    'Keep tenant product data, stock, VAT, payments, offline sync, and duplicate protection unchanged'
+    'Unify user menu icon colors across Order/Delivery, Admin, and Retail POS entry pages',
+    'Apply the same colored icon language to Admin heading icons injected by the shared icon polish script',
+    'Cache-bust shared icon assets so table QR, admin, user, sales report, and POS pages load the same icon color rules',
+    'Keep tenant data, stock, VAT, payments, offline sync, duplicate protection, and printable document headers unchanged'
   ]
 };
 
