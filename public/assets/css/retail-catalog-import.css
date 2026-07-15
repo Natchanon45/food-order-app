@@ -25,6 +25,19 @@
 .category-card.has-ready small{color:#0b6b3d;font-weight:700}
 .category-icon{width:44px;height:44px;min-width:44px;border-radius:16px;background:#eef8f1;color:#0b6b3d;display:grid;place-items:center}
 .category-icon .bi{font-size:24px;line-height:1}
+.catalog-import-summary{display:grid;grid-template-columns:minmax(220px,1fr) minmax(0,1.7fr);gap:14px;align-items:stretch;margin:16px 0 10px;padding:14px;border:1px solid #d7e8dd;border-radius:22px;background:linear-gradient(135deg,#f8fcf9,#fff);box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}
+.summary-copy{display:flex;flex-direction:column;justify-content:center;gap:5px;padding:6px 4px;color:#0f2f20}
+.summary-copy strong{font-size:15px;line-height:1.45;font-weight:600}
+.summary-copy span{color:#64748b;font-size:12px;line-height:1.45}
+.summary-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.summary-metrics span{display:flex;min-width:0;flex-direction:column;gap:4px;border:1px solid #dbe7df;border-radius:16px;background:#fff;padding:11px 12px}
+.summary-metrics small{color:#64748b;font-size:11px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.summary-metrics strong{color:#10291d;font-size:20px;font-weight:600;line-height:1}
+.summary-metrics .ready{border-color:#9bd4ac;background:#f4fbf6}
+.summary-metrics .ready strong{color:#0b6b3d}
+.summary-metrics .warning{border-color:#f4d597;background:#fffaf0}
+.summary-metrics .warning strong{color:#8a5a00}
+.summary-metrics .muted{background:#f8faf9}
 .catalog-panel{min-width:0;background:#fff;border:1px solid #dbe7df;border-radius:26px;padding:20px;margin-top:18px;box-shadow:0 8px 24px rgba(30,60,45,.06);overflow:hidden}
 .panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
 .panel-head h2{margin:0;font-size:20px}
@@ -62,5 +75,5 @@
 .catalog-dialog-actions .btn{border-radius:14px;padding:12px 16px;font-weight:800}
 .catalog-dialog-actions .primary{border:0;background:#159447;color:#fff}
 .catalog-dialog-actions .secondary{background:#fff;color:#334155;border:1px solid #cbd5e1}
-@media(max-width:900px){.catalog-hero{grid-template-columns:1fr}.catalog-actions{justify-content:flex-start}.catalog-stats,.catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.catalog-shell{padding:16px 12px 32px}.catalog-hero{padding:22px;border-radius:22px}.catalog-stats,.catalog-grid{grid-template-columns:1fr}.panel-head,.excel-preview-head{align-items:stretch;flex-direction:column}.catalog-panel{padding:16px}.catalog-panel .table-wrap{padding-bottom:8px}.catalog-table{font-size:13px}.excel-download,.excel-import-button{width:100%}.excel-dropzone{padding:22px 12px}}
+@media(max-width:900px){.catalog-hero{grid-template-columns:1fr}.catalog-actions{justify-content:flex-start}.catalog-stats,.catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.catalog-import-summary{grid-template-columns:1fr}.summary-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:560px){.catalog-shell{padding:16px 12px 32px}.catalog-hero{padding:22px;border-radius:22px}.catalog-stats,.catalog-grid,.summary-metrics{grid-template-columns:1fr}.panel-head,.excel-preview-head{align-items:stretch;flex-direction:column}.catalog-panel{padding:16px}.catalog-panel .table-wrap{padding-bottom:8px}.catalog-table{font-size:13px}.excel-download,.excel-import-button{width:100%}.excel-dropzone{padding:22px 12px}}

@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Unified Icon Color System
-Version: 0.14.68
-Build: 2026.07.15.011
+Milestone: Catalog Import Readiness UI
+Version: 0.14.69
+Build: 2026.07.15.012
 
-Change: Unified shared icon colors across Order/Delivery, Admin, table QR, staff user menus, and Retail POS entry surfaces. User menu icons now share the same color-coded chip mapping on every authenticated page, Admin heading icons injected by `admin-icon-polish.js` use the same visual language, and shared icon assets are cache-busted to `20260715-011`. The overall theme remains green, black, and white; no adjacent duplicate icons or emoji are introduced; printable receipt and tax invoice headers remain text-only; and tenant product data, stock, VAT, payments, offline sale sync, duplicate protection, and tax invoice transactions are unchanged.
+Change: Improved `/pos/catalog` import readiness visibility for the Retail Master Catalog flow. The category panel now explains selected products, verified ready products, products importable now, products skipped because SKU/barcode already exists in the tenant store, and draft products waiting for verification. The import button also distinguishes "ready products already skipped" from a truly empty ready catalog. Catalog CSS/JS are cache-busted to `20260715-012`, and tenant product data, stock, VAT, payments, offline sale sync, duplicate protection, and tax invoice transactions are unchanged.
+
+Previous build note: Unified Icon Color System from build `2026.07.15.011` remains unchanged across Order/Delivery, Admin, table QR, staff user menus, and Retail POS entry surfaces.
 
 Previous build note: Colorful Home Menu Icons from build `2026.07.15.010` remains unchanged for the central `/` staff dashboard cards.
 

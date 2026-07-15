@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>นำเข้าสินค้าพื้นฐาน</title>
   <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260713-004">
-  <link rel="stylesheet" href="/assets/css/retail-catalog-import.css?v=20260702-028">
+  <link rel="stylesheet" href="/assets/css/retail-catalog-import.css?v=20260715-012">
 </head>
 <body>
   <header class="pos-header">
@@ -40,6 +40,7 @@
         <div class="import-options"><label><input type="checkbox" id="skipExisting" checked> ข้าม SKU ที่มีอยู่แล้ว</label></div>
       </div>
       <div id="categoryGrid" class="catalog-grid"></div>
+      <div id="catalogImportSummary" class="catalog-import-summary" aria-live="polite"></div>
       <div id="importResult" class="result-box"></div>
     </section>
 
@@ -82,7 +83,7 @@
 
   <script src="/assets/vendor/sheetjs/xlsx.full.min.js"></script>
   <script type="module" src="/assets/js/retail-pos-icons.js?v=20260715-009"></script>
-  <script type="module" src="/assets/js/retail-catalog-import.js?v=20260702-028"></script>
+  <script type="module" src="/assets/js/retail-catalog-import.js?v=20260715-012"></script>
   <script type="module" src="/assets/js/retail-catalog-excel-import.js?v=20260702-028"></script>
 </body>
 </html>

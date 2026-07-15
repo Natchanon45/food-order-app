@@ -14,6 +14,7 @@ const els = {
   importButton: document.querySelector('#importButton'),
   previewRows: document.querySelector('#previewRows'),
   previewSummary: document.querySelector('#previewSummary'),
+  catalogImportSummary: document.querySelector('#catalogImportSummary'),
   importResult: document.querySelector('#importResult'),
   skipExisting: document.querySelector('#skipExisting'),
   categoryGrid: document.querySelector('#categoryGrid'),
@@ -96,6 +97,49 @@ function importRows() {
   return rows.filter(item => !isExisting(item, keys));
 }
 
+function importBreakdown() {
+  const rows = selectedProducts();
+  const keys = existingKeys();
+  const readyRows = rows.filter(item => item.catalogStatus === 'published');
+  const existingReadyRows = readyRows.filter(item => isExisting(item, keys));
+  const importableRows = els.skipExisting.checked
+    ? readyRows.filter(item => !isExisting(item, keys))
+    : readyRows;
+  return {
+    selected: rows.length,
+    ready: readyRows.length,
+    importable: importableRows.length,
+    skippedExisting: els.skipExisting.checked ? existingReadyRows.length : 0,
+    draft: rows.length - readyRows.length
+  };
+}
+
+function renderImportSummary() {
+  const summary = importBreakdown();
+  const emptyReason = !validation.valid
+    ? `Catalog ไม่ผ่าน validation: ${validation.errors[0]}`
+    : summary.importable
+      ? 'พร้อมนำเข้าเฉพาะรายการที่ผ่านตรวจ โดยตั้งสต็อกเป็น 0 และยังไม่แสดงบน POS'
+      : summary.ready && summary.skippedExisting
+        ? `มีสินค้า ${summary.ready.toLocaleString('th-TH')} รายการที่พร้อมนำเข้า แต่ถูกข้ามทั้งหมดเพราะมี SKU หรือ Barcode อยู่ในร้านแล้ว`
+        : summary.ready
+          ? 'ยังไม่มีรายการพร้อมนำเข้าหลังตัวกรองปัจจุบัน'
+          : 'หมวดที่เลือกยังมีเฉพาะรายการรอตรวจสอบ จึงยังไม่สามารถนำเข้าได้';
+  els.catalogImportSummary.innerHTML = `
+    <div class="summary-copy">
+      <strong>${escapeHtml(emptyReason)}</strong>
+      <span>ใช้ตัวเลขนี้ตรวจสอบก่อนกดยืนยัน ระบบจะไม่นำเข้าฉบับร่างและไม่แตะสต็อกเดิม</span>
+    </div>
+    <div class="summary-metrics">
+      <span><small>เลือกอยู่</small><strong>${summary.selected.toLocaleString('th-TH')}</strong></span>
+      <span class="ready"><small>พร้อมนำเข้า</small><strong>${summary.ready.toLocaleString('th-TH')}</strong></span>
+      <span class="${summary.importable ? 'ready' : 'muted'}"><small>นำเข้าได้ตอนนี้</small><strong>${summary.importable.toLocaleString('th-TH')}</strong></span>
+      <span class="${summary.skippedExisting ? 'warning' : 'muted'}"><small>ข้ามเพราะมีแล้ว</small><strong>${summary.skippedExisting.toLocaleString('th-TH')}</strong></span>
+      <span class="${summary.draft ? 'warning' : 'muted'}"><small>รอตรวจสอบ</small><strong>${summary.draft.toLocaleString('th-TH')}</strong></span>
+    </div>
+  `;
+}
+
 function barcodeCell(item) {
   return item.barcode ? `<span class="pill">${escapeHtml(item.barcode)}</span>` : '<span class="pill muted">รอตรวจสอบ</span>';
 }
@@ -130,6 +174,7 @@ function renderPreview() {
       <td>${sourceCell(item)}</td>
     </tr>
   `).join('');
+  renderImportSummary();
 }
 
 function renderStats() {
@@ -140,11 +185,15 @@ function renderStats() {
 }
 
 function updateImportButton() {
-  const count = importRows().length;
+  const breakdown = importBreakdown();
+  const count = breakdown.importable;
   els.importButton.disabled = importing || !validation.valid || count === 0;
   els.importButton.textContent = importing ? 'กำลังนำเข้า...' : count
     ? `นำเข้า ${count.toLocaleString('th-TH')} รายการที่ผ่านตรวจ`
-    : 'ไม่มีสินค้าที่พร้อมนำเข้า';
+    : breakdown.ready && breakdown.skippedExisting
+      ? 'พร้อมนำเข้าถูกข้ามทั้งหมด'
+      : 'ไม่มีสินค้าที่พร้อมนำเข้า';
+  renderImportSummary();
 }
 
 function prepareImportProduct(item) {
