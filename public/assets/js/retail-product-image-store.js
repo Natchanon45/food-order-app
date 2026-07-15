@@ -133,6 +133,39 @@ export async function saveProductImage(productId, file) {
   return { imageKey: key, imagePath, imageUrl };
 }
 
+export async function saveProductImageLocalFallback(productId, file) {
+  const key = String(productId || "").trim();
+  if (!key) throw new Error("ไม่พบรหัสสินค้า");
+  const blob = await compressProductImage(file);
+  await saveLocalProductImage(key, blob);
+  return { imageKey: key };
+}
+
+export function isProductImageStorageQuotaError(error) {
+  const text = [
+    error?.code,
+    error?.message,
+    error?.serverResponse,
+    error?.customData?.serverResponse
+  ].filter(Boolean).join(" ").toLowerCase();
+  return text.includes("quota")
+    || text.includes("storage/quota-exceeded")
+    || text.includes("bucket") && text.includes("exceeded");
+}
+
+export function productImageUploadMessage(error) {
+  if (isProductImageStorageQuotaError(error)) {
+    return "พื้นที่ Firebase Storage เต็ม จึงบันทึกรูปไว้ในเครื่องนี้แทน และคง URL รูปเดิมไว้ก่อน";
+  }
+  if (error?.code === "storage/unauthorized") {
+    return "ไม่มีสิทธิ์อัปโหลดรูปสินค้า กรุณาตรวจสอบ Storage rules";
+  }
+  if (error?.code === "storage/canceled") {
+    return "ยกเลิกการอัปโหลดรูปสินค้า";
+  }
+  return "อัปโหลดรูปสินค้าไม่สำเร็จ จึงบันทึกรูปไว้ในเครื่องนี้แทน";
+}
+
 export async function getProductImageUrl(productId) {
   const key = String(productId || "").trim();
   if (!key) return "";

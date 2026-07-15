@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Sync Drain Safe Confirm
-Version: 0.14.64
-Build: 2026.07.15.007
+Milestone: Product Image Storage Fallback
+Version: 0.14.65
+Build: 2026.07.15.008
 
-Change: Fixed Retail POS sync queue persistence by letting the main online checkout flow handle normal payments instead of the legacy safe-confirm fallback intercepting every confirmation click and saving all sales as local pending rows. The offline sync worker also continues draining queued sales in 5-sale batches when more rows remain instead of waiting for another page load. The touched POS sync and safe-confirm assets are cache-busted to `20260715-007`. This preserves tenant data, stable saleId, duplicate protection, stock safety, VAT, payments, and tax invoice create/void transactions.
+Change: Hardened the `/pos/products/` product image editor for Firebase Storage quota or upload failures. If cloud image upload fails while a staff member saves a product, the selected image is compressed and stored in the local IndexedDB product-image fallback, any existing/product image URL remains intact when available, and the product can still be saved with a readable Thai warning instead of a raw Firebase Storage error. The touched product image assets and Developer Panel cache chain are cache-busted to `20260715-008`. This preserves tenant product data, stock, VAT, payments, offline sale sync, duplicate protection, and tax invoice transactions.
+
+Previous build note: POS sync queue persistence from build `2026.07.15.007` remains unchanged. Normal online checkout uses the canonical Firestore transaction flow, while the safe-confirm fallback stays explicit-only.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -16,6 +18,8 @@ Validation text-only workflow: shared web form entry points import `/assets/js/f
 System UI font-weight workflow: `/delivery`, `/order`, and Retail POS pages use the shared Thai UI font stack with lighter weights after the local `Kanit Local` font change. Normal copy stays 400, most controls use 500, prominent UI labels/headings should generally stay at 600, and legacy 700-900 UI requests resolve to SemiBold or are reduced in runtime CSS/JS. Printable paper documents remain excluded from this web UI weight rule.
 
 POS product image fallback workflow: `/pos/` product cards can use local IndexedDB images or product image URLs, but the UI must never leave browser broken-image icons visible on product tiles. If a URL fails or a product image field is not a usable string URL, the card should restore the green initial fallback while keeping product selection, stock, VAT, payment, and offline sync behavior unchanged.
+
+POS product image upload fallback workflow: `/pos/products/` saves product data even when Firebase Storage is over quota or an image upload fails. The selected image is stored locally in IndexedDB for the current POS machine, the previous or entered `imageUrl` remains the cross-device image source when present, and staff see a concise Thai warning instead of the raw Firebase Storage quota message. This fallback must not mutate stock movements, sales, VAT, payments, offline sale sync, duplicate protection, or tax invoice data.
 
 Unified green UI icon workflow: `/delivery`, `/order`, and Retail POS pages use the green/black/white visual system for app headers, hero panels, cards, focused inputs, and primary actions. Main headings and action buttons may show one Bootstrap Icon, but buttons/cards must not render adjacent duplicate icons, printable bill headers must stay text-only, and emoji must not be used in the UI.
 

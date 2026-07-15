@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.64
-Build: 2026.07.15.007
-Milestone: POS Sync Drain Safe Confirm
+Version: 0.14.65
+Build: 2026.07.15.008
+Milestone: Product Image Storage Fallback
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -115,6 +115,8 @@ Theme rule: Retail POS UI screens should stay visually aligned with Order/Delive
 Product card overlay rule: Retail POS image product cards show only product images by default on both desktop and mobile. Desktop may reveal the overlay on hover/focus. Touch devices must keep name, stock, and price hidden by default and only reveal the overlay during active touch, focus, or an explicit `show-info` state. Overlay prices use dark green text while preserving readable contrast on the dark green product overlay.
 
 Product image fallback rule: Retail POS product cards may load images from local IndexedDB (`imageKey`) or product URL fields, but the visible tile must not retain a broken browser image icon when an image fails to load. If no usable string URL exists, or an image load errors, the card must fall back to the green initial tile while preserving the same product selection, stock, VAT, payment, offline sale sync, and duplicate-protection behavior.
+
+Product image upload fallback rule: `/pos/products/` must not block product data saves solely because Firebase Storage is over quota or an image upload fails. The selected image may be compressed and stored in the local IndexedDB product-image fallback for the current POS machine, while the existing or entered `imageUrl` remains the cross-device source when present. The UI should show a concise Thai warning instead of raw Firebase Storage quota text, and this fallback must not mutate stock movements, sales, VAT, payments, offline sale sync, duplicate protection, or tax invoice data.
 
 Mobile button layout rule: on small Retail POS screens, header actions should stay compact and predictable. The menu button may keep a short label, sync status should not expose a long status string in the header, and icon-only actions such as Customer Display should remain fixed-size. Receipt/tax print toolbars should avoid cramped wrapping by placing long actions on their own row and keeping secondary actions evenly sized.
 

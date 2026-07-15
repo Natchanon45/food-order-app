@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords, watchRecords, saveRecord, moveRecord, deleteRecord, migrateLocalArray } from './retail-db.js?v=20260627-3';
-import { deleteProductImage } from './retail-product-image-store.js?v=20260627-2';
+import { deleteProductImage } from './retail-product-image-store.js?v=20260715-008';
 
 const PRODUCT_KEY = "retail_pos_products_v1";
 const MOVEMENT_KEY = "retail_pos_stock_movements_v1";
@@ -315,9 +315,12 @@ async function submitProduct(event) {
       product = await globalThis.retailProductMerchandising.prepareProduct(product);
     }
   } catch (error) {
-    els.productFormError.textContent = error?.message || "อัปโหลดรูปสินค้าไม่สำเร็จ";
+    els.productFormError.textContent = error?.message?.includes("Firebase Storage")
+      ? "อัปโหลดรูปสินค้าไม่สำเร็จ กรุณาตรวจสอบพื้นที่ Firebase Storage หรือใช้ URL รูปเดิมก่อน"
+      : error?.message || "อัปโหลดรูปสินค้าไม่สำเร็จ";
     return;
   }
+  const productImageWarning = globalThis.retailProductMerchandising?.consumeLastWarning?.() || "";
 
   const sourceDocumentId = editingDocumentId || editingId;
   const idChanged = Boolean(editingId && sourceDocumentId !== id);
@@ -345,7 +348,7 @@ async function submitProduct(event) {
   renderProducts();
   renderMovements();
   els.productDialog.close();
-  showToast(editingId ? "แก้ไขสินค้าแล้ว" : "เพิ่มสินค้าแล้ว");
+  showToast(productImageWarning || (editingId ? "แก้ไขสินค้าแล้ว" : "เพิ่มสินค้าแล้ว"));
   if (!idChanged) await saveProductToDb(product);
 }
 
