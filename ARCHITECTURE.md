@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.78
-Build: 2026.07.16.003
-Milestone: POS Receipt Reliability Repair
+Version: 0.14.79
+Build: 2026.07.16.004
+Milestone: Delivery COD Edit Unlock
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -49,6 +49,8 @@ Central dashboard icon rule: the signed-in `/` staff dashboard may use color-cod
 Shared icon color rule: authenticated user menus and Admin heading icons must use the shared color token mapping from `/assets/css/icons.css` and `admin-icon-polish.js` instead of page-local all-green or black-only overrides. The visual treatment is presentation-only, must keep one icon per menu row/button, must not add emoji, and must not alter role permissions, routing, tenant data, order data, VAT, payments, stock, offline sync, duplicate protection, or printable document headers.
 
 Delivery fee options rule: store settings may include `deliveryFeeOptions`, an ordered list of tenant-scoped delivery choices with stable `id`, display `label`, and non-negative `fee`. Admin users can add, remove, rename, and price these options from `/admin`; the editor keeps the plus-icon add action in the card header, uses placeholder examples instead of a visible option-name caption, aligns row number badges with inputs, and uses red X icon buttons for row removal. The public `/delivery` page must render these labels and fees in the customer dropdown, apply the selected fee to totals, and persist `deliveryZone`, `deliveryZoneLabel`, and `deliveryFee` on the order. Legacy `deliveryFeeNearby`, `deliveryFeeGeneral`, and `deliveryFeeFar` values remain fallback-compatible when no custom option list exists.
+
+Delivery payment lock rule: `/delivery` should lock cart editing only for PromptPay / transfer checkout after the customer asks to review/pay, because the QR amount and attached slip must match the locked total. Cash-on-delivery (`cod`) does not need a QR/slip amount lock and must remain editable until the customer presses the final `ยืนยันคำสั่งซื้อ`: adding items, quantity changes, item notes, delivery fee option changes, and payment method changes stay enabled. If a restored session draft contains an old locked state but the selected method is COD, the lock must be discarded before the customer continues.
 
 Font rule: all web UI screens, including standalone POS pages, buttons, forms, dialogs, and Customer Display, use the shared `--app-ui-font` Thai sans/no-head stack with `Kanit Local` loaded from `/assets/fonts/` as the primary UI font. The shared UI weight scale is regular 400, controls/secondary emphasis 500, and prominent UI headings/card labels 600; `Kanit Local` should map 700-900 UI requests to the SemiBold face or reduce runtime CSS/JS hardcoded weights to 500-600 so legacy heavy UI text does not render as ExtraBold/Black. Avoid reintroducing 700-900 weights for normal web UI text unless there is a specific accessibility or legal-document reason. POS UI button text must stay at font-weight 500 or lighter, and form labels/inputs should use normal weight. Printable paper documents such as receipts, tax invoices, QR tickets, invoices, quotations, and print pages use `--paper-font-local` / `--print-font`, with `TH Sarabun PSK Local` loaded from `/assets/fonts/` as the primary paper font and are excluded from the web UI weight cap.
 

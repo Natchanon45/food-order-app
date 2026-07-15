@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Receipt Reliability Repair
-Version: 0.14.78
-Build: 2026.07.16.003
+Milestone: Delivery COD Edit Unlock
+Version: 0.14.79
+Build: 2026.07.16.004
 
-Change: Repaired Retail POS receipt reliability around checkout speed, old sync rows, customer/member display, loyalty points, late full-tax invoice lookup, and sale-history receipt reprints. POS checkout now restores the cashier UI immediately after the sale is saved and opens the receipt popup without blocking the save button. `/pos/receipt` and `/pos/sales` receipt reprint can recover customer/member and loyalty rows from the local customer and loyalty ledger cache when the sale row was saved before those fields were patched. Sale-history receipt reprints also fill shop address, phone, tax ID, and branch from store settings. Offline sync remote reconcile now checks both stable saleId and sale number before retrying an old queued row, protecting duplicate bills and duplicate stock cuts. `/pos/tax-invoices` late full-tax invoice issuing now has a DBD lookup button beside the buyer tax ID field. POS receipt, sales, sync, tax-invoice, and version cache chains are bumped to `20260716-003`.
+Change: Fixed the Delivery cash-on-delivery checkout flow so choosing `เก็บเงินปลายทาง` no longer locks the cart before final confirmation. Customers can still add items, increase/decrease quantities, edit item notes, change the delivery fee option, and switch payment method until they press `ยืนยันคำสั่งซื้อ`. The payment amount lock remains active only for PromptPay / transfer orders, where the QR and slip need a stable amount. Restored Delivery drafts now discard stale payment locks when the method is COD. Delivery payment-lock and version metadata cache chains are bumped to `20260716-004`.
+
+Previous build note: POS Receipt Reliability Repair from build `2026.07.16.003` remains unchanged for POS checkout speed, old sync row reconcile, receipt customer/member recovery, loyalty rows, sale-history shop details, and late full-tax invoice DBD lookup.
 
 Previous build note: POS Receipt Privacy Masking from build `2026.07.16.002` remains unchanged for printed customer/member privacy masking and saved VAT mode rows.
 
