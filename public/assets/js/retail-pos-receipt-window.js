@@ -1,4 +1,5 @@
 import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, getExistingFullTaxInvoiceForSale, syncPendingTaxInvoices, taxInvoiceUrl } from './retail-pos-full-tax-invoice.js?v=20260713-002';
+import { maskReceiptCustomerName, maskReceiptPhone } from './retail-receipt-privacy.js?v=20260716-002';
 
 const SALES_KEY = 'retail_pos_sales_v1';
 const STORE_SETTINGS_KEY = 'retail_pos_store_settings_v1';
@@ -34,19 +35,6 @@ function numberText(value) { return Number(value || 0).toLocaleString('th-TH'); 
 function saleKey(sale) { return String(sale?.id || sale?.saleNumber || '').trim(); }
 function normalizeTaxId(value) { return String(value || '').replace(/\D/g, '').slice(0, 13); }
 function normalizeText(value) { return String(value || '').replace(/\s+/g, ' ').trim(); }
-function maskPhone(phone = '') { const digits = String(phone || '').replace(/\D/g, ''); if (!digits) return ''; if (digits.length < 10) return digits.length <= 2 ? digits : `${digits.slice(0, 2)}***`; return `${digits.slice(0, 3)}-***-**${digits.slice(-2)}`; }
-function firstChars(text, count) { return Array.from(String(text || '')).slice(0, count).join(''); }
-function maskFirstName(name = '') { const chars = Array.from(String(name || '').trim()); if (!chars.length) return ''; return `${chars.slice(0, Math.min(5, chars.length)).join('')}*****`; }
-function maskLastName(name = '') { const chars = Array.from(String(name || '').trim()); if (!chars.length) return ''; return `*****${chars.slice(Math.max(0, chars.length - 3)).join('')}`; }
-function maskName(name = '') {
-  const text = String(name || '').replace(/\s+/g, ' ').trim();
-  if (!text) return '';
-  const parts = text.split(' ').filter(Boolean);
-  if (parts.length >= 2) return `${maskFirstName(parts[0])} ${maskLastName(parts.slice(1).join(' '))}`;
-  const chars = Array.from(text);
-  if (chars.length <= 5) return `${firstChars(text, chars.length)}*****`;
-  return `${firstChars(text, 5)}*****`;
-}
 function taxTitle(sale = {}) { return Number(sale.vatAmount || 0) > 0 || sale.vatRegistered ? 'ใบกำกับภาษีอย่างย่อ / ใบเสร็จรับเงิน' : 'ใบเสร็จรับเงิน'; }
 function settings() {
   const local = readJson(STORE_SETTINGS_KEY, {});
@@ -66,7 +54,7 @@ function customerHtml(sale) {
   const name = sale.customerName || sale.customerDisplayName || '';
   const phone = sale.customerPhone || sale.customerDisplayPhone || '';
   if (!name && !phone && !sale.customerCode) return '';
-  return `<hr class="rule"><div class="row"><span>ลูกค้า</span><strong>${escapeHtml(maskName(name) || '-')}</strong></div>${sale.customerCode ? `<div class="row"><span>สมาชิก</span><span>${escapeHtml(sale.customerCode)}</span></div>` : ''}${phone ? `<div class="row"><span>โทร</span><span>${escapeHtml(maskPhone(phone))}</span></div>` : ''}`;
+  return `<hr class="rule"><div class="row"><span>ลูกค้า</span><strong>${escapeHtml(maskReceiptCustomerName(name) || '-')}</strong></div>${sale.customerCode ? `<div class="row"><span>สมาชิก</span><span>${escapeHtml(sale.customerCode)}</span></div>` : ''}${phone ? `<div class="row"><span>โทร</span><span>${escapeHtml(maskReceiptPhone(phone))}</span></div>` : ''}`;
 }
 function itemsHtml(items) { return items.map(item => `<div class="item"><div><strong>${escapeHtml(item.name || item.productName || '-')}</strong><small>${money(item.price)} x ${Number(item.qty || 0).toLocaleString('th-TH')}</small></div><div>${money(item.lineTotal || Number(item.price || 0) * Number(item.qty || 0))}</div></div>`).join(''); }
 function vatHtml(sale) {

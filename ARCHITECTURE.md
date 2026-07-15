@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.76
-Build: 2026.07.16.001
-Milestone: Catalog Post Import Checklist
+Version: 0.14.77
+Build: 2026.07.16.002
+Milestone: POS Receipt Privacy Masking
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -23,6 +23,10 @@ Retail catalog preview count rule: `/pos/catalog` may show live row counts insid
 Retail catalog import result rule: after `/pos/catalog` successfully imports published catalog rows, the page may show a client-side success panel with imported counts, imported SKU/name examples, a link to the product management page, and a copy-SKU helper. This panel must be derived only from the rows already passed to the existing import save path. It must not write extra product data, change imported stock defaults, show products on POS automatically, create stock movements, alter duplicate skip behavior, or mutate sales, VAT, payments, offline sync, duplicate protection, or tax invoice data.
 
 Retail catalog post-import checklist rule: the `/pos/catalog` success panel may display guidance-only checklist steps such as verifying prices, setting stock, and enabling POS visibility after import. These steps are operator reminders only and must not toggle `showOnPos`, change stock, create stock movements, update product prices, write product metadata, or mutate sales, VAT, payments, offline sync, duplicate protection, or tax invoice data.
+
+POS printed receipt privacy rule: any Retail POS receipt or short tax invoice surface that can be printed must mask customer/member personal data through the shared receipt privacy helper. Printed customer names show the first 3-4 first-name characters and mask the rest, while surnames mask all but the final 3 characters. Printed phone numbers use `098-xxx-xx81`. Cashier-facing screen rows may show full customer data, but paper print output must use the masked format consistently across `/pos/receipt`, `/pos/sales` receipt detail, and customer sale receipts.
+
+POS receipt VAT mode persistence rule: receipt print surfaces must display VAT from the saved sale row, not from the current default setting when the sale already has VAT fields. If a sale was saved with `vatMode: "include"`, the receipt must show `โหมด VAT` = `ราคารวม VAT`; if saved with `vatMode: "exclude"`, it must show `ราคาไม่รวม VAT`. The VAT mode row is informational and must not be rendered as an amount or dash placeholder.
 
 POS offline sync remote reconcile rule: before retrying queued local POS sales, the offline sync worker should read `tenants/{tenantId}/sales/{saleId}` for each local queued sale that still lacks a valid synced flag. If the remote sale exists for the current tenant, the local row must be marked `syncStatus: "synced"` with `firebaseSyncedAt`, `offlineSyncHash`, `syncHashVersion`, and clean queue metadata, and the worker must not rewrite the sale, sale items, stock movements, product stock, or daily summary. This protects duplicate bills and duplicate stock cuts when a previous sync wrote Firestore successfully but the browser did not finish marking localStorage.
 

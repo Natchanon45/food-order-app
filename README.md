@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Catalog Post Import Checklist
-Version: 0.14.76
-Build: 2026.07.16.001
+Milestone: POS Receipt Privacy Masking
+Version: 0.14.77
+Build: 2026.07.16.002
 
-Change: Added a post-import checklist to `/pos/catalog` so successful Retail Master Catalog imports clearly remind owners to verify selling prices, set stock, and enable POS visibility only when ready. Catalog CSS/JS are cache-busted to `20260716-001`; this is checklist UI only and does not alter import payloads, tenant product data, stock defaults, stock movements, VAT, payments, offline sale sync, duplicate protection, or tax invoice transactions.
+Change: Standardized Retail POS printed receipt privacy for customer/member data. `/pos/receipt`, `/pos/sales` receipt detail print, and customer sale receipt print now use the same masking helper: customer names show the first 3-4 characters of the first name and mask the rest, surnames mask all but the final 3 characters, and phone numbers print as `098-xxx-xx81`. VAT mode rows now print as `โหมด VAT: ราคารวม VAT` or `โหมด VAT: ราคาไม่รวม VAT` from the saved sale data instead of a dash amount. Receipt/customer/history JS and POS cache chains are bumped to `20260716-002`; tenant data, stock, payments, offline sale sync, duplicate protection, and full-tax invoice transactions are unchanged.
+
+Previous build note: Catalog Post Import Checklist from build `2026.07.16.001` remains unchanged for post-import owner reminders after Retail Master Catalog import.
 
 Previous build note: Catalog Import Result Actions from build `2026.07.15.018` remains unchanged for imported count, SKU/name examples, product-review link, and copy-SKU action after import.
 
