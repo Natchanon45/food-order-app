@@ -70,6 +70,8 @@
 .import-options{display:flex;gap:10px;align-items:center;flex-wrap:wrap;color:#475569}
 .import-options label{display:flex;gap:8px;align-items:center;font-size:14px}
 .import-options input[type="checkbox"]{width:16px;height:16px;min-width:16px;accent-color:#159447}
+.chip-action{border:1px solid #dbe7df;border-radius:999px;background:#f8faf9;color:#0f2f20;padding:9px 12px;font-weight:600;font-size:13px}
+.chip-action:hover{border-color:#9bc9aa;background:#eef8f1;color:#0b6b3d}
 .excel-download,.excel-import-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:14px;padding:11px 14px;background:#159447;color:#fff;text-decoration:none;font-weight:800;white-space:nowrap}
 .excel-download{background:#eef8f1;color:#0b6b3d;border:1px solid #b8ddc4}
 .excel-dropzone{position:relative;display:grid;justify-items:center;gap:7px;padding:28px 18px;border:2px dashed #b8d3c1;border-radius:18px;background:#f8fcf9;text-align:center;cursor:pointer;transition:.18s ease}

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>นำเข้าสินค้าพื้นฐาน</title>
   <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260713-004">
-  <link rel="stylesheet" href="/assets/css/retail-catalog-import.css?v=20260715-015">
+  <link rel="stylesheet" href="/assets/css/retail-catalog-import.css?v=20260715-016">
 </head>
 <body>
   <header class="pos-header">
@@ -37,7 +37,12 @@
     <section class="catalog-panel">
       <div class="panel-head">
         <div><h2>เลือกหมวดสินค้า</h2><p class="preview-muted">เลือกหมวดที่ต้องการ ระบบจะนำเข้าเฉพาะรายการที่ผ่านการตรวจสอบแล้ว</p></div>
-        <div class="import-options"><label><input type="checkbox" id="skipExisting" checked> ข้าม SKU ที่มีอยู่แล้ว</label></div>
+        <div class="import-options">
+          <button id="selectAllCategories" class="btn chip-action" type="button">เลือกทั้งหมด</button>
+          <button id="selectReadyCategories" class="btn chip-action" type="button">เฉพาะที่พร้อมนำเข้า</button>
+          <button id="clearCategories" class="btn chip-action" type="button">ล้างการเลือก</button>
+          <label><input type="checkbox" id="skipExisting" checked> ข้าม SKU ที่มีอยู่แล้ว</label>
+        </div>
       </div>
       <div id="categoryGrid" class="catalog-grid"></div>
       <div id="catalogImportSummary" class="catalog-import-summary" aria-live="polite"></div>
@@ -98,7 +103,7 @@
 
   <script src="/assets/vendor/sheetjs/xlsx.full.min.js"></script>
   <script type="module" src="/assets/js/retail-pos-icons.js?v=20260715-009"></script>
-  <script type="module" src="/assets/js/retail-catalog-import.js?v=20260715-015"></script>
+  <script type="module" src="/assets/js/retail-catalog-import.js?v=20260715-016"></script>
   <script type="module" src="/assets/js/retail-catalog-excel-import.js?v=20260702-028"></script>
 </body>
 </html>

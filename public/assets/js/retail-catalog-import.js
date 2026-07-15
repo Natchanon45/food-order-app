@@ -14,6 +14,9 @@ const els = {
   catalogSearch: document.querySelector('#catalogSearch'),
   catalogStatusFilter: document.querySelector('#catalogStatusFilter'),
   clearCatalogFilters: document.querySelector('#clearCatalogFilters'),
+  selectAllCategories: document.querySelector('#selectAllCategories'),
+  selectReadyCategories: document.querySelector('#selectReadyCategories'),
+  clearCategories: document.querySelector('#clearCategories'),
   importButton: document.querySelector('#importButton'),
   previewRows: document.querySelector('#previewRows'),
   previewSummary: document.querySelector('#previewSummary'),
@@ -31,6 +34,7 @@ const els = {
 const catalog = buildRetailMasterCatalogThailand();
 const validation = validateRetailMasterCatalogThailand(catalog);
 const selectedCategoryIds = new Set(catalog.products.map(item => item.categoryId));
+const categorySummaries = categorySummary(catalog.products);
 let existingProducts = [];
 let importing = false;
 let pendingImportRows = [];
@@ -62,7 +66,7 @@ function categorySummary(products) {
 }
 
 function renderCategories() {
-  els.categoryGrid.innerHTML = categorySummary(catalog.products).map((item, index) => `
+  els.categoryGrid.innerHTML = categorySummaries.map((item, index) => `
     <label class="category-card ${item.published ? 'has-ready' : ''}">
       <input type="checkbox" data-category-id="${escapeHtml(item.id)}" ${selectedCategoryIds.has(item.id) ? 'checked' : ''}>
       <span class="category-icon" aria-hidden="true"><i class="bi bi-${categoryIcons[index % categoryIcons.length]}"></i></span>
@@ -200,6 +204,12 @@ function renderPreview() {
   renderImportSummary();
 }
 
+function refreshCatalogView() {
+  renderCategories();
+  renderPreview();
+  updateImportButton();
+}
+
 function previewRows(rows) {
   const query = String(els.catalogSearch.value || '').trim().toLowerCase();
   const status = els.catalogStatusFilter.value || 'all';
@@ -317,7 +327,26 @@ els.categoryGrid.addEventListener('change', event => {
   renderPreview();
   updateImportButton();
 });
-els.skipExisting.addEventListener('change', updateImportButton);
+els.selectAllCategories.addEventListener('click', () => {
+  selectedCategoryIds.clear();
+  for (const item of categorySummaries) selectedCategoryIds.add(item.id);
+  refreshCatalogView();
+});
+els.selectReadyCategories.addEventListener('click', () => {
+  selectedCategoryIds.clear();
+  for (const item of categorySummaries) {
+    if (item.published) selectedCategoryIds.add(item.id);
+  }
+  refreshCatalogView();
+});
+els.clearCategories.addEventListener('click', () => {
+  selectedCategoryIds.clear();
+  refreshCatalogView();
+});
+els.skipExisting.addEventListener('change', () => {
+  renderPreview();
+  updateImportButton();
+});
 els.catalogSearch.addEventListener('input', renderPreview);
 els.catalogStatusFilter.addEventListener('change', renderPreview);
 els.clearCatalogFilters.addEventListener('click', () => {
