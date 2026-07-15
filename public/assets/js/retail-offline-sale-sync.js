@@ -231,11 +231,17 @@ async function reconcileRemoteSyncedSales({ limit = 100 } = {}) {
   for (const sale of active) {
     const saleId = localSaleId(sale);
     try {
-      const snap = await getDoc(tenantDoc(RetailCollections.sales, saleId));
-      if (!snap.exists()) continue;
+      const lookupIds = [...new Set([saleId, sale.saleNumber, sale.finalSaleNumber, sale.localSaleNumber].map(value => String(value || '').trim()).filter(Boolean))];
+      let snap = null;
+      for (const lookupId of lookupIds) {
+        const candidate = await getDoc(tenantDoc(RetailCollections.sales, lookupId));
+        if (candidate.exists()) { snap = candidate; break; }
+      }
+      if (!snap?.exists()) continue;
       const remote = snap.data() || {};
       if (remote.tenantId && String(remote.tenantId) !== String(tenantId)) continue;
       markSynced(saleId, {
+        remoteSaleId: snap.id,
         saleNumber: remote.saleNumber || sale.saleNumber || saleId,
         finalSaleNumber: remote.finalSaleNumber || remote.saleNumber || sale.finalSaleNumber || sale.saleNumber || saleId,
         runningNumberStatus: remote.runningNumberStatus || sale.runningNumberStatus || 'reserved',

@@ -468,7 +468,7 @@ async function confirmPayment() {
     renderProducts();
     readyForNextSale();
     showToast(offline ? `บันทึกการขาย ${sale.saleNumber || sale.id} แบบออฟไลน์แล้ว` : `บันทึกการขาย ${sale.saleNumber || sale.id} สำเร็จ`);
-    await showReceipt(sale, { autoPrint: false });
+    showReceipt(sale, { autoPrint: false }).catch(error => console.warn("[retail-pos] receipt popup skipped", error));
   }
   catch (error) { console.error("[retail-pos] sale failed", error); const message = String(error?.message || error); if (message.startsWith("INSUFFICIENT_STOCK:")) els.paymentError.textContent = `สต็อก ${message.split(":").slice(1).join(":")} ไม่พอ`; else if (message.startsWith("PRODUCT_NOT_FOUND:")) els.paymentError.textContent = `ไม่พบสินค้า ${message.split(":").slice(1).join(":")}`; else if (message === "AUTH_REQUIRED") els.paymentError.textContent = "กรุณาเข้าสู่ระบบก่อนบันทึกการขาย"; else els.paymentError.textContent = "บันทึกการขายไม่สำเร็จ กรุณาลองใหม่"; }
   finally { savingSale = false; els.confirmPaymentBtn.disabled = false; els.confirmPaymentBtn.textContent = "ยืนยันการขาย"; renderProducts(); renderCart(); }

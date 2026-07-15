@@ -1,4 +1,4 @@
-import { syncOfflineSalesToFirebase, retryFailedOfflineSales, getOfflineQueueWorkerSnapshot, saleHasSyncedFlag } from './retail-offline-sale-sync.js?v=20260715-007';
+import { syncOfflineSalesToFirebase, retryFailedOfflineSales, getOfflineQueueWorkerSnapshot, saleHasSyncedFlag } from './retail-offline-sale-sync.js?v=20260716-003';
 import { listLocalSales } from './retail-pos-repository.js?v=20260630-081';
 
 const SYNC_EVENT = 'retail-offline-sales-synced';

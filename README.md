@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Receipt Privacy Masking
-Version: 0.14.77
-Build: 2026.07.16.002
+Milestone: POS Receipt Reliability Repair
+Version: 0.14.78
+Build: 2026.07.16.003
 
-Change: Standardized Retail POS printed receipt privacy for customer/member data. `/pos/receipt`, `/pos/sales` receipt detail print, and customer sale receipt print now use the same masking helper: customer names show the first 3-4 characters of the first name and mask the rest, surnames mask all but the final 3 characters, and phone numbers print as `098-xxx-xx81`. VAT mode rows now print as `โหมด VAT: ราคารวม VAT` or `โหมด VAT: ราคาไม่รวม VAT` from the saved sale data instead of a dash amount. Receipt/customer/history JS and POS cache chains are bumped to `20260716-002`; tenant data, stock, payments, offline sale sync, duplicate protection, and full-tax invoice transactions are unchanged.
+Change: Repaired Retail POS receipt reliability around checkout speed, old sync rows, customer/member display, loyalty points, late full-tax invoice lookup, and sale-history receipt reprints. POS checkout now restores the cashier UI immediately after the sale is saved and opens the receipt popup without blocking the save button. `/pos/receipt` and `/pos/sales` receipt reprint can recover customer/member and loyalty rows from the local customer and loyalty ledger cache when the sale row was saved before those fields were patched. Sale-history receipt reprints also fill shop address, phone, tax ID, and branch from store settings. Offline sync remote reconcile now checks both stable saleId and sale number before retrying an old queued row, protecting duplicate bills and duplicate stock cuts. `/pos/tax-invoices` late full-tax invoice issuing now has a DBD lookup button beside the buyer tax ID field. POS receipt, sales, sync, tax-invoice, and version cache chains are bumped to `20260716-003`.
+
+Previous build note: POS Receipt Privacy Masking from build `2026.07.16.002` remains unchanged for printed customer/member privacy masking and saved VAT mode rows.
 
 Previous build note: Catalog Post Import Checklist from build `2026.07.16.001` remains unchanged for post-import owner reminders after Retail Master Catalog import.
 

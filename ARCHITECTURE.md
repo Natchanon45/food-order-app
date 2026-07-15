@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.77
-Build: 2026.07.16.002
-Milestone: POS Receipt Privacy Masking
+Version: 0.14.78
+Build: 2026.07.16.003
+Milestone: POS Receipt Reliability Repair
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -29,6 +29,10 @@ POS printed receipt privacy rule: any Retail POS receipt or short tax invoice su
 POS receipt VAT mode persistence rule: receipt print surfaces must display VAT from the saved sale row, not from the current default setting when the sale already has VAT fields. If a sale was saved with `vatMode: "include"`, the receipt must show `โหมด VAT` = `ราคารวม VAT`; if saved with `vatMode: "exclude"`, it must show `ราคาไม่รวม VAT`. The VAT mode row is informational and must not be rendered as an amount or dash placeholder.
 
 POS offline sync remote reconcile rule: before retrying queued local POS sales, the offline sync worker should read `tenants/{tenantId}/sales/{saleId}` for each local queued sale that still lacks a valid synced flag. If the remote sale exists for the current tenant, the local row must be marked `syncStatus: "synced"` with `firebaseSyncedAt`, `offlineSyncHash`, `syncHashVersion`, and clean queue metadata, and the worker must not rewrite the sale, sale items, stock movements, product stock, or daily summary. This protects duplicate bills and duplicate stock cuts when a previous sync wrote Firestore successfully but the browser did not finish marking localStorage.
+
+POS receipt reliability rule: receipt display code must not depend on a single sale-row timing path for customer/member and loyalty data. `/pos/receipt` and `/pos/sales` receipt reprint may recover customer name, customer code, phone, and loyalty point rows from the local customer cache and loyalty ledger using saleId, sale number, customerId, customerCode, or phone, while still masking printed personal data through the shared receipt privacy helper. Sale-history receipt reprints must fill store address, phone, tax ID, and branch from store settings when those receipt placeholders exist. These recovery steps are read-only presentation repair and must not create duplicate sales, stock movements, payments, or tax invoices.
+
+POS old sync reconcile rule: before retrying a completed local POS sale that is still marked pending/failed/syncing/conflict locally, the offline sync worker should check Firestore by stable local saleId and by known sale number/final sale number. If any matching remote sale exists under the current tenant, localStorage must be marked synced and the worker must skip the write transaction, sale item writes, stock movement writes, stock updates, and daily summary updates.
 
 POS offline sync marker authority rule: for completed POS sales, local evidence that the sale already synced (`syncStatus: "synced"`, `firebaseSyncedAt`, or `syncedAt`) is authoritative for queue exclusion. `offlineSyncHash` is diagnostic metadata and may be refreshed if later local metadata changes make it differ, but a hash mismatch alone must not move an already-synced sale back to pending or re-enter the stock-deduction sync path. Queue counts and automatic scheduling should include only completed sales whose sync status is still eligible for processing; when that eligible queue is empty, the worker should remain idle instead of scheduling a page-load sync timer.
 

@@ -2,6 +2,8 @@ import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, getExistingFullTaxI
 import { maskReceiptCustomerName, maskReceiptPhone } from './retail-receipt-privacy.js?v=20260716-002';
 
 const SALES_KEY = 'retail_pos_sales_v1';
+const CUSTOMER_KEY = 'retail_pos_customers_v1';
+const LEDGER_KEY = 'retail_pos_loyalty_ledger_v1';
 const STORE_SETTINGS_KEY = 'retail_pos_store_settings_v1';
 const LEGACY_STORE_SETTINGS_KEY = 'food_order_store_settings';
 const DBD_LOOKUP_URL_KEY = 'retail_pos_dbd_lookup_url';
@@ -42,19 +44,48 @@ function settings() {
   const merged = { ...legacy, ...local };
   return { shopName: merged.taxInvoiceName || merged.shopName || merged.name || 'POS ร้านค้าปลีก', shopAddress: merged.shopAddress || merged.address || '', shopPhone: merged.shopPhone || merged.phone || '', taxId: merged.taxId || merged.shopTaxId || '', taxBranch: merged.taxBranch || merged.branchName || 'สำนักงานใหญ่', logoUrl: merged.logoUrl || merged.shopLogoUrl || '', receiptThanks: merged.receiptThanks || 'ขอบคุณที่ใช้บริการ', receiptFooter: merged.receiptFooter || '' };
 }
+function customers() { const rows = readJson(CUSTOMER_KEY, []); return Array.isArray(rows) ? rows : []; }
+function loyaltyLedger() { const rows = readJson(LEDGER_KEY, []); return Array.isArray(rows) ? rows : []; }
 function findSale() { const sales = readJson(SALES_KEY, []); if (!Array.isArray(sales)) return null; return sales.find(sale => saleKey(sale) === saleId || String(sale.saleNumber || '') === saleId) || sales[0] || null; }
+function customerForSale(sale = {}) {
+  const cid = String(sale.customerId || sale.memberId || '').trim();
+  const code = String(sale.customerCode || sale.memberCode || '').trim();
+  const phone = String(sale.customerPhone || sale.customerDisplayPhone || '').replace(/\D/g, '');
+  return customers().find(customer => {
+    const customerId = String(customer.id || customer._documentId || '').trim();
+    const customerCode = String(customer.customerCode || customer.code || '').trim();
+    const customerPhone = String(customer.phone || '').replace(/\D/g, '');
+    return (cid && customerId === cid) || (code && customerCode === code) || (phone && customerPhone === phone);
+  }) || null;
+}
+function loyaltyForSale(sale = {}) {
+  if (sale?.loyalty) return sale.loyalty;
+  const id = String(sale?.id || '').trim();
+  const number = String(sale?.saleNumber || '').trim();
+  const entry = loyaltyLedger().find(row => (id && String(row.saleId || '') === id) || (number && String(row.saleNumber || '') === number));
+  if (!entry) return null;
+  return {
+    pointsBefore: entry.pointsBefore ?? entry.balanceBefore,
+    pointsUsed: entry.pointsUsed,
+    pointsEarned: entry.pointsEarned,
+    pointsAfter: entry.pointsAfter ?? entry.balanceAfter,
+    redeemValue: entry.redeemValue
+  };
+}
 function draftKey() { return `${TAX_BUYER_DRAFT_PREFIX}${saleKey(currentSale) || saleId || 'latest'}`; }
 function currentBuyerDraft() { return { buyerName: buyerNameInput.value, buyerTaxId: buyerTaxIdInput.value, buyerAddress: buyerAddressInput.value, buyerBranchName: buyerBranchInput.value }; }
 function saveBuyerDraft() { if (currentSale) writeJson(draftKey(), { ...currentBuyerDraft(), updatedAt: Date.now() }); }
 function loadBuyerDraft() { return currentSale ? readJson(draftKey(), null) : null; }
 function clearBuyerDraft() { if (currentSale) localStorage.removeItem(draftKey()); }
 function applyBuyerData(data = {}) { buyerNameInput.value = data.buyerName || ''; buyerTaxIdInput.value = data.buyerTaxId || ''; buyerAddressInput.value = data.buyerAddress || ''; buyerBranchInput.value = data.buyerBranchName || 'สำนักงานใหญ่'; saveBuyerDraft(); }
-function loyaltyHtml(sale) { const loyalty = sale.loyalty; if (!loyalty) return ''; return `<hr class="rule"><div class="row"><span>แต้มก่อนซื้อ</span><span>${numberText(loyalty.pointsBefore)}</span></div><div class="row"><span>ใช้แต้ม</span><span>${numberText(loyalty.pointsUsed)}</span></div><div class="row"><span>แต้มที่ได้รับ</span><span>${numberText(loyalty.pointsEarned)}</span></div><div class="row"><span>แต้มคงเหลือ</span><strong>${numberText(loyalty.pointsAfter)}</strong></div>`; }
+function loyaltyHtml(sale) { const loyalty = loyaltyForSale(sale); if (!loyalty) return ''; return `<hr class="rule"><div class="row"><span>แต้มก่อนซื้อ</span><span>${numberText(loyalty.pointsBefore)}</span></div><div class="row"><span>ใช้แต้ม</span><span>${numberText(loyalty.pointsUsed)}</span></div><div class="row"><span>แต้มที่ได้รับ</span><span>${numberText(loyalty.pointsEarned)}</span></div><div class="row"><span>แต้มคงเหลือ</span><strong>${numberText(loyalty.pointsAfter)}</strong></div>`; }
 function customerHtml(sale) {
-  const name = sale.customerName || sale.customerDisplayName || '';
-  const phone = sale.customerPhone || sale.customerDisplayPhone || '';
-  if (!name && !phone && !sale.customerCode) return '';
-  return `<hr class="rule"><div class="row"><span>ลูกค้า</span><strong>${escapeHtml(maskReceiptCustomerName(name) || '-')}</strong></div>${sale.customerCode ? `<div class="row"><span>สมาชิก</span><span>${escapeHtml(sale.customerCode)}</span></div>` : ''}${phone ? `<div class="row"><span>โทร</span><span>${escapeHtml(maskReceiptPhone(phone))}</span></div>` : ''}`;
+  const customer = customerForSale(sale);
+  const name = sale.customerName || customer?.name || sale.customerDisplayName || '';
+  const phone = sale.customerPhone || customer?.phone || sale.customerDisplayPhone || '';
+  const code = sale.customerCode || customer?.customerCode || '';
+  if (!name && !phone && !code) return '';
+  return `<hr class="rule"><div class="row"><span>ลูกค้า</span><strong>${escapeHtml(maskReceiptCustomerName(name) || '-')}</strong></div>${code ? `<div class="row"><span>สมาชิก</span><span>${escapeHtml(code)}</span></div>` : ''}${phone ? `<div class="row"><span>โทร</span><span>${escapeHtml(maskReceiptPhone(phone))}</span></div>` : ''}`;
 }
 function itemsHtml(items) { return items.map(item => `<div class="item"><div><strong>${escapeHtml(item.name || item.productName || '-')}</strong><small>${money(item.price)} x ${Number(item.qty || 0).toLocaleString('th-TH')}</small></div><div>${money(item.lineTotal || Number(item.price || 0) * Number(item.qty || 0))}</div></div>`).join(''); }
 function vatHtml(sale) {
@@ -71,7 +102,7 @@ function render(sale) {
   root.innerHTML = `<div class="center">${store.logoUrl ? `<img class="logo" src="${escapeHtml(store.logoUrl)}" alt="">` : ''}<div class="shop">${escapeHtml(store.shopName)}</div>${store.shopAddress ? `<div class="muted">${escapeHtml(store.shopAddress)}</div>` : ''}${store.shopPhone ? `<div class="muted">โทร ${escapeHtml(store.shopPhone)}</div>` : ''}${store.taxId ? `<div class="muted">เลขประจำตัวผู้เสียภาษี ${escapeHtml(store.taxId)}</div>` : ''}${store.taxBranch ? `<div class="muted">${escapeHtml(store.taxBranch)}</div>` : ''}<div class="receipt-title">${taxTitle(sale)}</div></div><hr class="rule"><div class="row"><span>เลขที่</span><strong>${escapeHtml(sale.saleNumber || sale.id || '-')}</strong></div><div class="row"><span>วันที่</span><span>${escapeHtml(new Date(sale.createdAt || Date.now()).toLocaleString('th-TH'))}</span></div><div class="row"><span>ชำระเงิน</span><span>${escapeHtml(sale.paymentMethod || sale.payment?.method || '-')}</span></div>${customerHtml(sale)}<hr class="rule">${itemsHtml(items)}<hr class="rule"><div class="row"><span>รวมสินค้า</span><span>${money(sale.subtotal)}</span></div><div class="row"><span>ส่วนลด</span><span>${money(sale.discount)}</span></div>${Number(sale.pointDiscount || 0) ? `<div class="row"><span>ส่วนลดแต้ม</span><span>${money(sale.pointDiscount)}</span></div>` : ''}${vatHtml(sale)}<div class="row total"><span>ยอดสุทธิ</span><span>${money(sale.totalAmount || sale.total)}</span></div><div class="row"><span>รับเงิน</span><span>${money(sale.receivedAmount || sale.payment?.received || sale.totalAmount || sale.total)}</span></div><div class="row"><span>เงินทอน</span><span>${money(sale.changeAmount || sale.payment?.change || 0)}</span></div>${loyaltyHtml(sale)}${sale.syncStatus === 'pending' ? '<hr class="rule"><div class="center muted">บิลนี้บันทึกแบบออฟไลน์ รอ Sync Firebase</div>' : ''}<hr class="rule"><div class="center muted footer">${escapeHtml(store.receiptThanks)}${store.receiptFooter ? `<br>${escapeHtml(store.receiptFooter)}` : ''}</div>`;
 }
 function rerenderLatest() { const sale = findSale(); if (sale) render(sale); return sale; }
-async function waitForLoyaltyAndRender() { let sale = findSale(); render(sale); const started = Date.now(); while (Date.now() - started < 2500) { await new Promise(resolve => setTimeout(resolve, 180)); sale = rerenderLatest(); if (sale?.loyalty) break; } if (autoPrint) setTimeout(() => window.print(), 250); }
+async function waitForLoyaltyAndRender() { let sale = findSale(); render(sale); const started = Date.now(); while (Date.now() - started < 900) { await new Promise(resolve => setTimeout(resolve, 160)); sale = rerenderLatest(); if (loyaltyForSale(sale)) break; } if (autoPrint) setTimeout(() => window.print(), 250); }
 function openInvoice(invoice) { window.open(taxInvoiceUrl(invoice, { autoPrint: false }), `pos_tax_invoice_${String(invoice.id).replace(/[^a-zA-Z0-9]/g, '_')}`, 'popup=yes,width=920,height=760,noopener,noreferrer'); }
 async function showTaxDialog() {
   if (!currentSale || !taxDialog) return;
