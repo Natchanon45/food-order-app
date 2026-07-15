@@ -1,4 +1,4 @@
-import {hasPermission} from "./retail-pos-navigation.js?v=20260715-004";
+import {hasPermission} from "./retail-pos-navigation.js?v=20260715-009";
 
 const PERMISSIONS={
   checkout:"pos.sale.checkout",

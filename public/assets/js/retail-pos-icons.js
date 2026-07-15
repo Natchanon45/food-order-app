@@ -61,6 +61,53 @@ const GROUP_ICONS = {
   system: "gear",
 };
 
+const ICON_TONES = {
+  "arrow-clockwise": "sky",
+  "arrow-counterclockwise": "rose",
+  "arrow-left": "slate",
+  "arrow-left-right": "sky",
+  "arrow-right": "slate",
+  "bar-chart-line": "indigo",
+  "box-arrow-in-right": "emerald",
+  "box-arrow-right": "rose",
+  "box-seam": "teal",
+  boxes: "teal",
+  building: "indigo",
+  calendar3: "blue",
+  cart3: "emerald",
+  "cash-stack": "amber",
+  "check-lg": "emerald",
+  "clipboard-check": "lime",
+  "clock-history": "violet",
+  "credit-card": "blue",
+  "database-down": "cyan",
+  "database-up": "cyan",
+  download: "blue",
+  eye: "blue",
+  "file-earmark-text": "amber",
+  floppy: "emerald",
+  gear: "slate",
+  house: "emerald",
+  list: "slate",
+  "pause-circle": "amber",
+  "pencil-square": "blue",
+  people: "pink",
+  "person-vcard": "pink",
+  "play-circle": "emerald",
+  "plus-lg": "emerald",
+  printer: "indigo",
+  search: "slate",
+  shield: "purple",
+  "shield-lock": "purple",
+  sliders: "slate",
+  trash3: "rose",
+  truck: "orange",
+  upload: "cyan",
+  "upc-scan": "violet",
+  "x-circle": "rose",
+  "x-lg": "slate",
+};
+
 const ICON_TARGET_SELECTOR = "button, a.btn, a.header-link, .pos-menu-link, h1, h2, h3, .app-title > div > strong";
 
 function visibleText(element) {
@@ -78,6 +125,10 @@ function iconFor(element, fallback = "circle") {
   if (group && GROUP_ICONS[group]) return GROUP_ICONS[group];
   const haystack = `${element.id || ""} ${visibleText(element)}`;
   return ICON_RULES.find(([pattern]) => pattern.test(haystack))?.[1] || fallback;
+}
+
+function toneForIcon(iconName) {
+  return ICON_TONES[iconName] || "green";
 }
 
 function shouldSkipIcon(element) {
@@ -112,7 +163,9 @@ function addIcon(element, fallback) {
     return;
   }
   const icon = document.createElement("i");
-  icon.className = `bi bi-${iconFor(element, fallback)} pos-context-icon`;
+  const iconName = iconFor(element, fallback);
+  icon.className = `bi bi-${iconName} pos-context-icon`;
+  icon.dataset.iconTone = element.dataset.iconTone || toneForIcon(iconName);
   icon.setAttribute("aria-hidden", "true");
   element.prepend(icon);
   element.dataset.posIconReady = "1";

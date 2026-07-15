@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Product Image Storage Fallback
-Version: 0.14.65
-Build: 2026.07.15.008
+Milestone: Colorful Menu Icons
+Version: 0.14.66
+Build: 2026.07.15.009
 
-Change: Hardened the `/pos/products/` product image editor for Firebase Storage quota or upload failures. If cloud image upload fails while a staff member saves a product, the selected image is compressed and stored in the local IndexedDB product-image fallback, any existing/product image URL remains intact when available, and the product can still be saved with a readable Thai warning instead of a raw Firebase Storage error. The touched product image assets and Developer Panel cache chain are cache-busted to `20260715-008`. This preserves tenant product data, stock, VAT, payments, offline sale sync, duplicate protection, and tax invoice transactions.
+Change: Added color-coded Bootstrap Icon accents for the Retail POS drawer menu groups and menu links, plus primary Order/Delivery heading icons, so menu categories are easier to remember while the overall UI remains green, black, and white. The shared POS icon injector now assigns stable icon tones, the POS drawer renders explicit non-duplicated group/item icons, and the touched icon/navigation assets plus Developer Panel cache chain are cache-busted to `20260715-009`. Printable receipt and tax invoice headers remain text-only, emoji remain disallowed, and tenant product data, stock, VAT, payments, offline sale sync, duplicate protection, and tax invoice transactions are unchanged.
+
+Previous build note: Product Image Storage Fallback from build `2026.07.15.008` remains unchanged. If cloud image upload fails while a staff member saves a product, the selected image is compressed and stored in the local IndexedDB product-image fallback, any existing/product image URL remains intact when available, and the product can still be saved with a readable Thai warning instead of a raw Firebase Storage error.
 
 Previous build note: POS sync queue persistence from build `2026.07.15.007` remains unchanged. Normal online checkout uses the canonical Firestore transaction flow, while the safe-confirm fallback stays explicit-only.
 
