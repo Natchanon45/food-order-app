@@ -23,6 +23,7 @@ const els = {
   categoryGrid: document.querySelector('#categoryGrid'),
   importDialog: document.querySelector('#importDialog'),
   importDialogCount: document.querySelector('#importDialogCount'),
+  importDialogSummary: document.querySelector('#importDialogSummary'),
   cancelImport: document.querySelector('#cancelImport'),
   confirmImport: document.querySelector('#confirmImport')
 };
@@ -257,7 +258,13 @@ async function loadCatalogState() {
 function requestImport() {
   pendingImportRows = importRows();
   if (!pendingImportRows.length || importing || !validation.valid) return;
+  const summary = importBreakdown();
   els.importDialogCount.textContent = pendingImportRows.length.toLocaleString('th-TH');
+  els.importDialogSummary.innerHTML = `
+    <span><small>นำเข้าใหม่</small><strong>${summary.importable.toLocaleString('th-TH')}</strong></span>
+    <span><small>ข้ามเพราะมีแล้ว</small><strong>${summary.skippedExisting.toLocaleString('th-TH')}</strong></span>
+    <span><small>รอตรวจสอบ</small><strong>${summary.draft.toLocaleString('th-TH')}</strong></span>
+  `;
   els.importDialog.showModal();
 }
 

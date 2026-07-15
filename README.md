@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Catalog Import Filters
-Version: 0.14.70
-Build: 2026.07.15.013
+Milestone: Catalog Import Confirmation Summary
+Version: 0.14.71
+Build: 2026.07.15.014
 
-Change: Added `/pos/catalog` preview search and status filters for the Retail Master Catalog flow. Owners can search by product name, barcode, SKU, brand, category, or keywords and filter the preview table by all rows, importable now, verified ready, already in store, or draft/waiting verification. Catalog CSS/JS are cache-busted to `20260715-013`; the filters are preview-only and do not alter category selection, import payloads, tenant product data, stock, VAT, payments, offline sale sync, duplicate protection, or tax invoice transactions.
+Change: Added a final confirmation summary to `/pos/catalog` before Retail Master Catalog products are imported. The confirmation dialog now shows how many rows will be imported, how many verified rows are skipped because the tenant store already has the same SKU/barcode, and how many selected rows are still waiting for verification. Catalog CSS/JS are cache-busted to `20260715-014`; this is confirmation UI only and does not alter category selection, import payloads, tenant product data, stock, VAT, payments, offline sale sync, duplicate protection, or tax invoice transactions.
+
+Previous build note: Catalog Import Filters from build `2026.07.15.013` remains unchanged for preview search and status filters.
 
 Previous build note: Catalog Import Readiness UI from build `2026.07.15.012` remains unchanged for import readiness counts and skipped-existing explanations.
 

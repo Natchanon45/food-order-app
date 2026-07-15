@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>นำเข้าสินค้าพื้นฐาน</title>
   <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260713-004">
-  <link rel="stylesheet" href="/assets/css/retail-catalog-import.css?v=20260715-013">
+  <link rel="stylesheet" href="/assets/css/retail-catalog-import.css?v=20260715-014">
 </head>
 <body>
   <header class="pos-header">
@@ -63,7 +63,7 @@
     </section>
 
     <section class="catalog-panel">
-      <div class="panel-head"><div><h2>ตรวจรายการก่อนนำเข้า</h2><p id="previewSummary" class="preview-muted">กำลังตรวจ Catalog...</p></div><span class="pill">Preview 20 รายการ</span></div>
+      <div class="panel-head"><div><h2>ตรวจรายการก่อนนำเข้า</h2><p id="previewSummary" class="preview-muted">กำลังตรวจ Catalog...</p></div><span class="pill">Preview สูงสุด 50 รายการ</span></div>
       <div class="catalog-filterbar" aria-label="ค้นหาและกรองรายการ Catalog">
         <label class="catalog-search">
           <i class="bi bi-search" aria-hidden="true"></i>
@@ -87,6 +87,7 @@
       <div class="catalog-dialog-icon" aria-hidden="true"><i class="bi bi-check-circle"></i></div>
       <h2>ยืนยันนำเข้าสินค้า</h2>
       <p>ระบบจะนำเข้าสินค้าที่ผ่านการตรวจสอบ <strong id="importDialogCount">0</strong> รายการ โดยตั้งสต็อกเป็น 0 และยังไม่แสดงบนหน้าขาย</p>
+      <div id="importDialogSummary" class="dialog-summary"></div>
       <p class="preview-muted">หลังนำเข้า ให้ตรวจราคา ตั้งสต็อก และเปิดแสดงบน POS จากหน้าสินค้า</p>
       <div class="catalog-dialog-actions">
         <button id="cancelImport" class="btn secondary" type="button">ยกเลิก</button>
@@ -97,7 +98,7 @@
 
   <script src="/assets/vendor/sheetjs/xlsx.full.min.js"></script>
   <script type="module" src="/assets/js/retail-pos-icons.js?v=20260715-009"></script>
-  <script type="module" src="/assets/js/retail-catalog-import.js?v=20260715-013"></script>
+  <script type="module" src="/assets/js/retail-catalog-import.js?v=20260715-014"></script>
   <script type="module" src="/assets/js/retail-catalog-excel-import.js?v=20260702-028"></script>
 </body>
 </html>
