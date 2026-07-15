@@ -2,11 +2,13 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.61
-Build: 2026.07.15.004
-Milestone: Validation Text Only
+Version: 0.14.62
+Build: 2026.07.15.005
+Milestone: POS Offline Sync Reconcile
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
+
+POS offline sync remote reconcile rule: before retrying queued local POS sales, the offline sync worker should read `tenants/{tenantId}/sales/{saleId}` for each local queued sale that still lacks a valid synced flag. If the remote sale exists for the current tenant, the local row must be marked `syncStatus: "synced"` with `firebaseSyncedAt`, `offlineSyncHash`, `syncHashVersion`, and clean queue metadata, and the worker must not rewrite the sale, sale items, stock movements, product stock, or daily summary. This protects duplicate bills and duplicate stock cuts when a previous sync wrote Firestore successfully but the browser did not finish marking localStorage.
 
 Form validation text-only rule: shared web form entry points should import `/assets/js/form-validation-ui.js` so inputs, selects, and textareas show consistent inline validation copy across Order/Delivery, Admin, Register, and Retail POS. Required or native-invalid fields show only red feedback text directly under the field after touch or submit, valid fields hide feedback without adding green success styling, and optional blank fields stay neutral. The validation layer must suppress native browser validation bubbles and must not change field shape, border, background, shadow, label color, icons, or emoji. Printable receipt/tax document surfaces remain skipped. This presentation layer must not change tenant data, order data, VAT, payments, stock, offline sync, duplicate protection, or tax invoice transactions.
 

@@ -1,4 +1,4 @@
-import { auth, db, isFirebaseConfigured, doc, runTransaction, serverTimestamp } from './firebase-config.js?v=20260630-073';
+import { auth, db, isFirebaseConfigured, doc, getDoc, runTransaction, serverTimestamp } from './firebase-config.js?v=20260630-073';
 import { getTenantId, RetailCollections } from './retail-db.js?v=20260629-032';
 import { listLocalSales, saveLocalSales, updateLocalSale, localSaleId } from './retail-pos-repository.js?v=20260630-081';
 import { POS_COLLECTIONS, POS_FIRESTORE_VERSION, dateKeyFrom, applySaleToDailySummary, buildSaleItemRows, buildSyncQueueRow } from './retail-pos-firestore-foundation.js?v=20260702-002';
@@ -214,6 +214,37 @@ export function recoverStaleSyncingSales({ force = false } = {}) {
   return changed;
 }
 
+async function reconcileRemoteSyncedSales({ limit = 100 } = {}) {
+  if (!isFirebaseConfigured || !db || navigator.onLine === false) return 0;
+  const tenantId = getTenantId();
+  const active = readSales()
+    .filter(sale => !saleHasSyncedFlag(sale) && queueStatuses().has(normalizeStatus(sale.syncStatus)))
+    .filter(sale => localSaleId(sale))
+    .slice(0, limit);
+  let changed = 0;
+  for (const sale of active) {
+    const saleId = localSaleId(sale);
+    try {
+      const snap = await getDoc(tenantDoc(RetailCollections.sales, saleId));
+      if (!snap.exists()) continue;
+      const remote = snap.data() || {};
+      if (remote.tenantId && String(remote.tenantId) !== String(tenantId)) continue;
+      markSynced(saleId, {
+        saleNumber: remote.saleNumber || sale.saleNumber || saleId,
+        finalSaleNumber: remote.finalSaleNumber || remote.saleNumber || sale.finalSaleNumber || sale.saleNumber || saleId,
+        runningNumberStatus: remote.runningNumberStatus || sale.runningNumberStatus || 'reserved',
+        syncNote: 'remote sale already exists in Firebase',
+        reconciledFromRemoteAt: nowIso()
+      });
+      changed += 1;
+    } catch (error) {
+      console.warn('[retail-offline-sale-sync] remote reconcile skipped', saleId, error);
+    }
+  }
+  if (changed) updateWorkerSnapshot({ state: 'remote_reconciled', lastReconciled: changed, lastReconciledAt: nowIso() });
+  return changed;
+}
+
 function normalizeOfflineSale(sale, { saleId, tenantId, userId, saleNumber, counterReserved }) {
   const createdAt = sale.createdAt || nowIso();
   const dateKey = sale.dateKey || dateKeyFrom(createdAt);
@@ -306,6 +337,7 @@ export async function syncOfflineSalesToFirebase({ forceRetry = false } = {}) {
   if (syncRunning) return { synced: 0, failed: 0, conflict: 0, skipped: getOfflineSyncQueue().length };
   syncRunning = true;
   backfillSyncedSaleFlags();
+  await reconcileRemoteSyncedSales();
   recoverStaleSyncingSales();
   const runId = `sync-${nowMs()}-${Math.random().toString(16).slice(2)}`;
   let synced = 0, failed = 0, conflict = 0, skipped = 0;
@@ -350,7 +382,7 @@ export function scheduleOfflineQueueRun(delay = 1200) {
 }
 
 function exposeQueueApi() {
-  window.retailOfflineQueue = Object.freeze({ version: OFFLINE_QUEUE_VERSION, snapshot: getOfflineQueueWorkerSnapshot, details: getOfflineSyncQueueDetails, sync: syncOfflineSalesToFirebase, retryFailed: retryFailedOfflineSales, retryConflict: saleId => resolveOfflineSaleConflict(saleId, 'retry'), discardConflict: saleId => resolveOfflineSaleConflict(saleId, 'discard'), resolveAllConflicts: resolveAllOfflineSaleConflicts, recoverStale: recoverStaleSyncingSales, recoverNow: () => recoverStaleSyncingSales({ force: true }), schedule: scheduleOfflineQueueRun });
+  window.retailOfflineQueue = Object.freeze({ version: OFFLINE_QUEUE_VERSION, snapshot: getOfflineQueueWorkerSnapshot, details: getOfflineSyncQueueDetails, sync: syncOfflineSalesToFirebase, reconcileRemote: reconcileRemoteSyncedSales, retryFailed: retryFailedOfflineSales, retryConflict: saleId => resolveOfflineSaleConflict(saleId, 'retry'), discardConflict: saleId => resolveOfflineSaleConflict(saleId, 'discard'), resolveAllConflicts: resolveAllOfflineSaleConflicts, recoverStale: recoverStaleSyncingSales, recoverNow: () => recoverStaleSyncingSales({ force: true }), schedule: scheduleOfflineQueueRun });
 }
 class OfflineQueueWorker {
   start() {

@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.61',
-  build: '2026.07.15.004',
+  version: '0.14.62',
+  build: '2026.07.15.005',
   branch: 'feature/retail-pos',
-  commit: 'VALIDATION-TEXT-ONLY-01461',
+  commit: 'POS-OFFLINE-RECONCILE-01462',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Validation Text Only',
-  updatedAt: '2026-07-15T03:25:00+07:00',
+  milestone: 'POS Offline Sync Reconcile',
+  updatedAt: '2026-07-15T10:25:00+07:00',
   whatsNew: [
-    'Show validation messages as red inline text directly under invalid inputs, selects, and textareas',
-    'Keep the original field shape, border, background, shadow, and label color unchanged during validation',
-    'Disable native browser validation bubbles for shared forms while keeping printable receipt/tax documents excluded',
-    'Keep VAT, stock, payment, offline sync, tenant data, duplicate protection, and tax invoice transactions unchanged'
+    'Reconcile queued local POS sales with existing Firestore sales before retrying offline sync',
+    'Mark already-synced local sales with firebaseSyncedAt, offlineSyncHash, syncHashVersion, and clean queue metadata',
+    'Remove reconciled sales from the POS sync badge and worker queue on reload',
+    'Keep stable saleId, duplicate protection, stock safety, VAT, payments, and tax invoice transactions unchanged'
   ]
 };
 
