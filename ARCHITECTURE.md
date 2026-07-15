@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.65
-Build: 2026.07.15.008
-Milestone: Product Image Storage Fallback
+Version: 0.14.67
+Build: 2026.07.15.010
+Milestone: Colorful Home Menu Icons
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -19,6 +19,8 @@ POS safe-confirm fallback rule: `retail-pos-safe-confirm.js` is an explicit emer
 Form validation text-only rule: shared web form entry points should import `/assets/js/form-validation-ui.js` so inputs, selects, and textareas show consistent inline validation copy across Order/Delivery, Admin, Register, and Retail POS. Required or native-invalid fields show only red feedback text directly under the field after touch or submit, valid fields hide feedback without adding green success styling, and optional blank fields stay neutral. The validation layer must suppress native browser validation bubbles and must not change field shape, border, background, shadow, label color, icons, or emoji. Printable receipt/tax document surfaces remain skipped. This presentation layer must not change tenant data, order data, VAT, payments, stock, offline sync, duplicate protection, or tax invoice transactions.
 
 Unified green UI icon rule: Order/Delivery and Retail POS web UI surfaces should use the shared green, black, and white visual language for app headers, panels, cards, inputs, and primary actions. Main headings and actionable buttons may include one appropriate Bootstrap Icon, but the UI must not render adjacent duplicate icons in a button/card, must not use emoji, and must not inject or display icons inside printable bill, receipt, return receipt, or tax invoice headers. This rule is presentation-only and must not change tenant data, order data, VAT, payments, stock, offline sync, duplicate protection, or tax invoice transactions.
+
+Central dashboard icon rule: the signed-in `/` staff dashboard may use color-coded Bootstrap Icon chips for Order/Delivery and Retail POS entry cards plus the user menu to improve recognition. Icon color is presentation-only and must stay within the green/black/white layout system, must not add adjacent duplicate icons, must not use emoji, and must not affect role permissions, routing, tenant data, order data, VAT, payments, stock, offline sync, duplicate protection, or tax invoice transactions.
 
 Delivery fee options rule: store settings may include `deliveryFeeOptions`, an ordered list of tenant-scoped delivery choices with stable `id`, display `label`, and non-negative `fee`. Admin users can add, remove, rename, and price these options from `/admin`; the editor keeps the plus-icon add action in the card header, uses placeholder examples instead of a visible option-name caption, aligns row number badges with inputs, and uses red X icon buttons for row removal. The public `/delivery` page must render these labels and fees in the customer dropdown, apply the selected fee to totals, and persist `deliveryZone`, `deliveryZoneLabel`, and `deliveryFee` on the order. Legacy `deliveryFeeNearby`, `deliveryFeeGeneral`, and `deliveryFeeFar` values remain fallback-compatible when no custom option list exists.
 

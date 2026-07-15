@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Colorful Menu Icons
-Version: 0.14.66
-Build: 2026.07.15.009
+Milestone: Colorful Home Menu Icons
+Version: 0.14.67
+Build: 2026.07.15.010
 
-Change: Added color-coded Bootstrap Icon accents for the Retail POS drawer menu groups and menu links, plus primary Order/Delivery heading icons, so menu categories are easier to remember while the overall UI remains green, black, and white. The shared POS icon injector now assigns stable icon tones, the POS drawer renders explicit non-duplicated group/item icons, and the touched icon/navigation assets plus Developer Panel cache chain are cache-busted to `20260715-009`. Printable receipt and tax invoice headers remain text-only, emoji remain disallowed, and tenant product data, stock, VAT, payments, offline sale sync, duplicate protection, and tax invoice transactions are unchanged.
+Change: Added color-coded icon chips to the central staff dashboard menu cards for Order/Delivery and Retail POS, plus matching color accents in the user menu, so the system entry points are easier to remember. The home dashboard stylesheet and Developer Panel cache chain are cache-busted to `20260715-010`. The overall theme remains green, black, and white; no adjacent duplicate icons or emoji are introduced; printable receipt and tax invoice headers remain text-only; and tenant product data, stock, VAT, payments, offline sale sync, duplicate protection, and tax invoice transactions are unchanged.
+
+Previous build note: Colorful Menu Icons from build `2026.07.15.009` remains unchanged for Retail POS drawer menu groups/menu links and primary Order/Delivery heading icons.
 
 Previous build note: Product Image Storage Fallback from build `2026.07.15.008` remains unchanged. If cloud image upload fails while a staff member saves a product, the selected image is compressed and stored in the local IndexedDB product-image fallback, any existing/product image URL remains intact when available, and the product can still be saved with a readable Thai warning instead of a raw Firebase Storage error.
 
