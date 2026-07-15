@@ -52,6 +52,60 @@ function setResult(message, tone = '') {
   els.importResult.dataset.tone = tone;
 }
 
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (error) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    const ok = document.execCommand('copy');
+    textarea.remove();
+    return ok;
+  }
+}
+
+function renderImportSuccess(rows) {
+  const previewRows = rows.slice(0, 8);
+  const moreCount = Math.max(0, rows.length - previewRows.length);
+  els.importResult.dataset.tone = 'success';
+  els.importResult.innerHTML = `
+    <div class="import-success">
+      <div class="import-success-head">
+        <span class="import-success-icon" aria-hidden="true"><i class="bi bi-check2-circle"></i></span>
+        <div>
+          <strong>นำเข้าสำเร็จ ${rows.length.toLocaleString('th-TH')} รายการ</strong>
+          <span>ตั้งสต็อกเป็น 0 และยังไม่แสดงบน POS จนกว่าจะตรวจสินค้า</span>
+        </div>
+      </div>
+      <div class="import-success-actions">
+        <a class="btn primary" href="/pos/products/">ไปตรวจสินค้าที่นำเข้า</a>
+        <button id="copyImportedSku" class="btn secondary" type="button">คัดลอก SKU</button>
+      </div>
+      <div class="import-success-list">
+        ${previewRows.map(item => `
+          <span>
+            <strong>${escapeHtml(item.masterProductId)}</strong>
+            <small>${escapeHtml(item.name)}</small>
+          </span>
+        `).join('')}
+        ${moreCount ? `<span class="more"><strong>+${moreCount.toLocaleString('th-TH')}</strong><small>รายการอื่น ๆ</small></span>` : ''}
+      </div>
+    </div>
+  `;
+  els.importResult.querySelector('#copyImportedSku')?.addEventListener('click', async event => {
+    const button = event.currentTarget;
+    const copied = await copyText(rows.map(item => item.masterProductId).join('\n'));
+    button.textContent = copied ? 'คัดลอกแล้ว' : 'คัดลอกไม่สำเร็จ';
+    window.setTimeout(() => { button.textContent = 'คัดลอก SKU'; }, 1600);
+  });
+}
+
 function categorySummary(products) {
   const map = new Map();
   for (const item of products) {
@@ -337,7 +391,7 @@ async function importCatalog() {
     await saveRecordsStrict(RetailCollections.products, rows.map(prepareImportProduct), {
       onProgress: ({ completed, total }) => setResult(`กำลังนำเข้า ${completed.toLocaleString('th-TH')} / ${total.toLocaleString('th-TH')} รายการ`)
     });
-    setResult(`นำเข้าสำเร็จ ${rows.length.toLocaleString('th-TH')} รายการ กรุณาตั้งสต็อกและเปิดแสดงบน POS จากหน้าสินค้า`, '');
+    renderImportSuccess(rows);
     existingProducts = await listRecords(RetailCollections.products);
     renderStats();
     renderPreview();

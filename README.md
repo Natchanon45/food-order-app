@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Catalog Preview Filter Counts
-Version: 0.14.74
-Build: 2026.07.15.017
+Milestone: Catalog Import Result Actions
+Version: 0.14.75
+Build: 2026.07.15.018
 
-Change: Added live preview status counts to `/pos/catalog` so the status dropdown shows how many selected rows are in `ทุกสถานะ`, `นำเข้าได้ตอนนี้`, `พร้อมนำเข้า`, `มีในร้านแล้ว`, and `รอตรวจสอบ`. Counts refresh when owners change category shortcuts or toggle `ข้าม SKU ที่มีอยู่แล้ว`. Catalog CSS/JS are cache-busted to `20260715-017`; this is preview/filter UI only and does not alter import payloads, tenant product data, stock, VAT, payments, offline sale sync, duplicate protection, or tax invoice transactions.
+Change: Added post-import result actions to `/pos/catalog`. Successful Retail Master Catalog imports now show a structured success panel with imported count, imported SKU/name examples, a product-review link, and a copy-SKU action for the imported batch. Catalog CSS/JS are cache-busted to `20260715-018`; this is import-result UI only and does not alter import payloads, tenant product data, stock, VAT, payments, offline sale sync, duplicate protection, or tax invoice transactions.
+
+Previous build note: Catalog Preview Filter Counts from build `2026.07.15.017` remains unchanged for live counts in the preview status dropdown.
 
 Previous build note: Catalog Import Category Shortcuts from build `2026.07.15.016` remains unchanged for selecting all categories, ready categories only, clearing the selection, and refreshing importable counts from the skip-existing toggle.
 
