@@ -389,7 +389,8 @@ export function scheduleOfflineQueueRun(delay = 1200) {
   workerTimer = setTimeout(async () => {
     const result = await syncOfflineSalesToFirebase();
     const hasRetryDue = getOfflineSyncQueue().some(sale => normalizeStatus(sale.syncStatus) === 'failed' && retryDue(sale));
-    if (navigator.onLine !== false && (result.failed > 0 || hasRetryDue)) scheduleOfflineQueueRun(Math.min(300000, Math.max(5000, delay * 2)));
+    if (navigator.onLine !== false && result.skipped > 0) scheduleOfflineQueueRun(800);
+    else if (navigator.onLine !== false && (result.failed > 0 || hasRetryDue)) scheduleOfflineQueueRun(Math.min(300000, Math.max(5000, delay * 2)));
   }, delay);
 }
 

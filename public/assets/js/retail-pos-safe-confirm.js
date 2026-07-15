@@ -131,6 +131,8 @@ function resetCartUi() {
 async function safeConfirmPayment(event) {
   const button = event.target?.closest?.('#confirmPaymentBtn');
   if (!button || saving) return;
+  const fallbackEnabled = button.dataset.safeConfirmFallback === '1' || document.documentElement.dataset.retailPosSafeConfirm === 'enabled';
+  if (!fallbackEnabled) return;
   event.preventDefault();
   event.stopPropagation();
   event.stopImmediatePropagation();
@@ -165,4 +167,5 @@ async function safeConfirmPayment(event) {
 }
 
 document.addEventListener('click', safeConfirmPayment, true);
+window.retailPosSafeConfirmFallback = safeConfirmPayment;
 window.addEventListener('retail-pos-receipt-closed', () => setTimeout(resetCartUi, 0));

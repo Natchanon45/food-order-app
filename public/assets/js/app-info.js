@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.63',
-  build: '2026.07.15.006',
+  version: '0.14.64',
+  build: '2026.07.15.007',
   branch: 'feature/retail-pos',
-  commit: 'POS-SYNC-MARKER-AUTHORITY-01463',
+  commit: 'POS-SYNC-DRAIN-SAFE-CONFIRM-01464',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'POS Sync Marker Authority',
-  updatedAt: '2026-07-15T10:50:00+07:00',
+  milestone: 'POS Sync Drain Safe Confirm',
+  updatedAt: '2026-07-15T14:58:00+07:00',
   whatsNew: [
-    'Keep local POS sales with synced markers out of the offline queue after reload',
-    'Refresh diagnostic sync hashes without turning already-synced sales back to pending',
-    'Count only completed sync-eligible sales in the POS sync badge and leave the worker idle when the queue is empty',
+    'Let normal POS checkout use the canonical online Firestore transaction flow instead of the safe-confirm fallback',
+    'Keep safe-confirm as an explicit emergency fallback only when enabled by data attribute or page flag',
+    'Drain large offline sale queues through repeated short sync batches until the queue clears',
     'Keep stable saleId, duplicate protection, stock safety, VAT, payments, and tax invoice transactions unchanged'
   ]
 };

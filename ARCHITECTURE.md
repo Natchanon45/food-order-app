@@ -2,15 +2,19 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.63
-Build: 2026.07.15.006
-Milestone: POS Sync Marker Authority
+Version: 0.14.64
+Build: 2026.07.15.007
+Milestone: POS Sync Drain Safe Confirm
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
 POS offline sync remote reconcile rule: before retrying queued local POS sales, the offline sync worker should read `tenants/{tenantId}/sales/{saleId}` for each local queued sale that still lacks a valid synced flag. If the remote sale exists for the current tenant, the local row must be marked `syncStatus: "synced"` with `firebaseSyncedAt`, `offlineSyncHash`, `syncHashVersion`, and clean queue metadata, and the worker must not rewrite the sale, sale items, stock movements, product stock, or daily summary. This protects duplicate bills and duplicate stock cuts when a previous sync wrote Firestore successfully but the browser did not finish marking localStorage.
 
 POS offline sync marker authority rule: for completed POS sales, local evidence that the sale already synced (`syncStatus: "synced"`, `firebaseSyncedAt`, or `syncedAt`) is authoritative for queue exclusion. `offlineSyncHash` is diagnostic metadata and may be refreshed if later local metadata changes make it differ, but a hash mismatch alone must not move an already-synced sale back to pending or re-enter the stock-deduction sync path. Queue counts and automatic scheduling should include only completed sales whose sync status is still eligible for processing; when that eligible queue is empty, the worker should remain idle instead of scheduling a page-load sync timer.
+
+POS offline sync batch drain rule: the offline sale sync worker may limit each run to a small batch, currently 5 sales, but if more eligible queue rows remain after a successful run it must schedule another short drain cycle automatically. Staff should not need to reload or refocus `/pos` repeatedly to clear a large local pending queue.
+
+POS safe-confirm fallback rule: `retail-pos-safe-confirm.js` is an explicit emergency fallback for stuck checkout UI only. It must not intercept normal `#confirmPaymentBtn` clicks, stop event propagation, or save every sale as local pending unless the button has `data-safe-confirm-fallback="1"` or `document.documentElement.dataset.retailPosSafeConfirm` is set to `enabled`. The normal `retail-pos.js` online checkout path remains the primary flow for Firestore transaction writes, duplicate protection, and stock deduction.
 
 Form validation text-only rule: shared web form entry points should import `/assets/js/form-validation-ui.js` so inputs, selects, and textareas show consistent inline validation copy across Order/Delivery, Admin, Register, and Retail POS. Required or native-invalid fields show only red feedback text directly under the field after touch or submit, valid fields hide feedback without adding green success styling, and optional blank fields stay neutral. The validation layer must suppress native browser validation bubbles and must not change field shape, border, background, shadow, label color, icons, or emoji. Printable receipt/tax document surfaces remain skipped. This presentation layer must not change tenant data, order data, VAT, payments, stock, offline sync, duplicate protection, or tax invoice transactions.
 

@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Sync Marker Authority
-Version: 0.14.63
-Build: 2026.07.15.006
+Milestone: POS Sync Drain Safe Confirm
+Version: 0.14.64
+Build: 2026.07.15.007
 
-Change: Hardened Retail POS offline sale sync so a synced local sale stays synced across page reloads. The sync marker (`syncStatus: "synced"`, `firebaseSyncedAt`, or `syncedAt`) is now authoritative even if later local metadata changes make the diagnostic hash differ, and the POS sync badge counts only completed sales that are actually eligible for offline sync. If no eligible queue exists, the worker stays idle instead of scheduling another page-load sync cycle. The touched POS sync assets are cache-busted to `20260715-006`. This preserves tenant data, stable saleId, duplicate protection, stock safety, VAT, payments, and tax invoice create/void transactions.
+Change: Fixed Retail POS sync queue persistence by letting the main online checkout flow handle normal payments instead of the legacy safe-confirm fallback intercepting every confirmation click and saving all sales as local pending rows. The offline sync worker also continues draining queued sales in 5-sale batches when more rows remain instead of waiting for another page load. The touched POS sync and safe-confirm assets are cache-busted to `20260715-007`. This preserves tenant data, stable saleId, duplicate protection, stock safety, VAT, payments, and tax invoice create/void transactions.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -24,6 +24,10 @@ POS offline sync synced-flag workflow: `/pos` computes a diagnostic `offlineSync
 POS offline sync remote reconcile workflow: before retrying local queued sales, `/pos` reads the matching Firestore sale document by stable `saleId`. If the remote sale already exists for the current tenant, the local row is marked `synced` and removed from the offline queue without writing the sale, sale items, stock movements, product stock, or daily summary again. This handles cases where a previous sync reached Firestore but the browser refreshed or timed out before localStorage was marked.
 
 POS offline sync idle workflow: `/pos` counts and schedules offline sale sync work only for local rows whose sale status is `completed` and whose sync status is still eligible for queue processing. Draft, incomplete, or already-synced rows do not make the header show `รอ Sync`, and when the eligible queue is empty the worker records an idle snapshot without starting another page-load sync timer.
+
+POS offline sync batch drain workflow: `/pos` syncs queued offline sales in small batches to avoid long-running checkout sessions. If one run processes the current batch but more eligible rows remain, the worker schedules the next short drain cycle automatically instead of waiting for staff to reload or refocus the page.
+
+POS safe-confirm fallback workflow: `/pos` keeps `retail-pos-safe-confirm.js` as an emergency fallback only. It must not intercept the normal `#confirmPaymentBtn` click unless `data-safe-confirm-fallback="1"` is placed on the button or `document.documentElement.dataset.retailPosSafeConfirm` is set to `enabled`; the canonical `retail-pos.js` online transaction flow remains responsible for normal checkout.
 
 Tax sync health panel workflow: `/pos/tax-invoices/` displays a diagnostic-only sync health panel after loading and refreshing tax invoices. It summarizes total invoices, Sync Error, pending sync, stale sync, quality review, Firestore-only, local-only, and both-source counts from the merged in-memory invoice list, plus concise load/sync errors from the existing pending invoice sync, tax buyer profile sync, or Firestore list calls. This does not add a Firestore write path and does not mutate retry counters, source sales, VAT totals, payments, stock movements, or issued invoice totals.
 
