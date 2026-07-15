@@ -47,6 +47,7 @@ function isConflictError(error) { return Boolean(conflictTypeFromError(error)); 
 function retryDelayMs(attemptCount) { return RETRY_DELAYS_MS[Math.max(0, Math.min(Number(attemptCount || 0), RETRY_DELAYS_MS.length - 1))]; }
 function retryDue(sale) { const next = new Date(sale?.nextRetryAt || 0).getTime(); return !next || next <= nowMs(); }
 function queueStatuses() { return new Set(['pending', 'syncing', 'failed', 'conflict']); }
+function isCompletedSale(sale = {}) { return String(sale?.status || '').toLowerCase() === 'completed'; }
 function stableJson(value) {
   if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
   if (value && typeof value === 'object') return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`).join(',')}}`;
@@ -110,9 +111,9 @@ export function saleSyncHash(sale = {}) { return `${OFFLINE_SYNC_HASH_VERSION}:$
 export function saleHasSyncedFlag(sale = {}) {
   const status = normalizeStatus(sale.syncStatus);
   if (status !== 'synced' && !sale.firebaseSyncedAt && !sale.syncedAt) return false;
-  return !sale.offlineSyncHash || String(sale.offlineSyncHash) === saleSyncHash(sale);
+  return true;
 }
-function getOfflineSyncQueue() { return readSales().filter(sale => !saleHasSyncedFlag(sale) && queueStatuses().has(normalizeStatus(sale.syncStatus))); }
+function getOfflineSyncQueue() { return readSales().filter(sale => isCompletedSale(sale) && !saleHasSyncedFlag(sale) && queueStatuses().has(normalizeStatus(sale.syncStatus))); }
 
 function backfillSyncedSaleFlags() {
   let changed = 0;
@@ -125,13 +126,18 @@ function backfillSyncedSaleFlags() {
       changed += 1;
       return {
         ...sale,
-        syncStatus: 'pending',
-        syncError: 'SYNC_HASH_CHANGED',
+        syncStatus: 'synced',
+        firebaseSyncedAt: sale.firebaseSyncedAt || sale.syncedAt || nowIso(),
+        offlineSyncHash: hash,
+        syncHashVersion: OFFLINE_SYNC_HASH_VERSION,
+        syncError: '',
         syncLockId: '',
         syncStartedAt: '',
         nextRetryAt: '',
         conflictType: '',
         conflictResolution: '',
+        syncHashMismatchAt: sale.syncHashMismatchAt || nowIso(),
+        syncHashMismatchNote: 'synced marker kept authoritative after local payload metadata changed',
         queueVersion: OFFLINE_QUEUE_VERSION
       };
     }
@@ -177,7 +183,7 @@ function updateWorkerSnapshot(patch = {}) {
 export function getOfflineQueueWorkerSnapshot() { return { ...workerSnapshot, ...getOfflineSyncQueueDetails() }; }
 
 function saleNeedsSync(sale) {
-  if (!sale || sale.status !== 'completed') return false;
+  if (!sale || !isCompletedSale(sale)) return false;
   const status = normalizeStatus(sale.syncStatus);
   if (saleHasSyncedFlag(sale)) return false;
   if (status === 'discarded' || status === 'conflict_resolved') return false;
@@ -218,7 +224,7 @@ async function reconcileRemoteSyncedSales({ limit = 100 } = {}) {
   if (!isFirebaseConfigured || !db || navigator.onLine === false) return 0;
   const tenantId = getTenantId();
   const active = readSales()
-    .filter(sale => !saleHasSyncedFlag(sale) && queueStatuses().has(normalizeStatus(sale.syncStatus)))
+    .filter(sale => isCompletedSale(sale) && !saleHasSyncedFlag(sale) && queueStatuses().has(normalizeStatus(sale.syncStatus)))
     .filter(sale => localSaleId(sale))
     .slice(0, limit);
   let changed = 0;
@@ -372,6 +378,12 @@ export async function syncOfflineSalesToFirebase({ forceRetry = false } = {}) {
 
 export function scheduleOfflineQueueRun(delay = 1200) {
   clearTimeout(workerTimer);
+  backfillSyncedSaleFlags();
+  recoverStaleSyncingSales();
+  if (!getOfflineSyncQueue().length) {
+    updateWorkerSnapshot({ state: navigator.onLine === false ? 'offline' : 'idle', nextRunAt: '' });
+    return;
+  }
   const state = navigator.onLine === false ? 'offline' : 'scheduled';
   updateWorkerSnapshot({ state, nextRunAt: new Date(nowMs() + delay).toISOString() });
   workerTimer = setTimeout(async () => {

@@ -2,13 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.62
-Build: 2026.07.15.005
-Milestone: POS Offline Sync Reconcile
+Version: 0.14.63
+Build: 2026.07.15.006
+Milestone: POS Sync Marker Authority
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
 POS offline sync remote reconcile rule: before retrying queued local POS sales, the offline sync worker should read `tenants/{tenantId}/sales/{saleId}` for each local queued sale that still lacks a valid synced flag. If the remote sale exists for the current tenant, the local row must be marked `syncStatus: "synced"` with `firebaseSyncedAt`, `offlineSyncHash`, `syncHashVersion`, and clean queue metadata, and the worker must not rewrite the sale, sale items, stock movements, product stock, or daily summary. This protects duplicate bills and duplicate stock cuts when a previous sync wrote Firestore successfully but the browser did not finish marking localStorage.
+
+POS offline sync marker authority rule: for completed POS sales, local evidence that the sale already synced (`syncStatus: "synced"`, `firebaseSyncedAt`, or `syncedAt`) is authoritative for queue exclusion. `offlineSyncHash` is diagnostic metadata and may be refreshed if later local metadata changes make it differ, but a hash mismatch alone must not move an already-synced sale back to pending or re-enter the stock-deduction sync path. Queue counts and automatic scheduling should include only completed sales whose sync status is still eligible for processing; when that eligible queue is empty, the worker should remain idle instead of scheduling a page-load sync timer.
 
 Form validation text-only rule: shared web form entry points should import `/assets/js/form-validation-ui.js` so inputs, selects, and textareas show consistent inline validation copy across Order/Delivery, Admin, Register, and Retail POS. Required or native-invalid fields show only red feedback text directly under the field after touch or submit, valid fields hide feedback without adding green success styling, and optional blank fields stay neutral. The validation layer must suppress native browser validation bubbles and must not change field shape, border, background, shadow, label color, icons, or emoji. Printable receipt/tax document surfaces remain skipped. This presentation layer must not change tenant data, order data, VAT, payments, stock, offline sync, duplicate protection, or tax invoice transactions.
 
@@ -122,7 +124,7 @@ POS local stock idempotency rule: local POS sale persistence must be idempotent 
 
 POS offline sync module rule: the POS sync status UI must import the same versioned offline sale sync worker URL as `/pos` loads directly. This keeps manual Sync/Retry actions, background retry timers, worker snapshots, and queue events on one module instance instead of creating duplicate workers through mismatched cache-busted import URLs.
 
-POS offline sync synced flag rule: local POS sales that have reached Firestore may store `offlineSyncHash` and `syncHashVersion` alongside `syncStatus: "synced"` / `firebaseSyncedAt`. The hash must be derived from stable sale payload fields that affect sync and must exclude volatile sync metadata and official sale-number changes. Offline queue and status badge logic should skip only rows with a matching synced flag/hash; if the local sale payload changes and the hash no longer matches, the worker must not blindly treat the row as already synced.
+POS offline sync synced flag rule: local POS sales that have reached Firestore may store `offlineSyncHash` and `syncHashVersion` alongside `syncStatus: "synced"` / `firebaseSyncedAt`. The hash must be derived from stable sale payload fields that affect sync and must exclude volatile sync metadata and official sale-number changes. Offline queue and status badge logic should skip rows with a synced marker first, then refresh diagnostic hash metadata as needed, because preventing duplicate bill writes and duplicate stock cuts is more important than re-queuing an immutable completed sale from local metadata drift.
 
 Tax invoice sync health panel rule: `/pos/tax-invoices/` may display a diagnostic-only sync health panel derived from the already-loaded local/remote invoice rows and existing sync/list error handling. The panel may summarize Sync Error, pending/local sync, stale sync, quality review, and local/Firestore source counts, plus the latest check time and concise load/sync errors. It must not create a new Firestore write path, reset retry counters, mutate buyer profiles, alter source sales, or change VAT, payment, stock, issued invoice totals, create transactions, or void transactions.
 

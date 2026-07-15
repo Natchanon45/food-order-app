@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Offline Sync Reconcile
-Version: 0.14.62
-Build: 2026.07.15.005
+Milestone: POS Sync Marker Authority
+Version: 0.14.63
+Build: 2026.07.15.006
 
-Change: Hardened Retail POS offline sale sync so queued local sales reconcile with Firestore before another sync attempt. If a local sale already exists at `tenants/{tenantId}/sales/{saleId}`, the browser marks the local row as `synced` with `firebaseSyncedAt`, `offlineSyncHash`, `syncHashVersion`, and clean queue metadata, then excludes it from the sync badge and worker queue. The touched POS sync assets are cache-busted to `20260715-005`. This preserves tenant data, stable saleId, duplicate protection, stock safety, VAT, payments, and tax invoice create/void transactions.
+Change: Hardened Retail POS offline sale sync so a synced local sale stays synced across page reloads. The sync marker (`syncStatus: "synced"`, `firebaseSyncedAt`, or `syncedAt`) is now authoritative even if later local metadata changes make the diagnostic hash differ, and the POS sync badge counts only completed sales that are actually eligible for offline sync. If no eligible queue exists, the worker stays idle instead of scheduling another page-load sync cycle. The touched POS sync assets are cache-busted to `20260715-006`. This preserves tenant data, stable saleId, duplicate protection, stock safety, VAT, payments, and tax invoice create/void transactions.
 
 Previous build note: POS sales barcode scanner continuous scanning from P9-B006-18 remains unchanged. After deploy, hard refresh `/pos` if the browser still uses a cached scanner script.
 
@@ -19,9 +19,11 @@ POS product image fallback workflow: `/pos/` product cards can use local Indexed
 
 Unified green UI icon workflow: `/delivery`, `/order`, and Retail POS pages use the green/black/white visual system for app headers, hero panels, cards, focused inputs, and primary actions. Main headings and action buttons may show one Bootstrap Icon, but buttons/cards must not render adjacent duplicate icons, printable bill headers must stay text-only, and emoji must not be used in the UI.
 
-POS offline sync synced-flag workflow: `/pos` computes a stable `offlineSyncHash` from the local sale payload fields that matter for sync, excluding volatile sync metadata and official sale-number changes. Sales with `syncStatus: "synced"` or `firebaseSyncedAt` are backfilled with `offlineSyncHash`, `syncHashVersion`, and clean sync metadata, and the offline queue/status badge excludes them. If the sale payload changes later and the hash no longer matches, the worker can treat it as needing attention instead of blindly trusting a stale boolean flag.
+POS offline sync synced-flag workflow: `/pos` computes a diagnostic `offlineSyncHash` from the local sale payload fields that matter for sync, excluding volatile sync metadata and official sale-number changes. Sales with `syncStatus: "synced"`, `firebaseSyncedAt`, or `syncedAt` are treated as already synced and are backfilled with `offlineSyncHash`, `syncHashVersion`, and clean sync metadata. If later local metadata changes make the hash differ, the worker refreshes the local diagnostic hash while keeping the synced marker authoritative, so already-written sales do not return to the sync badge or duplicate stock-cut path.
 
 POS offline sync remote reconcile workflow: before retrying local queued sales, `/pos` reads the matching Firestore sale document by stable `saleId`. If the remote sale already exists for the current tenant, the local row is marked `synced` and removed from the offline queue without writing the sale, sale items, stock movements, product stock, or daily summary again. This handles cases where a previous sync reached Firestore but the browser refreshed or timed out before localStorage was marked.
+
+POS offline sync idle workflow: `/pos` counts and schedules offline sale sync work only for local rows whose sale status is `completed` and whose sync status is still eligible for queue processing. Draft, incomplete, or already-synced rows do not make the header show `รอ Sync`, and when the eligible queue is empty the worker records an idle snapshot without starting another page-load sync timer.
 
 Tax sync health panel workflow: `/pos/tax-invoices/` displays a diagnostic-only sync health panel after loading and refreshing tax invoices. It summarizes total invoices, Sync Error, pending sync, stale sync, quality review, Firestore-only, local-only, and both-source counts from the merged in-memory invoice list, plus concise load/sync errors from the existing pending invoice sync, tax buyer profile sync, or Firestore list calls. This does not add a Firestore write path and does not mutate retry counters, source sales, VAT totals, payments, stock movements, or issued invoice totals.
 
