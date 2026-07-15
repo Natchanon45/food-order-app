@@ -87,6 +87,11 @@ function renderImportSuccess(rows) {
         <a class="btn primary" href="/pos/products/">ไปตรวจสินค้าที่นำเข้า</a>
         <button id="copyImportedSku" class="btn secondary" type="button">คัดลอก SKU</button>
       </div>
+      <div class="import-success-checklist" aria-label="สิ่งที่ต้องตรวจหลังนำเข้า">
+        <span><i class="bi bi-currency-dollar" aria-hidden="true"></i><strong>ตรวจราคา</strong><small>ยืนยันราคาขายจริงก่อนเปิดใช้งาน</small></span>
+        <span><i class="bi bi-box-seam" aria-hidden="true"></i><strong>ตั้งสต็อก</strong><small>เพิ่มจำนวนคงเหลือจากหน้าสินค้า</small></span>
+        <span><i class="bi bi-eye" aria-hidden="true"></i><strong>เปิดขายบน POS</strong><small>เปิดแสดงเฉพาะรายการที่พร้อมขาย</small></span>
+      </div>
       <div class="import-success-list">
         ${previewRows.map(item => `
           <span>

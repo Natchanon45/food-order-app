@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Catalog Import Result Actions
-Version: 0.14.75
-Build: 2026.07.15.018
+Milestone: Catalog Post Import Checklist
+Version: 0.14.76
+Build: 2026.07.16.001
 
-Change: Added post-import result actions to `/pos/catalog`. Successful Retail Master Catalog imports now show a structured success panel with imported count, imported SKU/name examples, a product-review link, and a copy-SKU action for the imported batch. Catalog CSS/JS are cache-busted to `20260715-018`; this is import-result UI only and does not alter import payloads, tenant product data, stock, VAT, payments, offline sale sync, duplicate protection, or tax invoice transactions.
+Change: Added a post-import checklist to `/pos/catalog` so successful Retail Master Catalog imports clearly remind owners to verify selling prices, set stock, and enable POS visibility only when ready. Catalog CSS/JS are cache-busted to `20260716-001`; this is checklist UI only and does not alter import payloads, tenant product data, stock defaults, stock movements, VAT, payments, offline sale sync, duplicate protection, or tax invoice transactions.
+
+Previous build note: Catalog Import Result Actions from build `2026.07.15.018` remains unchanged for imported count, SKU/name examples, product-review link, and copy-SKU action after import.
 
 Previous build note: Catalog Preview Filter Counts from build `2026.07.15.017` remains unchanged for live counts in the preview status dropdown.
 
