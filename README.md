@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Catalog Import Confirmation Summary
-Version: 0.14.71
-Build: 2026.07.15.014
+Milestone: Catalog Import Review Reasons
+Version: 0.14.72
+Build: 2026.07.15.015
 
-Change: Added a final confirmation summary to `/pos/catalog` before Retail Master Catalog products are imported. The confirmation dialog now shows how many rows will be imported, how many verified rows are skipped because the tenant store already has the same SKU/barcode, and how many selected rows are still waiting for verification. Catalog CSS/JS are cache-busted to `20260715-014`; this is confirmation UI only and does not alter category selection, import payloads, tenant product data, stock, VAT, payments, offline sale sync, duplicate protection, or tax invoice transactions.
+Change: Added concise review reasons to the `/pos/catalog` preview status column. Each row now explains why it is ready, why it will be skipped as already in the tenant store, or what review inputs are missing before a draft product can become importable. Catalog CSS/JS are cache-busted to `20260715-015`; this is preview guidance only and does not alter category selection, import payloads, tenant product data, stock, VAT, payments, offline sale sync, duplicate protection, or tax invoice transactions.
+
+Previous build note: Catalog Import Confirmation Summary from build `2026.07.15.014` remains unchanged for final import dialog counts.
 
 Previous build note: Catalog Import Filters from build `2026.07.15.013` remains unchanged for preview search and status filters.
 

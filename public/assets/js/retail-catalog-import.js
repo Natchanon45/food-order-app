@@ -149,10 +149,25 @@ function barcodeCell(item) {
 }
 
 function statusCell(item) {
-  if (item.catalogStatus !== 'published') return '<span class="pill muted">รอตรวจสอบ</span>';
-  return isExisting(item)
-    ? '<span class="pill warning">มีในร้านแล้ว</span>'
-    : '<span class="pill">พร้อมนำเข้า</span>';
+  const reason = statusReason(item);
+  if (item.catalogStatus !== 'published') {
+    return `<span class="status-stack"><span class="pill muted">รอตรวจสอบ</span><small>${escapeHtml(reason)}</small></span>`;
+  }
+  if (isExisting(item)) {
+    return `<span class="status-stack"><span class="pill warning">มีในร้านแล้ว</span><small>${escapeHtml(reason)}</small></span>`;
+  }
+  return `<span class="status-stack"><span class="pill">พร้อมนำเข้า</span><small>${escapeHtml(reason)}</small></span>`;
+}
+
+function statusReason(item) {
+  if (item.catalogStatus === 'published') {
+    return isExisting(item) ? 'ข้ามได้เพราะ SKU หรือ Barcode ซ้ำ' : 'มี Barcode และแหล่งตรวจสอบแล้ว';
+  }
+  const missing = [];
+  if (!item.barcode) missing.push('Barcode จริง');
+  if (!item.verificationSources?.length) missing.push('แหล่งตรวจสอบ');
+  if (!item.imageUrl) missing.push('รูปสินค้า');
+  return missing.length ? `ต้องเติม ${missing.join(', ')}` : 'รอตรวจคุณภาพข้อมูล';
 }
 
 function sourceCell(item) {

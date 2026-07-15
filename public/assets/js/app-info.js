@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.71',
-  build: '2026.07.15.014',
+  version: '0.14.72',
+  build: '2026.07.15.015',
   branch: 'feature/retail-pos',
-  commit: 'CATALOG-IMPORT-CONFIRMATION-01471',
+  commit: 'CATALOG-IMPORT-REVIEW-REASONS-01472',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Catalog Import Confirmation Summary',
-  updatedAt: '2026-07-15T21:02:00+07:00',
+  milestone: 'Catalog Import Review Reasons',
+  updatedAt: '2026-07-15T21:18:00+07:00',
   whatsNew: [
-    'Add a final Retail Master Catalog import confirmation summary before writing products',
-    'Show importable, skipped-existing, and waiting-verification counts in the confirmation dialog',
-    'Cache-bust the catalog import CSS and JS for the new confirmation summary',
+    'Add short review reasons below each Retail Master Catalog preview status badge',
+    'Explain ready, skipped-existing, and waiting-verification catalog rows before import',
+    'Cache-bust the catalog import CSS and JS for the new status reason display',
     'Keep tenant data, stock, VAT, payments, offline sync, duplicate protection, and tax invoice transactions unchanged'
   ]
 };
