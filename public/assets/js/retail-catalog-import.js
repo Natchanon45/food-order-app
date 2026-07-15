@@ -11,6 +11,9 @@ const els = {
   readyProducts: document.querySelector('#readyProducts'),
   currentProducts: document.querySelector('#currentProducts'),
   reviewPending: document.querySelector('#reviewPending'),
+  catalogSearch: document.querySelector('#catalogSearch'),
+  catalogStatusFilter: document.querySelector('#catalogStatusFilter'),
+  clearCatalogFilters: document.querySelector('#clearCatalogFilters'),
   importButton: document.querySelector('#importButton'),
   previewRows: document.querySelector('#previewRows'),
   previewSummary: document.querySelector('#previewSummary'),
@@ -145,9 +148,10 @@ function barcodeCell(item) {
 }
 
 function statusCell(item) {
-  return item.catalogStatus === 'published'
-    ? '<span class="pill">พร้อมนำเข้า</span>'
-    : '<span class="pill muted">ฉบับร่าง</span>';
+  if (item.catalogStatus !== 'published') return '<span class="pill muted">รอตรวจสอบ</span>';
+  return isExisting(item)
+    ? '<span class="pill warning">มีในร้านแล้ว</span>'
+    : '<span class="pill">พร้อมนำเข้า</span>';
 }
 
 function sourceCell(item) {
@@ -160,9 +164,12 @@ function sourceCell(item) {
 
 function renderPreview() {
   const rows = selectedProducts();
+  const filteredRows = previewRows(rows);
   const published = rows.filter(item => item.catalogStatus === 'published').length;
-  els.previewSummary.textContent = `เลือก ${rows.length.toLocaleString('th-TH')} รายการ • พร้อมนำเข้า ${published.toLocaleString('th-TH')} รายการ`;
-  els.previewRows.innerHTML = rows.slice(0, 20).map(item => `
+  const importable = importBreakdown().importable;
+  const visibleLimit = 50;
+  els.previewSummary.textContent = `เลือก ${rows.length.toLocaleString('th-TH')} รายการ • แสดง ${filteredRows.length.toLocaleString('th-TH')} รายการ • พร้อมนำเข้า ${published.toLocaleString('th-TH')} • นำเข้าได้ตอนนี้ ${importable.toLocaleString('th-TH')}`;
+  els.previewRows.innerHTML = filteredRows.length ? filteredRows.slice(0, visibleLimit).map(item => `
     <tr>
       <td>${escapeHtml(item.masterProductId)}</td>
       <td><strong>${escapeHtml(item.name)}</strong></td>
@@ -173,8 +180,37 @@ function renderPreview() {
       <td>${statusCell(item)}</td>
       <td>${sourceCell(item)}</td>
     </tr>
-  `).join('');
+  `).join('') : '<tr><td colspan="8" class="empty-preview">ไม่พบรายการตามคำค้นหาหรือตัวกรองนี้</td></tr>';
   renderImportSummary();
+}
+
+function previewRows(rows) {
+  const query = String(els.catalogSearch.value || '').trim().toLowerCase();
+  const status = els.catalogStatusFilter.value || 'all';
+  return rows.filter(item => {
+    const exists = isExisting(item);
+    const isReady = item.catalogStatus === 'published';
+    const statusMatch = status === 'all'
+      || (status === 'ready' && isReady)
+      || (status === 'importable' && isReady && (!els.skipExisting.checked || !exists))
+      || (status === 'existing' && isReady && exists)
+      || (status === 'draft' && !isReady);
+    if (!statusMatch) return false;
+    if (!query) return true;
+    const haystack = [
+      item.masterProductId,
+      item.sku,
+      item.barcode,
+      item.name,
+      item.nameTh,
+      item.brand,
+      item.brandTh,
+      item.category,
+      item.categoryId,
+      item.keywords?.join(' ')
+    ].join(' ').toLowerCase();
+    return haystack.includes(query);
+  });
 }
 
 function renderStats() {
@@ -260,6 +296,13 @@ els.categoryGrid.addEventListener('change', event => {
   updateImportButton();
 });
 els.skipExisting.addEventListener('change', updateImportButton);
+els.catalogSearch.addEventListener('input', renderPreview);
+els.catalogStatusFilter.addEventListener('change', renderPreview);
+els.clearCatalogFilters.addEventListener('click', () => {
+  els.catalogSearch.value = '';
+  els.catalogStatusFilter.value = 'all';
+  renderPreview();
+});
 els.importButton.addEventListener('click', requestImport);
 els.cancelImport.addEventListener('click', () => {
   pendingImportRows = [];

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>นำเข้าสินค้าพื้นฐาน</title>
   <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260713-004">
-  <link rel="stylesheet" href="/assets/css/retail-catalog-import.css?v=20260715-012">
+  <link rel="stylesheet" href="/assets/css/retail-catalog-import.css?v=20260715-013">
 </head>
 <body>
   <header class="pos-header">
@@ -64,6 +64,20 @@
 
     <section class="catalog-panel">
       <div class="panel-head"><div><h2>ตรวจรายการก่อนนำเข้า</h2><p id="previewSummary" class="preview-muted">กำลังตรวจ Catalog...</p></div><span class="pill">Preview 20 รายการ</span></div>
+      <div class="catalog-filterbar" aria-label="ค้นหาและกรองรายการ Catalog">
+        <label class="catalog-search">
+          <i class="bi bi-search" aria-hidden="true"></i>
+          <input id="catalogSearch" type="search" placeholder="ค้นหาชื่อสินค้า / Barcode / SKU / แบรนด์">
+        </label>
+        <select id="catalogStatusFilter" aria-label="กรองสถานะ Catalog">
+          <option value="all">ทุกสถานะ</option>
+          <option value="importable">นำเข้าได้ตอนนี้</option>
+          <option value="ready">พร้อมนำเข้า</option>
+          <option value="existing">มีในร้านแล้ว</option>
+          <option value="draft">รอตรวจสอบ</option>
+        </select>
+        <button id="clearCatalogFilters" class="btn filter-clear" type="button">ล้างตัวกรอง</button>
+      </div>
       <div class="table-wrap"><table class="catalog-table"><thead><tr><th>Master ID</th><th>สินค้า</th><th>หมวด</th><th>แบรนด์</th><th class="number">ราคาแนะนำ</th><th>Barcode</th><th>สถานะ</th><th>แหล่งตรวจสอบ</th></tr></thead><tbody id="previewRows"></tbody></table></div>
     </section>
   </main>
@@ -83,7 +97,7 @@
 
   <script src="/assets/vendor/sheetjs/xlsx.full.min.js"></script>
   <script type="module" src="/assets/js/retail-pos-icons.js?v=20260715-009"></script>
-  <script type="module" src="/assets/js/retail-catalog-import.js?v=20260715-012"></script>
+  <script type="module" src="/assets/js/retail-catalog-import.js?v=20260715-013"></script>
   <script type="module" src="/assets/js/retail-catalog-excel-import.js?v=20260702-028"></script>
 </body>
 </html>

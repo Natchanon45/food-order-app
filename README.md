@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Catalog Import Readiness UI
-Version: 0.14.69
-Build: 2026.07.15.012
+Milestone: Catalog Import Filters
+Version: 0.14.70
+Build: 2026.07.15.013
 
-Change: Improved `/pos/catalog` import readiness visibility for the Retail Master Catalog flow. The category panel now explains selected products, verified ready products, products importable now, products skipped because SKU/barcode already exists in the tenant store, and draft products waiting for verification. The import button also distinguishes "ready products already skipped" from a truly empty ready catalog. Catalog CSS/JS are cache-busted to `20260715-012`, and tenant product data, stock, VAT, payments, offline sale sync, duplicate protection, and tax invoice transactions are unchanged.
+Change: Added `/pos/catalog` preview search and status filters for the Retail Master Catalog flow. Owners can search by product name, barcode, SKU, brand, category, or keywords and filter the preview table by all rows, importable now, verified ready, already in store, or draft/waiting verification. Catalog CSS/JS are cache-busted to `20260715-013`; the filters are preview-only and do not alter category selection, import payloads, tenant product data, stock, VAT, payments, offline sale sync, duplicate protection, or tax invoice transactions.
+
+Previous build note: Catalog Import Readiness UI from build `2026.07.15.012` remains unchanged for import readiness counts and skipped-existing explanations.
 
 Previous build note: Unified Icon Color System from build `2026.07.15.011` remains unchanged across Order/Delivery, Admin, table QR, staff user menus, and Retail POS entry surfaces.
 
