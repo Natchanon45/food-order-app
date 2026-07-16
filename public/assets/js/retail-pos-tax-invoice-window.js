@@ -9,7 +9,7 @@ const closeBtn = document.querySelector('#closeBtn');
 const params = new URLSearchParams(location.search);
 const invoiceId = params.get('invoiceId') || '';
 const autoPrint = params.get('auto') === '1';
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 20;
 
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -78,12 +78,13 @@ function vatTotalAmount(invoice = {}) {
   return beforeVat + vatAmount;
 }
 
-function invoiceHeaderHtml(invoice, seller, buyer, isVoid) {
+function invoiceHeaderHtml(invoice, seller, buyer, isVoid, pageNumber, totalPages) {
   const sellerTax = sellerTaxLine(seller);
   const buyerTax = buyerTaxLine(buyer);
   const buyerBranch = buyerBranchText(buyer);
   return `
     ${isVoid ? `<div class="void-stamp">ยกเลิก</div>` : ''}
+    <div class="tax-page-number">หน้า ${pageNumber}/${totalPages}</div>
     <section class="tax-title">
       <h1>ใบกำกับภาษี</h1>
       <div>Tax Invoice</div>
@@ -151,22 +152,40 @@ function render(invoice) {
     chunks.push(items.slice(index, index + ITEMS_PER_PAGE));
   }
   root.className = 'tax-stack';
+  const totalPages = chunks.length;
   root.innerHTML = chunks.map((chunk, pageIndex) => {
     const isLastPage = pageIndex === chunks.length - 1;
     const offset = pageIndex * ITEMS_PER_PAGE;
     return `<article class="tax-paper" data-tax-page="${pageIndex + 1}">
-      ${invoiceHeaderHtml(invoice, seller, buyer, isVoid)}
+      ${invoiceHeaderHtml(invoice, seller, buyer, isVoid, pageIndex + 1, totalPages)}
       ${itemsTableHtml(chunk, offset)}
       ${isLastPage ? summaryHtml(invoice) : ''}
     </article>`;
   }).join('');
 }
 
-async function boot() {
-  render(await findInvoice());
-  if (autoPrint) setTimeout(() => window.print(), 350);
+async function waitForPrintReady() {
+  try {
+    if (document.fonts?.ready) await document.fonts.ready;
+  } catch {}
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 }
 
-printBtn?.addEventListener('click', () => window.print());
+async function printInvoice() {
+  if (printBtn) printBtn.disabled = true;
+  try {
+    await waitForPrintReady();
+    window.print();
+  } finally {
+    setTimeout(() => { if (printBtn) printBtn.disabled = false; }, 800);
+  }
+}
+
+async function boot() {
+  render(await findInvoice());
+  if (autoPrint) setTimeout(printInvoice, 350);
+}
+
+printBtn?.addEventListener('click', printInvoice);
 closeBtn?.addEventListener('click', () => window.close());
 boot();

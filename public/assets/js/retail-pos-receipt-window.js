@@ -87,7 +87,15 @@ function customerHtml(sale) {
   if (!name && !phone && !code) return '';
   return `<hr class="rule"><div class="row"><span>ลูกค้า</span><strong>${escapeHtml(maskReceiptCustomerName(name) || '-')}</strong></div>${code ? `<div class="row"><span>สมาชิก</span><span>${escapeHtml(code)}</span></div>` : ''}${phone ? `<div class="row"><span>โทร</span><span>${escapeHtml(maskReceiptPhone(phone))}</span></div>` : ''}`;
 }
-function itemsHtml(items) { return items.map(item => `<div class="item"><div><strong>${escapeHtml(item.name || item.productName || '-')}</strong><small>${money(item.price)} x ${Number(item.qty || 0).toLocaleString('th-TH')}</small></div><div>${money(item.lineTotal || Number(item.price || 0) * Number(item.qty || 0))}</div></div>`).join(''); }
+function itemsHtml(items) {
+  const rows = items.map(item => {
+    const qty = Number(item.qty || 0);
+    const name = `${item.name || item.productName || '-'} x ${qty.toLocaleString('th-TH')}`;
+    const code = item.id || item.barcode || '';
+    return `<tr><td><strong>${escapeHtml(name)}</strong>${code ? `<small>${escapeHtml(code)}</small>` : ''}</td><td>${money(item.price)}</td><td>${money(item.lineTotal || Number(item.price || 0) * qty)}</td></tr>`;
+  }).join('');
+  return `<table class="receipt-items"><thead><tr><th>รายการ</th><th>ราคา</th><th>รวม</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
 function vatHtml(sale) {
   const vat = Number(sale.vatAmount || 0);
   if (!vat && !sale.vatRegistered) return '';

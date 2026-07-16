@@ -1,13 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Invoice A4 Pagination Polish
-Version: 0.14.82
-Build: 2026.07.16.007
+Milestone: Tax Invoice Page Count And Receipt Reprint
+Version: 0.14.83
+Build: 2026.07.16.008
 
-Change: Polished `/pos/tax-invoice/` for reliable A4 full tax invoice printing. Seller and buyer tax ID rows append `สำนักงานใหญ่` or branch text on the same line, the invoice metadata box now wraps invoice number/date/source receipt values inside the value column, and toolbar buttons include icons. Print output repeats the header and buyer section on every page, limits item rows to 10 per page, and renders totals plus signature lines only on the final page. The tax invoice print script cache is bumped to `20260716-007`.
+Change: Updated `/pos/tax-invoice/` and `/pos/sales/` print flows. Full tax invoices now fit up to 20 item rows per A4 page, show `หน้า n/m` page numbers, and avoid external icon CSS in the print window to reduce print-preview hangs. Sale-history receipt detail now uses `รายการ / ราคา / รวม` with quantity inline in the item name, and historical receipt printing opens the canonical `/pos/receipt/` print page so the shop header/address appear like a normal checkout receipt. Cache versions are bumped to `20260716-008`.
 
-Previous build note: POS Local First Loyalty Receipt from build `2026.07.16.006` remains unchanged for saving Retail POS bills locally first, stable saleId background sync, idempotent local stock deduction, and first-render customer/member plus loyalty rows.
+Previous build note: Tax Invoice A4 Pagination Polish from build `2026.07.16.007` remains unchanged for seller/buyer branch text, compact metadata box wrapping, repeated invoice headers, and final-page-only totals/signatures.
 
 Previous build note: POS Local First Receipt Data from build `2026.07.16.005` remains unchanged for saving Retail POS bills locally first, using stable saleId background sync, and avoiding duplicate stock deduction.
 
