@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Buyer Tax ID First
-Version: 0.14.91
-Build: 2026.07.16.016
+Milestone: Tax Sync Permission And Cross Tab Lock
+Version: 0.14.92
+Build: 2026.07.16.017
 
-Change: In `/pos/tax-invoices/`, the `แก้ข้อมูลผู้ซื้อ` dialog now shows `เลขประจำตัวผู้เสียภาษี` with its DBD lookup button above `ชื่อผู้ซื้อ / บริษัท`. Existing field IDs, buyer recovery validation, local pending-invoice updates, and retry sync behavior remain unchanged. The app-info cache chain is bumped to `20260716-016`.
+Change: Fixed endless full-tax invoice retry caused by missing Firestore permissions and cross-tab LocalStorage feedback. Firestore rules now allow tenant-authorized Retail POS roles to read/write `taxInvoices` and `taxBuyerProfiles`, reserve `TAX` counters/running numbers, and preserve tenant payload validation. Tax sync uses a tenant-scoped cross-tab lock, marks `permission-denied` as auto-retry blocked, retries blocked rows only after an explicit `ลอง Sync`, and handles invoice LocalStorage events as display refreshes without starting another sync. Tax assets and app-info are bumped to `20260716-017`.
+
+Previous build note: Tax Buyer Tax ID First from build `2026.07.16.016` remains unchanged for the buyer tax ID and DBD lookup above the buyer/company name.
 
 Previous build note: Retail POS Settings Nonblocking Sync from build `2026.07.16.015` remains unchanged for responsive local-first settings saves and timeout-protected background Firebase sync.
 

@@ -1,4 +1,4 @@
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, getExistingFullTaxInvoiceForSale, syncPendingTaxInvoices, taxInvoiceUrl } from './retail-pos-full-tax-invoice.js?v=20260713-002';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, getExistingFullTaxInvoiceForSale, syncPendingTaxInvoices, taxInvoiceUrl } from './retail-pos-full-tax-invoice.js?v=20260716-017';
 import { maskReceiptCustomerName, maskReceiptPhone } from './retail-receipt-privacy.js?v=20260716-002';
 
 const SALES_KEY = 'retail_pos_sales_v1';

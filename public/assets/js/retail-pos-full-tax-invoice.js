@@ -9,6 +9,9 @@ const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
 const TAX_BUYER_PROFILE_KEY = 'retail_pos_tax_buyer_profiles_v1';
 const STORE_SETTINGS_KEY = 'retail_pos_store_settings_v1';
 const LEGACY_STORE_SETTINGS_KEY = 'food_order_store_settings';
+const TAX_SYNC_LOCK_PREFIX = 'retail_pos_tax_sync_lock_v1_';
+const TAX_SYNC_LOCK_TTL_MS = 30000;
+const TAX_SYNC_OWNER = crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`;
 let pendingTaxInvoiceSyncPromise = null;
 
 function readJson(key, fallback) {
@@ -42,6 +45,30 @@ function moneyNumber(value) {
 
 function syncErrorMessage(error) {
   return normalizeText(error?.message || error || 'SYNC_FAILED').slice(0, 180);
+}
+
+function isPermissionDenied(error) {
+  const code = normalizeText(error?.code || '').toLowerCase();
+  const message = syncErrorMessage(error).toLowerCase();
+  return code.includes('permission-denied') || message.includes('permission-denied') || message.includes('missing or insufficient permissions') || message.includes('403');
+}
+
+function taxSyncLockKey() {
+  return `${TAX_SYNC_LOCK_PREFIX}${getTenantId()}`;
+}
+
+function acquireTaxSyncLock() {
+  const now = Date.now();
+  const key = taxSyncLockKey();
+  const current = readJson(key, null);
+  if (current?.owner && current.owner !== TAX_SYNC_OWNER && Number(current.expiresAt || 0) > now) return false;
+  writeJson(key, { owner: TAX_SYNC_OWNER, expiresAt: now + TAX_SYNC_LOCK_TTL_MS });
+  return readJson(key, null)?.owner === TAX_SYNC_OWNER;
+}
+
+function releaseTaxSyncLock() {
+  const key = taxSyncLockKey();
+  if (readJson(key, null)?.owner === TAX_SYNC_OWNER) localStorage.removeItem(key);
 }
 
 function taxVoidValidationError(message) {
@@ -266,7 +293,9 @@ function markLocalInvoiceSyncError(invoice, error, context = {}) {
       syncTargetId: normalizeText(context.targetId || invoice.syncTargetId || invoice.id || invoice._documentId || invoice.invoiceNumber || ''),
       syncErrorAt: Date.now(),
       syncAttemptedAt: Date.now(),
-      syncAttemptCount: Number(invoice.syncAttemptCount || 0) + 1
+      syncAttemptCount: Number(invoice.syncAttemptCount || 0) + 1,
+      syncAutoRetryBlocked: isPermissionDenied(error),
+      syncBlockedReason: isPermissionDenied(error) ? 'permission-denied' : ''
     });
   } catch (updateError) {
     console.warn('[retail-pos-full-tax-invoice] mark sync error failed', updateError);
@@ -423,6 +452,7 @@ async function createInvoiceOnline(sale, buyer) {
     });
   } catch (error) {
     console.warn('[retail-pos-full-tax-invoice] transaction fallback', error);
+    if (isPermissionDenied(error)) throw error;
     return null;
   }
   if (committed) saveLocalInvoice(committed);
@@ -458,6 +488,7 @@ async function runPendingTaxInvoiceSync() {
     const status = String(invoice.syncStatus || '');
     return invoice.status !== 'void'
       && ['pending_create', 'local_only'].includes(status)
+      && invoice.syncAutoRetryBlocked !== true
       && saleKey(saleFromInvoice(invoice));
   });
   for (const invoice of pendingCreates) {
@@ -483,7 +514,9 @@ async function runPendingTaxInvoiceSync() {
   }
   const pendingVoids = listLocalInvoices().filter(invoice => {
     const status = String(invoice.syncStatus || '');
-    return invoice.status === 'void' && ['pending_void', 'local_void'].includes(status);
+    return invoice.status === 'void'
+      && ['pending_void', 'local_void'].includes(status)
+      && invoice.syncAutoRetryBlocked !== true;
   });
   for (const invoice of pendingVoids) {
     try {
@@ -506,10 +539,24 @@ async function runPendingTaxInvoiceSync() {
 
 export async function syncPendingTaxInvoices() {
   if (pendingTaxInvoiceSyncPromise) return pendingTaxInvoiceSyncPromise;
+  if (!acquireTaxSyncLock()) return [];
   pendingTaxInvoiceSyncPromise = runPendingTaxInvoiceSync().finally(() => {
+    releaseTaxSyncLock();
     pendingTaxInvoiceSyncPromise = null;
   });
   return pendingTaxInvoiceSyncPromise;
+}
+
+export async function retryTaxInvoiceSync(invoice) {
+  updateLocalInvoice({
+    id: invoice?.id || invoice?._documentId || invoice?.invoiceNumber || '',
+    invoiceNumber: invoice?.invoiceNumber || '',
+    syncAutoRetryBlocked: false,
+    syncBlockedReason: '',
+    syncError: '',
+    retryRequestedAt: Date.now()
+  });
+  return syncPendingTaxInvoices();
 }
 
 export function getExistingFullTaxInvoiceForSale(sale) {
@@ -626,7 +673,9 @@ export async function voidFullTaxInvoice(invoiceInput, reason = '') {
       syncError: transactionError ? syncErrorMessage(transactionError) : '',
       syncErrorAt: transactionError ? Date.now() : null,
       syncAttemptedAt: transactionError ? Date.now() : null,
-      syncAttemptCount: transactionError ? Number(invoiceInput.syncAttemptCount || 0) + 1 : Number(invoiceInput.syncAttemptCount || 0)
+      syncAttemptCount: transactionError ? Number(invoiceInput.syncAttemptCount || 0) + 1 : Number(invoiceInput.syncAttemptCount || 0),
+      syncAutoRetryBlocked: transactionError ? isPermissionDenied(transactionError) : false,
+      syncBlockedReason: transactionError && isPermissionDenied(transactionError) ? 'permission-denied' : ''
     });
     return committed;
   }

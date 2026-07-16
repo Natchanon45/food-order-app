@@ -1,5 +1,5 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
-import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260713-002';
+import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, retryTaxInvoiceSync, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260716-017';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -972,7 +972,7 @@ function cardHtml(invoice) {
         ${receiptUrl ? `<a class="btn btn-secondary" href="${escapeHtml(receiptUrl)}" target="_blank" rel="noopener">${iconLabel('bi-receipt', 'ดูบิลต้นทาง')}</a>` : ''}
         ${canEditPendingBuyer(invoice) ? `<button class="btn btn-secondary" type="button" data-edit-tax-buyer="${escapeHtml(keyOf(invoice))}">${iconLabel('bi-pencil-square', 'แก้ผู้ซื้อ')}</button>` : ''}
         ${canRetrySync(invoice) ? `<button class="btn btn-secondary" type="button" data-copy-tax-sync="${escapeHtml(keyOf(invoice))}">${iconLabel('bi-clipboard', 'คัดลอก Sync')}</button>` : ''}
-        ${canRetrySync(invoice) ? `<button class="btn btn-secondary" type="button" data-retry-tax-sync="1">${iconLabel('bi-arrow-repeat', 'ลอง Sync')}</button>` : ''}
+        ${canRetrySync(invoice) ? `<button class="btn btn-secondary" type="button" data-retry-tax-sync="${escapeHtml(keyOf(invoice))}">${iconLabel('bi-arrow-repeat', 'ลอง Sync')}</button>` : ''}
         ${isVoid ? '' : `<button class="btn btn-danger" type="button" data-void-tax="${escapeHtml(keyOf(invoice))}">${iconLabel('bi-x-circle', 'ยกเลิก')}</button>`}
       </div>
     </div>
@@ -993,12 +993,12 @@ function render() {
   listEl.innerHTML = rows.map(cardHtml).join('');
 }
 
-async function load() {
+async function load({ sync = true } = {}) {
   refreshBtn.disabled = true;
   setIconLabel(refreshBtn, 'bi-hourglass-split', 'กำลังโหลด...');
   lastSyncHealth = { checkedAt: Date.now(), pendingTaxOk: true, profileOk: true, remoteListOk: true, pendingTaxError: '', profileError: '', remoteListError: '' };
   try {
-    try { await syncPendingTaxInvoices(); }
+    try { if (sync) await syncPendingTaxInvoices(); }
     catch (error) {
       lastSyncHealth.pendingTaxOk = false;
       lastSyncHealth.pendingTaxError = `ใบกำกับ: ${conciseError(error) || 'sync skipped'}`;
@@ -1139,10 +1139,12 @@ listEl?.addEventListener('click', async event => {
   }
   const retryButton = event.target.closest('[data-retry-tax-sync]');
   if (retryButton) {
+    const invoice = invoices.find(row => keyOf(row) === String(retryButton.dataset.retryTaxSync || ''));
     retryButton.disabled = true;
     setIconLabel(retryButton, 'bi-hourglass-split', 'กำลัง Sync...');
     try {
-      await load();
+      if (invoice) await retryTaxInvoiceSync(invoice);
+      await load({ sync: false });
     } finally {
       if (retryButton.isConnected) {
         retryButton.disabled = false;
@@ -1158,7 +1160,7 @@ listEl?.addEventListener('click', async event => {
 });
 voidCancelBtn?.addEventListener('click', () => voidDialog?.close());
 voidForm?.addEventListener('submit', event => { event.preventDefault(); submitVoidInvoice(); });
-window.addEventListener('storage', event => { if (!event.key || event.key === TAX_INVOICE_LOCAL_KEY) load(); });
+window.addEventListener('storage', event => { if (!event.key || event.key === TAX_INVOICE_LOCAL_KEY) load({ sync: false }); });
 window.addEventListener('online', load);
 load();
 loadSalesForSearch();

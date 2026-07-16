@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.91',
-  build: '2026.07.16.016',
+  version: '0.14.92',
+  build: '2026.07.16.017',
   branch: 'feature/retail-pos',
-  commit: 'TAX-BUYER-TAX-ID-FIRST-01491',
+  commit: 'TAX-SYNC-PERMISSION-LOCK-01492',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Tax Buyer Tax ID First',
-  updatedAt: '2026-07-16T23:30:00+07:00',
+  milestone: 'Tax Sync Permission And Cross Tab Lock',
+  updatedAt: '2026-07-16T23:55:00+07:00',
   whatsNew: [
-    'Move the buyer tax ID field above the buyer or company name field',
-    'Keep the DBD lookup button attached to the tax ID input',
-    'Preserve existing tax buyer recovery validation and save behavior'
+    'Allow tenant-scoped tax invoices, tax buyer profiles, TAX counters, and TAX running numbers in Firestore rules',
+    'Stop automatic retry after permission-denied and require an explicit retry',
+    'Prevent multiple tax history tabs from triggering each other in an endless sync loop'
   ]
 };
 
