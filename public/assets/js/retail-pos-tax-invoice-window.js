@@ -40,8 +40,26 @@ async function findInvoice() {
   catch { return null; }
 }
 
-function branchText(seller = {}) {
+function sellerBranchText(seller = {}) {
   return seller.sellerBranchType === 'branch' ? `สาขา ${seller.sellerBranchCode || '-'}` : 'สำนักงานใหญ่';
+}
+
+function buyerBranchText(buyer = {}) {
+  return String(buyer.buyerBranchName || '').trim();
+}
+
+function sellerTaxLine(seller = {}) {
+  const taxId = String(seller.sellerTaxId || '').trim();
+  const branch = sellerBranchText(seller);
+  if (!taxId) return branch;
+  return `เลขประจำตัวผู้เสียภาษี ${taxId}${branch ? ` ${branch}` : ''}`;
+}
+
+function buyerTaxLine(buyer = {}) {
+  const taxId = String(buyer.buyerTaxId || '').trim();
+  const branch = buyerBranchText(buyer) || 'สำนักงานใหญ่';
+  if (!taxId) return '';
+  return `เลขประจำตัวผู้เสียภาษี ${taxId}${branch ? ` ${branch}` : ''}`;
 }
 
 function itemLineTotal(item = {}) {
@@ -61,6 +79,9 @@ function vatTotalAmount(invoice = {}) {
 }
 
 function invoiceHeaderHtml(invoice, seller, buyer, isVoid) {
+  const sellerTax = sellerTaxLine(seller);
+  const buyerTax = buyerTaxLine(buyer);
+  const buyerBranch = buyerBranchText(buyer);
   return `
     ${isVoid ? `<div class="void-stamp">ยกเลิก</div>` : ''}
     <section class="tax-title">
@@ -72,8 +93,7 @@ function invoiceHeaderHtml(invoice, seller, buyer, isVoid) {
         <h2>${escapeHtml(seller.sellerName || 'POS ร้านค้าปลีก')}</h2>
         ${seller.sellerAddress ? `<p>${escapeHtml(seller.sellerAddress)}</p>` : ''}
         ${seller.sellerPhone ? `<p>โทร ${escapeHtml(seller.sellerPhone)}</p>` : ''}
-        ${seller.sellerTaxId ? `<p>เลขประจำตัวผู้เสียภาษี ${escapeHtml(seller.sellerTaxId)}</p>` : ''}
-        <p>${escapeHtml(branchText(seller))}</p>
+        ${sellerTax ? `<p>${escapeHtml(sellerTax)}</p>` : ''}
       </div>
       <div class="doc-box">
         <div><span>เลขที่</span><strong>${escapeHtml(invoice.invoiceNumber || invoice.id || '-')}</strong></div>
@@ -86,8 +106,7 @@ function invoiceHeaderHtml(invoice, seller, buyer, isVoid) {
     <section class="buyer-box">
       <h2>ผู้ซื้อ / ลูกค้า</h2>
       <p><strong>${escapeHtml(buyer.buyerName || '-')}</strong></p>
-      ${buyer.buyerTaxId ? `<p>เลขประจำตัวผู้เสียภาษี ${escapeHtml(buyer.buyerTaxId)}</p>` : ''}
-      ${buyer.buyerBranchName ? `<p>${escapeHtml(buyer.buyerBranchName)}</p>` : ''}
+      ${buyerTax ? `<p>${escapeHtml(buyerTax)}</p>` : buyerBranch ? `<p>${escapeHtml(buyerBranch)}</p>` : ''}
       ${buyer.buyerAddress ? `<p>${escapeHtml(buyer.buyerAddress)}</p>` : ''}
     </section>`;
 }
@@ -100,18 +119,20 @@ function itemsTableHtml(items, offset) {
 }
 
 function summaryHtml(invoice) {
-  return `<section class="summary-box">
-    <div><span>รวมสินค้า</span><strong>${money(invoice.subtotal)}</strong></div>
-    <div><span>ส่วนลด</span><strong>${money(invoice.discount)}</strong></div>
-    ${Number(invoice.pointDiscount || 0) ? `<div><span>ส่วนลดแต้ม</span><strong>${money(invoice.pointDiscount)}</strong></div>` : ''}
-    <div><span>ยอดก่อน VAT</span><strong>${money(invoice.beforeVat)}</strong></div>
-    <div><span>VAT ${Number(invoice.vatRate || 7).toLocaleString('th-TH')}%</span><strong>${money(invoice.vatAmount)}</strong></div>
-    <div><span>${invoice.vatMode === 'exclude' ? 'ราคาไม่รวม VAT' : 'ราคารวม VAT'}</span><strong>${money(vatTotalAmount(invoice))}</strong></div>
-    <div class="grand"><span>ยอดสุทธิ</span><strong>${money(invoice.totalAmount)}</strong></div>
-  </section>
-  <section class="signature-grid">
-    <div><span></span><p>ผู้รับสินค้า / ผู้ซื้อ</p></div>
-    <div><span></span><p>ผู้รับเงิน / ผู้ขาย</p></div>
+  return `<section class="tax-final-block">
+    <section class="summary-box">
+      <div><span>รวมสินค้า</span><strong>${money(invoice.subtotal)}</strong></div>
+      <div><span>ส่วนลด</span><strong>${money(invoice.discount)}</strong></div>
+      ${Number(invoice.pointDiscount || 0) ? `<div><span>ส่วนลดแต้ม</span><strong>${money(invoice.pointDiscount)}</strong></div>` : ''}
+      <div><span>ยอดก่อน VAT</span><strong>${money(invoice.beforeVat)}</strong></div>
+      <div><span>VAT ${Number(invoice.vatRate || 7).toLocaleString('th-TH')}%</span><strong>${money(invoice.vatAmount)}</strong></div>
+      <div><span>${invoice.vatMode === 'exclude' ? 'ราคาไม่รวม VAT' : 'ราคารวม VAT'}</span><strong>${money(vatTotalAmount(invoice))}</strong></div>
+      <div class="grand"><span>ยอดสุทธิ</span><strong>${money(invoice.totalAmount)}</strong></div>
+    </section>
+    <section class="signature-grid">
+      <div><span></span><p>ผู้รับสินค้า / ผู้ซื้อ</p></div>
+      <div><span></span><p>ผู้รับเงิน / ผู้ขาย</p></div>
+    </section>
   </section>`;
 }
 
@@ -133,7 +154,7 @@ function render(invoice) {
   root.innerHTML = chunks.map((chunk, pageIndex) => {
     const isLastPage = pageIndex === chunks.length - 1;
     const offset = pageIndex * ITEMS_PER_PAGE;
-    return `<article class="tax-paper">
+    return `<article class="tax-paper" data-tax-page="${pageIndex + 1}">
       ${invoiceHeaderHtml(invoice, seller, buyer, isVoid)}
       ${itemsTableHtml(chunk, offset)}
       ${isLastPage ? summaryHtml(invoice) : ''}

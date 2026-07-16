@@ -2,9 +2,9 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.81
-Build: 2026.07.16.006
-Milestone: POS Local First Loyalty Receipt
+Version: 0.14.82
+Build: 2026.07.16.007
+Milestone: Tax Invoice A4 Pagination Polish
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
@@ -33,6 +33,8 @@ POS offline sync remote reconcile rule: before retrying queued local POS sales, 
 POS receipt reliability rule: receipt display code must not depend on a single sale-row timing path for customer/member and loyalty data. `/pos/receipt` and `/pos/sales` receipt reprint may recover customer name, customer code, phone, and loyalty point rows from the local customer cache and loyalty ledger using saleId, sale number, customerId, customerCode, or phone, while still masking printed personal data through the shared receipt privacy helper. Sale-history receipt reprints must fill store address, phone, tax ID, and branch from store settings when those receipt placeholders exist. These recovery steps are read-only presentation repair and must not create duplicate sales, stock movements, payments, or tax invoices.
 
 POS local-first checkout rule: normal Retail POS checkout must persist the completed sale to localStorage first, open/print the short receipt from that local sale, and let the existing offline sync worker write the sale to Firestore in the background. The local sale must keep the same stable saleId that will be used remotely, include tenantId, customer/member fields, saved VAT fields, payment fields, and pending sync metadata, and locally deduct stock only once per stable saleId. A repeated local save with the same saleId must preserve the existing sale and must not add duplicate stock movement rows. Loyalty updates must patch local sale/customer/ledger data and notify receipt windows before waiting for any remote loyalty/customer write, and checkout may wait briefly for that local patch before opening the receipt, so printed receipts can show masked customer data and point rows even while Firebase sync is still pending.
+
+Full tax invoice A4 pagination rule: `/pos/tax-invoice/` must render printable full tax invoices as fixed A4 pages. Each page repeats the invoice header, seller block, buyer block, and document metadata box; item tables must contain no more than 10 rows per page; totals and signature lines render only on the final page and must not spill to a separate blank page. Seller and buyer tax ID rows append the relevant `สำนักงานใหญ่` or branch label on the same row. Toolbar buttons may use one Bootstrap Icon each, but printable invoice headers stay text-only.
 
 POS old sync reconcile rule: before retrying a completed local POS sale that is still marked pending/failed/syncing/conflict locally, the offline sync worker should check Firestore by stable local saleId and by known sale number/final sale number. If any matching remote sale exists under the current tenant, localStorage must be marked synced and the worker must skip the write transaction, sale item writes, stock movement writes, stock updates, and daily summary updates.
 
@@ -72,7 +74,7 @@ Full Tax Invoice sync visibility rule: online create/reuse calls should retry pe
 
 Full Tax Invoice sync error visibility rule: pending local full tax invoice sync attempts must preserve retryable local state and record concise sync diagnostics when automatic create/void sync is skipped or fails. Tax invoice history must surface sync errors with a clear badge and searchable message without writing failed documents to Firestore outside the transaction path.
 
-Full Tax Invoice A4 print rule: `/pos/tax-invoice/` renders the printed title as `ใบกำกับภาษี` and the buyer box as `ผู้ซื้อ / ลูกค้า`. Document metadata rows must keep labels and values in separate columns so long sale references wrap only inside the value area. Printed A4 tax invoices must paginate item rows at 10 rows per page; continuation pages repeat the invoice header and buyer block, continue item numbering, and render totals/signatures only on the final page.
+Full Tax Invoice A4 print rule: `/pos/tax-invoice/` renders the printed title as `ใบกำกับภาษี` and the buyer box as `ผู้ซื้อ / ลูกค้า`. Seller and buyer tax ID lines append `สำนักงานใหญ่` or branch text in the same row. Document metadata rows must keep labels and values in separate columns so long sale references wrap only inside the value area. Printed A4 tax invoices must paginate item rows at 10 rows per page; continuation pages repeat the invoice header and buyer block, continue item numbering, and render totals/signatures only on the final page.
 
 Tax Invoice label rule: POS receipt and tax invoice history user-facing Thai labels should use `ใบกำกับภาษี` consistently. Avoid reintroducing the longer `ใบกำกับภาษีเต็มรูปแบบ` wording in visible buttons, dialog titles, empty states, or error fallback messages unless a legal/business requirement explicitly needs it.
 

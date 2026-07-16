@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Local First Loyalty Receipt
-Version: 0.14.81
-Build: 2026.07.16.006
+Milestone: Tax Invoice A4 Pagination Polish
+Version: 0.14.82
+Build: 2026.07.16.007
 
-Change: Changed Retail POS checkout to local-first persistence. Every confirmed POS bill is saved to `retail_pos_sales_v1`, local stock is deducted once by stable saleId, and the receipt can open immediately without waiting for the Firestore transaction. The existing offline sync worker now handles Firebase writes in the background from the pending local sale. Customer/member fields are copied into the local sale at save time, and checkout now waits briefly for the local loyalty/customer patch before opening the receipt window so printed short tax invoices and receipts can show the masked customer and point summary consistently. POS, loyalty, toast/version cache chains are bumped to `20260716-006`.
+Change: Polished `/pos/tax-invoice/` for reliable A4 full tax invoice printing. Seller and buyer tax ID rows append `สำนักงานใหญ่` or branch text on the same line, the invoice metadata box now wraps invoice number/date/source receipt values inside the value column, and toolbar buttons include icons. Print output repeats the header and buyer section on every page, limits item rows to 10 per page, and renders totals plus signature lines only on the final page. The tax invoice print script cache is bumped to `20260716-007`.
+
+Previous build note: POS Local First Loyalty Receipt from build `2026.07.16.006` remains unchanged for saving Retail POS bills locally first, stable saleId background sync, idempotent local stock deduction, and first-render customer/member plus loyalty rows.
 
 Previous build note: POS Local First Receipt Data from build `2026.07.16.005` remains unchanged for saving Retail POS bills locally first, using stable saleId background sync, and avoiding duplicate stock deduction.
 
