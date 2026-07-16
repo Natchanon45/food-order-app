@@ -256,6 +256,10 @@ function getTotals() {
 }
 
 function renderProducts() {
+  if (els.productGrid.dataset.renderer === "catalog") {
+    window.dispatchEvent(new CustomEvent("retail-pos-catalog-render-request"));
+    return;
+  }
   const keyword = els.searchInput.value.trim().toLowerCase();
   const filtered = products.filter(product => {
     const searchText = `${product.name || ""} ${product.id || ""} ${product.barcode || ""}`.toLowerCase();

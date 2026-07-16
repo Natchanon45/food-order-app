@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Catalog Hero Mobile Organization
-Version: 0.14.93
-Build: 2026.07.17.001
+Milestone: POS Catalog Single Renderer
+Version: 0.14.94
+Build: 2026.07.17.002
 
-Change: Reorganized the `/pos/catalog/` hero card. The heading is now `นำเข้าชุดสินค้าพื้นฐาน`; the primary action is consistently labeled `นำเข้าทั้งหมด` with a box-import icon; heading and actions share one row on desktop; the catalog description stays on one line where viewport width permits; and mobile layouts stack compact full-width actions with improved padding and type sizing. Catalog CSS/JS and app-info are bumped to `20260717-001`.
+Change: Stabilized `/pos` for large product catalogs. The catalog renderer now owns `#productGrid` before the sales module loads, the sales module requests refreshes without writing legacy text cards over visual cards, and the older 96-card performance limiter no longer competes with catalog paging. The first render remains limited to 96 products, `แสดงเพิ่ม` loads subsequent batches, and image/fallback cards keep a consistent square layout. POS catalog, performance, sales, hold, toast/app-info cache chains are bumped to `20260717-002`.
 
 Previous build note: Tax Sync Permission And Cross Tab Lock from build `2026.07.16.017` remains unchanged for tenant tax permissions, TAX running numbers, explicit retry, and cross-tab sync protection.
 

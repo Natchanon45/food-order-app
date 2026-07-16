@@ -10,6 +10,7 @@ const LOAD_STEP = 96;
 const productGrid = document.querySelector("#productGrid");
 const productPanel = document.querySelector(".product-panel");
 const searchInput = document.querySelector("#searchInput");
+if (productGrid) productGrid.dataset.renderer = "catalog";
 
 const style = document.createElement("link");
 style.rel = "stylesheet";
@@ -29,7 +30,6 @@ let ranking = new Map();
 let searchTimer = null;
 let renderLimit = INITIAL_LIMIT;
 let rendering = false;
-let observer = null;
 let categoryOrder = readJson(ORDER_KEY, []);
 
 function readRaw(key) { return localStorage.getItem(key) || "[]"; }
@@ -129,7 +129,6 @@ async function hydrateVisibleImages() {
 function renderCatalog() {
   if (!productGrid || rendering) return;
   rendering = true;
-  observer?.disconnect();
   refreshProductCache();
   renderTabs();
   const matched = sortProducts(products.filter(shouldShow));
@@ -141,7 +140,6 @@ function renderCatalog() {
   productGrid.innerHTML = html;
   hydrateVisibleImages();
   rendering = false;
-  observer?.observe(productGrid, { childList: true });
 }
 
 function scheduleRender({ resetLimit = false } = {}) {
@@ -173,8 +171,7 @@ searchInput?.addEventListener("input", event => {
 
 window.addEventListener("storage", () => { categoryOrder = readJson(ORDER_KEY, []); scheduleRender({ resetLimit: true }); });
 window.addEventListener("retail-pos-products-changed", () => scheduleRender({ resetLimit: true }));
-observer = new MutationObserver(() => { if (!rendering) scheduleRender(); });
-if (productGrid) observer.observe(productGrid, { childList: true });
+window.addEventListener("retail-pos-catalog-render-request", () => scheduleRender());
 
 getRecord(RetailCollections.settings, SETTINGS_ID).then(settings => {
   if (!Array.isArray(settings?.categoryOrder)) return;

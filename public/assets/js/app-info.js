@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.93',
-  build: '2026.07.17.001',
+  version: '0.14.94',
+  build: '2026.07.17.002',
   branch: 'feature/retail-pos',
-  commit: 'CATALOG-HERO-MOBILE-01493',
+  commit: 'POS-CATALOG-SINGLE-RENDERER-01494',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Catalog Hero Mobile Organization',
-  updatedAt: '2026-07-17T00:15:00+07:00',
+  milestone: 'POS Catalog Single Renderer',
+  updatedAt: '2026-07-17T03:20:00+07:00',
   whatsNew: [
-    'Rename the catalog hero to นำเข้าชุดสินค้าพื้นฐาน',
-    'Place the นำเข้าทั้งหมด action beside the hero heading with an import icon',
-    'Polish catalog hero spacing, description flow, and full-width mobile actions'
+    'Make the catalog renderer the sole owner of the POS product grid',
+    'Keep large catalogs paged at 96 visible products per render',
+    'Prevent the legacy product renderer and performance limiter from replacing image cards'
   ]
 };
 

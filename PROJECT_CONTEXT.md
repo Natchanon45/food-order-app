@@ -2,15 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.93
-Build: 2026.07.17.001
-Milestone: Catalog Hero Mobile Organization
+Version: 0.14.94
+Build: 2026.07.17.002
+Milestone: POS Catalog Single Renderer
 
-Change: Reorganized the Retail Master Catalog hero so the import heading and `นำเข้าทั้งหมด` action share a clean desktop row, the description remains one line on suitable widths, and the card stacks into compact full-width controls on mobile.
+Change: Made `retail-pos-catalog.js` the sole owner of the `/pos` product grid. The sales module now requests a catalog refresh instead of replacing image cards with the legacy text-card renderer, the older performance limiter yields to the catalog renderer, and large catalogs remain paged at 96 products per render.
 
 Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through POS continuous scanner support, plus local POS UI font coverage, menu icon cleanup, UI font-weight tuning, POS drawer title icon cleanup, POS legacy drawer icon guard, POS menu group chevron cleanup, POS menu pseudo-chevron cleanup, POS theme alignment with Order/Delivery, mobile product image-card overlay tuning, mobile POS button layout tuning, payment modal visual tuning, later full tax invoice issuing from an existing short tax invoice/receipt, PromptPay QR payment display for POS/customer screens, payment customer clear hardening, Customer Display PC stacked-left layout tuning, compact PC Customer Display tuning, editable full-tax buyer profiles, full-tax invoice void/cancel workflow, Customer Display PromptPay visual refresh, and Customer Display liquid-glass theme tuning.
 
-Usage: open `/pos/catalog/` on desktop and mobile. Verify the hero heading reads `นำเข้าชุดสินค้าพื้นฐาน`, the primary button reads `นำเข้าทั้งหมด` with an import icon, desktop keeps heading/actions aligned, and mobile shows a tidy stacked card without overflow.
+Usage: open `/pos` with 400-500 products. Verify the first render contains at most 96 square visual cards, products with images remain image cards, products without images use the square initial fallback, no narrow legacy text cards appear, category/search filters work, and `แสดงเพิ่ม` loads the next batch.
 
 Deploy rules: use hosting-only deploy for `public/` asset changes. Deploy functions only when files under `functions/` or function rewrites/routes change. This build only needs hosting deploy.
 
@@ -30,6 +30,6 @@ Previous build note: Retail POS Action Bar Text Only from build `2026.07.16.013`
 
 Previous build note: Admin Hero Title Icon Cleanup from build `2026.07.16.012` remains unchanged for the text-only `/admin` hero heading `จัดการร้าน`.
 
-Next Task: deploy hosting and verify the `20260717-001` Catalog hero at desktop, tablet, and 360-430px mobile widths.
+Next Task: deploy hosting and verify build `20260717-002` with a 400-500 product tenant on desktop and mobile, including category switching, search, product selection, and repeated `แสดงเพิ่ม`.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
