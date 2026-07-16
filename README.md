@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Retail POS Settings Nonblocking Sync
-Version: 0.14.90
-Build: 2026.07.16.015
+Milestone: Tax Buyer Tax ID First
+Version: 0.14.91
+Build: 2026.07.16.016
 
-Change: Fixed the post-deploy `/pos/settings/` responsiveness regression by removing Firebase work from the page-load and form-submit critical paths. Settings still save to tenant-scoped LocalStorage first, but Firestore queue processing now starts after a short delay in the background, applies an eight-second timeout per settings document, avoids immediate retry loops, and resumes on the browser `online` event. The settings and app-info cache chain is bumped to `20260716-015`.
+Change: In `/pos/tax-invoices/`, the `แก้ข้อมูลผู้ซื้อ` dialog now shows `เลขประจำตัวผู้เสียภาษี` with its DBD lookup button above `ชื่อผู้ซื้อ / บริษัท`. Existing field IDs, buyer recovery validation, local pending-invoice updates, and retry sync behavior remain unchanged. The app-info cache chain is bumped to `20260716-016`.
+
+Previous build note: Retail POS Settings Nonblocking Sync from build `2026.07.16.015` remains unchanged for responsive local-first settings saves and timeout-protected background Firebase sync.
 
 Previous build note: Retail POS Settings Offline Sync from build `2026.07.16.014` remains unchanged for tenant-scoped local-first persistence of store, receipt, tax, payment, and loyalty settings.
 

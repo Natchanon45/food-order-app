@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.90',
-  build: '2026.07.16.015',
+  version: '0.14.91',
+  build: '2026.07.16.016',
   branch: 'feature/retail-pos',
-  commit: 'POS-SETTINGS-NONBLOCKING-SYNC-01490',
+  commit: 'TAX-BUYER-TAX-ID-FIRST-01491',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS Settings Nonblocking Sync',
-  updatedAt: '2026-07-16T22:20:00+07:00',
+  milestone: 'Tax Buyer Tax ID First',
+  updatedAt: '2026-07-16T23:30:00+07:00',
   whatsNew: [
-    'Keep the Retail POS settings page responsive during Firebase connectivity issues',
-    'Move settings sync fully to a delayed background queue with an eight-second timeout',
-    'Preserve tenant-scoped local-first settings and automatic online recovery sync'
+    'Move the buyer tax ID field above the buyer or company name field',
+    'Keep the DBD lookup button attached to the tax ID input',
+    'Preserve existing tax buyer recovery validation and save behavior'
   ]
 };
 
