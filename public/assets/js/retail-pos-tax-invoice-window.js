@@ -10,6 +10,8 @@ const params = new URLSearchParams(location.search);
 const invoiceId = params.get('invoiceId') || '';
 const autoPrint = params.get('auto') === '1';
 const ITEMS_PER_PAGE = 20;
+let printReady = false;
+let printReadyPromise = null;
 
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -171,21 +173,41 @@ async function waitForPrintReady() {
   await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 }
 
-async function printInvoice() {
-  if (printBtn) printBtn.disabled = true;
-  try {
-    await waitForPrintReady();
+function setPrintButtonReady(ready) {
+  if (printBtn) printBtn.disabled = !ready;
+}
+
+function preparePrintReady() {
+  if (printReadyPromise) return printReadyPromise;
+  setPrintButtonReady(false);
+  printReadyPromise = waitForPrintReady()
+    .then(() => {
+      printReady = true;
+      setPrintButtonReady(true);
+    })
+    .catch(() => {
+      printReady = true;
+      setPrintButtonReady(true);
+    });
+  return printReadyPromise;
+}
+
+async function printInvoice(options = {}) {
+  const auto = Boolean(options.auto);
+  if (!auto && printReady) {
     window.print();
-  } finally {
-    setTimeout(() => { if (printBtn) printBtn.disabled = false; }, 800);
+    return;
   }
+  await preparePrintReady();
+  window.print();
 }
 
 async function boot() {
   render(await findInvoice());
-  if (autoPrint) setTimeout(printInvoice, 350);
+  preparePrintReady();
+  if (autoPrint) setTimeout(() => printInvoice({ auto: true }), 450);
 }
 
-printBtn?.addEventListener('click', printInvoice);
+printBtn?.addEventListener('click', () => printInvoice());
 closeBtn?.addEventListener('click', () => window.close());
 boot();

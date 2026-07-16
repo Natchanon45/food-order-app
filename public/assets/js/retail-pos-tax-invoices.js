@@ -99,6 +99,14 @@ function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
 }
 
+function iconLabel(iconClass, label) {
+  return `<i class="bi ${iconClass}" aria-hidden="true"></i><span>${escapeHtml(label)}</span>`;
+}
+
+function setIconLabel(button, iconClass, label) {
+  if (button) button.innerHTML = iconLabel(iconClass, label);
+}
+
 function money(value) {
   return Number(value || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
@@ -519,19 +527,19 @@ function resetFilters() {
 async function copyCurrentViewLink() {
   if (!copyViewLinkBtn) return;
   syncHistoryUrlState();
-  const originalText = copyViewLinkBtn.textContent;
+  const originalHtml = copyViewLinkBtn.innerHTML;
   copyViewLinkBtn.disabled = true;
   try {
     await copyText(currentHistoryUrl().toString());
-    copyViewLinkBtn.textContent = 'คัดลอกแล้ว';
+    setIconLabel(copyViewLinkBtn, 'bi-check-lg', 'คัดลอกแล้ว');
   } catch (error) {
     console.warn('[retail-pos-tax-invoices] copy view link failed', error);
-    copyViewLinkBtn.textContent = 'คัดลอกไม่สำเร็จ';
+    setIconLabel(copyViewLinkBtn, 'bi-exclamation-triangle', 'คัดลอกไม่สำเร็จ');
   } finally {
     setTimeout(() => {
       if (copyViewLinkBtn.isConnected) {
         copyViewLinkBtn.disabled = false;
-        copyViewLinkBtn.textContent = originalText || 'คัดลอกลิงก์มุมมอง';
+        copyViewLinkBtn.innerHTML = originalHtml || iconLabel('bi-link-45deg', 'คัดลอกลิงก์มุมมอง');
       }
     }, 1200);
   }
@@ -712,7 +720,7 @@ async function lookupLateBuyerDbd() {
   }
   if (lateDbdLookupBtn) {
     lateDbdLookupBtn.disabled = true;
-    lateDbdLookupBtn.textContent = 'ค้นหา...';
+    setIconLabel(lateDbdLookupBtn, 'bi-hourglass-split', 'ค้นหา...');
   }
   try {
     const url = new URL(dbdLookupEndpoint(), location.origin);
@@ -728,7 +736,7 @@ async function lookupLateBuyerDbd() {
   } finally {
     if (lateDbdLookupBtn) {
       lateDbdLookupBtn.disabled = false;
-      lateDbdLookupBtn.textContent = 'DBD';
+      setIconLabel(lateDbdLookupBtn, 'bi-search', 'DBD');
     }
   }
 }
@@ -778,7 +786,7 @@ async function findSourceSale() {
     return;
   }
   findSourceSaleBtn.disabled = true;
-  findSourceSaleBtn.textContent = 'กำลังค้นหา...';
+  setIconLabel(findSourceSaleBtn, 'bi-hourglass-split', 'กำลังค้นหา...');
   setSourceSaleMessage('กำลังค้นหาบิลเดิม...');
   try {
     await loadSalesForSearch();
@@ -797,14 +805,14 @@ async function findSourceSale() {
     showLateTaxDialog(sale);
   } finally {
     findSourceSaleBtn.disabled = false;
-    findSourceSaleBtn.textContent = 'ค้นหาบิล';
+    setIconLabel(findSourceSaleBtn, 'bi-search', 'ค้นหาบิล');
   }
 }
 
 async function submitLateTaxInvoice() {
   if (!currentSourceSale) return;
   lateTaxInvoiceSubmitBtn.disabled = true;
-  lateTaxInvoiceSubmitBtn.textContent = 'กำลังออกเอกสาร...';
+  setIconLabel(lateTaxInvoiceSubmitBtn, 'bi-hourglass-split', 'กำลังออกเอกสาร...');
   if (lateTaxInvoiceError) lateTaxInvoiceError.textContent = '';
   try {
     const invoice = await createFullTaxInvoiceFromSale(currentSourceSale, currentBuyer());
@@ -816,7 +824,7 @@ async function submitLateTaxInvoice() {
     if (lateTaxInvoiceError) lateTaxInvoiceError.textContent = error?.message || 'ออกใบกำกับภาษีไม่สำเร็จ';
   } finally {
     lateTaxInvoiceSubmitBtn.disabled = false;
-    lateTaxInvoiceSubmitBtn.textContent = 'ออกใบกำกับภาษี';
+    setIconLabel(lateTaxInvoiceSubmitBtn, 'bi-send', 'ออกใบกำกับภาษี');
   }
 }
 
@@ -832,7 +840,7 @@ function showVoidDialog(invoice) {
 async function submitVoidInvoice() {
   if (!currentVoidInvoice) return;
   voidSubmitBtn.disabled = true;
-  voidSubmitBtn.textContent = 'กำลังยกเลิก...';
+  setIconLabel(voidSubmitBtn, 'bi-hourglass-split', 'กำลังยกเลิก...');
   if (voidError) voidError.textContent = '';
   try {
     await voidFullTaxInvoice(currentVoidInvoice, voidReasonInput?.value || '');
@@ -843,7 +851,7 @@ async function submitVoidInvoice() {
     if (voidError) voidError.textContent = error?.message || 'ยกเลิกใบกำกับภาษีไม่สำเร็จ';
   } finally {
     voidSubmitBtn.disabled = false;
-    voidSubmitBtn.textContent = 'ยืนยันยกเลิก';
+    setIconLabel(voidSubmitBtn, 'bi-x-circle', 'ยืนยันยกเลิก');
   }
 }
 
@@ -872,7 +880,7 @@ function currentEditBuyer() {
 async function submitEditBuyer() {
   if (!currentEditBuyerInvoice) return;
   editBuyerSubmitBtn.disabled = true;
-  editBuyerSubmitBtn.textContent = 'กำลังบันทึก...';
+  setIconLabel(editBuyerSubmitBtn, 'bi-hourglass-split', 'กำลังบันทึก...');
   if (editBuyerError) editBuyerError.textContent = '';
   try {
     updateLocalTaxInvoiceBuyer(currentEditBuyerInvoice, currentEditBuyer());
@@ -883,7 +891,7 @@ async function submitEditBuyer() {
     if (editBuyerError) editBuyerError.textContent = error?.message || 'บันทึกข้อมูลผู้ซื้อไม่สำเร็จ';
   } finally {
     editBuyerSubmitBtn.disabled = false;
-    editBuyerSubmitBtn.textContent = 'บันทึกข้อมูลผู้ซื้อ';
+    setIconLabel(editBuyerSubmitBtn, 'bi-floppy', 'บันทึกข้อมูลผู้ซื้อ');
   }
 }
 
@@ -911,12 +919,12 @@ function cardHtml(invoice) {
       <strong>${money(invoice.totalAmount)}</strong>
       <span>VAT ${money(invoice.vatAmount)}</span>
       <div class="tax-actions">
-        <a class="btn btn-primary" href="${invoiceUrl(invoice)}" target="_blank" rel="noopener">เปิด/พิมพ์</a>
-        ${receiptUrl ? `<a class="btn btn-secondary" href="${escapeHtml(receiptUrl)}" target="_blank" rel="noopener">ดูบิลต้นทาง</a>` : ''}
-        ${canEditPendingBuyer(invoice) ? `<button class="btn btn-secondary" type="button" data-edit-tax-buyer="${escapeHtml(keyOf(invoice))}">แก้ผู้ซื้อ</button>` : ''}
-        ${canRetrySync(invoice) ? `<button class="btn btn-secondary" type="button" data-copy-tax-sync="${escapeHtml(keyOf(invoice))}">คัดลอก Sync</button>` : ''}
-        ${canRetrySync(invoice) ? '<button class="btn btn-secondary" type="button" data-retry-tax-sync="1">ลอง Sync</button>' : ''}
-        ${isVoid ? '' : `<button class="btn btn-danger" type="button" data-void-tax="${escapeHtml(keyOf(invoice))}">ยกเลิก</button>`}
+        <a class="btn btn-primary" href="${invoiceUrl(invoice)}" target="_blank" rel="noopener">${iconLabel('bi-printer', 'เปิด/พิมพ์')}</a>
+        ${receiptUrl ? `<a class="btn btn-secondary" href="${escapeHtml(receiptUrl)}" target="_blank" rel="noopener">${iconLabel('bi-receipt', 'ดูบิลต้นทาง')}</a>` : ''}
+        ${canEditPendingBuyer(invoice) ? `<button class="btn btn-secondary" type="button" data-edit-tax-buyer="${escapeHtml(keyOf(invoice))}">${iconLabel('bi-pencil-square', 'แก้ผู้ซื้อ')}</button>` : ''}
+        ${canRetrySync(invoice) ? `<button class="btn btn-secondary" type="button" data-copy-tax-sync="${escapeHtml(keyOf(invoice))}">${iconLabel('bi-clipboard', 'คัดลอก Sync')}</button>` : ''}
+        ${canRetrySync(invoice) ? `<button class="btn btn-secondary" type="button" data-retry-tax-sync="1">${iconLabel('bi-arrow-repeat', 'ลอง Sync')}</button>` : ''}
+        ${isVoid ? '' : `<button class="btn btn-danger" type="button" data-void-tax="${escapeHtml(keyOf(invoice))}">${iconLabel('bi-x-circle', 'ยกเลิก')}</button>`}
       </div>
     </div>
   </article>`;
@@ -938,7 +946,7 @@ function render() {
 
 async function load() {
   refreshBtn.disabled = true;
-  refreshBtn.textContent = 'กำลังโหลด...';
+  setIconLabel(refreshBtn, 'bi-hourglass-split', 'กำลังโหลด...');
   lastSyncHealth = { checkedAt: Date.now(), pendingTaxOk: true, profileOk: true, remoteListOk: true, pendingTaxError: '', profileError: '', remoteListError: '' };
   try {
     try { await syncPendingTaxInvoices(); }
@@ -966,7 +974,7 @@ async function load() {
     render();
   } finally {
     refreshBtn.disabled = false;
-    refreshBtn.textContent = 'รีเฟรช';
+    setIconLabel(refreshBtn, 'bi-arrow-clockwise', 'รีเฟรช');
   }
 }
 
@@ -1049,19 +1057,19 @@ listEl?.addEventListener('click', async event => {
   if (copyButton) {
     const invoice = invoices.find(row => keyOf(row) === String(copyButton.dataset.copyTaxSync || ''));
     if (!invoice) return;
-    const originalText = copyButton.textContent;
+    const originalHtml = copyButton.innerHTML;
     copyButton.disabled = true;
     try {
       await copyText(syncRecoveryText(invoice));
-      copyButton.textContent = 'คัดลอกแล้ว';
+      setIconLabel(copyButton, 'bi-check-lg', 'คัดลอกแล้ว');
     } catch (error) {
       console.warn('[retail-pos-tax-invoices] copy sync diagnostics failed', error);
-      copyButton.textContent = 'คัดลอกไม่สำเร็จ';
+      setIconLabel(copyButton, 'bi-exclamation-triangle', 'คัดลอกไม่สำเร็จ');
     } finally {
       setTimeout(() => {
         if (copyButton.isConnected) {
           copyButton.disabled = false;
-          copyButton.textContent = originalText || 'คัดลอก Sync';
+          copyButton.innerHTML = originalHtml || iconLabel('bi-clipboard', 'คัดลอก Sync');
         }
       }, 1200);
     }
@@ -1070,13 +1078,13 @@ listEl?.addEventListener('click', async event => {
   const retryButton = event.target.closest('[data-retry-tax-sync]');
   if (retryButton) {
     retryButton.disabled = true;
-    retryButton.textContent = 'กำลัง Sync...';
+    setIconLabel(retryButton, 'bi-hourglass-split', 'กำลัง Sync...');
     try {
       await load();
     } finally {
       if (retryButton.isConnected) {
         retryButton.disabled = false;
-        retryButton.textContent = 'ลอง Sync';
+        setIconLabel(retryButton, 'bi-arrow-repeat', 'ลอง Sync');
       }
     }
     return;

@@ -21,6 +21,16 @@ const SKIP_SELECTOR = [
   ".qr-ticket"
 ].join(",");
 const FEEDBACK_CLASS = "bootstrap-invalid-feedback";
+const FEEDBACK_HOST_SELECTOR = [
+  "[data-validation-feedback-host]",
+  ".barcode-input-group",
+  ".tax-id-control",
+  ".loyalty-controls",
+  ".payment-customer-control",
+  ".input-with-action",
+  ".input-action",
+  ".field-control"
+].join(",");
 
 function ensureStyles() {
   if (document.getElementById(STYLE_ID)) return;
@@ -93,6 +103,11 @@ function feedbackHost(control) {
   return control.closest("label") || control.parentElement;
 }
 
+function feedbackInsertionTarget(control) {
+  if (control.type === "checkbox" || control.type === "radio") return feedbackHost(control);
+  return control.closest(FEEDBACK_HOST_SELECTOR) || control;
+}
+
 function feedbackForControl(control) {
   const host = feedbackHost(control);
   if (!host) return null;
@@ -105,7 +120,7 @@ function feedbackForControl(control) {
   feedback.id = `validation-feedback-${Math.random().toString(36).slice(2, 10)}`;
   feedback.setAttribute("role", "alert");
   feedback.setAttribute("aria-live", "polite");
-  control.insertAdjacentElement("afterend", feedback);
+  feedbackInsertionTarget(control)?.insertAdjacentElement("afterend", feedback);
   control.dataset.validationFeedbackId = feedback.id;
   const describedBy = new Set(String(control.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean));
   describedBy.add(feedback.id);

@@ -1,5 +1,5 @@
 import { dataService, usingDemoMode } from "./data-service.js";
-import { money, formatTime } from "./ui.js?v=20260715-004";
+import { money, formatTime } from "./ui.js?v=20260716-009";
 import { autoPrintReceipt } from "./receipt-auto-print.js?v=20260702-001";
 
 if (usingDemoMode)

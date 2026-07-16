@@ -1,6 +1,6 @@
 import "./sweet-dialog.js?v=20260629-048";
 import { dataService, usingDemoMode } from "./data-service.js?v=20260701-008";
-import { money, toast, getTableCode, formatTime } from "./ui.js?v=20260715-004";
+import { money, toast, getTableCode, formatTime } from "./ui.js?v=20260716-009";
 
 const tableCode = getTableCode();
 const tableToken = new URLSearchParams(location.search).get("token") || "";

@@ -28,12 +28,18 @@ const params = new URLSearchParams(location.search);
 const saleId = params.get('saleId') || '';
 const autoPrint = params.get('auto') === '1';
 let currentSale = null;
+let printReady = false;
+let printReadyPromise = null;
 
 function readJson(key, fallback) { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } }
 function writeJson(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
 function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char])); }
 function money(value) { return Number(value || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 function numberText(value) { return Number(value || 0).toLocaleString('th-TH'); }
+function iconLabel(iconPath, label) { return `<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">${iconPath}</svg><span>${escapeHtml(label)}</span>`; }
+function setButtonIconLabel(button, iconPath, label) { if (button) button.innerHTML = iconLabel(iconPath, label); }
+const ICON_SEARCH = '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>';
+const ICON_HOURGLASS = '<path d="M6 2h12"/><path d="M6 22h12"/><path d="M17 2v6.2a2 2 0 0 1-.6 1.4L14 12l2.4 2.4a2 2 0 0 1 .6 1.4V22"/><path d="M7 2v6.2a2 2 0 0 0 .6 1.4L10 12l-2.4 2.4a2 2 0 0 0-.6 1.4V22"/>';
 function saleKey(sale) { return String(sale?.id || sale?.saleNumber || '').trim(); }
 function normalizeTaxId(value) { return String(value || '').replace(/\D/g, '').slice(0, 13); }
 function normalizeText(value) { return String(value || '').replace(/\s+/g, ' ').trim(); }
@@ -102,15 +108,17 @@ function vatHtml(sale) {
   return `<div class="row"><span>ยอดก่อน VAT</span><span>${money(sale.beforeVat ?? sale.taxableBase ?? sale.discountedBase ?? 0)}</span></div><div class="row"><span>VAT ${Number(sale.vatRate || 7).toLocaleString('th-TH')}%</span><span>${money(vat)}</span></div><div class="row"><span>โหมด VAT</span><span>${String(sale.vatMode || 'include') === 'exclude' ? 'ราคาไม่รวม VAT' : 'ราคารวม VAT'}</span></div>`;
 }
 function render(sale) {
+  markPrintDirty();
   if (!sale) { root.className = 'missing'; root.textContent = 'ไม่พบบิลที่ต้องการพิมพ์'; return; }
   currentSale = sale;
   const store = settings();
   const items = Array.isArray(sale.items) ? sale.items : [];
   root.className = 'receipt';
   root.innerHTML = `<div class="center">${store.logoUrl ? `<img class="logo" src="${escapeHtml(store.logoUrl)}" alt="">` : ''}<div class="shop">${escapeHtml(store.shopName)}</div>${store.shopAddress ? `<div class="muted">${escapeHtml(store.shopAddress)}</div>` : ''}${store.shopPhone ? `<div class="muted">โทร ${escapeHtml(store.shopPhone)}</div>` : ''}${store.taxId ? `<div class="muted">เลขประจำตัวผู้เสียภาษี ${escapeHtml(store.taxId)}</div>` : ''}${store.taxBranch ? `<div class="muted">${escapeHtml(store.taxBranch)}</div>` : ''}<div class="receipt-title">${taxTitle(sale)}</div></div><hr class="rule"><div class="row"><span>เลขที่</span><strong>${escapeHtml(sale.saleNumber || sale.id || '-')}</strong></div><div class="row"><span>วันที่</span><span>${escapeHtml(new Date(sale.createdAt || Date.now()).toLocaleString('th-TH'))}</span></div><div class="row"><span>ชำระเงิน</span><span>${escapeHtml(sale.paymentMethod || sale.payment?.method || '-')}</span></div>${customerHtml(sale)}<hr class="rule">${itemsHtml(items)}<hr class="rule"><div class="row"><span>รวมสินค้า</span><span>${money(sale.subtotal)}</span></div><div class="row"><span>ส่วนลด</span><span>${money(sale.discount)}</span></div>${Number(sale.pointDiscount || 0) ? `<div class="row"><span>ส่วนลดแต้ม</span><span>${money(sale.pointDiscount)}</span></div>` : ''}${vatHtml(sale)}<div class="row total"><span>ยอดสุทธิ</span><span>${money(sale.totalAmount || sale.total)}</span></div><div class="row"><span>รับเงิน</span><span>${money(sale.receivedAmount || sale.payment?.received || sale.totalAmount || sale.total)}</span></div><div class="row"><span>เงินทอน</span><span>${money(sale.changeAmount || sale.payment?.change || 0)}</span></div>${loyaltyHtml(sale)}${sale.syncStatus === 'pending' ? '<hr class="rule"><div class="center muted">บิลนี้บันทึกแบบออฟไลน์ รอ Sync Firebase</div>' : ''}<hr class="rule"><div class="center muted footer">${escapeHtml(store.receiptThanks)}${store.receiptFooter ? `<br>${escapeHtml(store.receiptFooter)}` : ''}</div>`;
+  preparePrintReady();
 }
 function rerenderLatest() { const sale = findSale(); if (sale) render(sale); return sale; }
-async function waitForLoyaltyAndRender() { let sale = findSale(); render(sale); const started = Date.now(); while (Date.now() - started < 900) { await new Promise(resolve => setTimeout(resolve, 160)); sale = rerenderLatest(); if (loyaltyForSale(sale)) break; } if (autoPrint) setTimeout(() => window.print(), 250); }
+async function waitForLoyaltyAndRender() { let sale = findSale(); render(sale); const started = Date.now(); while (Date.now() - started < 900) { await new Promise(resolve => setTimeout(resolve, 160)); sale = rerenderLatest(); if (loyaltyForSale(sale)) break; } preparePrintReady(); if (autoPrint) setTimeout(() => printReceipt({ auto: true }), 350); }
 function openInvoice(invoice) { window.open(taxInvoiceUrl(invoice, { autoPrint: false }), `pos_tax_invoice_${String(invoice.id).replace(/[^a-zA-Z0-9]/g, '_')}`, 'popup=yes,width=920,height=760,noopener,noreferrer'); }
 async function showTaxDialog() {
   if (!currentSale || !taxDialog) return;
@@ -152,6 +160,42 @@ function fillBuyerFromDbd(profile) {
   if (profile.buyerBranchName) buyerBranchInput.value = profile.buyerBranchName;
   saveBuyerDraft();
 }
+async function waitForPrintReady() {
+  try {
+    if (document.fonts?.ready) await document.fonts.ready;
+  } catch {}
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+function setPrintButtonReady(ready) {
+  if (printBtn) printBtn.disabled = !ready;
+}
+function markPrintDirty() {
+  printReady = false;
+  printReadyPromise = null;
+  setPrintButtonReady(false);
+}
+function preparePrintReady() {
+  if (printReadyPromise) return printReadyPromise;
+  printReadyPromise = waitForPrintReady()
+    .then(() => {
+      printReady = true;
+      setPrintButtonReady(true);
+    })
+    .catch(() => {
+      printReady = true;
+      setPrintButtonReady(true);
+    });
+  return printReadyPromise;
+}
+async function printReceipt(options = {}) {
+  const auto = Boolean(options.auto);
+  if (!auto && printReady) {
+    window.print();
+    return;
+  }
+  await preparePrintReady();
+  window.print();
+}
 function manualDbdLink(taxId) { return `${DBD_DATAWAREHOUSE_URL}?keyword=${encodeURIComponent(taxId)}`; }
 function showManualDbdMessage(taxId) {
   const url = manualDbdLink(taxId);
@@ -164,7 +208,7 @@ async function lookupDbd() {
   taxError.innerHTML = '';
   if (!taxId || taxId.length < 13) { taxError.textContent = 'กรุณากรอกเลขประจำตัวผู้เสียภาษี 13 หลักก่อนกด DBD'; return; }
   dbdLookupBtn.disabled = true;
-  dbdLookupBtn.textContent = 'ค้นหา...';
+  setButtonIconLabel(dbdLookupBtn, ICON_HOURGLASS, 'ค้นหา...');
   try {
     const url = new URL(dbdLookupEndpoint(), location.origin);
     url.searchParams.set('taxId', taxId);
@@ -179,10 +223,10 @@ async function lookupDbd() {
     buyerTaxIdInput.focus();
   } finally {
     dbdLookupBtn.disabled = false;
-    dbdLookupBtn.textContent = 'DBD';
+    setButtonIconLabel(dbdLookupBtn, ICON_SEARCH, 'DBD');
   }
 }
-printBtn?.addEventListener('click', () => window.print());
+printBtn?.addEventListener('click', () => printReceipt());
 closeBtn?.addEventListener('click', () => window.close());
 taxInvoiceBtn?.addEventListener('click', showTaxDialog);
 dbdLookupBtn?.addEventListener('click', lookupDbd);
