@@ -1,20 +1,20 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.84',
-  build: '2026.07.16.009',
+  version: '0.14.85',
+  build: '2026.07.16.010',
   branch: 'feature/retail-pos',
-  commit: 'PRINT-ICON-MOBILE-VALIDATION-01484',
+  commit: 'TAX-BUYER-DBD-VALIDATION-LAYOUT-01485',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Print Icon And Mobile Validation Polish',
-  updatedAt: '2026-07-16T15:55:00+07:00',
+  milestone: 'Tax Buyer DBD And Validation Layout Polish',
+  updatedAt: '2026-07-16T19:42:00+07:00',
   whatsNew: [
-    'Use explicit print and receipt icons on tax invoice history actions',
-    'Prewarm receipt and tax invoice print layouts before opening print preview',
-    'Keep validation feedback under barcode scanner input rows',
-    'Make the staff table scroll horizontally on mobile screens'
+    'Improve tax invoice history open/print button contrast',
+    'Add DBD lookup to the tax buyer edit dialog',
+    'Keep product form validation feedback from stretching barcode input controls',
+    'Keep product code and barcode inputs at a stable height during validation'
   ]
 };
 

@@ -57,6 +57,7 @@ const editBuyerForm = document.querySelector('#editTaxBuyerForm');
 const editBuyerText = document.querySelector('#editTaxBuyerText');
 const editBuyerNameInput = document.querySelector('#editBuyerNameInput');
 const editBuyerTaxIdInput = document.querySelector('#editBuyerTaxIdInput');
+const editDbdLookupBtn = document.querySelector('#editDbdLookupBtn');
 const editBuyerBranchInput = document.querySelector('#editBuyerBranchInput');
 const editBuyerAddressInput = document.querySelector('#editBuyerAddressInput');
 const editBuyerError = document.querySelector('#editTaxBuyerError');
@@ -127,11 +128,11 @@ function dbdLookupEndpoint() {
   return window.RETAIL_POS_DBD_LOOKUP_URL || localStorage.getItem(DBD_LOOKUP_URL_KEY) || DEFAULT_TAX_BUYER_LOOKUP_URL;
 }
 
-function normalizeDbdProfile(data = {}) {
+function normalizeDbdProfile(data = {}, fallbackTaxId = '') {
   const source = data.data || data.result || data.profile || data;
   return {
     buyerName: normalizeText(source.buyerName || source.juristicNameTH || source.juristicName || source.nameTh || source.name || source.companyName || ''),
-    buyerTaxId: normalizeTaxId(source.buyerTaxId || source.juristicId || source.registrationNo || source.taxId || source.id || lateBuyerTaxIdInput?.value),
+    buyerTaxId: normalizeTaxId(source.buyerTaxId || source.juristicId || source.registrationNo || source.taxId || source.id || fallbackTaxId),
     buyerAddress: normalizeText(source.buyerAddress || source.addressTh || source.address || source.location || ''),
     buyerBranchName: normalizeText(source.buyerBranchName || source.branchName || source.branch || 'สำนักงานใหญ่') || 'สำนักงานใหญ่'
   };
@@ -703,10 +704,36 @@ function fillLateBuyerFromDbd(profile = {}) {
   if (lateBuyerBranchInput && profile.buyerBranchName) lateBuyerBranchInput.value = profile.buyerBranchName;
 }
 
-function showLateManualDbdMessage(taxId) {
+function fillEditBuyerFromDbd(profile = {}) {
+  if (editBuyerTaxIdInput && profile.buyerTaxId) editBuyerTaxIdInput.value = profile.buyerTaxId;
+  if (editBuyerNameInput && profile.buyerName) editBuyerNameInput.value = profile.buyerName;
+  if (editBuyerAddressInput && profile.buyerAddress) editBuyerAddressInput.value = profile.buyerAddress;
+  if (editBuyerBranchInput && profile.buyerBranchName) editBuyerBranchInput.value = profile.buyerBranchName;
+}
+
+function dbdManualButtonHtml(id, taxId) {
   const url = manualDbdLink(taxId);
+  return `<button id="${id}" class="dbd-btn" type="button" data-url="${escapeHtml(url)}"><i class="bi bi-clipboard" aria-hidden="true"></i><span>คัดลอกลิงก์ DBD</span></button>`;
+}
+
+function showLateManualDbdMessage(taxId) {
   if (!lateTaxInvoiceError) return;
-  lateTaxInvoiceError.innerHTML = `ยังดึงข้อมูลอัตโนมัติไม่ได้<br><button id="copyLateDbdLinkBtn" class="dbd-btn" type="button" data-url="${escapeHtml(url)}">คัดลอกลิงก์ DBD</button><br><small>นำลิงก์ไปเปิดที่แท็บ DBD แล้วกลับมากรอกข้อมูลต่อ</small>`;
+  lateTaxInvoiceError.innerHTML = `ยังดึงข้อมูลอัตโนมัติไม่ได้<br>${dbdManualButtonHtml('copyLateDbdLinkBtn', taxId)}<br><small>นำลิงก์ไปเปิดที่แท็บ DBD แล้วกลับมากรอกข้อมูลต่อ</small>`;
+}
+
+function showEditManualDbdMessage(taxId) {
+  if (!editBuyerError) return;
+  editBuyerError.innerHTML = `ยังดึงข้อมูลอัตโนมัติไม่ได้<br>${dbdManualButtonHtml('copyEditDbdLinkBtn', taxId)}<br><small>นำลิงก์ไปเปิดที่แท็บ DBD แล้วกลับมากรอกข้อมูลต่อ</small>`;
+}
+
+async function fetchDbdProfile(taxId) {
+  const url = new URL(dbdLookupEndpoint(), location.origin);
+  url.searchParams.set('taxId', taxId);
+  const response = await fetch(url.toString(), { headers: { accept: 'application/json' } });
+  if (!response.ok) throw new Error('DBD lookup failed');
+  const profile = normalizeDbdProfile(await response.json(), taxId);
+  if (!profile.buyerName && !profile.buyerAddress) throw new Error('ไม่พบข้อมูลจาก DBD');
+  return profile;
 }
 
 async function lookupLateBuyerDbd() {
@@ -723,12 +750,7 @@ async function lookupLateBuyerDbd() {
     setIconLabel(lateDbdLookupBtn, 'bi-hourglass-split', 'ค้นหา...');
   }
   try {
-    const url = new URL(dbdLookupEndpoint(), location.origin);
-    url.searchParams.set('taxId', taxId);
-    const response = await fetch(url.toString(), { headers: { accept: 'application/json' } });
-    if (!response.ok) throw new Error('DBD lookup failed');
-    const profile = normalizeDbdProfile(await response.json());
-    if (!profile.buyerName && !profile.buyerAddress) throw new Error('ไม่พบข้อมูลจาก DBD');
+    const profile = await fetchDbdProfile(taxId);
     fillLateBuyerFromDbd(profile);
     if (lateTaxInvoiceError) lateTaxInvoiceError.textContent = 'ดึงข้อมูลสำเร็จ กรุณาตรวจสอบก่อนออกเอกสาร';
   } catch (error) {
@@ -737,6 +759,33 @@ async function lookupLateBuyerDbd() {
     if (lateDbdLookupBtn) {
       lateDbdLookupBtn.disabled = false;
       setIconLabel(lateDbdLookupBtn, 'bi-search', 'DBD');
+    }
+  }
+}
+
+async function lookupEditBuyerDbd() {
+  const taxId = normalizeTaxId(editBuyerTaxIdInput?.value || '');
+  if (editBuyerTaxIdInput) editBuyerTaxIdInput.value = taxId;
+  if (editBuyerError) editBuyerError.textContent = '';
+  if (!taxId || taxId.length < 13) {
+    if (editBuyerError) editBuyerError.textContent = 'กรุณากรอกเลขประจำตัวผู้เสียภาษี 13 หลักก่อนกด DBD';
+    editBuyerTaxIdInput?.focus();
+    return;
+  }
+  if (editDbdLookupBtn) {
+    editDbdLookupBtn.disabled = true;
+    setIconLabel(editDbdLookupBtn, 'bi-hourglass-split', 'ค้นหา...');
+  }
+  try {
+    const profile = await fetchDbdProfile(taxId);
+    fillEditBuyerFromDbd(profile);
+    if (editBuyerError) editBuyerError.textContent = 'ดึงข้อมูลสำเร็จ กรุณาตรวจสอบก่อนบันทึก';
+  } catch (error) {
+    showEditManualDbdMessage(taxId);
+  } finally {
+    if (editDbdLookupBtn) {
+      editDbdLookupBtn.disabled = false;
+      setIconLabel(editDbdLookupBtn, 'bi-search', 'DBD');
     }
   }
 }
@@ -1045,6 +1094,19 @@ profileListEl?.addEventListener('click', event => {
 });
 profileForm?.addEventListener('submit', event => { event.preventDefault(); saveProfileForm(); });
 editBuyerCancelBtn?.addEventListener('click', () => editBuyerDialog?.close());
+editDbdLookupBtn?.addEventListener('click', lookupEditBuyerDbd);
+editBuyerForm?.addEventListener('click', async event => {
+  const button = event.target.closest('#copyEditDbdLinkBtn');
+  if (!button) return;
+  event.preventDefault();
+  const url = button.dataset.url || manualDbdLink(normalizeTaxId(editBuyerTaxIdInput?.value || ''));
+  try {
+    await copyText(url);
+    if (editBuyerError) editBuyerError.textContent = 'คัดลอกลิงก์ DBD แล้ว เปิดแท็บ DBD แล้วกลับมากรอกต่อได้';
+  } catch (error) {
+    if (editBuyerError) editBuyerError.textContent = `คัดลอกลิงก์นี้ไปเปิดเอง: ${url}`;
+  }
+});
 editBuyerForm?.addEventListener('submit', event => { event.preventDefault(); submitEditBuyer(); });
 listEl?.addEventListener('click', async event => {
   const editBuyerButton = event.target.closest('[data-edit-tax-buyer]');

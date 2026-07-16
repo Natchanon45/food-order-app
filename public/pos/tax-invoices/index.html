@@ -13,6 +13,8 @@
   </style>
   <style>
     .tax-id-control{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}.dbd-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 16px;border:0;border-radius:14px;background:#123a8c;color:#fff;font-family:var(--app-ui-font);font-weight:500;cursor:pointer}.dbd-btn:disabled{opacity:.62;cursor:wait}
+    .tax-actions .btn-primary,.tax-actions a.btn-primary,.issue-sale-card .btn-primary,.issue-sale-card a.btn-primary{background:#0f8f46!important;border-color:#0f8f46!important;color:#fff!important;-webkit-text-fill-color:#fff!important;box-shadow:0 12px 26px rgba(15,143,70,.24)}
+    .tax-actions .btn-primary .bi,.tax-actions a.btn-primary .bi,.issue-sale-card .btn-primary .bi,.issue-sale-card a.btn-primary .bi{color:#fff!important;-webkit-text-fill-color:#fff!important}
     .profile-sync-badge{display:inline-flex;align-items:center;min-height:22px;margin-left:6px;padding:0 8px;border-radius:999px;background:#f1f5f9;color:#475569;font-size:12px;font-weight:500;vertical-align:middle}
     .profile-sync-badge.is-synced{background:#e7f8ef;color:#0b6b32}
     .profile-sync-badge.is-pending{background:#fff7ed;color:#c2410c}
@@ -99,14 +101,14 @@
       <div><h2>แก้ข้อมูลผู้ซื้อ</h2><p id="editTaxBuyerText">-</p></div>
       <p>ใช้สำหรับใบกำกับภาษีที่ยังค้าง Sync ในเครื่องเท่านั้น หลังบันทึกแล้วกด ลอง Sync อีกครั้ง</p>
       <label>ชื่อผู้ซื้อ / บริษัท<input id="editBuyerNameInput" autocomplete="name" required></label>
-      <label>เลขประจำตัวผู้เสียภาษี<input id="editBuyerTaxIdInput" autocomplete="off" inputmode="numeric" maxlength="13"></label>
+      <label>เลขประจำตัวผู้เสียภาษี<div class="tax-id-control"><input id="editBuyerTaxIdInput" autocomplete="off" inputmode="numeric" maxlength="13"><button id="editDbdLookupBtn" class="dbd-btn" type="button"><i class="bi bi-search" aria-hidden="true"></i><span>DBD</span></button></div></label>
       <label>สำนักงานใหญ่ / สาขา<input id="editBuyerBranchInput" autocomplete="off"></label>
       <label>ที่อยู่สำหรับใบกำกับภาษี<textarea id="editBuyerAddressInput" autocomplete="street-address"></textarea></label>
       <div id="editTaxBuyerError" class="tax-error"></div>
       <div class="tax-dialog-actions"><button id="editTaxBuyerCancelBtn" class="btn btn-secondary" type="button"><i class="bi bi-x-lg" aria-hidden="true"></i><span>ยกเลิก</span></button><button id="editTaxBuyerSubmitBtn" class="btn btn-primary" type="submit"><i class="bi bi-floppy" aria-hidden="true"></i><span>บันทึกข้อมูลผู้ซื้อ</span></button></div>
     </form>
   </dialog>
-  <script type="module" src="/assets/js/retail-pos-navigation.js?v=20260716-009"></script>
-  <script type="module" src="/assets/js/retail-pos-tax-invoices.js?v=20260716-009"></script>
+  <script type="module" src="/assets/js/retail-pos-navigation.js?v=20260716-010"></script>
+  <script type="module" src="/assets/js/retail-pos-tax-invoices.js?v=20260716-010"></script>
 </body>
 </html>

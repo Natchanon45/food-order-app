@@ -33,10 +33,17 @@
 .movement-qty { font-weight: 600; }
 .movement-qty.plus { color: #0f766e; }
 .movement-qty.minus { color: #b42318; }
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.form-grid label { margin-top: 0; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+.form-grid label { margin-top: 0; align-self: start; }
 .form-grid .full { grid-column: 1 / -1; }
 .stock-product-name { margin: 14px 0 4px; padding: 12px; border-radius: 10px; background: #e8f7f4; font-weight: 500; }
+#productForm .form-grid > label { min-height: 0; }
+#productForm .form-grid input,
+#productForm .form-grid select { height: 48px; min-height: 48px; box-sizing: border-box; }
+#productForm .barcode-input-group { align-self: start; min-height: 48px; }
+#productForm .barcode-input-group input { height: 48px; min-height: 48px; }
+#productForm .barcode-input-group .scan-barcode-btn { top: 24px !important; transform: translateY(-50%) !important; }
+#productForm .bootstrap-invalid-feedback { margin-top: 6px; }
 @media (min-width: 801px) {
   #productDialog { width: min(760px, calc(100% - 48px)); }
 }

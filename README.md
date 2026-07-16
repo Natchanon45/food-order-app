@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Print Icon And Mobile Validation Polish
-Version: 0.14.84
-Build: 2026.07.16.009
+Milestone: Tax Buyer DBD And Validation Layout Polish
+Version: 0.14.85
+Build: 2026.07.16.010
 
-Change: Polished POS tax invoice history and receipt print actions with explicit icons and button spacing, prewarmed receipt/full-tax print windows before invoking browser print, kept shared validation feedback under compound controls such as barcode scanner inputs, and made `/admin/users` use horizontal table scrolling on mobile. Cache versions are bumped to `20260716-009`.
+Change: Improved POS tax invoice history open/print button contrast, added DBD lookup with manual-copy fallback to the tax buyer edit dialog, and kept product form validation feedback from stretching product code/barcode inputs or moving scanner icons. Cache versions are bumped to `20260716-010`.
+
+Previous build note: Print Icon And Mobile Validation Polish from build `2026.07.16.009` remains unchanged for POS tax invoice history and receipt print action icons, prewarmed print windows, validation feedback under compound scanner controls, and `/admin/users` horizontal table scrolling on mobile.
 
 Previous build note: Tax Invoice Page Count And Receipt Reprint from build `2026.07.16.008` remains unchanged for 20-row full-tax invoice pages, `หน้า n/m` page numbers, reduced print-window dependencies, and sale-history receipt reprint consistency.
 
