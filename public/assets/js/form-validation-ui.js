@@ -29,6 +29,7 @@ const FEEDBACK_HOST_SELECTOR = [
   ".payment-customer-control",
   ".input-with-action",
   ".input-action",
+  ".login-input-wrap",
   ".field-control"
 ].join(",");
 

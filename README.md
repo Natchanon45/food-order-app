@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Buyer DBD And Validation Layout Polish
-Version: 0.14.85
-Build: 2026.07.16.010
+Milestone: Login Validation Layout Polish
+Version: 0.14.86
+Build: 2026.07.16.011
 
-Change: Improved POS tax invoice history open/print button contrast, added DBD lookup with manual-copy fallback to the tax buyer edit dialog, and kept product form validation feedback from stretching product code/barcode inputs or moving scanner icons. Cache versions are bumped to `20260716-010`.
+Change: Kept login validation feedback under the full input group so the email icon, password icon, and password visibility button no longer shift when red validation text appears. Login cache versions are bumped to `20260716-011`.
+
+Previous build note: Tax Buyer DBD And Validation Layout Polish from build `2026.07.16.010` remains unchanged for POS tax invoice history open/print button contrast, DBD lookup with manual-copy fallback in the tax buyer edit dialog, and product form validation that does not stretch product code/barcode inputs or move scanner icons.
 
 Previous build note: Print Icon And Mobile Validation Polish from build `2026.07.16.009` remains unchanged for POS tax invoice history and receipt print action icons, prewarmed print windows, validation feedback under compound scanner controls, and `/admin/users` horizontal table scrolling on mobile.
 

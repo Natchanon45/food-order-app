@@ -4,7 +4,7 @@ import {
   doc, getDoc, httpsCallable,
   EmailAuthProvider, reauthenticateWithCredential, updatePassword
 } from "./firebase-config.js?v=20260630-073";
-import "./form-validation-ui.js?v=20260716-009";
+import "./form-validation-ui.js?v=20260716-011";
 import { clearActiveTenant, setActiveTenant } from "./tenant-context.js";
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 
