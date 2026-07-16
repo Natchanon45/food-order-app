@@ -487,6 +487,23 @@ function scheduleBackgroundSaleSync() {
   }, 50);
 }
 
+async function waitForLocalLoyaltyPatch(sale) {
+  const apply = window.retailPosApplyLoyaltyToSale;
+  if (typeof apply !== "function" || !sale?.id) return;
+  const paymentDialog = document.querySelector("#paymentDialog");
+  const customerId = paymentDialog?.dataset.customerId || sale.customerId || "";
+  if (!customerId) return;
+  const pointsUsed = Number(paymentDialog?.dataset.loyaltyPoints || 0);
+  try {
+    await Promise.race([
+      Promise.resolve(apply(sale.id, { customerId, pointsUsed })),
+      new Promise(resolve => setTimeout(resolve, 300))
+    ]);
+  } catch (error) {
+    console.warn("[retail-pos] loyalty local patch skipped", error);
+  }
+}
+
 async function confirmPayment() {
   if (savingSale) return;
   const totals = getTotals();
@@ -503,6 +520,7 @@ async function confirmPayment() {
   const saleItems = cart.map(item => ({ ...item }));
   try {
     const { sale, offline, localFirst } = await saveSaleWithFallback({ saleId, method, received, totals, createdAt, saleItems });
+    await waitForLocalLoyaltyPatch(sale);
     els.paymentDialog.close();
     renderProducts();
     readyForNextSale();

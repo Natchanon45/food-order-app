@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Local First Receipt Data
-Version: 0.14.80
-Build: 2026.07.16.005
+Milestone: POS Local First Loyalty Receipt
+Version: 0.14.81
+Build: 2026.07.16.006
 
-Change: Changed Retail POS checkout to local-first persistence. Every confirmed POS bill is saved to `retail_pos_sales_v1`, local stock is deducted once by stable saleId, and the receipt can open immediately without waiting for the Firestore transaction. The existing offline sync worker now handles Firebase writes in the background from the pending local sale. Customer/member fields are copied into the local sale at save time, and loyalty point rows update local sale/customer/ledger data before the receipt window renders so printed short tax invoices and receipts can show the masked customer and point summary consistently. POS, loyalty, toast/version cache chains are bumped to `20260716-005`.
+Change: Changed Retail POS checkout to local-first persistence. Every confirmed POS bill is saved to `retail_pos_sales_v1`, local stock is deducted once by stable saleId, and the receipt can open immediately without waiting for the Firestore transaction. The existing offline sync worker now handles Firebase writes in the background from the pending local sale. Customer/member fields are copied into the local sale at save time, and checkout now waits briefly for the local loyalty/customer patch before opening the receipt window so printed short tax invoices and receipts can show the masked customer and point summary consistently. POS, loyalty, toast/version cache chains are bumped to `20260716-006`.
+
+Previous build note: POS Local First Receipt Data from build `2026.07.16.005` remains unchanged for saving Retail POS bills locally first, using stable saleId background sync, and avoiding duplicate stock deduction.
 
 Previous build note: Delivery COD Edit Unlock from build `2026.07.16.004` remains unchanged for cash-on-delivery cart editing before final order confirmation.
 
