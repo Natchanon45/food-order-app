@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Delivery COD Edit Unlock
-Version: 0.14.79
-Build: 2026.07.16.004
+Milestone: POS Local First Receipt Data
+Version: 0.14.80
+Build: 2026.07.16.005
 
-Change: Fixed the Delivery cash-on-delivery checkout flow so choosing `เก็บเงินปลายทาง` no longer locks the cart before final confirmation. Customers can still add items, increase/decrease quantities, edit item notes, change the delivery fee option, and switch payment method until they press `ยืนยันคำสั่งซื้อ`. The payment amount lock remains active only for PromptPay / transfer orders, where the QR and slip need a stable amount. Restored Delivery drafts now discard stale payment locks when the method is COD. Delivery payment-lock and version metadata cache chains are bumped to `20260716-004`.
+Change: Changed Retail POS checkout to local-first persistence. Every confirmed POS bill is saved to `retail_pos_sales_v1`, local stock is deducted once by stable saleId, and the receipt can open immediately without waiting for the Firestore transaction. The existing offline sync worker now handles Firebase writes in the background from the pending local sale. Customer/member fields are copied into the local sale at save time, and loyalty point rows update local sale/customer/ledger data before the receipt window renders so printed short tax invoices and receipts can show the masked customer and point summary consistently. POS, loyalty, toast/version cache chains are bumped to `20260716-005`.
+
+Previous build note: Delivery COD Edit Unlock from build `2026.07.16.004` remains unchanged for cash-on-delivery cart editing before final order confirmation.
 
 Previous build note: POS Receipt Reliability Repair from build `2026.07.16.003` remains unchanged for POS checkout speed, old sync row reconcile, receipt customer/member recovery, loyalty rows, sale-history shop details, and late full-tax invoice DBD lookup.
 

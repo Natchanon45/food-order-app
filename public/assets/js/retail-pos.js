@@ -21,6 +21,7 @@ const SHIFT_KEY = "retail_pos_active_shift_v1";
 const CUSTOMER_KEY = "retail_pos_customers_v1";
 const SETTINGS_KEY = "retail_pos_store_settings_v1";
 const FIRESTORE_SAVE_TIMEOUT_MS = 10000;
+const LOCAL_FIRST_SYNC_DELAY_MS = 900;
 
 const DEFAULT_TAX_SETTINGS = Object.freeze({
   vatRegistered: "no",
@@ -327,10 +328,21 @@ function moneyInputValue(value) {
 function saveLocalSale(sale, nextProducts, movements) {
   const sales = readJson(SALES_KEY, []);
   const saleKey = String(sale?.id || sale?.saleNumber || "");
+  const existingSale = saleKey ? sales.find(item => String(item?.id || item?.saleNumber || "") === saleKey) : null;
+  if (existingSale) {
+    const preservedSale = { ...sale, ...existingSale };
+    writeJson(SALES_KEY, [preservedSale, ...sales.filter(item => String(item?.id || item?.saleNumber || "") !== saleKey)].slice(0, 500));
+    window.dispatchEvent(new CustomEvent("retail-pos-sale-saved", { detail: { sale: preservedSale, duplicateLocalSave: true } }));
+    return preservedSale;
+  }
   const existing = sales.filter(item => String(item?.id || item?.saleNumber || "") !== saleKey);
+  const movementIds = new Set((movements || []).map(item => String(item?.id || "")));
+  const existingMovements = readJson(MOVEMENT_KEY, []).filter(item => !movementIds.has(String(item?.id || "")));
   writeJson(PRODUCT_KEY, nextProducts);
   writeJson(SALES_KEY, [sale, ...existing].slice(0, 500));
-  writeJson(MOVEMENT_KEY, [...movements, ...readJson(MOVEMENT_KEY, [])].slice(0, 500));
+  writeJson(MOVEMENT_KEY, [...(movements || []), ...existingMovements].slice(0, 500));
+  window.dispatchEvent(new CustomEvent("retail-pos-sale-saved", { detail: { sale } }));
+  return sale;
 }
 
 function updateLocalSaleOnly(sale) {
@@ -349,6 +361,11 @@ function updateLocalSaleOnly(sale) {
 
 async function completeSaleOffline({ saleId, method, received, totals, createdAt, saleItems }) {
   const number = pendingSaleNumber(createdAt, saleId);
+  const existingSale = readJson(SALES_KEY, []).find(item => String(item?.id || item?.saleNumber || "") === String(saleId));
+  if (existingSale) {
+    window.dispatchEvent(new CustomEvent("retail-pos-sale-saved", { detail: { sale: existingSale, duplicateLocalSave: true } }));
+    return existingSale;
+  }
   const movementRows = [];
   const nextProducts = products.map(product => {
     const sold = saleItems.find(item => item.id === product.id)?.qty || 0;
@@ -359,21 +376,31 @@ async function completeSaleOffline({ saleId, method, received, totals, createdAt
     movementRows.push({ id, tenantId: getTenantId(), productId: product.id, productName: product.name, type: "sale", direction: "out", qty: sold, before, after, stockBefore: before, stockAfter: after, note: `ขายสินค้า ${number}`, referenceType: "sale", referenceId: saleId, referenceNumber: number, createdAt });
     return { ...product, stock: after };
   });
-  const sale = buildSale({ id: saleId, number, method, received, totals, createdAt, saleItems, syncStatus: "pending" });
-  saveLocalSale(sale, nextProducts, movementRows);
+  const sale = {
+    ...buildSale({ id: saleId, number, method, received, totals, createdAt, saleItems, syncStatus: "pending" }),
+    localSaleNumber: number,
+    finalSaleNumber: "",
+    runningNumberType: "SALE",
+    runningNumberStatus: "pending_sync",
+    stockDeductedAt: new Date().toISOString(),
+    stockDeductionStatus: "deducted"
+  };
+  const savedSale = saveLocalSale(sale, nextProducts, movementRows);
   products = nextProducts;
-  return sale;
+  return savedSale;
 }
 
 function buildSale({ id, number, method, received, totals, createdAt, saleItems = cart, cashierId = auth?.currentUser?.uid || "", syncStatus = "synced" }) {
   const shift = readJson(SHIFT_KEY, null);
   const selectedCustomerId = document.querySelector("#paymentDialog")?.dataset.customerId || "";
-  const customer = readJson(CUSTOMER_KEY, []).find(item => String(item.id) === String(selectedCustomerId));
+  const customer = readJson(CUSTOMER_KEY, []).find(item => String(item.id || item._documentId || "") === String(selectedCustomerId));
   const tenantId = getTenantId();
   const deviceId = getDeviceId();
   const dateKey = dateKeyFrom(createdAt);
   const monthKey = monthKeyFrom(createdAt);
-  return { id, saleNumber: number, tenantId, shopId: tenantId, deviceId, schemaVersion: POS_FIRESTORE_VERSION, deleted: false, dateKey, monthKey, channel: "retail-pos", orderType: "pos", status: "completed", paymentStatus: "paid", syncStatus, createdAt, items: saleItems.map(({ id, barcode, name, price, cost, qty, unit }) => ({ id, productId: id, barcode, name, price, cost: Number.isFinite(Number(cost)) ? Number(cost) : null, qty, unit, lineTotal: Number(price || 0) * Number(qty || 0) })), totalQty: saleItems.reduce((sum, item) => sum + item.qty, 0), subtotal: totals.subtotal, discount: totals.discount, pointDiscount: totals.pointDiscount || 0, discountedBase: totals.discountedBase, taxableBase: totals.taxableBase, beforeVat: totals.beforeVat, vatAmount: totals.vatAmount, vatRate: totals.vatRate, vatMode: totals.vatMode, vatRegistered: totals.vatRegistered, vatCalculationBase: totals.vatCalculationBase, total: totals.total, totalAmount: totals.total, payment: { method, received, change: Math.max(0, received - totals.total) }, paymentMethod: method, receivedAmount: received, changeAmount: Math.max(0, received - totals.total), cashierId, customerId: customer?.id || "", customerCode: customer?.customerCode || "", customerName: customer?.name || "", customerPhone: customer?.phone || "", shiftId: shift?.id || "", cashierName: shift?.cashierName || "", terminalCode: shift?.terminalCode || "" };
+  const customerId = customer?.id || customer?._documentId || "";
+  const customerCode = customer?.customerCode || customer?.code || "";
+  return { id, saleNumber: number, tenantId, shopId: tenantId, deviceId, schemaVersion: POS_FIRESTORE_VERSION, deleted: false, dateKey, monthKey, channel: "retail-pos", orderType: "pos", status: "completed", paymentStatus: "paid", syncStatus, createdAt, items: saleItems.map(({ id, barcode, name, price, cost, qty, unit }) => ({ id, productId: id, barcode, name, price, cost: Number.isFinite(Number(cost)) ? Number(cost) : null, qty, unit, lineTotal: Number(price || 0) * Number(qty || 0) })), totalQty: saleItems.reduce((sum, item) => sum + item.qty, 0), subtotal: totals.subtotal, discount: totals.discount, pointDiscount: totals.pointDiscount || 0, discountedBase: totals.discountedBase, taxableBase: totals.taxableBase, beforeVat: totals.beforeVat, vatAmount: totals.vatAmount, vatRate: totals.vatRate, vatMode: totals.vatMode, vatRegistered: totals.vatRegistered, vatCalculationBase: totals.vatCalculationBase, total: totals.total, totalAmount: totals.total, payment: { method, received, change: Math.max(0, received - totals.total) }, paymentMethod: method, receivedAmount: received, changeAmount: Math.max(0, received - totals.total), cashierId, customerId, customerCode, customerName: customer?.name || "", customerPhone: customer?.phone || "", memberId: customerId, memberCode: customerCode, shiftId: shift?.id || "", cashierName: shift?.cashierName || "", terminalCode: shift?.terminalCode || "" };
 }
 
 async function completeSaleFirestore({ saleId, method, received, totals, createdAt, saleItems }) {
@@ -443,9 +470,21 @@ function withTimeout(promise, ms = FIRESTORE_SAVE_TIMEOUT_MS) {
 
 async function saveSaleWithFallback({ saleId, method, received, totals, createdAt, saleItems }) {
   const payload = { saleId, method, received, totals, createdAt, saleItems };
-  if (!isFirebaseConfigured || !db || navigator.onLine === false) return { sale: await completeSaleOffline(payload), offline: true };
-  try { return { sale: await withTimeout(completeSaleFirestore(payload)), offline: false }; }
-  catch (error) { if (!shouldFallbackToOffline(error)) throw error; console.warn("[retail-pos] firebase unavailable, saved sale offline", error); return { sale: await completeSaleOffline(payload), offline: true }; }
+  const sale = await completeSaleOffline(payload);
+  scheduleBackgroundSaleSync();
+  return { sale, offline: true, localFirst: true };
+}
+
+function scheduleBackgroundSaleSync() {
+  if (navigator.onLine === false) return;
+  setTimeout(() => {
+    try {
+      if (window.retailOfflineQueue?.schedule) window.retailOfflineQueue.schedule(LOCAL_FIRST_SYNC_DELAY_MS);
+      else if (window.retailOfflineQueue?.sync) window.retailOfflineQueue.sync().catch(error => console.warn("[retail-pos] background sync failed", error));
+    } catch (error) {
+      console.warn("[retail-pos] background sync schedule failed", error);
+    }
+  }, 50);
 }
 
 async function confirmPayment() {
@@ -463,11 +502,11 @@ async function confirmPayment() {
   const createdAt = new Date().toISOString();
   const saleItems = cart.map(item => ({ ...item }));
   try {
-    const { sale, offline } = await saveSaleWithFallback({ saleId, method, received, totals, createdAt, saleItems });
+    const { sale, offline, localFirst } = await saveSaleWithFallback({ saleId, method, received, totals, createdAt, saleItems });
     els.paymentDialog.close();
     renderProducts();
     readyForNextSale();
-    showToast(offline ? `บันทึกการขาย ${sale.saleNumber || sale.id} แบบออฟไลน์แล้ว` : `บันทึกการขาย ${sale.saleNumber || sale.id} สำเร็จ`);
+    showToast(localFirst ? `บันทึกบิล ${sale.saleNumber || sale.id} ในเครื่องแล้ว กำลัง Sync Firebase` : offline ? `บันทึกการขาย ${sale.saleNumber || sale.id} แบบออฟไลน์แล้ว` : `บันทึกการขาย ${sale.saleNumber || sale.id} สำเร็จ`);
     showReceipt(sale, { autoPrint: false }).catch(error => console.warn("[retail-pos] receipt popup skipped", error));
   }
   catch (error) { console.error("[retail-pos] sale failed", error); const message = String(error?.message || error); if (message.startsWith("INSUFFICIENT_STOCK:")) els.paymentError.textContent = `สต็อก ${message.split(":").slice(1).join(":")} ไม่พอ`; else if (message.startsWith("PRODUCT_NOT_FOUND:")) els.paymentError.textContent = `ไม่พบสินค้า ${message.split(":").slice(1).join(":")}`; else if (message === "AUTH_REQUIRED") els.paymentError.textContent = "กรุณาเข้าสู่ระบบก่อนบันทึกการขาย"; else els.paymentError.textContent = "บันทึกการขายไม่สำเร็จ กรุณาลองใหม่"; }

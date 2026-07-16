@@ -135,9 +135,11 @@ async function applyLedgerToSale(saleId, customerId, pointsUsed) {
   write(CUSTOMER_KEY, customers);
   write(SALES_KEY, nextSales);
   write(LEDGER_KEY, ledger);
-  try { await commitTenantRecordsStrict([{ collectionName: RetailCollections.customers, row: updatedCustomer }, { collectionName: RetailCollections.sales, row: updatedSale }, { collectionName: RetailCollections.loyaltyLedger, row: entry }]); }
-  catch (error) { console.warn('[retail-pos-loyalty] firebase save failed', error); }
   window.dispatchEvent(new CustomEvent('pos:loyalty-updated', { detail: { customerId: customer.id, saleId: sale.id, pointsAfter: after, pointsEarned: earned } }));
+  const saleAlreadySynced = String(updatedSale.syncStatus || '').toLowerCase() === 'synced' || Boolean(updatedSale.firebaseSyncedAt || updatedSale.syncedAt);
+  const rows = [{ collectionName: RetailCollections.customers, row: updatedCustomer }, { collectionName: RetailCollections.loyaltyLedger, row: entry }];
+  if (saleAlreadySynced) rows.push({ collectionName: RetailCollections.sales, row: updatedSale });
+  commitTenantRecordsStrict(rows).catch(error => console.warn('[retail-pos-loyalty] firebase save failed', error));
   return true;
 }
 
