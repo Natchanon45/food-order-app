@@ -108,7 +108,7 @@ const ICON_TONES = {
   "x-lg": "slate",
 };
 
-const ICON_TARGET_SELECTOR = "button, a.btn, a.header-link, .pos-menu-link, h1, h2, h3, .app-title > div > strong";
+const ICON_TARGET_SELECTOR = "button, a.btn, a.header-link, .pos-menu-link, h1, h2, h3";
 
 function visibleText(element) {
   return (element.getAttribute("aria-label") || element.textContent || "").replace(/\s+/g, " ").trim();
@@ -133,6 +133,7 @@ function toneForIcon(iconName) {
 
 function shouldSkipIcon(element) {
   if (element.closest(".receipt, .receipt-header, .tax-paper, .tax-title, .qr-ticket, .print-document, .document-page, .print-page, .invoice, .quotation, .customer-sale-receipt, .return-receipt")) return true;
+  if (element.closest(".pos-header, .page-head, .display-header")) return true;
   if (element.matches(".icon-btn, .pos-menu-title, .pos-menu-head h2, .pos-menu-group > button, [data-menu-group], .product-card, .catalog-tab, .sort-row-main, .app-version-badge, .mobile-cart-bar, .qty-tools button, [data-mobile-cart-close]")) return true;
   return element.closest(".pos-menu-head") && visibleText(element) === "เมนู POS";
 }

@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Admin Hero Title Icon Cleanup
-Version: 0.14.87
-Build: 2026.07.16.012
+Milestone: Retail POS Action Bar Text Only
+Version: 0.14.88
+Build: 2026.07.16.013
 
-Change: Removed the decorative icon directly beside the `/admin` hero heading `จัดการร้าน` while keeping the rest of the Admin section and action icons unchanged. The Admin icon polish cache version is bumped to `20260716-012`.
+Change: Removed the `FOD` logo badge and automatic title icons from Retail POS action bars across the main POS page, all POS submenu pages, tax invoice history, and Customer Display. Page titles and descriptions remain text-only while menu buttons, action buttons, content headings, and functional icons remain unchanged. The shared Retail POS icon/navigation/app-info cache chain is bumped to `20260716-013`.
+
+Previous build note: Admin Hero Title Icon Cleanup from build `2026.07.16.012` remains unchanged for the text-only `/admin` hero heading `จัดการร้าน`.
 
 Previous build note: Login Validation Layout Polish from build `2026.07.16.011` remains unchanged for login validation feedback below the full input group and stable email/password icons.
 

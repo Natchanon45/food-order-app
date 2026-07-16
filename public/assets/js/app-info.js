@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.87',
-  build: '2026.07.16.012',
+  version: '0.14.88',
+  build: '2026.07.16.013',
   branch: 'feature/retail-pos',
-  commit: 'ADMIN-HERO-TITLE-CLEANUP-01487',
+  commit: 'POS-ACTION-BAR-TEXT-ONLY-01488',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Admin Hero Title Icon Cleanup',
-  updatedAt: '2026-07-16T21:13:23+07:00',
+  milestone: 'Retail POS Action Bar Text Only',
+  updatedAt: '2026-07-16T21:45:00+07:00',
   whatsNew: [
-    'Remove the decorative icon directly beside the Admin hero heading',
-    'Keep Admin section and action icons unchanged',
-    'Cache-bust the Admin icon polish asset for the deployed admin screen'
+    'Remove the FOD badge from Retail POS action bars and Customer Display',
+    'Keep Retail POS page titles and descriptions text-only across submenus',
+    'Prevent the shared icon enhancer from injecting icons into action-bar titles'
   ]
 };
 

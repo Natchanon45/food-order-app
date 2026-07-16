@@ -1,4 +1,4 @@
-import {hasPermission} from "./retail-pos-navigation.js?v=20260716-010";
+import {hasPermission} from "./retail-pos-navigation.js?v=20260716-013";
 
 const PERMISSIONS={
   viewBill:"pos.sales.view_bill",
