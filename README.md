@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Retail POS Settings Offline Sync
-Version: 0.14.89
-Build: 2026.07.16.014
+Milestone: Retail POS Settings Nonblocking Sync
+Version: 0.14.90
+Build: 2026.07.16.015
 
-Change: `/pos/settings/` now saves every store-settings form value locally first, including store, receipt, tax, PromptPay, and loyalty settings. Each pending settings document is scoped by `tenantId`, queued in LocalStorage, written to `tenants/{tenantId}/settings/{documentId}` when Firebase is available, and retried automatically on page startup or the browser `online` event. The success toast now reads `บันทึกข้อมูลการตั้งค่าร้านค้าสำเร็จ`. The settings and app-info cache chain is bumped to `20260716-014`.
+Change: Fixed the post-deploy `/pos/settings/` responsiveness regression by removing Firebase work from the page-load and form-submit critical paths. Settings still save to tenant-scoped LocalStorage first, but Firestore queue processing now starts after a short delay in the background, applies an eight-second timeout per settings document, avoids immediate retry loops, and resumes on the browser `online` event. The settings and app-info cache chain is bumped to `20260716-015`.
+
+Previous build note: Retail POS Settings Offline Sync from build `2026.07.16.014` remains unchanged for tenant-scoped local-first persistence of store, receipt, tax, payment, and loyalty settings.
 
 Previous build note: Retail POS Action Bar Text Only from build `2026.07.16.013` remains unchanged across the main POS page, submenu pages, tax invoice history, and Customer Display.
 

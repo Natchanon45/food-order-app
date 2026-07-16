@@ -1,5 +1,5 @@
 import { RetailCollections, getRecord, getTenantId } from './retail-db.js?v=20260629-032';
-import { saveSettingsDocumentsLocalFirst, syncPendingSettings } from './retail-pos-settings-sync.js?v=20260716-014';
+import { saveSettingsDocumentsLocalFirst } from './retail-pos-settings-sync.js?v=20260716-015';
 
 const SETTINGS_KEY = "retail_pos_store_settings_v1";
 const tenantSettingsKey = () => `${SETTINGS_KEY}_${getTenantId()}`;
@@ -307,4 +307,3 @@ els.resetBtn.addEventListener("click", async () => {
 });
 
 fillForm(await readSettings());
-syncPendingSettings().catch(error => console.warn("[retail-pos-settings] pending sync failed", error));

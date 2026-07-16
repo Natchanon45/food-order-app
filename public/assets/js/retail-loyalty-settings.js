@@ -1,5 +1,5 @@
 import { RetailCollections, getRecord, getTenantId, watchRecords } from './retail-db.js?v=20260629-031';
-import { saveSettingsDocumentsLocalFirst } from './retail-pos-settings-sync.js?v=20260716-014';
+import { saveSettingsDocumentsLocalFirst } from './retail-pos-settings-sync.js?v=20260716-015';
 
 const KEY = 'retail_pos_loyalty_settings_v1';
 const DOCUMENT_ID = 'loyalty';

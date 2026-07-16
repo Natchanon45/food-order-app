@@ -1,7 +1,33 @@
 import { RetailCollections, getTenantId, saveRecordStrict } from './retail-db.js?v=20260629-032';
 
 const QUEUE_PREFIX = 'retail_pos_settings_sync_queue_v1_';
+const FIREBASE_SYNC_TIMEOUT_MS = 8000;
 let activeSync = null;
+let scheduledSync = 0;
+
+function withTimeout(promise, timeoutMs, label) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`${label}_TIMEOUT`)), timeoutMs);
+    Promise.resolve(promise).then(
+      value => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      error => {
+        clearTimeout(timer);
+        reject(error);
+      }
+    );
+  });
+}
+
+function scheduleSync(delay = 500) {
+  clearTimeout(scheduledSync);
+  scheduledSync = setTimeout(() => {
+    scheduledSync = 0;
+    syncPendingSettings().catch(error => console.warn('[retail-pos-settings-sync] scheduled sync failed', error));
+  }, delay);
+}
 
 function queueKey() {
   return `${QUEUE_PREFIX}${getTenantId()}`;
@@ -67,15 +93,19 @@ export async function syncPendingSettings() {
       }
       try {
         const syncedAt = Date.now();
-        await saveRecordStrict(RetailCollections.settings, {
-          ...queued,
-          tenantId,
-          shopId: tenantId,
-          syncStatus: 'synced',
-          firebaseSyncedAt: syncedAt,
-          syncError: '',
-          syncAttemptedAt: syncedAt
-        });
+        await withTimeout(
+          saveRecordStrict(RetailCollections.settings, {
+            ...queued,
+            tenantId,
+            shopId: tenantId,
+            syncStatus: 'synced',
+            firebaseSyncedAt: syncedAt,
+            syncError: '',
+            syncAttemptedAt: syncedAt
+          }),
+          FIREBASE_SYNC_TIMEOUT_MS,
+          `SETTINGS_${queued.id}`
+        );
         synced += 1;
         results.set(String(queued.id), { queuedAt: queued.syncQueuedAt, synced: true });
       } catch (error) {
@@ -113,21 +143,20 @@ export async function syncPendingSettings() {
   } finally {
     activeSync = null;
     if (result?.drain && navigator.onLine !== false && hasPendingSettingsSync()) {
-      setTimeout(() => {
-        syncPendingSettings().catch(error => console.warn('[retail-pos-settings-sync] queue drain failed', error));
-      }, 0);
+      scheduleSync(500);
     }
   }
 }
 
 export async function saveSettingsDocumentsLocalFirst(documents = []) {
   enqueue(documents);
-  if (navigator.onLine === false) return { synced: 0, pending: readQueue().length };
-  return syncPendingSettings();
+  const pending = readQueue().length;
+  if (navigator.onLine !== false) scheduleSync(100);
+  return { synced: 0, pending };
 }
 
 window.addEventListener('online', () => {
-  syncPendingSettings().catch(error => console.warn('[retail-pos-settings-sync] online sync failed', error));
+  scheduleSync(300);
 });
 
-syncPendingSettings().catch(error => console.warn('[retail-pos-settings-sync] startup sync failed', error));
+if (navigator.onLine !== false && hasPendingSettingsSync()) scheduleSync(1500);
