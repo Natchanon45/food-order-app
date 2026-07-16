@@ -341,11 +341,10 @@ function updateImportButton() {
   const breakdown = importBreakdown();
   const count = breakdown.importable;
   els.importButton.disabled = importing || !validation.valid || count === 0;
-  els.importButton.textContent = importing ? 'กำลังนำเข้า...' : count
-    ? `นำเข้า ${count.toLocaleString('th-TH')} รายการที่ผ่านตรวจ`
-    : breakdown.ready && breakdown.skippedExisting
-      ? 'พร้อมนำเข้าถูกข้ามทั้งหมด'
-      : 'ไม่มีสินค้าที่พร้อมนำเข้า';
+  els.importButton.dataset.posIcon = importing ? 'hourglass-split' : 'box-arrow-in-down';
+  els.importButton.innerHTML = importing
+    ? '<i class="bi bi-hourglass-split" aria-hidden="true"></i><span>กำลังนำเข้า...</span>'
+    : '<i class="bi bi-box-arrow-in-down" aria-hidden="true"></i><span>นำเข้าทั้งหมด</span>';
   renderImportSummary();
 }
 

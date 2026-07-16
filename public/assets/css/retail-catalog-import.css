@@ -1,9 +1,11 @@
 .catalog-shell{max-width:1180px;margin:0 auto;padding:24px 18px 48px}
-.catalog-hero{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;background:linear-gradient(135deg,#0b3d2a,#159447);color:#fff;border-radius:28px;padding:28px;box-shadow:0 18px 40px rgba(15,80,48,.18)}
-.catalog-hero h1{margin:0 0 8px;font-size:clamp(26px,4vw,42px)}
-.catalog-hero p{margin:0;color:rgba(255,255,255,.82);max-width:680px}
+.catalog-hero{background:linear-gradient(135deg,#0b3d2a,#159447);color:#fff;border-radius:28px;padding:28px;box-shadow:0 18px 40px rgba(15,80,48,.18)}
+.catalog-hero-content{min-width:0}
+.catalog-hero-head{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.catalog-hero h1{min-width:0;margin:0;font-size:clamp(26px,3.3vw,40px);line-height:1.2}
+.catalog-hero p{margin:12px 0 0;color:rgba(255,255,255,.82);font-size:clamp(13px,1.25vw,16px);line-height:1.5;white-space:nowrap}
 .catalog-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-.catalog-actions .btn{border:0;border-radius:16px;padding:14px 18px;font-weight:800}
+.catalog-actions .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border:0;border-radius:16px;padding:12px 18px;font-weight:800;white-space:nowrap}
 .catalog-actions .primary{background:#fff;color:#0b6b3d}
 .catalog-actions .primary:disabled{opacity:.62;cursor:not-allowed}
 .catalog-actions .secondary{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.25)}
@@ -113,5 +115,6 @@
 .catalog-dialog-actions .btn{border-radius:14px;padding:12px 16px;font-weight:800}
 .catalog-dialog-actions .primary{border:0;background:#159447;color:#fff}
 .catalog-dialog-actions .secondary{background:#fff;color:#334155;border:1px solid #cbd5e1}
-@media(max-width:900px){.catalog-hero{grid-template-columns:1fr}.catalog-actions{justify-content:flex-start}.catalog-stats,.catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.catalog-import-summary{grid-template-columns:1fr}.summary-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.catalog-filterbar{grid-template-columns:1fr 1fr}.filter-clear{grid-column:1/-1}.import-success-checklist,.import-success-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.catalog-shell{padding:16px 12px 32px}.catalog-hero{padding:22px;border-radius:22px}.catalog-stats,.catalog-grid,.summary-metrics,.catalog-filterbar,.dialog-summary,.import-success-checklist,.import-success-list{grid-template-columns:1fr}.panel-head,.excel-preview-head{align-items:stretch;flex-direction:column}.catalog-panel{padding:16px}.catalog-panel .table-wrap{padding-bottom:8px}.catalog-table{font-size:13px}.excel-download,.excel-import-button,.filter-clear,.import-success-actions .btn{width:100%}.excel-dropzone{padding:22px 12px}}
+@media(max-width:1100px){.catalog-hero p{white-space:normal}}
+@media(max-width:900px){.catalog-hero-head{align-items:flex-start;flex-direction:column}.catalog-actions{width:100%;justify-content:flex-start}.catalog-stats,.catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.catalog-import-summary{grid-template-columns:1fr}.summary-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.catalog-filterbar{grid-template-columns:1fr 1fr}.filter-clear{grid-column:1/-1}.import-success-checklist,.import-success-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.catalog-shell{padding:12px 10px 30px}.catalog-hero{padding:18px;border-radius:20px}.catalog-hero-head{gap:14px}.catalog-hero h1{font-size:25px}.catalog-hero p{margin-top:10px;font-size:13px;line-height:1.55}.catalog-actions{display:grid;grid-template-columns:1fr;width:100%;gap:8px}.catalog-actions .btn{width:100%;min-height:44px;border-radius:14px;padding:10px 14px}.catalog-stats,.catalog-grid,.summary-metrics,.catalog-filterbar,.dialog-summary,.import-success-checklist,.import-success-list{grid-template-columns:1fr}.panel-head,.excel-preview-head{align-items:stretch;flex-direction:column}.catalog-panel{padding:16px}.catalog-panel .table-wrap{padding-bottom:8px}.catalog-table{font-size:13px}.excel-download,.excel-import-button,.filter-clear,.import-success-actions .btn{width:100%}.excel-dropzone{padding:22px 12px}}

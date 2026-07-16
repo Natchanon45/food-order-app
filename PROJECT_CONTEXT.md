@@ -2,21 +2,23 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.92
-Build: 2026.07.16.017
-Milestone: Tax Sync Permission And Cross Tab Lock
+Version: 0.14.93
+Build: 2026.07.17.001
+Milestone: Catalog Hero Mobile Organization
 
-Change: Fixed endless tax invoice sync attempts by adding tenant-scoped Firestore permissions for tax invoices, buyer profiles, TAX counters, and TAX running numbers; blocking automatic retries after permission errors; serializing sync across browser tabs; and preventing LocalStorage events from initiating another sync.
+Change: Reorganized the Retail Master Catalog hero so the import heading and `นำเข้าทั้งหมด` action share a clean desktop row, the description remains one line on suitable widths, and the card stacks into compact full-width controls on mobile.
 
 Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through POS continuous scanner support, plus local POS UI font coverage, menu icon cleanup, UI font-weight tuning, POS drawer title icon cleanup, POS legacy drawer icon guard, POS menu group chevron cleanup, POS menu pseudo-chevron cleanup, POS theme alignment with Order/Delivery, mobile product image-card overlay tuning, mobile POS button layout tuning, payment modal visual tuning, later full tax invoice issuing from an existing short tax invoice/receipt, PromptPay QR payment display for POS/customer screens, payment customer clear hardening, Customer Display PC stacked-left layout tuning, compact PC Customer Display tuning, editable full-tax buyer profiles, full-tax invoice void/cancel workflow, Customer Display PromptPay visual refresh, and Customer Display liquid-glass theme tuning.
 
-Usage: open `/pos/tax-invoices/` in one or two tabs. Pending documents should sync once under the current tenant without repeated attempt growth. A `permission-denied` row must stop automatic retries and remain available for explicit `ลอง Sync`; LocalStorage updates from another tab should refresh the list only.
+Usage: open `/pos/catalog/` on desktop and mobile. Verify the hero heading reads `นำเข้าชุดสินค้าพื้นฐาน`, the primary button reads `นำเข้าทั้งหมด` with an import icon, desktop keeps heading/actions aligned, and mobile shows a tidy stacked card without overflow.
 
 Deploy rules: use hosting-only deploy for `public/` asset changes. Deploy functions only when files under `functions/` or function rewrites/routes change. This build only needs hosting deploy.
 
 Previous build note: Login Validation Layout Polish from build `2026.07.16.011` remains unchanged for login validation feedback below the full input group and stable email/password icons.
 
 Previous build note: Tax Buyer DBD And Validation Layout Polish from build `2026.07.16.010` remains unchanged for tax invoice history open/print button contrast, DBD lookup with manual-copy fallback in the tax buyer edit dialog, and product form validation that does not stretch product code/barcode inputs or move scanner icons.
+
+Previous build note: Tax Sync Permission And Cross Tab Lock from build `2026.07.16.017` remains unchanged for tenant tax permissions and retry-loop protection.
 
 Previous build note: Tax Buyer Tax ID First from build `2026.07.16.016` remains unchanged for the buyer tax ID field order.
 
@@ -28,6 +30,6 @@ Previous build note: Retail POS Action Bar Text Only from build `2026.07.16.013`
 
 Previous build note: Admin Hero Title Icon Cleanup from build `2026.07.16.012` remains unchanged for the text-only `/admin` hero heading `จัดการร้าน`.
 
-Next Task: deploy Firestore rules and hosting, then verify build `20260716-017` drains existing pending tax invoices once without cross-tab retry loops.
+Next Task: deploy hosting and verify the `20260717-001` Catalog hero at desktop, tablet, and 360-430px mobile widths.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting

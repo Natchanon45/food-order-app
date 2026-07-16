@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>นำเข้าสินค้าพื้นฐาน</title>
   <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260713-004">
-  <link rel="stylesheet" href="/assets/css/retail-catalog-import.css?v=20260716-001">
+  <link rel="stylesheet" href="/assets/css/retail-catalog-import.css?v=20260717-001">
 </head>
 <body>
   <header class="pos-header">
@@ -15,13 +15,15 @@
 
   <main class="catalog-shell">
     <section class="catalog-hero">
-      <div>
-        <h1>เริ่มร้านได้เร็วขึ้นด้วยชุดสินค้าพื้นฐาน</h1>
+      <div class="catalog-hero-content">
+        <div class="catalog-hero-head">
+          <h1>นำเข้าชุดสินค้าพื้นฐาน</h1>
+          <div class="catalog-actions">
+            <button id="importButton" class="btn primary" type="button" data-pos-icon="box-arrow-in-down">นำเข้าทั้งหมด</button>
+            <a class="btn secondary" href="/pos/products/">ดูสินค้าร้านนี้</a>
+          </div>
+        </div>
         <p>นำเข้าสินค้ายอดนิยมสำหรับร้านของชำและมินิมาร์ทไทย พร้อม SKU ระบบ หมวดสินค้า แบรนด์ ราคาแนะนำ และคำค้นหา</p>
-      </div>
-      <div class="catalog-actions">
-        <button id="importButton" class="btn primary" type="button">กำลังตรวจ Catalog...</button>
-        <a class="btn secondary" href="/pos/products/">ดูสินค้าร้านนี้</a>
       </div>
     </section>
 
@@ -103,7 +105,7 @@
 
   <script src="/assets/vendor/sheetjs/xlsx.full.min.js"></script>
   <script type="module" src="/assets/js/retail-pos-icons.js?v=20260716-013"></script>
-  <script type="module" src="/assets/js/retail-catalog-import.js?v=20260716-001"></script>
+  <script type="module" src="/assets/js/retail-catalog-import.js?v=20260717-001"></script>
   <script type="module" src="/assets/js/retail-catalog-excel-import.js?v=20260702-028"></script>
 </body>
 </html>

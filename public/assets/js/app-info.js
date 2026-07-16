@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.92',
-  build: '2026.07.16.017',
+  version: '0.14.93',
+  build: '2026.07.17.001',
   branch: 'feature/retail-pos',
-  commit: 'TAX-SYNC-PERMISSION-LOCK-01492',
+  commit: 'CATALOG-HERO-MOBILE-01493',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Tax Sync Permission And Cross Tab Lock',
-  updatedAt: '2026-07-16T23:55:00+07:00',
+  milestone: 'Catalog Hero Mobile Organization',
+  updatedAt: '2026-07-17T00:15:00+07:00',
   whatsNew: [
-    'Allow tenant-scoped tax invoices, tax buyer profiles, TAX counters, and TAX running numbers in Firestore rules',
-    'Stop automatic retry after permission-denied and require an explicit retry',
-    'Prevent multiple tax history tabs from triggering each other in an endless sync loop'
+    'Rename the catalog hero to นำเข้าชุดสินค้าพื้นฐาน',
+    'Place the นำเข้าทั้งหมด action beside the hero heading with an import icon',
+    'Polish catalog hero spacing, description flow, and full-width mobile actions'
   ]
 };
 

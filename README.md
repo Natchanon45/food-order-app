@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Sync Permission And Cross Tab Lock
-Version: 0.14.92
-Build: 2026.07.16.017
+Milestone: Catalog Hero Mobile Organization
+Version: 0.14.93
+Build: 2026.07.17.001
 
-Change: Fixed endless full-tax invoice retry caused by missing Firestore permissions and cross-tab LocalStorage feedback. Firestore rules now allow tenant-authorized Retail POS roles to read/write `taxInvoices` and `taxBuyerProfiles`, reserve `TAX` counters/running numbers, and preserve tenant payload validation. Tax sync uses a tenant-scoped cross-tab lock, marks `permission-denied` as auto-retry blocked, retries blocked rows only after an explicit `ลอง Sync`, and handles invoice LocalStorage events as display refreshes without starting another sync. Tax assets and app-info are bumped to `20260716-017`.
+Change: Reorganized the `/pos/catalog/` hero card. The heading is now `นำเข้าชุดสินค้าพื้นฐาน`; the primary action is consistently labeled `นำเข้าทั้งหมด` with a box-import icon; heading and actions share one row on desktop; the catalog description stays on one line where viewport width permits; and mobile layouts stack compact full-width actions with improved padding and type sizing. Catalog CSS/JS and app-info are bumped to `20260717-001`.
+
+Previous build note: Tax Sync Permission And Cross Tab Lock from build `2026.07.16.017` remains unchanged for tenant tax permissions, TAX running numbers, explicit retry, and cross-tab sync protection.
 
 Previous build note: Tax Buyer Tax ID First from build `2026.07.16.016` remains unchanged for the buyer tax ID and DBD lookup above the buyer/company name.
 
