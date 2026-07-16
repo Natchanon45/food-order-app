@@ -1,7 +1,6 @@
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 
 const headingIcons = new Map([
-  ["จัดการร้าน", "shop"],
   ["สร้าง QR แยกตามโต๊ะ", "qr-code-scan"],
   ["รายงานยอดขาย", "bar-chart-line"],
   ["ข้อมูลร้านและการรับชำระ", "building-gear"],

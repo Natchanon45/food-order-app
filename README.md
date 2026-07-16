@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Login Validation Layout Polish
-Version: 0.14.86
-Build: 2026.07.16.011
+Milestone: Admin Hero Title Icon Cleanup
+Version: 0.14.87
+Build: 2026.07.16.012
 
-Change: Kept login validation feedback under the full input group so the email icon, password icon, and password visibility button no longer shift when red validation text appears. Login cache versions are bumped to `20260716-011`.
+Change: Removed the decorative icon directly beside the `/admin` hero heading `จัดการร้าน` while keeping the rest of the Admin section and action icons unchanged. The Admin icon polish cache version is bumped to `20260716-012`.
+
+Previous build note: Login Validation Layout Polish from build `2026.07.16.011` remains unchanged for login validation feedback below the full input group and stable email/password icons.
 
 Previous build note: Tax Buyer DBD And Validation Layout Polish from build `2026.07.16.010` remains unchanged for POS tax invoice history open/print button contrast, DBD lookup with manual-copy fallback in the tax buyer edit dialog, and product form validation that does not stretch product code/barcode inputs or move scanner icons.
 
