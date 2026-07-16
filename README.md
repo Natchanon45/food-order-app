@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Retail POS Action Bar Text Only
-Version: 0.14.88
-Build: 2026.07.16.013
+Milestone: Retail POS Settings Offline Sync
+Version: 0.14.89
+Build: 2026.07.16.014
 
-Change: Removed the `FOD` logo badge and automatic title icons from Retail POS action bars across the main POS page, all POS submenu pages, tax invoice history, and Customer Display. Page titles and descriptions remain text-only while menu buttons, action buttons, content headings, and functional icons remain unchanged. The shared Retail POS icon/navigation/app-info cache chain is bumped to `20260716-013`.
+Change: `/pos/settings/` now saves every store-settings form value locally first, including store, receipt, tax, PromptPay, and loyalty settings. Each pending settings document is scoped by `tenantId`, queued in LocalStorage, written to `tenants/{tenantId}/settings/{documentId}` when Firebase is available, and retried automatically on page startup or the browser `online` event. The success toast now reads `บันทึกข้อมูลการตั้งค่าร้านค้าสำเร็จ`. The settings and app-info cache chain is bumped to `20260716-014`.
+
+Previous build note: Retail POS Action Bar Text Only from build `2026.07.16.013` remains unchanged across the main POS page, submenu pages, tax invoice history, and Customer Display.
 
 Previous build note: Admin Hero Title Icon Cleanup from build `2026.07.16.012` remains unchanged for the text-only `/admin` hero heading `จัดการร้าน`.
 

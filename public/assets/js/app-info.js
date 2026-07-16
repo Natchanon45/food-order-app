@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.88',
-  build: '2026.07.16.013',
+  version: '0.14.89',
+  build: '2026.07.16.014',
   branch: 'feature/retail-pos',
-  commit: 'POS-ACTION-BAR-TEXT-ONLY-01488',
+  commit: 'POS-SETTINGS-OFFLINE-SYNC-01489',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS Action Bar Text Only',
-  updatedAt: '2026-07-16T21:45:00+07:00',
+  milestone: 'Retail POS Settings Offline Sync',
+  updatedAt: '2026-07-16T22:05:00+07:00',
   whatsNew: [
-    'Remove the FOD badge from Retail POS action bars and Customer Display',
-    'Keep Retail POS page titles and descriptions text-only across submenus',
-    'Prevent the shared icon enhancer from injecting icons into action-bar titles'
+    'Save all Retail POS store-setting form data locally before Firebase sync',
+    'Queue tenant-scoped settings and sync automatically when connectivity returns',
+    'Use the requested successful store-settings confirmation message'
   ]
 };
 

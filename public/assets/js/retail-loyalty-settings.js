@@ -1,4 +1,5 @@
-import { RetailCollections, getRecord, saveRecordStrict, watchRecords } from './retail-db.js?v=20260629-031';
+import { RetailCollections, getRecord, getTenantId, watchRecords } from './retail-db.js?v=20260629-031';
+import { saveSettingsDocumentsLocalFirst } from './retail-pos-settings-sync.js?v=20260716-014';
 
 const KEY = 'retail_pos_loyalty_settings_v1';
 const DOCUMENT_ID = 'loyalty';
@@ -6,12 +7,21 @@ const defaults = { enabled: true, spendPerPoint: 10, pointValue: 1 };
 const form = document.querySelector('#storeSettingsForm');
 
 function readLocal() {
-  try { return { ...defaults, ...(JSON.parse(localStorage.getItem(KEY)) || {}) }; }
+  try {
+    const tenantId = getTenantId();
+    const scoped = JSON.parse(localStorage.getItem(`${KEY}_${tenantId}`)) || null;
+    const legacy = JSON.parse(localStorage.getItem(KEY)) || null;
+    const saved = scoped || (!legacy?.tenantId || legacy.tenantId === tenantId ? legacy : null);
+    return { ...defaults, ...(saved || {}), tenantId, shopId: tenantId };
+  }
   catch { return { ...defaults }; }
 }
 
 function writeLocal(settings) {
-  localStorage.setItem(KEY, JSON.stringify(settings));
+  const tenantId = getTenantId();
+  const row = { ...settings, tenantId, shopId: tenantId };
+  localStorage.setItem(`${KEY}_${tenantId}`, JSON.stringify(row));
+  localStorage.setItem(KEY, JSON.stringify(row));
 }
 
 if (form && !document.querySelector('#loyaltySettingsSection')) {
@@ -28,7 +38,6 @@ const exampleSpend = document.querySelector('#loyaltyExampleSpend');
 const exampleEarn = document.querySelector('#loyaltyExampleEarn');
 const exampleValue = document.querySelector('#loyaltyExampleValue');
 const error = document.querySelector('#settingsError');
-const toast = document.querySelector('#toast');
 
 function collect() {
   return {
@@ -55,24 +64,22 @@ function fill(settings) {
   preview();
 }
 
-function showStatus(message) {
-  if (!toast) return;
-  toast.textContent = message;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 1800);
-}
-
 form?.addEventListener('input', preview);
 form?.addEventListener('submit', async () => {
   const settings = collect();
   try {
-    await saveRecordStrict(RetailCollections.settings, { id: DOCUMENT_ID, type: 'loyalty', ...settings });
-    writeLocal(settings);
+    const localSettings = { ...settings, syncStatus: 'pending_sync', syncQueuedAt: Date.now() };
+    writeLocal(localSettings);
+    const result = await saveSettingsDocumentsLocalFirst([{ id: DOCUMENT_ID, type: 'loyalty', ...settings }]);
+    writeLocal({
+      ...localSettings,
+      syncStatus: result.pending ? 'pending_sync' : 'synced',
+      firebaseSyncedAt: result.pending ? 0 : Date.now()
+    });
     error.textContent = '';
-    showStatus('บันทึกระบบแต้มใน Firebase แล้ว');
   } catch (saveError) {
-    console.error('[retail-loyalty-settings] firebase save failed', saveError);
-    error.textContent = 'บันทึกระบบแต้มใน Firebase ไม่สำเร็จ กรุณาลองใหม่';
+    console.error('[retail-loyalty-settings] local save failed', saveError);
+    error.textContent = 'บันทึกข้อมูลระบบแต้มในเครื่องไม่สำเร็จ กรุณาลองใหม่';
   }
 });
 
@@ -84,7 +91,7 @@ if (remoteSettings) {
 } else {
   fill(localSettings);
   try {
-    await saveRecordStrict(RetailCollections.settings, { id: DOCUMENT_ID, type: 'loyalty', ...localSettings });
+    await saveSettingsDocumentsLocalFirst([{ id: DOCUMENT_ID, type: 'loyalty', ...localSettings }]);
   } catch (migrationError) {
     console.warn('[retail-loyalty-settings] migration failed', migrationError);
   }

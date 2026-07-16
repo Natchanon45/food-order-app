@@ -1,6 +1,8 @@
-import { RetailCollections, getRecord, saveRecordStrict } from './retail-db.js?v=20260629-032';
+import { RetailCollections, getRecord, getTenantId } from './retail-db.js?v=20260629-032';
+import { saveSettingsDocumentsLocalFirst, syncPendingSettings } from './retail-pos-settings-sync.js?v=20260716-014';
 
 const SETTINGS_KEY = "retail_pos_store_settings_v1";
+const tenantSettingsKey = () => `${SETTINGS_KEY}_${getTenantId()}`;
 
 const defaults = {
   shopName: "POS ร้านค้าปลีก",
@@ -63,7 +65,13 @@ const els = {
 let toastTimer;
 
 function readLocalSettings() {
-  try { return { ...defaults, ...(JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}) }; }
+  try {
+    const tenantId = getTenantId();
+    const scoped = JSON.parse(localStorage.getItem(tenantSettingsKey())) || null;
+    const legacy = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || null;
+    const saved = scoped || (!legacy?.tenantId || legacy.tenantId === tenantId ? legacy : null);
+    return { ...defaults, ...(saved || {}), tenantId, shopId: tenantId };
+  }
   catch { return { ...defaults }; }
 }
 
@@ -201,7 +209,30 @@ function showToast(message) {
 }
 
 async function saveSettings(settings) {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  const tenantId = getTenantId();
+  const localSettings = {
+    ...settings,
+    tenantId,
+    shopId: tenantId,
+    syncStatus: "pending_sync",
+    syncQueuedAt: Date.now()
+  };
+  localStorage.setItem(tenantSettingsKey(), JSON.stringify(localSettings));
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(localSettings));
+  const storeSettings = {
+    id: "store",
+    shopName: settings.shopName,
+    shopAddress: settings.shopAddress,
+    shopPhone: settings.shopPhone,
+    taxId: settings.taxId
+  };
+  const receiptSettings = {
+    id: "receipt",
+    receiptThanks: settings.receiptThanks,
+    receiptFooter: settings.receiptFooter,
+    receiptPaperSize: settings.receiptPaperSize,
+    receiptPrintMode: settings.receiptPrintMode
+  };
   const taxSettings = {
     id: "tax",
     vatRegistered: settings.vatRegistered,
@@ -220,16 +251,20 @@ async function saveSettings(settings) {
     promptPayId: settings.promptPayId,
     promptPayAccountName: settings.promptPayAccountName
   };
-  try {
-    await Promise.all([
-      saveRecordStrict(RetailCollections.settings, { id: "store", shopName: settings.shopName, shopAddress: settings.shopAddress, shopPhone: settings.shopPhone, taxId: settings.taxId }),
-      saveRecordStrict(RetailCollections.settings, { id: "receipt", receiptThanks: settings.receiptThanks, receiptFooter: settings.receiptFooter, receiptPaperSize: settings.receiptPaperSize, receiptPrintMode: settings.receiptPrintMode }),
-      saveRecordStrict(RetailCollections.settings, taxSettings),
-      saveRecordStrict(RetailCollections.settings, paymentSettings)
-    ]);
-  } catch (error) {
-    console.warn("[retail-pos-settings] firebase save failed", error);
-  }
+  const result = await saveSettingsDocumentsLocalFirst([
+    storeSettings,
+    receiptSettings,
+    taxSettings,
+    paymentSettings
+  ]);
+  const saved = {
+    ...localSettings,
+    syncStatus: result.pending ? "pending_sync" : "synced",
+    firebaseSyncedAt: result.pending ? 0 : Date.now()
+  };
+  localStorage.setItem(tenantSettingsKey(), JSON.stringify(saved));
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(saved));
+  return result;
 }
 
 els.form.addEventListener("input", updatePreview);
@@ -260,7 +295,7 @@ els.form.addEventListener("submit", async event => {
   }
   els.error.textContent = "";
   await saveSettings(settings);
-  showToast("บันทึกการตั้งค่าแล้ว");
+  showToast("บันทึกข้อมูลการตั้งค่าร้านค้าสำเร็จ");
 });
 
 els.resetBtn.addEventListener("click", async () => {
@@ -272,3 +307,4 @@ els.resetBtn.addEventListener("click", async () => {
 });
 
 fillForm(await readSettings());
+syncPendingSettings().catch(error => console.warn("[retail-pos-settings] pending sync failed", error));
