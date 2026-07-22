@@ -17,6 +17,7 @@ function safeId(prefix) { return globalThis.crypto?.randomUUID ? `${prefix}-${cr
 function localSaleKey(sale) { return String(sale?.id || sale?.saleNumber || ''); }
 function movementId(saleId, productId) { return `${saleId}_${productId}`.replace(/[^a-zA-Z0-9_-]/g, '_'); }
 function parseMoneyText(text) { return Number(String(text || '').replace(/[^\d.-]/g, '')) || 0; }
+function parseMoneyInput(value) { return Number(String(value || '').replace(/,/g, '').replace(/[^\d.-]/g, '')) || 0; }
 
 function currentCartItems() {
   const products = readJson(PRODUCT_KEY, []);
@@ -54,6 +55,16 @@ function buildSale({ saleId, number, method, received, totals, createdAt, items 
 }
 
 function saveLocalSale(sale, items) {
+  const saleKey = localSaleKey(sale);
+  const existingSales = readJson(SALES_KEY, []);
+  const existingSale = saleKey ? existingSales.find(item => localSaleKey(item) === saleKey) : null;
+  if (existingSale) {
+    const preservedSale = { ...sale, ...existingSale };
+    writeJson(SALES_KEY, [preservedSale, ...existingSales.filter(item => localSaleKey(item) !== saleKey)].slice(0, 500));
+    window.dispatchEvent(new CustomEvent('retail-pos-sale-saved', { detail: { sale: preservedSale, duplicateLocalSave: true } }));
+    return preservedSale;
+  }
+
   const products = readJson(PRODUCT_KEY, []);
   const itemMap = new Map(items.map(item => [String(item.id), item]));
   const movements = [];
@@ -66,13 +77,14 @@ function saveLocalSale(sale, items) {
     movements.push({ id, tenantId: sale.tenantId, productId: product.id || product.code, productName: product.name, type: 'sale', direction: 'out', qty: sold, before, after, stockBefore: before, stockAfter: after, note: `ขายสินค้า ${sale.saleNumber}`, referenceType: 'sale', referenceId: sale.id, referenceNumber: sale.saleNumber, createdAt: sale.createdAt });
     return { ...product, stock: after };
   });
-  const saleKey = localSaleKey(sale);
-  const sales = readJson(SALES_KEY, []).filter(item => localSaleKey(item) !== saleKey);
+  const saleWithStockMark = { ...sale, stockDeductedAt: sale.stockDeductedAt || new Date().toISOString(), stockDeductionStatus: 'deducted' };
+  const movementIds = new Set(movements.map(item => String(item.id || '')));
+  const existingMovements = readJson(MOVEMENT_KEY, []).filter(item => !movementIds.has(String(item.id || '')));
   writeJson(PRODUCT_KEY, nextProducts);
-  writeJson(SALES_KEY, [sale, ...sales].slice(0, 500));
-  writeJson(MOVEMENT_KEY, [...movements, ...readJson(MOVEMENT_KEY, [])].slice(0, 500));
-  window.dispatchEvent(new CustomEvent('retail-pos-sale-saved', { detail: { sale } }));
-  return sale;
+  writeJson(SALES_KEY, [saleWithStockMark, ...existingSales].slice(0, 500));
+  writeJson(MOVEMENT_KEY, [...movements, ...existingMovements].slice(0, 500));
+  window.dispatchEvent(new CustomEvent('retail-pos-sale-saved', { detail: { sale: saleWithStockMark } }));
+  return saleWithStockMark;
 }
 
 function unlockPage() {
@@ -119,6 +131,8 @@ function resetCartUi() {
 async function safeConfirmPayment(event) {
   const button = event.target?.closest?.('#confirmPaymentBtn');
   if (!button || saving) return;
+  const fallbackEnabled = button.dataset.safeConfirmFallback === '1' || document.documentElement.dataset.retailPosSafeConfirm === 'enabled';
+  if (!fallbackEnabled) return;
   event.preventDefault();
   event.stopPropagation();
   event.stopImmediatePropagation();
@@ -126,7 +140,8 @@ async function safeConfirmPayment(event) {
   if (!items.length) return;
   const totals = currentTotals(items);
   const method = document.querySelector('#paymentMethod')?.value || 'cash';
-  const received = method === 'cash' ? Number(document.querySelector('#receivedInput')?.value || 0) : totals.total;
+  const enteredReceived = parseMoneyInput(document.querySelector('#receivedInput')?.value);
+  const received = method === 'cash' || enteredReceived > 0 ? enteredReceived : totals.total;
   if (received < totals.total) { const error = document.querySelector('#paymentError'); if (error) error.textContent = 'จำนวนเงินที่รับมายังไม่ครบ'; return; }
   saving = true;
   button.disabled = true;
@@ -136,10 +151,10 @@ async function safeConfirmPayment(event) {
     const createdAt = new Date().toISOString();
     const pendingNumber = pendingDocumentNumber({ type: 'SALE', value: createdAt, stableId: saleId });
     const sale = buildSale({ saleId, number: pendingNumber, method, received, totals, createdAt, items });
-    saveLocalSale(sale, items);
+    const savedSale = saveLocalSale(sale, items);
     unlockPage();
     resetCartUi();
-    await showReceipt(sale, { autoPrint: false });
+    await showReceipt(savedSale, { autoPrint: false });
   } catch (error) {
     console.error('[retail-pos-safe-confirm] save failed', error);
     const errorNode = document.querySelector('#paymentError');
@@ -152,4 +167,5 @@ async function safeConfirmPayment(event) {
 }
 
 document.addEventListener('click', safeConfirmPayment, true);
+window.retailPosSafeConfirmFallback = safeConfirmPayment;
 window.addEventListener('retail-pos-receipt-closed', () => setTimeout(resetCartUi, 0));

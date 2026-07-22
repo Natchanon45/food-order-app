@@ -9,6 +9,9 @@ const closeBtn = document.querySelector('#closeBtn');
 const params = new URLSearchParams(location.search);
 const invoiceId = params.get('invoiceId') || '';
 const autoPrint = params.get('auto') === '1';
+const ITEMS_PER_PAGE = 20;
+let printReady = false;
+let printReadyPromise = null;
 
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -39,16 +42,34 @@ async function findInvoice() {
   catch { return null; }
 }
 
-function branchText(seller = {}) {
+function sellerBranchText(seller = {}) {
   return seller.sellerBranchType === 'branch' ? `สาขา ${seller.sellerBranchCode || '-'}` : 'สำนักงานใหญ่';
+}
+
+function buyerBranchText(buyer = {}) {
+  return String(buyer.buyerBranchName || '').trim();
+}
+
+function sellerTaxLine(seller = {}) {
+  const taxId = String(seller.sellerTaxId || '').trim();
+  const branch = sellerBranchText(seller);
+  if (!taxId) return branch;
+  return `เลขประจำตัวผู้เสียภาษี ${taxId}${branch ? ` ${branch}` : ''}`;
+}
+
+function buyerTaxLine(buyer = {}) {
+  const taxId = String(buyer.buyerTaxId || '').trim();
+  const branch = buyerBranchText(buyer) || 'สำนักงานใหญ่';
+  if (!taxId) return '';
+  return `เลขประจำตัวผู้เสียภาษี ${taxId}${branch ? ` ${branch}` : ''}`;
 }
 
 function itemLineTotal(item = {}) {
   return Number(item.lineTotal ?? Number(item.price || 0) * Number(item.qty || 0));
 }
 
-function itemRows(items = []) {
-  return items.map((item, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(item.name || item.productName || '-')}</td><td class="right">${Number(item.qty || 0).toLocaleString('th-TH')}</td><td class="right">${money(item.price)}</td><td class="right">${money(itemLineTotal(item))}</td></tr>`).join('');
+function itemRows(items = [], offset = 0) {
+  return items.map((item, index) => `<tr><td>${offset + index + 1}</td><td>${escapeHtml(item.name || item.productName || '-')}</td><td class="right">${Number(item.qty || 0).toLocaleString('th-TH')}</td><td class="right">${money(item.price)}</td><td class="right">${money(itemLineTotal(item))}</td></tr>`).join('');
 }
 
 function vatTotalAmount(invoice = {}) {
@@ -59,19 +80,15 @@ function vatTotalAmount(invoice = {}) {
   return beforeVat + vatAmount;
 }
 
-function render(invoice) {
-  if (!invoice) {
-    root.className = 'missing';
-    root.textContent = 'ไม่พบใบกำกับภาษีเต็มรูปแบบ';
-    return;
-  }
-  const seller = invoice.seller || {};
-  const buyer = invoice.buyer || {};
-  const items = Array.isArray(invoice.items) ? invoice.items : [];
-  root.className = 'tax-paper';
-  root.innerHTML = `
+function invoiceHeaderHtml(invoice, seller, buyer, isVoid, pageNumber, totalPages) {
+  const sellerTax = sellerTaxLine(seller);
+  const buyerTax = buyerTaxLine(buyer);
+  const buyerBranch = buyerBranchText(buyer);
+  return `
+    ${isVoid ? `<div class="void-stamp">ยกเลิก</div>` : ''}
+    <div class="tax-page-number">หน้า ${pageNumber}/${totalPages}</div>
     <section class="tax-title">
-      <h1>ใบกำกับภาษีเต็มรูปแบบ</h1>
+      <h1>ใบกำกับภาษี</h1>
       <div>Tax Invoice</div>
     </section>
     <section class="tax-grid top-grid">
@@ -79,26 +96,33 @@ function render(invoice) {
         <h2>${escapeHtml(seller.sellerName || 'POS ร้านค้าปลีก')}</h2>
         ${seller.sellerAddress ? `<p>${escapeHtml(seller.sellerAddress)}</p>` : ''}
         ${seller.sellerPhone ? `<p>โทร ${escapeHtml(seller.sellerPhone)}</p>` : ''}
-        ${seller.sellerTaxId ? `<p>เลขประจำตัวผู้เสียภาษี ${escapeHtml(seller.sellerTaxId)}</p>` : ''}
-        <p>${escapeHtml(branchText(seller))}</p>
+        ${sellerTax ? `<p>${escapeHtml(sellerTax)}</p>` : ''}
       </div>
       <div class="doc-box">
         <div><span>เลขที่</span><strong>${escapeHtml(invoice.invoiceNumber || invoice.id || '-')}</strong></div>
         <div><span>วันที่</span><strong>${escapeHtml(dateTime(invoice.issuedAt))}</strong></div>
         ${invoice.saleNumber ? `<div><span>อ้างอิงบิล</span><strong>${escapeHtml(invoice.saleNumber)}</strong></div>` : ''}
+        ${isVoid ? `<div><span>สถานะ</span><strong>ยกเลิก</strong></div>` : ''}
       </div>
     </section>
+    ${isVoid ? `<section class="void-note"><strong>เอกสารนี้ถูกยกเลิก</strong>${invoice.voidedAt ? ` เมื่อ ${escapeHtml(dateTime(invoice.voidedAt))}` : ''}${invoice.voidReason ? `<br>เหตุผล: ${escapeHtml(invoice.voidReason)}` : ''}</section>` : ''}
     <section class="buyer-box">
-      <h2>ผู้ซื้อ / Customer</h2>
+      <h2>ผู้ซื้อ / ลูกค้า</h2>
       <p><strong>${escapeHtml(buyer.buyerName || '-')}</strong></p>
-      ${buyer.buyerTaxId ? `<p>เลขประจำตัวผู้เสียภาษี ${escapeHtml(buyer.buyerTaxId)}</p>` : ''}
-      ${buyer.buyerBranchName ? `<p>${escapeHtml(buyer.buyerBranchName)}</p>` : ''}
+      ${buyerTax ? `<p>${escapeHtml(buyerTax)}</p>` : buyerBranch ? `<p>${escapeHtml(buyerBranch)}</p>` : ''}
       ${buyer.buyerAddress ? `<p>${escapeHtml(buyer.buyerAddress)}</p>` : ''}
-    </section>
-    <table class="items-table">
-      <thead><tr><th>#</th><th>รายการ</th><th class="right">จำนวน</th><th class="right">ราคา</th><th class="right">รวม</th></tr></thead>
-      <tbody>${itemRows(items)}</tbody>
-    </table>
+    </section>`;
+}
+
+function itemsTableHtml(items, offset) {
+  return `<table class="items-table">
+    <thead><tr><th>#</th><th>รายการ</th><th class="right">จำนวน</th><th class="right">ราคา</th><th class="right">รวม</th></tr></thead>
+    <tbody>${itemRows(items, offset)}</tbody>
+  </table>`;
+}
+
+function summaryHtml(invoice) {
+  return `<section class="tax-final-block">
     <section class="summary-box">
       <div><span>รวมสินค้า</span><strong>${money(invoice.subtotal)}</strong></div>
       <div><span>ส่วนลด</span><strong>${money(invoice.discount)}</strong></div>
@@ -111,14 +135,79 @@ function render(invoice) {
     <section class="signature-grid">
       <div><span></span><p>ผู้รับสินค้า / ผู้ซื้อ</p></div>
       <div><span></span><p>ผู้รับเงิน / ผู้ขาย</p></div>
-    </section>`;
+    </section>
+  </section>`;
+}
+
+function render(invoice) {
+  if (!invoice) {
+    root.className = 'missing';
+    root.textContent = 'ไม่พบใบกำกับภาษี';
+    return;
+  }
+  const seller = invoice.seller || {};
+  const buyer = invoice.buyer || {};
+  const items = Array.isArray(invoice.items) ? invoice.items : [];
+  const isVoid = invoice.status === 'void';
+  const chunks = [];
+  for (let index = 0; index < Math.max(items.length, 1); index += ITEMS_PER_PAGE) {
+    chunks.push(items.slice(index, index + ITEMS_PER_PAGE));
+  }
+  root.className = 'tax-stack';
+  const totalPages = chunks.length;
+  root.innerHTML = chunks.map((chunk, pageIndex) => {
+    const isLastPage = pageIndex === chunks.length - 1;
+    const offset = pageIndex * ITEMS_PER_PAGE;
+    return `<article class="tax-paper" data-tax-page="${pageIndex + 1}">
+      ${invoiceHeaderHtml(invoice, seller, buyer, isVoid, pageIndex + 1, totalPages)}
+      ${itemsTableHtml(chunk, offset)}
+      ${isLastPage ? summaryHtml(invoice) : ''}
+    </article>`;
+  }).join('');
+}
+
+async function waitForPrintReady() {
+  try {
+    if (document.fonts?.ready) await document.fonts.ready;
+  } catch {}
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
+function setPrintButtonReady(ready) {
+  if (printBtn) printBtn.disabled = !ready;
+}
+
+function preparePrintReady() {
+  if (printReadyPromise) return printReadyPromise;
+  setPrintButtonReady(false);
+  printReadyPromise = waitForPrintReady()
+    .then(() => {
+      printReady = true;
+      setPrintButtonReady(true);
+    })
+    .catch(() => {
+      printReady = true;
+      setPrintButtonReady(true);
+    });
+  return printReadyPromise;
+}
+
+async function printInvoice(options = {}) {
+  const auto = Boolean(options.auto);
+  if (!auto && printReady) {
+    window.print();
+    return;
+  }
+  await preparePrintReady();
+  window.print();
 }
 
 async function boot() {
   render(await findInvoice());
-  if (autoPrint) setTimeout(() => window.print(), 350);
+  preparePrintReady();
+  if (autoPrint) setTimeout(() => printInvoice({ auto: true }), 450);
 }
 
-printBtn?.addEventListener('click', () => window.print());
+printBtn?.addEventListener('click', () => printInvoice());
 closeBtn?.addEventListener('click', () => window.close());
 boot();

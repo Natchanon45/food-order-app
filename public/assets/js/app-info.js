@@ -1,20 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.12.62',
-  build: '2026.07.02.016',
+  version: '0.14.95',
+  build: '2026.07.23.001',
   branch: 'feature/retail-pos',
-  commit: 'POS-HARDENING-002',
+  commit: 'SUPER-ADMIN-PLATFORM-GUARD-01495',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'POS Hardening 002',
-  updatedAt: '2026-07-02T00:00:00+07:00',
+  milestone: 'Super Admin Platform Guard Recovery',
+  updatedAt: '2026-07-23T06:10:00+07:00',
   whatsNew: [
-    'Add POS hardening diagnostics for long-running cashier sessions',
-    'Track queue summary, localStorage usage, uptime, event counters, and multi-tab leader state',
-    'Expose window.retailPosHardening.diagnostics() for manual inspection',
-    'Bump hardening script version to prevent stale browser cache'
+    'Redirect Super Admin directly to the platform after login',
+    'Restore page visibility when profile or permission loading fails',
+    'Show retry and re-login recovery actions instead of a blank page'
   ]
 };
 

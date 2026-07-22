@@ -4,9 +4,88 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#159447">
-  <link rel="stylesheet" href="/assets/css/app.css?v=20260707-018">
-  <link rel="stylesheet" href="/assets/css/icons.css?v=20260702-003">
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260713-004">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260715-011">
   <title>จัดการพนักงาน</title>
+  <style>
+    .user-form-action,
+    .user-save-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .user-form-action .bi,
+    .user-save-button .bi {
+      flex: 0 0 auto;
+      line-height: 1;
+    }
+
+    .user-table-scroll {
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 8px;
+    }
+
+    .user-table {
+      min-width: 760px;
+    }
+
+    .user-table th,
+    .user-table td {
+      white-space: nowrap;
+      vertical-align: top;
+    }
+
+    .user-table td:nth-child(2) {
+      min-width: 220px;
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    @media (max-width: 640px) {
+      .user-table-scroll {
+        margin-inline: -8px;
+        padding-inline: 8px;
+      }
+
+      .user-table-scroll .table-list {
+        display: table !important;
+        width: 760px !important;
+        min-width: 760px !important;
+        border-collapse: collapse !important;
+      }
+
+      .user-table-scroll thead {
+        display: table-header-group !important;
+      }
+
+      .user-table-scroll tbody {
+        display: table-row-group !important;
+      }
+
+      .user-table-scroll tr {
+        display: table-row !important;
+      }
+
+      .user-table-scroll th,
+      .user-table-scroll td {
+        display: table-cell !important;
+        padding: 10px !important;
+        border-bottom: 1px solid var(--line) !important;
+      }
+
+      .user-table-scroll input.input {
+        min-width: 150px;
+      }
+
+      .user-table-scroll select.input {
+        min-width: 120px;
+      }
+    }
+  </style>
 </head>
 <body data-roles="owner,super_admin">
   <header class="app-header">
@@ -33,15 +112,15 @@
         </div>
         <div class="field"><label>สิทธิ์พนักงาน</label><select class="input" id="role" required><option value="admin">Admin</option><option value="cashier">Cashier</option><option value="kitchen">Kitchen</option></select></div>
         <label><input type="checkbox" id="active" checked> เปิดใช้งานทันที</label>
-        <button class="btn btn-primary" id="createUserButton">สร้างผู้ใช้งาน</button>
+        <button class="btn btn-primary user-form-action" id="createUserButton" type="submit"><i class="bi bi-person-plus" aria-hidden="true"></i><span>สร้างผู้ใช้งาน</span></button>
         <div class="upload-error" id="userError" hidden></div>
       </form>
     </section>
 
     <section class="card" style="margin-top:16px">
       <div class="section-title"><h2>รายการพนักงาน</h2><span class="badge" id="userCount">0 คน</span></div>
-      <div style="overflow:auto">
-        <table class="table-list">
+      <div class="user-table-scroll">
+        <table class="table-list user-table">
           <thead><tr><th>ชื่อ</th><th>อีเมล</th><th>สิทธิ์</th><th>เปิดใช้งาน</th><th></th></tr></thead>
           <tbody id="userRows"></tbody>
         </table>
@@ -50,6 +129,6 @@
   </main>
 
   <script type="module" src="/assets/js/page-guard.js?v=20260701-015"></script>
-  <script type="module" src="/assets/js/admin-users.js?v=20260704-002"></script>
+  <script type="module" src="/assets/js/admin-users.js?v=20260716-009"></script>
 </body>
 </html>

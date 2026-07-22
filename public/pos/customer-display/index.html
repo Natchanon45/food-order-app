@@ -6,12 +6,12 @@
 <meta name="theme-color" content="#159447">
 <title>Customer Display</title>
 <link rel="stylesheet" href="/assets/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1.13.1">
-<link rel="stylesheet" href="/assets/css/retail-customer-display.css?v=20260707-018">
+<link rel="stylesheet" href="/assets/css/retail-customer-display.css?v=20260713-005">
 </head>
 <body>
 <div class="display-shell">
   <header class="display-header">
-    <div class="brand"><span class="brand-badge">FOD</span><div><strong>จอลูกค้า POS</strong><span>รายการสินค้าและยอดชำระแบบเรียลไทม์</span></div></div>
+    <div class="brand"><div><strong>จอลูกค้า POS</strong><span>รายการสินค้าและยอดชำระแบบเรียลไทม์</span></div></div>
     <div id="displayStatus" class="display-status">รอข้อมูลจาก POS</div>
   </header>
   <main class="display-main">
@@ -30,11 +30,22 @@
       <div class="total-row"><span>VAT</span><strong id="vatAmount">0.00</strong></div>
       <div class="total-row"><span>โหมด VAT</span><strong id="vatMode">-</strong></div>
       <div class="total-row grand-row"><span>ยอดสุทธิ</span><strong id="grandTotal">0.00</strong></div>
+      <section id="paymentQrPanel" class="payment-qr-card" hidden>
+        <div class="payment-qr-copy">
+          <span>ชำระผ่าน PromptPay / โอนเงิน</span>
+          <strong id="paymentQrAmount">0.00 บาท</strong>
+          <p id="paymentQrVerify"></p>
+        </div>
+        <div class="payment-qr-image-wrap">
+          <img id="paymentQrImage" class="payment-qr-image" alt="QR PromptPay สำหรับชำระเงิน" hidden>
+          <div id="paymentQrError" class="payment-qr-error" hidden></div>
+        </div>
+      </section>
       <div id="paidState" class="paid-state" hidden>ขอบคุณที่ใช้บริการ</div>
     </section>
   </main>
   <footer class="display-footer"><span></span><span id="updatedAt"></span></footer>
 </div>
-<script type="module" src="/assets/js/retail-customer-display.js?v=20260706-060"></script>
+<script type="module" src="/assets/js/retail-customer-display.js?v=20260708-002"></script>
 </body>
 </html>

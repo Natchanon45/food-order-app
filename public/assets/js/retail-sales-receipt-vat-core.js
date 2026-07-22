@@ -70,7 +70,7 @@ async function enhanceReceipt() {
   if (Number(sale.pointDiscount || 0)) grand.insertAdjacentElement('beforebegin', row('ส่วนลดแต้ม', money(sale.pointDiscount)));
   grand.insertAdjacentElement('beforebegin', row('ยอดก่อน VAT', money(sale.beforeVat ?? sale.taxableBase ?? sale.discountedBase ?? sale.subtotal)));
   grand.insertAdjacentElement('beforebegin', row(`VAT ${money(rate).replace(/\.00$/, '')}%`, money(sale.vatAmount || 0)));
-  grand.insertAdjacentElement('beforebegin', row(mode === 'exclude' ? 'ราคาไม่รวม VAT' : 'ราคารวม VAT', ''));
+  grand.insertAdjacentElement('beforebegin', row('โหมด VAT', mode === 'exclude' ? 'ราคาไม่รวม VAT' : 'ราคารวม VAT'));
 }
 
 document.querySelector('#salesTableBody')?.addEventListener('click', () => setTimeout(enhanceReceipt, 0), true);

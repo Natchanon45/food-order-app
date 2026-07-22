@@ -23,7 +23,8 @@ function productsById() {
 
 function imageUrl(product = {}) {
   const nested = product.image && typeof product.image === 'object' ? product.image.url || product.image.src || product.image.downloadURL : '';
-  return product.imageUrl || product.imageURL || product.photoUrl || product.photoURL || product.thumbnailUrl || product.thumbnailURL || product.productImageUrl || product.pictureUrl || product.imageDataUrl || product.imageData || product.image || nested || '';
+  const candidates = [product.imageUrl, product.imageURL, product.photoUrl, product.photoURL, product.thumbnailUrl, product.thumbnailURL, product.productImageUrl, product.pictureUrl, product.imageDataUrl, product.imageData, nested, product.image];
+  return candidates.find(value => typeof value === 'string' && value.trim()) || '';
 }
 
 function escapeHtml(value) {
@@ -44,6 +45,14 @@ function hoverInfoHtml(product = {}) {
 
 function soldOutHtml(product = {}) {
   return Number(product.stock || 0) <= 0 ? '<span class="pos-card-sold-out">สินค้าหมด</span>' : '';
+}
+
+function initials(name) {
+  return String(name || 'สินค้า').trim().slice(0, 2).toUpperCase();
+}
+
+function fallbackImageHtml(product = {}) {
+  return `<span class="pos-card-image-fallback" aria-hidden="true">${escapeHtml(initials(product.name))}</span>`;
 }
 
 function restoreProductCards() {
@@ -67,6 +76,10 @@ function restoreProductCards() {
     const barcode = product.barcode || '';
     const code = [id, barcode].filter(Boolean).join(' • ');
     card.innerHTML = `${soldOutHtml(product)}<span class="pos-card-image-wrap"><img src="${escapeHtml(src)}" alt="${escapeHtml(product.name || '')}" loading="lazy" decoding="async"></span><span class="pos-card-title">${escapeHtml(product.name || 'ไม่ระบุชื่อ')}</span><span class="pos-card-code">${escapeHtml(code)}</span><span class="pos-card-stock">คงเหลือ ${Number(product.stock || 0).toLocaleString('th-TH')} ${escapeHtml(product.unit || 'ชิ้น')}</span><span class="pos-card-price">${money(product.price)} บาท</span>${hoverInfoHtml(product)}`;
+    const image = card.querySelector('.pos-card-image-wrap img');
+    image?.addEventListener('error', () => {
+      image.closest('.pos-card-image-wrap')?.replaceChildren(document.createRange().createContextualFragment(fallbackImageHtml(product)));
+    }, { once: true });
   });
 }
 

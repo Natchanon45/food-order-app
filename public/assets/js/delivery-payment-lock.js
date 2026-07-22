@@ -1,4 +1,4 @@
-import { toast } from "./ui.js?v=20260701-002";
+import { toast } from "./ui.js?v=20260716-009";
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 
 const submitButton = document.querySelector("#submitOrder");
@@ -17,6 +17,10 @@ let paymentLocked = false;
 let lockedSnapshot = null;
 let restoringDraft = false;
 let saveTimer = null;
+
+function requiresPaymentLock() {
+  return paymentMethod?.value === "promptpay";
+}
 
 function downloadIcon() {
   return iconMarkup("download");
@@ -105,6 +109,11 @@ function setEditingDisabled(disabled) {
 function updateUi() {
   const panel = document.querySelector("#paymentLockPanel");
   if (!panel) return;
+  if (!requiresPaymentLock() && paymentLocked) {
+    paymentLocked = false;
+    lockedSnapshot = null;
+    setEditingDisabled(false);
+  }
   document.body.classList.toggle("delivery-payment-unlocked", !paymentLocked);
   panel.querySelector("#paymentLockState").hidden = paymentLocked;
   panel.querySelector("#paymentLockSummary").hidden = !paymentLocked;
@@ -117,10 +126,17 @@ function updateUi() {
     panel.querySelector("#lockedTotal").textContent = `${lockedSnapshot.total.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท`;
   }
 
-  submitButton.textContent = paymentLocked ? "ยืนยันคำสั่งซื้อ" : "ตรวจสอบและชำระเงิน";
+  submitButton.textContent = paymentLocked || !requiresPaymentLock() ? "ยืนยันคำสั่งซื้อ" : "ตรวจสอบและชำระเงิน";
 }
 
 function lockPayment() {
+  if (!requiresPaymentLock()) {
+    paymentLocked = false;
+    lockedSnapshot = null;
+    setEditingDisabled(false);
+    updateUi();
+    return;
+  }
   if (!cartQuantity()) {
     toast("กรุณาเพิ่มรายการอาหารก่อน", "error");
     return;
@@ -250,7 +266,7 @@ async function restoreDraft() {
     paymentMethod.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
-  paymentLocked = Boolean(draft.paymentLocked && draft.lockedSnapshot && draft.cart.length);
+  paymentLocked = Boolean(draft.paymentLocked && draft.lockedSnapshot && draft.cart.length && paymentMethod?.value === "promptpay");
   lockedSnapshot = paymentLocked ? draft.lockedSnapshot : null;
   setEditingDisabled(paymentLocked);
   updateUi();
@@ -262,6 +278,16 @@ async function restoreDraft() {
 }
 
 submitButton?.addEventListener("click", event => {
+  if (!requiresPaymentLock()) {
+    if (paymentLocked) {
+      paymentLocked = false;
+      lockedSnapshot = null;
+      setEditingDisabled(false);
+      updateUi();
+      saveDraft();
+    }
+    return;
+  }
   if (paymentLocked) {
     const changed = Math.abs(amountValue("#cartTotal") - Number(lockedSnapshot?.total || 0)) > 0.001
       || paymentMethod?.value !== lockedSnapshot?.method
@@ -289,7 +315,10 @@ new MutationObserver(() => {
 }).observe(cartList, { childList: true, subtree: true, characterData: true });
 
 document.addEventListener("input", saveDraft, true);
-document.addEventListener("change", saveDraft, true);
+document.addEventListener("change", event => {
+  if (event.target === paymentMethod) updateUi();
+  saveDraft();
+}, true);
 window.addEventListener("pagehide", saveDraft);
 
 mountPanel();

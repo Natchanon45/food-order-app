@@ -61,7 +61,54 @@ const GROUP_ICONS = {
   system: "gear",
 };
 
-const ICON_TARGET_SELECTOR = "button, a.btn, a.header-link, .pos-menu-link, h1, h2, h3, .app-title > div > strong";
+const ICON_TONES = {
+  "arrow-clockwise": "sky",
+  "arrow-counterclockwise": "rose",
+  "arrow-left": "slate",
+  "arrow-left-right": "sky",
+  "arrow-right": "slate",
+  "bar-chart-line": "indigo",
+  "box-arrow-in-right": "emerald",
+  "box-arrow-right": "rose",
+  "box-seam": "teal",
+  boxes: "teal",
+  building: "indigo",
+  calendar3: "blue",
+  cart3: "emerald",
+  "cash-stack": "amber",
+  "check-lg": "emerald",
+  "clipboard-check": "lime",
+  "clock-history": "violet",
+  "credit-card": "blue",
+  "database-down": "cyan",
+  "database-up": "cyan",
+  download: "blue",
+  eye: "blue",
+  "file-earmark-text": "amber",
+  floppy: "emerald",
+  gear: "slate",
+  house: "emerald",
+  list: "slate",
+  "pause-circle": "amber",
+  "pencil-square": "blue",
+  people: "pink",
+  "person-vcard": "pink",
+  "play-circle": "emerald",
+  "plus-lg": "emerald",
+  printer: "indigo",
+  search: "slate",
+  shield: "purple",
+  "shield-lock": "purple",
+  sliders: "slate",
+  trash3: "rose",
+  truck: "orange",
+  upload: "cyan",
+  "upc-scan": "violet",
+  "x-circle": "rose",
+  "x-lg": "slate",
+};
+
+const ICON_TARGET_SELECTOR = "button, a.btn, a.header-link, .pos-menu-link, h1, h2, h3";
 
 function visibleText(element) {
   return (element.getAttribute("aria-label") || element.textContent || "").replace(/\s+/g, " ").trim();
@@ -80,9 +127,26 @@ function iconFor(element, fallback = "circle") {
   return ICON_RULES.find(([pattern]) => pattern.test(haystack))?.[1] || fallback;
 }
 
+function toneForIcon(iconName) {
+  return ICON_TONES[iconName] || "green";
+}
+
 function shouldSkipIcon(element) {
+  if (element.closest(".receipt, .receipt-header, .tax-paper, .tax-title, .qr-ticket, .print-document, .document-page, .print-page, .invoice, .quotation, .customer-sale-receipt, .return-receipt")) return true;
+  if (element.closest(".pos-header, .page-head, .display-header")) return true;
   if (element.matches(".icon-btn, .pos-menu-title, .pos-menu-head h2, .pos-menu-group > button, [data-menu-group], .product-card, .catalog-tab, .sort-row-main, .app-version-badge, .mobile-cart-bar, .qty-tools button, [data-mobile-cart-close]")) return true;
   return element.closest(".pos-menu-head") && visibleText(element) === "เมนู POS";
+}
+
+function normalizeIconStack(element) {
+  const generated = [...element.querySelectorAll(":scope > .pos-context-icon")];
+  if (generated.length > 1) generated.slice(1).forEach(icon => icon.remove());
+  const leadingIcons = [...element.querySelectorAll(":scope > i.bi, :scope > .app-icon, :scope > .pos-context-icon")];
+  if (leadingIcons.length > 1) {
+    const keepAuthored = leadingIcons.find(icon => !icon.classList.contains("pos-context-icon"));
+    if (keepAuthored) generated.forEach(icon => icon.remove());
+    else leadingIcons.slice(1).forEach(icon => icon.remove());
+  }
 }
 
 function addIcon(element, fallback) {
@@ -95,12 +159,18 @@ function addIcon(element, fallback) {
     element.removeAttribute("data-pos-icon-ready");
     return;
   }
-  if (authoredIcon || generatedIcon || !visibleText(element)) return;
+  if (authoredIcon || generatedIcon || !visibleText(element)) {
+    normalizeIconStack(element);
+    return;
+  }
   const icon = document.createElement("i");
-  icon.className = `bi bi-${iconFor(element, fallback)} pos-context-icon`;
+  const iconName = iconFor(element, fallback);
+  icon.className = `bi bi-${iconName} pos-context-icon`;
+  icon.dataset.iconTone = element.dataset.iconTone || toneForIcon(iconName);
   icon.setAttribute("aria-hidden", "true");
   element.prepend(icon);
   element.dataset.posIconReady = "1";
+  normalizeIconStack(element);
 }
 
 function enhance(root = document) {

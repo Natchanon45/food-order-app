@@ -48,6 +48,7 @@ const els = {
 };
 
 let sales = readJson(SALES_KEY, []);
+let selectedSaleId = "";
 
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -76,6 +77,10 @@ function localDateKey(value) {
 
 function saleDisplayNumber(sale) {
   return String(sale?.saleNumber || sale?.number || sale?.id || "");
+}
+
+function receiptPrintUrl(sale) {
+  return `/pos/receipt/?saleId=${encodeURIComponent(sale?.id || saleDisplayNumber(sale))}&auto=1`;
 }
 
 function saleTotalAmount(sale) {
@@ -185,7 +190,7 @@ function renderSales() {
   els.salesTableBody.innerHTML = rows.map(sale => {
     const qty = (sale.items || []).reduce((sum, item) => sum + Number(item.qty || 0), 0);
     const method = paymentMethod(sale);
-    return `<tr><td class="sale-id">${escapeHtml(saleDisplayNumber(sale))}</td><td class="sale-date" data-label="วันที่">${new Date(sale.createdAt || Date.now()).toLocaleString("th-TH")}</td><td class="number" data-label="จำนวนสุทธิ">${qty.toLocaleString("th-TH")}</td><td data-label="ชำระโดย"><span class="payment-badge ${escapeHtml(method)}">${paymentName(method)}</span></td><td data-label="VAT">${escapeHtml(vatModeName(sale))}</td><td class="number" data-label="ยอดก่อน VAT">${isVatSale(sale) ? money(beforeVatOf(sale)) : "-"}</td><td class="number" data-label="VAT">${isVatSale(sale) ? money(sale.vatAmount) : "-"}</td><td class="number" data-label="ส่วนลด">${money(saleDiscount(sale))}</td><td class="number" data-label="ยอดขายสุทธิ"><strong>${money(saleTotalAmount(sale))}</strong></td><td class="sale-actions"><button type="button" class="view-sale" data-sale-id="${escapeHtml(sale.id)}">ดูบิล</button></td></tr>`;
+    return `<tr><td class="sale-id">${escapeHtml(saleDisplayNumber(sale))}</td><td class="sale-date" data-label="วันที่">${new Date(sale.createdAt || Date.now()).toLocaleString("th-TH")}</td><td class="number" data-label="จำนวนสุทธิ">${qty.toLocaleString("th-TH")}</td><td data-label="ชำระโดย"><span class="payment-badge ${escapeHtml(method)}">${paymentName(method)}</span></td><td data-label="VAT">${escapeHtml(vatModeName(sale))}</td><td class="number" data-label="ยอดก่อน VAT">${isVatSale(sale) ? money(beforeVatOf(sale)) : "-"}</td><td class="number" data-label="VAT">${isVatSale(sale) ? money(sale.vatAmount) : "-"}</td><td class="number" data-label="ส่วนลด">${money(saleDiscount(sale))}</td><td class="number" data-label="ยอดขายสุทธิ"><strong>${money(saleTotalAmount(sale))}</strong></td><td class="sale-actions"><button type="button" class="view-sale" data-sale-id="${escapeHtml(sale.id)}"><i class="bi bi-receipt" aria-hidden="true"></i><span>ดูบิล</span></button></td></tr>`;
   }).join("");
   renderStats(rows);
   renderBestSellers(rows);
@@ -195,11 +200,17 @@ function renderSales() {
 function openSale(id) {
   const sale = sales.find(item => item.id === id);
   if (!sale) return;
+  selectedSaleId = sale.id || "";
   els.receiptSaleId.textContent = saleDisplayNumber(sale);
   els.receiptDate.textContent = new Date(sale.createdAt || Date.now()).toLocaleString("th-TH");
   const method = paymentMethod(sale);
   els.receiptPayment.textContent = paymentName(method);
-  els.receiptItems.innerHTML = (sale.items || []).map(item => `<tr><td>${escapeHtml(item.name)}<div class="product-sub">${escapeHtml(item.id || item.barcode || "")}</div></td><td class="number">${Number(item.qty || 0).toLocaleString("th-TH")}</td><td class="number">${money(item.price)}</td><td class="number">${money(item.lineTotal || Number(item.price || 0) * Number(item.qty || 0))}</td></tr>`).join("");
+  els.receiptItems.innerHTML = (sale.items || []).map(item => {
+    const qty = Number(item.qty || 0);
+    const qtyLabel = qty.toLocaleString("th-TH");
+    const name = `${item.name || item.productName || "-"} x ${qtyLabel}`;
+    return `<tr><td>${escapeHtml(name)}<div class="product-sub">${escapeHtml(item.id || item.barcode || "")}</div></td><td class="number">${money(item.price)}</td><td class="number">${money(item.lineTotal || Number(item.price || 0) * qty)}</td></tr>`;
+  }).join("");
   els.receiptSubtotal.textContent = money(sale.subtotal);
   els.receiptDiscount.textContent = money(saleDiscount(sale));
   els.receiptTotal.textContent = money(saleTotalAmount(sale));
@@ -242,7 +253,11 @@ els.clearFilterBtn.addEventListener("click", () => { els.saleSearch.value = ""; 
 els.exportCsvBtn.addEventListener("click", exportCsv);
 els.closeSaleDialog.addEventListener("click", () => els.saleDialog.close());
 els.closeSaleBtn.addEventListener("click", () => els.saleDialog.close());
-els.printReceiptBtn.addEventListener("click", () => window.print());
+els.printReceiptBtn.addEventListener("click", () => {
+  const sale = sales.find(item => item.id === selectedSaleId);
+  if (!sale) return window.print();
+  window.open(receiptPrintUrl(sale), `pos_receipt_${String(sale.id || saleDisplayNumber(sale)).replace(/[^a-zA-Z0-9]/g, "_")}`, "popup=yes,width=520,height=760,noopener,noreferrer");
+});
 window.addEventListener("storage", () => { sales = readJson(SALES_KEY, []); renderSales(); });
 renderSales();
 const stopSalesWatch = watchRecords(RetailCollections.sales, rows => { sales = rows; writeJson(SALES_KEY, rows); document.documentElement.dataset.salesSource = "firestore"; renderSales(); }, { sortBy: "createdAt", direction: "desc" });

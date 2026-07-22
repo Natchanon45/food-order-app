@@ -2,7 +2,7 @@ import "./sweet-dialog.js?v=20260629-048";
 import "./cart-item-layout.js?v=20260702-002";
 import { dataService, usingDemoMode } from "./data-service.js";
 import { ensureTenantContext } from "./tenant-context.js";
-import { money, toast, getTableCode, formatTime } from "./ui.js?v=20260701-001";
+import { money, toast, getTableCode, formatTime } from "./ui.js?v=20260716-009";
 
 if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
   const link = document.createElement("link");
@@ -33,6 +33,25 @@ let unsubscribeOrders = null;
 let currentPage = 1;
 let categoryObserver = null;
 
+function setIconHeading(selector, icon, text) {
+  const heading = document.querySelector(selector);
+  if (!heading) return;
+  let label = heading.querySelector(":scope > span");
+  if (!label) {
+    heading.innerHTML = `<i class="bi bi-${icon} app-icon" aria-hidden="true"></i><span></span>`;
+    label = heading.querySelector(":scope > span");
+  }
+  label.textContent = text;
+}
+
+function setSubmitButton(text, busy = false) {
+  const button = document.querySelector("#submitOrder");
+  if (!button) return;
+  button.innerHTML = busy
+    ? `<i class="bi bi-hourglass-split app-icon" aria-hidden="true"></i><span>${text}</span>`
+    : `<i class="bi bi-check-lg app-icon" aria-hidden="true"></i><span>${text}</span>`;
+}
+
 if (usingDemoMode) {
   document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง: ยังไม่ได้ใส่ Firebase Config ข้อมูลจะเก็บในเบราว์เซอร์นี้</div>';
 }
@@ -48,7 +67,7 @@ function activeTableName() {
 function updateTableHeader() {
   const label = activeTableName();
   document.querySelector("#tableBadge").textContent = label || "ไม่พบรหัสโต๊ะ";
-  document.querySelector("#tableTitle").textContent = label ? `เมนูสำหรับ${label}` : "กรุณาสแกน QR ของโต๊ะ";
+  setIconHeading("#tableTitle", "journal-text", label ? `เมนูสำหรับ${label}` : "กรุณาสแกน QR ของโต๊ะ");
 }
 
 updateTableHeader();
@@ -265,7 +284,7 @@ function renderPreviousOrders() {
   const highestRound = sorted.reduce((max, order) => Math.max(max, Number(order.roundNumber || 0)), 0);
   currentRoundLabel.textContent = `รอบที่ ${highestRound + 1}`;
   previousRoundCount.textContent = `${sorted.length} รอบ`;
-  previousOrdersSection.querySelector("h2").textContent = activeTableName() ? `รายการที่${activeTableName()}สั่งแล้ว` : "รายการที่โต๊ะนี้สั่งแล้ว";
+  setIconHeading("#previousOrdersSection h2", "clock-history", activeTableName() ? `รายการที่${activeTableName()}สั่งแล้ว` : "รายการที่โต๊ะนี้สั่งแล้ว");
   previousOrdersSection.hidden = sorted.length === 0;
 
   previousOrdersList.innerHTML = sorted.map(order => `
@@ -427,7 +446,7 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
   const totalAmount = items.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   button.disabled = true;
-  button.textContent = "กำลังส่ง...";
+  setSubmitButton("กำลังส่ง...", true);
 
   try {
     await dataService.createTableOrder({
@@ -447,7 +466,7 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
     console.error(error);
     toast(error.message === "INVALID_TABLE_SESSION" ? "QR นี้หมดอายุแล้ว กรุณาติดต่อแคชเชียร์" : "ส่งออเดอร์ไม่สำเร็จ", "error");
   } finally {
-    button.textContent = "ยืนยันการสั่ง";
+    setSubmitButton("ยืนยันการสั่ง");
     updateCart();
   }
 });
@@ -457,7 +476,7 @@ try {
   tableSessionValid = await validateTableSession();
   if (!tableSessionValid) {
     document.querySelector("#tableBadge").textContent = "QR หมดอายุ";
-    document.querySelector("#tableTitle").textContent = "QR นี้ไม่สามารถใช้งานได้";
+    setIconHeading("#tableTitle", "journal-x", "QR นี้ไม่สามารถใช้งานได้");
     categoryTabs.innerHTML = "";
     menuGrid.innerHTML = '<div class="card empty">กรุณาติดต่อแคชเชียร์เพื่อรับ QR สำหรับโต๊ะของคุณ</div>';
     menuPagination.hidden = true;
@@ -471,7 +490,7 @@ try {
 } catch (error) {
   console.error(error);
   document.querySelector("#tableBadge").textContent = "ไม่พบร้าน";
-  document.querySelector("#tableTitle").textContent = "ไม่สามารถโหลดข้อมูลร้านได้";
+  setIconHeading("#tableTitle", "journal-x", "ไม่สามารถโหลดข้อมูลร้านได้");
   categoryTabs.innerHTML = "";
   menuGrid.innerHTML = '<div class="card empty">ไม่พบข้อมูลร้านหรือร้านถูกปิดใช้งาน</div>';
   menuPagination.hidden = true;

@@ -1,7 +1,6 @@
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 
 const headingIcons = new Map([
-  ["จัดการร้าน", "shop"],
   ["สร้าง QR แยกตามโต๊ะ", "qr-code-scan"],
   ["รายงานยอดขาย", "bar-chart-line"],
   ["ข้อมูลร้านและการรับชำระ", "building-gear"],
@@ -62,10 +61,52 @@ function ensureThemeStyle() {
     h2 .admin-heading-icon,
     .hero h1 .admin-heading-icon,
     .section-title h2 .admin-heading-icon {
-      color: #159447 !important;
+      --admin-icon-fg: #0d6f34;
+      --admin-icon-bg: #e8f3ec;
+      width: 34px !important;
+      height: 34px !important;
+      flex: 0 0 34px !important;
+      display: inline-grid !important;
+      place-items: center !important;
+      border-radius: 12px !important;
+      background: var(--admin-icon-bg) !important;
+      color: var(--admin-icon-fg) !important;
+      font-size: 20px !important;
+      line-height: 1 !important;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.5);
     }
     .admin-heading-icon::before {
-      color: #159447 !important;
+      color: var(--admin-icon-fg) !important;
+      line-height: 1 !important;
+    }
+    [data-admin-icon="shop"] .admin-heading-icon,
+    [data-admin-icon="shop-window"] .admin-heading-icon { --admin-icon-fg:#047857; --admin-icon-bg:#d1fae5; }
+    [data-admin-icon="qr-code-scan"] .admin-heading-icon { --admin-icon-fg:#0f766e; --admin-icon-bg:#ccfbf1; }
+    [data-admin-icon="bar-chart-line"] .admin-heading-icon,
+    [data-admin-icon="graph-up-arrow"] .admin-heading-icon { --admin-icon-fg:#15803d; --admin-icon-bg:#dcfce7; }
+    [data-admin-icon="building-gear"] .admin-heading-icon,
+    [data-admin-icon="buildings"] .admin-heading-icon { --admin-icon-fg:#0369a1; --admin-icon-bg:#e0f2fe; }
+    [data-admin-icon="scooter"] .admin-heading-icon { --admin-icon-fg:#c2410c; --admin-icon-bg:#ffedd5; }
+    [data-admin-icon="journal-plus"] .admin-heading-icon,
+    [data-admin-icon="list-ol"] .admin-heading-icon,
+    [data-admin-icon="fork-knife"] .admin-heading-icon { --admin-icon-fg:#b45309; --admin-icon-bg:#fef3c7; }
+    [data-admin-icon="table"] .admin-heading-icon,
+    [data-admin-icon="grid-3x3-gap"] .admin-heading-icon { --admin-icon-fg:#1d4ed8; --admin-icon-bg:#dbeafe; }
+    [data-admin-icon="person-plus"] .admin-heading-icon,
+    [data-admin-icon="people"] .admin-heading-icon { --admin-icon-fg:#6d28d9; --admin-icon-bg:#ede9fe; }
+    [data-admin-icon="bag-check"] .admin-heading-icon { --admin-icon-fg:#047857; --admin-icon-bg:#d1fae5; }
+    [data-admin-icon="credit-card"] .admin-heading-icon,
+    [data-admin-icon="receipt"] .admin-heading-icon,
+    [data-admin-icon="receipt-cutoff"] .admin-heading-icon { --admin-icon-fg:#0e7490; --admin-icon-bg:#cffafe; }
+    [data-admin-icon="calendar-check"] .admin-heading-icon,
+    [data-admin-icon="clock-history"] .admin-heading-icon { --admin-icon-fg:#be123c; --admin-icon-bg:#ffe4e6; }
+    [data-admin-icon="diagram-3"] .admin-heading-icon,
+    [data-admin-icon="trophy"] .admin-heading-icon { --admin-icon-fg:#7c3aed; --admin-icon-bg:#f3e8ff; }
+    [data-admin-icon="pencil-square"] .admin-heading-icon { --admin-icon-fg:#475569; --admin-icon-bg:#f1f5f9; }
+    .hero h1 .admin-heading-icon {
+      --admin-icon-bg: rgba(255,255,255,.16);
+      --admin-icon-fg: #fff;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.22);
     }
     .table-list button[data-admin-button-icon] {
       min-width: max-content !important;
@@ -128,6 +169,15 @@ function labelText(button) {
 
 function wrapButtonLabel(button, text) {
   if (button.querySelector(".admin-button-label")) return;
+  const existingLabel = [...button.children].find(child =>
+    child.tagName === "SPAN" &&
+    !child.classList.contains("app-icon") &&
+    !child.classList.contains("admin-button-icon")
+  );
+  if (existingLabel) {
+    existingLabel.classList.add("admin-button-label");
+    return;
+  }
   [...button.childNodes].forEach(node => {
     if (node.nodeType === Node.TEXT_NODE) node.remove();
   });

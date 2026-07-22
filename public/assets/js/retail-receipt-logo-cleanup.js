@@ -1,3 +1,5 @@
+import { maskReceiptCustomerName, maskReceiptPhone } from './retail-receipt-privacy.js?v=20260716-002';
+
 const styleId = 'retailReceiptLogoCleanupStyle';
 const SALES_KEY = 'retail_pos_sales_v1';
 const STORE_SETTINGS_KEY = 'retail_pos_store_settings_v1';
@@ -80,9 +82,9 @@ function customerRows(sale = {}) {
   const phone = sale.customerDisplayPhone || sale.customerPhone || '';
   if (!customerName && !sale.customerCode && !phone) return frag;
   frag.append(rule());
-  if (customerName) frag.append(row('ลูกค้า', customerName, true));
+  if (customerName) frag.append(row('ลูกค้า', maskReceiptCustomerName(customerName), true));
   if (sale.customerCode) frag.append(row('สมาชิก', sale.customerCode));
-  if (phone) frag.append(row('โทร', phone));
+  if (phone) frag.append(row('โทร', maskReceiptPhone(phone)));
   return frag;
 }
 
@@ -104,7 +106,7 @@ function vatRows(sale = {}) {
   if (Number(sale.pointDiscount || 0)) frag.append(row('ส่วนลดแต้ม', money(sale.pointDiscount)));
   frag.append(row('ยอดก่อน VAT', money(beforeVat(sale))));
   frag.append(row(`VAT ${vatRate(sale).toLocaleString('th-TH')}%`, money(sale.vatAmount || 0)));
-  frag.append(row(modeLabel(sale), ''));
+  frag.append(row('โหมด VAT', modeLabel(sale)));
   return frag;
 }
 

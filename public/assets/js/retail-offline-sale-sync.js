@@ -1,10 +1,11 @@
-import { auth, db, isFirebaseConfigured, doc, runTransaction, serverTimestamp } from './firebase-config.js?v=20260630-073';
+import { auth, db, isFirebaseConfigured, doc, getDoc, runTransaction, serverTimestamp } from './firebase-config.js?v=20260630-073';
 import { getTenantId, RetailCollections } from './retail-db.js?v=20260629-032';
 import { listLocalSales, saveLocalSales, updateLocalSale, localSaleId } from './retail-pos-repository.js?v=20260630-081';
 import { POS_COLLECTIONS, POS_FIRESTORE_VERSION, dateKeyFrom, applySaleToDailySummary, buildSaleItemRows, buildSyncQueueRow } from './retail-pos-firestore-foundation.js?v=20260702-002';
 import { reserveRunningNumber, POS_COUNTER_VERSION } from './retail-pos-counter.js?v=20260706-037';
 
 export const OFFLINE_QUEUE_VERSION = 'P9-B004.1';
+export const OFFLINE_SYNC_HASH_VERSION = 'sale-sync-hash-v1';
 
 const SALES_KEY = 'retail_pos_sales_v1';
 const SYNC_EVENT = 'retail-offline-sales-synced';
@@ -46,7 +47,121 @@ function isConflictError(error) { return Boolean(conflictTypeFromError(error)); 
 function retryDelayMs(attemptCount) { return RETRY_DELAYS_MS[Math.max(0, Math.min(Number(attemptCount || 0), RETRY_DELAYS_MS.length - 1))]; }
 function retryDue(sale) { const next = new Date(sale?.nextRetryAt || 0).getTime(); return !next || next <= nowMs(); }
 function queueStatuses() { return new Set(['pending', 'syncing', 'failed', 'conflict']); }
-function getOfflineSyncQueue() { return readSales().filter(sale => queueStatuses().has(normalizeStatus(sale.syncStatus))); }
+function isCompletedSale(sale = {}) { return String(sale?.status || '').toLowerCase() === 'completed'; }
+function stableJson(value) {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
+  if (value && typeof value === 'object') return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`).join(',')}}`;
+  return JSON.stringify(value ?? null);
+}
+function hashText(value) {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0');
+}
+function saleSyncPayload(sale = {}) {
+  return {
+    id: localSaleId(sale),
+    tenantId: sale.tenantId || sale.shopId || '',
+    deviceId: sale.deviceId || '',
+    createdAt: sale.createdAt || '',
+    channel: sale.channel || 'retail-pos',
+    orderType: sale.orderType || 'pos',
+    status: sale.status || 'completed',
+    paymentStatus: sale.paymentStatus || 'paid',
+    items: (Array.isArray(sale.items) ? sale.items : []).map(item => ({
+      productId: String(item.productId || item.id || '').trim(),
+      barcode: item.barcode || '',
+      name: item.name || '',
+      price: Number(item.price || 0),
+      cost: item.cost == null ? null : Number(item.cost),
+      qty: Number(item.qty || 0),
+      unit: item.unit || '',
+      lineTotal: Number(item.lineTotal ?? Number(item.price || 0) * Number(item.qty || 0))
+    })),
+    subtotal: Number(sale.subtotal || 0),
+    discount: Number(sale.discount || 0),
+    pointDiscount: Number(sale.pointDiscount || 0),
+    discountedBase: Number(sale.discountedBase || 0),
+    taxableBase: Number(sale.taxableBase || 0),
+    beforeVat: Number(sale.beforeVat || 0),
+    vatAmount: Number(sale.vatAmount || 0),
+    vatRate: Number(sale.vatRate || 0),
+    vatMode: sale.vatMode || '',
+    vatRegistered: Boolean(sale.vatRegistered),
+    vatCalculationBase: sale.vatCalculationBase || '',
+    total: Number(sale.total ?? sale.totalAmount ?? 0),
+    totalAmount: Number(sale.totalAmount ?? sale.total ?? 0),
+    paymentMethod: sale.paymentMethod || sale.payment?.method || '',
+    receivedAmount: Number(sale.receivedAmount ?? sale.payment?.received ?? 0),
+    changeAmount: Number(sale.changeAmount ?? sale.payment?.change ?? 0),
+    customerId: sale.customerId || '',
+    customerCode: sale.customerCode || '',
+    customerName: sale.customerName || '',
+    customerPhone: sale.customerPhone || '',
+    shiftId: sale.shiftId || '',
+    cashierId: sale.cashierId || '',
+    cashierName: sale.cashierName || '',
+    terminalCode: sale.terminalCode || ''
+  };
+}
+export function saleSyncHash(sale = {}) { return `${OFFLINE_SYNC_HASH_VERSION}:${hashText(stableJson(saleSyncPayload(sale)))}`; }
+export function saleHasSyncedFlag(sale = {}) {
+  const status = normalizeStatus(sale.syncStatus);
+  if (status !== 'synced' && !sale.firebaseSyncedAt && !sale.syncedAt) return false;
+  return true;
+}
+function getOfflineSyncQueue() { return readSales().filter(sale => isCompletedSale(sale) && !saleHasSyncedFlag(sale) && queueStatuses().has(normalizeStatus(sale.syncStatus))); }
+
+function backfillSyncedSaleFlags() {
+  let changed = 0;
+  const next = readSales().map(sale => {
+    const hash = saleSyncHash(sale);
+    const status = normalizeStatus(sale.syncStatus);
+    const hasSyncMarker = status === 'synced' || Boolean(sale.firebaseSyncedAt || sale.syncedAt);
+    if (!hasSyncMarker) return sale;
+    if (sale.offlineSyncHash && String(sale.offlineSyncHash) !== hash) {
+      changed += 1;
+      return {
+        ...sale,
+        syncStatus: 'synced',
+        firebaseSyncedAt: sale.firebaseSyncedAt || sale.syncedAt || nowIso(),
+        offlineSyncHash: hash,
+        syncHashVersion: OFFLINE_SYNC_HASH_VERSION,
+        syncError: '',
+        syncLockId: '',
+        syncStartedAt: '',
+        nextRetryAt: '',
+        conflictType: '',
+        conflictResolution: '',
+        syncHashMismatchAt: sale.syncHashMismatchAt || nowIso(),
+        syncHashMismatchNote: 'synced marker kept authoritative after local payload metadata changed',
+        queueVersion: OFFLINE_QUEUE_VERSION
+      };
+    }
+    if (!saleHasSyncedFlag(sale)) return sale;
+    if (sale.offlineSyncHash === hash && sale.syncHashVersion === OFFLINE_SYNC_HASH_VERSION && sale.syncStatus === 'synced' && sale.firebaseSyncedAt) return sale;
+    changed += 1;
+    return {
+      ...sale,
+      syncStatus: 'synced',
+      firebaseSyncedAt: sale.firebaseSyncedAt || sale.syncedAt || nowIso(),
+      offlineSyncHash: hash,
+      syncHashVersion: OFFLINE_SYNC_HASH_VERSION,
+      syncError: '',
+      syncLockId: '',
+      syncStartedAt: '',
+      nextRetryAt: '',
+      conflictType: '',
+      conflictResolution: '',
+      queueVersion: OFFLINE_QUEUE_VERSION
+    };
+  });
+  if (changed) writeSales(next);
+  return changed;
+}
 
 export function getOfflineSyncQueueDetails() {
   const queue = getOfflineSyncQueue();
@@ -68,9 +183,9 @@ function updateWorkerSnapshot(patch = {}) {
 export function getOfflineQueueWorkerSnapshot() { return { ...workerSnapshot, ...getOfflineSyncQueueDetails() }; }
 
 function saleNeedsSync(sale) {
-  if (!sale || sale.status !== 'completed') return false;
+  if (!sale || !isCompletedSale(sale)) return false;
   const status = normalizeStatus(sale.syncStatus);
-  if (sale.firebaseSyncedAt || status === 'synced') return false;
+  if (saleHasSyncedFlag(sale)) return false;
   if (status === 'discarded' || status === 'conflict_resolved') return false;
   if (status === 'conflict') return false;
   if (status === 'syncing') { const started = new Date(sale.syncStartedAt || 0).getTime(); if (started && nowMs() - started < SYNCING_STALE_MS) return false; }
@@ -79,7 +194,11 @@ function saleNeedsSync(sale) {
 }
 function markSale(id, patch) { updateLocalSale(id, { ...patch, queueVersion: OFFLINE_QUEUE_VERSION }); }
 function markSyncing(sale, lockId) { const id = localSaleId(sale); const attemptCount = Number(sale.syncAttemptCount || 0) + 1; markSale(id, { syncStatus: 'syncing', syncLockId: lockId, syncStartedAt: nowIso(), lastSyncAttemptAt: nowIso(), syncAttemptCount: attemptCount, syncError: '', nextRetryAt: '', conflictType: '', queueVersion: OFFLINE_QUEUE_VERSION }); }
-function markSynced(id, extra = {}) { markSale(id, { syncStatus: 'synced', firebaseSyncedAt: nowIso(), syncError: '', syncLockId: '', syncStartedAt: '', nextRetryAt: '', conflictType: '', conflictResolution: '', queueVersion: OFFLINE_QUEUE_VERSION, ...extra }); }
+function markSynced(id, extra = {}) {
+  const current = readSales().find(sale => localSaleId(sale) === id) || {};
+  const payload = { ...current, ...extra, syncStatus: 'synced' };
+  markSale(id, { syncStatus: 'synced', firebaseSyncedAt: nowIso(), offlineSyncHash: saleSyncHash(payload), syncHashVersion: OFFLINE_SYNC_HASH_VERSION, syncError: '', syncLockId: '', syncStartedAt: '', nextRetryAt: '', conflictType: '', conflictResolution: '', queueVersion: OFFLINE_QUEUE_VERSION, ...extra });
+}
 function markFailed(id, error, status = 'failed') {
   const current = readSales().find(sale => localSaleId(sale) === id) || {};
   const attemptCount = Number(current.syncAttemptCount || 0);
@@ -98,6 +217,43 @@ export function recoverStaleSyncingSales({ force = false } = {}) {
     return { ...sale, syncStatus: 'failed', syncError: 'RECOVERED_STALE_SYNCING', syncLockId: '', syncStartedAt: '', nextRetryAt: new Date(nowMs() + 5000).toISOString(), recoveredAt: nowIso(), queueVersion: OFFLINE_QUEUE_VERSION };
   });
   if (changed) { writeSales(next); updateWorkerSnapshot({ state: 'stale_recovered' }); }
+  return changed;
+}
+
+async function reconcileRemoteSyncedSales({ limit = 100 } = {}) {
+  if (!isFirebaseConfigured || !db || navigator.onLine === false) return 0;
+  const tenantId = getTenantId();
+  const active = readSales()
+    .filter(sale => isCompletedSale(sale) && !saleHasSyncedFlag(sale) && queueStatuses().has(normalizeStatus(sale.syncStatus)))
+    .filter(sale => localSaleId(sale))
+    .slice(0, limit);
+  let changed = 0;
+  for (const sale of active) {
+    const saleId = localSaleId(sale);
+    try {
+      const lookupIds = [...new Set([saleId, sale.saleNumber, sale.finalSaleNumber, sale.localSaleNumber].map(value => String(value || '').trim()).filter(Boolean))];
+      let snap = null;
+      for (const lookupId of lookupIds) {
+        const candidate = await getDoc(tenantDoc(RetailCollections.sales, lookupId));
+        if (candidate.exists()) { snap = candidate; break; }
+      }
+      if (!snap?.exists()) continue;
+      const remote = snap.data() || {};
+      if (remote.tenantId && String(remote.tenantId) !== String(tenantId)) continue;
+      markSynced(saleId, {
+        remoteSaleId: snap.id,
+        saleNumber: remote.saleNumber || sale.saleNumber || saleId,
+        finalSaleNumber: remote.finalSaleNumber || remote.saleNumber || sale.finalSaleNumber || sale.saleNumber || saleId,
+        runningNumberStatus: remote.runningNumberStatus || sale.runningNumberStatus || 'reserved',
+        syncNote: 'remote sale already exists in Firebase',
+        reconciledFromRemoteAt: nowIso()
+      });
+      changed += 1;
+    } catch (error) {
+      console.warn('[retail-offline-sale-sync] remote reconcile skipped', saleId, error);
+    }
+  }
+  if (changed) updateWorkerSnapshot({ state: 'remote_reconciled', lastReconciled: changed, lastReconciledAt: nowIso() });
   return changed;
 }
 
@@ -192,6 +348,8 @@ export async function syncOfflineSalesToFirebase({ forceRetry = false } = {}) {
   if (!isFirebaseConfigured || !db || navigator.onLine === false) { updateWorkerSnapshot({ state: navigator.onLine === false ? 'offline' : 'disabled' }); return { synced: 0, failed: 0, conflict: 0, skipped: 0 }; }
   if (syncRunning) return { synced: 0, failed: 0, conflict: 0, skipped: getOfflineSyncQueue().length };
   syncRunning = true;
+  backfillSyncedSaleFlags();
+  await reconcileRemoteSyncedSales();
   recoverStaleSyncingSales();
   const runId = `sync-${nowMs()}-${Math.random().toString(16).slice(2)}`;
   let synced = 0, failed = 0, conflict = 0, skipped = 0;
@@ -226,21 +384,29 @@ export async function syncOfflineSalesToFirebase({ forceRetry = false } = {}) {
 
 export function scheduleOfflineQueueRun(delay = 1200) {
   clearTimeout(workerTimer);
+  backfillSyncedSaleFlags();
+  recoverStaleSyncingSales();
+  if (!getOfflineSyncQueue().length) {
+    updateWorkerSnapshot({ state: navigator.onLine === false ? 'offline' : 'idle', nextRunAt: '' });
+    return;
+  }
   const state = navigator.onLine === false ? 'offline' : 'scheduled';
   updateWorkerSnapshot({ state, nextRunAt: new Date(nowMs() + delay).toISOString() });
   workerTimer = setTimeout(async () => {
     const result = await syncOfflineSalesToFirebase();
     const hasRetryDue = getOfflineSyncQueue().some(sale => normalizeStatus(sale.syncStatus) === 'failed' && retryDue(sale));
-    if (navigator.onLine !== false && (result.failed > 0 || hasRetryDue)) scheduleOfflineQueueRun(Math.min(300000, Math.max(5000, delay * 2)));
+    if (navigator.onLine !== false && result.skipped > 0) scheduleOfflineQueueRun(800);
+    else if (navigator.onLine !== false && (result.failed > 0 || hasRetryDue)) scheduleOfflineQueueRun(Math.min(300000, Math.max(5000, delay * 2)));
   }, delay);
 }
 
 function exposeQueueApi() {
-  window.retailOfflineQueue = Object.freeze({ version: OFFLINE_QUEUE_VERSION, snapshot: getOfflineQueueWorkerSnapshot, details: getOfflineSyncQueueDetails, sync: syncOfflineSalesToFirebase, retryFailed: retryFailedOfflineSales, retryConflict: saleId => resolveOfflineSaleConflict(saleId, 'retry'), discardConflict: saleId => resolveOfflineSaleConflict(saleId, 'discard'), resolveAllConflicts: resolveAllOfflineSaleConflicts, recoverStale: recoverStaleSyncingSales, recoverNow: () => recoverStaleSyncingSales({ force: true }), schedule: scheduleOfflineQueueRun });
+  window.retailOfflineQueue = Object.freeze({ version: OFFLINE_QUEUE_VERSION, snapshot: getOfflineQueueWorkerSnapshot, details: getOfflineSyncQueueDetails, sync: syncOfflineSalesToFirebase, reconcileRemote: reconcileRemoteSyncedSales, retryFailed: retryFailedOfflineSales, retryConflict: saleId => resolveOfflineSaleConflict(saleId, 'retry'), discardConflict: saleId => resolveOfflineSaleConflict(saleId, 'discard'), resolveAllConflicts: resolveAllOfflineSaleConflicts, recoverStale: recoverStaleSyncingSales, recoverNow: () => recoverStaleSyncingSales({ force: true }), schedule: scheduleOfflineQueueRun });
 }
 class OfflineQueueWorker {
   start() {
     exposeQueueApi();
+    backfillSyncedSaleFlags();
     recoverStaleSyncingSales({ force: true });
     scheduleOfflineQueueRun(1200);
     window.addEventListener('online', () => scheduleOfflineQueueRun(800));

@@ -1,6 +1,6 @@
 import { RetailCollections, saveRecordsStrict, listRecords } from './retail-db.js?v=20260628-7';
 import { buildRetailMasterCatalogThailand, validateRetailMasterCatalogThailand } from './rmct.js?v=20260628-7';
-import { requireRole } from './auth-service.js?v=20260630-067';
+import { requireRole } from './auth-service.js?v=20260716-009';
 
 await requireRole(['owner']);
 
@@ -11,14 +11,22 @@ const els = {
   readyProducts: document.querySelector('#readyProducts'),
   currentProducts: document.querySelector('#currentProducts'),
   reviewPending: document.querySelector('#reviewPending'),
+  catalogSearch: document.querySelector('#catalogSearch'),
+  catalogStatusFilter: document.querySelector('#catalogStatusFilter'),
+  clearCatalogFilters: document.querySelector('#clearCatalogFilters'),
+  selectAllCategories: document.querySelector('#selectAllCategories'),
+  selectReadyCategories: document.querySelector('#selectReadyCategories'),
+  clearCategories: document.querySelector('#clearCategories'),
   importButton: document.querySelector('#importButton'),
   previewRows: document.querySelector('#previewRows'),
   previewSummary: document.querySelector('#previewSummary'),
+  catalogImportSummary: document.querySelector('#catalogImportSummary'),
   importResult: document.querySelector('#importResult'),
   skipExisting: document.querySelector('#skipExisting'),
   categoryGrid: document.querySelector('#categoryGrid'),
   importDialog: document.querySelector('#importDialog'),
   importDialogCount: document.querySelector('#importDialogCount'),
+  importDialogSummary: document.querySelector('#importDialogSummary'),
   cancelImport: document.querySelector('#cancelImport'),
   confirmImport: document.querySelector('#confirmImport')
 };
@@ -26,6 +34,7 @@ const els = {
 const catalog = buildRetailMasterCatalogThailand();
 const validation = validateRetailMasterCatalogThailand(catalog);
 const selectedCategoryIds = new Set(catalog.products.map(item => item.categoryId));
+const categorySummaries = categorySummary(catalog.products);
 let existingProducts = [];
 let importing = false;
 let pendingImportRows = [];
@@ -43,6 +52,65 @@ function setResult(message, tone = '') {
   els.importResult.dataset.tone = tone;
 }
 
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (error) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    const ok = document.execCommand('copy');
+    textarea.remove();
+    return ok;
+  }
+}
+
+function renderImportSuccess(rows) {
+  const previewRows = rows.slice(0, 8);
+  const moreCount = Math.max(0, rows.length - previewRows.length);
+  els.importResult.dataset.tone = 'success';
+  els.importResult.innerHTML = `
+    <div class="import-success">
+      <div class="import-success-head">
+        <span class="import-success-icon" aria-hidden="true"><i class="bi bi-check2-circle"></i></span>
+        <div>
+          <strong>นำเข้าสำเร็จ ${rows.length.toLocaleString('th-TH')} รายการ</strong>
+          <span>ตั้งสต็อกเป็น 0 และยังไม่แสดงบน POS จนกว่าจะตรวจสินค้า</span>
+        </div>
+      </div>
+      <div class="import-success-actions">
+        <a class="btn primary" href="/pos/products/">ไปตรวจสินค้าที่นำเข้า</a>
+        <button id="copyImportedSku" class="btn secondary" type="button">คัดลอก SKU</button>
+      </div>
+      <div class="import-success-checklist" aria-label="สิ่งที่ต้องตรวจหลังนำเข้า">
+        <span><i class="bi bi-currency-dollar" aria-hidden="true"></i><strong>ตรวจราคา</strong><small>ยืนยันราคาขายจริงก่อนเปิดใช้งาน</small></span>
+        <span><i class="bi bi-box-seam" aria-hidden="true"></i><strong>ตั้งสต็อก</strong><small>เพิ่มจำนวนคงเหลือจากหน้าสินค้า</small></span>
+        <span><i class="bi bi-eye" aria-hidden="true"></i><strong>เปิดขายบน POS</strong><small>เปิดแสดงเฉพาะรายการที่พร้อมขาย</small></span>
+      </div>
+      <div class="import-success-list">
+        ${previewRows.map(item => `
+          <span>
+            <strong>${escapeHtml(item.masterProductId)}</strong>
+            <small>${escapeHtml(item.name)}</small>
+          </span>
+        `).join('')}
+        ${moreCount ? `<span class="more"><strong>+${moreCount.toLocaleString('th-TH')}</strong><small>รายการอื่น ๆ</small></span>` : ''}
+      </div>
+    </div>
+  `;
+  els.importResult.querySelector('#copyImportedSku')?.addEventListener('click', async event => {
+    const button = event.currentTarget;
+    const copied = await copyText(rows.map(item => item.masterProductId).join('\n'));
+    button.textContent = copied ? 'คัดลอกแล้ว' : 'คัดลอกไม่สำเร็จ';
+    window.setTimeout(() => { button.textContent = 'คัดลอก SKU'; }, 1600);
+  });
+}
+
 function categorySummary(products) {
   const map = new Map();
   for (const item of products) {
@@ -57,7 +125,7 @@ function categorySummary(products) {
 }
 
 function renderCategories() {
-  els.categoryGrid.innerHTML = categorySummary(catalog.products).map((item, index) => `
+  els.categoryGrid.innerHTML = categorySummaries.map((item, index) => `
     <label class="category-card ${item.published ? 'has-ready' : ''}">
       <input type="checkbox" data-category-id="${escapeHtml(item.id)}" ${selectedCategoryIds.has(item.id) ? 'checked' : ''}>
       <span class="category-icon" aria-hidden="true"><i class="bi bi-${categoryIcons[index % categoryIcons.length]}"></i></span>
@@ -96,14 +164,104 @@ function importRows() {
   return rows.filter(item => !isExisting(item, keys));
 }
 
+function importBreakdown() {
+  const rows = selectedProducts();
+  const keys = existingKeys();
+  const readyRows = rows.filter(item => item.catalogStatus === 'published');
+  const existingReadyRows = readyRows.filter(item => isExisting(item, keys));
+  const importableRows = els.skipExisting.checked
+    ? readyRows.filter(item => !isExisting(item, keys))
+    : readyRows;
+  return {
+    selected: rows.length,
+    ready: readyRows.length,
+    importable: importableRows.length,
+    skippedExisting: els.skipExisting.checked ? existingReadyRows.length : 0,
+    draft: rows.length - readyRows.length
+  };
+}
+
+function renderImportSummary() {
+  const summary = importBreakdown();
+  const emptyReason = !validation.valid
+    ? `Catalog ไม่ผ่าน validation: ${validation.errors[0]}`
+    : summary.importable
+      ? 'พร้อมนำเข้าเฉพาะรายการที่ผ่านตรวจ โดยตั้งสต็อกเป็น 0 และยังไม่แสดงบน POS'
+      : summary.ready && summary.skippedExisting
+        ? `มีสินค้า ${summary.ready.toLocaleString('th-TH')} รายการที่พร้อมนำเข้า แต่ถูกข้ามทั้งหมดเพราะมี SKU หรือ Barcode อยู่ในร้านแล้ว`
+        : summary.ready
+          ? 'ยังไม่มีรายการพร้อมนำเข้าหลังตัวกรองปัจจุบัน'
+          : 'หมวดที่เลือกยังมีเฉพาะรายการรอตรวจสอบ จึงยังไม่สามารถนำเข้าได้';
+  els.catalogImportSummary.innerHTML = `
+    <div class="summary-copy">
+      <strong>${escapeHtml(emptyReason)}</strong>
+      <span>ใช้ตัวเลขนี้ตรวจสอบก่อนกดยืนยัน ระบบจะไม่นำเข้าฉบับร่างและไม่แตะสต็อกเดิม</span>
+    </div>
+    <div class="summary-metrics">
+      <span><small>เลือกอยู่</small><strong>${summary.selected.toLocaleString('th-TH')}</strong></span>
+      <span class="ready"><small>พร้อมนำเข้า</small><strong>${summary.ready.toLocaleString('th-TH')}</strong></span>
+      <span class="${summary.importable ? 'ready' : 'muted'}"><small>นำเข้าได้ตอนนี้</small><strong>${summary.importable.toLocaleString('th-TH')}</strong></span>
+      <span class="${summary.skippedExisting ? 'warning' : 'muted'}"><small>ข้ามเพราะมีแล้ว</small><strong>${summary.skippedExisting.toLocaleString('th-TH')}</strong></span>
+      <span class="${summary.draft ? 'warning' : 'muted'}"><small>รอตรวจสอบ</small><strong>${summary.draft.toLocaleString('th-TH')}</strong></span>
+    </div>
+  `;
+}
+
+function previewStatusCounts(rows) {
+  const counts = { all: rows.length, importable: 0, ready: 0, existing: 0, draft: 0 };
+  for (const item of rows) {
+    const isReady = item.catalogStatus === 'published';
+    if (!isReady) {
+      counts.draft += 1;
+      continue;
+    }
+    counts.ready += 1;
+    const exists = isExisting(item);
+    if (exists) counts.existing += 1;
+    if (!els.skipExisting.checked || !exists) counts.importable += 1;
+  }
+  return counts;
+}
+
+function renderStatusFilterOptions(rows) {
+  const currentValue = els.catalogStatusFilter.value || 'all';
+  const counts = previewStatusCounts(rows);
+  const options = [
+    ['all', 'ทุกสถานะ', counts.all],
+    ['importable', 'นำเข้าได้ตอนนี้', counts.importable],
+    ['ready', 'พร้อมนำเข้า', counts.ready],
+    ['existing', 'มีในร้านแล้ว', counts.existing],
+    ['draft', 'รอตรวจสอบ', counts.draft]
+  ];
+  els.catalogStatusFilter.innerHTML = options.map(([value, label, count]) => (
+    `<option value="${value}" ${value === currentValue ? 'selected' : ''}>${label} (${count.toLocaleString('th-TH')})</option>`
+  )).join('');
+}
+
 function barcodeCell(item) {
   return item.barcode ? `<span class="pill">${escapeHtml(item.barcode)}</span>` : '<span class="pill muted">รอตรวจสอบ</span>';
 }
 
 function statusCell(item) {
-  return item.catalogStatus === 'published'
-    ? '<span class="pill">พร้อมนำเข้า</span>'
-    : '<span class="pill muted">ฉบับร่าง</span>';
+  const reason = statusReason(item);
+  if (item.catalogStatus !== 'published') {
+    return `<span class="status-stack"><span class="pill muted">รอตรวจสอบ</span><small>${escapeHtml(reason)}</small></span>`;
+  }
+  if (isExisting(item)) {
+    return `<span class="status-stack"><span class="pill warning">มีในร้านแล้ว</span><small>${escapeHtml(reason)}</small></span>`;
+  }
+  return `<span class="status-stack"><span class="pill">พร้อมนำเข้า</span><small>${escapeHtml(reason)}</small></span>`;
+}
+
+function statusReason(item) {
+  if (item.catalogStatus === 'published') {
+    return isExisting(item) ? 'ข้ามได้เพราะ SKU หรือ Barcode ซ้ำ' : 'มี Barcode และแหล่งตรวจสอบแล้ว';
+  }
+  const missing = [];
+  if (!item.barcode) missing.push('Barcode จริง');
+  if (!item.verificationSources?.length) missing.push('แหล่งตรวจสอบ');
+  if (!item.imageUrl) missing.push('รูปสินค้า');
+  return missing.length ? `ต้องเติม ${missing.join(', ')}` : 'รอตรวจคุณภาพข้อมูล';
 }
 
 function sourceCell(item) {
@@ -116,9 +274,13 @@ function sourceCell(item) {
 
 function renderPreview() {
   const rows = selectedProducts();
+  renderStatusFilterOptions(rows);
+  const filteredRows = previewRows(rows);
   const published = rows.filter(item => item.catalogStatus === 'published').length;
-  els.previewSummary.textContent = `เลือก ${rows.length.toLocaleString('th-TH')} รายการ • พร้อมนำเข้า ${published.toLocaleString('th-TH')} รายการ`;
-  els.previewRows.innerHTML = rows.slice(0, 20).map(item => `
+  const importable = importBreakdown().importable;
+  const visibleLimit = 50;
+  els.previewSummary.textContent = `เลือก ${rows.length.toLocaleString('th-TH')} รายการ • แสดง ${filteredRows.length.toLocaleString('th-TH')} รายการ • พร้อมนำเข้า ${published.toLocaleString('th-TH')} • นำเข้าได้ตอนนี้ ${importable.toLocaleString('th-TH')}`;
+  els.previewRows.innerHTML = filteredRows.length ? filteredRows.slice(0, visibleLimit).map(item => `
     <tr>
       <td>${escapeHtml(item.masterProductId)}</td>
       <td><strong>${escapeHtml(item.name)}</strong></td>
@@ -129,7 +291,43 @@ function renderPreview() {
       <td>${statusCell(item)}</td>
       <td>${sourceCell(item)}</td>
     </tr>
-  `).join('');
+  `).join('') : '<tr><td colspan="8" class="empty-preview">ไม่พบรายการตามคำค้นหาหรือตัวกรองนี้</td></tr>';
+  renderImportSummary();
+}
+
+function refreshCatalogView() {
+  renderCategories();
+  renderPreview();
+  updateImportButton();
+}
+
+function previewRows(rows) {
+  const query = String(els.catalogSearch.value || '').trim().toLowerCase();
+  const status = els.catalogStatusFilter.value || 'all';
+  return rows.filter(item => {
+    const exists = isExisting(item);
+    const isReady = item.catalogStatus === 'published';
+    const statusMatch = status === 'all'
+      || (status === 'ready' && isReady)
+      || (status === 'importable' && isReady && (!els.skipExisting.checked || !exists))
+      || (status === 'existing' && isReady && exists)
+      || (status === 'draft' && !isReady);
+    if (!statusMatch) return false;
+    if (!query) return true;
+    const haystack = [
+      item.masterProductId,
+      item.sku,
+      item.barcode,
+      item.name,
+      item.nameTh,
+      item.brand,
+      item.brandTh,
+      item.category,
+      item.categoryId,
+      item.keywords?.join(' ')
+    ].join(' ').toLowerCase();
+    return haystack.includes(query);
+  });
 }
 
 function renderStats() {
@@ -140,11 +338,14 @@ function renderStats() {
 }
 
 function updateImportButton() {
-  const count = importRows().length;
+  const breakdown = importBreakdown();
+  const count = breakdown.importable;
   els.importButton.disabled = importing || !validation.valid || count === 0;
-  els.importButton.textContent = importing ? 'กำลังนำเข้า...' : count
-    ? `นำเข้า ${count.toLocaleString('th-TH')} รายการที่ผ่านตรวจ`
-    : 'ไม่มีสินค้าที่พร้อมนำเข้า';
+  els.importButton.dataset.posIcon = importing ? 'hourglass-split' : 'box-arrow-in-down';
+  els.importButton.innerHTML = importing
+    ? '<i class="bi bi-hourglass-split" aria-hidden="true"></i><span>กำลังนำเข้า...</span>'
+    : '<i class="bi bi-box-arrow-in-down" aria-hidden="true"></i><span>นำเข้าทั้งหมด</span>';
+  renderImportSummary();
 }
 
 function prepareImportProduct(item) {
@@ -172,7 +373,13 @@ async function loadCatalogState() {
 function requestImport() {
   pendingImportRows = importRows();
   if (!pendingImportRows.length || importing || !validation.valid) return;
+  const summary = importBreakdown();
   els.importDialogCount.textContent = pendingImportRows.length.toLocaleString('th-TH');
+  els.importDialogSummary.innerHTML = `
+    <span><small>นำเข้าใหม่</small><strong>${summary.importable.toLocaleString('th-TH')}</strong></span>
+    <span><small>ข้ามเพราะมีแล้ว</small><strong>${summary.skippedExisting.toLocaleString('th-TH')}</strong></span>
+    <span><small>รอตรวจสอบ</small><strong>${summary.draft.toLocaleString('th-TH')}</strong></span>
+  `;
   els.importDialog.showModal();
 }
 
@@ -188,7 +395,7 @@ async function importCatalog() {
     await saveRecordsStrict(RetailCollections.products, rows.map(prepareImportProduct), {
       onProgress: ({ completed, total }) => setResult(`กำลังนำเข้า ${completed.toLocaleString('th-TH')} / ${total.toLocaleString('th-TH')} รายการ`)
     });
-    setResult(`นำเข้าสำเร็จ ${rows.length.toLocaleString('th-TH')} รายการ กรุณาตั้งสต็อกและเปิดแสดงบน POS จากหน้าสินค้า`, '');
+    renderImportSuccess(rows);
     existingProducts = await listRecords(RetailCollections.products);
     renderStats();
     renderPreview();
@@ -210,7 +417,33 @@ els.categoryGrid.addEventListener('change', event => {
   renderPreview();
   updateImportButton();
 });
-els.skipExisting.addEventListener('change', updateImportButton);
+els.selectAllCategories.addEventListener('click', () => {
+  selectedCategoryIds.clear();
+  for (const item of categorySummaries) selectedCategoryIds.add(item.id);
+  refreshCatalogView();
+});
+els.selectReadyCategories.addEventListener('click', () => {
+  selectedCategoryIds.clear();
+  for (const item of categorySummaries) {
+    if (item.published) selectedCategoryIds.add(item.id);
+  }
+  refreshCatalogView();
+});
+els.clearCategories.addEventListener('click', () => {
+  selectedCategoryIds.clear();
+  refreshCatalogView();
+});
+els.skipExisting.addEventListener('change', () => {
+  renderPreview();
+  updateImportButton();
+});
+els.catalogSearch.addEventListener('input', renderPreview);
+els.catalogStatusFilter.addEventListener('change', renderPreview);
+els.clearCatalogFilters.addEventListener('click', () => {
+  els.catalogSearch.value = '';
+  els.catalogStatusFilter.value = 'all';
+  renderPreview();
+});
 els.importButton.addEventListener('click', requestImport);
 els.cancelImport.addEventListener('click', () => {
   pendingImportRows = [];

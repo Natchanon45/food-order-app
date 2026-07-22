@@ -1,6 +1,8 @@
-import { RetailCollections, getRecord, saveRecordStrict } from './retail-db.js?v=20260629-032';
+import { RetailCollections, getRecord, getTenantId } from './retail-db.js?v=20260629-032';
+import { saveSettingsDocumentsLocalFirst } from './retail-pos-settings-sync.js?v=20260716-015';
 
 const SETTINGS_KEY = "retail_pos_store_settings_v1";
+const tenantSettingsKey = () => `${SETTINGS_KEY}_${getTenantId()}`;
 
 const defaults = {
   shopName: "POS ร้านค้าปลีก",
@@ -17,7 +19,10 @@ const defaults = {
   receiptThanks: "ขอบคุณที่ใช้บริการ",
   receiptFooter: "เอกสารฉบับนี้ออกโดยระบบของร้านตามข้อมูลด้านบน",
   receiptPaperSize: "80",
-  receiptPrintMode: "ask"
+  receiptPrintMode: "ask",
+  promptPayEnabled: "no",
+  promptPayId: "",
+  promptPayAccountName: ""
 };
 
 const els = {
@@ -37,6 +42,9 @@ const els = {
   receiptFooter: document.querySelector("#receiptFooter"),
   receiptPaperSize: document.querySelector("#receiptPaperSize"),
   receiptPrintMode: document.querySelector("#receiptPrintMode"),
+  promptPayEnabled: document.querySelector("#promptPayEnabled"),
+  promptPayId: document.querySelector("#promptPayId"),
+  promptPayAccountName: document.querySelector("#promptPayAccountName"),
   previewShopName: document.querySelector("#previewShopName"),
   previewShopAddress: document.querySelector("#previewShopAddress"),
   previewShopPhone: document.querySelector("#previewShopPhone"),
@@ -48,6 +56,7 @@ const els = {
   previewFooter: document.querySelector("#previewFooter"),
   previewPaperSize: document.querySelector("#previewPaperSize"),
   previewPrintMode: document.querySelector("#previewPrintMode"),
+  previewPromptPay: document.querySelector("#previewPromptPay"),
   resetBtn: document.querySelector("#resetSettingsBtn"),
   error: document.querySelector("#settingsError"),
   toast: document.querySelector("#toast")
@@ -56,19 +65,26 @@ const els = {
 let toastTimer;
 
 function readLocalSettings() {
-  try { return { ...defaults, ...(JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}) }; }
+  try {
+    const tenantId = getTenantId();
+    const scoped = JSON.parse(localStorage.getItem(tenantSettingsKey())) || null;
+    const legacy = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || null;
+    const saved = scoped || (!legacy?.tenantId || legacy.tenantId === tenantId ? legacy : null);
+    return { ...defaults, ...(saved || {}), tenantId, shopId: tenantId };
+  }
   catch { return { ...defaults }; }
 }
 
 async function readSettings() {
   const local = readLocalSettings();
   try {
-    const [store, receipt, tax] = await Promise.all([
+    const [store, receipt, tax, payment] = await Promise.all([
       getRecord(RetailCollections.settings, "store"),
       getRecord(RetailCollections.settings, "receipt"),
-      getRecord(RetailCollections.settings, "tax")
+      getRecord(RetailCollections.settings, "tax"),
+      getRecord(RetailCollections.settings, "payment")
     ]);
-    return { ...defaults, ...(store || {}), ...(receipt || {}), ...(tax || {}), ...local };
+    return { ...defaults, ...(store || {}), ...(receipt || {}), ...(tax || {}), ...(payment || {}), ...local };
   } catch (error) {
     console.warn("[retail-pos-settings] firebase settings fallback", error);
     return local;
@@ -93,9 +109,18 @@ function normalizeVatMode(value) {
 }
 
 function normalizeVatRate(value) {
+  if (String(value ?? "").trim() === "") return defaults.vatRate;
   const rate = Number(value);
   if (!Number.isFinite(rate) || rate < 0) return defaults.vatRate;
   return Math.min(100, Math.round(rate * 100) / 100);
+}
+
+function normalizePromptPayEnabled(value) {
+  return String(value || "no") === "yes" ? "yes" : "no";
+}
+
+function normalizePromptPayId(value) {
+  return String(value || "").replace(/[^\d]/g, "").slice(0, 13);
 }
 
 function normalizeBranchType(value) {
@@ -103,13 +128,15 @@ function normalizeBranchType(value) {
 }
 
 function collectSettings() {
+  const vatRegistered = normalizeVatRegistered(els.vatRegistered?.value);
+  const vatRate = normalizeVatRate(els.vatRate?.value);
   return {
     shopName: els.shopName.value.trim(),
     shopAddress: els.shopAddress.value.trim(),
     shopPhone: els.shopPhone.value.trim(),
     taxId: els.taxId.value.trim(),
-    vatRegistered: normalizeVatRegistered(els.vatRegistered?.value),
-    vatRate: normalizeVatRate(els.vatRate?.value),
+    vatRegistered,
+    vatRate: vatRegistered === "yes" && vatRate <= 0 ? defaults.vatRate : vatRate,
     defaultVatMode: normalizeVatMode(els.defaultVatMode?.value),
     taxBranchType: normalizeBranchType(els.taxBranchType?.value),
     taxBranchCode: els.taxBranchCode?.value.trim() || "",
@@ -120,7 +147,10 @@ function collectSettings() {
     receiptThanks: els.receiptThanks.value.trim() || defaults.receiptThanks,
     receiptFooter: els.receiptFooter.value.trim() || defaults.receiptFooter,
     receiptPaperSize: normalizePaperSize(els.receiptPaperSize?.value),
-    receiptPrintMode: normalizePrintMode(els.receiptPrintMode?.value)
+    receiptPrintMode: normalizePrintMode(els.receiptPrintMode?.value),
+    promptPayEnabled: normalizePromptPayEnabled(els.promptPayEnabled?.value),
+    promptPayId: normalizePromptPayId(els.promptPayId?.value),
+    promptPayAccountName: els.promptPayAccountName?.value.trim() || ""
   };
 }
 
@@ -140,6 +170,9 @@ function fillForm(settings) {
   els.receiptFooter.value = settings.receiptFooter || defaults.receiptFooter;
   if (els.receiptPaperSize) els.receiptPaperSize.value = normalizePaperSize(settings.receiptPaperSize);
   if (els.receiptPrintMode) els.receiptPrintMode.value = normalizePrintMode(settings.receiptPrintMode);
+  if (els.promptPayEnabled) els.promptPayEnabled.value = normalizePromptPayEnabled(settings.promptPayEnabled);
+  if (els.promptPayId) els.promptPayId.value = normalizePromptPayId(settings.promptPayId);
+  if (els.promptPayAccountName) els.promptPayAccountName.value = settings.promptPayAccountName || "";
   updatePreview();
 }
 
@@ -158,6 +191,13 @@ function updatePreview() {
   els.previewFooter.textContent = settings.receiptFooter;
   if (els.previewPaperSize) els.previewPaperSize.textContent = `ขนาด: ${settings.receiptPaperSize === "a4" ? "A4" : `${settings.receiptPaperSize}mm`}`;
   if (els.previewPrintMode) els.previewPrintMode.textContent = settings.receiptPrintMode === "auto" ? "พิมพ์ทันทีหลังบันทึก" : "ถามก่อนพิมพ์";
+  if (els.previewPromptPay) {
+    const enabled = settings.promptPayEnabled === "yes";
+    const receiver = settings.promptPayAccountName || displayName;
+    els.previewPromptPay.textContent = enabled && settings.promptPayId
+      ? `PromptPay พร้อมใช้ • ผู้รับเงิน ${receiver} • ${settings.promptPayId}`
+      : "PromptPay / QR โอนเงินยังไม่เปิดใช้";
+  }
 }
 
 function showToast(message) {
@@ -169,7 +209,30 @@ function showToast(message) {
 }
 
 async function saveSettings(settings) {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  const tenantId = getTenantId();
+  const localSettings = {
+    ...settings,
+    tenantId,
+    shopId: tenantId,
+    syncStatus: "pending_sync",
+    syncQueuedAt: Date.now()
+  };
+  localStorage.setItem(tenantSettingsKey(), JSON.stringify(localSettings));
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(localSettings));
+  const storeSettings = {
+    id: "store",
+    shopName: settings.shopName,
+    shopAddress: settings.shopAddress,
+    shopPhone: settings.shopPhone,
+    taxId: settings.taxId
+  };
+  const receiptSettings = {
+    id: "receipt",
+    receiptThanks: settings.receiptThanks,
+    receiptFooter: settings.receiptFooter,
+    receiptPaperSize: settings.receiptPaperSize,
+    receiptPrintMode: settings.receiptPrintMode
+  };
   const taxSettings = {
     id: "tax",
     vatRegistered: settings.vatRegistered,
@@ -182,15 +245,26 @@ async function saveSettings(settings) {
     vatCalculationBase: settings.vatCalculationBase,
     shortTaxInvoiceEnabled: settings.shortTaxInvoiceEnabled
   };
-  try {
-    await Promise.all([
-      saveRecordStrict(RetailCollections.settings, { id: "store", shopName: settings.shopName, shopAddress: settings.shopAddress, shopPhone: settings.shopPhone, taxId: settings.taxId }),
-      saveRecordStrict(RetailCollections.settings, { id: "receipt", receiptThanks: settings.receiptThanks, receiptFooter: settings.receiptFooter, receiptPaperSize: settings.receiptPaperSize, receiptPrintMode: settings.receiptPrintMode }),
-      saveRecordStrict(RetailCollections.settings, taxSettings)
-    ]);
-  } catch (error) {
-    console.warn("[retail-pos-settings] firebase save failed", error);
-  }
+  const paymentSettings = {
+    id: "payment",
+    promptPayEnabled: settings.promptPayEnabled,
+    promptPayId: settings.promptPayId,
+    promptPayAccountName: settings.promptPayAccountName
+  };
+  const result = await saveSettingsDocumentsLocalFirst([
+    storeSettings,
+    receiptSettings,
+    taxSettings,
+    paymentSettings
+  ]);
+  const saved = {
+    ...localSettings,
+    syncStatus: result.pending ? "pending_sync" : "synced",
+    firebaseSyncedAt: result.pending ? 0 : Date.now()
+  };
+  localStorage.setItem(tenantSettingsKey(), JSON.stringify(saved));
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(saved));
+  return result;
 }
 
 els.form.addEventListener("input", updatePreview);
@@ -209,9 +283,19 @@ els.form.addEventListener("submit", async event => {
     els.taxId.focus();
     return;
   }
+  if (settings.promptPayEnabled === "yes" && !settings.promptPayId) {
+    els.error.textContent = "กรุณากรอกเบอร์ PromptPay หรือเลขนิติบุคคลก่อนเปิดใช้ QR โอนเงิน";
+    els.promptPayId?.focus();
+    return;
+  }
+  if (settings.promptPayEnabled === "yes" && ![10, 13].includes(settings.promptPayId.length)) {
+    els.error.textContent = "PromptPay ต้องเป็นเบอร์โทร 10 หลัก หรือเลขนิติบุคคล/เลขภาษี 13 หลัก";
+    els.promptPayId?.focus();
+    return;
+  }
   els.error.textContent = "";
   await saveSettings(settings);
-  showToast("บันทึกการตั้งค่าแล้ว");
+  showToast("บันทึกข้อมูลการตั้งค่าร้านค้าสำเร็จ");
 });
 
 els.resetBtn.addEventListener("click", async () => {

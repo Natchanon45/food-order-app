@@ -1,4 +1,10 @@
-import { deleteProductImage, getProductImageUrl, saveProductImage } from "./retail-product-image-store.js?v=20260627-2";
+import {
+  deleteProductImage,
+  getProductImageUrl,
+  productImageUploadMessage,
+  saveProductImage,
+  saveProductImageLocalFallback
+} from "./retail-product-image-store.js?v=20260715-008";
 
 const PRODUCT_KEY = "retail_pos_products_v1";
 const form = document.querySelector("#productForm");
@@ -57,6 +63,7 @@ const showOnPosInput = document.querySelector("#productShowOnPos");
 let selectedImageFile = null;
 let removeSavedImage = false;
 let previewObjectUrl = "";
+let lastProductImageWarning = "";
 
 function readProducts() {
   try { return JSON.parse(localStorage.getItem(PRODUCT_KEY)) || []; }
@@ -133,6 +140,7 @@ async function loadMerchFields(id) {
 }
 
 async function prepareProduct(product) {
+  lastProductImageWarning = "";
   let nextProduct = {
     ...product,
     imageUrl: imageUrlInput.value.trim(),
@@ -145,11 +153,18 @@ async function prepareProduct(product) {
     nextProduct = { ...nextProduct, imageUrl: "", imagePath: "", imageKey: "" };
   } else if (selectedImageFile) {
     const previousImagePath = nextProduct.imagePath;
-    const uploaded = await saveProductImage(product.id, selectedImageFile);
-    if (previousImagePath && previousImagePath !== uploaded.imagePath) {
-      await deleteProductImage({ imagePath: previousImagePath });
+    try {
+      const uploaded = await saveProductImage(product.id, selectedImageFile);
+      if (previousImagePath && previousImagePath !== uploaded.imagePath) {
+        await deleteProductImage({ imagePath: previousImagePath });
+      }
+      nextProduct = { ...nextProduct, ...uploaded };
+    } catch (error) {
+      console.warn("[retail-product-merchandising] image upload failed, using local fallback", error);
+      const localImage = await saveProductImageLocalFallback(product.id, selectedImageFile);
+      nextProduct = { ...nextProduct, ...localImage };
+      lastProductImageWarning = productImageUploadMessage(error);
     }
-    nextProduct = { ...nextProduct, ...uploaded };
   } else if (nextProduct.imagePath && nextProduct.imageUrl !== product.imageUrl) {
     await deleteProductImage(nextProduct);
     nextProduct = { ...nextProduct, imagePath: "", imageKey: "" };
@@ -158,7 +173,13 @@ async function prepareProduct(product) {
   return nextProduct;
 }
 
-globalThis.retailProductMerchandising = { prepareProduct };
+function consumeLastWarning() {
+  const warning = lastProductImageWarning;
+  lastProductImageWarning = "";
+  return warning;
+}
+
+globalThis.retailProductMerchandising = { prepareProduct, consumeLastWarning };
 
 document.querySelector("#addProductBtn")?.addEventListener("click", () => setTimeout(() => {
   resetMerchFields();

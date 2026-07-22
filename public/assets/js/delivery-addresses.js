@@ -5,7 +5,7 @@ import {
   getCustomerProfile,
   saveCustomerProfile
 } from "./customer-profile-service.js?v=20260630-074";
-import { toast } from "./ui.js?v=20260701-002";
+import { toast } from "./ui.js?v=20260716-009";
 
 const phoneInput = document.querySelector("#recipientPhone");
 const nameInput = document.querySelector("#recipientName");

@@ -8,12 +8,12 @@
     />
     <meta name="theme-color" content="#159447" />
     <title>เข้าสู่ระบบ</title>
-    <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260707-018" />
+    <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260713-004" />
     <link
       rel="stylesheet"
       href="/assets/css/retail-pos-login.css?v=20260627-3"
     />
-    <link rel="stylesheet" href="/assets/css/icons.css?v=20260702-003" />
+    <link rel="stylesheet" href="/assets/css/icons.css?v=20260715-011" />
     <style>
       * {
         box-sizing: border-box;
@@ -127,11 +127,13 @@
       }
       .login-input-wrap {
         position: relative;
+        display: block;
+        min-height: 52px;
       }
       .login-input-wrap .login-field-icon {
         position: absolute;
         left: 13px;
-        top: 50%;
+        top: 26px;
         transform: translateY(-50%) scale(1);
         width: 18px;
         height: 18px;
@@ -146,8 +148,8 @@
       }
       .login-input-wrap:focus-within .login-field-icon,
       .login-input-wrap.is-filled .login-field-icon {
-        top: 7px;
-        transform: translateY(0) scale(0.72);
+        top: 26px;
+        transform: translateY(-50%) scale(1);
         color: #159447;
         opacity: 1;
       }
@@ -173,8 +175,8 @@
       }
       .login-input-wrap:focus-within input,
       .login-input-wrap.is-filled input {
-        padding-top: 17px;
-        padding-bottom: 11px;
+        padding-top: 14px;
+        padding-bottom: 14px;
       }
       .login-password-wrap input {
         padding-right: 72px;
@@ -186,7 +188,7 @@
       .login-password-wrap button {
         position: absolute;
         right: 7px;
-        top: 50%;
+        top: 26px;
         transform: translateY(-50%);
         border: 0;
         background: transparent;
@@ -195,6 +197,9 @@
         padding: 7px;
         font: inherit;
         line-height: 1;
+      }
+      .login-form .bootstrap-invalid-feedback {
+        margin-top: 6px;
       }
       .btn {
         border: 0;
@@ -306,7 +311,7 @@
         >
           <label
             ><span class="login-field-title">อีเมล</span
-            ><span class="login-input-wrap"
+            ><span class="login-input-wrap" data-validation-feedback-host
               ><i
                 class="bi bi-envelope app-icon login-field-icon"
                 aria-hidden="true"
@@ -322,7 +327,9 @@
           ></label>
           <label
             ><span class="login-field-title">รหัสผ่าน</span
-            ><span class="login-input-wrap login-password-wrap"
+            ><span
+              class="login-input-wrap login-password-wrap"
+              data-validation-feedback-host
               ><i
                 class="bi bi-key app-icon login-field-icon"
                 aria-hidden="true"
@@ -354,7 +361,7 @@
         ><span>หน้าหลัก</span></a
       >
     </main>
-    <script type="module" src="/assets/js/login.js?v=20260704-003"></script>
+    <script type="module" src="/assets/js/login.js?v=20260723-001"></script>
     <script>
       window.addEventListener("error", function () {
         var e = document.getElementById("loginError"),

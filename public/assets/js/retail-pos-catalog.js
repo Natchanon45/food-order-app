@@ -10,10 +10,11 @@ const LOAD_STEP = 96;
 const productGrid = document.querySelector("#productGrid");
 const productPanel = document.querySelector(".product-panel");
 const searchInput = document.querySelector("#searchInput");
+if (productGrid) productGrid.dataset.renderer = "catalog";
 
 const style = document.createElement("link");
 style.rel = "stylesheet";
-style.href = "/assets/css/retail-pos-catalog.css?v=20260701-018";
+style.href = "/assets/css/retail-pos-catalog.css?v=20260713-005";
 (document.head || document.documentElement).appendChild(style);
 
 const tabs = document.createElement("div");
@@ -29,7 +30,6 @@ let ranking = new Map();
 let searchTimer = null;
 let renderLimit = INITIAL_LIMIT;
 let rendering = false;
-let observer = null;
 let categoryOrder = readJson(ORDER_KEY, []);
 
 function readRaw(key) { return localStorage.getItem(key) || "[]"; }
@@ -38,6 +38,10 @@ function escapeHtml(value) { return String(value ?? "").replace(/[&<>"']/g, char
 function initials(name) { return String(name || "สินค้า").trim().slice(0, 2).toUpperCase(); }
 function money(value) { return Number(value || 0).toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 function productSearchText(product) { return `${product.name || ""} ${product.id || ""} ${product.barcode || ""} ${product.category || ""}`.toLowerCase(); }
+function restoreImageFallback(container) {
+  container.replaceChildren(document.createTextNode(initials(container.dataset.productName)));
+  container.dataset.imageState = "fallback";
+}
 function activeProducts() { return products.filter(item => item.showOnPos !== false); }
 function rawCategories() { return [...new Set(activeProducts().map(item => item.category || "ทั่วไป"))]; }
 function orderedTabIds() {
@@ -109,14 +113,14 @@ async function hydrateVisibleImages() {
     let url = "";
     if (container.dataset.imageKey) url = await getProductImageUrl(container.dataset.imageKey);
     if (!url) url = container.dataset.imageUrl || "";
-    if (!url) { container.dataset.imageState = "ready"; continue; }
+    if (!url) { restoreImageFallback(container); continue; }
     const image = document.createElement("img");
     image.src = url;
     image.alt = container.dataset.productName || "สินค้า";
     image.loading = "lazy";
     image.decoding = "async";
     image.onload = () => { container.dataset.imageState = "ready"; };
-    image.onerror = () => { container.dataset.imageState = "ready"; };
+    image.onerror = () => { restoreImageFallback(container); };
     container.textContent = "";
     container.appendChild(image);
   }
@@ -125,7 +129,6 @@ async function hydrateVisibleImages() {
 function renderCatalog() {
   if (!productGrid || rendering) return;
   rendering = true;
-  observer?.disconnect();
   refreshProductCache();
   renderTabs();
   const matched = sortProducts(products.filter(shouldShow));
@@ -137,7 +140,6 @@ function renderCatalog() {
   productGrid.innerHTML = html;
   hydrateVisibleImages();
   rendering = false;
-  observer?.observe(productGrid, { childList: true });
 }
 
 function scheduleRender({ resetLimit = false } = {}) {
@@ -169,8 +171,7 @@ searchInput?.addEventListener("input", event => {
 
 window.addEventListener("storage", () => { categoryOrder = readJson(ORDER_KEY, []); scheduleRender({ resetLimit: true }); });
 window.addEventListener("retail-pos-products-changed", () => scheduleRender({ resetLimit: true }));
-observer = new MutationObserver(() => { if (!rendering) scheduleRender(); });
-if (productGrid) observer.observe(productGrid, { childList: true });
+window.addEventListener("retail-pos-catalog-render-request", () => scheduleRender());
 
 getRecord(RetailCollections.settings, SETTINGS_ID).then(settings => {
   if (!Array.isArray(settings?.categoryOrder)) return;

@@ -4,6 +4,10 @@ import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 const STORAGE_KEY = "admin_collapsed_cards_v1";
 const MODAL_TRANSITION_MS = 220;
 
+try {
+  localStorage.removeItem(STORAGE_KEY);
+} catch {}
+
 function icon(name) {
   return iconMarkup(name);
 }
@@ -24,22 +28,6 @@ function cardKey(card, index = 0) {
   return key;
 }
 
-function collapsedState() {
-  try {
-    return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"));
-  } catch {
-    return new Set();
-  }
-}
-
-function saveCollapsed(state) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify([...state]));
-}
-
-function defaultCollapsed(card) {
-  return Boolean(card.querySelector("#storeForm, #menuForm, #tableForm, .sort-manager")) || /QR สำหรับสั่ง Delivery/i.test(card.textContent || "");
-}
-
 function ensureCardBody(card, title) {
   let body = card.querySelector(":scope > .admin-card-body");
   if (body) return body;
@@ -58,8 +46,7 @@ function decorateCard(card, index = 0) {
   const title = card.querySelector(":scope > .section-title");
   if (!title || card.closest(".admin-edit-modal") || isNonCollapsibleCard(card)) return;
 
-  const key = cardKey(card, index);
-  const state = collapsedState();
+  cardKey(card, index);
   const heading = document.createElement("div");
   heading.className = "admin-card-heading";
 
@@ -78,17 +65,12 @@ function decorateCard(card, index = 0) {
   card.classList.add("admin-collapsible-card");
   card.dataset.adminCollapsible = "true";
 
-  const shouldCollapse = state.has(key) || (!localStorage.getItem(STORAGE_KEY) && defaultCollapsed(card));
-  card.classList.toggle("admin-card-collapsed", shouldCollapse);
-  toggle.setAttribute("aria-expanded", String(!shouldCollapse));
+  card.classList.add("admin-card-collapsed");
+  toggle.setAttribute("aria-expanded", "false");
 
   toggle.addEventListener("click", () => {
     const collapsed = card.classList.toggle("admin-card-collapsed");
     toggle.setAttribute("aria-expanded", String(!collapsed));
-    const nextState = collapsedState();
-    if (collapsed) nextState.add(key);
-    else nextState.delete(key);
-    saveCollapsed(nextState);
   });
 }
 

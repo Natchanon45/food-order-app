@@ -1,5 +1,5 @@
 import { dataService } from "./data-service.js?v=20260701-017";
-import { toast } from "./ui.js?v=20260701-002";
+import { toast } from "./ui.js?v=20260716-009";
 
 const categoryList = document.querySelector("#categorySortList");
 const itemList = document.querySelector("#itemSortList");
@@ -54,7 +54,7 @@ function renderCategories() {
   const categories = orderedCategories();
   categoryOrder = [...categories];
   if (!selectedCategory || !categories.includes(selectedCategory)) selectedCategory = categories[0] || "";
-  categoryList.innerHTML = categories.length ? categories.map((category, index) => `<div class="sort-item${category === selectedCategory ? " active-category" : ""}" data-category="${escapeHtml(category)}"><span class="sort-handle" aria-hidden="true">⋮⋮</span><button type="button" class="btn" data-select-category="${escapeHtml(category)}" style="padding:0;background:transparent;text-align:left;font-weight:800">${escapeHtml(category)}</button><span class="sort-order-badge">${index + 1}</span></div>`).join("") : '<div class="sort-empty">ยังไม่มีหมวดหมู่</div>';
+  categoryList.innerHTML = categories.length ? categories.map((category, index) => `<div class="sort-item${category === selectedCategory ? " active-category" : ""}" data-category="${escapeHtml(category)}"><span class="sort-handle" aria-hidden="true">⋮⋮</span><button type="button" class="btn" data-select-category="${escapeHtml(category)}" style="padding:0;background:transparent;text-align:left;font-weight:600">${escapeHtml(category)}</button><span class="sort-order-badge">${index + 1}</span></div>`).join("") : '<div class="sort-empty">ยังไม่มีหมวดหมู่</div>';
   categorySortable?.destroy();
   if (window.Sortable && categories.length) categorySortable = new window.Sortable(categoryList, { animation: 180, handle: ".sort-handle", ghostClass: "sort-ghost", chosenClass: "sort-chosen", dragClass: "sort-drag", delay: 120, delayOnTouchOnly: true, touchStartThreshold: 4, onEnd: async () => { categoryOrder = [...categoryList.querySelectorAll("[data-category]")].map(item => item.dataset.category); refreshOrderBadges(categoryList); await persistCategoryOrder({ silent: true }); } });
   renderItems();

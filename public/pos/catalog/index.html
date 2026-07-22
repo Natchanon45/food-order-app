@@ -4,24 +4,26 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>นำเข้าสินค้าพื้นฐาน</title>
-  <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260707-022">
-  <link rel="stylesheet" href="/assets/css/retail-catalog-import.css?v=20260702-028">
+  <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260713-004">
+  <link rel="stylesheet" href="/assets/css/retail-catalog-import.css?v=20260717-001">
 </head>
 <body>
   <header class="pos-header">
-    <div class="app-title"><span class="app-badge">FOD</span><div><strong>นำเข้าสินค้าพื้นฐาน</strong><small>Retail Master Catalog Thailand</small></div></div>
+    <div class="app-title"><div><strong>นำเข้าสินค้าพื้นฐาน</strong><small>Retail Master Catalog Thailand</small></div></div>
     <div class="header-actions"><a class="btn btn-secondary" href="/pos/products/">กลับหน้าสินค้า</a></div>
   </header>
 
   <main class="catalog-shell">
     <section class="catalog-hero">
-      <div>
-        <h1>เริ่มร้านได้เร็วขึ้นด้วยชุดสินค้าพื้นฐาน</h1>
+      <div class="catalog-hero-content">
+        <div class="catalog-hero-head">
+          <h1>นำเข้าชุดสินค้าพื้นฐาน</h1>
+          <div class="catalog-actions">
+            <button id="importButton" class="btn primary" type="button" data-pos-icon="box-arrow-in-down">นำเข้าทั้งหมด</button>
+            <a class="btn secondary" href="/pos/products/">ดูสินค้าร้านนี้</a>
+          </div>
+        </div>
         <p>นำเข้าสินค้ายอดนิยมสำหรับร้านของชำและมินิมาร์ทไทย พร้อม SKU ระบบ หมวดสินค้า แบรนด์ ราคาแนะนำ และคำค้นหา</p>
-      </div>
-      <div class="catalog-actions">
-        <button id="importButton" class="btn primary" type="button">กำลังตรวจ Catalog...</button>
-        <a class="btn secondary" href="/pos/products/">ดูสินค้าร้านนี้</a>
       </div>
     </section>
 
@@ -37,9 +39,15 @@
     <section class="catalog-panel">
       <div class="panel-head">
         <div><h2>เลือกหมวดสินค้า</h2><p class="preview-muted">เลือกหมวดที่ต้องการ ระบบจะนำเข้าเฉพาะรายการที่ผ่านการตรวจสอบแล้ว</p></div>
-        <div class="import-options"><label><input type="checkbox" id="skipExisting" checked> ข้าม SKU ที่มีอยู่แล้ว</label></div>
+        <div class="import-options">
+          <button id="selectAllCategories" class="btn chip-action" type="button">เลือกทั้งหมด</button>
+          <button id="selectReadyCategories" class="btn chip-action" type="button">เฉพาะที่พร้อมนำเข้า</button>
+          <button id="clearCategories" class="btn chip-action" type="button">ล้างการเลือก</button>
+          <label><input type="checkbox" id="skipExisting" checked> ข้าม SKU ที่มีอยู่แล้ว</label>
+        </div>
       </div>
       <div id="categoryGrid" class="catalog-grid"></div>
+      <div id="catalogImportSummary" class="catalog-import-summary" aria-live="polite"></div>
       <div id="importResult" class="result-box"></div>
     </section>
 
@@ -62,7 +70,21 @@
     </section>
 
     <section class="catalog-panel">
-      <div class="panel-head"><div><h2>ตรวจรายการก่อนนำเข้า</h2><p id="previewSummary" class="preview-muted">กำลังตรวจ Catalog...</p></div><span class="pill">Preview 20 รายการ</span></div>
+      <div class="panel-head"><div><h2>ตรวจรายการก่อนนำเข้า</h2><p id="previewSummary" class="preview-muted">กำลังตรวจ Catalog...</p></div><span class="pill">Preview สูงสุด 50 รายการ</span></div>
+      <div class="catalog-filterbar" aria-label="ค้นหาและกรองรายการ Catalog">
+        <label class="catalog-search">
+          <i class="bi bi-search" aria-hidden="true"></i>
+          <input id="catalogSearch" type="search" placeholder="ค้นหาชื่อสินค้า / Barcode / SKU / แบรนด์">
+        </label>
+        <select id="catalogStatusFilter" aria-label="กรองสถานะ Catalog">
+          <option value="all">ทุกสถานะ</option>
+          <option value="importable">นำเข้าได้ตอนนี้</option>
+          <option value="ready">พร้อมนำเข้า</option>
+          <option value="existing">มีในร้านแล้ว</option>
+          <option value="draft">รอตรวจสอบ</option>
+        </select>
+        <button id="clearCatalogFilters" class="btn filter-clear" type="button">ล้างตัวกรอง</button>
+      </div>
       <div class="table-wrap"><table class="catalog-table"><thead><tr><th>Master ID</th><th>สินค้า</th><th>หมวด</th><th>แบรนด์</th><th class="number">ราคาแนะนำ</th><th>Barcode</th><th>สถานะ</th><th>แหล่งตรวจสอบ</th></tr></thead><tbody id="previewRows"></tbody></table></div>
     </section>
   </main>
@@ -72,6 +94,7 @@
       <div class="catalog-dialog-icon" aria-hidden="true"><i class="bi bi-check-circle"></i></div>
       <h2>ยืนยันนำเข้าสินค้า</h2>
       <p>ระบบจะนำเข้าสินค้าที่ผ่านการตรวจสอบ <strong id="importDialogCount">0</strong> รายการ โดยตั้งสต็อกเป็น 0 และยังไม่แสดงบนหน้าขาย</p>
+      <div id="importDialogSummary" class="dialog-summary"></div>
       <p class="preview-muted">หลังนำเข้า ให้ตรวจราคา ตั้งสต็อก และเปิดแสดงบน POS จากหน้าสินค้า</p>
       <div class="catalog-dialog-actions">
         <button id="cancelImport" class="btn secondary" type="button">ยกเลิก</button>
@@ -81,8 +104,8 @@
   </dialog>
 
   <script src="/assets/vendor/sheetjs/xlsx.full.min.js"></script>
-  <script type="module" src="/assets/js/retail-pos-icons.js?v=20260707-021"></script>
-  <script type="module" src="/assets/js/retail-catalog-import.js?v=20260702-028"></script>
+  <script type="module" src="/assets/js/retail-pos-icons.js?v=20260716-013"></script>
+  <script type="module" src="/assets/js/retail-catalog-import.js?v=20260717-001"></script>
   <script type="module" src="/assets/js/retail-catalog-excel-import.js?v=20260702-028"></script>
 </body>
 </html>

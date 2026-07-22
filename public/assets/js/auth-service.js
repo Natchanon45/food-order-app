@@ -4,6 +4,7 @@ import {
   doc, getDoc, httpsCallable,
   EmailAuthProvider, reauthenticateWithCredential, updatePassword
 } from "./firebase-config.js?v=20260630-073";
+import "./form-validation-ui.js?v=20260716-011";
 import { clearActiveTenant, setActiveTenant } from "./tenant-context.js";
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 
@@ -59,7 +60,7 @@ function ensureIconStyles() {
   if (!document.querySelector('link[href^="/assets/css/icons.css"]')) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "/assets/css/icons.css?v=20260701-001";
+    link.href = "/assets/css/icons.css?v=20260715-011";
     document.head.appendChild(link);
   }
 }
@@ -73,12 +74,12 @@ function ensurePasswordDialogStyles() {
     .owner-password-dialog{width:min(460px,100%);border-radius:22px;background:#fff;box-shadow:0 24px 70px rgba(10,25,18,.28);padding:22px;color:#111827}
     .owner-password-dialog h2{margin:0 0 6px;font-size:24px}
     .owner-password-dialog p{margin:0 0 18px;color:#64748b;font-weight:600}
-    .owner-password-field{display:grid;gap:7px;margin-top:12px;font-weight:800;color:#334155}
-    .owner-password-field input{width:100%;box-sizing:border-box;border:1px solid #d8e2dc;border-radius:14px;padding:13px 14px;font:inherit;font-weight:700;outline:none}
+    .owner-password-field{display:grid;gap:7px;margin-top:12px;font-weight:600;color:#334155}
+    .owner-password-field input{width:100%;box-sizing:border-box;border:1px solid #d8e2dc;border-radius:14px;padding:13px 14px;font:inherit;font-weight:500;outline:none}
     .owner-password-field input:focus{border-color:#159447;box-shadow:0 0 0 4px rgba(21,148,71,.12)}
-    .owner-password-error{min-height:20px;margin-top:12px;color:#d33;font-weight:800}
+    .owner-password-error{min-height:20px;margin-top:12px;color:#d33;font-weight:600}
     .owner-password-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
-    .owner-password-actions button{border:0;border-radius:14px;padding:12px 16px;font-weight:900;cursor:pointer}
+    .owner-password-actions button{border:0;border-radius:14px;padding:12px 16px;font-weight:600;cursor:pointer}
     .owner-password-cancel{background:#eef3ef;color:#111827}
     .owner-password-submit{background:#159447;color:#fff}
     .owner-password-submit:disabled{opacity:.65;cursor:wait}
@@ -289,35 +290,63 @@ export async function getUserProfile(user) {
 
 export async function requireRole(allowedRoles = []) {
   document.documentElement.style.visibility = "hidden";
-  const user = await waitForAuth();
-  if (!user) {
-    const next = encodeURIComponent(location.pathname + location.search);
-    location.replace(`/login/?next=${next}`);
+  try {
+    const user = await waitForAuth();
+    if (!user) {
+      const next = encodeURIComponent(location.pathname + location.search);
+      location.replace(`/login/?next=${next}`);
+      return new Promise(() => {});
+    }
+
+    const profile = await getUserProfile(user);
+    if (!profile?.role || profile.active === false) {
+      throw new Error("ACCOUNT_PROFILE_NOT_AVAILABLE");
+    }
+
+    const ownerAllowed = profile.role === "owner" && allowedRoles.some(role => ["owner", "admin", "cashier", "kitchen", "manager"].includes(role));
+    const permitted = ownerAllowed || allowedRoles.includes(profile.role);
+    const moduleAllowed = profileSupportsModule(profile, routeModule());
+
+    if (!permitted || !moduleAllowed) {
+      location.replace(moduleHome(profile));
+      return new Promise(() => {});
+    }
+
+    if (profile.role !== "super_admin" && profile.tenantReady === false) {
+      document.documentElement.innerHTML = `<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ยังไม่มีร้าน</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;font-family:system-ui,sans-serif;background:#f3f6f4;color:#151515}main{width:min(440px,100%);padding:26px;border-radius:20px;background:#fff;border:1px solid #dde5df;text-align:center}</style></head><body><main><h1>ยังไม่มีข้อมูลร้าน</h1><p>บัญชีนี้ยังไม่ได้ผูกกับร้าน กรุณาติดต่อผู้ดูแลระบบ</p></main></body>`;
+      return new Promise(() => {});
+    }
+
+    document.documentElement.style.visibility = "";
+    mountUserMenu(profile);
+    return profile;
+  } catch (error) {
+    console.error("PAGE_GUARD_PROFILE_FAILED", error);
+    document.documentElement.style.visibility = "";
+    document.body.innerHTML = `
+      <main style="box-sizing:border-box;min-height:100vh;display:grid;place-items:center;padding:20px;background:#f3f6f4;font-family:system-ui,-apple-system,sans-serif;color:#151515">
+        <section style="box-sizing:border-box;width:min(480px,100%);padding:30px;border:1px solid #dde5df;border-radius:20px;background:#fff;text-align:center;box-shadow:0 16px 44px rgba(16,35,23,.08)">
+          <h1 style="margin:0 0 10px;font-size:25px">โหลดข้อมูลบัญชีไม่สำเร็จ</h1>
+          <p style="margin:0;color:#6b746f;line-height:1.7">ระบบไม่สามารถตรวจสอบสิทธิ์ผู้ใช้งานได้ กรุณาลองโหลดหน้าใหม่ หรือเข้าสู่ระบบอีกครั้ง</p>
+          <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px">
+            <button type="button" onclick="location.reload()" style="border:0;border-radius:10px;padding:11px 16px;background:#159447;color:#fff;font:inherit;font-weight:700;cursor:pointer">ลองใหม่</button>
+            <button type="button" data-auth-reset style="border:1px solid #d5ded8;border-radius:10px;padding:10px 16px;background:#fff;color:#151515;font:inherit;font-weight:700;cursor:pointer">เข้าสู่ระบบอีกครั้ง</button>
+          </div>
+        </section>
+      </main>`;
+    document.querySelector("[data-auth-reset]")?.addEventListener("click", logoutToLogin);
     return new Promise(() => {});
   }
-
-  const profile = await getUserProfile(user);
-  const ownerAllowed = profile?.role === "owner" && allowedRoles.some(role => ["owner", "admin", "cashier", "kitchen", "manager"].includes(role));
-  const permitted = ownerAllowed || allowedRoles.includes(profile?.role);
-  const moduleAllowed = profileSupportsModule(profile, routeModule());
-
-  if (!permitted || !moduleAllowed) {
-    location.replace(moduleHome(profile));
-    return new Promise(() => {});
-  }
-
-  if (profile.role !== "super_admin" && profile.tenantReady === false) {
-    document.documentElement.innerHTML = `<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ยังไม่มีร้าน</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;font-family:system-ui,sans-serif;background:#f3f6f4;color:#151515}main{width:min(440px,100%);padding:26px;border-radius:20px;background:#fff;border:1px solid #dde5df;text-align:center}</style></head><body><main><h1>ยังไม่มีข้อมูลร้าน</h1><p>บัญชีนี้ยังไม่ได้ผูกกับร้าน กรุณาติดต่อผู้ดูแลระบบ</p></main></body>`;
-    return new Promise(() => {});
-  }
-
-  document.documentElement.style.visibility = "";
-  mountUserMenu(profile);
-  return profile;
 }
 
 export async function login(email, password) {
-  return signInWithEmailAndPassword(auth, email, password);
+  const credential = await signInWithEmailAndPassword(auth, email, password);
+  const profile = await getUserProfile(credential.user);
+  if (!profile?.role || profile.active === false) {
+    await signOut(auth);
+    throw new Error("ACCOUNT_NOT_ALLOWED");
+  }
+  return profile;
 }
 
 export async function logout() {

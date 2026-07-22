@@ -1,6 +1,6 @@
 import { auth } from "./firebase-config.js?v=20260630-073";
 import { createStaffUser, listStaffUsers, updateStaffUser } from "./admin-staff-service.js?v=20260704-002";
-import { toast } from "./ui.js?v=20260701-002";
+import { toast } from "./ui.js?v=20260716-009";
 
 const userForm = document.getElementById("userForm");
 const userRows = document.getElementById("userRows");
@@ -20,6 +20,15 @@ function showError(message = "") {
   userError.hidden = !message;
 }
 
+function iconLabel(iconClass, label) {
+  return `<i class="bi ${iconClass}" aria-hidden="true"></i><span>${label}</span>`;
+}
+
+function setButtonContent(button, iconClass, label) {
+  if (!button) return;
+  button.innerHTML = iconLabel(iconClass, label);
+}
+
 function roleSelect(user) {
   return `<select class="input" data-role-uid="${user.uid}">
     ${roleOptions.map(([value, label]) => `<option value="${value}" ${user.role === value ? "selected" : ""}>${label}</option>`).join("")}
@@ -34,7 +43,7 @@ function renderUsers() {
       <td>${user.email || "-"}</td>
       <td>${roleSelect(user)}</td>
       <td style="text-align:center"><input type="checkbox" data-active-uid="${user.uid}" ${user.active !== false ? "checked" : ""}></td>
-      <td><button class="btn btn-primary btn-sm" data-save-user="${user.uid}">บันทึก</button></td>
+      <td><button class="btn btn-primary btn-sm user-save-button" data-save-user="${user.uid}">${iconLabel("bi-floppy", "บันทึก")}</button></td>
     </tr>
   `).join("") : '<tr><td colspan="5"><div class="empty">ยังไม่มีพนักงานในร้าน</div></td></tr>';
 }
@@ -66,7 +75,7 @@ userForm.addEventListener("submit", async event => {
   }
 
   createUserButton.disabled = true;
-  createUserButton.textContent = "กำลังสร้าง...";
+  setButtonContent(createUserButton, "bi-hourglass-split", "กำลังสร้าง...");
 
   try {
     await createStaffUser({
@@ -92,7 +101,7 @@ userForm.addEventListener("submit", async event => {
     toast(message, "error");
   } finally {
     createUserButton.disabled = false;
-    createUserButton.textContent = "สร้างผู้ใช้งาน";
+    setButtonContent(createUserButton, "bi-person-plus", "สร้างผู้ใช้งาน");
   }
 });
 
@@ -105,7 +114,7 @@ userRows.addEventListener("click", async event => {
   if (!user || uid === auth.currentUser?.uid) return;
 
   button.disabled = true;
-  button.textContent = "กำลังบันทึก...";
+  setButtonContent(button, "bi-hourglass-split", "กำลังบันทึก...");
 
   try {
     const displayName = document.querySelector(`[data-name-uid="${uid}"]`).value.trim();
@@ -118,7 +127,7 @@ userRows.addEventListener("click", async event => {
     console.error(error);
     toast("บันทึกพนักงานไม่สำเร็จ", "error");
     button.disabled = false;
-    button.textContent = "บันทึก";
+    setButtonContent(button, "bi-floppy", "บันทึก");
   }
 });
 

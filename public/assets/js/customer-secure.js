@@ -75,4 +75,4 @@ dataService.subscribeOrders = callback => {
   return () => { stopped = true; clearInterval(timer); };
 };
 
-await import("./customer.js?v=20260702-004");
+await import("./customer.js?v=20260713-003");

@@ -1,5 +1,5 @@
-import { syncOfflineSalesToFirebase, retryFailedOfflineSales, getOfflineQueueWorkerSnapshot } from './retail-offline-sale-sync.js?v=20260702-004';
-import { listLocalSales } from './retail-pos-repository.js?v=20260702-005';
+import { syncOfflineSalesToFirebase, retryFailedOfflineSales, getOfflineQueueWorkerSnapshot, saleHasSyncedFlag } from './retail-offline-sale-sync.js?v=20260716-003';
+import { listLocalSales } from './retail-pos-repository.js?v=20260630-081';
 
 const SYNC_EVENT = 'retail-offline-sales-synced';
 const WORKER_EVENT = 'retail-offline-queue-worker';
@@ -9,8 +9,9 @@ let syncTimer;
 let manualSyncRunning = false;
 
 function countSyncStatus() {
-  const rows = listLocalSales();
+  const rows = listLocalSales().filter(sale => String(sale?.status || '').toLowerCase() === 'completed');
   return rows.reduce((acc, sale) => {
+    if (saleHasSyncedFlag(sale)) return acc;
     const status = String(sale?.syncStatus || '').toLowerCase();
     if (status === 'pending') acc.pending += 1;
     else if (status === 'syncing') acc.syncing += 1;

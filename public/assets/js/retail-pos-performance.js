@@ -34,6 +34,10 @@ function cardSearchText(card) {
 
 function applyProductVirtualLimit(grid = document.querySelector(PRODUCT_GRID_SELECTOR), keyword = lastSearchValue) {
   if (!grid) return;
+  if (grid.dataset.renderer === 'catalog') {
+    grid.querySelector('[data-pos-perf-summary]')?.remove();
+    return;
+  }
   const cards = productCards(grid);
   if (!cards.length) return;
   const term = normalizeText(keyword);

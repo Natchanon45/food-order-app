@@ -38,7 +38,103 @@
 }
 
 @media (max-width: 640px) {
-  .pos-header .header-actions { gap: 6px; }
+  .pos-header {
+    align-items: center !important;
+    min-height: 58px !important;
+    padding: 8px 10px !important;
+    gap: 8px !important;
+  }
+
+  .pos-header .app-title {
+    min-width: 0 !important;
+    gap: 8px !important;
+  }
+
+  .pos-header .app-badge {
+    width: 34px !important;
+    height: 30px !important;
+    border-radius: 9px !important;
+    font-size: .72rem !important;
+  }
+
+  .pos-header strong {
+    max-width: 128px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: .95rem !important;
+    line-height: 1.16 !important;
+  }
+
+  .pos-header small {
+    display: none !important;
+  }
+
+  .pos-header .header-actions {
+    flex: 0 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex-wrap: nowrap !important;
+    gap: 5px !important;
+    max-width: calc(100vw - 168px) !important;
+    margin-left: auto !important;
+    overflow: visible !important;
+  }
+
+  .pos-header .header-actions .btn,
+  .pos-header .header-actions .pos-menu-trigger {
+    height: 38px !important;
+    min-height: 38px !important;
+    border-radius: 11px !important;
+    padding: 0 10px !important;
+    font-size: .84rem !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  .pos-header .header-actions .pos-menu-trigger {
+    gap: 5px !important;
+  }
+
+  .pos-header .header-actions .pos-sync-status {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    max-width: none !important;
+    min-width: 70px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    gap: 5px !important;
+    padding: 0 5px !important;
+    border-radius: 11px !important;
+    font-size: .72rem !important;
+    font-weight: 500 !important;
+  }
+
+  .pos-header .header-actions .pos-sync-dot {
+    width: 8px !important;
+    height: 8px !important;
+  }
+
+  .pos-header .header-actions .pos-sync-text {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    white-space: nowrap !important;
+  }
+
+  .pos-header .header-actions .pos-sync-status button {
+    height: 28px !important;
+    min-height: 28px !important;
+    padding: 0 8px !important;
+    border-radius: 999px !important;
+    font-size: .72rem !important;
+    font-weight: 500 !important;
+  }
+
   .pos-header .header-actions a[href="/pos/customer-display"] {
     width: 38px !important;
     height: 38px !important;
@@ -48,5 +144,38 @@
   }
   .pos-header .header-actions a[href="/pos/customer-display"] i.bi-display {
     font-size: 1.18rem !important;
+  }
+}
+
+@media (max-width: 370px) {
+  .pos-header strong {
+    max-width: 104px !important;
+  }
+
+  .pos-header .header-actions {
+    max-width: calc(100vw - 142px) !important;
+    gap: 4px !important;
+  }
+
+  .pos-header .header-actions .btn,
+  .pos-header .header-actions .pos-menu-trigger,
+  .pos-header .header-actions a[href="/pos/customer-display"] {
+    height: 36px !important;
+    min-height: 36px !important;
+  }
+
+  .pos-header .header-actions .pos-menu-trigger {
+    padding: 0 8px !important;
+  }
+
+  .pos-header .header-actions .pos-sync-status {
+    min-width: 64px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+  }
+
+  .pos-header .header-actions a[href="/pos/customer-display"] {
+    width: 36px !important;
+    min-width: 36px !important;
   }
 }
