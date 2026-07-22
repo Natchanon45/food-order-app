@@ -1,12 +1,12 @@
 # Food Order App — Project Context
 
 Repository: Natchanon45/food-order-app
-Branch: feature/retail-pos
-Version: 0.14.95
-Build: 2026.07.23.001
-Milestone: Super Admin Platform Guard Recovery
+Branch: main
+Version: 0.14.96
+Build: 2026.07.23.002
+Milestone: Retail POS Main Integration
 
-Change: Fixed the Super Admin login and `/platform` guard flow. Login now resolves the signed-in Firestore profile before selecting `ROLE_HOME`, so `super_admin` goes directly to `/platform`. The shared role guard now restores page visibility and provides retry/re-login actions if profile loading fails, preventing a permanently blank page.
+Change: Integrated the completed `feature/retail-pos` history into `main`, including the Super Admin `/platform` login recovery, tenant-scoped Retail POS workflows, stable sale and stock duplicate protection, offline synchronization, catalog, tax invoice, and current UI releases.
 
 Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through POS continuous scanner support, plus local POS UI font coverage, menu icon cleanup, UI font-weight tuning, POS drawer title icon cleanup, POS legacy drawer icon guard, POS menu group chevron cleanup, POS menu pseudo-chevron cleanup, POS theme alignment with Order/Delivery, mobile product image-card overlay tuning, mobile POS button layout tuning, payment modal visual tuning, later full tax invoice issuing from an existing short tax invoice/receipt, PromptPay QR payment display for POS/customer screens, payment customer clear hardening, Customer Display PC stacked-left layout tuning, compact PC Customer Display tuning, editable full-tax buyer profiles, full-tax invoice void/cancel workflow, Customer Display PromptPay visual refresh, and Customer Display liquid-glass theme tuning.
 
@@ -32,6 +32,8 @@ Previous build note: Admin Hero Title Icon Cleanup from build `2026.07.16.012` r
 
 Previous build note: POS Catalog Single Renderer from build `2026.07.17.002` remains unchanged for stable 96-item catalog rendering and image/fallback cards.
 
-Next Task: deploy hosting and verify build `20260723-001` with an active Super Admin account, including direct login redirect, platform rendering, retry, and re-login recovery.
+Previous build note: Super Admin Platform Guard Recovery from build `2026.07.23.001` remains unchanged for direct `/platform` login routing and visible recovery actions.
 
-Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
+Next Task: verify build `20260723-002` on production across Super Admin, Order/Delivery, and Retail POS entry points.
+
+Deploy: git pull --rebase origin main && firebase deploy --only hosting

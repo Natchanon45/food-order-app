@@ -1,10 +1,10 @@
 # Food Order App Architecture
 
 Repository: Natchanon45/food-order-app
-Branch: feature/retail-pos
-Version: 0.14.84
-Build: 2026.07.16.009
-Milestone: Print Icon And Mobile Validation Polish
+Branch: main
+Version: 0.14.96
+Build: 2026.07.23.002
+Milestone: Retail POS Main Integration
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 

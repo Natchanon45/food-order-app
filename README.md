@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
-Branch: feature/retail-pos
-Milestone: Super Admin Platform Guard Recovery
-Version: 0.14.95
-Build: 2026.07.23.001
+Branch: main
+Milestone: Retail POS Main Integration
+Version: 0.14.96
+Build: 2026.07.23.002
 
-Change: Repaired the Super Admin login route and blank `/platform` failure mode. Shared login now loads the authenticated profile before resolving `ROLE_HOME`, sending `super_admin` directly to `/platform`. The role guard restores document visibility and presents retry/re-login actions when authentication or profile loading fails. Login and platform cache chains are bumped to `20260723-001`.
+Change: Merged the completed `feature/retail-pos` implementation into `main`. This release carries forward tenant-scoped Retail POS, stable sale IDs, duplicate sale/stock protection, online/offline synchronization, catalog and tax invoice workflows, plus the Super Admin direct `/platform` login and blank-page recovery fix. Developer Panel metadata is bumped to `20260723-002`.
 
 Previous build note: POS Catalog Single Renderer from build `2026.07.17.002` remains unchanged for stable large-catalog rendering, 96-item paging, and consistent image/fallback cards.
 
