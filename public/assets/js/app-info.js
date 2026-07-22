@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.94',
-  build: '2026.07.17.002',
+  version: '0.14.95',
+  build: '2026.07.23.001',
   branch: 'feature/retail-pos',
-  commit: 'POS-CATALOG-SINGLE-RENDERER-01494',
+  commit: 'SUPER-ADMIN-PLATFORM-GUARD-01495',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'POS Catalog Single Renderer',
-  updatedAt: '2026-07-17T03:20:00+07:00',
+  milestone: 'Super Admin Platform Guard Recovery',
+  updatedAt: '2026-07-23T06:10:00+07:00',
   whatsNew: [
-    'Make the catalog renderer the sole owner of the POS product grid',
-    'Keep large catalogs paged at 96 visible products per render',
-    'Prevent the legacy product renderer and performance limiter from replacing image cards'
+    'Redirect Super Admin directly to the platform after login',
+    'Restore page visibility when profile or permission loading fails',
+    'Show retry and re-login recovery actions instead of a blank page'
   ]
 };
 

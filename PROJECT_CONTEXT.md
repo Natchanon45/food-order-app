@@ -2,15 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.94
-Build: 2026.07.17.002
-Milestone: POS Catalog Single Renderer
+Version: 0.14.95
+Build: 2026.07.23.001
+Milestone: Super Admin Platform Guard Recovery
 
-Change: Made `retail-pos-catalog.js` the sole owner of the `/pos` product grid. The sales module now requests a catalog refresh instead of replacing image cards with the legacy text-card renderer, the older performance limiter yields to the catalog renderer, and large catalogs remain paged at 96 products per render.
+Change: Fixed the Super Admin login and `/platform` guard flow. Login now resolves the signed-in Firestore profile before selecting `ROLE_HOME`, so `super_admin` goes directly to `/platform`. The shared role guard now restores page visibility and provides retry/re-login actions if profile loading fails, preventing a permanently blank page.
 
 Completed: P9-B005 Customer Display work and P9-B006 Full Tax Invoice through POS continuous scanner support, plus local POS UI font coverage, menu icon cleanup, UI font-weight tuning, POS drawer title icon cleanup, POS legacy drawer icon guard, POS menu group chevron cleanup, POS menu pseudo-chevron cleanup, POS theme alignment with Order/Delivery, mobile product image-card overlay tuning, mobile POS button layout tuning, payment modal visual tuning, later full tax invoice issuing from an existing short tax invoice/receipt, PromptPay QR payment display for POS/customer screens, payment customer clear hardening, Customer Display PC stacked-left layout tuning, compact PC Customer Display tuning, editable full-tax buyer profiles, full-tax invoice void/cancel workflow, Customer Display PromptPay visual refresh, and Customer Display liquid-glass theme tuning.
 
-Usage: open `/pos` with 400-500 products. Verify the first render contains at most 96 square visual cards, products with images remain image cards, products without images use the square initial fallback, no narrow legacy text cards appear, category/search filters work, and `แสดงเพิ่ม` loads the next batch.
+Usage: sign in with an active `super_admin` account and verify the browser opens `/platform` with the Super Admin Control Center visible. If profile loading is blocked or unavailable, verify the page shows recovery actions instead of a white screen.
 
 Deploy rules: use hosting-only deploy for `public/` asset changes. Deploy functions only when files under `functions/` or function rewrites/routes change. This build only needs hosting deploy.
 
@@ -30,6 +30,8 @@ Previous build note: Retail POS Action Bar Text Only from build `2026.07.16.013`
 
 Previous build note: Admin Hero Title Icon Cleanup from build `2026.07.16.012` remains unchanged for the text-only `/admin` hero heading `จัดการร้าน`.
 
-Next Task: deploy hosting and verify build `20260717-002` with a 400-500 product tenant on desktop and mobile, including category switching, search, product selection, and repeated `แสดงเพิ่ม`.
+Previous build note: POS Catalog Single Renderer from build `2026.07.17.002` remains unchanged for stable 96-item catalog rendering and image/fallback cards.
+
+Next Task: deploy hosting and verify build `20260723-001` with an active Super Admin account, including direct login redirect, platform rendering, retry, and re-login recovery.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting

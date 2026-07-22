@@ -1,11 +1,13 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: POS Catalog Single Renderer
-Version: 0.14.94
-Build: 2026.07.17.002
+Milestone: Super Admin Platform Guard Recovery
+Version: 0.14.95
+Build: 2026.07.23.001
 
-Change: Stabilized `/pos` for large product catalogs. The catalog renderer now owns `#productGrid` before the sales module loads, the sales module requests refreshes without writing legacy text cards over visual cards, and the older 96-card performance limiter no longer competes with catalog paging. The first render remains limited to 96 products, `แสดงเพิ่ม` loads subsequent batches, and image/fallback cards keep a consistent square layout. POS catalog, performance, sales, hold, toast/app-info cache chains are bumped to `20260717-002`.
+Change: Repaired the Super Admin login route and blank `/platform` failure mode. Shared login now loads the authenticated profile before resolving `ROLE_HOME`, sending `super_admin` directly to `/platform`. The role guard restores document visibility and presents retry/re-login actions when authentication or profile loading fails. Login and platform cache chains are bumped to `20260723-001`.
+
+Previous build note: POS Catalog Single Renderer from build `2026.07.17.002` remains unchanged for stable large-catalog rendering, 96-item paging, and consistent image/fallback cards.
 
 Previous build note: Tax Sync Permission And Cross Tab Lock from build `2026.07.16.017` remains unchanged for tenant tax permissions, TAX running numbers, explicit retry, and cross-tab sync protection.
 
