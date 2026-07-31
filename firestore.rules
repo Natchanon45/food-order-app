@@ -68,7 +68,7 @@ service cloud.firestore {
         && request.resource.data.role is string
         && tenantHasRole(tenantId, [request.resource.data.role])
         && request.resource.data.active is bool
-        && request.resource.data.keys().hasOnly(['token', 'uid', 'email', 'role', 'tenantId', 'deviceId', 'userAgent', 'active', 'updatedAt']);
+        && request.resource.data.keys().hasOnly(['token', 'uid', 'email', 'role', 'tenantId', 'deviceId', 'userAgent', 'active', 'updatedAt', 'invalidatedAt', 'errorCode']);
     }
 
     match /menus/{menuId} { allow read: if true; allow create, update, delete: if adminRole(); }

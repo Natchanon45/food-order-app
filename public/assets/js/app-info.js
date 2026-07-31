@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.15.17',
-  build: '2026.08.01.099',
+  version: '0.15.18',
+  build: '2026.08.01.100',
   branch: 'feature/retail-pos',
-  commit: 'TENANT-PUSH-TOKEN-RULES-01517',
+  commit: 'TAKEAWAY-ALERT-VALIDATION-01518',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Secure Push Notification Enrollment',
-  updatedAt: '2026-08-01T04:20:00+07:00',
+  milestone: 'Take Away Kitchen Alerts',
+  updatedAt: '2026-08-01T04:35:00+07:00',
   whatsNew: [
-    'Allow tenant members to register only their own Push token',
-    'Validate token ownership, tenant, role, document ID, and fields',
-    'Show actionable Push Notification setup errors'
+    'Play the enabled kitchen alert for new Take Away orders',
+    'Show red validation on both missing pickup-contact fields',
+    'Label the accepted-order action as เริ่มทำ'
   ]
 };
 

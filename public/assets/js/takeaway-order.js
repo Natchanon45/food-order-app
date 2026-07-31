@@ -107,11 +107,29 @@ cartList.addEventListener("input", event => { const id = event.target.dataset.no
 document.querySelector("#searchInput").addEventListener("input", () => { currentPage = 1; renderMenus(); });
 window.addEventListener("resize", () => { currentPage = 1; renderMenus(); });
 
+let customerValidationAttempted = false;
+
+function updateCustomerValidation(force = false) {
+  if (force) customerValidationAttempted = true;
+  const nameInput = document.querySelector("#customerName");
+  const phoneInput = document.querySelector("#customerPhone");
+  const valid = Boolean(nameInput.value.trim() || phoneInput.value.trim());
+  [nameInput, phoneInput].forEach(input => {
+    if (valid || !customerValidationAttempted) input.removeAttribute("aria-invalid");
+    else input.setAttribute("aria-invalid", "true");
+  });
+  return valid;
+}
+
+["#customerName", "#customerPhone"].forEach(selector => {
+  document.querySelector(selector).addEventListener("input", () => updateCustomerValidation(false));
+});
+
 submitButton.addEventListener("click", async () => {
   if (confirming || submitting) return;
   const customerName = document.querySelector("#customerName").value.trim();
   const customerPhone = document.querySelector("#customerPhone").value.trim();
-  if (!customerName && !customerPhone) { toast("กรุณากรอกชื่อหรือเบอร์โทร", "error"); document.querySelector("#customerName").focus(); return; }
+  if (!updateCustomerValidation(true)) { toast("กรุณากรอกชื่อหรือเบอร์โทร", "error"); document.querySelector("#customerName").focus(); return; }
   const items = [...cart.values()].map(({ id, name, price, qty, note }) => ({ menuId: id, name, price: Number(price), qty, note: note || "" }));
   if (!items.length) return;
   const totalAmount = items.reduce((sum, item) => sum + item.price * item.qty, 0);

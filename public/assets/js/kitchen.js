@@ -2,7 +2,7 @@ import "./sweet-dialog.js?v=20260731-080";
 import "./kitchen-item-serve.js?v=20260701-014";
 import { dataService, usingDemoMode } from "./data-service.js?v=20260701-009";
 import { money, statusLabel, formatTime, toast } from "./ui.js?v=20260731-080";
-import { observeDeliveryOrders } from "./delivery-notifier.js?v=20260801-099";
+import { observeDeliveryOrders } from "./delivery-notifier.js?v=20260801-100";
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 
 if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
@@ -44,7 +44,7 @@ function queueSequence(order) { const explicit = Number(order?.queueSequence); i
 function queueBadge(order) { return `<span class="order-queue-badge"><small>เลขคิว</small><strong>${order?.queueNo || "-"}</strong></span>`; }
 function nextActions(status, orderType) {
   if (status === "pending") return [["accepted", "รับออเดอร์", "btn-primary", "check", "kitchen-accept-action"]];
-  if (status === "accepted") return [["cooking", "กำลังทำ", "btn-warning", "hourglass-split", "kitchen-start-action"]];
+  if (status === "accepted") return [["cooking", "เริ่มทำ", "btn-warning", "hourglass-split", "kitchen-start-action"]];
   if (status === "cooking") return [["ready", orderType === "delivery" ? "พร้อมจัดส่ง" : "พร้อมเสิร์ฟ", "btn-primary", "check-circle", "kitchen-ready-action"]];
   if (status === "ready") return [["served", orderType === "delivery" ? "ส่งให้ไรเดอร์แล้ว" : "เสิร์ฟแล้ว", "btn-dark", "check-circle", "kitchen-served-action"]];
   return [];

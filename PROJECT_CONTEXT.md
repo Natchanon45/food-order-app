@@ -2,8 +2,14 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.15.17
-Build: 2026.08.01.099
+Version: 0.15.18
+Build: 2026.08.01.100
+
+Change: Fixed the reported Take Away operational gaps. The Kitchen/Cashier real-time observer now recognizes new Take Away orders and plays the already enabled alert sound; the Firestore order-created notification uses Take Away queue/customer wording instead of a blank table. The public Take Away form marks both contact alternatives red when both are empty, and the accepted-order button reads `เริ่มทำ`.
+
+Firebase boundary: Notification delivery still uses the existing tenant order trigger and validated tenant token documents. Stable order/sale/queue IDs, duplicate protection, online/offline behavior, and existing order state transitions remain unchanged.
+
+Deploy rules: deploy Hosting, Functions, and Firestore rules. Load cache build `20260801-100` with a hard refresh after deployment.
 
 Change: Fixed Push Notification enrollment. Tenant members can now create or refresh only their own validated token document under `tenants/{tenantId}/notificationTokens`, while client listing and deletion remain denied. The UI reports actionable Firebase Messaging, Service Worker, profile, browser-permission, and Firestore authorization errors instead of one generic failure.
 

@@ -7,7 +7,7 @@ import {
   getDownloadURL,
 } from "./firebase-config.js?v=20260630-073";
 import { money, statusLabel, formatTime, toast } from "./ui.js?v=20260731-080";
-import { observeDeliveryOrders } from "./delivery-notifier.js?v=20260801-099";
+import { observeDeliveryOrders } from "./delivery-notifier.js?v=20260801-100";
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 import { getStoredTenant } from "./tenant-context.js";
 

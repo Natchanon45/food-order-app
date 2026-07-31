@@ -1,9 +1,15 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Secure Push Notification Enrollment
-Version: 0.15.17
-Build: 2026.08.01.099
+Milestone: Take Away Kitchen Alerts
+Version: 0.15.18
+Build: 2026.08.01.100
+
+Change: Added Take Away orders to the enabled foreground kitchen alert, corrected Take Away Push titles and queue details, applied red invalid styling to both pickup-contact inputs when neither name nor phone is supplied, and renamed the accepted-order action from `กำลังทำ` to `เริ่มทำ` while keeping the resulting cooking status unchanged.
+
+Firebase safety: The existing tenant-scoped order trigger and notification token collection remain authoritative. No order/sale/queue ID generation, duplicate protection, stock, payment, or offline workflow changed.
+
+Deploy: Firebase Hosting, Functions, and Firestore rules. Hard refresh after deployment to load cache build `20260801-100`.
 
 Change: Enabled Firebase Web Push registration for signed-in tenant members. Firestore now permits each user to create or update only their own tenant-scoped notification token, validates the token owner, tenant, role, document ID, and allowed fields, and keeps token listing/deletion closed to browser clients. Push setup errors now distinguish permission, profile, Service Worker, FCM token, and Firestore-rule failures.
 
