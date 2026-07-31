@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.15.12',
-  build: '2026.07.31.094',
+  version: '0.15.13',
+  build: '2026.07.31.095',
   branch: 'feature/retail-pos',
-  commit: 'RETAIL-NATIVE-DIALOG-REPLACEMENT-01512',
+  commit: 'SHARED-DIALOG-ACTION-LAYOUT-01513',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail Native Dialog Replacement',
-  updatedAt: '2026-07-31T23:35:00+07:00',
+  milestone: 'Shared Dialog Action Layout',
+  updatedAt: '2026-07-31T23:45:00+07:00',
   whatsNew: [
-    'Replace native alerts and confirmations in stock movement, purchasing, customers, and settings',
-    'Use the shared styled dialog with explicit warning, cancel, and confirmation actions',
-    'Show a green check-circle icon when a permission group can be selected in full'
+    'Keep confirmation actions side by side with cancel on the left and confirm on the right',
+    'Add a consistent 8 px gap between every shared-dialog icon and its label',
+    'Hide the cancel action correctly for one-action alert dialogs'
   ]
 };
 

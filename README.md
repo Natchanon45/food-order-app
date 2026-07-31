@@ -1,15 +1,17 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Retail Native Dialog Replacement
-Version: 0.15.12
-Build: 2026.07.31.094
+Milestone: Shared Dialog Action Layout
+Version: 0.15.13
+Build: 2026.07.31.095
 
-Change: Replaced browser-native messages shown in the supplied Retail POS screens with the shared styled dialog: empty CSV export on stock movements and purchases, customer deletion and related errors, and store-setting reset confirmation. Permission-group “เลือกทั้งหมด” now uses an explicit green check-circle, while “ยกเลิกทั้งหมด” retains a red x-circle. Data writes and permission behavior remain unchanged.
+Change: Standardized shared Dialog actions across the system. Two-action dialogs now keep “ยกเลิก” on the left and the confirmation action on the right, every action uses an 8 px icon-to-label gap, and one-action alerts correctly hide the unused cancel button.
 
 Firebase safety: This build changes presentation and interaction flow only. Product/category writes remain tenant-scoped through `tenants/{tenantId}`; the local stock-history clear action still clears local history only. Sales, stock quantities, sale stock movements, stable identifiers, duplicate protection, local-first checkout, offline sale queues, VAT, payments, returns, and tax invoices are unchanged.
 
-Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260731-094`.
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260731-095`.
+
+Previous build — Retail Native Dialog Replacement (`2026.07.31.094`): Replaced native Retail POS alerts and confirmations with shared styled dialogs and clarified permission-group select-all icons.
 
 Previous build — Tax Issue Title Icon Spacing (`2026.07.31.093`): Separated the receipt icon and late tax-invoice title with explicit elements and consistent spacing.
 

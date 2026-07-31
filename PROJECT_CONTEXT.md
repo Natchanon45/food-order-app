@@ -2,15 +2,17 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.15.12
-Build: 2026.07.31.094
+Version: 0.15.13
+Build: 2026.07.31.095
 
-Change: Replaced the native browser alert/confirm flows shown on Retail POS stock movements, purchases, customers, and store settings with the shared styled dialog. Permission-group “เลือกทั้งหมด” renders an explicit green check-circle and switches to a red x-circle for “ยกเลิกทั้งหมด”. Export, delete, reset, Firebase, and permission operations retain their existing behavior.
+Change: Corrected the shared Dialog action layout system-wide. Confirmation dialogs render cancel on the left and confirm on the right, action icons have a consistent 8 px separation from their labels, and alert-only dialogs no longer expose the hidden cancel action.
 
 Firebase boundary: Product and category writes remain tenant-scoped through `tenants/{tenantId}`. Clearing stock history still affects only the local movement-history list and never changes product stock. Sales, sale stock movements, stable sale/order/queue IDs, duplicate protection, local-first checkout, offline sale sync, VAT, payments, returns, and tax invoices remain authoritative and unchanged.
 
-Deploy rules: Hosting only. Load cache build `20260731-094` with a hard refresh after deployment.
-Milestone: Retail Native Dialog Replacement
+Deploy rules: Hosting only. Load cache build `20260731-095` with a hard refresh after deployment.
+Milestone: Shared Dialog Action Layout
+
+Previous build (`2026.07.31.094`): Replaced native Retail POS alerts and confirmations with the shared styled dialog and clarified select-all permission icons.
 
 Previous build (`2026.07.31.093`): Separated the receipt icon and late tax-invoice title using explicit elements, flex alignment, and a 10 px gap.
 
