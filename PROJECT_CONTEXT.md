@@ -2,15 +2,17 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.15.15
-Build: 2026.08.01.097
+Version: 0.15.16
+Build: 2026.08.01.098
 
-Change: Product pagination now uses accessible arrow-only previous/next controls. Catalog sorting no longer rewrites every product: it persists the category-order setting plus only reordered products in bounded Firestore batches, surfaces timeout/failure feedback, and restores the save control in every completion path.
+Change: Fixed the settings-source mismatch. Tenant Firestore `store`, `receipt`, `tax`, and `payment` documents now override stale local cache values on the settings screen, including explicit `no` and empty VAT/PromptPay fields. The resolved authoritative configuration is then copied to the tenant-scoped and compatibility local caches used by POS and customer display.
 
-Firebase boundary: Sort writes remain tenant-scoped through `tenants/{tenantId}` and retain stable product/category IDs and all non-sort fields. Sales, sale stock movements, stable sale/order/queue IDs, duplicate protection, local-first checkout, offline sale sync, VAT, payments, returns, and tax invoices remain authoritative and unchanged.
+Firebase boundary: No schema or write path changed. Settings remain under `tenants/{tenantId}/settings`; this update only corrects read precedence and local cache refresh. Sales, stock movements, stable sale/order/queue IDs, duplicate protection, offline sync, payments, returns, and tax invoices remain unchanged.
 
-Deploy rules: Hosting only. Load cache build `20260801-097` with a hard refresh after deployment.
-Milestone: Product Pagination and Sort Save
+Deploy rules: Hosting only. Load cache build `20260801-098` with a hard refresh after deployment.
+Milestone: Authoritative Store Settings
+
+Previous build (`2026.08.01.097`): Added icon-only product pagination and bounded, changed-record-only catalog sorting saves.
 
 Previous build (`2026.08.01.096`): Improved mobile received-cash alignment, shared sales-export Dialog behavior, and global red invalid-control styling.
 

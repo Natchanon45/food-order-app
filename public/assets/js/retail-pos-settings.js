@@ -85,7 +85,21 @@ async function readSettings() {
       getRecord(RetailCollections.settings, "tax"),
       getRecord(RetailCollections.settings, "payment")
     ]);
-    return { ...defaults, ...(store || {}), ...(receipt || {}), ...(tax || {}), ...(payment || {}), ...local };
+    const tenantId = getTenantId();
+    const resolved = {
+      ...defaults,
+      ...local,
+      ...(store || {}),
+      ...(receipt || {}),
+      ...(tax || {}),
+      ...(payment || {}),
+      tenantId,
+      shopId: tenantId,
+      syncStatus: "synced"
+    };
+    localStorage.setItem(tenantSettingsKey(), JSON.stringify(resolved));
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(resolved));
+    return resolved;
   } catch (error) {
     console.warn("[retail-pos-settings] firebase settings fallback", error);
     return local;

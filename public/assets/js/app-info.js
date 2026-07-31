@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.15.15',
-  build: '2026.08.01.097',
+  version: '0.15.16',
+  build: '2026.08.01.098',
   branch: 'feature/retail-pos',
-  commit: 'PRODUCT-PAGINATION-SORT-SAVE-01515',
+  commit: 'AUTHORITATIVE-STORE-SETTINGS-01516',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Product Pagination and Sort Save',
-  updatedAt: '2026-08-01T03:45:00+07:00',
+  milestone: 'Authoritative Store Settings',
+  updatedAt: '2026-08-01T04:00:00+07:00',
   whatsNew: [
-    'Show icon-only previous and next controls in product pagination',
-    'Persist only reordered products instead of rewriting the entire catalog',
-    'Restore the sort-save button after success, failure, or timeout'
+    'Use Firestore as the authoritative VAT and PromptPay configuration',
+    'Prevent stale browser settings from overriding explicit remote values',
+    'Refresh the tenant-local settings cache from the resolved remote configuration'
   ]
 };
 

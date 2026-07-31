@@ -1,15 +1,17 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Product Pagination and Sort Save
-Version: 0.15.15
-Build: 2026.08.01.097
+Milestone: Authoritative Store Settings
+Version: 0.15.16
+Build: 2026.08.01.098
 
-Change: Replaced the product pagination previous/next labels with accessible arrow-only controls. Product/category sorting now saves only the settings and products whose order changed, uses bounded Firestore batches, reports a timeout, and always restores the save button instead of appearing stuck while rewriting the whole catalog.
+Change: Corrected the Retail POS settings read order so tenant Firestore documents are authoritative for VAT registration and PromptPay enablement, ID, and account name. Explicit remote `no` and empty values are preserved, while stale browser data can no longer overwrite the settings form; the resolved configuration refreshes the local cache used by POS and customer-display flows.
 
-Firebase safety: Sort writes remain tenant-scoped through `tenants/{tenantId}` and preserve existing product IDs, category IDs, stock, prices, and metadata. Sales, stock movements, stable identifiers, duplicate protection, local-first checkout, offline sale queues, VAT, payments, returns, and tax invoices are unchanged.
+Firebase safety: This is a tenant-scoped settings-read correction. It does not change Firestore paths, settings writes, sales, stock movements, stable identifiers, duplicate protection, local-first checkout, offline sale queues, payments, returns, or tax-invoice records.
 
-Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260801-097`.
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260801-098`.
+
+Previous build — Product Pagination and Sort Save (`2026.08.01.097`): Added arrow-only product pagination and optimized catalog-order persistence to save only changed records.
 
 Previous build — Mobile Payment Dialog and Validation (`2026.08.01.096`): Right-aligned received cash on mobile, replaced the sales-export browser message with the shared Dialog, and standardized invalid controls in red.
 
