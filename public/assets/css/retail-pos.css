@@ -243,6 +243,17 @@ dialog .dialog-actions { position: sticky; bottom: 0; z-index: 2; margin: 16px -
   display: none !important;
 }
 
+/* Shared checkbox theme: keep native accessibility while matching the green UI. */
+input[type="checkbox"] {
+  width: 20px !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+  padding: 0 !important;
+  accent-color: var(--green, #159447) !important;
+  cursor: pointer;
+}
+
 @media (max-width: 900px) {
   .pos-layout { grid-template-columns: 1fr; }
   .cart-panel { min-height: 420px; }

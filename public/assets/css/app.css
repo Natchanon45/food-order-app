@@ -261,6 +261,17 @@ body.table-order-page .cart-bar {
 .return-receipt-head h1 svg {
   display: none !important;
 }
+
+/* Shared checkbox theme: keep native accessibility while matching the green UI. */
+input[type="checkbox"] {
+  width: 20px !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+  padding: 0 !important;
+  accent-color: var(--green, #159447) !important;
+  cursor: pointer;
+}
 @media (max-width: 760px) { .grid-2, .grid-3, .nav-cards, .qr-grid { grid-template-columns: 1fr 1fr; } .table-list { font-size: 13px; } }
 @media (max-width: 480px) {
   .grid-2, .grid-3, .nav-cards, .qr-grid { grid-template-columns: 1fr; }

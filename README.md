@@ -1,15 +1,17 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Admin Users Laravel Parity
-Version: 0.15.8
-Build: 2026.07.31.090
+Milestone: Global Green Checkbox Theme
+Version: 0.15.9
+Build: 2026.07.31.091
 
-Change: Ported the Laravel employee-management presentation to Firebase `/admin/users`: staff Hero with an add action, compact employee list card, and a responsive create-user modal with matching validation layout and actions. Firebase staff creation, tenant-scoped listing, role updates, active-state updates, and current-user protection remain unchanged.
+Change: Standardized native checkboxes across Order/Delivery and Retail POS with the primary green theme and a slightly larger 20 × 20 px control. Native accessibility, keyboard interaction, checked state, validation, and existing form behavior remain unchanged.
 
 Firebase safety: This build changes presentation and interaction flow only. Product/category writes remain tenant-scoped through `tenants/{tenantId}`; the local stock-history clear action still clears local history only. Sales, stock quantities, sale stock movements, stable identifiers, duplicate protection, local-first checkout, offline sale queues, VAT, payments, returns, and tax invoices are unchanged.
 
-Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260731-088`.
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260731-091`.
+
+Previous build — Admin Users Laravel Parity (`2026.07.31.090`): Ported the Laravel employee-management presentation to Firebase `/admin/users` with a staff Hero, compact employee list, and responsive create-user modal while preserving Firebase staff workflows.
 
 Previous build — Category Pagination Number Cleanup (`2026.07.31.087`): Category pagination on `/pos/products` renders page buttons as plain numbers only while previous/next controls, search, filters, sorting, page-size selection, and navigation behavior remain unchanged.
 
