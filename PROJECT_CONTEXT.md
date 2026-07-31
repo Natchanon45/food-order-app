@@ -2,15 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.15.7
-Build: 2026.07.31.089
+Version: 0.15.8
+Build: 2026.07.31.090
 
-Change: Polished shared dialog and cashier UI parity: stable left/right dialog actions, enforced hidden actions, distinct cancel/destructive icons, no duplicated Take Away controls inside the cashier Hero, and the shared room-service icon for `ออกโต๊ะ`.
+Change: Matched Firebase `/admin/users` to the Laravel employee-management UI. The inline create form moved into the responsive add-employee dialog, the Hero now carries the add action and team kicker, and the employee table uses the same compact list-card layout.
 
 Firebase boundary: Product and category writes remain tenant-scoped through `tenants/{tenantId}`. Clearing stock history still affects only the local movement-history list and never changes product stock. Sales, sale stock movements, stable sale/order/queue IDs, duplicate protection, local-first checkout, offline sale sync, VAT, payments, returns, and tax invoices remain authoritative and unchanged.
 
-Deploy rules: Hosting only. Load cache build `20260731-089` with a hard refresh after deployment.
-Milestone: Dialog and Cashier Icon Polish
+Deploy rules: Hosting only. Load cache build `20260731-090` with a hard refresh after deployment.
+Milestone: Admin Users Laravel Parity
 
 Previous build (`2026.07.31.087`): Category pagination on `/pos/products` shows page buttons as plain numbers only while previous/next controls, search, filters, sorting, page-size selection, and page navigation remain unchanged.
 

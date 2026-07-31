@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Dialog and Cashier Icon Polish
-Version: 0.15.7
-Build: 2026.07.31.089
+Milestone: Admin Users Laravel Parity
+Version: 0.15.8
+Build: 2026.07.31.090
 
-Change: Corrected shared dialog actions and cashier presentation. Dialog buttons now keep a stable left/right layout, hidden actions stay hidden, and destructive confirmation uses a trash icon distinct from cancel. The legacy cashier script no longer duplicates Take Away actions in the Hero, while the user menu keeps the shared room-service icon for `ออกโต๊ะ`.
+Change: Ported the Laravel employee-management presentation to Firebase `/admin/users`: staff Hero with an add action, compact employee list card, and a responsive create-user modal with matching validation layout and actions. Firebase staff creation, tenant-scoped listing, role updates, active-state updates, and current-user protection remain unchanged.
 
 Firebase safety: This build changes presentation and interaction flow only. Product/category writes remain tenant-scoped through `tenants/{tenantId}`; the local stock-history clear action still clears local history only. Sales, stock quantities, sale stock movements, stable identifiers, duplicate protection, local-first checkout, offline sale queues, VAT, payments, returns, and tax invoices are unchanged.
 

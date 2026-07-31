@@ -7,6 +7,10 @@ const userRows = document.getElementById("userRows");
 const userCount = document.getElementById("userCount");
 const createUserButton = document.getElementById("createUserButton");
 const userError = document.getElementById("userError");
+const userDialog = document.getElementById("userDialog");
+const openCreateUserModal = document.getElementById("openCreateUserModal");
+const closeCreateUserModal = document.getElementById("closeCreateUserModal");
+const cancelCreateUserModal = document.getElementById("cancelCreateUserModal");
 let users = [];
 
 const roleOptions = [
@@ -19,6 +23,26 @@ function showError(message = "") {
   userError.textContent = message;
   userError.hidden = !message;
 }
+
+function resetCreateForm() {
+  userForm.reset();
+  document.getElementById("active").checked = true;
+  showError("");
+}
+
+function closeCreateDialog() {
+  if (userDialog.open) userDialog.close();
+}
+
+openCreateUserModal.addEventListener("click", () => {
+  resetCreateForm();
+  userDialog.showModal();
+  requestAnimationFrame(() => document.getElementById("displayName").focus());
+});
+
+closeCreateUserModal.addEventListener("click", closeCreateDialog);
+cancelCreateUserModal.addEventListener("click", closeCreateDialog);
+userDialog.addEventListener("close", resetCreateForm);
 
 function iconLabel(iconClass, label) {
   return `<i class="bi ${iconClass}" aria-hidden="true"></i><span>${label}</span>`;
@@ -86,8 +110,7 @@ userForm.addEventListener("submit", async event => {
       active: document.getElementById("active").checked
     });
 
-    userForm.reset();
-    document.getElementById("active").checked = true;
+    closeCreateDialog();
     toast("สร้างพนักงานเรียบร้อยแล้ว");
     await loadUsers();
   } catch (error) {
