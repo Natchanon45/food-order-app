@@ -70,6 +70,15 @@ service cloud.firestore {
         && request.resource.data.active is bool
         && request.resource.data.keys().hasOnly(['token', 'uid', 'email', 'role', 'tenantId', 'deviceId', 'userAgent', 'active', 'updatedAt', 'invalidatedAt', 'errorCode']);
     }
+    function validPublicWaitingQueue() {
+      return request.resource.data.publicToken is string
+        && request.resource.data.publicToken.size() >= 20
+        && request.resource.data.tenantId is string
+        && request.resource.data.queueNumber is string
+        && request.resource.data.partySize is number
+        && request.resource.data.partySize > 0
+        && request.resource.data.status in ['waiting', 'called', 'seated', 'skipped', 'cancelled'];
+    }
 
     match /menus/{menuId} { allow read: if true; allow create, update, delete: if adminRole(); }
     match /settings/{settingId} { allow read: if true; allow create, update, delete: if adminRole(); }
@@ -79,6 +88,15 @@ service cloud.firestore {
     match /deliveryCustomers/{customerId} { allow read, write: if adminRole(); }
     match /users/{userId} { allow read: if signedIn() && (request.auth.uid == userId || superAdminRole()); allow create, update, delete: if superAdminRole(); }
     match /tenantSlugs/{slug} { allow read: if true; allow write: if superAdminRole(); }
+    match /publicWaitingQueues/{publicToken} {
+      allow get: if true;
+      allow list: if false;
+      allow create, update: if signedIn()
+        && publicToken == request.resource.data.publicToken
+        && tenantHasRole(request.resource.data.tenantId, ['owner', 'admin', 'manager', 'cashier', 'super_admin'])
+        && validPublicWaitingQueue();
+      allow delete: if false;
+    }
 
     match /tenants/{tenantId} {
       allow read: if true; allow create, update, delete: if superAdminRole();
@@ -102,7 +120,8 @@ service cloud.firestore {
       match /returns/{returnId} { allow read: if tenantMember(tenantId); allow create: if retailTenantWrite(tenantId) && validRetailReturn(tenantId); allow update, delete: if false; }
       match /taxInvoices/{invoiceId} { allow read: if tenantMember(tenantId); allow create: if retailTenantWrite(tenantId) && tenantPayloadMatches(tenantId); allow update: if retailTenantWrite(tenantId) && tenantPayloadMatches(tenantId) && tenantResourceMatches(tenantId); allow delete: if false; }
       match /taxBuyerProfiles/{profileId} { allow read: if tenantMember(tenantId); allow create: if retailTenantWrite(tenantId) && tenantPayloadMatches(tenantId); allow update: if retailTenantWrite(tenantId) && tenantPayloadMatches(tenantId) && tenantResourceMatches(tenantId); allow delete: if signedIn() && tenantHasRole(tenantId, ['owner', 'admin', 'manager', 'cashier', 'super_admin']) && tenantResourceMatches(tenantId); }
-      match /tables/{tableId} { allow read: if true; allow create, delete: if tenantAdminRole(tenantId); allow update: if tenantAdminRole(tenantId) || tenantCashierRole(tenantId) || (tenantKitchenRole(tenantId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'orderToken', 'sessionStartedAt', 'currentRound', 'orderIds', 'updatedAt', 'tenantId', 'shopId']) && resource.data.status == 'occupied' && request.resource.data.status == 'available' && request.resource.data.orderToken == '') || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentRound', 'orderIds', 'updatedAt', 'tenantId', 'shopId']) && resource.data.status == 'occupied' && request.resource.data.orderToken == resource.data.orderToken && request.resource.data.orderIds is list); }
+      match /tables/{tableId} { allow read: if true; allow create, delete: if tenantAdminRole(tenantId); allow update: if tenantAdminRole(tenantId) || tenantCashierRole(tenantId) || tenantHasRole(tenantId, ['manager']) || (tenantKitchenRole(tenantId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'orderToken', 'sessionStartedAt', 'currentRound', 'orderIds', 'updatedAt', 'tenantId', 'shopId']) && resource.data.status == 'occupied' && request.resource.data.status == 'available' && request.resource.data.orderToken == '') || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentRound', 'orderIds', 'updatedAt', 'tenantId', 'shopId']) && resource.data.status == 'occupied' && request.resource.data.orderToken == resource.data.orderToken && request.resource.data.orderIds is list); }
+      match /waitingQueues/{queueId} { allow read, create, update: if tenantHasRole(tenantId, ['owner', 'admin', 'manager', 'cashier', 'super_admin']) && (request.method == 'get' || request.method == 'list' || tenantPayloadMatches(tenantId)); allow delete: if false; }
       match /orders/{orderId} { allow get: if true; allow list: if tenantStaffRole(tenantId) || activeTenantTableOrder(tenantId); allow create: if superAdminRole() || validPublicTenantDelivery(tenantId) || validPublicTenantTakeaway(tenantId) || validTenantTableOrder(tenantId); allow update: if tenantCashierRole(tenantId) || tenantKitchenRole(tenantId) || tenantAdminRole(tenantId); allow delete: if superAdminRole() || tenantHasRole(tenantId, ['owner', 'super_admin']); }
       match /deliveryCustomers/{customerId} { allow read, write: if tenantAdminRole(tenantId); }
       match /notificationTokens/{tokenId} {

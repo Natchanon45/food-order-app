@@ -2,8 +2,14 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.15.20
-Build: 2026.08.01.102
+Version: 0.16.0
+Build: 2026.08.01.103
+
+Change: Implemented Waiting Table Queue MVP for walk-in guests. Staff roles owner/admin/manager/cashier can create tenant-scoped queues, call or pause them, and seat an active queue at an available table. The operation changes the table to `occupied`, creates its stable session token, and marks the queue seated in the same Firestore transaction. `/queue?token=...` provides a PII-free real-time customer view.
+
+Firebase boundary: Staff queue data lives at `tenants/{tenantId}/waitingQueues/{queueId}`. Public status lives at `publicWaitingQueues/{publicToken}` with get-only public access, denied collection listing, validated staff writes, and no customer contact fields. Creating or mutating a queue requires online Firestore so duplicate queue/table transitions cannot be produced; unrelated local-first POS and offline order workflows are unchanged.
+
+Deploy rules: deploy Hosting and Firestore rules. Load cache build `20260801-103` with a hard refresh after deployment.
 
 Change: Compacted the Cashier Take Away toolbar on screens up to 600 px. Its title remains left-aligned while the QR, new Take Away, and copy-link controls stay together on the right of the same row as 38 px icon-only actions, reducing the toolbar to one line where available.
 

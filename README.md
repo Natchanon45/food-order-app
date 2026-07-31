@@ -2,8 +2,14 @@
 
 Branch: feature/retail-pos
 Milestone: Compact Cashier Tools
-Version: 0.15.20
-Build: 2026.08.01.102
+Version: 0.16.0
+Build: 2026.08.01.103
+
+Change: Added the first Waiting Table Queue release. Authorized staff can add a walk-in party, preserve arrival order, see party size and suitable free tables, call or pause a queue, and atomically seat the queue into the existing table session. Customers receive a privacy-safe token link that updates waiting, called, and seated status in real time without exposing their name or phone number.
+
+Firebase safety: Private queue records are tenant-scoped under `tenants/{tenantId}/waitingQueues`; public tracking mirrors contain no customer PII and permit direct reads by unguessable token only. Seating verifies both queue and table state in one Firestore transaction, creates the existing stable table token once, and blocks duplicate seating. Queue mutations intentionally require connectivity to prevent split-brain numbering; all existing order, sale, stock, and offline workflows remain unchanged.
+
+Deploy: Firebase Hosting and Firestore rules. Hard refresh after deployment to load cache build `20260801-103`.
 
 Change: Kept all three Take Away tool buttons right-aligned on the same row as the `เครื่องมือสั่งกลับบ้าน` title on mobile. Mobile actions use compact 38 px icon buttons, a 6 px gap, and tighter bar padding to reclaim vertical workspace while retaining accessible labels and tooltips.
 

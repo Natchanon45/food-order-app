@@ -116,6 +116,7 @@ function roleMenuLinks(profile) {
   }
 
   const links = [{ href: "/", icon: "home", label: "หน้าหลัก" }];
+  if (["owner", "admin", "manager", "cashier"].includes(profile.role)) links.push({ href: "/cashier/waiting-queue", icon: "people", label: "คิวรอโต๊ะ" });
   if (["owner", "cashier"].includes(profile.role)) links.push({ href: "/cashier/table-qr", icon: "easel2", label: "ออกโต๊ะ" });
   if (["owner", "admin"].includes(profile.role)) links.push({ href: "/admin", icon: "settings", label: "จัดการระบบร้าน" });
   if (profile.role === "owner") {

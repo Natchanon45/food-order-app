@@ -31,6 +31,8 @@
       { "source": "/order/**", "destination": "/order/index.html" },
       { "source": "/kitchen/**", "destination": "/kitchen/index.html" },
       { "source": "/cashier/receipt/**", "destination": "/cashier/receipt/index.html" },
+      { "source": "/cashier/waiting-queue/**", "destination": "/cashier/waiting-queue/index.html" },
+      { "source": "/queue/**", "destination": "/queue/index.html" },
       { "source": "/cashier/table-qr/**", "destination": "/cashier/table-qr/index.html" },
       { "source": "/cashier/**", "destination": "/cashier/index.html" },
       { "source": "/pos/login", "destination": "/pos/login/index.html" },

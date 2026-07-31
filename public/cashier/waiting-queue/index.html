@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#159447">
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260731-079">
+  <link rel="stylesheet" href="/assets/css/waiting-queue.css?v=20260801-103">
+  <title>คิวรอโต๊ะ</title>
+</head>
+<body class="order-delivery-workspace waiting-queue-page" data-roles="cashier,admin,manager">
+  <header class="app-header"><div class="brand"><span class="brand-mark">FO</span>คิวรอโต๊ะ</div><a class="btn btn-sm" href="/cashier">ย้อนกลับ</a></header>
+  <main class="container waiting-shell">
+    <section class="hero waiting-hero"><div><small>บริการหน้าร้าน</small><h1>จัดคิวรอโต๊ะ</h1><p>เรียกตามลำดับอย่างเป็นธรรม และเลือกโต๊ะที่เหมาะกับจำนวนลูกค้า</p></div><span class="waiting-live"><i class="bi bi-broadcast"></i> Real-time</span></section>
+    <section class="card waiting-add-card">
+      <div class="section-title"><div><h2>เพิ่มคิวใหม่</h2><p>ข้อมูลติดต่อจะแสดงเฉพาะพนักงาน</p></div></div>
+      <form id="waitingQueueForm" class="waiting-form">
+        <div class="field"><label for="customerName">ชื่อลูกค้า *</label><input class="input" id="customerName" maxlength="80" required placeholder="เช่น คุณนัท"></div>
+        <div class="field"><label for="customerPhone">เบอร์โทร</label><input class="input" id="customerPhone" inputmode="tel" maxlength="20" placeholder="สำหรับเรียกติดต่อ"></div>
+        <div class="field"><label for="partySize">จำนวนลูกค้า *</label><input class="input" id="partySize" type="number" min="1" max="30" value="2" required></div>
+        <div class="field"><label for="queueNote">หมายเหตุ</label><input class="input" id="queueNote" maxlength="120" placeholder="เช่น มีเด็กเล็ก / รถเข็น"></div>
+        <button class="btn btn-primary waiting-add-button" type="submit"><i class="bi bi-person-plus"></i><span>เพิ่มคิว</span></button>
+      </form>
+    </section>
+    <section class="waiting-summary" aria-label="สรุปคิว"><article><small>กำลังรอ</small><strong id="waitingCount">0</strong><span>คิว</span></article><article><small>เรียกแล้ว</small><strong id="calledCount">0</strong><span>คิว</span></article><article><small>โต๊ะว่าง</small><strong id="availableTableCount">0</strong><span>โต๊ะ</span></article></section>
+    <section class="card waiting-board">
+      <header class="section-title"><div><h2>ลำดับคิววันนี้</h2><p>คิวเก่ากว่าอยู่ก่อน ภายในขนาดกลุ่มที่เหมาะกับโต๊ะ</p></div><button class="btn btn-sm" id="copyPublicLink" type="button"><i class="bi bi-link-45deg"></i><span>คัดลอกหน้าติดตาม</span></button></header>
+      <div id="waitingQueueList" class="waiting-list"><div class="waiting-empty">กำลังโหลดคิว...</div></div>
+    </section>
+  </main>
+  <dialog id="seatQueueDialog" class="seat-dialog"><form method="dialog"><header><div><small>เชื่อมคิวกับโต๊ะ</small><h2 id="seatDialogTitle">เลือกโต๊ะว่าง</h2></div><button value="cancel" class="dialog-close" aria-label="ปิด"><i class="bi bi-x-lg"></i></button></header><div id="availableTableList" class="available-table-list"></div><footer><button value="cancel" class="btn"><i class="bi bi-x-circle"></i><span>ยกเลิก</span></button><button id="confirmSeatQueue" value="default" class="btn btn-primary"><i class="bi bi-check-circle"></i><span>เปิดโต๊ะ</span></button></footer></form></dialog>
+  <script type="module" src="/assets/js/page-guard.js?v=20260801-103"></script>
+  <script type="module" src="/assets/js/waiting-queue.js?v=20260801-103"></script>
+</body>
+</html>
