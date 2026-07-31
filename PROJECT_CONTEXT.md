@@ -2,8 +2,14 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.15.0
-Build: 2026.07.31.082
+Version: 0.15.1
+Build: 2026.07.31.083
+
+Change: Matched the Retail POS working viewport and product-management interactions more closely to Laravel: fixed product/search/category controls with an independently scrolling product grid; compact 7–8-row cart; circular +/- and trash controls; compact discount/VAT totals; correct pagination arrows; responsive searchable category management; and a searchable product-category combobox that persists stable category IDs.
+
+Firebase boundary: This build changes presentation and category selection metadata only. Tenant-scoped category IDs remain in Firestore while existing sales, stock movements, stable sale/order/queue IDs, duplicate protection, local-first operation, and offline sync remain authoritative.
+
+Deploy rules: Hosting only. Load cache build `20260731-083` with a hard refresh after deployment.
 Milestone: Firebase Retail POS Full Parity
 
 Change: Closed the seven remaining Retail POS parity gaps: correct password key icon, single category strip, fixed VAT mode without the removed selector, hamburger menu icon, product pagination, tenant-scoped Firestore category management, and restored category/product sorting content.

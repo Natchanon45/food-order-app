@@ -3,6 +3,7 @@ import { RetailCollections, watchRecords, saveRecordStrict, deleteRecordStrict }
 const PRODUCT_KEY = "retail_pos_products_v1";
 const root = document.querySelector("#categoryManagerRoot");
 const addButton = document.querySelector("#addCategoryBtn");
+const searchInput = document.querySelector("#categorySearch");
 const toast = document.querySelector("#toast");
 let categories = [];
 let editingId = "";
@@ -42,7 +43,8 @@ function publish() {
 }
 function render(formOpen = false) {
   if (!root) return;
-  const rows = mergedCategories();
+  const needle = String(searchInput?.value || "").trim().toLocaleLowerCase("th");
+  const rows = mergedCategories().filter(item => !needle || String(item.name).toLocaleLowerCase("th").includes(needle));
   root.innerHTML = `${formOpen ? `<form class="category-inline-form" data-category-form>
     <input name="name" maxlength="80" required autocomplete="off" placeholder="ชื่อหมวดหมู่" value="${escapeHtml(categories.find(item => item.id === editingId)?.name || "")}">
     <button class="btn btn-pay" type="submit">บันทึก</button>
@@ -91,5 +93,6 @@ root?.addEventListener("click", async event => {
   catch (error) { console.error("[retail-product-categories] delete failed", error); notify("ลบหมวดหมู่ไม่สำเร็จ"); }
 });
 addButton?.addEventListener("click", () => { editingId = ""; render(true); });
+searchInput?.addEventListener("input", () => render());
 window.addEventListener("retail-pos-products-changed", () => render());
 if (root) watchRecords(RetailCollections.categories, rows => { categories = rows || []; render(); }, { sortBy:"sortOrder", direction:"asc" });

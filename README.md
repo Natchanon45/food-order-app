@@ -2,8 +2,14 @@
 
 Branch: feature/retail-pos
 Milestone: Firebase Sales Report Parity
-Version: 0.15.0
-Build: 2026.07.31.082
+Version: 0.15.1
+Build: 2026.07.31.083
+
+Change: Refined Retail POS screen parity against the Laravel reference. The product heading, scanner/search row, category strip, and horizontal category scrollbar remain fixed while the product grid scrolls independently. Cart rows now fit 7–8 visible items with circular quantity controls, a circular trash action, and a compact two-column VAT summary. Product pagination uses the intended arrow icons, category management uses an orderly responsive grid with search, and the product editor uses a searchable category combobox that stores both stable `categoryId` and category name.
+
+Firebase safety: Category selection continues to use tenant-scoped Firestore category IDs. Sales, stock transactions, stable identifiers, duplicate protection, local-first checkout, and offline synchronization are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260731-083`.
 
 Change: Completed the Retail POS parity corrections from the Laravel edition. The profile password action now uses the original key treatment, the POS category strip mounts once, VAT mode is fixed without an include/exclude selector, the menu button includes its hamburger icon, and product management now includes pagination, a dedicated Firestore-backed category manager, and visible category/product sorting.
 
