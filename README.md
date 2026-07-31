@@ -1,9 +1,15 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Take Away Kitchen Alerts
-Version: 0.15.18
-Build: 2026.08.01.100
+Milestone: Header Notification Alignment
+Version: 0.15.19
+Build: 2026.08.01.101
+
+Change: Grouped the Push Notification bell and signed-in user profile inside the same right-aligned header action area on both Kitchen and Cashier. The profile menu is moved beside the bell even when authentication finishes after the notification control is mounted, keeping an 8 px gap on desktop and mobile.
+
+Firebase safety: This is a presentation-only header change. Notification enrollment/delivery, tenant scoping, order/sale/queue identifiers, duplicate protection, order states, and online/offline behavior are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260801-101`.
 
 Change: Added Take Away orders to the enabled foreground kitchen alert, corrected Take Away Push titles and queue details, applied red invalid styling to both pickup-contact inputs when neither name nor phone is supplied, and renamed the accepted-order action from `กำลังทำ` to `เริ่มทำ` while keeping the resulting cooking status unchanged.
 

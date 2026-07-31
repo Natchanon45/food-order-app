@@ -153,6 +153,14 @@ function installEnableButton() {
     header.appendChild(actions);
   }
 
+  const placeUserMenuBesideAlert = () => {
+    const mountedUserMenu = header.querySelector("[data-user-menu]");
+    if (!mountedUserMenu) return false;
+    if (mountedUserMenu.parentElement !== actions) actions.appendChild(mountedUserMenu);
+    mountedUserMenu.style.marginLeft = "0";
+    return true;
+  };
+
   const button = document.createElement("button");
   button.type = "button";
   button.id = "deliveryAlertButton";
@@ -162,7 +170,13 @@ function installEnableButton() {
   button.addEventListener("click", () => toggleNotifications(button));
   actions.appendChild(button);
 
-  if (userMenu) actions.appendChild(userMenu);
+  if (userMenu) placeUserMenuBesideAlert();
+  else {
+    const menuObserver = new MutationObserver(() => {
+      if (placeUserMenuBesideAlert()) menuObserver.disconnect();
+    });
+    menuObserver.observe(header, { childList: true });
+  }
 
   if (isEnabled()) {
     restorePushNotifications().then(() => updateButton(button));

@@ -2,8 +2,14 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.15.18
-Build: 2026.08.01.100
+Version: 0.15.19
+Build: 2026.08.01.101
+
+Change: Moved the Kitchen/Cashier notification bell into the same right-aligned header action group as the authenticated user profile. A short-lived header observer handles the asynchronous profile mount, then disconnects after placing the menu beside the bell with consistent desktop/mobile spacing.
+
+Firebase boundary: No Firebase reads, writes, rules, Functions, token registration, notification delivery, tenant data, order/sale/queue IDs, duplicate protection, or offline workflow changed.
+
+Deploy rules: Hosting only. Load cache build `20260801-101` with a hard refresh after deployment.
 
 Change: Fixed the reported Take Away operational gaps. The Kitchen/Cashier real-time observer now recognizes new Take Away orders and plays the already enabled alert sound; the Firestore order-created notification uses Take Away queue/customer wording instead of a blank table. The public Take Away form marks both contact alternatives red when both are empty, and the accepted-order button reads `เริ่มทำ`.
 
