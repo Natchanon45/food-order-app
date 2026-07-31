@@ -1,15 +1,17 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Shared Dialog Action Layout
-Version: 0.15.13
-Build: 2026.07.31.095
+Milestone: Mobile Payment Dialog and Validation
+Version: 0.15.14
+Build: 2026.08.01.096
 
-Change: Standardized shared Dialog actions across the system. Two-action dialogs now keep “ยกเลิก” on the left and the confirmation action on the right, every action uses an 8 px icon-to-label gap, and one-action alerts correctly hide the unused cancel button.
+Change: Right-aligned the received-cash value in the mobile payment dialog, replaced the sales-export native browser message with the shared two-action Dialog, and standardized invalid input/select/textarea borders and focus rings to red across Order/Delivery and Retail POS.
 
 Firebase safety: This build changes presentation and interaction flow only. Product/category writes remain tenant-scoped through `tenants/{tenantId}`; the local stock-history clear action still clears local history only. Sales, stock quantities, sale stock movements, stable identifiers, duplicate protection, local-first checkout, offline sale queues, VAT, payments, returns, and tax invoices are unchanged.
 
-Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260731-095`.
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260801-096`.
+
+Previous build — Shared Dialog Action Layout (`2026.07.31.095`): Kept cancel/confirm actions side by side, added icon-label spacing, and fixed hidden alert actions.
 
 Previous build — Retail Native Dialog Replacement (`2026.07.31.094`): Replaced native Retail POS alerts and confirmations with shared styled dialogs and clarified permission-group select-all icons.
 

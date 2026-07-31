@@ -149,6 +149,19 @@ h1 > .pos-context-icon, h2 > .pos-context-icon, h3 > .pos-context-icon, .app-tit
 input, select, textarea { width: 100%; min-height: var(--control-height); border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; background: #fff; color: var(--black); }
 textarea { min-height: 96px; resize: vertical; }
 input:focus, select:focus, textarea:focus { outline: 3px solid #15944722; border-color: var(--green); }
+:is(input, select, textarea).is-invalid,
+:is(input, select, textarea)[aria-invalid="true"],
+:is(input, select, textarea)[data-validation-state="invalid"] {
+  border-color: var(--danger) !important;
+  box-shadow: 0 0 0 1px rgba(200, 52, 52, .08) !important;
+}
+:is(input, select, textarea).is-invalid:focus,
+:is(input, select, textarea)[aria-invalid="true"]:focus,
+:is(input, select, textarea)[data-validation-state="invalid"]:focus {
+  border-color: var(--danger) !important;
+  outline: 3px solid rgba(200, 52, 52, .16) !important;
+  box-shadow: none !important;
+}
 .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
 .product-card { min-height: 132px; border: 1px solid rgba(13,111,52,.16); border-radius: 14px; padding: 12px; background: #fff; text-align: left; display: flex; flex-direction: column; gap: 6px; }
 .product-card:hover { border-color: var(--green); transform: translateY(-1px); box-shadow: 0 8px 22px #15944714; }

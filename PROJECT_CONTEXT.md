@@ -2,15 +2,17 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.15.13
-Build: 2026.07.31.095
+Version: 0.15.14
+Build: 2026.08.01.096
 
-Change: Corrected the shared Dialog action layout system-wide. Confirmation dialogs render cancel on the left and confirm on the right, action icons have a consistent 8 px separation from their labels, and alert-only dialogs no longer expose the hidden cancel action.
+Change: Improved mobile payment and validation presentation. The received-cash value is right-aligned on mobile, the empty sales export flow uses the shared left/right action Dialog with spaced icons, and invalid controls retain a red border and focus ring instead of inheriting green or dark focus styling.
 
 Firebase boundary: Product and category writes remain tenant-scoped through `tenants/{tenantId}`. Clearing stock history still affects only the local movement-history list and never changes product stock. Sales, sale stock movements, stable sale/order/queue IDs, duplicate protection, local-first checkout, offline sale sync, VAT, payments, returns, and tax invoices remain authoritative and unchanged.
 
-Deploy rules: Hosting only. Load cache build `20260731-095` with a hard refresh after deployment.
-Milestone: Shared Dialog Action Layout
+Deploy rules: Hosting only. Load cache build `20260801-096` with a hard refresh after deployment.
+Milestone: Mobile Payment Dialog and Validation
+
+Previous build (`2026.07.31.095`): Standardized shared Dialog button layout, icon spacing, and hidden alert actions.
 
 Previous build (`2026.07.31.094`): Replaced native Retail POS alerts and confirmations with the shared styled dialog and clarified select-all permission icons.
 
