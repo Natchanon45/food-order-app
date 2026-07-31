@@ -2,15 +2,17 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.15.10
-Build: 2026.07.31.092
+Version: 0.15.11
+Build: 2026.07.31.093
 
-Change: Fixed the net-sales summary card contrast on `/admin/sales-report`. A report-specific selector now preserves the green gradient and forces the label, amount, and unit to white after the shared workspace theme loads.
+Change: Separated the receipt icon and “ออกใบกำกับภาษีจากบิลเดิม” title into explicit elements on `/pos/tax-invoices`, with flex alignment and a 10 px gap. Tax lookup, issuing, history, local/Firestore sync, and printing behavior remain unchanged.
 
 Firebase boundary: Product and category writes remain tenant-scoped through `tenants/{tenantId}`. Clearing stock history still affects only the local movement-history list and never changes product stock. Sales, sale stock movements, stable sale/order/queue IDs, duplicate protection, local-first checkout, offline sale sync, VAT, payments, returns, and tax invoices remain authoritative and unchanged.
 
-Deploy rules: Hosting only. Load cache build `20260731-092` with a hard refresh after deployment.
-Milestone: Sales Net Card Contrast
+Deploy rules: Hosting only. Load cache build `20260731-093` with a hard refresh after deployment.
+Milestone: Tax Issue Title Icon Spacing
+
+Previous build (`2026.07.31.092`): Fixed the net-sales summary card contrast with a green gradient and white label, value, and unit.
 
 Previous build (`2026.07.31.091`): Applied the primary green theme and a 20 × 20 px size to native checkboxes across Order/Delivery and Retail POS while preserving native behavior.
 

@@ -1,15 +1,17 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Sales Net Card Contrast
-Version: 0.15.10
-Build: 2026.07.31.092
+Milestone: Tax Issue Title Icon Spacing
+Version: 0.15.11
+Build: 2026.07.31.093
 
-Change: Restored the net-sales summary card on `/admin/sales-report` to a high-contrast green gradient with white label, amount, and unit text. Report calculations, filters, receipt totals, and the other summary cards remain unchanged.
+Change: Separated the receipt icon from the “ออกใบกำกับภาษีจากบิลเดิม” heading on `/pos/tax-invoices` using explicit icon/text elements, aligned flex layout, and a consistent 10 px gap. Tax-invoice lookup and data behavior are unchanged.
 
 Firebase safety: This build changes presentation and interaction flow only. Product/category writes remain tenant-scoped through `tenants/{tenantId}`; the local stock-history clear action still clears local history only. Sales, stock quantities, sale stock movements, stable identifiers, duplicate protection, local-first checkout, offline sale queues, VAT, payments, returns, and tax invoices are unchanged.
 
-Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260731-092`.
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260731-093`.
+
+Previous build — Sales Net Card Contrast (`2026.07.31.092`): Restored the net-sales summary card to a green gradient with high-contrast white text.
 
 Previous build — Global Green Checkbox Theme (`2026.07.31.091`): Standardized native checkboxes across Order/Delivery and Retail POS with the green theme and a 20 × 20 px control.
 
