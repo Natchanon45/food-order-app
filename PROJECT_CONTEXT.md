@@ -2,8 +2,14 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.16.0
-Build: 2026.08.01.103
+Version: 0.16.1
+Build: 2026.08.01.104
+
+Change: Kept the Waiting Queue add action aligned with the input controls on desktop even when customer-name validation feedback is visible. The responsive stacked action remains unchanged on mobile.
+
+Firebase boundary: Presentation only. No Firestore read/write, queue transition, tenant boundary, stable identifier, duplicate guard, public tracking, or connectivity behavior changed.
+
+Deploy rules: Hosting only. Load cache build `20260801-104` with a hard refresh after deployment.
 
 Change: Implemented Waiting Table Queue MVP for walk-in guests. Staff roles owner/admin/manager/cashier can create tenant-scoped queues, call or pause them, and seat an active queue at an available table. The operation changes the table to `occupied`, creates its stable session token, and marks the queue seated in the same Firestore transaction. `/queue?token=...` provides a PII-free real-time customer view.
 

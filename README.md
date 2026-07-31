@@ -1,9 +1,15 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Compact Cashier Tools
-Version: 0.16.0
-Build: 2026.08.01.103
+Milestone: Waiting Queue Validation Alignment
+Version: 0.16.1
+Build: 2026.08.01.104
+
+Change: Anchored the Waiting Queue `เพิ่มคิว` action to the desktop input-control row so validation feedback below the customer-name field no longer pushes the button downward. The mobile action remains full-width on its own row.
+
+Firebase safety: This is a CSS-only alignment correction. Queue creation, tenant scoping, stable queue/table identifiers, duplicate seating protection, real-time tracking, and online/offline behavior are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260801-104`.
 
 Change: Added the first Waiting Table Queue release. Authorized staff can add a walk-in party, preserve arrival order, see party size and suitable free tables, call or pause a queue, and atomically seat the queue into the existing table session. Customers receive a privacy-safe token link that updates waiting, called, and seated status in real time without exposing their name or phone number.
 
