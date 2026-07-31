@@ -2,8 +2,14 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.15.19
-Build: 2026.08.01.101
+Version: 0.15.20
+Build: 2026.08.01.102
+
+Change: Compacted the Cashier Take Away toolbar on screens up to 600 px. Its title remains left-aligned while the QR, new Take Away, and copy-link controls stay together on the right of the same row as 38 px icon-only actions, reducing the toolbar to one line where available.
+
+Firebase boundary: Responsive presentation only. No Take Away action, URL, Firebase path, tenant boundary, order/sale/queue identifier, duplicate guard, Push Notification, or offline behavior changed.
+
+Deploy rules: Hosting only. Load cache build `20260801-102` with a hard refresh after deployment.
 
 Change: Moved the Kitchen/Cashier notification bell into the same right-aligned header action group as the authenticated user profile. A short-lived header observer handles the asynchronous profile mount, then disconnects after placing the menu beside the bell with consistent desktop/mobile spacing.
 

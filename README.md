@@ -1,9 +1,15 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Header Notification Alignment
-Version: 0.15.19
-Build: 2026.08.01.101
+Milestone: Compact Cashier Tools
+Version: 0.15.20
+Build: 2026.08.01.102
+
+Change: Kept all three Take Away tool buttons right-aligned on the same row as the `เครื่องมือสั่งกลับบ้าน` title on mobile. Mobile actions use compact 38 px icon buttons, a 6 px gap, and tighter bar padding to reclaim vertical workspace while retaining accessible labels and tooltips.
+
+Firebase safety: This is a responsive CSS-only operational-toolbar adjustment. Take Away links, QR behavior, orders, tenant scoping, stable identifiers, duplicate protection, notifications, and online/offline behavior are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260801-102`.
 
 Change: Grouped the Push Notification bell and signed-in user profile inside the same right-aligned header action area on both Kitchen and Cashier. The profile menu is moved beside the bell even when authentication finishes after the notification control is mounted, keeping an 8 px gap on desktop and mobile.
 

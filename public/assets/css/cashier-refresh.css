@@ -160,13 +160,23 @@
   .cashier-hero::after { right: -150px; top: -150px; }
   .cashier-hero h1 { font-size: 30px; }
   .cashier-hero p { max-width: 280px; font-size: 14px; line-height: 1.55; }
-  .cashier-action-bar { display: grid; gap: 12px; padding: 14px; border-radius: 16px; }
-  .cashier-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
+  .cashier-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 16px;
+  }
+  .cashier-action-title { min-width: 0; }
+  .cashier-action-title strong,
+  .cashier-action-title span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cashier-actions { display: flex; flex: 0 0 auto; flex-wrap: nowrap; width: auto; gap: 6px; }
   .cashier-actions .btn {
-    width: 100%;
-    min-width: 0;
-    min-height: 44px;
-    padding: 10px;
+    width: 38px;
+    min-width: 38px;
+    min-height: 38px;
+    padding: 8px;
     gap: 0;
   }
   .cashier-actions .btn .app-icon {
@@ -177,7 +187,6 @@
     line-height: 1;
   }
   .cashier-actions .btn > span { display: none; }
-  .cashier-copy-action { grid-column: auto; }
   .cashier-workspace { border-radius: 20px; }
   .cashier-section-head { align-items: flex-start; padding: 17px 16px; }
   .cashier-section-head h2 { font-size: 18px; }
