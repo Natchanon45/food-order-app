@@ -1,9 +1,15 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Waiting Queue Validation Alignment
-Version: 0.16.1
-Build: 2026.08.01.104
+Milestone: Waiting Queue UI Polish
+Version: 0.16.2
+Build: 2026.08.01.105
+
+Change: Renamed the profile-menu action from `ออกโต๊ะ` to `เปิดโต๊ะ`, replaced the Waiting Queue fallback circle with a customer-waiting icon, unified the Waiting Queue table action with the same room-service icon, fine-tuned the add button alignment, and contained long queue numbers within a wider responsive badge.
+
+Firebase safety: UI text, icons, and layout only. Stored queue numbers and stable queue/table IDs are not truncated or changed; tenant scoping, duplicate seating protection, real-time tracking, and online/offline behavior remain unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260801-105`.
 
 Change: Anchored the Waiting Queue `เพิ่มคิว` action to the desktop input-control row so validation feedback below the customer-name field no longer pushes the button downward. The mobile action remains full-width on its own row.
 

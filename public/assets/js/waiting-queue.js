@@ -65,7 +65,7 @@ function render() {
       <div><span class="waiting-status">${statusText(row.status)}</span><div class="waiting-meta">รอ ${Math.max(0, Math.floor((Date.now() - timeValue(row.createdAt)) / 60000))} นาที${row.note ? ` • ${escapeHtml(row.note)}` : ''}</div></div>
       <div class="waiting-actions">
         ${row.status === 'waiting' ? '<button class="btn btn-warning btn-sm" data-action="call"><i class="bi bi-megaphone"></i><span>เรียกคิว</span></button>' : '<button class="btn btn-sm" data-action="recall"><i class="bi bi-megaphone-fill"></i><span>เรียกซ้ำ</span></button>'}
-        <button class="btn btn-primary btn-sm" data-action="seat"><i class="bi bi-easel2"></i><span>เปิดโต๊ะ</span></button>
+        <button class="btn btn-primary btn-sm" data-action="seat"><i class="fi fi-rr-room-service"></i><span>เปิดโต๊ะ</span></button>
         <button class="btn btn-sm" data-action="skip"><i class="bi bi-arrow-down-circle"></i><span>พักคิว</span></button>
       </div>
     </article>`).join('');

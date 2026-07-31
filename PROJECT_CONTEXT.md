@@ -2,8 +2,14 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.16.1
-Build: 2026.08.01.104
+Version: 0.16.2
+Build: 2026.08.01.105
+
+Change: Polished all five reported Waiting Queue UI points: the table menu now reads `เปิดโต๊ะ`; Waiting Queue uses the mapped `user-time` icon; the add button aligns with its inputs; queue badges safely contain long display values; and queue seating uses the same `room-service` icon as the table menu.
+
+Firebase boundary: No queue value or stable identifier is rewritten. These are display-only changes with no Firestore path, tenant permission, queue/table transaction, duplicate guard, public mirror, or connectivity change.
+
+Deploy rules: Hosting only. Load cache build `20260801-105` with a hard refresh after deployment.
 
 Change: Kept the Waiting Queue add action aligned with the input controls on desktop even when customer-name validation feedback is visible. The responsive stacked action remains unchanged on mobile.
 
