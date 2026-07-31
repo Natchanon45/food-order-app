@@ -1,15 +1,17 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Retail Product Category Manager Usability
-Version: 0.15.4
-Build: 2026.07.31.086
+Milestone: Category Pagination Number Cleanup
+Version: 0.15.5
+Build: 2026.07.31.087
 
-Change: Reworked `/pos/products` category management from a long card grid into a compact searchable, filterable, sortable, and paginated list. Add/edit now uses a focused dialog, category counts and status are visible, derived categories can be promoted to stable records, and renaming a category updates the affected product category metadata while preserving the category ID and its saved POS display position.
+Change: Category pagination on `/pos/products` now renders page buttons as plain numbers only. The previous and next arrow controls remain visible, and category searching, filtering, sorting, page-size selection, and navigation behavior are unchanged.
 
-Firebase safety: Category and affected product metadata writes remain tenant-scoped through `tenants/{tenantId}` and the existing tenant-aware data layer. This build does not change sales, stock quantities, stock movements, stable sale IDs, duplicate protection, checkout transactions, offline sale queues, VAT, payments, or tax invoices.
+Firebase safety: This build is presentation-only. Category records and product category metadata remain tenant-scoped through `tenants/{tenantId}`. Sales, stock quantities, stock movements, stable identifiers, duplicate protection, local-first checkout, offline sale queues, VAT, payments, and tax invoices are unchanged.
 
-Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260731-086`.
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260731-087`.
+
+Previous build — Retail Product Category Manager Usability (`2026.07.31.086`): Reworked `/pos/products` category management from a long card grid into a compact searchable, filterable, sortable, and paginated list. Add/edit uses a focused dialog, category counts and status are visible, derived categories can be promoted to stable records, and renaming a category updates affected product metadata while preserving the Stable Category ID and saved POS display position.
 
 Previous build — Cart Quantity Icon Polish (`2026.07.31.085`): Replaced the text minus and plus controls in Retail POS cart rows with Bootstrap Icons while preserving the circular buttons, accessible Thai labels, quantity behavior, and compact Laravel-aligned cart layout. Category selection remains tenant-scoped; sales, stock transactions, stable identifiers, duplicate protection, local-first checkout, and offline synchronization are unchanged.
 
