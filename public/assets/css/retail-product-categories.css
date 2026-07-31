@@ -402,6 +402,10 @@
   cursor: pointer;
 }
 
+.category-page-controls button[data-category-page]:not([data-category-page="prev"]):not([data-category-page="next"]) > .pos-context-icon {
+  display: none !important;
+}
+
 .category-pagination button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
