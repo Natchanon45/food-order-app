@@ -1,15 +1,17 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Mobile Payment Dialog and Validation
-Version: 0.15.14
-Build: 2026.08.01.096
+Milestone: Product Pagination and Sort Save
+Version: 0.15.15
+Build: 2026.08.01.097
 
-Change: Right-aligned the received-cash value in the mobile payment dialog, replaced the sales-export native browser message with the shared two-action Dialog, and standardized invalid input/select/textarea borders and focus rings to red across Order/Delivery and Retail POS.
+Change: Replaced the product pagination previous/next labels with accessible arrow-only controls. Product/category sorting now saves only the settings and products whose order changed, uses bounded Firestore batches, reports a timeout, and always restores the save button instead of appearing stuck while rewriting the whole catalog.
 
-Firebase safety: This build changes presentation and interaction flow only. Product/category writes remain tenant-scoped through `tenants/{tenantId}`; the local stock-history clear action still clears local history only. Sales, stock quantities, sale stock movements, stable identifiers, duplicate protection, local-first checkout, offline sale queues, VAT, payments, returns, and tax invoices are unchanged.
+Firebase safety: Sort writes remain tenant-scoped through `tenants/{tenantId}` and preserve existing product IDs, category IDs, stock, prices, and metadata. Sales, stock movements, stable identifiers, duplicate protection, local-first checkout, offline sale queues, VAT, payments, returns, and tax invoices are unchanged.
 
-Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260801-096`.
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260801-097`.
+
+Previous build — Mobile Payment Dialog and Validation (`2026.08.01.096`): Right-aligned received cash on mobile, replaced the sales-export browser message with the shared Dialog, and standardized invalid controls in red.
 
 Previous build — Shared Dialog Action Layout (`2026.07.31.095`): Kept cancel/confirm actions side by side, added icon-label spacing, and fixed hidden alert actions.
 

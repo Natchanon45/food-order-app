@@ -2,15 +2,17 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.15.14
-Build: 2026.08.01.096
+Version: 0.15.15
+Build: 2026.08.01.097
 
-Change: Improved mobile payment and validation presentation. The received-cash value is right-aligned on mobile, the empty sales export flow uses the shared left/right action Dialog with spaced icons, and invalid controls retain a red border and focus ring instead of inheriting green or dark focus styling.
+Change: Product pagination now uses accessible arrow-only previous/next controls. Catalog sorting no longer rewrites every product: it persists the category-order setting plus only reordered products in bounded Firestore batches, surfaces timeout/failure feedback, and restores the save control in every completion path.
 
-Firebase boundary: Product and category writes remain tenant-scoped through `tenants/{tenantId}`. Clearing stock history still affects only the local movement-history list and never changes product stock. Sales, sale stock movements, stable sale/order/queue IDs, duplicate protection, local-first checkout, offline sale sync, VAT, payments, returns, and tax invoices remain authoritative and unchanged.
+Firebase boundary: Sort writes remain tenant-scoped through `tenants/{tenantId}` and retain stable product/category IDs and all non-sort fields. Sales, sale stock movements, stable sale/order/queue IDs, duplicate protection, local-first checkout, offline sale sync, VAT, payments, returns, and tax invoices remain authoritative and unchanged.
 
-Deploy rules: Hosting only. Load cache build `20260801-096` with a hard refresh after deployment.
-Milestone: Mobile Payment Dialog and Validation
+Deploy rules: Hosting only. Load cache build `20260801-097` with a hard refresh after deployment.
+Milestone: Product Pagination and Sort Save
+
+Previous build (`2026.08.01.096`): Improved mobile received-cash alignment, shared sales-export Dialog behavior, and global red invalid-control styling.
 
 Previous build (`2026.07.31.095`): Standardized shared Dialog button layout, icon spacing, and hidden alert actions.
 

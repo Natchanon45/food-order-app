@@ -1,4 +1,4 @@
-import { RetailCollections, getRecord, saveRecordStrict, saveRecordsStrict } from "./retail-db.js?v=20260629-032";
+import { RetailCollections, getRecord, commitTenantRecordsStrict } from "./retail-db.js?v=20260629-032";
 
 const PRODUCT_KEY = "retail_pos_products_v1";
 const ORDER_KEY = "retail_pos_catalog_order_v1";
@@ -15,6 +15,8 @@ let saving = false;
 let categorySortable;
 let productSortable;
 let toastTimer;
+const dirtyProductIds = new Set();
+const SAVE_TIMEOUT_MS = 15000;
 
 function readJson(key, fallback) { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } }
 function escapeHtml(value) { return String(value ?? "").replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]); }
@@ -23,6 +25,12 @@ function categoryId(name) { return `category:${name}`; }
 function categoryLabel(id) { return id === QUICK_ID ? "ขายดี" : id === ALL_ID ? "ทั้งหมด" : id.startsWith("category:") ? id.slice(9) : id; }
 function actualCategory(id) { return id.startsWith("category:") ? id.slice(9) : ""; }
 function showToast(message) { if (!toast) return; clearTimeout(toastTimer); toast.textContent = message; toast.classList.add("show"); toastTimer = setTimeout(() => toast.classList.remove("show"), 1800); }
+function withTimeout(promise, timeoutMs = SAVE_TIMEOUT_MS) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error("SAVE_TIMEOUT")), timeoutMs))
+  ]);
+}
 
 function allCategoryIds() {
   const actual = [...new Set(products.map(categoryName))].map(categoryId);
@@ -81,6 +89,7 @@ function bindSortables() {
   if (window.Sortable && productList && category) productSortable = new window.Sortable(productList, sortableOptions(() => {
     const ids = [...productList.querySelectorAll("[data-product-id]")].map(row => row.dataset.productId);
     products = products.map(product => categoryName(product) === category ? { ...product, sortOrder: (ids.indexOf(String(product.id)) + 1) * 10 } : product);
+    ids.forEach(id => dirtyProductIds.add(String(id)));
     localStorage.setItem(PRODUCT_KEY, JSON.stringify(products)); refreshBadges(productList); sortProductTableRows();
   }));
 }
@@ -90,13 +99,20 @@ async function saveAll() {
   saving = true; render();
   try {
     configuredOrder = allCategoryIds();
-    await saveRecordStrict(RetailCollections.settings, { id: SETTINGS_ID, type: "catalog-order", categoryOrder: configuredOrder });
-    await saveRecordsStrict(RetailCollections.products, products);
+    const changedProducts = products.filter(product => dirtyProductIds.has(String(product.id)));
+    const writes = [
+      { collectionName: RetailCollections.settings, row: { id: SETTINGS_ID, type: "catalog-order", categoryOrder: configuredOrder } },
+      ...changedProducts.map(row => ({ collectionName: RetailCollections.products, row }))
+    ];
+    for (let index = 0; index < writes.length; index += 450) {
+      await withTimeout(commitTenantRecordsStrict(writes.slice(index, index + 450)));
+    }
     localStorage.setItem(ORDER_KEY, JSON.stringify(configuredOrder));
     localStorage.setItem(PRODUCT_KEY, JSON.stringify(products));
+    dirtyProductIds.clear();
     window.dispatchEvent(new StorageEvent("storage", { key: ORDER_KEY }));
     showToast("บันทึกลำดับลง Firebase แล้ว");
-  } catch (error) { console.error("[retail-products-sort-manager] save failed", error); showToast("บันทึกลำดับไม่สำเร็จ กรุณาตรวจสอบสิทธิ์"); }
+  } catch (error) { console.error("[retail-products-sort-manager] save failed", error); showToast(error?.message === "SAVE_TIMEOUT" ? "หมดเวลาบันทึก กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่" : "บันทึกลำดับไม่สำเร็จ กรุณาตรวจสอบสิทธิ์"); }
   finally { saving = false; render(); }
 }
 

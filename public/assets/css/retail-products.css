@@ -21,7 +21,7 @@
 .product-pagination .pagination-summary label { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .product-pagination .pagination-summary select { min-height: 36px; padding: 6px 28px 6px 10px; border: 1px solid #cfd9dc; border-radius: 9px; background: #fff; color: #193426; font: inherit; }
 .product-pagination button { min-height: 36px; padding: 7px 12px; border: 1px solid #cfd9dc; border-radius: 9px; background: #fff; color: #193426; cursor: pointer; }
-.product-pagination .page-controls > button:not(.page-number) { display: inline-flex; align-items: center; gap: 7px; }
+.product-pagination .page-controls > button:not(.page-number) { display: inline-flex; align-items: center; justify-content: center; width: 36px; padding-inline: 0; }
 .product-pagination button:disabled { opacity: .45; cursor: not-allowed; }
 .product-pagination .page-number { min-width: 36px; padding-inline: 9px; }
 .product-pagination .page-number > .pos-context-icon { display: none !important; }
