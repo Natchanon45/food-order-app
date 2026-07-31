@@ -15,7 +15,7 @@
     />
     <link
       rel="stylesheet"
-      href="/assets/css/retail-product-categories.css?v=20260731-083"
+      href="/assets/css/retail-product-categories.css?v=20260731-086"
     />
     <link
       rel="stylesheet"
@@ -94,23 +94,81 @@
         ></nav>
       </section>
       <section class="panel category-manager-panel" id="productCategoryManager">
-        <div class="section-heading">
+        <div class="section-heading category-manager-heading">
           <div>
-            <h2>หมวดสินค้า</h2>
-            <p>เพิ่ม แก้ไข และลบหมวดหมู่สำหรับหน้าขาย POS</p>
+            <div class="category-manager-title-row">
+              <h2>หมวดสินค้า</h2>
+              <span id="categoryCountBadge" class="category-count-badge">0 หมวด</span>
+            </div>
+            <p>ค้นหา แบ่งหน้า เพิ่ม แก้ไข และควบคุมหมวดสำหรับหน้าขาย POS</p>
           </div>
           <button id="addCategoryBtn" class="btn btn-pay" type="button">
-            เพิ่มหมวดหมู่
+            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            <span>เพิ่มหมวดหมู่</span>
           </button>
         </div>
         <div class="category-manager-toolbar">
-          <label for="categorySearch">ค้นหาหมวดสินค้า</label>
           <div class="category-search-control">
             <i class="bi bi-search" aria-hidden="true"></i>
-            <input id="categorySearch" type="search" autocomplete="off" placeholder="พิมพ์ชื่อหมวดหมู่">
+            <input
+              id="categorySearch"
+              type="search"
+              autocomplete="off"
+              aria-label="ค้นหาหมวดสินค้า"
+              placeholder="ค้นหาชื่อหมวดสินค้า"
+            />
+            <button
+              id="clearCategorySearch"
+              class="category-search-clear"
+              type="button"
+              aria-label="ล้างคำค้นหา"
+              title="ล้างคำค้นหา"
+              hidden
+            >
+              <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="category-toolbar-controls">
+            <label class="category-filter-control" for="categoryStatusFilter">
+              สถานะ
+              <select id="categoryStatusFilter">
+                <option value="all">ทุกสถานะ</option>
+                <option value="used">ใช้งานอยู่</option>
+                <option value="empty">ยังไม่มีสินค้า</option>
+                <option value="derived">รอบันทึกหมวด</option>
+              </select>
+            </label>
+            <label class="category-filter-control" for="categorySort">
+              เรียงตาม
+              <select id="categorySort">
+                <option value="name">ชื่อ ก–ฮ</option>
+                <option value="count-desc">จำนวนสินค้ามากสุด</option>
+                <option value="empty-first">หมวดว่างก่อน</option>
+                <option value="manual">ลำดับหน้า POS</option>
+              </select>
+            </label>
+            <label class="category-filter-control" for="categoryPageSize">
+              แสดงต่อหน้า
+              <select id="categoryPageSize">
+                <option value="10">10 หมวด</option>
+                <option value="20">20 หมวด</option>
+                <option value="50">50 หมวด</option>
+              </select>
+            </label>
           </div>
         </div>
+        <div
+          id="categoryManagerSummary"
+          class="category-manager-summary"
+          role="status"
+          aria-live="polite"
+        ></div>
         <div id="categoryManagerRoot" class="category-manager-root"></div>
+        <nav
+          id="categoryPagination"
+          class="category-pagination"
+          aria-label="แบ่งหน้าหมวดสินค้า"
+        ></nav>
       </section>
       <section class="panel sort-manager-panel" id="productSortManager">
         <div class="section-heading">
@@ -213,6 +271,43 @@
         </div>
       </form>
     </dialog>
+    <dialog id="categoryDialog">
+      <form id="categoryForm" class="payment-form">
+        <div class="dialog-head">
+          <h2 id="categoryDialogTitle">เพิ่มหมวดสินค้า</h2>
+          <button
+            type="button"
+            id="closeCategoryDialog"
+            class="icon-btn"
+            aria-label="ปิด"
+          >
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+          </button>
+        </div>
+        <label for="categoryName">
+          ชื่อหมวดสินค้า
+          <input
+            id="categoryName"
+            name="name"
+            type="text"
+            maxlength="80"
+            autocomplete="off"
+            required
+            placeholder="เช่น เครื่องดื่ม หรือ ขนมขบเคี้ยว"
+          />
+        </label>
+        <p id="categoryDialogHint" class="category-dialog-hint"></p>
+        <p id="categoryFormError" class="error-text"></p>
+        <div class="dialog-actions">
+          <button type="button" id="cancelCategoryBtn" class="btn btn-secondary">
+            ยกเลิก
+          </button>
+          <button id="saveCategoryBtn" type="submit" class="btn btn-pay">
+            บันทึกหมวดหมู่
+          </button>
+        </div>
+      </form>
+    </dialog>
     <dialog id="stockDialog">
       <form id="stockForm" class="payment-form">
         <div class="dialog-head">
@@ -260,7 +355,7 @@
     <script src="/assets/vendor/sortablejs/Sortable.min.js"></script>
     <script
       type="module"
-      src="/assets/js/retail-toast-status.js?v=20260731-080"
+      src="/assets/js/retail-toast-status.js?v=20260731-086"
     ></script>
     <script
       type="module"
@@ -276,7 +371,7 @@
     ></script>
     <script
       type="module"
-      src="/assets/js/retail-product-categories.js?v=20260731-083"
+      src="/assets/js/retail-product-categories.js?v=20260731-086"
     ></script>
     <script
       type="module"
