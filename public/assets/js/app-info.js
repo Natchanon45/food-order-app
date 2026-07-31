@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.15.11',
-  build: '2026.07.31.093',
+  version: '0.15.12',
+  build: '2026.07.31.094',
   branch: 'feature/retail-pos',
-  commit: 'TAX-ISSUE-TITLE-ICON-SPACING-01511',
+  commit: 'RETAIL-NATIVE-DIALOG-REPLACEMENT-01512',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Tax Issue Title Icon Spacing',
-  updatedAt: '2026-07-31T23:22:00+07:00',
+  milestone: 'Retail Native Dialog Replacement',
+  updatedAt: '2026-07-31T23:35:00+07:00',
   whatsNew: [
-    'Separate the tax-invoice issue title icon from its text',
-    'Align the receipt icon and heading with a consistent ten-pixel gap',
-    'Keep tax-invoice lookup, history, sync, and printing behavior unchanged'
+    'Replace native alerts and confirmations in stock movement, purchasing, customers, and settings',
+    'Use the shared styled dialog with explicit warning, cancel, and confirmation actions',
+    'Show a green check-circle icon when a permission group can be selected in full'
   ]
 };
 

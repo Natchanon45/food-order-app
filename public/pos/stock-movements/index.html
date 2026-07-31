@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260731-091">
 <link rel="stylesheet" href="/assets/css/retail-stock-movements.css?v=20260626-1">
 <link rel="stylesheet" href="/assets/css/retail-pos-navigation.css?v=20260731-080">
+<link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-094">
 </head>
 <body>
 <header class="pos-header"><div class="app-title"><div><strong>รายงานความเคลื่อนไหวสต็อก</strong><small>ตรวจสอบรับเข้า ขาย คืนสินค้า ปรับยอด และตรวจนับ</small></div></div><div class="header-actions"></div></header>
@@ -17,7 +18,7 @@
 <section class="panel movement-report-panel"><div class="movement-report-heading section-heading"><div><h1>รายการความเคลื่อนไหว</h1><p id="movementPeriodText">ข้อมูลทั้งหมด</p></div><button id="exportMovementCsv" class="btn btn-pay" type="button">ส่งออก CSV</button></div><div class="movement-product-filter"><input id="movementProductFilter" list="movementProductOptions" autocomplete="off" placeholder="ค้นหาชื่อสินค้า รหัส หรือบาร์โค้ด"><datalist id="movementProductOptions"></datalist></div><div class="table-wrap"><table class="movement-table"><thead><tr><th>วันที่และเวลา</th><th>สินค้า</th><th>ประเภท</th><th>หมายเหตุ</th><th class="number">ก่อน</th><th class="number">เปลี่ยนแปลง</th><th class="number">หลัง</th></tr></thead><tbody id="movementTableBody"></tbody></table></div><div id="movementEmpty" class="empty-state movement-empty">ไม่พบความเคลื่อนไหวสต็อก</div></section>
 </main>
 <script type="module" src="/assets/js/retail-toast-status.js?v=20260731-080"></script>
-<script type="module" src="/assets/js/retail-stock-movements.js?v=20260703-001"></script>
+<script type="module" src="/assets/js/retail-stock-movements.js?v=20260731-094"></script>
 <script type="module" src="/assets/js/retail-barcode-scan-tools.js?v=20260703-003"></script>
 <script type="module" src="/assets/js/retail-pos-navigation.js?v=20260716-013"></script>
 <script type="module" src="/assets/js/retail-stock-permissions.js?v=20260707-016"></script>

@@ -1,15 +1,17 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Tax Issue Title Icon Spacing
-Version: 0.15.11
-Build: 2026.07.31.093
+Milestone: Retail Native Dialog Replacement
+Version: 0.15.12
+Build: 2026.07.31.094
 
-Change: Separated the receipt icon from the “ออกใบกำกับภาษีจากบิลเดิม” heading on `/pos/tax-invoices` using explicit icon/text elements, aligned flex layout, and a consistent 10 px gap. Tax-invoice lookup and data behavior are unchanged.
+Change: Replaced browser-native messages shown in the supplied Retail POS screens with the shared styled dialog: empty CSV export on stock movements and purchases, customer deletion and related errors, and store-setting reset confirmation. Permission-group “เลือกทั้งหมด” now uses an explicit green check-circle, while “ยกเลิกทั้งหมด” retains a red x-circle. Data writes and permission behavior remain unchanged.
 
 Firebase safety: This build changes presentation and interaction flow only. Product/category writes remain tenant-scoped through `tenants/{tenantId}`; the local stock-history clear action still clears local history only. Sales, stock quantities, sale stock movements, stable identifiers, duplicate protection, local-first checkout, offline sale queues, VAT, payments, returns, and tax invoices are unchanged.
 
-Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260731-093`.
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260731-094`.
+
+Previous build — Tax Issue Title Icon Spacing (`2026.07.31.093`): Separated the receipt icon and late tax-invoice title with explicit elements and consistent spacing.
 
 Previous build — Sales Net Card Contrast (`2026.07.31.092`): Restored the net-sales summary card to a green gradient with high-contrast white text.
 
