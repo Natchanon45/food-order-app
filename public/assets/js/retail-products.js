@@ -1,9 +1,11 @@
 import { RetailCollections, listRecords, watchRecords, saveRecord, moveRecord, deleteRecord, migrateLocalArray } from './retail-db.js?v=20260627-3';
 import { deleteProductImage } from './retail-product-image-store.js?v=20260715-008';
+import { sweetConfirm } from "./sweet-dialog.js?v=20260731-089";
 
 const PRODUCT_KEY = "retail_pos_products_v1";
 const MOVEMENT_KEY = "retail_pos_stock_movements_v1";
 const PRODUCT_CODE_PATTERN = /^P\d{9}$/;
+const PRODUCT_PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 const els = {
   productCount: document.querySelector("#productCount"),
@@ -14,6 +16,7 @@ const els = {
   stockFilter: document.querySelector("#stockFilter"),
   productTableBody: document.querySelector("#productTableBody"),
   tableEmpty: document.querySelector("#tableEmpty"),
+  productPagination: document.querySelector("#productPagination"),
   movementList: document.querySelector("#movementList"),
   movementEmpty: document.querySelector("#movementEmpty"),
   clearMovementBtn: document.querySelector("#clearMovementBtn"),
@@ -50,6 +53,8 @@ let movements = readJson(MOVEMENT_KEY, []);
 let toastTimer;
 let stopProductWatch;
 let editingDocumentId = "";
+let productPage = 1;
+let productPageSize = 20;
 
 function readJson(key, fallback) {
   try {
@@ -181,8 +186,11 @@ function filteredProducts() {
 
 function renderProducts() {
   const rows = filteredProducts();
+  const totalPages = Math.max(1, Math.ceil(rows.length / productPageSize));
+  productPage = Math.min(productPage, totalPages);
+  const visibleRows = rows.slice((productPage - 1) * productPageSize, productPage * productPageSize);
   els.tableEmpty.hidden = rows.length > 0;
-  els.productTableBody.innerHTML = rows.map(product => {
+  els.productTableBody.innerHTML = visibleRows.map(product => {
     const klass = stockClass(product);
     const costText = Number.isFinite(Number(product.cost)) ? ` • ทุน ${money(product.cost)}` : " • ยังไม่กำหนดทุน";
     return `
@@ -202,7 +210,25 @@ function renderProducts() {
         </td>
       </tr>`;
   }).join("");
+  renderProductPagination(rows.length, totalPages);
   renderStats();
+}
+
+function renderProductPagination(totalRows, totalPages) {
+  if (!els.productPagination) return;
+  if (!totalRows) { els.productPagination.innerHTML = ""; els.productPagination.hidden = true; return; }
+  const start = (productPage - 1) * productPageSize + 1;
+  const end = Math.min(totalRows, productPage * productPageSize);
+  const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1)
+    .filter(page => page === 1 || page === totalPages || Math.abs(page - productPage) <= 2);
+  const pageControls = pageNumbers.map((page, index) => {
+    const hasGap = index > 0 && page - pageNumbers[index - 1] > 1;
+    const gap = hasGap ? '<span class="page-ellipsis" aria-hidden="true">…</span>' : "";
+    return `${gap}<button type="button" class="page-number${page === productPage ? " active" : ""}" data-product-page="${page}" ${page === productPage ? 'aria-current="page"' : ""} aria-label="หน้า ${page.toLocaleString("th-TH")}">${page.toLocaleString("th-TH")}</button>`;
+  }).join("");
+  const sizeOptions = PRODUCT_PAGE_SIZE_OPTIONS.map(size => `<option value="${size}" ${size === productPageSize ? "selected" : ""}>${size.toLocaleString("th-TH")}</option>`).join("");
+  els.productPagination.hidden = false;
+  els.productPagination.innerHTML = `<div class="pagination-summary"><span>แสดง ${start.toLocaleString("th-TH")}–${end.toLocaleString("th-TH")} จาก ${totalRows.toLocaleString("th-TH")} รายการ</span><label>แสดงต่อหน้า <select data-product-page-size aria-label="จำนวนสินค้าต่อหน้า">${sizeOptions}</select> รายการ</label></div><div class="page-controls"><button type="button" data-product-page="prev" aria-label="หน้าก่อนหน้า" title="หน้าก่อนหน้า" ${productPage <= 1 ? "disabled" : ""}><i class="bi bi-arrow-left" aria-hidden="true"></i></button>${pageControls}<button type="button" data-product-page="next" aria-label="หน้าถัดไป" title="หน้าถัดไป" ${productPage >= totalPages ? "disabled" : ""}><i class="bi bi-arrow-right" aria-hidden="true"></i></button></div>`;
 }
 
 function renderMovements() {
@@ -258,8 +284,10 @@ function openEditProduct(id) {
 function readMerchandisingFields(existingProduct = {}) {
   const costInput = document.querySelector("#productCost");
   const parsedCost = costInput && costInput.value !== "" ? Number(costInput.value) : existingProduct.cost;
+  const categoryInput = document.querySelector("#productCategory");
   return {
-    category: document.querySelector("#productCategory")?.value.trim() || existingProduct.category || "ทั่วไป",
+    categoryId: categoryInput?.value || existingProduct.categoryId || "",
+    category: categoryInput?.dataset.categoryName || existingProduct.category || "ทั่วไป",
     sortOrder: Number(document.querySelector("#productSortOrder")?.value || existingProduct.sortOrder || 999),
     imageUrl: document.querySelector("#productImageUrl")?.value.trim() || "",
     showOnPos: document.querySelector("#productShowOnPos")?.checked !== false,
@@ -278,8 +306,9 @@ async function submitProduct(event) {
   const minStock = Number(els.productMinStock.value);
   const unit = els.productUnit.value.trim();
   const costValue = document.querySelector("#productCost")?.value ?? "";
+  const categoryId = document.querySelector("#productCategory")?.value || "";
 
-  if (!id || !barcode || !name || !unit || price < 0 || stock < 0 || minStock < 0 || (costValue !== "" && Number(costValue) < 0)) {
+  if (!id || !barcode || !name || !unit || !categoryId || price < 0 || stock < 0 || minStock < 0 || (costValue !== "" && Number(costValue) < 0)) {
     els.productFormError.textContent = "กรุณากรอกข้อมูลสินค้าให้ครบและถูกต้อง";
     return;
   }
@@ -355,7 +384,16 @@ async function submitProduct(event) {
 async function deleteProduct(id) {
   const product = products.find(item => item.id === id);
   if (!product) return;
-  if (!confirm(`ลบสินค้า “${product.name}” หรือไม่?\nประวัติการขายเดิมจะไม่ถูกลบ`)) return;
+  const confirmed = await sweetConfirm(
+    `ลบสินค้า “${product.name}” หรือไม่?\nประวัติการขายเดิมจะไม่ถูกลบ`,
+    {
+      title: "ลบสินค้า",
+      confirmText: "ลบสินค้า",
+      cancelText: "ยกเลิก",
+      type: "warning",
+    },
+  );
+  if (!confirmed) return;
   try { await deleteProductImage(product); }
   catch (error) { console.warn("[retail-products] image delete failed", error); }
   products = products.filter(item => item.id !== id);
@@ -430,8 +468,22 @@ els.cancelProductBtn.addEventListener("click", () => els.productDialog.close());
 els.stockForm.addEventListener("submit", submitStock);
 els.closeStockDialog.addEventListener("click", () => els.stockDialog.close());
 els.cancelStockBtn.addEventListener("click", () => els.stockDialog.close());
-els.productSearch.addEventListener("input", renderProducts);
-els.stockFilter.addEventListener("change", renderProducts);
+els.productSearch.addEventListener("input", () => { productPage = 1; renderProducts(); });
+els.stockFilter.addEventListener("change", () => { productPage = 1; renderProducts(); });
+els.productPagination?.addEventListener("click", event => {
+  const button = event.target.closest("[data-product-page]");
+  if (!button || button.disabled) return;
+  const target = button.dataset.productPage;
+  productPage = target === "prev" ? productPage - 1 : target === "next" ? productPage + 1 : Number(target) || 1;
+  renderProducts();
+  document.querySelector(".management-panel")?.scrollIntoView({ behavior:"smooth", block:"start" });
+});
+els.productPagination?.addEventListener("change", event => {
+  if (!event.target.matches("[data-product-page-size]")) return;
+  productPageSize = Number(event.target.value) || 20;
+  productPage = 1;
+  renderProducts();
+});
 els.productTableBody.addEventListener("click", event => {
   const button = event.target.closest("button[data-action]");
   if (!button) return;
@@ -439,8 +491,19 @@ els.productTableBody.addEventListener("click", event => {
   if (button.dataset.action === "stock") openStock(button.dataset.id);
   if (button.dataset.action === "delete") deleteProduct(button.dataset.id);
 });
-els.clearMovementBtn.addEventListener("click", () => {
-  if (!movements.length || !confirm("ล้างประวัติการปรับสต็อกทั้งหมดในเครื่องนี้หรือไม่?")) return;
+els.clearMovementBtn.addEventListener("click", async () => {
+  if (!movements.length) return;
+  const confirmed = await sweetConfirm(
+    "ล้างประวัติการปรับสต็อกทั้งหมดในเครื่องนี้หรือไม่?\nการล้างประวัติจะไม่เปลี่ยนยอดสต็อกสินค้า",
+    {
+      title: "ล้างประวัติการปรับสต็อก",
+      confirmText: "ล้างประวัติ",
+      confirmIcon: "trash3",
+      cancelText: "ยกเลิก",
+      type: "warning",
+    },
+  );
+  if (!confirmed) return;
   movements = [];
   saveMovements();
   renderMovements();

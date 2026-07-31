@@ -34,16 +34,19 @@ exports.notifyNewTableOrder = onDocumentCreated(
     const tokens = tokenDocs.map(doc => doc.data().token).filter(Boolean);
     if (!tokens.length) return;
 
+    const isTakeaway = order.orderType === "takeaway";
     const tableCode = order.tableCode || "-";
     const round = order.roundNumber || 1;
+    const queueNo = order.queueNo || order.queueNumber || orderId;
+    const customerName = order.customerName || "ลูกค้า";
     const message = {
       tokens: tokens.slice(0, 500),
       notification: {
-        title: "มีออเดอร์หน้าร้านใหม่",
-        body: `โต๊ะ ${tableCode} • รอบที่ ${round}`
+        title: isTakeaway ? "มีออเดอร์ Take Away ใหม่" : "มีออเดอร์หน้าร้านใหม่",
+        body: isTakeaway ? `คิว ${queueNo} • ${customerName}` : `โต๊ะ ${tableCode} • รอบที่ ${round}`
       },
       data: {
-        type: "table_order_created",
+        type: isTakeaway ? "takeaway_order_created" : "table_order_created",
         tenantId,
         orderId,
         url: `/kitchen/?order=${encodeURIComponent(orderId)}`
@@ -53,7 +56,7 @@ exports.notifyNewTableOrder = onDocumentCreated(
         notification: {
           icon: "/assets/images/icon-192.png",
           badge: "/assets/images/icon-192.png",
-          tag: `table-${orderId}`,
+          tag: `${isTakeaway ? "takeaway" : "table"}-${orderId}`,
           renotify: true
         }
       }

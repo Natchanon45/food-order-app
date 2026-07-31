@@ -4,8 +4,8 @@ import {
   logoutCustomer,
   getCustomerProfile,
   saveCustomerProfile
-} from "./customer-profile-service.js?v=20260630-074";
-import { toast } from "./ui.js?v=20260716-009";
+} from "./customer-profile-service.js?v=20260731-080";
+import { toast } from "./ui.js?v=20260731-080";
 
 const phoneInput = document.querySelector("#recipientPhone");
 const nameInput = document.querySelector("#recipientName");
@@ -30,6 +30,7 @@ const customerAccountName = document.querySelector("#customerAccountName");
 const customerModeText = document.querySelector("#customerModeText");
 
 let currentUser = null;
+let currentStaff = null;
 let currentProfile = { displayName: "", phone: "", addresses: [] };
 let selectedAddressId = "";
 let editingAddressId = "";
@@ -50,13 +51,22 @@ function newAddressId() {
 
 function renderAccount() {
   const signedIn = Boolean(currentUser);
-  googleLoginButton.hidden = signedIn;
-  customerLogoutButton.hidden = !signedIn;
-  customerAccount.hidden = !signedIn;
-  customerAccountName.textContent = signedIn ? (currentUser.displayName || currentUser.email || "บัญชี Google") : "";
-  customerModeText.textContent = signedIn
-    ? "ที่อยู่จะบันทึกกับบัญชี Google และใช้ได้บนอุปกรณ์อื่น"
-    : "โหมด Guest: ที่อยู่จะจำเฉพาะอุปกรณ์และเบราว์เซอร์นี้";
+  const staffActive = Boolean(currentStaff);
+  googleLoginButton.hidden = signedIn || staffActive;
+  googleLoginButton.disabled = staffActive;
+  customerLogoutButton.hidden = !signedIn && !staffActive;
+  customerLogoutButton.textContent = staffActive ? "ออกจากระบบพนักงาน" : "ออกจากระบบลูกค้า";
+  customerAccount.hidden = !signedIn && !staffActive;
+  customerAccountName.textContent = signedIn
+    ? (currentUser.displayName || currentUser.email || "บัญชี Google")
+    : staffActive
+      ? `${currentStaff.displayName || currentStaff.email || "พนักงาน"} • ${currentStaff.role || "staff"}`
+      : "";
+  customerModeText.textContent = staffActive
+    ? "กำลังใช้บัญชีพนักงาน ที่อยู่ Delivery จะบันทึกเฉพาะอุปกรณ์และร้านนี้"
+    : signedIn
+      ? "ที่อยู่จะบันทึกกับบัญชี Google และใช้ได้บนอุปกรณ์อื่น"
+      : "โหมด Guest: ที่อยู่จะจำเฉพาะอุปกรณ์และเบราว์เซอร์นี้";
 }
 
 function renderAddressBook() {
@@ -175,7 +185,15 @@ googleLoginButton.addEventListener("click", async () => {
 });
 
 customerLogoutButton.addEventListener("click", async () => {
+  const staffLogout = Boolean(currentStaff);
+  customerLogoutButton.disabled = true;
+  customerLogoutButton.textContent = "กำลังออกจากระบบ...";
   await logoutCustomer();
+  if (staffLogout) {
+    location.replace("/login/");
+    return;
+  }
+  customerLogoutButton.disabled = false;
   toast("ออกจากระบบลูกค้าแล้ว");
 });
 
@@ -325,8 +343,9 @@ submitOrderButton.addEventListener("click", async event => {
   }
 }, true);
 
-watchCustomerAuth(async user => {
+watchCustomerAuth(async (user, staff) => {
   currentUser = user;
+  currentStaff = staff || null;
   renderAccount();
   await loadProfile();
 });

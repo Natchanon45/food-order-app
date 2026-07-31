@@ -1,6 +1,8 @@
-import './app-version-badge.js?v=20260723-002';
+import './app-version-badge.js?v=20260801-103';
 
 const styleId = 'retailToastMainStyle';
+const toastDismissTimers = new WeakMap();
+const TOAST_VISIBLE_MS = 2800;
 if (!document.getElementById(styleId)) {
   const style = document.createElement('style');
   style.id = styleId;
@@ -55,20 +57,59 @@ function renderToastContent(toast) {
   toast.append(icon, message);
 }
 
+function closeToast(toast) {
+  const timer = toastDismissTimers.get(toast);
+  if (timer) window.clearTimeout(timer);
+  toastDismissTimers.delete(toast);
+  toast.dataset.toastExpiresAt = '';
+  toast.classList.remove('show');
+  try {
+    if (toast.matches(':popover-open')) toast.hidePopover();
+  } catch {}
+}
+
+function armToastDismiss(toast) {
+  const previous = toastDismissTimers.get(toast);
+  if (previous) window.clearTimeout(previous);
+  const expiresAt = Date.now() + TOAST_VISIBLE_MS;
+  toast.dataset.toastExpiresAt = String(expiresAt);
+  toastDismissTimers.set(toast, window.setTimeout(() => closeToast(toast), TOAST_VISIBLE_MS));
+}
+
+function closeExpiredToasts() {
+  document.querySelectorAll('.toast.show').forEach(toast => {
+    const expiresAt = Number(toast.dataset.toastExpiresAt || 0);
+    if (expiresAt && Date.now() >= expiresAt) closeToast(toast);
+  });
+}
+
 function setupToast() {
   ensureToastElement();
   document.querySelectorAll('.toast').forEach(toast => {
     if (toast.dataset.toastBootstrapReady === '1') return;
     toast.dataset.toastBootstrapReady = '1';
     try { toast.setAttribute('popover', 'manual'); } catch {}
+    let wasShown = false;
+    let lastMessage = '';
     const sync = () => {
       try {
+        const isShown = toast.classList.contains('show');
+        const message = getToastText(toast);
         renderToastContent(toast);
-        if (toast.classList.contains('show')) {
+        if (isShown) {
           if (!toast.matches(':popover-open')) toast.showPopover();
+          if (!wasShown || message !== lastMessage) armToastDismiss(toast);
         } else if (toast.matches(':popover-open')) {
           toast.hidePopover();
         }
+        if (!isShown) {
+          const timer = toastDismissTimers.get(toast);
+          if (timer) window.clearTimeout(timer);
+          toastDismissTimers.delete(toast);
+          toast.dataset.toastExpiresAt = '';
+        }
+        wasShown = isShown;
+        lastMessage = message;
       } catch {}
     };
     new MutationObserver(sync).observe(toast, { attributes: true, childList: true, subtree: true, characterData: true, attributeFilter: ['class'] });
@@ -77,5 +118,10 @@ function setupToast() {
 }
 
 document.addEventListener('DOMContentLoaded', setupToast);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) closeExpiredToasts();
+});
+window.addEventListener('pageshow', closeExpiredToasts);
+window.addEventListener('focus', closeExpiredToasts);
 setupToast();
 export {};

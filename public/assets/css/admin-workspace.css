@@ -39,6 +39,24 @@
   margin-top: 16px;
 }
 
+.admin-entity-form-card {
+  display: none;
+}
+
+.admin-edit-modal-body > .admin-entity-form-card {
+  display: block;
+}
+
+.admin-list-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
 .admin-table-card {
   position: relative;
 }
@@ -164,6 +182,14 @@
 }
 
 @media (max-width: 600px) {
+  .admin-list-actions {
+    flex-wrap: wrap;
+  }
+
+  .admin-list-actions .btn {
+    min-height: 38px;
+  }
+
   .admin-edit-modal-backdrop {
     place-items: center;
     padding: 12px;

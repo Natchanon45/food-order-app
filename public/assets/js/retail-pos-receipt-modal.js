@@ -1,5 +1,23 @@
 const RECEIPT_PATH = '/pos/receipt/';
+const STORE_SETTINGS_KEY = 'retail_pos_store_settings_v1';
 let lastReceiptSaleId = '';
+
+function readSettings() {
+  try { return JSON.parse(localStorage.getItem(STORE_SETTINGS_KEY)) || {}; }
+  catch { return {}; }
+}
+
+function normalizePaperSize(value) {
+  return ['58', '80', 'a4'].includes(String(value || '')) ? String(value) : '80';
+}
+
+function receiptPreferences() {
+  const settings = readSettings();
+  return {
+    autoPrint: String(settings.receiptPrintMode || 'ask') === 'auto',
+    paperSize: normalizePaperSize(settings.receiptPaperSize)
+  };
+}
 
 function closeExistingReceiptModal() {
   const modal = document.querySelector('[data-pos-receipt-modal]');
@@ -22,9 +40,12 @@ function focusNextSale() {
   window.dispatchEvent(new CustomEvent('retail-pos-ready-for-next-sale'));
 }
 
-function receiptUrl(sale, { autoPrint = true } = {}) {
+function receiptUrl(sale, { autoPrint, paperSize } = {}) {
   const id = encodeURIComponent(sale?.id || sale?.saleNumber || '');
-  return `${RECEIPT_PATH}?saleId=${id}&auto=${autoPrint ? '1' : '0'}`;
+  const preferences = receiptPreferences();
+  const shouldAutoPrint = typeof autoPrint === 'boolean' ? autoPrint : preferences.autoPrint;
+  const size = normalizePaperSize(paperSize || preferences.paperSize);
+  return `${RECEIPT_PATH}?saleId=${id}&auto=${shouldAutoPrint ? '1' : '0'}&paper=${encodeURIComponent(size)}`;
 }
 
 function openReceiptWindow(sale, options = {}) {
@@ -42,12 +63,12 @@ function openReceiptWindow(sale, options = {}) {
   return popup;
 }
 
-async function showReceipt(sale) {
+async function showReceipt(sale, options = {}) {
   closeExistingReceiptModal();
-  const popup = openReceiptWindow(sale, { autoPrint: true });
+  const popup = openReceiptWindow(sale, options);
   focusNextSale();
   if (!popup) {
-    const url = receiptUrl(sale, { autoPrint: true });
+    const url = receiptUrl(sale, options);
     const link = document.createElement('a');
     link.href = url;
     link.target = '_blank';

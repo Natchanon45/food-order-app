@@ -14,7 +14,7 @@ const productTableBody = document.querySelector("#productTableBody");
 
 const style = document.createElement("link");
 style.rel = "stylesheet";
-style.href = "/assets/css/retail-product-merchandising.css?v=20260624-5";
+style.href = "/assets/css/retail-product-merchandising.css?v=20260731-080";
 document.head.appendChild(style);
 
 const section = document.createElement("section");
@@ -26,8 +26,11 @@ section.innerHTML = `
       <input id="productCost" type="number" min="0" step="0.01" placeholder="เช่น 7.50">
     </label>
     <label>หมวดสินค้า
-      <input id="productCategory" maxlength="60" list="productCategoryList" placeholder="เช่น เครื่องดื่ม">
-      <datalist id="productCategoryList"></datalist>
+      <div class="category-combobox">
+        <input id="productCategorySearch" type="search" autocomplete="off" placeholder="พิมพ์ค้นหาหมวดสินค้า" role="combobox" aria-expanded="false" aria-controls="productCategoryOptions">
+        <input id="productCategory" type="hidden" required>
+        <div id="productCategoryOptions" class="category-combobox-options" role="listbox" hidden></div>
+      </div>
     </label>
     <label>ลำดับการแสดง
       <input id="productSortOrder" type="number" min="0" step="1" value="999">
@@ -52,7 +55,8 @@ form.querySelector(".form-grid")?.appendChild(section);
 
 const costInput = document.querySelector("#productCost");
 const categoryInput = document.querySelector("#productCategory");
-const categoryList = document.querySelector("#productCategoryList");
+const categorySearchInput = document.querySelector("#productCategorySearch");
+const categoryOptions = document.querySelector("#productCategoryOptions");
 const sortOrderInput = document.querySelector("#productSortOrder");
 const imageFileInput = document.querySelector("#productImageFile");
 const imageUrlInput = document.querySelector("#productImageUrl");
@@ -97,9 +101,48 @@ function showPreview(url) {
   imagePreview.innerHTML = `<img src="${escapeHtml(url)}" alt="ตัวอย่างรูปสินค้า" onerror="this.parentElement.textContent='โหลดรูปไม่สำเร็จ'">`;
 }
 
-function updateCategoryList() {
-  const categories = [...new Set(readProducts().map(item => item.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, "th"));
-  categoryList.innerHTML = categories.map(name => `<option value="${escapeHtml(name)}"></option>`).join("");
+function currentCategories() {
+  const managed = globalThis.retailProductCategories?.currentCategories?.() || [];
+  const map = new Map(managed.map(item => [String(item.name), item]));
+  readProducts().forEach(product => {
+    const name = String(product.category || "").trim();
+    if (name && !map.has(name)) map.set(name, { id:product.categoryId || `derived:${name}`, name });
+  });
+  return [...map.values()].sort((a,b) => String(a.name).localeCompare(String(b.name),"th"));
+}
+
+function chooseCategory(category) {
+  categoryInput.value = category?.id || "";
+  categoryInput.dataset.categoryName = category?.name || "";
+  categorySearchInput.value = category?.name || "";
+}
+
+function renderCategoryOptions(query = "") {
+  const needle = String(query).trim().toLocaleLowerCase("th");
+  const options = currentCategories().filter(item => !needle || String(item.name).toLocaleLowerCase("th").includes(needle));
+  categoryOptions.innerHTML = `${options.map(item => `<button type="button" role="option" data-category-id="${escapeHtml(item.id)}"><span>${escapeHtml(item.name)}</span></button>`).join("")}
+    ${!options.length ? '<p class="category-combobox-empty">ไม่พบหมวดสินค้าที่ค้นหา</p>' : ""}`;
+}
+
+function openCategoryOptions() {
+  renderCategoryOptions(categorySearchInput.value);
+  categoryOptions.hidden = false;
+  categorySearchInput.setAttribute("aria-expanded","true");
+}
+
+function closeCategoryOptions() {
+  categoryOptions.hidden = true;
+  categorySearchInput.setAttribute("aria-expanded","false");
+}
+
+function updateCategoryList(preferredId = "") {
+  const options = currentCategories();
+  const selected = options.find(item => String(item.id) === String(preferredId || categoryInput.value))
+    || options.find(item => item.name === categoryInput.dataset.categoryName)
+    || options.find(item => item.name === "ทั่วไป")
+    || options[0] || null;
+  chooseCategory(selected);
+  renderCategoryOptions();
 }
 
 async function updatePreviewFromSaved(product) {
@@ -116,7 +159,8 @@ function resetMerchFields() {
   selectedImageFile = null;
   removeSavedImage = false;
   costInput.value = "";
-  categoryInput.value = "ทั่วไป";
+  categoryInput.dataset.categoryName = "ทั่วไป";
+  updateCategoryList();
   sortOrderInput.value = "999";
   imageFileInput.value = "";
   imageUrlInput.value = "";
@@ -132,7 +176,8 @@ async function loadMerchFields(id) {
   const product = readProducts().find(item => item.id === id);
   if (!product) return resetMerchFields();
   costInput.value = Number.isFinite(Number(product.cost)) ? Number(product.cost) : "";
-  categoryInput.value = product.category || "ทั่วไป";
+  categoryInput.dataset.categoryName = product.category || "ทั่วไป";
+  updateCategoryList(product.categoryId || "");
   sortOrderInput.value = Number(product.sortOrder ?? 999);
   imageUrlInput.value = product.imageUrl || "";
   showOnPosInput.checked = product.showOnPos !== false;
@@ -180,6 +225,30 @@ function consumeLastWarning() {
 }
 
 globalThis.retailProductMerchandising = { prepareProduct, consumeLastWarning };
+
+categorySearchInput.addEventListener("focus", openCategoryOptions);
+categorySearchInput.addEventListener("input", () => {
+  categoryInput.value = "";
+  categoryInput.dataset.categoryName = "";
+  openCategoryOptions();
+});
+categorySearchInput.addEventListener("keydown", event => {
+  if (event.key === "Escape") closeCategoryOptions();
+  if (event.key === "Enter") {
+    event.preventDefault();
+    categoryOptions.querySelector("button")?.click();
+  }
+});
+categoryOptions.addEventListener("click", event => {
+  const button = event.target.closest("[data-category-id]");
+  if (!button) return;
+  const selected = currentCategories().find(item => String(item.id) === String(button.dataset.categoryId));
+  if (selected) chooseCategory(selected);
+  closeCategoryOptions();
+});
+document.addEventListener("pointerdown", event => {
+  if (!event.target.closest(".category-combobox")) closeCategoryOptions();
+});
 
 document.querySelector("#addProductBtn")?.addEventListener("click", () => setTimeout(() => {
   resetMerchFields();
@@ -249,6 +318,7 @@ function decorateProductRows() {
 
 const observer = new MutationObserver(() => decorateProductRows());
 observer.observe(productTableBody, { childList: true, subtree: true });
+window.addEventListener("retail:categories-changed", () => updateCategoryList(categoryInput.value));
 
 updateCategoryList();
 resetMerchFields();

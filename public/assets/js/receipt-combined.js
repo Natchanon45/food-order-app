@@ -1,5 +1,5 @@
 import { dataService } from "./data-service.js";
-import { money, formatTime } from "./ui.js?v=20260716-009";
+import { money, formatTime } from "./ui.js?v=20260731-080";
 import { autoPrintReceipt } from "./receipt-auto-print.js?v=20260702-001";
 
 const params = new URLSearchParams(location.search);

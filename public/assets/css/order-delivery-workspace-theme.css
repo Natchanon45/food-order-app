@@ -1,0 +1,209 @@
+/*
+ * Shared visual identity for Order / Delivery workspaces.
+ * Keep this stylesheet scoped so Retail POS and Platform remain independent.
+ */
+body.order-delivery-workspace {
+  --od-ink: #14271b;
+  --od-muted: #617066;
+  --od-green: #159447;
+  --od-green-dark: #0d6f34;
+  --od-green-deep: #0a3d22;
+  --od-green-bright: #34b96a;
+  --od-green-soft: #e8f7ee;
+  --od-amber: #f59e0b;
+  --od-surface: rgba(255, 255, 255, 0.96);
+  --od-border: rgba(21, 148, 71, 0.16);
+  color: var(--od-ink);
+  background:
+    radial-gradient(circle at 8% 4%, rgba(52, 185, 106, 0.12), transparent 28rem),
+    radial-gradient(circle at 94% 12%, rgba(21, 148, 71, 0.1), transparent 27rem),
+    #f3f7f4;
+}
+
+body.order-delivery-workspace .app-header {
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(115deg, #111b15 0%, var(--od-green-deep) 45%, var(--od-green-dark) 100%);
+  box-shadow: 0 12px 35px rgba(10, 61, 34, 0.2);
+}
+
+body.order-delivery-workspace .app-header .brand-mark {
+  color: #fff;
+  background: linear-gradient(135deg, var(--od-green), var(--od-green-bright));
+  box-shadow: 0 8px 22px rgba(21, 148, 71, 0.25);
+}
+
+body.order-delivery-workspace .app-header .btn,
+body.order-delivery-workspace .app-header .badge {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+body.order-delivery-workspace .hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: #fff;
+  border: 0;
+  background: linear-gradient(125deg, var(--od-green-deep) 0%, var(--od-green-dark) 56%, var(--od-green) 100%);
+  box-shadow: 0 22px 46px rgba(10, 61, 34, 0.2);
+}
+
+body.order-delivery-workspace .hero::before,
+body.order-delivery-workspace .hero::after {
+  position: absolute;
+  z-index: -1;
+  content: "";
+  pointer-events: none;
+  border-radius: 999px;
+}
+
+body.order-delivery-workspace .hero::before {
+  width: 210px;
+  height: 210px;
+  top: -120px;
+  right: 7%;
+  background: rgba(101, 220, 145, 0.24);
+}
+
+body.order-delivery-workspace .hero::after {
+  width: 150px;
+  height: 150px;
+  right: -34px;
+  bottom: -82px;
+  background: rgba(196, 247, 215, 0.2);
+}
+
+body.order-delivery-workspace .hero h1,
+body.order-delivery-workspace .hero h2,
+body.order-delivery-workspace .hero p {
+  color: inherit;
+}
+
+body.order-delivery-workspace .card,
+body.order-delivery-workspace .panel,
+body.order-delivery-workspace .summary-card,
+body.order-delivery-workspace .cashier-action-bar,
+body.order-delivery-workspace .table-wrap {
+  border-color: var(--od-border);
+  background: var(--od-surface);
+  box-shadow: 0 14px 36px rgba(30, 41, 59, 0.07);
+}
+
+body.order-delivery-workspace .card:hover {
+  border-color: rgba(21, 148, 71, 0.32);
+}
+
+body.order-delivery-workspace h1,
+body.order-delivery-workspace h2,
+body.order-delivery-workspace h3,
+body.order-delivery-workspace .section-title {
+  color: var(--od-green-deep);
+}
+
+body.order-delivery-workspace .muted,
+body.order-delivery-workspace small {
+  color: var(--od-muted);
+}
+
+body.order-delivery-workspace .btn-primary {
+  color: #fff;
+  border-color: var(--od-green);
+  background: linear-gradient(135deg, var(--od-green), var(--od-green-dark));
+  box-shadow: 0 9px 20px rgba(21, 148, 71, 0.2);
+}
+
+body.order-delivery-workspace .btn-primary:hover {
+  border-color: var(--od-green-dark);
+  background: linear-gradient(135deg, var(--od-green-bright), var(--od-green-dark));
+}
+
+body.order-delivery-workspace .btn-danger {
+  color: #fff;
+  border-color: var(--danger);
+  background: linear-gradient(135deg, var(--danger), #a92828);
+}
+
+body.order-delivery-workspace .btn-warning {
+  color: #fff;
+  border-color: var(--od-amber);
+  background: linear-gradient(135deg, var(--od-amber), #ea580c);
+}
+
+body.order-delivery-workspace .input:focus,
+body.order-delivery-workspace input:focus,
+body.order-delivery-workspace select:focus,
+body.order-delivery-workspace textarea:focus {
+  border-color: var(--od-green);
+  outline: 3px solid rgba(21, 148, 71, 0.14);
+  box-shadow: none;
+}
+
+body.order-delivery-workspace .badge {
+  color: var(--od-green-dark);
+  border-color: rgba(21, 148, 71, 0.18);
+  background: var(--od-green-soft);
+}
+
+body.order-delivery-workspace .order-queue-badge small {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+  opacity: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
+}
+
+body.order-delivery-workspace .grid > .card:nth-child(3n + 1) {
+  border-top: 3px solid var(--od-green);
+}
+
+body.order-delivery-workspace .grid > .card:nth-child(3n + 2) {
+  border-top: 3px solid var(--od-green-bright);
+}
+
+body.order-delivery-workspace .grid > .card:nth-child(3n) {
+  border-top: 3px solid var(--od-green-dark);
+}
+
+body.order-delivery-workspace .receipt {
+  color: #111;
+  background: #fff;
+}
+
+@media (max-width: 720px) {
+  body.order-delivery-workspace .app-header {
+    background: linear-gradient(120deg, #111b15, var(--od-green-dark));
+  }
+
+  body.order-delivery-workspace .hero {
+    border-radius: 20px;
+    box-shadow: 0 14px 30px rgba(10, 61, 34, 0.16);
+  }
+
+  body.order-delivery-workspace .card,
+  body.order-delivery-workspace .panel {
+    border-radius: 18px;
+  }
+}
+
+@media print {
+  body.order-delivery-workspace {
+    color: #000;
+    background: #fff;
+  }
+
+  body.order-delivery-workspace .app-header,
+  body.order-delivery-workspace .app-footer,
+  body.order-delivery-workspace .no-print {
+    display: none !important;
+  }
+
+  body.order-delivery-workspace .receipt {
+    border: 0;
+    box-shadow: none;
+  }
+}

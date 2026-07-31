@@ -44,7 +44,7 @@ function ensureCardBody(card, title) {
 function decorateCard(card, index = 0) {
   if (!(card instanceof HTMLElement) || card.dataset.adminCollapsible === "true") return;
   const title = card.querySelector(":scope > .section-title");
-  if (!title || card.closest(".admin-edit-modal") || isNonCollapsibleCard(card)) return;
+  if (!title || card.matches("[data-admin-entity-form]") || card.closest(".admin-edit-modal") || isNonCollapsibleCard(card)) return;
 
   cardKey(card, index);
   const heading = document.createElement("div");
@@ -161,7 +161,8 @@ let originalScrollTo = null;
 
 document.addEventListener("click", event => {
   const editButton = event.target.closest("[data-edit-menu], [data-edit-table]");
-  if (!editButton) return;
+  const addButton = event.target.closest("[data-open-admin-modal]");
+  if (!editButton && !addButton) return;
   savedScrollY = window.scrollY;
   if (!originalScrollTo) originalScrollTo = window.scrollTo;
   window.scrollTo = () => {};
@@ -169,10 +170,11 @@ document.addEventListener("click", event => {
   setTimeout(() => {
     window.scrollTo = originalScrollTo;
     originalScrollTo = null;
-    const isMenu = editButton.hasAttribute("data-edit-menu");
+    const entity = addButton?.dataset.openAdminModal || (editButton?.hasAttribute("data-edit-menu") ? "menu" : "table");
+    const isMenu = entity === "menu";
     const form = document.querySelector(isMenu ? "#menuForm" : "#tableForm");
     const card = form?.closest("section.card");
-    if (card) openModal(card, isMenu ? "แก้ไขเมนูอาหาร" : "แก้ไขโต๊ะ");
+    if (card) openModal(card, addButton ? (isMenu ? "เพิ่มเมนูอาหาร" : "เพิ่มโต๊ะ") : (isMenu ? "แก้ไขเมนูอาหาร" : "แก้ไขโต๊ะ"));
     window.scrollTo(0, savedScrollY);
   }, 0);
 }, true);

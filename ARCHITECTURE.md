@@ -2,11 +2,13 @@
 
 Repository: Natchanon45/food-order-app
 Branch: main
-Version: 0.14.96
-Build: 2026.07.23.002
+Version: 0.15.21
+Build: 2026.08.01.103
 Milestone: Retail POS Main Integration
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
+
+POS product management dialog rule: `/pos/products` must not use browser-native `alert`, `confirm`, or `prompt` for product deletion, category deletion, stock-history clearing, or permission-denied feedback. These flows use the shared styled Sweet Dialog, and destructive actions execute only after an explicit asynchronous confirmation. This UI rule must not change tenant scope, product stock, sale stock movements, stable IDs, duplicate protection, or offline sync.
 
 Retail catalog import readiness rule: `/pos/catalog` may compute client-side readiness counts from the master catalog and tenant product list so staff can see selected rows, verified ready rows, importable rows after the duplicate skip filter, rows skipped because SKU/barcode already exists, and draft rows waiting for verification. These counts and messages are UI guidance only. The actual import path must still import only published catalog items, keep imported stock at 0, keep products hidden from POS until staff review them, and avoid changing VAT, stock movements, sales, offline sync, duplicate protection, or tax invoice data.
 

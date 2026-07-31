@@ -1,64 +1,594 @@
-import {getSessionUser,logout,sessionRole} from "./retail-pos-auth.js?v=20260630-076";
-import "./form-validation-ui.js?v=20260716-009";
+import {
+  getSessionUser,
+  logout,
+  sessionRole,
+} from "./retail-pos-auth.js?v=20260630-076";
+import "./form-validation-ui.js?v=20260731-080";
 import "./retail-pos-icons.js?v=20260716-013";
 
-const ROLE_KEY="retail_pos_roles_v1";
-const MIGRATION_KEY="retail_pos_permission_schema_v8";
+const ROLE_KEY = "retail_pos_roles_v1";
+const MIGRATION_KEY = "retail_pos_permission_schema_v8";
 
-export const MENU_GROUPS=[
-  {id:"sales",label:"ขายหน้าร้าน",icon:"cart3",tone:"emerald",items:[{key:"pos.sale",label:"หน้าขาย",href:"/pos/",icon:"cart3",tone:"emerald"},{key:"pos.sales",label:"ประวัติการขาย",href:"/pos/sales/",icon:"receipt",tone:"blue"},{key:"pos.tax_invoices",label:"ใบกำกับภาษี",href:"/pos/tax-invoices/",icon:"file-earmark-text",tone:"amber"},{key:"pos.returns",label:"คืนสินค้า",href:"/pos/returns/",icon:"arrow-counterclockwise",tone:"rose"},{key:"pos.shifts",label:"กะพนักงาน",href:"/pos/shifts/",icon:"clock-history",tone:"violet"}]},
-  {id:"stock",label:"สินค้าและสต็อก",icon:"boxes",tone:"teal",items:[{key:"pos.products",label:"สินค้าและสต็อก",href:"/pos/products/",icon:"box-seam",tone:"teal"},{key:"pos.stock_movements",label:"เคลื่อนไหวสต็อก",href:"/pos/stock-movements/",icon:"arrow-left-right",tone:"sky"},{key:"pos.stock_counts",label:"ตรวจนับสต็อก",href:"/pos/stock-counts/",icon:"clipboard-check",tone:"lime"}]},
-  {id:"purchase",label:"จัดซื้อ",icon:"truck",tone:"orange",items:[{key:"pos.purchases",label:"รับสินค้าเข้า",href:"/pos/purchases/",icon:"truck",tone:"orange"},{key:"pos.payables",label:"เจ้าหนี้",href:"/pos/payables/",icon:"cash-stack",tone:"amber"},{key:"pos.suppliers",label:"ผู้จำหน่าย",href:"/pos/suppliers/",icon:"building",tone:"indigo"}]},
-  {id:"customer",label:"ลูกค้าและสมาชิก",icon:"person-vcard",tone:"pink",items:[{key:"pos.customers",label:"ทะเบียนลูกค้า",href:"/pos/customers/",icon:"person-vcard",tone:"pink"}]},
-  {id:"system",label:"ระบบ",icon:"gear",tone:"slate",items:[{key:"pos.settings",label:"ตั้งค่าร้าน",href:"/pos/settings/",icon:"gear",tone:"slate"},{key:"pos.backup",label:"สำรองและกู้คืน",href:"/pos/backup/",icon:"database-down",tone:"cyan"},{key:"pos.users",label:"ผู้ใช้และสิทธิ์",href:"/pos/users/",icon:"shield-lock",tone:"purple"}]}
+export const MENU_GROUPS = [
+  {
+    id: "sales",
+    label: "ขายหน้าร้าน",
+    icon: "cart3",
+    tone: "emerald",
+    items: [
+      {
+        key: "pos.sale",
+        label: "หน้าขาย",
+        href: "/pos/",
+        icon: "cart3",
+        tone: "emerald",
+      },
+      {
+        key: "pos.sales",
+        label: "ประวัติการขาย",
+        href: "/pos/sales/",
+        icon: "receipt",
+        tone: "blue",
+      },
+      {
+        key: "pos.tax_invoices",
+        label: "ใบกำกับภาษี",
+        href: "/pos/tax-invoices/",
+        icon: "file-earmark-text",
+        tone: "amber",
+      },
+      {
+        key: "pos.returns",
+        label: "คืนสินค้า",
+        href: "/pos/returns/",
+        icon: "arrow-counterclockwise",
+        tone: "rose",
+      },
+      {
+        key: "pos.shifts",
+        label: "กะพนักงาน",
+        href: "/pos/shifts/",
+        icon: "clock-history",
+        tone: "violet",
+      },
+    ],
+  },
+  {
+    id: "stock",
+    label: "สินค้าและสต็อก",
+    icon: "boxes",
+    tone: "teal",
+    items: [
+      {
+        key: "pos.products",
+        label: "สินค้าและสต็อก",
+        href: "/pos/products/",
+        icon: "box-seam",
+        tone: "teal",
+      },
+      {
+        key: "pos.stock_movements",
+        label: "เคลื่อนไหวสต็อก",
+        href: "/pos/stock-movements/",
+        icon: "arrow-left-right",
+        tone: "sky",
+      },
+      {
+        key: "pos.stock_counts",
+        label: "ตรวจนับสต็อก",
+        href: "/pos/stock-counts/",
+        icon: "clipboard-check",
+        tone: "lime",
+      },
+    ],
+  },
+  {
+    id: "purchase",
+    label: "จัดซื้อ",
+    icon: "truck",
+    tone: "orange",
+    items: [
+      {
+        key: "pos.purchases",
+        label: "รับสินค้าเข้า",
+        href: "/pos/purchases/",
+        icon: "truck",
+        tone: "orange",
+      },
+      {
+        key: "pos.payables",
+        label: "เจ้าหนี้",
+        href: "/pos/payables/",
+        icon: "cash-stack",
+        tone: "amber",
+      },
+      {
+        key: "pos.suppliers",
+        label: "ผู้จำหน่าย",
+        href: "/pos/suppliers/",
+        icon: "building",
+        tone: "indigo",
+      },
+    ],
+  },
+  {
+    id: "customer",
+    label: "ลูกค้าและสมาชิก",
+    icon: "person-vcard",
+    tone: "pink",
+    items: [
+      {
+        key: "pos.customers",
+        label: "ทะเบียนลูกค้า",
+        href: "/pos/customers/",
+        icon: "person-vcard",
+        tone: "pink",
+      },
+    ],
+  },
+  {
+    id: "system",
+    label: "ระบบ",
+    icon: "gear",
+    tone: "slate",
+    items: [
+      {
+        key: "pos.settings",
+        label: "ตั้งค่าร้าน",
+        href: "/pos/settings/",
+        icon: "gear",
+        tone: "slate",
+      },
+      {
+        key: "pos.backup",
+        label: "สำรองและกู้คืน",
+        href: "/pos/backup/",
+        icon: "database-down",
+        tone: "cyan",
+      },
+      {
+        key: "pos.users",
+        label: "ผู้ใช้และสิทธิ์",
+        href: "/pos/users/",
+        icon: "shield-lock",
+        tone: "purple",
+      },
+    ],
+  },
 ];
 
-export const ACTION_GROUPS=[
-  {id:"sale_actions",label:"การขายหน้าร้าน",items:[{key:"pos.sale.checkout",label:"ยืนยันการขาย"},{key:"pos.sale.discount",label:"ให้ส่วนลด"},{key:"pos.sale.hold",label:"พักและเรียกบิล"},{key:"pos.sale.clear",label:"ล้างบิลปัจจุบัน"},{key:"pos.sale.seed",label:"โหลดสินค้าตัวอย่าง"}]},
-  {id:"sales_history_actions",label:"ประวัติการขาย",items:[{key:"pos.sales.view_bill",label:"ดูรายละเอียดบิล"},{key:"pos.sales.print_bill",label:"พิมพ์ใบเสร็จย้อนหลัง"},{key:"pos.sales.export",label:"ส่งออกข้อมูลการขาย CSV"}]},
-  {id:"return_actions",label:"คืนสินค้า",items:[{key:"pos.returns.create",label:"ยืนยันคืนสินค้าและคืนเงิน"},{key:"pos.returns.print",label:"ดูและพิมพ์ใบรับคืน"}]},
-  {id:"shift_actions",label:"กะพนักงาน",items:[{key:"pos.shifts.open",label:"เปิดกะ"},{key:"pos.shifts.close",label:"ปิดกะ"},{key:"pos.shifts.view_amount",label:"ดูยอดเงินและผลต่าง"},{key:"pos.shifts.view_history",label:"ดูประวัติกะ"},{key:"pos.shifts.clear_history",label:"ล้างประวัติกะ"}]},
-  {id:"product_actions",label:"การจัดการสินค้าและสต็อก",items:[{key:"pos.products.create",label:"เพิ่มสินค้า"},{key:"pos.products.edit",label:"แก้ไขสินค้า"},{key:"pos.products.delete",label:"ลบสินค้า"},{key:"pos.products.adjust_stock",label:"ปรับสต็อก"},{key:"pos.products.view_cost",label:"ดูราคาทุน"},{key:"pos.products.clear_history",label:"ล้างประวัติสต็อก"}]},
-  {id:"stock_count_actions",label:"ตรวจนับสต็อก",items:[{key:"pos.stock_counts.perform",label:"กรอกและยืนยันตรวจนับ"},{key:"pos.stock_counts.view_value",label:"ดูต้นทุนและมูลค่าผลต่าง"},{key:"pos.stock_counts.view_history",label:"ดูประวัติการตรวจนับ"}]},
-  {id:"stock_movement_actions",label:"ความเคลื่อนไหวสต็อก",items:[{key:"pos.stock_movements.view_quantity",label:"ดูยอดก่อน–หลังและจำนวนเปลี่ยนแปลง"},{key:"pos.stock_movements.export",label:"ส่งออกความเคลื่อนไหว CSV"}]},
-  {id:"purchase_actions",label:"รับสินค้าเข้า",items:[{key:"pos.purchases.create",label:"บันทึกรับสินค้าเข้า"},{key:"pos.purchases.view_cost",label:"ดูราคาทุนและยอดซื้อ"}]},
-  {id:"payable_actions",label:"เจ้าหนี้",items:[{key:"pos.payables.pay",label:"บันทึกชำระเจ้าหนี้"},{key:"pos.payables.view_amount",label:"ดูยอดเจ้าหนี้"}]},
-  {id:"supplier_actions",label:"ผู้จำหน่าย",items:[{key:"pos.suppliers.create",label:"เพิ่มผู้จำหน่าย"},{key:"pos.suppliers.edit",label:"แก้ไขผู้จำหน่าย"},{key:"pos.suppliers.delete",label:"ลบผู้จำหน่าย"},{key:"pos.suppliers.view_purchase",label:"ดูยอดซื้อสะสม"}]},
-  {id:"customer_actions",label:"ลูกค้าและสมาชิก",items:[{key:"pos.customers.create",label:"เพิ่มลูกค้า"},{key:"pos.customers.edit",label:"แก้ไขลูกค้า"},{key:"pos.customers.delete",label:"ลบลูกค้า"},{key:"pos.customers.view_history",label:"ดูประวัติการซื้อ"},{key:"pos.customers.view_points",label:"ดูคะแนนและประวัติแต้ม"},{key:"pos.customers.view_sales",label:"ดูยอดซื้อสะสม"}]},
-  {id:"settings_actions",label:"ตั้งค่าร้าน",items:[{key:"pos.settings.edit_store",label:"แก้ไขข้อมูลร้านและใบเสร็จ"},{key:"pos.settings.edit_loyalty",label:"แก้ไขระบบคะแนนสมาชิก"},{key:"pos.settings.reset",label:"คืนค่าการตั้งค่าเริ่มต้น"}]},
-  {id:"backup_actions",label:"สำรองและกู้คืน",items:[{key:"pos.backup.export",label:"ดาวน์โหลดไฟล์สำรอง"},{key:"pos.backup.restore",label:"กู้คืนและเขียนทับข้อมูล"}]},
-  {id:"user_actions",label:"ผู้ใช้และสิทธิ์",items:[{key:"pos.users.manage_roles",label:"เพิ่ม แก้ไข และลบบทบาท"},{key:"pos.users.manage_users",label:"เพิ่มและแก้ไขบัญชีผู้ใช้"}]}
+export const ACTION_GROUPS = [
+  {
+    id: "sale_actions",
+    label: "การขายหน้าร้าน",
+    items: [
+      { key: "pos.sale.checkout", label: "ยืนยันการขาย" },
+      { key: "pos.sale.discount", label: "ให้ส่วนลด" },
+      { key: "pos.sale.hold", label: "พักและเรียกบิล" },
+      { key: "pos.sale.clear", label: "ล้างบิลปัจจุบัน" },
+      { key: "pos.sale.seed", label: "โหลดสินค้าตัวอย่าง" },
+    ],
+  },
+  {
+    id: "sales_history_actions",
+    label: "ประวัติการขาย",
+    items: [
+      { key: "pos.sales.view_bill", label: "ดูรายละเอียดบิล" },
+      { key: "pos.sales.print_bill", label: "พิมพ์ใบเสร็จย้อนหลัง" },
+      { key: "pos.sales.export", label: "ส่งออกข้อมูลการขาย CSV" },
+    ],
+  },
+  {
+    id: "return_actions",
+    label: "คืนสินค้า",
+    items: [
+      { key: "pos.returns.create", label: "ยืนยันคืนสินค้าและคืนเงิน" },
+      { key: "pos.returns.print", label: "ดูและพิมพ์ใบรับคืน" },
+    ],
+  },
+  {
+    id: "shift_actions",
+    label: "กะพนักงาน",
+    items: [
+      { key: "pos.shifts.open", label: "เปิดกะ" },
+      { key: "pos.shifts.close", label: "ปิดกะ" },
+      { key: "pos.shifts.view_amount", label: "ดูยอดเงินและผลต่าง" },
+      { key: "pos.shifts.view_history", label: "ดูประวัติกะ" },
+      { key: "pos.shifts.clear_history", label: "ล้างประวัติกะ" },
+    ],
+  },
+  {
+    id: "product_actions",
+    label: "การจัดการสินค้าและสต็อก",
+    items: [
+      { key: "pos.products.create", label: "เพิ่มสินค้า" },
+      { key: "pos.products.edit", label: "แก้ไขสินค้า" },
+      { key: "pos.products.delete", label: "ลบสินค้า" },
+      { key: "pos.products.adjust_stock", label: "ปรับสต็อก" },
+      { key: "pos.products.view_cost", label: "ดูราคาทุน" },
+      { key: "pos.products.clear_history", label: "ล้างประวัติสต็อก" },
+    ],
+  },
+  {
+    id: "stock_count_actions",
+    label: "ตรวจนับสต็อก",
+    items: [
+      { key: "pos.stock_counts.perform", label: "กรอกและยืนยันตรวจนับ" },
+      { key: "pos.stock_counts.view_value", label: "ดูต้นทุนและมูลค่าผลต่าง" },
+      { key: "pos.stock_counts.view_history", label: "ดูประวัติการตรวจนับ" },
+    ],
+  },
+  {
+    id: "stock_movement_actions",
+    label: "ความเคลื่อนไหวสต็อก",
+    items: [
+      {
+        key: "pos.stock_movements.view_quantity",
+        label: "ดูยอดก่อน–หลังและจำนวนเปลี่ยนแปลง",
+      },
+      { key: "pos.stock_movements.export", label: "ส่งออกความเคลื่อนไหว CSV" },
+    ],
+  },
+  {
+    id: "purchase_actions",
+    label: "รับสินค้าเข้า",
+    items: [
+      { key: "pos.purchases.create", label: "บันทึกรับสินค้าเข้า" },
+      { key: "pos.purchases.view_cost", label: "ดูราคาทุนและยอดซื้อ" },
+    ],
+  },
+  {
+    id: "payable_actions",
+    label: "เจ้าหนี้",
+    items: [
+      { key: "pos.payables.pay", label: "บันทึกชำระเจ้าหนี้" },
+      { key: "pos.payables.view_amount", label: "ดูยอดเจ้าหนี้" },
+    ],
+  },
+  {
+    id: "supplier_actions",
+    label: "ผู้จำหน่าย",
+    items: [
+      { key: "pos.suppliers.create", label: "เพิ่มผู้จำหน่าย" },
+      { key: "pos.suppliers.edit", label: "แก้ไขผู้จำหน่าย" },
+      { key: "pos.suppliers.delete", label: "ลบผู้จำหน่าย" },
+      { key: "pos.suppliers.view_purchase", label: "ดูยอดซื้อสะสม" },
+    ],
+  },
+  {
+    id: "customer_actions",
+    label: "ลูกค้าและสมาชิก",
+    items: [
+      { key: "pos.customers.create", label: "เพิ่มลูกค้า" },
+      { key: "pos.customers.edit", label: "แก้ไขลูกค้า" },
+      { key: "pos.customers.delete", label: "ลบลูกค้า" },
+      { key: "pos.customers.view_history", label: "ดูประวัติการซื้อ" },
+      { key: "pos.customers.view_points", label: "ดูคะแนนและประวัติแต้ม" },
+      { key: "pos.customers.view_sales", label: "ดูยอดซื้อสะสม" },
+    ],
+  },
+  {
+    id: "settings_actions",
+    label: "ตั้งค่าร้าน",
+    items: [
+      { key: "pos.settings.edit_store", label: "แก้ไขข้อมูลร้านและใบเสร็จ" },
+      { key: "pos.settings.edit_loyalty", label: "แก้ไขระบบคะแนนสมาชิก" },
+      { key: "pos.settings.reset", label: "คืนค่าการตั้งค่าเริ่มต้น" },
+    ],
+  },
+  {
+    id: "backup_actions",
+    label: "สำรองและกู้คืน",
+    items: [
+      { key: "pos.backup.export", label: "ดาวน์โหลดไฟล์สำรอง" },
+      { key: "pos.backup.restore", label: "กู้คืนและเขียนทับข้อมูล" },
+    ],
+  },
+  {
+    id: "user_actions",
+    label: "ผู้ใช้และสิทธิ์",
+    items: [
+      { key: "pos.users.manage_roles", label: "เพิ่ม แก้ไข และลบบทบาท" },
+      { key: "pos.users.manage_users", label: "เพิ่มและแก้ไขบัญชีผู้ใช้" },
+    ],
+  },
 ];
 
-const MENU_PERMISSIONS=MENU_GROUPS.flatMap(group=>group.items.map(item=>item.key));
-const ACTION_PERMISSIONS=ACTION_GROUPS.flatMap(group=>group.items.map(item=>item.key));
-const ALL_PERMISSIONS=[...MENU_PERMISSIONS,...ACTION_PERMISSIONS];
-const actionKeys=id=>ACTION_GROUPS.find(group=>group.id===id)?.items.map(item=>item.key)||[];
-const SALE_ACTIONS=actionKeys("sale_actions"),SALES_HISTORY_ACTIONS=actionKeys("sales_history_actions"),RETURN_ACTIONS=actionKeys("return_actions"),SHIFT_ACTIONS=actionKeys("shift_actions"),STOCK_COUNT_ACTIONS=actionKeys("stock_count_actions"),STOCK_MOVEMENT_ACTIONS=actionKeys("stock_movement_actions"),PURCHASE_ACTIONS=actionKeys("purchase_actions"),SUPPLIER_ACTIONS=actionKeys("supplier_actions"),CUSTOMER_ACTIONS=actionKeys("customer_actions");
+const MENU_PERMISSIONS = MENU_GROUPS.flatMap((group) =>
+  group.items.map((item) => item.key),
+);
+const ACTION_PERMISSIONS = ACTION_GROUPS.flatMap((group) =>
+  group.items.map((item) => item.key),
+);
+const ALL_PERMISSIONS = [...MENU_PERMISSIONS, ...ACTION_PERMISSIONS];
+const actionKeys = (id) =>
+  ACTION_GROUPS.find((group) => group.id === id)?.items.map(
+    (item) => item.key,
+  ) || [];
+const SALE_ACTIONS = actionKeys("sale_actions"),
+  SALES_HISTORY_ACTIONS = actionKeys("sales_history_actions"),
+  RETURN_ACTIONS = actionKeys("return_actions"),
+  SHIFT_ACTIONS = actionKeys("shift_actions"),
+  STOCK_COUNT_ACTIONS = actionKeys("stock_count_actions"),
+  STOCK_MOVEMENT_ACTIONS = actionKeys("stock_movement_actions"),
+  PURCHASE_ACTIONS = actionKeys("purchase_actions"),
+  SUPPLIER_ACTIONS = actionKeys("supplier_actions"),
+  CUSTOMER_ACTIONS = actionKeys("customer_actions");
 
-const DEFAULT_ROLES=[
-  {id:"owner",name:"เจ้าของร้าน",permissions:[...ALL_PERMISSIONS],locked:true},
-  {id:"cashier",name:"พนักงานขาย",permissions:["pos.sale","pos.sales","pos.returns","pos.customers","pos.shifts",...SALE_ACTIONS.filter(key=>key!=="pos.sale.seed"),...SALES_HISTORY_ACTIONS.filter(key=>key!=="pos.sales.export"),...RETURN_ACTIONS,...SHIFT_ACTIONS.filter(key=>key!=="pos.shifts.clear_history"),...CUSTOMER_ACTIONS.filter(key=>key!=="pos.customers.delete")],locked:false},
-  {id:"stock",name:"พนักงานสต็อก",permissions:["pos.products","pos.stock_movements","pos.stock_counts","pos.purchases","pos.suppliers","pos.products.adjust_stock",...STOCK_COUNT_ACTIONS,...STOCK_MOVEMENT_ACTIONS,"pos.purchases.create","pos.purchases.view_cost","pos.suppliers.create","pos.suppliers.edit"],locked:false},
-  {id:"manager",name:"ผู้จัดการร้าน",permissions:ALL_PERMISSIONS.filter(key=>key!=="pos.backup"&&key!=="pos.users"&&key!=="pos.backup.restore"),locked:false}
+const DEFAULT_ROLES = [
+  {
+    id: "owner",
+    name: "เจ้าของร้าน",
+    permissions: [...ALL_PERMISSIONS],
+    locked: true,
+  },
+  {
+    id: "cashier",
+    name: "พนักงานขาย",
+    permissions: [
+      "pos.sale",
+      "pos.sales",
+      "pos.returns",
+      "pos.customers",
+      "pos.shifts",
+      ...SALE_ACTIONS.filter((key) => key !== "pos.sale.seed"),
+      ...SALES_HISTORY_ACTIONS.filter((key) => key !== "pos.sales.export"),
+      ...RETURN_ACTIONS,
+      ...SHIFT_ACTIONS.filter((key) => key !== "pos.shifts.clear_history"),
+      ...CUSTOMER_ACTIONS.filter((key) => key !== "pos.customers.delete"),
+    ],
+    locked: false,
+  },
+  {
+    id: "stock",
+    name: "พนักงานสต็อก",
+    permissions: [
+      "pos.products",
+      "pos.stock_movements",
+      "pos.stock_counts",
+      "pos.purchases",
+      "pos.suppliers",
+      "pos.products.adjust_stock",
+      ...STOCK_COUNT_ACTIONS,
+      ...STOCK_MOVEMENT_ACTIONS,
+      "pos.purchases.create",
+      "pos.purchases.view_cost",
+      "pos.suppliers.create",
+      "pos.suppliers.edit",
+    ],
+    locked: false,
+  },
+  {
+    id: "manager",
+    name: "ผู้จัดการร้าน",
+    permissions: ALL_PERMISSIONS.filter(
+      (key) =>
+        key !== "pos.backup" &&
+        key !== "pos.users" &&
+        key !== "pos.backup.restore",
+    ),
+    locked: false,
+  },
 ];
 
-function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}}
-function write(key,value){localStorage.setItem(key,JSON.stringify(value))}
-function esc(value){return String(value??"").replace(/[&<>'"]/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"})[char])}
-function menuIcon(icon,tone,extraClass=""){return`<i class="bi bi-${esc(icon||"circle")} ${extraClass}" data-icon-tone="${esc(tone||"green")}" aria-hidden="true"></i>`}
-function normalizePath(value){const url=new URL(value,location.origin);let path=url.pathname.replace(/\/index\.html$/,"/");if(!path.endsWith("/"))path+="/";return path}
-function migrateRolesOnce(roles){if(localStorage.getItem(MIGRATION_KEY)==="1")return roles;const migrated=roles.map(role=>{const permissions=new Set(role.permissions||[]),add=key=>permissions.add(key);if(role.id==="owner")ALL_PERMISSIONS.forEach(add);if(role.id==="manager"){MENU_PERMISSIONS.filter(key=>key!=="pos.backup"&&key!=="pos.users").forEach(add);ACTION_PERMISSIONS.filter(key=>key!=="pos.backup.restore").forEach(add)}if(role.id==="cashier"){["pos.sale","pos.sales","pos.tax_invoices","pos.returns","pos.customers","pos.shifts"].forEach(add);SALE_ACTIONS.filter(key=>key!=="pos.sale.seed").forEach(add);SALES_HISTORY_ACTIONS.filter(key=>key!=="pos.sales.export").forEach(add);RETURN_ACTIONS.forEach(add);SHIFT_ACTIONS.filter(key=>key!=="pos.shifts.clear_history").forEach(add);CUSTOMER_ACTIONS.filter(key=>key!=="pos.customers.delete").forEach(add)}if(role.id==="stock"){add("pos.products.adjust_stock");STOCK_COUNT_ACTIONS.forEach(add);STOCK_MOVEMENT_ACTIONS.forEach(add);PURCHASE_ACTIONS.forEach(add);SUPPLIER_ACTIONS.filter(key=>key!=="pos.suppliers.delete"&&key!=="pos.suppliers.view_purchase").forEach(add)}return{...role,permissions:[...permissions]}});write(ROLE_KEY,migrated);localStorage.setItem(MIGRATION_KEY,"1");return migrated}
-export function ensureAccessData(){const roles=read(ROLE_KEY,[]);if(!roles.length){write(ROLE_KEY,DEFAULT_ROLES);localStorage.setItem(MIGRATION_KEY,"1")}else migrateRolesOnce(roles)}
-export function getRoles(){ensureAccessData();return read(ROLE_KEY,DEFAULT_ROLES)}
-export function getUsers(){const user=getSessionUser();return user?[user]:[]}
-export function getCurrentUser(){ensureAccessData();return getSessionUser()}
-export function getCurrentRole(){ensureAccessData();return sessionRole()}
-export function hasPermission(permission){const role=getCurrentRole();return Boolean(role?.permissions?.includes(permission))||getCurrentUser()?.roleId==="owner"}
-export function permissionForPath(pathname=location.pathname){const current=normalizePath(pathname);for(const group of MENU_GROUPS){for(const item of group.items){if(normalizePath(item.href)===current)return item.key}}return null}
-export function firstAllowedPage(user=getCurrentUser()){const role=getRoles().find(item=>item.id===user?.roleId),permissions=new Set(role?.permissions||[]);return MENU_GROUPS.flatMap(group=>group.items).find(item=>permissions.has(item.key))?.href||"/pos/"}
-function requireLogin(){if(getCurrentUser())return true;const next=encodeURIComponent(location.pathname+location.search);location.replace(`/pos/login/?next=${next}`);return false}
-function guardPage(){const permission=permissionForPath();if(!permission||hasPermission(permission))return true;const allowedPage=firstAllowedPage(),currentPath=normalizePath(location.pathname);if(allowedPage!=="/pos/forbidden/"&&normalizePath(allowedPage)!==currentPath){location.replace(`${allowedPage}?from=permission`);return false}const next=encodeURIComponent(location.pathname+location.search);location.replace(`/pos/forbidden/?permission=${encodeURIComponent(permission)}&next=${next}`);return false}
-function removeLegacyMenuLinks(header){const known=new Set(MENU_GROUPS.flatMap(group=>group.items.map(item=>normalizePath(item.href))));[...header.querySelectorAll("a[href]")].forEach(link=>{if(known.has(normalizePath(link.href)))link.remove()})}
-function renderMenu(){const header=document.querySelector(".pos-header .header-actions");if(!header||document.querySelector("#posMenuTrigger"))return;removeLegacyMenuLinks(header);const user=getCurrentUser(),role=getCurrentRole(),current=normalizePath(location.pathname);const trigger=document.createElement("button");trigger.id="posMenuTrigger";trigger.type="button";trigger.className="btn btn-secondary pos-menu-trigger";trigger.dataset.posIcon="list";trigger.textContent="เมนู";header.prepend(trigger);const popover=document.createElement("div");popover.id="posMenuPopover";popover.className="pos-menu-popover";const groups=MENU_GROUPS.map(group=>{const items=group.items.filter(item=>hasPermission(item.key));if(!items.length)return"";const open=items.some(item=>normalizePath(item.href)===current);return`<section class="pos-menu-group ${open?"is-open":""}"><button type="button" data-menu-group="${esc(group.id)}" aria-expanded="${open?"true":"false"}"><span class="pos-menu-group-title">${menuIcon(group.icon,group.tone,"pos-menu-group-icon")}<span class="pos-menu-group-label">${esc(group.label)}</span></span><i class="bi ${open?"bi-chevron-up":"bi-chevron-down"} pos-menu-chevron" aria-hidden="true"></i></button><ul class="pos-menu-links">${items.map(item=>`<li><a class="pos-menu-link ${normalizePath(item.href)===current?"is-current":""}" href="${esc(item.href)}" data-pos-icon="${esc(item.icon||"")}" data-icon-tone="${esc(item.tone||"green")}">${menuIcon(item.icon,item.tone,"pos-menu-item-icon")}<span>${esc(item.label)}</span></a></li>`).join("")}</ul></section>`}).join("")||'<div class="pos-menu-empty">ไม่มีเมนูที่ได้รับอนุญาต</div>';popover.innerHTML=`<div class="pos-menu-backdrop" data-close-menu></div><aside class="pos-menu-panel"><div class="pos-menu-head"><h2 class="pos-menu-title">เมนู POS</h2><button class="icon-btn" type="button" data-close-menu><i class="bi bi-x-lg" aria-hidden="true"></i></button></div><div class="pos-menu-user"><i class="bi bi-person-circle pos-menu-user-icon" aria-hidden="true"></i><strong>${esc(user?.name||"-")}</strong><span>${esc(role?.name||"ไม่ระบุสิทธิ์")} • ${esc(user?.email||"")}</span></div><a class="btn btn-secondary pos-central-home" href="/" data-pos-icon="house">กลับหน้าระบบกลาง</a><nav>${groups}</nav><div class="pos-menu-footer"><button id="posLogoutBtn" class="btn btn-danger" type="button" data-pos-icon="box-arrow-right">ออกจากระบบ</button></div></aside>`;document.body.appendChild(popover);function close(){popover.classList.remove("open");document.body.classList.remove("pos-menu-open")}trigger.addEventListener("click",()=>{popover.classList.add("open");document.body.classList.add("pos-menu-open")});popover.addEventListener("click",async event=>{if(event.target.closest("[data-close-menu]"))close();const groupButton=event.target.closest("[data-menu-group]");if(groupButton){const group=groupButton.closest(".pos-menu-group");const isOpen=group?.classList.toggle("is-open");groupButton.setAttribute("aria-expanded",isOpen?"true":"false");const icon=groupButton.querySelector(".pos-menu-chevron");icon?.classList.toggle("bi-chevron-up",Boolean(isOpen));icon?.classList.toggle("bi-chevron-down",!isOpen)}if(event.target.closest("#posLogoutBtn")){await logout();location.replace("/pos/login/")}})}
-ensureAccessData();if(requireLogin()&&guardPage()){if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",renderMenu);else renderMenu()}
+function read(key, fallback) {
+  try {
+    return JSON.parse(localStorage.getItem(key)) ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+function write(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+function esc(value) {
+  return String(value ?? "").replace(
+    /[&<>'"]/g,
+    (char) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[
+        char
+      ],
+  );
+}
+function menuIcon(icon, tone, extraClass = "") {
+  return `<i class="bi bi-${esc(icon || "circle")} ${extraClass}" data-icon-tone="${esc(tone || "green")}" aria-hidden="true"></i>`;
+}
+function normalizePath(value) {
+  const url = new URL(value, location.origin);
+  let path = url.pathname.replace(/\/index\.html$/, "/");
+  if (!path.endsWith("/")) path += "/";
+  return path;
+}
+function migrateRolesOnce(roles) {
+  if (localStorage.getItem(MIGRATION_KEY) === "1") return roles;
+  const migrated = roles.map((role) => {
+    const permissions = new Set(role.permissions || []),
+      add = (key) => permissions.add(key);
+    if (role.id === "owner") ALL_PERMISSIONS.forEach(add);
+    if (role.id === "manager") {
+      MENU_PERMISSIONS.filter(
+        (key) => key !== "pos.backup" && key !== "pos.users",
+      ).forEach(add);
+      ACTION_PERMISSIONS.filter((key) => key !== "pos.backup.restore").forEach(
+        add,
+      );
+    }
+    if (role.id === "cashier") {
+      [
+        "pos.sale",
+        "pos.sales",
+        "pos.tax_invoices",
+        "pos.returns",
+        "pos.customers",
+        "pos.shifts",
+      ].forEach(add);
+      SALE_ACTIONS.filter((key) => key !== "pos.sale.seed").forEach(add);
+      SALES_HISTORY_ACTIONS.filter((key) => key !== "pos.sales.export").forEach(
+        add,
+      );
+      RETURN_ACTIONS.forEach(add);
+      SHIFT_ACTIONS.filter((key) => key !== "pos.shifts.clear_history").forEach(
+        add,
+      );
+      CUSTOMER_ACTIONS.filter((key) => key !== "pos.customers.delete").forEach(
+        add,
+      );
+    }
+    if (role.id === "stock") {
+      add("pos.products.adjust_stock");
+      STOCK_COUNT_ACTIONS.forEach(add);
+      STOCK_MOVEMENT_ACTIONS.forEach(add);
+      PURCHASE_ACTIONS.forEach(add);
+      SUPPLIER_ACTIONS.filter(
+        (key) =>
+          key !== "pos.suppliers.delete" &&
+          key !== "pos.suppliers.view_purchase",
+      ).forEach(add);
+    }
+    return { ...role, permissions: [...permissions] };
+  });
+  write(ROLE_KEY, migrated);
+  localStorage.setItem(MIGRATION_KEY, "1");
+  return migrated;
+}
+export function ensureAccessData() {
+  const roles = read(ROLE_KEY, []);
+  if (!roles.length) {
+    write(ROLE_KEY, DEFAULT_ROLES);
+    localStorage.setItem(MIGRATION_KEY, "1");
+  } else migrateRolesOnce(roles);
+}
+export function getRoles() {
+  ensureAccessData();
+  return read(ROLE_KEY, DEFAULT_ROLES);
+}
+export function getUsers() {
+  const user = getSessionUser();
+  return user ? [user] : [];
+}
+export function getCurrentUser() {
+  ensureAccessData();
+  return getSessionUser();
+}
+export function getCurrentRole() {
+  ensureAccessData();
+  return sessionRole();
+}
+export function hasPermission(permission) {
+  const role = getCurrentRole();
+  return (
+    Boolean(role?.permissions?.includes(permission)) ||
+    getCurrentUser()?.roleId === "owner"
+  );
+}
+export function permissionForPath(pathname = location.pathname) {
+  const current = normalizePath(pathname);
+  for (const group of MENU_GROUPS) {
+    for (const item of group.items) {
+      if (normalizePath(item.href) === current) return item.key;
+    }
+  }
+  return null;
+}
+export function firstAllowedPage(user = getCurrentUser()) {
+  const role = getRoles().find((item) => item.id === user?.roleId),
+    permissions = new Set(role?.permissions || []);
+  return (
+    MENU_GROUPS.flatMap((group) => group.items).find((item) =>
+      permissions.has(item.key),
+    )?.href || "/pos/"
+  );
+}
+function requireLogin() {
+  if (getCurrentUser()) return true;
+  const next = encodeURIComponent(location.pathname + location.search);
+  location.replace(`/pos/login/?next=${next}`);
+  return false;
+}
+function guardPage() {
+  const permission = permissionForPath();
+  if (!permission || hasPermission(permission)) return true;
+  const allowedPage = firstAllowedPage(),
+    currentPath = normalizePath(location.pathname);
+  if (
+    allowedPage !== "/pos/forbidden/" &&
+    normalizePath(allowedPage) !== currentPath
+  ) {
+    location.replace(`${allowedPage}?from=permission`);
+    return false;
+  }
+  const next = encodeURIComponent(location.pathname + location.search);
+  location.replace(
+    `/pos/forbidden/?permission=${encodeURIComponent(permission)}&next=${next}`,
+  );
+  return false;
+}
+function removeLegacyMenuLinks(header) {
+  const known = new Set(
+    MENU_GROUPS.flatMap((group) =>
+      group.items.map((item) => normalizePath(item.href)),
+    ),
+  );
+  [...header.querySelectorAll("a[href]")].forEach((link) => {
+    if (known.has(normalizePath(link.href))) link.remove();
+  });
+}
+function renderMenu() {
+  const header = document.querySelector(".pos-header .header-actions");
+  if (!header || document.querySelector("#posMenuTrigger")) return;
+  removeLegacyMenuLinks(header);
+  const user = getCurrentUser(),
+    role = getCurrentRole(),
+    current = normalizePath(location.pathname);
+  const trigger = document.createElement("button");
+  trigger.id = "posMenuTrigger";
+  trigger.type = "button";
+  trigger.className = "btn btn-secondary pos-menu-trigger";
+  trigger.setAttribute("aria-label", "เมนู");
+  trigger.title = "เมนู";
+  trigger.innerHTML =
+    '<i class="bi bi-list" aria-hidden="true"></i><span class="pos-menu-trigger-label">เมนู</span>';
+  header.prepend(trigger);
+  const popover = document.createElement("div");
+  popover.id = "posMenuPopover";
+  popover.className = "pos-menu-popover";
+  const groups =
+    MENU_GROUPS.map((group) => {
+      const items = group.items.filter((item) => hasPermission(item.key));
+      if (!items.length) return "";
+      const open = items.some((item) => normalizePath(item.href) === current);
+      return `<section class="pos-menu-group ${open ? "is-open" : ""}"><button type="button" data-menu-group="${esc(group.id)}" aria-expanded="${open ? "true" : "false"}"><span class="pos-menu-group-title">${menuIcon(group.icon, group.tone, "pos-menu-group-icon")}<span class="pos-menu-group-label">${esc(group.label)}</span></span><i class="bi ${open ? "bi-chevron-up" : "bi-chevron-down"} pos-menu-chevron" aria-hidden="true"></i></button><ul class="pos-menu-links">${items.map((item) => `<li><a class="pos-menu-link ${normalizePath(item.href) === current ? "is-current" : ""}" href="${esc(item.href)}" data-pos-icon="${esc(item.icon || "")}" data-icon-tone="${esc(item.tone || "green")}">${menuIcon(item.icon, item.tone, "pos-menu-item-icon")}<span>${esc(item.label)}</span></a></li>`).join("")}</ul></section>`;
+    }).join("") || '<div class="pos-menu-empty">ไม่มีเมนูที่ได้รับอนุญาต</div>';
+  popover.innerHTML = `<div class="pos-menu-backdrop" data-close-menu></div><aside class="pos-menu-panel"><div class="pos-menu-head"><h2 class="pos-menu-title">เมนู POS</h2><button class="icon-btn" type="button" data-close-menu><i class="bi bi-x-lg" aria-hidden="true"></i></button></div><div class="pos-menu-user"><i class="bi bi-person-circle pos-menu-user-icon" aria-hidden="true"></i><strong>${esc(user?.name || "-")}</strong><span>${esc(role?.name || "ไม่ระบุสิทธิ์")} • ${esc(user?.email || "")}</span></div><a class="btn btn-secondary pos-central-home" href="/" data-pos-icon="house">กลับหน้าระบบกลาง</a><nav>${groups}</nav><div class="pos-menu-footer"><button id="posLogoutBtn" class="btn btn-danger" type="button" data-pos-icon="box-arrow-right">ออกจากระบบ</button></div></aside>`;
+  document.body.appendChild(popover);
+  function close() {
+    popover.classList.remove("open");
+    document.body.classList.remove("pos-menu-open");
+  }
+  trigger.addEventListener("click", () => {
+    popover.classList.add("open");
+    document.body.classList.add("pos-menu-open");
+  });
+  popover.addEventListener("click", async (event) => {
+    if (event.target.closest("[data-close-menu]")) close();
+    const groupButton = event.target.closest("[data-menu-group]");
+    if (groupButton) {
+      const group = groupButton.closest(".pos-menu-group");
+      const isOpen = group?.classList.toggle("is-open");
+      groupButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      const icon = groupButton.querySelector(".pos-menu-chevron");
+      icon?.classList.toggle("bi-chevron-up", Boolean(isOpen));
+      icon?.classList.toggle("bi-chevron-down", !isOpen);
+    }
+    if (event.target.closest("#posLogoutBtn")) {
+      await logout();
+      location.replace("/pos/login/");
+    }
+  });
+}
+ensureAccessData();
+if (requireLogin() && guardPage()) {
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", renderMenu);
+  else renderMenu();
+}

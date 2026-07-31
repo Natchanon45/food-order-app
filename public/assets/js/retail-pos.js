@@ -12,7 +12,7 @@ import {
   buildSyncQueueRow
 } from './retail-pos-firestore-foundation.js?v=20260702-002';
 import { reserveRunningNumber } from './retail-pos-counter.js?v=20260702-003';
-import { showReceipt } from './retail-pos-receipt-modal.js?v=20260706-028';
+import { showReceipt } from './retail-pos-receipt-modal.js?v=20260731-080';
 
 const PRODUCT_KEY = "retail_pos_products_v1";
 const SALES_KEY = "retail_pos_sales_v1";
@@ -270,7 +270,7 @@ function renderProducts() {
 
 function renderCart() {
   els.cartEmpty.hidden = cart.length > 0;
-  els.cartList.innerHTML = cart.map(item => `<div class="cart-row"><div><div class="cart-name">${escapeHtml(item.name)}</div><div class="cart-meta">${money(item.price)} บาท / ${escapeHtml(item.unit)}</div><div class="qty-tools"><button type="button" data-action="decrease" data-id="${escapeHtml(item.id)}" ${savingSale ? "disabled" : ""}>−</button><strong>${item.qty}</strong><button type="button" data-action="increase" data-id="${escapeHtml(item.id)}" ${savingSale ? "disabled" : ""}>+</button><button type="button" class="remove" data-action="remove" data-id="${escapeHtml(item.id)}" ${savingSale ? "disabled" : ""}>ลบ</button></div></div><div class="line-total">${money(item.price * item.qty)}</div></div>`).join("");
+  els.cartList.innerHTML = cart.map(item => `<div class="cart-row"><div><div class="cart-name">${escapeHtml(item.name)}</div><div class="cart-meta">${money(item.price)} บาท / ${escapeHtml(item.unit)}</div><div class="qty-tools"><button type="button" data-action="decrease" data-id="${escapeHtml(item.id)}" aria-label="ลดจำนวน ${escapeHtml(item.name)}" title="ลดจำนวน" ${savingSale ? "disabled" : ""}><i class="bi bi-dash-lg" aria-hidden="true"></i></button><strong>${item.qty}</strong><button type="button" data-action="increase" data-id="${escapeHtml(item.id)}" aria-label="เพิ่มจำนวน ${escapeHtml(item.name)}" title="เพิ่มจำนวน" ${savingSale ? "disabled" : ""}><i class="bi bi-plus-lg" aria-hidden="true"></i></button><button type="button" class="remove qty-remove" data-action="remove" data-id="${escapeHtml(item.id)}" aria-label="ลบ ${escapeHtml(item.name)}" title="ลบสินค้า" ${savingSale ? "disabled" : ""}><i class="bi bi-trash3" aria-hidden="true"></i></button></div></div><div class="line-total">${money(item.price * item.qty)}</div></div>`).join("");
   const qty = cart.reduce((sum, item) => sum + item.qty, 0);
   const totals = getTotals();
   els.itemCount.textContent = `${qty} รายการ`;

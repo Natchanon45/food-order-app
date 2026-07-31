@@ -1,0 +1,210 @@
+/* Fixed POS catalog controls and compact cart actions.
+   Loaded last so this workspace contract wins over historical presentation layers. */
+
+body[data-module="retail-pos"] .product-panel,
+body[data-module="retail-pos"] .cart-panel {
+  min-height: 0 !important;
+}
+
+body[data-module="retail-pos"] .product-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+body[data-module="retail-pos"] .product-panel > .section-heading,
+body[data-module="retail-pos"] .product-panel > .search-row,
+body[data-module="retail-pos"] .product-panel > .catalog-tabs {
+  flex: 0 0 auto;
+}
+
+body[data-module="retail-pos"] .product-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  grid-auto-rows: max-content;
+  align-items: start;
+  gap: 12px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  align-content: start;
+  padding-right: 5px;
+  scrollbar-color: var(--green) #e7f1ea;
+  scrollbar-width: thin;
+}
+
+body[data-module="retail-pos"] .product-grid::-webkit-scrollbar,
+body[data-module="retail-pos"] .cart-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+body[data-module="retail-pos"] .product-grid::-webkit-scrollbar-track,
+body[data-module="retail-pos"] .cart-list::-webkit-scrollbar-track {
+  background: #e7f1ea;
+  border-radius: 999px;
+}
+
+body[data-module="retail-pos"] .product-grid::-webkit-scrollbar-thumb,
+body[data-module="retail-pos"] .cart-list::-webkit-scrollbar-thumb {
+  background: var(--green);
+  border: 2px solid #e7f1ea;
+  border-radius: 999px;
+}
+
+body[data-module="retail-pos"] .cart-list {
+  flex: 1 1 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overscroll-behavior: contain;
+  padding-right: 5px !important;
+}
+
+body[data-module="retail-pos"] #vatMode {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+body[data-module="retail-pos"] .summary {
+  display: grid !important;
+  grid-auto-rows: max-content;
+  row-gap: 0 !important;
+}
+
+body[data-module="retail-pos"] .summary > div,
+body[data-module="retail-pos"] .summary > label {
+  margin-block: 0 !important;
+}
+
+body[data-module="retail-pos"] .summary #discountInput {
+  margin-block: 0 !important;
+}
+
+body[data-module="retail-pos"] .summary #beforeVatWrap,
+body[data-module="retail-pos"] .summary #vatAmountWrap {
+  margin-top: 0 !important;
+}
+
+body[data-module="retail-pos"] .summary > .bootstrap-invalid-feedback:not(.show) {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body[data-module="retail-pos"] .summary > .bootstrap-invalid-feedback.show {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 16px !important;
+  margin: 6px 0 0 !important;
+}
+
+body[data-module="retail-pos"] .qty-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+body[data-module="retail-pos"] .qty-tools strong {
+  display: inline-grid;
+  min-width: 22px;
+  place-items: center;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+body[data-module="retail-pos"] .qty-tools button {
+  display: inline-grid !important;
+  width: 28px !important;
+  min-width: 28px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  padding: 0 !important;
+  place-items: center;
+  border: 1px solid #d5e2d9 !important;
+  border-radius: 50% !important;
+  background: #f8fbf9 !important;
+  color: #183d29 !important;
+  line-height: 1 !important;
+  transition: border-color .16s ease, background-color .16s ease, color .16s ease, transform .16s ease;
+}
+
+body[data-module="retail-pos"] .qty-tools button i {
+  display: block;
+  font-size: .82rem;
+  line-height: 1;
+}
+
+body[data-module="retail-pos"] .qty-tools button:hover:not(:disabled) {
+  border-color: #8bcda3 !important;
+  background: #eaf8ef !important;
+  color: #087630 !important;
+  transform: translateY(-1px);
+}
+
+body[data-module="retail-pos"] .qty-tools .qty-remove {
+  border-color: #ffd6da !important;
+  background: #fff2f3 !important;
+  color: #d72f3b !important;
+}
+
+body[data-module="retail-pos"] .qty-tools .qty-remove:hover:not(:disabled) {
+  border-color: #f5a8ae !important;
+  background: #ffe5e8 !important;
+  color: #b91f2b !important;
+}
+
+body[data-module="retail-pos"] .qty-tools button:focus-visible {
+  outline: 3px solid rgba(21, 148, 71, .2);
+  outline-offset: 2px;
+}
+
+@media (min-width: 901px) {
+  body[data-module="retail-pos"] .product-panel,
+  body[data-module="retail-pos"] .cart-panel {
+    height: calc(100dvh - 100px) !important;
+    max-height: calc(100dvh - 100px) !important;
+  }
+
+  body[data-module="retail-pos"] .cart-row {
+    min-height: 54px !important;
+    margin-bottom: 6px !important;
+    padding-block: 6px !important;
+  }
+
+  body[data-module="retail-pos"] .summary {
+    padding-top: 4px !important;
+  }
+
+  body[data-module="retail-pos"] .summary > div,
+  body[data-module="retail-pos"] .summary > label {
+    min-height: 29px !important;
+  }
+}
+
+@media (max-width: 700px) {
+  body[data-module="retail-pos"] .product-panel {
+    height: calc(100dvh - 76px);
+    max-height: calc(100dvh - 76px);
+  }
+
+  body[data-module="retail-pos"] .product-grid {
+    gap: 8px !important;
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  }
+
+  body[data-module="retail-pos"] .qty-tools button {
+    width: 30px !important;
+    min-width: 30px !important;
+    height: 30px !important;
+    min-height: 30px !important;
+  }
+}

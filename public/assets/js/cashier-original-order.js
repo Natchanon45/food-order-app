@@ -1,5 +1,5 @@
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
-import { toast } from "./ui.js?v=20260716-009";
+import { toast } from "./ui.js?v=20260731-080";
 import { getStoredTenant } from "./tenant-context.js";
 
 function textAfterLabel(container, label) {
@@ -74,6 +74,7 @@ function ensureTakeawayQrModal(url) {
 }
 
 function mountTakeawayTools() {
+  if (document.querySelector(".cashier-action-bar")) return;
   const hero = document.querySelector(".hero");
   if (!hero || document.querySelector("#takeawayCashierTools")) return;
   document.querySelector("#takeawayQrTools")?.remove();

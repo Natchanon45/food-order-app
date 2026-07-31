@@ -1,7 +1,6 @@
 import { RetailCollections, getRecord } from './retail-db.js?v=20260629-032';
 
 const SALES_KEY = "retail_pos_sales_v1";
-const PRINT_MODE_KEY = "retail_pos_print_mode_v1";
 const STORE_SETTINGS_KEY = "retail_pos_store_settings_v1";
 const LEGACY_STORE_SETTINGS_KEY = "food_order_store_settings";
 
@@ -21,12 +20,10 @@ document.body.insertAdjacentHTML("beforeend", `
         <div><span>รับเงิน</span><strong id="completeReceived">0.00 บาท</strong></div>
         <div class="change"><span>เงินทอน</span><strong id="completeChange">0.00 บาท</strong></div>
       </div>
-      <label class="complete-setting">การพิมพ์หลังชำระเงิน
-        <select id="printMode">
+      <select id="printMode" hidden aria-hidden="true" tabindex="-1">
           <option value="ask">ถามก่อนพิมพ์</option>
           <option value="auto">เปิดหน้าพิมพ์อัตโนมัติ</option>
-        </select>
-      </label>
+      </select>
       <div class="complete-actions">
         <button id="noPrintNewBtn" class="btn btn-secondary" type="button">ไม่พิมพ์ เริ่มบิลใหม่</button>
         <button id="printAndNewBtn" class="btn btn-pay" type="button">พิมพ์ใบเสร็จ</button>
@@ -110,7 +107,9 @@ function normalizeSettings(settings = {}, receipt = {}, legacy = {}) {
     shopPhone: receipt.shopPhone || settings.shopPhone || settings.phone || legacy.shopPhone || "",
     taxId: receipt.taxId || receipt.shopTaxId || settings.taxId || settings.shopTaxId || legacy.taxId || legacy.shopTaxId || "",
     receiptThanks: receipt.receiptThanks || settings.receiptThanks || legacy.receiptThanks || "ขอบคุณที่ใช้บริการ",
-    receiptFooter: receipt.receiptFooter || settings.receiptFooter || legacy.receiptFooter || "เอกสารฉบับนี้ออกโดยระบบของร้านตามข้อมูลด้านบน"
+    receiptFooter: receipt.receiptFooter || settings.receiptFooter || legacy.receiptFooter || "เอกสารฉบับนี้ออกโดยระบบของร้านตามข้อมูลด้านบน",
+    receiptPrintMode: String(receipt.receiptPrintMode || settings.receiptPrintMode || legacy.receiptPrintMode || "ask") === "auto" ? "auto" : "ask",
+    receiptPaperSize: ["58", "80", "a4"].includes(String(receipt.receiptPaperSize || settings.receiptPaperSize || legacy.receiptPaperSize || "")) ? String(receipt.receiptPaperSize || settings.receiptPaperSize || legacy.receiptPaperSize) : "80"
   };
 }
 
@@ -240,14 +239,15 @@ async function printReceipt() {
   requestAnimationFrame(() => requestAnimationFrame(() => window.print()));
 }
 
-function showComplete(sale) {
+async function showComplete(sale) {
+  const settings = await loadStoreSettings();
+  printMode.value = settings.receiptPrintMode;
   activeSale = latestSaleSnapshot(sale);
   completeSaleId.textContent = activeSale.id;
   completeTotal.textContent = `${money(activeSale.total)} บาท`;
   completeReceived.textContent = `${money(activeSale.payment?.received)} บาท`;
   completeChange.textContent = `${money(activeSale.payment?.change)} บาท`;
   completeDialog.showModal();
-  if (printMode.value === "auto") setTimeout(printReceipt, 350);
 }
 
 confirmPaymentBtn?.addEventListener("click", () => {
@@ -259,9 +259,7 @@ confirmPaymentBtn?.addEventListener("click", () => {
   }, 120);
 }, { capture: true });
 
-loadStoreSettings();
-printMode.value = localStorage.getItem(PRINT_MODE_KEY) || "ask";
-printMode.addEventListener("change", () => localStorage.setItem(PRINT_MODE_KEY, printMode.value));
+loadStoreSettings().then(settings => { printMode.value = settings.receiptPrintMode; });
 printAndNewBtn.addEventListener("click", printReceipt);
 noPrintNewBtn.addEventListener("click", closeCompleteDialog);
 window.addEventListener("afterprint", closeCompleteDialog);

@@ -2,10 +2,92 @@
 
 Branch: main
 Milestone: Retail POS Main Integration
-Version: 0.14.96
-Build: 2026.07.23.002
+Version: 0.15.21
+Build: 2026.08.01.103
 
-Change: Merged the completed `feature/retail-pos` implementation into `main`. This release carries forward tenant-scoped Retail POS, stable sale IDs, duplicate sale/stock protection, online/offline synchronization, catalog and tax invoice workflows, plus the Super Admin direct `/platform` login and blank-page recovery fix. Developer Panel metadata is bumped to `20260723-002`.
+Change: Merged the completed `feature/retail-pos` history into `main`, including the current Firebase Retail POS parity, tenant-safe persistence, stable identifiers, duplicate protection, online/offline workflows, Push Notification fixes, and the latest responsive Kitchen/Cashier interface updates.
+
+Firebase safety: The merge preserves the feature branch implementations without changing Firebase paths, tenant boundaries, order/sale/queue identifiers, duplicate protection, stock transactions, notification delivery, or offline synchronization behavior.
+
+Deploy: Main branch release metadata and cache chain are prepared at build `20260801-103`. Deployment is separate from this branch merge unless explicitly requested.
+
+Change: Kept all three Take Away tool buttons right-aligned on the same row as the `เครื่องมือสั่งกลับบ้าน` title on mobile. Mobile actions use compact 38 px icon buttons, a 6 px gap, and tighter bar padding to reclaim vertical workspace while retaining accessible labels and tooltips.
+
+Firebase safety: This is a responsive CSS-only operational-toolbar adjustment. Take Away links, QR behavior, orders, tenant scoping, stable identifiers, duplicate protection, notifications, and online/offline behavior are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260801-102`.
+
+Change: Grouped the Push Notification bell and signed-in user profile inside the same right-aligned header action area on both Kitchen and Cashier. The profile menu is moved beside the bell even when authentication finishes after the notification control is mounted, keeping an 8 px gap on desktop and mobile.
+
+Firebase safety: This is a presentation-only header change. Notification enrollment/delivery, tenant scoping, order/sale/queue identifiers, duplicate protection, order states, and online/offline behavior are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260801-101`.
+
+Change: Added Take Away orders to the enabled foreground kitchen alert, corrected Take Away Push titles and queue details, applied red invalid styling to both pickup-contact inputs when neither name nor phone is supplied, and renamed the accepted-order action from `กำลังทำ` to `เริ่มทำ` while keeping the resulting cooking status unchanged.
+
+Firebase safety: The existing tenant-scoped order trigger and notification token collection remain authoritative. No order/sale/queue ID generation, duplicate protection, stock, payment, or offline workflow changed.
+
+Deploy: Firebase Hosting, Functions, and Firestore rules. Hard refresh after deployment to load cache build `20260801-100`.
+
+Change: Enabled Firebase Web Push registration for signed-in tenant members. Firestore now permits each user to create or update only their own tenant-scoped notification token, validates the token owner, tenant, role, document ID, and allowed fields, and keeps token listing/deletion closed to browser clients. Push setup errors now distinguish permission, profile, Service Worker, FCM token, and Firestore-rule failures.
+
+Firebase safety: Notification tokens remain under `tenants/{tenantId}/notificationTokens`; Cloud Functions continue reading them through the Admin SDK. Order/sale/queue identifiers, duplicate protection, offline behavior, stock, payments, and existing notification triggers are unchanged.
+
+Deploy: Firebase Hosting and Firestore rules. Hard refresh after deployment to load cache build `20260801-099`.
+
+Change: Corrected the Retail POS settings read order so tenant Firestore documents are authoritative for VAT registration and PromptPay enablement, ID, and account name. Explicit remote `no` and empty values are preserved, while stale browser data can no longer overwrite the settings form; the resolved configuration refreshes the local cache used by POS and customer-display flows.
+
+Firebase safety: This is a tenant-scoped settings-read correction. It does not change Firestore paths, settings writes, sales, stock movements, stable identifiers, duplicate protection, local-first checkout, offline sale queues, payments, returns, or tax-invoice records.
+
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260801-098`.
+
+Previous build — Product Pagination and Sort Save (`2026.08.01.097`): Added arrow-only product pagination and optimized catalog-order persistence to save only changed records.
+
+Previous build — Mobile Payment Dialog and Validation (`2026.08.01.096`): Right-aligned received cash on mobile, replaced the sales-export browser message with the shared Dialog, and standardized invalid controls in red.
+
+Previous build — Shared Dialog Action Layout (`2026.07.31.095`): Kept cancel/confirm actions side by side, added icon-label spacing, and fixed hidden alert actions.
+
+Previous build — Retail Native Dialog Replacement (`2026.07.31.094`): Replaced native Retail POS alerts and confirmations with shared styled dialogs and clarified permission-group select-all icons.
+
+Previous build — Tax Issue Title Icon Spacing (`2026.07.31.093`): Separated the receipt icon and late tax-invoice title with explicit elements and consistent spacing.
+
+Previous build — Sales Net Card Contrast (`2026.07.31.092`): Restored the net-sales summary card to a green gradient with high-contrast white text.
+
+Previous build — Global Green Checkbox Theme (`2026.07.31.091`): Standardized native checkboxes across Order/Delivery and Retail POS with the green theme and a 20 × 20 px control.
+
+Previous build — Admin Users Laravel Parity (`2026.07.31.090`): Ported the Laravel employee-management presentation to Firebase `/admin/users` with a staff Hero, compact employee list, and responsive create-user modal while preserving Firebase staff workflows.
+
+Previous build — Category Pagination Number Cleanup (`2026.07.31.087`): Category pagination on `/pos/products` renders page buttons as plain numbers only while previous/next controls, search, filters, sorting, page-size selection, and navigation behavior remain unchanged.
+
+Previous build — Retail Product Category Manager Usability (`2026.07.31.086`): Reworked `/pos/products` category management from a long card grid into a compact searchable, filterable, sortable, and paginated list. Add/edit uses a focused dialog, category counts and status are visible, derived categories can be promoted to stable records, and renaming a category updates affected product metadata while preserving the Stable Category ID and saved POS display position.
+
+Previous build — Cart Quantity Icon Polish (`2026.07.31.085`): Replaced the text minus and plus controls in Retail POS cart rows with Bootstrap Icons while preserving the circular buttons, accessible Thai labels, quantity behavior, and compact Laravel-aligned cart layout. Category selection remains tenant-scoped; sales, stock transactions, stable identifiers, duplicate protection, local-first checkout, and offline synchronization are unchanged.
+
+Change: Completed the Retail POS parity corrections from the Laravel edition. The profile password action now uses the original key treatment, the POS category strip mounts once, VAT mode is fixed without an include/exclude selector, the menu button includes its hamburger icon, and product management now includes pagination, a dedicated Firestore-backed category manager, and visible category/product sorting.
+
+Firebase safety: Category records are tenant-scoped under `tenants/{tenantId}/categories`, with owner/admin write rules. Product and sorting writes continue through the existing tenant-aware data service; sale IDs, stock transactions, duplicate protection, offline sale queues, and synchronization behavior are unchanged.
+
+Deploy: Firebase Hosting and Firestore rules. Hard refresh after deployment to load cache build `20260731-082`.
+
+Change: Corrected the Sales Report parity gap shown after the first Firebase deployment. The page now combines paid restaurant orders with Retail POS sales from the active tenant's Firestore `sales` collection, normalizes them into the same receipt model, and prevents duplicated receipts when a transaction appears in both sources. The report now opens in monthly mode and enforces the same green application header as the Laravel screen.
+
+Firebase safety: Report reads remain tenant-scoped. No Firestore rules, indexes, Cloud Functions, transaction handlers, stable IDs, duplicate-sale protection, or offline synchronization behavior changed.
+
+Deploy: hosting only. Hard refresh after deployment to load cache build `20260731-081`.
+
+Change: Extended the Laravel parity work from presentation-only to browser workflow parity while retaining Firebase Auth, Firestore, and Storage. Kitchen now groups table rounds and applies stable queue ordering, Cashier uses the same queue ordering, Take Away toolbar, empty state, and receipt fallback, Delivery supports staff logout, and Admin restores verified store settings plus add-menu/add-table modal actions. Shared POS presentation, dialogs, toast behavior, remembered receipt choices, and responsive action styling are aligned with the Laravel edition.
+
+Firebase safety: All writes continue through the existing tenant-scoped Firebase services. Firestore order/table documents, stable IDs, transactions, duplicate protection, offline queues, and synchronization remain the source of truth. No Firebase rules, indexes, or Cloud Functions changed.
+
+Deploy: hosting only. Hard refresh after deployment to load cache build `20260731-080`.
+
+Change: Ported the current presentation layer from the Laravel/MySQL edition back to this Firebase branch. The green Order/Delivery workspace theme, staff dashboard, Flaticon dashboard icons, modern sales report, queue badges, Take Away confirmation dialogs, cashier/kitchen confirmation icons, kitchen action animation/label, and blue `ส่งมอบแล้ว` action now match while Firebase data transport remains unchanged.
+
+Safety: Firebase Auth, Firestore/Storage transport, tenant scope, stable order/sale/queue IDs, duplicate sale/stock protection, and online/offline synchronization are preserved. No Firestore rules, Storage rules, Cloud Functions, or transaction handlers changed.
+
+Deploy: hosting only. Hard refresh after deployment to load cache build `20260731-079`.
+
+Change: Repaired the Super Admin login route and blank `/platform` failure mode. Shared login now loads the authenticated profile before resolving `ROLE_HOME`, sending `super_admin` directly to `/platform`. The role guard restores document visibility and presents retry/re-login actions when authentication or profile loading fails. Login and platform cache chains are bumped to `20260723-001`.
 
 Previous build note: POS Catalog Single Renderer from build `2026.07.17.002` remains unchanged for stable large-catalog rendering, 96-item paging, and consistent image/fallback cards.
 

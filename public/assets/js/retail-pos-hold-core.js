@@ -1,5 +1,6 @@
 import { auth } from './firebase-config.js?v=20260630-073';
 import { RetailCollections, listRecords, saveRecordStrict, saveRecordsStrict, deleteRecordStrict, watchRecords } from './retail-db.js?v=20260629-032';
+import { sweetAlert, sweetConfirm, sweetPrompt } from './sweet-dialog.js?v=20260731-089';
 
 const HOLD_KEY = "retail_pos_held_bills_v1";
 const holdBtn = document.querySelector("#holdBillBtn");
@@ -68,8 +69,19 @@ async function refreshHeldBills() {
 
 async function holdCurrentBill() {
   const items = currentCartFromDom();
-  if (!items.length) return alert("ยังไม่มีสินค้าในบิลสำหรับพักไว้");
-  const note = prompt("ระบุชื่อบิลพัก เช่น ลูกค้าเสื้อแดง หรือ คิว 1", "") ?? "";
+  if (!items.length) {
+    await sweetAlert("ยังไม่มีสินค้าในบิลสำหรับพักไว้", {
+      title: "พักบิล",
+      type: "warning",
+    });
+    return;
+  }
+  const note = await sweetPrompt("ระบุชื่อบิลพัก เช่น ลูกค้าเสื้อแดง หรือ คิว 1", "", {
+    title: "พักบิล",
+    placeholder: "ชื่อลูกค้า หรือหมายเลขคิว",
+    confirmText: "พักบิล",
+  });
+  if (note === null) return;
   const products = JSON.parse(localStorage.getItem("retail_pos_products_v1") || "[]");
   const productMap = new Map(products.map(item => [item.id, item]));
   const total = items.reduce((sum, item) => sum + Number(productMap.get(item.id)?.price || 0) * item.qty, 0) - Number(discountInput?.value || 0);
@@ -78,25 +90,43 @@ async function holdCurrentBill() {
     await saveRecordStrict(RetailCollections.heldBills, hold);
   } catch (error) {
     console.error('[retail-pos-hold] save firebase failed', error);
-    alert("พักบิลใน Firebase ไม่สำเร็จ กรุณาลองใหม่");
+    await sweetAlert("พักบิลใน Firebase ไม่สำเร็จ กรุณาลองใหม่", {
+      title: "พักบิลไม่สำเร็จ",
+      type: "error",
+    });
     return;
   }
   holds = [hold, ...holds].slice(0, 100);
   cacheLegacyHolds(holds);
   renderHeldCount();
   clearCurrentBill();
-  alert("พักบิลใน Firebase เรียบร้อยแล้ว");
+  await sweetAlert("พักบิลใน Firebase เรียบร้อยแล้ว", {
+    title: "พักบิลสำเร็จ",
+    type: "success",
+  });
   await refreshHeldBills();
 }
 
 async function resumeBill(id) {
   const hold = holds.find(item => String(item.id) === String(id));
   if (!hold) return;
-  if (currentCartFromDom().length && !confirm("บิลปัจจุบันยังมีสินค้า ต้องการล้างแล้วเรียกบิลพักหรือไม่?")) return;
+  if (currentCartFromDom().length) {
+    const reopenHeldDialog = Boolean(heldDialog?.open);
+    if (reopenHeldDialog) heldDialog.close();
+    const confirmed = await sweetConfirm("บิลปัจจุบันยังมีสินค้า ต้องการล้างแล้วเรียกบิลพักหรือไม่?", {
+      title: "เรียกบิลพัก",
+      confirmText: "ล้างและเรียกบิล",
+    });
+    if (reopenHeldDialog && !heldDialog.open) heldDialog.showModal();
+    if (!confirmed) return;
+  }
   try { await deleteRecordStrict(RetailCollections.heldBills, id); }
   catch (error) {
     console.error('[retail-pos-hold] delete firebase failed', error);
-    alert("เรียกบิลพักไม่สำเร็จ เพราะลบสถานะพักใน Firebase ไม่ได้");
+    await sweetAlert("เรียกบิลพักไม่สำเร็จ เพราะลบสถานะพักใน Firebase ไม่ได้", {
+      title: "เรียกบิลพักไม่สำเร็จ",
+      type: "error",
+    });
     return;
   }
   clearCurrentBill();
@@ -118,11 +148,23 @@ async function resumeBill(id) {
 
 async function deleteHeldBill(id) {
   const hold = holds.find(item => String(item.id) === String(id));
-  if (!hold || !confirm(`ลบบิลพัก “${hold.note || "บิลพัก"}” หรือไม่?`)) return;
+  if (!hold) return;
+  const reopenHeldDialog = Boolean(heldDialog?.open);
+  if (reopenHeldDialog) heldDialog.close();
+  const confirmed = await sweetConfirm(`ลบบิลพัก “${hold.note || "บิลพัก"}” หรือไม่?`, {
+    title: "ลบบิลพัก",
+    confirmText: "ลบ",
+    type: "warning",
+  });
+  if (reopenHeldDialog && !heldDialog.open) heldDialog.showModal();
+  if (!confirmed) return;
   try { await deleteRecordStrict(RetailCollections.heldBills, id); }
   catch (error) {
     console.error('[retail-pos-hold] delete firebase failed', error);
-    alert("ลบบิลพักใน Firebase ไม่สำเร็จ กรุณาลองใหม่");
+    await sweetAlert("ลบบิลพักใน Firebase ไม่สำเร็จ กรุณาลองใหม่", {
+      title: "ลบบิลพักไม่สำเร็จ",
+      type: "error",
+    });
     return;
   }
   holds = holds.filter(item => String(item.id) !== String(id));

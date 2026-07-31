@@ -1,5 +1,5 @@
 import { dataService } from "./data-service.js";
-import { money, formatTime, toast } from "./ui.js?v=20260716-009";
+import { money, formatTime, toast } from "./ui.js?v=20260731-080";
 
 const orderId = new URLSearchParams(location.search).get("order") || "";
 const receipt = document.querySelector("#customerReceipt");

@@ -1,0 +1,20 @@
+.permission-group-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.permission-group-toggle .bi {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.permission-group-toggle.is-select,
+.permission-group-toggle.is-select .bi {
+  color: #159447;
+}
+
+.permission-group-toggle.is-clear,
+.permission-group-toggle.is-clear .bi {
+  color: #dc3545;
+}

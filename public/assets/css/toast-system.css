@@ -5,7 +5,9 @@
   left: 50% !important;
   top: auto !important;
   bottom: 25vh !important;
-  z-index: 300 !important;
+  z-index: var(--top-layer-z, 2147483647) !important;
+  right: auto !important;
+  margin: 0 !important;
   width: min(520px, calc(100% - 28px)) !important;
   min-height: 0 !important;
   height: auto !important;
@@ -26,6 +28,10 @@
   transition: opacity .2s ease, transform .2s ease !important;
   pointer-events: none !important;
   overflow: hidden !important;
+}
+
+.app-toast[popover] {
+  inset: auto auto 25vh 50% !important;
 }
 
 .app-toast.show {
@@ -88,8 +94,7 @@
 
 @media (max-width: 480px) {
   .app-toast {
-    top: auto !important;
-    bottom: 24vh !important;
+    inset: auto auto 24vh 50% !important;
     width: calc(100% - 20px) !important;
     padding: 10px !important;
     grid-template-columns: 18px minmax(0, 1fr) !important;

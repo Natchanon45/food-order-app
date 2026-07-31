@@ -1,11 +1,11 @@
-import { money, toast } from "./ui.js?v=20260716-009";
+import { money, toast } from "./ui.js?v=20260731-080";
 import {
   registerPushNotifications,
   restorePushNotifications,
   disablePushNotifications,
   pushEnabled,
   pushErrorMessage
-} from "./push-notification-service.js";
+} from "./push-notification-service.js?v=20260801-100";
 
 const ENABLED_KEY = "food_order_delivery_alerts_enabled";
 const originalTitle = document.title;
@@ -56,10 +56,11 @@ function playDeliverySound() {
   playTone(1568, 0.48, 0.3);
 }
 
-function flashTitle(count) {
+function flashTitle(count, orderType = "delivery") {
   clearInterval(titleTimer);
   let showAlert = true;
-  const alertTitle = count > 1 ? `มี Delivery ใหม่ ${count} รายการ` : "มี Delivery ใหม่";
+  const label = orderType === "takeaway" ? "Take Away" : "Delivery";
+  const alertTitle = count > 1 ? `มีออเดอร์ใหม่ ${count} รายการ` : `มี ${label} ใหม่`;
   document.title = alertTitle;
   titleTimer = setInterval(() => {
     document.title = showAlert ? originalTitle : alertTitle;
@@ -152,6 +153,14 @@ function installEnableButton() {
     header.appendChild(actions);
   }
 
+  const placeUserMenuBesideAlert = () => {
+    const mountedUserMenu = header.querySelector("[data-user-menu]");
+    if (!mountedUserMenu) return false;
+    if (mountedUserMenu.parentElement !== actions) actions.appendChild(mountedUserMenu);
+    mountedUserMenu.style.marginLeft = "0";
+    return true;
+  };
+
   const button = document.createElement("button");
   button.type = "button";
   button.id = "deliveryAlertButton";
@@ -161,7 +170,13 @@ function installEnableButton() {
   button.addEventListener("click", () => toggleNotifications(button));
   actions.appendChild(button);
 
-  if (userMenu) actions.appendChild(userMenu);
+  if (userMenu) placeUserMenuBesideAlert();
+  else {
+    const menuObserver = new MutationObserver(() => {
+      if (placeUserMenuBesideAlert()) menuObserver.disconnect();
+    });
+    menuObserver.observe(header, { childList: true });
+  }
 
   if (isEnabled()) {
     restorePushNotifications().then(() => updateButton(button));
@@ -173,7 +188,7 @@ function installEnableButton() {
 
 export function observeDeliveryOrders(orders = []) {
   const activeDeliveries = orders.filter(order =>
-    order.orderType === "delivery" && !["paid", "cancelled"].includes(order.status)
+    ["delivery", "takeaway"].includes(order.orderType) && !["paid", "cancelled"].includes(order.status)
   );
   const currentIds = new Set(activeDeliveries.map(order => order.id));
   if (!initialized) {
@@ -187,12 +202,14 @@ export function observeDeliveryOrders(orders = []) {
   if (!newOrders.length) return;
 
   const newest = newOrders[0];
+  const typeLabel = newest.orderType === "takeaway" ? "Take Away" : "Delivery";
+  const customerName = newest.customerName || newest.recipientName || "ลูกค้า";
   const message = newOrders.length > 1
-    ? `มีออเดอร์ Delivery ใหม่ ${newOrders.length} รายการ`
-    : `มี Delivery ใหม่จาก ${newest.recipientName || "ลูกค้า"} ยอด ${money(newest.totalAmount || 0)} บาท`;
+    ? `มีออเดอร์ใหม่ ${newOrders.length} รายการ`
+    : `มี ${typeLabel} ใหม่จาก ${customerName} ยอด ${money(newest.totalAmount || 0)} บาท`;
 
   toast(message);
-  flashTitle(newOrders.length);
+  flashTitle(newOrders.length, newest.orderType);
   if (isEnabled()) {
     playDeliverySound();
     showDesktopNotification(newest, newOrders.length);

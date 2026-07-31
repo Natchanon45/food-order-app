@@ -1,0 +1,15 @@
+.sweet-dialog-button[hidden] {
+  display: none !important;
+}
+
+.sweet-dialog-actions.has-cancel {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+}
+
+.sweet-dialog-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}

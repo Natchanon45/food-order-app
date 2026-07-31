@@ -5,8 +5,8 @@ const PRODUCT_KEY = "retail_pos_products_v1";
 const SALES_KEY = "retail_pos_sales_v1";
 const ORDER_KEY = "retail_pos_catalog_order_v1";
 const SETTINGS_ID = "catalog-order";
-const INITIAL_LIMIT = 96;
-const LOAD_STEP = 96;
+const INITIAL_LIMIT = 99;
+const LOAD_STEP = 99;
 const productGrid = document.querySelector("#productGrid");
 const productPanel = document.querySelector(".product-panel");
 const searchInput = document.querySelector("#searchInput");
@@ -103,7 +103,10 @@ function sortProducts(rows) {
 
 function productCard(product) {
   const disabled = Number(product.stock || 0) <= 0;
-  return `<button class="product-card visual-card" type="button" data-product-id="${escapeHtml(product.id)}" ${disabled ? "disabled" : ""} title="${escapeHtml(product.name || "สินค้า")}"><div class="product-image" data-image-key="${escapeHtml(product.imageKey || "")}" data-image-url="${escapeHtml(product.imageUrl || "")}" data-product-name="${escapeHtml(product.name || "สินค้า")}">${escapeHtml(initials(product.name))}</div><div class="product-card-body"><span class="name">${escapeHtml(product.name)}</span><span class="code">${escapeHtml(product.id)} • ${escapeHtml(product.barcode)}</span><span class="stock">คงเหลือ ${Number(product.stock || 0).toLocaleString("th-TH")} ${escapeHtml(product.unit || "")}</span><span class="price">${money(product.price)} บาท</span></div><div class="product-info-overlay"><strong>${escapeHtml(product.name || "สินค้า")}</strong><span>${money(product.price)} บาท • เหลือ ${Number(product.stock || 0).toLocaleString("th-TH")} ${escapeHtml(product.unit || "")}</span></div></button>`;
+  const stockText = disabled ? "สินค้าหมด" : `คงเหลือ ${Number(product.stock || 0).toLocaleString("th-TH")} ${escapeHtml(product.unit || "")}`;
+  const detailText = disabled ? "สินค้าหมด" : `เหลือ ${Number(product.stock || 0).toLocaleString("th-TH")} ${escapeHtml(product.unit || "")}`;
+  const productName = escapeHtml(product.name || "สินค้า");
+  return `<button class="product-card visual-card" type="button" data-product-id="${escapeHtml(product.id)}" ${disabled ? 'disabled aria-disabled="true"' : ""} title="${productName} • ${stockText}" aria-label="${productName} ${stockText} ${money(product.price)} บาท"><div class="product-image" data-image-key="${escapeHtml(product.imageKey || "")}" data-image-url="${escapeHtml(product.imageUrl || "")}" data-product-name="${productName}">${escapeHtml(initials(product.name))}</div><div class="product-card-body"><span class="name">${productName}</span><span class="code">${escapeHtml(product.id)} • ${escapeHtml(product.barcode)}</span><span class="stock">${stockText}</span><span class="price">${money(product.price)} บาท</span></div><div class="product-info-overlay"><strong>${productName}</strong><span>${money(product.price)} บาท • ${detailText}</span></div></button>`;
 }
 
 async function hydrateVisibleImages() {

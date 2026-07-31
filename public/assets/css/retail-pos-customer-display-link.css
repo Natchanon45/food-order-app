@@ -4,7 +4,7 @@
   gap: 8px;
 }
 
-.pos-header .header-actions a[href="/pos/customer-display"] {
+.pos-header .header-actions a[href^="/pos/customer-display"] {
   order: -1;
   display: inline-grid !important;
   place-items: center !important;
@@ -14,27 +14,66 @@
   min-height: 42px !important;
   padding: 0 !important;
   border-radius: 12px !important;
-  background: #050b08 !important;
+  background: #fff !important;
   color: #0d6f34 !important;
-  border: 1px solid #0d6f34 !important;
+  border: 1px solid #d7e1dc !important;
   font-size: 0 !important;
   text-decoration: none !important;
 }
 
-.pos-header .header-actions a[href="/pos/customer-display"] i.bi-display {
-  display: inline-block !important;
+.pos-header .header-actions a[href^="/pos/customer-display"] i.bi-display {
+  display: grid !important;
+  place-items: center !important;
+  width: 1em !important;
+  height: 1em !important;
   color: #0d6f34 !important;
   font-size: 1.28rem !important;
   line-height: 1 !important;
+  vertical-align: 0 !important;
 }
 
-.pos-header .header-actions a[href="/pos/customer-display"]:hover {
-  background: #020403 !important;
+.pos-header .header-actions a[href^="/pos/customer-display"]:hover {
+  background: #f3faf6 !important;
   border-color: #159447 !important;
 }
 
-.pos-header .header-actions a[href="/pos/customer-display"]:hover i.bi-display {
+.pos-header .header-actions a[href^="/pos/customer-display"]:hover i.bi-display {
   color: #159447 !important;
+}
+
+.pos-header .header-actions #shiftNavLink {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  min-height: 42px !important;
+  padding: 0 16px !important;
+  border: 1px solid rgba(255, 255, 255, .72) !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, .96) !important;
+  color: #0d6f34 !important;
+  box-shadow: 0 6px 16px rgba(4, 45, 25, .14) !important;
+  text-decoration: none !important;
+}
+
+.pos-header .header-actions #shiftNavLink i {
+  display: grid !important;
+  place-items: center !important;
+  width: 1em !important;
+  height: 1em !important;
+  font-size: 1.05rem !important;
+  line-height: 1 !important;
+}
+
+.pos-header .header-actions #shiftNavLink.is-open {
+  background: #e8f7ee !important;
+  border-color: #b9dec8 !important;
+}
+
+.pos-header .header-actions #shiftNavLink:hover {
+  background: #f3faf6 !important;
+  border-color: #159447 !important;
+  transform: translateY(-1px);
 }
 
 @media (max-width: 640px) {
@@ -94,8 +133,43 @@
     white-space: nowrap !important;
   }
 
+  .pos-header .header-actions #shiftNavLink {
+    width: 38px !important;
+    min-width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 0 !important;
+    border-radius: 11px !important;
+    box-shadow: 0 4px 12px rgba(4, 45, 25, .12) !important;
+  }
+
+  .pos-header .header-actions #shiftNavLink span {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    white-space: nowrap !important;
+  }
+
+  .pos-header .header-actions #shiftNavLink i {
+    font-size: 1.15rem !important;
+  }
+
   .pos-header .header-actions .pos-menu-trigger {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     gap: 5px !important;
+  }
+
+  .pos-header .header-actions .pos-menu-trigger > i {
+    display: grid !important;
+    place-items: center !important;
+    width: 1em !important;
+    height: 1em !important;
+    line-height: 1 !important;
+    vertical-align: 0 !important;
   }
 
   .pos-header .header-actions .pos-sync-status {
@@ -135,14 +209,14 @@
     font-weight: 500 !important;
   }
 
-  .pos-header .header-actions a[href="/pos/customer-display"] {
+  .pos-header .header-actions a[href^="/pos/customer-display"] {
     width: 38px !important;
     height: 38px !important;
     min-width: 38px !important;
     min-height: 38px !important;
     border-radius: 11px !important;
   }
-  .pos-header .header-actions a[href="/pos/customer-display"] i.bi-display {
+  .pos-header .header-actions a[href^="/pos/customer-display"] i.bi-display {
     font-size: 1.18rem !important;
   }
 }
@@ -159,7 +233,7 @@
 
   .pos-header .header-actions .btn,
   .pos-header .header-actions .pos-menu-trigger,
-  .pos-header .header-actions a[href="/pos/customer-display"] {
+  .pos-header .header-actions a[href^="/pos/customer-display"] {
     height: 36px !important;
     min-height: 36px !important;
   }
@@ -168,13 +242,18 @@
     padding: 0 8px !important;
   }
 
+  .pos-header .header-actions #shiftNavLink {
+    width: 36px !important;
+    min-width: 36px !important;
+  }
+
   .pos-header .header-actions .pos-sync-status {
     min-width: 64px !important;
     height: 36px !important;
     min-height: 36px !important;
   }
 
-  .pos-header .header-actions a[href="/pos/customer-display"] {
+  .pos-header .header-actions a[href^="/pos/customer-display"] {
     width: 36px !important;
     min-width: 36px !important;
   }

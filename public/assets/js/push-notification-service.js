@@ -1,7 +1,7 @@
 import { app, auth, db, doc, setDoc, serverTimestamp } from "./firebase-config.js?v=20260630-073";
 import { getUserProfile, waitForAuth } from "./auth-service.js";
 import { resolveTenantContext } from "./tenant-context.js";
-import { toast } from "./ui.js?v=20260716-009";
+import { toast } from "./ui.js?v=20260731-080";
 import {
   getMessaging, getToken, isSupported, onMessage
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-messaging.js";
@@ -106,8 +106,14 @@ function installForegroundListener(messaging) {
 }
 
 export function pushErrorMessage(error) {
-  if (error?.message === "PUSH_NOT_SUPPORTED") return "อุปกรณ์หรือเบราว์เซอร์นี้ไม่รองรับ Push Notification";
-  if (error?.message === "PUSH_PERMISSION_DENIED") return "กรุณาอนุญาตการแจ้งเตือนในเบราว์เซอร์";
-  if (error?.message === "AUTH_REQUIRED") return "กรุณาเข้าสู่ระบบก่อนเปิด Push Notification";
+  const code = String(error?.code || "").toLowerCase();
+  const message = String(error?.message || "");
+  if (message === "PUSH_NOT_SUPPORTED" || code.includes("unsupported-browser")) return "อุปกรณ์หรือเบราว์เซอร์นี้ไม่รองรับ Push Notification";
+  if (message === "PUSH_PERMISSION_DENIED" || code.includes("permission-blocked")) return "กรุณาอนุญาตการแจ้งเตือนในเบราว์เซอร์";
+  if (message === "AUTH_REQUIRED") return "กรุณาเข้าสู่ระบบก่อนเปิด Push Notification";
+  if (message === "PROFILE_REQUIRED") return "ไม่พบสิทธิ์พนักงานสำหรับเปิด Push Notification";
+  if (message === "FCM_TOKEN_UNAVAILABLE" || code.includes("token-subscribe-failed")) return "ไม่สามารถสร้าง Push token ได้ กรุณาตรวจสอบการตั้งค่า Firebase Messaging";
+  if (code.includes("permission-denied")) return "ไม่มีสิทธิ์บันทึก Push token สำหรับร้านนี้";
+  if (code.includes("failed-service-worker-registration") || message.toLowerCase().includes("service worker")) return "ติดตั้งระบบ Push Notification ไม่สำเร็จ กรุณารีเฟรชแล้วลองใหม่";
   return "เปิด Push Notification ไม่สำเร็จ";
 }

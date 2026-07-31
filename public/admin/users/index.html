@@ -4,121 +4,38 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#159447">
-  <link rel="stylesheet" href="/assets/css/app.css?v=20260713-004">
-  <link rel="stylesheet" href="/assets/css/icons.css?v=20260715-011">
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260731-079">
+  <link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260731-079">
+  <link rel="stylesheet" href="/assets/css/admin-users.css?v=20260731-090">
   <title>จัดการพนักงาน</title>
-  <style>
-    .user-form-action,
-    .user-save-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .user-form-action .bi,
-    .user-save-button .bi {
-      flex: 0 0 auto;
-      line-height: 1;
-    }
-
-    .user-table-scroll {
-      overflow-x: auto;
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 8px;
-    }
-
-    .user-table {
-      min-width: 760px;
-    }
-
-    .user-table th,
-    .user-table td {
-      white-space: nowrap;
-      vertical-align: top;
-    }
-
-    .user-table td:nth-child(2) {
-      min-width: 220px;
-      white-space: normal;
-      word-break: break-word;
-    }
-
-    @media (max-width: 640px) {
-      .user-table-scroll {
-        margin-inline: -8px;
-        padding-inline: 8px;
-      }
-
-      .user-table-scroll .table-list {
-        display: table !important;
-        width: 760px !important;
-        min-width: 760px !important;
-        border-collapse: collapse !important;
-      }
-
-      .user-table-scroll thead {
-        display: table-header-group !important;
-      }
-
-      .user-table-scroll tbody {
-        display: table-row-group !important;
-      }
-
-      .user-table-scroll tr {
-        display: table-row !important;
-      }
-
-      .user-table-scroll th,
-      .user-table-scroll td {
-        display: table-cell !important;
-        padding: 10px !important;
-        border-bottom: 1px solid var(--line) !important;
-      }
-
-      .user-table-scroll input.input {
-        min-width: 150px;
-      }
-
-      .user-table-scroll select.input {
-        min-width: 120px;
-      }
-    }
-  </style>
 </head>
-<body data-roles="owner,super_admin">
+<body class="order-delivery-workspace admin-users-page" data-roles="owner,super_admin">
   <header class="app-header">
     <div class="brand"><span class="brand-mark">FO</span>จัดการพนักงาน</div>
     <a class="btn btn-sm" href="/admin">กลับหน้าจัดการร้าน</a>
   </header>
 
   <main class="container">
-    <section class="hero">
-      <h1>พนักงานของร้าน</h1>
-      <p>Owner สามารถเพิ่ม เปิดหรือปิด และกำหนดสิทธิ์พนักงานเฉพาะร้านของตนเอง</p>
+    <section class="hero staff-hero">
+      <div>
+        <span class="staff-hero-kicker"><i class="bi bi-people" aria-hidden="true"></i> ทีมงานของร้าน</span>
+        <h1>พนักงานของร้าน</h1>
+        <p>เพิ่มพนักงาน กำหนดหน้าที่ และควบคุมการเข้าใช้งานเฉพาะร้านของคุณ</p>
+      </div>
+      <button class="btn staff-create-trigger" id="openCreateUserModal" type="button">
+        <i class="bi bi-person-plus" aria-hidden="true"></i><span>เพิ่มพนักงาน</span>
+      </button>
     </section>
 
-    <section class="card">
-      <div class="section-title"><h2>สร้างผู้ใช้ใหม่</h2></div>
-      <form id="userForm" class="grid">
-        <div class="grid grid-2">
-          <div class="field"><label>ชื่อที่แสดง</label><input class="input" id="displayName" required maxlength="100"></div>
-          <div class="field"><label>อีเมล</label><input class="input" id="email" type="email" autocomplete="off" required></div>
+    <section class="card staff-list-card">
+      <div class="section-title staff-list-heading">
+        <div>
+          <h2>รายการพนักงาน</h2>
+          <p>แก้ไขชื่อ สิทธิ์ และสถานะการใช้งานได้จากรายการด้านล่าง</p>
         </div>
-        <div class="grid grid-2">
-          <div class="field"><label>รหัสผ่านเริ่มต้น</label><input class="input" id="password" type="password" autocomplete="new-password" minlength="8" required></div>
-          <div class="field"><label>ยืนยันรหัสผ่าน</label><input class="input" id="confirmPassword" type="password" autocomplete="new-password" minlength="8" required></div>
-        </div>
-        <div class="field"><label>สิทธิ์พนักงาน</label><select class="input" id="role" required><option value="admin">Admin</option><option value="cashier">Cashier</option><option value="kitchen">Kitchen</option></select></div>
-        <label><input type="checkbox" id="active" checked> เปิดใช้งานทันที</label>
-        <button class="btn btn-primary user-form-action" id="createUserButton" type="submit"><i class="bi bi-person-plus" aria-hidden="true"></i><span>สร้างผู้ใช้งาน</span></button>
-        <div class="upload-error" id="userError" hidden></div>
-      </form>
-    </section>
-
-    <section class="card" style="margin-top:16px">
-      <div class="section-title"><h2>รายการพนักงาน</h2><span class="badge" id="userCount">0 คน</span></div>
+        <span class="badge" id="userCount">0 คน</span>
+      </div>
       <div class="user-table-scroll">
         <table class="table-list user-table">
           <thead><tr><th>ชื่อ</th><th>อีเมล</th><th>สิทธิ์</th><th>เปิดใช้งาน</th><th></th></tr></thead>
@@ -128,7 +45,42 @@
     </section>
   </main>
 
-  <script type="module" src="/assets/js/page-guard.js?v=20260701-015"></script>
-  <script type="module" src="/assets/js/admin-users.js?v=20260716-009"></script>
+  <dialog class="staff-dialog" id="userDialog" aria-labelledby="userDialogTitle">
+    <form id="userForm" class="staff-dialog-form">
+      <header class="staff-dialog-header">
+        <span class="staff-dialog-icon"><i class="bi bi-person-plus" aria-hidden="true"></i></span>
+        <div>
+          <h2 id="userDialogTitle">เพิ่มพนักงานใหม่</h2>
+          <p>สร้างบัญชีและกำหนดสิทธิ์เริ่มต้นให้พนักงาน</p>
+        </div>
+        <button class="staff-dialog-close" id="closeCreateUserModal" type="button" aria-label="ปิด">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </header>
+      <div class="staff-dialog-body">
+        <div class="grid grid-2">
+          <div class="field"><label for="displayName">ชื่อที่แสดง</label><input class="input" id="displayName" required maxlength="100" placeholder="เช่น พนักงานแคชเชียร์"></div>
+          <div class="field"><label for="email">อีเมล</label><input class="input" id="email" type="email" autocomplete="off" required placeholder="name@example.com"></div>
+        </div>
+        <div class="grid grid-2">
+          <div class="field"><label for="password">รหัสผ่านเริ่มต้น</label><input class="input" id="password" type="password" autocomplete="new-password" minlength="8" required placeholder="อย่างน้อย 8 ตัวอักษร"></div>
+          <div class="field"><label for="confirmPassword">ยืนยันรหัสผ่าน</label><input class="input" id="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="กรอกรหัสผ่านอีกครั้ง"></div>
+        </div>
+        <div class="field"><label for="role">สิทธิ์พนักงาน</label><select class="input" id="role" required><option value="admin">Admin — จัดการร้าน</option><option value="cashier">Cashier — รับชำระเงิน</option><option value="kitchen">Kitchen — จัดการครัว</option></select></div>
+        <label class="staff-active-option">
+          <span><strong>เปิดใช้งานทันที</strong><small>พนักงานสามารถเข้าสู่ระบบได้หลังสร้างบัญชี</small></span>
+          <input type="checkbox" id="active" checked>
+        </label>
+        <div class="upload-error" id="userError" hidden></div>
+      </div>
+      <footer class="staff-dialog-footer">
+        <button class="btn staff-cancel-button" id="cancelCreateUserModal" type="button"><i class="bi bi-x-circle" aria-hidden="true"></i><span>ยกเลิก</span></button>
+        <button class="btn btn-primary user-form-action" id="createUserButton" type="submit"><i class="bi bi-person-plus" aria-hidden="true"></i><span>สร้างผู้ใช้งาน</span></button>
+      </footer>
+    </form>
+  </dialog>
+
+  <script type="module" src="/assets/js/page-guard.js?v=20260731-079"></script>
+  <script type="module" src="/assets/js/admin-users.js?v=20260731-090"></script>
 </body>
 </html>

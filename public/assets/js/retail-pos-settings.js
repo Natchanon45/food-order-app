@@ -1,5 +1,6 @@
 import { RetailCollections, getRecord, getTenantId } from './retail-db.js?v=20260629-032';
 import { saveSettingsDocumentsLocalFirst } from './retail-pos-settings-sync.js?v=20260716-015';
+import { sweetConfirm } from './sweet-dialog.js?v=20260731-094';
 
 const SETTINGS_KEY = "retail_pos_store_settings_v1";
 const tenantSettingsKey = () => `${SETTINGS_KEY}_${getTenantId()}`;
@@ -84,7 +85,21 @@ async function readSettings() {
       getRecord(RetailCollections.settings, "tax"),
       getRecord(RetailCollections.settings, "payment")
     ]);
-    return { ...defaults, ...(store || {}), ...(receipt || {}), ...(tax || {}), ...(payment || {}), ...local };
+    const tenantId = getTenantId();
+    const resolved = {
+      ...defaults,
+      ...local,
+      ...(store || {}),
+      ...(receipt || {}),
+      ...(tax || {}),
+      ...(payment || {}),
+      tenantId,
+      shopId: tenantId,
+      syncStatus: "synced"
+    };
+    localStorage.setItem(tenantSettingsKey(), JSON.stringify(resolved));
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(resolved));
+    return resolved;
   } catch (error) {
     console.warn("[retail-pos-settings] firebase settings fallback", error);
     return local;
@@ -299,7 +314,14 @@ els.form.addEventListener("submit", async event => {
 });
 
 els.resetBtn.addEventListener("click", async () => {
-  if (!confirm("คืนค่าข้อมูลร้าน ภาษี และข้อความใบเสร็จเป็นค่าเริ่มต้นหรือไม่?")) return;
+  const confirmed = await sweetConfirm("คืนค่าข้อมูลร้าน ภาษี และข้อความใบเสร็จเป็นค่าเริ่มต้นหรือไม่?", {
+    title: "ยืนยันคืนค่าเริ่มต้น",
+    type: "warning",
+    cancelText: "ยกเลิก",
+    confirmText: "คืนค่าเริ่มต้น",
+    confirmIcon: "arrow-clockwise"
+  });
+  if (!confirmed) return;
   localStorage.removeItem(SETTINGS_KEY);
   fillForm(defaults);
   await saveSettings(defaults);
