@@ -1,6 +1,6 @@
 import { RetailCollections, listRecords, watchRecords, saveRecord, moveRecord, deleteRecord, migrateLocalArray } from './retail-db.js?v=20260627-3';
 import { deleteProductImage } from './retail-product-image-store.js?v=20260715-008';
-import { sweetConfirm } from "./sweet-dialog.js?v=20260731-088";
+import { sweetConfirm } from "./sweet-dialog.js?v=20260731-089";
 
 const PRODUCT_KEY = "retail_pos_products_v1";
 const MOVEMENT_KEY = "retail_pos_stock_movements_v1";
@@ -498,6 +498,7 @@ els.clearMovementBtn.addEventListener("click", async () => {
     {
       title: "ล้างประวัติการปรับสต็อก",
       confirmText: "ล้างประวัติ",
+      confirmIcon: "trash3",
       cancelText: "ยกเลิก",
       type: "warning",
     },

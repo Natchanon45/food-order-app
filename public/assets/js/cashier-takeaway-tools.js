@@ -1,7 +1,7 @@
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 import { toast } from "./ui.js?v=20260731-080";
 import { getStoredTenant } from "./tenant-context.js";
-import { sweetPrompt } from "./sweet-dialog.js?v=20260731-080";
+import { sweetPrompt } from "./sweet-dialog.js?v=20260731-089";
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);

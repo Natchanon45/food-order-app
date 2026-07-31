@@ -1,11 +1,11 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Product Management Confirmation Dialogs
-Version: 0.15.6
-Build: 2026.07.31.088
+Milestone: Dialog and Cashier Icon Polish
+Version: 0.15.7
+Build: 2026.07.31.089
 
-Change: Replaced browser-native confirmation and alert boxes on `/pos/products` with the same shared styled dialog used by the Retail POS hold-bill workflow. Product deletion, category deletion, local stock-history clearing, and permission-denied feedback now stay inside the application UI. Destructive actions execute only after the user explicitly confirms the styled dialog.
+Change: Corrected shared dialog actions and cashier presentation. Dialog buttons now keep a stable left/right layout, hidden actions stay hidden, and destructive confirmation uses a trash icon distinct from cancel. The legacy cashier script no longer duplicates Take Away actions in the Hero, while the user menu keeps the shared room-service icon for `ออกโต๊ะ`.
 
 Firebase safety: This build changes presentation and interaction flow only. Product/category writes remain tenant-scoped through `tenants/{tenantId}`; the local stock-history clear action still clears local history only. Sales, stock quantities, sale stock movements, stable identifiers, duplicate protection, local-first checkout, offline sale queues, VAT, payments, returns, and tax invoices are unchanged.
 

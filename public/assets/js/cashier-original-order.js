@@ -74,6 +74,7 @@ function ensureTakeawayQrModal(url) {
 }
 
 function mountTakeawayTools() {
+  if (document.querySelector(".cashier-action-bar")) return;
   const hero = document.querySelector(".hero");
   if (!hero || document.querySelector("#takeawayCashierTools")) return;
   document.querySelector("#takeawayQrTools")?.remove();

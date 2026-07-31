@@ -29,6 +29,10 @@ function setDialogIcon(icon, type = "warning") {
   icon.innerHTML = `<i class="bi bi-${iconName}" aria-hidden="true"></i>`;
 }
 
+function setDialogButton(button, label, iconName) {
+  button.innerHTML = `<i class="bi bi-${iconName}" aria-hidden="true"></i><span>${String(label || '')}</span>`;
+}
+
 function closeDialog(value) {
   const root = document.querySelector('#sweetDialogRoot');
   root?.classList.remove('show');
@@ -51,7 +55,7 @@ export async function sweetAlert(message, options = {}) {
   msg.textContent = String(message ?? '');
   icon.className = `sweet-dialog-icon ${options.type || 'warning'}`.trim();
   setDialogIcon(icon, options.type || 'warning');
-  confirm.textContent = options.confirmText || 'ตกลง';
+  setDialogButton(confirm, options.confirmText || 'ตกลง', options.confirmIcon || 'check-circle');
   cancel.hidden = true;
   input.hidden = true;
   actions.classList.remove('has-cancel');
@@ -74,8 +78,8 @@ export async function sweetConfirm(message, options = {}) {
   msg.textContent = String(message ?? '');
   icon.className = `sweet-dialog-icon ${options.type || 'warning'}`.trim();
   setDialogIcon(icon, options.type || 'warning');
-  confirm.textContent = options.confirmText || 'ยืนยัน';
-  cancel.textContent = options.cancelText || 'ยกเลิก';
+  setDialogButton(confirm, options.confirmText || 'ยืนยัน', options.confirmIcon || 'check-circle');
+  setDialogButton(cancel, options.cancelText || 'ยกเลิก', options.cancelIcon || 'x-circle');
   cancel.hidden = false;
   input.hidden = true;
   actions.classList.add('has-cancel');
@@ -102,8 +106,8 @@ export async function sweetPrompt(message, defaultValue = '', options = {}) {
   input.readOnly = Boolean(options.readOnly);
   input.value = String(defaultValue ?? '');
   input.placeholder = options.placeholder || '';
-  confirm.textContent = options.confirmText || 'ตกลง';
-  cancel.textContent = options.cancelText || 'ยกเลิก';
+  setDialogButton(confirm, options.confirmText || 'ตกลง', options.confirmIcon || 'check-circle');
+  setDialogButton(cancel, options.cancelText || 'ยกเลิก', options.cancelIcon || 'x-circle');
   cancel.hidden = false;
   actions.classList.add('has-cancel');
   root.classList.add('show');

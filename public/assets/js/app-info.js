@@ -1,10 +1,10 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.15.6',
-  build: '2026.07.31.088',
+  version: '0.15.7',
+  build: '2026.07.31.089',
   branch: 'feature/retail-pos',
-  commit: 'PRODUCT-MANAGEMENT-CONFIRMATION-DIALOGS-01506',
+  commit: 'DIALOG-CASHIER-ICON-POLISH-01507',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',

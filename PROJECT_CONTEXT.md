@@ -2,15 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.15.6
-Build: 2026.07.31.088
+Version: 0.15.7
+Build: 2026.07.31.089
 
-Change: Removed browser-native confirmation/alert flows from `/pos/products` and replaced them with the shared styled Sweet Dialog already used by the Retail POS hold-bill workflow. Product deletion, category deletion, local stock-history clearing, and permission-denied feedback now render as application dialogs. Each destructive operation keeps its existing data path and runs only after explicit confirmation.
+Change: Polished shared dialog and cashier UI parity: stable left/right dialog actions, enforced hidden actions, distinct cancel/destructive icons, no duplicated Take Away controls inside the cashier Hero, and the shared room-service icon for `ออกโต๊ะ`.
 
 Firebase boundary: Product and category writes remain tenant-scoped through `tenants/{tenantId}`. Clearing stock history still affects only the local movement-history list and never changes product stock. Sales, sale stock movements, stable sale/order/queue IDs, duplicate protection, local-first checkout, offline sale sync, VAT, payments, returns, and tax invoices remain authoritative and unchanged.
 
-Deploy rules: Hosting only. Load cache build `20260731-088` with a hard refresh after deployment.
-Milestone: Product Management Confirmation Dialogs
+Deploy rules: Hosting only. Load cache build `20260731-089` with a hard refresh after deployment.
+Milestone: Dialog and Cashier Icon Polish
 
 Previous build (`2026.07.31.087`): Category pagination on `/pos/products` shows page buttons as plain numbers only while previous/next controls, search, filters, sorting, page-size selection, and page navigation remain unchanged.
 
