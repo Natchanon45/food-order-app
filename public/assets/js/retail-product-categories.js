@@ -5,6 +5,7 @@ import {
   deleteRecordStrict,
   commitTenantRecordsStrict
 } from "./retail-db.js?v=20260731-082";
+import { sweetConfirm } from "./sweet-dialog.js?v=20260731-088";
 
 const PRODUCT_KEY = "retail_pos_products_v1";
 const ORDER_KEY = "retail_pos_catalog_order_v1";
@@ -525,7 +526,16 @@ async function deleteCategory(id) {
     notify(`ยังลบไม่ได้ เนื่องจากมีสินค้า ${productCount.toLocaleString("th-TH")} รายการอยู่ในหมวดนี้`);
     return;
   }
-  if (!confirm(`ลบหมวด “${item.name}” ใช่หรือไม่?`)) return;
+  const confirmed = await sweetConfirm(
+    `ลบหมวด “${item.name}” ใช่หรือไม่?`,
+    {
+      title: "ลบหมวดสินค้า",
+      confirmText: "ลบหมวด",
+      cancelText: "ยกเลิก",
+      type: "warning",
+    },
+  );
+  if (!confirmed) return;
 
   try {
     await deleteRecordStrict(RetailCollections.categories, id);

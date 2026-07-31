@@ -1,5 +1,6 @@
 import { RetailCollections, listRecords, watchRecords, saveRecord, moveRecord, deleteRecord, migrateLocalArray } from './retail-db.js?v=20260627-3';
 import { deleteProductImage } from './retail-product-image-store.js?v=20260715-008';
+import { sweetConfirm } from "./sweet-dialog.js?v=20260731-088";
 
 const PRODUCT_KEY = "retail_pos_products_v1";
 const MOVEMENT_KEY = "retail_pos_stock_movements_v1";
@@ -383,7 +384,16 @@ async function submitProduct(event) {
 async function deleteProduct(id) {
   const product = products.find(item => item.id === id);
   if (!product) return;
-  if (!confirm(`ลบสินค้า “${product.name}” หรือไม่?\nประวัติการขายเดิมจะไม่ถูกลบ`)) return;
+  const confirmed = await sweetConfirm(
+    `ลบสินค้า “${product.name}” หรือไม่?\nประวัติการขายเดิมจะไม่ถูกลบ`,
+    {
+      title: "ลบสินค้า",
+      confirmText: "ลบสินค้า",
+      cancelText: "ยกเลิก",
+      type: "warning",
+    },
+  );
+  if (!confirmed) return;
   try { await deleteProductImage(product); }
   catch (error) { console.warn("[retail-products] image delete failed", error); }
   products = products.filter(item => item.id !== id);
@@ -481,8 +491,18 @@ els.productTableBody.addEventListener("click", event => {
   if (button.dataset.action === "stock") openStock(button.dataset.id);
   if (button.dataset.action === "delete") deleteProduct(button.dataset.id);
 });
-els.clearMovementBtn.addEventListener("click", () => {
-  if (!movements.length || !confirm("ล้างประวัติการปรับสต็อกทั้งหมดในเครื่องนี้หรือไม่?")) return;
+els.clearMovementBtn.addEventListener("click", async () => {
+  if (!movements.length) return;
+  const confirmed = await sweetConfirm(
+    "ล้างประวัติการปรับสต็อกทั้งหมดในเครื่องนี้หรือไม่?\nการล้างประวัติจะไม่เปลี่ยนยอดสต็อกสินค้า",
+    {
+      title: "ล้างประวัติการปรับสต็อก",
+      confirmText: "ล้างประวัติ",
+      cancelText: "ยกเลิก",
+      type: "warning",
+    },
+  );
+  if (!confirmed) return;
   movements = [];
   saveMovements();
   renderMovements();

@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.15.5',
-  build: '2026.07.31.087',
+  version: '0.15.6',
+  build: '2026.07.31.088',
   branch: 'feature/retail-pos',
-  commit: 'CATEGORY-PAGINATION-NUMBERS-01505',
+  commit: 'PRODUCT-MANAGEMENT-CONFIRMATION-DIALOGS-01506',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Category Pagination Number Cleanup',
-  updatedAt: '2026-07-31T11:05:00+07:00',
+  milestone: 'Product Management Confirmation Dialogs',
+  updatedAt: '2026-07-31T16:40:00+07:00',
   whatsNew: [
-    'Show category pagination page buttons as numbers only',
-    'Keep the previous and next arrow controls unchanged',
-    'Preserve all category data, sorting, filters, and tenant-scoped persistence behavior'
+    'Replace browser-native product-management confirmations with the shared styled dialog',
+    'Use explicit confirmation dialogs for product deletion, category deletion, and local stock-history clearing',
+    'Show permission-denied feedback inside the application instead of a browser alert'
   ]
 };
 

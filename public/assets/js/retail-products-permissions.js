@@ -1,4 +1,5 @@
 import {hasPermission} from "./retail-pos-navigation.js?v=20260716-013";
+import {sweetAlert} from "./sweet-dialog.js?v=20260731-088";
 
 const ACTIONS={
   create:"pos.products.create",
@@ -8,7 +9,7 @@ const ACTIONS={
   clearHistory:"pos.products.clear_history"
 };
 
-function deny(message="คุณไม่มีสิทธิ์ดำเนินการนี้"){alert(message)}
+function deny(message="คุณไม่มีสิทธิ์ดำเนินการนี้"){void sweetAlert(message,{title:"ไม่มีสิทธิ์ดำเนินการ",type:"warning",confirmText:"ตกลง"})}
 function setHidden(element,hidden){if(element&&element.hidden!==hidden)element.hidden=hidden}
 
 function applyVisibility(){

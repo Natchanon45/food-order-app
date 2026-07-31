@@ -1,15 +1,17 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Category Pagination Number Cleanup
-Version: 0.15.5
-Build: 2026.07.31.087
+Milestone: Product Management Confirmation Dialogs
+Version: 0.15.6
+Build: 2026.07.31.088
 
-Change: Category pagination on `/pos/products` now renders page buttons as plain numbers only. The previous and next arrow controls remain visible, and category searching, filtering, sorting, page-size selection, and navigation behavior are unchanged.
+Change: Replaced browser-native confirmation and alert boxes on `/pos/products` with the same shared styled dialog used by the Retail POS hold-bill workflow. Product deletion, category deletion, local stock-history clearing, and permission-denied feedback now stay inside the application UI. Destructive actions execute only after the user explicitly confirms the styled dialog.
 
-Firebase safety: This build is presentation-only. Category records and product category metadata remain tenant-scoped through `tenants/{tenantId}`. Sales, stock quantities, stock movements, stable identifiers, duplicate protection, local-first checkout, offline sale queues, VAT, payments, and tax invoices are unchanged.
+Firebase safety: This build changes presentation and interaction flow only. Product/category writes remain tenant-scoped through `tenants/{tenantId}`; the local stock-history clear action still clears local history only. Sales, stock quantities, sale stock movements, stable identifiers, duplicate protection, local-first checkout, offline sale queues, VAT, payments, returns, and tax invoices are unchanged.
 
-Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260731-087`.
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260731-088`.
+
+Previous build — Category Pagination Number Cleanup (`2026.07.31.087`): Category pagination on `/pos/products` renders page buttons as plain numbers only while previous/next controls, search, filters, sorting, page-size selection, and navigation behavior remain unchanged.
 
 Previous build — Retail Product Category Manager Usability (`2026.07.31.086`): Reworked `/pos/products` category management from a long card grid into a compact searchable, filterable, sortable, and paginated list. Add/edit uses a focused dialog, category counts and status are visible, derived categories can be promoted to stable records, and renaming a category updates affected product metadata while preserving the Stable Category ID and saved POS display position.
 
