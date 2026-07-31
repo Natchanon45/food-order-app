@@ -2,15 +2,17 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.15.4
-Build: 2026.07.31.086
+Version: 0.15.5
+Build: 2026.07.31.087
 
-Change: Reworked the `/pos/products` category manager into a compact operational list with search, status filtering, sorting, page-size selection, pagination, category/product counts, and a dedicated add/edit dialog. Existing product-derived categories can now be saved as stable category records, and a category rename updates affected product `categoryId`/`category` metadata without changing stock or sales data, and keeps the saved POS category order aligned with the renamed category.
+Change: Category pagination on `/pos/products` now shows page buttons as plain numbers only. The previous and next arrow controls remain unchanged, while search, filters, sorting, page-size selection, and page navigation behavior are preserved.
 
-Firebase boundary: Category records and category-only product metadata continue through tenant-scoped `tenants/{tenantId}` collections and the existing data service. Sales, stock quantities, stock movements, stable sale/order/queue IDs, duplicate protection, local-first checkout, offline sale sync, VAT, payments, returns, and tax invoices remain authoritative and unchanged.
+Firebase boundary: This is a presentation-only CSS correction. Category records and product category metadata remain tenant-scoped through `tenants/{tenantId}`. Sales, stock quantities, stock movements, stable sale/order/queue IDs, duplicate protection, local-first checkout, offline sale sync, VAT, payments, returns, and tax invoices are unchanged.
 
-Deploy rules: Hosting only. Load cache build `20260731-086` with a hard refresh after deployment.
-Milestone: Retail Product Category Manager Usability
+Deploy rules: Hosting only. Load cache build `20260731-087` with a hard refresh after deployment.
+Milestone: Category Pagination Number Cleanup
+
+Previous build (`2026.07.31.086`): Reworked the `/pos/products` category manager into a compact operational list with search, status filtering, sorting, page-size selection, pagination, category/product counts, and a dedicated add/edit dialog. Existing product-derived categories can be saved as stable category records, and a category rename updates affected product `categoryId`/`category` metadata without changing stock or sales data, while keeping the saved POS category order aligned with the renamed category.
 
 Previous build (`2026.07.31.085`): Retail POS cart decrement and increment controls render Bootstrap dash/plus icons inside the existing circular controls. Accessible labels and all quantity/cart behavior remain unchanged. Category selection remains tenant-scoped, while sales, stock movements, stable sale/order/queue IDs, duplicate protection, local-first operation, and offline sync remain authoritative.
 
@@ -64,6 +66,6 @@ Previous build note: Admin Hero Title Icon Cleanup from build `2026.07.16.012` r
 
 Previous build note: POS Catalog Single Renderer from build `2026.07.17.002` remains unchanged for stable 96-item catalog rendering and image/fallback cards.
 
-Next Task: deploy Hosting and verify `/pos/products` category search, status filters, sorting, 10/20/50 pagination, add/edit dialog, derived-category promotion, rename propagation, and delete protection for categories that still contain products.
+Next Task: deploy Hosting and verify that category pagination page buttons display only `1`, `2`, `3`, and so on, while the previous/next arrow buttons and all category-management behavior remain unchanged.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
