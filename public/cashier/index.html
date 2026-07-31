@@ -7,29 +7,42 @@
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <meta name="theme-color" content="#159447" />
-    <link rel="stylesheet" href="/assets/css/app.css?v=20260713-004" />
-    <link rel="stylesheet" href="/assets/css/icons.css?v=20260715-011" />
-    <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260629-048" />
+    <link rel="stylesheet" href="/assets/css/app.css?v=20260731-079" />
+    <link rel="stylesheet" href="/assets/css/icons.css?v=20260731-079" />
+    <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-079" />
+    <link rel="stylesheet" href="/assets/css/cashier-refresh.css?v=20260731-079" />
+    <link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260731-079" />
     <title>หน้าแคชเชียร์</title>
   </head>
-  <body data-roles="cashier">
+  <body class="order-delivery-workspace cashier-page" data-roles="cashier">
     <div id="demoBanner"></div>
     <header class="app-header">
       <div class="brand"><span class="brand-mark">FO</span>หน้าแคชเชียร์</div>
     </header>
-    <main class="container">
-      <section class="hero">
-        <h1>หน้าแคชเชียร์</h1>
-        <p>ออก QR ให้ลูกค้า ตรวจสอบยอดรวม และปิดบิล</p>
+    <main class="container cashier-shell">
+      <section class="hero cashier-hero">
+        <div class="cashier-hero-copy">
+          <h1>หน้าแคชเชียร์</h1>
+          <p>ตรวจสอบรายการ รับชำระเงิน และปิดบิลจากหน้าจอเดียว</p>
+        </div>
       </section>
-      <div id="orderGrid" class="grid grid-2"></div>
+      <section class="cashier-workspace" aria-labelledby="cashierQueueTitle">
+        <header class="cashier-section-head">
+          <div>
+            <h2 id="cashierQueueTitle">บิลที่รอดำเนินการ</h2>
+            <p>รายการใหม่จะแสดงที่หน้านี้โดยอัตโนมัติ</p>
+          </div>
+          <span id="cashierOrderCount" class="cashier-order-count">0 บิล</span>
+        </header>
+        <div id="orderGrid" class="cashier-order-grid"></div>
+      </section>
     </main>
     <script
       type="module"
-      src="/assets/js/page-guard.js?v=20260701-015"
+      src="/assets/js/page-guard.js?v=20260731-079"
     ></script>
     <script type="module" src="/assets/js/offline-data-service.js"></script>
-    <script type="module" src="/assets/js/cashier.js?v=20260702-003"></script>
+    <script type="module" src="/assets/js/cashier.js?v=20260731-079"></script>
     <script
       type="module"
       src="/assets/js/order-completion-finalizer.js?v=20260702-002"

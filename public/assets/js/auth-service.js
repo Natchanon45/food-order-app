@@ -60,7 +60,13 @@ function ensureIconStyles() {
   if (!document.querySelector('link[href^="/assets/css/icons.css"]')) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "/assets/css/icons.css?v=20260715-011";
+    link.href = "/assets/css/icons.css?v=20260731-079";
+    document.head.appendChild(link);
+  }
+  if (!document.querySelector('link[href*="cdn-uicons.flaticon.com"]')) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn-uicons.flaticon.com/4.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css";
     document.head.appendChild(link);
   }
 }
@@ -148,8 +154,17 @@ async function activateProfileTenant(profile = {}) {
 }
 
 function renderMenuItem(item) {
-  if (item.action) return `<button type="button" class="user-menu-link" data-menu-action="${item.action}" role="menuitem">${icon(item.icon)}<span>${item.label}</span></button>`;
-  return `<a class="user-menu-link" href="${item.href}" role="menuitem">${icon(item.icon)}<span>${item.label}</span></a>`;
+  const flaticon = {
+    home: "house-chimney",
+    easel2: "room-service",
+    settings: "settings-sliders",
+    users: "users"
+  };
+  const itemIcon = item.icon === "key"
+    ? icon("key")
+    : `<i class="fi fi-rr-${flaticon[item.icon] || "circle"} app-icon" aria-hidden="true"></i>`;
+  if (item.action) return `<button type="button" class="user-menu-link" data-menu-action="${item.action}" role="menuitem">${itemIcon}<span>${item.label}</span></button>`;
+  return `<a class="user-menu-link" href="${item.href}" role="menuitem">${itemIcon}<span>${item.label}</span></a>`;
 }
 
 function passwordErrorText(error) {
@@ -254,7 +269,7 @@ export function mountUserMenu(profile) {
     <div class="user-menu-panel" data-user-menu-panel role="menu" hidden>
       <div class="user-menu-greeting">สวัสดี ${greetingName(profile)}<span class="user-menu-role">${roleLabel(profile.role)}</span></div>
       ${roleMenuLinks(profile).map(renderMenuItem).join("")}
-      <button type="button" class="user-menu-action danger" data-logout role="menuitem">${icon("logout")}<span>ออกจากระบบ</span></button>
+      <button type="button" class="user-menu-action danger" data-logout role="menuitem"><i class="fi fi-rr-exit app-icon" aria-hidden="true"></i><span>ออกจากระบบ</span></button>
     </div>`;
   header.appendChild(menu);
 

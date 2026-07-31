@@ -1,9 +1,15 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Super Admin Platform Guard Recovery
-Version: 0.14.95
-Build: 2026.07.23.001
+Milestone: Firebase UI Presentation Parity
+Version: 0.14.97
+Build: 2026.07.31.079
+
+Change: Ported the current presentation layer from the Laravel/MySQL edition back to this Firebase branch. The green Order/Delivery workspace theme, staff dashboard, Flaticon dashboard icons, modern sales report, queue badges, Take Away confirmation dialogs, cashier/kitchen confirmation icons, kitchen action animation/label, and blue `ส่งมอบแล้ว` action now match while Firebase data transport remains unchanged.
+
+Safety: Firebase Auth, Firestore/Storage transport, tenant scope, stable order/sale/queue IDs, duplicate sale/stock protection, and online/offline synchronization are preserved. No Firestore rules, Storage rules, Cloud Functions, or transaction handlers changed.
+
+Deploy: hosting only. Hard refresh after deployment to load cache build `20260731-079`.
 
 Change: Repaired the Super Admin login route and blank `/platform` failure mode. Shared login now loads the authenticated profile before resolving `ROLE_HOME`, sending `super_admin` directly to `/platform`. The role guard restores document visibility and presents retry/re-login actions when authentication or profile loading fails. Login and platform cache chains are bumped to `20260723-001`.
 

@@ -1,4 +1,4 @@
-import "./sweet-dialog.js?v=20260629-048";
+import "./sweet-dialog.js?v=20260731-079";
 import "./kitchen-item-serve.js?v=20260701-014";
 import { dataService, usingDemoMode } from "./data-service.js?v=20260701-009";
 import { money, statusLabel, formatTime, toast } from "./ui.js?v=20260716-009";
@@ -8,7 +8,7 @@ import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "/assets/css/sweet-dialog.css?v=20260629-048";
+  link.href = "/assets/css/sweet-dialog.css?v=20260731-079";
   document.head.appendChild(link);
 }
 if (usingDemoMode) document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง</div>';
@@ -20,16 +20,28 @@ let availableMenus = [];
 
 async function askConfirm(message, options = {}) { if (typeof window.sweetConfirm === "function") return await window.sweetConfirm(message, options); return confirm(message); }
 function icon(name) { return iconMarkup(name); }
+function decorateConfirmAction() {
+  queueMicrotask(() => {
+    const confirmButton = document.querySelector("#sweetDialogConfirm");
+    if (!confirmButton) return;
+    confirmButton.innerHTML = `${icon("check-circle")}<span>ตกลง</span>`;
+    confirmButton.style.display = "inline-flex";
+    confirmButton.style.alignItems = "center";
+    confirmButton.style.justifyContent = "center";
+    confirmButton.style.gap = "8px";
+  });
+}
 function isDelivery(order) { return order?.orderType === "delivery"; }
 function isTakeaway(order) { return order?.orderType === "takeaway"; }
 function displayTime(order) { return order.createdAt || order.createdAtText || order.updatedAt; }
 function valueToDate(value) { if (!value) return null; if (typeof value.toDate === "function") return value.toDate(); if (value.seconds) return new Date(value.seconds * 1000); const date = value instanceof Date ? value : new Date(value); return Number.isNaN(date.getTime()) ? null : date; }
 function orderAgeMinutes(order) { const date = valueToDate(displayTime(order)); return date ? Math.floor((Date.now() - date.getTime()) / 60000) : 0; }
 function isOverdue(order) { return ["pending", "accepted", "cooking"].includes(order?.status) && orderAgeMinutes(order) >= 15; }
-function orderTitle(order) { if (isDelivery(order)) return `Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}`; if (isTakeaway(order)) return `Take Away: ${order.queueNo || order.tableCode || "TA"}`; return `โต๊ะ ${order.tableCode}${order.roundNumber ? ` • รอบที่ ${order.roundNumber}` : " • รอบที่ 1"}`; }
+function orderTitle(order) { if (isDelivery(order)) return `Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}`; if (isTakeaway(order)) return "Take Away"; return `โต๊ะ ${order.tableCode}${order.roundNumber ? ` • รอบที่ ${order.roundNumber}` : " • รอบที่ 1"}`; }
+function queueBadge(order) { return `<span class="order-queue-badge"><small>เลขคิว</small><strong>${order?.queueNo || "-"}</strong></span>`; }
 function nextActions(status, orderType) {
   if (status === "pending") return [["accepted", "รับออเดอร์", "btn-primary", "check", "kitchen-accept-action"]];
-  if (status === "accepted") return [["cooking", "เริ่มทำ", "btn-warning", "hourglass-split", "kitchen-start-action"]];
+  if (status === "accepted") return [["cooking", "กำลังทำ", "btn-warning", "hourglass-split", "kitchen-start-action"]];
   if (status === "cooking") return [["ready", orderType === "delivery" ? "พร้อมจัดส่ง" : "พร้อมเสิร์ฟ", "btn-primary", "check-circle", "kitchen-ready-action"]];
   if (status === "ready") return [["served", orderType === "delivery" ? "ส่งให้ไรเดอร์แล้ว" : "เสิร์ฟแล้ว", "btn-dark", "check-circle", "kitchen-served-action"]];
   return [];
@@ -49,7 +61,7 @@ function render(orders) {
     const statusText = isTakeaway(order) && order.status === "ready" ? "พร้อมเสิร์ฟ" : statusLabel(order.status);
     const overdueBadge = overdue ? `<span class="badge warning kitchen-overdue-badge">รอนาน ${orderAgeMinutes(order)} นาที</span>` : "";
     const actionButtons = nextActions(order.status, order.orderType).map(([status,label,cls,iconName,actionClass]) => `<button class="btn ${cls} kitchen-status-action ${actionClass || ""}" data-id="${order.id}" data-status="${status}" aria-label="${label}">${icon(iconName)}<span>${label}</span></button>`).join("");
-    return `<article class="card order-card${isTakeaway(order) ? " takeaway-kitchen-card" : ""}${overdue ? " kitchen-order-overdue" : ""}"><div class="order-head"><div><h2 style="margin:0">${orderTitle(order)}</h2><small>${formatTime(displayTime(order))}</small></div><span class="badge ${isTakeaway(order) ? "warning" : ""}">${statusText}</span></div>${overdueBadge}${orderInfo(order)}<ul class="order-items">${itemRows}</ul>${orderSummary(order)}${order.note ? `<p><strong>หมายเหตุรวม:</strong> ${order.note}</p>` : ""}<div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions kitchen-order-actions" style="margin-top:12px">${actionButtons}${locked ? "" : `<button class="btn btn-danger" data-cancel-order="${order.id}">ยกเลิกทั้งออเดอร์</button>`}</div></article>`;
+    return `<article class="card order-card${isTakeaway(order) ? " takeaway-kitchen-card" : ""}${overdue ? " kitchen-order-overdue" : ""}"><div class="order-head"><div class="order-heading-with-queue">${queueBadge(order)}<div><h2 style="margin:0">${orderTitle(order)}</h2><small>${formatTime(displayTime(order))}</small></div></div><span class="badge ${isTakeaway(order) ? "warning" : ""}">${statusText}</span></div>${overdueBadge}${orderInfo(order)}<ul class="order-items">${itemRows}</ul>${orderSummary(order)}${order.note ? `<p><strong>หมายเหตุรวม:</strong> ${order.note}</p>` : ""}<div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions kitchen-order-actions" style="margin-top:12px">${actionButtons}${locked ? "" : `<button class="btn btn-danger" data-cancel-order="${order.id}">ยกเลิกทั้งออเดอร์</button>`}</div></article>`;
   }).join("") : '<div class="card empty">ยังไม่มีออเดอร์ที่รอดำเนินการ</div>';
 }
 function closeEditor() { document.querySelector(".kitchen-item-editor-backdrop")?.remove(); }
@@ -64,7 +76,7 @@ function openEditor(order, itemIndex) {
 grid.addEventListener("click", async event => {
   const editItemButton = event.target.closest("[data-edit-item]"); if (editItemButton) { const order = currentOrders.find(item => item.id === editItemButton.dataset.editItem); const itemIndex = Number(editItemButton.dataset.itemIndex); if (order && Number.isInteger(itemIndex) && !isKitchenLocked(order)) openEditor(order, itemIndex); return; }
   const cancelItemButton = event.target.closest("[data-cancel-item]"); if (cancelItemButton) { const order = currentOrders.find(item => item.id === cancelItemButton.dataset.cancelItem); const itemIndex = Number(cancelItemButton.dataset.itemIndex); if (!order || !Number.isInteger(itemIndex) || isKitchenLocked(order)) return; const selectedItem = order.items?.[itemIndex]; if (!selectedItem || selectedItem.cancelled) return; const ok = await askConfirm(`ยกเลิกเฉพาะรายการ ${selectedItem.name} ใช่หรือไม่?`, { title: "ยกเลิกรายการ", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" }); if (!ok) return; const items = order.items.map((item, index) => index === itemIndex ? { ...item, cancelled: true, cancelledAt: new Date().toISOString() } : item); const totals = recalculateOrder(order, items); const patch = { items, ...totals }; if (totals.subtotalAmount <= 0) patch.status = "cancelled"; await dataService.updateOrder(order.id, patch); toast(totals.subtotalAmount <= 0 ? "ยกเลิกทั้งออเดอร์แล้ว เพราะไม่มีรายการเหลือ" : "ยกเลิกรายการและคำนวณยอดใหม่แล้ว"); return; }
-  const cancelOrderButton = event.target.closest("[data-cancel-order]"); if (cancelOrderButton) { const order = currentOrders.find(item => item.id === cancelOrderButton.dataset.cancelOrder); if (isKitchenLocked(order)) return; const ok = await askConfirm("ยืนยันยกเลิกทุกรายการในออเดอร์นี้?", { title: "ยกเลิกทั้งออเดอร์", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" }); if (!ok) return; await dataService.updateOrder(cancelOrderButton.dataset.cancelOrder, { status: "cancelled", subtotalAmount: 0, deliveryFee: 0, totalAmount: 0, cancelledAt: new Date().toISOString() }); toast("ยกเลิกทั้งออเดอร์แล้ว"); return; }
+  const cancelOrderButton = event.target.closest("[data-cancel-order]"); if (cancelOrderButton) { const order = currentOrders.find(item => item.id === cancelOrderButton.dataset.cancelOrder); if (isKitchenLocked(order)) return; const confirmation = askConfirm("ยืนยันยกเลิกทุกรายการในออเดอร์นี้?", { title: "ยกเลิกทั้งออเดอร์", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" }); decorateConfirmAction(); const ok = await confirmation; if (!ok) return; await dataService.updateOrder(cancelOrderButton.dataset.cancelOrder, { status: "cancelled", subtotalAmount: 0, deliveryFee: 0, totalAmount: 0, cancelledAt: new Date().toISOString() }); toast("ยกเลิกทั้งออเดอร์แล้ว"); return; }
   const button = event.target.closest("[data-id][data-status]"); if (!button) return; const { id, status } = button.dataset; const order = currentOrders.find(item => item.id === id); button.disabled = true;
   try { const patch = { status }; if (status === "served") patch.servedAt = new Date().toISOString(); if (isTakeaway(order) && status === "ready") patch.pickupStatus = "ready"; if (isTakeaway(order) && status === "served") patch.pickupStatus = "served"; if (isDelivery(order) && status === "served" && order.paymentStatus === "paid") { patch.status = "paid"; patch.completedAt = new Date().toISOString(); } await dataService.updateOrder(id, patch); toast(isTakeaway(order) && patch.status === "served" ? "เสิร์ฟ Take Away แล้ว และล็อกรายการแล้ว" : isTakeaway(order) && patch.status === "ready" ? "ออเดอร์ Take Away พร้อมเสิร์ฟแล้ว" : patch.status === "paid" ? "ส่งให้ไรเดอร์และปิดออเดอร์ Delivery แล้ว" : `เปลี่ยนสถานะเป็น ${statusLabel(patch.status)}`); }
   catch (error) { console.error(error); toast("อัปเดตสถานะไม่สำเร็จ", "error"); button.disabled = false; }

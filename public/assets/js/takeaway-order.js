@@ -1,4 +1,4 @@
-import "./sweet-dialog.js?v=20260629-048";
+import "./sweet-dialog.js?v=20260731-079";
 import "./cart-item-layout.js?v=20260702-002";
 import { dataService, usingDemoMode } from "./data-service.js?v=20260701-009";
 import { money, toast } from "./ui.js?v=20260716-009";
@@ -15,10 +15,49 @@ let menus = [];
 let activeCategory = "ทั้งหมด";
 let currentPage = 1;
 let submitting = false;
+let confirming = false;
 
 async function askConfirm(message, options = {}) {
   if (typeof window.sweetConfirm === "function") return await window.sweetConfirm(message, options);
   return confirm(message);
+}
+
+function setDialogActionContent(button, icon, label) {
+  if (!button) return;
+  button.innerHTML = `<i class="bi bi-${icon}" aria-hidden="true"></i><span>${label}</span>`;
+  button.style.display = "inline-flex";
+  button.style.alignItems = "center";
+  button.style.justifyContent = "center";
+  button.style.gap = "8px";
+}
+
+function decorateDialogActions(cancelIcon, cancelLabel, confirmIcon, confirmLabel) {
+  queueMicrotask(() => {
+    setDialogActionContent(document.querySelector("#sweetDialogCancel"), cancelIcon, cancelLabel);
+    setDialogActionContent(document.querySelector("#sweetDialogConfirm"), confirmIcon, confirmLabel);
+  });
+}
+
+async function confirmOrderSubmission() {
+  const confirmation = askConfirm("ส่งรายการคำสั่งซื้อนี้เข้าครัวและแคชเชียร์ใช่หรือไม่?", {
+    title: "ยืนยันส่งรายการคำสั่งซื้อ",
+    confirmText: "ตกลง",
+    cancelText: "ยกเลิก",
+    type: "warning"
+  });
+  decorateDialogActions("x-circle", "ยกเลิก", "check-circle", "ตกลง");
+  return await confirmation;
+}
+
+function showOrderSuccess(queueNo) {
+  if (typeof window.sweetConfirm !== "function") return;
+  void window.sweetConfirm(`เลขคิวของคุณคือ ${queueNo || "Take Away"}`, {
+    title: "สั่งกลับบ้านสำเร็จ",
+    type: "success",
+    cancelText: "ปิด",
+    confirmText: "ตกลง",
+  });
+  decorateDialogActions("x-circle", "ปิด", "check-circle", "ตกลง");
 }
 
 function isMobile() { return window.matchMedia("(max-width: 899px)").matches; }
@@ -31,7 +70,7 @@ function menuCard(item) { return `<article class="card menu-card"><div class="me
 function visiblePageNumbers(totalPages) { if (totalPages <= 5) return Array.from({ length: totalPages }, (_, index) => index + 1); const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4)); return Array.from({ length: 5 }, (_, index) => start + index); }
 function renderPagination(totalItems) { if (isMobile()) { menuPagination.hidden = true; menuPagination.innerHTML = ""; return; } const totalPages = Math.max(1, Math.ceil(totalItems / pageSize())); currentPage = Math.min(currentPage, totalPages); menuPagination.hidden = totalPages <= 1; menuPagination.innerHTML = totalPages <= 1 ? "" : `<button type="button" class="menu-page-button" data-page="${currentPage - 1}" ${currentPage === 1 ? "disabled" : ""}>‹</button>${visiblePageNumbers(totalPages).map(page => `<button type="button" class="menu-page-button${page === currentPage ? " active" : ""}" data-page="${page}">${page}</button>`).join("")}<button type="button" class="menu-page-button" data-page="${currentPage + 1}" ${currentPage === totalPages ? "disabled" : ""}>›</button><div class="menu-page-summary">หน้า ${currentPage} จาก ${totalPages} • ${totalItems} เมนู</div>`; }
 function renderMenus() { const filtered = filteredMenus(); const size = pageSize(); const totalPages = Math.max(1, Math.ceil(filtered.length / size)); currentPage = Math.min(currentPage, totalPages); const pageItems = isMobile() ? filtered : filtered.slice((currentPage - 1) * size, currentPage * size); menuGrid.innerHTML = pageItems.length ? pageItems.map(menuCard).join("") : '<div class="card empty">ไม่พบเมนู</div>'; renderPagination(filtered.length); }
-function updateCart() { const items = [...cart.values()]; cartList.innerHTML = items.length ? items.map(item => `<div class="cart-row"><div><strong>${escapeHtml(item.name)}</strong><div class="menu-category">${money(item.price)} บาท</div><input class="input" data-note="${escapeHtml(item.id)}" value="${escapeHtml(item.note || "")}" placeholder="หมายเหตุ เช่น ไม่เผ็ด" style="margin-top:7px"></div><div class="qty"><button data-dec="${escapeHtml(item.id)}">−</button><strong>${item.qty}</strong><button data-inc="${escapeHtml(item.id)}">+</button></div></div>`).join("") : '<div class="empty">ยังไม่มีรายการ</div>'; const totalQty = items.reduce((sum, item) => sum + item.qty, 0); const total = items.reduce((sum, item) => sum + item.qty * Number(item.price), 0); document.querySelector("#cartCount").textContent = `${totalQty} รายการ`; document.querySelector("#cartTotal").textContent = money(total); submitButton.disabled = submitting || !items.length; }
+function updateCart() { const items = [...cart.values()]; cartList.innerHTML = items.length ? items.map(item => `<div class="cart-row"><div><strong>${escapeHtml(item.name)}</strong><div class="menu-category">${money(item.price)} บาท</div><input class="input" data-note="${escapeHtml(item.id)}" value="${escapeHtml(item.note || "")}" placeholder="หมายเหตุ เช่น ไม่เผ็ด" style="margin-top:7px"></div><div class="qty"><button data-dec="${escapeHtml(item.id)}">−</button><strong>${item.qty}</strong><button data-inc="${escapeHtml(item.id)}">+</button></div></div>`).join("") : '<div class="empty">ยังไม่มีรายการ</div>'; const totalQty = items.reduce((sum, item) => sum + item.qty, 0); const total = items.reduce((sum, item) => sum + item.qty * Number(item.price), 0); document.querySelector("#cartCount").textContent = `${totalQty} รายการ`; document.querySelector("#cartTotal").textContent = money(total); submitButton.disabled = confirming || submitting || !items.length; }
 
 categoryTabs.addEventListener("click", event => { const button = event.target.closest("[data-category]"); if (!button) return; activeCategory = button.dataset.category; currentPage = 1; renderTabs(); renderMenus(); });
 menuPagination.addEventListener("click", event => { const button = event.target.closest("[data-page]"); if (!button || button.disabled) return; currentPage = Number(button.dataset.page); renderMenus(); document.querySelector("#menuListStart")?.scrollIntoView({ behavior: "smooth", block: "start" }); });
@@ -69,14 +108,25 @@ document.querySelector("#searchInput").addEventListener("input", () => { current
 window.addEventListener("resize", () => { currentPage = 1; renderMenus(); });
 
 submitButton.addEventListener("click", async () => {
+  if (confirming || submitting) return;
   const customerName = document.querySelector("#customerName").value.trim();
   const customerPhone = document.querySelector("#customerPhone").value.trim();
   if (!customerName && !customerPhone) { toast("กรุณากรอกชื่อหรือเบอร์โทร", "error"); document.querySelector("#customerName").focus(); return; }
   const items = [...cart.values()].map(({ id, name, price, qty, note }) => ({ menuId: id, name, price: Number(price), qty, note: note || "" }));
   if (!items.length) return;
   const totalAmount = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  confirming = true;
+  updateCart();
+  const confirmed = await confirmOrderSubmission().finally(() => {
+    confirming = false;
+    updateCart();
+  });
+  if (!confirmed) {
+    toast("ยกเลิกรายการแล้ว");
+    return;
+  }
   submitting = true; submitButton.textContent = "กำลังส่ง..."; updateCart();
-  try { const result = await dataService.createTakeawayOrder({ customerName, customerPhone, status: "pending", totalAmount, subtotalAmount: totalAmount, note: document.querySelector("#orderNote").value.trim(), items }); cart.clear(); document.querySelector("#orderNote").value = ""; updateCart(); toast(`ส่งรายการเข้าครัวแล้ว เลขคิว ${result?.queueNo || "Take Away"}`); if (typeof window.sweetAlert === "function") window.sweetAlert(`เลขคิวของคุณคือ ${result?.queueNo || "Take Away"}`, { title: "สั่งกลับบ้านสำเร็จ", type: "success" }); }
+  try { const result = await dataService.createTakeawayOrder({ customerName, customerPhone, status: "pending", totalAmount, subtotalAmount: totalAmount, note: document.querySelector("#orderNote").value.trim(), items }); cart.clear(); document.querySelector("#orderNote").value = ""; updateCart(); toast("ส่งรายการคำสั่งซื้อเข้าครัวแล้ว"); showOrderSuccess(result?.queueNo); }
   catch (error) { console.error(error); toast(error.message === "TAKEAWAY_CUSTOMER_REQUIRED" ? "กรุณากรอกชื่อหรือเบอร์โทร" : "ส่งออเดอร์ไม่สำเร็จ", "error"); }
   finally { submitting = false; submitButton.textContent = "ส่งรายการเข้าครัว"; updateCart(); }
 });

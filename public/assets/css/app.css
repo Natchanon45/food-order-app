@@ -44,8 +44,16 @@ button { cursor: pointer; }
 .btn-warning { color: white; background: var(--warning); }
 .btn-sm { padding: 7px 10px; border-radius: 10px; font-size: 13px; }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
-.field { display: grid; gap: 6px; min-width: 0; }
+.field { display: grid; gap: 6px; min-width: 0; align-content: start; align-self: start; }
 .field label { font-size: 13px; font-weight: 400; color: var(--muted); }
+.order-heading-with-queue { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.order-heading-with-queue > div { min-width: 0; }
+.order-queue-badge { flex: 0 0 auto; min-width: 68px; min-height: 58px; padding: 7px 10px; border-radius: 14px; background: var(--green-dark); color: white; display: grid; place-items: center; align-content: center; line-height: 1; box-shadow: 0 8px 18px rgba(8, 59, 29, .16); }
+.order-queue-badge small { font-size: 10px; font-weight: 500; opacity: .78; margin-bottom: 4px; }
+.order-queue-badge strong { font-size: 20px; letter-spacing: .02em; }
+.table-round-list { display: grid; gap: 10px; margin-top: 12px; }
+.table-round-card { padding: 12px; box-shadow: none; background: #f8fbf9; border-color: #dce9e1; }
+@media (max-width: 640px) { .order-heading-with-queue { align-items: flex-start; } .order-queue-badge { min-width: 60px; min-height: 54px; } .order-queue-badge strong { font-size: 18px; } }
 .input { width: 100%; max-width: 100%; min-width: 0; min-height: 44px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: white; }
 input[type="date"], input[type="month"], input[type="week"], input[type="time"], input[type="datetime-local"], input[type="number"], input[data-year-input] { width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; -webkit-appearance: none; appearance: none; line-height: normal; }
 input[type="date"]::-webkit-date-and-time-value, input[type="month"]::-webkit-date-and-time-value, input[type="week"]::-webkit-date-and-time-value, input[type="time"]::-webkit-date-and-time-value, input[type="datetime-local"]::-webkit-date-and-time-value { text-align: left; min-height: 1.4em; }

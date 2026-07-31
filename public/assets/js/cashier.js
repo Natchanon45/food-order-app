@@ -1,4 +1,4 @@
-import "./sweet-dialog.js?v=20260629-048";
+import "./sweet-dialog.js?v=20260731-079";
 import "./cashier-table-move.js?v=20260701-014";
 import { dataService, usingDemoMode } from "./data-service.js";
 import {
@@ -14,7 +14,7 @@ import { getStoredTenant } from "./tenant-context.js";
 if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "/assets/css/sweet-dialog.css?v=20260629-048";
+  link.href = "/assets/css/sweet-dialog.css?v=20260731-079";
   document.head.appendChild(link);
 }
 if (usingDemoMode)
@@ -22,6 +22,7 @@ if (usingDemoMode)
     '<div class="demo-banner">โหมดตัวอย่าง: ข้อมูลอยู่ในเบราว์เซอร์นี้</div>';
 
 const grid = document.querySelector("#orderGrid");
+const orderCount = document.querySelector("#cashierOrderCount");
 let currentOrders = [];
 let slipUrls = new Map();
 async function askConfirm(message, options = {}) {
@@ -31,6 +32,17 @@ async function askConfirm(message, options = {}) {
 }
 function icon(name) {
   return iconMarkup(name);
+}
+function decorateConfirmAction() {
+  queueMicrotask(() => {
+    const confirmButton = document.querySelector("#sweetDialogConfirm");
+    if (!confirmButton) return;
+    confirmButton.innerHTML = `${icon("check-circle")}<span>ตกลง</span>`;
+    confirmButton.style.display = "inline-flex";
+    confirmButton.style.alignItems = "center";
+    confirmButton.style.justifyContent = "center";
+    confirmButton.style.gap = "8px";
+  });
 }
 function takeawayUrl() {
   const tenant = getStoredTenant?.();
@@ -115,6 +127,9 @@ function isTableOrder(order) {
 function isServed(order) {
   return order?.status === "served";
 }
+function queueBadge(order) {
+  return `<span class="order-queue-badge"><small>เลขคิว</small><strong>${order?.queueNo || "-"}</strong></span>`;
+}
 function tablePaymentPatch(order, paidAt) {
   const patch = { paymentStatus: "paid", paidAt };
   if (isServed(order)) {
@@ -162,7 +177,7 @@ function renderDelivery(order) {
     : order.paymentSlipPath
       ? `<button class="btn btn-warning" disabled>${icon("view")}<span>กำลังโหลดสลิป...</span></button>`
       : "";
-  return `<article class="card order-card"><div class="order-head"><div><h2 style="margin:0">Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}</h2><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div><span class="badge">${statusLabel(order.status)}</span></div><p><span class="badge ${order.paymentStatus === "paid" ? "" : "warning"}">${paymentLabel(order)}</span><br><strong>โทร:</strong> ${order.recipientPhone || "-"}<br><strong>ที่อยู่:</strong> ${order.deliveryAddress || "-"}</p><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>${slipAction}${paymentAction}<button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button></div></article>`;
+  return `<article class="card order-card"><div class="order-head"><div class="order-heading-with-queue">${queueBadge(order)}<div><h2 style="margin:0">Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}</h2><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div></div><span class="badge">${statusLabel(order.status)}</span></div><p><span class="badge ${order.paymentStatus === "paid" ? "" : "warning"}">${paymentLabel(order)}</span><br><strong>โทร:</strong> ${order.recipientPhone || "-"}<br><strong>ที่อยู่:</strong> ${order.deliveryAddress || "-"}</p><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>${slipAction}${paymentAction}<button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button></div></article>`;
 }
 function renderTakeaway(order) {
   const queueNo = order.queueNo || order.tableCode || "TA";
@@ -177,9 +192,9 @@ function renderTakeaway(order) {
       : "";
   const doneAction =
     ready || order.pickupStatus === "called"
-      ? `<button class="btn btn-dark" data-pickup-done="${order.id}">${icon("check-circle")}<span>${paid ? "ส่งมอบแล้ว" : "ชำระและส่งมอบแล้ว"}</span></button>`
+      ? `<button class="btn cashier-pickup-done-action" data-pickup-done="${order.id}">${icon("check-circle")}<span>ส่งมอบแล้ว</span></button>`
       : "";
-  return `<article class="card order-card"><div class="order-head"><div><h2 style="margin:0">Take Away: ${queueNo}</h2><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div><span class="badge ${order.pickupStatus === "called" ? "warning" : ""}">${order.pickupStatus === "called" ? "เรียกคิวแล้ว" : statusLabel(order.status)}</span></div><p><strong>ลูกค้า:</strong> ${order.customerName || "-"}<br><strong>โทร:</strong> ${order.customerPhone || "-"}<br><span class="badge ${paid ? "" : "warning"}">${paid ? "ชำระเงินแล้ว" : "รอชำระเงิน"}</span></p><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>${paymentAction}${callAction}${doneAction}<button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button></div></article>`;
+  return `<article class="card order-card"><div class="order-head"><div class="order-heading-with-queue">${queueBadge(order)}<div><h2 style="margin:0">Take Away</h2><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div></div><span class="badge ${order.pickupStatus === "called" ? "warning" : ""}">${order.pickupStatus === "called" ? "เรียกคิวแล้ว" : statusLabel(order.status)}</span></div><p><strong>ลูกค้า:</strong> ${order.customerName || "-"}<br><strong>โทร:</strong> ${order.customerPhone || "-"}<br><span class="badge ${paid ? "" : "warning"}">${paid ? "ชำระเงินแล้ว" : "รอชำระเงิน"}</span></p><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>${paymentAction}${callAction}${doneAction}<button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button></div></article>`;
 }
 function renderTableBill(group) {
   const sorted = [...group].sort(
@@ -208,7 +223,7 @@ function renderTableBill(group) {
   const paymentAction = unpaidPaymentRounds.length
     ? `<button class="btn btn-primary" data-table-payment="${key}">${icon("easel2")}<span>ตรวจแล้ว/ชำระแล้ว</span></button>`
     : `<button class="btn btn-primary" disabled>${icon("check-circle")}<span>ชำระแล้ว</span></button>`;
-  return `<article class="card order-card"><div class="order-head"><div><h2 style="margin:0">โต๊ะ ${first.tableCode}</h2><small>${sorted.length} รอบที่ยังไม่ปิดบิล • เสิร์ฟแล้ว ${servedCount}/${sorted.length} รอบ</small></div>${paymentBadge}</div>${rounds}<div class="order-head" style="margin-top:14px;padding-top:12px;border-top:2px solid #dfe8e2"><strong>ยอดรวมทั้งโต๊ะ</strong><strong class="price">${money(total)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?orders=${encodeURIComponent(ids)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>${paymentAction}</div></article>`;
+  return `<article class="card order-card"><div class="order-head"><div class="order-heading-with-queue">${queueBadge(first)}<div><h2 style="margin:0">โต๊ะ ${first.tableCode}</h2><small>${sorted.length} รอบที่ยังไม่ปิดบิล • เสิร์ฟแล้ว ${servedCount}/${sorted.length} รอบ</small></div></div>${paymentBadge}</div>${rounds}<div class="order-head" style="margin-top:14px;padding-top:12px;border-top:2px solid #dfe8e2"><strong>ยอดรวมทั้งโต๊ะ</strong><strong class="price">${money(total)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?orders=${encodeURIComponent(ids)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>${paymentAction}</div></article>`;
 }
 function render(orders) {
   currentOrders = orders;
@@ -229,6 +244,7 @@ function render(orders) {
     ...takeaways.map(renderTakeaway),
     ...deliveries.map(renderDelivery),
   ];
+  if (orderCount) orderCount.textContent = `${cards.length} บิล`;
   grid.innerHTML = cards.length
     ? cards.join("")
     : '<div class="card empty">ไม่มีบิลที่รอดำเนินการ</div>';
@@ -350,7 +366,7 @@ grid.addEventListener("click", async (event) => {
   }
   const paymentButton = event.target.closest("[data-payment-id]");
   if (paymentButton) {
-    const ok = await askConfirm(
+    const confirmation = askConfirm(
       "ตรวจสอบสลิปหรือรับเงินเรียบร้อยแล้วใช่หรือไม่?",
       {
         title: "ยืนยันการชำระเงิน",
@@ -359,6 +375,8 @@ grid.addEventListener("click", async (event) => {
         type: "warning",
       },
     );
+    decorateConfirmAction();
+    const ok = await confirmation;
     if (!ok) return;
     const printWindow = openReceiptPrintWindow();
     paymentButton.disabled = true;
@@ -400,7 +418,7 @@ grid.addEventListener("click", async (event) => {
         : order?.orderType === "takeaway"
           ? `ออเดอร์ Take Away ${order.queueNo || ""}`
           : `ออเดอร์โต๊ะ ${order?.tableCode || "-"} รอบที่ ${order?.roundNumber || 1}`;
-    const ok = await askConfirm(
+    const confirmation = askConfirm(
       `ยืนยันยกเลิก ${targetLabel} ใช่หรือไม่?\n\nการดำเนินการนี้จะนำรายการออกจากบิลทันที`,
       {
         title: "ยกเลิกออเดอร์",
@@ -409,6 +427,8 @@ grid.addEventListener("click", async (event) => {
         type: "warning",
       },
     );
+    decorateConfirmAction();
+    const ok = await confirmation;
     if (!ok) return;
   }
   button.disabled = true;

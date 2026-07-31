@@ -2,9 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.95
-Build: 2026.07.23.001
-Milestone: Super Admin Platform Guard Recovery
+Version: 0.14.97
+Build: 2026.07.31.079
+Milestone: Firebase UI Presentation Parity
+
+Change: Ported presentation-only updates from the Laravel/MySQL application into the Firebase-hosted application. This includes the shared green theme, modern dashboard/report workspace, Flaticon dashboard icons, clearer queue badges, Take Away confirmation/success actions, cashier/kitchen confirm icons, smooth kitchen hourglass animation, `กำลังทำ`, and the blue `ส่งมอบแล้ว` action.
+
+Firebase boundary: Firebase Auth, Firestore and Storage services, tenant selection, stable order/sale/queue IDs, duplicate protection, local-first persistence, offline queue processing, and sync behavior remain authoritative and unchanged. No rules, indexes, functions, or Firebase transaction code changed.
+
+Deploy rules: hosting-only deploy. Load cache build `20260731-079` with a hard refresh after deployment.
 
 Change: Fixed the Super Admin login and `/platform` guard flow. Login now resolves the signed-in Firestore profile before selecting `ROLE_HOME`, so `super_admin` goes directly to `/platform`. The shared role guard now restores page visibility and provides retry/re-login actions if profile loading fails, preventing a permanently blank page.
 
