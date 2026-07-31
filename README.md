@@ -1,15 +1,17 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Firebase Sales Report Parity
-Version: 0.15.3
-Build: 2026.07.31.085
+Milestone: Retail Product Category Manager Usability
+Version: 0.15.4
+Build: 2026.07.31.086
 
-Change: Replaced the text minus and plus controls in Retail POS cart rows with Bootstrap Icons while preserving the circular buttons, accessible Thai labels, quantity behavior, and compact Laravel-aligned cart layout.
+Change: Reworked `/pos/products` category management from a long card grid into a compact searchable, filterable, sortable, and paginated list. Add/edit now uses a focused dialog, category counts and status are visible, derived categories can be promoted to stable records, and renaming a category updates the affected product category metadata while preserving the category ID and its saved POS display position.
 
-Firebase safety: Category selection continues to use tenant-scoped Firestore category IDs. Sales, stock transactions, stable identifiers, duplicate protection, local-first checkout, and offline synchronization are unchanged.
+Firebase safety: Category and affected product metadata writes remain tenant-scoped through `tenants/{tenantId}` and the existing tenant-aware data layer. This build does not change sales, stock quantities, stock movements, stable sale IDs, duplicate protection, checkout transactions, offline sale queues, VAT, payments, or tax invoices.
 
-Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260731-085`.
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260731-086`.
+
+Previous build — Cart Quantity Icon Polish (`2026.07.31.085`): Replaced the text minus and plus controls in Retail POS cart rows with Bootstrap Icons while preserving the circular buttons, accessible Thai labels, quantity behavior, and compact Laravel-aligned cart layout. Category selection remains tenant-scoped; sales, stock transactions, stable identifiers, duplicate protection, local-first checkout, and offline synchronization are unchanged.
 
 Change: Completed the Retail POS parity corrections from the Laravel edition. The profile password action now uses the original key treatment, the POS category strip mounts once, VAT mode is fixed without an include/exclude selector, the menu button includes its hamburger icon, and product management now includes pagination, a dedicated Firestore-backed category manager, and visible category/product sorting.
 
