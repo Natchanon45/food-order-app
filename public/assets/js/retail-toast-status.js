@@ -1,4 +1,4 @@
-import './app-version-badge.js?v=20260801-098';
+import './app-version-badge.js?v=20260801-099';
 
 const styleId = 'retailToastMainStyle';
 const toastDismissTimers = new WeakMap();

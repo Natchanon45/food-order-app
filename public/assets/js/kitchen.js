@@ -2,7 +2,7 @@ import "./sweet-dialog.js?v=20260731-080";
 import "./kitchen-item-serve.js?v=20260701-014";
 import { dataService, usingDemoMode } from "./data-service.js?v=20260701-009";
 import { money, statusLabel, formatTime, toast } from "./ui.js?v=20260731-080";
-import { observeDeliveryOrders } from "./delivery-notifier.js";
+import { observeDeliveryOrders } from "./delivery-notifier.js?v=20260801-099";
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 
 if (!document.querySelector('link[href*="sweet-dialog.css"]')) {

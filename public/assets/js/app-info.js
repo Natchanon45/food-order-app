@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.15.16',
-  build: '2026.08.01.098',
+  version: '0.15.17',
+  build: '2026.08.01.099',
   branch: 'feature/retail-pos',
-  commit: 'AUTHORITATIVE-STORE-SETTINGS-01516',
+  commit: 'TENANT-PUSH-TOKEN-RULES-01517',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Authoritative Store Settings',
-  updatedAt: '2026-08-01T04:00:00+07:00',
+  milestone: 'Secure Push Notification Enrollment',
+  updatedAt: '2026-08-01T04:20:00+07:00',
   whatsNew: [
-    'Use Firestore as the authoritative VAT and PromptPay configuration',
-    'Prevent stale browser settings from overriding explicit remote values',
-    'Refresh the tenant-local settings cache from the resolved remote configuration'
+    'Allow tenant members to register only their own Push token',
+    'Validate token ownership, tenant, role, document ID, and fields',
+    'Show actionable Push Notification setup errors'
   ]
 };
 

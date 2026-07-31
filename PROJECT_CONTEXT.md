@@ -2,8 +2,14 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.15.16
-Build: 2026.08.01.098
+Version: 0.15.17
+Build: 2026.08.01.099
+
+Change: Fixed Push Notification enrollment. Tenant members can now create or refresh only their own validated token document under `tenants/{tenantId}/notificationTokens`, while client listing and deletion remain denied. The UI reports actionable Firebase Messaging, Service Worker, profile, browser-permission, and Firestore authorization errors instead of one generic failure.
+
+Firebase boundary: Existing Cloud Functions still consume active notification tokens with Admin SDK access. No notification trigger, order/sale/queue ID, duplicate protection, online/offline workflow, or other persistence path changed.
+
+Deploy rules: deploy Hosting and Firestore rules. Load cache build `20260801-099` with a hard refresh after deployment.
 
 Change: Fixed the settings-source mismatch. Tenant Firestore `store`, `receipt`, `tax`, and `payment` documents now override stale local cache values on the settings screen, including explicit `no` and empty VAT/PromptPay fields. The resolved authoritative configuration is then copied to the tenant-scoped and compatibility local caches used by POS and customer display.
 

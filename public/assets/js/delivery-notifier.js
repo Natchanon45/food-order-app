@@ -5,7 +5,7 @@ import {
   disablePushNotifications,
   pushEnabled,
   pushErrorMessage
-} from "./push-notification-service.js";
+} from "./push-notification-service.js?v=20260801-099";
 
 const ENABLED_KEY = "food_order_delivery_alerts_enabled";
 const originalTitle = document.title;

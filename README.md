@@ -1,9 +1,15 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Authoritative Store Settings
-Version: 0.15.16
-Build: 2026.08.01.098
+Milestone: Secure Push Notification Enrollment
+Version: 0.15.17
+Build: 2026.08.01.099
+
+Change: Enabled Firebase Web Push registration for signed-in tenant members. Firestore now permits each user to create or update only their own tenant-scoped notification token, validates the token owner, tenant, role, document ID, and allowed fields, and keeps token listing/deletion closed to browser clients. Push setup errors now distinguish permission, profile, Service Worker, FCM token, and Firestore-rule failures.
+
+Firebase safety: Notification tokens remain under `tenants/{tenantId}/notificationTokens`; Cloud Functions continue reading them through the Admin SDK. Order/sale/queue identifiers, duplicate protection, offline behavior, stock, payments, and existing notification triggers are unchanged.
+
+Deploy: Firebase Hosting and Firestore rules. Hard refresh after deployment to load cache build `20260801-099`.
 
 Change: Corrected the Retail POS settings read order so tenant Firestore documents are authoritative for VAT registration and PromptPay enablement, ID, and account name. Explicit remote `no` and empty values are preserved, while stale browser data can no longer overwrite the settings form; the resolved configuration refreshes the local cache used by POS and customer-display flows.
 
