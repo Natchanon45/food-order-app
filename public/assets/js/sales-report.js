@@ -1,5 +1,5 @@
 import { dataService, usingDemoMode } from "./data-service.js";
-import { money, formatTime } from "./ui.js?v=20260716-009";
+import { money, formatTime } from "./ui.js?v=20260731-080";
 
 const backIcon = document.querySelector('.app-header a[href="/admin/"] .bi:not(.app-icon)');
 if (backIcon) backIcon.remove();

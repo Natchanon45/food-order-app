@@ -26,6 +26,26 @@
           <p>ตรวจสอบรายการ รับชำระเงิน และปิดบิลจากหน้าจอเดียว</p>
         </div>
       </section>
+      <section class="cashier-action-bar" aria-label="เครื่องมือสั่งกลับบ้าน">
+        <div class="cashier-action-title">
+          <strong>เครื่องมือสั่งกลับบ้าน</strong>
+          <span>สำหรับลูกค้า Walk-in</span>
+        </div>
+        <div class="cashier-actions">
+          <button class="btn btn-primary" type="button" id="showTakeawayQr" aria-label="แสดง QR สั่งกลับบ้าน" title="แสดง QR สั่งกลับบ้าน">
+            <i class="bi bi-qr-code app-icon" aria-hidden="true"></i>
+            <span>QR Take Away</span>
+          </button>
+          <a class="btn btn-warning" id="openTakeawayOrder" target="_blank" rel="noopener" aria-label="เปิดหน้าสั่งกลับบ้าน" title="เปิดหน้าสั่งกลับบ้าน">
+            <i class="bi bi-plus-lg app-icon" aria-hidden="true"></i>
+            <span>สั่งกลับบ้าน</span>
+          </a>
+          <button class="btn cashier-copy-action" type="button" id="copyTakeawayUrl" aria-label="คัดลอกลิงก์สั่งกลับบ้าน" title="คัดลอกลิงก์สั่งกลับบ้าน">
+            <i class="bi bi-clipboard app-icon" aria-hidden="true"></i>
+            <span>คัดลอกลิงก์</span>
+          </button>
+        </div>
+      </section>
       <section class="cashier-workspace" aria-labelledby="cashierQueueTitle">
         <header class="cashier-section-head">
           <div>
@@ -42,7 +62,8 @@
       src="/assets/js/page-guard.js?v=20260731-079"
     ></script>
     <script type="module" src="/assets/js/offline-data-service.js"></script>
-    <script type="module" src="/assets/js/cashier.js?v=20260731-079"></script>
+    <script type="module" src="/assets/js/cashier.js?v=20260731-080"></script>
+    <script type="module" src="/assets/js/cashier-takeaway-tools.js?v=20260731-080"></script>
     <script
       type="module"
       src="/assets/js/order-completion-finalizer.js?v=20260702-002"

@@ -31,20 +31,18 @@ function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[ch]);
 }
 
-function productLabel(product = {}) {
+function stockLabel(product = {}) {
+  if (Number(product.stock || 0) <= 0) return 'สินค้าหมด';
   const stock = Number(product.stock || 0).toLocaleString('th-TH');
-  const unit = product.unit || 'ชิ้น';
-  return `${product.name || 'ไม่ระบุชื่อ'} คงเหลือ ${stock} ${unit} ${money(product.price)} บาท`;
+  return `คงเหลือ ${stock} ${product.unit || 'ชิ้น'}`;
+}
+
+function productLabel(product = {}) {
+  return `${product.name || 'ไม่ระบุชื่อ'} ${stockLabel(product)} ${money(product.price)} บาท`;
 }
 
 function hoverInfoHtml(product = {}) {
-  const stock = Number(product.stock || 0).toLocaleString('th-TH');
-  const unit = product.unit || 'ชิ้น';
-  return `<span class="pos-card-hover-info" aria-hidden="true"><strong>${escapeHtml(product.name || 'ไม่ระบุชื่อ')}</strong><span class="pos-hover-stock">คงเหลือ ${stock} ${escapeHtml(unit)}</span><span class="pos-hover-price">${money(product.price)} บาท</span></span>`;
-}
-
-function soldOutHtml(product = {}) {
-  return Number(product.stock || 0) <= 0 ? '<span class="pos-card-sold-out">สินค้าหมด</span>' : '';
+  return `<span class="pos-card-hover-info" aria-hidden="true"><strong>${escapeHtml(product.name || 'ไม่ระบุชื่อ')}</strong><span class="pos-hover-stock">${escapeHtml(stockLabel(product))}</span><span class="pos-hover-price">${money(product.price)} บาท</span></span>`;
 }
 
 function initials(name) {
@@ -75,7 +73,7 @@ function restoreProductCards() {
     const id = product.id || '';
     const barcode = product.barcode || '';
     const code = [id, barcode].filter(Boolean).join(' • ');
-    card.innerHTML = `${soldOutHtml(product)}<span class="pos-card-image-wrap"><img src="${escapeHtml(src)}" alt="${escapeHtml(product.name || '')}" loading="lazy" decoding="async"></span><span class="pos-card-title">${escapeHtml(product.name || 'ไม่ระบุชื่อ')}</span><span class="pos-card-code">${escapeHtml(code)}</span><span class="pos-card-stock">คงเหลือ ${Number(product.stock || 0).toLocaleString('th-TH')} ${escapeHtml(product.unit || 'ชิ้น')}</span><span class="pos-card-price">${money(product.price)} บาท</span>${hoverInfoHtml(product)}`;
+    card.innerHTML = `<span class="pos-card-image-wrap"><img src="${escapeHtml(src)}" alt="${escapeHtml(product.name || '')}" loading="lazy" decoding="async"></span><span class="pos-card-title">${escapeHtml(product.name || 'ไม่ระบุชื่อ')}</span><span class="pos-card-code">${escapeHtml(code)}</span><span class="pos-card-stock">${escapeHtml(stockLabel(product))}</span><span class="pos-card-price">${money(product.price)} บาท</span>${hoverInfoHtml(product)}`;
     const image = card.querySelector('.pos-card-image-wrap img');
     image?.addEventListener('error', () => {
       image.closest('.pos-card-image-wrap')?.replaceChildren(document.createRange().createContextualFragment(fallbackImageHtml(product)));

@@ -210,6 +210,10 @@
   }
 }
 
+.product-card.visual-card:disabled::after {
+  content: "สินค้าหมด" !important;
+}
+
 @media (max-width: 600px) {
   .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
   .product-card.visual-card,
@@ -226,11 +230,29 @@
   .product-card.visual-card .price,
   .product-card .pos-card-price { display: none !important; }
   .product-card.pos-product-card-image .pos-card-hover-info,
-  .product-card.visual-card .product-info-overlay { display: flex !important; opacity: 0 !important; min-height: 64% !important; padding: 24px 7px 7px !important; }
+  .product-card.visual-card .product-info-overlay {
+    display: flex !important;
+    opacity: 1 !important;
+    min-height: 58% !important;
+    padding: 20px 7px 7px !important;
+    transform: translateY(0) !important;
+  }
   .product-card.pos-product-card-image .pos-card-hover-info strong,
-  .product-card.visual-card .product-info-overlay strong { font-size: .68rem !important; line-height: 1.12 !important; }
+  .product-card.visual-card .product-info-overlay strong {
+    display: -webkit-box !important;
+    font-size: .68rem !important;
+    line-height: 1.14 !important;
+    white-space: normal !important;
+    text-overflow: clip !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+  }
   .product-card.pos-product-card-image .pos-card-hover-info span,
-  .product-card.visual-card .product-info-overlay span { font-size: .58rem !important; line-height: 1.05 !important; }
+  .product-card.visual-card .product-info-overlay span {
+    font-size: .58rem !important;
+    line-height: 1.08 !important;
+    white-space: normal !important;
+  }
   .product-card.pos-product-card-image .pos-card-hover-info .pos-hover-price,
   .product-card.visual-card .product-info-overlay .pos-hover-price { font-size: .66rem !important; padding: 2px 5px !important; }
   .product-card .pos-card-sold-out { top: 5px !important; left: 5px !important; font-size: .62rem !important; }

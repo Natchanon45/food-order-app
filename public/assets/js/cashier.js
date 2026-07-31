@@ -1,4 +1,4 @@
-import "./sweet-dialog.js?v=20260731-079";
+import "./sweet-dialog.js?v=20260731-080";
 import "./cashier-table-move.js?v=20260701-014";
 import { dataService, usingDemoMode } from "./data-service.js";
 import {
@@ -6,7 +6,7 @@ import {
   ref,
   getDownloadURL,
 } from "./firebase-config.js?v=20260630-073";
-import { money, statusLabel, formatTime, toast } from "./ui.js?v=20260716-009";
+import { money, statusLabel, formatTime, toast } from "./ui.js?v=20260731-080";
 import { observeDeliveryOrders } from "./delivery-notifier.js";
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 import { getStoredTenant } from "./tenant-context.js";
@@ -127,6 +127,12 @@ function isTableOrder(order) {
 function isServed(order) {
   return order?.status === "served";
 }
+function queueSequence(order) {
+  const explicit = Number(order?.queueSequence);
+  if (Number.isFinite(explicit) && explicit > 0) return explicit;
+  const parsed = Number(String(order?.queueNo || "").replace(/\D/g, ""));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
 function queueBadge(order) {
   return `<span class="order-queue-badge"><small>เลขคิว</small><strong>${order?.queueNo || "-"}</strong></span>`;
 }
@@ -240,14 +246,14 @@ function render(orders) {
     groups.get(key).push(order);
   });
   const cards = [
-    ...Array.from(groups.values()).map(renderTableBill),
-    ...takeaways.map(renderTakeaway),
-    ...deliveries.map(renderDelivery),
-  ];
+    ...Array.from(groups.values()).map(group => ({ queueDate: group[0].queueDate || "", sequence: queueSequence(group[0]), createdAt: group[0].createdAt, html: renderTableBill(group) })),
+    ...takeaways.map(order => ({ queueDate: order.queueDate || "", sequence: queueSequence(order), createdAt: order.createdAt, html: renderTakeaway(order) })),
+    ...deliveries.map(order => ({ queueDate: order.queueDate || "", sequence: queueSequence(order), createdAt: order.createdAt, html: renderDelivery(order) })),
+  ].sort((a, b) => String(b.queueDate).localeCompare(String(a.queueDate)) || b.sequence - a.sequence || new Date(b.createdAt?.toDate?.() || b.createdAt || 0) - new Date(a.createdAt?.toDate?.() || a.createdAt || 0));
   if (orderCount) orderCount.textContent = `${cards.length} บิล`;
   grid.innerHTML = cards.length
-    ? cards.join("")
-    : '<div class="card empty">ไม่มีบิลที่รอดำเนินการ</div>';
+    ? cards.map(card => card.html).join("")
+    : '<div class="cashier-empty"><span class="cashier-empty-mark" aria-hidden="true"></span><strong>ยังไม่มีบิลที่รอดำเนินการ</strong><span>เมื่อมีออเดอร์ใหม่ รายการจะแสดงที่นี่อัตโนมัติ</span></div>';
 }
 async function closeTableAfterPayment(orders) {
   const first = orders[0];
@@ -398,7 +404,7 @@ grid.addEventListener("click", async (event) => {
             ? "ชำระเงินและปิดออเดอร์ Delivery แล้ว"
             : "บันทึกการชำระเงินแล้ว รอครัวส่งให้ไรเดอร์",
       );
-      printOrderReceipt(printWindow, order.id);
+      printOrderReceipt(printWindow, order?.id || paymentButton.dataset.paymentId);
     } catch (error) {
       closePrintWindow(printWindow);
       console.error(error);
@@ -506,4 +512,3 @@ dataService.subscribeOrders(async (orders) => {
     console.error("Unable to sync table order ids", error),
   );
 });
-mountTakeawayQrTools();

@@ -1,10 +1,33 @@
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
-import "./form-validation-ui.js?v=20260716-011";
+import "./form-validation-ui.js?v=20260731-080";
 
 export const APP_VERSION = "1.6.17";
 export const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
 
 export const money = (value = 0) => new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value) || 0);
+
+function mountToastOnTopLayer(el) {
+  document.body.appendChild(el);
+  if (typeof el.showPopover !== "function") return;
+
+  try {
+    el.setAttribute("popover", "manual");
+    el.showPopover();
+  } catch {
+    el.removeAttribute("popover");
+  }
+}
+
+function removeToastFromTopLayer(el) {
+  try {
+    if (typeof el.hidePopover === "function" && el.matches(":popover-open")) {
+      el.hidePopover();
+    }
+  } catch {
+    // The fallback fixed layer remains removable even when Popover API state changed.
+  }
+  el.remove();
+}
 
 export function toast(message, type = "success") {
   const normalizedType = type === "error" ? "error" : "success";
@@ -20,11 +43,11 @@ export function toast(message, type = "success") {
     <span class="app-toast-message"></span>
   `;
   el.querySelector(".app-toast-message").textContent = String(message || "");
-  document.body.appendChild(el);
+  mountToastOnTopLayer(el);
   requestAnimationFrame(() => el.classList.add("show"));
   setTimeout(() => {
     el.classList.remove("show");
-    setTimeout(() => el.remove(), 250);
+    setTimeout(() => removeToastFromTopLayer(el), 250);
   }, 3200);
 }
 
@@ -36,23 +59,40 @@ export function statusLabel(status) {
   return ({ pending: "รอรับออเดอร์", accepted: "ครัวรับแล้ว", cooking: "กำลังทำ", ready: "พร้อมเสิร์ฟ", served: "เสิร์ฟแล้ว", paid: "ชำระแล้ว", cancelled: "ยกเลิก" })[status] || status;
 }
 
+const BANGKOK_TIME_ZONE = "Asia/Bangkok";
+const THAI_GREGORIAN_LOCALE = "th-TH-u-ca-gregory";
+const SQL_TIMESTAMP_WITHOUT_ZONE = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:\.\d+)?$/;
+
 function normalizedDate(value) {
   if (!value) return new Date();
   if (value?.toDate) return value.toDate();
   if (typeof value === "object" && Number.isFinite(Number(value.seconds))) return new Date(Number(value.seconds) * 1000);
-  const date = new Date(value);
+
+  const source = String(value).trim();
+  const normalizedSource = SQL_TIMESTAMP_WITHOUT_ZONE.test(source)
+    ? `${source.replace(" ", "T")}Z`
+    : source;
+  const date = new Date(normalizedSource);
   return Number.isNaN(date.getTime()) ? new Date() : date;
 }
 
 export function formatTime(value) {
-  return normalizedDate(value).toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" });
+  return new Intl.DateTimeFormat(THAI_GREGORIAN_LOCALE, {
+    timeZone: BANGKOK_TIME_ZONE,
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(normalizedDate(value)).replace(",", "");
 }
 
 function mountIconStyles() {
   if (!document.querySelector('link[href^="/assets/css/icons.css"]')) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "/assets/css/icons.css?v=20260715-011";
+    link.href = "/assets/css/icons.css?v=20260731-080";
     document.head.appendChild(link);
   }
   if (!document.querySelector("#receiptCompactStyles")) {
@@ -67,6 +107,7 @@ const STANDARD_ACTIONS = [
   { pattern: /^\s*[+＋]?\s*สร้าง/i, label: "สร้าง", icon: "plus" },
   { pattern: /^\s*[+＋]?\s*เพิ่ม/i, label: "เพิ่ม", icon: "plus" },
   { pattern: /^\s*แก้ไข/i, label: "แก้ไข", icon: "pencil" },
+  { pattern: /^\s*ลบรูป/i, label: "ลบรูป", icon: "trash" },
   { pattern: /^\s*ลบ/i, label: "ลบ", icon: "trash" },
   { pattern: /^\s*ยกเลิก/i, label: "ยกเลิก", icon: "x-circle" },
   { pattern: /^\s*บันทึก/i, label: "บันทึก", icon: "save" }

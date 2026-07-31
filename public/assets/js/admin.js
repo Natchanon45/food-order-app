@@ -1,7 +1,7 @@
 import "./admin-delivery-qr.js?v=20260708-027";
 import { dataService, usingDemoMode } from "./data-service.js";
 import { storage, ref, uploadBytes, getDownloadURL } from "./firebase-config.js?v=20260630-073";
-import { money, toast, DEFAULT_FOOD_IMAGE } from "./ui.js?v=20260716-009";
+import { money, toast, DEFAULT_FOOD_IMAGE } from "./ui.js?v=20260731-080";
 import { getMenuImagePosition, setMenuImagePosition } from "./admin-image-position.js";
 
 if (usingDemoMode) document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง: ข้อมูลอยู่ในเบราว์เซอร์นี้</div>';
@@ -21,6 +21,39 @@ const fileName = document.querySelector("#menuImageFileName");
 const fileSize = document.querySelector("#menuImageFileSize");
 const removeImageButton = document.querySelector("#removeMenuImage");
 const imageError = document.querySelector("#menuImageError");
+
+function collectStoreSettings() {
+  const settings = {
+    shopName: document.querySelector("#shopName").value.trim(),
+    shopAddress: document.querySelector("#shopAddress").value.trim(),
+    shopPhone: document.querySelector("#shopPhone").value.trim()
+  };
+  for (const fieldId of ["promptPayId", "promptPayName", "bankName", "bankAccountNumber", "bankAccountName"]) {
+    settings[fieldId] = document.getElementById(fieldId)?.value.trim() || "";
+  }
+  const deliveryFeeOptions = [...document.querySelectorAll("[data-delivery-fee-row]")]
+    .map((row, index) => ({
+      id: row.dataset.optionId || `fee-${index + 1}`,
+      label: row.querySelector("[data-delivery-fee-label]")?.value.trim() || "",
+      fee: Math.max(0, Number(row.querySelector("[data-delivery-fee-amount]")?.value || 0))
+    }))
+    .filter(option => option.label);
+  if (deliveryFeeOptions.length) {
+    settings.deliveryFeeOptions = deliveryFeeOptions;
+    settings.deliveryFeeNearby = deliveryFeeOptions[0]?.fee ?? 0;
+    settings.deliveryFeeGeneral = deliveryFeeOptions[1]?.fee ?? 30;
+    settings.deliveryFeeFar = deliveryFeeOptions[2]?.fee ?? 50;
+  }
+  return settings;
+}
+
+function storeSettingsMatch(expected, actual) {
+  const fields = ["shopName", "shopAddress", "shopPhone", "promptPayId", "promptPayName", "bankName", "bankAccountNumber", "bankAccountName"];
+  if (fields.some(field => String(actual[field] ?? "") !== String(expected[field] ?? ""))) return false;
+  if (!expected.deliveryFeeOptions) return true;
+  const normalize = options => (options || []).map(option => ({ id: String(option.id || ""), label: String(option.label || ""), fee: Number(option.fee || 0) }));
+  return JSON.stringify(normalize(actual.deliveryFeeOptions)) === JSON.stringify(normalize(expected.deliveryFeeOptions));
+}
 
 async function askConfirm(message, options = {}) {
   if (typeof window.sweetConfirm === "function") return await window.sweetConfirm(message, options);
@@ -140,17 +173,29 @@ async function load() {
   document.querySelector("#shopAddress").value = settings.shopAddress || "";
   document.querySelector("#shopPhone").value = settings.shopPhone || "";
   document.querySelector("#menuRows").innerHTML = menus.map(item => `
-    <tr><td><img src="${item.image || DEFAULT_FOOD_IMAGE}" alt="${item.name}" data-food-image style="width:58px;height:46px;object-fit:cover;object-position:${Number(item.imagePositionX ?? 50)}% ${Number(item.imagePositionY ?? 50)}%;border-radius:8px"></td><td><strong>${item.name}</strong></td><td>${item.category || "-"}</td><td>${money(item.price)}</td><td>${item.active !== false ? '<span class="badge">เปิดขาย</span>' : '<span class="badge dark">ปิด</span>'}</td><td><button class="btn btn-sm" data-edit-menu="${item.id}">แก้ไข</button> <button class="btn btn-danger btn-sm" data-delete-menu="${item.id}">ลบ</button></td></tr>
+    <tr data-active="${item.active !== false}"><td><img src="${item.image || DEFAULT_FOOD_IMAGE}" alt="${item.name}" data-food-image style="width:58px;height:46px;object-fit:cover;object-position:${Number(item.imagePositionX ?? 50)}% ${Number(item.imagePositionY ?? 50)}%;border-radius:8px"></td><td><strong>${item.name}</strong></td><td>${item.category || "-"}</td><td>${money(item.price)}</td><td>${item.active !== false ? '<span class="badge">เปิดขาย</span>' : '<span class="badge dark">ปิด</span>'}</td><td><button class="btn btn-sm" data-edit-menu="${item.id}">แก้ไข</button> <button class="btn btn-danger btn-sm" data-delete-menu="${item.id}">ลบ</button></td></tr>
   `).join("");
   document.querySelector("#tableRows").innerHTML = tables.map(item => `
-    <tr><td><strong>${item.code}</strong></td><td>${item.name}</td><td>${item.active !== false ? '<span class="badge">ใช้งาน</span>' : '<span class="badge dark">ปิด</span>'}</td><td><button class="btn btn-sm" data-edit-table="${item.id}">แก้ไข</button> <button class="btn btn-danger btn-sm" data-delete-table="${item.id}">ลบ</button></td></tr>
+    <tr data-active="${item.active !== false}"><td><strong>${item.code}</strong></td><td>${item.name}</td><td>${item.active !== false ? '<span class="badge">ใช้งาน</span>' : '<span class="badge dark">ปิด</span>'}</td><td><button class="btn btn-sm" data-edit-table="${item.id}">แก้ไข</button> <button class="btn btn-danger btn-sm" data-delete-table="${item.id}">ลบ</button></td></tr>
   `).join("");
 }
 
 document.querySelector("#storeForm").addEventListener("submit", async event => {
   event.preventDefault();
-  await dataService.saveStoreSettings({ shopName: document.querySelector("#shopName").value.trim(), shopAddress: document.querySelector("#shopAddress").value.trim(), shopPhone: document.querySelector("#shopPhone").value.trim() });
-  toast("บันทึกข้อมูลร้านแล้ว");
+  const button = event.submitter || event.target.querySelector('button[type="submit"], button:not([type])');
+  if (button) button.disabled = true;
+  try {
+    const settings = collectStoreSettings();
+    await dataService.saveStoreSettings(settings);
+    const savedSettings = await dataService.getStoreSettings();
+    if (!storeSettingsMatch(settings, savedSettings)) throw new Error("STORE_SETTINGS_VERIFICATION_FAILED");
+    toast("บันทึกข้อมูลร้านและการรับชำระแล้ว");
+  } catch (error) {
+    console.error("Unable to save store settings", error);
+    toast("บันทึกข้อมูลร้านไม่สำเร็จ กรุณาลองใหม่", "error");
+  } finally {
+    if (button) button.disabled = false;
+  }
 });
 
 fileInput.addEventListener("change", event => { const file = event.target.files?.[0]; if (file) selectImageFile(file); });
@@ -254,6 +299,29 @@ document.body.addEventListener("click", async event => {
   if (deleteTable) {
     const ok = await askConfirm("ยืนยันลบโต๊ะนี้?", { title: "ลบโต๊ะ", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" });
     if (ok) { await dataService.deleteTable(deleteTable); toast("ลบโต๊ะแล้ว"); await load(); }
+  }
+});
+
+document.body.addEventListener("click", event => {
+  const addButton = event.target.closest("[data-open-admin-modal]");
+  if (!addButton) return;
+  if (addButton.dataset.openAdminModal === "menu") {
+    const form = document.querySelector("#menuForm");
+    form.reset();
+    document.querySelector("#menuId").value = "";
+    menuImage.value = "";
+    menuImagePath.value = "";
+    selectedImageFile = null;
+    fileInput.value = "";
+    setImageError("");
+    setMenuImagePosition(50, 50);
+    showPreview("");
+  }
+  if (addButton.dataset.openAdminModal === "table") {
+    const form = document.querySelector("#tableForm");
+    form.reset();
+    document.querySelector("#tableId").value = "";
+    document.querySelector("#tableActive").checked = true;
   }
 });
 

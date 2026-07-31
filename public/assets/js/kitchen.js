@@ -1,7 +1,7 @@
-import "./sweet-dialog.js?v=20260731-079";
+import "./sweet-dialog.js?v=20260731-080";
 import "./kitchen-item-serve.js?v=20260701-014";
 import { dataService, usingDemoMode } from "./data-service.js?v=20260701-009";
-import { money, statusLabel, formatTime, toast } from "./ui.js?v=20260716-009";
+import { money, statusLabel, formatTime, toast } from "./ui.js?v=20260731-080";
 import { observeDeliveryOrders } from "./delivery-notifier.js";
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 
@@ -38,6 +38,9 @@ function valueToDate(value) { if (!value) return null; if (typeof value.toDate =
 function orderAgeMinutes(order) { const date = valueToDate(displayTime(order)); return date ? Math.floor((Date.now() - date.getTime()) / 60000) : 0; }
 function isOverdue(order) { return ["pending", "accepted", "cooking"].includes(order?.status) && orderAgeMinutes(order) >= 15; }
 function orderTitle(order) { if (isDelivery(order)) return `Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}`; if (isTakeaway(order)) return "Take Away"; return `โต๊ะ ${order.tableCode}${order.roundNumber ? ` • รอบที่ ${order.roundNumber}` : " • รอบที่ 1"}`; }
+function isTableOrder(order) { return !isDelivery(order) && !isTakeaway(order); }
+function tableGroupKey(order) { return order.tableToken || `table:${order.tableCode}`; }
+function queueSequence(order) { const explicit = Number(order?.queueSequence); if (Number.isFinite(explicit) && explicit > 0) return explicit; const parsed = Number(String(order?.queueNo || "").replace(/\D/g, "")); return Number.isFinite(parsed) ? parsed : 0; }
 function queueBadge(order) { return `<span class="order-queue-badge"><small>เลขคิว</small><strong>${order?.queueNo || "-"}</strong></span>`; }
 function nextActions(status, orderType) {
   if (status === "pending") return [["accepted", "รับออเดอร์", "btn-primary", "check", "kitchen-accept-action"]];
@@ -51,18 +54,34 @@ function lockedItemLabel(order) { if (isDelivery(order) && order?.status === "se
 function recalculateOrder(order, items) { const subtotalAmount = items.filter(item => !item.cancelled).reduce((sum, item) => sum + Number(item.qty) * Number(item.price), 0); const deliveryFee = isDelivery(order) && subtotalAmount > 0 ? Number(order.deliveryFee || 0) : 0; return { subtotalAmount, deliveryFee, totalAmount: subtotalAmount + deliveryFee }; }
 function orderInfo(order) { if (isDelivery(order)) return `<p><span class="badge ${order.paymentStatus === "paid" ? "" : "warning"}">${order.paymentStatus === "paid" ? "ชำระเงินแล้ว" : "ยังไม่ชำระเงิน"}</span><br><strong>โทร:</strong> ${order.recipientPhone || "-"}<br><strong>ที่อยู่:</strong> ${order.deliveryAddress || "-"}</p>`; if (isTakeaway(order)) return `<p><span class="badge warning">สั่งกลับบ้าน</span><br><strong>ลูกค้า:</strong> ${order.customerName || "-"}<br><strong>โทร:</strong> ${order.customerPhone || "-"}<br><strong>เลขคิว:</strong> ${order.queueNo || "-"}</p>`; return ""; }
 function orderSummary(order) { if (!isDelivery(order)) return ""; return `<div class="card" style="margin-top:10px;padding:10px 12px;box-shadow:none;background:#f8fbf9"><div class="receipt-row"><span>พื้นที่จัดส่ง</span><strong>${order.deliveryZoneLabel || "-"}</strong></div><div class="receipt-row"><span>ค่าอาหาร</span><strong>${money(order.subtotalAmount ?? (Number(order.totalAmount || 0) - Number(order.deliveryFee || 0)))} บาท</strong></div><div class="receipt-row"><span>ค่าจัดส่ง</span><strong>${money(order.deliveryFee || 0)} บาท</strong></div></div>`; }
+function renderKitchenOrder(order, { nested = false } = {}) {
+  const locked = isKitchenLocked(order);
+  const overdue = isOverdue(order);
+  const itemRows = (order.items || []).map((item, index) => `<li style="${item.cancelled ? "opacity:.48;text-decoration:line-through" : ""}"><strong>${item.qty} × ${item.name}</strong>${item.note ? `<br><small>หมายเหตุ: ${item.note}</small>` : ""}${item.cancelled ? '<br><small>ยกเลิกแล้ว</small>' : locked ? `<div class="kitchen-item-actions"><span class="badge">${lockedItemLabel(order)}</span></div>` : `<div class="kitchen-item-actions"><button class="btn btn-sm" data-edit-item="${order.id}" data-item-index="${index}">${icon("pencil")}<span>แก้ไข</span></button><button class="btn btn-danger btn-sm" data-cancel-item="${order.id}" data-item-index="${index}">${icon("x-circle")}<span>ยกเลิก</span></button></div>`}</li>`).join("");
+  const statusText = isTakeaway(order) && order.status === "ready" ? "พร้อมเสิร์ฟ" : statusLabel(order.status);
+  const overdueBadge = overdue ? `<span class="badge warning kitchen-overdue-badge">รอนาน ${orderAgeMinutes(order)} นาที</span>` : "";
+  const actionButtons = nextActions(order.status, order.orderType).map(([status,label,cls,iconName,actionClass]) => `<button class="btn ${cls} kitchen-status-action ${actionClass || ""}" data-id="${order.id}" data-status="${status}" aria-label="${label}">${icon(iconName)}<span>${label}</span></button>`).join("");
+  const heading = nested
+    ? `<div><h3 style="margin:0">รอบที่ ${order.roundNumber || 1}</h3><small>${formatTime(displayTime(order))}</small></div>`
+    : `<div class="order-heading-with-queue">${queueBadge(order)}<div><h2 style="margin:0">${orderTitle(order)}</h2><small>${formatTime(displayTime(order))}</small></div></div>`;
+  const tag = nested ? "section" : "article";
+  return `<${tag} class="card order-card${nested ? " table-round-card" : ""}${isTakeaway(order) ? " takeaway-kitchen-card" : ""}${overdue ? " kitchen-order-overdue" : ""}"><div class="order-head">${heading}<span class="badge ${isTakeaway(order) ? "warning" : ""}">${statusText}</span></div>${overdueBadge}${orderInfo(order)}<ul class="order-items">${itemRows}</ul>${orderSummary(order)}${order.note ? `<p><strong>หมายเหตุรวม:</strong> ${order.note}</p>` : ""}<div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions kitchen-order-actions" style="margin-top:12px">${actionButtons}${locked ? "" : `<button class="btn btn-danger" data-cancel-order="${order.id}">ยกเลิกทั้งออเดอร์</button>`}</div></${tag}>`;
+}
+function renderTableKitchenGroup(group) {
+  const sorted = [...group].sort((a, b) => Number(a.roundNumber || 0) - Number(b.roundNumber || 0));
+  const first = sorted[0];
+  return `<article class="card order-card table-kitchen-group"><div class="order-head"><div class="order-heading-with-queue">${queueBadge(first)}<div><h2 style="margin:0">โต๊ะ ${first.tableCode}</h2><small>${sorted.length} รอบในคิวเดียวกัน</small></div></div><span class="badge">${sorted.filter(order => order.status === "served").length}/${sorted.length} รอบเสิร์ฟแล้ว</span></div><div class="table-round-list">${sorted.map(order => renderKitchenOrder(order, { nested: true })).join("")}</div></article>`;
+}
 function render(orders) {
   currentOrders = orders;
   const active = orders.filter(order => activeStatuses.includes(order.status));
-  grid.innerHTML = active.length ? active.map(order => {
-    const locked = isKitchenLocked(order);
-    const overdue = isOverdue(order);
-    const itemRows = (order.items || []).map((item, index) => `<li style="${item.cancelled ? "opacity:.48;text-decoration:line-through" : ""}"><strong>${item.qty} × ${item.name}</strong>${item.note ? `<br><small>หมายเหตุ: ${item.note}</small>` : ""}${item.cancelled ? '<br><small>ยกเลิกแล้ว</small>' : locked ? `<div class="kitchen-item-actions"><span class="badge">${lockedItemLabel(order)}</span></div>` : `<div class="kitchen-item-actions"><button class="btn btn-sm" data-edit-item="${order.id}" data-item-index="${index}">${icon("pencil")}<span>แก้ไข</span></button><button class="btn btn-danger btn-sm" data-cancel-item="${order.id}" data-item-index="${index}">${icon("x-circle")}<span>ยกเลิก</span></button></div>`}</li>`).join("");
-    const statusText = isTakeaway(order) && order.status === "ready" ? "พร้อมเสิร์ฟ" : statusLabel(order.status);
-    const overdueBadge = overdue ? `<span class="badge warning kitchen-overdue-badge">รอนาน ${orderAgeMinutes(order)} นาที</span>` : "";
-    const actionButtons = nextActions(order.status, order.orderType).map(([status,label,cls,iconName,actionClass]) => `<button class="btn ${cls} kitchen-status-action ${actionClass || ""}" data-id="${order.id}" data-status="${status}" aria-label="${label}">${icon(iconName)}<span>${label}</span></button>`).join("");
-    return `<article class="card order-card${isTakeaway(order) ? " takeaway-kitchen-card" : ""}${overdue ? " kitchen-order-overdue" : ""}"><div class="order-head"><div class="order-heading-with-queue">${queueBadge(order)}<div><h2 style="margin:0">${orderTitle(order)}</h2><small>${formatTime(displayTime(order))}</small></div></div><span class="badge ${isTakeaway(order) ? "warning" : ""}">${statusText}</span></div>${overdueBadge}${orderInfo(order)}<ul class="order-items">${itemRows}</ul>${orderSummary(order)}${order.note ? `<p><strong>หมายเหตุรวม:</strong> ${order.note}</p>` : ""}<div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions kitchen-order-actions" style="margin-top:12px">${actionButtons}${locked ? "" : `<button class="btn btn-danger" data-cancel-order="${order.id}">ยกเลิกทั้งออเดอร์</button>`}</div></article>`;
-  }).join("") : '<div class="card empty">ยังไม่มีออเดอร์ที่รอดำเนินการ</div>';
+  const tableGroups = new Map();
+  active.filter(isTableOrder).forEach(order => { const key = tableGroupKey(order); if (!tableGroups.has(key)) tableGroups.set(key, []); tableGroups.get(key).push(order); });
+  const cards = [
+    ...[...tableGroups.values()].map(group => ({ queueDate: group[0].queueDate || "", sequence: queueSequence(group[0]), createdAt: displayTime(group[0]), html: renderTableKitchenGroup(group) })),
+    ...active.filter(order => !isTableOrder(order)).map(order => ({ queueDate: order.queueDate || "", sequence: queueSequence(order), createdAt: displayTime(order), html: renderKitchenOrder(order) }))
+  ].sort((a, b) => String(b.queueDate).localeCompare(String(a.queueDate)) || b.sequence - a.sequence || valueToDate(b.createdAt) - valueToDate(a.createdAt));
+  grid.innerHTML = cards.length ? cards.map(card => card.html).join("") : '<div class="card empty">ยังไม่มีออเดอร์ที่รอดำเนินการ</div>';
 }
 function closeEditor() { document.querySelector(".kitchen-item-editor-backdrop")?.remove(); }
 function openEditor(order, itemIndex) {
@@ -78,7 +97,7 @@ grid.addEventListener("click", async event => {
   const cancelItemButton = event.target.closest("[data-cancel-item]"); if (cancelItemButton) { const order = currentOrders.find(item => item.id === cancelItemButton.dataset.cancelItem); const itemIndex = Number(cancelItemButton.dataset.itemIndex); if (!order || !Number.isInteger(itemIndex) || isKitchenLocked(order)) return; const selectedItem = order.items?.[itemIndex]; if (!selectedItem || selectedItem.cancelled) return; const ok = await askConfirm(`ยกเลิกเฉพาะรายการ ${selectedItem.name} ใช่หรือไม่?`, { title: "ยกเลิกรายการ", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" }); if (!ok) return; const items = order.items.map((item, index) => index === itemIndex ? { ...item, cancelled: true, cancelledAt: new Date().toISOString() } : item); const totals = recalculateOrder(order, items); const patch = { items, ...totals }; if (totals.subtotalAmount <= 0) patch.status = "cancelled"; await dataService.updateOrder(order.id, patch); toast(totals.subtotalAmount <= 0 ? "ยกเลิกทั้งออเดอร์แล้ว เพราะไม่มีรายการเหลือ" : "ยกเลิกรายการและคำนวณยอดใหม่แล้ว"); return; }
   const cancelOrderButton = event.target.closest("[data-cancel-order]"); if (cancelOrderButton) { const order = currentOrders.find(item => item.id === cancelOrderButton.dataset.cancelOrder); if (isKitchenLocked(order)) return; const confirmation = askConfirm("ยืนยันยกเลิกทุกรายการในออเดอร์นี้?", { title: "ยกเลิกทั้งออเดอร์", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" }); decorateConfirmAction(); const ok = await confirmation; if (!ok) return; await dataService.updateOrder(cancelOrderButton.dataset.cancelOrder, { status: "cancelled", subtotalAmount: 0, deliveryFee: 0, totalAmount: 0, cancelledAt: new Date().toISOString() }); toast("ยกเลิกทั้งออเดอร์แล้ว"); return; }
   const button = event.target.closest("[data-id][data-status]"); if (!button) return; const { id, status } = button.dataset; const order = currentOrders.find(item => item.id === id); button.disabled = true;
-  try { const patch = { status }; if (status === "served") patch.servedAt = new Date().toISOString(); if (isTakeaway(order) && status === "ready") patch.pickupStatus = "ready"; if (isTakeaway(order) && status === "served") patch.pickupStatus = "served"; if (isDelivery(order) && status === "served" && order.paymentStatus === "paid") { patch.status = "paid"; patch.completedAt = new Date().toISOString(); } await dataService.updateOrder(id, patch); toast(isTakeaway(order) && patch.status === "served" ? "เสิร์ฟ Take Away แล้ว และล็อกรายการแล้ว" : isTakeaway(order) && patch.status === "ready" ? "ออเดอร์ Take Away พร้อมเสิร์ฟแล้ว" : patch.status === "paid" ? "ส่งให้ไรเดอร์และปิดออเดอร์ Delivery แล้ว" : `เปลี่ยนสถานะเป็น ${statusLabel(patch.status)}`); }
+  try { const patch = { status }; if (status === "served") patch.servedAt = new Date().toISOString(); if (isTakeaway(order) && status === "ready") patch.pickupStatus = "ready"; if (isTakeaway(order) && status === "served") patch.pickupStatus = "served"; if (isDelivery(order) && status === "served" && order.paymentStatus === "paid") { patch.status = "paid"; patch.completedAt = new Date().toISOString(); } await dataService.updateOrder(id, patch); currentOrders = currentOrders.map(row => row.id === id ? { ...row, ...patch, updatedAt: new Date().toISOString() } : row); render(currentOrders); toast(isTakeaway(order) && patch.status === "served" ? "เสิร์ฟ Take Away แล้ว และล็อกรายการแล้ว" : isTakeaway(order) && patch.status === "ready" ? "ออเดอร์ Take Away พร้อมเสิร์ฟแล้ว" : patch.status === "paid" ? "ส่งให้ไรเดอร์และปิดออเดอร์ Delivery แล้ว" : `เปลี่ยนสถานะเป็น ${statusLabel(patch.status)}`); }
   catch (error) { console.error(error); toast("อัปเดตสถานะไม่สำเร็จ", "error"); button.disabled = false; }
 });
 

@@ -1,5 +1,5 @@
 import { dataService } from "./data-service.js?v=20260701-017";
-import { toast } from "./ui.js?v=20260716-009";
+import { toast } from "./ui.js?v=20260731-080";
 
 const categoryList = document.querySelector("#categorySortList");
 const itemList = document.querySelector("#itemSortList");

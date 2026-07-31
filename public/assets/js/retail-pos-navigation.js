@@ -1,5 +1,5 @@
 import {getSessionUser,logout,sessionRole} from "./retail-pos-auth.js?v=20260630-076";
-import "./form-validation-ui.js?v=20260716-009";
+import "./form-validation-ui.js?v=20260731-080";
 import "./retail-pos-icons.js?v=20260716-013";
 
 const ROLE_KEY="retail_pos_roles_v1";

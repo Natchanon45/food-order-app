@@ -1,6 +1,6 @@
 import { getTenantId } from './retail-db.js?v=20260629-032';
 import { getDeviceId, POS_FIRESTORE_VERSION, dateKeyFrom, monthKeyFrom, pendingDocumentNumber } from './retail-pos-firestore-foundation.js?v=20260706-041';
-import { showReceipt } from './retail-pos-receipt-modal.js?v=20260706-028';
+import { showReceipt } from './retail-pos-receipt-modal.js?v=20260731-080';
 
 const PRODUCT_KEY = 'retail_pos_products_v1';
 const SALES_KEY = 'retail_pos_sales_v1';

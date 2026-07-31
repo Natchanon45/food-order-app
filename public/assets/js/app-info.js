@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.97',
-  build: '2026.07.31.079',
+  version: '0.14.98',
+  build: '2026.07.31.080',
   branch: 'feature/retail-pos',
-  commit: 'FIREBASE-UI-PARITY-01497',
+  commit: 'FIREBASE-WORKFLOW-PARITY-01498',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Firebase UI Presentation Parity',
-  updatedAt: '2026-07-31T06:50:00+07:00',
+  milestone: 'Firebase UI and Workflow Parity',
+  updatedAt: '2026-07-31T07:45:00+07:00',
   whatsNew: [
-    'Apply the green Order, Delivery, Kitchen, Cashier, and staff dashboard theme',
-    'Modernize sales reporting, queue badges, action colors, icons, and dialogs',
-    'Preserve Firebase tenant scope, stable IDs, duplicate protection, and offline sync'
+    'Match the Laravel UI and browser workflow while keeping Firestore as the data store',
+    'Group table rounds and sort stable queues consistently in Kitchen and Cashier',
+    'Restore cashier Take Away tools, admin add flows, staff logout, and POS presentation parity'
   ]
 };
 

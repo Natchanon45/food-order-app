@@ -14,7 +14,7 @@ const productTableBody = document.querySelector("#productTableBody");
 
 const style = document.createElement("link");
 style.rel = "stylesheet";
-style.href = "/assets/css/retail-product-merchandising.css?v=20260624-5";
+style.href = "/assets/css/retail-product-merchandising.css?v=20260731-080";
 document.head.appendChild(style);
 
 const section = document.createElement("section");

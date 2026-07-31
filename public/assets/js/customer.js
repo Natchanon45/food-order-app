@@ -1,8 +1,8 @@
-import "./sweet-dialog.js?v=20260629-048";
+import "./sweet-dialog.js?v=20260731-080";
 import "./cart-item-layout.js?v=20260702-002";
 import { dataService, usingDemoMode } from "./data-service.js";
 import { ensureTenantContext } from "./tenant-context.js";
-import { money, toast, getTableCode, formatTime } from "./ui.js?v=20260716-009";
+import { money, toast, getTableCode, formatTime } from "./ui.js?v=20260731-080";
 
 if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
   const link = document.createElement("link");

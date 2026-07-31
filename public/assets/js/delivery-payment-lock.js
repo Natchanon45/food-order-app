@@ -1,4 +1,4 @@
-import { toast } from "./ui.js?v=20260716-009";
+import { toast } from "./ui.js?v=20260731-080";
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 
 const submitButton = document.querySelector("#submitOrder");

@@ -1,7 +1,7 @@
-import "./sweet-dialog.js?v=20260629-048";
+import "./sweet-dialog.js?v=20260731-080";
 import "./cashier-table-close-guard.js?v=20260630-059";
 import { dataService, usingDemoMode } from "./data-service.js";
-import { toast } from "./ui.js?v=20260716-009";
+import { toast } from "./ui.js?v=20260731-080";
 
 if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
   const link = document.createElement("link");

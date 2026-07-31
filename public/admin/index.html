@@ -21,7 +21,7 @@
     />
     <link
       rel="stylesheet"
-      href="/assets/css/admin-workspace.css?v=20260623-10"
+      href="/assets/css/admin-workspace.css?v=20260731-080"
     />
     <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-079" />
     <title>จัดการระบบ</title>
@@ -115,7 +115,7 @@
           <button class="btn btn-primary">บันทึกข้อมูลร้าน</button>
         </form>
       </section>
-      <section class="card admin-single-row-card">
+      <section class="card admin-entity-form-card" data-admin-entity-form="menu">
         <div class="section-title"><h2>เพิ่ม/แก้ไขเมนู</h2></div>
         <form id="menuForm" class="grid">
           <input type="hidden" id="menuId" /><input
@@ -188,7 +188,7 @@
           </button>
         </form>
       </section>
-      <section class="card admin-single-row-card admin-table-card">
+      <section class="card admin-entity-form-card admin-table-card" data-admin-entity-form="table">
         <div class="section-title"><h2>เพิ่มโต๊ะ</h2></div>
         <a href="/admin/qr" class="btn btn-dark btn-sm admin-table-qr-action"
           ><i class="bi bi-qr-code app-icon" aria-hidden="true"></i
@@ -259,6 +259,11 @@
       </section>
       <section class="card" style="margin-top: 16px">
         <div class="section-title"><h2>รายการสินค้า/อาหาร</h2></div>
+        <div class="admin-list-actions">
+          <button class="btn btn-primary btn-sm" type="button" data-open-admin-modal="menu">
+            <i class="bi bi-plus-lg app-icon" aria-hidden="true"></i><span>เพิ่ม</span>
+          </button>
+        </div>
         <div class="grid grid-2" style="margin-bottom: 12px">
           <input
             class="input"
@@ -294,6 +299,12 @@
       </section>
       <section class="card" style="margin-top: 16px">
         <div class="section-title"><h2>จัดการโต๊ะ</h2></div>
+        <div class="admin-list-actions">
+          <a href="/admin/qr" class="btn btn-dark btn-sm"><i class="bi bi-qr-code app-icon" aria-hidden="true"></i><span>ออก QR โต๊ะ</span></a>
+          <button class="btn btn-primary btn-sm" type="button" data-open-admin-modal="table">
+            <i class="bi bi-plus-lg app-icon" aria-hidden="true"></i><span>เพิ่ม</span>
+          </button>
+        </div>
         <div class="grid grid-2" style="margin-bottom: 12px">
           <input
             class="input"
@@ -330,9 +341,9 @@
     <script type="module" src="/assets/js/page-guard.js?v=20260731-079"></script>
     <script
       type="module"
-      src="/assets/js/sweet-dialog.js?v=20260629-048"
+      src="/assets/js/sweet-dialog.js?v=20260731-080"
     ></script>
-    <script type="module" src="/assets/js/admin.js?v=20260708-029"></script>
+    <script type="module" src="/assets/js/admin.js?v=20260731-080"></script>
     <script
       type="module"
       src="/assets/js/admin-status-icons.js?v=20260701-031"
@@ -359,7 +370,7 @@
     ></script>
     <script
       type="module"
-      src="/assets/js/admin-workspace.js?v=20260708-028"
+      src="/assets/js/admin-workspace.js?v=20260731-080"
     ></script>
     <script
       type="module"

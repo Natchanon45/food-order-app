@@ -2,9 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.97
-Build: 2026.07.31.079
-Milestone: Firebase UI Presentation Parity
+Version: 0.14.98
+Build: 2026.07.31.080
+Milestone: Firebase UI and Workflow Parity
+
+Change: Completed browser workflow parity with the Laravel/MySQL edition while keeping Firebase as the only persistence layer. Kitchen groups table rounds under one queue, Cashier restores stable queue ordering and Take Away tools, Admin restores modal add actions and verified payment/store settings saves, Delivery permits an active Firebase staff session to sign out, and shared POS/dialog/toast presentation follows the current Laravel behavior.
+
+Firebase boundary: Existing tenant-scoped Auth/Firestore/Storage services, order/table transactions, stable order/sale/queue IDs, duplicate protection, local-first persistence, offline queue processing, and sync behavior remain authoritative. No rules, indexes, Functions, or schema paths changed.
+
+Deploy rules: hosting-only deploy. Load cache build `20260731-080` with a hard refresh after deployment.
 
 Change: Ported presentation-only updates from the Laravel/MySQL application into the Firebase-hosted application. This includes the shared green theme, modern dashboard/report workspace, Flaticon dashboard icons, clearer queue badges, Take Away confirmation/success actions, cashier/kitchen confirm icons, smooth kitchen hourglass animation, `กำลังทำ`, and the blue `ส่งมอบแล้ว` action.
 

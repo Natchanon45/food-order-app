@@ -1,4 +1,4 @@
-import { showReceipt } from './retail-pos-receipt-modal.js?v=20260706-028';
+import { showReceipt } from './retail-pos-receipt-modal.js?v=20260731-080';
 
 const SALES_KEY = 'retail_pos_sales_v1';
 const nativeSetItem = localStorage.setItem.bind(localStorage);

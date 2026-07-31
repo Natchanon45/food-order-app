@@ -37,8 +37,9 @@ function applyStaffDeliveryState(staff) {
     googleLoginButton.style.display = "none";
   }
   if (customerLogoutButton) {
-    customerLogoutButton.hidden = true;
-    customerLogoutButton.style.display = "none";
+    customerLogoutButton.hidden = false;
+    customerLogoutButton.style.display = "";
+    customerLogoutButton.textContent = "ออกจากระบบพนักงาน";
   }
   if (customerAccount) customerAccount.hidden = false;
   if (customerAccountName) customerAccountName.textContent = `${staff.displayName || staff.email} • ${staff.role}`;

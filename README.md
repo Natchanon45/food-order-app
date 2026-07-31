@@ -1,9 +1,15 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Firebase UI Presentation Parity
-Version: 0.14.97
-Build: 2026.07.31.079
+Milestone: Firebase UI and Workflow Parity
+Version: 0.14.98
+Build: 2026.07.31.080
+
+Change: Extended the Laravel parity work from presentation-only to browser workflow parity while retaining Firebase Auth, Firestore, and Storage. Kitchen now groups table rounds and applies stable queue ordering, Cashier uses the same queue ordering, Take Away toolbar, empty state, and receipt fallback, Delivery supports staff logout, and Admin restores verified store settings plus add-menu/add-table modal actions. Shared POS presentation, dialogs, toast behavior, remembered receipt choices, and responsive action styling are aligned with the Laravel edition.
+
+Firebase safety: All writes continue through the existing tenant-scoped Firebase services. Firestore order/table documents, stable IDs, transactions, duplicate protection, offline queues, and synchronization remain the source of truth. No Firebase rules, indexes, or Cloud Functions changed.
+
+Deploy: hosting only. Hard refresh after deployment to load cache build `20260731-080`.
 
 Change: Ported the current presentation layer from the Laravel/MySQL edition back to this Firebase branch. The green Order/Delivery workspace theme, staff dashboard, Flaticon dashboard icons, modern sales report, queue badges, Take Away confirmation dialogs, cashier/kitchen confirmation icons, kitchen action animation/label, and blue `ส่งมอบแล้ว` action now match while Firebase data transport remains unchanged.
 

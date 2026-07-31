@@ -25,8 +25,21 @@ function renderShiftNavigation() {
   const link = document.querySelector("#shiftNavLink");
   if (!link) return;
   const shift = activeShift();
-  link.textContent = shift ? `กะ: ${shift.cashierName}` : "เปิดกะ";
+  link.classList.toggle("is-open", Boolean(shift));
+  link.innerHTML = shift
+    ? `<i class="bi bi-clock-history" aria-hidden="true"></i><span>กะ: ${escapeHtml(shift.cashierName || "-")}</span>`
+    : '<i class="bi bi-play-circle" aria-hidden="true"></i><span>เปิดกะ</span>';
+  link.setAttribute("aria-label", shift ? `กะกำลังเปิดโดย ${shift.cashierName || "-"}` : "เปิดกะ");
   link.title = shift ? `${shift.terminalCode} • เปิดเมื่อ ${new Date(shift.openedAt).toLocaleString("th-TH")}` : "ยังไม่ได้เปิดกะ";
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 function tagLatestSale() {
