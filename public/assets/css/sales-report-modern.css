@@ -133,6 +133,23 @@ body.sales-report-workspace .sales-report-page .summary-card strong {
   letter-spacing: -0.025em;
 }
 
+body.sales-report-workspace .sales-report-page .summary-card.primary {
+  border-color: #08702f;
+  background: linear-gradient(145deg, #075b28 0%, #159447 100%);
+  color: #fff;
+}
+
+body.sales-report-workspace .sales-report-page .summary-card.primary > span,
+body.sales-report-workspace .sales-report-page .summary-card.primary > strong,
+body.sales-report-workspace .sales-report-page .summary-card.primary > small {
+  color: #fff;
+}
+
+body.sales-report-workspace .sales-report-page .summary-card.primary > span,
+body.sales-report-workspace .sales-report-page .summary-card.primary > small {
+  opacity: 0.9;
+}
+
 body.sales-report-workspace .sales-report-page .summary-card:not(.primary) {
   border-color: #dcebe1;
   background: linear-gradient(155deg, #fff 60%, #f1f9f4 100%);

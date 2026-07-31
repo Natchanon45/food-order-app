@@ -1,15 +1,17 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Global Green Checkbox Theme
-Version: 0.15.9
-Build: 2026.07.31.091
+Milestone: Sales Net Card Contrast
+Version: 0.15.10
+Build: 2026.07.31.092
 
-Change: Standardized native checkboxes across Order/Delivery and Retail POS with the primary green theme and a slightly larger 20 × 20 px control. Native accessibility, keyboard interaction, checked state, validation, and existing form behavior remain unchanged.
+Change: Restored the net-sales summary card on `/admin/sales-report` to a high-contrast green gradient with white label, amount, and unit text. Report calculations, filters, receipt totals, and the other summary cards remain unchanged.
 
 Firebase safety: This build changes presentation and interaction flow only. Product/category writes remain tenant-scoped through `tenants/{tenantId}`; the local stock-history clear action still clears local history only. Sales, stock quantities, sale stock movements, stable identifiers, duplicate protection, local-first checkout, offline sale queues, VAT, payments, returns, and tax invoices are unchanged.
 
-Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260731-091`.
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260731-092`.
+
+Previous build — Global Green Checkbox Theme (`2026.07.31.091`): Standardized native checkboxes across Order/Delivery and Retail POS with the green theme and a 20 × 20 px control.
 
 Previous build — Admin Users Laravel Parity (`2026.07.31.090`): Ported the Laravel employee-management presentation to Firebase `/admin/users` with a staff Hero, compact employee list, and responsive create-user modal while preserving Firebase staff workflows.
 

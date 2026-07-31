@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.15.9',
-  build: '2026.07.31.091',
+  version: '0.15.10',
+  build: '2026.07.31.092',
   branch: 'feature/retail-pos',
-  commit: 'GLOBAL-GREEN-CHECKBOX-THEME-01509',
+  commit: 'SALES-NET-CARD-CONTRAST-01510',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Global Green Checkbox Theme',
-  updatedAt: '2026-07-31T17:55:00+07:00',
+  milestone: 'Sales Net Card Contrast',
+  updatedAt: '2026-07-31T18:05:00+07:00',
   whatsNew: [
-    'Apply the green application theme to native checkboxes across Order/Delivery and Retail POS',
-    'Increase checkbox controls to 20 pixels for improved visibility and touch targeting',
-    'Preserve native checkbox semantics, keyboard operation, and existing form behavior'
+    'Restore the primary green background of the net-sales summary card',
+    'Render the net-sales label, amount, and unit in high-contrast white',
+    'Keep the remaining report summary cards and sales calculations unchanged'
   ]
 };
 

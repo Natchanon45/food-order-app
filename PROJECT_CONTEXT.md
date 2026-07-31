@@ -2,15 +2,17 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.15.9
-Build: 2026.07.31.091
+Version: 0.15.10
+Build: 2026.07.31.092
 
-Change: Applied one global checkbox presentation across Order/Delivery and Retail POS: primary green checked state and a slightly enlarged 20 × 20 px native control. Checkbox semantics, validation, keyboard behavior, and existing data workflows are unchanged.
+Change: Fixed the net-sales summary card contrast on `/admin/sales-report`. A report-specific selector now preserves the green gradient and forces the label, amount, and unit to white after the shared workspace theme loads.
 
 Firebase boundary: Product and category writes remain tenant-scoped through `tenants/{tenantId}`. Clearing stock history still affects only the local movement-history list and never changes product stock. Sales, sale stock movements, stable sale/order/queue IDs, duplicate protection, local-first checkout, offline sale sync, VAT, payments, returns, and tax invoices remain authoritative and unchanged.
 
-Deploy rules: Hosting only. Load cache build `20260731-091` with a hard refresh after deployment.
-Milestone: Global Green Checkbox Theme
+Deploy rules: Hosting only. Load cache build `20260731-092` with a hard refresh after deployment.
+Milestone: Sales Net Card Contrast
+
+Previous build (`2026.07.31.091`): Applied the primary green theme and a 20 × 20 px size to native checkboxes across Order/Delivery and Retail POS while preserving native behavior.
 
 Previous build (`2026.07.31.090`): Matched Firebase `/admin/users` to the Laravel employee-management UI with a staff Hero, compact employee list, and responsive create-user modal while retaining Firebase Auth and tenant-scoped Firestore behavior.
 
