@@ -98,7 +98,11 @@ function showPreview(url) {
 }
 
 function updateCategoryList() {
-  const categories = [...new Set(readProducts().map(item => item.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, "th"));
+  const managed = globalThis.retailProductCategories?.currentCategories?.().map(item => item.name) || [];
+  const categories = [...new Set([
+    ...managed,
+    ...readProducts().map(item => item.category).filter(Boolean)
+  ])].sort((a, b) => a.localeCompare(b, "th"));
   categoryList.innerHTML = categories.map(name => `<option value="${escapeHtml(name)}"></option>`).join("");
 }
 
@@ -249,6 +253,7 @@ function decorateProductRows() {
 
 const observer = new MutationObserver(() => decorateProductRows());
 observer.observe(productTableBody, { childList: true, subtree: true });
+window.addEventListener("retail:categories-changed", updateCategoryList);
 
 updateCategoryList();
 resetMerchFields();

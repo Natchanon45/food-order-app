@@ -161,7 +161,7 @@ function renderMenuItem(item) {
     users: "users"
   };
   const itemIcon = item.icon === "key"
-    ? icon("key")
+    ? '<i class="fi fi-rr-key app-icon fontawesome-profile-icon profile-key-reference-icon" aria-hidden="true"></i>'
     : `<i class="fi fi-rr-${flaticon[item.icon] || "circle"} app-icon" aria-hidden="true"></i>`;
   if (item.action) return `<button type="button" class="user-menu-link" data-menu-action="${item.action}" role="menuitem">${itemIcon}<span>${item.label}</span></button>`;
   return `<a class="user-menu-link" href="${item.href}" role="menuitem">${itemIcon}<span>${item.label}</span></a>`;

@@ -2,9 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.99
-Build: 2026.07.31.081
-Milestone: Firebase Sales Report Parity
+Version: 0.15.0
+Build: 2026.07.31.082
+Milestone: Firebase Retail POS Full Parity
+
+Change: Closed the seven remaining Retail POS parity gaps: correct password key icon, single category strip, fixed VAT mode without the removed selector, hamburger menu icon, product pagination, tenant-scoped Firestore category management, and restored category/product sorting content.
+
+Firebase boundary: New category documents use `tenants/{tenantId}/categories` and tenant admin rules. Existing Auth, products, sales, stock movements, stable sale/order/queue IDs, duplicate protection, local-first behavior, offline sale queue, and synchronization workflows remain authoritative.
+
+Deploy rules: deploy Hosting and Firestore rules. Load cache build `20260731-082` with a hard refresh after deployment.
 
 Change: Closed the Sales Report parity gap. The report now watches both restaurant `orders` and Retail POS `sales` for the active tenant, converts POS sales to the shared receipt structure, and de-duplicates matching order/receipt IDs. Its default period is monthly and its application header is pinned to the Laravel green theme.
 

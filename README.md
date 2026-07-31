@@ -2,8 +2,14 @@
 
 Branch: feature/retail-pos
 Milestone: Firebase Sales Report Parity
-Version: 0.14.99
-Build: 2026.07.31.081
+Version: 0.15.0
+Build: 2026.07.31.082
+
+Change: Completed the Retail POS parity corrections from the Laravel edition. The profile password action now uses the original key treatment, the POS category strip mounts once, VAT mode is fixed without an include/exclude selector, the menu button includes its hamburger icon, and product management now includes pagination, a dedicated Firestore-backed category manager, and visible category/product sorting.
+
+Firebase safety: Category records are tenant-scoped under `tenants/{tenantId}/categories`, with owner/admin write rules. Product and sorting writes continue through the existing tenant-aware data service; sale IDs, stock transactions, duplicate protection, offline sale queues, and synchronization behavior are unchanged.
+
+Deploy: Firebase Hosting and Firestore rules. Hard refresh after deployment to load cache build `20260731-082`.
 
 Change: Corrected the Sales Report parity gap shown after the first Firebase deployment. The page now combines paid restaurant orders with Retail POS sales from the active tenant's Firestore `sales` collection, normalizes them into the same receipt model, and prevents duplicated receipts when a transaction appears in both sources. The report now opens in monthly mode and enforces the same green application header as the Laravel screen.
 

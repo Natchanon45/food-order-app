@@ -14,6 +14,7 @@ const els = {
   stockFilter: document.querySelector("#stockFilter"),
   productTableBody: document.querySelector("#productTableBody"),
   tableEmpty: document.querySelector("#tableEmpty"),
+  productPagination: document.querySelector("#productPagination"),
   movementList: document.querySelector("#movementList"),
   movementEmpty: document.querySelector("#movementEmpty"),
   clearMovementBtn: document.querySelector("#clearMovementBtn"),
@@ -50,6 +51,8 @@ let movements = readJson(MOVEMENT_KEY, []);
 let toastTimer;
 let stopProductWatch;
 let editingDocumentId = "";
+let productPage = 1;
+let productPageSize = 20;
 
 function readJson(key, fallback) {
   try {
@@ -181,8 +184,11 @@ function filteredProducts() {
 
 function renderProducts() {
   const rows = filteredProducts();
+  const totalPages = Math.max(1, Math.ceil(rows.length / productPageSize));
+  productPage = Math.min(productPage, totalPages);
+  const visibleRows = rows.slice((productPage - 1) * productPageSize, productPage * productPageSize);
   els.tableEmpty.hidden = rows.length > 0;
-  els.productTableBody.innerHTML = rows.map(product => {
+  els.productTableBody.innerHTML = visibleRows.map(product => {
     const klass = stockClass(product);
     const costText = Number.isFinite(Number(product.cost)) ? ` • ทุน ${money(product.cost)}` : " • ยังไม่กำหนดทุน";
     return `
@@ -202,7 +208,27 @@ function renderProducts() {
         </td>
       </tr>`;
   }).join("");
+  renderProductPagination(rows.length, totalPages);
   renderStats();
+}
+
+function renderProductPagination(totalRows, totalPages) {
+  if (!els.productPagination) return;
+  if (!totalRows) { els.productPagination.innerHTML = ""; return; }
+  const pages = [...new Set([1, totalPages, productPage - 1, productPage, productPage + 1])]
+    .filter(page => page >= 1 && page <= totalPages).sort((a, b) => a - b);
+  let previous = 0;
+  const buttons = pages.map(page => {
+    const gap = previous && page - previous > 1 ? '<span class="page-ellipsis">…</span>' : "";
+    previous = page;
+    return `${gap}<button type="button" data-product-page="${page}" class="page-number ${page === productPage ? "active" : ""}" ${page === productPage ? 'aria-current="page"' : ""}>${page}</button>`;
+  }).join("");
+  const first = (productPage - 1) * productPageSize + 1;
+  const last = Math.min(productPage * productPageSize, totalRows);
+  els.productPagination.innerHTML = `<div class="pagination-summary"><span>แสดง ${first}-${last} จาก ${totalRows.toLocaleString("th-TH")} รายการ</span>
+    <label>ต่อหน้า <select data-page-size><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></label></div>
+    <div class="page-controls"><button type="button" data-product-page="${productPage - 1}" ${productPage === 1 ? "disabled" : ""}>ก่อนหน้า</button>${buttons}<button type="button" data-product-page="${productPage + 1}" ${productPage === totalPages ? "disabled" : ""}>ถัดไป</button></div>`;
+  els.productPagination.querySelector("[data-page-size]").value = String(productPageSize);
 }
 
 function renderMovements() {
@@ -430,8 +456,21 @@ els.cancelProductBtn.addEventListener("click", () => els.productDialog.close());
 els.stockForm.addEventListener("submit", submitStock);
 els.closeStockDialog.addEventListener("click", () => els.stockDialog.close());
 els.cancelStockBtn.addEventListener("click", () => els.stockDialog.close());
-els.productSearch.addEventListener("input", renderProducts);
-els.stockFilter.addEventListener("change", renderProducts);
+els.productSearch.addEventListener("input", () => { productPage = 1; renderProducts(); });
+els.stockFilter.addEventListener("change", () => { productPage = 1; renderProducts(); });
+els.productPagination?.addEventListener("click", event => {
+  const button = event.target.closest("[data-product-page]");
+  if (!button || button.disabled) return;
+  productPage = Number(button.dataset.productPage) || 1;
+  renderProducts();
+  document.querySelector(".management-panel")?.scrollIntoView({ behavior:"smooth", block:"start" });
+});
+els.productPagination?.addEventListener("change", event => {
+  if (!event.target.matches("[data-page-size]")) return;
+  productPageSize = Number(event.target.value) || 20;
+  productPage = 1;
+  renderProducts();
+});
 els.productTableBody.addEventListener("click", event => {
   const button = event.target.closest("button[data-action]");
   if (!button) return;
