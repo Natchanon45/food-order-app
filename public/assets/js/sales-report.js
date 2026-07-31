@@ -1,5 +1,6 @@
 import { dataService, usingDemoMode } from "./data-service.js";
 import { money, formatTime } from "./ui.js?v=20260731-080";
+import { watchRecords, RetailCollections, setTenantId } from "./retail-db.js?v=20260731-081";
 
 const backIcon = document.querySelector('.app-header a[href="/admin/"] .bi:not(.app-icon)');
 if (backIcon) backIcon.remove();
@@ -9,7 +10,7 @@ if (usingDemoMode) {
   if (banner) banner.innerHTML = '<div class="demo-banner">โหมดตัวอย่าง: รายงานจากข้อมูลในเบราว์เซอร์นี้</div>';
 }
 
-const state = { period: "daily", orders: [], receipts: [], filteredReceipts: [], page: 1, pageSize: 20 };
+const state = { period: "monthly", orders: [], retailSales: [], receipts: [], filteredReceipts: [], page: 1, pageSize: 20 };
 const els = {
   reportDate: document.querySelector("#reportDate"), reportMonth: document.querySelector("#reportMonth"), reportYear: document.querySelector("#reportYear"), startDate: document.querySelector("#startDate"), endDate: document.querySelector("#endDate"), orderType: document.querySelector("#orderTypeFilter"), paymentMethod: document.querySelector("#paymentMethodFilter"), search: document.querySelector("#receiptSearch"), totalSales: document.querySelector("#totalSales"), receiptCount: document.querySelector("#receiptCount"), averageReceipt: document.querySelector("#averageReceipt"), soldItemCount: document.querySelector("#soldItemCount"), orderTypeSummary: document.querySelector("#orderTypeSummary"), paymentSummary: document.querySelector("#paymentSummary"), chartTitle: document.querySelector("#chartTitle"), chartSubtitle: document.querySelector("#chartSubtitle"), salesChart: document.querySelector("#salesChart"), topItems: document.querySelector("#topItems"), bestPeriod: document.querySelector("#bestPeriod"), receiptRows: document.querySelector("#receiptRows"), receiptResultCount: document.querySelector("#receiptResultCount"), receiptRangeLabel: document.querySelector("#receiptRangeLabel"), pagination: document.querySelector("#receiptPagination"), dialog: document.querySelector("#receiptDialog"), detail: document.querySelector("#receiptDetail")
 };
@@ -24,6 +25,36 @@ function escapeHtml(value=""){return String(value).replace(/[&<>"]/g,char=>({"&"
 function paidDate(order){return toDate(order.paidAt)||toDate(order.completedAt)||toDate(order.updatedAt)||toDate(order.createdAt)}
 function isPaidOrder(order){return order?.paymentStatus==="paid"||order?.status==="paid"}
 function isCancelledItem(item){return item?.cancelled===true}
+function normalizeRetailSale(sale){
+  const paidAt=toDate(sale.paidAt)||toDate(sale.completedAt)||toDate(sale.createdAt)||toDate(sale.updatedAt)||new Date();
+  const paymentMethod=sale?.payment?.method||sale.paymentMethod||"cash";
+  return{
+    ...sale,
+    id:String(sale.id||sale.saleNumber||sale.number||""),
+    receiptNumber:sale.receiptNumber||sale.saleNumber||sale.number||sale.id,
+    orderType:sale.orderType||"table",
+    tableCode:sale.tableCode||sale.registerName||"POS",
+    paymentStatus:"paid",
+    status:"paid",
+    paymentMethod,
+    paidAt,
+    subtotalAmount:Number(sale.subtotalAmount??sale.subtotal??0),
+    discountAmount:Number(sale.discountAmount??sale.discount??0)+Number(sale.pointDiscount||0),
+    totalAmount:Number(sale.totalAmount??sale.total??0),
+    items:(sale.items||[]).map(item=>({...item,name:item.name||item.productName||"รายการ",qty:Number(item.qty||0),price:Number(item.price||0)})),
+    _reportSource:"retail-pos"
+  }
+}
+function rebuildReceipts(){
+  const rows=new Map();
+  state.orders.forEach(order=>rows.set(`order:${order.id}`,order));
+  state.retailSales.map(normalizeRetailSale).forEach(sale=>{
+    const duplicate=[...rows.values()].some(order=>String(order.id||"")===sale.id||String(order.receiptNumber||"")===String(sale.receiptNumber||""));
+    if(!duplicate)rows.set(`sale:${sale.id}`,sale);
+  });
+  state.receipts=buildReceipts([...rows.values()]);
+  applyFilters();
+}
 function orderNet(order){if(Number.isFinite(Number(order.totalAmount)))return Number(order.totalAmount||0);return(order.items||[]).filter(item=>!isCancelledItem(item)).reduce((sum,item)=>sum+Number(item.price||0)*Number(item.qty||0),0)+Number(order.deliveryFee||0)}
 function paymentMethodKey(order){const value=String(order.paymentMethod||"").toLowerCase();if(["cash","เงินสด"].includes(value))return"cash";if(["promptpay","transfer","bank","qr"].includes(value))return"promptpay";if(value==="cod")return"cod";return"other"}
 function paymentMethodLabel(key){return({cash:"เงินสด",promptpay:"พร้อมเพย์/โอนเงิน",cod:"เก็บเงินปลายทาง",other:"อื่น ๆ"})[key]||"อื่น ๆ"}
@@ -48,4 +79,8 @@ function renderReceiptDetail(receipt){const itemRows=receipt.items.map(item=>`<d
 function renderAll(range){renderSummary();renderBreakdowns();renderChart(range);renderTopItems();renderBestPeriod(range);renderReceipts(range)}
 function setPeriod(period){state.period=period;document.querySelectorAll("[data-period]").forEach(button=>button.classList.toggle("active",button.dataset.period===period));document.querySelectorAll("[data-control]").forEach(control=>{control.hidden=control.dataset.control!==period});applyFilters()}
 function initializeDates(){const now=new Date(),today=localDateKey(now);els.reportDate.value=today;els.reportMonth.value=monthKey(now);els.startDate.value=today;els.endDate.value=today;const currentYear=now.getFullYear();els.reportYear.innerHTML=Array.from({length:7},(_,index)=>currentYear-5+index).reverse().map(year=>`<option value="${year}"${year===currentYear?" selected":""}>${year+543}</option>`).join("")}
-document.querySelectorAll("[data-period]").forEach(button=>button.addEventListener("click",()=>setPeriod(button.dataset.period)));[els.reportDate,els.reportMonth,els.reportYear,els.startDate,els.endDate,els.orderType,els.paymentMethod].forEach(input=>input.addEventListener("change",applyFilters));els.search.addEventListener("input",applyFilters);els.pagination.addEventListener("click",event=>{const button=event.target.closest("[data-page]");if(!button)return;state.page=Number(button.dataset.page||1);renderReceipts(selectedRange());document.querySelector(".receipt-section")?.scrollIntoView({behavior:"smooth",block:"start"})});els.receiptRows.addEventListener("click",event=>{const button=event.target.closest("[data-view-receipt]");if(!button)return;const receipt=state.filteredReceipts.find(item=>item.key===button.dataset.viewReceipt);if(receipt)renderReceiptDetail(receipt)});document.querySelector("#closeReceiptDialog").addEventListener("click",()=>els.dialog.close());els.dialog.addEventListener("click",event=>{if(event.target===els.dialog)els.dialog.close()});initializeDates();dataService.subscribeOrders(orders=>{state.orders=orders;state.receipts=buildReceipts(orders);applyFilters()});
+document.querySelectorAll("[data-period]").forEach(button=>button.addEventListener("click",()=>setPeriod(button.dataset.period)));[els.reportDate,els.reportMonth,els.reportYear,els.startDate,els.endDate,els.orderType,els.paymentMethod].forEach(input=>input.addEventListener("change",applyFilters));els.search.addEventListener("input",applyFilters);els.pagination.addEventListener("click",event=>{const button=event.target.closest("[data-page]");if(!button)return;state.page=Number(button.dataset.page||1);renderReceipts(selectedRange());document.querySelector(".receipt-section")?.scrollIntoView({behavior:"smooth",block:"start"})});els.receiptRows.addEventListener("click",event=>{const button=event.target.closest("[data-view-receipt]");if(!button)return;const receipt=state.filteredReceipts.find(item=>item.key===button.dataset.viewReceipt);if(receipt)renderReceiptDetail(receipt)});document.querySelector("#closeReceiptDialog").addEventListener("click",()=>els.dialog.close());els.dialog.addEventListener("click",event=>{if(event.target===els.dialog)els.dialog.close()});initializeDates();setPeriod("monthly");
+const reportTenantId=String(dataService.getActiveShop()?.id||"").trim();
+if(reportTenantId)setTenantId(reportTenantId);
+dataService.subscribeOrders(orders=>{state.orders=orders||[];rebuildReceipts()});
+watchRecords(RetailCollections.sales,sales=>{state.retailSales=sales||[];rebuildReceipts()},{sortBy:"createdAt",direction:"desc"});

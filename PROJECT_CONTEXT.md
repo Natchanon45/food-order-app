@@ -2,9 +2,15 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.14.98
-Build: 2026.07.31.080
-Milestone: Firebase UI and Workflow Parity
+Version: 0.14.99
+Build: 2026.07.31.081
+Milestone: Firebase Sales Report Parity
+
+Change: Closed the Sales Report parity gap. The report now watches both restaurant `orders` and Retail POS `sales` for the active tenant, converts POS sales to the shared receipt structure, and de-duplicates matching order/receipt IDs. Its default period is monthly and its application header is pinned to the Laravel green theme.
+
+Firebase boundary: This is a tenant-scoped read/presentation change only. Existing Auth, Firestore/Storage writes, transactions, stable IDs, duplicate protection, local-first behavior, and offline synchronization remain authoritative.
+
+Deploy rules: hosting-only deploy. Load cache build `20260731-081` with a hard refresh after deployment.
 
 Change: Completed browser workflow parity with the Laravel/MySQL edition while keeping Firebase as the only persistence layer. Kitchen groups table rounds under one queue, Cashier restores stable queue ordering and Take Away tools, Admin restores modal add actions and verified payment/store settings saves, Delivery permits an active Firebase staff session to sign out, and shared POS/dialog/toast presentation follows the current Laravel behavior.
 

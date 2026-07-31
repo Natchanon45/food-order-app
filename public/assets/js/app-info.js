@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.14.98',
-  build: '2026.07.31.080',
+  version: '0.14.99',
+  build: '2026.07.31.081',
   branch: 'feature/retail-pos',
-  commit: 'FIREBASE-WORKFLOW-PARITY-01498',
+  commit: 'FIREBASE-SALES-REPORT-PARITY-01499',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Firebase UI and Workflow Parity',
-  updatedAt: '2026-07-31T07:45:00+07:00',
+  milestone: 'Firebase Sales Report Parity',
+  updatedAt: '2026-07-31T08:05:00+07:00',
   whatsNew: [
-    'Match the Laravel UI and browser workflow while keeping Firestore as the data store',
-    'Group table rounds and sort stable queues consistently in Kitchen and Cashier',
-    'Restore cashier Take Away tools, admin add flows, staff logout, and POS presentation parity'
+    'Match the Laravel Sales Report header, layout, and default monthly period',
+    'Combine restaurant orders and Retail POS sales from tenant-scoped Firestore collections',
+    'Prevent duplicate receipts when a sale is represented in both report sources'
   ]
 };
 

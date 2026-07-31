@@ -1,9 +1,15 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Firebase UI and Workflow Parity
-Version: 0.14.98
-Build: 2026.07.31.080
+Milestone: Firebase Sales Report Parity
+Version: 0.14.99
+Build: 2026.07.31.081
+
+Change: Corrected the Sales Report parity gap shown after the first Firebase deployment. The page now combines paid restaurant orders with Retail POS sales from the active tenant's Firestore `sales` collection, normalizes them into the same receipt model, and prevents duplicated receipts when a transaction appears in both sources. The report now opens in monthly mode and enforces the same green application header as the Laravel screen.
+
+Firebase safety: Report reads remain tenant-scoped. No Firestore rules, indexes, Cloud Functions, transaction handlers, stable IDs, duplicate-sale protection, or offline synchronization behavior changed.
+
+Deploy: hosting only. Hard refresh after deployment to load cache build `20260731-081`.
 
 Change: Extended the Laravel parity work from presentation-only to browser workflow parity while retaining Firebase Auth, Firestore, and Storage. Kitchen now groups table rounds and applies stable queue ordering, Cashier uses the same queue ordering, Take Away toolbar, empty state, and receipt fallback, Delivery supports staff logout, and Admin restores verified store settings plus add-menu/add-table modal actions. Shared POS presentation, dialogs, toast behavior, remembered receipt choices, and responsive action styling are aligned with the Laravel edition.
 
