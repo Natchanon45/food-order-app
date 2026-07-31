@@ -2,14 +2,14 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.15.2
-Build: 2026.07.31.084
+Version: 0.15.3
+Build: 2026.07.31.085
 
-Change: Removed the conflicting Firebase-only POS screen override and loaded Laravel's final `retail-pos-sale-workspace.css` contract last. This aligns the complete background workspace—not only the modal—including product/cart panel height, independent scrolling, cart-row density, summary flow, VAT visibility, and quantity/remove controls. Native hold-bill prompts and alerts were replaced with the shared styled dialogs without changing Firestore persistence.
+Change: Retail POS cart decrement and increment controls now render Bootstrap dash/plus icons inside the existing circular controls. Accessible labels and all quantity/cart behavior remain unchanged.
 
 Firebase boundary: This build changes presentation and category selection metadata only. Tenant-scoped category IDs remain in Firestore while existing sales, stock movements, stable sale/order/queue IDs, duplicate protection, local-first operation, and offline sync remain authoritative.
 
-Deploy rules: Hosting only. Load cache build `20260731-084` with a hard refresh after deployment.
+Deploy rules: Hosting only. Load cache build `20260731-085` with a hard refresh after deployment.
 Milestone: Firebase Retail POS Full Parity
 
 Change: Closed the seven remaining Retail POS parity gaps: correct password key icon, single category strip, fixed VAT mode without the removed selector, hamburger menu icon, product pagination, tenant-scoped Firestore category management, and restored category/product sorting content.

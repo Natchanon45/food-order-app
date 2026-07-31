@@ -1,8 +1,8 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.15.2',
-  build: '2026.07.31.084',
+  version: '0.15.3',
+  build: '2026.07.31.085',
   branch: 'feature/retail-pos',
   commit: 'FIREBASE-SALES-REPORT-PARITY-01499',
   firebaseProject: 'chat-45754',
