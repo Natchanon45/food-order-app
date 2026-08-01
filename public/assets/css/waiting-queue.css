@@ -806,6 +806,17 @@ dialog.waiting-dialog .waiting-dialog-actions .btn > i {
   }
 }
 
+/* WAITING_QUEUE_TICKET_PRIVACY_SPACING_20260802_014 */
+dialog.waiting-ticket-dialog .waiting-ticket-card > small {
+  width: 100%;
+  min-height: 32px;
+  margin: 3px 0 5px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: #f4f8f5;
+  line-height: 1.4;
+}
+
 /* WAITING_QUEUE_QR_MODAL_VIEWPORT_20260802_010 */
 dialog.waiting-ticket-dialog {
   max-height: min(94dvh, 820px) !important;
