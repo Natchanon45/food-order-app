@@ -23,6 +23,8 @@ let soundEnabled = savedSoundPreference !== "off";
 let soundArmed = soundEnabled;
 let audioContext = null;
 let thaiVoice = null;
+let activeUtterance = null;
+let speechRequestId = 0;
 let unsubscribe = () => {};
 let clockTimer = null;
 
@@ -51,6 +53,9 @@ function resolveThaiVoice() {
   );
   thaiVoice = thaiVoices.find(voice => voice.localService)
     || thaiVoices[0]
+    || voices.find(voice => voice.localService && /^en-/i.test(String(voice.lang || "")))
+    || voices.find(voice => voice.localService)
+    || voices[0]
     || null;
   return thaiVoice;
 }
@@ -121,16 +126,32 @@ function spokenQueueNumber(queueNumber) {
 function speakText(text) {
   if (!supportsSpeech()) return false;
   try {
+    const requestId = ++speechRequestId;
     speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "th-TH";
-    utterance.rate = 0.74;
+    utterance.rate = 0.78;
     utterance.pitch = 1;
     utterance.volume = 1;
     if (resolveThaiVoice()) utterance.voice = thaiVoice;
-    speechSynthesis.speak(utterance);
+    activeUtterance = utterance;
+    const release = () => {
+      if (requestId === speechRequestId) activeUtterance = null;
+    };
+    utterance.onend = release;
+    utterance.onerror = release;
+    window.setTimeout(() => {
+      if (requestId !== speechRequestId || !soundEnabled || !soundArmed) return;
+      try {
+        speechSynthesis.resume();
+        speechSynthesis.speak(utterance);
+      } catch {
+        release();
+      }
+    }, 120);
     return true;
   } catch {
+    activeUtterance = null;
     return false;
   }
 }
@@ -143,7 +164,7 @@ async function announce(queueNumber) {
     const message =
       `ขอเชิญคิว, ${spokenQueueNumber(queueNumber)}, กรุณามาที่จุดรับโต๊ะค่ะ`;
     speakText(message);
-  }, 680);
+  }, 820);
 }
 
 function audioCapabilityText() {
@@ -294,6 +315,7 @@ window.addEventListener("beforeunload", () => {
   unsubscribe();
   clearInterval(clockTimer);
   try { speechSynthesis.cancel(); } catch {}
+  activeUtterance = null;
   try { audioContext?.close(); } catch {}
 }, { once: true });
 
