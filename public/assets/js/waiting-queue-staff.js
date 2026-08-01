@@ -28,7 +28,7 @@ import {
   waitingQueueStatusLabel,
   watchWaitingQueuePublicResponses,
   watchWaitingQueues,
-} from "./waiting-queue-core.js?v=20260802-001";
+} from "./waiting-queue-core.js?v=20260802-004";
 
 const waitingProfile = await requireRole(["owner", "admin", "manager", "cashier"]);
 
@@ -110,6 +110,7 @@ let tableTimer = null;
 let clockTimer = null;
 let syncing = false;
 const responseInFlight = new Set();
+const seatRepairInFlight = new Set();
 const LONG_WAIT_ALERT_MINUTES = 60;
 
 function escapeHtml(value) {
@@ -903,6 +904,28 @@ async function processPublicResponses() {
   }
 }
 
+async function repairSeatedQueueSessions() {
+  for (const queue of queues) {
+    if (queue.status !== WAITING_QUEUE_STATUS.SEATED || queue.tableToken) continue;
+    if (!queue.tableId || seatRepairInFlight.has(queue.id)) continue;
+    const table = tables.find(item => String(item.id) === String(queue.tableId));
+    if (!table) continue;
+    seatRepairInFlight.add(queue.id);
+    seatWaitingQueue(queue.id, table, {
+      tenantId,
+      allowSeatRepair: true,
+      reason: "ซ่อม session โต๊ะที่เปิดจากคิวรอโต๊ะรุ่นก่อนหน้า",
+    }).then(async result => {
+      if (result?.repaired) {
+        showToast(`เชื่อม ${table.label} กับหน้าสั่งอาหารแล้ว`);
+        await refreshTables();
+      }
+    }).catch(error => {
+      console.warn("[waiting-queue-staff] seated queue session repair failed", error);
+    }).finally(() => seatRepairInFlight.delete(queue.id));
+  }
+}
+
 function bindEvents() {
   els.addBtn.addEventListener("click", openAddDialog);
   els.closeAdd.addEventListener("click", closeAddDialog);
@@ -978,6 +1001,7 @@ async function initialize() {
     renderQueues();
     renderTables();
     renderConnectivity();
+    repairSeatedQueueSessions();
   }, error => {
     console.error("[waiting-queue-staff] queue watch failed", error);
     showToast("โหลดคิวจาก Firebase ไม่สำเร็จ กำลังใช้ข้อมูลในเครื่อง", "error");

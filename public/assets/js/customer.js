@@ -453,6 +453,8 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
       tableCode: activeTableCode(),
       tableName: activeTableName(),
       tableToken,
+      waitingQueueId: activeTable?.waitingQueueId || "",
+      waitingQueueNumber: activeTable?.waitingQueueNumber || "",
       status: "pending",
       totalAmount,
       note: document.querySelector("#orderNote").value.trim(),

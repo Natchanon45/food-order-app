@@ -1441,23 +1441,34 @@ function tableFitsQueue(table, queue) {
   return Boolean(table?.available) && tableSupportsQueue(table, queue);
 }
 
-function orderUrl({ tableId, tableLabel = "", orderId, waitingQueueId }) {
+async function tenantStorefrontSlug(tenantId) {
+  const snapshot = await getDoc(doc(db, "tenants", tenantId));
+  const slug = normalizeString(snapshot.exists() ? snapshot.data()?.slug : "");
+  if (!slug) {
+    throw new WaitingQueueError(
+      "TENANT_SLUG_REQUIRED",
+      "ร้านนี้ยังไม่มีชื่อร้านสำหรับลิงก์สั่งอาหาร กรุณาตั้งค่าร้านก่อนเปิดโต๊ะ",
+    );
+  }
+  return slug;
+}
+
+function orderUrl({ tenantSlug, tableCode, tableToken }) {
   const params = new URLSearchParams({
-    tableId,
-    table: tableId,
-    tableNumber: tableLabel || tableId,
-    orderId,
-    waitingQueueId,
+    table: tableCode,
+    token: tableToken,
   });
-  return `/order/?${params.toString()}`;
+  return `/s/${encodeURIComponent(tenantSlug)}/order/?${params.toString()}`;
 }
 
 export async function seatWaitingQueue(queueId, table, options = {}) {
   if (!isOnline()) throw new WaitingQueueError("ONLINE_REQUIRED", "การเปิดโต๊ะต้องเชื่อมต่ออินเทอร์เน็ตเพื่อป้องกันการจัดโต๊ะซ้ำ");
   const tenantId = normalizeString(options.tenantId || await resolveTenantId());
+  const tenantSlug = await tenantStorefrontSlug(tenantId);
   const actor = currentActor();
   const opId = safeId("wqseat");
   const orderId = normalizeString(options.orderId) || `order-wq-${queueId}`;
+  const requestedTableToken = normalizeString(options.tableToken) || safeToken();
   const qRef = queueRef(queueId);
   const tRef = tableRefFromTable(table);
   const oRef = doc(db, COLLECTIONS.orders, orderId);
@@ -1478,20 +1489,41 @@ export async function seatWaitingQueue(queueId, table, options = {}) {
       waitingQueueId: qSnap.data()?.waitingQueueId || qSnap.id,
     };
     const remoteTable = { ...tSnap.data(), id: tSnap.id };
-    if (queue.status === WAITING_QUEUE_STATUS.SEATED) {
-      if (queue.tableId === String(table.id) && queue.orderId) {
-        return { queue, orderId: queue.orderId, tableId: queue.tableId, idempotent: true };
+    const seatedAtSelectedTable = queue.status === WAITING_QUEUE_STATUS.SEATED
+      && queue.tableId === String(table.id)
+      && queue.orderId;
+    const repairExistingSeat = Boolean(
+      seatedAtSelectedTable
+      && (
+        !normalizeString(queue.tableToken)
+        || !normalizeString(remoteTable.orderToken)
+        || normalizeString(queue.tableToken) !== normalizeString(remoteTable.orderToken)
+      ),
+    );
+    if (queue.status === WAITING_QUEUE_STATUS.SEATED && !repairExistingSeat) {
+      if (seatedAtSelectedTable) {
+        const tableCode = normalizeString(remoteTable.code || remoteTable.id || table.id);
+        const tableToken = normalizeString(remoteTable.orderToken || queue.tableToken);
+        return {
+          queue: { ...queue, tableCode, tableToken },
+          orderId: queue.orderId,
+          tableId: queue.tableId,
+          tableCode,
+          tableToken,
+          tenantSlug,
+          idempotent: true,
+        };
       }
       throw new WaitingQueueError("QUEUE_ALREADY_SEATED", "คิวนี้ถูกจัดโต๊ะไปแล้วจากอุปกรณ์อื่น");
     }
-    if (!WAITING_QUEUE_ACTIVE_STATUSES.has(queue.status)) {
+    if (!repairExistingSeat && !WAITING_QUEUE_ACTIVE_STATUSES.has(queue.status)) {
       throw new WaitingQueueError("QUEUE_NOT_ACTIVE", "คิวนี้ไม่อยู่ในสถานะที่เปิดโต๊ะได้");
     }
-    if (!tableIsAvailable(remoteTable)) {
+    if (!repairExistingSeat && !tableIsAvailable(remoteTable)) {
       throw new WaitingQueueError("TABLE_ALREADY_OCCUPIED", "โต๊ะนี้ไม่ว่างแล้ว กรุณาเลือกโต๊ะใหม่");
     }
     const normalizedRemoteTable = normalizeTable({ ...remoteTable, id: tSnap.id }, table._collection || COLLECTIONS.tables);
-    if (!tableFitsQueue(normalizedRemoteTable, queue) && !normalizeString(options.overrideReason)) {
+    if (!repairExistingSeat && !tableFitsQueue(normalizedRemoteTable, queue) && !normalizeString(options.overrideReason)) {
       throw new WaitingQueueError("TABLE_NOT_SUITABLE", "โต๊ะไม่เหมาะกับจำนวนคนหรือความต้องการพิเศษ หากต้องการข้ามเงื่อนไขต้องระบุเหตุผล");
     }
     if (oSnap.exists()) {
@@ -1505,14 +1537,19 @@ export async function seatWaitingQueue(queueId, table, options = {}) {
     const [publicSnap, dedupeSnap] = await Promise.all([transaction.get(pRef), transaction.get(dRef)]);
     const timestamp = nowMs();
     const tableLabel = normalizedRemoteTable.label;
+    const tableCode = normalizeString(normalizedRemoteTable.code || normalizedRemoteTable.id);
+    const tableToken = normalizeString(remoteTable.orderToken || queue.tableToken || requestedTableToken);
     const nextQueue = {
       ...queue,
       status: WAITING_QUEUE_STATUS.SEATED,
       statusLabel: WAITING_QUEUE_STATUS_LABEL.seated,
       active: false,
-      seatedAtMs: timestamp,
+      seatedAtMs: Number(queue.seatedAtMs || timestamp),
       tableId: String(table.id),
+      tableCode,
       tableLabel,
+      tableToken,
+      tenantSlug,
       orderId,
       version: Number(queue.version || 1) + 1,
       appliedOperationIds: pushAppliedOperation(queue, opId),
@@ -1539,6 +1576,8 @@ export async function seatWaitingQueue(queueId, table, options = {}) {
       tableNo: tableLabel,
       tableName: tableLabel,
       tableLabel,
+      tableCode,
+      tableToken,
       waitingQueueId: queue.id,
       waitingQueueNumber: queue.queueNumber,
       customerName: queue.customerName,
@@ -1568,6 +1607,10 @@ export async function seatWaitingQueue(queueId, table, options = {}) {
       currentOrderId: orderId,
       orderId,
       isOpen: true,
+      orderToken: tableToken,
+      sessionStartedAt: normalizeString(remoteTable.sessionStartedAt) || new Date(timestamp).toISOString(),
+      currentRound: Number(remoteTable.currentRound || 0),
+      orderIds: Array.isArray(remoteTable.orderIds) ? remoteTable.orderIds : [],
       waitingQueueId: queue.id,
       waitingQueueNumber: queue.queueNumber,
       partySize: Number(queue.partySize || 1),
@@ -1604,7 +1647,7 @@ export async function seatWaitingQueue(queueId, table, options = {}) {
     transaction.set(aRef, auditRow({
       opId,
       queue: nextQueue,
-      action: "table_opened",
+      action: repairExistingSeat ? "table_session_repaired" : "table_opened",
       fromStatus: queue.status,
       toStatus: WAITING_QUEUE_STATUS.SEATED,
       reason: options.overrideReason || options.reason,
@@ -1623,13 +1666,26 @@ export async function seatWaitingQueue(queueId, table, options = {}) {
           : [],
       },
     }), { merge: false });
-    return { queue: nextQueue, orderId, tableId: String(table.id), idempotent: false };
+    return {
+      queue: nextQueue,
+      orderId,
+      tableId: String(table.id),
+      tableCode,
+      tableToken,
+      tenantSlug,
+      idempotent: false,
+      repaired: repairExistingSeat,
+    };
   });
 
   upsertLocalQueue(tenantId, { ...result.queue, syncStatus: "synced" });
   return {
     ...result,
-    orderUrl: orderUrl({ tableId: result.tableId, tableLabel: result.queue.tableLabel, orderId: result.orderId, waitingQueueId: queueId }),
+    orderUrl: orderUrl({
+      tenantSlug: result.tenantSlug || tenantSlug,
+      tableCode: result.tableCode || result.tableId,
+      tableToken: result.tableToken || result.queue.tableToken,
+    }),
   };
 }
 

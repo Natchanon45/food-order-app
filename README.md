@@ -1,9 +1,20 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Waiting Queue Ticket Print Polish
+Milestone: Waiting Queue Table Session Bridge
 Version: 0.16.6
-Build: 2026.08.02.003
+Build: 2026.08.02.004
+
+<!-- WAITING_QUEUE_TABLE_SESSION_BRIDGE_20260802_004 -->
+Change: Connected Waiting Queue seating to the canonical Table QR ordering session.
+
+Opening a table now writes `orderToken`, `sessionStartedAt`, `currentRound`, and `orderIds` together with the Waiting Queue table linkage. The resulting staff action opens the tenant storefront URL `/s/{slug}/order/` with the table code and active token, so the customer ordering page recognizes the same occupied table shown by `/cashier/table-qr`.
+
+Recovery: the staff page automatically repairs previously seated queues whose tables were marked occupied without an order token. Customer-created table orders copy `waitingQueueId` and `waitingQueueNumber` from the active table for end-to-end linkage.
+
+Firebase safety: seating and repair retain transaction read-before-write ordering, tenant checks, stable IDs, duplicate seating protection, audit history, and exact table-field restrictions.
+
+Deploy: Firestore Rules and Hosting. Hard refresh cache `20260802-004`.
 
 <!-- WAITING_QUEUE_TICKET_PRINT_POLISH_20260802_003 -->
 Change: Polished the on-screen customer ticket and 80 mm printed queue ticket.

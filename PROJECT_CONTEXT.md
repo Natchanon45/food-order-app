@@ -3,7 +3,18 @@
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
 Version: 0.16.6
-Build: 2026.08.02.003
+Build: 2026.08.02.004
+
+<!-- WAITING_QUEUE_TABLE_SESSION_BRIDGE_20260802_004 -->
+Change: Waiting Queue Table Session Bridge.
+
+Current behavior: opening a table from Waiting Queue now creates the same active table session contract as the canonical Table QR workflow: `orderToken`, `sessionStartedAt`, `currentRound`, and `orderIds`. Staff navigation uses `/s/{tenantSlug}/order/?table={tableCode}&token={orderToken}`, and customer orders inherit the Waiting Queue link from the active table.
+
+Recovery: seated queues created by the previous build without a table token are repaired automatically from the staff page in the existing read-before-write transaction. Stable queue, table, and deterministic draft order IDs are preserved.
+
+Deploy rules: Firestore Rules and Hosting. No Composite Index or Function change.
+
+Next Task: refresh Waiting Queue, confirm the prior seated table appears under issued Table QR, open its order page, and submit one customer order.
 
 <!-- WAITING_QUEUE_TICKET_PRINT_POLISH_20260802_003 -->
 Change: Waiting Queue Ticket Print Polish.

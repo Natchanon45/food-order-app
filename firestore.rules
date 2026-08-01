@@ -128,6 +128,11 @@ service cloud.firestore {
         && request.resource.data.get('status', '') == 'occupied'
         && request.resource.data.get('orderId', '') ==
           'order-wq-' + request.resource.data.get('waitingQueueId', '')
+        && request.resource.data.get('orderToken', '') is string
+        && request.resource.data.get('orderToken', '').size() >= 16
+        && request.resource.data.get('currentRound', -1) is int
+        && request.resource.data.get('currentRound', -1) >= 0
+        && request.resource.data.get('orderIds', []) is list
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'tenantId',
           'status',
@@ -140,6 +145,10 @@ service cloud.firestore {
           'currentOrderId',
           'orderId',
           'isOpen',
+          'orderToken',
+          'sessionStartedAt',
+          'currentRound',
+          'orderIds',
           'waitingQueueId',
           'waitingQueueNumber',
           'partySize',

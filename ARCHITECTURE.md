@@ -3,7 +3,14 @@
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
 Version: 0.16.6
-Build: 2026.08.02.003
+Build: 2026.08.02.004
+
+<!-- WAITING_QUEUE_TABLE_SESSION_BRIDGE_20260802_004 -->
+Waiting Queue table-session bridge rule:
+
+A seated Waiting Queue table must use the canonical restaurant session fields `status: occupied`, non-empty `orderToken`, `sessionStartedAt`, numeric `currentRound`, and list `orderIds`. The customer order URL must include the tenant storefront slug, table code, and active token. Existing seated rows missing this contract may be repaired only for the same stable queue/table relationship through the transaction-safe seating path.
+
+Customer table orders inherit `waitingQueueId` and `waitingQueueNumber` from the validated active table session. Closing or moving the table continues to use the existing Table QR/Cashier workflows.
 
 <!-- WAITING_QUEUE_TICKET_PRINT_POLISH_20260802_003 -->
 Waiting Queue ticket print rule:
