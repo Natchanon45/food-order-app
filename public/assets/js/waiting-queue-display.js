@@ -2,6 +2,7 @@ import { watchPublicQueueBoard } from "./waiting-queue-core.js?v=20260802-016";
 
 const params = new URLSearchParams(location.search);
 const tenantId = String(params.get("tenantId") || "").trim();
+const RECORDED_VOICE_BASE = "/assets/audio/waiting-queue-th";
 const els = {
   clock: document.querySelector("#waitingDisplayClock"),
   called: document.querySelector("#waitingDisplayCalled"),
@@ -25,6 +26,8 @@ let audioContext = null;
 let thaiVoice = null;
 let activeUtterance = null;
 let speechRequestId = 0;
+let activeRecordedAudio = null;
+let recordedAnnouncementId = 0;
 let unsubscribe = () => {};
 let clockTimer = null;
 
@@ -62,6 +65,48 @@ function resolveThaiVoice() {
 
 function supportsSpeech() {
   return "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+}
+
+function playAudioFile(src, announcementId) {
+  return new Promise(resolve => {
+    if (announcementId !== recordedAnnouncementId || !soundEnabled || !soundArmed) {
+      resolve(false);
+      return;
+    }
+    const audio = new Audio(src);
+    activeRecordedAudio = audio;
+    audio.preload = "auto";
+    audio.volume = 1;
+    const finish = played => {
+      audio.onended = null;
+      audio.onerror = null;
+      if (activeRecordedAudio === audio) activeRecordedAudio = null;
+      resolve(played);
+    };
+    audio.onended = () => finish(true);
+    audio.onerror = () => finish(false);
+    audio.play().catch(() => finish(false));
+  });
+}
+
+async function playRecordedAnnouncement(queueNumber) {
+  const digits = String(queueNumber || "").replace(/\D/g, "").split("");
+  if (!digits.length) return false;
+  const announcementId = ++recordedAnnouncementId;
+  if (activeRecordedAudio) {
+    activeRecordedAudio.pause();
+    activeRecordedAudio.currentTime = 0;
+    activeRecordedAudio = null;
+  }
+  const files = [
+    `${RECORDED_VOICE_BASE}/intro.m4a`,
+    ...digits.map(digit => `${RECORDED_VOICE_BASE}/${digit}.m4a`),
+    `${RECORDED_VOICE_BASE}/outro.m4a`,
+  ];
+  for (const file of files) {
+    if (!await playAudioFile(file, announcementId)) return false;
+  }
+  return true;
 }
 
 async function ensureAudioContext() {
@@ -159,22 +204,25 @@ function speakText(text) {
 async function announce(queueNumber) {
   if (!soundEnabled || !soundArmed) return;
   await playChime();
-  window.setTimeout(() => {
+  window.setTimeout(async () => {
     if (!soundEnabled || !soundArmed) return;
-    const message =
-      `ขอเชิญคิว, ${spokenQueueNumber(queueNumber)}, กรุณามาที่จุดรับโต๊ะค่ะ`;
-    speakText(message);
+    const recorded = await playRecordedAnnouncement(queueNumber);
+    if (!recorded && soundEnabled && soundArmed) {
+      const message =
+        `ขอเชิญคิว, ${spokenQueueNumber(queueNumber)}, กรุณามาที่จุดรับโต๊ะค่ะ`;
+      speakText(message);
+    }
   }, 820);
 }
 
 function audioCapabilityText() {
   if (!soundArmed || !soundEnabled) return "เสียงยังไม่เปิด";
-  return supportsSpeech() ? "เสียงเตือน + อ่านหมายเลขคิว" : "เสียงเตือนเท่านั้น";
+  return "เสียงเตือน + อ่านหมายเลขคิว";
 }
 
 function renderAudioState() {
   const ready = soundArmed && soundEnabled;
-  const speech = supportsSpeech();
+  const speech = true;
   els.sound.classList.toggle("is-armed", ready && speech);
   els.sound.classList.toggle("is-fallback", ready && !speech);
   els.audioNotice.classList.toggle("is-ready", ready);
@@ -189,9 +237,7 @@ function renderAudioState() {
   }
 
   els.sound.innerHTML = '<i class="bi bi-volume-up" aria-hidden="true"></i><span>ปิดเสียงเรียก</span>';
-  els.audioNotice.innerHTML = supportsSpeech()
-    ? '<i class="bi bi-check-circle" aria-hidden="true"></i><span>เสียงพร้อมใช้งาน: เล่นเสียงเตือน แล้วอ่านหมายเลขคิวเป็นภาษาไทย</span>'
-    : '<i class="bi bi-exclamation-circle" aria-hidden="true"></i><span>เบราว์เซอร์นี้ไม่รองรับเสียงพูด ระบบจะเล่นเสียงเตือนเท่านั้น</span>';
+  els.audioNotice.innerHTML = '<i class="bi bi-check-circle" aria-hidden="true"></i><span>เสียงพร้อมใช้งาน: เล่นเสียงเตือน แล้วอ่านหมายเลขคิวด้วยเสียงบันทึกภาษาไทย</span>';
 }
 
 function countdownText(row) {
@@ -262,6 +308,12 @@ async function toggleSound() {
 
   soundEnabled = false;
   localStorage.setItem("waiting_queue_display_sound", "off");
+  recordedAnnouncementId += 1;
+  if (activeRecordedAudio) {
+    activeRecordedAudio.pause();
+    activeRecordedAudio.currentTime = 0;
+    activeRecordedAudio = null;
+  }
   try { speechSynthesis.cancel(); } catch {}
   renderAudioState();
 }
@@ -316,6 +368,9 @@ window.addEventListener("beforeunload", () => {
   clearInterval(clockTimer);
   try { speechSynthesis.cancel(); } catch {}
   activeUtterance = null;
+  recordedAnnouncementId += 1;
+  try { activeRecordedAudio?.pause(); } catch {}
+  activeRecordedAudio = null;
   try { audioContext?.close(); } catch {}
 }, { once: true });
 
