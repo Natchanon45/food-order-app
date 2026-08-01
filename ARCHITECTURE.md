@@ -3,7 +3,12 @@
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
 Version: 0.16.6
-Build: 2026.08.02.002
+Build: 2026.08.02.003
+
+<!-- WAITING_QUEUE_TICKET_PRINT_POLISH_20260802_003 -->
+Waiting Queue ticket print rule:
+
+Printed customer tickets use local TH Sarabun PSK regular and bold font files, a fixed 80 x 160 mm receipt page, and defer `window.print()` until the font set and QR image are ready. The ticket may show the stable W-number, party size, suitable groups ahead, estimated wait, received time, tracking URL, and privacy guidance, but never customer name or phone number.
 
 <!-- WAITING_QUEUE_IMMEDIATE_TICKET_HANDOFF_20260802_002 -->
 Waiting Queue immediate ticket handoff rule:

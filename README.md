@@ -1,9 +1,18 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Waiting Queue Immediate Ticket Handoff
+Milestone: Waiting Queue Ticket Print Polish
 Version: 0.16.6
-Build: 2026.08.02.002
+Build: 2026.08.02.003
+
+<!-- WAITING_QUEUE_TICKET_PRINT_POLISH_20260802_003 -->
+Change: Polished the on-screen customer ticket and 80 mm printed queue ticket.
+
+The ticket preview now shows suitable queues ahead with more balanced spacing. Print output uses local `THSarabun.ttf` and `THSarabun-Bold.ttf` as `TH Sarabun PSK`, targets an 80 x 160 mm receipt page, and waits for both the font and QR image before printing. The ticket retains the stable W-number, party size, wait estimate, received time, tracking URL, scan instruction, and privacy note.
+
+Firebase safety: This is presentation and print-layout only. Customer PII remains excluded from the QR ticket; queue persistence, tenant boundaries, audit history, stable IDs, duplicate protection, offline outbox behavior, and table-opening transactions are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260802-003`.
 
 <!-- WAITING_QUEUE_IMMEDIATE_TICKET_HANDOFF_20260802_002 -->
 Change: Open the printable customer QR ticket immediately after queue creation.

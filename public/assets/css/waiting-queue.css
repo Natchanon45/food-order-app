@@ -710,6 +710,7 @@ dialog.waiting-dialog .waiting-dialog-actions .btn > i {
 }
 
 .waiting-ticket-meta > div,
+.waiting-ticket-ahead,
 .waiting-ticket-issued {
   display: grid;
   gap: 3px;
@@ -720,12 +721,14 @@ dialog.waiting-dialog .waiting-dialog-actions .btn > i {
 }
 
 .waiting-ticket-meta span,
+.waiting-ticket-ahead span,
 .waiting-ticket-issued span {
   color: var(--wq-muted);
   font-size: .72rem;
 }
 
 .waiting-ticket-meta strong,
+.waiting-ticket-ahead strong,
 .waiting-ticket-issued strong {
   color: var(--wq-text);
   font-size: .9rem;
@@ -736,6 +739,17 @@ dialog.waiting-dialog .waiting-dialog-actions .btn > i {
   grid-template-columns: auto 1fr;
   align-items: center;
   text-align: left;
+}
+
+.waiting-ticket-ahead {
+  width: 100%;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  text-align: left;
+}
+
+.waiting-ticket-ahead strong {
+  text-align: right;
 }
 
 .waiting-ticket-issued strong {
@@ -794,43 +808,43 @@ dialog.waiting-dialog .waiting-dialog-actions .btn > i {
 
 /* WAITING_QUEUE_QR_MODAL_REPAIR_20260802_001 */
 .waiting-ticket-dialog {
-  width: min(520px, calc(100% - 24px)) !important;
+  width: min(560px, calc(100% - 24px)) !important;
 }
 
 .waiting-ticket-dialog-form {
-  max-height: min(90dvh, 820px) !important;
+  max-height: min(92dvh, 840px) !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
 }
 
 .waiting-ticket-card {
   min-width: 0;
-  gap: 7px;
-  margin: 14px 18px 0;
-  padding: 16px;
+  gap: 6px;
+  margin: 12px 18px 0;
+  padding: 14px 16px;
   overflow: hidden;
 }
 
 .waiting-ticket-number {
-  font-size: clamp(2.9rem, 9vw, 4.1rem);
+  font-size: clamp(2.8rem, 8vw, 3.8rem);
 }
 
 .waiting-ticket-qr {
-  width: 212px !important;
-  height: 212px !important;
-  min-width: 212px;
-  min-height: 212px;
-  padding: 12px;
+  width: 196px !important;
+  height: 196px !important;
+  min-width: 196px;
+  min-height: 196px;
+  padding: 10px;
   overflow: hidden;
 }
 
 .waiting-ticket-qr > canvas,
 .waiting-ticket-qr > img,
 .waiting-ticket-qr > table {
-  width: 188px !important;
-  height: 188px !important;
-  max-width: 188px !important;
-  max-height: 188px !important;
+  width: 176px !important;
+  height: 176px !important;
+  max-width: 176px !important;
+  max-height: 176px !important;
   margin: 0 !important;
 }
 
@@ -844,7 +858,7 @@ dialog.waiting-dialog .waiting-dialog-actions .btn > i {
 }
 
 .waiting-ticket-url {
-  max-height: 58px;
+  max-height: 48px;
   overflow: auto;
   scrollbar-width: thin;
 }

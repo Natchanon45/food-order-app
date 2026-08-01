@@ -74,6 +74,7 @@ const els = {
   ticketQueueNumber: document.querySelector("#waitingTicketQueueNumber"),
   ticketPartySize: document.querySelector("#waitingTicketPartySize"),
   ticketEstimate: document.querySelector("#waitingTicketEstimate"),
+  ticketGroupsAhead: document.querySelector("#waitingTicketGroupsAhead"),
   ticketIssuedAt: document.querySelector("#waitingTicketIssuedAt"),
   ticketQr: document.querySelector("#waitingTicketQr"),
   ticketUrl: document.querySelector("#waitingTicketUrl"),
@@ -528,6 +529,8 @@ function openTicketDialog(queue) {
   els.ticketPartySize.textContent =
     `${Number(queue.partySize || 1).toLocaleString("th-TH")} คน`;
   els.ticketEstimate.textContent = ticketEstimateText(queue);
+  els.ticketGroupsAhead.textContent =
+    `${Number(queue.groupsAhead || 0).toLocaleString("th-TH")} คิว`;
   els.ticketIssuedAt.textContent = ticketIssuedText(queue);
   els.ticketUrl.textContent = url;
   els.ticketError.textContent = "";
@@ -557,6 +560,9 @@ function printableTicketHtml(queue, url, qrDataUrl) {
     `${Number(queue.partySize || 1).toLocaleString("th-TH")} คน`,
   );
   const estimate = escapeHtml(ticketEstimateText(queue));
+  const groupsAhead = escapeHtml(
+    `${Number(queue.groupsAhead || 0).toLocaleString("th-TH")} คิว`,
+  );
   const issuedAt = escapeHtml(ticketIssuedText(queue));
   const safeUrl = escapeHtml(url);
   const safeQr = escapeHtml(qrDataUrl);
@@ -568,22 +574,28 @@ function printableTicketHtml(queue, url, qrDataUrl) {
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>บัตรคิว ${queueNumber}</title>
   <style>
-    @page{size:80mm auto;margin:4mm}
+    @font-face{font-family:"TH Sarabun PSK";src:url("/assets/fonts/THSarabun.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap}
+    @font-face{font-family:"TH Sarabun PSK";src:url("/assets/fonts/THSarabun-Bold.ttf") format("truetype");font-weight:700;font-style:normal;font-display:swap}
+    @page{size:80mm 160mm;margin:0}
     *{box-sizing:border-box}
-    body{margin:0;background:#fff;color:#111;font-family:"Noto Sans Thai",Tahoma,sans-serif}
-    .ticket{width:72mm;margin:0 auto;text-align:center}
-    .brand{font-size:16pt;font-weight:700}
-    .sub{margin-top:1mm;font-size:9pt}
-    .number{margin:3mm 0 2mm;font-size:34pt;line-height:1;font-weight:800;letter-spacing:.06em}
-    .meta{display:grid;grid-template-columns:1fr 1fr;gap:2mm;margin:3mm 0}
-    .meta div{padding:2mm;border:1px solid #222;border-radius:2mm}
-    .meta span{display:block;font-size:7.5pt}
-    .meta strong{display:block;margin-top:1mm;font-size:10pt}
-    .qr{width:48mm;height:48mm;display:block;margin:3mm auto}
-    .instruction{font-size:10pt;font-weight:700}
-    .time{margin-top:2mm;font-size:8pt}
-    .url{margin-top:2mm;font-size:6.5pt;line-height:1.35;word-break:break-all}
-    .footer{margin-top:3mm;padding-top:2mm;border-top:1px dashed #333;font-size:8pt}
+    html,body{width:80mm;min-height:160mm}
+    body{margin:0;padding:4mm;background:#fff;color:#10271a;font-family:"TH Sarabun PSK",sans-serif;font-size:14pt;line-height:1.05}
+    .ticket{width:72mm;min-height:152mm;margin:0 auto;padding:4mm 4mm 3mm;border:1px solid #9bc6aa;border-radius:4mm;text-align:center}
+    .brand{color:#076536;font-size:22pt;line-height:1;font-weight:700}
+    .sub{margin-top:1mm;color:#425c4b;font-size:13pt}
+    .number{margin:3mm 0 2.5mm;color:#075f33;font-size:44pt;line-height:.85;font-weight:700;letter-spacing:.055em}
+    .meta{display:grid;grid-template-columns:1fr 1fr;gap:2mm;margin:0 0 2mm}
+    .meta div{padding:2mm 1mm;border:1px solid #b9d8c3;border-radius:2.5mm;background:#f7fbf8}
+    .meta span{display:block;color:#567060;font-size:11pt}
+    .meta strong{display:block;margin-top:.6mm;color:#10271a;font-size:15pt;font-weight:700}
+    .ahead{display:flex;align-items:center;justify-content:space-between;margin-bottom:2.5mm;padding:1.5mm 2mm;border:1px solid #d5e7db;border-radius:2mm;background:#fbfdfb;font-size:12pt}
+    .ahead strong{font-size:14pt}
+    .qr{width:42mm;height:42mm;display:block;margin:0 auto 2mm}
+    .instruction{color:#075f33;font-size:15pt;font-weight:700}
+    .time{margin-top:1mm;color:#324b3a;font-size:12pt}
+    .url{margin-top:1.5mm;padding:1.5mm;border-radius:1.5mm;background:#f4f7f5;color:#53685b;font-size:8pt;line-height:1.1;word-break:break-all}
+    .privacy{margin-top:1.5mm;color:#52675a;font-size:10pt}
+    .footer{margin-top:2mm;padding-top:2mm;border-top:1px dashed #739680;color:#183d28;font-size:12pt;font-weight:700}
   </style>
 </head>
 <body>
@@ -595,17 +607,23 @@ function printableTicketHtml(queue, url, qrDataUrl) {
       <div><span>จำนวนลูกค้า</span><strong>${partySize}</strong></div>
       <div><span>เวลารอประมาณ</span><strong>${estimate}</strong></div>
     </div>
+    <div class="ahead"><span>คิวที่เหมาะสมก่อนหน้า</span><strong>${groupsAhead}</strong></div>
     <img class="qr" src="${safeQr}" alt="QR Code ติดตามคิว">
     <div class="instruction">สแกนเพื่อติดตามสถานะคิว</div>
     <div class="time">รับคิวเมื่อ ${issuedAt}</div>
     <div class="url">${safeUrl}</div>
+    <div class="privacy">บัตรนี้ไม่แสดงชื่อหรือเบอร์โทรของลูกค้า</div>
     <div class="footer">โปรดเก็บบัตรนี้ไว้จนกว่าจะได้รับโต๊ะ</div>
   </main>
   <script>
     const image = document.querySelector(".qr");
-    const printNow = () => setTimeout(() => { window.focus(); window.print(); }, 120);
-    if (image.complete) printNow();
-    else image.addEventListener("load", printNow, { once: true });
+    const imageReady = image.complete
+      ? Promise.resolve()
+      : new Promise(resolve => image.addEventListener("load", resolve, { once: true }));
+    const fontReady = document.fonts?.ready || Promise.resolve();
+    Promise.all([imageReady, fontReady]).then(() => {
+      setTimeout(() => { window.focus(); window.print(); }, 120);
+    });
     window.addEventListener("afterprint", () => window.close(), { once: true });
   <\/script>
 </body>

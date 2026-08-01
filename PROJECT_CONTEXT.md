@@ -3,7 +3,18 @@
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
 Version: 0.16.6
-Build: 2026.08.02.002
+Build: 2026.08.02.003
+
+<!-- WAITING_QUEUE_TICKET_PRINT_POLISH_20260802_003 -->
+Change: Waiting Queue Ticket Print Polish.
+
+Current behavior: the customer ticket preview has balanced spacing and includes the number of suitable queues ahead. Printed output uses a fixed 80 x 160 mm receipt layout, waits for the QR and local TH Sarabun PSK fonts, and retains the W-number, party size, estimated wait, received time, tracking URL, privacy note, and scan instruction.
+
+Privacy and Firebase boundaries are unchanged. The printed ticket contains no customer name or phone number, QR generation remains local, and queue writes, tenant scoping, stable IDs, outbox behavior, and table transactions are unchanged.
+
+Deploy rules: Hosting only. No Firestore Rules, Indexes, or Functions change.
+
+Next Task: print to an 80 mm receipt printer and scan the QR from the physical ticket.
 
 <!-- WAITING_QUEUE_IMMEDIATE_TICKET_HANDOFF_20260802_002 -->
 Change: Waiting Queue Immediate Ticket Handoff.

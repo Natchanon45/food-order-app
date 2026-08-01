@@ -8,7 +8,7 @@
     <link rel="icon" href="/assets/images/icon-192.png" type="image/png" />
     <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260713-004" />
     <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260801-002" />
-    <link rel="stylesheet" href="/assets/css/waiting-queue.css?v=20260802-001" />
+    <link rel="stylesheet" href="/assets/css/waiting-queue.css?v=20260802-003" />
   </head>
   <body data-module="waiting-queue">
     <header class="pos-header waiting-app-header">
@@ -237,6 +237,10 @@
               <strong id="waitingTicketEstimate">-</strong>
             </div>
           </div>
+          <div class="waiting-ticket-ahead">
+            <span>คิวที่เหมาะสมก่อนหน้า</span>
+            <strong id="waitingTicketGroupsAhead">-</strong>
+          </div>
           <div class="waiting-ticket-issued">
             <span>รับคิวเมื่อ</span>
             <strong id="waitingTicketIssuedAt">-</strong>
@@ -291,8 +295,8 @@
     </dialog>
 
     <div id="toast" class="toast" role="status"></div>
-    <script type="module" src="/assets/js/retail-toast-status.js?v=20260802-002"></script>
+    <script type="module" src="/assets/js/retail-toast-status.js?v=20260802-003"></script>
     <script src="/assets/vendor/qrcodejs/qrcode.min.js?v=1.0.0"></script>
-    <script type="module" src="/assets/js/waiting-queue-staff.js?v=20260802-002"></script>
+    <script type="module" src="/assets/js/waiting-queue-staff.js?v=20260802-003"></script>
   </body>
 </html>
