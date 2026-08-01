@@ -150,6 +150,7 @@ body[data-module="waiting-queue"]{min-height:100vh}
 .waiting-dialog{width:min(680px,calc(100% - 28px));max-width:none;max-height:min(88vh,820px);margin:auto;border:0;border-radius:22px;padding:0;background:#fff;color:var(--wq-text);box-shadow:0 28px 90px rgba(15,23,42,.3);overflow:hidden}
 .waiting-dialog::backdrop{background:rgba(15,23,42,.55);backdrop-filter:blur(3px)}
 .waiting-seat-dialog{width:min(760px,calc(100% - 28px))}
+.waiting-seat-dialog{box-shadow:none}
 .waiting-dialog-form{display:flex;flex-direction:column;max-height:min(88vh,820px);margin:0;padding:0!important;background:#fff}
 .waiting-dialog-head{flex:0 0 auto;align-items:flex-start!important;margin:0!important;padding:19px 20px 16px;border-bottom:1px solid var(--wq-border-soft);background:#fbfdfc}
 .waiting-dialog-head>div{min-width:0}
