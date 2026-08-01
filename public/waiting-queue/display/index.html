@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#051d12" />
+    <title>จอเรียกคิวรอโต๊ะ</title>
+    <link rel="icon" href="/assets/images/icon-192.png" type="image/png" />
+    <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260713-004" />
+    <link rel="stylesheet" href="/assets/css/waiting-queue-display.css?v=20260801-001" />
+  </head>
+  <body>
+    <main class="waiting-display-shell">
+      <header class="waiting-display-head">
+        <div class="waiting-display-brand">
+          <strong>คิวรอโต๊ะ</strong>
+          <span>กรุณาตรวจสอบหมายเลขคิวและมาที่จุดรับโต๊ะเมื่อถูกเรียก</span>
+        </div>
+        <div class="waiting-display-head-actions">
+          <span id="waitingDisplayClock" class="waiting-display-clock"></span>
+          <button id="waitingDisplaySound" type="button" aria-label="เปิดหรือปิดเสียง">
+            <i class="bi bi-volume-up" aria-hidden="true"></i><span>เสียงเปิด</span>
+          </button>
+          <button id="waitingDisplayFullscreen" type="button" aria-label="เต็มหน้าจอ">
+            <i class="bi bi-fullscreen" aria-hidden="true"></i><span>เต็มจอ</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="waiting-display-main">
+        <div class="waiting-display-current">
+          <div class="waiting-display-current-label">กำลังเรียก</div>
+          <strong id="waitingDisplayCalled" class="waiting-display-called" hidden>W---</strong>
+          <div id="waitingDisplayCalledEmpty" class="waiting-display-called-empty">รอการเรียกคิว</div>
+          <div id="waitingDisplayCalledTimer" class="waiting-display-timer">กรุณามาที่จุดรับโต๊ะ</div>
+        </div>
+        <aside class="waiting-display-next-panel">
+          <h2>คิวถัดไป</h2>
+          <div id="waitingDisplayNext" class="waiting-display-next"></div>
+        </aside>
+      </section>
+
+      <footer class="waiting-display-foot">
+        <span id="waitingDisplayStatus" class="waiting-display-status">กำลังเชื่อมต่อระบบเรียกคิว...</span>
+        <span>จอแสดงเฉพาะหมายเลขคิว ไม่แสดงข้อมูลส่วนบุคคล</span>
+      </footer>
+    </main>
+    <script type="module" src="/assets/js/waiting-queue-display.js?v=20260801-001"></script>
+  </body>
+</html>

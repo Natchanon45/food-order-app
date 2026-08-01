@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#159447" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>ติดตามคิวรอโต๊ะ</title>
+    <link rel="icon" href="/assets/images/icon-192.png" type="image/png" />
+    <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260713-004" />
+    <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260801-001" />
+    <link rel="stylesheet" href="/assets/css/waiting-queue-customer.css?v=20260801-001" />
+  </head>
+  <body>
+    <main class="waiting-customer-shell">
+      <header class="waiting-customer-brand">
+        <strong>ติดตามคิวรอโต๊ะ</strong>
+        <span>หน้านี้แสดงเฉพาะข้อมูลคิวของคุณ</span>
+      </header>
+
+      <div id="waitingCustomerLoading" class="waiting-customer-loading">กำลังโหลดสถานะคิว...</div>
+      <div id="waitingCustomerError" class="waiting-customer-error" hidden></div>
+
+      <section id="waitingCustomerCard" class="waiting-customer-card" hidden>
+        <div class="waiting-customer-hero">
+          <span>หมายเลขคิวรอโต๊ะ</span>
+          <strong id="waitingCustomerQueueNumber" class="waiting-customer-number">W---</strong>
+          <span id="waitingCustomerPartySize" class="waiting-customer-party">0 คน</span>
+          <div id="waitingCustomerStatus" class="waiting-customer-status">รอเรียก</div>
+        </div>
+
+        <div class="waiting-customer-info">
+          <article>
+            <span>คิวที่เหมาะสมก่อนหน้า</span>
+            <strong id="waitingCustomerGroupsAhead">0</strong>
+          </article>
+          <article>
+            <span>เวลารอโดยประมาณ</span>
+            <strong id="waitingCustomerEstimate">0–5 นาที</strong>
+          </article>
+        </div>
+
+        <div id="waitingCustomerProgress" class="waiting-customer-progress" aria-label="ขั้นตอนคิว">
+          <div class="waiting-customer-step" data-waiting-step="1"><i>1</i><span>รอคิว</span></div>
+          <div class="waiting-customer-step" data-waiting-step="2"><i>2</i><span>เรียกแล้ว</span></div>
+          <div class="waiting-customer-step" data-waiting-step="3"><i>3</i><span>ตอบรับ</span></div>
+          <div class="waiting-customer-step" data-waiting-step="4"><i>4</i><span>จัดโต๊ะ</span></div>
+          <div class="waiting-customer-step" data-waiting-step="5"><i>5</i><span>เข้านั่ง</span></div>
+        </div>
+
+        <div id="waitingCustomerCallMessage" class="waiting-customer-call" hidden>
+          <strong>กำลังเรียกคิวของคุณ</strong>
+          <span>กรุณามาที่จุดรับโต๊ะภายในเวลาที่กำหนด</span>
+        </div>
+        <div id="waitingCustomerCountdownWrap" class="waiting-customer-countdown" hidden>
+          <span>เวลาตอบรับคงเหลือ</span>
+          <strong id="waitingCustomerCountdown">05:00</strong>
+        </div>
+
+        <div class="waiting-customer-actions">
+          <button id="waitingCustomerConfirmArrival" class="waiting-customer-confirm" type="button" hidden>
+            ยืนยันว่ากำลังมาที่จุดรับโต๊ะ
+          </button>
+          <button id="waitingCustomerNotification" class="waiting-customer-notification" type="button">
+            เปิดการแจ้งเตือนบนอุปกรณ์นี้
+          </button>
+          <button id="waitingCustomerCancelQueue" class="waiting-customer-cancel" type="button">
+            ยกเลิกคิว
+          </button>
+        </div>
+        <footer class="waiting-customer-note">
+          การแจ้งเตือนของเบราว์เซอร์ทำงานเมื่อหน้านี้ยังเปิดอยู่ กรุณาติดตามจอเรียกคิวและเสียงของร้านร่วมด้วย
+          <span id="waitingCustomerUpdated" class="waiting-customer-updated"></span>
+        </footer>
+      </section>
+    </main>
+    <script type="module" src="/assets/js/waiting-queue-customer.js?v=20260801-001"></script>
+  </body>
+</html>

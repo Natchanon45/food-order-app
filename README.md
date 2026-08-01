@@ -1,9 +1,19 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Waiting Queue Full Number
-Version: 0.16.3
-Build: 2026.08.01.106
+Milestone: Waiting Queue MVP
+Version: 0.16.0
+Build: 2026.08.01.001
+
+Change: Added the first production-ready table waiting queue module, separate from food/order queue numbers. Staff can create stable W-numbers, call/recall, acknowledge, prepare, defer, cancel, mark no-show, match queues to suitable tables, and open a table through a Firestore transaction. Customer tracking and a privacy-safe public queue display are included.
+
+Firebase safety: Every waiting queue, audit, counter, number claim, dedupe record, table link, and created order carries `tenantId`. Staff queue intake is local-first with a stable `waitingQueueId`, a preleased immutable W-number, and an ordered outbox; online sync is idempotent. Queue records are never deleted. Seating reads the queue, table, order, public snapshot, and dedupe record before writes, preventing two devices from seating the same queue or occupying the same table.
+
+Deploy: This build changes Hosting, Firestore Rules, and Composite Indexes. Deploy with `firebase deploy --only firestore:rules,firestore:indexes,hosting`, then hard refresh build `20260801-001`.
+
+Next Task: verify W-number allocation, offline intake/sync, duplicate rejection, fair table recommendations, call countdown, customer response, public display sound, and transaction-safe table opening with two staff devices.
+
+Previous build — Waiting Queue Full Number (`2026.08.01.106`):
 
 Change: Expanded the Waiting Queue number badge to show the complete 8-character queue number without ellipsis. Desktop uses a 116 px queue column and mobile uses 104 px with responsive text sizing, taking advantage of the available row space while keeping customer and action content readable.
 

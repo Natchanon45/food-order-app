@@ -1,19 +1,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.16.3',
-  build: '2026.08.01.106',
+  version: '0.16.0',
+  build: '2026.08.01.001',
   branch: 'feature/retail-pos',
-  commit: 'WAITING-QUEUE-FULL-NUMBER-01603',
+  commit: 'WAITING-QUEUE-MVP-01600',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Waiting Queue Full Number',
-  updatedAt: '2026-08-01T07:25:00+07:00',
+  milestone: 'Waiting Queue MVP',
+  updatedAt: '2026-08-01T10:39:37+07:00',
   whatsNew: [
-    'Expand the Waiting Queue badge to show the complete queue number',
-    'Keep the full queue number visible on both desktop and mobile',
-    'Preserve stored queue values and all existing queue workflows'
+    'Add a table waiting queue with stable W-numbers separate from food and order queues',
+    'Support local-first staff intake, fair table matching, call/response states, audit history, and transaction-safe seating',
+    'Add privacy-safe customer tracking and a public queue display with in-store sound'
   ]
 };
 

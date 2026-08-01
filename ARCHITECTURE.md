@@ -2,11 +2,19 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.15.6
-Build: 2026.07.31.088
-Milestone: Product Management Confirmation Dialogs
+Version: 0.16.0
+Build: 2026.08.01.001
+Milestone: Waiting Queue MVP
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
+
+Waiting queue architecture rule: table waiting queues are a distinct domain from food/order queues. Each record uses a stable `waitingQueueId`, an immutable customer tracking token, a daily W-number, `tenantId`, explicit status, version, applied operation IDs, and audit history. Queue records must never be physically deleted. Staff intake is local-first and reserves blocks of daily W-numbers while online. During a temporary outage, unused leased numbers remain stable; if the lease is exhausted, intake stops with a clear warning rather than issuing or later changing the customer’s queue number.
+
+Waiting queue fairness rule: table recommendations first enforce capacity and special-needs compatibility, then favor the longest effective wait. Priority groups may move ahead only within the configured near-time window. Any manual table mismatch or fair-order bypass requires a reason and records the actor, device, recommended queue, skipped queues, table, and linked order in `waitingQueueAudits`.
+
+Waiting queue seating transaction rule: opening a table must be online and use one Firestore transaction. The transaction reads the waiting queue, table, deterministic order, public snapshot, and dedupe record before any write; confirms the queue remains active and the table remains free; then atomically marks the queue seated, occupies the table, creates/reuses the linked order, updates the privacy-safe public snapshot, closes dedupe, and appends the audit record. The relation `tenantId + waitingQueueId + tableId + orderId` remains stable.
+
+Waiting queue privacy and notification rule: customer-facing and public-display documents contain no customer name, phone, phone hash, or free-text note. Customer control tokens remain only in non-listable `waitingQueuePublic` documents; the listable `waitingQueueBoard` contains no token or customer-response controls. The public display shows W-numbers only. Browser notification is an optional secondary channel while the tracking page is open; in-store display/sound and staff controls remain authoritative.
 
 POS product management dialog rule: `/pos/products` must not use browser-native `alert`, `confirm`, or `prompt` for product deletion, category deletion, stock-history clearing, or permission-denied feedback. These flows use the shared styled Sweet Dialog, and destructive actions execute only after an explicit asynchronous confirmation. This UI rule must not change tenant scope, product stock, sale stock movements, stable IDs, duplicate protection, or offline sync.
 

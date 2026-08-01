@@ -2,8 +2,19 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.16.3
-Build: 2026.08.01.106
+Version: 0.16.0
+Build: 2026.08.01.001
+
+Change: Implemented Waiting Queue MVP as a table-waiting workflow independent from food queue and order numbers. Stable `waitingQueueId` and W-number records support staff intake, status transitions, fair size/special-needs matching, five-minute call response, customer acknowledgement/cancellation, a public display with sound, and transaction-safe table opening that creates a deterministic linked order.
+
+Firebase boundary: Waiting queue writes use top-level tenant-scoped collections `waitingQueues`, `waitingQueuePublic`, `waitingQueueBoard`, `waitingQueueAudits`, `waitingQueueCounters`, `waitingQueueNumberLeases`, `waitingQueueNumbers`, `waitingQueueDedupe`, and `waitingQueueOperations`. Customer tracking tokens remain in non-listable `waitingQueuePublic` documents, while the listable public display reads token-free `waitingQueueBoard` documents. Neither public surface contains customer name, phone, or note. Local staff intake uses preleased stable W-numbers and an idempotent outbox; queue records are retained for audit and are never physically deleted. Existing order, payment, stock, VAT, Kitchen, Delivery, stable sale/order IDs, and duplicate stock protection remain authoritative.
+
+Deploy rules: deploy Firestore Rules, Indexes, and Hosting. Load cache build `20260801-001` with a hard refresh.
+Milestone: Waiting Queue MVP
+
+Next Task: perform two-device acceptance tests for duplicate intake, call/recall audit, customer response, skip reasons, table collision protection, and order/table linkage.
+
+Previous build (`2026.08.01.106`) — Authoritative Store Settings:
 
 Change: Expanded the Waiting Queue badge instead of truncating the queue label. The full 8-character queue number is now visible within a 116 px desktop badge and a 104 px mobile badge, with a small responsive font adjustment on narrow screens.
 
@@ -58,7 +69,6 @@ Change: Fixed the settings-source mismatch. Tenant Firestore `store`, `receipt`,
 Firebase boundary: No schema or write path changed. Settings remain under `tenants/{tenantId}/settings`; this update only corrects read precedence and local cache refresh. Sales, stock movements, stable sale/order/queue IDs, duplicate protection, offline sync, payments, returns, and tax invoices remain unchanged.
 
 Deploy rules: Hosting only. Load cache build `20260801-098` with a hard refresh after deployment.
-Milestone: Authoritative Store Settings
 
 Previous build (`2026.08.01.097`): Added icon-only product pagination and bounded, changed-record-only catalog sorting saves.
 
