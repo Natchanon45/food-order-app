@@ -1,5 +1,5 @@
 import "./sweet-dialog.js?v=20260731-080";
-import "./cashier-table-close-guard.js?v=20260630-059";
+import "./cashier-table-close-guard.js?v=20260802-006";
 import { dataService, usingDemoMode } from "./data-service.js";
 import { toast } from "./ui.js?v=20260731-080";
 
@@ -107,7 +107,7 @@ async function loadTables() {
       <p class="menu-category" style="margin-bottom:0">สามารถพิมพ์ซ้ำได้โดยใช้ QR เดิม หรือปิดโต๊ะเพื่อยกเลิก QR นี้</p>
       <div class="order-actions" style="margin-top:14px">
         <button class="btn btn-dark" data-reprint-table="${table.id}">พิมพ์ QR ซ้ำ</button>
-        <button class="btn btn-danger" data-close-table="${table.id}">ปิดโต๊ะ</button>
+        <button class="btn btn-danger" data-close-table="${table.id}"><i class="bi bi-door-closed" aria-hidden="true"></i><span>ปิดโต๊ะ</span></button>
       </div>
     </article>
   `).join("") : '<div class="card empty">ยังไม่มีโต๊ะที่ออก QR</div>';
@@ -226,7 +226,7 @@ occupiedTables.addEventListener("click", async event => {
       console.error("TABLE_CLOSE_FAILED", error);
       toast(qrErrorMessage(error), "error");
       closeButton.disabled = false;
-      closeButton.textContent = "ปิดโต๊ะ";
+      closeButton.innerHTML = '<i class="bi bi-door-closed" aria-hidden="true"></i><span>ปิดโต๊ะ</span>';
     }
     return;
   }
