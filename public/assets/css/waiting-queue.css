@@ -265,3 +265,251 @@ body[data-module="waiting-queue"]{min-height:100vh}
   .waiting-seat-summary span{text-align:left}
   .waiting-seat-section-title{align-items:flex-start;flex-direction:column;gap:3px}
 }
+
+/* WAITING_QUEUE_STAFF_POLISH_20260801_004 */
+body[data-module="waiting-queue"] {
+  font-size: 16px;
+}
+
+.waiting-page {
+  width: min(1540px, 100%);
+}
+
+.waiting-eyebrow,
+.waiting-dialog-eyebrow {
+  font-size: .78rem;
+}
+
+.waiting-page-header p {
+  font-size: .92rem;
+}
+
+.waiting-flow {
+  font-size: .8rem;
+}
+
+.waiting-connectivity {
+  font-size: .84rem;
+}
+
+.waiting-sync-text {
+  font-size: .78rem;
+}
+
+.waiting-stat span {
+  font-size: .9rem;
+}
+
+.waiting-stat strong {
+  font-size: 1.95rem;
+}
+
+.waiting-stat small {
+  font-size: .76rem;
+}
+
+.waiting-section-heading h2,
+.waiting-table-heading h2 {
+  font-size: 1.22rem;
+}
+
+.waiting-section-heading p,
+.waiting-table-heading p {
+  font-size: .88rem;
+}
+
+.waiting-filter-field {
+  font-size: .82rem;
+}
+
+.waiting-search input,
+.waiting-toolbar select {
+  font-size: .92rem;
+}
+
+.waiting-recommendation {
+  font-size: .84rem;
+}
+
+.waiting-queue-number {
+  font-size: 1.58rem;
+}
+
+.waiting-queued-time {
+  font-size: .76rem;
+}
+
+.waiting-customer-title strong {
+  font-size: 1rem;
+}
+
+.waiting-customer-title span {
+  font-size: .76rem;
+}
+
+.waiting-customer-meta {
+  font-size: .82rem;
+}
+
+.waiting-tags span {
+  font-size: .72rem;
+}
+
+.waiting-response {
+  font-size: .75rem;
+}
+
+.waiting-queue-estimate span,
+.waiting-queue-estimate small {
+  font-size: .75rem;
+}
+
+.waiting-queue-estimate strong {
+  font-size: .94rem;
+}
+
+.waiting-status,
+.waiting-countdown,
+.waiting-long-wait,
+.waiting-sync-badge {
+  font-size: .74rem;
+}
+
+.waiting-action {
+  gap: 7px;
+  font-size: .8rem;
+}
+
+.waiting-table-card > div:first-child strong {
+  font-size: .92rem;
+}
+
+.waiting-table-card > div:first-child span,
+.waiting-table-match span,
+.waiting-table-match small {
+  font-size: .74rem;
+}
+
+.waiting-table-match strong {
+  font-size: .84rem;
+}
+
+.waiting-table-match.empty,
+.waiting-table-card button {
+  font-size: .78rem;
+}
+
+.waiting-policy {
+  font-size: .82rem;
+}
+
+.waiting-dialog-form {
+  overflow: auto;
+}
+
+.waiting-dialog-head h2 {
+  font-size: 1.32rem;
+}
+
+.waiting-dialog-head p {
+  font-size: .84rem;
+}
+
+.waiting-form-grid label {
+  min-width: 0;
+  align-content: start;
+  font-size: .86rem;
+}
+
+.waiting-form-grid input,
+.waiting-form-grid select,
+.waiting-form-grid textarea {
+  min-width: 0;
+  max-width: 100%;
+  font-size: .92rem;
+}
+
+.waiting-form-grid label:has([required]) .bootstrap-invalid-feedback {
+  display: block !important;
+  visibility: hidden;
+  min-height: 18px;
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+  font-size: .72rem;
+  line-height: 1.3;
+}
+
+.waiting-form-grid label:has([required]) .bootstrap-invalid-feedback.show {
+  visibility: visible;
+}
+
+.waiting-needs legend,
+.waiting-needs label {
+  font-size: .82rem;
+}
+
+.waiting-intake-preview span {
+  font-size: .78rem;
+}
+
+.waiting-intake-preview strong {
+  font-size: 1rem;
+}
+
+.waiting-dialog-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  align-items: stretch !important;
+  gap: 12px !important;
+}
+
+.waiting-dialog-actions .btn {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 9px !important;
+  font-size: .92rem;
+}
+
+.waiting-dialog-actions .btn > i {
+  flex: 0 0 auto;
+  margin: 0 !important;
+  line-height: 1;
+}
+
+.waiting-seat-summary span,
+.waiting-seat-section-title span,
+.waiting-seat-table small,
+.waiting-seat-reason {
+  font-size: .8rem;
+}
+
+.waiting-seat-section-title strong,
+.waiting-seat-table strong {
+  font-size: .92rem;
+}
+
+@media (max-width: 760px) {
+  body[data-module="waiting-queue"] {
+    font-size: 15px;
+  }
+
+  .waiting-page-header p,
+  .waiting-section-heading p,
+  .waiting-table-heading p {
+    font-size: .84rem;
+  }
+
+  .waiting-action {
+    font-size: .78rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .waiting-dialog-actions {
+    grid-template-columns: 1fr !important;
+  }
+}

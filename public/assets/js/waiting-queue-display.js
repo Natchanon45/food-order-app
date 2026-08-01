@@ -41,7 +41,12 @@ function upcoming() {
 function resolveThaiVoice() {
   if (!("speechSynthesis" in window)) return null;
   const voices = speechSynthesis.getVoices();
-  thaiVoice = voices.find(voice => String(voice.lang || "").toLowerCase().startsWith("th")) || null;
+  const thaiVoices = voices.filter(voice =>
+    String(voice.lang || "").toLowerCase().startsWith("th")
+  );
+  thaiVoice = thaiVoices.find(voice => voice.localService)
+    || thaiVoices[0]
+    || null;
   return thaiVoice;
 }
 
@@ -84,9 +89,28 @@ async function playChime() {
 function spokenQueueNumber(queueNumber) {
   const raw = String(queueNumber || "").trim().toUpperCase();
   const prefixMatch = raw.match(/^[A-Z]+/);
-  const prefix = prefixMatch?.[0] === "W" ? "ดับเบิลยู" : (prefixMatch?.[0] || "คิว");
-  const digits = raw.replace(/^[A-Z]+/, "").replace(/\D/g, "").split("").join(" ");
-  return `${prefix}${digits ? ` ${digits}` : ""}`;
+  const prefix = prefixMatch?.[0] === "W"
+    ? "ดับเบิ้ลยู"
+    : (prefixMatch?.[0] || "คิว");
+  const digitWords = {
+    "0": "ศูนย์",
+    "1": "หนึ่ง",
+    "2": "สอง",
+    "3": "สาม",
+    "4": "สี่",
+    "5": "ห้า",
+    "6": "หก",
+    "7": "เจ็ด",
+    "8": "แปด",
+    "9": "เก้า",
+  };
+  const digits = raw
+    .replace(/^[A-Z]+/, "")
+    .replace(/\D/g, "")
+    .split("")
+    .map(digit => digitWords[digit] || digit)
+    .join(" ");
+  return [prefix, digits].filter(Boolean).join(" ");
 }
 
 function speakText(text) {
@@ -95,7 +119,7 @@ function speakText(text) {
     speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "th-TH";
-    utterance.rate = 0.82;
+    utterance.rate = 0.74;
     utterance.pitch = 1;
     utterance.volume = 1;
     if (resolveThaiVoice()) utterance.voice = thaiVoice;
@@ -113,9 +137,9 @@ async function announce(queueNumber, { test = false } = {}) {
     if (!soundEnabled || !soundArmed) return;
     const message = test
       ? "เปิดเสียงเรียกคิวแล้ว"
-      : `ขอเชิญคิว ${spokenQueueNumber(queueNumber)} กรุณามาที่จุดรับโต๊ะ`;
+      : `ขอเชิญคิว, ${spokenQueueNumber(queueNumber)}, กรุณามาที่จุดรับโต๊ะค่ะ`;
     speakText(message);
-  }, 480);
+  }, 680);
 }
 
 function audioCapabilityText() {

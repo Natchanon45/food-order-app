@@ -1,21 +1,21 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.16.2',
-  build: '2026.08.01.003',
+  version: '0.16.3',
+  build: '2026.08.01.004',
   branch: 'feature/retail-pos',
-  commit: 'WAITING-QUEUE-CONFLICT-RECOVERY',
+  commit: 'WAITING-QUEUE-USABILITY-PERMISSION-REPAIR',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Waiting Queue Conflict Recovery',
-  updatedAt: '2026-08-01T16:30:00+07:00',
+  milestone: 'Waiting Queue Usability And Permission Repair',
+  updatedAt: '2026-08-01T19:30:00+07:00',
   whatsNew: [
-    'Automatically reconcile stale Waiting Queue outbox operations against the latest Firebase state',
-    'Retry transaction contention with a larger bounded attempt budget and Thai operator messages',
-    'Use one authoritative dashboard card and prevent stale local queue state from overriding terminal remote state'
+    'Allow canonical tenant memberships and staff roles to operate Waiting Queue writes',
+    'Increase staff and customer readability while keeping the responsive layouts balanced',
+    'Polish dialog actions, validation stability, public-display icons, and natural Thai queue speech'
   ],
-  marker: 'WAITING_QUEUE_CONFLICT_RECOVERY_20260801_003'
+  marker: 'WAITING_QUEUE_USABILITY_PERMISSION_20260801_004'
 };
 
 export function appVersionText() {

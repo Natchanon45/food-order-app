@@ -59,3 +59,204 @@ body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#e7f5ec 
 .waiting-customer-spinner{width:32px;height:32px;border:3px solid #dbe8df;border-top-color:var(--wq-green);border-radius:999px;animation:wq-customer-spin .8s linear infinite}
 @keyframes wq-customer-spin{to{transform:rotate(360deg)}}
 @media(max-width:520px){body{padding:8px;place-items:start center}.waiting-customer-brand{justify-content:flex-start;padding:8px 5px 0}.waiting-customer-card{border-radius:18px}.waiting-customer-hero{padding:22px 15px 18px}.waiting-customer-info{grid-template-columns:1fr;padding-inline:12px}.waiting-customer-progress{padding-inline:9px}.waiting-customer-step span{font-size:.56rem}.waiting-customer-actions{padding-inline:12px}.waiting-customer-call,.waiting-customer-countdown{margin-inline:12px}.waiting-customer-note{padding-inline:14px}}
+
+/* WAITING_QUEUE_CUSTOMER_POLISH_20260801_004 */
+.waiting-customer-shell {
+  width: min(720px, 100%);
+}
+
+.waiting-customer-brand {
+  gap: 13px;
+  margin-bottom: 18px;
+}
+
+.waiting-customer-logo {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  background: #0d7e3d;
+  color: #fff !important;
+}
+
+.waiting-customer-logo > i {
+  width: 100%;
+  height: 100%;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  color: #fff !important;
+  font-size: 1.45rem;
+  line-height: 1 !important;
+}
+
+.waiting-customer-logo > i::before {
+  display: block !important;
+  margin: 0 !important;
+  color: #fff !important;
+  line-height: 1 !important;
+}
+
+.waiting-customer-brand strong {
+  font-size: 1.32rem;
+}
+
+.waiting-customer-brand span {
+  font-size: .94rem;
+}
+
+.waiting-customer-hero {
+  padding: 31px 28px 24px;
+}
+
+.waiting-customer-label {
+  font-size: .94rem;
+}
+
+.waiting-customer-number {
+  font-size: clamp(4.25rem, 11vw, 6.25rem);
+}
+
+.waiting-customer-party,
+.waiting-customer-status {
+  min-height: 40px;
+  padding: 8px 16px;
+  font-size: .94rem;
+}
+
+.waiting-customer-info {
+  gap: 12px;
+  padding: 0 24px 22px;
+}
+
+.waiting-customer-info article {
+  grid-template-columns: 44px minmax(0, 1fr);
+  padding: 16px;
+}
+
+.waiting-customer-info article > i {
+  width: 44px;
+  height: 44px;
+  font-size: 1.15rem;
+}
+
+.waiting-customer-info span {
+  font-size: .82rem;
+}
+
+.waiting-customer-info strong {
+  font-size: 1.14rem;
+}
+
+.waiting-customer-progress {
+  padding: 4px 28px 25px;
+}
+
+.waiting-customer-step {
+  font-size: .72rem;
+}
+
+.waiting-customer-step i {
+  width: 30px;
+  height: 30px;
+  font-size: .78rem;
+}
+
+.waiting-customer-call {
+  margin-inline: 24px;
+}
+
+.waiting-customer-call strong {
+  font-size: 1.12rem;
+}
+
+.waiting-customer-call span {
+  font-size: .88rem;
+}
+
+.waiting-customer-countdown {
+  margin-inline: 24px;
+}
+
+.waiting-customer-countdown span:first-child {
+  font-size: .8rem;
+}
+
+.waiting-customer-countdown strong {
+  font-size: 1.7rem;
+}
+
+.waiting-customer-actions {
+  gap: 11px;
+  padding: 0 24px 24px;
+}
+
+.waiting-customer-actions button {
+  min-height: 54px;
+  gap: 10px;
+  font-size: 1rem;
+}
+
+.waiting-customer-note {
+  padding: 16px 24px;
+  font-size: .8rem;
+}
+
+.waiting-customer-updated {
+  font-size: .74rem;
+}
+
+@media (max-width: 520px) {
+  .waiting-customer-shell {
+    width: 100%;
+  }
+
+  .waiting-customer-brand {
+    justify-content: center;
+    padding: 10px 8px 0;
+  }
+
+  .waiting-customer-logo {
+    width: 48px;
+    height: 48px;
+  }
+
+  .waiting-customer-brand strong {
+    font-size: 1.16rem;
+  }
+
+  .waiting-customer-brand span {
+    font-size: .82rem;
+  }
+
+  .waiting-customer-number {
+    font-size: clamp(3.7rem, 20vw, 5.2rem);
+  }
+
+  .waiting-customer-label,
+  .waiting-customer-party,
+  .waiting-customer-status {
+    font-size: .86rem;
+  }
+
+  .waiting-customer-info span {
+    font-size: .78rem;
+  }
+
+  .waiting-customer-info strong {
+    font-size: 1.05rem;
+  }
+
+  .waiting-customer-step {
+    font-size: .64rem;
+  }
+
+  .waiting-customer-actions button {
+    min-height: 52px;
+    font-size: .94rem;
+  }
+
+  .waiting-customer-note {
+    font-size: .76rem;
+  }
+}

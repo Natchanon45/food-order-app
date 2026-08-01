@@ -1,4 +1,5 @@
 import { requireRole } from "./auth-service.js?v=20260731-079";
+import "./form-validation-ui.js?v=20260731-080";
 import { sweetAlert, sweetConfirm, sweetPrompt } from "./sweet-dialog.js?v=20260801-003";
 import {
   WAITING_QUEUE_STATUS,
@@ -119,6 +120,13 @@ function showToast(message, type = "success") {
 function friendlyWaitingQueueError(error, fallback = "ดำเนินการไม่สำเร็จ") {
   const message = String(error?.message || error || "").trim();
   const normalized = message.toLowerCase();
+  const code = String(error?.code || "").toLowerCase().replace(/^firestore\//, "");
+  if (
+    code.includes("permission-denied")
+    || normalized.includes("missing or insufficient permissions")
+  ) {
+    return "บัญชีนี้ยังไม่มีสิทธิ์จัดการคิวรอโต๊ะ กรุณาให้ผู้ดูแลตรวจสอบสิทธิ์ของร้านแล้วลองใหม่";
+  }
   if (
     normalized.includes("stored version")
     && normalized.includes("required base version")
@@ -367,6 +375,15 @@ function updateAddPreview() {
 
 function openAddDialog() {
   els.addForm.reset();
+  els.addForm.classList.remove("was-validated");
+  els.addForm.querySelectorAll("[data-validation-touched]").forEach(control => {
+    delete control.dataset.validationTouched;
+    delete control.dataset.validationState;
+  });
+  els.addForm.querySelectorAll(".bootstrap-invalid-feedback").forEach(feedback => {
+    feedback.textContent = "";
+    feedback.classList.remove("show");
+  });
   els.partySize.value = "2";
   els.priority.value = "normal";
   els.addError.textContent = "";
@@ -383,7 +400,7 @@ async function submitAddQueue(event) {
   event.preventDefault();
   els.addError.textContent = "";
   els.addSubmit.disabled = true;
-  els.addSubmit.textContent = "กำลังบันทึก...";
+  els.addSubmit.innerHTML = '<span class="waiting-button-spinner" aria-hidden="true"></span><span>กำลังบันทึก...</span>';
   try {
     const partySize = Number(els.partySize.value);
     const needs = {
@@ -432,7 +449,7 @@ async function submitAddQueue(event) {
     els.addError.textContent = error?.message || "เพิ่มคิวไม่สำเร็จ";
   } finally {
     els.addSubmit.disabled = false;
-    els.addSubmit.textContent = "บันทึกคิว";
+    els.addSubmit.innerHTML = '<i class="bi bi-floppy" aria-hidden="true"></i><span>บันทึกคิว</span>';
   }
 }
 

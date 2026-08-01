@@ -2,8 +2,22 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.16.2
-Build: 2026.08.01.003
+Version: 0.16.3
+Build: 2026.08.01.004
+
+<!-- WAITING_QUEUE_USABILITY_PERMISSION_20260801_004 -->
+Change: Waiting Queue Usability And Permission Repair closes the production permission and readability gaps.
+
+Current behavior: owner/admin/manager/cashier users recognized through the canonical tenant membership path can create, call, sync, and seat waiting queues. Permission-denied errors are translated into actionable Thai text.
+
+UI behavior: Staff controls use readable operational sizes. Add-queue validation keeps fixed control widths and reserved feedback space. Customer tracking and public display preserve privacy while increasing visibility and icon contrast.
+
+Audio behavior: The display still requires one operator gesture. Its spoken phrase uses individually pronounced Thai digits and a slower natural speech rate.
+
+Deploy rules: deploy Firestore Rules and Hosting. Composite Indexes and Functions are unchanged.
+
+Next Task: verify pending outbox count reaches zero, call W001/W002, confirm the display voice, and repeat the two-device open-table collision test.
+
 
 <!-- WAITING_QUEUE_CONFLICT_RECOVERY_20260801_003 -->
 Change: Waiting Queue Conflict Recovery reconciles the local outbox with authoritative remote queue state.
@@ -34,7 +48,7 @@ Change: Implemented Waiting Queue MVP as a table-waiting workflow independent fr
 Firebase boundary: Waiting queue writes use top-level tenant-scoped collections `waitingQueues`, `waitingQueuePublic`, `waitingQueueBoard`, `waitingQueueAudits`, `waitingQueueCounters`, `waitingQueueNumberLeases`, `waitingQueueNumbers`, `waitingQueueDedupe`, and `waitingQueueOperations`. Customer tracking tokens remain in non-listable `waitingQueuePublic` documents, while the listable public display reads token-free `waitingQueueBoard` documents. Neither public surface contains customer name, phone, or note. Local staff intake uses preleased stable W-numbers and an idempotent outbox; queue records are retained for audit and are never physically deleted. Existing order, payment, stock, VAT, Kitchen, Delivery, stable sale/order IDs, and duplicate stock protection remain authoritative.
 
 Deploy rules: deploy Firestore Rules, Indexes, and Hosting. Load cache build `20260801-001` with a hard refresh.
-Milestone: Waiting Queue Conflict Recovery
+Milestone: Waiting Queue Usability And Permission Repair
 
 Next Task: perform two-device acceptance tests for duplicate intake, call/recall audit, customer response, skip reasons, table collision protection, and order/table linkage.
 

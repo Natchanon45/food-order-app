@@ -1,9 +1,25 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Waiting Queue Conflict Recovery
-Version: 0.16.2
-Build: 2026.08.01.003
+Milestone: Waiting Queue Usability And Permission Repair
+Version: 0.16.3
+Build: 2026.08.01.004
+
+<!-- WAITING_QUEUE_USABILITY_PERMISSION_20260801_004 -->
+Change: Repaired Waiting Queue permissions and completed the reported usability polish.
+
+Permissions: Waiting Queue Security Rules now recognize the canonical tenant membership and role helper used by the rest of the application, while retaining the existing fallback tenant mappings. Existing pending queue operations can resume after deploying the updated rules.
+
+Staff UI: The dashboard card now includes a purpose description. Waiting Queue staff text, filters, queue rows, table recommendations, statuses, and actions are larger and easier to read. The add-queue footer uses equal-width cancel/save actions with appropriate icons, and required-field validation reserves feedback space so controls do not stretch or jump.
+
+Customer/Public UI: The customer tracking card is larger on PC and mobile, the waiting-person icon has explicit white contrast, and the public-display megaphone is centered in its badge.
+
+Audio: Queue numbers are spoken as separated Thai words, for example `ดับเบิ้ลยู ศูนย์ ศูนย์ หนึ่ง`, at a slightly slower natural rate, ending with `กรุณามาที่จุดรับโต๊ะค่ะ`.
+
+Firebase safety: Collection paths, stable W-numbers, waitingQueueId, customer token, table/order transaction, duplicate protection, audit history, payment, stock, VAT, and food queue behavior are unchanged.
+
+Deploy: Firestore Rules and Hosting. Load cache `20260801-004` with a hard refresh.
+
 
 <!-- WAITING_QUEUE_CONFLICT_RECOVERY_20260801_003 -->
 Change: Hardened Waiting Queue conflict recovery after production acceptance testing.

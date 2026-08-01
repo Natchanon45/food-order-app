@@ -147,28 +147,42 @@ service cloud.firestore {
     }
 
     function wqTenantMember(tenantId) {
-      return request.auth != null && (
-        request.auth.token.get('super_admin', false) == true ||
-        request.auth.token.get('role', '') == 'super_admin' ||
-        request.auth.token.get('tenantId', '') == tenantId ||
-        request.auth.token.get('activeTenantId', '') == tenantId ||
-        request.auth.token.get('shopId', '') == tenantId ||
-        request.auth.token.get('storeId', '') == tenantId ||
-        tenantId in request.auth.token.get('tenantIds', []) ||
-        (
-          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-          wqMapHasTenant(get(/databases/$(database)/documents/users/$(request.auth.uid)).data, tenantId)
-        ) ||
-        (
-          exists(/databases/$(database)/documents/staff/$(request.auth.uid)) &&
-          wqMapHasTenant(get(/databases/$(database)/documents/staff/$(request.auth.uid)).data, tenantId)
-        ) ||
-        (
-          exists(/databases/$(database)/documents/profiles/$(request.auth.uid)) &&
-          wqMapHasTenant(get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data, tenantId)
-        ) ||
-        exists(/databases/$(database)/documents/tenants/$(tenantId)/users/$(request.auth.uid)) ||
-        exists(/databases/$(database)/documents/tenants/$(tenantId)/staff/$(request.auth.uid))
+      return tenantHasRole(
+        tenantId,
+        ['owner', 'admin', 'manager', 'cashier', 'super_admin']
+      ) || (
+        request.auth != null && (
+          request.auth.token.get('super_admin', false) == true ||
+          request.auth.token.get('role', '') == 'super_admin' ||
+          request.auth.token.get('tenantId', '') == tenantId ||
+          request.auth.token.get('activeTenantId', '') == tenantId ||
+          request.auth.token.get('shopId', '') == tenantId ||
+          request.auth.token.get('storeId', '') == tenantId ||
+          tenantId in request.auth.token.get('tenantIds', []) ||
+          (
+            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+            wqMapHasTenant(
+              get(/databases/$(database)/documents/users/$(request.auth.uid)).data,
+              tenantId
+            )
+          ) ||
+          (
+            exists(/databases/$(database)/documents/staff/$(request.auth.uid)) &&
+            wqMapHasTenant(
+              get(/databases/$(database)/documents/staff/$(request.auth.uid)).data,
+              tenantId
+            )
+          ) ||
+          (
+            exists(/databases/$(database)/documents/profiles/$(request.auth.uid)) &&
+            wqMapHasTenant(
+              get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data,
+              tenantId
+            )
+          ) ||
+          exists(/databases/$(database)/documents/tenants/$(tenantId)/users/$(request.auth.uid)) ||
+          exists(/databases/$(database)/documents/tenants/$(tenantId)/staff/$(request.auth.uid))
+        )
       );
     }
 

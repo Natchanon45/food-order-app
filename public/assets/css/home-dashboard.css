@@ -527,3 +527,18 @@ body.staff-home .nav-card[href="/pos/catalog"] .nav-card-icon { --dash-icon-fg: 
     padding: 20px 12px;
   }
 }
+
+/* WAITING_QUEUE_HOME_CARD_20260801_004 */
+body.staff-home .nav-card[href="/waiting-queue/"] {
+  --dash-card-accent: #159447;
+  --dash-card-tint: #e8f7ee;
+}
+
+body.staff-home .nav-card[href="/waiting-queue/"]::after {
+  content: "รับคิว เรียกคิว จัดโต๊ะ และเปิดโต๊ะเมื่อถึงลำดับ";
+}
+
+body.staff-home .nav-card[href="/waiting-queue/"] .nav-card-icon {
+  --dash-icon-fg: #087443;
+  --dash-icon-bg: #d1fae5;
+}
