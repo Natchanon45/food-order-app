@@ -3,7 +3,12 @@
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
 Version: 0.16.6
-Build: 2026.08.02.001
+Build: 2026.08.02.002
+
+<!-- WAITING_QUEUE_IMMEDIATE_TICKET_HANDOFF_20260802_002 -->
+Waiting Queue immediate ticket handoff rule:
+
+Successful staff intake opens the canonical customer ticket dialog directly. The same stable queue object drives the W-number, local QR tracking URL, estimate, received time, copy action, and 80 mm print output. This presentation handoff must not add another queue write or expose customer PII.
 
 <!-- WAITING_QUEUE_RUNTIME_REPAIR_20260802_001 -->
 Waiting Queue authoritative mirror and deterministic order rule:

@@ -3,7 +3,18 @@
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
 Version: 0.16.6
-Build: 2026.08.02.001
+Build: 2026.08.02.002
+
+<!-- WAITING_QUEUE_IMMEDIATE_TICKET_HANDOFF_20260802_002 -->
+Change: Waiting Queue Immediate Ticket Handoff.
+
+Current behavior: after staff successfully add a queue, the privacy-safe customer ticket dialog opens immediately with the stable W-number, local QR Code, tracking URL, estimated wait, copy-link action, and 80 mm print action. Staff no longer need to close a separate success prompt and reopen the ticket from the queue row.
+
+Privacy and data boundaries remain unchanged: the QR contains only the existing customer tracking URL, printed tickets contain no customer name or phone number, and queue creation, tenant scoping, outbox sync, stable IDs, and table-opening transactions are unchanged.
+
+Deploy rules: Hosting only. No Firestore Rules, Indexes, or Functions change.
+
+Next Task: add a queue, print its ticket, scan the QR on a customer device, then continue call and open-table acceptance testing.
 
 <!-- WAITING_QUEUE_RUNTIME_REPAIR_20260802_001 -->
 Change: Waiting Queue Runtime Repair.

@@ -1,9 +1,18 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Waiting Queue Runtime Repair
+Milestone: Waiting Queue Immediate Ticket Handoff
 Version: 0.16.6
-Build: 2026.08.02.001
+Build: 2026.08.02.002
+
+<!-- WAITING_QUEUE_IMMEDIATE_TICKET_HANDOFF_20260802_002 -->
+Change: Open the printable customer QR ticket immediately after queue creation.
+
+After staff save a new queue, the existing privacy-safe ticket modal opens directly. It shows the stable W-number, party size, estimated wait, received time, locally generated QR Code, copy-link action, and 80 mm print action. The separate two-button success prompt is removed from this handoff step.
+
+Firebase safety: The QR and printed ticket still contain no customer name or phone number. Queue writes, stable IDs, tenant boundaries, offline outbox behavior, duplicate protection, audit history, and transaction-safe table opening are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260802-002`.
 
 <!-- WAITING_QUEUE_RUNTIME_REPAIR_20260802_001 -->
 Change: Repaired Waiting Queue runtime writes and customer QR ticket rendering.

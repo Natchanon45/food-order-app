@@ -448,17 +448,7 @@ async function submitAddQueue(event) {
     });
     els.addDialog.close();
     showToast(isOnline() && row.syncStatus === "synced" ? `เพิ่มคิว ${row.queueNumber} แล้ว` : `บันทึกคิว ${row.queueNumber} ในเครื่องแล้ว รอ Sync`);
-    const tracking = customerTrackingUrl(row);
-    const copy = await sweetConfirm(`ออกคิว ${row.queueNumber} สำเร็จ\nประมาณ ${row.estimatedWaitMin || 0}–${row.estimatedWaitMax || 5} นาที\nต้องการคัดลอกลิงก์ติดตามให้ลูกค้าหรือไม่?`, {
-      title: "เพิ่มคิวสำเร็จ",
-      confirmText: "คัดลอกลิงก์",
-      cancelText: "ปิด",
-      type: "success",
-    });
-    if (copy) {
-      await navigator.clipboard.writeText(tracking).catch(() => fallbackCopy(tracking));
-      showToast("คัดลอกลิงก์ติดตามคิวแล้ว");
-    }
+    openTicketDialog(row);
   } catch (error) {
     console.error("[waiting-queue-staff] create failed", error);
     els.addError.textContent = error?.message || "เพิ่มคิวไม่สำเร็จ";
