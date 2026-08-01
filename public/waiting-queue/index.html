@@ -8,7 +8,7 @@
     <link rel="icon" href="/assets/images/icon-192.png" type="image/png" />
     <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260713-004" />
     <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260801-002" />
-    <link rel="stylesheet" href="/assets/css/waiting-queue.css?v=20260802-003" />
+    <link rel="stylesheet" href="/assets/css/waiting-queue.css?v=20260802-005" />
   </head>
   <body data-module="waiting-queue">
     <header class="pos-header waiting-app-header">
@@ -245,8 +245,12 @@
             <span>รับคิวเมื่อ</span>
             <strong id="waitingTicketIssuedAt">-</strong>
           </div>
-          <code id="waitingTicketUrl" class="waiting-ticket-url"></code>
-          <small>บัตรพิมพ์จะไม่แสดงชื่อหรือเบอร์โทรของลูกค้า</small>
+          <div class="waiting-ticket-url-status">
+            <i class="bi bi-link-45deg" aria-hidden="true"></i>
+            <span>ลิงก์ติดตามคิวพร้อมใช้งาน</span>
+          </div>
+          <code id="waitingTicketUrl" class="waiting-ticket-url" hidden></code>
+          <small><i class="bi bi-shield-check" aria-hidden="true"></i> บัตรคิวไม่แสดงชื่อหรือเบอร์โทรของลูกค้า</small>
         </section>
 
         <p id="waitingTicketError" class="error-text waiting-ticket-error" role="alert"></p>
@@ -295,8 +299,8 @@
     </dialog>
 
     <div id="toast" class="toast" role="status"></div>
-    <script type="module" src="/assets/js/retail-toast-status.js?v=20260802-004"></script>
+    <script type="module" src="/assets/js/retail-toast-status.js?v=20260802-005"></script>
     <script src="/assets/vendor/qrcodejs/qrcode.min.js?v=1.0.0"></script>
-    <script type="module" src="/assets/js/waiting-queue-staff.js?v=20260802-004"></script>
+    <script type="module" src="/assets/js/waiting-queue-staff.js?v=20260802-005"></script>
   </body>
 </html>

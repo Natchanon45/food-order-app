@@ -3,7 +3,12 @@
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
 Version: 0.16.6
-Build: 2026.08.02.004
+Build: 2026.08.02.005
+
+<!-- WAITING_QUEUE_TICKET_MODAL_READABILITY_20260802_005 -->
+Waiting Queue ticket modal presentation rule:
+
+The staff modal must prioritize the W-number, QR, party size, estimated wait, groups ahead, and received time at readable operational sizes. The raw private tracking URL is held in a hidden copy source rather than displayed in the modal; QR and copy actions remain unchanged.
 
 <!-- WAITING_QUEUE_TABLE_SESSION_BRIDGE_20260802_004 -->
 Waiting Queue table-session bridge rule:

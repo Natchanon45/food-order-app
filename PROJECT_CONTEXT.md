@@ -3,7 +3,16 @@
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
 Version: 0.16.6
-Build: 2026.08.02.004
+Build: 2026.08.02.005
+
+<!-- WAITING_QUEUE_TICKET_MODAL_READABILITY_20260802_005 -->
+Change: Waiting Queue Ticket Modal Readability.
+
+Current behavior: the ticket modal uses larger operational text, a more compact screen QR, clearer metadata rows, and a concise tracking-link ready state. The long raw URL remains available to the copy action but is no longer rendered as a cramped visible line.
+
+Print, privacy, Firebase, stable IDs, tenant scoping, and table-session behavior are unchanged.
+
+Deploy rules: Hosting only.
 
 <!-- WAITING_QUEUE_TABLE_SESSION_BRIDGE_20260802_004 -->
 Change: Waiting Queue Table Session Bridge.

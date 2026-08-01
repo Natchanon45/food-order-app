@@ -657,13 +657,13 @@ dialog.waiting-dialog .waiting-dialog-actions .btn > i {
 
 .waiting-ticket-brand {
   color: var(--wq-green-dark);
-  font-size: 1rem;
+  font-size: 1.08rem;
   font-weight: 600;
 }
 
 .waiting-ticket-label {
   color: var(--wq-muted);
-  font-size: .78rem;
+  font-size: .84rem;
 }
 
 .waiting-ticket-number {
@@ -698,7 +698,7 @@ dialog.waiting-dialog .waiting-dialog-actions .btn > i {
 .waiting-ticket-instruction {
   margin: 0;
   color: #244c34;
-  font-size: .92rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 
@@ -724,14 +724,14 @@ dialog.waiting-dialog .waiting-dialog-actions .btn > i {
 .waiting-ticket-ahead span,
 .waiting-ticket-issued span {
   color: var(--wq-muted);
-  font-size: .72rem;
+  font-size: .82rem;
 }
 
 .waiting-ticket-meta strong,
 .waiting-ticket-ahead strong,
 .waiting-ticket-issued strong {
   color: var(--wq-text);
-  font-size: .9rem;
+  font-size: 1rem;
 }
 
 .waiting-ticket-issued {
@@ -812,28 +812,28 @@ dialog.waiting-dialog .waiting-dialog-actions .btn > i {
 }
 
 .waiting-ticket-dialog-form {
-  max-height: min(92dvh, 840px) !important;
+  max-height: min(94dvh, 820px) !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
 }
 
 .waiting-ticket-card {
   min-width: 0;
-  gap: 6px;
-  margin: 12px 18px 0;
-  padding: 14px 16px;
+  gap: 7px;
+  margin: 10px 18px 0;
+  padding: 14px 16px 12px;
   overflow: hidden;
 }
 
 .waiting-ticket-number {
-  font-size: clamp(2.8rem, 8vw, 3.8rem);
+  font-size: clamp(3rem, 8vw, 3.7rem);
 }
 
 .waiting-ticket-qr {
-  width: 196px !important;
-  height: 196px !important;
-  min-width: 196px;
-  min-height: 196px;
+  width: 184px !important;
+  height: 184px !important;
+  min-width: 184px;
+  min-height: 184px;
   padding: 10px;
   overflow: hidden;
 }
@@ -841,10 +841,10 @@ dialog.waiting-dialog .waiting-dialog-actions .btn > i {
 .waiting-ticket-qr > canvas,
 .waiting-ticket-qr > img,
 .waiting-ticket-qr > table {
-  width: 176px !important;
-  height: 176px !important;
-  max-width: 176px !important;
-  max-height: 176px !important;
+  width: 164px !important;
+  height: 164px !important;
+  max-width: 164px !important;
+  max-height: 164px !important;
   margin: 0 !important;
 }
 
@@ -857,10 +857,26 @@ dialog.waiting-dialog .waiting-dialog-actions .btn > i {
   display: block !important;
 }
 
-.waiting-ticket-url {
-  max-height: 48px;
-  overflow: auto;
-  scrollbar-width: thin;
+.waiting-ticket-url-status {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #edf8f1;
+  color: #176738;
+  font-size: .86rem;
+  font-weight: 600;
+}
+
+.waiting-ticket-card > small {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: .78rem;
 }
 
 @media (max-width: 620px) {
@@ -870,19 +886,19 @@ dialog.waiting-dialog .waiting-dialog-actions .btn > i {
   }
 
   .waiting-ticket-qr {
-    width: 196px !important;
-    height: 196px !important;
-    min-width: 196px;
-    min-height: 196px;
+    width: 178px !important;
+    height: 178px !important;
+    min-width: 178px;
+    min-height: 178px;
     aspect-ratio: auto;
   }
 
   .waiting-ticket-qr > canvas,
   .waiting-ticket-qr > img,
   .waiting-ticket-qr > table {
-    width: 172px !important;
-    height: 172px !important;
-    max-width: 172px !important;
-    max-height: 172px !important;
+    width: 158px !important;
+    height: 158px !important;
+    max-width: 158px !important;
+    max-height: 158px !important;
   }
 }

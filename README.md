@@ -1,9 +1,18 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Waiting Queue Table Session Bridge
+Milestone: Waiting Queue Ticket Modal Readability
 Version: 0.16.6
-Build: 2026.08.02.004
+Build: 2026.08.02.005
+
+<!-- WAITING_QUEUE_TICKET_MODAL_READABILITY_20260802_005 -->
+Change: Improved the customer ticket modal hierarchy and readability.
+
+The modal increases label and value sizes, reduces the screen-only QR footprint, keeps the footer actions inside the viewport, and replaces the visible raw tracking URL with a concise ready indicator. Copy-link and 80 mm print output retain the complete URL.
+
+Firebase safety: Hosting presentation only. No queue, tenant, session, audit, or transaction behavior changed.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260802-005`.
 
 <!-- WAITING_QUEUE_TABLE_SESSION_BRIDGE_20260802_004 -->
 Change: Connected Waiting Queue seating to the canonical Table QR ordering session.

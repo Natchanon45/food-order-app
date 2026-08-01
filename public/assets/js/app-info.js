@@ -2,20 +2,20 @@ export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
   version: '0.16.6',
-  build: '2026.08.02.004',
+  build: '2026.08.02.005',
   branch: 'feature/retail-pos',
-  commit: 'WAITING-QUEUE-TABLE-SESSION-BRIDGE',
+  commit: 'WAITING-QUEUE-TICKET-MODAL-READABILITY',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Waiting Queue Table Session Bridge',
+  milestone: 'Waiting Queue Ticket Modal Readability',
   updatedAt: '2026-08-02T00:15:00+07:00',
   whatsNew: [
-    'Open Waiting Queue tables with the canonical table order token and session fields',
-    'Navigate to the tenant storefront order URL with table code and token',
-    'Repair already seated Waiting Queue tables that are missing an order session'
+    'Increase customer ticket modal text readability and visual hierarchy',
+    'Replace the long visible tracking URL with a concise ready state',
+    'Keep the copy-link action and printed QR ticket data unchanged'
   ],
-  marker: 'WAITING_QUEUE_TABLE_SESSION_BRIDGE_20260802_004'
+  marker: 'WAITING_QUEUE_TICKET_MODAL_READABILITY_20260802_005'
 };
 
 export function appVersionText() {
