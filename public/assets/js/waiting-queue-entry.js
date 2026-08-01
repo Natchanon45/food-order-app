@@ -65,23 +65,11 @@ function mountHomeCard() {
   return true;
 }
 
-function createHeaderLink() {
-  const link = document.createElement("a");
-  link.href = WAITING_QUEUE_HREF;
-  link.className = "btn btn-secondary waiting-queue-header-link";
-  link.dataset.waitingQueueHeaderLink = "1";
-  link.setAttribute("aria-label", "คิวรอโต๊ะ");
-  link.title = "คิวรอโต๊ะ";
-  link.innerHTML = '<i class="bi bi-person-standing" aria-hidden="true"></i><span>คิวรอโต๊ะ</span>';
-  return link;
-}
-
 function mountCashierHeaderLink() {
   if (!location.pathname.startsWith("/cashier")) return false;
-  if (document.querySelector('[data-waiting-queue-header-link="1"]')) return true;
-  const headerActions = document.querySelector(".header-actions,.top-actions,[data-header-actions]");
-  if (!headerActions) return false;
-  headerActions.prepend(createHeaderLink());
+  document
+    .querySelectorAll('[data-waiting-queue-header-link="1"],.waiting-queue-header-link')
+    .forEach(element => element.remove());
   return true;
 }
 
@@ -97,10 +85,8 @@ function ensureStyles() {
   const style = document.createElement("style");
   style.id = "waitingQueueEntryStyle";
   style.textContent = `
-    .waiting-queue-header-link{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;text-decoration:none!important;white-space:nowrap!important}
-    .waiting-queue-header-link>.pos-context-icon,.waiting-queue-home-card>.pos-context-icon{display:none!important}
+    .waiting-queue-home-card>.pos-context-icon{display:none!important}
     .waiting-queue-home-card .waiting-queue-home-icon{color:#159447!important}
-    @media(max-width:640px){.waiting-queue-header-link span{display:none}.waiting-queue-header-link{width:42px!important;min-width:42px!important;padding-inline:0!important}}
   `;
   document.head.appendChild(style);
 }
