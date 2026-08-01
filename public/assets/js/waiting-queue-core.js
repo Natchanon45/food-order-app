@@ -12,7 +12,7 @@ import {
   runTransaction,
   writeBatch,
   serverTimestamp,
-} from "./waiting-queue-firebase.js?v=20260801-002";
+} from "./waiting-queue-firebase.js?v=20260801-003";
 
 export const WAITING_QUEUE_STATUS = Object.freeze({
   WAITING: "waiting",
@@ -96,6 +96,108 @@ export class WaitingQueueError extends Error {
     this.code = code;
     this.details = details;
   }
+}
+
+const WAITING_QUEUE_TRANSACTION_MAX_ATTEMPTS = 10;
+const WAITING_QUEUE_TRANSACTION_OUTER_ATTEMPTS = 2;
+const WAITING_QUEUE_TRANSIENT_TRANSACTION_CODES = new Set([
+  "aborted",
+  "cancelled",
+  "deadline-exceeded",
+  "failed-precondition",
+  "internal",
+  "resource-exhausted",
+  "unavailable",
+  "unknown",
+]);
+
+function waitForRetry(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function retryableWaitingQueueTransactionError(error) {
+  if (error instanceof WaitingQueueError) return false;
+  const code = String(error?.code || "")
+    .toLowerCase()
+    .replace(/^firestore\//, "");
+  const message = String(error?.message || error || "").toLowerCase();
+  return WAITING_QUEUE_TRANSIENT_TRANSACTION_CODES.has(code)
+    || (message.includes("stored version") && message.includes("required base version"))
+    || message.includes("transaction aborted")
+    || message.includes("transaction failed")
+    || message.includes("too much contention");
+}
+
+async function runWaitingQueueTransaction(updateFunction) {
+  let lastError = null;
+  for (let attempt = 0; attempt < WAITING_QUEUE_TRANSACTION_OUTER_ATTEMPTS; attempt += 1) {
+    try {
+      return await runTransaction(
+        db,
+        updateFunction,
+        { maxAttempts: WAITING_QUEUE_TRANSACTION_MAX_ATTEMPTS },
+      );
+    } catch (error) {
+      lastError = error;
+      if (!retryableWaitingQueueTransactionError(error)) throw error;
+      if (attempt + 1 < WAITING_QUEUE_TRANSACTION_OUTER_ATTEMPTS) {
+        await waitForRetry(120 + Math.floor(Math.random() * 180));
+      }
+    }
+  }
+  throw new WaitingQueueError(
+    "TRANSACTION_RETRY_EXHAUSTED",
+    "ข้อมูลคิวถูกอัปเดตพร้อมกัน ระบบลองใหม่แล้ว กรุณากดอีกครั้ง",
+    {
+      originalCode: String(lastError?.code || ""),
+      originalMessage: String(lastError?.message || lastError || ""),
+    },
+  );
+}
+
+function stripOperationMetadata(row) {
+  if (!row || typeof row !== "object") return row;
+  const {
+    _idempotent,
+    _operationResolution,
+    _operationResolutionReason,
+    _resolvedOperationId,
+    ...clean
+  } = row;
+  return clean;
+}
+
+function operationQueueId(operation) {
+  return String(operation?.queueId || operation?.payload?.queueId || operation?.payload?.id || "");
+}
+
+function operationTargetStatus(operation) {
+  return String(operation?.payload?.toStatus || "");
+}
+
+async function readRemoteWaitingQueue(queueId) {
+  if (!queueId || !db) return null;
+  const snapshot = await getDoc(queueRef(queueId));
+  return snapshot.exists() ? { ...snapshot.data(), id: snapshot.id } : null;
+}
+
+function operationCanResolveFromRemote(operation, remote, error) {
+  if (!operation || !remote) return false;
+  if (operation.kind === "create") {
+    return String(remote.id) === String(operation.payload?.id)
+      && String(remote.tenantId) === String(operation.tenantId || operation.payload?.tenantId);
+  }
+  if (operation.kind !== "transition") return false;
+
+  const targetStatus = operationTargetStatus(operation);
+  if (remote.status === targetStatus || WAITING_QUEUE_FINAL_STATUSES.has(remote.status)) return true;
+
+  const expectedVersion = Number(operation.payload?.expectedVersion);
+  const remoteVersion = Number(remote.version || 1);
+  const code = String(error?.code || "");
+  return Number.isFinite(expectedVersion)
+    && remoteVersion >= expectedVersion
+    && ["INVALID_STATUS_TRANSITION", "QUEUE_CONFLICT", "QUEUE_NOT_ACTIVE", "QUEUE_ALREADY_SEATED"].includes(code);
 }
 
 function nowMs() {
@@ -187,17 +289,25 @@ function localQueues(tenantId) {
   return Array.isArray(rows) ? rows : [];
 }
 
-function saveLocalQueues(tenantId, rows) {
-  writeJson(storageKey(tenantId, "queues"), (rows || []).slice(0, 1000));
-  window.dispatchEvent(new CustomEvent("waiting-queue:local-changed", { detail: { tenantId } }));
+function saveLocalQueues(tenantId, rows, { notify = true } = {}) {
+  const key = storageKey(tenantId, "queues");
+  const nextRows = (rows || []).slice(0, 1000);
+  const encoded = JSON.stringify(nextRows);
+  if (localStorage.getItem(key) === encoded) return false;
+  localStorage.setItem(key, encoded);
+  if (notify) {
+    window.dispatchEvent(new CustomEvent("waiting-queue:local-changed", { detail: { tenantId } }));
+  }
+  return true;
 }
 
 function upsertLocalQueue(tenantId, row) {
-  const rows = localQueues(tenantId).filter(item => String(item.id) !== String(row.id));
-  rows.push(row);
+  const cleanRow = stripOperationMetadata(row);
+  const rows = localQueues(tenantId).filter(item => String(item.id) !== String(cleanRow.id));
+  rows.push(cleanRow);
   rows.sort((a, b) => Number(a.queuedAtMs || 0) - Number(b.queuedAtMs || 0));
   saveLocalQueues(tenantId, rows);
-  return row;
+  return cleanRow;
 }
 
 function removeLocalQueue(tenantId, queueId) {
@@ -210,8 +320,13 @@ function localOutbox(tenantId) {
 }
 
 function saveOutbox(tenantId, rows) {
-  writeJson(storageKey(tenantId, "outbox"), (rows || []).slice(-1000));
+  const key = storageKey(tenantId, "outbox");
+  const nextRows = (rows || []).slice(-1000);
+  const encoded = JSON.stringify(nextRows);
+  if (localStorage.getItem(key) === encoded) return false;
+  localStorage.setItem(key, encoded);
   window.dispatchEvent(new CustomEvent("waiting-queue:outbox-changed", { detail: { tenantId } }));
+  return true;
 }
 
 function enqueueOperation(tenantId, operation) {
@@ -354,7 +469,7 @@ export async function ensureWaitingNumberLease(tenantId, { force = false } = {})
   const leaseId = safeId("lease");
   const counterRef = doc(db, COLLECTIONS.counters, queueCounterId(tenantId, dateKey));
   const leaseRef = doc(db, COLLECTIONS.leases, leaseId);
-  const lease = await runTransaction(db, async transaction => {
+  const lease = await runWaitingQueueTransaction(async transaction => {
     const counterSnap = await transaction.get(counterRef);
     const counter = counterSnap.exists() ? counterSnap.data() : {};
     const start = Math.max(1, Number(counter.nextNumber || 1));
@@ -605,9 +720,10 @@ async function syncCreateOperation(operation) {
   const initialNumberRef = queueNumberRef(payload.tenantId, payload.queueDate, payload.queueNumber);
   const actor = operation.actor || currentActor();
 
-  return runTransaction(db, async transaction => {
-    const [operationSnap, dedupeSnap, initialNumberSnap] = await Promise.all([
+  return runWaitingQueueTransaction(async transaction => {
+    const [operationSnap, queueSnap, dedupeSnap, initialNumberSnap] = await Promise.all([
       transaction.get(opRef),
+      transaction.get(qRef),
       transaction.get(dRef),
       transaction.get(initialNumberRef),
     ]);
@@ -625,6 +741,20 @@ async function syncCreateOperation(operation) {
         syncStatus: "synced",
         firebaseSyncedAtMs: Number(marker.createdAtMs || nowMs()),
         _idempotent: true,
+      };
+    }
+
+
+    if (queueSnap.exists()) {
+      const existing = { ...queueSnap.data(), id: queueSnap.id };
+      if (String(existing.tenantId) !== String(payload.tenantId) || String(existing.id) !== String(payload.id)) {
+        throw new WaitingQueueError("QUEUE_ID_CONFLICT", "พบ Waiting Queue ID ซ้ำ กรุณาลองใหม่");
+      }
+      return {
+        ...existing,
+        syncStatus: "synced",
+        _operationResolution: "queue_exists",
+        _operationResolutionReason: "พบคิวนี้ใน Firebase แล้ว จึงไม่เขียนข้อมูลเริ่มต้นทับสถานะล่าสุด",
       };
     }
 
@@ -772,27 +902,90 @@ function validateTransition(queue, toStatus, options = {}) {
 }
 
 async function syncTransitionOperation(operation) {
-  const { tenantId, queueId, toStatus, options = {}, expectedVersion } = operation.payload;
+  const {
+    tenantId,
+    queueId,
+    toStatus,
+    options = {},
+    expectedVersion,
+    fromStatus,
+  } = operation.payload;
   const qRef = queueRef(queueId);
   const aRef = auditRef(operation.opId);
   const actor = operation.actor || currentActor();
-  return runTransaction(db, async transaction => {
+
+  return runWaitingQueueTransaction(async transaction => {
     const qSnap = await transaction.get(qRef);
     if (!qSnap.exists()) throw new WaitingQueueError("QUEUE_NOT_FOUND", "ไม่พบคิวรอโต๊ะใน Firebase");
+
     const remote = { ...qSnap.data(), id: qSnap.id };
-    if ((remote.appliedOperationIds || []).includes(operation.opId)) return { ...remote, _idempotent: true };
-    if (remote.status === toStatus && !options.allowSameStatus) return { ...remote, _idempotent: true };
-    validateTransition(remote, toStatus, options);
-    if (Number.isFinite(Number(expectedVersion)) && Number(remote.version || 1) !== Number(expectedVersion)) {
-      throw new WaitingQueueError("QUEUE_CONFLICT", "คิวถูกแก้ไขจากอุปกรณ์อื่นแล้ว กรุณาโหลดข้อมูลใหม่", {
-        remoteVersion: remote.version,
-        expectedVersion,
-      });
+    if ((remote.appliedOperationIds || []).includes(operation.opId)) {
+      return {
+        ...remote,
+        _idempotent: true,
+        _operationResolution: "already_applied",
+      };
     }
+    if (remote.status === toStatus && !options.allowSameStatus) {
+      return {
+        ...remote,
+        _idempotent: true,
+        _operationResolution: "already_applied",
+      };
+    }
+    if (WAITING_QUEUE_FINAL_STATUSES.has(remote.status)) {
+      return {
+        ...remote,
+        _operationResolution: "remote_final",
+        _operationResolutionReason: `สถานะล่าสุดคือ ${WAITING_QUEUE_STATUS_LABEL[remote.status] || remote.status}`,
+      };
+    }
+
+    const sourceStatus = normalizeString(fromStatus);
+    const expected = Number(expectedVersion);
+    const versionChanged = Number.isFinite(expected)
+      && Number(remote.version || 1) !== expected;
+    const sourceChanged = Boolean(sourceStatus && remote.status !== sourceStatus);
+    const terminalIntent = [
+      WAITING_QUEUE_STATUS.CANCELLED,
+      WAITING_QUEUE_STATUS.NO_SHOW,
+    ].includes(toStatus);
+    const recallIntent = toStatus === WAITING_QUEUE_STATUS.CALLED
+      && options.allowSameStatus
+      && remote.status === WAITING_QUEUE_STATUS.CALLED;
+
+    if ((versionChanged || sourceChanged) && !terminalIntent && !recallIntent) {
+      return {
+        ...remote,
+        _operationResolution: "superseded",
+        _operationResolutionReason: "คำสั่งนี้อ้างอิงสถานะเก่า ระบบใช้สถานะล่าสุดจาก Firebase แทน",
+      };
+    }
+
+    try {
+      validateTransition(remote, toStatus, options);
+    } catch (error) {
+      if (
+        error?.code === "INVALID_STATUS_TRANSITION"
+        && (versionChanged || sourceChanged)
+      ) {
+        return {
+          ...remote,
+          _operationResolution: "superseded",
+          _operationResolutionReason: "ลำดับสถานะเปลี่ยนจากอุปกรณ์อื่นแล้ว ระบบจึงยกเลิกคำสั่งเก่า",
+        };
+      }
+      throw error;
+    }
+
     const pRef = publicRef(remote.publicToken);
     const bRef = boardRef(remote.id);
     const dRef = queueDedupeRef(tenantId, remote.queueDate, remote.phoneHash || "no-phone");
-    const [publicSnap, dedupeSnap] = await Promise.all([transaction.get(pRef), transaction.get(dRef)]);
+    const [publicSnap, dedupeSnap] = await Promise.all([
+      transaction.get(pRef),
+      transaction.get(dRef),
+    ]);
+
     const patch = transitionPatch(remote, toStatus, options);
     const next = {
       ...remote,
@@ -805,13 +998,20 @@ async function syncTransitionOperation(operation) {
       syncStatus: "synced",
       firebaseSyncedAtMs: nowMs(),
     };
+
     transaction.set(qRef, { ...next, updatedAt: serverTimestamp() }, { merge: true });
     transaction.set(pRef, {
       ...(publicSnap.exists() ? publicSnap.data() : {}),
       ...publicSnapshotFromQueue(
         next,
         publicSnap.exists() ? publicSnap.data() : {},
-        { responseMode: [WAITING_QUEUE_STATUS.CALLED, WAITING_QUEUE_STATUS.WAITING, WAITING_QUEUE_STATUS.DEFERRED].includes(toStatus) ? "queue" : "preserve" },
+        {
+          responseMode: [
+            WAITING_QUEUE_STATUS.CALLED,
+            WAITING_QUEUE_STATUS.WAITING,
+            WAITING_QUEUE_STATUS.DEFERRED,
+          ].includes(toStatus) ? "queue" : "preserve",
+        },
       ),
       updatedAt: serverTimestamp(),
     }, { merge: true });
@@ -839,6 +1039,7 @@ async function syncTransitionOperation(operation) {
       actor,
       metadata: options.metadata || {},
     }), { merge: false });
+
     return { ...next, updatedAt: null };
   });
 }
@@ -850,24 +1051,69 @@ async function syncOperation(operation) {
 }
 
 export async function syncWaitingQueueOutbox(tenantId, { maxOperations = 20 } = {}) {
-  if (!isOnline() || !db) return { processed: 0, pending: localOutbox(tenantId).length };
+  if (!isOnline() || !db) {
+    return {
+      processed: 0,
+      resolved: 0,
+      pending: localOutbox(tenantId).length,
+      errors: [],
+    };
+  }
+
   const pending = localOutbox(tenantId).slice(0, maxOperations);
   let processed = 0;
+  let resolved = 0;
   const errors = [];
+
   for (const operation of pending) {
     try {
       const synced = await syncOperation(operation);
-      if (synced?.id) upsertLocalQueue(tenantId, { ...synced, syncStatus: "synced" });
+      if (synced?.id) {
+        upsertLocalQueue(tenantId, {
+          ...stripOperationMetadata(synced),
+          syncStatus: "synced",
+          syncError: "",
+        });
+      }
+      if (synced?._operationResolution && synced._operationResolution !== "already_applied") {
+        resolved += 1;
+      }
       removeOperation(tenantId, operation.opId);
       processed += 1;
     } catch (error) {
+      let remote = null;
+      try {
+        remote = await readRemoteWaitingQueue(operationQueueId(operation));
+      } catch {
+        remote = null;
+      }
+
+      if (operationCanResolveFromRemote(operation, remote, error)) {
+        removeOperation(tenantId, operation.opId);
+        if (remote?.id) {
+          upsertLocalQueue(tenantId, {
+            ...remote,
+            syncStatus: "synced",
+            syncError: "",
+          });
+        }
+        processed += 1;
+        resolved += 1;
+        continue;
+      }
+
       markOperationError(tenantId, operation.opId, error);
       errors.push({ opId: operation.opId, error });
-      // Preserve operation ordering. Later transitions may depend on this write.
       break;
     }
   }
-  return { processed, pending: localOutbox(tenantId).length, errors };
+
+  return {
+    processed,
+    resolved,
+    pending: localOutbox(tenantId).length,
+    errors,
+  };
 }
 
 export async function createWaitingQueue(input) {
@@ -938,13 +1184,16 @@ export async function createWaitingQueue(input) {
 export async function transitionWaitingQueue(queueId, toStatus, options = {}) {
   const tenantId = normalizeString(options.tenantId || await resolveTenantId());
   const local = localQueues(tenantId).find(item => String(item.id) === String(queueId));
+
   if (!local) {
     const snapshot = await getDoc(queueRef(queueId));
     if (!snapshot.exists()) throw new WaitingQueueError("QUEUE_NOT_FOUND", "ไม่พบคิวรอโต๊ะ");
     upsertLocalQueue(tenantId, { ...snapshot.data(), id: snapshot.id });
   }
+
   const current = localQueues(tenantId).find(item => String(item.id) === String(queueId));
   validateTransition(current, toStatus, options);
+
   const actor = currentActor();
   const opId = safeId("wqop");
   const localPatch = transitionPatch(current, toStatus, options);
@@ -956,8 +1205,10 @@ export async function transitionWaitingQueue(queueId, toStatus, options = {}) {
     updatedByName: actor.actorName,
     lastReason: normalizeString(options.reason),
     syncStatus: "pending_sync",
+    syncError: "",
   };
   upsertLocalQueue(tenantId, optimistic);
+
   const operation = {
     opId,
     kind: "transition",
@@ -966,6 +1217,7 @@ export async function transitionWaitingQueue(queueId, toStatus, options = {}) {
     payload: {
       tenantId,
       queueId,
+      fromStatus: current.status,
       toStatus,
       options,
       expectedVersion: Number(current.version || 1),
@@ -975,15 +1227,46 @@ export async function transitionWaitingQueue(queueId, toStatus, options = {}) {
     syncStatus: "pending_sync",
   };
   enqueueOperation(tenantId, operation);
+
   if (!isOnline()) return optimistic;
+
   try {
     const synced = await syncOperation(operation);
     removeOperation(tenantId, opId);
-    upsertLocalQueue(tenantId, { ...synced, syncStatus: "synced" });
+    upsertLocalQueue(tenantId, {
+      ...stripOperationMetadata(synced),
+      syncStatus: "synced",
+      syncError: "",
+    });
     return synced;
   } catch (error) {
+    let remote = null;
+    try {
+      remote = await readRemoteWaitingQueue(queueId);
+    } catch {
+      remote = null;
+    }
+
+    if (operationCanResolveFromRemote(operation, remote, error)) {
+      removeOperation(tenantId, opId);
+      upsertLocalQueue(tenantId, {
+        ...remote,
+        syncStatus: "synced",
+        syncError: "",
+      });
+      return {
+        ...remote,
+        _operationResolution: "reconciled_after_error",
+        _operationResolutionReason: "ระบบโหลดสถานะล่าสุดจาก Firebase และยกเลิกคำสั่งที่อ้างอิงข้อมูลเก่า",
+      };
+    }
+
     markOperationError(tenantId, opId, error);
-    upsertLocalQueue(tenantId, { ...current, syncStatus: "conflict", syncError: error.message });
+    upsertLocalQueue(tenantId, {
+      ...current,
+      syncStatus: "conflict",
+      syncError: String(error?.message || error),
+    });
     throw error;
   }
 }
@@ -1087,7 +1370,7 @@ export async function seatWaitingQueue(queueId, table, options = {}) {
   const bRef = boardRef(queueId);
   const aRef = auditRef(opId);
 
-  const result = await runTransaction(db, async transaction => {
+  const result = await runWaitingQueueTransaction(async transaction => {
     const [qSnap, tSnap, oSnap] = await Promise.all([
       transaction.get(qRef),
       transaction.get(tRef),
@@ -1255,22 +1538,63 @@ function snapshotRows(snapshot) {
 
 function mergeRemoteAndLocal(tenantId, remoteRows, dateKey = toDateKey()) {
   const byId = new Map(remoteRows.map(row => [String(row.id), row]));
+  const pendingQueueIds = new Set(
+    localOutbox(tenantId)
+      .map(operationQueueId)
+      .filter(Boolean),
+  );
+
   localQueues(tenantId).forEach(local => {
-    const remote = byId.get(String(local.id));
-    if (!remote || local.syncStatus !== "synced" || Number(local.updatedAtMs || 0) > Number(remote.updatedAtMs || 0)) {
-      byId.set(String(local.id), { ...(remote || {}), ...local });
+    const id = String(local.id);
+    const remote = byId.get(id);
+    if (!remote) {
+      byId.set(id, local);
+      return;
     }
+
+    const hasPending = pendingQueueIds.has(id);
+    const localVersion = Number(local.version || 1);
+    const remoteVersion = Number(remote.version || 1);
+    const remoteIsFinal = WAITING_QUEUE_FINAL_STATUSES.has(remote.status);
+    const localShouldLead = hasPending
+      && local.syncStatus === "pending_sync"
+      && !remoteIsFinal
+      && localVersion > remoteVersion;
+
+    if (localShouldLead) {
+      byId.set(id, { ...remote, ...local });
+      return;
+    }
+
+    byId.set(id, {
+      ...local,
+      ...remote,
+      syncStatus: hasPending ? "pending_sync" : "synced",
+      syncError: hasPending ? String(local.syncError || "") : "",
+    });
   });
-  const rows = [...byId.values()].filter(item => item.tenantId === tenantId && item.queueDate === dateKey && item.deleted !== true);
-  rows.sort((a, b) => Number(a.effectiveQueuedAtMs || a.queuedAtMs || 0) - Number(b.effectiveQueuedAtMs || b.queuedAtMs || 0));
-  saveLocalQueues(tenantId, rows);
+
+  const rows = [...byId.values()]
+    .filter(item => item.tenantId === tenantId && item.queueDate === dateKey && item.deleted !== true)
+    .sort((a, b) =>
+      Number(a.effectiveQueuedAtMs || a.queuedAtMs || 0)
+        - Number(b.effectiveQueuedAtMs || b.queuedAtMs || 0)
+    );
+
+  saveLocalQueues(tenantId, rows, { notify: false });
   return rows;
 }
 
 export function watchWaitingQueues(tenantId, callback, onError = console.error) {
   let unsubscribe = () => {};
   let stopped = false;
+  let latestRemoteRows = [];
   const dateKey = toDateKey();
+
+  const publish = () => {
+    callback(mergeRemoteAndLocal(tenantId, latestRemoteRows, dateKey));
+  };
+
   const attach = mode => {
     try {
       const base = collection(db, COLLECTIONS.queues);
@@ -1279,16 +1603,17 @@ export function watchWaitingQueues(tenantId, callback, onError = console.error) 
         : mode === "dated"
           ? query(base, where("tenantId", "==", tenantId), where("queueDate", "==", dateKey))
           : query(base, where("tenantId", "==", tenantId));
+
       unsubscribe = onSnapshot(q, snapshot => {
-        const rows = mergeRemoteAndLocal(tenantId, snapshotRows(snapshot), dateKey);
-        callback(rows);
+        latestRemoteRows = snapshotRows(snapshot);
+        publish();
       }, error => {
         if (stopped) return;
         if (mode === "ordered") attach("dated");
         else if (mode === "dated") attach("tenant");
         else {
           onError(error);
-          callback(mergeRemoteAndLocal(tenantId, [], dateKey));
+          publish();
         }
       });
     } catch (error) {
@@ -1296,16 +1621,19 @@ export function watchWaitingQueues(tenantId, callback, onError = console.error) 
       else if (mode === "dated") attach("tenant");
       else {
         onError(error);
-        callback(mergeRemoteAndLocal(tenantId, [], dateKey));
+        publish();
       }
     }
   };
+
   attach("ordered");
+
   const localHandler = event => {
     if (event.detail?.tenantId !== tenantId) return;
-    callback(mergeRemoteAndLocal(tenantId, [], dateKey));
+    publish();
   };
   window.addEventListener("waiting-queue:local-changed", localHandler);
+
   return () => {
     stopped = true;
     unsubscribe();
@@ -1373,34 +1701,74 @@ export function estimateWaitRange(queue, queues, tables, settings = {}) {
 }
 
 let publicRefreshTimer = null;
+let pendingPublicRefresh = null;
+const publicSnapshotSignatures = new Map();
+
+function stablePublicSnapshotSignature(publicRow, boardRow) {
+  const { updatedAtMs: _publicUpdatedAtMs, ...stablePublic } = publicRow;
+  const { updatedAtMs: _boardUpdatedAtMs, ...stableBoard } = boardRow;
+  return JSON.stringify({ public: stablePublic, board: stableBoard });
+}
 export function schedulePublicSnapshotRefresh(tenantId, queues, tables, settings = {}) {
-  clearTimeout(publicRefreshTimer);
-  publicRefreshTimer = setTimeout(() => refreshPublicSnapshots(tenantId, queues, tables, settings).catch(error => {
-    console.warn("[waiting-queue] public snapshot refresh failed", error);
-  }), 350);
+  pendingPublicRefresh = { tenantId, queues, tables, settings };
+  if (publicRefreshTimer) return;
+
+  publicRefreshTimer = setTimeout(() => {
+    const pending = pendingPublicRefresh;
+    pendingPublicRefresh = null;
+    publicRefreshTimer = null;
+    if (!pending) return;
+    refreshPublicSnapshots(
+      pending.tenantId,
+      pending.queues,
+      pending.tables,
+      pending.settings,
+    ).catch(error => {
+      console.warn("[waiting-queue] public snapshot refresh failed", error);
+    });
+  }, 900);
 }
 
 export async function refreshPublicSnapshots(tenantId, queues, tables, settings = {}) {
   if (!isOnline() || !db) return 0;
   const active = (queues || []).filter(queue => queue.publicToken && queue.tenantId === tenantId);
   if (!active.length) return 0;
+
   let updated = 0;
   for (let offset = 0; offset < active.length; offset += 200) {
-    const batch = writeBatch(db);
+    const changes = [];
+
     active.slice(offset, offset + 200).forEach(queue => {
       const estimate = estimateWaitRange(queue, queues, tables, settings);
+      const publicRow = publicSnapshotFromQueue(queue, estimate);
+      const boardRow = boardSnapshotFromQueue(queue, estimate);
+      const key = `${tenantId}:${queue.id}`;
+      const signature = stablePublicSnapshotSignature(publicRow, boardRow);
+      if (publicSnapshotSignatures.get(key) === signature) return;
+      changes.push({ queue, publicRow, boardRow, key, signature });
+    });
+
+    if (!changes.length) continue;
+
+    const batch = writeBatch(db);
+    changes.forEach(({ queue, publicRow, boardRow }) => {
       batch.set(publicRef(queue.publicToken), {
-        ...publicSnapshotFromQueue(queue, estimate),
+        ...publicRow,
         updatedAt: serverTimestamp(),
       }, { merge: true });
       batch.set(boardRef(queue.id), {
-        ...boardSnapshotFromQueue(queue, estimate),
+        ...boardRow,
         updatedAt: serverTimestamp(),
       }, { merge: true });
+    });
+
+    await batch.commit();
+    changes.forEach(({ key, signature }) => {
+      publicSnapshotSignatures.set(key, signature);
       updated += 1;
     });
-    await batch.commit();
   }
+
   return updated;
 }
 
@@ -1458,7 +1826,7 @@ export async function updatePublicCustomerResponse(token, response) {
   const snapshot = await getDoc(ref);
   if (!snapshot.exists()) throw new WaitingQueueError("PUBLIC_QUEUE_NOT_FOUND", "ไม่พบข้อมูลคิว");
   const current = snapshot.data() || {};
-  await runTransaction(db, async transaction => {
+  await runWaitingQueueTransaction(async transaction => {
     const latest = await transaction.get(ref);
     if (!latest.exists()) throw new WaitingQueueError("PUBLIC_QUEUE_NOT_FOUND", "ไม่พบข้อมูลคิว");
     const data = latest.data() || {};

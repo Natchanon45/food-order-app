@@ -18,7 +18,7 @@ function stripDuplicateIdentity(root) {
 }
 
 function replaceText(element, title, description) {
-  const titleNode = element.querySelector("h2,h3,h4,strong,.menu-title,.card-title,.dashboard-card-title");
+  const titleNode = element.querySelector(".nav-card-label,.dashboard-card-title,.card-title,.menu-title,h2,h3,h4,strong");
   if (titleNode) titleNode.textContent = title;
 
   const descriptionNode = [...element.querySelectorAll("p,small,.menu-description,.card-description")]
@@ -30,7 +30,7 @@ function replaceIcon(element) {
   const icons = [...element.querySelectorAll("i")];
   const primary = icons[0];
   if (primary) {
-    primary.className = "bi bi-person-standing waiting-queue-home-icon";
+    primary.className = "bi bi-person-standing app-icon waiting-queue-home-icon";
     primary.setAttribute("aria-hidden", "true");
   }
   icons.slice(1).forEach(icon => {
@@ -57,6 +57,9 @@ function mountHomeCard() {
   card.setAttribute("aria-label", "คิวรอโต๊ะ");
   card.title = "คิวรอโต๊ะ";
   replaceText(card, "คิวรอโต๊ะ", "รับคิว เรียกคิว และเปิดโต๊ะเมื่อถึงลำดับ");
+  card.querySelectorAll(".nav-card-label").forEach(node => {
+    node.textContent = "คิวรอโต๊ะ";
+  });
   replaceIcon(card);
   reference.insertAdjacentElement("afterend", card);
   return true;

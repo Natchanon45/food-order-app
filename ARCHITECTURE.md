@@ -2,8 +2,18 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.16.1
-Build: 2026.08.01.002
+Version: 0.16.2
+Build: 2026.08.01.003
+
+<!-- WAITING_QUEUE_CONFLICT_RECOVERY_20260801_003 -->
+Waiting Queue conflict-recovery rule: Firebase is authoritative when local pending state is stale.
+
+A terminal remote queue state must never be replaced by an older local call, defer, cancel, or create operation. The ordered outbox may discard an operation only after reading the matching remote queue and proving that the operation is already applied, superseded, or invalid because the remote queue is final. A delayed create operation must read the existing queue document before any write and must never reset an existing queue to its initial state.
+
+Waiting Queue contention rule: transactions retain read-before-write ordering and use a bounded retry budget. Background public/board snapshot refreshes must be coalesced and skipped when their nonvolatile payload is unchanged, so presentation mirrors do not continuously contend with staff status or seating transactions.
+
+Waiting Queue local-cache rule: snapshot merges may show an optimistic local row only while a matching outbox operation exists, the remote queue is not final, and the optimistic version is newer. Remote rows otherwise replace conflict/error cache state. Cache writes must not recursively dispatch unchanged local snapshots.
+
 
 <!-- WAITING_QUEUE_UI_20260801_002 -->
 Waiting Queue canonical UI rule: `/waiting-queue/` is the only staff-management surface for table waiting queues. `/cashier/waiting-queue` may redirect to it, but must not maintain a second independent queue workflow. Legacy `/queue?token=...` links may retain their original data source and receive presentation-only compatibility until migration is explicitly approved.
@@ -14,7 +24,7 @@ Waiting Queue dialog rule: add-queue and open-table workflows use centered, resp
 
 Waiting Queue display audio rule: audio starts only after an operator gesture. Enabled mode means chime plus spoken Thai queue number when supported, and the UI must explicitly identify a chime-only fallback. No customer personal data may appear on the public display.
 
-Milestone: Waiting Queue UI Consolidation
+Milestone: Waiting Queue Conflict Recovery
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 

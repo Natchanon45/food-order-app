@@ -2,8 +2,22 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.16.1
-Build: 2026.08.01.002
+Version: 0.16.2
+Build: 2026.08.01.003
+
+<!-- WAITING_QUEUE_CONFLICT_RECOVERY_20260801_003 -->
+Change: Waiting Queue Conflict Recovery reconciles the local outbox with authoritative remote queue state.
+
+Current behavior: Remote terminal statuses (`seated`, `no_show`, `cancelled`) override stale optimistic local rows. Outbox transitions that reference an older status/version resolve as superseded and no longer block later operations. Valid current operations remain transaction-safe and preserve stable IDs.
+
+Contention boundary: Firestore transactions still perform reads before writes. The client increases the bounded transaction attempt budget and reduces background public-snapshot writes by signature, preventing repeated public mirror updates from competing with call/open-table transactions.
+
+Dashboard: `คิวรอโต๊ะ` is a static role-controlled dashboard card; the runtime clone remains fallback-only.
+
+Deploy rules: Hosting only. No Rules, Indexes, Functions, or schema migration is required.
+
+Next Task: rerun two-device call/cancel/open-table acceptance tests and verify that the old local outbox drains to zero without manual Local Storage deletion.
+
 
 <!-- WAITING_QUEUE_UI_20260801_002 -->
 Change: Waiting Queue UI Consolidation makes `/waiting-queue/` the single staff workspace. It removes the Retail POS menu from that screen, replaces the floating home shortcut with a normal dashboard card, redirects the legacy cashier staff route, and preserves legacy customer links through a presentation-only compatibility layer.
@@ -20,7 +34,7 @@ Change: Implemented Waiting Queue MVP as a table-waiting workflow independent fr
 Firebase boundary: Waiting queue writes use top-level tenant-scoped collections `waitingQueues`, `waitingQueuePublic`, `waitingQueueBoard`, `waitingQueueAudits`, `waitingQueueCounters`, `waitingQueueNumberLeases`, `waitingQueueNumbers`, `waitingQueueDedupe`, and `waitingQueueOperations`. Customer tracking tokens remain in non-listable `waitingQueuePublic` documents, while the listable public display reads token-free `waitingQueueBoard` documents. Neither public surface contains customer name, phone, or note. Local staff intake uses preleased stable W-numbers and an idempotent outbox; queue records are retained for audit and are never physically deleted. Existing order, payment, stock, VAT, Kitchen, Delivery, stable sale/order IDs, and duplicate stock protection remain authoritative.
 
 Deploy rules: deploy Firestore Rules, Indexes, and Hosting. Load cache build `20260801-001` with a hard refresh.
-Milestone: Waiting Queue UI Consolidation
+Milestone: Waiting Queue Conflict Recovery
 
 Next Task: perform two-device acceptance tests for duplicate intake, call/recall audit, customer response, skip reasons, table collision protection, and order/table linkage.
 

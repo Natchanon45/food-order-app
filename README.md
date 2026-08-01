@@ -1,9 +1,23 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Waiting Queue UI Consolidation
-Version: 0.16.1
-Build: 2026.08.01.002
+Milestone: Waiting Queue Conflict Recovery
+Version: 0.16.2
+Build: 2026.08.01.003
+
+<!-- WAITING_QUEUE_CONFLICT_RECOVERY_20260801_003 -->
+Change: Hardened Waiting Queue conflict recovery after production acceptance testing.
+
+Stale local create/transition operations are now reconciled against the latest Firebase queue instead of blocking the ordered outbox. Terminal remote states always win, obsolete transitions are discarded without regressing queue status, and an existing remote queue cannot be overwritten by a delayed create operation.
+
+Reliability: Queue transactions use a bounded ten-attempt Firebase retry budget plus one guarded retry for transient contention. Public/customer snapshot writes are coalesced and skipped when their meaningful payload is unchanged, reducing version churn while staff call, cancel, or open a table.
+
+UI: The home dashboard now owns one static `คิวรอโต๊ะ` card with the correct label and icon. Sync results report recovered stale operations in Thai instead of showing raw Firestore base-version errors.
+
+Firebase safety: No collection path, Security Rule, Composite Index, stable W-number, waitingQueueId, table/order link, audit payload, payment, stock, VAT, or food-queue behavior changed.
+
+Deploy: Firebase Hosting only. Hard refresh after deployment to load `20260801-003`.
+
 
 <!-- WAITING_QUEUE_UI_20260801_002 -->
 Change: Consolidated the table waiting queue into the canonical `/waiting-queue/` staff workspace. The old `/cashier/waiting-queue` entry now forwards to the canonical page, the home shortcut is rendered as a normal dashboard card instead of a floating bottom-right button, and the Retail POS drawer is no longer loaded on the waiting-queue page.

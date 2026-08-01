@@ -1,5 +1,5 @@
 import { requireRole } from "./auth-service.js?v=20260731-079";
-import { sweetAlert, sweetConfirm, sweetPrompt } from "./sweet-dialog.js?v=20260801-002";
+import { sweetAlert, sweetConfirm, sweetPrompt } from "./sweet-dialog.js?v=20260801-003";
 import {
   WAITING_QUEUE_STATUS,
   WAITING_QUEUE_ACTIVE_STATUSES,
@@ -26,7 +26,7 @@ import {
   waitingQueueStatusLabel,
   watchWaitingQueuePublicResponses,
   watchWaitingQueues,
-} from "./waiting-queue-core.js?v=20260801-002";
+} from "./waiting-queue-core.js?v=20260801-003";
 
 await requireRole(["owner", "admin", "manager", "cashier"]);
 
@@ -113,6 +113,25 @@ function showToast(message, type = "success") {
   els.toast.classList.add("show");
   clearTimeout(showToast.timer);
   showToast.timer = setTimeout(() => els.toast.classList.remove("show"), 2600);
+}
+
+
+function friendlyWaitingQueueError(error, fallback = "ดำเนินการไม่สำเร็จ") {
+  const message = String(error?.message || error || "").trim();
+  const normalized = message.toLowerCase();
+  if (
+    normalized.includes("stored version")
+    && normalized.includes("required base version")
+  ) {
+    return "ข้อมูลคิวถูกอัปเดตพร้อมกัน ระบบลองใหม่แล้ว กรุณากดอีกครั้ง";
+  }
+  if (error?.code === "TRANSACTION_RETRY_EXHAUSTED") {
+    return "ข้อมูลคิวถูกอัปเดตพร้อมกัน ระบบลองใหม่แล้ว กรุณากดอีกครั้ง";
+  }
+  if (error?.code === "QUEUE_CONFLICT") {
+    return "คิวถูกแก้ไขจากอุปกรณ์อื่น ระบบกำลังโหลดสถานะล่าสุด";
+  }
+  return message || fallback;
 }
 
 function formatTime(ms) {
@@ -434,11 +453,30 @@ function queueById(id) {
 
 async function performTransition(queue, toStatus, options) {
   try {
-    await transitionWaitingQueue(queue.id, toStatus, { tenantId, ...options });
+    const result = await transitionWaitingQueue(queue.id, toStatus, { tenantId, ...options });
+    if (
+      result?._operationResolution
+      && !["already_applied"].includes(result._operationResolution)
+    ) {
+      await sweetAlert(
+        result._operationResolutionReason
+          || "ข้อมูลคิวถูกเปลี่ยนจากอุปกรณ์อื่น ระบบโหลดสถานะล่าสุดแล้ว",
+        {
+          title: "อัปเดตข้อมูลล่าสุด",
+          type: "warning",
+        },
+      );
+      return result;
+    }
     showToast(options.successMessage || `อัปเดตคิว ${queue.queueNumber} แล้ว`);
+    return result;
   } catch (error) {
     console.error("[waiting-queue-staff] transition failed", error);
-    await sweetAlert(error?.message || "อัปเดตคิวไม่สำเร็จ", { title: "ดำเนินการไม่สำเร็จ", type: "error" });
+    await sweetAlert(
+      friendlyWaitingQueueError(error, "อัปเดตคิวไม่สำเร็จ"),
+      { title: "ดำเนินการไม่สำเร็จ", type: "error" },
+    );
+    return null;
   }
 }
 
@@ -599,7 +637,7 @@ async function confirmSeat() {
     if (openOrder) location.href = result.orderUrl;
   } catch (error) {
     console.error("[waiting-queue-staff] seat failed", error);
-    els.seatError.textContent = error?.message || "เปิดโต๊ะไม่สำเร็จ";
+    els.seatError.textContent = friendlyWaitingQueueError(error, "เปิดโต๊ะไม่สำเร็จ");
   } finally {
     els.seatConfirm.disabled = false;
     els.seatConfirm.textContent = "เปิดโต๊ะ";
@@ -612,10 +650,19 @@ async function syncNow() {
   renderConnectivity();
   els.syncBtn.textContent = "กำลัง Sync...";
   try {
-    const result = await syncWaitingQueueOutbox(tenantId, { maxOperations: 50 });
+    const result = await syncWaitingQueueOutbox(tenantId, { maxOperations: 100 });
     if (result.errors?.length) {
-      await sweetAlert(result.errors[0].error?.message || "มีรายการ Sync ไม่สำเร็จ", { title: "Sync ไม่ครบ", type: "warning" });
-    } else showToast(`Sync สำเร็จ ${result.processed.toLocaleString("th-TH")} รายการ`);
+      await sweetAlert(
+        friendlyWaitingQueueError(result.errors[0].error, "มีรายการ Sync ไม่สำเร็จ"),
+        { title: "Sync ไม่ครบ", type: "warning" },
+      );
+    } else if (result.resolved > 0) {
+      showToast(
+        `Sync สำเร็จ ${result.processed.toLocaleString("th-TH")} รายการ • ปรับข้อมูลเก่า ${result.resolved.toLocaleString("th-TH")} รายการ`,
+      );
+    } else {
+      showToast(`Sync สำเร็จ ${result.processed.toLocaleString("th-TH")} รายการ`);
+    }
   } finally {
     syncing = false;
     els.syncBtn.innerHTML = '<i class="bi bi-arrow-repeat" aria-hidden="true"></i><span>Sync</span>';
