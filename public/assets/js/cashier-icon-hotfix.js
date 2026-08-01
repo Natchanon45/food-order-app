@@ -18,6 +18,9 @@ function replaceButtonIcon(button, iconName) {
 function applyCashierIcons() {
   document.querySelectorAll('[data-table-payment]').forEach(button => replaceButtonIcon(button, 'check-circle'));
   document.querySelectorAll('[data-table-move]').forEach(button => replaceButtonIcon(button, 'arrow-left-right'));
+  document.querySelectorAll('#orderGrid [data-status="cancelled"] span').forEach(label => {
+    label.textContent = 'ยกเลิกทุกรายการ';
+  });
 }
 
 function scheduleApply() {
