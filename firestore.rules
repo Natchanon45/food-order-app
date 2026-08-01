@@ -328,7 +328,13 @@ service cloud.firestore {
     }
 
     match /waitingQueues/{waitingQueueId} {
-      allow get, list: if wqTenantMember(resource.data.tenantId);
+      allow get: if request.auth != null && (
+        !exists(
+          /databases/$(database)/documents/waitingQueues/$(waitingQueueId)
+        )
+        || wqTenantMember(resource.data.tenantId)
+      );
+      allow list: if wqTenantMember(resource.data.tenantId);
       allow create: if
         wqTenantMember(request.resource.data.tenantId)
         && request.resource.data.get('waitingQueueId', '') == waitingQueueId
