@@ -691,6 +691,16 @@ function baseQueueRow({ tenantId, queueId, publicToken, number, input, phoneHash
 }
 
 function publicSnapshotFromQueue(queue, extra = {}, options = {}) {
+  const seatedOrderUrl = queue.status === WAITING_QUEUE_STATUS.SEATED
+    && normalizeString(queue.tenantSlug)
+    && normalizeString(queue.tableCode || queue.tableId)
+    && normalizeString(queue.tableToken)
+    ? orderUrl({
+        tenantSlug: normalizeString(queue.tenantSlug),
+        tableCode: normalizeString(queue.tableCode || queue.tableId),
+        tableToken: normalizeString(queue.tableToken),
+      })
+    : "";
   const snapshot = {
     id: queue.publicToken,
     token: queue.publicToken,
@@ -711,6 +721,7 @@ function publicSnapshotFromQueue(queue, extra = {}, options = {}) {
     calledAtMs: Number(queue.calledAtMs || 0) || null,
     responseDeadlineAtMs: Number(queue.responseDeadlineAtMs || 0) || null,
     tableLabel: queue.status === WAITING_QUEUE_STATUS.SEATED ? normalizeString(queue.tableLabel) : "",
+    orderUrl: seatedOrderUrl,
     updatedAtMs: nowMs(),
   };
   const responseMode = options.responseMode || "omit";

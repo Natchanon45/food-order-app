@@ -29,7 +29,7 @@ import {
   waitingQueueStatusLabel,
   watchWaitingQueuePublicResponses,
   watchWaitingQueues,
-} from "./waiting-queue-core.js?v=20260802-016";
+} from "./waiting-queue-core.js?v=20260802-017";
 
 const waitingProfile = await requireRole(["owner", "admin", "manager", "cashier"]);
 

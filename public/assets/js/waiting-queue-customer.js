@@ -4,7 +4,7 @@ import {
   updatePublicCustomerResponse,
   waitingQueueStatusLabel,
   watchPublicQueue,
-} from "./waiting-queue-core.js?v=20260802-001";
+} from "./waiting-queue-core.js?v=20260802-017";
 
 const params = new URLSearchParams(location.search);
 const tenantId = String(params.get("tenantId") || "").trim();
@@ -23,6 +23,9 @@ const els = {
   countdownWrap: document.querySelector("#waitingCustomerCountdownWrap"),
   countdown: document.querySelector("#waitingCustomerCountdown"),
   callMessage: document.querySelector("#waitingCustomerCallMessage"),
+  orderReady: document.querySelector("#waitingCustomerOrderReady"),
+  tableLabel: document.querySelector("#waitingCustomerTableLabel"),
+  orderLink: document.querySelector("#waitingCustomerOrderLink"),
   confirmArrival: document.querySelector("#waitingCustomerConfirmArrival"),
   cancelQueue: document.querySelector("#waitingCustomerCancelQueue"),
   notification: document.querySelector("#waitingCustomerNotification"),
@@ -122,6 +125,16 @@ function render(row) {
     element.classList.toggle("current", Number(element.dataset.waitingStep) === step);
   });
   els.callMessage.hidden = row.status !== "called";
+  const orderReady = row.status === "seated" && /^\/s\/[^/]+\/order\/\?/.test(String(row.orderUrl || ""));
+  els.orderReady.hidden = !orderReady;
+  if (orderReady) {
+    els.tableLabel.textContent = row.tableLabel
+      ? `เปิด ${row.tableLabel} แล้ว สั่งอาหารได้ทันที`
+      : "เปิดโต๊ะแล้ว สั่งอาหารได้ทันที";
+    els.orderLink.href = row.orderUrl;
+  } else {
+    els.orderLink.removeAttribute("href");
+  }
   els.confirmArrival.hidden = !["called", "acknowledged"].includes(row.status);
   els.confirmArrival.disabled = row.customerResponse === "on_the_way";
   els.confirmArrival.textContent = row.customerResponse === "on_the_way" ? "ยืนยันแล้วว่ากำลังมา" : "ยืนยันว่ากำลังมาที่จุดรับโต๊ะ";

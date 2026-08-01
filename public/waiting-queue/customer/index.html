@@ -9,7 +9,7 @@
     <link rel="icon" href="/assets/images/icon-192.png" type="image/png" />
     <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260713-004" />
     <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260801-002" />
-    <link rel="stylesheet" href="/assets/css/waiting-queue-customer.css?v=20260801-005" />
+    <link rel="stylesheet" href="/assets/css/waiting-queue-customer.css?v=20260802-006" />
   </head>
   <body>
     <main class="waiting-customer-shell">
@@ -66,6 +66,17 @@
           <strong id="waitingCustomerCountdown">05:00</strong>
         </div>
 
+        <section id="waitingCustomerOrderReady" class="waiting-customer-order-ready" hidden>
+          <i class="bi bi-check-circle" aria-hidden="true"></i>
+          <div>
+            <strong>โต๊ะของคุณพร้อมแล้ว</strong>
+            <span id="waitingCustomerTableLabel">กรุณาเข้าประจำโต๊ะ</span>
+          </div>
+          <a id="waitingCustomerOrderLink" href="#">
+            <i class="bi bi-journal-text" aria-hidden="true"></i><span>สั่งอาหารที่โต๊ะ</span>
+          </a>
+        </section>
+
         <div class="waiting-customer-actions">
           <button id="waitingCustomerConfirmArrival" class="waiting-customer-confirm" type="button" hidden>
             <i class="bi bi-geo-alt" aria-hidden="true"></i><span>ยืนยันว่ากำลังมาที่จุดรับโต๊ะ</span>
@@ -84,6 +95,6 @@
         </footer>
       </section>
     </main>
-    <script type="module" src="/assets/js/waiting-queue-customer.js?v=20260802-001"></script>
+    <script type="module" src="/assets/js/waiting-queue-customer.js?v=20260802-002"></script>
   </body>
 </html>
