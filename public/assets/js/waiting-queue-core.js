@@ -1995,6 +1995,32 @@ export function watchPublicQueueBoard(tenantId, callback, onError = console.erro
   return watchTenantPublicRows(COLLECTIONS.board, tenantId, callback, onError);
 }
 
+export async function recallWaitingQueue(queueId, options = {}) {
+  if (!isOnline()) {
+    throw new WaitingQueueError("ONLINE_REQUIRED", "ต้องเชื่อมต่ออินเทอร์เน็ตเพื่อส่งเสียงเรียกซ้ำ");
+  }
+  const tenantId = normalizeString(options.tenantId || await resolveTenantId());
+  const ref = boardRef(queueId);
+  const signalAtMs = nowMs();
+  await runWaitingQueueTransaction(async transaction => {
+    const snapshot = await transaction.get(ref);
+    if (!snapshot.exists()) throw new WaitingQueueError("QUEUE_NOT_FOUND", "ไม่พบคิวบนจอเรียกคิว");
+    const board = snapshot.data() || {};
+    if (normalizeString(board.tenantId) !== tenantId) {
+      throw new WaitingQueueError("TENANT_MISMATCH", "คิวนี้ไม่ได้อยู่ในร้านที่กำลังใช้งาน");
+    }
+    if (board.status !== WAITING_QUEUE_STATUS.CALLED) {
+      throw new WaitingQueueError("INVALID_STATUS_TRANSITION", "เรียกซ้ำได้เฉพาะคิวที่อยู่ในสถานะเรียกแล้ว");
+    }
+    transaction.set(ref, {
+      recallSignalAtMs: signalAtMs,
+      updatedAt: serverTimestamp(),
+      updatedAtMs: signalAtMs,
+    }, { merge: true });
+  });
+  return { queueId, tenantId, recallSignalAtMs: signalAtMs };
+}
+
 export async function updatePublicCustomerResponse(token, response) {
   const allowed = new Set(["on_the_way", "cancel_requested"]);
   if (!allowed.has(response)) throw new WaitingQueueError("INVALID_CUSTOMER_RESPONSE", "คำตอบของลูกค้าไม่ถูกต้อง");

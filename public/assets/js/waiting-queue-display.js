@@ -1,4 +1,4 @@
-import { watchPublicQueueBoard } from "./waiting-queue-core.js?v=20260802-001";
+import { watchPublicQueueBoard } from "./waiting-queue-core.js?v=20260802-016";
 
 const params = new URLSearchParams(location.search);
 const tenantId = String(params.get("tenantId") || "").trim();
@@ -193,7 +193,7 @@ function render() {
     els.called.textContent = primary.queueNumber || "-";
     els.calledTimer.textContent = countdownText(primary);
     els.calledTimer.classList.toggle("overdue", Number(primary.responseDeadlineAtMs || 0) > 0 && Number(primary.responseDeadlineAtMs) <= Date.now());
-    const signature = `${primary.waitingQueueId}:${primary.calledAtMs || primary.updatedAtMs}`;
+    const signature = `${primary.waitingQueueId}:${primary.calledAtMs || primary.updatedAtMs}:${primary.recallSignalAtMs || 0}`;
     if (signature !== lastCalledSignature) {
       lastCalledSignature = signature;
       announce(primary.queueNumber);

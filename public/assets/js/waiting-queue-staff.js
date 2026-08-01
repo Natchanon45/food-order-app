@@ -17,6 +17,7 @@ import {
   isOnline,
   loadWaitingQueueTables,
   queueDisplayUrl,
+  recallWaitingQueue,
   recommendQueueForTable,
   refreshPublicSnapshots,
   resolveTenantId,
@@ -28,7 +29,7 @@ import {
   waitingQueueStatusLabel,
   watchWaitingQueuePublicResponses,
   watchWaitingQueues,
-} from "./waiting-queue-core.js?v=20260802-004";
+} from "./waiting-queue-core.js?v=20260802-016";
 
 const waitingProfile = await requireRole(["owner", "admin", "manager", "cashier"]);
 
@@ -696,12 +697,24 @@ async function performTransition(queue, toStatus, options) {
 
 async function handleQueueAction(action, queue) {
   if (!queue) return;
-  if (action === "call" || action === "recall") {
+  if (action === "recall") {
+    try {
+      await recallWaitingQueue(queue.id, { tenantId });
+      showToast(`ส่งเสียงเรียกคิว ${queue.queueNumber} ซ้ำแล้ว`);
+    } catch (error) {
+      console.error("[waiting-queue-staff] recall failed", error);
+      await sweetAlert(
+        friendlyWaitingQueueError(error, "ส่งเสียงเรียกซ้ำไม่สำเร็จ"),
+        { title: "เรียกซ้ำไม่สำเร็จ", type: "error" },
+      );
+    }
+    return;
+  }
+  if (action === "call") {
     await performTransition(queue, WAITING_QUEUE_STATUS.CALLED, {
-      action: action === "recall" ? "queue_recalled" : "queue_called",
-      reason: action === "recall" ? "พนักงานเรียกคิวซ้ำ" : "พนักงานเรียกคิว",
+      action: "queue_called",
+      reason: "พนักงานเรียกคิว",
       callTimeoutMinutes: 5,
-      allowSameStatus: action === "recall",
       successMessage: `เรียกคิว ${queue.queueNumber} แล้ว`,
     });
     return;
