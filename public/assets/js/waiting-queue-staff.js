@@ -1,6 +1,6 @@
 import { requireRole } from "./auth-service.js?v=20260731-079";
 import "./form-validation-ui.js?v=20260731-080";
-import { sweetAlert, sweetConfirm, sweetPrompt } from "./sweet-dialog.js?v=20260801-006";
+import { sweetAlert, sweetConfirm, sweetPrompt } from "./sweet-dialog.js?v=20260802-001";
 import {
   WAITING_QUEUE_STATUS,
   WAITING_QUEUE_ACTIVE_STATUSES,
@@ -28,7 +28,7 @@ import {
   waitingQueueStatusLabel,
   watchWaitingQueuePublicResponses,
   watchWaitingQueues,
-} from "./waiting-queue-core.js?v=20260801-006";
+} from "./waiting-queue-core.js?v=20260802-001";
 
 const waitingProfile = await requireRole(["owner", "admin", "manager", "cashier"]);
 
@@ -502,12 +502,24 @@ function renderTicketQr(url) {
   }
   new window.QRCode(els.ticketQr, {
     text: url,
-    width: 224,
-    height: 224,
+    width: 188,
+    height: 188,
     colorDark: "#071d10",
     colorLight: "#ffffff",
     correctLevel: window.QRCode.CorrectLevel.M,
   });
+
+  const nodes = [...els.ticketQr.querySelectorAll("canvas, img, table")];
+  const primary = nodes.find(node => node.tagName === "CANVAS")
+    || nodes.find(node => node.tagName === "IMG")
+    || nodes.find(node => node.tagName === "TABLE")
+    || null;
+  nodes.forEach(node => {
+    if (node !== primary) node.remove();
+  });
+  if (!primary) throw new Error("QR_CODE_RENDER_EMPTY");
+  primary.hidden = false;
+  primary.style.display = "block";
 }
 
 function ticketQrDataUrl() {

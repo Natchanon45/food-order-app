@@ -12,7 +12,8 @@ import {
   runTransaction,
   writeBatch,
   serverTimestamp,
-} from "./waiting-queue-firebase.js?v=20260801-006";
+  deleteField,
+} from "./waiting-queue-firebase.js?v=20260802-001";
 
 export const WAITING_QUEUE_STATUS = Object.freeze({
   WAITING: "waiting",
@@ -1095,7 +1096,6 @@ async function syncTransitionOperation(operation) {
 
     transaction.set(qRef, { ...next, updatedAt: serverTimestamp() }, { merge: true });
     transaction.set(pRef, {
-      ...(publicSnap.exists() ? publicSnap.data() : {}),
       ...publicSnapshotFromQueue(
         next,
         publicSnap.exists() ? publicSnap.data() : {},
@@ -1108,11 +1108,11 @@ async function syncTransitionOperation(operation) {
         },
       ),
       updatedAt: serverTimestamp(),
-    }, { merge: true });
+    }, { merge: false });
     transaction.set(bRef, {
       ...boardSnapshotFromQueue(next),
       updatedAt: serverTimestamp(),
-    }, { merge: true });
+    }, { merge: false });
     transaction.set(dRef, {
       ...(dedupeSnap.exists() ? dedupeSnap.data() : {}),
       tenantId,
@@ -1580,14 +1580,17 @@ export async function seatWaitingQueue(queueId, table, options = {}) {
     transaction.set(oRef, order, { merge: true });
     transaction.set(qRef, { ...nextQueue, updatedAt: serverTimestamp() }, { merge: true });
     transaction.set(pRef, {
-      ...(publicSnap.exists() ? publicSnap.data() : {}),
-      ...publicSnapshotFromQueue(nextQueue, publicSnap.exists() ? publicSnap.data() : {}, { responseMode: "preserve" }),
+      ...publicSnapshotFromQueue(
+        nextQueue,
+        publicSnap.exists() ? publicSnap.data() : {},
+        { responseMode: "preserve" },
+      ),
       updatedAt: serverTimestamp(),
-    }, { merge: true });
+    }, { merge: false });
     transaction.set(bRef, {
       ...boardSnapshotFromQueue(nextQueue),
       updatedAt: serverTimestamp(),
-    }, { merge: true });
+    }, { merge: false });
     transaction.set(dRef, {
       ...(dedupeSnap.exists() ? dedupeSnap.data() : {}),
       tenantId,
@@ -1852,10 +1855,30 @@ export async function refreshPublicSnapshots(tenantId, queues, tables, settings 
     changes.forEach(({ queue, publicRow, boardRow }) => {
       batch.set(publicRef(queue.publicToken), {
         ...publicRow,
+        customerName: deleteField(),
+        phone: deleteField(),
+        phoneMasked: deleteField(),
+        phoneHash: deleteField(),
+        specialNote: deleteField(),
+        createdByName: deleteField(),
+        actorName: deleteField(),
+        actorEmail: deleteField(),
         updatedAt: serverTimestamp(),
       }, { merge: true });
       batch.set(boardRef(queue.id), {
         ...boardRow,
+        customerName: deleteField(),
+        phone: deleteField(),
+        phoneMasked: deleteField(),
+        phoneHash: deleteField(),
+        specialNote: deleteField(),
+        createdByName: deleteField(),
+        actorName: deleteField(),
+        actorEmail: deleteField(),
+        token: deleteField(),
+        publicToken: deleteField(),
+        customerResponse: deleteField(),
+        customerResponseAtMs: deleteField(),
         updatedAt: serverTimestamp(),
       }, { merge: true });
     });

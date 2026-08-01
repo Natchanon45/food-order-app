@@ -2,8 +2,18 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.16.5
-Build: 2026.08.01.006
+Version: 0.16.6
+Build: 2026.08.02.001
+
+<!-- WAITING_QUEUE_RUNTIME_REPAIR_20260802_001 -->
+Waiting Queue authoritative mirror and deterministic order rule:
+
+Public and Board documents are replaceable privacy-safe mirrors. Staff status and seating operations must not merge unknown legacy fields into these mirrors.
+
+Table opening may create or idempotently update only the deterministic empty order `order-wq-{waitingQueueId}` for the same tenant and queue. The table patch is restricted to the existing Waiting Queue occupation fields, and the private queue, table, order, dedupe record, mirror records, and audit remain protected by the transaction's read-before-write sequence.
+
+A QR ticket modal must retain one QR render target and must not display the library fallback image together with its canvas.
+
 
 <!-- WAITING_QUEUE_TICKET_QR_CALL_RECOVERY_20260801_006 -->
 Waiting Queue ticket, audio-arm, and call authorization rule:
@@ -54,7 +64,7 @@ Waiting Queue dialog rule: add-queue and open-table workflows use centered, resp
 
 Waiting Queue display audio rule: audio starts only after an operator gesture. Enabled mode means chime plus spoken Thai queue number when supported, and the UI must explicitly identify a chime-only fallback. No customer personal data may appear on the public display.
 
-Milestone: Waiting Queue Ticket QR And Call Recovery
+Milestone: Waiting Queue Runtime Repair
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 

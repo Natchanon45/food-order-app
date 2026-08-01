@@ -2,8 +2,22 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.16.5
-Build: 2026.08.01.006
+Version: 0.16.6
+Build: 2026.08.02.001
+
+<!-- WAITING_QUEUE_RUNTIME_REPAIR_20260802_001 -->
+Change: Waiting Queue Runtime Repair.
+
+Current behavior: call, recall, cancel, defer, customer response, and seating write the private queue plus clean Public/Board mirrors without retaining unknown legacy fields. Existing failed outbox transitions can retry and drain.
+
+Opening a table remains one transaction and may create only the deterministic Waiting Queue dine-in draft order for the same tenant and stable queue.
+
+The customer-link action displays one QR Code and prints the existing privacy-safe tracking URL.
+
+Deploy rules: Firestore Rules and Hosting. No Index or Function change.
+
+Next Task: drain the existing outbox, call W001, scan/print the QR ticket, and repeat the two-device open-table collision test.
+
 
 <!-- WAITING_QUEUE_TICKET_QR_CALL_RECOVERY_20260801_006 -->
 Change: Waiting Queue Ticket QR And Call Recovery.
@@ -76,7 +90,7 @@ Change: Implemented Waiting Queue MVP as a table-waiting workflow independent fr
 Firebase boundary: Waiting queue writes use top-level tenant-scoped collections `waitingQueues`, `waitingQueuePublic`, `waitingQueueBoard`, `waitingQueueAudits`, `waitingQueueCounters`, `waitingQueueNumberLeases`, `waitingQueueNumbers`, `waitingQueueDedupe`, and `waitingQueueOperations`. Customer tracking tokens remain in non-listable `waitingQueuePublic` documents, while the listable public display reads token-free `waitingQueueBoard` documents. Neither public surface contains customer name, phone, or note. Local staff intake uses preleased stable W-numbers and an idempotent outbox; queue records are retained for audit and are never physically deleted. Existing order, payment, stock, VAT, Kitchen, Delivery, stable sale/order IDs, and duplicate stock protection remain authoritative.
 
 Deploy rules: deploy Firestore Rules, Indexes, and Hosting. Load cache build `20260801-001` with a hard refresh.
-Milestone: Waiting Queue Ticket QR And Call Recovery
+Milestone: Waiting Queue Runtime Repair
 
 Next Task: perform two-device acceptance tests for duplicate intake, call/recall audit, customer response, skip reasons, table collision protection, and order/table linkage.
 

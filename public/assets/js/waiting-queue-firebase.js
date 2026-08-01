@@ -1,3 +1,4 @@
+import { deleteField } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 import * as FirebaseConfig from "./firebase-config.js?v=20260801-002";
 import * as FirestoreSdk from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
@@ -14,3 +15,5 @@ export const onSnapshot = FirebaseConfig.onSnapshot || FirestoreSdk.onSnapshot;
 export const runTransaction = FirebaseConfig.runTransaction || FirestoreSdk.runTransaction;
 export const writeBatch = FirebaseConfig.writeBatch || FirestoreSdk.writeBatch;
 export const serverTimestamp = FirebaseConfig.serverTimestamp || FirestoreSdk.serverTimestamp;
+
+export { deleteField };

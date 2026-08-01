@@ -791,3 +791,84 @@ dialog.waiting-dialog .waiting-dialog-actions .btn > i {
     padding: 8px !important;
   }
 }
+
+/* WAITING_QUEUE_QR_MODAL_REPAIR_20260802_001 */
+.waiting-ticket-dialog {
+  width: min(520px, calc(100% - 24px)) !important;
+}
+
+.waiting-ticket-dialog-form {
+  max-height: min(90dvh, 820px) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.waiting-ticket-card {
+  min-width: 0;
+  gap: 7px;
+  margin: 14px 18px 0;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.waiting-ticket-number {
+  font-size: clamp(2.9rem, 9vw, 4.1rem);
+}
+
+.waiting-ticket-qr {
+  width: 212px !important;
+  height: 212px !important;
+  min-width: 212px;
+  min-height: 212px;
+  padding: 12px;
+  overflow: hidden;
+}
+
+.waiting-ticket-qr > canvas,
+.waiting-ticket-qr > img,
+.waiting-ticket-qr > table {
+  width: 188px !important;
+  height: 188px !important;
+  max-width: 188px !important;
+  max-height: 188px !important;
+  margin: 0 !important;
+}
+
+.waiting-ticket-qr > img,
+.waiting-ticket-qr > table {
+  display: none !important;
+}
+
+.waiting-ticket-qr > canvas {
+  display: block !important;
+}
+
+.waiting-ticket-url {
+  max-height: 58px;
+  overflow: auto;
+  scrollbar-width: thin;
+}
+
+@media (max-width: 620px) {
+  .waiting-ticket-card {
+    margin-inline: 10px;
+    padding: 14px 10px;
+  }
+
+  .waiting-ticket-qr {
+    width: 196px !important;
+    height: 196px !important;
+    min-width: 196px;
+    min-height: 196px;
+    aspect-ratio: auto;
+  }
+
+  .waiting-ticket-qr > canvas,
+  .waiting-ticket-qr > img,
+  .waiting-ticket-qr > table {
+    width: 172px !important;
+    height: 172px !important;
+    max-width: 172px !important;
+    max-height: 172px !important;
+  }
+}

@@ -1,9 +1,21 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Waiting Queue Ticket QR And Call Recovery
-Version: 0.16.5
-Build: 2026.08.01.006
+Milestone: Waiting Queue Runtime Repair
+Version: 0.16.6
+Build: 2026.08.02.001
+
+<!-- WAITING_QUEUE_RUNTIME_REPAIR_20260802_001 -->
+Change: Repaired Waiting Queue runtime writes and customer QR ticket rendering.
+
+Queue call and seating transitions now replace Public and Board mirrors with complete privacy-safe snapshots, removing legacy fields that previously caused Firestore to reject the whole transaction. Customer response values are preserved explicitly.
+
+Waiting Queue table opening may create only the deterministic empty dine-in draft order `order-wq-{waitingQueueId}` and may update only the exact table occupation field set. Tenant checks, stable IDs, duplicate protection, audit history, and Firestore read-before-write ordering remain unchanged.
+
+The customer ticket modal keeps exactly one locally generated QR render target, uses a compact responsive preview, and preserves the privacy-safe 80 mm print ticket.
+
+Deploy: Firestore Rules and Hosting. Hard refresh cache `20260802-001`.
+
 
 <!-- WAITING_QUEUE_TICKET_QR_CALL_RECOVERY_20260801_006 -->
 Change: Added printable customer QR queue tickets and completed call-permission recovery.
