@@ -1148,3 +1148,26 @@ body.waiting-queue-workspace .waiting-policy {
     max-height: 158px !important;
   }
 }
+
+/* Keep this final so legacy ticket rules cannot restore the overlapping footer. */
+dialog.waiting-ticket-dialog .waiting-ticket-dialog-form {
+  overflow: hidden !important;
+}
+
+dialog.waiting-ticket-dialog .waiting-ticket-card {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+
+dialog.waiting-ticket-dialog .waiting-ticket-error {
+  flex: 0 0 auto;
+}
+
+dialog.waiting-ticket-dialog .waiting-ticket-actions {
+  position: static !important;
+  flex: 0 0 auto;
+  bottom: auto !important;
+}
