@@ -2,8 +2,23 @@
 
 Repository: Natchanon45/food-order-app
 Branch: main
-Version: 0.16.6
-Build: 2026.08.02.005
+Version: 0.16.7
+Build: 2026.08.02.020
+
+<!-- WAITING_QUEUE_SEAMLESS_ORDER_HANDOFF_20260802_020 -->
+Change: Waiting Queue Seamless Customer Order Handoff And Recorded Announcement Audio.
+
+Current behavior: after staff open a table, the existing seating transaction publishes the active table order path to the customer's privacy-safe tracking document. The tracking page updates in real time, shows the assigned table, and provides `สั่งอาหารที่โต๊ะ`. The action opens the same tenant storefront table session created during seating and reuses the deterministic Waiting Queue order instead of creating another order.
+
+Audio behavior: the public display defaults to enabled sound, subject to the browser's required first interaction. A four-note service chime and prerecorded Thai phrase play through the same unlocked Web Audio context. Recall replays audio only and preserves the original call time and response deadline. Browser speech synthesis remains a fallback.
+
+Privacy and integrity: the public document contains the same-origin order path only after `seated` and only when tenant slug, table code, and table token are complete. Customer name, phone, phone hash, and notes remain private. Opening a table remains online-only and atomic across queue, table, deterministic order, public/board mirrors, dedupe, and audit records. Stable IDs, tenant scope, fair-order override reasons, and two-device collision protection remain unchanged.
+
+UI behavior: the open-table dialog no longer renders an outer shadow. Customer tracking adds a responsive ready-to-order panel without changing cancellation or notification rules.
+
+Deploy rules: Hosting only. No Firestore Rule, Composite Index, or Function change.
+
+Acceptance test: create and scan a queue ticket, call the queue, open a table, verify that the same tracking page changes to `เข้านั่งแล้ว`, then use `สั่งอาหารที่โต๊ะ` and confirm the URL contains the assigned table code and active table token. Submit an item and confirm it belongs to `order-wq-{waitingQueueId}`. On the public display, click once to unlock audio and verify both first call and recall play the chime followed by the Thai recorded queue number while the original countdown remains unchanged.
 
 <!-- WAITING_QUEUE_TICKET_MODAL_READABILITY_20260802_005 -->
 Change: Waiting Queue Ticket Modal Readability.

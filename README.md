@@ -1,9 +1,26 @@
 # Food Order / Delivery / Retail POS
 
 Branch: main
-Milestone: Waiting Queue Ticket Modal Readability
-Version: 0.16.6
-Build: 2026.08.02.005
+Milestone: Waiting Queue Seamless Order Handoff
+Version: 0.16.7
+Build: 2026.08.02.020
+
+<!-- WAITING_QUEUE_SEAMLESS_ORDER_HANDOFF_20260802_020 -->
+Change: Completed the Waiting Queue handoff from customer tracking to table ordering and stabilized recorded announcements.
+
+Customer flow: staff create a queue and issue its QR ticket; the customer follows the privacy-safe tracking page; staff call and open a suitable table; the same tracking page updates to `เข้านั่งแล้ว`, displays the assigned table, and shows `สั่งอาหารที่โต๊ะ`. The button opens `/s/{slug}/order/?table={tableCode}&token={tableToken}` for the active table session created by the seating transaction.
+
+Order integrity: the handoff reuses the existing deterministic `order-wq-{waitingQueueId}` and the stable `tenantId + waitingQueueId + tableId + orderId` relationship. It does not create another queue, table session, or order. The ordering link is published only for a seated queue with a complete tenant slug, table code, and table token.
+
+Privacy: public queue tracking still excludes customer name, phone, phone hash, notes, and staff/audit metadata. The public ordering path contains only the storefront route and active table-session credentials required by the existing QR Table Order workflow.
+
+Announcement audio: sound is enabled by default after the browser's required first interaction. The public display plays a four-note service chime followed by locally recorded Thai queue speech through one Web Audio context. Recall is sound-only and does not restart the response timer or add another queue call. Speech synthesis remains fallback behavior.
+
+UI: removed the outer shadow from the open-table dialog and added a responsive ready-to-order panel to customer tracking.
+
+Firebase safety: no Security Rule, Index, or Function change. Seating remains one read-before-write Firestore transaction with tenant checks, stable IDs, duplicate seating/order protection, dedupe closure, public/board mirror updates, and audit history.
+
+Deploy: Firebase Hosting only. Hard refresh the staff, customer tracking, and public display pages to load build `20260802-020`.
 
 <!-- WAITING_QUEUE_TICKET_MODAL_READABILITY_20260802_005 -->
 Change: Improved the customer ticket modal hierarchy and readability.

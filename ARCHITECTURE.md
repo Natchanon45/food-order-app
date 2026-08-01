@@ -2,8 +2,19 @@
 
 Repository: Natchanon45/food-order-app
 Branch: main
-Version: 0.16.6
-Build: 2026.08.02.005
+Version: 0.16.7
+Build: 2026.08.02.020
+
+<!-- WAITING_QUEUE_SEAMLESS_ORDER_HANDOFF_20260802_020 -->
+Waiting Queue customer handoff and announcement rule:
+
+The customer tracking page watches the privacy-safe `waitingQueuePublic/{publicToken}` mirror. Before seating, that mirror exposes only operational queue state. The online seating transaction atomically links the stable `tenantId + waitingQueueId + tableId + orderId`, creates or reuses `order-wq-{waitingQueueId}`, occupies the table, and publishes a same-origin storefront order URL only after the queue reaches `seated` and the table has a valid `tenantSlug`, `tableCode`, and `tableToken`.
+
+The seated customer page displays the assigned table and a `สั่งอาหารที่โต๊ะ` action that opens `/s/{tenantSlug}/order/?table={tableCode}&token={tableToken}`. It must reuse the active table session and must not create a second queue, table session, or draft order. The public mirror and link contain no customer name, phone, phone hash, or free-text note. A malformed or incomplete order path is never rendered as an actionable link.
+
+The public queue display defaults to sound enabled but still requires a browser interaction to unlock audio. Its four-note service chime and prerecorded Thai queue announcement share one Web Audio context so Edge cannot allow the melody while independently blocking the spoken files. Recall changes only the recall signal and replays sound; it does not change `calledAtMs`, the response deadline, queue status, or audit identity. Announcement audio is served locally from `public/assets/audio/waiting-queue-th/` and falls back to browser speech synthesis if recorded playback cannot be decoded.
+
+Waiting Queue UI remains the canonical `/waiting-queue/` staff surface. The seating dialog has no outer shadow, while its tenant-scoped transaction, fairness checks, duplicate protection, and audit behavior remain unchanged.
 
 <!-- WAITING_QUEUE_TICKET_MODAL_READABILITY_20260802_005 -->
 Waiting Queue ticket modal presentation rule:
