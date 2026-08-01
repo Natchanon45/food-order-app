@@ -70,15 +70,112 @@ service cloud.firestore {
         && request.resource.data.active is bool
         && request.resource.data.keys().hasOnly(['token', 'uid', 'email', 'role', 'tenantId', 'deviceId', 'userAgent', 'active', 'updatedAt', 'invalidatedAt', 'errorCode']);
     }
+    function validPublicWaitingQueue() {
+      return request.resource.data.publicToken is string
+        && request.resource.data.publicToken.size() >= 20
+        && request.resource.data.tenantId is string
+        && request.resource.data.queueNumber is string
+        && request.resource.data.partySize is number
+        && request.resource.data.partySize > 0
+        && request.resource.data.status in ['waiting', 'called', 'seated', 'skipped', 'cancelled'];
+    }
+
+
+    function waitingQueueOrderStaff(tenantId) {
+      return signedIn()
+        && tenantHasRole(
+          tenantId,
+          ['owner', 'admin', 'manager', 'cashier', 'super_admin']
+        );
+    }
+
+    function validWaitingQueueDraftOrder(orderId) {
+      return request.resource.data.get('tenantId', '') is string
+        && waitingQueueOrderStaff(request.resource.data.get('tenantId', ''))
+        && request.resource.data.get('waitingQueueId', '') is string
+        && request.resource.data.get('waitingQueueId', '').size() > 0
+        && orderId == 'order-wq-' + request.resource.data.get('waitingQueueId', '')
+        && request.resource.data.get('id', '') == orderId
+        && request.resource.data.get('orderId', '') == orderId
+        && request.resource.data.get('orderType', '') == 'dine_in'
+        && request.resource.data.get('status', '') == 'open'
+        && request.resource.data.get('paymentStatus', '') == 'unpaid'
+        && request.resource.data.get('items', []) is list
+        && request.resource.data.get('items', []).size() == 0
+        && request.resource.data.get('subtotal', -1) == 0
+        && request.resource.data.get('total', -1) == 0
+        && request.resource.data.get('createdBy', '') == request.auth.uid;
+    }
+
+    function validWaitingQueueDraftOrderUpdate(orderId) {
+      return validWaitingQueueDraftOrder(orderId)
+        && resource.data.get('tenantId', '') ==
+          request.resource.data.get('tenantId', '')
+        && resource.data.get('waitingQueueId', '') ==
+          request.resource.data.get('waitingQueueId', '');
+    }
+
+    function validWaitingQueueTableOccupy() {
+      return request.resource.data.get('tenantId', '') is string
+        && waitingQueueOrderStaff(request.resource.data.get('tenantId', ''))
+        && (
+          resource.data.get('tenantId', '') == ''
+          || resource.data.get('tenantId', '') ==
+            request.resource.data.get('tenantId', '')
+        )
+        && request.resource.data.get('waitingQueueId', '') is string
+        && request.resource.data.get('waitingQueueId', '').size() > 0
+        && request.resource.data.get('status', '') == 'occupied'
+        && request.resource.data.get('orderId', '') ==
+          'order-wq-' + request.resource.data.get('waitingQueueId', '')
+        && request.resource.data.get('orderToken', '') is string
+        && request.resource.data.get('orderToken', '').size() >= 16
+        && request.resource.data.get('currentRound', -1) is int
+        && request.resource.data.get('currentRound', -1) >= 0
+        && request.resource.data.get('orderIds', []) is list
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'tenantId',
+          'status',
+          'tableStatus',
+          'occupied',
+          'isOccupied',
+          'available',
+          'isAvailable',
+          'activeOrderId',
+          'currentOrderId',
+          'orderId',
+          'isOpen',
+          'orderToken',
+          'sessionStartedAt',
+          'currentRound',
+          'orderIds',
+          'waitingQueueId',
+          'waitingQueueNumber',
+          'partySize',
+          'occupiedAt',
+          'occupiedAtMs',
+          'updatedAt',
+          'updatedAtMs'
+        ]);
+    }
 
     match /menus/{menuId} { allow read: if true; allow create, update, delete: if adminRole(); }
     match /settings/{settingId} { allow read: if true; allow create, update, delete: if adminRole(); }
-    match /tables/{tableId} { allow read: if true; allow create, delete: if adminRole(); allow update: if adminRole() || cashierRole() || (kitchenRole() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'orderToken', 'sessionStartedAt', 'currentRound', 'orderIds', 'updatedAt', 'tenantId', 'shopId']) && resource.data.status == 'occupied' && request.resource.data.status == 'available' && request.resource.data.orderToken == '') || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentRound', 'orderIds', 'updatedAt']) && resource.data.status == 'occupied' && request.resource.data.orderToken == resource.data.orderToken && request.resource.data.orderIds is list); }
-    match /orders/{orderId} { allow get: if true; allow list: if staffRole() || activeTableOrder(); allow create: if validDeliveryOrder() || validTableOrder() || validTakeawayOrder(); allow update: if cashierRole() || kitchenRole() || adminRole(); allow delete: if superAdminRole(); }
+    match /tables/{tableId} { allow read: if true; allow create, delete: if adminRole(); allow update: if adminRole() || cashierRole() || validWaitingQueueTableOccupy() || (kitchenRole() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'orderToken', 'sessionStartedAt', 'currentRound', 'orderIds', 'updatedAt', 'tenantId', 'shopId']) && resource.data.status == 'occupied' && request.resource.data.status == 'available' && request.resource.data.orderToken == '') || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentRound', 'orderIds', 'updatedAt']) && resource.data.status == 'occupied' && request.resource.data.orderToken == resource.data.orderToken && request.resource.data.orderIds is list); }
+    match /orders/{orderId} { allow get: if true; allow list: if staffRole() || activeTableOrder(); allow create: if validDeliveryOrder() || validTableOrder() || validTakeawayOrder() || validWaitingQueueDraftOrder(orderId); allow update: if cashierRole() || kitchenRole() || adminRole() || validWaitingQueueDraftOrderUpdate(orderId); allow delete: if superAdminRole(); }
     match /customerProfiles/{userId} { allow read, create, update, delete: if signedIn() && request.auth.uid == userId && (request.method == 'delete' || (request.resource.data.addresses is list && request.resource.data.addresses.size() <= 5)); }
     match /deliveryCustomers/{customerId} { allow read, write: if adminRole(); }
     match /users/{userId} { allow read: if signedIn() && (request.auth.uid == userId || superAdminRole()); allow create, update, delete: if superAdminRole(); }
     match /tenantSlugs/{slug} { allow read: if true; allow write: if superAdminRole(); }
+    match /publicWaitingQueues/{publicToken} {
+      allow get: if true;
+      allow list: if false;
+      allow create, update: if signedIn()
+        && publicToken == request.resource.data.publicToken
+        && tenantHasRole(request.resource.data.tenantId, ['owner', 'admin', 'manager', 'cashier', 'super_admin'])
+        && validPublicWaitingQueue();
+      allow delete: if false;
+    }
 
     match /tenants/{tenantId} {
       allow read: if true; allow create, update, delete: if superAdminRole();
@@ -102,7 +199,8 @@ service cloud.firestore {
       match /returns/{returnId} { allow read: if tenantMember(tenantId); allow create: if retailTenantWrite(tenantId) && validRetailReturn(tenantId); allow update, delete: if false; }
       match /taxInvoices/{invoiceId} { allow read: if tenantMember(tenantId); allow create: if retailTenantWrite(tenantId) && tenantPayloadMatches(tenantId); allow update: if retailTenantWrite(tenantId) && tenantPayloadMatches(tenantId) && tenantResourceMatches(tenantId); allow delete: if false; }
       match /taxBuyerProfiles/{profileId} { allow read: if tenantMember(tenantId); allow create: if retailTenantWrite(tenantId) && tenantPayloadMatches(tenantId); allow update: if retailTenantWrite(tenantId) && tenantPayloadMatches(tenantId) && tenantResourceMatches(tenantId); allow delete: if signedIn() && tenantHasRole(tenantId, ['owner', 'admin', 'manager', 'cashier', 'super_admin']) && tenantResourceMatches(tenantId); }
-      match /tables/{tableId} { allow read: if true; allow create, delete: if tenantAdminRole(tenantId); allow update: if tenantAdminRole(tenantId) || tenantCashierRole(tenantId) || (tenantKitchenRole(tenantId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'orderToken', 'sessionStartedAt', 'currentRound', 'orderIds', 'updatedAt', 'tenantId', 'shopId']) && resource.data.status == 'occupied' && request.resource.data.status == 'available' && request.resource.data.orderToken == '') || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentRound', 'orderIds', 'updatedAt', 'tenantId', 'shopId']) && resource.data.status == 'occupied' && request.resource.data.orderToken == resource.data.orderToken && request.resource.data.orderIds is list); }
+      match /tables/{tableId} { allow read: if true; allow create, delete: if tenantAdminRole(tenantId); allow update: if tenantAdminRole(tenantId) || tenantCashierRole(tenantId) || tenantHasRole(tenantId, ['manager']) || validWaitingQueueTableOccupy() || (tenantKitchenRole(tenantId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'orderToken', 'sessionStartedAt', 'currentRound', 'orderIds', 'updatedAt', 'tenantId', 'shopId']) && resource.data.status == 'occupied' && request.resource.data.status == 'available' && request.resource.data.orderToken == '') || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentRound', 'orderIds', 'updatedAt', 'tenantId', 'shopId']) && resource.data.status == 'occupied' && request.resource.data.orderToken == resource.data.orderToken && request.resource.data.orderIds is list); }
+      match /waitingQueues/{queueId} { allow read, create, update: if tenantHasRole(tenantId, ['owner', 'admin', 'manager', 'cashier', 'super_admin']) && (request.method == 'get' || request.method == 'list' || tenantPayloadMatches(tenantId)); allow delete: if false; }
       match /orders/{orderId} { allow get: if true; allow list: if tenantStaffRole(tenantId) || activeTenantTableOrder(tenantId); allow create: if superAdminRole() || validPublicTenantDelivery(tenantId) || validPublicTenantTakeaway(tenantId) || validTenantTableOrder(tenantId); allow update: if tenantCashierRole(tenantId) || tenantKitchenRole(tenantId) || tenantAdminRole(tenantId); allow delete: if superAdminRole() || tenantHasRole(tenantId, ['owner', 'super_admin']); }
       match /deliveryCustomers/{customerId} { allow read, write: if tenantAdminRole(tenantId); }
       match /notificationTokens/{tokenId} {
@@ -113,5 +211,283 @@ service cloud.firestore {
       }
       match /memberships/{userId} { allow read: if signedIn() && (request.auth.uid == userId || superAdminRole() || tenantAdminRole(tenantId)); allow create, update, delete: if superAdminRole(); }
     }
+    /* WAITING_QUEUE_MVP_RULES_START */
+    function wqTenantFromMap(data) {
+      return data.get('tenantId', data.get('activeTenantId', data.get('shopId', data.get('storeId', ''))));
+    }
+
+    function wqMapHasTenant(data, tenantId) {
+      return (
+        wqTenantFromMap(data) == tenantId ||
+        tenantId in data.get('tenantIds', []) ||
+        tenantId in data.get('shopIds', []) ||
+        tenantId in data.get('storeIds', [])
+      );
+    }
+
+    function wqAllowedStaffRole(role) {
+      return role in ['owner', 'admin', 'manager', 'cashier', 'super_admin'];
+    }
+
+    function wqUserProfileMember(tenantId) {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid))
+          .data.get('active', true) == true
+        && wqAllowedStaffRole(
+          get(/databases/$(database)/documents/users/$(request.auth.uid))
+            .data.get('role', '')
+        )
+        && wqMapHasTenant(
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data,
+          tenantId
+        );
+    }
+
+    function wqMembershipMember(tenantId) {
+      return request.auth != null
+        && exists(
+          /databases/$(database)/documents/tenants/$(tenantId)/memberships/$(request.auth.uid)
+        )
+        && get(
+          /databases/$(database)/documents/tenants/$(tenantId)/memberships/$(request.auth.uid)
+        ).data.get('active', true) == true
+        && wqAllowedStaffRole(
+          get(
+            /databases/$(database)/documents/tenants/$(tenantId)/memberships/$(request.auth.uid)
+          ).data.get('role', '')
+        );
+    }
+
+    function wqTenantOwnerMember(tenantId) {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/tenants/$(tenantId))
+        && (
+          get(/databases/$(database)/documents/tenants/$(tenantId))
+            .data.get('ownerUid', '') == request.auth.uid
+          || (
+            request.auth.token.get('email', '') != ''
+            && get(/databases/$(database)/documents/tenants/$(tenantId))
+              .data.get('ownerEmail', '') == request.auth.token.get('email', '')
+          )
+        );
+    }
+
+    function wqClaimMember(tenantId) {
+      return request.auth != null
+        && wqAllowedStaffRole(request.auth.token.get('role', ''))
+        && (
+          request.auth.token.get('tenantId', '') == tenantId
+          || request.auth.token.get('activeTenantId', '') == tenantId
+          || request.auth.token.get('shopId', '') == tenantId
+          || request.auth.token.get('storeId', '') == tenantId
+          || tenantId in request.auth.token.get('tenantIds', [])
+        );
+    }
+
+    function wqTenantMember(tenantId) {
+      return request.auth != null && (
+        request.auth.token.get('super_admin', false) == true
+        || request.auth.token.get('role', '') == 'super_admin'
+        || wqUserProfileMember(tenantId)
+        || wqMembershipMember(tenantId)
+        || wqTenantOwnerMember(tenantId)
+        || wqClaimMember(tenantId)
+      );
+    }
+
+    function wqValidStatus(status) {
+      return status in [
+        'waiting',
+        'called',
+        'acknowledged',
+        'preparing_table',
+        'seated',
+        'deferred',
+        'no_show',
+        'cancelled'
+      ];
+    }
+
+    function wqPublicHasNoPii(data) {
+      return !data.keys().hasAny([
+        'customerName',
+        'phone',
+        'phoneMasked',
+        'phoneHash',
+        'specialNote',
+        'createdByName',
+        'actorName',
+        'actorEmail'
+      ]);
+    }
+
+    function wqBoardHasNoPiiOrControlToken(data) {
+      return wqPublicHasNoPii(data) && !data.keys().hasAny([
+        'token',
+        'publicToken',
+        'customerResponse',
+        'customerResponseAtMs'
+      ]);
+    }
+
+    function wqExistingTenantCompatible(data, tenantId) {
+      return data.get('tenantId', '') == ''
+        || data.get('tenantId', '') == tenantId;
+    }
+
+    match /waitingQueues/{waitingQueueId} {
+      allow get: if request.auth != null && (
+        !exists(
+          /databases/$(database)/documents/waitingQueues/$(waitingQueueId)
+        )
+        || wqTenantMember(resource.data.tenantId)
+      );
+      allow list: if wqTenantMember(resource.data.tenantId);
+      allow create: if
+        wqTenantMember(request.resource.data.tenantId)
+        && request.resource.data.get('waitingQueueId', '') == waitingQueueId
+        && request.resource.data.get('id', '') == waitingQueueId
+        && request.resource.data.get('partySize', 0) >= 1
+        && request.resource.data.get('partySize', 0) <= 99
+        && wqValidStatus(request.resource.data.get('status', ''))
+        && request.resource.data.get('deleted', false) == false;
+      allow update: if
+        wqTenantMember(request.resource.data.get('tenantId', ''))
+        && wqExistingTenantCompatible(
+          resource.data,
+          request.resource.data.get('tenantId', '')
+        )
+        && request.resource.data.get('waitingQueueId', '') == waitingQueueId
+        && request.resource.data.get('id', '') == waitingQueueId
+        && resource.data.get('waitingQueueId', waitingQueueId) == waitingQueueId
+        && resource.data.get('id', waitingQueueId) == waitingQueueId
+        && request.resource.data.get('version', 0) >= resource.data.get('version', 0)
+        && wqValidStatus(request.resource.data.get('status', ''))
+        && request.resource.data.get('deleted', false) == false;
+      allow delete: if false;
+    }
+
+    match /waitingQueuePublic/{publicToken} {
+      allow get: if true;
+      allow list: if wqTenantMember(resource.data.tenantId);
+      allow create: if
+        wqTenantMember(request.resource.data.tenantId)
+        && request.resource.data.get('token', '') == publicToken
+        && wqPublicHasNoPii(request.resource.data);
+      allow update: if (
+        wqTenantMember(request.resource.data.get('tenantId', ''))
+        && wqExistingTenantCompatible(
+          resource.data,
+          request.resource.data.get('tenantId', '')
+        )
+        && request.resource.data.get('token', '') == publicToken
+        && resource.data.get('token', publicToken) == publicToken
+        && request.resource.data.get('waitingQueueId', '') != ''
+        && request.resource.data.get('waitingQueueId', '') ==
+          resource.data.get(
+            'waitingQueueId',
+            request.resource.data.get('waitingQueueId', '')
+          )
+        && wqPublicHasNoPii(request.resource.data)
+      ) || (
+        resource.data.get('active', false) == true
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'customerResponse',
+          'customerResponseAtMs',
+          'updatedAt',
+          'updatedAtMs'
+        ])
+        && request.resource.data.get('customerResponse', '') in [
+          'on_the_way',
+          'cancel_requested'
+        ]
+        && request.resource.data.get('customerResponseAtMs', 0) is int
+        && request.resource.data.get('updatedAtMs', 0) is int
+        && request.resource.data.get('updatedAtMs', 0) >=
+          resource.data.get('updatedAtMs', 0)
+      );
+      allow delete: if false;
+    }
+
+    match /waitingQueueBoard/{waitingQueueId} {
+      allow get, list: if true;
+      allow create: if
+        wqTenantMember(request.resource.data.tenantId)
+        && request.resource.data.get('id', '') == waitingQueueId
+        && request.resource.data.get('waitingQueueId', '') == waitingQueueId
+        && wqValidStatus(request.resource.data.get('status', ''))
+        && wqBoardHasNoPiiOrControlToken(request.resource.data);
+      allow update: if
+        wqTenantMember(request.resource.data.get('tenantId', ''))
+        && wqExistingTenantCompatible(
+          resource.data,
+          request.resource.data.get('tenantId', '')
+        )
+        && request.resource.data.get('id', '') == waitingQueueId
+        && request.resource.data.get('waitingQueueId', '') == waitingQueueId
+        && resource.data.get('id', waitingQueueId) == waitingQueueId
+        && resource.data.get('waitingQueueId', waitingQueueId) == waitingQueueId
+        && wqValidStatus(request.resource.data.get('status', ''))
+        && wqBoardHasNoPiiOrControlToken(request.resource.data);
+      allow delete: if false;
+    }
+
+    match /waitingQueueAudits/{auditId} {
+      allow get, list: if wqTenantMember(resource.data.tenantId);
+      allow create: if
+        wqTenantMember(request.resource.data.tenantId) &&
+        request.resource.data.get('id', '') == auditId &&
+        request.resource.data.get('waitingQueueId', '') != '';
+      allow update, delete: if false;
+    }
+
+    match /waitingQueueCounters/{counterId} {
+      allow get: if request.auth != null;
+      allow list: if false;
+      allow create, update: if wqTenantMember(request.resource.data.tenantId);
+      allow delete: if false;
+    }
+
+    match /waitingQueueNumberLeases/{leaseId} {
+      allow get: if request.auth != null;
+      allow list: if request.auth != null && wqTenantMember(resource.data.tenantId);
+      allow create, update: if wqTenantMember(request.resource.data.tenantId);
+      allow delete: if false;
+    }
+
+    match /waitingQueueNumbers/{numberId} {
+      allow get: if request.auth != null;
+      allow list: if false;
+      allow create: if wqTenantMember(request.resource.data.tenantId);
+      allow update: if
+        wqTenantMember(resource.data.tenantId)
+        && request.resource.data.get('tenantId', '') ==
+          resource.data.get('tenantId', '')
+        && request.resource.data.get('waitingQueueId', '') ==
+          resource.data.get('waitingQueueId', '')
+        && request.resource.data.get('queueNumber', '') ==
+          resource.data.get('queueNumber', '');
+      allow delete: if false;
+    }
+
+
+    match /waitingQueueOperations/{operationId} {
+      allow get: if request.auth != null;
+      allow list: if false;
+      allow create: if
+        wqTenantMember(request.resource.data.tenantId) &&
+        request.resource.data.get('id', '') == operationId &&
+        request.resource.data.get('waitingQueueId', '') != '';
+      allow update, delete: if false;
+    }
+
+    match /waitingQueueDedupe/{dedupeId} {
+      allow get: if request.auth != null;
+      allow list: if false;
+      allow create, update: if wqTenantMember(request.resource.data.tenantId);
+      allow delete: if false;
+    }
+    /* WAITING_QUEUE_MVP_RULES_END */
   }
 }

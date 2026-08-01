@@ -48,6 +48,10 @@ dataService.updateTable = async function guardedUpdateTable(id, patch = {}) {
   return originalUpdateTable(id, patch);
 };
 
+function restoreCloseButton(button) {
+  button.innerHTML = '<i class="bi bi-door-closed" aria-hidden="true"></i><span>ปิดโต๊ะ</span>';
+}
+
 async function closeTableSafely(button) {
   const table = await dataService.getTable(button.dataset.closeTable);
   if (!table) {
@@ -56,21 +60,20 @@ async function closeTableSafely(button) {
   }
 
   button.disabled = true;
-  const originalText = button.textContent;
   button.textContent = 'กำลังตรวจสอบออเดอร์...';
 
   try {
     if (await hasUnpaidOrdersForTable(table)) {
       toast('ยังมีออเดอร์หรือยังไม่ได้ชำระเงิน ไม่สามารถปิดโต๊ะได้', 'error');
       button.disabled = false;
-      button.textContent = originalText || 'ปิดโต๊ะ';
+      restoreCloseButton(button);
       return;
     }
 
     const ok = await askConfirm(`ยืนยันปิด ${table.name || `โต๊ะ ${table.code || table.id}`} ใช่หรือไม่?\n\nQR ใบเดิมจะใช้งานไม่ได้ และโต๊ะจะกลับเป็นโต๊ะว่าง`, { title: 'ปิดโต๊ะ', confirmText: 'ตกลง', cancelText: 'ยกเลิก', type: 'warning' });
     if (!ok) {
       button.disabled = false;
-      button.textContent = originalText || 'ปิดโต๊ะ';
+      restoreCloseButton(button);
       return;
     }
 
@@ -83,7 +86,7 @@ async function closeTableSafely(button) {
     const message = String(error?.message || '');
     toast(message.includes('TABLE_HAS_UNPAID_ORDERS') ? 'ยังมีออเดอร์หรือยังไม่ได้ชำระเงิน ไม่สามารถปิดโต๊ะได้' : 'ปิดโต๊ะไม่สำเร็จ กรุณาลองใหม่', 'error');
     button.disabled = false;
-    button.textContent = originalText || 'ปิดโต๊ะ';
+    restoreCloseButton(button);
   }
 }
 

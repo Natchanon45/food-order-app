@@ -1,0 +1,13 @@
+html.wq-legacy-customer,html.wq-legacy-customer body{min-height:100%}
+html.wq-legacy-customer body{margin:0!important;display:grid!important;place-items:center!important;padding:18px!important;background:radial-gradient(circle at top,#e7f5ec 0,#f4f8f5 45%,#eef4f0 100%)!important;color:#173b28!important;font-family:var(--app-ui-font,"Kanit","Noto Sans Thai",sans-serif)!important}
+.wq-legacy-source{display:none!important}
+.wq-legacy-shell{width:min(560px,100%)}
+.wq-legacy-brand{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px}
+.wq-legacy-logo{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:#159447;color:#fff;font-weight:600;box-shadow:0 8px 22px rgba(21,148,71,.22)}
+.wq-legacy-brand-text{display:grid;gap:2px}.wq-legacy-brand-text strong{font-size:1.02rem}.wq-legacy-brand-text span{color:#66776e;font-size:.74rem}
+.wq-legacy-card{overflow:hidden;border:1px solid #d8e5dc;border-radius:23px;background:#fff;box-shadow:0 24px 72px rgba(15,23,42,.14)}
+.wq-legacy-hero{padding:26px 20px;text-align:center;background:linear-gradient(180deg,#eaf8ef,#fff)}
+.wq-legacy-label{display:block;color:#66776e;font-size:.76rem}.wq-legacy-number{display:block;margin-top:7px;color:#075f33;font-size:clamp(3rem,14vw,4.5rem);line-height:.95;font-weight:600;letter-spacing:.04em}
+.wq-legacy-meta{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:14px}.wq-legacy-party,.wq-legacy-status{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:6px 13px;border-radius:999px;font-size:.77rem;font-weight:500}.wq-legacy-party{border:1px solid #cfe4d6;background:#fff;color:#075f33}.wq-legacy-status{background:#edf3ef;color:#435d4c}.wq-legacy-status.called{background:#eaf2ff;color:#175cd3}.wq-legacy-status.seated{background:#e8f7ee;color:#075f33}.wq-legacy-status.cancelled{background:#feeceb;color:#b42318}
+.wq-legacy-message{display:grid;gap:7px;padding:22px;text-align:center}.wq-legacy-message strong{font-size:1.02rem;font-weight:600}.wq-legacy-message span{color:#66776e;font-size:.76rem;line-height:1.6}.wq-legacy-note{padding:13px 18px;border-top:1px solid #e9efeb;background:#f9fbfa;color:#718178;font-size:.67rem;line-height:1.55;text-align:center}
+@media(max-width:520px){html.wq-legacy-customer body{place-items:start center;padding:8px}.wq-legacy-brand{justify-content:flex-start;padding:8px 4px 0}.wq-legacy-card{border-radius:18px}}

@@ -1,15 +1,167 @@
 # Food Order / Delivery / Retail POS
 
 Branch: main
-Milestone: Retail POS Main Integration
-Version: 0.15.21
-Build: 2026.08.01.103
+Milestone: Waiting Queue Ticket Modal Readability
+Version: 0.16.6
+Build: 2026.08.02.005
 
-Change: Merged the completed `feature/retail-pos` history into `main`, including the current Firebase Retail POS parity, tenant-safe persistence, stable identifiers, duplicate protection, online/offline workflows, Push Notification fixes, and the latest responsive Kitchen/Cashier interface updates.
+<!-- WAITING_QUEUE_TICKET_MODAL_READABILITY_20260802_005 -->
+Change: Improved the customer ticket modal hierarchy and readability.
 
-Firebase safety: The merge preserves the feature branch implementations without changing Firebase paths, tenant boundaries, order/sale/queue identifiers, duplicate protection, stock transactions, notification delivery, or offline synchronization behavior.
+The modal increases label and value sizes, reduces the screen-only QR footprint, keeps the footer actions inside the viewport, and replaces the visible raw tracking URL with a concise ready indicator. Copy-link and 80 mm print output retain the complete URL.
 
-Deploy: Main branch release metadata and cache chain are prepared at build `20260801-103`. Deployment is separate from this branch merge unless explicitly requested.
+Firebase safety: Hosting presentation only. No queue, tenant, session, audit, or transaction behavior changed.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260802-005`.
+
+<!-- WAITING_QUEUE_TABLE_SESSION_BRIDGE_20260802_004 -->
+Change: Connected Waiting Queue seating to the canonical Table QR ordering session.
+
+Opening a table now writes `orderToken`, `sessionStartedAt`, `currentRound`, and `orderIds` together with the Waiting Queue table linkage. The resulting staff action opens the tenant storefront URL `/s/{slug}/order/` with the table code and active token, so the customer ordering page recognizes the same occupied table shown by `/cashier/table-qr`.
+
+Recovery: the staff page automatically repairs previously seated queues whose tables were marked occupied without an order token. Customer-created table orders copy `waitingQueueId` and `waitingQueueNumber` from the active table for end-to-end linkage.
+
+Firebase safety: seating and repair retain transaction read-before-write ordering, tenant checks, stable IDs, duplicate seating protection, audit history, and exact table-field restrictions.
+
+Deploy: Firestore Rules and Hosting. Hard refresh cache `20260802-004`.
+
+<!-- WAITING_QUEUE_TICKET_PRINT_POLISH_20260802_003 -->
+Change: Polished the on-screen customer ticket and 80 mm printed queue ticket.
+
+The ticket preview now shows suitable queues ahead with more balanced spacing. Print output uses local `THSarabun.ttf` and `THSarabun-Bold.ttf` as `TH Sarabun PSK`, targets an 80 x 160 mm receipt page, and waits for both the font and QR image before printing. The ticket retains the stable W-number, party size, wait estimate, received time, tracking URL, scan instruction, and privacy note.
+
+Firebase safety: This is presentation and print-layout only. Customer PII remains excluded from the QR ticket; queue persistence, tenant boundaries, audit history, stable IDs, duplicate protection, offline outbox behavior, and table-opening transactions are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260802-003`.
+
+<!-- WAITING_QUEUE_IMMEDIATE_TICKET_HANDOFF_20260802_002 -->
+Change: Open the printable customer QR ticket immediately after queue creation.
+
+After staff save a new queue, the existing privacy-safe ticket modal opens directly. It shows the stable W-number, party size, estimated wait, received time, locally generated QR Code, copy-link action, and 80 mm print action. The separate two-button success prompt is removed from this handoff step.
+
+Firebase safety: The QR and printed ticket still contain no customer name or phone number. Queue writes, stable IDs, tenant boundaries, offline outbox behavior, duplicate protection, audit history, and transaction-safe table opening are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260802-002`.
+
+<!-- WAITING_QUEUE_RUNTIME_REPAIR_20260802_001 -->
+Change: Repaired Waiting Queue runtime writes and customer QR ticket rendering.
+
+Queue call and seating transitions now replace Public and Board mirrors with complete privacy-safe snapshots, removing legacy fields that previously caused Firestore to reject the whole transaction. Customer response values are preserved explicitly.
+
+Waiting Queue table opening may create only the deterministic empty dine-in draft order `order-wq-{waitingQueueId}` and may update only the exact table occupation field set. Tenant checks, stable IDs, duplicate protection, audit history, and Firestore read-before-write ordering remain unchanged.
+
+The customer ticket modal keeps exactly one locally generated QR render target, uses a compact responsive preview, and preserves the privacy-safe 80 mm print ticket.
+
+Deploy: Firestore Rules and Hosting. Hard refresh cache `20260802-001`.
+
+
+<!-- WAITING_QUEUE_TICKET_QR_CALL_RECOVERY_20260801_006 -->
+Change: Added printable customer QR queue tickets and completed call-permission recovery.
+
+Customer ticket: `ลิงก์ลูกค้า` now opens a staff modal containing a locally generated QR Code, queue number, party size, estimated wait, received time, copy-link action, and print action. The printed 80 mm ticket contains no customer name or phone number and lets the customer scan the existing privacy-safe tracking URL.
+
+Offline readiness: QRCode.js is vendored under `public/assets/vendor/qrcodejs` and executes locally; the customer tracking token is not sent to an external QR service.
+
+Audio: enabling the public-display sound plays only a confirmation chime when no queue is active. It no longer speaks `เปิดเสียงเรียกคิวแล้ว`. When a queue is active, the normal queue announcement remains authoritative.
+
+Call recovery: staff tenant resolution prefers the authenticated profile returned by the role guard. Firestore owner/profile/membership/claim checks and same-tenant legacy identity backfills cover the queue, public mirror, board mirror, and number claim without permitting cross-tenant writes.
+
+Firebase safety: Stable W-number, waitingQueueId, customer token, tableId, orderId, audit history, read-before-write seating transaction, duplicate protection, payment, stock, VAT, and food queue behavior are unchanged.
+
+Deploy: Firestore Rules and Hosting. Hard refresh cache `20260801-006`.
+
+
+<!-- WAITING_QUEUE_OWNER_ACCESS_DIALOG_20260801_005 -->
+Change: Fixed owner access resolution and modal action spacing in Waiting Queue.
+
+Root cause: the staff page previously trusted generic tenant IDs left in Local Storage before reading the authenticated `users/{uid}` profile. An owner could therefore open the page successfully but send queue writes to a different tenant, which Firestore correctly denied.
+
+Tenant safety: authenticated staff now use the active profile tenant as the authoritative tenant. A stale browser tenant is corrected without deleting its local queue cache or attempting to sync it across tenants. Firestore Waiting Queue rules use safe owner, user-profile, membership, and claim checks and retain tenant matching on every write.
+
+Compatibility: queue, public, board, and number-claim rules permit only same-tenant idempotent backfills for legacy documents. Stable W-numbers, waitingQueueId, public token, tableId, and orderId do not change.
+
+UI: add-queue and open-table modal action bars now have internal margins, equal button spacing, and explicit cancel/open-table icons. Horizontal overflow is suppressed while the existing responsive layout remains.
+
+Deploy: Firestore Rules and Hosting. Hard refresh cache `20260801-005`.
+
+
+<!-- WAITING_QUEUE_USABILITY_PERMISSION_20260801_004 -->
+Change: Repaired Waiting Queue permissions and completed the reported usability polish.
+
+Permissions: Waiting Queue Security Rules now recognize the canonical tenant membership and role helper used by the rest of the application, while retaining the existing fallback tenant mappings. Existing pending queue operations can resume after deploying the updated rules.
+
+Staff UI: The dashboard card now includes a purpose description. Waiting Queue staff text, filters, queue rows, table recommendations, statuses, and actions are larger and easier to read. The add-queue footer uses equal-width cancel/save actions with appropriate icons, and required-field validation reserves feedback space so controls do not stretch or jump.
+
+Customer/Public UI: The customer tracking card is larger on PC and mobile, the waiting-person icon has explicit white contrast, and the public-display megaphone is centered in its badge.
+
+Audio: Queue numbers are spoken as separated Thai words, for example `ดับเบิ้ลยู ศูนย์ ศูนย์ หนึ่ง`, at a slightly slower natural rate, ending with `กรุณามาที่จุดรับโต๊ะค่ะ`.
+
+Firebase safety: Collection paths, stable W-numbers, waitingQueueId, customer token, table/order transaction, duplicate protection, audit history, payment, stock, VAT, and food queue behavior are unchanged.
+
+Deploy: Firestore Rules and Hosting. Load cache `20260801-004` with a hard refresh.
+
+
+<!-- WAITING_QUEUE_CONFLICT_RECOVERY_20260801_003 -->
+Change: Hardened Waiting Queue conflict recovery after production acceptance testing.
+
+Stale local create/transition operations are now reconciled against the latest Firebase queue instead of blocking the ordered outbox. Terminal remote states always win, obsolete transitions are discarded without regressing queue status, and an existing remote queue cannot be overwritten by a delayed create operation.
+
+Reliability: Queue transactions use a bounded ten-attempt Firebase retry budget plus one guarded retry for transient contention. Public/customer snapshot writes are coalesced and skipped when their meaningful payload is unchanged, reducing version churn while staff call, cancel, or open a table.
+
+UI: The home dashboard now owns one static `คิวรอโต๊ะ` card with the correct label and icon. Sync results report recovered stale operations in Thai instead of showing raw Firestore base-version errors.
+
+Firebase safety: No collection path, Security Rule, Composite Index, stable W-number, waitingQueueId, table/order link, audit payload, payment, stock, VAT, or food-queue behavior changed.
+
+Deploy: Firebase Hosting only. Hard refresh after deployment to load `20260801-003`.
+
+
+<!-- WAITING_QUEUE_UI_20260801_002 -->
+Change: Consolidated the table waiting queue into the canonical `/waiting-queue/` staff workspace. The old `/cashier/waiting-queue` entry now forwards to the canonical page, the home shortcut is rendered as a normal dashboard card instead of a floating bottom-right button, and the Retail POS drawer is no longer loaded on the waiting-queue page.
+
+UI: Rebalanced search/status/party filters, queue cards, table recommendations, add-queue dialog, and the transaction-safe open-table dialog. The customer tracker is now a structured queue card. The public display clearly separates the currently called queue from upcoming queues.
+
+Audio: Public display audio is user-armed to satisfy browser autoplay rules. When enabled it plays a chime and reads the queue number in Thai when speech synthesis is available; otherwise it labels itself as chime-only.
+
+Compatibility: Existing legacy `/queue?token=...` customer links keep their original data source and receive a compatibility presentation layer. No legacy queue record is deleted.
+
+Firebase safety: No collection path, rule, index, stable waitingQueueId, table transaction, order link, duplicate protection, offline outbox, stock, payment, VAT, or food-queue behavior changed.
+
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260801-002`.
+
+
+Change: Added the first production-ready table waiting queue module, separate from food/order queue numbers. Staff can create stable W-numbers, call/recall, acknowledge, prepare, defer, cancel, mark no-show, match queues to suitable tables, and open a table through a Firestore transaction. Customer tracking and a privacy-safe public queue display are included.
+
+Firebase safety: Every waiting queue, audit, counter, number claim, dedupe record, table link, and created order carries `tenantId`. Staff queue intake is local-first with a stable `waitingQueueId`, a preleased immutable W-number, and an ordered outbox; online sync is idempotent. Queue records are never deleted. Seating reads the queue, table, order, public snapshot, and dedupe record before writes, preventing two devices from seating the same queue or occupying the same table.
+
+Deploy: This build changes Hosting, Firestore Rules, and Composite Indexes. Deploy with `firebase deploy --only firestore:rules,firestore:indexes,hosting`, then hard refresh build `20260801-001`.
+
+Next Task: verify W-number allocation, offline intake/sync, duplicate rejection, fair table recommendations, call countdown, customer response, public display sound, and transaction-safe table opening with two staff devices.
+
+Previous build — Waiting Queue Full Number (`2026.08.01.106`):
+
+Change: Expanded the Waiting Queue number badge to show the complete 8-character queue number without ellipsis. Desktop uses a 116 px queue column and mobile uses 104 px with responsive text sizing, taking advantage of the available row space while keeping customer and action content readable.
+
+Firebase safety: Presentation only. The stored queue number, stable queue/table IDs, tenant scoping, duplicate seating guard, public tracking payload, real-time updates, and online/offline behavior are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260801-106`.
+
+Change: Renamed the profile-menu action from `ออกโต๊ะ` to `เปิดโต๊ะ`, replaced the Waiting Queue fallback circle with a customer-waiting icon, unified the Waiting Queue table action with the same room-service icon, fine-tuned the add button alignment, and contained long queue numbers within a wider responsive badge.
+
+Firebase safety: UI text, icons, and layout only. Stored queue numbers and stable queue/table IDs are not truncated or changed; tenant scoping, duplicate seating protection, real-time tracking, and online/offline behavior remain unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260801-105`.
+
+Change: Anchored the Waiting Queue `เพิ่มคิว` action to the desktop input-control row so validation feedback below the customer-name field no longer pushes the button downward. The mobile action remains full-width on its own row.
+
+Firebase safety: This is a CSS-only alignment correction. Queue creation, tenant scoping, stable queue/table identifiers, duplicate seating protection, real-time tracking, and online/offline behavior are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260801-104`.
+
+Change: Added the first Waiting Table Queue release. Authorized staff can add a walk-in party, preserve arrival order, see party size and suitable free tables, call or pause a queue, and atomically seat the queue into the existing table session. Customers receive a privacy-safe token link that updates waiting, called, and seated status in real time without exposing their name or phone number.
+
+Firebase safety: Private queue records are tenant-scoped under `tenants/{tenantId}/waitingQueues`; public tracking mirrors contain no customer PII and permit direct reads by unguessable token only. Seating verifies both queue and table state in one Firestore transaction, creates the existing stable table token once, and blocks duplicate seating. Queue mutations intentionally require connectivity to prevent split-brain numbering; all existing order, sale, stock, and offline workflows remain unchanged.
+
+Deploy: Firebase Hosting and Firestore rules. Hard refresh after deployment to load cache build `20260801-103`.
 
 Change: Kept all three Take Away tool buttons right-aligned on the same row as the `เครื่องมือสั่งกลับบ้าน` title on mobile. Mobile actions use compact 38 px icon buttons, a 6 px gap, and tighter bar padding to reclaim vertical workspace while retaining accessible labels and tooltips.
 

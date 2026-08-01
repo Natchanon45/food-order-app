@@ -2,14 +2,165 @@
 
 Repository: Natchanon45/food-order-app
 Branch: main
-Version: 0.15.21
-Build: 2026.08.01.103
+Version: 0.16.6
+Build: 2026.08.02.005
 
-Change: Integrated `feature/retail-pos` into `main` with a merge commit, retaining the complete feature history and the three existing main-only release commits. Conflicts were limited to superseded release metadata and asset query versions; the latest feature implementations remain authoritative.
+<!-- WAITING_QUEUE_TICKET_MODAL_READABILITY_20260802_005 -->
+Change: Waiting Queue Ticket Modal Readability.
 
-Firebase boundary: This integration does not alter tenant-scoped persistence, Firestore paths/rules semantics, Functions behavior, stable order/sale/queue IDs, duplicate guards, stock processing, Push Notification delivery, or online/offline workflows.
+Current behavior: the ticket modal uses larger operational text, a more compact screen QR, clearer metadata rows, and a concise tracking-link ready state. The long raw URL remains available to the copy action but is no longer rendered as a cramped visible line.
 
-Deploy rules: Main is prepared at cache build `20260801-103`. Deploy Hosting, Functions, or Firestore rules only according to the release scope.
+Print, privacy, Firebase, stable IDs, tenant scoping, and table-session behavior are unchanged.
+
+Deploy rules: Hosting only.
+
+<!-- WAITING_QUEUE_TABLE_SESSION_BRIDGE_20260802_004 -->
+Change: Waiting Queue Table Session Bridge.
+
+Current behavior: opening a table from Waiting Queue now creates the same active table session contract as the canonical Table QR workflow: `orderToken`, `sessionStartedAt`, `currentRound`, and `orderIds`. Staff navigation uses `/s/{tenantSlug}/order/?table={tableCode}&token={orderToken}`, and customer orders inherit the Waiting Queue link from the active table.
+
+Recovery: seated queues created by the previous build without a table token are repaired automatically from the staff page in the existing read-before-write transaction. Stable queue, table, and deterministic draft order IDs are preserved.
+
+Deploy rules: Firestore Rules and Hosting. No Composite Index or Function change.
+
+Next Task: refresh Waiting Queue, confirm the prior seated table appears under issued Table QR, open its order page, and submit one customer order.
+
+<!-- WAITING_QUEUE_TICKET_PRINT_POLISH_20260802_003 -->
+Change: Waiting Queue Ticket Print Polish.
+
+Current behavior: the customer ticket preview has balanced spacing and includes the number of suitable queues ahead. Printed output uses a fixed 80 x 160 mm receipt layout, waits for the QR and local TH Sarabun PSK fonts, and retains the W-number, party size, estimated wait, received time, tracking URL, privacy note, and scan instruction.
+
+Privacy and Firebase boundaries are unchanged. The printed ticket contains no customer name or phone number, QR generation remains local, and queue writes, tenant scoping, stable IDs, outbox behavior, and table transactions are unchanged.
+
+Deploy rules: Hosting only. No Firestore Rules, Indexes, or Functions change.
+
+Next Task: print to an 80 mm receipt printer and scan the QR from the physical ticket.
+
+<!-- WAITING_QUEUE_IMMEDIATE_TICKET_HANDOFF_20260802_002 -->
+Change: Waiting Queue Immediate Ticket Handoff.
+
+Current behavior: after staff successfully add a queue, the privacy-safe customer ticket dialog opens immediately with the stable W-number, local QR Code, tracking URL, estimated wait, copy-link action, and 80 mm print action. Staff no longer need to close a separate success prompt and reopen the ticket from the queue row.
+
+Privacy and data boundaries remain unchanged: the QR contains only the existing customer tracking URL, printed tickets contain no customer name or phone number, and queue creation, tenant scoping, outbox sync, stable IDs, and table-opening transactions are unchanged.
+
+Deploy rules: Hosting only. No Firestore Rules, Indexes, or Functions change.
+
+Next Task: add a queue, print its ticket, scan the QR on a customer device, then continue call and open-table acceptance testing.
+
+<!-- WAITING_QUEUE_RUNTIME_REPAIR_20260802_001 -->
+Change: Waiting Queue Runtime Repair.
+
+Current behavior: call, recall, cancel, defer, customer response, and seating write the private queue plus clean Public/Board mirrors without retaining unknown legacy fields. Existing failed outbox transitions can retry and drain.
+
+Opening a table remains one transaction and may create only the deterministic Waiting Queue dine-in draft order for the same tenant and stable queue.
+
+The customer-link action displays one QR Code and prints the existing privacy-safe tracking URL.
+
+Deploy rules: Firestore Rules and Hosting. No Index or Function change.
+
+Next Task: drain the existing outbox, call W001, scan/print the QR ticket, and repeat the two-device open-table collision test.
+
+
+<!-- WAITING_QUEUE_TICKET_QR_CALL_RECOVERY_20260801_006 -->
+Change: Waiting Queue Ticket QR And Call Recovery.
+
+Current behavior: staff open a QR ticket from each queue row, copy the tracking link, or print a privacy-safe 80 mm queue ticket for the customer. QR generation is local and does not expose the token to a third-party QR endpoint.
+
+Audio behavior: the operator gesture arms sound with a chime only. The system speaks only actual queue calls and does not announce that sound has been enabled.
+
+Authorization behavior: the page passes the authenticated profile tenant into Waiting Queue resolution. Rules validate active owner/staff membership and support same-tenant legacy identity backfills needed by existing queue mirrors. Permission errors no longer arise from a stale generic browser tenant.
+
+Deploy rules: Firestore Rules and Hosting. Composite Indexes and Functions are unchanged.
+
+Next Task: drain the current outbox, call a queue, scan and print its ticket, then repeat the two-device open-table collision test.
+
+
+<!-- WAITING_QUEUE_OWNER_ACCESS_DIALOG_20260801_005 -->
+Change: Waiting Queue Owner Access And Dialog Spacing.
+
+Current behavior: `resolveTenantId()` reads the authenticated staff profile before legacy tenant keys. When the browser contains a different tenant ID, the system switches to the profile tenant and records a one-time warning; the previous tenant cache is preserved but excluded from the current outbox.
+
+Authorization: top-level Waiting Queue collections remain tenant-scoped. Owner/staff authorization is evaluated from `users/{uid}`, canonical tenant membership, tenant ownership, or validated Auth claims. Rules no longer depend on an unsafe helper evaluation before these checks.
+
+Dialog behavior: both modal footers use inset sticky action containers. Cancel and primary actions have icons, balanced widths, and no edge contact.
+
+Deploy rules: Firestore Rules and Hosting. No Index or Function change.
+
+Next Task: confirm the corrected tenant warning if applicable, drain the current outbox to zero, then repeat call and two-device open-table tests.
+
+
+<!-- WAITING_QUEUE_USABILITY_PERMISSION_20260801_004 -->
+Change: Waiting Queue Usability And Permission Repair closes the production permission and readability gaps.
+
+Current behavior: owner/admin/manager/cashier users recognized through the canonical tenant membership path can create, call, sync, and seat waiting queues. Permission-denied errors are translated into actionable Thai text.
+
+UI behavior: Staff controls use readable operational sizes. Add-queue validation keeps fixed control widths and reserved feedback space. Customer tracking and public display preserve privacy while increasing visibility and icon contrast.
+
+Audio behavior: The display still requires one operator gesture. Its spoken phrase uses individually pronounced Thai digits and a slower natural speech rate.
+
+Deploy rules: deploy Firestore Rules and Hosting. Composite Indexes and Functions are unchanged.
+
+Next Task: verify pending outbox count reaches zero, call W001/W002, confirm the display voice, and repeat the two-device open-table collision test.
+
+
+<!-- WAITING_QUEUE_CONFLICT_RECOVERY_20260801_003 -->
+Change: Waiting Queue Conflict Recovery reconciles the local outbox with authoritative remote queue state.
+
+Current behavior: Remote terminal statuses (`seated`, `no_show`, `cancelled`) override stale optimistic local rows. Outbox transitions that reference an older status/version resolve as superseded and no longer block later operations. Valid current operations remain transaction-safe and preserve stable IDs.
+
+Contention boundary: Firestore transactions still perform reads before writes. The client increases the bounded transaction attempt budget and reduces background public-snapshot writes by signature, preventing repeated public mirror updates from competing with call/open-table transactions.
+
+Dashboard: `คิวรอโต๊ะ` is a static role-controlled dashboard card; the runtime clone remains fallback-only.
+
+Deploy rules: Hosting only. No Rules, Indexes, Functions, or schema migration is required.
+
+Next Task: rerun two-device call/cancel/open-table acceptance tests and verify that the old local outbox drains to zero without manual Local Storage deletion.
+
+
+<!-- WAITING_QUEUE_UI_20260801_002 -->
+Change: Waiting Queue UI Consolidation makes `/waiting-queue/` the single staff workspace. It removes the Retail POS menu from that screen, replaces the floating home shortcut with a normal dashboard card, redirects the legacy cashier staff route, and preserves legacy customer links through a presentation-only compatibility layer.
+
+Current behavior: Staff filters and table selection are aligned on consistent control heights; the open-table dialog uses selectable table cards and keeps the existing read-before-write transaction. Customer tracking uses the canonical responsive card. The public display explains that enabled audio means a chime plus spoken Thai queue number, with a clearly labelled chime-only fallback.
+
+Data boundary: Waiting Queue documents, public snapshots, board rows, audits, leases, dedupe records, tables, and deterministic orders remain tenant-scoped and unchanged. Legacy rows are not deleted or rewritten.
+
+Deploy rules: Hosting only. Load `20260801-002` with a hard refresh.
+
+
+Change: Implemented Waiting Queue MVP as a table-waiting workflow independent from food queue and order numbers. Stable `waitingQueueId` and W-number records support staff intake, status transitions, fair size/special-needs matching, five-minute call response, customer acknowledgement/cancellation, a public display with sound, and transaction-safe table opening that creates a deterministic linked order.
+
+Firebase boundary: Waiting queue writes use top-level tenant-scoped collections `waitingQueues`, `waitingQueuePublic`, `waitingQueueBoard`, `waitingQueueAudits`, `waitingQueueCounters`, `waitingQueueNumberLeases`, `waitingQueueNumbers`, `waitingQueueDedupe`, and `waitingQueueOperations`. Customer tracking tokens remain in non-listable `waitingQueuePublic` documents, while the listable public display reads token-free `waitingQueueBoard` documents. Neither public surface contains customer name, phone, or note. Local staff intake uses preleased stable W-numbers and an idempotent outbox; queue records are retained for audit and are never physically deleted. Existing order, payment, stock, VAT, Kitchen, Delivery, stable sale/order IDs, and duplicate stock protection remain authoritative.
+
+Deploy rules: deploy Firestore Rules, Indexes, and Hosting. Load cache build `20260801-001` with a hard refresh.
+Milestone: Waiting Queue Runtime Repair
+
+Next Task: perform two-device acceptance tests for duplicate intake, call/recall audit, customer response, skip reasons, table collision protection, and order/table linkage.
+
+Previous build (`2026.08.01.106`) — Authoritative Store Settings:
+
+Change: Expanded the Waiting Queue badge instead of truncating the queue label. The full 8-character queue number is now visible within a 116 px desktop badge and a 104 px mobile badge, with a small responsive font adjustment on narrow screens.
+
+Firebase boundary: CSS presentation only. Queue values and stable identifiers remain byte-for-byte unchanged; no Firestore read/write, tenant permission, state transition, duplicate protection, public tracking, or connectivity behavior changed.
+
+Deploy rules: Hosting only. Load cache build `20260801-106` with a hard refresh after deployment.
+
+Change: Polished all five reported Waiting Queue UI points: the table menu now reads `เปิดโต๊ะ`; Waiting Queue uses the mapped `user-time` icon; the add button aligns with its inputs; queue badges safely contain long display values; and queue seating uses the same `room-service` icon as the table menu.
+
+Firebase boundary: No queue value or stable identifier is rewritten. These are display-only changes with no Firestore path, tenant permission, queue/table transaction, duplicate guard, public mirror, or connectivity change.
+
+Deploy rules: Hosting only. Load cache build `20260801-105` with a hard refresh after deployment.
+
+Change: Kept the Waiting Queue add action aligned with the input controls on desktop even when customer-name validation feedback is visible. The responsive stacked action remains unchanged on mobile.
+
+Firebase boundary: Presentation only. No Firestore read/write, queue transition, tenant boundary, stable identifier, duplicate guard, public tracking, or connectivity behavior changed.
+
+Deploy rules: Hosting only. Load cache build `20260801-104` with a hard refresh after deployment.
+
+Change: Implemented Waiting Table Queue MVP for walk-in guests. Staff roles owner/admin/manager/cashier can create tenant-scoped queues, call or pause them, and seat an active queue at an available table. The operation changes the table to `occupied`, creates its stable session token, and marks the queue seated in the same Firestore transaction. `/queue?token=...` provides a PII-free real-time customer view.
+
+Firebase boundary: Staff queue data lives at `tenants/{tenantId}/waitingQueues/{queueId}`. Public status lives at `publicWaitingQueues/{publicToken}` with get-only public access, denied collection listing, validated staff writes, and no customer contact fields. Creating or mutating a queue requires online Firestore so duplicate queue/table transitions cannot be produced; unrelated local-first POS and offline order workflows are unchanged.
+
+Deploy rules: deploy Hosting and Firestore rules. Load cache build `20260801-103` with a hard refresh after deployment.
 
 Change: Compacted the Cashier Take Away toolbar on screens up to 600 px. Its title remains left-aligned while the QR, new Take Away, and copy-link controls stay together on the right of the same row as 38 px icon-only actions, reducing the toolbar to one line where available.
 
@@ -40,7 +191,6 @@ Change: Fixed the settings-source mismatch. Tenant Firestore `store`, `receipt`,
 Firebase boundary: No schema or write path changed. Settings remain under `tenants/{tenantId}/settings`; this update only corrects read precedence and local cache refresh. Sales, stock movements, stable sale/order/queue IDs, duplicate protection, offline sync, payments, returns, and tax invoices remain unchanged.
 
 Deploy rules: Hosting only. Load cache build `20260801-098` with a hard refresh after deployment.
-Milestone: Authoritative Store Settings
 
 Previous build (`2026.08.01.097`): Added icon-only product pagination and bounded, changed-record-only catalog sorting saves.
 

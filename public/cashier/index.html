@@ -11,9 +11,17 @@
     <link rel="stylesheet" href="/assets/css/icons.css?v=20260731-079" />
     <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-095" />
     <link rel="stylesheet" href="/assets/css/sweet-dialog-polish.css?v=20260731-089" />
-    <link rel="stylesheet" href="/assets/css/cashier-refresh.css?v=20260801-102" />
+    <link rel="stylesheet" href="/assets/css/cashier-refresh.css?v=20260802-010" />
     <link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260731-079" />
     <title>หน้าแคชเชียร์</title>
+      <script>/* WAITING_QUEUE_CANONICAL_REDIRECT_20260801_002 */
+      if (location.pathname.replace(/\/$/, "") === "/cashier/waiting-queue") {
+        const target = new URL("/waiting-queue/", location.origin);
+        for (const [key, value] of new URLSearchParams(location.search)) target.searchParams.set(key, value);
+        target.hash = location.hash;
+        location.replace(target.href);
+      }
+    </script>
   </head>
   <body class="order-delivery-workspace cashier-page" data-roles="cashier">
     <div id="demoBanner"></div>
@@ -33,6 +41,10 @@
           <span>สำหรับลูกค้า Walk-in</span>
         </div>
         <div class="cashier-actions">
+          <a class="btn btn-primary" href="/cashier/waiting-queue" aria-label="จัดการคิวรอโต๊ะ" title="จัดการคิวรอโต๊ะ">
+            <i class="fi fi-rr-user-time app-icon" aria-hidden="true"></i>
+            <span>คิวรอโต๊ะ</span>
+          </a>
           <button class="btn btn-primary" type="button" id="showTakeawayQr" aria-label="แสดง QR สั่งกลับบ้าน" title="แสดง QR สั่งกลับบ้าน">
             <i class="bi bi-qr-code app-icon" aria-hidden="true"></i>
             <span>QR Take Away</span>
@@ -60,10 +72,10 @@
     </main>
     <script
       type="module"
-      src="/assets/js/page-guard.js?v=20260731-079"
+      src="/assets/js/page-guard.js?v=20260801-103"
     ></script>
     <script type="module" src="/assets/js/offline-data-service.js"></script>
-    <script type="module" src="/assets/js/cashier.js?v=20260801-101"></script>
+    <script type="module" src="/assets/js/cashier.js?v=20260802-009"></script>
     <script type="module" src="/assets/js/cashier-takeaway-tools.js?v=20260731-089"></script>
     <script
       type="module"
@@ -71,11 +83,12 @@
     ></script>
     <script
       type="module"
-      src="/assets/js/cashier-icon-hotfix.js?v=20260731-089"
+      src="/assets/js/cashier-icon-hotfix.js?v=20260802-009"
     ></script>
     <script
       type="module"
       src="/assets/js/cashier-original-order.js?v=20260731-089"
     ></script>
+      <script type="module" src="/assets/js/waiting-queue-entry.js?v=20260802-011"></script>
   </body>
 </html>

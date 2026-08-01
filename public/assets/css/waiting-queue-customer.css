@@ -1,0 +1,262 @@
+:root{--wq-green:#159447;--wq-green-dark:#075f33;--wq-soft:#e8f7ee;--wq-border:#d8e5dc;--wq-muted:#66776e;--wq-danger:#b42318;--wq-blue:#175cd3}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#e7f5ec 0,#f4f8f5 40%,#eef4f0 100%);color:#173b28;display:grid;place-items:center;padding:18px}
+[hidden]{display:none!important}
+.waiting-customer-shell{width:min(620px,100%)}
+.waiting-customer-brand{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;text-align:left}
+.waiting-customer-logo{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:#159447;color:#fff;font-size:1.15rem;box-shadow:0 8px 22px rgba(21,148,71,.22)}
+.waiting-customer-brand>div{display:grid;gap:2px}
+.waiting-customer-brand strong{font-size:1.05rem;font-weight:600}
+.waiting-customer-brand span{color:var(--wq-muted);font-size:.76rem}
+.waiting-customer-card{overflow:hidden;border:1px solid var(--wq-border);border-radius:24px;background:#fff;box-shadow:0 24px 72px rgba(15,23,42,.14)}
+.waiting-customer-hero{padding:25px 22px 20px;text-align:center;background:linear-gradient(180deg,#eaf8ef 0,#f9fdfb 72%,#fff 100%)}
+.waiting-customer-label{color:var(--wq-muted);font-size:.78rem}
+.waiting-customer-number{display:block;margin-top:6px;color:var(--wq-green-dark);font-size:clamp(3rem,12vw,4.5rem);line-height:.95;font-weight:600;letter-spacing:.04em}
+.waiting-customer-hero-meta{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:14px}
+.waiting-customer-party,.waiting-customer-status{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:6px 13px;border-radius:999px;font-size:.78rem;font-weight:500}
+.waiting-customer-party{background:#fff;border:1px solid #cfe4d6;color:var(--wq-green-dark)}
+.waiting-customer-status{background:#edf3ef;color:#435d4c}
+.waiting-customer-status[data-status="called"]{background:#eaf2ff;color:#175cd3}
+.waiting-customer-status[data-status="acknowledged"]{background:#f1edff;color:#6941c6}
+.waiting-customer-status[data-status="preparing_table"]{background:#fff4e5;color:#b54708}
+.waiting-customer-status[data-status="seated"]{background:var(--wq-soft);color:var(--wq-green-dark)}
+.waiting-customer-status[data-status="cancelled"],.waiting-customer-status[data-status="no_show"]{background:#feeceb;color:var(--wq-danger)}
+.waiting-customer-info{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 20px 18px}
+.waiting-customer-info article{display:grid;grid-template-columns:38px minmax(0,1fr);align-items:center;gap:10px;padding:13px;border:1px solid #e2eae5;border-radius:14px;background:#fbfdfb;text-align:left}
+.waiting-customer-info article>i{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:var(--wq-soft);color:var(--wq-green-dark);font-size:1rem}
+.waiting-customer-info article>div{min-width:0}
+.waiting-customer-info span{display:block;color:var(--wq-muted);font-size:.68rem}
+.waiting-customer-info strong{display:block;margin-top:4px;font-size:.98rem;font-weight:600;overflow-wrap:anywhere}
+.waiting-customer-progress{display:grid;grid-template-columns:repeat(5,1fr);padding:2px 22px 22px}
+.waiting-customer-step{position:relative;display:grid;justify-items:center;gap:6px;color:#98a49d;font-size:.62rem;text-align:center}
+.waiting-customer-step::before{content:"";position:absolute;top:12px;left:-50%;width:100%;height:2px;background:#dfe7e2}
+.waiting-customer-step:first-child::before{display:none}
+.waiting-customer-step i{position:relative;z-index:1;display:grid;place-items:center;width:26px;height:26px;border-radius:999px;background:#e6ece8;color:#839188;font-style:normal;font-size:.68rem}
+.waiting-customer-step.active::before,.waiting-customer-step.active i{background:var(--wq-green)}
+.waiting-customer-step.active i{color:#fff}
+.waiting-customer-step.current span{color:var(--wq-green-dark);font-weight:600}
+.waiting-customer-call{display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:12px;margin:0 20px 14px;padding:14px 16px;border:1px solid #b9d0ff;border-radius:16px;background:#f2f7ff;color:#174ea6;text-align:left}
+.waiting-customer-call>i{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:#dce9ff;font-size:1.1rem}
+.waiting-customer-call strong{display:block;font-size:1rem}
+.waiting-customer-call span{display:block;margin-top:4px;font-size:.75rem;line-height:1.45}
+.waiting-customer-countdown{display:grid;justify-items:center;gap:4px;margin:0 20px 16px;padding:13px;border-radius:15px;background:#eef4ff;color:#3538cd}
+.waiting-customer-countdown span:first-child{font-size:.68rem}
+.waiting-customer-countdown strong{font-size:1.5rem;letter-spacing:.05em}
+.waiting-customer-countdown.overdue{background:#feeceb;color:var(--wq-danger)}
+.waiting-customer-actions{display:grid;gap:9px;padding:0 20px 20px}
+.waiting-customer-actions button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border:0;border-radius:13px;padding:10px 14px;font:inherit;font-weight:500;cursor:pointer}
+.waiting-customer-actions button>.pos-context-icon{display:none!important}
+.waiting-customer-confirm{background:var(--wq-green);color:#fff}
+.waiting-customer-notification{background:#eaf2ff;color:#175cd3}
+.waiting-customer-cancel{background:#fff0ee;color:var(--wq-danger)}
+.waiting-customer-actions button:disabled{opacity:.62;cursor:not-allowed}
+.waiting-customer-note{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:7px 9px;padding:14px 20px;border-top:1px solid #e9efeb;background:#f9fbfa;color:var(--wq-muted);font-size:.68rem;line-height:1.55;text-align:left}
+.waiting-customer-note>i{margin-top:2px;color:#6b8175}
+.waiting-customer-updated{grid-column:2;display:block;color:#87968e;font-size:.64rem}
+.waiting-customer-loading,.waiting-customer-error{display:grid;justify-items:center;gap:6px;padding:34px;border:1px solid var(--wq-border);border-radius:20px;background:#fff;text-align:center;color:var(--wq-muted);box-shadow:0 14px 44px rgba(15,23,42,.08)}
+.waiting-customer-loading strong{color:#355542;font-weight:600}
+.waiting-customer-loading>span:last-child{font-size:.72rem}
+.waiting-customer-spinner{width:32px;height:32px;border:3px solid #dbe8df;border-top-color:var(--wq-green);border-radius:999px;animation:wq-customer-spin .8s linear infinite}
+@keyframes wq-customer-spin{to{transform:rotate(360deg)}}
+@media(max-width:520px){body{padding:8px;place-items:start center}.waiting-customer-brand{justify-content:flex-start;padding:8px 5px 0}.waiting-customer-card{border-radius:18px}.waiting-customer-hero{padding:22px 15px 18px}.waiting-customer-info{grid-template-columns:1fr;padding-inline:12px}.waiting-customer-progress{padding-inline:9px}.waiting-customer-step span{font-size:.56rem}.waiting-customer-actions{padding-inline:12px}.waiting-customer-call,.waiting-customer-countdown{margin-inline:12px}.waiting-customer-note{padding-inline:14px}}
+
+/* WAITING_QUEUE_CUSTOMER_POLISH_20260801_004 */
+.waiting-customer-shell {
+  width: min(720px, 100%);
+}
+
+.waiting-customer-brand {
+  gap: 13px;
+  margin-bottom: 18px;
+}
+
+.waiting-customer-logo {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  background: #0d7e3d;
+  color: #fff !important;
+}
+
+.waiting-customer-logo > i {
+  width: 100%;
+  height: 100%;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  color: #fff !important;
+  font-size: 1.45rem;
+  line-height: 1 !important;
+}
+
+.waiting-customer-logo > i::before {
+  display: block !important;
+  margin: 0 !important;
+  color: #fff !important;
+  line-height: 1 !important;
+}
+
+.waiting-customer-brand strong {
+  font-size: 1.32rem;
+}
+
+.waiting-customer-brand span {
+  font-size: .94rem;
+}
+
+.waiting-customer-hero {
+  padding: 31px 28px 24px;
+}
+
+.waiting-customer-label {
+  font-size: .94rem;
+}
+
+.waiting-customer-number {
+  font-size: clamp(4.25rem, 11vw, 6.25rem);
+}
+
+.waiting-customer-party,
+.waiting-customer-status {
+  min-height: 40px;
+  padding: 8px 16px;
+  font-size: .94rem;
+}
+
+.waiting-customer-info {
+  gap: 12px;
+  padding: 0 24px 22px;
+}
+
+.waiting-customer-info article {
+  grid-template-columns: 44px minmax(0, 1fr);
+  padding: 16px;
+}
+
+.waiting-customer-info article > i {
+  width: 44px;
+  height: 44px;
+  font-size: 1.15rem;
+}
+
+.waiting-customer-info span {
+  font-size: .82rem;
+}
+
+.waiting-customer-info strong {
+  font-size: 1.14rem;
+}
+
+.waiting-customer-progress {
+  padding: 4px 28px 25px;
+}
+
+.waiting-customer-step {
+  font-size: .72rem;
+}
+
+.waiting-customer-step i {
+  width: 30px;
+  height: 30px;
+  font-size: .78rem;
+}
+
+.waiting-customer-call {
+  margin-inline: 24px;
+}
+
+.waiting-customer-call strong {
+  font-size: 1.12rem;
+}
+
+.waiting-customer-call span {
+  font-size: .88rem;
+}
+
+.waiting-customer-countdown {
+  margin-inline: 24px;
+}
+
+.waiting-customer-countdown span:first-child {
+  font-size: .8rem;
+}
+
+.waiting-customer-countdown strong {
+  font-size: 1.7rem;
+}
+
+.waiting-customer-actions {
+  gap: 11px;
+  padding: 0 24px 24px;
+}
+
+.waiting-customer-actions button {
+  min-height: 54px;
+  gap: 10px;
+  font-size: 1rem;
+}
+
+.waiting-customer-note {
+  padding: 16px 24px;
+  font-size: .8rem;
+}
+
+.waiting-customer-updated {
+  font-size: .74rem;
+}
+
+@media (max-width: 520px) {
+  .waiting-customer-shell {
+    width: 100%;
+  }
+
+  .waiting-customer-brand {
+    justify-content: center;
+    padding: 10px 8px 0;
+  }
+
+  .waiting-customer-logo {
+    width: 48px;
+    height: 48px;
+  }
+
+  .waiting-customer-brand strong {
+    font-size: 1.16rem;
+  }
+
+  .waiting-customer-brand span {
+    font-size: .82rem;
+  }
+
+  .waiting-customer-number {
+    font-size: clamp(3.7rem, 20vw, 5.2rem);
+  }
+
+  .waiting-customer-label,
+  .waiting-customer-party,
+  .waiting-customer-status {
+    font-size: .86rem;
+  }
+
+  .waiting-customer-info span {
+    font-size: .78rem;
+  }
+
+  .waiting-customer-info strong {
+    font-size: 1.05rem;
+  }
+
+  .waiting-customer-step {
+    font-size: .64rem;
+  }
+
+  .waiting-customer-actions button {
+    min-height: 52px;
+    font-size: .94rem;
+  }
+
+  .waiting-customer-note {
+    font-size: .76rem;
+  }
+}

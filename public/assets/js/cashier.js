@@ -1,5 +1,5 @@
 import "./sweet-dialog.js?v=20260731-089";
-import "./cashier-table-move.js?v=20260701-014";
+import "./cashier-table-move.js?v=20260802-007";
 import { dataService, usingDemoMode } from "./data-service.js";
 import {
   storage,
@@ -175,7 +175,7 @@ function itemRows(order) {
 function renderDelivery(order) {
   const paymentAction =
     order.paymentStatus !== "paid"
-      ? `<button class="btn btn-primary" data-payment-id="${order.id}">${icon("check-circle")}<span>ตรวจแล้ว/ชำระแล้ว</span></button>`
+      ? `<button class="btn btn-primary" data-payment-id="${order.id}">${icon("check-circle")}<span>รับชำระบิล</span></button>`
       : "";
   const slipUrl = order.paymentSlipUrl || slipUrls.get(order.id) || "";
   const slipAction = slipUrl
@@ -183,7 +183,7 @@ function renderDelivery(order) {
     : order.paymentSlipPath
       ? `<button class="btn btn-warning" disabled>${icon("view")}<span>กำลังโหลดสลิป...</span></button>`
       : "";
-  return `<article class="card order-card"><div class="order-head"><div class="order-heading-with-queue">${queueBadge(order)}<div><h2 style="margin:0">Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}</h2><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div></div><span class="badge">${statusLabel(order.status)}</span></div><p><span class="badge ${order.paymentStatus === "paid" ? "" : "warning"}">${paymentLabel(order)}</span><br><strong>โทร:</strong> ${order.recipientPhone || "-"}<br><strong>ที่อยู่:</strong> ${order.deliveryAddress || "-"}</p><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>${slipAction}${paymentAction}<button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button></div></article>`;
+  return `<article class="card order-card"><div class="order-head"><div class="order-heading-with-queue">${queueBadge(order)}<div><h2 style="margin:0">Delivery: ${order.recipientName || "ไม่ระบุชื่อ"}</h2><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div></div><span class="badge">${statusLabel(order.status)}</span></div><p><span class="badge ${order.paymentStatus === "paid" ? "" : "warning"}">${paymentLabel(order)}</span><br><strong>โทร:</strong> ${order.recipientPhone || "-"}<br><strong>ที่อยู่:</strong> ${order.deliveryAddress || "-"}</p><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>${slipAction}${paymentAction}<button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิกทุกรายการ</span></button></div></article>`;
 }
 function renderTakeaway(order) {
   const queueNo = order.queueNo || order.tableCode || "TA";
@@ -200,7 +200,7 @@ function renderTakeaway(order) {
     ready || order.pickupStatus === "called"
       ? `<button class="btn cashier-pickup-done-action" data-pickup-done="${order.id}">${icon("check-circle")}<span>ส่งมอบแล้ว</span></button>`
       : "";
-  return `<article class="card order-card"><div class="order-head"><div class="order-heading-with-queue">${queueBadge(order)}<div><h2 style="margin:0">Take Away</h2><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div></div><span class="badge ${order.pickupStatus === "called" ? "warning" : ""}">${order.pickupStatus === "called" ? "เรียกคิวแล้ว" : statusLabel(order.status)}</span></div><p><strong>ลูกค้า:</strong> ${order.customerName || "-"}<br><strong>โทร:</strong> ${order.customerPhone || "-"}<br><span class="badge ${paid ? "" : "warning"}">${paid ? "ชำระเงินแล้ว" : "รอชำระเงิน"}</span></p><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>${paymentAction}${callAction}${doneAction}<button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button></div></article>`;
+  return `<article class="card order-card"><div class="order-head"><div class="order-heading-with-queue">${queueBadge(order)}<div><h2 style="margin:0">Take Away</h2><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div></div><span class="badge ${order.pickupStatus === "called" ? "warning" : ""}">${order.pickupStatus === "called" ? "เรียกคิวแล้ว" : statusLabel(order.status)}</span></div><p><strong>ลูกค้า:</strong> ${order.customerName || "-"}<br><strong>โทร:</strong> ${order.customerPhone || "-"}<br><span class="badge ${paid ? "" : "warning"}">${paid ? "ชำระเงินแล้ว" : "รอชำระเงิน"}</span></p><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="order-head" style="margin-top:10px"><strong>ยอดสุทธิ</strong><strong class="price">${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>${paymentAction}${callAction}${doneAction}<button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิกทุกรายการ</span></button></div></article>`;
 }
 function renderTableBill(group) {
   const sorted = [...group].sort(
@@ -223,11 +223,11 @@ function renderTableBill(group) {
   const rounds = sorted
     .map(
       (order) =>
-        `<section class="card" style="padding:12px;margin-top:10px;box-shadow:none;background:#f8fbf9"><div class="order-head"><strong>รอบที่ ${order.roundNumber || 1}</strong><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div><div class="menu-category">สถานะครัว: ${statusLabel(order.status)} • ${order.paymentStatus === "paid" ? "ชำระแล้ว" : "ยังไม่ชำระ"}</div><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="order-head" style="margin-top:8px"><span>รวมรอบนี้</span><strong>${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:8px"><button class="btn btn-danger btn-sm" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิก</span></button></div></section>`,
+        `<section class="card" style="padding:12px;margin-top:10px;box-shadow:none;background:#f8fbf9"><div class="order-head"><strong>รอบที่ ${order.roundNumber || 1}</strong><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div><div class="menu-category">สถานะครัว: ${statusLabel(order.status)} • ${order.paymentStatus === "paid" ? "ชำระแล้ว" : "ยังไม่ชำระ"}</div><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="order-head" style="margin-top:8px"><span>รวมรอบนี้</span><strong>${money(order.totalAmount)} บาท</strong></div><div class="order-actions" style="margin-top:8px"><button class="btn btn-danger btn-sm" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>ยกเลิกทุกรายการ</span></button></div></section>`,
     )
     .join("");
   const paymentAction = unpaidPaymentRounds.length
-    ? `<button class="btn btn-primary" data-table-payment="${key}">${icon("easel2")}<span>ตรวจแล้ว/ชำระแล้ว</span></button>`
+    ? `<button class="btn btn-primary" data-table-payment="${key}">${icon("easel2")}<span>รับชำระบิล</span></button>`
     : `<button class="btn btn-primary" disabled>${icon("check-circle")}<span>ชำระแล้ว</span></button>`;
   return `<article class="card order-card"><div class="order-head"><div class="order-heading-with-queue">${queueBadge(first)}<div><h2 style="margin:0">โต๊ะ ${first.tableCode}</h2><small>${sorted.length} รอบที่ยังไม่ปิดบิล • เสิร์ฟแล้ว ${servedCount}/${sorted.length} รอบ</small></div></div>${paymentBadge}</div>${rounds}<div class="order-head" style="margin-top:14px;padding-top:12px;border-top:2px solid #dfe8e2"><strong>ยอดรวมทั้งโต๊ะ</strong><strong class="price">${money(total)} บาท</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?orders=${encodeURIComponent(ids)}" target="_blank" rel="noopener">${icon("print")}<span>พิมพ์</span></a>${paymentAction}</div></article>`;
 }

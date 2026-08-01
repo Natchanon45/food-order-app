@@ -2,11 +2,101 @@
 
 Repository: Natchanon45/food-order-app
 Branch: main
-Version: 0.15.21
-Build: 2026.08.01.103
-Milestone: Retail POS Main Integration
+Version: 0.16.6
+Build: 2026.08.02.005
+
+<!-- WAITING_QUEUE_TICKET_MODAL_READABILITY_20260802_005 -->
+Waiting Queue ticket modal presentation rule:
+
+The staff modal must prioritize the W-number, QR, party size, estimated wait, groups ahead, and received time at readable operational sizes. The raw private tracking URL is held in a hidden copy source rather than displayed in the modal; QR and copy actions remain unchanged.
+
+<!-- WAITING_QUEUE_TABLE_SESSION_BRIDGE_20260802_004 -->
+Waiting Queue table-session bridge rule:
+
+A seated Waiting Queue table must use the canonical restaurant session fields `status: occupied`, non-empty `orderToken`, `sessionStartedAt`, numeric `currentRound`, and list `orderIds`. The customer order URL must include the tenant storefront slug, table code, and active token. Existing seated rows missing this contract may be repaired only for the same stable queue/table relationship through the transaction-safe seating path.
+
+Customer table orders inherit `waitingQueueId` and `waitingQueueNumber` from the validated active table session. Closing or moving the table continues to use the existing Table QR/Cashier workflows.
+
+<!-- WAITING_QUEUE_TICKET_PRINT_POLISH_20260802_003 -->
+Waiting Queue ticket print rule:
+
+Printed customer tickets use local TH Sarabun PSK regular and bold font files, a fixed 80 x 160 mm receipt page, and defer `window.print()` until the font set and QR image are ready. The ticket may show the stable W-number, party size, suitable groups ahead, estimated wait, received time, tracking URL, and privacy guidance, but never customer name or phone number.
+
+<!-- WAITING_QUEUE_IMMEDIATE_TICKET_HANDOFF_20260802_002 -->
+Waiting Queue immediate ticket handoff rule:
+
+Successful staff intake opens the canonical customer ticket dialog directly. The same stable queue object drives the W-number, local QR tracking URL, estimate, received time, copy action, and 80 mm print output. This presentation handoff must not add another queue write or expose customer PII.
+
+<!-- WAITING_QUEUE_RUNTIME_REPAIR_20260802_001 -->
+Waiting Queue authoritative mirror and deterministic order rule:
+
+Public and Board documents are replaceable privacy-safe mirrors. Staff status and seating operations must not merge unknown legacy fields into these mirrors.
+
+Table opening may create or idempotently update only the deterministic empty order `order-wq-{waitingQueueId}` for the same tenant and queue. The table patch is restricted to the existing Waiting Queue occupation fields, and the private queue, table, order, dedupe record, mirror records, and audit remain protected by the transaction's read-before-write sequence.
+
+A QR ticket modal must retain one QR render target and must not display the library fallback image together with its canvas.
+
+
+<!-- WAITING_QUEUE_TICKET_QR_CALL_RECOVERY_20260801_006 -->
+Waiting Queue ticket, audio-arm, and call authorization rule:
+
+Customer QR tickets encode only the existing privacy-safe tracking URL. Printed tickets may show the W-number, party size, estimated wait, received time, and QR Code, but must not print customer name, phone, phone hash, special note, or control/audit metadata. QR generation must execute locally.
+
+Arming public-display audio may play a chime but must not speak a synthetic `sound enabled` sentence. Spoken output is reserved for real queue numbers and retains the operator-gesture requirement.
+
+Staff queue calls must use the tenant from the authenticated role-guard profile before generic Local Storage candidates. Firestore authorization must remain tenant-scoped through active user profile, membership, tenant ownership, or validated claims. Legacy identity backfill is allowed only when the document ID and tenant remain stable.
+
+
+<!-- WAITING_QUEUE_OWNER_ACCESS_DIALOG_20260801_005 -->
+Waiting Queue authoritative tenant and modal action rule:
+
+For authenticated staff, the tenant ID from the active `users/{uid}` profile is authoritative over generic browser keys. A mismatched local tenant must never be used to write or drain an outbox under another tenant. The old cache may be retained for recovery but is excluded from the active tenant workflow.
+
+Waiting Queue Firestore authorization must verify one of: an active allowed-role user profile matching the tenant, an active canonical membership, tenant ownership, or validated tenant/role Auth claims. Every queue write still requires tenant equality and stable document identity. Legacy compatibility permits only same-tenant idempotent identity backfills.
+
+Waiting Queue modal actions use inset responsive footers with balanced buttons and accessible icons. Styling must not alter the read-before-write table seating transaction or duplicate protection.
+
+
+<!-- WAITING_QUEUE_USABILITY_PERMISSION_20260801_004 -->
+Waiting Queue permission and accessibility rule:
+
+Waiting Queue write access must use the same tenant membership and allowed staff roles as the rest of the application: owner, admin, manager, cashier, or super_admin. The legacy tenant-map checks remain fallback compatibility only. Public customer response and public display privacy rules remain unchanged.
+
+Waiting Queue validation layout rule: required-field feedback must not change input width or push action buttons out of balance. The add-queue dialog uses stable two-column desktop controls, responsive mobile stacking, and equal action widths with accessible icons.
+
+Waiting Queue readability rule: operational staff/customer text must remain legible at normal browser zoom on PC and mobile. Public display icons must be centered in their visual badges. Spoken W-numbers must pronounce each digit separately and end with a polite Thai instruction.
+
+
+<!-- WAITING_QUEUE_CONFLICT_RECOVERY_20260801_003 -->
+Waiting Queue conflict-recovery rule: Firebase is authoritative when local pending state is stale.
+
+A terminal remote queue state must never be replaced by an older local call, defer, cancel, or create operation. The ordered outbox may discard an operation only after reading the matching remote queue and proving that the operation is already applied, superseded, or invalid because the remote queue is final. A delayed create operation must read the existing queue document before any write and must never reset an existing queue to its initial state.
+
+Waiting Queue contention rule: transactions retain read-before-write ordering and use a bounded retry budget. Background public/board snapshot refreshes must be coalesced and skipped when their nonvolatile payload is unchanged, so presentation mirrors do not continuously contend with staff status or seating transactions.
+
+Waiting Queue local-cache rule: snapshot merges may show an optimistic local row only while a matching outbox operation exists, the remote queue is not final, and the optimistic version is newer. Remote rows otherwise replace conflict/error cache state. Cache writes must not recursively dispatch unchanged local snapshots.
+
+
+<!-- WAITING_QUEUE_UI_20260801_002 -->
+Waiting Queue canonical UI rule: `/waiting-queue/` is the only staff-management surface for table waiting queues. `/cashier/waiting-queue` may redirect to it, but must not maintain a second independent queue workflow. Legacy `/queue?token=...` links may retain their original data source and receive presentation-only compatibility until migration is explicitly approved.
+
+Waiting Queue navigation rule: the home page must show a normal dashboard card or header action. A fixed bottom-right shortcut is prohibited. The staff waiting-queue page must not load the Retail POS navigation drawer.
+
+Waiting Queue dialog rule: add-queue and open-table workflows use centered, responsive dialogs with explicit labels and selectable table cards. The open-table action must continue to use the existing tenant-scoped read-before-write transaction and must not create a second order or seat the same queue twice.
+
+Waiting Queue display audio rule: audio starts only after an operator gesture. Enabled mode means chime plus spoken Thai queue number when supported, and the UI must explicitly identify a chime-only fallback. No customer personal data may appear on the public display.
+
+Milestone: Waiting Queue Runtime Repair
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
+
+Waiting queue architecture rule: table waiting queues are a distinct domain from food/order queues. Each record uses a stable `waitingQueueId`, an immutable customer tracking token, a daily W-number, `tenantId`, explicit status, version, applied operation IDs, and audit history. Queue records must never be physically deleted. Staff intake is local-first and reserves blocks of daily W-numbers while online. During a temporary outage, unused leased numbers remain stable; if the lease is exhausted, intake stops with a clear warning rather than issuing or later changing the customer’s queue number.
+
+Waiting queue fairness rule: table recommendations first enforce capacity and special-needs compatibility, then favor the longest effective wait. Priority groups may move ahead only within the configured near-time window. Any manual table mismatch or fair-order bypass requires a reason and records the actor, device, recommended queue, skipped queues, table, and linked order in `waitingQueueAudits`.
+
+Waiting queue seating transaction rule: opening a table must be online and use one Firestore transaction. The transaction reads the waiting queue, table, deterministic order, public snapshot, and dedupe record before any write; confirms the queue remains active and the table remains free; then atomically marks the queue seated, occupies the table, creates/reuses the linked order, updates the privacy-safe public snapshot, closes dedupe, and appends the audit record. The relation `tenantId + waitingQueueId + tableId + orderId` remains stable.
+
+Waiting queue privacy and notification rule: customer-facing and public-display documents contain no customer name, phone, phone hash, or free-text note. Customer control tokens remain only in non-listable `waitingQueuePublic` documents; the listable `waitingQueueBoard` contains no token or customer-response controls. The public display shows W-numbers only. Browser notification is an optional secondary channel while the tracking page is open; in-store display/sound and staff controls remain authoritative.
 
 POS product management dialog rule: `/pos/products` must not use browser-native `alert`, `confirm`, or `prompt` for product deletion, category deletion, stock-history clearing, or permission-denied feedback. These flows use the shared styled Sweet Dialog, and destructive actions execute only after an explicit asynchronous confirmation. This UI rule must not change tenant scope, product stock, sale stock movements, stable IDs, duplicate protection, or offline sync.
 
