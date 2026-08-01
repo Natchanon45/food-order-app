@@ -1,5 +1,5 @@
 import "./sweet-dialog.js?v=20260731-089";
-import "./cashier-table-move.js?v=20260701-014";
+import "./cashier-table-move.js?v=20260802-007";
 import { dataService, usingDemoMode } from "./data-service.js";
 import {
   storage,

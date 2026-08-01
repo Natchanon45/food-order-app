@@ -17,7 +17,7 @@ function replaceButtonIcon(button, iconName) {
 
 function applyCashierIcons() {
   document.querySelectorAll('[data-table-payment]').forEach(button => replaceButtonIcon(button, 'check-circle'));
-  document.querySelectorAll('[data-table-move]').forEach(button => replaceButtonIcon(button, 'easel2'));
+  document.querySelectorAll('[data-table-move]').forEach(button => replaceButtonIcon(button, 'arrow-left-right'));
 }
 
 function scheduleApply() {
