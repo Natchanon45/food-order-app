@@ -2,9 +2,19 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.16.0
-Build: 2026.08.01.001
-Milestone: Waiting Queue MVP
+Version: 0.16.1
+Build: 2026.08.01.002
+
+<!-- WAITING_QUEUE_UI_20260801_002 -->
+Waiting Queue canonical UI rule: `/waiting-queue/` is the only staff-management surface for table waiting queues. `/cashier/waiting-queue` may redirect to it, but must not maintain a second independent queue workflow. Legacy `/queue?token=...` links may retain their original data source and receive presentation-only compatibility until migration is explicitly approved.
+
+Waiting Queue navigation rule: the home page must show a normal dashboard card or header action. A fixed bottom-right shortcut is prohibited. The staff waiting-queue page must not load the Retail POS navigation drawer.
+
+Waiting Queue dialog rule: add-queue and open-table workflows use centered, responsive dialogs with explicit labels and selectable table cards. The open-table action must continue to use the existing tenant-scoped read-before-write transaction and must not create a second order or seat the same queue twice.
+
+Waiting Queue display audio rule: audio starts only after an operator gesture. Enabled mode means chime plus spoken Thai queue number when supported, and the UI must explicitly identify a chime-only fallback. No customer personal data may appear on the public display.
+
+Milestone: Waiting Queue UI Consolidation
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 

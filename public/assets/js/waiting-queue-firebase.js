@@ -1,4 +1,4 @@
-import * as FirebaseConfig from "./firebase-config.js?v=20260801-001";
+import * as FirebaseConfig from "./firebase-config.js?v=20260801-002";
 import * as FirestoreSdk from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 export const db = FirebaseConfig.db;

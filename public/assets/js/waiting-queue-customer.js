@@ -1,10 +1,10 @@
-import { sweetAlert, sweetConfirm } from "./sweet-dialog.js?v=20260731-084";
+import { sweetAlert, sweetConfirm } from "./sweet-dialog.js?v=20260801-002";
 import {
   callCountdownSeconds,
   updatePublicCustomerResponse,
   waitingQueueStatusLabel,
   watchPublicQueue,
-} from "./waiting-queue-core.js?v=20260801-001";
+} from "./waiting-queue-core.js?v=20260801-002";
 
 const params = new URLSearchParams(location.search);
 const tenantId = String(params.get("tenantId") || "").trim();
@@ -194,7 +194,7 @@ async function enableNotifications() {
 }
 
 function initialize() {
-  if (!tenantId || !token || token.length < 12) {
+  if (!token || token.length < 12) {
     showError("ลิงก์ติดตามคิวไม่ถูกต้อง กรุณาขอลิงก์ใหม่จากพนักงาน");
     return;
   }
@@ -206,7 +206,7 @@ function initialize() {
     els.notification.disabled = true;
   }
   unsubscribe = watchPublicQueue(token, row => {
-    if (!row || row.tenantId !== tenantId) {
+    if (!row || (tenantId && row.tenantId !== tenantId)) {
       showError("ไม่พบคิวนี้ หรือคิวหมดอายุแล้ว");
       return;
     }

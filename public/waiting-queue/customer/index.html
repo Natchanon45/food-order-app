@@ -8,35 +8,44 @@
     <title>ติดตามคิวรอโต๊ะ</title>
     <link rel="icon" href="/assets/images/icon-192.png" type="image/png" />
     <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260713-004" />
-    <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260801-001" />
-    <link rel="stylesheet" href="/assets/css/waiting-queue-customer.css?v=20260801-001" />
+    <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260801-002" />
+    <link rel="stylesheet" href="/assets/css/waiting-queue-customer.css?v=20260801-002" />
   </head>
   <body>
     <main class="waiting-customer-shell">
       <header class="waiting-customer-brand">
-        <strong>ติดตามคิวรอโต๊ะ</strong>
-        <span>หน้านี้แสดงเฉพาะข้อมูลคิวของคุณ</span>
+        <span class="waiting-customer-logo" aria-hidden="true"><i class="bi bi-person-standing"></i></span>
+        <div>
+          <strong>คิวรอโต๊ะ</strong>
+          <span>ติดตามสถานะของคุณแบบเรียลไทม์</span>
+        </div>
       </header>
 
-      <div id="waitingCustomerLoading" class="waiting-customer-loading">กำลังโหลดสถานะคิว...</div>
+      <div id="waitingCustomerLoading" class="waiting-customer-loading">
+        <span class="waiting-customer-spinner" aria-hidden="true"></span>
+        <strong>กำลังโหลดสถานะคิว</strong>
+        <span>กรุณารอสักครู่</span>
+      </div>
       <div id="waitingCustomerError" class="waiting-customer-error" hidden></div>
 
       <section id="waitingCustomerCard" class="waiting-customer-card" hidden>
         <div class="waiting-customer-hero">
-          <span>หมายเลขคิวรอโต๊ะ</span>
+          <span class="waiting-customer-label">หมายเลขคิวของคุณ</span>
           <strong id="waitingCustomerQueueNumber" class="waiting-customer-number">W---</strong>
-          <span id="waitingCustomerPartySize" class="waiting-customer-party">0 คน</span>
-          <div id="waitingCustomerStatus" class="waiting-customer-status">รอเรียก</div>
+          <div class="waiting-customer-hero-meta">
+            <span id="waitingCustomerPartySize" class="waiting-customer-party">0 คน</span>
+            <div id="waitingCustomerStatus" class="waiting-customer-status">รอเรียก</div>
+          </div>
         </div>
 
         <div class="waiting-customer-info">
           <article>
-            <span>คิวที่เหมาะสมก่อนหน้า</span>
-            <strong id="waitingCustomerGroupsAhead">0</strong>
+            <i class="bi bi-people" aria-hidden="true"></i>
+            <div><span>คิวที่เหมาะสมก่อนหน้า</span><strong id="waitingCustomerGroupsAhead">0</strong></div>
           </article>
           <article>
-            <span>เวลารอโดยประมาณ</span>
-            <strong id="waitingCustomerEstimate">0–5 นาที</strong>
+            <i class="bi bi-clock" aria-hidden="true"></i>
+            <div><span>เวลารอโดยประมาณ</span><strong id="waitingCustomerEstimate">0–5 นาที</strong></div>
           </article>
         </div>
 
@@ -48,9 +57,9 @@
           <div class="waiting-customer-step" data-waiting-step="5"><i>5</i><span>เข้านั่ง</span></div>
         </div>
 
-        <div id="waitingCustomerCallMessage" class="waiting-customer-call" hidden>
-          <strong>กำลังเรียกคิวของคุณ</strong>
-          <span>กรุณามาที่จุดรับโต๊ะภายในเวลาที่กำหนด</span>
+        <div id="waitingCustomerCallMessage" class="waiting-customer-call" hidden aria-live="assertive">
+          <i class="bi bi-megaphone" aria-hidden="true"></i>
+          <div><strong>กำลังเรียกคิวของคุณ</strong><span>กรุณามาที่จุดรับโต๊ะภายในเวลาที่กำหนด</span></div>
         </div>
         <div id="waitingCustomerCountdownWrap" class="waiting-customer-countdown" hidden>
           <span>เวลาตอบรับคงเหลือ</span>
@@ -59,21 +68,22 @@
 
         <div class="waiting-customer-actions">
           <button id="waitingCustomerConfirmArrival" class="waiting-customer-confirm" type="button" hidden>
-            ยืนยันว่ากำลังมาที่จุดรับโต๊ะ
+            <i class="bi bi-geo-alt" aria-hidden="true"></i><span>ยืนยันว่ากำลังมาที่จุดรับโต๊ะ</span>
           </button>
           <button id="waitingCustomerNotification" class="waiting-customer-notification" type="button">
-            เปิดการแจ้งเตือนบนอุปกรณ์นี้
+            <i class="bi bi-bell" aria-hidden="true"></i><span>เปิดการแจ้งเตือนบนอุปกรณ์นี้</span>
           </button>
           <button id="waitingCustomerCancelQueue" class="waiting-customer-cancel" type="button">
-            ยกเลิกคิว
+            <i class="bi bi-x-circle" aria-hidden="true"></i><span>ยกเลิกคิว</span>
           </button>
         </div>
         <footer class="waiting-customer-note">
-          การแจ้งเตือนของเบราว์เซอร์ทำงานเมื่อหน้านี้ยังเปิดอยู่ กรุณาติดตามจอเรียกคิวและเสียงของร้านร่วมด้วย
+          <i class="bi bi-info-circle" aria-hidden="true"></i>
+          <span>การแจ้งเตือนของเบราว์เซอร์ทำงานเมื่อหน้านี้ยังเปิดอยู่ กรุณาติดตามจอเรียกคิวและเสียงของร้านร่วมด้วย</span>
           <span id="waitingCustomerUpdated" class="waiting-customer-updated"></span>
         </footer>
       </section>
     </main>
-    <script type="module" src="/assets/js/waiting-queue-customer.js?v=20260801-001"></script>
+    <script type="module" src="/assets/js/waiting-queue-customer.js?v=20260801-002"></script>
   </body>
 </html>

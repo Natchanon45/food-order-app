@@ -1,5 +1,5 @@
 import { requireRole } from "./auth-service.js?v=20260731-079";
-import { sweetAlert, sweetConfirm, sweetPrompt } from "./sweet-dialog.js?v=20260731-084";
+import { sweetAlert, sweetConfirm, sweetPrompt } from "./sweet-dialog.js?v=20260801-002";
 import {
   WAITING_QUEUE_STATUS,
   WAITING_QUEUE_ACTIVE_STATUSES,
@@ -26,7 +26,7 @@ import {
   waitingQueueStatusLabel,
   watchWaitingQueuePublicResponses,
   watchWaitingQueues,
-} from "./waiting-queue-core.js?v=20260801-001";
+} from "./waiting-queue-core.js?v=20260801-002";
 
 await requireRole(["owner", "admin", "manager", "cashier"]);
 

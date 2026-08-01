@@ -14,6 +14,14 @@
     <link rel="stylesheet" href="/assets/css/cashier-refresh.css?v=20260801-102" />
     <link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260731-079" />
     <title>หน้าแคชเชียร์</title>
+      <script>/* WAITING_QUEUE_CANONICAL_REDIRECT_20260801_002 */
+      if (location.pathname.replace(/\/$/, "") === "/cashier/waiting-queue") {
+        const target = new URL("/waiting-queue/", location.origin);
+        for (const [key, value] of new URLSearchParams(location.search)) target.searchParams.set(key, value);
+        target.hash = location.hash;
+        location.replace(target.href);
+      }
+    </script>
   </head>
   <body class="order-delivery-workspace cashier-page" data-roles="cashier">
     <div id="demoBanner"></div>
@@ -81,6 +89,6 @@
       type="module"
       src="/assets/js/cashier-original-order.js?v=20260731-089"
     ></script>
-      <script type="module" src="/assets/js/waiting-queue-entry.js?v=20260801-001"></script>
+      <script type="module" src="/assets/js/waiting-queue-entry.js?v=20260801-002"></script>
   </body>
 </html>

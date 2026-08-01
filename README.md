@@ -1,9 +1,23 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Waiting Queue MVP
-Version: 0.16.0
-Build: 2026.08.01.001
+Milestone: Waiting Queue UI Consolidation
+Version: 0.16.1
+Build: 2026.08.01.002
+
+<!-- WAITING_QUEUE_UI_20260801_002 -->
+Change: Consolidated the table waiting queue into the canonical `/waiting-queue/` staff workspace. The old `/cashier/waiting-queue` entry now forwards to the canonical page, the home shortcut is rendered as a normal dashboard card instead of a floating bottom-right button, and the Retail POS drawer is no longer loaded on the waiting-queue page.
+
+UI: Rebalanced search/status/party filters, queue cards, table recommendations, add-queue dialog, and the transaction-safe open-table dialog. The customer tracker is now a structured queue card. The public display clearly separates the currently called queue from upcoming queues.
+
+Audio: Public display audio is user-armed to satisfy browser autoplay rules. When enabled it plays a chime and reads the queue number in Thai when speech synthesis is available; otherwise it labels itself as chime-only.
+
+Compatibility: Existing legacy `/queue?token=...` customer links keep their original data source and receive a compatibility presentation layer. No legacy queue record is deleted.
+
+Firebase safety: No collection path, rule, index, stable waitingQueueId, table transaction, order link, duplicate protection, offline outbox, stock, payment, VAT, or food-queue behavior changed.
+
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260801-002`.
+
 
 Change: Added the first production-ready table waiting queue module, separate from food/order queue numbers. Staff can create stable W-numbers, call/recall, acknowledge, prepare, defer, cancel, mark no-show, match queues to suitable tables, and open a table through a Firestore transaction. Customer tracking and a privacy-safe public queue display are included.
 

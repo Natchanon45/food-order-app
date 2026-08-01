@@ -1,21 +1,27 @@
-import { watchPublicQueueBoard } from "./waiting-queue-core.js?v=20260801-001";
+import { watchPublicQueueBoard } from "./waiting-queue-core.js?v=20260801-002";
 
 const params = new URLSearchParams(location.search);
 const tenantId = String(params.get("tenantId") || "").trim();
 const els = {
   clock: document.querySelector("#waitingDisplayClock"),
   called: document.querySelector("#waitingDisplayCalled"),
+  calledWrap: document.querySelector("#waitingDisplayCalledWrap"),
   calledEmpty: document.querySelector("#waitingDisplayCalledEmpty"),
   calledTimer: document.querySelector("#waitingDisplayCalledTimer"),
   next: document.querySelector("#waitingDisplayNext"),
   status: document.querySelector("#waitingDisplayStatus"),
   sound: document.querySelector("#waitingDisplaySound"),
+  audioNotice: document.querySelector("#waitingDisplayAudioNotice"),
+  audioMode: document.querySelector("#waitingDisplayAudioMode"),
   fullscreen: document.querySelector("#waitingDisplayFullscreen"),
 };
 
 let rows = [];
 let lastCalledSignature = "";
-let soundEnabled = localStorage.getItem("waiting_queue_display_sound") !== "off";
+let soundEnabled = localStorage.getItem("waiting_queue_display_sound") === "on";
+let soundArmed = false;
+let audioContext = null;
+let thaiVoice = null;
 let unsubscribe = () => {};
 let clockTimer = null;
 
@@ -32,41 +38,111 @@ function upcoming() {
     .slice(0, 3);
 }
 
-function beep() {
-  try {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContext) return;
-    const context = new AudioContext();
-    const gain = context.createGain();
-    gain.gain.setValueAtTime(0.0001, context.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.15, context.currentTime + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.6);
-    const oscillator = context.createOscillator();
-    oscillator.frequency.setValueAtTime(880, context.currentTime);
-    oscillator.frequency.setValueAtTime(1046, context.currentTime + 0.25);
-    oscillator.connect(gain);
-    gain.connect(context.destination);
-    oscillator.start();
-    oscillator.stop(context.currentTime + 0.62);
-    oscillator.addEventListener("ended", () => context.close());
-  } catch {}
+function resolveThaiVoice() {
+  if (!("speechSynthesis" in window)) return null;
+  const voices = speechSynthesis.getVoices();
+  thaiVoice = voices.find(voice => String(voice.lang || "").toLowerCase().startsWith("th")) || null;
+  return thaiVoice;
 }
 
-function announce(queueNumber) {
-  if (!soundEnabled || !queueNumber) return;
-  beep();
-  if (!("speechSynthesis" in window)) return;
-  setTimeout(() => {
-    try {
-      speechSynthesis.cancel();
-      const spoken = String(queueNumber).replace(/^W/i, "ดับเบิลยู ").split("").join(" ");
-      const utterance = new SpeechSynthesisUtterance(`ขอเชิญคิว ${spoken} ที่จุดรับโต๊ะ`);
-      utterance.lang = "th-TH";
-      utterance.rate = 0.85;
-      utterance.pitch = 1;
-      speechSynthesis.speak(utterance);
-    } catch {}
-  }, 420);
+function supportsSpeech() {
+  return "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+}
+
+async function ensureAudioContext() {
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContext) return null;
+  if (!audioContext || audioContext.state === "closed") audioContext = new AudioContext();
+  if (audioContext.state === "suspended") await audioContext.resume();
+  return audioContext;
+}
+
+async function playChime() {
+  try {
+    const context = await ensureAudioContext();
+    if (!context) return false;
+    const start = context.currentTime;
+    const gain = context.createGain();
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(0.16, start + 0.025);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.72);
+    const oscillator = context.createOscillator();
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(784, start);
+    oscillator.frequency.setValueAtTime(988, start + 0.22);
+    oscillator.frequency.setValueAtTime(1175, start + 0.44);
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start(start);
+    oscillator.stop(start + 0.74);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function spokenQueueNumber(queueNumber) {
+  const raw = String(queueNumber || "").trim().toUpperCase();
+  const prefixMatch = raw.match(/^[A-Z]+/);
+  const prefix = prefixMatch?.[0] === "W" ? "ดับเบิลยู" : (prefixMatch?.[0] || "คิว");
+  const digits = raw.replace(/^[A-Z]+/, "").replace(/\D/g, "").split("").join(" ");
+  return `${prefix}${digits ? ` ${digits}` : ""}`;
+}
+
+function speakText(text) {
+  if (!supportsSpeech()) return false;
+  try {
+    speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "th-TH";
+    utterance.rate = 0.82;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    if (resolveThaiVoice()) utterance.voice = thaiVoice;
+    speechSynthesis.speak(utterance);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function announce(queueNumber, { test = false } = {}) {
+  if (!soundEnabled || !soundArmed) return;
+  await playChime();
+  window.setTimeout(() => {
+    if (!soundEnabled || !soundArmed) return;
+    const message = test
+      ? "เปิดเสียงเรียกคิวแล้ว"
+      : `ขอเชิญคิว ${spokenQueueNumber(queueNumber)} กรุณามาที่จุดรับโต๊ะ`;
+    speakText(message);
+  }, 480);
+}
+
+function audioCapabilityText() {
+  if (!soundArmed || !soundEnabled) return "เสียงยังไม่เปิด";
+  return supportsSpeech() ? "เสียงเตือน + อ่านหมายเลขคิว" : "เสียงเตือนเท่านั้น";
+}
+
+function renderAudioState() {
+  const ready = soundArmed && soundEnabled;
+  const speech = supportsSpeech();
+  els.sound.classList.toggle("is-armed", ready && speech);
+  els.sound.classList.toggle("is-fallback", ready && !speech);
+  els.audioNotice.classList.toggle("is-ready", ready);
+  els.audioMode.classList.toggle("is-ready", ready && speech);
+  els.audioMode.classList.toggle("is-fallback", ready && !speech);
+  els.audioMode.textContent = audioCapabilityText();
+
+  if (!ready) {
+    els.sound.innerHTML = '<i class="bi bi-volume-mute" aria-hidden="true"></i><span>เปิดเสียงเรียก</span>';
+    els.audioNotice.innerHTML = '<i class="bi bi-volume-up" aria-hidden="true"></i><span>กด “เปิดเสียงเรียก” หนึ่งครั้งก่อนใช้งาน ระบบจะเล่นเสียงเตือนและอ่านหมายเลขคิว</span>';
+    return;
+  }
+
+  els.sound.innerHTML = '<i class="bi bi-volume-up" aria-hidden="true"></i><span>ปิดเสียงเรียก</span>';
+  els.audioNotice.innerHTML = supportsSpeech()
+    ? '<i class="bi bi-check-circle" aria-hidden="true"></i><span>เสียงพร้อมใช้งาน: เล่นเสียงเตือน แล้วอ่านหมายเลขคิวเป็นภาษาไทย</span>'
+    : '<i class="bi bi-exclamation-circle" aria-hidden="true"></i><span>เบราว์เซอร์นี้ไม่รองรับเสียงพูด ระบบจะเล่นเสียงเตือนเท่านั้น</span>';
 }
 
 function countdownText(row) {
@@ -83,7 +159,8 @@ function render() {
   const called = activeCalled();
   const primary = called[0] || null;
   els.calledEmpty.hidden = Boolean(primary);
-  els.called.hidden = !primary;
+  els.calledWrap.hidden = !primary;
+
   if (primary) {
     els.called.textContent = primary.queueNumber || "-";
     els.calledTimer.textContent = countdownText(primary);
@@ -93,14 +170,18 @@ function render() {
       lastCalledSignature = signature;
       announce(primary.queueNumber);
     }
+  } else {
+    lastCalledSignature = "";
   }
+
   const nextRows = upcoming();
   els.next.innerHTML = nextRows.length
     ? nextRows.map((row, index) => `<article><span>${index + 1}</span><strong>${String(row.queueNumber || "-")}</strong><small>${Number(row.partySize || 1).toLocaleString("th-TH")} คน</small></article>`).join("")
-    : '<div class="waiting-display-next-empty">ยังไม่มีคิวถัดไป</div>';
+    : '<div class="waiting-display-next-empty">ยังไม่มีคิวรอเรียก</div>';
+
   els.status.textContent = navigator.onLine ? "เชื่อมต่อระบบเรียกคิวแล้ว" : "ออฟไลน์ — กำลังรอการเชื่อมต่อ";
   els.status.classList.toggle("offline", !navigator.onLine);
-  els.sound.innerHTML = `<i class="bi bi-volume-${soundEnabled ? "up" : "mute"}" aria-hidden="true"></i><span>${soundEnabled ? "เสียงเปิด" : "เสียงปิด"}</span>`;
+  renderAudioState();
 }
 
 function updateClock() {
@@ -111,21 +192,44 @@ function updateClock() {
     second: "2-digit",
   });
   const primary = activeCalled()[0];
-  if (primary) els.calledTimer.textContent = countdownText(primary);
+  if (primary) {
+    els.calledTimer.textContent = countdownText(primary);
+    els.calledTimer.classList.toggle("overdue", Number(primary.responseDeadlineAtMs || 0) > 0 && Number(primary.responseDeadlineAtMs) <= Date.now());
+  }
+}
+
+async function toggleSound() {
+  if (!soundArmed || !soundEnabled) {
+    soundEnabled = true;
+    soundArmed = true;
+    localStorage.setItem("waiting_queue_display_sound", "on");
+    await ensureAudioContext();
+    renderAudioState();
+    await announce("", { test: true });
+    const currentQueue = activeCalled()[0];
+    if (currentQueue) window.setTimeout(() => announce(currentQueue.queueNumber), 1800);
+    return;
+  }
+
+  soundEnabled = false;
+  localStorage.setItem("waiting_queue_display_sound", "off");
+  try { speechSynthesis.cancel(); } catch {}
+  renderAudioState();
 }
 
 function initialize() {
+  resolveThaiVoice();
+  if ("speechSynthesis" in window) speechSynthesis.addEventListener?.("voiceschanged", resolveThaiVoice);
+
   if (!tenantId) {
-    els.calledEmpty.textContent = "ไม่พบ Tenant ของร้าน กรุณาเปิดลิงก์จากหน้าพนักงาน";
-    els.status.textContent = "ลิงก์ไม่ถูกต้อง";
+    els.calledEmpty.innerHTML = '<span class="waiting-display-empty-icon" aria-hidden="true"><i class="bi bi-link-45deg"></i></span><strong>ลิงก์จอเรียกคิวไม่ครบ</strong><span>กรุณาเปิดจอจากหน้าพนักงานอีกครั้ง</span>';
+    els.status.textContent = "ไม่พบ Tenant ของร้าน";
+    els.status.classList.add("offline");
+    renderAudioState();
     return;
   }
-  els.sound.addEventListener("click", () => {
-    soundEnabled = !soundEnabled;
-    localStorage.setItem("waiting_queue_display_sound", soundEnabled ? "on" : "off");
-    if (soundEnabled) beep();
-    render();
-  });
+
+  els.sound.addEventListener("click", toggleSound);
   els.fullscreen.addEventListener("click", async () => {
     try {
       if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
@@ -134,6 +238,7 @@ function initialize() {
   });
   window.addEventListener("online", render);
   window.addEventListener("offline", render);
+
   unsubscribe = watchPublicQueueBoard(tenantId, nextRows => {
     rows = nextRows;
     render();
@@ -142,13 +247,17 @@ function initialize() {
     els.status.textContent = "เชื่อมต่อข้อมูลคิวไม่สำเร็จ";
     els.status.classList.add("offline");
   });
+
   updateClock();
+  renderAudioState();
   clockTimer = setInterval(updateClock, 1000);
 }
 
 window.addEventListener("beforeunload", () => {
   unsubscribe();
   clearInterval(clockTimer);
+  try { speechSynthesis.cancel(); } catch {}
+  try { audioContext?.close(); } catch {}
 }, { once: true });
 
 initialize();

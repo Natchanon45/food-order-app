@@ -12,7 +12,7 @@ import {
   runTransaction,
   writeBatch,
   serverTimestamp,
-} from "./waiting-queue-firebase.js?v=20260801-001";
+} from "./waiting-queue-firebase.js?v=20260801-002";
 
 export const WAITING_QUEUE_STATUS = Object.freeze({
   WAITING: "waiting",
