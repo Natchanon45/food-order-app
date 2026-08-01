@@ -18,12 +18,17 @@ const els = {
 
 let rows = [];
 let lastCalledSignature = "";
-let soundEnabled = localStorage.getItem("waiting_queue_display_sound") === "on";
-let soundArmed = false;
+const savedSoundPreference = localStorage.getItem("waiting_queue_display_sound");
+let soundEnabled = savedSoundPreference !== "off";
+let soundArmed = soundEnabled;
 let audioContext = null;
 let thaiVoice = null;
 let unsubscribe = () => {};
 let clockTimer = null;
+
+if (savedSoundPreference === null) {
+  localStorage.setItem("waiting_queue_display_sound", "on");
+}
 
 function activeCalled() {
   return rows
@@ -240,6 +245,13 @@ async function toggleSound() {
   renderAudioState();
 }
 
+async function unlockDefaultSound() {
+  if (!soundEnabled) return;
+  soundArmed = true;
+  try { await ensureAudioContext(); } catch {}
+  renderAudioState();
+}
+
 function initialize() {
   resolveThaiVoice();
   if ("speechSynthesis" in window) speechSynthesis.addEventListener?.("voiceschanged", resolveThaiVoice);
@@ -253,6 +265,8 @@ function initialize() {
   }
 
   els.sound.addEventListener("click", toggleSound);
+  window.addEventListener("pointerdown", unlockDefaultSound, { once: true, passive: true });
+  window.addEventListener("keydown", unlockDefaultSound, { once: true });
   els.fullscreen.addEventListener("click", async () => {
     try {
       if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
