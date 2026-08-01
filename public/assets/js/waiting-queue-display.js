@@ -26,8 +26,9 @@ let audioContext = null;
 let thaiVoice = null;
 let activeUtterance = null;
 let speechRequestId = 0;
-let activeRecordedAudio = null;
+let activeRecordedSource = null;
 let recordedAnnouncementId = 0;
+const recordedBufferCache = new Map();
 let unsubscribe = () => {};
 let clockTimer = null;
 
@@ -67,36 +68,48 @@ function supportsSpeech() {
   return "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
 }
 
-function playAudioFile(src, announcementId) {
-  return new Promise(resolve => {
-    if (announcementId !== recordedAnnouncementId || !soundEnabled || !soundArmed) {
-      resolve(false);
-      return;
-    }
-    const audio = new Audio(src);
-    activeRecordedAudio = audio;
-    audio.preload = "auto";
-    audio.volume = 1;
-    const finish = played => {
-      audio.onended = null;
-      audio.onerror = null;
-      if (activeRecordedAudio === audio) activeRecordedAudio = null;
-      resolve(played);
-    };
-    audio.onended = () => finish(true);
-    audio.onerror = () => finish(false);
-    audio.play().catch(() => finish(false));
-  });
+async function recordedBuffer(src, context) {
+  if (!recordedBufferCache.has(src)) {
+    recordedBufferCache.set(src, (async () => {
+      const response = await fetch(src, { cache: "force-cache" });
+      if (!response.ok) throw new Error(`RECORDED_AUDIO_HTTP_${response.status}`);
+      return context.decodeAudioData(await response.arrayBuffer());
+    })());
+  }
+  return recordedBufferCache.get(src);
+}
+
+async function playAudioFile(src, announcementId) {
+  if (announcementId !== recordedAnnouncementId || !soundEnabled || !soundArmed) return false;
+  try {
+    const context = await ensureAudioContext();
+    if (!context || context.state !== "running") return false;
+    const buffer = await recordedBuffer(src, context);
+    if (announcementId !== recordedAnnouncementId || !soundEnabled || !soundArmed) return false;
+    return await new Promise(resolve => {
+      const source = context.createBufferSource();
+      activeRecordedSource = source;
+      source.buffer = buffer;
+      source.connect(context.destination);
+      source.onended = () => {
+        if (activeRecordedSource === source) activeRecordedSource = null;
+        resolve(true);
+      };
+      source.start();
+    });
+  } catch (error) {
+    console.warn("[waiting-queue-display] recorded voice failed", src, error);
+    return false;
+  }
 }
 
 async function playRecordedAnnouncement(queueNumber) {
   const digits = String(queueNumber || "").replace(/\D/g, "").split("");
   if (!digits.length) return false;
   const announcementId = ++recordedAnnouncementId;
-  if (activeRecordedAudio) {
-    activeRecordedAudio.pause();
-    activeRecordedAudio.currentTime = 0;
-    activeRecordedAudio = null;
+  if (activeRecordedSource) {
+    try { activeRecordedSource.stop(); } catch {}
+    activeRecordedSource = null;
   }
   const files = [
     `${RECORDED_VOICE_BASE}/intro.m4a`,
@@ -309,10 +322,9 @@ async function toggleSound() {
   soundEnabled = false;
   localStorage.setItem("waiting_queue_display_sound", "off");
   recordedAnnouncementId += 1;
-  if (activeRecordedAudio) {
-    activeRecordedAudio.pause();
-    activeRecordedAudio.currentTime = 0;
-    activeRecordedAudio = null;
+  if (activeRecordedSource) {
+    try { activeRecordedSource.stop(); } catch {}
+    activeRecordedSource = null;
   }
   try { speechSynthesis.cancel(); } catch {}
   renderAudioState();
@@ -369,8 +381,8 @@ window.addEventListener("beforeunload", () => {
   try { speechSynthesis.cancel(); } catch {}
   activeUtterance = null;
   recordedAnnouncementId += 1;
-  try { activeRecordedAudio?.pause(); } catch {}
-  activeRecordedAudio = null;
+  try { activeRecordedSource?.stop(); } catch {}
+  activeRecordedSource = null;
   try { audioContext?.close(); } catch {}
 }, { once: true });
 
