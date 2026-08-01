@@ -841,6 +841,206 @@ dialog.waiting-ticket-dialog .waiting-ticket-actions {
   margin-top: 12px !important;
 }
 
+/* WAITING_QUEUE_REPORT_VISUAL_LANGUAGE_20260802_012 */
+body.waiting-queue-workspace {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 8% 4%, rgba(21,148,71,.09), transparent 28rem),
+    linear-gradient(180deg,#f7faf8 0%,#eef4f0 100%);
+}
+
+body.waiting-queue-workspace > .waiting-app-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  color: #fff !important;
+  border-bottom-color: rgba(255,255,255,.12) !important;
+  background: linear-gradient(115deg,#111b15 0%,#0a3d22 45%,#0d6f34 100%) !important;
+  box-shadow: 0 12px 35px rgba(10,61,34,.2) !important;
+}
+
+body.waiting-queue-workspace > .waiting-app-header .brand,
+body.waiting-queue-workspace > .waiting-app-header .brand .bi,
+body.waiting-queue-workspace > .waiting-app-header .btn,
+body.waiting-queue-workspace > .waiting-app-header .btn .bi {
+  color: #fff !important;
+}
+
+body.waiting-queue-workspace .waiting-page {
+  display: grid;
+  gap: 18px;
+  width: min(1160px,100%);
+  margin: 0 auto;
+  padding: 24px 0 42px;
+}
+
+body.waiting-queue-workspace .waiting-page > * {
+  margin: 0;
+}
+
+body.waiting-queue-workspace .waiting-page-header {
+  position: relative;
+  isolation: isolate;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  padding: 30px 32px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 28px;
+  color: #fff;
+  background: linear-gradient(125deg,#101c16 0%,#0b4f2b 58%,#0b7b3b 100%);
+  box-shadow: 0 20px 45px rgba(11,67,37,.16);
+}
+
+body.waiting-queue-workspace .waiting-page-header::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: -48px;
+  top: -112px;
+  width: 300px;
+  height: 300px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 50%;
+  box-shadow: 0 0 0 48px rgba(255,255,255,.07),0 0 0 96px rgba(255,255,255,.035);
+}
+
+body.waiting-queue-workspace .waiting-eyebrow {
+  color: #075f33;
+  background: rgba(255,255,255,.9);
+}
+
+body.waiting-queue-workspace .waiting-page-header h1 {
+  margin-top: 10px;
+  color: #fff;
+  font-size: clamp(30px,4vw,42px);
+  font-weight: 700;
+  letter-spacing: -.025em;
+}
+
+body.waiting-queue-workspace .waiting-page-header p {
+  color: rgba(255,255,255,.9);
+  font-size: .92rem;
+}
+
+body.waiting-queue-workspace .waiting-flow {
+  color: rgba(255,255,255,.88);
+}
+
+body.waiting-queue-workspace .waiting-flow span {
+  border-color: rgba(255,255,255,.24);
+  background: rgba(255,255,255,.12);
+}
+
+body.waiting-queue-workspace .waiting-flow i {
+  color: rgba(255,255,255,.7);
+}
+
+.waiting-control-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 18px 16px 22px;
+  border: 1px solid var(--wq-border);
+  border-radius: 20px;
+  background: rgba(255,255,255,.96);
+  box-shadow: 0 16px 42px rgba(10,61,34,.07);
+}
+
+.waiting-control-title {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+
+.waiting-control-title > i {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border-radius: 12px;
+  color: var(--wq-green);
+  background: var(--wq-green-soft);
+}
+
+.waiting-control-title div {
+  display: grid;
+  gap: 2px;
+}
+
+.waiting-control-title strong {
+  font-size: .94rem;
+}
+
+.waiting-control-title span {
+  color: var(--wq-muted);
+  font-size: .72rem;
+}
+
+body.waiting-queue-workspace .waiting-stats {
+  gap: 14px;
+}
+
+body.waiting-queue-workspace .waiting-stat {
+  min-height: 112px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  box-shadow: 0 14px 35px rgba(10,61,34,.065);
+}
+
+body.waiting-queue-workspace .waiting-stat:first-child {
+  border-color: #11813e;
+  color: #fff;
+  background: linear-gradient(145deg,#08783a,#159447);
+}
+
+body.waiting-queue-workspace .waiting-stat:first-child span,
+body.waiting-queue-workspace .waiting-stat:first-child strong,
+body.waiting-queue-workspace .waiting-stat:first-child small {
+  color: #fff;
+}
+
+body.waiting-queue-workspace .waiting-panel,
+body.waiting-queue-workspace .waiting-policy {
+  border-radius: 22px;
+  box-shadow: 0 16px 42px rgba(10,61,34,.07);
+}
+
+@media (max-width: 1200px) {
+  body.waiting-queue-workspace .waiting-page {
+    padding-inline: 18px;
+  }
+}
+
+@media (max-width: 760px) {
+  body.waiting-queue-workspace .waiting-page {
+    gap: 12px;
+    padding: 12px 10px 28px;
+  }
+
+  body.waiting-queue-workspace .waiting-page-header {
+    min-height: 138px;
+    padding: 22px 20px;
+    border-radius: 22px;
+  }
+
+  .waiting-control-card {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+    padding: 15px;
+    border-radius: 18px;
+  }
+
+  .waiting-control-card .waiting-header-actions {
+    max-width: none;
+  }
+}
+
 /* WAITING_QUEUE_QR_MODAL_REPAIR_20260802_001 */
 .waiting-ticket-dialog {
   width: min(560px, calc(100% - 24px)) !important;

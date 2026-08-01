@@ -6,24 +6,24 @@
     <meta name="theme-color" content="#0d6f3c" />
     <title>จัดการคิวรอโต๊ะ</title>
     <link rel="icon" href="/assets/images/icon-192.png" type="image/png" />
+    <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096" />
+    <link rel="stylesheet" href="/assets/css/icons.css?v=20260731-079" />
     <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260713-004" />
     <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260801-002" />
-    <link rel="stylesheet" href="/assets/css/waiting-queue.css?v=20260802-010" />
+    <link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260731-081" />
+    <link rel="stylesheet" href="/assets/css/waiting-queue.css?v=20260802-012" />
   </head>
-  <body data-module="waiting-queue">
-    <header class="pos-header waiting-app-header">
-      <div class="app-title">
-        <div>
-          <strong>คิวรอโต๊ะ</strong>
-          <small>รับคิว เรียกคิว จัดโต๊ะ และเปิดโต๊ะในขั้นตอนเดียว</small>
-        </div>
+  <body class="order-delivery-workspace waiting-queue-workspace" data-module="waiting-queue">
+    <header class="app-header waiting-app-header">
+      <div class="brand">
+        <span class="brand-mark">FOD</span>
+        <i class="bi bi-person-standing app-icon" aria-hidden="true"></i>
+        <span>คิวรอโต๊ะ</span>
       </div>
-      <div class="header-actions">
-        <a class="btn btn-secondary waiting-home-link" href="/" aria-label="กลับหน้าหลัก" title="กลับหน้าหลัก">
-          <i class="bi bi-house" aria-hidden="true"></i>
-          <span>หน้าหลัก</span>
-        </a>
-      </div>
+      <a class="btn btn-dark btn-sm waiting-home-link" href="/" aria-label="ย้อนกลับ" title="ย้อนกลับ">
+        <i class="bi bi-arrow-left app-icon" aria-hidden="true"></i>
+        <span>ย้อนกลับ</span>
+      </a>
     </header>
 
     <main class="waiting-page">
@@ -38,6 +38,13 @@
             <span>3 เลือกโต๊ะ</span><i class="bi bi-chevron-right" aria-hidden="true"></i>
             <span>4 เปิดโต๊ะ</span>
           </div>
+        </div>
+      </section>
+
+      <section class="waiting-control-card" aria-label="เครื่องมือคิวรอโต๊ะ">
+        <div class="waiting-control-title">
+          <i class="bi bi-sliders" aria-hidden="true"></i>
+          <div><strong>เครื่องมือจัดการคิว</strong><span>ตรวจสอบการเชื่อมต่อ เรียกจอคิว และรับคิวใหม่</span></div>
         </div>
         <div class="waiting-header-actions" aria-label="เครื่องมือคิวรอโต๊ะ">
           <div class="waiting-connection-group">
