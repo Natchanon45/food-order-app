@@ -1,9 +1,23 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Waiting Queue Usability And Permission Repair
-Version: 0.16.3
-Build: 2026.08.01.004
+Milestone: Waiting Queue Owner Access And Dialog Spacing
+Version: 0.16.4
+Build: 2026.08.01.005
+
+<!-- WAITING_QUEUE_OWNER_ACCESS_DIALOG_20260801_005 -->
+Change: Fixed owner access resolution and modal action spacing in Waiting Queue.
+
+Root cause: the staff page previously trusted generic tenant IDs left in Local Storage before reading the authenticated `users/{uid}` profile. An owner could therefore open the page successfully but send queue writes to a different tenant, which Firestore correctly denied.
+
+Tenant safety: authenticated staff now use the active profile tenant as the authoritative tenant. A stale browser tenant is corrected without deleting its local queue cache or attempting to sync it across tenants. Firestore Waiting Queue rules use safe owner, user-profile, membership, and claim checks and retain tenant matching on every write.
+
+Compatibility: queue, public, board, and number-claim rules permit only same-tenant idempotent backfills for legacy documents. Stable W-numbers, waitingQueueId, public token, tableId, and orderId do not change.
+
+UI: add-queue and open-table modal action bars now have internal margins, equal button spacing, and explicit cancel/open-table icons. Horizontal overflow is suppressed while the existing responsive layout remains.
+
+Deploy: Firestore Rules and Hosting. Hard refresh cache `20260801-005`.
+
 
 <!-- WAITING_QUEUE_USABILITY_PERMISSION_20260801_004 -->
 Change: Repaired Waiting Queue permissions and completed the reported usability polish.

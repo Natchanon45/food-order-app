@@ -12,7 +12,7 @@ import {
   runTransaction,
   writeBatch,
   serverTimestamp,
-} from "./waiting-queue-firebase.js?v=20260801-003";
+} from "./waiting-queue-firebase.js?v=20260801-005";
 
 export const WAITING_QUEUE_STATUS = Object.freeze({
   WAITING: "waiting",
@@ -359,58 +359,141 @@ export function isOnline() {
   return navigator.onLine !== false;
 }
 
-async function readProfileTenant(uid) {
-  if (!uid || !db) return "";
+async function readProfileContext(uid) {
+  if (!uid || !db) return null;
   for (const collectionName of ["users", "staff", "profiles"]) {
     try {
       const snapshot = await getDoc(doc(db, collectionName, uid));
       if (!snapshot.exists()) continue;
       const data = snapshot.data() || {};
-      const tenantId = normalizeString(data.tenantId || data.shopId || data.storeId);
-      if (tenantId) return tenantId;
+      const tenantId = normalizeString(
+        data.tenantId
+        || data.activeTenantId
+        || data.shopId
+        || data.storeId,
+      );
+      const role = normalizeString(data.role);
+      if (!tenantId && role !== "super_admin") continue;
+      return {
+        tenantId,
+        role,
+        active: data.active !== false,
+        source: collectionName,
+      };
     } catch {
-      // Try the next profile shape.
+      // Try the next supported profile shape.
     }
   }
-  return "";
+  return null;
 }
 
-export async function resolveTenantId({ required = true } = {}) {
-  const params = new URLSearchParams(location.search);
-  const queryTenant = normalizeString(params.get("tenantId") || params.get("shopId"));
-  const localCandidates = [
-    queryTenant,
+function canonicalStoredTenantId() {
+  try {
+    const row = JSON.parse(
+      localStorage.getItem("food_order_active_tenant") || "null",
+    );
+    return normalizeString(row?.id || row?.tenantId);
+  } catch {
+    return "";
+  }
+}
+
+function legacyStoredTenantIds() {
+  return [
     localStorage.getItem("tenantId"),
     localStorage.getItem("currentTenantId"),
     localStorage.getItem("selectedTenantId"),
     localStorage.getItem("food_order_tenant_id"),
     localStorage.getItem("retail_pos_tenant_id"),
   ].map(normalizeString).filter(Boolean);
-  if (localCandidates[0]) {
-    localStorage.setItem("food_order_tenant_id", localCandidates[0]);
-    return localCandidates[0];
-  }
+}
 
+function saveResolvedTenantId(tenantId) {
+  if (!tenantId) return;
+  localStorage.setItem("food_order_tenant_id", tenantId);
+  localStorage.setItem("tenantId", tenantId);
+}
+
+function recordTenantCorrection(previousTenantId, tenantId) {
+  if (!previousTenantId || !tenantId || previousTenantId === tenantId) return;
+  writeJson(`${STORAGE_PREFIX}:tenant-correction`, {
+    previousTenantId,
+    tenantId,
+    correctedAtMs: nowMs(),
+    reason: "authenticated_profile_is_authoritative",
+  });
+}
+
+export function consumeWaitingQueueTenantCorrection() {
+  const key = `${STORAGE_PREFIX}:tenant-correction`;
+  const value = readJson(key, null);
+  localStorage.removeItem(key);
+  return value;
+}
+
+export async function resolveTenantId({ required = true } = {}) {
+  const params = new URLSearchParams(location.search);
+  const queryTenant = normalizeString(
+    params.get("tenantId") || params.get("shopId"),
+  );
   const user = auth?.currentUser || null;
+  const profile = await readProfileContext(user?.uid);
+
+  let claimTenant = "";
+  let claimRole = "";
   if (user?.getIdTokenResult) {
     try {
       const token = await user.getIdTokenResult();
-      const claimTenant = normalizeString(token?.claims?.tenantId || token?.claims?.shopId || token?.claims?.storeId);
-      if (claimTenant) {
-        localStorage.setItem("food_order_tenant_id", claimTenant);
-        return claimTenant;
-      }
+      claimTenant = normalizeString(
+        token?.claims?.tenantId
+        || token?.claims?.activeTenantId
+        || token?.claims?.shopId
+        || token?.claims?.storeId,
+      );
+      claimRole = normalizeString(token?.claims?.role);
     } catch {
-      // Fall through to profile lookup.
+      // Continue with the Firestore profile.
     }
   }
-  const profileTenant = await readProfileTenant(user?.uid);
-  if (profileTenant) {
-    localStorage.setItem("food_order_tenant_id", profileTenant);
-    return profileTenant;
+
+  const canonicalTenant = canonicalStoredTenantId();
+  const legacyTenants = legacyStoredTenantIds();
+  const previousTenant = legacyTenants[0] || canonicalTenant || queryTenant;
+
+  let tenantId = "";
+  if (user && profile?.tenantId && profile.active) {
+    tenantId = profile.tenantId;
+  } else if (user && claimTenant) {
+    tenantId = claimTenant;
+  } else if (
+    user
+    && (profile?.role === "super_admin" || claimRole === "super_admin")
+    && (queryTenant || canonicalTenant)
+  ) {
+    tenantId = queryTenant || canonicalTenant;
+  } else {
+    tenantId = queryTenant || canonicalTenant || legacyTenants[0] || "";
   }
 
-  if (required) throw new WaitingQueueError("TENANT_REQUIRED", "ไม่พบ Tenant ของร้าน กรุณาเข้าสู่ระบบใหม่");
+  if (user && profile?.active === false) {
+    throw new WaitingQueueError(
+      "ACCOUNT_INACTIVE",
+      "บัญชีผู้ใช้งานถูกปิดใช้งาน กรุณาติดต่อผู้ดูแลระบบ",
+    );
+  }
+
+  if (tenantId) {
+    saveResolvedTenantId(tenantId);
+    recordTenantCorrection(previousTenant, tenantId);
+    return tenantId;
+  }
+
+  if (required) {
+    throw new WaitingQueueError(
+      "TENANT_REQUIRED",
+      "ไม่พบ Tenant ของร้าน กรุณาออกจากระบบแล้วเข้าสู่ระบบใหม่",
+    );
+  }
   return "";
 }
 
@@ -796,14 +879,16 @@ async function syncCreateOperation(operation) {
     };
     const publicRow = publicSnapshotFromQueue(row);
 
-    transaction.set(numberClaimRef, {
-      tenantId: payload.tenantId,
-      dateKey: payload.queueDate,
-      queueNumber,
-      waitingQueueId: payload.id,
-      createdAt: serverTimestamp(),
-      createdAtMs,
-    }, { merge: false });
+    if (!initialNumberSnap.exists()) {
+      transaction.set(numberClaimRef, {
+        tenantId: payload.tenantId,
+        dateKey: payload.queueDate,
+        queueNumber,
+        waitingQueueId: payload.id,
+        createdAt: serverTimestamp(),
+        createdAtMs,
+      }, { merge: false });
+    }
     transaction.set(opRef, {
       id: operation.opId,
       tenantId: payload.tenantId,
@@ -918,7 +1003,11 @@ async function syncTransitionOperation(operation) {
     const qSnap = await transaction.get(qRef);
     if (!qSnap.exists()) throw new WaitingQueueError("QUEUE_NOT_FOUND", "ไม่พบคิวรอโต๊ะใน Firebase");
 
-    const remote = { ...qSnap.data(), id: qSnap.id };
+    const remote = {
+      ...qSnap.data(),
+      id: qSnap.id,
+      waitingQueueId: qSnap.data()?.waitingQueueId || qSnap.id,
+    };
     if ((remote.appliedOperationIds || []).includes(operation.opId)) {
       return {
         ...remote,
@@ -1378,7 +1467,11 @@ export async function seatWaitingQueue(queueId, table, options = {}) {
     ]);
     if (!qSnap.exists()) throw new WaitingQueueError("QUEUE_NOT_FOUND", "ไม่พบคิวรอโต๊ะ");
     if (!tSnap.exists()) throw new WaitingQueueError("TABLE_NOT_FOUND", "ไม่พบโต๊ะที่เลือก");
-    const queue = { ...qSnap.data(), id: qSnap.id };
+    const queue = {
+      ...qSnap.data(),
+      id: qSnap.id,
+      waitingQueueId: qSnap.data()?.waitingQueueId || qSnap.id,
+    };
     const remoteTable = { ...tSnap.data(), id: tSnap.id };
     if (queue.status === WAITING_QUEUE_STATUS.SEATED) {
       if (queue.tableId === String(table.id) && queue.orderId) {

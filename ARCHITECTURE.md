@@ -2,8 +2,18 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.16.3
-Build: 2026.08.01.004
+Version: 0.16.4
+Build: 2026.08.01.005
+
+<!-- WAITING_QUEUE_OWNER_ACCESS_DIALOG_20260801_005 -->
+Waiting Queue authoritative tenant and modal action rule:
+
+For authenticated staff, the tenant ID from the active `users/{uid}` profile is authoritative over generic browser keys. A mismatched local tenant must never be used to write or drain an outbox under another tenant. The old cache may be retained for recovery but is excluded from the active tenant workflow.
+
+Waiting Queue Firestore authorization must verify one of: an active allowed-role user profile matching the tenant, an active canonical membership, tenant ownership, or validated tenant/role Auth claims. Every queue write still requires tenant equality and stable document identity. Legacy compatibility permits only same-tenant idempotent identity backfills.
+
+Waiting Queue modal actions use inset responsive footers with balanced buttons and accessible icons. Styling must not alter the read-before-write table seating transaction or duplicate protection.
+
 
 <!-- WAITING_QUEUE_USABILITY_PERMISSION_20260801_004 -->
 Waiting Queue permission and accessibility rule:
@@ -34,7 +44,7 @@ Waiting Queue dialog rule: add-queue and open-table workflows use centered, resp
 
 Waiting Queue display audio rule: audio starts only after an operator gesture. Enabled mode means chime plus spoken Thai queue number when supported, and the UI must explicitly identify a chime-only fallback. No customer personal data may appear on the public display.
 
-Milestone: Waiting Queue Usability And Permission Repair
+Milestone: Waiting Queue Owner Access And Dialog Spacing
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 

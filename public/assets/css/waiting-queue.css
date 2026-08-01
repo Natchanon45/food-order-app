@@ -513,3 +513,69 @@ body[data-module="waiting-queue"] {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* WAITING_QUEUE_DIALOG_SPACING_20260801_005 */
+dialog.waiting-dialog {
+  overflow-x: hidden !important;
+}
+
+dialog.waiting-dialog .waiting-dialog-form {
+  overflow-x: hidden !important;
+}
+
+dialog.waiting-dialog .waiting-dialog-actions {
+  position: sticky !important;
+  bottom: 0 !important;
+  width: calc(100% - 32px) !important;
+  max-width: calc(100% - 32px) !important;
+  margin: 16px 16px 14px !important;
+  padding: 10px !important;
+  box-sizing: border-box !important;
+  border: 1px solid var(--wq-border-soft) !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, .98) !important;
+  box-shadow: 0 -8px 24px rgba(15, 23, 42, .055) !important;
+}
+
+dialog.waiting-dialog .waiting-dialog-actions .btn {
+  min-width: 0 !important;
+  min-height: 48px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  padding-inline: 16px !important;
+}
+
+dialog.waiting-dialog .waiting-dialog-actions .btn > i {
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+
+dialog.waiting-dialog .waiting-dialog-actions .btn > span {
+  min-width: 0;
+}
+
+.waiting-button-spinner {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  animation: waiting-button-spin .75s linear infinite;
+}
+
+@keyframes waiting-button-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 480px) {
+  dialog.waiting-dialog .waiting-dialog-actions {
+    width: calc(100% - 20px) !important;
+    max-width: calc(100% - 20px) !important;
+    margin: 12px 10px 10px !important;
+    padding: 8px !important;
+  }
+}

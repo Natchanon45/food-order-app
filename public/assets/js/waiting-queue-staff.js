@@ -1,12 +1,13 @@
 import { requireRole } from "./auth-service.js?v=20260731-079";
 import "./form-validation-ui.js?v=20260731-080";
-import { sweetAlert, sweetConfirm, sweetPrompt } from "./sweet-dialog.js?v=20260801-003";
+import { sweetAlert, sweetConfirm, sweetPrompt } from "./sweet-dialog.js?v=20260801-005";
 import {
   WAITING_QUEUE_STATUS,
   WAITING_QUEUE_ACTIVE_STATUSES,
   acknowledgeCustomerResponse,
   callCountdownSeconds,
   compatibleQueuesForTable,
+  consumeWaitingQueueTenantCorrection,
   createWaitingQueue,
   currentActor,
   customerTrackingUrl,
@@ -27,7 +28,7 @@ import {
   waitingQueueStatusLabel,
   watchWaitingQueuePublicResponses,
   watchWaitingQueues,
-} from "./waiting-queue-core.js?v=20260801-003";
+} from "./waiting-queue-core.js?v=20260801-005";
 
 await requireRole(["owner", "admin", "manager", "cashier"]);
 
@@ -125,7 +126,7 @@ function friendlyWaitingQueueError(error, fallback = "ดำเนินกา�
     code.includes("permission-denied")
     || normalized.includes("missing or insufficient permissions")
   ) {
-    return "บัญชีนี้ยังไม่มีสิทธิ์จัดการคิวรอโต๊ะ กรุณาให้ผู้ดูแลตรวจสอบสิทธิ์ของร้านแล้วลองใหม่";
+    return "ระบบไม่สามารถบันทึกข้อมูลคิวของร้านนี้ได้ กรุณาโหลดหน้าใหม่เพื่อตรวจสอบร้านที่ผูกกับบัญชี แล้วลองอีกครั้ง";
   }
   if (
     normalized.includes("stored version")
@@ -625,7 +626,8 @@ async function confirmSeat() {
   }
   els.seatError.textContent = "";
   els.seatConfirm.disabled = true;
-  els.seatConfirm.textContent = "กำลังเปิดโต๊ะ...";
+  els.seatConfirm.innerHTML =
+    '<span class="waiting-button-spinner" aria-hidden="true"></span><span>กำลังเปิดโต๊ะ...</span>';
   try {
     const fairness = recommendQueueForTable(selectedSeatTable, queues);
     const result = await seatWaitingQueue(selectedSeatQueue.id, selectedSeatTable, {
@@ -657,7 +659,8 @@ async function confirmSeat() {
     els.seatError.textContent = friendlyWaitingQueueError(error, "เปิดโต๊ะไม่สำเร็จ");
   } finally {
     els.seatConfirm.disabled = false;
-    els.seatConfirm.textContent = "เปิดโต๊ะ";
+    els.seatConfirm.innerHTML =
+      '<i class="bi bi-door-open" aria-hidden="true"></i><span>เปิดโต๊ะ</span>';
   }
 }
 
@@ -751,6 +754,20 @@ async function initialize() {
   const actor = currentActor();
   els.tenantName.textContent = `${tenantId} • ${actor.actorName}`;
   bindEvents();
+
+  const tenantCorrection = consumeWaitingQueueTenantCorrection();
+  if (
+    tenantCorrection?.previousTenantId
+    && tenantCorrection.previousTenantId !== tenantId
+  ) {
+    await sweetAlert(
+      "ระบบปรับร้านที่ใช้งานให้ตรงกับบัญชีเจ้าของร้านแล้ว ข้อมูลคิวของร้านเดิมยังถูกเก็บไว้และจะไม่ถูก Sync ข้ามร้าน",
+      {
+        title: "ปรับร้านที่ใช้งานแล้ว",
+        type: "warning",
+      },
+    );
+  }
   renderConnectivity();
   ensureWaitingNumberLease(tenantId).catch(() => {});
   await refreshTables();

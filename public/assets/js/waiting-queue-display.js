@@ -1,4 +1,4 @@
-import { watchPublicQueueBoard } from "./waiting-queue-core.js?v=20260801-003";
+import { watchPublicQueueBoard } from "./waiting-queue-core.js?v=20260801-005";
 
 const params = new URLSearchParams(location.search);
 const tenantId = String(params.get("tenantId") || "").trim();
