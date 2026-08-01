@@ -12,7 +12,7 @@ import {
   runTransaction,
   writeBatch,
   serverTimestamp,
-} from "./waiting-queue-firebase.js?v=20260801-005";
+} from "./waiting-queue-firebase.js?v=20260801-006";
 
 export const WAITING_QUEUE_STATUS = Object.freeze({
   WAITING: "waiting",
@@ -372,11 +372,10 @@ async function readProfileContext(uid) {
         || data.shopId
         || data.storeId,
       );
-      const role = normalizeString(data.role);
-      if (!tenantId && role !== "super_admin") continue;
+      if (!tenantId) continue;
       return {
         tenantId,
-        role,
+        role: normalizeString(data.role),
         active: data.active !== false,
         source: collectionName,
       };
@@ -431,7 +430,10 @@ export function consumeWaitingQueueTenantCorrection() {
   return value;
 }
 
-export async function resolveTenantId({ required = true } = {}) {
+export async function resolveTenantId({
+  required = true,
+  preferredTenantId = "",
+} = {}) {
   const params = new URLSearchParams(location.search);
   const queryTenant = normalizeString(
     params.get("tenantId") || params.get("shopId"),
@@ -456,30 +458,33 @@ export async function resolveTenantId({ required = true } = {}) {
     }
   }
 
+  const preferred = normalizeString(preferredTenantId);
   const canonicalTenant = canonicalStoredTenantId();
   const legacyTenants = legacyStoredTenantIds();
   const previousTenant = legacyTenants[0] || canonicalTenant || queryTenant;
-
-  let tenantId = "";
-  if (user && profile?.tenantId && profile.active) {
-    tenantId = profile.tenantId;
-  } else if (user && claimTenant) {
-    tenantId = claimTenant;
-  } else if (
-    user
-    && (profile?.role === "super_admin" || claimRole === "super_admin")
-    && (queryTenant || canonicalTenant)
-  ) {
-    tenantId = queryTenant || canonicalTenant;
-  } else {
-    tenantId = queryTenant || canonicalTenant || legacyTenants[0] || "";
-  }
 
   if (user && profile?.active === false) {
     throw new WaitingQueueError(
       "ACCOUNT_INACTIVE",
       "บัญชีผู้ใช้งานถูกปิดใช้งาน กรุณาติดต่อผู้ดูแลระบบ",
     );
+  }
+
+  let tenantId = "";
+  if (user && preferred) {
+    tenantId = preferred;
+  } else if (user && profile?.tenantId && profile.active) {
+    tenantId = profile.tenantId;
+  } else if (user && claimTenant) {
+    tenantId = claimTenant;
+  } else if (
+    user
+    && claimRole === "super_admin"
+    && (queryTenant || canonicalTenant)
+  ) {
+    tenantId = queryTenant || canonicalTenant;
+  } else {
+    tenantId = queryTenant || canonicalTenant || legacyTenants[0] || "";
   }
 
   if (tenantId) {

@@ -8,7 +8,7 @@
     <link rel="icon" href="/assets/images/icon-192.png" type="image/png" />
     <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260713-004" />
     <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260801-002" />
-    <link rel="stylesheet" href="/assets/css/waiting-queue.css?v=20260801-005" />
+    <link rel="stylesheet" href="/assets/css/waiting-queue.css?v=20260801-006" />
   </head>
   <body data-module="waiting-queue">
     <header class="pos-header waiting-app-header">
@@ -207,6 +207,59 @@
       </form>
     </dialog>
 
+
+    <dialog id="waitingTicketDialog" class="waiting-dialog waiting-ticket-dialog">
+      <div class="waiting-dialog-form waiting-ticket-dialog-form">
+        <div class="dialog-head waiting-dialog-head">
+          <div>
+            <span class="waiting-dialog-eyebrow">บัตรคิวสำหรับลูกค้า</span>
+            <h2 id="waitingTicketDialogTitle">บัตรคิว</h2>
+            <p>ให้ลูกค้าสแกน QR Code เพื่อติดตามสถานะคิวด้วยตนเอง</p>
+          </div>
+          <button id="closeWaitingTicketDialog" type="button" class="icon-btn" aria-label="ปิด">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <section class="waiting-ticket-card" aria-label="ตัวอย่างบัตรคิว">
+          <span class="waiting-ticket-brand">คิวรอโต๊ะ</span>
+          <span class="waiting-ticket-label">หมายเลขคิว</span>
+          <strong id="waitingTicketQueueNumber" class="waiting-ticket-number">W---</strong>
+          <div id="waitingTicketQr" class="waiting-ticket-qr" aria-label="QR Code ติดตามคิว"></div>
+          <p class="waiting-ticket-instruction">สแกนเพื่อติดตามสถานะคิวแบบเรียลไทม์</p>
+          <div class="waiting-ticket-meta">
+            <div>
+              <span>จำนวนลูกค้า</span>
+              <strong id="waitingTicketPartySize">-</strong>
+            </div>
+            <div>
+              <span>เวลารอประมาณ</span>
+              <strong id="waitingTicketEstimate">-</strong>
+            </div>
+          </div>
+          <div class="waiting-ticket-issued">
+            <span>รับคิวเมื่อ</span>
+            <strong id="waitingTicketIssuedAt">-</strong>
+          </div>
+          <code id="waitingTicketUrl" class="waiting-ticket-url"></code>
+          <small>บัตรพิมพ์จะไม่แสดงชื่อหรือเบอร์โทรของลูกค้า</small>
+        </section>
+
+        <p id="waitingTicketError" class="error-text waiting-ticket-error" role="alert"></p>
+        <div class="dialog-actions waiting-dialog-actions waiting-ticket-actions">
+          <button id="cancelWaitingTicketDialog" type="button" class="btn btn-secondary">
+            <i class="bi bi-x-lg" aria-hidden="true"></i><span>ปิด</span>
+          </button>
+          <button id="copyWaitingTicketLinkBtn" type="button" class="btn btn-secondary">
+            <i class="bi bi-clipboard" aria-hidden="true"></i><span>คัดลอกลิงก์</span>
+          </button>
+          <button id="printWaitingTicketBtn" type="button" class="btn btn-pay">
+            <i class="bi bi-printer" aria-hidden="true"></i><span>พิมพ์บัตรคิว</span>
+          </button>
+        </div>
+      </div>
+    </dialog>
+
     <dialog id="waitingSeatDialog" class="waiting-dialog waiting-seat-dialog">
       <form class="payment-form waiting-dialog-form" onsubmit="return false">
         <div class="dialog-head waiting-dialog-head">
@@ -238,7 +291,8 @@
     </dialog>
 
     <div id="toast" class="toast" role="status"></div>
-    <script type="module" src="/assets/js/retail-toast-status.js?v=20260801-005"></script>
-    <script type="module" src="/assets/js/waiting-queue-staff.js?v=20260801-005"></script>
+    <script type="module" src="/assets/js/retail-toast-status.js?v=20260801-006"></script>
+    <script src="/assets/vendor/qrcodejs/qrcode.min.js?v=1.0.0"></script>
+    <script type="module" src="/assets/js/waiting-queue-staff.js?v=20260801-006"></script>
   </body>
 </html>

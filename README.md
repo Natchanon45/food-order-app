@@ -1,9 +1,25 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Waiting Queue Owner Access And Dialog Spacing
-Version: 0.16.4
-Build: 2026.08.01.005
+Milestone: Waiting Queue Ticket QR And Call Recovery
+Version: 0.16.5
+Build: 2026.08.01.006
+
+<!-- WAITING_QUEUE_TICKET_QR_CALL_RECOVERY_20260801_006 -->
+Change: Added printable customer QR queue tickets and completed call-permission recovery.
+
+Customer ticket: `ลิงก์ลูกค้า` now opens a staff modal containing a locally generated QR Code, queue number, party size, estimated wait, received time, copy-link action, and print action. The printed 80 mm ticket contains no customer name or phone number and lets the customer scan the existing privacy-safe tracking URL.
+
+Offline readiness: QRCode.js is vendored under `public/assets/vendor/qrcodejs` and executes locally; the customer tracking token is not sent to an external QR service.
+
+Audio: enabling the public-display sound plays only a confirmation chime when no queue is active. It no longer speaks `เปิดเสียงเรียกคิวแล้ว`. When a queue is active, the normal queue announcement remains authoritative.
+
+Call recovery: staff tenant resolution prefers the authenticated profile returned by the role guard. Firestore owner/profile/membership/claim checks and same-tenant legacy identity backfills cover the queue, public mirror, board mirror, and number claim without permitting cross-tenant writes.
+
+Firebase safety: Stable W-number, waitingQueueId, customer token, tableId, orderId, audit history, read-before-write seating transaction, duplicate protection, payment, stock, VAT, and food queue behavior are unchanged.
+
+Deploy: Firestore Rules and Hosting. Hard refresh cache `20260801-006`.
+
 
 <!-- WAITING_QUEUE_OWNER_ACCESS_DIALOG_20260801_005 -->
 Change: Fixed owner access resolution and modal action spacing in Waiting Queue.

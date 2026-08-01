@@ -4,7 +4,7 @@ import {
   updatePublicCustomerResponse,
   waitingQueueStatusLabel,
   watchPublicQueue,
-} from "./waiting-queue-core.js?v=20260801-005";
+} from "./waiting-queue-core.js?v=20260801-006";
 
 const params = new URLSearchParams(location.search);
 const tenantId = String(params.get("tenantId") || "").trim();

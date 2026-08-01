@@ -579,3 +579,215 @@ dialog.waiting-dialog .waiting-dialog-actions .btn > span {
     padding: 8px !important;
   }
 }
+
+/* WAITING_QUEUE_TICKET_QR_STYLE_20260801_006 */
+dialog.waiting-dialog {
+  overflow-x: hidden !important;
+}
+
+dialog.waiting-dialog .waiting-dialog-form {
+  overflow-x: hidden !important;
+}
+
+dialog.waiting-dialog .waiting-dialog-actions {
+  position: sticky !important;
+  bottom: 0 !important;
+  width: calc(100% - 32px) !important;
+  max-width: calc(100% - 32px) !important;
+  margin: 16px 16px 14px !important;
+  padding: 10px !important;
+  box-sizing: border-box !important;
+  border: 1px solid var(--wq-border-soft) !important;
+  border-radius: 14px !important;
+  background: rgba(255,255,255,.98) !important;
+  box-shadow: 0 -8px 24px rgba(15,23,42,.055) !important;
+}
+
+dialog.waiting-dialog .waiting-dialog-actions .btn {
+  min-width: 0 !important;
+  min-height: 48px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  padding-inline: 14px !important;
+}
+
+dialog.waiting-dialog .waiting-dialog-actions .btn > i {
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+
+.waiting-button-spinner {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  animation: waiting-button-spin .75s linear infinite;
+}
+
+@keyframes waiting-button-spin {
+  to { transform: rotate(360deg); }
+}
+
+.waiting-ticket-dialog {
+  width: min(560px, calc(100% - 24px));
+}
+
+.waiting-ticket-dialog-form {
+  max-height: min(92vh, 860px);
+}
+
+.waiting-ticket-card {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin: 16px 20px 0;
+  padding: 20px;
+  border: 1px solid #cadfd1;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 50% 0, rgba(21,148,71,.09), transparent 45%),
+    #fff;
+  text-align: center;
+}
+
+.waiting-ticket-brand {
+  color: var(--wq-green-dark);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.waiting-ticket-label {
+  color: var(--wq-muted);
+  font-size: .78rem;
+}
+
+.waiting-ticket-number {
+  color: var(--wq-green-dark);
+  font-size: clamp(3.2rem, 11vw, 4.8rem);
+  line-height: .95;
+  letter-spacing: .055em;
+}
+
+.waiting-ticket-qr {
+  width: 248px;
+  height: 248px;
+  display: grid;
+  place-items: center;
+  margin-top: 4px;
+  padding: 12px;
+  border: 1px solid #d9e5dd;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.waiting-ticket-qr canvas,
+.waiting-ticket-qr img,
+.waiting-ticket-qr table {
+  display: block !important;
+  width: 224px !important;
+  height: 224px !important;
+  max-width: 100%;
+  margin: 0 !important;
+}
+
+.waiting-ticket-instruction {
+  margin: 0;
+  color: #244c34;
+  font-size: .92rem;
+  font-weight: 600;
+}
+
+.waiting-ticket-meta {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.waiting-ticket-meta > div,
+.waiting-ticket-issued {
+  display: grid;
+  gap: 3px;
+  padding: 10px;
+  border: 1px solid #e1ebe4;
+  border-radius: 12px;
+  background: #f8fbf9;
+}
+
+.waiting-ticket-meta span,
+.waiting-ticket-issued span {
+  color: var(--wq-muted);
+  font-size: .72rem;
+}
+
+.waiting-ticket-meta strong,
+.waiting-ticket-issued strong {
+  color: var(--wq-text);
+  font-size: .9rem;
+}
+
+.waiting-ticket-issued {
+  width: 100%;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  text-align: left;
+}
+
+.waiting-ticket-issued strong {
+  text-align: right;
+}
+
+.waiting-ticket-url {
+  width: 100%;
+  display: block;
+  padding: 8px 10px;
+  overflow-wrap: anywhere;
+  border-radius: 10px;
+  background: #f1f5f2;
+  color: #53685b;
+  font-size: .68rem;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.waiting-ticket-card > small {
+  color: var(--wq-muted);
+  font-size: .7rem;
+}
+
+.waiting-ticket-error {
+  margin-inline: 20px !important;
+}
+
+.waiting-ticket-actions {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+@media (max-width: 620px) {
+  .waiting-ticket-card {
+    margin-inline: 12px;
+    padding: 16px 12px;
+  }
+
+  .waiting-ticket-qr {
+    width: min(248px, 100%);
+    height: auto;
+    aspect-ratio: 1;
+  }
+
+  .waiting-ticket-actions {
+    grid-template-columns: 1fr !important;
+  }
+
+  dialog.waiting-dialog .waiting-dialog-actions {
+    width: calc(100% - 20px) !important;
+    max-width: calc(100% - 20px) !important;
+    margin: 12px 10px 10px !important;
+    padding: 8px !important;
+  }
+}

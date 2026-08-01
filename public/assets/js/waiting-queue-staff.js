@@ -1,6 +1,6 @@
 import { requireRole } from "./auth-service.js?v=20260731-079";
 import "./form-validation-ui.js?v=20260731-080";
-import { sweetAlert, sweetConfirm, sweetPrompt } from "./sweet-dialog.js?v=20260801-005";
+import { sweetAlert, sweetConfirm, sweetPrompt } from "./sweet-dialog.js?v=20260801-006";
 import {
   WAITING_QUEUE_STATUS,
   WAITING_QUEUE_ACTIVE_STATUSES,
@@ -28,9 +28,9 @@ import {
   waitingQueueStatusLabel,
   watchWaitingQueuePublicResponses,
   watchWaitingQueues,
-} from "./waiting-queue-core.js?v=20260801-005";
+} from "./waiting-queue-core.js?v=20260801-006";
 
-await requireRole(["owner", "admin", "manager", "cashier"]);
+const waitingProfile = await requireRole(["owner", "admin", "manager", "cashier"]);
 
 const els = {
   tenantName: document.querySelector("#waitingTenantName"),
@@ -69,6 +69,19 @@ const els = {
   intakePreview: document.querySelector("#waitingQueuePreview"),
   intakeAhead: document.querySelector("#waitingQueuePreviewAhead"),
   intakeEstimate: document.querySelector("#waitingQueuePreviewEstimate"),
+  ticketDialog: document.querySelector("#waitingTicketDialog"),
+  ticketTitle: document.querySelector("#waitingTicketDialogTitle"),
+  ticketQueueNumber: document.querySelector("#waitingTicketQueueNumber"),
+  ticketPartySize: document.querySelector("#waitingTicketPartySize"),
+  ticketEstimate: document.querySelector("#waitingTicketEstimate"),
+  ticketIssuedAt: document.querySelector("#waitingTicketIssuedAt"),
+  ticketQr: document.querySelector("#waitingTicketQr"),
+  ticketUrl: document.querySelector("#waitingTicketUrl"),
+  ticketError: document.querySelector("#waitingTicketError"),
+  closeTicket: document.querySelector("#closeWaitingTicketDialog"),
+  cancelTicket: document.querySelector("#cancelWaitingTicketDialog"),
+  copyTicket: document.querySelector("#copyWaitingTicketLinkBtn"),
+  printTicket: document.querySelector("#printWaitingTicketBtn"),
   seatDialog: document.querySelector("#waitingSeatDialog"),
   seatTitle: document.querySelector("#waitingSeatDialogTitle"),
   seatQueueSummary: document.querySelector("#waitingSeatQueueSummary"),
@@ -86,6 +99,7 @@ let tenantId = "";
 let queues = [];
 let tables = [];
 let publicRows = [];
+let selectedTicketQueue = null;
 let selectedSeatQueue = null;
 let selectedSeatTable = null;
 let recommendedSeatQueueId = "";
@@ -126,7 +140,7 @@ function friendlyWaitingQueueError(error, fallback = "ดำเนินกา�
     code.includes("permission-denied")
     || normalized.includes("missing or insufficient permissions")
   ) {
-    return "ระบบไม่สามารถบันทึกข้อมูลคิวของร้านนี้ได้ กรุณาโหลดหน้าใหม่เพื่อตรวจสอบร้านที่ผูกกับบัญชี แล้วลองอีกครั้ง";
+    return "ระบบไม่สามารถบันทึกการเปลี่ยนสถานะคิวของร้านนี้ได้ กรุณาโหลดหน้าใหม่เพื่อตรวจสอบร้านที่ผูกกับบัญชี แล้วลองอีกครั้ง";
   }
   if (
     normalized.includes("stored version")
@@ -215,7 +229,7 @@ function queueActions(queue) {
     actions.push(["cancel", "ยกเลิก", "x-circle"]);
   }
   if (calledOverdue(queue)) actions.unshift(["no-show", "ไม่มา", "person-x"]);
-  actions.push(["copy", "ลิงก์ลูกค้า", "link-45deg"]);
+  actions.push(["copy", "ลิงก์ลูกค้า", "qr-code"]);
   return actions;
 }
 
@@ -465,6 +479,167 @@ function fallbackCopy(text) {
   textarea.remove();
 }
 
+
+/* WAITING_QUEUE_TICKET_QR_20260801_006 */
+function ticketEstimateText(queue) {
+  const estimate = estimateWaitRange(queue, queues, tables);
+  return `${estimate.estimatedWaitMin}–${estimate.estimatedWaitMax} นาที`;
+}
+
+function ticketIssuedText(queue) {
+  const timestamp = Number(queue?.queuedAtMs || queue?.createdAtMs || Date.now());
+  return new Date(timestamp).toLocaleString("th-TH", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
+function renderTicketQr(url) {
+  if (!els.ticketQr) return;
+  els.ticketQr.innerHTML = "";
+  if (typeof window.QRCode !== "function") {
+    throw new Error("QR_CODE_LIBRARY_NOT_READY");
+  }
+  new window.QRCode(els.ticketQr, {
+    text: url,
+    width: 224,
+    height: 224,
+    colorDark: "#071d10",
+    colorLight: "#ffffff",
+    correctLevel: window.QRCode.CorrectLevel.M,
+  });
+}
+
+function ticketQrDataUrl() {
+  const canvas = els.ticketQr?.querySelector("canvas");
+  if (canvas?.toDataURL) return canvas.toDataURL("image/png");
+  const image = els.ticketQr?.querySelector("img");
+  return String(image?.src || "");
+}
+
+function openTicketDialog(queue) {
+  if (!queue || !els.ticketDialog) return;
+  selectedTicketQueue = queue;
+  const url = customerTrackingUrl(queue);
+  els.ticketTitle.textContent = `บัตรคิว ${queue.queueNumber}`;
+  els.ticketQueueNumber.textContent = queue.queueNumber || "W---";
+  els.ticketPartySize.textContent =
+    `${Number(queue.partySize || 1).toLocaleString("th-TH")} คน`;
+  els.ticketEstimate.textContent = ticketEstimateText(queue);
+  els.ticketIssuedAt.textContent = ticketIssuedText(queue);
+  els.ticketUrl.textContent = url;
+  els.ticketError.textContent = "";
+  els.ticketDialog.showModal();
+
+  requestAnimationFrame(() => {
+    try {
+      renderTicketQr(url);
+    } catch (error) {
+      console.error("[waiting-queue-staff] QR render failed", error);
+      els.ticketError.textContent =
+        "สร้าง QR Code ไม่สำเร็จ กรุณาคัดลอกลิงก์ให้ลูกค้าแทน";
+    }
+  });
+}
+
+async function copyTicketLink() {
+  if (!selectedTicketQueue) return;
+  const url = customerTrackingUrl(selectedTicketQueue);
+  await navigator.clipboard.writeText(url).catch(() => fallbackCopy(url));
+  showToast(`คัดลอกลิงก์คิว ${selectedTicketQueue.queueNumber} แล้ว`);
+}
+
+function printableTicketHtml(queue, url, qrDataUrl) {
+  const queueNumber = escapeHtml(queue.queueNumber || "W---");
+  const partySize = escapeHtml(
+    `${Number(queue.partySize || 1).toLocaleString("th-TH")} คน`,
+  );
+  const estimate = escapeHtml(ticketEstimateText(queue));
+  const issuedAt = escapeHtml(ticketIssuedText(queue));
+  const safeUrl = escapeHtml(url);
+  const safeQr = escapeHtml(qrDataUrl);
+
+  return `<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>บัตรคิว ${queueNumber}</title>
+  <style>
+    @page{size:80mm auto;margin:4mm}
+    *{box-sizing:border-box}
+    body{margin:0;background:#fff;color:#111;font-family:"Noto Sans Thai",Tahoma,sans-serif}
+    .ticket{width:72mm;margin:0 auto;text-align:center}
+    .brand{font-size:16pt;font-weight:700}
+    .sub{margin-top:1mm;font-size:9pt}
+    .number{margin:3mm 0 2mm;font-size:34pt;line-height:1;font-weight:800;letter-spacing:.06em}
+    .meta{display:grid;grid-template-columns:1fr 1fr;gap:2mm;margin:3mm 0}
+    .meta div{padding:2mm;border:1px solid #222;border-radius:2mm}
+    .meta span{display:block;font-size:7.5pt}
+    .meta strong{display:block;margin-top:1mm;font-size:10pt}
+    .qr{width:48mm;height:48mm;display:block;margin:3mm auto}
+    .instruction{font-size:10pt;font-weight:700}
+    .time{margin-top:2mm;font-size:8pt}
+    .url{margin-top:2mm;font-size:6.5pt;line-height:1.35;word-break:break-all}
+    .footer{margin-top:3mm;padding-top:2mm;border-top:1px dashed #333;font-size:8pt}
+  </style>
+</head>
+<body>
+  <main class="ticket">
+    <div class="brand">บัตรคิวรอโต๊ะ</div>
+    <div class="sub">โปรดรอเรียกหมายเลขคิวของท่าน</div>
+    <div class="number">${queueNumber}</div>
+    <div class="meta">
+      <div><span>จำนวนลูกค้า</span><strong>${partySize}</strong></div>
+      <div><span>เวลารอประมาณ</span><strong>${estimate}</strong></div>
+    </div>
+    <img class="qr" src="${safeQr}" alt="QR Code ติดตามคิว">
+    <div class="instruction">สแกนเพื่อติดตามสถานะคิว</div>
+    <div class="time">รับคิวเมื่อ ${issuedAt}</div>
+    <div class="url">${safeUrl}</div>
+    <div class="footer">โปรดเก็บบัตรนี้ไว้จนกว่าจะได้รับโต๊ะ</div>
+  </main>
+  <script>
+    const image = document.querySelector(".qr");
+    const printNow = () => setTimeout(() => { window.focus(); window.print(); }, 120);
+    if (image.complete) printNow();
+    else image.addEventListener("load", printNow, { once: true });
+    window.addEventListener("afterprint", () => window.close(), { once: true });
+  <\/script>
+</body>
+</html>`;
+}
+
+async function printWaitingTicket() {
+  if (!selectedTicketQueue) return;
+  const popup = window.open("", "waiting-queue-ticket-print", "width=480,height=760");
+  if (!popup) {
+    await sweetAlert(
+      "เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาต Pop-up แล้วลองใหม่",
+      { title: "เปิดหน้าพิมพ์ไม่สำเร็จ", type: "warning" },
+    );
+    return;
+  }
+
+  const url = customerTrackingUrl(selectedTicketQueue);
+  const qrDataUrl = ticketQrDataUrl();
+  if (!qrDataUrl) {
+    popup.close();
+    await sweetAlert(
+      "QR Code ยังสร้างไม่เสร็จ กรุณารอสักครู่แล้วกดพิมพ์อีกครั้ง",
+      { title: "ยังพิมพ์ไม่ได้", type: "warning" },
+    );
+    return;
+  }
+
+  popup.document.open();
+  popup.document.write(
+    printableTicketHtml(selectedTicketQueue, url, qrDataUrl),
+  );
+  popup.document.close();
+}
+
+
 function queueById(id) {
   return queues.find(queue => String(queue.id) === String(id));
 }
@@ -556,9 +731,7 @@ async function handleQueueAction(action, queue) {
     return;
   }
   if (action === "copy") {
-    const url = customerTrackingUrl(queue);
-    await navigator.clipboard.writeText(url).catch(() => fallbackCopy(url));
-    showToast(`คัดลอกลิงก์คิว ${queue.queueNumber} แล้ว`);
+    openTicketDialog(queue);
     return;
   }
   if (action === "seat") openSeatDialog(queue);
@@ -741,6 +914,13 @@ function bindEvents() {
     selectedSeatTable = tables.find(table => table.id === event.target.value) || null;
     syncSeatReasonVisibility();
   });
+  els.closeTicket.addEventListener("click", () => els.ticketDialog.close());
+  els.cancelTicket.addEventListener("click", () => els.ticketDialog.close());
+  els.copyTicket.addEventListener("click", copyTicketLink);
+  els.printTicket.addEventListener("click", printWaitingTicket);
+  els.ticketDialog.addEventListener("click", event => {
+    if (event.target === els.ticketDialog) els.ticketDialog.close();
+  });
   els.closeSeat.addEventListener("click", () => els.seatDialog.close());
   els.cancelSeat.addEventListener("click", () => els.seatDialog.close());
   els.seatConfirm.addEventListener("click", confirmSeat);
@@ -750,7 +930,9 @@ function bindEvents() {
 }
 
 async function initialize() {
-  tenantId = await resolveTenantId();
+  tenantId = await resolveTenantId({
+    preferredTenantId: waitingProfile?.tenantId || "",
+  });
   const actor = currentActor();
   els.tenantName.textContent = `${tenantId} • ${actor.actorName}`;
   bindEvents();

@@ -279,33 +279,37 @@ service cloud.firestore {
       allow get: if true;
       allow list: if wqTenantMember(resource.data.tenantId);
       allow create: if
-        wqTenantMember(request.resource.data.tenantId) &&
-        request.resource.data.get('token', '') == publicToken &&
-        wqPublicHasNoPii(request.resource.data);
+        wqTenantMember(request.resource.data.tenantId)
+        && request.resource.data.get('token', '') == publicToken
+        && wqPublicHasNoPii(request.resource.data);
       allow update: if (
-        wqTenantMember(resource.data.tenantId) &&
-        request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '') &&
-        request.resource.data.get('token', '') == publicToken &&
-        resource.data.get('token', publicToken) == publicToken &&
-        request.resource.data.get('waitingQueueId', '') != '' &&
-        request.resource.data.get('waitingQueueId', '') ==
+        wqTenantMember(resource.data.tenantId)
+        && request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '')
+        && request.resource.data.get('token', '') == publicToken
+        && resource.data.get('token', publicToken) == publicToken
+        && request.resource.data.get('waitingQueueId', '') != ''
+        && request.resource.data.get('waitingQueueId', '') ==
           resource.data.get(
             'waitingQueueId',
             request.resource.data.get('waitingQueueId', '')
-          ) &&
-        wqPublicHasNoPii(request.resource.data)
+          )
+        && wqPublicHasNoPii(request.resource.data)
       ) || (
-        resource.data.get('active', false) == true &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        resource.data.get('active', false) == true
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'customerResponse',
           'customerResponseAtMs',
           'updatedAt',
           'updatedAtMs'
-        ]) &&
-        request.resource.data.get('customerResponse', '') in ['on_the_way', 'cancel_requested'] &&
-        request.resource.data.get('customerResponseAtMs', 0) is int &&
-        request.resource.data.get('updatedAtMs', 0) is int &&
-        request.resource.data.get('updatedAtMs', 0) >= resource.data.get('updatedAtMs', 0)
+        ])
+        && request.resource.data.get('customerResponse', '') in [
+          'on_the_way',
+          'cancel_requested'
+        ]
+        && request.resource.data.get('customerResponseAtMs', 0) is int
+        && request.resource.data.get('updatedAtMs', 0) is int
+        && request.resource.data.get('updatedAtMs', 0) >=
+          resource.data.get('updatedAtMs', 0)
       );
       allow delete: if false;
     }
@@ -313,20 +317,20 @@ service cloud.firestore {
     match /waitingQueueBoard/{waitingQueueId} {
       allow get, list: if true;
       allow create: if
-        wqTenantMember(request.resource.data.tenantId) &&
-        request.resource.data.get('id', '') == waitingQueueId &&
-        request.resource.data.get('waitingQueueId', '') == waitingQueueId &&
-        wqValidStatus(request.resource.data.get('status', '')) &&
-        wqBoardHasNoPiiOrControlToken(request.resource.data);
+        wqTenantMember(request.resource.data.tenantId)
+        && request.resource.data.get('id', '') == waitingQueueId
+        && request.resource.data.get('waitingQueueId', '') == waitingQueueId
+        && wqValidStatus(request.resource.data.get('status', ''))
+        && wqBoardHasNoPiiOrControlToken(request.resource.data);
       allow update: if
-        wqTenantMember(resource.data.tenantId) &&
-        request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '') &&
-        request.resource.data.get('id', '') == waitingQueueId &&
-        request.resource.data.get('waitingQueueId', '') == waitingQueueId &&
-        resource.data.get('id', waitingQueueId) == waitingQueueId &&
-        resource.data.get('waitingQueueId', waitingQueueId) == waitingQueueId &&
-        wqValidStatus(request.resource.data.get('status', '')) &&
-        wqBoardHasNoPiiOrControlToken(request.resource.data);
+        wqTenantMember(resource.data.tenantId)
+        && request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '')
+        && request.resource.data.get('id', '') == waitingQueueId
+        && request.resource.data.get('waitingQueueId', '') == waitingQueueId
+        && resource.data.get('id', waitingQueueId) == waitingQueueId
+        && resource.data.get('waitingQueueId', waitingQueueId) == waitingQueueId
+        && wqValidStatus(request.resource.data.get('status', ''))
+        && wqBoardHasNoPiiOrControlToken(request.resource.data);
       allow delete: if false;
     }
 
@@ -359,7 +363,8 @@ service cloud.firestore {
       allow create: if wqTenantMember(request.resource.data.tenantId);
       allow update: if
         wqTenantMember(resource.data.tenantId)
-        && request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '')
+        && request.resource.data.get('tenantId', '') ==
+          resource.data.get('tenantId', '')
         && request.resource.data.get('waitingQueueId', '') ==
           resource.data.get('waitingQueueId', '')
         && request.resource.data.get('queueNumber', '') ==

@@ -2,8 +2,18 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.16.4
-Build: 2026.08.01.005
+Version: 0.16.5
+Build: 2026.08.01.006
+
+<!-- WAITING_QUEUE_TICKET_QR_CALL_RECOVERY_20260801_006 -->
+Waiting Queue ticket, audio-arm, and call authorization rule:
+
+Customer QR tickets encode only the existing privacy-safe tracking URL. Printed tickets may show the W-number, party size, estimated wait, received time, and QR Code, but must not print customer name, phone, phone hash, special note, or control/audit metadata. QR generation must execute locally.
+
+Arming public-display audio may play a chime but must not speak a synthetic `sound enabled` sentence. Spoken output is reserved for real queue numbers and retains the operator-gesture requirement.
+
+Staff queue calls must use the tenant from the authenticated role-guard profile before generic Local Storage candidates. Firestore authorization must remain tenant-scoped through active user profile, membership, tenant ownership, or validated claims. Legacy identity backfill is allowed only when the document ID and tenant remain stable.
+
 
 <!-- WAITING_QUEUE_OWNER_ACCESS_DIALOG_20260801_005 -->
 Waiting Queue authoritative tenant and modal action rule:
@@ -44,7 +54,7 @@ Waiting Queue dialog rule: add-queue and open-table workflows use centered, resp
 
 Waiting Queue display audio rule: audio starts only after an operator gesture. Enabled mode means chime plus spoken Thai queue number when supported, and the UI must explicitly identify a chime-only fallback. No customer personal data may appear on the public display.
 
-Milestone: Waiting Queue Owner Access And Dialog Spacing
+Milestone: Waiting Queue Ticket QR And Call Recovery
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 

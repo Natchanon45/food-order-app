@@ -1,4 +1,4 @@
-import { watchPublicQueueBoard } from "./waiting-queue-core.js?v=20260801-005";
+import { watchPublicQueueBoard } from "./waiting-queue-core.js?v=20260801-006";
 
 const params = new URLSearchParams(location.search);
 const tenantId = String(params.get("tenantId") || "").trim();
@@ -130,14 +130,13 @@ function speakText(text) {
   }
 }
 
-async function announce(queueNumber, { test = false } = {}) {
+async function announce(queueNumber) {
   if (!soundEnabled || !soundArmed) return;
   await playChime();
   window.setTimeout(() => {
     if (!soundEnabled || !soundArmed) return;
-    const message = test
-      ? "เปิดเสียงเรียกคิวแล้ว"
-      : `ขอเชิญคิว, ${spokenQueueNumber(queueNumber)}, กรุณามาที่จุดรับโต๊ะค่ะ`;
+    const message =
+      `ขอเชิญคิว, ${spokenQueueNumber(queueNumber)}, กรุณามาที่จุดรับโต๊ะค่ะ`;
     speakText(message);
   }, 680);
 }
@@ -229,9 +228,9 @@ async function toggleSound() {
     localStorage.setItem("waiting_queue_display_sound", "on");
     await ensureAudioContext();
     renderAudioState();
-    await announce("", { test: true });
     const currentQueue = activeCalled()[0];
-    if (currentQueue) window.setTimeout(() => announce(currentQueue.queueNumber), 1800);
+    if (currentQueue) await announce(currentQueue.queueNumber);
+    else await playChime();
     return;
   }
 
