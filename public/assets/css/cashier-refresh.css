@@ -123,6 +123,15 @@ body[data-roles="cashier"] #orderGrid .order-actions {
   justify-content: flex-end;
 }
 
+body[data-roles="cashier"] #orderGrid [data-status="cancelled"] > span {
+  font-size: 0 !important;
+}
+
+body[data-roles="cashier"] #orderGrid [data-status="cancelled"] > span::after {
+  content: "ยกเลิกทุกรายการ";
+  font-size: .92rem;
+}
+
 .cashier-empty {
   grid-column: 1 / -1;
   min-height: 260px;
