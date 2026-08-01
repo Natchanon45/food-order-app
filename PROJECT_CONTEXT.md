@@ -2,8 +2,14 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.16.2
-Build: 2026.08.01.105
+Version: 0.16.3
+Build: 2026.08.01.106
+
+Change: Expanded the Waiting Queue badge instead of truncating the queue label. The full 8-character queue number is now visible within a 116 px desktop badge and a 104 px mobile badge, with a small responsive font adjustment on narrow screens.
+
+Firebase boundary: CSS presentation only. Queue values and stable identifiers remain byte-for-byte unchanged; no Firestore read/write, tenant permission, state transition, duplicate protection, public tracking, or connectivity behavior changed.
+
+Deploy rules: Hosting only. Load cache build `20260801-106` with a hard refresh after deployment.
 
 Change: Polished all five reported Waiting Queue UI points: the table menu now reads `เปิดโต๊ะ`; Waiting Queue uses the mapped `user-time` icon; the add button aligns with its inputs; queue badges safely contain long display values; and queue seating uses the same `room-service` icon as the table menu.
 

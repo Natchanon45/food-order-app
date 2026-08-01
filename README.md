@@ -1,9 +1,15 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Waiting Queue UI Polish
-Version: 0.16.2
-Build: 2026.08.01.105
+Milestone: Waiting Queue Full Number
+Version: 0.16.3
+Build: 2026.08.01.106
+
+Change: Expanded the Waiting Queue number badge to show the complete 8-character queue number without ellipsis. Desktop uses a 116 px queue column and mobile uses 104 px with responsive text sizing, taking advantage of the available row space while keeping customer and action content readable.
+
+Firebase safety: Presentation only. The stored queue number, stable queue/table IDs, tenant scoping, duplicate seating guard, public tracking payload, real-time updates, and online/offline behavior are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh after deployment to load cache build `20260801-106`.
 
 Change: Renamed the profile-menu action from `ออกโต๊ะ` to `เปิดโต๊ะ`, replaced the Waiting Queue fallback circle with a customer-waiting icon, unified the Waiting Queue table action with the same room-service icon, fine-tuned the add button alignment, and contained long queue numbers within a wider responsive badge.
 
