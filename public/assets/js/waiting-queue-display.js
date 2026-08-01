@@ -135,19 +135,26 @@ async function playChime() {
     const context = await ensureAudioContext();
     if (!context) return false;
     const start = context.currentTime;
-    const gain = context.createGain();
-    gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(0.16, start + 0.025);
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.72);
-    const oscillator = context.createOscillator();
-    oscillator.type = "sine";
-    oscillator.frequency.setValueAtTime(784, start);
-    oscillator.frequency.setValueAtTime(988, start + 0.22);
-    oscillator.frequency.setValueAtTime(1175, start + 0.44);
-    oscillator.connect(gain);
-    gain.connect(context.destination);
-    oscillator.start(start);
-    oscillator.stop(start + 0.74);
+    const master = context.createGain();
+    master.gain.setValueAtTime(0.72, start);
+    master.connect(context.destination);
+
+    // A calm four-note service chime suitable for a mall or bank announcement.
+    [659.25, 783.99, 987.77, 783.99].forEach((frequency, index) => {
+      const noteStart = start + (index * 0.24);
+      const duration = index === 3 ? 0.48 : 0.36;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(frequency, noteStart);
+      gain.gain.setValueAtTime(0.0001, noteStart);
+      gain.gain.exponentialRampToValueAtTime(0.18, noteStart + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + duration);
+      oscillator.connect(gain);
+      gain.connect(master);
+      oscillator.start(noteStart);
+      oscillator.stop(noteStart + duration + 0.02);
+    });
     return true;
   } catch {
     return false;
@@ -225,7 +232,7 @@ async function announce(queueNumber) {
         `ขอเชิญคิว, ${spokenQueueNumber(queueNumber)}, กรุณามาที่จุดรับโต๊ะค่ะ`;
       speakText(message);
     }
-  }, 820);
+  }, 1320);
 }
 
 function audioCapabilityText() {
