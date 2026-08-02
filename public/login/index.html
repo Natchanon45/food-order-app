@@ -14,6 +14,10 @@
       href="/assets/css/retail-pos-login.css?v=20260627-3"
     />
     <link rel="stylesheet" href="/assets/css/icons.css?v=20260731-079" />
+    <link
+      rel="stylesheet"
+      href="https://cdn-uicons.flaticon.com/4.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css"
+    />
     <style>
       * {
         box-sizing: border-box;
@@ -145,6 +149,18 @@
           transform 0.2s ease,
           color 0.2s ease,
           opacity 0.2s ease;
+      }
+      .login-input-wrap .login-key-reference-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+      }
+      .login-input-wrap .login-key-reference-icon::before {
+        display: block;
+        line-height: 1;
+        transform: rotate(90deg) scaleY(-1);
+        transform-origin: center;
       }
       .login-input-wrap:focus-within .login-field-icon,
       .login-input-wrap.is-filled .login-field-icon {
@@ -331,7 +347,7 @@
               class="login-input-wrap login-password-wrap"
               data-validation-feedback-host
               ><i
-                class="bi bi-key app-icon login-field-icon"
+                class="fi fi-rr-key app-icon login-field-icon login-key-reference-icon"
                 aria-hidden="true"
               ></i
               ><input
