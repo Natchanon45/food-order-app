@@ -14,7 +14,9 @@ function apply() {
     cell.dataset.statusIconApplied = '1';
   });
   document.querySelectorAll('#tableRows tr').forEach(row => {
-    const cell = row.children && row.children[2];
+    // Table rows are: code, name, capacity, status, actions.
+    // Keep the numeric capacity cell intact and decorate only the status cell.
+    const cell = row.children && row.children[3];
     if (!cell || cell.dataset.statusIconApplied) return;
     const text = cell.textContent.trim();
     if (!text) return;
