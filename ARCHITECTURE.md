@@ -2,8 +2,14 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.16.11
-Build: 2026.08.03.003
+Version: 0.16.12
+Build: 2026.08.03.004
+
+<!-- ADMIN_MODAL_HEADER_ICON_DEDUPLICATION_20260803_004 -->
+Admin modal icon rule:
+
+A shared Admin modal title must not be decorated by the general Admin heading icon enhancer. The dedicated modal header badge is authoritative, and the title remains plain accessible text. Presentation cleanup may remove stale inline icons but must not alter form submission or entity data.
+
 
 <!-- ADMIN_MODAL_TEMPLATE_LOCAL_PRINT_FONT_20260803_003 -->
 Admin modal and QR print presentation rule:
@@ -128,7 +134,7 @@ Waiting Queue dialog rule: add-queue and open-table workflows use centered, resp
 
 Waiting Queue display audio rule: audio starts only after an operator gesture. Enabled mode means chime plus spoken Thai queue number when supported, and the UI must explicitly identify a chime-only fallback. No customer personal data may appear on the public display.
 
-Milestone: Admin Modal Template And Local Print Font
+Milestone: Admin Modal Header Icon Deduplication
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 

@@ -1,9 +1,19 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Admin Modal Template And Local Print Font
-Version: 0.16.11
-Build: 2026.08.03.003
+Milestone: Admin Modal Header Icon Deduplication
+Version: 0.16.12
+Build: 2026.08.03.004
+
+<!-- ADMIN_MODAL_HEADER_ICON_DEDUPLICATION_20260803_004 -->
+Change: Removed the duplicate icon from Admin Menu/Table modal titles.
+
+The shared Admin modal keeps one semantic icon badge in the header. `admin-icon-polish.js` now excludes `#adminEditModalTitle` and any heading inside `.admin-edit-modal`, while the modal presenter removes an icon that may have been inserted before initialization.
+
+Add/Edit Menu and Table form behavior, validation, submit delegation, persistence, tenant scope, QR actions, and report workflows are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260803-004`.
+
 
 <!-- ADMIN_MODAL_TEMPLATE_LOCAL_PRINT_FONT_20260803_003 -->
 Change: Standardized Admin edit modals and local QR print typography.

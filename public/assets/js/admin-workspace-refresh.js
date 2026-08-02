@@ -1,3 +1,4 @@
+// ADMIN_MODAL_HEADER_ICON_DEDUPLICATION_20260803_004
 const path = location.pathname.replace(/\/index\.html$/, "/");
 const isReport = /\/admin\/sales-report\/?$/.test(path);
 const body = document.body;
@@ -474,6 +475,9 @@ function adminVrEnsureModalTemplate() {
   }
 
   function syncPresentation() {
+    title.querySelectorAll(".admin-heading-icon").forEach(node => node.remove());
+    title.removeAttribute("data-admin-icon");
+
     const current = presentation();
     modal.dataset.adminModalEntity = current.entity;
     iconWrap.innerHTML =

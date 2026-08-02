@@ -2,8 +2,18 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.16.11
-Build: 2026.08.03.003
+Version: 0.16.12
+Build: 2026.08.03.004
+
+<!-- ADMIN_MODAL_HEADER_ICON_DEDUPLICATION_20260803_004 -->
+Change: Admin Modal Header Icon Deduplication.
+
+Current behavior: Add/Edit Menu and Table modals display exactly one icon in the dedicated header badge. Inline heading decoration is disabled for the shared Admin entity modal and stale inline icons are removed during presentation synchronization.
+
+Deploy rules: Hosting only.
+
+Next Task: verify Add Table, Edit Table, Add Menu, and Edit Menu modal headers.
+
 
 <!-- ADMIN_MODAL_TEMPLATE_LOCAL_PRINT_FONT_20260803_003 -->
 Change: Admin Modal Template And Local Print Font.
@@ -194,7 +204,7 @@ Change: Implemented Waiting Queue MVP as a table-waiting workflow independent fr
 Firebase boundary: Waiting queue writes use top-level tenant-scoped collections `waitingQueues`, `waitingQueuePublic`, `waitingQueueBoard`, `waitingQueueAudits`, `waitingQueueCounters`, `waitingQueueNumberLeases`, `waitingQueueNumbers`, `waitingQueueDedupe`, and `waitingQueueOperations`. Customer tracking tokens remain in non-listable `waitingQueuePublic` documents, while the listable public display reads token-free `waitingQueueBoard` documents. Neither public surface contains customer name, phone, or note. Local staff intake uses preleased stable W-numbers and an idempotent outbox; queue records are retained for audit and are never physically deleted. Existing order, payment, stock, VAT, Kitchen, Delivery, stable sale/order IDs, and duplicate stock protection remain authoritative.
 
 Deploy rules: deploy Firestore Rules, Indexes, and Hosting. Load cache build `20260801-001` with a hard refresh.
-Milestone: Admin Modal Template And Local Print Font
+Milestone: Admin Modal Header Icon Deduplication
 
 Next Task: perform two-device acceptance tests for duplicate intake, call/recall audit, customer response, skip reasons, table collision protection, and order/table linkage.
 
