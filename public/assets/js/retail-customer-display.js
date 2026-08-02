@@ -27,7 +27,9 @@ const els = {
   paymentQrError: document.querySelector('#paymentQrError'),
   paidState: document.querySelector('#paidState'),
   updatedAt: document.querySelector('#updatedAt'),
-  header: document.querySelector('.display-header')
+  header: document.querySelector('.display-header'),
+  headerActions: document.querySelector('#displayHeaderActions'),
+  fullscreen: document.querySelector('#customerDisplayFullscreen')
 };
 
 function safeId(value, fallback = DEFAULT_DISPLAY_ID) {
@@ -126,7 +128,23 @@ function installPairingCard() {
         <div class="pairing-display-id">${esc(requestedDisplayId)}</div>
       </div>
     </div>`;
-  els.header.append(card);
+  (els.headerActions || els.header).append(card);
+}
+
+function renderFullscreenButton() {
+  if (!els.fullscreen) return;
+  const active = Boolean(document.fullscreenElement);
+  els.fullscreen.setAttribute('aria-label', active ? 'ออกจากเต็มจอ' : 'เปิดเต็มจอ');
+  els.fullscreen.innerHTML = `<i class="bi ${active ? 'bi-fullscreen-exit' : 'bi-arrows-fullscreen'}" aria-hidden="true"></i><span>${active ? 'ออกจากเต็มจอ' : 'เต็มจอ'}</span>`;
+}
+
+async function toggleFullscreen() {
+  try {
+    if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+    else await document.exitFullscreen();
+  } catch (error) {
+    console.warn('[customer-display] fullscreen unavailable', error);
+  }
 }
 
 function render(snapshot = {}) {
@@ -156,6 +174,9 @@ function renderLocal() {
 }
 
 installPairingCard();
+renderFullscreenButton();
+els.fullscreen?.addEventListener('click', toggleFullscreen);
+document.addEventListener('fullscreenchange', renderFullscreenButton);
 renderLocal();
 const stop = watchRecords(DISPLAY_COLLECTION, rows => {
   const snapshot = rows.find(row => String(row.id || row._documentId || row.displayId) === requestedDisplayId) || localSnapshot();
