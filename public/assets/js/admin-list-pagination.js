@@ -123,6 +123,6 @@ createPaginator({
   searchSelector: "#tableListSearch",
   statusSelector: "#tableListStatus",
   paginationSelector: "#tableListPagination",
-  emptyColumns: 4,
+  emptyColumns: 5,
   activeWords: ["ใช้งาน"]
 });

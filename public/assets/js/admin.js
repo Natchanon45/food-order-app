@@ -176,7 +176,7 @@ async function load() {
     <tr data-active="${item.active !== false}"><td><img src="${item.image || DEFAULT_FOOD_IMAGE}" alt="${item.name}" data-food-image style="width:58px;height:46px;object-fit:cover;object-position:${Number(item.imagePositionX ?? 50)}% ${Number(item.imagePositionY ?? 50)}%;border-radius:8px"></td><td><strong>${item.name}</strong></td><td>${item.category || "-"}</td><td>${money(item.price)}</td><td>${item.active !== false ? '<span class="badge">เปิดขาย</span>' : '<span class="badge dark">ปิด</span>'}</td><td><button class="btn btn-sm" data-edit-menu="${item.id}">แก้ไข</button> <button class="btn btn-danger btn-sm" data-delete-menu="${item.id}">ลบ</button></td></tr>
   `).join("");
   document.querySelector("#tableRows").innerHTML = tables.map(item => `
-    <tr data-active="${item.active !== false}"><td><strong>${item.code}</strong></td><td>${item.name}</td><td>${item.active !== false ? '<span class="badge">ใช้งาน</span>' : '<span class="badge dark">ปิด</span>'}</td><td><button class="btn btn-sm" data-edit-table="${item.id}">แก้ไข</button> <button class="btn btn-danger btn-sm" data-delete-table="${item.id}">ลบ</button></td></tr>
+    <tr data-active="${item.active !== false}"><td><strong>${item.code}</strong></td><td>${item.name}</td><td>${Math.max(1, Number.parseInt(item.capacity ?? item.seats ?? item.seatCount ?? 4, 10) || 4)} ที่นั่ง</td><td>${item.active !== false ? '<span class="badge">ใช้งาน</span>' : '<span class="badge dark">ปิด</span>'}</td><td><button class="btn btn-sm" data-edit-table="${item.id}">แก้ไข</button> <button class="btn btn-danger btn-sm" data-delete-table="${item.id}">ลบ</button></td></tr>
   `).join("");
 }
 
@@ -253,11 +253,22 @@ document.querySelector("#menuForm").addEventListener("submit", async event => {
   }
 });
 
+document.querySelector("#tableCapacity").addEventListener("input", event => event.currentTarget.setCustomValidity(""));
+
 document.querySelector("#tableForm").addEventListener("submit", async event => {
   event.preventDefault();
   const code = document.querySelector("#tableCode").value.trim().toUpperCase();
-  await dataService.saveTable({ id: document.querySelector("#tableId").value || code, code, name: document.querySelector("#tableName").value.trim(), active: document.querySelector("#tableActive").checked });
+  const capacityInput = document.querySelector("#tableCapacity");
+  const capacity = Number.parseInt(capacityInput.value, 10);
+  if (!Number.isInteger(capacity) || capacity < 1 || capacity > 100) {
+    capacityInput.setCustomValidity("กรุณาระบุจำนวนที่นั่งตั้งแต่ 1 ถึง 100 ที่นั่ง");
+    capacityInput.reportValidity();
+    return;
+  }
+  capacityInput.setCustomValidity("");
+  await dataService.saveTable({ id: document.querySelector("#tableId").value || code, code, name: document.querySelector("#tableName").value.trim(), capacity, active: document.querySelector("#tableActive").checked });
   event.target.reset();
+  document.querySelector("#tableCapacity").value = "4";
   document.querySelector("#tableActive").checked = true;
   toast("บันทึกโต๊ะแล้ว");
   await load();
@@ -293,6 +304,7 @@ document.body.addEventListener("click", async event => {
     document.querySelector("#tableId").value = item.id;
     document.querySelector("#tableCode").value = item.code;
     document.querySelector("#tableName").value = item.name;
+    document.querySelector("#tableCapacity").value = Math.max(1, Number.parseInt(item.capacity ?? item.seats ?? item.seatCount ?? 4, 10) || 4);
     document.querySelector("#tableActive").checked = item.active !== false;
     scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -321,6 +333,7 @@ document.body.addEventListener("click", event => {
     const form = document.querySelector("#tableForm");
     form.reset();
     document.querySelector("#tableId").value = "";
+    document.querySelector("#tableCapacity").value = "4";
     document.querySelector("#tableActive").checked = true;
   }
 });
