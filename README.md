@@ -1,9 +1,21 @@
 # Food Order / Delivery / Retail POS
 
-Branch: main
-Milestone: Admin Workspace Visual Refresh
-Version: 0.16.9
-Build: 2026.08.03.001
+Branch: feature/retail-pos
+Milestone: Admin Responsive And Print Refinement
+Version: 0.16.10
+Build: 2026.08.03.002
+
+<!-- ADMIN_RESPONSIVE_PRINT_REFINEMENT_20260803_002 -->
+Change: Admin Responsive And Print Refinement.
+
+Visual acceptance: Admin list pagination uses local Bootstrap chevron icons rather than text angle characters. Delivery fee rows use a two-row mobile layout with the delete action aligned beside the price. Menu and table edit modals use inset responsive spacing and stable single-column mobile forms.
+
+Print behavior: Delivery and Take Away QR actions open an isolated single-card 80 mm print document, preventing both QR cards or hidden Admin page layout from producing multiple printed pages.
+
+Data boundary: Presentation and print behavior only. Admin settings, menu/table persistence, tenant scoping, QR destinations, sales reports, stable IDs, duplicate protection, and offline behavior are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260803-002`.
+
 
 <!-- ADMIN_WORKSPACE_VISUAL_REFRESH_20260803 -->
 Change: Refreshed the Admin Dashboard and Sales Report visual system.

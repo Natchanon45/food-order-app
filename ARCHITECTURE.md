@@ -1,9 +1,21 @@
 # Food Order App Architecture
 
 Repository: Natchanon45/food-order-app
-Branch: main
-Version: 0.16.9
-Build: 2026.08.03.001
+Branch: feature/retail-pos
+Version: 0.16.10
+Build: 2026.08.03.002
+
+<!-- ADMIN_RESPONSIVE_PRINT_REFINEMENT_20260803_002 -->
+Change: Admin Responsive And Print Refinement.
+
+Visual acceptance: Admin list pagination uses local Bootstrap chevron icons rather than text angle characters. Delivery fee rows use a two-row mobile layout with the delete action aligned beside the price. Menu and table edit modals use inset responsive spacing and stable single-column mobile forms.
+
+Print behavior: Delivery and Take Away QR actions open an isolated single-card 80 mm print document, preventing both QR cards or hidden Admin page layout from producing multiple printed pages.
+
+Data boundary: Presentation and print behavior only. Admin settings, menu/table persistence, tenant scoping, QR destinations, sales reports, stable IDs, duplicate protection, and offline behavior are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260803-002`.
+
 
 <!-- ADMIN_WORKSPACE_VISUAL_REFRESH_20260803 -->
 Admin visual architecture rule:
@@ -108,7 +120,7 @@ Waiting Queue dialog rule: add-queue and open-table workflows use centered, resp
 
 Waiting Queue display audio rule: audio starts only after an operator gesture. Enabled mode means chime plus spoken Thai queue number when supported, and the UI must explicitly identify a chime-only fallback. No customer personal data may appear on the public display.
 
-Milestone: Admin Workspace Visual Refresh
+Milestone: Admin Responsive And Print Refinement
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 

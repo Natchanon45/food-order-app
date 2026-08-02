@@ -1,9 +1,21 @@
 # Food Order App — Project Context
 
 Repository: Natchanon45/food-order-app
-Branch: main
-Version: 0.16.9
-Build: 2026.08.03.001
+Branch: feature/retail-pos
+Version: 0.16.10
+Build: 2026.08.03.002
+
+<!-- ADMIN_RESPONSIVE_PRINT_REFINEMENT_20260803_002 -->
+Change: Admin Responsive And Print Refinement.
+
+Visual acceptance: Admin list pagination uses local Bootstrap chevron icons rather than text angle characters. Delivery fee rows use a two-row mobile layout with the delete action aligned beside the price. Menu and table edit modals use inset responsive spacing and stable single-column mobile forms.
+
+Print behavior: Delivery and Take Away QR actions open an isolated single-card 80 mm print document, preventing both QR cards or hidden Admin page layout from producing multiple printed pages.
+
+Data boundary: Presentation and print behavior only. Admin settings, menu/table persistence, tenant scoping, QR destinations, sales reports, stable IDs, duplicate protection, and offline behavior are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260803-002`.
+
 
 <!-- ADMIN_WORKSPACE_VISUAL_REFRESH_20260803 -->
 Change: Admin Workspace Visual Refresh aligns `/admin` and `/admin/sales-report` with Waiting Queue quality.
@@ -168,7 +180,7 @@ Change: Implemented Waiting Queue MVP as a table-waiting workflow independent fr
 Firebase boundary: Waiting queue writes use top-level tenant-scoped collections `waitingQueues`, `waitingQueuePublic`, `waitingQueueBoard`, `waitingQueueAudits`, `waitingQueueCounters`, `waitingQueueNumberLeases`, `waitingQueueNumbers`, `waitingQueueDedupe`, and `waitingQueueOperations`. Customer tracking tokens remain in non-listable `waitingQueuePublic` documents, while the listable public display reads token-free `waitingQueueBoard` documents. Neither public surface contains customer name, phone, or note. Local staff intake uses preleased stable W-numbers and an idempotent outbox; queue records are retained for audit and are never physically deleted. Existing order, payment, stock, VAT, Kitchen, Delivery, stable sale/order IDs, and duplicate stock protection remain authoritative.
 
 Deploy rules: deploy Firestore Rules, Indexes, and Hosting. Load cache build `20260801-001` with a hard refresh.
-Milestone: Admin Workspace Visual Refresh
+Milestone: Admin Responsive And Print Refinement
 
 Next Task: perform two-device acceptance tests for duplicate intake, call/recall audit, customer response, skip reasons, table collision protection, and order/table linkage.
 
