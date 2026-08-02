@@ -2,8 +2,20 @@
 
 Repository: Natchanon45/food-order-app
 Branch: main
-Version: 0.16.8
-Build: 2026.08.02.104
+Version: 0.16.9
+Build: 2026.08.03.001
+
+<!-- ADMIN_WORKSPACE_VISUAL_REFRESH_20260803 -->
+Change: Admin Workspace Visual Refresh aligns `/admin` and `/admin/sales-report` with Waiting Queue quality.
+
+Current behavior: both Admin surfaces share a responsive visual layer with a green gradient hero, accent-colored cards, readable form controls, report metrics, chart panels, and improved tables. Dynamic report content is presentation-enhanced through an idempotent MutationObserver.
+
+Data boundary: no Admin form submit handler, Firebase collection path, tenant selection, sales-report calculation, order/POS sale de-duplication, or business workflow changes are included.
+
+Deploy rules: Hosting only.
+
+Next Task: verify `/admin` and `/admin/sales-report` at desktop, tablet, and mobile widths with real tenant data.
+
 
 <!-- FIREBASE_AUTH_UI_PARITY_20260802_104 -->
 Change: Firebase Login And Owner Password Dialog UI Parity.
@@ -156,7 +168,7 @@ Change: Implemented Waiting Queue MVP as a table-waiting workflow independent fr
 Firebase boundary: Waiting queue writes use top-level tenant-scoped collections `waitingQueues`, `waitingQueuePublic`, `waitingQueueBoard`, `waitingQueueAudits`, `waitingQueueCounters`, `waitingQueueNumberLeases`, `waitingQueueNumbers`, `waitingQueueDedupe`, and `waitingQueueOperations`. Customer tracking tokens remain in non-listable `waitingQueuePublic` documents, while the listable public display reads token-free `waitingQueueBoard` documents. Neither public surface contains customer name, phone, or note. Local staff intake uses preleased stable W-numbers and an idempotent outbox; queue records are retained for audit and are never physically deleted. Existing order, payment, stock, VAT, Kitchen, Delivery, stable sale/order IDs, and duplicate stock protection remain authoritative.
 
 Deploy rules: deploy Firestore Rules, Indexes, and Hosting. Load cache build `20260801-001` with a hard refresh.
-Milestone: Waiting Queue Runtime Repair
+Milestone: Admin Workspace Visual Refresh
 
 Next Task: perform two-device acceptance tests for duplicate intake, call/recall audit, customer response, skip reasons, table collision protection, and order/table linkage.
 

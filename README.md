@@ -1,9 +1,19 @@
 # Food Order / Delivery / Retail POS
 
 Branch: main
-Milestone: Waiting Queue Seamless Order Handoff
-Version: 0.16.8
-Build: 2026.08.02.104
+Milestone: Admin Workspace Visual Refresh
+Version: 0.16.9
+Build: 2026.08.03.001
+
+<!-- ADMIN_WORKSPACE_VISUAL_REFRESH_20260803 -->
+Change: Refreshed the Admin Dashboard and Sales Report visual system.
+
+The `/admin` dashboard now uses a colorful green-led workspace with a gradient hero, semantic card accents, clearer section hierarchy, refined controls, richer hover states, and balanced responsive spacing. `/admin/sales-report` now uses the same visual language for its report hero, filter toolbar, summary metrics, chart surfaces, and data table.
+
+Presentation boundary: the new `admin-workspace-refresh.css` and `admin-workspace-refresh.js` only add presentation classes and styling. Existing collapse behavior, QR actions, settings forms, report queries, tenant-scoped reads, Firebase writes, sales normalization, stable IDs, duplicate protection, and offline sync are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260803-001`.
+
 
 <!-- FIREBASE_AUTH_UI_PARITY_20260802_104 -->
 Change: Unified the Firebase authentication UI and release identity with the current application design.

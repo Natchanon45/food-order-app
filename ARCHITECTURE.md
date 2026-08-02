@@ -2,8 +2,14 @@
 
 Repository: Natchanon45/food-order-app
 Branch: main
-Version: 0.16.8
-Build: 2026.08.02.104
+Version: 0.16.9
+Build: 2026.08.03.001
+
+<!-- ADMIN_WORKSPACE_VISUAL_REFRESH_20260803 -->
+Admin visual architecture rule:
+
+Admin presentation enhancements must remain scoped to `.admin-vr-page` and may add idempotent semantic classes without changing Admin workflows or report data. `/admin` retains its collapse/QR/settings behavior, while `/admin/sales-report` retains tenant-scoped Firestore reads, POS/restaurant normalization, and de-duplication. Asset references must be cache-bumped whenever the visual CSS or presentation JS changes.
+
 
 <!-- FIREBASE_AUTH_UI_PARITY_20260802_104 -->
 Firebase authentication presentation rule:
@@ -102,7 +108,7 @@ Waiting Queue dialog rule: add-queue and open-table workflows use centered, resp
 
 Waiting Queue display audio rule: audio starts only after an operator gesture. Enabled mode means chime plus spoken Thai queue number when supported, and the UI must explicitly identify a chime-only fallback. No customer personal data may appear on the public display.
 
-Milestone: Waiting Queue Runtime Repair
+Milestone: Admin Workspace Visual Refresh
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
