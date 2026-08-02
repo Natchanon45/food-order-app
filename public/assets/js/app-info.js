@@ -1,19 +1,23 @@
+// ADMIN_MODAL_HEADER_ICON_DEDUPLICATION_20260803_004
+// ADMIN_MODAL_TEMPLATE_LOCAL_PRINT_FONT_20260803_003
+// ADMIN_RESPONSIVE_PRINT_REFINEMENT_20260803_002
+// ADMIN_WORKSPACE_VISUAL_REFRESH_20260803
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.16.8',
-  build: '2026.08.02.104',
-  branch: 'main',
-  commit: 'FIREBASE-AUTH-UI-PARITY-01608',
+  version: '0.16.12',
+  build: '2026.08.03.004',
+  branch: 'feature/retail-pos',
+  commit: 'ADMIN-MODAL-HEADER-ICON-DEDUPLICATION',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Firebase Auth UI Parity',
-  updatedAt: '2026-08-02T09:15:00+07:00',
+  milestone: 'Admin Modal Header Icon Deduplication',
+  updatedAt: '2026-08-03T05:29:13+07:00',
   whatsNew: [
-    'Align the Firebase owner password dialog with the Laravel interface',
-    'Add password visibility controls and consistent validation feedback',
-    'Use one current application version on the login footer'
+    'Show one icon badge in Admin Menu and Table modal headers',
+    'Exclude shared modal titles from generic heading icon decoration',
+    'Preserve the existing Admin entity form workflow'
   ]
 };
 

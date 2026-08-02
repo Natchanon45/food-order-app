@@ -1,0 +1,376 @@
+/* ADMIN_RESPONSIVE_PRINT_REFINEMENT_20260803_002 */
+
+body.admin-vr-page .menu-page-button.admin-vr-page-nav {
+  width: 42px;
+  min-width: 42px;
+  padding: 0 !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  color: #214c34;
+  background: #f3f8f4;
+}
+
+body.admin-vr-page .menu-page-button.admin-vr-page-nav i {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  margin: 0 !important;
+  color: currentColor;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+body.admin-vr-page .menu-page-button.admin-vr-page-nav i::before {
+  margin: 0 !important;
+  line-height: 1;
+}
+
+body.admin-vr-page .menu-page-button.admin-vr-page-nav:hover:not(:disabled) {
+  border-color: #8fc9a5;
+  color: #0b6f36;
+  background: #e8f7ee;
+}
+
+body.admin-vr-page .menu-page-button.admin-vr-page-nav:disabled {
+  color: #9aaba0;
+  background: #f7faf8;
+}
+
+@media (max-width: 720px) {
+  body.admin-vr-page .delivery-fee-options {
+    gap: 12px !important;
+  }
+
+  body.admin-vr-page .delivery-fee-row {
+    grid-template-columns: 38px minmax(0, 1fr) 46px !important;
+    grid-template-rows: auto auto !important;
+    align-items: end !important;
+    gap: 9px !important;
+    padding: 12px !important;
+  }
+
+  body.admin-vr-page .delivery-fee-index {
+    grid-column: 1 !important;
+    grid-row: 1 / span 2 !important;
+    align-self: start !important;
+    width: 38px !important;
+    height: 46px !important;
+  }
+
+  body.admin-vr-page .delivery-fee-name-field,
+  body.admin-vr-page .delivery-fee-row .field:has([data-delivery-fee-label]) {
+    grid-column: 2 / 4 !important;
+    grid-row: 1 !important;
+    min-width: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  body.admin-vr-page .delivery-fee-row .field:has([data-delivery-fee-amount]) {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    min-width: 0 !important;
+  }
+
+  body.admin-vr-page .delivery-fee-remove {
+    grid-column: 3 !important;
+    grid-row: 2 !important;
+    width: 46px !important;
+    min-width: 46px !important;
+    height: 46px !important;
+    min-height: 46px !important;
+    margin: 0 !important;
+    border-radius: 12px !important;
+  }
+
+  body.admin-vr-page .delivery-fee-row :where(input, select) {
+    min-width: 0;
+  }
+}
+
+body.admin-vr-page .admin-edit-modal {
+  width: min(720px, calc(100vw - 36px));
+  overflow: hidden;
+}
+
+body.admin-vr-page .admin-edit-modal-head {
+  padding: 15px 18px;
+}
+
+body.admin-vr-page .admin-edit-modal-body {
+  max-height: calc(88dvh - 70px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 18px 20px 20px;
+  scrollbar-gutter: stable;
+}
+
+body.admin-vr-page .admin-edit-modal-body form {
+  gap: 14px;
+}
+
+body.admin-vr-page .admin-edit-modal-body form > .btn:last-child {
+  min-height: 48px;
+  margin: 6px 0 0;
+  border-radius: 12px;
+}
+
+body.admin-vr-page .admin-edit-modal-body label:has(input[type="checkbox"]) {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+body.admin-vr-page .admin-edit-modal-body .upload-dropzone {
+  min-height: 176px;
+}
+
+body.admin-vr-page .admin-edit-modal-body .grid.grid-2 {
+  gap: 12px;
+}
+
+@media (max-width: 600px) {
+  body.admin-vr-page .admin-edit-modal-backdrop {
+    padding: 10px;
+  }
+
+  body.admin-vr-page .admin-edit-modal {
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+    border-radius: 17px;
+  }
+
+  body.admin-vr-page .admin-edit-modal-head {
+    padding: 13px 14px;
+  }
+
+  body.admin-vr-page .admin-edit-modal-head h2 {
+    font-size: 1.08rem;
+  }
+
+  body.admin-vr-page .admin-edit-modal-body {
+    max-height: calc(100dvh - 82px);
+    padding: 14px;
+  }
+
+  body.admin-vr-page .admin-edit-modal-body .grid.grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  body.admin-vr-page .admin-edit-modal-body .upload-dropzone {
+    min-height: 150px;
+  }
+}
+
+
+/* ADMIN_MODAL_TEMPLATE_LOCAL_PRINT_FONT_20260803_003 */
+body.admin-vr-dashboard .admin-vr-eyebrow,
+body.admin-vr-dashboard .admin-vr-hero-chips {
+  display: none !important;
+}
+
+body.admin-vr-page .admin-list-actions :is(.btn-dark, .btn-primary) {
+  min-height: 42px !important;
+  height: 42px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 8px 13px !important;
+}
+
+body.admin-vr-page .admin-list-actions :is(.btn-dark, .btn-primary) .app-icon {
+  width: 17px;
+  height: 17px;
+}
+
+body.admin-vr-page .admin-edit-modal {
+  display: flex;
+  max-height: min(820px, calc(100dvh - 32px));
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 24px;
+  color: #172554;
+  background: #fff;
+}
+
+body.admin-vr-page .admin-edit-modal-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  flex: 0 0 auto;
+  padding: 22px 24px;
+  border-bottom: 1px solid #e6e9f5;
+  background: #fff;
+}
+
+body.admin-vr-page .admin-edit-modal-icon {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  font-size: 21px;
+  background: linear-gradient(135deg, #dcfce7, #dbeafe);
+  color: #087443;
+}
+
+body.admin-vr-page .admin-edit-modal[data-admin-modal-entity="table"]
+  .admin-edit-modal-icon {
+  background: linear-gradient(135deg, #dbeafe, #e0e7ff);
+  color: #2563eb;
+}
+
+body.admin-vr-page .admin-edit-modal-copy {
+  min-width: 0;
+}
+
+body.admin-vr-page .admin-edit-modal-copy h2,
+body.admin-vr-page .admin-edit-modal-copy p {
+  margin: 0;
+}
+
+body.admin-vr-page .admin-edit-modal-copy h2 {
+  color: #123d27;
+  font-size: 22px;
+  line-height: 1.3;
+}
+
+body.admin-vr-page .admin-edit-modal-subtitle {
+  margin-top: 3px !important;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+body.admin-vr-page .admin-edit-modal-close {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  min-height: 42px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  color: #334155 !important;
+  background: #f1f5f9 !important;
+  cursor: pointer;
+}
+
+body.admin-vr-page .admin-edit-modal-close:hover {
+  color: #0f172a !important;
+  background: #e2e8f0 !important;
+}
+
+body.admin-vr-page .admin-edit-modal-body {
+  flex: 1 1 auto;
+  max-height: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 24px;
+  scrollbar-gutter: stable;
+}
+
+body.admin-vr-page .admin-edit-modal-body > .admin-vr-card {
+  overflow: visible !important;
+  background: transparent !important;
+}
+
+body.admin-vr-page .admin-edit-modal-body > .admin-vr-card::before,
+body.admin-vr-page .admin-edit-modal-body > .admin-vr-card::after {
+  display: none !important;
+  content: none !important;
+}
+
+body.admin-vr-page .admin-edit-modal-body .admin-edit-modal-source-submit {
+  display: none !important;
+}
+
+body.admin-vr-page .admin-edit-modal-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  flex: 0 0 auto;
+  padding: 18px 24px;
+  border-top: 1px solid #e6e9f5;
+  background: #f8fafc;
+}
+
+body.admin-vr-page .admin-edit-modal-footer .btn {
+  min-width: 0;
+  min-height: 48px;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  border-radius: 12px !important;
+}
+
+body.admin-vr-page .admin-edit-modal-cancel {
+  border: 1px solid #dbe3ee !important;
+  color: #334155 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+body.admin-vr-page .admin-edit-modal-cancel:hover {
+  color: #172554 !important;
+  background: #f1f5f9 !important;
+}
+
+body.admin-vr-page .admin-edit-modal-submit {
+  color: #fff !important;
+  background: linear-gradient(135deg, #0d6f34, #159447) !important;
+  box-shadow: 0 10px 22px rgba(21, 148, 71, .18) !important;
+}
+
+body.admin-vr-page .admin-edit-modal-spinner {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  animation: admin-edit-modal-spin .75s linear infinite;
+}
+
+@keyframes admin-edit-modal-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 640px) {
+  body.admin-vr-page .admin-edit-modal {
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+    border-radius: 20px;
+  }
+
+  body.admin-vr-page .admin-edit-modal-head {
+    padding: 18px;
+  }
+
+  body.admin-vr-page .admin-edit-modal-copy h2 {
+    font-size: 19px;
+  }
+
+  body.admin-vr-page .admin-edit-modal-subtitle {
+    display: none;
+  }
+
+  body.admin-vr-page .admin-edit-modal-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  body.admin-vr-page .admin-edit-modal-body {
+    padding: 18px;
+  }
+
+  body.admin-vr-page .admin-edit-modal-footer {
+    padding: 14px 18px;
+  }
+}

@@ -1,9 +1,57 @@
 # Food Order / Delivery / Retail POS
 
-Branch: main
-Milestone: Waiting Queue Seamless Order Handoff
-Version: 0.16.8
-Build: 2026.08.02.104
+Branch: feature/retail-pos
+Milestone: Admin Modal Header Icon Deduplication
+Version: 0.16.12
+Build: 2026.08.03.004
+
+<!-- ADMIN_MODAL_HEADER_ICON_DEDUPLICATION_20260803_004 -->
+Change: Removed the duplicate icon from Admin Menu/Table modal titles.
+
+The shared Admin modal keeps one semantic icon badge in the header. `admin-icon-polish.js` now excludes `#adminEditModalTitle` and any heading inside `.admin-edit-modal`, while the modal presenter removes an icon that may have been inserted before initialization.
+
+Add/Edit Menu and Table form behavior, validation, submit delegation, persistence, tenant scope, QR actions, and report workflows are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260803-004`.
+
+
+<!-- ADMIN_MODAL_TEMPLATE_LOCAL_PRINT_FONT_20260803_003 -->
+Change: Standardized Admin edit modals and local QR print typography.
+
+Admin Hero: `/admin` now keeps only the main title and description; the generated management-center eyebrow and workflow chips are removed. `/admin/sales-report` retains its report-specific hierarchy.
+
+QR print: Delivery and Take Away print documents declare and wait for the local `THSarabun.ttf` and `THSarabun-Bold.ttf` files and use only `TH Sarabun PSK Local` for printed text.
+
+Modal template: Menu and Table add/edit dialogs now follow the canonical Admin Users modal structure—icon/title/subtitle header, scrollable body, separate two-column footer, cancel/create-or-save actions, and circular close control. Decorative Admin card bars are suppressed inside modal bodies, and source form submit buttons remain functionally authoritative through `requestSubmit()`.
+
+Admin list actions: `ออก QR โต๊ะ` and `เพิ่ม` use the same control height.
+
+Data boundary: Presentation and print behavior only. Menu/table saves, image upload, tenant scope, QR destinations, sales reports, stable IDs, duplicate protection, and offline behavior are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260803-003`.
+
+
+<!-- ADMIN_RESPONSIVE_PRINT_REFINEMENT_20260803_002 -->
+Change: Admin Responsive And Print Refinement.
+
+Visual acceptance: Admin list pagination uses local Bootstrap chevron icons rather than text angle characters. Delivery fee rows use a two-row mobile layout with the delete action aligned beside the price. Menu and table edit modals use inset responsive spacing and stable single-column mobile forms.
+
+Print behavior: Delivery and Take Away QR actions open an isolated single-card 80 mm print document, preventing both QR cards or hidden Admin page layout from producing multiple printed pages.
+
+Data boundary: Presentation and print behavior only. Admin settings, menu/table persistence, tenant scoping, QR destinations, sales reports, stable IDs, duplicate protection, and offline behavior are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260803-002`.
+
+
+<!-- ADMIN_WORKSPACE_VISUAL_REFRESH_20260803 -->
+Change: Refreshed the Admin Dashboard and Sales Report visual system.
+
+The `/admin` dashboard now uses a colorful green-led workspace with a gradient hero, semantic card accents, clearer section hierarchy, refined controls, richer hover states, and balanced responsive spacing. `/admin/sales-report` now uses the same visual language for its report hero, filter toolbar, summary metrics, chart surfaces, and data table.
+
+Presentation boundary: the new `admin-workspace-refresh.css` and `admin-workspace-refresh.js` only add presentation classes and styling. Existing collapse behavior, QR actions, settings forms, report queries, tenant-scoped reads, Firebase writes, sales normalization, stable IDs, duplicate protection, and offline sync are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260803-001`.
+
 
 <!-- FIREBASE_AUTH_UI_PARITY_20260802_104 -->
 Change: Unified the Firebase authentication UI and release identity with the current application design.

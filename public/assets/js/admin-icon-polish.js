@@ -188,6 +188,15 @@ function decorate(root = document) {
   ensureThemeStyle();
 
   root.querySelectorAll("h1,h2").forEach(heading => {
+    if (
+      heading.matches("#adminEditModalTitle")
+      || heading.closest(".admin-edit-modal")
+    ) {
+      heading.querySelectorAll(".admin-heading-icon").forEach(node => node.remove());
+      heading.removeAttribute("data-admin-icon");
+      return;
+    }
+
     if (heading.querySelector(".admin-heading-icon")) return;
 
     const name = headingIcons.get(heading.textContent.trim());
