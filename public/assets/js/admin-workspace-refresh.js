@@ -82,6 +82,12 @@ function ensureHero(main) {
   if (!hero) return;
   hero.classList.add("admin-vr-hero");
 
+  if (!isReport) {
+    hero.querySelectorAll(".admin-vr-eyebrow,.admin-vr-hero-chips")
+      .forEach(node => node.remove());
+    return;
+  }
+
   if (!hero.querySelector(".admin-vr-eyebrow")) {
     const eyebrow = document.createElement("span");
     eyebrow.className = "admin-vr-eyebrow";
@@ -228,12 +234,26 @@ function adminVrPrintableQrHtml(paper) {
   <meta charset="utf-8">
   <title>${title}</title>
   <style>
+    @font-face {
+      font-family: "TH Sarabun PSK Local";
+      src: url("${location.origin}/assets/fonts/THSarabun.ttf") format("truetype");
+      font-style: normal;
+      font-weight: 400;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "TH Sarabun PSK Local";
+      src: url("${location.origin}/assets/fonts/THSarabun-Bold.ttf") format("truetype");
+      font-style: normal;
+      font-weight: 700;
+      font-display: block;
+    }
     @page { size: 80mm 128mm; margin: 4mm; }
     * { box-sizing: border-box; }
     html, body { width: 72mm; margin: 0; padding: 0; background: #fff; }
     body {
       color: #102f1e;
-      font-family: "TH Sarabun PSK", "TH Sarabun New", "Sarabun", sans-serif;
+      font-family: "TH Sarabun PSK Local";
     }
     .delivery-qr-paper {
       width: 72mm;
@@ -308,9 +328,17 @@ function adminVrPrintSingleQr(button) {
   }, 180);
 
   const popupImage = popup.document.querySelector("img");
-  if (popupImage?.complete) printNow();
-  else popupImage?.addEventListener("load", printNow, { once: true });
+  const imageReady = new Promise(resolve => {
+    if (!popupImage || popupImage.complete) {
+      resolve();
+      return;
+    }
+    popupImage.addEventListener("load", resolve, { once: true });
+    popupImage.addEventListener("error", resolve, { once: true });
+  });
+  const fontReady = popup.document.fonts?.ready || Promise.resolve();
 
+  Promise.all([imageReady, fontReady]).then(printNow);
   popup.addEventListener("afterprint", () => popup.close(), { once: true });
 }
 
@@ -325,6 +353,172 @@ document.addEventListener("click", event => {
 adminVrEnhancePagination();
 
 new MutationObserver(() => adminVrEnhancePagination()).observe(document.body, {
+  childList: true,
+  subtree: true
+});
+
+
+/* ADMIN_MODAL_TEMPLATE_LOCAL_PRINT_FONT_20260803_003 */
+function adminVrModalPresentation(titleText = "") {
+  const isTable = /โต๊ะ/.test(titleText);
+  const isEdit = /แก้ไข/.test(titleText);
+
+  return {
+    entity: isTable ? "table" : "menu",
+    icon: isTable ? "grid-3x3-gap" : "egg-fried",
+    subtitle: isTable
+      ? "กำหนดรหัส ชื่อ จำนวนที่นั่ง และสถานะการใช้งาน"
+      : "กรอกชื่อ หมวดหมู่ ราคา รูปอาหาร และสถานะการขาย",
+    actionIcon: isEdit ? "floppy" : "plus-lg",
+    actionLabel: isEdit ? "บันทึก" : "สร้าง"
+  };
+}
+
+function adminVrEnsureModalTemplate() {
+  const modal = document.querySelector(".admin-edit-modal");
+  if (!modal || modal.dataset.adminVrTemplate === "true") return;
+
+  const header = modal.querySelector(".admin-edit-modal-head");
+  const body = modal.querySelector(".admin-edit-modal-body");
+  const title = modal.querySelector("#adminEditModalTitle");
+  const closeButton = modal.querySelector("[data-close-admin-modal]");
+
+  if (!header || !body || !title || !closeButton) return;
+
+  const iconWrap = document.createElement("span");
+  iconWrap.className = "admin-edit-modal-icon";
+  iconWrap.setAttribute("aria-hidden", "true");
+
+  const copy = document.createElement("div");
+  copy.className = "admin-edit-modal-copy";
+
+  const subtitle = document.createElement("p");
+  subtitle.className = "admin-edit-modal-subtitle";
+  subtitle.id = "adminEditModalSubtitle";
+
+  header.insertBefore(copy, title);
+  copy.append(title, subtitle);
+  header.insertBefore(iconWrap, copy);
+
+  closeButton.className = "admin-edit-modal-close";
+  closeButton.innerHTML =
+    '<i class="bi bi-x-lg" aria-hidden="true"></i>';
+  modal.setAttribute("aria-describedby", subtitle.id);
+
+  const footer = document.createElement("footer");
+  footer.className = "admin-edit-modal-footer";
+  footer.innerHTML = `
+    <button class="btn admin-edit-modal-cancel" type="button">
+      <i class="bi bi-x-circle" aria-hidden="true"></i>
+      <span>ยกเลิก</span>
+    </button>
+    <button class="btn btn-primary admin-edit-modal-submit" type="button">
+      <i class="bi bi-plus-lg" aria-hidden="true"></i>
+      <span>สร้าง</span>
+    </button>
+  `;
+  body.insertAdjacentElement("afterend", footer);
+
+  const cancelButton = footer.querySelector(".admin-edit-modal-cancel");
+  const submitButton = footer.querySelector(".admin-edit-modal-submit");
+
+  let sourceSubmit = null;
+  let sourceObserver = null;
+
+  function presentation() {
+    return adminVrModalPresentation(title.textContent.trim());
+  }
+
+  function syncSubmitButton() {
+    const current = presentation();
+    const busy = Boolean(sourceSubmit?.disabled);
+    submitButton.disabled = busy;
+
+    if (busy) {
+      const busyText = sourceSubmit?.textContent?.trim() || "กำลังบันทึก...";
+      submitButton.innerHTML = `
+        <span class="admin-edit-modal-spinner" aria-hidden="true"></span>
+        <span>${busyText}</span>
+      `;
+      return;
+    }
+
+    submitButton.innerHTML = `
+      <i class="bi bi-${current.actionIcon}" aria-hidden="true"></i>
+      <span>${current.actionLabel}</span>
+    `;
+  }
+
+  function bindSourceSubmit() {
+    sourceObserver?.disconnect();
+    if (sourceSubmit) sourceSubmit.classList.remove("admin-edit-modal-source-submit");
+
+    const form = body.querySelector("form");
+    sourceSubmit = form?.querySelector(
+      "#saveMenuButton, button[type='submit'], button:not([type])"
+    ) || null;
+
+    if (sourceSubmit) {
+      sourceSubmit.classList.add("admin-edit-modal-source-submit");
+      sourceObserver = new MutationObserver(syncSubmitButton);
+      sourceObserver.observe(sourceSubmit, {
+        attributes: true,
+        attributeFilter: ["disabled"],
+        childList: true,
+        characterData: true,
+        subtree: true
+      });
+    }
+
+    syncSubmitButton();
+  }
+
+  function syncPresentation() {
+    const current = presentation();
+    modal.dataset.adminModalEntity = current.entity;
+    iconWrap.innerHTML =
+      `<i class="bi bi-${current.icon}" aria-hidden="true"></i>`;
+    subtitle.textContent = current.subtitle;
+    syncSubmitButton();
+  }
+
+  cancelButton.addEventListener("click", () => closeButton.click());
+
+  submitButton.addEventListener("click", () => {
+    const form = body.querySelector("form");
+    if (!form || submitButton.disabled) return;
+
+    if (typeof form.requestSubmit === "function") {
+      if (sourceSubmit) form.requestSubmit(sourceSubmit);
+      else form.requestSubmit();
+      return;
+    }
+
+    sourceSubmit?.click();
+  });
+
+  new MutationObserver(syncPresentation).observe(title, {
+    childList: true,
+    characterData: true,
+    subtree: true
+  });
+
+  new MutationObserver(() => {
+    bindSourceSubmit();
+    syncPresentation();
+  }).observe(body, {
+    childList: true,
+    subtree: true
+  });
+
+  modal.dataset.adminVrTemplate = "true";
+  syncPresentation();
+  bindSourceSubmit();
+}
+
+adminVrEnsureModalTemplate();
+
+new MutationObserver(adminVrEnsureModalTemplate).observe(document.body, {
   childList: true,
   subtree: true
 });

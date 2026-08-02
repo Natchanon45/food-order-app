@@ -1,9 +1,25 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Admin Responsive And Print Refinement
-Version: 0.16.10
-Build: 2026.08.03.002
+Milestone: Admin Modal Template And Local Print Font
+Version: 0.16.11
+Build: 2026.08.03.003
+
+<!-- ADMIN_MODAL_TEMPLATE_LOCAL_PRINT_FONT_20260803_003 -->
+Change: Standardized Admin edit modals and local QR print typography.
+
+Admin Hero: `/admin` now keeps only the main title and description; the generated management-center eyebrow and workflow chips are removed. `/admin/sales-report` retains its report-specific hierarchy.
+
+QR print: Delivery and Take Away print documents declare and wait for the local `THSarabun.ttf` and `THSarabun-Bold.ttf` files and use only `TH Sarabun PSK Local` for printed text.
+
+Modal template: Menu and Table add/edit dialogs now follow the canonical Admin Users modal structure—icon/title/subtitle header, scrollable body, separate two-column footer, cancel/create-or-save actions, and circular close control. Decorative Admin card bars are suppressed inside modal bodies, and source form submit buttons remain functionally authoritative through `requestSubmit()`.
+
+Admin list actions: `ออก QR โต๊ะ` and `เพิ่ม` use the same control height.
+
+Data boundary: Presentation and print behavior only. Menu/table saves, image upload, tenant scope, QR destinations, sales reports, stable IDs, duplicate protection, and offline behavior are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260803-003`.
+
 
 <!-- ADMIN_RESPONSIVE_PRINT_REFINEMENT_20260803_002 -->
 Change: Admin Responsive And Print Refinement.

@@ -2,8 +2,16 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.16.10
-Build: 2026.08.03.002
+Version: 0.16.11
+Build: 2026.08.03.003
+
+<!-- ADMIN_MODAL_TEMPLATE_LOCAL_PRINT_FONT_20260803_003 -->
+Admin modal and QR print presentation rule:
+
+Admin entity dialogs must use the shared Admin Users interaction hierarchy: semantic icon/title/subtitle header, independently scrollable body, and separate responsive footer with cancel plus create/save actions. Existing form elements and submit handlers remain authoritative; presentation controls delegate through native form submission rather than duplicating business logic. Admin card accent pseudo-elements must not render inside modal bodies.
+
+Admin QR print documents must load `THSarabun.ttf` and `THSarabun-Bold.ttf` from same-origin local assets, use only `TH Sarabun PSK Local`, and wait for local fonts and the QR image before opening the browser print dialog.
+
 
 <!-- ADMIN_RESPONSIVE_PRINT_REFINEMENT_20260803_002 -->
 Change: Admin Responsive And Print Refinement.
@@ -120,7 +128,7 @@ Waiting Queue dialog rule: add-queue and open-table workflows use centered, resp
 
 Waiting Queue display audio rule: audio starts only after an operator gesture. Enabled mode means chime plus spoken Thai queue number when supported, and the UI must explicitly identify a chime-only fallback. No customer personal data may appear on the public display.
 
-Milestone: Admin Responsive And Print Refinement
+Milestone: Admin Modal Template And Local Print Font
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 
