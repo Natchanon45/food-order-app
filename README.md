@@ -2,8 +2,15 @@
 
 Branch: main
 Milestone: Waiting Queue Seamless Order Handoff
-Version: 0.16.7
-Build: 2026.08.02.020
+Version: 0.16.8
+Build: 2026.08.02.104
+
+<!-- FIREBASE_AUTH_UI_PARITY_20260802_104 -->
+Change: Unified the Firebase authentication UI and release identity with the current application design.
+
+Login now reads the version and build from the shared `app-info.js` source instead of the legacy hard-coded `1.6.17`. The owner password-change dialog now matches the current Laravel interaction pattern with a structured header, local Bootstrap Icons, password visibility controls, an eight-character hint, inline feedback, and responsive right-aligned actions.
+
+Deploy: Firebase Hosting only. Login and Admin entry points use cache version `20260802-104` so a normal refresh loads the updated authentication bundle.
 
 <!-- WAITING_QUEUE_SEAMLESS_ORDER_HANDOFF_20260802_020 -->
 Change: Completed the Waiting Queue handoff from customer tracking to table ordering and stabilized recorded announcements.

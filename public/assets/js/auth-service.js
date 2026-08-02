@@ -76,19 +76,21 @@ function ensurePasswordDialogStyles() {
   const style = document.createElement("style");
   style.id = "owner-password-dialog-styles";
   style.textContent = `
-    .owner-password-backdrop{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:18px;background:rgba(8,18,14,.48);backdrop-filter:blur(8px)}
-    .owner-password-dialog{width:min(460px,100%);border-radius:22px;background:#fff;box-shadow:0 24px 70px rgba(10,25,18,.28);padding:22px;color:#111827}
-    .owner-password-dialog h2{margin:0 0 6px;font-size:24px}
-    .owner-password-dialog p{margin:0 0 18px;color:#64748b;font-weight:600}
-    .owner-password-field{display:grid;gap:7px;margin-top:12px;font-weight:600;color:#334155}
-    .owner-password-field input{width:100%;box-sizing:border-box;border:1px solid #d8e2dc;border-radius:14px;padding:13px 14px;font:inherit;font-weight:500;outline:none}
-    .owner-password-field input:focus{border-color:#159447;box-shadow:0 0 0 4px rgba(21,148,71,.12)}
-    .owner-password-error{min-height:20px;margin-top:12px;color:#d33;font-weight:600}
-    .owner-password-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
-    .owner-password-actions button{border:0;border-radius:14px;padding:12px 16px;font-weight:600;cursor:pointer}
-    .owner-password-cancel{background:#eef3ef;color:#111827}
-    .owner-password-submit{background:#159447;color:#fff}
-    .owner-password-submit:disabled{opacity:.65;cursor:wait}
+    .owner-password-backdrop{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:20px;background:rgba(5,18,12,.58);backdrop-filter:blur(9px);animation:owner-password-fade .16s ease-out}
+    .owner-password-dialog{width:min(500px,100%);max-height:min(760px,calc(100dvh - 28px));overflow:auto;border:1px solid rgba(21,148,71,.12);border-radius:26px;background:#fff;box-shadow:0 30px 90px rgba(7,31,19,.34);color:#17211b;animation:owner-password-rise .2s ease-out}
+    .owner-password-header{display:flex;align-items:flex-start;gap:14px;padding:24px 24px 18px;border-bottom:1px solid #e7eee9;background:linear-gradient(135deg,#f5fcf7 0%,#fff 72%)}
+    .owner-password-heading-icon{display:inline-flex;align-items:center;justify-content:center;flex:0 0 48px;width:48px;height:48px;border-radius:15px;background:#dcf8e7;color:#118540;font-size:1.35rem;line-height:1;box-shadow:inset 0 0 0 1px rgba(21,148,71,.08)}
+    .owner-password-key-icon{display:inline-flex;align-items:center;justify-content:center;width:1em;height:1em;line-height:1}.owner-password-key-icon::before,.profile-key-reference-icon::before{display:block;line-height:1;transform:rotate(90deg) scaleY(-1);transform-origin:center}
+    .owner-password-title{flex:1;min-width:0}.owner-password-dialog h2{margin:1px 0 5px;font-size:1.5rem;line-height:1.2}.owner-password-dialog p{margin:0;color:#64748b;font-size:.93rem;font-weight:600;line-height:1.55}
+    .owner-password-close{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border:0;border-radius:12px;background:#edf3ef;color:#334a3d;cursor:pointer;font-size:1rem}.owner-password-close:hover{background:#e1ece5;color:#0d6f35}
+    .owner-password-body{display:grid;gap:16px;padding:22px 24px 8px}.owner-password-field{display:grid;gap:8px;font-weight:750;color:#263c30}.owner-password-label{display:flex;align-items:center;gap:8px}.owner-password-label .app-icon{color:#159447}
+    .owner-password-input-wrap{position:relative}.owner-password-field input{width:100%;box-sizing:border-box;border:1px solid #cfdbd3;border-radius:14px;background:#fbfdfb;padding:13px 48px 13px 14px;font:inherit;outline:none;transition:border-color .16s,box-shadow .16s,background .16s}.owner-password-field input:hover{border-color:#9fc5ac}.owner-password-field input:focus{border-color:#159447;background:#fff;box-shadow:0 0 0 4px rgba(21,148,71,.12)}
+    .owner-password-toggle{position:absolute;top:50%;right:7px;transform:translateY(-50%);display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:10px;background:transparent;color:#607267;cursor:pointer}.owner-password-toggle:hover{background:#eaf6ee;color:#118540}
+    .owner-password-hint{display:flex;align-items:center;gap:7px;margin-top:-3px;color:#718096;font-size:.82rem;font-weight:600}.owner-password-hint .app-icon{color:#159447}
+    .owner-password-error{display:none;align-items:center;gap:8px;min-height:22px;margin:8px 24px 0;padding:11px 13px;border-radius:12px;background:#fff0f0;color:#c92b2b;font-weight:700}.owner-password-error.has-message{display:flex}.owner-password-error.is-success{background:#eaf8ef;color:#0f7d3a}
+    .owner-password-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;padding:18px 24px 22px;border-top:1px solid #e7eee9;background:#fbfdfb}.owner-password-actions button{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:46px;border:0;border-radius:14px;padding:12px 18px;font-weight:750;cursor:pointer}.owner-password-cancel{background:#e9efeb;color:#263c30}.owner-password-cancel:hover{background:#dfe8e2}.owner-password-submit{min-width:174px;background:#159447;color:#fff;box-shadow:0 10px 24px rgba(21,148,71,.2)}.owner-password-submit:hover{background:#107f3c}.owner-password-submit:disabled{opacity:.65;cursor:wait;box-shadow:none}
+    @keyframes owner-password-fade{from{opacity:0}to{opacity:1}}@keyframes owner-password-rise{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+    @media(max-width:600px){.owner-password-backdrop{align-items:end;padding:10px}.owner-password-dialog{width:100%;max-height:calc(100dvh - 20px);border-radius:24px}.owner-password-header{padding:19px 18px 15px}.owner-password-heading-icon{width:44px;height:44px;flex-basis:44px}.owner-password-dialog h2{font-size:1.3rem}.owner-password-body{padding:18px 18px 6px;gap:14px}.owner-password-error{margin-inline:18px}.owner-password-actions{padding:15px 18px 18px}.owner-password-actions button{flex:1;padding-inline:12px}.owner-password-submit{min-width:0}}
   `;
   document.head.appendChild(style);
 }
@@ -172,7 +174,7 @@ function renderMenuItem(item) {
 function passwordErrorText(error) {
   const code = String(error?.code || error?.message || "");
   if (code.includes("auth/invalid-credential") || code.includes("auth/wrong-password")) return "รหัสผ่านเดิมไม่ถูกต้อง";
-  if (code.includes("auth/weak-password")) return "รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร";
+  if (code.includes("auth/weak-password")) return "รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร";
   if (code.includes("auth/requires-recent-login")) return "กรุณาออกจากระบบแล้วเข้าสู่ระบบใหม่ก่อนเปลี่ยนรหัสผ่าน";
   return "เปลี่ยนรหัสผ่านไม่สำเร็จ กรุณาลองใหม่";
 }
@@ -186,24 +188,57 @@ function showOwnerPasswordDialog() {
   document.querySelector(".owner-password-backdrop")?.remove();
   const backdrop = document.createElement("div");
   backdrop.className = "owner-password-backdrop";
+  const passwordField = ({ label, name, autocomplete, hint = "" }) => `
+    <label class="owner-password-field">
+      <span class="owner-password-label">${icon("lock")}<span>${label}</span></span>
+      <span class="owner-password-input-wrap">
+        <input type="password" name="${name}" autocomplete="${autocomplete}"${name === "currentPassword" ? "" : ' minlength="8"'} required>
+        <button class="owner-password-toggle" type="button" data-password-toggle aria-label="แสดง${label}" aria-pressed="false">${icon("eye")}</button>
+      </span>
+      ${hint ? `<small class="owner-password-hint">${icon("info-circle")}<span>${hint}</span></small>` : ""}
+    </label>`;
+  const keyIcon = '<i class="fi fi-rr-key owner-password-key-icon" aria-hidden="true"></i>';
   backdrop.innerHTML = `
     <form class="owner-password-dialog" data-owner-password-form>
-      <h2>เปลี่ยนรหัสผ่าน</h2>
-      <p>สำหรับเจ้าของร้านเท่านั้น กรุณากรอกรหัสผ่านเดิมเพื่อยืนยันตัวตน</p>
-      <label class="owner-password-field">รหัสผ่านเดิม<input type="password" name="currentPassword" autocomplete="current-password" required></label>
-      <label class="owner-password-field">รหัสผ่านใหม่<input type="password" name="newPassword" autocomplete="new-password" minlength="6" required></label>
-      <label class="owner-password-field">ยืนยันรหัสผ่านใหม่<input type="password" name="confirmPassword" autocomplete="new-password" minlength="6" required></label>
-      <div class="owner-password-error" data-password-error></div>
+      <div class="owner-password-header">
+        <span class="owner-password-heading-icon">${keyIcon}</span>
+        <div class="owner-password-title"><h2>เปลี่ยนรหัสผ่าน</h2><p>ยืนยันตัวตนด้วยรหัสผ่านเดิม แล้วกำหนดรหัสผ่านใหม่สำหรับบัญชีเจ้าของร้าน</p></div>
+        <button class="owner-password-close" type="button" data-close-password-dialog aria-label="ปิดหน้าต่าง">${icon("close")}</button>
+      </div>
+      <div class="owner-password-body">
+        ${passwordField({ label: "รหัสผ่านเดิม", name: "currentPassword", autocomplete: "current-password" })}
+        ${passwordField({ label: "รหัสผ่านใหม่", name: "newPassword", autocomplete: "new-password", hint: "ใช้ตัวอักษรอย่างน้อย 8 ตัว เพื่อความปลอดภัยของบัญชี" })}
+        ${passwordField({ label: "ยืนยันรหัสผ่านใหม่", name: "confirmPassword", autocomplete: "new-password" })}
+      </div>
+      <div class="owner-password-error" data-password-error>${icon("x-circle")}<span data-password-message></span></div>
       <div class="owner-password-actions">
-        <button class="owner-password-cancel" type="button" data-close-password-dialog>ยกเลิก</button>
-        <button class="owner-password-submit" type="submit">เปลี่ยนรหัสผ่าน</button>
+        <button class="owner-password-cancel" type="button" data-close-password-dialog>${icon("close")}<span>ยกเลิก</span></button>
+        <button class="owner-password-submit" type="submit">${keyIcon}<span>เปลี่ยนรหัสผ่าน</span></button>
       </div>
     </form>`;
 
-  const close = () => backdrop.remove();
+  const onEscape = event => { if (event.key === "Escape") close(); };
+  const close = () => { document.removeEventListener("keydown", onEscape); backdrop.remove(); };
   backdrop.addEventListener("click", event => {
     if (event.target === backdrop || event.target.closest("[data-close-password-dialog]")) close();
   });
+  backdrop.querySelectorAll("[data-password-toggle]").forEach(button => button.addEventListener("click", () => {
+    const input = button.closest(".owner-password-input-wrap")?.querySelector("input");
+    if (!input) return;
+    const visible = input.type === "text";
+    input.type = visible ? "password" : "text";
+    button.setAttribute("aria-pressed", String(!visible));
+    button.innerHTML = icon(visible ? "eye" : "eye-slash");
+  }));
+  document.addEventListener("keydown", onEscape);
+
+  const setMessage = (box, message = "", success = false) => {
+    box.classList.toggle("has-message", Boolean(message));
+    box.classList.toggle("is-success", Boolean(message) && success);
+    const messageIcon = box.querySelector(".app-icon");
+    if (messageIcon) messageIcon.className = `bi bi-${success ? "check-circle" : "x-circle"} app-icon`;
+    box.querySelector("[data-password-message]").textContent = message;
+  };
 
   backdrop.querySelector("[data-owner-password-form]").addEventListener("submit", async event => {
     event.preventDefault();
@@ -214,34 +249,36 @@ function showOwnerPasswordDialog() {
     const newPassword = form.newPassword.value;
     const confirmPassword = form.confirmPassword.value;
 
-    errorBox.textContent = "";
+    setMessage(errorBox);
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setMessage(errorBox, "กรุณากรอกรหัสผ่านให้ครบทุกช่อง");
+      return;
+    }
     if (newPassword !== confirmPassword) {
-      errorBox.textContent = "รหัสผ่านใหม่และยืนยันรหัสผ่านใหม่ไม่ตรงกัน";
+      setMessage(errorBox, "รหัสผ่านใหม่และยืนยันรหัสผ่านใหม่ไม่ตรงกัน");
       form.confirmPassword.focus();
       return;
     }
-    if (newPassword.length < 6) {
-      errorBox.textContent = "รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร";
+    if (newPassword.length < 8) {
+      setMessage(errorBox, "รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร");
       form.newPassword.focus();
       return;
     }
 
     button.disabled = true;
-    button.textContent = "กำลังตรวจสอบ...";
+    button.innerHTML = `${icon("arrow-repeat")}<span>กำลังตรวจสอบ...</span>`;
     try {
       const credential = EmailAuthProvider.credential(email, currentPassword);
       await reauthenticateWithCredential(user, credential);
-      button.textContent = "กำลังเปลี่ยนรหัสผ่าน...";
+      button.innerHTML = `${icon("arrow-repeat")}<span>กำลังเปลี่ยน...</span>`;
       await updatePassword(user, newPassword);
-      errorBox.style.color = "#0f8a3b";
-      errorBox.textContent = "เปลี่ยนรหัสผ่านเรียบร้อยแล้ว";
+      setMessage(errorBox, "เปลี่ยนรหัสผ่านเรียบร้อยแล้ว", true);
       setTimeout(close, 900);
     } catch (error) {
       console.error("OWNER_PASSWORD_CHANGE_FAILED", error);
-      errorBox.style.color = "#d33";
-      errorBox.textContent = passwordErrorText(error);
+      setMessage(errorBox, passwordErrorText(error));
       button.disabled = false;
-      button.textContent = "เปลี่ยนรหัสผ่าน";
+      button.innerHTML = `${keyIcon}<span>เปลี่ยนรหัสผ่าน</span>`;
     }
   });
 

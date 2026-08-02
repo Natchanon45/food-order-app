@@ -2,8 +2,13 @@
 
 Repository: Natchanon45/food-order-app
 Branch: main
-Version: 0.16.7
-Build: 2026.08.02.020
+Version: 0.16.8
+Build: 2026.08.02.104
+
+<!-- FIREBASE_AUTH_UI_PARITY_20260802_104 -->
+Firebase authentication presentation rule:
+
+Release identity is read from `public/assets/js/app-info.js`; authentication pages must not maintain a second hard-coded version. The owner password dialog is presentation-owned by `auth-service.js`, but credential verification and mutation remain Firebase Auth operations: reauthenticate with the current email/password credential, then call `updatePassword` only after local length and confirmation validation succeeds. UI refactors must not write passwords to Firestore, Local Storage, logs, or query strings.
 
 <!-- WAITING_QUEUE_SEAMLESS_ORDER_HANDOFF_20260802_020 -->
 Waiting Queue customer handoff and announcement rule:

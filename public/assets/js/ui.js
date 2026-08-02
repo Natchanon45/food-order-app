@@ -1,7 +1,8 @@
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 import "./form-validation-ui.js?v=20260731-080";
+import { APP_INFO } from "./app-info.js?v=20260802-104";
 
-export const APP_VERSION = "1.6.17";
+export const APP_VERSION = APP_INFO.version;
 export const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
 
 export const money = (value = 0) => new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value) || 0);
@@ -253,7 +254,7 @@ function mountVersion() {
   if (document.querySelector(".app-version")) return;
   const footer = document.createElement("footer");
   footer.className = "app-version";
-  footer.textContent = `Food Order/Delivery With QR • Version ${APP_VERSION}`;
+  footer.textContent = `Food Order/Delivery With QR • Version ${APP_VERSION} • Build ${APP_INFO.build}`;
   document.body.appendChild(footer);
 }
 

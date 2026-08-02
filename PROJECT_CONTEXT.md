@@ -2,8 +2,17 @@
 
 Repository: Natchanon45/food-order-app
 Branch: main
-Version: 0.16.7
-Build: 2026.08.02.020
+Version: 0.16.8
+Build: 2026.08.02.104
+
+<!-- FIREBASE_AUTH_UI_PARITY_20260802_104 -->
+Change: Firebase Login And Owner Password Dialog UI Parity.
+
+Current behavior: the Login footer consumes the shared application version metadata and no longer presents the retired hard-coded `1.6.17`. The owner-only password dialog uses the current modal hierarchy, visibility toggles, minimum eight-character guidance, inline validation, keyboard dismissal, and responsive action layout while retaining Firebase reauthentication and `updatePassword` behavior.
+
+Deploy rules: Hosting only. No Firestore Rule, Index, Function, Auth account, tenant, or role change.
+
+Acceptance test: open `/login`, confirm version `0.16.8` and build `2026.08.02.104`, sign in as an owner, open `เปลี่ยนรหัสผ่าน`, toggle all three password fields, verify mismatched passwords remain blocked, and confirm a valid change still requires the current password.
 
 <!-- WAITING_QUEUE_SEAMLESS_ORDER_HANDOFF_20260802_020 -->
 Change: Waiting Queue Seamless Customer Order Handoff And Recorded Announcement Audio.

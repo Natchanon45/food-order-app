@@ -1,6 +1,6 @@
-import { login, ROLE_HOME } from "./auth-service.js?v=20260801-103";
+import { login, ROLE_HOME } from "./auth-service.js?v=20260802-104";
 import { login as retailPosLogin } from "./retail-pos-auth.js?v=20260704-004";
-import { toast } from "./ui.js?v=20260731-080";
+import { toast } from "./ui.js?v=20260802-104";
 
 localStorage.removeItem("retail_pos_session_v1");
 localStorage.removeItem("retail_pos_current_user_v1");
