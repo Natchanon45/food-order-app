@@ -2,8 +2,16 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.16.14
-Build: 2026.08.03.006
+Version: 0.16.15
+Build: 2026.08.04.001
+
+<!-- TENANT_MANAGEMENT_WORKSPACE_20260804_001 -->
+Change: Tenant Management Workspace.
+
+The Super Admin tenant page now uses a summary dashboard, search/status filters, semantic tenant cards, and a responsive create/edit modal while preserving the original Cloud Functions and validation. Subscription controls bind by stable Tenant ID instead of visual list index.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260804-001`.
+
 
 <!-- WAITING_QUEUE_TABLE_STATE_NUMBER_REPAIR_20260803_006 -->
 Change: Waiting Queue Table State And Number Allocation Repair.
@@ -232,7 +240,7 @@ Change: Implemented Waiting Queue MVP as a table-waiting workflow independent fr
 Firebase boundary: Waiting queue writes use top-level tenant-scoped collections `waitingQueues`, `waitingQueuePublic`, `waitingQueueBoard`, `waitingQueueAudits`, `waitingQueueCounters`, `waitingQueueNumberLeases`, `waitingQueueNumbers`, `waitingQueueDedupe`, and `waitingQueueOperations`. Customer tracking tokens remain in non-listable `waitingQueuePublic` documents, while the listable public display reads token-free `waitingQueueBoard` documents. Neither public surface contains customer name, phone, or note. Local staff intake uses preleased stable W-numbers and an idempotent outbox; queue records are retained for audit and are never physically deleted. Existing order, payment, stock, VAT, Kitchen, Delivery, stable sale/order IDs, and duplicate stock protection remain authoritative.
 
 Deploy rules: deploy Firestore Rules, Indexes, and Hosting. Load cache build `20260801-001` with a hard refresh.
-Milestone: Waiting Queue Table State And Number Allocation Repair
+Milestone: Tenant Management Workspace
 
 Next Task: perform two-device acceptance tests for duplicate intake, call/recall audit, customer response, skip reasons, table collision protection, and order/table linkage.
 

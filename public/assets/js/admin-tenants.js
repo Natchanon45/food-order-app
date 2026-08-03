@@ -27,7 +27,16 @@ const submitButton = document.getElementById("createTenantButton");
 const errorBox = document.getElementById("tenantError");
 const tenantList = document.getElementById("tenantList");
 const tenantCount = document.getElementById("tenantCount");
-const formTitle = form.closest(".card")?.querySelector(".section-title h2");
+const formTitle = document.getElementById("tenantFormTitle");
+const formSubtitle = document.getElementById("tenantFormSubtitle");
+const tenantModal = document.getElementById("tenantFormModal");
+const openTenantModalButton = document.getElementById("openTenantModalButton");
+const cancelEditButton = document.getElementById("tenantCancelButton");
+const tenantSearch = document.getElementById("tenantSearch");
+const tenantStatusFilter = document.getElementById("tenantStatusFilter");
+const summaryTotal = document.getElementById("tenantSummaryTotal");
+const summaryActive = document.getElementById("tenantSummaryActive");
+const summaryAttention = document.getElementById("tenantSummaryAttention");
 
 let tenants = [];
 let editingTenantId = "";
@@ -65,19 +74,7 @@ function setSubmitContent(mode = "create") {
 submitButton.style.cssText = "display:flex;align-items:center;justify-content:center;gap:8px;width:100%;";
 setSubmitContent();
 
-const cancelEditButton = document.createElement("button");
-cancelEditButton.type = "button";
-cancelEditButton.className = "btn tenant-cancel-edit";
-cancelEditButton.textContent = "ยกเลิกแก้ไข";
-cancelEditButton.setAttribute("aria-label", "ยกเลิกการแก้ไข");
-cancelEditButton.style.setProperty("display", "none", "important");
-cancelEditButton.style.setProperty("width", "100%", "important");
-cancelEditButton.style.setProperty("border-radius", "12px", "important");
-submitButton.insertAdjacentElement("afterend", cancelEditButton);
-
-function setCancelVisible(visible) {
-  cancelEditButton.style.setProperty("display", visible ? "block" : "none", "important");
-}
+function setCancelVisible() { cancelEditButton.hidden = false; }
 
 function sanitizeSlugTyping(value = "") {
   return String(value).toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-").replace(/^-+/g, "");
@@ -92,13 +89,16 @@ function showError(message = "") {
   errorBox.hidden = !message;
 }
 
+function openTenantModal() { tenantModal.hidden = false; document.body.classList.add("tenant-form-modal-open"); requestAnimationFrame(() => nameField.focus()); }
+function closeTenantModal() { if (submitButton.disabled) return; tenantModal.hidden = true; document.body.classList.remove("tenant-form-modal-open"); }
 function resetForm() {
   editingTenantId = "";
   form.reset();
   slugField.dataset.edited = "false";
   setSubmitContent("create");
-  setCancelVisible(false);
+  setCancelVisible(true);
   if (formTitle) formTitle.textContent = "สร้างร้านใหม่";
+  if (formSubtitle) formSubtitle.textContent = "กำหนดชื่อร้าน URL และข้อมูลติดต่อเบื้องต้น";
   showError("");
 }
 
@@ -112,8 +112,8 @@ function beginEdit(tenant) {
   setSubmitContent("edit");
   setCancelVisible(true);
   if (formTitle) formTitle.textContent = "แก้ไขร้านค้า";
-  form.scrollIntoView({ behavior: "smooth", block: "start" });
-  nameField.focus();
+  if (formSubtitle) formSubtitle.textContent = "ปรับข้อมูลพื้นฐานโดยไม่เปลี่ยน Tenant ID";
+  openTenantModal();
 }
 
 const ownerModal = document.createElement("div");
@@ -233,22 +233,11 @@ ownerForm.addEventListener("submit", async event => {
   }
 });
 
-function renderTenants(items = []) {
-  tenants = items;
-  tenantCount.textContent = `${items.length} ร้าน`;
-  tenantList.innerHTML = items.length ? items.map(tenant => `
-    <article class="card" style="box-shadow:none;background:#f8fbf9">
-      <div class="section-title" style="margin:0"><div><h2 style="margin:0">${escapeHtml(tenant.name || "ไม่ระบุชื่อร้าน")}</h2><div class="menu-category">/${escapeHtml(tenant.slug || "-")}</div></div><span class="badge ${tenant.active === false ? "warning" : ""}">${tenant.active === false ? "ปิดใช้งาน" : "ใช้งาน"}</span></div>
-      <div style="margin-top:10px"><span class="badge ${tenant.ownerUid ? "" : "warning"}">${tenant.ownerUid ? `Owner: ${escapeHtml(tenant.ownerDisplayName || tenant.ownerEmail || "มีแล้ว")}` : "ยังไม่มี Owner"}</span></div>
-      <div style="margin-top:12px;word-break:break-all"><strong>Tenant ID:</strong> ${escapeHtml(tenant.id)}</div>
-      <div class="order-actions" style="margin-top:12px;align-items:center">
-        <a class="btn btn-dark btn-sm" href="/s/${encodeURIComponent(tenant.slug || "")}/delivery" target="_blank" rel="noopener noreferrer">${icon("home")}<span>เปิดหน้าร้าน</span></a>
-        ${tenant.ownerUid ? "" : `<button class="btn btn-primary btn-sm" type="button" data-create-owner="${escapeHtml(tenant.id)}">${icon("user")}<span>สร้าง Owner</span></button>`}
-        <button class="btn btn-sm" type="button" data-edit-tenant="${escapeHtml(tenant.id)}">${icon("edit")}<span>แก้ไข</span></button>
-        <button class="btn btn-danger btn-sm" type="button" data-delete-tenant="${escapeHtml(tenant.id)}">${icon("delete")}<span>ลบ</span></button>
-      </div>
-    </article>`).join("") : '<div class="empty">ยังไม่มีร้านค้า</div>';
-}
+function tenantNeedsAttention(tenant) { const status=tenant.subscriptionStatus||"active"; return !tenant.ownerUid || tenant.active===false || ["expired","suspended","grace"].includes(status); }
+function filteredTenants(){ const needle=String(tenantSearch?.value||"").trim().toLocaleLowerCase("th"); const status=tenantStatusFilter?.value||"all"; return tenants.filter(t=>{ const text=!needle||[t.name,t.slug,t.id,t.ownerDisplayName,t.ownerEmail].some(v=>String(v||"").toLocaleLowerCase("th").includes(needle)); const attention=tenantNeedsAttention(t); const state=status==="all"||(status==="active"&&t.active!==false&&!attention)||(status==="attention"&&attention)||(status==="inactive"&&t.active===false); return text&&state; }); }
+function updateTenantSummary(){ summaryTotal.textContent=tenants.length.toLocaleString("th-TH"); summaryActive.textContent=tenants.filter(t=>t.active!==false).length.toLocaleString("th-TH"); summaryAttention.textContent=tenants.filter(tenantNeedsAttention).length.toLocaleString("th-TH"); }
+function renderTenants(items=null){ if(Array.isArray(items)) tenants=items; updateTenantSummary(); const rows=filteredTenants(); tenantCount.textContent=`${rows.length} จาก ${tenants.length} ร้าน`; tenantList.innerHTML=rows.length?rows.map(tenant=>`
+<article class="tenant-card" data-tenant-id="${escapeHtml(tenant.id)}"><header class="tenant-card-header"><div class="tenant-card-identity"><span class="tenant-card-mark">${icon("home")}</span><div><h2>${escapeHtml(tenant.name||"ไม่ระบุชื่อร้าน")}</h2><p>/${escapeHtml(tenant.slug||"-")}</p></div></div><span class="tenant-state ${tenant.active===false?"inactive":"active"}">${tenant.active===false?"ปิดใช้งาน":"ใช้งาน"}</span></header><div class="tenant-card-meta"><div><span>Owner</span><strong>${tenant.ownerUid?escapeHtml(tenant.ownerDisplayName||tenant.ownerEmail||"มีบัญชีแล้ว"):"ยังไม่มี Owner"}</strong></div><div><span>Tenant ID</span><strong class="tenant-id">${escapeHtml(tenant.id)}</strong></div></div><div class="tenant-action-row"><a class="btn btn-dark btn-sm" href="/s/${encodeURIComponent(tenant.slug||"")}/delivery" target="_blank" rel="noopener noreferrer">${icon("home")}<span>เปิดหน้าร้าน</span></a><button class="btn btn-sm" type="button" data-edit-tenant="${escapeHtml(tenant.id)}">${icon("edit")}<span>แก้ไข</span></button><button class="btn btn-danger btn-sm" type="button" data-delete-tenant="${escapeHtml(tenant.id)}">${icon("delete")}<span>ลบ</span></button></div></article>`).join(""):'<div class="tenant-empty-state"><i class="bi bi-shop-window"></i><strong>ไม่พบร้านค้าที่ตรงกับตัวกรอง</strong><span>ลองเปลี่ยนคำค้นหาหรือสถานะ</span></div>'; }
 
 async function loadTenants() {
   tenantList.innerHTML = '<div class="empty">กำลังโหลด...</div>';
@@ -273,7 +262,12 @@ slugField.addEventListener("input", () => {
   slugField.setSelectionRange(nextPosition, nextPosition);
 });
 slugField.addEventListener("blur", () => { slugField.value = normalizeSlug(slugField.value); });
-cancelEditButton.addEventListener("click", resetForm);
+openTenantModalButton.addEventListener("click",()=>{resetForm();openTenantModal();});
+cancelEditButton.addEventListener("click",()=>{resetForm();closeTenantModal();});
+tenantModal.addEventListener("click",event=>{if(event.target.closest("[data-close-tenant-modal]")){resetForm();closeTenantModal();}});
+document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!tenantModal.hidden){resetForm();closeTenantModal();}});
+tenantSearch.addEventListener("input",()=>renderTenants());
+tenantStatusFilter.addEventListener("change",()=>renderTenants());
 
 tenantList.addEventListener("click", async event => {
   const ownerButton = event.target.closest("[data-create-owner]");
@@ -335,6 +329,7 @@ form.addEventListener("submit", async event => {
       toast(`สร้างร้าน ${result.data?.tenant?.name || "ใหม่"} เรียบร้อยแล้ว`);
     }
     resetForm();
+    closeTenantModal();
     await loadTenants();
   } catch (error) {
     console.error(error);

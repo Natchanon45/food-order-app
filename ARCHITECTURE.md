@@ -2,8 +2,16 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.16.14
-Build: 2026.08.03.006
+Version: 0.16.15
+Build: 2026.08.04.001
+
+<!-- TENANT_MANAGEMENT_WORKSPACE_20260804_001 -->
+Change: Tenant Management Workspace.
+
+The Super Admin tenant page now uses a summary dashboard, search/status filters, semantic tenant cards, and a responsive create/edit modal while preserving the original Cloud Functions and validation. Subscription controls bind by stable Tenant ID instead of visual list index.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260804-001`.
+
 
 <!-- WAITING_QUEUE_TABLE_STATE_NUMBER_REPAIR_20260803_006 -->
 Waiting Queue table state and number lease rule:
@@ -150,7 +158,7 @@ Waiting Queue dialog rule: add-queue and open-table workflows use centered, resp
 
 Waiting Queue display audio rule: audio starts only after an operator gesture. Enabled mode means chime plus spoken Thai queue number when supported, and the UI must explicitly identify a chime-only fallback. No customer personal data may appear on the public display.
 
-Milestone: Waiting Queue Table State And Number Allocation Repair
+Milestone: Tenant Management Workspace
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 

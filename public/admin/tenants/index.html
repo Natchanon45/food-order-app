@@ -6,60 +6,51 @@
   <meta name="theme-color" content="#159447">
   <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
   <link rel="stylesheet" href="/assets/css/icons.css?v=20260731-079">
-  <link rel="stylesheet" href="/assets/css/tenant-admin.css?v=20260621-43">
+  <link rel="stylesheet" href="/assets/css/tenant-admin.css?v=20260804-001">
   <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-095">
   <title>จัดการร้านค้า</title>
 </head>
-<body data-roles="super_admin">
-  <header class="app-header">
-    <div class="brand"><span class="brand-mark">FOD</span>จัดการร้านค้า</div>
-    <a class="btn btn-sm" href="/platform">กลับระบบกลาง</a>
-  </header>
-
-  <main class="container">
-    <section class="hero">
-      <h1>Tenant / ร้านค้า</h1>
-      <p>สร้างร้านใหม่ กำหนด Owner ควบคุมสถานะ และกำหนดวันหมดอายุสมาชิก</p>
-    </section>
-
-    <section class="card">
-      <div class="section-title"><h2>สร้างร้านใหม่</h2></div>
-      <form id="tenantForm" class="grid">
-        <div class="grid grid-2">
-          <div class="field">
-            <label>ชื่อร้าน</label>
-            <input class="input" id="tenantName" maxlength="120" required placeholder="เช่น ร้านอาหารบ้านสวน">
-          </div>
-          <div class="field">
-            <label>Slug สำหรับ URL</label>
-            <input class="input" id="tenantSlug" maxlength="50" required placeholder="เช่น baan-suan">
-            <small>ใช้ตัวอักษรอังกฤษเล็ก ตัวเลข และขีดกลางเท่านั้น</small>
-          </div>
-        </div>
-        <div class="grid grid-2">
-          <div class="field">
-            <label>เบอร์โทรร้าน</label>
-            <input class="input" id="tenantPhone" type="tel" maxlength="30">
-          </div>
-          <div class="field">
-            <label>ที่อยู่ร้าน</label>
-            <input class="input" id="tenantAddress" maxlength="300">
-          </div>
-        </div>
-        <button class="btn btn-primary" id="createTenantButton">สร้างร้าน</button>
+<body data-roles="super_admin" class="tenant-admin-page">
+<header class="app-header">
+  <div class="brand"><span class="brand-mark">FOD</span><span>จัดการร้านค้า</span></div>
+  <a class="btn btn-sm" href="/platform"><i class="bi bi-arrow-left"></i><span>กลับระบบกลาง</span></a>
+</header>
+<main class="container tenant-admin-shell">
+  <section class="hero tenant-admin-hero">
+    <div><span class="tenant-admin-eyebrow"><i class="bi bi-buildings"></i> ระบบกลาง</span><h1>ร้านค้าและสมาชิก</h1><p>สร้างร้าน ตรวจสอบ Owner และบริหารอายุสมาชิกจากหน้าจอเดียว</p></div>
+    <button class="btn tenant-create-trigger" id="openTenantModalButton" type="button"><i class="bi bi-plus-lg"></i><span>สร้างร้านใหม่</span></button>
+  </section>
+  <section class="tenant-summary-grid">
+    <article><span>ร้านทั้งหมด</span><strong id="tenantSummaryTotal">0</strong><small>ร้าน</small></article>
+    <article class="active"><span>กำลังใช้งาน</span><strong id="tenantSummaryActive">0</strong><small>ร้าน</small></article>
+    <article class="warning"><span>ต้องติดตาม</span><strong id="tenantSummaryAttention">0</strong><small>ร้าน</small></article>
+  </section>
+  <section class="card tenant-directory-card">
+    <div class="tenant-directory-header"><div><h2>รายการร้านค้า</h2><p>ค้นหาและจัดการข้อมูลร้าน Owner และสมาชิก</p></div><span class="badge" id="tenantCount">0 ร้าน</span></div>
+    <div class="tenant-toolbar">
+      <label class="tenant-search"><i class="bi bi-search"></i><input id="tenantSearch" type="search" placeholder="ค้นหาชื่อร้าน Slug, Tenant ID หรือ Owner"></label>
+      <select class="input" id="tenantStatusFilter"><option value="all">ทุกสถานะ</option><option value="active">กำลังใช้งาน</option><option value="attention">ต้องติดตาม</option><option value="inactive">ปิดใช้งาน</option></select>
+    </div>
+    <div id="tenantList" class="tenant-list"></div>
+  </section>
+</main>
+<div class="tenant-form-modal" id="tenantFormModal" hidden>
+  <button class="tenant-form-backdrop" type="button" data-close-tenant-modal aria-label="ปิด"></button>
+  <section class="tenant-form-dialog" role="dialog" aria-modal="true" aria-labelledby="tenantFormTitle">
+    <header class="tenant-form-header"><span class="tenant-form-icon"><i class="bi bi-shop"></i></span><div><h2 id="tenantFormTitle">สร้างร้านใหม่</h2><p id="tenantFormSubtitle">กำหนดชื่อร้าน URL และข้อมูลติดต่อเบื้องต้น</p></div><button class="tenant-form-close" type="button" data-close-tenant-modal><i class="bi bi-x-lg"></i></button></header>
+    <form id="tenantForm" class="tenant-form" novalidate>
+      <div class="tenant-form-body">
+        <div class="grid grid-2"><div class="field"><label for="tenantName">ชื่อร้าน *</label><input class="input" id="tenantName" maxlength="120" required placeholder="เช่น ร้านอาหารบ้านสวน"></div><div class="field"><label for="tenantSlug">Slug สำหรับ URL *</label><div class="tenant-slug-input"><span>/s/</span><input class="input" id="tenantSlug" maxlength="50" required placeholder="baan-suan"></div><small>อังกฤษตัวเล็ก ตัวเลข และขีดกลางเท่านั้น</small></div></div>
+        <div class="grid grid-2"><div class="field"><label for="tenantPhone">เบอร์โทรร้าน</label><input class="input" id="tenantPhone" type="tel" maxlength="30"></div><div class="field"><label for="tenantAddress">ที่อยู่ร้าน</label><input class="input" id="tenantAddress" maxlength="300"></div></div>
+        <div class="tenant-form-note"><i class="bi bi-info-circle"></i><span>หลังสร้างร้านแล้ว ให้สร้างบัญชี Owner จากเมนูบัญชีเจ้าของร้าน</span></div>
         <div class="upload-error" id="tenantError" hidden></div>
-      </form>
-    </section>
-
-    <section class="card" style="margin-top:16px">
-      <div class="section-title"><h2>รายการร้านค้า</h2><span class="badge" id="tenantCount">0 ร้าน</span></div>
-      <div id="tenantList" class="grid"></div>
-    </section>
-  </main>
-
-  <script type="module" src="/assets/js/page-guard.js?v=20260802-104"></script>
-  <script type="module" src="/assets/js/sweet-dialog.js?v=20260731-080"></script>
-  <script type="module" src="/assets/js/admin-tenants.js?v=20260630-050"></script>
-  <script type="module" src="/assets/js/admin-subscriptions.js?v=20260630-050"></script>
-</body>
-</html>
+      </div>
+      <footer class="tenant-form-footer"><button class="btn tenant-cancel-edit" id="tenantCancelButton" type="button"><i class="bi bi-x-circle"></i><span>ยกเลิก</span></button><button class="btn btn-primary" id="createTenantButton" type="submit"><i class="bi bi-plus-lg"></i><span>สร้างร้าน</span></button></footer>
+    </form>
+  </section>
+</div>
+<script type="module" src="/assets/js/page-guard.js?v=20260802-104"></script>
+<script type="module" src="/assets/js/sweet-dialog.js?v=20260731-080"></script>
+<script type="module" src="/assets/js/admin-tenants.js?v=20260804-001"></script>
+<script type="module" src="/assets/js/admin-subscriptions.js?v=20260804-001"></script>
+</body></html>

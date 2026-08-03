@@ -1,9 +1,17 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Waiting Queue Table State And Number Allocation Repair
-Version: 0.16.14
-Build: 2026.08.03.006
+Milestone: Tenant Management Workspace
+Version: 0.16.15
+Build: 2026.08.04.001
+
+<!-- TENANT_MANAGEMENT_WORKSPACE_20260804_001 -->
+Change: Tenant Management Workspace.
+
+The Super Admin tenant page now uses a summary dashboard, search/status filters, semantic tenant cards, and a responsive create/edit modal while preserving the original Cloud Functions and validation. Subscription controls bind by stable Tenant ID instead of visual list index.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260804-001`.
+
 
 <!-- WAITING_QUEUE_TABLE_STATE_NUMBER_REPAIR_20260803_006 -->
 Change: Repaired Waiting Queue table visibility and sequential number allocation.

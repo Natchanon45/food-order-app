@@ -58,7 +58,7 @@ function subscriptionHtml(tenant) {
   const remaining = daysRemaining(tenant);
   const { status, label } = statusInfo(tenant);
   return `
-    <section class="tenant-subscription" data-subscription-tenant="${tenant.id}" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">
+    <section class="tenant-subscription" data-subscription-tenant="${tenant.id}">
       <div class="grid grid-3">
         <div><strong>แพ็กเกจ</strong><div class="menu-category">${tenant.planCode === "yearly" ? "รายปี" : "รายเดือน"}</div></div>
         <div><strong>วันหมดอายุ</strong><div class="menu-category">${toDate(tenant.subscriptionExpiresAt)?.toLocaleDateString("th-TH") || "ยังไม่กำหนด"}</div></div>
@@ -80,15 +80,15 @@ function subscriptionHtml(tenant) {
 }
 
 async function decorateTenantCards() {
-  const cards = [...tenantList.querySelectorAll(":scope > article.card")];
+  const cards = [...tenantList.querySelectorAll(":scope > article.tenant-card")];
   if (!cards.length) return;
   if (!tenants.length) {
     const result = await listTenants();
     tenants = result.data?.tenants || [];
   }
-  cards.forEach((card, index) => {
+  cards.forEach(card => {
     if (card.querySelector("[data-subscription-tenant]")) return;
-    const tenant = tenants[index];
+    const tenant = tenants.find(item => String(item.id) === String(card.dataset.tenantId));
     if (tenant) card.insertAdjacentHTML("beforeend", subscriptionHtml(tenant));
   });
 }
