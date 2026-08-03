@@ -1,5 +1,5 @@
 import './sweet-dialog.js?v=20260731-080';
-import { dataService } from './data-service.js';
+import { dataService } from "./data-service.js?v=20260803-006";
 import { toast } from './ui.js?v=20260731-080';
 import { db, isFirebaseConfigured, collection, getDocs } from './firebase-config.js?v=20260630-073';
 import { shopCollectionPath } from './tenant-context.js';
@@ -78,7 +78,27 @@ async function closeTableSafely(button) {
     }
 
     button.textContent = 'กำลังปิดโต๊ะ...';
-    await dataService.updateTable(table.id, { status: 'available', orderToken: '', sessionStartedAt: null, currentRound: 0 });
+    await dataService.updateTable(table.id, {
+      status: "available",
+      tableStatus: "available",
+      occupied: false,
+      isOccupied: false,
+      available: true,
+      isAvailable: true,
+      isOpen: false,
+      activeOrderId: "",
+      currentOrderId: "",
+      orderId: "",
+      waitingQueueId: "",
+      waitingQueueNumber: "",
+      partySize: 0,
+      occupiedAt: null,
+      occupiedAtMs: 0,
+      orderToken: "",
+      sessionStartedAt: null,
+      currentRound: 0,
+      orderIds: [],
+    });
     toast(`ปิด ${table.name || `โต๊ะ ${table.code || table.id}`} เรียบร้อยแล้ว`);
     setTimeout(() => location.reload(), 350);
   } catch (error) {

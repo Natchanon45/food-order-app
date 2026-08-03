@@ -2,8 +2,22 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.16.13
-Build: 2026.08.03.005
+Version: 0.16.14
+Build: 2026.08.03.006
+
+<!-- WAITING_QUEUE_TABLE_STATE_NUMBER_REPAIR_20260803_006 -->
+Change: Waiting Queue Table State And Number Allocation Repair.
+
+Current behavior: Waiting Queue loads tenant table documents first and treats an explicit available status as canonical while excluding inactive, deleted, or disabled tables. Closing a table clears every occupied/session/queue/order flag, so Cashier, QR Table, and Waiting Queue share the same state.
+
+Number behavior: the first online queue is allocated directly from the daily counter. Merely opening the page does not advance the counter. A three-number offline lease is created only after actual queue activity and is never replaced before its remaining numbers are consumed.
+
+Existing data: W021 and other already-issued numbers remain stable by design. The repair prevents future page-open and premature-refill jumps; the daily date key naturally starts a new sequence on the next service day.
+
+Deploy rules: Hosting only.
+
+Next Task: hard refresh Waiting Queue and Table QR, confirm tables 01–12, close/reopen one table, and create queues online then offline.
+
 
 <!-- PUBLIC_CONTACT_CENTER_20260803_005 -->
 Change: Public Contact Center.
@@ -218,7 +232,7 @@ Change: Implemented Waiting Queue MVP as a table-waiting workflow independent fr
 Firebase boundary: Waiting queue writes use top-level tenant-scoped collections `waitingQueues`, `waitingQueuePublic`, `waitingQueueBoard`, `waitingQueueAudits`, `waitingQueueCounters`, `waitingQueueNumberLeases`, `waitingQueueNumbers`, `waitingQueueDedupe`, and `waitingQueueOperations`. Customer tracking tokens remain in non-listable `waitingQueuePublic` documents, while the listable public display reads token-free `waitingQueueBoard` documents. Neither public surface contains customer name, phone, or note. Local staff intake uses preleased stable W-numbers and an idempotent outbox; queue records are retained for audit and are never physically deleted. Existing order, payment, stock, VAT, Kitchen, Delivery, stable sale/order IDs, and duplicate stock protection remain authoritative.
 
 Deploy rules: deploy Firestore Rules, Indexes, and Hosting. Load cache build `20260801-001` with a hard refresh.
-Milestone: Public Contact Center
+Milestone: Waiting Queue Table State And Number Allocation Repair
 
 Next Task: perform two-device acceptance tests for duplicate intake, call/recall audit, customer response, skip reasons, table collision protection, and order/table linkage.
 

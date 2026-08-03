@@ -1,9 +1,21 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Public Contact Center
-Version: 0.16.13
-Build: 2026.08.03.005
+Milestone: Waiting Queue Table State And Number Allocation Repair
+Version: 0.16.14
+Build: 2026.08.03.006
+
+<!-- WAITING_QUEUE_TABLE_STATE_NUMBER_REPAIR_20260803_006 -->
+Change: Repaired Waiting Queue table visibility and sequential number allocation.
+
+Table state: `status: available` is now authoritative for legacy table documents, so Waiting Queue immediately recognizes tables whose secondary `occupied`/`available` flags were left stale. Tenant-scoped table documents are preferred over the legacy top-level source and duplicate logical tables are removed. Shared table updates now write the complete available or occupied state, including Waiting Queue and active-order cleanup.
+
+Running number: opening the Waiting Queue page no longer reserves twenty numbers. Online queue creation increments the daily counter by exactly one. After a real queue is saved or synced, the device keeps a small three-number lease for offline continuity. A lease is consumed completely before another one is reserved, preventing the previous lease-overwrite gap.
+
+Compatibility: Existing issued W-numbers are not renumbered. Queue IDs, duplicate protection, public tokens, table/order transactions, tenant scope, audit history, and offline outbox behavior are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260803-006`.
+
 
 <!-- PUBLIC_CONTACT_CENTER_20260803_005 -->
 Change: Added the Public Contact Center managed by Super Admin.

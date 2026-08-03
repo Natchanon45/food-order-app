@@ -1,6 +1,6 @@
 import "./sweet-dialog.js?v=20260731-080";
-import "./cashier-table-close-guard.js?v=20260802-006";
-import { dataService, usingDemoMode } from "./data-service.js";
+import "./cashier-table-close-guard.js?v=20260803-006";
+import { dataService, usingDemoMode } from "./data-service.js?v=20260803-006";
 import { toast } from "./ui.js?v=20260731-080";
 
 if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
@@ -172,10 +172,16 @@ availableTables.addEventListener("click", async event => {
     const token = createOrderToken();
     await dataService.updateTable(table.id, {
       status: "occupied",
+      tableStatus: "occupied",
+      occupied: true,
+      isOccupied: true,
+      available: false,
+      isAvailable: false,
+      isOpen: true,
       orderToken: token,
       currentRound: 0,
       orderIds: [],
-      sessionStartedAt: new Date().toISOString()
+      sessionStartedAt: new Date().toISOString(),
     });
 
     renderTicket(table, token, true);
@@ -215,10 +221,24 @@ occupiedTables.addEventListener("click", async event => {
     try {
       await dataService.updateTable(table.id, {
         status: "available",
+        tableStatus: "available",
+        occupied: false,
+        isOccupied: false,
+        available: true,
+        isAvailable: true,
+        isOpen: false,
+        activeOrderId: "",
+        currentOrderId: "",
+        orderId: "",
+        waitingQueueId: "",
+        waitingQueueNumber: "",
+        partySize: 0,
+        occupiedAt: null,
+        occupiedAtMs: 0,
         orderToken: "",
         sessionStartedAt: null,
         currentRound: 0,
-        orderIds: []
+        orderIds: [],
       });
       toast(`ปิด ${table.name} เรียบร้อยแล้ว`);
       await loadTables();

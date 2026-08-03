@@ -29,7 +29,7 @@ import {
   waitingQueueStatusLabel,
   watchWaitingQueuePublicResponses,
   watchWaitingQueues,
-} from "./waiting-queue-core.js?v=20260802-017";
+} from "./waiting-queue-core.js?v=20260803-006";
 
 const waitingProfile = await requireRole(["owner", "admin", "manager", "cashier"]);
 
@@ -878,6 +878,9 @@ async function syncNow() {
   els.syncBtn.textContent = "กำลัง Sync...";
   try {
     const result = await syncWaitingQueueOutbox(tenantId, { maxOperations: 100 });
+    if (result.processed > 0 && isOnline()) {
+      ensureWaitingNumberLease(tenantId).catch(() => {});
+    }
     if (result.errors?.length) {
       await sweetAlert(
         friendlyWaitingQueueError(result.errors[0].error, "มีรายการ Sync ไม่สำเร็จ"),
@@ -980,7 +983,12 @@ function bindEvents() {
   els.closeSeat.addEventListener("click", () => els.seatDialog.close());
   els.cancelSeat.addEventListener("click", () => els.seatDialog.close());
   els.seatConfirm.addEventListener("click", confirmSeat);
-  window.addEventListener("online", () => { renderConnectivity(); syncNow(); refreshTables(); });
+  window.addEventListener("online", () => {
+    renderConnectivity();
+    syncNow();
+    refreshTables();
+    ensureWaitingNumberLease(tenantId).catch(() => {});
+  });
   window.addEventListener("offline", renderConnectivity);
   window.addEventListener("waiting-queue:outbox-changed", renderConnectivity);
 }
@@ -1007,7 +1015,6 @@ async function initialize() {
     );
   }
   renderConnectivity();
-  ensureWaitingNumberLease(tenantId).catch(() => {});
   await refreshTables();
   unsubscribeQueues = watchWaitingQueues(tenantId, rows => {
     queues = rows;

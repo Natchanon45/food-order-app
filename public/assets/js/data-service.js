@@ -29,6 +29,70 @@ function sortMenus(menus, categoryOrder = []) {
   });
 }
 function withShop(payload = {}) { const tenantId = activeShop().id; return { ...payload, tenantId }; }
+
+function canonicalTableStatePatch(patch = {}) {
+  const next = { ...patch };
+  const status = String(next.status || next.tableStatus || "")
+    .trim()
+    .toLowerCase();
+
+  const availableStatuses = new Set([
+    "available",
+    "free",
+    "empty",
+    "open",
+    "ready",
+    "ว่าง",
+  ]);
+  const occupiedStatuses = new Set([
+    "occupied",
+    "busy",
+    "in_use",
+    "in-use",
+    "active",
+    "ไม่ว่าง",
+  ]);
+
+  if (availableStatuses.has(status)) {
+    return {
+      ...next,
+      status: "available",
+      tableStatus: "available",
+      occupied: false,
+      isOccupied: false,
+      available: true,
+      isAvailable: true,
+      isOpen: false,
+      activeOrderId: "",
+      currentOrderId: "",
+      orderId: "",
+      waitingQueueId: "",
+      waitingQueueNumber: "",
+      partySize: 0,
+      occupiedAt: null,
+      occupiedAtMs: 0,
+      orderToken: "",
+      sessionStartedAt: null,
+      currentRound: 0,
+      orderIds: [],
+    };
+  }
+
+  if (occupiedStatuses.has(status)) {
+    return {
+      ...next,
+      status: "occupied",
+      tableStatus: "occupied",
+      occupied: true,
+      isOccupied: true,
+      available: false,
+      isAvailable: false,
+      isOpen: true,
+    };
+  }
+
+  return next;
+}
 function isUnpaidTableOrder(order) { return order?.orderType !== "delivery" && order?.orderType !== "takeaway" && !["paid", "cancelled"].includes(order?.status) && order?.paymentStatus !== "paid"; }
 function dateKeyFrom(value = new Date()) { const date = value instanceof Date ? value : new Date(value || Date.now()); return `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}${String(date.getDate()).padStart(2, "0")}`; }
 function takeawayQueueNoFromDate(value = new Date()) { const date = value instanceof Date ? value : new Date(value || Date.now()); return `TA-${String(date.getHours()).padStart(2, "0")}${String(date.getMinutes()).padStart(2, "0")}${String(date.getSeconds()).padStart(2, "0")}-${Math.random().toString(36).slice(2, 5).toUpperCase()}`; }
@@ -82,8 +146,38 @@ export const dataService = {
     return tables.find(item => String(item.id || "").toUpperCase() === lookup || String(item.code || "").toUpperCase() === lookup) || null;
   },
 
-  async saveTable(table) { if (usingDemoMode) return demoStore.tables.save(table); const id = table.id || table.code; const payload = withShop({ status: "available", orderToken: "", currentRound: 0, ...table }); delete payload.id; return setDoc(shopDocument("tables", id), payload, { merge: true }); },
-  async updateTable(id, patch) { if (usingDemoMode) { const table = await this.getTable(id); if (!table) return; return demoStore.tables.save({ ...table, ...patch, id: table.id }); } return updateDoc(shopDocument("tables", id), withShop({ ...patch, updatedAt: serverTimestamp() })); },
+  async saveTable(table) {
+    const id = table.id || table.code;
+    const normalized = canonicalTableStatePatch({
+      status: "available",
+      orderToken: "",
+      currentRound: 0,
+      ...table,
+    });
+    if (usingDemoMode) return demoStore.tables.save({ ...normalized, id });
+    const payload = withShop(normalized);
+    delete payload.id;
+    return setDoc(shopDocument("tables", id), payload, { merge: true });
+  },
+  async updateTable(id, patch) {
+    const normalizedPatch = canonicalTableStatePatch(patch);
+    if (usingDemoMode) {
+      const table = await this.getTable(id);
+      if (!table) return;
+      return demoStore.tables.save({
+        ...table,
+        ...normalizedPatch,
+        id: table.id,
+      });
+    }
+    return updateDoc(
+      shopDocument("tables", id),
+      withShop({
+        ...normalizedPatch,
+        updatedAt: serverTimestamp(),
+      }),
+    );
+  },
   async deleteTable(id) { if (usingDemoMode) return demoStore.tables.remove(id); return deleteDoc(shopDocument("tables", id)); },
   async createOrder(order) { if (usingDemoMode) return demoStore.orders.add(order); return addDoc(shopCollection("orders"), withShop({ ...order, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })); },
   async createOrderWithId(id, order) { if (!id) throw new Error("ORDER_ID_REQUIRED"); if (usingDemoMode) return demoStore.orders.add({ ...order, id }); await setDoc(shopDocument("orders", id), withShop({ ...order, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })); return { id }; },
@@ -164,8 +258,24 @@ export const dataService = {
       const target = toSnapshot.data();
       if (target.active === false || (target.status && target.status !== "available")) throw new Error("TARGET_TABLE_NOT_AVAILABLE");
       orderSnapshots.forEach(snapshot => { if (!snapshot.exists()) throw new Error("MOVE_ORDER_NOT_FOUND"); const order = snapshot.data(); if (!isUnpaidTableOrder(order) || order.tableToken !== fromTableToken || String(order.tableCode) !== String(source.code || fromTableCode)) throw new Error("MOVE_ORDER_NOT_UNPAID"); });
-      transaction.update(fromTableRef, withShop({ status: "available", orderToken: "", sessionStartedAt: null, currentRound: 0, orderIds: [], updatedAt: serverTimestamp() }));
-      transaction.update(toTableRef, withShop({ status: "occupied", orderToken: fromTableToken, sessionStartedAt: source.sessionStartedAt || movedAt, currentRound: maxRound, orderIds, movedFromTableCode: source.code || fromTableCode, movedAt, updatedAt: serverTimestamp() }));
+      transaction.update(fromTableRef, withShop(canonicalTableStatePatch({
+        status: "available",
+        orderToken: "",
+        sessionStartedAt: null,
+        currentRound: 0,
+        orderIds: [],
+        updatedAt: serverTimestamp(),
+      })));
+      transaction.update(toTableRef, withShop(canonicalTableStatePatch({
+        status: "occupied",
+        orderToken: fromTableToken,
+        sessionStartedAt: source.sessionStartedAt || movedAt,
+        currentRound: maxRound,
+        orderIds,
+        movedFromTableCode: source.code || fromTableCode,
+        movedAt,
+        updatedAt: serverTimestamp(),
+      })));
       orderRefs.forEach(ref => transaction.update(ref, withShop({ tableCode: targetCode, tableName: targetName, movedFromTableCode: source.code || fromTableCode, tableMovedAt: movedAt, updatedAt: serverTimestamp() })));
     });
     return { fromTable, toTable: { ...toTable, code: targetCode, name: targetName }, movedOrders: orderIds.length };
