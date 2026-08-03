@@ -1,9 +1,21 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Admin Modal Header Icon Deduplication
-Version: 0.16.12
-Build: 2026.08.03.004
+Milestone: Public Contact Center
+Version: 0.16.13
+Build: 2026.08.03.005
+
+<!-- PUBLIC_CONTACT_CENTER_20260803_005 -->
+Change: Added the Public Contact Center managed by Super Admin.
+
+Public landing: a responsive Contact card appears after the pricing section when the global setting is enabled. It supports phone, LINE, Facebook Messenger through an `m.me` or HTTPS link, and email. The known settings document is watched in real time, so saved changes appear without rebuilding the page.
+
+Super Admin: `/platform/contact/` provides a role-protected form, per-channel enable switches, labels, values, Messenger username normalization, and a live preview. `/platform` now links to this settings page.
+
+Firebase boundary: the single document is `platformSettings/publicContact` with `tenantId: __platform__`. Public clients may get that known document but may not list the collection. Only an authenticated `super_admin` may create or update it; delete is denied. No tenant operational collection, order, stock, payment, queue, or POS behavior changes.
+
+Deploy: Firestore Rules and Hosting. Hard refresh cache `20260803-005`.
+
 
 <!-- ADMIN_MODAL_HEADER_ICON_DEDUPLICATION_20260803_004 -->
 Change: Removed the duplicate icon from Admin Menu/Table modal titles.

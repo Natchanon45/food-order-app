@@ -2,8 +2,22 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.16.12
-Build: 2026.08.03.004
+Version: 0.16.13
+Build: 2026.08.03.005
+
+<!-- PUBLIC_CONTACT_CENTER_20260803_005 -->
+Change: Public Contact Center.
+
+Current behavior: Super Admin manages the public landing contact channels at `/platform/contact/`. The public landing listens to the global `platformSettings/publicContact` document and renders only enabled, valid channels.
+
+Supported channels: telephone `tel:`, LINE HTTPS URL, Facebook Messenger `m.me`/HTTPS URL, and email `mailto:`. Messenger accepts a page username and normalizes it to `https://m.me/{username}` before saving.
+
+Security boundary: public access is get-only for the known contact document; collection listing and deletion are denied. Writes require `super_admin` and validated field/type/length constraints.
+
+Deploy rules: Firestore Rules and Hosting.
+
+Next Task: save production contact values, verify real-time landing update, and test every action on desktop and mobile.
+
 
 <!-- ADMIN_MODAL_HEADER_ICON_DEDUPLICATION_20260803_004 -->
 Change: Admin Modal Header Icon Deduplication.
@@ -204,7 +218,7 @@ Change: Implemented Waiting Queue MVP as a table-waiting workflow independent fr
 Firebase boundary: Waiting queue writes use top-level tenant-scoped collections `waitingQueues`, `waitingQueuePublic`, `waitingQueueBoard`, `waitingQueueAudits`, `waitingQueueCounters`, `waitingQueueNumberLeases`, `waitingQueueNumbers`, `waitingQueueDedupe`, and `waitingQueueOperations`. Customer tracking tokens remain in non-listable `waitingQueuePublic` documents, while the listable public display reads token-free `waitingQueueBoard` documents. Neither public surface contains customer name, phone, or note. Local staff intake uses preleased stable W-numbers and an idempotent outbox; queue records are retained for audit and are never physically deleted. Existing order, payment, stock, VAT, Kitchen, Delivery, stable sale/order IDs, and duplicate stock protection remain authoritative.
 
 Deploy rules: deploy Firestore Rules, Indexes, and Hosting. Load cache build `20260801-001` with a hard refresh.
-Milestone: Admin Modal Header Icon Deduplication
+Milestone: Public Contact Center
 
 Next Task: perform two-device acceptance tests for duplicate intake, call/recall audit, customer response, skip reasons, table collision protection, and order/table linkage.
 

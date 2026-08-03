@@ -2,8 +2,16 @@
 
 Repository: Natchanon45/food-order-app
 Branch: feature/retail-pos
-Version: 0.16.12
-Build: 2026.08.03.004
+Version: 0.16.13
+Build: 2026.08.03.005
+
+<!-- PUBLIC_CONTACT_CENTER_20260803_005 -->
+Public Contact Center rule:
+
+Global platform contact information is stored only at `platformSettings/publicContact` with `tenantId: __platform__`. The public landing may read this known document but must not list platform settings. Create/update is restricted to active `super_admin`; deletion is forbidden.
+
+The public renderer must create DOM nodes from validated values rather than inject user-supplied HTML. Phone uses a sanitized `tel:` target, email uses validated `mailto:`, and LINE/Messenger accept only HTTP/HTTPS URLs. Contact settings are global platform presentation and must not be copied into tenant business records.
+
 
 <!-- ADMIN_MODAL_HEADER_ICON_DEDUPLICATION_20260803_004 -->
 Admin modal icon rule:
@@ -134,7 +142,7 @@ Waiting Queue dialog rule: add-queue and open-table workflows use centered, resp
 
 Waiting Queue display audio rule: audio starts only after an operator gesture. Enabled mode means chime plus spoken Thai queue number when supported, and the UI must explicitly identify a chime-only fallback. No customer personal data may appear on the public display.
 
-Milestone: Admin Modal Header Icon Deduplication
+Milestone: Public Contact Center
 
 Core rules remain unchanged. All business data must include tenantId. Retail POS must work online and offline. Offline sales must sync back to Firestore. Duplicate bills are not allowed. Stock must not be deducted twice. The same stable saleId must be used for local sale and Firestore sync. Firestore transactions must read required documents before writes. HTML asset query versions must be bumped when referenced JS or CSS changes.
 

@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#159447">
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260731-079">
+  <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-095">
+  <link rel="stylesheet" href="/assets/css/public-contact.css?v=20260803-005">
+  <link rel="stylesheet" href="/assets/css/platform-contact-settings.css?v=20260803-005">
+  <title>ช่องทางติดต่อหน้าแรก</title>
+</head>
+<body data-roles="super_admin" class="platform-contact-page">
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark">FOD</span>
+      <span>ช่องทางติดต่อหน้าแรก</span>
+    </div>
+    <a class="btn btn-sm" href="/platform">
+      <i class="bi bi-arrow-left" aria-hidden="true"></i>
+      <span>กลับระบบกลาง</span>
+    </a>
+  </header>
+
+  <main class="container platform-contact-shell">
+    <section class="hero platform-contact-hero">
+      <span class="platform-contact-eyebrow">
+        <i class="bi bi-shield-check" aria-hidden="true"></i>
+        Super Admin
+      </span>
+      <h1>ตั้งค่า Contact หน้าแรก</h1>
+      <p>
+        กำหนดช่องทางให้ผู้เยี่ยมชมติดต่อผู้ดูแลระบบผ่านโทรศัพท์ LINE
+        Facebook Messenger หรืออีเมล
+      </p>
+    </section>
+
+    <div class="platform-contact-layout">
+      <section class="card platform-contact-form-card">
+        <div class="section-title">
+          <div>
+            <h2>ข้อมูลที่แสดงต่อสาธารณะ</h2>
+            <p>เปิดเฉพาะช่องทางที่พร้อมให้ผู้ใช้งานติดต่อจริง</p>
+          </div>
+          <label class="platform-contact-master-toggle">
+            <input id="contactEnabled" type="checkbox">
+            <span>แสดง Contact หน้าแรก</span>
+          </label>
+        </div>
+
+        <form id="platformContactForm" class="platform-contact-form" novalidate>
+          <div class="grid grid-2">
+            <div class="field">
+              <label for="contactHeading">หัวข้อ</label>
+              <input
+                class="input"
+                id="contactHeading"
+                maxlength="80"
+                placeholder="เช่น คุยกับเรา"
+                required
+              >
+            </div>
+            <div class="field">
+              <label for="contactDescription">คำอธิบาย</label>
+              <input
+                class="input"
+                id="contactDescription"
+                maxlength="240"
+                placeholder="เช่น สอบถามข้อมูลแพ็กเกจและการใช้งานระบบ"
+              >
+            </div>
+          </div>
+
+          <div class="platform-contact-channel-grid">
+            <fieldset class="platform-contact-channel" data-channel="phone">
+              <legend>
+                <i class="bi bi-telephone-fill" aria-hidden="true"></i>
+                โทรศัพท์
+              </legend>
+              <label class="platform-contact-channel-toggle">
+                <input id="phoneEnabled" type="checkbox">
+                <span>เปิดใช้งาน</span>
+              </label>
+              <div class="field">
+                <label for="phoneLabel">ข้อความบนปุ่ม</label>
+                <input class="input" id="phoneLabel" maxlength="60" placeholder="โทรศัพท์">
+              </div>
+              <div class="field">
+                <label for="phoneNumber">เบอร์โทร</label>
+                <input
+                  class="input"
+                  id="phoneNumber"
+                  type="tel"
+                  maxlength="40"
+                  placeholder="เช่น 0812345678"
+                >
+              </div>
+            </fieldset>
+
+            <fieldset class="platform-contact-channel" data-channel="line">
+              <legend>
+                <i class="bi bi-line" aria-hidden="true"></i>
+                LINE
+              </legend>
+              <label class="platform-contact-channel-toggle">
+                <input id="lineEnabled" type="checkbox">
+                <span>เปิดใช้งาน</span>
+              </label>
+              <div class="field">
+                <label for="lineLabel">ข้อความบนปุ่ม</label>
+                <input class="input" id="lineLabel" maxlength="60" placeholder="LINE">
+              </div>
+              <div class="field">
+                <label for="lineUrl">LINE URL</label>
+                <input
+                  class="input"
+                  id="lineUrl"
+                  type="url"
+                  maxlength="500"
+                  placeholder="https://lin.ee/..."
+                >
+              </div>
+            </fieldset>
+
+            <fieldset class="platform-contact-channel" data-channel="messenger">
+              <legend>
+                <i class="bi bi-messenger" aria-hidden="true"></i>
+                Facebook Messenger
+              </legend>
+              <label class="platform-contact-channel-toggle">
+                <input id="messengerEnabled" type="checkbox">
+                <span>เปิดใช้งาน</span>
+              </label>
+              <div class="field">
+                <label for="messengerLabel">ข้อความบนปุ่ม</label>
+                <input
+                  class="input"
+                  id="messengerLabel"
+                  maxlength="60"
+                  placeholder="Messenger"
+                >
+              </div>
+              <div class="field">
+                <label for="messengerUrl">Messenger URL หรือชื่อเพจ</label>
+                <input
+                  class="input"
+                  id="messengerUrl"
+                  maxlength="500"
+                  placeholder="https://m.me/your.page หรือ your.page"
+                >
+                <small>กรอกชื่อเพจอย่างเดียว ระบบจะสร้างลิงก์ m.me ให้โดยอัตโนมัติ</small>
+              </div>
+            </fieldset>
+
+            <fieldset class="platform-contact-channel" data-channel="email">
+              <legend>
+                <i class="bi bi-envelope-fill" aria-hidden="true"></i>
+                อีเมล
+              </legend>
+              <label class="platform-contact-channel-toggle">
+                <input id="emailEnabled" type="checkbox">
+                <span>เปิดใช้งาน</span>
+              </label>
+              <div class="field">
+                <label for="emailLabel">ข้อความบนปุ่ม</label>
+                <input class="input" id="emailLabel" maxlength="60" placeholder="อีเมล">
+              </div>
+              <div class="field">
+                <label for="contactEmail">อีเมล</label>
+                <input
+                  class="input"
+                  id="contactEmail"
+                  type="email"
+                  maxlength="160"
+                  placeholder="support@example.com"
+                >
+              </div>
+            </fieldset>
+          </div>
+
+          <div class="platform-contact-form-status" id="contactFormStatus" hidden></div>
+
+          <div class="platform-contact-actions">
+            <button class="btn" id="reloadContactButton" type="button">
+              <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+              <span>โหลดข้อมูลล่าสุด</span>
+            </button>
+            <button class="btn btn-primary" id="saveContactButton" type="submit">
+              <i class="bi bi-floppy" aria-hidden="true"></i>
+              <span>บันทึกข้อมูลติดต่อ</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <aside class="card platform-contact-preview-card">
+        <div class="section-title">
+          <div>
+            <h2>ตัวอย่างหน้าแรก</h2>
+            <p>ตัวอย่างเปลี่ยนตามข้อมูลที่กรอกทันที</p>
+          </div>
+        </div>
+
+        <section class="public-contact-card platform-contact-preview" id="contactPreview">
+          <div class="public-contact-copy">
+            <span class="public-contact-kicker">
+              <i class="bi bi-chat-heart" aria-hidden="true"></i>
+              <span>ติดต่อเรา</span>
+            </span>
+            <h2 id="previewHeading">คุยกับเรา</h2>
+            <p id="previewDescription">
+              ติดต่อสอบถามข้อมูลแพ็กเกจและการใช้งานระบบ
+            </p>
+          </div>
+          <nav
+            class="public-contact-links"
+            id="previewLinks"
+            aria-label="ตัวอย่างช่องทางติดต่อ"
+          ></nav>
+        </section>
+
+        <p class="platform-contact-preview-note">
+          ข้อมูลส่วนนี้เป็นข้อมูลสาธารณะ ห้ามกรอกรหัสผ่าน Token หรือข้อมูลลับ
+        </p>
+      </aside>
+    </div>
+  </main>
+
+  <script type="module" src="/assets/js/page-guard.js?v=20260802-104"></script>
+  <script type="module" src="/assets/js/sweet-dialog.js?v=20260731-080"></script>
+  <script type="module" src="/assets/js/platform-contact-settings.js?v=20260803-005"></script>
+</body>
+</html>
