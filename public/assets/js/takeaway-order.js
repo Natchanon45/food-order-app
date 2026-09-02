@@ -105,7 +105,18 @@ cartList.addEventListener("click", async event => {
 });
 cartList.addEventListener("input", event => { const id = event.target.dataset.note; if (!id) return; const item = cart.get(id); if (!item) return; item.note = event.target.value; cart.set(id, item); });
 document.querySelector("#searchInput").addEventListener("input", () => { currentPage = 1; renderMenus(); });
-window.addEventListener("resize", () => { currentPage = 1; renderMenus(); });
+let resizeTimer = 0;
+let mobileLayout = isMobile();
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = window.setTimeout(() => {
+    const nextMobileLayout = isMobile();
+    if (nextMobileLayout === mobileLayout) return;
+    mobileLayout = nextMobileLayout;
+    currentPage = 1;
+    renderMenus();
+  }, 150);
+});
 
 let customerValidationAttempted = false;
 
