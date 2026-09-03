@@ -1,114 +1,48 @@
 <!doctype html>
 <html lang="th">
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
-    <meta name="theme-color" content="#159447" />
-    <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096" />
-    <link
-      rel="stylesheet"
-      href="/assets/css/receipt-layout.css?v=20260701-020"
-    />
-    <title>พิมพ์ใบเสร็จ</title>
-  </head>
-  <body>
-    <div id="demoBanner"></div>
-    <header class="app-header no-print">
-      <div class="brand"><span class="brand-mark">FO</span>พิมพ์ใบเสร็จ</div>
-      <a class="btn btn-sm" href="/cashier">ย้อนกลับ</a>
-    </header>
-    <main class="receipt-page">
-      <div class="receipt-toolbar no-print">
-        <label for="paperSize">ขนาดกระดาษ</label
-        ><select
-          class="input"
-          id="paperSize"
-          style="width: auto; min-width: 130px"
-        >
-          <option value="80">80 มม.</option>
-          <option value="58">58 มม.</option>
-          <option value="a4">A4</option></select
-        ><button class="btn btn-primary" id="printButton">พิมพ์ใบเสร็จ</button>
-      </div>
-      <section class="receipt" id="receipt">
-        <div class="receipt-header">
-          <h1 id="shopName">Food Order QR</h1>
-          <div id="shopAddress"></div>
-          <div id="shopPhone"></div>
-          <strong id="receiptTitle">ใบเสร็จรับเงิน</strong>
-        </div>
-        <hr class="receipt-rule" />
-        <div class="receipt-row">
-          <span id="receiptTypeLabel">โต๊ะ</span
-          ><strong id="receiptTable">-</strong>
-        </div>
-        <div class="receipt-row">
-          <span>เลขที่บิล</span><span id="receiptNumber">-</span>
-        </div>
-        <div class="receipt-row">
-          <span>วันที่</span><span id="receiptDate">-</span>
-        </div>
-        <div class="receipt-row">
-          <span>การชำระเงิน</span><strong id="receiptPayment">-</strong>
-        </div>
-        <div id="deliveryInfo" hidden>
-          <hr class="receipt-rule" />
-          <div>
-            <strong>ชื่อผู้รับ:</strong> <span id="receiptRecipient">-</span>
-          </div>
-          <div><strong>โทร:</strong> <span id="receiptPhone">-</span></div>
-          <div>
-            <strong>ที่อยู่:</strong> <span id="receiptAddress">-</span>
-          </div>
-          <div>
-            <strong>พื้นที่:</strong> <span id="receiptDeliveryZone">-</span>
-          </div>
-        </div>
-        <hr class="receipt-rule" />
-        <table class="receipt-items receipt-items-3col">
-          <thead>
-            <tr>
-              <th>รายการ</th>
-              <th class="num receipt-unit">ราคา</th>
-              <th class="num receipt-line-total">รวม</th>
-            </tr>
-          </thead>
-          <tbody id="receiptItems"></tbody>
-        </table>
-        <hr class="receipt-rule" />
-        <div id="receiptDeliverySummary" hidden>
-          <div class="receipt-row">
-            <span>ค่าอาหาร</span
-            ><span><span id="receiptSubtotal">0.00</span> บาท</span>
-          </div>
-          <div class="receipt-row">
-            <span>ค่าจัดส่ง</span
-            ><span><span id="receiptDeliveryFee">0.00</span> บาท</span>
-          </div>
-        </div>
-        <div class="receipt-row receipt-total">
-          <span>ยอดสุทธิ</span
-          ><span><span id="receiptTotal">0.00</span> บาท</span>
-        </div>
-        <div id="receiptNoteWrap" class="receipt-note" hidden>
-          <hr class="receipt-rule" />
-          <strong>หมายเหตุ</strong>
-          <div id="receiptNote"></div>
-        </div>
-        <hr class="receipt-rule" />
-        <div class="receipt-header">
-          <img id="verifyQr" width="112" height="112" alt="QR ตรวจสอบใบเสร็จ" />
-          <div>สแกนเพื่อตรวจสอบใบเสร็จจริง</div>
-          <small id="verifyCode"></small>
-        </div>
-      </section>
-    </main>
-    <script
-      type="module"
-      src="/assets/js/receipt-combined.js?v=20260702-001"
-    ></script>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#159447">
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
+  <link rel="stylesheet" href="/assets/css/receipt-layout.css?v=20260701-020">
+  <link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260731-079">
+  <link rel="stylesheet" href="/assets/css/i18n.css?v=20260903-202">
+  <title>พิมพ์ใบเสร็จ</title>
+</head>
+<body class="order-delivery-workspace od-receipt-page" data-roles="owner,admin,cashier">
+  <div id="demoBanner"></div>
+  <header class="app-header no-print">
+    <div class="brand"><span class="brand-mark">FO</span><span data-i18n="cashier_documents.receipt.header_title">พิมพ์ใบเสร็จ</span></div>
+    <a class="btn btn-sm" href="/cashier"><span data-i18n="cashier_documents.receipt.back">ย้อนกลับ</span></a>
+    <div class="app-locale-switcher" data-static-locale-switcher><details class="app-locale-menu" data-locale-menu><summary class="app-locale-trigger" aria-label="Language" title="Language"><i class="bi bi-globe2" aria-hidden="true"></i><span class="visually-hidden">Language</span></summary><div class="app-locale-menu__panel" role="menu" aria-label="Language"><button type="button" class="app-locale-option" data-locale-option="th" lang="th" role="menuitemradio" aria-checked="true"><span>ไทย</span><i class="bi bi-check-lg" aria-hidden="true"></i></button><button type="button" class="app-locale-option" data-locale-option="en" lang="en" role="menuitemradio" aria-checked="false"><span>English</span><i class="bi bi-check-lg" aria-hidden="true"></i></button></div></details></div>
+  </header>
+  <main class="receipt-page">
+    <div class="receipt-toolbar no-print">
+      <label for="paperSize" data-i18n="cashier_documents.receipt.paper_size">ขนาดกระดาษ</label><select class="input" id="paperSize" style="width:auto;min-width:130px"><option value="80" data-i18n="cashier_documents.receipt.paper_80">80 มม.</option><option value="58" data-i18n="cashier_documents.receipt.paper_58">58 มม.</option><option value="a4">A4</option></select><button class="btn btn-primary" id="printButton" data-i18n="cashier_documents.receipt.print">พิมพ์ใบเสร็จ</button>
+    </div>
+    <section class="receipt" id="receipt">
+      <div class="receipt-header"><h1 id="shopName">Food Order QR</h1><div id="shopAddress"></div><div id="shopPhone"></div><strong id="receiptTitle" data-i18n="cashier_documents.receipt.title">ใบเสร็จรับเงิน</strong></div>
+      <hr class="receipt-rule">
+      <div class="receipt-row"><span id="receiptTypeLabel" data-i18n="cashier_documents.receipt.table">โต๊ะ</span><strong id="receiptTable">-</strong></div>
+      <div class="receipt-row"><span data-i18n="cashier_documents.receipt.bill_number">เลขที่บิล</span><span id="receiptNumber">-</span></div>
+      <div class="receipt-row"><span data-i18n="cashier_documents.receipt.date">วันที่</span><span id="receiptDate">-</span></div>
+      <div class="receipt-row"><span data-i18n="cashier_documents.receipt.payment">การชำระเงิน</span><strong id="receiptPayment">-</strong></div>
+      <div id="deliveryInfo" hidden><hr class="receipt-rule"><div><strong><span data-i18n="cashier_documents.receipt.recipient">ชื่อผู้รับ</span>:</strong> <span id="receiptRecipient">-</span></div><div><strong><span data-i18n="cashier_documents.receipt.phone">โทร</span>:</strong> <span id="receiptPhone">-</span></div><div><strong><span data-i18n="cashier_documents.receipt.address">ที่อยู่</span>:</strong> <span id="receiptAddress">-</span></div><div><strong><span data-i18n="cashier_documents.receipt.zone">พื้นที่</span>:</strong> <span id="receiptDeliveryZone">-</span></div></div>
+      <hr class="receipt-rule">
+      <table class="receipt-items receipt-items-3col"><thead><tr><th data-i18n="cashier_documents.receipt.item">รายการ</th><th class="num receipt-unit" data-i18n="cashier_documents.receipt.price">ราคา</th><th class="num receipt-line-total" data-i18n="cashier_documents.receipt.total">รวม</th></tr></thead><tbody id="receiptItems"></tbody></table>
+      <hr class="receipt-rule">
+      <div id="receiptDeliverySummary" hidden><div class="receipt-row"><span data-i18n="cashier_documents.receipt.food_subtotal">ค่าอาหาร</span><span><span id="receiptSubtotal">0.00</span> <span data-i18n="cashier.common.baht">บาท</span></span></div><div class="receipt-row"><span data-i18n="cashier_documents.receipt.delivery_fee">ค่าจัดส่ง</span><span><span id="receiptDeliveryFee">0.00</span> <span data-i18n="cashier.common.baht">บาท</span></span></div></div>
+      <div class="receipt-row receipt-total"><span data-i18n="cashier_documents.receipt.net_total">ยอดสุทธิ</span><span><span id="receiptTotal">0.00</span> <span data-i18n="cashier.common.baht">บาท</span></span></div>
+      <div id="receiptNoteWrap" class="receipt-note" hidden><hr class="receipt-rule"><strong data-i18n="cashier_documents.receipt.note">หมายเหตุ</strong><div id="receiptNote"></div></div>
+      <hr class="receipt-rule">
+      <div class="receipt-header"><img id="verifyQr" width="112" height="112" alt="QR ตรวจสอบใบเสร็จ" data-i18n-alt="cashier_documents.receipt.verify_qr_alt"><div data-i18n="cashier_documents.receipt.verify_instruction">สแกนเพื่อตรวจสอบใบเสร็จจริง</div><small id="verifyCode"></small></div>
+    </section>
+  </main>
+  <script type="module" src="/assets/js/cashier-documents-i18n-bootstrap.js?v=20260903-224"></script>
+  <script type="module" src="/assets/js/page-guard.js?v=20260903-201"></script>
+  <script type="module" src="/assets/js/receipt-combined.js?v=20260903-244"></script>
+  <script type="module" src="/assets/js/locale-switcher-static.js?v=20260903-202"></script>
+  <script type="module" src="/assets/js/user-menu-i18n-static.js?v=20260903-202"></script>
+</body>
 </html>

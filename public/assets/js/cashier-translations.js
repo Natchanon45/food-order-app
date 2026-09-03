@@ -1,0 +1,596 @@
+export default {
+  "th": {
+    "cashier": {
+      "meta": {
+        "title": "หน้าแคชเชียร์"
+      },
+      "header": {
+        "title": "หน้าแคชเชียร์"
+      },
+      "hero": {
+        "title": "หน้าแคชเชียร์",
+        "description": "ตรวจสอบรายการ รับชำระเงิน และปิดบิลจากหน้าจอเดียว"
+      },
+      "takeaway_tools": {
+        "aria_label": "เครื่องมือสั่งกลับบ้าน",
+        "title": "เครื่องมือสั่งกลับบ้าน",
+        "subtitle": "สำหรับลูกค้า Walk-in",
+        "waiting_queue_aria": "จัดการคิวรอโต๊ะ",
+        "waiting_queue": "คิวรอโต๊ะ",
+        "show_qr_aria": "แสดง QR สั่งกลับบ้าน",
+        "qr_label": "QR Take Away",
+        "open_order_aria": "เปิดหน้าสั่งกลับบ้าน",
+        "open_order": "สั่งกลับบ้าน",
+        "copy_link_aria": "คัดลอกลิงก์สั่งกลับบ้าน",
+        "copy_link": "คัดลอกลิงก์",
+        "copy_done": "คัดลอกลิงก์ Take Away แล้ว",
+        "copy_blocked": "เบราว์เซอร์ไม่อนุญาตให้คัดลอกอัตโนมัติ กรุณาคัดลอกลิงก์ด้านล่าง",
+        "copy_title": "คัดลอกลิงก์สั่งกลับบ้าน",
+        "close": "ปิด",
+        "qr_title": "QR สั่งกลับบ้าน",
+        "qr_help": "ให้ลูกค้า Walk-in สแกนเพื่อสั่งกลับบ้าน",
+        "qr_alt": "QR สำหรับสั่งกลับบ้าน",
+        "link_aria": "ลิงก์สั่งกลับบ้าน",
+        "open_page": "เปิดหน้าสั่ง",
+        "store_unavailable": "ไม่พบข้อมูลร้าน กรุณารีเฟรชหน้าแล้วลองใหม่"
+      },
+      "queue": {
+        "title": "บิลที่รอดำเนินการ",
+        "description": "รายการใหม่จะแสดงที่หน้านี้โดยอัตโนมัติ",
+        "count": ":count บิล",
+        "empty_title": "ยังไม่มีบิลที่รอดำเนินการ",
+        "empty_help": "เมื่อมีออเดอร์ใหม่ รายการจะแสดงที่นี่อัตโนมัติ",
+        "number": "เลขคิว"
+      },
+      "demo": "โหมดตัวอย่าง: ข้อมูลอยู่ในเบราว์เซอร์นี้",
+      "common": {
+        "confirm": "ตกลง",
+        "cancel": "ยกเลิก",
+        "baht": "บาท",
+        "print": "พิมพ์"
+      },
+      "items": {
+        "gift_suffix": "(ของแถม)",
+        "note_label": "หมายเหตุ:",
+        "changed_from_label": "เปลี่ยนจาก:",
+        "original_qty_label": "จำนวนเดิม:",
+        "original_order_label": "ลูกค้าสั่งเดิม:",
+        "cancelled": "ยกเลิก",
+        "order_note_title": "หมายเหตุรวมถึงร้าน"
+      },
+      "payment": {
+        "paid_waiting_close": "ชำระแล้ว รอระบบปิดออเดอร์",
+        "confirmed": "ตรวจสอบและรับชำระแล้ว",
+        "slip_pending": "มีสลิป รอตรวจสอบ",
+        "cod": "เก็บเงินปลายทาง",
+        "waiting": "รอชำระเงิน",
+        "paid": "ชำระเงินแล้ว",
+        "paid_short": "ชำระแล้ว",
+        "unpaid": "ยังไม่ชำระ",
+        "receive": "รับชำระ",
+        "view_slip": "ดูสลิป",
+        "loading_slip": "กำลังโหลดสลิป...",
+        "confirm_message": "ตรวจสอบสลิปหรือรับเงินเรียบร้อยแล้วใช่หรือไม่?",
+        "confirm_title": "ยืนยันการชำระเงิน"
+      },
+      "actions": {
+        "cancel_all": "ยกเลิกทุกรายการ",
+        "call_pickup": "เรียกรับของ",
+        "handed_over": "ส่งมอบแล้ว"
+      },
+      "delivery": {
+        "recipient_fallback": "ไม่ระบุชื่อ",
+        "phone": "โทร:",
+        "address": "ที่อยู่:",
+        "net_total": "ยอดสุทธิ"
+      },
+      "takeaway": {
+        "queue_called": "เรียกคิวแล้ว",
+        "customer": "ลูกค้า:",
+        "phone": "โทร:",
+        "net_total": "ยอดสุทธิ"
+      },
+      "table": {
+        "waiting_payment": "รอชำระเงิน",
+        "paid_waiting_served": "ชำระแล้ว รอเสิร์ฟครบ",
+        "round": "รอบที่ :round",
+        "kitchen_status": "สถานะครัว:",
+        "round_total": "รวมรอบนี้",
+        "title": "โต๊ะ :table",
+        "open_rounds_summary": ":rounds รอบที่ยังไม่ปิดบิล • เสิร์ฟแล้ว :served/:rounds รอบ",
+        "total": "ยอดรวมทั้งโต๊ะ",
+        "confirm_payment": "รับชำระเงินโต๊ะ :table จำนวน :amount บาท ใช่หรือไม่?",
+        "payment_serving_help": "ถ้ายังเสิร์ฟไม่ครบ รายการจะยังอยู่ที่ครัวและแคชเชียร์จนกว่าจะเสิร์ฟครบ",
+        "payment_title": "รับชำระเงิน"
+      },
+      "cancel_order": {
+        "delivery_target": "ออเดอร์ Delivery ของ :customer",
+        "customer_fallback": "ลูกค้า",
+        "takeaway_target": "ออเดอร์ Take Away :queue",
+        "table_target": "ออเดอร์โต๊ะ :table รอบที่ :round",
+        "message": "ยืนยันยกเลิก :target ใช่หรือไม่?",
+        "warning": "การดำเนินการนี้จะนำรายการออกจากบิลทันที",
+        "title": "ยกเลิกออเดอร์"
+      },
+      "toasts": {
+        "table_paid_closed": "รับชำระและปิดบิลโต๊ะ :table เรียบร้อย",
+        "table_paid_waiting_kitchen": "รับชำระโต๊ะ :table แล้ว รอครัวเสิร์ฟให้ครบก่อนปิดบิล",
+        "table_payment_failed": "รับชำระรวมบิลไม่สำเร็จ",
+        "pickup_called": "เรียกคิวรับอาหารแล้ว",
+        "takeaway_handed_over": "ส่งมอบออเดอร์ Take Away แล้ว",
+        "takeaway_payment_saved": "บันทึกการชำระเงิน Take Away แล้ว",
+        "delivery_paid_closed": "ชำระเงินและปิดออเดอร์ Delivery แล้ว",
+        "payment_saved_waiting_rider": "บันทึกการชำระเงินแล้ว รอครัวส่งให้ไรเดอร์",
+        "payment_failed": "บันทึกการชำระเงินไม่สำเร็จ",
+        "order_cancelled": "ยกเลิกรายการแล้ว",
+        "status_update_failed": "อัปเดตสถานะไม่สำเร็จ"
+      },
+      "table_move": {
+        "button": "เปลี่ยนโต๊ะ",
+        "source_not_active": "โต๊ะเดิมไม่ได้เปิดอยู่ หรือมีการปิด/ย้ายไปแล้ว กรุณารีเฟรชรายการ",
+        "target_not_available": "โต๊ะใหม่ไม่ว่างแล้ว กรุณาเลือกโต๊ะอื่น",
+        "order_not_unpaid": "พบออเดอร์บางรายการถูกชำระเงินหรือไม่ได้อยู่ในโต๊ะเดิมแล้ว",
+        "permission_denied": "ไม่มีสิทธิ์เปลี่ยนโต๊ะ กรุณาติดต่อผู้ดูแลระบบเพื่อตรวจสอบสิทธิ์",
+        "failed": "เปลี่ยนโต๊ะไม่สำเร็จ (:code)",
+        "no_available_tables": "ไม่มีโต๊ะว่างสำหรับย้าย",
+        "dialog_title": "เปลี่ยนโต๊ะ",
+        "dialog_message": "ย้ายออเดอร์ที่ยังไม่ชำระจากโต๊ะ :table ไปยังโต๊ะว่าง",
+        "confirm_selection": "ยืนยันย้ายโต๊ะ",
+        "table_fallback": "โต๊ะ :table",
+        "no_unpaid_orders": "ไม่มีออเดอร์ที่ยังไม่ชำระสำหรับย้ายโต๊ะ",
+        "confirm_message": "ยืนยันย้ายโต๊ะ :from ไป :to ใช่หรือไม่?",
+        "confirm_warning": "ระบบจะปิดโต๊ะเดิมเป็นว่าง และย้ายออเดอร์ที่ยังไม่ชำระทั้งหมดไปโต๊ะใหม่",
+        "confirm_title": "ยืนยันเปลี่ยนโต๊ะ",
+        "confirm_action": "ย้ายโต๊ะ",
+        "success": "ย้ายโต๊ะ :from ไป :to เรียบร้อย"
+      }
+    },
+    "shared": {
+      "actions": {
+        "create": "สร้าง",
+        "add": "เพิ่ม",
+        "edit": "แก้ไข",
+        "delete_image": "ลบรูป",
+        "delete": "ลบ",
+        "cancel": "ยกเลิก",
+        "save": "บันทึก",
+        "close": "ปิด",
+        "back": "ย้อนกลับ",
+        "confirm": "ยืนยัน",
+        "ok": "ตกลง",
+        "retry": "ลองใหม่",
+        "increase_quantity": "เพิ่มจำนวน",
+        "decrease_quantity": "ลดจำนวน",
+        "action_button": "ปุ่มคำสั่ง"
+      },
+      "dialog": {
+        "alert_title": "แจ้งเตือน",
+        "confirm_title": "ยืนยันการทำรายการ",
+        "prompt_title": "กรอกข้อมูล"
+      },
+      "state": {
+        "loading": "กำลังโหลด...",
+        "saving": "กำลังบันทึก...",
+        "processing": "กำลังดำเนินการ...",
+        "please_wait": "กรุณารอสักครู่...",
+        "empty": "ยังไม่มีข้อมูล",
+        "no_data": "ไม่พบข้อมูล",
+        "error": "เกิดข้อผิดพลาด",
+        "unexpected_error": "เกิดข้อผิดพลาด กรุณาลองใหม่",
+        "try_again": "กรุณาลองใหม่อีกครั้ง",
+        "load_failed": "โหลดข้อมูลไม่สำเร็จ",
+        "save_failed": "บันทึกข้อมูลไม่สำเร็จ",
+        "action_failed": "ไม่สามารถดำเนินการได้"
+      },
+      "form": {
+        "search": "ค้นหา",
+        "search_placeholder": "ค้นหา...",
+        "search_menu_placeholder": "ค้นหาเมนู...",
+        "name": "ชื่อ",
+        "full_name": "ชื่อ-นามสกุล",
+        "store_name": "ชื่อร้าน",
+        "email": "อีเมล",
+        "phone": "เบอร์โทรศัพท์",
+        "password": "รหัสผ่าน",
+        "password_confirmation": "ยืนยันรหัสผ่าน",
+        "address": "ที่อยู่",
+        "note": "หมายเหตุ",
+        "quantity": "จำนวน",
+        "price": "ราคา",
+        "category": "หมวดหมู่",
+        "select_placeholder": "เลือก...",
+        "enter_name": "กรอกชื่อ",
+        "enter_full_name": "กรอกชื่อ-นามสกุล",
+        "enter_email": "กรอกอีเมล",
+        "enter_phone": "กรอกเบอร์โทรศัพท์",
+        "enter_password": "กรอกรหัสผ่าน",
+        "enter_address": "กรอกที่อยู่",
+        "enter_note": "กรอกหมายเหตุ"
+      },
+      "count": {
+        "items_one": ":count รายการ",
+        "items_other": ":count รายการ",
+        "bills_one": ":count บิล",
+        "bills_other": ":count บิล",
+        "rounds_one": ":count รอบ",
+        "rounds_other": ":count รอบ",
+        "round_label": "รอบที่ :count",
+        "table_label": "โต๊ะ :value"
+      },
+      "status": {
+        "pending": "รอรับออเดอร์",
+        "accepted": "ครัวรับแล้ว",
+        "cooking": "กำลังทำ",
+        "ready": "พร้อมเสิร์ฟ",
+        "served": "เสิร์ฟแล้ว",
+        "paid": "ชำระแล้ว",
+        "cancelled": "ยกเลิก"
+      },
+      "validation": {
+        "check_field": "กรุณาตรวจสอบข้อมูลในช่องนี้",
+        "required": "กรุณากรอกข้อมูลในช่องนี้",
+        "email": "กรุณากรอกอีเมลให้ถูกต้อง",
+        "url": "กรุณากรอก URL ให้ถูกต้อง",
+        "invalid_format": "รูปแบบข้อมูลไม่ถูกต้อง",
+        "min_length": "กรุณากรอกอย่างน้อย :min ตัวอักษร",
+        "max_length": "กรุณากรอกไม่เกิน :max ตัวอักษร",
+        "min_value": "กรุณากรอกค่าตั้งแต่ :min ขึ้นไป",
+        "max_value": "กรุณากรอกค่าไม่เกิน :max",
+        "step": "กรุณากรอกตัวเลขตามรูปแบบที่กำหนด",
+        "bad_input": "กรุณากรอกข้อมูลให้ถูกต้อง"
+      },
+      "toast": {
+        "item_added": "เพิ่ม :name แล้ว",
+        "default_item_name": "เมนู",
+        "saved": "บันทึกข้อมูลเรียบร้อยแล้ว",
+        "updated": "อัปเดตข้อมูลเรียบร้อยแล้ว",
+        "deleted": "ลบข้อมูลเรียบร้อยแล้ว",
+        "copied": "คัดลอกแล้ว"
+      },
+      "user_menu": {
+        "greeting": "สวัสดี :name",
+        "roles": {
+          "owner": "เจ้าของร้าน",
+          "admin": "ผู้ดูแลระบบ",
+          "manager": "ผู้จัดการ",
+          "cashier": "แคชเชียร์",
+          "kitchen": "ครัว",
+          "staff": "พนักงาน",
+          "super_admin": "ผู้ดูแลระบบกลาง"
+        },
+        "platform": "ระบบกลาง",
+        "manage_stores": "จัดการร้านค้า",
+        "home": "หน้าหลัก",
+        "waiting_queue": "คิวรอโต๊ะ",
+        "open_table": "เปิดโต๊ะ",
+        "store_management": "จัดการระบบร้าน",
+        "staff_management": "จัดการพนักงาน",
+        "change_password": "เปลี่ยนรหัสผ่าน",
+        "logout": "ออกจากระบบ"
+      },
+      "password_dialog": {
+        "title": "เปลี่ยนรหัสผ่าน",
+        "description": "ยืนยันตัวตนด้วยรหัสผ่านเดิม แล้วกำหนดรหัสผ่านใหม่สำหรับบัญชีเจ้าของร้าน",
+        "current_password": "รหัสผ่านเดิม",
+        "new_password": "รหัสผ่านใหม่",
+        "confirm_password": "ยืนยันรหัสผ่านใหม่",
+        "hint": "ใช้ตัวอักษรอย่างน้อย 8 ตัว เพื่อความปลอดภัยของบัญชี",
+        "close": "ปิดหน้าต่าง",
+        "show_field": "แสดง:field",
+        "hide_field": "ซ่อน:field",
+        "cancel": "ยกเลิก",
+        "submit": "เปลี่ยนรหัสผ่าน",
+        "submitting": "กำลังเปลี่ยน...",
+        "required": "กรุณากรอกรหัสผ่านให้ครบทุกช่อง",
+        "mismatch": "รหัสผ่านใหม่และยืนยันรหัสผ่านใหม่ไม่ตรงกัน",
+        "too_short": "รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร",
+        "current_invalid": "รหัสผ่านเดิมไม่ถูกต้อง",
+        "failed": "เปลี่ยนรหัสผ่านไม่สำเร็จ กรุณาลองใหม่",
+        "success": "เปลี่ยนรหัสผ่านเรียบร้อยแล้ว"
+      },
+      "footer": {
+        "product": "Food Order/Delivery With QR",
+        "version": "Version :version",
+        "build": "Build :build",
+        "icon_credit": "Uicons by Flaticon"
+      }
+    }
+  },
+  "en": {
+    "cashier": {
+      "meta": {
+        "title": "Cashier"
+      },
+      "header": {
+        "title": "Cashier"
+      },
+      "hero": {
+        "title": "Cashier",
+        "description": "Review orders, receive payment, and close bills from one screen."
+      },
+      "takeaway_tools": {
+        "aria_label": "Takeaway tools",
+        "title": "Takeaway tools",
+        "subtitle": "For walk-in customers",
+        "waiting_queue_aria": "Manage the table waiting queue",
+        "waiting_queue": "Waiting queue",
+        "show_qr_aria": "Show takeaway QR",
+        "qr_label": "QR Take Away",
+        "open_order_aria": "Open the takeaway order page",
+        "open_order": "Takeaway order",
+        "copy_link_aria": "Copy the takeaway order link",
+        "copy_link": "Copy link",
+        "copy_done": "Take Away link copied",
+        "copy_blocked": "Your browser could not copy automatically. Please copy the link below.",
+        "copy_title": "Copy takeaway order link",
+        "close": "Close",
+        "qr_title": "Takeaway order QR",
+        "qr_help": "Let walk-in customers scan this QR code to place a takeaway order.",
+        "qr_alt": "QR code for takeaway ordering",
+        "link_aria": "Takeaway order link",
+        "open_page": "Open order page",
+        "store_unavailable": "Store information is unavailable. Refresh the page and try again."
+      },
+      "queue": {
+        "title": "Pending bills",
+        "description": "New orders appear here automatically.",
+        "count": ":count bills",
+        "empty_title": "No pending bills",
+        "empty_help": "New orders will appear here automatically.",
+        "number": "Queue number"
+      },
+      "demo": "Demo mode: data is stored in this browser.",
+      "common": {
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "baht": "baht",
+        "print": "Print"
+      },
+      "items": {
+        "gift_suffix": "(Free gift)",
+        "note_label": "Note:",
+        "changed_from_label": "Changed from:",
+        "original_qty_label": "Original quantity:",
+        "original_order_label": "Original customer order:",
+        "cancelled": "Cancelled",
+        "order_note_title": "Order note to store"
+      },
+      "payment": {
+        "paid_waiting_close": "Paid, waiting for order closure",
+        "confirmed": "Payment confirmed",
+        "slip_pending": "Slip submitted, awaiting review",
+        "cod": "Cash on delivery",
+        "waiting": "Awaiting payment",
+        "paid": "Paid",
+        "paid_short": "Paid",
+        "unpaid": "Unpaid",
+        "receive": "Receive payment",
+        "view_slip": "View slip",
+        "loading_slip": "Loading slip...",
+        "confirm_message": "Have you verified the payment slip or received the payment?",
+        "confirm_title": "Confirm payment"
+      },
+      "actions": {
+        "cancel_all": "Cancel all items",
+        "call_pickup": "Call for pickup",
+        "handed_over": "Handed over"
+      },
+      "delivery": {
+        "recipient_fallback": "Unnamed recipient",
+        "phone": "Phone:",
+        "address": "Address:",
+        "net_total": "Net total"
+      },
+      "takeaway": {
+        "queue_called": "Queue called",
+        "customer": "Customer:",
+        "phone": "Phone:",
+        "net_total": "Net total"
+      },
+      "table": {
+        "waiting_payment": "Awaiting payment",
+        "paid_waiting_served": "Paid, waiting for all rounds to be served",
+        "round": "Round :round",
+        "kitchen_status": "Kitchen status:",
+        "round_total": "Round total",
+        "title": "Table :table",
+        "open_rounds_summary": ":rounds open rounds • Served :served/:rounds rounds",
+        "total": "Table total",
+        "confirm_payment": "Receive :amount baht for table :table?",
+        "payment_serving_help": "If serving is not complete, the orders will remain in Kitchen and Cashier until every round has been served.",
+        "payment_title": "Receive payment"
+      },
+      "cancel_order": {
+        "delivery_target": "Delivery order for :customer",
+        "customer_fallback": "customer",
+        "takeaway_target": "Take Away order :queue",
+        "table_target": "table :table, round :round",
+        "message": "Cancel :target?",
+        "warning": "This action removes the items from the bill immediately.",
+        "title": "Cancel order"
+      },
+      "toasts": {
+        "table_paid_closed": "Payment received and table :table bill closed",
+        "table_paid_waiting_kitchen": "Payment received for table :table. Waiting for the kitchen to serve all rounds before closing the bill.",
+        "table_payment_failed": "Could not receive payment for the combined bill",
+        "pickup_called": "Pickup queue called",
+        "takeaway_handed_over": "Take Away order handed over",
+        "takeaway_payment_saved": "Take Away payment saved",
+        "delivery_paid_closed": "Delivery order paid and closed",
+        "payment_saved_waiting_rider": "Payment saved. Waiting for the kitchen to hand the order to the rider.",
+        "payment_failed": "Could not save payment",
+        "order_cancelled": "Order cancelled",
+        "status_update_failed": "Could not update status"
+      },
+      "table_move": {
+        "button": "Change table",
+        "source_not_active": "The original table is no longer active or has already been closed or moved. Refresh the list and try again.",
+        "target_not_available": "The destination table is no longer available. Choose another table.",
+        "order_not_unpaid": "Some orders have already been paid or no longer belong to the original table.",
+        "permission_denied": "You do not have permission to change tables. Ask an administrator to check your permissions.",
+        "failed": "Could not change table (:code)",
+        "no_available_tables": "No available tables to move to",
+        "dialog_title": "Change table",
+        "dialog_message": "Move unpaid orders from table :table to an available table.",
+        "confirm_selection": "Confirm table change",
+        "table_fallback": "Table :table",
+        "no_unpaid_orders": "There are no unpaid orders to move from this table.",
+        "confirm_message": "Move table :from to :to?",
+        "confirm_warning": "The original table will become available and all unpaid orders will move to the new table.",
+        "confirm_title": "Confirm table change",
+        "confirm_action": "Change table",
+        "success": "Table changed from :from to :to"
+      }
+    },
+    "shared": {
+      "actions": {
+        "create": "Create",
+        "add": "Add",
+        "edit": "Edit",
+        "delete_image": "Delete image",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "save": "Save",
+        "close": "Close",
+        "back": "Back",
+        "confirm": "Confirm",
+        "ok": "OK",
+        "retry": "Try again",
+        "increase_quantity": "Increase quantity",
+        "decrease_quantity": "Decrease quantity",
+        "action_button": "Action button"
+      },
+      "dialog": {
+        "alert_title": "Notice",
+        "confirm_title": "Confirm action",
+        "prompt_title": "Enter information"
+      },
+      "state": {
+        "loading": "Loading...",
+        "saving": "Saving...",
+        "processing": "Processing...",
+        "please_wait": "Please wait...",
+        "empty": "No items yet",
+        "no_data": "No data found",
+        "error": "An error occurred",
+        "unexpected_error": "An error occurred. Please try again.",
+        "try_again": "Please try again.",
+        "load_failed": "Unable to load data.",
+        "save_failed": "Unable to save data.",
+        "action_failed": "Unable to complete this action."
+      },
+      "form": {
+        "search": "Search",
+        "search_placeholder": "Search...",
+        "search_menu_placeholder": "Search menu...",
+        "name": "Name",
+        "full_name": "Full name",
+        "store_name": "Store name",
+        "email": "Email",
+        "phone": "Phone number",
+        "password": "Password",
+        "password_confirmation": "Confirm password",
+        "address": "Address",
+        "note": "Note",
+        "quantity": "Quantity",
+        "price": "Price",
+        "category": "Category",
+        "select_placeholder": "Select...",
+        "enter_name": "Enter name",
+        "enter_full_name": "Enter full name",
+        "enter_email": "Enter email",
+        "enter_phone": "Enter phone number",
+        "enter_password": "Enter password",
+        "enter_address": "Enter address",
+        "enter_note": "Enter note"
+      },
+      "count": {
+        "items_one": ":count item",
+        "items_other": ":count items",
+        "bills_one": ":count bill",
+        "bills_other": ":count bills",
+        "rounds_one": ":count round",
+        "rounds_other": ":count rounds",
+        "round_label": "Round :count",
+        "table_label": "Table :value"
+      },
+      "status": {
+        "pending": "Pending",
+        "accepted": "Accepted by kitchen",
+        "cooking": "Cooking",
+        "ready": "Ready to serve",
+        "served": "Served",
+        "paid": "Paid",
+        "cancelled": "Cancelled"
+      },
+      "validation": {
+        "check_field": "Please check this field.",
+        "required": "Please fill in this field.",
+        "email": "Please enter a valid email address.",
+        "url": "Please enter a valid URL.",
+        "invalid_format": "The value format is invalid.",
+        "min_length": "Please enter at least :min characters.",
+        "max_length": "Please enter no more than :max characters.",
+        "min_value": "Please enter a value greater than or equal to :min.",
+        "max_value": "Please enter a value less than or equal to :max.",
+        "step": "Please enter a number in the required step.",
+        "bad_input": "Please enter a valid value."
+      },
+      "toast": {
+        "item_added": "Added :name.",
+        "default_item_name": "item",
+        "saved": "Saved successfully.",
+        "updated": "Updated successfully.",
+        "deleted": "Deleted successfully.",
+        "copied": "Copied."
+      },
+      "user_menu": {
+        "greeting": "Hello :name",
+        "roles": {
+          "owner": "Store owner",
+          "admin": "Administrator",
+          "manager": "Manager",
+          "cashier": "Cashier",
+          "kitchen": "Kitchen",
+          "staff": "Staff",
+          "super_admin": "Platform administrator"
+        },
+        "platform": "Platform",
+        "manage_stores": "Manage stores",
+        "home": "Home",
+        "waiting_queue": "Table waiting queue",
+        "open_table": "Open table",
+        "store_management": "Store management",
+        "staff_management": "Staff management",
+        "change_password": "Change password",
+        "logout": "Log out"
+      },
+      "password_dialog": {
+        "title": "Change password",
+        "description": "Verify your identity with your current password, then set a new password for the store owner account.",
+        "current_password": "Current password",
+        "new_password": "New password",
+        "confirm_password": "Confirm new password",
+        "hint": "Use at least 8 characters to help keep your account secure.",
+        "close": "Close dialog",
+        "show_field": "Show :field",
+        "hide_field": "Hide :field",
+        "cancel": "Cancel",
+        "submit": "Change password",
+        "submitting": "Changing...",
+        "required": "Please complete all password fields.",
+        "mismatch": "The new password and confirmation do not match.",
+        "too_short": "The new password must be at least 8 characters.",
+        "current_invalid": "The current password is incorrect.",
+        "failed": "Unable to change the password. Please try again.",
+        "success": "Password changed successfully."
+      },
+      "footer": {
+        "product": "Food Order/Delivery With QR",
+        "version": "Version :version",
+        "build": "Build :build",
+        "icon_credit": "Uicons by Flaticon"
+      }
+    }
+  }
+};

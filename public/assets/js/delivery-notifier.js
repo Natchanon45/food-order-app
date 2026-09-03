@@ -145,6 +145,7 @@ function installEnableButton() {
   if (!header || document.querySelector("#deliveryAlertButton")) return;
 
   const userMenu = header.querySelector("[data-user-menu]");
+  const localeSwitcher = header.querySelector("[data-static-locale-switcher]");
   let actions = header.querySelector("[data-header-actions]");
   if (!actions) {
     actions = document.createElement("div");
@@ -160,6 +161,10 @@ function installEnableButton() {
     mountedUserMenu.style.marginLeft = "0";
     return true;
   };
+
+  if (localeSwitcher && localeSwitcher.parentElement !== actions) {
+    actions.appendChild(localeSwitcher);
+  }
 
   const button = document.createElement("button");
   button.type = "button";

@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#159447">
+<link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
+<link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240">
+<link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-095">
+<link rel="stylesheet" href="/assets/css/public-contact.css?v=20260803-005">
+<link rel="stylesheet" href="/assets/css/platform-contact-settings.css?v=20260803-005">
+<link rel="stylesheet" href="/assets/css/platform-google-login-settings.css?v=20260903-214">
+<link rel="stylesheet" href="/assets/css/i18n.css?v=20260903-202">
+<title>ช่องทางติดต่อหน้าแรก</title>
+</head>
+<body data-roles="super_admin" class="platform-contact-page">
+<header class="app-header"><div class="brand">
+  <span class="brand-mark">FOD</span>
+  <span><span data-i18n="platform_contact.header.title">ช่องทางติดต่อหน้าแรก</span></span>
+</div>
+<a class="btn btn-sm" href="/platform">
+  <i class="bi bi-arrow-left" aria-hidden="true"></i>
+  <span><span data-i18n="platform_contact.header.back">กลับระบบกลาง</span></span>
+</a><div class="app-locale-switcher" data-static-locale-switcher><details class="app-locale-menu" data-locale-menu><summary class="app-locale-trigger" aria-label="Language" title="Language"><i class="bi bi-globe2" aria-hidden="true"></i><span class="visually-hidden">Language</span></summary><div class="app-locale-menu__panel" role="menu" aria-label="Language"><button type="button" class="app-locale-option" data-locale-option="th" lang="th" role="menuitemradio" aria-checked="true"><span>ไทย</span><i class="bi bi-check-lg" aria-hidden="true"></i></button><button type="button" class="app-locale-option" data-locale-option="en" lang="en" role="menuitemradio" aria-checked="false"><span>English</span><i class="bi bi-check-lg" aria-hidden="true"></i></button></div></details></div></header>
+<main class="container platform-contact-shell">
+  <section class="hero platform-contact-hero">
+    <span class="platform-contact-eyebrow">
+      <i class="bi bi-shield-check" aria-hidden="true"></i>
+      <span data-i18n="platform_contact.hero.eyebrow">Super Admin</span>
+    </span>
+    <h1><span data-i18n="platform_contact.hero.title">ตั้งค่า Contact หน้าแรก</span></h1>
+    <p><span data-i18n="platform_contact.hero.description">กำหนดช่องทางให้ผู้เยี่ยมชมติดต่อผู้ดูแลระบบผ่านโทรศัพท์ LINE Facebook Messenger หรืออีเมล</span></p>
+  </section>
+
+  <div class="platform-contact-layout">
+    <section class="card platform-contact-form-card">
+      <div class="section-title">
+        <div>
+          <h2><span data-i18n="platform_contact.contact.section.title">ข้อมูลที่แสดงต่อสาธารณะ</span></h2>
+          <p><span data-i18n="platform_contact.contact.section.subtitle">เปิดเฉพาะช่องทางที่พร้อมให้ผู้ใช้งานติดต่อจริง</span></p>
+        </div>
+        <label class="platform-contact-master-toggle">
+          <input id="contactEnabled" type="checkbox">
+          <span><span data-i18n="platform_contact.contact.section.master_toggle">แสดง Contact หน้าแรก</span></span>
+        </label>
+      </div>
+
+      <form id="platformContactForm" class="platform-contact-form" novalidate>
+        <div class="grid grid-2">
+          <div class="field">
+            <label for="contactHeading"><span data-i18n="platform_contact.contact.fields.heading">หัวข้อ</span></label>
+            <input
+              class="input"
+              id="contactHeading"
+              maxlength="80"
+              placeholder="เช่น คุยกับเรา" data-i18n-placeholder="platform_contact.contact.fields.heading_placeholder"
+              required
+            >
+          </div>
+          <div class="field">
+            <label for="contactDescription"><span data-i18n="platform_contact.contact.fields.description">คำอธิบาย</span></label>
+            <input
+              class="input"
+              id="contactDescription"
+              maxlength="240"
+              placeholder="เช่น สอบถามข้อมูลแพ็กเกจและการใช้งานระบบ" data-i18n-placeholder="platform_contact.contact.fields.description_placeholder"
+            >
+          </div>
+        </div>
+
+        <div class="platform-contact-channel-grid">
+          <fieldset class="platform-contact-channel" data-channel="phone">
+            <legend>
+              <i class="bi bi-telephone-fill" aria-hidden="true"></i>
+              <span data-i18n="platform_contact.contact.channels.phone">โทรศัพท์</span>
+            </legend>
+            <label class="platform-contact-channel-toggle">
+              <input id="phoneEnabled" type="checkbox">
+              <span><span data-i18n="platform_contact.contact.fields.enabled">เปิดใช้งาน</span></span>
+            </label>
+            <div class="field">
+              <label for="phoneLabel"><span data-i18n="platform_contact.contact.fields.button_label">ข้อความบนปุ่ม</span></label>
+              <input class="input" id="phoneLabel" maxlength="60" placeholder="โทรศัพท์" data-i18n-placeholder="platform_contact.contact.channels.phone">
+            </div>
+            <div class="field">
+              <label for="phoneNumber"><span data-i18n="platform_contact.contact.fields.phone_number">เบอร์โทร</span></label>
+              <input
+                class="input"
+                id="phoneNumber"
+                type="tel"
+                maxlength="40"
+                placeholder="เช่น 0812345678" data-i18n-placeholder="platform_contact.contact.fields.phone_placeholder"
+              >
+            </div>
+          </fieldset>
+
+          <fieldset class="platform-contact-channel" data-channel="line">
+            <legend>
+              <i class="bi bi-line" aria-hidden="true"></i>
+              <span data-i18n="platform_contact.contact.channels.line">LINE</span>
+            </legend>
+            <label class="platform-contact-channel-toggle">
+              <input id="lineEnabled" type="checkbox">
+              <span><span data-i18n="platform_contact.contact.fields.enabled">เปิดใช้งาน</span></span>
+            </label>
+            <div class="field">
+              <label for="lineLabel"><span data-i18n="platform_contact.contact.fields.button_label">ข้อความบนปุ่ม</span></label>
+              <input class="input" id="lineLabel" maxlength="60" placeholder="LINE">
+            </div>
+            <div class="field">
+              <label for="lineUrl"><span data-i18n="platform_contact.contact.fields.line_url">LINE URL</span></label>
+              <input
+                class="input"
+                id="lineUrl"
+                type="url"
+                maxlength="500"
+                placeholder="https://lin.ee/..."
+              >
+            </div>
+          </fieldset>
+
+          <fieldset class="platform-contact-channel" data-channel="messenger">
+            <legend>
+              <i class="bi bi-messenger" aria-hidden="true"></i>
+              <span data-i18n="platform_contact.contact.channels.messenger">Facebook Messenger</span>
+            </legend>
+            <label class="platform-contact-channel-toggle">
+              <input id="messengerEnabled" type="checkbox">
+              <span><span data-i18n="platform_contact.contact.fields.enabled">เปิดใช้งาน</span></span>
+            </label>
+            <div class="field">
+              <label for="messengerLabel"><span data-i18n="platform_contact.contact.fields.button_label">ข้อความบนปุ่ม</span></label>
+              <input
+                class="input"
+                id="messengerLabel"
+                maxlength="60"
+                placeholder="Messenger"
+              >
+            </div>
+            <div class="field">
+              <label for="messengerUrl"><span data-i18n="platform_contact.contact.fields.messenger_url">Messenger URL หรือชื่อเพจ</span></label>
+              <input
+                class="input"
+                id="messengerUrl"
+                maxlength="500"
+                placeholder="https://m.me/your.page หรือ your.page" data-i18n-placeholder="platform_contact.contact.fields.messenger_placeholder"
+              >
+              <small><span data-i18n="platform_contact.contact.fields.messenger_help">กรอกชื่อเพจอย่างเดียว ระบบจะสร้างลิงก์ m.me ให้โดยอัตโนมัติ</span></small>
+            </div>
+          </fieldset>
+
+          <fieldset class="platform-contact-channel" data-channel="email">
+            <legend>
+              <i class="bi bi-envelope-fill" aria-hidden="true"></i>
+              <span data-i18n="platform_contact.contact.channels.email">อีเมล</span>
+            </legend>
+            <label class="platform-contact-channel-toggle">
+              <input id="emailEnabled" type="checkbox">
+              <span><span data-i18n="platform_contact.contact.fields.enabled">เปิดใช้งาน</span></span>
+            </label>
+            <div class="field">
+              <label for="emailLabel"><span data-i18n="platform_contact.contact.fields.button_label">ข้อความบนปุ่ม</span></label>
+              <input class="input" id="emailLabel" maxlength="60" placeholder="อีเมล" data-i18n-placeholder="platform_contact.contact.channels.email">
+            </div>
+            <div class="field">
+              <label for="contactEmail"><span data-i18n="platform_contact.contact.fields.email">อีเมล</span></label>
+              <input
+                class="input"
+                id="contactEmail"
+                type="email"
+                maxlength="160"
+                placeholder="support@example.com"
+              >
+            </div>
+          </fieldset>
+        </div>
+
+        <div class="platform-contact-form-status" id="contactFormStatus" hidden></div>
+        <div class="platform-contact-actions">
+          <button class="btn" id="reloadContactButton" type="button">
+            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+            <span><span data-i18n="platform_contact.contact.actions.reload">โหลดข้อมูลล่าสุด</span></span>
+          </button>
+          <button class="btn btn-primary" id="saveContactButton" type="submit">
+            <i class="bi bi-floppy" aria-hidden="true"></i>
+            <span><span data-i18n="platform_contact.contact.actions.save">บันทึกข้อมูลติดต่อ</span></span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <aside class="card platform-contact-preview-card">
+      <div class="section-title">
+        <div>
+          <h2><span data-i18n="platform_contact.contact.preview.title">ตัวอย่างหน้าแรก</span></h2>
+          <p><span data-i18n="platform_contact.contact.preview.subtitle">ตัวอย่างเปลี่ยนตามข้อมูลที่กรอกทันที</span></p>
+        </div>
+      </div>
+      <section class="public-contact-card platform-contact-preview" id="contactPreview">
+        <div class="public-contact-copy">
+          <span class="public-contact-kicker">
+            <i class="bi bi-chat-heart" aria-hidden="true"></i>
+            <span><span data-i18n="platform_contact.contact.preview.kicker">ติดต่อเรา</span></span>
+          </span>
+          <h2 id="previewHeading"><span data-i18n="platform_contact.contact.defaults.heading">คุยกับเรา</span></h2>
+          <p id="previewDescription"><span data-i18n="platform_contact.contact.defaults.description">ติดต่อสอบถามข้อมูลแพ็กเกจและการใช้งานระบบ</span></p>
+        </div>
+        <nav
+          class="public-contact-links"
+          id="previewLinks"
+          aria-label="ตัวอย่างช่องทางติดต่อ" data-i18n-aria-label="platform_contact.contact.preview.aria_label"
+        ></nav>
+      </section>
+      <p class="platform-contact-preview-note">
+        <span data-i18n="platform_contact.contact.preview.note">ข้อมูลส่วนนี้เป็นข้อมูลสาธารณะ ห้ามกรอกรหัสผ่าน Token หรือข้อมูลลับ</span>
+      </p>
+    </aside>
+  </div>
+
+  <div class="platform-google-login-layout">
+    <section class="card platform-google-login-card">
+      <div class="section-title">
+        <div class="platform-google-login-title">
+          <span class="platform-google-login-icon" aria-hidden="true">
+            <i class="bi bi-google"></i>
+          </span>
+          <div>
+            <h2><span data-i18n="platform_contact.google.title">Google Login สำหรับลูกค้า Delivery</span></h2>
+            <p><span data-i18n="platform_contact.google.subtitle">กำหนด OAuth Web Client ID สำหรับให้ลูกค้า Guest บันทึกชื่อและที่อยู่ข้ามอุปกรณ์</span></p>
+          </div>
+        </div>
+        <span class="platform-google-login-source" id="googleLoginSettingsSource">
+          <span data-i18n="platform_contact.google.loading">กำลังโหลด...</span>
+        </span>
+      </div>
+
+      <form id="googleCustomerLoginForm" class="platform-google-login-form" novalidate>
+        <label class="platform-google-login-toggle">
+          <span>
+            <strong><span data-i18n="platform_contact.google.toggle.title">เปิดใช้งาน Google Login</span></strong>
+            <small><span data-i18n="platform_contact.google.toggle.help">เมื่อปิด ลูกค้ายังสั่งซื้อแบบ Guest และบันทึกข้อมูลเฉพาะ Browser ได้ตามปกติ</span></small>
+          </span>
+          <input id="googleCustomerLoginEnabled" type="checkbox">
+        </label>
+
+        <div class="platform-google-login-field-grid">
+          <div class="field">
+            <label for="googleCustomerClientId"><span data-i18n="platform_contact.google.fields.client_id">Google OAuth Web Client ID</span></label>
+            <input
+              class="input"
+              id="googleCustomerClientId"
+              maxlength="255"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="1234567890-xxxxxxxx.apps.googleusercontent.com"
+            >
+            <small><span data-i18n="platform_contact.google.fields.client_id_help">ใช้ Client ID ชนิด Web application เท่านั้น — ไม่ต้องกรอก Client Secret</span></small>
+          </div>
+          <div class="field">
+            <label for="googleCustomerTokenTtlDays"><span data-i18n="platform_contact.google.fields.ttl">อายุ Session</span></label>
+            <input
+              class="input"
+              id="googleCustomerTokenTtlDays"
+              type="number"
+              min="1"
+              max="90"
+              step="1"
+              value="30"
+            >
+            <small><span data-i18n="platform_contact.google.fields.ttl_help">1–90 วัน</span></small>
+          </div>
+        </div>
+
+        <div class="platform-google-login-privacy">
+          <div class="is-stored">
+            <strong><span data-i18n="platform_contact.google.privacy.stored_title">ข้อมูลที่ระบบจัดเก็บ</span></strong>
+            <span><span data-i18n="platform_contact.google.privacy.stored_description">ชื่อผู้รับ และที่อยู่จัดส่งสูงสุด 5 รายการ</span></span>
+          </div>
+          <div class="is-not-stored">
+            <strong><span data-i18n="platform_contact.google.privacy.not_stored_title">ข้อมูลที่ระบบไม่จัดเก็บ</span></strong>
+            <span><span data-i18n="platform_contact.google.privacy.not_stored_description">อีเมล Google, รูปโปรไฟล์, Client Secret, Access Token และเบอร์โทร</span></span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label><span data-i18n="platform_contact.google.origins.label">Authorized JavaScript origins ที่ต้องเพิ่มใน Google Cloud Console</span></label>
+          <div class="platform-google-origins" id="googleAuthorizedOrigins"></div>
+          <small><span data-i18n="platform_contact.google.origins.help">เพิ่มเฉพาะ Origin ไม่ต้องใส่ path เช่น /s/local-store/delivery</span></small>
+        </div>
+
+        <div class="platform-contact-form-status" id="googleLoginSettingsStatus" hidden></div>
+
+        <div class="platform-google-login-actions">
+          <button class="btn" id="reloadGoogleLoginSettings" type="button">
+            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+            <span><span data-i18n="platform_contact.google.actions.reload">โหลดล่าสุด</span></span>
+          </button>
+          <button class="btn" id="validateGoogleLoginSettings" type="button">
+            <i class="bi bi-shield-check" aria-hidden="true"></i>
+            <span><span data-i18n="platform_contact.google.actions.validate">ตรวจสอบรูปแบบ</span></span>
+          </button>
+          <button class="btn btn-primary" id="saveGoogleLoginSettings" type="submit">
+            <i class="bi bi-floppy" aria-hidden="true"></i>
+            <span><span data-i18n="platform_contact.google.actions.save">บันทึก Google Login</span></span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <aside class="card platform-google-login-preview-card">
+      <div class="section-title">
+        <div>
+          <h2><span data-i18n="platform_contact.google.preview.title">ตัวอย่างหน้า Delivery</span></h2>
+          <p><span data-i18n="platform_contact.google.preview.subtitle">ตัวอย่างส่วนบัญชีและที่อยู่จัดส่ง</span></p>
+        </div>
+      </div>
+
+      <div class="platform-google-login-preview">
+        <strong><span data-i18n="platform_contact.google.preview.account_title">บัญชีและที่อยู่จัดส่ง</span></strong>
+        <p class="menu-category"><span data-i18n="platform_contact.google.preview.guest_description">โหมด Guest: ชื่อและที่อยู่จะจำเฉพาะร้าน อุปกรณ์ และเบราว์เซอร์นี้</span></p>
+        <div class="platform-google-preview-button" id="googleLoginPreviewButton" aria-disabled="true">
+          <span class="platform-google-preview-g">G</span>
+          <span><span data-i18n="platform_contact.google.preview.sign_in">เข้าสู่ระบบด้วย Google</span></span>
+        </div>
+        <p class="platform-google-preview-status" id="googleLoginPreviewStatus" data-ready="false">
+          <span data-i18n="platform_contact.google.preview.disabled">ปิดใช้งาน Google Login — ลูกค้ายังใช้โหมด Guest ได้</span>
+        </p>
+      </div>
+
+      <p class="platform-google-warning">
+        <span data-i18n="platform_contact.google.preview.warning">หน้านี้ตั้งค่า Client ID และสถานะเปิดใช้งานเท่านั้น การเพิ่ม Authorized JavaScript origins ยังต้องทำใน Google Cloud Console</span>
+      </p>
+    </aside>
+  </div>
+</main>
+<script type="module" src="/assets/js/page-guard.js?v=20260903-201"></script>
+<script type="module" src="/assets/js/sweet-dialog.js?v=20260731-080"></script>
+<script type="module" src="/assets/js/platform-contact-settings.js?v=20260903-214"></script>
+<script type="module" src="/assets/js/platform-google-login-settings.js?v=20260903-214"></script>
+<script type="module" src="/assets/js/locale-switcher-static.js?v=20260903-202"></script>
+</body>
+</html>

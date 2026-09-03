@@ -55,7 +55,11 @@ async function fetchTenantBySlug(slug) {
   if (snapshot.empty) return null;
   const docSnapshot = snapshot.docs[0];
   const data = docSnapshot.data();
-  if (data.active === false || ["expired", "suspended"].includes(data.subscriptionStatus)) {
+  const revenueMode = data.revenueShareEnabled === true || data.billingMode === "revenue_share";
+  const inactive = revenueMode
+    ? data.active === false || data.revenueShareSuspended === true
+    : data.active === false || ["expired", "suspended"].includes(data.subscriptionStatus);
+  if (inactive) {
     throw new Error(`TENANT_INACTIVE:${slug}`);
   }
   return setActiveTenant({

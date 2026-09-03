@@ -1,0 +1,15 @@
+import { getLocale } from "./i18n.js?v=20260903-202";
+
+const copy = {
+  th: { greeting: name => `สวัสดี ${name}`, roles:{owner:"เจ้าของร้าน",admin:"ผู้ดูแลระบบ",manager:"ผู้จัดการ",cashier:"แคชเชียร์",kitchen:"ครัว",staff:"พนักงาน",super_admin:"ผู้ดูแลระบบกลาง"}, menu:{home:"หน้าหลัก",platform:"ระบบกลาง",manage_stores:"จัดการร้านค้า",waiting_queue:"คิวรอโต๊ะ",open_table:"เปิดโต๊ะ",store_management:"จัดการระบบร้าน",staff_management:"จัดการพนักงาน",change_password:"เปลี่ยนรหัสผ่าน",logout:"ออกจากระบบ"} },
+  en: { greeting: name => `Hello ${name}`, roles:{owner:"Store owner",admin:"Administrator",manager:"Manager",cashier:"Cashier",kitchen:"Kitchen",staff:"Staff",super_admin:"Platform administrator"}, menu:{home:"Home",platform:"Platform",manage_stores:"Manage stores",waiting_queue:"Waiting queue",open_table:"Open table",store_management:"Store management",staff_management:"Staff management",change_password:"Change password",logout:"Sign out"} }
+};
+const roleAliases={"เจ้าของร้าน":"owner","Store owner":"owner","ผู้ดูแลระบบ":"admin","Administrator":"admin","ผู้จัดการ":"manager","Manager":"manager","แคชเชียร์":"cashier","Cashier":"cashier","ครัว":"kitchen","Kitchen":"kitchen","พนักงาน":"staff","Staff":"staff","ผู้ดูแลระบบกลาง":"super_admin","Platform administrator":"super_admin","เจ้าของระบบ":"super_admin"};
+const paths={"/":"home","/platform":"platform","/admin/tenants":"manage_stores","/cashier/waiting-queue":"waiting_queue","/cashier/table-qr":"open_table","/admin":"store_management","/admin/users":"staff_management"};
+function normalizedPath(value){try{return new URL(value,location.origin).pathname.replace(/\/+$/,"")||"/"}catch{return String(value||"").replace(/\/+$/,"")||"/"}}
+function label(el,key){const node=el?.querySelector?.(":scope > span:last-child");if(node)node.textContent=copy[getLocale()].menu[key]||node.textContent}
+function translate(menu){if(!(menu instanceof HTMLElement))return;const lang=copy[getLocale()];const role=menu.querySelector(".user-menu-role");if(role){const key=role.dataset.userMenuRole||roleAliases[role.textContent.trim()];if(key){role.dataset.userMenuRole=key;role.textContent=lang.roles[key]||role.textContent}}
+ const greeting=menu.querySelector(".user-menu-greeting");if(greeting){const text=[...greeting.childNodes].find(n=>n.nodeType===Node.TEXT_NODE);if(text){const name=String(text.nodeValue||"").trim().replace(/^(?:สวัสดี|Hello)\s*/i,"").trim();if(name)text.nodeValue=`${lang.greeting(name)} `}}
+ menu.querySelectorAll("a.user-menu-link[href]").forEach(link=>{const key=paths[normalizedPath(link.getAttribute("href"))];if(key)label(link,key)});label(menu.querySelector('[data-menu-action="change-password"]'),"change_password");label(menu.querySelector("[data-logout]"),"logout")}
+function scan(root=document){if(root instanceof HTMLElement&&root.matches("[data-user-menu]"))translate(root);root.querySelectorAll?.("[data-user-menu]").forEach(translate)}
+scan();new MutationObserver(records=>records.forEach(record=>record.addedNodes.forEach(node=>{if(node instanceof HTMLElement)scan(node)}))).observe(document.body,{childList:true,subtree:true});

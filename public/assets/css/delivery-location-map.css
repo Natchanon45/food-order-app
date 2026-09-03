@@ -1,0 +1,128 @@
+/* DELIVERY_LOCATION_PICKER_20260827_001 */
+
+.delivery-location-picker {
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid var(--border, #dce3df);
+  border-radius: 14px;
+  background: #f8fbf9;
+}
+
+.delivery-location-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.delivery-location-head > div {
+  min-width: 0;
+}
+
+.delivery-location-map {
+  width: 100%;
+  height: 320px;
+  border: 1px solid var(--border, #dce3df);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #e9efec;
+  z-index: 0;
+}
+
+.delivery-location-footer {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 9px;
+}
+
+.delivery-location-status,
+.delivery-location-coordinates {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.delivery-location-status {
+  color: var(--muted, #66736d);
+}
+
+.delivery-location-status.is-ready {
+  color: #176b45;
+  font-weight: 700;
+}
+
+.delivery-location-status.is-error {
+  color: #b42318;
+  font-weight: 700;
+}
+
+.delivery-location-coordinates {
+  color: var(--muted, #66736d);
+  font-variant-numeric: tabular-nums;
+}
+
+.delivery-location-picker .leaflet-control-attribution {
+  font-size: 10px;
+}
+
+@media (max-width: 640px) {
+  .delivery-location-picker {
+    padding: 12px;
+  }
+
+  .delivery-location-head {
+    flex-direction: column;
+  }
+
+  #useCurrentLocationButton {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .delivery-location-map {
+    height: 280px;
+  }
+}
+
+
+/* DELIVERY_DISTANCE_ENGINE_20260827_002 */
+.delivery-distance-status {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #eef7f1;
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.delivery-distance-status.is-ready {
+  color: #176b45;
+}
+
+.delivery-distance-status.is-error {
+  color: #b42318;
+  background: #fff1f0;
+}
+
+
+/* DELIVERY_MAP_VISIBILITY_20260903_233 */
+body.delivery-page #deliveryLocationPicker.delivery-location-picker {
+  display: block !important;
+  width: 100%;
+  min-width: 0;
+}
+body.delivery-page #deliveryLocationMap.delivery-location-map {
+  display: block !important;
+  width: 100% !important;
+  min-height: 320px !important;
+  height: 320px !important;
+}
+@media (max-width: 640px) {
+  body.delivery-page #deliveryLocationMap.delivery-location-map {
+    min-height: 280px !important;
+    height: 280px !important;
+  }
+}

@@ -5,41 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#159447">
   <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
-  <link rel="stylesheet" href="/assets/css/icons.css?v=20260731-079">
-  <link rel="stylesheet" href="/assets/css/tenant-admin.css?v=20260621-44">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240">
+  <link rel="stylesheet" href="/assets/css/tenant-admin.css?v=20260903-210">
+  <link rel="stylesheet" href="/assets/css/i18n.css?v=20260903-202">
   <title>บัญชีเจ้าของร้าน</title>
 </head>
 <body data-roles="super_admin">
   <header class="app-header">
-    <div class="brand"><span class="brand-mark">FOD</span>บัญชีเจ้าของร้าน</div>
-    <a class="btn btn-sm" href="/platform">กลับระบบกลาง</a>
+    <div class="brand"><span class="brand-mark">FOD</span><span data-i18n="platform_owners.header.title">บัญชีเจ้าของร้าน</span></div>
+    <a class="btn btn-sm" href="/platform"><span data-i18n="platform_owners.header.back">กลับระบบกลาง</span></a>
+    <div class="app-locale-switcher" data-static-locale-switcher><details class="app-locale-menu" data-locale-menu><summary class="app-locale-trigger" aria-label="Language" title="Language"><i class="bi bi-globe2" aria-hidden="true"></i><span class="visually-hidden">Language</span></summary><div class="app-locale-menu__panel" role="menu" aria-label="Language"><button type="button" class="app-locale-option" data-locale-option="th" lang="th" role="menuitemradio" aria-checked="true"><span>ไทย</span><i class="bi bi-check-lg" aria-hidden="true"></i></button><button type="button" class="app-locale-option" data-locale-option="en" lang="en" role="menuitemradio" aria-checked="false"><span>English</span><i class="bi bi-check-lg" aria-hidden="true"></i></button></div></details></div>
   </header>
-
   <main class="container">
-    <section class="hero">
-      <h1>บัญชี Owner ของแต่ละร้าน</h1>
-      <p>สร้างบัญชี Owner และแก้ไขชื่อเจ้าของร้านได้โดยตรงจากหน้านี้</p>
-    </section>
-
+    <section class="hero"><h1 data-i18n="platform_owners.hero.title">บัญชี Owner ของแต่ละร้าน</h1><p data-i18n="platform_owners.hero.description">สร้างบัญชี Owner และแก้ไขชื่อเจ้าของร้านได้โดยตรงจากหน้านี้</p></section>
     <section class="card">
-      <div class="section-title">
-        <h2>รายการบัญชีเจ้าของร้าน</h2>
-        <span class="badge" id="ownerCount">0 บัญชี</span>
-      </div>
+      <div class="section-title"><h2 data-i18n="platform_owners.list.title">รายการบัญชีเจ้าของร้าน</h2><span class="badge" id="ownerCount">0 บัญชี</span></div>
       <div class="grid grid-2" style="margin-bottom:14px">
-        <input class="input" id="ownerSearch" placeholder="ค้นหาชื่อร้าน ชื่อ Owner หรืออีเมล...">
-        <select class="input" id="ownerStatusFilter">
-          <option value="all">ทุกสถานะ</option>
-          <option value="has-owner">มี Owner แล้ว</option>
-          <option value="no-owner">ยังไม่มี Owner</option>
-          <option value="inactive">ร้านถูกระงับ</option>
-        </select>
+        <input class="input" id="ownerSearch" placeholder="ค้นหาชื่อร้าน ชื่อ Owner หรืออีเมล..." data-i18n-placeholder="platform_owners.list.search">
+        <select class="input" id="ownerStatusFilter"><option value="all" data-i18n="platform_owners.list.status_all">ทุกสถานะ</option><option value="has-owner" data-i18n="platform_owners.list.status_has_owner">มี Owner แล้ว</option><option value="no-owner" data-i18n="platform_owners.list.status_no_owner">ยังไม่มี Owner</option><option value="inactive" data-i18n="platform_owners.list.status_inactive">ร้านถูกระงับ</option></select>
       </div>
       <div id="ownerList" class="grid"></div>
     </section>
   </main>
-
-  <script type="module" src="/assets/js/page-guard.js?v=20260801-103"></script>
-  <script type="module" src="/assets/js/platform-owners.js?v=20260621-44"></script>
+  <script type="module" src="/assets/js/page-guard.js?v=20260903-201"></script>
+  <script type="module" src="/assets/js/platform-owners.js?v=20260903-212"></script>
+  <script type="module" src="/assets/js/locale-switcher-static.js?v=20260903-202"></script>
 </body>
 </html>

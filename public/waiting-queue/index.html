@@ -7,75 +7,92 @@
     <title>จัดการคิวรอโต๊ะ</title>
     <link rel="icon" href="/assets/images/icon-192.png" type="image/png" />
     <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096" />
-    <link rel="stylesheet" href="/assets/css/icons.css?v=20260731-079" />
+    <link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240" />
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/4.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css" data-icon-library="flaticon-uicons" />
     <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260713-004" />
-    <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260801-002" />
+    <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260802-003" />
     <link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260731-081" />
-    <link rel="stylesheet" href="/assets/css/waiting-queue.css?v=20260802-017" />
+    <link rel="stylesheet" href="/assets/css/waiting-queue.css?v=20260903-228" />
+    <link rel="stylesheet" href="/assets/css/i18n.css?v=20260903-202" />
+    <link rel="stylesheet" href="/assets/css/waiting-queue-footer.css?v=20260903-228" />
+
+
   </head>
   <body class="order-delivery-workspace waiting-queue-workspace" data-module="waiting-queue">
     <header class="app-header waiting-app-header">
       <div class="brand">
         <span class="brand-mark">FOD</span>
         <i class="bi bi-person-standing app-icon" aria-hidden="true"></i>
-        <span>คิวรอโต๊ะ</span>
+        <span data-wq-i18n="header.title">คิวรอโต๊ะ</span>
       </div>
-      <a class="btn btn-dark btn-sm waiting-home-link" href="/" aria-label="ย้อนกลับ" title="ย้อนกลับ">
+      <a class="btn btn-dark btn-sm waiting-home-link" href="/" aria-label="ย้อนกลับ" title="ย้อนกลับ" data-wq-aria="header.back" data-wq-title="header.back">
         <i class="bi bi-arrow-left app-icon" aria-hidden="true"></i>
-        <span>ย้อนกลับ</span>
+        <span data-wq-i18n="header.back">ย้อนกลับ</span>
       </a>
+      <div class="app-locale-switcher waiting-locale-switcher" data-static-locale-switcher>
+        <details class="app-locale-menu" data-locale-menu>
+          <summary class="app-locale-trigger" aria-label="เปลี่ยนภาษา" title="เปลี่ยนภาษา" data-wq-aria="footer.language_aria" data-wq-title="footer.language_aria">
+            <i class="bi bi-globe2" aria-hidden="true"></i>
+            <span class="visually-hidden" data-wq-i18n="footer.language_aria">เปลี่ยนภาษา</span>
+          </summary>
+          <div class="app-locale-menu__panel" role="menu" aria-label="ภาษา" data-wq-aria="locale.label">
+            <button type="button" class="app-locale-option" data-locale-option="th" lang="th" role="menuitemradio" aria-checked="true"><span data-wq-i18n="locale.th">ไทย</span><i class="bi bi-check-lg" aria-hidden="true"></i></button>
+            <button type="button" class="app-locale-option" data-locale-option="en" lang="en" role="menuitemradio" aria-checked="false"><span data-wq-i18n="locale.en">English</span><i class="bi bi-check-lg" aria-hidden="true"></i></button>
+          </div>
+        </details>
+      </div>
     </header>
 
     <main class="waiting-page">
       <section class="waiting-page-header" aria-labelledby="waitingPageTitle">
         <div class="waiting-page-heading">
-          <h1 id="waitingPageTitle">จัดการคิวรอโต๊ะ</h1>
-          <p id="waitingTenantName">กำลังตรวจสอบร้านและผู้ใช้งาน...</p>
-          <div class="waiting-flow" aria-label="ขั้นตอนทำงาน">
-            <span>1 รับคิว</span><i class="bi bi-chevron-right" aria-hidden="true"></i>
-            <span>2 เรียกคิว</span><i class="bi bi-chevron-right" aria-hidden="true"></i>
-            <span>3 เลือกโต๊ะ</span><i class="bi bi-chevron-right" aria-hidden="true"></i>
-            <span>4 เปิดโต๊ะ</span>
+          <h1 id="waitingPageTitle" data-wq-i18n="hero.title">จัดการคิวรอโต๊ะ</h1>
+          <p id="waitingTenantName" data-wq-i18n="hero.loading_actor">กำลังตรวจสอบร้านและผู้ใช้งาน...</p>
+          <div class="waiting-flow" aria-label="ขั้นตอนทำงาน" data-wq-aria="hero.flow_aria">
+            <span data-wq-i18n="hero.step_receive">1 รับคิว</span><i class="bi bi-chevron-right" aria-hidden="true"></i>
+            <span data-wq-i18n="hero.step_call">2 เรียกคิว</span><i class="bi bi-chevron-right" aria-hidden="true"></i>
+            <span data-wq-i18n="hero.step_table">3 เลือกโต๊ะ</span><i class="bi bi-chevron-right" aria-hidden="true"></i>
+            <span data-wq-i18n="hero.step_open">4 เปิดโต๊ะ</span>
           </div>
         </div>
       </section>
 
-      <section class="waiting-control-card" aria-label="เครื่องมือคิวรอโต๊ะ">
+      <section class="waiting-control-card" aria-label="เครื่องมือคิวรอโต๊ะ" data-wq-aria="controls.aria">
         <div class="waiting-control-title">
           <i class="bi bi-sliders" aria-hidden="true"></i>
-          <div><strong>เครื่องมือจัดการคิว</strong><span>ตรวจสอบการเชื่อมต่อ เรียกจอคิว และรับคิวใหม่</span></div>
+          <div><strong data-wq-i18n="controls.title">เครื่องมือจัดการคิว</strong><span data-wq-i18n="controls.description">ตรวจสอบการเชื่อมต่อ เรียกจอคิว และรับคิวใหม่</span></div>
         </div>
-        <div class="waiting-header-actions" aria-label="เครื่องมือคิวรอโต๊ะ">
+        <div class="waiting-header-actions" aria-label="เครื่องมือคิวรอโต๊ะ" data-wq-aria="controls.aria">
           <div class="waiting-connection-group">
             <span id="waitingOnlineState" class="waiting-connectivity">
-              <i class="bi bi-wifi" aria-hidden="true"></i><span>ออนไลน์</span>
+              <i class="bi bi-wifi" aria-hidden="true"></i><span data-wq-i18n="controls.online">ออนไลน์</span>
             </span>
-            <span id="waitingSyncState" class="waiting-sync-text">Sync แล้ว</span>
+            <span id="waitingSyncState" class="waiting-sync-text" data-wq-i18n="controls.synced">Sync แล้ว</span>
           </div>
           <button id="waitingSyncBtn" class="btn btn-secondary" type="button">
-            <i class="bi bi-arrow-repeat" aria-hidden="true"></i><span>Sync</span>
+            <i class="bi bi-arrow-repeat" aria-hidden="true"></i><span data-wq-i18n="controls.sync">Sync</span>
           </button>
           <button id="openWaitingDisplayBtn" class="btn btn-secondary" type="button">
-            <i class="bi bi-display" aria-hidden="true"></i><span>จอเรียกคิว</span>
+            <i class="bi bi-display" aria-hidden="true"></i><span data-wq-i18n="controls.display">จอเรียกคิว</span>
           </button>
           <button id="addWaitingQueueBtn" class="btn btn-pay" type="button">
-            <i class="bi bi-plus-lg" aria-hidden="true"></i><span>เพิ่มคิว</span>
+            <i class="bi bi-plus-lg" aria-hidden="true"></i><span data-wq-i18n="controls.add">เพิ่มคิว</span>
           </button>
         </div>
       </section>
 
-      <section class="waiting-stats" aria-label="สรุปคิวรอโต๊ะ">
+      <section class="waiting-stats" aria-label="สรุปคิวรอโต๊ะ" data-wq-aria="stats.aria">
         <article class="waiting-stat">
-          <span>รอเรียก</span><strong id="waitingStatWaiting">0</strong><small>คิว</small>
+          <span data-wq-i18n="stats.waiting">รอเรียก</span><strong id="waitingStatWaiting">0</strong><small data-wq-i18n="stats.waiting_unit">คิว</small>
         </article>
         <article class="waiting-stat called">
-          <span>กำลังดำเนินการ</span><strong id="waitingStatCalled">0</strong><small>เรียกแล้ว / จัดโต๊ะ</small>
+          <span data-wq-i18n="stats.in_progress">กำลังดำเนินการ</span><strong id="waitingStatCalled">0</strong><small data-wq-i18n="stats.in_progress_note">เรียกแล้ว / จัดโต๊ะ</small>
         </article>
         <article class="waiting-stat overdue">
-          <span>ต้องติดตาม</span><strong id="waitingStatOverdue">0</strong><small>พ้นเวลาตอบรับ</small>
+          <span data-wq-i18n="stats.follow_up">ต้องติดตาม</span><strong id="waitingStatOverdue">0</strong><small data-wq-i18n="stats.overdue">พ้นเวลาตอบรับ</small>
         </article>
         <article class="waiting-stat seated">
-          <span>เข้านั่งวันนี้</span><strong id="waitingStatSeated">0</strong><small>คิว</small>
+          <span data-wq-i18n="stats.seated_today">เข้านั่งวันนี้</span><strong id="waitingStatSeated">0</strong><small data-wq-i18n="stats.waiting_unit">คิว</small>
         </article>
       </section>
 
@@ -83,41 +100,41 @@
         <section class="panel waiting-panel waiting-main-panel">
           <div class="section-heading waiting-section-heading">
             <div>
-              <h2><i class="bi bi-list-ol" aria-hidden="true"></i> คิววันนี้</h2>
-              <p>ระบบเรียงจากความเหมาะสมของโต๊ะ เวลารอ และเงื่อนไขพิเศษ</p>
+              <h2><i class="bi bi-list-ol" aria-hidden="true"></i> <span data-wq-i18n="queue.title">คิววันนี้</span></h2>
+              <p data-wq-i18n="queue.description">ระบบเรียงจากความเหมาะสมของโต๊ะ เวลารอ และเงื่อนไขพิเศษ</p>
             </div>
           </div>
 
-          <div class="waiting-toolbar" aria-label="ค้นหาและกรองคิว">
+          <div class="waiting-toolbar" aria-label="ค้นหาและกรองคิว" data-wq-aria="queue.filter_aria">
             <label class="waiting-filter-field waiting-search">
-              <span>ค้นหาคิว</span>
+              <span data-wq-i18n="queue.search_label">ค้นหาคิว</span>
               <div class="waiting-control-wrap">
                 <i class="bi bi-search" aria-hidden="true"></i>
-                <input id="waitingSearch" type="search" autocomplete="off" placeholder="เลขคิว ชื่อ เบอร์โทร หรือหมายเหตุ" />
+                <input id="waitingSearch" type="search" autocomplete="off" placeholder="เลขคิว ชื่อ เบอร์โทร หรือหมายเหตุ" data-wq-placeholder="queue.search_placeholder" />
               </div>
             </label>
             <label class="waiting-filter-field">
-              <span>สถานะ</span>
+              <span data-wq-i18n="queue.status_label">สถานะ</span>
               <select id="waitingStatusFilter">
-                <option value="active">คิวที่กำลังใช้งาน</option>
-                <option value="all">ทุกสถานะวันนี้</option>
-                <option value="waiting">รอเรียก</option>
-                <option value="called">เรียกแล้ว</option>
-                <option value="acknowledged">ลูกค้าตอบรับแล้ว</option>
-                <option value="preparing_table">กำลังจัดโต๊ะ</option>
-                <option value="deferred">ขอเลื่อนคิว</option>
-                <option value="seated">เข้านั่งแล้ว</option>
-                <option value="no_show">ไม่มา/พ้นเวลา</option>
-                <option value="cancelled">ยกเลิก</option>
+                <option value="active" data-wq-i18n="queue.status.active">คิวที่กำลังใช้งาน</option>
+                <option value="all" data-wq-i18n="queue.status.all">ทุกสถานะวันนี้</option>
+                <option value="waiting" data-wq-i18n="queue.status.waiting">รอเรียก</option>
+                <option value="called" data-wq-i18n="queue.status.called">เรียกแล้ว</option>
+                <option value="acknowledged" data-wq-i18n="queue.status.acknowledged">ลูกค้าตอบรับแล้ว</option>
+                <option value="preparing_table" data-wq-i18n="queue.status.preparing_table">กำลังจัดโต๊ะ</option>
+                <option value="deferred" data-wq-i18n="queue.status.deferred">ขอเลื่อนคิว</option>
+                <option value="seated" data-wq-i18n="queue.status.seated">เข้านั่งแล้ว</option>
+                <option value="no_show" data-wq-i18n="queue.status.no_show">ไม่มา/พ้นเวลา</option>
+                <option value="cancelled" data-wq-i18n="queue.status.cancelled">ยกเลิก</option>
               </select>
             </label>
             <label class="waiting-filter-field">
-              <span>จำนวนคน</span>
+              <span data-wq-i18n="queue.party_label">จำนวนคน</span>
               <select id="waitingPartyFilter">
-                <option value="all">ทุกขนาดกลุ่ม</option>
-                <option value="1-2">1–2 คน</option>
-                <option value="3-4">3–4 คน</option>
-                <option value="5+">5 คนขึ้นไป</option>
+                <option value="all" data-wq-i18n="queue.party.all">ทุกขนาดกลุ่ม</option>
+                <option value="1-2" data-wq-i18n="queue.party.one_two">1–2 คน</option>
+                <option value="3-4" data-wq-i18n="queue.party.three_four">3–4 คน</option>
+                <option value="5+" data-wq-i18n="queue.party.five_plus">5 คนขึ้นไป</option>
               </select>
             </label>
           </div>
@@ -126,8 +143,8 @@
           <div id="waitingQueueList" class="waiting-queue-list"></div>
           <div id="waitingQueueEmpty" class="waiting-empty" hidden>
             <i class="bi bi-inbox" aria-hidden="true"></i>
-            <strong>ยังไม่มีคิวที่ตรงกับตัวกรอง</strong>
-            <span>ลองเปลี่ยนสถานะ จำนวนคน หรือคำค้นหา</span>
+            <strong data-wq-i18n="queue.empty_title">ยังไม่มีคิวที่ตรงกับตัวกรอง</strong>
+            <span data-wq-i18n="queue.empty_description">ลองเปลี่ยนสถานะ จำนวนคน หรือคำค้นหา</span>
           </div>
         </section>
 
@@ -135,21 +152,21 @@
           <section class="panel waiting-panel waiting-table-panel">
             <div class="section-heading waiting-table-heading">
               <div>
-                <h2><i class="bi bi-grid-3x3-gap" aria-hidden="true"></i> โต๊ะว่างและคิวแนะนำ</h2>
-                <p>เลือกโต๊ะก่อน ระบบจะแนะนำคิวที่เหมาะสมโดยอัตโนมัติ</p>
+                <h2><i class="bi bi-grid-3x3-gap" aria-hidden="true"></i> <span data-wq-i18n="tables.title">โต๊ะว่างและคิวแนะนำ</span></h2>
+                <p data-wq-i18n="tables.description">เลือกโต๊ะก่อน ระบบจะแนะนำคิวที่เหมาะสมโดยอัตโนมัติ</p>
               </div>
             </div>
             <div id="waitingTableList" class="waiting-table-list"></div>
             <div id="waitingTableEmpty" class="waiting-empty" hidden>
               <i class="bi bi-door-closed" aria-hidden="true"></i>
-              <strong>ยังไม่มีโต๊ะว่าง</strong>
-              <span>ระบบจะอัปเดตเมื่อสถานะโต๊ะเปลี่ยน</span>
+              <strong data-wq-i18n="tables.empty_title">ยังไม่มีโต๊ะว่าง</strong>
+              <span data-wq-i18n="tables.empty_description">ระบบจะอัปเดตเมื่อสถานะโต๊ะเปลี่ยน</span>
             </div>
           </section>
 
           <details class="panel waiting-policy">
-            <summary><i class="bi bi-shield-check" aria-hidden="true"></i> หลักการจัดคิวอย่างเป็นธรรม</summary>
-            <p>ระบบเลือกโต๊ะที่รองรับจำนวนคนก่อน แล้วให้คิวที่รอนานที่สุด พร้อมพิจารณาคิวพิเศษในช่วงเวลาใกล้เคียงกัน หากข้ามคิวจะต้องระบุเหตุผลและบันทึกผู้ดำเนินการ</p>
+            <summary><i class="bi bi-shield-check" aria-hidden="true"></i> <span data-wq-i18n="policy.title">หลักการจัดคิวอย่างเป็นธรรม</span></summary>
+            <p data-wq-i18n="policy.description">ระบบเลือกโต๊ะที่รองรับจำนวนคนก่อน แล้วให้คิวที่รอนานที่สุด พร้อมพิจารณาคิวพิเศษในช่วงเวลาใกล้เคียงกัน หากข้ามคิวจะต้องระบุเหตุผลและบันทึกผู้ดำเนินการ</p>
           </details>
         </aside>
       </div>
@@ -159,117 +176,60 @@
       <form id="waitingQueueForm" class="payment-form waiting-dialog-form">
         <div class="dialog-head waiting-dialog-head">
           <div>
-            <span class="waiting-dialog-eyebrow">รับลูกค้าเข้าคิว</span>
-            <h2>เพิ่มคิวรอโต๊ะ</h2>
-            <p>ระบบจะออกเลข W แยกจากเลขคิวอาหารและเลขออเดอร์</p>
+            <span class="waiting-dialog-eyebrow" data-wq-i18n="add.eyebrow">รับลูกค้าเข้าคิว</span>
+            <h2 data-wq-i18n="add.title">เพิ่มคิวรอโต๊ะ</h2>
+            <p data-wq-i18n="add.description">ระบบจะออกเลข W แยกจากเลขคิวอาหารและเลขออเดอร์</p>
           </div>
-          <button id="closeWaitingQueueDialog" type="button" class="icon-btn" aria-label="ปิด">
-            <i class="bi bi-x-lg" aria-hidden="true"></i>
-          </button>
+          <button id="closeWaitingQueueDialog" type="button" class="icon-btn" aria-label="ปิด" data-wq-aria="common.close"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
         </div>
         <div class="waiting-form-grid">
-          <label>
-            ชื่อลูกค้า
-            <input id="waitingCustomerName" required maxlength="80" autocomplete="name" placeholder="ชื่อสำหรับเรียกคิว" />
-          </label>
-          <label>
-            เบอร์โทร
-            <input id="waitingCustomerPhone" required maxlength="20" inputmode="tel" autocomplete="tel" placeholder="เช่น 0812345678" />
-          </label>
-          <label>
-            จำนวนลูกค้า
-            <input id="waitingPartySize" required type="number" min="1" max="99" step="1" value="2" />
-          </label>
-          <label>
-            ประเภทคิวพิเศษ
-            <select id="waitingPriority">
-              <option value="normal">ทั่วไป</option>
-              <option value="elderly">ผู้สูงอายุ</option>
-              <option value="disabled">ผู้พิการ</option>
-              <option value="young_child">มีเด็กเล็ก</option>
-            </select>
-          </label>
-          <label class="full">
-            หมายเหตุ
-            <textarea id="waitingSpecialNote" maxlength="240" placeholder="เช่น ต้องการโต๊ะติดผนัง หรือสมาชิกในกลุ่มกำลังเดินทางมา"></textarea>
-          </label>
+          <label><span data-wq-i18n="add.customer_name">ชื่อลูกค้า</span><input id="waitingCustomerName" required maxlength="80" autocomplete="name" placeholder="ชื่อสำหรับเรียกคิว" data-wq-placeholder="add.customer_placeholder" /></label>
+          <label><span data-wq-i18n="add.phone">เบอร์โทร</span><input id="waitingCustomerPhone" required maxlength="20" inputmode="tel" autocomplete="tel" placeholder="เช่น 0812345678" data-wq-placeholder="add.phone_placeholder" /></label>
+          <label><span data-wq-i18n="add.party_size">จำนวนลูกค้า</span><input id="waitingPartySize" required type="number" min="1" max="99" step="1" value="2" /></label>
+          <label><span data-wq-i18n="add.priority">ประเภทคิวพิเศษ</span><select id="waitingPriority"><option value="normal" data-wq-i18n="priority.normal">ทั่วไป</option><option value="elderly" data-wq-i18n="priority.elderly">ผู้สูงอายุ</option><option value="disabled" data-wq-i18n="priority.disabled">ผู้พิการ</option><option value="young_child" data-wq-i18n="priority.young_child">มีเด็กเล็ก</option></select></label>
+          <label class="full"><span data-wq-i18n="add.note">หมายเหตุ</span><textarea id="waitingSpecialNote" maxlength="240" placeholder="เช่น ต้องการโต๊ะติดผนัง หรือสมาชิกในกลุ่มกำลังเดินทางมา" data-wq-placeholder="add.note_placeholder"></textarea></label>
         </div>
         <fieldset class="waiting-needs">
-          <legend>ความต้องการพิเศษ</legend>
-          <label><input id="waitingNeedHighChair" type="checkbox" /> <span>เก้าอี้เด็ก</span></label>
-          <label><input id="waitingNeedWheelchair" type="checkbox" /> <span>พื้นที่รถเข็น</span></label>
-          <label><input id="waitingNeedQuietArea" type="checkbox" /> <span>พื้นที่เงียบ</span></label>
-          <label><input id="waitingNeedStroller" type="checkbox" /> <span>พื้นที่รถเข็นเด็ก</span></label>
+          <legend data-wq-i18n="add.needs">ความต้องการพิเศษ</legend>
+          <label><input id="waitingNeedHighChair" type="checkbox" /> <span data-wq-i18n="needs.high_chair">เก้าอี้เด็ก</span></label>
+          <label><input id="waitingNeedWheelchair" type="checkbox" /> <span data-wq-i18n="needs.wheelchair">พื้นที่รถเข็น</span></label>
+          <label><input id="waitingNeedQuietArea" type="checkbox" /> <span data-wq-i18n="needs.quiet">พื้นที่เงียบ</span></label>
+          <label><input id="waitingNeedStroller" type="checkbox" /> <span data-wq-i18n="needs.stroller">พื้นที่รถเข็นเด็ก</span></label>
         </fieldset>
         <div id="waitingQueuePreview" class="waiting-intake-preview" role="status" aria-live="polite">
-          <div><span>คิวที่เหมาะสมก่อนหน้า</span><strong id="waitingQueuePreviewAhead">0</strong></div>
-          <div><span>เวลารอประมาณ</span><strong id="waitingQueuePreviewEstimate">0–5 นาที</strong></div>
+          <div><span data-wq-i18n="add.ahead">คิวที่เหมาะสมก่อนหน้า</span><strong id="waitingQueuePreviewAhead">0</strong></div>
+          <div><span data-wq-i18n="add.estimate">เวลารอประมาณ</span><strong id="waitingQueuePreviewEstimate">0–5 นาที</strong></div>
         </div>
         <p id="waitingQueueFormError" class="error-text" role="alert"></p>
         <div class="dialog-actions waiting-dialog-actions">
-          <button id="cancelWaitingQueueDialog" type="button" class="btn btn-secondary"><i class="bi bi-x-lg" aria-hidden="true"></i><span>ยกเลิก</span></button>
-          <button id="saveWaitingQueueBtn" type="submit" class="btn btn-pay"><i class="bi bi-floppy" aria-hidden="true"></i><span>บันทึกคิว</span></button>
+          <button id="cancelWaitingQueueDialog" type="button" class="btn btn-secondary"><i class="bi bi-x-lg" aria-hidden="true"></i><span data-wq-i18n="add.cancel">ยกเลิก</span></button>
+          <button id="saveWaitingQueueBtn" type="submit" class="btn btn-pay"><i class="bi bi-floppy" aria-hidden="true"></i><span data-wq-i18n="add.save">บันทึกคิว</span></button>
         </div>
       </form>
     </dialog>
 
-
     <dialog id="waitingTicketDialog" class="waiting-dialog waiting-ticket-dialog">
       <div class="waiting-dialog-form waiting-ticket-dialog-form">
         <div class="dialog-head waiting-dialog-head">
-          <div>
-            <span class="waiting-dialog-eyebrow">บัตรคิวสำหรับลูกค้า</span>
-            <h2 id="waitingTicketDialogTitle">บัตรคิว</h2>
-            <p>ให้ลูกค้าสแกน QR Code เพื่อติดตามสถานะคิวด้วยตนเอง</p>
-          </div>
-          <button id="closeWaitingTicketDialog" type="button" class="icon-btn" aria-label="ปิด">
-            <i class="bi bi-x-lg" aria-hidden="true"></i>
-          </button>
+          <div><span class="waiting-dialog-eyebrow" data-wq-i18n="ticket.eyebrow">บัตรคิวสำหรับลูกค้า</span><h2 id="waitingTicketDialogTitle" data-wq-i18n="ticket.title">บัตรคิว</h2><p data-wq-i18n="ticket.description">ให้ลูกค้าสแกน QR Code เพื่อติดตามสถานะคิวด้วยตนเอง</p></div>
+          <button id="closeWaitingTicketDialog" type="button" class="icon-btn" aria-label="ปิด" data-wq-aria="common.close"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
         </div>
-
-        <section class="waiting-ticket-card" aria-label="ตัวอย่างบัตรคิว">
-          <span class="waiting-ticket-brand">คิวรอโต๊ะ</span>
-          <span class="waiting-ticket-label">หมายเลขคิว</span>
-          <strong id="waitingTicketQueueNumber" class="waiting-ticket-number">W---</strong>
-          <div id="waitingTicketQr" class="waiting-ticket-qr" aria-label="QR Code ติดตามคิว"></div>
-          <p class="waiting-ticket-instruction">สแกนเพื่อติดตามสถานะคิวแบบเรียลไทม์</p>
-          <div class="waiting-ticket-meta">
-            <div>
-              <span>จำนวนลูกค้า</span>
-              <strong id="waitingTicketPartySize">-</strong>
-            </div>
-            <div>
-              <span>เวลารอประมาณ</span>
-              <strong id="waitingTicketEstimate">-</strong>
-            </div>
-          </div>
-          <div class="waiting-ticket-ahead">
-            <span>คิวที่เหมาะสมก่อนหน้า</span>
-            <strong id="waitingTicketGroupsAhead">-</strong>
-          </div>
-          <div class="waiting-ticket-issued">
-            <span>รับคิวเมื่อ</span>
-            <strong id="waitingTicketIssuedAt">-</strong>
-          </div>
-          <div class="waiting-ticket-url-status">
-            <i class="bi bi-link-45deg" aria-hidden="true"></i>
-            <span>ลิงก์ติดตามคิวพร้อมใช้งาน</span>
-          </div>
+        <section class="waiting-ticket-card" aria-label="ตัวอย่างบัตรคิว" data-wq-aria="ticket.preview_aria">
+          <span class="waiting-ticket-brand" data-wq-i18n="ticket.brand">คิวรอโต๊ะ</span><span class="waiting-ticket-label" data-wq-i18n="ticket.number">หมายเลขคิว</span><strong id="waitingTicketQueueNumber" class="waiting-ticket-number">W---</strong>
+          <div id="waitingTicketQr" class="waiting-ticket-qr" aria-label="QR Code ติดตามคิว" data-wq-aria="ticket.qr_aria"></div>
+          <p class="waiting-ticket-instruction" data-wq-i18n="ticket.instruction">สแกนเพื่อติดตามสถานะคิวแบบเรียลไทม์</p>
+          <div class="waiting-ticket-meta"><div><span data-wq-i18n="ticket.party_size">จำนวนลูกค้า</span><strong id="waitingTicketPartySize">-</strong></div><div><span data-wq-i18n="ticket.estimate">เวลารอประมาณ</span><strong id="waitingTicketEstimate">-</strong></div></div>
+          <div class="waiting-ticket-ahead"><span data-wq-i18n="ticket.ahead">คิวที่เหมาะสมก่อนหน้า</span><strong id="waitingTicketGroupsAhead">-</strong></div>
+          <div class="waiting-ticket-issued"><span data-wq-i18n="ticket.issued_at">รับคิวเมื่อ</span><strong id="waitingTicketIssuedAt">-</strong></div>
+          <div class="waiting-ticket-url-status"><i class="bi bi-link-45deg" aria-hidden="true"></i><span data-wq-i18n="ticket.link_ready">ลิงก์ติดตามคิวพร้อมใช้งาน</span></div>
           <code id="waitingTicketUrl" class="waiting-ticket-url" hidden></code>
-          <small><i class="bi bi-shield-check" aria-hidden="true"></i> บัตรคิวไม่แสดงชื่อหรือเบอร์โทรของลูกค้า</small>
+          <small><i class="bi bi-shield-check" aria-hidden="true"></i> <span data-wq-i18n="ticket.privacy">บัตรคิวไม่แสดงชื่อหรือเบอร์โทรของลูกค้า</span></small>
         </section>
-
         <p id="waitingTicketError" class="error-text waiting-ticket-error" role="alert"></p>
         <div class="dialog-actions waiting-dialog-actions waiting-ticket-actions">
-          <button id="cancelWaitingTicketDialog" type="button" class="btn btn-secondary">
-            <i class="bi bi-x-lg" aria-hidden="true"></i><span>ปิด</span>
-          </button>
-          <button id="copyWaitingTicketLinkBtn" type="button" class="btn btn-secondary">
-            <i class="bi bi-clipboard" aria-hidden="true"></i><span>คัดลอกลิงก์</span>
-          </button>
-          <button id="printWaitingTicketBtn" type="button" class="btn btn-pay">
-            <i class="bi bi-printer" aria-hidden="true"></i><span>พิมพ์บัตรคิว</span>
-          </button>
+          <button id="cancelWaitingTicketDialog" type="button" class="btn btn-secondary"><i class="bi bi-x-lg" aria-hidden="true"></i><span data-wq-i18n="ticket.close">ปิด</span></button>
+          <button id="copyWaitingTicketLinkBtn" type="button" class="btn btn-secondary"><i class="bi bi-clipboard" aria-hidden="true"></i><span data-wq-i18n="ticket.copy">คัดลอกลิงก์</span></button>
+          <button id="printWaitingTicketBtn" type="button" class="btn btn-pay"><i class="bi bi-printer" aria-hidden="true"></i><span data-wq-i18n="ticket.print">พิมพ์บัตรคิว</span></button>
         </div>
       </div>
     </dialog>
@@ -277,36 +237,33 @@
     <dialog id="waitingSeatDialog" class="waiting-dialog waiting-seat-dialog">
       <form class="payment-form waiting-dialog-form" onsubmit="return false">
         <div class="dialog-head waiting-dialog-head">
-          <div>
-            <span class="waiting-dialog-eyebrow">เชื่อมคิวกับโต๊ะ</span>
-            <h2 id="waitingSeatDialogTitle">เปิดโต๊ะ</h2>
-            <p>เลือกโต๊ะว่างที่เหมาะสม แล้วระบบจะเปิดโต๊ะและสร้างออเดอร์ด้วย Transaction</p>
-          </div>
-          <button id="closeWaitingSeatDialog" type="button" class="icon-btn" aria-label="ปิด">
-            <i class="bi bi-x-lg" aria-hidden="true"></i>
-          </button>
+          <div><span class="waiting-dialog-eyebrow" data-wq-i18n="seat.eyebrow">เชื่อมคิวกับโต๊ะ</span><h2 id="waitingSeatDialogTitle" data-wq-i18n="seat.title">เปิดโต๊ะ</h2><p data-wq-i18n="seat.description">เลือกโต๊ะว่างที่เหมาะสม แล้วระบบจะเปิดโต๊ะด้วย Transaction</p></div>
+          <button id="closeWaitingSeatDialog" type="button" class="icon-btn" aria-label="ปิด" data-wq-aria="common.close"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
         </div>
         <div id="waitingSeatQueueSummary" class="waiting-seat-summary"></div>
-        <div class="waiting-seat-section-title">
-          <strong>เลือกโต๊ะว่าง</strong>
-          <span>โต๊ะที่เหมาะสมจะแสดงก่อน</span>
-        </div>
+        <div class="waiting-seat-section-title"><strong data-wq-i18n="seat.choose">เลือกโต๊ะว่าง</strong><span data-wq-i18n="seat.suitable_first">โต๊ะที่เหมาะสมจะแสดงก่อน</span></div>
         <div id="waitingSeatTableList" class="waiting-seat-table-list"></div>
-        <label id="waitingSeatReasonWrap" class="waiting-seat-reason" hidden>
-          เหตุผลการข้ามเงื่อนไขหรือข้ามคิว
-          <textarea id="waitingSeatReason" maxlength="240" placeholder="ระบุเหตุผลเพื่อเก็บในประวัติการจัดคิว"></textarea>
-        </label>
+        <label id="waitingSeatReasonWrap" class="waiting-seat-reason" hidden><span data-wq-i18n="seat.override_reason">เหตุผลการข้ามเงื่อนไขหรือข้ามคิว</span><textarea id="waitingSeatReason" maxlength="240" placeholder="ระบุเหตุผลเพื่อเก็บในประวัติการจัดคิว" data-wq-placeholder="seat.override_placeholder"></textarea></label>
         <p id="waitingSeatError" class="error-text" role="alert"></p>
         <div class="dialog-actions waiting-dialog-actions">
-          <button id="cancelWaitingSeatDialog" type="button" class="btn btn-secondary"><i class="bi bi-x-lg" aria-hidden="true"></i><span>ยกเลิก</span></button>
-          <button id="confirmWaitingSeatBtn" type="button" class="btn btn-pay"><i class="bi bi-door-open" aria-hidden="true"></i><span>เปิดโต๊ะ</span></button>
+          <button id="cancelWaitingSeatDialog" type="button" class="btn btn-secondary"><i class="bi bi-x-lg" aria-hidden="true"></i><span data-wq-i18n="seat.cancel">ยกเลิก</span></button>
+          <button id="confirmWaitingSeatBtn" type="button" class="btn btn-pay"><i class="bi bi-door-open" aria-hidden="true"></i><span data-wq-i18n="seat.open">เปิดโต๊ะ</span></button>
         </div>
       </form>
     </dialog>
 
+    <footer class="app-version waiting-shared-footer" data-shared-app-footer>
+      <span data-wq-footer-product>Food Order Delivery</span><span aria-hidden="true"> • </span><span data-wq-footer-version>Version</span><span aria-hidden="true"> • </span><span data-wq-footer-build>Build</span><span aria-hidden="true"> • </span><a class="icon-library-credit" data-wq-footer-credit href="https://www.flaticon.com/uicons" target="_blank" rel="noopener noreferrer">UIcons by Flaticon</a>
+    </footer>
+
     <div id="toast" class="toast" role="status"></div>
-    <script type="module" src="/assets/js/retail-toast-status.js?v=20260802-005"></script>
+
+    <script type="module" src="/assets/js/retail-toast-status.js?v=20260806-083"></script>
     <script src="/assets/vendor/qrcodejs/qrcode.min.js?v=1.0.0"></script>
-    <script type="module" src="/assets/js/waiting-queue-staff.js?v=20260802-017"></script>
+    <script type="module" src="/assets/js/waiting-queue-i18n-bootstrap.js?v=20260903-228"></script>
+    <script type="module" src="/assets/js/waiting-queue-i18n.js?v=20260903-228"></script>
+    <script type="module" src="/assets/js/locale-switcher-static.js?v=20260903-202"></script>
+    <script type="module" src="/assets/js/waiting-queue-print-i18n.js?v=20260903-228"></script>
+    <script type="module" src="/assets/js/waiting-queue-staff.js?v=20260903-228"></script>
   </body>
 </html>

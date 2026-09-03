@@ -1,3 +1,5 @@
+import { t } from "./i18n.js?v=20260903-202";
+
 function createPaginator({ rowsSelector, searchSelector, statusSelector, paginationSelector, emptyColumns, activeWords }) {
   const rowsContainer = document.querySelector(rowsSelector);
   const searchInput = document.querySelector(searchSelector);
@@ -21,7 +23,9 @@ function createPaginator({ rowsSelector, searchSelector, statusSelector, paginat
   }
 
   function rowStatus(row) {
-    if (row.dataset.active) return row.dataset.active === "true" ? "active" : "inactive";
+    if (row.dataset.active === "true" || row.dataset.active === "false") {
+      return row.dataset.active === "true" ? "active" : "inactive";
+    }
     const badgeText = row.querySelector(".badge")?.textContent.trim() || "";
     return activeWords.includes(badgeText) ? "active" : "inactive";
   }
@@ -58,16 +62,16 @@ function createPaginator({ rowsSelector, searchSelector, statusSelector, paginat
     if (!matched.length) {
       const emptyRow = document.createElement("tr");
       emptyRow.dataset.paginationEmpty = "true";
-      emptyRow.innerHTML = `<td colspan="${emptyColumns}" class="empty">ไม่พบข้อมูลที่ค้นหา</td>`;
+      emptyRow.innerHTML = `<td colspan="${emptyColumns}" class="empty">${t("admin.pagination.no_results")}</td>`;
       rowsContainer.appendChild(emptyRow);
     }
 
     pagination.hidden = totalPages <= 1;
     pagination.innerHTML = totalPages <= 1 ? "" : `
-      <button type="button" class="menu-page-button" data-page="${currentPage - 1}" ${currentPage === 1 ? "disabled" : ""} aria-label="หน้าก่อนหน้า">‹</button>
-      ${visiblePages(totalPages).map(page => `<button type="button" class="menu-page-button${page === currentPage ? " active" : ""}" data-page="${page}" aria-label="หน้า ${page}">${page}</button>`).join("")}
-      <button type="button" class="menu-page-button" data-page="${currentPage + 1}" ${currentPage === totalPages ? "disabled" : ""} aria-label="หน้าถัดไป">›</button>
-      <div class="menu-page-summary">หน้า ${currentPage} จาก ${totalPages} • ${matched.length} รายการ</div>
+      <button type="button" class="menu-page-button menu-page-direction" data-page="${currentPage - 1}" ${currentPage === 1 ? "disabled" : ""} aria-label="${t("admin.pagination.previous")}"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+      ${visiblePages(totalPages).map(page => `<button type="button" class="menu-page-button${page === currentPage ? " active" : ""}" data-page="${page}" aria-label="${t("admin.pagination.page", { page })}">${page}</button>`).join("")}
+      <button type="button" class="menu-page-button menu-page-direction" data-page="${currentPage + 1}" ${currentPage === totalPages ? "disabled" : ""} aria-label="${t("admin.pagination.next")}"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+      <div class="menu-page-summary">${t("admin.pagination.summary", { current: currentPage, total: totalPages, count: matched.length })}</div>
     `;
 
     rendering = false;
@@ -115,7 +119,7 @@ createPaginator({
   statusSelector: "#menuListStatus",
   paginationSelector: "#menuListPagination",
   emptyColumns: 6,
-  activeWords: ["เปิดขาย"]
+  activeWords: [t("admin.menu.active")]
 });
 
 createPaginator({
@@ -124,5 +128,5 @@ createPaginator({
   statusSelector: "#tableListStatus",
   paginationSelector: "#tableListPagination",
   emptyColumns: 5,
-  activeWords: ["ใช้งาน"]
+  activeWords: [t("admin.table.active")]
 });

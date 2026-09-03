@@ -1,5 +1,14 @@
 import { waitForAuth, getUserProfile, mountUserMenu, STAFF_ROLES } from "./auth-service.js?v=20260802-104";
 import { dataService } from "./data-service.js?v=20260704-001";
+import { functions, httpsCallable } from "./firebase-config.js?v=20260630-073";
+import translations from "./home-translations.js?v=20260903-218";
+import { configureI18n, applyTranslations, t } from "./i18n.js?v=20260903-202";
+
+configureI18n(translations);
+applyTranslations();
+document.title = t("home.meta.title");
+
+const getTenantRevenueShareAccess = httpsCallable(functions, "getTenantRevenueShareAccess");
 
 const dashboard = document.querySelector("#staffDashboard");
 const publicLanding = document.querySelector("#publicLanding");
@@ -12,7 +21,7 @@ function enablePublicRegisterCta() {
     registerLink.removeAttribute("aria-disabled");
   }
   const registerNote = document.querySelector(".public-register-note");
-  if (registerNote) registerNote.textContent = "สมัคร Premium Trial ฟรี 1 เดือน หลังยืนยันอีเมลแล้วเริ่มเปิดร้านได้ทันที";
+  if (registerNote) registerNote.textContent = t("home.public.pricing.register_note");
 }
 
 function routePublicLoginLinks() {
@@ -44,7 +53,18 @@ async function resolveDisplayShopName(profile) {
   } catch (error) {
     console.warn("STAFF_HOME_STORE_NAME_FALLBACK", error);
   }
-  return profile.tenantName || "ร้านของคุณ";
+  return profile.tenantName || t("home.staff.owner.store_fallback");
+}
+
+async function resolveRevenueShareAccess(profile) {
+  if (!["owner", "admin"].includes(profile?.role)) return false;
+  try {
+    const result = await getTenantRevenueShareAccess({});
+    return result.data?.enabled === true;
+  } catch (error) {
+    console.warn("REVENUE_SHARE_ACCESS_UNAVAILABLE", error);
+    return false;
+  }
 }
 
 function lower(value) { return String(value || "").trim().toLowerCase(); }
@@ -87,20 +107,25 @@ if (user) {
     const brandLabel = document.querySelector(".brand-label");
     if (brandLabel) brandLabel.textContent = "Food Order/Delivery With QR";
     const ownerRoleAliases = new Set(["owner", "admin", "cashier", "kitchen", "manager"]);
+    const revenueShareEnabled = await resolveRevenueShareAccess(profile);
 
     document.querySelectorAll("[data-dashboard-role]").forEach(card => {
       const roles = card.dataset.dashboardRole.split(",").map(role => role.trim());
       const ownerCanView = profile.role === "owner" && roles.some(role => ownerRoleAliases.has(role));
       const roleAllowed = ownerCanView || roles.includes(profile.role);
       const moduleAllowed = profileSupportsModule(profile, card.dataset.dashboardModule);
-      card.hidden = !(roleAllowed && moduleAllowed);
+      const revenueShareAllowed = !card.hasAttribute("data-revenue-share-card") || revenueShareEnabled;
+      card.hidden = !(roleAllowed && moduleAllowed && revenueShareAllowed);
     });
+
+    const revenueShareSection = document.querySelector("[data-revenue-share-section]");
+    if (revenueShareSection) revenueShareSection.hidden = !revenueShareEnabled;
 
     const heroTitle = dashboard.querySelector(".hero h1");
     const heroSubtitle = dashboard.querySelector(".hero p");
 
     if (profile.role === "owner") {
-      if (heroTitle) heroTitle.textContent = "ระบบจัดการร้าน";
+      if (heroTitle) heroTitle.textContent = t("home.staff.owner.title");
       if (heroSubtitle) heroSubtitle.textContent = await resolveDisplayShopName(profile);
     }
 

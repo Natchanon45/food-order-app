@@ -1,5 +1,6 @@
 import "./active-status-icons.js?v=20260701-031";
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
+import { t } from "./i18n.js?v=20260903-202";
 
 const STORAGE_KEY = "admin_collapsed_cards_v1";
 const MODAL_TRANSITION_MS = 220;
@@ -17,7 +18,7 @@ function headingText(card) {
 }
 
 function isNonCollapsibleCard(card) {
-  return headingText(card) === "รายงานยอดขาย";
+  return card.dataset.adminCardRole === "sales-report";
 }
 
 function cardKey(card, index = 0) {
@@ -41,6 +42,11 @@ function ensureCardBody(card, title) {
   return body;
 }
 
+function setCardCollapsed(card, toggle, collapsed) {
+  card.classList.toggle("admin-card-collapsed", collapsed);
+  toggle.setAttribute("aria-expanded", String(!collapsed));
+}
+
 function decorateCard(card, index = 0) {
   if (!(card instanceof HTMLElement) || card.dataset.adminCollapsible === "true") return;
   const title = card.querySelector(":scope > .section-title");
@@ -57,20 +63,29 @@ function decorateCard(card, index = 0) {
   toggle.type = "button";
   toggle.className = "btn admin-card-toggle";
   toggle.innerHTML = icon("chevron-down");
-  toggle.setAttribute("aria-label", "แสดงหรือซ่อนการ์ด");
-  toggle.title = "แสดงหรือซ่อน";
+  toggle.setAttribute("aria-label", t("admin.workspace.toggle_card"));
+  toggle.title = t("admin.workspace.toggle_title");
   title.appendChild(toggle);
 
   ensureCardBody(card, title);
   card.classList.add("admin-collapsible-card");
   card.dataset.adminCollapsible = "true";
+  title.classList.add("admin-card-touch-target");
 
-  card.classList.add("admin-card-collapsed");
-  toggle.setAttribute("aria-expanded", "false");
+  setCardCollapsed(card, toggle, true);
 
-  toggle.addEventListener("click", () => {
-    const collapsed = card.classList.toggle("admin-card-collapsed");
-    toggle.setAttribute("aria-expanded", String(!collapsed));
+  const toggleCard = () => {
+    setCardCollapsed(card, toggle, !card.classList.contains("admin-card-collapsed"));
+  };
+
+  toggle.addEventListener("click", event => {
+    event.stopPropagation();
+    toggleCard();
+  });
+
+  title.addEventListener("click", event => {
+    if (event.target.closest("button, a, input, select, textarea, label")) return;
+    toggleCard();
   });
 }
 
@@ -88,8 +103,8 @@ function createModal() {
   backdrop.innerHTML = `
     <section class="admin-edit-modal" role="dialog" aria-modal="true" aria-labelledby="adminEditModalTitle">
       <header class="admin-edit-modal-head">
-        <h2 id="adminEditModalTitle">แก้ไขข้อมูล</h2>
-        <button type="button" class="btn admin-edit-modal-close" data-close-admin-modal aria-label="ปิด">${icon("x-circle")}</button>
+        <h2 id="adminEditModalTitle">${t("admin.workspace.modal_default_title")}</h2>
+        <button type="button" class="btn admin-edit-modal-close" data-close-admin-modal aria-label="${t("admin.common.close")}">${icon("x-circle")}</button>
       </header>
       <div class="admin-edit-modal-body"></div>
     </section>`;
@@ -174,7 +189,7 @@ document.addEventListener("click", event => {
     const isMenu = entity === "menu";
     const form = document.querySelector(isMenu ? "#menuForm" : "#tableForm");
     const card = form?.closest("section.card");
-    if (card) openModal(card, addButton ? (isMenu ? "เพิ่มเมนูอาหาร" : "เพิ่มโต๊ะ") : (isMenu ? "แก้ไขเมนูอาหาร" : "แก้ไขโต๊ะ"));
+    if (card) openModal(card, addButton ? (isMenu ? t("admin.workspace.add_menu") : t("admin.workspace.add_table")) : (isMenu ? t("admin.workspace.edit_menu") : t("admin.workspace.edit_table")));
     window.scrollTo(0, savedScrollY);
   }, 0);
 }, true);

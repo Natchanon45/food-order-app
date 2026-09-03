@@ -1,5 +1,9 @@
-import { dataService } from "./data-service.js";
-import { money, formatTime, toast } from "./ui.js?v=20260731-080";
+import "./public-page-static-i18n.js?v=20260903-243";
+
+import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20260903-231';
+import { money, formatTime, toast } from "./ui.js?v=20260805-081";
+import { t } from "./i18n.js?v=20260903-202";
+import { effectiveDeliveryAmounts, enrichDeliveryGiftItems } from "./delivery-order-display.js?v=20260903-243";
 
 const orderId = new URLSearchParams(location.search).get("order") || "";
 const receipt = document.querySelector("#customerReceipt");
@@ -7,15 +11,17 @@ const saveButton = document.querySelector("#saveImageButton");
 const orderAgainLink = document.querySelector("#orderAgainLink");
 
 function paymentText(order) {
-  if (order.paymentStatus === "paid") return "ชำระเงินแล้ว";
-  if (order.paymentMethod === "cod") return "เก็บเงินปลายทาง";
-  if (order.paymentStatus === "pending_verification") return "ส่งหลักฐานแล้ว รอร้านตรวจสอบ";
-  return "ยังไม่ชำระเงิน";
+  if (order.paymentStatus === "paid") return t("delivery.success.payment.paid");
+  if (order.paymentMethod === "cod") return t("delivery.success.payment.cod");
+  if (order.paymentStatus === "pending_verification") return t("delivery.success.payment.pending_verification");
+  return t("delivery.success.payment.unpaid");
 }
 
 function receiptItemName(item) {
-  return `<div class="receipt-item-line"><span class="receipt-item-text" title="${item.name}">${item.name}</span><span class="receipt-item-qty">x ${item.qty}</span></div>${item.note ? `<div class="receipt-item-note">${item.note}</div>` : ""}`;
+  const displayName = item.isGift === true ? `${item.name} ${t("delivery.success.receipt.gift_suffix")}` : item.name;
+  return `<div class="receipt-item-line"><span class="receipt-item-text" title="${displayName}">${displayName}</span><span class="receipt-item-qty">x ${item.qty}</span></div>${item.note ? `<div class="receipt-item-note">${item.note}</div>` : ""}`;
 }
+
 
 function clearDeliveryDraft(tenantSlug = "") {
   if (!tenantSlug) return;
@@ -40,13 +46,14 @@ function renderVerificationQr(order) {
 }
 
 async function load() {
-  if (!orderId) throw new Error("ไม่พบเลขที่คำสั่งซื้อ");
-  const [order, settings] = await Promise.all([dataService.getOrder(orderId), dataService.getStoreSettings()]);
-  if (!order) throw new Error("ไม่พบคำสั่งซื้อ");
+  if (!orderId) throw new Error(t("delivery.success.errors.missing_order_number"));
+  const [rawOrder, settings, menus] = await Promise.all([dataService.getOrder(orderId), dataService.getStoreSettings(), dataService.listMenus()]);
+  if (!rawOrder) throw new Error(t("delivery.success.errors.order_not_found"));
+  const order = enrichDeliveryGiftItems(rawOrder, menus);
 
-  document.querySelector("#shopName").textContent = settings.shopName || "Food Order/Delivery With QR";
+  document.querySelector("#shopName").textContent = settings.shopName || t("delivery.success.receipt.shop_fallback");
   document.querySelector("#shopAddress").textContent = settings.shopAddress || "";
-  document.querySelector("#shopPhone").textContent = settings.shopPhone ? `โทร ${settings.shopPhone}` : "";
+  document.querySelector("#shopPhone").textContent = settings.shopPhone ? t("delivery.success.shop_phone", { phone: settings.shopPhone }) : "";
   document.querySelector("#receiptNumber").textContent = orderId.slice(0, 12).toUpperCase();
   document.querySelector("#receiptDate").textContent = formatTime(order.createdAt);
   document.querySelector("#receiptPayment").textContent = paymentText(order);
@@ -54,9 +61,10 @@ async function load() {
   document.querySelector("#receiptPhone").textContent = order.recipientPhone || "-";
   document.querySelector("#receiptAddress").textContent = order.deliveryAddress || "-";
   document.querySelector("#receiptDeliveryZone").textContent = order.deliveryZoneLabel || "-";
-  document.querySelector("#receiptSubtotal").textContent = money(order.subtotalAmount ?? (Number(order.totalAmount || 0) - Number(order.deliveryFee || 0)));
-  document.querySelector("#receiptDeliveryFee").textContent = money(order.deliveryFee || 0);
-  document.querySelector("#receiptTotal").textContent = money(order.totalAmount);
+  const amounts = effectiveDeliveryAmounts(order);
+  document.querySelector("#receiptSubtotal").textContent = money(amounts.subtotal);
+  document.querySelector("#receiptDeliveryFee").textContent = money(amounts.deliveryFee);
+  document.querySelector("#receiptTotal").textContent = money(amounts.total);
   document.querySelector("#receiptItems").innerHTML = (order.items || []).filter(item => !item.cancelled).map(item => `
     <tr>
       <td class="receipt-item-name">${receiptItemName(item)}</td>
@@ -107,16 +115,16 @@ async function downloadReceipt() {
 
 saveButton.addEventListener("click", async () => {
   saveButton.disabled = true;
-  saveButton.textContent = "กำลังสร้างรูปใบสั่งซื้อ...";
+  saveButton.textContent = t("delivery.success.actions.creating_image");
   try {
     await downloadReceipt();
-    toast("ดาวน์โหลดใบสั่งซื้อแล้ว");
+    toast(t("delivery.success.actions.downloaded"));
   } catch (error) {
     console.error(error);
-    toast("ดาวน์โหลดใบสั่งซื้อไม่สำเร็จ กรุณาลองใหม่", "error");
+    toast(t("delivery.success.actions.download_failed"), "error");
   } finally {
     saveButton.disabled = false;
-    saveButton.textContent = "ดาวน์โหลดใบสั่งซื้อ";
+    saveButton.textContent = t("delivery.success.actions.download");
   }
 });
 

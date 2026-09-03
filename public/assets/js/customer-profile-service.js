@@ -8,6 +8,29 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 const GUEST_KEY = "food_order_guest_delivery_profile";
+const googleSettingsRef = doc(db, "platformSettings", "googleCustomerLogin");
+let googleCustomerLoginAvailable = true;
+
+async function loadGoogleCustomerLoginSetting() {
+  try {
+    const snapshot = await getDoc(googleSettingsRef);
+    if (!snapshot.exists()) {
+      googleCustomerLoginAvailable = true;
+      return googleCustomerLoginAvailable;
+    }
+    const settings = snapshot.data() || {};
+    googleCustomerLoginAvailable = settings.enabled === true && Boolean(String(settings.clientId || "").trim());
+    return googleCustomerLoginAvailable;
+  } catch (error) {
+    console.warn("[customer-profile] Google login settings unavailable", error);
+    googleCustomerLoginAvailable = true;
+    return googleCustomerLoginAvailable;
+  }
+}
+
+export function isCustomerAccountAvailable() {
+  return googleCustomerLoginAvailable;
+}
 
 function getGuestProfile() {
   const saved = localStorage.getItem(GUEST_KEY);
@@ -50,9 +73,18 @@ function applyStaffDeliveryState(staff) {
 
 export function watchCustomerAuth(callback) {
   return onAuthStateChanged(auth, async user => {
-    const staff = await getStaffSession(user).catch(() => null);
+    const [staff] = await Promise.all([
+      getStaffSession(user).catch(() => null),
+      loadGoogleCustomerLoginSetting(),
+    ]);
     await callback(staff ? null : user, staff);
     applyStaffDeliveryState(staff);
+    const googleLoginButton = document.querySelector("#googleLoginButton");
+    if (googleLoginButton && !staff && !user && !googleCustomerLoginAvailable) {
+      googleLoginButton.hidden = true;
+      googleLoginButton.disabled = true;
+      googleLoginButton.style.display = "none";
+    }
   });
 }
 
@@ -65,8 +97,16 @@ export async function getStaffSession(user = auth.currentUser) {
 }
 
 export async function loginCustomerWithGoogle() {
-  const staff = await getStaffSession();
+  const [staff, available] = await Promise.all([
+    getStaffSession(),
+    loadGoogleCustomerLoginSetting(),
+  ]);
   if (staff) throw new Error("STAFF_SESSION_ACTIVE");
+  if (!available) {
+    const error = new Error("GOOGLE_LOGIN_DISABLED");
+    error.code = "GOOGLE_LOGIN_DISABLED";
+    throw error;
+  }
 
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });

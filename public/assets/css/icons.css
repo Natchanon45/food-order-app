@@ -328,3 +328,50 @@ body[data-roles="cashier"] .order-actions .btn span {
   .user-menu-trigger .user-menu-chevron { display: none; }
   .user-menu-panel { min-width: min(250px, calc(100vw - 24px)); }
 }
+
+
+/* GLOBAL_ORDER_MENU_ADD_CIRCLE_20260903_237 */
+.order-delivery-workspace .menu-card {
+  position: relative;
+}
+.order-delivery-workspace .menu-card .menu-footer .menu-add-button {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  max-width: 44px !important;
+  max-height: 44px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transform: translateY(-50%);
+  touch-action: manipulation;
+}
+.order-delivery-workspace .menu-card .menu-footer .menu-add-button:hover,
+.order-delivery-workspace .menu-card .menu-footer .menu-add-button:focus,
+.order-delivery-workspace .menu-card .menu-footer .menu-add-button:active {
+  transform: translateY(-50%);
+}
+.order-delivery-workspace .menu-card .menu-footer .menu-add-button .bi {
+  margin: 0 !important;
+  font-size: 18px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* GLOBAL_USER_MENU_NAME_COLOR_20260903_240 */
+html body .app-header .user-menu .user-menu-trigger,
+html body .app-header .user-menu .user-menu-trigger-label,
+html body .user-menu-panel .user-menu-greeting {
+  color: #159447 !important;
+  font-weight: 600 !important;
+}
+html body .user-menu-panel .user-menu-greeting .user-menu-role {
+  color: #159447 !important;
+  font-weight: 500 !important;
+}

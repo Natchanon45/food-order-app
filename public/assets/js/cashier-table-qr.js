@@ -1,17 +1,19 @@
-import "./sweet-dialog.js?v=20260731-080";
-import "./cashier-table-close-guard.js?v=20260802-006";
-import { dataService, usingDemoMode } from "./data-service.js";
-import { toast } from "./ui.js?v=20260731-080";
+import "./sweet-dialog.js?v=20260726-034";
+import "./cashier-table-close-guard.js?v=20260812-122";
+import { dataService, usingDemoMode } from "./data-service.js?v=20260718-021";
+import { toast } from "./ui.js?v=20260805-081";
+import { qrDataUrl } from "./local-qr.js?v=20260722-037";
+import { t } from "./i18n.js?v=20260812-099";
 
 if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "/assets/css/sweet-dialog.css?v=20260629-048";
+  link.href = "/assets/css/sweet-dialog.css?v=20260726-034";
   document.head.appendChild(link);
 }
 
 if (usingDemoMode) {
-  document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง</div>';
+  document.querySelector("#demoBanner").innerHTML = `<div class="demo-banner">${t("cashier_documents.table_qr.demo")}</div>`;
 }
 
 const availableTables = document.querySelector("#availableTables");
@@ -23,6 +25,14 @@ const issuedQr = document.querySelector("#issuedQr");
 const qrPaperSize = document.querySelector("#qrPaperSize");
 let tables = [];
 let currentOrders = [];
+
+function closeTableButtonMarkup(label = t("cashier_documents.table_qr.close_table")) {
+  return `<i class="bi bi-door-closed app-icon" aria-hidden="true"></i><span>${label}</span>`;
+}
+
+function reprintTableButtonMarkup(label = t("cashier_documents.table_qr.reprint")) {
+  return `<i class="bi bi-printer app-icon" aria-hidden="true"></i><span>${label}</span>`;
+}
 
 async function askConfirm(message, options = {}) {
   if (typeof window.sweetConfirm === "function") return await window.sweetConfirm(message, options);
@@ -40,7 +50,14 @@ setPaperSize(qrPaperSize.value);
 qrPaperSize.addEventListener("change", () => setPaperSize(qrPaperSize.value));
 
 function buildQrImageUrl(value) {
-  return `https://quickchart.io/qr?text=${encodeURIComponent(value)}&size=320&margin=1`;
+  return qrDataUrl(value, { size: 320, margin: 4 });
+}
+
+function buildTableOrderUrl(tenantSlug, tableCode, token) {
+  const orderUrl = new URL(`/s/${encodeURIComponent(tenantSlug)}/order/`, location.origin);
+  orderUrl.searchParams.set("table", tableCode);
+  orderUrl.searchParams.set("token", token);
+  return orderUrl.toString();
 }
 
 function createOrderToken() {
@@ -63,11 +80,11 @@ function createOrderToken() {
 
 function qrErrorMessage(error) {
   const code = String(error?.code || error?.message || "UNKNOWN_ERROR");
-  if (code.includes("TABLE_HAS_UNPAID_ORDERS")) return "ยังมีออเดอร์หรือยังไม่ได้ชำระเงิน ไม่สามารถปิดโต๊ะได้";
-  if (code.includes("permission-denied")) return "ไม่มีสิทธิ์อัปเดตโต๊ะ กรุณา Deploy Firestore Rules ล่าสุด";
-  if (code.includes("TENANT_CONTEXT_REQUIRED") || code.includes("TENANT_NOT_RESOLVED")) return "ไม่พบข้อมูลร้าน กรุณาออกจากระบบแล้วเข้าสู่ระบบใหม่";
-  if (code.includes("not-found")) return "ไม่พบข้อมูลโต๊ะ กรุณารีเฟรชหน้าแล้วลองใหม่";
-  return `ออก QR ไม่สำเร็จ (${code})`;
+  if (code.includes("TABLE_HAS_UNPAID_ORDERS")) return t("cashier_documents.table_qr.unpaid_orders");
+  if (code.includes("permission-denied")) return t("cashier_documents.table_qr.permission_denied");
+  if (code.includes("TENANT_CONTEXT_REQUIRED") || code.includes("TENANT_NOT_RESOLVED")) return t("cashier_documents.table_qr.tenant_missing");
+  if (code.includes("not-found")) return t("cashier_documents.table_qr.table_not_found");
+  return t("cashier_documents.table_qr.qr_failed", { code });
 }
 
 function hasUnpaidTableOrders(table) {
@@ -89,34 +106,33 @@ async function loadTables() {
   const available = tables.filter(table => table.active !== false && (!table.status || table.status === "available"));
   const occupied = tables.filter(table => table.active !== false && table.status === "occupied" && table.orderToken);
 
-  availableCount.textContent = `${available.length} โต๊ะ`;
-  occupiedCount.textContent = `${occupied.length} โต๊ะ`;
+  availableCount.textContent = t("cashier_documents.table_qr.table_count", { count: available.length });
+  occupiedCount.textContent = t("cashier_documents.table_qr.table_count", { count: occupied.length });
 
   availableTables.innerHTML = available.length ? available.map(table => `
     <article class="card">
       <h2 style="margin-top:0">${table.name}</h2>
-      <div class="badge">โต๊ะว่าง</div>
-      <button class="btn btn-primary" data-issue-table="${table.id}" style="width:100%;margin-top:14px">ออก QR และพิมพ์</button>
+      <div class="badge">${t("cashier_documents.table_qr.status_available")}</div>
+      <button class="btn btn-primary" data-issue-table="${table.id}" style="width:100%;margin-top:14px">${t("cashier_documents.table_qr.issue_print")}</button>
     </article>
-  `).join("") : '<div class="card empty">ขณะนี้ไม่มีโต๊ะว่าง</div>';
+  `).join("") : `<div class="card empty">${t("cashier_documents.table_qr.no_available_tables")}</div>`;
 
   occupiedTables.innerHTML = occupied.length ? occupied.map(table => `
     <article class="card order-card">
       <h2 style="margin-top:0">${table.name}</h2>
-      <div class="badge warning">ออก QR แล้ว</div>
-      <p class="menu-category" style="margin-bottom:0">สามารถพิมพ์ซ้ำได้โดยใช้ QR เดิม หรือปิดโต๊ะเพื่อยกเลิก QR นี้</p>
+      <div class="badge warning">${t("cashier_documents.table_qr.status_issued")}</div>
+      <p class="menu-category" style="margin-bottom:0">${t("cashier_documents.table_qr.occupied_help")}</p>
       <div class="order-actions" style="margin-top:14px">
-        <button class="btn btn-dark" data-reprint-table="${table.id}">พิมพ์ QR ซ้ำ</button>
-        <button class="btn btn-danger" data-close-table="${table.id}"><i class="bi bi-door-closed" aria-hidden="true"></i><span>ปิดโต๊ะ</span></button>
+        <button class="btn btn-dark" data-reprint-table="${table.id}">${reprintTableButtonMarkup()}</button>
+        <button class="btn btn-danger" data-close-table="${table.id}">${closeTableButtonMarkup()}</button>
       </div>
     </article>
-  `).join("") : '<div class="card empty">ยังไม่มีโต๊ะที่ออก QR</div>';
+  `).join("") : `<div class="card empty">${t("cashier_documents.table_qr.no_issued_tables")}</div>`;
 }
 
 function renderTicket(table, token, autoPrint = true) {
   const tenant = dataService.getActiveShop();
-  const tenantSlug = encodeURIComponent(tenant.slug || "");
-  const orderUrl = `${location.origin}/s/${tenantSlug}/order/?table=${encodeURIComponent(table.code)}`;
+  const orderUrl = buildTableOrderUrl(tenant.slug || "", table.code || "", token || "");
   const qrUrl = buildQrImageUrl(orderUrl);
 
   issuedQr.innerHTML = `
@@ -124,20 +140,20 @@ function renderTicket(table, token, autoPrint = true) {
       <div class="qr-ticket">
         <div class="qr-ticket-header">
           <div class="qr-ticket-brand">FOOD ORDER QR</div>
-          <div class="qr-ticket-title">สแกนเพื่อสั่งอาหาร</div>
+          <div class="qr-ticket-title">${t("cashier_documents.table_qr.ticket_title")}</div>
           <div class="qr-ticket-table">${table.name}</div>
         </div>
         <div class="qr-ticket-rule"></div>
-        <div class="qr-ticket-code"><img src="${qrUrl}" width="260" height="260" alt="QR ${table.name}"></div>
+        <div class="qr-ticket-code"><img src="${qrUrl}" width="260" height="260" alt="${t("cashier_documents.table_qr.qr_alt", { table: table.name })}"></div>
         <div class="qr-ticket-rule"></div>
         <div class="qr-ticket-steps">
-          <div>1. เปิดกล้องโทรศัพท์</div>
-          <div>2. สแกน QR Code</div>
-          <div>3. เลือกเมนูและยืนยันออเดอร์</div>
+          <div>${t("cashier_documents.table_qr.ticket_step_camera")}</div>
+          <div>${t("cashier_documents.table_qr.ticket_step_scan")}</div>
+          <div>${t("cashier_documents.table_qr.ticket_step_order")}</div>
         </div>
-        <div class="qr-ticket-footer">QR นี้ใช้สำหรับ ${table.name} เท่านั้น<br>กรุณาตรวจสอบเลขโต๊ะก่อนสั่งอาหาร</div>
+        <div class="qr-ticket-footer">${t("cashier_documents.table_qr.ticket_footer", { table: table.name })}<br>${t("cashier_documents.table_qr.ticket_footer_check")}</div>
       </div>
-      <button class="btn btn-dark" id="printIssuedQr" style="margin-top:12px">พิมพ์อีกครั้ง</button>
+      <button class="btn btn-dark" id="printIssuedQr" style="margin-top:12px">${t("cashier_documents.table_qr.print_again")}</button>
     </article>
   `;
 
@@ -159,12 +175,12 @@ availableTables.addEventListener("click", async event => {
   if (!table) return;
 
   button.disabled = true;
-  button.textContent = "กำลังออก QR...";
+  button.textContent = t("cashier_documents.table_qr.issuing");
 
   try {
     const latestTable = await dataService.getTable(table.id);
     if (!latestTable || (latestTable.status && latestTable.status !== "available")) {
-      toast("โต๊ะนี้ไม่ว่างแล้ว กรุณารีเฟรชรายการ", "error");
+      toast(t("cashier_documents.table_qr.table_unavailable"), "error");
       await loadTables();
       return;
     }
@@ -184,7 +200,7 @@ availableTables.addEventListener("click", async event => {
     console.error("TABLE_QR_ISSUE_FAILED", error);
     toast(qrErrorMessage(error), "error");
     button.disabled = false;
-    button.textContent = "ออก QR และพิมพ์";
+    button.textContent = t("cashier_documents.table_qr.issue_print");
   }
 });
 
@@ -197,20 +213,20 @@ occupiedTables.addEventListener("click", async event => {
     const latestTable = await dataService.getTable(table.id);
     const targetTable = latestTable || table;
     if (hasUnpaidTableOrders(targetTable)) {
-      toast("ยังมีออเดอร์หรือยังไม่ได้ชำระเงิน ไม่สามารถปิดโต๊ะได้", "error");
+      toast(t("cashier_documents.table_qr.unpaid_orders"), "error");
       return;
     }
 
-    const ok = await askConfirm(`ยืนยันปิด ${table.name} ใช่หรือไม่?\n\nQR ใบเดิมจะใช้งานไม่ได้ และโต๊ะจะกลับเป็นโต๊ะว่าง`, {
-      title: "ปิดโต๊ะ",
-      confirmText: "ตกลง",
-      cancelText: "ยกเลิก",
+    const ok = await askConfirm(`${t("cashier_documents.table_qr.close_confirm_message", { table: table.name })}\n\n${t("cashier_documents.table_qr.close_confirm_warning")}`, {
+      title: t("cashier_documents.table_qr.close_confirm_title"),
+      confirmText: t("cashier.common.confirm"),
+      cancelText: t("cashier.common.cancel"),
       type: "warning"
     });
     if (!ok) return;
 
     closeButton.disabled = true;
-    closeButton.textContent = "กำลังปิดโต๊ะ...";
+    closeButton.innerHTML = closeTableButtonMarkup(t("cashier_documents.table_qr.closing"));
 
     try {
       await dataService.updateTable(table.id, {
@@ -220,13 +236,13 @@ occupiedTables.addEventListener("click", async event => {
         currentRound: 0,
         orderIds: []
       });
-      toast(`ปิด ${table.name} เรียบร้อยแล้ว`);
+      toast(t("cashier_documents.table_qr.close_success", { table: table.name }));
       await loadTables();
     } catch (error) {
       console.error("TABLE_CLOSE_FAILED", error);
       toast(qrErrorMessage(error), "error");
       closeButton.disabled = false;
-      closeButton.innerHTML = '<i class="bi bi-door-closed" aria-hidden="true"></i><span>ปิดโต๊ะ</span>';
+      closeButton.innerHTML = closeTableButtonMarkup();
     }
     return;
   }
@@ -234,12 +250,12 @@ occupiedTables.addEventListener("click", async event => {
   const button = event.target.closest("[data-reprint-table]");
   if (!button) return;
   button.disabled = true;
-  button.textContent = "กำลังเตรียม QR...";
+  button.innerHTML = reprintTableButtonMarkup(t("cashier_documents.table_qr.reprint_preparing"));
 
   try {
     const table = await dataService.getTable(button.dataset.reprintTable);
     if (!table || table.status !== "occupied" || !table.orderToken) {
-      toast("QR ของโต๊ะนี้หมดอายุหรือโต๊ะถูกปิดแล้ว", "error");
+      toast(t("cashier_documents.table_qr.expired"), "error");
       await loadTables();
       return;
     }
@@ -249,7 +265,7 @@ occupiedTables.addEventListener("click", async event => {
     toast(qrErrorMessage(error), "error");
   } finally {
     button.disabled = false;
-    button.textContent = "พิมพ์ QR ซ้ำ";
+    button.innerHTML = reprintTableButtonMarkup();
   }
 });
 

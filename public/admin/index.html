@@ -1,45 +1,51 @@
 <!doctype html>
 <html lang="th">
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
-    <meta name="theme-color" content="#159447" />
-    <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096" />
-    <link rel="stylesheet" href="/assets/css/admin-upload.css?v=20260623-10" />
-    <link
-      rel="stylesheet"
-      href="/assets/css/menu-pagination.css?v=20260623-10"
-    />
-    <link rel="stylesheet" href="/assets/css/admin-sort.css?v=20260623-10" />
-    <link rel="stylesheet" href="/assets/css/icons.css?v=20260731-079" />
-    <link
-      rel="stylesheet"
-      href="/assets/css/admin-mobile-table.css?v=20260704-007"
-    />
-    <link
-      rel="stylesheet"
-      href="/assets/css/admin-workspace.css?v=20260731-080"
-    />
-    <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-095" />
-    <title>จัดการระบบ</title>
-    <link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260731-079">
-  <link rel="stylesheet" href="/assets/css/admin-workspace-refresh.css?v=20260803-001" data-admin-workspace-refresh="style" data-build="20260803-001" />
-  <link rel="stylesheet" href="/assets/css/admin-workspace-refinement.css?v=20260803-003" data-admin-workspace-refinement="style" data-build="20260803-002" />
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#159447">
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
+<link rel="stylesheet" href="/assets/css/admin-upload.css?v=20260623-10">
+<link rel="stylesheet" href="/assets/css/menu-pagination.css?v=20260623-10">
+<link rel="stylesheet" href="/assets/css/admin-sort.css?v=20260623-10">
+<link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240">
+<link rel="stylesheet" href="/assets/css/admin-mobile-table.css?v=20260811-095">
+<link rel="stylesheet" href="/assets/css/admin-workspace.css?v=20260811-090">
+<link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-095">
+<link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260731-079">
+<link rel="stylesheet" href="/assets/css/admin-retail-pos-parity.css?v=20260805-085" data-retail-pos-parity="admin-style">
+<link rel="stylesheet" href="/assets/css/admin-modal-retail-pos-parity.css?v=20260805-089" data-admin-modal-retail-pos-parity="style">
+<link rel="stylesheet" href="/assets/css/admin-delivery-fee-row-alignment.css?v=20260811-094" data-delivery-fee-row-alignment="1">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="/assets/css/admin-store-location.css?v=20260827-002">
+<link rel="stylesheet" href="/assets/css/admin-delivery-providers.css?v=20260827-002">
+<link rel="stylesheet" href="/assets/css/admin-delivery-promotions.css?v=20260827-001">
+  <link rel="stylesheet" href="/assets/css/i18n.css?v=20260903-202">
+  <link rel="stylesheet" href="/assets/css/admin-workspace-refresh.css?v=20260803-001" data-admin-workspace-refresh="style" data-build="20260803-001">
+  <link rel="stylesheet" href="/assets/css/admin-workspace-refinement.css?v=20260803-003" data-admin-workspace-refinement="style" data-build="20260803-002">
+  <title>จัดการระบบ</title>
 </head>
-  <body class="order-delivery-workspace admin-vr-page admin-vr-dashboard" data-roles="admin" data-admin-workspace-refresh="1">
-    <div id="demoBanner"></div>
-    <header class="app-header">
-      <div class="brand"><span class="brand-mark">FOD</span>จัดการระบบ</div>
-    </header>
+<body class="order-delivery-workspace admin-vr-page admin-vr-dashboard" data-roles="admin" data-admin-workspace-refresh="1">
+<header class="app-header">
+  <div class="brand"><span class="brand-mark">FOD</span>จัดการระบบ</div>
+  <div class="app-locale-switcher" data-static-locale-switcher>
+  <details class="app-locale-menu" data-locale-menu>
+    <summary class="app-locale-trigger" aria-label="เลือกภาษา" title="Language"><i class="bi bi-globe2" aria-hidden="true"></i><span class="visually-hidden">Language</span></summary>
+    <div class="app-locale-menu__panel" role="menu" aria-label="Language">
+      <button type="button" class="app-locale-option" data-locale-option="th" lang="th" role="menuitemradio" aria-checked="true"><span>ไทย</span><i class="bi bi-check-lg" aria-hidden="true"></i></button>
+      <button type="button" class="app-locale-option" data-locale-option="en" lang="en" role="menuitemradio" aria-checked="false"><span>English</span><i class="bi bi-check-lg" aria-hidden="true"></i></button>
+    </div>
+  </details>
+</div>
+</header>
+<div id="demoBanner"></div>
+
     <main class="container">
       <section class="hero">
         <h1>จัดการร้าน</h1>
         <p>ตั้งค่าร้าน การรับชำระ ค่าจัดส่ง เมนู รูปอาหาร และโต๊ะ</p>
       </section>
-      <section class="card" style="margin-bottom: 16px">
+      <section class="card" style="margin-bottom: 16px" data-admin-card-role="sales-report">
         <div class="section-title" style="margin: 0; align-items: center">
           <div>
             <h2>รายงานยอดขาย</h2>
@@ -47,55 +53,330 @@
               ดูยอดขายรายวัน รายเดือน รายปี แยกตามใบเสร็จ
             </div>
           </div>
-          <a class="btn btn-primary" href="/admin/sales-report"
-            ><i class="bi bi-eye app-icon" aria-hidden="true"></i
-            ><span>รายงาน</span></a
-          >
+          <a class="btn btn-primary" href="/admin/sales-report"><i class="bi bi-eye app-icon" aria-hidden="true"></i><span>รายงาน</span></a>
         </div>
       </section>
       <section class="card" style="margin-bottom: 16px">
         <div class="section-title"><h2>ข้อมูลร้านและการรับชำระ</h2></div>
         <form id="storeForm" class="grid">
           <div class="field">
-            <label>ชื่อร้าน</label
-            ><input class="input" id="shopName" required />
+            <label>ชื่อร้าน</label><input class="input" id="shopName" required>
           </div>
           <div class="field">
-            <label>ที่อยู่ร้าน</label
-            ><textarea class="input" id="shopAddress" required></textarea>
+            <label>ที่อยู่ร้าน</label><textarea class="input" id="shopAddress" required></textarea>
           </div>
           <div class="field">
-            <label>เบอร์โทรร้าน</label
-            ><input class="input" id="shopPhone" type="tel" />
+            <label>เบอร์โทรร้าน</label><input class="input" id="shopPhone" type="tel">
+          </div>
+
+          <section class="admin-store-location">
+            <div class="admin-store-location-head">
+              <div>
+                <h3>ตำแหน่งร้าน</h3>
+                <div class="menu-category">
+                  ใช้เป็นจุดเริ่มต้นสำหรับคำนวณระยะทาง Delivery
+                </div>
+              </div>
+
+              <button
+                class="btn btn-sm"
+                id="adminUseCurrentLocation"
+                type="button"
+              >
+                <i class="bi bi-crosshair app-icon" aria-hidden="true"></i>
+                <span>ใช้ตำแหน่งปัจจุบัน</span>
+              </button>
+            </div>
+
+            <div
+              id="adminStoreLocationMap"
+              class="admin-store-location-map"
+              aria-label="ตำแหน่งร้าน"
+            ></div>
+
+            <div class="admin-store-location-footer">
+              <span id="adminStoreLocationStatus">
+                ยังไม่ได้กำหนดตำแหน่งร้าน
+              </span>
+
+              <span id="adminStoreLocationCoordinates"></span>
+            </div>
+
+            <input type="hidden" id="storeLatitude">
+            <input type="hidden" id="storeLongitude">
+          </section>
+
+          <div class="grid grid-2">
+            <div class="field">
+              <label>เลขพร้อมเพย์</label><input class="input" id="promptPayId" inputmode="numeric">
+            </div>
+            <div class="field">
+              <label>ชื่อบัญชีพร้อมเพย์</label><input class="input" id="promptPayName">
+            </div>
           </div>
           <div class="grid grid-2">
             <div class="field">
-              <label>เลขพร้อมเพย์</label
-              ><input class="input" id="promptPayId" inputmode="numeric" />
+              <label>ธนาคาร</label><input class="input" id="bankName">
             </div>
             <div class="field">
-              <label>ชื่อบัญชีพร้อมเพย์</label
-              ><input class="input" id="promptPayName" />
-            </div>
-          </div>
-          <div class="grid grid-2">
-            <div class="field">
-              <label>ธนาคาร</label><input class="input" id="bankName" />
-            </div>
-            <div class="field">
-              <label>เลขบัญชี</label
-              ><input
-                class="input"
-                id="bankAccountNumber"
-                inputmode="numeric"
-              />
+              <label>เลขบัญชี</label><input class="input" id="bankAccountNumber" inputmode="numeric">
             </div>
           </div>
           <div class="field">
-            <label>ชื่อบัญชีธนาคาร</label
-            ><input class="input" id="bankAccountName" />
+            <label>ชื่อบัญชีธนาคาร</label><input class="input" id="bankAccountName">
           </div>
-          <div class="card" style="box-shadow: none; background: #f8fbf9">
+          <div class="card admin-delivery-settings-card" style="box-shadow: none; background: #f8fbf9">
+            <div class="section-title" style="margin-top: 0">
+              <div>
+                <h2>การจัดส่ง</h2>
+                <div class="menu-category">
+                    ตั้งค่าสำหรับการรับส่งสินค้าของร้าน
+</div>
+              </div>
+            </div>
+
+            <div class="grid grid-2">
+              <div class="field">
+                <label>รูปแบบการจัดส่ง</label>
+                <select id="deliveryProvider" hidden>
+                  <option value="self" selected>self</option>
+                </select>
+
+                <div
+                  class="admin-delivery-provider-options"
+                  id="deliveryProviderOptions"
+                >
+                  <div
+                    class="admin-delivery-provider-card is-active"
+                    data-delivery-provider-card="self"
+                  >
+                    <div class="admin-delivery-provider-icon">
+                      <i class="bi bi-shop" aria-hidden="true"></i>
+                    </div>
+
+                    <div class="admin-delivery-provider-content">
+                      <div class="admin-delivery-provider-title-row">
+                        <strong>ร้านค้าจัดส่งเอง</strong>
+                        <span class="admin-delivery-provider-badge is-active">
+                          เปิดใช้งาน
+                        </span>
+                      </div>
+
+                      <div class="admin-delivery-provider-description">
+                          ร้านจัดส่งสินค้าเอง ระบบจะคำนวณระยะทางจากพิกัดร้านไปยังพิกัดจัดส่งของลูกค้า
+</div>
+                    </div>
+
+                    <div class="admin-delivery-provider-check">
+                      <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                    </div>
+                  </div>
+
+                  <div
+                    class="admin-delivery-provider-card is-disabled"
+                    data-delivery-provider-card="lalamove"
+                    aria-disabled="true"
+                  >
+                    <div class="admin-delivery-provider-icon">
+                      <i class="bi bi-truck" aria-hidden="true"></i>
+                    </div>
+
+                    <div class="admin-delivery-provider-content">
+                      <div class="admin-delivery-provider-title-row">
+                        <strong>Lalamove</strong>
+                        <span class="admin-delivery-provider-badge is-disabled">
+                          ยังไม่เปิดใช้งาน
+                        </span>
+                      </div>
+
+                      <div class="admin-delivery-provider-description">
+                          เชื่อมต่อบริการจัดส่งผ่าน Lalamove API ระบบส่วนนี้จะเปิดใช้งานหลังจากตั้งค่า API เรียบร้อย
+</div>
+                    </div>
+
+                    <div class="admin-delivery-provider-lock">
+                      <i class="bi bi-lock-fill" aria-hidden="true"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field">
+                <label>ระยะทางสูงสุดที่รับจัดส่ง (กม.)</label>
+                <input
+                  class="input"
+                  id="deliveryMaxDistanceKm"
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value="10"
+                >
+              </div>
+            </div>
+
+            <div class="menu-category admin-delivery-distance-note">
+              ระบบจะคำนวณระยะทางจากพิกัดร้านไปยังพิกัดที่ลูกค้าปักหมุด
+            </div>
+          </div>
+
+
+              <!-- DELIVERY_PROMOTION_ADMIN_20260827_001 -->
+              <section
+                class="admin-delivery-promotion"
+                id="deliveryPromotionSettings"
+              >
+                <div class="admin-delivery-promotion-head">
+                  <div>
+                    <h3>
+                      <i class="bi bi-gift" aria-hidden="true"></i>
+                      โปรโมชั่นการจัดส่ง
+                    </h3>
+                    <p>
+                      ตั้งค่าส่งฟรีและของแถมสำหรับคำสั่งซื้อ Delivery
+                    </p>
+                  </div>
+                  <span class="admin-delivery-promotion-badge">
+                      Delivery
+</span>
+                </div>
+
+                <div class="admin-delivery-promotion-block">
+                  <label class="admin-promotion-toggle">
+                    <input
+                      type="checkbox"
+                      id="deliveryFreeShippingEnabled"
+                    >
+                    <span class="admin-promotion-toggle-ui"></span>
+                    <span>
+                      <strong>ส่งฟรีเมื่อยอดถึงขั้นต่ำ</strong>
+                      <small>
+                        หากยอดอาหารถึงที่กำหนด ระบบจะไม่คิดค่าจัดส่งตามระยะทาง
+                      </small>
+                    </span>
+                  </label>
+
+                  <div class="admin-promotion-fields">
+                    <div class="field">
+                      <label for="deliveryFreeShippingMinimumSubtotal">
+                        ยอดขั้นต่ำส่งฟรี
+                      </label>
+                      <div class="admin-promotion-money-input">
+                        <input
+                          class="input"
+                          id="deliveryFreeShippingMinimumSubtotal"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value="500"
+                        >
+                        <span>บาท</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="admin-delivery-promotion-block">
+                  <label class="admin-promotion-toggle">
+                    <input
+                      type="checkbox"
+                      id="deliveryFreeGiftEnabled"
+                    >
+                    <span class="admin-promotion-toggle-ui"></span>
+                    <span>
+                      <strong>โปรโมชั่นของแถมสำหรับ Delivery</strong>
+                      <small>
+                        ลูกค้าสามารถเลือกของแถมจากรายการที่ร้านกำหนด
+                      </small>
+                    </span>
+                  </label>
+
+                  <div
+                    class="admin-promotion-fields admin-promotion-fields-three"
+                  >
+                    <div class="field">
+                      <label for="deliveryFreeGiftMaxSelectableItems">
+                        เลือกของแถมได้สูงสุด
+                      </label>
+                      <div class="admin-promotion-number-input">
+                        <input
+                          class="input"
+                          id="deliveryFreeGiftMaxSelectableItems"
+                          type="number"
+                          min="1"
+                          max="20"
+                          step="1"
+                          value="1"
+                        >
+                        <span>รายการ</span>
+                      </div>
+                    </div>
+
+                    <div class="field">
+                      <label for="deliveryFreeGiftValidFrom">
+                        เริ่มโปรโมชั่น
+                      </label>
+                      <input
+                        class="input"
+                        id="deliveryFreeGiftValidFrom"
+                        type="date"
+                      >
+                      <small class="admin-promotion-help">
+                        เว้นว่าง = เริ่มใช้งานทันที
+                      </small>
+                    </div>
+
+                    <div class="field">
+                      <label for="deliveryFreeGiftValidUntil">
+                        ใช้โปรโมชั่นถึงวันที่
+                      </label>
+                      <input
+                        class="input"
+                        id="deliveryFreeGiftValidUntil"
+                        type="date"
+                      >
+                      <small class="admin-promotion-help">
+                        ใช้ได้จนถึง 23:59:59 ของวันที่กำหนด
+                      </small>
+                    </div>
+                  </div>
+
+                  <div class="admin-promotion-gifts">
+                    <div class="admin-promotion-gifts-head">
+                      <div>
+                        <strong>รายการของแถม</strong>
+                        <small>
+                          เลือกเมนูที่ลูกค้าสามารถเลือกรับเป็นของแถม
+                        </small>
+                      </div>
+
+                      <span
+                        class="badge"
+                        id="deliveryFreeGiftSelectedCount"
+                      >
+                          0 รายการ
+</span>
+                    </div>
+
+                    <div
+                      class="admin-promotion-gift-list"
+                      id="deliveryFreeGiftMenuList"
+                    >
+                      <div class="admin-promotion-empty">
+                        กำลังโหลดรายการเมนู...
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="admin-delivery-promotion-note">
+                  <i class="bi bi-shield-check" aria-hidden="true"></i>
+                  <span>
+                      ขั้นตอนถัดไป Backend จะเป็นผู้ตรวจสอบยอดขั้นต่ำ วันโปรโมชั่น และรายการของแถมอีกครั้งก่อนสร้าง Order
+</span>
+                </div>
+              </section>
+
+<div class="card" style="box-shadow: none; background: #f8fbf9">
             <div class="section-title delivery-fee-head" style="margin-top: 0">
               <div>
                 <h2>ค่าจัดส่ง Delivery</h2>
@@ -103,11 +384,7 @@
                   กำหนดชื่อตัวเลือกและราคาที่ลูกค้าเลือกเองในหน้า Delivery
                 </div>
               </div>
-              <button
-                class="btn btn-primary btn-sm"
-                id="addDeliveryFeeOption"
-                type="button"
-              >
+              <button class="btn btn-primary btn-sm" id="addDeliveryFeeOption" type="button">
                 <i class="bi bi-plus-lg app-icon" aria-hidden="true"></i>
                 <span>เพิ่มตัวเลือกค่าส่ง</span>
               </button>
@@ -120,43 +397,23 @@
       <section class="card admin-entity-form-card" data-admin-entity-form="menu">
         <div class="section-title"><h2>เพิ่ม/แก้ไขเมนู</h2></div>
         <form id="menuForm" class="grid">
-          <input type="hidden" id="menuId" /><input
-            type="hidden"
-            id="menuImage"
-          /><input type="hidden" id="menuImagePath" />
+          <input type="hidden" id="menuId"><input type="hidden" id="menuImage"><input type="hidden" id="menuImagePath">
           <div class="field">
-            <label>ชื่อเมนู</label
-            ><input class="input" id="menuName" required />
+            <label>ชื่อเมนู</label><input class="input" id="menuName" required>
           </div>
           <div class="grid grid-2">
             <div class="field">
-              <label>หมวดหมู่</label
-              ><input class="input" id="menuCategory" required />
+              <label>หมวดหมู่</label><input class="input" id="menuCategory" required>
             </div>
             <div class="field">
-              <label>ราคา</label
-              ><input
-                class="input"
-                id="menuPrice"
-                type="number"
-                min="0"
-                step="0.01"
-                required
-              />
+              <label>ราคา</label><input class="input" id="menuPrice" type="number" min="0" step="0.01" required>
             </div>
           </div>
           <div class="field">
             <label>รูปอาหาร</label>
             <div class="upload-dropzone" id="menuImageDropzone">
-              <input
-                id="menuImageFile"
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
-              />
-              <div
-                class="upload-dropzone-content"
-                id="menuImageDropzoneContent"
-              >
+              <input id="menuImageFile" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif">
+              <div class="upload-dropzone-content" id="menuImageDropzoneContent">
                 <div class="upload-dropzone-icon">+</div>
                 <div class="upload-dropzone-title">
                   แตะเพื่อเลือกรูป หรือลากรูปมาวาง
@@ -166,113 +423,40 @@
                 </div>
               </div>
               <div class="upload-preview" id="menuImagePreviewWrap" hidden>
-                <img id="menuImagePreview" alt="ตัวอย่างรูปอาหาร" />
+                <img id="menuImagePreview" alt="ตัวอย่างรูปอาหาร">
                 <div class="upload-file-meta">
-                  <span id="menuImageFileName">-</span
-                  ><span id="menuImageFileSize">-</span>
+                  <span id="menuImageFileName">-</span><span id="menuImageFileSize">-</span>
                 </div>
               </div>
             </div>
             <div class="upload-error" id="menuImageError" hidden></div>
-            <button
-              type="button"
-              class="btn btn-danger btn-sm"
-              id="removeMenuImage"
-              hidden
-            >
+            <button type="button" class="btn btn-danger btn-sm" id="removeMenuImage" hidden>
               ลบรูป
             </button>
           </div>
-          <label
-            ><input type="checkbox" id="menuActive" checked /> เปิดขาย</label
-          ><button class="btn btn-primary" id="saveMenuButton">
+          <label><input type="checkbox" id="menuActive" checked> เปิดขาย</label><button class="btn btn-primary" id="saveMenuButton">
             บันทึกเมนู
           </button>
         </form>
       </section>
       <section class="card admin-entity-form-card admin-table-card" data-admin-entity-form="table">
         <div class="section-title"><h2>เพิ่มโต๊ะ</h2></div>
-        <a href="/admin/qr" class="btn btn-dark btn-sm admin-table-qr-action"
-          ><i class="bi bi-qr-code app-icon" aria-hidden="true"></i
-          ><span>ออก QR โต๊ะ</span></a
-        >
         <form id="tableForm" class="grid">
-          <input type="hidden" id="tableId" />
+          <input type="hidden" id="tableId">
           <div class="field">
-            <label>รหัสโต๊ะ</label
-            ><input class="input" id="tableCode" placeholder="A01" required />
+            <label>รหัสโต๊ะ</label><input class="input" id="tableCode" placeholder="A01" required>
           </div>
           <div class="field">
-            <label>ชื่อโต๊ะ</label
-            ><input
-              class="input"
-              id="tableName"
-              placeholder="โต๊ะ A01"
-              required
-            />
+            <label>ชื่อโต๊ะ</label><input class="input" id="tableName" placeholder="โต๊ะ A01" required>
           </div>
           <div class="field">
             <label for="tableCapacity">จำนวนที่นั่ง</label>
-            <input
-              class="input"
-              id="tableCapacity"
-              type="number"
-              min="1"
-              max="100"
-              step="1"
-              value="4"
-              inputmode="numeric"
-              required
-            />
+            <input class="input" id="tableCapacity" type="number" min="1" max="100" step="1" value="4" inputmode="numeric" required>
             <small>ใช้จัดคิวรอโต๊ะและแนะนำโต๊ะตามจำนวนลูกค้า</small>
           </div>
-          <label
-            ><input type="checkbox" id="tableActive" checked />
-            เปิดใช้งาน</label
-          ><button class="btn btn-primary">บันทึกโต๊ะ</button>
+          <label><input type="checkbox" id="tableActive" checked>
+            เปิดใช้งาน</label><button class="btn btn-primary">บันทึกโต๊ะ</button>
         </form>
-      </section>
-      <section class="card" style="margin-top: 16px">
-        <div class="section-title">
-          <div>
-            <h2>จัดลำดับการแสดงเมนู</h2>
-            <div class="menu-category">
-              ลากจากสัญลักษณ์ ⋮⋮ เพื่อจัดลำดับหมวดและเมนู
-              รองรับทั้งเมาส์และมือถือ
-            </div>
-          </div>
-        </div>
-        <div class="sort-manager">
-          <div class="sort-panel">
-            <div class="sort-panel-head">
-              <strong>ลำดับหมวดหมู่</strong
-              ><button
-                type="button"
-                class="btn btn-primary btn-sm"
-                id="saveCategoryOrder"
-              >
-                บันทึกลำดับหมวด
-              </button>
-            </div>
-            <div id="categorySortList" class="sort-list"></div>
-          </div>
-          <div class="sort-panel">
-            <div class="sort-panel-head">
-              <div>
-                <strong>ลำดับเมนูในหมวด</strong>
-                <div class="menu-category" id="selectedSortCategory">-</div>
-              </div>
-              <button
-                type="button"
-                class="btn btn-primary btn-sm"
-                id="saveItemOrder"
-              >
-                บันทึกลำดับเมนู
-              </button>
-            </div>
-            <div id="itemSortList" class="sort-list"></div>
-          </div>
-        </div>
       </section>
       <section class="card" style="margin-top: 16px">
         <div class="section-title"><h2>รายการสินค้า/อาหาร</h2></div>
@@ -282,17 +466,13 @@
           </button>
         </div>
         <div class="grid grid-2" style="margin-bottom: 12px">
-          <input
-            class="input"
-            id="menuListSearch"
-            placeholder="ค้นหาชื่อเมนูหรือหมวดหมู่..."
-          /><select class="input" id="menuListStatus">
+          <input class="input" id="menuListSearch" placeholder="ค้นหาชื่อเมนูหรือหมวดหมู่..."><select class="input" id="menuListStatus">
             <option value="all">ทุกสถานะ</option>
             <option value="active">เปิดขาย</option>
             <option value="inactive">ปิดขาย</option>
           </select>
         </div>
-        <div style="overflow: auto">
+        <div class="admin-table-scroll admin-menu-table-scroll" data-horizontal-scroll="true">
           <table class="table-list">
             <thead>
               <tr>
@@ -307,12 +487,39 @@
             <tbody id="menuRows"></tbody>
           </table>
         </div>
-        <nav
-          id="menuListPagination"
-          class="menu-pagination"
-          aria-label="แบ่งหน้ารายการสินค้า"
-          hidden
-        ></nav>
+        <nav id="menuListPagination" class="menu-pagination" aria-label="แบ่งหน้ารายการสินค้า" hidden></nav>
+      </section>
+      <section class="card" style="margin-top: 16px">
+        <div class="section-title">
+          <div>
+            <h2>จัดลำดับการแสดงเมนู</h2>
+            <div class="menu-category">
+              ลากจากสัญลักษณ์ ⋮⋮ เพื่อจัดลำดับหมวดและเมนู รองรับทั้งเมาส์และมือถือ
+            </div>
+          </div>
+        </div>
+        <div class="sort-manager">
+          <div class="sort-panel">
+            <div class="sort-panel-head">
+              <strong>ลำดับหมวดหมู่</strong><button type="button" class="btn btn-primary btn-sm" id="saveCategoryOrder">
+                บันทึกลำดับหมวด
+              </button>
+            </div>
+            <div id="categorySortList" class="sort-list"></div>
+          </div>
+          <div class="sort-panel">
+            <div class="sort-panel-head">
+              <div>
+                <strong>ลำดับเมนูในหมวด</strong>
+                <div class="menu-category" id="selectedSortCategory">-</div>
+              </div>
+              <button type="button" class="btn btn-primary btn-sm" id="saveItemOrder">
+                บันทึกลำดับเมนู
+              </button>
+            </div>
+            <div id="itemSortList" class="sort-list"></div>
+          </div>
+        </div>
       </section>
       <section class="card" style="margin-top: 16px">
         <div class="section-title"><h2>จัดการโต๊ะ</h2></div>
@@ -323,17 +530,13 @@
           </button>
         </div>
         <div class="grid grid-2" style="margin-bottom: 12px">
-          <input
-            class="input"
-            id="tableListSearch"
-            placeholder="ค้นหารหัสหรือชื่อโต๊ะ..."
-          /><select class="input" id="tableListStatus">
+          <input class="input" id="tableListSearch" placeholder="ค้นหารหัสหรือชื่อโต๊ะ..."><select class="input" id="tableListStatus">
             <option value="all">ทุกสถานะ</option>
             <option value="active">เปิดใช้งาน</option>
             <option value="inactive">ปิดใช้งาน</option>
           </select>
         </div>
-        <div style="overflow: auto">
+        <div class="admin-table-scroll admin-table-list-scroll" data-horizontal-scroll="true">
           <table class="table-list">
             <thead>
               <tr>
@@ -347,53 +550,30 @@
             <tbody id="tableRows"></tbody>
           </table>
         </div>
-        <nav
-          id="tableListPagination"
-          class="menu-pagination"
-          aria-label="แบ่งหน้ารายการโต๊ะ"
-          hidden
-        ></nav>
+        <nav id="tableListPagination" class="menu-pagination" aria-label="แบ่งหน้ารายการโต๊ะ" hidden></nav>
       </section>
     </main>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
-    <script type="module" src="/assets/js/page-guard.js?v=20260802-104"></script>
-    <script
-      type="module"
-      src="/assets/js/sweet-dialog.js?v=20260731-080"
-    ></script>
-    <script type="module" src="/assets/js/admin.js?v=20260802-106"></script>
-    <script
-      type="module"
-      src="/assets/js/admin-status-icons.js?v=20260802-032"
-    ></script>
-    <script
-      type="module"
-      src="/assets/js/admin-delivery-qr.js?v=20260708-027"
-    ></script>
-    <script
-      type="module"
-      src="/assets/js/admin-payment.js?v=20260713-005"
-    ></script>
-    <script
-      type="module"
-      src="/assets/js/admin-list-pagination.js?v=20260802-105"
-    ></script>
-    <script
-      type="module"
-      src="/assets/js/admin-sort.js?v=20260713-005"
-    ></script>
-    <script
-      type="module"
-      src="/assets/js/admin-mobile-table.js?v=20260802-008"
-    ></script>
-    <script
-      type="module"
-      src="/assets/js/admin-workspace.js?v=20260731-080"
-    ></script>
-    <script
-      type="module"
-      src="/assets/js/admin-icon-polish.js?v=20260803-004"
-    ></script>
-    <script type="module" src="/assets/js/admin-workspace-refresh.js?v=20260803-004" data-admin-workspace-refresh="script" data-build="20260803-001"></script>
+<script type="module" src="/assets/js/admin-i18n-bootstrap.js?v=20260903-203"></script>
+<script type="module" src="/assets/js/locale-switcher-static.js?v=20260903-202"></script>
+<script type="module" src="/assets/js/user-menu-i18n-static.js?v=20260903-202"></script>
+<script type="module" src="/assets/js/admin-workspace-refresh-retail-pos-parity.js?v=20260903-203" data-retail-pos-safe-decorator="1"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<script type="module" src="/assets/js/page-guard.js?v=20260903-201"></script>
+<script type="module" src="/assets/js/sweet-dialog.js?v=20260731-080"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="module" src="/assets/js/admin-leaflet-layout-fix.js?v=20260903-203"></script>
+<script type="module" src="/assets/js/admin.js?v=20260903-203"></script>
+<script type="module" src="/assets/js/admin-status-icons.js?v=20260903-203"></script>
+<script type="module" src="/assets/js/admin-delivery-qr.js?v=20260903-203"></script>
+<script type="module" src="/assets/js/admin-qr-session-recovery.js?v=20260903-203"></script>
+<script type="module" src="/assets/js/admin-payment.js?v=20260903-203"></script>
+<script type="module" src="/assets/js/admin-list-pagination.js?v=20260903-203"></script>
+<script type="module" src="/assets/js/horizontal-scroll-restore.js?v=20260629-044"></script>
+<script type="module" src="/assets/js/admin-sort.js?v=20260903-203"></script>
+<script type="module" src="/assets/js/admin-mobile-table.js?v=20260903-203"></script>
+<script type="module" src="/assets/js/admin-workspace.js?v=20260903-203"></script>
+<script type="module" src="/assets/js/admin-icon-polish.js?v=20260903-203"></script>
+<script type="module" src="/assets/js/admin-modal-retail-pos-parity.js?v=20260903-203" data-admin-modal-retail-pos-parity="script"></script>
+<script type="module" src="/assets/js/admin-workspace-refresh.js?v=20260803-004" data-admin-workspace-refresh="script" data-build="20260803-001"></script>
 </body>
 </html>

@@ -5,82 +5,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#159447">
   <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
-  <link rel="stylesheet" href="/assets/css/icons.css?v=20260731-079">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240">
   <link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260731-079">
-  <link rel="stylesheet" href="/assets/css/admin-users.css?v=20260731-090">
+  <link rel="stylesheet" href="/assets/css/admin-users.css?v=20260903-205">
+  <link rel="stylesheet" href="/assets/css/i18n.css?v=20260903-202">
   <title>จัดการพนักงาน</title>
 </head>
 <body class="order-delivery-workspace admin-users-page" data-roles="owner,super_admin">
   <header class="app-header">
-    <div class="brand"><span class="brand-mark">FO</span>จัดการพนักงาน</div>
-    <a class="btn btn-sm" href="/admin">กลับหน้าจัดการร้าน</a>
+    <div class="brand"><span class="brand-mark">FO</span><span data-i18n="admin_users.header.title">จัดการพนักงาน</span></div>
+    <a class="btn btn-sm" href="/admin"><span data-i18n="admin_users.header.back">กลับหน้าจัดการร้าน</span></a>
+    <div class="app-locale-switcher" data-static-locale-switcher>
+      <details class="app-locale-menu" data-locale-menu>
+        <summary class="app-locale-trigger" aria-label="เลือกภาษา" title="Language"><i class="bi bi-globe2" aria-hidden="true"></i><span class="visually-hidden">Language</span></summary>
+        <div class="app-locale-menu__panel" role="menu" aria-label="Language">
+          <button type="button" class="app-locale-option" data-locale-option="th" lang="th" role="menuitemradio" aria-checked="true"><span>ไทย</span><i class="bi bi-check-lg" aria-hidden="true"></i></button>
+          <button type="button" class="app-locale-option" data-locale-option="en" lang="en" role="menuitemradio" aria-checked="false"><span>English</span><i class="bi bi-check-lg" aria-hidden="true"></i></button>
+        </div>
+      </details>
+    </div>
   </header>
-
   <main class="container">
     <section class="hero staff-hero">
       <div>
-        <span class="staff-hero-kicker"><i class="bi bi-people" aria-hidden="true"></i> ทีมงานของร้าน</span>
-        <h1>พนักงานของร้าน</h1>
-        <p>เพิ่มพนักงาน กำหนดหน้าที่ และควบคุมการเข้าใช้งานเฉพาะร้านของคุณ</p>
+        <span class="staff-hero-kicker"><i class="bi bi-people" aria-hidden="true"></i><span data-i18n="admin_users.hero.kicker">ทีมงานของร้าน</span></span>
+        <h1 data-i18n="admin_users.hero.title">พนักงานของร้าน</h1>
+        <p data-i18n="admin_users.hero.description">เพิ่มพนักงาน กำหนดหน้าที่ และควบคุมการเข้าใช้งานเฉพาะร้านของคุณ</p>
       </div>
-      <button class="btn staff-create-trigger" id="openCreateUserModal" type="button">
-        <i class="bi bi-person-plus" aria-hidden="true"></i><span>เพิ่มพนักงาน</span>
-      </button>
+      <button class="btn staff-create-trigger" id="openCreateUserModal" type="button"><i class="bi bi-person-plus" aria-hidden="true"></i><span data-i18n="admin_users.hero.add">เพิ่มพนักงาน</span></button>
     </section>
-
     <section class="card staff-list-card">
       <div class="section-title staff-list-heading">
-        <div>
-          <h2>รายการพนักงาน</h2>
-          <p>แก้ไขชื่อ สิทธิ์ และสถานะการใช้งานได้จากรายการด้านล่าง</p>
-        </div>
+        <div><h2 data-i18n="admin_users.list.title">รายการพนักงาน</h2><p data-i18n="admin_users.list.description">แก้ไขชื่อ สิทธิ์ ระบบที่เข้าใช้งาน และสถานะได้จากรายการด้านล่าง</p></div>
         <span class="badge" id="userCount">0 คน</span>
       </div>
       <div class="user-table-scroll">
         <table class="table-list user-table">
-          <thead><tr><th>ชื่อ</th><th>อีเมล</th><th>สิทธิ์</th><th>เปิดใช้งาน</th><th></th></tr></thead>
+          <thead><tr><th data-i18n="admin_users.list.columns.name">ชื่อ</th><th data-i18n="admin_users.list.columns.email">อีเมล</th><th data-i18n="admin_users.list.columns.role">สิทธิ์</th><th data-i18n="admin_users.list.columns.scope">ระบบ</th><th data-i18n="admin_users.list.columns.active">เปิดใช้งาน</th><th></th></tr></thead>
           <tbody id="userRows"></tbody>
         </table>
       </div>
     </section>
   </main>
-
   <dialog class="staff-dialog" id="userDialog" aria-labelledby="userDialogTitle">
     <form id="userForm" class="staff-dialog-form">
       <header class="staff-dialog-header">
         <span class="staff-dialog-icon"><i class="bi bi-person-plus" aria-hidden="true"></i></span>
-        <div>
-          <h2 id="userDialogTitle">เพิ่มพนักงานใหม่</h2>
-          <p>สร้างบัญชีและกำหนดสิทธิ์เริ่มต้นให้พนักงาน</p>
-        </div>
-        <button class="staff-dialog-close" id="closeCreateUserModal" type="button" aria-label="ปิด">
-          <i class="bi bi-x-lg" aria-hidden="true"></i>
-        </button>
+        <div><h2 id="userDialogTitle" data-i18n="admin_users.dialog.title">เพิ่มพนักงานใหม่</h2><p data-i18n="admin_users.dialog.description">สร้างบัญชีและกำหนดสิทธิ์เริ่มต้นให้พนักงาน</p></div>
+        <button class="staff-dialog-close" id="closeCreateUserModal" type="button" aria-label="ปิด" data-i18n-aria-label="admin_users.dialog.close"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
       </header>
       <div class="staff-dialog-body">
         <div class="grid grid-2">
-          <div class="field"><label for="displayName">ชื่อที่แสดง</label><input class="input" id="displayName" required maxlength="100" placeholder="เช่น พนักงานแคชเชียร์"></div>
-          <div class="field"><label for="email">อีเมล</label><input class="input" id="email" type="email" autocomplete="off" required placeholder="name@example.com"></div>
+          <div class="field"><label for="displayName" data-i18n="admin_users.dialog.display_name">ชื่อที่แสดง</label><input class="input" id="displayName" required maxlength="100" placeholder="เช่น พนักงานแคชเชียร์" data-i18n-placeholder="admin_users.dialog.display_name_placeholder"></div>
+          <div class="field"><label for="email" data-i18n="admin_users.dialog.email">อีเมล</label><input class="input" id="email" type="email" autocomplete="off" required placeholder="name@example.com"></div>
         </div>
         <div class="grid grid-2">
-          <div class="field"><label for="password">รหัสผ่านเริ่มต้น</label><input class="input" id="password" type="password" autocomplete="new-password" minlength="8" required placeholder="อย่างน้อย 8 ตัวอักษร"></div>
-          <div class="field"><label for="confirmPassword">ยืนยันรหัสผ่าน</label><input class="input" id="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="กรอกรหัสผ่านอีกครั้ง"></div>
+          <div class="field"><label for="password" data-i18n="admin_users.dialog.password">รหัสผ่านเริ่มต้น</label><input class="input" id="password" type="password" autocomplete="new-password" minlength="8" required placeholder="อย่างน้อย 8 ตัวอักษร" data-i18n-placeholder="admin_users.dialog.password_placeholder"></div>
+          <div class="field"><label for="confirmPassword" data-i18n="admin_users.dialog.confirm_password">ยืนยันรหัสผ่าน</label><input class="input" id="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="กรอกรหัสผ่านอีกครั้ง" data-i18n-placeholder="admin_users.dialog.confirm_password_placeholder"></div>
         </div>
-        <div class="field"><label for="role">สิทธิ์พนักงาน</label><select class="input" id="role" required><option value="admin">Admin — จัดการร้าน</option><option value="cashier">Cashier — รับชำระเงิน</option><option value="kitchen">Kitchen — จัดการครัว</option></select></div>
-        <label class="staff-active-option">
-          <span><strong>เปิดใช้งานทันที</strong><small>พนักงานสามารถเข้าสู่ระบบได้หลังสร้างบัญชี</small></span>
-          <input type="checkbox" id="active" checked>
-        </label>
+        <div class="grid grid-2">
+          <div class="field"><label for="role" data-i18n="admin_users.dialog.role">สิทธิ์พนักงาน</label><select class="input" id="role" required><option value="admin" data-i18n="admin_users.role_options.admin">Admin — จัดการร้าน</option><option value="cashier" data-i18n="admin_users.role_options.cashier">Cashier — รับชำระเงิน</option><option value="kitchen" data-i18n="admin_users.role_options.kitchen">Kitchen — จัดการครัว</option></select></div>
+          <div class="field"><label for="businessScope" data-i18n="admin_users.dialog.scope">ระบบที่เข้าใช้งาน</label><select class="input" id="businessScope" required><option value="order_delivery" selected data-i18n="admin_users.scope_options.order_delivery">Order / Delivery เท่านั้น</option><option value="retail_pos" data-i18n="admin_users.scope_options.retail_pos">Retail POS เท่านั้น</option><option value="both" data-i18n="admin_users.scope_options.both">ทั้ง 2 ระบบ</option></select></div>
+        </div>
+        <label class="staff-active-option"><span><strong data-i18n="admin_users.dialog.active_title">เปิดใช้งานทันที</strong><small data-i18n="admin_users.dialog.active_help">พนักงานสามารถเข้าสู่ระบบได้หลังสร้างบัญชี</small></span><input type="checkbox" id="active" checked></label>
         <div class="upload-error" id="userError" hidden></div>
       </div>
       <footer class="staff-dialog-footer">
-        <button class="btn staff-cancel-button" id="cancelCreateUserModal" type="button"><i class="bi bi-x-circle" aria-hidden="true"></i><span>ยกเลิก</span></button>
-        <button class="btn btn-primary user-form-action" id="createUserButton" type="submit"><i class="bi bi-person-plus" aria-hidden="true"></i><span>สร้างผู้ใช้งาน</span></button>
+        <button class="btn staff-cancel-button" id="cancelCreateUserModal" type="button"><i class="bi bi-x-circle" aria-hidden="true"></i><span data-i18n="admin_users.dialog.cancel">ยกเลิก</span></button>
+        <button class="btn btn-primary user-form-action" id="createUserButton" type="submit"><i class="bi bi-person-plus" aria-hidden="true"></i><span data-i18n="admin_users.dialog.create">สร้างผู้ใช้งาน</span></button>
       </footer>
     </form>
   </dialog>
-
-  <script type="module" src="/assets/js/page-guard.js?v=20260802-104"></script>
-  <script type="module" src="/assets/js/admin-users.js?v=20260731-090"></script>
+  <script type="module" src="/assets/js/page-guard.js?v=20260903-201"></script>
+  <script type="module" src="/assets/js/admin-users.js?v=20260903-205"></script>
+  <script type="module" src="/assets/js/locale-switcher-static.js?v=20260903-202"></script>
+  <script type="module" src="/assets/js/user-menu-i18n-static.js?v=20260903-202"></script>
 </body>
 </html>

@@ -1,6 +1,7 @@
-import { dataService } from './data-service.js';
-import { toast } from './ui.js?v=20260731-080';
+import { dataService } from './data-service.js?v=20260718-021';
+import { toast } from './ui.js?v=20260805-081';
 import { iconMarkup } from './bootstrap-icons.js?v=20260701-001';
+import { t } from './i18n.js?v=20260812-099';
 
 const grid=document.querySelector('#orderGrid');
 let currentOrders=[];
@@ -19,11 +20,11 @@ function isUnpaid(order){
 
 function errorText(error){
   const code=String(error?.code||error?.message||'UNKNOWN_ERROR');
-  if(code.includes('SOURCE_TABLE_NOT_ACTIVE'))return 'โต๊ะเดิมไม่ได้เปิดอยู่ หรือมีการปิด/ย้ายไปแล้ว กรุณารีเฟรชรายการ';
-  if(code.includes('TARGET_TABLE_NOT_AVAILABLE'))return 'โต๊ะใหม่ไม่ว่างแล้ว กรุณาเลือกโต๊ะอื่น';
-  if(code.includes('MOVE_ORDER_NOT_UNPAID'))return 'พบออเดอร์บางรายการถูกชำระเงินหรือไม่ได้อยู่ในโต๊ะเดิมแล้ว';
-  if(code.includes('permission-denied'))return 'ไม่มีสิทธิ์เปลี่ยนโต๊ะ กรุณา Deploy Firestore Rules ล่าสุด';
-  return `เปลี่ยนโต๊ะไม่สำเร็จ (${code})`;
+  if(code.includes('SOURCE_TABLE_NOT_ACTIVE'))return t('cashier.table_move.source_not_active');
+  if(code.includes('TARGET_TABLE_NOT_AVAILABLE'))return t('cashier.table_move.target_not_available');
+  if(code.includes('MOVE_ORDER_NOT_UNPAID'))return t('cashier.table_move.order_not_unpaid');
+  if(code.includes('permission-denied'))return t('cashier.table_move.permission_denied');
+  return t('cashier.table_move.failed',{code});
 }
 
 function installButtons(){
@@ -36,14 +37,14 @@ function installButtons(){
     button.type='button';
     button.className='btn btn-warning';
     button.dataset.tableMove=key;
-    button.innerHTML=`${icon('arrow-left-right')}<span>เปลี่ยนโต๊ะ</span>`;
+    button.innerHTML=`${icon('arrow-left-right')}<span>${t('cashier.table_move.button')}</span>`;
     actions.insertBefore(button,paymentButton);
   });
 }
 
 function showTargetDialog(fromTableCode,tables){
   if(!tables.length){
-    toast('ไม่มีโต๊ะว่างสำหรับย้าย','error');
+    toast(t('cashier.table_move.no_available_tables'),'error');
     return Promise.resolve(null);
   }
   return new Promise(resolve=>{
@@ -52,19 +53,19 @@ function showTargetDialog(fromTableCode,tables){
     root.innerHTML=[
       '<div class="sweet-dialog" role="dialog" aria-modal="true">',
       '<div class="sweet-dialog-icon warning">!</div>',
-      '<h2 class="sweet-dialog-title">เปลี่ยนโต๊ะ</h2>',
-      `<p class="sweet-dialog-message">ย้ายออเดอร์ที่ยังไม่ชำระจากโต๊ะ ${fromTableCode} ไปยังโต๊ะว่าง</p>`,
+      `<h2 class="sweet-dialog-title">${t('cashier.table_move.dialog_title')}</h2>`,
+      `<p class="sweet-dialog-message">${t('cashier.table_move.dialog_message',{table:fromTableCode})}</p>`,
       '<select id="moveTableTarget" style="width:100%;padding:12px;border:1px solid #dfe8e2;border-radius:12px;font:inherit"></select>',
       '<div class="sweet-dialog-actions has-cancel" style="margin-top:18px">',
-      '<button id="moveTableCancel" class="sweet-dialog-button sweet-dialog-cancel" type="button">ยกเลิก</button>',
-      '<button id="moveTableConfirm" class="sweet-dialog-button sweet-dialog-confirm" type="button">ยืนยันย้ายโต๊ะ</button>',
+      `<button id="moveTableCancel" class="sweet-dialog-button sweet-dialog-cancel" type="button">${t('cashier.common.cancel')}</button>`,
+      `<button id="moveTableConfirm" class="sweet-dialog-button sweet-dialog-confirm" type="button">${t('cashier.table_move.confirm_selection')}</button>`,
       '</div></div>'
     ].join('');
     const select=root.querySelector('#moveTableTarget');
     tables.forEach(table=>{
       const option=document.createElement('option');
       option.value=table.id;
-      option.textContent=table.name||`โต๊ะ ${table.code||table.id}`;
+      option.textContent=table.name||t('cashier.table_move.table_fallback',{table:table.code||table.id});
       select.appendChild(option);
     });
     document.body.appendChild(root);
@@ -82,7 +83,7 @@ function showTargetDialog(fromTableCode,tables){
 async function moveTable(key,button){
   const rounds=currentOrders.filter(order=>isUnpaid(order)&&groupKey(order)===key);
   if(!rounds.length){
-    toast('ไม่มีออเดอร์ที่ยังไม่ชำระสำหรับย้ายโต๊ะ','error');
+    toast(t('cashier.table_move.no_unpaid_orders'),'error');
     return;
   }
   button.disabled=true;
@@ -90,15 +91,15 @@ async function moveTable(key,button){
     const fromTableCode=rounds[0].tableCode;
     const tables=await dataService.listTables();
     const available=tables.filter(table=>table.active!==false&&(!table.status||table.status==='available')&&String(table.code||table.id)!==String(fromTableCode))
-      .sort((a,b)=>String(a.code||a.id).localeCompare(String(b.code||b.id),'th'));
+      .sort((a,b)=>String(a.code||a.id).localeCompare(String(b.code||b.id),document.documentElement.lang||undefined));
     const targetId=await showTargetDialog(fromTableCode,available);
     if(!targetId){button.disabled=false;return}
     const target=available.find(table=>String(table.id)===String(targetId));
     const label=target?.name||target?.code||targetId;
-    const ok=await window.sweetConfirm?.(`ยืนยันย้ายโต๊ะ ${fromTableCode} ไป ${label} ใช่หรือไม่?\n\nระบบจะปิดโต๊ะเดิมเป็นว่าง และย้ายออเดอร์ที่ยังไม่ชำระทั้งหมดไปโต๊ะใหม่`,{title:'ยืนยันเปลี่ยนโต๊ะ',confirmText:'ย้ายโต๊ะ',cancelText:'ยกเลิก',type:'warning'});
+    const ok=await window.sweetConfirm?.(`${t('cashier.table_move.confirm_message',{from:fromTableCode,to:label})}\n\n${t('cashier.table_move.confirm_warning')}`,{title:t('cashier.table_move.confirm_title'),confirmText:t('cashier.table_move.confirm_action'),cancelText:t('cashier.common.cancel'),type:'warning'});
     if(!ok){button.disabled=false;return}
     await dataService.moveTableSession({fromTableCode,fromTableToken:rounds[0].tableToken,toTableId:targetId,orders:rounds});
-    toast(`ย้ายโต๊ะ ${fromTableCode} ไป ${label} เรียบร้อย`);
+    toast(t('cashier.table_move.success',{from:fromTableCode,to:label}));
   }catch(error){
     console.error('TABLE_MOVE_FAILED',error);
     toast(errorText(error),'error');

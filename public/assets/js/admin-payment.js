@@ -1,61 +1,138 @@
-import { dataService } from "./data-service.js";
+import { dataService } from "./data-service.js?v=20260903-203";
+import { ensureAdminSessionContext } from "./admin-session-bootstrap.js?v=20260903-203";
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
+import { t } from "./i18n.js?v=20260903-202";
 
+// ADMIN_DELIVERY_FEE_TABLE_20260829_004
 const textFieldIds = ["promptPayId", "promptPayName", "bankName", "bankAccountNumber", "bankAccountName"];
 const deliveryFeeOptionsList = document.getElementById("deliveryFeeOptionsList");
 const addDeliveryFeeOption = document.getElementById("addDeliveryFeeOption");
-const currentSettings = await dataService.getStoreSettings();
-const defaultDeliveryFeeOptions = [
-  { id: "pickup", label: "รับที่ร้าน", fee: 0 },
-  { id: "distance-0-2", label: "ระยะทาง 0-2 กิโลเมตร", fee: 10 },
-  { id: "distance-2-5", label: "ระยะทาง 2-5 กิโลเมตร", fee: 30 },
-  { id: "distance-5-plus", label: "ระยะทาง 5 กิโลเมตรขึ้นไป", fee: 50 }
-];
+const english = String(document.documentElement.lang || "").toLowerCase().startsWith("en");
+const feeCopy = english
+  ? {
+      number: "No.",
+      description: "Description",
+      distance: "Distance (km)",
+      fee: "Delivery Fee (THB)",
+      action: "Action",
+      pickup: "Store Pickup",
+      upTo: distance => `Up to ${distance} km`,
+      descriptionExample: value => `e.g. ${value}`,
+      descriptionAria: "Delivery fee description",
+      distanceAria: "Maximum delivery distance in kilometers",
+      amountAria: "Delivery fee in THB",
+      pickupLocked: "Store Pickup is a required system option and cannot be removed",
+      tableAria: "Delivery fee tiers",
+    }
+  : {
+      number: "ลำดับ",
+      description: "รายละเอียด",
+      distance: "ระยะทาง/กม.",
+      fee: "ค่าส่ง/บาท",
+      action: "การทำงาน",
+      pickup: "รับเองที่ร้าน",
+      upTo: distance => `ไม่เกิน ${distance} กิโลเมตร`,
+      descriptionExample: value => `เช่น ${value}`,
+      descriptionAria: "รายละเอียดช่วงค่าส่ง",
+      distanceAria: "ระยะทางสูงสุดของช่วงค่าส่ง หน่วยกิโลเมตร",
+      amountAria: "ค่าส่ง หน่วยบาท",
+      pickupLocked: "รับเองที่ร้านเป็นตัวเลือกพื้นฐานของระบบและไม่สามารถลบได้",
+      tableAria: "ตารางค่าจัดส่ง",
+    };
 
-function ensureStyles() {
-  if (document.getElementById("adminDeliveryFeeOptionsStyle")) return;
-  const style = document.createElement("style");
-  style.id = "adminDeliveryFeeOptionsStyle";
-  style.textContent = `
-    .delivery-fee-head{align-items:flex-start!important;gap:16px!important}
-    .delivery-fee-head>div{min-width:0;flex:1 1 auto}
-    .delivery-fee-head #addDeliveryFeeOption{flex:0 0 auto;white-space:nowrap}
-    #addDeliveryFeeOption{background:#159447;color:#fff;border-color:#159447;box-shadow:0 8px 18px rgba(21,148,71,.18);display:inline-flex;align-items:center;justify-content:center;gap:8px}
-    #addDeliveryFeeOption .app-icon{width:16px;height:16px}
-    #addDeliveryFeeOption:hover,#addDeliveryFeeOption:focus-visible{background:#0f7f3b;border-color:#0f7f3b}
-    .delivery-fee-options{display:grid;gap:10px;margin-top:12px}
-    .delivery-fee-row{display:grid;grid-template-columns:34px minmax(0,1fr) minmax(120px,180px) auto;gap:10px;align-items:end;padding:12px;border:1px solid #d8e8dd;border-radius:16px;background:linear-gradient(180deg,#fff,#fbfefc);box-shadow:0 8px 20px rgba(15,23,42,.04)}
-    .delivery-fee-index{width:34px;height:46px;border-radius:12px;background:#e8f6ed;color:#0d6f34;display:grid;place-items:center;font-weight:600;align-self:end}
-    .delivery-fee-row .field{margin:0}
-    .delivery-fee-name-field{padding-top:22px}
-    .delivery-fee-remove{width:42px!important;height:46px!important;min-width:42px!important;min-height:46px!important;padding:0!important;border-radius:12px!important;background:#dc2626!important;border-color:#dc2626!important;color:#fff!important;display:inline-grid!important;place-items:center!important;box-shadow:0 8px 18px rgba(220,38,38,.18)}
-    .delivery-fee-remove .app-icon{width:18px;height:18px}
-    .delivery-fee-remove:hover,.delivery-fee-remove:focus-visible{background:#b91c1c!important;border-color:#b91c1c!important;color:#fff!important}
-    @media(max-width:720px){.delivery-fee-head{display:grid!important}.delivery-fee-head #addDeliveryFeeOption{width:100%;margin-top:10px}.delivery-fee-row{grid-template-columns:34px minmax(0,1fr);align-items:end}.delivery-fee-row .field:nth-of-type(2){grid-column:2}.delivery-fee-remove{grid-column:2;width:100%!important;border-radius:12px!important}}
-  `;
-  document.head.appendChild(style);
-}
+await ensureAdminSessionContext();
+const currentSettings = await dataService.getStoreSettings();
+
+const DEFAULT_DISTANCE_LIMITS = [2, 5, 10];
+const LEGACY_DISTANCE_LIMITS = Object.freeze({
+  "distance-0-2": 2,
+  "distance-2-5": 5,
+  "distance-5-plus": 10,
+  nearby: 2,
+  general: 5,
+  far: 10,
+});
+
+const defaultDeliveryFeeOptions = [
+  { id: "pickup", label: "", maxDistanceKm: null, fee: 0 },
+  { id: "distance-0-2", label: "", maxDistanceKm: 2, fee: 10 },
+  { id: "distance-2-5", label: "", maxDistanceKm: 5, fee: 30 },
+  { id: "distance-5-plus", label: "", maxDistanceKm: 10, fee: 50 },
+];
 
 function icon(name) {
   return iconMarkup(name);
 }
 
 function optionId() {
-  if (typeof globalThis.crypto?.randomUUID === "function") return `fee-${globalThis.crypto.randomUUID()}`;
+  if (typeof globalThis.crypto?.randomUUID === "function") {
+    return `fee-${globalThis.crypto.randomUUID()}`;
+  }
   return `fee-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 function escapeHtml(value = "") {
-  return String(value).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  }[char]));
+}
+
+function normalizePositiveNumber(value) {
+  if (value === null || value === undefined || String(value).trim() === "") return null;
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 0) return null;
+  return Math.round(number * 100) / 100;
+}
+
+function formatDistance(value) {
+  const number = normalizePositiveNumber(value);
+  if (number === null) return "";
+  return Number.isInteger(number)
+    ? String(number)
+    : String(number).replace(/0+$/, "").replace(/\.$/, "");
+}
+
+function distanceForOption(option, index) {
+  const explicit = normalizePositiveNumber(
+    option?.maxDistanceKm ?? option?.distanceKm ?? option?.maxDistance,
+  );
+  if (explicit !== null) return explicit;
+
+  const legacy = LEGACY_DISTANCE_LIMITS[String(option?.id || option?.key || "")];
+  if (legacy) return legacy;
+
+  const fallback = DEFAULT_DISTANCE_LIMITS[index];
+  if (fallback) return fallback;
+
+  return DEFAULT_DISTANCE_LIMITS.at(-1)
+    + ((index - DEFAULT_DISTANCE_LIMITS.length + 1) * 5);
+}
+
+function defaultDescriptionForOption(option) {
+  if (option.id === "pickup") return feeCopy.pickup;
+  const distance = formatDistance(option.maxDistanceKm);
+  return distance ? feeCopy.upTo(distance) : feeCopy.upTo("2");
+}
+
+function descriptionPlaceholder(option) {
+  return feeCopy.descriptionExample(defaultDescriptionForOption(option));
 }
 
 function legacyDeliveryFeeOptions(settings) {
-  const hasLegacy = ["deliveryFeeNearby", "deliveryFeeGeneral", "deliveryFeeFar"].some(key => settings[key] !== undefined && settings[key] !== null && settings[key] !== "");
+  const hasLegacy = ["deliveryFeeNearby", "deliveryFeeGeneral", "deliveryFeeFar"]
+    .some(key => settings[key] !== undefined && settings[key] !== null && settings[key] !== "");
+
   if (!hasLegacy) return defaultDeliveryFeeOptions;
+
   return [
-    { id: "nearby", label: "ในเขตใกล้ร้าน", fee: Number(settings.deliveryFeeNearby ?? 0) },
-    { id: "general", label: "พื้นที่ทั่วไป", fee: Number(settings.deliveryFeeGeneral ?? 30) },
-    { id: "far", label: "พื้นที่ห่างไกล", fee: Number(settings.deliveryFeeFar ?? 50) }
+    { id: "pickup", label: "", maxDistanceKm: null, fee: 0 },
+    { id: "distance-0-2", label: "", maxDistanceKm: 2, fee: Number(settings.deliveryFeeNearby ?? 10) },
+    { id: "distance-2-5", label: "", maxDistanceKm: 5, fee: Number(settings.deliveryFeeGeneral ?? 30) },
+    { id: "distance-5-plus", label: "", maxDistanceKm: 10, fee: Number(settings.deliveryFeeFar ?? 50) },
   ];
 }
 
@@ -63,55 +140,219 @@ function normalizeDeliveryFeeOptions(settings) {
   const source = Array.isArray(settings.deliveryFeeOptions) && settings.deliveryFeeOptions.length
     ? settings.deliveryFeeOptions
     : legacyDeliveryFeeOptions(settings);
-  return source.map((option, index) => ({
-    id: String(option.id || option.key || `fee-${index + 1}`).trim() || `fee-${index + 1}`,
-    label: String(option.label || option.name || "").trim(),
-    fee: Math.max(0, Number(option.fee ?? option.amount ?? 0) || 0)
-  })).filter(option => option.label);
+  const sourceStartsWithPickup = String(source[0]?.id || "") === "pickup";
+
+  const normalized = source.map((option, index) => {
+    const id = String(option?.id || option?.key || `fee-${index + 1}`).trim()
+      || `fee-${index + 1}`;
+    const pickup = id === "pickup";
+    const distanceIndex = Math.max(0, index - (sourceStartsWithPickup ? 1 : 0));
+
+    return {
+      id,
+      label: String(option?.label ?? option?.name ?? "").trim(),
+      maxDistanceKm: pickup ? null : distanceForOption(option, distanceIndex),
+      fee: pickup ? 0 : Math.max(0, Number(option?.fee ?? option?.amount ?? 0) || 0),
+    };
+  });
+
+  const pickup = normalized.find(option => option.id === "pickup")
+    || { ...defaultDeliveryFeeOptions[0] };
+  const tiers = normalized
+    .filter(option => option.id !== "pickup" && normalizePositiveNumber(option.maxDistanceKm) !== null)
+    .sort((left, right) => left.maxDistanceKm - right.maxDistanceKm)
+    .slice(0, 11);
+
+  return [pickup, ...tiers];
 }
 
 function rowTemplate(option = {}) {
-  const id = option.id || optionId();
+  const id = String(option.id || optionId());
+  const pickup = id === "pickup";
   const safeId = escapeHtml(id);
-  const label = escapeHtml(option.label || "");
-  const fee = Math.max(0, Number(option.fee || 0));
+  const label = escapeHtml(String(option.label || "").trim());
+  const placeholder = escapeHtml(descriptionPlaceholder({ ...option, id }));
+  const distance = formatDistance(option.maxDistanceKm);
+  const fee = pickup ? 0 : Math.max(0, Number(option.fee || 0));
+
   return `
-    <div class="delivery-fee-row" data-delivery-fee-row data-option-id="${safeId}">
-      <div class="delivery-fee-index" aria-hidden="true"></div>
-      <div class="field delivery-fee-name-field">
-        <input class="input" data-delivery-fee-label maxlength="80" value="${label}" placeholder="เช่น รับเองที่ร้าน หรือ ระยะทาง 1-2 กิโลเมตร" aria-label="ชื่อที่แสดงใน Dropdown">
+    <div
+      class="delivery-fee-row${pickup ? " is-pickup" : ""}"
+      data-delivery-fee-row
+      data-option-id="${safeId}"
+      data-delivery-fee-pickup="${pickup ? "true" : "false"}"
+      role="row"
+    >
+      <div class="delivery-fee-index" data-delivery-fee-index role="cell"></div>
+      <input
+        class="input delivery-fee-description delivery-fee-description-input"
+        data-delivery-fee-label
+        type="text"
+        maxlength="120"
+        value="${label}"
+        placeholder="${placeholder}"
+        aria-label="${escapeHtml(feeCopy.descriptionAria)}"
+      >
+      <div class="delivery-fee-cell delivery-fee-distance-cell" role="cell" data-mobile-label="${escapeHtml(feeCopy.distance)}">
+        ${pickup
+          ? `<span class="delivery-fee-static-value" data-delivery-fee-distance-static>&mdash;</span>`
+          : `<input
+              class="input"
+              data-delivery-fee-distance
+              type="number"
+              min="0.1"
+              step="0.1"
+              required
+              inputmode="decimal"
+              value="${escapeHtml(distance)}"
+              aria-label="${escapeHtml(feeCopy.distanceAria)}"
+            >`}
       </div>
-      <div class="field">
-        <label>ค่าส่ง (บาท)</label>
-        <input class="input" data-delivery-fee-amount type="number" min="0" step="1" value="${fee}">
+      <div class="delivery-fee-cell delivery-fee-amount-cell" role="cell" data-mobile-label="${escapeHtml(feeCopy.fee)}">
+        ${pickup
+          ? `<span class="delivery-fee-static-value" data-delivery-fee-amount-static>0</span><input type="hidden" data-delivery-fee-amount value="0">`
+          : `<input
+              class="input"
+              data-delivery-fee-amount
+              type="number"
+              min="0"
+              step="1"
+              required
+              inputmode="decimal"
+              value="${fee}"
+              aria-label="${escapeHtml(feeCopy.amountAria)}"
+            >`}
       </div>
-      <button class="btn delivery-fee-remove" type="button" data-remove-delivery-fee aria-label="ลบตัวเลือกค่าส่ง" title="ลบตัวเลือกค่าส่ง">${icon("x-lg")}</button>
+      <div class="delivery-fee-action" role="cell">
+        ${pickup
+          ? `<span
+              class="delivery-fee-lock"
+              title="${escapeHtml(feeCopy.pickupLocked)}"
+              aria-label="${escapeHtml(feeCopy.pickupLocked)}"
+              role="img"
+            >${icon("lock-fill")}</span>`
+          : `<button
+              class="btn delivery-fee-remove"
+              type="button"
+              data-remove-delivery-fee
+              aria-label="${escapeHtml(t("admin.delivery_fee.remove"))}"
+              title="${escapeHtml(t("admin.delivery_fee.remove"))}"
+            >${icon("x-lg")}</button>`}
+      </div>
+    </div>`;
+}
+
+function tableHeaderTemplate() {
+  return `
+    <div class="delivery-fee-table-header" role="row">
+      <div role="columnheader">${escapeHtml(feeCopy.number)}</div>
+      <div role="columnheader">${escapeHtml(feeCopy.description)}</div>
+      <div role="columnheader">${escapeHtml(feeCopy.distance)}</div>
+      <div role="columnheader">${escapeHtml(feeCopy.fee)}</div>
+      <div role="columnheader" class="delivery-fee-action-header" aria-label="${escapeHtml(feeCopy.action)}"></div>
     </div>`;
 }
 
 function refreshDeliveryFeeIndexes() {
-  document.querySelectorAll("[data-delivery-fee-row]").forEach((row, index) => {
-    const badge = row.querySelector(".delivery-fee-index");
+  deliveryFeeOptionsList?.querySelectorAll("[data-delivery-fee-row]").forEach((row, index) => {
+    const badge = row.querySelector("[data-delivery-fee-index]");
     if (badge) badge.textContent = String(index + 1);
+  });
+}
+
+function syncRowDescriptionPlaceholder(row) {
+  if (!row || row.dataset.deliveryFeePickup === "true") return;
+  const distanceInput = row.querySelector("[data-delivery-fee-distance]");
+  const labelInput = row.querySelector("[data-delivery-fee-label]");
+  const maxDistanceKm = normalizePositiveNumber(distanceInput?.value);
+  if (!labelInput || maxDistanceKm === null) return;
+  labelInput.placeholder = feeCopy.descriptionExample(
+    feeCopy.upTo(formatDistance(maxDistanceKm)),
+  );
+}
+
+function readDeliveryFeeOptionsFromTable() {
+  const rows = [...(deliveryFeeOptionsList?.querySelectorAll("[data-delivery-fee-row]") || [])];
+  const options = rows.map((row, index) => {
+    const pickup = row.dataset.deliveryFeePickup === "true" || row.dataset.optionId === "pickup";
+    const maxDistanceKm = pickup
+      ? null
+      : normalizePositiveNumber(row.querySelector("[data-delivery-fee-distance]")?.value);
+    const typedLabel = String(
+      row.querySelector("[data-delivery-fee-label]")?.value || "",
+    ).trim();
+    const fallbackLabel = pickup
+      ? feeCopy.pickup
+      : (maxDistanceKm === null ? "" : feeCopy.upTo(formatDistance(maxDistanceKm)));
+    const label = typedLabel || fallbackLabel;
+    const fee = pickup
+      ? 0
+      : Math.max(0, Number(row.querySelector("[data-delivery-fee-amount]")?.value || 0) || 0);
+
+    return {
+      id: String(row.dataset.optionId || `fee-${index + 1}`),
+      label,
+      maxDistanceKm,
+      fee,
+    };
+  });
+
+  const pickup = options.find(option => option.id === "pickup") || {
+    id: "pickup",
+    label: feeCopy.pickup,
+    maxDistanceKm: null,
+    fee: 0,
+  };
+  const tiers = options
+    .filter(option => option.id !== "pickup" && option.maxDistanceKm !== null)
+    .sort((left, right) => left.maxDistanceKm - right.maxDistanceKm);
+
+  return [pickup, ...tiers];
+}
+
+function installDeliveryFeeSaveEnrichment() {
+  if (dataService.__deliveryFeeTableSaveEnriched) return;
+  const originalSaveStoreProfile = dataService.saveStoreProfile?.bind(dataService);
+  if (typeof originalSaveStoreProfile !== "function") return;
+
+  dataService.saveStoreProfile = async settings => {
+    const options = readDeliveryFeeOptionsFromTable();
+    const tiers = options.filter(option => option.id !== "pickup");
+    const enriched = {
+      ...settings,
+      deliveryFeeOptions: options,
+      deliveryFeeNearby: tiers[0]?.fee ?? 0,
+      deliveryFeeGeneral: tiers[1]?.fee ?? tiers[0]?.fee ?? 0,
+      deliveryFeeFar: tiers[2]?.fee ?? tiers.at(-1)?.fee ?? 0,
+    };
+    return originalSaveStoreProfile(enriched);
+  };
+
+  Object.defineProperty(dataService, "__deliveryFeeTableSaveEnriched", {
+    value: true,
+    configurable: true,
   });
 }
 
 function renderDeliveryFeeOptions() {
   if (!deliveryFeeOptionsList) return;
-  ensureStyles();
   const options = normalizeDeliveryFeeOptions(currentSettings);
-  deliveryFeeOptionsList.innerHTML = options.map(rowTemplate).join("");
+  deliveryFeeOptionsList.setAttribute("role", "table");
+  deliveryFeeOptionsList.setAttribute("aria-label", feeCopy.tableAria);
+  deliveryFeeOptionsList.innerHTML = `
+    ${tableHeaderTemplate()}
+    <div class="delivery-fee-table-body" data-delivery-fee-body role="rowgroup">
+      ${options.map(rowTemplate).join("")}
+    </div>`;
   refreshDeliveryFeeIndexes();
 }
 
-function readDeliveryFeeOptions() {
-  const rows = [...document.querySelectorAll("[data-delivery-fee-row]")];
-  const options = rows.map((row, index) => ({
-    id: row.dataset.optionId || `fee-${index + 1}`,
-    label: row.querySelector("[data-delivery-fee-label]")?.value.trim() || "",
-    fee: Math.max(0, Number(row.querySelector("[data-delivery-fee-amount]")?.value || 0))
-  })).filter(option => option.label);
-  return options.length ? options : defaultDeliveryFeeOptions;
+function nextDeliveryDistance() {
+  const values = [...(deliveryFeeOptionsList?.querySelectorAll("[data-delivery-fee-distance]") || [])]
+    .map(input => normalizePositiveNumber(input.value))
+    .filter(value => value !== null);
+  const maximum = values.length ? Math.max(...values) : 0;
+  return maximum > 0 ? Math.round((maximum + 5) * 100) / 100 : 2;
 }
 
 for (const fieldId of textFieldIds) {
@@ -120,34 +361,34 @@ for (const fieldId of textFieldIds) {
 }
 
 renderDeliveryFeeOptions();
+installDeliveryFeeSaveEnrichment();
 
 addDeliveryFeeOption?.addEventListener("click", () => {
-  deliveryFeeOptionsList?.insertAdjacentHTML("beforeend", rowTemplate({ id: optionId(), label: "", fee: 0 }));
+  const body = deliveryFeeOptionsList?.querySelector("[data-delivery-fee-body]");
+  if (!body || body.querySelectorAll("[data-delivery-fee-row]").length >= 12) return;
+
+  const option = {
+    id: optionId(),
+    label: "",
+    maxDistanceKm: nextDeliveryDistance(),
+    fee: 0,
+  };
+  body.insertAdjacentHTML("beforeend", rowTemplate(option));
   refreshDeliveryFeeIndexes();
-  deliveryFeeOptionsList?.querySelector("[data-delivery-fee-row]:last-child [data-delivery-fee-label]")?.focus();
+
+  const newRow = body.querySelector("[data-delivery-fee-row]:last-child");
+  newRow?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  newRow?.querySelector("[data-delivery-fee-label]")?.focus({ preventScroll: true });
+});
+
+deliveryFeeOptionsList?.addEventListener("input", event => {
+  if (!event.target.matches("[data-delivery-fee-distance]")) return;
+  syncRowDescriptionPlaceholder(event.target.closest("[data-delivery-fee-row]"));
 });
 
 deliveryFeeOptionsList?.addEventListener("click", event => {
   const button = event.target.closest("[data-remove-delivery-fee]");
   if (!button) return;
-  const rows = deliveryFeeOptionsList.querySelectorAll("[data-delivery-fee-row]");
-  if (rows.length <= 1) return;
   button.closest("[data-delivery-fee-row]")?.remove();
   refreshDeliveryFeeIndexes();
-});
-
-document.getElementById("storeForm")?.addEventListener("submit", async () => {
-  const settings = {};
-
-  for (const fieldId of textFieldIds) {
-    settings[fieldId] = document.getElementById(fieldId)?.value.trim() || "";
-  }
-
-  const deliveryFeeOptions = readDeliveryFeeOptions();
-  settings.deliveryFeeOptions = deliveryFeeOptions;
-  settings.deliveryFeeNearby = deliveryFeeOptions[0]?.fee ?? 0;
-  settings.deliveryFeeGeneral = deliveryFeeOptions[1]?.fee ?? 30;
-  settings.deliveryFeeFar = deliveryFeeOptions[2]?.fee ?? 50;
-
-  await dataService.saveStoreSettings(settings);
 });

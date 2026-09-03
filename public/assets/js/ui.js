@@ -1,11 +1,12 @@
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
+import { getIntlLocale, t } from "./i18n.js?v=20260903-202";
 import "./form-validation-ui.js?v=20260731-080";
 import { APP_INFO } from "./app-info.js?v=20260802-104";
 
 export const APP_VERSION = APP_INFO.version;
 export const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
 
-export const money = (value = 0) => new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value) || 0);
+export const money = (value = 0) => new Intl.NumberFormat(getIntlLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value) || 0);
 
 function mountToastOnTopLayer(el) {
   document.body.appendChild(el);
@@ -57,7 +58,11 @@ export function getTableCode() {
 }
 
 export function statusLabel(status) {
-  return ({ pending: "รอรับออเดอร์", accepted: "ครัวรับแล้ว", cooking: "กำลังทำ", ready: "พร้อมเสิร์ฟ", served: "เสิร์ฟแล้ว", paid: "ชำระแล้ว", cancelled: "ยกเลิก" })[status] || status;
+  const key = String(status || "").trim().toLowerCase();
+  const fallback = { pending: "รอรับออเดอร์", accepted: "ครัวรับแล้ว", cooking: "กำลังทำ", ready: "พร้อมเสิร์ฟ", served: "เสิร์ฟแล้ว", paid: "ชำระแล้ว", cancelled: "ยกเลิก" };
+  if (!Object.prototype.hasOwnProperty.call(fallback, key)) return status;
+  const translated = t(`shared.status.${key}`);
+  return translated === `shared.status.${key}` ? fallback[key] : translated;
 }
 
 const BANGKOK_TIME_ZONE = "Asia/Bangkok";
@@ -78,7 +83,8 @@ function normalizedDate(value) {
 }
 
 export function formatTime(value) {
-  return new Intl.DateTimeFormat(THAI_GREGORIAN_LOCALE, {
+  const locale = `${getIntlLocale()}-u-ca-gregory`;
+  return new Intl.DateTimeFormat(locale, {
     timeZone: BANGKOK_TIME_ZONE,
     day: "2-digit",
     month: "2-digit",

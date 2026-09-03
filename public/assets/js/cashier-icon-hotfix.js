@@ -1,4 +1,5 @@
 import { iconMarkup } from './bootstrap-icons.js?v=20260701-001';
+import { t } from './i18n.js?v=20260812-099';
 
 const grid = document.querySelector('#orderGrid');
 let pending = false;
@@ -18,8 +19,8 @@ function replaceButtonIcon(button, iconName) {
 function applyCashierIcons() {
   document.querySelectorAll('[data-table-payment]').forEach(button => replaceButtonIcon(button, 'check-circle'));
   document.querySelectorAll('[data-table-move]').forEach(button => replaceButtonIcon(button, 'arrow-left-right'));
-  document.querySelectorAll('#orderGrid [data-status="cancelled"] span').forEach(label => {
-    label.textContent = 'ยกเลิกทุกรายการ';
+  document.querySelectorAll('[data-status="cancelled"] span').forEach(label => {
+    label.textContent = t('cashier.actions.cancel_all');
   });
 }
 

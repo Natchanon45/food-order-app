@@ -1,65 +1,202 @@
 <!doctype html>
 <html lang="th">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#159447">
-  <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
-  <link rel="stylesheet" href="/assets/css/icons.css?v=20260731-079">
-  <link rel="stylesheet" href="/assets/css/tenant-admin.css?v=20260621-43">
-  <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-095">
-  <title>จัดการร้านค้า</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#159447">
+<link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
+<link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240">
+<link rel="stylesheet" href="/assets/css/tenant-admin.css?v=20260903-210">
+<link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-095">
+<link rel="stylesheet" href="/assets/css/tenant-card-independent-height.css?v=20260903-210">
+<link rel="stylesheet" href="/assets/css/tenant-admin-clarity.css?v=20260903-210">
+<link rel="stylesheet" href="/assets/css/revenue-share-slip-dialog.css?v=20260903-210">
+<link rel="stylesheet" href="/assets/css/i18n.css?v=20260903-202">
+<title>จัดการร้านค้า</title>
 </head>
 <body data-roles="super_admin">
-  <header class="app-header">
-    <div class="brand"><span class="brand-mark">FOD</span>จัดการร้านค้า</div>
-    <a class="btn btn-sm" href="/platform">กลับระบบกลาง</a>
-  </header>
+<header class="app-header"><div class="brand"><span class="brand-mark">FOD</span><span><span data-i18n="admin_tenants.header.title">จัดการร้านค้า</span></span></div>
+<a class="btn btn-sm" href="/platform"><i class="bi bi-arrow-left" aria-hidden="true"></i><span><span data-i18n="admin_tenants.header.back">กลับระบบกลาง</span></span></a><div class="app-locale-switcher" data-static-locale-switcher><details class="app-locale-menu" data-locale-menu><summary class="app-locale-trigger" aria-label="Language" title="Language"><i class="bi bi-globe2" aria-hidden="true"></i><span class="visually-hidden">Language</span></summary><div class="app-locale-menu__panel" role="menu" aria-label="Language"><button type="button" class="app-locale-option" data-locale-option="th" lang="th" role="menuitemradio" aria-checked="true"><span>ไทย</span><i class="bi bi-check-lg" aria-hidden="true"></i></button><button type="button" class="app-locale-option" data-locale-option="en" lang="en" role="menuitemradio" aria-checked="false"><span>English</span><i class="bi bi-check-lg" aria-hidden="true"></i></button></div></details></div></header>
+<main class="container tenant-admin-page">
+  <section class="hero tenant-admin-hero">
+    <div>
+      <span class="tenant-admin-eyebrow"><i class="bi bi-shield-check" aria-hidden="true"></i> <span data-i18n="admin_tenants.hero.eyebrow">Super Admin</span></span>
+      <h1><span data-i18n="admin_tenants.hero.title">Tenant / ร้านค้า</span></h1>
+      <p><span data-i18n="admin_tenants.hero.description">จัดการร้าน Owner สถานะสมาชิก ยอดขายรวม และส่วนแบ่งแพลตฟอร์มในหน้าจอเดียว</span></p>
+    </div>
+    <button id="openTenantCreateButton" class="btn btn-primary tenant-create-trigger" type="button">
+      <i class="bi bi-plus-lg" aria-hidden="true"></i><span><span data-i18n="admin_tenants.hero.create">สร้างร้านใหม่</span></span>
+    </button>
+  </section>
 
-  <main class="container">
-    <section class="hero">
-      <h1>Tenant / ร้านค้า</h1>
-      <p>สร้างร้านใหม่ กำหนด Owner ควบคุมสถานะ และกำหนดวันหมดอายุสมาชิก</p>
-    </section>
+  <section class="card tenant-global-filter" aria-labelledby="tenantGlobalFilterLabel">
+    <div class="tenant-global-filter-copy">
+      <span class="tenant-global-filter-icon"><i class="bi bi-funnel" aria-hidden="true"></i></span>
+      <div><strong id="tenantGlobalFilterLabel"><span data-i18n="admin_tenants.filter.label">ร้านค้า</span></strong><span><span data-i18n="admin_tenants.filter.help">เลือกเพื่อกรองยอดขาย ส่วนแบ่ง สลิป และรายการร้านค้าทั้งหน้านี้</span></span></div>
+    </div>
+    <label class="tenant-global-filter-control" for="tenantStoreFilter">
+      <span class="sr-only"><span data-i18n="admin_tenants.filter.aria">กรองข้อมูลตามร้านค้า</span></span>
+      <select class="input" id="tenantStoreFilter" aria-label="กรองข้อมูลตามร้านค้า" data-i18n-aria-label="admin_tenants.filter.aria" disabled>
+        <option value="" data-i18n="admin_tenants.filter.all">ทุกร้าน</option>
+      </select>
+    </label>
+  </section>
 
-    <section class="card">
-      <div class="section-title"><h2>สร้างร้านใหม่</h2></div>
-      <form id="tenantForm" class="grid">
-        <div class="grid grid-2">
-          <div class="field">
-            <label>ชื่อร้าน</label>
-            <input class="input" id="tenantName" maxlength="120" required placeholder="เช่น ร้านอาหารบ้านสวน">
-          </div>
-          <div class="field">
-            <label>Slug สำหรับ URL</label>
-            <input class="input" id="tenantSlug" maxlength="50" required placeholder="เช่น baan-suan">
-            <small>ใช้ตัวอักษรอังกฤษเล็ก ตัวเลข และขีดกลางเท่านั้น</small>
-          </div>
-        </div>
-        <div class="grid grid-2">
-          <div class="field">
-            <label>เบอร์โทรร้าน</label>
-            <input class="input" id="tenantPhone" type="tel" maxlength="30">
-          </div>
-          <div class="field">
-            <label>ที่อยู่ร้าน</label>
-            <input class="input" id="tenantAddress" maxlength="300">
-          </div>
-        </div>
-        <button class="btn btn-primary" id="createTenantButton">สร้างร้าน</button>
-        <div class="upload-error" id="tenantError" hidden></div>
-      </form>
-    </section>
+  <section class="card tenant-report-card" aria-labelledby="tenantReportTitle">
+    <div class="section-title tenant-report-heading">
+      <div>
+        <h2 id="tenantReportTitle"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i><span><span data-i18n="admin_tenants.report.title">ยอดขายและส่วนแบ่ง</span></span></h2>
+        <p><span data-i18n="admin_tenants.report.description">รวมยอดออเดอร์ร้านอาหารและ Retail POS แยกตามช่วงเวลา</span></p>
+      </div>
+      <button id="refreshTenantSalesButton" class="btn btn-sm" type="button"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i><span><span data-i18n="admin_tenants.report.refresh">รีเฟรช</span></span></button>
+    </div>
 
-    <section class="card" style="margin-top:16px">
-      <div class="section-title"><h2>รายการร้านค้า</h2><span class="badge" id="tenantCount">0 ร้าน</span></div>
-      <div id="tenantList" class="grid"></div>
-    </section>
-  </main>
+    <div class="tenant-report-filters">
+      <div class="tenant-period-tabs" role="tablist" aria-label="ช่วงเวลายอดขาย" data-i18n-aria-label="admin_tenants.report.period_aria">
+      <button type="button" class="active" data-tenant-period="daily"><i class="bi bi-calendar-day" aria-hidden="true"></i><span><span data-i18n="admin_tenants.report.periods.daily">รายวัน</span></span></button>
+      <button type="button" data-tenant-period="monthly"><i class="bi bi-calendar-month" aria-hidden="true"></i><span><span data-i18n="admin_tenants.report.periods.monthly">รายเดือน</span></span></button>
+      <button type="button" data-tenant-period="yearly"><i class="bi bi-calendar3" aria-hidden="true"></i><span><span data-i18n="admin_tenants.report.periods.yearly">รายปี</span></span></button>
+      <button type="button" data-tenant-period="custom"><i class="bi bi-calendar-range" aria-hidden="true"></i><span><span data-i18n="admin_tenants.report.periods.custom">กำหนดเอง</span></span></button>
+    </div>
 
-  <script type="module" src="/assets/js/page-guard.js?v=20260802-104"></script>
-  <script type="module" src="/assets/js/sweet-dialog.js?v=20260731-080"></script>
-  <script type="module" src="/assets/js/admin-tenants.js?v=20260630-050"></script>
-  <script type="module" src="/assets/js/admin-subscriptions.js?v=20260630-050"></script>
+    <div class="tenant-period-controls">
+      <label data-tenant-control="daily"><span><span data-i18n="admin_tenants.report.controls.date">วันที่</span></span><input class="input" id="tenantReportDate" type="date"></label>
+      <label data-tenant-control="monthly" hidden><span><span data-i18n="admin_tenants.report.controls.month">เดือน</span></span><input class="input" id="tenantReportMonth" type="month"></label>
+      <label data-tenant-control="yearly" hidden><span><span data-i18n="admin_tenants.report.controls.year">ปี</span></span><select class="input" id="tenantReportYear"></select></label>
+      <div class="tenant-custom-period" data-tenant-control="custom" hidden>
+        <label><span><span data-i18n="admin_tenants.report.controls.start_date">วันที่เริ่มต้น</span></span><input class="input" id="tenantReportStartDate" type="date"></label>
+        <label><span><span data-i18n="admin_tenants.report.controls.end_date">วันที่สิ้นสุด</span></span><input class="input" id="tenantReportEndDate" type="date"></label>
+      </div>
+      <div class="tenant-period-label" id="tenantPeriodLabel"><span data-i18n="admin_tenants.report.controls.loading_period">กำลังโหลดช่วงเวลา...</span></div>
+    </div>
+
+    </div>
+
+    <div class="tenant-platform-summary">
+      <article><span><span data-i18n="admin_tenants.report.summary.order_sales">ออเดอร์ร้านอาหาร</span></span><strong id="platformOrderSales">0.00</strong><small id="platformOrderCount">0 ออเดอร์</small></article>
+      <article><span><span data-i18n="admin_tenants.report.summary.pos_sales">Retail POS</span></span><strong id="platformPosSales">0.00</strong><small id="platformPosCount">0 ใบเสร็จ</small></article>
+      <article class="primary"><span><span data-i18n="admin_tenants.report.summary.combined_sales">ยอดขายรวม</span></span><strong id="platformCombinedSales">0.00</strong><small><span data-i18n="admin_tenants.common.baht">บาท</span></small></article>
+      <article class="share"><span><span data-i18n="admin_tenants.report.summary.revenue_share">ส่วนแบ่งรวม</span></span><strong id="platformRevenueShare">0.00</strong><small><span data-i18n="admin_tenants.common.baht">บาท</span></small></article>
+    </div>
+  </section>
+
+  <section class="card tenant-share-review-card" aria-labelledby="tenantShareReviewTitle">
+    <div class="section-title tenant-share-review-heading">
+      <div><h2 id="tenantShareReviewTitle"><i class="bi bi-receipt-cutoff" aria-hidden="true"></i><span><span data-i18n="admin_tenants.review.title">ตรวจสอบสลิปส่วนแบ่ง</span></span></h2><p><span data-i18n="admin_tenants.review.description">ตรวจสอบยอดโอนจาก Tenant และยืนยันหรือปฏิเสธรายการ หากปฏิเสธระบบจะระงับร้านจนกว่าจะมีรายการที่ได้รับการยืนยัน</span></p></div>
+      <button id="refreshRevenueShareReview" class="btn btn-sm" type="button"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i><span><span data-i18n="admin_tenants.review.refresh">รีเฟรชและตรวจรอบค้าง</span></span></button>
+    </div>
+    <div class="tenant-review-tabs" role="tablist" aria-label="สถานะการตรวจสอบสลิป" data-i18n-aria-label="admin_tenants.review.filter_aria">
+      <button class="active" type="button" data-review-status="pending"><span><span data-i18n="admin_tenants.review.statuses.pending">รอตรวจสอบ</span></span><b data-review-count="pending">0</b></button>
+      <button type="button" data-review-status="approved"><span><span data-i18n="admin_tenants.review.statuses.approved">ยืนยันแล้ว</span></span><b data-review-count="approved">0</b></button>
+      <button type="button" data-review-status="rejected"><span><span data-i18n="admin_tenants.review.statuses.rejected">ไม่ผ่าน</span></span><b data-review-count="rejected">0</b></button>
+      <button type="button" data-review-status="all"><span><span data-i18n="admin_tenants.review.statuses.all">ทั้งหมด</span></span></button>
+    </div>
+    <div id="revenueShareReviewList" class="tenant-review-list"><div class="tenant-list-loading"><span data-i18n="admin_tenants.review.loading">กำลังโหลดรายการตรวจสอบ...</span></div></div>
+  </section>
+
+  <section class="card tenant-list-card">
+    <div class="section-title tenant-list-heading">
+      <div><h2><i class="bi bi-shop" aria-hidden="true"></i><span><span data-i18n="admin_tenants.list.title">รายการร้านค้า</span></span></h2><p><span data-i18n="admin_tenants.list.description">ดูสถานะ ยอดขาย และจัดการร้านแต่ละแห่ง</span></p></div>
+      <span class="badge" id="tenantCount">0 ร้าน</span>
+    </div>
+    <div id="tenantList" class="tenant-card-grid"><div class="tenant-list-loading"><span data-i18n="admin_tenants.list.loading">กำลังโหลดรายการร้านค้า...</span></div></div>
+  </section>
+</main>
+
+<dialog id="tenantDialog" class="tenant-dialog">
+  <form id="tenantForm" class="tenant-dialog-card">
+    <div class="tenant-dialog-head">
+      <div class="tenant-dialog-title">
+        <span class="tenant-dialog-icon"><i class="bi bi-shop-window" aria-hidden="true"></i></span>
+        <div><span class="tenant-dialog-eyebrow" id="tenantDialogEyebrow"><span data-i18n="admin_tenants.tenant.new_eyebrow">Tenant ใหม่</span></span><h2 id="tenantDialogTitle"><span data-i18n="admin_tenants.tenant.create_title">สร้างร้านใหม่</span></h2><p id="tenantDialogDescription"><span data-i18n="admin_tenants.tenant.create_description">กรอกข้อมูลพื้นฐานสำหรับเปิดร้านในระบบ</span></p></div>
+      </div>
+      <button type="button" class="tenant-dialog-close" data-close-tenant-dialog aria-label="ปิด" data-i18n-aria-label="admin_tenants.common.close"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+    </div>
+    <div class="tenant-dialog-body">
+      <div class="grid grid-2">
+        <div class="field"><label for="tenantName"><span data-i18n="admin_tenants.tenant.fields.name">ชื่อร้าน</span></label><input class="input" id="tenantName" maxlength="120" required placeholder="เช่น ร้านอาหารบ้านสวน" data-i18n-placeholder="admin_tenants.tenant.fields.name_placeholder"></div>
+        <div class="field"><label for="tenantSlug"><span data-i18n="admin_tenants.tenant.fields.slug">Slug สำหรับ URL</span></label><input class="input" id="tenantSlug" maxlength="50" required placeholder="เช่น baan-suan" data-i18n-placeholder="admin_tenants.tenant.fields.slug_placeholder"><small><span data-i18n="admin_tenants.tenant.fields.slug_help">ใช้ตัวอักษรอังกฤษเล็ก ตัวเลข และขีดกลางเท่านั้น</span></small></div>
+      </div>
+      <div class="grid grid-2">
+        <div class="field"><label for="tenantPhone"><span data-i18n="admin_tenants.tenant.fields.phone">เบอร์โทรร้าน</span></label><input class="input" id="tenantPhone" type="tel" maxlength="30" placeholder="เช่น 0812345678" data-i18n-placeholder="admin_tenants.tenant.fields.phone_placeholder"></div>
+        <div class="field"><label for="tenantAddress"><span data-i18n="admin_tenants.tenant.fields.address">ที่อยู่ร้าน</span></label><input class="input" id="tenantAddress" maxlength="300" placeholder="ที่อยู่สำหรับแสดงบนเอกสาร" data-i18n-placeholder="admin_tenants.tenant.fields.address_placeholder"></div>
+      </div>
+      <div class="upload-error" id="tenantError" hidden></div>
+    </div>
+    <div class="tenant-dialog-actions">
+      <button type="button" class="btn" data-close-tenant-dialog><i class="bi bi-x-circle" aria-hidden="true"></i><span><span data-i18n="admin_tenants.common.cancel">ยกเลิก</span></span></button>
+      <button class="btn btn-primary" id="createTenantButton" type="submit"><i class="bi bi-floppy" aria-hidden="true"></i><span><span data-i18n="admin_tenants.tenant.create">สร้างร้าน</span></span></button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="revenueShareDialog" class="tenant-dialog revenue-share-dialog">
+  <form id="revenueShareForm" class="tenant-dialog-card">
+    <div class="tenant-dialog-head">
+      <div class="tenant-dialog-title">
+        <span class="tenant-dialog-icon share"><i class="bi bi-percent" aria-hidden="true"></i></span>
+        <div><span class="tenant-dialog-eyebrow"><span data-i18n="admin_tenants.share.eyebrow">การคิดส่วนแบ่ง</span></span><h2><span data-i18n="admin_tenants.share.title">กำหนดส่วนแบ่งยอดขาย</span></h2><p id="revenueShareTenantName">-</p></div>
+      </div>
+      <button type="button" class="tenant-dialog-close" data-close-share-dialog aria-label="ปิด" data-i18n-aria-label="admin_tenants.common.close"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+    </div>
+    <div class="tenant-dialog-body">
+      <label class="tenant-share-switch"><input id="revenueShareEnabled" type="checkbox"><span><strong><span data-i18n="admin_tenants.share.enabled">เปิดใช้งานการคิดส่วนแบ่ง</span></strong><small><span data-i18n="admin_tenants.share.help">คำนวณจากยอดขายรวมของออเดอร์และ POS ตามช่วงเวลาที่เลือก</span></small></span></label>
+      <div class="field"><label for="revenueShareRate"><span data-i18n="admin_tenants.share.rate">อัตราส่วนแบ่ง (%)</span></label><div class="tenant-share-input"><input class="input" id="revenueShareRate" type="number" min="0" max="100" step="0.01" value="0" required><span>%</span></div></div>
+      <div class="field"><label for="revenueShareBillingCycle"><span data-i18n="admin_tenants.share.billing_cycle">รอบการชำระและตรวจสอบ</span></label><select class="input" id="revenueShareBillingCycle" required><option value="daily" data-i18n="admin_tenants.share.billing_cycles.daily">รายวัน</option><option value="monthly" data-i18n="admin_tenants.share.billing_cycles.monthly">รายเดือน</option></select><small><span data-i18n="admin_tenants.share.billing_cycle_help">ใช้รอบนี้สำหรับการแนบสลิปและระงับการใช้งานเมื่อค้างชำระ</span></small></div>
+      <div class="tenant-share-preview"><span><span data-i18n="admin_tenants.share.current_sales">ยอดขายช่วงปัจจุบัน</span></span><strong id="revenueShareSalesPreview">0.00 <span data-i18n="admin_tenants.common.baht">บาท</span></strong><span><span data-i18n="admin_tenants.share.estimated">ส่วนแบ่งโดยประมาณ</span></span><strong id="revenueShareAmountPreview">0.00 <span data-i18n="admin_tenants.common.baht">บาท</span></strong></div>
+      <div class="upload-error" id="revenueShareError" hidden></div>
+    </div>
+    <div class="tenant-dialog-actions">
+      <button type="button" class="btn" data-close-share-dialog><i class="bi bi-x-circle" aria-hidden="true"></i><span><span data-i18n="admin_tenants.common.cancel">ยกเลิก</span></span></button>
+      <button type="submit" class="btn btn-primary" id="saveRevenueShareButton"><i class="bi bi-floppy" aria-hidden="true"></i><span><span data-i18n="admin_tenants.share.save">บันทึกส่วนแบ่ง</span></span></button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="revenueShareReviewDialog" class="tenant-dialog tenant-review-dialog">
+  <form id="revenueShareReviewForm" class="tenant-dialog-card">
+    <div class="tenant-dialog-head">
+      <div class="tenant-dialog-title"><span class="tenant-dialog-icon review"><i class="bi bi-clipboard-check" aria-hidden="true"></i></span><div><span class="tenant-dialog-eyebrow"><span data-i18n="admin_tenants.review.dialog_eyebrow">ตรวจสอบการชำระ</span></span><h2 id="revenueShareReviewDialogTitle"><span data-i18n="admin_tenants.review.reject_title">ปฏิเสธสลิปการโอน</span></h2><p id="revenueShareReviewTenantName">-</p></div></div>
+      <button type="button" class="tenant-dialog-close" data-close-review-dialog aria-label="ปิด" data-i18n-aria-label="admin_tenants.common.close"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+    </div>
+    <div class="tenant-dialog-body">
+      <div class="tenant-review-dialog-summary" id="revenueShareReviewSummary"></div>
+      <div class="field"><label for="revenueShareReviewNote"><span data-i18n="admin_tenants.review.note">เหตุผล / หมายเหตุ</span></label><textarea class="input" id="revenueShareReviewNote" rows="4" maxlength="1000" required placeholder="เช่น ไม่พบยอดเงินเข้าบัญชี กรุณาตรวจสอบและแนบสลิปใหม่" data-i18n-placeholder="admin_tenants.review.note_placeholder"></textarea><small><span data-i18n="admin_tenants.review.note_help">Tenant จะเห็นหมายเหตุนี้ในประวัติการส่งสลิป</span></small></div>
+      <div class="upload-error" id="revenueShareReviewError" hidden></div>
+    </div>
+    <div class="tenant-dialog-actions">
+      <button type="button" class="btn" data-close-review-dialog><i class="bi bi-x-circle" aria-hidden="true"></i><span><span data-i18n="admin_tenants.common.cancel">ยกเลิก</span></span></button>
+      <button type="submit" class="btn btn-danger" id="rejectRevenueSharePayment"><i class="bi bi-x-octagon" aria-hidden="true"></i><span><span data-i18n="admin_tenants.review.reject">ปฏิเสธ</span></span></button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="revenueShareSlipDialog" class="tenant-dialog revenue-share-slip-dialog" aria-labelledby="revenueShareSlipDialogTitle">
+  <div class="tenant-dialog-card">
+    <div class="tenant-dialog-head">
+      <div class="tenant-dialog-title">
+        <span class="tenant-dialog-icon"><i class="bi bi-receipt" aria-hidden="true"></i></span>
+        <div><span class="tenant-dialog-eyebrow"><span data-i18n="admin_tenants.review.dialog_eyebrow">ตรวจสอบการชำระ</span></span><h2 id="revenueShareSlipDialogTitle"><span data-i18n="admin_tenants.review.slip_title">สลิปการโอนส่วนแบ่ง</span></h2><p id="revenueShareSlipTenantName">-</p></div>
+      </div>
+      <button type="button" class="tenant-dialog-close" data-close-slip-dialog aria-label="ปิด" data-i18n-aria-label="admin_tenants.common.close"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+    </div>
+    <div class="tenant-dialog-body">
+      <div class="revenue-share-slip-preview">
+        <img id="revenueShareSlipImage" alt="<span data-i18n="admin_tenants.review.slip_title">สลิปการโอนส่วนแบ่ง</span>" hidden>
+        <iframe id="revenueShareSlipFrame" title="สลิปการโอนส่วนแบ่ง" data-i18n-title="admin_tenants.review.slip_title" loading="eager" hidden></iframe>
+      </div>
+    </div>
+    <div class="tenant-dialog-actions revenue-share-slip-actions">
+      <button type="button" class="btn btn-danger" data-close-slip-dialog><i class="bi bi-x-circle" aria-hidden="true"></i><span><span data-i18n="admin_tenants.common.close">ปิด</span></span></button>
+    </div>
+  </div>
+</dialog>
+<script type="module" src="/assets/js/admin-tenants-i18n-bootstrap.js?v=20260903-210"></script>
+<script type="module" src="/assets/js/page-guard.js?v=20260903-201"></script>
+<script type="module" src="/assets/js/sweet-dialog.js?v=20260731-080"></script>
+<script type="module" src="/assets/js/admin-tenants.js?v=20260903-210"></script>
+<script type="module" src="/assets/js/admin-revenue-share-review.js?v=20260903-210"></script>
+<script type="module" src="/assets/js/admin-subscriptions.js?v=20260903-210"></script>
+<script type="module" src="/assets/js/locale-switcher-static.js?v=20260903-202"></script>
 </body>
 </html>

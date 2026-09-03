@@ -29,6 +29,8 @@ function moduleValues(profile = {}) {
     profile.businessType,
     profile.businessUnit,
     profile.business_unit,
+    profile.businessScope,
+    profile.business_scope,
     ...(Array.isArray(profile.modules) ? profile.modules : []),
     ...(Array.isArray(profile.businessUnits) ? profile.businessUnits : []),
     ...(Array.isArray(profile.allowedModules) ? profile.allowedModules : [])
@@ -45,8 +47,8 @@ function profileSupportsModule(profile = {}, moduleName = "") {
   if (profile.role === "super_admin") return true;
   const values = moduleValues(profile);
   if (moduleName === "retail-pos") {
-    if (profile.role === "owner") return !values.length || values.includes("retail_pos") || values.includes("retail") || values.includes("all");
-    return values.includes("retail_pos") || values.includes("retail") || values.includes("all");
+    if (profile.role === "owner") return !values.length || values.includes("retail_pos") || values.includes("retail") || values.includes("all") || values.includes("both");
+    return values.includes("retail_pos") || values.includes("retail") || values.includes("all") || values.includes("both");
   }
   if (!values.length) return true;
   return values.includes(moduleName) || values.includes("all");

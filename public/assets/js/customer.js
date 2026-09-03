@@ -1,13 +1,21 @@
-import "./sweet-dialog.js?v=20260731-080";
+import "./public-page-static-i18n.js?v=20260903-231";
+
+import "./sweet-dialog.js?v=20260726-034";
 import "./cart-item-layout.js?v=20260702-002";
-import { dataService, usingDemoMode } from "./data-service.js";
+import { dataService as defaultDataService, usingDemoMode as defaultUsingDemoMode } from "./data-service.js?v=20260718-021";
 import { ensureTenantContext } from "./tenant-context.js";
-import { money, toast, getTableCode, formatTime } from "./ui.js?v=20260731-080";
+import { money, toast, getTableCode, formatTime } from "./ui.js?v=20260805-081";
+import { t } from "./i18n.js?v=20260903-202";
+
+const dataService = window.__CUSTOMER_DATA_SERVICE__ || defaultDataService;
+const usingDemoMode = window.__CUSTOMER_USING_DEMO_MODE__ ?? defaultUsingDemoMode;
+const ALL_CATEGORY = "ทั้งหมด";
+const OTHER_CATEGORY = "อื่น ๆ";
 
 if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "/assets/css/sweet-dialog.css?v=20260629-048";
+  link.href = "/assets/css/sweet-dialog.css?v=20260726-034";
   document.head.appendChild(link);
 }
 
@@ -26,8 +34,8 @@ const cart = new Map();
 let menus = [];
 let sessionOrders = [];
 let activeTable = null;
-let activeCategory = "ทั้งหมด";
-let highlightedCategory = "ทั้งหมด";
+let activeCategory = ALL_CATEGORY;
+let highlightedCategory = ALL_CATEGORY;
 let tableSessionValid = false;
 let unsubscribeOrders = null;
 let currentPage = 1;
@@ -52,8 +60,18 @@ function setSubmitButton(text, busy = false) {
     : `<i class="bi bi-check-lg app-icon" aria-hidden="true"></i><span>${text}</span>`;
 }
 
+function categoryLabel(category) {
+  if (category === ALL_CATEGORY) return t("order.menu.all");
+  if (category === OTHER_CATEGORY) return t("order.menu.other");
+  return category;
+}
+
+function priceLabel(value) {
+  return t("order.cart.amount", { amount: money(value) });
+}
+
 if (usingDemoMode) {
-  document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง: ยังไม่ได้ใส่ Firebase Config ข้อมูลจะเก็บในเบราว์เซอร์นี้</div>';
+  document.querySelector("#demoBanner").innerHTML = `<div class="demo-banner">${t("order.demo")}</div>`;
 }
 
 function activeTableCode() {
@@ -61,13 +79,13 @@ function activeTableCode() {
 }
 
 function activeTableName() {
-  return activeTable?.name || (activeTableCode() ? `โต๊ะ ${activeTableCode()}` : "");
+  return activeTable?.name || (activeTableCode() ? t("order.table.name", { table: activeTableCode() }) : "");
 }
 
 function updateTableHeader() {
   const label = activeTableName();
-  document.querySelector("#tableBadge").textContent = label || "ไม่พบรหัสโต๊ะ";
-  setIconHeading("#tableTitle", "journal-text", label ? `เมนูสำหรับ${label}` : "กรุณาสแกน QR ของโต๊ะ");
+  document.querySelector("#tableBadge").textContent = label || t("order.header.missing_table");
+  setIconHeading("#tableTitle", "journal-text", label ? t("order.hero.for_table", { table: label }) : t("order.hero.scan_qr"));
 }
 
 updateTableHeader();
@@ -87,11 +105,11 @@ function pageSize() {
 }
 
 function categories() {
-  return ["ทั้งหมด", ...new Set(menus.filter(item => item.active !== false).map(item => item.category || "อื่น ๆ"))];
+  return [ALL_CATEGORY, ...new Set(menus.filter(item => item.active !== false).map(item => item.category || OTHER_CATEGORY))];
 }
 
 function currentTabCategory() {
-  return activeCategory === "ทั้งหมด" && isMobileMenu() ? highlightedCategory : activeCategory;
+  return activeCategory === ALL_CATEGORY && isMobileMenu() ? highlightedCategory : activeCategory;
 }
 
 function renderCategoryTabs() {
@@ -99,7 +117,7 @@ function renderCategoryTabs() {
   categoryTabs.innerHTML = categories().map(category => `
     <button type="button" class="category-tab${category === selected ? " active" : ""}"
       data-category="${category}" role="tab" aria-selected="${category === selected}">
-      ${category}
+      ${categoryLabel(category)}
     </button>
   `).join("");
 
@@ -112,7 +130,7 @@ function getFilteredMenus() {
   return menus.filter(item =>
     item.active !== false &&
     (!keyword || item.name.toLowerCase().includes(keyword)) &&
-    (activeCategory === "ทั้งหมด" || (item.category || "อื่น ๆ") === activeCategory)
+    (activeCategory === ALL_CATEGORY || (item.category || OTHER_CATEGORY) === activeCategory)
   );
 }
 
@@ -140,10 +158,10 @@ function renderPagination(totalItems) {
   }
 
   menuPagination.innerHTML = `
-    <button type="button" class="menu-page-button" data-page="${currentPage - 1}" ${currentPage === 1 ? "disabled" : ""} aria-label="หน้าก่อนหน้า">‹</button>
-    ${visiblePageNumbers(totalPages).map(page => `<button type="button" class="menu-page-button${page === currentPage ? " active" : ""}" data-page="${page}" aria-label="หน้า ${page}" aria-current="${page === currentPage ? "page" : "false"}">${page}</button>`).join("")}
-    <button type="button" class="menu-page-button" data-page="${currentPage + 1}" ${currentPage === totalPages ? "disabled" : ""} aria-label="หน้าถัดไป">›</button>
-    <div class="menu-page-summary">หน้า ${currentPage} จาก ${totalPages} • ${totalItems} เมนู</div>
+    <button type="button" class="menu-page-button menu-page-nav" data-page="${currentPage - 1}" ${currentPage === 1 ? "disabled" : ""} aria-label="${t("order.menu.previous_page")}" title="${t("order.menu.previous_page")}"><i class="bi bi-chevron-left app-icon" aria-hidden="true"></i></button>
+    ${visiblePageNumbers(totalPages).map(page => `<button type="button" class="menu-page-button${page === currentPage ? " active" : ""}" data-page="${page}" aria-label="${t("order.menu.page_aria", { page })}" aria-current="${page === currentPage ? "page" : "false"}">${page}</button>`).join("")}
+    <button type="button" class="menu-page-button menu-page-nav" data-page="${currentPage + 1}" ${currentPage === totalPages ? "disabled" : ""} aria-label="${t("order.menu.next_page")}" title="${t("order.menu.next_page")}"><i class="bi bi-chevron-right app-icon" aria-hidden="true"></i></button>
+    <div class="menu-page-summary">${t("order.menu.page_summary", { current: currentPage, total: totalPages, count: totalItems })}</div>
   `;
 }
 
@@ -152,10 +170,10 @@ function menuCard(item) {
     <article class="card menu-card">
       <div class="menu-image"><img src="${item.image}" alt="${item.name}"></div>
       <div class="menu-name">${item.name}</div>
-      <div class="menu-category">${item.category || "อื่น ๆ"}</div>
+      <div class="menu-category">${categoryLabel(item.category || OTHER_CATEGORY)}</div>
       <div class="menu-footer">
-        <span class="price">${money(item.price)} บาท</span>
-        <button class="btn btn-primary btn-sm" data-add="${item.id}">เพิ่ม</button>
+        <span class="price">${priceLabel(item.price)}</span>
+        <button type="button" class="btn btn-primary btn-sm menu-add-button" data-add="${item.id}" aria-label="${t("order.menu.add")}" title="${t("order.menu.add")}"><i class="bi bi-plus-lg" aria-hidden="true"></i></button>
       </div>
     </article>`;
 }
@@ -167,7 +185,7 @@ function disconnectCategoryObserver() {
 
 function observeCategorySections() {
   disconnectCategoryObserver();
-  if (!isMobileMenu() || activeCategory !== "ทั้งหมด") return;
+  if (!isMobileMenu() || activeCategory !== ALL_CATEGORY) return;
 
   const sections = [...menuGrid.querySelectorAll("[data-menu-category-section]")];
   if (!sections.length) return;
@@ -193,12 +211,12 @@ function observeCategorySections() {
 
 function renderMobileGroupedMenus(filtered) {
   if (!filtered.length) {
-    menuGrid.innerHTML = '<div class="card empty">ไม่พบเมนูในหมวดหมู่นี้</div>';
+    menuGrid.innerHTML = `<div class="card empty">${t("order.menu.empty")}</div>`;
     disconnectCategoryObserver();
     return;
   }
 
-  if (activeCategory !== "ทั้งหมด") {
+  if (activeCategory !== ALL_CATEGORY) {
     menuGrid.innerHTML = filtered.map(menuCard).join("");
     disconnectCategoryObserver();
     return;
@@ -206,14 +224,14 @@ function renderMobileGroupedMenus(filtered) {
 
   const grouped = new Map();
   filtered.forEach(item => {
-    const category = item.category || "อื่น ๆ";
+    const category = item.category || OTHER_CATEGORY;
     if (!grouped.has(category)) grouped.set(category, []);
     grouped.get(category).push(item);
   });
 
   menuGrid.innerHTML = [...grouped.entries()].map(([category, items]) => `
     <section data-menu-category-section="${category}" style="grid-column:1/-1;scroll-margin-top:155px">
-      <div class="section-title" style="margin:8px 0 10px"><h2>${category}</h2><span class="badge">${items.length} เมนู</span></div>
+      <div class="section-title" style="margin:8px 0 10px"><h2>${categoryLabel(category)}</h2><span class="badge">${t("order.menu.group_count", { count: items.length })}</span></div>
       <div class="grid grid-3">${items.map(menuCard).join("")}</div>
     </section>
   `).join("");
@@ -233,14 +251,14 @@ function renderMenus() {
   }
 
   disconnectCategoryObserver();
-  highlightedCategory = "ทั้งหมด";
+  highlightedCategory = ALL_CATEGORY;
   const size = pageSize();
   const totalPages = Math.max(1, Math.ceil(filtered.length / size));
   currentPage = Math.min(currentPage, totalPages);
   const start = (currentPage - 1) * size;
   const pageItems = filtered.slice(start, start + size);
 
-  menuGrid.innerHTML = pageItems.length ? pageItems.map(menuCard).join("") : '<div class="card empty">ไม่พบเมนูในหมวดหมู่นี้</div>';
+  menuGrid.innerHTML = pageItems.length ? pageItems.map(menuCard).join("") : `<div class="card empty">${t("order.menu.empty")}</div>`;
   renderPagination(filtered.length);
 }
 
@@ -277,20 +295,20 @@ function renderPreviousOrders() {
       ...(activeTable || {}),
       code: latestTableOrder.tableCode,
       id: latestTableOrder.tableCode,
-      name: latestTableOrder.tableName || `โต๊ะ ${latestTableOrder.tableCode}`
+      name: latestTableOrder.tableName || t("order.table.name", { table: latestTableOrder.tableCode })
     };
     updateTableHeader();
   }
   const highestRound = sorted.reduce((max, order) => Math.max(max, Number(order.roundNumber || 0)), 0);
-  currentRoundLabel.textContent = `รอบที่ ${highestRound + 1}`;
-  previousRoundCount.textContent = `${sorted.length} รอบ`;
-  setIconHeading("#previousOrdersSection h2", "clock-history", activeTableName() ? `รายการที่${activeTableName()}สั่งแล้ว` : "รายการที่โต๊ะนี้สั่งแล้ว");
+  currentRoundLabel.textContent = t("order.cart.round", { round: highestRound + 1 });
+  previousRoundCount.textContent = t("order.previous.round_count", { count: sorted.length });
+  setIconHeading("#previousOrdersSection h2", "clock-history", activeTableName() ? t("order.previous.title_for_table", { table: activeTableName() }) : t("order.previous.title"));
   previousOrdersSection.hidden = sorted.length === 0;
 
   previousOrdersList.innerHTML = sorted.map(order => `
     <article class="previous-round">
       <div class="previous-round-head">
-        <div class="previous-round-title">รอบที่ ${order.roundNumber || 1}</div>
+        <div class="previous-round-title">${t("order.previous.round", { round: order.roundNumber || 1 })}</div>
         <small>${formatTime(order.createdAt)}</small>
       </div>
       <div class="previous-round-items">
@@ -302,8 +320,8 @@ function renderPreviousOrders() {
         `).join("")}
       </div>
       <div class="previous-round-head" style="margin-top:8px;margin-bottom:0">
-        <small>ยืนยันแล้ว</small>
-        <strong>${money(order.totalAmount)} บาท</strong>
+        <small>${t("order.previous.confirmed")}</small>
+        <strong>${priceLabel(order.totalAmount)}</strong>
       </div>
     </article>
   `).join("");
@@ -315,8 +333,8 @@ function updateCart() {
     <div class="cart-row">
       <div>
         <strong>${item.name}</strong>
-        <div class="menu-category">${money(item.price)} บาท</div>
-        <input class="input" data-note="${item.id}" value="${item.note || ""}" placeholder="หมายเหตุ เช่น ไม่เผ็ด" style="margin-top:7px">
+        <div class="menu-category">${priceLabel(item.price)}</div>
+        <input class="input" data-note="${item.id}" value="${item.note || ""}" placeholder="${t("order.cart.item_note_placeholder")}" style="margin-top:7px">
       </div>
       <div class="qty">
         <button data-dec="${item.id}">−</button>
@@ -324,11 +342,11 @@ function updateCart() {
         <button data-inc="${item.id}">+</button>
       </div>
     </div>
-  `).join("") : '<div class="empty">ยังไม่มีรายการในรอบปัจจุบัน</div>';
+  `).join("") : `<div class="empty">${t("order.cart.empty")}</div>`;
 
   const totalQty = items.reduce((sum, item) => sum + item.qty, 0);
   const total = items.reduce((sum, item) => sum + item.qty * item.price, 0);
-  document.querySelector("#cartCount").textContent = `${totalQty} รายการ`;
+  document.querySelector("#cartCount").textContent = t("order.cart.count", { count: totalQty });
   document.querySelector("#cartTotal").textContent = money(total);
   document.querySelector("#submitOrder").disabled = !tableSessionValid || !items.length;
 }
@@ -354,7 +372,7 @@ categoryTabs.addEventListener("click", event => {
   const button = event.target.closest("[data-category]");
   if (!button) return;
   activeCategory = button.dataset.category;
-  highlightedCategory = activeCategory === "ทั้งหมด" ? "ทั้งหมด" : activeCategory;
+  highlightedCategory = activeCategory === ALL_CATEGORY ? ALL_CATEGORY : activeCategory;
   renderCategoryTabs();
   resetMenuPage();
   scrollToMenuList();
@@ -369,13 +387,13 @@ menuPagination.addEventListener("click", event => {
 });
 
 menuGrid.addEventListener("click", event => {
-  const id = event.target.dataset.add;
+  const id = event.target.closest?.("[data-add]")?.dataset.add;
   if (!id || !tableSessionValid) return;
   const menu = menus.find(item => item.id === id);
   const current = cart.get(id);
   cart.set(id, current ? { ...current, qty: current.qty + 1 } : { ...menu, qty: 1, note: "" });
   updateCart();
-  toast(`เพิ่ม ${menu.name} แล้ว`);
+  toast(t("order.toast.added", { name: menu.name }));
 });
 
 cartList.addEventListener("click", async event => {
@@ -395,7 +413,12 @@ cartList.addEventListener("click", async event => {
   }
 
   if (item.qty <= 1) {
-    const ok = await askConfirm(`ลบ ${item.name} ออกจากรายการสั่งซื้อใช่หรือไม่?`, { title: "ลบรายการอาหาร", confirmText: "ตกลง", cancelText: "ยกเลิก", type: "warning" });
+    const ok = await askConfirm(t("order.remove.message", { name: item.name }), {
+      title: t("order.remove.title"),
+      confirmText: t("shared.actions.ok"),
+      cancelText: t("shared.actions.cancel"),
+      type: "warning"
+    });
     if (!ok) return;
     cart.delete(id);
   } else {
@@ -415,13 +438,13 @@ cartList.addEventListener("input", event => {
 });
 
 document.querySelector("#searchInput").addEventListener("input", () => {
-  highlightedCategory = "ทั้งหมด";
+  highlightedCategory = ALL_CATEGORY;
   resetMenuPage();
 });
 
 window.addEventListener("resize", () => {
   currentPage = 1;
-  highlightedCategory = "ทั้งหมด";
+  highlightedCategory = ALL_CATEGORY;
   renderCategoryTabs();
   renderMenus();
 });
@@ -432,7 +455,7 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
   if (!stillValid) {
     tableSessionValid = false;
     updateCart();
-    toast("QR นี้หมดอายุแล้ว กรุณาติดต่อแคชเชียร์", "error");
+    toast(t("order.errors.expired"), "error");
     return;
   }
 
@@ -446,15 +469,13 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
   const totalAmount = items.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   button.disabled = true;
-  setSubmitButton("กำลังส่ง...", true);
+  setSubmitButton(t("order.actions.submitting"), true);
 
   try {
     await dataService.createTableOrder({
       tableCode: activeTableCode(),
       tableName: activeTableName(),
       tableToken,
-      waitingQueueId: activeTable?.waitingQueueId || "",
-      waitingQueueNumber: activeTable?.waitingQueueNumber || "",
       status: "pending",
       totalAmount,
       note: document.querySelector("#orderNote").value.trim(),
@@ -463,12 +484,12 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
     cart.clear();
     document.querySelector("#orderNote").value = "";
     updateCart();
-    toast("ส่งรายการเข้าครัวแล้ว");
+    toast(t("order.toast.submitted"));
   } catch (error) {
     console.error(error);
-    toast(error.message === "INVALID_TABLE_SESSION" ? "QR นี้หมดอายุแล้ว กรุณาติดต่อแคชเชียร์" : "ส่งออเดอร์ไม่สำเร็จ", "error");
+    toast(error.message === "INVALID_TABLE_SESSION" ? t("order.errors.expired") : t("order.toast.submit_failed"), "error");
   } finally {
-    setSubmitButton("ยืนยันการสั่ง");
+    setSubmitButton(t("order.actions.submit"));
     updateCart();
   }
 });
@@ -477,10 +498,10 @@ try {
   await ensureTenantContext();
   tableSessionValid = await validateTableSession();
   if (!tableSessionValid) {
-    document.querySelector("#tableBadge").textContent = "QR หมดอายุ";
-    setIconHeading("#tableTitle", "journal-x", "QR นี้ไม่สามารถใช้งานได้");
+    document.querySelector("#tableBadge").textContent = t("order.header.expired");
+    setIconHeading("#tableTitle", "journal-x", t("order.errors.invalid_title"));
     categoryTabs.innerHTML = "";
-    menuGrid.innerHTML = '<div class="card empty">กรุณาติดต่อแคชเชียร์เพื่อรับ QR สำหรับโต๊ะของคุณ</div>';
+    menuGrid.innerHTML = `<div class="card empty">${t("order.errors.invalid_description")}</div>`;
     menuPagination.hidden = true;
     document.querySelector("#searchInput").disabled = true;
   } else {
@@ -491,9 +512,9 @@ try {
   }
 } catch (error) {
   console.error(error);
-  document.querySelector("#tableBadge").textContent = "ไม่พบร้าน";
-  setIconHeading("#tableTitle", "journal-x", "ไม่สามารถโหลดข้อมูลร้านได้");
+  document.querySelector("#tableBadge").textContent = t("order.header.store_missing");
+  setIconHeading("#tableTitle", "journal-x", t("order.errors.store_title"));
   categoryTabs.innerHTML = "";
-  menuGrid.innerHTML = '<div class="card empty">ไม่พบข้อมูลร้านหรือร้านถูกปิดใช้งาน</div>';
+  menuGrid.innerHTML = `<div class="card empty">${t("order.errors.store_description")}</div>`;
   menuPagination.hidden = true;
 }

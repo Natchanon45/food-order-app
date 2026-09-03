@@ -80,7 +80,7 @@ const STORAGE_PREFIX = "food_waiting_queue_v1";
 const DEFAULT_CALL_TIMEOUT_MINUTES = 5;
 const DEFAULT_MAX_DEFERS = 2;
 const DEFAULT_TABLE_MINUTES = 45;
-const NUMBER_LEASE_SIZE = 20;
+const NUMBER_LEASE_SIZE = 3;
 const APPLIED_OPERATION_LIMIT = 30;
 const ACTIVE_DEDUPE_STATUSES = new Set([
   "waiting",
@@ -548,64 +548,135 @@ function saveLease(tenantId, dateKey, lease) {
   writeJson(storageKey(tenantId, `number-lease:${dateKey}`), lease);
 }
 
-export async function ensureWaitingNumberLease(tenantId, { force = false } = {}) {
+const waitingNumberLeaseRequests = new Map();
+
+export async function ensureWaitingNumberLease(
+  tenantId,
+  { force = false } = {},
+) {
   const dateKey = toDateKey();
   const existing = readLease(tenantId, dateKey);
-  if (!force && existing && Number(existing.end) - Number(existing.next) >= 3) return existing;
+
+  if (!force && existing) return existing;
   if (!isOnline()) return existing;
 
-  const actor = currentActor();
-  const leaseId = safeId("lease");
-  const counterRef = doc(db, COLLECTIONS.counters, queueCounterId(tenantId, dateKey));
-  const leaseRef = doc(db, COLLECTIONS.leases, leaseId);
-  const lease = await runWaitingQueueTransaction(async transaction => {
+  const requestKey = `${tenantId}:${dateKey}`;
+  if (waitingNumberLeaseRequests.has(requestKey)) {
+    return waitingNumberLeaseRequests.get(requestKey);
+  }
+
+  const request = (async () => {
+    const actor = currentActor();
+    const leaseId = safeId("lease");
+    const counterRef = doc(
+      db,
+      COLLECTIONS.counters,
+      queueCounterId(tenantId, dateKey),
+    );
+    const leaseRef = doc(db, COLLECTIONS.leases, leaseId);
+
+    const lease = await runWaitingQueueTransaction(async transaction => {
+      const counterSnap = await transaction.get(counterRef);
+      const counter = counterSnap.exists() ? counterSnap.data() : {};
+      const start = Math.max(1, Number(counter.nextNumber || 1));
+      const end = start + NUMBER_LEASE_SIZE - 1;
+      const timestamp = nowMs();
+
+      const nextCounter = {
+        tenantId,
+        dateKey,
+        nextNumber: end + 1,
+        updatedAt: serverTimestamp(),
+        updatedAtMs: timestamp,
+      };
+      const row = {
+        id: leaseId,
+        tenantId,
+        dateKey,
+        start,
+        end,
+        next: start,
+        deviceId: actor.deviceId,
+        createdBy: actor.actorId,
+        createdAt: serverTimestamp(),
+        createdAtMs: timestamp,
+      };
+
+      transaction.set(counterRef, nextCounter, { merge: true });
+      transaction.set(leaseRef, row, { merge: false });
+      return { ...row, createdAt: null };
+    });
+
+    saveLease(tenantId, dateKey, lease);
+    return lease;
+  })();
+
+  waitingNumberLeaseRequests.set(requestKey, request);
+
+  try {
+    return await request;
+  } finally {
+    waitingNumberLeaseRequests.delete(requestKey);
+  }
+}
+
+async function allocateOnlineQueueNumber(tenantId, dateKey) {
+  const counterRef = doc(
+    db,
+    COLLECTIONS.counters,
+    queueCounterId(tenantId, dateKey),
+  );
+
+  return runWaitingQueueTransaction(async transaction => {
     const counterSnap = await transaction.get(counterRef);
     const counter = counterSnap.exists() ? counterSnap.data() : {};
-    const start = Math.max(1, Number(counter.nextNumber || 1));
-    const end = start + NUMBER_LEASE_SIZE - 1;
-    const nextCounter = {
+    const sequence = Math.max(1, Number(counter.nextNumber || 1));
+    const timestamp = nowMs();
+
+    transaction.set(counterRef, {
       tenantId,
       dateKey,
-      nextNumber: end + 1,
+      nextNumber: sequence + 1,
       updatedAt: serverTimestamp(),
-      updatedAtMs: nowMs(),
-    };
-    const row = {
-      id: leaseId,
-      tenantId,
+      updatedAtMs: timestamp,
+    }, { merge: true });
+
+    return {
+      queueNumber: formatQueueNumber(sequence),
+      queueSequence: sequence,
       dateKey,
-      start,
-      end,
-      next: start,
-      deviceId: actor.deviceId,
-      createdBy: actor.actorId,
-      createdAt: serverTimestamp(),
-      createdAtMs: nowMs(),
+      provisional: false,
     };
-    transaction.set(counterRef, nextCounter, { merge: true });
-    transaction.set(leaseRef, row, { merge: false });
-    return { ...row, createdAt: null };
   });
-  saveLease(tenantId, dateKey, lease);
-  return lease;
 }
 
 async function allocateQueueNumber(tenantId) {
   const dateKey = toDateKey();
-  let lease = readLease(tenantId, dateKey);
-  if (!lease && isOnline()) lease = await ensureWaitingNumberLease(tenantId, { force: true });
-  if (!lease) {
-    throw new WaitingQueueError(
-      "OFFLINE_NUMBER_LEASE_REQUIRED",
-      "ไม่มีชุดเลขคิวออฟไลน์สำรอง กรุณาเชื่อมต่ออินเทอร์เน็ตชั่วคราวเพื่อสำรองเลข W ก่อนรับคิว",
-    );
+  const lease = readLease(tenantId, dateKey);
+
+  if (lease) {
+    const sequence = Number(lease.next);
+    saveLease(tenantId, dateKey, {
+      ...lease,
+      next: sequence + 1,
+    });
+
+    return {
+      queueNumber: formatQueueNumber(sequence),
+      queueSequence: sequence,
+      dateKey,
+      provisional: false,
+    };
   }
-  const sequence = Number(lease.next);
-  saveLease(tenantId, dateKey, { ...lease, next: sequence + 1 });
-  if (Number(lease.end) - sequence <= 3 && isOnline()) {
-    setTimeout(() => ensureWaitingNumberLease(tenantId, { force: true }).catch(() => {}), 0);
+
+  if (isOnline()) {
+    return allocateOnlineQueueNumber(tenantId, dateKey);
   }
-  return { queueNumber: formatQueueNumber(sequence), queueSequence: sequence, dateKey, provisional: false };
+
+  throw new WaitingQueueError(
+    "OFFLINE_NUMBER_LEASE_REQUIRED",
+    "ไม่มีเลขคิวออฟไลน์สำรอง กรุณาเชื่อมต่ออินเทอร์เน็ตชั่วคราวก่อนรับคิว",
+  );
 }
 
 function priorityRank(priority) {
@@ -1379,19 +1450,80 @@ export async function transitionWaitingQueue(queueId, toStatus, options = {}) {
 function normalizeTable(snapshot, sourceCollection) {
   const data = snapshot.data ? snapshot.data() : snapshot;
   const id = snapshot.id || data.id || data.tableId;
-  const capacity = Math.max(1, Number(data.capacity || data.seats || data.seatCount || data.maxGuests || data.size || 4));
-  const label = normalizeString(data.name || data.tableName || data.label || data.number || data.code || id);
-  const status = normalizeString(data.status || data.tableStatus || (data.occupied || data.isOccupied ? "occupied" : "available")).toLowerCase();
-  const available = !data.deleted && !data.disabled && !data.occupied && !data.isOccupied && data.available !== false && data.isAvailable !== false && ["", "available", "free", "empty", "open", "ready", "ว่าง"].includes(status);
+  const capacity = Math.max(
+    1,
+    Number(
+      data.capacity
+      || data.seats
+      || data.seatCount
+      || data.maxGuests
+      || data.size
+      || 4
+    ),
+  );
+  const label = normalizeString(
+    data.name
+    || data.tableName
+    || data.label
+    || data.number
+    || data.code
+    || id,
+  );
+  const status = normalizeString(
+    data.status
+    || data.tableStatus
+    || (data.occupied || data.isOccupied ? "occupied" : "available"),
+  ).toLowerCase();
+
+  const availableStatuses = new Set([
+    "",
+    "available",
+    "free",
+    "empty",
+    "open",
+    "ready",
+    "ว่าง",
+  ]);
+  const occupiedStatuses = new Set([
+    "occupied",
+    "busy",
+    "in_use",
+    "in-use",
+    "active",
+    "ไม่ว่าง",
+  ]);
+
+  const enabled =
+    data.active !== false
+    && data.deleted !== true
+    && data.disabled !== true;
+
+  const fallbackAvailable =
+    data.occupied !== true
+    && data.isOccupied !== true
+    && data.available !== false
+    && data.isAvailable !== false;
+
+  const available =
+    enabled
+    && (
+      availableStatuses.has(status)
+      || (!occupiedStatuses.has(status) && fallbackAvailable)
+    );
+
   return {
     ...data,
     id: String(id),
     tableId: String(id),
     label,
     capacity,
-    status,
+    status: available ? "available" : status,
     available,
-    accessible: Boolean(data.accessible || data.wheelchairAccessible || data.wheelchair),
+    accessible: Boolean(
+      data.accessible
+      || data.wheelchairAccessible
+      || data.wheelchair
+    ),
     highChairSupported: data.highChairSupported !== false,
     quietArea: Boolean(data.quietArea),
     _collection: sourceCollection,
@@ -1402,8 +1534,21 @@ export async function loadWaitingQueueTables(tenantId) {
   const rows = [];
   const seen = new Set();
   const attempts = [
-    { collectionRef: collection(db, COLLECTIONS.tables), source: COLLECTIONS.tables, filter: true },
-    { collectionRef: collection(db, "tenants", tenantId, COLLECTIONS.tables), source: `tenants/${tenantId}/${COLLECTIONS.tables}`, filter: false },
+    {
+      collectionRef: collection(
+        db,
+        "tenants",
+        tenantId,
+        COLLECTIONS.tables,
+      ),
+      source: `tenants/${tenantId}/${COLLECTIONS.tables}`,
+      filter: false,
+    },
+    {
+      collectionRef: collection(db, COLLECTIONS.tables),
+      source: COLLECTIONS.tables,
+      filter: true,
+    },
   ];
   for (const attempt of attempts) {
     try {
@@ -1413,7 +1558,7 @@ export async function loadWaitingQueueTables(tenantId) {
       const snapshot = await getDocs(q);
       snapshot.forEach(item => {
         const table = normalizeTable(item, attempt.source);
-        const key = `${table._collection}:${table.id}`;
+        const key = normalizeString(table.code || table.id).toUpperCase();
         if (!seen.has(key)) {
           seen.add(key);
           rows.push(table);

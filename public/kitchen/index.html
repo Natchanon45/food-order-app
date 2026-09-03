@@ -1,39 +1,32 @@
 <!doctype html>
 <html lang="th">
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
-    <meta name="theme-color" content="#159447" />
-    <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096" />
-    <link rel="stylesheet" href="/assets/css/icons.css?v=20260731-079" />
-    <link
-      rel="stylesheet"
-      href="/assets/css/kitchen-item-editor.css?v=20260731-079"
-    />
-    <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-095" />
-    <link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260731-079" />
-    <title>หน้าครัว</title>
-  </head>
-  <body class="order-delivery-workspace kitchen-page" data-roles="kitchen">
-    <div id="demoBanner"></div>
-    <header class="app-header">
-      <div class="brand"><span class="brand-mark">FO</span>หน้าครัว</div>
-    </header>
-    <main class="container">
-      <section class="hero">
-        <h1>หน้าครัว</h1>
-        <p>ออเดอร์ใหม่จะแสดงแบบ Real-time</p>
-      </section>
-      <div id="orderGrid" class="grid grid-2"></div>
-    </main>
-    <script type="module" src="/assets/js/page-guard.js?v=20260801-103"></script>
-    <script type="module" src="/assets/js/kitchen.js?v=20260801-101"></script>
-    <script
-      type="module"
-      src="/assets/js/order-completion-finalizer.js?v=20260702-002"
-    ></script>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#159447">
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240">
+  <link rel="stylesheet" href="/assets/css/kitchen-item-editor.css?v=20260731-079">
+  <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-095">
+  <link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260731-079">
+  <link rel="stylesheet" href="/assets/css/i18n.css?v=20260903-202">
+  <style>.app-header:has(#deliveryAlertButton) > .user-menu { margin-left:0!important; }</style>
+  <title>หน้าครัว</title>
+</head>
+<body class="order-delivery-workspace kitchen-page" data-roles="owner,admin,kitchen">
+  <div id="demoBanner"></div>
+  <header class="app-header">
+    <div class="brand"><span class="brand-mark">FO</span><span data-i18n="kitchen.brand">หน้าครัว</span></div>
+    <div class="app-locale-switcher" data-static-locale-switcher><details class="app-locale-menu" data-locale-menu><summary class="app-locale-trigger" aria-label="Language" title="Language"><i class="bi bi-globe2" aria-hidden="true"></i><span class="visually-hidden">Language</span></summary><div class="app-locale-menu__panel" role="menu" aria-label="Language"><button type="button" class="app-locale-option" data-locale-option="th" lang="th" role="menuitemradio" aria-checked="true"><span>ไทย</span><i class="bi bi-check-lg" aria-hidden="true"></i></button><button type="button" class="app-locale-option" data-locale-option="en" lang="en" role="menuitemradio" aria-checked="false"><span>English</span><i class="bi bi-check-lg" aria-hidden="true"></i></button></div></details></div>
+  </header>
+  <main class="container">
+    <section class="hero"><h1 data-i18n="kitchen.hero.title">หน้าครัว</h1><p data-i18n="kitchen.hero.description">ออเดอร์ใหม่จะแสดงแบบ Real-time</p></section>
+    <div id="orderGrid" class="grid grid-2"></div>
+  </main>
+  <script type="module" src="/assets/js/page-guard.js?v=20260903-201"></script>
+  <script type="module" src="/assets/js/kitchen.js?v=20260903-242"></script>
+  <script type="module" src="/assets/js/order-completion-finalizer.js?v=20260702-002"></script>
+  <script type="module" src="/assets/js/locale-switcher-static.js?v=20260903-202"></script>
+  <script type="module" src="/assets/js/user-menu-i18n-static.js?v=20260903-202"></script>
+</body>
 </html>

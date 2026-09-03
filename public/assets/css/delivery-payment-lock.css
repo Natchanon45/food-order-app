@@ -1,3 +1,7 @@
+#paymentLockPanel [hidden] {
+  display: none !important;
+}
+
 .delivery-payment-unlocked #promptPayQr,
 .delivery-payment-unlocked #paymentSlipWrap,
 .delivery-payment-unlocked #downloadPaymentQr,
@@ -55,12 +59,18 @@
   font-size: 18px;
 }
 
+/* DELIVERY_PAYMENT_ACTIONS_TWO_COLUMNS_20260829_001 */
 .payment-lock-actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 8px;
+  width: 100%;
 }
 
 .payment-lock-actions .btn {
-  flex: 1 1 190px;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  justify-content: center;
+  white-space: nowrap;
 }

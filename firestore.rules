@@ -165,6 +165,102 @@ service cloud.firestore {
     match /orders/{orderId} { allow get: if true; allow list: if staffRole() || activeTableOrder(); allow create: if validDeliveryOrder() || validTableOrder() || validTakeawayOrder() || validWaitingQueueDraftOrder(orderId); allow update: if cashierRole() || kitchenRole() || adminRole() || validWaitingQueueDraftOrderUpdate(orderId); allow delete: if superAdminRole(); }
     match /customerProfiles/{userId} { allow read, create, update, delete: if signedIn() && request.auth.uid == userId && (request.method == 'delete' || (request.resource.data.addresses is list && request.resource.data.addresses.size() <= 5)); }
     match /deliveryCustomers/{customerId} { allow read, write: if adminRole(); }
+
+    // PUBLIC_CONTACT_CENTER_20260803_005
+    match /platformSettings/{settingId} {
+      allow get: if settingId == 'publicContact';
+      allow list: if false;
+
+      allow create, update: if
+        settingId == 'publicContact'
+        && superAdminRole()
+        && request.resource.data.keys().hasOnly([
+          'id',
+          'tenantId',
+          'enabled',
+          'heading',
+          'description',
+          'phoneEnabled',
+          'phoneLabel',
+          'phoneNumber',
+          'lineEnabled',
+          'lineLabel',
+          'lineUrl',
+          'messengerEnabled',
+          'messengerLabel',
+          'messengerUrl',
+          'emailEnabled',
+          'emailLabel',
+          'email',
+          'updatedBy',
+          'updatedByEmail',
+          'updatedAt',
+          'updatedAtMs'
+        ])
+        && request.resource.data.get('id', '') == 'publicContact'
+        && request.resource.data.get('tenantId', '') == '__platform__'
+        && request.resource.data.get('enabled', false) is bool
+        && request.resource.data.get('heading', '') is string
+        && request.resource.data.get('heading', '').size() > 0
+        && request.resource.data.get('heading', '').size() <= 80
+        && request.resource.data.get('description', '') is string
+        && request.resource.data.get('description', '').size() <= 240
+        && request.resource.data.get('phoneEnabled', false) is bool
+        && request.resource.data.get('phoneLabel', '') is string
+        && request.resource.data.get('phoneLabel', '').size() <= 60
+        && request.resource.data.get('phoneNumber', '') is string
+        && request.resource.data.get('phoneNumber', '').size() <= 40
+        && request.resource.data.get('lineEnabled', false) is bool
+        && request.resource.data.get('lineLabel', '') is string
+        && request.resource.data.get('lineLabel', '').size() <= 60
+        && request.resource.data.get('lineUrl', '') is string
+        && request.resource.data.get('lineUrl', '').size() <= 500
+        && request.resource.data.get('messengerEnabled', false) is bool
+        && request.resource.data.get('messengerLabel', '') is string
+        && request.resource.data.get('messengerLabel', '').size() <= 60
+        && request.resource.data.get('messengerUrl', '') is string
+        && request.resource.data.get('messengerUrl', '').size() <= 500
+        && request.resource.data.get('emailEnabled', false) is bool
+        && request.resource.data.get('emailLabel', '') is string
+        && request.resource.data.get('emailLabel', '').size() <= 60
+        && request.resource.data.get('email', '') is string
+        && request.resource.data.get('email', '').size() <= 160
+        && request.resource.data.get('updatedBy', '') == request.auth.uid
+        && request.resource.data.get('updatedByEmail', '') is string
+        && request.resource.data.get('updatedByEmail', '').size() <= 160
+        && request.resource.data.get('updatedAtMs', 0) is int
+        && request.resource.data.get('updatedAtMs', 0) > 0;
+
+      allow delete: if false;
+    }
+
+    // GOOGLE_CUSTOMER_LOGIN_SETTINGS_20260903_001
+    match /platformSettings/{settingId} {
+      allow get: if settingId == 'googleCustomerLogin';
+      allow list: if false;
+      allow create, update: if
+        settingId == 'googleCustomerLogin'
+        && superAdminRole()
+        && request.resource.data.keys().hasOnly([
+          'id', 'tenantId', 'enabled', 'clientId', 'tokenTtlDays',
+          'updatedBy', 'updatedByEmail', 'updatedAt', 'updatedAtMs'
+        ])
+        && request.resource.data.get('id', '') == 'googleCustomerLogin'
+        && request.resource.data.get('tenantId', '') == '__platform__'
+        && request.resource.data.get('enabled', false) is bool
+        && request.resource.data.get('clientId', '') is string
+        && request.resource.data.get('clientId', '').size() <= 255
+        && request.resource.data.get('tokenTtlDays', 30) is int
+        && request.resource.data.get('tokenTtlDays', 30) >= 1
+        && request.resource.data.get('tokenTtlDays', 30) <= 90
+        && request.resource.data.get('updatedBy', '') == request.auth.uid
+        && request.resource.data.get('updatedByEmail', '') is string
+        && request.resource.data.get('updatedByEmail', '').size() <= 160
+        && request.resource.data.get('updatedAtMs', 0) is int
+        && request.resource.data.get('updatedAtMs', 0) > 0;
+      allow delete: if false;
+    }
+
     match /users/{userId} { allow read: if signedIn() && (request.auth.uid == userId || superAdminRole()); allow create, update, delete: if superAdminRole(); }
     match /tenantSlugs/{slug} { allow read: if true; allow write: if superAdminRole(); }
     match /publicWaitingQueues/{publicToken} {

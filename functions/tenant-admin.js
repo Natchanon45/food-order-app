@@ -36,9 +36,17 @@ exports.listTenants = onCall(
   async request => {
     await assertSuperAdmin(request.auth);
     const snapshot = await getFirestore().collection("tenants").orderBy("name").get();
-    return {
-      tenants: snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-    };
+    const tenants = await Promise.all(snapshot.docs.map(async tenantDoc => {
+      const tenant = { id: tenantDoc.id, ...tenantDoc.data() };
+      const settingsSnapshot = await tenantDoc.ref.collection("settings").doc("store").get();
+      const settings = settingsSnapshot.exists ? settingsSnapshot.data() : {};
+      return {
+        ...tenant,
+        shopPhone: settings.shopPhone || tenant.shopPhone || "",
+        shopAddress: settings.shopAddress || tenant.shopAddress || "",
+      };
+    }));
+    return { tenants };
   }
 );
 
@@ -312,7 +320,10 @@ exports.deleteTenant = onCall(
     const tenantSnapshot = await tenantRef.get();
     if (!tenantSnapshot.exists) throw new HttpsError("not-found", "Tenant not found");
 
-    const protectedCollections = ["orders", "memberships", "menus", "tables", "notificationTokens", "deliveryCustomers"];
+    const protectedCollections = [
+      "orders", "memberships", "menus", "tables", "notificationTokens", "deliveryCustomers",
+      "sales", "products", "categories", "revenueSharePayments"
+    ];
     for (const collectionName of protectedCollections) {
       const snapshot = await tenantRef.collection(collectionName).limit(1).get();
       if (!snapshot.empty) {

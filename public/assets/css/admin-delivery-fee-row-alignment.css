@@ -1,0 +1,319 @@
+/* ADMIN_DELIVERY_FEE_BORDERLESS_TABLE_20260829_001 */
+body.admin-vr-page .delivery-fee-head {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+}
+
+body.admin-vr-page .delivery-fee-head > div {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+body.admin-vr-page .delivery-fee-head #addDeliveryFeeOption {
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  min-height: 42px !important;
+  white-space: nowrap !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList.delivery-fee-options {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin-top: 14px !important;
+  overflow: visible !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-table-header,
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-row {
+  display: grid !important;
+  grid-template-columns: 64px minmax(180px, 1fr) minmax(120px, 160px) minmax(120px, 160px) 48px !important;
+  column-gap: 12px !important;
+  align-items: center !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-table-header {
+  padding: 0 10px 8px !important;
+  color: var(--muted, #64748b) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-table-body {
+  display: grid !important;
+  gap: 4px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-row {
+  min-height: 58px !important;
+  padding: 6px 10px !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-row:nth-child(even) {
+  background: rgba(15, 125, 59, 0.035) !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-index {
+  display: grid !important;
+  place-items: center !important;
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  min-height: 38px !important;
+  margin: 0 auto !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: rgba(21, 148, 71, 0.1) !important;
+  color: #0d6f34 !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-description {
+  min-width: 0 !important;
+  color: var(--text, #17211b) !important;
+  font-weight: 650 !important;
+  line-height: 1.35 !important;
+  overflow-wrap: anywhere !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-cell {
+  min-width: 0 !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList
+  :is([data-delivery-fee-distance], [data-delivery-fee-amount]) {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  margin: 0 !important;
+  padding: 8px 10px !important;
+  box-sizing: border-box !important;
+  text-align: right !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-static-value {
+  display: block !important;
+  width: 100% !important;
+  padding: 8px 10px !important;
+  color: var(--text, #17211b) !important;
+  font-weight: 650 !important;
+  text-align: right !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-action,
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-action-header {
+  display: grid !important;
+  place-items: center !important;
+  min-width: 0 !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-remove,
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-lock {
+  display: inline-grid !important;
+  place-items: center !important;
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  min-height: 42px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  box-sizing: border-box !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-remove {
+  border: 0 !important;
+  background: #dc2626 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-remove:hover,
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-remove:focus-visible {
+  background: #b91c1c !important;
+  color: #fff !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-lock {
+  color: var(--muted, #64748b) !important;
+  background: rgba(100, 116, 139, 0.08) !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList
+  :is(.delivery-fee-remove, .delivery-fee-lock) .app-icon {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+/* ADMIN_DELIVERY_FEE_LOCK_CENTER_20260829_001
+ * The global i.app-icon uses font-size: 1.25em. Inside the non-button
+ * pickup lock that resolves to 20px while its box is only 18x18px,
+ * which makes the Bootstrap Icons glyph overflow off-center.
+ */
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-lock .app-icon {
+  font-size: 18px !important;
+  line-height: 1 !important;
+  vertical-align: 0 !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-lock .app-icon::before {
+  display: block !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+
+@media (max-width: 900px) {
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-table-header,
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-row {
+    grid-template-columns: 52px minmax(150px, 1fr) 112px 112px 44px !important;
+    column-gap: 8px !important;
+  }
+}
+
+@media (max-width: 720px) {
+  body.admin-vr-page .delivery-fee-head {
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+
+  body.admin-vr-page .delivery-fee-head #addDeliveryFeeOption {
+    margin-left: auto !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    padding: 8px 12px !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-table-header {
+    display: none !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-table-body {
+    gap: 10px !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-row {
+    grid-template-columns: 38px minmax(0, 1fr) 44px !important;
+    grid-template-areas:
+      "index description action"
+      "index distance action"
+      "index amount action" !important;
+    column-gap: 10px !important;
+    row-gap: 7px !important;
+    align-items: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 10px 6px !important;
+    overflow: visible !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-index {
+    grid-area: index !important;
+    align-self: start !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    min-height: 34px !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-description {
+    grid-area: description !important;
+    padding-right: 4px !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-distance-cell {
+    grid-area: distance !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-amount-cell {
+    grid-area: amount !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-action {
+    grid-area: action !important;
+    align-self: start !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-cell {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(88px, 108px) !important;
+    gap: 8px !important;
+    align-items: center !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-cell::before {
+    content: attr(data-mobile-label) !important;
+    display: block !important;
+    min-width: 0 !important;
+    color: var(--muted, #64748b) !important;
+    font-size: 12px !important;
+    font-weight: 650 !important;
+    line-height: 1.25 !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList
+    :is([data-delivery-fee-distance], [data-delivery-fee-amount]) {
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 7px 9px !important;
+    font-size: 16px !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-static-value {
+    padding: 7px 9px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  body.admin-vr-page .delivery-fee-head {
+    align-items: flex-start !important;
+  }
+
+  body.admin-vr-page .delivery-fee-head #addDeliveryFeeOption {
+    width: 44px !important;
+    max-width: 44px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    gap: 0 !important;
+  }
+
+  body.admin-vr-page .delivery-fee-head #addDeliveryFeeOption > span {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-row {
+    grid-template-columns: 34px minmax(0, 1fr) 42px !important;
+    column-gap: 8px !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-cell {
+    grid-template-columns: minmax(0, 1fr) 86px !important;
+  }
+}

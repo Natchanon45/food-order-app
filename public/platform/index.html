@@ -5,50 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#159447">
   <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
-  <link rel="stylesheet" href="/assets/css/icons.css?v=20260731-079">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240">
+  <link rel="stylesheet" href="/assets/css/i18n.css?v=20260903-202">
   <title>ระบบกลาง FOD</title>
 </head>
 <body data-roles="super_admin">
   <header class="app-header">
-    <div class="brand"><span class="brand-mark">FOD</span>ระบบกลาง</div>
+    <div class="brand"><span class="brand-mark">FOD</span><span data-i18n="platform.header.title">ระบบกลาง</span></div>
+    <div class="app-locale-switcher" data-static-locale-switcher><details class="app-locale-menu" data-locale-menu><summary class="app-locale-trigger" aria-label="Language" title="Language"><i class="bi bi-globe2" aria-hidden="true"></i><span class="visually-hidden">Language</span></summary><div class="app-locale-menu__panel" role="menu" aria-label="Language"><button type="button" class="app-locale-option" data-locale-option="th" lang="th" role="menuitemradio" aria-checked="true"><span>ไทย</span><i class="bi bi-check-lg" aria-hidden="true"></i></button><button type="button" class="app-locale-option" data-locale-option="en" lang="en" role="menuitemradio" aria-checked="false"><span>English</span><i class="bi bi-check-lg" aria-hidden="true"></i></button></div></details></div>
   </header>
-
   <main class="container">
-    <section class="hero">
-      <h1>Super Admin Control Center</h1>
-      <p>จัดการร้านค้าและสถานะระบบจากส่วนกลาง โดยแยกออกจากระบบปฏิบัติการของแต่ละร้าน</p>
-    </section>
-
+    <section class="hero"><h1 data-i18n="platform.hero.title">Super Admin Control Center</h1><p data-i18n="platform.hero.description">จัดการร้านค้าและสถานะระบบจากส่วนกลาง โดยแยกออกจากระบบปฏิบัติการของแต่ละร้าน</p></section>
     <section class="nav-cards platform-cards">
-      <a class="card nav-card" href="/admin/tenants">
-        <i class="bi bi-arrow-left-right app-icon" aria-hidden="true"></i>
-        <strong>จัดการร้านค้า</strong>
-        <small>สร้างร้าน กำหนด Owner เปิดหรือระงับบัญชี</small>
-      </a>
-      <a class="card nav-card" href="/platform/owners">
-        <i class="bi bi-people app-icon" aria-hidden="true"></i>
-        <strong>บัญชีเจ้าของร้าน</strong>
-        <small>ตรวจสอบ Owner ของแต่ละ Tenant</small>
-      </a>
+      <a class="card nav-card" href="/admin/tenants"><i class="bi bi-arrow-left-right app-icon" aria-hidden="true"></i><strong data-i18n="platform.cards.tenants.title">จัดการร้านค้า</strong><small data-i18n="platform.cards.tenants.description">สร้างร้าน กำหนด Owner เปิดหรือระงับบัญชี</small></a>
+      <a class="card nav-card" href="/platform/owners"><i class="bi bi-people app-icon" aria-hidden="true"></i><strong data-i18n="platform.cards.owners.title">บัญชีเจ้าของร้าน</strong><small data-i18n="platform.cards.owners.description">ตรวจสอบ Owner ของแต่ละ Tenant</small></a>
+      <a class="card nav-card" href="/platform/contact"><i class="bi bi-chat-heart app-icon" aria-hidden="true"></i><strong data-i18n="platform.cards.contact.title">ช่องทางติดต่อหน้าแรก</strong><small data-i18n="platform.cards.contact.description">ตั้งค่าโทรศัพท์ LINE Messenger และอีเมลที่แสดงต่อผู้เยี่ยมชม</small></a>
     </section>
-
-    <section class="card" style="margin-top:16px">
-      <div class="section-title"><h2>ขอบเขตระบบกลาง</h2></div>
-      <p class="menu-category" style="font-size:14px;line-height:1.7;margin:0">
-        Super Admin ใช้สำหรับจัดการ Tenant และสถานะบริการเท่านั้น ไม่เข้าสู่หน้าครัว แคชเชียร์ เมนู โต๊ะ หรือข้อมูลปฏิบัติการของร้านโดยอัตโนมัติ
-      </p>
-    </section>
+    <section class="card" style="margin-top:16px"><div class="section-title"><h2 data-i18n="platform.scope.title">ขอบเขตระบบกลาง</h2></div><p class="menu-category" style="font-size:14px;line-height:1.7;margin:0" data-i18n="platform.scope.description">Super Admin ใช้สำหรับจัดการ Tenant และสถานะบริการเท่านั้น ไม่เข้าสู่หน้าครัว แคชเชียร์ เมนู โต๊ะ หรือข้อมูลปฏิบัติการของร้านโดยอัตโนมัติ</p></section>
   </main>
-
-  <style>
-    .platform-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .platform-cards .nav-card{display:grid;justify-items:start;text-align:left;gap:8px}
-    .platform-cards .nav-card .app-icon{width:32px;height:32px;margin:0;color:var(--green-dark)}
-    .platform-cards .nav-card strong{font-size:18px}
-    .platform-cards .nav-card small{color:var(--muted);font-weight:500;line-height:1.5}
-    @media(max-width:640px){.platform-cards{grid-template-columns:1fr}}
-  </style>
-
-  <script type="module" src="/assets/js/page-guard.js?v=20260801-103"></script>
+  <style>.platform-cards{grid-template-columns:repeat(3,minmax(0,1fr))}.platform-cards .nav-card{display:grid;justify-items:start;text-align:left;gap:8px}.platform-cards .nav-card .app-icon{width:32px;height:32px;margin:0;color:var(--green-dark)}.platform-cards .nav-card strong{font-size:18px}.platform-cards .nav-card small{color:var(--muted);font-weight:500;line-height:1.5}@media(max-width:640px){.platform-cards{grid-template-columns:1fr}}</style>
+  <script type="module" src="/assets/js/platform-i18n-bootstrap.js?v=20260903-212"></script>
+  <script type="module" src="/assets/js/page-guard.js?v=20260903-201"></script>
+  <script type="module" src="/assets/js/locale-switcher-static.js?v=20260903-202"></script>
 </body>
 </html>

@@ -1,79 +1,107 @@
-.tenant-action-row,
-#tenantList .order-actions {
-  display: flex !important;
-  align-items: center !important;
-  flex-wrap: wrap !important;
-  gap: 8px !important;
-}
+body.tenant-modal-open{overflow:hidden}
+.tenant-admin-page{width:min(1480px,100%);padding-bottom:72px}
+.tenant-admin-hero{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:18px;padding:26px 28px;border-radius:24px;background:linear-gradient(135deg,#101915 0%,#075f33 56%,#118b46 100%);color:#fff;overflow:hidden;position:relative}
+.tenant-admin-hero::after{content:"";position:absolute;right:-50px;top:-100px;width:260px;height:260px;border:46px solid rgba(255,255,255,.08);border-radius:999px}
+.tenant-admin-hero> *{position:relative;z-index:1}
+.tenant-admin-hero h1{margin:8px 0 4px;font-size:clamp(1.8rem,3vw,2.5rem);line-height:1.1}
+.tenant-admin-hero p{margin:0;color:rgba(255,255,255,.84)}
+.tenant-admin-eyebrow{display:inline-flex;align-items:center;gap:7px;padding:5px 10px;border:1px solid rgba(255,255,255,.2);border-radius:999px;background:rgba(255,255,255,.1);font-size:.76rem;font-weight:800}
+.tenant-create-trigger{min-height:46px;padding-inline:18px;white-space:nowrap;background:#fff!important;color:#075f33!important;box-shadow:0 12px 28px rgba(0,0,0,.16)}
+.tenant-report-card,.tenant-list-card{border:1px solid #d8e7dd;border-radius:22px;box-shadow:0 16px 40px rgba(21,64,39,.07)}
+.tenant-list-card{margin-top:16px}
+.tenant-report-heading,.tenant-list-heading{align-items:flex-start}
+.tenant-report-heading h2,.tenant-list-heading h2{display:flex;align-items:center;gap:9px;margin:0}
+.tenant-report-heading p,.tenant-list-heading p{margin:5px 0 0;color:#697a70;font-size:.82rem}
+.tenant-period-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding:6px;border:1px solid #dce8df;border-radius:15px;background:#f5faf7}
+.tenant-period-tabs button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:8px 14px;border:0;border-radius:11px;background:transparent;color:#50665a;font:inherit;font-weight:800;cursor:pointer}
+.tenant-period-tabs button.active{background:#159447;color:#fff;box-shadow:0 7px 18px rgba(21,148,71,.2)}
+.tenant-period-controls{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin-top:14px}
+.tenant-period-controls>label,.tenant-custom-period label{display:grid;gap:6px;min-width:190px;color:#52695c;font-size:.78rem;font-weight:800}
+.tenant-custom-period{display:grid;grid-template-columns:repeat(2,minmax(180px,1fr));gap:10px}
+.tenant-period-label{margin-left:auto;padding:10px 13px;border-radius:11px;background:#eef8f2;color:#0d6f34;font-size:.8rem;font-weight:800}
+.tenant-platform-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-top:16px}
+.tenant-platform-summary article{display:grid;gap:5px;min-height:108px;padding:15px;border:1px solid #dce8df;border-radius:16px;background:#fbfefc}
+.tenant-platform-summary span{color:#68796f;font-size:.78rem;font-weight:700}
+.tenant-platform-summary strong{color:#163e29;font-size:1.55rem;line-height:1.1}
+.tenant-platform-summary small{color:#7c8a82}
+.tenant-platform-summary article.primary{border-color:#9fd0b3;background:linear-gradient(145deg,#0a6c38,#159447);color:#fff}
+.tenant-platform-summary article.primary span,.tenant-platform-summary article.primary strong,.tenant-platform-summary article.primary small{color:#fff}
+.tenant-platform-summary article.share{background:#fff8e9;border-color:#f0d394}
+.tenant-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px}
+.tenant-store-card{display:grid;gap:14px;min-width:0;padding:18px;border:1px solid #dbe7df;border-radius:18px;background:linear-gradient(160deg,#fff 0%,#f9fcfa 100%);box-shadow:0 9px 26px rgba(18,63,38,.055)}
+.tenant-store-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.tenant-store-title{display:flex;align-items:center;gap:11px;min-width:0}
+.tenant-store-mark{display:grid;place-items:center;width:44px;height:44px;flex:0 0 44px;border-radius:14px;background:#e8f7ee;color:#0c7038;font-size:1.05rem;font-weight:900}
+.tenant-store-title h3{margin:0;color:#173e2a;font-size:1.08rem;overflow-wrap:anywhere}
+.tenant-store-title a{display:inline-block;margin-top:3px;color:#668077;text-decoration:none;font-size:.78rem}
+.tenant-status-pill{display:inline-flex;align-items:center;min-height:28px;padding:5px 9px;border-radius:999px;font-size:.72rem;font-weight:900;white-space:nowrap}
+.tenant-status-pill.active{background:#e5f7eb;color:#0b7438}
+.tenant-status-pill.inactive{background:#fff0ee;color:#b42318}
+.tenant-meta-row{display:flex;flex-wrap:wrap;gap:7px}
+.tenant-meta-row span{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;background:#f0f5f2;color:#52695c;font-size:.73rem}
+.tenant-sales-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.tenant-sales-grid article{display:grid;gap:3px;min-width:0;padding:12px;border:1px solid #e0e9e3;border-radius:13px;background:#fff}
+.tenant-sales-grid span{color:#6d7d74;font-size:.7rem;font-weight:800}
+.tenant-sales-grid strong{color:#173f2a;font-size:1.12rem;line-height:1.15}
+.tenant-sales-grid small{color:#849189;font-size:.68rem}
+.tenant-sales-grid article.total{background:#edf9f1;border-color:#c4e3cf}
+.tenant-sales-grid article.share{background:#fff8ea;border-color:#ecd69f}
+.tenant-store-details{display:grid;gap:6px;padding:11px 12px;border-radius:13px;background:#f5f8f6;color:#607269;font-size:.73rem}
+.tenant-store-details span{display:grid;grid-template-columns:82px minmax(0,1fr);gap:8px;min-width:0;overflow-wrap:anywhere}
+.tenant-store-details strong{color:#264c36}
+.tenant-card-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:auto}
+.tenant-card-actions>.btn{width:100%!important;height:40px!important;min-width:0!important;min-height:40px!important;padding:0 8px!important;border-radius:10px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;white-space:nowrap!important;font-size:.74rem!important}
+.tenant-share-button{background:#fff8e8!important;border-color:#efd58c!important;color:#825900!important}
+.tenant-list-loading,.tenant-list-empty{grid-column:1/-1;display:grid;justify-items:center;gap:8px;padding:36px;border:1px dashed #ccdcd2;border-radius:16px;color:#6c7b73;text-align:center}
+.tenant-button-spinner{width:17px;height:17px;display:inline-block;flex:0 0 17px;border:2px solid currentColor;border-right-color:transparent;border-radius:999px;animation:tenant-spin .75s linear infinite}
+@keyframes tenant-spin{to{transform:rotate(360deg)}}
+.tenant-dialog{width:min(720px,calc(100% - 28px));max-width:720px;max-height:calc(100dvh - 28px);padding:0;border:0;border-radius:23px;background:transparent;overflow:visible}
+.tenant-dialog::backdrop{background:rgba(8,22,14,.62);backdrop-filter:blur(6px)}
+.tenant-dialog-card{display:grid;max-height:calc(100dvh - 28px);overflow:auto;border:1px solid #d7e5dc;border-radius:23px;background:#fff;box-shadow:0 28px 80px rgba(0,0,0,.3)}
+.tenant-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:20px;border-bottom:1px solid #e4ece7;background:linear-gradient(145deg,#f7fcf9,#fff)}
+.tenant-dialog-title{display:flex;align-items:center;gap:12px;min-width:0}
+.tenant-dialog-icon{display:grid;place-items:center;width:48px;height:48px;flex:0 0 48px;border-radius:15px;background:#e8f7ee;color:#0c7038;font-size:1.25rem}
+.tenant-dialog-icon.share{background:#fff3d6;color:#8a5a00}
+.tenant-dialog-eyebrow{display:block;color:#159447;font-size:.72rem;font-weight:900}
+.tenant-dialog-head h2{margin:3px 0 0;font-size:1.28rem}
+.tenant-dialog-head p{margin:4px 0 0;color:#687a70;font-size:.8rem;overflow-wrap:anywhere}
+.tenant-dialog-close{width:38px;height:38px;flex:0 0 38px;border:0;border-radius:999px;background:#edf2ef;color:#263c30;cursor:pointer}
+.tenant-dialog-body{display:grid;gap:15px;padding:20px}
+.tenant-dialog-body .field{align-content:start}
+.tenant-dialog-body .field>label{min-height:21px}
+.tenant-dialog-body .input{min-height:46px}
+.tenant-dialog-actions{display:grid;grid-template-columns:1fr 1.25fr;gap:10px;padding:15px 20px 20px;border-top:1px solid #e5ece8}
+.tenant-dialog-actions>.btn{width:100%!important;min-height:46px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important}
+.tenant-share-switch{display:flex;align-items:flex-start;gap:10px;padding:14px;border:1px solid #cfe3d6;border-radius:15px;background:#f2faf5;cursor:pointer}
+.tenant-share-switch input{width:20px;height:20px;margin-top:2px;accent-color:#159447}
+.tenant-share-switch span{display:grid;gap:3px}
+.tenant-share-switch small{color:#6d7d74;line-height:1.45}
+.tenant-share-input{display:grid;grid-template-columns:minmax(0,1fr) 52px;align-items:center}
+.tenant-share-input .input{border-radius:12px 0 0 12px}
+.tenant-share-input>span{display:grid;place-items:center;height:46px;border:1px solid #cbdad0;border-left:0;border-radius:0 12px 12px 0;background:#f3f7f4;font-weight:900}
+.tenant-share-preview{display:grid;grid-template-columns:1fr auto;gap:8px 12px;padding:14px;border-radius:14px;background:#f6f8f7}
+.tenant-share-preview span{color:#66766d}
+.tenant-share-preview strong{text-align:right;color:#173f29}
+@media(max-width:1050px){.tenant-card-grid{grid-template-columns:1fr}.tenant-platform-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){.tenant-admin-page{padding:10px 9px 60px}.tenant-admin-hero{align-items:stretch;flex-direction:column;padding:20px;border-radius:19px}.tenant-create-trigger{width:100%}.tenant-period-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.tenant-period-tabs button{width:100%}.tenant-period-controls{display:grid;grid-template-columns:1fr}.tenant-period-controls>label,.tenant-custom-period label{min-width:0}.tenant-custom-period{grid-template-columns:1fr}.tenant-period-label{margin-left:0}.tenant-platform-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.tenant-card-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.tenant-dialog{width:100%;max-width:none;max-height:calc(100dvh - env(safe-area-inset-top));margin:auto 0 0;border-radius:22px 22px 0 0}.tenant-dialog-card{max-height:calc(100dvh - env(safe-area-inset-top));border-radius:22px 22px 0 0;padding-bottom:env(safe-area-inset-bottom)}.tenant-dialog-body .grid-2{grid-template-columns:1fr!important}}
+@media(max-width:430px){.tenant-platform-summary{grid-template-columns:1fr 1fr}.tenant-platform-summary article{min-height:96px;padding:12px}.tenant-platform-summary strong{font-size:1.25rem}.tenant-store-card{padding:14px}.tenant-store-head{align-items:flex-start}.tenant-sales-grid{grid-template-columns:1fr 1fr}.tenant-card-actions{grid-template-columns:1fr 1fr}.tenant-dialog-head,.tenant-dialog-body,.tenant-dialog-actions{padding-inline:15px}.tenant-dialog-actions{grid-template-columns:1fr}}
+.tenant-subscription{order:20;border:1px solid #dce7e0;border-radius:14px;background:#fff;overflow:hidden}
+.tenant-subscription>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:10px 12px;cursor:pointer;list-style:none;color:#34513f}
+.tenant-subscription>summary::-webkit-details-marker{display:none}
+.tenant-subscription>summary>span:first-child{display:flex;align-items:center;gap:8px}
+.tenant-subscription-summary{display:inline-flex;align-items:center;gap:7px;color:#6c7d73;font-size:.72rem}
+.tenant-subscription[open] .tenant-subscription-summary .bi-chevron-down{transform:rotate(180deg)}
+.tenant-subscription-body{display:grid;gap:10px;padding:12px;border-top:1px solid #e6ede9;background:#f9fcfa}
+.tenant-subscription-info{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tenant-subscription-info article{display:grid;gap:3px;padding:9px;border-radius:11px;background:#fff;border:1px solid #e3ebe6}
+.tenant-subscription-info span{color:#728078;font-size:.68rem}.tenant-subscription-info strong{font-size:.8rem}
+.tenant-subscription-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tenant-subscription-fields label{display:grid;gap:5px;color:#617168;font-size:.7rem;font-weight:800}.tenant-subscription-fields .input{min-width:0;min-height:40px}
+.tenant-subscription-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.tenant-subscription-actions>.btn{width:100%!important;height:39px!important;min-width:0!important;min-height:39px!important;padding:0 7px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;font-size:.7rem!important;white-space:nowrap!important}
+@media(max-width:720px){.tenant-subscription-info,.tenant-subscription-fields{grid-template-columns:1fr}.tenant-subscription-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.tenant-subscription>summary{align-items:flex-start;flex-direction:column}.tenant-subscription-summary{width:100%;justify-content:space-between}}
 
-/* Keep all fields in the create/edit tenant form aligned from the top.
-   Fields with helper text must not push neighbouring inputs down. */
-#tenantForm .grid-2 {
-  align-items: start;
-}
-
-#tenantForm .field {
-  align-content: start;
-  align-self: start;
-}
-
-#tenantForm .field > label {
-  min-height: 20px;
-  display: flex;
-  align-items: center;
-}
-
-#tenantForm .field > .input {
-  min-height: 46px;
-}
-
-/* Owner accounts are managed only from /platform/owners. */
-#tenantList [data-create-owner] {
-  display: none !important;
-}
-
-.tenant-action-button,
-#tenantList .order-actions > a.btn,
-#tenantList [data-edit-tenant],
-#tenantList [data-delete-tenant] {
-  width: auto !important;
-  height: 38px !important;
-  min-width: max-content !important;
-  min-height: 38px !important;
-  max-width: none !important;
-  padding: 0 12px !important;
-  border-radius: 10px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 7px !important;
-  aspect-ratio: auto !important;
-  white-space: nowrap !important;
-  line-height: 1 !important;
-  flex: 0 0 auto !important;
-}
-
-.tenant-action-button > span,
-#tenantList .order-actions > a.btn > span,
-#tenantList [data-edit-tenant] > span,
-#tenantList [data-delete-tenant] > span {
-  display: inline !important;
-  width: auto !important;
-  height: auto !important;
-  overflow: visible !important;
-  clip: auto !important;
-  position: static !important;
-  white-space: nowrap !important;
-}
-
-.tenant-action-button .app-icon,
-#tenantList .order-actions .app-icon {
-  width: 17px !important;
-  height: 17px !important;
-  flex: 0 0 17px !important;
-  margin: 0 !important;
-}
-
+/* OWNER_MODAL_STYLE_RECOVERY_20260804_004 */
 body.owner-modal-open {
   overflow: hidden;
 }
@@ -85,17 +113,25 @@ body.owner-modal-open {
 .owner-modal {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: 320;
   display: grid;
   place-items: center;
+  width: 100%;
+  height: 100%;
   padding: 18px;
+  isolation: isolate;
 }
 
 .owner-modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(10, 18, 13, .58);
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: rgba(10, 18, 13, .60);
   backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
 .owner-modal-card {
@@ -103,11 +139,12 @@ body.owner-modal-open {
   z-index: 1;
   width: min(620px, 100%);
   max-height: calc(100dvh - 36px);
+  overflow-x: hidden;
   overflow-y: auto;
-  background: var(--card);
-  border: 1px solid var(--line);
+  border: 1px solid #d8e5dc;
   border-radius: 22px;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, .28);
+  background: #fff;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, .30);
 }
 
 .owner-modal-head {
@@ -116,7 +153,8 @@ body.owner-modal-open {
   justify-content: space-between;
   gap: 16px;
   padding: 20px 20px 15px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid #e2ebe5;
+  background: linear-gradient(135deg, #fbfefc, #f3f9f5);
 }
 
 .owner-modal-head > div:first-child {
@@ -133,8 +171,8 @@ body.owner-modal-open {
   display: grid;
   place-items: center;
   border-radius: 13px;
+  color: #0d6f34;
   background: #e8f3ec;
-  color: var(--green-dark);
 }
 
 .owner-modal-icon .app-icon {
@@ -144,12 +182,14 @@ body.owner-modal-open {
 
 .owner-modal-head h2 {
   margin: 0;
+  color: #123d27;
   font-size: 21px;
+  line-height: 1.25;
 }
 
 .owner-modal-head p {
   margin: 3px 0 0;
-  color: var(--muted);
+  color: #66776e;
   overflow-wrap: anywhere;
 }
 
@@ -159,10 +199,16 @@ body.owner-modal-open {
   min-width: 38px;
   display: grid;
   place-items: center;
+  padding: 0;
   border: 0;
   border-radius: 50%;
+  color: #17211b;
   background: #eef2ef;
-  color: var(--black);
+  cursor: pointer;
+}
+
+.owner-modal-close:hover {
+  background: #e3eae5;
 }
 
 .owner-modal-close .app-icon {
@@ -176,12 +222,34 @@ body.owner-modal-open {
   padding: 20px;
 }
 
+.owner-modal-form .field {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-width: 0;
+}
+
+.owner-modal-form .field > label {
+  color: #294b36;
+  font-weight: 800;
+}
+
+.owner-modal-form .input {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+}
+
 .owner-modal-form small {
-  color: var(--muted);
+  color: #66776e;
 }
 
 .owner-modal-form .input:invalid:not(:placeholder-shown) {
-  border-color: var(--danger);
+  border-color: #d92d20;
+}
+
+.owner-password-grid {
+  align-items: start;
 }
 
 .owner-form-error {
@@ -228,6 +296,7 @@ body.owner-modal-open {
   white-space: nowrap !important;
 }
 
+.owner-modal-actions .app-icon,
 #ownerSubmitButton .app-icon {
   width: 17px !important;
   height: 17px !important;
@@ -265,27 +334,22 @@ body.owner-modal-open {
     min-width: 0 !important;
     height: 44px !important;
     min-height: 44px !important;
-    border-radius: 11px !important;
-    aspect-ratio: auto !important;
   }
 }
 
 @media (max-width: 480px) {
-  #tenantList .order-actions > a.btn,
-  #tenantList [data-edit-tenant],
-  #tenantList [data-delete-tenant] {
-    width: auto !important;
-    height: 38px !important;
-    min-width: max-content !important;
-    min-height: 38px !important;
-    max-width: none !important;
-    padding: 0 11px !important;
-    border-radius: 10px !important;
-    aspect-ratio: auto !important;
-  }
-
   .owner-modal-head,
   .owner-modal-form {
     padding-inline: 16px;
+  }
+
+  .owner-modal-head h2 {
+    font-size: 19px;
+  }
+}
+
+@media (max-width: 380px) {
+  .owner-modal-actions {
+    grid-template-columns: 1fr !important;
   }
 }

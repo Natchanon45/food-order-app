@@ -2,6 +2,7 @@ import { auth, db, functions, collection, doc, getDoc, getDocs, httpsCallable } 
 import { resolveTenantContext } from './tenant-context.js';
 
 const STAFF_ROLES = new Set(['admin', 'cashier', 'kitchen']);
+const BUSINESS_SCOPES = new Set(['order_delivery', 'retail_pos', 'both']);
 const POS_SCOPE_VALUES = new Set(['pos', 'retail', 'retail_pos', 'retail-pos', 'retail_pos_staff']);
 const RESTAURANT_SCOPE_VALUES = new Set(['restaurant', 'order_delivery', 'order-delivery']);
 
@@ -34,7 +35,16 @@ function isPosScoped(row = {}) {
 }
 
 function staffOnly(row) {
-  return STAFF_ROLES.has(rawRole(row)) && !isPosScoped(row);
+  return STAFF_ROLES.has(rawRole(row));
+}
+
+function normalizeBusinessScope(data = {}) {
+  const requested = String(data.businessScope || data.business_scope || '').trim().toLowerCase();
+  if (BUSINESS_SCOPES.has(requested)) return requested;
+  const unit = String(data.businessUnit || data.business_unit || '').trim().toLowerCase();
+  if (unit === 'retail_pos') return 'retail_pos';
+  if (unit === 'all' || unit === 'both') return 'both';
+  return 'order_delivery';
 }
 
 function normalizeUser(uid, data = {}) {
@@ -44,6 +54,7 @@ function normalizeUser(uid, data = {}) {
     email: data.email || '',
     role: rawRole(data),
     roleId: data.roleId || '',
+    businessScope: normalizeBusinessScope(data),
     active: data.active !== false,
     tenantId: data.tenantId || '',
     tenantSlug: data.tenantSlug || '',
@@ -91,7 +102,7 @@ export async function listStaffUsers() {
 
 export async function createStaffUser(payload = {}) {
   const tenant = await currentTenant();
-  return callStaffFunction('createTenantStaff', { ...payload, staffScope: 'restaurant', tenantId: tenant.id, tenantSlug: tenant.slug });
+  return callStaffFunction('createTenantStaff', { ...payload, businessScope: payload.businessScope || 'order_delivery', staffScope: 'restaurant', tenantId: tenant.id, tenantSlug: tenant.slug });
 }
 
 export async function updateStaffUser(uid, patch = {}) {

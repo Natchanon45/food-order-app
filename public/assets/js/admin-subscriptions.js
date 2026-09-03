@@ -1,30 +1,18 @@
-import "./sweet-dialog.js?v=20260731-080";
-import { app } from "./firebase-config.js?v=20260630-073";
-import { toast } from "./ui.js?v=20260731-080";
-import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-functions.js";
-import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
+import "./sweet-dialog.js?v=20260726-034";
+import { toast } from "./ui.js?v=20260805-081";
+import { formatDate, formatNumber, t } from "./i18n.js?v=20260812-099";
+import {
+  backfillTenantSubscriptions,
+  listTenants,
+  updateTenantSubscription,
+} from "./platform-tenant-service.js?v=20260804-010";
 
-if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
-  const link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href = "/assets/css/sweet-dialog.css?v=20260629-048";
-  document.head.appendChild(link);
-}
-
-const functions = getFunctions(app, "asia-southeast1");
-const listTenants = httpsCallable(functions, "listTenants");
-const backfillTenantSubscriptions = httpsCallable(functions, "backfillTenantSubscriptions");
-const updateTenantSubscription = httpsCallable(functions, "updateTenantSubscription");
 const tenantList = document.querySelector("#tenantList");
 let tenants = [];
 
 async function askConfirm(message, options = {}) {
   if (typeof window.sweetConfirm === "function") return await window.sweetConfirm(message, options);
   return confirm(message);
-}
-
-function icon(name) {
-  return iconMarkup(name);
 }
 
 function toDate(value) {
@@ -50,45 +38,68 @@ function daysRemaining(tenant) {
 
 function statusInfo(tenant) {
   const status = tenant.subscriptionStatus || "active";
-  const labels = { active: "ใช้งาน", grace: "ช่วงผ่อนผัน", expired: "หมดอายุ", suspended: "ระงับ" };
-  return { status, label: labels[status] || status };
+  const key = `admin_tenants.subscription.statuses.${status}`;
+  const translated = t(key);
+  return { status, label: translated === key ? status : translated };
+}
+
+function displaySubscriptionDate(value) {
+  const date = toDate(value);
+  if (!date) return t("admin_tenants.subscription.not_set");
+  return formatDate(date, { year: "numeric", month: "short", day: "numeric" });
 }
 
 function subscriptionHtml(tenant) {
   const remaining = daysRemaining(tenant);
   const { status, label } = statusInfo(tenant);
-  return `
-    <section class="tenant-subscription" data-subscription-tenant="${tenant.id}" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">
-      <div class="grid grid-3">
-        <div><strong>แพ็กเกจ</strong><div class="menu-category">${tenant.planCode === "yearly" ? "รายปี" : "รายเดือน"}</div></div>
-        <div><strong>วันหมดอายุ</strong><div class="menu-category">${toDate(tenant.subscriptionExpiresAt)?.toLocaleDateString("th-TH") || "ยังไม่กำหนด"}</div></div>
-        <div><strong>สถานะสมาชิก</strong><div><span class="badge ${["expired", "suspended"].includes(status) ? "warning" : ""}">${label}</span></div></div>
+  const planLabel = t(`admin_tenants.subscription.plans.${tenant.planCode === "yearly" ? "yearly" : "monthly"}`);
+  const remainingLabel = remaining === null
+    ? "-"
+    : remaining >= 0
+      ? t("admin_tenants.subscription.days", { count: formatNumber(remaining) })
+      : t("admin_tenants.subscription.days_over", { count: formatNumber(Math.abs(remaining)) });
+
+  return `<details class="tenant-subscription" data-subscription-tenant="${tenant.id}">
+    <summary><span><i class="bi bi-credit-card-2-front" aria-hidden="true"></i><strong>${t("admin_tenants.subscription.title")}</strong></span><span class="tenant-subscription-summary">${label} · ${displaySubscriptionDate(tenant.subscriptionExpiresAt)}<i class="bi bi-chevron-down" aria-hidden="true"></i></span></summary>
+    <div class="tenant-subscription-body">
+      <div class="tenant-subscription-info">
+        <article><span>${t("admin_tenants.subscription.package")}</span><strong>${planLabel}</strong></article>
+        <article><span>${t("admin_tenants.subscription.status")}</span><strong>${label}</strong></article>
+        <article><span>${t("admin_tenants.subscription.remaining")}</span><strong>${remainingLabel}</strong></article>
       </div>
-      <div class="menu-category" style="margin-top:8px">${remaining === null ? "ยังไม่กำหนดวันหมดอายุ" : remaining >= 0 ? `เหลือ ${remaining} วัน` : `หมดอายุแล้ว ${Math.abs(remaining)} วัน`} • ผ่อนผัน ${Number(tenant.gracePeriodDays ?? 3)} วัน</div>
-      <div class="grid grid-3" style="margin-top:10px">
-        <div class="field"><label>กำหนดวันหมดอายุ</label><input class="input" type="date" data-expiry-date value="${dateInputValue(tenant.subscriptionExpiresAt)}"></div>
-        <div class="field"><label>ช่วงผ่อนผัน (วัน)</label><input class="input" type="number" min="0" max="30" data-grace-days value="${Number(tenant.gracePeriodDays ?? 3)}"></div>
-        <div class="field"><label>แพ็กเกจ</label><select class="input" data-plan-code><option value="monthly" ${tenant.planCode !== "yearly" ? "selected" : ""}>รายเดือน</option><option value="yearly" ${tenant.planCode === "yearly" ? "selected" : ""}>รายปี</option></select></div>
+      <div class="tenant-subscription-fields">
+        <label>${t("admin_tenants.subscription.expiry")}<input class="input" type="date" data-expiry-date value="${dateInputValue(tenant.subscriptionExpiresAt)}"></label>
+        <label>${t("admin_tenants.subscription.grace_days")}<input class="input" type="number" min="0" max="30" data-grace-days value="${Number(tenant.gracePeriodDays ?? 3)}"></label>
+        <label>${t("admin_tenants.subscription.plan")}<select class="input" data-plan-code><option value="monthly" ${tenant.planCode !== "yearly" ? "selected" : ""}>${t("admin_tenants.subscription.plans.monthly")}</option><option value="yearly" ${tenant.planCode === "yearly" ? "selected" : ""}>${t("admin_tenants.subscription.plans.yearly")}</option></select></label>
       </div>
-      <div class="order-actions" style="margin-top:10px">
-        <button class="btn btn-primary btn-sm" type="button" data-subscription-action="extend" data-days="30">${icon("add")}<span>ต่ออายุ 30 วัน</span></button>
-        <button class="btn btn-primary btn-sm" type="button" data-subscription-action="extend" data-days="365">${icon("add")}<span>ต่ออายุ 1 ปี</span></button>
-        <button class="btn btn-sm" type="button" data-subscription-action="set-expiry">${icon("save")}<span>บันทึกวันหมดอายุ</span></button>
-        ${status === "suspended" ? `<button class="btn btn-primary btn-sm" type="button" data-subscription-action="activate">${icon("check-circle")}<span>เปิดใช้งานอีกครั้ง</span></button>` : `<button class="btn btn-danger btn-sm" type="button" data-subscription-action="suspend">${icon("times-circle")}<span>ระงับบัญชี</span></button>`}
+      <div class="tenant-subscription-actions">
+        <button class="btn btn-primary btn-sm" type="button" data-subscription-action="extend" data-days="30"><i class="bi bi-calendar-plus" aria-hidden="true"></i><span>${t("admin_tenants.subscription.extend_30")}</span></button>
+        <button class="btn btn-primary btn-sm" type="button" data-subscription-action="extend" data-days="365"><i class="bi bi-calendar2-plus" aria-hidden="true"></i><span>${t("admin_tenants.subscription.extend_year")}</span></button>
+        <button class="btn btn-sm" type="button" data-subscription-action="set-expiry"><i class="bi bi-floppy" aria-hidden="true"></i><span>${t("admin_tenants.subscription.save_expiry")}</span></button>
+        ${status === "suspended"
+          ? `<button class="btn btn-primary btn-sm" type="button" data-subscription-action="activate"><i class="bi bi-check-circle" aria-hidden="true"></i><span>${t("admin_tenants.subscription.activate")}</span></button>`
+          : `<button class="btn btn-danger btn-sm" type="button" data-subscription-action="suspend"><i class="bi bi-pause-circle" aria-hidden="true"></i><span>${t("admin_tenants.subscription.suspend")}</span></button>`}
       </div>
-    </section>`;
+    </div>
+  </details>`;
 }
 
 async function decorateTenantCards() {
-  const cards = [...tenantList.querySelectorAll(":scope > article.card")];
+  const cards = [...tenantList.querySelectorAll(":scope > article.tenant-store-card")];
   if (!cards.length) return;
   if (!tenants.length) {
     const result = await listTenants();
     tenants = result.data?.tenants || [];
   }
-  cards.forEach((card, index) => {
-    if (card.querySelector("[data-subscription-tenant]")) return;
-    const tenant = tenants[index];
+  cards.forEach(card => {
+    const existing = card.querySelector("[data-subscription-tenant]");
+    const tenant = tenants.find(item => String(item.id) === String(card.dataset.tenantCard));
+    const revenueShareMode = card.dataset.billingMode === "revenue_share" || tenant?.billingMode === "revenue_share";
+    if (revenueShareMode) {
+      existing?.remove();
+      return;
+    }
+    if (existing) return;
     if (tenant) card.insertAdjacentHTML("beforeend", subscriptionHtml(tenant));
   });
 }
@@ -99,11 +110,11 @@ async function performAction(button) {
   if (!tenantId) return;
   const action = button.dataset.subscriptionAction;
   if (action === "suspend") {
-    const ok = await askConfirm("ยืนยันระงับบัญชีร้านนี้ใช่หรือไม่? QR และระบบร้านจะหยุดใช้งานทันที", {
-      title: "ระงับบัญชีร้าน",
-      confirmText: "ตกลง",
-      cancelText: "ยกเลิก",
-      type: "warning"
+    const ok = await askConfirm(t("admin_tenants.subscription.suspend_confirm"), {
+      title: t("admin_tenants.subscription.suspend_title"),
+      confirmText: t("admin_tenants.subscription.suspend"),
+      cancelText: t("admin_tenants.common.cancel"),
+      type: "warning",
     });
     if (!ok) return;
   }
@@ -114,17 +125,36 @@ async function performAction(button) {
     days: Number(button.dataset.days || 0),
     expiresAt: section.querySelector("[data-expiry-date]")?.value || "",
     gracePeriodDays: Number(section.querySelector("[data-grace-days]")?.value || 3),
-    planCode: section.querySelector("[data-plan-code]")?.value || "monthly"
+    planCode: section.querySelector("[data-plan-code]")?.value || "monthly",
   };
 
   button.disabled = true;
   try {
-    await updateTenantSubscription(payload);
-    toast("อัปเดตอายุสมาชิกเรียบร้อยแล้ว");
-    location.reload();
+    const result = await updateTenantSubscription(payload);
+    toast(t("admin_tenants.subscription.updated"));
+    const current = tenants.find(item => String(item.id) === String(tenantId)) || {};
+    const tenant = {
+      ...current,
+      id: tenantId,
+      active: result.data?.active !== false,
+      subscriptionStatus: result.data?.status || current.subscriptionStatus || "active",
+      subscriptionExpiresAt: result.data?.expiresAt || current.subscriptionExpiresAt || "",
+      gracePeriodDays: Number(result.data?.gracePeriodDays ?? payload.gracePeriodDays),
+      planCode: payload.planCode || current.planCode || "monthly",
+    };
+    const index = tenants.findIndex(item => String(item.id) === String(tenantId));
+    if (index >= 0) tenants[index] = tenant;
+    else tenants.push(tenant);
+    const card = section.closest(".tenant-store-card");
+    if (card) {
+      section.remove();
+      card.insertAdjacentHTML("beforeend", subscriptionHtml(tenant));
+      card.querySelector("[data-subscription-tenant]")?.setAttribute("open", "");
+    }
+    document.dispatchEvent(new CustomEvent("tenant-subscription-updated", { detail: { tenant } }));
   } catch (error) {
     console.error(error);
-    toast(error.message || "อัปเดตอายุสมาชิกไม่สำเร็จ", "error");
+    toast(error.message || t("admin_tenants.subscription.update_failed"), "error");
     button.disabled = false;
   }
 }
@@ -135,10 +165,14 @@ tenantList.addEventListener("click", event => {
 });
 
 new MutationObserver(() => decorateTenantCards().catch(console.error)).observe(tenantList, { childList: true });
+document.addEventListener("tenant-billing-mode-changed", () => {
+  tenants = [];
+  decorateTenantCards().catch(console.error);
+});
 
 try {
   const result = await backfillTenantSubscriptions({});
-  if (result.data?.updated) toast(`กำหนดอายุเริ่มต้นให้ ${result.data.updated} ร้านแล้ว`);
+  if (result.data?.updated) toast(t("admin_tenants.subscription.backfilled", { count: formatNumber(result.data.updated) }));
 } catch (error) {
   console.error("Subscription backfill failed", error);
 }

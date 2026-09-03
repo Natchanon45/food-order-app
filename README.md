@@ -1,9 +1,41 @@
 # Food Order / Delivery / Retail POS
 
 Branch: feature/retail-pos
-Milestone: Admin Modal Header Icon Deduplication
-Version: 0.16.12
-Build: 2026.08.03.004
+Milestone: Tenant Management Workspace
+Version: 0.16.15
+Build: 2026.08.04.001
+
+<!-- TENANT_MANAGEMENT_WORKSPACE_20260804_001 -->
+Change: Tenant Management Workspace.
+
+The Super Admin tenant page now uses a summary dashboard, search/status filters, semantic tenant cards, and a responsive create/edit modal while preserving the original Cloud Functions and validation. Subscription controls bind by stable Tenant ID instead of visual list index.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260804-001`.
+
+
+<!-- WAITING_QUEUE_TABLE_STATE_NUMBER_REPAIR_20260803_006 -->
+Change: Repaired Waiting Queue table visibility and sequential number allocation.
+
+Table state: `status: available` is now authoritative for legacy table documents, so Waiting Queue immediately recognizes tables whose secondary `occupied`/`available` flags were left stale. Tenant-scoped table documents are preferred over the legacy top-level source and duplicate logical tables are removed. Shared table updates now write the complete available or occupied state, including Waiting Queue and active-order cleanup.
+
+Running number: opening the Waiting Queue page no longer reserves twenty numbers. Online queue creation increments the daily counter by exactly one. After a real queue is saved or synced, the device keeps a small three-number lease for offline continuity. A lease is consumed completely before another one is reserved, preventing the previous lease-overwrite gap.
+
+Compatibility: Existing issued W-numbers are not renumbered. Queue IDs, duplicate protection, public tokens, table/order transactions, tenant scope, audit history, and offline outbox behavior are unchanged.
+
+Deploy: Firebase Hosting only. Hard refresh cache `20260803-006`.
+
+
+<!-- PUBLIC_CONTACT_CENTER_20260803_005 -->
+Change: Added the Public Contact Center managed by Super Admin.
+
+Public landing: a responsive Contact card appears after the pricing section when the global setting is enabled. It supports phone, LINE, Facebook Messenger through an `m.me` or HTTPS link, and email. The known settings document is watched in real time, so saved changes appear without rebuilding the page.
+
+Super Admin: `/platform/contact/` provides a role-protected form, per-channel enable switches, labels, values, Messenger username normalization, and a live preview. `/platform` now links to this settings page.
+
+Firebase boundary: the single document is `platformSettings/publicContact` with `tenantId: __platform__`. Public clients may get that known document but may not list the collection. Only an authenticated `super_admin` may create or update it; delete is denied. No tenant operational collection, order, stock, payment, queue, or POS behavior changes.
+
+Deploy: Firestore Rules and Hosting. Hard refresh cache `20260803-005`.
+
 
 <!-- ADMIN_MODAL_HEADER_ICON_DEDUPLICATION_20260803_004 -->
 Change: Removed the duplicate icon from Admin Menu/Table modal titles.

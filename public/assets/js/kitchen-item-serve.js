@@ -1,5 +1,5 @@
-import { dataService } from './data-service.js';
-import { toast } from './ui.js?v=20260731-080';
+import { dataService } from './data-service.js?v=20260720-022';
+import { toast } from './ui.js?v=20260805-081';
 
 const grid = document.querySelector('#orderGrid');
 let currentOrders = [];
@@ -76,7 +76,13 @@ async function serveItem(button) {
       patch.status = 'served';
       patch.servedAt = now;
     }
-    await dataService.updateOrder(order.id, patch);
+    const updated = await dataService.updateOrder(order.id, patch);
+    currentOrders = currentOrders.map(row => row.id === order.id ? updated : row);
+    if (patch.status === 'served') {
+      grid.querySelector(`[data-serve-item="${CSS.escape(order.id)}"]`)?.closest('.order-card')?.remove();
+    } else {
+      installButtons();
+    }
     toast(patch.status === 'served' ? 'เสิร์ฟครบทั้งออเดอร์แล้ว' : 'เสิร์ฟรายการนี้แล้ว');
   } catch (error) {
     console.error('SERVE_ITEM_FAILED', error);
