@@ -1,4 +1,4 @@
-import "./public-page-static-i18n.js?v=20260903-231";
+import "./public-page-static-i18n.js?v=20260903-245";
 
 // DELIVERY_GOOGLE_NORMAL_BUTTON_20260805_098
 // DELIVERY_CURRENT_LOCATION_ADDRESS_FLOW_20260827_001
@@ -9,7 +9,7 @@ import {
   getCustomerProfile,
   saveCustomerProfile,
   isCustomerAccountAvailable,
-} from './customer-profile-service.js?v=20260903-201';
+} from './customer-profile-service.js?v=20260903-247';
 import { toast } from './ui.js?v=20260903-231';
 import { t } from './i18n.js?v=20260903-202';
 
@@ -138,23 +138,33 @@ function newAddressId() {
 
 function renderAccount() {
   const signedIn = Boolean(currentUser);
+  const staffSignedIn = Boolean(currentStaff);
   const accountAvailable = isCustomerAccountAvailable();
-  const showGoogle = accountAvailable && !signedIn;
+  const showGoogle = accountAvailable && !signedIn && !staffSignedIn;
+  const showLogout = signedIn || staffSignedIn;
 
-  currentStaff = null;
   googleLoginButton.hidden = !showGoogle;
   googleLoginButton.disabled = !showGoogle;
-  customerLogoutButton.hidden = !signedIn;
-  customerLogoutButton.textContent = t('delivery.checkout.customer.logout');
-  customerAccount.hidden = !signedIn;
-  customerAccountName.textContent = signedIn
-    ? (currentUser.displayName || t('delivery.checkout.customer.google_account'))
-    : '';
+  googleLoginButton.style.display = showGoogle ? '' : 'none';
 
-  customerModeText.textContent = signedIn
-    ? t('delivery.checkout.customer.signed_in_mode')
-    : t('delivery.checkout.customer.guest_mode');
+  customerLogoutButton.hidden = !showLogout;
+  customerLogoutButton.style.display = showLogout ? '' : 'none';
+  customerLogoutButton.textContent = staffSignedIn
+    ? 'ออกจากระบบพนักงาน'
+    : t('delivery.checkout.customer.logout');
 
+  customerAccount.hidden = !showLogout;
+  customerAccountName.textContent = staffSignedIn
+    ? `${currentStaff.displayName || currentStaff.email || ''} • ${currentStaff.role || ''}`
+    : signedIn
+      ? (currentUser.displayName || t('delivery.checkout.customer.google_account'))
+      : '';
+
+  customerModeText.textContent = staffSignedIn
+    ? 'กำลังใช้บัญชีพนักงาน ที่อยู่ Delivery จะบันทึกเฉพาะอุปกรณ์นี้'
+    : signedIn
+      ? t('delivery.checkout.customer.signed_in_mode')
+      : t('delivery.checkout.customer.guest_mode');
 }
 function renderAddressBook() {
   const addresses = currentProfile.addresses || [];
@@ -287,6 +297,14 @@ googleLoginButton.addEventListener('click', async () => {
 
 customerLogoutButton.addEventListener('click', async () => {
   await logoutCustomer();
+
+  // Firebase auth state propagation is asynchronous. Reset the local account
+  // state immediately so a button hidden by a previous staff/customer session
+  // does not remain display:none until the next page refresh.
+  currentUser = null;
+  currentStaff = null;
+  renderAccount();
+
   toast(t('delivery.checkout.customer.logout_done'));
 });
 

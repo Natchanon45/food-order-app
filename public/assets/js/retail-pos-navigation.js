@@ -548,7 +548,7 @@ function renderMenu() {
   trigger.title = "เมนู";
   trigger.innerHTML =
     '<i class="bi bi-list" aria-hidden="true"></i><span class="pos-menu-trigger-label">เมนู</span>';
-  header.prepend(trigger);
+  header.appendChild(trigger);
   const popover = document.createElement("div");
   popover.id = "posMenuPopover";
   popover.className = "pos-menu-popover";

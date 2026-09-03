@@ -2,8 +2,12 @@
 <html lang="th">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#159447">
   <title>ใบกำกับภาษี</title>
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240">
+  <link rel="stylesheet" href="/assets/css/i18n.css?v=20260903-240">
+  <link rel="stylesheet" href="/assets/css/pos-locale-switcher-placement.css?v=20260903-251">
   <link rel="stylesheet" href="/assets/css/retail-pos-font-local.css?v=20260707-018">
   <style>
     *{box-sizing:border-box}
@@ -29,9 +33,9 @@
     .top-grid h2,.buyer-box h2{margin:0 0 2px;font-size:21px;line-height:1.04}
     .top-grid p,.buyer-box p{margin:1px 0}
     .doc-box{border:1px solid #111827;border-radius:7px;padding:6px 8px;display:grid;gap:2px;align-self:start;font-size:17px;line-height:1.03}
-    .doc-box div{display:grid;grid-template-columns:58px minmax(0,1fr);column-gap:8px;align-items:start}
-    .doc-box span{white-space:nowrap}
-    .doc-box strong{display:block;text-align:left;overflow-wrap:anywhere;word-break:break-word;line-height:1.05}
+    .doc-box div{display:grid;grid-template-columns:minmax(0,42%) minmax(0,58%);column-gap:8px;align-items:start;min-width:0}
+    .doc-box span,.doc-box strong{min-width:0;overflow-wrap:anywhere;word-break:break-word;line-height:1.12}
+    .doc-box strong{display:block;text-align:left}
     .buyer-box{margin:6px 0 7px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px;flex:0 0 auto}
     .items-table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:0;font-size:16px;line-height:1.01;break-inside:avoid;page-break-inside:avoid;flex:0 0 auto}
     .items-table th,.items-table td{border:1px solid #cbd5e1;padding:2px 4px;vertical-align:top}
@@ -69,6 +73,7 @@
     </div>
     <div id="taxInvoiceRoot" class="loading">กำลังโหลดใบกำกับภาษี...</div>
   </main>
-  <script type="module" src="/assets/js/retail-pos-tax-invoice-window.js?v=20260716-009"></script>
+  <script type="module" src="/assets/js/retail-pos-i18n-bootstrap.js?v=20260903-251" data-pos-i18n-generated="1"></script>
+  <script type="module" src="/assets/js/retail-pos-tax-invoice-window.js?v=20260903-251"></script>
 </body>
 </html>

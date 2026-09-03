@@ -1,10 +1,12 @@
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
+const { defineSecret } = require("firebase-functions/params");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
 
 const REGION = "asia-southeast1";
 const TZ_OFFSET = "+07:00";
+const GOOGLE_VISION_API_KEY = defineSecret("GOOGLE_VISION_API_KEY");
 const MAX_SLIP_SIZE = 10 * 1024 * 1024;
 const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
 const PAID_ORDER_STATUSES = new Set(["paid", "completed", "served", "delivered", "closed"]);
@@ -147,6 +149,120 @@ async function summaryForTenant(tenantId, period, setting) {
   return { orderSales, orderCount, posSales, posCount, combinedSales, revenueShareEnabled: setting.enabled, revenueShareRate: setting.rate, revenueShareBillingCycle: setting.billingCycle, revenueShare };
 }
 
+const MONEY_PATTERN = /(?:฿\s*)?(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d{1,2}))?/g;
+const AMOUNT_HINT = /(?:จำนวน|ยอด(?:เงิน|โอน|ชำระ|สุทธิ)?|amount|transfer(?:red)?\s*amount|total\s*amount)/i;
+const FEE_HINT = /(?:ค่าธรรมเนียม|fee|fees|service\s*charge)/i;
+const DATE_TIME_HINT = /(?:วันที่|date|เวลา|time|พ\.?ศ\.?|ค\.?ศ\.?|a\.?m\.?|p\.?m\.?|น\.)/i;
+const REFERENCE_HINT = /(?:เลขที่รายการ|เลขอ้างอิง|reference|ref\.?|transaction|บัญชี|account)/i;
+
+function moneyValuesFromLine(line = "") {
+  const values = [];
+  for (const match of String(line || "").matchAll(MONEY_PATTERN)) {
+    const raw = `${match[1] || ""}${match[2] ? `.${match[2]}` : ""}`.replace(/,/g, "");
+    const value = Number(raw);
+    if (!Number.isFinite(value) || value <= 0 || value > 10000000) continue;
+    values.push(Math.round(value * 100) / 100);
+  }
+  return values;
+}
+
+function extractMoneyCandidates(text = "") {
+  const values = [];
+  const seen = new Set();
+  for (const value of moneyValuesFromLine(String(text || ""))) {
+    const key = value.toFixed(2);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    values.push(value);
+  }
+  return values.slice(0, 40);
+}
+
+function detectSlipAmount(text = "") {
+  const lines = String(text || "").split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const ranked = [];
+  lines.forEach((line, index) => {
+    const values = moneyValuesFromLine(line);
+    if (!values.length) return;
+    let score = 0;
+    if (AMOUNT_HINT.test(line)) score += 120;
+    if (/บาท|thb|฿/i.test(line)) score += 35;
+    if (FEE_HINT.test(line)) score -= 180;
+    if (DATE_TIME_HINT.test(line)) score -= 100;
+    if (REFERENCE_HINT.test(line)) score -= 90;
+    if (/\d{1,2}[:.]\d{2}/.test(line)) score -= 60;
+    values.forEach(value => ranked.push({ value, score, line, index }));
+  });
+  for (let index = 0; index < lines.length - 1; index += 1) {
+    if (!AMOUNT_HINT.test(lines[index]) || FEE_HINT.test(lines[index])) continue;
+    for (const value of moneyValuesFromLine(lines[index + 1])) {
+      ranked.push({ value, score: 115 + (/บาท|thb|฿/i.test(lines[index + 1]) ? 25 : 0), line: `${lines[index]} ${lines[index + 1]}`, index });
+    }
+  }
+  ranked.sort((a, b) => b.score - a.score || b.value - a.value || a.index - b.index);
+  const best = ranked.find(candidate => candidate.score > 0) || null;
+  return { amount: best?.value ?? null, ranked: ranked.slice(0, 20) };
+}
+
+async function inspectRevenueShareSlip(file, mime, expectedAmount) {
+  const expected = Math.round(Number(expectedAmount || 0) * 100) / 100;
+  const base = { provider: "google_vision", expectedAmount: expected, checkedAt: new Date().toISOString() };
+  if (!String(mime || "").startsWith("image/")) {
+    return { ...base, status: "manual_review", reason: "pdf_requires_manual_review", detectedAmount: null, amountCandidates: [], textExcerpt: "" };
+  }
+  try {
+    const apiKey = GOOGLE_VISION_API_KEY.value();
+    if (!apiKey) throw new Error("GOOGLE_VISION_API_KEY_MISSING");
+    const [buffer] = await file.download();
+    const response = await fetch("https://vision.googleapis.com/v1/images:annotate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Goog-Api-Key": apiKey },
+      body: JSON.stringify({ requests: [{ image: { content: buffer.toString("base64") }, features: [{ type: "DOCUMENT_TEXT_DETECTION" }], imageContext: { languageHints: ["th", "en"] } }] }),
+    });
+    if (!response.ok) throw new Error(`VISION_HTTP_${response.status}:${(await response.text()).slice(0, 500)}`);
+    const payload = await response.json();
+    const result = payload?.responses?.[0] || {};
+    if (result.error) throw new Error(`VISION_API:${result.error.message || result.error.code || "unknown"}`);
+    const text = String(result.fullTextAnnotation?.text || result.textAnnotations?.[0]?.description || "").trim();
+    if (!text) return { ...base, status: "unreadable", reason: "no_text_detected", detectedAmount: null, amountCandidates: [], textExcerpt: "" };
+    const candidates = extractMoneyCandidates(text);
+    const detection = detectSlipAmount(text);
+    const detectedAmount = detection.amount;
+    const matched = detectedAmount !== null && Math.abs(detectedAmount - expected) <= 0.05;
+    return {
+      ...base,
+      status: matched ? "matched" : (candidates.length ? "mismatch" : "unreadable"),
+      reason: matched ? "amount_matched" : (candidates.length ? "amount_not_matched" : "no_amount_detected"),
+      detectedAmount,
+      amountCandidates: candidates,
+      amountEvidence: detection.ranked.slice(0, 8),
+      parserVersion: 2,
+      textExcerpt: text.slice(0, 4000),
+    };
+  } catch (error) {
+    console.error("[revenue-share-ocr] failed", error);
+    return { ...base, status: "manual_review", reason: "vision_error", detectedAmount: null, amountCandidates: [], textExcerpt: "" };
+  }
+}
+
+function normalizedOcr(row = {}) {
+  const current = row.ocr && typeof row.ocr === "object" ? { ...row.ocr } : null;
+  if (!current?.textExcerpt) return current;
+  const detection = detectSlipAmount(current.textExcerpt);
+  if (detection.amount === null) return current;
+  const expected = Math.round(Number(current.expectedAmount ?? row.revenueShareAmount ?? 0) * 100) / 100;
+  const matched = Math.abs(detection.amount - expected) <= 0.05;
+  return {
+    ...current,
+    expectedAmount: expected,
+    detectedAmount: detection.amount,
+    status: matched ? "matched" : "mismatch",
+    reason: matched ? "amount_matched" : "amount_not_matched",
+    amountEvidence: detection.ranked.slice(0, 8),
+    parserVersion: 2,
+  };
+}
+
 function paymentPayload(snapshot, tenant = null) {
   const row = snapshot.data();
   return {
@@ -156,6 +272,7 @@ function paymentPayload(snapshot, tenant = null) {
     orderSales: Number(row.orderSales || 0), posSales: Number(row.posSales || 0), combinedSales: Number(row.combinedSales || 0),
     revenueShareRate: Number(row.revenueShareRate || 0), revenueShareAmount: Number(row.revenueShareAmount || 0),
     status: row.status || "pending", reviewNote: row.reviewNote || "", submittedAt: asDate(row.createdAt)?.toISOString() || "", reviewedAt: asDate(row.reviewedAt)?.toISOString() || "",
+    ocr: normalizedOcr(row),
     slip: { name: row.slipName || "", mime: row.slipMime || "", size: Number(row.slipSize || 0), path: row.slipPath || "" }
   };
 }
@@ -255,7 +372,7 @@ exports.listTenantRevenueSharePayments = onCall({ region: REGION }, async reques
   return { items: snapshot.docs.map(doc => paymentPayload(doc)) };
 });
 
-exports.submitTenantRevenueSharePayment = onCall({ region: REGION }, async request => {
+exports.submitTenantRevenueSharePayment = onCall({ region: REGION, timeoutSeconds: 60, memory: "512MiB", secrets: [GOOGLE_VISION_API_KEY] }, async request => {
   const { profile, tenantRef, tenant } = await assertTenantAdmin(request.auth);
   const setting = revenueSetting(tenant);
   if (!setting.enabled) throw new HttpsError("failed-precondition", "Revenue share is disabled");
@@ -277,7 +394,8 @@ exports.submitTenantRevenueSharePayment = onCall({ region: REGION }, async reque
   const summary = await summaryForTenant(tenant.id, period, setting);
   const ref = tenantRef.collection("revenueSharePayments").doc(id);
   if ((await ref.get()).exists) throw new HttpsError("already-exists", "Payment ID already exists");
-  await ref.set({ id, tenantId: tenant.id, periodType: period.type, periodLabel: period.label, periodStart: period.startDate, periodEnd: period.endDate, orderSales: summary.orderSales, posSales: summary.posSales, combinedSales: summary.combinedSales, revenueShareRate: setting.rate, revenueShareAmount: summary.revenueShare, slipPath, slipName: String(request.data?.slipName || metadata.name || "slip").slice(0, 255), slipMime: mime, slipSize: size, status: "pending", reviewNote: "", submittedBy: profile.uid, createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() });
+  const ocr = await inspectRevenueShareSlip(file, mime, summary.revenueShare);
+  await ref.set({ id, tenantId: tenant.id, periodType: period.type, periodLabel: period.label, periodStart: period.startDate, periodEnd: period.endDate, orderSales: summary.orderSales, posSales: summary.posSales, combinedSales: summary.combinedSales, revenueShareRate: setting.rate, revenueShareAmount: summary.revenueShare, slipPath, slipName: String(request.data?.slipName || metadata.name || "slip").slice(0, 255), slipMime: mime, slipSize: size, ocr, status: "pending", reviewNote: "", submittedBy: profile.uid, createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() });
   const saved = await ref.get();
   return { item: paymentPayload(saved) };
 });

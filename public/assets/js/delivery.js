@@ -1,6 +1,7 @@
-import "./public-page-static-i18n.js?v=20260903-231";
+import "./public-page-static-i18n.js?v=20260903-245";
 
 import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20260903-231';
+import { functions, httpsCallable } from "./firebase-config.js?v=20260630-073";
 import { money, toast } from "./ui.js?v=20260805-081";
 import { t } from "./i18n.js?v=20260903-202";
 import { generatePromptPayPayload } from "./promptpay.js";
@@ -54,9 +55,13 @@ let currentDeliveryBaseFee = 0;
 let freeShippingApplied = false;
 let selectedFreeGiftMenuIds = new Set();
 
-// DELIVERY_DISTANCE_ENGINE_20260829_003
+// DELIVERY_GOOGLE_ROUTE_ENGINE_20260903_001
 const deliveryDistanceStatus = document.querySelector("#deliveryDistanceStatus");
+const computeDeliveryRoute = httpsCallable(functions, "computeDeliveryRoute");
 let currentDeliveryDistanceKm = null;
+let currentDeliveryRoute = null;
+let deliveryRouteRequestSerial = 0;
+let deliveryRoutePromise = Promise.resolve(null);
 
 const DELIVERY_FEE_MODE_AUTOMATIC = "automatic";
 const DELIVERY_FEE_MODE_MANUAL_FALLBACK = "manual-fallback";
@@ -137,30 +142,9 @@ function manualDeliveryFeeFallbackAllowed() {
     && deliveryZone?.dataset.deliveryFeeMode === DELIVERY_FEE_MODE_MANUAL_FALLBACK;
 }
 
-function radians(degrees) {
-  return degrees * Math.PI / 180;
-}
-
-function haversineDistanceKm(from, to) {
-  if (!from || !to) return null;
-
-  const earthRadiusKm = 6371.0088;
-  const latitudeDelta = radians(to.latitude - from.latitude);
-  const longitudeDelta = radians(to.longitude - from.longitude);
-
-  const latitude1 = radians(from.latitude);
-  const latitude2 = radians(to.latitude);
-
-  const value =
-    Math.sin(latitudeDelta / 2) ** 2
-    + Math.cos(latitude1)
-      * Math.cos(latitude2)
-      * Math.sin(longitudeDelta / 2) ** 2;
-
-  const centralAngle =
-    2 * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
-
-  return earthRadiusKm * centralAngle;
+function storefrontSlug() {
+  const match = location.pathname.match(/^\/s\/([^/]+)/i);
+  return decodeURIComponent(match?.[1] || dataService.getActiveShop()?.slug || "").trim().toLowerCase();
 }
 
 function configuredMaxDeliveryDistanceKm() {
@@ -228,87 +212,112 @@ function syncDeliveryZoneFromDistance() {
   return zone;
 }
 
-function refreshDeliveryDistance() {
+function renderDeliveryDistanceStatus() {
+  if (!deliveryDistanceStatus) return;
   const from = storeLocation();
   const to = customerDeliveryLocation();
-
-  currentDeliveryDistanceKm =
-    from && to
-      ? haversineDistanceKm(from, to)
-      : null;
-
-  syncDeliveryZoneFromDistance();
-
-  if (!deliveryDistanceStatus) return;
-
   if (!from) {
     deliveryDistanceStatus.hidden = false;
     deliveryDistanceStatus.classList.remove("is-ready");
     deliveryDistanceStatus.classList.add("is-error");
-    deliveryDistanceStatus.textContent =
-      t("delivery.checkout.distance.store_location_missing");
+    deliveryDistanceStatus.textContent = t("delivery.checkout.distance.store_location_missing");
     return;
   }
-
-  if (!to || currentDeliveryDistanceKm === null) {
+  if (!to) {
     deliveryDistanceStatus.hidden = true;
     deliveryDistanceStatus.textContent = "";
     deliveryDistanceStatus.classList.remove("is-ready", "is-error");
     return;
   }
-
-  const maxDistance = configuredMaxDeliveryDistanceKm();
-
+  if (!currentDeliveryRoute) return;
+  const maxDistance = Number(currentDeliveryRoute.maxDistanceKm || configuredMaxDeliveryDistanceKm() || 0) || null;
   deliveryDistanceStatus.hidden = false;
-
-  if (
-    maxDistance !== null
-    && currentDeliveryDistanceKm > maxDistance
-  ) {
+  if (currentDeliveryRoute.inRange !== true) {
     deliveryDistanceStatus.classList.remove("is-ready");
     deliveryDistanceStatus.classList.add("is-error");
-    deliveryDistanceStatus.textContent = t(
-      "delivery.checkout.distance.out_of_range",
-      {
-        distance: currentDeliveryDistanceKm.toFixed(2),
-        max: maxDistance.toFixed(2),
-      },
-    );
-
+    deliveryDistanceStatus.textContent = maxDistance
+      ? t("delivery.checkout.distance.out_of_range", { distance: currentDeliveryDistanceKm.toFixed(2), max: maxDistance.toFixed(2) })
+      : t("delivery.checkout.distance.fee_rule_missing");
     return;
   }
-
   deliveryDistanceStatus.classList.remove("is-error");
   deliveryDistanceStatus.classList.add("is-ready");
+  deliveryDistanceStatus.textContent = maxDistance
+    ? t("delivery.checkout.distance.ready_with_limit", { distance: currentDeliveryDistanceKm.toFixed(2), max: maxDistance.toFixed(2) })
+    : t("delivery.checkout.distance.ready", { distance: currentDeliveryDistanceKm.toFixed(2) });
+}
 
-  deliveryDistanceStatus.textContent =
-    maxDistance !== null
-      ? t(
-          "delivery.checkout.distance.ready_with_limit",
-          {
-            distance: currentDeliveryDistanceKm.toFixed(2),
-            max: maxDistance.toFixed(2),
-          },
-        )
-      : t(
-          "delivery.checkout.distance.ready",
-          {
-            distance: currentDeliveryDistanceKm.toFixed(2),
-          },
-        );
+function refreshDeliveryDistance() {
+  const from = storeLocation();
+  const to = customerDeliveryLocation();
+  const requestSerial = ++deliveryRouteRequestSerial;
+  currentDeliveryDistanceKm = null;
+  currentDeliveryRoute = null;
+
+  if (!from) {
+    syncDeliveryZoneFromDistance();
+    renderDeliveryDistanceStatus();
+    deliveryRoutePromise = Promise.resolve(null);
+    return deliveryRoutePromise;
+  }
+  if (!to) {
+    setDeliveryFeeMode(DELIVERY_FEE_MODE_AUTOMATIC);
+    if (deliveryZone) deliveryZone.value = "";
+    updateCart();
+    renderDeliveryDistanceStatus();
+    deliveryRoutePromise = Promise.resolve(null);
+    return deliveryRoutePromise;
+  }
+
+  setDeliveryFeeMode(DELIVERY_FEE_MODE_AUTOMATIC);
+  if (deliveryZone) deliveryZone.value = "";
+  updateCart();
+  if (deliveryDistanceStatus) {
+    deliveryDistanceStatus.hidden = false;
+    deliveryDistanceStatus.classList.remove("is-ready", "is-error");
+    deliveryDistanceStatus.textContent = t("delivery.checkout.distance.calculating");
+  }
+
+  deliveryRoutePromise = computeDeliveryRoute({
+    slug: storefrontSlug(),
+    latitude: to.latitude,
+    longitude: to.longitude,
+  }).then(response => {
+    if (requestSerial !== deliveryRouteRequestSerial) return null;
+    const route = response.data || null;
+    const distance = Number(route?.distanceKm);
+    if (!route || !Number.isFinite(distance) || distance <= 0) throw new Error("GOOGLE_ROUTE_INVALID");
+    currentDeliveryRoute = route;
+    currentDeliveryDistanceKm = distance;
+    if (route.zone?.id && deliveryZone?.querySelector(`option[value="${CSS.escape(String(route.zone.id))}"]`)) {
+      deliveryZone.value = String(route.zone.id);
+    }
+    updateCart();
+    renderDeliveryDistanceStatus();
+    return route;
+  }).catch(error => {
+    if (requestSerial !== deliveryRouteRequestSerial) return null;
+    console.error("[delivery-route] Google Routes failed", error);
+    currentDeliveryRoute = null;
+    currentDeliveryDistanceKm = null;
+    if (deliveryZone) deliveryZone.value = "";
+    updateCart();
+    if (deliveryDistanceStatus) {
+      deliveryDistanceStatus.hidden = false;
+      deliveryDistanceStatus.classList.remove("is-ready");
+      deliveryDistanceStatus.classList.add("is-error");
+      deliveryDistanceStatus.textContent = t("delivery.checkout.distance.route_failed");
+    }
+    return null;
+  });
+  return deliveryRoutePromise;
 }
 
 function deliveryDistanceAllowed() {
   if (currentDeliveryDistanceKm === null) {
     return manualDeliveryFeeFallbackAllowed() && Boolean(selectedZone());
   }
-
-  const maxDistance = configuredMaxDeliveryDistanceKm();
-  if (maxDistance !== null && currentDeliveryDistanceKm > maxDistance) {
-    return false;
-  }
-
-  return Boolean(deliveryZoneForDistance(currentDeliveryDistanceKm));
+  return currentDeliveryRoute?.inRange === true && Boolean(currentDeliveryRoute?.zone?.id);
 }
 
 function categories() {
@@ -714,12 +723,10 @@ function renderDeliveryZones() {
     `<option value="${escapeHtml(zone.id)}">${escapeHtml(zone.label)} • ${money(zone.fee)} ${t("delivery.checkout.units.baht")}</option>`
   ).join("");
 
-  const automatic = deliveryZoneForDistance(
-    currentDeliveryDistanceKm
-  );
-
-  if (currentDeliveryDistanceKm !== null) {
-    deliveryZone.value = automatic?.id || "";
+  if (currentDeliveryRoute) {
+    deliveryZone.value = currentDeliveryRoute.inRange === true
+      ? String(currentDeliveryRoute.zone?.id || "")
+      : "";
     setDeliveryFeeMode(DELIVERY_FEE_MODE_AUTOMATIC);
     return;
   }
@@ -731,15 +738,11 @@ function renderDeliveryZones() {
 }
 
 function selectedZone() {
-  const automatic = deliveryZoneForDistance(
-    currentDeliveryDistanceKm
-  );
-
-  if (automatic) {
-    return automatic;
+  if (currentDeliveryRoute?.inRange === true && currentDeliveryRoute?.zone?.id) {
+    return currentDeliveryRoute.zone;
   }
 
-  if (!manualDeliveryFeeFallbackAllowed()) {
+  if (currentDeliveryRoute || currentDeliveryDistanceKm !== null || !manualDeliveryFeeFallbackAllowed()) {
     return null;
   }
 
@@ -1084,7 +1087,7 @@ submitOrderButton.addEventListener("click", async () => {
     return;
   }
 
-  refreshDeliveryDistance();
+  await refreshDeliveryDistance();
 
   const deliveryLocation = customerDeliveryLocation();
   const storeCoordinates = storeLocation();
@@ -1092,7 +1095,14 @@ submitOrderButton.addEventListener("click", async () => {
     storeCoordinates
     && deliveryLocation
     && currentDeliveryDistanceKm !== null
+    && currentDeliveryRoute
   );
+
+  if (storeCoordinates && deliveryLocation && !currentDeliveryRoute) {
+    toast(t("delivery.checkout.distance.route_failed"), "error");
+    deliveryDistanceStatus?.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
 
   if (automaticDistanceAvailable && !deliveryDistanceAllowed()) {
     const maxDistance = configuredMaxDeliveryDistanceKm();
@@ -1155,7 +1165,7 @@ submitOrderButton.addEventListener("click", async () => {
   const items = [...paidItems, ...giftItems];
 
   const zone = automaticDistanceAvailable
-    ? deliveryZoneForDistance(currentDeliveryDistanceKm)
+    ? currentDeliveryRoute?.zone || null
     : selectedZone();
 
   if (!zone) {
@@ -1198,7 +1208,7 @@ submitOrderButton.addEventListener("click", async () => {
       deliveryFeeDiscount: Math.max(0, finalBaseFee - finalDeliveryFee),
       freeShippingApplied: Boolean(finalFreeShipping),
       deliveryFeeMode: automaticDistanceAvailable
-        ? "automatic_distance"
+        ? "google_routes"
         : "manual_fallback",
       freeGiftMenuIds: [...selectedFreeGiftMenuIds],
       subtotalAmount: currentSubtotal,
@@ -1219,6 +1229,9 @@ submitOrderButton.addEventListener("click", async () => {
 
     if (automaticDistanceAvailable) {
       orderPayload.deliveryDistanceKm = Number(currentDeliveryDistanceKm.toFixed(3));
+      orderPayload.deliveryDistanceMeters = Number(currentDeliveryRoute?.distanceMeters || 0);
+      orderPayload.deliveryDurationSeconds = Number(currentDeliveryRoute?.durationSeconds || 0);
+      orderPayload.deliveryRouteProvider = "google_routes";
     }
 
     await dataService.createDeliveryOrder(orderPayload);
