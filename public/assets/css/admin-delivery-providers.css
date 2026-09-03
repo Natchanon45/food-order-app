@@ -1,0 +1,225 @@
+/* ADMIN_DELIVERY_PROVIDERS_20260827_002 */
+
+.field:has(#deliveryProviderOptions) {
+  grid-column: 1 / -1 !important;
+  width: 100%;
+}
+
+.field:has(#deliveryMaxDistanceKm) {
+  grid-column: 1 / -1 !important;
+  width: min(100%, 420px);
+}
+
+.admin-delivery-provider-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  width: 100%;
+  margin-top: 9px;
+}
+
+.admin-delivery-provider-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 13px;
+  min-width: 0;
+
+  padding: 16px 17px;
+
+  border: 1px solid #d8e3dc;
+  border-radius: 15px;
+
+  background: #ffffff;
+
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.admin-delivery-provider-card.is-active {
+  border-color: #16954b;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(22, 149, 75, 0.055),
+      rgba(255, 255, 255, 0.96) 65%
+    );
+
+  box-shadow:
+    0 0 0 1px rgba(22, 149, 75, 0.04),
+    0 5px 16px rgba(18, 72, 42, 0.05);
+}
+
+.admin-delivery-provider-card.is-disabled {
+  border-color: #dfe4e1;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(247, 248, 247, 0.98),
+      rgba(242, 244, 243, 0.92)
+    );
+}
+
+.admin-delivery-provider-card.is-disabled::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: rgba(255,255,255,0.10);
+}
+
+.admin-delivery-provider-icon {
+  position: relative;
+  z-index: 1;
+
+  display: grid;
+  place-items: center;
+
+  width: 48px;
+  height: 48px;
+
+  border-radius: 13px;
+
+  background: #e7f6ec;
+  color: #128744;
+
+  font-size: 21px;
+}
+
+.admin-delivery-provider-card.is-disabled
+.admin-delivery-provider-icon {
+  background: #e8ece9;
+  color: #77817b;
+}
+
+.admin-delivery-provider-content {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  padding-top: 1px;
+}
+
+.admin-delivery-provider-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-delivery-provider-title-row strong {
+  color: #173426;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.admin-delivery-provider-description {
+  max-width: 620px;
+  margin-top: 7px;
+
+  color: #69766f;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.admin-delivery-provider-badge {
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 22px;
+  padding: 3px 9px;
+
+  border-radius: 999px;
+
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.admin-delivery-provider-badge.is-active {
+  background: #dff4e6;
+  color: #087739;
+}
+
+.admin-delivery-provider-badge.is-disabled {
+  background: #e5e9e6;
+  color: #68716c;
+}
+
+.admin-delivery-provider-check,
+.admin-delivery-provider-lock {
+  position: relative;
+  z-index: 1;
+
+  display: grid;
+  place-items: center;
+
+  width: 28px;
+  height: 28px;
+
+  margin-top: 1px;
+  border-radius: 50%;
+}
+
+.admin-delivery-provider-check {
+  background: #e1f5e7;
+  color: #109148;
+}
+
+.admin-delivery-provider-lock {
+  background: #e8ebe9;
+  color: #7b847f;
+}
+
+.admin-delivery-provider-card.is-disabled
+.admin-delivery-provider-content {
+  opacity: 0.78;
+}
+
+
+/* Make maximum distance a distinct setting below providers */
+
+.field:has(#deliveryMaxDistanceKm) {
+  margin-top: 3px;
+}
+
+#deliveryMaxDistanceKm {
+  min-height: 44px;
+}
+
+
+/* Tablet */
+
+@media (max-width: 900px) {
+  .admin-delivery-provider-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Mobile */
+
+@media (max-width: 640px) {
+  .admin-delivery-provider-card {
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .admin-delivery-provider-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    font-size: 18px;
+  }
+
+  .admin-delivery-provider-title-row {
+    gap: 6px;
+  }
+}

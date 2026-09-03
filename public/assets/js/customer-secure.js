@@ -1,8 +1,9 @@
-await import("./public-tenant-resolver.js?v=20260629-025");
-await import("./table-qr-resolver.js?v=20260702-002");
+await import("./public-tenant-resolver.js?v=20260903-231");
+await import("./table-qr-resolver.js?v=20260903-231");
 
-import { dataService, usingDemoMode } from "./data-service.js";
+import { publicStorefrontService as dataService } from "./public-storefront-service.js?v=20260903-231";
 import { demoStore } from "./demo-store.js";
+const usingDemoMode = false;
 
 function tableSession() {
   const params = new URLSearchParams(location.search);
@@ -75,4 +76,9 @@ dataService.subscribeOrders = callback => {
   return () => { stopped = true; clearInterval(timer); };
 };
 
-await import("./customer.js?v=20260802-004");
+// The public table-order page must use the slug/token-scoped storefront API.
+// customer.js is shared with authenticated screens, so inject its service before
+// loading the module instead of allowing it to fall back to /api/* endpoints.
+window.__CUSTOMER_DATA_SERVICE__ = dataService;
+window.__CUSTOMER_USING_DEMO_MODE__ = usingDemoMode;
+await import("./customer.js?v=20260903-238");

@@ -4,6 +4,10 @@
   display: none !important;
 }
 
+.payment-slip-wrap {
+  position: relative;
+}
+
 .payment-slip-dropzone {
   position: relative;
   display: grid;
@@ -93,4 +97,58 @@
   color: var(--danger);
   font-size: 13px;
   font-weight: 700;
+}
+
+/* DELIVERY_PAYMENT_SLIP_REMOVE_OVERLAY_20260829_007 */
+.payment-slip-wrap #removePaymentSlip[hidden],
+body .payment-slip-wrap #removePaymentSlip.payment-slip-remove-icon[hidden] {
+  display: none !important;
+}
+
+/* High-contrast white circular badge, matching the quotation attachment control. */
+body .payment-slip-wrap #removePaymentSlip.payment-slip-remove-icon {
+  position: absolute !important;
+  top: 32px !important;
+  right: 7px !important;
+  z-index: 12 !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 2px solid rgba(75, 85, 99, .52) !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, .98) !important;
+  color: #4b5563 !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, .28) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  backdrop-filter: blur(4px) !important;
+  cursor: pointer !important;
+  line-height: 1 !important;
+  transform: none !important;
+}
+
+.payment-slip-wrap #removePaymentSlip > span {
+  display: none !important;
+}
+
+body .payment-slip-wrap #removePaymentSlip.payment-slip-remove-icon .app-icon {
+  width: 18px !important;
+  height: 18px !important;
+  margin: 0 !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  -webkit-text-stroke: .35px currentColor;
+}
+
+body .payment-slip-wrap #removePaymentSlip.payment-slip-remove-icon:hover,
+body .payment-slip-wrap #removePaymentSlip.payment-slip-remove-icon:focus-visible {
+  border-color: rgba(55, 65, 81, .7) !important;
+  background: #fff !important;
+  color: #1f2937 !important;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, .34) !important;
+  transform: none !important;
 }

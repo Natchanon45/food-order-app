@@ -1,17 +1,16 @@
-import './sweet-dialog.js?v=20260731-080';
-import { dataService } from "./data-service.js?v=20260803-006";
-import { toast } from './ui.js?v=20260731-080';
-import { db, isFirebaseConfigured, collection, getDocs } from './firebase-config.js?v=20260630-073';
-import { shopCollectionPath } from './tenant-context.js';
+import './sweet-dialog.js?v=20260726-034';
+import { dataService } from './data-service.js?v=20260718-021';
+import { toast } from './ui.js?v=20260805-081';
+import { t } from './i18n.js?v=20260812-099';
 
 const occupiedTables = document.querySelector('#occupiedTables');
 let currentOrders = [];
 
+function closeButtonMarkup(label = t('cashier_documents.table_qr.close_table')) {
+  return `<i class="bi bi-door-closed app-icon" aria-hidden="true"></i><span>${label}</span>`;
+}
+
 async function latestOrders() {
-  if (isFirebaseConfigured && db) {
-    const snapshot = await getDocs(collection(db, ...shopCollectionPath('orders', dataService.getActiveShop())));
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  }
   return currentOrders;
 }
 
@@ -48,65 +47,42 @@ dataService.updateTable = async function guardedUpdateTable(id, patch = {}) {
   return originalUpdateTable(id, patch);
 };
 
-function restoreCloseButton(button) {
-  button.innerHTML = '<i class="bi bi-door-closed" aria-hidden="true"></i><span>ปิดโต๊ะ</span>';
-}
-
 async function closeTableSafely(button) {
   const table = await dataService.getTable(button.dataset.closeTable);
   if (!table) {
-    toast('ไม่พบข้อมูลโต๊ะ กรุณารีเฟรชหน้าแล้วลองใหม่', 'error');
+    toast(t('cashier_documents.table_qr.table_not_found'), 'error');
     return;
   }
 
   button.disabled = true;
-  button.textContent = 'กำลังตรวจสอบออเดอร์...';
+  button.innerHTML = closeButtonMarkup(t('cashier_documents.table_qr.checking_orders'));
 
   try {
     if (await hasUnpaidOrdersForTable(table)) {
-      toast('ยังมีออเดอร์หรือยังไม่ได้ชำระเงิน ไม่สามารถปิดโต๊ะได้', 'error');
+      toast(t('cashier_documents.table_qr.unpaid_orders'), 'error');
       button.disabled = false;
-      restoreCloseButton(button);
+      button.innerHTML = closeButtonMarkup();
       return;
     }
 
-    const ok = await askConfirm(`ยืนยันปิด ${table.name || `โต๊ะ ${table.code || table.id}`} ใช่หรือไม่?\n\nQR ใบเดิมจะใช้งานไม่ได้ และโต๊ะจะกลับเป็นโต๊ะว่าง`, { title: 'ปิดโต๊ะ', confirmText: 'ตกลง', cancelText: 'ยกเลิก', type: 'warning' });
+    const tableLabel = table.name || t('cashier_documents.table_qr.table_fallback', { table: table.code || table.id });
+    const ok = await askConfirm(`${t('cashier_documents.table_qr.close_confirm_message', { table: tableLabel })}\n\n${t('cashier_documents.table_qr.close_confirm_warning')}`, { title: t('cashier_documents.table_qr.close_confirm_title'), confirmText: t('cashier.common.confirm'), cancelText: t('cashier.common.cancel'), type: 'warning' });
     if (!ok) {
       button.disabled = false;
-      restoreCloseButton(button);
+      button.innerHTML = closeButtonMarkup();
       return;
     }
 
-    button.textContent = 'กำลังปิดโต๊ะ...';
-    await dataService.updateTable(table.id, {
-      status: "available",
-      tableStatus: "available",
-      occupied: false,
-      isOccupied: false,
-      available: true,
-      isAvailable: true,
-      isOpen: false,
-      activeOrderId: "",
-      currentOrderId: "",
-      orderId: "",
-      waitingQueueId: "",
-      waitingQueueNumber: "",
-      partySize: 0,
-      occupiedAt: null,
-      occupiedAtMs: 0,
-      orderToken: "",
-      sessionStartedAt: null,
-      currentRound: 0,
-      orderIds: [],
-    });
-    toast(`ปิด ${table.name || `โต๊ะ ${table.code || table.id}`} เรียบร้อยแล้ว`);
+    button.innerHTML = closeButtonMarkup(t('cashier_documents.table_qr.closing'));
+    await dataService.updateTable(table.id, { status: 'available', orderToken: '', sessionStartedAt: null, currentRound: 0 });
+    toast(t('cashier_documents.table_qr.close_success', { table: tableLabel }));
     setTimeout(() => location.reload(), 350);
   } catch (error) {
     console.error('SAFE_TABLE_CLOSE_FAILED', error);
     const message = String(error?.message || '');
-    toast(message.includes('TABLE_HAS_UNPAID_ORDERS') ? 'ยังมีออเดอร์หรือยังไม่ได้ชำระเงิน ไม่สามารถปิดโต๊ะได้' : 'ปิดโต๊ะไม่สำเร็จ กรุณาลองใหม่', 'error');
+    toast(message.includes('TABLE_HAS_UNPAID_ORDERS') ? t('cashier_documents.table_qr.unpaid_orders') : t('cashier_documents.table_qr.close_failed'), 'error');
     button.disabled = false;
-    restoreCloseButton(button);
+    button.innerHTML = closeButtonMarkup();
   }
 }
 

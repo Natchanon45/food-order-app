@@ -1,6 +1,12 @@
 import { auth } from "./firebase-config.js?v=20260630-073";
-import { createStaffUser, listStaffUsers, updateStaffUser } from "./admin-staff-service.js?v=20260704-002";
-import { toast } from "./ui.js?v=20260731-080";
+import { createStaffUser, listStaffUsers, updateStaffUser } from "./admin-staff-service.js?v=20260903-205";
+import { toast } from "./ui.js?v=20260805-081";
+import translations from "./admin-users-translations.js?v=20260903-205";
+import { configureI18n, applyTranslations, t } from "./i18n.js?v=20260903-202";
+
+configureI18n(translations);
+applyTranslations();
+document.title = t("admin_users.meta.title");
 
 const userForm = document.getElementById("userForm");
 const userRows = document.getElementById("userRows");
@@ -12,11 +18,18 @@ const openCreateUserModal = document.getElementById("openCreateUserModal");
 const closeCreateUserModal = document.getElementById("closeCreateUserModal");
 const cancelCreateUserModal = document.getElementById("cancelCreateUserModal");
 let users = [];
+const currentUserId = String(auth?.currentUser?.uid || "");
 
 const roleOptions = [
-  ["admin", "Admin"],
-  ["cashier", "Cashier"],
-  ["kitchen", "Kitchen"]
+  ["admin", t("admin_users.roles.admin")],
+  ["cashier", t("admin_users.roles.cashier")],
+  ["kitchen", t("admin_users.roles.kitchen")]
+];
+
+const scopeOptions = [
+  ["order_delivery", t("admin_users.scopes.order_delivery")],
+  ["retail_pos", t("admin_users.scopes.retail_pos")],
+  ["both", t("admin_users.scopes.both")]
 ];
 
 function showError(message = "") {
@@ -27,6 +40,7 @@ function showError(message = "") {
 function resetCreateForm() {
   userForm.reset();
   document.getElementById("active").checked = true;
+  document.getElementById("businessScope").value = "order_delivery";
   showError("");
 }
 
@@ -59,17 +73,24 @@ function roleSelect(user) {
   </select>`;
 }
 
+function scopeSelect(user) {
+  return `<select class="input" data-scope-uid="${user.uid}">
+    ${scopeOptions.map(([value, label]) => `<option value="${value}" ${user.businessScope === value ? "selected" : ""}>${label}</option>`).join("")}
+  </select>`;
+}
+
 function renderUsers() {
-  userCount.textContent = `${users.length} คน`;
+  userCount.textContent = t("admin_users.list.count", { count: users.length });
   userRows.innerHTML = users.length ? users.map(user => `
     <tr>
       <td><input class="input" data-name-uid="${user.uid}" value="${user.displayName || ""}" maxlength="100"></td>
       <td>${user.email || "-"}</td>
       <td>${roleSelect(user)}</td>
+      <td>${scopeSelect(user)}</td>
       <td style="text-align:center"><input type="checkbox" data-active-uid="${user.uid}" ${user.active !== false ? "checked" : ""}></td>
-      <td><button class="btn btn-primary btn-sm user-save-button" data-save-user="${user.uid}">${iconLabel("bi-floppy", "บันทึก")}</button></td>
+      <td><button class="btn btn-primary btn-sm user-save-button" data-save-user="${user.uid}">${iconLabel("bi-floppy", t("admin_users.actions.save"))}</button></td>
     </tr>
-  `).join("") : '<tr><td colspan="5"><div class="empty">ยังไม่มีพนักงานในร้าน</div></td></tr>';
+  `).join("") : `<tr><td colspan="6"><div class="empty">${t("admin_users.list.empty")}</div></td></tr>`;
 }
 
 async function loadUsers() {
@@ -78,8 +99,9 @@ async function loadUsers() {
     renderUsers();
   } catch (error) {
     console.error(error);
-    showError("โหลดรายการพนักงานไม่สำเร็จ");
-    toast("โหลดรายการพนักงานไม่สำเร็จ", "error");
+    const message = t("admin_users.list.load_failed");
+    showError(message);
+    toast(message, "error");
   }
 }
 
@@ -90,16 +112,16 @@ userForm.addEventListener("submit", async event => {
   const password = document.getElementById("password").value;
   const confirmPassword = document.getElementById("confirmPassword").value;
   if (password.length < 8) {
-    showError("รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร");
+    showError(t("admin_users.validation.password_min"));
     return;
   }
   if (password !== confirmPassword) {
-    showError("รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน");
+    showError(t("admin_users.validation.password_mismatch"));
     return;
   }
 
   createUserButton.disabled = true;
-  setButtonContent(createUserButton, "bi-hourglass-split", "กำลังสร้าง...");
+  setButtonContent(createUserButton, "bi-hourglass-split", t("admin_users.dialog.creating"));
 
   try {
     await createStaffUser({
@@ -107,24 +129,25 @@ userForm.addEventListener("submit", async event => {
       email: document.getElementById("email").value.trim().toLowerCase(),
       password,
       role: document.getElementById("role").value,
+      businessScope: document.getElementById("businessScope").value,
       active: document.getElementById("active").checked
     });
 
     closeCreateDialog();
-    toast("สร้างพนักงานเรียบร้อยแล้ว");
+    toast(t("admin_users.messages.created"));
     await loadUsers();
   } catch (error) {
     console.error(error);
     const code = String(error?.code || error?.message || "");
-    let message = "สร้างพนักงานไม่สำเร็จ";
-    if (code.includes("already-exists") || code.includes("email-already-exists")) message = "อีเมลนี้ถูกใช้งานแล้ว";
-    if (code.includes("invalid-argument")) message = "กรุณาตรวจสอบข้อมูลพนักงาน";
-    if (code.includes("permission-denied")) message = "บัญชีนี้ไม่มีสิทธิ์จัดการพนักงาน";
+    let message = t("admin_users.messages.create_failed");
+    if (code.includes("STAFF_EMAIL_EXISTS") || code.includes("already-exists") || code.includes("email-already-exists")) message = t("admin_users.messages.email_exists");
+    if (code.includes("STAFF_NAME_REQUIRED") || code.includes("STAFF_EMAIL_INVALID") || code.includes("STAFF_ROLE_INVALID") || code.includes("STAFF_BUSINESS_SCOPE_INVALID") || code.includes("invalid-argument")) message = t("admin_users.messages.invalid_data");
+    if (code.includes("FORBIDDEN") || code.includes("HTTP_403") || code.includes("permission-denied")) message = t("admin_users.messages.forbidden");
     showError(message);
     toast(message, "error");
   } finally {
     createUserButton.disabled = false;
-    setButtonContent(createUserButton, "bi-person-plus", "สร้างผู้ใช้งาน");
+    setButtonContent(createUserButton, "bi-person-plus", t("admin_users.dialog.create"));
   }
 });
 
@@ -134,23 +157,24 @@ userRows.addEventListener("click", async event => {
 
   const uid = button.dataset.saveUser;
   const user = users.find(item => item.uid === uid);
-  if (!user || uid === auth.currentUser?.uid) return;
+  if (!user || uid === currentUserId) return;
 
   button.disabled = true;
-  setButtonContent(button, "bi-hourglass-split", "กำลังบันทึก...");
+  setButtonContent(button, "bi-hourglass-split", t("admin_users.actions.saving"));
 
   try {
     const displayName = document.querySelector(`[data-name-uid="${uid}"]`).value.trim();
     const role = document.querySelector(`[data-role-uid="${uid}"]`).value;
+    const businessScope = document.querySelector(`[data-scope-uid="${uid}"]`).value;
     const active = document.querySelector(`[data-active-uid="${uid}"]`).checked;
-    await updateStaffUser(uid, { displayName, role, active });
-    toast("บันทึกข้อมูลพนักงานแล้ว");
+    await updateStaffUser(uid, { displayName, email: user.email, role, businessScope, active });
+    toast(t("admin_users.messages.saved"));
     await loadUsers();
   } catch (error) {
     console.error(error);
-    toast("บันทึกพนักงานไม่สำเร็จ", "error");
+    toast(t("admin_users.messages.save_failed"), "error");
     button.disabled = false;
-    setButtonContent(button, "bi-floppy", "บันทึก");
+    setButtonContent(button, "bi-floppy", t("admin_users.actions.save"));
   }
 });
 

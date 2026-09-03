@@ -1,94 +1,59 @@
 <!doctype html>
 <html lang="th">
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
-    <meta name="theme-color" content="#159447" />
-    <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096" />
-    <link rel="stylesheet" href="/assets/css/icons.css?v=20260731-079" />
-    <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-095" />
-    <link rel="stylesheet" href="/assets/css/sweet-dialog-polish.css?v=20260731-089" />
-    <link rel="stylesheet" href="/assets/css/cashier-refresh.css?v=20260802-010" />
-    <link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260731-079" />
-    <title>หน้าแคชเชียร์</title>
-      <script>/* WAITING_QUEUE_CANONICAL_REDIRECT_20260801_002 */
-      if (location.pathname.replace(/\/$/, "") === "/cashier/waiting-queue") {
-        const target = new URL("/waiting-queue/", location.origin);
-        for (const [key, value] of new URLSearchParams(location.search)) target.searchParams.set(key, value);
-        target.hash = location.hash;
-        location.replace(target.href);
-      }
-    </script>
-  </head>
-  <body class="order-delivery-workspace cashier-page" data-roles="cashier">
-    <div id="demoBanner"></div>
-    <header class="app-header">
-      <div class="brand"><span class="brand-mark">FO</span>หน้าแคชเชียร์</div>
-    </header>
-    <main class="container cashier-shell">
-      <section class="hero cashier-hero">
-        <div class="cashier-hero-copy">
-          <h1>หน้าแคชเชียร์</h1>
-          <p>ตรวจสอบรายการ รับชำระเงิน และปิดบิลจากหน้าจอเดียว</p>
-        </div>
-      </section>
-      <section class="cashier-action-bar" aria-label="เครื่องมือสั่งกลับบ้าน">
-        <div class="cashier-action-title">
-          <strong>เครื่องมือสั่งกลับบ้าน</strong>
-          <span>สำหรับลูกค้า Walk-in</span>
-        </div>
-        <div class="cashier-actions">
-          <a class="btn btn-primary" href="/cashier/waiting-queue" aria-label="จัดการคิวรอโต๊ะ" title="จัดการคิวรอโต๊ะ">
-            <i class="fi fi-rr-user-time app-icon" aria-hidden="true"></i>
-            <span>คิวรอโต๊ะ</span>
-          </a>
-          <button class="btn btn-primary" type="button" id="showTakeawayQr" aria-label="แสดง QR สั่งกลับบ้าน" title="แสดง QR สั่งกลับบ้าน">
-            <i class="bi bi-qr-code app-icon" aria-hidden="true"></i>
-            <span>QR Take Away</span>
-          </button>
-          <a class="btn btn-warning" id="openTakeawayOrder" target="_blank" rel="noopener" aria-label="เปิดหน้าสั่งกลับบ้าน" title="เปิดหน้าสั่งกลับบ้าน">
-            <i class="bi bi-plus-lg app-icon" aria-hidden="true"></i>
-            <span>สั่งกลับบ้าน</span>
-          </a>
-          <button class="btn cashier-copy-action" type="button" id="copyTakeawayUrl" aria-label="คัดลอกลิงก์สั่งกลับบ้าน" title="คัดลอกลิงก์สั่งกลับบ้าน">
-            <i class="bi bi-clipboard app-icon" aria-hidden="true"></i>
-            <span>คัดลอกลิงก์</span>
-          </button>
-        </div>
-      </section>
-      <section class="cashier-workspace" aria-labelledby="cashierQueueTitle">
-        <header class="cashier-section-head">
-          <div>
-            <h2 id="cashierQueueTitle">บิลที่รอดำเนินการ</h2>
-            <p>รายการใหม่จะแสดงที่หน้านี้โดยอัตโนมัติ</p>
-          </div>
-          <span id="cashierOrderCount" class="cashier-order-count">0 บิล</span>
-        </header>
-        <div id="orderGrid" class="cashier-order-grid"></div>
-      </section>
-    </main>
-    <script
-      type="module"
-      src="/assets/js/page-guard.js?v=20260801-103"
-    ></script>
-    <script type="module" src="/assets/js/offline-data-service.js"></script>
-    <script type="module" src="/assets/js/cashier.js?v=20260802-009"></script>
-    <script type="module" src="/assets/js/cashier-takeaway-tools.js?v=20260731-089"></script>
-    <script
-      type="module"
-      src="/assets/js/order-completion-finalizer.js?v=20260702-002"
-    ></script>
-    <script
-      type="module"
-      src="/assets/js/cashier-icon-hotfix.js?v=20260802-009"
-    ></script>
-    <script
-      type="module"
-      src="/assets/js/cashier-original-order.js?v=20260731-089"
-    ></script>
-      <script type="module" src="/assets/js/waiting-queue-entry.js?v=20260802-011"></script>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#159447">
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240">
+  <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-095">
+  <link rel="stylesheet" href="/assets/css/cashier-refresh.css?v=20260903-222">
+  <link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260731-079">
+  <link rel="stylesheet" href="/assets/css/i18n.css?v=20260903-202">
+  <style>.app-header:has(#deliveryAlertButton) > .user-menu { margin-left:0!important; }</style>
+  <title>หน้าแคชเชียร์</title>
+  <script>
+    if (location.pathname.replace(/\/$/, "") === "/cashier/waiting-queue") {
+      const target = new URL("/waiting-queue/", location.origin);
+      for (const [key, value] of new URLSearchParams(location.search)) target.searchParams.set(key, value);
+      target.hash = location.hash;
+      location.replace(target.href);
+    }
+  </script>
+</head>
+<body class="order-delivery-workspace cashier-page" data-roles="owner,admin,cashier">
+  <div id="demoBanner"></div>
+  <header class="app-header">
+    <div class="brand"><span class="brand-mark">FO</span><span data-i18n="cashier.header.title">หน้าแคชเชียร์</span></div>
+    <div class="app-locale-switcher" data-static-locale-switcher><details class="app-locale-menu" data-locale-menu><summary class="app-locale-trigger" aria-label="Language" title="Language"><i class="bi bi-globe2" aria-hidden="true"></i><span class="visually-hidden">Language</span></summary><div class="app-locale-menu__panel" role="menu" aria-label="Language"><button type="button" class="app-locale-option" data-locale-option="th" lang="th" role="menuitemradio" aria-checked="true"><span>ไทย</span><i class="bi bi-check-lg" aria-hidden="true"></i></button><button type="button" class="app-locale-option" data-locale-option="en" lang="en" role="menuitemradio" aria-checked="false"><span>English</span><i class="bi bi-check-lg" aria-hidden="true"></i></button></div></details></div>
+  </header>
+  <main class="container cashier-shell">
+    <section class="hero cashier-hero"><div class="cashier-hero-copy"><h1 data-i18n="cashier.hero.title">หน้าแคชเชียร์</h1><p data-i18n="cashier.hero.description">ตรวจสอบรายการ รับชำระเงิน และปิดบิลจากหน้าจอเดียว</p></div></section>
+    <section class="cashier-action-bar" aria-label="เครื่องมือสั่งกลับบ้าน" data-i18n-aria-label="cashier.takeaway_tools.aria_label">
+      <div class="cashier-action-title"><strong data-i18n="cashier.takeaway_tools.title">เครื่องมือสั่งกลับบ้าน</strong><span data-i18n="cashier.takeaway_tools.subtitle">สำหรับลูกค้า Walk-in</span></div>
+      <div class="cashier-actions">
+        <a class="btn btn-primary" href="/cashier/waiting-queue" aria-label="จัดการคิวรอโต๊ะ" title="จัดการคิวรอโต๊ะ" data-i18n-aria-label="cashier.takeaway_tools.waiting_queue_aria" data-i18n-title="cashier.takeaway_tools.waiting_queue_aria"><i class="bi bi-person-standing app-icon" aria-hidden="true"></i><span data-i18n="cashier.takeaway_tools.waiting_queue">คิวรอโต๊ะ</span></a>
+        <button class="btn btn-primary" type="button" id="showTakeawayQr" aria-label="แสดง QR สั่งกลับบ้าน" title="แสดง QR สั่งกลับบ้าน" data-i18n-aria-label="cashier.takeaway_tools.show_qr_aria" data-i18n-title="cashier.takeaway_tools.show_qr_aria"><i class="bi bi-qr-code app-icon" aria-hidden="true"></i><span data-i18n="cashier.takeaway_tools.qr_label">QR Take Away</span></button>
+        <a class="btn btn-warning" id="openTakeawayOrder" target="_blank" rel="noopener" aria-label="เปิดหน้าสั่งกลับบ้าน" title="เปิดหน้าสั่งกลับบ้าน" data-i18n-aria-label="cashier.takeaway_tools.open_order_aria" data-i18n-title="cashier.takeaway_tools.open_order_aria"><i class="bi bi-plus-lg app-icon" aria-hidden="true"></i><span data-i18n="cashier.takeaway_tools.open_order">สั่งกลับบ้าน</span></a>
+        <button class="btn cashier-copy-action" type="button" id="copyTakeawayUrl" aria-label="คัดลอกลิงก์สั่งกลับบ้าน" title="คัดลอกลิงก์สั่งกลับบ้าน" data-i18n-aria-label="cashier.takeaway_tools.copy_link_aria" data-i18n-title="cashier.takeaway_tools.copy_link_aria"><i class="bi bi-clipboard app-icon" aria-hidden="true"></i><span data-i18n="cashier.takeaway_tools.copy_link">คัดลอกลิงก์</span></button>
+      </div>
+    </section>
+    <section class="cashier-workspace" aria-labelledby="cashierQueueTitle">
+      <header class="cashier-section-head"><div><h2 id="cashierQueueTitle" data-i18n="cashier.queue.title">บิลที่รอดำเนินการ</h2><p data-i18n="cashier.queue.description">รายการใหม่จะแสดงที่หน้านี้โดยอัตโนมัติ</p></div><span id="cashierOrderCount" class="cashier-order-count">0 บิล</span></header>
+      <div id="orderGrid" class="cashier-order-grid"></div>
+    </section>
+  </main>
+  <script type="module" src="/assets/js/cashier-i18n-bootstrap.js?v=20260903-222"></script>
+  <script type="module" src="/assets/js/page-guard.js?v=20260903-201"></script>
+  <script type="module" src="/assets/js/offline-data-service.js"></script>
+  <script type="module" src="/assets/js/cashier.js?v=20260903-242"></script>
+  <script type="module" src="/assets/js/cashier-header-actions.js?v=20260903-222"></script>
+  <script type="module" src="/assets/js/cashier-takeaway-tools.js?v=20260903-222"></script>
+  <script type="module" src="/assets/js/order-completion-finalizer.js?v=20260702-002"></script>
+  <script type="module" src="/assets/js/cashier-icon-hotfix.js?v=20260903-222"></script>
+  <script type="module" src="/assets/js/cashier-original-order.js?v=20260903-222"></script>
+  <script type="module" src="/assets/js/waiting-queue-entry.js?v=20260802-011"></script>
+  <script type="module" src="/assets/js/locale-switcher-static.js?v=20260903-202"></script>
+  <script type="module" src="/assets/js/user-menu-i18n-static.js?v=20260903-202"></script>
+</body>
 </html>

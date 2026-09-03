@@ -32,6 +32,14 @@ service firebase.storage {
         && request.resource.contentType.matches('image/.*');
     }
 
+    function validRevenueShareSlip(maxBytes) {
+      return request.resource != null
+        && request.resource.size > 0
+        && request.resource.size <= maxBytes
+        && (request.resource.contentType.matches('image/(jpeg|png|webp)')
+          || request.resource.contentType == 'application/pdf');
+    }
+
     function tenantOwner(tenantId) {
       return signedIn()
         && (
@@ -84,6 +92,14 @@ service firebase.storage {
       allow read: if staffRole();
       allow update: if false;
       allow delete: if hasRole(['owner', 'super_admin']);
+    }
+
+    match /tenants/{tenantId}/revenue-share-slips/{paymentId}/{fileName} {
+      allow create: if tenantProductAdmin(tenantId) && validRevenueShareSlip(10 * 1024 * 1024);
+      allow read: if hasRole(['super_admin']) || tenantProductAdmin(tenantId);
+      allow update: if false;
+      allow delete: if tenantProductAdmin(tenantId)
+        && !firestore.exists(/databases/(default)/documents/tenants/$(tenantId)/revenueSharePayments/$(paymentId));
     }
 
     match /{allPaths=**} {

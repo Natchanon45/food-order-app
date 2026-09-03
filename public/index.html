@@ -1,62 +1,176 @@
 <!doctype html>
 <html lang="th">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#159447">
-  <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
-  <link rel="stylesheet" href="/assets/css/icons.css?v=20260731-079">
-  <link rel="stylesheet" href="/assets/css/home-dashboard.css?v=20260801-004">
-  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/4.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
-  <style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#159447">
+<link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
+<link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240">
+<link rel="stylesheet" href="/assets/css/home-dashboard.css?v=20260802-073">
+<link rel="stylesheet" href="/assets/css/public-contact.css?v=20260803-005">
+<link rel="stylesheet" href="/assets/css/public-utility-actions.css?v=20260811-096">
+<link rel="stylesheet" href="/assets/css/waiting-queue-legacy-customer.css?v=20260801-002">
+<link rel="stylesheet" href="/assets/css/i18n.css?v=20260903-202">
+<link rel="stylesheet" href="https://cdn-uicons.flaticon.com/4.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+<style>
     .public-pricing-card{margin-top:18px}.public-pricing-head{display:flex;align-items:end;justify-content:space-between;gap:14px;margin-bottom:14px}.public-pricing-head h2{display:flex;align-items:center;gap:10px;margin:0;font-size:24px}.public-pricing-head p{margin:0;color:#5d6a61}.public-plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.public-plan{position:relative;display:grid;gap:10px;padding:34px 16px 16px;border:1px solid #dfeae3;border-radius:18px;background:#fbfffc}.public-plan-featured{border-color:#9fd0b3;background:linear-gradient(180deg,#fff,#f0fbf4);box-shadow:0 14px 32px rgba(16,75,42,.08)}.public-plan-badge{position:absolute;top:10px;right:10px;display:inline-flex;align-items:center;gap:4px;width:max-content;padding:3px 7px;border-radius:999px;background:#e8f3ec;color:#0d6f34;font-size:10px;font-weight:900;line-height:1}.public-plan-badge .bi{font-size:10px}.public-plan h3{margin:0;text-align:center;font-size:24px}.public-plan-price{margin:0;text-align:center;color:#0d6f34;font-size:22px;font-weight:900}.public-plan-price small{font-size:12px;color:#5d6a61}.public-plan p{margin:0;color:#5d6a61;line-height:1.5}.public-plan ul{display:grid;gap:7px;margin:0;padding:0;list-style:none}.public-plan li{display:flex;gap:7px;align-items:flex-start;color:#102317;font-size:13px;line-height:1.45}.public-plan li .bi{color:#159447;margin-top:2px}.public-cta-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;margin-top:16px}.public-cta-row .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px}.btn-outline-public{border:1px solid #b9ddc8;background:#fff;color:#0d6f34}.public-register-note{margin:4px 0 0;text-align:center;color:#6b746f;font-size:12px}.public-support{display:grid;justify-items:center;gap:10px}.public-support-links{display:flex;flex-wrap:nowrap;justify-content:center;gap:9px}.public-support-link{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;padding:7px 11px;border:1px solid #d7e9de;border-radius:999px;background:#f6fbf8;color:#0d6f34!important;font-size:12px;font-weight:800;text-decoration:none!important}@media(max-width:760px){.app-header{min-height:54px;padding:9px 12px}.brand{gap:8px;font-size:13px;line-height:1.15}.brand-mark{min-width:34px;width:34px;height:34px;border-radius:10px}.brand-mark:after{font-size:11px}#publicLanding.container{width:min(430px,100%);padding:12px 10px 72px}#publicLanding .hero{margin:0 0 12px;padding:16px;border-radius:16px}#publicLanding .public-landing-hero h1,#publicLanding .public-feature-card h2,#publicLanding .quick-menu-head h2,#publicLanding .public-about-card h2,#publicLanding .public-pricing-head h2{display:grid;grid-template-columns:22px minmax(0,1fr);align-items:center;gap:8px;margin:0 0 8px;font-size:20px;line-height:1.25}#publicLanding .public-landing-hero p,#publicLanding .public-feature-card p,#publicLanding .quick-menu-head p,#publicLanding .public-about-card p,#publicLanding .public-pricing-head p{margin-top:0;font-size:13px;line-height:1.55}#publicLanding .grid,#publicLanding .grid-3{display:grid;grid-template-columns:1fr;gap:10px}#publicLanding .card{padding:14px;border-radius:16px}#publicLanding .public-heading-icon{width:20px;height:20px;justify-self:center}#publicLanding .quick-menu-card,#publicLanding .public-about-card,#publicLanding .public-pricing-card{margin-top:10px!important}#publicLanding .quick-menu-head p{margin-bottom:10px}#publicLanding .quick-link{align-items:flex-start;gap:10px;padding:12px;border-radius:15px}#publicLanding .quick-link-icon{width:34px;height:34px;flex-basis:34px;border-radius:12px}#publicLanding .quick-link-icon .app-icon{width:18px;height:18px}#publicLanding .quick-link strong{font-size:13px;line-height:1.25}#publicLanding .quick-link span{font-size:12px;line-height:1.4}#publicLanding .public-pricing-head{display:block;margin-bottom:10px}#publicLanding .public-plan-grid{grid-template-columns:1fr;gap:10px}#publicLanding .public-plan{padding:32px 13px 13px;border-radius:15px;gap:8px}#publicLanding .public-plan h3{font-size:21px}#publicLanding .public-plan-price{font-size:20px}#publicLanding .public-plan p,#publicLanding .public-plan li{font-size:12px}#publicLanding .public-plan-badge{top:9px;right:9px;font-size:9.5px;padding:3px 6px}#publicLanding .public-cta-row{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}#publicLanding .public-cta-row .btn{width:100%;min-height:42px;border-radius:13px;font-size:13px}#publicLanding .public-support{justify-items:stretch;text-align:left}#publicLanding .public-support-links{display:grid;grid-template-columns:1fr;gap:8px}#publicLanding .public-support-link{justify-content:center;width:100%;padding:8px 10px;font-size:11px}.app-version{padding:10px 12px 18px;font-size:9.5px;line-height:1.35;color:#6b746f}}
-  </style>
-  <title>Food Order Delivery</title>
-    <link rel="stylesheet" href="/assets/css/waiting-queue-legacy-customer.css?v=20260801-002" />
-    <link rel="stylesheet" href="/assets/css/public-contact.css?v=20260803-005" data-public-contact="style" data-build="20260803-005" />
+    body.staff-home .dashboard-section:not(.dashboard-section-pos) .nav-card::after{content:attr(data-description)!important}
+</style>
+<title>Food Order Delivery</title>
 </head>
-<body class="staff-home">
-  <header class="app-header">
-    <div class="brand"><span class="brand-mark">FOD</span><span class="brand-label">Food Order Delivery</span></div>
-  </header>
-  <main class="container" id="publicLanding">
-    <section class="hero public-landing-hero"><h1><i class="bi bi-shop-window app-icon public-heading-icon" aria-hidden="true"></i><span>Food Order Delivery</span></h1><p>ระบบสั่งอาหาร จัดส่ง และจัดการร้านอาหารออนไลน์</p></section>
-    <section class="grid grid-3" aria-label="ความสามารถของระบบ"><article class="card public-feature-card"><h2><i class="bi bi-phone app-icon public-heading-icon" aria-hidden="true"></i><span>สั่งอาหารออนไลน์</span></h2><p>ลูกค้าเลือกเมนู ระบุที่อยู่จัดส่ง ยืนยันคำสั่งซื้อ และติดตามสถานะได้จากหน้าร้านออนไลน์</p></article><article class="card public-feature-card"><h2><i class="bi bi-scooter app-icon public-heading-icon" aria-hidden="true"></i><span>บริการจัดส่ง</span></h2><p>ร้านอาหารรับคำสั่งซื้อ เตรียมอาหาร และจัดการข้อมูลการจัดส่งในระบบเดียว</p></article><article class="card public-feature-card"><h2><i class="bi bi-building-gear app-icon public-heading-icon" aria-hidden="true"></i><span>จัดการร้านอาหาร</span></h2><p>พนักงานดูแลเมนู ห้องครัว แคชเชียร์ ยอดขาย และงานหลังร้านตามสิทธิ์ที่ได้รับ</p></article></section>
-    <section class="card public-pricing-card" aria-label="แพ็กเกจการใช้งาน"><div class="public-pricing-head"><div><h2><i class="bi bi-stars app-icon public-heading-icon" aria-hidden="true"></i><span>แพ็กเกจสำหรับร้านค้า</span></h2><p>เลือกแผนที่เหมาะกับร้านของคุณ เริ่มจากทดลองใช้งานไปจนถึงระบบเต็มรูปแบบ</p></div></div><div class="public-plan-grid"><article class="public-plan"><span class="public-plan-badge"><i class="bi bi-gift" aria-hidden="true"></i>เริ่มต้น</span><h3>ฟรี</h3><p class="public-plan-price">0฿<small>/Month</small></p><p>เหมาะสำหรับทดลองระบบและเริ่มจัดการเมนูเบื้องต้น</p><ul><li><i class="bi bi-check-circle" aria-hidden="true"></i><span>เมนูและออเดอร์พื้นฐาน</span></li><li><i class="bi bi-check-circle" aria-hidden="true"></i><span>หน้าเข้าสู่ระบบพนักงาน</span></li></ul></article><article class="public-plan public-plan-featured"><span class="public-plan-badge"><i class="bi bi-lightning-charge" aria-hidden="true"></i>แนะนำ</span><h3>โปร</h3><p class="public-plan-price">390฿<small>/Month</small></p><p>เพิ่มเครื่องมือจัดการร้าน ครัว แคชเชียร์ และงานขายประจำวัน</p><ul><li><i class="bi bi-check-circle" aria-hidden="true"></i><span>Order / Delivery / Kitchen</span></li><li><i class="bi bi-check-circle" aria-hidden="true"></i><span>Cashier และรายงานพื้นฐาน</span></li></ul></article><article class="public-plan"><span class="public-plan-badge"><i class="bi bi-gem" aria-hidden="true"></i>เต็มระบบ</span><h3>พรีเมียม</h3><p class="public-plan-price">590฿<small>/Month</small></p><p>เหมาะกับร้านที่ต้องการระบบหลังบ้านและ POS แบบครบชุด</p><ul><li><i class="bi bi-check-circle" aria-hidden="true"></i><span>Retail POS และสิทธิ์พนักงาน</span></li><li><i class="bi bi-check-circle" aria-hidden="true"></i><span>รองรับ Online / Offline / Sync</span></li></ul></article></div><div class="public-cta-row"><a class="btn btn-primary" href="/register/"><i class="bi bi-person-plus app-icon" aria-hidden="true"></i><span>ลงทะเบียน</span></a><a class="btn btn-outline-public" href="/login"><i class="bi bi-box-arrow-in-right app-icon" aria-hidden="true"></i><span>ลงชื่อเข้าใช้</span></a></div><p class="public-register-note">สมัคร Premium Trial ฟรี 1 เดือน หลังยืนยันอีเมลแล้วเริ่มเปิดร้านได้ทันที</p></section>
-    <section
-  class="card public-contact-card"
-  id="publicContactCard"
-  aria-labelledby="publicContactTitle"
-  hidden
->
-  <div class="public-contact-copy">
-    <span class="public-contact-kicker">
-      <i class="bi bi-chat-heart" aria-hidden="true"></i>
-      <span>ติดต่อเรา</span>
-    </span>
-    <h2 id="publicContactTitle">คุยกับเรา</h2>
-    <p id="publicContactDescription">
-      ติดต่อสอบถามข้อมูลแพ็กเกจและการใช้งานระบบ
-    </p>
-  </div>
-  <nav
-    class="public-contact-links"
-    id="publicContactLinks"
-    aria-label="ช่องทางติดต่อ"
-  ></nav>
-</section>
-<section class="card quick-menu-card" aria-label="ลิงก์เข้าใช้งานด่วน"><div class="quick-menu-head"><h2><i class="bi bi-lightning-charge app-icon public-heading-icon" aria-hidden="true"></i><span>เข้าใช้งานด่วน</span></h2><p>สำหรับพนักงานให้เข้าสู่ระบบก่อน เพื่อให้ระบบเลือก tenant และสิทธิ์เมนูให้ถูกต้อง</p></div><div class="quick-link-grid quick-link-grid-single"><a class="quick-link" href="/login"><span class="quick-link-icon"><i class="bi bi-box-arrow-in-right app-icon" aria-hidden="true"></i></span><span class="quick-link-content"><strong>ลงชื่อเข้าใช้พนักงาน / POS</strong><span>เข้าสู่ระบบเพื่อใช้งานครัว แคชเชียร์ จัดการร้าน และ POS ตามสิทธิ์</span></span></a></div></section>
-    <section class="card public-about-card" style="margin-top:18px"><h2 style="margin-top:0"><i class="bi bi-info-circle app-icon public-heading-icon" aria-hidden="true"></i><span>เกี่ยวกับแอปพลิเคชัน</span></h2><p>Food Order Delivery เชื่อมต่อร้านอาหารกับลูกค้าเพื่อให้การสั่งอาหาร การชำระเงิน และการจัดส่งเป็นเรื่องง่าย บัญชี Google ใช้สำหรับยืนยันตัวตนลูกค้าและบันทึกข้อมูลโปรไฟล์กับที่อยู่จัดส่งตามที่ลูกค้าเลือกให้ระบบเข้าถึง</p><div class="public-support"><nav class="public-support-links" aria-label="ลิงก์ติดต่อและนโยบาย"><a class="public-support-link" href="mailto:sripleng.natchanon@gmail.com"><i class="bi bi-envelope app-icon public-inline-icon" aria-hidden="true"></i><span>ติดต่อฝ่ายสนับสนุน</span></a><a class="public-support-link" href="/privacy"><i class="bi bi-shield-check app-icon public-inline-icon" aria-hidden="true"></i><span>นโยบายความเป็นส่วนตัว</span></a><a class="public-support-link" href="/terms"><i class="bi bi-file-text app-icon public-inline-icon" aria-hidden="true"></i><span>ข้อกำหนดการใช้งาน</span></a></nav></div></section>
-  </main>
-  <main class="container" id="staffDashboard" hidden>
-    <section class="hero staff-hero"><h1>Food Order / Delivery / POS</h1><p>รวมเมนูใช้งานหลักของร้านไว้ในหน้าเดียว</p></section>
-    <section class="dashboard-section" aria-labelledby="frontServiceTitle"><div class="dashboard-section-head"><h2 id="frontServiceTitle">Order / Delivery</h2><p>เมนูหลักของร้านอาหารสำหรับพนักงานและผู้ดูแลร้าน</p></div><div class="nav-cards" aria-label="เมนู Order และ Delivery"><a class="card nav-card" href="/kitchen" data-dashboard-role="owner,admin,kitchen,super_admin" hidden><span class="nav-card-icon"><i class="fi fi-rr-restaurant app-icon" aria-hidden="true"></i></span><span class="nav-card-label">หน้าครัว</span></a><a class="card nav-card" href="/cashier" data-dashboard-role="owner,admin,cashier,super_admin" hidden><span class="nav-card-icon"><i class="fi fi-rr-receipt app-icon" aria-hidden="true"></i></span><span class="nav-card-label">แคชเชียร์ร้านอาหาร</span></a><a class="card nav-card waiting-queue-home-card" href="/waiting-queue/" data-dashboard-role="owner,admin,manager,cashier,super_admin" data-waiting-queue-home-card="1" aria-label="คิวรอโต๊ะ" title="คิวรอโต๊ะ" hidden><span class="nav-card-icon"><i class="bi bi-person-standing app-icon waiting-queue-home-icon" aria-hidden="true"></i></span><span class="nav-card-label">คิวรอโต๊ะ</span></a><a class="card nav-card" href="/admin" data-dashboard-role="owner,admin,super_admin" hidden><span class="nav-card-icon"><i class="fi fi-rr-settings-sliders app-icon" aria-hidden="true"></i></span><span class="nav-card-label">จัดการระบบ</span></a><a class="card nav-card" href="/admin/users" data-dashboard-role="owner,super_admin" hidden><span class="nav-card-icon"><i class="fi fi-rr-users app-icon" aria-hidden="true"></i></span><span class="nav-card-label">จัดการพนักงาน</span></a></div></section>
-    <section class="dashboard-section dashboard-section-pos" aria-labelledby="retailPosTitle"><div class="dashboard-section-head"><h2 id="retailPosTitle">Retail POS</h2><p>ระบบขายร้านค้าแยกเดี่ยว มีเมนูจัดการพนักงานและสิทธิ์ในตัว</p></div><div class="nav-cards nav-cards-pos" aria-label="เมนู Retail POS"><a class="card nav-card nav-card-feature" href="/pos" data-dashboard-role="owner,admin,manager,cashier,super_admin" data-dashboard-module="retail-pos" hidden><span class="nav-card-icon"><i class="fi fi-rr-shop app-icon" aria-hidden="true"></i></span><span class="nav-card-label">POS ร้านค้าปลีก</span></a><a class="card nav-card" href="/pos/catalog" data-dashboard-role="owner,super_admin" data-dashboard-module="retail-pos" hidden><span class="nav-card-icon"><i class="fi fi-rr-box-open app-icon" aria-hidden="true"></i></span><span class="nav-card-label">POS Catalog</span></a></div></section>
-  </main>
-  <script type="module" src="/assets/js/ui.js?v=20260731-080"></script>
-  <script type="module" src="/assets/js/home-session-fa.js?v=20260731-079"></script>
-    <script type="module" src="/assets/js/waiting-queue-entry.js?v=20260801-003"></script>
-      <script defer src="/assets/js/waiting-queue-legacy-customer.js?v=20260801-002"></script>
-    <script type="module" src="/assets/js/public-contact.js?v=20260803-005" data-public-contact="script" data-build="20260803-005"></script>
+<body>
+<header class="app-header"><div class="brand"><span class="brand-mark">FOD</span><span class="brand-label">Food Order Delivery</span></div><div class="app-locale-switcher" data-static-locale-switcher><details class="app-locale-menu" data-locale-menu><summary class="app-locale-trigger" aria-label="Language" title="Language"><i class="bi bi-globe2" aria-hidden="true"></i><span class="visually-hidden">Language</span></summary><div class="app-locale-menu__panel" role="menu" aria-label="Language"><button type="button" class="app-locale-option" data-locale-option="th" lang="th" role="menuitemradio" aria-checked="true"><span>ไทย</span><i class="bi bi-check-lg" aria-hidden="true"></i></button><button type="button" class="app-locale-option" data-locale-option="en" lang="en" role="menuitemradio" aria-checked="false"><span>English</span><i class="bi bi-check-lg" aria-hidden="true"></i></button></div></details></div></header>
+<main class="container" id="publicLanding">
+    <section class="hero public-landing-hero">
+        <h1><i class="bi bi-shop-window app-icon public-heading-icon" aria-hidden="true"></i><span>Food Order Delivery</span></h1>
+        <p><span data-i18n="home.public.hero.description">ระบบสั่งอาหาร จัดส่ง และจัดการร้านอาหารออนไลน์</span></p>
+    </section>
+
+    <section class="grid grid-3" aria-label="ความสามารถของระบบ" data-i18n-aria-label="home.public.features.aria_label">
+        <article class="card public-feature-card">
+            <h2><i class="bi bi-phone app-icon public-heading-icon" aria-hidden="true"></i><span><span data-i18n="home.public.features.online.title">สั่งอาหารออนไลน์</span></span></h2>
+            <p><span data-i18n="home.public.features.online.description">ลูกค้าเลือกเมนู ระบุที่อยู่จัดส่ง ยืนยันคำสั่งซื้อ และติดตามสถานะได้จากหน้าร้านออนไลน์</span></p>
+        </article>
+        <article class="card public-feature-card">
+            <h2><i class="bi bi-scooter app-icon public-heading-icon" aria-hidden="true"></i><span><span data-i18n="home.public.features.delivery.title">บริการจัดส่ง</span></span></h2>
+            <p><span data-i18n="home.public.features.delivery.description">ร้านอาหารรับคำสั่งซื้อ เตรียมอาหาร และจัดการข้อมูลการจัดส่งในระบบเดียว</span></p>
+        </article>
+        <article class="card public-feature-card">
+            <h2><i class="bi bi-building-gear app-icon public-heading-icon" aria-hidden="true"></i><span><span data-i18n="home.public.features.management.title">จัดการร้านอาหาร</span></span></h2>
+            <p><span data-i18n="home.public.features.management.description">พนักงานดูแลเมนู ห้องครัว แคชเชียร์ ยอดขาย และงานหลังร้านตามสิทธิ์ที่ได้รับ</span></p>
+        </article>
+    </section>
+
+    <section class="card public-pricing-card" aria-label="แพ็กเกจการใช้งาน" data-i18n-aria-label="home.public.pricing.aria_label">
+        <div class="public-pricing-head">
+            <div>
+                <h2><i class="bi bi-stars app-icon public-heading-icon" aria-hidden="true"></i><span><span data-i18n="home.public.pricing.title">แพ็กเกจสำหรับร้านค้า</span></span></h2>
+                <p><span data-i18n="home.public.pricing.description">เลือกแผนที่เหมาะกับร้านของคุณ เริ่มจากทดลองใช้งานไปจนถึงระบบเต็มรูปแบบ</span></p>
+            </div>
+        </div>
+        <div class="public-plan-grid">
+            <article class="public-plan">
+                <span class="public-plan-badge"><i class="bi bi-gift" aria-hidden="true"></i><span data-i18n="home.public.pricing.badges.start">เริ่มต้น</span></span>
+                <h3><span data-i18n="home.public.pricing.plans.free.name">ฟรี</span></h3>
+                <p class="public-plan-price">0฿<small><span data-i18n="home.public.pricing.month_suffix">/เดือน</span></small></p>
+                <p><span data-i18n="home.public.pricing.plans.free.description">เหมาะสำหรับทดลองระบบและเริ่มจัดการเมนูเบื้องต้น</span></p>
+                <ul>
+                    <li><i class="bi bi-check-circle" aria-hidden="true"></i><span><span data-i18n="home.public.pricing.plans.free.features.basic_orders">เมนูและออเดอร์พื้นฐาน</span></span></li>
+                    <li><i class="bi bi-check-circle" aria-hidden="true"></i><span><span data-i18n="home.public.pricing.plans.free.features.staff_login">หน้าเข้าสู่ระบบพนักงาน</span></span></li>
+                </ul>
+            </article>
+            <article class="public-plan public-plan-featured">
+                <span class="public-plan-badge"><i class="bi bi-lightning-charge" aria-hidden="true"></i><span data-i18n="home.public.pricing.badges.recommended">แนะนำ</span></span>
+                <h3><span data-i18n="home.public.pricing.plans.pro.name">โปร</span></h3>
+                <p class="public-plan-price">390฿<small><span data-i18n="home.public.pricing.month_suffix">/เดือน</span></small></p>
+                <p><span data-i18n="home.public.pricing.plans.pro.description">เพิ่มเครื่องมือจัดการร้าน ครัว แคชเชียร์ และงานขายประจำวัน</span></p>
+                <ul>
+                    <li><i class="bi bi-check-circle" aria-hidden="true"></i><span>Order / Delivery / Kitchen</span></li>
+                    <li><i class="bi bi-check-circle" aria-hidden="true"></i><span><span data-i18n="home.public.pricing.plans.pro.features.cashier_reports">Cashier และรายงานพื้นฐาน</span></span></li>
+                </ul>
+            </article>
+            <article class="public-plan">
+                <span class="public-plan-badge"><i class="bi bi-gem" aria-hidden="true"></i><span data-i18n="home.public.pricing.badges.full_system">เต็มระบบ</span></span>
+                <h3><span data-i18n="home.public.pricing.plans.premium.name">พรีเมียม</span></h3>
+                <p class="public-plan-price">590฿<small><span data-i18n="home.public.pricing.month_suffix">/เดือน</span></small></p>
+                <p><span data-i18n="home.public.pricing.plans.premium.description">เหมาะกับร้านที่ต้องการระบบหลังบ้านและ POS แบบครบชุด</span></p>
+                <ul>
+                    <li><i class="bi bi-check-circle" aria-hidden="true"></i><span><span data-i18n="home.public.pricing.plans.premium.features.retail_pos_staff">Retail POS และสิทธิ์พนักงาน</span></span></li>
+                    <li><i class="bi bi-check-circle" aria-hidden="true"></i><span><span data-i18n="home.public.pricing.plans.premium.features.sync">รองรับ ออนไลน์ / ออฟไลน์ / ส่งข้อมูล</span></span></li>
+                </ul>
+            </article>
+        </div>
+        <div class="public-cta-row">
+            <a class="btn btn-primary" href="/register/"><i class="bi bi-person-plus app-icon" aria-hidden="true"></i><span><span data-i18n="home.public.pricing.register">ลงทะเบียน</span></span></a>
+            <a class="btn btn-outline-public" href="/login"><i class="bi bi-box-arrow-in-right app-icon" aria-hidden="true"></i><span><span data-i18n="home.public.pricing.login">ลงชื่อเข้าใช้</span></span></a>
+        </div>
+        <p class="public-register-note"><span data-i18n="home.public.pricing.register_note">สมัคร Premium Trial ฟรี 1 เดือน หลังยืนยันอีเมลแล้วเริ่มเปิดร้านได้ทันที</span></p>
+    </section>
+
+    <section class="card public-contact-card" id="publicContactCard" aria-labelledby="publicContactTitle" hidden>
+        <div class="public-contact-copy">
+            <span class="public-contact-kicker">
+                <i class="bi bi-chat-heart" aria-hidden="true"></i>
+                <span><span data-i18n="home.public.contact.kicker">ติดต่อเรา</span></span>
+            </span>
+            <h2 id="publicContactTitle"><span data-i18n="home.public.contact.title">คุยกับเรา</span></h2>
+            <p id="publicContactDescription"><span data-i18n="home.public.contact.description">ติดต่อสอบถามข้อมูลแพ็กเกจและการใช้งานระบบ</span></p>
+        </div>
+        <nav class="public-contact-links" id="publicContactLinks" aria-label="ช่องทางติดต่อ" data-i18n-aria-label="home.public.contact.channels_aria"></nav>
+    </section>
+
+    <section class="card quick-menu-card" aria-label="ลิงก์เข้าใช้งานด่วน" data-i18n-aria-label="home.public.quick.aria_label">
+        <div class="quick-menu-head">
+            <h2><i class="bi bi-lightning-charge app-icon public-heading-icon" aria-hidden="true"></i><span><span data-i18n="home.public.quick.title">เข้าใช้งานด่วน</span></span></h2>
+            <p><span data-i18n="home.public.quick.description">สำหรับพนักงานให้เข้าสู่ระบบก่อน เพื่อให้ระบบเลือก tenant และสิทธิ์เมนูให้ถูกต้อง</span></p>
+        </div>
+        <div class="quick-link-grid quick-link-grid-single">
+            <a class="quick-link" href="/login">
+                <span class="quick-link-icon"><i class="bi bi-box-arrow-in-right app-icon" aria-hidden="true"></i></span>
+                <span class="quick-link-content">
+                    <strong><span data-i18n="home.public.quick.staff_login_title">ลงชื่อเข้าใช้พนักงาน / POS</span></strong>
+                    <span><span data-i18n="home.public.quick.staff_login_description">เข้าสู่ระบบเพื่อใช้งานครัว แคชเชียร์ จัดการร้าน และ POS ตามสิทธิ์</span></span>
+                </span>
+            </a>
+        </div>
+    </section>
+
+    <section class="card public-about-card" style="margin-top:18px">
+        <h2 style="margin-top:0"><i class="bi bi-info-circle app-icon public-heading-icon" aria-hidden="true"></i><span><span data-i18n="home.public.about.title">เกี่ยวกับแอปพลิเคชัน</span></span></h2>
+        <p><span data-i18n="home.public.about.description">Food Order Delivery เชื่อมต่อร้านอาหารกับลูกค้าเพื่อให้การสั่งอาหาร การชำระเงิน และการจัดส่งเป็นเรื่องง่าย บัญชี Google ใช้สำหรับยืนยันตัวตนลูกค้าและบันทึกข้อมูลโปรไฟล์กับที่อยู่จัดส่งตามที่ลูกค้าเลือกให้ระบบเข้าถึง</span></p>
+        <div class="public-support">
+            <nav class="public-support-links" aria-label="ลิงก์ติดต่อและนโยบาย" data-i18n-aria-label="home.public.about.links_aria">
+                <a class="public-support-link" href="mailto:sripleng.natchanon@gmail.com"><i class="bi bi-envelope app-icon public-inline-icon" aria-hidden="true"></i><span><span data-i18n="home.public.about.support">ติดต่อฝ่ายสนับสนุน</span></span></a>
+                <a class="public-support-link" href="/privacy"><i class="bi bi-shield-check app-icon public-inline-icon" aria-hidden="true"></i><span><span data-i18n="home.public.about.privacy">นโยบายความเป็นส่วนตัว</span></span></a>
+                <a class="public-support-link" href="/terms"><i class="bi bi-file-text app-icon public-inline-icon" aria-hidden="true"></i><span><span data-i18n="home.public.about.terms">ข้อกำหนดการใช้งาน</span></span></a>
+            </nav>
+        </div>
+    </section>
+</main>
+
+<main class="container" id="staffDashboard" hidden>
+    <section class="hero staff-hero">
+        <h1>Food Order / Delivery / POS</h1>
+        <p><span data-i18n="home.staff.hero_description">รวมเมนูใช้งานหลักของร้านไว้ในหน้าเดียว</span></p>
+    </section>
+    <section class="dashboard-section" aria-labelledby="frontServiceTitle">
+        <div class="dashboard-section-head">
+            <h2 id="frontServiceTitle">Order / Delivery</h2>
+            <p><span data-i18n="home.staff.order_delivery.description">เมนูหลักของร้านอาหารสำหรับพนักงานและผู้ดูแลร้าน</span></p>
+        </div>
+        <div class="nav-cards" aria-label="เมนู Order และ Delivery" data-i18n-aria-label="home.staff.order_delivery.aria_label">
+            <a class="card nav-card" href="/kitchen" data-dashboard-role="owner,admin,kitchen,super_admin" data-description="จัดคิวอาหารและอัปเดตสถานะจากครัว" data-i18n-data-description="home.staff.card_descriptions.kitchen" hidden><span class="nav-card-icon"><i class="fi fi-rr-restaurant app-icon" aria-hidden="true"></i></span><span class="nav-card-label"><span data-i18n="home.staff.cards.kitchen">หน้าครัว</span></span></a>
+            <a class="card nav-card" href="/cashier" data-dashboard-role="owner,admin,cashier,super_admin" data-description="รับชำระและติดตามออเดอร์หน้าร้าน" data-i18n-data-description="home.staff.card_descriptions.cashier" hidden><span class="nav-card-icon"><i class="fi fi-rr-receipt app-icon" aria-hidden="true"></i></span><span class="nav-card-label"><span data-i18n="home.staff.cards.cashier">แคชเชียร์ร้านอาหาร</span></span></a>
+            <a class="card nav-card waiting-queue-home-card" href="/waiting-queue/" data-dashboard-role="owner,admin,manager,cashier,super_admin" data-waiting-queue-home-card="1" data-description="รับคิว เรียกคิว จัดโต๊ะ และเปิดโต๊ะเมื่อถึงลำดับ" data-i18n-data-description="home.staff.card_descriptions.waiting_queue" aria-label="คิวรอโต๊ะ" data-i18n-aria-label="home.staff.cards.waiting_queue" title="คิวรอโต๊ะ" data-i18n-title="home.staff.cards.waiting_queue" hidden><span class="nav-card-icon"><i class="bi bi-person-standing app-icon waiting-queue-home-icon" aria-hidden="true"></i></span><span class="nav-card-label"><span data-i18n="home.staff.cards.waiting_queue">คิวรอโต๊ะ</span></span></a>
+            <a class="card nav-card" href="/admin" data-dashboard-role="owner,admin,super_admin" data-description="ดูแลร้าน เมนู โต๊ะ และช่องทางจัดส่ง" data-i18n-data-description="home.staff.card_descriptions.system_admin" hidden><span class="nav-card-icon"><i class="fi fi-rr-settings-sliders app-icon" aria-hidden="true"></i></span><span class="nav-card-label"><span data-i18n="home.staff.cards.system_admin">จัดการระบบ</span></span></a>
+            <a class="card nav-card" href="/admin/users" data-dashboard-role="owner,super_admin" data-description="จัดการบัญชี บทบาท และสิทธิ์พนักงาน" data-i18n-data-description="home.staff.card_descriptions.staff_admin" hidden><span class="nav-card-icon"><i class="fi fi-rr-users app-icon" aria-hidden="true"></i></span><span class="nav-card-label"><span data-i18n="home.staff.cards.staff_admin">จัดการพนักงาน</span></span></a>
+        </div>
+    </section>
+    <section class="dashboard-section" aria-labelledby="centralReportsTitle" data-revenue-share-section hidden>
+        <div class="dashboard-section-head">
+            <h2 id="centralReportsTitle"><span data-i18n="revenue_share_report.menu.section_title">รายงานกลาง</span></h2>
+            <p><span data-i18n="revenue_share_report.menu.section_description">รายงานสำคัญสำหรับเจ้าของร้านและผู้ดูแลระบบ</span></p>
+        </div>
+        <div class="nav-cards" aria-label="รายงานกลาง" data-i18n-aria-label="revenue_share_report.menu.section_title">
+            <a class="card nav-card" href="/reports/revenue-share" data-dashboard-role="owner,admin" data-revenue-share-card data-description="ดูยอดขายของร้านและส่วนแบ่งแพลตฟอร์ม" data-i18n-data-description="revenue_share_report.menu.description" hidden><span class="nav-card-icon"><i class="bi bi-graph-up-arrow app-icon" aria-hidden="true"></i></span><span class="nav-card-label"><span data-i18n="revenue_share_report.menu.title">ยอดขายและส่วนแบ่ง</span></span></a>
+        </div>
+    </section>
+    <section class="dashboard-section dashboard-section-pos" aria-labelledby="retailPosTitle">
+        <div class="dashboard-section-head">
+            <h2 id="retailPosTitle">Retail POS</h2>
+            <p><span data-i18n="home.staff.retail_pos.description">ระบบขายร้านค้าแยกเดี่ยว มีเมนูจัดการพนักงานและสิทธิ์ในตัว</span></p>
+        </div>
+        <div class="nav-cards nav-cards-pos" aria-label="เมนู Retail POS" data-i18n-aria-label="home.staff.retail_pos.aria_label">
+            <a class="card nav-card nav-card-feature" href="/pos" data-dashboard-role="owner,admin,manager,cashier,super_admin" data-dashboard-module="retail-pos" hidden><span class="nav-card-icon"><i class="fi fi-rr-shop app-icon" aria-hidden="true"></i></span><span class="nav-card-label"><span data-i18n="home.staff.retail_pos.store">POS ร้านค้าปลีก</span></span></a>
+            <a class="card nav-card" href="/pos/catalog" data-dashboard-role="owner,super_admin" data-dashboard-module="retail-pos" hidden><span class="nav-card-icon"><i class="fi fi-rr-box-open app-icon" aria-hidden="true"></i></span><span class="nav-card-label">POS Catalog</span></a>
+        </div>
+    </section>
+</main>
+<script type="module" src="/assets/js/ui.js?v=20260805-081"></script>
+<script type="module" src="/assets/js/home-session-fa.js?v=20260903-218"></script>
+<script type="module" src="/assets/js/waiting-queue-entry.js?v=20260802-001"></script>
+<script defer src="/assets/js/waiting-queue-legacy-customer.js?v=20260801-002"></script>
+<script type="module" src="/assets/js/public-contact.js?v=20260903-218"></script>
+<script type="module" src="/assets/js/locale-switcher-static.js?v=20260903-202"></script>
 </body>
 </html>

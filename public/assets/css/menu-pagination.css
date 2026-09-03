@@ -68,3 +68,42 @@
     display: none;
   }
 }
+
+
+/* DELIVERY_PAGINATION_SQUARE_NAV_20260829_001
+ * Keep previous / next buttons the same rounded-square shape
+ * and dimensions as the numbered page buttons.
+ */
+.order-delivery-workspace #menuPagination .menu-page-button {
+  width: 42px !important;
+  min-width: 42px !important;
+  max-width: 42px !important;
+
+  height: 42px !important;
+  min-height: 42px !important;
+  max-height: 42px !important;
+
+  padding: 0 !important;
+
+  border-radius: 11px !important;
+  aspect-ratio: auto !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.order-delivery-workspace #menuPagination .menu-page-button .app-icon {
+  margin: 0 !important;
+}
+
+
+/* DELIVERY_PAGINATION_ICON_NAV_20260903_233 */
+.order-delivery-workspace #menuPagination .menu-page-nav .app-icon {
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  color: currentColor;
+  font-size: 16px;
+  line-height: 1;
+}

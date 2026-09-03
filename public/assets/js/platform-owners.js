@@ -1,12 +1,16 @@
-import { app } from "./firebase-config.js?v=20260630-073";
-import { toast } from "./ui.js?v=20260731-080";
-import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-functions.js";
+import { toast } from "./ui.js?v=20260805-081";
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
+import translations from "./platform-owners-translations.js?v=20260903-212";
+import { configureI18n, applyTranslations, t } from "./i18n.js?v=20260903-202";
+import {
+  createTenantOwner,
+  listTenants,
+  updateTenantOwner
+} from "./platform-tenant-service.js?v=20260726-023";
 
-const functions = getFunctions(app, "asia-southeast1");
-const listTenants = httpsCallable(functions, "listTenants");
-const createTenantOwner = httpsCallable(functions, "createTenantOwner");
-const updateTenantOwner = httpsCallable(functions, "updateTenantOwner");
+configureI18n(translations);
+applyTranslations();
+document.title = t("platform_owners.meta.title");
 
 const ownerList = document.querySelector("#ownerList");
 const ownerCount = document.querySelector("#ownerCount");
@@ -35,35 +39,35 @@ ownerModal.innerHTML = `
     <div class="owner-modal-head">
       <div>
         <div class="owner-modal-icon">${icon("user")}</div>
-        <div><h2 id="ownerModalTitle">สร้างบัญชี Owner</h2><p id="ownerModalShop">-</p></div>
+        <div><h2 id="ownerModalTitle">${t("platform_owners.modal.create_title")}</h2><p id="ownerModalShop">-</p></div>
       </div>
-      <button type="button" class="owner-modal-close" data-owner-close aria-label="ปิด">${icon("close")}</button>
+      <button type="button" class="owner-modal-close" data-owner-close aria-label="${t("platform_owners.modal.close")}">${icon("close")}</button>
     </div>
     <form id="ownerForm" class="owner-modal-form">
       <div class="field">
-        <label for="ownerDisplayName">ชื่อเจ้าของร้าน</label>
+        <label for="ownerDisplayName">${t("platform_owners.modal.display_name")}</label>
         <input class="input" id="ownerDisplayName" maxlength="120" autocomplete="name" required>
       </div>
       <div class="field">
-        <label for="ownerEmail">อีเมลสำหรับเข้าสู่ระบบ</label>
+        <label for="ownerEmail">${t("platform_owners.modal.email")}</label>
         <input class="input" id="ownerEmail" type="email" maxlength="160" autocomplete="username" required>
       </div>
       <div id="ownerPasswordFields" class="grid grid-2 owner-password-grid">
         <div class="field">
-          <label for="ownerPassword">รหัสผ่านเริ่มต้น</label>
+          <label for="ownerPassword">${t("platform_owners.modal.password")}</label>
           <input class="input" id="ownerPassword" type="password" minlength="8" autocomplete="new-password">
-          <small>อย่างน้อย 8 ตัวอักษร</small>
+          <small>${t("platform_owners.modal.password_help")}</small>
         </div>
         <div class="field">
-          <label for="ownerPasswordConfirm">ยืนยันรหัสผ่าน</label>
+          <label for="ownerPasswordConfirm">${t("platform_owners.modal.password_confirm")}</label>
           <input class="input" id="ownerPasswordConfirm" type="password" minlength="8" autocomplete="new-password">
-          <small>ต้องตรงกับรหัสผ่านด้านซ้าย</small>
+          <small>${t("platform_owners.modal.password_confirm_help")}</small>
         </div>
       </div>
       <div class="upload-error owner-form-error" id="ownerFormError" hidden></div>
       <div class="owner-modal-actions">
-        <button type="button" class="btn" data-owner-close>${icon("close")}<span>ยกเลิก</span></button>
-        <button type="submit" class="btn btn-primary" id="ownerSubmitButton">${icon("save")}<span>บันทึก</span></button>
+        <button type="button" class="btn" data-owner-close>${icon("close")}<span>${t("platform_owners.modal.cancel")}</span></button>
+        <button type="submit" class="btn btn-primary" id="ownerSubmitButton">${icon("save")}<span>${t("platform_owners.modal.save")}</span></button>
       </div>
     </form>
   </section>`;
@@ -85,6 +89,12 @@ function setOwnerFormError(message = "") {
   ownerFormError.hidden = !message;
 }
 
+function submitButtonMarkup(editing) {
+  return editing
+    ? `${icon("save")}<span>${t("platform_owners.modal.save_name")}</span>`
+    : `${icon("save")}<span>${t("platform_owners.modal.create_account")}</span>`;
+}
+
 function openOwnerModal(tenant, mode) {
   selectedTenant = tenant;
   modalMode = mode;
@@ -93,16 +103,14 @@ function openOwnerModal(tenant, mode) {
   ownerModalShop.textContent = tenant.name || tenant.slug || tenant.id;
 
   const editing = mode === "edit";
-  ownerModalTitle.textContent = editing ? "แก้ไขชื่อเจ้าของร้าน" : "สร้างบัญชี Owner";
+  ownerModalTitle.textContent = editing ? t("platform_owners.modal.edit_title") : t("platform_owners.modal.create_title");
   ownerDisplayName.value = editing ? tenant.ownerDisplayName || "" : "";
   ownerEmail.value = editing ? tenant.ownerEmail || "" : "";
   ownerEmail.disabled = editing;
   ownerPasswordFields.hidden = editing;
   ownerPassword.required = !editing;
   ownerPasswordConfirm.required = !editing;
-  ownerSubmitButton.innerHTML = editing
-    ? `${icon("save")}<span>บันทึกชื่อเจ้าของร้าน</span>`
-    : `${icon("save")}<span>สร้างบัญชี Owner</span>`;
+  ownerSubmitButton.innerHTML = submitButtonMarkup(editing);
 
   ownerModal.hidden = false;
   document.body.classList.add("owner-modal-open");
@@ -130,43 +138,43 @@ function render() {
     return true;
   });
 
-  ownerCount.textContent = `${tenants.filter(item => item.ownerUid).length} บัญชี`;
+  ownerCount.textContent = t("platform_owners.list.count", { count: tenants.filter(item => item.ownerUid).length });
   ownerList.innerHTML = filtered.length ? filtered.map(tenant => `
     <article class="card" style="box-shadow:none;background:#f8fbf9">
       <div class="section-title" style="margin:0">
         <div>
-          <h2 style="margin:0">${escapeHtml(tenant.name || "ไม่ระบุชื่อร้าน")}</h2>
+          <h2 style="margin:0">${escapeHtml(tenant.name || t("platform_owners.tenant.unknown_name"))}</h2>
           <div class="menu-category">/${escapeHtml(tenant.slug || "-")}</div>
         </div>
-        <span class="badge ${tenant.active === false ? "warning" : ""}">${tenant.active === false ? "ร้านถูกระงับ" : "ร้านใช้งาน"}</span>
+        <span class="badge ${tenant.active === false ? "warning" : ""}">${tenant.active === false ? t("platform_owners.tenant.inactive") : t("platform_owners.tenant.active")}</span>
       </div>
       <div style="margin-top:14px">
         ${tenant.ownerUid ? `
-          <div><strong>${escapeHtml(tenant.ownerDisplayName || "ไม่ระบุชื่อ Owner")}</strong></div>
+          <div><strong>${escapeHtml(tenant.ownerDisplayName || t("platform_owners.tenant.owner_unknown"))}</strong></div>
           <div class="menu-category" style="font-size:14px">${escapeHtml(tenant.ownerEmail || "-")}</div>
-          <div style="margin-top:8px"><span class="badge">มีบัญชี Owner แล้ว</span></div>
+          <div style="margin-top:8px"><span class="badge">${t("platform_owners.tenant.owner_exists")}</span></div>
         ` : `
-          <div class="menu-category" style="font-size:14px">ร้านนี้ยังไม่มีบัญชี Owner</div>
-          <div style="margin-top:8px"><span class="badge warning">รอสร้างบัญชี</span></div>
+          <div class="menu-category" style="font-size:14px">${t("platform_owners.tenant.no_owner")}</div>
+          <div style="margin-top:8px"><span class="badge warning">${t("platform_owners.tenant.pending")}</span></div>
         `}
       </div>
       <div class="order-actions" style="margin-top:14px">
         ${tenant.ownerUid
-          ? `<button class="btn" type="button" data-owner-action="edit" data-tenant-id="${escapeHtml(tenant.id)}">${icon("edit")}<span>แก้ไขชื่อ Owner</span></button>`
-          : `<button class="btn btn-primary" type="button" data-owner-action="create" data-tenant-id="${escapeHtml(tenant.id)}">${icon("user")}<span>สร้าง Owner</span></button>`}
+          ? `<button class="btn" type="button" data-owner-action="edit" data-tenant-id="${escapeHtml(tenant.id)}">${icon("edit")}<span>${t("platform_owners.tenant.edit_owner")}</span></button>`
+          : `<button class="btn btn-primary" type="button" data-owner-action="create" data-tenant-id="${escapeHtml(tenant.id)}">${icon("user")}<span>${t("platform_owners.tenant.create_owner")}</span></button>`}
       </div>
-    </article>`).join("") : '<div class="empty">ไม่พบข้อมูลบัญชี Owner</div>';
+    </article>`).join("") : `<div class="empty">${t("platform_owners.list.empty")}</div>`;
 }
 
 async function load() {
-  ownerList.innerHTML = '<div class="empty">กำลังโหลด...</div>';
+  ownerList.innerHTML = `<div class="empty">${t("platform_owners.list.loading")}</div>`;
   try {
     const result = await listTenants();
     tenants = result.data?.tenants || [];
     render();
   } catch (error) {
     console.error(error);
-    ownerList.innerHTML = '<div class="upload-error">โหลดบัญชี Owner ไม่สำเร็จ</div>';
+    ownerList.innerHTML = `<div class="upload-error">${t("platform_owners.list.load_failed")}</div>`;
   }
 }
 
@@ -189,7 +197,7 @@ ownerPasswordConfirm.addEventListener("input", () => {
   if (!ownerPasswordConfirm.value || ownerPasswordConfirm.value === ownerPassword.value) {
     ownerPasswordConfirm.setCustomValidity("");
   } else {
-    ownerPasswordConfirm.setCustomValidity("รหัสผ่านไม่ตรงกัน");
+    ownerPasswordConfirm.setCustomValidity(t("platform_owners.modal.password_mismatch"));
   }
 });
 
@@ -201,7 +209,7 @@ ownerForm.addEventListener("submit", async event => {
   setOwnerFormError("");
 
   if (modalMode === "create" && ownerPassword.value !== ownerPasswordConfirm.value) {
-    ownerPasswordConfirm.setCustomValidity("รหัสผ่านไม่ตรงกัน");
+    ownerPasswordConfirm.setCustomValidity(t("platform_owners.modal.password_mismatch"));
     ownerPasswordConfirm.reportValidity();
     return;
   }
@@ -209,11 +217,11 @@ ownerForm.addEventListener("submit", async event => {
   if (!ownerForm.reportValidity()) return;
 
   ownerSubmitButton.disabled = true;
-  ownerSubmitButton.innerHTML = "<span>กำลังบันทึก...</span>";
+  ownerSubmitButton.innerHTML = `<span>${t("platform_owners.modal.saving")}</span>`;
   try {
     if (modalMode === "edit") {
       await updateTenantOwner({ tenantId: selectedTenant.id, displayName });
-      toast("แก้ไขชื่อเจ้าของร้านเรียบร้อยแล้ว");
+      toast(t("platform_owners.toast.updated"));
     } else {
       await createTenantOwner({
         tenantId: selectedTenant.id,
@@ -221,23 +229,21 @@ ownerForm.addEventListener("submit", async event => {
         email: ownerEmail.value.trim().toLowerCase(),
         password: ownerPassword.value
       });
-      toast("สร้างบัญชี Owner เรียบร้อยแล้ว");
+      toast(t("platform_owners.toast.created"));
     }
     closeOwnerModal();
     await load();
   } catch (error) {
     console.error(error);
-    let message = modalMode === "edit" ? "แก้ไขชื่อเจ้าของร้านไม่สำเร็จ" : "สร้าง Owner ไม่สำเร็จ";
-    if (error.code === "functions/already-exists") message = error.message || "ร้านนี้มี Owner แล้ว หรืออีเมลถูกใช้งานแล้ว";
-    if (error.code === "functions/invalid-argument") message = error.message || "ข้อมูล Owner ไม่ถูกต้อง";
-    if (error.code === "functions/permission-denied") message = "บัญชีนี้ไม่มีสิทธิ์ดำเนินการ";
+    let message = modalMode === "edit" ? t("platform_owners.errors.update_failed") : t("platform_owners.errors.create_failed");
+    if (error.code === "functions/already-exists") message = t("platform_owners.errors.already_exists");
+    if (error.code === "functions/invalid-argument") message = t("platform_owners.errors.invalid");
+    if (error.code === "functions/permission-denied") message = t("platform_owners.errors.permission_denied");
     setOwnerFormError(message);
     toast(message, "error");
   } finally {
     ownerSubmitButton.disabled = false;
-    ownerSubmitButton.innerHTML = modalMode === "edit"
-      ? `${icon("save")}<span>บันทึกชื่อเจ้าของร้าน</span>`
-      : `${icon("save")}<span>สร้างบัญชี Owner</span>`;
+    ownerSubmitButton.innerHTML = submitButtonMarkup(modalMode === "edit");
   }
 });
 

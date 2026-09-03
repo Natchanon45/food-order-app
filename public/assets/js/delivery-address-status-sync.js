@@ -1,3 +1,7 @@
+import "./public-i18n-bootstrap.js?v=20260903-231";
+
+import { t } from "./i18n.js?v=20260903-202";
+
 const addressCount = document.querySelector("#addressCount");
 const lookupStatus = document.querySelector("#addressLookupStatus");
 
@@ -11,12 +15,13 @@ function syncAddressStatus() {
   const count = currentAddressCount();
 
   if (count > 0) {
-    lookupStatus.textContent = `พบ ${count} ที่อยู่ เลือกที่อยู่สำหรับจัดส่งได้เลย`;
+    lookupStatus.textContent = t("delivery.checkout.address.found", { count });
     return;
   }
 
-  if (/กำลังโหลด|โหลดที่อยู่ไม่สำเร็จ/.test(lookupStatus.textContent || "")) return;
-  lookupStatus.textContent = "ยังไม่มีที่อยู่ที่บันทึกไว้ กรุณาเพิ่มที่อยู่ใหม่";
+  const status = lookupStatus.textContent || "";
+  if (status.includes(t("delivery.checkout.address.loading")) || status.includes(t("delivery.checkout.address.load_failed"))) return;
+  lookupStatus.textContent = t("delivery.checkout.address.none_saved_prompt");
 }
 
 if (addressCount && lookupStatus) {

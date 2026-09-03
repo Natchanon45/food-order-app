@@ -1,3 +1,7 @@
+.od-qr-page #occupiedTables .order-actions {
+  justify-content: flex-end;
+}
+
 @media print {
   @page {
     margin: 0;

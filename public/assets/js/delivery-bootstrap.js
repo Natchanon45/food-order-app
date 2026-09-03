@@ -1,5 +1,5 @@
 async function startDeliveryStorefront() {
-  await import("./public-tenant-resolver.js?v=20260621-3");
+  await import("./public-tenant-resolver.js?v=20260903-201");
   await import("./delivery-addresses.js?v=20260621-28");
   await import("./delivery-address-status-sync.js?v=20260621-28");
   await import("./delivery.js?v=20260621-28");

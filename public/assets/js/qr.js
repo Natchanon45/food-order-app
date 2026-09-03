@@ -1,7 +1,14 @@
-import { dataService, usingDemoMode } from "./data-service.js";
+import { dataService, usingDemoMode } from "./data-service.js?v=20260903-203";
+import { qrDataUrl } from "./local-qr.js?v=20260722-037";
+import translations from "./admin-qr-translations.js?v=20260903-204";
+import { configureI18n, applyTranslations, t } from "./i18n.js?v=20260903-202";
+
+configureI18n(translations);
+applyTranslations();
+document.title = t("admin_qr.meta.title");
 
 if (usingDemoMode) {
-  document.querySelector("#demoBanner").innerHTML = '<div class="demo-banner">โหมดตัวอย่าง</div>';
+  document.querySelector("#demoBanner").innerHTML = `<div class="demo-banner">${t("admin_qr.demo")}</div>`;
 }
 
 const baseUrl = document.querySelector("#baseUrl");
@@ -17,8 +24,7 @@ baseUrl.value = tenantBaseUrl();
 baseUrl.readOnly = true;
 
 function buildQrImageUrl(value) {
-  const encoded = encodeURIComponent(value);
-  return `https://quickchart.io/qr?text=${encoded}&size=320&margin=1`;
+  return qrDataUrl(value, { size: 320, margin: 4 });
 }
 
 function clearPrintTarget() {
@@ -29,14 +35,14 @@ function clearPrintTarget() {
 }
 
 async function render() {
-  root.innerHTML = '<div class="card empty">กำลังสร้าง QR...</div>';
+  root.innerHTML = `<div class="card empty">${t("admin_qr.states.loading")}</div>`;
 
   try {
     const tables = await dataService.listTables();
     const activeTables = tables.filter(table => table.active !== false);
 
     if (!activeTables.length) {
-      root.innerHTML = '<div class="card empty">ยังไม่มีโต๊ะ กรุณาเพิ่มโต๊ะในหน้าจัดการระบบก่อน</div>';
+      root.innerHTML = `<div class="card empty">${t("admin_qr.states.no_tables")}</div>`;
       return;
     }
 
@@ -52,7 +58,7 @@ async function render() {
           <div class="qr-ticket">
             <div class="qr-ticket-header">
               <div class="qr-ticket-brand">FOOD ORDER QR</div>
-              <div class="qr-ticket-title">สแกนเพื่อสั่งอาหาร</div>
+              <div class="qr-ticket-title">${t("admin_qr.ticket.scan_to_order")}</div>
               <div class="qr-ticket-table">${table.name}</div>
             </div>
 
@@ -65,25 +71,25 @@ async function render() {
             <div class="qr-ticket-rule"></div>
 
             <div class="qr-ticket-steps">
-              <div>1. เปิดกล้องโทรศัพท์</div>
-              <div>2. สแกน QR Code</div>
-              <div>3. เลือกเมนูและยืนยันออเดอร์</div>
+              <div>${t("admin_qr.ticket.step_camera")}</div>
+              <div>${t("admin_qr.ticket.step_scan")}</div>
+              <div>${t("admin_qr.ticket.step_order")}</div>
             </div>
 
             <div class="qr-ticket-footer">
-              กรุณาตรวจสอบเลขโต๊ะก่อนสั่งอาหาร<br>
-              ขอบคุณที่ใช้บริการ
+              ${t("admin_qr.ticket.check_table")}<br>
+              ${t("admin_qr.ticket.thanks")}
             </div>
           </div>
 
           <small class="qr-ticket-url">${orderUrl}</small>
-          <button class="btn btn-dark btn-sm" data-print-card>พิมพ์สำหรับวางที่โต๊ะ</button>
+          <button class="btn btn-dark btn-sm" data-print-card>${t("admin_qr.ticket.print")}</button>
         </article>
       `;
     }).join("");
   } catch (error) {
     console.error(error);
-    root.innerHTML = '<div class="card empty">สร้าง QR ไม่สำเร็จ กรุณาตรวจสอบข้อมูลร้านและ slug แล้วลองใหม่</div>';
+    root.innerHTML = `<div class="card empty">${t("admin_qr.states.error")}</div>`;
   }
 }
 

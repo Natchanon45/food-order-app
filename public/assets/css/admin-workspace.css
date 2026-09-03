@@ -9,6 +9,8 @@
   align-items: center !important;
   justify-content: center !important;
   flex: 0 0 36px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .admin-card-toggle .app-icon {
@@ -28,6 +30,14 @@
 .admin-collapsible-card > .section-title {
   align-items: center;
   gap: 10px;
+}
+
+.admin-collapsible-card > .section-title.admin-card-touch-target {
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .admin-collapsible-card > .section-title > .admin-card-heading {
@@ -190,6 +200,53 @@
     min-height: 38px;
   }
 
+  .delivery-qr-tools .order-actions {
+    width: 100%;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+  }
+
+  .delivery-qr-tools .order-actions .btn {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    flex: 0 0 44px !important;
+    padding: 0 !important;
+    border-radius: 12px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    aspect-ratio: 1 / 1 !important;
+    touch-action: manipulation;
+  }
+
+  .delivery-qr-tools .order-actions .btn .app-icon,
+  .delivery-qr-tools .order-actions .btn .admin-button-icon {
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    flex: 0 0 20px !important;
+    margin: 0 !important;
+    font-size: 20px !important;
+  }
+
+  .delivery-qr-tools .order-actions .btn > span:not(.app-icon):not(.admin-button-icon) {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+
   .admin-edit-modal-backdrop {
     place-items: center;
     padding: 12px;
@@ -210,10 +267,10 @@
   }
 
   .admin-card-toggle {
-    width: 34px !important;
-    height: 34px !important;
-    min-width: 34px !important;
-    min-height: 34px !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
   }
 
   .admin-table-qr-action {

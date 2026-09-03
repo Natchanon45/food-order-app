@@ -234,6 +234,33 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // GOOGLE_CUSTOMER_LOGIN_SETTINGS_20260903_001
+    match /platformSettings/{settingId} {
+      allow get: if settingId == 'googleCustomerLogin';
+      allow list: if false;
+      allow create, update: if
+        settingId == 'googleCustomerLogin'
+        && superAdminRole()
+        && request.resource.data.keys().hasOnly([
+          'id', 'tenantId', 'enabled', 'clientId', 'tokenTtlDays',
+          'updatedBy', 'updatedByEmail', 'updatedAt', 'updatedAtMs'
+        ])
+        && request.resource.data.get('id', '') == 'googleCustomerLogin'
+        && request.resource.data.get('tenantId', '') == '__platform__'
+        && request.resource.data.get('enabled', false) is bool
+        && request.resource.data.get('clientId', '') is string
+        && request.resource.data.get('clientId', '').size() <= 255
+        && request.resource.data.get('tokenTtlDays', 30) is int
+        && request.resource.data.get('tokenTtlDays', 30) >= 1
+        && request.resource.data.get('tokenTtlDays', 30) <= 90
+        && request.resource.data.get('updatedBy', '') == request.auth.uid
+        && request.resource.data.get('updatedByEmail', '') is string
+        && request.resource.data.get('updatedByEmail', '').size() <= 160
+        && request.resource.data.get('updatedAtMs', 0) is int
+        && request.resource.data.get('updatedAtMs', 0) > 0;
+      allow delete: if false;
+    }
+
     match /users/{userId} { allow read: if signedIn() && (request.auth.uid == userId || superAdminRole()); allow create, update, delete: if superAdminRole(); }
     match /tenantSlugs/{slug} { allow read: if true; allow write: if superAdminRole(); }
     match /publicWaitingQueues/{publicToken} {

@@ -4,19 +4,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#041d11" />
-    <title>จอเรียกคิวรอโต๊ะ</title>
+    <title data-wqd-i18n="meta.title">จอเรียกคิวรอโต๊ะ</title>
     <link rel="icon" href="/assets/images/icon-192.png" type="image/png" />
     <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260713-004" />
     <link rel="stylesheet" href="/assets/css/waiting-queue-display.css?v=20260801-005" />
-  </head>
+</head>
   <body>
     <main class="waiting-display-shell">
       <header class="waiting-display-head">
         <div class="waiting-display-brand">
           <span class="waiting-display-logo" aria-hidden="true"><i class="bi bi-megaphone"></i></span>
           <div>
-            <strong>จอเรียกคิวรอโต๊ะ</strong>
-            <span>ตรวจสอบหมายเลขคิว และมาที่จุดรับโต๊ะเมื่อถูกเรียก</span>
+            <strong data-wqd-i18n="header.title">จอเรียกคิวรอโต๊ะ</strong>
+            <span data-wqd-i18n="header.description">ตรวจสอบหมายเลขคิว และมาที่จุดรับโต๊ะเมื่อถูกเรียก</span>
           </div>
         </div>
         <div class="waiting-display-head-actions">
@@ -24,28 +24,28 @@
           <button id="waitingDisplaySound" class="waiting-display-sound" type="button" aria-label="เปิดเสียงเรียกคิว">
             <i class="bi bi-volume-mute" aria-hidden="true"></i><span>เปิดเสียงเรียก</span>
           </button>
-          <button id="waitingDisplayFullscreen" type="button" aria-label="เต็มหน้าจอ">
-            <i class="bi bi-fullscreen" aria-hidden="true"></i><span>เต็มจอ</span>
+          <button id="waitingDisplayFullscreen" type="button" aria-label="เต็มหน้าจอ" data-wqd-aria="controls.fullscreen_aria">
+            <i class="bi bi-fullscreen" aria-hidden="true"></i><span data-wqd-i18n="controls.fullscreen">เต็มจอ</span>
           </button>
         </div>
       </header>
 
       <div id="waitingDisplayAudioNotice" class="waiting-display-audio-notice" role="status">
         <i class="bi bi-volume-up" aria-hidden="true"></i>
-        <span>กด “เปิดเสียงเรียก” หนึ่งครั้งก่อนใช้งาน ระบบจะเล่นเสียงเตือนและอ่านหมายเลขคิว</span>
+        <span data-wqd-i18n="audio.prompt">กด “เปิดเสียงเรียก” หนึ่งครั้งก่อนใช้งาน ระบบจะเล่นเสียงเตือนและอ่านหมายเลขคิว</span>
       </div>
 
       <section class="waiting-display-main">
         <div class="waiting-display-current">
-          <div class="waiting-display-current-label">กำลังเรียกคิว</div>
+          <div class="waiting-display-current-label" data-wqd-i18n="called.label">กำลังเรียกคิว</div>
           <div id="waitingDisplayCalledEmpty" class="waiting-display-empty-state">
             <span class="waiting-display-empty-icon" aria-hidden="true"><i class="bi bi-hourglass-split"></i></span>
-            <strong>ยังไม่มีคิวที่กำลังเรียก</strong>
-            <span>เมื่อพนักงานกดเรียก หมายเลขคิวจะแสดงตรงนี้</span>
+            <strong data-wqd-i18n="called.empty_title">ยังไม่มีคิวที่กำลังเรียก</strong>
+            <span data-wqd-i18n="called.empty_description">เมื่อพนักงานกดเรียก หมายเลขคิวจะแสดงตรงนี้</span>
           </div>
           <div id="waitingDisplayCalledWrap" class="waiting-display-called-wrap" hidden>
             <strong id="waitingDisplayCalled" class="waiting-display-called">W---</strong>
-            <div class="waiting-display-instruction">กรุณามาที่จุดรับโต๊ะ</div>
+            <div class="waiting-display-instruction" data-wqd-i18n="called.instruction">กรุณามาที่จุดรับโต๊ะ</div>
             <div id="waitingDisplayCalledTimer" class="waiting-display-timer">เวลาตอบรับ 05:00</div>
           </div>
         </div>
@@ -53,22 +53,23 @@
         <aside class="waiting-display-next-panel">
           <div class="waiting-display-next-head">
             <div>
-              <span>เตรียมตัว</span>
-              <h2>คิวรอเรียกถัดไป</h2>
+              <span data-wqd-i18n="next.eyebrow">เตรียมตัว</span>
+              <h2 data-wqd-i18n="next.title">คิวรอเรียกถัดไป</h2>
             </div>
             <i class="bi bi-list-ol" aria-hidden="true"></i>
           </div>
           <div id="waitingDisplayNext" class="waiting-display-next"></div>
-          <p class="waiting-display-next-note">ลำดับอาจเปลี่ยนตามขนาดโต๊ะว่างและจำนวนลูกค้า</p>
+          <p class="waiting-display-next-note" data-wqd-i18n="next.note">ลำดับอาจเปลี่ยนตามขนาดโต๊ะว่างและจำนวนลูกค้า</p>
         </aside>
       </section>
 
       <footer class="waiting-display-foot">
         <span id="waitingDisplayStatus" class="waiting-display-status">กำลังเชื่อมต่อระบบเรียกคิว...</span>
         <span id="waitingDisplayAudioMode" class="waiting-display-audio-mode">เสียงยังไม่เปิด</span>
-        <span>แสดงเฉพาะหมายเลขคิว ไม่มีข้อมูลส่วนบุคคล</span>
+        <span data-wqd-i18n="footer.privacy">แสดงเฉพาะหมายเลขคิว ไม่มีข้อมูลส่วนบุคคล</span>
       </footer>
     </main>
-    <script type="module" src="/assets/js/waiting-queue-display.js?v=20260802-020"></script>
+    <script type="module" src="/assets/js/waiting-queue-i18n-bootstrap.js?v=20260903-229"></script>
+    <script type="module" src="/assets/js/waiting-queue-display.js?v=20260813-145"></script>
   </body>
 </html>

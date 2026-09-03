@@ -1,3 +1,4 @@
+import { t } from "./i18n.js?v=20260903-202";
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 
 function icon(name) {
@@ -9,7 +10,7 @@ function actionContent(name, label) {
 }
 
 function statusIcon(active) {
-  const label = active ? "เปิดใช้งาน" : "ไม่ได้ใช้งาน";
+  const label = active ? t("admin.common.enabled") : t("admin.common.disabled");
   return `<i class="bi bi-${active ? "check-square" : "square"} admin-status-icon" role="img" aria-label="${label}" title="${label}"></i>`;
 }
 
@@ -42,18 +43,18 @@ function decorateActionCell(row) {
   wrap.className = "admin-row-actions";
 
   if (editButton) {
-    editButton.innerHTML = actionContent("pencil", "แก้ไข");
+    editButton.innerHTML = actionContent("pencil", t("admin.common.edit"));
     editButton.classList.add("admin-icon-button", "btn-icon-only");
-    editButton.setAttribute("aria-label", "แก้ไข");
-    editButton.title = "แก้ไข";
+    editButton.setAttribute("aria-label", t("admin.common.edit"));
+    editButton.title = t("admin.common.edit");
     wrap.appendChild(editButton);
   }
 
   if (deleteButton) {
-    deleteButton.innerHTML = actionContent("trash", "ลบ");
+    deleteButton.innerHTML = actionContent("trash", t("admin.common.delete"));
     deleteButton.classList.add("admin-icon-button", "btn-icon-only");
-    deleteButton.setAttribute("aria-label", "ลบ");
-    deleteButton.title = "ลบ";
+    deleteButton.setAttribute("aria-label", t("admin.common.delete"));
+    deleteButton.title = t("admin.common.delete");
     wrap.appendChild(deleteButton);
   }
 

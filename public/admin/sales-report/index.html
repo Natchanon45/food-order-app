@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#159447">
   <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
-  <link rel="stylesheet" href="/assets/css/icons.css?v=20260731-079">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240">
+  <link rel="stylesheet" href="/assets/css/i18n.css?v=20260903-202">
   <link rel="stylesheet" href="/assets/css/sales-report.css?v=20260713-005">
   <link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260731-081">
-  <link rel="stylesheet" href="/assets/css/sales-report-modern.css?v=20260731-092">
+  <link rel="stylesheet" href="/assets/css/sales-report-modern.css?v=20260903-245">
+  <link rel="stylesheet" href="/assets/css/sales-report-period-tabs.css?v=20260903-202">
   <style>
     .sales-report-page .bi,
     .app-header .bi { color:#159447; }
@@ -82,71 +84,84 @@
     <div class="brand">
       <span class="brand-mark">FOD</span>
       <i class="bi bi-bar-chart-line app-icon" aria-hidden="true"></i>
-      <span>รายงานยอดขาย</span>
+      <span data-i18n="sales_report.header.title">รายงานยอดขาย</span>
     </div>
-    <a class="btn btn-dark btn-sm sales-back-link" href="/admin/"><i class="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>ย้อนกลับ</span></a>
+    <a class="btn btn-dark btn-sm sales-back-link" href="/admin/"><i class="bi bi-arrow-left app-icon" aria-hidden="true"></i><span data-i18n="sales_report.header.back">ย้อนกลับ</span></a>
+    <div class="app-locale-switcher" data-static-locale-switcher>
+      <details class="app-locale-menu" data-locale-menu>
+        <summary class="app-locale-trigger" aria-label="เลือกภาษา" title="Language"><i class="bi bi-globe2" aria-hidden="true"></i><span class="visually-hidden">Language</span></summary>
+        <div class="app-locale-menu__panel" role="menu" aria-label="Language">
+          <button type="button" class="app-locale-option" data-locale-option="th" lang="th" role="menuitemradio" aria-checked="true"><span>ไทย</span><i class="bi bi-check-lg" aria-hidden="true"></i></button>
+          <button type="button" class="app-locale-option" data-locale-option="en" lang="en" role="menuitemradio" aria-checked="false"><span>English</span><i class="bi bi-check-lg" aria-hidden="true"></i></button>
+        </div>
+      </details>
+    </div>
   </header>
 
   <main class="container sales-report-page">
     <section class="hero">
-      <h1><i class="bi bi-graph-up-arrow" aria-hidden="true"></i><span>สรุปยอดขาย</span></h1>
-      <p>ตรวจสอบยอดขายรายวัน รายเดือน รายปี และรายละเอียดแยกตามใบเสร็จ</p>
+      <h1><i class="bi bi-graph-up-arrow" aria-hidden="true"></i><span data-i18n="sales_report.hero.title">สรุปยอดขาย</span></h1>
+      <p data-i18n="sales_report.hero.description">ตรวจสอบยอดขายรายวัน รายเดือน รายปี และรายละเอียดแยกตามใบเสร็จ</p>
+      <div class="admin-vr-hero-chips"><span class="admin-vr-hero-chip" data-i18n="sales_report.workspace.overview">ภาพรวมยอดขาย</span><span class="admin-vr-hero-chip" data-i18n="sales_report.workspace.payments">ช่องทางชำระ</span><span class="admin-vr-hero-chip" data-i18n="sales_report.workspace.trends">แนวโน้มและรายการ</span></div>
     </section>
 
     <section class="card report-filter-card">
-      <div class="section-title"><h2><i class="bi bi-funnel" aria-hidden="true"></i><span>ตัวกรองรายงาน</span></h2></div>
-      <div class="report-period-tabs" role="tablist" aria-label="ช่วงเวลารายงาน">
-        <button type="button" class="period-tab active" data-period="daily"><i class="bi bi-calendar-day" aria-hidden="true"></i><span>รายวัน</span></button>
-        <button type="button" class="period-tab" data-period="monthly"><i class="bi bi-calendar-month" aria-hidden="true"></i><span>รายเดือน</span></button>
-        <button type="button" class="period-tab" data-period="yearly"><i class="bi bi-calendar3" aria-hidden="true"></i><span>รายปี</span></button>
-        <button type="button" class="period-tab" data-period="custom"><i class="bi bi-calendar-range" aria-hidden="true"></i><span>กำหนดช่วง</span></button>
+      <div class="section-title"><h2><i class="bi bi-funnel" aria-hidden="true"></i><span data-i18n="sales_report.filters.title">ตัวกรองรายงาน</span></h2></div>
+      <div class="report-period-tabs" role="tablist" aria-label="ช่วงเวลารายงาน" data-i18n-aria-label="sales_report.filters.period_aria">
+        <button type="button" class="period-tab active" data-period="daily"><i class="bi bi-calendar-day" aria-hidden="true"></i><span data-i18n="sales_report.filters.daily">รายวัน</span></button>
+        <button type="button" class="period-tab" data-period="monthly"><i class="bi bi-calendar-month" aria-hidden="true"></i><span data-i18n="sales_report.filters.monthly">รายเดือน</span></button>
+        <button type="button" class="period-tab" data-period="yearly"><i class="bi bi-calendar3" aria-hidden="true"></i><span data-i18n="sales_report.filters.yearly">รายปี</span></button>
+        <button type="button" class="period-tab" data-period="custom"><i class="bi bi-calendar-range" aria-hidden="true"></i><span data-i18n="sales_report.filters.custom">กำหนดช่วง</span></button>
       </div>
       <div class="report-filter-grid">
-        <div class="field period-control" data-control="daily"><label><i class="bi bi-calendar-check" aria-hidden="true"></i><span>วันที่</span></label><input class="input" id="reportDate" type="date"></div>
-        <div class="field period-control" data-control="monthly" hidden><label><i class="bi bi-calendar-month" aria-hidden="true"></i><span>เดือน</span></label><input class="input" id="reportMonth" type="month"></div>
-        <div class="field period-control" data-control="yearly" hidden><label><i class="bi bi-calendar3" aria-hidden="true"></i><span>ปี</span></label><select class="input" id="reportYear"></select></div>
+        <div class="field period-control" data-control="daily"><label><i class="bi bi-calendar-check" aria-hidden="true"></i><span data-i18n="sales_report.filters.date">วันที่</span></label><input class="input" id="reportDate" type="date"></div>
+        <div class="field period-control" data-control="monthly" hidden><label><i class="bi bi-calendar-month" aria-hidden="true"></i><span data-i18n="sales_report.filters.month">เดือน</span></label><input class="input" id="reportMonth" type="month"></div>
+        <div class="field period-control" data-control="yearly" hidden><label><i class="bi bi-calendar3" aria-hidden="true"></i><span data-i18n="sales_report.filters.year">ปี</span></label><select class="input" id="reportYear"></select></div>
         <div class="period-control custom-date-grid" data-control="custom" hidden>
-          <div class="field"><label><i class="bi bi-calendar-plus" aria-hidden="true"></i><span>วันที่เริ่มต้น</span></label><input class="input" id="startDate" type="date"></div>
-          <div class="field"><label><i class="bi bi-calendar-minus" aria-hidden="true"></i><span>วันที่สิ้นสุด</span></label><input class="input" id="endDate" type="date"></div>
+          <div class="field"><label><i class="bi bi-calendar-plus" aria-hidden="true"></i><span data-i18n="sales_report.filters.start_date">วันที่เริ่มต้น</span></label><input class="input" id="startDate" type="date"></div>
+          <div class="field"><label><i class="bi bi-calendar-minus" aria-hidden="true"></i><span data-i18n="sales_report.filters.end_date">วันที่สิ้นสุด</span></label><input class="input" id="endDate" type="date"></div>
         </div>
-        <div class="field"><label><i class="bi bi-shop" aria-hidden="true"></i><span>ประเภทออเดอร์</span></label><select class="input" id="orderTypeFilter"><option value="all">ทั้งหมด</option><option value="table">หน้าร้าน</option><option value="delivery">Delivery</option></select></div>
-        <div class="field"><label><i class="bi bi-credit-card" aria-hidden="true"></i><span>วิธีชำระเงิน</span></label><select class="input" id="paymentMethodFilter"><option value="all">ทั้งหมด</option><option value="cash">เงินสด</option><option value="promptpay">พร้อมเพย์/โอนเงิน</option><option value="cod">เก็บเงินปลายทาง</option><option value="other">อื่น ๆ</option></select></div>
-        <div class="field"><label><i class="bi bi-search" aria-hidden="true"></i><span>ค้นหาใบเสร็จ/ลูกค้า/โต๊ะ</span></label><input class="input" id="receiptSearch" placeholder="ค้นหา..."></div>
+        <div class="field"><label><i class="bi bi-shop" aria-hidden="true"></i><span data-i18n="sales_report.filters.order_type">ประเภทออเดอร์</span></label><select class="input" id="orderTypeFilter"><option value="all" data-i18n="sales_report.filters.all">ทั้งหมด</option><option value="table" data-i18n="sales_report.order_type.storefront">หน้าร้าน</option><option value="delivery" data-i18n="sales_report.order_type.delivery">Delivery</option></select></div>
+        <div class="field"><label><i class="bi bi-credit-card" aria-hidden="true"></i><span data-i18n="sales_report.filters.payment_method">วิธีชำระเงิน</span></label><select class="input" id="paymentMethodFilter"><option value="all" data-i18n="sales_report.filters.all">ทั้งหมด</option><option value="cash" data-i18n="sales_report.payment.cash">เงินสด</option><option value="promptpay" data-i18n="sales_report.payment.promptpay">พร้อมเพย์/โอนเงิน</option><option value="cod" data-i18n="sales_report.payment.cod">เก็บเงินปลายทาง</option><option value="other" data-i18n="sales_report.payment.other">อื่น ๆ</option></select></div>
+        <div class="field"><label><i class="bi bi-search" aria-hidden="true"></i><span data-i18n="sales_report.filters.search_label">ค้นหาใบเสร็จ/ลูกค้า/โต๊ะ</span></label><input class="input" id="receiptSearch" placeholder="ค้นหา..." data-i18n-placeholder="sales_report.filters.search_placeholder"></div>
       </div>
     </section>
 
     <section class="summary-grid sales-summary-grid">
-      <article class="summary-card primary"><span><i class="bi bi-cash-stack" aria-hidden="true"></i>ยอดขายสุทธิ</span><strong id="totalSales">0.00</strong><small>บาท</small><span class="summary-icon"><i class="bi bi-currency-dollar" aria-hidden="true"></i></span></article>
-      <article class="summary-card"><span><i class="bi bi-receipt-cutoff" aria-hidden="true"></i>จำนวนใบเสร็จ</span><strong id="receiptCount">0</strong><small>ใบ</small><span class="summary-icon"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></span></article>
-      <article class="summary-card"><span><i class="bi bi-calculator" aria-hidden="true"></i>ยอดเฉลี่ยต่อใบ</span><strong id="averageReceipt">0.00</strong><small>บาท</small><span class="summary-icon"><i class="bi bi-percent" aria-hidden="true"></i></span></article>
-      <article class="summary-card"><span><i class="bi bi-bag-check" aria-hidden="true"></i>จำนวนรายการขาย</span><strong id="soldItemCount">0</strong><small>รายการ</small><span class="summary-icon"><i class="bi bi-box-seam" aria-hidden="true"></i></span></article>
+      <article class="summary-card primary"><span><i class="bi bi-cash-stack" aria-hidden="true"></i><span data-i18n="sales_report.summary.net_sales">ยอดขายสุทธิ</span></span><strong id="totalSales">0.00</strong><small data-i18n="sales_report.units.baht">บาท</small><span class="summary-icon"><i class="bi bi-currency-dollar" aria-hidden="true"></i></span></article>
+      <article class="summary-card"><span><i class="bi bi-receipt-cutoff" aria-hidden="true"></i><span data-i18n="sales_report.summary.receipt_count">จำนวนใบเสร็จ</span></span><strong id="receiptCount">0</strong><small data-i18n="sales_report.units.receipt">ใบ</small><span class="summary-icon"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></span></article>
+      <article class="summary-card"><span><i class="bi bi-calculator" aria-hidden="true"></i><span data-i18n="sales_report.summary.average_receipt">ยอดเฉลี่ยต่อใบ</span></span><strong id="averageReceipt">0.00</strong><small data-i18n="sales_report.units.baht">บาท</small><span class="summary-icon"><i class="bi bi-percent" aria-hidden="true"></i></span></article>
+      <article class="summary-card"><span><i class="bi bi-bag-check" aria-hidden="true"></i><span data-i18n="sales_report.summary.sold_items">จำนวนรายการขาย</span></span><strong id="soldItemCount">0</strong><small data-i18n="sales_report.units.item">รายการ</small><span class="summary-icon"><i class="bi bi-box-seam" aria-hidden="true"></i></span></article>
     </section>
 
     <section class="grid grid-2 report-breakdown-grid">
-      <article class="card"><div class="section-title"><h2><i class="bi bi-diagram-3" aria-hidden="true"></i><span>ยอดขายตามช่องทาง</span></h2></div><div id="orderTypeSummary" class="breakdown-list"></div></article>
-      <article class="card"><div class="section-title"><h2><i class="bi bi-wallet2" aria-hidden="true"></i><span>ยอดขายตามวิธีชำระ</span></h2></div><div id="paymentSummary" class="breakdown-list"></div></article>
+      <article class="card"><div class="section-title"><h2><i class="bi bi-diagram-3" aria-hidden="true"></i><span data-i18n="sales_report.sections.order_type_sales">ยอดขายตามช่องทาง</span></h2></div><div id="orderTypeSummary" class="breakdown-list"></div></article>
+      <article class="card"><div class="section-title"><h2><i class="bi bi-wallet2" aria-hidden="true"></i><span data-i18n="sales_report.sections.payment_sales">ยอดขายตามวิธีชำระ</span></h2></div><div id="paymentSummary" class="breakdown-list"></div></article>
     </section>
 
     <section class="card report-chart-card">
-      <div class="section-title"><div><h2 id="chartTitle"><i class="bi bi-bar-chart-steps" aria-hidden="true"></i><span>ยอดขายรายชั่วโมง</span></h2><div class="menu-category" id="chartSubtitle"></div></div></div>
+      <div class="section-title"><div><h2 id="chartTitle"><i class="bi bi-bar-chart-steps" aria-hidden="true"></i><span data-i18n="sales_report.sections.hourly_sales">ยอดขายรายชั่วโมง</span></h2><div class="menu-category" id="chartSubtitle"></div></div></div>
       <div id="salesChart" class="sales-chart" data-horizontal-scroll="true"></div>
     </section>
 
     <section class="grid grid-2 report-analysis-grid">
-      <article class="card"><div class="section-title"><h2><i class="bi bi-award" aria-hidden="true"></i><span>เมนูขายดี</span></h2></div><div id="topItems" class="rank-list"></div></article>
-      <article class="card"><div class="section-title"><h2><i class="bi bi-trophy" aria-hidden="true"></i><span>วันที่/เดือนขายดีที่สุด</span></h2></div><div id="bestPeriod" class="best-period"></div></article>
+      <article class="card"><div class="section-title"><h2><i class="bi bi-award" aria-hidden="true"></i><span data-i18n="sales_report.sections.top_items">เมนูขายดี</span></h2></div><div id="topItems" class="rank-list"></div></article>
+      <article class="card"><div class="section-title"><h2><i class="bi bi-trophy" aria-hidden="true"></i><span data-i18n="sales_report.sections.best_period">วันที่/เดือนขายดีที่สุด</span></h2></div><div id="bestPeriod" class="best-period"></div></article>
     </section>
 
     <section class="card receipt-section">
-      <div class="section-title receipt-heading"><div><h2><i class="bi bi-table" aria-hidden="true"></i><span>รายการแยกตามใบเสร็จ</span></h2><div class="menu-category" id="receiptRangeLabel"></div></div><span class="badge" id="receiptResultCount">0 ใบ</span></div>
-      <div class="table-scroll" data-horizontal-scroll="true"><table class="table-list receipt-table"><thead><tr><th>เลขที่ใบเสร็จ</th><th>วันที่/เวลา</th><th>ช่องทาง</th><th>ลูกค้า/โต๊ะ</th><th>วิธีชำระ</th><th>จำนวน</th><th class="number">ยอดสุทธิ</th><th></th></tr></thead><tbody id="receiptRows"></tbody></table></div>
+      <div class="section-title receipt-heading"><div><h2><i class="bi bi-table" aria-hidden="true"></i><span data-i18n="sales_report.sections.receipts">รายการแยกตามใบเสร็จ</span></h2><div class="menu-category" id="receiptRangeLabel"></div></div><span class="badge" id="receiptResultCount">0 ใบ</span></div>
+      <div class="table-scroll" data-horizontal-scroll="true"><table class="table-list receipt-table"><thead><tr><th data-i18n="sales_report.receipt.number">เลขที่ใบเสร็จ</th><th data-i18n="sales_report.receipt.date_time">วันที่/เวลา</th><th data-i18n="sales_report.receipt.channel">ช่องทาง</th><th data-i18n="sales_report.receipt.customer_table">ลูกค้า/โต๊ะ</th><th data-i18n="sales_report.receipt.payment">วิธีชำระ</th><th data-i18n="sales_report.receipt.quantity">จำนวน</th><th class="number" data-i18n="sales_report.receipt.net_total">ยอดสุทธิ</th><th></th></tr></thead><tbody id="receiptRows"></tbody></table></div>
       <nav id="receiptPagination" class="report-pagination" hidden></nav>
     </section>
   </main>
 
-  <dialog id="receiptDialog" class="receipt-dialog"><div class="receipt-dialog-card"><div class="section-title"><h2><i class="bi bi-receipt" aria-hidden="true"></i><span>รายละเอียดใบเสร็จ</span></h2><button type="button" class="btn btn-sm" id="closeReceiptDialog"><i class="bi bi-x-circle" aria-hidden="true"></i><span>ปิด</span></button></div><div id="receiptDetail"></div></div></dialog>
-  <script type="module" src="/assets/js/page-guard.js?v=20260802-104"></script>
-  <script type="module" src="/assets/js/sales-report.js?v=20260731-081"></script>
+  <dialog id="receiptDialog" class="receipt-dialog"><div class="receipt-dialog-card"><div class="section-title"><h2><i class="bi bi-receipt" aria-hidden="true"></i><span data-i18n="sales_report.sections.receipt_detail">รายละเอียดใบเสร็จ</span></h2><button type="button" class="receipt-dialog-close" id="closeReceiptDialog" aria-label="ปิด" title="ปิด"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div><div id="receiptDetail"></div></div></dialog>
+  <script type="module" src="/assets/js/page-guard.js?v=20260903-201"></script>
+  <script type="module" src="/assets/js/sales-report.js?v=20260903-244"></script>
+  <script type="module" src="/assets/js/locale-switcher-static.js?v=20260903-202"></script>
+  <script type="module" src="/assets/js/user-menu-i18n-static.js?v=20260903-202"></script>
+  <script type="module" src="/assets/js/admin-workspace-refresh-retail-pos-parity.js?v=20260903-202" data-retail-pos-safe-decorator="1"></script>
   <script type="module" src="/assets/js/horizontal-scroll-restore.js?v=20260629-044"></script>
   <script type="module" src="/assets/js/admin-workspace-refresh.js?v=20260803-004" data-admin-workspace-refresh="script" data-build="20260803-001"></script>
 </body>

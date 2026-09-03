@@ -17,6 +17,8 @@ function asDate(value) {
 }
 
 function canUseTenant(tenant) {
+  const revenueMode = tenant.revenueShareEnabled === true || tenant.billingMode === "revenue_share";
+  if (revenueMode) return tenant.active !== false && tenant.revenueShareSuspended !== true;
   if (tenant.active === false || ["expired", "suspended"].includes(tenant.subscriptionStatus)) return false;
   const expiry = asDate(tenant.subscriptionExpiresAt);
   if (!expiry) return true;
@@ -27,7 +29,15 @@ function canUseTenant(tenant) {
 if (profile?.role !== "super_admin" && profile?.tenantId) {
   const tenantSnapshot = await getDoc(doc(db, "tenants", profile.tenantId));
   const tenant = tenantSnapshot.exists() ? tenantSnapshot.data() : null;
-  if (!tenant || !canUseTenant(tenant)) {
+  const normalizedPath = location.pathname.replace(/\/index\.html$/, "/");
+  const revenueShareRecoveryRoute = normalizedPath.startsWith("/reports/revenue-share/") || normalizedPath.startsWith("/admin/revenue-share/");
+  const revenueShareMode = tenant && (tenant.revenueShareEnabled === true || tenant.billingMode === "revenue_share");
+  const canRecoverRevenueShare = revenueShareRecoveryRoute && revenueShareMode;
+  if (tenant && revenueShareMode && tenant.revenueShareSuspended === true && !revenueShareRecoveryRoute) {
+    location.replace("/reports/revenue-share/");
+    await new Promise(() => {});
+  }
+  if (!tenant || (!canUseTenant(tenant) && !canRecoverRevenueShare)) {
     document.documentElement.innerHTML = `
       <head>
         <meta charset="utf-8">

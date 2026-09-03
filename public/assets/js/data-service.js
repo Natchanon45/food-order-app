@@ -1,6 +1,7 @@
 import {
-  db, isFirebaseConfigured, collection, addDoc, doc, getDoc, getDocs, setDoc,
-  updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, runTransaction
+  db, storage, isFirebaseConfigured, collection, addDoc, doc, getDoc, getDocs, setDoc,
+  updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, runTransaction,
+  ref as storageRef, uploadBytes, getDownloadURL
 } from "./firebase-config.js?v=20260630-073";
 import { demoStore } from "./demo-store.js";
 import { resolveShopContext, shopCollectionPath, shopDocumentPath } from "./tenant-context.js";
@@ -122,6 +123,20 @@ export const dataService = {
     return setDoc(shopDocument("settings", "store"), payload, { merge: true });
   },
 
+  async saveStoreProfile(settings = {}) {
+    await this.saveStoreSettings(settings);
+    return this.getStoreSettings();
+  },
+
+  async uploadMenuImage(menuId, blob) {
+    if (!storage) throw new Error("STORAGE_NOT_READY");
+    if (!menuId || !blob) throw new Error("IMAGE_UPLOAD_REQUIRED");
+    const path = `menu-images/${menuId}/${Date.now()}.webp`;
+    const fileRef = storageRef(storage, path);
+    await uploadBytes(fileRef, blob, { contentType: "image/webp" });
+    return { url: await getDownloadURL(fileRef), path };
+  },
+
   async listMenus() {
     if (usingDemoMode) {
       const settings = await this.getStoreSettings();
@@ -207,7 +222,7 @@ export const dataService = {
     const table = await this.getTable(order.tableCode);
     if (!table) throw new Error("INVALID_TABLE_SESSION");
     const tableRef = shopDocument("tables", table.id);
-    const orderRef = doc(shopCollection("orders"));
+    const orderRef = order?.id ? shopDocument("orders", String(order.id)) : doc(shopCollection("orders"));
     await runTransaction(db, async transaction => {
       const tableSnapshot = await transaction.get(tableRef);
       if (!tableSnapshot.exists()) throw new Error("INVALID_TABLE_SESSION");
@@ -221,7 +236,13 @@ export const dataService = {
   },
 
   async getOrder(id) { if (usingDemoMode) return demoStore.orders.list().find(item => item.id === id) || null; const snapshot = await getDoc(shopDocument("orders", id)); return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null; },
-  async updateOrder(id, patch) { if (usingDemoMode) return demoStore.orders.update(id, patch); return updateDoc(shopDocument("orders", id), withShop({ ...patch, updatedAt: serverTimestamp() })); },
+  async updateOrder(id, patch) {
+    if (usingDemoMode) return demoStore.orders.update(id, patch);
+    const orderRef = shopDocument("orders", id);
+    await updateDoc(orderRef, withShop({ ...patch, updatedAt: serverTimestamp() }));
+    const snapshot = await getDoc(orderRef);
+    return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : { id, ...patch };
+  },
 
   async moveTableSession({ fromTableCode, fromTableToken, toTableId, orders = [] }) {
     const orderIds = [...new Set((orders || []).map(order => String(order?.id || "").trim()).filter(Boolean))];
@@ -281,7 +302,7 @@ export const dataService = {
     return { fromTable, toTable: { ...toTable, code: targetCode, name: targetName }, movedOrders: orderIds.length };
   },
 
-  async createDeliveryOrder(order) { const id = `DELIVERY-${Date.now()}-${Math.random().toString(16).slice(2)}`; return this.createOrderWithId(id, { ...order, orderType: "delivery", status: "pending" }); },
+  async createDeliveryOrder(order) { const id = String(order?.id || "").trim() || `DELIVERY-${Date.now()}-${Math.random().toString(16).slice(2)}`; return this.createOrderWithId(id, { ...order, id, orderType: "delivery", status: order.status || "pending" }); },
 
   subscribeOrders(callback) {
     if (usingDemoMode) {

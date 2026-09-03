@@ -1,6 +1,18 @@
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
+import { t } from "./i18n.js?v=20260903-202";
 
 const headingIcons = new Map([
+  [t("admin.sales_report.title"), "bar-chart-line"],
+  [t("admin.store.section_title"), "building-gear"],
+  [t("admin.delivery_fee.title"), "scooter"],
+  [t("admin.menu.form_title"), "journal-plus"],
+  [t("admin.table.form_title"), "table"],
+  [t("admin.menu.sort_title"), "list-ol"],
+  [t("admin.menu.list_title"), "fork-knife"],
+  [t("admin.table.list_title"), "grid-3x3-gap"],
+  [t("admin.delivery_qr.delivery_title"), "qr-code-scan"],
+  [t("admin.delivery_qr.takeaway_title"), "bag-check"],
+  [t("admin.workspace.modal_default_title"), "pencil-square"],
   ["สร้าง QR แยกตามโต๊ะ", "qr-code-scan"],
   ["รายงานยอดขาย", "bar-chart-line"],
   ["ข้อมูลร้านและการรับชำระ", "building-gear"],
@@ -28,6 +40,16 @@ const headingIcons = new Map([
 ]);
 
 const buttonIcons = new Map([
+  [t("admin.store.save"), "floppy"],
+  [t("admin.menu.save"), "floppy"],
+  [t("admin.table.save"), "floppy"],
+  [t("admin.menu.remove_image"), "trash3"],
+  [t("admin.sales_report.button"), "bar-chart-line"],
+  [t("admin.delivery_qr.copy_link"), "clipboard"],
+  [t("admin.common.edit"), "pencil-square"],
+  [t("admin.common.delete"), "trash3"],
+  [t("admin.delivery_qr.print"), "printer"],
+  [t("admin.common.close"), "x-lg"],
   ["ย้อนกลับ", "arrow-left"],
   ["พิมพ์สำหรับวางที่โต๊ะ", "printer"],
   ["บันทึกข้อมูลร้าน", "floppy"],
@@ -188,15 +210,6 @@ function decorate(root = document) {
   ensureThemeStyle();
 
   root.querySelectorAll("h1,h2").forEach(heading => {
-    if (
-      heading.matches("#adminEditModalTitle")
-      || heading.closest(".admin-edit-modal")
-    ) {
-      heading.querySelectorAll(".admin-heading-icon").forEach(node => node.remove());
-      heading.removeAttribute("data-admin-icon");
-      return;
-    }
-
     if (heading.querySelector(".admin-heading-icon")) return;
 
     const name = headingIcons.get(heading.textContent.trim());

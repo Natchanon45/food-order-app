@@ -15,6 +15,8 @@ function asDate(value) {
 }
 
 function tenantCanUseStorefront(tenant) {
+  const revenueMode = tenant.revenueShareEnabled === true || tenant.billingMode === "revenue_share";
+  if (revenueMode) return tenant.active !== false && tenant.revenueShareSuspended !== true;
   if (tenant.active === false || ["expired", "suspended"].includes(tenant.subscriptionStatus)) return false;
   const expiry = asDate(tenant.subscriptionExpiresAt);
   if (!expiry) return true;

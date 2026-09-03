@@ -1,6 +1,8 @@
-import { dataService } from "./data-service.js";
-import { money, formatTime } from "./ui.js?v=20260731-080";
+import { dataService } from "./data-service.js?v=20260718-021";
+import { money, formatTime } from "./ui.js?v=20260805-081";
 import { autoPrintReceipt } from "./receipt-auto-print.js?v=20260702-001";
+import { qrDataUrl } from "./local-qr.js?v=20260722-037";
+import { t } from "./i18n.js?v=20260812-099";
 
 const params = new URLSearchParams(location.search);
 const ids = (params.get("orders") || "")
@@ -18,14 +20,15 @@ function receiptItemName(item) {
       item.replacedFromName)
   ) {
     details.push(
-      `ลูกค้าสั่งเดิม: ${item.originalName || item.replacedFromName || item.name} x ${item.originalQty}`,
+      `${t("cashier_documents.receipt.original_order_label")} ${item.originalName || item.replacedFromName || item.name} x ${item.originalQty}`,
     );
   }
-  return `<div class="receipt-item-line"><span class="receipt-item-text" title="${item.name}">${item.name}</span><span class="receipt-item-qty">x ${item.qty}</span></div>${details.map((text) => `<div class="receipt-item-note">${text}</div>`).join("")}`;
+  const displayName = item.isGift === true ? `${item.name} ${t("cashier.items.gift_suffix")}` : item.name;
+  return `<div class="receipt-item-line"><span class="receipt-item-text" title="${displayName}">${displayName}</span><span class="receipt-item-qty">x ${item.qty}</span></div>${details.map((text) => `<div class="receipt-item-note">${text}</div>`).join("")}`;
 }
 
 if (!ids.length) {
-  await import("./receipt.js?v=20260702-001");
+  await import("./receipt.js?v=20260903-244");
 } else {
   const receipt = document.querySelector("#receipt");
   const paperSize = document.querySelector("#paperSize");
@@ -57,16 +60,19 @@ if (!ids.length) {
       (sum, order) => sum + Number(order.totalAmount || 0),
       0,
     );
-    const verifyUrl = `${location.origin}/verify/?orders=${encodeURIComponent(ids.join(","))}`;
+    const tenantSlug = dataService.getActiveShop()?.slug || "";
+    const verifyParams = new URLSearchParams({ orders: ids.join(",") });
+    if (tenantSlug) verifyParams.set("tenant", tenantSlug);
+    const verifyUrl = `${location.origin}/verify/?${verifyParams.toString()}`;
 
     document.querySelector("#shopName").textContent =
       settings.shopName || "Food Order QR";
     document.querySelector("#shopAddress").textContent =
       settings.shopAddress || "";
     document.querySelector("#shopPhone").textContent = settings.shopPhone
-      ? `โทร ${settings.shopPhone}`
+      ? t("cashier_documents.receipt.shop_phone", { phone: settings.shopPhone })
       : "";
-    document.querySelector("#receiptTitle").textContent = "ใบเสร็จรับเงินรวม";
+    document.querySelector("#receiptTitle").textContent = t("cashier_documents.receipt.combined_title");
     document.querySelector("#receiptTable").textContent =
       first.tableCode || "-";
     document.querySelector("#receiptNumber").textContent =
@@ -77,14 +83,14 @@ if (!ids.length) {
     document.querySelector("#receiptPayment").textContent = orders.every(
       (o) => o.status === "paid" || o.paymentStatus === "paid",
     )
-      ? "ชำระเงินแล้ว"
-      : "ยังไม่ชำระเงิน";
+      ? t("cashier_documents.receipt.paid")
+      : t("cashier_documents.receipt.unpaid");
     document.querySelector("#receiptTotal").textContent = money(total);
 
     document.querySelector("#receiptItems").innerHTML = orders
       .map(
         (order) => `
-      <tr><td colspan="3"><strong>รอบที่ ${order.roundNumber || 1}</strong></td></tr>
+      <tr><td colspan="3"><strong>${t("cashier_documents.receipt.round", { round: order.roundNumber || 1 })}</strong></td></tr>
       ${(order.items || [])
         .filter((item) => !item.cancelled)
         .map(
@@ -105,12 +111,14 @@ if (!ids.length) {
 
     const qr = document.querySelector("#verifyQr");
     qr.hidden = false;
-    qr.src = `https://quickchart.io/qr?text=${encodeURIComponent(verifyUrl)}&size=180&margin=1`;
-    document.querySelector("#verifyCode").textContent =
-      `${orders.length} รอบ • รวมบิลโต๊ะ ${first.tableCode || "-"}`;
+    qr.src = qrDataUrl(verifyUrl, { size: 180, margin: 4 });
+    document.querySelector("#verifyCode").textContent = t("cashier_documents.receipt.verify_combined", {
+      rounds: orders.length,
+      table: first.tableCode || "-",
+    });
     await autoPrintReceipt();
   } catch (error) {
     console.error(error);
-    receipt.innerHTML = '<div class="empty">โหลดใบเสร็จรวมไม่สำเร็จ</div>';
+    receipt.innerHTML = `<div class="empty">${t("cashier_documents.receipt.combined_load_failed")}</div>`;
   }
 }

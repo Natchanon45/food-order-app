@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#159447">
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240">
+  <link rel="stylesheet" href="/assets/css/i18n.css?v=20260903-202">
+  <link rel="stylesheet" href="/assets/css/tenant-admin.css?v=20260804-001">
+  <link rel="stylesheet" href="/assets/css/revenue-share-report.css?v=20260903-010">
+  <link rel="stylesheet" href="/assets/css/revenue-share-slip-dialog.css?v=20260903-004">
+  <title>ยอดขายและส่วนแบ่ง</title>
+  <style>body[data-revenue-share-ready="0"] .revenue-share-page{visibility:hidden}</style>
+</head>
+<body class="order-delivery-workspace revenue-share-report-page" data-roles="owner,admin" data-revenue-share-ready="0">
+<header class="app-header revenue-share-app-header">
+  <div class="brand"><span class="brand-mark">FOD</span><span data-i18n="header.title">ยอดขายและส่วนแบ่ง</span></div>
+  <a class="btn btn-sm revenue-share-back-link" href="/"><i class="bi bi-arrow-left" aria-hidden="true"></i><span data-i18n="header.back">กลับ</span></a>
+  <div class="app-locale-switcher" data-static-locale-switcher>
+    <details class="app-locale-menu" data-locale-menu>
+      <summary class="app-locale-trigger" aria-label="เลือกภาษา" title="Language"><i class="bi bi-globe2" aria-hidden="true"></i><span class="visually-hidden">Language</span></summary>
+      <div class="app-locale-menu__panel" role="menu" aria-label="Language">
+        <button type="button" class="app-locale-option" data-locale-option="th" lang="th" role="menuitemradio" aria-checked="true"><span>ไทย</span><i class="bi bi-check-lg" aria-hidden="true"></i></button>
+        <button type="button" class="app-locale-option" data-locale-option="en" lang="en" role="menuitemradio" aria-checked="false"><span>English</span><i class="bi bi-check-lg" aria-hidden="true"></i></button>
+      </div>
+    </details>
+  </div>
+</header>
+<main class="container revenue-share-page">
+  <section class="hero revenue-share-hero">
+    <div><span class="report-eyebrow"><i class="bi bi-shield-lock" aria-hidden="true"></i><span data-i18n="hero.private">เฉพาะเจ้าของร้านและผู้ดูแลระบบ</span></span><h1 data-i18n="hero.title">ยอดขายและส่วนแบ่ง</h1><p data-i18n="hero.description">สรุปยอดออเดอร์ร้านอาหารและ Retail POS เฉพาะร้านของคุณ พร้อมคำนวณส่วนแบ่งตามอัตราที่ระบบกลางกำหนด</p></div>
+    <button class="btn btn-primary" id="refreshRevenueShare" type="button"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i><span data-i18n="actions.refresh">รีเฟรช</span></button>
+  </section>
+  <section class="card report-filter-card" aria-labelledby="reportPeriodTitle">
+    <div class="report-section-heading"><div><h2 id="reportPeriodTitle" data-i18n="period.title">ช่วงเวลารายงาน</h2><p data-i18n="period.description">เลือกดูรายวัน รายเดือน รายปี หรือกำหนดช่วงเอง</p></div><strong id="reportPeriodLabel">กำลังโหลด...</strong></div>
+    <div class="report-period-tabs" role="tablist">
+      <button class="active" type="button" data-report-period="daily"><i class="bi bi-calendar-day"></i><span data-i18n="period.daily">รายวัน</span></button>
+      <button type="button" data-report-period="monthly"><i class="bi bi-calendar-month"></i><span data-i18n="period.monthly">รายเดือน</span></button>
+      <button type="button" data-report-period="yearly"><i class="bi bi-calendar3"></i><span data-i18n="period.yearly">รายปี</span></button>
+      <button type="button" data-report-period="custom"><i class="bi bi-calendar-range"></i><span data-i18n="period.custom">กำหนดเอง</span></button>
+    </div>
+    <div class="report-period-controls">
+      <label data-period-control="daily"><span data-i18n="period.date">วันที่</span><input class="input" id="reportDate" type="date"></label>
+      <label data-period-control="monthly" hidden><span data-i18n="period.month">เดือน</span><input class="input" id="reportMonth" type="month"></label>
+      <label data-period-control="yearly" hidden><span data-i18n="period.year">ปี</span><select class="input" id="reportYear"></select></label>
+      <div class="report-custom-period" data-period-control="custom" hidden><label><span data-i18n="period.start">วันที่เริ่มต้น</span><input class="input" id="reportStartDate" type="date"></label><label><span data-i18n="period.end">วันที่สิ้นสุด</span><input class="input" id="reportEndDate" type="date"></label></div>
+    </div>
+  </section>
+  <section class="report-summary-grid">
+    <article class="report-summary-card order"><span data-i18n="summary.orderSales">ยอดออเดอร์ร้านอาหาร</span><strong id="orderSales">0.00</strong><small id="orderCount">0</small></article>
+    <article class="report-summary-card pos"><span data-i18n="summary.posSales">Retail POS</span><strong id="posSales">0.00</strong><small id="posCount">0</small></article>
+    <article class="report-summary-card total"><span data-i18n="summary.combinedSales">ยอดขายรวม</span><strong id="combinedSales">0.00</strong><small data-i18n="common.baht">บาท</small></article>
+    <article class="report-summary-card share"><span id="shareRateLabel" data-i18n="summary.revenueShare">ส่วนแบ่งรวม</span><strong id="revenueShare">0.00</strong><small data-i18n="common.baht">บาท</small></article>
+  </section>
+  <section class="card report-explanation"><div class="report-explanation-icon"><i class="bi bi-calculator"></i></div><div><h2 data-i18n="explanation.title">การคำนวณส่วนแบ่ง</h2><p id="shareExplanation">กำลังโหลดอัตราส่วนแบ่ง</p></div></section>
+  <section class="card report-payment-card" aria-labelledby="reportPaymentTitle">
+    <div class="report-section-heading"><div><h2 id="reportPaymentTitle" data-i18n="payment.title">แจ้งโอนส่วนแบ่งการขาย</h2><p data-i18n="payment.description">แนบสลิปของช่วงรายงานที่เลือก ระบบจะบันทึกยอดและอัตราส่วนแบ่ง ณ เวลาที่ส่ง</p></div><strong id="paymentBillingCycle">-</strong></div>
+    <div class="report-payment-summary"><div><span data-i18n="payment.selectedPeriod">งวดที่เลือก</span><strong id="paymentPeriodLabel">-</strong></div><div><span data-i18n="payment.amountDue">ยอดส่วนแบ่งที่ต้องโอน</span><strong><span id="paymentAmountDue">0.00</span> <span data-i18n="common.baht">บาท</span></strong></div></div>
+    <form id="revenueSharePaymentForm" class="report-payment-form" novalidate>
+      <div class="report-slip-field"><span data-i18n="payment.slip">สลิปการโอนเงิน</span><input id="revenueShareSlip" name="slip" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"><label class="report-slip-picker" for="revenueShareSlip"><i class="bi bi-paperclip"></i><strong data-i18n="payment.chooseFile">เลือกไฟล์สลิป</strong><small id="revenueShareSlipName">ยังไม่ได้เลือกไฟล์</small></label><small class="report-slip-error" id="revenueShareSlipError" role="alert" hidden></small><small data-i18n="payment.slipHelp">รองรับ JPG, PNG, WEBP หรือ PDF ขนาดไม่เกิน 10 MB</small>
+        <div class="report-slip-selected" id="revenueShareSlipSelected" hidden><div class="report-slip-selected-meta"><i class="bi bi-file-earmark-check"></i><div><strong id="revenueShareSelectedName">-</strong><small id="revenueShareSelectedSize">-</small></div></div><div class="report-slip-selected-actions"><button class="btn btn-sm" id="previewRevenueShareSlip" type="button"><i class="bi bi-eye"></i><span data-i18n="actions.previewSelected">ดูไฟล์ที่เลือก</span></button><button class="btn btn-danger btn-sm" id="removeRevenueShareSlip" type="button"><i class="bi bi-trash"></i><span data-i18n="actions.removeSelected">ลบไฟล์</span></button></div></div>
+      </div>
+      <button class="btn btn-primary report-submit-slip" id="submitRevenueShareSlip" type="submit"><i class="bi bi-cloud-arrow-up"></i><span data-i18n="actions.submitSlip">ส่งสลิปเพื่อตรวจสอบ</span></button>
+    </form>
+    <div class="report-payment-message" id="revenueSharePaymentMessage" role="status" hidden></div>
+  </section>
+  <section class="card report-history-card"><div class="report-section-heading"><div><h2 data-i18n="payment.historyTitle">ประวัติการส่งสลิป</h2><p data-i18n="payment.historyDescription">แสดงรายการล่าสุดไม่เกิน 50 รายการ</p></div></div><div class="report-payment-history" id="revenueSharePaymentHistory"><div class="report-history-empty">กำลังโหลด...</div></div></section>
+  <div class="report-error" id="revenueShareError" role="alert" hidden></div>
+</main>
+<dialog id="revenueShareSlipDialog" class="tenant-dialog revenue-share-slip-dialog">
+  <div class="tenant-dialog-card"><div class="tenant-dialog-head"><div class="tenant-dialog-title"><span class="tenant-dialog-icon"><i class="bi bi-receipt"></i></span><div><span class="tenant-dialog-eyebrow" data-i18n="payment.historyTitle">ประวัติการส่งสลิป</span><h2 data-i18n="payment.slipTitle">ดูสลิปการโอนเงิน</h2><p id="revenueShareSlipPeriod">-</p></div></div><button type="button" class="tenant-dialog-close" data-close-report-slip aria-label="ปิด"><i class="bi bi-x-lg"></i></button></div><div class="tenant-dialog-body"><div class="revenue-share-slip-preview"><img id="revenueShareSlipImage" alt="" hidden><iframe id="revenueShareSlipFrame" title="Transfer slip" loading="eager" hidden></iframe></div></div><div class="tenant-dialog-actions revenue-share-slip-actions"><button type="button" class="btn btn-danger" data-close-report-slip><i class="bi bi-x-circle"></i><span data-i18n="actions.close">ปิด</span></button></div></div>
+</dialog>
+<script type="module" src="/assets/js/page-guard.js?v=20260903-201"></script>
+<script type="module" src="/assets/js/revenue-share-report-firebase.js?v=20260903-002"></script>
+<script type="module" src="/assets/js/locale-switcher-static.js?v=20260903-202"></script>
+</body>
+</html>

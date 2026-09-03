@@ -1,15 +1,11 @@
-import {
-  auth,
-  db,
-  doc,
-  getDoc,
-  onAuthStateChanged,
-  serverTimestamp,
-  setDoc,
-} from "./firebase-config.js?v=20260630-073";
-import { toast } from "./ui.js?v=20260731-080";
+import { apiRequest } from "./platform-contact-firebase-api.js?v=20260903-214";
+import { toast } from "./ui.js?v=20260805-081";
+import translations from "./platform-contact-translations.js?v=20260903-214";
+import { configureI18n, applyTranslations, t } from "./i18n.js?v=20260903-202";
 
-const settingsRef = doc(db, "platformSettings", "publicContact");
+configureI18n(translations);
+applyTranslations();
+document.title = t("platform_contact.meta.title");
 
 const form = document.getElementById("platformContactForm");
 const enabledField = document.getElementById("contactEnabled");
@@ -19,7 +15,6 @@ const descriptionField = document.getElementById("contactDescription");
 const phoneEnabled = document.getElementById("phoneEnabled");
 const phoneLabel = document.getElementById("phoneLabel");
 const phoneNumber = document.getElementById("phoneNumber");
-
 const lineEnabled = document.getElementById("lineEnabled");
 const lineLabel = document.getElementById("lineLabel");
 const lineUrl = document.getElementById("lineUrl");
@@ -27,7 +22,6 @@ const lineUrl = document.getElementById("lineUrl");
 const messengerEnabled = document.getElementById("messengerEnabled");
 const messengerLabel = document.getElementById("messengerLabel");
 const messengerUrl = document.getElementById("messengerUrl");
-
 const emailEnabled = document.getElementById("emailEnabled");
 const emailLabel = document.getElementById("emailLabel");
 const emailField = document.getElementById("contactEmail");
@@ -35,7 +29,6 @@ const emailField = document.getElementById("contactEmail");
 const reloadButton = document.getElementById("reloadContactButton");
 const saveButton = document.getElementById("saveContactButton");
 const statusBox = document.getElementById("contactFormStatus");
-
 const preview = document.getElementById("contactPreview");
 const previewHeading = document.getElementById("previewHeading");
 const previewDescription = document.getElementById("previewDescription");
@@ -43,39 +36,21 @@ const previewLinks = document.getElementById("previewLinks");
 
 const defaults = {
   enabled: true,
-  heading: "คุยกับเรา",
-  description: "ติดต่อสอบถามข้อมูลแพ็กเกจและการใช้งานระบบ",
+  heading: t("platform_contact.contact.defaults.heading"),
+  description: t("platform_contact.contact.defaults.description"),
   phoneEnabled: false,
-  phoneLabel: "โทรศัพท์",
+  phoneLabel: t("platform_contact.contact.defaults.phone_label"),
   phoneNumber: "",
   lineEnabled: false,
-  lineLabel: "LINE",
+  lineLabel: t("platform_contact.contact.defaults.line_label"),
   lineUrl: "",
   messengerEnabled: false,
-  messengerLabel: "Messenger",
+  messengerLabel: t("platform_contact.contact.defaults.messenger_label"),
   messengerUrl: "",
   emailEnabled: false,
-  emailLabel: "อีเมล",
+  emailLabel: t("platform_contact.contact.defaults.email_label"),
   email: "",
 };
-
-function waitForUser() {
-  if (auth.currentUser) return Promise.resolve(auth.currentUser);
-
-  return new Promise((resolve, reject) => {
-    const timeout = window.setTimeout(() => {
-      unsubscribe();
-      reject(new Error("AUTH_TIMEOUT"));
-    }, 10000);
-
-    const unsubscribe = onAuthStateChanged(auth, user => {
-      if (!user) return;
-      window.clearTimeout(timeout);
-      unsubscribe();
-      resolve(user);
-    });
-  });
-}
 
 function showStatus(message = "", type = "success") {
   statusBox.textContent = message;
@@ -102,7 +77,6 @@ function normalizeMessengerUrl(value = "") {
 
   const fullUrl = normalizeHttpUrl(raw);
   if (fullUrl) return fullUrl;
-
   const username = raw
     .replace(/^@/, "")
     .replace(/^m\.me\//i, "")
@@ -133,7 +107,6 @@ function createPreviewAction({ channel, icon, label, href }) {
   const iconWrap = document.createElement("span");
   iconWrap.className = "public-contact-action-icon";
   iconWrap.setAttribute("aria-hidden", "true");
-
   const iconNode = document.createElement("i");
   iconNode.className = `bi bi-${icon}`;
   iconWrap.appendChild(iconNode);
@@ -175,7 +148,6 @@ function writeForm(data = {}) {
   phoneEnabled.checked = value.phoneEnabled === true;
   phoneLabel.value = value.phoneLabel || defaults.phoneLabel;
   phoneNumber.value = value.phoneNumber || "";
-
   lineEnabled.checked = value.lineEnabled === true;
   lineLabel.value = value.lineLabel || defaults.lineLabel;
   lineUrl.value = value.lineUrl || "";
@@ -187,7 +159,6 @@ function writeForm(data = {}) {
   emailEnabled.checked = value.emailEnabled === true;
   emailLabel.value = value.emailLabel || defaults.emailLabel;
   emailField.value = value.email || "";
-
   renderPreview();
 }
 
@@ -196,12 +167,11 @@ function renderPreview() {
   preview.hidden = data.enabled !== true;
   previewHeading.textContent = data.heading;
   previewDescription.textContent =
-    data.description || "ติดต่อสอบถามข้อมูลและการใช้งานระบบ";
+    data.description || t("platform_contact.contact.defaults.preview_description");
 
   previewLinks.replaceChildren();
 
   const actions = [];
-
   if (data.phoneEnabled && data.phoneNumber) {
     actions.push(createPreviewAction({
       channel: "phone",
@@ -242,25 +212,25 @@ function renderPreview() {
 }
 
 function validateData(data) {
-  if (!data.heading) return "กรุณากรอกหัวข้อ";
+  if (!data.heading) return t("platform_contact.contact.validation.heading_required");
 
   if (data.phoneEnabled && !data.phoneNumber) {
-    return "เปิดโทรศัพท์แล้ว กรุณากรอกเบอร์โทร";
+    return t("platform_contact.contact.validation.phone_required");
   }
 
   if (data.lineEnabled && !data.lineUrl) {
-    return "เปิด LINE แล้ว กรุณากรอก LINE URL ที่ถูกต้อง";
+    return t("platform_contact.contact.validation.line_required");
   }
 
   if (data.messengerEnabled && !data.messengerUrl) {
-    return "เปิด Messenger แล้ว กรุณากรอก Messenger URL หรือชื่อเพจ";
+    return t("platform_contact.contact.validation.messenger_required");
   }
 
   if (
     data.emailEnabled
     && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)
   ) {
-    return "เปิดอีเมลแล้ว กรุณากรอกอีเมลที่ถูกต้อง";
+    return t("platform_contact.contact.validation.email_required");
   }
 
   const enabledChannels = [
@@ -271,7 +241,7 @@ function validateData(data) {
   ].filter(Boolean).length;
 
   if (data.enabled && enabledChannels === 0) {
-    return "เปิด Contact หน้าแรกแล้ว กรุณาเปิดอย่างน้อยหนึ่งช่องทาง";
+    return t("platform_contact.contact.validation.channel_required");
   }
 
   return "";
@@ -280,22 +250,23 @@ function validateData(data) {
 async function loadSettings({ announce = false } = {}) {
   reloadButton.disabled = true;
   saveButton.disabled = true;
-  showStatus("กำลังโหลดข้อมูลล่าสุด...");
+  showStatus(t("platform_contact.contact.status.loading"));
 
   try {
-    await waitForUser();
-    const snapshot = await getDoc(settingsRef);
-    writeForm(snapshot.exists() ? snapshot.data() : defaults);
+    const payload = await apiRequest(`/api/platform/contact?ts=${Date.now()}`, {
+      headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
+    });
+    writeForm(payload?.exists && payload?.contact ? payload.contact : defaults);
     showStatus(
-      snapshot.exists()
-        ? "โหลดข้อมูลติดต่อแล้ว"
-        : "ยังไม่มีข้อมูลเดิม กรุณากรอกและบันทึก",
+      payload?.exists
+        ? t("platform_contact.contact.status.loaded")
+        : t("platform_contact.contact.status.empty"),
     );
-    if (announce) toast("โหลดข้อมูลติดต่อล่าสุดแล้ว");
+    if (announce) toast(t("platform_contact.contact.toast.loaded"));
   } catch (error) {
     console.error("[platform-contact] load failed", error);
     showStatus(
-      "โหลดข้อมูลไม่สำเร็จ กรุณาตรวจสอบสิทธิ์ Super Admin แล้วลองใหม่",
+      t("platform_contact.contact.status.load_failed"),
       "error",
     );
   } finally {
@@ -304,61 +275,56 @@ async function loadSettings({ announce = false } = {}) {
   }
 }
 
-form.addEventListener("input", renderPreview);
-form.addEventListener("change", renderPreview);
+if (form && reloadButton && saveButton) {
+  form.addEventListener("input", renderPreview);
+  form.addEventListener("change", renderPreview);
 
-reloadButton.addEventListener("click", () => {
-  loadSettings({ announce: true });
-});
+  reloadButton.addEventListener("click", () => {
+    loadSettings({ announce: true });
+  });
 
-form.addEventListener("submit", async event => {
-  event.preventDefault();
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
 
-  const data = readForm();
-  const validationError = validateData(data);
+    const data = readForm();
+    const validationError = validateData(data);
 
-  if (validationError) {
-    showStatus(validationError, "error");
-    return;
-  }
+    if (validationError) {
+      showStatus(validationError, "error");
+      return;
+    }
 
-  saveButton.disabled = true;
-  reloadButton.disabled = true;
-  saveButton.innerHTML =
-    '<span class="platform-contact-saving" aria-hidden="true"></span>'
-    + "<span>กำลังบันทึก...</span>";
-  showStatus("กำลังบันทึกข้อมูลติดต่อ...");
-
-  try {
-    const user = await waitForUser();
-
-    await setDoc(settingsRef, {
-      id: "publicContact",
-      tenantId: "__platform__",
-      ...data,
-      updatedBy: user.uid,
-      updatedByEmail: user.email || "",
-      updatedAt: serverTimestamp(),
-      updatedAtMs: Date.now(),
-    }, { merge: false });
-
-    showStatus("บันทึกข้อมูลติดต่อเรียบร้อยแล้ว");
-    toast("อัปเดต Contact หน้าแรกแล้ว");
-  } catch (error) {
-    console.error("[platform-contact] save failed", error);
-    showStatus(
-      error?.code === "permission-denied"
-        ? "บัญชีนี้ไม่มีสิทธิ์แก้ไข Contact หน้าแรก"
-        : "บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่",
-      "error",
-    );
-  } finally {
-    saveButton.disabled = false;
-    reloadButton.disabled = false;
+    saveButton.disabled = true;
+    reloadButton.disabled = true;
     saveButton.innerHTML =
-      '<i class="bi bi-floppy" aria-hidden="true"></i>'
-      + "<span>บันทึกข้อมูลติดต่อ</span>";
-  }
-});
+      '<span class="platform-contact-saving" aria-hidden="true"></span>'
+      + `<span>${t("platform_contact.contact.status.saving")}</span>`;
+    showStatus(t("platform_contact.contact.status.saving"));
 
-loadSettings();
+    try {
+      await apiRequest("/api/platform/contact", {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
+      showStatus(t("platform_contact.contact.status.saved"));
+      toast(t("platform_contact.contact.toast.saved"));
+    } catch (error) {
+      console.error("[platform-contact] save failed", error);
+      const validationMessage = error?.serverResponse?.message;
+      showStatus(
+        error?.status === 403
+          ? t("platform_contact.contact.errors.permission_denied")
+          : (validationMessage || t("platform_contact.contact.errors.save_failed")),
+        "error",
+      );
+    } finally {
+      saveButton.disabled = false;
+      reloadButton.disabled = false;
+      saveButton.innerHTML =
+        '<i class="bi bi-floppy" aria-hidden="true"></i>'
+        + `<span>${t("platform_contact.contact.actions.save")}</span>`;
+    }
+  });
+
+  loadSettings();
+}

@@ -25,7 +25,12 @@ function asDate(value) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+function revenueShareEnabled(tenant = {}) {
+  return tenant.revenueShareEnabled === true || tenant.billingMode === "revenue_share";
+}
+
 function effectiveStatus(tenant, now = new Date()) {
+  if (revenueShareEnabled(tenant)) return tenant.revenueShareSuspended === true ? "revenue_share_suspended" : "revenue_share_active";
   if (tenant.subscriptionStatus === "suspended" || tenant.active === false && tenant.suspensionReason) return "suspended";
   const expiresAt = asDate(tenant.subscriptionExpiresAt);
   if (!expiresAt) return tenant.subscriptionStatus || "active";
@@ -85,7 +90,7 @@ exports.backfillTenantSubscriptions = onCall(
     let updated = 0;
     for (const tenantDoc of snapshot.docs) {
       const tenant = tenantDoc.data();
-      if (tenant.subscriptionExpiresAt) continue;
+      if (tenant.subscriptionExpiresAt || revenueShareEnabled(tenant)) continue;
       const batch = db.batch();
       const patch = defaultPatch();
       batch.set(tenantDoc.ref, patch, { merge: true });
@@ -145,6 +150,8 @@ exports.updateTenantSubscription = onCall(
     }
 
     const gracePeriodDays = Math.max(0, Math.min(30, Number(request.data?.gracePeriodDays ?? tenant.gracePeriodDays ?? DEFAULT_GRACE_DAYS)));
+    if (revenueShareEnabled(tenant)) active = tenant.revenueShareSuspended !== true;
+
     const patch = {
       planCode: String(request.data?.planCode || tenant.planCode || "monthly"),
       subscriptionStatus: status,
@@ -173,6 +180,7 @@ exports.syncExpiredTenants = onSchedule(
     let changed = 0;
     for (const tenantDoc of snapshot.docs) {
       const tenant = tenantDoc.data();
+      if (revenueShareEnabled(tenant)) continue;
       if (!tenant.subscriptionExpiresAt) {
         const batch = db.batch();
         const patch = defaultPatch();

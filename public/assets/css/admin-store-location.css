@@ -1,0 +1,206 @@
+/* ADMIN_STORE_LOCATION_20260827_001 */
+
+.admin-store-location {
+  padding: 14px;
+  border: 1px solid var(--border, #dce3df);
+  border-radius: 14px;
+  background: #f8fbf9;
+}
+
+.admin-store-location-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.admin-store-location-head h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+.admin-store-location-map {
+  width: 100%;
+  height: 320px;
+  border: 1px solid var(--border, #dce3df);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #e9efec;
+  z-index: 0;
+}
+
+.admin-store-location-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px 16px;
+  flex-wrap: wrap;
+  margin-top: 9px;
+  font-size: 13px;
+  color: var(--muted, #66736d);
+}
+
+#adminStoreLocationStatus.is-ready {
+  color: #176b45;
+  font-weight: 700;
+}
+
+#adminStoreLocationStatus.is-error {
+  color: #b42318;
+  font-weight: 700;
+}
+
+#adminStoreLocationCoordinates {
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-delivery-settings-card {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-delivery-distance-note {
+  margin-top: -2px;
+}
+
+.admin-store-location .leaflet-control-attribution {
+  font-size: 10px;
+}
+
+@media (max-width: 640px) {
+  .admin-store-location {
+    padding: 12px;
+  }
+
+  .admin-store-location-head {
+    flex-direction: column;
+  }
+
+  #adminUseCurrentLocation {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .admin-store-location-map {
+    height: 280px;
+  }
+}
+/* ADMIN_STORE_LOCATION_LAYOUT_FIX_20260827_002 */
+
+.admin-store-location,
+.store-location-panel,
+.store-location-section {
+  min-width: 0;
+}
+
+#storeLocationMap,
+.admin-store-location-map,
+.store-location-map {
+  position: relative;
+
+  display: block;
+
+  width: 100% !important;
+  height: 340px !important;
+  min-height: 340px;
+
+  overflow: hidden;
+
+  border: 1px solid #d7e2dc;
+  border-radius: 13px;
+
+  background: #edf2ef;
+}
+
+#storeLocationMap.leaflet-container,
+.admin-store-location-map.leaflet-container,
+.store-location-map.leaflet-container {
+  width: 100% !important;
+  height: 340px !important;
+
+  font-family: inherit;
+  background: #edf2ef;
+}
+
+
+/*
+ * Important:
+ * Prevent surrounding grid/flex layout from giving Leaflet an
+ * intermediate width that is later changed.
+ */
+
+.field:has(#storeLocationMap),
+.field:has(.admin-store-location-map),
+.field:has(.store-location-map) {
+  min-width: 0;
+  width: 100%;
+  grid-column: 1 / -1;
+}
+
+#storeLocationMap .leaflet-map-pane,
+.admin-store-location-map .leaflet-map-pane,
+.store-location-map .leaflet-map-pane {
+  z-index: 1;
+}
+
+#storeLocationMap .leaflet-control-container,
+.admin-store-location-map .leaflet-control-container,
+.store-location-map .leaflet-control-container {
+  position: relative;
+  z-index: 10;
+}
+
+#storeLocationMap .leaflet-control-zoom,
+.admin-store-location-map .leaflet-control-zoom,
+.store-location-map .leaflet-control-zoom {
+  overflow: hidden;
+  border: 0;
+  border-radius: 9px;
+
+  box-shadow:
+    0 3px 12px rgba(15, 48, 30, 0.14);
+}
+
+#storeLocationMap .leaflet-control-zoom a,
+.admin-store-location-map .leaflet-control-zoom a,
+.store-location-map .leaflet-control-zoom a {
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+
+  border-color: #e1e7e3;
+
+  color: #163e29;
+}
+
+#storeLocationMap .leaflet-control-attribution,
+.admin-store-location-map .leaflet-control-attribution,
+.store-location-map .leaflet-control-attribution {
+  padding: 2px 5px;
+
+  background: rgba(255,255,255,0.84);
+
+  color: #66736c;
+  font-size: 9px;
+}
+
+
+/* Avoid blurry / clipped tiles after parent width changes */
+
+#storeLocationMap .leaflet-tile-pane,
+.admin-store-location-map .leaflet-tile-pane,
+.store-location-map .leaflet-tile-pane {
+  will-change: transform;
+}
+
+@media (max-width: 640px) {
+  #storeLocationMap,
+  .admin-store-location-map,
+  .store-location-map,
+  #storeLocationMap.leaflet-container,
+  .admin-store-location-map.leaflet-container,
+  .store-location-map.leaflet-container {
+    height: 285px !important;
+    min-height: 285px;
+  }
+}

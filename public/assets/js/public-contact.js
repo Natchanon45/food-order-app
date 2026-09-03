@@ -3,6 +3,7 @@ import {
   doc,
   onSnapshot,
 } from "./firebase-config.js?v=20260630-073";
+import { t } from "./i18n.js?v=20260903-202";
 
 const card = document.getElementById("publicContactCard");
 const title = document.getElementById("publicContactTitle");
@@ -65,10 +66,10 @@ function renderContact(data = null) {
     return;
   }
 
-  title.textContent = String(data.heading || "คุยกับเรา").trim() || "คุยกับเรา";
+  title.textContent = String(data.heading || t("home.public.contact.title")).trim() || t("home.public.contact.title");
   description.textContent =
-    String(data.description || "ติดต่อสอบถามข้อมูลและการใช้งานระบบ").trim()
-    || "ติดต่อสอบถามข้อมูลและการใช้งานระบบ";
+    String(data.description || t("home.public.contact.runtime_description")).trim()
+    || t("home.public.contact.runtime_description");
 
   const actions = [];
 
@@ -77,7 +78,7 @@ function renderContact(data = null) {
     actions.push(createContactLink({
       channel: "phone",
       icon: "telephone-fill",
-      label: String(data.phoneLabel || "โทรศัพท์").trim() || "โทรศัพท์",
+      label: String(data.phoneLabel || t("home.public.contact.phone")).trim() || t("home.public.contact.phone"),
       href: `tel:${phone}`,
     }));
   }
@@ -109,7 +110,7 @@ function renderContact(data = null) {
     actions.push(createContactLink({
       channel: "email",
       icon: "envelope-fill",
-      label: String(data.emailLabel || "อีเมล").trim() || "อีเมล",
+      label: String(data.emailLabel || t("home.public.contact.email")).trim() || t("home.public.contact.email"),
       href: `mailto:${email}`,
     }));
   }

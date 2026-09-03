@@ -13,24 +13,27 @@
     />
     <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096" />
     <link rel="stylesheet" href="/assets/css/menu-qr.css?v=20260623-7" />
-    <link rel="stylesheet" href="/assets/css/payment-slip.css?v=20260623-7" />
+    <link rel="stylesheet" href="/assets/css/payment-slip.css?v=20260903-232" />
     <link
       rel="stylesheet"
-      href="/assets/css/menu-pagination.css?v=20260623-7"
+      href="/assets/css/menu-pagination.css?v=20260903-238"
     />
     <link
       rel="stylesheet"
-      href="/assets/css/delivery-addresses.css?v=20260623-7"
+      href="/assets/css/delivery-addresses.css?v=20260903-232"
     />
-    <link rel="stylesheet" href="/assets/css/icons.css?v=20260731-079" />
-    <link rel="stylesheet" href="/assets/css/pos-refresh.css?v=20260629-046" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="/assets/css/delivery-location-map.css?v=20260903-233" />
+    <link rel="stylesheet" href="/assets/css/delivery-promotions.css?v=20260903-231" />
+    <link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240" />
+    <link rel="stylesheet" href="/assets/css/pos-refresh.css?v=20260903-233" />
     <link
       rel="stylesheet"
       href="/assets/css/mobile-menu-scroll.css?v=20260623-7"
     />
     <link
       rel="stylesheet"
-      href="/assets/css/delivery-payment-lock.css?v=20260623-1"
+      href="/assets/css/delivery-payment-lock.css?v=20260903-232"
     />
     <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-095" />
     <link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260731-079" />
@@ -226,10 +229,26 @@
                 maxlength="500"
               ></textarea>
             </div>
-            <div class="field" style="margin-top: 12px">
-              <label>พื้นที่จัดส่ง *</label
-              ><select class="input" id="deliveryZone" required></select>
-            </div>
+<section class="delivery-location-picker" id="deliveryLocationPicker">
+  <div class="delivery-location-head">
+    <div><strong>ตำแหน่งจัดส่ง *</strong><div class="menu-category">แตะบนแผนที่หรือลากหมุดเพื่อระบุตำแหน่งที่ต้องการให้จัดส่ง</div></div>
+    <button type="button" class="btn btn-sm" id="useCurrentLocationButton"><i class="bi bi-crosshair app-icon" aria-hidden="true"></i><span>ใช้ตำแหน่งปัจจุบัน</span></button>
+  </div>
+  <div id="deliveryLocationMap" class="delivery-location-map" aria-label="ตำแหน่งจัดส่ง"></div>
+  <div class="delivery-location-footer"><div id="deliveryLocationStatus" class="delivery-location-status">กรุณาปักตำแหน่งจัดส่งบนแผนที่</div><div id="deliveryLocationCoordinates" class="delivery-location-coordinates" hidden></div></div>
+  <div id="deliveryDistanceStatus" class="delivery-distance-status" hidden></div>
+  <input type="hidden" id="deliveryLatitude">
+  <input type="hidden" id="deliveryLongitude">
+</section>
+<div class="field" style="margin-top: 12px">
+  <label>พื้นที่จัดส่ง *</label
+  ><select class="input" id="deliveryZone" required></select>
+</div>
+<section id="deliveryFreeGiftSection" class="delivery-free-gift-section" hidden>
+  <div class="delivery-free-gift-head"><div><h3><i class="bi bi-gift app-icon" aria-hidden="true"></i><span>เลือกของแถม</span></h3><div id="deliveryFreeGiftPeriod" class="menu-category"></div></div><span class="badge" id="deliveryFreeGiftCounter">0 / 0</span></div>
+  <div id="deliveryFreeGiftList" class="delivery-free-gift-list"></div>
+  <div id="deliveryFreeGiftStatus" class="delivery-free-gift-status"></div>
+</section>
             <div
               class="card"
               style="margin-top: 12px; box-shadow: none; background: #f8fbf9"
@@ -242,6 +261,7 @@
                 <span>ค่าจัดส่ง</span
                 ><strong><span id="deliveryFeeDisplay">0.00</span> บาท</strong>
               </div>
+              <div id="deliveryFreeShippingStatus" class="delivery-free-shipping-status" hidden></div>
             </div>
             <div class="field" style="margin-top: 12px">
               <label>หมายเหตุถึงร้าน</label
@@ -356,29 +376,33 @@
     ></script>
     <script
       type="module"
-      src="/assets/js/public-tenant-resolver.js?v=20260629-025"
+      src="/assets/js/public-tenant-resolver.js?v=20260903-231"
     ></script>
-    <script type="module" src="/assets/js/ui.js?v=20260731-080"></script>
+    <script type="module" src="/assets/js/public-i18n-bootstrap.js?v=20260903-231"></script>
+    <script type="module" src="/assets/js/ui.js?v=20260903-231"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="module" src="/assets/js/delivery-location-map.js?v=20260903-233"></script>
     <script
       type="module"
-      src="/assets/js/delivery-addresses.js?v=20260731-080"
+      src="/assets/js/delivery-addresses.js?v=20260903-232"
+    ></script>
+    <script type="module" src="/assets/js/delivery-location-address-resolver.js?v=20260903-232"></script>
+    <script
+      type="module"
+      src="/assets/js/delivery-address-status-sync.js?v=20260903-232"
+    ></script>
+    <script type="module" src="/assets/js/delivery.js?v=20260903-242"></script>
+    <script
+      type="module"
+      src="/assets/js/delivery-payment-lock.js?v=20260903-232"
     ></script>
     <script
       type="module"
-      src="/assets/js/delivery-address-status-sync.js?v=20260623-7"
-    ></script>
-    <script type="module" src="/assets/js/delivery.js?v=20260708-029"></script>
-    <script
-      type="module"
-      src="/assets/js/delivery-payment-lock.js?v=20260716-004"
+      src="/assets/js/delivery-button-click-fix.js?v=20260903-236"
     ></script>
     <script
       type="module"
-      src="/assets/js/delivery-button-click-fix.js?v=20260623-7"
-    ></script>
-    <script
-      type="module"
-      src="/assets/js/dom-menu-pagination.js?v=20260629-046"
+      src="/assets/js/dom-menu-pagination.js?v=20260903-233"
     ></script>
     <script
       type="module"
