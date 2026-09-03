@@ -1,4 +1,5 @@
 import { getRecord } from './retail-db.js?v=20260629-032';
+import { getIntlLocale, t } from './i18n.js?v=20260903-202';
 
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
@@ -10,6 +11,21 @@ const params = new URLSearchParams(location.search);
 const invoiceId = params.get('invoiceId') || '';
 const autoPrint = params.get('auto') === '1';
 const ITEMS_PER_PAGE = 20;
+const INTL_LOCALE = getIntlLocale();
+const tx = (key, replacements = {}) => t(`pos_tax_invoice.${key}`, replacements);
+
+function localizeStaticUi() {
+  document.title = tx('meta_title');
+  const toolbarTitle = document.querySelector('.toolbar > strong');
+  const historyLabel = document.querySelector('.toolbar a[href="/pos/tax-invoices/"] span');
+  const printLabel = printBtn?.querySelector('span');
+  const closeLabel = closeBtn?.querySelector('span');
+  if (toolbarTitle) toolbarTitle.textContent = tx('title');
+  if (historyLabel) historyLabel.textContent = tx('history');
+  if (printLabel) printLabel.textContent = tx('print');
+  if (closeLabel) closeLabel.textContent = tx('close');
+  if (root?.classList.contains('loading')) root.textContent = tx('loading');
+}
 let printReady = false;
 let printReadyPromise = null;
 
@@ -23,11 +39,11 @@ function escapeHtml(value) {
 }
 
 function money(value) {
-  return Number(value || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return Number(value || 0).toLocaleString(INTL_LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function dateTime(value) {
-  return new Date(value || Date.now()).toLocaleString('th-TH');
+  return new Date(value || Date.now()).toLocaleString(INTL_LOCALE);
 }
 
 function localInvoice() {
@@ -35,15 +51,25 @@ function localInvoice() {
   return (Array.isArray(rows) ? rows : []).find(row => String(row.id) === invoiceId || String(row.invoiceNumber) === invoiceId) || null;
 }
 
-async function findInvoice() {
-  const local = localInvoice();
-  if (local) return local;
+async function firebaseInvoice() {
+  if (!invoiceId) return null;
   try { return await getRecord(TAX_INVOICE_COLLECTION, invoiceId); }
   catch { return null; }
 }
 
+async function findInvoice() {
+  if (!invoiceId) return null;
+
+  // Firestore is authoritative for synced documents. The dedicated local
+  // invoice store remains available for pending/offline documents.
+  const remote = await firebaseInvoice();
+  if (remote) return remote;
+
+  return localInvoice();
+}
+
 function sellerBranchText(seller = {}) {
-  return seller.sellerBranchType === 'branch' ? `สาขา ${seller.sellerBranchCode || '-'}` : 'สำนักงานใหญ่';
+  return seller.sellerBranchType === 'branch' ? tx('branch', { code: seller.sellerBranchCode || '-' }) : tx('head_office');
 }
 
 function buyerBranchText(buyer = {}) {
@@ -54,14 +80,14 @@ function sellerTaxLine(seller = {}) {
   const taxId = String(seller.sellerTaxId || '').trim();
   const branch = sellerBranchText(seller);
   if (!taxId) return branch;
-  return `เลขประจำตัวผู้เสียภาษี ${taxId}${branch ? ` ${branch}` : ''}`;
+  return tx('tax_id', { tax_id: taxId, branch: branch ? ` ${branch}` : '' });
 }
 
 function buyerTaxLine(buyer = {}) {
   const taxId = String(buyer.buyerTaxId || '').trim();
-  const branch = buyerBranchText(buyer) || 'สำนักงานใหญ่';
+  const branch = buyerBranchText(buyer) || tx('head_office');
   if (!taxId) return '';
-  return `เลขประจำตัวผู้เสียภาษี ${taxId}${branch ? ` ${branch}` : ''}`;
+  return tx('tax_id', { tax_id: taxId, branch: branch ? ` ${branch}` : '' });
 }
 
 function itemLineTotal(item = {}) {
@@ -69,7 +95,7 @@ function itemLineTotal(item = {}) {
 }
 
 function itemRows(items = [], offset = 0) {
-  return items.map((item, index) => `<tr><td>${offset + index + 1}</td><td>${escapeHtml(item.name || item.productName || '-')}</td><td class="right">${Number(item.qty || 0).toLocaleString('th-TH')}</td><td class="right">${money(item.price)}</td><td class="right">${money(itemLineTotal(item))}</td></tr>`).join('');
+  return items.map((item, index) => `<tr><td>${offset + index + 1}</td><td>${escapeHtml(item.name || item.productName || '-')}</td><td class="right">${Number(item.qty || 0).toLocaleString(INTL_LOCALE)}</td><td class="right">${money(item.price)}</td><td class="right">${money(itemLineTotal(item))}</td></tr>`).join('');
 }
 
 function vatTotalAmount(invoice = {}) {
@@ -85,29 +111,29 @@ function invoiceHeaderHtml(invoice, seller, buyer, isVoid, pageNumber, totalPage
   const buyerTax = buyerTaxLine(buyer);
   const buyerBranch = buyerBranchText(buyer);
   return `
-    ${isVoid ? `<div class="void-stamp">ยกเลิก</div>` : ''}
-    <div class="tax-page-number">หน้า ${pageNumber}/${totalPages}</div>
+    ${isVoid ? `<div class="void-stamp">${escapeHtml(tx('void'))}</div>` : ''}
+    <div class="tax-page-number">${escapeHtml(tx('page', { current: pageNumber, total: totalPages }))}</div>
     <section class="tax-title">
-      <h1>ใบกำกับภาษี</h1>
+      <h1>${escapeHtml(tx('title'))}</h1>
       <div>Tax Invoice</div>
     </section>
     <section class="tax-grid top-grid">
       <div>
-        <h2>${escapeHtml(seller.sellerName || 'POS ร้านค้าปลีก')}</h2>
+        <h2>${escapeHtml(seller.sellerName || tx('default_seller'))}</h2>
         ${seller.sellerAddress ? `<p>${escapeHtml(seller.sellerAddress)}</p>` : ''}
-        ${seller.sellerPhone ? `<p>โทร ${escapeHtml(seller.sellerPhone)}</p>` : ''}
+        ${seller.sellerPhone ? `<p>${escapeHtml(tx('phone', { phone: seller.sellerPhone }))}</p>` : ''}
         ${sellerTax ? `<p>${escapeHtml(sellerTax)}</p>` : ''}
       </div>
       <div class="doc-box">
-        <div><span>เลขที่</span><strong>${escapeHtml(invoice.invoiceNumber || invoice.id || '-')}</strong></div>
-        <div><span>วันที่</span><strong>${escapeHtml(dateTime(invoice.issuedAt))}</strong></div>
-        ${invoice.saleNumber ? `<div><span>อ้างอิงบิล</span><strong>${escapeHtml(invoice.saleNumber)}</strong></div>` : ''}
-        ${isVoid ? `<div><span>สถานะ</span><strong>ยกเลิก</strong></div>` : ''}
+        <div><span>${escapeHtml(tx('number'))}</span><strong>${escapeHtml(invoice.invoiceNumber || invoice.id || '-')}</strong></div>
+        <div><span>${escapeHtml(tx('date'))}</span><strong>${escapeHtml(dateTime(invoice.issuedAt))}</strong></div>
+        ${invoice.saleNumber ? `<div><span>${escapeHtml(tx('sale_reference'))}</span><strong>${escapeHtml(invoice.saleNumber)}</strong></div>` : ''}
+        ${isVoid ? `<div><span>${escapeHtml(tx('status'))}</span><strong>${escapeHtml(tx('void'))}</strong></div>` : ''}
       </div>
     </section>
-    ${isVoid ? `<section class="void-note"><strong>เอกสารนี้ถูกยกเลิก</strong>${invoice.voidedAt ? ` เมื่อ ${escapeHtml(dateTime(invoice.voidedAt))}` : ''}${invoice.voidReason ? `<br>เหตุผล: ${escapeHtml(invoice.voidReason)}` : ''}</section>` : ''}
+    ${isVoid ? `<section class="void-note"><strong>${escapeHtml(tx('void_note'))}</strong>${invoice.voidedAt ? escapeHtml(tx('void_when', { date: dateTime(invoice.voidedAt) })) : ''}${invoice.voidReason ? `<br>${escapeHtml(tx('reason', { reason: invoice.voidReason }))}` : ''}</section>` : ''}
     <section class="buyer-box">
-      <h2>ผู้ซื้อ / ลูกค้า</h2>
+      <h2>${escapeHtml(tx('buyer'))}</h2>
       <p><strong>${escapeHtml(buyer.buyerName || '-')}</strong></p>
       ${buyerTax ? `<p>${escapeHtml(buyerTax)}</p>` : buyerBranch ? `<p>${escapeHtml(buyerBranch)}</p>` : ''}
       ${buyer.buyerAddress ? `<p>${escapeHtml(buyer.buyerAddress)}</p>` : ''}
@@ -116,7 +142,7 @@ function invoiceHeaderHtml(invoice, seller, buyer, isVoid, pageNumber, totalPage
 
 function itemsTableHtml(items, offset) {
   return `<table class="items-table">
-    <thead><tr><th>#</th><th>รายการ</th><th class="right">จำนวน</th><th class="right">ราคา</th><th class="right">รวม</th></tr></thead>
+    <thead><tr><th>#</th><th>${escapeHtml(tx('item'))}</th><th class="right">${escapeHtml(tx('quantity'))}</th><th class="right">${escapeHtml(tx('price'))}</th><th class="right">${escapeHtml(tx('total'))}</th></tr></thead>
     <tbody>${itemRows(items, offset)}</tbody>
   </table>`;
 }
@@ -124,17 +150,17 @@ function itemsTableHtml(items, offset) {
 function summaryHtml(invoice) {
   return `<section class="tax-final-block">
     <section class="summary-box">
-      <div><span>รวมสินค้า</span><strong>${money(invoice.subtotal)}</strong></div>
-      <div><span>ส่วนลด</span><strong>${money(invoice.discount)}</strong></div>
-      ${Number(invoice.pointDiscount || 0) ? `<div><span>ส่วนลดแต้ม</span><strong>${money(invoice.pointDiscount)}</strong></div>` : ''}
-      <div><span>ยอดก่อน VAT</span><strong>${money(invoice.beforeVat)}</strong></div>
-      <div><span>VAT ${Number(invoice.vatRate || 7).toLocaleString('th-TH')}%</span><strong>${money(invoice.vatAmount)}</strong></div>
-      <div><span>${invoice.vatMode === 'exclude' ? 'ราคาไม่รวม VAT' : 'ราคารวม VAT'}</span><strong>${money(vatTotalAmount(invoice))}</strong></div>
-      <div class="grand"><span>ยอดสุทธิ</span><strong>${money(invoice.totalAmount)}</strong></div>
+      <div><span>${escapeHtml(tx('subtotal'))}</span><strong>${money(invoice.subtotal)}</strong></div>
+      <div><span>${escapeHtml(tx('discount'))}</span><strong>${money(invoice.discount)}</strong></div>
+      ${Number(invoice.pointDiscount || 0) ? `<div><span>${escapeHtml(tx('point_discount'))}</span><strong>${money(invoice.pointDiscount)}</strong></div>` : ''}
+      <div><span>${escapeHtml(tx('before_vat'))}</span><strong>${money(invoice.beforeVat)}</strong></div>
+      <div><span>VAT ${Number(invoice.vatRate || 7).toLocaleString(INTL_LOCALE)}%</span><strong>${money(invoice.vatAmount)}</strong></div>
+      <div><span>${escapeHtml(tx(invoice.vatMode === 'exclude' ? 'vat_excluded' : 'vat_included'))}</span><strong>${money(vatTotalAmount(invoice))}</strong></div>
+      <div class="grand"><span>${escapeHtml(tx('net_total'))}</span><strong>${money(invoice.totalAmount)}</strong></div>
     </section>
     <section class="signature-grid">
-      <div><span></span><p>ผู้รับสินค้า / ผู้ซื้อ</p></div>
-      <div><span></span><p>ผู้รับเงิน / ผู้ขาย</p></div>
+      <div><span></span><p>${escapeHtml(tx('goods_receiver'))}</p></div>
+      <div><span></span><p>${escapeHtml(tx('payment_receiver'))}</p></div>
     </section>
   </section>`;
 }
@@ -142,7 +168,7 @@ function summaryHtml(invoice) {
 function render(invoice) {
   if (!invoice) {
     root.className = 'missing';
-    root.textContent = 'ไม่พบใบกำกับภาษี';
+    root.textContent = tx('missing');
     return;
   }
   const seller = invoice.seller || {};
@@ -210,4 +236,5 @@ async function boot() {
 
 printBtn?.addEventListener('click', () => printInvoice());
 closeBtn?.addEventListener('click', () => window.close());
+localizeStaticUi();
 boot();

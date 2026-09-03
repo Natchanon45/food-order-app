@@ -4,3 +4,4 @@ Object.assign(exports, require("./subscription-admin"));
 Object.assign(exports, require("./revenue-share"));
 
 Object.assign(exports, require("./public-geocoding"));
+Object.assign(exports, require("./google-delivery"));

@@ -1,6 +1,19 @@
 import { RetailCollections, listRecords } from './retail-db.js?v=20260629-032';
 import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, deleteTaxBuyerProfile, getExistingFullTaxInvoiceForSale, listTaxBuyerProfiles, retryTaxInvoiceSync, saveTaxBuyerProfile, syncPendingTaxInvoices, syncTaxBuyerProfiles, taxInvoiceUrl, updateLocalTaxInvoiceBuyer, voidFullTaxInvoice } from './retail-pos-full-tax-invoice.js?v=20260716-017';
 
+const appI18n = globalThis.APP_I18N || {};
+const intlLocale = appI18n.locale === 'en' ? 'en-US' : 'th-TH';
+function tr(key, replacements = {}) {
+  const current = appI18n.messages?.pos_tax_invoices?.dynamic?.[key];
+  const fallback = appI18n.fallbackMessages?.pos_tax_invoices?.dynamic?.[key];
+  let text = String(current ?? fallback ?? key);
+  for (const [name, value] of Object.entries(replacements)) {
+    text = text.replaceAll(`:${name}`, String(value));
+  }
+  return text;
+}
+
+
 const TAX_INVOICE_COLLECTION = 'taxInvoices';
 const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
 const SALES_KEY = 'retail_pos_sales_v1';
@@ -109,11 +122,11 @@ function setIconLabel(button, iconClass, label) {
 }
 
 function money(value) {
-  return Number(value || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return Number(value || 0).toLocaleString(intlLocale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function dateText(value) {
-  return new Date(value || Date.now()).toLocaleString('th-TH');
+  return new Date(value || Date.now()).toLocaleString(intlLocale);
 }
 
 function normalizeTaxId(value) {
@@ -134,7 +147,7 @@ function normalizeDbdProfile(data = {}, fallbackTaxId = '') {
     buyerName: normalizeText(source.buyerName || source.juristicNameTH || source.juristicName || source.nameTh || source.name || source.companyName || ''),
     buyerTaxId: normalizeTaxId(source.buyerTaxId || source.juristicId || source.registrationNo || source.taxId || source.id || fallbackTaxId),
     buyerAddress: normalizeText(source.buyerAddress || source.addressTh || source.address || source.location || ''),
-    buyerBranchName: normalizeText(source.buyerBranchName || source.branchName || source.branch || 'สำนักงานใหญ่') || 'สำนักงานใหญ่'
+    buyerBranchName: normalizeText(source.buyerBranchName || source.branchName || source.branch || tr('head_office')) || tr('head_office')
   };
 }
 
@@ -167,10 +180,10 @@ function mergeInvoices(...groups) {
 }
 
 function invoiceSourceText(invoice = {}) {
-  if (invoice._syncSourceLocal && invoice._syncSourceRemote) return 'Firestore + เครื่องนี้';
-  if (invoice._syncSourceRemote) return 'Firestore';
-  if (invoice._syncSourceLocal) return 'เครื่องนี้';
-  return 'ไม่ทราบแหล่งข้อมูล';
+  if (invoice._syncSourceLocal && invoice._syncSourceRemote) return tr('source_both');
+  if (invoice._syncSourceRemote) return tr('source_remote');
+  if (invoice._syncSourceLocal) return tr('source_local');
+  return tr('source_unknown');
 }
 
 function saleKey(sale = {}) {
@@ -182,7 +195,7 @@ function saleSearchText(sale = {}) {
 }
 
 function saleDateText(sale = {}) {
-  return new Date(sale.createdAt || sale.updatedAt || Date.now()).toLocaleString('th-TH');
+  return new Date(sale.createdAt || sale.updatedAt || Date.now()).toLocaleString(intlLocale);
 }
 
 function mergeSales(...groups) {
@@ -198,8 +211,8 @@ function mergeSales(...groups) {
 function invoiceSearchText(invoice = {}) {
   const buyer = invoice.buyer || {};
   const seller = invoice.seller || {};
-  const escalation = shouldEscalateSync(invoice) ? 'ส่ง support ตรวจสอบ stuck sync retry' : '';
-  const stale = shouldShowStaleSync(invoice) ? 'ค้าง sync เกิน 24 ชั่วโมง stuck pending local' : '';
+  const escalation = shouldEscalateSync(invoice) ? tr('search_escalation') : '';
+  const stale = shouldShowStaleSync(invoice) ? tr('search_stale') : '';
   const quality = qualityWarnings(invoice).join(' ');
   const recommendation = recoveryRecommendation(invoice);
   const source = invoiceSourceText(invoice);
@@ -208,12 +221,13 @@ function invoiceSearchText(invoice = {}) {
 
 function syncBadge(invoice = {}) {
   const status = String(invoice.syncStatus || '');
-  const staleBadge = shouldShowStaleSync(invoice) ? '<span class="sync-badge is-pending">ค้าง Sync</span>' : '';
-  const qualityBadge = needsQualityReview(invoice) ? '<span class="sync-badge is-pending">ตรวจข้อมูล</span>' : '';
-  if (invoice.syncError) return `<span class="sync-badge is-error">Sync Error</span>${shouldEscalateSync(invoice) ? '<span class="sync-badge is-pending">ส่ง Support</span>' : ''}${staleBadge}${qualityBadge}`;
-  if (['pending_create', 'pending_void'].includes(status)) return `<span class="sync-badge is-pending">รอ Sync</span>${staleBadge}${qualityBadge}`;
-  if (['local_only', 'local_void'].includes(status)) return `<span class="sync-badge is-local">เอกสารในเครื่อง</span>${staleBadge}${qualityBadge}`;
-  if (invoice.runningNumberStatus === 'local_only') return `<span class="sync-badge is-local">เลขชั่วคราว</span>${staleBadge}${qualityBadge}`;
+  const badge = (className, label) => `<span class="sync-badge ${className}">${escapeHtml(label)}</span>`;
+  const staleBadge = shouldShowStaleSync(invoice) ? badge('is-pending', tr('sync_stale')) : '';
+  const qualityBadge = needsQualityReview(invoice) ? badge('is-pending', tr('review_data')) : '';
+  if (invoice.syncError) return `${badge('is-error', tr('sync_failed'))}${shouldEscalateSync(invoice) ? badge('is-pending', tr('send_support')) : ''}${staleBadge}${qualityBadge}`;
+  if (['pending_create', 'pending_void'].includes(status)) return `${badge('is-pending', tr('pending_sync'))}${staleBadge}${qualityBadge}`;
+  if (['local_only', 'local_void'].includes(status)) return `${badge('is-local', tr('local_document'))}${staleBadge}${qualityBadge}`;
+  if (invoice.runningNumberStatus === 'local_only') return `${badge('is-local', tr('temporary_number'))}${staleBadge}${qualityBadge}`;
   return `${staleBadge}${qualityBadge}`;
 }
 
@@ -240,9 +254,9 @@ function qualityWarnings(invoice = {}) {
   if (!canRetrySync(invoice)) return [];
   const buyer = invoice.buyer || {};
   const warnings = [];
-  if (canEditPendingBuyer(invoice) && !String(buyer.buyerName || '').trim()) warnings.push('ขาดชื่อผู้ซื้อ');
-  if (canEditPendingBuyer(invoice) && !normalizeTaxId(buyer.buyerTaxId)) warnings.push('ไม่มีเลขภาษีผู้ซื้อ');
-  if (!sourceSaleKey(invoice)) warnings.push('ไม่มีเลขบิลต้นทาง');
+  if (canEditPendingBuyer(invoice) && !String(buyer.buyerName || '').trim()) warnings.push('missing_buyer_name');
+  if (canEditPendingBuyer(invoice) && !normalizeTaxId(buyer.buyerTaxId)) warnings.push('missing_buyer_tax_id');
+  if (!sourceSaleKey(invoice)) warnings.push('missing_source_receipt');
   return warnings;
 }
 
@@ -252,29 +266,29 @@ function needsQualityReview(invoice = {}) {
 
 function recoveryRecommendation(invoice = {}) {
   if (!canRetrySync(invoice)) return '';
-  if (shouldEscalateSync(invoice)) return 'คำแนะนำ: คัดลอก Sync ส่ง Support';
+  if (shouldEscalateSync(invoice)) return tr('recommend_support');
   const warnings = qualityWarnings(invoice);
-  if (warnings.some(text => text.includes('ชื่อผู้ซื้อ') || text.includes('เลขภาษี'))) return 'คำแนะนำ: แก้ผู้ซื้อ แล้วลอง Sync';
-  if (warnings.some(text => text.includes('เลขบิลต้นทาง'))) return 'คำแนะนำ: ดูบิลต้นทางหรือคัดลอก Sync ให้ Support';
-  if (shouldShowStaleSync(invoice)) return 'คำแนะนำ: ลอง Sync อีกครั้ง ถ้ายังค้างให้คัดลอก Sync';
-  if (invoice.syncError) return 'คำแนะนำ: ลอง Sync หรือคัดลอก Sync';
-  return 'คำแนะนำ: ลอง Sync';
+  if (warnings.some(key => ['missing_buyer_name', 'missing_buyer_tax_id'].includes(key))) return tr('recommend_edit_buyer');
+  if (warnings.includes('missing_source_receipt')) return tr('recommend_source_receipt');
+  if (shouldShowStaleSync(invoice)) return tr('recommend_stale');
+  if (invoice.syncError) return tr('recommend_retry_or_copy');
+  return tr('recommend_retry');
 }
 
 function syncDiagnosticText(invoice = {}) {
   const recommendation = recoveryRecommendation(invoice);
   if (!invoice.syncError && !shouldShowStaleSync(invoice) && !needsQualityReview(invoice) && !recommendation) return '';
-  const parts = invoice.syncError ? [`Sync: ${invoice.syncError}`] : [];
+  const parts = invoice.syncError ? [tr('diagnostic_error', { error: invoice.syncError })] : [];
   const action = String(invoice.syncAction || '').trim();
   const phase = String(invoice.syncPhase || '').trim();
-  if (action || phase) parts.push(`งาน ${action || '-'}${phase ? ` / ${phase}` : ''}`);
+  if (action || phase) parts.push(tr('diagnostic_job', { job: `${action || '-'}${phase ? ` / ${phase}` : ''}` }));
   const count = Number(invoice.syncAttemptCount || 0);
-  if (count > 0) parts.push(`พยายาม ${count.toLocaleString('th-TH')} ครั้ง`);
+  if (count > 0) parts.push(tr('diagnostic_attempts', { count: count.toLocaleString(intlLocale) }));
   const attemptedAt = syncReferenceTime(invoice);
-  if (attemptedAt > 0) parts.push(`ล่าสุด ${dateText(attemptedAt)}`);
-  if (shouldShowStaleSync(invoice)) parts.push(`ค้าง Sync ประมาณ ${staleSyncHours(invoice).toLocaleString('th-TH')} ชม.`);
-  if (needsQualityReview(invoice)) parts.push(`ตรวจข้อมูล: ${qualityWarnings(invoice).join(', ')}`);
-  if (shouldEscalateSync(invoice)) parts.push('แนะนำคัดลอก Sync ส่ง Support');
+  if (attemptedAt > 0) parts.push(tr('diagnostic_latest', { date: dateText(attemptedAt) }));
+  if (shouldShowStaleSync(invoice)) parts.push(tr('diagnostic_stale_hours', { count: staleSyncHours(invoice).toLocaleString(intlLocale) }));
+  if (needsQualityReview(invoice)) parts.push(tr('diagnostic_review', { warnings: qualityWarnings(invoice).map(key => tr(key)).join(', ') }));
+  if (shouldEscalateSync(invoice)) parts.push(tr('diagnostic_escalate'));
   if (recommendation) parts.push(recommendation);
   return parts.join(' • ');
 }
@@ -283,7 +297,7 @@ function syncRecoveryText(invoice = {}) {
   const buyer = invoice.buyer || {};
   const receiptUrl = sourceReceiptUrl(invoice);
   return [
-    'Food Order POS Tax Invoice Sync Recovery',
+    tr('recovery_title'),
     `Invoice ID: ${keyOf(invoice) || '-'}`,
     `Invoice No: ${invoice.invoiceNumber || '-'}`,
     `Sale: ${invoice.saleNumber || invoice.saleId || invoice.sourceSale?.saleNumber || invoice.sourceSale?.id || '-'}`,
@@ -291,19 +305,19 @@ function syncRecoveryText(invoice = {}) {
     `Source Receipt: ${receiptUrl || '-'}`,
     `Buyer: ${buyer.buyerName || '-'}`,
     `Status: ${invoice.status || '-'}`,
-    `Sync Status: ${invoice.syncStatus || '-'}`,
-    `Sync Action: ${invoice.syncAction || '-'}`,
-    `Sync Phase: ${invoice.syncPhase || '-'}`,
-    `Sync Target: ${invoice.syncTargetId || '-'}`,
-    `Sync Error: ${invoice.syncError || '-'}`,
-    `Attempts: ${Number(invoice.syncAttemptCount || 0)}`,
-    `Escalation: ${shouldEscalateSync(invoice) ? 'ส่ง Support' : '-'}`,
-    `Stale Sync: ${shouldShowStaleSync(invoice) ? `${staleSyncHours(invoice)} hours` : '-'}`,
-    `Quality Check: ${needsQualityReview(invoice) ? qualityWarnings(invoice).join(', ') : '-'}`,
+    `${tr('recovery_sync_status')}: ${invoice.syncStatus || '-'}`,
+    `${tr('recovery_action')}: ${invoice.syncAction || '-'}`,
+    `${tr('recovery_phase')}: ${invoice.syncPhase || '-'}`,
+    `${tr('recovery_target')}: ${invoice.syncTargetId || '-'}`,
+    `${tr('recovery_error')}: ${invoice.syncError || '-'}`,
+    `${tr('recovery_attempts')}: ${Number(invoice.syncAttemptCount || 0)}`,
+    `${tr('recovery_escalation')}: ${shouldEscalateSync(invoice) ? tr('send_support') : '-'}`,
+    `${tr('recovery_stale')}: ${shouldShowStaleSync(invoice) ? `${staleSyncHours(invoice)} hours` : '-'}`,
+    `Quality Check: ${needsQualityReview(invoice) ? qualityWarnings(invoice).map(key => tr(key)).join(', ') : '-'}`,
     `Recommended Action: ${recoveryRecommendation(invoice) || '-'}`,
     `Data Source: ${invoiceSourceText(invoice)}`,
-    `Sync Reference: ${syncReferenceTime(invoice) ? dateText(syncReferenceTime(invoice)) : '-'}`,
-    `Latest Attempt: ${invoice.syncAttemptedAt || invoice.syncErrorAt ? dateText(invoice.syncAttemptedAt || invoice.syncErrorAt) : '-'}`
+    `${tr('recovery_reference_time')}: ${syncReferenceTime(invoice) ? dateText(syncReferenceTime(invoice)) : '-'}`,
+    `${tr('recovery_last_attempt')}: ${invoice.syncAttemptedAt || invoice.syncErrorAt ? dateText(invoice.syncAttemptedAt || invoice.syncErrorAt) : '-'}`
   ].join('\n');
 }
 
@@ -360,19 +374,19 @@ function invoiceMatchesSourceFilter(invoice = {}) {
 }
 
 function syncFilterLabel() {
-  if (activeSyncFilter === 'error') return 'Sync Error';
-  if (activeSyncFilter === 'pending') return 'รอ Sync';
-  if (activeSyncFilter === 'support') return 'ส่ง Support';
-  if (activeSyncFilter === 'stale') return 'ค้าง Sync';
-  if (activeSyncFilter === 'review') return 'ตรวจข้อมูล';
-  return 'ทั้งหมด';
+  if (activeSyncFilter === 'error') return tr('sync_failed');
+  if (activeSyncFilter === 'pending') return tr('pending_sync');
+  if (activeSyncFilter === 'support') return tr('send_support');
+  if (activeSyncFilter === 'stale') return tr('sync_stale');
+  if (activeSyncFilter === 'review') return tr('review_data');
+  return tr('all');
 }
 
 function sourceFilterLabel() {
-  if (activeSourceFilter === 'remote') return 'Firestore เท่านั้น';
-  if (activeSourceFilter === 'local') return 'เครื่องนี้เท่านั้น';
-  if (activeSourceFilter === 'both') return 'ทั้งสอง';
-  return 'ทุกแหล่ง';
+  if (activeSourceFilter === 'remote') return tr('remote_only');
+  if (activeSourceFilter === 'local') return tr('local_only');
+  if (activeSourceFilter === 'both') return tr('both');
+  return tr('all_sources');
 }
 
 function syncFilterForInvoice(invoice = {}) {
@@ -408,7 +422,7 @@ function updateSyncFilterCounts() {
     const key = String(button.dataset.taxSyncFilter || 'all');
     button.classList.toggle('is-active', key === activeSyncFilter);
     const countEl = button.querySelector('[data-tax-sync-count]');
-    if (countEl) countEl.textContent = Number(counts[key] || 0).toLocaleString('th-TH');
+    if (countEl) countEl.textContent = Number(counts[key] || 0).toLocaleString(intlLocale);
   });
 }
 
@@ -423,7 +437,7 @@ function updateSourceFilterCounts() {
     const key = String(button.dataset.taxSourceFilter || 'all');
     button.classList.toggle('is-active', key === activeSourceFilter);
     const countEl = button.querySelector('[data-tax-source-count]');
-    if (countEl) countEl.textContent = Number(counts[key] || 0).toLocaleString('th-TH');
+    if (countEl) countEl.textContent = Number(counts[key] || 0).toLocaleString(intlLocale);
   });
 }
 
@@ -442,7 +456,7 @@ function syncHealthCounts() {
 }
 
 function syncHealthChip(label, value, className = '', attrs = '') {
-  return `<button class="tax-sync-health-chip${className ? ` ${className}` : ''}" type="button" ${attrs}>${escapeHtml(label)} <strong>${Number(value || 0).toLocaleString('th-TH')}</strong></button>`;
+  return `<button class="tax-sync-health-chip${className ? ` ${className}` : ''}" type="button" ${attrs}>${escapeHtml(label)} <strong>${Number(value || 0).toLocaleString(intlLocale)}</strong></button>`;
 }
 
 function renderSyncHealth() {
@@ -452,23 +466,23 @@ function renderSyncHealth() {
   const hasErrors = counts.error > 0 || loadErrors.length > 0;
   const hasWarnings = counts.pending > 0 || counts.stale > 0 || counts.review > 0 || counts.support > 0;
   const stateClass = hasErrors ? 'is-error' : hasWarnings ? 'is-warning' : '';
-  const title = hasErrors ? 'ต้องตรวจ Sync' : hasWarnings ? 'มีรายการรอจัดการ' : 'Sync ปกติ';
-  const checkedText = lastSyncHealth.checkedAt ? dateText(lastSyncHealth.checkedAt) : 'ยังไม่ได้ตรวจ';
+  const title = hasErrors ? tr('health_error') : hasWarnings ? tr('health_warning') : tr('health_ok');
+  const checkedText = lastSyncHealth.checkedAt ? dateText(lastSyncHealth.checkedAt) : tr('not_checked');
   syncHealthEl.className = `tax-sync-health${stateClass ? ` ${stateClass}` : ''}`;
   syncHealthEl.innerHTML = `
     <div class="tax-sync-health-main">
       <p class="tax-sync-health-title">${title}</p>
-      <p class="tax-sync-health-state">ตรวจล่าสุด <strong>${escapeHtml(checkedText)}</strong>${loadErrors.length ? ` • ${escapeHtml(loadErrors.join(' • '))}` : ''}</p>
+      <p class="tax-sync-health-state">${escapeHtml(tr('last_checked'))} <strong>${escapeHtml(checkedText)}</strong>${loadErrors.length ? ` • ${escapeHtml(loadErrors.join(' • '))}` : ''}</p>
     </div>
     <div class="tax-sync-health-grid">
-      ${syncHealthChip('ทั้งหมด', counts.all, '', 'data-health-sync-filter="all" data-health-source-filter="all"')}
-      ${syncHealthChip('Sync Error', counts.error, counts.error ? 'is-error' : '', 'data-health-sync-filter="error"')}
-      ${syncHealthChip('รอ Sync', counts.pending, counts.pending ? 'is-warning' : '', 'data-health-sync-filter="pending"')}
-      ${syncHealthChip('ค้าง Sync', counts.stale, counts.stale ? 'is-warning' : '', 'data-health-sync-filter="stale"')}
-      ${syncHealthChip('ตรวจข้อมูล', counts.review, counts.review ? 'is-warning' : '', 'data-health-sync-filter="review"')}
-      ${syncHealthChip('Firestore', counts.remote, '', 'data-health-source-filter="remote"')}
-      ${syncHealthChip('เครื่องนี้', counts.local, counts.local ? 'is-muted' : '', 'data-health-source-filter="local"')}
-      ${syncHealthChip('ทั้งสอง', counts.both, '', 'data-health-source-filter="both"')}
+      ${syncHealthChip(tr('all'), counts.all, '', 'data-health-sync-filter="all" data-health-source-filter="all"')}
+      ${syncHealthChip(tr('sync_failed'), counts.error, counts.error ? 'is-error' : '', 'data-health-sync-filter="error"')}
+      ${syncHealthChip(tr('pending_sync'), counts.pending, counts.pending ? 'is-warning' : '', 'data-health-sync-filter="pending"')}
+      ${syncHealthChip(tr('sync_stale'), counts.stale, counts.stale ? 'is-warning' : '', 'data-health-sync-filter="stale"')}
+      ${syncHealthChip(tr('review_data'), counts.review, counts.review ? 'is-warning' : '', 'data-health-sync-filter="review"')}
+      ${syncHealthChip(tr('source_remote'), counts.remote, '', 'data-health-source-filter="remote"')}
+      ${syncHealthChip(tr('source_local'), counts.local, counts.local ? 'is-muted' : '', 'data-health-source-filter="local"')}
+      ${syncHealthChip(tr('both'), counts.both, '', 'data-health-source-filter="both"')}
     </div>`;
 }
 
@@ -532,15 +546,15 @@ async function copyCurrentViewLink() {
   copyViewLinkBtn.disabled = true;
   try {
     await copyText(currentHistoryUrl().toString());
-    setIconLabel(copyViewLinkBtn, 'bi-check-lg', 'คัดลอกแล้ว');
+    setIconLabel(copyViewLinkBtn, 'bi-check-lg', tr('copied'));
   } catch (error) {
     console.warn('[retail-pos-tax-invoices] copy view link failed', error);
-    setIconLabel(copyViewLinkBtn, 'bi-exclamation-triangle', 'คัดลอกไม่สำเร็จ');
+    setIconLabel(copyViewLinkBtn, 'bi-exclamation-triangle', tr('copy_failed'));
   } finally {
     setTimeout(() => {
       if (copyViewLinkBtn.isConnected) {
         copyViewLinkBtn.disabled = false;
-        copyViewLinkBtn.innerHTML = originalHtml || iconLabel('bi-link-45deg', 'คัดลอกลิงก์มุมมอง');
+        copyViewLinkBtn.innerHTML = originalHtml || iconLabel('bi-link-45deg', tr('copy_view_link'));
       }
     }, 1200);
   }
@@ -557,8 +571,13 @@ function sourceSaleKey(invoice = {}) {
 
 function sourceReceiptUrl(invoice = {}) {
   const saleKeyValue = sourceSaleKey(invoice);
-  if (!saleKeyValue) return '';
-  return new URL(`/pos/receipt/?saleId=${encodeURIComponent(saleKeyValue)}&auto=0`, location.origin).toString();
+  const invoiceKeyValue = keyOf(invoice);
+  if (!saleKeyValue && !invoiceKeyValue) return '';
+  const url = new URL('/pos/receipt/', location.origin);
+  if (saleKeyValue) url.searchParams.set('saleId', saleKeyValue);
+  if (invoiceKeyValue) url.searchParams.set('taxInvoiceId', invoiceKeyValue);
+  url.searchParams.set('auto', '0');
+  return url.toString();
 }
 
 function historySearchUrl(invoice = {}) {
@@ -593,21 +612,21 @@ function profileRows() {
 
 function profileSyncState(profile = {}) {
   const status = String(profile.syncStatus || '').trim();
-  if (status === 'pending_sync') return { className: 'is-pending', label: 'รอ Sync' };
-  if (status === 'synced' || profile.firebaseSyncedAt) return { className: 'is-synced', label: 'Sync แล้ว' };
-  return { className: 'is-local', label: 'เครื่องนี้' };
+  if (status === 'pending_sync') return { className: 'is-pending', label: tr('pending_sync') };
+  if (status === 'synced' || profile.firebaseSyncedAt) return { className: 'is-synced', label: tr('synced') };
+  return { className: 'is-local', label: tr('source_local') };
 }
 
 function profileSyncDetail(profile = {}) {
   const error = String(profile.syncError || '').trim();
   if (error) {
     const count = Number(profile.syncAttemptCount || 0);
-    const attemptText = count > 0 ? ` • พยายาม ${count.toLocaleString('th-TH')} ครั้ง` : '';
-    return ` • Sync: ${error}${attemptText}`;
+    const attemptText = count > 0 ? ` • ${tr('attempt_count', { count: count.toLocaleString(intlLocale) })}` : '';
+    return ` • ${tr('sync_error_detail', { error })}${attemptText}`;
   }
   const syncedAt = Number(profile.firebaseSyncedAt || 0);
-  if (syncedAt) return ` • Sync ล่าสุด ${dateText(syncedAt)}`;
-  if (String(profile.syncStatus || '') === 'pending_sync') return ' • รอเชื่อม Firebase';
+  if (syncedAt) return ` • ${tr('last_sync', { date: dateText(syncedAt) })}`;
+  if (String(profile.syncStatus || '') === 'pending_sync') return ` • ${tr('waiting_central_sync')}`;
   return '';
 }
 
@@ -619,7 +638,7 @@ function resetProfileForm(profile = {}) {
   if (profileNameInput) profileNameInput.value = profile.buyerName || '';
   if (profileTaxIdInput) profileTaxIdInput.value = profile.buyerTaxId || '';
   if (profileAddressInput) profileAddressInput.value = profile.buyerAddress || '';
-  if (profileBranchInput) profileBranchInput.value = profile.buyerBranchName || 'สำนักงานใหญ่';
+  if (profileBranchInput) profileBranchInput.value = profile.buyerBranchName || tr('head_office');
   if (profileError) profileError.textContent = '';
   if (profileDeleteBtn) profileDeleteBtn.hidden = !(profile.id || profile.customerKey);
 }
@@ -628,16 +647,16 @@ function renderProfiles(selectedId = '') {
   if (!profileListEl) return;
   const rows = profileRows();
   if (!rows.length) {
-    profileListEl.innerHTML = '<div class="profile-empty">ยังไม่มีโปรไฟล์ภาษีลูกค้า</div>';
+    profileListEl.innerHTML = `<div class="profile-empty">${escapeHtml(tr('no_profiles'))}</div>`;
     resetProfileForm();
     return;
   }
   profileListEl.innerHTML = rows.map(profile => {
     const id = profile.id || profile.customerKey || '';
     const state = profileSyncState(profile);
-    return `<button class="profile-row${String(id) === String(selectedId) ? ' is-active' : ''}" type="button" data-profile-id="${escapeHtml(id)}">
+    return `<button class="profile-row${String(id) === String(selectedId) ? ' is-active' : ''}" type="button" data-profile-id="${escapeHtml(id)}" data-pos-icon="person-vcard">
       <strong>${escapeHtml(profile.buyerName || '-')} <span class="profile-sync-badge ${state.className}">${escapeHtml(state.label)}</span></strong>
-      <span>${escapeHtml(profile.buyerTaxId || '-')} • ${escapeHtml(profile.buyerBranchName || 'สำนักงานใหญ่')}${escapeHtml(profileSyncDetail(profile))}</span>
+      <span>${escapeHtml(profile.buyerTaxId || '-')} • ${escapeHtml(profile.buyerBranchName || tr('head_office'))}${escapeHtml(profileSyncDetail(profile))}</span>
     </button>`;
   }).join('');
   const active = rows.find(row => String(row.id || row.customerKey || '') === String(selectedId)) || rows[0];
@@ -677,24 +696,27 @@ function saveProfileForm() {
       .then(() => renderProfiles(profile.id))
       .catch(error => console.warn('[retail-pos-tax-invoices] tax profile save sync skipped', error));
   } catch (error) {
-    if (profileError) profileError.textContent = error?.message || 'บันทึกโปรไฟล์ภาษีไม่สำเร็จ';
+    if (profileError) profileError.textContent = error?.message || tr('profile_save_failed');
   }
 }
 
 function deleteProfileForm() {
   const id = selectedProfileId();
   if (!id) return;
-  const ok = window.confirm('ลบโปรไฟล์ภาษีลูกค้านี้หรือไม่');
+  const ok = window.confirm(tr('profile_delete_confirm'));
   if (!ok) return;
   deleteTaxBuyerProfile(id);
   renderProfiles();
+  syncTaxBuyerProfiles()
+    .then(() => renderProfiles())
+    .catch(error => console.warn('[retail-pos-tax-invoices] tax profile delete sync skipped', error));
 }
 
 function applyBuyer(buyer = {}) {
   if (lateBuyerNameInput) lateBuyerNameInput.value = buyer.buyerName || '';
   if (lateBuyerTaxIdInput) lateBuyerTaxIdInput.value = buyer.buyerTaxId || '';
   if (lateBuyerAddressInput) lateBuyerAddressInput.value = buyer.buyerAddress || '';
-  if (lateBuyerBranchInput) lateBuyerBranchInput.value = buyer.buyerBranchName || 'สำนักงานใหญ่';
+  if (lateBuyerBranchInput) lateBuyerBranchInput.value = buyer.buyerBranchName || tr('head_office');
 }
 
 function fillLateBuyerFromDbd(profile = {}) {
@@ -713,17 +735,17 @@ function fillEditBuyerFromDbd(profile = {}) {
 
 function dbdManualButtonHtml(id, taxId) {
   const url = manualDbdLink(taxId);
-  return `<button id="${id}" class="dbd-btn" type="button" data-url="${escapeHtml(url)}"><i class="bi bi-clipboard" aria-hidden="true"></i><span>คัดลอกลิงก์ DBD</span></button>`;
+  return `<button id="${id}" class="dbd-btn" type="button" data-url="${escapeHtml(url)}"><i class="bi bi-clipboard" aria-hidden="true"></i><span>${escapeHtml(tr('copy_dbd_link'))}</span></button>`;
 }
 
 function showLateManualDbdMessage(taxId) {
   if (!lateTaxInvoiceError) return;
-  lateTaxInvoiceError.innerHTML = `ยังดึงข้อมูลอัตโนมัติไม่ได้<br>${dbdManualButtonHtml('copyLateDbdLinkBtn', taxId)}<br><small>นำลิงก์ไปเปิดที่แท็บ DBD แล้วกลับมากรอกข้อมูลต่อ</small>`;
+  lateTaxInvoiceError.innerHTML = `${escapeHtml(tr('dbd_auto_failed'))}<br>${dbdManualButtonHtml('copyLateDbdLinkBtn', taxId)}<br><small>${escapeHtml(tr('dbd_manual_help'))}</small>`;
 }
 
 function showEditManualDbdMessage(taxId) {
   if (!editBuyerError) return;
-  editBuyerError.innerHTML = `ยังดึงข้อมูลอัตโนมัติไม่ได้<br>${dbdManualButtonHtml('copyEditDbdLinkBtn', taxId)}<br><small>นำลิงก์ไปเปิดที่แท็บ DBD แล้วกลับมากรอกข้อมูลต่อ</small>`;
+  editBuyerError.innerHTML = `${escapeHtml(tr('dbd_auto_failed'))}<br>${dbdManualButtonHtml('copyEditDbdLinkBtn', taxId)}<br><small>${escapeHtml(tr('dbd_manual_help'))}</small>`;
 }
 
 async function fetchDbdProfile(taxId) {
@@ -732,7 +754,7 @@ async function fetchDbdProfile(taxId) {
   const response = await fetch(url.toString(), { headers: { accept: 'application/json' } });
   if (!response.ok) throw new Error('DBD lookup failed');
   const profile = normalizeDbdProfile(await response.json(), taxId);
-  if (!profile.buyerName && !profile.buyerAddress) throw new Error('ไม่พบข้อมูลจาก DBD');
+  if (!profile.buyerName && !profile.buyerAddress) throw new Error(tr('dbd_not_found'));
   return profile;
 }
 
@@ -741,18 +763,18 @@ async function lookupLateBuyerDbd() {
   if (lateBuyerTaxIdInput) lateBuyerTaxIdInput.value = taxId;
   if (lateTaxInvoiceError) lateTaxInvoiceError.textContent = '';
   if (!taxId || taxId.length < 13) {
-    if (lateTaxInvoiceError) lateTaxInvoiceError.textContent = 'กรุณากรอกเลขประจำตัวผู้เสียภาษี 13 หลักก่อนกด DBD';
+    if (lateTaxInvoiceError) lateTaxInvoiceError.textContent = tr('tax_id_required');
     lateBuyerTaxIdInput?.focus();
     return;
   }
   if (lateDbdLookupBtn) {
     lateDbdLookupBtn.disabled = true;
-    setIconLabel(lateDbdLookupBtn, 'bi-hourglass-split', 'ค้นหา...');
+    setIconLabel(lateDbdLookupBtn, 'bi-hourglass-split', tr('searching'));
   }
   try {
     const profile = await fetchDbdProfile(taxId);
     fillLateBuyerFromDbd(profile);
-    if (lateTaxInvoiceError) lateTaxInvoiceError.textContent = 'ดึงข้อมูลสำเร็จ กรุณาตรวจสอบก่อนออกเอกสาร';
+    if (lateTaxInvoiceError) lateTaxInvoiceError.textContent = tr('dbd_issue_success');
   } catch (error) {
     showLateManualDbdMessage(taxId);
   } finally {
@@ -768,18 +790,18 @@ async function lookupEditBuyerDbd() {
   if (editBuyerTaxIdInput) editBuyerTaxIdInput.value = taxId;
   if (editBuyerError) editBuyerError.textContent = '';
   if (!taxId || taxId.length < 13) {
-    if (editBuyerError) editBuyerError.textContent = 'กรุณากรอกเลขประจำตัวผู้เสียภาษี 13 หลักก่อนกด DBD';
+    if (editBuyerError) editBuyerError.textContent = tr('tax_id_required');
     editBuyerTaxIdInput?.focus();
     return;
   }
   if (editDbdLookupBtn) {
     editDbdLookupBtn.disabled = true;
-    setIconLabel(editDbdLookupBtn, 'bi-hourglass-split', 'ค้นหา...');
+    setIconLabel(editDbdLookupBtn, 'bi-hourglass-split', tr('searching'));
   }
   try {
     const profile = await fetchDbdProfile(taxId);
     fillEditBuyerFromDbd(profile);
-    if (editBuyerError) editBuyerError.textContent = 'ดึงข้อมูลสำเร็จ กรุณาตรวจสอบก่อนบันทึก';
+    if (editBuyerError) editBuyerError.textContent = tr('dbd_save_success');
   } catch (error) {
     showEditManualDbdMessage(taxId);
   } finally {
@@ -798,7 +820,7 @@ function setSourceSaleMessage(message = '', { error = false } = {}) {
 
 function sourceSaleCard(sale, actionHtml = '') {
   const number = saleKey(sale) || '-';
-  return `<div class="issue-sale-card"><div><strong>${escapeHtml(number)}</strong><div>${escapeHtml(saleDateText(sale))} • ยอดสุทธิ ${money(sale.totalAmount ?? sale.total)} บาท</div></div>${actionHtml}</div>`;
+  return `<div class="issue-sale-card"><div><strong>${escapeHtml(number)}</strong><div>${escapeHtml(saleDateText(sale))} • ${escapeHtml(tr('net_total', { amount: money(sale.totalAmount ?? sale.total) }))}</div></div>${actionHtml}</div>`;
 }
 
 async function loadSalesForSearch() {
@@ -821,7 +843,7 @@ function showLateTaxDialog(sale) {
   currentSourceSale = sale;
   const defaults = defaultBuyerFromSale(sale);
   applyBuyer(defaults);
-  if (lateSaleText) lateSaleText.textContent = `บิล ${saleKey(sale) || '-'} • ${saleDateText(sale)} • ยอดสุทธิ ${money(sale.totalAmount ?? sale.total)} บาท`;
+  if (lateSaleText) lateSaleText.textContent = tr('sale_summary', { receipt: saleKey(sale) || '-', date: saleDateText(sale), amount: money(sale.totalAmount ?? sale.total) });
   if (lateTaxInvoiceError) lateTaxInvoiceError.textContent = '';
   lateDialog?.showModal();
   setTimeout(() => lateBuyerTaxIdInput?.focus(), 50);
@@ -830,56 +852,56 @@ function showLateTaxDialog(sale) {
 async function findSourceSale() {
   const queryText = sourceSaleSearch?.value || '';
   if (!String(queryText).trim()) {
-    setSourceSaleMessage('กรุณาระบุเลขบิลเดิมก่อนค้นหา', { error: true });
+    setSourceSaleMessage(tr('source_required'), { error: true });
     sourceSaleSearch?.focus();
     return;
   }
   findSourceSaleBtn.disabled = true;
-  setIconLabel(findSourceSaleBtn, 'bi-hourglass-split', 'กำลังค้นหา...');
-  setSourceSaleMessage('กำลังค้นหาบิลเดิม...');
+  setIconLabel(findSourceSaleBtn, 'bi-hourglass-split', tr('searching'));
+  setSourceSaleMessage(tr('searching_receipt'));
   try {
     await loadSalesForSearch();
     const sale = findSale(queryText);
     if (!sale) {
-      setSourceSaleMessage('ไม่พบบิลเดิมจากเลขที่ระบุ กรุณาตรวจเลขบิลหรือให้เครื่อง Sync ข้อมูลก่อน', { error: true });
+      setSourceSaleMessage(tr('source_not_found'), { error: true });
       return;
     }
     const existing = existingInvoiceForSale(sale);
     if (existing) {
-      setSourceSaleMessage(sourceSaleCard(sale, `<button class="btn btn-secondary" type="button" data-open-existing-tax="${escapeHtml(existing.id || existing.invoiceNumber || '')}">เปิดใบกำกับเดิม</button>`));
+      setSourceSaleMessage(sourceSaleCard(sale, `<button class="btn btn-secondary" type="button" data-open-existing-tax="${escapeHtml(existing.id || existing.invoiceNumber || '')}">${escapeHtml(tr('open_existing'))}</button>`));
       openInvoice(existing);
       return;
     }
-    setSourceSaleMessage(sourceSaleCard(sale, '<button class="btn btn-primary" type="button" data-issue-late-tax="1">ออกใบกำกับภาษี</button>'));
+    setSourceSaleMessage(sourceSaleCard(sale, `<button class="btn btn-primary" type="button" data-issue-late-tax="1">${escapeHtml(tr('issue_invoice'))}</button>`));
     showLateTaxDialog(sale);
   } finally {
     findSourceSaleBtn.disabled = false;
-    setIconLabel(findSourceSaleBtn, 'bi-search', 'ค้นหาบิล');
+    setIconLabel(findSourceSaleBtn, 'bi-search', tr('find_receipt'));
   }
 }
 
 async function submitLateTaxInvoice() {
   if (!currentSourceSale) return;
   lateTaxInvoiceSubmitBtn.disabled = true;
-  setIconLabel(lateTaxInvoiceSubmitBtn, 'bi-hourglass-split', 'กำลังออกเอกสาร...');
+  setIconLabel(lateTaxInvoiceSubmitBtn, 'bi-hourglass-split', tr('issuing'));
   if (lateTaxInvoiceError) lateTaxInvoiceError.textContent = '';
   try {
     const invoice = await createFullTaxInvoiceFromSale(currentSourceSale, currentBuyer());
     lateDialog?.close();
     openInvoice(invoice);
     await load();
-    setSourceSaleMessage(sourceSaleCard(currentSourceSale, `<a class="btn btn-primary" href="${invoiceUrl(invoice)}" target="_blank" rel="noopener">เปิด/พิมพ์</a>`));
+    setSourceSaleMessage(sourceSaleCard(currentSourceSale, `<a class="btn btn-primary" href="${invoiceUrl(invoice)}" target="_blank" rel="noopener">${escapeHtml(tr('open_print'))}</a>`));
   } catch (error) {
-    if (lateTaxInvoiceError) lateTaxInvoiceError.textContent = error?.message || 'ออกใบกำกับภาษีไม่สำเร็จ';
+    if (lateTaxInvoiceError) lateTaxInvoiceError.textContent = error?.message || tr('issue_failed');
   } finally {
     lateTaxInvoiceSubmitBtn.disabled = false;
-    setIconLabel(lateTaxInvoiceSubmitBtn, 'bi-send', 'ออกใบกำกับภาษี');
+    setIconLabel(lateTaxInvoiceSubmitBtn, 'bi-send', tr('issue_invoice'));
   }
 }
 
 function showVoidDialog(invoice) {
   currentVoidInvoice = invoice;
-  if (voidText) voidText.textContent = `${invoice.invoiceNumber || invoice.id || '-'} • บิล ${invoice.saleNumber || invoice.saleId || '-'}`;
+  if (voidText) voidText.textContent = tr('invoice_receipt_summary', { invoice: invoice.invoiceNumber || invoice.id || '-', receipt: invoice.saleNumber || invoice.saleId || '-' });
   if (voidReasonInput) voidReasonInput.value = '';
   if (voidError) voidError.textContent = '';
   voidDialog?.showModal();
@@ -889,7 +911,7 @@ function showVoidDialog(invoice) {
 async function submitVoidInvoice() {
   if (!currentVoidInvoice) return;
   voidSubmitBtn.disabled = true;
-  setIconLabel(voidSubmitBtn, 'bi-hourglass-split', 'กำลังยกเลิก...');
+  setIconLabel(voidSubmitBtn, 'bi-hourglass-split', tr('voiding'));
   if (voidError) voidError.textContent = '';
   try {
     await voidFullTaxInvoice(currentVoidInvoice, voidReasonInput?.value || '');
@@ -897,20 +919,20 @@ async function submitVoidInvoice() {
     currentVoidInvoice = null;
     await load();
   } catch (error) {
-    if (voidError) voidError.textContent = error?.message || 'ยกเลิกใบกำกับภาษีไม่สำเร็จ';
+    if (voidError) voidError.textContent = error?.message || tr('void_failed');
   } finally {
     voidSubmitBtn.disabled = false;
-    setIconLabel(voidSubmitBtn, 'bi-x-circle', 'ยืนยันยกเลิก');
+    setIconLabel(voidSubmitBtn, 'bi-x-circle', tr('confirm_void'));
   }
 }
 
 function showEditBuyerDialog(invoice) {
   currentEditBuyerInvoice = invoice;
   const buyer = invoice.buyer || {};
-  if (editBuyerText) editBuyerText.textContent = `${invoice.invoiceNumber || invoice.id || '-'} • บิล ${invoice.saleNumber || invoice.saleId || '-'}`;
+  if (editBuyerText) editBuyerText.textContent = tr('invoice_receipt_summary', { invoice: invoice.invoiceNumber || invoice.id || '-', receipt: invoice.saleNumber || invoice.saleId || '-' });
   if (editBuyerNameInput) editBuyerNameInput.value = buyer.buyerName || '';
   if (editBuyerTaxIdInput) editBuyerTaxIdInput.value = buyer.buyerTaxId || '';
-  if (editBuyerBranchInput) editBuyerBranchInput.value = buyer.buyerBranchName || 'สำนักงานใหญ่';
+  if (editBuyerBranchInput) editBuyerBranchInput.value = buyer.buyerBranchName || tr('head_office');
   if (editBuyerAddressInput) editBuyerAddressInput.value = buyer.buyerAddress || '';
   if (editBuyerError) editBuyerError.textContent = '';
   editBuyerDialog?.showModal();
@@ -929,7 +951,7 @@ function currentEditBuyer() {
 async function submitEditBuyer() {
   if (!currentEditBuyerInvoice) return;
   editBuyerSubmitBtn.disabled = true;
-  setIconLabel(editBuyerSubmitBtn, 'bi-hourglass-split', 'กำลังบันทึก...');
+  setIconLabel(editBuyerSubmitBtn, 'bi-hourglass-split', tr('saving'));
   if (editBuyerError) editBuyerError.textContent = '';
   try {
     updateLocalTaxInvoiceBuyer(currentEditBuyerInvoice, currentEditBuyer());
@@ -937,10 +959,10 @@ async function submitEditBuyer() {
     currentEditBuyerInvoice = null;
     await load();
   } catch (error) {
-    if (editBuyerError) editBuyerError.textContent = error?.message || 'บันทึกข้อมูลผู้ซื้อไม่สำเร็จ';
+    if (editBuyerError) editBuyerError.textContent = error?.message || tr('buyer_save_failed');
   } finally {
     editBuyerSubmitBtn.disabled = false;
-    setIconLabel(editBuyerSubmitBtn, 'bi-floppy', 'บันทึกข้อมูลผู้ซื้อ');
+    setIconLabel(editBuyerSubmitBtn, 'bi-floppy', tr('save_buyer'));
   }
 }
 
@@ -948,7 +970,7 @@ function cardHtml(invoice) {
   const buyer = invoice.buyer || {};
   const seller = invoice.seller || {};
   const isVoid = invoice.status === 'void';
-  const status = isVoid ? 'ยกเลิก' : 'ออกเอกสารแล้ว';
+  const status = isVoid ? tr('voided') : tr('issued');
   const syncText = syncDiagnosticText(invoice);
   const receiptUrl = sourceReceiptUrl(invoice);
   return `<article class="tax-card">
@@ -956,24 +978,24 @@ function cardHtml(invoice) {
       <div class="tax-card-badges"><div class="tax-doc-no">${escapeHtml(invoice.invoiceNumber || invoice.id || '-')}</div>${syncBadge(invoice)}</div>
       <h2>${escapeHtml(buyer.buyerName || '-')}</h2>
       <div class="tax-meta">
-        <span>แหล่งข้อมูล: ${escapeHtml(invoiceSourceText(invoice))}</span>
-        <span>เลขภาษี: ${escapeHtml(buyer.buyerTaxId || '-')}</span>
-        <span>บิล: ${escapeHtml(invoice.saleNumber || invoice.saleId || '-')}</span>
+        <span>${escapeHtml(tr('data_source'))}: ${escapeHtml(invoiceSourceText(invoice))}</span>
+        <span>${escapeHtml(tr('tax_id'))}: ${escapeHtml(buyer.buyerTaxId || '-')}</span>
+        <span>${escapeHtml(tr('receipt'))}: ${escapeHtml(invoice.saleNumber || invoice.saleId || '-')}</span>
         <span>${escapeHtml(dateText(invoice.issuedAt))}</span>
       </div>
       <p>${escapeHtml(buyer.buyerAddress || '')}</p>
-      <small>ผู้ขาย: ${escapeHtml(seller.sellerName || '-')} • ${escapeHtml(status)}${invoice.voidReason ? ` • เหตุผล: ${escapeHtml(invoice.voidReason)}` : ''}${syncText ? ` • ${escapeHtml(syncText)}` : ''}</small>
+      <small>${escapeHtml(tr('seller'))}: ${escapeHtml(seller.sellerName || '-')} • ${escapeHtml(status)}${invoice.voidReason ? ` • ${escapeHtml(tr('reason'))}: ${escapeHtml(invoice.voidReason)}` : ''}${syncText ? ` • ${escapeHtml(syncText)}` : ''}</small>
     </div>
     <div class="tax-card-side">
       <strong>${money(invoice.totalAmount)}</strong>
       <span>VAT ${money(invoice.vatAmount)}</span>
       <div class="tax-actions">
-        <a class="btn btn-primary" href="${invoiceUrl(invoice)}" target="_blank" rel="noopener">${iconLabel('bi-printer', 'เปิด/พิมพ์')}</a>
-        ${receiptUrl ? `<a class="btn btn-secondary" href="${escapeHtml(receiptUrl)}" target="_blank" rel="noopener">${iconLabel('bi-receipt', 'ดูบิลต้นทาง')}</a>` : ''}
-        ${canEditPendingBuyer(invoice) ? `<button class="btn btn-secondary" type="button" data-edit-tax-buyer="${escapeHtml(keyOf(invoice))}">${iconLabel('bi-pencil-square', 'แก้ผู้ซื้อ')}</button>` : ''}
-        ${canRetrySync(invoice) ? `<button class="btn btn-secondary" type="button" data-copy-tax-sync="${escapeHtml(keyOf(invoice))}">${iconLabel('bi-clipboard', 'คัดลอก Sync')}</button>` : ''}
-        ${canRetrySync(invoice) ? `<button class="btn btn-secondary" type="button" data-retry-tax-sync="${escapeHtml(keyOf(invoice))}">${iconLabel('bi-arrow-repeat', 'ลอง Sync')}</button>` : ''}
-        ${isVoid ? '' : `<button class="btn btn-danger" type="button" data-void-tax="${escapeHtml(keyOf(invoice))}">${iconLabel('bi-x-circle', 'ยกเลิก')}</button>`}
+        <a class="btn btn-primary" href="${invoiceUrl(invoice)}" target="_blank" rel="noopener">${iconLabel('bi-printer', tr('open_print'))}</a>
+        ${receiptUrl ? `<a class="btn btn-secondary" href="${escapeHtml(receiptUrl)}" target="_blank" rel="noopener">${iconLabel('bi-receipt', tr('view_source_receipt'))}</a>` : ''}
+        ${canEditPendingBuyer(invoice) ? `<button class="btn btn-secondary" type="button" data-edit-tax-buyer="${escapeHtml(keyOf(invoice))}">${iconLabel('bi-pencil-square', tr('edit_buyer'))}</button>` : ''}
+        ${canRetrySync(invoice) ? `<button class="btn btn-secondary" type="button" data-copy-tax-sync="${escapeHtml(keyOf(invoice))}">${iconLabel('bi-clipboard', tr('copy_diagnostics'))}</button>` : ''}
+        ${canRetrySync(invoice) ? `<button class="btn btn-secondary" type="button" data-retry-tax-sync="${escapeHtml(keyOf(invoice))}">${iconLabel('bi-arrow-repeat', tr('retry_sync'))}</button>` : ''}
+        ${isVoid ? '' : `<button class="btn btn-danger" type="button" data-void-tax="${escapeHtml(keyOf(invoice))}">${iconLabel('bi-x-circle', tr('void'))}</button>`}
       </div>
     </div>
   </article>`;
@@ -985,36 +1007,38 @@ function render() {
   updateSyncFilterCounts();
   updateSourceFilterCounts();
   renderSyncHealth();
-  summaryEl.textContent = `ทั้งหมด ${invoices.length.toLocaleString('th-TH')} เอกสาร • สถานะ ${syncFilterLabel()} • แหล่งข้อมูล ${sourceFilterLabel()} • แสดง ${rows.length.toLocaleString('th-TH')} เอกสาร`;
+  summaryEl.textContent = tr('summary', { total: invoices.length.toLocaleString(intlLocale), status: syncFilterLabel(), source: sourceFilterLabel(), shown: rows.length.toLocaleString(intlLocale) });
   emptyEl.hidden = rows.length > 0;
   emptyEl.innerHTML = hasActiveFilters()
-    ? 'ไม่พบรายการตามตัวกรองที่เลือก <button class="btn btn-secondary" type="button" data-clear-tax-filters="1">ล้างตัวกรอง</button>'
-    : 'ยังไม่มีใบกำกับภาษี หรือไม่พบรายการที่ค้นหา';
+    ? `${escapeHtml(tr('filtered_empty'))} <button class="btn btn-secondary" type="button" data-clear-tax-filters="1">${escapeHtml(tr('clear_filters'))}</button>`
+    : escapeHtml(tr('empty'));
   listEl.innerHTML = rows.map(cardHtml).join('');
 }
 
 async function load({ sync = true } = {}) {
   refreshBtn.disabled = true;
-  setIconLabel(refreshBtn, 'bi-hourglass-split', 'กำลังโหลด...');
+  setIconLabel(refreshBtn, 'bi-hourglass-split', tr('loading'));
   lastSyncHealth = { checkedAt: Date.now(), pendingTaxOk: true, profileOk: true, remoteListOk: true, pendingTaxError: '', profileError: '', remoteListError: '' };
   try {
     try { if (sync) await syncPendingTaxInvoices(); }
     catch (error) {
       lastSyncHealth.pendingTaxOk = false;
-      lastSyncHealth.pendingTaxError = `ใบกำกับ: ${conciseError(error) || 'sync skipped'}`;
+      lastSyncHealth.pendingTaxError = tr('invoice_load_error', { error: conciseError(error) || 'sync skipped' });
       console.warn('[retail-pos-tax-invoices] pending sync skipped', error);
     }
     try { await syncTaxBuyerProfiles(); }
     catch (error) {
       lastSyncHealth.profileOk = false;
-      lastSyncHealth.profileError = `โปรไฟล์: ${conciseError(error) || 'sync skipped'}`;
+      lastSyncHealth.profileError = tr('profile_load_error', { error: conciseError(error) || 'sync skipped' });
       console.warn('[retail-pos-tax-invoices] tax profile sync skipped', error);
     }
     let remote = [];
-    try { remote = await listRecords(TAX_INVOICE_COLLECTION, { sortBy: 'issuedAt', direction: 'desc' }); }
+    try {
+      remote = await listRecords(TAX_INVOICE_COLLECTION, { sortBy: 'issuedAt', direction: 'desc' });
+    }
     catch (error) {
       lastSyncHealth.remoteListOk = false;
-      lastSyncHealth.remoteListError = `Firestore: ${conciseError(error) || 'list fallback'}`;
+      lastSyncHealth.remoteListError = tr('remote_load_error', { error: conciseError(error) || 'list fallback' });
       console.warn('[retail-pos-tax-invoices] firebase/list fallback', error);
     }
     const localRows = localInvoices().map(row => ({ ...row, _syncSourceLocal: true }));
@@ -1023,7 +1047,7 @@ async function load({ sync = true } = {}) {
     render();
   } finally {
     refreshBtn.disabled = false;
-    setIconLabel(refreshBtn, 'bi-arrow-clockwise', 'รีเฟรช');
+    setIconLabel(refreshBtn, 'bi-arrow-clockwise', tr('refresh'));
   }
 }
 
@@ -1072,9 +1096,9 @@ lateForm?.addEventListener('click', async event => {
   const url = button.dataset.url || manualDbdLink(normalizeTaxId(lateBuyerTaxIdInput?.value || ''));
   try {
     await copyText(url);
-    if (lateTaxInvoiceError) lateTaxInvoiceError.textContent = 'คัดลอกลิงก์ DBD แล้ว เปิดแท็บ DBD แล้วกลับมากรอกต่อได้';
+    if (lateTaxInvoiceError) lateTaxInvoiceError.textContent = tr('dbd_link_copied');
   } catch (error) {
-    if (lateTaxInvoiceError) lateTaxInvoiceError.textContent = `คัดลอกลิงก์นี้ไปเปิดเอง: ${url}`;
+    if (lateTaxInvoiceError) lateTaxInvoiceError.textContent = tr('copy_link_manually', { url });
   }
 });
 lateForm?.addEventListener('submit', event => { event.preventDefault(); submitLateTaxInvoice(); });
@@ -1102,9 +1126,9 @@ editBuyerForm?.addEventListener('click', async event => {
   const url = button.dataset.url || manualDbdLink(normalizeTaxId(editBuyerTaxIdInput?.value || ''));
   try {
     await copyText(url);
-    if (editBuyerError) editBuyerError.textContent = 'คัดลอกลิงก์ DBD แล้ว เปิดแท็บ DBD แล้วกลับมากรอกต่อได้';
+    if (editBuyerError) editBuyerError.textContent = tr('dbd_link_copied');
   } catch (error) {
-    if (editBuyerError) editBuyerError.textContent = `คัดลอกลิงก์นี้ไปเปิดเอง: ${url}`;
+    if (editBuyerError) editBuyerError.textContent = tr('copy_link_manually', { url });
   }
 });
 editBuyerForm?.addEventListener('submit', event => { event.preventDefault(); submitEditBuyer(); });
@@ -1123,15 +1147,15 @@ listEl?.addEventListener('click', async event => {
     copyButton.disabled = true;
     try {
       await copyText(syncRecoveryText(invoice));
-      setIconLabel(copyButton, 'bi-check-lg', 'คัดลอกแล้ว');
+      setIconLabel(copyButton, 'bi-check-lg', tr('copied'));
     } catch (error) {
       console.warn('[retail-pos-tax-invoices] copy sync diagnostics failed', error);
-      setIconLabel(copyButton, 'bi-exclamation-triangle', 'คัดลอกไม่สำเร็จ');
+      setIconLabel(copyButton, 'bi-exclamation-triangle', tr('copy_failed'));
     } finally {
       setTimeout(() => {
         if (copyButton.isConnected) {
           copyButton.disabled = false;
-          copyButton.innerHTML = originalHtml || iconLabel('bi-clipboard', 'คัดลอก Sync');
+          copyButton.innerHTML = originalHtml || iconLabel('bi-clipboard', tr('copy_diagnostics'));
         }
       }, 1200);
     }
@@ -1141,14 +1165,14 @@ listEl?.addEventListener('click', async event => {
   if (retryButton) {
     const invoice = invoices.find(row => keyOf(row) === String(retryButton.dataset.retryTaxSync || ''));
     retryButton.disabled = true;
-    setIconLabel(retryButton, 'bi-hourglass-split', 'กำลัง Sync...');
+    setIconLabel(retryButton, 'bi-hourglass-split', tr('syncing'));
     try {
       if (invoice) await retryTaxInvoiceSync(invoice);
       await load({ sync: false });
     } finally {
       if (retryButton.isConnected) {
         retryButton.disabled = false;
-        setIconLabel(retryButton, 'bi-arrow-repeat', 'ลอง Sync');
+        setIconLabel(retryButton, 'bi-arrow-repeat', tr('retry_sync'));
       }
     }
     return;

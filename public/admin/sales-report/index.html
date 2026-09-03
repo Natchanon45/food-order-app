@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/assets/css/i18n.css?v=20260903-202">
   <link rel="stylesheet" href="/assets/css/sales-report.css?v=20260713-005">
   <link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260731-081">
-  <link rel="stylesheet" href="/assets/css/sales-report-modern.css?v=20260903-245">
+  <link rel="stylesheet" href="/assets/css/sales-report-modern.css?v=20260903-246">
   <link rel="stylesheet" href="/assets/css/sales-report-period-tabs.css?v=20260903-202">
   <style>
     .sales-report-page .bi,
@@ -42,6 +42,10 @@
     .summary-card .summary-icon .bi { color:#159447; }
     .summary-card.primary .summary-icon { background:rgba(255,255,255,.18); }
     .summary-card.primary .summary-icon .bi { color:#fff; }
+    .sales-report-workspace .sales-report-page .summary-card.primary > span:first-child,
+    .sales-report-workspace .sales-report-page .summary-card.primary > span:first-child > span {
+      color:#355b47;
+    }
     .report-filter-card label {
       display:inline-flex;
       align-items:center;
@@ -158,7 +162,7 @@
 
   <dialog id="receiptDialog" class="receipt-dialog"><div class="receipt-dialog-card"><div class="section-title"><h2><i class="bi bi-receipt" aria-hidden="true"></i><span data-i18n="sales_report.sections.receipt_detail">รายละเอียดใบเสร็จ</span></h2><button type="button" class="receipt-dialog-close" id="closeReceiptDialog" aria-label="ปิด" title="ปิด"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div><div id="receiptDetail"></div></div></dialog>
   <script type="module" src="/assets/js/page-guard.js?v=20260903-201"></script>
-  <script type="module" src="/assets/js/sales-report.js?v=20260903-244"></script>
+  <script type="module" src="/assets/js/sales-report.js?v=20260903-245"></script>
   <script type="module" src="/assets/js/locale-switcher-static.js?v=20260903-202"></script>
   <script type="module" src="/assets/js/user-menu-i18n-static.js?v=20260903-202"></script>
   <script type="module" src="/assets/js/admin-workspace-refresh-retail-pos-parity.js?v=20260903-202" data-retail-pos-safe-decorator="1"></script>

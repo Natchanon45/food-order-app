@@ -1,5 +1,6 @@
 import { createFullTaxInvoiceFromSale, defaultBuyerFromSale, getExistingFullTaxInvoiceForSale, syncPendingTaxInvoices, taxInvoiceUrl } from './retail-pos-full-tax-invoice.js?v=20260731-080';
 import { maskReceiptCustomerName, maskReceiptPhone } from './retail-receipt-privacy.js?v=20260716-002';
+import { getRecord } from './retail-db.js?v=20260629-032';
 
 const SALES_KEY = 'retail_pos_sales_v1';
 const CUSTOMER_KEY = 'retail_pos_customers_v1';
@@ -8,6 +9,7 @@ const STORE_SETTINGS_KEY = 'retail_pos_store_settings_v1';
 const LEGACY_STORE_SETTINGS_KEY = 'food_order_store_settings';
 const DBD_LOOKUP_URL_KEY = 'retail_pos_dbd_lookup_url';
 const TAX_BUYER_DRAFT_PREFIX = 'retail_pos_tax_buyer_draft_';
+const TAX_INVOICE_LOCAL_KEY = 'retail_pos_tax_invoices_v1';
 const DEFAULT_TAX_BUYER_LOOKUP_URL = '/api/tax-buyer/lookup';
 const DBD_DATAWAREHOUSE_URL = 'https://datawarehouse.dbd.go.th/juristic';
 
@@ -26,6 +28,7 @@ const buyerAddressInput = document.querySelector('#buyerAddressInput');
 const buyerBranchInput = document.querySelector('#buyerBranchInput');
 const params = new URLSearchParams(location.search);
 const saleId = params.get('saleId') || '';
+const taxInvoiceId = params.get('taxInvoiceId') || params.get('invoiceId') || '';
 const autoPrint = params.get('auto') === '1';
 const requestedPaperSize = params.get('paper') || '';
 let currentSale = null;
@@ -64,7 +67,96 @@ function applyPaperSize() {
 }
 function customers() { const rows = readJson(CUSTOMER_KEY, []); return Array.isArray(rows) ? rows : []; }
 function loyaltyLedger() { const rows = readJson(LEDGER_KEY, []); return Array.isArray(rows) ? rows : []; }
-function findSale() { const sales = readJson(SALES_KEY, []); if (!Array.isArray(sales)) return null; return sales.find(sale => saleKey(sale) === saleId || String(sale.saleNumber || '') === saleId) || sales[0] || null; }
+function localSales() { const rows = readJson(SALES_KEY, []); return Array.isArray(rows) ? rows : []; }
+function findLocalSale() {
+  const sales = localSales();
+  if (!saleId) return sales[0] || null;
+  return sales.find(sale => saleKey(sale) === saleId || String(sale.saleNumber || '') === saleId) || null;
+}
+function cacheResolvedSale(sale) {
+  if (!sale) return null;
+  const key = saleKey(sale);
+  const rows = localSales().filter(row => saleKey(row) !== key && String(row.saleNumber || '') !== String(sale.saleNumber || ''));
+  rows.unshift(sale);
+  writeJson(SALES_KEY, rows.slice(0, 500));
+  return sale;
+}
+async function fetchFirestoreSale() {
+  if (!saleId || navigator.onLine === false) return null;
+  try {
+    return cacheResolvedSale(await getRecord('sales', saleId));
+  } catch (error) {
+    console.warn('[retail-pos-receipt-window] firestore sale fallback', error);
+    return null;
+  }
+}
+function saleFromTaxInvoice(invoice = {}) {
+  if (!invoice || typeof invoice !== 'object') return null;
+  const sourceSale = invoice.sourceSale && typeof invoice.sourceSale === 'object' ? invoice.sourceSale : {};
+  const buyer = invoice.buyer && typeof invoice.buyer === 'object' ? invoice.buyer : {};
+  const items = Array.isArray(invoice.items) ? invoice.items : [];
+  const resolvedId = String(invoice.saleId || sourceSale.id || saleId || '').trim();
+  const resolvedNumber = String(invoice.saleNumber || sourceSale.saleNumber || '').trim();
+  if (!resolvedId && !resolvedNumber && !items.length) return null;
+  return {
+    ...sourceSale,
+    id: resolvedId || resolvedNumber,
+    saleId: resolvedId || resolvedNumber,
+    saleNumber: resolvedNumber || resolvedId,
+    createdAt: sourceSale.createdAt || invoice.issuedAt || invoice.createdAt || Date.now(),
+    customerCode: invoice.buyerProfileId || buyer.customerKey || sourceSale.customerCode || '',
+    customerName: buyer.buyerName || sourceSale.customerName || '',
+    customerDisplayName: buyer.buyerName || sourceSale.customerDisplayName || '',
+    customerPhone: sourceSale.customerPhone || '',
+    customerDisplayPhone: sourceSale.customerDisplayPhone || '',
+    items,
+    subtotal: Number(invoice.subtotal || 0),
+    discount: Number(invoice.discount || 0),
+    pointDiscount: Number(invoice.pointDiscount || 0),
+    beforeVat: Number(invoice.beforeVat || invoice.taxableBase || 0),
+    taxableBase: Number(invoice.taxableBase || invoice.beforeVat || 0),
+    vatRegistered: true,
+    vatMode: invoice.vatMode || 'include',
+    vatRate: Number(invoice.vatRate || 0),
+    vatAmount: Number(invoice.vatAmount || 0),
+    total: Number(invoice.totalAmount || invoice.total || 0),
+    totalAmount: Number(invoice.totalAmount || invoice.total || 0),
+    paymentMethod: invoice.paymentMethod || sourceSale.paymentMethod || '',
+    receivedAmount: Number(invoice.receivedAmount || invoice.totalAmount || invoice.total || 0),
+    changeAmount: Number(invoice.changeAmount || 0),
+    syncStatus: 'synced',
+    sourceTaxInvoiceId: invoice.id || invoice.invoiceNumber || taxInvoiceId || ''
+  };
+}
+function localTaxInvoice() {
+  const rows = readJson(TAX_INVOICE_LOCAL_KEY, []);
+  if (!Array.isArray(rows)) return null;
+  if (taxInvoiceId) {
+    const match = rows.find(row => String(row.id || row.invoiceNumber || row._documentId || '') === taxInvoiceId);
+    if (match) return match;
+  }
+  if (saleId) return rows.find(row => String(row.saleId || row.saleNumber || row.sourceSale?.id || row.sourceSale?.saleNumber || '') === saleId) || null;
+  return null;
+}
+async function fetchTaxInvoiceSnapshot() {
+  if (navigator.onLine !== false && taxInvoiceId) {
+    try {
+      const invoice = await getRecord('taxInvoices', taxInvoiceId);
+      const sale = saleFromTaxInvoice(invoice);
+      if (sale) return cacheResolvedSale(sale);
+    } catch (error) {
+      console.warn('[retail-pos-receipt-window] firestore tax invoice fallback', error);
+    }
+  }
+  return cacheResolvedSale(saleFromTaxInvoice(localTaxInvoice()));
+}
+async function resolveSale() {
+  const remoteSale = await fetchFirestoreSale();
+  if (remoteSale) return remoteSale;
+  const invoiceSale = await fetchTaxInvoiceSnapshot();
+  return invoiceSale || findLocalSale();
+}
+function findSale() { return currentSale || findLocalSale(); }
 function customerForSale(sale = {}) {
   const cid = String(sale.customerId || sale.memberId || '').trim();
   const code = String(sale.customerCode || sale.memberCode || '').trim();
@@ -130,7 +222,7 @@ function render(sale) {
   preparePrintReady();
 }
 function rerenderLatest() { const sale = findSale(); if (sale) render(sale); return sale; }
-async function waitForLoyaltyAndRender() { applyPaperSize(); let sale = findSale(); render(sale); const started = Date.now(); while (Date.now() - started < 900) { await new Promise(resolve => setTimeout(resolve, 160)); sale = rerenderLatest(); if (loyaltyForSale(sale)) break; } preparePrintReady(); if (autoPrint) setTimeout(() => printReceipt({ auto: true }), 350); }
+async function waitForLoyaltyAndRender() { applyPaperSize(); let sale = await resolveSale(); render(sale); const started = Date.now(); while (Date.now() - started < 900) { await new Promise(resolve => setTimeout(resolve, 160)); sale = rerenderLatest(); if (loyaltyForSale(sale)) break; } preparePrintReady(); if (autoPrint) setTimeout(() => printReceipt({ auto: true }), 350); }
 function openInvoice(invoice) { window.open(taxInvoiceUrl(invoice, { autoPrint: false }), `pos_tax_invoice_${String(invoice.id).replace(/[^a-zA-Z0-9]/g, '_')}`, 'popup=yes,width=920,height=760,noopener,noreferrer'); }
 async function showTaxDialog() {
   if (!currentSale || !taxDialog) return;

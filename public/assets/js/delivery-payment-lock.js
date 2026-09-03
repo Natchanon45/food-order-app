@@ -1,4 +1,4 @@
-import "./public-i18n-bootstrap.js?v=20260903-231";
+import "./public-i18n-bootstrap.js?v=20260903-245";
 
 import { toast } from "./ui.js?v=20260903-231";
 import { t, formatNumber } from "./i18n.js?v=20260903-202";

@@ -124,9 +124,41 @@ export async function getCustomerProfile(user = auth.currentUser) {
   if (staff) return getGuestProfile();
 
   const snapshot = await getDoc(customerProfileDoc(user.uid));
-  return snapshot.exists()
-    ? { id: snapshot.id, ...snapshot.data() }
-    : { displayName: user.displayName || "", email: user.email || "", phone: "", addresses: [] };
+  if (snapshot.exists()) return { id: snapshot.id, ...snapshot.data() };
+
+  // First Google sign-in on this device: preserve an existing Guest delivery
+  // profile by promoting it to the tenant-scoped cloud profile. Once written,
+  // the same Google account can load these addresses from another device.
+  const guest = getGuestProfile();
+  const guestAddresses = Array.isArray(guest.addresses) ? guest.addresses.slice(0, 5) : [];
+  const hasGuestData = Boolean(
+    String(guest.displayName || '').trim()
+    || String(guest.phone || '').trim()
+    || guestAddresses.length
+  );
+
+  if (hasGuestData) {
+    const tenant = resolveTenantContext();
+    const payload = {
+      tenantId: tenant.id,
+      displayName: guest.displayName || user.displayName || "",
+      email: user.email || "",
+      phone: guest.phone || "",
+      addresses: guestAddresses,
+    };
+
+    try {
+      await setDoc(customerProfileDoc(user.uid), {
+        ...payload,
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+      return payload;
+    } catch (error) {
+      console.warn('[customer-profile] Guest profile cloud migration failed', error);
+    }
+  }
+
+  return { displayName: user.displayName || "", email: user.email || "", phone: "", addresses: [] };
 }
 
 export async function saveCustomerProfile(profile, user = auth.currentUser) {

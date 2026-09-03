@@ -41,6 +41,10 @@ function dateTime(value) {
   return formatDate(new Date(value), { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) || "-";
 }
 
+function periodDateText(value = "") {
+  return String(value || "-").replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, (_, year, month, day) => `${day}/${month}/${year}`);
+}
+
 function setDialogError(message = "") {
   els.error.textContent = message;
   els.error.hidden = !message;
@@ -48,6 +52,22 @@ function setDialogError(message = "") {
 
 function statusLabel(status) {
   return t(`admin_tenants.review.statuses.${status}`);
+}
+
+function ocrMarkup(item = {}) {
+  const ocr = item.ocr && typeof item.ocr === "object" ? item.ocr : null;
+  if (!ocr) return "";
+  const status = ["matched", "mismatch", "unreadable", "manual_review"].includes(ocr.status) ? ocr.status : "manual_review";
+  const key = status === "matched"
+    ? "admin_tenants.review.ocr_matched"
+    : status === "mismatch"
+      ? "admin_tenants.review.ocr_mismatch"
+      : status === "unreadable"
+        ? "admin_tenants.review.ocr_unreadable"
+        : "admin_tenants.review.ocr_manual";
+  const amount = ocr.detectedAmount === null || ocr.detectedAmount === undefined ? "-" : money(ocr.detectedAmount);
+  const icon = status === "matched" ? "bi-check-circle" : status === "mismatch" ? "bi-exclamation-triangle" : "bi-eye";
+  return `<small class="tenant-review-ocr ${status}"><i class="bi ${icon}" aria-hidden="true"></i><span>${escapeHtml(t(key, { amount }))}</span></small>`;
 }
 
 function render(items = []) {
@@ -65,8 +85,8 @@ function render(items = []) {
       : "";
     return `<article class="tenant-review-item" data-payment-id="${escapeHtml(item.id)}">
       <div class="tenant-review-main"><div class="tenant-review-store"><span class="tenant-review-mark">${escapeHtml((tenant.name || "S").slice(0, 1).toUpperCase())}</span><div><strong>${escapeHtml(tenant.name || tenant.id || "-")}</strong><small>${escapeHtml(tenant.slug ? `/${tenant.slug}` : tenant.id || "-")}</small></div></div><span class="tenant-review-status ${status}">${escapeHtml(statusLabel(status))}</span></div>
-      <div class="tenant-review-period"><span>${t("admin_tenants.review.period")}</span><strong>${escapeHtml(item.period?.label || "-")}</strong><small>${escapeHtml(item.period?.startDate || "-")} – ${escapeHtml(item.period?.endDate || "-")}</small></div>
-      <div class="tenant-review-amount"><span>${t("admin_tenants.review.amount")}</span><strong>${money(item.revenueShareAmount)} ${t("admin_tenants.common.baht")}</strong><small>${escapeHtml(t("admin_tenants.review.rate", { rate: money(item.revenueShareRate) }))}</small></div>
+      <div class="tenant-review-period"><span>${t("admin_tenants.review.period")}</span><strong>${escapeHtml(periodDateText(item.period?.label || "-"))}</strong><small>${escapeHtml(periodDateText(item.period?.startDate || "-"))} – ${escapeHtml(periodDateText(item.period?.endDate || "-"))}</small></div>
+      <div class="tenant-review-amount"><span>${t("admin_tenants.review.amount")}</span><strong>${money(item.revenueShareAmount)} ${t("admin_tenants.common.baht")}</strong><small>${escapeHtml(t("admin_tenants.review.rate", { rate: money(item.revenueShareRate) }))}</small>${ocrMarkup(item)}</div>
       <div class="tenant-review-submitted"><span>${t("admin_tenants.review.submitted")}</span><strong>${escapeHtml(dateTime(item.submittedAt))}</strong>${item.reviewNote ? `<small>${escapeHtml(item.reviewNote)}</small>` : ""}</div>
       <div class="tenant-review-actions"><button class="btn btn-sm" type="button" data-review-view-slip="${escapeHtml(item.id)}"><i class="bi bi-receipt" aria-hidden="true"></i><span>${t("admin_tenants.review.view_slip")}</span></button>${actions}</div>
     </article>`;
@@ -165,7 +185,7 @@ function closeSlip() {
 function openReject(item) {
   state.rejectingId = item.id;
   els.tenant.textContent = item.tenant?.name || item.tenant?.id || "-";
-  els.summary.innerHTML = `<span>${escapeHtml(item.period?.label || "-")}</span><strong>${money(item.revenueShareAmount)} ${t("admin_tenants.common.baht")}</strong>`;
+  els.summary.innerHTML = `<span>${escapeHtml(periodDateText(item.period?.label || "-"))}</span><strong>${money(item.revenueShareAmount)} ${t("admin_tenants.common.baht")}</strong>`;
   els.note.value = "";
   setDialogError("");
   if (typeof els.dialog.showModal === "function") els.dialog.showModal();

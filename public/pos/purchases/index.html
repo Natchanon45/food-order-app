@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#159447">
-<title>รับสินค้าเข้าและใบซื้อ</title>
+<title>รับสินค้าเข้า</title>
 <link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260801-096">
 <link rel="stylesheet" href="/assets/css/retail-purchases.css?v=20260627-1">
 <link rel="stylesheet" href="/assets/css/retail-purchases-report.css?v=20260624-1">
@@ -12,17 +12,18 @@
 <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-095">
 </head>
 <body>
-<header class="pos-header"><div><strong>รับสินค้าเข้าและใบซื้อ</strong><small>เพิ่มสต็อกและคำนวณต้นทุนเฉลี่ย</small></div><div class="header-actions"><a href="/pos/" class="btn btn-secondary header-link">หน้าขาย</a><a href="/pos/products/" class="btn btn-secondary header-link">สินค้าและสต็อก</a><a href="/pos/suppliers/" class="btn btn-secondary header-link">ผู้จำหน่าย</a></div></header>
+<header class="pos-header"><div><strong>รับสินค้าเข้า</strong><small>บันทึกผู้จำหน่าย ต้นทุน และปรับสต็อกพร้อมกัน</small></div><div class="header-actions"><a href="/pos/" class="btn btn-secondary header-link">หน้าขาย</a><a href="/pos/products/" class="btn btn-secondary header-link">สินค้าและสต็อก</a><a href="/pos/suppliers/" class="btn btn-secondary header-link">ผู้จำหน่าย</a></div></header>
 <main class="purchase-container">
-<section class="panel purchase-form-panel"><div class="section-heading"><div><h1>บันทึกรับสินค้าเข้า</h1><p>ต้นทุนใหม่คำนวณแบบเฉลี่ยถ่วงน้ำหนัก</p></div></div><form id="purchaseForm"><div class="purchase-meta-grid"><label>ผู้จำหน่าย<input id="supplierName" maxlength="120" required list="supplierList" autocomplete="off"><datalist id="supplierList"></datalist><small id="supplierHint">เลือกจากทะเบียนผู้จำหน่าย หรือพิมพ์ชื่อใหม่ได้</small></label><label>เลขที่ใบซื้อ / ใบส่งของ<input id="purchaseInvoice" maxlength="80"></label><label>วันที่รับสินค้า<input id="purchaseDate" type="date" required></label><label>หมายเหตุ<input id="purchaseNote" maxlength="200"></label></div><div class="purchase-lines-heading"><h2>รายการสินค้า</h2><button id="addPurchaseLineBtn" class="btn btn-secondary" type="button">เพิ่มรายการ</button></div><div class="purchase-table-wrap"><table class="purchase-table"><thead><tr><th>สินค้า</th><th class="number">คงเหลือเดิม</th><th class="number">จำนวนรับ</th><th class="number">ราคาทุน/หน่วย</th><th class="number">รวม</th><th></th></tr></thead><tbody id="purchaseLines"></tbody></table></div><div class="purchase-summary"><span>ยอดซื้อรวม</span><strong id="purchaseTotal">0.00 บาท</strong></div><p id="purchaseError" class="error-text"></p><div class="purchase-actions"><button id="resetPurchaseBtn" class="btn btn-secondary" type="button">ล้างรายการ</button><button class="btn btn-pay" type="submit">บันทึกรับสินค้า</button></div></form></section>
-<section class="panel purchase-history-panel"><div class="section-heading"><div><h2>ประวัติการรับสินค้า</h2><p>รายการล่าสุดในเครื่องนี้</p></div></div><label class="purchase-history-search">ค้นหารายการ<input id="purchaseSearch" placeholder="ค้นหาผู้จำหน่าย เลขที่ใบซื้อ หรือสินค้า"></label><div id="purchaseHistory" class="purchase-history"></div><div id="purchaseHistoryEmpty" class="empty-state">ยังไม่มีประวัติการรับสินค้า</div></section>
+<section class="panel purchase-form-panel"><div class="section-heading"><div><h1>รับสินค้าใหม่</h1><p>รองรับหลายรายการในใบซื้อเดียว และคำนวณต้นทุนเฉลี่ยอัตโนมัติ</p></div></div><form id="purchaseForm"><div class="purchase-meta-grid"><label>ผู้จำหน่าย<input id="supplierName" maxlength="120" required list="supplierList" autocomplete="off" placeholder="เลือกหรือพิมพ์ชื่อผู้จำหน่าย"><datalist id="supplierList"></datalist><small id="supplierHint">เลือกจากทะเบียนผู้จำหน่าย หรือพิมพ์ชื่อใหม่ได้</small></label><label>เลขที่ใบซื้อ / Invoice<input id="purchaseInvoice" maxlength="80" placeholder="ถ้ามี"></label><label>วันที่รับสินค้า<input id="purchaseDate" type="date" required></label><label>หมายเหตุ<input id="purchaseNote" maxlength="200"></label></div><div class="purchase-lines-heading"><h2>สินค้า</h2><button id="addPurchaseLineBtn" class="btn btn-secondary" type="button">เพิ่มสินค้า</button></div><div class="purchase-table-wrap"><table class="purchase-table"><thead><tr><th>สินค้า</th><th class="number">สต็อกเดิม</th><th class="number">จำนวนรับ</th><th class="number">ต้นทุน / หน่วย</th><th class="number">รวม</th><th></th></tr></thead><tbody id="purchaseLines"></tbody></table></div><div class="purchase-summary"><span>ยอดรับเข้ารวม</span><strong id="purchaseTotal">0.00 บาท</strong></div><p id="purchaseError" class="error-text"></p><div class="purchase-actions"><button id="resetPurchaseBtn" class="btn btn-secondary" type="button">ล้าง</button><button class="btn btn-pay" type="submit">บันทึกรับสินค้า</button></div></form></section>
+<section class="panel purchase-history-panel"><div class="section-heading"><div><h2>ประวัติรับสินค้า</h2><p>แสดงรายการล่าสุด และค้นหาจากเลขที่ใบซื้อหรือผู้จำหน่าย</p></div></div><label class="purchase-history-search">ค้นหารายการ<input id="purchaseSearch" placeholder="ค้นหาเลขที่ใบซื้อ ผู้จำหน่าย หรือสินค้า"></label><div id="purchaseHistory" class="purchase-history"></div><div id="purchaseHistoryEmpty" class="empty-state">ยังไม่มีประวัติรับสินค้า</div></section>
 </main>
 <div id="toast" class="toast" role="status"></div>
 <script type="module" src="/assets/js/retail-toast-status.js?v=20260801-103"></script>
 <script type="module" src="/assets/js/retail-purchases.js?v=20260629-042"></script>
 <script type="module" src="/assets/js/retail-barcode-scan-tools.js?v=20260627-2"></script>
 <script type="module" src="/assets/js/retail-purchases-report.js?v=20260731-094"></script>
-<script type="module" src="/assets/js/retail-pos-navigation.js?v=20260716-013"></script>
+<script type="module" src="/assets/js/retail-pos-navigation.js?v=20260903-250"></script>
 <script type="module" src="/assets/js/retail-purchasing-permissions.js?v=20260707-016"></script>
+<script type="module" src="/assets/js/retail-pos-i18n-bootstrap.js?v=20260903-249" data-pos-i18n-generated="1"></script>
 </body>
 </html>

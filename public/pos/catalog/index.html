@@ -53,18 +53,18 @@
 
     <section class="catalog-panel excel-import-panel">
       <div class="panel-head">
-        <div><h2>นำเข้าสินค้าจาก Excel</h2><p class="preview-muted">สำหรับเจ้าของร้าน ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับเข้าระบบ</p></div>
+        <div><h2>นำเข้า–ส่งออกสินค้า Excel / CSV</h2><p class="preview-muted">สำหรับเจ้าของร้าน ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับเข้าระบบ</p></div>
         <a class="btn excel-download" href="/assets/templates/pos-product-import-template.xlsx" download><i class="bi bi-file-earmark-arrow-down" aria-hidden="true"></i> ดาวน์โหลดแบบฟอร์มตัวอย่าง</a>
       </div>
       <label class="excel-dropzone" id="excelDropzone">
         <input id="excelFile" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
         <i class="bi bi-file-earmark-excel" aria-hidden="true"></i>
         <strong>เลือกหรือลากไฟล์ Excel มาวาง</strong>
-        <span>รองรับไฟล์ .xlsx ตามแบบฟอร์มตัวอย่าง • สูงสุด 1,000 รายการ</span>
+        <span>รองรับไฟล์ .xlsx และ .csv ตามแบบฟอร์มตัวอย่าง • สูงสุด 1,000 รายการ</span>
       </label>
       <div id="excelImportResult" class="result-box"></div>
       <div id="excelPreview" hidden>
-        <div class="excel-preview-head"><strong id="excelPreviewSummary">-</strong><button id="excelImportButton" class="btn excel-import-button" type="button" disabled>นำเข้าสินค้าจาก Excel</button></div>
+        <div class="excel-preview-head"><strong id="excelPreviewSummary">-</strong><button id="excelImportButton" class="btn excel-import-button" type="button" disabled>นำเข้า–ส่งออกสินค้า Excel / CSV</button></div>
         <div class="table-wrap"><table class="catalog-table excel-preview-table"><thead><tr><th>แถว</th><th>รหัสสินค้า</th><th>สินค้า</th><th>หมวด</th><th class="number">ราคา</th><th>สถานะ</th></tr></thead><tbody id="excelPreviewRows"></tbody></table></div>
       </div>
     </section>
@@ -107,5 +107,6 @@
   <script type="module" src="/assets/js/retail-pos-icons.js?v=20260716-013"></script>
   <script type="module" src="/assets/js/retail-catalog-import.js?v=20260731-079"></script>
   <script type="module" src="/assets/js/retail-catalog-excel-import.js?v=20260731-079"></script>
+<script type="module" src="/assets/js/retail-pos-i18n-bootstrap.js?v=20260903-249" data-pos-i18n-generated="1"></script>
 </body>
 </html>

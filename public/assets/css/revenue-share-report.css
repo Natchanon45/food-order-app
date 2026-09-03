@@ -125,3 +125,11 @@ body.revenue-share-report-page .revenue-share-back-link {
 @media (max-width: 560px) {
   body.revenue-share-report-page > .revenue-share-app-header { gap: 8px; }
 }
+
+/* REVENUE_SHARE_VISION_OCR_20260903_001 */
+.report-history-ocr{grid-column:1/-2;display:flex;align-items:flex-start;gap:7px;padding:9px 11px;border-radius:11px;font-size:12px;font-weight:700;line-height:1.45}
+.report-history-ocr.matched{background:#e8f7ee;color:#087035;border:1px solid #b9e2c7}
+.report-history-ocr.mismatch{background:#fff0ef;color:#a5302d;border:1px solid #f2b8b5}
+.report-history-ocr.unreadable,.report-history-ocr.manual_review{background:#fff7e4;color:#805c00;border:1px solid #edd697}
+.report-history-ocr i{flex:0 0 auto;margin-top:1px}
+@media(max-width:620px){.report-history-ocr{grid-column:1/-1}}

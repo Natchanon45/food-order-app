@@ -13,7 +13,7 @@
   <header class="display-header">
     <div class="brand"><div><strong>จอลูกค้า POS</strong><span>รายการสินค้าและยอดชำระแบบเรียลไทม์</span></div></div>
     <div id="displayStatus" class="display-status">รอข้อมูลจาก POS</div>
-    <div id="displayHeaderActions" class="display-header-actions">
+    <div id="displayHeaderActions" class="display-header-actions" data-pos-locale-switcher-target>
       <button id="customerDisplayFullscreen" class="display-header-button" type="button" aria-label="เปิดเต็มจอ">
         <i class="bi bi-arrows-fullscreen" aria-hidden="true"></i><span>เต็มจอ</span>
       </button>
@@ -52,5 +52,6 @@
   <footer class="display-footer"><span></span><span id="updatedAt"></span></footer>
 </div>
 <script type="module" src="/assets/js/retail-customer-display.js?v=20260802-006"></script>
+<script type="module" src="/assets/js/retail-pos-i18n-bootstrap.js?v=20260903-249" data-pos-i18n-generated="1"></script>
 </body>
 </html>

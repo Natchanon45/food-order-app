@@ -1375,3 +1375,10 @@ p {
     min-width: 0;
   }
 }
+
+/* REVENUE_SHARE_VISION_OCR_20260903_001 */
+.tenant-review-ocr{display:flex!important;align-items:flex-start;gap:5px;margin-top:5px;padding:6px 8px;border-radius:9px;font-size:11px!important;line-height:1.35;font-weight:700}
+.tenant-review-ocr.matched{background:#e8f7ee;color:#087035}
+.tenant-review-ocr.mismatch{background:#fff0ef;color:#a5302d}
+.tenant-review-ocr.unreadable,.tenant-review-ocr.manual_review{background:#fff7e4;color:#805c00}
+.tenant-review-ocr i{flex:0 0 auto;margin-top:1px}
