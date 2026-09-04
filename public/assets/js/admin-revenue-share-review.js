@@ -58,16 +58,19 @@ function ocrMarkup(item = {}) {
   const ocr = item.ocr && typeof item.ocr === "object" ? item.ocr : null;
   if (!ocr) return "";
   const status = ["matched", "mismatch", "unreadable", "manual_review"].includes(ocr.status) ? ocr.status : "manual_review";
-  const key = status === "matched"
-    ? "admin_tenants.review.ocr_matched"
-    : status === "mismatch"
-      ? "admin_tenants.review.ocr_mismatch"
-      : status === "unreadable"
-        ? "admin_tenants.review.ocr_unreadable"
-        : "admin_tenants.review.ocr_manual";
-  const amount = ocr.detectedAmount === null || ocr.detectedAmount === undefined ? "-" : money(ocr.detectedAmount);
+  const amountMissing = ocr.detectedAmount === null || ocr.detectedAmount === undefined;
+  const key = ocr.status === "manual_review" && amountMissing
+    ? "admin_tenants.review.ocr_manual"
+    : amountMissing
+      ? "admin_tenants.review.ocr_unreadable"
+      : ocr.amountMatched === true
+        ? "admin_tenants.review.ocr_matched"
+        : "admin_tenants.review.ocr_mismatch";
+  const amount = amountMissing ? "-" : money(ocr.detectedAmount);
+  const recipient = String(ocr.expectedRecipientName || "").trim();
+  const recipientKey = !recipient ? "admin_tenants.review.recipient_not_configured" : ocr.recipientMatched === true ? "admin_tenants.review.recipient_matched" : ocr.recipientMatched === false ? "admin_tenants.review.recipient_mismatch" : "admin_tenants.review.recipient_manual";
   const icon = status === "matched" ? "bi-check-circle" : status === "mismatch" ? "bi-exclamation-triangle" : "bi-eye";
-  return `<small class="tenant-review-ocr ${status}"><i class="bi ${icon}" aria-hidden="true"></i><span>${escapeHtml(t(key, { amount }))}</span></small>`;
+  return `<small class="tenant-review-ocr ${status}"><i class="bi ${icon}" aria-hidden="true"></i><span class="tenant-review-ocr-copy"><span>${escapeHtml(t(key, { amount }))}</span><span>${escapeHtml(t(recipientKey, { recipient: recipient || "-" }))}</span></span></small>`;
 }
 
 function render(items = []) {

@@ -95,7 +95,8 @@ function revenueSetting(tenant = {}) {
   return {
     enabled: tenant.revenueShareEnabled === true || tenant.billingMode === "revenue_share",
     rate: Math.max(0, Math.min(100, Number(tenant.revenueShareRate || 0))),
-    billingCycle: tenant.revenueShareBillingCycle === "daily" ? "daily" : "monthly"
+    billingCycle: tenant.revenueShareBillingCycle === "daily" ? "daily" : "monthly",
+    recipientName: String(tenant.revenueShareRecipientName || "").trim()
   };
 }
 
@@ -159,6 +160,44 @@ function normalizeOcrText(value = "") {
   return String(value || "").normalize("NFC").replace(/\u0e4d\u0e32/g, "\u0e33");
 }
 
+function normalizeRecipientText(value = "") {
+  return normalizeOcrText(value).toLocaleLowerCase("th-TH").replace(/[^\p{L}\p{M}\p{N}]+/gu, "");
+}
+
+function recipientCore(value = "") {
+  return normalizeRecipientText(value)
+    .replace(/^(?:นาย|นางสาว|นาง|คุณ|บริษัท|บจก|หจก)/, "")
+    .replace(/(?:จำกัด|มหาชน)$/g, "");
+}
+
+function detectSlipRecipient(text = "", expectedRecipientName = "") {
+  const expected = String(expectedRecipientName || "").trim();
+  if (!expected) return { configured: false, matched: null, evidence: "" };
+  const full = normalizeRecipientText(expected);
+  const core = recipientCore(expected);
+  const normalizedText = normalizeRecipientText(text);
+  const variants = [full, core].filter(value => value.length >= 4);
+  const matched = variants.some(value => normalizedText.includes(value));
+  let evidence = "";
+  if (matched) {
+    const lines = normalizeOcrText(text).split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+    evidence = lines.find(line => {
+      const normalizedLine = normalizeRecipientText(line);
+      return variants.some(value => normalizedLine.includes(value) || value.includes(normalizedLine) && normalizedLine.length >= 4);
+    }) || expected;
+  }
+  return { configured: true, matched, evidence: String(evidence).slice(0, 250) };
+}
+
+function evaluateOcrStatus({ detectedAmount, expectedAmount, recipientCheck }) {
+  const amountMatched = detectedAmount !== null && detectedAmount !== undefined && Math.abs(Number(detectedAmount) - Number(expectedAmount || 0)) <= 0.05;
+  if (detectedAmount !== null && detectedAmount !== undefined && !amountMatched) return { status: "mismatch", reason: "amount_not_matched", amountMatched };
+  if (recipientCheck.configured && recipientCheck.matched === false) return { status: "mismatch", reason: "recipient_not_matched", amountMatched };
+  if (detectedAmount === null || detectedAmount === undefined) return { status: "unreadable", reason: "no_amount_detected", amountMatched: false };
+  if (!recipientCheck.configured) return { status: "manual_review", reason: "recipient_not_configured", amountMatched };
+  return { status: "matched", reason: "amount_and_recipient_matched", amountMatched };
+}
+
 function moneyValuesFromLine(line = "") {
   const values = [];
   for (const match of String(line || "").matchAll(MONEY_PATTERN)) {
@@ -212,9 +251,10 @@ function detectSlipAmount(text = "") {
   return { amount: best?.value ?? null, ranked: ranked.slice(0, 20) };
 }
 
-async function inspectRevenueShareSlip(file, mime, expectedAmount) {
+async function inspectRevenueShareSlip(file, mime, expectedAmount, expectedRecipientName = "") {
   const expected = Math.round(Number(expectedAmount || 0) * 100) / 100;
-  const base = { provider: "google_vision", expectedAmount: expected, checkedAt: new Date().toISOString() };
+  const recipientName = String(expectedRecipientName || "").trim();
+  const base = { provider: "google_vision", expectedAmount: expected, expectedRecipientName: recipientName, checkedAt: new Date().toISOString() };
   if (!String(mime || "").startsWith("image/")) {
     return { ...base, status: "manual_review", reason: "pdf_requires_manual_review", detectedAmount: null, amountCandidates: [], textExcerpt: "" };
   }
@@ -236,15 +276,19 @@ async function inspectRevenueShareSlip(file, mime, expectedAmount) {
     const candidates = extractMoneyCandidates(text);
     const detection = detectSlipAmount(text);
     const detectedAmount = detection.amount;
-    const matched = detectedAmount !== null && Math.abs(detectedAmount - expected) <= 0.05;
+    const recipientCheck = detectSlipRecipient(text, recipientName);
+    const evaluation = evaluateOcrStatus({ detectedAmount, expectedAmount: expected, recipientCheck });
     return {
       ...base,
-      status: matched ? "matched" : (candidates.length ? "mismatch" : "unreadable"),
-      reason: matched ? "amount_matched" : (candidates.length ? "amount_not_matched" : "no_amount_detected"),
+      status: evaluation.status,
+      reason: evaluation.reason,
       detectedAmount,
+      amountMatched: evaluation.amountMatched,
       amountCandidates: candidates,
       amountEvidence: detection.ranked.slice(0, 8),
-      parserVersion: 3,
+      recipientMatched: recipientCheck.matched,
+      recipientEvidence: recipientCheck.evidence,
+      parserVersion: 4,
       textExcerpt: text.slice(0, 4000),
     };
   } catch (error) {
@@ -253,21 +297,26 @@ async function inspectRevenueShareSlip(file, mime, expectedAmount) {
   }
 }
 
-function normalizedOcr(row = {}) {
+function normalizedOcr(row = {}, tenant = null) {
   const current = row.ocr && typeof row.ocr === "object" ? { ...row.ocr } : null;
   if (!current?.textExcerpt) return current;
   const detection = detectSlipAmount(current.textExcerpt);
-  if (detection.amount === null) return current;
   const expected = Math.round(Number(current.expectedAmount ?? row.revenueShareAmount ?? 0) * 100) / 100;
-  const matched = Math.abs(detection.amount - expected) <= 0.05;
+  const recipientName = String(row.revenueShareRecipientName || current.expectedRecipientName || tenant?.revenueShareRecipientName || "").trim();
+  const recipientCheck = detectSlipRecipient(current.textExcerpt, recipientName);
+  const evaluation = evaluateOcrStatus({ detectedAmount: detection.amount, expectedAmount: expected, recipientCheck });
   return {
     ...current,
     expectedAmount: expected,
+    expectedRecipientName: recipientName,
     detectedAmount: detection.amount,
-    status: matched ? "matched" : "mismatch",
-    reason: matched ? "amount_matched" : "amount_not_matched",
+    amountMatched: evaluation.amountMatched,
+    status: evaluation.status,
+    reason: evaluation.reason,
     amountEvidence: detection.ranked.slice(0, 8),
-    parserVersion: 3,
+    recipientMatched: recipientCheck.matched,
+    recipientEvidence: recipientCheck.evidence,
+    parserVersion: 4,
   };
 }
 
@@ -280,7 +329,7 @@ function paymentPayload(snapshot, tenant = null) {
     orderSales: Number(row.orderSales || 0), posSales: Number(row.posSales || 0), combinedSales: Number(row.combinedSales || 0),
     revenueShareRate: Number(row.revenueShareRate || 0), revenueShareAmount: Number(row.revenueShareAmount || 0),
     status: row.status || "pending", reviewNote: row.reviewNote || "", submittedAt: asDate(row.createdAt)?.toISOString() || "", reviewedAt: asDate(row.reviewedAt)?.toISOString() || "",
-    ocr: normalizedOcr(row),
+    ocr: normalizedOcr(row, tenant),
     slip: { name: row.slipName || "", mime: row.slipMime || "", size: Number(row.slipSize || 0), path: row.slipPath || "" }
   };
 }
@@ -292,11 +341,11 @@ function subscriptionActive(tenant = {}, now = new Date()) {
   return now <= addDays(expiry, Number(tenant.gracePeriodDays ?? 3));
 }
 
-async function mirrorTenantAccess(tenantRef, tenant, patch) {
+async function mirrorTenantAccess(tenantRef, tenant, patch, tenantOnlyPatch = {}) {
   const db = getFirestore();
   const slug = String(tenant.slug || "").trim();
   const batch = db.batch();
-  batch.set(tenantRef, { ...patch, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+  batch.set(tenantRef, { ...patch, ...tenantOnlyPatch, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
   if (slug) batch.set(db.collection("tenantSlugs").doc(slug), { ...patch, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
   await batch.commit();
 }
@@ -375,9 +424,9 @@ exports.getTenantRevenueShareSummary = onCall({ region: REGION }, async request 
 });
 
 exports.listTenantRevenueSharePayments = onCall({ region: REGION }, async request => {
-  const { tenantRef } = await assertTenantAdmin(request.auth);
+  const { tenantRef, tenant } = await assertTenantAdmin(request.auth);
   const snapshot = await tenantRef.collection("revenueSharePayments").orderBy("createdAt", "desc").limit(50).get();
-  return { items: snapshot.docs.map(doc => paymentPayload(doc)) };
+  return { items: snapshot.docs.map(doc => paymentPayload(doc, tenant)) };
 });
 
 exports.submitTenantRevenueSharePayment = onCall({ region: REGION, timeoutSeconds: 60, memory: "512MiB", secrets: [GOOGLE_VISION_API_KEY] }, async request => {
@@ -402,10 +451,40 @@ exports.submitTenantRevenueSharePayment = onCall({ region: REGION, timeoutSecond
   const summary = await summaryForTenant(tenant.id, period, setting);
   const ref = tenantRef.collection("revenueSharePayments").doc(id);
   if ((await ref.get()).exists) throw new HttpsError("already-exists", "Payment ID already exists");
-  const ocr = await inspectRevenueShareSlip(file, mime, summary.revenueShare);
-  await ref.set({ id, tenantId: tenant.id, periodType: period.type, periodLabel: period.label, periodStart: period.startDate, periodEnd: period.endDate, orderSales: summary.orderSales, posSales: summary.posSales, combinedSales: summary.combinedSales, revenueShareRate: setting.rate, revenueShareAmount: summary.revenueShare, slipPath, slipName: String(request.data?.slipName || metadata.name || "slip").slice(0, 255), slipMime: mime, slipSize: size, ocr, status: "pending", reviewNote: "", submittedBy: profile.uid, createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() });
+  const ocr = await inspectRevenueShareSlip(file, mime, summary.revenueShare, setting.recipientName);
+  await ref.set({ id, tenantId: tenant.id, periodType: period.type, periodLabel: period.label, periodStart: period.startDate, periodEnd: period.endDate, orderSales: summary.orderSales, posSales: summary.posSales, combinedSales: summary.combinedSales, revenueShareRate: setting.rate, revenueShareAmount: summary.revenueShare, revenueShareRecipientName: setting.recipientName, slipPath, slipName: String(request.data?.slipName || metadata.name || "slip").slice(0, 255), slipMime: mime, slipSize: size, ocr, status: "pending", reviewNote: "", submittedBy: profile.uid, createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() });
   const saved = await ref.get();
   return { item: paymentPayload(saved) };
+});
+
+exports.deleteTenantRevenueSharePayment = onCall({ region: REGION }, async request => {
+  const { profile, tenantRef, tenant } = await assertTenantAdmin(request.auth);
+  const paymentId = String(request.data?.paymentId || "").trim();
+  if (!/^[a-zA-Z0-9_-]{16,80}$/.test(paymentId)) throw new HttpsError("invalid-argument", "Invalid payment ID");
+  const paymentRef = tenantRef.collection("revenueSharePayments").doc(paymentId);
+  const db = getFirestore();
+  let slipPath = "";
+  await db.runTransaction(async transaction => {
+    const snapshot = await transaction.get(paymentRef);
+    if (!snapshot.exists) throw new HttpsError("not-found", "Payment not found");
+    const row = snapshot.data() || {};
+    if (row.status !== "pending") throw new HttpsError("failed-precondition", "Only pending payments can be deleted");
+    slipPath = String(row.slipPath || "");
+    transaction.delete(paymentRef);
+  });
+  let storageDeleted = true;
+  if (slipPath) {
+    try {
+      await getStorage().bucket().file(slipPath).delete();
+    } catch (error) {
+      if (Number(error?.code) !== 404) {
+        storageDeleted = false;
+        console.error("[revenue-share] pending slip storage cleanup failed", { tenantId: tenant.id, paymentId, slipPath, error: error?.message || error });
+      }
+    }
+  }
+  console.log("Revenue-share pending payment deleted", { tenantId: tenant.id, paymentId, deletedBy: profile.uid, storageDeleted });
+  return { ok: true, paymentId, storageDeleted };
 });
 
 exports.getPlatformRevenueShareSummary = onCall({ region: REGION }, async request => {
@@ -455,12 +534,17 @@ exports.reviewRevenueSharePayment = onCall({ region: REGION }, async request => 
   if (!tenantId || !paymentId || !["approve", "reject"].includes(action)) throw new HttpsError("invalid-argument", "Invalid review request");
   if (action === "reject" && !note) throw new HttpsError("invalid-argument", "Reject note is required");
   const db = getFirestore(), tenantRef = db.collection("tenants").doc(tenantId), paymentRef = tenantRef.collection("revenueSharePayments").doc(paymentId);
-  const [tenantSnapshot, paymentSnapshot] = await Promise.all([tenantRef.get(), paymentRef.get()]);
-  if (!tenantSnapshot.exists || !paymentSnapshot.exists) throw new HttpsError("not-found", "Payment not found");
-  if (paymentSnapshot.data().status !== "pending") throw new HttpsError("already-exists", "Payment already reviewed");
+  const tenantSnapshot = await tenantRef.get();
+  if (!tenantSnapshot.exists) throw new HttpsError("not-found", "Payment not found");
   const status = action === "approve" ? "approved" : "rejected";
-  await paymentRef.set({ status, reviewNote: note, reviewedBy: reviewer.uid, reviewedAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() }, { merge: true });
-  const payment = { ...paymentSnapshot.data(), status, reviewNote: note };
+  let payment = null;
+  await db.runTransaction(async transaction => {
+    const paymentSnapshot = await transaction.get(paymentRef);
+    if (!paymentSnapshot.exists) throw new HttpsError("not-found", "Payment not found");
+    if (paymentSnapshot.data().status !== "pending") throw new HttpsError("already-exists", "Payment already reviewed or deleted");
+    payment = { ...paymentSnapshot.data(), status, reviewNote: note };
+    transaction.set(paymentRef, { status, reviewNote: note, reviewedBy: reviewer.uid, reviewedAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+  });
   const tenant = { id: tenantSnapshot.id, ...tenantSnapshot.data() };
   if (status === "approved" && tenant.revenueShareSuspended && tenant.revenueShareSuspendedPeriodStart === payment.periodStart && tenant.revenueShareSuspendedPeriodEnd === payment.periodEnd) {
     await mirrorTenantAccess(tenantRef, tenant, { active: true, revenueShareSuspended: false, revenueShareSuspendedAt: FieldValue.delete(), revenueShareSuspendedPeriodType: FieldValue.delete(), revenueShareSuspendedPeriodStart: FieldValue.delete(), revenueShareSuspendedPeriodEnd: FieldValue.delete(), revenueShareSuspensionReason: FieldValue.delete() });
@@ -476,14 +560,15 @@ exports.updateTenantRevenueShare = onCall({ region: REGION }, async request => {
   const enabled = request.data?.enabled === true;
   const rate = Number(request.data?.rate || 0);
   const billingCycle = request.data?.billingCycle === "daily" ? "daily" : request.data?.billingCycle === "monthly" ? "monthly" : "";
-  if (!tenantId || !Number.isFinite(rate) || rate < 0 || rate > 100 || !billingCycle) throw new HttpsError("invalid-argument", "Invalid revenue-share settings");
+  const recipientName = String(request.data?.recipientName || "").trim().slice(0, 160);
+  if (!tenantId || !Number.isFinite(rate) || rate < 0 || rate > 100 || !billingCycle || (enabled && recipientName.length < 2)) throw new HttpsError("invalid-argument", "Invalid revenue-share settings or recipient name");
   const db = getFirestore(), tenantRef = db.collection("tenants").doc(tenantId), snapshot = await tenantRef.get();
   if (!snapshot.exists) throw new HttpsError("not-found", "Tenant not found");
   const tenant = { id: snapshot.id, ...snapshot.data() };
   const active = enabled ? tenant.revenueShareSuspended !== true : subscriptionActive(tenant);
-  await mirrorTenantAccess(tenantRef, tenant, { revenueShareEnabled: enabled, revenueShareRate: Math.round(rate * 10000) / 10000, revenueShareBillingCycle: billingCycle, billingMode: enabled ? "revenue_share" : "subscription", active });
+  await mirrorTenantAccess(tenantRef, tenant, { revenueShareEnabled: enabled, revenueShareRate: Math.round(rate * 10000) / 10000, revenueShareBillingCycle: billingCycle, billingMode: enabled ? "revenue_share" : "subscription", active }, { revenueShareRecipientName: recipientName });
   if (!enabled && tenant.revenueShareSuspended) await reconcileTenant(tenantId);
-  return { ok: true, tenantId, enabled, rate, billingCycle, active };
+  return { ok: true, tenantId, enabled, rate, billingCycle, recipientName, active };
 });
 
 exports.unlockTenantRevenueShare = onCall({ region: REGION }, async request => {

@@ -1382,3 +1382,5 @@ p {
 .tenant-review-ocr.mismatch{background:#fff0ef;color:#a5302d}
 .tenant-review-ocr.unreadable,.tenant-review-ocr.manual_review{background:#fff7e4;color:#805c00}
 .tenant-review-ocr i{flex:0 0 auto;margin-top:1px}
+
+.tenant-review-ocr-copy{display:grid;gap:2px;min-width:0}

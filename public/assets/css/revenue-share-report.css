@@ -133,3 +133,8 @@ body.revenue-share-report-page .revenue-share-back-link {
 .report-history-ocr.unreadable,.report-history-ocr.manual_review{background:#fff7e4;color:#805c00;border:1px solid #edd697}
 .report-history-ocr i{flex:0 0 auto;margin-top:1px}
 @media(max-width:620px){.report-history-ocr{grid-column:1/-1}}
+
+.report-history-ocr-copy{display:grid;gap:2px;min-width:0}
+.report-history-ocr-copy small{font-size:11px;font-weight:700;opacity:.9}
+.report-history-actions .btn-danger{background:#cf3434;color:#fff;border-color:#cf3434}
+@media(max-width:620px){.report-history-actions .btn{flex:1 1 0;width:auto}}
