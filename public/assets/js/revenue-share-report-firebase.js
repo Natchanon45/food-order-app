@@ -125,4 +125,18 @@ document.querySelectorAll("[data-report-period]").forEach(button=>button.addEven
 els.slip.addEventListener("change",()=>{const file=els.slip.files?.[0]||null;els.slipName.textContent=file?.name||t("payment.noFile");setPaymentMessage("");setSlipError("");if(!file){renderSelectedSlip(null);return;}if(validateSlip(file,true)){renderSelectedSlip(file);return;}clearSelectedSlip(true);}); els.previewSelected.addEventListener("click",previewSelectedSlip); els.removeSelected.addEventListener("click",()=>clearSelectedSlip()); els.paymentForm.addEventListener("submit",submitPayment);
 els.paymentHistory.addEventListener("click",event=>{const button=event.target.closest("[data-report-view-slip]");if(!button)return;const item=state.payments.find(row=>row.id===button.dataset.reportViewSlip);if(item)viewStoredSlip(item);}); document.querySelectorAll("[data-close-report-slip]").forEach(button=>button.addEventListener("click",closeSlip)); els.slipDialog.addEventListener("cancel",event=>event.preventDefault()); window.addEventListener("beforeunload",revokeSelectedSlipUrl);
 
-try { const access=(await callAccess({})).data||{}; if(access.enabled!==true){location.replace("/");} else {document.body.dataset.revenueShareReady="1"; applyLocale(); await Promise.all([loadReport(),loadPaymentHistory()]);} } catch(error){console.error(error);location.replace("/");}
+try {
+  const access=(await callAccess({})).data||{};
+  if(access.enabled!==true){
+    location.replace("/");
+  } else {
+    document.body.dataset.revenueShareReady="1";
+    applyLocale();
+    await Promise.all([loadReport(),loadPaymentHistory()]);
+  }
+} catch(error){
+  console.error(error);
+  document.body.dataset.revenueShareReady="1";
+  applyLocale();
+  setError(t("states.loadFailed"));
+}

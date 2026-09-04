@@ -29,12 +29,17 @@ function canUseTenant(tenant) {
 if (profile?.role !== "super_admin" && profile?.tenantId) {
   const tenantSnapshot = await getDoc(doc(db, "tenants", profile.tenantId));
   const tenant = tenantSnapshot.exists() ? tenantSnapshot.data() : null;
-  const normalizedPath = location.pathname.replace(/\/index\.html$/, "/");
-  const revenueShareRecoveryRoute = normalizedPath.startsWith("/reports/revenue-share/") || normalizedPath.startsWith("/admin/revenue-share/");
+  const normalizedPath = location.pathname.replace(/\/index\.html$/, "").replace(/\/+$/, "") || "/";
+  const revenueShareRecoveryRoute =
+    normalizedPath === "/reports/revenue-share" ||
+    normalizedPath.startsWith("/reports/revenue-share/") ||
+    normalizedPath === "/admin/revenue-share" ||
+    normalizedPath.startsWith("/admin/revenue-share/");
   const revenueShareMode = tenant && (tenant.revenueShareEnabled === true || tenant.billingMode === "revenue_share");
   const canRecoverRevenueShare = revenueShareRecoveryRoute && revenueShareMode;
   if (tenant && revenueShareMode && tenant.revenueShareSuspended === true && !revenueShareRecoveryRoute) {
-    location.replace("/reports/revenue-share/");
+    const recoveryPath = "/reports/revenue-share";
+    if (normalizedPath !== recoveryPath) location.replace(recoveryPath);
     await new Promise(() => {});
   }
   if (!tenant || (!canUseTenant(tenant) && !canRecoverRevenueShare)) {
