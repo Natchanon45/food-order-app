@@ -155,6 +155,10 @@ const FEE_HINT = /(?:ค่าธรรมเนียม|fee|fees|service\s*cha
 const DATE_TIME_HINT = /(?:วันที่|date|เวลา|time|พ\.?ศ\.?|ค\.?ศ\.?|a\.?m\.?|p\.?m\.?|น\.)/i;
 const REFERENCE_HINT = /(?:เลขที่รายการ|เลขอ้างอิง|reference|ref\.?|transaction|บัญชี|account)/i;
 
+function normalizeOcrText(value = "") {
+  return String(value || "").normalize("NFC").replace(/\u0e4d\u0e32/g, "\u0e33");
+}
+
 function moneyValuesFromLine(line = "") {
   const values = [];
   for (const match of String(line || "").matchAll(MONEY_PATTERN)) {
@@ -179,7 +183,7 @@ function extractMoneyCandidates(text = "") {
 }
 
 function detectSlipAmount(text = "") {
-  const lines = String(text || "").split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const lines = normalizeOcrText(text).split(/\r?\n/).map(line => line.trim()).filter(Boolean);
   const ranked = [];
   lines.forEach((line, index) => {
     const values = moneyValuesFromLine(line);
@@ -187,10 +191,14 @@ function detectSlipAmount(text = "") {
     let score = 0;
     if (AMOUNT_HINT.test(line)) score += 120;
     if (/บาท|thb|฿/i.test(line)) score += 35;
+    // Vision may place the amount far away from its label in bank-slip layouts.
+    // A grouped decimal such as 3,000.00 is still strong standalone money evidence.
+    if (/\b\d{1,3}(?:,\d{3})+\.\d{2}\b/.test(line)) score += 75;
+    else if (/^\s*(?:฿\s*)?\d+\.\d{2}\s*(?:บาท|thb)?\s*$/i.test(line)) score += 45;
     if (FEE_HINT.test(line)) score -= 180;
     if (DATE_TIME_HINT.test(line)) score -= 100;
     if (REFERENCE_HINT.test(line)) score -= 90;
-    if (/\d{1,2}[:.]\d{2}/.test(line)) score -= 60;
+    if (/\d{1,2}[:.]\d{2}/.test(line) && !/,\d{3}\.\d{2}/.test(line)) score -= 60;
     values.forEach(value => ranked.push({ value, score, line, index }));
   });
   for (let index = 0; index < lines.length - 1; index += 1) {
@@ -236,7 +244,7 @@ async function inspectRevenueShareSlip(file, mime, expectedAmount) {
       detectedAmount,
       amountCandidates: candidates,
       amountEvidence: detection.ranked.slice(0, 8),
-      parserVersion: 2,
+      parserVersion: 3,
       textExcerpt: text.slice(0, 4000),
     };
   } catch (error) {
@@ -259,7 +267,7 @@ function normalizedOcr(row = {}) {
     status: matched ? "matched" : "mismatch",
     reason: matched ? "amount_matched" : "amount_not_matched",
     amountEvidence: detection.ranked.slice(0, 8),
-    parserVersion: 2,
+    parserVersion: 3,
   };
 }
 
