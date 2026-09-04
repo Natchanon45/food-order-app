@@ -46,6 +46,7 @@ const els = {
   shareEnabled: document.querySelector("#revenueShareEnabled"),
   shareRate: document.querySelector("#revenueShareRate"),
   shareBillingCycle: document.querySelector("#revenueShareBillingCycle"),
+  shareRecipientName: document.querySelector("#revenueShareRecipientName"),
   shareSalesPreview: document.querySelector("#revenueShareSalesPreview"),
   shareAmountPreview: document.querySelector("#revenueShareAmountPreview"),
   shareError: document.querySelector("#revenueShareError"),
@@ -368,6 +369,8 @@ function openShareDialog(tenant) {
   els.shareEnabled.checked = summary.revenueShareEnabled === true;
   els.shareRate.value = Number(summary.revenueShareRate || 0).toFixed(2);
   els.shareBillingCycle.value = summary.revenueShareBillingCycle === "daily" ? "daily" : "monthly";
+  els.shareRecipientName.value = String(tenant.revenueShareRecipientName || "");
+  els.shareRecipientName.required = els.shareEnabled.checked;
   els.shareSalesPreview.textContent = `${money(summary.combinedSales)} ${t("admin_tenants.common.baht")}`;
   setShareError("");
   updateSharePreview();
@@ -512,10 +515,21 @@ els.tenantList.addEventListener("click", event => {
   }
 });
 
-els.shareEnabled.addEventListener("change", updateSharePreview);
+els.shareEnabled.addEventListener("change", () => {
+  els.shareRecipientName.required = els.shareEnabled.checked;
+  if (!els.shareEnabled.checked) els.shareRecipientName.setCustomValidity("");
+  updateSharePreview();
+});
 els.shareRate.addEventListener("input", updateSharePreview);
+els.shareRecipientName.addEventListener("input", () => els.shareRecipientName.setCustomValidity(""));
 els.shareForm.addEventListener("submit", async event => {
   event.preventDefault();
+  els.shareRecipientName.required = els.shareEnabled.checked;
+  if (els.shareEnabled.checked && els.shareRecipientName.value.trim().length < 2) {
+    els.shareRecipientName.setCustomValidity(t("admin_tenants.share.recipient_name_required"));
+  } else {
+    els.shareRecipientName.setCustomValidity("");
+  }
   if (!els.shareForm.reportValidity() || !state.shareTenantId) return;
   setShareError("");
   els.shareSubmit.disabled = true;
@@ -526,6 +540,7 @@ els.shareForm.addEventListener("submit", async event => {
       enabled: els.shareEnabled.checked,
       rate: Number(els.shareRate.value || 0),
       billingCycle: els.shareBillingCycle.value,
+      recipientName: els.shareRecipientName.value.trim(),
     });
     toast(t("admin_tenants.share.saved"));
     closeDialog(els.shareDialog);

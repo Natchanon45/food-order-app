@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="/assets/css/tenant-admin.css?v=20260903-210">
 <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-095">
 <link rel="stylesheet" href="/assets/css/tenant-card-independent-height.css?v=20260903-210">
-<link rel="stylesheet" href="/assets/css/tenant-admin-clarity.css?v=20260903-211">
+<link rel="stylesheet" href="/assets/css/tenant-admin-clarity.css?v=20260904-002">
 <link rel="stylesheet" href="/assets/css/revenue-share-slip-dialog.css?v=20260903-210">
 <link rel="stylesheet" href="/assets/css/i18n.css?v=20260903-202">
 <title>จัดการร้านค้า</title>
@@ -143,6 +143,7 @@
       <label class="tenant-share-switch"><input id="revenueShareEnabled" type="checkbox"><span><strong><span data-i18n="admin_tenants.share.enabled">เปิดใช้งานการคิดส่วนแบ่ง</span></strong><small><span data-i18n="admin_tenants.share.help">คำนวณจากยอดขายรวมของออเดอร์และ POS ตามช่วงเวลาที่เลือก</span></small></span></label>
       <div class="field"><label for="revenueShareRate"><span data-i18n="admin_tenants.share.rate">อัตราส่วนแบ่ง (%)</span></label><div class="tenant-share-input"><input class="input" id="revenueShareRate" type="number" min="0" max="100" step="0.01" value="0" required><span>%</span></div></div>
       <div class="field"><label for="revenueShareBillingCycle"><span data-i18n="admin_tenants.share.billing_cycle">รอบการชำระและตรวจสอบ</span></label><select class="input" id="revenueShareBillingCycle" required><option value="daily" data-i18n="admin_tenants.share.billing_cycles.daily">รายวัน</option><option value="monthly" data-i18n="admin_tenants.share.billing_cycles.monthly">รายเดือน</option></select><small><span data-i18n="admin_tenants.share.billing_cycle_help">ใช้รอบนี้สำหรับการแนบสลิปและระงับการใช้งานเมื่อค้างชำระ</span></small></div>
+      <div class="field"><label for="revenueShareRecipientName"><span data-i18n="admin_tenants.share.recipient_name">ชื่อผู้รับเงิน / ชื่อบริษัท</span></label><input class="input" id="revenueShareRecipientName" maxlength="160" placeholder="เช่น นาย ณัฐชนน ศรีเปล่ง หรือ บริษัท ตัวอย่าง จำกัด" data-i18n-placeholder="admin_tenants.share.recipient_name_placeholder"><small><span data-i18n="admin_tenants.share.recipient_name_help">ระบบจะตรวจว่าชื่อนี้ปรากฏในสลิป โดยไม่สนใจช่องว่าง จุด หรือขีด</span></small></div>
       <div class="tenant-share-preview"><span><span data-i18n="admin_tenants.share.current_sales">ยอดขายช่วงปัจจุบัน</span></span><strong id="revenueShareSalesPreview">0.00 <span data-i18n="admin_tenants.common.baht">บาท</span></strong><span><span data-i18n="admin_tenants.share.estimated">ส่วนแบ่งโดยประมาณ</span></span><strong id="revenueShareAmountPreview">0.00 <span data-i18n="admin_tenants.common.baht">บาท</span></strong></div>
       <div class="upload-error" id="revenueShareError" hidden></div>
     </div>
@@ -191,11 +192,11 @@
     </div>
   </div>
 </dialog>
-<script type="module" src="/assets/js/admin-tenants-i18n-bootstrap.js?v=20260903-211"></script>
+<script type="module" src="/assets/js/admin-tenants-i18n-bootstrap.js?v=20260904-002"></script>
 <script type="module" src="/assets/js/page-guard.js?v=20260904-001"></script>
 <script type="module" src="/assets/js/sweet-dialog.js?v=20260731-080"></script>
-<script type="module" src="/assets/js/admin-tenants.js?v=20260903-210"></script>
-<script type="module" src="/assets/js/admin-revenue-share-review.js?v=20260903-212"></script>
+<script type="module" src="/assets/js/admin-tenants.js?v=20260904-002"></script>
+<script type="module" src="/assets/js/admin-revenue-share-review.js?v=20260904-002"></script>
 <script type="module" src="/assets/js/admin-subscriptions.js?v=20260903-210"></script>
 <script type="module" src="/assets/js/locale-switcher-static.js?v=20260903-202"></script>
 </body>
