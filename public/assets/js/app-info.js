@@ -8,19 +8,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.16.25',
-  build: '2026.09.16.010',
+  version: '0.16.26',
+  build: '2026.09.16.011',
   branch: 'feature/retail-pos',
-  commit: 'VERTICAL-MENU-IMAGE-POSITION',
+  commit: 'CASHIER-DELIVERY-FEE-BREAKDOWN',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Vertical Menu Image Position Parity',
-  updatedAt: '2026-09-16T01:38:00+07:00',
+  milestone: 'Cashier Delivery Fee Breakdown',
+  updatedAt: '2026-09-16T04:27:00+07:00',
   whatsNew: [
-    'Apply admin menu image focal positions consistently to Delivery, Take Away, and table ordering',
-    'Keep image focal position values clamped with a safe 50% center fallback',
-    'Preserve responsive menu cards, favorites, and notification improvements'
+    'Show Delivery zone, food subtotal, and delivery fee separately on Cashier bills',
+    'Reuse the same effective delivery amount calculation as Kitchen and receipt views',
+    'Preserve vertical-only menu image positioning across public ordering pages'
   ]
 };
 

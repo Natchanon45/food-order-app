@@ -2,11 +2,11 @@ import "./sweet-dialog.js?v=20260726-034";
 import "./cashier-table-move.js?v=20260812-117";
 import { dataService, usingDemoMode } from "./data-service.js?v=20260903-221";
 import { storage, ref, getDownloadURL } from "./firebase-config.js?v=20260630-073";
-import { money, statusLabel, formatTime, toast } from "./ui.js?v=20260805-081";
+import { money, statusLabel, formatTime, toast } from "./ui.js?v=20260916-005";
 import { observeDeliveryOrders } from "./delivery-notifier.js?v=20260915-003";
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 import { t } from "./i18n.js?v=20260812-099";
-import { enrichDeliveryGiftItems } from "./delivery-order-display.js?v=20260903-242";
+import { effectiveDeliveryAmounts, enrichDeliveryGiftItems } from "./delivery-order-display.js?v=20260916-011";
 
 if (!document.querySelector('link[href*="sweet-dialog.css"]')) {
   const link = document.createElement("link");
@@ -152,6 +152,10 @@ function itemRows(order) {
     )
     .join("");
 }
+function deliverySummary(order) {
+  const amounts = effectiveDeliveryAmounts(order);
+  return `<div class="card" style="margin-top:10px;padding:10px 12px;box-shadow:none;background:#f8fbf9"><div class="receipt-row"><span>${t("cashier.delivery.delivery_zone")}</span><strong>${order.deliveryZoneLabel || "-"}</strong></div><div class="receipt-row"><span>${t("cashier.delivery.food_subtotal")}</span><strong>${money(amounts.subtotal)} ${t("cashier.common.baht")}</strong></div><div class="receipt-row"><span>${t("cashier.delivery.delivery_fee")}</span><strong>${money(amounts.deliveryFee)} ${t("cashier.common.baht")}</strong></div></div>`;
+}
 function renderDelivery(order) {
   const paymentAction =
     order.paymentStatus !== "paid"
@@ -163,7 +167,7 @@ function renderDelivery(order) {
     : order.paymentSlipPath
       ? `<button class="btn btn-warning" disabled>${icon("view")}<span>${t("cashier.payment.loading_slip")}</span></button>`
       : "";
-  return `<article class="card order-card"><div class="order-head"><div class="order-heading-with-queue">${queueBadge(order)}<div><h2 style="margin:0">Delivery: ${order.recipientName || t("cashier.delivery.recipient_fallback")}</h2><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div></div><span class="badge">${statusLabel(order.status)}</span></div><p><span class="badge ${order.paymentStatus === "paid" ? "" : "warning"}">${paymentLabel(order)}</span><br><strong>${t("cashier.delivery.phone")}</strong> ${order.recipientPhone || "-"}<br><strong>${t("cashier.delivery.address")}</strong> ${order.deliveryAddress || "-"}</p><ul class="order-items">${itemRows(order)}</ul>${orderNote(order)}<div class="order-head" style="margin-top:10px"><strong>${t("cashier.delivery.net_total")}</strong><strong class="price">${money(order.totalAmount)} ${t("cashier.common.baht")}</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">${icon("print")}<span>${t("cashier.common.print")}</span></a>${slipAction}${paymentAction}<button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>${t("cashier.actions.cancel_all")}</span></button></div></article>`;
+  return `<article class="card order-card"><div class="order-head"><div class="order-heading-with-queue">${queueBadge(order)}<div><h2 style="margin:0">Delivery: ${order.recipientName || t("cashier.delivery.recipient_fallback")}</h2><small>${formatTime(order.createdAt || order.createdAtText || order.updatedAt)}</small></div></div><span class="badge">${statusLabel(order.status)}</span></div><p><span class="badge ${order.paymentStatus === "paid" ? "" : "warning"}">${paymentLabel(order)}</span><br><strong>${t("cashier.delivery.phone")}</strong> ${order.recipientPhone || "-"}<br><strong>${t("cashier.delivery.address")}</strong> ${order.deliveryAddress || "-"}</p><ul class="order-items">${itemRows(order)}</ul>${deliverySummary(order)}${orderNote(order)}<div class="order-head" style="margin-top:10px"><strong>${t("cashier.delivery.net_total")}</strong><strong class="price">${money(order.totalAmount)} ${t("cashier.common.baht")}</strong></div><div class="order-actions" style="margin-top:12px"><a class="btn btn-dark" href="/cashier/receipt/?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">${icon("print")}<span>${t("cashier.common.print")}</span></a>${slipAction}${paymentAction}<button class="btn btn-danger" data-id="${order.id}" data-status="cancelled">${icon("times-circle")}<span>${t("cashier.actions.cancel_all")}</span></button></div></article>`;
 }
 function renderTakeaway(order) {
   const paid = order.paymentStatus === "paid";
