@@ -1,7 +1,7 @@
-import { dataService, usingDemoMode } from "./data-service.js?v=20260915-005";
+import { dataService, usingDemoMode } from "./data-service.js?v=20260916-005";
 import { ensureAdminSessionContext } from "./admin-session-bootstrap.js?v=20260903-203";
 import { money, toast, DEFAULT_FOOD_IMAGE } from "./ui.js?v=20260831-001";
-import { getMenuImagePosition, setMenuImagePosition } from "./admin-image-position.js";
+import { getMenuImagePosition, setMenuImagePosition } from "./admin-image-position.js?v=20260916-001";
 import { t } from "./i18n.js?v=20260903-202";
 import { createAdminStoreLocationMap } from "./admin-store-location-map.js?v=20260915-001";
 
@@ -673,7 +673,7 @@ async function load() {
         : 10;
   }
   document.querySelector("#menuRows").innerHTML = menus.map(item => `
-    <tr data-active="${item.active !== false}"><td><img src="${item.image || DEFAULT_FOOD_IMAGE}" alt="${item.name}" data-food-image style="width:58px;height:46px;object-fit:cover;object-position:${Number(item.imagePositionX ?? 50)}% ${Number(item.imagePositionY ?? 50)}%;border-radius:8px"></td><td><strong>${item.name}</strong></td><td>${item.category || "-"}</td><td>${money(item.price)}</td><td>${item.active !== false ? `<span class="badge">${t("admin.menu.active")}</span>` : `<span class="badge dark">${t("admin.menu.closed")}</span>`}</td><td><button class="btn btn-sm" data-edit-menu="${item.id}">${t("admin.common.edit")}</button> <button class="btn btn-danger btn-sm" data-delete-menu="${item.id}">${t("admin.common.delete")}</button></td></tr>
+    <tr data-active="${item.active !== false}"><td><img src="${item.image || DEFAULT_FOOD_IMAGE}" alt="${item.name}" data-food-image style="width:58px;height:46px;object-fit:cover;object-position:50% ${Number(item.imagePositionY ?? 50)}%;border-radius:8px"></td><td><strong>${item.name}</strong></td><td>${item.category || "-"}</td><td>${money(item.price)}</td><td>${item.active !== false ? `<span class="badge">${t("admin.menu.active")}</span>` : `<span class="badge dark">${t("admin.menu.closed")}</span>`}</td><td><button class="btn btn-sm" data-edit-menu="${item.id}">${t("admin.common.edit")}</button> <button class="btn btn-danger btn-sm" data-delete-menu="${item.id}">${t("admin.common.delete")}</button></td></tr>
   `).join("");
   document.querySelector("#tableRows").innerHTML = tables.map(item => `
     <tr data-active="${item.active !== false}"><td><strong>${item.code}</strong></td><td>${item.name}</td><td><strong class="table-capacity">${Math.max(1, Number.parseInt(item.capacity ?? item.seats ?? item.seatCount ?? 4, 10) || 4)}</strong></td><td>${item.active !== false ? `<span class="badge">${t("admin.table.active")}</span>` : `<span class="badge dark">${t("admin.table.closed")}</span>`}</td><td><button class="btn btn-sm" data-edit-table="${item.id}">${t("admin.common.edit")}</button> <button class="btn btn-danger btn-sm" data-delete-table="${item.id}">${t("admin.common.delete")}</button></td></tr>

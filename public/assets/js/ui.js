@@ -1,7 +1,7 @@
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 import { getIntlLocale, t } from "./i18n.js?v=20260903-202";
 import "./form-validation-ui.js?v=20260731-080";
-import { APP_INFO } from "./app-info.js?v=20260915-001";
+import { APP_INFO } from "./app-info.js?v=20260916-004";
 
 export const APP_VERSION = APP_INFO.version;
 export const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
@@ -279,7 +279,8 @@ function initializeUi() {
       decorateCartHeading(node.parentElement.closest?.(".section-title h2"));
     }
   }))).observe(document.body, { childList: true, subtree: true });
-  if (document.querySelector("#menuGrid")) import("./menu-image-position.js");
+  // Menu image positions are rendered directly from each tenant-scoped menu item.
+  // Do not load the legacy global decorator here because it can race tenant resolution.
   mountVersion();
 }
 

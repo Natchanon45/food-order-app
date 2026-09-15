@@ -1,7 +1,7 @@
-await import("./public-tenant-resolver.js?v=20260903-231");
+await import("./public-tenant-resolver.js?v=20260916-004");
 await import("./table-qr-resolver.js?v=20260903-231");
 
-import { publicStorefrontService as dataService } from "./public-storefront-service.js?v=20260903-231";
+import { publicStorefrontService as dataService } from "./public-storefront-service.js?v=20260916-005";
 import { demoStore } from "./demo-store.js";
 const usingDemoMode = false;
 
@@ -81,4 +81,4 @@ dataService.subscribeOrders = callback => {
 // loading the module instead of allowing it to fall back to /api/* endpoints.
 window.__CUSTOMER_DATA_SERVICE__ = dataService;
 window.__CUSTOMER_USING_DEMO_MODE__ = usingDemoMode;
-await import("./customer.js?v=20260903-238");
+await import("./customer.js?v=20260916-005");
