@@ -82,6 +82,9 @@ export default {
         "recipient_fallback": "ไม่ระบุชื่อ",
         "phone": "โทร:",
         "address": "ที่อยู่:",
+        "delivery_zone": "พื้นที่จัดส่ง",
+        "food_subtotal": "ค่าอาหาร",
+        "delivery_fee": "ค่าจัดส่ง",
         "net_total": "ยอดสุทธิ"
       },
       "takeaway": {
@@ -379,6 +382,9 @@ export default {
         "recipient_fallback": "Unnamed recipient",
         "phone": "Phone:",
         "address": "Address:",
+        "delivery_zone": "Delivery zone",
+        "food_subtotal": "Food subtotal",
+        "delivery_fee": "Delivery fee",
         "net_total": "Net total"
       },
       "takeaway": {
