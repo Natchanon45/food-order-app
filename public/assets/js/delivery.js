@@ -1,6 +1,8 @@
 import "./public-page-static-i18n.js?v=20260915-005";
 
-import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20260903-231';
+await import("./public-tenant-resolver.js?v=20260916-005");
+
+import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20260916-005';
 import { functions, httpsCallable } from "./firebase-config.js?v=20260630-073";
 import { money, toast } from "./ui.js?v=20260805-081";
 import { t } from "./i18n.js?v=20260903-202";
@@ -327,6 +329,11 @@ function deliveryDistanceAllowed() {
   return currentDeliveryRoute?.inRange === true && Boolean(currentDeliveryRoute?.zone?.id);
 }
 
+function menuImagePositionStyle(item = {}) {
+  const clamp = value => Math.max(0, Math.min(100, Number.isFinite(Number(value)) ? Number(value) : 50));
+  return `object-position:50% ${clamp(item.imagePositionY)}% !important`;
+}
+
 function favoriteCategoryLabel() {
   return t("delivery.checkout.menu.favorites");
 }
@@ -361,7 +368,7 @@ function renderMenus() {
     ? filtered.map(item => {
       const favorite = favoriteMenuIds.has(String(item.id));
       const favoriteLabel = favorite ? t("delivery.checkout.menu.favorite_remove") : t("delivery.checkout.menu.favorite_add");
-      return `<article class="card menu-card"><div class="menu-image"><img src="${item.image}" alt="${item.name}"><button type="button" class="menu-favorite-button${favorite ? " is-favorite" : ""}" data-favorite="${item.id}" aria-pressed="${favorite}" aria-label="${favoriteLabel}" title="${favoriteLabel}"><i class="bi bi-heart${favorite ? "-fill" : ""}" aria-hidden="true"></i></button></div><div class="menu-name">${item.name}</div><div class="menu-category">${item.category || otherCategory}</div><div class="menu-footer"><span class="price">${money(item.price)} ${t("delivery.checkout.units.baht")}</span><button type="button" class="btn btn-primary btn-sm menu-add-button" data-add="${item.id}" aria-label="${t("delivery.checkout.menu.add")}" title="${t("delivery.checkout.menu.add")}"><i class="bi bi-plus-lg" aria-hidden="true"></i></button></div></article>`;
+      return `<article class="card menu-card"><div class="menu-image"><img src="${item.image}" alt="${item.name}" data-image-position-x="50" data-image-position-y="${Number(item.imagePositionY ?? 50)}" style="${menuImagePositionStyle(item)}"><button type="button" class="menu-favorite-button${favorite ? " is-favorite" : ""}" data-favorite="${item.id}" aria-pressed="${favorite}" aria-label="${favoriteLabel}" title="${favoriteLabel}"><i class="bi bi-heart${favorite ? "-fill" : ""}" aria-hidden="true"></i></button></div><div class="menu-name">${item.name}</div><div class="menu-category">${item.category || otherCategory}</div><div class="menu-footer"><span class="price">${money(item.price)} ${t("delivery.checkout.units.baht")}</span><button type="button" class="btn btn-primary btn-sm menu-add-button" data-add="${item.id}" aria-label="${t("delivery.checkout.menu.add")}" title="${t("delivery.checkout.menu.add")}"><i class="bi bi-plus-lg" aria-hidden="true"></i></button></div></article>`;
     }).join("")
     : `<div class="card empty">${t("delivery.checkout.menu.not_found")}</div>`;
 }

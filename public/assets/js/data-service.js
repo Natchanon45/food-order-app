@@ -13,7 +13,16 @@ function activeShop() { return resolveShopContext(); }
 function shopCollection(name) { return collection(db, ...shopCollectionPath(name, activeShop())); }
 function shopDocument(name, id) { return doc(db, ...shopDocumentPath(name, id, activeShop())); }
 function mapDocs(snapshot) { return snapshot.docs.map(item => ({ id: item.id, ...item.data() })); }
-function normalizeMenu(menu) { return { ...menu, image: menu.image || DEFAULT_FOOD_IMAGE, sortOrder: Number(menu.sortOrder || 9999) }; }
+function normalizeMenu(menu) {
+  const clampPosition = value => Math.max(0, Math.min(100, Number.isFinite(Number(value)) ? Number(value) : 50));
+  return {
+    ...menu,
+    image: menu.image || DEFAULT_FOOD_IMAGE,
+    imagePositionX: 50,
+    imagePositionY: clampPosition(menu.imagePositionY),
+    sortOrder: Number(menu.sortOrder || 9999),
+  };
+}
 function canonicalMenuName(value = "") { return String(value || "").normalize("NFKC").trim().replace(/\s+/g, " ").toLocaleLowerCase(); }
 function sortMenus(menus, categoryOrder = []) {
   const rank = new Map(categoryOrder.map((name, index) => [name, index]));

@@ -1,8 +1,10 @@
 import "./public-page-static-i18n.js?v=20260903-231";
 
+await import("./public-tenant-resolver.js?v=20260916-005");
+
 import "./sweet-dialog.js?v=20260726-034";
 import "./cart-item-layout.js?v=20260702-002";
-import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20260903-231';
+import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20260916-005';
 import { money, toast } from "./ui.js?v=20260805-081";
 import { t } from "./i18n.js?v=20260903-202";
 
@@ -76,10 +78,11 @@ function categoryLabel(category) {
   if (category === OTHER_CATEGORY) return t("takeaway.menu.other");
   return category;
 }
+function menuImagePositionStyle(item = {}) { const clamp = value => Math.max(0, Math.min(100, Number.isFinite(Number(value)) ? Number(value) : 50)); return `object-position:50% ${clamp(item.imagePositionY)}% !important`; }
 function priceLabel(value) { return t("takeaway.cart.amount", { amount: money(value) }); }
 function renderTabs() { categoryTabs.innerHTML = categories().map(category => `<button type="button" class="category-tab${category === activeCategory ? " active" : ""}" data-category="${escapeHtml(category)}" role="tab" aria-selected="${category === activeCategory}">${escapeHtml(categoryLabel(category))}</button>`).join(""); }
 function filteredMenus() { const keyword = document.querySelector("#searchInput").value.trim().toLowerCase(); return menus.filter(item => item.active !== false && (!keyword || String(item.name || "").toLowerCase().includes(keyword)) && (activeCategory === ALL_CATEGORY || (item.category || OTHER_CATEGORY) === activeCategory)); }
-function menuCard(item) { return `<article class="card menu-card"><div class="menu-image"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}"></div><div class="menu-name">${escapeHtml(item.name)}</div><div class="menu-category">${escapeHtml(categoryLabel(item.category || OTHER_CATEGORY))}</div><div class="menu-footer"><span class="price">${priceLabel(item.price)}</span><button type="button" class="btn btn-primary btn-sm menu-add-button" data-add="${escapeHtml(item.id)}" aria-label="${t("takeaway.menu.add")}" title="${t("takeaway.menu.add")}"><i class="bi bi-plus-lg" aria-hidden="true"></i></button></div></article>`; }
+function menuCard(item) { return `<article class="card menu-card"><div class="menu-image"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" data-image-position-x="50" data-image-position-y="${escapeHtml(item.imagePositionY ?? 50)}" style="${menuImagePositionStyle(item)}"></div><div class="menu-name">${escapeHtml(item.name)}</div><div class="menu-category">${escapeHtml(categoryLabel(item.category || OTHER_CATEGORY))}</div><div class="menu-footer"><span class="price">${priceLabel(item.price)}</span><button type="button" class="btn btn-primary btn-sm menu-add-button" data-add="${escapeHtml(item.id)}" aria-label="${t("takeaway.menu.add")}" title="${t("takeaway.menu.add")}"><i class="bi bi-plus-lg" aria-hidden="true"></i></button></div></article>`; }
 function visiblePageNumbers(totalPages) { if (totalPages <= 5) return Array.from({ length: totalPages }, (_, index) => index + 1); const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4)); return Array.from({ length: 5 }, (_, index) => start + index); }
 function renderPagination(totalItems) {
   if (isMobile()) { menuPagination.hidden = true; menuPagination.innerHTML = ""; return; }

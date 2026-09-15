@@ -165,10 +165,15 @@ function renderPagination(totalItems) {
   `;
 }
 
+function menuImagePositionStyle(item = {}) {
+  const clamp = value => Math.max(0, Math.min(100, Number.isFinite(Number(value)) ? Number(value) : 50));
+  return `object-position:50% ${clamp(item.imagePositionY)}% !important`;
+}
+
 function menuCard(item) {
   return `
     <article class="card menu-card">
-      <div class="menu-image"><img src="${item.image}" alt="${item.name}"></div>
+      <div class="menu-image"><img src="${item.image}" alt="${item.name}" data-image-position-x="50" data-image-position-y="${Number(item.imagePositionY ?? 50)}" style="${menuImagePositionStyle(item)}"></div>
       <div class="menu-name">${item.name}</div>
       <div class="menu-category">${categoryLabel(item.category || OTHER_CATEGORY)}</div>
       <div class="menu-footer">

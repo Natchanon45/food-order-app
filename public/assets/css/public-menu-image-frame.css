@@ -1,0 +1,44 @@
+/* PUBLIC_MENU_IMAGE_FRAME_PARITY_20260916_001 */
+body.delivery-page .menu-image,
+body.table-order-page #menuGrid .menu-image {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+body.delivery-page .menu-image > img,
+body.table-order-page #menuGrid .menu-image > img {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  object-fit: cover !important;
+}
+
+/* PUBLIC_MENU_VERTICAL_ONLY_20260916_002 */
+body.delivery-page .menu-image,
+body.table-order-page #menuGrid .menu-image {
+  aspect-ratio: 1 / 1 !important;
+}
+
+body.takeaway-order-page #menuGrid .menu-card {
+  display: grid !important;
+  grid-template-columns: 82px minmax(0, 1fr) !important;
+  grid-template-rows: auto auto auto !important;
+  column-gap: 10px !important;
+  align-items: start !important;
+  min-height: 0 !important;
+}
+body.takeaway-order-page #menuGrid .menu-image {
+  grid-row: 1 / 4 !important;
+  width: 82px !important;
+  height: 82px !important;
+  aspect-ratio: 1 / 1 !important;
+}
+body.takeaway-order-page #menuGrid .menu-name { margin-top: 0 !important; }

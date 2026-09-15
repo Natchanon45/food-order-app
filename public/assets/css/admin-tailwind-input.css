@@ -356,3 +356,21 @@
     display: none !important;
   }
 }
+
+
+/* ADMIN_MENU_IMAGE_PREVIEW_PARITY_20260916_001 */
+body.admin-vr-page #menuImagePreviewWrap {
+  width: min(100%, 360px) !important;
+  margin-inline: auto !important;
+}
+body.admin-vr-page #menuImagePreview {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 1 / 1 !important;
+  object-fit: cover !important;
+}
+body.admin-vr-page .image-position-controls {
+  width: min(100%, 360px) !important;
+  margin-inline: auto !important;
+}
