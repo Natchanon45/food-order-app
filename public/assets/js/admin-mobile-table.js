@@ -11,7 +11,7 @@ function actionContent(name, label) {
 
 function statusIcon(active) {
   const label = active ? t("admin.common.enabled") : t("admin.common.disabled");
-  return `<i class="bi bi-${active ? "check-square" : "square"} admin-status-icon" role="img" aria-label="${label}" title="${label}"></i>`;
+  return `<span class="admin-status-pill ${active ? "is-active" : "is-inactive"}" role="status" aria-label="${label}" title="${label}"><span class="admin-status-dot" aria-hidden="true"></span><span>${label}</span></span>`;
 }
 
 function decorateStatusCell(row) {
@@ -25,9 +25,16 @@ function decorateStatusCell(row) {
     row.dataset.active = /เปิดขาย|ใช้งาน/.test(text) ? "true" : "false";
   }
 
-  if (statusCell.querySelector(".admin-status-icon")) return;
-
   const active = row.dataset.active === "true";
+  const existingPill = statusCell.querySelector(".admin-status-pill");
+  if (existingPill) {
+    existingPill.classList.toggle("is-active", active);
+    existingPill.classList.toggle("is-inactive", !active);
+    existingPill.innerHTML = `<span class="admin-status-dot" aria-hidden="true"></span><span>${active ? t("admin.common.enabled") : t("admin.common.disabled")}</span>`;
+    return;
+  }
+
+  // Always replace legacy check-square/square status icons with the compact pill.
   statusCell.innerHTML = statusIcon(active);
 }
 

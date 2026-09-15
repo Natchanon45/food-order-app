@@ -8,6 +8,32 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 const GUEST_KEY = "food_order_guest_delivery_profile";
+const GUEST_FAVORITES_PREFIX = "food_order_guest_menu_favorites";
+
+function normalizeFavoriteMenuIds(values = []) {
+  return [...new Set((Array.isArray(values) ? values : [])
+    .map(value => String(value || "").trim())
+    .filter(Boolean))];
+}
+
+function guestFavoritesKey() {
+  const tenant = resolveTenantContext();
+  return `${GUEST_FAVORITES_PREFIX}:${tenant.id}`;
+}
+
+function getGuestFavorites() {
+  try {
+    return normalizeFavoriteMenuIds(JSON.parse(localStorage.getItem(guestFavoritesKey()) || "[]"));
+  } catch {
+    return [];
+  }
+}
+
+function saveGuestFavorites(values = []) {
+  const ids = normalizeFavoriteMenuIds(values);
+  localStorage.setItem(guestFavoritesKey(), JSON.stringify(ids));
+  return ids;
+}
 const googleSettingsRef = doc(db, "platformSettings", "googleCustomerLogin");
 let googleCustomerLoginAvailable = true;
 
@@ -181,4 +207,44 @@ export async function saveCustomerProfile(profile, user = auth.currentUser) {
     updatedAt: serverTimestamp()
   }, { merge: true });
   return payload;
+}
+export async function getCustomerFavorites(user = auth.currentUser) {
+  const guestIds = getGuestFavorites();
+  if (!user) return guestIds;
+
+  const staff = await getStaffSession(user);
+  if (staff) return guestIds;
+
+  const snapshot = await getDoc(customerProfileDoc(user.uid));
+  const cloudIds = snapshot.exists()
+    ? normalizeFavoriteMenuIds(snapshot.data()?.favoriteMenuIds)
+    : [];
+  const merged = normalizeFavoriteMenuIds([...cloudIds, ...guestIds]);
+
+  if (merged.length !== cloudIds.length || merged.some((id, index) => id !== cloudIds[index])) {
+    const tenant = resolveTenantContext();
+    await setDoc(customerProfileDoc(user.uid), {
+      tenantId: tenant.id,
+      favoriteMenuIds: merged,
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  }
+
+  return merged;
+}
+
+export async function saveCustomerFavorites(values = [], user = auth.currentUser) {
+  const ids = normalizeFavoriteMenuIds(values);
+  if (!user) return saveGuestFavorites(ids);
+
+  const staff = await getStaffSession(user);
+  if (staff) return saveGuestFavorites(ids);
+
+  const tenant = resolveTenantContext();
+  await setDoc(customerProfileDoc(user.uid), {
+    tenantId: tenant.id,
+    favoriteMenuIds: ids,
+    updatedAt: serverTimestamp(),
+  }, { merge: true });
+  return ids;
 }

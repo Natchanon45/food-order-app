@@ -8,19 +8,19 @@
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.16.15',
-  build: '2026.08.04.001',
+  version: '0.16.16',
+  build: '2026.09.15.001',
   branch: 'feature/retail-pos',
-  commit: 'TENANT-MANAGEMENT-WORKSPACE',
+  commit: 'ADMIN-DELIVERY-UX-FAVORITES',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Tenant Management Workspace',
-  updatedAt: '2026-08-04T01:41:42+07:00',
+  milestone: 'Admin And Delivery UX Favorites',
+  updatedAt: '2026-09-15T22:55:00+07:00',
   whatsNew: [
-    'Move tenant creation and editing into a responsive modal',
-    'Add tenant summary, search, filtering, and modern cards',
-    'Bind subscription controls by stable tenant ID'
+    'Refresh responsive admin menu cards, modal layout, map selection, and pagination',
+    'Add customer menu favorites with guest-device and signed-in account persistence',
+    'Improve duplicate menu validation and order notification sound'
   ]
 };
 

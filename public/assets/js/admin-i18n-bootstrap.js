@@ -1,4 +1,4 @@
-import translations from "./admin-translations.js?v=20260903-203";
+import translations from "./admin-translations.js?v=20260915-005";
 import { configureI18n, getLocale, t } from "./i18n.js?v=20260903-202";
 
 configureI18n(translations);

@@ -105,9 +105,14 @@ function createPaginator({ rowsSelector, searchSelector, statusSelector, paginat
   observer.observe(rowsContainer, { childList: true });
 
   let resizeTimer;
+  let lastPageSize = pageSize();
   window.addEventListener("resize", () => {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(reset, 120);
+    resizeTimer = setTimeout(() => {
+      const nextPageSize = pageSize();
+      lastPageSize = nextPageSize;
+      render();
+    }, 120);
   });
 
   render();

@@ -1,0 +1,53 @@
+/* DELIVERY_CUSTOMER_FAVORITES_20260915_005 */
+body.delivery-page .menu-image {
+  position: relative;
+}
+
+body.delivery-page .menu-favorite-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 3;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  min-height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  color: rgba(255,255,255,.78);
+  box-shadow: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+body.delivery-page .menu-favorite-button.is-favorite {
+  color: #e11d48;
+}
+
+body.delivery-page .menu-favorite-button .bi {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.34));
+  transition: color .16s ease, transform .16s ease;
+}
+body.delivery-page .menu-favorite-button.is-favorite .bi {
+  transform: scale(1.04);
+  filter: drop-shadow(0 1px 1px rgba(255,255,255,.3));
+}
+
+body.delivery-page .category-tab[data-category="เมนูโปรด"],
+html[lang="en"] body.delivery-page .category-tab[data-category="Favorites"] {
+  font-weight: 800;
+}
+
+body.delivery-page .category-tab[data-category="เมนูโปรด"]::before,
+html[lang="en"] body.delivery-page .category-tab[data-category="Favorites"]::before {
+  content: "♥";
+  margin-right: 5px;
+  color: #e11d48;
+}

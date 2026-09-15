@@ -14,6 +14,7 @@ function shopCollection(name) { return collection(db, ...shopCollectionPath(name
 function shopDocument(name, id) { return doc(db, ...shopDocumentPath(name, id, activeShop())); }
 function mapDocs(snapshot) { return snapshot.docs.map(item => ({ id: item.id, ...item.data() })); }
 function normalizeMenu(menu) { return { ...menu, image: menu.image || DEFAULT_FOOD_IMAGE, sortOrder: Number(menu.sortOrder || 9999) }; }
+function canonicalMenuName(value = "") { return String(value || "").normalize("NFKC").trim().replace(/\s+/g, " ").toLocaleLowerCase(); }
 function sortMenus(menus, categoryOrder = []) {
   const rank = new Map(categoryOrder.map((name, index) => [name, index]));
   return [...menus].sort((a, b) => {
@@ -147,7 +148,27 @@ export const dataService = {
     return sortMenus(mapDocs(menuSnapshot).map(normalizeMenu), settings.categoryOrder || []);
   },
 
-  async saveMenu(menu) { if (usingDemoMode) return demoStore.menus.save(menu); const id = menu.id || crypto.randomUUID(); const payload = withShop({ ...menu }); delete payload.id; return setDoc(shopDocument("menus", id), payload, { merge: true }); },
+  async saveMenu(menu) {
+    const id = menu.id || crypto.randomUUID();
+    const name = String(menu.name || "").trim();
+    const canonicalName = canonicalMenuName(name);
+    if (!canonicalName) throw new Error("MENU_NAME_REQUIRED");
+
+    if (usingDemoMode) {
+      const duplicate = demoStore.menus.list().some(item => item.id !== id && canonicalMenuName(item.name) === canonicalName);
+      if (duplicate) throw new Error("DUPLICATE_MENU_NAME");
+      return demoStore.menus.save({ ...menu, id, name });
+    }
+
+    const current = mapDocs(await getDocs(shopCollection("menus")));
+    if (current.some(item => item.id !== id && canonicalMenuName(item.name) === canonicalName)) {
+      throw new Error("DUPLICATE_MENU_NAME");
+    }
+
+    const payload = withShop({ ...menu, name });
+    delete payload.id;
+    return setDoc(shopDocument("menus", id), payload, { merge: true });
+  },
   async deleteMenu(id) { if (usingDemoMode) return demoStore.menus.remove(id); return deleteDoc(shopDocument("menus", id)); },
   async listTables() { if (usingDemoMode) return demoStore.tables.list(); return mapDocs(await getDocs(shopCollection("tables"))); },
 

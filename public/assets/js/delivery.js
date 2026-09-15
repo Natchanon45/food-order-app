@@ -1,4 +1,4 @@
-import "./public-page-static-i18n.js?v=20260903-245";
+import "./public-page-static-i18n.js?v=20260915-005";
 
 import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20260903-231';
 import { functions, httpsCallable } from "./firebase-config.js?v=20260630-073";
@@ -7,6 +7,11 @@ import { t } from "./i18n.js?v=20260903-202";
 import { generatePromptPayPayload } from "./promptpay.js";
 import { qrDataUrl } from "./local-qr.js?v=20260722-036";
 import "./cart-item-layout.js?v=20260702-002";
+import {
+  watchCustomerAuth,
+  getCustomerFavorites,
+  saveCustomerFavorites,
+} from "./customer-profile-service.js?v=20260915-005";
 
 const menuGrid = document.querySelector("#menuGrid");
 const cartList = document.querySelector("#cartList");
@@ -54,6 +59,8 @@ let isSubmitting = false;
 let currentDeliveryBaseFee = 0;
 let freeShippingApplied = false;
 let selectedFreeGiftMenuIds = new Set();
+let favoriteMenuIds = new Set();
+let currentFavoriteUser = null;
 
 // DELIVERY_GOOGLE_ROUTE_ENGINE_20260903_001
 const deliveryDistanceStatus = document.querySelector("#deliveryDistanceStatus");
@@ -320,8 +327,18 @@ function deliveryDistanceAllowed() {
   return currentDeliveryRoute?.inRange === true && Boolean(currentDeliveryRoute?.zone?.id);
 }
 
+function favoriteCategoryLabel() {
+  return t("delivery.checkout.menu.favorites");
+}
+
+function visibleFavoriteCount() {
+  return menus.filter(item => item.active !== false && favoriteMenuIds.has(String(item.id))).length;
+}
+
 function categories() {
-  return [t("delivery.checkout.menu.all"), ...new Set(menus.filter(item => item.active !== false).map(item => item.category || t("delivery.checkout.menu.other")))];
+  const all = t("delivery.checkout.menu.all");
+  const favorites = visibleFavoriteCount() ? [favoriteCategoryLabel()] : [];
+  return [all, ...favorites, ...new Set(menus.filter(item => item.active !== false).map(item => item.category || t("delivery.checkout.menu.other")))];
 }
 
 function renderTabs() {
@@ -331,10 +348,21 @@ function renderTabs() {
 function renderMenus() {
   const keyword = document.querySelector("#searchInput").value.trim().toLowerCase();
   const allCategory = t("delivery.checkout.menu.all");
+  const favoriteCategory = favoriteCategoryLabel();
   const otherCategory = t("delivery.checkout.menu.other");
-  const filtered = menus.filter(item => item.active !== false && (!keyword || item.name.toLowerCase().includes(keyword)) && (activeCategory === allCategory || (item.category || otherCategory) === activeCategory));
+  const filtered = menus.filter(item => {
+    if (item.active === false) return false;
+    if (keyword && !String(item.name || "").toLowerCase().includes(keyword)) return false;
+    if (activeCategory === allCategory) return true;
+    if (activeCategory === favoriteCategory) return favoriteMenuIds.has(String(item.id));
+    return (item.category || otherCategory) === activeCategory;
+  });
   menuGrid.innerHTML = filtered.length
-    ? filtered.map(item => `<article class="card menu-card"><div class="menu-image"><img src="${item.image}" alt="${item.name}"></div><div class="menu-name">${item.name}</div><div class="menu-category">${item.category || otherCategory}</div><div class="menu-footer"><span class="price">${money(item.price)} ${t("delivery.checkout.units.baht")}</span><button type="button" class="btn btn-primary btn-sm menu-add-button" data-add="${item.id}" aria-label="${t("delivery.checkout.menu.add")}" title="${t("delivery.checkout.menu.add")}"><i class="bi bi-plus-lg" aria-hidden="true"></i></button></div></article>`).join("")
+    ? filtered.map(item => {
+      const favorite = favoriteMenuIds.has(String(item.id));
+      const favoriteLabel = favorite ? t("delivery.checkout.menu.favorite_remove") : t("delivery.checkout.menu.favorite_add");
+      return `<article class="card menu-card"><div class="menu-image"><img src="${item.image}" alt="${item.name}"><button type="button" class="menu-favorite-button${favorite ? " is-favorite" : ""}" data-favorite="${item.id}" aria-pressed="${favorite}" aria-label="${favoriteLabel}" title="${favoriteLabel}"><i class="bi bi-heart${favorite ? "-fill" : ""}" aria-hidden="true"></i></button></div><div class="menu-name">${item.name}</div><div class="menu-category">${item.category || otherCategory}</div><div class="menu-footer"><span class="price">${money(item.price)} ${t("delivery.checkout.units.baht")}</span><button type="button" class="btn btn-primary btn-sm menu-add-button" data-add="${item.id}" aria-label="${t("delivery.checkout.menu.add")}" title="${t("delivery.checkout.menu.add")}"><i class="bi bi-plus-lg" aria-hidden="true"></i></button></div></article>`;
+    }).join("")
     : `<div class="card empty">${t("delivery.checkout.menu.not_found")}</div>`;
 }
 
@@ -1031,7 +1059,33 @@ deliveryFreeGiftList?.addEventListener(
     renderDeliveryFreeGiftPromotion();
   }
 );
-menuGrid.addEventListener("click", event => {
+menuGrid.addEventListener("click", async event => {
+  const favoriteButton = event.target.closest("[data-favorite]");
+  if (favoriteButton) {
+    const id = String(favoriteButton.dataset.favorite || "");
+    if (!id) return;
+    const wasFavorite = favoriteMenuIds.has(id);
+    if (wasFavorite) favoriteMenuIds.delete(id);
+    else favoriteMenuIds.add(id);
+
+    if (activeCategory === favoriteCategoryLabel() && !visibleFavoriteCount()) {
+      activeCategory = t("delivery.checkout.menu.all");
+    }
+    renderTabs();
+    renderMenus();
+    try {
+      await saveCustomerFavorites([...favoriteMenuIds], currentFavoriteUser);
+    } catch (error) {
+      console.error("[delivery-favorites] save failed", error);
+      if (wasFavorite) favoriteMenuIds.add(id);
+      else favoriteMenuIds.delete(id);
+      renderTabs();
+      renderMenus();
+      toast(t("delivery.checkout.menu.favorite_save_failed"), "error");
+    }
+    return;
+  }
+
   const addButton = event.target.closest("[data-add]");
   const id = addButton?.dataset.add;
   if (!id) return;
@@ -1249,6 +1303,21 @@ submitOrderButton.addEventListener("click", async () => {
     submitOrderButton.textContent = t("delivery.checkout.summary.submit_order");
     updateCart();
   }
+});
+
+watchCustomerAuth(async user => {
+  currentFavoriteUser = user;
+  try {
+    favoriteMenuIds = new Set(await getCustomerFavorites(user));
+  } catch (error) {
+    console.warn("[delivery-favorites] load failed", error);
+    favoriteMenuIds = new Set();
+  }
+  if (activeCategory === favoriteCategoryLabel() && !visibleFavoriteCount()) {
+    activeCategory = t("delivery.checkout.menu.all");
+  }
+  renderTabs();
+  renderMenus();
 });
 
 try {
