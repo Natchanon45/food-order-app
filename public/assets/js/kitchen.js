@@ -8,7 +8,7 @@ import { configureI18n, applyTranslations, t } from "./i18n.js?v=20260903-202";
 configureI18n(translations);
 applyTranslations();
 document.title = t("kitchen.meta_title");
-import { observeDeliveryOrders } from "./delivery-notifier.js?v=20260903-242";
+import { observeDeliveryOrders } from "./delivery-notifier.js?v=20260915-003";
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 import { effectiveDeliveryAmounts, enrichDeliveryGiftItems } from "./delivery-order-display.js?v=20260903-242";
 

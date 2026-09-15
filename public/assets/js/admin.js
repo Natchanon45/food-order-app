@@ -1,8 +1,9 @@
-import { dataService, usingDemoMode } from "./data-service.js?v=20260903-203";
+import { dataService, usingDemoMode } from "./data-service.js?v=20260915-005";
 import { ensureAdminSessionContext } from "./admin-session-bootstrap.js?v=20260903-203";
 import { money, toast, DEFAULT_FOOD_IMAGE } from "./ui.js?v=20260831-001";
 import { getMenuImagePosition, setMenuImagePosition } from "./admin-image-position.js";
 import { t } from "./i18n.js?v=20260903-202";
+import { createAdminStoreLocationMap } from "./admin-store-location-map.js?v=20260915-001";
 
 await ensureAdminSessionContext();
 
@@ -11,6 +12,10 @@ if (usingDemoMode) document.querySelector("#demoBanner").innerHTML = `<div class
 let menus = [];
 let tables = [];
 let selectedImageFile = null;
+
+function canonicalMenuName(value = "") {
+  return String(value || "").normalize("NFKC").trim().replace(/\s+/g, " ").toLocaleLowerCase();
+}
 
 const menuImage = document.querySelector("#menuImage");
 const menuImagePath = document.querySelector("#menuImagePath");
@@ -142,7 +147,7 @@ async function selectImageFile(file) {
     let message = t("admin.menu.image_read_failed");
     if (error.message === "IMAGE_TOO_LARGE") message = t("admin.menu.image_too_large");
     if (error.message === "INVALID_IMAGE_TYPE") message = t("admin.menu.image_type_invalid");
-    setImageError(message);
+    if (error.message !== "DUPLICATE_MENU_NAME") setImageError(message);
     toast(message, "error");
   }
 }
@@ -198,8 +203,7 @@ const ADMIN_STORE_DEFAULT_LOCATION = {
   zoom: 11,
 };
 
-let adminStoreMap = null;
-let adminStoreMarker = null;
+let adminStoreMapController = null;
 
 function normalizeAdminStoreLocation(latitude, longitude) {
   if (
@@ -227,10 +231,7 @@ function normalizeAdminStoreLocation(latitude, longitude) {
     return null;
   }
 
-  return {
-    latitude: lat,
-    longitude: lng,
-  };
+  return { latitude: lat, longitude: lng };
 }
 
 function getAdminStoreLocation() {
@@ -242,31 +243,19 @@ function getAdminStoreLocation() {
 
 function renderAdminStoreLocation(location) {
   const ready = Boolean(location);
-
   if (adminStoreLocationElements.latitude) {
-    adminStoreLocationElements.latitude.value = ready
-      ? location.latitude.toFixed(7)
-      : "";
+    adminStoreLocationElements.latitude.value = ready ? location.latitude.toFixed(7) : "";
   }
-
   if (adminStoreLocationElements.longitude) {
-    adminStoreLocationElements.longitude.value = ready
-      ? location.longitude.toFixed(7)
-      : "";
+    adminStoreLocationElements.longitude.value = ready ? location.longitude.toFixed(7) : "";
   }
-
   if (adminStoreLocationElements.status) {
-    adminStoreLocationElements.status.classList.toggle(
-      "is-ready",
-      ready,
-    );
+    adminStoreLocationElements.status.classList.toggle("is-ready", ready);
     adminStoreLocationElements.status.classList.remove("is-error");
-
     adminStoreLocationElements.status.textContent = ready
       ? "กำหนดตำแหน่งร้านแล้ว"
       : "ยังไม่ได้กำหนดตำแหน่งร้าน";
   }
-
   if (adminStoreLocationElements.coordinates) {
     adminStoreLocationElements.coordinates.textContent = ready
       ? `${location.latitude.toFixed(7)}, ${location.longitude.toFixed(7)}`
@@ -275,160 +264,65 @@ function renderAdminStoreLocation(location) {
 }
 
 function moveAdminStoreMarker(location, pan = true) {
-  if (!adminStoreMap || !location || !window.L) return;
-
-  if (!adminStoreMarker) {
-    adminStoreMarker = window.L.marker(
-      [location.latitude, location.longitude],
-      { draggable: true },
-    ).addTo(adminStoreMap);
-
-    adminStoreMarker.on("dragend", () => {
-      const point = adminStoreMarker.getLatLng();
-
-      setAdminStoreLocation(
-        point.lat,
-        point.lng,
-        false,
-      );
-    });
-  } else {
-    adminStoreMarker.setLatLng([
-      location.latitude,
-      location.longitude,
-    ]);
-  }
-
-  if (pan) {
-    adminStoreMap.setView(
-      [location.latitude, location.longitude],
-      Math.max(adminStoreMap.getZoom(), 16),
-    );
-  }
+  adminStoreMapController?.setLocation?.(location, pan);
 }
 
 function setAdminStoreLocation(latitude, longitude, pan = true) {
-  const location = normalizeAdminStoreLocation(
-    latitude,
-    longitude,
-  );
-
+  const location = normalizeAdminStoreLocation(latitude, longitude);
   if (!location) return false;
-
   renderAdminStoreLocation(location);
   moveAdminStoreMarker(location, pan);
-
   return true;
 }
 
-function initAdminStoreLocationMap() {
+async function initAdminStoreLocationMap() {
   if (!adminStoreLocationElements.map) return;
-
-  if (!window.L) {
+  try {
+    adminStoreMapController = await createAdminStoreLocationMap({
+      element: adminStoreLocationElements.map,
+      defaultLocation: ADMIN_STORE_DEFAULT_LOCATION,
+      onChange: (latitude, longitude, pan = true) => {
+        setAdminStoreLocation(latitude, longitude, pan);
+      },
+    });
+    const existing = getAdminStoreLocation();
+    if (existing) moveAdminStoreMarker(existing, false);
+  } catch (error) {
+    console.error('[admin-store-location] map initialization failed', error);
     if (adminStoreLocationElements.status) {
-      adminStoreLocationElements.status.textContent =
-        "โหลดแผนที่ไม่สำเร็จ";
-
-      adminStoreLocationElements.status.classList.add(
-        "is-error",
-      );
+      adminStoreLocationElements.status.textContent = "โหลดแผนที่ไม่สำเร็จ";
+      adminStoreLocationElements.status.classList.add("is-error");
     }
-
-    return;
   }
-
-  adminStoreMap = window.L.map(
-    adminStoreLocationElements.map,
-    {
-      scrollWheelZoom: false,
-    },
-  ).setView(
-    [
-      ADMIN_STORE_DEFAULT_LOCATION.latitude,
-      ADMIN_STORE_DEFAULT_LOCATION.longitude,
-    ],
-    ADMIN_STORE_DEFAULT_LOCATION.zoom,
-  );
-
-  window.L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-      maxZoom: 19,
-      attribution: "&copy; OpenStreetMap contributors",
-    },
-  ).addTo(adminStoreMap);
-
-  adminStoreMap.on("click", event => {
-    setAdminStoreLocation(
-      event.latlng.lat,
-      event.latlng.lng,
-    );
-  });
-
-  setTimeout(
-    () => adminStoreMap?.invalidateSize(),
-    0,
-  );
 }
 
-adminStoreLocationElements.currentLocationButton
-  ?.addEventListener("click", () => {
-    if (!navigator.geolocation) {
-      if (adminStoreLocationElements.status) {
-        adminStoreLocationElements.status.textContent =
-          "เบราว์เซอร์ไม่รองรับการอ่านตำแหน่ง";
-
-        adminStoreLocationElements.status.classList.add(
-          "is-error",
-        );
-      }
-
-      return;
+adminStoreLocationElements.currentLocationButton?.addEventListener("click", () => {
+  if (!navigator.geolocation) {
+    if (adminStoreLocationElements.status) {
+      adminStoreLocationElements.status.textContent = "เบราว์เซอร์ไม่รองรับการอ่านตำแหน่ง";
+      adminStoreLocationElements.status.classList.add("is-error");
     }
-
-    const button =
-      adminStoreLocationElements.currentLocationButton;
-
-    button.disabled = true;
-
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        setAdminStoreLocation(
-          position.coords.latitude,
-          position.coords.longitude,
-        );
-
-        button.disabled = false;
-      },
-      error => {
-        console.error(
-          "[admin-store-location] geolocation failed",
-          error,
-        );
-
-        if (adminStoreLocationElements.status) {
-          adminStoreLocationElements.status.textContent =
-            "ไม่สามารถอ่านตำแหน่งปัจจุบันได้";
-
-          adminStoreLocationElements.status.classList.remove(
-            "is-ready",
-          );
-
-          adminStoreLocationElements.status.classList.add(
-            "is-error",
-          );
-        }
-
-        button.disabled = false;
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 12000,
-        maximumAge: 30000,
-      },
-    );
-  });
-
+    return;
+  }
+  const button = adminStoreLocationElements.currentLocationButton;
+  button.disabled = true;
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      setAdminStoreLocation(position.coords.latitude, position.coords.longitude);
+      button.disabled = false;
+    },
+    error => {
+      console.error("[admin-store-location] geolocation failed", error);
+      if (adminStoreLocationElements.status) {
+        adminStoreLocationElements.status.textContent = "ไม่สามารถอ่านตำแหน่งปัจจุบันได้";
+        adminStoreLocationElements.status.classList.remove("is-ready");
+        adminStoreLocationElements.status.classList.add("is-error");
+      }
+      button.disabled = false;
+    },
+    { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 },
+  );
+});
 
 
 // DELIVERY_PROMOTION_ADMIN_20260827_001
@@ -1047,6 +941,12 @@ document.querySelector("#menuForm").addEventListener("submit", async event => {
   setImageError("");
   try {
     const id = document.querySelector("#menuId").value || crypto.randomUUID();
+    const nameInput = document.querySelector("#menuName");
+    const name = nameInput.value.trim();
+    const duplicate = menus.some(item => item.id !== id && canonicalMenuName(item.name) === canonicalMenuName(name));
+    if (duplicate) {
+      throw new Error("DUPLICATE_MENU_NAME");
+    }
     let image = menuImage.value;
     let imagePath = menuImagePath.value;
     if (selectedImageFile) {
@@ -1054,7 +954,7 @@ document.querySelector("#menuForm").addEventListener("submit", async event => {
       image = uploaded.url;
       imagePath = uploaded.path;
     }
-    await dataService.saveMenu({ id, name: document.querySelector("#menuName").value.trim(), category: document.querySelector("#menuCategory").value.trim(), price: Number(document.querySelector("#menuPrice").value), image, imagePath, ...getMenuImagePosition(), active: document.querySelector("#menuActive").checked });
+    await dataService.saveMenu({ id, name, category: document.querySelector("#menuCategory").value.trim(), price: Number(document.querySelector("#menuPrice").value), image, imagePath, ...getMenuImagePosition(), active: document.querySelector("#menuActive").checked });
     event.target.reset();
     document.querySelector("#menuId").value = "";
     menuImage.value = "";
@@ -1068,17 +968,24 @@ document.querySelector("#menuForm").addEventListener("submit", async event => {
   } catch (error) {
     console.error(error);
     let message = t("admin.menu.save_failed");
+    if (error.message === "DUPLICATE_MENU_NAME") {
+      message = t("admin.menu.name_duplicate");
+    }
     if (error.message === "IMAGE_TOO_LARGE") message = t("admin.menu.image_too_large");
     if (error.message === "INVALID_IMAGE_TYPE") message = t("admin.menu.image_type_unsupported");
     if (["IMAGE_DECODE_FAILED", "IMAGE_CONVERT_FAILED"].includes(error.message)) message = t("admin.menu.image_decode_failed");
     if (error.status === 413) message = t("admin.menu.image_server_too_large");
     if (error.status === 422 || error.code === "IMAGE_UPLOAD_FAILED") message = t("admin.menu.image_upload_failed");
-    setImageError(message);
+    if (error.message !== "DUPLICATE_MENU_NAME") setImageError(message);
     toast(message, "error");
   } finally {
     button.disabled = false;
     button.textContent = t("admin.menu.save");
   }
+});
+
+document.querySelector("#menuName")?.addEventListener("input", event => {
+  event.currentTarget.setCustomValidity("");
 });
 
 document.querySelector("#tableCapacity")?.addEventListener("input", event => {
@@ -1172,5 +1079,5 @@ document.body.addEventListener("click", async event => {
 
 setMenuImagePosition(50, 50);
 showPreview("");
-initAdminStoreLocationMap();
+await initAdminStoreLocationMap();
 await loadWithRetry();

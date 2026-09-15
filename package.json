@@ -15,7 +15,8 @@
   "scripts": {
     "sync:bootstrap-icons": "mkdir -p public/assets/vendor/bootstrap-icons/fonts && cp node_modules/bootstrap-icons/font/bootstrap-icons.min.css public/assets/vendor/bootstrap-icons/bootstrap-icons.min.css && cp node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff* public/assets/vendor/bootstrap-icons/fonts/",
     "sync:sortablejs": "mkdir -p public/assets/vendor/sortablejs && cp node_modules/sortablejs/Sortable.min.js public/assets/vendor/sortablejs/Sortable.min.js",
-    "sync:sheetjs": "mkdir -p public/assets/vendor/sheetjs && cp node_modules/xlsx/dist/xlsx.full.min.js public/assets/vendor/sheetjs/xlsx.full.min.js"
+    "sync:sheetjs": "mkdir -p public/assets/vendor/sheetjs && cp node_modules/xlsx/dist/xlsx.full.min.js public/assets/vendor/sheetjs/xlsx.full.min.js",
+    "build:admin-css": "tailwindcss -c tailwind.admin.config.cjs -i ./public/assets/css/admin-tailwind-input.css -o ./public/assets/css/admin-tailwind.css --minify"
   },
   "repository": {
     "type": "git",
@@ -28,5 +29,8 @@
   "bugs": {
     "url": "https://github.com/Natchanon45/food-order-app/issues"
   },
-  "homepage": "https://github.com/Natchanon45/food-order-app#readme"
+  "homepage": "https://github.com/Natchanon45/food-order-app#readme",
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
 }

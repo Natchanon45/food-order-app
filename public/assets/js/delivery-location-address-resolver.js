@@ -6,7 +6,7 @@ import { functions, httpsCallable } from "./firebase-config.js?v=20260630-073";
 import {
   watchCustomerAuth,
   getCustomerProfile,
-} from './customer-profile-service.js?v=20260903-247';
+} from './customer-profile-service.js?v=20260915-005';
 
 const NEARBY_SAVED_ADDRESS_METERS = 100;
 const REVERSE_GEOCODE_DEBOUNCE_MS = 250;

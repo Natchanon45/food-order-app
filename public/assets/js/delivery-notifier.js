@@ -34,15 +34,16 @@ async function unlockAudio() {
   if (context?.state === "suspended") await context.resume();
 }
 
-function playTone(frequency, start, duration, volume = 0.18) {
+function playTone(frequency, start, duration, volume = 0.58, type = "square") {
   const context = ensureAudioContext();
   if (!context || context.state !== "running") return;
   const oscillator = context.createOscillator();
   const gain = context.createGain();
-  oscillator.type = "sine";
+  oscillator.type = type;
   oscillator.frequency.value = frequency;
   gain.gain.setValueAtTime(0.0001, context.currentTime + start);
-  gain.gain.exponentialRampToValueAtTime(volume, context.currentTime + start + 0.02);
+  gain.gain.exponentialRampToValueAtTime(volume, context.currentTime + start + 0.018);
+  gain.gain.setValueAtTime(volume, context.currentTime + start + Math.max(0.02, duration - 0.05));
   gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + start + duration);
   oscillator.connect(gain);
   gain.connect(context.destination);
@@ -51,9 +52,22 @@ function playTone(frequency, start, duration, volume = 0.18) {
 }
 
 function playDeliverySound() {
-  playTone(880, 0, 0.18);
-  playTone(1175, 0.24, 0.18);
-  playTone(1568, 0.48, 0.3);
+  const phrase = (offset) => {
+    playTone(988, offset + 0.00, 0.32, 0.58, "square");
+    playTone(1319, offset + 0.38, 0.32, 0.62, "square");
+    playTone(1568, offset + 0.76, 0.42, 0.66, "square");
+    playTone(1319, offset + 1.26, 0.28, 0.62, "square");
+    playTone(1760, offset + 1.60, 0.48, 0.70, "square");
+  };
+
+  phrase(0);
+  phrase(2.25);
+  phrase(4.50);
+  phrase(6.75);
+
+  try {
+    navigator.vibrate?.([300, 140, 300, 140, 500, 350, 300, 140, 500]);
+  } catch {}
 }
 
 function flashTitle(count, orderType = "delivery") {
