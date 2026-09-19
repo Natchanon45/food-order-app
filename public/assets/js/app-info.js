@@ -5,22 +5,23 @@
 // ADMIN_MODAL_TEMPLATE_LOCAL_PRINT_FONT_20260803_003
 // ADMIN_RESPONSIVE_PRINT_REFINEMENT_20260803_002
 // ADMIN_WORKSPACE_VISUAL_REFRESH_20260803
+// SUBSCRIPTION_PRICING_CONFIGURATION_20260920_001
 export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
-  version: '0.16.26',
-  build: '2026.09.16.011',
+  version: '0.16.31',
+  build: '2026.09.20.005',
   branch: 'feature/retail-pos',
-  commit: 'CASHIER-DELIVERY-FEE-BREAKDOWN',
+  commit: 'STANDARD-HEADER-PLATFORM-FOOTER',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Cashier Delivery Fee Breakdown',
-  updatedAt: '2026-09-16T04:27:00+07:00',
+  milestone: 'Shared Header Actions and Platform Footer',
+  updatedAt: '2026-09-20T03:55:00+07:00',
   whatsNew: [
-    'Show Delivery zone, food subtotal, and delivery fee separately on Cashier bills',
-    'Reuse the same effective delivery amount calculation as Kitchen and receipt views',
-    'Preserve vertical-only menu image positioning across public ordering pages'
+    'Keep the language switcher immediately before the user profile across authenticated headers',
+    'Add the shared Version / Build footer to the Super Admin control center',
+    'Normalize dynamic locale and profile actions into one responsive right-aligned header group'
   ]
 };
 

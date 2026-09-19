@@ -1,4 +1,4 @@
-import "./public-page-static-i18n.js?v=20260903-243";
+import "./public-page-static-i18n.js?v=20260920-001";
 
 import { db, doc, getDoc } from "./firebase-config.js?v=20260630-073";
 import { setActiveTenant } from "./tenant-context.js?v=20260903-201";

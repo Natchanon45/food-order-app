@@ -43,6 +43,8 @@
       { "source": "/pos/login/**", "destination": "/pos/login/index.html" },
       { "source": "/pos/**", "destination": "/pos/index.html" },
       { "source": "/platform/owners/**", "destination": "/platform/owners/index.html" },
+      { "source": "/platform/pricing/**", "destination": "/platform/pricing/index.html" },
+      { "source": "/platform/pricing", "destination": "/platform/pricing/index.html" },
       { "source": "/platform/**", "destination": "/platform/index.html" },
       { "source": "/admin/qr/**", "destination": "/admin/qr/index.html" },
       { "source": "/admin/tenants/**", "destination": "/admin/tenants/index.html" },

@@ -1,4 +1,4 @@
-import { requireRole } from "./auth-service.js?v=20260802-104";
+import { requireRole } from "./auth-service.js?v=20260920-001";
 import "./form-validation-ui.js?v=20260731-080";
 import { sweetAlert, sweetConfirm, sweetPrompt } from "./sweet-dialog.js?v=20260802-001";
 import {

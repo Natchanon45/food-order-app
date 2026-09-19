@@ -1,4 +1,4 @@
-import { waitForAuth, getUserProfile, mountUserMenu, STAFF_ROLES } from "./auth-service.js?v=20260802-104";
+import { waitForAuth, getUserProfile, mountUserMenu, STAFF_ROLES } from "./auth-service.js?v=20260920-001";
 import { dataService } from "./data-service.js?v=20260704-001";
 import { functions, httpsCallable } from "./firebase-config.js?v=20260630-073";
 import translations from "./home-translations.js?v=20260903-218";

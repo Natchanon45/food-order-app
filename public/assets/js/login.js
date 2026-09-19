@@ -1,4 +1,4 @@
-import { login, ROLE_HOME } from "./auth-service.js?v=20260802-104";
+import { login, ROLE_HOME } from "./auth-service.js?v=20260920-001";
 import { login as retailPosLogin } from "./retail-pos-auth.js?v=20260704-004";
 import { toast } from "./ui.js?v=20260802-104";
 

@@ -69,7 +69,21 @@ function mountLocaleSwitcher() {
     location.reload();
   }));
   const userMenu = header.querySelector("[data-user-menu]");
-  if (userMenu) header.insertBefore(root, userMenu); else header.appendChild(root);
+  const actions = header.querySelector(":scope > [data-header-actions]");
+  if (actions) {
+    actions.prepend(root);
+    root.style.marginLeft = "0";
+    root.style.order = "-100";
+    if (userMenu) {
+      if (userMenu.parentElement !== actions) actions.appendChild(userMenu);
+      userMenu.style.marginLeft = "0";
+      userMenu.style.order = "100";
+    }
+  } else if (userMenu && userMenu.parentElement === header) {
+    header.insertBefore(root, userMenu);
+  } else {
+    header.appendChild(root);
+  }
 }
 
 translateNode(document.body);

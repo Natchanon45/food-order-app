@@ -1,18 +1,364 @@
 import "./form-validation-ui.js?v=20260731-080";
-import{auth,functions,createUserWithEmailAndPassword,signInWithEmailAndPassword,sendEmailVerification,reload,onAuthStateChanged,httpsCallable}from'./firebase-config.js?v=20260704-003';
-const $=s=>document.querySelector(s),f=$('#registerForm'),vbox=$('#verifyBox'),slug=$('#slug'),prev=$('#slugPreview'),st=$('#registerStatus'),vs=$('#verifyStatus'),btn=$('#submitRegister'),act=$('#activateTrial'),resend=$('#resendEmail'),terms=$('#termsAccepted'),phone=$('#phone'),requestSignup=httpsCallable(functions,'requestTrialTenantSignup'),activateSignup=httpsCallable(functions,'activateTrialTenantSignup');let busy=false,tried=false;if(f)f.noValidate=true;
-function css(){if($('#reg-val-css'))return;document.head.insertAdjacentHTML('beforeend','<style id="reg-val-css">#registerForm input{background:#f4f6f5!important;border-color:#d7e0da!important}#registerForm input:focus{background:#fff!important;outline:3px solid rgba(21,148,71,.14)!important;border-color:#159447!important}#registerForm .field-error{display:block;visibility:hidden;min-height:17px;margin:6px 0 0;color:#d92d20;font-size:12px;font-weight:500;line-height:1.35}#registerForm .field-error.show{visibility:visible}.plan-year-price{background:#e7f8ee!important;border:1px solid #9fd0b3!important;box-shadow:0 8px 18px rgba(21,148,71,.10)!important}.old-price-slash{position:relative;display:inline-block;color:#b42318!important;font-size:18px!important;font-weight:1000!important;padding:0 2px}.old-price-slash:after{content:"";position:absolute;left:-2px;right:-2px;top:52%;height:1px;background:#111;transform:rotate(-12deg);transform-origin:center}.plan-year-price .new-year-price{color:#08702f!important;font-size:22px!important;font-weight:1000!important}</style>')}
-function fixPrice(){let p=document.querySelector('.plan-year-price');if(!p||p.dataset.fixed==='1')return;p.innerHTML='พิเศษ <span class="old-price-slash">7080฿</span> <span class="new-year-price">5900฿/1 Year</span>';p.dataset.fixed='1'}
-function digits(v=''){return String(v||'').replace(/\D/g,'').slice(0,10)}function phoneFmt(v=''){let d=digits(v),a=[];if(d[0])a.push(d.slice(0,1));if(d.length>1)a.push(d.slice(1,5));if(d.length>5)a.push(d.slice(5,9));if(d.length>9)a.push(d.slice(9,10));return a.filter(Boolean).join('-')}function clean(v=''){return String(v||'').trim().toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'')}function url(s){return`${location.origin}/s/${encodeURIComponent(s||'saas-test-shop')}/`}function plan(){return document.querySelector('input[name="packagePlan"]:checked')?.value||'premium'}
-function status(m='',e=false){st.textContent=m;st.classList.toggle('hidden',!m);st.classList.toggle('error',e)}function verify(m='',e=false){vs.textContent=m;vs.classList.toggle('error',e)}function loading(x){busy=x;btn.disabled=busy||!terms?.checked;act.disabled=busy;resend.disabled=busy}
-function plans(){document.querySelectorAll('.package-option').forEach(c=>c.classList.toggle('is-selected',!!c.querySelector('input[type="radio"]')?.checked));if(plan()!=='premium')status('แพ็กเกจนี้ยังไม่เปิดสมัครในขณะนี้ กรุณาเลือกพรีเมียมเพื่อทดลองใช้งานฟรี 1 เดือน',true);else if(st.textContent.includes('แพ็กเกจนี้ยังไม่เปิดสมัคร'))status('')}
-function errEl(i){let term=i.closest('.terms-box'),lab=i.closest('label'),host=term||lab||i.parentElement,e;if(lab&&!term){e=lab.querySelector(':scope>.field-error');if(!e){e=document.createElement('div');e.className='field-error';lab.append(e)}return e}e=host?.nextElementSibling;if(!e||!e.classList?.contains('field-error')){e=document.createElement('div');e.className='field-error';host?.after(e)}return e}function label(i){let l=i.closest('label'),t=(l?.childNodes?.[0]?.textContent||l?.textContent||'').replace(/\s+/g,' ').trim();return t||'ข้อมูลนี้'}
-function msg(i){let v=String(i.value||'').trim();if(i.type==='checkbox')return i.checked?'':'กรุณายอมรับข้อตกลงและนโยบายการใช้งาน';if(i.required&&!v)return`กรุณากรอก${label(i)}`;if(i.id==='phone'&&digits(v).length!==10)return'กรุณากรอกเบอร์โทรศัพท์ 10 หลัก';if(i.type==='email'&&v&&!/^\S+@\S+\.\S+$/.test(v))return'กรุณากรอกอีเมลให้ถูกต้อง';if(i.id==='secretA'&&v.length>0&&v.length<8)return'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร';if(i.id==='secretB'&&v!==$('#secretA').value)return'ยืนยันรหัสผ่านไม่ตรงกัน';return''}
-const ids=['#ownerName','#phone','#email','#orderDeliveryShopName','#retailPosShopName','#slug','#secretA','#secretB','#termsAccepted'];function show(i,force=tried){if(!force)return true;let m=msg(i),box=i.closest('.terms-box')||i,e=errEl(i);i.classList.toggle('field-invalid',!!m);box.classList?.toggle('field-invalid',!!m);e.textContent=m;e.classList.toggle('show',!!m);return!m}function valid(){tried=true;let a=ids.map($).filter(Boolean),ok=a.every(i=>show(i,true));if(!ok)a.find(i=>msg(i))?.focus?.();return ok}
-function data(){if(!valid())throw Error('กรุณาตรวจสอบข้อมูลที่จำเป็นให้ครบถ้วน');if(plan()!=='premium')throw Error('แพ็กเกจนี้ยังไม่เปิดสมัครในขณะนี้ กรุณาเลือกพรีเมียมเพื่อทดลองใช้งานฟรี 1 เดือน');return{packageId:plan(),ownerName:$('#ownerName').value.trim(),phone:digits($('#phone').value),orderDeliveryShopName:$('#orderDeliveryShopName').value.trim(),retailPosShopName:$('#retailPosShopName').value.trim(),slug:clean(slug.value),email:$('#email').value.trim().toLowerCase(),secret:$('#secretA').value}}
-async function mail(user){if(!user)throw Error('ไม่พบบัญชีผู้สมัคร กรุณาสมัครใหม่อีกครั้ง');await reload(user).catch(()=>{});if(auth.currentUser?.emailVerified)return{alreadyVerified:true};await sendEmailVerification(auth.currentUser||user,{url:`${location.origin}/register/?verify=1`,handleCodeInApp:false});return{alreadyVerified:false}}
-async function user(p){try{return await createUserWithEmailAndPassword(auth,p.email,p.secret)}catch(e){if(!String(e?.code||e?.message||'').includes('email-already-in-use'))throw e;try{return await signInWithEmailAndPassword(auth,p.email,p.secret)}catch{throw Error('อีเมลนี้ถูกใช้งานแล้ว กรุณาใช้รหัสเดิมให้ถูกต้อง หรือใช้อีเมลอื่น')}}}
-async function submit(e){e.preventDefault();status('');if(!valid()){status('กรุณาตรวจสอบข้อมูลที่จำเป็นให้ครบถ้วน',true);return}loading(true);try{let p=data();slug.value=p.slug;prev.textContent=url(p.slug);let c=await user(p);await mail(c.user);await requestSignup(p);f.classList.add('hidden');vbox.classList.add('show');verify('ส่งอีเมลยืนยันแล้ว กรุณาตรวจสอบกล่องจดหมาย รวมถึง Spam/Junk')}catch(e){let c=String(e?.code||e?.message||''),m=e?.message||'สมัครใช้งานไม่สำเร็จ';if(c.includes('already-exists'))m='Slug นี้ถูกใช้งานแล้ว กรุณาเปลี่ยน slug';if(c.includes('weak-password'))m='รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร';status(m,true)}finally{loading(false)}}
-async function activate(){loading(true);try{let u=auth.currentUser;if(!u)throw Error('กรุณาสมัครหรือลงชื่อเข้าใช้ก่อน');await reload(u);if(!auth.currentUser.emailVerified)throw Error('ยังไม่พบสถานะยืนยันอีเมล กรุณากดลิงก์ในอีเมลก่อน');let r=await activateSignup({}),s=r.data?.slug||'';verify('เปิดร้านสำเร็จแล้ว Premium Trial เริ่มใช้งานแล้ว');location.href=s?`/login?tenant=${encodeURIComponent(s)}`:'/login'}catch(e){verify(e?.message||'เปิดร้านไม่สำเร็จ',true)}finally{loading(false)}}
-async function resendMail(){loading(true);try{let r=await mail(auth.currentUser);verify(r.alreadyVerified?'อีเมลยืนยันแล้ว กดเปิดร้านได้เลย':'ส่งอีเมลยืนยันอีกครั้งแล้ว กรุณาตรวจสอบ Inbox และ Spam/Junk')}catch(e){verify(e?.message||'ส่งอีเมลยืนยันไม่สำเร็จ',true)}finally{loading(false)}}
-css();fixPrice();if(phone){phone.placeholder='กรอกแค่ตัวเลข';phone.inputMode='numeric';phone.addEventListener('input',()=>{phone.value=digits(phone.value);show(phone)});phone.addEventListener('blur',()=>{phone.value=phoneFmt(phone.value);show(phone)})}ids.map($).filter(Boolean).forEach(i=>{errEl(i);i.addEventListener('input',()=>show(i));i.addEventListener('change',()=>show(i))});slug.addEventListener('input',()=>prev.textContent=url(clean(slug.value)));document.querySelectorAll('input[name="packagePlan"]').forEach(i=>i.addEventListener('change',plans));terms?.addEventListener('change',()=>{btn.disabled=busy||!terms.checked;show(terms)});plans();btn.disabled=busy||!terms?.checked;f.addEventListener('submit',submit);act.addEventListener('click',activate);resend.addEventListener('click',resendMail);onAuthStateChanged(auth,async u=>{if(u&&location.search.includes('verify=1')){await reload(u).catch(()=>{});f.classList.add('hidden');vbox.classList.add('show');verify(auth.currentUser?.emailVerified?'อีเมลยืนยันแล้ว กดเปิดร้านได้เลย':'กรุณากดลิงก์ยืนยันในอีเมลก่อน')}});
+import {
+  auth, functions, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  sendEmailVerification, reload, onAuthStateChanged, httpsCallable,
+} from "./firebase-config.js?v=20260704-003";
+import {
+  loadPublicSubscriptionPricing,
+  formatSubscriptionMoney,
+  subscriptionVatLabel,
+} from "./subscription-pricing-client.js?v=20260920-001";
+import translations from "./public-register-translations.js?v=20260920-001";
+import {
+  configureI18n, applyTranslations, getLocale, getIntlLocale, t,
+} from "./i18n.js?v=20260903-202";
+
+configureI18n(translations);
+applyTranslations();
+document.title = t("register.meta.title");
+
+const $ = selector => document.querySelector(selector);
+const form = $("#registerForm");
+const verifyBox = $("#verifyBox");
+const slug = $("#slug");
+const slugPreview = $("#slugPreview");
+const registerStatus = $("#registerStatus");
+const verifyStatus = $("#verifyStatus");
+const submitButton = $("#submitRegister");
+const activateButton = $("#activateTrial");
+const resendButton = $("#resendEmail");
+const terms = $("#termsAccepted");
+const phone = $("#phone");
+const requestSignup = httpsCallable(functions, "requestTrialTenantSignup");
+const activateSignup = httpsCallable(functions, "activateTrialTenantSignup");
+
+let busy = false;
+let tried = false;
+if (form) form.noValidate = true;
+
+function injectValidationCss() {
+  if ($("#reg-val-css")) return;
+  document.head.insertAdjacentHTML("beforeend", `
+    <style id="reg-val-css">
+      #registerForm input{background:#f4f6f5!important;border-color:#d7e0da!important}
+      #registerForm input:focus{background:#fff!important;outline:3px solid rgba(21,148,71,.14)!important;border-color:#159447!important}
+      #registerForm .field-error{display:block;visibility:hidden;min-height:17px;margin:6px 0 0;color:#d92d20;font-size:12px;font-weight:500;line-height:1.35}
+      #registerForm .field-error.show{visibility:visible}
+      .plan-year-price{background:#e7f8ee!important;border:1px solid #9fd0b3!important;box-shadow:0 8px 18px rgba(21,148,71,.10)!important}
+      .old-price-slash{position:relative;display:inline-block;color:#b42318!important;font-size:18px!important;font-weight:1000!important;padding:0 2px}
+      .old-price-slash:after{content:"";position:absolute;left:-2px;right:-2px;top:52%;height:1px;background:#111;transform:rotate(-12deg);transform-origin:center}
+      .plan-year-price .new-year-price{color:#08702f!important;font-size:22px!important;font-weight:1000!important}
+    </style>
+  `);
+}
+async function renderPricing() {
+  const { config, pricing } = await loadPublicSubscriptionPricing();
+  const locale = getLocale();
+  const number = value => formatSubscriptionMoney(value, getIntlLocale());
+  const money = value => locale === "en" ? `THB ${number(value)}` : `${number(value)}฿`;
+  const annual = pricing.annual;
+  const hasDiscount = annual.discountConfigured > 0.009;
+  const discountText = config.discountType === "percent"
+    ? t("register.pricing.discountPercent", { value: number(config.discountValue) })
+    : t("register.pricing.discountAmount", { amount: number(annual.discountConfigured) });
+
+  const premium = document.querySelector('.package-option input[value="premium"]')?.closest(".package-option");
+  const small = premium?.querySelector("small");
+  const next = document.querySelector(".plan-next-price");
+  const year = document.querySelector(".plan-year-price");
+
+  const monthlyVat = config.vatMode === "exclusive"
+    ? t("register.pricing.excludedPayable", {
+        rate: number(config.vatRate),
+        amount: number(pricing.monthly.payable),
+      })
+    : subscriptionVatLabel(config, locale);
+
+  if (small) {
+    small.innerHTML = `${t("register.pricing.nextMonth", { amount: number(pricing.monthly.configured) })}<br>${monthlyVat}<br>${t("register.pricing.trialLine")}`;
+  }
+  if (next) {
+    next.innerHTML = `${t("register.pricing.nextMonth", { amount: number(pricing.monthly.configured) })} <span class="plan-vat-note">${monthlyVat}</span>`;
+  }
+  if (year) {
+    const oldPrice = hasDiscount ? `<span class="old-price-slash">${money(annual.regularConfigured)}</span> ` : "";
+    const discountLabel = hasDiscount ? `<small class="plan-discount-label">${discountText}</small>` : "";
+    const special = hasDiscount ? `${t("register.pricing.special")} ` : "";
+    const period = t("register.pricing.months", { months: config.annualMonths });
+    const vatDetail = config.vatMode === "exclusive"
+      ? t("register.pricing.excludedPayable", { rate: number(config.vatRate), amount: number(annual.payable) })
+      : t("register.pricing.includedVat", { rate: number(config.vatRate), amount: number(annual.vat) });
+    year.innerHTML = `${special}${oldPrice}<span class="new-year-price">${money(annual.configured)}/${period}</span>${discountLabel}<small class="plan-tax-detail">${vatDetail}</small>`;
+  }
+}
+
+function digits(value = "") {
+  return String(value || "").replace(/\D/g, "").slice(0, 10);
+}
+
+function phoneFormat(value = "") {
+  const raw = digits(value);
+  const parts = [];
+  if (raw[0]) parts.push(raw.slice(0, 1));
+  if (raw.length > 1) parts.push(raw.slice(1, 5));
+  if (raw.length > 5) parts.push(raw.slice(5, 9));
+  if (raw.length > 9) parts.push(raw.slice(9, 10));
+  return parts.filter(Boolean).join("-");
+}
+
+function cleanSlug(value = "") {
+  return String(value || "").trim().toLowerCase()
+    .replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+}
+
+function storeUrl(value) {
+  return `${location.origin}/s/${encodeURIComponent(value || "saas-test-shop")}/`;
+}
+
+function selectedPlan() {
+  return document.querySelector('input[name="packagePlan"]:checked')?.value || "premium";
+}
+function setRegisterStatus(message = "", error = false) {
+  registerStatus.textContent = message;
+  registerStatus.classList.toggle("hidden", !message);
+  registerStatus.classList.toggle("error", error);
+}
+
+function setVerifyStatus(message = "", error = false) {
+  verifyStatus.textContent = message;
+  verifyStatus.classList.toggle("error", error);
+}
+
+function setLoading(value) {
+  busy = value;
+  submitButton.disabled = busy || !terms?.checked;
+  activateButton.disabled = busy;
+  resendButton.disabled = busy;
+}
+
+function syncPlanSelection() {
+  document.querySelectorAll(".package-option").forEach(card => {
+    card.classList.toggle("is-selected", Boolean(card.querySelector('input[type="radio"]')?.checked));
+  });
+  if (selectedPlan() !== "premium") {
+    setRegisterStatus(t("register.status.unavailablePlan"), true);
+  } else if (registerStatus.textContent === t("register.status.unavailablePlan")) {
+    setRegisterStatus("");
+  }
+}
+
+function errorElement(input) {
+  const termsBox = input.closest(".terms-box");
+  const label = input.closest("label");
+  const host = termsBox || label || input.parentElement;
+  let error;
+  if (label && !termsBox) {
+    error = label.querySelector(":scope>.field-error");
+    if (!error) {
+      error = document.createElement("div");
+      error.className = "field-error";
+      label.append(error);
+    }
+    return error;
+  }
+  error = host?.nextElementSibling;
+  if (!error || !error.classList?.contains("field-error")) {
+    error = document.createElement("div");
+    error.className = "field-error";
+    host?.after(error);
+  }
+  return error;
+}
+
+function inputLabel(input) {
+  const label = input.closest("label");
+  const text = (label?.childNodes?.[0]?.textContent || label?.textContent || "")
+    .replace(/\s+/g, " ").trim();
+  return text || t("register.validation.fallbackLabel");
+}
+
+function validationMessage(input) {
+  const value = String(input.value || "").trim();
+  if (input.type === "checkbox") return input.checked ? "" : t("register.validation.acceptTerms");
+  if (input.required && !value) return t("register.validation.required", { label: inputLabel(input) });
+  if (input.id === "phone" && digits(value).length !== 10) return t("register.validation.phone");
+  if (input.type === "email" && value && !/^\S+@\S+\.\S+$/.test(value)) return t("register.validation.email");
+  if (input.id === "secretA" && value.length > 0 && value.length < 8) return t("register.validation.passwordMin");
+  if (input.id === "secretB" && value !== $("#secretA").value) return t("register.validation.passwordMismatch");
+  return "";
+}
+
+const requiredSelectors = [
+  "#ownerName", "#phone", "#email", "#orderDeliveryShopName", "#retailPosShopName",
+  "#slug", "#secretA", "#secretB", "#termsAccepted",
+];
+
+function showValidation(input, force = tried) {
+  if (!force) return true;
+  const message = validationMessage(input);
+  const box = input.closest(".terms-box") || input;
+  const error = errorElement(input);
+  input.classList.toggle("field-invalid", Boolean(message));
+  box.classList?.toggle("field-invalid", Boolean(message));
+  error.textContent = message;
+  error.classList.toggle("show", Boolean(message));
+  return !message;
+}
+
+function isValid() {
+  tried = true;
+  const inputs = requiredSelectors.map($).filter(Boolean);
+  const valid = inputs.every(input => showValidation(input, true));
+  if (!valid) inputs.find(input => validationMessage(input))?.focus?.();
+  return valid;
+}
+function signupPayload() {
+  if (!isValid()) throw Error(t("register.validation.checkRequired"));
+  if (selectedPlan() !== "premium") throw Error(t("register.status.unavailablePlan"));
+  return {
+    packageId: selectedPlan(),
+    ownerName: $("#ownerName").value.trim(),
+    phone: digits($("#phone").value),
+    orderDeliveryShopName: $("#orderDeliveryShopName").value.trim(),
+    retailPosShopName: $("#retailPosShopName").value.trim(),
+    slug: cleanSlug(slug.value),
+    email: $("#email").value.trim().toLowerCase(),
+    secret: $("#secretA").value,
+  };
+}
+
+async function sendVerification(user) {
+  if (!user) throw Error(t("register.status.accountNotFound"));
+  await reload(user).catch(() => {});
+  if (auth.currentUser?.emailVerified) return { alreadyVerified: true };
+  await sendEmailVerification(auth.currentUser || user, {
+    url: `${location.origin}/register/?verify=1`,
+    handleCodeInApp: false,
+  });
+  return { alreadyVerified: false };
+}
+
+async function ensureUser(payload) {
+  try {
+    return await createUserWithEmailAndPassword(auth, payload.email, payload.secret);
+  } catch (error) {
+    if (!String(error?.code || error?.message || "").includes("email-already-in-use")) throw error;
+    try {
+      return await signInWithEmailAndPassword(auth, payload.email, payload.secret);
+    } catch {
+      throw Error(t("register.status.emailUsed"));
+    }
+  }
+}
+
+async function submitRegistration(event) {
+  event.preventDefault();
+  setRegisterStatus("");
+  if (!isValid()) {
+    setRegisterStatus(t("register.validation.checkRequired"), true);
+    return;
+  }
+  setLoading(true);
+  try {
+    const payload = signupPayload();
+    slug.value = payload.slug;
+    slugPreview.textContent = storeUrl(payload.slug);
+    const credential = await ensureUser(payload);
+    await sendVerification(credential.user);
+    await requestSignup(payload);
+    form.classList.add("hidden");
+    verifyBox.classList.add("show");
+    setVerifyStatus(t("register.status.verificationSent"));
+  } catch (error) {
+    const code = String(error?.code || error?.message || "");
+    let message = error?.message || t("register.status.signupFailed");
+    if (code.includes("already-exists")) message = t("register.status.slugUsed");
+    if (code.includes("weak-password")) message = t("register.validation.passwordMin");
+    setRegisterStatus(message, true);
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function activateStore() {
+  setLoading(true);
+  try {
+    const user = auth.currentUser;
+    if (!user) throw Error(t("register.status.loginFirst"));
+    await reload(user);
+    if (!auth.currentUser.emailVerified) throw Error(t("register.status.emailUnverified"));
+    const response = await activateSignup({});
+    const tenantSlug = response.data?.slug || "";
+    setVerifyStatus(t("register.status.activated"));
+    location.href = tenantSlug ? `/login?tenant=${encodeURIComponent(tenantSlug)}` : "/login";
+  } catch (error) {
+    setVerifyStatus(error?.message || t("register.status.activateFailed"), true);
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function resendVerification() {
+  setLoading(true);
+  try {
+    const result = await sendVerification(auth.currentUser);
+    setVerifyStatus(result.alreadyVerified ? t("register.status.verifiedReady") : t("register.status.resendSent"));
+  } catch (error) {
+    setVerifyStatus(error?.message || t("register.status.resendFailed"), true);
+  } finally {
+    setLoading(false);
+  }
+}
+injectValidationCss();
+renderPricing().catch(error => console.warn("REGISTER_PRICING_RENDER_FAILED", error));
+
+if (phone) {
+  phone.placeholder = t("register.form.phonePlaceholder");
+  phone.inputMode = "numeric";
+  phone.addEventListener("input", () => {
+    phone.value = digits(phone.value);
+    showValidation(phone);
+  });
+  phone.addEventListener("blur", () => {
+    phone.value = phoneFormat(phone.value);
+    showValidation(phone);
+  });
+}
+
+requiredSelectors.map($).filter(Boolean).forEach(input => {
+  errorElement(input);
+  input.addEventListener("input", () => showValidation(input));
+  input.addEventListener("change", () => showValidation(input));
+});
+
+slug.addEventListener("input", () => {
+  slugPreview.textContent = storeUrl(cleanSlug(slug.value));
+});
+
+document.querySelectorAll('input[name="packagePlan"]').forEach(input => {
+  input.addEventListener("change", syncPlanSelection);
+});
+
+terms?.addEventListener("change", () => {
+  submitButton.disabled = busy || !terms.checked;
+  showValidation(terms);
+});
+
+syncPlanSelection();
+submitButton.disabled = busy || !terms?.checked;
+form.addEventListener("submit", submitRegistration);
+activateButton.addEventListener("click", activateStore);
+resendButton.addEventListener("click", resendVerification);
+
+onAuthStateChanged(auth, async user => {
+  if (user && location.search.includes("verify=1")) {
+    await reload(user).catch(() => {});
+    form.classList.add("hidden");
+    verifyBox.classList.add("show");
+    setVerifyStatus(
+      auth.currentUser?.emailVerified
+        ? t("register.status.verifiedReady")
+        : t("register.status.clickVerify")
+    );
+  }
+});

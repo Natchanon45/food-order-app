@@ -294,10 +294,48 @@ async function logoutToLogin() {
   location.replace("/login");
 }
 
+function ensureStandardHeaderActions(header) {
+  if (!header) return null;
+  let actions = header.querySelector(":scope > [data-header-actions]");
+  if (!actions) {
+    actions = document.createElement("div");
+    actions.className = "app-header-actions";
+    actions.dataset.headerActions = "true";
+    actions.style.cssText = "display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-left:auto;min-width:0;flex:0 0 auto;";
+    header.appendChild(actions);
+  }
+
+  const localeSwitcher = header.querySelector(".app-locale-switcher");
+  if (localeSwitcher) {
+    if (localeSwitcher.parentElement !== actions) actions.prepend(localeSwitcher);
+    localeSwitcher.style.marginLeft = "0";
+    localeSwitcher.style.marginRight = "0";
+    localeSwitcher.style.order = "-100";
+  }
+
+  const existingMenu = header.querySelector("[data-user-menu]");
+  if (existingMenu) {
+    if (existingMenu.parentElement !== actions) actions.appendChild(existingMenu);
+    existingMenu.style.marginLeft = "0";
+    existingMenu.style.order = "100";
+  }
+
+  if (header.dataset.standardHeaderActionsObserver !== "1") {
+    header.dataset.standardHeaderActionsObserver = "1";
+    new MutationObserver(() => ensureStandardHeaderActions(header)).observe(header, {
+      childList: true,
+      subtree: true
+    });
+  }
+  return actions;
+}
+
 export function mountUserMenu(profile) {
   ensureIconStyles();
   const header = document.querySelector(".app-header");
-  if (!header || header.querySelector("[data-user-menu]")) return;
+  if (!header) return;
+  const actions = ensureStandardHeaderActions(header);
+  if (header.querySelector("[data-user-menu]")) return;
   const menu = document.createElement("div");
   menu.className = "user-menu";
   menu.dataset.userMenu = "true";
@@ -312,7 +350,10 @@ export function mountUserMenu(profile) {
       ${roleMenuLinks(profile).map(renderMenuItem).join("")}
       <button type="button" class="user-menu-action danger" data-logout role="menuitem"><i class="fi fi-rr-exit app-icon" aria-hidden="true"></i><span>ออกจากระบบ</span></button>
     </div>`;
-  header.appendChild(menu);
+  actions.appendChild(menu);
+  menu.style.marginLeft = "0";
+  menu.style.order = "100";
+  ensureStandardHeaderActions(header);
 
   const trigger = menu.querySelector("[data-user-menu-trigger]");
   const panel = menu.querySelector("[data-user-menu-panel]");

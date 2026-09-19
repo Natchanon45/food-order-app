@@ -1,4 +1,4 @@
-import { requireRole } from './auth-service.js?v=20260802-104';
+import { requireRole } from './auth-service.js?v=20260920-001';
 import { RetailCollections, listRecords, saveRecordsStrict } from './retail-db.js?v=20260629-032';
 
 await requireRole(['owner']);

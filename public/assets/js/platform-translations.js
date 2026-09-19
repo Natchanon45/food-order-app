@@ -23,6 +23,10 @@ export default {
                 "contact": {
                     "title": "ช่องทางติดต่อหน้าแรก",
                     "description": "ตั้งค่าโทรศัพท์ LINE Messenger และอีเมลที่แสดงต่อผู้เยี่ยมชม"
+                },
+                "pricing": {
+                    "title": "ราคาแพ็กเกจ",
+                    "description": "ตั้งราคา ส่วนลด และ VAT ที่ใช้หน้าแรกและหน้าลงทะเบียน"
                 }
             },
             "scope": {
@@ -55,6 +59,10 @@ export default {
                 "contact": {
                     "title": "Homepage contact channels",
                     "description": "Configure the phone, LINE, Messenger, and email details shown to visitors."
+                },
+                "pricing": {
+                    "title": "Package pricing",
+                    "description": "Manage price, discount, and VAT used on the homepage and registration page."
                 }
             },
             "scope": {

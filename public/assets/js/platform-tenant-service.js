@@ -56,3 +56,5 @@ export function updateTenantSubscription(payload = {}) { return call("updateTena
 export function listTenantSalesSummary(params = {}) { return call("getPlatformRevenueShareSummary", objectParams(params)); }
 export function updateTenantRevenueShare(payload = {}) { return call("updateTenantRevenueShare", payload); }
 export function unlockTenantRevenueShare(payload = {}) { return call("unlockTenantRevenueShare", payload); }
+export function getSubscriptionPricing() { return call("getSubscriptionPricing", {}); }
+export function updateSubscriptionPricing(payload = {}) { return call("updateSubscriptionPricing", payload); }

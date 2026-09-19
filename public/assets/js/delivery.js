@@ -1,4 +1,4 @@
-import "./public-page-static-i18n.js?v=20260915-005";
+import "./public-page-static-i18n.js?v=20260920-001";
 
 await import("./public-tenant-resolver.js?v=20260916-005");
 

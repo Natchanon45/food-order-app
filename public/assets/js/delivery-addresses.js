@@ -1,4 +1,4 @@
-import "./public-page-static-i18n.js?v=20260903-245";
+import "./public-page-static-i18n.js?v=20260920-001";
 
 // DELIVERY_GOOGLE_NORMAL_BUTTON_20260805_098
 // DELIVERY_CURRENT_LOCATION_ADDRESS_FLOW_20260827_001

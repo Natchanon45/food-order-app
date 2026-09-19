@@ -1,4 +1,4 @@
-import { waitForAuth, getUserProfile } from "./auth-service.js?v=20260802-104";
+import { waitForAuth, getUserProfile } from "./auth-service.js?v=20260920-001";
 
 let contextPromise = null;
 

@@ -1,4 +1,122 @@
 <!doctype html>
-<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#159447"><title>ลงทะเบียนเปิดร้าน</title><link rel="stylesheet" href="/assets/css/app.css?v=20260801-096"><link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240"><style>
-*{box-sizing:border-box}.register-page{min-height:100dvh;background:linear-gradient(145deg,#eef8f1,#f8fbf9);color:#102317}.register-shell{width:min(1180px,100%);margin:auto;padding:14px 14px 56px}.register-hero{margin-bottom:12px;padding:16px 20px;border-radius:22px;background:linear-gradient(135deg,#0d2a1a,#159447);color:#fff}.register-hero h1{margin:0;font-size:26px}.register-hero p{margin:4px 0 0;color:#e7f5eb}.register-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start}.register-card{padding:16px;border:1px solid #dfeae3;border-radius:20px;background:#fff;box-shadow:0 14px 36px rgba(15,23,42,.08)}.register-form{display:grid;gap:12px}.register-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}.register-form label{display:grid;gap:5px;font-weight:800;color:#1f2f27}.register-form input{width:100%;min-height:44px;border:1px solid #dde5df;border-radius:12px;padding:9px 12px;background:#fff;font:inherit}.full{grid-column:1/-1}.label-small,.field-help,.register-note{color:#65756c;font-size:12px;line-height:1.45}.field-help,.register-note{margin:0}.package-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.package-option{display:grid!important;grid-template-columns:auto 1fr auto;gap:4px 10px;min-height:118px;padding:13px;border:1px solid #dbe7df;border-radius:16px;background:#fbfffc}.package-option input{width:18px!important;min-width:18px;height:18px!important;min-height:18px;accent-color:#159447}.package-option strong{font-size:18px}.package-option small{grid-column:2/4;color:#607068;font-weight:700;line-height:1.35}.package-price{grid-column:2/4;color:#0d6f34;font-weight:900}.package-check{display:none;color:#159447;font-size:22px}.package-option.is-selected{border-color:#83c79e;background:#effaf3;box-shadow:0 10px 26px rgba(21,148,71,.1)}.package-option.is-selected .package-check{display:inline-block}.package-option.is-disabled{opacity:.55;cursor:not-allowed;background:#f4f7f5}.slug-preview{padding:9px 12px;border:1px dashed #9fd0b3;border-radius:12px;background:#f6fbf8;color:#0d6f34;font-weight:800;word-break:break-word}.terms-box{display:flex!important;flex-direction:row!important;gap:10px;align-items:center;padding:12px;border:1px solid #dbe7df;border-radius:14px;background:#f8fcfa;font-weight:800}.terms-box input{width:18px!important;min-width:18px;height:18px!important;min-height:18px;margin:0;accent-color:#159447}.terms-box span{font-size:13px}.register-actions{display:flex;flex-wrap:wrap;gap:9px;justify-content:center}.register-actions .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;min-width:210px}.register-status{margin:0;padding:9px 12px;border-radius:12px;background:#f6fbf8;color:#0d6f34;font-weight:800}.register-status.error{background:#fff3f3;color:#b42318}.plan-card{position:sticky;top:72px;display:grid;gap:9px}.plan-badge{width:max-content;padding:5px 9px;border-radius:999px;background:#e8f3ec;color:#0d6f34;font-weight:900;font-size:12px}.plan-price{margin:0;color:#0d6f34;font-size:25px;font-weight:900}.plan-next-price{margin:-5px 0 0;color:#41534a;font-size:13px;font-weight:800}.plan-year-price{margin:0;padding:10px 12px;border-radius:14px;background:#e8f8ee;color:#0d6f34;font-weight:900}.old-price{color:#b42318;font-size:18px;text-decoration:line-through;text-decoration-thickness:3px}.new-year-price{color:#08702f;font-size:22px;font-weight:1000}.plan-card ul{display:grid;gap:7px;margin:0;padding:0;list-style:none}.plan-card li{display:flex;gap:8px;font-size:13px}.verify-box{display:none;gap:12px}.verify-box.show{display:grid}.hidden{display:none!important}@media(max-width:980px){.register-grid{grid-template-columns:1fr}.plan-card{position:static;grid-row:1}}@media(max-width:760px){.register-grid,.register-form-grid,.package-grid{grid-template-columns:1fr}.register-actions{display:grid}.register-actions .btn{width:100%;min-width:0}.register-form input{font-size:16px}}
-</style></head><body class="register-page"><header class="app-header"><div class="brand"><span class="brand-mark">FOD</span><span>ลงทะเบียนเปิดร้าน</span></div><a class="btn btn-sm" href="/"><i class="bi bi-house-door app-icon"></i><span>หน้าหลัก</span></a></header><main class="register-shell"><section class="register-hero"><h1>เริ่มใช้งาน Premium ฟรี 1 เดือน</h1><p>สมัครร้านใหม่ ยืนยันอีเมล แล้วระบบจะเปิดสิทธิ์เจ้าของร้านให้อัตโนมัติ</p></section><section class="register-grid"><section class="register-card"><form id="registerForm" class="register-form" novalidate><section class="full"><b>แพ็กเกจ</b><div class="package-grid"><label class="package-option is-disabled"><input type="radio" name="packagePlan" value="free" disabled><strong>ฟรี</strong><i class="bi bi-check-circle-fill package-check"></i><span class="package-price">0฿ / เดือน</span><small>สำหรับทดลองระบบพื้นฐาน เร็ว ๆ นี้</small></label><label class="package-option is-disabled"><input type="radio" name="packagePlan" value="pro" disabled><strong>โปร</strong><i class="bi bi-check-circle-fill package-check"></i><span class="package-price">390฿ / เดือน</span><small>สำหรับร้านที่ต้องการเครื่องมือเพิ่ม เร็ว ๆ นี้</small></label><label class="package-option is-selected"><input id="packageId" type="radio" name="packagePlan" value="premium" checked><strong>พรีเมียม</strong><i class="bi bi-check-circle-fill package-check"></i><span class="package-price">0฿ / เดือนแรก</span><small>และ 590฿ สำหรับเดือนถัดไป<br>Premium Trial ฟรี 1 เดือน เปิดใช้งานอัตโนมัติหลังยืนยันอีเมล</small></label></div></section><div class="register-form-grid"><label>ชื่อ-นามสกุล<input id="ownerName" required maxlength="120" autocomplete="name"></label><label>เบอร์โทรศัพท์<input id="phone" type="tel" required maxlength="30" autocomplete="tel"></label><label class="full">อีเมล<input id="email" type="email" required maxlength="120" autocomplete="email"></label><label>ชื่อร้านอาหาร <span class="label-small">(Order/Delivery)</span><input id="orderDeliveryShopName" required maxlength="120"></label><label>ชื่อร้านค้า <span class="label-small">(Retail POS)</span><input id="retailPosShopName" required maxlength="120"></label><p class="full field-help">ถ้าชื่อร้านค้าและชื่อร้านเป็นชื่อเดียวกัน ให้กรอกข้อมูลชื่อร้านอาหาร และ ชื่อร้านค้า เป็นชื่อเดียวกัน</p><label class="full">Slug ของร้าน <span class="label-small">(ให้กรอกเป็นภาษาอังกฤษ ดูตัวอย่างลิงก์ของร้านเต็มได้ข้างล่าง)</span><input id="slug" required maxlength="50" placeholder="saas-test-shop" autocomplete="off"></label><div class="full slug-preview" id="slugPreview">https://natchanon-food-order-delivery.web.app/s/saas-test-shop/</div><label>รหัสผ่าน<input id="secretA" type="password" required minlength="8" maxlength="100" autocomplete="new-password"></label><label>ยืนยันรหัสผ่าน<input id="secretB" type="password" required minlength="8" maxlength="100" autocomplete="new-password"></label></div><p class="register-note">หลังสมัคร ระบบจะส่งลิงก์ยืนยันไปที่อีเมล เมื่อยืนยันแล้วให้กลับมาหน้านี้เพื่อเปิดร้านและเริ่มนับ Premium Trial 1 เดือน</p><label class="terms-box"><input id="termsAccepted" type="checkbox" required><span>ข้าพเจ้าได้อ่านข้อตกลงและนโยบายการใช้งานจากระบบและมีความเข้าใจเป็นอย่างดีแล้ว</span></label><p id="registerStatus" class="register-status hidden"></p><div class="register-actions"><button id="submitRegister" class="btn btn-primary" type="submit" disabled><i class="bi bi-send-check app-icon"></i><span>ยืนยันการสมัครใช้บริการ</span></button><a class="btn" href="/login"><i class="bi bi-box-arrow-in-right app-icon"></i><span>ลงชื่อเข้าใช้</span></a></div></form><div id="verifyBox" class="verify-box"><h2>ตรวจสอบอีเมลของคุณ</h2><p class="register-note">กดลิงก์ยืนยันตัวตนในอีเมลแล้วกลับมาที่หน้านี้ จากนั้นกดปุ่มด้านล่างเพื่อเปิดร้าน</p><p id="verifyStatus" class="register-status">รอการยืนยันอีเมล</p><div class="register-actions"><button id="activateTrial" class="btn btn-primary" type="button"><i class="bi bi-patch-check app-icon"></i><span>ฉันยืนยันอีเมลแล้ว เปิดร้าน</span></button><button id="resendEmail" class="btn" type="button"><i class="bi bi-envelope app-icon"></i><span>ส่งอีเมลอีกครั้ง</span></button></div></div></section><aside class="register-card plan-card"><span class="plan-badge">Premium Trial</span><h2>ใช้งาน Premium ฟรี 1 เดือน</h2><p class="plan-price">0฿ <small>/ เดือนแรก</small></p><p class="plan-next-price">และ 590฿ สำหรับเดือนถัดไป</p><p class="plan-year-price">พิเศษ <span class="old-price">7080฿</span> <span class="new-year-price">5900฿/1 Year</span></p><ul><li><i class="bi bi-check-circle"></i><span>Order / Delivery / Kitchen / Cashier</span></li><li><i class="bi bi-check-circle"></i><span>Retail POS พร้อม Online / Offline / Sync</span></li><li><i class="bi bi-check-circle"></i><span>สิทธิ์เจ้าของร้านหลังยืนยันอีเมล</span></li><li><i class="bi bi-check-circle"></i><span>เริ่มนับ trial หลังเปิดร้านสำเร็จ</span></li></ul></aside></section></main><script type="module" src="/assets/js/public-register.js?v=20260716-009"></script></body></html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#159447">
+  <title>ลงทะเบียนเปิดร้าน</title>
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
+  <link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240">
+  <link rel="stylesheet" href="/assets/css/i18n.css?v=20260903-202">
+  <style>
+*{box-sizing:border-box}.register-page{min-height:100dvh;background:linear-gradient(145deg,#eef8f1,#f8fbf9);color:#102317}.register-header{gap:10px}.register-header-actions{display:flex;align-items:center;gap:8px;margin-left:auto}.register-shell{width:min(1180px,100%);margin:auto;padding:14px 14px 56px}.register-hero{margin-bottom:12px;padding:16px 20px;border-radius:22px;background:linear-gradient(135deg,#0d2a1a,#159447);color:#fff}.register-hero h1{margin:0;font-size:26px}.register-hero p{margin:4px 0 0;color:#e7f5eb}.register-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start}.register-card{padding:16px;border:1px solid #dfeae3;border-radius:20px;background:#fff;box-shadow:0 14px 36px rgba(15,23,42,.08)}.register-form{display:grid;gap:12px}.register-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}.register-form label{display:grid;gap:5px;font-weight:800;color:#1f2f27}.register-form input{width:100%;min-height:44px;border:1px solid #dde5df;border-radius:12px;padding:9px 12px;background:#fff;font:inherit}.full{grid-column:1/-1}.label-small,.field-help,.register-note{color:#65756c;font-size:12px;line-height:1.45}.field-help,.register-note{margin:0}.package-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.package-option{display:grid!important;grid-template-columns:auto 1fr auto;gap:4px 10px;min-height:118px;padding:13px;border:1px solid #dbe7df;border-radius:16px;background:#fbfffc}.package-option input{width:18px!important;min-width:18px;height:18px!important;min-height:18px;accent-color:#159447}.package-option strong{font-size:18px}.package-option small{grid-column:2/4;color:#607068;font-weight:700;line-height:1.35}.package-price{grid-column:2/4;color:#0d6f34;font-weight:900}.package-check{display:none;color:#159447;font-size:22px}.package-option.is-selected{border-color:#83c79e;background:#effaf3;box-shadow:0 10px 26px rgba(21,148,71,.1)}.package-option.is-selected .package-check{display:inline-block}.package-option.is-disabled{opacity:.55;cursor:not-allowed;background:#f4f7f5}
+.slug-preview{padding:9px 12px;border:1px dashed #9fd0b3;border-radius:12px;background:#f6fbf8;color:#0d6f34;font-weight:800;word-break:break-word}.terms-box{display:flex!important;flex-direction:row!important;gap:10px;align-items:center;padding:12px;border:1px solid #dbe7df;border-radius:14px;background:#f8fcfa;font-weight:800}.terms-box input{width:18px!important;min-width:18px;height:18px!important;min-height:18px;margin:0;accent-color:#159447}.terms-box span{font-size:13px}.register-actions{display:flex;flex-wrap:wrap;gap:9px;justify-content:center}.register-actions .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;min-width:210px}.register-status{margin:0;padding:9px 12px;border-radius:12px;background:#f6fbf8;color:#0d6f34;font-weight:800}.register-status.error{background:#fff3f3;color:#b42318}.plan-card{position:sticky;top:72px;display:grid;gap:9px}.plan-badge{width:max-content;padding:5px 9px;border-radius:999px;background:#e8f3ec;color:#0d6f34;font-weight:900;font-size:12px}.plan-price{margin:0;color:#0d6f34;font-size:25px;font-weight:900}.plan-next-price{margin:-5px 0 0;color:#41534a;font-size:13px;font-weight:800}.plan-year-price{margin:0;padding:10px 12px;border-radius:14px;background:#e8f8ee;color:#0d6f34;font-weight:900}.old-price{color:#b42318;font-size:18px;text-decoration:line-through;text-decoration-thickness:3px}.new-year-price{color:#08702f;font-size:22px;font-weight:1000}.plan-card ul{display:grid;gap:7px;margin:0;padding:0;list-style:none}.plan-vat-note{display:block;margin-top:3px;color:#607068;font-size:11px;font-weight:800}.plan-tax-detail{display:block;margin-top:5px;color:#52635a;font-size:11px;font-weight:800}.plan-discount-label{display:block;margin-top:4px;color:#0d6f34;font-size:11px;font-weight:900}.plan-card li{display:flex;gap:8px;font-size:13px}.verify-box{display:none;gap:12px}.verify-box.show{display:grid}.hidden{display:none!important}@media(max-width:980px){.register-grid{grid-template-columns:1fr}.plan-card{position:static;grid-row:1}}@media(max-width:760px){.register-header{padding-inline:10px}.register-header-actions{gap:6px}.register-header-actions .btn{padding-inline:9px;white-space:nowrap}.register-grid,.register-form-grid,.package-grid{grid-template-columns:1fr}.register-actions{display:grid}.register-actions .btn{width:100%;min-width:0}.register-form input{font-size:16px}}
+  </style>
+</head>
+<body class="register-page">
+<header class="app-header register-header">
+  <div class="brand"><span class="brand-mark">FOD</span><span data-i18n="register.header.title">ลงทะเบียนเปิดร้าน</span></div>
+  <div class="register-header-actions">
+    <a class="btn btn-sm" href="/"><i class="bi bi-house-door app-icon"></i><span data-i18n="register.header.home">หน้าหลัก</span></a>
+    <div class="app-locale-switcher" data-static-locale-switcher>
+      <details class="app-locale-menu" data-locale-menu>
+        <summary class="app-locale-trigger" aria-label="Language"><i class="bi bi-globe2"></i></summary>
+        <div class="app-locale-menu__panel">
+          <button type="button" class="app-locale-option" data-locale-option="th"><span>ไทย</span></button>
+          <button type="button" class="app-locale-option" data-locale-option="en"><span>English</span></button>
+        </div>
+      </details>
+    </div>
+  </div>
+</header>
+<main class="register-shell">
+  <section class="register-hero">
+    <h1 data-i18n="register.hero.title">เริ่มใช้งาน Premium ฟรี 1 เดือน</h1>
+    <p data-i18n="register.hero.description">สมัครร้านใหม่ ยืนยันอีเมล แล้วระบบจะเปิดสิทธิ์เจ้าของร้านให้อัตโนมัติ</p>
+  </section>
+  <section class="register-grid">
+    <section class="register-card">
+      <form id="registerForm" class="register-form" novalidate>
+        <section class="full">
+          <b data-i18n="register.packages.title">แพ็กเกจ</b>
+          <div class="package-grid">
+            <label class="package-option is-disabled">
+              <input type="radio" name="packagePlan" value="free" disabled>
+              <strong data-i18n="register.packages.free.name">ฟรี</strong>
+              <i class="bi bi-check-circle-fill package-check"></i>
+              <span class="package-price" data-i18n="register.packages.free.price">0฿ / เดือน</span>
+              <small data-i18n="register.packages.free.description">สำหรับทดลองระบบพื้นฐาน เร็ว ๆ นี้</small>
+            </label>
+            <label class="package-option is-disabled">
+              <input type="radio" name="packagePlan" value="pro" disabled>
+              <strong data-i18n="register.packages.pro.name">โปร</strong>
+              <i class="bi bi-check-circle-fill package-check"></i>
+              <span class="package-price" data-i18n="register.packages.pro.price">390฿ / เดือน</span>
+              <small data-i18n="register.packages.pro.description">สำหรับร้านที่ต้องการเครื่องมือเพิ่ม เร็ว ๆ นี้</small>
+            </label>
+            <label class="package-option is-selected">
+              <input id="packageId" type="radio" name="packagePlan" value="premium" checked>
+              <strong data-i18n="register.packages.premium.name">พรีเมียม</strong>
+              <i class="bi bi-check-circle-fill package-check"></i>
+              <span class="package-price" data-i18n="register.packages.premium.firstMonth">0฿ / เดือนแรก</span>
+              <small><span data-i18n="register.packages.premium.loading">กำลังโหลดราคา Premium...</span><br><span data-i18n="register.packages.premium.trial">Premium Trial ฟรี 1 เดือน เปิดใช้งานอัตโนมัติหลังยืนยันอีเมล</span></small>
+            </label>
+          </div>
+        </section>
+
+        <div class="register-form-grid">
+          <label><span data-i18n="register.form.ownerName">ชื่อ-นามสกุล</span><input id="ownerName" required maxlength="120" autocomplete="name"></label>
+          <label><span data-i18n="register.form.phone">เบอร์โทรศัพท์</span><input id="phone" type="tel" required maxlength="30" autocomplete="tel" data-i18n-placeholder="register.form.phonePlaceholder"></label>
+          <label class="full"><span data-i18n="register.form.email">อีเมล</span><input id="email" type="email" required maxlength="120" autocomplete="email"></label>
+
+          <label><span><span data-i18n="register.form.orderShop">ชื่อร้านอาหาร</span> <span class="label-small" data-i18n="register.form.orderShopTag">(Order/Delivery)</span></span><input id="orderDeliveryShopName" required maxlength="120"></label>
+          <label><span><span data-i18n="register.form.retailShop">ชื่อร้านค้า</span> <span class="label-small" data-i18n="register.form.retailShopTag">(Retail POS)</span></span><input id="retailPosShopName" required maxlength="120"></label>
+          <p class="full field-help" data-i18n="register.form.shopHelp">ถ้าชื่อร้านค้าและชื่อร้านเป็นชื่อเดียวกัน ให้กรอกข้อมูลชื่อร้านอาหาร และชื่อร้านค้าเป็นชื่อเดียวกัน</p>
+
+          <label class="full"><span><span data-i18n="register.form.slug">Slug ของร้าน</span> <span class="label-small" data-i18n="register.form.slugHelp">(ให้กรอกเป็นภาษาอังกฤษ ดูตัวอย่างลิงก์ของร้านเต็มได้ข้างล่าง)</span></span><input id="slug" required maxlength="50" data-i18n-placeholder="register.form.slugPlaceholder" autocomplete="off"></label>
+          <div class="full slug-preview" id="slugPreview">https://natchanon-food-order-delivery.web.app/s/saas-test-shop/</div>
+
+          <label><span data-i18n="register.form.password">รหัสผ่าน</span><input id="secretA" type="password" required minlength="8" maxlength="100" autocomplete="new-password"></label>
+          <label><span data-i18n="register.form.confirmPassword">ยืนยันรหัสผ่าน</span><input id="secretB" type="password" required minlength="8" maxlength="100" autocomplete="new-password"></label>
+        </div>
+
+        <p class="register-note" data-i18n="register.form.note">หลังสมัคร ระบบจะส่งลิงก์ยืนยันไปที่อีเมล เมื่อยืนยันแล้วให้กลับมาหน้านี้เพื่อเปิดร้านและเริ่มนับ Premium Trial 1 เดือน</p>
+        <label class="terms-box"><input id="termsAccepted" type="checkbox" required><span data-i18n="register.form.terms">ข้าพเจ้าได้อ่านข้อตกลงและนโยบายการใช้งานจากระบบและมีความเข้าใจเป็นอย่างดีแล้ว</span></label>
+
+        <p id="registerStatus" class="register-status hidden"></p>
+        <div class="register-actions">
+          <button id="submitRegister" class="btn btn-primary" type="submit" disabled><i class="bi bi-send-check app-icon"></i><span data-i18n="register.form.submit">ยืนยันการสมัครใช้บริการ</span></button>
+          <a class="btn" href="/login"><i class="bi bi-box-arrow-in-right app-icon"></i><span data-i18n="register.form.login">ลงชื่อเข้าใช้</span></a>
+        </div>
+      </form>
+      <div id="verifyBox" class="verify-box">
+        <h2 data-i18n="register.verify.title">ตรวจสอบอีเมลของคุณ</h2>
+        <p class="register-note" data-i18n="register.verify.description">กดลิงก์ยืนยันตัวตนในอีเมลแล้วกลับมาที่หน้านี้ จากนั้นกดปุ่มด้านล่างเพื่อเปิดร้าน</p>
+        <p id="verifyStatus" class="register-status" data-i18n="register.verify.waiting">รอการยืนยันอีเมล</p>
+        <div class="register-actions">
+          <button id="activateTrial" class="btn btn-primary" type="button"><i class="bi bi-patch-check app-icon"></i><span data-i18n="register.verify.activate">ฉันยืนยันอีเมลแล้ว เปิดร้าน</span></button>
+          <button id="resendEmail" class="btn" type="button"><i class="bi bi-envelope app-icon"></i><span data-i18n="register.verify.resend">ส่งอีเมลอีกครั้ง</span></button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="register-card plan-card">
+      <span class="plan-badge" data-i18n="register.plan.badge">Premium Trial</span>
+      <h2 data-i18n="register.plan.title">ใช้งาน Premium ฟรี 1 เดือน</h2>
+      <p class="plan-price"><span data-i18n="register.plan.firstMonth">0฿</span> <small data-i18n="register.plan.firstMonthSuffix">/ เดือนแรก</small></p>
+      <p class="plan-next-price" data-i18n="register.plan.loadingPrice">กำลังโหลดราคา Premium...</p>
+      <p class="plan-year-price" data-i18n="register.plan.loadingAnnual">กำลังโหลดโปรโมชั่นรายปี...</p>
+      <ul>
+        <li><i class="bi bi-check-circle"></i><span data-i18n="register.plan.features.order">Order / Delivery / Kitchen / Cashier</span></li>
+        <li><i class="bi bi-check-circle"></i><span data-i18n="register.plan.features.retail">Retail POS พร้อม Online / Offline / Sync</span></li>
+        <li><i class="bi bi-check-circle"></i><span data-i18n="register.plan.features.owner">สิทธิ์เจ้าของร้านหลังยืนยันอีเมล</span></li>
+        <li><i class="bi bi-check-circle"></i><span data-i18n="register.plan.features.trial">เริ่มนับ trial หลังเปิดร้านสำเร็จ</span></li>
+      </ul>
+    </aside>
+  </section>
+</main>
+
+<script type="module" src="/assets/js/public-register.js?v=20260920-002"></script>
+<script type="module" src="/assets/js/locale-switcher-static.js?v=20260903-202"></script>
+</body>
+</html>

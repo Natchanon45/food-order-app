@@ -1,4 +1,4 @@
-import "./public-page-static-i18n.js?v=20260903-231";
+import "./public-page-static-i18n.js?v=20260920-001";
 
 import "./sweet-dialog.js?v=20260726-034";
 import "./cart-item-layout.js?v=20260702-002";

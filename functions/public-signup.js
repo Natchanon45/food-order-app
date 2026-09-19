@@ -2,6 +2,7 @@ const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { getAuth } = require("firebase-admin/auth");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { randomUUID } = require("crypto");
+const { loadPricing, pricingSnapshot } = require("./subscription-pricing-core");
 
 const PLAN_ID = "premium";
 const TRIAL_DAYS = 30;
@@ -46,6 +47,7 @@ exports.requestTrialTenantSignup = onCall({ region: "asia-southeast1" }, async r
   const pendingSlugRef = db.collection("publicTenantSignupSlugs").doc(slug);
   const tenantSlugRef = db.collection("tenantSlugs").doc(slug);
   const now = FieldValue.serverTimestamp();
+  const signupPricing = pricingSnapshot(await loadPricing(db));
 
   await db.runTransaction(async tx => {
     const [tenantSlugSnap, pendingSlugSnap] = await Promise.all([tx.get(tenantSlugRef), tx.get(pendingSlugRef)]);
@@ -61,6 +63,7 @@ exports.requestTrialTenantSignup = onCall({ region: "asia-southeast1" }, async r
       slug,
       packageId: PLAN_ID,
       plan: PLAN_ID,
+      pricingSnapshot: signupPricing,
       status: "email_verification_required",
       previewUrl: `https://natchanon-food-order-delivery.web.app/s/${slug}/`,
       updatedAt: now,
@@ -95,6 +98,7 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
   const membershipRef = tenantRef.collection("memberships").doc(uid);
   const now = FieldValue.serverTimestamp();
   const trialEndsAt = trialEndDate();
+  const signupPricing = pending.pricingSnapshot || pricingSnapshot(await loadPricing(db));
 
   await db.runTransaction(async tx => {
     const [tenantSlugSnap, pendingSlugSnap] = await Promise.all([tx.get(tenantSlugRef), tx.get(pendingSlugRef)]);
@@ -113,6 +117,7 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
       tenantName: pending.orderDeliveryShopName,
       packageId: PLAN_ID,
       plan: PLAN_ID,
+      subscriptionPricingSnapshot: signupPricing,
       subscriptionStatus: "trialing",
       trialStartsAt: now,
       trialEndsAt,
@@ -136,6 +141,7 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
       subscriptionStatus: "trialing",
       trialStartsAt: now,
       trialEndsAt,
+      subscriptionPricingSnapshot: signupPricing,
       businessUnits: BUSINESS_UNITS,
       createdBy: uid,
       updatedAt: now,
@@ -167,6 +173,7 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
       trialDays: TRIAL_DAYS,
       trialStartsAt: now,
       trialEndsAt,
+      pricingSnapshot: signupPricing,
       createdAt: now,
       updatedAt: now
     });

@@ -1,4 +1,4 @@
-import "./public-page-static-i18n.js?v=20260903-243";
+import "./public-page-static-i18n.js?v=20260920-001";
 
 import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20260903-231';
 import { money, formatTime, toast } from "./ui.js?v=20260805-081";
