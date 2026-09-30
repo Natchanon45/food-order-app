@@ -1,11 +1,11 @@
-import "./public-page-static-i18n.js?v=20260930-002";
+import "./public-page-static-i18n.js?v=20261001-003";
 
 await import("./public-tenant-resolver.js?v=20260916-005");
 
 import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20260930-004';
 import { functions, httpsCallable } from "./firebase-config.js?v=20260630-073";
 import { money, toast } from "./ui.js?v=20260930-001";
-import { t } from "./i18n.js?v=20260930-001";
+import { t } from "./i18n.js?v=20261001-003";
 import { generatePromptPayPayload } from "./promptpay.js";
 import { qrDataUrl } from "./local-qr.js?v=20260722-036";
 import "./cart-item-layout.js?v=20260702-002";

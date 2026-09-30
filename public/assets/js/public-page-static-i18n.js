@@ -1,5 +1,5 @@
-import translations from "./public-translations.js?v=20260930-002";
-import { applyTranslations, configureI18n, getLocale, setLocale } from "./i18n.js?v=20260930-001";
+import translations from "./public-translations.js?v=20261001-003";
+import { applyTranslations, configureI18n, getLocale, setLocale } from "./i18n.js?v=20261001-003";
 
 configureI18n(translations);
 const locale = getLocale();

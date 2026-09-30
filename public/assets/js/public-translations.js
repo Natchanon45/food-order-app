@@ -262,7 +262,9 @@ export default {
                     "lalamove_unavailable": "ไม่สามารถขอราคาค่าจัดส่งจาก Lalamove ได้ กรุณาลองใหม่",
                     "lalamove_out_of_service_area": "ตำแหน่งนี้อยู่นอกพื้นที่ให้บริการของ Lalamove กรุณาเลือกตำแหน่งจัดส่งใหม่",
                     "lalamove_cod_unavailable": "พื้นที่นี้ยังไม่รองรับบริการเก็บเงินปลายทางของ Lalamove กรุณาเลือกชำระเงินล่วงหน้าหรือเปลี่ยนพื้นที่จัดส่ง",
-                    "lalamove_expired": "ราคาค่าส่ง Lalamove หมดอายุแล้ว ระบบกำลังขอราคาใหม่"
+                    "lalamove_expired": "ราคาค่าส่ง Lalamove หมดอายุแล้ว ระบบกำลังขอราคาใหม่",
+                    "calculating": "กำลังคำนวณระยะทางจากร้าน...",
+                    "route_failed": "ไม่สามารถคำนวณเส้นทางจัดส่งได้ กรุณาลองใหม่"
                 },
                 "promotion": {
                     "gift_title": "เลือกของแถม",
@@ -947,7 +949,9 @@ export default {
                     "lalamove_unavailable": "Could not get a Lalamove delivery quotation. Please try again.",
                     "lalamove_out_of_service_area": "This location is outside Lalamove’s service area. Please choose another delivery location.",
                     "lalamove_cod_unavailable": "Lalamove cash on delivery is not available for this area. Please prepay or choose another delivery location.",
-                    "lalamove_expired": "The Lalamove quotation has expired. A new quotation is required."
+                    "lalamove_expired": "The Lalamove quotation has expired. A new quotation is required.",
+                    "calculating": "Calculating distance from the store...",
+                    "route_failed": "Unable to calculate the delivery route. Please try again."
                 },
                 "promotion": {
                     "gift_title": "Choose free gifts",
@@ -1632,7 +1636,9 @@ export default {
                     "lalamove_unavailable": "Lalamove ပေးပို့မှု quotation ကို မရခဲ့ပါ။ ထပ်စမ်းကြည့်ပါ။",
                     "lalamove_out_of_service_area": "ဤတည်နေရာသည် Lalamove ၏ ဝန်ဆောင်မှုဧရိယာ အပြင်ဘက်ဖြစ်သည်။ ကျေးဇူးပြု၍ အခြားပေးပို့ရမည့်နေရာကို ရွေးပါ။",
                     "lalamove_cod_unavailable": "Lalamove ဤဧရိယာအတွက် ပို့ဆောင်မှုတွင် ငွေသားမရနိုင်ပါ။ ကျေးဇူးပြု၍ ကြိုတင်ငွေပေးချေပါ သို့မဟုတ် အခြားပေးပို့ရမည့်နေရာကို ရွေးချယ်ပါ။",
-                    "lalamove_expired": "Lalamove ကိုးကားချက် သက်တမ်းကုန်သွားပါပြီ။ ကိုးကားချက်အသစ်တစ်ခု လိုအပ်ပါသည်။"
+                    "lalamove_expired": "Lalamove ကိုးကားချက် သက်တမ်းကုန်သွားပါပြီ။ ကိုးကားချက်အသစ်တစ်ခု လိုအပ်ပါသည်။",
+                    "calculating": "ဆိုင်မှ အကွာအဝေးကို တွက်ချက်နေသည်...",
+                    "route_failed": "ပို့ဆောင်ရေးလမ်းကြောင်းကို မတွက်ချက်နိုင်ပါ။ ထပ်မံကြိုးစားပါ။"
                 },
                 "promotion": {
                     "gift_title": "အခမဲ့လက်ဆောင်များကိုရွေးချယ်ပါ။",
@@ -2317,7 +2323,9 @@ export default {
                     "lalamove_unavailable": "ບໍ່ສາມາດຮັບໃບສະເໜີລາຄາການຈັດສົ່ງ Lalamove ໄດ້. ກະລຸນາລອງອີກຄັ້ງ.",
                     "lalamove_out_of_service_area": "ສະຖານທີ່ນີ້ແມ່ນຢູ່ນອກເຂດບໍລິການຂອງ Lalamove. ກະລຸນາເລືອກສະຖານທີ່ຈັດສົ່ງອື່ນ.",
                     "lalamove_cod_unavailable": "Lalamove ເງິນສົດໃນການຂົນສົ່ງແມ່ນບໍ່ສາມາດໃຊ້ໄດ້ສໍາລັບພື້ນທີ່ນີ້. ກະລຸນາຈ່າຍລ່ວງໜ້າ ຫຼືເລືອກສະຖານທີ່ຈັດສົ່ງອື່ນ.",
-                    "lalamove_expired": "ໃບສະເໜີລາຄາ Lalamove ໝົດອາຍຸແລ້ວ. ຕ້ອງການໃບສະເໜີລາຄາໃໝ່."
+                    "lalamove_expired": "ໃບສະເໜີລາຄາ Lalamove ໝົດອາຍຸແລ້ວ. ຕ້ອງການໃບສະເໜີລາຄາໃໝ່.",
+                    "calculating": "ກຳລັງຄຳນວນໄລຍະທາງຈາກຮ້ານ...",
+                    "route_failed": "ບໍ່ສາມາດຄຳນວນເສັ້ນທາງຈັດສົ່ງໄດ້ ກະລຸນາລອງໃໝ່"
                 },
                 "promotion": {
                     "gift_title": "ເລືອກຂອງຂວັນຟຣີ",
@@ -3002,7 +3010,9 @@ export default {
                     "lalamove_unavailable": "មិនអាចទទួលបានសម្រង់ដឹកជញ្ជូន Lalamove ទេ។ សូមព្យាយាមម្តងទៀត។",
                     "lalamove_out_of_service_area": "ទីតាំងនេះនៅក្រៅតំបន់សេវាកម្មរបស់ Lalamove។ សូមជ្រើសរើសទីតាំងដឹកជញ្ជូនផ្សេងទៀត។",
                     "lalamove_cod_unavailable": "Lalamove សាច់ប្រាក់លើការដឹកជញ្ជូនមិនមានសម្រាប់តំបន់នេះទេ។ សូមបង់ប្រាក់ជាមុន ឬជ្រើសរើសទីតាំងដឹកជញ្ជូនផ្សេងទៀត។",
-                    "lalamove_expired": "សម្រង់ Lalamove បានផុតកំណត់ហើយ។ តម្រូវឱ្យមានការដកស្រង់ថ្មី។"
+                    "lalamove_expired": "សម្រង់ Lalamove បានផុតកំណត់ហើយ។ តម្រូវឱ្យមានការដកស្រង់ថ្មី។",
+                    "calculating": "កំពុងគណនាចម្ងាយពីហាង...",
+                    "route_failed": "មិនអាចគណនាផ្លូវដឹកជញ្ជូនបានទេ សូមព្យាយាមម្តងទៀត"
                 },
                 "promotion": {
                     "gift_title": "ជ្រើសរើសអំណោយឥតគិតថ្លៃ",

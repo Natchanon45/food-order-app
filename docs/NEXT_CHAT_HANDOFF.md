@@ -61,7 +61,7 @@ KINJAI branding checkpoint (2026-09-30):
 - Public-facing brand is now **KINJAI**; compact fallback mark is `KJ`.
 - Uploaded Platform App Icon is the first-choice header icon globally; Logo remains primary for login/large logo surfaces.
 - Internal repo/Firebase/schema/DOM/translation identifiers are intentionally unchanged.
-- Next release identity: React `0.4.280 / 2026.10.01.302`; public storefront `0.16.32 / 2026.10.01.017`.
+- Next release identity: React `0.4.280 / 2026.10.01.303`; public storefront `0.16.32 / 2026.10.01.018`.
 - Pull, test/build, commit generated assets, and deploy Hosting before visual verification.
 - If the uploaded App Icon artwork still contains FOD, upload a new KINJAI App Icon from Platform Branding after deploy.
 
