@@ -808,6 +808,56 @@ Remaining:
 
 ---
 
+## 2026-10-01 — Static footer i18n module-instance repair
+
+Symptom / request:
+- The Home / staff dashboard footer rendered raw translation keys such as `shared.footer.product • shared.footer.version • shared.footer.build • shared.footer.icon_credit` instead of the KINJAI release text.
+- User requested that clear defects be repaired directly after diagnosis and that every completed change include pull/test/build/deploy commands.
+
+Root cause:
+- `public/assets/js/ui.js` created the shared static footer from an `i18n.js?v=20260930-001` ES-module instance.
+- `public/assets/js/home-session-fa.js` configured translations through `i18n.js?v=20260903-202`.
+- Different query strings create distinct browser ES-module instances. The Home translation dictionary was therefore configured in one instance while the Footer called `t()` from another instance whose local dictionary was empty, causing `t()` to return the key names themselves.
+
+Change:
+- Made static `i18n.js` read the current shared `globalThis.APP_I18N_DICTIONARIES` dictionary instead of relying only on module-local state.
+- Added global i18n configured / locale-changed events so shared UI can refresh after another module configures translations.
+- Changed the shared static Footer to render safe KINJAI / Version / Build / Uicons fallbacks immediately and re-render from translations when i18n becomes available.
+- Aligned Home `ui.js`, `home-session-fa.js`, and `locale-switcher-static.js` on `i18n.js?v=20261001-001` and cache-busted the Home entry scripts.
+- Prepared a fresh Hosting identity: React `0.4.280 / 2026.10.01.300`; public storefront `0.16.32 / 2026.10.01.015`.
+- Updated the React foundation release contract and current handoff/release documentation.
+
+Important files:
+- `public/assets/js/i18n.js`
+- `public/assets/js/ui.js`
+- `public/assets/js/home-session-fa.js`
+- `public/assets/js/locale-switcher-static.js`
+- `public/index.html`
+- `public/assets/js/app-info.js`
+- `react-app/src/config/release.js`
+- `tools/react-foundation-contract.mjs`
+- `README.md`
+- `docs/NEXT_CHAT_HANDOFF.md`
+
+Verification:
+- GitHub source inspection confirmed the reported footer keys exist in the Home translation dictionary for TH / EN / MY / LO / KM.
+- Source guard confirms the Footer no longer exposes raw keys when a dictionary is not ready and will refresh when i18n configuration becomes available.
+- Home static modules now share the same `i18n.js?v=20261001-001` cache identity.
+- Full `npm run test:operational`, `npm run test:react-parity`, `npm run build:react`, and `git diff --check` must still be run on the Mac because Desktop Commander command execution remains unavailable.
+
+Deploy state:
+- Fix commit: `ba3b2e32` — `fix: restore localized static footer`.
+- Branch: `feature/react-firebase-port`.
+- No merge to `main`.
+- No Firebase deployment performed by the assistant.
+- Hosting-only deployment is the intended scope after the local test/build gate.
+
+Remaining:
+- Pull the branch on the Mac, run the test/build gate, and deploy Hosting target `foodapp`.
+- Verify the footer on `/` in all five locales and confirm it shows KINJAI, Version, Build, and Uicons credit rather than translation keys.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
