@@ -707,6 +707,7 @@ Verification:
 
 Deploy state:
 - Branding regression fix commit: `28ae96f2` — `fix: prevent KINJAI branding regression`.
+- Regression-contract follow-up: `f432a7c5` — `test: tighten KINJAI branding guard`; corrected the standalone `FOD` word-boundary assertion so future translation regressions are detected.
 - Commit pushed to `origin/feature/react-firebase-port` by fast-forward GitHub ref update.
 - No merge to `main`.
 - No Firebase Hosting, Firestore Rules, Storage Rules, or Functions deployment performed in this action.
