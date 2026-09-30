@@ -33,7 +33,7 @@ function upsertLink(rel, href, id) {
   link.href = href;
 }
 
-function applyBrandImage(selector, imageUrl = "", alt = "LUKKAJA") {
+function applyBrandImage(selector, imageUrl = "", alt = "KINJAI") {
   document.querySelectorAll(selector).forEach(target => {
     if (!target.dataset.brandingFallbackHtml) target.dataset.brandingFallbackHtml = target.innerHTML;
     const applied = target.dataset.brandingImageUrl || "";
@@ -63,10 +63,10 @@ export function applyPlatformBranding(branding = {}) {
   const appIconUrl = String(branding.appIconUrl || "").trim();
 
   // Header mark is the application icon. Use the uploaded App Icon first.
-  applyBrandImage(".brand-mark", appIconUrl || logoUrl, "LUKKAJA");
+  applyBrandImage(".brand-mark", appIconUrl || logoUrl, "KINJAI");
 
   // Login/large brand areas are logo surfaces. Keep Logo as the primary asset.
-  applyBrandImage(".login-logo", logoUrl || appIconUrl, "LUKKAJA");
+  applyBrandImage(".login-logo", logoUrl || appIconUrl, "KINJAI");
 
   const favicon = branding.faviconUrl || appIconUrl || logoUrl || "";
   upsertLink("icon", favicon, "platformDynamicFavicon");
