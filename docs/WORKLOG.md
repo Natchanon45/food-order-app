@@ -465,6 +465,7 @@ Deployment scope:
 - Takeaway, Delivery, Delivery Success, and Retail POS are not part of this Order-only React test cutover.
 
 Deploy state:
+- GitHub release-preparation commits created after `acf05c18`: `1454b95b` (React build 295), `707d18b5` (public build 010), `286ac46c` (release contract), `bdf19e5a` (WORKLOG checkpoint), `fd2d2d99` (generated React bundle build stamp).
 - Pending Firebase Hosting deployment and production verification.
 
 ---
