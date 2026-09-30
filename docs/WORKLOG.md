@@ -1028,6 +1028,51 @@ Remaining:
 
 ---
 
+## 2026-10-01 — Cashier Receipt action icons restored
+
+Symptom / request:
+- React Cashier Receipt at `/cashier/receipt` no longer matched Laravel MASTER: the Back button and the green Print Receipt button rendered as text-only actions.
+- User supplied the current React screenshot and the Laravel MASTER screenshot for visual comparison.
+
+Root cause:
+- `CashierReceiptPage.jsx` rendered both actions without icon markup:
+  - Back was only the translated text inside the `Link`.
+  - Print Receipt was only the translated text inside `#printButton`.
+- This was a markup parity regression, not a CSS visibility problem.
+
+Change:
+- Restored the Laravel MASTER-style Back icon with `bi bi-arrow-left app-icon`.
+- Restored the Laravel MASTER-style Print Receipt icon with `bi bi-check-lg app-icon`.
+- Wrapped action labels in `<span>` to preserve the shared button icon/text spacing behavior.
+- Added a React foundation regression assertion requiring both Receipt action icons.
+- Prepared a fresh Hosting identity: React `0.4.280 / 2026.10.01.304`; public storefront `0.16.32 / 2026.10.01.019`.
+
+Important files:
+- `react-app/src/pages/CashierReceiptPage.jsx`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `tools/react-foundation-contract.mjs`
+- `README.md`
+- `docs/NEXT_CHAT_HANDOFF.md`
+
+Verification:
+- GitHub source inspection confirms the Back action now contains `bi-arrow-left`.
+- GitHub source inspection confirms `#printButton` now contains `bi-check-lg`.
+- The page already loads shared app/icon CSS, so no new CSS dependency is required.
+- Full `npm run test:operational`, `npm run test:react-parity`, `npm run build:react`, and `git diff --check` still need to run on the Mac because Desktop Commander command execution remains unavailable.
+
+Deploy state:
+- Fix commit: `089bd5ed` — `fix: restore cashier receipt action icons`.
+- Branch: `feature/react-firebase-port`.
+- No merge to `main`.
+- No Firebase deployment performed by the assistant.
+- Hosting-only deployment is intended after the local test/build gate.
+
+Remaining:
+- Pull, test/build, deploy Hosting `foodapp`, then compare `/cashier/receipt` visually against Laravel MASTER on desktop and mobile.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
