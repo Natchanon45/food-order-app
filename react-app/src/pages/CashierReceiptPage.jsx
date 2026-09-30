@@ -243,7 +243,7 @@ export function CashierReceiptPage() {
           {missingMessage ? <div className="empty">{missingMessage}</div> : first ? (
             <>
               <div className="receipt-header">
-                <h1 id="shopName">{settings.shopName || settings.storeName || tenant.name || "LUKKAJA"}</h1>
+                <h1 id="shopName">{settings.shopName || settings.storeName || tenant.name || "KINJAI"}</h1>
                 <div id="shopAddress">{settings.shopAddress || settings.address || ""}</div>
                 <div id="shopPhone">{settings.shopPhone ? t("cashier_documents.receipt.shop_phone", { phone: settings.shopPhone }) : ""}</div>
                 <strong id="receiptTitle">{t(combined ? "cashier_documents.receipt.combined_title" : "cashier_documents.receipt.title")}</strong>
