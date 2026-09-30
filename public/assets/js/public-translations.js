@@ -154,11 +154,11 @@ export default {
             "checkout": {
                 "meta_title": "สั่งอาหาร Delivery",
                 "header": {
-                    "title": "LUKKAJA",
+                    "title": "KINJAI",
                     "badge": "จัดส่งถึงบ้าน"
                 },
                 "hero": {
-                    "title": "LUKKAJA",
+                    "title": "KINJAI",
                     "description": "แอปพลิเคชันสั่งอาหารและบริการจัดส่งออนไลน์ สำหรับเลือกเมนู กรอกข้อมูลจัดส่ง ยืนยันคำสั่งซื้อ และชำระเงิน"
                 },
                 "menu": {
@@ -408,7 +408,7 @@ export default {
                     "download_failed": "ดาวน์โหลดใบสั่งซื้อไม่สำเร็จ กรุณาลองใหม่"
                 },
                 "receipt": {
-                    "shop_fallback": "LUKKAJA",
+                    "shop_fallback": "KINJAI",
                     "evidence": "หลักฐานคำสั่งซื้อ Delivery",
                     "fields": {
                         "order_number": "เลขที่รายการ",
@@ -483,7 +483,7 @@ export default {
                 "description": "ยอดและสถานะด้านล่างอ่านจากข้อมูลล่าสุดของร้านค้า"
             },
             "loading": "กำลังตรวจสอบ...",
-            "shop_fallback": "LUKKAJA",
+            "shop_fallback": "KINJAI",
             "latest_badge": "ข้อมูลล่าสุดจากระบบ",
             "payment": {
                 "paid": "ชำระเงินแล้ว",
@@ -677,7 +677,7 @@ export default {
                 "success": "เปลี่ยนรหัสผ่านเรียบร้อยแล้ว"
             },
             "footer": {
-                "product": "LUKKAJA",
+                "product": "KINJAI",
                 "version": "Version :version",
                 "build": "Build :build",
                 "icon_credit": "Uicons by Flaticon"
@@ -837,13 +837,13 @@ export default {
         },
         "delivery": {
             "checkout": {
-                "meta_title": "LUKKAJA",
+                "meta_title": "KINJAI",
                 "header": {
-                    "title": "LUKKAJA",
+                    "title": "KINJAI",
                     "badge": "Home delivery"
                 },
                 "hero": {
-                    "title": "LUKKAJA",
+                    "title": "KINJAI",
                     "description": "Order food online, enter delivery details, confirm your order, and choose a payment method."
                 },
                 "menu": {
@@ -1093,7 +1093,7 @@ export default {
                     "download_failed": "Could not download the order receipt. Please try again."
                 },
                 "receipt": {
-                    "shop_fallback": "LUKKAJA",
+                    "shop_fallback": "KINJAI",
                     "evidence": "Delivery order confirmation",
                     "fields": {
                         "order_number": "Order number",
@@ -1168,7 +1168,7 @@ export default {
                 "description": "The totals and statuses below are read from the restaurant’s latest data."
             },
             "loading": "Checking...",
-            "shop_fallback": "LUKKAJA",
+            "shop_fallback": "KINJAI",
             "latest_badge": "Latest system data",
             "payment": {
                 "paid": "Paid",
@@ -1362,7 +1362,7 @@ export default {
                 "success": "Password changed successfully."
             },
             "footer": {
-                "product": "LUKKAJA",
+                "product": "KINJAI",
                 "version": "Version :version",
                 "build": "Build :build",
                 "icon_credit": "Uicons by Flaticon"
@@ -1522,13 +1522,13 @@ export default {
         },
         "delivery": {
             "checkout": {
-                "meta_title": "LUKKAJA",
+                "meta_title": "KINJAI",
                 "header": {
-                    "title": "LUKKAJA",
+                    "title": "KINJAI",
                     "badge": "အိမ်အရောက်ပို့"
                 },
                 "hero": {
-                    "title": "LUKKAJA",
+                    "title": "KINJAI",
                     "description": "အွန်လိုင်းမှ အစားအသောက်မှာယူပါ၊ ပို့ဆောင်ရန်အချက်အလက်ထည့်ပါ၊ အော်ဒါအတည်ပြုပြီး ငွေပေးချေမှုနည်းလမ်းရွေးပါ။"
                 },
                 "menu": {
@@ -1778,7 +1778,7 @@ export default {
                     "download_failed": "အော်ဒါပြေစာအား ဒေါင်းလုဒ်လုပ်၍မရပါ။ ထပ်စမ်းကြည့်ပါ။"
                 },
                 "receipt": {
-                    "shop_fallback": "LUKKAJA",
+                    "shop_fallback": "KINJAI",
                     "evidence": "ပို့ဆောင်မှုအမိန့်အတည်ပြုခြင်း။",
                     "fields": {
                         "order_number": "အော်ဒါနံပါတ်",
@@ -1853,7 +1853,7 @@ export default {
                 "description": "အောက်ဖော်ပြပါ စုစုပေါင်းနှင့် အခြေအနေများကို စားသောက်ဆိုင်၏ နောက်ဆုံးဒေတာမှ ဖတ်ရသည်။"
             },
             "loading": "စစ်ဆေးနေသည်...",
-            "shop_fallback": "LUKKAJA",
+            "shop_fallback": "KINJAI",
             "latest_badge": "နောက်ဆုံးထွက်စနစ်ဒေတာ",
             "payment": {
                 "paid": "အခကြေးငွေ",
@@ -2047,7 +2047,7 @@ export default {
                 "success": "စကားဝှက်ကို အောင်မြင်စွာ ပြောင်းလဲခဲ့သည်။"
             },
             "footer": {
-                "product": "LUKKAJA",
+                "product": "KINJAI",
                 "version": "ဗားရှင်း :version",
                 "build": "တည်ဆောက်ခြင်း :build",
                 "icon_credit": "Flaticon မှ Uicons"
@@ -2207,13 +2207,13 @@ export default {
         },
         "delivery": {
             "checkout": {
-                "meta_title": "LUKKAJA",
+                "meta_title": "KINJAI",
                 "header": {
-                    "title": "LUKKAJA",
+                    "title": "KINJAI",
                     "badge": "ຈັດສົ່ງເຖິງບ້ານ"
                 },
                 "hero": {
-                    "title": "LUKKAJA",
+                    "title": "KINJAI",
                     "description": "ສັ່ງອາຫານອອນລາຍ, ກອກຂໍ້ມູນຈັດສົ່ງ, ຢືນຢັນຄຳສັ່ງ ແລະ ເລືອກວິທີຊຳລະເງິນ."
                 },
                 "menu": {
@@ -2463,7 +2463,7 @@ export default {
                     "download_failed": "ບໍ່ສາມາດດາວໂຫລດໃບຮັບເງິນໄດ້. ກະລຸນາລອງອີກຄັ້ງ."
                 },
                 "receipt": {
-                    "shop_fallback": "LUKKAJA",
+                    "shop_fallback": "KINJAI",
                     "evidence": "ການຢືນຢັນການຈັດສົ່ງ",
                     "fields": {
                         "order_number": "ໝາຍເລກສັ່ງຊື້",
@@ -2538,7 +2538,7 @@ export default {
                 "description": "ທັງໝົດ ແລະສະຖານະຂ້າງລຸ່ມນີ້ແມ່ນອ່ານຈາກຂໍ້ມູນຫຼ້າສຸດຂອງຮ້ານອາຫານ."
             },
             "loading": "ກຳລັງກວດສອບ...",
-            "shop_fallback": "LUKKAJA",
+            "shop_fallback": "KINJAI",
             "latest_badge": "ຂໍ້ມູນລະບົບຫຼ້າສຸດ",
             "payment": {
                 "paid": "ຈ່າຍແລ້ວ",
@@ -2732,7 +2732,7 @@ export default {
                 "success": "ປ່ຽນລະຫັດຜ່ານສຳເລັດແລ້ວ."
             },
             "footer": {
-                "product": "LUKKAJA",
+                "product": "KINJAI",
                 "version": "ລຸ້ນ :version",
                 "build": "ສ້າງ :build",
                 "icon_credit": "Uicons ໂດຍ Flaticon"
@@ -2892,13 +2892,13 @@ export default {
         },
         "delivery": {
             "checkout": {
-                "meta_title": "LUKKAJA",
+                "meta_title": "KINJAI",
                 "header": {
-                    "title": "LUKKAJA",
+                    "title": "KINJAI",
                     "badge": "ដឹកជញ្ជូនដល់ផ្ទះ"
                 },
                 "hero": {
-                    "title": "LUKKAJA",
+                    "title": "KINJAI",
                     "description": "បញ្ជាទិញអាហារតាមអ៊ីនធឺណិត បញ្ចូលព័ត៌មានដឹកជញ្ជូន បញ្ជាក់ការបញ្ជាទិញ និងជ្រើសរើសវិធីបង់ប្រាក់។"
                 },
                 "menu": {
@@ -3148,7 +3148,7 @@ export default {
                     "download_failed": "មិនអាចទាញយកបង្កាន់ដៃបញ្ជាទិញបានទេ។ សូមព្យាយាមម្តងទៀត។"
                 },
                 "receipt": {
-                    "shop_fallback": "LUKKAJA",
+                    "shop_fallback": "KINJAI",
                     "evidence": "ការបញ្ជាក់ការបញ្ជាទិញដឹកជញ្ជូន",
                     "fields": {
                         "order_number": "លេខបញ្ជាទិញ",
@@ -3223,7 +3223,7 @@ export default {
                 "description": "សរុប និងស្ថានភាពខាងក្រោមត្រូវបានអានពីទិន្នន័យចុងក្រោយរបស់ភោជនីយដ្ឋាន។"
             },
             "loading": "កំពុងពិនិត្យ...",
-            "shop_fallback": "LUKKAJA",
+            "shop_fallback": "KINJAI",
             "latest_badge": "ទិន្នន័យប្រព័ន្ធចុងក្រោយ",
             "payment": {
                 "paid": "បង់",
@@ -3417,7 +3417,7 @@ export default {
                 "success": "បានផ្លាស់ប្តូរពាក្យសម្ងាត់ដោយជោគជ័យ។"
             },
             "footer": {
-                "product": "LUKKAJA",
+                "product": "KINJAI",
                 "version": "កំណែ :version",
                 "build": "សាងសង់ :build",
                 "icon_credit": "Uicons ដោយ Flaticon"
