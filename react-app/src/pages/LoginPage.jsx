@@ -202,7 +202,7 @@ export function LoginPage() {
         <div className="login-language"><LocaleSwitcher /></div>
         <section className="login-card">
           <div className="login-brand">
-            <div className="login-logo">FOD</div>
+            <div className="login-logo">KJ</div>
             <h1>
               <i className="bi bi-person-circle app-icon" aria-hidden="true"></i>
               <span>{t("auth.login.staff_title")}</span>
