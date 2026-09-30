@@ -4,7 +4,7 @@ export function mountAppFooter() {
   if (document.querySelector(".app-version")) return;
   const footer = document.createElement("footer");
   footer.className = "app-version";
-  footer.textContent = `Food Order/Delivery With QR • Version ${APP_INFO.version} • Build ${APP_INFO.build}`;
+  footer.textContent = `KINJAI • Version ${APP_INFO.version} • Build ${APP_INFO.build}`;
   document.body.appendChild(footer);
 }
 

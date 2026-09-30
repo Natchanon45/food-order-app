@@ -7,17 +7,17 @@
 // ADMIN_WORKSPACE_VISUAL_REFRESH_20260803
 // SUBSCRIPTION_PRICING_CONFIGURATION_20260920_001
 export const APP_INFO = {
-  name: 'Food Order Delivery',
-  product: 'Food Order Delivery',
+  name: 'KINJAI',
+  product: 'KINJAI',
   version: '0.16.32',
-  build: '2026.09.30.012',
+  build: '2026.09.30.013',
   branch: 'feature/react-firebase-port',
   commit: 'CANONICAL-URL-CUTOVER',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
   milestone: 'KINJAI branding rollout',
-  updatedAt: '2026-09-30T20:40:00+07:00',
+  updatedAt: '2026-09-30T22:25:00+07:00',
   whatsNew: [
     'Keep the language switcher immediately before the user profile across authenticated headers',
     'Add the shared Version / Build footer to the Super Admin control center',

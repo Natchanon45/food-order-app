@@ -18,6 +18,21 @@ const nested = (source, key) => String(key || "")
 const interpolate = (value, replacements = {}) => String(value).replace(/:([A-Za-z0-9_]+)/g, (match, key) =>
   Object.prototype.hasOwnProperty.call(replacements, key) ? String(replacements[key]) : match,
 );
+const normalizeVisibleBranding = value => {
+  if (typeof value === "string") {
+    return value
+      .replaceAll("Food Order/Delivery With QR", "KINJAI")
+      .replaceAll("Food Order Delivery", "KINJAI")
+      .replaceAll("FOOD ORDER QR", "KINJAI QR")
+      .replaceAll("LUKKAJA", "KINJAI")
+      .replace(/\bFOD\b/g, "KJ");
+  }
+  if (Array.isArray(value)) return value.map(normalizeVisibleBranding);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, normalizeVisibleBranding(item)]));
+  }
+  return value;
+};
 function initialLocale() {
   try { return normalize(localStorage.getItem(KEY) || document.documentElement.lang || "th"); }
   catch { return normalize(document.documentElement.lang || "th"); }
@@ -157,13 +172,13 @@ export function I18nProvider({ children }) {
       nested(parityTranslations?.[locale], key) ??
       nested(parityTranslations?.th, key) ??
       key;
-    return interpolate(value, replacements);
+    return interpolate(normalizeVisibleBranding(value), replacements);
   }, [locale]);
 
   const value = useMemo(() => ({
     locale,
     supportedLocales: SUPPORTED,
-    raw: key => nested(parityTranslations?.[locale], key) ?? nested(parityTranslations?.th, key),
+    raw: key => normalizeVisibleBranding(nested(parityTranslations?.[locale], key) ?? nested(parityTranslations?.th, key)),
     intlLocale: INTL[locale] || "th-TH",
     setLocale,
     t,

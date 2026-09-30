@@ -16,10 +16,18 @@ for(const source of ["/cashier/**","/kitchen/**","/pos/**","/admin/**"])assert(r
 
 const dict=JSON.parse(read("react-app/src/i18n/parity-translations.json"));
 for(const locale of ["th","en","my","lo","km"]) {
-  assert(dict?.[locale]?.home?.meta?.title==="LUKKAJA",`home locale missing: ${locale}`);
+  assert(dict?.[locale]?.home?.meta?.title==="KINJAI",`home locale missing: ${locale}`);
   assert(Boolean(dict?.[locale]?.auth?.login?.staff_title),`login locale missing: ${locale}`);
   assert(Boolean(dict?.[locale]?.auth?.register?.title),`register locale missing: ${locale}`);
 }
+const translationValues=[];
+const collectTranslationValues=value=>{
+  if(typeof value==="string"){translationValues.push(value);return;}
+  if(Array.isArray(value)){value.forEach(collectTranslationValues);return;}
+  if(value&&typeof value==="object")Object.values(value).forEach(collectTranslationValues);
+};
+collectTranslationValues(dict);
+assert(!translationValues.some(value=>/(LUKKAJA|Food Order\/Delivery With QR|Food Order Delivery|FOOD ORDER QR|\\bFOD\\b)/.test(value)),"visible legacy branding remains in React translations");
 const app=read("react-app/src/app/App.jsx");
 for(const route of ["/","/login","/register"])assert(app.includes(`path="${route}"`),`route missing: ${route}`);
 for(const route of ["/cashier","/cashier/quick-order","/cashier/receipt","/cashier/table-qr","/cashier/waiting-queue"]) {
@@ -87,6 +95,7 @@ const revenueShareCss=read("react-app/public/parity/css/revenue-share-report.css
 assert(revenueShareCss.includes(".report-suspension-notice"),"Revenue-share report parity CSS/suspension banner missing");
 assert(read("tools/sync-react-parity-assets.py").includes('"revenue-share-report.css"'),"Revenue-share CSS must be included in parity asset sync");
 const reactIndex=read("react-app/index.html");
+assert(reactIndex.includes("<title>KINJAI</title>")&&!reactIndex.includes("<title>LUKKAJA</title>"),"React entry title must remain KINJAI");
 assert(reactIndex.includes("page-ready-overlay"),"Laravel-parity pre-React loading overlay missing");
 assert(reactIndex.includes('/react/parity/css/app.css'),"global app.css must load on every React route");
 const pageReadyCss=read("react-app/public/parity/css/page-ready-state.css");
@@ -97,6 +106,8 @@ assert(globalAppCss.includes(".brand-mark::after"),"global brand-mark pseudo ele
 assert(globalAppCss.includes("align-items: center !important;")&&globalAppCss.includes("justify-content: center !important;"),"global FOD vertical centering contract missing");
 const brandingRuntime=read("react-app/src/components/PlatformBrandingRuntime.jsx");
 assert(brandingRuntime.includes(".brand-mark.platform-brand-image-target::after{content:none!important}"),"branding image override must suppress FOD pseudo label");
+const i18nProvider=read("react-app/src/i18n/I18nProvider.jsx");
+assert(i18nProvider.includes("normalizeVisibleBranding")&&i18nProvider.includes('.replaceAll("LUKKAJA", "KINJAI")')&&i18nProvider.includes('.replace(/\\bFOD\\b/g, "KJ")'),"React runtime branding normalization missing");
 const adminWorkspaceCss=read("react-app/public/parity/css/admin-workspace.css");
 assert(adminWorkspaceCss.includes(".admin-card-toggle .app-icon::before"),"admin collapse icon centering rule missing");
 assert(adminWorkspaceCss.includes("display: inline-flex !important;")&&adminWorkspaceCss.includes("justify-content: center !important;"),"admin collapse icon must stay centered");
@@ -144,7 +155,7 @@ const releaseConfig=read("react-app/src/config/release.js");
 const parityFooter=read("react-app/src/components/ParityFooter.jsx");
 const paritySync=read("tools/sync-react-parity-assets.py");
 assert(posPage.includes("initialDataReady")&&posPage.includes("!initialDataReady"),"POS full-page readiness must wait for initial Firebase data");
-assert(releaseConfig.includes('version: "0.4.280"')&&releaseConfig.includes('build: "2026.09.30.297"')&&parityFooter.includes("REACT_RELEASE.version")&&parityFooter.includes("REACT_RELEASE.build"),"React release identity must stay centralized across footer/developer surfaces");
+assert(releaseConfig.includes('version: "0.4.280"')&&releaseConfig.includes('build: "2026.09.30.298"')&&parityFooter.includes("REACT_RELEASE.version")&&parityFooter.includes("REACT_RELEASE.build"),"React release identity must stay centralized across footer/developer surfaces");
 assert(posPage.includes('import { AppDeveloperPanel }')&&posPage.includes('"app-version-badge-runtime.css"')&&posPage.includes("<AppDeveloperPanel />"),"React POS floating Developer Panel must be mounted");
 assert(developerPanel.includes("data-app-version-badge")&&developerPanel.includes("data-app-dev-panel")&&developerPanel.includes("Retail Cache Keys")&&developerPanel.includes("Firebase / Firestore")===false&&developerPanel.includes("REACT_RELEASE.dataService")&&developerPanel.includes("metaKey")&&developerPanel.includes('event.key === "Escape"')&&developerPanel.includes('onClick={() => setOpen(true)}\n      ></button>'),"React Developer Panel runtime diagnostics/keyboard controls/empty MASTER badge button missing");
 assert(developerPanelCss.includes("z-index:2147483646")&&read("react-app/public/parity/css/ui-layer-stack.css").includes("--ui-layer-toast-z: 2147483647"),"Developer Panel must remain below the topmost toast layer");

@@ -2,7 +2,7 @@
 
 Current development branch: `feature/react-firebase-port`
 Current milestone: React + Firebase parity migration / Super Admin Console
-Next KINJAI branding release identity: Version `0.4.280` • Build `2026.09.30.297`
+Next KINJAI branding release identity: Version `0.4.280` • Build `2026.09.30.298`
 
 > New Chat / continuation: read `STRUCTURE.md`, `docs/NEXT_CHAT_HANDOFF.md`, and `docs/WORKLOG.md` before changing code.
 > Historical entries below may refer to older branches/releases and must not override the current handoff.
