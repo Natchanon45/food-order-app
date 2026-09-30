@@ -11,6 +11,8 @@ Current deployed React footer identity: Version `0.4.280` • Build `2026.09.30.
 >
 > Firebase Hosting rule: **Build must change before every Hosting deploy.** Review/bump Version for a user-visible release and never redeploy the same Version + Build pair.
 
+> **Temporary MCP fallback rule:** while Desktop Commander MCP command execution is unavailable, every completed GitHub-side change must end with copy-paste commands for the user to (1) `git pull --ff-only origin feature/react-firebase-port` and (2) deploy Firebase Hosting with `npx firebase-tools deploy --only hosting:foodapp --project chat-45754`. Include any required test/build or Build-bump step before deploy when applicable.
+
 <!-- TENANT_MANAGEMENT_WORKSPACE_20260804_001 -->
 Change: Tenant Management Workspace.
 
