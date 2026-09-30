@@ -409,7 +409,15 @@ Verification:
 - Existing customer URLs `/s/saas-test-shop/order`, `/s/saas-test-shop/delivery`, and `/s/saas-test-shop/takeaway` returned HTTP 200 without `/react`.
 
 Deploy state:
-- Pending commit / push / Hosting deploy.
+- Release commit: `98e68180` — `chore: prepare canonical hosting redeploy`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://natchanon-food-order-delivery.web.app`.
+- Production verification returned HTTP 200 for canonical no-`/react` operational routes and the existing customer Order / Delivery / Takeaway URLs.
+- Production public storefront identity verified as Version `0.16.32` / Build `2026.09.30.009`.
+- Production React bundle verified to contain Build `2026.09.30.294`.
+- Hosting emitted the known warning that rewrite function `lalamoveWebhook` has no valid endpoint; Hosting release still completed successfully. No Functions were deployed in this action.
+- Firestore Rules, Storage Rules, and Cloud Functions were not deployed.
+- No merge to `main` was performed.
 
 ---
 

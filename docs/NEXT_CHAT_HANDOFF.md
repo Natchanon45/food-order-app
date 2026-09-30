@@ -62,8 +62,8 @@ Production cutover is deployed on the existing URLs without `/react`:
 - Migrated staff/admin routes use `/login`, `/cashier`, `/kitchen`, `/waiting-queue`, `/admin`, `/platform`, `/reports/...`, and related original paths.
 - `/react/**` is compatibility-only and canonicalizes to the no-`/react` path, including canonical login `next` values.
 - `/pos` remains legacy until the paused Retail POS checkpoint is resumed and completed.
-- Final Hosting release identity: React `0.4.280` / `2026.09.30.293`; public storefront `0.16.32` / `2026.09.30.008`.
-- Deployed code commits on `feature/react-firebase-port`: `d8c5eaf4`, `2d94caa4`, `3ece7604`. All were pushed to origin. No merge to `main` was performed.
+- Current Hosting release identity: React `0.4.280` / `2026.09.30.294`; public storefront `0.16.32` / `2026.09.30.009`.
+- Latest Hosting redeploy commit: `98e68180` (`chore: prepare canonical hosting redeploy`), pushed to `origin/feature/react-firebase-port`. Earlier canonical cutover commits remain `d8c5eaf4`, `2d94caa4`, `3ece7604`. No merge to `main` was performed.
 - Verification: operational + React parity contracts passed, React build passed, full P0 browser smoke passed 52/52 before deploy, and the final route/auth correction gate passed 37/37.
 - Firebase Hosting target `foodapp` deployed successfully at `https://natchanon-food-order-delivery.web.app`.
 - Deployment scope was Hosting only. Firestore Rules, Storage Rules, and Cloud Functions were not deployed in this cutover.
