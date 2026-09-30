@@ -219,7 +219,7 @@ export function CashierReceiptPage() {
       <header className="app-header">
         <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
           <div className="brand"><span className="brand-mark">FO</span>{t("cashier_documents.receipt.header_title")}</div>
-          <Link className="btn btn-sm" to="/cashier">{t("cashier_documents.receipt.back")}</Link>
+          <Link className="btn btn-sm" to="/cashier"><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{t("cashier_documents.receipt.back")}</span></Link>
         </div>
         <div className="app-header-actions" data-header-actions>
           <LocaleSwitcher style={{ marginLeft: 0, marginRight: 0 }} />
@@ -236,7 +236,7 @@ export function CashierReceiptPage() {
             <option value="58">{t("cashier_documents.receipt.paper_58")}</option>
             <option value="a4">A4</option>
           </select>
-          <button className="btn btn-primary" id="printButton" type="button" onClick={() => window.print()}>{t("cashier_documents.receipt.print")}</button>
+          <button className="btn btn-primary" id="printButton" type="button" onClick={() => window.print()}><i className="bi bi-check-lg app-icon" aria-hidden="true"></i><span>{t("cashier_documents.receipt.print")}</span></button>
         </div>
 
         <section className={receiptClass} id="receipt">
