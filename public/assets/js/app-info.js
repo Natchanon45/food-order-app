@@ -10,7 +10,7 @@ export const APP_INFO = {
   name: 'KINJAI',
   product: 'KINJAI',
   version: '0.16.32',
-  build: '2026.09.30.014',
+  build: '2026.10.01.015',
   branch: 'feature/react-firebase-port',
   commit: 'CANONICAL-URL-CUTOVER',
   firebaseProject: 'chat-45754',

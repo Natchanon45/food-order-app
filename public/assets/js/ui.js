@@ -1,7 +1,7 @@
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
-import { getIntlLocale, t } from "./i18n.js?v=20260930-001";
+import { getIntlLocale, t } from "./i18n.js?v=20261001-001";
 import "./form-validation-ui.js?v=20260731-080";
-import { APP_INFO } from "./app-info.js?v=20260920-003";
+import { APP_INFO } from "./app-info.js?v=20261001-001";
 
 export const APP_VERSION = APP_INFO.version;
 export const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
@@ -256,13 +256,38 @@ function mountDeliveryAddToast() {
   });
 }
 
+const footerFallback = Object.freeze({
+  product: "KINJAI",
+  version: `Version ${APP_VERSION}`,
+  build: `Build ${APP_INFO.build}`,
+  iconCredit: "Uicons by Flaticon",
+});
+
+function localizedFooterText(key, replacements, fallback) {
+  const value = t(key, replacements);
+  return !value || value === key ? fallback : value;
+}
+
+function renderVersionFooter(footer = document.querySelector("[data-static-app-footer]")) {
+  if (!footer) return;
+  footer.querySelector("[data-app-footer-product]").textContent = localizedFooterText("shared.footer.product", {}, footerFallback.product);
+  footer.querySelector("[data-app-footer-version]").textContent = localizedFooterText("shared.footer.version", { version: APP_VERSION }, footerFallback.version);
+  footer.querySelector("[data-app-footer-build]").textContent = localizedFooterText("shared.footer.build", { build: APP_INFO.build }, footerFallback.build);
+  footer.querySelector("[data-app-footer-icon-credit]").textContent = localizedFooterText("shared.footer.icon_credit", {}, footerFallback.iconCredit);
+}
+
 function mountVersion() {
   if (document.querySelector(".app-version")) return;
   const footer = document.createElement("footer");
   footer.className = "app-version";
-  footer.innerHTML = `<span>${t("shared.footer.product")}</span><span aria-hidden="true"> • </span><span>${t("shared.footer.version", { version: APP_VERSION })}</span><span aria-hidden="true"> • </span><span>${t("shared.footer.build", { build: APP_INFO.build })}</span><span aria-hidden="true"> • </span><a class="icon-library-credit" href="https://www.flaticon.com/uicons" target="_blank" rel="noopener noreferrer">${t("shared.footer.icon_credit")}</a>`;
+  footer.dataset.staticAppFooter = "true";
+  footer.innerHTML = `<span data-app-footer-product></span><span aria-hidden="true"> • </span><span data-app-footer-version></span><span aria-hidden="true"> • </span><span data-app-footer-build></span><span aria-hidden="true"> • </span><a class="icon-library-credit" data-app-footer-icon-credit href="https://www.flaticon.com/uicons" target="_blank" rel="noopener noreferrer"></a>`;
   document.body.appendChild(footer);
+  renderVersionFooter(footer);
 }
+
+window.addEventListener("app:i18n-configured", () => renderVersionFooter());
+window.addEventListener("app:i18n-locale-changed", () => renderVersionFooter());
 
 function initializeUi() {
   mountIconStyles();

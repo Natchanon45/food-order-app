@@ -2,6 +2,22 @@ const supportedLocales = new Set(["th", "en", "my", "lo", "km"]);
 const storageKey = "food_order_locale";
 let dictionaries = globalThis.APP_I18N_DICTIONARIES || {};
 let fallbackLocale = "th";
+const configuredEvent = "app:i18n-configured";
+const localeChangedEvent = "app:i18n-locale-changed";
+
+function activeDictionaries() {
+  const shared = globalThis.APP_I18N_DICTIONARIES;
+  return shared && typeof shared === "object" ? shared : dictionaries;
+}
+
+function activeFallbackLocale() {
+  return normalizeLocale(globalThis.APP_I18N_FALLBACK_LOCALE || fallbackLocale || "th");
+}
+
+function dispatchI18nEvent(name) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(name, { detail: { locale: getLocale() } }));
+}
 
 function normalizeLocale(value) {
   const locale = String(value || "").trim().toLowerCase().split("-")[0];
@@ -24,6 +40,8 @@ export function configureI18n(next = {}, options = {}) {
   dictionaries = next || {};
   fallbackLocale = normalizeLocale(options.fallbackLocale || "th");
   globalThis.APP_I18N_DICTIONARIES = dictionaries;
+  globalThis.APP_I18N_FALLBACK_LOCALE = fallbackLocale;
+  dispatchI18nEvent(configuredEvent);
 }
 
 export function getLocale() {
@@ -35,6 +53,7 @@ export function setLocale(locale) {
   const next = normalizeLocale(locale);
   try { localStorage.setItem(storageKey, next); } catch {}
   document.documentElement.lang = next;
+  dispatchI18nEvent(localeChangedEvent);
   return next;
 }
 
@@ -43,7 +62,9 @@ export function getIntlLocale() { return intlLocales[getLocale()] || intlLocales
 
 export function t(key, replacements = {}) {
   const locale = getLocale();
-  const value = nested(dictionaries?.[locale] || {}, key) ?? nested(dictionaries?.[fallbackLocale] || {}, key) ?? key;
+  const source = activeDictionaries();
+  const fallback = activeFallbackLocale();
+  const value = nested(source?.[locale] || {}, key) ?? nested(source?.[fallback] || {}, key) ?? key;
   return interpolate(value, replacements);
 }
 

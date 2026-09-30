@@ -2,7 +2,7 @@ import { waitForAuth, getUserProfile, mountUserMenu, STAFF_ROLES } from "./auth-
 import { dataService } from "./data-service.js?v=20260704-001";
 import { functions, httpsCallable } from "./firebase-config.js?v=20260630-073";
 import translations from "./home-translations.js?v=20260903-218";
-import { configureI18n, applyTranslations, t } from "./i18n.js?v=20260903-202";
+import { configureI18n, applyTranslations, t } from "./i18n.js?v=20261001-001";
 
 configureI18n(translations);
 applyTranslations();

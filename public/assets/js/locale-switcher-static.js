@@ -1,4 +1,4 @@
-import { getLocale, setLocale } from "./i18n.js?v=20260903-202";
+import { getLocale, setLocale } from "./i18n.js?v=20261001-001";
 
 function sync(root = document) {
   const locale = getLocale();
