@@ -1073,6 +1073,66 @@ Remaining:
 
 ---
 
+## 2026-10-01 — Receipt icons existed in source but stale bundle was deployed
+
+Symptom / request:
+- After the React Cashier Receipt source was updated with Back and Print icons, production still showed both buttons as text-only.
+- User confirmed the issue remained after the next Hosting deploy.
+
+Root cause:
+- The React source was correct:
+  - Back contained `bi bi-arrow-left app-icon`.
+  - Print Receipt contained `bi bi-check-lg app-icon`.
+- The canonical `public/cashier/receipt/index.html` still referenced generated bundle `/react/assets/index-CS6qqkzb.js`.
+- That bundle was stale:
+  - it contained React release Build `2026.10.01.303`, not source Build `2026.10.01.304`;
+  - its Cashier Receipt markup still rendered text-only Back / Print actions.
+- Therefore the deployed page could not display the new icons even though the JSX source had already been fixed.
+- The previous copy/paste command block also lacked `set -e`; a failed test/build chain could therefore be followed by a later deploy command in the same shell. That workflow is no longer acceptable.
+
+Change:
+- Added `tools/generated-react-build-contract.mjs`.
+- The generated-artifact contract reads the canonical Cashier Receipt entrypoint, resolves the exact hashed React bundle referenced by that entrypoint, and verifies:
+  - the bundle contains the current React release Build;
+  - the Cashier Receipt Back action around `cashier_documents.receipt.back` contains `bi bi-arrow-left app-icon`;
+  - the generated `printButton` area contains `bi bi-check-lg app-icon`.
+- Added `npm run verify:react-build`.
+- Extended `postbuild:react` so every `npm run build:react` now performs:
+  1. canonical entrypoint sync;
+  2. generated deploy-artifact verification.
+- Added foundation coverage requiring the postbuild generated-artifact guard.
+- Prepared a fresh Hosting identity: React `0.4.280 / 2026.10.01.305`; public storefront `0.16.32 / 2026.10.01.020`.
+- Future deployment command blocks must use `set -euo pipefail` so any failed pull/test/build/verification stops before commit or Firebase deploy.
+
+Important files:
+- `tools/generated-react-build-contract.mjs`
+- `package.json`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `README.md`
+- `docs/NEXT_CHAT_HANDOFF.md`
+
+Verification:
+- GitHub source inspection confirms `CashierReceiptPage.jsx` has both required icons.
+- Inspection of the currently referenced generated bundle `index-CS6qqkzb.js` confirms it still has text-only Receipt actions and carries Build `2026.10.01.303`, proving the production symptom came from a stale generated artifact.
+- The new postbuild contract will fail the local build if the canonical deploy bundle is stale or missing either Receipt icon.
+- Full local `npm run test:operational`, `npm run test:react-parity`, `npm run build:react`, generated contract execution, and `git diff --check` still need to run on the Mac.
+
+Deploy state:
+- Generated-artifact guard commit: `d2eb2155` — `build: verify generated receipt icon parity`.
+- Minifier-safe guard follow-up: `1bd2fcc4` — `test: make generated receipt guard minifier-safe`.
+- Branch: `feature/react-firebase-port`.
+- No merge to `main`.
+- No Firebase deployment performed by the assistant.
+- Hosting-only deployment is intended after a fresh local React build generates and commits the new hashed bundle.
+
+Remaining:
+- Pull the branch, run the guarded test/build sequence, commit generated assets if changed, push, then deploy Hosting.
+- Verify the deployed canonical Receipt entry references the new bundle and visually shows both icons.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
