@@ -1,0 +1,26 @@
+.platform-pricing-page{min-height:100dvh;display:flex;flex-direction:column}
+.platform-pricing-shell{width:min(1120px,100%);margin:auto;padding:18px 14px 64px;flex:1}
+.platform-pricing-grid{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:16px;align-items:start}
+.platform-pricing-form-card,.platform-pricing-preview-card{padding:20px}
+.platform-pricing-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.platform-pricing-fields>label{display:grid;gap:6px;font-weight:800;align-self:start;align-content:start;grid-auto-rows:max-content;min-height:0}
+.platform-pricing-fields .bootstrap-invalid-feedback{align-self:start}
+.platform-pricing-fields input,.platform-pricing-fields select{width:100%;min-height:44px;border:1px solid #d8e3dc;border-radius:12px;padding:9px 12px;background:#fff;font:inherit}
+.platform-pricing-inline-input{display:grid;grid-template-columns:1fr auto;align-items:center;border:1px solid #d8e3dc;border-radius:12px;background:#fff}
+.platform-pricing-inline-input input{border:0}
+.platform-pricing-inline-input span{padding:0 12px;color:#5d6a61;font-weight:800}
+.platform-pricing-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+.platform-pricing-preview-card{position:sticky;top:76px}
+.platform-pricing-price-hero{padding:18px;border:1px solid #b8dfc7;border-radius:18px;background:linear-gradient(145deg,#f6fff9,#eaf8ef)}
+.platform-pricing-strike{display:inline-block;color:#9d2b21;text-decoration:line-through;text-decoration-thickness:2px;font-size:20px;font-weight:900}
+.platform-pricing-final{display:block;margin-top:4px;color:#0a7132;font-size:36px;font-weight:1000;line-height:1.1}
+.platform-pricing-vat-label{display:inline-flex;margin-top:8px;padding:5px 9px;border-radius:999px;background:#dff2e6;color:#126c36;font-size:12px;font-weight:900}
+.platform-pricing-breakdown{display:grid;gap:8px;margin-top:14px}
+.platform-pricing-breakdown div{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px dashed #dce7e0}
+.platform-pricing-breakdown div:last-child{border-bottom:0}
+.platform-pricing-breakdown strong{white-space:nowrap}
+.platform-pricing-monthly{margin:0 0 12px;color:#42534a}
+.platform-pricing-monthly strong{color:#0d6f34;font-size:20px}
+#pricingStorageMessage{margin-top:12px;padding:10px 12px;border-radius:12px;background:#fff4e5;color:#8a4b08;font-weight:700}
+@media(max-width:860px){.platform-pricing-grid{grid-template-columns:1fr}.platform-pricing-preview-card{position:static;grid-row:1}}
+@media(max-width:620px){.platform-pricing-fields{grid-template-columns:1fr}.platform-pricing-actions{display:flex;flex-wrap:nowrap;justify-content:flex-end;gap:8px}.platform-pricing-actions .btn{width:auto;min-width:0;flex:0 1 auto;white-space:nowrap}}

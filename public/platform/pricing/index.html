@@ -1,69 +1,58 @@
 <!doctype html>
 <html lang="th">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#159447">
-  <title>ราคาแพ็กเกจ</title>
-  <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
-  <link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240">
-  <link rel="stylesheet" href="/assets/css/i18n.css?v=20260903-202">
-  <style>
-    .pricing-header{gap:10px}.pricing-header-left{display:flex;align-items:center;gap:10px;min-width:0}.pricing-header-locale{margin-left:auto;flex:0 0 auto}.pricing-shell{width:min(1120px,100%);margin:auto;padding:18px 14px 64px}.pricing-grid{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:16px;align-items:start}.pricing-form-card,.pricing-preview-card{padding:20px}.pricing-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}.pricing-fields label{display:grid;gap:6px;font-weight:800}.pricing-fields input,.pricing-fields select{width:100%;min-height:44px;border:1px solid #d8e3dc;border-radius:12px;padding:9px 12px;background:#fff;font:inherit}.pricing-field-full{grid-column:1/-1}.pricing-inline-input{display:grid;grid-template-columns:1fr auto;align-items:center;border:1px solid #d8e3dc;border-radius:12px;background:#fff}.pricing-inline-input input{border:0}.pricing-inline-input span{padding:0 12px;color:#5d6a61;font-weight:800}.pricing-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}.pricing-preview-card{position:sticky;top:76px}.pricing-price-hero{padding:18px;border:1px solid #b8dfc7;border-radius:18px;background:linear-gradient(145deg,#f6fff9,#eaf8ef)}.pricing-strike{display:inline-block;color:#9d2b21;text-decoration:line-through;text-decoration-thickness:2px;font-size:20px;font-weight:900}.pricing-final{display:block;margin-top:4px;color:#0a7132;font-size:36px;font-weight:1000;line-height:1.1}.pricing-vat-label{display:inline-flex;margin-top:8px;padding:5px 9px;border-radius:999px;background:#dff2e6;color:#126c36;font-size:12px;font-weight:900}.pricing-breakdown{display:grid;gap:8px;margin-top:14px}.pricing-breakdown div{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px dashed #dce7e0}.pricing-breakdown div:last-child{border-bottom:0}.pricing-breakdown strong{white-space:nowrap}.pricing-monthly{margin:0 0 12px;color:#42534a}.pricing-monthly strong{color:#0d6f34;font-size:20px}@media(max-width:860px){.pricing-grid{grid-template-columns:1fr}.pricing-preview-card{position:static;grid-row:1}}@media(max-width:620px){.pricing-header{padding-inline:10px}.pricing-header-left{gap:6px}.pricing-header-left .brand{gap:6px}.pricing-header-left .btn{padding-inline:9px;white-space:nowrap}.pricing-fields{grid-template-columns:1fr}.pricing-field-full{grid-column:auto}.pricing-actions{display:flex;flex-wrap:nowrap;justify-content:flex-end;gap:8px}.pricing-actions .btn{width:auto;min-width:0;flex:0 1 auto;white-space:nowrap}}
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#159447" />
+  <title>LUKKAJA</title>
+  <link rel="stylesheet" href="/assets/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1.13.1">
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/4.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <link rel="stylesheet" href="/react/parity/css/unified-table-icon.css">
+  <link rel="stylesheet" href="/react/parity/css/sweet-dialog.css">
+  <link rel="stylesheet" href="/react/parity/css/i18n.css">
+  <link rel="stylesheet" href="/react/parity/css/app.css">
+  <link rel="stylesheet" href="/react/parity/css/icons.css">
+  <link rel="stylesheet" href="/react/parity/css/shared-responsive.css">
+  <link rel="stylesheet" href="/react/parity/css/theme-checkbox.css">
+  <link rel="stylesheet" href="/react/parity/css/page-ready-state.css">
+  <link rel="stylesheet" href="/react/parity/css/ui-layer-stack.css" data-ui-layer-policy>
+  <script>
+    (() => {
+      const recoveryKey = "lukkhaja_react_entry_recovery";
+      window.__lukkhajaReactEntryLoaded = () => {
+        try { sessionStorage.removeItem(recoveryKey); } catch {}
+      };
+      window.addEventListener("error", event => {
+        const target = event.target;
+        if (!(target instanceof HTMLScriptElement) || target.type !== "module") return;
+        const src = String(target.src || "");
+        if (!src.includes("/react/assets/")) return;
+        try {
+          if (sessionStorage.getItem(recoveryKey) === "1") return;
+          sessionStorage.setItem(recoveryKey, "1");
+        } catch {}
+        const url = new URL(location.href);
+        url.searchParams.set("__react_reload", String(Date.now()));
+        location.replace(url.toString());
+      }, true);
+    })();
+  </script>
+  <script type="module" crossorigin src="/react/assets/index-BPuxyHI1.js"></script>
+  <link rel="modulepreload" crossorigin href="/react/assets/rolldown-runtime-CbXtAM7H.js">
+  <link rel="modulepreload" crossorigin href="/react/assets/react-vendor-3bqauxVt.js">
+  <link rel="modulepreload" crossorigin href="/react/assets/firebase-Bj2z7sdJ.js">
 </head>
-<body data-roles="super_admin">
-<header class="app-header pricing-header">
-  <div class="pricing-header-left">
-    <div class="brand"><span class="brand-mark">FOD</span><span data-i18n="pricing.header.title">ราคาแพ็กเกจ</span></div>
-    <a class="btn btn-sm" href="/platform"><i class="bi bi-arrow-left"></i><span data-i18n="pricing.header.back">กลับระบบกลาง</span></a>
+<body>
+  <div id="root">
+    <div class="page-ready-overlay" id="pageReadyOverlay" role="status" aria-live="polite" aria-busy="true" aria-hidden="false">
+      <div class="page-ready-simple" aria-labelledby="pageReadyTitle">
+        <span class="page-ready-spinner" aria-hidden="true"></span>
+        <div class="page-ready-copy">
+          <h2 id="pageReadyTitle">กำลังโหลดข้อมูล...</h2>
+          <p>กรุณารอสักครู่....</p>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="app-locale-switcher pricing-header-locale" data-static-locale-switcher>
-    <details class="app-locale-menu" data-locale-menu>
-      <summary class="app-locale-trigger" aria-label="Language"><i class="bi bi-globe2"></i></summary>
-      <div class="app-locale-menu__panel">
-        <button type="button" class="app-locale-option" data-locale-option="th"><span>ไทย</span></button>
-        <button type="button" class="app-locale-option" data-locale-option="en"><span>English</span></button>
-      </div>
-    </details>
-  </div>
-</header>
-<main class="pricing-shell">
-  <section class="hero"><h1 data-i18n="pricing.hero.title">ตั้งราคา Premium</h1><p data-i18n="pricing.hero.description">กำหนดราคา ส่วนลด และ VAT จากส่วนกลาง ค่าเดียวกันจะแสดงที่หน้าแรกและหน้าลงทะเบียน</p></section>
-  <section class="pricing-grid">
-    <form id="pricingForm" class="card pricing-form-card">
-      <div class="section-title"><h2>Premium</h2></div>
-      <div class="pricing-fields">
-        <label><span data-i18n="pricing.form.monthly">ราคาปกติต่อเดือน (บาท)</span><input id="pricingMonthlyPrice" type="number" min="0.01" max="1000000" step="0.01" required></label>
-        <label><span data-i18n="pricing.form.months">จำนวนเดือนสำหรับแพ็กเกจรายปี</span><input id="pricingAnnualMonths" type="number" min="1" max="60" step="1" required></label>
-        <label><span data-i18n="pricing.form.discountType">รูปแบบส่วนลดรายปี</span><select id="pricingDiscountType"><option value="none" data-i18n="pricing.form.none">ไม่มีส่วนลด</option><option value="amount" data-i18n="pricing.form.amount">ลดเป็นจำนวนเงิน</option><option value="percent" data-i18n="pricing.form.percent">ลดเป็นเปอร์เซ็นต์</option></select></label>
-        <label><span data-i18n="pricing.form.discountValue">มูลค่าส่วนลด</span><span class="pricing-inline-input"><input id="pricingDiscountValue" type="number" min="0" step="0.01"><span id="discountValueSuffix">บาท</span></span></label>
-        <label><span data-i18n="pricing.form.vatMode">รูปแบบ VAT</span><select id="pricingVatMode"><option value="inclusive" data-i18n="pricing.form.inclusive">Include VAT (ราคารวม VAT แล้ว)</option><option value="exclusive" data-i18n="pricing.form.exclusive">Exclude VAT (ราคายังไม่รวม VAT)</option></select></label>
-        <label><span data-i18n="pricing.form.vatRate">VAT (%)</span><input id="pricingVatRate" type="number" min="0" max="30" step="0.01" required></label>
-      </div>
-      <div class="pricing-actions"><button id="pricingReset" class="btn" type="button" data-i18n="pricing.form.reset">คืนค่าเริ่มต้น</button><button id="pricingSave" class="btn btn-primary" type="submit" data-i18n="pricing.form.save">บันทึกราคา</button></div>
-    </form>
-    <aside class="card pricing-preview-card">
-      <div class="section-title"><h2 data-i18n="pricing.preview.title">ตัวอย่างราคาที่ลูกค้าเห็น</h2></div>
-      <p class="pricing-monthly"><span data-i18n="pricing.preview.monthly">รายเดือน</span> <strong id="previewMonthly">590 ฿</strong></p>
-      <div class="pricing-price-hero">
-        <small data-i18n="pricing.preview.annual">รายปี</small>
-        <span id="previewRegular" class="pricing-strike">7,080 ฿</span>
-        <span id="previewDiscounted" class="pricing-final">5,900 ฿</span>
-        <span id="previewVatLabel" class="pricing-vat-label">รวม VAT 7%</span>
-      </div>
-      <div class="pricing-breakdown">
-        <div><span data-i18n="pricing.preview.regular">ราคาเต็ม</span><strong id="previewRegularBreakdown">-</strong></div>
-        <div><span data-i18n="pricing.preview.discount">ส่วนลด</span><strong id="previewDiscount">- 1,180 ฿</strong></div>
-        <div><span data-i18n="pricing.preview.net">ราคาก่อน VAT</span><strong id="previewNet">-</strong></div>
-        <div><span data-i18n="pricing.preview.vat">VAT</span><strong id="previewVat">-</strong></div>
-        <div><span data-i18n="pricing.preview.payable">ยอดชำระจริง</span><strong id="previewPayable">-</strong></div>
-      </div>
-    </aside>
-  </section>
-</main>
-<script type="module" src="/assets/js/page-guard.js?v=20260920-001"></script>
-<script type="module" src="/assets/js/platform-pricing.js?v=20260920-003"></script>
-<script type="module" src="/assets/js/locale-switcher-static.js?v=20260903-202"></script>
 </body>
 </html>

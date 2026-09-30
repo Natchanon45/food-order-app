@@ -1,0 +1,77 @@
+/* POS_LOCALE_SWITCHER_PLACEMENT_20260813_147 */
+.pos-header .header-actions {
+  margin-left: auto !important;
+  justify-content: flex-end !important;
+  text-align: right;
+}
+
+.pos-header .header-actions > .app-locale-switcher {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  flex: 0 0 auto;
+  justify-content: flex-end;
+}
+
+.pos-header .header-actions > .app-locale-switcher .app-locale-menu__panel {
+  right: 0;
+  left: auto;
+}
+
+[data-pos-locale-switcher-target] > .app-locale-switcher {
+  margin: 0;
+  flex: 0 0 auto;
+  order: 99;
+}
+
+[data-pos-locale-switcher-target] > .app-locale-switcher .app-locale-trigger {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  border-color: rgba(255, 255, 255, 0.28);
+  background: #0b6a34;
+  color: #fff !important;
+}
+
+[data-pos-locale-switcher-target] > .app-locale-switcher .app-locale-trigger:hover,
+[data-pos-locale-switcher-target] > .app-locale-switcher .app-locale-trigger:focus-visible,
+[data-pos-locale-switcher-target] > .app-locale-switcher .app-locale-menu[open] .app-locale-trigger {
+  border-color: rgba(255, 255, 255, 0.45);
+  background: #09572c;
+  color: #fff !important;
+}
+
+[data-pos-locale-switcher-target] > .app-locale-switcher .app-locale-menu__panel {
+  right: 0;
+  left: auto;
+  border-color: #cfe7d8;
+  background: #fff;
+  color: #102317 !important;
+  text-shadow: none !important;
+}
+
+[data-pos-locale-switcher-target] > .app-locale-switcher .app-locale-option,
+[data-pos-locale-switcher-target] > .app-locale-switcher .app-locale-option span {
+  color: #26362d !important;
+  text-shadow: none !important;
+}
+
+[data-pos-locale-switcher-target] > .app-locale-switcher .app-locale-option[aria-checked="true"],
+[data-pos-locale-switcher-target] > .app-locale-switcher .app-locale-option[aria-checked="true"] span,
+[data-pos-locale-switcher-target] > .app-locale-switcher .app-locale-option .bi {
+  color: #0d6f34 !important;
+}
+
+.pos-locale-switcher-fallback {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 8px 14px;
+  background: #fff;
+}
+
+@media (max-width: 700px) {
+  .pos-header .header-actions {
+    margin-left: auto !important;
+    justify-content: flex-end !important;
+  }
+}

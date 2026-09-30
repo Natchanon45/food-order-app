@@ -34,7 +34,7 @@ function validate(raw = {}) {
   if (config.discountType === "amount" && config.discountValue > annualBase) {
     throw new HttpsError("invalid-argument", "Discount amount is invalid");
   }
-  if (!["inclusive", "exclusive"].includes(String(raw.vatMode || ""))) {
+  if (!["inclusive", "exclusive", "none"].includes(String(raw.vatMode || ""))) {
     throw new HttpsError("invalid-argument", "VAT mode is invalid");
   }
   if (!Number.isFinite(Number(raw.vatRate)) || config.vatRate < 0 || config.vatRate > 30) {
@@ -58,13 +58,35 @@ exports.getSubscriptionPricing = onCall({ region: "asia-southeast1" }, async req
 });
 
 exports.updateSubscriptionPricing = onCall({ region: "asia-southeast1" }, async request => {
-  await assertSuperAdmin(request.auth);
-  const config = validate(request.data || {});
-  const db = getFirestore();
-  await db.collection(PRICING_DOC.collection).doc(PRICING_DOC.id).set({
-    ...config,
-    updatedBy: request.auth.uid,
-    updatedAt: FieldValue.serverTimestamp(),
-  }, { merge: true });
-  return { ok: true, config, pricing: calculatePricing(config) };
+  try {
+    await assertSuperAdmin(request.auth);
+    const config = validate(request.data || {});
+    console.info("SUBSCRIPTION_PRICING_UPDATE_ATTEMPT", {
+      uid: request.auth.uid,
+      monthlyPrice: config.monthlyPrice,
+      annualMonths: config.annualMonths,
+      discountType: config.discountType,
+      discountValue: config.discountValue,
+      vatMode: config.vatMode,
+      vatRate: config.vatRate,
+    });
+    const db = getFirestore();
+    await db.collection(PRICING_DOC.collection).doc(PRICING_DOC.id).set({
+      ...config,
+      updatedBy: request.auth.uid,
+      updatedAt: FieldValue.serverTimestamp(),
+    }, { merge: true });
+    console.info("SUBSCRIPTION_PRICING_UPDATE_SUCCESS", {
+      uid: request.auth.uid,
+      document: `${PRICING_DOC.collection}/${PRICING_DOC.id}`,
+    });
+    return { ok: true, config, pricing: calculatePricing(config) };
+  } catch (error) {
+    console.warn("SUBSCRIPTION_PRICING_UPDATE_FAILED", {
+      uid: request.auth?.uid || null,
+      code: error?.code || null,
+      message: String(error?.message || error || "").slice(0, 500),
+    });
+    throw error;
+  }
 });

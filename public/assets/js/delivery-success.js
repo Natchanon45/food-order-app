@@ -1,14 +1,28 @@
-import "./public-page-static-i18n.js?v=20260920-001";
+import "./public-page-static-i18n.js?v=20260930-001";
 
 import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20260903-231';
-import { money, formatTime, toast } from "./ui.js?v=20260805-081";
-import { t } from "./i18n.js?v=20260903-202";
+import { money, formatTime, toast } from "./ui.js?v=20260930-001";
+import { t } from "./i18n.js?v=20260930-001";
 import { effectiveDeliveryAmounts, enrichDeliveryGiftItems } from "./delivery-order-display.js?v=20260903-243";
 
 const orderId = new URLSearchParams(location.search).get("order") || "";
 const receipt = document.querySelector("#customerReceipt");
 const saveButton = document.querySelector("#saveImageButton");
 const orderAgainLink = document.querySelector("#orderAgainLink");
+const trackingMessage = document.querySelector("#deliveryTrackingMessage");
+const trackingBadge = document.querySelector("#deliveryTrackingBadge");
+const trackingUpdated = document.querySelector("#deliveryTrackingUpdated");
+const trackingSteps = [...document.querySelectorAll("[data-tracking-step]")];
+const customerTrackLink = document.querySelector("#customerLalamoveTrackLink");
+const saveButtonLabel = saveButton?.querySelector("[data-action-label]");
+let trackingTimer = null;
+
+document.title = t("delivery.success.meta_title");
+
+function setSaveButtonLabel(key) {
+  if (saveButtonLabel) saveButtonLabel.textContent = t(key);
+  else saveButton.textContent = t(key);
+}
 
 function paymentText(order) {
   if (order.paymentStatus === "paid") return t("delivery.success.payment.paid");
@@ -17,11 +31,70 @@ function paymentText(order) {
   return t("delivery.success.payment.unpaid");
 }
 
+function trackingState(order = {}) {
+  const local = String(order.status || "pending").toLowerCase();
+  const lala = String(order.lalamoveOrderStatus || "").toUpperCase();
+  if (local === "cancelled") {
+    return { key: "canceled", progress: Math.max(0, ["pending", "accepted", "cooking", "ready", "served"].indexOf(local)), terminal: true };
+  }
+  if (["CANCELED", "CANCELLED", "REJECTED", "EXPIRED"].includes(lala)) {
+    return { key: "dispatch_retry", progress: 3, terminal: false };
+  }
+  if (lala === "COMPLETED") return { key: "completed", progress: 5, terminal: true };
+  if (lala === "PICKED_UP") return { key: "picked_up", progress: 4, terminal: false };
+  if (lala === "ON_GOING") return { key: "on_going", progress: 3, terminal: false };
+  if (lala === "ASSIGNING_DRIVER") return { key: "assigning_driver", progress: 3, terminal: false };
+  const map = {
+    pending: ["pending", 0], accepted: ["accepted", 1], cooking: ["cooking", 2],
+    ready: ["ready", 3], served: ["served", 4], paid: ["paid", 5],
+  };
+  const state = map[local] || ["unknown", 0];
+  return { key: state[0], progress: state[1], terminal: local === "paid" };
+}
+
+function renderTracking(order = {}) {
+  const state = trackingState(order);
+  const text = t(`delivery.success.tracking.statuses.${state.key}`);
+  trackingMessage.textContent = text;
+  trackingBadge.textContent = text;
+  trackingSteps.forEach((step, index) => {
+    step.classList.toggle("is-done", index < state.progress || (state.terminal && state.progress === 5));
+    step.classList.toggle("is-current", index === state.progress && !(state.terminal && state.progress === 5));
+  });
+  const shareLink = String(order.lalamoveShareLink || "").trim();
+  customerTrackLink.hidden = !shareLink || ["canceled", "dispatch_retry", "completed"].includes(state.key);
+  if (shareLink) customerTrackLink.href = shareLink;
+  trackingUpdated.textContent = t("delivery.success.tracking.updated", {
+    time: formatTime(order.updatedAt || new Date().toISOString()),
+  });
+  document.querySelector("#receiptPayment").textContent = paymentText(order);
+  return state;
+}
+
+async function refreshTracking() {
+  try {
+    const order = await dataService.getOrder(orderId);
+    if (!order) return;
+    const state = renderTracking(order);
+    if (state.terminal && trackingTimer) {
+      clearInterval(trackingTimer);
+      trackingTimer = null;
+    }
+  } catch (error) {
+    console.warn("[delivery-tracking] refresh failed", error);
+  }
+}
+
+function startTrackingPolling(initialOrder) {
+  const state = renderTracking(initialOrder);
+  if (state.terminal || trackingTimer) return;
+  trackingTimer = setInterval(refreshTracking, 15000);
+}
+
 function receiptItemName(item) {
   const displayName = item.isGift === true ? `${item.name} ${t("delivery.success.receipt.gift_suffix")}` : item.name;
   return `<div class="receipt-item-line"><span class="receipt-item-text" title="${displayName}">${displayName}</span><span class="receipt-item-qty">x ${item.qty}</span></div>${item.note ? `<div class="receipt-item-note">${item.note}</div>` : ""}`;
 }
-
 
 function clearDeliveryDraft(tenantSlug = "") {
   if (!tenantSlug) return;
@@ -79,6 +152,7 @@ async function load() {
   }
 
   renderVerificationQr(order);
+  return order;
 }
 
 async function waitForReceiptReady() {
@@ -115,7 +189,7 @@ async function downloadReceipt() {
 
 saveButton.addEventListener("click", async () => {
   saveButton.disabled = true;
-  saveButton.textContent = t("delivery.success.actions.creating_image");
+  setSaveButtonLabel("delivery.success.actions.creating_image");
   try {
     await downloadReceipt();
     toast(t("delivery.success.actions.downloaded"));
@@ -124,12 +198,16 @@ saveButton.addEventListener("click", async () => {
     toast(t("delivery.success.actions.download_failed"), "error");
   } finally {
     saveButton.disabled = false;
-    saveButton.textContent = t("delivery.success.actions.download");
+    setSaveButtonLabel("delivery.success.actions.download");
   }
 });
 
 try {
-  await load();
+  const initialOrder = await load();
+  startTrackingPolling(initialOrder);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) refreshTracking();
+  });
 } catch (error) {
   console.error(error);
   receipt.innerHTML = `<div class="empty">${error.message}</div>`;

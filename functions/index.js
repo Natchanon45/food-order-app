@@ -183,6 +183,10 @@ exports.updateTenantOwner = tenantAdmin.updateTenantOwner;
 exports.updateTenant = tenantAdmin.updateTenant;
 exports.deleteTenant = tenantAdmin.deleteTenant;
 
+const saasMigration = require("./saas-migration");
+exports.inspectLegacySaasMigration = saasMigration.inspectLegacySaasMigration;
+exports.migrateLegacySaasStore = saasMigration.migrateLegacySaasStore;
+
 const staffAdmin = require("./staff-admin");
 exports.listTenantStaff = staffAdmin.listTenantStaff;
 exports.createTenantStaff = staffAdmin.createTenantStaff;
@@ -196,4 +200,72 @@ const retailPosStaff = require("./retail-pos-staff");
 exports.upsertRetailPosStaff = retailPosStaff.upsertRetailPosStaff;
 
 const taxBuyerLookup = require("./tax-buyer-lookup");
+const retailPosBackup = require("./retail-pos-backup");
 exports.lookupTaxBuyer = taxBuyerLookup.lookupTaxBuyer;
+exports.exportRetailPosBackup = retailPosBackup.exportRetailPosBackup;
+exports.restoreRetailPosBackup = retailPosBackup.restoreRetailPosBackup;
+
+const platformSettings = require("./platform-settings");
+exports.getPlatformBranding = platformSettings.getPlatformBranding;
+exports.updatePlatformBranding = platformSettings.updatePlatformBranding;
+exports.getPlatformGoogleApis = platformSettings.getPlatformGoogleApis;
+exports.updatePlatformGoogleApis = platformSettings.updatePlatformGoogleApis;
+exports.getPlatformSlipVerification = platformSettings.getPlatformSlipVerification;
+exports.updatePlatformSlipVerification = platformSettings.updatePlatformSlipVerification;
+exports.testPlatformSlipVerification = platformSettings.testPlatformSlipVerification;
+exports.getPlatformLalamove = platformSettings.getPlatformLalamove;
+exports.updatePlatformLalamove = platformSettings.updatePlatformLalamove;
+exports.testPlatformLalamove = platformSettings.testPlatformLalamove;
+exports.registerPlatformLalamoveWebhook = platformSettings.registerPlatformLalamoveWebhook;
+
+const tenantLalamoveWallet = require("./tenant-lalamove-wallet");
+exports.updateTenantLalamoveApproval = tenantLalamoveWallet.updateTenantLalamoveApproval;
+exports.getTenantLalamoveWallet = tenantLalamoveWallet.getTenantLalamoveWallet;
+exports.reviewTenantLalamoveWalletTopup = tenantLalamoveWallet.reviewTenantLalamoveWalletTopup;
+exports.getTenantLalamoveSettings = tenantLalamoveWallet.getTenantLalamoveSettings;
+exports.updateTenantLalamoveSettings = tenantLalamoveWallet.updateTenantLalamoveSettings;
+exports.testTenantLalamoveConnection = tenantLalamoveWallet.testTenantLalamoveConnection;
+exports.getOwnTenantLalamoveWallet = tenantLalamoveWallet.getOwnTenantLalamoveWallet;
+exports.submitTenantLalamoveWalletTopup = tenantLalamoveWallet.submitTenantLalamoveWalletTopup;
+exports.deleteTenantLalamoveWalletTopup = tenantLalamoveWallet.deleteTenantLalamoveWalletTopup;
+
+const revenueShare = require("./revenue-share");
+exports.getTenantRevenueShareAccess = revenueShare.getTenantRevenueShareAccess;
+exports.getTenantRevenueShareSummary = revenueShare.getTenantRevenueShareSummary;
+exports.listTenantRevenueSharePayments = revenueShare.listTenantRevenueSharePayments;
+exports.submitTenantRevenueSharePayment = revenueShare.submitTenantRevenueSharePayment;
+exports.deleteTenantRevenueSharePayment = revenueShare.deleteTenantRevenueSharePayment;
+exports.getPlatformRevenueShareSummary = revenueShare.getPlatformRevenueShareSummary;
+exports.listPlatformRevenueSharePayments = revenueShare.listPlatformRevenueSharePayments;
+exports.reviewRevenueSharePayment = revenueShare.reviewRevenueSharePayment;
+exports.updateTenantRevenueShare = revenueShare.updateTenantRevenueShare;
+exports.unlockTenantRevenueShare = revenueShare.unlockTenantRevenueShare;
+exports.reconcileRevenueShare = revenueShare.reconcileRevenueShare;
+exports.syncRevenueShareTenants = revenueShare.syncRevenueShareTenants;
+
+const subscriptionAdmin = require("./subscription-admin");
+exports.initializeTenantSubscription = subscriptionAdmin.initializeTenantSubscription;
+exports.backfillTenantSubscriptions = subscriptionAdmin.backfillTenantSubscriptions;
+exports.updateTenantSubscription = subscriptionAdmin.updateTenantSubscription;
+exports.syncExpiredTenants = subscriptionAdmin.syncExpiredTenants;
+
+const subscriptionPricing = require("./subscription-pricing");
+exports.getPublicSubscriptionPricing = subscriptionPricing.getPublicSubscriptionPricing;
+exports.getSubscriptionPricing = subscriptionPricing.getSubscriptionPricing;
+exports.updateSubscriptionPricing = subscriptionPricing.updateSubscriptionPricing;
+
+const googleDelivery = require("./google-delivery");
+exports.getDeliveryGoogleMapsConfig = googleDelivery.getDeliveryGoogleMapsConfig;
+exports.computeDeliveryRoute = googleDelivery.computeDeliveryRoute;
+
+const operationalOrders = require("./operational-orders");
+exports.createWalkInOrder = operationalOrders.createWalkInOrder;
+exports.assignWalkInTable = operationalOrders.assignWalkInTable;
+exports.moveTableSession = operationalOrders.moveTableSession;
+exports.releaseQuickOrderHeldBill = operationalOrders.releaseQuickOrderHeldBill;
+
+const lalamoveDispatch = require("./lalamove-dispatch");
+exports.quoteTenantLalamoveDispatch = lalamoveDispatch.quoteTenantLalamoveDispatch;
+exports.placeTenantLalamoveDispatch = lalamoveDispatch.placeTenantLalamoveDispatch;
+exports.refreshTenantLalamoveDispatch = lalamoveDispatch.refreshTenantLalamoveDispatch;
+exports.cancelTenantLalamoveDispatch = lalamoveDispatch.cancelTenantLalamoveDispatch;

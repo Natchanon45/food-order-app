@@ -1,0 +1,68 @@
+.settings-container{max-width:860px;margin:0 auto;padding:16px;font-size:.88rem}.settings-panel{padding:18px}.settings-panel section+section{margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}.settings-panel h1,.settings-panel h2{margin:0;font-weight:750}.settings-panel h1{font-size:1.12rem}.settings-panel h2{font-size:1rem}.settings-panel p{margin:4px 0 0;color:var(--muted);font-size:.8rem;font-weight:400}.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.settings-grid label{display:grid;gap:5px;font-size:.82rem;font-weight:700}.settings-grid input,.settings-grid textarea,.settings-grid select{font-family:inherit;font-size:.86rem;font-weight:400}.settings-grid .full{grid-column:1/-1}.settings-grid textarea{width:100%;resize:vertical;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff}.settings-grid textarea:focus{outline:3px solid #15944722;border-color:var(--green)}.settings-note{margin-top:10px!important;padding:9px 12px;border-radius:12px;background:#eef8f1;color:#31543e!important;font-size:.78rem!important}.receipt-preview{max-width:340px;margin:8px auto 0;padding:18px;border:1px dashed #9fb4a6;border-radius:14px;background:#fff;text-align:center;font-family:"TH Sarabun PSK Local","TH Sarabun New",Sarabun,sans-serif;font-size:21px;line-height:1.05}.receipt-preview strong,.receipt-preview span,.receipt-preview small{display:block}.receipt-preview strong{font-size:28px}.receipt-preview small{margin-top:5px;font-size:17px}.receipt-preview hr{border:0;border-top:1px dashed #000;margin:8px 0}.receipt-preview span:empty,.receipt-preview small:empty{display:none}.settings-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}.settings-actions .btn{min-width:150px;min-height:42px;font-size:.86rem}.settings-panel .error-text{margin-top:12px}@media(max-width:620px){.settings-container{padding:8px;font-size:.84rem}.settings-panel{padding:14px;border-radius:14px}.settings-panel section+section{margin-top:18px;padding-top:18px}.settings-grid{grid-template-columns:1fr;gap:11px}.settings-grid .full{grid-column:auto}.settings-grid input,.settings-grid textarea,.settings-grid select{min-height:44px;font-size:.84rem}.receipt-preview{width:100%;max-width:100%;margin-top:10px;padding:16px}.settings-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:16px;padding-top:14px}.settings-actions .btn{width:100%;min-height:42px}}
+
+
+/* STORE_LOCATION_PICKER_20260827_002 */
+.store-location-picker{
+  margin-top:16px;
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#f8fbf9
+}
+.store-location-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  margin-bottom:10px
+}
+.store-location-head strong{
+  font-size:.9rem
+}
+.store-location-map{
+  width:100%;
+  height:320px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  overflow:hidden;
+  background:#e9efec;
+  z-index:0
+}
+.store-location-footer{
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:8px 16px;
+  margin-top:9px;
+  color:var(--muted);
+  font-size:.78rem
+}
+#storeLocationStatus.is-ready{
+  color:#176b45;
+  font-weight:700
+}
+#storeLocationStatus.is-error{
+  color:#b42318;
+  font-weight:700
+}
+#storeLocationCoordinates{
+  font-variant-numeric:tabular-nums
+}
+.store-location-picker .leaflet-control-attribution{
+  font-size:10px
+}
+@media(max-width:620px){
+  .store-location-picker{
+    padding:12px
+  }
+  .store-location-head{
+    flex-direction:column
+  }
+  #useStoreCurrentLocationButton{
+    width:100%;
+    min-height:44px
+  }
+  .store-location-map{
+    height:280px
+  }
+}

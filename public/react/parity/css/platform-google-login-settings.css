@@ -1,0 +1,251 @@
+/* PLATFORM_GOOGLE_LOGIN_SETTINGS_20260805_092 */
+.platform-google-login-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, .65fr);
+  gap: 18px;
+  margin-top: 18px;
+  align-items: start;
+}
+
+.platform-google-login-card,
+.platform-google-login-preview-card {
+  overflow: hidden;
+}
+
+.platform-google-login-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.platform-google-login-icon {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: #2563eb;
+  background: linear-gradient(135deg, #dbeafe, #fef3c7);
+  font-size: 18px;
+}
+
+.platform-google-login-source {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 11px;
+  border: 1px solid #cfe4d6;
+  border-radius: 999px;
+  color: #0d6f34;
+  background: #eef9f2;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.platform-google-login-source[data-source="environment"] {
+  border-color: #f0d59c;
+  color: #9a5b06;
+  background: #fff8e7;
+}
+
+.platform-google-login-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.platform-google-login-toggle {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border: 1px solid #d7e8dc;
+  border-radius: 14px;
+  background: #f8fcf9;
+}
+
+.platform-google-login-toggle strong {
+  display: block;
+  color: #123d27;
+}
+
+.platform-google-login-toggle small {
+  display: block;
+  margin-top: 2px;
+  color: #718078;
+}
+
+.platform-google-login-field-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 170px;
+  gap: 12px;
+}
+
+.platform-google-login-privacy {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.platform-google-login-privacy > div {
+  padding: 12px;
+  border-radius: 13px;
+  line-height: 1.45;
+}
+
+.platform-google-login-privacy .is-stored {
+  border: 1px solid #cce7d4;
+  color: #0d6f34;
+  background: #eef9f2;
+}
+
+.platform-google-login-privacy .is-not-stored {
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  background: #f8fafc;
+}
+
+.platform-google-login-privacy strong,
+.platform-google-login-privacy span {
+  display: block;
+}
+
+.platform-google-login-privacy span {
+  margin-top: 3px;
+  font-size: 12px;
+}
+
+.platform-google-origins {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.platform-google-origin {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 9px 8px 12px;
+  border: 1px solid #dbe7df;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.platform-google-origin code {
+  min-width: 0;
+  overflow: hidden;
+  color: #214c34;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.platform-google-origin .btn {
+  min-height: 34px;
+  gap: 6px;
+}
+
+.platform-google-login-actions {
+  display: grid;
+  grid-template-columns: .8fr .8fr 1.2fr;
+  gap: 10px;
+}
+
+.platform-google-login-actions .btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.platform-google-login-preview-card {
+  position: sticky;
+  top: 82px;
+}
+
+.platform-google-login-preview {
+  display: grid;
+  gap: 14px;
+  margin-top: 15px;
+  padding: 18px;
+  border: 1px solid #d8e8dd;
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 100% 0, rgba(21, 148, 71, .10), transparent 40%),
+    #fbfefc;
+}
+
+.platform-google-preview-button {
+  min-height: 46px;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 0 15px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #1f2937;
+  background: #fff;
+  font-weight: 700;
+}
+
+.platform-google-preview-g {
+  font-size: 20px;
+  font-weight: 900;
+  color: #4285f4;
+  text-align: center;
+}
+
+.platform-google-preview-status {
+  margin: 0;
+  color: #0d6f34;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.platform-google-preview-status[data-ready="false"] {
+  color: #9a5b06;
+}
+
+.platform-google-preview-button.is-disabled {
+  color: #84918a;
+  background: #f4f7f5;
+}
+
+.platform-google-warning {
+  padding: 12px 13px;
+  border: 1px solid #f0d59c;
+  border-radius: 12px;
+  color: #7a4a06;
+  background: #fff8e7;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+@media (max-width: 1040px) {
+  .platform-google-login-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .platform-google-login-preview-card {
+    position: static;
+  }
+}
+
+@media (max-width: 720px) {
+  .platform-google-login-field-grid,
+  .platform-google-login-privacy,
+  .platform-google-login-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .platform-google-login-toggle {
+    align-items: flex-start;
+  }
+}

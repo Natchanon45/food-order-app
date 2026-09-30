@@ -1,0 +1,370 @@
+/* TENANT_ADMIN_COMPACT_20260910_001
+ * Compact responsive store cards for /admin/tenants.
+ * Presentation only; no tenant or accounting logic changes.
+ */
+.tenant-admin-page .tenant-list-card {
+  padding: 16px 18px;
+}
+.tenant-admin-page .tenant-list-heading {
+  margin-bottom: 10px;
+}
+.tenant-admin-page #tenantList.tenant-card-grid {
+  gap: 10px;
+  margin-top: 10px;
+}
+.tenant-admin-page .tenant-store-card {
+  grid-template-columns: minmax(260px,.72fr) minmax(0,1.8fr);
+  grid-template-areas:
+    "head sales"
+    "meta sales"
+    "details sales"
+    "actions actions"
+    "subscription subscription";
+  gap: 8px 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+}
+.tenant-admin-page .tenant-store-head {
+  min-height: 42px;
+  align-items: center;
+}
+.tenant-admin-page .tenant-store-mark {
+  width: 40px;
+  height: 40px;
+  flex-basis: 40px;
+  border-radius: 12px;
+}
+.tenant-admin-page .tenant-store-title {
+  gap: 9px;
+}
+.tenant-admin-page .tenant-store-title h3 {
+  font-size: 1rem;
+}
+.tenant-admin-page .tenant-store-title a {
+  margin-top: 2px;
+  font-size: 11px;
+}
+.tenant-admin-page .tenant-status-pill {
+  min-height: 26px;
+  padding: 4px 8px;
+  font-size: 10.5px;
+}
+.tenant-admin-page .tenant-meta-row {
+  gap: 5px;
+  align-content: start;
+}
+.tenant-admin-page .tenant-meta-row span {
+  min-height: 27px;
+  padding: 4px 7px;
+  font-size: 10.5px;
+}
+.tenant-admin-page .tenant-sales-grid {
+  grid-template-columns: repeat(4,minmax(0,1fr)) !important;
+  gap: 6px;
+  align-self: start;
+}
+.tenant-admin-page .tenant-sales-grid article {
+  min-height: 68px !important;
+  padding: 8px 10px !important;
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  grid-template-rows: auto auto;
+  gap: 2px 6px;
+  align-content: center;
+  align-items: end;
+  border-radius: 11px;
+}
+.tenant-admin-page .tenant-sales-grid article > span {
+  grid-column: 1 / -1;
+  line-height: 1.2;
+  font-size: 10px;
+}
+.tenant-admin-page .tenant-sales-grid article > strong {
+  grid-column: 1;
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.05;
+}
+.tenant-admin-page .tenant-sales-grid article > small {
+  grid-column: 2;
+  align-self: end;
+  padding-bottom: 1px;
+  font-size: 9.5px;
+  line-height: 1;
+  white-space: nowrap;
+  text-align: right;
+}
+.tenant-admin-page .tenant-store-details {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 0 10px;
+  padding: 0;
+}
+.tenant-admin-page .tenant-store-details span {
+  min-height: 28px;
+  grid-template-columns: 74px minmax(0,1fr);
+  gap: 6px;
+  padding: 4px 2px;
+  font-size: 10.5px;
+}
+.tenant-admin-page .tenant-store-details span:last-child {
+  grid-column: 1 / -1;
+}
+.tenant-admin-page .tenant-card-actions {
+  grid-template-columns: repeat(auto-fit,minmax(130px,1fr)) !important;
+  gap: 6px;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+.tenant-admin-page .tenant-card-actions > .btn {
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 10px !important;
+  justify-content: center !important;
+  font-size: 11px !important;
+}
+.tenant-admin-page .tenant-subscription {
+  margin-top: 1px;
+  border-radius: 12px;
+}
+.tenant-admin-page .tenant-subscription > summary {
+  min-height: 42px;
+  padding: 8px 10px;
+}
+.tenant-admin-page .tenant-subscription > summary > span:first-child > i {
+  width: 26px;
+  height: 26px;
+}
+.tenant-admin-page .tenant-subscription-summary {
+  padding: 4px 7px;
+  font-size: 10.5px;
+}
+
+@media (max-width: 980px) {
+  .tenant-admin-page .tenant-store-card {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "head"
+      "meta"
+      "sales"
+      "details"
+      "actions"
+      "subscription";
+  }
+}
+@media (max-width: 720px) {
+  .tenant-admin-page .tenant-list-card {
+    padding: 12px;
+  }
+  .tenant-admin-page .tenant-store-card {
+    gap: 7px;
+    padding: 12px;
+  }
+  .tenant-admin-page .tenant-sales-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  }
+  .tenant-admin-page .tenant-sales-grid article {
+    min-height: 64px !important;
+  }
+  .tenant-admin-page .tenant-store-details {
+    grid-template-columns: 1fr;
+  }
+  .tenant-admin-page .tenant-store-details span:last-child {
+    grid-column: auto;
+  }
+  .tenant-admin-page .tenant-card-actions {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  }
+}
+@media (max-width: 480px) {
+  .tenant-admin-page .tenant-store-head {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) auto;
+    gap: 8px;
+    align-items: center;
+  }
+  .tenant-admin-page .tenant-status-pill {
+    align-self: center;
+  }
+  .tenant-admin-page .tenant-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .tenant-admin-page .tenant-meta-row span {
+    width: auto;
+    max-width: 100%;
+  }
+  .tenant-admin-page .tenant-store-details span {
+    grid-template-columns: 70px minmax(0,1fr);
+    gap: 6px;
+  }
+  .tenant-admin-page .tenant-card-actions > .btn {
+    justify-content: center !important;
+  }
+}
+@media (max-width: 380px) {
+  .tenant-admin-page .tenant-store-mark {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+  .tenant-admin-page .tenant-store-title h3 {
+    font-size: .94rem;
+  }
+  .tenant-admin-page .tenant-sales-grid article {
+    padding: 7px 8px !important;
+  }
+  .tenant-admin-page .tenant-sales-grid article > strong {
+    font-size: .94rem;
+  }
+  .tenant-admin-page .tenant-sales-grid article > small {
+    font-size: 9px;
+  }
+  .tenant-admin-page .tenant-card-actions [data-unlock-revenue-share] {
+    grid-column: 1 / -1;
+  }
+}
+
+/* TENANT_FOD_WALLET_PHASE2_20260916_001 */
+.tenant-admin-page .tenant-wallet-summary {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: baseline;
+  padding: 16px;
+  border: 1px solid #d6e6dc;
+  border-radius: 14px;
+  background: #f8fbf9;
+}
+.tenant-admin-page .tenant-wallet-summary span,
+.tenant-admin-page .tenant-wallet-summary small { color: #66736b; }
+.tenant-admin-page .tenant-wallet-summary strong { font-size: 1.55rem; color: #075f33; }
+.tenant-admin-page .tenant-wallet-phase-note { margin: 10px 0 14px; color: #6f7c74; font-size: .85rem; }
+.tenant-admin-page .tenant-wallet-history-head { margin-bottom: 8px; }
+.tenant-admin-page .tenant-wallet-history { display: grid; gap: 7px; max-height: 360px; overflow: auto; }
+.tenant-admin-page .tenant-wallet-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  background: #f8fbf9;
+  border: 1px solid #edf2ef;
+}
+.tenant-admin-page .tenant-wallet-row strong,
+.tenant-admin-page .tenant-wallet-row small { display: block; }
+.tenant-admin-page .tenant-wallet-row small { margin-top: 2px; color: #758078; }
+.tenant-admin-page .tenant-wallet-row > span { font-weight: 700; white-space: nowrap; }
+.tenant-admin-page .tenant-wallet-row.credit > span { color: #08783d; }
+.tenant-admin-page .tenant-wallet-row.debit > span { color: #b42318; }
+.tenant-admin-page .tenant-wallet-empty { padding: 18px; text-align: center; color: #718078; background: #f8fbf9; border-radius: 11px; }
+.lalamove-wallet-dialog .tenant-dialog-card { max-width: 720px; }
+@media (max-width: 640px) {
+  .tenant-admin-page .tenant-wallet-summary { grid-template-columns: 1fr auto; }
+  .tenant-admin-page .tenant-wallet-summary small { grid-column: 2; }
+}
+
+/* TENANT_FOD_WALLET_PHASE3_20260916_001 */
+.tenant-admin-page .tenant-wallet-ledger-head {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e2ebe5;
+}
+.tenant-admin-page .tenant-wallet-topup-row {
+  align-items: flex-start;
+  border-left: 3px solid #c78a00;
+}
+.tenant-admin-page .tenant-wallet-topup-row.approved { border-left-color: #08783d; }
+.tenant-admin-page .tenant-wallet-topup-row.rejected { border-left-color: #b42318; }
+.tenant-admin-page .tenant-wallet-topup-copy {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.tenant-admin-page .tenant-wallet-topup-copy small {
+  overflow-wrap: anywhere;
+}
+.tenant-admin-page .tenant-wallet-topup-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.tenant-admin-page .tenant-wallet-topup-actions .btn {
+  min-width: 72px;
+  min-height: 34px;
+  padding: 6px 12px;
+}
+@media (max-width: 720px) {
+  .tenant-admin-page .tenant-wallet-topup-row {
+    display: grid;
+    grid-template-columns: minmax(0,1fr);
+  }
+  .tenant-admin-page .tenant-wallet-topup-actions {
+    display: grid;
+    grid-template-columns: repeat(3,minmax(0,1fr));
+    width: 100%;
+    white-space: normal;
+  }
+  .tenant-admin-page .tenant-wallet-topup-actions .btn {
+    min-width: 0;
+    justify-content: center;
+  }
+}
+@media (max-width: 440px) {
+  .tenant-admin-page .tenant-wallet-topup-actions .btn span {
+    font-size: .72rem;
+  }
+}
+
+
+/* TENANT_FOD_WALLET_DIALOG_ACTION_SPACING_20260916_001 */
+.lalamove-wallet-dialog .tenant-dialog-actions {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+.lalamove-wallet-dialog .tenant-dialog-actions > .btn {
+  width: auto !important;
+  min-width: 132px;
+  flex: 0 0 auto;
+}
+@media (max-width: 440px) {
+  .tenant-admin-page .tenant-wallet-topup-actions {
+    gap: 10px;
+  }
+  .lalamove-wallet-dialog .tenant-dialog-actions > .btn {
+    min-width: 112px;
+  }
+}
+
+
+/* TENANT_FOD_WALLET_DIALOG_ACTION_SCOPE_FIX_20260916_001 */
+.lalamove-wallet-dialog .tenant-wallet-topup-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.lalamove-wallet-dialog .tenant-wallet-topup-actions .btn {
+  min-width: 78px;
+  min-height: 34px;
+  padding: 6px 12px;
+  justify-content: center;
+}
+@media (max-width: 720px) {
+  .lalamove-wallet-dialog .tenant-wallet-topup-actions {
+    display: grid !important;
+    grid-template-columns: repeat(3,minmax(0,1fr));
+    gap: 10px !important;
+    width: 100%;
+  }
+  .lalamove-wallet-dialog .tenant-wallet-topup-actions .btn {
+    min-width: 0;
+  }
+}

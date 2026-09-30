@@ -6,3 +6,8 @@ Object.assign(exports, require("./revenue-share"));
 
 Object.assign(exports, require("./public-geocoding"));
 Object.assign(exports, require("./google-delivery"));
+Object.assign(exports, require("./operational-orders"));
+Object.assign(exports, require("./platform-settings"));
+Object.assign(exports, require("./tenant-lalamove-wallet"));
+Object.assign(exports, require("./lalamove-webhook"));
+Object.assign(exports, require("./lalamove-dispatch"));

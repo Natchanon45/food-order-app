@@ -1,4 +1,4 @@
-import "./public-page-static-i18n.js?v=20260920-001";
+import "./public-page-static-i18n.js?v=20260930-001";
 
 // DELIVERY_GOOGLE_NORMAL_BUTTON_20260805_098
 // DELIVERY_CURRENT_LOCATION_ADDRESS_FLOW_20260827_001
@@ -10,8 +10,8 @@ import {
   saveCustomerProfile,
   isCustomerAccountAvailable,
 } from './customer-profile-service.js?v=20260915-005';
-import { toast } from './ui.js?v=20260903-231';
-import { t } from './i18n.js?v=20260903-202';
+import { toast } from './ui.js?v=20260930-001';
+import { t } from './i18n.js?v=20260930-001';
 
 const phoneInput = document.querySelector('#recipientPhone');
 const nameInput = document.querySelector('#recipientName');

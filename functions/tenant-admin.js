@@ -38,12 +38,28 @@ exports.listTenants = onCall(
     const snapshot = await getFirestore().collection("tenants").orderBy("name").get();
     const tenants = await Promise.all(snapshot.docs.map(async tenantDoc => {
       const tenant = { id: tenantDoc.id, ...tenantDoc.data() };
-      const settingsSnapshot = await tenantDoc.ref.collection("settings").doc("store").get();
+      const [settingsSnapshot, lalamoveSnapshot, walletSnapshot] = await Promise.all([
+        tenantDoc.ref.collection("settings").doc("store").get(),
+        tenantDoc.ref.collection("settings").doc("lalamove").get(),
+        tenantDoc.ref.collection("settings").doc("lalamoveWallet").get(),
+      ]);
       const settings = settingsSnapshot.exists ? settingsSnapshot.data() : {};
+      const lalamove = lalamoveSnapshot.exists ? lalamoveSnapshot.data() : {};
+      const wallet = walletSnapshot.exists ? walletSnapshot.data() : {};
       return {
         ...tenant,
         shopPhone: settings.shopPhone || tenant.shopPhone || "",
         shopAddress: settings.shopAddress || tenant.shopAddress || "",
+        lalamove: {
+          accountMode: ["disabled", "fod_central", "partner"].includes(String(lalamove.accountMode || ""))
+            ? String(lalamove.accountMode)
+            : "disabled",
+          fodCentralApproved: lalamove.fodCentralApproved === true,
+        },
+        lalamoveWallet: {
+          balance: Math.round((Number(wallet.balance) || 0) * 100) / 100,
+          currency: String(wallet.currency || "THB"),
+        },
       };
     }));
     return { tenants };

@@ -1,4 +1,4 @@
-import "./public-i18n-bootstrap.js?v=20260903-245";
+import "./public-i18n-bootstrap.js?v=20260930-001";
 import { functions, httpsCallable } from "./firebase-config.js?v=20260630-073";
 
 // DELIVERY_LOCATION_ADDRESS_RESOLVER_20260827_003

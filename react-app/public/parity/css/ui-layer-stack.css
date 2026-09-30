@@ -1,0 +1,78 @@
+/*
+ * Global UI layer policy
+ * Highest -> lowest:
+ *   1) Toast alert
+ *   2) SweetAlert / confirmation dialog
+ *   3) Modal / native <dialog>
+ *   4) Page UI
+ *
+ * IMPORTANT: Native <dialog>.showModal() uses the browser Top Layer, so z-index
+ * alone is not enough. toast-top-layer.js re-promotes Sweet Dialog first and
+ * visible Toast last whenever a modal/dialog changes.
+ */
+:root {
+  --ui-layer-page-z: 0;
+  --ui-layer-modal-z: 2147483000;
+  --ui-layer-dialog-z: 2147483600;
+  --ui-layer-toast-z: 2147483647;
+
+  /* Backward-compatible alias. Toast is always the highest application layer. */
+  --top-layer-z: var(--ui-layer-toast-z);
+}
+
+/* Modal layer: native dialogs and known custom modal backdrops. */
+dialog,
+[data-ui-layer="modal"],
+.modal,
+.modal-backdrop,
+.admin-edit-modal-backdrop,
+.owner-password-backdrop,
+.tenant-dialog,
+.pos-menu-popover,
+#takeawayQrModal {
+  z-index: var(--ui-layer-modal-z) !important;
+}
+
+/* SweetAlert / confirmation layer must always be above modal. */
+.sweet-dialog-backdrop,
+[data-ui-layer="dialog"] {
+  z-index: var(--ui-layer-dialog-z) !important;
+}
+
+/*
+ * The Top Layer manager promotes Sweet Dialogs with popover="manual".
+ * Browser UA popover styles add their own border, auto margin and fit-content
+ * sizing unless explicitly reset. The backdrop itself must remain a clean
+ * full-viewport overlay; only .sweet-dialog owns the visible dialog frame.
+ */
+.sweet-dialog-backdrop[popover],
+[data-ui-layer="dialog"][popover] {
+  box-sizing: border-box !important;
+  width: 100vw !important;
+  max-width: none !important;
+  height: 100dvh !important;
+  max-height: none !important;
+  margin: 0 !important;
+  border: 0 !important;
+  outline: 0 !important;
+  overflow: visible !important;
+}
+
+/* Promoted Toasts must not inherit the browser's default popover frame. */
+.app-toast[popover],
+.toast[popover],
+[data-app-toast][popover],
+[data-ui-layer="toast"][popover] {
+  margin: 0 !important;
+  border: 0 !important;
+  outline: 0 !important;
+}
+
+/* Toast must always be the last/highest application layer. */
+.app-toast,
+.toast,
+[data-app-toast],
+[role="status"].toast,
+[data-ui-layer="toast"] {
+  z-index: var(--ui-layer-toast-z) !important;
+}

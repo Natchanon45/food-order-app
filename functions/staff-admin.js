@@ -2,7 +2,7 @@ const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { getAuth } = require("firebase-admin/auth");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
-const ALLOWED_STAFF_ROLES = new Set(["admin", "cashier", "kitchen"]);
+const ALLOWED_STAFF_ROLES = new Set(["admin", "cashier", "kitchen", "manager", "stock"]);
 const STAFF_MANAGER_ROLES = new Set(["owner", "super_admin"]);
 const STAFF_SCOPE = "restaurant";
 const BUSINESS_UNIT = "order_delivery";

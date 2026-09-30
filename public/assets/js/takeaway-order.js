@@ -1,18 +1,20 @@
-import "./public-page-static-i18n.js?v=20260920-001";
+import "./public-page-static-i18n.js?v=20260930-001";
 
 await import("./public-tenant-resolver.js?v=20260916-005");
 
 import "./sweet-dialog.js?v=20260726-034";
 import "./cart-item-layout.js?v=20260702-002";
 import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20260916-005';
-import { money, toast } from "./ui.js?v=20260805-081";
-import { t } from "./i18n.js?v=20260903-202";
+import { money, toast } from "./ui.js?v=20260930-001";
+import { t } from "./i18n.js?v=20260930-001";
 
 const menuGrid = document.querySelector("#menuGrid");
+const takeawayHeroStoreName = document.querySelector("#takeawayHeroStoreName");
 const menuPagination = document.querySelector("#menuPagination");
 const cartList = document.querySelector("#cartList");
 const categoryTabs = document.querySelector("#categoryTabs");
 const submitButton = document.querySelector("#submitOrder");
+const submitButtonLabel = submitButton?.querySelector("[data-submit-label]");
 const cart = new Map();
 const ALL_CATEGORY = "ทั้งหมด";
 const OTHER_CATEGORY = "อื่น ๆ";
@@ -80,6 +82,8 @@ function categoryLabel(category) {
 }
 function menuImagePositionStyle(item = {}) { const clamp = value => Math.max(0, Math.min(100, Number.isFinite(Number(value)) ? Number(value) : 50)); return `object-position:50% ${clamp(item.imagePositionY)}% !important`; }
 function priceLabel(value) { return t("takeaway.cart.amount", { amount: money(value) }); }
+function renderTakeawayStoreHero(settings = {}) { if (!takeawayHeroStoreName) return; takeawayHeroStoreName.textContent = String(settings?.shopName || "").trim() || t("shared.store.fallback_name"); }
+function setSubmitLabel(key) { const label = t(key); if (submitButtonLabel) submitButtonLabel.textContent = label; else submitButton.textContent = label; }
 function renderTabs() { categoryTabs.innerHTML = categories().map(category => `<button type="button" class="category-tab${category === activeCategory ? " active" : ""}" data-category="${escapeHtml(category)}" role="tab" aria-selected="${category === activeCategory}">${escapeHtml(categoryLabel(category))}</button>`).join(""); }
 function filteredMenus() { const keyword = document.querySelector("#searchInput").value.trim().toLowerCase(); return menus.filter(item => item.active !== false && (!keyword || String(item.name || "").toLowerCase().includes(keyword)) && (activeCategory === ALL_CATEGORY || (item.category || OTHER_CATEGORY) === activeCategory)); }
 function menuCard(item) { return `<article class="card menu-card"><div class="menu-image"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" data-image-position-x="50" data-image-position-y="${escapeHtml(item.imagePositionY ?? 50)}" style="${menuImagePositionStyle(item)}"></div><div class="menu-name">${escapeHtml(item.name)}</div><div class="menu-category">${escapeHtml(categoryLabel(item.category || OTHER_CATEGORY))}</div><div class="menu-footer"><span class="price">${priceLabel(item.price)}</span><button type="button" class="btn btn-primary btn-sm menu-add-button" data-add="${escapeHtml(item.id)}" aria-label="${t("takeaway.menu.add")}" title="${t("takeaway.menu.add")}"><i class="bi bi-plus-lg" aria-hidden="true"></i></button></div></article>`; }
@@ -155,7 +159,7 @@ submitButton.addEventListener("click", async () => {
   updateCart();
   const confirmed = await confirmOrderSubmission().finally(() => { confirming = false; updateCart(); });
   if (!confirmed) { toast(t("takeaway.toast.cancelled")); return; }
-  submitting = true; submitButton.textContent = t("takeaway.actions.submitting"); updateCart();
+  submitting = true; setSubmitLabel("takeaway.actions.submitting"); updateCart();
   try {
     const result = await dataService.createTakeawayOrder({ customerName, customerPhone, status: "pending", totalAmount, subtotalAmount: totalAmount, note: document.querySelector("#orderNote").value.trim(), items });
     cart.clear();
@@ -165,8 +169,8 @@ submitButton.addEventListener("click", async () => {
     showOrderSuccess(result?.queueNo);
   }
   catch (error) { console.error(error); toast(error.message === "TAKEAWAY_CUSTOMER_REQUIRED" ? t("takeaway.customer.required") : t("takeaway.toast.submit_failed"), "error"); }
-  finally { submitting = false; submitButton.textContent = t("takeaway.actions.submit"); updateCart(); }
+  finally { submitting = false; setSubmitLabel("takeaway.actions.submit"); updateCart(); }
 });
 
-try { menus = await dataService.listMenus(); renderTabs(); renderMenus(); } catch (error) { console.error(error); menuGrid.innerHTML = `<div class="card empty">${t("takeaway.menu.load_failed")}</div>`; }
+try { const [loadedMenus, storeSettings] = await Promise.all([dataService.listMenus(), dataService.getStoreSettings()]); menus = loadedMenus; renderTakeawayStoreHero(storeSettings); renderTabs(); renderMenus(); } catch (error) { console.error(error); menuGrid.innerHTML = `<div class="card empty">${t("takeaway.menu.load_failed")}</div>`; }
 updateCart();

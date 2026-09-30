@@ -1,0 +1,372 @@
+{
+  "th": {
+    "meta": {
+      "title": "เริ่มระบบ Tenant"
+    },
+    "header": {
+      "brand": "Tenant Setup",
+      "back": "กลับหน้าหลัก"
+    },
+    "hero": {
+      "title": "ย้ายร้านแรกเข้าสู่ระบบ Tenant",
+      "description": "คัดลอกข้อมูลจาก :source ไปยัง Tenant :tenant โดยไม่ลบข้อมูลต้นทาง"
+    },
+    "summary": {
+      "title": "ข้อมูลที่จะย้าย",
+      "checking": "กำลังตรวจสอบ",
+      "menus": "เมนู",
+      "tables": "โต๊ะ",
+      "orders": "ออเดอร์",
+      "settings": "การตั้งค่าร้าน"
+    },
+    "target": {
+      "title": "Tenant ร้านแรก",
+      "name": "ชื่อ",
+      "slug": "Slug",
+      "id": "ID"
+    },
+    "overwrite": "เขียนทับข้อมูลใน Tenant ที่มีอยู่แล้ว",
+    "actions": {
+      "refresh": "ตรวจสอบอีกครั้ง",
+      "start": "เริ่มย้ายเข้า Tenant"
+    },
+    "runtime": {
+      "count": {
+        "items": ":count รายการ",
+        "tables": ":count โต๊ะ",
+        "orders": ":count ออเดอร์"
+      },
+      "settings": {
+        "found": "พบข้อมูล",
+        "missing": "ไม่พบข้อมูล"
+      },
+      "state": {
+        "checking": "กำลังตรวจสอบ",
+        "tenant_exists": "พบ Tenant แล้ว",
+        "ready": "พร้อมเริ่ม",
+        "check_failed": "ตรวจสอบไม่สำเร็จ",
+        "migration_success": "ย้ายสำเร็จ",
+        "migration_failed": "ย้ายไม่สำเร็จ"
+      },
+      "toast": {
+        "check_failed": "ตรวจสอบข้อมูลต้นทางไม่สำเร็จ",
+        "migration_success": "ย้ายข้อมูลเข้า Tenant ร้านแรกแล้ว",
+        "migration_failed": "ย้ายข้อมูลไม่สำเร็จ กรุณาตรวจสอบสิทธิ์และ Rules"
+      },
+      "confirm": {
+        "overwrite": "ยืนยันย้ายข้อมูลและเขียนทับข้อมูลใน Tenant ร้านแรก?",
+        "copy": "ยืนยันคัดลอกข้อมูลจาก :source เข้า Tenant ร้านแรก? ข้อมูลต้นทางจะไม่ถูกลบ",
+        "title": "ยืนยันย้ายข้อมูล",
+        "confirm": "ตกลง",
+        "cancel": "ยกเลิก"
+      },
+      "log": {
+        "start": "เริ่มกระบวนการย้ายข้อมูลเข้า Tenant...",
+        "result": ":source: คัดลอก :copied, ข้าม :skipped, ทั้งหมด :total",
+        "error": "เกิดข้อผิดพลาด: :message"
+      },
+      "progress": {
+        "tenant": "เตรียม Tenant ร้านแรกแล้ว",
+        "collection": "กำลังย้าย :name...",
+        "settings": "กำลังย้ายการตั้งค่าร้าน...",
+        "done": "ย้ายข้อมูลเข้า Tenant ร้านแรกสำเร็จ"
+      }
+    }
+  },
+  "en": {
+    "meta": {
+      "title": "Tenant Setup"
+    },
+    "header": {
+      "brand": "Tenant Setup",
+      "back": "Back to home"
+    },
+    "hero": {
+      "title": "Migrate the first store into Tenant mode",
+      "description": "Copy data from :source into Tenant :tenant without deleting the source data."
+    },
+    "summary": {
+      "title": "Data to migrate",
+      "checking": "Checking",
+      "menus": "Menus",
+      "tables": "Tables",
+      "orders": "Orders",
+      "settings": "Store settings"
+    },
+    "target": {
+      "title": "First Tenant",
+      "name": "Name",
+      "slug": "Slug",
+      "id": "ID"
+    },
+    "overwrite": "Overwrite data that already exists in the Tenant",
+    "actions": {
+      "refresh": "Check again",
+      "start": "Start Tenant migration"
+    },
+    "runtime": {
+      "count": {
+        "items": ":count items",
+        "tables": ":count tables",
+        "orders": ":count orders"
+      },
+      "settings": {
+        "found": "Data found",
+        "missing": "No data found"
+      },
+      "state": {
+        "checking": "Checking",
+        "tenant_exists": "Tenant found",
+        "ready": "Ready",
+        "check_failed": "Check failed",
+        "migration_success": "Migration complete",
+        "migration_failed": "Migration failed"
+      },
+      "toast": {
+        "check_failed": "Unable to inspect the source data.",
+        "migration_success": "Data migrated into the first Tenant.",
+        "migration_failed": "Migration failed. Check permissions and Rules."
+      },
+      "confirm": {
+        "overwrite": "Migrate the data and overwrite existing data in the first Tenant?",
+        "copy": "Copy data from :source into the first Tenant? The source data will not be deleted.",
+        "title": "Confirm data migration",
+        "confirm": "Confirm",
+        "cancel": "Cancel"
+      },
+      "log": {
+        "start": "Starting the Tenant migration...",
+        "result": ":source: copied :copied, skipped :skipped, total :total",
+        "error": "Error: :message"
+      },
+      "progress": {
+        "tenant": "Prepared the first Tenant.",
+        "collection": "Migrating :name...",
+        "settings": "Migrating store settings...",
+        "done": "Successfully migrated data into the first Tenant."
+      }
+    }
+  },
+  "my": {
+    "meta": {
+      "title": "Tenant စနစ်ထည့်သွင်းခြင်း။"
+    },
+    "header": {
+      "brand": "Tenant စနစ်ထည့်သွင်းခြင်း။",
+      "back": "အိမ်ပြန်"
+    },
+    "hero": {
+      "title": "ပထမစတိုးကို Tenant မုဒ်သို့ ပြောင်းရွှေ့ပါ။",
+      "description": "အရင်းအမြစ်ဒေတာကို မဖျက်ဘဲ :source မှဒေတာကို Tenant :tenant သို့ ကူးယူပါ။"
+    },
+    "summary": {
+      "title": "ဒေတာရွှေ့ပြောင်းရန်",
+      "checking": "စစ်ဆေးနေပါတယ်။",
+      "menus": "မီနူးများ",
+      "tables": "စားပွဲများ",
+      "orders": "အော်",
+      "settings": "စတိုးဆိုင်ဆက်တင်များ"
+    },
+    "target": {
+      "title": "ပထမဆုံး Tenant",
+      "name": "နာမည်",
+      "slug": "ပက်ကျိ",
+      "id": "ID"
+    },
+    "overwrite": "Tenant တွင် ရှိနှင့်ပြီးသား ဒေတာကို ထပ်ရေးပါ",
+    "actions": {
+      "refresh": "ထပ်မံစစ်ဆေးပါ။",
+      "start": "Tenant ပြောင်းရွှေ့ခြင်းကို စတင်ပါ။"
+    },
+    "runtime": {
+      "count": {
+        "items": ":count ပစ္စည်းများ",
+        "tables": ":count ဇယားများ",
+        "orders": ":count အော်ဒါများ"
+      },
+      "settings": {
+        "found": "ဒေတာတွေ့ရှိခဲ့သည်။",
+        "missing": "ဒေတာမတွေ့ပါ။"
+      },
+      "state": {
+        "checking": "စစ်ဆေးနေပါတယ်။",
+        "tenant_exists": "Tenant တွေ့သည်။",
+        "ready": "အဆင်သင့်",
+        "check_failed": "စစ်ဆေးခြင်း မအောင်မြင်ပါ။",
+        "migration_success": "ရွှေ့ပြောင်းခြင်း ပြီးပါပြီ။",
+        "migration_failed": "ရွှေ့ပြောင်းခြင်း မအောင်မြင်ပါ။"
+      },
+      "toast": {
+        "check_failed": "အရင်းအမြစ်ဒေတာကို စစ်ဆေး၍မရပါ။",
+        "migration_success": "ဒေတာကို ပထမ Tenant သို့ ရွှေ့ပြောင်းထားသည်။",
+        "migration_failed": "ရွှေ့ပြောင်းခြင်း မအောင်မြင်ပါ။ ခွင့်ပြုချက်များနှင့်စည်းကမ်းများကိုစစ်ဆေးပါ။"
+      },
+      "confirm": {
+        "overwrite": "ဒေတာကို ရွှေ့ပြောင်းပြီး ပထမ Tenant တွင် ရှိပြီးသားဒေတာကို ထပ်ရေးမလား။",
+        "copy": ":source မှဒေတာကို ပထမ Tenant သို့ ကူးယူမလား။ အရင်းအမြစ်ဒေတာကို ဖျက်မည်မဟုတ်ပါ။",
+        "title": "ဒေတာရွှေ့ပြောင်းခြင်းကို အတည်ပြုပါ။",
+        "confirm": "အတည်ပြုပါ။",
+        "cancel": "မလုပ်တော့"
+      },
+      "log": {
+        "start": "Tenant ရွှေ့ပြောင်းခြင်း စတင်နေသည်...",
+        "result": ":source- ကူးယူထားသော :copied၊ ကျော်သွားသည် :skipped၊ စုစုပေါင်း :total",
+        "error": "အမှား- :message"
+      },
+      "progress": {
+        "tenant": "ပထမ Tenant ကို ပြင်ဆင်ခဲ့သည်။",
+        "collection": ":name ပြောင်းရွှေ့နေသည်...",
+        "settings": "စတိုးဆိုင်ဆက်တင်များကို ပြောင်းရွှေ့နေသည်...",
+        "done": "ဒေတာကို ပထမ Tenant သို့ အောင်မြင်စွာ ပြောင်းရွှေ့ခဲ့သည်။"
+      }
+    }
+  },
+  "lo": {
+    "meta": {
+      "title": "Tenant ຕັ້ງຄ່າ"
+    },
+    "header": {
+      "brand": "Tenant ຕັ້ງຄ່າ",
+      "back": "ກັບໄປຫາບ້ານ"
+    },
+    "hero": {
+      "title": "ຍ້າຍຮ້ານທຳອິດເຂົ້າໄປໃນໂໝດ Tenant",
+      "description": "ສຳເນົາຂໍ້ມູນຈາກ :source ໄປໃສ່ Tenant :tenant ໂດຍບໍ່ຕ້ອງລຶບແຫຼ່ງທີ່ມາ."
+    },
+    "summary": {
+      "title": "ຂໍ້ມູນເພື່ອຍ້າຍ",
+      "checking": "ກຳລັງກວດສອບ",
+      "menus": "ເມນູ",
+      "tables": "ຕາຕະລາງ",
+      "orders": "ຄໍາສັ່ງ",
+      "settings": "ການຕັ້ງຄ່າຮ້ານ"
+    },
+    "target": {
+      "title": "ທຳອິດ Tenant",
+      "name": "ຊື່",
+      "slug": "ທາກ",
+      "id": "ID"
+    },
+    "overwrite": "ຂຽນທັບຂໍ້ມູນທີ່ມີຢູ່ແລ້ວໃນ Tenant",
+    "actions": {
+      "refresh": "ກວດເບິ່ງອີກຄັ້ງ",
+      "start": "ເລີ່ມການຍ້າຍຖິ່ນຖານ Tenant"
+    },
+    "runtime": {
+      "count": {
+        "items": ":count ລາຍການ",
+        "tables": ":count ຕາຕະລາງ",
+        "orders": ":count ສັ່ງ"
+      },
+      "settings": {
+        "found": "ພົບຂໍ້ມູນ",
+        "missing": "ບໍ່ພົບຂໍ້ມູນ"
+      },
+      "state": {
+        "checking": "ກຳລັງກວດສອບ",
+        "tenant_exists": "Tenant ພົບ",
+        "ready": "ພ້ອມ",
+        "check_failed": "ກວດສອບບໍ່ສຳເລັດ",
+        "migration_success": "ການຍົກຍ້າຍສຳເລັດແລ້ວ",
+        "migration_failed": "ການເຄື່ອນຍ້າຍລົ້ມເຫລວ"
+      },
+      "toast": {
+        "check_failed": "ບໍ່ສາມາດກວດສອບຂໍ້ມູນແຫຼ່ງໄດ້.",
+        "migration_success": "ຂໍ້ມູນຖືກຍ້າຍໄປຢູ່ໃນ Tenant ທຳອິດ.",
+        "migration_failed": "ການເຄື່ອນຍ້າຍລົ້ມເຫລວ. ກວດສອບການອະນຸຍາດແລະກົດລະບຽບ."
+      },
+      "confirm": {
+        "overwrite": "ຍ້າຍຂໍ້ມູນ ແລະຂຽນທັບຂໍ້ມູນທີ່ມີຢູ່ແລ້ວໃນ Tenant ທຳອິດບໍ?",
+        "copy": "ສຳເນົາຂໍ້ມູນຈາກ :source ເຂົ້າໄປໃນ Tenant ທຳອິດບໍ? ຂໍ້ມູນແຫຼ່ງຈະບໍ່ຖືກລຶບ.",
+        "title": "ຢືນຢັນການຍ້າຍຂໍ້ມູນ",
+        "confirm": "ຢືນຢັນ",
+        "cancel": "ຍົກເລີກ"
+      },
+      "log": {
+        "start": "ເລີ່ມການຍ້າຍຖິ່ນຖານ Tenant...",
+        "result": ":source: ສຳເນົາ :copied, ຂ້າມໄປ :skipped, ທັງໝົດ :total",
+        "error": "ຂໍ້ຜິດພາດ: :message"
+      },
+      "progress": {
+        "tenant": "ກະກຽມ Tenant ຄັ້ງທໍາອິດ.",
+        "collection": "ກຳລັງຍ້າຍ :name...",
+        "settings": "ກຳລັງໂອນຍ້າຍການຕັ້ງຄ່າຮ້ານຄ້າ...",
+        "done": "ສຳເລັດການຍ້າຍຂໍ້ມູນເຂົ້າໄປໃນ Tenant ທຳອິດ."
+      }
+    }
+  },
+  "km": {
+    "meta": {
+      "title": "Tenant ការដំឡើង"
+    },
+    "header": {
+      "brand": "Tenant ការដំឡើង",
+      "back": "ត្រឡប់ទៅផ្ទះវិញ។"
+    },
+    "hero": {
+      "title": "ផ្ទេរហាងដំបូងទៅជារបៀប Tenant",
+      "description": "ចម្លងទិន្នន័យពី :source ចូលទៅក្នុង Tenant :tenant ដោយមិនចាំបាច់លុបទិន្នន័យប្រភព។"
+    },
+    "summary": {
+      "title": "ទិន្នន័យ​ត្រូវ​ធ្វើ​ចំណាក​ស្រុក",
+      "checking": "កំពុងពិនិត្យ",
+      "menus": "ម៉ឺនុយ",
+      "tables": "តុ",
+      "orders": "ការបញ្ជាទិញ",
+      "settings": "ការកំណត់ហាង"
+    },
+    "target": {
+      "title": "ដំបូង Tenant",
+      "name": "ឈ្មោះ",
+      "slug": "ស្លក",
+      "id": "ID"
+    },
+    "overwrite": "សរសេរជាន់លើទិន្នន័យដែលមានរួចហើយនៅក្នុង Tenant",
+    "actions": {
+      "refresh": "ពិនិត្យម្តងទៀត",
+      "start": "ចាប់ផ្តើម Tenant ការធ្វើចំណាកស្រុក"
+    },
+    "runtime": {
+      "count": {
+        "items": ":count ធាតុ",
+        "tables": ":count តារាង",
+        "orders": ":count បញ្ជាទិញ"
+      },
+      "settings": {
+        "found": "ទិន្នន័យបានរកឃើញ",
+        "missing": "រកមិនឃើញទិន្នន័យទេ។"
+      },
+      "state": {
+        "checking": "កំពុងពិនិត្យ",
+        "tenant_exists": "Tenant បានរកឃើញ",
+        "ready": "រួចរាល់",
+        "check_failed": "ការត្រួតពិនិត្យបានបរាជ័យ",
+        "migration_success": "ការធ្វើចំណាកស្រុកបានបញ្ចប់",
+        "migration_failed": "ការធ្វើចំណាកស្រុកបានបរាជ័យ"
+      },
+      "toast": {
+        "check_failed": "មិនអាចពិនិត្យទិន្នន័យប្រភពបានទេ។",
+        "migration_success": "ទិន្នន័យបានផ្លាស់ប្តូរទៅជា Tenant ដំបូង។",
+        "migration_failed": "ការធ្វើចំណាកស្រុកបានបរាជ័យ។ ពិនិត្យការអនុញ្ញាត និងច្បាប់។"
+      },
+      "confirm": {
+        "overwrite": "ផ្ទេរទិន្នន័យ និងសរសេរជាន់លើទិន្នន័យដែលមានស្រាប់នៅក្នុង Tenant ដំបូង?",
+        "copy": "ចម្លងទិន្នន័យពី :source ទៅក្នុង Tenant ដំបូង? ទិន្នន័យប្រភពនឹងមិនត្រូវបានលុបទេ។",
+        "title": "បញ្ជាក់ការផ្ទេរទិន្នន័យ",
+        "confirm": "បញ្ជាក់",
+        "cancel": "បោះបង់"
+      },
+      "log": {
+        "start": "ចាប់ផ្តើមការធ្វើចំណាកស្រុក Tenant...",
+        "result": ":source៖ ចម្លង :copied រំលង :skipped សរុប :total",
+        "error": "កំហុស៖ :message"
+      },
+      "progress": {
+        "tenant": "បានរៀបចំ Tenant ដំបូង។",
+        "collection": "ការធ្វើចំណាកស្រុក :name...",
+        "settings": "កំពុងផ្ទេរការកំណត់ហាង...",
+        "done": "បានផ្ទេរទិន្នន័យដោយជោគជ័យទៅក្នុង Tenant ដំបូង។"
+      }
+    }
+  }
+}

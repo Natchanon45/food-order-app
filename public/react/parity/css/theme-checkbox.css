@@ -1,0 +1,30 @@
+input[type="checkbox"] {
+  inline-size: 22px !important;
+  block-size: 22px !important;
+  min-inline-size: 22px !important;
+  min-block-size: 22px !important;
+  flex: 0 0 22px !important;
+  margin-block: 0;
+  accent-color: var(--green, #159447);
+  cursor: pointer;
+}
+
+input[type="checkbox"]:focus-visible {
+  outline: 3px solid rgba(21, 148, 71, 0.28);
+  outline-offset: 2px;
+}
+
+input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@media (max-width: 620px) {
+  input[type="checkbox"] {
+    inline-size: 24px !important;
+    block-size: 24px !important;
+    min-inline-size: 24px !important;
+    min-block-size: 24px !important;
+    flex-basis: 24px !important;
+  }
+}

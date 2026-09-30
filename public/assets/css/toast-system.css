@@ -84,6 +84,15 @@
   letter-spacing: 0 !important;
 }
 
+/* Defensive fallback: legacy/simple toasts may omit the icon node.
+   In that case let the message span both grid columns instead of wrapping
+   inside the reserved 20px icon column. */
+.app-toast > .app-toast-message:first-child {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  text-align: center !important;
+}
+
 .upload-error,
 .form-error,
 .error-box,

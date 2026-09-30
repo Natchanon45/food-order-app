@@ -38,12 +38,17 @@
 
 @media (max-width: 899px) {
   .table-order-page .menu-filter-area {
-    top: 62px;
+    top: 70px;
     margin: 0 -10px 12px;
-    padding: 8px 10px 10px;
+    padding: 0 10px 10px;
+    border-top: 0;
     border-left: 0;
     border-right: 0;
     border-radius: 0;
+  }
+
+  .table-order-page .menu-filter-area .category-tabs {
+    padding-top: 0;
   }
 
   .table-order-page .menu-filter-area .menu-search {
@@ -63,8 +68,8 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .table-order-page .menu-filter-area {
-    top: 60px;
+    top: 56px;
   }
 }

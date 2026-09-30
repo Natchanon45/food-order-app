@@ -143,7 +143,7 @@ submitButton.addEventListener("click", async () => {
   submitButton.disabled = true;
   setSubmitButton("กำลังส่ง...", true);
   try {
-    await dataService.createTableOrder({ tableCode, tableToken, status: "pending", totalAmount, note: orderNote.value.trim(), items });
+    await dataService.createTableOrder({ tableCode, tableToken, orderType: "table", paymentStatus: "unpaid", status: "pending", totalAmount, note: orderNote.value.trim(), items });
     cart.clear();
     orderNote.value = "";
     renderCart();

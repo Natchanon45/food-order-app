@@ -1,0 +1,458 @@
+{
+  "source": {
+    "firebaseRepo": "food-order-app",
+    "laravelRepo": "food-order-app-php80",
+    "laravelBaseline": "29e3ad71"
+  },
+  "policy": {
+    "uiParity": "1:1",
+    "redesignAllowed": false,
+    "replaceLegacyHtmlJs": true,
+    "firebaseHostingRequired": true,
+    "preserveExistingUrls": true
+  },
+  "routes": [
+    {
+      "route": "/",
+      "group": "home",
+      "firebaseHtml": "index.html",
+      "laravelView": "migrated.home",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/admin",
+      "group": "admin",
+      "firebaseHtml": "admin/index.html",
+      "laravelView": "migrated.admin",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/admin/qr",
+      "group": "admin",
+      "firebaseHtml": "admin/qr/index.html",
+      "laravelView": "migrated.admin__qr",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/admin/revenue-share",
+      "group": "admin",
+      "firebaseHtml": "admin/revenue-share/index.html",
+      "laravelView": null,
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/admin/sales-report",
+      "group": "admin",
+      "firebaseHtml": "admin/sales-report/index.html",
+      "laravelView": "migrated.admin__sales_report",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/admin/tenants",
+      "group": "admin",
+      "firebaseHtml": "admin/tenants/index.html",
+      "laravelView": "migrated.admin__tenants",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/admin/users",
+      "group": "admin",
+      "firebaseHtml": "admin/users/index.html",
+      "laravelView": "migrated.admin__users",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/cashier",
+      "group": "cashier",
+      "firebaseHtml": "cashier/index.html",
+      "laravelView": "migrated.cashier",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/cashier/quick-order",
+      "group": "cashier",
+      "firebaseHtml": null,
+      "laravelView": "migrated.cashier__quick_order",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/cashier/receipt",
+      "group": "cashier",
+      "firebaseHtml": "cashier/receipt/index.html",
+      "laravelView": "migrated.cashier__receipt",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/cashier/table-qr",
+      "group": "cashier",
+      "firebaseHtml": "cashier/table-qr/index.html",
+      "laravelView": "migrated.cashier__table_qr",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/cashier/waiting-queue",
+      "group": "cashier",
+      "firebaseHtml": "cashier/waiting-queue/index.html",
+      "laravelView": null,
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/delivery",
+      "group": "delivery",
+      "firebaseHtml": "delivery/index.html",
+      "laravelView": "migrated.delivery",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/delivery/success",
+      "group": "delivery",
+      "firebaseHtml": "delivery/success/index.html",
+      "laravelView": "migrated.delivery__success",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/kitchen",
+      "group": "kitchen",
+      "firebaseHtml": "kitchen/index.html",
+      "laravelView": "migrated.kitchen",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/login",
+      "group": "login",
+      "firebaseHtml": "login/index.html",
+      "laravelView": "migrated.login",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/order",
+      "group": "order",
+      "firebaseHtml": "order/index.html",
+      "laravelView": "migrated.order",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/platform",
+      "group": "platform",
+      "firebaseHtml": "platform/index.html",
+      "laravelView": "migrated.platform",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/platform/contact",
+      "group": "platform",
+      "firebaseHtml": "platform/contact/index.html",
+      "laravelView": "migrated.platform__contact",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/platform/owners",
+      "group": "platform",
+      "firebaseHtml": "platform/owners/index.html",
+      "laravelView": "migrated.platform__owners",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/platform/pricing",
+      "group": "platform",
+      "firebaseHtml": "platform/pricing/index.html",
+      "laravelView": "migrated.platform__pricing",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos",
+      "group": "pos",
+      "firebaseHtml": "pos/index.html",
+      "laravelView": "migrated.pos",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos/backup",
+      "group": "pos",
+      "firebaseHtml": "pos/backup/index.html",
+      "laravelView": "migrated.pos__backup",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos/catalog",
+      "group": "pos",
+      "firebaseHtml": "pos/catalog/index.html",
+      "laravelView": "migrated.pos__catalog",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos/customer-display",
+      "group": "pos",
+      "firebaseHtml": "pos/customer-display/index.html",
+      "laravelView": "migrated.pos__customer_display",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos/customers",
+      "group": "pos",
+      "firebaseHtml": "pos/customers/index.html",
+      "laravelView": "migrated.pos__customers",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos/forbidden",
+      "group": "pos",
+      "firebaseHtml": "pos/forbidden/index.html",
+      "laravelView": "migrated.pos__forbidden",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos/login",
+      "group": "pos",
+      "firebaseHtml": "pos/login/index.html",
+      "laravelView": "migrated.pos__login",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos/payables",
+      "group": "pos",
+      "firebaseHtml": "pos/payables/index.html",
+      "laravelView": "migrated.pos__payables",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos/products",
+      "group": "pos",
+      "firebaseHtml": "pos/products/index.html",
+      "laravelView": "migrated.pos__products",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos/purchases",
+      "group": "pos",
+      "firebaseHtml": "pos/purchases/index.html",
+      "laravelView": "migrated.pos__purchases",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos/receipt",
+      "group": "pos",
+      "firebaseHtml": "pos/receipt/index.html",
+      "laravelView": "migrated.pos__receipt",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos/returns",
+      "group": "pos",
+      "firebaseHtml": "pos/returns/index.html",
+      "laravelView": "migrated.pos__returns",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos/sales",
+      "group": "pos",
+      "firebaseHtml": "pos/sales/index.html",
+      "laravelView": "migrated.pos__sales",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos/settings",
+      "group": "pos",
+      "firebaseHtml": "pos/settings/index.html",
+      "laravelView": "migrated.pos__settings",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos/shifts",
+      "group": "pos",
+      "firebaseHtml": "pos/shifts/index.html",
+      "laravelView": "migrated.pos__shifts",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos/stock-counts",
+      "group": "pos",
+      "firebaseHtml": "pos/stock-counts/index.html",
+      "laravelView": "migrated.pos__stock_counts",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos/stock-movements",
+      "group": "pos",
+      "firebaseHtml": "pos/stock-movements/index.html",
+      "laravelView": "migrated.pos__stock_movements",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos/suppliers",
+      "group": "pos",
+      "firebaseHtml": "pos/suppliers/index.html",
+      "laravelView": "migrated.pos__suppliers",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos/tax-invoice",
+      "group": "pos",
+      "firebaseHtml": "pos/tax-invoice/index.html",
+      "laravelView": "migrated.pos__tax_invoice",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos/tax-invoices",
+      "group": "pos",
+      "firebaseHtml": "pos/tax-invoices/index.html",
+      "laravelView": "migrated.pos__tax_invoices",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/pos/users",
+      "group": "pos",
+      "firebaseHtml": "pos/users/index.html",
+      "laravelView": "migrated.pos__users",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/privacy",
+      "group": "privacy",
+      "firebaseHtml": "privacy/index.html",
+      "laravelView": "migrated.privacy",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/queue",
+      "group": "queue",
+      "firebaseHtml": "queue/index.html",
+      "laravelView": null,
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/register",
+      "group": "register",
+      "firebaseHtml": "register/index.html",
+      "laravelView": "migrated.register",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/reports/revenue-share",
+      "group": "reports",
+      "firebaseHtml": "reports/revenue-share/index.html",
+      "laravelView": "migrated.admin__revenue_share",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/super-admin/saas-setup",
+      "group": "super-admin",
+      "firebaseHtml": "super-admin/saas-setup/index.html",
+      "laravelView": "migrated.super_admin__saas_setup",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/takeaway",
+      "group": "takeaway",
+      "firebaseHtml": "takeaway/index.html",
+      "laravelView": "migrated.takeaway",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/terms",
+      "group": "terms",
+      "firebaseHtml": "terms/index.html",
+      "laravelView": "migrated.terms",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/verify",
+      "group": "verify",
+      "firebaseHtml": "verify/index.html",
+      "laravelView": "migrated.verify",
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/waiting-queue",
+      "group": "waiting-queue",
+      "firebaseHtml": "waiting-queue/index.html",
+      "laravelView": null,
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/waiting-queue/customer",
+      "group": "waiting-queue",
+      "firebaseHtml": "waiting-queue/customer/index.html",
+      "laravelView": null,
+      "status": "pending",
+      "target": "react"
+    },
+    {
+      "route": "/waiting-queue/display",
+      "group": "waiting-queue",
+      "firebaseHtml": "waiting-queue/display/index.html",
+      "laravelView": null,
+      "status": "pending",
+      "target": "react"
+    }
+  ],
+  "aliases": [
+    {
+      "routePattern": "/s/:tenant/delivery",
+      "canonical": "/delivery"
+    },
+    {
+      "routePattern": "/s/:tenant/delivery/success",
+      "canonical": "/delivery/success"
+    },
+    {
+      "routePattern": "/s/:tenant/takeaway",
+      "canonical": "/takeaway"
+    },
+    {
+      "routePattern": "/s/:tenant/order",
+      "canonical": "/order"
+    }
+  ]
+}

@@ -1,11 +1,11 @@
-import "./public-page-static-i18n.js?v=20260920-001";
+import "./public-page-static-i18n.js?v=20260930-002";
 
 await import("./public-tenant-resolver.js?v=20260916-005");
 
-import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20260916-005';
+import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20260930-004';
 import { functions, httpsCallable } from "./firebase-config.js?v=20260630-073";
-import { money, toast } from "./ui.js?v=20260805-081";
-import { t } from "./i18n.js?v=20260903-202";
+import { money, toast } from "./ui.js?v=20260930-001";
+import { t } from "./i18n.js?v=20260930-001";
 import { generatePromptPayPayload } from "./promptpay.js";
 import { qrDataUrl } from "./local-qr.js?v=20260722-036";
 import "./cart-item-layout.js?v=20260702-002";
@@ -500,6 +500,16 @@ function availableFreeGiftMenus() {
   );
 }
 
+function freeGiftSelectionRequired() {
+  return freeGiftPromotionActive()
+    && availableFreeGiftMenus().length > 0;
+}
+
+function missingRequiredFreeGiftSelection() {
+  return freeGiftSelectionRequired()
+    && selectedFreeGiftMenuIds.size < 1;
+}
+
 function renderDeliveryFreeGiftPromotion() {
   if (
     !deliveryFreeGiftSection
@@ -624,14 +634,18 @@ function renderDeliveryFreeGiftPromotion() {
   }
 
   if (deliveryFreeGiftStatus) {
+    const giftRequired = selectedFreeGiftMenuIds.size < 1;
+    deliveryFreeGiftStatus.classList.toggle("is-required", giftRequired);
     deliveryFreeGiftStatus.textContent =
-      t(
-        "delivery.checkout.promotion.gift_selection",
-        {
-          selected: selectedFreeGiftMenuIds.size,
-          max: config.maxSelectableItems,
-        }
-      );
+      giftRequired
+        ? t("delivery.checkout.promotion.gift_required")
+        : t(
+            "delivery.checkout.promotion.gift_selection",
+            {
+              selected: selectedFreeGiftMenuIds.size,
+              max: config.maxSelectableItems,
+            }
+          );
   }
 }
 
@@ -872,7 +886,7 @@ function updateCart() {
   document.querySelector("#deliveryFeeDisplay").textContent = money(currentDeliveryFee);
   renderDeliveryFreeShippingStatus();
   document.querySelector("#cartTotal").textContent = money(currentTotal);
-  submitOrderButton.disabled = isSubmitting || !items.length || !deliveryDistanceAllowed();
+  submitOrderButton.disabled = isSubmitting || !items.length || !deliveryDistanceAllowed() || missingRequiredFreeGiftSelection();
   renderPromptPay();
 }
 
@@ -950,6 +964,14 @@ function submitErrorMessage(error) {
         normalizeDeliveryPromotion(storeSettings)
           .freeGift.maxSelectableItems,
     });
+  }
+
+  if (
+    code.includes("DELIVERY_FREE_GIFT_REQUIRED")
+  ) {
+    return t(
+      "delivery.checkout.promotion.gift_required"
+    );
   }
 
   if (
@@ -1064,6 +1086,7 @@ deliveryFreeGiftList?.addEventListener(
     }
 
     renderDeliveryFreeGiftPromotion();
+    updateCart();
   }
 );
 menuGrid.addEventListener("click", async event => {
@@ -1186,6 +1209,18 @@ submitOrderButton.addEventListener("click", async () => {
       block: "center",
     });
 
+    return;
+  }
+
+  if (missingRequiredFreeGiftSelection()) {
+    deliveryFreeGiftSection?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+    toast(
+      t("delivery.checkout.promotion.gift_required"),
+      "error",
+    );
     return;
   }
 

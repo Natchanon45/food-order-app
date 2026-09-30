@@ -1,0 +1,122 @@
+@import url("./system-controls.css?v=20260622-1");
+
+.app-toast {
+  position: fixed !important;
+  left: 50% !important;
+  top: auto !important;
+  bottom: 25vh !important;
+  z-index: var(--ui-layer-toast-z, 2147483647) !important;
+  right: auto !important;
+  margin: 0 !important;
+  width: min(520px, calc(100% - 28px)) !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  display: grid !important;
+  grid-template-columns: 20px minmax(0, 1fr) !important;
+  align-items: center !important;
+  justify-content: start !important;
+  gap: 8px !important;
+  padding: 10px !important;
+  border: 0 !important;
+  border-radius: 14px !important;
+  background: #111 !important;
+  color: #fff !important;
+  box-shadow: 0 16px 42px rgba(0, 0, 0, .34) !important;
+  transform: translate(-50%, 12px) !important;
+  opacity: 0 !important;
+  transition: opacity .2s ease, transform .2s ease !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+}
+
+.app-toast[popover] {
+  inset: auto auto 25vh 50% !important;
+}
+
+.app-toast.show {
+  opacity: 1 !important;
+  transform: translate(-50%, 0) !important;
+}
+
+.app-toast.success,
+.app-toast.error {
+  background: #111 !important;
+}
+
+.app-toast-icon {
+  width: 20px !important;
+  height: 20px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: center !important;
+  justify-self: start !important;
+  color: currentColor !important;
+}
+
+.app-toast-icon .app-icon,
+.app-toast-icon .bi {
+  width: 20px !important;
+  height: 20px !important;
+  margin: 0 !important;
+  font-size: 20px !important;
+  line-height: 1 !important;
+}
+
+.app-toast.success .app-toast-icon {
+  color: #22c55e !important;
+}
+
+.app-toast.error .app-toast-icon {
+  color: #ef4444 !important;
+}
+
+.app-toast-message {
+  min-width: 0 !important;
+  display: block !important;
+  overflow: hidden !important;
+  overflow-wrap: anywhere !important;
+  color: #fff !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0 !important;
+}
+
+/* Defensive fallback for legacy/simple Toasts that omit the icon node. */
+.app-toast > .app-toast-message:first-child {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  text-align: center !important;
+}
+
+.upload-error,
+.form-error,
+.error-box,
+.alert-error,
+[data-error-box] {
+  border-radius: 14px !important;
+}
+
+@media (max-width: 480px) {
+  .app-toast {
+    inset: auto auto 24vh 50% !important;
+    width: calc(100% - 20px) !important;
+    padding: 10px !important;
+    grid-template-columns: 18px minmax(0, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .app-toast-icon,
+  .app-toast-icon .app-icon,
+  .app-toast-icon .bi {
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 18px !important;
+  }
+
+  .app-toast-message {
+    font-size: 14px !important;
+  }
+}

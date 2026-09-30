@@ -1,0 +1,80 @@
+/* React Super Admin header alignment.
+   Keep the FOD mark vertically centered and all back actions on the left side. */
+
+.super-admin-header {
+  align-items: center;
+}
+
+.super-admin-header-leading {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.super-admin-header-leading > .brand {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.super-admin-header-back {
+  flex: 0 0 auto;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px;
+  margin: 0 !important;
+  white-space: nowrap;
+}
+
+.super-admin-header > .app-header-actions {
+  flex: 0 0 auto;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Laravel admin-icon-polish parity: ordinary icon buttons use an 8px icon/label gap.
+   Keep page-specific MASTER gaps where those controls already define their own spacing. */
+body[data-roles~="super_admin"] .btn:has(> i + span):not(.tenant-card-actions > .btn):not(.tenant-subscription-actions > .btn):not(.tenant-dialog-actions > .btn):not(.platform-branding-buttons .btn):not(.platform-google-api-actions .btn):not(.platform-google-api-field .btn) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+body[data-roles~="super_admin"] .btn > i {
+  flex: 0 0 auto;
+  margin: 0;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .super-admin-header {
+    align-items: center !important;
+  }
+
+  .super-admin-header-leading {
+    flex: 1 1 100%;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .super-admin-header > .app-header-actions {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  .super-admin-header-leading {
+    gap: 8px;
+  }
+
+  .super-admin-header-back {
+    justify-content: flex-start !important;
+  }
+}

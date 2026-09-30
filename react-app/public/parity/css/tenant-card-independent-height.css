@@ -1,0 +1,45 @@
+/* TENANT_CARD_INDEPENDENT_HEIGHT_20260805_101 */
+
+/*
+ * Tenant cards live in the same CSS Grid row.
+ * Grid defaults to align-items: stretch, which makes the neighbouring
+ * card grow when one subscription panel is expanded.
+ */
+#tenantList.tenant-card-grid {
+  align-items: start !important;
+  grid-auto-rows: max-content !important;
+}
+
+#tenantList.tenant-card-grid > .tenant-store-card {
+  align-self: start !important;
+  align-content: start !important;
+  height: max-content !important;
+  min-height: 0 !important;
+}
+
+/* Keep actions directly after each card's own content. */
+#tenantList .tenant-store-card > .tenant-card-actions {
+  margin-top: 0 !important;
+}
+
+/* Subscription expansion affects only its own tenant card. */
+#tenantList .tenant-store-card > .tenant-subscription {
+  width: 100%;
+  min-width: 0;
+}
+
+/*
+ * The list is one column below 1050px, but retaining these declarations
+ * prevents a shared height from returning if another stylesheet overrides it.
+ */
+@media (max-width: 1050px) {
+  #tenantList.tenant-card-grid {
+    align-items: start !important;
+    grid-auto-rows: max-content !important;
+  }
+
+  #tenantList.tenant-card-grid > .tenant-store-card {
+    height: auto !important;
+    align-self: start !important;
+  }
+}

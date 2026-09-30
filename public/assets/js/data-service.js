@@ -109,6 +109,31 @@ function dateKeyFrom(value = new Date()) { const date = value instanceof Date ? 
 function takeawayQueueNoFromDate(value = new Date()) { const date = value instanceof Date ? value : new Date(value || Date.now()); return `TA-${String(date.getHours()).padStart(2, "0")}${String(date.getMinutes()).padStart(2, "0")}${String(date.getSeconds()).padStart(2, "0")}-${Math.random().toString(36).slice(2, 5).toUpperCase()}`; }
 function demoTakeawayQueueNo() { const dateKey = dateKeyFrom(); const count = demoStore.orders.list().filter(order => order.orderType === "takeaway" && String(order.dateKey || "") === dateKey).length + 1; return `TA-${String(count).padStart(3, "0")}`; }
 
+function localDateKey() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+}
+
+function normalizedDeliveryFreeGift(settings = {}) {
+  const raw = settings?.deliveryPromotion?.freeGift;
+  const source = raw && typeof raw === "object" ? raw : {};
+  return {
+    enabled: Boolean(source.enabled),
+    maxSelectableItems: Math.min(20, Math.max(0, Number.parseInt(source.maxSelectableItems || 0, 10) || 0)),
+    validFrom: String(source.validFrom || "").trim(),
+    validUntil: String(source.validUntil || "").trim(),
+    menuIds: [...new Set((Array.isArray(source.menuIds) ? source.menuIds : []).map(value => String(value || "").trim()).filter(Boolean))],
+  };
+}
+
+function deliveryFreeGiftActive(config = {}) {
+  if (!config.enabled || config.maxSelectableItems < 1 || !config.menuIds?.length) return false;
+  const today = localDateKey();
+  if (config.validFrom && today < config.validFrom) return false;
+  if (config.validUntil && today > config.validUntil) return false;
+  return true;
+}
+
 export const dataService = {
   getActiveShop() { return activeShop(); },
 
@@ -245,7 +270,7 @@ export const dataService = {
       const table = await this.getTable(order.tableCode);
       if (!table || table.status !== "occupied" || table.orderToken !== order.tableToken) throw new Error("INVALID_TABLE_SESSION");
       const roundNumber = Number(table.currentRound || 0) + 1;
-      const created = demoStore.orders.add({ ...order, roundNumber });
+      const created = demoStore.orders.add({ ...order, orderType: "table", paymentStatus: order.paymentStatus || "unpaid", roundNumber });
       await this.updateTable(table.id, { currentRound: roundNumber, orderIds: [...new Set([...(table.orderIds || []), created.id])] });
       return created;
     }
@@ -260,7 +285,7 @@ export const dataService = {
       if (tableData.status !== "occupied" || tableData.orderToken !== order.tableToken) throw new Error("INVALID_TABLE_SESSION");
       const roundNumber = Number(tableData.currentRound || 0) + 1;
       transaction.update(tableRef, withShop({ currentRound: roundNumber, orderIds: [...new Set([...(tableData.orderIds || []), orderRef.id])], updatedAt: serverTimestamp() }));
-      transaction.set(orderRef, withShop({ ...order, roundNumber, createdAt: serverTimestamp(), updatedAt: serverTimestamp() }));
+      transaction.set(orderRef, withShop({ ...order, orderType: "table", paymentStatus: order.paymentStatus || "unpaid", roundNumber, createdAt: serverTimestamp(), updatedAt: serverTimestamp() }));
     });
     return { id: orderRef.id };
   },
@@ -332,7 +357,81 @@ export const dataService = {
     return { fromTable, toTable: { ...toTable, code: targetCode, name: targetName }, movedOrders: orderIds.length };
   },
 
-  async createDeliveryOrder(order) { const id = String(order?.id || "").trim() || `DELIVERY-${Date.now()}-${Math.random().toString(16).slice(2)}`; return this.createOrderWithId(id, { ...order, id, orderType: "delivery", status: order.status || "pending" }); },
+  async createDeliveryOrder(order) {
+    const id = String(order?.id || "").trim()
+      || `DELIVERY-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const settings = await this.getStoreSettings();
+    const giftConfig = normalizedDeliveryFreeGift(settings);
+    const selectedGiftMenuIds = [...new Set(
+      (Array.isArray(order?.freeGiftMenuIds) ? order.freeGiftMenuIds : [])
+        .map(value => String(value || "").trim())
+        .filter(Boolean),
+    )];
+
+    const paidItems = (Array.isArray(order?.items) ? order.items : [])
+      .filter(item => item?.isGift !== true);
+    let normalizedOrder = {
+      ...order,
+      freeGiftApplied: false,
+      freeGiftMenuIds: [],
+      freeGiftItems: [],
+      items: paidItems,
+    };
+
+    if (deliveryFreeGiftActive(giftConfig)) {
+      const allowed = new Set(giftConfig.menuIds);
+      const activeGiftMenus = (await this.listMenus()).filter(
+        menu => menu?.active !== false && allowed.has(String(menu.id || "")),
+      );
+      const activeGiftMap = new Map(
+        activeGiftMenus.map(menu => [String(menu.id || ""), menu]),
+      );
+
+      if (activeGiftMenus.length && selectedGiftMenuIds.length < 1) {
+        throw new Error("DELIVERY_FREE_GIFT_REQUIRED");
+      }
+      if (selectedGiftMenuIds.length > giftConfig.maxSelectableItems) {
+        throw new Error("DELIVERY_FREE_GIFT_LIMIT_EXCEEDED");
+      }
+      if (selectedGiftMenuIds.some(menuId => !activeGiftMap.has(menuId))) {
+        throw new Error("DELIVERY_FREE_GIFT_INVALID");
+      }
+
+      const freeGiftItems = selectedGiftMenuIds.map(menuId => {
+        const menu = activeGiftMap.get(menuId);
+        return {
+          menuId,
+          name: String(menu?.name || ""),
+          price: 0,
+          originalPrice: Number(menu?.price || 0),
+          qty: 1,
+          note: "",
+          cancelled: false,
+          isGift: true,
+        };
+      });
+
+      normalizedOrder = {
+        ...order,
+        freeGiftApplied: freeGiftItems.length > 0,
+        freeGiftMenuIds: selectedGiftMenuIds,
+        freeGiftItems,
+        freeGiftMaxSelectableItems: giftConfig.maxSelectableItems,
+        freeGiftValidFrom: giftConfig.validFrom,
+        freeGiftValidUntil: giftConfig.validUntil,
+        items: [...paidItems, ...freeGiftItems],
+      };
+    } else if (selectedGiftMenuIds.length) {
+      throw new Error("DELIVERY_FREE_GIFT_NOT_AVAILABLE");
+    }
+
+    return this.createOrderWithId(id, {
+      ...normalizedOrder,
+      id,
+      orderType: "delivery",
+      status: order.status || "pending",
+    });
+  },
 
   subscribeOrders(callback) {
     if (usingDemoMode) {

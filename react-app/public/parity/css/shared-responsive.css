@@ -1,0 +1,144 @@
+/* Shared responsive safety layer for migrated non-POS pages.
+ * Keep this file layout-focused: page identity, colors, and business states stay page-owned.
+ */
+
+body:not(.receipt-page):not(.print-page):not(.document-page) {
+  overflow-x: clip;
+}
+
+body:not(.receipt-page):not(.print-page):not(.document-page) :is(img, svg, canvas, video) {
+  max-width: 100%;
+}
+
+body:not(.receipt-page):not(.print-page):not(.document-page) :is(.container, .cashier-shell) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+body:not(.receipt-page):not(.print-page):not(.document-page) :is(.grid, .grid-2, .grid-3, .qr-grid, .nav-cards, .cashier-order-grid) > * {
+  min-width: 0;
+}
+
+body:not(.receipt-page):not(.print-page):not(.document-page) :is(.toolbar, .section-title, .order-actions, .cashier-actions, .cashier-action-bar, .cashier-section-head) {
+  min-width: 0;
+}
+
+body:not(.receipt-page):not(.print-page):not(.document-page) :is(input, select, textarea, button) {
+  max-width: 100%;
+}
+
+body:not(.receipt-page):not(.print-page):not(.document-page) :is(.table-list, table) {
+  max-width: 100%;
+}
+
+@media (max-width: 1024px) {
+  body:not(.receipt-page):not(.print-page):not(.document-page) :is(.grid-3, .qr-grid, .nav-cards) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body:not(.receipt-page):not(.print-page):not(.document-page) .container {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  body:not(.receipt-page):not(.print-page):not(.document-page) .app-header {
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    min-height: 56px;
+    padding: 8px 10px;
+  }
+
+  body:not(.receipt-page):not(.print-page):not(.document-page) .app-header > .brand {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  body:not(.receipt-page):not(.print-page):not(.document-page) .app-header > :is([data-header-actions], .app-locale-switcher, .user-menu) {
+    flex: 0 0 auto;
+    max-width: 100%;
+  }
+
+  body:not(.receipt-page):not(.print-page):not(.document-page) .brand {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  body:not(.receipt-page):not(.print-page):not(.document-page) .container {
+    width: 100%;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  body:not(.receipt-page):not(.print-page):not(.document-page) :is(.grid-2, .grid-3, .qr-grid, .nav-cards, .cashier-order-grid) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body:not(.receipt-page):not(.print-page):not(.document-page) :is(.toolbar, .section-title, .cashier-action-bar, .cashier-section-head) {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  body:not(.receipt-page):not(.print-page):not(.document-page) :is(.toolbar, .cashier-actions, .order-actions) > * {
+    min-width: 0;
+  }
+
+  body:not(.receipt-page):not(.print-page):not(.document-page) :is(.field, .field > *, .input) {
+    width: 100%;
+    min-width: 0;
+  }
+
+  body:not(.receipt-page):not(.print-page):not(.document-page) :is(.table-list, table) {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body:not(.receipt-page):not(.print-page):not(.document-page) .cart-bar {
+    width: calc(100% - 20px);
+    flex-wrap: wrap;
+  }
+
+  body:not(.receipt-page):not(.print-page):not(.document-page) .user-menu-panel {
+    right: 0;
+    width: max-content;
+    max-width: calc(100vw - 20px);
+  }
+
+  body:not(.receipt-page):not(.print-page):not(.document-page) :is(.card, .cashier-workspace, .cashier-action-bar) {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  body:not(.receipt-page):not(.print-page):not(.document-page) .app-header {
+    align-items: center;
+  }
+
+  body:not(.receipt-page):not(.print-page):not(.document-page) .section-title {
+    gap: 8px;
+  }
+
+  body:not(.receipt-page):not(.print-page):not(.document-page) .section-title > :is(h1, h2, h3, div) {
+    min-width: 0;
+  }
+
+  body:not(.receipt-page):not(.print-page):not(.document-page) :is(.hero, .card, .cashier-workspace) {
+    border-radius: min(var(--radius, 18px), 18px);
+  }
+
+  body:not(.receipt-page):not(.print-page):not(.document-page) :is(.btn, button, a.btn) {
+    overflow-wrap: anywhere;
+  }
+
+  body:not(.receipt-page):not(.print-page):not(.document-page) .user-menu-panel {
+    position: fixed;
+    top: 64px;
+    right: 10px;
+    left: auto;
+    max-height: calc(100dvh - 76px);
+    overflow-y: auto;
+  }
+}

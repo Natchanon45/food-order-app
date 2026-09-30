@@ -1,12 +1,11 @@
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
-const { defineSecret } = require("firebase-functions/params");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
+const { inspectSlip } = require("./slip-verification");
 
 const REGION = "asia-southeast1";
 const TZ_OFFSET = "+07:00";
-const GOOGLE_VISION_API_KEY = defineSecret("GOOGLE_VISION_API_KEY");
 const MAX_SLIP_SIZE = 10 * 1024 * 1024;
 const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
 const PAID_ORDER_STATUSES = new Set(["paid", "completed", "served", "delivered", "closed"]);
@@ -127,13 +126,41 @@ async function summaryForTenant(tenantId, period, setting) {
     db.collection("tenants").doc(tenantId).collection("sales").get()
   ]);
   let orderSales = 0, orderCount = 0, posSales = 0, posCount = 0;
+  let customerDeliveryFees = 0, lalamoveDeliveryCost = 0, lalamoveWalletCoveredCost = 0, deliverySubsidy = 0;
+
   ordersSnapshot.docs.forEach(snapshot => {
     const row = snapshot.data();
     const date = orderDate(row);
     if (!date || date < period.start || date >= period.end || !validOrder(row)) return;
-    orderSales += Number(row.totalAmount ?? row.total ?? 0) || 0;
+
+    const total = Math.max(0, Number(row.totalAmount ?? row.total ?? 0) || 0);
+    const orderType = String(row.orderType || "").toLowerCase();
+    const isDelivery = orderType === "delivery";
+    const customerFee = isDelivery ? Math.max(0, Number(row.deliveryFee || 0) || 0) : 0;
+    const foodSales = isDelivery && Number.isFinite(Number(row.subtotalAmount))
+      ? Math.max(0, Number(row.subtotalAmount))
+      : (isDelivery ? Math.max(0, total - customerFee) : total);
+
+    const isLalamove = isDelivery && String(row.deliveryProvider || "").toLowerCase() === "lalamove";
+    const accountMode = String(row.lalamoveAccountMode || "").trim().toLowerCase();
+    const usesFodCentral = isLalamove && (!accountMode || accountMode === "fod_central");
+    let lalamoveCost = 0;
+    if (usesFodCentral) {
+      if (Number.isFinite(Number(row.lalamoveDispatchFee))) lalamoveCost = Math.max(0, Number(row.lalamoveDispatchFee));
+      else if (Number.isFinite(Number(row.deliveryBaseFee))) lalamoveCost = Math.max(0, Number(row.deliveryBaseFee));
+    }
+    const walletCovered = usesFodCentral && Number.isFinite(Number(row.lalamoveWalletDebitedAmount))
+      ? Math.min(lalamoveCost, Math.max(0, Number(row.lalamoveWalletDebitedAmount)))
+      : 0;
+
+    orderSales += foodSales;
     orderCount += 1;
+    customerDeliveryFees += isLalamove ? customerFee : 0;
+    lalamoveDeliveryCost += lalamoveCost;
+    lalamoveWalletCoveredCost += walletCovered;
+    deliverySubsidy += usesFodCentral ? Math.max(0, lalamoveCost - customerFee) : 0;
   });
+
   salesSnapshot.docs.forEach(snapshot => {
     const row = snapshot.data();
     const date = saleDate(row);
@@ -143,11 +170,29 @@ async function summaryForTenant(tenantId, period, setting) {
     posSales += Math.max(0, gross - refund);
     posCount += 1;
   });
-  orderSales = Math.round(orderSales * 100) / 100;
-  posSales = Math.round(posSales * 100) / 100;
-  const combinedSales = Math.round((orderSales + posSales) * 100) / 100;
-  const revenueShare = setting.enabled ? Math.round(combinedSales * setting.rate) / 100 : 0;
-  return { orderSales, orderCount, posSales, posCount, combinedSales, revenueShareEnabled: setting.enabled, revenueShareRate: setting.rate, revenueShareBillingCycle: setting.billingCycle, revenueShare };
+
+  const roundMoney = value => Math.round(Number(value || 0) * 100) / 100;
+  orderSales = roundMoney(orderSales);
+  posSales = roundMoney(posSales);
+  customerDeliveryFees = roundMoney(customerDeliveryFees);
+  lalamoveDeliveryCost = roundMoney(lalamoveDeliveryCost);
+  lalamoveWalletCoveredCost = roundMoney(lalamoveWalletCoveredCost);
+  deliverySubsidy = roundMoney(deliverySubsidy);
+  const combinedSales = roundMoney(orderSales + posSales);
+  const revenueShare = setting.enabled ? roundMoney(combinedSales * setting.rate / 100) : 0;
+  const lalamoveOutstandingCost = roundMoney(Math.max(0, lalamoveDeliveryCost - lalamoveWalletCoveredCost));
+  const platformAmountDue = setting.enabled ? roundMoney(revenueShare + lalamoveOutstandingCost) : 0;
+
+  return {
+    orderSales, orderCount, posSales, posCount, combinedSales,
+    customerDeliveryFees, lalamoveDeliveryCost, lalamoveWalletCoveredCost,
+    lalamoveOutstandingCost, deliverySubsidy,
+    revenueShareEnabled: setting.enabled,
+    revenueShareRate: setting.rate,
+    revenueShareBillingCycle: setting.billingCycle,
+    revenueShare,
+    platformAmountDue,
+  };
 }
 
 const MONEY_PATTERN = /(?:฿\s*)?(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d{1,2}))?/g;
@@ -251,73 +296,13 @@ function detectSlipAmount(text = "") {
   return { amount: best?.value ?? null, ranked: ranked.slice(0, 20) };
 }
 
-async function inspectRevenueShareSlip(file, mime, expectedAmount, expectedRecipientName = "") {
-  const expected = Math.round(Number(expectedAmount || 0) * 100) / 100;
-  const recipientName = String(expectedRecipientName || "").trim();
-  const base = { provider: "google_vision", expectedAmount: expected, expectedRecipientName: recipientName, checkedAt: new Date().toISOString() };
-  if (!String(mime || "").startsWith("image/")) {
-    return { ...base, status: "manual_review", reason: "pdf_requires_manual_review", detectedAmount: null, amountCandidates: [], textExcerpt: "" };
-  }
-  try {
-    const apiKey = GOOGLE_VISION_API_KEY.value();
-    if (!apiKey) throw new Error("GOOGLE_VISION_API_KEY_MISSING");
-    const [buffer] = await file.download();
-    const response = await fetch("https://vision.googleapis.com/v1/images:annotate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Goog-Api-Key": apiKey },
-      body: JSON.stringify({ requests: [{ image: { content: buffer.toString("base64") }, features: [{ type: "DOCUMENT_TEXT_DETECTION" }], imageContext: { languageHints: ["th", "en"] } }] }),
-    });
-    if (!response.ok) throw new Error(`VISION_HTTP_${response.status}:${(await response.text()).slice(0, 500)}`);
-    const payload = await response.json();
-    const result = payload?.responses?.[0] || {};
-    if (result.error) throw new Error(`VISION_API:${result.error.message || result.error.code || "unknown"}`);
-    const text = String(result.fullTextAnnotation?.text || result.textAnnotations?.[0]?.description || "").trim();
-    if (!text) return { ...base, status: "unreadable", reason: "no_text_detected", detectedAmount: null, amountCandidates: [], textExcerpt: "" };
-    const candidates = extractMoneyCandidates(text);
-    const detection = detectSlipAmount(text);
-    const detectedAmount = detection.amount;
-    const recipientCheck = detectSlipRecipient(text, recipientName);
-    const evaluation = evaluateOcrStatus({ detectedAmount, expectedAmount: expected, recipientCheck });
-    return {
-      ...base,
-      status: evaluation.status,
-      reason: evaluation.reason,
-      detectedAmount,
-      amountMatched: evaluation.amountMatched,
-      amountCandidates: candidates,
-      amountEvidence: detection.ranked.slice(0, 8),
-      recipientMatched: recipientCheck.matched,
-      recipientEvidence: recipientCheck.evidence,
-      parserVersion: 4,
-      textExcerpt: text.slice(0, 4000),
-    };
-  } catch (error) {
-    console.error("[revenue-share-ocr] failed", error);
-    return { ...base, status: "manual_review", reason: "vision_error", detectedAmount: null, amountCandidates: [], textExcerpt: "" };
-  }
+async function inspectRevenueShareSlip(file, mime, expectedAmount) {
+  const [buffer] = await file.download();
+  return inspectSlip(buffer, mime, String(file.name || "slip"), expectedAmount);
 }
 
-function normalizedOcr(row = {}, tenant = null) {
-  const current = row.ocr && typeof row.ocr === "object" ? { ...row.ocr } : null;
-  if (!current?.textExcerpt) return current;
-  const detection = detectSlipAmount(current.textExcerpt);
-  const expected = Math.round(Number(current.expectedAmount ?? row.revenueShareAmount ?? 0) * 100) / 100;
-  const recipientName = String(row.revenueShareRecipientName || current.expectedRecipientName || tenant?.revenueShareRecipientName || "").trim();
-  const recipientCheck = detectSlipRecipient(current.textExcerpt, recipientName);
-  const evaluation = evaluateOcrStatus({ detectedAmount: detection.amount, expectedAmount: expected, recipientCheck });
-  return {
-    ...current,
-    expectedAmount: expected,
-    expectedRecipientName: recipientName,
-    detectedAmount: detection.amount,
-    amountMatched: evaluation.amountMatched,
-    status: evaluation.status,
-    reason: evaluation.reason,
-    amountEvidence: detection.ranked.slice(0, 8),
-    recipientMatched: recipientCheck.matched,
-    recipientEvidence: recipientCheck.evidence,
-    parserVersion: 4,
-  };
+function normalizedOcr(row = {}) {
+  return row.ocr && typeof row.ocr === "object" ? { ...row.ocr } : null;
 }
 
 function paymentPayload(snapshot, tenant = null) {
@@ -327,9 +312,21 @@ function paymentPayload(snapshot, tenant = null) {
     tenant: tenant ? { id: tenant.id, name: tenant.name || "", slug: tenant.slug || "" } : undefined,
     period: { type: row.periodType, label: row.periodLabel, startDate: row.periodStart, endDate: row.periodEnd },
     orderSales: Number(row.orderSales || 0), posSales: Number(row.posSales || 0), combinedSales: Number(row.combinedSales || 0),
+    customerDeliveryFees: Number(row.customerDeliveryFees || 0),
+    lalamoveDeliveryCost: Number(row.lalamoveDeliveryCost || 0),
+    lalamoveWalletCoveredCost: Number(row.lalamoveWalletCoveredCost || 0),
+    lalamoveOutstandingCost: Number(row.lalamoveOutstandingCost || 0),
+    deliverySubsidy: Number(row.deliverySubsidy || 0),
     revenueShareRate: Number(row.revenueShareRate || 0), revenueShareAmount: Number(row.revenueShareAmount || 0),
-    status: row.status || "pending", reviewNote: row.reviewNote || "", submittedAt: asDate(row.createdAt)?.toISOString() || "", reviewedAt: asDate(row.reviewedAt)?.toISOString() || "",
-    ocr: normalizedOcr(row, tenant),
+    platformAmountDue: Number(row.platformAmountDue ?? row.revenueShareAmount ?? 0),
+    status: row.status || "pending",
+    verificationProvider: String(row.slipVerificationProvider || ""),
+    verificationStatus: String(row.slipVerificationStatus || ""),
+    slip2GoReferenceId: String(row.slip2GoReferenceId || ""),
+    slip2GoTransRef: String(row.slip2GoTransRef || ""),
+    slip2GoCheckedAt: asDate(row.slip2GoCheckedAt)?.toISOString() || "",
+    reviewNote: row.reviewNote || "", submittedAt: asDate(row.createdAt)?.toISOString() || "", reviewedAt: asDate(row.reviewedAt)?.toISOString() || "",
+    ocr: normalizedOcr(row),
     slip: { name: row.slipName || "", mime: row.slipMime || "", size: Number(row.slipSize || 0), path: row.slipPath || "" }
   };
 }
@@ -379,6 +376,21 @@ async function latestPaymentForPeriod(tenantRef, startDate, endDate) {
   }) || null;
 }
 
+async function duplicateSlipReferenceExists(referenceId = "", transRef = "") {
+  const reference = String(referenceId || "").trim();
+  const transaction = String(transRef || "").trim();
+  if (!reference && !transaction) return false;
+  const db = getFirestore();
+  for (const collectionName of ["revenueSharePayments", "lalamoveWalletTopups"]) {
+    for (const [field, value] of [["slip2GoReferenceId", reference], ["slip2GoTransRef", transaction]]) {
+      if (!value) continue;
+      const snapshot = await db.collectionGroup(collectionName).where(field, "==", value).limit(1).get();
+      if (!snapshot.empty) return true;
+    }
+  }
+  return false;
+}
+
 async function reconcileTenant(tenantId) {
   const db = getFirestore();
   const tenantRef = db.collection("tenants").doc(tenantId);
@@ -410,9 +422,124 @@ async function reconcileTenant(tenantId) {
   return { state: "suspended", action: "suspended", periodStart: due.startDate, periodEnd: due.endDate };
 }
 
+async function tenantWalletReport(tenantId, period) {
+  const tenantRef = getFirestore().collection("tenants").doc(tenantId);
+  const transactionsRef = tenantRef.collection("lalamoveWalletTransactions");
+  const topupsRef = tenantRef.collection("lalamoveWalletTopups");
+  const [walletSnapshot, periodSnapshot, topupTransactionsSnapshot, pendingTopupsSnapshot, recentSnapshot] = await Promise.all([
+    tenantRef.collection("settings").doc("lalamoveWallet").get(),
+    transactionsRef.where("createdAt", ">=", period.start).where("createdAt", "<", period.end).get(),
+    transactionsRef.where("type", "==", "topup").get(),
+    topupsRef.where("status", "==", "pending").get(),
+    transactionsRef.orderBy("createdAt", "desc").limit(12).get(),
+  ]);
+  let periodTopup = 0, periodDeliveryDebit = 0, periodDeliveryRefund = 0;
+  periodSnapshot.docs.forEach(snapshot => {
+    const row = snapshot.data() || {};
+    const type = String(row.type || "");
+    const direction = String(row.direction || "");
+    const amount = Math.max(0, Number(row.amount || 0));
+    if (type === "topup" && direction === "credit") periodTopup += amount;
+    if (type === "delivery_debit" && direction === "debit") periodDeliveryDebit += amount;
+    if (type === "delivery_refund" && direction === "credit") periodDeliveryRefund += amount;
+  });
+  let approvedTopupTotal = 0;
+  topupTransactionsSnapshot.docs.forEach(snapshot => {
+    const row = snapshot.data() || {};
+    if (String(row.direction || "") === "credit") approvedTopupTotal += Math.max(0, Number(row.amount || 0));
+  });
+  let pendingTopupAmount = 0;
+  pendingTopupsSnapshot.docs.forEach(snapshot => {
+    pendingTopupAmount += Math.max(0, Number(snapshot.data()?.amount || 0));
+  });
+  const wallet = walletSnapshot.data() || {};
+  const recentTransactions = recentSnapshot.docs.map(snapshot => {
+    const row = snapshot.data() || {};
+    return {
+      id: snapshot.id,
+      type: String(row.type || "adjustment"),
+      direction: String(row.direction || "credit"),
+      amount: Math.round(Number(row.amount || 0) * 100) / 100,
+      balanceBefore: Math.round(Number(row.balanceBefore || 0) * 100) / 100,
+      balanceAfter: Math.round(Number(row.balanceAfter || 0) * 100) / 100,
+      currency: String(row.currency || "THB"),
+      orderId: String(row.orderId || ""),
+      lalamoveOrderId: String(row.lalamoveOrderId || ""),
+      quotationId: String(row.quotationId || ""),
+      reference: String(row.reference || ""),
+      note: String(row.note || ""),
+      createdAt: asDate(row.createdAt)?.toISOString() || "",
+    };
+  });
+  return {
+    storageReady: true,
+    currency: String(wallet.currency || "THB"),
+    balance: Math.round(Number(wallet.balance || 0) * 100) / 100,
+    approvedTopupTotal: Math.round(approvedTopupTotal * 100) / 100,
+    periodTopup: Math.round(periodTopup * 100) / 100,
+    periodDeliveryDebit: Math.round(periodDeliveryDebit * 100) / 100,
+    periodDeliveryRefund: Math.round(periodDeliveryRefund * 100) / 100,
+    pendingTopupCount: pendingTopupsSnapshot.size,
+    pendingTopupAmount: Math.round(pendingTopupAmount * 100) / 100,
+    recentTransactions,
+  };
+}
+
+async function tenantLalamoveFailures(tenantId, period) {
+  const ordersSnapshot = await getFirestore().collection("tenants").doc(tenantId)
+    .collection("orders").orderBy("updatedAt", "desc").limit(300).get();
+  const items = [];
+  for (const snapshot of ordersSnapshot.docs) {
+    const row = snapshot.data() || {};
+    if (String(row.deliveryProvider || "").toLowerCase() !== "lalamove") continue;
+    const history = Array.isArray(row.lalamoveDispatchFailureHistory)
+      ? [...row.lalamoveDispatchFailureHistory] : [];
+    if (!history.length && row.lalamoveLastDispatchFailure && typeof row.lalamoveLastDispatchFailure === "object") {
+      history.push(row.lalamoveLastDispatchFailure);
+    }
+    const hasWalletDebitFailure = history.some(item => item && item.stage === "wallet_debit");
+    if (row.lalamoveWalletDebitPending === true && row.lalamoveWalletDebitError && !hasWalletDebitFailure) {
+      history.push({
+        error: String(row.lalamoveWalletDebitError),
+        stage: "wallet_debit",
+        requiredAmount: Number.isFinite(Number(row.lalamoveWalletDebitAttemptedAmount)) ? Number(row.lalamoveWalletDebitAttemptedAmount) : null,
+        walletBalance: Number.isFinite(Number(row.lalamoveWalletBalanceAfter)) ? Number(row.lalamoveWalletBalanceAfter) : null,
+        occurredAt: row.lalamoveWalletDebitAttemptedAt || "",
+      });
+    }
+    history.forEach(failure => {
+      if (!failure || typeof failure !== "object") return;
+      const occurred = asDate(failure.occurredAt);
+      if (!occurred || occurred < period.start || occurred >= period.end) return;
+      items.push({
+        orderId: snapshot.id,
+        lalamoveOrderId: String(row.lalamoveOrderId || ""),
+        error: String(failure.error || "LALAMOVE_DISPATCH_FAILED"),
+        stage: String(failure.stage || "dispatch"),
+        providerError: String(failure.providerError || ""),
+        requestId: String(failure.requestId || ""),
+        requiredAmount: Number.isFinite(Number(failure.requiredAmount)) ? Math.round(Number(failure.requiredAmount) * 100) / 100 : null,
+        walletBalance: Number.isFinite(Number(failure.walletBalance)) ? Math.round(Number(failure.walletBalance) * 100) / 100 : null,
+        quoteFee: Number.isFinite(Number(failure.quoteFee)) ? Math.round(Number(failure.quoteFee) * 100) / 100 : null,
+        currency: String(failure.currency || "THB"),
+        occurredAt: occurred.toISOString(),
+      });
+    });
+  }
+  return items.sort((a, b) => String(b.occurredAt).localeCompare(String(a.occurredAt))).slice(0, 20);
+}
+
 exports.getTenantRevenueShareAccess = onCall({ region: REGION }, async request => {
   const { tenant } = await assertTenantAdmin(request.auth);
-  return revenueSetting(tenant);
+  return {
+    ...revenueSetting(tenant),
+    suspended: tenant.revenueShareSuspended === true,
+    suspensionReason: String(tenant.revenueShareSuspensionReason || ""),
+    suspendedAt: asDate(tenant.revenueShareSuspendedAt)?.toISOString() || null,
+    suspendedPeriodType: String(tenant.revenueShareSuspendedPeriodType || ""),
+    suspendedPeriodStart: String(tenant.revenueShareSuspendedPeriodStart || ""),
+    suspendedPeriodEnd: String(tenant.revenueShareSuspendedPeriodEnd || ""),
+  };
 });
 
 exports.getTenantRevenueShareSummary = onCall({ region: REGION }, async request => {
@@ -420,7 +547,18 @@ exports.getTenantRevenueShareSummary = onCall({ region: REGION }, async request 
   const setting = revenueSetting(tenant);
   if (!setting.enabled) throw new HttpsError("permission-denied", "Revenue share is disabled");
   const period = periodFromData(request.data || {});
-  return { period: { type: period.type, label: period.label, startDate: period.startDate, endDate: period.endDate }, tenantId: tenant.id, summary: await summaryForTenant(tenant.id, period, setting) };
+  const [summary, wallet, lalamoveFailures] = await Promise.all([
+    summaryForTenant(tenant.id, period, setting),
+    tenantWalletReport(tenant.id, period),
+    tenantLalamoveFailures(tenant.id, period),
+  ]);
+  return {
+    period: { type: period.type, label: period.label, startDate: period.startDate, endDate: period.endDate },
+    tenantId: tenant.id,
+    summary,
+    wallet,
+    lalamoveFailures,
+  };
 });
 
 exports.listTenantRevenueSharePayments = onCall({ region: REGION }, async request => {
@@ -429,7 +567,7 @@ exports.listTenantRevenueSharePayments = onCall({ region: REGION }, async reques
   return { items: snapshot.docs.map(doc => paymentPayload(doc, tenant)) };
 });
 
-exports.submitTenantRevenueSharePayment = onCall({ region: REGION, timeoutSeconds: 60, memory: "512MiB", secrets: [GOOGLE_VISION_API_KEY] }, async request => {
+exports.submitTenantRevenueSharePayment = onCall({ region: REGION, timeoutSeconds: 60, memory: "512MiB" }, async request => {
   const { profile, tenantRef, tenant } = await assertTenantAdmin(request.auth);
   const setting = revenueSetting(tenant);
   if (!setting.enabled) throw new HttpsError("failed-precondition", "Revenue share is disabled");
@@ -451,10 +589,105 @@ exports.submitTenantRevenueSharePayment = onCall({ region: REGION, timeoutSecond
   const summary = await summaryForTenant(tenant.id, period, setting);
   const ref = tenantRef.collection("revenueSharePayments").doc(id);
   if ((await ref.get()).exists) throw new HttpsError("already-exists", "Payment ID already exists");
-  const ocr = await inspectRevenueShareSlip(file, mime, summary.revenueShare, setting.recipientName);
-  await ref.set({ id, tenantId: tenant.id, periodType: period.type, periodLabel: period.label, periodStart: period.startDate, periodEnd: period.endDate, orderSales: summary.orderSales, posSales: summary.posSales, combinedSales: summary.combinedSales, revenueShareRate: setting.rate, revenueShareAmount: summary.revenueShare, revenueShareRecipientName: setting.recipientName, slipPath, slipName: String(request.data?.slipName || metadata.name || "slip").slice(0, 255), slipMime: mime, slipSize: size, ocr, status: "pending", reviewNote: "", submittedBy: profile.uid, createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() });
+  const verification = await inspectRevenueShareSlip(file, mime, summary.platformAmountDue);
+  const verificationStatus = String(verification?.status || "manual_review");
+  const verificationReason = String(verification?.reason || "");
+  const deleteUploadedSlip = async () => {
+    try { await file.delete(); } catch (error) {
+      if (Number(error?.code) !== 404) console.warn("REVENUE_SHARE_SLIP_CLEANUP_FAILED", slipPath, error?.message || error);
+    }
+  };
+  if (verificationStatus === "config_required") {
+    await deleteUploadedSlip();
+    throw new HttpsError(
+      "failed-precondition",
+      verificationReason.startsWith("google_") ? "GOOGLE_VISION_API_KEY_REQUIRED" : "SLIP2GO_CONFIG_REQUIRED",
+    );
+  }
+  if (verificationStatus === "config_invalid") {
+    await deleteUploadedSlip();
+    throw new HttpsError(
+      "failed-precondition",
+      verificationReason.startsWith("google_") ? "GOOGLE_VISION_API_KEY_INVALID" : "SLIP2GO_CONFIG_INVALID",
+    );
+  }
+  if (verificationStatus === "duplicate") {
+    await deleteUploadedSlip();
+    throw new HttpsError("already-exists", "SLIP2GO_DUPLICATE_SLIP");
+  }
+
+  const referenceId = String(verification?.referenceId || "").trim();
+  const transRef = String(verification?.transRef || "").trim();
+  if (await duplicateSlipReferenceExists(referenceId, transRef)) {
+    await deleteUploadedSlip();
+    throw new HttpsError("already-exists", "SLIP2GO_DUPLICATE_SLIP");
+  }
+
+  const verificationProvider = String(verification?.provider || "google_vision");
+  const autoApproved = verificationProvider === "slip2go"
+    && verificationStatus === "matched"
+    && verification?.amountMatched === true
+    && Boolean(referenceId || transRef);
+
+  await ref.set({
+    id,
+    tenantId: tenant.id,
+    periodType: period.type,
+    periodLabel: period.label,
+    periodStart: period.startDate,
+    periodEnd: period.endDate,
+    orderSales: summary.orderSales,
+    posSales: summary.posSales,
+    combinedSales: summary.combinedSales,
+    customerDeliveryFees: summary.customerDeliveryFees,
+    lalamoveDeliveryCost: summary.lalamoveDeliveryCost,
+    lalamoveWalletCoveredCost: summary.lalamoveWalletCoveredCost,
+    lalamoveOutstandingCost: summary.lalamoveOutstandingCost,
+    deliverySubsidy: summary.deliverySubsidy,
+    revenueShareRate: setting.rate,
+    revenueShareAmount: summary.revenueShare,
+    platformAmountDue: summary.platformAmountDue,
+    revenueShareRecipientName: setting.recipientName,
+    slipPath,
+    slipName: String(request.data?.slipName || metadata.name || "slip").slice(0, 255),
+    slipMime: mime,
+    slipSize: size,
+    slipVerificationProvider: verificationProvider,
+    slipVerificationStatus: verificationStatus,
+    slip2GoReferenceId: referenceId,
+    slip2GoTransRef: transRef,
+    slip2GoCheckedAt: verificationProvider.includes("slip2go") ? FieldValue.serverTimestamp() : null,
+    ocr: verification,
+    status: autoApproved ? "approved" : "pending",
+    reviewNote: autoApproved ? "Auto-approved by Slip2Go" : "",
+    submittedBy: profile.uid,
+    reviewedBy: autoApproved ? "system:slip2go" : "",
+    reviewedAt: autoApproved ? FieldValue.serverTimestamp() : null,
+    createdAt: FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp()
+  });
+
+  let tenantAccess = null;
+  if (
+    autoApproved
+    && tenant.revenueShareSuspended === true
+    && tenant.revenueShareSuspendedPeriodStart === period.startDate
+    && tenant.revenueShareSuspendedPeriodEnd === period.endDate
+  ) {
+    await mirrorTenantAccess(tenantRef, tenant, {
+      active: true,
+      revenueShareSuspended: false,
+      revenueShareSuspendedAt: FieldValue.delete(),
+      revenueShareSuspendedPeriodType: FieldValue.delete(),
+      revenueShareSuspendedPeriodStart: FieldValue.delete(),
+      revenueShareSuspendedPeriodEnd: FieldValue.delete(),
+      revenueShareSuspensionReason: FieldValue.delete(),
+    });
+    tenantAccess = { active: true, revenueShareSuspended: false };
+  }
+
   const saved = await ref.get();
-  return { item: paymentPayload(saved) };
+  return { item: paymentPayload(saved), autoApproved, tenantAccess };
 });
 
 exports.deleteTenantRevenueSharePayment = onCall({ region: REGION }, async request => {
@@ -494,14 +727,22 @@ exports.getPlatformRevenueShareSummary = onCall({ region: REGION }, async reques
   const tenantFilter = String(request.data?.tenantId || "").trim();
   const tenantsSnapshot = await db.collection("tenants").get();
   const tenants = tenantsSnapshot.docs.filter(doc => !tenantFilter || doc.id === tenantFilter);
-  const result = {}, totals = { orderSales: 0, orderCount: 0, posSales: 0, posCount: 0, combinedSales: 0, revenueShare: 0 };
+  const result = {}, totals = {
+    orderSales: 0, orderCount: 0, posSales: 0, posCount: 0, combinedSales: 0,
+    customerDeliveryFees: 0, lalamoveDeliveryCost: 0, lalamoveWalletCoveredCost: 0,
+    lalamoveOutstandingCost: 0, deliverySubsidy: 0, revenueShare: 0, platformAmountDue: 0
+  };
   for (const snapshot of tenants) {
     const tenant = { id: snapshot.id, ...snapshot.data() };
     const summary = await summaryForTenant(tenant.id, period, revenueSetting(tenant));
     result[tenant.id] = summary;
     Object.keys(totals).forEach(key => { totals[key] += Number(summary[key] || 0); });
   }
-  ["orderSales", "posSales", "combinedSales", "revenueShare"].forEach(key => { totals[key] = Math.round(totals[key] * 100) / 100; });
+  [
+    "orderSales", "posSales", "combinedSales", "customerDeliveryFees",
+    "lalamoveDeliveryCost", "lalamoveWalletCoveredCost", "lalamoveOutstandingCost",
+    "deliverySubsidy", "revenueShare", "platformAmountDue"
+  ].forEach(key => { totals[key] = Math.round(totals[key] * 100) / 100; });
   return { period: { type: period.type, label: period.label, startDate: period.startDate, endDate: period.endDate }, totals, tenants: result };
 });
 
@@ -561,7 +802,7 @@ exports.updateTenantRevenueShare = onCall({ region: REGION }, async request => {
   const rate = Number(request.data?.rate || 0);
   const billingCycle = request.data?.billingCycle === "daily" ? "daily" : request.data?.billingCycle === "monthly" ? "monthly" : "";
   const recipientName = String(request.data?.recipientName || "").trim().slice(0, 160);
-  if (!tenantId || !Number.isFinite(rate) || rate < 0 || rate > 100 || !billingCycle || (enabled && recipientName.length < 2)) throw new HttpsError("invalid-argument", "Invalid revenue-share settings or recipient name");
+  if (!tenantId || !Number.isFinite(rate) || rate < 0 || rate > 100 || !billingCycle) throw new HttpsError("invalid-argument", "Invalid revenue-share settings");
   const db = getFirestore(), tenantRef = db.collection("tenants").doc(tenantId), snapshot = await tenantRef.get();
   if (!snapshot.exists) throw new HttpsError("not-found", "Tenant not found");
   const tenant = { id: snapshot.id, ...snapshot.data() };

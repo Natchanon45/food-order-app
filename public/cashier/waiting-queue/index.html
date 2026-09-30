@@ -1,27 +1,58 @@
 <!doctype html>
 <html lang="th">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex,nofollow" />
-    <meta name="theme-color" content="#159447" />
-    <title>กำลังเปิดระบบคิวรอโต๊ะ</title>
-    <style>
-      *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:#f3f7f4;color:#173b28;font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif}.card{width:min(460px,100%);padding:28px;border:1px solid #d6e4da;border-radius:20px;background:#fff;box-shadow:0 18px 56px rgba(15,23,42,.12);text-align:center}.icon{display:grid;place-items:center;width:54px;height:54px;margin:0 auto 14px;border-radius:17px;background:#e9f8ef;color:#075f33;font-size:25px}h1{margin:0;font-size:1.25rem}p{margin:8px 0 18px;color:#66776e;line-height:1.55}.spinner{width:28px;height:28px;margin:0 auto;border:3px solid #dbe7df;border-top-color:#159447;border-radius:999px;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
-    </style>
-  </head>
-  <body>
-    <main class="card">
-      <div class="icon" aria-hidden="true">W</div>
-      <h1>กำลังเปิดระบบคิวรอโต๊ะ</h1>
-      <p>รวมหน้ารับคิว เรียกคิว เลือกโต๊ะ และเปิดโต๊ะไว้ในหน้าจอเดียว</p>
-      <div class="spinner" aria-hidden="true"></div>
-    </main>
-    <script>
-      const target = new URL('/waiting-queue/', location.origin);
-      for (const [key, value] of new URLSearchParams(location.search)) target.searchParams.set(key, value);
-      target.hash = location.hash;
-      location.replace(target.href);
-    </script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#159447" />
+  <title>LUKKAJA</title>
+  <link rel="stylesheet" href="/assets/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1.13.1">
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/4.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <link rel="stylesheet" href="/react/parity/css/unified-table-icon.css">
+  <link rel="stylesheet" href="/react/parity/css/sweet-dialog.css">
+  <link rel="stylesheet" href="/react/parity/css/i18n.css">
+  <link rel="stylesheet" href="/react/parity/css/app.css">
+  <link rel="stylesheet" href="/react/parity/css/icons.css">
+  <link rel="stylesheet" href="/react/parity/css/shared-responsive.css">
+  <link rel="stylesheet" href="/react/parity/css/theme-checkbox.css">
+  <link rel="stylesheet" href="/react/parity/css/page-ready-state.css">
+  <link rel="stylesheet" href="/react/parity/css/ui-layer-stack.css" data-ui-layer-policy>
+  <script>
+    (() => {
+      const recoveryKey = "lukkhaja_react_entry_recovery";
+      window.__lukkhajaReactEntryLoaded = () => {
+        try { sessionStorage.removeItem(recoveryKey); } catch {}
+      };
+      window.addEventListener("error", event => {
+        const target = event.target;
+        if (!(target instanceof HTMLScriptElement) || target.type !== "module") return;
+        const src = String(target.src || "");
+        if (!src.includes("/react/assets/")) return;
+        try {
+          if (sessionStorage.getItem(recoveryKey) === "1") return;
+          sessionStorage.setItem(recoveryKey, "1");
+        } catch {}
+        const url = new URL(location.href);
+        url.searchParams.set("__react_reload", String(Date.now()));
+        location.replace(url.toString());
+      }, true);
+    })();
+  </script>
+  <script type="module" crossorigin src="/react/assets/index-BPuxyHI1.js"></script>
+  <link rel="modulepreload" crossorigin href="/react/assets/rolldown-runtime-CbXtAM7H.js">
+  <link rel="modulepreload" crossorigin href="/react/assets/react-vendor-3bqauxVt.js">
+  <link rel="modulepreload" crossorigin href="/react/assets/firebase-Bj2z7sdJ.js">
+</head>
+<body>
+  <div id="root">
+    <div class="page-ready-overlay" id="pageReadyOverlay" role="status" aria-live="polite" aria-busy="true" aria-hidden="false">
+      <div class="page-ready-simple" aria-labelledby="pageReadyTitle">
+        <span class="page-ready-spinner" aria-hidden="true"></span>
+        <div class="page-ready-copy">
+          <h2 id="pageReadyTitle">กำลังโหลดข้อมูล...</h2>
+          <p>กรุณารอสักครู่....</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
 </html>

@@ -1,5 +1,14 @@
+import { t } from "./i18n.js?v=20260930-001";
+
+// DELIVERY_MENU_PAGINATION_ICONS_20260829_001
 const menuGrid = document.querySelector("#menuGrid");
 const pagination = document.querySelector("#menuPagination");
+const copy = {
+  previous: t("common.pagination.previous"),
+  next: t("common.pagination.next"),
+  page: page => t("common.pagination.page", { page }),
+  summary: (current, total, count) => t("common.pagination.summary", { current, total, count }),
+};
 let currentPage = 1;
 let rendering = false;
 
@@ -49,10 +58,10 @@ function renderPagination() {
   }
 
   pagination.innerHTML = `
-    <button type="button" class="menu-page-button menu-page-nav" data-page-nav="previous" data-page="${currentPage - 1}" ${currentPage === 1 ? "disabled" : ""} aria-label="หน้าก่อนหน้า" title="หน้าก่อนหน้า"><i class="bi bi-chevron-left app-icon" aria-hidden="true"></i></button>
-    ${visiblePageNumbers(totalPages).map(page => `<button type="button" class="menu-page-button${page === currentPage ? " active" : ""}" data-page="${page}" aria-label="หน้า ${page}" aria-current="${page === currentPage ? "page" : "false"}">${page}</button>`).join("")}
-    <button type="button" class="menu-page-button menu-page-nav" data-page-nav="next" data-page="${currentPage + 1}" ${currentPage === totalPages ? "disabled" : ""} aria-label="หน้าถัดไป" title="หน้าถัดไป"><i class="bi bi-chevron-right app-icon" aria-hidden="true"></i></button>
-    <div class="menu-page-summary">หน้า ${currentPage} จาก ${totalPages} • ${cards.length} เมนู</div>
+    <button type="button" class="menu-page-button" data-page="${currentPage - 1}" ${currentPage === 1 ? "disabled" : ""} aria-label="${copy.previous}"><i class="bi bi-chevron-left app-icon" aria-hidden="true"></i></button>
+    ${visiblePageNumbers(totalPages).map(page => `<button type="button" class="menu-page-button${page === currentPage ? " active" : ""}" data-page="${page}" aria-label="${copy.page(page)}" aria-current="${page === currentPage ? "page" : "false"}">${page}</button>`).join("")}
+    <button type="button" class="menu-page-button" data-page="${currentPage + 1}" ${currentPage === totalPages ? "disabled" : ""} aria-label="${copy.next}"><i class="bi bi-chevron-right app-icon" aria-hidden="true"></i></button>
+    <div class="menu-page-summary">${copy.summary(currentPage, totalPages, cards.length)}</div>
   `;
 
   rendering = false;

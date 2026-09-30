@@ -1,4 +1,4 @@
-import { dataService } from "./data-service.js?v=20260916-005";
+import { dataService } from "./data-service.js?v=20260930-004";
 import { storage, ref, uploadBytes } from "./firebase-config.js?v=20260630-073";
 import { getStoredTenant } from "./tenant-context.js?v=20260916-005";
 

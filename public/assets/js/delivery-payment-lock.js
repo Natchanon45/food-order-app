@@ -1,7 +1,7 @@
-import "./public-i18n-bootstrap.js?v=20260903-245";
+import "./public-i18n-bootstrap.js?v=20260930-002";
 
-import { toast } from "./ui.js?v=20260903-231";
-import { t, formatNumber } from "./i18n.js?v=20260903-202";
+import { toast } from "./ui.js?v=20260930-001";
+import { t, formatNumber } from "./i18n.js?v=20260930-001";
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
 
 const submitButton = document.querySelector("#submitOrder");
@@ -13,6 +13,7 @@ const paymentSlipWrap = document.querySelector("#paymentSlipWrap");
 const removePaymentSlip = document.querySelector("#removePaymentSlip");
 const cartList = document.querySelector("#cartList");
 const menuGrid = document.querySelector("#menuGrid");
+const deliveryFreeGiftSection = document.querySelector("#deliveryFreeGiftSection");
 const deliveryFreeGiftList = document.querySelector("#deliveryFreeGiftList");
 const slug = decodeURIComponent(location.pathname.match(/^\/s\/([^/]+)/i)?.[1] || "shop");
 const draftKey = `delivery_checkout_draft:${slug}`;
@@ -138,6 +139,15 @@ function selectedFreeGiftIds() {
     .filter(Boolean);
 }
 
+function missingRequiredFreeGiftSelection() {
+  if (!deliveryFreeGiftSection || deliveryFreeGiftSection.hidden || !deliveryFreeGiftList) {
+    return false;
+  }
+  const availableGiftInputs =
+    deliveryFreeGiftList.querySelectorAll("[data-delivery-free-gift-input]");
+  return availableGiftInputs.length > 0 && selectedFreeGiftIds().length < 1;
+}
+
 async function restoreFreeGiftIds(ids = []) {
   if (!deliveryFreeGiftList || !Array.isArray(ids) || !ids.length) return;
 
@@ -260,6 +270,14 @@ function lockPayment() {
   }
   if (!requiredDataReady()) {
     toast(t("delivery.checkout.validation.delivery_details_required"), "error");
+    return;
+  }
+  if (missingRequiredFreeGiftSelection()) {
+    deliveryFreeGiftSection?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+    toast(t("delivery.checkout.promotion.gift_required"), "error");
     return;
   }
   if (paymentMethod?.value === "promptpay" && (!promptPayQr?.src || promptPayQr.hidden)) {

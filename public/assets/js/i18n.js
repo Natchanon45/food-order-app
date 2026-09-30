@@ -1,4 +1,4 @@
-const supportedLocales = new Set(["th", "en"]);
+const supportedLocales = new Set(["th", "en", "my", "lo", "km"]);
 const storageKey = "food_order_locale";
 let dictionaries = globalThis.APP_I18N_DICTIONARIES || {};
 let fallbackLocale = "th";
@@ -38,7 +38,8 @@ export function setLocale(locale) {
   return next;
 }
 
-export function getIntlLocale() { return getLocale() === "th" ? "th-TH" : "en-US"; }
+const intlLocales = Object.freeze({ th: "th-TH", en: "en-US", my: "my-MM", lo: "lo-LA", km: "km-KH" });
+export function getIntlLocale() { return intlLocales[getLocale()] || intlLocales.th; }
 
 export function t(key, replacements = {}) {
   const locale = getLocale();

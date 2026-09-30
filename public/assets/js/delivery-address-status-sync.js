@@ -1,6 +1,6 @@
-import "./public-i18n-bootstrap.js?v=20260903-245";
+import "./public-i18n-bootstrap.js?v=20260930-001";
 
-import { t } from "./i18n.js?v=20260903-202";
+import { t } from "./i18n.js?v=20260930-001";
 
 const addressCount = document.querySelector("#addressCount");
 const lookupStatus = document.querySelector("#addressLookupStatus");

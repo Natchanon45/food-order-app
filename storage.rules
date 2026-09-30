@@ -52,20 +52,26 @@ service firebase.storage {
       return signedIn()
         && staffProfile().active == true
         && staffProfile().tenantId == tenantId
-        && staffProfile().role in ['owner', 'admin', 'super_admin'];
+        && staffProfile().role in ['owner', 'admin', 'manager', 'super_admin'];
     }
 
     function membershipTenantProductAdmin(tenantId) {
       return signedIn()
         && firestore.exists(/databases/(default)/documents/tenants/$(tenantId)/memberships/$(request.auth.uid))
         && firestore.get(/databases/(default)/documents/tenants/$(tenantId)/memberships/$(request.auth.uid)).data.active == true
-        && firestore.get(/databases/(default)/documents/tenants/$(tenantId)/memberships/$(request.auth.uid)).data.role in ['owner', 'admin', 'super_admin'];
+        && firestore.get(/databases/(default)/documents/tenants/$(tenantId)/memberships/$(request.auth.uid)).data.role in ['owner', 'admin', 'manager', 'super_admin'];
     }
 
     function tenantProductAdmin(tenantId) {
       return tenantOwner(tenantId)
         || userTenantProductAdmin(tenantId)
         || membershipTenantProductAdmin(tenantId);
+    }
+
+    match /platform-branding/{fileName} {
+      allow read: if true;
+      allow create, update: if hasRole(['super_admin']) && validImage(4 * 1024 * 1024);
+      allow delete: if hasRole(['super_admin']);
     }
 
     match /menu-images/{menuId}/{fileName} {
@@ -77,6 +83,12 @@ service firebase.storage {
     match /tenants/{tenantId}/product-images/{productId}/{fileName} {
       allow read: if true;
       allow create, update: if tenantProductAdmin(tenantId) && validImage(5 * 1024 * 1024);
+      allow delete: if tenantProductAdmin(tenantId);
+    }
+
+    match /tenants/{tenantId}/lalamove-wallet-topups/{topupId}/{fileName} {
+      allow read: if tenantProductAdmin(tenantId);
+      allow create, update: if tenantProductAdmin(tenantId) && validRevenueShareSlip(10 * 1024 * 1024);
       allow delete: if tenantProductAdmin(tenantId);
     }
 

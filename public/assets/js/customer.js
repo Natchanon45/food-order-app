@@ -481,6 +481,8 @@ document.querySelector("#submitOrder").addEventListener("click", async () => {
       tableCode: activeTableCode(),
       tableName: activeTableName(),
       tableToken,
+      orderType: "table",
+      paymentStatus: "unpaid",
       status: "pending",
       totalAmount,
       note: document.querySelector("#orderNote").value.trim(),

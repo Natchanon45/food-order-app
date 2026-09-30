@@ -1,9 +1,15 @@
 # Food Order / Delivery / Retail POS
 
-Branch: feature/retail-pos
-Milestone: Tenant Management Workspace
-Version: 0.16.15
-Build: 2026.08.04.001
+Current development branch: `feature/react-firebase-port`
+Current milestone: React + Firebase parity migration / Super Admin Console
+Current React footer identity before next Hosting release: Version `0.4.280` • Build `2026.09.30.291`
+
+> New Chat / continuation: read `STRUCTURE.md`, `docs/NEXT_CHAT_HANDOFF.md`, and `docs/WORKLOG.md` before changing code.
+> Historical entries below may refer to older branches/releases and must not override the current handoff.
+>
+> **Mandatory worklog rule:** after every completed code repair, behavior change, implementation-affecting investigation, or intentional pause, update `docs/WORKLOG.md` before starting the next task. Record scope, root cause, important files, verification, deploy state, and remaining follow-up.
+>
+> Firebase Hosting rule: **Build must change before every Hosting deploy.** Review/bump Version for a user-visible release and never redeploy the same Version + Build pair.
 
 <!-- TENANT_MANAGEMENT_WORKSPACE_20260804_001 -->
 Change: Tenant Management Workspace.

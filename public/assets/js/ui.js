@@ -1,5 +1,5 @@
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
-import { getIntlLocale, t } from "./i18n.js?v=20260903-202";
+import { getIntlLocale, t } from "./i18n.js?v=20260930-001";
 import "./form-validation-ui.js?v=20260731-080";
 import { APP_INFO } from "./app-info.js?v=20260920-003";
 
@@ -260,7 +260,7 @@ function mountVersion() {
   if (document.querySelector(".app-version")) return;
   const footer = document.createElement("footer");
   footer.className = "app-version";
-  footer.textContent = `Food Order/Delivery With QR • Version ${APP_VERSION} • Build ${APP_INFO.build}`;
+  footer.innerHTML = `<span>${t("shared.footer.product")}</span><span aria-hidden="true"> • </span><span>${t("shared.footer.version", { version: APP_VERSION })}</span><span aria-hidden="true"> • </span><span>${t("shared.footer.build", { build: APP_INFO.build })}</span><span aria-hidden="true"> • </span><a class="icon-library-credit" href="https://www.flaticon.com/uicons" target="_blank" rel="noopener noreferrer">${t("shared.footer.icon_credit")}</a>`;
   document.body.appendChild(footer);
 }
 

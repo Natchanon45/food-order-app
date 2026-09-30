@@ -20,7 +20,7 @@ function finite(value, fallback = 0) {
 function normalizePricing(input = {}) {
   const discountType = ["none", "amount", "percent"].includes(String(input.discountType || ""))
     ? String(input.discountType) : DEFAULT_PRICING.discountType;
-  const vatMode = ["inclusive", "exclusive"].includes(String(input.vatMode || ""))
+  const vatMode = ["inclusive", "exclusive", "none"].includes(String(input.vatMode || ""))
     ? String(input.vatMode) : DEFAULT_PRICING.vatMode;
   return {
     planId: "premium",
@@ -30,7 +30,9 @@ function normalizePricing(input = {}) {
     discountType,
     discountValue: Math.max(0, round2(finite(input.discountValue, DEFAULT_PRICING.discountValue))),
     vatMode,
-    vatRate: Math.max(0, round2(finite(input.vatRate, DEFAULT_PRICING.vatRate))),
+    vatRate: vatMode === "none"
+      ? 0
+      : Math.max(0, round2(finite(input.vatRate, DEFAULT_PRICING.vatRate))),
   };
 }
 
@@ -45,6 +47,9 @@ function calculatePricing(input = {}) {
   const annualDiscountedConfigured = round2(Math.max(0, annualRegularConfigured - discountConfigured));
   const taxFactor = 1 + (config.vatRate / 100);
   const breakdown = configured => {
+    if (config.vatMode === "none") {
+      return { configured, net: configured, vat: 0, payable: configured };
+    }
     if (config.vatMode === "exclusive") {
       const vat = round2(configured * config.vatRate / 100);
       return { configured, net: configured, vat, payable: round2(configured + vat) };

@@ -1,0 +1,808 @@
+/* ADMIN_DELIVERY_FEE_BORDERLESS_TABLE_20260829_001 */
+body.admin-vr-page .delivery-fee-head {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+}
+
+body.admin-vr-page .delivery-fee-head > div {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+body.admin-vr-page .delivery-fee-head #addDeliveryFeeOption {
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  min-height: 42px !important;
+  white-space: nowrap !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList.delivery-fee-options {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin-top: 14px !important;
+  overflow: visible !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-table-header,
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-row {
+  display: grid !important;
+  grid-template-columns: 64px minmax(180px, 1fr) minmax(120px, 160px) minmax(120px, 160px) 48px !important;
+  column-gap: 12px !important;
+  align-items: center !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-table-header {
+  padding: 0 10px 8px !important;
+  color: var(--muted, #64748b) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-table-body {
+  display: grid !important;
+  gap: 4px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-row {
+  min-height: 58px !important;
+  padding: 6px 10px !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-row:nth-child(even) {
+  background: rgba(15, 125, 59, 0.035) !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-index {
+  display: grid !important;
+  place-items: center !important;
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  min-height: 38px !important;
+  margin: 0 auto !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: rgba(21, 148, 71, 0.1) !important;
+  color: #0d6f34 !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-description {
+  min-width: 0 !important;
+  color: var(--text, #17211b) !important;
+  font-weight: 650 !important;
+  line-height: 1.35 !important;
+  overflow-wrap: anywhere !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-cell {
+  min-width: 0 !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList
+  :is([data-delivery-fee-distance], [data-delivery-fee-amount]) {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  margin: 0 !important;
+  padding: 8px 10px !important;
+  box-sizing: border-box !important;
+  text-align: right !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-static-value {
+  display: block !important;
+  width: 100% !important;
+  padding: 8px 10px !important;
+  color: var(--text, #17211b) !important;
+  font-weight: 650 !important;
+  text-align: right !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-action,
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-action-header {
+  display: grid !important;
+  place-items: center !important;
+  min-width: 0 !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-remove,
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-lock {
+  display: inline-grid !important;
+  place-items: center !important;
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  min-height: 42px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  box-sizing: border-box !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-remove {
+  border: 0 !important;
+  background: #dc2626 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-remove:hover,
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-remove:focus-visible {
+  background: #b91c1c !important;
+  color: #fff !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-lock {
+  color: var(--muted, #64748b) !important;
+  background: rgba(100, 116, 139, 0.08) !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList
+  :is(.delivery-fee-remove, .delivery-fee-lock) .app-icon {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+/* ADMIN_DELIVERY_FEE_LOCK_CENTER_20260829_001
+ * The global i.app-icon uses font-size: 1.25em. Inside the non-button
+ * pickup lock that resolves to 20px while its box is only 18x18px,
+ * which makes the Bootstrap Icons glyph overflow off-center.
+ */
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-lock .app-icon {
+  font-size: 18px !important;
+  line-height: 1 !important;
+  vertical-align: 0 !important;
+}
+
+body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-lock .app-icon::before {
+  display: block !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+
+@media (max-width: 900px) {
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-table-header,
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-row {
+    grid-template-columns: 52px minmax(150px, 1fr) 112px 112px 44px !important;
+    column-gap: 8px !important;
+  }
+}
+
+@media (max-width: 720px) {
+  body.admin-vr-page .delivery-fee-head {
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+
+  body.admin-vr-page .delivery-fee-head #addDeliveryFeeOption {
+    margin-left: auto !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    padding: 8px 12px !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-table-header {
+    display: none !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-table-body {
+    gap: 10px !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-row {
+    grid-template-columns: 38px minmax(0, 1fr) 44px !important;
+    grid-template-areas:
+      "index description action"
+      "index distance action"
+      "index amount action" !important;
+    column-gap: 10px !important;
+    row-gap: 7px !important;
+    align-items: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 10px 6px !important;
+    overflow: visible !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-index {
+    grid-area: index !important;
+    align-self: start !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    min-height: 34px !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-description {
+    grid-area: description !important;
+    padding-right: 4px !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-distance-cell {
+    grid-area: distance !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-amount-cell {
+    grid-area: amount !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-action {
+    grid-area: action !important;
+    align-self: start !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-cell {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(88px, 108px) !important;
+    gap: 8px !important;
+    align-items: center !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-cell::before {
+    content: attr(data-mobile-label) !important;
+    display: block !important;
+    min-width: 0 !important;
+    color: var(--muted, #64748b) !important;
+    font-size: 12px !important;
+    font-weight: 650 !important;
+    line-height: 1.25 !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList
+    :is([data-delivery-fee-distance], [data-delivery-fee-amount]) {
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 7px 9px !important;
+    font-size: 16px !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-static-value {
+    padding: 7px 9px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  body.admin-vr-page .delivery-fee-head {
+    align-items: flex-start !important;
+  }
+
+  body.admin-vr-page .delivery-fee-head #addDeliveryFeeOption {
+    width: 44px !important;
+    max-width: 44px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    gap: 0 !important;
+  }
+
+  body.admin-vr-page .delivery-fee-head #addDeliveryFeeOption > span {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-row {
+    grid-template-columns: 34px minmax(0, 1fr) 42px !important;
+    column-gap: 8px !important;
+  }
+
+  body.admin-vr-page #deliveryFeeOptionsList .delivery-fee-cell {
+    grid-template-columns: minmax(0, 1fr) 86px !important;
+  }
+}
+
+/* ADMIN_LALAMOVE_DELIVERY_FEE_READONLY_20260915_001 */
+body.admin-vr-page #deliveryFeeSettingsCard.is-lalamove-readonly {
+  background: #eef1ef !important;
+  border-color: #cfd7d2 !important;
+  box-shadow: none !important;
+}
+
+body.admin-vr-page #deliveryFeeSettingsCard.is-lalamove-readonly .delivery-fee-head,
+body.admin-vr-page #deliveryFeeSettingsCard.is-lalamove-readonly #deliveryFeeOptionsList {
+  opacity: 0.82 !important;
+}
+
+body.admin-vr-page #deliveryFeeSettingsCard.is-lalamove-readonly
+:is([data-delivery-fee-label], [data-delivery-fee-distance], [data-delivery-fee-amount]):disabled {
+  background: #e2e7e4 !important;
+  border-color: #cbd3ce !important;
+  color: #68736c !important;
+  -webkit-text-fill-color: #68736c !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
+}
+
+body.admin-vr-page #deliveryFeeSettingsCard.is-lalamove-readonly .delivery-fee-row:nth-child(even) {
+  background: rgba(100, 116, 139, 0.06) !important;
+}
+body.admin-vr-page #deliveryFeeSettingsCard.is-lalamove-readonly .delivery-fee-index {
+  background: #dde3df !important;
+  color: #657069 !important;
+}
+
+body.admin-vr-page #deliveryFeeSettingsCard.is-lalamove-readonly #addDeliveryFeeOption:disabled,
+body.admin-vr-page #deliveryFeeSettingsCard.is-lalamove-readonly .delivery-fee-remove:disabled {
+  border-color: #aeb8b2 !important;
+  background: #aeb8b2 !important;
+  color: #f7f8f7 !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
+}
+
+body.admin-vr-page #deliveryFeeSettingsCard.is-lalamove-readonly .delivery-fee-static-value,
+body.admin-vr-page #deliveryFeeSettingsCard.is-lalamove-readonly .delivery-fee-description {
+  color: #68736c !important;
+}
+
+/* ADMIN_LALAMOVE_ACCOUNT_LAYOUT_20260916_001 */
+body.admin-vr-page .admin-lalamove-account-actions {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+  margin-top: 12px !important;
+  width: 100% !important;
+}
+
+
+/* ADMIN_LALAMOVE_ACCOUNT_MODE_CONTROL_20260916_001 */
+body.admin-vr-page #lalamoveAccountCard :is(input, select):disabled {
+  background: #eef1ef !important;
+  border-color: #cfd7d2 !important;
+  color: #68736c !important;
+  -webkit-text-fill-color: #68736c !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
+}
+
+body.admin-vr-page #lalamoveAccountCard .is-lalamove-readonly label,
+body.admin-vr-page #lalamoveAccountCard .is-lalamove-readonly .field label {
+  color: #7a847e !important;
+}
+
+/* ADMIN_LALAMOVE_FOD_WALLET_PHASE2_20260916_001 */
+body.admin-vr-page .admin-lalamove-wallet {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid #d5e6db;
+  border-radius: 14px;
+  background: #ffffff;
+}
+body.admin-vr-page .admin-lalamove-wallet-head,
+body.admin-vr-page .admin-lalamove-wallet-head > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+body.admin-vr-page .admin-lalamove-wallet-head > div:first-child { justify-content: flex-start; }
+body.admin-vr-page .admin-lalamove-wallet-icon {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #edf9f1;
+  color: #08783d;
+  flex: 0 0 auto;
+}
+body.admin-vr-page .admin-lalamove-wallet-head strong,
+body.admin-vr-page .admin-lalamove-wallet-head small { display: block; }
+body.admin-vr-page .admin-lalamove-wallet-head small { margin-top: 2px; color: #66736b; }
+body.admin-vr-page .admin-lalamove-wallet-balance { text-align: right; }
+body.admin-vr-page .admin-lalamove-wallet-balance span,
+body.admin-vr-page .admin-lalamove-wallet-balance small { display: block; color: #66736b; }
+body.admin-vr-page .admin-lalamove-wallet-balance strong { font-size: 1.35rem; color: #075f33; }
+body.admin-vr-page .admin-lalamove-wallet-ledger { margin-top: 12px; border-top: 1px solid #e2ebe5; padding-top: 12px; }
+body.admin-vr-page .admin-lalamove-wallet-ledger-title { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 8px; }
+body.admin-vr-page .admin-lalamove-wallet-ledger-title span { color: #718078; font-size: .8rem; }
+body.admin-vr-page .admin-lalamove-wallet-transactions { display: grid; gap: 6px; }
+body.admin-vr-page .admin-lalamove-wallet-row { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 9px 10px; border-radius: 10px; background: #f8fbf9; }
+body.admin-vr-page .admin-lalamove-wallet-row strong,
+body.admin-vr-page .admin-lalamove-wallet-row small { display: block; }
+body.admin-vr-page .admin-lalamove-wallet-row small { color: #758078; margin-top: 2px; }
+body.admin-vr-page .admin-lalamove-wallet-row > span { font-weight: 700; white-space: nowrap; }
+body.admin-vr-page .admin-lalamove-wallet-row.credit > span { color: #08783d; }
+body.admin-vr-page .admin-lalamove-wallet-row.debit > span { color: #b42318; }
+body.admin-vr-page .admin-lalamove-wallet-empty { padding: 10px; text-align: center; color: #718078; background: #f8fbf9; border-radius: 10px; }
+@media (max-width: 640px) {
+  body.admin-vr-page .admin-lalamove-wallet-head,
+  body.admin-vr-page .admin-lalamove-wallet-ledger-title { align-items: flex-start; }
+  body.admin-vr-page .admin-lalamove-wallet-balance { min-width: 92px; }
+  body.admin-vr-page .admin-lalamove-wallet-ledger-title { display: block; }
+  body.admin-vr-page .admin-lalamove-wallet-ledger-title span { display: block; margin-top: 3px; }
+}
+
+/* ADMIN_LALAMOVE_FOD_WALLET_PHASE3_20260916_001 */
+body.admin-vr-page .admin-lalamove-wallet-topup[hidden] {
+  display: none !important;
+}
+body.admin-vr-page .admin-lalamove-wallet-topup,
+body.admin-vr-page .admin-lalamove-wallet-topup-history {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e2ebe5;
+}
+body.admin-vr-page .admin-lalamove-wallet-topup-destination {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+}
+body.admin-vr-page .admin-lalamove-wallet-topup-destination > div {
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid #e2ebe5;
+  border-radius: 10px;
+  background: #f8fbf9;
+}
+body.admin-vr-page .admin-lalamove-wallet-topup-destination span,
+body.admin-vr-page .admin-lalamove-wallet-topup-destination strong {
+  display: block;
+  overflow-wrap: anywhere;
+}
+body.admin-vr-page .admin-lalamove-wallet-topup-destination span {
+  color: #718078;
+  font-size: .76rem;
+  margin-bottom: 2px;
+}
+body.admin-vr-page .admin-lalamove-wallet-topup-form {
+  display: grid;
+  grid-template-columns: minmax(150px,.55fr) minmax(280px,1.45fr);
+  column-gap: 10px;
+  row-gap: 14px;
+  align-items: end;
+}
+body.admin-vr-page .admin-lalamove-wallet-topup-form label,
+body.admin-vr-page .admin-lalamove-wallet-topup-form label > span {
+  display: block;
+}
+body.admin-vr-page .admin-lalamove-wallet-topup-form label > span {
+  margin-bottom: 5px;
+  font-size: .82rem;
+  color: #4f6157;
+}
+body.admin-vr-page .admin-lalamove-wallet-topup-form .btn {
+  min-height: 42px;
+  white-space: nowrap;
+}
+body.admin-vr-page .admin-lalamove-wallet-topup-help {
+  display: block;
+  margin-top: 7px;
+  color: #68766e;
+  line-height: 1.4;
+}
+body.admin-vr-page .admin-lalamove-wallet-row.topup.pending { border-left: 3px solid #c78a00; }
+body.admin-vr-page .admin-lalamove-wallet-row.topup.approved { border-left: 3px solid #08783d; }
+body.admin-vr-page .admin-lalamove-wallet-row.topup.rejected { border-left: 3px solid #b42318; }
+body.admin-vr-page .admin-lalamove-wallet-row.topup .btn { flex: 0 0 auto; }
+@media (max-width: 760px) {
+  body.admin-vr-page .admin-lalamove-wallet-topup-destination {
+    grid-template-columns: 1fr;
+  }
+  body.admin-vr-page .admin-lalamove-wallet-topup-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ADMIN_LALAMOVE_FOD_WALLET_UPLOAD_POLISH_20260916_001 */
+body.admin-vr-page #lalamoveAccountCard {
+  margin-bottom: 20px !important;
+}
+body.admin-vr-page .admin-lalamove-wallet {
+  margin-bottom: 4px;
+}
+body.admin-vr-page .admin-lalamove-wallet-topup-form {
+  grid-template-columns: minmax(150px,.55fr) minmax(280px,1.45fr);
+  column-gap: 10px;
+  row-gap: 14px;
+}
+body.admin-vr-page .admin-lalamove-wallet-field-label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: .82rem;
+  color: #4f6157;
+}
+body.admin-vr-page .admin-lalamove-wallet-slip-field {
+  min-width: 0;
+}
+body.admin-vr-page .admin-lalamove-wallet-slip-picker {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border: 1px solid #cddbd2;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+body.admin-vr-page .admin-lalamove-wallet-slip-picker:hover,
+body.admin-vr-page .admin-lalamove-wallet-slip-picker:focus-visible,
+body.admin-vr-page .admin-lalamove-wallet-slip-picker.is-dragover {
+  border-color: #159154;
+  box-shadow: 0 0 0 3px rgba(21,145,84,.1);
+  outline: none;
+}
+body.admin-vr-page .admin-lalamove-wallet-slip-picker.is-dragover {
+  background: #f3fbf6;
+}
+body.admin-vr-page .admin-lalamove-wallet-slip-picker > input[type="file"] {
+  display: none !important;
+}
+body.admin-vr-page .admin-lalamove-wallet-slip-empty,
+body.admin-vr-page .admin-lalamove-wallet-slip-selected {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0,1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+}
+body.admin-vr-page .admin-lalamove-wallet-slip-empty[hidden],
+body.admin-vr-page .admin-lalamove-wallet-slip-selected[hidden] {
+  display: none !important;
+}
+body.admin-vr-page .admin-lalamove-wallet-slip-empty strong,
+body.admin-vr-page .admin-lalamove-wallet-slip-empty small,
+body.admin-vr-page .admin-lalamove-wallet-slip-selected strong,
+body.admin-vr-page .admin-lalamove-wallet-slip-selected small {
+  display: block;
+  min-width: 0;
+}
+body.admin-vr-page .admin-lalamove-wallet-slip-empty strong,
+body.admin-vr-page .admin-lalamove-wallet-slip-selected strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #234535;
+}
+body.admin-vr-page .admin-lalamove-wallet-slip-empty small,
+body.admin-vr-page .admin-lalamove-wallet-slip-selected small {
+  margin-top: 1px;
+  color: #758078;
+  font-size: .72rem;
+}
+body.admin-vr-page .admin-lalamove-wallet-slip-icon {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: #edf9f1;
+  color: #08783d;
+  flex: 0 0 auto;
+}
+body.admin-vr-page .admin-lalamove-wallet-slip-icon.is-selected {
+  background: #e6f6ec;
+}
+body.admin-vr-page .admin-lalamove-wallet-slip-upload-icon {
+  color: #159154;
+  font-size: 1rem;
+}
+body.admin-vr-page .admin-lalamove-wallet-slip-clear {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border: 1px solid #efcaca;
+  border-radius: 9px;
+  background: #fff7f7;
+  color: #a61b1b;
+  cursor: pointer;
+  font: inherit;
+  font-size: .76rem;
+}
+body.admin-vr-page .admin-lalamove-wallet-slip-clear:hover {
+  background: #fff0f0;
+  border-color: #e9aaaa;
+}
+/* ADMIN_ACTION_ROW_RIGHT_ALIGN_STANDARD_20260916_001 */
+body.admin-vr-page .admin-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
+}
+body.admin-vr-page .admin-lalamove-wallet-topup-actions {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+}
+body.admin-vr-page .admin-lalamove-wallet-topup-submit {
+  width: auto;
+  align-self: auto;
+}
+@media (max-width: 760px) {
+  body.admin-vr-page #lalamoveAccountCard {
+    margin-bottom: 16px !important;
+  }
+  body.admin-vr-page .admin-lalamove-wallet-topup-form {
+    grid-template-columns: 1fr;
+  }
+  body.admin-vr-page .admin-lalamove-wallet-topup-actions {
+    grid-column: 1;
+  }
+  body.admin-vr-page .admin-action-row .btn {
+    width: auto !important;
+  }
+  body.admin-vr-page .admin-lalamove-wallet-slip-clear span {
+    display: none;
+  }
+  body.admin-vr-page .admin-lalamove-wallet-slip-clear {
+    width: 32px;
+    padding: 0;
+  }
+}
+
+
+/* ADMIN_STORE_SAVE_FULL_ROW_20260916_001 */
+body.admin-vr-page #storeForm > .admin-store-save-full-row {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  max-width: none !important;
+  justify-self: stretch !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* ADMIN_LALAMOVE_FOD_WALLET_TOPUP_REDESIGN_20260916_001 */
+body.admin-vr-page .admin-lalamove-wallet-topup-form {
+  grid-template-columns: minmax(220px,.7fr) minmax(360px,1.3fr) !important;
+  gap: 16px !important;
+  align-items: start !important;
+  padding: 14px !important;
+  border: 1px solid #e1ebe5 !important;
+  border-radius: 14px !important;
+  background: #fbfdfc !important;
+}
+body.admin-vr-page .admin-lalamove-wallet-topup-amount,
+body.admin-vr-page .admin-lalamove-wallet-slip-field {
+  min-width: 0;
+  margin: 0;
+}
+body.admin-vr-page .admin-lalamove-wallet-amount-control {
+  height: 54px;
+  min-height: 54px;
+  display: grid !important;
+  grid-template-columns: auto minmax(0,1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border: 1px solid #cddbd2;
+  border-radius: 12px;
+  background: #fff;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+body.admin-vr-page .admin-lalamove-wallet-amount-control:focus-within {
+  border-color: #159154;
+  box-shadow: 0 0 0 3px rgba(21,145,84,.1);
+}
+body.admin-vr-page .admin-lalamove-wallet-amount-icon {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: #edf9f1;
+  color: #08783d;
+}
+body.admin-vr-page .admin-lalamove-wallet-amount-input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #173b29;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0;
+}
+body.admin-vr-page .admin-lalamove-wallet-amount-input::placeholder {
+  color: #98a59d;
+  font-weight: 500;
+}
+body.admin-vr-page .admin-lalamove-wallet-amount-unit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: #eef6f1;
+  color: #567064;
+  font-size: .75rem;
+  font-weight: 700;
+}
+body.admin-vr-page .admin-lalamove-wallet-slip-picker {
+  height: 54px !important;
+  min-height: 54px !important;
+}
+body.admin-vr-page .admin-lalamove-wallet-slip-hint {
+  display: block;
+  margin: 6px 2px 0 !important;
+  color: #758078;
+  font-size: .72rem;
+  line-height: 1.35;
+}
+body.admin-vr-page .admin-lalamove-wallet-topup-actions {
+  grid-column: 1 / -1 !important;
+  margin-top: 0 !important;
+  padding-top: 2px;
+}
+body.admin-vr-page .admin-lalamove-wallet-topup-help {
+  margin-top: 10px !important;
+}
+@media (max-width: 760px) {
+  body.admin-vr-page .admin-lalamove-wallet-topup-form {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+    padding: 12px !important;
+  }
+  body.admin-vr-page .admin-lalamove-wallet-topup-actions {
+    grid-column: 1 !important;
+  }
+}
+
+/* FOD_CREDIT_TERMS_20260921_001 */
+body.admin-vr-page .admin-lalamove-wallet-credit-policy {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid #ead9a3;
+  border-radius: 12px;
+  background: #fffaf0;
+}
+body.admin-vr-page .admin-lalamove-wallet-credit-policy p {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  color: #725a17;
+  font-size: .76rem;
+  line-height: 1.45;
+}
+body.admin-vr-page .admin-lalamove-wallet-credit-policy .bi {
+  margin-top: 2px;
+  flex: 0 0 auto;
+}

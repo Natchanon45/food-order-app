@@ -7,6 +7,17 @@ const GOOGLE_MAPS_SERVER_API_KEY = defineSecret("GOOGLE_MAPS_SERVER_API_KEY");
 const GOOGLE_MAPS_BROWSER_API_KEY = defineSecret("GOOGLE_MAPS_BROWSER_API_KEY");
 const ROUTE_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
+async function platformGoogleKey(field, fallback = "") {
+  try {
+    const snapshot = await getFirestore().collection("platformPrivateSettings").doc("googleApis").get();
+    const value = String(snapshot.data()?.[field] || "").trim();
+    if (value) return value;
+  } catch (error) {
+    console.warn("[google-delivery] dynamic platform key unavailable", field, error?.message || error);
+  }
+  return String(fallback || "").trim();
+}
+
 function coordinate(value, min, max, field) {
   const number = Number(value);
   if (!Number.isFinite(number) || number < min || number > max) {
@@ -97,7 +108,7 @@ function routeResult(row, settings) {
 
 exports.getDeliveryGoogleMapsConfig = onCall({ region: REGION, timeoutSeconds: 10, secrets: [GOOGLE_MAPS_BROWSER_API_KEY] }, async request => {
   await storefront(request.data?.slug);
-  const apiKey = GOOGLE_MAPS_BROWSER_API_KEY.value();
+  const apiKey = await platformGoogleKey("mapsBrowserKey", GOOGLE_MAPS_BROWSER_API_KEY.value());
   if (!apiKey) throw new HttpsError("failed-precondition", "Google Maps browser key is not configured");
   return { apiKey };
 });
@@ -123,7 +134,7 @@ exports.computeDeliveryRoute = onCall({ region: REGION, timeoutSeconds: 25, secr
     }
   }
 
-  const apiKey = GOOGLE_MAPS_SERVER_API_KEY.value();
+  const apiKey = await platformGoogleKey("routesApiKey", GOOGLE_MAPS_SERVER_API_KEY.value());
   if (!apiKey) throw new HttpsError("failed-precondition", "Google Routes key is not configured");
   const response = await fetch("https://routes.googleapis.com/directions/v2:computeRoutes", {
     method: "POST",

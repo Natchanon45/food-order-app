@@ -1,5 +1,5 @@
-import translations from "./public-translations.js?v=20260915-005";
-import { configureI18n, getLocale, setLocale } from "./i18n.js?v=20260903-202";
+import translations from "./public-translations.js?v=20260930-002";
+import { applyTranslations, configureI18n, getLocale, setLocale } from "./i18n.js?v=20260930-001";
 
 configureI18n(translations);
 const locale = getLocale();
@@ -63,7 +63,14 @@ function mountLocaleSwitcher() {
   const root = document.createElement("div");
   root.className = "app-locale-switcher";
   root.dataset.publicLocaleSwitcher = "1";
-  root.innerHTML = `<details class="app-locale-menu"><summary class="app-locale-trigger" aria-label="Language" title="Language"><i class="bi bi-globe2" aria-hidden="true"></i></summary><div class="app-locale-menu__panel" role="menu"><button type="button" class="app-locale-option" data-locale="th" role="menuitemradio" aria-checked="${locale === "th"}"><span>ไทย</span></button><button type="button" class="app-locale-option" data-locale="en" role="menuitemradio" aria-checked="${locale === "en"}"><span>English</span></button></div></details>`;
+  const localeOptions = [
+    ["th", "ไทย"],
+    ["en", "English"],
+    ["my", "မြန်မာ"],
+    ["lo", "ລາວ"],
+    ["km", "ខ្មែរ"],
+  ];
+  root.innerHTML = `<details class="app-locale-menu"><summary class="app-locale-trigger" aria-label="Language" title="Language"><i class="bi bi-globe2" aria-hidden="true"></i></summary><div class="app-locale-menu__panel" role="menu">${localeOptions.map(([code, label]) => `<button type="button" class="app-locale-option" data-locale="${code}" role="menuitemradio" aria-checked="${locale === code}"><span>${label}</span></button>`).join("")}</div></details>`;
   root.querySelectorAll("[data-locale]").forEach(button => button.addEventListener("click", () => {
     setLocale(button.dataset.locale);
     location.reload();
@@ -86,10 +93,11 @@ function mountLocaleSwitcher() {
   }
 }
 
+applyTranslations(document);
 translateNode(document.body);
 mountLocaleSwitcher();
 
-if (locale === "en") {
+if (locale !== "th") {
   const observer = new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(translateNode)));
   observer.observe(document.body, { childList: true, subtree: true });
 }

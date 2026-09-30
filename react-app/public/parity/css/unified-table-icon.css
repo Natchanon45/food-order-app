@@ -1,0 +1,32 @@
+.unified-table-icon.fi {
+  display: inline-grid;
+  place-items: center;
+  font-style: normal;
+  line-height: 1;
+  vertical-align: -.12em;
+}
+
+.unified-table-icon.fi::before {
+  display: block;
+  line-height: 1;
+}
+
+.user-menu-link .unified-table-icon,
+.user-menu-action .unified-table-icon {
+  font-size: 17px;
+}
+
+[data-table-move] .unified-table-icon {
+  font-size: 18px;
+}
+
+.app-version .icon-library-credit {
+  color: inherit;
+  text-decoration: none;
+  opacity: .78;
+}
+
+.app-version .icon-library-credit:hover {
+  opacity: 1;
+  text-decoration: underline;
+}

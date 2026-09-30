@@ -1,57 +1,464 @@
 {
-  "functions": { "source": "functions" },
+  "functions": {
+    "source": "functions"
+  },
   "hosting": {
     "target": "foodapp",
     "public": "public",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
     "headers": [
-      { "source": "/login", "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }] },
-      { "source": "/login/**", "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }] },
-      { "source": "/assets/js/firebase-config.js", "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }] },
-      { "source": "/delivery/**", "headers": [{ "key": "Permissions-Policy", "value": "geolocation=(self)" }] },
-      { "source": "/s/**", "headers": [{ "key": "Permissions-Policy", "value": "geolocation=(self)" }] },
-      { "source": "/assets/js/cashier-original-order.js", "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }] },
-      { "source": "/firebase-messaging-sw.js", "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }] }
+      {
+        "source": "/react",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/react/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/login",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/login/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/assets/js/firebase-config.js",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/delivery/**",
+        "headers": [
+          {
+            "key": "Permissions-Policy",
+            "value": "geolocation=(self)"
+          }
+        ]
+      },
+      {
+        "source": "/s/**",
+        "headers": [
+          {
+            "key": "Permissions-Policy",
+            "value": "geolocation=(self)"
+          }
+        ]
+      },
+      {
+        "source": "/assets/js/cashier-original-order.js",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/firebase-messaging-sw.js",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/register",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/register/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/cashier",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/cashier/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/kitchen",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/kitchen/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/waiting-queue",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/waiting-queue/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/admin",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/admin/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/platform",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/platform/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/reports",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/reports/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/super-admin/saas-setup",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/super-admin/saas-setup/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      }
     ],
     "cleanUrls": true,
     "trailingSlash": false,
     "rewrites": [
-      { "source": "/api/tax-buyer/lookup", "function": { "functionId": "lookupTaxBuyer", "region": "asia-southeast1" } },
-      { "source": "/delivery/success", "destination": "/delivery/success/index.html" },
-      { "source": "/delivery/success/**", "destination": "/delivery/success/index.html" },
-      { "source": "/s/*/delivery/success", "destination": "/delivery/success/index.html" },
-      { "source": "/s/*/delivery/success/**", "destination": "/delivery/success/index.html" },
-      { "source": "/s/*/delivery", "destination": "/delivery/index.html" },
-      { "source": "/s/*/delivery/**", "destination": "/delivery/index.html" },
-      { "source": "/s/*/takeaway", "destination": "/takeaway/index.html" },
-      { "source": "/s/*/takeaway/**", "destination": "/takeaway/index.html" },
-      { "source": "/takeaway", "destination": "/takeaway/index.html" },
-      { "source": "/takeaway/**", "destination": "/takeaway/index.html" },
-      { "source": "/s/*/order", "destination": "/order/index.html" },
-      { "source": "/s/*/order/**", "destination": "/order/index.html" },
-      { "source": "/delivery/**", "destination": "/delivery/index.html" },
-      { "source": "/s/**", "destination": "/delivery/index.html" },
-      { "source": "/verify/**", "destination": "/verify/index.html" },
-      { "source": "/order/**", "destination": "/order/index.html" },
-      { "source": "/kitchen/**", "destination": "/kitchen/index.html" },
-      { "source": "/cashier/receipt/**", "destination": "/cashier/receipt/index.html" },
-      { "source": "/cashier/waiting-queue/**", "destination": "/cashier/waiting-queue/index.html" },
-      { "source": "/queue/**", "destination": "/queue/index.html" },
-      { "source": "/cashier/table-qr/**", "destination": "/cashier/table-qr/index.html" },
-      { "source": "/cashier/**", "destination": "/cashier/index.html" },
-      { "source": "/pos/login", "destination": "/pos/login/index.html" },
-      { "source": "/pos/login/**", "destination": "/pos/login/index.html" },
-      { "source": "/pos/**", "destination": "/pos/index.html" },
-      { "source": "/platform/owners/**", "destination": "/platform/owners/index.html" },
-      { "source": "/platform/pricing/**", "destination": "/platform/pricing/index.html" },
-      { "source": "/platform/pricing", "destination": "/platform/pricing/index.html" },
-      { "source": "/platform/**", "destination": "/platform/index.html" },
-      { "source": "/admin/qr/**", "destination": "/admin/qr/index.html" },
-      { "source": "/admin/tenants/**", "destination": "/admin/tenants/index.html" },
-      { "source": "/admin/**", "destination": "/admin/index.html" }
+      {
+        "source": "/react",
+        "destination": "/react/index.html"
+      },
+      {
+        "source": "/react/**",
+        "destination": "/react/index.html"
+      },
+      {
+        "source": "/api/tax-buyer/lookup",
+        "function": {
+          "functionId": "lookupTaxBuyer",
+          "region": "asia-southeast1"
+        }
+      },
+      {
+        "source": "/api/lalamove/webhook",
+        "function": {
+          "functionId": "lalamoveWebhook",
+          "region": "asia-southeast1"
+        }
+      },
+      {
+        "source": "/login",
+        "destination": "/react/index.html"
+      },
+      {
+        "source": "/login/**",
+        "destination": "/react/index.html"
+      },
+      {
+        "source": "/register",
+        "destination": "/react/index.html"
+      },
+      {
+        "source": "/register/**",
+        "destination": "/react/index.html"
+      },
+      {
+        "source": "/kitchen",
+        "destination": "/react/index.html"
+      },
+      {
+        "source": "/kitchen/**",
+        "destination": "/react/index.html"
+      },
+      {
+        "source": "/cashier",
+        "destination": "/react/index.html"
+      },
+      {
+        "source": "/cashier/**",
+        "destination": "/react/index.html"
+      },
+      {
+        "source": "/waiting-queue",
+        "destination": "/react/index.html"
+      },
+      {
+        "source": "/waiting-queue/**",
+        "destination": "/react/index.html"
+      },
+      {
+        "source": "/admin",
+        "destination": "/react/index.html"
+      },
+      {
+        "source": "/admin/**",
+        "destination": "/react/index.html"
+      },
+      {
+        "source": "/platform",
+        "destination": "/react/index.html"
+      },
+      {
+        "source": "/platform/**",
+        "destination": "/react/index.html"
+      },
+      {
+        "source": "/reports",
+        "destination": "/react/index.html"
+      },
+      {
+        "source": "/reports/**",
+        "destination": "/react/index.html"
+      },
+      {
+        "source": "/super-admin/saas-setup",
+        "destination": "/react/index.html"
+      },
+      {
+        "source": "/super-admin/saas-setup/**",
+        "destination": "/react/index.html"
+      },
+      {
+        "source": "/delivery/success",
+        "destination": "/delivery/success/index.html"
+      },
+      {
+        "source": "/delivery/success/**",
+        "destination": "/delivery/success/index.html"
+      },
+      {
+        "source": "/s/*/react/delivery/success",
+        "destination": "/delivery/success/index.html"
+      },
+      {
+        "source": "/s/*/react/delivery/success/**",
+        "destination": "/delivery/success/index.html"
+      },
+      {
+        "source": "/s/*/react/delivery",
+        "destination": "/delivery/index.html"
+      },
+      {
+        "source": "/s/*/react/delivery/**",
+        "destination": "/delivery/index.html"
+      },
+      {
+        "source": "/s/*/react/takeaway",
+        "destination": "/takeaway/index.html"
+      },
+      {
+        "source": "/s/*/react/takeaway/**",
+        "destination": "/takeaway/index.html"
+      },
+      {
+        "source": "/s/*/react/order",
+        "destination": "/order/index.html"
+      },
+      {
+        "source": "/s/*/react/order/**",
+        "destination": "/order/index.html"
+      },
+      {
+        "source": "/s/*/delivery/success",
+        "destination": "/delivery/success/index.html"
+      },
+      {
+        "source": "/s/*/delivery/success/**",
+        "destination": "/delivery/success/index.html"
+      },
+      {
+        "source": "/s/*/delivery",
+        "destination": "/delivery/index.html"
+      },
+      {
+        "source": "/s/*/delivery/**",
+        "destination": "/delivery/index.html"
+      },
+      {
+        "source": "/s/*/takeaway",
+        "destination": "/takeaway/index.html"
+      },
+      {
+        "source": "/s/*/takeaway/**",
+        "destination": "/takeaway/index.html"
+      },
+      {
+        "source": "/takeaway",
+        "destination": "/takeaway/index.html"
+      },
+      {
+        "source": "/takeaway/**",
+        "destination": "/takeaway/index.html"
+      },
+      {
+        "source": "/s/*/order",
+        "destination": "/order/index.html"
+      },
+      {
+        "source": "/s/*/order/**",
+        "destination": "/order/index.html"
+      },
+      {
+        "source": "/delivery/**",
+        "destination": "/delivery/index.html"
+      },
+      {
+        "source": "/s/**",
+        "destination": "/delivery/index.html"
+      },
+      {
+        "source": "/verify/**",
+        "destination": "/verify/index.html"
+      },
+      {
+        "source": "/order/**",
+        "destination": "/order/index.html"
+      },
+      {
+        "source": "/queue/**",
+        "destination": "/queue/index.html"
+      },
+      {
+        "source": "/pos/login",
+        "destination": "/pos/login/index.html"
+      },
+      {
+        "source": "/pos/login/**",
+        "destination": "/pos/login/index.html"
+      },
+      {
+        "source": "/pos/**",
+        "destination": "/pos/index.html"
+      }
     ]
   },
-  "firestore": { "rules": "firestore.rules", "indexes": "firestore.indexes.json" },
-  "storage": { "rules": "storage.rules" },
-  "emulators": { "hosting": { "host": "0.0.0.0", "port": 5002 } }
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "emulators": {
+    "hosting": {
+      "host": "0.0.0.0",
+      "port": 5002
+    }
+  }
 }

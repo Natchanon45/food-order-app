@@ -90,6 +90,11 @@
   font-size: 11px;
 }
 
+.delivery-free-gift-status.is-required {
+  color: #c62828;
+  font-weight: 700;
+}
+
 .delivery-free-gift-empty {
   grid-column: 1 / -1;
   padding: 13px;
