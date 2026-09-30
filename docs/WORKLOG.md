@@ -559,6 +559,23 @@ Deploy state:
 
 ---
 
+## 2026-09-30 — Temporary MCP fallback delivery workflow
+
+Request:
+- Until Desktop Commander MCP command execution is available again, every completed change must include copy-paste commands for pulling the latest branch and deploying Firebase Hosting from the user's Mac.
+
+Rule:
+- Always provide:
+  - `git pull --ff-only origin feature/react-firebase-port`
+  - `npx firebase-tools deploy --only hosting:foodapp --project chat-45754`
+- If the change requires a new Hosting release, include the required Build bump and test/build gate before the deploy command.
+- Keep deployment scoped to Hosting unless the user explicitly requests Rules / Storage / Functions.
+
+Deploy state:
+- Documentation/process change only; no Firebase deploy performed by this entry.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
