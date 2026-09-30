@@ -466,7 +466,13 @@ Deployment scope:
 
 Deploy state:
 - GitHub release-preparation commits created after `acf05c18`: `1454b95b` (React build 295), `707d18b5` (public build 010), `286ac46c` (release contract), `bdf19e5a` (WORKLOG checkpoint), `fd2d2d99` (generated React bundle build stamp).
-- Pending Firebase Hosting deployment and production verification.
+- Final build commit from the Mac: `affb7d25` — `build: finalize Order React test deploy`.
+- User confirmed the Firebase Hosting deployment completed after that commit.
+- Generated React shell now references `/react/assets/index-BoWOX-Jp.js`.
+- React source identity remains Version `0.4.280` / Build `2026.09.30.295`; public storefront identity remains Version `0.16.32` / Build `2026.09.30.010`.
+- Production cross-device/mobile verification is now the active test phase.
+- Assistant-side live HTTP verification could not be completed at this checkpoint because the external web fetch path could not access the Firebase web.app host and Desktop Commander commands remain paused by its monthly quota; do not treat this as a failed deploy.
+- Firestore Rules, Storage Rules, and Cloud Functions were not intended to be deployed in this Order-only test cutover.
 
 ---
 
