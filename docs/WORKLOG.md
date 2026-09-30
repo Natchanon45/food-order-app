@@ -514,6 +514,51 @@ Remaining:
 
 ---
 
+## 2026-09-30 — Global FOD brand-mark vertical centering
+
+Symptom / request:
+- The FOD mark appeared too low on the Y axis across multiple pages, not only the Sales Report.
+- The fix must apply everywhere the shared FOD brand mark is rendered.
+
+Root cause:
+- The shared `.brand-mark` still used grid/pseudo-element text rendering in base CSS.
+- Even where the container was mathematically centered, the FOD/Kanit glyph baseline made the text appear optically low.
+- Page-specific header fixes were insufficient because the same brand mark is shared across many React and remaining static/legacy surfaces.
+
+Change:
+- Added a global React runtime rule in `PlatformBrandingRuntime` so every React route forces `.brand-mark` to inline-flex center on both axes.
+- The FOD `::after` content now fills the mark, centers with flex, uses line-height 1, and receives a 1px upward optical correction.
+- Dynamic platform logo images remain centered with `object-position: center center` and are not given the text optical transform.
+- Updated shared React parity `app.css` source and built public copy.
+- Updated static/legacy `public/assets/css/app.css` and `system-controls.css` so remaining non-React surfaces follow the same alignment.
+
+Important files:
+- `react-app/src/components/PlatformBrandingRuntime.jsx`
+- `react-app/public/parity/css/app.css`
+- `public/react/parity/css/app.css`
+- `public/assets/css/app.css`
+- `public/assets/css/system-controls.css`
+
+Git state:
+- `8e62dc5e` — global React branding runtime alignment.
+- `c1fc234c` — React parity source app.css.
+- `516cc7d0` — built React parity app.css.
+- `29be4a11` — shared static/legacy app.css.
+- `b54f425f` — legacy system controls optical alignment.
+- Branch: `feature/react-firebase-port`.
+- No merge to `main`.
+
+Verification:
+- Source review confirms React runtime mounts `PlatformBrandingRuntime` above the router, so the rule applies to all React pages.
+- Static/legacy shared CSS contains the same centered brand-mark treatment.
+- Visual runtime verification remains required after pulling/building because Desktop Commander command execution is still paused by its service quota.
+
+Deploy state:
+- Not deployed yet.
+- Build number must be increased before the next Firebase Hosting deployment.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
