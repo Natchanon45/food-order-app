@@ -42,7 +42,7 @@ assert(
   "Cashier Receipt generated bundle is missing the Back arrow icon"
 );
 
-const printIndex = receipt.source.indexOf('id:`printButton`');
+const printIndex = receipt.source.indexOf("printButton");
 assert(printIndex >= 0, "Cashier Receipt print button missing from generated bundle");
 const printWindow = receipt.source.slice(Math.max(0, printIndex - 1400), printIndex + 1400);
 assert(
