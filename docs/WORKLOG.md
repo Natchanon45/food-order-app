@@ -842,11 +842,13 @@ Important files:
 Verification:
 - GitHub source inspection confirmed the reported footer keys exist in the Home translation dictionary for TH / EN / MY / LO / KM.
 - Source guard confirms the Footer no longer exposes raw keys when a dictionary is not ready and will refresh when i18n configuration becomes available.
+- Added `react-foundation-contract.mjs` regression assertions for the shared global dictionary, Footer fallback/refresh behavior, and Home's common `i18n.js?v=20261001-001` cache identity.
 - Home static modules now share the same `i18n.js?v=20261001-001` cache identity.
 - Full `npm run test:operational`, `npm run test:react-parity`, `npm run build:react`, and `git diff --check` must still be run on the Mac because Desktop Commander command execution remains unavailable.
 
 Deploy state:
 - Fix commit: `ba3b2e32` — `fix: restore localized static footer`.
+- Regression guard commit: `71794169` — `test: guard static footer i18n state`.
 - Branch: `feature/react-firebase-port`.
 - No merge to `main`.
 - No Firebase deployment performed by the assistant.
