@@ -576,6 +576,52 @@ Deploy state:
 
 ---
 
+## 2026-09-30 — Use uploaded App Icon for global header brand mark
+
+Symptom / request:
+- The FOD text mark still appeared visually low even after global Y-axis centering.
+- Super Admin already provides an App Icon upload, so the header should use that real asset instead of relying on generated FOD text.
+
+Root cause:
+- `PlatformBrandingRuntime` applied `logoUrl` to both `.brand-mark` and `.login-logo`.
+- `appIconUrl` was only used for favicon / apple-touch-icon fallback and never for the visible header mark.
+- When no logo was configured, headers therefore fell back to CSS-generated `FOD`.
+
+Change:
+- Added target-specific branding:
+  - `.brand-mark` uses uploaded `appIconUrl` first, then `logoUrl`, then CSS `FOD` fallback.
+  - `.login-logo` uses `logoUrl` first, then `appIconUrl`.
+- Favicon fallback is now favicon -> App Icon -> Logo.
+- Existing image centering remains `object-fit: contain` / center-center.
+- Bumped React Build to `2026.09.30.296`.
+- Bumped public storefront Build to `2026.09.30.011`.
+- Updated React foundation release contract to Build 296.
+
+Important files:
+- `react-app/src/components/PlatformBrandingRuntime.jsx`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `tools/react-foundation-contract.mjs`
+
+Git state:
+- `72a5ab32` — use App Icon in global header branding.
+- `72a36328` — React Build 296.
+- `ac38458f` — public Build 011.
+- `a845b1d1` — release contract alignment.
+- Branch: `feature/react-firebase-port`.
+- No merge to `main`.
+
+Verification:
+- Source inspection confirms App Icon is now the first-choice asset for every React `.brand-mark`.
+- Existing uploaded App Icon will be applied automatically after the runtime loads platform branding.
+- Full browser/build verification must be run on the Mac before deploy while Desktop Commander MCP commands remain unavailable.
+
+Deploy state:
+- Not deployed yet.
+- Next Hosting deploy must build React with Build 296 before deployment.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
