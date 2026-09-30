@@ -336,8 +336,8 @@ Implementation:
 - Fixed missing nested static entrypoint synchronization for Admin Revenue Share, Admin Sales Report, Admin Users, Waiting Queue Customer, and Waiting Queue Display.
 
 Release identity before Hosting deploy:
-- React Version `0.4.280` • Build `2026.09.30.291`.
-- Public storefront Version `0.16.32` • Build `2026.09.30.006`.
+- React Version `0.4.280` • Build `2026.09.30.292` (final correction deploy build).
+- Public storefront Version `0.16.32` • Build `2026.09.30.007` (final correction deploy build).
 - Release marker: `CANONICAL-URL-CUTOVER`.
 
 Verification before commit/deploy:
@@ -349,6 +349,11 @@ Verification before commit/deploy:
 - Existing customer URLs for Order / Delivery / Takeaway returned HTTP 200 without `/react`.
 - Playwright P0 browser smoke passed 52/52 on canonical routes.
 - `git diff --check` passed.
+
+Post-deploy correction:
+- First Hosting release exposed one remaining legacy static entry at `/reports/revenue-share`.
+- Added `public/reports/revenue-share/index.html` to the automatic React legacy-entry sync.
+- Bumped Build again before the corrective Hosting deploy; Version stayed unchanged.
 
 Deployment scope:
 - Hosting only.

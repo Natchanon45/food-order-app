@@ -10,7 +10,7 @@ export const APP_INFO = {
   name: 'Food Order Delivery',
   product: 'Food Order Delivery',
   version: '0.16.32',
-  build: '2026.09.30.006',
+  build: '2026.09.30.007',
   branch: 'feature/react-firebase-port',
   commit: 'CANONICAL-URL-CUTOVER',
   firebaseProject: 'chat-45754',

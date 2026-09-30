@@ -62,7 +62,7 @@ Production cutover prepared for the existing URLs without `/react`:
 - Migrated staff/admin routes use `/login`, `/cashier`, `/kitchen`, `/waiting-queue`, `/admin`, `/platform`, and related original paths.
 - `/react/**` is compatibility-only and canonicalizes to the no-`/react` path.
 - `/pos` remains legacy until the paused Retail POS checkpoint is resumed and completed.
-- Hosting release identity: React `0.4.280` / `2026.09.30.291`; public storefront `0.16.32` / `2026.09.30.006`.
+- Hosting release identity: React `0.4.280` / `2026.09.30.292`; public storefront `0.16.32` / `2026.09.30.007`.
 - Predeploy verification: operational + React parity contracts passed, React build passed, and Playwright P0 browser smoke passed 52/52 on canonical routes.
 - Deployment scope is Hosting only; do not deploy all local Rules/Functions as part of this cutover.
 - See `docs/WORKLOG.md` for the detailed implementation and deployment record.

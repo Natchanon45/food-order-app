@@ -24,6 +24,7 @@ TARGETS = [
     "public/platform/owners/index.html",
     "public/platform/contact/index.html",
     "public/platform/pricing/index.html",
+    "public/reports/revenue-share/index.html",
     "public/super-admin/saas-setup/index.html",
 ]
 
