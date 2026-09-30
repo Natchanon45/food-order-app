@@ -860,6 +860,70 @@ Remaining:
 
 ---
 
+## 2026-10-01 — Home session loading, five-locale menu, profile icon colors, and logout transition
+
+Symptom / request:
+- Static Home user-profile menu icons were falling back to nearly the same default color instead of the semantic per-menu colors already defined by the shared icon CSS.
+- The Home language switcher exposed only Thai and English although the React application supports TH / EN / MY / LO / KM.
+- Refreshing Home or navigating back to Home with an authenticated Firebase session briefly exposed the public landing page before the staff session/profile finished resolving.
+- Logging out briefly exposed the unstyled React Login markup before `login-page.css` finished loading.
+
+Root cause:
+- Static `auth-service.js` rendered profile-menu links without `data-user-menu-key`, so the shared CSS selectors for Home / Waiting Queue / Table / Admin / Staff colors never matched.
+- `public/index.html` hard-coded only the TH and EN locale choices, and `home-translations.js` contained only TH / EN.
+- Static Home rendered the public landing immediately while `waitForAuth()` and `getUserProfile()` were still asynchronous.
+- `LoginPage.jsx` called `useParityPage()` but ignored its `stylesReady` result, allowing the Login form to render before its page-specific CSS loaded.
+- Logout redirected immediately after Firebase sign-out without a blocking transition state.
+
+Change:
+- Added semantic `data-user-menu-key` values to the static profile menu so the existing icon color palette now applies consistently with React.
+- Static auth menu labels now resolve through shared i18n keys with safe Thai fallbacks.
+- Expanded the static Home locale menu to Thai, English, Myanmar, Lao, and Khmer.
+- Rebuilt `public/assets/js/home-translations.js` from the React parity dictionary for all five locales, including Home, Revenue Share, shared UI, and i18n date/locale data.
+- Added an immediate full-screen Home auth/session loading overlay before any Home content is exposed. It stays visible while the Firebase session/profile resolves and remains visible through Super Admin redirects.
+- Added a blocking logout loading overlay to both static auth and React `UserMenu`.
+- React Login now keeps `PageReadyOverlay` visible until `login-page.css` reports ready through `useParityPage()`, preventing the raw unstyled Login form from flashing.
+- Aligned the touched static Home/i18n cache identities on `20261001-002`.
+- Added foundation regression assertions for five locales, static profile-menu semantic keys, Home session gating, Login CSS gating, and logout loading state.
+- Prepared a fresh Hosting identity: React `0.4.280 / 2026.10.01.301`; public storefront `0.16.32 / 2026.10.01.016`.
+
+Important files:
+- `public/index.html`
+- `public/assets/js/auth-service.js`
+- `public/assets/js/home-session-fa.js`
+- `public/assets/js/home-translations.js`
+- `public/assets/js/locale-switcher-static.js`
+- `public/assets/js/user-menu-i18n-static.js`
+- `public/assets/js/ui.js`
+- `react-app/src/components/UserMenu.jsx`
+- `react-app/src/pages/LoginPage.jsx`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `tools/react-foundation-contract.mjs`
+- `README.md`
+- `docs/NEXT_CHAT_HANDOFF.md`
+
+Verification:
+- GitHub source inspection confirms all five locale options are present on static Home and all five locale dictionaries are present in `home-translations.js`.
+- Static profile links now carry `data-user-menu-key`, which activates the existing semantic icon color rules in `icons.css`.
+- Static Home contains the auth/session ready overlay and the bootstrap code removes it only after session resolution; Super Admin redirects keep it covering the page.
+- React Login checks `stylesReady` and returns `PageReadyOverlay` before rendering the form.
+- Static and React logout paths both establish a loading overlay before redirecting.
+- Full `npm run test:operational`, `npm run test:react-parity`, `npm run build:react`, and `git diff --check` still need to run on the Mac because Desktop Commander command execution remains unavailable.
+
+Deploy state:
+- Implementation + regression guard commit: `ddfd4389` — `fix: stabilize home session and login transitions`.
+- Branch: `feature/react-firebase-port`.
+- No merge to `main`.
+- No Firebase deployment performed by the assistant.
+- Hosting-only deployment is intended after the local test/build gate.
+
+Remaining:
+- Pull the branch, run the local test/build gate, and deploy Hosting `foodapp`.
+- Verify the profile-menu icon colors, all five locale options, authenticated Home refresh/back navigation, and Logout -> Login transition on desktop and mobile.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
