@@ -365,7 +365,21 @@ Deployment scope:
 - Firestore Rules, Storage Rules, and Cloud Functions are deliberately not part of this deploy because the worktree contains backend/POS migration changes that are not all intended for this production cutover.
 
 Deploy state:
-- Ready for commit / push / Hosting deploy. Final commit hash and Hosting deployment result will be appended after deployment.
+- Main migration commit: `d8c5eaf4` — `feat: migrate customer flows and canonical firebase routes`.
+- Revenue Share static-entry correction: `2d94caa4` — `fix: sync revenue share canonical entrypoint`.
+- Canonical auth-return correction: `3ece7604` — `fix: canonicalize auth return paths`.
+- All three commits were pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` was deployed successfully to `https://natchanon-food-order-delivery.web.app`.
+- Final deployed release identity: React Version `0.4.280` / Build `2026.09.30.293`; public storefront Version `0.16.32` / Build `2026.09.30.008`.
+- Final production shell hash observed on migrated operational routes: `index-CdjJ8_3Y.js`.
+- Production verification: `/login`, `/cashier`, `/kitchen`, `/waiting-queue`, `/admin`, `/admin/sales-report`, `/platform`, and `/reports/revenue-share` returned HTTP 200 with the same React shell.
+- Existing customer URLs `/s/saas-test-shop/order`, `/delivery`, and `/takeaway` returned HTTP 200 without requiring `/react`.
+- `/pos` intentionally remained the legacy POS entrypoint.
+- Canonical anonymous `/cashier` redirects to `/login?next=%2Fcashier`; compatibility `/react/cashier` also resolves to the same canonical login return path.
+- Final route/auth browser gate passed 37/37 after the auth-return correction; the earlier full P0 browser suite passed 52/52.
+- No merge to `main` was performed.
+- No Firestore Rules, Storage Rules, or Cloud Functions were deployed as part of this cutover.
+- The first Hosting deploy emitted a warning that rewrite function `lalamoveWebhook` had no valid endpoint. Hosting still deployed successfully. Treat `/api/lalamove/webhook` as a follow-up dependency until that Function is deliberately deployed/verified; do not deploy all local Functions just to silence this warning.
 
 ## Entry template for future changes
 

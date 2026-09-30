@@ -57,14 +57,17 @@ Documentation rule as of 2026-09-30:
 
 ## Canonical production URL cutover — 2026-09-30
 
-Production cutover prepared for the existing URLs without `/react`:
-- Customer storefront remains `/s/{slug}/order`, `/delivery`, and `/takeaway`.
-- Migrated staff/admin routes use `/login`, `/cashier`, `/kitchen`, `/waiting-queue`, `/admin`, `/platform`, and related original paths.
-- `/react/**` is compatibility-only and canonicalizes to the no-`/react` path.
+Production cutover is deployed on the existing URLs without `/react`:
+- Customer storefront remains `/s/{slug}/order`, `/delivery`, and `/takeaway`; production checks returned HTTP 200 on all three.
+- Migrated staff/admin routes use `/login`, `/cashier`, `/kitchen`, `/waiting-queue`, `/admin`, `/platform`, `/reports/...`, and related original paths.
+- `/react/**` is compatibility-only and canonicalizes to the no-`/react` path, including canonical login `next` values.
 - `/pos` remains legacy until the paused Retail POS checkpoint is resumed and completed.
-- Hosting release identity: React `0.4.280` / `2026.09.30.293`; public storefront `0.16.32` / `2026.09.30.008`.
-- Predeploy verification: operational + React parity contracts passed, React build passed, and Playwright P0 browser smoke passed 52/52 on canonical routes.
-- Deployment scope is Hosting only; do not deploy all local Rules/Functions as part of this cutover.
+- Final Hosting release identity: React `0.4.280` / `2026.09.30.293`; public storefront `0.16.32` / `2026.09.30.008`.
+- Deployed code commits on `feature/react-firebase-port`: `d8c5eaf4`, `2d94caa4`, `3ece7604`. All were pushed to origin. No merge to `main` was performed.
+- Verification: operational + React parity contracts passed, React build passed, full P0 browser smoke passed 52/52 before deploy, and the final route/auth correction gate passed 37/37.
+- Firebase Hosting target `foodapp` deployed successfully at `https://natchanon-food-order-delivery.web.app`.
+- Deployment scope was Hosting only. Firestore Rules, Storage Rules, and Cloud Functions were not deployed in this cutover.
+- Important follow-up: the first Hosting release warned that rewrite function `lalamoveWebhook` had no valid endpoint. Do not deploy all local Functions just to clear this warning; verify/deploy that Function deliberately when the Lalamove webhook scope is resumed.
 - See `docs/WORKLOG.md` for the detailed implementation and deployment record.
 
 ## Super Admin Console callable repair — 2026-09-29
