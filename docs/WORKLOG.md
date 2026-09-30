@@ -721,6 +721,93 @@ Remaining:
 
 ---
 
+## 2026-10-01 — KINJAI residual visible-brand cleanup
+
+Symptom / request:
+- Continue the KINJAI rename after the previous GitHub-side rollout and confirm remaining visible FOD / LUKKAJA / Food Order strings.
+
+Root cause:
+- HEAD `d66bdf90` (`build: finalize KINJAI branding`) already covered the main React/static title/fallback rename, but leftover visible product strings remained in POS overlays, page-title default, Delivery QR print brand, Waiting Queue footer product names, QR ticket brand, home translations, receipt/offline shop-name fallbacks, and one Sales Report parity CSS `content: "FOD"` rule.
+- Old hashed React bundles under `public/react/assets/index-*.js` still contained LUKKAJA/FOD because they were generated before this cleanup.
+
+Change:
+- Visible leftovers now use KINJAI / KJ / KINJAI QR.
+- Internal identifiers such as `fod-login-email`, `fod_wallet_*`, `FOD_WALLET_*`, Firebase project IDs, repo names, and translation keys were not renamed.
+- Bumped Hosting identity before the next deploy: React `0.4.280 / 2026.09.30.299`; public storefront `0.16.32 / 2026.09.30.014`.
+
+Important files:
+- `react-app/src/pages/PosPage.jsx`
+- `react-app/src/pages/PosCatalogPage.jsx`
+- `react-app/src/pages/PosProductsPage.jsx`
+- `react-app/src/hooks/useParityPage.jsx`
+- `react-app/src/components/AdminDeliveryQr.jsx`
+- `react-app/src/i18n/waiting-queue-translations.js`
+- `react-app/public/parity/css/admin-sales-report-retail-pos-parity.css`
+- `public/react/parity/css/admin-sales-report-retail-pos-parity.css`
+- `public/assets/js/qr.js`
+- `public/assets/js/cashier-table-qr.js`
+- `public/assets/js/home-translations.js`
+- `public/assets/js/offline-data-service.js`
+- `public/assets/js/receipt.js`
+- `public/assets/js/receipt-combined.js`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `tools/react-foundation-contract.mjs`
+
+Verification:
+- `npm run test:operational` passed.
+- `npm run test:react-parity` passed after aligning the branding-image assertion with the existing `content:none` + `transform:none` runtime CSS.
+- `npm run build:react` passed and produced `public/react/assets/index-DkeByQfC.js`.
+- `git diff --check` passed.
+- Source-level leftover visible LUKKAJA / FOOD ORDER QR / Food Order Delivery strings were removed except the I18n runtime `normalizeVisibleBranding()` replace list.
+
+Deploy state:
+- Commit/push pending after this worklog update.
+- No merge to `main`.
+- Hosting-only deploy remains pending.
+
+Remaining:
+- Push `feature/react-firebase-port`, then deploy Hosting `foodapp` only.
+- Visual-check uploaded App Icon headers, Login Logo, favicon/apple-touch-icon, and TH/EN/MY/LO/KM after deploy.
+- If the uploaded App Icon artwork still contains FOD, Super Admin must upload a new KINJAI App Icon.
+
+---
+
+## 2026-10-01 — KINJAI static customer page brand-mark fallback
+
+Symptom / request:
+- Continue the KINJAI rename in a new chat: verify what the previous rounds left behind and remove residual visible FOD / LUKKAJA / Food Order strings without touching internal identifiers.
+
+Root cause:
+- Local HEAD at the start of this session was `d66bdf90` (`build: finalize KINJAI branding`), with the 2026-10-01 residual cleanup already present in the working tree.
+- Three legacy static customer pages still rendered the old generated fallback `FO` inside `.brand-mark` (the same fallback that the rollout replaced with `KJ` everywhere else): `public/order/index.html`, `public/takeaway/index.html`, `public/queue/index.html`.
+
+Change:
+- Changed `<span class="brand-mark">FO</span>` to `<span class="brand-mark">KJ</span>` in those three files. No other text or markup was touched.
+- Audited, without changes needed: all React pages/components listed in the handoff, `public/assets/js/public-translations.js`, `public/assets/js/platform-translations.js`, every `public/**/index.html` (React shells, storefront, privacy/terms, verify, waiting-queue, cashier, kitchen, admin, super-admin, pos/*).
+- Deliberately preserved internal identifiers: `fod-login-email`, `fod-login-secret`, `fod_central`, `fod_wallet_*`, `FOD_WALLET_*`, `data-delete-fod-wallet-topup`, `lalamoveFodWallet*` element ids, `lukkhaja_react_entry_recovery` (sessionStorage key) and `__lukkhajaReactEntryLoaded` (global callback used by the React entry shells).
+
+Important files:
+- `public/order/index.html`
+- `public/takeaway/index.html`
+- `public/queue/index.html`
+
+Verification:
+- Source-level scan by reading the files. The edit diffs were confirmed to change only the brand-mark line in each file.
+- `npm run test:operational`, `npm run test:react-parity`, `npm run build:react`, and `git diff --check` were NOT run in this session (no command execution available). They must be run on the Mac.
+- Runtime visual check of the three pages (header shows `KJ` or the uploaded App Icon) is still required.
+
+Deploy state:
+- No git command was run. Not committed / pushed / merged / deployed.
+- Build identity was not bumped in this entry: pending release identity remains React `0.4.280 / 2026.09.30.299` and public storefront `0.16.32 / 2026.09.30.014`. If that identity was already deployed, bump Build before the next Hosting deploy.
+
+Remaining:
+- Run the test/build gate on the Mac, commit, then deploy Hosting `foodapp` only.
+- `react-app/src/pages/HomePage.jsx` still contains a redundant ternary `{staff ? "KINJAI" : "KINJAI"}` in `.brand-label`; it renders correctly and was left untouched.
+- Verify App Icon / Logo / favicon / apple-touch-icon and TH/EN/MY/LO/KM after deploy. If the uploaded App Icon artwork still contains FOD, upload a new KINJAI App Icon from Platform Branding.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title

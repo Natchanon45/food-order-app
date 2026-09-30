@@ -2,7 +2,7 @@ export default {
     "th": {
         "home": {
             "meta": {
-                "title": "Food Order Delivery"
+                "title": "KINJAI"
             },
             "public": {
                 "hero": {
@@ -80,7 +80,7 @@ export default {
                 },
                 "about": {
                     "title": "เกี่ยวกับแอปพลิเคชัน",
-                    "description": "Food Order Delivery เชื่อมต่อร้านอาหารกับลูกค้าเพื่อให้การสั่งอาหาร การชำระเงิน และการจัดส่งเป็นเรื่องง่าย บัญชี Google ใช้สำหรับยืนยันตัวตนลูกค้าและบันทึกข้อมูลโปรไฟล์กับที่อยู่จัดส่งตามที่ลูกค้าเลือกให้ระบบเข้าถึง",
+                    "description": "KINJAI เชื่อมต่อร้านอาหารกับลูกค้าเพื่อให้การสั่งอาหาร การชำระเงิน และการจัดส่งเป็นเรื่องง่าย บัญชี Google ใช้สำหรับยืนยันตัวตนลูกค้าและบันทึกข้อมูลโปรไฟล์กับที่อยู่จัดส่งตามที่ลูกค้าเลือกให้ระบบเข้าถึง",
                     "links_aria": "ลิงก์ติดต่อและนโยบาย",
                     "support": "ติดต่อฝ่ายสนับสนุน",
                     "privacy": "นโยบายความเป็นส่วนตัว",
@@ -223,7 +223,7 @@ export default {
     "en": {
         "home": {
             "meta": {
-                "title": "Food Order Delivery"
+                "title": "KINJAI"
             },
             "public": {
                 "hero": {
@@ -301,7 +301,7 @@ export default {
                 },
                 "about": {
                     "title": "About the application",
-                    "description": "Food Order Delivery connects restaurants with customers to make ordering, payment, and delivery easier. Google accounts are used to verify customer identity and save profile information and delivery addresses that customers choose to share with the system.",
+                    "description": "KINJAI connects restaurants with customers to make ordering, payment, and delivery easier. Google accounts are used to verify customer identity and save profile information and delivery addresses that customers choose to share with the system.",
                     "links_aria": "Support and policy links",
                     "support": "Contact support",
                     "privacy": "Privacy policy",

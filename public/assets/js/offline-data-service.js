@@ -118,7 +118,7 @@ dataService.getStoreSettings = async function getStoreSettingsOfflineFirst() {
     return settings;
   } catch (error) {
     if (!shouldUseOffline(error)) throw error;
-    return await offlineStore.getSettings() || { shopName: activeShop().name || "Food Order QR", shopAddress: "", shopPhone: "", categoryOrder: [] };
+    return await offlineStore.getSettings() || { shopName: activeShop().name || "KINJAI", shopAddress: "", shopPhone: "", categoryOrder: [] };
   }
 };
 

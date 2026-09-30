@@ -57,7 +57,7 @@ async function render() {
         <article class="card qr-card">
           <div class="qr-ticket">
             <div class="qr-ticket-header">
-              <div class="qr-ticket-brand">FOOD ORDER QR</div>
+              <div class="qr-ticket-brand">KINJAI QR</div>
               <div class="qr-ticket-title">${t("admin_qr.ticket.scan_to_order")}</div>
               <div class="qr-ticket-table">${table.name}</div>
             </div>

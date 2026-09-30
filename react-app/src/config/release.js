@@ -1,7 +1,7 @@
 export const REACT_RELEASE = Object.freeze({
   product: "KINJAI",
   version: "0.4.280",
-  build: "2026.09.30.298",
+  build: "2026.09.30.299",
   branch: "feature/react-firebase-port",
   commit: "CANONICAL-URL-CUTOVER",
   dataService: "Firebase / Firestore",

@@ -139,7 +139,7 @@ function renderTicket(table, token, autoPrint = true) {
     <article class="card qr-card print-target">
       <div class="qr-ticket">
         <div class="qr-ticket-header">
-          <div class="qr-ticket-brand">FOOD ORDER QR</div>
+          <div class="qr-ticket-brand">KINJAI QR</div>
           <div class="qr-ticket-title">${t("cashier_documents.table_qr.ticket_title")}</div>
           <div class="qr-ticket-table">${table.name}</div>
         </div>
