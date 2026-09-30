@@ -182,7 +182,7 @@ assert(read("react-app/src/components/UserMenu.jsx").includes("loggingOut")&&rea
 assert(staticDeliveryEntry.includes('id="deliveryHeroStoreName"')&&!staticDeliveryEntry.includes('<span>KINJAI</span></h1>')&&staticDeliveryRuntime.includes("renderDeliveryStoreHero")&&staticDeliveryRuntime.includes("settings?.shopName")&&staticDeliveryRuntime.includes("activeShop?.name"),"Delivery customer Hero must render the tenant store name, not the KINJAI platform brand");
 for(const key of ["calculating","fee_rule_missing","out_of_range","ready_with_limit","route_failed","store_location_missing","unavailable"]){
   const count=(publicTranslations.match(new RegExp(`"${key}"\\s*:`,"g"))||[]).length;
-  assert.equal(count,5,`Delivery distance translation must exist in all five public locales: ${key}`);
+  assert(count===5,`Delivery distance translation must exist in all five public locales: ${key}`);
 }
 assert(posPage.includes('import { AppDeveloperPanel }')&&posPage.includes('"app-version-badge-runtime.css"')&&posPage.includes("<AppDeveloperPanel />"),"React POS floating Developer Panel must be mounted");
 assert(developerPanel.includes("data-app-version-badge")&&developerPanel.includes("data-app-dev-panel")&&developerPanel.includes("Retail Cache Keys")&&developerPanel.includes("Firebase / Firestore")===false&&developerPanel.includes("REACT_RELEASE.dataService")&&developerPanel.includes("metaKey")&&developerPanel.includes('event.key === "Escape"')&&developerPanel.includes('onClick={() => setOpen(true)}\n      ></button>'),"React Developer Panel runtime diagnostics/keyboard controls/empty MASTER badge button missing");
