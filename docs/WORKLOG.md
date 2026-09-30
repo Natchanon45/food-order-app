@@ -974,6 +974,60 @@ Remaining:
 
 ---
 
+## 2026-10-01 — Delivery distance raw translation key cleanup
+
+Symptom / request:
+- Delivery page showed the raw key `delivery.checkout.distance.calculating` directly beneath the Google map while calculating route distance.
+
+Root cause:
+- `public/assets/js/delivery.js` called two distance-state translation keys that were completely absent from `public/assets/js/public-translations.js`:
+  - `delivery.checkout.distance.calculating`
+  - `delivery.checkout.distance.route_failed`
+- The remaining distance keys used by Delivery were present in all five supported locales.
+- Because the missing keys were not in the dictionary, `t()` correctly fell back to returning the key name itself.
+
+Change:
+- Added `calculating` and `route_failed` translations for TH / EN / MY / LO / KM.
+- Audited every `delivery.checkout.distance.*` key currently called by `delivery.js`; all runtime distance keys are now represented in all five public dictionaries.
+- Cache-busted the public translation/i18n chain used by Delivery so browsers cannot retain the old dictionary after deploy:
+  - `public-translations.js?v=20261001-003`
+  - `i18n.js?v=20261001-003`
+  - `public-page-static-i18n.js?v=20261001-003`
+  - `public-i18n-bootstrap.js?v=20261001-003`
+  - `delivery.js?v=20261001-004`
+- Added a foundation regression assertion requiring every Delivery distance runtime key to appear in all five public locales.
+- Prepared a fresh Hosting identity: React `0.4.280 / 2026.10.01.303`; public storefront `0.16.32 / 2026.10.01.018`.
+
+Important files:
+- `public/assets/js/public-translations.js`
+- `public/assets/js/public-page-static-i18n.js`
+- `public/assets/js/public-i18n-bootstrap.js`
+- `public/assets/js/delivery.js`
+- `public/delivery/index.html`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `tools/react-foundation-contract.mjs`
+- `README.md`
+- `docs/NEXT_CHAT_HANDOFF.md`
+
+Verification:
+- Source audit found Delivery uses these distance keys: `calculating`, `fee_rule_missing`, `out_of_range`, `ready`, `ready_with_limit`, `route_failed`, `store_location_missing`, and `unavailable`.
+- Before the fix, `calculating` and `route_failed` appeared 0 times in the public dictionary while the other required keys existed for all five locales.
+- After the fix, both missing keys are populated for TH / EN / MY / LO / KM and the new regression contract enforces five-locale coverage.
+- Full `npm run test:operational`, `npm run test:react-parity`, `npm run build:react`, and `git diff --check` still need to run on the Mac because Desktop Commander command execution remains unavailable.
+
+Deploy state:
+- Fix commit: `313e68e5` — `fix: restore delivery distance translations`.
+- Branch: `feature/react-firebase-port`.
+- No merge to `main`.
+- No Firebase deployment performed by the assistant.
+- Hosting-only deployment is intended after the local test/build gate.
+
+Remaining:
+- Pull the branch, run the local test/build gate, deploy Hosting `foodapp`, and verify the map status shows localized text instead of raw translation keys.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
