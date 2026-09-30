@@ -924,6 +924,56 @@ Remaining:
 
 ---
 
+## 2026-10-01 — Delivery Hero uses tenant store name
+
+Symptom / request:
+- Customer Delivery page at `/s/{slug}/delivery` showed platform brand `KINJAI` inside the Hero card.
+- The Hero card is store-facing content and must display the current tenant/store name instead.
+
+Root cause:
+- `public/delivery/index.html` hard-coded `KINJAI` directly in the Hero heading.
+- Delivery runtime loaded `storeSettings` but never bound `shopName` or the resolved tenant name to the Hero.
+
+Change:
+- Replaced the hard-coded Hero brand with `#deliveryHeroStoreName`.
+- Added `renderDeliveryStoreHero()` to `public/assets/js/delivery.js`.
+- Store-name precedence is now:
+  1. `storeSettings.shopName`
+  2. resolved active tenant/store `name`
+  3. localized `shared.store.fallback_name` / `ร้านอาหาร`
+- Hydrates the Hero once immediately after tenant resolution, then re-renders after Store Settings finishes loading. This prevents a visible platform-brand or fallback flash while waiting for settings.
+- Kept `KINJAI` in the application header/platform brand; only the tenant-facing Hero title changed.
+- Added a React foundation regression assertion so the Delivery Hero cannot regress to a hard-coded KINJAI title.
+- Prepared the next Hosting identity: React `0.4.280 / 2026.10.01.302`; public storefront `0.16.32 / 2026.10.01.017`.
+
+Important files:
+- `public/delivery/index.html`
+- `public/assets/js/delivery.js`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `tools/react-foundation-contract.mjs`
+- `README.md`
+- `docs/NEXT_CHAT_HANDOFF.md`
+
+Verification:
+- GitHub source inspection confirms `public/delivery/index.html` no longer hard-codes `<span>KINJAI</span>` inside the Delivery Hero.
+- Delivery runtime now references both `settings?.shopName` and `activeShop?.name`.
+- The runtime hydrates the tenant name immediately and again after Store Settings loads.
+- Full `npm run test:operational`, `npm run test:react-parity`, `npm run build:react`, and `git diff --check` still need to run on the Mac because Desktop Commander command execution remains unavailable.
+
+Deploy state:
+- Main fix commit: `75642f79` — `fix: show store name in delivery hero`.
+- Immediate tenant-context hydration follow-up: `1f10f94b` — `fix: hydrate delivery hero from tenant context`.
+- Branch: `feature/react-firebase-port`.
+- No merge to `main`.
+- No Firebase deployment performed by the assistant.
+- Hosting-only deployment is intended after the local test/build gate.
+
+Remaining:
+- Pull the branch, run test/build, deploy Hosting `foodapp`, then verify the Delivery Hero shows the actual store name for multiple tenant slugs.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
