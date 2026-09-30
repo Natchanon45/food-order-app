@@ -421,6 +421,54 @@ Deploy state:
 
 ---
 
+## 2026-09-30 — React Table Order production-test preparation
+
+Request:
+- Move the existing customer Table Order URL to React while preserving the canonical URL `/s/{slug}/order`.
+- Prepare a Firebase Hosting build for cross-device and mobile testing before continuing Takeaway / Delivery / Delivery Success and before resuming Retail POS.
+
+Implementation:
+- Added `react-app/src/pages/PublicOrderPage.jsx`.
+- Added shared public storefront UI in `react-app/src/components/PublicStorefront.jsx`.
+- Added public tenant/menu/table/order Firebase data layer in `react-app/src/data/publicStorefrontData.js`.
+- Firebase Hosting rewrites for both `/s/*/order` and compatibility `/s/*/react/order` now target `/react/index.html`.
+- Table session lookup supports the active table by `tableToken`, preserving moved-table sessions.
+- Existing table order history is read through table `orderIds`; paid/cancelled orders stay excluded from the active customer view.
+- Existing pending-order ID protection is preserved for retry safety.
+- Added React storefront parity CSS assets and repaired the parity sync runtime-CSS extractor.
+- Added `public-storefront-overrides.json` so the mandatory free-gift translation cannot be lost when syncing translations from Laravel MASTER.
+
+Local verification completed before GitHub push:
+- React production build completed with 134 modules.
+- `git diff --check` passed after parity-sync EOF normalization.
+- Canonical local URL `/s/saas-test-shop/order?table=01&token=...` loaded the React shell.
+- Active Table 01 session resolved correctly.
+- 37 menu items loaded with desktop pagination.
+- Existing round history rendered: 1 previous round, total 375.00.
+- Add item, quantity increment, cart total, and toast interaction worked in browser probe.
+- No extra test order was submitted during the UI probe.
+- Compatibility `/s/{slug}/react/order` is retained only as a redirect/compatibility path; customers should continue using the canonical URL without `/react`.
+
+Git state:
+- User pushed the migration checkpoint as commit `acf05c18` (`upload final react project`) to `origin/feature/react-firebase-port`.
+- No merge to `main`.
+
+Release preparation:
+- React Version `0.4.280` • Build `2026.09.30.295`.
+- Public storefront Version `0.16.32` • Build `2026.09.30.010`.
+- Build numbers were increased because `294 / 009` were already deployed previously.
+- Full operational/parity test suites still need to be rerun before treating this as a final release; this deployment is specifically for Order React cross-device/mobile verification.
+
+Deployment scope:
+- Firebase Hosting target `foodapp` only.
+- Do not deploy Firestore Rules, Storage Rules, or Cloud Functions.
+- Takeaway, Delivery, Delivery Success, and Retail POS are not part of this Order-only React test cutover.
+
+Deploy state:
+- Pending Firebase Hosting deployment and production verification.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
