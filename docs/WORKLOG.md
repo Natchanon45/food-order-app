@@ -1166,6 +1166,48 @@ Remaining:
 
 ---
 
+## 2026-10-01 — Home parity CSS loading flash removed
+
+Symptom / request:
+- Returning from `/reports/revenue-share` to Home briefly showed the dashboard in a pale / near-monochrome intermediate state before the normal semantic card colors appeared.
+- The flash was short enough that it was difficult to capture, but reproducible during route navigation.
+
+Root cause:
+- `HomePage.jsx` called `useParityPage(...)` to load `home-dashboard.css`, `public-contact.css`, `public-utility-actions.css`, and `home-page.css`, but ignored the hook's `stylesReady` return value.
+- React therefore rendered the Home dashboard immediately with only the already-loaded global CSS. The Home-specific semantic color rules arrived asynchronously a moment later, causing the visible white/grey -> colored transition.
+
+Change:
+- Home now stores `const stylesReady = useParityPage(...)`.
+- Home's existing `PageReadyOverlay` remains visible while `stylesReady === false`.
+- Dashboard/public Home content is not rendered until all Home-specific parity stylesheets are ready.
+- Added a React foundation regression assertion requiring the Home page to gate rendering on `stylesReady`.
+- Prepared a fresh Hosting identity: React `0.4.280 / 2026.10.01.306`; public storefront `0.16.32 / 2026.10.01.021`.
+
+Important files:
+- `react-app/src/pages/HomePage.jsx`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `tools/react-foundation-contract.mjs`
+- `README.md`
+- `docs/NEXT_CHAT_HANDOFF.md`
+
+Verification:
+- Source inspection confirms Home now captures `stylesReady`.
+- Home loading condition now includes `|| !stylesReady`.
+- The existing `PageReadyOverlay` uses globally preloaded CSS, so the user sees the loading state rather than partially styled Home content during route transitions.
+- Full local test/build/generated-artifact verification and Hosting deploy still need to run on the Mac.
+
+Deploy state:
+- Fix commit: `77296f7f` — `fix: gate home rendering on parity styles`.
+- Branch: `feature/react-firebase-port`.
+- No merge to `main`.
+- No Firebase deployment performed by the assistant.
+
+Remaining:
+- Pull, test/build, commit generated assets if changed, push, deploy Hosting, then re-test Revenue Share -> Back -> Home on desktop and mobile.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
