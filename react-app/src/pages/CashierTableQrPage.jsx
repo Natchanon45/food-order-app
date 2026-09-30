@@ -460,7 +460,7 @@ export function CashierTableQrPage() {
               <article className="card qr-card print-target">
                 <div className="qr-ticket">
                   <div className="qr-ticket-header">
-                    <div className="qr-ticket-brand">FOOD ORDER QR</div>
+                    <div className="qr-ticket-brand">KINJAI QR</div>
                     <div className="qr-ticket-title">{t("cashier_documents.table_qr.ticket_title")}</div>
                     <div className="qr-ticket-table">{ticket.table.name}</div>
                   </div>
