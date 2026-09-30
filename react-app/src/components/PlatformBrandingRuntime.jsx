@@ -33,23 +33,24 @@ function upsertLink(rel, href, id) {
   link.href = href;
 }
 
-function applyLogo(logoUrl = "") {
-  document.querySelectorAll(".brand-mark, .login-logo").forEach(target => {
+function applyBrandImage(selector, imageUrl = "", alt = "LUKKAJA") {
+  document.querySelectorAll(selector).forEach(target => {
     if (!target.dataset.brandingFallbackHtml) target.dataset.brandingFallbackHtml = target.innerHTML;
-    const applied = target.dataset.brandingLogoUrl || "";
-    if (applied === logoUrl) return;
+    const applied = target.dataset.brandingImageUrl || "";
+    if (applied === imageUrl) return;
 
-    target.dataset.brandingLogoUrl = logoUrl;
-    if (!logoUrl) {
+    target.dataset.brandingImageUrl = imageUrl;
+    if (!imageUrl) {
       target.classList.remove("platform-brand-image-target");
       target.innerHTML = target.dataset.brandingFallbackHtml;
       return;
     }
+
     target.classList.add("platform-brand-image-target");
     target.textContent = "";
     const image = document.createElement("img");
-    image.src = logoUrl;
-    image.alt = "LUKKAJA";
+    image.src = imageUrl;
+    image.alt = alt;
     image.decoding = "async";
     target.appendChild(image);
   });
@@ -57,10 +58,19 @@ function applyLogo(logoUrl = "") {
 
 export function applyPlatformBranding(branding = {}) {
   ensureStyles();
-  applyLogo(branding.logoUrl || "");
-  const favicon = branding.faviconUrl || branding.appIconUrl || "";
+
+  const logoUrl = String(branding.logoUrl || "").trim();
+  const appIconUrl = String(branding.appIconUrl || "").trim();
+
+  // Header mark is the application icon. Use the uploaded App Icon first.
+  applyBrandImage(".brand-mark", appIconUrl || logoUrl, "LUKKAJA");
+
+  // Login/large brand areas are logo surfaces. Keep Logo as the primary asset.
+  applyBrandImage(".login-logo", logoUrl || appIconUrl, "LUKKAJA");
+
+  const favicon = branding.faviconUrl || appIconUrl || logoUrl || "";
   upsertLink("icon", favicon, "platformDynamicFavicon");
-  upsertLink("apple-touch-icon", branding.appIconUrl || favicon, "platformAppleTouchIcon");
+  upsertLink("apple-touch-icon", appIconUrl || favicon, "platformAppleTouchIcon");
 }
 
 async function resolvedBranding(data = {}) {
