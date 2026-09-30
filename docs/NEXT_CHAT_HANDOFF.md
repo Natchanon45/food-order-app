@@ -319,13 +319,13 @@ Minimum:
 - Version should bump for a user-visible release/milestone.
 - Never reuse the exact same Version + Build pair.
 
-Current React footer identity before the next Hosting deployment:
-- Version: `0.4.279`
-- Build: `2026.09.27.290`
+Current React footer identity prepared for the next Hosting deployment:
+- Version: `0.4.280`
+- Build: `2026.09.30.294`
 
-Current legacy/shared `public/assets/js/app-info.js` identity is older:
-- Version: `0.16.31`
-- Build: `2026.09.20.005`
+Current public storefront `public/assets/js/app-info.js` identity prepared for the next Hosting deployment:
+- Version: `0.16.32`
+- Build: `2026.09.30.009`
 
 Before the next Hosting deploy, decide the next release identity and synchronize active release surfaces.
 Review/update at minimum before Hosting deploy:

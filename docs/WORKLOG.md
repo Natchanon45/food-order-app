@@ -381,6 +381,38 @@ Deploy state:
 - No Firestore Rules, Storage Rules, or Cloud Functions were deployed as part of this cutover.
 - The first Hosting deploy emitted a warning that rewrite function `lalamoveWebhook` had no valid endpoint. Hosting still deployed successfully. Treat `/api/lalamove/webhook` as a follow-up dependency until that Function is deliberately deployed/verified; do not deploy all local Functions just to silence this warning.
 
+## 2026-09-30 — Canonical no-/react Hosting redeploy preparation
+
+Request:
+- Commit, push, and deploy the current Firebase production build while preserving the existing customer URLs without requiring `/react`.
+
+Routing requirement:
+- Customer storefront URLs remain `/s/{slug}/order`, `/s/{slug}/delivery`, `/s/{slug}/takeaway`, and `/s/{slug}/delivery/success`.
+- Canonical operational routes remain `/login`, `/cashier`, `/kitchen`, `/admin`, `/platform`, `/waiting-queue`, and other migrated legacy paths without `/react`.
+- `/react/**` remains compatibility-only and must not be required for existing customers.
+
+Release identity for this redeploy:
+- React Version `0.4.280` • Build `2026.09.30.294`.
+- Public storefront Version `0.16.32` • Build `2026.09.30.009`.
+- Version unchanged because this is a redeploy of the existing canonical-cutover milestone; Build increased to satisfy the mandatory unique Hosting-build rule.
+
+Deployment scope:
+- Firebase Hosting target `foodapp` only.
+- Do not deploy Firestore Rules, Storage Rules, or Cloud Functions as part of this action.
+
+Verification:
+- `npm run test:operational` passed.
+- `npm run test:react-parity` passed.
+- `npm run build:react` passed; 131 modules and canonical legacy entrypoints were synchronized.
+- `git diff --check` passed.
+- Local Hosting emulator returned HTTP 200 for canonical `/login`, `/cashier`, `/kitchen`, `/admin`, `/platform`, and `/waiting-queue` routes without `/react`.
+- Existing customer URLs `/s/saas-test-shop/order`, `/s/saas-test-shop/delivery`, and `/s/saas-test-shop/takeaway` returned HTTP 200 without `/react`.
+
+Deploy state:
+- Pending commit / push / Hosting deploy.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
