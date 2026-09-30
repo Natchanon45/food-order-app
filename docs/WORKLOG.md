@@ -476,6 +476,44 @@ Deploy state:
 
 ---
 
+## 2026-09-30 — Mobile Sales Report header one-row alignment
+
+Symptom / request:
+- On the React Admin Sales Report at mobile width, the FOD mark was visually off-center on the Y axis.
+- Language/profile actions wrapped to a second row; the requested header/action bar is a single row.
+
+Root cause:
+- Shared `super-admin-header.css` forced `.super-admin-header-leading` to `flex: 1 1 100%` and `width: 100%` below 768px, which consumed the entire first row and pushed `.app-header-actions` below it.
+- The FOD label relied on the generic brand-mark grid/pseudo-element alignment and was not explicitly centered by the shared Super Admin header layer.
+
+Change:
+- Made the Super Admin mobile header `flex-wrap: nowrap`.
+- Changed the leading block back to `flex: 1 1 auto` / `width: auto`.
+- Kept brand, back button, locale switcher, and profile actions on one row.
+- Added compact mobile gaps and title ellipsis protection so narrow screens do not force another row.
+- Explicitly centered `.brand-mark` and `.brand-mark::after` with inline-flex/flex on both axes.
+- Synchronized both React parity source and built public parity CSS.
+
+Important files:
+- `react-app/public/parity/css/super-admin-header.css`
+- `public/react/parity/css/super-admin-header.css`
+
+Verification:
+- CSS rule review confirms the previous 100%-width mobile row break was removed.
+- Runtime visual verification remains to be performed on the user's 440px mobile viewport after pulling this branch.
+- No Firebase deploy was performed for this CSS-only correction yet.
+
+Git state:
+- GitHub commits: `52894f51` (source parity CSS), `b642c996` (public React parity CSS).
+- Branch: `feature/react-firebase-port`.
+- No merge to `main`.
+
+Remaining:
+- Pull latest branch on the Mac and refresh the mobile emulator / real phone.
+- If approved, bump Build before the next Firebase Hosting deploy.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
