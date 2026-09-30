@@ -1,7 +1,7 @@
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
-import { getIntlLocale, t } from "./i18n.js?v=20261001-001";
+import { getIntlLocale, t } from "./i18n.js?v=20261001-002";
 import "./form-validation-ui.js?v=20260731-080";
-import { APP_INFO } from "./app-info.js?v=20261001-001";
+import { APP_INFO } from "./app-info.js?v=20261001-002";
 
 export const APP_VERSION = APP_INFO.version;
 export const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";

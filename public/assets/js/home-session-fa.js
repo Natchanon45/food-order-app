@@ -1,8 +1,8 @@
-import { waitForAuth, getUserProfile, mountUserMenu, STAFF_ROLES } from "./auth-service.js?v=20260920-001";
+import { waitForAuth, getUserProfile, mountUserMenu, STAFF_ROLES } from "./auth-service.js?v=20261001-002";
 import { dataService } from "./data-service.js?v=20260704-001";
 import { functions, httpsCallable } from "./firebase-config.js?v=20260630-073";
-import translations from "./home-translations.js?v=20260903-218";
-import { configureI18n, applyTranslations, t } from "./i18n.js?v=20261001-001";
+import translations from "./home-translations.js?v=20261001-002";
+import { configureI18n, applyTranslations, t } from "./i18n.js?v=20261001-002";
 
 configureI18n(translations);
 applyTranslations();
@@ -12,6 +12,23 @@ const getTenantRevenueShareAccess = httpsCallable(functions, "getTenantRevenueSh
 
 const dashboard = document.querySelector("#staffDashboard");
 const publicLanding = document.querySelector("#publicLanding");
+const readyOverlay = document.querySelector("[data-home-session-ready]");
+let redirecting = false;
+
+function finishHomeReady() {
+  document.documentElement.classList.remove("page-ready-blocked");
+  document.body.classList.remove("page-ready-blocked");
+  if (readyOverlay) readyOverlay.hidden = true;
+}
+
+function failHomeReady(error) {
+  console.error("STAFF_HOME_BOOTSTRAP_FAILED", error);
+  const title = readyOverlay?.querySelector("[data-page-ready-title]");
+  const message = readyOverlay?.querySelector("[data-page-ready-message]");
+  if (title) title.textContent = t("shared.state.load_failed");
+  if (message) message.textContent = t("shared.state.try_again");
+}
+
 const user = await waitForAuth();
 
 function enablePublicRegisterCta() {
@@ -100,6 +117,7 @@ if (user) {
   const profile = await getUserProfile(user);
 
   if (profile?.active !== false && profile?.role === "super_admin") {
+    redirecting = true;
     location.replace("/platform");
   } else if (profile?.active !== false && STAFF_ROLES.includes(profile?.role)) {
     document.body.classList.add("staff-home");
@@ -134,3 +152,5 @@ if (user) {
     dashboard.hidden = false;
   }
 }
+
+if (!redirecting) finishHomeReady();

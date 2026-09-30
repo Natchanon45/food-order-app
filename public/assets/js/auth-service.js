@@ -7,6 +7,7 @@ import {
 import "./form-validation-ui.js?v=20260731-080";
 import { clearActiveTenant, setActiveTenant } from "./tenant-context.js";
 import { iconMarkup } from "./bootstrap-icons.js?v=20260701-001";
+import { t as i18nText } from "./i18n.js?v=20261001-002";
 
 export const ROLE_HOME = {
   super_admin: "/platform",
@@ -97,8 +98,14 @@ function ensurePasswordDialogStyles() {
   document.head.appendChild(style);
 }
 
+function translated(key, fallback, replacements = {}) {
+  const value = i18nText(key, replacements);
+  return value && value !== key ? value : fallback;
+}
+
 function roleLabel(role) {
-  return ({ super_admin: "เจ้าของระบบ", owner: "เจ้าของร้าน", admin: "ผู้ดูแลระบบ", manager: "ผู้จัดการ", cashier: "แคชเชียร์", kitchen: "ครัว" })[role] || role;
+  const fallback = ({ super_admin: "เจ้าของระบบ", owner: "เจ้าของร้าน", admin: "ผู้ดูแลระบบ", manager: "ผู้จัดการ", cashier: "แคชเชียร์", kitchen: "ครัว" })[role] || role;
+  return translated(`shared.user_menu.roles.${role}`, fallback);
 }
 
 function greetingName(profile) {
@@ -114,18 +121,18 @@ function greetingName(profile) {
 function roleMenuLinks(profile) {
   if (profile.role === "super_admin") {
     return [
-      { href: "/platform", icon: "home", label: "ระบบกลาง" },
-      { href: "/admin/tenants", icon: "settings", label: "จัดการร้านค้า" }
+      { key: "platform", href: "/platform", icon: "home", label: translated("shared.user_menu.platform", "ระบบกลาง") },
+      { key: "tenants", href: "/admin/tenants", icon: "settings", label: translated("shared.user_menu.manage_stores", "จัดการร้านค้า") }
     ];
   }
 
-  const links = [{ href: "/", icon: "home", label: "หน้าหลัก" }];
-  if (["owner", "admin", "manager", "cashier"].includes(profile.role)) links.push({ href: "/cashier/waiting-queue", icon: "people", label: "คิวรอโต๊ะ" });
-  if (["owner", "cashier"].includes(profile.role)) links.push({ href: "/cashier/table-qr", icon: "easel2", label: "เปิดโต๊ะ" });
-  if (["owner", "admin"].includes(profile.role)) links.push({ href: "/admin", icon: "settings", label: "จัดการระบบร้าน" });
+  const links = [{ key: "home", href: "/", icon: "home", label: translated("shared.user_menu.home", "หน้าหลัก") }];
+  if (["owner", "admin", "manager", "cashier"].includes(profile.role)) links.push({ key: "waiting_queue", href: "/cashier/waiting-queue", icon: "people", label: translated("shared.user_menu.waiting_queue", "คิวรอโต๊ะ") });
+  if (["owner", "cashier"].includes(profile.role)) links.push({ key: "table_qr", href: "/cashier/table-qr", icon: "easel2", label: translated("shared.user_menu.open_table", "เปิดโต๊ะ") });
+  if (["owner", "admin"].includes(profile.role)) links.push({ key: "admin", href: "/admin", icon: "settings", label: translated("shared.user_menu.store_management", "จัดการระบบร้าน") });
   if (profile.role === "owner") {
-    links.push({ href: "/admin/users", icon: "users", label: "จัดการพนักงาน" });
-    links.push({ action: "change-password", icon: "key", label: "เปลี่ยนรหัสผ่าน" });
+    links.push({ key: "admin_users", href: "/admin/users", icon: "users", label: translated("shared.user_menu.staff_management", "จัดการพนักงาน") });
+    links.push({ key: "change_password", action: "change-password", icon: "key", label: translated("shared.user_menu.change_password", "เปลี่ยนรหัสผ่าน") });
   }
   return links;
 }
@@ -169,8 +176,9 @@ function renderMenuItem(item) {
   const itemIcon = item.icon === "key"
     ? '<i class="fi fi-rr-key app-icon fontawesome-profile-icon profile-key-reference-icon" aria-hidden="true"></i>'
     : `<i class="fi fi-rr-${flaticon[item.icon] || "circle"} app-icon" aria-hidden="true"></i>`;
-  if (item.action) return `<button type="button" class="user-menu-link" data-menu-action="${item.action}" role="menuitem">${itemIcon}<span>${item.label}</span></button>`;
-  return `<a class="user-menu-link" href="${item.href}" role="menuitem">${itemIcon}<span>${item.label}</span></a>`;
+  const keyAttr = item.key ? ` data-user-menu-key="${item.key}"` : "";
+  if (item.action) return `<button type="button" class="user-menu-link"${keyAttr} data-menu-action="${item.action}" role="menuitem">${itemIcon}<span>${item.label}</span></button>`;
+  return `<a class="user-menu-link"${keyAttr} href="${item.href}" role="menuitem">${itemIcon}<span>${item.label}</span></a>`;
 }
 
 function passwordErrorText(error) {
@@ -288,8 +296,32 @@ function showOwnerPasswordDialog() {
   setTimeout(() => backdrop.querySelector('input[name="currentPassword"]')?.focus(), 30);
 }
 
+function showAuthTransitionOverlay() {
+  if (document.querySelector("[data-auth-transition-overlay]")) return;
+  const overlay = document.createElement("div");
+  overlay.className = "page-ready-overlay";
+  overlay.dataset.authTransitionOverlay = "true";
+  overlay.setAttribute("role", "status");
+  overlay.setAttribute("aria-live", "polite");
+  overlay.setAttribute("aria-busy", "true");
+  overlay.style.cssText = "position:fixed;inset:0;z-index:2147482000;display:grid;place-items:center;padding:24px;background:rgba(246,249,247,.99);";
+  overlay.innerHTML = `
+    <div class="page-ready-simple" style="display:grid;justify-items:center;gap:8px;text-align:center">
+      <span class="page-ready-spinner" aria-hidden="true" style="display:block;box-sizing:border-box;width:44px;height:44px;border:4px solid #deebe3;border-top-color:#159447;border-right-color:#159447;border-radius:50%;animation:auth-transition-spin .85s linear infinite"></span>
+      <div class="page-ready-copy"><h2 style="margin:0;color:#162b20;font-size:1.15rem">กำลังออกจากระบบ...</h2><p style="margin:6px 0 0;color:#66756c">กรุณารอสักครู่...</p></div>
+    </div>`;
+  if (!document.querySelector("#auth-transition-style")) {
+    const style = document.createElement("style");
+    style.id = "auth-transition-style";
+    style.textContent = "@keyframes auth-transition-spin{to{transform:rotate(360deg)}}";
+    document.head.appendChild(style);
+  }
+  document.body.appendChild(overlay);
+}
+
 async function logoutToLogin() {
-  await signOut(auth);
+  showAuthTransitionOverlay();
+  await signOut(auth).catch(error => console.warn("AUTH_SIGN_OUT_FAILED", error));
   clearActiveTenant();
   location.replace("/login");
 }
@@ -346,9 +378,9 @@ export function mountUserMenu(profile) {
       ${icon("chevron-down", "app-icon user-menu-chevron")}
     </button>
     <div class="user-menu-panel" data-user-menu-panel role="menu" hidden>
-      <div class="user-menu-greeting">สวัสดี ${greetingName(profile)}<span class="user-menu-role">${roleLabel(profile.role)}</span></div>
+      <div class="user-menu-greeting">${translated("shared.user_menu.greeting", "สวัสดี :name", { name: greetingName(profile) })}<span class="user-menu-role">${roleLabel(profile.role)}</span></div>
       ${roleMenuLinks(profile).map(renderMenuItem).join("")}
-      <button type="button" class="user-menu-action danger" data-logout role="menuitem"><i class="fi fi-rr-exit app-icon" aria-hidden="true"></i><span>ออกจากระบบ</span></button>
+      <button type="button" class="user-menu-action danger" data-logout role="menuitem"><i class="fi fi-rr-exit app-icon" aria-hidden="true"></i><span>${translated("shared.user_menu.logout", "ออกจากระบบ")}</span></button>
     </div>`;
   actions.appendChild(menu);
   menu.style.marginLeft = "0";

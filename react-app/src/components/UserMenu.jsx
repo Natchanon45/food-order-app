@@ -4,6 +4,7 @@ import { EmailAuthProvider, reauthenticateWithCredential, signOut, updatePasswor
 import { auth } from "@/firebase/client";
 import { clearRetailPosSession } from "@/auth/retailPosSession";
 import { useI18n } from "@/i18n/I18nProvider";
+import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 
 const roleLabel = role => ({
   super_admin: "เจ้าของระบบ",
@@ -200,6 +201,7 @@ export function UserMenu({ profile }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const rootRef = useRef(null);
 
   useEffect(() => {
@@ -218,7 +220,10 @@ export function UserMenu({ profile }) {
   }, []);
 
   const logout = async () => {
-    await signOut(auth).catch(() => {});
+    if (loggingOut) return;
+    setOpen(false);
+    setLoggingOut(true);
+    await signOut(auth).catch(error => console.warn("AUTH_SIGN_OUT_FAILED", error));
     clearRetailPosSession();
     localStorage.removeItem("food_order_active_tenant");
     localStorage.removeItem("food_order_active_shop");
@@ -266,6 +271,7 @@ export function UserMenu({ profile }) {
         </div>
       </div>
       <OwnerPasswordDialog open={passwordOpen} onClose={() => setPasswordOpen(false)} />
+      {loggingOut ? <PageReadyOverlay title={t("shared.state.loading")} message={t("shared.state.please_wait")} /> : null}
     </>
   );
 }

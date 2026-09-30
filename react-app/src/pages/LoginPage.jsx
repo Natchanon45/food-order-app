@@ -4,6 +4,7 @@ import { authenticateStaff, ROLE_HOME } from "@/auth/authFlow";
 import { clearRetailPosSession, prepareRetailPosSession } from "@/auth/retailPosSession";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { ParityFooter } from "@/components/ParityFooter";
+import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 
@@ -140,7 +141,7 @@ export function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  useParityPage({
+  const stylesReady = useParityPage({
     bodyClass: "login-page",
     title: t("auth.login.title"),
     styles: ["login-page.css"],
@@ -195,6 +196,10 @@ export function LoginPage() {
       setBusy(false);
     }
   };
+
+  if (!stylesReady) {
+    return <PageReadyOverlay title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
+  }
 
   return (
     <>
