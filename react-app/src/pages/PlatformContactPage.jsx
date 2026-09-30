@@ -292,7 +292,7 @@ export function PlatformContactPage() {
   const origins = [location.origin, "http://127.0.0.1:8000", "http://localhost:8000"].filter((value, index, list) => list.indexOf(value) === index);
 
   if (authState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="LUKKAJA" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={78} />;
+    return <PageReadyOverlay context="KINJAI" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={78} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fplatform%2Fcontact" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;
@@ -301,7 +301,7 @@ export function PlatformContactPage() {
     <>
       <header className="app-header super-admin-header">
         <div className="super-admin-header-leading">
-          <div className="brand"><span className="brand-mark">FOD</span><span>{t("platform_contact.header.title")}</span></div>
+          <div className="brand"><span className="brand-mark">KJ</span><span>{t("platform_contact.header.title")}</span></div>
           <Link className="btn btn-sm super-admin-header-back" to="/platform"><i className="bi bi-arrow-left" aria-hidden="true"></i><span>{t("platform_contact.header.back")}</span></Link>
         </div>
         <div className="app-header-actions" data-header-actions>
