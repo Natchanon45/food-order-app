@@ -622,6 +622,42 @@ Deploy state:
 
 ---
 
+## 2026-09-30 — KINJAI brand rollout
+
+Decision:
+- Public product brand is now **KINJAI**.
+- Branding/UI names change first; repository names, Firebase project IDs, Firestore schema, translation keys, DOM/data identifiers, and other internal identifiers remain unchanged unless separately migrated later.
+
+Change:
+- Replaced visible React branding `LUKKAJA / FOD / FOOD ORDER QR` with `KINJAI / KJ / KINJAI QR` across Home, Login, Register, Platform, Admin, Sales Report, QR, Revenue Share, Waiting Queue, tenant/platform management, receipt, and SaaS setup surfaces.
+- Public Storefront header fallback changed to `KJ`.
+- Platform branding runtime image alt/fallback naming changed to KINJAI while keeping uploaded App Icon as the primary header asset.
+- Renamed public/static page titles and visible branding to KINJAI, including Delivery, Delivery Success, Takeaway, Verify, Privacy, Terms, Platform compatibility pages, and Revenue Share.
+- Public translation fallback names now use KINJAI in all supported locales.
+- Platform static translations changed from FOD platform naming to KINJAI.
+- Shared CSS fallback mark changed from `FOD` to compact `KJ` across React parity and remaining static/legacy bundles.
+- Existing internal identifiers such as `fod-login-email`, `data-delete-fod-wallet-topup`, and `fod_wallet_*` translation keys were intentionally preserved.
+- If the currently uploaded App Icon image itself still contains old FOD artwork, Super Admin must upload a new KINJAI App Icon; runtime wiring is already ready to use it globally.
+
+Release preparation:
+- React Version `0.4.280` • Build `2026.09.30.297`.
+- Public storefront Version `0.16.32` • Build `2026.09.30.012`.
+- Public milestone set to `KINJAI branding rollout`.
+- React foundation release contract aligned to Build 297.
+
+Verification:
+- React source audit found old FOD text only in preserved internal identifiers, not visible branding.
+- Public/static audit found no LUKKAJA/FOD brand labels remaining in the checked customer/platform/admin pages.
+- Shared CSS audit confirms zero `content: "FOD"` fallbacks and `KJ` fallback is present in all checked source/public bundles.
+- Full test/build/runtime verification remains required on the Mac after pulling because Desktop Commander command execution is unavailable.
+
+Deploy state:
+- Not deployed yet.
+- Hosting-only deployment is expected after local test/build and generated React asset refresh.
+- No Firestore Rules, Storage Rules, Functions, or merge to `main` are part of this branding rollout.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
