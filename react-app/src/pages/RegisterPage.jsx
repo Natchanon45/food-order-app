@@ -239,7 +239,7 @@ export function RegisterPage() {
     <>
       <header className="app-header register-header">
         <div className="brand">
-          <span className="brand-mark">FOD</span>
+          <span className="brand-mark">KJ</span>
           <span>{t("auth.register.title")}</span>
         </div>
         <Link className="btn btn-sm" to="/">
