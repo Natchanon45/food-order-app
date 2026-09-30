@@ -21,7 +21,7 @@ export function showStorefrontToast(message, type = "success") {
   }, 2600);
 }
 
-export function PublicStorefrontHeader({ title, badge, brandMark = "FO" }) {
+export function PublicStorefrontHeader({ title, badge, brandMark = "KJ" }) {
   return (
     <header className="app-header">
       <div className="brand"><span className="brand-mark">{brandMark}</span><span>{title}</span></div>
