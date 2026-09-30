@@ -16,6 +16,7 @@ import {
 } from "./customer-profile-service.js?v=20260915-005";
 
 const menuGrid = document.querySelector("#menuGrid");
+const deliveryHeroStoreName = document.querySelector("#deliveryHeroStoreName");
 const cartList = document.querySelector("#cartList");
 const categoryTabs = document.querySelector("#categoryTabs");
 const paymentMethod = document.querySelector("#paymentMethod");
@@ -63,6 +64,20 @@ let freeShippingApplied = false;
 let selectedFreeGiftMenuIds = new Set();
 let favoriteMenuIds = new Set();
 let currentFavoriteUser = null;
+
+function renderDeliveryStoreHero(settings = {}) {
+  if (!deliveryHeroStoreName) return;
+  const activeShop = dataService.getActiveShop?.() || {};
+  const translatedFallback = t("shared.store.fallback_name");
+  const fallback = translatedFallback && translatedFallback !== "shared.store.fallback_name"
+    ? translatedFallback
+    : "ร้านอาหาร";
+  deliveryHeroStoreName.textContent = String(
+    settings?.shopName
+    || activeShop?.name
+    || ""
+  ).trim() || fallback;
+}
 
 // DELIVERY_GOOGLE_ROUTE_ENGINE_20260903_001
 const deliveryDistanceStatus = document.querySelector("#deliveryDistanceStatus");
@@ -1364,6 +1379,7 @@ watchCustomerAuth(async user => {
 
 try {
   [menus, storeSettings] = await Promise.all([dataService.listMenus(), dataService.getStoreSettings()]);
+  renderDeliveryStoreHero(storeSettings);
   renderTabs();
   renderMenus();
   renderDeliveryZones();
