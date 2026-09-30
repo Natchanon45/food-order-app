@@ -1133,6 +1133,39 @@ Remaining:
 
 ---
 
+## 2026-10-01 — Foundation test custom assert compatibility fix
+
+Symptom / request:
+- Local `npm run test:react-parity` stopped in `tools/react-foundation-contract.mjs` with:
+  `TypeError: assert.equal is not a function`.
+
+Root cause:
+- This contract file defines its own assertion helper:
+  `const assert=(condition,message)=>{if(!condition)throw new Error(message)};`
+- A recently added Delivery distance translation regression check incorrectly used Node-style `assert.equal(...)`.
+- The custom helper has no `.equal` method, so the test crashed before reaching the React build.
+
+Change:
+- Replaced `assert.equal(count,5,...)` with the contract's native style:
+  `assert(count===5,...)`.
+- Audited the entire file for other `assert.*(...)` method calls; none remain.
+- Release identity remains React `0.4.280 / 2026.10.01.305` and public `0.16.32 / 2026.10.01.020` because the previous pipeline stopped before build/deploy and that release pair has not been deployed.
+
+Verification:
+- GitHub source audit confirms zero remaining `assert.<method>(...)` calls in `react-foundation-contract.mjs`.
+- Local tests/build/deploy still need to be rerun on the Mac.
+
+Deploy state:
+- Fix commit: `42171757` — `test: fix foundation translation assertion`.
+- Branch: `feature/react-firebase-port`.
+- No merge to `main`.
+- No Firebase deployment performed by the assistant.
+
+Remaining:
+- Pull the fix and rerun the guarded test/build/push/deploy sequence.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
