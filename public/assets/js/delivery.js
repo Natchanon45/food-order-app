@@ -79,6 +79,8 @@ function renderDeliveryStoreHero(settings = {}) {
   ).trim() || fallback;
 }
 
+renderDeliveryStoreHero();
+
 // DELIVERY_GOOGLE_ROUTE_ENGINE_20260903_001
 const deliveryDistanceStatus = document.querySelector("#deliveryDistanceStatus");
 const computeDeliveryRoute = httpsCallable(functions, "computeDeliveryRoute");
