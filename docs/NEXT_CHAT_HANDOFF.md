@@ -49,6 +49,14 @@ Active focus as of 2026-09-30: **pause the Retail POS migration at the checkpoin
 
 After Order / Delivery / Takeaway are complete and verified, resume the Retail POS work from the POS checkpoint in this document. Do not restart or re-port the completed POS work from scratch.
 
+Customer React production-test checkpoint (2026-09-30 evening):
+- Table Order React is deployed for cross-device/mobile testing on the canonical customer URL `/s/{slug}/order` without requiring `/react`.
+- Final build commit before deploy: `affb7d25` (`build: finalize Order React test deploy`).
+- React Version `0.4.280` / Build `2026.09.30.295`; public storefront Version `0.16.32` / Build `2026.09.30.010`.
+- Generated production candidate shell references `/react/assets/index-BoWOX-Jp.js`.
+- User confirmed Firebase Hosting deploy completed. Current next step is real production testing on desktop + mobile before starting Takeaway React.
+- Takeaway / Delivery / Delivery Success remain outside this Order-only test cutover; Retail POS remains paused.
+
 Documentation rule as of 2026-09-30:
 - `docs/WORKLOG.md` is the chronological source for completed fixes and implementation-affecting investigations.
 - **Update `docs/WORKLOG.md` after every completed change before moving to the next task.**
