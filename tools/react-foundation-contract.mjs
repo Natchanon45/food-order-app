@@ -164,7 +164,7 @@ const staticDeliveryRuntime=read("public/assets/js/delivery.js");
 const publicTranslations=read("public/assets/js/public-translations.js");
 const paritySync=read("tools/sync-react-parity-assets.py");
 assert(posPage.includes("initialDataReady")&&posPage.includes("!initialDataReady"),"POS full-page readiness must wait for initial Firebase data");
-assert(releaseConfig.includes('version: "0.4.280"')&&releaseConfig.includes('build: "2026.10.01.304"')&&parityFooter.includes("REACT_RELEASE.version")&&parityFooter.includes("REACT_RELEASE.build"),"React release identity must stay centralized across footer/developer surfaces");
+assert(releaseConfig.includes('version: "0.4.280"')&&releaseConfig.includes('build: "2026.10.01.305"')&&parityFooter.includes("REACT_RELEASE.version")&&parityFooter.includes("REACT_RELEASE.build"),"React release identity must stay centralized across footer/developer surfaces");
 assert(staticI18n.includes("globalThis.APP_I18N_DICTIONARIES")&&staticI18n.includes("activeDictionaries()")&&staticI18n.includes("app:i18n-configured"),"Static i18n must share dictionaries across cache-versioned module instances and publish configuration");
 assert(staticUi.includes("localizedFooterText")&&staticUi.includes("data-static-app-footer")&&staticUi.includes("app:i18n-configured")&&staticUi.includes("footerFallback"),"Static footer must never expose raw translation keys while i18n is still configuring");
 assert(staticUi.includes('./i18n.js?v=20261001-002')&&staticHomeSession.includes('./i18n.js?v=20261001-002')&&staticHome.includes('/assets/js/ui.js?v=20261001-002')&&staticHome.includes('/assets/js/home-session-fa.js?v=20261001-002'),"Static Home must keep one cache identity for shared i18n modules");
@@ -174,6 +174,10 @@ assert(staticHome.includes("data-home-session-ready")&&staticHomeSession.include
 assert(read("react-app/src/pages/LoginPage.jsx").includes("const stylesReady = useParityPage")&&read("react-app/src/pages/LoginPage.jsx").includes("if (!stylesReady)")&&read("react-app/src/pages/LoginPage.jsx").includes("<PageReadyOverlay"),"React Login must keep the loading overlay until page CSS is ready");
 const cashierReceiptPage=read("react-app/src/pages/CashierReceiptPage.jsx");
 assert(cashierReceiptPage.includes('bi bi-arrow-left app-icon')&&cashierReceiptPage.includes('bi bi-check-lg app-icon')&&cashierReceiptPage.includes('id="printButton"'),"Cashier Receipt back/print action icons must match Laravel MASTER");
+const packageJson=read("package.json");
+const generatedBuildContract=read("tools/generated-react-build-contract.mjs");
+assert(packageJson.includes('"verify:react-build": "node tools/generated-react-build-contract.mjs"')&&packageJson.includes("npm run verify:react-build"),"React postbuild must verify generated deploy artifacts");
+assert(generatedBuildContract.includes("Cashier Receipt generated bundle is missing the Back arrow icon")&&generatedBuildContract.includes("Cashier Receipt generated bundle is missing the Print check icon")&&generatedBuildContract.includes("is stale: expected release Build"),"Generated React build contract must guard release identity and Receipt action icons");
 assert(read("react-app/src/components/UserMenu.jsx").includes("loggingOut")&&read("react-app/src/components/UserMenu.jsx").includes("<PageReadyOverlay"),"React logout must show a blocking loading overlay before redirecting to Login");
 assert(staticDeliveryEntry.includes('id="deliveryHeroStoreName"')&&!staticDeliveryEntry.includes('<span>KINJAI</span></h1>')&&staticDeliveryRuntime.includes("renderDeliveryStoreHero")&&staticDeliveryRuntime.includes("settings?.shopName")&&staticDeliveryRuntime.includes("activeShop?.name"),"Delivery customer Hero must render the tenant store name, not the KINJAI platform brand");
 for(const key of ["calculating","fee_rule_missing","out_of_range","ready_with_limit","route_failed","store_location_missing","unavailable"]){

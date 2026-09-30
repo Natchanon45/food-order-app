@@ -36,7 +36,8 @@
     "report:react-parity": "node tools/react-parity-report.mjs",
     "test:react-parity": "npm run test:react-foundation && npm run test:react-migration && npm run test:react-parity-matrix && npm run test:react-p0-actions && npm run test:react-callables && npm run test:tenant-access && npm run test:ui-layers",
     "test:react-parity-full": "npm run test:react-parity && npm run test:react-p0-browser",
-    "postbuild:react": "python3 tools/sync-react-legacy-entrypoints.py"
+    "postbuild:react": "python3 tools/sync-react-legacy-entrypoints.py && npm run verify:react-build",
+    "verify:react-build": "node tools/generated-react-build-contract.mjs"
   },
   "repository": {
     "type": "git",
