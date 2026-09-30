@@ -82,7 +82,7 @@ export function HomePage() {
   const [resolvedShopName, setResolvedShopName] = useState("");
   const [publicContact, setPublicContact] = useState(null);
 
-  useParityPage({
+  const stylesReady = useParityPage({
     bodyClass: staff ? "staff-home" : "",
     title: t("home.meta.title"),
     styles: ["home-dashboard.css", "public-contact.css", "public-utility-actions.css", "home-page.css"],
@@ -154,6 +154,7 @@ export function HomePage() {
 
   if (
     authState.status === "loading"
+    || !stylesReady
     || profile?.role === "super_admin"
     || (staff && tenantState.status === "loading")
   ) {
