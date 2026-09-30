@@ -10,9 +10,11 @@ function ensureStyles() {
   const style = document.createElement("style");
   style.id = STYLE_ID;
   style.textContent =
-    ".brand-mark.platform-brand-image-target::after{content:none!important}" +
+    ".brand-mark{display:inline-flex!important;align-items:center!important;justify-content:center!important;line-height:1!important;vertical-align:middle!important}" +
+    ".brand-mark::after{display:flex!important;width:100%!important;height:100%!important;align-items:center!important;justify-content:center!important;margin:0!important;padding:0!important;line-height:1!important;transform:translateY(-1px)!important}" +
+    ".brand-mark.platform-brand-image-target::after{content:none!important;transform:none!important}" +
     ".brand-mark.platform-brand-image-target,.login-logo.platform-brand-image-target{padding:0!important;background:transparent!important;overflow:hidden!important}" +
-    ".platform-brand-image-target>img{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important}";
+    ".platform-brand-image-target>img{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;object-position:center center!important;margin:auto!important}";
   document.head.appendChild(style);
 }
 
