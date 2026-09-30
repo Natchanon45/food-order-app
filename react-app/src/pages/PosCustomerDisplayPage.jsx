@@ -94,7 +94,7 @@ export function PosCustomerDisplayPage() {
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (tenant?.id && !ready)) {
     return <PageReadyOverlay context={t("pos_customer_display.header.title")} title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={82} />;
   }
-  if (!profile) return <Navigate to="/login?next=%2Freact%2Fpos%2Fcustomer-display" replace />;
+  if (!profile) return <Navigate to="/login?next=%2Fpos%2Fcustomer-display" replace />;
   if (!tenant) return <Navigate to="/" replace />;
 
   return (

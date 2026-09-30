@@ -337,7 +337,7 @@ export function CashierTableQrPage() {
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (allowed && loading)) {
     return <PageReadyOverlay context={t("cashier_documents.table_qr.header_title")} title={t("cashier.loading.title")} message={t("cashier.loading.preparing")} progress={76} />;
   }
-  if (!profile) return <Navigate to="/login?next=%2Freact%2Fcashier%2Ftable-qr" replace />;
+  if (!profile) return <Navigate to="/login?next=%2Fcashier%2Ftable-qr" replace />;
   if (!allowed) return <Navigate to="/" replace />;
   if (tenantState.status === "error" || !tenant) return <Navigate to="/" replace />;
 

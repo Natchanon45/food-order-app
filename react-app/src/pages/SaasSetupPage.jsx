@@ -136,7 +136,7 @@ export function SaasSetupPage() {
   if (authState.status === "loading" || !stylesReady) {
     return <PageReadyOverlay context="LUKKAJA" title={globalT("shared.state.loading")} message={globalT("shared.state.please_wait")} progress={80} />;
   }
-  if (!profile) return <Navigate to="/login?next=%2Freact%2Fsuper-admin%2Fsaas-setup" replace />;
+  if (!profile) return <Navigate to="/login?next=%2Fsuper-admin%2Fsaas-setup" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;
 
   return (

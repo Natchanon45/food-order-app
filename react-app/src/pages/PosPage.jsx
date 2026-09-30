@@ -872,7 +872,7 @@ export function PosPage() {
   ) {
     return <PageReadyOverlay context="LUKKAJA" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={92} />;
   }
-  if (!profile) return <Navigate to="/login?next=%2Freact%2Fpos" replace />;
+  if (!profile) return <Navigate to="/login?next=%2Fpos" replace />;
   if (!ALLOWED_ROLES.has(profile.role) || !canUseRetailPos(profile) || tenantState.status === "error" || !tenant) return <Navigate to="/" replace />;
 
   return (

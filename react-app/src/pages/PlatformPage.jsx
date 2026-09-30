@@ -599,7 +599,7 @@ export function PlatformPage() {
   if (authState.status === "loading" || !stylesReady) {
     return <PageReadyOverlay context="LUKKAJA" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={72} />;
   }
-  if (!profile) return <Navigate to="/login?next=%2Freact%2Fplatform" replace />;
+  if (!profile) return <Navigate to="/login?next=%2Fplatform" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;
 
   const receiverTypes = raw("platform.slip_verification.receiver_account_types") || {};

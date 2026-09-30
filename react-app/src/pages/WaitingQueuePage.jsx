@@ -514,7 +514,7 @@ export function WaitingQueuePage() {
   if (authStatus === "loading" || tenantState.status === "loading" || !stylesReady || (tenant && loading)) {
     return <PageReadyOverlay context="LUKKAJA" title={wq("hero.loading_actor")} message={wq("controls.syncing")} progress={82} />;
   }
-  if (!profile) return <Navigate to="/login?next=%2Freact%2Fwaiting-queue" replace />;
+  if (!profile) return <Navigate to="/login?next=%2Fwaiting-queue" replace />;
   if (!ROLES.has(profile.role) || tenantState.status === "error" || !tenant) return <Navigate to="/" replace />;
 
   const publicFor = queue => publicRows.find(row => row.waitingQueueId === queue.id || row.token === queue.publicToken);

@@ -903,7 +903,7 @@ export function CashierPage() {
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (allowedRole && loading)) {
     return <PageReadyOverlay context={t("cashier.header.title")} title={t("cashier.loading.title")} message={t("cashier.loading.preparing")} progress={76} />;
   }
-  if (!profile) return <Navigate to="/login?next=%2Freact%2Fcashier" replace />;
+  if (!profile) return <Navigate to="/login?next=%2Fcashier" replace />;
   if (!allowedRole) return <Navigate to="/" replace />;
   if (tenantState.status === "error" || !tenant) return <Navigate to="/" replace />;
 

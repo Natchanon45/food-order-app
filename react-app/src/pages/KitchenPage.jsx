@@ -494,7 +494,7 @@ export function KitchenPage() {
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (allowedRole && loading)) {
     return <PageReadyOverlay context={t("kitchen.brand")} title={t("kitchen.loading.title")} message={t("kitchen.loading.preparing")} progress={76} />;
   }
-  if (!profile) return <Navigate to="/login?next=%2Freact%2Fkitchen" replace />;
+  if (!profile) return <Navigate to="/login?next=%2Fkitchen" replace />;
   if (!allowedRole) return <Navigate to="/" replace />;
   if (tenantState.status === "error" || !tenant) return <Navigate to="/" replace />;
 

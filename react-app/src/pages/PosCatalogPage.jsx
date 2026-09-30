@@ -220,7 +220,7 @@ export function PosCatalogPage() {
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady) {
     return <PageReadyOverlay context="LUKKAJA" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={92} />;
   }
-  if (!profile) return <Navigate to="/login?next=%2Freact%2Fpos%2Fcatalog" replace />;
+  if (!profile) return <Navigate to="/login?next=%2Fpos%2Fcatalog" replace />;
   if (profile.role !== "owner" || tenantState.status === "error" || !tenant) return <Navigate to="/" replace />;
 
   return (

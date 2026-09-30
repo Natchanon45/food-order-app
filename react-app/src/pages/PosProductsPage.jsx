@@ -571,7 +571,7 @@ export function PosProductsPage() {
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || !initialReady) {
     return <PageReadyOverlay context="LUKKAJA" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={92} />;
   }
-  if (!profile) return <Navigate to="/login?next=%2Freact%2Fpos%2Fproducts" replace />;
+  if (!profile) return <Navigate to="/login?next=%2Fpos%2Fproducts" replace />;
   if (!tenant || !canView) return <Navigate to="/pos" replace />;
 
   const selectedStockProduct = products.find(item => item.id === stockForm.productId);

@@ -67,7 +67,7 @@ export function PosTaxInvoicePage() {
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (tenant?.id && !ready)) {
     return <PageReadyOverlay context={t("pos_tax_invoice.title")} title={t("pos_tax_invoice.loading")} message={t("shared.state.please_wait")} progress={90} />;
   }
-  if (!profile) return <NavigAte to="/login?next=%2Freact%2Fpos%2Ftax-invoice" replace />;
+  if (!profile) return <NavigAte to="/login?next=%2Fpos%2Ftax-invoice" replace />;
   if (!tenant) return <NavigAte to="/" replace />;
 
   const items = Array.isArray(invoice?.items) ? invoice.items : [];

@@ -294,7 +294,7 @@ export function PlatformContactPage() {
   if (authState.status === "loading" || !stylesReady) {
     return <PageReadyOverlay context="LUKKAJA" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={78} />;
   }
-  if (!profile) return <Navigate to="/login?next=%2Freact%2Fplatform%2Fcontact" replace />;
+  if (!profile) return <Navigate to="/login?next=%2Fplatform%2Fcontact" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;
 
   return (

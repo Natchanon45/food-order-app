@@ -1378,7 +1378,7 @@ export function AdminPage() {
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady) {
     return <PageReadyOverlay context="LUKKAJA" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={82} />;
   }
-  if (!profile) return <Navigate to="/login?next=%2Freact%2Fadmin" replace />;
+  if (!profile) return <Navigate to="/login?next=%2Fadmin" replace />;
   if (!["owner", "admin"].includes(profile.role)) return <Navigate to="/" replace />;
   if (tenantState.status === "error" || !tenant) return <Navigate to="/" replace />;
 

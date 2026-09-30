@@ -169,7 +169,7 @@ export function AdminUsersPage() {
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (profile?.role === "owner" && tenantState.status === "ready" && !initialUsersReady)) {
     return <PageReadyOverlay context="LUKKAJA" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={84} />;
   }
-  if (!profile) return <Navigate to="/login?next=%2Freact%2Fadmin%2Fusers" replace />;
+  if (!profile) return <Navigate to="/login?next=%2Fadmin%2Fusers" replace />;
   if (profile.role !== "owner") return <Navigate to="/" replace />;
   if (tenantState.status === "error" || !tenantState.tenant) return <Navigate to="/" replace />;
 

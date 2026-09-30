@@ -943,7 +943,7 @@ export function AdminTenantsPage() {
   if (authState.status === "loading" || !stylesReady || (profile?.role === "super_admin" && !initialTenantsReady)) {
     return <PageReadyOverlay context="LUKKAJA" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={74} />;
   }
-  if (!profile) return <Navigate to="/login?next=%2Freact%2Fadmin%2Ftenants" replace />;
+  if (!profile) return <Navigate to="/login?next=%2Fadmin%2Ftenants" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;
 
   const money = value => formatNumber(Number(value || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 });

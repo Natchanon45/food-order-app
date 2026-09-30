@@ -336,8 +336,8 @@ Implementation:
 - Fixed missing nested static entrypoint synchronization for Admin Revenue Share, Admin Sales Report, Admin Users, Waiting Queue Customer, and Waiting Queue Display.
 
 Release identity before Hosting deploy:
-- React Version `0.4.280` • Build `2026.09.30.292` (final correction deploy build).
-- Public storefront Version `0.16.32` • Build `2026.09.30.007` (final correction deploy build).
+- React Version `0.4.280` • Build `2026.09.30.293` (final canonical-auth correction deploy build).
+- Public storefront Version `0.16.32` • Build `2026.09.30.008` (final canonical-auth correction deploy build).
 - Release marker: `CANONICAL-URL-CUTOVER`.
 
 Verification before commit/deploy:
@@ -354,6 +354,11 @@ Post-deploy correction:
 - First Hosting release exposed one remaining legacy static entry at `/reports/revenue-share`.
 - Added `public/reports/revenue-share/index.html` to the automatic React legacy-entry sync.
 - Bumped Build again before the corrective Hosting deploy; Version stayed unchanged.
+
+Canonical auth-return correction:
+- Production verification showed canonical protected pages redirected to `/login` but still carried `next=/react/...` in the query string.
+- Removed `/react` from all protected-route login return paths and from `RequireRole` return-path generation.
+- Bumped Build again before this Hosting correction; Version stayed unchanged.
 
 Deployment scope:
 - Hosting only.
