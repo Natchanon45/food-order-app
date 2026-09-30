@@ -27,7 +27,7 @@ const collectTranslationValues=value=>{
   if(value&&typeof value==="object")Object.values(value).forEach(collectTranslationValues);
 };
 collectTranslationValues(dict);
-assert(!translationValues.some(value=>/(LUKKAJA|Food Order\/Delivery With QR|Food Order Delivery|FOOD ORDER QR|\\bFOD\\b)/.test(value)),"visible legacy branding remains in React translations");
+assert(!translationValues.some(value=>/(LUKKAJA|Food Order\/Delivery With QR|Food Order Delivery|FOOD ORDER QR|\bFOD\b)/.test(value)),"visible legacy branding remains in React translations");
 const app=read("react-app/src/app/App.jsx");
 for(const route of ["/","/login","/register"])assert(app.includes(`path="${route}"`),`route missing: ${route}`);
 for(const route of ["/cashier","/cashier/quick-order","/cashier/receipt","/cashier/table-qr","/cashier/waiting-queue"]) {
