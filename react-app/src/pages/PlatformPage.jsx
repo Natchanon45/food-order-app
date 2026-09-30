@@ -22,7 +22,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 
 const BRANDING_ITEMS = [
-  { key: "logo", fallback: "FOD", accept: "image/png,image/jpeg,image/webp" },
+  { key: "logo", fallback: "KINJAI", accept: "image/png,image/jpeg,image/webp" },
   { key: "favicon", fallbackIcon: "bi bi-window", accept: "image/png,image/x-icon,image/vnd.microsoft.icon" },
   { key: "appIcon", fallbackIcon: "bi bi-app", accept: "image/png,image/jpeg,image/webp" },
 ];
@@ -597,7 +597,7 @@ export function PlatformPage() {
   };
 
   if (authState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="LUKKAJA" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={72} />;
+    return <PageReadyOverlay context="KINJAI" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={72} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fplatform" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;
@@ -613,7 +613,7 @@ export function PlatformPage() {
   return (
     <>
       <header className="app-header super-admin-header">
-        <div className="brand"><span className="brand-mark">FOD</span><span>{t("platform.header.title")}</span></div>
+        <div className="brand"><span className="brand-mark">KJ</span><span>{t("platform.header.title")}</span></div>
         <div className="app-header-actions" data-header-actions>
           <LocaleSwitcher style={{ marginLeft: 0, marginRight: 0, order: -100 }} />
           <UserMenu profile={profile} />
