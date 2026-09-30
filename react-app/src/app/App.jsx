@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { useAuth } from "@/auth/AuthProvider";
 import { useTenant } from "@/tenant/TenantProvider";
@@ -45,6 +45,12 @@ import { PlatformOwnersPage } from "@/pages/PlatformOwnersPage";
 import { PlatformContactPage } from "@/pages/PlatformContactPage";
 import { PlatformPricingPage } from "@/pages/PlatformPricingPage";
 import { SaasSetupPage } from "@/pages/SaasSetupPage";
+import { PublicOrderPage } from "@/pages/PublicOrderPage";
+
+function LegacyPublicOrderRedirect() {
+  const { slug = "" } = useParams();
+  return <Navigate to={"/s/" + encodeURIComponent(slug) + "/order" + location.search + location.hash} replace />;
+}
 
 function NotFound() {
   return (
@@ -152,6 +158,8 @@ export default function App() {
       <Route path="/platform/contact" element={<PlatformContactPage />} />
       <Route path="/platform/pricing" element={<PlatformPricingPage />} />
       <Route path="/super-admin/saas-setup" element={<SaasSetupPage />} />
+      <Route path="/s/:slug/order" element={<PublicOrderPage />} />
+      <Route path="/s/:slug/react/order" element={<LegacyPublicOrderRedirect />} />
       <Route path="*" element={<NotFound />} />
       </Routes>
     </RevenueShareSuspensionGuard>

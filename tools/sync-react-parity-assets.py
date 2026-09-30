@@ -20,6 +20,21 @@ for name in [
     "sweet-dialog.css",
     "cashier-refresh.css",
     "order-delivery-workspace-theme.css",
+    "customer-rounds.css",
+    "pos-refresh.css",
+    "table-order-sticky-lite.css",
+    "public-menu-image-frame.css",
+    "payment-slip.css",
+    "delivery-addresses.css",
+    "delivery-location-map.css",
+    "delivery-promotions.css",
+    "delivery-favorites.css",
+    "delivery-google-font-mobile-spacing.css",
+    "delivery-google-normal-button.css",
+    "mobile-menu-scroll.css",
+    "delivery-payment-lock.css",
+    "receipt-layout.css",
+    "delivery-success-tracking.css",
     "page-ready-state.css",
     "quick-order.css",
     "kitchen-item-editor.css",
@@ -90,16 +105,18 @@ for name in [
     "retail-pos-users-layout.css",
     "retail-pos-users-mobile.css",
 ]:
-    shutil.copy2(source / "public/assets/css" / name, css_dir / name)
+    destination = css_dir / name
+    shutil.copy2(source / "public/assets/css" / name, destination)
+    destination.write_text(destination.read_text().rstrip() + "\n")
 
 def extract_runtime_css(script_name, output_name, include_appends=False):
     text = (source / "public/assets/js" / script_name).read_text()
-    match = re.search(r"style\\.textContent\\s*=\\s*`(.*?)`;", text, flags=re.S)
+    match = re.search(r"style\.textContent\s*=\s*`(.*?)`;", text, flags=re.S)
     if not match:
         raise RuntimeError(f"Runtime CSS block not found: {script_name}")
     css = match.group(1).strip()
     if include_appends:
-        for extra in re.findall(r"style\\.textContent\\s*\\+=\\s*'([^']*)';", text):
+        for extra in re.findall(r"style\.textContent\s*\+=\s*'([^']*)';", text):
             css += "\n" + extra.replace('\\\"', '"').replace("\\'", "'")
     (css_dir / output_name).write_text(css + "\n")
 
@@ -149,6 +166,17 @@ for locale in locale_names:
         ], text=True)
         translations[locale][name] = json.loads(payload)
 
+def deep_merge(base, override):
+    for key, value in override.items():
+        if isinstance(value, dict) and isinstance(base.get(key), dict):
+            deep_merge(base[key], value)
+        else:
+            base[key] = value
+
+storefront_overrides = target / "react-app/src/i18n/public-storefront-overrides.json"
+if storefront_overrides.exists():
+    deep_merge(translations, json.loads(storefront_overrides.read_text()))
+
 out = target / "react-app/src/i18n/parity-translations.json"
 out.write_text(json.dumps(translations, ensure_ascii=False, indent=2) + "\n")
-print("Parity CSS/translations synced from Laravel baseline")
+print("Parity CSS/translations synced from Laravel baseline + React storefront overrides")

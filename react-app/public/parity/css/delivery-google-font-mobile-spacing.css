@@ -1,0 +1,41 @@
+/* DELIVERY_GOOGLE_FONT_MOBILE_SPACING_20260805_100 */
+
+/* Match the application UI font used by every other system button. */
+body.delivery-page #googleLoginButton,
+body.delivery-page #googleLoginButton > span,
+body.delivery-page .delivery-google-login-button,
+body.delivery-page .delivery-google-login-button > span {
+  font-family:
+    var(
+      --app-ui-font,
+      "Kanit Local",
+      "Kanit",
+      "Noto Sans Thai",
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif
+    ) !important;
+  font-weight: var(--ui-weight-medium, 500) !important;
+  font-style: normal !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
+}
+
+/*
+ * On mobile the menu column and cart column become stacked blocks.
+ * Add a clear visual gap between the final menu card and cart card.
+ */
+@media (max-width: 899px) {
+  body.delivery-page
+    .delivery-pos
+    > .delivery-menu-column
+    + .delivery-side-column {
+    margin-top: 24px !important;
+  }
+
+  body.delivery-page .delivery-side-column > .card:first-child {
+    margin-top: 0 !important;
+  }
+}

@@ -1,0 +1,144 @@
+/* DELIVERY_PROMOTION_CHECKOUT_20260827_001 */
+
+.delivery-free-gift-section {
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid #d9e7de;
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(245, 252, 247, 1),
+      rgba(255, 255, 255, 1)
+    );
+}
+
+.delivery-free-gift-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.delivery-free-gift-head h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 4px;
+  color: #1d432c;
+  font-size: 15px;
+}
+
+.delivery-free-gift-head h3 i {
+  color: #159447;
+}
+
+.delivery-free-gift-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.delivery-free-gift-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid #dae5de;
+  border-radius: 11px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.delivery-free-gift-item:has(input:checked) {
+  border-color: #17964b;
+  background: #f0faf3;
+  box-shadow: 0 0 0 1px rgba(23, 150, 75, .04);
+}
+
+
+
+.delivery-free-gift-item-content {
+  min-width: 0;
+}
+
+.delivery-free-gift-item strong {
+  display: block;
+  overflow: hidden;
+  color: #243c2e;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.delivery-free-gift-item small {
+  display: block;
+  margin-top: 2px;
+  overflow: hidden;
+  color: #75817a;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.delivery-free-gift-status {
+  margin-top: 9px;
+  color: #607168;
+  font-size: 11px;
+}
+
+.delivery-free-gift-empty {
+  grid-column: 1 / -1;
+  padding: 13px;
+  border: 1px dashed #d8e2dc;
+  border-radius: 10px;
+  color: #77847d;
+  text-align: center;
+  font-size: 11px;
+}
+
+.delivery-free-shipping-status {
+  margin-top: 9px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: #eef8f1;
+  color: #14743d;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.delivery-free-shipping-status.is-progress {
+  background: #f5f7f5;
+  color: #65736b;
+}
+
+@media (max-width: 640px) {
+  .delivery-free-gift-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* DELIVERY_GIFT_ADDRESS_DEFAULT_CHECKBOX_20260827_001 */
+
+/*
+ * IMPORTANT:
+ * The checkbox itself intentionally has NO custom appearance,
+ * size, colour, border or checkmark styling.
+ *
+ * It uses the same normal checkbox rendering as #addressDefault.
+ */
+
+.delivery-free-gift-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.delivery-free-gift-item-content {
+  min-width: 0;
+  flex: 1 1 auto;
+}

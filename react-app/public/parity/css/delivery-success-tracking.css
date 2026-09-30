@@ -1,0 +1,116 @@
+.delivery-tracking-card {
+  max-width: 760px;
+  margin: 0 auto 16px;
+  padding: 18px;
+  border: 1px solid #dce9e1;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(15, 65, 39, .06);
+}
+.delivery-tracking-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.delivery-tracking-head h2 { margin: 0; font-size: 1.05rem; }
+.delivery-tracking-head p { margin: 4px 0 0; color: #66756b; font-size: .88rem; }
+.delivery-tracking-badge {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eaf7ef;
+  color: #11753a;
+  font-weight: 700;
+  font-size: .78rem;
+}
+.delivery-tracking-timeline {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.delivery-tracking-step {
+  --tracking-dot-top: 4px;
+  --tracking-dot-left: 50%;
+  --tracking-dot-size: 16px;
+  position: relative;
+  min-width: 0;
+  padding-top: 28px;
+  text-align: center;
+  color: #809086;
+  font-size: .74rem;
+  line-height: 1.25;
+}
+.delivery-tracking-step::before {
+  content: "";
+  position: absolute;
+  top: var(--tracking-dot-top);
+  left: var(--tracking-dot-left);
+  width: var(--tracking-dot-size);
+  height: var(--tracking-dot-size);
+  transform: translateX(-50%);
+  border: 3px solid #d8e4dc;
+  border-radius: 50%;
+  background: #fff;
+  z-index: 2;
+}
+.delivery-tracking-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--tracking-dot-top) + 9px);
+  left: var(--tracking-dot-left);
+  width: calc(100% + 8px);
+  height: 2px;
+  background: #d8e4dc;
+  z-index: 1;
+}
+.delivery-tracking-step.is-done,
+.delivery-tracking-step.is-current { color: #145c32; font-weight: 700; }
+.delivery-tracking-step.is-done::before,
+.delivery-tracking-step.is-current::before { border-color: #169447; background: #169447; }
+.delivery-tracking-step.is-done:not(:last-child)::after { background: #169447; }
+.delivery-tracking-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #edf2ee;
+}
+.delivery-tracking-updated { color: #738078; font-size: .78rem; }
+#customerLalamoveTrackLink[hidden] { display: none !important; }
+@media (max-width: 640px) {
+  .delivery-tracking-card { margin: 0 12px 14px; padding: 14px; }
+  .delivery-tracking-head { align-items: center; }
+  .delivery-tracking-timeline {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .delivery-tracking-step {
+    --tracking-dot-top: 9px;
+    --tracking-dot-left: 17px;
+    display: flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 0 0 34px;
+    text-align: left;
+  }
+  .delivery-tracking-label {
+    position: relative;
+    top: 2px;
+  }
+  .delivery-tracking-step:not(:last-child)::after {
+    top: calc(var(--tracking-dot-top) + 8px);
+    left: var(--tracking-dot-left);
+    width: 2px;
+    height: 100%;
+    transform: translateX(-50%);
+  }
+  .delivery-tracking-actions { align-items: flex-start; flex-direction: column; }
+  .delivery-tracking-actions .btn { width: 100%; justify-content: center; }
+}

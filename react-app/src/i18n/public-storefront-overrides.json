@@ -1,0 +1,27 @@
+{
+  "th": {
+    "delivery": { "checkout": { "promotion": {
+      "gift_required": "กรุณาเลือกของแถมอย่างน้อย 1 รายการก่อนสั่งซื้อ"
+    } } }
+  },
+  "en": {
+    "delivery": { "checkout": { "promotion": {
+      "gift_required": "Please select at least 1 free gift before placing your order."
+    } } }
+  },
+  "my": {
+    "delivery": { "checkout": { "promotion": {
+      "gift_required": "အော်ဒါမတင်မီ အခမဲ့လက်ဆောင် အနည်းဆုံး ၁ ခု ရွေးချယ်ပါ။"
+    } } }
+  },
+  "lo": {
+    "delivery": { "checkout": { "promotion": {
+      "gift_required": "ກະລຸນາເລືອກຂອງຂວັນຟຣີຢ່າງນ້ອຍ 1 ລາຍການກ່ອນສັ່ງຊື້"
+    } } }
+  },
+  "km": {
+    "delivery": { "checkout": { "promotion": {
+      "gift_required": "សូមជ្រើសរើសអំណោយឥតគិតថ្លៃយ៉ាងហោចណាស់ 1 មុនពេលបញ្ជាទិញ។"
+    } } }
+  }
+}

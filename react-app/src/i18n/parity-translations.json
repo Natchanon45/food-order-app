@@ -1342,7 +1342,8 @@
           "gift_invalid": "รายการของแถมไม่ถูกต้อง กรุณาเลือกใหม่",
           "gift_unavailable": "โปรโมชั่นของแถมไม่สามารถใช้ได้แล้ว",
           "free_shipping_applied": "ส่งฟรี • ยอดถึง :minimum บาท",
-          "free_shipping_progress": "สั่งเพิ่มอีก :remaining บาท เพื่อรับส่งฟรี"
+          "free_shipping_progress": "สั่งเพิ่มอีก :remaining บาท เพื่อรับส่งฟรี",
+          "gift_required": "กรุณาเลือกของแถมอย่างน้อย 1 รายการก่อนสั่งซื้อ"
         },
         "zones": {
           "pickup": "รับที่ร้าน",
@@ -1902,10 +1903,10 @@
         "new_order_count": "มีคำสั่งซื้อใหม่ :count รายการ",
         "desktop_body": ":type • :total บาท",
         "desktop_body_count": "มีคำสั่งซื้อใหม่ :count รายการ",
-        "enable": "เปิดแจ้งเตือนคำสั่งซื้อ",
-        "disable": "ปิดแจ้งเตือนคำสั่งซื้อ",
-        "enabled": "เปิดแจ้งเตือนคำสั่งซื้อแล้ว",
-        "disabled": "ปิดแจ้งเตือนคำสั่งซื้อแล้ว",
+        "enable": "เปิดเสียงแจ้งเตือนคำสั่งซื้อ",
+        "disable": "ปิดเสียงแจ้งเตือนคำสั่งซื้อ",
+        "enabled": "เปิดเสียงแจ้งเตือนคำสั่งซื้อแล้ว",
+        "disabled": "ปิดเสียงแจ้งเตือนคำสั่งซื้อแล้ว",
         "incoming": "มีคำสั่งซื้อเข้ามา",
         "incoming_count": "มีคำสั่งซื้อเข้ามา :count รายการ",
         "speech": {
@@ -7286,7 +7287,8 @@
           "gift_invalid": "The selected free gift is invalid. Please select again.",
           "gift_unavailable": "The free gift promotion is no longer available.",
           "free_shipping_applied": "Free delivery • Minimum order :minimum",
-          "free_shipping_progress": "Add :remaining more for free delivery"
+          "free_shipping_progress": "Add :remaining more for free delivery",
+          "gift_required": "Please select at least 1 free gift before placing your order."
         },
         "zones": {
           "pickup": "Pick up at store",
@@ -7846,10 +7848,10 @@
         "new_order_count": ":count new orders",
         "desktop_body": ":type • :total THB",
         "desktop_body_count": ":count new orders",
-        "enable": "Enable order alerts",
-        "disable": "Disable order alerts",
-        "enabled": "Order alerts enabled.",
-        "disabled": "Order alerts disabled.",
+        "enable": "Enable order sound alerts",
+        "disable": "Disable order sound alerts",
+        "enabled": "Order sound alerts enabled.",
+        "disabled": "Order sound alerts disabled.",
         "incoming": "A new order has arrived.",
         "incoming_count": ":count new orders have arrived.",
         "speech": {
@@ -12955,7 +12957,8 @@
           "gift_invalid": "ရွေးချယ်ထားသော အခမဲ့လက်ဆောင်သည် မမှန်ကန်ပါ။ ထပ်မံရွေးချယ်ပါ။",
           "gift_unavailable": "အခမဲ့လက်ဆောင်ပရိုမိုးရှင်းကို မရနိုင်တော့ပါ။",
           "free_shipping_applied": "အခမဲ့ ပို့ဆောင်ခြင်း • အနည်းဆုံး မှာယူမှု :minimum",
-          "free_shipping_progress": "အခမဲ့ ပို့ဆောင်ခြင်းအတွက် နောက်ထပ် :remaining ထပ်ထည့်ပါ။"
+          "free_shipping_progress": "အခမဲ့ ပို့ဆောင်ခြင်းအတွက် နောက်ထပ် :remaining ထပ်ထည့်ပါ။",
+          "gift_required": "အော်ဒါမတင်မီ အခမဲ့လက်ဆောင် အနည်းဆုံး ၁ ခု ရွေးချယ်ပါ။"
         },
         "zones": {
           "pickup": "ဆိုင်မှာလာယူပါ။",
@@ -13515,10 +13518,10 @@
         "new_order_count": "အော်ဒါအသစ် :count ခု",
         "desktop_body": ":type • :total THB",
         "desktop_body_count": "အော်ဒါအသစ် :count ခု",
-        "enable": "အော်ဒါအသိပေးချက် ဖွင့်မည်",
-        "disable": "အော်ဒါအသိပေးချက် ပိတ်မည်",
-        "enabled": "အော်ဒါအသိပေးချက် ဖွင့်ထားပါသည်။",
-        "disabled": "အော်ဒါအသိပေးချက် ပိတ်ထားပါသည်။",
+        "enable": "အော်ဒါအသံအသိပေးချက် ဖွင့်မည်",
+        "disable": "အော်ဒါအသံအသိပေးချက် ပိတ်မည်",
+        "enabled": "အော်ဒါအသံအသိပေးချက် ဖွင့်ထားပါသည်။",
+        "disabled": "အော်ဒါအသံအသိပေးချက် ပိတ်ထားပါသည်။",
         "incoming": "အော်ဒါအသစ် ရောက်ရှိလာပါပြီ။",
         "incoming_count": "အော်ဒါအသစ် :count ခု ရောက်ရှိလာပါပြီ။",
         "speech": {
@@ -18624,7 +18627,8 @@
           "gift_invalid": "ຂອງຂວັນຟຣີທີ່ເລືອກນັ້ນບໍ່ຖືກຕ້ອງ. ກະລຸນາເລືອກອີກຄັ້ງ.",
           "gift_unavailable": "ໂປຣໂມຊັນຂອງຂັວນຟຣີບໍ່ມີແລ້ວ.",
           "free_shipping_applied": "ສົ່ງຟຣີ • ສັ່ງຂັ້ນຕ່ຳ :minimum",
-          "free_shipping_progress": "ເພີ່ມ :remaining ເພີ່ມເຕີມເພື່ອຈັດສົ່ງຟຣີ"
+          "free_shipping_progress": "ເພີ່ມ :remaining ເພີ່ມເຕີມເພື່ອຈັດສົ່ງຟຣີ",
+          "gift_required": "ກະລຸນາເລືອກຂອງຂວັນຟຣີຢ່າງນ້ອຍ 1 ລາຍການກ່ອນສັ່ງຊື້"
         },
         "zones": {
           "pickup": "ຮັບຢູ່ຮ້ານ",
@@ -19184,10 +19188,10 @@
         "new_order_count": "ມີອໍເດີໃໝ່ :count ລາຍການ",
         "desktop_body": ":type • :total THB",
         "desktop_body_count": "ມີອໍເດີໃໝ່ :count ລາຍການ",
-        "enable": "ເປີດແຈ້ງເຕືອນອໍເດີ",
-        "disable": "ປິດແຈ້ງເຕືອນອໍເດີ",
-        "enabled": "ເປີດແຈ້ງເຕືອນອໍເດີແລ້ວ.",
-        "disabled": "ປິດແຈ້ງເຕືອນອໍເດີແລ້ວ.",
+        "enable": "ເປີດສຽງແຈ້ງເຕືອນອໍເດີ",
+        "disable": "ປິດສຽງແຈ້ງເຕືອນອໍເດີ",
+        "enabled": "ເປີດສຽງແຈ້ງເຕືອນອໍເດີແລ້ວ.",
+        "disabled": "ປິດສຽງແຈ້ງເຕືອນອໍເດີແລ້ວ.",
         "incoming": "ມີອໍເດີໃໝ່ເຂົ້າມາ",
         "incoming_count": "ມີອໍເດີໃໝ່ເຂົ້າມາ :count ລາຍການ",
         "speech": {
@@ -24293,7 +24297,8 @@
           "gift_invalid": "អំណោយឥតគិតថ្លៃដែលបានជ្រើសរើសគឺមិនត្រឹមត្រូវទេ។ សូមជ្រើសរើសម្តងទៀត។",
           "gift_unavailable": "ការ​ផ្សព្វផ្សាយ​អំណោយ​ឥត​គិត​ថ្លៃ​លែង​មាន​ទៀត​ហើយ។",
           "free_shipping_applied": "ដឹកជញ្ជូនឥតគិតថ្លៃ • ការបញ្ជាទិញអប្បបរមា :minimum",
-          "free_shipping_progress": "បន្ថែម :remaining បន្ថែមទៀតសម្រាប់ការដឹកជញ្ជូនដោយឥតគិតថ្លៃ"
+          "free_shipping_progress": "បន្ថែម :remaining បន្ថែមទៀតសម្រាប់ការដឹកជញ្ជូនដោយឥតគិតថ្លៃ",
+          "gift_required": "សូមជ្រើសរើសអំណោយឥតគិតថ្លៃយ៉ាងហោចណាស់ 1 មុនពេលបញ្ជាទិញ។"
         },
         "zones": {
           "pickup": "មកយកនៅហាង",
@@ -24853,10 +24858,10 @@
         "new_order_count": "មានការកម្ម៉ង់ថ្មី :count",
         "desktop_body": ":type • :total THB",
         "desktop_body_count": "មានការកម្ម៉ង់ថ្មី :count",
-        "enable": "បើកជូនដំណឹងការកម្ម៉ង់",
-        "disable": "បិទជូនដំណឹងការកម្ម៉ង់",
-        "enabled": "បានបើកជូនដំណឹងការកម្ម៉ង់។",
-        "disabled": "បានបិទជូនដំណឹងការកម្ម៉ង់។",
+        "enable": "បើកសំឡេងជូនដំណឹងការកម្ម៉ង់",
+        "disable": "បិទសំឡេងជូនដំណឹងការកម្ម៉ង់",
+        "enabled": "បានបើកសំឡេងជូនដំណឹងការកម្ម៉ង់។",
+        "disabled": "បានបិទសំឡេងជូនដំណឹងការកម្ម៉ង់។",
         "incoming": "មានការកម្ម៉ង់ថ្មីចូលមក",
         "incoming_count": "មានការកម្ម៉ង់ថ្មីចូលមក :count",
         "speech": {

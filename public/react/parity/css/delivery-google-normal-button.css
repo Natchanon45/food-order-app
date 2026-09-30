@@ -1,0 +1,104 @@
+/* DELIVERY_GOOGLE_NORMAL_BUTTON_20260805_098 */
+.delivery-google-button-slot {
+  width: 100%;
+  min-width: 0;
+}
+
+.delivery-google-login-button {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 46px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  padding: 0 18px !important;
+  border: 1px solid #747775 !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  color: #1f1f1f !important;
+  font-family: Arial, "Noto Sans Thai", sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 20px !important;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .05) !important;
+  cursor: pointer !important;
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  z-index: 5;
+}
+
+.delivery-google-login-button:hover {
+  background: #f8f9fa !important;
+  border-color: #5f6368 !important;
+}
+
+.delivery-google-login-button:focus-visible {
+  outline: 3px solid rgba(26, 115, 232, .22) !important;
+  outline-offset: 2px;
+}
+
+.delivery-google-login-button:active {
+  transform: translateY(1px);
+}
+
+.delivery-google-login-button:disabled {
+  opacity: .65;
+  cursor: wait !important;
+  transform: none;
+}
+
+.delivery-google-login-button img {
+  width: 20px !important;
+  height: 20px !important;
+  flex: 0 0 20px;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.delivery-google-login-button span {
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .delivery-google-button-slot {
+    width: 100%;
+    display: block !important;
+  }
+
+  .delivery-google-login-button {
+    width: 100% !important;
+    min-height: 48px !important;
+    padding-inline: 14px !important;
+  }
+}
+
+/* DELIVERY_GOOGLE_ICON_DEDUP_20260805_099 */
+/*
+ * icons.css adds a Google logo through .google-login-button::before.
+ * The normal Delivery button already contains google-logo.svg in HTML.
+ * Keep the HTML image and suppress only the inherited pseudo icon.
+ */
+.google-login-button.delivery-google-login-button::before {
+  display: none !important;
+  content: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  flex: 0 0 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+}
+
+.google-login-button.delivery-google-login-button > img {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  flex: 0 0 20px !important;
+  display: block !important;
+  margin: 0 !important;
+}

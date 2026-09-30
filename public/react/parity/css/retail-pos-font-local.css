@@ -1,0 +1,147 @@
+@font-face {
+  font-family: "Kanit Local";
+  src: url("/assets/fonts/Kanit-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Kanit Local";
+  src: url("/assets/fonts/Kanit-SemiBold.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Kanit Local";
+  src: url("/assets/fonts/Kanit-Bold.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Kanit Local";
+  src: url("/assets/fonts/Kanit-ExtraBold.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Kanit Local";
+  src: url("/assets/fonts/Kanit-Black.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TH Sarabun PSK Local";
+  src: url("/assets/fonts/THSarabun.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TH Sarabun PSK Local";
+  src: url("/assets/fonts/THSarabun-Bold.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TH Sarabun PSK Local";
+  src: url("/assets/fonts/THSarabun-Italic.ttf") format("truetype");
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TH Sarabun PSK Local";
+  src: url("/assets/fonts/THSarabun-BoldItalic.ttf") format("truetype");
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --app-ui-font: "Kanit Local", "Kanit", "Noto Sans Thai", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --paper-font-local: "TH Sarabun PSK Local", "TH Sarabun PSK", "TH Sarabun New", serif;
+  --print-font: var(--paper-font-local);
+}
+
+html,
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--app-ui-font);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.toolbar :is(button, .btn, a.btn),
+.tax-dialog :is(button, .btn, a.btn, .dbd-btn),
+.shell :is(button, .btn, a.btn),
+.page > :not(.receipt):not(.tax-paper) :is(button, .btn, a.btn) {
+  font-weight: 500 !important;
+}
+
+.toolbar :is(strong, b),
+.tax-dialog :is(strong, b, h1, h2),
+.shell :is(strong, b, h1, h2, .badge, .tax-doc-no),
+.page > :not(.receipt):not(.tax-paper) :is(strong, b, h1, h2) {
+  font-weight: 500 !important;
+}
+
+.tax-dialog :is(label, input, select, textarea, .tax-hint),
+.shell :is(label, input, select, textarea, .search),
+.page > :not(.receipt):not(.tax-paper) :is(label, input, select, textarea) {
+  font-weight: 400 !important;
+}
+
+.paper-font-local,
+.receipt,
+.tax-paper,
+.qr-ticket,
+.print-document,
+.document-page,
+.print-page,
+.invoice,
+.quotation {
+  font-family: var(--paper-font-local) !important;
+}
+
+@media print {
+  .paper-font-local,
+  .receipt,
+  .receipt *,
+  .tax-paper,
+  .tax-paper *,
+  .qr-ticket,
+  .qr-ticket *,
+  .print-document,
+  .print-document *,
+  .document-page,
+  .document-page *,
+  .print-page,
+  .print-page *,
+  .invoice,
+  .invoice *,
+  .quotation,
+  .quotation * {
+    font-family: var(--paper-font-local) !important;
+  }
+}

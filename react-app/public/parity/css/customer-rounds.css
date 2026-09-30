@@ -1,0 +1,69 @@
+.previous-orders {
+  margin-bottom: 18px;
+}
+
+.previous-orders-list {
+  display: grid;
+  gap: 10px;
+}
+
+.previous-round {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #f7f9f7;
+  opacity: .66;
+}
+
+.previous-round-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.previous-round-title {
+  font-weight: 800;
+}
+
+.previous-round-items {
+  display: grid;
+  gap: 5px;
+}
+
+.previous-round-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px dashed var(--line);
+  padding-bottom: 5px;
+}
+
+.previous-round-item:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.current-round {
+  border: 2px solid var(--green);
+  box-shadow: 0 12px 32px rgba(21, 148, 71, .12);
+}
+
+.round-label {
+  display: inline-flex;
+  margin-left: 6px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--green);
+  color: #fff;
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+@media (max-width: 480px) {
+  .previous-round-head,
+  .previous-round-item {
+    align-items: flex-start;
+  }
+}

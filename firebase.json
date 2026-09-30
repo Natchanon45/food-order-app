@@ -368,11 +368,11 @@
       },
       {
         "source": "/s/*/react/order",
-        "destination": "/order/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/s/*/react/order/**",
-        "destination": "/order/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/s/*/delivery/success",
@@ -408,11 +408,11 @@
       },
       {
         "source": "/s/*/order",
-        "destination": "/order/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/s/*/order/**",
-        "destination": "/order/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/delivery/**",
