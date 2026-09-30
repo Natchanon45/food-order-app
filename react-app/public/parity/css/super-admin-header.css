@@ -5,6 +5,22 @@
   align-items: center;
 }
 
+.super-admin-header .brand-mark {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+}
+
+.super-admin-header .brand-mark::after {
+  display: flex !important;
+  width: 100%;
+  height: 100%;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+}
+
 .super-admin-header-leading {
   display: flex;
   align-items: center;
@@ -56,16 +72,41 @@ body[data-roles~="super_admin"] .btn > i {
 @media (max-width: 768px) {
   .super-admin-header {
     align-items: center !important;
+    flex-wrap: nowrap !important;
+    gap: 6px;
   }
 
   .super-admin-header-leading {
-    flex: 1 1 100%;
-    width: 100%;
-    flex-wrap: wrap;
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+
+  .super-admin-header-leading > .brand {
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  .super-admin-header-leading > .brand > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .super-admin-header-back {
+    flex: 0 0 auto;
   }
 
   .super-admin-header > .app-header-actions {
+    flex: 0 0 auto;
     margin-left: auto;
+    flex-wrap: nowrap !important;
+    gap: 6px;
+    white-space: nowrap;
   }
 }
 
