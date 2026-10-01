@@ -66,44 +66,44 @@
         "lalamove_status": "ยังไม่พร้อมใช้งาน",
         "lalamove_available_status": "พร้อมให้เลือก",
         "lalamove_selected_status": "เลือกใช้งาน",
-        "lalamove_description": "เชื่อมต่อบริการจัดส่งผ่าน Lalamove API โดยใช้ API ส่วนกลางของ KINJAI",
+        "lalamove_description": "เชื่อมต่อบริการจัดส่งผ่าน Lalamove API โดยใช้ API ส่วนกลางของ PENGUIN",
         "lalamove_unavailable_description": "บัญชี Lalamove ที่เลือกยังไม่พร้อมใช้งาน กรุณาตรวจสอบการตั้งค่าหรือการอนุมัติ",
         "lalamove_account_title": "บัญชี Lalamove ของร้าน",
-        "lalamove_account_description": "เลือกว่าออเดอร์ของร้านจะใช้ Partner API ของร้านเอง หรือใช้บัญชีกลาง KINJAI ที่ Super Admin อนุมัติ",
+        "lalamove_account_description": "เลือกว่าออเดอร์ของร้านจะใช้ Partner API ของร้านเอง หรือใช้บัญชีกลาง PENGUIN ที่ Super Admin อนุมัติ",
         "lalamove_account_mode": "โหมดบัญชี",
         "lalamove_mode_disabled": "ปิดใช้งาน Lalamove",
         "lalamove_mode_tenant": "ใช้ Lalamove Partner ของร้าน",
-        "lalamove_mode_fod": "ใช้บัญชีกลาง KINJAI",
+        "lalamove_mode_fod": "ใช้บัญชีกลาง PENGUIN",
         "lalamove_environment": "Environment",
         "lalamove_api_key": "Lalamove API Key ของร้าน",
         "lalamove_api_secret": "Lalamove API Secret ของร้าน",
-        "lalamove_mode_help": "บัญชีร้านต้อง Test Connection ผ่านก่อนใช้งาน ส่วนบัญชีกลาง KINJAI ต้องได้รับอนุมัติจาก Super Admin",
+        "lalamove_mode_help": "บัญชีร้านต้อง Test Connection ผ่านก่อนใช้งาน ส่วนบัญชีกลาง PENGUIN ต้องได้รับอนุมัติจาก Super Admin",
         "lalamove_save_account": "บันทึกบัญชี Lalamove",
         "lalamove_test_connection": "Test Connection",
         "lalamove_status_ready": "พร้อมใช้งาน",
         "lalamove_status_not_ready": "ยังไม่พร้อม",
-        "lalamove_status_waiting_approval": "รอ KINJAI อนุมัติ",
+        "lalamove_status_waiting_approval": "รอ PENGUIN อนุมัติ",
         "lalamove_status_disabled": "ปิดใช้งาน",
         "lalamove_account_saved": "บันทึกการตั้งค่า Lalamove แล้ว",
         "lalamove_account_save_failed": "บันทึกการตั้งค่า Lalamove ไม่สำเร็จ",
         "lalamove_test_success": "เชื่อมต่อ Lalamove Partner ของร้านสำเร็จ",
         "lalamove_test_failed": "เชื่อมต่อ Lalamove Partner ของร้านไม่สำเร็จ",
-        "fod_wallet_title": "KINJAI เครดิตสำหรับ Lalamove",
+        "fod_wallet_title": "PENGUIN เครดิตสำหรับ Lalamove",
         "fod_wallet_balance": "ยอดเครดิตคงเหลือ",
         "fod_wallet_credit_unit": "เครดิต",
         "fod_wallet_credit_rate": "อัตราเติมเครดิต: 1 บาท = 1 เครดิต",
-        "fod_wallet_credit_terms": "เครดิต KINJAI ใช้สำหรับชำระค่าบริการภายในระบบเท่านั้น ไม่สามารถโอน ถอน แลก หรือขอคืนเป็นเงินสดตามเงื่อนไขการใช้บริการ เว้นแต่กฎหมายกำหนดเป็นอย่างอื่น",
+        "fod_wallet_credit_terms": "เครดิต PENGUIN ใช้สำหรับชำระค่าบริการภายในระบบเท่านั้น ไม่สามารถโอน ถอน แลก หรือขอคืนเป็นเงินสดตามเงื่อนไขการใช้บริการ เว้นแต่กฎหมายกำหนดเป็นอย่างอื่น",
         "fod_wallet_recent": "ประวัติเครดิตล่าสุด",
         "fod_wallet_loading": "กำลังโหลด Wallet...",
         "fod_wallet_empty": "ยังไม่มีรายการเคลื่อนไหวเครดิต",
-        "fod_wallet_storage_missing": "ยังไม่ได้สร้างตาราง KINJAI Wallet บน Server",
-        "fod_wallet_load_failed": "โหลดข้อมูล KINJAI Wallet ไม่สำเร็จ ระบบจะลองเชื่อมต่อใหม่อัตโนมัติ",
-        "fod_wallet_active": "บัญชีกลาง KINJAI จะใช้เครดิตนี้สำหรับชำระค่าบริการ Lalamove",
-        "fod_wallet_inactive": "ยอดเครดิตนี้ยังคงอยู่ แต่จะไม่ถูกใช้กับงานใหม่จนกว่าจะเลือกบัญชีกลาง KINJAI",
+        "fod_wallet_storage_missing": "ยังไม่ได้สร้างตาราง PENGUIN Wallet บน Server",
+        "fod_wallet_load_failed": "โหลดข้อมูล PENGUIN Wallet ไม่สำเร็จ ระบบจะลองเชื่อมต่อใหม่อัตโนมัติ",
+        "fod_wallet_active": "บัญชีกลาง PENGUIN จะใช้เครดิตนี้สำหรับชำระค่าบริการ Lalamove",
+        "fod_wallet_inactive": "ยอดเครดิตนี้ยังคงอยู่ แต่จะไม่ถูกใช้กับงานใหม่จนกว่าจะเลือกบัญชีกลาง PENGUIN",
         "fod_wallet_phase2_note": "แสดงยอดเครดิตและ Credit Ledger ของร้าน",
         "fod_wallet_phase3_note": "เครดิตจะเข้าระบบเมื่อรายการเติมได้รับอนุมัติหรือ Slip2Go ยืนยันสำเร็จ",
         "fod_wallet_ledger_note": "รายการเครดิตที่อนุมัติแล้วจะแสดงใน Ledger",
-        "fod_wallet_topup_destination": "ช่องทางโอนเข้า KINJAI",
+        "fod_wallet_topup_destination": "ช่องทางโอนเข้า PENGUIN",
         "fod_wallet_topup_account_name": "ชื่อบัญชีผู้รับ",
         "fod_wallet_topup_account_number": "เลขบัญชี / PromptPay",
         "fod_wallet_topup_amount": "จำนวนเครดิตที่ต้องการเติม",
@@ -116,11 +116,11 @@
         "fod_wallet_topup_help": "โอนเงินตามบัญชีปลายทางด้านบนแล้วแนบสลิป หาก Slip2Go ยืนยันยอด ผู้รับ และธุรกรรมถูกต้อง ระบบจะเพิ่มเครดิตให้อัตโนมัติ กรณีตรวจอัตโนมัติไม่ได้จะส่งให้ Super Admin ตรวจสอบ",
         "fod_wallet_topup_history": "ประวัติการเติมเครดิต",
         "fod_wallet_topup_storage_missing": "ยังไม่ได้สร้างตาราง Top-up บน Server",
-        "fod_wallet_topup_not_allowed": "เติมเครดิตได้เฉพาะร้านที่ใช้บัญชีกลาง KINJAI และได้รับอนุมัติแล้ว",
-        "fod_wallet_topup_destination_missing": "Super Admin ยังไม่ได้กำหนดบัญชีรับเงินสำหรับเติมเครดิต KINJAI",
+        "fod_wallet_topup_not_allowed": "เติมเครดิตได้เฉพาะร้านที่ใช้บัญชีกลาง PENGUIN และได้รับอนุมัติแล้ว",
+        "fod_wallet_topup_destination_missing": "Super Admin ยังไม่ได้กำหนดบัญชีรับเงินสำหรับเติมเครดิต PENGUIN",
         "fod_wallet_topup_invalid": "กรุณาระบุเครดิตที่ต้องการเติมอย่างน้อย 1 เครดิตและแนบสลิป",
         "fod_wallet_topup_submitted": "ส่งคำขอเติมเครดิตแล้ว รอ Super Admin ตรวจสอบ",
-        "fod_wallet_topup_auto_approved": "Slip2Go ตรวจสอบสำเร็จ เพิ่มเครดิตเข้า KINJAI Wallet อัตโนมัติแล้ว",
+        "fod_wallet_topup_auto_approved": "Slip2Go ตรวจสอบสำเร็จ เพิ่มเครดิตเข้า PENGUIN Wallet อัตโนมัติแล้ว",
         "fod_wallet_topup_failed": "ส่งคำขอเติมเครดิตไม่สำเร็จ",
         "fod_wallet_topup_duplicate": "สลิปนี้ถูกใช้งานในระบบแล้ว กรุณาตรวจสอบหรือใช้สลิปอื่น",
         "fod_wallet_topup_delete": "ลบคำขอ",
@@ -479,16 +479,16 @@
         "lalamove_modes": {
           "disabled": "ปิดใช้งาน",
           "tenant": "Partner ของร้าน",
-          "fod_central": "บัญชีกลาง KINJAI"
+          "fod_central": "บัญชีกลาง PENGUIN"
         },
-        "lalamove_approved": "KINJAI อนุมัติแล้ว",
-        "lalamove_waiting": "รอ KINJAI อนุมัติ",
-        "lalamove_approve": "อนุมัติ KINJAI Lalamove",
-        "lalamove_revoke": "ยกเลิกสิทธิ์ KINJAI Lalamove",
-        "lalamove_approve_confirm": "อนุมัติให้ร้าน :name ใช้บัญชีกลาง Lalamove ของ KINJAI ใช่หรือไม่?",
-        "lalamove_revoke_confirm": "ยกเลิกสิทธิ์ร้าน :name ในการใช้บัญชีกลาง Lalamove ของ KINJAI ใช่หรือไม่? ออเดอร์ใหม่จะไม่สามารถเรียกผ่านบัญชีกลางได้",
-        "lalamove_approve_success": "อนุมัติบัญชีกลาง KINJAI ให้ร้านแล้ว",
-        "lalamove_revoke_success": "ยกเลิกสิทธิ์บัญชีกลาง KINJAI แล้ว",
+        "lalamove_approved": "PENGUIN อนุมัติแล้ว",
+        "lalamove_waiting": "รอ PENGUIN อนุมัติ",
+        "lalamove_approve": "อนุมัติ PENGUIN Lalamove",
+        "lalamove_revoke": "ยกเลิกสิทธิ์ PENGUIN Lalamove",
+        "lalamove_approve_confirm": "อนุมัติให้ร้าน :name ใช้บัญชีกลาง Lalamove ของ PENGUIN ใช่หรือไม่?",
+        "lalamove_revoke_confirm": "ยกเลิกสิทธิ์ร้าน :name ในการใช้บัญชีกลาง Lalamove ของ PENGUIN ใช่หรือไม่? ออเดอร์ใหม่จะไม่สามารถเรียกผ่านบัญชีกลางได้",
+        "lalamove_approve_success": "อนุมัติบัญชีกลาง PENGUIN ให้ร้านแล้ว",
+        "lalamove_revoke_success": "ยกเลิกสิทธิ์บัญชีกลาง PENGUIN แล้ว",
         "lalamove_approval_failed": "อัปเดตสิทธิ์ Lalamove ไม่สำเร็จ",
         "fields": {
           "name": "ชื่อร้าน",
@@ -503,8 +503,8 @@
         }
       },
       "wallet": {
-        "title": "เครดิต KINJAI สำหรับ Lalamove ของร้าน",
-        "label": "เครดิต KINJAI",
+        "title": "เครดิต PENGUIN สำหรับ Lalamove ของร้าน",
+        "label": "เครดิต PENGUIN",
         "view": "ดูเครดิต",
         "balance": "ยอดเครดิตคงเหลือ",
         "credit_unit": "เครดิต",
@@ -512,7 +512,7 @@
         "loading": "กำลังโหลดข้อมูลเครดิต...",
         "empty": "ยังไม่มีรายการเคลื่อนไหวเครดิต",
         "load_failed": "โหลดข้อมูลเครดิตไม่สำเร็จ",
-        "storage_missing": "ยังไม่ได้สร้างตาราง KINJAI Wallet บน Server",
+        "storage_missing": "ยังไม่ได้สร้างตาราง PENGUIN Wallet บน Server",
         "credit_note": "รายการที่อนุมัติแล้วจะเพิ่มเครดิตเข้า Wallet เพียงครั้งเดียว",
         "topups": "คำขอซื้อเครดิต",
         "topup_empty": "ยังไม่มีคำขอซื้อเครดิต",
@@ -521,8 +521,8 @@
         "approve": "อนุมัติ",
         "reject": "ปฏิเสธ",
         "approve_title": "อนุมัติคำขอซื้อเครดิต",
-        "approve_confirm": "อนุมัติ :amount เครดิตเข้า KINJAI Wallet ของร้าน :name ใช่หรือไม่? เครดิตจะเข้าระบบทันที",
-        "approve_success": "อนุมัติคำขอและเพิ่มเครดิตเข้า KINJAI Wallet เรียบร้อยแล้ว",
+        "approve_confirm": "อนุมัติ :amount เครดิตเข้า PENGUIN Wallet ของร้าน :name ใช่หรือไม่? เครดิตจะเข้าระบบทันที",
+        "approve_success": "อนุมัติคำขอและเพิ่มเครดิตเข้า PENGUIN Wallet เรียบร้อยแล้ว",
         "reject_title": "ปฏิเสธคำขอซื้อเครดิต",
         "reject_prompt": "ระบุเหตุผลที่ปฏิเสธคำขอซื้อเครดิต",
         "reject_success": "ปฏิเสธคำขอซื้อเครดิตแล้ว",
@@ -1009,7 +1009,7 @@
         "title": "จัดส่งด้วย Lalamove",
         "payment_ready_dispatch": "ชำระเงินแล้ว พร้อมเช็กราคาและเรียก Lalamove",
         "dispatched": "เรียก Lalamove แล้ว",
-        "local_cancel_locked": "สร้างงาน Lalamove แล้ว จึงไม่อนุญาตให้ยกเลิกเฉพาะฝั่ง KINJAI เพื่อป้องกันงานคนขับค้าง",
+        "local_cancel_locked": "สร้างงาน Lalamove แล้ว จึงไม่อนุญาตให้ยกเลิกเฉพาะฝั่ง PENGUIN เพื่อป้องกันงานคนขับค้าง",
         "waiting_ready": "รออาหารพร้อมส่งและยืนยันการชำระเงินก่อนเรียกคนขับ",
         "waiting_ready_cod": "รออาหารพร้อมส่งก่อนเรียกคนขับ ระบบจะให้ Lalamove เก็บเงินจากลูกค้าเมื่อจัดส่ง",
         "cod_collect": "COD: ให้คนขับเก็บจากลูกค้า :amount บาท",
@@ -1032,7 +1032,7 @@
         "retry": "เรียก Lalamove ใหม่",
         "cancel": "ยกเลิก Lalamove",
         "cancel_title": "ยืนยันยกเลิก Lalamove",
-        "cancel_confirm": "ต้องการยกเลิกงาน Lalamove นี้ใช่หรือไม่? หลังยกเลิกสำเร็จจึงจะสามารถยกเลิกออเดอร์ KINJAI ได้",
+        "cancel_confirm": "ต้องการยกเลิกงาน Lalamove นี้ใช่หรือไม่? หลังยกเลิกสำเร็จจึงจะสามารถยกเลิกออเดอร์ PENGUIN ได้",
         "cancel_confirm_button": "ยกเลิก Lalamove",
         "cancel_success": "ยกเลิกงาน Lalamove เรียบร้อย",
         "cancel_forbidden": "Lalamove ไม่อนุญาตให้ยกเลิกงานนี้แล้ว เนื่องจากสถานะการจัดส่งปัจจุบัน",
@@ -1048,11 +1048,11 @@
         "out_of_service_area": "จุดรับหรือจุดส่งอยู่นอกพื้นที่ให้บริการของ Lalamove",
         "quotation_expired": "ราคาค่าจัดส่งหมดอายุแล้ว กรุณากดเช็กราคาส่งล่าสุดอีกครั้ง",
         "insufficient_credit": "เครดิต/Wallet ของบัญชี Lalamove ที่ร้านเลือกไม่เพียงพอ กรุณาตรวจสอบบัญชีที่ใช้งาน",
-        "fod_wallet_insufficient": "ยอด KINJAI Wallet ไม่เพียงพอ (คงเหลือ :balance บาท / ต้องใช้ :required บาท) กรุณาเติม Wallet และรอ Super Admin อนุมัติก่อนเรียก Lalamove",
-        "fod_wallet_storage_missing": "ระบบ KINJAI Wallet ยังไม่พร้อมใช้งาน กรุณาติดต่อ Super Admin เพื่อตรวจสอบการตั้งค่าระบบ",
-        "fod_wallet_busy": "KINJAI Wallet กำลังถูกใช้งานโดยออเดอร์อื่น กรุณารอสักครู่แล้วลองเรียก Lalamove อีกครั้ง",
-        "fod_wallet_debit_pending": "สร้างงาน Lalamove แล้ว แต่ระบบตัด KINJAI Wallet ไม่สำเร็จ ห้ามกดเรียกซ้ำ กรุณาติดต่อ Super Admin เพื่อตรวจสอบบัญชี",
-        "account_not_ready": "บัญชี Lalamove ของร้านยังไม่พร้อมใช้งาน กรุณาตรวจสอบ Partner API หรือการอนุมัติบัญชีกลาง KINJAI",
+        "fod_wallet_insufficient": "ยอด PENGUIN Wallet ไม่เพียงพอ (คงเหลือ :balance บาท / ต้องใช้ :required บาท) กรุณาเติม Wallet และรอ Super Admin อนุมัติก่อนเรียก Lalamove",
+        "fod_wallet_storage_missing": "ระบบ PENGUIN Wallet ยังไม่พร้อมใช้งาน กรุณาติดต่อ Super Admin เพื่อตรวจสอบการตั้งค่าระบบ",
+        "fod_wallet_busy": "PENGUIN Wallet กำลังถูกใช้งานโดยออเดอร์อื่น กรุณารอสักครู่แล้วลองเรียก Lalamove อีกครั้ง",
+        "fod_wallet_debit_pending": "สร้างงาน Lalamove แล้ว แต่ระบบตัด PENGUIN Wallet ไม่สำเร็จ ห้ามกดเรียกซ้ำ กรุณาติดต่อ Super Admin เพื่อตรวจสอบบัญชี",
+        "account_not_ready": "บัญชี Lalamove ของร้านยังไม่พร้อมใช้งาน กรุณาตรวจสอบ Partner API หรือการอนุมัติบัญชีกลาง PENGUIN",
         "provider_payload_invalid": "Lalamove ปฏิเสธข้อมูลคำสั่งซื้อ กรุณาตรวจสอบข้อมูลร้านและลูกค้าแล้วลองใหม่",
         "generic_error": "ดำเนินการ Lalamove ไม่สำเร็จ (:code)",
         "statuses": {
@@ -1222,11 +1222,11 @@
       "checkout": {
         "meta_title": "สั่งอาหาร Delivery",
         "header": {
-          "title": "KINJAI",
+          "title": "PENGUIN",
           "badge": "จัดส่งถึงบ้าน"
         },
         "hero": {
-          "title": "KINJAI",
+          "title": "PENGUIN",
           "description": "แอปพลิเคชันสั่งอาหารและบริการจัดส่งออนไลน์ สำหรับเลือกเมนู กรอกข้อมูลจัดส่ง ยืนยันคำสั่งซื้อ และชำระเงิน"
         },
         "menu": {
@@ -1476,7 +1476,7 @@
           "download_failed": "ดาวน์โหลดใบสั่งซื้อไม่สำเร็จ กรุณาลองใหม่"
         },
         "receipt": {
-          "shop_fallback": "KINJAI",
+          "shop_fallback": "PENGUIN",
           "evidence": "หลักฐานคำสั่งซื้อ Delivery",
           "fields": {
             "order_number": "เลขที่รายการ",
@@ -1545,7 +1545,7 @@
     },
     "home": {
       "meta": {
-        "title": "KINJAI"
+        "title": "PENGUIN"
       },
       "public": {
         "hero": {
@@ -1623,7 +1623,7 @@
         },
         "about": {
           "title": "เกี่ยวกับแอปพลิเคชัน",
-          "description": "KINJAI เชื่อมต่อร้านอาหารกับลูกค้าเพื่อให้การสั่งอาหาร การชำระเงิน และการจัดส่งเป็นเรื่องง่าย บัญชี Google ใช้สำหรับยืนยันตัวตนลูกค้าและบันทึกข้อมูลโปรไฟล์กับที่อยู่จัดส่งตามที่ลูกค้าเลือกให้ระบบเข้าถึง",
+          "description": "PENGUIN เชื่อมต่อร้านอาหารกับลูกค้าเพื่อให้การสั่งอาหาร การชำระเงิน และการจัดส่งเป็นเรื่องง่าย บัญชี Google ใช้สำหรับยืนยันตัวตนลูกค้าและบันทึกข้อมูลโปรไฟล์กับที่อยู่จัดส่งตามที่ลูกค้าเลือกให้ระบบเข้าถึง",
           "links_aria": "ลิงก์ติดต่อและนโยบาย",
           "support": "ติดต่อฝ่ายสนับสนุน",
           "privacy": "นโยบายความเป็นส่วนตัว",
@@ -1826,10 +1826,10 @@
     },
     "legal": {
       "privacy": {
-        "meta_title": "นโยบายความเป็นส่วนตัว | KINJAI",
+        "meta_title": "นโยบายความเป็นส่วนตัว | PENGUIN",
         "title": "นโยบายความเป็นส่วนตัว",
         "updated": "ปรับปรุงล่าสุด: 30 มิถุนายน 2026",
-        "intro": "KINJAI เป็นระบบสั่งอาหารและจัดส่งออนไลน์ เราให้ความสำคัญกับข้อมูลส่วนบุคคลของลูกค้าและพนักงานร้านค้า",
+        "intro": "PENGUIN เป็นระบบสั่งอาหารและจัดส่งออนไลน์ เราให้ความสำคัญกับข้อมูลส่วนบุคคลของลูกค้าและพนักงานร้านค้า",
         "sections": {
           "collection": {
             "title": "ข้อมูลที่เราเก็บ",
@@ -1850,10 +1850,10 @@
         }
       },
       "terms": {
-        "meta_title": "ข้อกำหนดการใช้งาน | KINJAI",
+        "meta_title": "ข้อกำหนดการใช้งาน | PENGUIN",
         "title": "ข้อกำหนดการใช้งาน",
         "updated": "ปรับปรุงล่าสุด: 30 มิถุนายน 2026",
-        "intro": "การใช้ KINJAI ถือว่าคุณยอมรับข้อกำหนดฉบับนี้ ระบบให้บริการสั่งอาหาร จัดส่ง และเครื่องมือจัดการร้านอาหารออนไลน์",
+        "intro": "การใช้ PENGUIN ถือว่าคุณยอมรับข้อกำหนดฉบับนี้ ระบบให้บริการสั่งอาหาร จัดส่ง และเครื่องมือจัดการร้านอาหารออนไลน์",
         "sections": {
           "account": {
             "title": "บัญชีผู้ใช้",
@@ -2017,7 +2017,7 @@
     },
     "platform": {
       "meta": {
-        "title": "ระบบกลาง KINJAI"
+        "title": "ระบบกลาง PENGUIN"
       },
       "header": {
         "title": "ระบบกลาง"
@@ -2086,8 +2086,8 @@
       },
       "branding": {
         "title": "Branding และไอคอนของระบบ",
-        "description": "กำหนด Logo KINJAI, Favicon และ App Icon จาก Super Admin เพื่อใช้เป็นภาพกลางของระบบ",
-        "logo": "Logo KINJAI",
+        "description": "กำหนด Logo PENGUIN, Favicon และ App Icon จาก Super Admin เพื่อใช้เป็นภาพกลางของระบบ",
+        "logo": "Logo PENGUIN",
         "logo_help": "กำหนดโลโก้ที่ใช้ในส่วนหัวและหน้าเข้าสู่ระบบ รองรับ PNG, JPG และ WebP สูงสุด 4 MB",
         "favicon": "Favicon",
         "favicon_help": "ไอคอนบนแท็บ Browser รองรับ PNG หรือ ICO สูงสุด 2 MB",
@@ -2098,7 +2098,7 @@
         "configured": "ตั้งค่าแล้ว",
         "not_configured": "ยังไม่ได้ตั้งค่า",
         "clear_pending": "จะล้างค่าเมื่อกดบันทึก",
-        "runtime_help": "เมื่อบันทึกแล้ว หน้าเว็บที่ใช้ Layout กลางจะโหลด Branding ชุดใหม่อัตโนมัติ หากไม่ได้ตั้งค่า Logo ระบบจะแสดงโลโก้ KJ แบบเดิม",
+        "runtime_help": "เมื่อบันทึกแล้ว หน้าเว็บที่ใช้ Layout กลางจะโหลด Branding ชุดใหม่อัตโนมัติ หากไม่ได้ตั้งค่า Logo ระบบจะแสดงโลโก้ PG แบบเดิม",
         "pwa_help": "App Icon จะถูกนำไปใช้กับ manifest.webmanifest และ Apple touch icon เพื่อรองรับการเพิ่มเว็บลงหน้าจอหลัก",
         "save": "บันทึก Branding",
         "save_success": "บันทึก Branding ของระบบแล้ว",
@@ -2207,7 +2207,7 @@
       },
       "lalamove": {
         "title": "Lalamove API ของระบบกลาง",
-        "description": "ตั้งค่า Lalamove API ส่วนกลางสำหรับทุก Tenant โดย KINJAI เป็นคนกลางในการขอราคาและเชื่อมต่อบริการจัดส่ง",
+        "description": "ตั้งค่า Lalamove API ส่วนกลางสำหรับทุก Tenant โดย PENGUIN เป็นคนกลางในการขอราคาและเชื่อมต่อบริการจัดส่ง",
         "environment": "Environment",
         "sandbox": "Sandbox",
         "production": "Production",
@@ -4954,15 +4954,15 @@
       "explanation": {
         "title": "การคำนวณยอดที่ต้องโอน Platform",
         "loading": "กำลังโหลดข้อมูลการคำนวณ",
-        "enabled": "ยอดขายที่คิดส่วนแบ่ง :sales บาท × :rate% = ส่วนแบ่ง :share บาท + Lalamove คงค้าง :outstanding บาท = ยอดต้องโอน :due บาท (ต้นทุน Lalamove ทั้งหมด :deliveryCost บาท / เครดิต KINJAI ใช้แล้ว :walletCovered เครดิต / ลูกค้าชำระค่าส่ง :customerDelivery บาท / ร้านรับผิดชอบส่วนต่างหรือส่งฟรี :subsidy บาท)",
+        "enabled": "ยอดขายที่คิดส่วนแบ่ง :sales บาท × :rate% = ส่วนแบ่ง :share บาท + Lalamove คงค้าง :outstanding บาท = ยอดต้องโอน :due บาท (ต้นทุน Lalamove ทั้งหมด :deliveryCost บาท / เครดิต PENGUIN ใช้แล้ว :walletCovered เครดิต / ลูกค้าชำระค่าส่ง :customerDelivery บาท / ร้านรับผิดชอบส่วนต่างหรือส่งฟรี :subsidy บาท)",
         "disabled": "ระบบกลางยังไม่ได้เปิดใช้งานการคิดส่วนแบ่งสำหรับร้านนี้"
       },
       "wallet": {
-        "title": "KINJAI เครดิตสำหรับ Lalamove",
-        "description": "ยอดเครดิต KINJAI ที่ใช้ชำระค่าบริการ Lalamove พร้อมรายการเคลื่อนไหวและสาเหตุเมื่อเรียกรถไม่สำเร็จ",
-        "summary_aria": "สรุปยอดเครดิต KINJAI",
+        "title": "PENGUIN เครดิตสำหรับ Lalamove",
+        "description": "ยอดเครดิต PENGUIN ที่ใช้ชำระค่าบริการ Lalamove พร้อมรายการเคลื่อนไหวและสาเหตุเมื่อเรียกรถไม่สำเร็จ",
+        "summary_aria": "สรุปยอดเครดิต PENGUIN",
         "ready": "เครดิตพร้อมใช้งาน",
-        "storage_missing": "ยังไม่ได้ติดตั้งโครงสร้าง KINJAI Wallet",
+        "storage_missing": "ยังไม่ได้ติดตั้งโครงสร้าง PENGUIN Wallet",
         "balance": "ยอดเครดิตคงเหลือ",
         "approved_topup_total": "เครดิตสะสมที่เติมสำเร็จ",
         "period_topup": "เครดิตที่เติมในช่วงรายงาน",
@@ -4970,8 +4970,8 @@
         "period_delivery_refund": "เครดิตที่คืนจากค่าจัดส่งในช่วงรายงาน",
         "pending_topup": "เครดิตที่รอตรวจสอบ",
         "pending_count": ":count รายการ",
-        "accounting_note": "ค่าบริการ Lalamove ที่ตัดจากเครดิต KINJAI สำเร็จแล้วจะไม่ถูกนำไปบวกซ้ำในยอดที่ต้องโอน Platform",
-        "credit_policy": "อัตราเติมเครดิต 1 บาท = 1 เครดิต เครดิต KINJAI ใช้สำหรับชำระค่าบริการภายในระบบเท่านั้น ไม่สามารถโอน ถอน แลก หรือขอคืนเป็นเงินสดตามเงื่อนไขการใช้บริการ เว้นแต่กฎหมายกำหนดเป็นอย่างอื่น",
+        "accounting_note": "ค่าบริการ Lalamove ที่ตัดจากเครดิต PENGUIN สำเร็จแล้วจะไม่ถูกนำไปบวกซ้ำในยอดที่ต้องโอน Platform",
+        "credit_policy": "อัตราเติมเครดิต 1 บาท = 1 เครดิต เครดิต PENGUIN ใช้สำหรับชำระค่าบริการภายในระบบเท่านั้น ไม่สามารถโอน ถอน แลก หรือขอคืนเป็นเงินสดตามเงื่อนไขการใช้บริการ เว้นแต่กฎหมายกำหนดเป็นอย่างอื่น",
         "transactions_title": "รายการเครดิตล่าสุด",
         "transactions_description": "แสดงรายการล่าสุดไม่เกิน 12 รายการจาก Credit Ledger ของระบบ",
         "transactions_empty": "ยังไม่มีรายการเคลื่อนไหวเครดิต",
@@ -5003,8 +5003,8 @@
           "dispatch": "เรียกรถ"
         },
         "failure_reasons": {
-          "FOD_WALLET_INSUFFICIENT_BALANCE": "เครดิต KINJAI ไม่เพียงพอ ต้องใช้ :required เครดิต แต่มีคงเหลือ :balance เครดิต",
-          "FOD_WALLET_STORAGE_MISSING": "ระบบ KINJAI Wallet ยังไม่พร้อมใช้งาน กรุณาติดต่อผู้ดูแลระบบ",
+          "FOD_WALLET_INSUFFICIENT_BALANCE": "เครดิต PENGUIN ไม่เพียงพอ ต้องใช้ :required เครดิต แต่มีคงเหลือ :balance เครดิต",
+          "FOD_WALLET_STORAGE_MISSING": "ระบบ PENGUIN Wallet ยังไม่พร้อมใช้งาน กรุณาติดต่อผู้ดูแลระบบ",
           "FOD_WALLET_BUSY": "Wallet กำลังถูกใช้งานโดยรายการอื่น กรุณาลองใหม่อีกครั้ง",
           "FOD_WALLET_NOT_FOUND": "ไม่พบ Wallet ของร้าน กรุณาติดต่อผู้ดูแลระบบ",
           "LALAMOVE_ACCOUNT_NOT_READY": "บัญชี Lalamove ของร้านหรือระบบกลางยังไม่พร้อมใช้งาน",
@@ -5024,7 +5024,7 @@
       },
       "payment": {
         "title": "แจ้งโอนส่วนแบ่งและ Lalamove คงค้าง",
-        "description": "แนบสลิปของช่วงรายงานที่เลือก ระบบจะเรียกเก็บเฉพาะส่วนแบ่งยอดขายและต้นทุน Lalamove ที่ยังไม่ได้ถูกตัดจาก KINJAI Wallet",
+        "description": "แนบสลิปของช่วงรายงานที่เลือก ระบบจะเรียกเก็บเฉพาะส่วนแบ่งยอดขายและต้นทุน Lalamove ที่ยังไม่ได้ถูกตัดจาก PENGUIN Wallet",
         "selected_period": "งวดที่เลือก",
         "amount_due": "ยอดรวมที่ต้องโอน Platform",
         "amount_breakdown": "ส่วนแบ่ง :share บาท + Lalamove คงค้าง :delivery บาท",
@@ -5429,7 +5429,7 @@
         "success": "เปลี่ยนรหัสผ่านเรียบร้อยแล้ว"
       },
       "footer": {
-        "product": "KINJAI",
+        "product": "PENGUIN",
         "version": "Version :version",
         "build": "Build :build",
         "icon_credit": "Uicons by Flaticon"
@@ -5528,7 +5528,7 @@
         "description": "ยอดและสถานะด้านล่างอ่านจากข้อมูลล่าสุดของร้านค้า"
       },
       "loading": "กำลังตรวจสอบ...",
-      "shop_fallback": "KINJAI",
+      "shop_fallback": "PENGUIN",
       "latest_badge": "ข้อมูลล่าสุดจากระบบ",
       "payment": {
         "paid": "ชำระเงินแล้ว",
@@ -6011,40 +6011,40 @@
         "lalamove_status": "Not ready",
         "lalamove_available_status": "Available",
         "lalamove_selected_status": "Selected",
-        "lalamove_description": "Connect delivery through Lalamove using the central KINJAI API credentials.",
+        "lalamove_description": "Connect delivery through Lalamove using the central PENGUIN API credentials.",
         "lalamove_unavailable_description": "The selected Lalamove account is not ready. Check its settings or approval status.",
         "lalamove_account_title": "Store Lalamove account",
-        "lalamove_account_description": "Choose whether this store uses its own Lalamove Partner API or an KINJAI central account approved by Super Admin.",
+        "lalamove_account_description": "Choose whether this store uses its own Lalamove Partner API or an PENGUIN central account approved by Super Admin.",
         "lalamove_account_mode": "Account mode",
         "lalamove_mode_disabled": "Disable Lalamove",
         "lalamove_mode_tenant": "Use store Lalamove Partner account",
-        "lalamove_mode_fod": "Use KINJAI central account",
+        "lalamove_mode_fod": "Use PENGUIN central account",
         "lalamove_environment": "Environment",
         "lalamove_api_key": "Store Lalamove API Key",
         "lalamove_api_secret": "Store Lalamove API Secret",
-        "lalamove_mode_help": "Store credentials must pass Test Connection before use. KINJAI central mode requires Super Admin approval.",
+        "lalamove_mode_help": "Store credentials must pass Test Connection before use. PENGUIN central mode requires Super Admin approval.",
         "lalamove_save_account": "Save Lalamove account",
         "lalamove_test_connection": "Test Connection",
         "lalamove_status_ready": "Ready",
         "lalamove_status_not_ready": "Not ready",
-        "lalamove_status_waiting_approval": "Waiting for KINJAI approval",
+        "lalamove_status_waiting_approval": "Waiting for PENGUIN approval",
         "lalamove_status_disabled": "Disabled",
         "lalamove_account_saved": "Lalamove account settings saved.",
         "lalamove_account_save_failed": "Could not save Lalamove account settings.",
         "lalamove_test_success": "Store Lalamove Partner connection successful.",
         "lalamove_test_failed": "Could not connect to the store Lalamove Partner account.",
-        "fod_wallet_title": "KINJAI Credits for Lalamove",
+        "fod_wallet_title": "PENGUIN Credits for Lalamove",
         "fod_wallet_balance": "Credit balance",
         "fod_wallet_credit_unit": "credits",
         "fod_wallet_credit_rate": "Credit rate: THB 1 = 1 credit",
-        "fod_wallet_credit_terms": "KINJAI credits are for paying for services within the KINJAI system only. They cannot be transferred, withdrawn, redeemed, or refunded as cash under the service terms, except where otherwise required by law.",
+        "fod_wallet_credit_terms": "PENGUIN credits are for paying for services within the PENGUIN system only. They cannot be transferred, withdrawn, redeemed, or refunded as cash under the service terms, except where otherwise required by law.",
         "fod_wallet_recent": "Recent credit activity",
         "fod_wallet_loading": "Loading wallet...",
         "fod_wallet_empty": "No credit transactions yet.",
-        "fod_wallet_storage_missing": "KINJAI Wallet tables have not been created on the server.",
-        "fod_wallet_load_failed": "Unable to load KINJAI Wallet. The system will retry automatically.",
-        "fod_wallet_active": "KINJAI Central deliveries will use these credits for Lalamove service costs.",
-        "fod_wallet_inactive": "This credit balance is retained but is not used for new deliveries until KINJAI Central is selected.",
+        "fod_wallet_storage_missing": "PENGUIN Wallet tables have not been created on the server.",
+        "fod_wallet_load_failed": "Unable to load PENGUIN Wallet. The system will retry automatically.",
+        "fod_wallet_active": "PENGUIN Central deliveries will use these credits for Lalamove service costs.",
+        "fod_wallet_inactive": "This credit balance is retained but is not used for new deliveries until PENGUIN Central is selected.",
         "fod_wallet_phase2_note": "Shows the store credit balance and Credit Ledger.",
         "fod_wallet_phase3_note": "Credits are added after approval or successful Slip2Go verification.",
         "fod_wallet_ledger_note": "Approved credit top-ups appear in the ledger.",
@@ -6061,11 +6061,11 @@
         "fod_wallet_topup_help": "Transfer to the destination above and attach the slip. When Slip2Go confirms the amount, receiver, and transaction, credits are added automatically. Otherwise the request remains for Super Admin review.",
         "fod_wallet_topup_history": "Credit top-up history",
         "fod_wallet_topup_storage_missing": "Wallet top-up tables have not been created on the server.",
-        "fod_wallet_topup_not_allowed": "Credit top-up is available only for approved stores using the KINJAI Central account.",
-        "fod_wallet_topup_destination_missing": "Super Admin has not configured the receiving account for KINJAI credit top-ups yet.",
+        "fod_wallet_topup_not_allowed": "Credit top-up is available only for approved stores using the PENGUIN Central account.",
+        "fod_wallet_topup_destination_missing": "Super Admin has not configured the receiving account for PENGUIN credit top-ups yet.",
         "fod_wallet_topup_invalid": "Enter at least 1 credit and attach a slip.",
         "fod_wallet_topup_submitted": "Credit top-up submitted and waiting for Super Admin review.",
-        "fod_wallet_topup_auto_approved": "Slip2Go verified the transfer and KINJAI credits were added automatically.",
+        "fod_wallet_topup_auto_approved": "Slip2Go verified the transfer and PENGUIN credits were added automatically.",
         "fod_wallet_topup_failed": "Could not submit the credit top-up.",
         "fod_wallet_topup_duplicate": "This slip has already been used in the system. Check it or use another slip.",
         "fod_wallet_topup_delete": "Delete request",
@@ -6424,16 +6424,16 @@
         "lalamove_modes": {
           "disabled": "Disabled",
           "tenant": "Store Partner account",
-          "fod_central": "KINJAI central account"
+          "fod_central": "PENGUIN central account"
         },
-        "lalamove_approved": "KINJAI approved",
-        "lalamove_waiting": "Waiting for KINJAI approval",
-        "lalamove_approve": "Approve KINJAI Lalamove",
-        "lalamove_revoke": "Revoke KINJAI Lalamove",
-        "lalamove_approve_confirm": "Allow :name to use the KINJAI central Lalamove account?",
-        "lalamove_revoke_confirm": "Revoke :name access to the KINJAI central Lalamove account? New orders will no longer be dispatchable through the central account.",
-        "lalamove_approve_success": "KINJAI central Lalamove access approved.",
-        "lalamove_revoke_success": "KINJAI central Lalamove access revoked.",
+        "lalamove_approved": "PENGUIN approved",
+        "lalamove_waiting": "Waiting for PENGUIN approval",
+        "lalamove_approve": "Approve PENGUIN Lalamove",
+        "lalamove_revoke": "Revoke PENGUIN Lalamove",
+        "lalamove_approve_confirm": "Allow :name to use the PENGUIN central Lalamove account?",
+        "lalamove_revoke_confirm": "Revoke :name access to the PENGUIN central Lalamove account? New orders will no longer be dispatchable through the central account.",
+        "lalamove_approve_success": "PENGUIN central Lalamove access approved.",
+        "lalamove_revoke_success": "PENGUIN central Lalamove access revoked.",
         "lalamove_approval_failed": "Could not update Lalamove approval.",
         "fields": {
           "name": "Store name",
@@ -6448,8 +6448,8 @@
         }
       },
       "wallet": {
-        "title": "Store KINJAI credits for Lalamove",
-        "label": "KINJAI credits",
+        "title": "Store PENGUIN credits for Lalamove",
+        "label": "PENGUIN credits",
         "view": "View credits",
         "balance": "Credit balance",
         "credit_unit": "credits",
@@ -6457,7 +6457,7 @@
         "loading": "Loading credit data...",
         "empty": "No credit transactions yet.",
         "load_failed": "Could not load credit data.",
-        "storage_missing": "KINJAI Wallet tables have not been created on the server.",
+        "storage_missing": "PENGUIN Wallet tables have not been created on the server.",
         "credit_note": "Each approved request credits the wallet exactly once.",
         "topups": "Credit purchase requests",
         "topup_empty": "No credit purchase requests yet.",
@@ -6466,8 +6466,8 @@
         "approve": "Approve",
         "reject": "Reject",
         "approve_title": "Approve credit purchase request",
-        "approve_confirm": "Approve :amount credits into :name KINJAI Wallet? The credits will be added immediately.",
-        "approve_success": "Credit purchase approved and added to KINJAI Wallet.",
+        "approve_confirm": "Approve :amount credits into :name PENGUIN Wallet? The credits will be added immediately.",
+        "approve_success": "Credit purchase approved and added to PENGUIN Wallet.",
         "reject_title": "Reject credit purchase request",
         "reject_prompt": "Enter the reason for rejecting this credit purchase request.",
         "reject_success": "Credit purchase request rejected.",
@@ -6977,7 +6977,7 @@
         "retry": "Retry Lalamove",
         "cancel": "Cancel Lalamove",
         "cancel_title": "Confirm Lalamove cancellation",
-        "cancel_confirm": "Cancel this Lalamove delivery? After it is canceled successfully, the KINJAI order can be canceled locally.",
+        "cancel_confirm": "Cancel this Lalamove delivery? After it is canceled successfully, the PENGUIN order can be canceled locally.",
         "cancel_confirm_button": "Cancel Lalamove",
         "cancel_success": "Lalamove delivery canceled successfully.",
         "cancel_forbidden": "Lalamove no longer allows this delivery to be canceled at its current status.",
@@ -6993,11 +6993,11 @@
         "out_of_service_area": "The pickup or drop-off location is outside Lalamove service area.",
         "quotation_expired": "The delivery quotation has expired. Check the latest delivery price again.",
         "insufficient_credit": "The selected Lalamove account has insufficient credit or wallet balance. Check the account in use.",
-        "fod_wallet_insufficient": "Insufficient KINJAI Wallet balance (:balance THB available / :required THB required). Top up the Wallet and wait for Super Admin approval before dispatching Lalamove.",
-        "fod_wallet_storage_missing": "KINJAI Wallet is not ready. Contact Super Admin to check the system setup.",
-        "fod_wallet_busy": "KINJAI Wallet is being used by another order. Wait a moment and try dispatching Lalamove again.",
-        "fod_wallet_debit_pending": "The Lalamove order was created, but KINJAI Wallet debit is pending. Do not dispatch again; contact Super Admin to reconcile the Wallet.",
-        "account_not_ready": "This store Lalamove account is not ready. Check its Partner API credentials or KINJAI central approval.",
+        "fod_wallet_insufficient": "Insufficient PENGUIN Wallet balance (:balance THB available / :required THB required). Top up the Wallet and wait for Super Admin approval before dispatching Lalamove.",
+        "fod_wallet_storage_missing": "PENGUIN Wallet is not ready. Contact Super Admin to check the system setup.",
+        "fod_wallet_busy": "PENGUIN Wallet is being used by another order. Wait a moment and try dispatching Lalamove again.",
+        "fod_wallet_debit_pending": "The Lalamove order was created, but PENGUIN Wallet debit is pending. Do not dispatch again; contact Super Admin to reconcile the Wallet.",
+        "account_not_ready": "This store Lalamove account is not ready. Check its Partner API credentials or PENGUIN central approval.",
         "provider_payload_invalid": "Lalamove rejected the order data. Check the store and customer details and try again.",
         "generic_error": "Lalamove action failed (:code)",
         "statuses": {
@@ -7165,13 +7165,13 @@
     },
     "delivery": {
       "checkout": {
-        "meta_title": "KINJAI",
+        "meta_title": "PENGUIN",
         "header": {
-          "title": "KINJAI",
+          "title": "PENGUIN",
           "badge": "Home delivery"
         },
         "hero": {
-          "title": "KINJAI",
+          "title": "PENGUIN",
           "description": "Order food online, enter delivery details, confirm your order, and choose a payment method."
         },
         "menu": {
@@ -7421,7 +7421,7 @@
           "download_failed": "Could not download the order receipt. Please try again."
         },
         "receipt": {
-          "shop_fallback": "KINJAI",
+          "shop_fallback": "PENGUIN",
           "evidence": "Delivery order confirmation",
           "fields": {
             "order_number": "Order number",
@@ -7490,7 +7490,7 @@
     },
     "home": {
       "meta": {
-        "title": "KINJAI"
+        "title": "PENGUIN"
       },
       "public": {
         "hero": {
@@ -7568,7 +7568,7 @@
         },
         "about": {
           "title": "About the application",
-          "description": "KINJAI connects restaurants with customers to make ordering, payment, and delivery easier. Google accounts are used to verify customer identity and save profile information and delivery addresses that customers choose to share with the system.",
+          "description": "PENGUIN connects restaurants with customers to make ordering, payment, and delivery easier. Google accounts are used to verify customer identity and save profile information and delivery addresses that customers choose to share with the system.",
           "links_aria": "Support and policy links",
           "support": "Contact support",
           "privacy": "Privacy policy",
@@ -7771,10 +7771,10 @@
     },
     "legal": {
       "privacy": {
-        "meta_title": "Privacy policy | KINJAI",
+        "meta_title": "Privacy policy | PENGUIN",
         "title": "Privacy policy",
         "updated": "Last updated: June 30, 2026",
-        "intro": "KINJAI is an online food ordering and delivery system. We value the personal information of customers and restaurant staff.",
+        "intro": "PENGUIN is an online food ordering and delivery system. We value the personal information of customers and restaurant staff.",
         "sections": {
           "collection": {
             "title": "Information we collect",
@@ -7795,10 +7795,10 @@
         }
       },
       "terms": {
-        "meta_title": "Terms of use | KINJAI",
+        "meta_title": "Terms of use | PENGUIN",
         "title": "Terms of use",
         "updated": "Last updated: June 30, 2026",
-        "intro": "By using KINJAI, you agree to these terms. The system provides online food ordering, delivery, and restaurant management tools.",
+        "intro": "By using PENGUIN, you agree to these terms. The system provides online food ordering, delivery, and restaurant management tools.",
         "sections": {
           "account": {
             "title": "User accounts",
@@ -7962,7 +7962,7 @@
     },
     "platform": {
       "meta": {
-        "title": "KINJAI platform"
+        "title": "PENGUIN platform"
       },
       "header": {
         "title": "Platform"
@@ -8031,8 +8031,8 @@
       },
       "branding": {
         "title": "System branding and icons",
-        "description": "Manage the KINJAI logo, favicon, and app icon centrally from Super Admin.",
-        "logo": "KINJAI Logo",
+        "description": "Manage the PENGUIN logo, favicon, and app icon centrally from Super Admin.",
+        "logo": "PENGUIN Logo",
         "logo_help": "Sets the logo shown in headers and login. PNG, JPG, or WebP up to 4 MB.",
         "favicon": "Favicon",
         "favicon_help": "Browser-tab icon. PNG or ICO up to 2 MB.",
@@ -8043,7 +8043,7 @@
         "configured": "Configured",
         "not_configured": "Not configured",
         "clear_pending": "This image will be cleared when you save.",
-        "runtime_help": "After saving, pages using the shared layout load the new branding automatically. If no logo is configured, the original KJ logo mark remains.",
+        "runtime_help": "After saving, pages using the shared layout load the new branding automatically. If no logo is configured, the original PG logo mark remains.",
         "pwa_help": "The app icon is published through manifest.webmanifest and Apple touch icon for adding the website to a home screen.",
         "save": "Save Branding",
         "save_success": "System branding saved.",
@@ -8152,7 +8152,7 @@
       },
       "lalamove": {
         "title": "Platform Lalamove API",
-        "description": "Configure central Lalamove API credentials used by KINJAI as the delivery API intermediary for every Tenant.",
+        "description": "Configure central Lalamove API credentials used by PENGUIN as the delivery API intermediary for every Tenant.",
         "environment": "Environment",
         "sandbox": "Sandbox",
         "production": "Production",
@@ -10624,15 +10624,15 @@
       "explanation": {
         "title": "Platform amount-due calculation",
         "loading": "Loading calculation details.",
-        "enabled": "Revenue-share sales THB :sales × :rate% = THB :share share + THB :outstanding Lalamove outstanding = THB :due due to Platform (total Lalamove THB :deliveryCost / KINJAI credits used :walletCovered credits / customer delivery THB :customerDelivery / store subsidy THB :subsidy).",
+        "enabled": "Revenue-share sales THB :sales × :rate% = THB :share share + THB :outstanding Lalamove outstanding = THB :due due to Platform (total Lalamove THB :deliveryCost / PENGUIN credits used :walletCovered credits / customer delivery THB :customerDelivery / store subsidy THB :subsidy).",
         "disabled": "Platform revenue share has not been enabled for this store."
       },
       "wallet": {
-        "title": "KINJAI Credits for Lalamove",
-        "description": "KINJAI credits used for Lalamove services, with credit activity and failure reasons when dispatch cannot be created.",
-        "summary_aria": "KINJAI credit summary",
+        "title": "PENGUIN Credits for Lalamove",
+        "description": "PENGUIN credits used for Lalamove services, with credit activity and failure reasons when dispatch cannot be created.",
+        "summary_aria": "PENGUIN credit summary",
         "ready": "Credits ready",
-        "storage_missing": "KINJAI Wallet database structure is not installed",
+        "storage_missing": "PENGUIN Wallet database structure is not installed",
         "balance": "Credit balance",
         "approved_topup_total": "Credits added, all time",
         "period_topup": "Credits added in selected period",
@@ -10640,8 +10640,8 @@
         "period_delivery_refund": "Credits returned from delivery in selected period",
         "pending_topup": "Credits pending review",
         "pending_count": ":count requests",
-        "accounting_note": "Lalamove service costs successfully paid with KINJAI credits are not charged again in the amount due to Platform.",
-        "credit_policy": "Credit rate: THB 1 = 1 credit. KINJAI credits are for paying for services within the KINJAI system only. They cannot be transferred, withdrawn, redeemed, or refunded as cash under the service terms, except where otherwise required by law.",
+        "accounting_note": "Lalamove service costs successfully paid with PENGUIN credits are not charged again in the amount due to Platform.",
+        "credit_policy": "Credit rate: THB 1 = 1 credit. PENGUIN credits are for paying for services within the PENGUIN system only. They cannot be transferred, withdrawn, redeemed, or refunded as cash under the service terms, except where otherwise required by law.",
         "transactions_title": "Recent credit activity",
         "transactions_description": "Shows up to 12 latest entries from the system credit ledger.",
         "transactions_empty": "No credit activity yet.",
@@ -10673,8 +10673,8 @@
           "dispatch": "dispatch"
         },
         "failure_reasons": {
-          "FOD_WALLET_INSUFFICIENT_BALANCE": "KINJAI credit balance is insufficient. :required credits are required but only :balance credits are available.",
-          "FOD_WALLET_STORAGE_MISSING": "KINJAI Wallet is not ready. Please contact the system administrator.",
+          "FOD_WALLET_INSUFFICIENT_BALANCE": "PENGUIN credit balance is insufficient. :required credits are required but only :balance credits are available.",
+          "FOD_WALLET_STORAGE_MISSING": "PENGUIN Wallet is not ready. Please contact the system administrator.",
           "FOD_WALLET_BUSY": "The Wallet is being used by another transaction. Please try again.",
           "FOD_WALLET_NOT_FOUND": "The store Wallet could not be found. Please contact the system administrator.",
           "LALAMOVE_ACCOUNT_NOT_READY": "The store or platform Lalamove account is not ready.",
@@ -10694,7 +10694,7 @@
       },
       "payment": {
         "title": "Report revenue-share and outstanding Lalamove transfer",
-        "description": "Attach the transfer slip for the selected period. Only sales revenue share and Lalamove cost not already debited from KINJAI Wallet are charged.",
+        "description": "Attach the transfer slip for the selected period. Only sales revenue share and Lalamove cost not already debited from PENGUIN Wallet are charged.",
         "selected_period": "Selected period",
         "amount_due": "Total due to Platform",
         "amount_breakdown": "Share THB :share + outstanding Lalamove THB :delivery",
@@ -11099,7 +11099,7 @@
         "success": "Password changed successfully."
       },
       "footer": {
-        "product": "KINJAI",
+        "product": "PENGUIN",
         "version": "Version :version",
         "build": "Build :build",
         "icon_credit": "Uicons by Flaticon"
@@ -11198,7 +11198,7 @@
         "description": "The totals and statuses below are read from the restaurant’s latest data."
       },
       "loading": "Checking...",
-      "shop_fallback": "KINJAI",
+      "shop_fallback": "PENGUIN",
       "latest_badge": "Latest system data",
       "payment": {
         "paid": "Paid",
@@ -11681,40 +11681,40 @@
         "lalamove_status": "မအဆင်သင့်",
         "lalamove_available_status": "အသုံးပြုနိုင်",
         "lalamove_selected_status": "ရွေးထား",
-        "lalamove_description": "KINJAI ဗဟို API credential ဖြင့် Lalamove ပို့ဆောင်မှု ချိတ်ဆက်ပါ။",
+        "lalamove_description": "PENGUIN ဗဟို API credential ဖြင့် Lalamove ပို့ဆောင်မှု ချိတ်ဆက်ပါ။",
         "lalamove_unavailable_description": "ရွေးထားသော Lalamove အကောင့် မအဆင်သင့်သေးပါ။ Setting သို့မဟုတ် approval ကို စစ်ပါ။",
         "lalamove_account_title": "ဆိုင် Lalamove အကောင့်",
-        "lalamove_account_description": "ဆိုင်ကိုယ်ပိုင် Lalamove Partner API သုံးမလား သို့မဟုတ် Super Admin အတည်ပြုထားသော KINJAI ဗဟိုအကောင့်သုံးမလား ရွေးပါ။",
+        "lalamove_account_description": "ဆိုင်ကိုယ်ပိုင် Lalamove Partner API သုံးမလား သို့မဟုတ် Super Admin အတည်ပြုထားသော PENGUIN ဗဟိုအကောင့်သုံးမလား ရွေးပါ။",
         "lalamove_account_mode": "အကောင့်ပုံစံ",
         "lalamove_mode_disabled": "Lalamove ပိတ်မည်",
         "lalamove_mode_tenant": "ဆိုင်၏ Lalamove Partner အကောင့်သုံးမည်",
-        "lalamove_mode_fod": "KINJAI ဗဟိုအကောင့်သုံးမည်",
+        "lalamove_mode_fod": "PENGUIN ဗဟိုအကောင့်သုံးမည်",
         "lalamove_environment": "ပတ်ဝန်းကျင်",
         "lalamove_api_key": "ဆိုင် Lalamove API Key",
         "lalamove_api_secret": "ဆိုင် Lalamove API Secret",
-        "lalamove_mode_help": "ဆိုင် credential များသည် Test Connection အောင်မြင်မှ အသုံးပြုနိုင်သည်။ KINJAI ဗဟို mode သည် Super Admin approval လိုသည်။",
+        "lalamove_mode_help": "ဆိုင် credential များသည် Test Connection အောင်မြင်မှ အသုံးပြုနိုင်သည်။ PENGUIN ဗဟို mode သည် Super Admin approval လိုသည်။",
         "lalamove_save_account": "Lalamove အကောင့်သိမ်းမည်",
         "lalamove_test_connection": "ချိတ်ဆက်မှုစမ်းသပ်မည်",
         "lalamove_status_ready": "အဆင်သင့်",
         "lalamove_status_not_ready": "မအဆင်သင့်",
-        "lalamove_status_waiting_approval": "KINJAI approval စောင့်နေသည်",
+        "lalamove_status_waiting_approval": "PENGUIN approval စောင့်နေသည်",
         "lalamove_status_disabled": "ပိတ်ထား",
         "lalamove_account_saved": "Lalamove အကောင့် setting သိမ်းပြီး။",
         "lalamove_account_save_failed": "Lalamove အကောင့် setting မသိမ်းနိုင်ပါ။",
         "lalamove_test_success": "ဆိုင် Lalamove Partner ချိတ်ဆက်မှု အောင်မြင်သည်။",
         "lalamove_test_failed": "ဆိုင် Lalamove Partner အကောင့်နှင့် မချိတ်ဆက်နိုင်ပါ။",
-        "fod_wallet_title": "Lalamove အတွက် KINJAI Credits",
+        "fod_wallet_title": "Lalamove အတွက် PENGUIN Credits",
         "fod_wallet_balance": "Credit လက်ကျန်",
         "fod_wallet_credit_unit": "ခရက်ဒစ်",
         "fod_wallet_credit_rate": "Credit နှုန်း: 1 ဘတ် = 1 credit",
-        "fod_wallet_credit_terms": "KINJAI credit များသည် KINJAI စနစ်အတွင်း ဝန်ဆောင်ခပေးရန်အတွက်သာ ဖြစ်ပြီး ဥပဒေက မလိုအပ်သရွေ့ ငွေလွှဲ၊ ထုတ်ယူ၊ ငွေသားပြန်လဲ သို့မဟုတ် ငွေသားအဖြစ်ပြန်အမ်း မပြုနိုင်ပါ။",
+        "fod_wallet_credit_terms": "PENGUIN credit များသည် PENGUIN စနစ်အတွင်း ဝန်ဆောင်ခပေးရန်အတွက်သာ ဖြစ်ပြီး ဥပဒေက မလိုအပ်သရွေ့ ငွေလွှဲ၊ ထုတ်ယူ၊ ငွေသားပြန်လဲ သို့မဟုတ် ငွေသားအဖြစ်ပြန်အမ်း မပြုနိုင်ပါ။",
         "fod_wallet_recent": "လတ်တလော Credit လှုပ်ရှားမှု",
         "fod_wallet_loading": "Wallet ဖွင့်နေသည်...",
         "fod_wallet_empty": "Credit လှုပ်ရှားမှု မရှိသေးပါ။",
-        "fod_wallet_storage_missing": "Server တွင် KINJAI Wallet table မဖန်တီးရသေးပါ။",
-        "fod_wallet_load_failed": "KINJAI Wallet မဖွင့်နိုင်ပါ။ စနစ်က အလိုအလျောက် ထပ်စမ်းမည်။",
-        "fod_wallet_active": "KINJAI Central delivery များသည် Lalamove ဝန်ဆောင်ခအတွက် ဤ credit ကို အသုံးပြုမည်။",
-        "fod_wallet_inactive": "Credit လက်ကျန်ကို ထိန်းသိမ်းထားမည်၊ KINJAI Central မရွေးမချင်း Delivery အသစ်များအတွက် မသုံးပါ။",
+        "fod_wallet_storage_missing": "Server တွင် PENGUIN Wallet table မဖန်တီးရသေးပါ။",
+        "fod_wallet_load_failed": "PENGUIN Wallet မဖွင့်နိုင်ပါ။ စနစ်က အလိုအလျောက် ထပ်စမ်းမည်။",
+        "fod_wallet_active": "PENGUIN Central delivery များသည် Lalamove ဝန်ဆောင်ခအတွက် ဤ credit ကို အသုံးပြုမည်။",
+        "fod_wallet_inactive": "Credit လက်ကျန်ကို ထိန်းသိမ်းထားမည်၊ PENGUIN Central မရွေးမချင်း Delivery အသစ်များအတွက် မသုံးပါ။",
         "fod_wallet_phase2_note": "ဆိုင်၏ Credit လက်ကျန်နှင့် Credit Ledger ကို ပြသည်။",
         "fod_wallet_phase3_note": "Approval သို့မဟုတ် Slip2Go စစ်ဆေးအောင်မြင်ပြီးနောက် Credit ထည့်မည်။",
         "fod_wallet_ledger_note": "အတည်ပြုထားသော Credit top-up များသည် Ledger တွင် ပေါ်မည်။",
@@ -11731,11 +11731,11 @@
         "fod_wallet_topup_help": "အထက်ပါအကောင့်သို့ ငွေလွှဲပြီး စလစ်ပူးတွဲပါ။ Slip2Go က ပမာဏ၊ လက်ခံသူနှင့် transaction ကို အတည်ပြုပါက Credit အလိုအလျောက်ထည့်မည်။ မဟုတ်ပါက Super Admin စစ်ဆေးရန် စောင့်နေမည်။",
         "fod_wallet_topup_history": "Credit top-up မှတ်တမ်း",
         "fod_wallet_topup_storage_missing": "Server တွင် Wallet top-up table မဖန်တီးရသေးပါ။",
-        "fod_wallet_topup_not_allowed": "KINJAI Central အကောင့်သုံးရန် အတည်ပြုထားသောဆိုင်များသာ Credit top-up အသုံးပြုနိုင်သည်။",
-        "fod_wallet_topup_destination_missing": "Super Admin က KINJAI Credit လက်ခံအကောင့် မသတ်မှတ်ရသေးပါ။",
+        "fod_wallet_topup_not_allowed": "PENGUIN Central အကောင့်သုံးရန် အတည်ပြုထားသောဆိုင်များသာ Credit top-up အသုံးပြုနိုင်သည်။",
+        "fod_wallet_topup_destination_missing": "Super Admin က PENGUIN Credit လက်ခံအကောင့် မသတ်မှတ်ရသေးပါ။",
         "fod_wallet_topup_invalid": "အနည်းဆုံး 1 credit ထည့်ပြီး စလစ်ပူးတွဲပါ။",
         "fod_wallet_topup_submitted": "Credit top-up တင်ပြီး Super Admin စစ်ဆေးရန် စောင့်နေသည်။",
-        "fod_wallet_topup_auto_approved": "Slip2Go က ငွေလွှဲမှုကို အတည်ပြုပြီး KINJAI Credit အလိုအလျောက်ထည့်ပြီး။",
+        "fod_wallet_topup_auto_approved": "Slip2Go က ငွေလွှဲမှုကို အတည်ပြုပြီး PENGUIN Credit အလိုအလျောက်ထည့်ပြီး။",
         "fod_wallet_topup_failed": "Credit top-up မတင်နိုင်ပါ။",
         "fod_wallet_topup_duplicate": "ဤစလစ်ကို စနစ်တွင် အသုံးပြုပြီးဖြစ်သည်။ စစ်ဆေးပါ သို့မဟုတ် အခြားစလစ်သုံးပါ။",
         "fod_wallet_topup_delete": "တောင်းဆိုမှုဖျက်မည်",
@@ -12094,16 +12094,16 @@
         "lalamove_modes": {
           "disabled": "မသန်စွမ်း",
           "tenant": "စတိုးပါတနာအကောင့်",
-          "fod_central": "KINJAI ဗဟိုအကောင့်"
+          "fod_central": "PENGUIN ဗဟိုအကောင့်"
         },
-        "lalamove_approved": "KINJAI အတည်ပြုခဲ့သည်။",
-        "lalamove_waiting": "အတည်ပြုချက် KINJAI ကို စောင့်နေသည်။",
-        "lalamove_approve": "အတည်ပြု KINJAI Lalamove",
-        "lalamove_revoke": "KINJAI Lalamove ပြန်ရုပ်သိမ်းရန်",
-        "lalamove_approve_confirm": ":name KINJAI ဗဟို Lalamove အကောင့်ကို အသုံးပြုရန် ခွင့်ပြုမလား။",
-        "lalamove_revoke_confirm": ":name KINJAI ဗဟို Lalamove အကောင့်သို့ ဝင်ရောက်ခွင့်ကို ရုပ်သိမ်းမလား။ အမှာစာအသစ်များကို ဗဟိုအကောင့်မှတစ်ဆင့် ပေးပို့နိုင်တော့မည်မဟုတ်ပါ။",
-        "lalamove_approve_success": "KINJAI ဗဟို Lalamove အသုံးပြုခွင့်ကို အတည်ပြုခဲ့သည်။",
-        "lalamove_revoke_success": "KINJAI ဗဟို Lalamove အသုံးပြုခွင့်ကို ရုပ်သိမ်းလိုက်ပါပြီ။",
+        "lalamove_approved": "PENGUIN အတည်ပြုခဲ့သည်။",
+        "lalamove_waiting": "အတည်ပြုချက် PENGUIN ကို စောင့်နေသည်။",
+        "lalamove_approve": "အတည်ပြု PENGUIN Lalamove",
+        "lalamove_revoke": "PENGUIN Lalamove ပြန်ရုပ်သိမ်းရန်",
+        "lalamove_approve_confirm": ":name PENGUIN ဗဟို Lalamove အကောင့်ကို အသုံးပြုရန် ခွင့်ပြုမလား။",
+        "lalamove_revoke_confirm": ":name PENGUIN ဗဟို Lalamove အကောင့်သို့ ဝင်ရောက်ခွင့်ကို ရုပ်သိမ်းမလား။ အမှာစာအသစ်များကို ဗဟိုအကောင့်မှတစ်ဆင့် ပေးပို့နိုင်တော့မည်မဟုတ်ပါ။",
+        "lalamove_approve_success": "PENGUIN ဗဟို Lalamove အသုံးပြုခွင့်ကို အတည်ပြုခဲ့သည်။",
+        "lalamove_revoke_success": "PENGUIN ဗဟို Lalamove အသုံးပြုခွင့်ကို ရုပ်သိမ်းလိုက်ပါပြီ။",
         "lalamove_approval_failed": "Lalamove အတည်ပြုချက်ကို အပ်ဒိတ်လုပ်၍မရပါ။",
         "fields": {
           "name": "ဆိုင်နာမည်",
@@ -12118,8 +12118,8 @@
         }
       },
       "wallet": {
-        "title": "KINJAI ခရက်ဒစ်များကို Lalamove အတွက် သိမ်းဆည်းပါ",
-        "label": "KINJAI ခရက်ဒစ်များ",
+        "title": "PENGUIN ခရက်ဒစ်များကို Lalamove အတွက် သိမ်းဆည်းပါ",
+        "label": "PENGUIN ခရက်ဒစ်များ",
         "view": "ခရက်ဒစ်များကိုကြည့်ရှုပါ။",
         "balance": "အကြွေးလက်ကျန်",
         "credit_unit": "ခရက်ဒစ်",
@@ -12127,7 +12127,7 @@
         "loading": "ခရက်ဒစ်ဒေတာကို ဖွင့်နေသည်...",
         "empty": "ခရက်ဒစ် လွှဲပြောင်းမှု မရှိသေးပါ။",
         "load_failed": "ခရက်ဒစ်ဒေတာကို ဖွင့်၍မရပါ။",
-        "storage_missing": "KINJAI Wallet ဇယားများကို ဆာဗာပေါ်တွင် ဖန်တီးမထားပါ။",
+        "storage_missing": "PENGUIN Wallet ဇယားများကို ဆာဗာပေါ်တွင် ဖန်တီးမထားပါ။",
         "credit_note": "အတည်ပြုထားသော တောင်းဆိုမှုတိုင်းသည် ပိုက်ဆံအိတ်ကို တစ်ကြိမ်တိတိ ခရက်ဒစ်ပေးသည်။",
         "topups": "အကြွေးဝယ်တောင်းဆိုမှုများ",
         "topup_empty": "ခရက်ဒစ်ဝယ်ယူမှုတောင်းဆိုမှုများမရှိသေးပါ။",
@@ -12136,8 +12136,8 @@
         "approve": "လက်မခံပါ။",
         "reject": "ငြင်းပယ်ပါ။",
         "approve_title": "ခရက်ဒစ်ဝယ်ယူမှုတောင်းဆိုချက်ကို အတည်ပြုပါ။",
-        "approve_confirm": ":amount ခရက်ဒစ်များကို :name KINJAI Wallet သို့ အတည်ပြုမလား။ ခရက်ဒစ်များကို ချက်ချင်းထည့်ပါမည်။",
-        "approve_success": "ခရက်ဒစ်ဝယ်ယူမှုကို အတည်ပြုပြီး KINJAI Wallet သို့ ထည့်ခဲ့သည်။",
+        "approve_confirm": ":amount ခရက်ဒစ်များကို :name PENGUIN Wallet သို့ အတည်ပြုမလား။ ခရက်ဒစ်များကို ချက်ချင်းထည့်ပါမည်။",
+        "approve_success": "ခရက်ဒစ်ဝယ်ယူမှုကို အတည်ပြုပြီး PENGUIN Wallet သို့ ထည့်ခဲ့သည်။",
         "reject_title": "ခရက်ဒစ်ဝယ်ယူမှုတောင်းဆိုချက်ကို ငြင်းပယ်ပါ။",
         "reject_prompt": "ဤခရက်ဒစ်ဝယ်ယူမှုတောင်းဆိုမှုကို ငြင်းပယ်ရခြင်းအကြောင်းရင်းကို ထည့်သွင်းပါ။",
         "reject_success": "ခရက်ဒစ်ဝယ်ယူမှုတောင်းဆိုချက်ကို ပယ်ချခဲ့သည်။",
@@ -12647,7 +12647,7 @@
         "retry": "Lalamove ပြန်စမ်းမည်",
         "cancel": "Lalamove ပယ်ဖျက်မည်",
         "cancel_title": "Lalamove ပယ်ဖျက်မှု အတည်ပြု",
-        "cancel_confirm": "ဤ Lalamove ပို့ဆောင်မှုကို ပယ်ဖျက်မလား? အောင်မြင်စွာပယ်ဖျက်ပြီးနောက် KINJAI အော်ဒါကို local တွင် ပယ်ဖျက်နိုင်ပါသည်။",
+        "cancel_confirm": "ဤ Lalamove ပို့ဆောင်မှုကို ပယ်ဖျက်မလား? အောင်မြင်စွာပယ်ဖျက်ပြီးနောက် PENGUIN အော်ဒါကို local တွင် ပယ်ဖျက်နိုင်ပါသည်။",
         "cancel_confirm_button": "Lalamove ပယ်ဖျက်မည်",
         "cancel_success": "Lalamove ပို့ဆောင်မှု ပယ်ဖျက်ပြီးပါပြီ။",
         "cancel_forbidden": "လက်ရှိအခြေအနေတွင် Lalamove က ပယ်ဖျက်ခွင့်မပြုတော့ပါ။",
@@ -12663,11 +12663,11 @@
         "out_of_service_area": "လာယူရာ သို့မဟုတ် ပို့ရာနေရာသည် Lalamove ဝန်ဆောင်မှုဧရိယာပြင်ပတွင် ရှိသည်။",
         "quotation_expired": "ပို့ဆောင်ခ quote သက်တမ်းကုန်ပါပြီ။ နောက်ဆုံးဈေးကို ပြန်စစ်ပါ။",
         "insufficient_credit": "ရွေးထားသော Lalamove အကောင့်တွင် credit/wallet လက်ကျန်မလုံလောက်ပါ။",
-        "fod_wallet_insufficient": "KINJAI Wallet မလုံလောက်ပါ (လက်ကျန် :balance ဘတ် / လိုအပ် :required ဘတ်)။ Wallet ဖြည့်ပြီး Super Admin အတည်ပြုသည်အထိ စောင့်ပါ။",
-        "fod_wallet_storage_missing": "KINJAI Wallet မအဆင်သင့်သေးပါ။ Super Admin ကို စနစ် setup စစ်ခိုင်းပါ။",
-        "fod_wallet_busy": "KINJAI Wallet ကို အခြားအော်ဒါက အသုံးပြုနေသည်။ ခဏစောင့်ပြီး ထပ်စမ်းပါ။",
-        "fod_wallet_debit_pending": "Lalamove order ဖန်တီးပြီးဖြစ်သော်လည်း KINJAI Wallet ဖြတ်တောက်မှု စောင့်နေသည်။ ထပ်မခေါ်ပါနှင့်၊ Super Admin ကို Wallet reconciliation လုပ်ခိုင်းပါ။",
-        "account_not_ready": "ဤဆိုင်၏ Lalamove အကောင့် မအဆင်သင့်သေးပါ။ Partner API credential သို့မဟုတ် KINJAI ဗဟိုအတည်ပြုမှုကို စစ်ပါ။",
+        "fod_wallet_insufficient": "PENGUIN Wallet မလုံလောက်ပါ (လက်ကျန် :balance ဘတ် / လိုအပ် :required ဘတ်)။ Wallet ဖြည့်ပြီး Super Admin အတည်ပြုသည်အထိ စောင့်ပါ။",
+        "fod_wallet_storage_missing": "PENGUIN Wallet မအဆင်သင့်သေးပါ။ Super Admin ကို စနစ် setup စစ်ခိုင်းပါ။",
+        "fod_wallet_busy": "PENGUIN Wallet ကို အခြားအော်ဒါက အသုံးပြုနေသည်။ ခဏစောင့်ပြီး ထပ်စမ်းပါ။",
+        "fod_wallet_debit_pending": "Lalamove order ဖန်တီးပြီးဖြစ်သော်လည်း PENGUIN Wallet ဖြတ်တောက်မှု စောင့်နေသည်။ ထပ်မခေါ်ပါနှင့်၊ Super Admin ကို Wallet reconciliation လုပ်ခိုင်းပါ။",
+        "account_not_ready": "ဤဆိုင်၏ Lalamove အကောင့် မအဆင်သင့်သေးပါ။ Partner API credential သို့မဟုတ် PENGUIN ဗဟိုအတည်ပြုမှုကို စစ်ပါ။",
         "provider_payload_invalid": "Lalamove က order data ကို လက်မခံပါ။ ဆိုင်နှင့်ဖောက်သည်အချက်အလက် စစ်ပြီး ထပ်စမ်းပါ။",
         "generic_error": "Lalamove လုပ်ဆောင်ချက် မအောင်မြင်ပါ (:code)",
         "statuses": {
@@ -12835,13 +12835,13 @@
     },
     "delivery": {
       "checkout": {
-        "meta_title": "KINJAI",
+        "meta_title": "PENGUIN",
         "header": {
-          "title": "KINJAI",
+          "title": "PENGUIN",
           "badge": "အိမ်အရောက်ပို့"
         },
         "hero": {
-          "title": "KINJAI",
+          "title": "PENGUIN",
           "description": "အွန်လိုင်းမှ အစားအသောက်မှာယူပါ၊ ပို့ဆောင်ရန်အချက်အလက်ထည့်ပါ၊ အော်ဒါအတည်ပြုပြီး ငွေပေးချေမှုနည်းလမ်းရွေးပါ။"
         },
         "menu": {
@@ -13091,7 +13091,7 @@
           "download_failed": "အော်ဒါပြေစာအား ဒေါင်းလုဒ်လုပ်၍မရပါ။ ထပ်စမ်းကြည့်ပါ။"
         },
         "receipt": {
-          "shop_fallback": "KINJAI",
+          "shop_fallback": "PENGUIN",
           "evidence": "ပို့ဆောင်မှုအမိန့်အတည်ပြုခြင်း။",
           "fields": {
             "order_number": "အော်ဒါနံပါတ်",
@@ -13160,7 +13160,7 @@
     },
     "home": {
       "meta": {
-        "title": "KINJAI"
+        "title": "PENGUIN"
       },
       "public": {
         "hero": {
@@ -13238,7 +13238,7 @@
         },
         "about": {
           "title": "လျှောက်လွှာအကြောင်း",
-          "description": "KINJAI မှာယူခြင်း၊ ငွေပေးချေခြင်းနှင့် ပို့ဆောင်ခြင်းတို့ကို ပိုမိုလွယ်ကူစေရန်အတွက် စားသောက်ဆိုင်များကို ဝယ်ယူသူများနှင့် ချိတ်ဆက်ပေးပါသည်။ Google အကောင့်များကို သုံးစွဲသူများ၏ အထောက်အထားကို အတည်ပြုပြီး စနစ်နှင့် မျှဝေရန် သုံးစွဲသူများရွေးချယ်သည့် ပရိုဖိုင်အချက်အလက်နှင့် ပေးပို့လိပ်စာများကို သိမ်းဆည်းရန်အတွက် အသုံးပြုပါသည်။",
+          "description": "PENGUIN မှာယူခြင်း၊ ငွေပေးချေခြင်းနှင့် ပို့ဆောင်ခြင်းတို့ကို ပိုမိုလွယ်ကူစေရန်အတွက် စားသောက်ဆိုင်များကို ဝယ်ယူသူများနှင့် ချိတ်ဆက်ပေးပါသည်။ Google အကောင့်များကို သုံးစွဲသူများ၏ အထောက်အထားကို အတည်ပြုပြီး စနစ်နှင့် မျှဝေရန် သုံးစွဲသူများရွေးချယ်သည့် ပရိုဖိုင်အချက်အလက်နှင့် ပေးပို့လိပ်စာများကို သိမ်းဆည်းရန်အတွက် အသုံးပြုပါသည်။",
           "links_aria": "ပံ့ပိုးမှုနှင့် မူဝါဒလင့်ခ်များ",
           "support": "အကူအညီကို ဆက်သွယ်ပါ။",
           "privacy": "ကိုယ်ရေးကိုယ်တာမူဝါဒ",
@@ -13441,10 +13441,10 @@
     },
     "legal": {
       "privacy": {
-        "meta_title": "ကိုယ်ရေးကိုယ်တာမူဝါဒ | KINJAI",
+        "meta_title": "ကိုယ်ရေးကိုယ်တာမူဝါဒ | PENGUIN",
         "title": "ကိုယ်ရေးကိုယ်တာမူဝါဒ",
         "updated": "နောက်ဆုံးမွမ်းမံမှု- ဇွန်လ 30 ရက်၊ 2026",
-        "intro": "KINJAI သည် အွန်လိုင်း အစားအသောက် မှာယူခြင်းနှင့် ပို့ဆောင်ခြင်း စနစ်တစ်ခု ဖြစ်သည်။ ဖောက်သည်များနှင့် စားသောက်ဆိုင်ဝန်ထမ်းများ၏ ကိုယ်ရေးကိုယ်တာအချက်အလက်များကို ကျွန်ုပ်တို့တန်ဖိုးထားပါသည်။",
+        "intro": "PENGUIN သည် အွန်လိုင်း အစားအသောက် မှာယူခြင်းနှင့် ပို့ဆောင်ခြင်း စနစ်တစ်ခု ဖြစ်သည်။ ဖောက်သည်များနှင့် စားသောက်ဆိုင်ဝန်ထမ်းများ၏ ကိုယ်ရေးကိုယ်တာအချက်အလက်များကို ကျွန်ုပ်တို့တန်ဖိုးထားပါသည်။",
         "sections": {
           "collection": {
             "title": "အချက်အလက်တွေကို ကျွန်တော်တို့ စုဆောင်းတယ်။",
@@ -13465,10 +13465,10 @@
         }
       },
       "terms": {
-        "meta_title": "စည်းကမ်းချက်များ | KINJAI",
+        "meta_title": "စည်းကမ်းချက်များ | PENGUIN",
         "title": "အသုံးအနှုန်းများ",
         "updated": "နောက်ဆုံးမွမ်းမံမှု- ဇွန်လ 30 ရက်၊ 2026",
-        "intro": "KINJAI ကိုအသုံးပြုခြင်းဖြင့် သင်သည် ဤစည်းကမ်းချက်များကို သဘောတူပါသည်။ စနစ်သည် အွန်လိုင်း အစားအသောက် မှာယူခြင်း၊ ပို့ဆောင်ခြင်းနှင့် စားသောက်ဆိုင် စီမံခန့်ခွဲမှု ကိရိယာများကို ပံ့ပိုးပေးပါသည်။",
+        "intro": "PENGUIN ကိုအသုံးပြုခြင်းဖြင့် သင်သည် ဤစည်းကမ်းချက်များကို သဘောတူပါသည်။ စနစ်သည် အွန်လိုင်း အစားအသောက် မှာယူခြင်း၊ ပို့ဆောင်ခြင်းနှင့် စားသောက်ဆိုင် စီမံခန့်ခွဲမှု ကိရိယာများကို ပံ့ပိုးပေးပါသည်။",
         "sections": {
           "account": {
             "title": "အသုံးပြုသူအကောင့်များ",
@@ -13632,7 +13632,7 @@
     },
     "platform": {
       "meta": {
-        "title": "KINJAI ပလက်ဖောင်း"
+        "title": "PENGUIN ပလက်ဖောင်း"
       },
       "header": {
         "title": "ဗဟိုစနစ်"
@@ -13701,8 +13701,8 @@
       },
       "branding": {
         "title": "စနစ် Branding နှင့် Icon များ",
-        "description": "KINJAI logo, favicon နှင့် app icon ကို Super Admin မှ ဗဟိုစီမံပါ။",
-        "logo": "KINJAI လိုဂို",
+        "description": "PENGUIN logo, favicon နှင့် app icon ကို Super Admin မှ ဗဟိုစီမံပါ။",
+        "logo": "PENGUIN လိုဂို",
         "logo_help": "Header နှင့် Login တွင် ပြသမည့် logo ကို သတ်မှတ်ပါ။ PNG, JPG သို့မဟုတ် WebP ဖိုင် 4 MB အထိ အသုံးပြုနိုင်သည်။",
         "favicon": "Favicon",
         "favicon_help": "Browser tab icon အတွက် ဖြစ်သည်။ PNG သို့မဟုတ် ICO ဖိုင် 2 MB အထိ အသုံးပြုနိုင်သည်။",
@@ -13713,7 +13713,7 @@
         "configured": "သတ်မှတ်ပြီး",
         "not_configured": "မသတ်မှတ်ရသေး",
         "clear_pending": "သိမ်းဆည်းသည့်အခါ ဤပုံကို ဖယ်ရှားမည်။",
-        "runtime_help": "သိမ်းဆည်းပြီးနောက် shared layout အသုံးပြုသည့် စာမျက်နှာများတွင် Branding အသစ်ကို အလိုအလျောက် အသုံးပြုမည်။ Logo မသတ်မှတ်ထားပါက မူလ KJ logo ကို ဆက်လက်ပြသမည်။",
+        "runtime_help": "သိမ်းဆည်းပြီးနောက် shared layout အသုံးပြုသည့် စာမျက်နှာများတွင် Branding အသစ်ကို အလိုအလျောက် အသုံးပြုမည်။ Logo မသတ်မှတ်ထားပါက မူလ PG logo ကို ဆက်လက်ပြသမည်။",
         "pwa_help": "App icon ကို manifest.webmanifest နှင့် Apple touch icon မှတစ်ဆင့် အသုံးပြုပြီး website ကို Home Screen သို့ ထည့်နိုင်ရန် ပံ့ပိုးသည်။",
         "save": "Branding သိမ်းမည်",
         "save_success": "စနစ် Branding ကို သိမ်းဆည်းပြီးပါပြီ။",
@@ -13822,7 +13822,7 @@
       },
       "lalamove": {
         "title": "ပလပ်ဖောင်း Lalamove API",
-        "description": "Tenant အားလုံးအတွက် KINJAI ဗဟို Lalamove API ချိတ်ဆက်မှုကို စီမံပါ။",
+        "description": "Tenant အားလုံးအတွက် PENGUIN ဗဟို Lalamove API ချိတ်ဆက်မှုကို စီမံပါ။",
         "environment": "ပတ်ဝန်းကျင်",
         "sandbox": "Sandbox",
         "production": "Production",
@@ -16294,15 +16294,15 @@
       "explanation": {
         "title": "ပလပ်ဖောင်းပမာဏ - ပေးရမည့်တွက်ချက်မှု",
         "loading": "တွက်ချက်မှုအသေးစိတ်များကို တင်နေသည်။",
-        "enabled": "ဝင်ငွေခွဲဝေရောင်းအား THB :sales × :rate% = ခွဲဝေငွေ THB :share + မရှင်းရသေးသော Lalamove THB :outstanding = Platform သို့ပေးရန် THB :due (Lalamove စုစုပေါင်း THB :deliveryCost / အသုံးပြုထားသော KINJAI ခရက်ဒစ် :walletCovered ခရက်ဒစ် / ဖောက်သည်ပို့ဆောင်ခ THB :customerDelivery / ဆိုင်မှထောက်ပံ့ငွေ THB :subsidy)။",
+        "enabled": "ဝင်ငွေခွဲဝေရောင်းအား THB :sales × :rate% = ခွဲဝေငွေ THB :share + မရှင်းရသေးသော Lalamove THB :outstanding = Platform သို့ပေးရန် THB :due (Lalamove စုစုပေါင်း THB :deliveryCost / အသုံးပြုထားသော PENGUIN ခရက်ဒစ် :walletCovered ခရက်ဒစ် / ဖောက်သည်ပို့ဆောင်ခ THB :customerDelivery / ဆိုင်မှထောက်ပံ့ငွေ THB :subsidy)။",
         "disabled": "ဤစတိုးအတွက် ပလပ်ဖောင်းဝင်ငွေမျှဝေခြင်းကို ဖွင့်မထားပါ။"
       },
       "wallet": {
-        "title": "KINJAI Lalamove အတွက် ခရက်ဒစ်များ",
-        "description": "KINJAI Lalamove ဝန်ဆောင်မှုများအတွက် အသုံးပြုထားသော ခရက်ဒစ်များ ၊ ပေးပို့ခြင်းအား ဖန်တီး၍မရသည့်အခါ ခရက်ဒစ်လုပ်ဆောင်ချက်နှင့် မအောင်မြင်သည့်အကြောင်းရင်းများ။",
-        "summary_aria": "KINJAI ခရက်ဒစ်အနှစ်ချုပ်",
+        "title": "PENGUIN Lalamove အတွက် ခရက်ဒစ်များ",
+        "description": "PENGUIN Lalamove ဝန်ဆောင်မှုများအတွက် အသုံးပြုထားသော ခရက်ဒစ်များ ၊ ပေးပို့ခြင်းအား ဖန်တီး၍မရသည့်အခါ ခရက်ဒစ်လုပ်ဆောင်ချက်နှင့် မအောင်မြင်သည့်အကြောင်းရင်းများ။",
+        "summary_aria": "PENGUIN ခရက်ဒစ်အနှစ်ချုပ်",
         "ready": "ခရက်ဒစ် အဆင်သင့်",
-        "storage_missing": "KINJAI Wallet ဒေတာဘေ့စ်ဖွဲ့စည်းပုံကို ထည့်သွင်းမထားပါ။",
+        "storage_missing": "PENGUIN Wallet ဒေတာဘေ့စ်ဖွဲ့စည်းပုံကို ထည့်သွင်းမထားပါ။",
         "balance": "အကြွေးလက်ကျန်",
         "approved_topup_total": "ခရက်ဒစ်များ အားလုံးကို အချိန်တိုင်း ထည့်သွင်းထားသည်။",
         "period_topup": "ရွေးချယ်ထားသော ကာလတွင် ခရက်ဒစ်များ ထည့်ထားသည်။",
@@ -16310,8 +16310,8 @@
         "period_delivery_refund": "ရွေးချယ်ထားသော ကာလတွင် ပေးပို့မှုမှ ပြန်လာသော ခရက်ဒစ်များ",
         "pending_topup": "ခရက်ဒစ် ဆိုင်းငံ့ထားသော သုံးသပ်ချက်",
         "pending_count": ":count တောင်းဆိုချက်များ",
-        "accounting_note": "Lalamove ဝန်ဆောင်မှုကုန်ကျစရိတ်ကို KINJAI ခရက်ဒစ်များဖြင့် အောင်မြင်စွာပေးချေပြီး Platform ကြောင့် ပမာဏကို ထပ်မံကောက်ခံမည်မဟုတ်ပါ။",
-        "credit_policy": "ခရက်ဒစ်နှုန်း- THB 1 = 1 ခရက်ဒစ်။ KINJAI ခရက်ဒစ်များသည် KINJAI စနစ်အတွင်း ဝန်ဆောင်မှုများအတွက်သာ ပေးချေရန်ဖြစ်သည်။ ဝန်ဆောင်မှုစည်းကမ်းချက်များအရ လွှဲပြောင်းခြင်း၊ ထုတ်ယူခြင်း၊ ထုတ်ယူခြင်း သို့မဟုတ် ဥပဒေအရ အခြားလိုအပ်သည့်နေရာများမှလွဲ၍ ၎င်းတို့ကို ဝန်ဆောင်မှုစည်းမျဉ်းများအောက်တွင် ငွေသားအဖြစ် ပြန်အမ်း၍မရပါ။",
+        "accounting_note": "Lalamove ဝန်ဆောင်မှုကုန်ကျစရိတ်ကို PENGUIN ခရက်ဒစ်များဖြင့် အောင်မြင်စွာပေးချေပြီး Platform ကြောင့် ပမာဏကို ထပ်မံကောက်ခံမည်မဟုတ်ပါ။",
+        "credit_policy": "ခရက်ဒစ်နှုန်း- THB 1 = 1 ခရက်ဒစ်။ PENGUIN ခရက်ဒစ်များသည် PENGUIN စနစ်အတွင်း ဝန်ဆောင်မှုများအတွက်သာ ပေးချေရန်ဖြစ်သည်။ ဝန်ဆောင်မှုစည်းကမ်းချက်များအရ လွှဲပြောင်းခြင်း၊ ထုတ်ယူခြင်း၊ ထုတ်ယူခြင်း သို့မဟုတ် ဥပဒေအရ အခြားလိုအပ်သည့်နေရာများမှလွဲ၍ ၎င်းတို့ကို ဝန်ဆောင်မှုစည်းမျဉ်းများအောက်တွင် ငွေသားအဖြစ် ပြန်အမ်း၍မရပါ။",
         "transactions_title": "လတ်တလော ခရက်ဒစ် လုပ်ဆောင်ချက်",
         "transactions_description": "စနစ်ခရက်ဒစ် လယ်ဂျာမှ နောက်ဆုံးထည့်သွင်းမှု 12 ခုအထိ ပြသသည်။",
         "transactions_empty": "ခရက်ဒစ် လုပ်ဆောင်ချက် မရှိသေးပါ။",
@@ -16343,8 +16343,8 @@
           "dispatch": "ပို့ဆောင်"
         },
         "failure_reasons": {
-          "FOD_WALLET_INSUFFICIENT_BALANCE": "KINJAI ခရက်ဒစ်လက်ကျန် မလုံလောက်ပါ။ :required ခရက်ဒစ်များ လိုအပ်သော်လည်း :balance ခရက်ဒစ်များသာ ရနိုင်ပါသည်။",
-          "FOD_WALLET_STORAGE_MISSING": "KINJAI Wallet အဆင်သင့်မဖြစ်သေးပါ။ စနစ်စီမံခန့်ခွဲသူကို ဆက်သွယ်ပါ။",
+          "FOD_WALLET_INSUFFICIENT_BALANCE": "PENGUIN ခရက်ဒစ်လက်ကျန် မလုံလောက်ပါ။ :required ခရက်ဒစ်များ လိုအပ်သော်လည်း :balance ခရက်ဒစ်များသာ ရနိုင်ပါသည်။",
+          "FOD_WALLET_STORAGE_MISSING": "PENGUIN Wallet အဆင်သင့်မဖြစ်သေးပါ။ စနစ်စီမံခန့်ခွဲသူကို ဆက်သွယ်ပါ။",
           "FOD_WALLET_BUSY": "Wallet ကို အခြားငွေပေးငွေယူဖြင့် အသုံးပြုနေပါသည်။ ထပ်စမ်းကြည့်ပါ။",
           "FOD_WALLET_NOT_FOUND": "စတိုးဆိုင်မှ ပိုက်ဆံအိတ်ကို ရှာမတွေ့ပါ။ စနစ်စီမံခန့်ခွဲသူကို ဆက်သွယ်ပါ။",
           "LALAMOVE_ACCOUNT_NOT_READY": "စတိုး သို့မဟုတ် ပလပ်ဖောင်း Lalamove အကောင့် အဆင်သင့်မဖြစ်သေးပါ။",
@@ -16364,7 +16364,7 @@
       },
       "payment": {
         "title": "ဝင်ငွေမျှဝေမှုနှင့် ထူးထူးခြားခြား Lalamove လွှဲပြောင်းမှုကို အစီရင်ခံပါ။",
-        "description": "ရွေးချယ်ထားသောကာလအတွက် ငွေလွှဲစလစ်ကို ပူးတွဲပါ။ အရောင်းရငွေ ခွဲဝေမှုနှင့် Lalamove မှ ငွေမရှင်းရသေးသော ကုန်ကျစရိတ်များကိုသာ KINJAI Wallet မှ ကောက်ခံပါသည်။",
+        "description": "ရွေးချယ်ထားသောကာလအတွက် ငွေလွှဲစလစ်ကို ပူးတွဲပါ။ အရောင်းရငွေ ခွဲဝေမှုနှင့် Lalamove မှ ငွေမရှင်းရသေးသော ကုန်ကျစရိတ်များကိုသာ PENGUIN Wallet မှ ကောက်ခံပါသည်။",
         "selected_period": "ရွေးချယ်ထားသောကာလ",
         "amount_due": "ပလပ်ဖောင်းကြောင့် စုစုပေါင်း",
         "amount_breakdown": "မျှဝေရန် THB :share + ထူးထူးခြားခြား Lalamove THB :delivery",
@@ -16769,7 +16769,7 @@
         "success": "စကားဝှက်ကို အောင်မြင်စွာ ပြောင်းလဲခဲ့သည်။"
       },
       "footer": {
-        "product": "KINJAI",
+        "product": "PENGUIN",
         "version": "ဗားရှင်း :version",
         "build": "တည်ဆောက်ခြင်း :build",
         "icon_credit": "Flaticon မှ Uicons"
@@ -16868,7 +16868,7 @@
         "description": "အောက်ဖော်ပြပါ စုစုပေါင်းနှင့် အခြေအနေများကို စားသောက်ဆိုင်၏ နောက်ဆုံးဒေတာမှ ဖတ်ရသည်။"
       },
       "loading": "စစ်ဆေးနေသည်...",
-      "shop_fallback": "KINJAI",
+      "shop_fallback": "PENGUIN",
       "latest_badge": "နောက်ဆုံးထွက်စနစ်ဒေတာ",
       "payment": {
         "paid": "အခကြေးငွေ",
@@ -17351,40 +17351,40 @@
         "lalamove_status": "ຍັງບໍ່ພ້ອມ",
         "lalamove_available_status": "ໃຊ້ໄດ້",
         "lalamove_selected_status": "ເລືອກແລ້ວ",
-        "lalamove_description": "ເຊື່ອມ Delivery ຜ່ານ Lalamove ດ້ວຍ credential ກາງຂອງ KINJAI.",
+        "lalamove_description": "ເຊື່ອມ Delivery ຜ່ານ Lalamove ດ້ວຍ credential ກາງຂອງ PENGUIN.",
         "lalamove_unavailable_description": "ບັນຊີ Lalamove ທີ່ເລືອກຍັງບໍ່ພ້ອມ ກວດຕັ້ງຄ່າ ຫຼື ສະຖານະອະນຸມັດ.",
         "lalamove_account_title": "ບັນຊີ Lalamove ຂອງຮ້ານ",
-        "lalamove_account_description": "ເລືອກໃຊ້ Lalamove Partner API ຂອງຮ້ານ ຫຼື ບັນຊີກາງ KINJAI ທີ່ Super Admin ອະນຸມັດ.",
+        "lalamove_account_description": "ເລືອກໃຊ້ Lalamove Partner API ຂອງຮ້ານ ຫຼື ບັນຊີກາງ PENGUIN ທີ່ Super Admin ອະນຸມັດ.",
         "lalamove_account_mode": "ໂໝດບັນຊີ",
         "lalamove_mode_disabled": "ປິດ Lalamove",
         "lalamove_mode_tenant": "ໃຊ້ບັນຊີ Lalamove Partner ຂອງຮ້ານ",
-        "lalamove_mode_fod": "ໃຊ້ບັນຊີກາງ KINJAI",
+        "lalamove_mode_fod": "ໃຊ້ບັນຊີກາງ PENGUIN",
         "lalamove_environment": "ສະພາບແວດລ້ອມ",
         "lalamove_api_key": "Lalamove API Key ຂອງຮ້ານ",
         "lalamove_api_secret": "Lalamove API Secret ຂອງຮ້ານ",
-        "lalamove_mode_help": "Credential ຂອງຮ້ານຕ້ອງ Test Connection ຜ່ານກ່ອນ. ໂໝດ KINJAI ກາງຕ້ອງໄດ້ Super Admin ອະນຸມັດ.",
+        "lalamove_mode_help": "Credential ຂອງຮ້ານຕ້ອງ Test Connection ຜ່ານກ່ອນ. ໂໝດ PENGUIN ກາງຕ້ອງໄດ້ Super Admin ອະນຸມັດ.",
         "lalamove_save_account": "ບັນທຶກບັນຊີ Lalamove",
         "lalamove_test_connection": "ທົດສອບການເຊື່ອມຕໍ່",
         "lalamove_status_ready": "ພ້ອມ",
         "lalamove_status_not_ready": "ຍັງບໍ່ພ້ອມ",
-        "lalamove_status_waiting_approval": "ລໍຖ້າ KINJAI ອະນຸມັດ",
+        "lalamove_status_waiting_approval": "ລໍຖ້າ PENGUIN ອະນຸມັດ",
         "lalamove_status_disabled": "ປິດໃຊ້",
         "lalamove_account_saved": "ບັນທຶກບັນຊີ Lalamove ແລ້ວ.",
         "lalamove_account_save_failed": "ບັນທຶກບັນຊີ Lalamove ບໍ່ສຳເລັດ.",
         "lalamove_test_success": "ເຊື່ອມຕໍ່ Lalamove Partner ຂອງຮ້ານສຳເລັດ.",
         "lalamove_test_failed": "ບໍ່ສາມາດເຊື່ອມ Lalamove Partner ຂອງຮ້ານ.",
-        "fod_wallet_title": "KINJAI Credits ສຳລັບ Lalamove",
+        "fod_wallet_title": "PENGUIN Credits ສຳລັບ Lalamove",
         "fod_wallet_balance": "ຍອດ Credit",
         "fod_wallet_credit_unit": "ສິນເຊື່ອ",
         "fod_wallet_credit_rate": "ອັດຕາ Credit: 1 ບາດ = 1 credit",
-        "fod_wallet_credit_terms": "KINJAI credits ໃຊ້ຊຳລະຄ່າບໍລິການໃນລະບົບ KINJAI ເທົ່ານັ້ນ ບໍ່ສາມາດໂອນ, ຖອນ, ແລກ ຫຼື ຄືນເປັນເງິນສົດ ນອກຈາກກົດໝາຍກຳນົດ.",
+        "fod_wallet_credit_terms": "PENGUIN credits ໃຊ້ຊຳລະຄ່າບໍລິການໃນລະບົບ PENGUIN ເທົ່ານັ້ນ ບໍ່ສາມາດໂອນ, ຖອນ, ແລກ ຫຼື ຄືນເປັນເງິນສົດ ນອກຈາກກົດໝາຍກຳນົດ.",
         "fod_wallet_recent": "ການເຄື່ອນໄຫວ Credit ລ່າສຸດ",
         "fod_wallet_loading": "ກຳລັງໂຫຼດ Wallet...",
         "fod_wallet_empty": "ຍັງບໍ່ມີລາຍການ Credit.",
-        "fod_wallet_storage_missing": "ຍັງບໍ່ສ້າງຕາຕະລາງ KINJAI Wallet ໃນ Server.",
-        "fod_wallet_load_failed": "ໂຫຼດ KINJAI Wallet ບໍ່ສຳເລັດ ລະບົບຈະລອງໃໝ່ອັດຕະໂນມັດ.",
-        "fod_wallet_active": "Delivery ຜ່ານ KINJAI Central ຈະໃຊ້ Credit ນີ້ເປັນຄ່າ Lalamove.",
-        "fod_wallet_inactive": "Credit ຍັງຄົງຢູ່ ແຕ່ບໍ່ຖືກໃຊ້ກັບ Delivery ໃໝ່ຈົນກວ່າເລືອກ KINJAI Central.",
+        "fod_wallet_storage_missing": "ຍັງບໍ່ສ້າງຕາຕະລາງ PENGUIN Wallet ໃນ Server.",
+        "fod_wallet_load_failed": "ໂຫຼດ PENGUIN Wallet ບໍ່ສຳເລັດ ລະບົບຈະລອງໃໝ່ອັດຕະໂນມັດ.",
+        "fod_wallet_active": "Delivery ຜ່ານ PENGUIN Central ຈະໃຊ້ Credit ນີ້ເປັນຄ່າ Lalamove.",
+        "fod_wallet_inactive": "Credit ຍັງຄົງຢູ່ ແຕ່ບໍ່ຖືກໃຊ້ກັບ Delivery ໃໝ່ຈົນກວ່າເລືອກ PENGUIN Central.",
         "fod_wallet_phase2_note": "ສະແດງຍອດ Credit ແລະ Credit Ledger.",
         "fod_wallet_phase3_note": "Credit ຈະຖືກເພີ່ມຫຼັງອະນຸມັດ ຫຼື Slip2Go ກວດສຳເລັດ.",
         "fod_wallet_ledger_note": "Credit top-up ທີ່ອະນຸມັດຈະປາກົດໃນ Ledger.",
@@ -17401,11 +17401,11 @@
         "fod_wallet_topup_help": "ໂອນເຂົ້າບັນຊີດ້ານເທິງແລະແນບສະລິບ. ຖ້າ Slip2Go ກວດຈຳນວນ, ຜູ້ຮັບ ແລະ transaction ຜ່ານ Credit ຈະເພີ່ມອັດຕະໂນມັດ; ຖ້າບໍ່ ຈະລໍຖ້າ Super Admin.",
         "fod_wallet_topup_history": "ປະຫວັດ Credit top-up",
         "fod_wallet_topup_storage_missing": "ຍັງບໍ່ສ້າງຕາຕະລາງ Wallet top-up ໃນ Server.",
-        "fod_wallet_topup_not_allowed": "Credit top-up ໃຊ້ໄດ້ສຳລັບຮ້ານທີ່ອະນຸມັດໃຊ້ KINJAI Central ເທົ່ານັ້ນ.",
+        "fod_wallet_topup_not_allowed": "Credit top-up ໃຊ້ໄດ້ສຳລັບຮ້ານທີ່ອະນຸມັດໃຊ້ PENGUIN Central ເທົ່ານັ້ນ.",
         "fod_wallet_topup_destination_missing": "Super Admin ຍັງບໍ່ຕັ້ງບັນຊີຮັບ Credit.",
         "fod_wallet_topup_invalid": "ກອກຢ່າງນ້ອຍ 1 credit ແລະ ແນບສະລິບ.",
         "fod_wallet_topup_submitted": "ສົ່ງ Credit top-up ແລ້ວ ລໍຖ້າ Super Admin ກວດ.",
-        "fod_wallet_topup_auto_approved": "Slip2Go ກວດການໂອນສຳເລັດ ແລະ ເພີ່ມ KINJAI Credit ອັດຕະໂນມັດ.",
+        "fod_wallet_topup_auto_approved": "Slip2Go ກວດການໂອນສຳເລັດ ແລະ ເພີ່ມ PENGUIN Credit ອັດຕະໂນມັດ.",
         "fod_wallet_topup_failed": "ສົ່ງ Credit top-up ບໍ່ສຳເລັດ.",
         "fod_wallet_topup_duplicate": "ສະລິບນີ້ຖືກໃຊ້ແລ້ວ ກວດ ຫຼື ໃຊ້ສະລິບອື່ນ.",
         "fod_wallet_topup_delete": "ລຶບຄຳຂໍ",
@@ -17764,16 +17764,16 @@
         "lalamove_modes": {
           "disabled": "ຄົນພິການ",
           "tenant": "ເກັບຮັກສາບັນຊີຄູ່ຮ່ວມງານ",
-          "fod_central": "KINJAI ບັນຊີກາງ"
+          "fod_central": "PENGUIN ບັນຊີກາງ"
         },
-        "lalamove_approved": "KINJAI ອະນຸມັດ",
-        "lalamove_waiting": "ລໍຖ້າການອະນຸມັດ KINJAI",
-        "lalamove_approve": "ອະນຸມັດ KINJAI Lalamove",
-        "lalamove_revoke": "ຖອນຄືນ KINJAI Lalamove",
-        "lalamove_approve_confirm": "ອະນຸຍາດໃຫ້ :name ໃຊ້ບັນຊີ KINJAI ກາງ Lalamove ບໍ?",
-        "lalamove_revoke_confirm": "ຖອນຄືນ :name ການເຂົ້າເຖິງ KINJAI ບັນຊີກາງ Lalamove ບໍ? ຄຳສັ່ງໃໝ່ຈະບໍ່ສາມາດສົ່ງຜ່ານບັນຊີກາງໄດ້ອີກຕໍ່ໄປ.",
-        "lalamove_approve_success": "KINJAI ກາງ Lalamove ອະນຸມັດການເຂົ້າເຖິງແລ້ວ.",
-        "lalamove_revoke_success": "KINJAI ກາງ Lalamove ຖອນການເຂົ້າເຖິງແລ້ວ.",
+        "lalamove_approved": "PENGUIN ອະນຸມັດ",
+        "lalamove_waiting": "ລໍຖ້າການອະນຸມັດ PENGUIN",
+        "lalamove_approve": "ອະນຸມັດ PENGUIN Lalamove",
+        "lalamove_revoke": "ຖອນຄືນ PENGUIN Lalamove",
+        "lalamove_approve_confirm": "ອະນຸຍາດໃຫ້ :name ໃຊ້ບັນຊີ PENGUIN ກາງ Lalamove ບໍ?",
+        "lalamove_revoke_confirm": "ຖອນຄືນ :name ການເຂົ້າເຖິງ PENGUIN ບັນຊີກາງ Lalamove ບໍ? ຄຳສັ່ງໃໝ່ຈະບໍ່ສາມາດສົ່ງຜ່ານບັນຊີກາງໄດ້ອີກຕໍ່ໄປ.",
+        "lalamove_approve_success": "PENGUIN ກາງ Lalamove ອະນຸມັດການເຂົ້າເຖິງແລ້ວ.",
+        "lalamove_revoke_success": "PENGUIN ກາງ Lalamove ຖອນການເຂົ້າເຖິງແລ້ວ.",
         "lalamove_approval_failed": "ບໍ່ສາມາດອັບເດດການອະນຸມັດ Lalamove ໄດ້.",
         "fields": {
           "name": "ຊື່ຮ້ານ",
@@ -17788,8 +17788,8 @@
         }
       },
       "wallet": {
-        "title": "ເກັບຮັກສາສິນເຊື່ອ KINJAI ສໍາລັບ Lalamove",
-        "label": "KINJAI ເຄຣດິດ",
+        "title": "ເກັບຮັກສາສິນເຊື່ອ PENGUIN ສໍາລັບ Lalamove",
+        "label": "PENGUIN ເຄຣດິດ",
         "view": "ເບິ່ງສິນເຊື່ອ",
         "balance": "ຍອດສິນເຊື່ອ",
         "credit_unit": "ສິນເຊື່ອ",
@@ -17797,7 +17797,7 @@
         "loading": "ກຳລັງໂຫຼດຂໍ້ມູນສິນເຊື່ອ...",
         "empty": "ບໍ່ມີທຸລະກໍາສິນເຊື່ອເທື່ອ.",
         "load_failed": "ບໍ່ສາມາດໂຫຼດຂໍ້ມູນສິນເຊື່ອໄດ້.",
-        "storage_missing": "KINJAI Wallet ຕາຕະລາງບໍ່ໄດ້ຖືກສ້າງຢູ່ໃນເຄື່ອງແມ່ຂ່າຍ.",
+        "storage_missing": "PENGUIN Wallet ຕາຕະລາງບໍ່ໄດ້ຖືກສ້າງຢູ່ໃນເຄື່ອງແມ່ຂ່າຍ.",
         "credit_note": "ແຕ່ລະຄໍາຮ້ອງຂໍທີ່ໄດ້ຮັບການອະນຸມັດໃຫ້ສິນເຊື່ອກະເປົາເງິນຢ່າງແນ່ນອນຫນຶ່ງຄັ້ງ.",
         "topups": "ການຮ້ອງຂໍການຊື້ສິນເຊື່ອ",
         "topup_empty": "ບໍ່ມີການຮ້ອງຂໍການຊື້ສິນເຊື່ອເທື່ອ.",
@@ -17806,8 +17806,8 @@
         "approve": "ອະນຸມັດ",
         "reject": "ປະຕິເສດ",
         "approve_title": "ອະນຸມັດການຮ້ອງຂໍການຊື້ສິນເຊື່ອ",
-        "approve_confirm": "ອະນຸມັດ :amount ເຄຣດິດເປັນ :name KINJAI Wallet ບໍ? ສິນເຊື່ອຈະຖືກເພີ່ມທັນທີ.",
-        "approve_success": "ອະນຸມັດການຊື້ສິນເຊື່ອ ແລະເພີ່ມໃສ່ KINJAI Wallet.",
+        "approve_confirm": "ອະນຸມັດ :amount ເຄຣດິດເປັນ :name PENGUIN Wallet ບໍ? ສິນເຊື່ອຈະຖືກເພີ່ມທັນທີ.",
+        "approve_success": "ອະນຸມັດການຊື້ສິນເຊື່ອ ແລະເພີ່ມໃສ່ PENGUIN Wallet.",
         "reject_title": "ປະຕິເສດການຮ້ອງຂໍການຊື້ສິນເຊື່ອ",
         "reject_prompt": "ລະບຸເຫດຜົນສໍາລັບການປະຕິເສດຄໍາຮ້ອງຂໍການຊື້ສິນເຊື່ອນີ້.",
         "reject_success": "ຄຳຮ້ອງຂໍການຊື້ສິນເຊື່ອຖືກປະຕິເສດ.",
@@ -18317,7 +18317,7 @@
         "retry": "ລອງ Lalamove ໃໝ່",
         "cancel": "ຍົກເລີກ Lalamove",
         "cancel_title": "ຢືນຢັນການຍົກເລີກ Lalamove",
-        "cancel_confirm": "ຍົກເລີກການຈັດສົ່ງ Lalamove ນີ້ບໍ? ເມື່ອຍົກເລີກສຳເລັດ ຈຶ່ງສາມາດຍົກເລີກອໍເດີ KINJAI ໄດ້.",
+        "cancel_confirm": "ຍົກເລີກການຈັດສົ່ງ Lalamove ນີ້ບໍ? ເມື່ອຍົກເລີກສຳເລັດ ຈຶ່ງສາມາດຍົກເລີກອໍເດີ PENGUIN ໄດ້.",
         "cancel_confirm_button": "ຍົກເລີກ Lalamove",
         "cancel_success": "ຍົກເລີກ Lalamove ສຳເລັດ.",
         "cancel_forbidden": "Lalamove ບໍ່ອະນຸຍາດໃຫ້ຍົກເລີກໃນສະຖານະປັດຈຸບັນ.",
@@ -18333,10 +18333,10 @@
         "out_of_service_area": "ຈຸດຮັບ ຫຼື ຈຸດສົ່ງຢູ່ນອກເຂດ Lalamove.",
         "quotation_expired": "Quote ຄ່າຈັດສົ່ງໝົດອາຍຸ ກວດລາຄາລ່າສຸດອີກຄັ້ງ.",
         "insufficient_credit": "ບັນຊີ Lalamove ທີ່ເລືອກມີ credit/wallet ບໍ່ພຽງພໍ.",
-        "fod_wallet_insufficient": "KINJAI Wallet ບໍ່ພຽງພໍ (ມີ :balance ບາດ / ຕ້ອງການ :required ບາດ). ເພີ່ມ Wallet ແລະ ລໍຖ້າ Super Admin ອະນຸມັດ.",
-        "fod_wallet_storage_missing": "KINJAI Wallet ຍັງບໍ່ພ້ອມ ຕິດຕໍ່ Super Admin ເພື່ອກວດ setup.",
-        "fod_wallet_busy": "KINJAI Wallet ກຳລັງຖືກໃຊ້ໂດຍອໍເດີອື່ນ ລໍຖ້າແລ້ວລອງໃໝ່.",
-        "fod_wallet_debit_pending": "ສ້າງ Lalamove order ແລ້ວ ແຕ່ການຫັກ KINJAI Wallet ຍັງລໍຖ້າ. ຫ້າມສົ່ງຊ້ຳ ໃຫ້ Super Admin ກວດ Wallet.",
+        "fod_wallet_insufficient": "PENGUIN Wallet ບໍ່ພຽງພໍ (ມີ :balance ບາດ / ຕ້ອງການ :required ບາດ). ເພີ່ມ Wallet ແລະ ລໍຖ້າ Super Admin ອະນຸມັດ.",
+        "fod_wallet_storage_missing": "PENGUIN Wallet ຍັງບໍ່ພ້ອມ ຕິດຕໍ່ Super Admin ເພື່ອກວດ setup.",
+        "fod_wallet_busy": "PENGUIN Wallet ກຳລັງຖືກໃຊ້ໂດຍອໍເດີອື່ນ ລໍຖ້າແລ້ວລອງໃໝ່.",
+        "fod_wallet_debit_pending": "ສ້າງ Lalamove order ແລ້ວ ແຕ່ການຫັກ PENGUIN Wallet ຍັງລໍຖ້າ. ຫ້າມສົ່ງຊ້ຳ ໃຫ້ Super Admin ກວດ Wallet.",
         "account_not_ready": "ບັນຊີ Lalamove ຂອງຮ້ານຍັງບໍ່ພ້ອມ ກວດ Partner API credential ຫຼື ການອະນຸມັດສ່ວນກາງ.",
         "provider_payload_invalid": "Lalamove ປະຕິເສດຂໍ້ມູນອໍເດີ ກວດຂໍ້ມູນຮ້ານແລະລູກຄ້າ.",
         "generic_error": "ດຳເນີນການ Lalamove ບໍ່ສຳເລັດ (:code)",
@@ -18505,13 +18505,13 @@
     },
     "delivery": {
       "checkout": {
-        "meta_title": "KINJAI",
+        "meta_title": "PENGUIN",
         "header": {
-          "title": "KINJAI",
+          "title": "PENGUIN",
           "badge": "ຈັດສົ່ງເຖິງບ້ານ"
         },
         "hero": {
-          "title": "KINJAI",
+          "title": "PENGUIN",
           "description": "ສັ່ງອາຫານອອນລາຍ, ກອກຂໍ້ມູນຈັດສົ່ງ, ຢືນຢັນຄຳສັ່ງ ແລະ ເລືອກວິທີຊຳລະເງິນ."
         },
         "menu": {
@@ -18761,7 +18761,7 @@
           "download_failed": "ບໍ່ສາມາດດາວໂຫລດໃບຮັບເງິນໄດ້. ກະລຸນາລອງອີກຄັ້ງ."
         },
         "receipt": {
-          "shop_fallback": "KINJAI",
+          "shop_fallback": "PENGUIN",
           "evidence": "ການຢືນຢັນການຈັດສົ່ງ",
           "fields": {
             "order_number": "ໝາຍເລກສັ່ງຊື້",
@@ -18830,7 +18830,7 @@
     },
     "home": {
       "meta": {
-        "title": "KINJAI"
+        "title": "PENGUIN"
       },
       "public": {
         "hero": {
@@ -18908,7 +18908,7 @@
         },
         "about": {
           "title": "ກ່ຽວກັບຄໍາຮ້ອງສະຫມັກ",
-          "description": "KINJAI ເຊື່ອມຕໍ່ຮ້ານອາຫານກັບລູກຄ້າເພື່ອເຮັດໃຫ້ການສັ່ງຊື້, ການຈ່າຍເງິນ, ແລະການຈັດສົ່ງງ່າຍຂຶ້ນ. ບັນຊີ Google ຖືກໃຊ້ເພື່ອຢັ້ງຢືນຕົວຕົນຂອງລູກຄ້າ ແລະບັນທຶກຂໍ້ມູນໂປຣໄຟລ໌ ແລະທີ່ຢູ່ຈັດສົ່ງທີ່ລູກຄ້າເລືອກແບ່ງປັນກັບລະບົບ.",
+          "description": "PENGUIN ເຊື່ອມຕໍ່ຮ້ານອາຫານກັບລູກຄ້າເພື່ອເຮັດໃຫ້ການສັ່ງຊື້, ການຈ່າຍເງິນ, ແລະການຈັດສົ່ງງ່າຍຂຶ້ນ. ບັນຊີ Google ຖືກໃຊ້ເພື່ອຢັ້ງຢືນຕົວຕົນຂອງລູກຄ້າ ແລະບັນທຶກຂໍ້ມູນໂປຣໄຟລ໌ ແລະທີ່ຢູ່ຈັດສົ່ງທີ່ລູກຄ້າເລືອກແບ່ງປັນກັບລະບົບ.",
           "links_aria": "ສະຫນັບສະຫນູນແລະການເຊື່ອມໂຍງນະໂຍບາຍ",
           "support": "ຕິດຕໍ່ສະຫນັບສະຫນູນ",
           "privacy": "ນະໂຍບາຍຄວາມເປັນສ່ວນຕົວ",
@@ -19111,10 +19111,10 @@
     },
     "legal": {
       "privacy": {
-        "meta_title": "ນະ​ໂຍ​ບາຍ​ຄວາມ​ເປັນ​ສ່ວນ​ຕົວ | KINJAI",
+        "meta_title": "ນະ​ໂຍ​ບາຍ​ຄວາມ​ເປັນ​ສ່ວນ​ຕົວ | PENGUIN",
         "title": "ນະໂຍບາຍຄວາມເປັນສ່ວນຕົວ",
         "updated": "ອັບເດດຫຼ້າສຸດ: 30 ມິຖຸນາ 2026",
-        "intro": "KINJAI ເປັນລະບົບສັ່ງອາຫານ ແລະຈັດສົ່ງອາຫານອອນລາຍ. ພວກເຮົາໃຫ້ຄຸນຄ່າຂໍ້ມູນສ່ວນຕົວຂອງລູກຄ້າ ແລະພະນັກງານຮ້ານອາຫານ.",
+        "intro": "PENGUIN ເປັນລະບົບສັ່ງອາຫານ ແລະຈັດສົ່ງອາຫານອອນລາຍ. ພວກເຮົາໃຫ້ຄຸນຄ່າຂໍ້ມູນສ່ວນຕົວຂອງລູກຄ້າ ແລະພະນັກງານຮ້ານອາຫານ.",
         "sections": {
           "collection": {
             "title": "ຂໍ້ມູນທີ່ພວກເຮົາເກັບກໍາ",
@@ -19135,10 +19135,10 @@
         }
       },
       "terms": {
-        "meta_title": "ເງື່ອນ​ໄຂ​ການ​ນໍາ​ໃຊ້ | KINJAI",
+        "meta_title": "ເງື່ອນ​ໄຂ​ການ​ນໍາ​ໃຊ້ | PENGUIN",
         "title": "ເງື່ອນໄຂການນໍາໃຊ້",
         "updated": "ອັບເດດຫຼ້າສຸດ: 30 ມິຖຸນາ 2026",
-        "intro": "ໂດຍການໃຊ້ KINJAI, ທ່ານຕົກລົງເຫັນດີກັບເງື່ອນໄຂເຫຼົ່ານີ້. ລະບົບສະຫນອງການສັ່ງອາຫານອອນໄລນ໌, ການຈັດສົ່ງ, ແລະເຄື່ອງມືການຄຸ້ມຄອງຮ້ານອາຫານ.",
+        "intro": "ໂດຍການໃຊ້ PENGUIN, ທ່ານຕົກລົງເຫັນດີກັບເງື່ອນໄຂເຫຼົ່ານີ້. ລະບົບສະຫນອງການສັ່ງອາຫານອອນໄລນ໌, ການຈັດສົ່ງ, ແລະເຄື່ອງມືການຄຸ້ມຄອງຮ້ານອາຫານ.",
         "sections": {
           "account": {
             "title": "ບັນຊີຜູ້ໃຊ້",
@@ -19302,7 +19302,7 @@
     },
     "platform": {
       "meta": {
-        "title": "ແພລດຟອມ KINJAI"
+        "title": "ແພລດຟອມ PENGUIN"
       },
       "header": {
         "title": "ລະບົບກາງ"
@@ -19371,8 +19371,8 @@
       },
       "branding": {
         "title": "Branding ແລະ Icon ຂອງລະບົບ",
-        "description": "ຈັດການ Logo KINJAI, Favicon ແລະ App Icon ຈາກ Super Admin.",
-        "logo": "Logo KINJAI",
+        "description": "ຈັດການ Logo PENGUIN, Favicon ແລະ App Icon ຈາກ Super Admin.",
+        "logo": "Logo PENGUIN",
         "logo_help": "ກຳນົດໂລໂກ້ທີ່ສະແດງໃນ header ແລະ ໜ້າເຂົ້າລະບົບ. ຮອງຮັບ PNG, JPG ຫຼື WebP ສູງສຸດ 4 MB.",
         "favicon": "Favicon",
         "favicon_help": "ໄອຄອນສຳລັບແທັບ browser. ຮອງຮັບ PNG ຫຼື ICO ສູງສຸດ 2 MB.",
@@ -19383,7 +19383,7 @@
         "configured": "ຕັ້ງຄ່າແລ້ວ",
         "not_configured": "ຍັງບໍ່ໄດ້ຕັ້ງຄ່າ",
         "clear_pending": "ຮູບນີ້ຈະຖືກລຶບເມື່ອບັນທຶກ.",
-        "runtime_help": "ຫຼັງຈາກບັນທຶກ ໜ້າທີ່ໃຊ້ shared layout ຈະໂຫຼດ Branding ໃໝ່ອັດຕະໂນມັດ. ຖ້າບໍ່ມີ Logo ຈະຍັງສະແດງສັນຍາລັກ KJ ເດີມ.",
+        "runtime_help": "ຫຼັງຈາກບັນທຶກ ໜ້າທີ່ໃຊ້ shared layout ຈະໂຫຼດ Branding ໃໝ່ອັດຕະໂນມັດ. ຖ້າບໍ່ມີ Logo ຈະຍັງສະແດງສັນຍາລັກ PG ເດີມ.",
         "pwa_help": "App icon ຈະໃຊ້ຜ່ານ manifest.webmanifest ແລະ Apple touch icon ເພື່ອເພີ່ມເວັບໄຊໄປຫາ Home Screen.",
         "save": "ບັນທຶກ Branding",
         "save_success": "ບັນທຶກ Branding ຂອງລະບົບແລ້ວ.",
@@ -19492,7 +19492,7 @@
       },
       "lalamove": {
         "title": "ເວທີ Lalamove API",
-        "description": "ຈັດການການເຊື່ອມຕໍ່ Lalamove API ກາງຂອງ KINJAI ສຳລັບທຸກ Tenant.",
+        "description": "ຈັດການການເຊື່ອມຕໍ່ Lalamove API ກາງຂອງ PENGUIN ສຳລັບທຸກ Tenant.",
         "environment": "ສະພາບແວດລ້ອມ",
         "sandbox": "Sandbox",
         "production": "Production",
@@ -21964,15 +21964,15 @@
       "explanation": {
         "title": "ການຄຳນວນຈຳນວນທີ່ຄົບກຳນົດໃນເວທີ",
         "loading": "ກຳລັງໂຫຼດລາຍລະອຽດການຄຳນວນ.",
-        "enabled": "ຍອດຂາຍແບ່ງລາຍຮັບ THB :sales × :rate% = ສ່ວນແບ່ງ THB :share + ຍອດ Lalamove ຄ້າງ THB :outstanding = ຈຳນວນທີ່ຕ້ອງຈ່າຍໃຫ້ Platform THB :due (Lalamove ລວມ THB :deliveryCost / ໃຊ້ KINJAI ເຄຣດິດ :walletCovered ເຄຣດິດ / ຄ່າຈັດສົ່ງທີ່ລູກຄ້າຈ່າຍ THB :customerDelivery / ຮ້ານອຸດໜູນ THB :subsidy).",
+        "enabled": "ຍອດຂາຍແບ່ງລາຍຮັບ THB :sales × :rate% = ສ່ວນແບ່ງ THB :share + ຍອດ Lalamove ຄ້າງ THB :outstanding = ຈຳນວນທີ່ຕ້ອງຈ່າຍໃຫ້ Platform THB :due (Lalamove ລວມ THB :deliveryCost / ໃຊ້ PENGUIN ເຄຣດິດ :walletCovered ເຄຣດິດ / ຄ່າຈັດສົ່ງທີ່ລູກຄ້າຈ່າຍ THB :customerDelivery / ຮ້ານອຸດໜູນ THB :subsidy).",
         "disabled": "ສ່ວນແບ່ງລາຍໄດ້ຂອງເວທີຍັງບໍ່ໄດ້ຖືກເປີດໃຊ້ສໍາລັບຮ້ານນີ້."
       },
       "wallet": {
-        "title": "KINJAI ເຄຣດິດສຳລັບ Lalamove",
-        "description": "KINJAI ເຄຣດິດທີ່ໃຊ້ສໍາລັບການບໍລິການ Lalamove, ດ້ວຍກິດຈະກໍາເຄຣດິດ ແລະເຫດຜົນຄວາມລົ້ມເຫລວໃນເວລາທີ່ການຈັດສົ່ງບໍ່ສາມາດສ້າງໄດ້.",
-        "summary_aria": "KINJAI ສະຫຼຸບສິນເຊື່ອ",
+        "title": "PENGUIN ເຄຣດິດສຳລັບ Lalamove",
+        "description": "PENGUIN ເຄຣດິດທີ່ໃຊ້ສໍາລັບການບໍລິການ Lalamove, ດ້ວຍກິດຈະກໍາເຄຣດິດ ແລະເຫດຜົນຄວາມລົ້ມເຫລວໃນເວລາທີ່ການຈັດສົ່ງບໍ່ສາມາດສ້າງໄດ້.",
+        "summary_aria": "PENGUIN ສະຫຼຸບສິນເຊື່ອ",
         "ready": "ສິນເຊື່ອພ້ອມ",
-        "storage_missing": "KINJAI Wallet ໂຄງສ້າງຖານຂໍ້ມູນບໍ່ໄດ້ຖືກຕິດຕັ້ງ",
+        "storage_missing": "PENGUIN Wallet ໂຄງສ້າງຖານຂໍ້ມູນບໍ່ໄດ້ຖືກຕິດຕັ້ງ",
         "balance": "ຍອດສິນເຊື່ອ",
         "approved_topup_total": "ເພີ່ມສິນເຊື່ອ, ຕະຫຼອດເວລາ",
         "period_topup": "ເພີ່ມເຄຣດິດໃນໄລຍະເວລາທີ່ເລືອກ",
@@ -21980,8 +21980,8 @@
         "period_delivery_refund": "ສິນເຊື່ອສົ່ງຄືນຈາກການຈັດສົ່ງໃນໄລຍະເວລາທີ່ເລືອກ",
         "pending_topup": "ສິນເຊື່ອລໍຖ້າການກວດສອບ",
         "pending_count": ":count ຄຳຮ້ອງຂໍ",
-        "accounting_note": "Lalamove ຄ່າບໍລິການທີ່ຈ່າຍສຳເລັດດ້ວຍເຄຣດິດ KINJAI ຈະບໍ່ຖືກຮຽກເກັບອີກໃນຈຳນວນເງິນເນື່ອງຈາກ Platform.",
-        "credit_policy": "ອັດຕາສິນເຊື່ອ: THB 1 = 1 ເຄຣດິດ. ສິນເຊື່ອ KINJAI ແມ່ນເພື່ອຈ່າຍຄ່າບໍລິການພາຍໃນລະບົບ KINJAI ເທົ່ານັ້ນ. ພວກເຂົາບໍ່ສາມາດໂອນ, ຖອນ, ແລກ, ຫຼືຄືນເງິນເປັນເງິນສົດພາຍໃຕ້ເງື່ອນໄຂການບໍລິການ, ຍົກເວັ້ນບ່ອນທີ່ກົດຫມາຍຕ້ອງການ.",
+        "accounting_note": "Lalamove ຄ່າບໍລິການທີ່ຈ່າຍສຳເລັດດ້ວຍເຄຣດິດ PENGUIN ຈະບໍ່ຖືກຮຽກເກັບອີກໃນຈຳນວນເງິນເນື່ອງຈາກ Platform.",
+        "credit_policy": "ອັດຕາສິນເຊື່ອ: THB 1 = 1 ເຄຣດິດ. ສິນເຊື່ອ PENGUIN ແມ່ນເພື່ອຈ່າຍຄ່າບໍລິການພາຍໃນລະບົບ PENGUIN ເທົ່ານັ້ນ. ພວກເຂົາບໍ່ສາມາດໂອນ, ຖອນ, ແລກ, ຫຼືຄືນເງິນເປັນເງິນສົດພາຍໃຕ້ເງື່ອນໄຂການບໍລິການ, ຍົກເວັ້ນບ່ອນທີ່ກົດຫມາຍຕ້ອງການ.",
         "transactions_title": "ການເຄື່ອນໄຫວສິນເຊື່ອທີ່ຜ່ານມາ",
         "transactions_description": "ສະແດງເຖິງ 12 ລາຍການຫຼ້າສຸດຈາກບັນຊີລາຍການສິນເຊື່ອຂອງລະບົບ.",
         "transactions_empty": "ບໍ່ມີກິດຈະກໍາສິນເຊື່ອເທື່ອ.",
@@ -22013,8 +22013,8 @@
           "dispatch": "ຈັດສົ່ງ"
         },
         "failure_reasons": {
-          "FOD_WALLET_INSUFFICIENT_BALANCE": "KINJAI ຍອດສິນເຊື່ອບໍ່ພຽງພໍ. ຕ້ອງໃຊ້ເຄຣດິດ :required ແຕ່ມີພຽງ :balance ເຄຣດິດເທົ່ານັ້ນ.",
-          "FOD_WALLET_STORAGE_MISSING": "KINJAI Wallet ບໍ່ພ້ອມ. ກະລຸນາຕິດຕໍ່ຜູ້ເບິ່ງແຍງລະບົບ.",
+          "FOD_WALLET_INSUFFICIENT_BALANCE": "PENGUIN ຍອດສິນເຊື່ອບໍ່ພຽງພໍ. ຕ້ອງໃຊ້ເຄຣດິດ :required ແຕ່ມີພຽງ :balance ເຄຣດິດເທົ່ານັ້ນ.",
+          "FOD_WALLET_STORAGE_MISSING": "PENGUIN Wallet ບໍ່ພ້ອມ. ກະລຸນາຕິດຕໍ່ຜູ້ເບິ່ງແຍງລະບົບ.",
           "FOD_WALLET_BUSY": "Wallet ກໍາລັງຖືກໃຊ້ໂດຍທຸລະກໍາອື່ນ. ກະລຸນາລອງອີກຄັ້ງ.",
           "FOD_WALLET_NOT_FOUND": "ບໍ່ພົບ Wallet ຮ້ານຄ້າ. ກະລຸນາຕິດຕໍ່ຜູ້ເບິ່ງແຍງລະບົບ.",
           "LALAMOVE_ACCOUNT_NOT_READY": "ບັນຊີຮ້ານຄ້າ ຫຼືແພລດຟອມ Lalamove ຍັງບໍ່ພ້ອມ.",
@@ -22034,7 +22034,7 @@
       },
       "payment": {
         "title": "ລາຍງານສ່ວນແບ່ງລາຍໄດ້ ແລະການໂອນເງິນທີ່ຄ້າງຈ່າຍ Lalamove",
-        "description": "ຄັດຕິດໃບໂອນເງິນສໍາລັບໄລຍະເວລາທີ່ເລືອກ. ສະເພາະສ່ວນແບ່ງລາຍໄດ້ຈາກການຂາຍ ແລະ Lalamove ຄ່າໃຊ້ຈ່າຍທີ່ຍັງບໍ່ໄດ້ຫັກຈາກ KINJAI Wallet ຈະຖືກຄິດຄ່າ.",
+        "description": "ຄັດຕິດໃບໂອນເງິນສໍາລັບໄລຍະເວລາທີ່ເລືອກ. ສະເພາະສ່ວນແບ່ງລາຍໄດ້ຈາກການຂາຍ ແລະ Lalamove ຄ່າໃຊ້ຈ່າຍທີ່ຍັງບໍ່ໄດ້ຫັກຈາກ PENGUIN Wallet ຈະຖືກຄິດຄ່າ.",
         "selected_period": "ໄລຍະເວລາທີ່ເລືອກ",
         "amount_due": "ທັງໝົດເນື່ອງຈາກເວທີ",
         "amount_breakdown": "ແບ່ງປັນ THB :share + ທີ່ໂດດເດັ່ນ Lalamove THB :delivery",
@@ -22439,7 +22439,7 @@
         "success": "ປ່ຽນລະຫັດຜ່ານສຳເລັດແລ້ວ."
       },
       "footer": {
-        "product": "KINJAI",
+        "product": "PENGUIN",
         "version": "ລຸ້ນ :version",
         "build": "ສ້າງ :build",
         "icon_credit": "Uicons ໂດຍ Flaticon"
@@ -22538,7 +22538,7 @@
         "description": "ທັງໝົດ ແລະສະຖານະຂ້າງລຸ່ມນີ້ແມ່ນອ່ານຈາກຂໍ້ມູນຫຼ້າສຸດຂອງຮ້ານອາຫານ."
       },
       "loading": "ກຳລັງກວດສອບ...",
-      "shop_fallback": "KINJAI",
+      "shop_fallback": "PENGUIN",
       "latest_badge": "ຂໍ້ມູນລະບົບຫຼ້າສຸດ",
       "payment": {
         "paid": "ຈ່າຍແລ້ວ",
@@ -23021,40 +23021,40 @@
         "lalamove_status": "មិនទាន់រួចរាល់ទេ។",
         "lalamove_available_status": "មាន",
         "lalamove_selected_status": "បានជ្រើសរើស",
-        "lalamove_description": "ភ្ជាប់ការដឹកជញ្ជូនតាមរយៈ Lalamove ដោយប្រើព័ត៌មានសម្ងាត់ KINJAI API កណ្តាល។",
+        "lalamove_description": "ភ្ជាប់ការដឹកជញ្ជូនតាមរយៈ Lalamove ដោយប្រើព័ត៌មានសម្ងាត់ PENGUIN API កណ្តាល។",
         "lalamove_unavailable_description": "គណនី Lalamove ដែលបានជ្រើសរើសមិនទាន់រួចរាល់ទេ។ ពិនិត្យមើលការកំណត់ ឬស្ថានភាពការយល់ព្រមរបស់វា។",
         "lalamove_account_title": "រក្សាទុកគណនី Lalamove",
-        "lalamove_account_description": "ជ្រើសរើសថាតើហាងនេះប្រើ Lalamove ដៃគូរបស់ខ្លួន API ឬគណនីកណ្តាល KINJAI ដែលត្រូវបានអនុម័តដោយ Super Admin ។",
+        "lalamove_account_description": "ជ្រើសរើសថាតើហាងនេះប្រើ Lalamove ដៃគូរបស់ខ្លួន API ឬគណនីកណ្តាល PENGUIN ដែលត្រូវបានអនុម័តដោយ Super Admin ។",
         "lalamove_account_mode": "របៀបគណនី",
         "lalamove_mode_disabled": "បិទ Lalamove",
         "lalamove_mode_tenant": "ប្រើហាង Lalamove គណនីដៃគូ",
-        "lalamove_mode_fod": "ប្រើ KINJAI គណនីកណ្តាល",
+        "lalamove_mode_fod": "ប្រើ PENGUIN គណនីកណ្តាល",
         "lalamove_environment": "បរិស្ថាន",
         "lalamove_api_key": "ហាង Lalamove API Key",
         "lalamove_api_secret": "ហាង Lalamove API Secret",
-        "lalamove_mode_help": "ការរក្សាទុកព័ត៌មានសម្ងាត់ត្រូវតែឆ្លងកាត់ការភ្ជាប់សាកល្បងមុនពេលប្រើប្រាស់។ KINJAI របៀបកណ្តាលទាមទារការយល់ព្រម Super Admin ។",
+        "lalamove_mode_help": "ការរក្សាទុកព័ត៌មានសម្ងាត់ត្រូវតែឆ្លងកាត់ការភ្ជាប់សាកល្បងមុនពេលប្រើប្រាស់។ PENGUIN របៀបកណ្តាលទាមទារការយល់ព្រម Super Admin ។",
         "lalamove_save_account": "រក្សាទុកគណនី Lalamove",
         "lalamove_test_connection": "ការភ្ជាប់សាកល្បង",
         "lalamove_status_ready": "រួចរាល់",
         "lalamove_status_not_ready": "មិនទាន់រួចរាល់ទេ។",
-        "lalamove_status_waiting_approval": "កំពុងរង់ចាំការយល់ព្រម KINJAI",
+        "lalamove_status_waiting_approval": "កំពុងរង់ចាំការយល់ព្រម PENGUIN",
         "lalamove_status_disabled": "ពិការ",
         "lalamove_account_saved": "Lalamove ការកំណត់គណនីត្រូវបានរក្សាទុក។",
         "lalamove_account_save_failed": "មិនអាចរក្សាទុកការកំណត់គណនី Lalamove បានទេ។",
         "lalamove_test_success": "ហាង Lalamove ការតភ្ជាប់ដៃគូបានជោគជ័យ។",
         "lalamove_test_failed": "មិនអាចភ្ជាប់ទៅហាង Lalamove គណនីដៃគូបានទេ។",
-        "fod_wallet_title": "KINJAI ឥណទានសម្រាប់ Lalamove",
+        "fod_wallet_title": "PENGUIN ឥណទានសម្រាប់ Lalamove",
         "fod_wallet_balance": "សមតុល្យឥណទាន",
         "fod_wallet_credit_unit": "ឥណទាន",
         "fod_wallet_credit_rate": "អត្រាឥណទាន៖ THB 1 = 1 ឥណទាន",
-        "fod_wallet_credit_terms": "ឥណទាន KINJAI គឺសម្រាប់បង់ថ្លៃសេវាក្នុងប្រព័ន្ធ KINJAI តែប៉ុណ្ណោះ។ ពួកវាមិនអាចផ្ទេរ ដក ដូរ ឬបង្វិលសងវិញជាសាច់ប្រាក់ក្រោមលក្ខខណ្ឌនៃសេវាកម្មបានទេ លើកលែងតែករណីដែលតម្រូវដោយច្បាប់។",
+        "fod_wallet_credit_terms": "ឥណទាន PENGUIN គឺសម្រាប់បង់ថ្លៃសេវាក្នុងប្រព័ន្ធ PENGUIN តែប៉ុណ្ណោះ។ ពួកវាមិនអាចផ្ទេរ ដក ដូរ ឬបង្វិលសងវិញជាសាច់ប្រាក់ក្រោមលក្ខខណ្ឌនៃសេវាកម្មបានទេ លើកលែងតែករណីដែលតម្រូវដោយច្បាប់។",
         "fod_wallet_recent": "សកម្មភាពឥណទានថ្មីៗ",
         "fod_wallet_loading": "កំពុងផ្ទុកកាបូប...",
         "fod_wallet_empty": "មិនទាន់មានប្រតិបត្តិការឥណទាននៅឡើយទេ។",
-        "fod_wallet_storage_missing": "តារាង KINJAI Wallet មិនត្រូវបានបង្កើតនៅលើម៉ាស៊ីនមេទេ។",
-        "fod_wallet_load_failed": "មិនអាចផ្ទុក KINJAI Wallet បានទេ។ ប្រព័ន្ធនឹងព្យាយាមម្តងទៀតដោយស្វ័យប្រវត្តិ។",
-        "fod_wallet_active": "KINJAI ការចែកចាយកណ្តាលនឹងប្រើឥណទានទាំងនេះសម្រាប់ថ្លៃសេវា Lalamove ។",
-        "fod_wallet_inactive": "សមតុល្យឥណទាននេះត្រូវបានរក្សាទុក ប៉ុន្តែមិនត្រូវបានប្រើប្រាស់សម្រាប់ការចែកចាយថ្មីទេ រហូតដល់ KINJAI Central ត្រូវបានជ្រើសរើស។",
+        "fod_wallet_storage_missing": "តារាង PENGUIN Wallet មិនត្រូវបានបង្កើតនៅលើម៉ាស៊ីនមេទេ។",
+        "fod_wallet_load_failed": "មិនអាចផ្ទុក PENGUIN Wallet បានទេ។ ប្រព័ន្ធនឹងព្យាយាមម្តងទៀតដោយស្វ័យប្រវត្តិ។",
+        "fod_wallet_active": "PENGUIN ការចែកចាយកណ្តាលនឹងប្រើឥណទានទាំងនេះសម្រាប់ថ្លៃសេវា Lalamove ។",
+        "fod_wallet_inactive": "សមតុល្យឥណទាននេះត្រូវបានរក្សាទុក ប៉ុន្តែមិនត្រូវបានប្រើប្រាស់សម្រាប់ការចែកចាយថ្មីទេ រហូតដល់ PENGUIN Central ត្រូវបានជ្រើសរើស។",
         "fod_wallet_phase2_note": "បង្ហាញសមតុល្យឥណទានរបស់ហាង និងសៀវភៅបញ្ជីឥណទាន។",
         "fod_wallet_phase3_note": "ក្រេឌីតត្រូវបានបន្ថែមបន្ទាប់ពីការអនុម័តឬការផ្ទៀងផ្ទាត់ Slip2Go ដោយជោគជ័យ។",
         "fod_wallet_ledger_note": "ការបញ្ចូលទឹកប្រាក់ឥណទានដែលបានអនុម័តបង្ហាញនៅក្នុងសៀវភៅកត់ត្រា។",
@@ -23071,11 +23071,11 @@
         "fod_wallet_topup_help": "ផ្ទេរទៅទិសដៅខាងលើហើយភ្ជាប់សន្លឹកបៀ។ នៅពេលដែល Slip2Go បញ្ជាក់ចំនួនទឹកប្រាក់ អ្នកទទួល និងប្រតិបត្តិការ ឥណទានត្រូវបានបន្ថែមដោយស្វ័យប្រវត្តិ។ បើមិនដូច្នេះទេ សំណើនៅតែមានសម្រាប់ Super Admin ពិនិត្យ។",
         "fod_wallet_topup_history": "ប្រវត្តិបញ្ចូលទឹកប្រាក់ឥណទាន",
         "fod_wallet_topup_storage_missing": "តារាងបញ្ចូលលុយកាបូបមិនត្រូវបានបង្កើតនៅលើម៉ាស៊ីនមេទេ។",
-        "fod_wallet_topup_not_allowed": "ការបញ្ចូលទឹកប្រាក់ក្នុងក្រេឌីតគឺអាចប្រើបានសម្រាប់តែហាងដែលមានការយល់ព្រមដោយប្រើគណនីកណ្តាល KINJAI ។",
-        "fod_wallet_topup_destination_missing": "Super Admin មិនទាន់បានកំណត់រចនាសម្ព័ន្ធគណនីទទួលសម្រាប់ការបញ្ចូលទឹកប្រាក់ឥណទាន KINJAI នៅឡើយទេ។",
+        "fod_wallet_topup_not_allowed": "ការបញ្ចូលទឹកប្រាក់ក្នុងក្រេឌីតគឺអាចប្រើបានសម្រាប់តែហាងដែលមានការយល់ព្រមដោយប្រើគណនីកណ្តាល PENGUIN ។",
+        "fod_wallet_topup_destination_missing": "Super Admin មិនទាន់បានកំណត់រចនាសម្ព័ន្ធគណនីទទួលសម្រាប់ការបញ្ចូលទឹកប្រាក់ឥណទាន PENGUIN នៅឡើយទេ។",
         "fod_wallet_topup_invalid": "បញ្ចូលឥណទានយ៉ាងតិច 1 និងភ្ជាប់ស្លីប។",
         "fod_wallet_topup_submitted": "ការដាក់បញ្ចូលទឹកប្រាក់ក្នុងក្រេឌីតត្រូវបានដាក់ស្នើ ហើយរង់ចាំការពិនិត្យឡើងវិញ Super Admin ។",
-        "fod_wallet_topup_auto_approved": "Slip2Go បានផ្ទៀងផ្ទាត់ការផ្ទេរ ហើយ KINJAI ក្រេឌីតត្រូវបានបន្ថែមដោយស្វ័យប្រវត្តិ។",
+        "fod_wallet_topup_auto_approved": "Slip2Go បានផ្ទៀងផ្ទាត់ការផ្ទេរ ហើយ PENGUIN ក្រេឌីតត្រូវបានបន្ថែមដោយស្វ័យប្រវត្តិ។",
         "fod_wallet_topup_failed": "មិនអាចដាក់បញ្ចូលទឹកប្រាក់ឥណទានបានទេ។",
         "fod_wallet_topup_duplicate": "សន្លឹកបៀនេះត្រូវបានប្រើប្រាស់ក្នុងប្រព័ន្ធរួចហើយ។ ពិនិត្យវា ឬប្រើសន្លឹកបៀផ្សេងទៀត។",
         "fod_wallet_topup_delete": "លុបសំណើ",
@@ -23434,16 +23434,16 @@
         "lalamove_modes": {
           "disabled": "ពិការ",
           "tenant": "ទុកគណនីដៃគូ",
-          "fod_central": "KINJAI គណនីកណ្តាល"
+          "fod_central": "PENGUIN គណនីកណ្តាល"
         },
-        "lalamove_approved": "KINJAI យល់ព្រម",
-        "lalamove_waiting": "កំពុងរង់ចាំការយល់ព្រម KINJAI",
-        "lalamove_approve": "យល់ព្រម KINJAI Lalamove",
-        "lalamove_revoke": "ដកហូត KINJAI Lalamove",
-        "lalamove_approve_confirm": "អនុញ្ញាតឱ្យ :name ប្រើគណនី KINJAI កណ្តាល Lalamove?",
-        "lalamove_revoke_confirm": "ដកហូត :name ចូលប្រើគណនី KINJAI កណ្តាល Lalamove? ការបញ្ជាទិញថ្មីនឹងមិនអាចចែកចាយតាមរយៈគណនីកណ្តាលបានទេ។",
-        "lalamove_approve_success": "KINJAI កណ្តាល Lalamove ការចូលប្រើត្រូវបានអនុម័ត។",
-        "lalamove_revoke_success": "KINJAI កណ្តាល Lalamove ការចូលប្រើត្រូវបានដកហូត។",
+        "lalamove_approved": "PENGUIN យល់ព្រម",
+        "lalamove_waiting": "កំពុងរង់ចាំការយល់ព្រម PENGUIN",
+        "lalamove_approve": "យល់ព្រម PENGUIN Lalamove",
+        "lalamove_revoke": "ដកហូត PENGUIN Lalamove",
+        "lalamove_approve_confirm": "អនុញ្ញាតឱ្យ :name ប្រើគណនី PENGUIN កណ្តាល Lalamove?",
+        "lalamove_revoke_confirm": "ដកហូត :name ចូលប្រើគណនី PENGUIN កណ្តាល Lalamove? ការបញ្ជាទិញថ្មីនឹងមិនអាចចែកចាយតាមរយៈគណនីកណ្តាលបានទេ។",
+        "lalamove_approve_success": "PENGUIN កណ្តាល Lalamove ការចូលប្រើត្រូវបានអនុម័ត។",
+        "lalamove_revoke_success": "PENGUIN កណ្តាល Lalamove ការចូលប្រើត្រូវបានដកហូត។",
         "lalamove_approval_failed": "មិនអាចធ្វើបច្ចុប្បន្នភាពការយល់ព្រម Lalamove បានទេ។",
         "fields": {
           "name": "ឈ្មោះហាង",
@@ -23458,8 +23458,8 @@
         }
       },
       "wallet": {
-        "title": "រក្សាទុក KINJAI ក្រេឌីតសម្រាប់ Lalamove",
-        "label": "ឥណទាន KINJAI",
+        "title": "រក្សាទុក PENGUIN ក្រេឌីតសម្រាប់ Lalamove",
+        "label": "ឥណទាន PENGUIN",
         "view": "មើលឥណទាន",
         "balance": "សមតុល្យឥណទាន",
         "credit_unit": "ឥណទាន",
@@ -23467,7 +23467,7 @@
         "loading": "កំពុងផ្ទុកទិន្នន័យឥណទាន...",
         "empty": "មិនទាន់មានប្រតិបត្តិការឥណទាននៅឡើយទេ។",
         "load_failed": "មិនអាចផ្ទុកទិន្នន័យឥណទានបានទេ។",
-        "storage_missing": "តារាង KINJAI Wallet មិនត្រូវបានបង្កើតនៅលើម៉ាស៊ីនមេទេ។",
+        "storage_missing": "តារាង PENGUIN Wallet មិនត្រូវបានបង្កើតនៅលើម៉ាស៊ីនមេទេ។",
         "credit_note": "សំណើដែលបានអនុម័តនីមួយៗផ្តល់ឥណទានដល់កាបូបភ្លាមៗតែម្តង។",
         "topups": "សំណើទិញឥណទាន",
         "topup_empty": "មិនទាន់មានសំណើទិញឥណទាននៅឡើយទេ។",
@@ -23476,8 +23476,8 @@
         "approve": "យល់ព្រម",
         "reject": "បដិសេធ",
         "approve_title": "អនុម័តសំណើទិញឥណទាន",
-        "approve_confirm": "យល់ព្រម :amount ក្រេឌីតទៅក្នុង :name KINJAI Wallet? ក្រេឌីតនឹងត្រូវបានបន្ថែមភ្លាមៗ។",
-        "approve_success": "ការទិញឥណទានត្រូវបានអនុម័ត និងបន្ថែមទៅ KINJAI Wallet។",
+        "approve_confirm": "យល់ព្រម :amount ក្រេឌីតទៅក្នុង :name PENGUIN Wallet? ក្រេឌីតនឹងត្រូវបានបន្ថែមភ្លាមៗ។",
+        "approve_success": "ការទិញឥណទានត្រូវបានអនុម័ត និងបន្ថែមទៅ PENGUIN Wallet។",
         "reject_title": "បដិសេធសំណើទិញឥណទាន",
         "reject_prompt": "បញ្ចូលហេតុផលសម្រាប់ការបដិសេធសំណើទិញឥណទាននេះ។",
         "reject_success": "សំណើទិញឥណទានត្រូវបានបដិសេធ។",
@@ -23987,7 +23987,7 @@
         "retry": "សាក Lalamove ម្តងទៀត",
         "cancel": "បោះបង់ Lalamove",
         "cancel_title": "បញ្ជាក់ការបោះបង់ Lalamove",
-        "cancel_confirm": "បោះបង់ការដឹកជញ្ជូន Lalamove នេះទេ? បន្ទាប់ពីបោះបង់បានជោគជ័យ អាចបោះបង់ការបញ្ជាទិញ KINJAI ក្នុង local បាន។",
+        "cancel_confirm": "បោះបង់ការដឹកជញ្ជូន Lalamove នេះទេ? បន្ទាប់ពីបោះបង់បានជោគជ័យ អាចបោះបង់ការបញ្ជាទិញ PENGUIN ក្នុង local បាន។",
         "cancel_confirm_button": "បោះបង់ Lalamove",
         "cancel_success": "បានបោះបង់ Lalamove ដោយជោគជ័យ។",
         "cancel_forbidden": "Lalamove មិនអនុញ្ញាតឱ្យបោះបង់នៅស្ថានភាពបច្ចុប្បន្នទេ។",
@@ -24003,11 +24003,11 @@
         "out_of_service_area": "ទីតាំងយក ឬទីតាំងដឹកនៅក្រៅតំបន់សេវា Lalamove។",
         "quotation_expired": "Quote ថ្លៃដឹកជញ្ជូនផុតកំណត់។ សូមពិនិត្យតម្លៃចុងក្រោយម្តងទៀត។",
         "insufficient_credit": "គណនី Lalamove ដែលបានជ្រើសមាន credit/wallet មិនគ្រប់គ្រាន់។",
-        "fod_wallet_insufficient": "KINJAI Wallet មិនគ្រប់គ្រាន់ (មាន :balance បាត / ត្រូវការ :required បាត)។ បន្ថែម Wallet ហើយរង់ចាំ Super Admin អនុម័ត។",
-        "fod_wallet_storage_missing": "KINJAI Wallet មិនទាន់រួចរាល់។ ទាក់ទង Super Admin ដើម្បីពិនិត្យ setup។",
-        "fod_wallet_busy": "KINJAI Wallet កំពុងប្រើដោយការបញ្ជាទិញផ្សេង។ រង់ចាំហើយសាកម្តងទៀត។",
-        "fod_wallet_debit_pending": "បានបង្កើត Lalamove order ប៉ុន្តែការកាត់ KINJAI Wallet កំពុងរង់ចាំ។ កុំបញ្ជូនម្តងទៀត; ទាក់ទង Super Admin។",
-        "account_not_ready": "គណនី Lalamove របស់ហាងមិនទាន់រួចរាល់។ ពិនិត្យ Partner API credential ឬការអនុម័តកណ្តាល KINJAI។",
+        "fod_wallet_insufficient": "PENGUIN Wallet មិនគ្រប់គ្រាន់ (មាន :balance បាត / ត្រូវការ :required បាត)។ បន្ថែម Wallet ហើយរង់ចាំ Super Admin អនុម័ត។",
+        "fod_wallet_storage_missing": "PENGUIN Wallet មិនទាន់រួចរាល់។ ទាក់ទង Super Admin ដើម្បីពិនិត្យ setup។",
+        "fod_wallet_busy": "PENGUIN Wallet កំពុងប្រើដោយការបញ្ជាទិញផ្សេង។ រង់ចាំហើយសាកម្តងទៀត។",
+        "fod_wallet_debit_pending": "បានបង្កើត Lalamove order ប៉ុន្តែការកាត់ PENGUIN Wallet កំពុងរង់ចាំ។ កុំបញ្ជូនម្តងទៀត; ទាក់ទង Super Admin។",
+        "account_not_ready": "គណនី Lalamove របស់ហាងមិនទាន់រួចរាល់។ ពិនិត្យ Partner API credential ឬការអនុម័តកណ្តាល PENGUIN។",
         "provider_payload_invalid": "Lalamove បដិសេធទិន្នន័យ order។ ពិនិត្យព័ត៌មានហាង និងអតិថិជន។",
         "generic_error": "សកម្មភាព Lalamove បរាជ័យ (:code)",
         "statuses": {
@@ -24175,13 +24175,13 @@
     },
     "delivery": {
       "checkout": {
-        "meta_title": "KINJAI",
+        "meta_title": "PENGUIN",
         "header": {
-          "title": "KINJAI",
+          "title": "PENGUIN",
           "badge": "ដឹកជញ្ជូនដល់ផ្ទះ"
         },
         "hero": {
-          "title": "KINJAI",
+          "title": "PENGUIN",
           "description": "បញ្ជាទិញអាហារតាមអ៊ីនធឺណិត បញ្ចូលព័ត៌មានដឹកជញ្ជូន បញ្ជាក់ការបញ្ជាទិញ និងជ្រើសរើសវិធីបង់ប្រាក់។"
         },
         "menu": {
@@ -24431,7 +24431,7 @@
           "download_failed": "មិនអាចទាញយកបង្កាន់ដៃបញ្ជាទិញបានទេ។ សូមព្យាយាមម្តងទៀត។"
         },
         "receipt": {
-          "shop_fallback": "KINJAI",
+          "shop_fallback": "PENGUIN",
           "evidence": "ការបញ្ជាក់ការបញ្ជាទិញដឹកជញ្ជូន",
           "fields": {
             "order_number": "លេខបញ្ជាទិញ",
@@ -24500,7 +24500,7 @@
     },
     "home": {
       "meta": {
-        "title": "KINJAI"
+        "title": "PENGUIN"
       },
       "public": {
         "hero": {
@@ -24578,7 +24578,7 @@
         },
         "about": {
           "title": "អំពីកម្មវិធី",
-          "description": "KINJAI ភ្ជាប់ភោជនីយដ្ឋានជាមួយអតិថិជនដើម្បីធ្វើឱ្យការបញ្ជាទិញ ការទូទាត់ និងការដឹកជញ្ជូនកាន់តែងាយស្រួល។ គណនី Google ត្រូវបានប្រើដើម្បីផ្ទៀងផ្ទាត់អត្តសញ្ញាណអតិថិជន និងរក្សាទុកព័ត៌មានប្រវត្តិរូប និងអាសយដ្ឋានដឹកជញ្ជូនដែលអតិថិជនជ្រើសរើសដើម្បីចែករំលែកជាមួយប្រព័ន្ធ។",
+          "description": "PENGUIN ភ្ជាប់ភោជនីយដ្ឋានជាមួយអតិថិជនដើម្បីធ្វើឱ្យការបញ្ជាទិញ ការទូទាត់ និងការដឹកជញ្ជូនកាន់តែងាយស្រួល។ គណនី Google ត្រូវបានប្រើដើម្បីផ្ទៀងផ្ទាត់អត្តសញ្ញាណអតិថិជន និងរក្សាទុកព័ត៌មានប្រវត្តិរូប និងអាសយដ្ឋានដឹកជញ្ជូនដែលអតិថិជនជ្រើសរើសដើម្បីចែករំលែកជាមួយប្រព័ន្ធ។",
           "links_aria": "ការគាំទ្រ និងតំណភ្ជាប់គោលនយោបាយ",
           "support": "ទាក់ទងផ្នែកគាំទ្រ",
           "privacy": "គោលការណ៍ឯកជនភាព",
@@ -24781,10 +24781,10 @@
     },
     "legal": {
       "privacy": {
-        "meta_title": "គោលការណ៍ឯកជនភាព | KINJAI",
+        "meta_title": "គោលការណ៍ឯកជនភាព | PENGUIN",
         "title": "គោលការណ៍ឯកជនភាព",
         "updated": "អាប់ដេតចុងក្រោយ៖ ថ្ងៃទី 30 ខែមិថុនា ឆ្នាំ 2026",
-        "intro": "KINJAI គឺជាប្រព័ន្ធបញ្ជាទិញ និងចែកចាយអាហារតាមអ៊ីនធឺណិត។ យើងឲ្យតម្លៃទៅលើព័ត៌មានផ្ទាល់ខ្លួនរបស់អតិថិជន និងបុគ្គលិកភោជនីយដ្ឋាន។",
+        "intro": "PENGUIN គឺជាប្រព័ន្ធបញ្ជាទិញ និងចែកចាយអាហារតាមអ៊ីនធឺណិត។ យើងឲ្យតម្លៃទៅលើព័ត៌មានផ្ទាល់ខ្លួនរបស់អតិថិជន និងបុគ្គលិកភោជនីយដ្ឋាន។",
         "sections": {
           "collection": {
             "title": "ព័ត៌មានដែលយើងប្រមូល",
@@ -24805,10 +24805,10 @@
         }
       },
       "terms": {
-        "meta_title": "លក្ខខណ្ឌប្រើប្រាស់ | KINJAI",
+        "meta_title": "លក្ខខណ្ឌប្រើប្រាស់ | PENGUIN",
         "title": "ល័ក្ខខ័ណ្ឌនៃការប្រើប្រាស់",
         "updated": "អាប់ដេតចុងក្រោយ៖ ថ្ងៃទី 30 ខែមិថុនា ឆ្នាំ 2026",
-        "intro": "ដោយប្រើ KINJAI អ្នកយល់ព្រមនឹងលក្ខខណ្ឌទាំងនេះ។ ប្រព័ន្ធនេះផ្តល់នូវការបញ្ជាទិញអាហារតាមអ៊ីនធឺណិត ការដឹកជញ្ជូន និងឧបករណ៍គ្រប់គ្រងភោជនីយដ្ឋាន។",
+        "intro": "ដោយប្រើ PENGUIN អ្នកយល់ព្រមនឹងលក្ខខណ្ឌទាំងនេះ។ ប្រព័ន្ធនេះផ្តល់នូវការបញ្ជាទិញអាហារតាមអ៊ីនធឺណិត ការដឹកជញ្ជូន និងឧបករណ៍គ្រប់គ្រងភោជនីយដ្ឋាន។",
         "sections": {
           "account": {
             "title": "គណនីអ្នកប្រើប្រាស់",
@@ -24972,7 +24972,7 @@
     },
     "platform": {
       "meta": {
-        "title": "វេទិកា KINJAI"
+        "title": "វេទិកា PENGUIN"
       },
       "header": {
         "title": "ប្រព័ន្ធកណ្តាល"
@@ -25041,8 +25041,8 @@
       },
       "branding": {
         "title": "Branding និង Icon របស់ប្រព័ន្ធ",
-        "description": "គ្រប់គ្រង Logo KINJAI, Favicon និង App Icon ពី Super Admin។",
-        "logo": "Logo KINJAI",
+        "description": "គ្រប់គ្រង Logo PENGUIN, Favicon និង App Icon ពី Super Admin។",
+        "logo": "Logo PENGUIN",
         "logo_help": "កំណត់ Logo ដែលបង្ហាញនៅ Header និងទំព័រចូល។ គាំទ្រ PNG, JPG ឬ WebP រហូតដល់ 4 MB។",
         "favicon": "Favicon",
         "favicon_help": "Icon សម្រាប់ browser tab។ គាំទ្រ PNG ឬ ICO រហូតដល់ 2 MB។",
@@ -25053,7 +25053,7 @@
         "configured": "បានកំណត់",
         "not_configured": "មិនទាន់កំណត់",
         "clear_pending": "រូបភាពនេះនឹងត្រូវបានលុបនៅពេលរក្សាទុក។",
-        "runtime_help": "បន្ទាប់ពីរក្សាទុក ទំព័រដែលប្រើ shared layout នឹងប្រើ Branding ថ្មីដោយស្វ័យប្រវត្តិ។ បើមិនបានកំណត់ Logo នោះសញ្ញា KJ ដើមនឹងនៅតែបង្ហាញ។",
+        "runtime_help": "បន្ទាប់ពីរក្សាទុក ទំព័រដែលប្រើ shared layout នឹងប្រើ Branding ថ្មីដោយស្វ័យប្រវត្តិ។ បើមិនបានកំណត់ Logo នោះសញ្ញា PG ដើមនឹងនៅតែបង្ហាញ។",
         "pwa_help": "App icon ត្រូវបានប្រើតាម manifest.webmanifest និង Apple touch icon សម្រាប់បន្ថែមគេហទំព័រទៅ Home Screen។",
         "save": "រក្សាទុក Branding",
         "save_success": "បានរក្សាទុក Branding របស់ប្រព័ន្ធ។",
@@ -25162,7 +25162,7 @@
       },
       "lalamove": {
         "title": "វេទិកា Lalamove API",
-        "description": "គ្រប់គ្រងការតភ្ជាប់ Lalamove API កណ្តាលរបស់ KINJAI សម្រាប់ Tenant ទាំងអស់។",
+        "description": "គ្រប់គ្រងការតភ្ជាប់ Lalamove API កណ្តាលរបស់ PENGUIN សម្រាប់ Tenant ទាំងអស់។",
         "environment": "បរិស្ថាន",
         "sandbox": "Sandbox",
         "production": "Production",
@@ -27634,15 +27634,15 @@
       "explanation": {
         "title": "ការគណនាចំនួនទឹកប្រាក់ដែលត្រូវបង់តាមវេទិកា",
         "loading": "កំពុងផ្ទុកព័ត៌មានលម្អិតនៃការគណនា។",
-        "enabled": "ការលក់ចែករំលែកចំណូល THB :sales × :rate% = ចំណែក THB :share + ប្រាក់ Lalamove នៅសល់ THB :outstanding = ប្រាក់ត្រូវបង់ទៅ Platform THB :due (Lalamove សរុប THB :deliveryCost / ក្រេឌីត KINJAI ដែលបានប្រើ :walletCovered ក្រេឌីត / ថ្លៃដឹកជញ្ជូនដែលអតិថិជនបង់ THB :customerDelivery / ប្រាក់ឧបត្ថម្ភពីហាង THB :subsidy)។",
+        "enabled": "ការលក់ចែករំលែកចំណូល THB :sales × :rate% = ចំណែក THB :share + ប្រាក់ Lalamove នៅសល់ THB :outstanding = ប្រាក់ត្រូវបង់ទៅ Platform THB :due (Lalamove សរុប THB :deliveryCost / ក្រេឌីត PENGUIN ដែលបានប្រើ :walletCovered ក្រេឌីត / ថ្លៃដឹកជញ្ជូនដែលអតិថិជនបង់ THB :customerDelivery / ប្រាក់ឧបត្ថម្ភពីហាង THB :subsidy)។",
         "disabled": "ការចែករំលែកប្រាក់ចំណូលលើវេទិកាមិនត្រូវបានបើកសម្រាប់ហាងនេះទេ។"
       },
       "wallet": {
-        "title": "KINJAI ឥណទានសម្រាប់ Lalamove",
-        "description": "ក្រេឌីត KINJAI ប្រើសម្រាប់សេវាកម្ម Lalamove ជាមួយនឹងសកម្មភាពឥណទាន និងហេតុផលបរាជ័យ នៅពេលដែលការបញ្ជូនមិនអាចបង្កើតបាន។",
-        "summary_aria": "KINJAI សង្ខេបឥណទាន",
+        "title": "PENGUIN ឥណទានសម្រាប់ Lalamove",
+        "description": "ក្រេឌីត PENGUIN ប្រើសម្រាប់សេវាកម្ម Lalamove ជាមួយនឹងសកម្មភាពឥណទាន និងហេតុផលបរាជ័យ នៅពេលដែលការបញ្ជូនមិនអាចបង្កើតបាន។",
+        "summary_aria": "PENGUIN សង្ខេបឥណទាន",
         "ready": "ក្រេឌីតរួចរាល់",
-        "storage_missing": "KINJAI Wallet រចនាសម្ព័ន្ធមូលដ្ឋានទិន្នន័យមិនត្រូវបានដំឡើងទេ។",
+        "storage_missing": "PENGUIN Wallet រចនាសម្ព័ន្ធមូលដ្ឋានទិន្នន័យមិនត្រូវបានដំឡើងទេ។",
         "balance": "សមតុល្យឥណទាន",
         "approved_topup_total": "ក្រេឌីតត្រូវបានបន្ថែមគ្រប់ពេលវេលា",
         "period_topup": "ឥណទានត្រូវបានបន្ថែមនៅក្នុងរយៈពេលដែលបានជ្រើសរើស",
@@ -27650,8 +27650,8 @@
         "period_delivery_refund": "ឥណទានត្រឡប់ពីការដឹកជញ្ជូនក្នុងរយៈពេលដែលបានជ្រើសរើស",
         "pending_topup": "ឥណទានកំពុងរង់ចាំការពិនិត្យឡើងវិញ",
         "pending_count": ":count សំណើ",
-        "accounting_note": "ថ្លៃសេវា Lalamove បង់ដោយជោគជ័យជាមួយក្រេឌីត KINJAI មិនត្រូវបានគិតប្រាក់ម្តងទៀតក្នុងចំនួននេះទេ ដោយសារវេទិកា។",
-        "credit_policy": "អត្រាឥណទាន៖ THB 1 = 1 ឥណទាន។ ឥណទាន KINJAI គឺសម្រាប់បង់ថ្លៃសេវាក្នុងប្រព័ន្ធ KINJAI តែប៉ុណ្ណោះ។ ពួកវាមិនអាចផ្ទេរ ដក ដូរ ឬបង្វិលសងវិញជាសាច់ប្រាក់ក្រោមលក្ខខណ្ឌនៃសេវាកម្មបានទេ លើកលែងតែករណីដែលតម្រូវដោយច្បាប់។",
+        "accounting_note": "ថ្លៃសេវា Lalamove បង់ដោយជោគជ័យជាមួយក្រេឌីត PENGUIN មិនត្រូវបានគិតប្រាក់ម្តងទៀតក្នុងចំនួននេះទេ ដោយសារវេទិកា។",
+        "credit_policy": "អត្រាឥណទាន៖ THB 1 = 1 ឥណទាន។ ឥណទាន PENGUIN គឺសម្រាប់បង់ថ្លៃសេវាក្នុងប្រព័ន្ធ PENGUIN តែប៉ុណ្ណោះ។ ពួកវាមិនអាចផ្ទេរ ដក ដូរ ឬបង្វិលសងវិញជាសាច់ប្រាក់ក្រោមលក្ខខណ្ឌនៃសេវាកម្មបានទេ លើកលែងតែករណីដែលតម្រូវដោយច្បាប់។",
         "transactions_title": "សកម្មភាពឥណទានថ្មីៗ",
         "transactions_description": "បង្ហាញរហូតដល់ 12 ធាតុចុងក្រោយបំផុតពីសៀវភៅបញ្ជីឥណទានប្រព័ន្ធ។",
         "transactions_empty": "មិនមានសកម្មភាពឥណទាននៅឡើយទេ។",
@@ -27683,8 +27683,8 @@
           "dispatch": "បញ្ជូន"
         },
         "failure_reasons": {
-          "FOD_WALLET_INSUFFICIENT_BALANCE": "KINJAI សមតុល្យឥណទានមិនគ្រប់គ្រាន់ទេ។ ត្រូវការក្រេឌីត :required ប៉ុន្តែមានតែក្រេឌីត :balance ប៉ុណ្ណោះដែលអាចប្រើបាន។",
-          "FOD_WALLET_STORAGE_MISSING": "KINJAI Wallet មិនទាន់រួចរាល់ទេ។ សូមទាក់ទងអ្នកគ្រប់គ្រងប្រព័ន្ធ។",
+          "FOD_WALLET_INSUFFICIENT_BALANCE": "PENGUIN សមតុល្យឥណទានមិនគ្រប់គ្រាន់ទេ។ ត្រូវការក្រេឌីត :required ប៉ុន្តែមានតែក្រេឌីត :balance ប៉ុណ្ណោះដែលអាចប្រើបាន។",
+          "FOD_WALLET_STORAGE_MISSING": "PENGUIN Wallet មិនទាន់រួចរាល់ទេ។ សូមទាក់ទងអ្នកគ្រប់គ្រងប្រព័ន្ធ។",
           "FOD_WALLET_BUSY": "កាបូបកំពុងត្រូវបានប្រើប្រាស់ដោយប្រតិបត្តិការមួយផ្សេងទៀត។ សូមព្យាយាមម្តងទៀត។",
           "FOD_WALLET_NOT_FOUND": "រកមិនឃើញកាបូបក្នុងហាងទេ។ សូមទាក់ទងអ្នកគ្រប់គ្រងប្រព័ន្ធ។",
           "LALAMOVE_ACCOUNT_NOT_READY": "ហាង ឬវេទិកា Lalamove គណនីមិនទាន់រួចរាល់ទេ។",
@@ -27704,7 +27704,7 @@
       },
       "payment": {
         "title": "រាយការណ៍ការចែករំលែកប្រាក់ចំណូល និងការផ្ទេរ Lalamove ដែលនៅសល់",
-        "description": "ភ្ជាប់ប័ណ្ណផ្ទេរប្រាក់សម្រាប់រយៈពេលដែលបានជ្រើសរើស។ មានតែចំណែកចំណូលពីការលក់ និង Lalamove ការចំណាយដែលមិនទាន់បានកាត់ពី KINJAI Wallet ប៉ុណ្ណោះដែលត្រូវបានគិតថ្លៃ។",
+        "description": "ភ្ជាប់ប័ណ្ណផ្ទេរប្រាក់សម្រាប់រយៈពេលដែលបានជ្រើសរើស។ មានតែចំណែកចំណូលពីការលក់ និង Lalamove ការចំណាយដែលមិនទាន់បានកាត់ពី PENGUIN Wallet ប៉ុណ្ណោះដែលត្រូវបានគិតថ្លៃ។",
         "selected_period": "រយៈពេលដែលបានជ្រើសរើស",
         "amount_due": "សរុបដោយសារតែវេទិកា",
         "amount_breakdown": "ចែករំលែក THB :share + ឆ្នើម Lalamove THB :delivery",
@@ -28109,7 +28109,7 @@
         "success": "បានផ្លាស់ប្តូរពាក្យសម្ងាត់ដោយជោគជ័យ។"
       },
       "footer": {
-        "product": "KINJAI",
+        "product": "PENGUIN",
         "version": "កំណែ :version",
         "build": "សាងសង់ :build",
         "icon_credit": "Uicons ដោយ Flaticon"
@@ -28208,7 +28208,7 @@
         "description": "សរុប និងស្ថានភាពខាងក្រោមត្រូវបានអានពីទិន្នន័យចុងក្រោយរបស់ភោជនីយដ្ឋាន។"
       },
       "loading": "កំពុងពិនិត្យ...",
-      "shop_fallback": "KINJAI",
+      "shop_fallback": "PENGUIN",
       "latest_badge": "ទិន្នន័យប្រព័ន្ធចុងក្រោយ",
       "payment": {
         "paid": "បង់",
