@@ -338,7 +338,17 @@ assert(
 );
 assert(adminUsersPage.indexOf("<LocaleSwitcher")<adminUsersPage.indexOf("<UserMenu"),"Admin Users right actions must keep locale immediately before User Menu");
 assert(adminUsersPage.includes("initialUsersReady")&&adminUsersPage.includes("!initialUsersReady"),"Admin Users full-page readiness must wait for the initial staff list");
-assert(adminUsersCss.includes(".admin-users-header-leading")&&adminUsersCss.includes(".admin-users-header-actions")&&adminUsersCss.includes("margin-left: auto;")&&adminUsersCss.includes(".admin-users-header-back")&&adminUsersCss.includes("gap: 7px;")&&!adminUsersCss.includes("order: 99;"),"Admin Users header left/right placement contract missing");
+assert(
+  adminUsersCss.includes(".admin-users-header-leading")
+  &&adminUsersCss.includes(".admin-users-header-title")
+  &&adminUsersCss.includes("flex: 0 1 auto;")
+  &&adminUsersCss.includes(".admin-users-page .app-header .app-header-actions")
+  &&adminUsersCss.includes("margin-left: auto !important;")
+  &&adminUsersCss.includes(".admin-users-header-back")
+  &&adminUsersCss.includes("gap: 7px;")
+  &&!adminUsersCss.includes("order: 99;"),
+  "Admin Users header must keep Logo/title/Back clustered left and account actions pinned right"
+);
 assert(
   adminUsersPage.includes('className="user-mobile-list"')
   &&adminUsersPage.includes('className="staff-user-card"')

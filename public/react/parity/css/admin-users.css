@@ -67,7 +67,7 @@
   }
 
   .admin-users-header-leading {
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     min-width: 0;
     gap: 6px;
     flex-wrap: nowrap;
@@ -78,7 +78,7 @@
   }
 
   .admin-users-header-title {
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     min-width: 0;
     font-size: 11px;
   }
@@ -324,7 +324,7 @@
   }
 
   .admin-users-page .app-header .app-header-actions {
-    margin-left: 0 !important;
+    margin-left: auto !important;
   }
 
   .admin-users-header-actions :is(.app-locale-switcher, .user-menu) {

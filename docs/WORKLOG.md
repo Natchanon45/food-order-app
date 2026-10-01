@@ -1994,6 +1994,50 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Admin Users keep Back action in the left header cluster
+
+Request:
+- The Admin Users Mobile header was almost correct, but the Back button was still visually pushed toward the right.
+- Desired order remains: Logo → `จัดการพนักงาน` → `กลับหน้าจัดการร้าน`, all grouped on the left; language/profile stay on the right.
+
+Root cause:
+- In the Mobile header CSS, `.admin-users-header-title` still used `flex: 1 1 auto`.
+- The leading group also used `flex: 1 1 auto`, so the title consumed the remaining horizontal space and pushed the Back button toward the right edge of the left group.
+- A lower Mobile rule also previously removed `margin-left:auto` from the right action group.
+
+Change:
+- Mobile `.admin-users-header-leading` now uses `flex: 0 1 auto`.
+- Mobile `.admin-users-header-title` now uses `flex: 0 1 auto`, so it no longer expands between Logo and Back.
+- Mobile right-side `.app-header-actions` is explicitly pinned right with `margin-left:auto !important`.
+- Header source order remains Logo → page title → Back → language/profile.
+- Existing vertical arrow centering and the corrected per-user Mobile switches are unchanged.
+- Strengthened the React foundation contract to preserve the left-cluster/right-actions layout.
+
+Release:
+- React `0.4.280 / 2026.10.02.320`
+- Public storefront `0.16.32 / 2026.10.02.035`
+
+Important files:
+- `react-app/public/parity/css/admin-users.css`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- Generated React Hosting entrypoints/parity CSS/bundle.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.320` and bundle `/react/assets/index-CtuikuOq.js`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Commit/push/deploy are performed after this WORKLOG entry.
+- No merge to `main`.
+- Firebase scope is Hosting only.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
