@@ -1389,6 +1389,64 @@ Deploy state:
 
 ---
 
+## 2026-10-01 — PG header fallback enforcement and parity CSS cache bust
+
+Symptom:
+- Production/mobile Admin still displayed the old compact brand mark `KJ` after the PENGUIN rollout.
+- The screenshot showed the old mark in the header even though `AdminPage.jsx` and shared `app.css` already used `PG`.
+
+Root cause:
+- `AdminPage` loads `admin-retail-pos-parity.css` after shared `app.css`.
+- That later stylesheet still declared `.brand-mark::after { content: "KJ"; }`, overriding the shared `PG` fallback.
+- `admin-sales-report-retail-pos-parity.css` contained the same stale override.
+- Several React operational page headers also still carried hidden legacy `FO` fallback text in their `brand-mark` markup.
+- Page-specific parity CSS was loaded with stable URLs and no release query, so browser cache could keep an older stylesheet across Hosting releases.
+
+Change:
+- Replaced stale `KJ` pseudo-element fallback with `PG` in Admin and Admin Sales Report parity CSS source/output copies.
+- Updated the static compatibility copy `public/assets/css/admin-retail-pos-parity.css` to `PG`.
+- Replaced legacy `FO` header fallback markup with `PG` in Admin QR, Admin Users, Cashier, Cashier Receipt, Cashier Table QR, Kitchen, and Quick Order.
+- `useParityPage` now appends the centralized React Build to dynamic parity stylesheet URLs, so a new Hosting Build forces fresh CSS instead of reusing an old cached parity stylesheet.
+- Added foundation-contract coverage so the Admin parity CSS cannot reintroduce `KJ`, the listed operational headers cannot reintroduce `FO`, and parity CSS cache busting must remain tied to `REACT_RELEASE.build`.
+- Prepared fresh Hosting identity:
+  - React `0.4.280 / 2026.10.01.309`
+  - Public storefront `0.16.32 / 2026.10.01.024`
+
+Important files:
+- `react-app/public/parity/css/admin-retail-pos-parity.css`
+- `react-app/public/parity/css/admin-sales-report-retail-pos-parity.css`
+- `public/react/parity/css/admin-retail-pos-parity.css`
+- `public/react/parity/css/admin-sales-report-retail-pos-parity.css`
+- `public/assets/css/admin-retail-pos-parity.css`
+- `react-app/src/hooks/useParityPage.jsx`
+- React Admin QR / Admin Users / Cashier / Cashier Receipt / Cashier Table QR / Kitchen / Quick Order pages
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `README.md`
+- `docs/NEXT_CHAT_HANDOFF.md`
+
+Verification:
+- Repository inspection confirmed the screenshot path `/admin` loads `admin-retail-pos-parity.css` after `app.css`; the stale `KJ` declaration was therefore authoritative for the visible fallback mark.
+- Source/output parity CSS targeted in this repair no longer contains `content: "KJ"`.
+- The affected React operational header markup now uses `PG` instead of `FO`.
+- Full npm test/build verification still needs to run on the Mac after pulling because Desktop Commander command execution is unavailable in this chat.
+
+Deploy state:
+- Fix commit: `a539bf0d` — `fix: enforce PG header branding fallbacks`.
+- No merge to `main`.
+- No Firebase deploy performed by the assistant.
+
+Remaining:
+- Pull the branch on the Mac.
+- Run operational/parity tests, React build, and `git diff --check`.
+- Commit/push generated build output if changed.
+- Deploy Hosting target `foodapp` only.
+- Hard refresh and re-check Admin, Sales Report, Admin Users, Cashier, Receipt, Table QR, Kitchen, Quick Order, and other headers for `PG`.
+- If a header still shows literal `KJ` after this CSS repair and hard refresh, inspect whether the uploaded Platform App Icon image itself contains `KJ`; uploaded images intentionally override the text fallback.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
