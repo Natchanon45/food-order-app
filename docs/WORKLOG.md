@@ -1371,6 +1371,24 @@ Remaining:
 
 ---
 
+## 2026-10-01 — Release-contract regex escaping correction
+
+Symptom:
+- Post-write verification of the new dynamic Build-format assertion showed the regex was double-escaped in the repository source (`\\d` instead of `\d`) because the replacement text passed through the GitHub API string layer.
+
+Change:
+- Corrected the regex in `tools/react-foundation-contract.mjs` so it validates the actual Build format `YYYY.MM.DD.NNN`.
+
+Verification:
+- Repository source was re-read after the correction before asking for another Mac test run.
+
+Deploy state:
+- Fix commit: `3b59ef86` — `test: fix release build regex escaping`.
+- No merge to `main`.
+- No Firebase deploy.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
