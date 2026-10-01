@@ -9,9 +9,17 @@
   min-width: 0;
 }
 
-.admin-users-header-leading .brand {
-  flex: 0 1 auto;
+.admin-users-header-leading > .brand-mark {
+  flex: 0 0 auto;
+}
+
+.admin-users-header-title {
   min-width: 0;
+  overflow: hidden;
+  color: #fff;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .admin-users-header-actions {
@@ -54,16 +62,14 @@
     flex-wrap: nowrap;
   }
 
-  .admin-users-header-leading .brand {
-    flex: 1 1 auto;
-    min-width: 0;
-    gap: 6px;
-    font-size: 12px;
-    white-space: nowrap;
+  .admin-users-header-leading > .brand-mark {
+    flex: 0 0 auto;
   }
 
-  .admin-users-header-leading .brand-mark {
-    flex: 0 0 auto;
+  .admin-users-header-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 11px;
   }
 
   .admin-users-header-back {
@@ -163,6 +169,10 @@
 
 .user-table .input {
   background: #f8fafc;
+}
+
+.user-mobile-list {
+  display: none;
 }
 
 .staff-dialog {
@@ -380,90 +390,60 @@
     margin-left: auto;
   }
 
-  .user-table-scroll {
-    overflow: visible;
-    padding: 0 12px 14px;
-  }
-
-  .user-table {
-    display: block !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    overflow: visible !important;
-  }
-
-  .user-table thead {
+  .user-desktop-table {
     display: none;
   }
 
-  .user-table tbody {
+  .user-mobile-list {
     display: grid;
-    gap: 14px;
+    gap: 12px;
+    padding: 0 12px 16px;
   }
 
-  .user-table .user-mobile-card {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 12px;
-    width: 100%;
+  .staff-user-card {
     padding: 14px;
-    overflow: hidden;
     border: 1px solid #e2e8f0;
     border-radius: 16px;
     background: #fff;
     box-shadow: 0 6px 18px rgba(15, 23, 42, .06);
   }
 
-  .user-table .user-mobile-card > td {
-    display: block;
-    width: auto !important;
-    min-width: 0 !important;
-    min-height: 0;
-    padding: 0;
-    border: 0;
-    white-space: normal !important;
-    text-align: left !important;
+  .staff-user-card-head {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    align-items: start;
+    gap: 10px;
   }
 
-  .user-table .user-mobile-card > td::before {
-    content: attr(data-label);
-    display: block;
-    margin-bottom: 6px;
+  .staff-user-avatar {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border-radius: 12px;
+    background: #ecfdf3;
+    color: #15803d;
+    font-size: 17px;
+  }
+
+  .staff-user-identity,
+  .staff-user-field {
+    min-width: 0;
+  }
+
+  .staff-user-field {
+    display: grid;
+    gap: 6px;
+  }
+
+  .staff-user-field > span {
     color: #64748b;
     font-size: 10px;
     font-weight: 700;
     line-height: 1.2;
   }
 
-  .user-table .user-name-cell,
-  .user-table .user-email-cell {
-    grid-column: 1 / -1;
-  }
-
-  .user-table .user-name-cell .input {
-    font-weight: 700;
-  }
-
-  .user-table .user-email-cell {
-    margin-top: -5px;
-    padding: 0 2px 10px;
-    border-bottom: 1px solid #eef2f7;
-    word-break: break-word;
-    color: #64748b;
-    font-size: 11px;
-    line-height: 1.4;
-  }
-
-  .user-table .user-email-cell::before {
-    content: none;
-  }
-
-  .user-table .user-role-cell,
-  .user-table .user-scope-cell {
-    min-width: 0;
-  }
-
-  .user-table .user-mobile-card .input {
+  .staff-user-field .input {
     width: 100%;
     min-width: 0;
     min-height: 40px;
@@ -473,41 +453,109 @@
     font-size: 12px;
   }
 
-  .user-table .user-active-cell {
+  .staff-user-name-field .input {
+    background: #fff;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .staff-user-email {
     display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    margin-top: 7px;
+    color: #64748b;
+    font-size: 10.5px;
+    line-height: 1.35;
+  }
+
+  .staff-user-email i {
+    flex: 0 0 auto;
+    color: #94a3b8;
+  }
+
+  .staff-user-email span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .staff-user-card-fields {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #eef2f7;
+  }
+
+  .staff-user-card-footer {
+    display: grid;
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    align-items: stretch;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #eef2f7;
+  }
+
+  .staff-user-active {
+    display: flex;
+    min-width: 0;
     min-height: 42px;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    padding: 9px 10px;
+    padding: 8px 10px;
     border-radius: 10px;
     background: #f8fafc;
+    color: #475569;
+    font-size: 10.5px;
+    font-weight: 700;
   }
 
-  .user-table .user-active-cell::before {
+  .staff-user-active input {
+    position: relative;
+    width: 38px;
+    height: 22px;
+    flex: 0 0 38px;
     margin: 0;
+    appearance: none;
+    border: 0;
+    border-radius: 999px;
+    background: #cbd5e1;
+    cursor: pointer;
+    transition: background .18s ease;
   }
 
-  .user-table .user-active-cell input[type="checkbox"] {
-    width: 21px;
-    height: 21px;
-    flex: 0 0 auto;
-    accent-color: #16a34a;
+  .staff-user-active input::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, .22);
+    transition: transform .18s ease;
   }
 
-  .user-table .user-action-cell {
-    display: flex;
-    align-items: stretch;
+  .staff-user-active input:checked {
+    background: #16a34a;
   }
 
-  .user-table .user-action-cell::before {
-    content: none;
+  .staff-user-active input:checked::after {
+    transform: translateX(16px);
   }
 
-  .user-save-button {
+  .staff-user-save {
     width: 100%;
     min-height: 42px;
     justify-content: center;
+    gap: 7px;
     border-radius: 10px;
   }
 

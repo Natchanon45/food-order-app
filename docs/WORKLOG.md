@@ -1877,6 +1877,65 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Admin Users dedicated Mobile card redesign
+
+Request:
+- Correct the header order to Logo first, Back second.
+- Redesign the Mobile employee list again because continued CSS adaptation of the Desktop table still looked cluttered and inconsistent.
+
+Root cause:
+- The previous attempts reused the same HTML table for Desktop and Mobile and then transformed table rows/cells into cards via CSS.
+- That approach retained table semantics, column rules, and legacy responsive interactions, making spacing and visual hierarchy fragile.
+- The header also grouped Brand text with the logo, making the requested exact Logo → Back → page-title order difficult to guarantee.
+
+Change:
+- Header markup is now explicitly ordered:
+  1. compact PENGUIN brand mark / uploaded App Icon,
+  2. Back button,
+  3. page title,
+  4. language/profile actions on the right.
+- Mobile employee management now uses a dedicated `.user-mobile-list` with real `article.staff-user-card` components.
+- Desktop retains its original table in `.user-desktop-table`; Mobile hides it rather than restyling table rows.
+- Each Mobile employee card has three clean visual zones:
+  - identity header: avatar, editable employee name, compact email,
+  - permissions row: Role + Business Scope in two equal columns,
+  - footer: touch-friendly Active switch + Save button.
+- Added a custom compact switch for Active state instead of the raw checkbox.
+- Removed the previous Mobile table-card CSS entirely.
+- Strengthened the React foundation contract so:
+  - Logo must precede Back, Back must precede page title,
+  - dedicated Mobile cards and separate Desktop table must remain present.
+
+Laravel comparison:
+- Existing Laravel Admin Users view/CSS remains a reference only.
+- The connected Laravel checkout is currently on `feature/for_dev`, not the documented MASTER `main`; no Laravel files were changed.
+
+Release:
+- React `0.4.280 / 2026.10.02.318`
+- Public storefront `0.16.32 / 2026.10.02.033`
+
+Important files:
+- `react-app/src/pages/AdminUsersPage.jsx`
+- `react-app/public/parity/css/admin-users.css`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- Generated React Hosting entrypoints/parity CSS/bundle.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.318` and bundle `/react/assets/index-CW8vp8w1.js`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Commit/push/deploy are performed after this WORKLOG entry.
+- No merge to `main`.
+- Firebase scope is Hosting only.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title

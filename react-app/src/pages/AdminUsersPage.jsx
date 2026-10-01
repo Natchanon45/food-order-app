@@ -177,8 +177,9 @@ export function AdminUsersPage() {
     <>
       <header className="app-header">
         <div className="admin-users-header-leading">
+          <span className="brand-mark">PG</span>
           <Link className="btn btn-sm admin-users-header-back" to="/admin"><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{t("admin_users.header.back")}</span></Link>
-          <div className="brand"><span className="brand-mark">PG</span>{t("admin_users.header.title")}</div>
+          <span className="admin-users-header-title">{t("admin_users.header.title")}</span>
         </div>
         <div className="app-header-actions admin-users-header-actions" data-header-actions>
           <LocaleSwitcher style={{ marginLeft: 0, marginRight: 0 }} />
@@ -204,7 +205,52 @@ export function AdminUsersPage() {
             <span className="badge" id="userCount">{t("admin_users.list.count", { count: users.length })}</span>
           </div>
           {loadError ? <div className="upload-error" role="alert">{loadError}</div> : null}
-          <div className="user-table-scroll">
+
+          <div className="user-mobile-list" id="userMobileRows">
+            {loading ? <div className="empty">{t("shared.state.loading")}</div>
+              : users.length ? users.map(user => {
+                const draft = drafts[user.uid] || {};
+                const isSelf = user.uid === authUser?.uid;
+                return (
+                  <article className="staff-user-card" key={"mobile-" + user.uid}>
+                    <div className="staff-user-card-head">
+                      <span className="staff-user-avatar" aria-hidden="true"><i className="bi bi-person"></i></span>
+                      <div className="staff-user-identity">
+                        <label className="staff-user-field staff-user-name-field">
+                          <span>{t("admin_users.list.columns.name")}</span>
+                          <input className="input" data-mobile-name-uid={user.uid} maxLength="100" value={draft.displayName ?? ""} onChange={e => patchDraft(user.uid, { displayName: e.target.value })} />
+                        </label>
+                        <div className="staff-user-email"><i className="bi bi-envelope" aria-hidden="true"></i><span>{user.email || "-"}</span></div>
+                      </div>
+                    </div>
+
+                    <div className="staff-user-card-fields">
+                      <label className="staff-user-field">
+                        <span>{t("admin_users.list.columns.role")}</span>
+                        <select className="input" data-mobile-role-uid={user.uid} value={draft.role || "admin"} onChange={e => patchDraft(user.uid, { role: e.target.value })}><option value="admin">{t("admin_users.roles.admin")}</option><option value="cashier">{t("admin_users.roles.cashier")}</option><option value="kitchen">{t("admin_users.roles.kitchen")}</option></select>
+                      </label>
+                      <label className="staff-user-field">
+                        <span>{t("admin_users.list.columns.scope")}</span>
+                        <select className="input" data-mobile-scope-uid={user.uid} value={draft.businessScope || "order_delivery"} onChange={e => patchDraft(user.uid, { businessScope: e.target.value })}><option value="order_delivery">{t("admin_users.scopes.order_delivery")}</option><option value="retail_pos">{t("admin_users.scopes.retail_pos")}</option><option value="both">{t("admin_users.scopes.both")}</option></select>
+                      </label>
+                    </div>
+
+                    <div className="staff-user-card-footer">
+                      <label className="staff-user-active">
+                        <span>{t("admin_users.list.columns.active")}</span>
+                        <input type="checkbox" data-mobile-active-uid={user.uid} checked={draft.active !== false} onChange={e => patchDraft(user.uid, { active: e.target.checked })} />
+                      </label>
+                      <button className="btn btn-primary btn-sm staff-user-save" type="button" data-mobile-save-user={user.uid} disabled={isSelf || savingUid === user.uid} onClick={() => saveUser(user)}>
+                        <i className={"bi " + (savingUid === user.uid ? "bi-hourglass-split" : "bi-floppy")} aria-hidden="true"></i>
+                        <span>{t(savingUid === user.uid ? "admin_users.actions.saving" : "admin_users.actions.save")}</span>
+                      </button>
+                    </div>
+                  </article>
+                );
+              }) : <div className="empty">{t("admin_users.list.empty")}</div>}
+          </div>
+
+          <div className="user-table-scroll user-desktop-table">
             <table className="table-list user-table">
               <thead><tr><th>{t("admin_users.list.columns.name")}</th><th>{t("admin_users.list.columns.email")}</th><th>{t("admin_users.list.columns.role")}</th><th>{t("admin_users.list.columns.scope")}</th><th>{t("admin_users.list.columns.active")}</th><th></th></tr></thead>
               <tbody id="userRows">
@@ -212,13 +258,13 @@ export function AdminUsersPage() {
                   : users.length ? users.map(user => {
                     const draft = drafts[user.uid] || {};
                     return (
-                      <tr key={user.uid} className="user-mobile-card">
-                        <td className="user-name-cell" data-label={t("admin_users.list.columns.name")}><input className="input" data-name-uid={user.uid} maxLength="100" value={draft.displayName ?? ""} onChange={e => patchDraft(user.uid, { displayName: e.target.value })} /></td>
-                        <td className="user-email-cell" data-label={t("admin_users.list.columns.email")}>{user.email || "-"}</td>
-                        <td className="user-role-cell" data-label={t("admin_users.list.columns.role")}><select className="input" data-role-uid={user.uid} value={draft.role || "admin"} onChange={e => patchDraft(user.uid, { role: e.target.value })}><option value="admin">{t("admin_users.roles.admin")}</option><option value="cashier">{t("admin_users.roles.cashier")}</option><option value="kitchen">{t("admin_users.roles.kitchen")}</option></select></td>
-                        <td className="user-scope-cell" data-label={t("admin_users.list.columns.scope")}><select className="input" data-scope-uid={user.uid} value={draft.businessScope || "order_delivery"} onChange={e => patchDraft(user.uid, { businessScope: e.target.value })}><option value="order_delivery">{t("admin_users.scopes.order_delivery")}</option><option value="retail_pos">{t("admin_users.scopes.retail_pos")}</option><option value="both">{t("admin_users.scopes.both")}</option></select></td>
-                        <td className="user-active-cell" data-label={t("admin_users.list.columns.active")}><input type="checkbox" data-active-uid={user.uid} checked={draft.active !== false} onChange={e => patchDraft(user.uid, { active: e.target.checked })} /></td>
-                        <td className="user-action-cell"><button className="btn btn-primary btn-sm user-save-button" type="button" data-save-user={user.uid} disabled={user.uid === authUser?.uid || savingUid === user.uid} onClick={() => saveUser(user)}><i className={"bi " + (savingUid === user.uid ? "bi-hourglass-split" : "bi-floppy")} aria-hidden="true"></i><span>{t(savingUid === user.uid ? "admin_users.actions.saving" : "admin_users.actions.save")}</span></button></td>
+                      <tr key={user.uid}>
+                        <td><input className="input" data-name-uid={user.uid} maxLength="100" value={draft.displayName ?? ""} onChange={e => patchDraft(user.uid, { displayName: e.target.value })} /></td>
+                        <td>{user.email || "-"}</td>
+                        <td><select className="input" data-role-uid={user.uid} value={draft.role || "admin"} onChange={e => patchDraft(user.uid, { role: e.target.value })}><option value="admin">{t("admin_users.roles.admin")}</option><option value="cashier">{t("admin_users.roles.cashier")}</option><option value="kitchen">{t("admin_users.roles.kitchen")}</option></select></td>
+                        <td><select className="input" data-scope-uid={user.uid} value={draft.businessScope || "order_delivery"} onChange={e => patchDraft(user.uid, { businessScope: e.target.value })}><option value="order_delivery">{t("admin_users.scopes.order_delivery")}</option><option value="retail_pos">{t("admin_users.scopes.retail_pos")}</option><option value="both">{t("admin_users.scopes.both")}</option></select></td>
+                        <td style={{ textAlign: "center" }}><input type="checkbox" data-active-uid={user.uid} checked={draft.active !== false} onChange={e => patchDraft(user.uid, { active: e.target.checked })} /></td>
+                        <td><button className="btn btn-primary btn-sm user-save-button" type="button" data-save-user={user.uid} disabled={user.uid === authUser?.uid || savingUid === user.uid} onClick={() => saveUser(user)}><i className={"bi " + (savingUid === user.uid ? "bi-hourglass-split" : "bi-floppy")} aria-hidden="true"></i><span>{t(savingUid === user.uid ? "admin_users.actions.saving" : "admin_users.actions.save")}</span></button></td>
                       </tr>
                     );
                   }) : <tr><td colSpan="6"><div className="empty">{t("admin_users.list.empty")}</div></td></tr>}

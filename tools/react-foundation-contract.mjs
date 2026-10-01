@@ -329,25 +329,31 @@ assert(storageRules.includes("['owner', 'admin', 'manager', 'super_admin']"),"PO
 const adminUsersPage=read("react-app/src/pages/AdminUsersPage.jsx");
 const adminUsersCss=read("react-app/public/parity/css/admin-users.css");
 assert(adminUsersPage.includes('className="btn btn-sm admin-users-header-back"')&&adminUsersPage.includes('bi bi-arrow-left app-icon'),"Admin Users back button must keep the left-arrow icon");
-assert(adminUsersPage.includes('className="admin-users-header-leading"')&&adminUsersPage.indexOf('admin-users-header-back')<adminUsersPage.indexOf('className="brand"')&&adminUsersPage.indexOf('admin-users-header-back')<adminUsersPage.indexOf('data-header-actions'),"Admin Users back button must stay leftmost in the header leading group");
+assert(
+  adminUsersPage.includes('className="admin-users-header-leading"')
+  &&adminUsersPage.indexOf('className="brand-mark"')<adminUsersPage.indexOf('admin-users-header-back')
+  &&adminUsersPage.indexOf('admin-users-header-back')<adminUsersPage.indexOf('admin-users-header-title')
+  &&adminUsersPage.indexOf('admin-users-header-title')<adminUsersPage.indexOf('data-header-actions'),
+  "Admin Users mobile header must keep Logo first, Back second, title third, and account actions last"
+);
 assert(adminUsersPage.indexOf("<LocaleSwitcher")<adminUsersPage.indexOf("<UserMenu"),"Admin Users right actions must keep locale immediately before User Menu");
 assert(adminUsersPage.includes("initialUsersReady")&&adminUsersPage.includes("!initialUsersReady"),"Admin Users full-page readiness must wait for the initial staff list");
 assert(adminUsersCss.includes(".admin-users-header-leading")&&adminUsersCss.includes(".admin-users-header-actions")&&adminUsersCss.includes("margin-left: auto;")&&adminUsersCss.includes(".admin-users-header-back")&&adminUsersCss.includes("gap: 7px;")&&!adminUsersCss.includes("order: 99;"),"Admin Users header left/right placement contract missing");
 assert(
-  adminUsersPage.includes('className="user-mobile-card"')
-  &&adminUsersPage.includes('data-label={t("admin_users.list.columns.name")}')
-  &&adminUsersPage.includes('className="user-action-cell"')
-  &&adminUsersCss.includes(".admin-users-page .app-header")
-  &&adminUsersCss.includes("flex-wrap: nowrap !important")
-  &&adminUsersCss.includes(".user-table .user-mobile-card")
-  &&adminUsersCss.includes("grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)")
-  &&adminUsersCss.includes(".user-table .user-name-cell")
-  &&adminUsersCss.includes(".user-table .user-email-cell")
-  &&adminUsersCss.includes(".user-table .user-active-cell")
-  &&adminUsersCss.includes("content: attr(data-label)")
-  &&adminUsersCss.includes(".staff-create-trigger")
-  &&adminUsersCss.includes("width: 100%;"),
-  "Admin Users mobile header, Hero CTA, and editable user-card layout contract missing"
+  adminUsersPage.includes('className="user-mobile-list"')
+  &&adminUsersPage.includes('className="staff-user-card"')
+  &&adminUsersPage.includes('className="staff-user-card-fields"')
+  &&adminUsersPage.includes('className="staff-user-card-footer"')
+  &&adminUsersPage.includes('className="user-table-scroll user-desktop-table"')
+  &&adminUsersCss.includes(".user-mobile-list")
+  &&adminUsersCss.includes(".user-desktop-table")
+  &&adminUsersCss.includes(".staff-user-card")
+  &&adminUsersCss.includes(".staff-user-card-fields")
+  &&adminUsersCss.includes(".staff-user-card-footer")
+  &&adminUsersCss.includes(".staff-user-active input:checked")
+  &&adminUsersCss.includes("display: none;")
+  &&adminUsersCss.includes(".staff-create-trigger"),
+  "Admin Users must keep separate clean Mobile cards and the untouched Desktop table"
 );
 assert(adminPage.includes('import Sortable from "sortablejs";'),"React Admin sort manager must use SortableJS like Laravel MASTER");
 assert(adminPage.includes('handle: ".sort-handle"')&&adminPage.includes("animation: 120")&&adminPage.includes("delay: 80")&&adminPage.includes("delayOnTouchOnly: true")&&adminPage.includes("touchStartThreshold: 4")&&adminPage.includes("forceFallback: Boolean(touchDevice)")&&adminPage.includes("fallbackOnBody: Boolean(touchDevice)")&&adminPage.includes('fallbackClass: "sort-fallback"')&&adminPage.includes("scrollSensitivity: 60")&&adminPage.includes("scrollSpeed: 14"),"React Admin sort manager must preserve the low-latency touch movement profile");
