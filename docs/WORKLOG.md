@@ -1582,7 +1582,12 @@ Verification:
 - Source audit found no remaining old Hosting origin in active source outside historical docs/dead generated bundles.
 
 Deploy state:
-- Commit/push, targeted signup Function deploy, new Hosting deploy, production URL verification, and Lalamove webhook re-registration are performed after this WORKLOG entry.
+- Main cutover commit: `23eda796` — `feat: cut over to PENGUIN hosting origin`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Deployed `requestTrialTenantSignup` successfully to `asia-southeast1` so new trial preview URLs use the PENGUIN origin.
+- Deployed Hosting target `foodapp` successfully to `https://penguin-food.web.app` with React Build `2026.10.01.312`.
+- Verified `https://penguin-food.web.app/` and `/admin` return HTTP 200; legacy Hosting remains reachable separately.
+- Final Auth Authorized Domains include both old and new Hosting domains for transition safety.
 - No merge to `main`.
 
 ---
@@ -1608,7 +1613,12 @@ Verification:
 - Hosting Build remains `2026.10.01.312`; no additional Hosting deploy is required for this function-only repair.
 
 Deploy state:
-- Function export commit/deploy and Lalamove webhook re-registration are performed after this WORKLOG entry.
+- Repair commit: `a30e2d88` — `fix: export Lalamove webhook`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Deployed `lalamoveWebhook` successfully as a Node.js 22 2nd Gen Function in `asia-southeast1`.
+- Verified `POST https://penguin-food.web.app/api/lalamove/webhook` returns HTTP 200 with `{"ok":true}` for an empty validation request.
+- Re-registered the Lalamove Sandbox webhook successfully; Lalamove now reports `https://penguin-food.web.app/api/lalamove/webhook` as the registered URL.
+- No additional Hosting deploy was required after the function export repair, so Build `2026.10.01.312` was not reused for another Hosting deployment.
 - No merge to `main`.
 
 ---
