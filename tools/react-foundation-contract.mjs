@@ -333,6 +333,18 @@ assert(adminUsersPage.includes('className="admin-users-header-leading"')&&adminU
 assert(adminUsersPage.indexOf("<LocaleSwitcher")<adminUsersPage.indexOf("<UserMenu"),"Admin Users right actions must keep locale immediately before User Menu");
 assert(adminUsersPage.includes("initialUsersReady")&&adminUsersPage.includes("!initialUsersReady"),"Admin Users full-page readiness must wait for the initial staff list");
 assert(adminUsersCss.includes(".admin-users-header-leading")&&adminUsersCss.includes(".admin-users-header-actions")&&adminUsersCss.includes("margin-left: auto;")&&adminUsersCss.includes(".admin-users-header-back")&&adminUsersCss.includes("gap: 7px;")&&!adminUsersCss.includes("order: 99;"),"Admin Users header left/right placement contract missing");
+assert(
+  adminUsersPage.includes('className="user-mobile-card"')
+  &&adminUsersPage.includes('data-label={t("admin_users.list.columns.name")}')
+  &&adminUsersPage.includes('className="user-action-cell"')
+  &&adminUsersCss.includes(".admin-users-page .app-header")
+  &&adminUsersCss.includes("flex-wrap: nowrap !important")
+  &&adminUsersCss.includes(".user-table .user-mobile-card")
+  &&adminUsersCss.includes("content: attr(data-label)")
+  &&adminUsersCss.includes(".staff-create-trigger")
+  &&adminUsersCss.includes("width: 100%;"),
+  "Admin Users mobile header, Hero CTA, and editable user-card layout contract missing"
+);
 assert(adminPage.includes('import Sortable from "sortablejs";'),"React Admin sort manager must use SortableJS like Laravel MASTER");
 assert(adminPage.includes('handle: ".sort-handle"')&&adminPage.includes("animation: 120")&&adminPage.includes("delay: 80")&&adminPage.includes("delayOnTouchOnly: true")&&adminPage.includes("touchStartThreshold: 4")&&adminPage.includes("forceFallback: Boolean(touchDevice)")&&adminPage.includes("fallbackOnBody: Boolean(touchDevice)")&&adminPage.includes('fallbackClass: "sort-fallback"')&&adminPage.includes("scrollSensitivity: 60")&&adminPage.includes("scrollSpeed: 14"),"React Admin sort manager must preserve the low-latency touch movement profile");
 assert(adminPage.includes("categorySortListRef")&&adminPage.includes("itemSortListRef")&&adminPage.includes("data-sort-category={name}")&&adminPage.includes("data-sort-menu-id={item.id}"),"React Admin sort lists must expose stable refs/data keys for SortableJS");

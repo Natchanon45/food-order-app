@@ -61,7 +61,7 @@ PENGUIN branding checkpoint (2026-10-01):
 - Public-facing brand is now **PENGUIN**; compact fallback mark is `PG`. The previous visible KINJAI / KJ branding is legacy-only and must not surface in the UI.
 - Uploaded Platform App Icon is the first-choice header icon globally; Logo remains primary for login/large logo surfaces.
 - Internal repo/Firebase/schema/DOM/translation identifiers are intentionally unchanged.
-- Next release identity: React `0.4.280 / 2026.10.02.315`; public storefront `0.16.32 / 2026.10.02.030`.
+- Next release identity: React `0.4.280 / 2026.10.02.316`; public storefront `0.16.32 / 2026.10.02.031`.
 - Primary production Hosting origin: `https://penguin-food.web.app`. Legacy `https://natchanon-food-order-delivery.web.app` remains reachable during transition but is no longer in deploy target `foodapp`.
 - Pull, test/build, commit generated assets, and deploy Hosting before visual verification.
 - If the uploaded Logo / App Icon artwork still contains FOD, KINJAI, or KJ, upload new PENGUIN / PG artwork from Platform Branding after deploy.

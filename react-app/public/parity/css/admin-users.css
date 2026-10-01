@@ -40,9 +40,42 @@
 }
 
 @media (max-width: 720px) {
+  .admin-users-page .app-header {
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+    min-height: 58px;
+    padding: 8px 10px !important;
+  }
+
   .admin-users-header-leading {
-    gap: 8px;
-    flex-wrap: wrap;
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+
+  .admin-users-header-leading .brand {
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .admin-users-header-leading .brand-mark {
+    flex: 0 0 auto;
+  }
+
+  .admin-users-header-back {
+    min-height: 34px;
+    padding: 7px 9px !important;
+    gap: 5px;
+    font-size: 11px;
+  }
+
+  .admin-users-header-actions {
+    flex: 0 0 auto;
+    gap: 5px;
   }
 }
 
@@ -266,25 +299,185 @@
 
 @media (max-width: 640px) {
   .admin-users-page .container {
-    padding-inline: 14px;
+    padding-inline: 12px;
+  }
+
+  .admin-users-page .app-header .app-header-actions {
+    margin-left: 0 !important;
+  }
+
+  .admin-users-header-actions :is(.app-locale-switcher, .user-menu) {
+    flex: 0 0 auto;
   }
 
   .staff-hero {
-    align-items: flex-start;
+    position: relative;
+    align-items: stretch;
     flex-direction: column;
+    gap: 18px;
+    min-height: 0;
+    padding: 20px;
+    border-radius: 20px;
+  }
+
+  .staff-hero > div:first-child {
+    min-width: 0;
+  }
+
+  .staff-hero-kicker {
+    margin-bottom: 8px;
+    font-size: 11px;
+  }
+
+  .staff-hero h1 {
+    margin-bottom: 8px;
+    font-size: 26px;
+    line-height: 1.15;
+  }
+
+  .staff-hero p {
+    max-width: 100%;
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.55;
   }
 
   .staff-create-trigger {
-    align-self: flex-end;
-    width: auto;
+    width: 100%;
+    min-height: 46px;
+    align-self: stretch;
+    justify-content: center;
+    border-color: rgba(255, 255, 255, .7);
+    border-radius: 14px;
+    box-shadow: 0 10px 24px rgba(20, 26, 70, .18);
+  }
+
+  .staff-list-card {
+    overflow: visible;
+    border-radius: 18px;
   }
 
   .staff-list-heading {
-    padding: 18px;
+    align-items: center !important;
+    padding: 18px 16px 14px;
+  }
+
+  .staff-list-heading > div {
+    flex: 1 1 auto;
+  }
+
+  .staff-list-heading h2 {
+    font-size: 18px;
+  }
+
+  .staff-list-heading p {
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .staff-list-heading .badge {
+    flex: 0 0 auto;
+    margin-left: auto;
   }
 
   .user-table-scroll {
-    padding-inline: 18px;
+    overflow: visible;
+    padding: 0 12px 14px;
+  }
+
+  .user-table {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+  }
+
+  .user-table thead {
+    display: none;
+  }
+
+  .user-table tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  .user-table .user-mobile-card {
+    display: grid;
+    gap: 0;
+    width: 100%;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, .06);
+  }
+
+  .user-table .user-mobile-card > td {
+    display: grid;
+    grid-template-columns: minmax(78px, .7fr) minmax(0, 1.5fr);
+    align-items: center;
+    gap: 10px;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 50px;
+    padding: 10px 12px;
+    border: 0;
+    border-bottom: 1px solid #eef2f7;
+    white-space: normal !important;
+    text-align: left !important;
+  }
+
+  .user-table .user-mobile-card > td::before {
+    content: attr(data-label);
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .user-table .user-mobile-card > td:last-child {
+    border-bottom: 0;
+  }
+
+  .user-table .user-mobile-card .input {
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: #f8fafc;
+    font-size: 13px;
+  }
+
+  .user-table .user-email-cell {
+    word-break: break-word;
+    color: #334155;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .user-table .user-active-cell input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    justify-self: start;
+    accent-color: #16a34a;
+  }
+
+  .user-table .user-action-cell {
+    display: block;
+    padding: 12px;
+    background: #f8fafc;
+  }
+
+  .user-table .user-action-cell::before {
+    content: none;
+  }
+
+  .user-save-button {
+    width: 100%;
+    min-height: 42px;
+    justify-content: center;
   }
 
   .staff-dialog {

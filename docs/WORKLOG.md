@@ -1764,6 +1764,65 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Admin Users mobile layout redesign
+
+Request:
+- Rework `/admin/users` on Mobile because the top action bar wrapped to two lines, the Hero / Add Employee button placement felt unbalanced, and the desktop table CSS made staff records difficult or impossible to view/edit.
+
+Implementation:
+- Kept the Desktop Admin Users table behavior intact.
+- Mobile header now stays on a single row:
+  - Brand + Back remain in the left leading group.
+  - Language + profile remain in the right action group.
+  - Mobile-only spacing/font/padding adjustments prevent the generic responsive header layer from wrapping this page.
+- Mobile Hero was redesigned:
+  - tighter title/kicker typography,
+  - balanced copy spacing,
+  - `เพิ่มพนักงาน` moved to a full-width CTA at the bottom of the Hero,
+  - improved button radius/shadow and touch height.
+- Staff list on Mobile is no longer a horizontally squeezed table:
+  - each user row becomes an editable card,
+  - table header is hidden only on Mobile,
+  - translated field labels are supplied through `data-label`,
+  - Name, Email, Role, Scope, Active, and Save stay visible without horizontal scrolling,
+  - inputs/selects use full available width,
+  - active checkbox and Save action have touch-friendly sizing.
+- Added explicit semantic classes to user row cells so responsive behavior does not rely on fragile `nth-child` layout.
+- Added React foundation regression coverage for:
+  - one-row Mobile header,
+  - full-width Hero CTA,
+  - editable Mobile user-card structure.
+
+Laravel comparison:
+- Read the available Laravel Admin Users view/CSS as a behavior/layout reference.
+- The connected Laravel checkout was on `feature/for_dev`, not `main`; no Laravel files were modified.
+
+Release:
+- React `0.4.280 / 2026.10.02.316`
+- Public storefront `0.16.32 / 2026.10.02.031`
+
+Important files:
+- `react-app/src/pages/AdminUsersPage.jsx`
+- `react-app/public/parity/css/admin-users.css`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- Generated React Hosting entrypoints/parity CSS/bundle.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.316` and bundle `/react/assets/index-Bfyuf6uM.js`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Commit/push/deploy are performed after this WORKLOG entry.
+- No merge to `main`.
+- Firebase scope is Hosting only.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
