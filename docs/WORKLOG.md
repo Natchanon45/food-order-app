@@ -2103,6 +2103,37 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Diagnose missing Google login after Delivery logout
+
+Symptom:
+- After signing out from the Delivery account card, the page returned to Guest mode but no `เข้าสู่ระบบด้วย Google` button appeared.
+
+Production diagnosis:
+- Firebase Authentication Google provider is enabled.
+- Firebase Google provider has a valid OAuth Web client configured.
+- `penguin-food.web.app` is present in Firebase Auth Authorized Domains.
+- Therefore the missing button is not caused by the new Hosting domain, Firebase Google provider, or the logout action itself.
+- Firestore `platformSettings/googleCustomerLogin` currently contains:
+  - `enabled = false`
+  - empty `clientId`
+- Delivery runtime `loadGoogleCustomerLoginSetting()` intentionally treats Google customer login as available only when both:
+  - `enabled === true`
+  - `clientId` is non-empty.
+- After logout, `renderAccount()` correctly returns to Guest state, but `showGoogle` remains false because the Platform-level feature gate is disabled.
+
+Conclusion:
+- This is a Platform configuration mismatch, not a Delivery logout regression.
+- Restoring the Google login button requires enabling the Platform Google Customer Login setting and supplying the configured Firebase Google OAuth Web client ID.
+- No production configuration was changed during this diagnostic pass.
+
+Deploy state:
+- No source-code change.
+- No Build bump.
+- No Firebase deploy.
+- No merge to `main`.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
