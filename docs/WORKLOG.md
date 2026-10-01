@@ -1336,6 +1336,41 @@ Remaining:
 
 ---
 
+## 2026-10-01 — React foundation release-contract repair
+
+Symptom:
+- `npm run test:operational` passed.
+- `npm run test:react-parity` stopped in `test:react-foundation` with `React release identity must stay centralized across footer/developer surfaces`.
+
+Root cause:
+- The Hosting candidate Build was correctly bumped from `2026.10.01.307` to `2026.10.01.308`.
+- `tools/react-foundation-contract.mjs` still hard-coded the old Build `2026.10.01.307`, so every legitimate Build bump would require changing the assertion or the test would fail.
+- Footer and Developer Panel already consume `REACT_RELEASE`; the failure was the stale test literal, not a runtime release-identity split.
+
+Change:
+- Removed the hard-coded Build literal from the foundation contract.
+- The contract now reads the Build from centralized `react-app/src/config/release.js`, validates the expected `YYYY.MM.DD.NNN` format, and verifies both Footer and Developer Panel consume `REACT_RELEASE.version` / `REACT_RELEASE.build`.
+- Current candidate identity remains React `0.4.280 / 2026.10.01.308`; no additional Build bump was needed because no Hosting deployment occurred between the failed test and this repair.
+
+Important file:
+- `tools/react-foundation-contract.mjs`
+
+Verification:
+- Source-level inspection confirms the stale `.307` assertion was the exact failing condition reported by Node at line 170.
+- Generated-build verification already reads the current Build dynamically from `react-app/src/config/release.js`.
+- Full test/build rerun must be performed on the Mac after pulling this commit.
+
+Deploy state:
+- Fix commit: `77f6e66d` — `test: centralize React release build contract`.
+- No merge to `main`.
+- No Firebase deploy.
+
+Remaining:
+- Pull branch on the Mac and rerun `npm run test:operational`, `npm run test:react-parity`, `npm run build:react`, and `git diff --check`.
+- If generated files change, commit/push them before Hosting-only deploy.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
