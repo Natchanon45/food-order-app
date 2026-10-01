@@ -57,13 +57,13 @@ Customer React production-test checkpoint (2026-09-30 evening):
 - User confirmed Firebase Hosting deploy completed. Current next step is real production testing on desktop + mobile before starting Takeaway React.
 - Takeaway / Delivery / Delivery Success remain outside this Order-only test cutover; Retail POS remains paused.
 
-KINJAI branding checkpoint (2026-09-30):
-- Public-facing brand is now **KINJAI**; compact fallback mark is `KJ`.
+PENGUIN branding checkpoint (2026-10-01):
+- Public-facing brand is now **PENGUIN**; compact fallback mark is `PG`. The previous visible KINJAI / KJ branding is legacy-only and must not surface in the UI.
 - Uploaded Platform App Icon is the first-choice header icon globally; Logo remains primary for login/large logo surfaces.
 - Internal repo/Firebase/schema/DOM/translation identifiers are intentionally unchanged.
-- Next release identity: React `0.4.280 / 2026.10.01.306`; public storefront `0.16.32 / 2026.10.01.021`.
+- Next release identity: React `0.4.280 / 2026.10.01.307`; public storefront `0.16.32 / 2026.10.01.022`.
 - Pull, test/build, commit generated assets, and deploy Hosting before visual verification.
-- If the uploaded App Icon artwork still contains FOD, upload a new KINJAI App Icon from Platform Branding after deploy.
+- If the uploaded Logo / App Icon artwork still contains FOD, KINJAI, or KJ, upload new PENGUIN / PG artwork from Platform Branding after deploy.
 
 Documentation rule as of 2026-09-30:
 - `docs/WORKLOG.md` is the chronological source for completed fixes and implementation-affecting investigations.
