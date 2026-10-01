@@ -292,7 +292,7 @@ export default {
         "success": "เปลี่ยนรหัสผ่านเรียบร้อยแล้ว"
       },
       "footer": {
-        "product": "KINJAI",
+        "product": "PENGUIN",
         "version": "Version :version",
         "build": "Build :build",
         "icon_credit": "Uicons by Flaticon"
@@ -592,7 +592,7 @@ export default {
         "success": "Password changed successfully."
       },
       "footer": {
-        "product": "KINJAI",
+        "product": "PENGUIN",
         "version": "Version :version",
         "build": "Build :build",
         "icon_credit": "Uicons by Flaticon"

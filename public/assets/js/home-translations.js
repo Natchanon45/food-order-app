@@ -2,7 +2,7 @@ export default {
     "th": {
         "home": {
             "meta": {
-                "title": "KINJAI"
+                "title": "PENGUIN"
             },
             "public": {
                 "hero": {
@@ -80,7 +80,7 @@ export default {
                 },
                 "about": {
                     "title": "เกี่ยวกับแอปพลิเคชัน",
-                    "description": "KINJAI เชื่อมต่อร้านอาหารกับลูกค้าเพื่อให้การสั่งอาหาร การชำระเงิน และการจัดส่งเป็นเรื่องง่าย บัญชี Google ใช้สำหรับยืนยันตัวตนลูกค้าและบันทึกข้อมูลโปรไฟล์กับที่อยู่จัดส่งตามที่ลูกค้าเลือกให้ระบบเข้าถึง",
+                    "description": "PENGUIN เชื่อมต่อร้านอาหารกับลูกค้าเพื่อให้การสั่งอาหาร การชำระเงิน และการจัดส่งเป็นเรื่องง่าย บัญชี Google ใช้สำหรับยืนยันตัวตนลูกค้าและบันทึกข้อมูลโปรไฟล์กับที่อยู่จัดส่งตามที่ลูกค้าเลือกให้ระบบเข้าถึง",
                     "links_aria": "ลิงก์ติดต่อและนโยบาย",
                     "support": "ติดต่อฝ่ายสนับสนุน",
                     "privacy": "นโยบายความเป็นส่วนตัว",
@@ -174,15 +174,15 @@ export default {
             "explanation": {
                 "title": "การคำนวณยอดที่ต้องโอน Platform",
                 "loading": "กำลังโหลดข้อมูลการคำนวณ",
-                "enabled": "ยอดขายที่คิดส่วนแบ่ง :sales บาท × :rate% = ส่วนแบ่ง :share บาท + Lalamove คงค้าง :outstanding บาท = ยอดต้องโอน :due บาท (ต้นทุน Lalamove ทั้งหมด :deliveryCost บาท / เครดิต KINJAI ใช้แล้ว :walletCovered เครดิต / ลูกค้าชำระค่าส่ง :customerDelivery บาท / ร้านรับผิดชอบส่วนต่างหรือส่งฟรี :subsidy บาท)",
+                "enabled": "ยอดขายที่คิดส่วนแบ่ง :sales บาท × :rate% = ส่วนแบ่ง :share บาท + Lalamove คงค้าง :outstanding บาท = ยอดต้องโอน :due บาท (ต้นทุน Lalamove ทั้งหมด :deliveryCost บาท / เครดิต PENGUIN ใช้แล้ว :walletCovered เครดิต / ลูกค้าชำระค่าส่ง :customerDelivery บาท / ร้านรับผิดชอบส่วนต่างหรือส่งฟรี :subsidy บาท)",
                 "disabled": "ระบบกลางยังไม่ได้เปิดใช้งานการคิดส่วนแบ่งสำหรับร้านนี้"
             },
             "wallet": {
-                "title": "KINJAI เครดิตสำหรับ Lalamove",
-                "description": "ยอดเครดิต KINJAI ที่ใช้ชำระค่าบริการ Lalamove พร้อมรายการเคลื่อนไหวและสาเหตุเมื่อเรียกรถไม่สำเร็จ",
-                "summary_aria": "สรุปยอดเครดิต KINJAI",
+                "title": "PENGUIN เครดิตสำหรับ Lalamove",
+                "description": "ยอดเครดิต PENGUIN ที่ใช้ชำระค่าบริการ Lalamove พร้อมรายการเคลื่อนไหวและสาเหตุเมื่อเรียกรถไม่สำเร็จ",
+                "summary_aria": "สรุปยอดเครดิต PENGUIN",
                 "ready": "เครดิตพร้อมใช้งาน",
-                "storage_missing": "ยังไม่ได้ติดตั้งโครงสร้าง KINJAI Wallet",
+                "storage_missing": "ยังไม่ได้ติดตั้งโครงสร้าง PENGUIN Wallet",
                 "balance": "ยอดเครดิตคงเหลือ",
                 "approved_topup_total": "เครดิตสะสมที่เติมสำเร็จ",
                 "period_topup": "เครดิตที่เติมในช่วงรายงาน",
@@ -190,8 +190,8 @@ export default {
                 "period_delivery_refund": "เครดิตที่คืนจากค่าจัดส่งในช่วงรายงาน",
                 "pending_topup": "เครดิตที่รอตรวจสอบ",
                 "pending_count": ":count รายการ",
-                "accounting_note": "ค่าบริการ Lalamove ที่ตัดจากเครดิต KINJAI สำเร็จแล้วจะไม่ถูกนำไปบวกซ้ำในยอดที่ต้องโอน Platform",
-                "credit_policy": "อัตราเติมเครดิต 1 บาท = 1 เครดิต เครดิต KINJAI ใช้สำหรับชำระค่าบริการภายในระบบเท่านั้น ไม่สามารถโอน ถอน แลก หรือขอคืนเป็นเงินสดตามเงื่อนไขการใช้บริการ เว้นแต่กฎหมายกำหนดเป็นอย่างอื่น",
+                "accounting_note": "ค่าบริการ Lalamove ที่ตัดจากเครดิต PENGUIN สำเร็จแล้วจะไม่ถูกนำไปบวกซ้ำในยอดที่ต้องโอน Platform",
+                "credit_policy": "อัตราเติมเครดิต 1 บาท = 1 เครดิต เครดิต PENGUIN ใช้สำหรับชำระค่าบริการภายในระบบเท่านั้น ไม่สามารถโอน ถอน แลก หรือขอคืนเป็นเงินสดตามเงื่อนไขการใช้บริการ เว้นแต่กฎหมายกำหนดเป็นอย่างอื่น",
                 "transactions_title": "รายการเครดิตล่าสุด",
                 "transactions_description": "แสดงรายการล่าสุดไม่เกิน 12 รายการจาก Credit Ledger ของระบบ",
                 "transactions_empty": "ยังไม่มีรายการเคลื่อนไหวเครดิต",
@@ -223,8 +223,8 @@ export default {
                     "dispatch": "เรียกรถ"
                 },
                 "failure_reasons": {
-                    "FOD_WALLET_INSUFFICIENT_BALANCE": "เครดิต KINJAI ไม่เพียงพอ ต้องใช้ :required เครดิต แต่มีคงเหลือ :balance เครดิต",
-                    "FOD_WALLET_STORAGE_MISSING": "ระบบ KINJAI Wallet ยังไม่พร้อมใช้งาน กรุณาติดต่อผู้ดูแลระบบ",
+                    "FOD_WALLET_INSUFFICIENT_BALANCE": "เครดิต PENGUIN ไม่เพียงพอ ต้องใช้ :required เครดิต แต่มีคงเหลือ :balance เครดิต",
+                    "FOD_WALLET_STORAGE_MISSING": "ระบบ PENGUIN Wallet ยังไม่พร้อมใช้งาน กรุณาติดต่อผู้ดูแลระบบ",
                     "FOD_WALLET_BUSY": "Wallet กำลังถูกใช้งานโดยรายการอื่น กรุณาลองใหม่อีกครั้ง",
                     "FOD_WALLET_NOT_FOUND": "ไม่พบ Wallet ของร้าน กรุณาติดต่อผู้ดูแลระบบ",
                     "LALAMOVE_ACCOUNT_NOT_READY": "บัญชี Lalamove ของร้านหรือระบบกลางยังไม่พร้อมใช้งาน",
@@ -244,7 +244,7 @@ export default {
             },
             "payment": {
                 "title": "แจ้งโอนส่วนแบ่งและ Lalamove คงค้าง",
-                "description": "แนบสลิปของช่วงรายงานที่เลือก ระบบจะเรียกเก็บเฉพาะส่วนแบ่งยอดขายและต้นทุน Lalamove ที่ยังไม่ได้ถูกตัดจาก KINJAI Wallet",
+                "description": "แนบสลิปของช่วงรายงานที่เลือก ระบบจะเรียกเก็บเฉพาะส่วนแบ่งยอดขายและต้นทุน Lalamove ที่ยังไม่ได้ถูกตัดจาก PENGUIN Wallet",
                 "selected_period": "งวดที่เลือก",
                 "amount_due": "ยอดรวมที่ต้องโอน Platform",
                 "amount_breakdown": "ส่วนแบ่ง :share บาท + Lalamove คงค้าง :delivery บาท",
@@ -460,7 +460,7 @@ export default {
                 "success": "เปลี่ยนรหัสผ่านเรียบร้อยแล้ว"
             },
             "footer": {
-                "product": "KINJAI",
+                "product": "PENGUIN",
                 "version": "Version :version",
                 "build": "Build :build",
                 "icon_credit": "Uicons by Flaticon"
@@ -530,7 +530,7 @@ export default {
     "en": {
         "home": {
             "meta": {
-                "title": "KINJAI"
+                "title": "PENGUIN"
             },
             "public": {
                 "hero": {
@@ -608,7 +608,7 @@ export default {
                 },
                 "about": {
                     "title": "About the application",
-                    "description": "KINJAI connects restaurants with customers to make ordering, payment, and delivery easier. Google accounts are used to verify customer identity and save profile information and delivery addresses that customers choose to share with the system.",
+                    "description": "PENGUIN connects restaurants with customers to make ordering, payment, and delivery easier. Google accounts are used to verify customer identity and save profile information and delivery addresses that customers choose to share with the system.",
                     "links_aria": "Support and policy links",
                     "support": "Contact support",
                     "privacy": "Privacy policy",
@@ -702,15 +702,15 @@ export default {
             "explanation": {
                 "title": "Platform amount-due calculation",
                 "loading": "Loading calculation details.",
-                "enabled": "Revenue-share sales THB :sales × :rate% = THB :share share + THB :outstanding Lalamove outstanding = THB :due due to Platform (total Lalamove THB :deliveryCost / KINJAI credits used :walletCovered credits / customer delivery THB :customerDelivery / store subsidy THB :subsidy).",
+                "enabled": "Revenue-share sales THB :sales × :rate% = THB :share share + THB :outstanding Lalamove outstanding = THB :due due to Platform (total Lalamove THB :deliveryCost / PENGUIN credits used :walletCovered credits / customer delivery THB :customerDelivery / store subsidy THB :subsidy).",
                 "disabled": "Platform revenue share has not been enabled for this store."
             },
             "wallet": {
-                "title": "KINJAI Credits for Lalamove",
-                "description": "KINJAI credits used for Lalamove services, with credit activity and failure reasons when dispatch cannot be created.",
-                "summary_aria": "KINJAI credit summary",
+                "title": "PENGUIN Credits for Lalamove",
+                "description": "PENGUIN credits used for Lalamove services, with credit activity and failure reasons when dispatch cannot be created.",
+                "summary_aria": "PENGUIN credit summary",
                 "ready": "Credits ready",
-                "storage_missing": "KINJAI Wallet database structure is not installed",
+                "storage_missing": "PENGUIN Wallet database structure is not installed",
                 "balance": "Credit balance",
                 "approved_topup_total": "Credits added, all time",
                 "period_topup": "Credits added in selected period",
@@ -718,8 +718,8 @@ export default {
                 "period_delivery_refund": "Credits returned from delivery in selected period",
                 "pending_topup": "Credits pending review",
                 "pending_count": ":count requests",
-                "accounting_note": "Lalamove service costs successfully paid with KINJAI credits are not charged again in the amount due to Platform.",
-                "credit_policy": "Credit rate: THB 1 = 1 credit. KINJAI credits are for paying for services within the KINJAI system only. They cannot be transferred, withdrawn, redeemed, or refunded as cash under the service terms, except where otherwise required by law.",
+                "accounting_note": "Lalamove service costs successfully paid with PENGUIN credits are not charged again in the amount due to Platform.",
+                "credit_policy": "Credit rate: THB 1 = 1 credit. PENGUIN credits are for paying for services within the PENGUIN system only. They cannot be transferred, withdrawn, redeemed, or refunded as cash under the service terms, except where otherwise required by law.",
                 "transactions_title": "Recent credit activity",
                 "transactions_description": "Shows up to 12 latest entries from the system credit ledger.",
                 "transactions_empty": "No credit activity yet.",
@@ -751,8 +751,8 @@ export default {
                     "dispatch": "dispatch"
                 },
                 "failure_reasons": {
-                    "FOD_WALLET_INSUFFICIENT_BALANCE": "KINJAI credit balance is insufficient. :required credits are required but only :balance credits are available.",
-                    "FOD_WALLET_STORAGE_MISSING": "KINJAI Wallet is not ready. Please contact the system administrator.",
+                    "FOD_WALLET_INSUFFICIENT_BALANCE": "PENGUIN credit balance is insufficient. :required credits are required but only :balance credits are available.",
+                    "FOD_WALLET_STORAGE_MISSING": "PENGUIN Wallet is not ready. Please contact the system administrator.",
                     "FOD_WALLET_BUSY": "The Wallet is being used by another transaction. Please try again.",
                     "FOD_WALLET_NOT_FOUND": "The store Wallet could not be found. Please contact the system administrator.",
                     "LALAMOVE_ACCOUNT_NOT_READY": "The store or platform Lalamove account is not ready.",
@@ -772,7 +772,7 @@ export default {
             },
             "payment": {
                 "title": "Report revenue-share and outstanding Lalamove transfer",
-                "description": "Attach the transfer slip for the selected period. Only sales revenue share and Lalamove cost not already debited from KINJAI Wallet are charged.",
+                "description": "Attach the transfer slip for the selected period. Only sales revenue share and Lalamove cost not already debited from PENGUIN Wallet are charged.",
                 "selected_period": "Selected period",
                 "amount_due": "Total due to Platform",
                 "amount_breakdown": "Share THB :share + outstanding Lalamove THB :delivery",
@@ -988,7 +988,7 @@ export default {
                 "success": "Password changed successfully."
             },
             "footer": {
-                "product": "KINJAI",
+                "product": "PENGUIN",
                 "version": "Version :version",
                 "build": "Build :build",
                 "icon_credit": "Uicons by Flaticon"
@@ -1058,7 +1058,7 @@ export default {
     "my": {
         "home": {
             "meta": {
-                "title": "KINJAI"
+                "title": "PENGUIN"
             },
             "public": {
                 "hero": {
@@ -1136,7 +1136,7 @@ export default {
                 },
                 "about": {
                     "title": "လျှောက်လွှာအကြောင်း",
-                    "description": "KINJAI မှာယူခြင်း၊ ငွေပေးချေခြင်းနှင့် ပို့ဆောင်ခြင်းတို့ကို ပိုမိုလွယ်ကူစေရန်အတွက် စားသောက်ဆိုင်များကို ဝယ်ယူသူများနှင့် ချိတ်ဆက်ပေးပါသည်။ Google အကောင့်များကို သုံးစွဲသူများ၏ အထောက်အထားကို အတည်ပြုပြီး စနစ်နှင့် မျှဝေရန် သုံးစွဲသူများရွေးချယ်သည့် ပရိုဖိုင်အချက်အလက်နှင့် ပေးပို့လိပ်စာများကို သိမ်းဆည်းရန်အတွက် အသုံးပြုပါသည်။",
+                    "description": "PENGUIN မှာယူခြင်း၊ ငွေပေးချေခြင်းနှင့် ပို့ဆောင်ခြင်းတို့ကို ပိုမိုလွယ်ကူစေရန်အတွက် စားသောက်ဆိုင်များကို ဝယ်ယူသူများနှင့် ချိတ်ဆက်ပေးပါသည်။ Google အကောင့်များကို သုံးစွဲသူများ၏ အထောက်အထားကို အတည်ပြုပြီး စနစ်နှင့် မျှဝေရန် သုံးစွဲသူများရွေးချယ်သည့် ပရိုဖိုင်အချက်အလက်နှင့် ပေးပို့လိပ်စာများကို သိမ်းဆည်းရန်အတွက် အသုံးပြုပါသည်။",
                     "links_aria": "ပံ့ပိုးမှုနှင့် မူဝါဒလင့်ခ်များ",
                     "support": "အကူအညီကို ဆက်သွယ်ပါ။",
                     "privacy": "ကိုယ်ရေးကိုယ်တာမူဝါဒ",
@@ -1230,15 +1230,15 @@ export default {
             "explanation": {
                 "title": "ပလပ်ဖောင်းပမာဏ - ပေးရမည့်တွက်ချက်မှု",
                 "loading": "တွက်ချက်မှုအသေးစိတ်များကို တင်နေသည်။",
-                "enabled": "ဝင်ငွေခွဲဝေရောင်းအား THB :sales × :rate% = ခွဲဝေငွေ THB :share + မရှင်းရသေးသော Lalamove THB :outstanding = Platform သို့ပေးရန် THB :due (Lalamove စုစုပေါင်း THB :deliveryCost / အသုံးပြုထားသော KINJAI ခရက်ဒစ် :walletCovered ခရက်ဒစ် / ဖောက်သည်ပို့ဆောင်ခ THB :customerDelivery / ဆိုင်မှထောက်ပံ့ငွေ THB :subsidy)။",
+                "enabled": "ဝင်ငွေခွဲဝေရောင်းအား THB :sales × :rate% = ခွဲဝေငွေ THB :share + မရှင်းရသေးသော Lalamove THB :outstanding = Platform သို့ပေးရန် THB :due (Lalamove စုစုပေါင်း THB :deliveryCost / အသုံးပြုထားသော PENGUIN ခရက်ဒစ် :walletCovered ခရက်ဒစ် / ဖောက်သည်ပို့ဆောင်ခ THB :customerDelivery / ဆိုင်မှထောက်ပံ့ငွေ THB :subsidy)။",
                 "disabled": "ဤစတိုးအတွက် ပလပ်ဖောင်းဝင်ငွေမျှဝေခြင်းကို ဖွင့်မထားပါ။"
             },
             "wallet": {
-                "title": "KINJAI Lalamove အတွက် ခရက်ဒစ်များ",
-                "description": "KINJAI Lalamove ဝန်ဆောင်မှုများအတွက် အသုံးပြုထားသော ခရက်ဒစ်များ ၊ ပေးပို့ခြင်းအား ဖန်တီး၍မရသည့်အခါ ခရက်ဒစ်လုပ်ဆောင်ချက်နှင့် မအောင်မြင်သည့်အကြောင်းရင်းများ။",
-                "summary_aria": "KINJAI ခရက်ဒစ်အနှစ်ချုပ်",
+                "title": "PENGUIN Lalamove အတွက် ခရက်ဒစ်များ",
+                "description": "PENGUIN Lalamove ဝန်ဆောင်မှုများအတွက် အသုံးပြုထားသော ခရက်ဒစ်များ ၊ ပေးပို့ခြင်းအား ဖန်တီး၍မရသည့်အခါ ခရက်ဒစ်လုပ်ဆောင်ချက်နှင့် မအောင်မြင်သည့်အကြောင်းရင်းများ။",
+                "summary_aria": "PENGUIN ခရက်ဒစ်အနှစ်ချုပ်",
                 "ready": "ခရက်ဒစ် အဆင်သင့်",
-                "storage_missing": "KINJAI Wallet ဒေတာဘေ့စ်ဖွဲ့စည်းပုံကို ထည့်သွင်းမထားပါ။",
+                "storage_missing": "PENGUIN Wallet ဒေတာဘေ့စ်ဖွဲ့စည်းပုံကို ထည့်သွင်းမထားပါ။",
                 "balance": "အကြွေးလက်ကျန်",
                 "approved_topup_total": "ခရက်ဒစ်များ အားလုံးကို အချိန်တိုင်း ထည့်သွင်းထားသည်။",
                 "period_topup": "ရွေးချယ်ထားသော ကာလတွင် ခရက်ဒစ်များ ထည့်ထားသည်။",
@@ -1246,8 +1246,8 @@ export default {
                 "period_delivery_refund": "ရွေးချယ်ထားသော ကာလတွင် ပေးပို့မှုမှ ပြန်လာသော ခရက်ဒစ်များ",
                 "pending_topup": "ခရက်ဒစ် ဆိုင်းငံ့ထားသော သုံးသပ်ချက်",
                 "pending_count": ":count တောင်းဆိုချက်များ",
-                "accounting_note": "Lalamove ဝန်ဆောင်မှုကုန်ကျစရိတ်ကို KINJAI ခရက်ဒစ်များဖြင့် အောင်မြင်စွာပေးချေပြီး Platform ကြောင့် ပမာဏကို ထပ်မံကောက်ခံမည်မဟုတ်ပါ။",
-                "credit_policy": "ခရက်ဒစ်နှုန်း- THB 1 = 1 ခရက်ဒစ်။ KINJAI ခရက်ဒစ်များသည် KINJAI စနစ်အတွင်း ဝန်ဆောင်မှုများအတွက်သာ ပေးချေရန်ဖြစ်သည်။ ဝန်ဆောင်မှုစည်းကမ်းချက်များအရ လွှဲပြောင်းခြင်း၊ ထုတ်ယူခြင်း၊ ထုတ်ယူခြင်း သို့မဟုတ် ဥပဒေအရ အခြားလိုအပ်သည့်နေရာများမှလွဲ၍ ၎င်းတို့ကို ဝန်ဆောင်မှုစည်းမျဉ်းများအောက်တွင် ငွေသားအဖြစ် ပြန်အမ်း၍မရပါ။",
+                "accounting_note": "Lalamove ဝန်ဆောင်မှုကုန်ကျစရိတ်ကို PENGUIN ခရက်ဒစ်များဖြင့် အောင်မြင်စွာပေးချေပြီး Platform ကြောင့် ပမာဏကို ထပ်မံကောက်ခံမည်မဟုတ်ပါ။",
+                "credit_policy": "ခရက်ဒစ်နှုန်း- THB 1 = 1 ခရက်ဒစ်။ PENGUIN ခရက်ဒစ်များသည် PENGUIN စနစ်အတွင်း ဝန်ဆောင်မှုများအတွက်သာ ပေးချေရန်ဖြစ်သည်။ ဝန်ဆောင်မှုစည်းကမ်းချက်များအရ လွှဲပြောင်းခြင်း၊ ထုတ်ယူခြင်း၊ ထုတ်ယူခြင်း သို့မဟုတ် ဥပဒေအရ အခြားလိုအပ်သည့်နေရာများမှလွဲ၍ ၎င်းတို့ကို ဝန်ဆောင်မှုစည်းမျဉ်းများအောက်တွင် ငွေသားအဖြစ် ပြန်အမ်း၍မရပါ။",
                 "transactions_title": "လတ်တလော ခရက်ဒစ် လုပ်ဆောင်ချက်",
                 "transactions_description": "စနစ်ခရက်ဒစ် လယ်ဂျာမှ နောက်ဆုံးထည့်သွင်းမှု 12 ခုအထိ ပြသသည်။",
                 "transactions_empty": "ခရက်ဒစ် လုပ်ဆောင်ချက် မရှိသေးပါ။",
@@ -1279,8 +1279,8 @@ export default {
                     "dispatch": "ပို့ဆောင်"
                 },
                 "failure_reasons": {
-                    "FOD_WALLET_INSUFFICIENT_BALANCE": "KINJAI ခရက်ဒစ်လက်ကျန် မလုံလောက်ပါ။ :required ခရက်ဒစ်များ လိုအပ်သော်လည်း :balance ခရက်ဒစ်များသာ ရနိုင်ပါသည်။",
-                    "FOD_WALLET_STORAGE_MISSING": "KINJAI Wallet အဆင်သင့်မဖြစ်သေးပါ။ စနစ်စီမံခန့်ခွဲသူကို ဆက်သွယ်ပါ။",
+                    "FOD_WALLET_INSUFFICIENT_BALANCE": "PENGUIN ခရက်ဒစ်လက်ကျန် မလုံလောက်ပါ။ :required ခရက်ဒစ်များ လိုအပ်သော်လည်း :balance ခရက်ဒစ်များသာ ရနိုင်ပါသည်။",
+                    "FOD_WALLET_STORAGE_MISSING": "PENGUIN Wallet အဆင်သင့်မဖြစ်သေးပါ။ စနစ်စီမံခန့်ခွဲသူကို ဆက်သွယ်ပါ။",
                     "FOD_WALLET_BUSY": "Wallet ကို အခြားငွေပေးငွေယူဖြင့် အသုံးပြုနေပါသည်။ ထပ်စမ်းကြည့်ပါ။",
                     "FOD_WALLET_NOT_FOUND": "စတိုးဆိုင်မှ ပိုက်ဆံအိတ်ကို ရှာမတွေ့ပါ။ စနစ်စီမံခန့်ခွဲသူကို ဆက်သွယ်ပါ။",
                     "LALAMOVE_ACCOUNT_NOT_READY": "စတိုး သို့မဟုတ် ပလပ်ဖောင်း Lalamove အကောင့် အဆင်သင့်မဖြစ်သေးပါ။",
@@ -1300,7 +1300,7 @@ export default {
             },
             "payment": {
                 "title": "ဝင်ငွေမျှဝေမှုနှင့် ထူးထူးခြားခြား Lalamove လွှဲပြောင်းမှုကို အစီရင်ခံပါ။",
-                "description": "ရွေးချယ်ထားသောကာလအတွက် ငွေလွှဲစလစ်ကို ပူးတွဲပါ။ အရောင်းရငွေ ခွဲဝေမှုနှင့် Lalamove မှ ငွေမရှင်းရသေးသော ကုန်ကျစရိတ်များကိုသာ KINJAI Wallet မှ ကောက်ခံပါသည်။",
+                "description": "ရွေးချယ်ထားသောကာလအတွက် ငွေလွှဲစလစ်ကို ပူးတွဲပါ။ အရောင်းရငွေ ခွဲဝေမှုနှင့် Lalamove မှ ငွေမရှင်းရသေးသော ကုန်ကျစရိတ်များကိုသာ PENGUIN Wallet မှ ကောက်ခံပါသည်။",
                 "selected_period": "ရွေးချယ်ထားသောကာလ",
                 "amount_due": "ပလပ်ဖောင်းကြောင့် စုစုပေါင်း",
                 "amount_breakdown": "မျှဝေရန် THB :share + ထူးထူးခြားခြား Lalamove THB :delivery",
@@ -1516,7 +1516,7 @@ export default {
                 "success": "စကားဝှက်ကို အောင်မြင်စွာ ပြောင်းလဲခဲ့သည်။"
             },
             "footer": {
-                "product": "KINJAI",
+                "product": "PENGUIN",
                 "version": "ဗားရှင်း :version",
                 "build": "တည်ဆောက်ခြင်း :build",
                 "icon_credit": "Flaticon မှ Uicons"
@@ -1586,7 +1586,7 @@ export default {
     "lo": {
         "home": {
             "meta": {
-                "title": "KINJAI"
+                "title": "PENGUIN"
             },
             "public": {
                 "hero": {
@@ -1664,7 +1664,7 @@ export default {
                 },
                 "about": {
                     "title": "ກ່ຽວກັບຄໍາຮ້ອງສະຫມັກ",
-                    "description": "KINJAI ເຊື່ອມຕໍ່ຮ້ານອາຫານກັບລູກຄ້າເພື່ອເຮັດໃຫ້ການສັ່ງຊື້, ການຈ່າຍເງິນ, ແລະການຈັດສົ່ງງ່າຍຂຶ້ນ. ບັນຊີ Google ຖືກໃຊ້ເພື່ອຢັ້ງຢືນຕົວຕົນຂອງລູກຄ້າ ແລະບັນທຶກຂໍ້ມູນໂປຣໄຟລ໌ ແລະທີ່ຢູ່ຈັດສົ່ງທີ່ລູກຄ້າເລືອກແບ່ງປັນກັບລະບົບ.",
+                    "description": "PENGUIN ເຊື່ອມຕໍ່ຮ້ານອາຫານກັບລູກຄ້າເພື່ອເຮັດໃຫ້ການສັ່ງຊື້, ການຈ່າຍເງິນ, ແລະການຈັດສົ່ງງ່າຍຂຶ້ນ. ບັນຊີ Google ຖືກໃຊ້ເພື່ອຢັ້ງຢືນຕົວຕົນຂອງລູກຄ້າ ແລະບັນທຶກຂໍ້ມູນໂປຣໄຟລ໌ ແລະທີ່ຢູ່ຈັດສົ່ງທີ່ລູກຄ້າເລືອກແບ່ງປັນກັບລະບົບ.",
                     "links_aria": "ສະຫນັບສະຫນູນແລະການເຊື່ອມໂຍງນະໂຍບາຍ",
                     "support": "ຕິດຕໍ່ສະຫນັບສະຫນູນ",
                     "privacy": "ນະໂຍບາຍຄວາມເປັນສ່ວນຕົວ",
@@ -1758,15 +1758,15 @@ export default {
             "explanation": {
                 "title": "ການຄຳນວນຈຳນວນທີ່ຄົບກຳນົດໃນເວທີ",
                 "loading": "ກຳລັງໂຫຼດລາຍລະອຽດການຄຳນວນ.",
-                "enabled": "ຍອດຂາຍແບ່ງລາຍຮັບ THB :sales × :rate% = ສ່ວນແບ່ງ THB :share + ຍອດ Lalamove ຄ້າງ THB :outstanding = ຈຳນວນທີ່ຕ້ອງຈ່າຍໃຫ້ Platform THB :due (Lalamove ລວມ THB :deliveryCost / ໃຊ້ KINJAI ເຄຣດິດ :walletCovered ເຄຣດິດ / ຄ່າຈັດສົ່ງທີ່ລູກຄ້າຈ່າຍ THB :customerDelivery / ຮ້ານອຸດໜູນ THB :subsidy).",
+                "enabled": "ຍອດຂາຍແບ່ງລາຍຮັບ THB :sales × :rate% = ສ່ວນແບ່ງ THB :share + ຍອດ Lalamove ຄ້າງ THB :outstanding = ຈຳນວນທີ່ຕ້ອງຈ່າຍໃຫ້ Platform THB :due (Lalamove ລວມ THB :deliveryCost / ໃຊ້ PENGUIN ເຄຣດິດ :walletCovered ເຄຣດິດ / ຄ່າຈັດສົ່ງທີ່ລູກຄ້າຈ່າຍ THB :customerDelivery / ຮ້ານອຸດໜູນ THB :subsidy).",
                 "disabled": "ສ່ວນແບ່ງລາຍໄດ້ຂອງເວທີຍັງບໍ່ໄດ້ຖືກເປີດໃຊ້ສໍາລັບຮ້ານນີ້."
             },
             "wallet": {
-                "title": "KINJAI ເຄຣດິດສຳລັບ Lalamove",
-                "description": "KINJAI ເຄຣດິດທີ່ໃຊ້ສໍາລັບການບໍລິການ Lalamove, ດ້ວຍກິດຈະກໍາເຄຣດິດ ແລະເຫດຜົນຄວາມລົ້ມເຫລວໃນເວລາທີ່ການຈັດສົ່ງບໍ່ສາມາດສ້າງໄດ້.",
-                "summary_aria": "KINJAI ສະຫຼຸບສິນເຊື່ອ",
+                "title": "PENGUIN ເຄຣດິດສຳລັບ Lalamove",
+                "description": "PENGUIN ເຄຣດິດທີ່ໃຊ້ສໍາລັບການບໍລິການ Lalamove, ດ້ວຍກິດຈະກໍາເຄຣດິດ ແລະເຫດຜົນຄວາມລົ້ມເຫລວໃນເວລາທີ່ການຈັດສົ່ງບໍ່ສາມາດສ້າງໄດ້.",
+                "summary_aria": "PENGUIN ສະຫຼຸບສິນເຊື່ອ",
                 "ready": "ສິນເຊື່ອພ້ອມ",
-                "storage_missing": "KINJAI Wallet ໂຄງສ້າງຖານຂໍ້ມູນບໍ່ໄດ້ຖືກຕິດຕັ້ງ",
+                "storage_missing": "PENGUIN Wallet ໂຄງສ້າງຖານຂໍ້ມູນບໍ່ໄດ້ຖືກຕິດຕັ້ງ",
                 "balance": "ຍອດສິນເຊື່ອ",
                 "approved_topup_total": "ເພີ່ມສິນເຊື່ອ, ຕະຫຼອດເວລາ",
                 "period_topup": "ເພີ່ມເຄຣດິດໃນໄລຍະເວລາທີ່ເລືອກ",
@@ -1774,8 +1774,8 @@ export default {
                 "period_delivery_refund": "ສິນເຊື່ອສົ່ງຄືນຈາກການຈັດສົ່ງໃນໄລຍະເວລາທີ່ເລືອກ",
                 "pending_topup": "ສິນເຊື່ອລໍຖ້າການກວດສອບ",
                 "pending_count": ":count ຄຳຮ້ອງຂໍ",
-                "accounting_note": "Lalamove ຄ່າບໍລິການທີ່ຈ່າຍສຳເລັດດ້ວຍເຄຣດິດ KINJAI ຈະບໍ່ຖືກຮຽກເກັບອີກໃນຈຳນວນເງິນເນື່ອງຈາກ Platform.",
-                "credit_policy": "ອັດຕາສິນເຊື່ອ: THB 1 = 1 ເຄຣດິດ. ສິນເຊື່ອ KINJAI ແມ່ນເພື່ອຈ່າຍຄ່າບໍລິການພາຍໃນລະບົບ KINJAI ເທົ່ານັ້ນ. ພວກເຂົາບໍ່ສາມາດໂອນ, ຖອນ, ແລກ, ຫຼືຄືນເງິນເປັນເງິນສົດພາຍໃຕ້ເງື່ອນໄຂການບໍລິການ, ຍົກເວັ້ນບ່ອນທີ່ກົດຫມາຍຕ້ອງການ.",
+                "accounting_note": "Lalamove ຄ່າບໍລິການທີ່ຈ່າຍສຳເລັດດ້ວຍເຄຣດິດ PENGUIN ຈະບໍ່ຖືກຮຽກເກັບອີກໃນຈຳນວນເງິນເນື່ອງຈາກ Platform.",
+                "credit_policy": "ອັດຕາສິນເຊື່ອ: THB 1 = 1 ເຄຣດິດ. ສິນເຊື່ອ PENGUIN ແມ່ນເພື່ອຈ່າຍຄ່າບໍລິການພາຍໃນລະບົບ PENGUIN ເທົ່ານັ້ນ. ພວກເຂົາບໍ່ສາມາດໂອນ, ຖອນ, ແລກ, ຫຼືຄືນເງິນເປັນເງິນສົດພາຍໃຕ້ເງື່ອນໄຂການບໍລິການ, ຍົກເວັ້ນບ່ອນທີ່ກົດຫມາຍຕ້ອງການ.",
                 "transactions_title": "ການເຄື່ອນໄຫວສິນເຊື່ອທີ່ຜ່ານມາ",
                 "transactions_description": "ສະແດງເຖິງ 12 ລາຍການຫຼ້າສຸດຈາກບັນຊີລາຍການສິນເຊື່ອຂອງລະບົບ.",
                 "transactions_empty": "ບໍ່ມີກິດຈະກໍາສິນເຊື່ອເທື່ອ.",
@@ -1807,8 +1807,8 @@ export default {
                     "dispatch": "ຈັດສົ່ງ"
                 },
                 "failure_reasons": {
-                    "FOD_WALLET_INSUFFICIENT_BALANCE": "KINJAI ຍອດສິນເຊື່ອບໍ່ພຽງພໍ. ຕ້ອງໃຊ້ເຄຣດິດ :required ແຕ່ມີພຽງ :balance ເຄຣດິດເທົ່ານັ້ນ.",
-                    "FOD_WALLET_STORAGE_MISSING": "KINJAI Wallet ບໍ່ພ້ອມ. ກະລຸນາຕິດຕໍ່ຜູ້ເບິ່ງແຍງລະບົບ.",
+                    "FOD_WALLET_INSUFFICIENT_BALANCE": "PENGUIN ຍອດສິນເຊື່ອບໍ່ພຽງພໍ. ຕ້ອງໃຊ້ເຄຣດິດ :required ແຕ່ມີພຽງ :balance ເຄຣດິດເທົ່ານັ້ນ.",
+                    "FOD_WALLET_STORAGE_MISSING": "PENGUIN Wallet ບໍ່ພ້ອມ. ກະລຸນາຕິດຕໍ່ຜູ້ເບິ່ງແຍງລະບົບ.",
                     "FOD_WALLET_BUSY": "Wallet ກໍາລັງຖືກໃຊ້ໂດຍທຸລະກໍາອື່ນ. ກະລຸນາລອງອີກຄັ້ງ.",
                     "FOD_WALLET_NOT_FOUND": "ບໍ່ພົບ Wallet ຮ້ານຄ້າ. ກະລຸນາຕິດຕໍ່ຜູ້ເບິ່ງແຍງລະບົບ.",
                     "LALAMOVE_ACCOUNT_NOT_READY": "ບັນຊີຮ້ານຄ້າ ຫຼືແພລດຟອມ Lalamove ຍັງບໍ່ພ້ອມ.",
@@ -1828,7 +1828,7 @@ export default {
             },
             "payment": {
                 "title": "ລາຍງານສ່ວນແບ່ງລາຍໄດ້ ແລະການໂອນເງິນທີ່ຄ້າງຈ່າຍ Lalamove",
-                "description": "ຄັດຕິດໃບໂອນເງິນສໍາລັບໄລຍະເວລາທີ່ເລືອກ. ສະເພາະສ່ວນແບ່ງລາຍໄດ້ຈາກການຂາຍ ແລະ Lalamove ຄ່າໃຊ້ຈ່າຍທີ່ຍັງບໍ່ໄດ້ຫັກຈາກ KINJAI Wallet ຈະຖືກຄິດຄ່າ.",
+                "description": "ຄັດຕິດໃບໂອນເງິນສໍາລັບໄລຍະເວລາທີ່ເລືອກ. ສະເພາະສ່ວນແບ່ງລາຍໄດ້ຈາກການຂາຍ ແລະ Lalamove ຄ່າໃຊ້ຈ່າຍທີ່ຍັງບໍ່ໄດ້ຫັກຈາກ PENGUIN Wallet ຈະຖືກຄິດຄ່າ.",
                 "selected_period": "ໄລຍະເວລາທີ່ເລືອກ",
                 "amount_due": "ທັງໝົດເນື່ອງຈາກເວທີ",
                 "amount_breakdown": "ແບ່ງປັນ THB :share + ທີ່ໂດດເດັ່ນ Lalamove THB :delivery",
@@ -2044,7 +2044,7 @@ export default {
                 "success": "ປ່ຽນລະຫັດຜ່ານສຳເລັດແລ້ວ."
             },
             "footer": {
-                "product": "KINJAI",
+                "product": "PENGUIN",
                 "version": "ລຸ້ນ :version",
                 "build": "ສ້າງ :build",
                 "icon_credit": "Uicons ໂດຍ Flaticon"
@@ -2114,7 +2114,7 @@ export default {
     "km": {
         "home": {
             "meta": {
-                "title": "KINJAI"
+                "title": "PENGUIN"
             },
             "public": {
                 "hero": {
@@ -2192,7 +2192,7 @@ export default {
                 },
                 "about": {
                     "title": "អំពីកម្មវិធី",
-                    "description": "KINJAI ភ្ជាប់ភោជនីយដ្ឋានជាមួយអតិថិជនដើម្បីធ្វើឱ្យការបញ្ជាទិញ ការទូទាត់ និងការដឹកជញ្ជូនកាន់តែងាយស្រួល។ គណនី Google ត្រូវបានប្រើដើម្បីផ្ទៀងផ្ទាត់អត្តសញ្ញាណអតិថិជន និងរក្សាទុកព័ត៌មានប្រវត្តិរូប និងអាសយដ្ឋានដឹកជញ្ជូនដែលអតិថិជនជ្រើសរើសដើម្បីចែករំលែកជាមួយប្រព័ន្ធ។",
+                    "description": "PENGUIN ភ្ជាប់ភោជនីយដ្ឋានជាមួយអតិថិជនដើម្បីធ្វើឱ្យការបញ្ជាទិញ ការទូទាត់ និងការដឹកជញ្ជូនកាន់តែងាយស្រួល។ គណនី Google ត្រូវបានប្រើដើម្បីផ្ទៀងផ្ទាត់អត្តសញ្ញាណអតិថិជន និងរក្សាទុកព័ត៌មានប្រវត្តិរូប និងអាសយដ្ឋានដឹកជញ្ជូនដែលអតិថិជនជ្រើសរើសដើម្បីចែករំលែកជាមួយប្រព័ន្ធ។",
                     "links_aria": "ការគាំទ្រ និងតំណភ្ជាប់គោលនយោបាយ",
                     "support": "ទាក់ទងផ្នែកគាំទ្រ",
                     "privacy": "គោលការណ៍ឯកជនភាព",
@@ -2286,15 +2286,15 @@ export default {
             "explanation": {
                 "title": "ការគណនាចំនួនទឹកប្រាក់ដែលត្រូវបង់តាមវេទិកា",
                 "loading": "កំពុងផ្ទុកព័ត៌មានលម្អិតនៃការគណនា។",
-                "enabled": "ការលក់ចែករំលែកចំណូល THB :sales × :rate% = ចំណែក THB :share + ប្រាក់ Lalamove នៅសល់ THB :outstanding = ប្រាក់ត្រូវបង់ទៅ Platform THB :due (Lalamove សរុប THB :deliveryCost / ក្រេឌីត KINJAI ដែលបានប្រើ :walletCovered ក្រេឌីត / ថ្លៃដឹកជញ្ជូនដែលអតិថិជនបង់ THB :customerDelivery / ប្រាក់ឧបត្ថម្ភពីហាង THB :subsidy)។",
+                "enabled": "ការលក់ចែករំលែកចំណូល THB :sales × :rate% = ចំណែក THB :share + ប្រាក់ Lalamove នៅសល់ THB :outstanding = ប្រាក់ត្រូវបង់ទៅ Platform THB :due (Lalamove សរុប THB :deliveryCost / ក្រេឌីត PENGUIN ដែលបានប្រើ :walletCovered ក្រេឌីត / ថ្លៃដឹកជញ្ជូនដែលអតិថិជនបង់ THB :customerDelivery / ប្រាក់ឧបត្ថម្ភពីហាង THB :subsidy)។",
                 "disabled": "ការចែករំលែកប្រាក់ចំណូលលើវេទិកាមិនត្រូវបានបើកសម្រាប់ហាងនេះទេ។"
             },
             "wallet": {
-                "title": "KINJAI ឥណទានសម្រាប់ Lalamove",
-                "description": "ក្រេឌីត KINJAI ប្រើសម្រាប់សេវាកម្ម Lalamove ជាមួយនឹងសកម្មភាពឥណទាន និងហេតុផលបរាជ័យ នៅពេលដែលការបញ្ជូនមិនអាចបង្កើតបាន។",
-                "summary_aria": "KINJAI សង្ខេបឥណទាន",
+                "title": "PENGUIN ឥណទានសម្រាប់ Lalamove",
+                "description": "ក្រេឌីត PENGUIN ប្រើសម្រាប់សេវាកម្ម Lalamove ជាមួយនឹងសកម្មភាពឥណទាន និងហេតុផលបរាជ័យ នៅពេលដែលការបញ្ជូនមិនអាចបង្កើតបាន។",
+                "summary_aria": "PENGUIN សង្ខេបឥណទាន",
                 "ready": "ក្រេឌីតរួចរាល់",
-                "storage_missing": "KINJAI Wallet រចនាសម្ព័ន្ធមូលដ្ឋានទិន្នន័យមិនត្រូវបានដំឡើងទេ។",
+                "storage_missing": "PENGUIN Wallet រចនាសម្ព័ន្ធមូលដ្ឋានទិន្នន័យមិនត្រូវបានដំឡើងទេ។",
                 "balance": "សមតុល្យឥណទាន",
                 "approved_topup_total": "ក្រេឌីតត្រូវបានបន្ថែមគ្រប់ពេលវេលា",
                 "period_topup": "ឥណទានត្រូវបានបន្ថែមនៅក្នុងរយៈពេលដែលបានជ្រើសរើស",
@@ -2302,8 +2302,8 @@ export default {
                 "period_delivery_refund": "ឥណទានត្រឡប់ពីការដឹកជញ្ជូនក្នុងរយៈពេលដែលបានជ្រើសរើស",
                 "pending_topup": "ឥណទានកំពុងរង់ចាំការពិនិត្យឡើងវិញ",
                 "pending_count": ":count សំណើ",
-                "accounting_note": "ថ្លៃសេវា Lalamove បង់ដោយជោគជ័យជាមួយក្រេឌីត KINJAI មិនត្រូវបានគិតប្រាក់ម្តងទៀតក្នុងចំនួននេះទេ ដោយសារវេទិកា។",
-                "credit_policy": "អត្រាឥណទាន៖ THB 1 = 1 ឥណទាន។ ឥណទាន KINJAI គឺសម្រាប់បង់ថ្លៃសេវាក្នុងប្រព័ន្ធ KINJAI តែប៉ុណ្ណោះ។ ពួកវាមិនអាចផ្ទេរ ដក ដូរ ឬបង្វិលសងវិញជាសាច់ប្រាក់ក្រោមលក្ខខណ្ឌនៃសេវាកម្មបានទេ លើកលែងតែករណីដែលតម្រូវដោយច្បាប់។",
+                "accounting_note": "ថ្លៃសេវា Lalamove បង់ដោយជោគជ័យជាមួយក្រេឌីត PENGUIN មិនត្រូវបានគិតប្រាក់ម្តងទៀតក្នុងចំនួននេះទេ ដោយសារវេទិកា។",
+                "credit_policy": "អត្រាឥណទាន៖ THB 1 = 1 ឥណទាន។ ឥណទាន PENGUIN គឺសម្រាប់បង់ថ្លៃសេវាក្នុងប្រព័ន្ធ PENGUIN តែប៉ុណ្ណោះ។ ពួកវាមិនអាចផ្ទេរ ដក ដូរ ឬបង្វិលសងវិញជាសាច់ប្រាក់ក្រោមលក្ខខណ្ឌនៃសេវាកម្មបានទេ លើកលែងតែករណីដែលតម្រូវដោយច្បាប់។",
                 "transactions_title": "សកម្មភាពឥណទានថ្មីៗ",
                 "transactions_description": "បង្ហាញរហូតដល់ 12 ធាតុចុងក្រោយបំផុតពីសៀវភៅបញ្ជីឥណទានប្រព័ន្ធ។",
                 "transactions_empty": "មិនមានសកម្មភាពឥណទាននៅឡើយទេ។",
@@ -2335,8 +2335,8 @@ export default {
                     "dispatch": "បញ្ជូន"
                 },
                 "failure_reasons": {
-                    "FOD_WALLET_INSUFFICIENT_BALANCE": "KINJAI សមតុល្យឥណទានមិនគ្រប់គ្រាន់ទេ។ ត្រូវការក្រេឌីត :required ប៉ុន្តែមានតែក្រេឌីត :balance ប៉ុណ្ណោះដែលអាចប្រើបាន។",
-                    "FOD_WALLET_STORAGE_MISSING": "KINJAI Wallet មិនទាន់រួចរាល់ទេ។ សូមទាក់ទងអ្នកគ្រប់គ្រងប្រព័ន្ធ។",
+                    "FOD_WALLET_INSUFFICIENT_BALANCE": "PENGUIN សមតុល្យឥណទានមិនគ្រប់គ្រាន់ទេ។ ត្រូវការក្រេឌីត :required ប៉ុន្តែមានតែក្រេឌីត :balance ប៉ុណ្ណោះដែលអាចប្រើបាន។",
+                    "FOD_WALLET_STORAGE_MISSING": "PENGUIN Wallet មិនទាន់រួចរាល់ទេ។ សូមទាក់ទងអ្នកគ្រប់គ្រងប្រព័ន្ធ។",
                     "FOD_WALLET_BUSY": "កាបូបកំពុងត្រូវបានប្រើប្រាស់ដោយប្រតិបត្តិការមួយផ្សេងទៀត។ សូមព្យាយាមម្តងទៀត។",
                     "FOD_WALLET_NOT_FOUND": "រកមិនឃើញកាបូបក្នុងហាងទេ។ សូមទាក់ទងអ្នកគ្រប់គ្រងប្រព័ន្ធ។",
                     "LALAMOVE_ACCOUNT_NOT_READY": "ហាង ឬវេទិកា Lalamove គណនីមិនទាន់រួចរាល់ទេ។",
@@ -2356,7 +2356,7 @@ export default {
             },
             "payment": {
                 "title": "រាយការណ៍ការចែករំលែកប្រាក់ចំណូល និងការផ្ទេរ Lalamove ដែលនៅសល់",
-                "description": "ភ្ជាប់ប័ណ្ណផ្ទេរប្រាក់សម្រាប់រយៈពេលដែលបានជ្រើសរើស។ មានតែចំណែកចំណូលពីការលក់ និង Lalamove ការចំណាយដែលមិនទាន់បានកាត់ពី KINJAI Wallet ប៉ុណ្ណោះដែលត្រូវបានគិតថ្លៃ។",
+                "description": "ភ្ជាប់ប័ណ្ណផ្ទេរប្រាក់សម្រាប់រយៈពេលដែលបានជ្រើសរើស។ មានតែចំណែកចំណូលពីការលក់ និង Lalamove ការចំណាយដែលមិនទាន់បានកាត់ពី PENGUIN Wallet ប៉ុណ្ណោះដែលត្រូវបានគិតថ្លៃ។",
                 "selected_period": "រយៈពេលដែលបានជ្រើសរើស",
                 "amount_due": "សរុបដោយសារតែវេទិកា",
                 "amount_breakdown": "ចែករំលែក THB :share + ឆ្នើម Lalamove THB :delivery",
@@ -2572,7 +2572,7 @@ export default {
                 "success": "បានផ្លាស់ប្តូរពាក្យសម្ងាត់ដោយជោគជ័យ។"
             },
             "footer": {
-                "product": "KINJAI",
+                "product": "PENGUIN",
                 "version": "កំណែ :version",
                 "build": "សាងសង់ :build",
                 "icon_credit": "Uicons ដោយ Flaticon"
