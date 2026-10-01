@@ -141,8 +141,22 @@ const validationUi=read("react-app/src/components/FormValidationUi.jsx");
 assert(validationUi.includes("form.noValidate = true")&&validationUi.includes("bootstrap-invalid-feedback"),"Global Laravel-style React form validation layer missing");
 assert(validationUi.includes('"#registerForm"')&&validationUi.includes("shared.validation.required"),"React validation exclusions/translations must match Laravel");
 const adminPage=read("react-app/src/pages/AdminPage.jsx");
+const adminMasterVisualCss=read("react-app/public/parity/css/admin-react-master-visual.css");
 assert(adminPage.includes('form={isTable ? "tableForm" : "menuForm"}'),"Admin menu/table modal footer must submit the real form so validation runs");
 assert(adminPage.includes('<form id="menuForm" className="grid" noValidate')&&adminPage.includes('<form id="tableForm" className="grid" noValidate'),"Admin menu/table forms must use shared validation UI instead of native browser bubbles");
+assert(
+  adminPage.includes('className="admin-sales-report-spotlight"')
+  &&adminPage.includes('className="admin-sales-report-spotlight__icon"')
+  &&adminPage.includes('className="admin-sales-report-spotlight__content"')
+  &&adminPage.includes('className="admin-sales-report-spotlight__action"')
+  &&!adminPage.includes('className="card admin-vr-card" style={{ marginBottom: 16 }} data-admin-card-role="sales-report"')
+  &&adminMasterVisualCss.includes(".admin-sales-report-spotlight")
+  &&adminMasterVisualCss.includes("grid-template-columns: 50px minmax(0, 1fr) auto;")
+  &&adminMasterVisualCss.includes(".admin-sales-report-spotlight::after")
+  &&adminMasterVisualCss.includes("content: none;")
+  &&adminMasterVisualCss.includes("grid-template-columns: 42px minmax(0, 1fr) auto;"),
+  "Admin Sales Report dashboard card must keep the dedicated flat spotlight design instead of generic layered admin-vr-card decoration"
+);
 const homePage=read("react-app/src/pages/HomePage.jsx");
 const homeDashboardCss=read("react-app/public/parity/css/home-dashboard.css");
 for(const key of ["kitchen","cashier","waiting_queue","admin","admin_users","pos","pos_catalog"]){

@@ -118,25 +118,157 @@ body.admin-vr-page .admin-vr-card.admin-card-collapsed:hover {
 }
 
 
-/* Sales report card: keep icon/title copy left-aligned and action at the far right. */
-body.admin-vr-page [data-admin-card-role="sales-report"] > .admin-card-visual-title {
-  justify-content: flex-start !important;
-}
-
-body.admin-vr-page [data-admin-card-role="sales-report"] > .admin-card-visual-title > .admin-card-heading {
-  flex: 1 1 auto;
+/* Sales Report spotlight: deliberately independent from generic admin-vr-card decoration. */
+body.admin-vr-page .admin-sales-report-spotlight {
+  position: relative;
+  isolation: isolate;
   min-width: 0;
-  text-align: left !important;
+  min-height: 108px;
+  display: grid;
+  grid-template-columns: 50px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 16px;
+  padding: 18px 18px 18px 20px;
+  overflow: hidden;
+  border: 1px solid #d8e9de;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(14, 72, 40, .07);
 }
 
-body.admin-vr-page [data-admin-card-role="sales-report"] > .admin-card-visual-title > .admin-card-heading h2,
-body.admin-vr-page [data-admin-card-role="sales-report"] > .admin-card-visual-title > .admin-card-heading .menu-category {
-  text-align: left !important;
+body.admin-vr-page .admin-sales-report-spotlight::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0 auto 0 0;
+  width: 5px;
+  content: "";
+  background: linear-gradient(180deg, #159447, #45bd74);
 }
 
-body.admin-vr-page [data-admin-card-role="sales-report"] > .admin-card-visual-title > .btn {
-  margin-left: auto;
-  flex: 0 0 auto;
+body.admin-vr-page .admin-sales-report-spotlight::after {
+  content: none;
+  display: none;
+}
+
+body.admin-vr-page .admin-sales-report-spotlight__icon {
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: #e8f8ee;
+  color: #0d7a39;
+  font-size: 22px;
+  line-height: 1;
+}
+
+body.admin-vr-page .admin-sales-report-spotlight__icon .bi,
+body.admin-vr-page .admin-sales-report-spotlight__icon .bi::before {
+  color: currentColor !important;
+  line-height: 1 !important;
+}
+
+body.admin-vr-page .admin-sales-report-spotlight__content {
+  min-width: 0;
+}
+
+body.admin-vr-page .admin-sales-report-spotlight__content h2 {
+  margin: 0;
+  color: #123d27;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -.015em;
+  line-height: 1.25;
+}
+
+body.admin-vr-page .admin-sales-report-spotlight__content p {
+  margin: 5px 0 0;
+  color: #6d7d73;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+body.admin-vr-page .admin-sales-report-spotlight__action {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: #0d7a39;
+  color: #fff;
+  box-shadow: 0 7px 16px rgba(13, 122, 57, .17);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform .16s ease, background .16s ease, box-shadow .16s ease;
+}
+
+body.admin-vr-page .admin-sales-report-spotlight__action:hover {
+  transform: translateY(-1px);
+  background: #0a6730;
+  box-shadow: 0 10px 20px rgba(13, 122, 57, .22);
+}
+
+body.admin-vr-page .admin-sales-report-spotlight__action .bi,
+body.admin-vr-page .admin-sales-report-spotlight__action .bi::before {
+  color: currentColor !important;
+  line-height: 1 !important;
+}
+
+body.admin-vr-page .admin-sales-report-spotlight__arrow {
+  width: 15px;
+  height: 15px;
+  display: inline-grid !important;
+  place-items: center !important;
+  margin-left: 1px;
+  font-size: 15px;
+}
+
+@media (max-width: 640px) {
+  body.admin-vr-page .admin-sales-report-spotlight {
+    min-height: 98px;
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 14px 12px 14px 16px;
+    border-radius: 16px;
+    box-shadow: 0 5px 14px rgba(14, 72, 40, .055);
+  }
+
+  body.admin-vr-page .admin-sales-report-spotlight__icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    font-size: 19px;
+  }
+
+  body.admin-vr-page .admin-sales-report-spotlight__content h2 {
+    font-size: 16px;
+  }
+
+  body.admin-vr-page .admin-sales-report-spotlight__content p {
+    margin-top: 3px;
+    font-size: 10.5px;
+    line-height: 1.35;
+  }
+
+  body.admin-vr-page .admin-sales-report-spotlight__action {
+    min-height: 38px;
+    gap: 5px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+  }
+
+  body.admin-vr-page .admin-sales-report-spotlight__arrow {
+    display: none !important;
+  }
 }
 
 

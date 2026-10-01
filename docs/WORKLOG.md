@@ -2419,6 +2419,70 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Admin dashboard Sales Report spotlight card redesign
+
+Request clarification:
+- The card that still looked unchanged was the `รายงานยอดขาย` navigation card on `/admin`, not the KPI cards inside `/admin/sales-report`.
+- User supplied a focused screenshot showing the dashboard card still using the same layered visual treatment.
+
+Root cause:
+- The Admin dashboard Sales Report entry still used `card admin-vr-card`.
+- Generic `.admin-vr-card` styling adds:
+  - a colored left pseudo-element,
+  - a large translucent circular `::after` decoration at the top-right,
+  - tinted gradient background,
+  - shared hover/shadow treatment.
+- The prior task redesigned the report page KPI cards only, so this dashboard navigation card correctly remained visually unchanged.
+
+Change:
+- Replaced the Sales Report dashboard entry with a dedicated standalone component:
+  - `.admin-sales-report-spotlight`
+  - `.admin-sales-report-spotlight__icon`
+  - `.admin-sales-report-spotlight__content`
+  - `.admin-sales-report-spotlight__action`
+- Removed `card admin-vr-card`, `data-admin-vr-accent`, generic section-title markup, and generic `admin-heading-icon` from this report card only.
+- The new spotlight card is a single clean white surface with:
+  - a narrow green leading accent,
+  - one compact chart icon tile,
+  - title + description as one text group,
+  - a dedicated green Report action.
+- Explicitly disables the previous circular `::after` decoration.
+- Desktop layout uses icon / content / action columns.
+- Mobile layout uses a compact 42px icon, responsive content column, and compact action; the extra trailing arrow is hidden on Mobile to avoid crowding.
+- Existing navigation destination remains `/admin/sales-report`.
+- Other Admin dashboard cards remain unchanged.
+
+Laravel comparison:
+- Connected Laravel reference checkout remains on `feature/for_dev`, not documented MASTER `main`.
+- No Laravel files were changed.
+
+Regression protection:
+- React foundation contract now requires the dedicated Sales Report spotlight markup/CSS.
+- Contract explicitly rejects regression to the old `card admin-vr-card` Sales Report markup.
+- Contract requires both Desktop and Mobile spotlight grid structures and disabled circular decoration.
+
+Release:
+- React `0.4.280 / 2026.10.02.325`
+- Public storefront `0.16.32 / 2026.10.02.040`
+- Generated React bundle `/react/assets/index-CL9NdkjE.js`.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- React foundation contract PASS.
+- React migration/parity matrix/P0 action/callable/tenant-access/UI-layer contracts PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.325`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Commit/push/deploy are performed after this WORKLOG entry.
+- Firebase scope for this UI-only change is Hosting only.
+- No Functions / Firestore Rules / Storage Rules changes are required.
+- No merge to `main`.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title

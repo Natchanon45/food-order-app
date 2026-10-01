@@ -1460,12 +1460,19 @@ export function AdminPage() {
 
         {loadError ? <div className="upload-error" role="alert">{loadError}</div> : null}
 
-        <section className="card admin-vr-card" style={{ marginBottom: 16 }} data-admin-card-role="sales-report" data-admin-vr-accent="cyan" data-admin-icon="bar-chart-line">
-          <div className="section-title admin-card-visual-title" style={{ margin: 0, alignItems: "center" }}>
-            <span className="admin-heading-icon" aria-hidden="true"><i className="bi bi-bar-chart-line"></i></span>
-            <div className="admin-card-heading"><h2>{t("admin.sales_report.title")}</h2><div className="menu-category">{t("admin.sales_report.description")}</div></div>
-            <Link className="btn btn-primary" to="/admin/sales-report"><i className="bi bi-eye app-icon" aria-hidden="true"></i><span>{t("admin.sales_report.button")}</span></Link>
+        <section className="admin-sales-report-spotlight" data-admin-card-role="sales-report">
+          <div className="admin-sales-report-spotlight__icon" aria-hidden="true">
+            <i className="bi bi-graph-up-arrow"></i>
           </div>
+          <div className="admin-sales-report-spotlight__content">
+            <h2>{t("admin.sales_report.title")}</h2>
+            <p>{t("admin.sales_report.description")}</p>
+          </div>
+          <Link className="admin-sales-report-spotlight__action" to="/admin/sales-report">
+            <i className="bi bi-eye" aria-hidden="true"></i>
+            <span>{t("admin.sales_report.button")}</span>
+            <i className="bi bi-arrow-right-short admin-sales-report-spotlight__arrow" aria-hidden="true"></i>
+          </Link>
         </section>
 
         <AdminDeliveryQr tenant={tenant} shopName={settings.shopName || tenant?.name || ""} t={t} />
