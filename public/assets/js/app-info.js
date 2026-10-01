@@ -7,16 +7,16 @@
 // ADMIN_WORKSPACE_VISUAL_REFRESH_20260803
 // SUBSCRIPTION_PRICING_CONFIGURATION_20260920_001
 export const APP_INFO = {
-  name: 'KINJAI',
-  product: 'KINJAI',
+  name: 'PENGUIN',
+  product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.01.021',
+  build: '2026.10.01.022',
   branch: 'feature/react-firebase-port',
   commit: 'CANONICAL-URL-CUTOVER',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'KINJAI branding rollout',
+  milestone: 'PENGUIN branding rollout',
   updatedAt: '2026-10-01T00:20:00+07:00',
   whatsNew: [
     'Keep the language switcher immediately before the user profile across authenticated headers',
