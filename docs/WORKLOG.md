@@ -1701,9 +1701,12 @@ Verification:
 - `git diff --check` PASS.
 
 Deploy state:
-- Commit/push/deploy are performed after this WORKLOG entry.
+- Commit: `11c5c5b2` — `feat: refine Quick Order menu cards`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` with React Build `2026.10.02.314`.
+- Verified `/cashier/quick-order` returns HTTP 200 from the PENGUIN Hosting origin.
+- No Functions / Rules / Storage deployment was performed for this UI change.
 - No merge to `main`.
-- Firebase scope is Hosting only.
 
 ---
 
