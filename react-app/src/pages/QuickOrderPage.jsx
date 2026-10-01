@@ -827,8 +827,9 @@ export function QuickOrderPage() {
                         style={{ objectPosition: `${imageX}% ${imageY}%` }}
                       />
                       <span className="quick-menu-info-overlay" aria-hidden="true">
-                        <strong>{menu.name || ""}</strong>
-                        <span>{money(menu.price || 0)}</span>
+                        <strong className="quick-menu-name">{menu.name || ""}</strong>
+                        <small className="quick-menu-category">{categoryKey(menu.category)}</small>
+                        <span className="quick-menu-price-badge">{money(menu.price || 0)}</span>
                       </span>
                     </button>
                   </article>

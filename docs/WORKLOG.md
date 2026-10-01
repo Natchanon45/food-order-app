@@ -1665,6 +1665,48 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Quick Order menu card metadata hierarchy
+
+Request:
+- On `/cashier/quick-order`, show each menu card with a clearer hierarchy:
+  - menu name bold,
+  - category smaller and normal weight,
+  - price bold inside a badge.
+
+Change:
+- Added explicit `.quick-menu-name`, `.quick-menu-category`, and `.quick-menu-price-badge` elements to Quick Order menu cards.
+- Menu name now uses heavier weight and retains two-line clamping.
+- Category now appears as a smaller, normal-weight secondary line with ellipsis protection.
+- Price now renders as a bold pill badge with a white surface and green text for contrast over food images.
+- Increased the lower image gradient overlay height slightly so name/category/price fit cleanly without obscuring the full image.
+- Added React foundation regression coverage for all three metadata roles and their CSS treatment.
+
+Release:
+- React `0.4.280 / 2026.10.02.314`
+- Public storefront `0.16.32 / 2026.10.02.029`
+
+Important files:
+- `react-app/src/pages/QuickOrderPage.jsx`
+- `react-app/public/parity/css/quick-order.css`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- Generated React Hosting entrypoints and bundle.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.314` and bundle `/react/assets/index-xxhr_5Rz.js`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Commit/push/deploy are performed after this WORKLOG entry.
+- No merge to `main`.
+- Firebase scope is Hosting only.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title

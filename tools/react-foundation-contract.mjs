@@ -370,7 +370,19 @@ const cashierNotifier=read("react-app/src/components/CashierOrderNotifier.jsx");
 assert(cashierNotifier.includes('id="orderAlertButton"')&&cashierNotifier.includes("food_order_order_alerts_enabled"),"Cashier order alert button/preference contract missing");
 const quickOrderPage=read("react-app/src/pages/QuickOrderPage.jsx");
 assert(quickOrderPage.includes('data-category="__best__"')&&quickOrderPage.includes("BEST_SELLER_LIMIT = 12"),"Quick Order best-seller category parity missing");
-assert(quickOrderPage.includes("quick-menu-info-overlay")&&quickOrderPage.includes("quick-menu-image"),"Quick Order menu card markup must match Laravel");
+assert(
+  quickOrderPage.includes("quick-menu-info-overlay")
+  &&quickOrderPage.includes("quick-menu-image")
+  &&quickOrderPage.includes('className="quick-menu-name"')
+  &&quickOrderPage.includes('className="quick-menu-category"')
+  &&quickOrderPage.includes('className="quick-menu-price-badge"')
+  &&quickOrderCss.includes(".quick-menu-info-overlay .quick-menu-name")
+  &&quickOrderCss.includes(".quick-menu-info-overlay .quick-menu-category")
+  &&quickOrderCss.includes(".quick-menu-info-overlay .quick-menu-price-badge")
+  &&quickOrderCss.includes("font-weight: 400;")
+  &&quickOrderCss.includes("font-weight: 800;"),
+  "Quick Order menu cards must keep bold name, compact category, and bold price badge"
+);
 assert(quickOrderPage.includes('disabled={serviceType !== "dine_in"}')&&quickOrderPage.includes('{ display: "none" }'),"Quick Order takeaway mode must hide/disable table selection");
 assert(read("react-app/src/pages/HomePage.jsx").includes("publicLanding"),"real home page missing");
 assert(read("react-app/src/pages/LoginPage.jsx").includes("loginForm"),"real login page missing");

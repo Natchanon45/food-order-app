@@ -426,8 +426,8 @@
   z-index: 2;
   inset: auto 0 0;
   display: flex;
-  min-height: 54%;
-  padding: 24px 8px 8px;
+  min-height: 62%;
+  padding: 30px 8px 8px;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-end;
@@ -438,27 +438,52 @@
   pointer-events: none;
 }
 
-.quick-menu-info-overlay strong,
-.quick-menu-info-overlay span {
-  display: block;
-  width: 100%;
+.quick-menu-info-overlay .quick-menu-name,
+.quick-menu-info-overlay .quick-menu-category,
+.quick-menu-info-overlay .quick-menu-price-badge {
   color: #fff;
 }
 
-.quick-menu-info-overlay strong {
+.quick-menu-info-overlay .quick-menu-name {
   display: -webkit-box;
+  width: 100%;
   overflow: hidden;
-  font-size: .78rem;
-  font-weight: 700;
-  line-height: 1.15;
+  font-size: .8rem;
+  font-weight: 800;
+  line-height: 1.18;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
 
-.quick-menu-info-overlay span {
-  font-size: .7rem;
-  font-weight: 700;
-  line-height: 1.1;
+.quick-menu-info-overlay .quick-menu-category {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  color: rgba(255, 255, 255, .84);
+  font-size: .64rem;
+  font-weight: 400;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quick-menu-info-overlay .quick-menu-price-badge {
+  display: inline-flex;
+  width: auto;
+  max-width: 100%;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  padding: 4px 8px;
+  border: 1px solid rgba(255, 255, 255, .66);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .94);
+  color: #0d6f34;
+  font-size: .68rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .13);
+  white-space: nowrap;
 }
 
 .quick-cart-panel {
