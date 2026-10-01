@@ -2476,9 +2476,17 @@ Verification:
 - `git diff --check` PASS.
 
 Deploy state:
-- Commit/push/deploy are performed after this WORKLOG entry.
-- Firebase scope for this UI-only change is Hosting only.
-- No Functions / Firestore Rules / Storage Rules changes are required.
+- Implementation commit: `7b1b4d9e` — `fix: redesign Admin sales report card`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` with React Build `2026.10.02.325`.
+- No Functions / Firestore Rules / Storage Rules deployment was performed for this UI-only change.
+- Production verification:
+  - `/admin` returns HTTP 200,
+  - production `admin-react-master-visual.css` contains `.admin-sales-report-spotlight`,
+  - Desktop spotlight grid `50px minmax(0,1fr) auto` is present,
+  - Mobile spotlight grid `42px minmax(0,1fr) auto` is present,
+  - old circular decoration is explicitly disabled with `content:none`,
+  - production bundle `/react/assets/index-CL9NdkjE.js` contains the new spotlight markup and action class.
 - No merge to `main`.
 
 ---
