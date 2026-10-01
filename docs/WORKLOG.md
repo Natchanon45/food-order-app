@@ -1986,9 +1986,11 @@ Verification:
 - Regression contract verifies Mobile switches are controlled by per-user `draft.active` and ON state remains green.
 
 Deploy state:
-- Commit/push/deploy are performed after this WORKLOG entry.
+- Commit: `cc432755` — `fix: correct Admin Users mobile header and switches`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` with React Build `2026.10.02.319`.
+- No Functions / Rules / Storage deployment was performed for this UI fix.
 - No merge to `main`.
-- Firebase scope is Hosting only.
 
 ---
 
