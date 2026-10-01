@@ -264,6 +264,9 @@ exports.assignWalkInTable = operationalOrders.assignWalkInTable;
 exports.moveTableSession = operationalOrders.moveTableSession;
 exports.releaseQuickOrderHeldBill = operationalOrders.releaseQuickOrderHeldBill;
 
+const lalamoveWebhook = require("./lalamove-webhook");
+exports.lalamoveWebhook = lalamoveWebhook.lalamoveWebhook;
+
 const lalamoveDispatch = require("./lalamove-dispatch");
 exports.quoteTenantLalamoveDispatch = lalamoveDispatch.quoteTenantLalamoveDispatch;
 exports.placeTenantLalamoveDispatch = lalamoveDispatch.placeTenantLalamoveDispatch;

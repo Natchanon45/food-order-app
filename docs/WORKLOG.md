@@ -1587,6 +1587,32 @@ Deploy state:
 
 ---
 
+## 2026-10-01 — Lalamove webhook export repair during PENGUIN origin cutover
+
+Finding:
+- After the new `penguin-food` Hosting release, Firebase still warned that rewrite function `lalamoveWebhook` had no valid endpoint.
+- Lalamove Sandbox webhook registration returned HTTP 422 with `ERR_INVALID_RESPONSE` because the callback URL did not return a valid 200 response.
+
+Root cause:
+- `functions/lalamove-webhook.js` already contained the complete HTTP webhook implementation.
+- `functions/index.js` never exported `lalamoveWebhook`, so Firebase Functions had no deployed function for the Hosting rewrite.
+
+Change:
+- Exported `lalamoveWebhook` from `functions/index.js`.
+- Added React foundation regression coverage requiring the webhook export to remain present.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `git diff --check` PASS.
+- Hosting Build remains `2026.10.01.312`; no additional Hosting deploy is required for this function-only repair.
+
+Deploy state:
+- Function export commit/deploy and Lalamove webhook re-registration are performed after this WORKLOG entry.
+- No merge to `main`.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title

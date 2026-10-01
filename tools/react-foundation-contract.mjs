@@ -203,6 +203,7 @@ assert(
   &&!publicSignupFunction.includes("natchanon-food-order-delivery.web.app"),
   "PENGUIN production origin must stay canonical across Hosting, Firebase Auth, messaging, and signup links"
 );
+assert(functionsIndex.includes('exports.lalamoveWebhook = lalamoveWebhook.lalamoveWebhook'),"Lalamove Hosting webhook must stay exported from Functions index");
 assert(posPage.includes("initialDataReady")&&posPage.includes("!initialDataReady"),"POS full-page readiness must wait for initial Firebase data");
 assert(
   adminRetailParity.includes('content: "PG"')&&!adminRetailParity.includes('content: "KJ"')
