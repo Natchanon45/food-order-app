@@ -258,6 +258,9 @@ const googleDelivery = require("./google-delivery");
 exports.getDeliveryGoogleMapsConfig = googleDelivery.getDeliveryGoogleMapsConfig;
 exports.computeDeliveryRoute = googleDelivery.computeDeliveryRoute;
 
+const deliveryCustomerAuth = require("./delivery-customer-auth");
+exports.createDeliveryCustomerSession = deliveryCustomerAuth.createDeliveryCustomerSession;
+
 const operationalOrders = require("./operational-orders");
 exports.createWalkInOrder = operationalOrders.createWalkInOrder;
 exports.assignWalkInTable = operationalOrders.assignWalkInTable;

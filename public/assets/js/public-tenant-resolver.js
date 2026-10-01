@@ -1,5 +1,6 @@
-import { db, doc, getDoc, collection, getDocs, query, where } from "./firebase-config.js?v=20260630-073";
-import { setActiveTenant } from "./tenant-context.js";
+import { doc, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import { customerDb } from "./public-firebase-context.js?v=20261002-001";
+import { setActiveTenant } from "./tenant-context.js?v=20261002-006";
 
 function storefrontSlug(pathname = location.pathname) {
   const match = pathname.match(/^\/s\/([^/]+)/i);
@@ -43,7 +44,7 @@ function showUnavailableStorefront(
 }
 
 async function getTenantBySlug(slug) {
-  const slugSnapshot = await getDoc(doc(db, "tenantSlugs", slug));
+  const slugSnapshot = await getDoc(doc(customerDb, "tenantSlugs", slug));
   if (slugSnapshot.exists()) {
     const data = slugSnapshot.data();
     return {
@@ -54,7 +55,7 @@ async function getTenantBySlug(slug) {
     };
   }
 
-  const tenantSnapshot = await getDocs(query(collection(db, "tenants"), where("slug", "==", slug)));
+  const tenantSnapshot = await getDocs(query(collection(customerDb, "tenants"), where("slug", "==", slug)));
   if (tenantSnapshot.empty) return null;
   const item = tenantSnapshot.docs[0];
   const data = item.data();

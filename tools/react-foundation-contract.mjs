@@ -179,6 +179,12 @@ const publicSignupFunction=read("functions/public-signup.js");
 const staticDeliveryEntry=read("public/delivery/index.html");
 const staticDeliveryAddresses=read("public/assets/js/delivery-addresses.js");
 const staticCustomerProfileService=read("public/assets/js/customer-profile-service.js");
+const publicFirebaseContext=read("public/assets/js/public-firebase-context.js");
+const publicStorefrontService=read("public/assets/js/public-storefront-service.js");
+const staticDataService=read("public/assets/js/data-service.js");
+const deliveryCustomerAuthFunction=read("functions/delivery-customer-auth.js");
+const firestoreRules=read("firestore.rules");
+const storageRules=read("storage.rules");
 const staticDeliveryStaffGuard=read("public/assets/js/delivery-staff-guard.js");
 const staticDeliveryAddressesCss=read("public/assets/css/delivery-addresses.css");
 const staticDeliveryRuntime=read("public/assets/js/delivery.js");
@@ -228,14 +234,39 @@ assert(
   &&!staticDeliveryAddresses.includes("currentStaff")
   &&!staticDeliveryAddresses.includes("staffSignedIn")
   &&staticDeliveryAddresses.includes("const showGoogle = !signedIn")
-  &&staticCustomerProfileService.includes('const CUSTOMER_APP_NAME = "penguin-delivery-customer"')
-  &&staticCustomerProfileService.includes("getAuth(customerApp)")
-  &&staticCustomerProfileService.includes("getFirestore(customerApp)")
-  &&staticCustomerProfileService.includes("signInWithPopup(customerAuth, provider)")
+  &&publicFirebaseContext.includes('CUSTOMER_APP_NAME = "penguin-storefront-customer-v2"')
+  &&publicFirebaseContext.includes('CUSTOMER_BROKER_APP_NAME = "penguin-google-customer-broker-v1"')
+  &&publicFirebaseContext.includes("customerAuth = getAuth(customerApp)")
+  &&publicFirebaseContext.includes("customerDb = getFirestore(customerApp)")
+  &&publicFirebaseContext.includes("customerStorage = getStorage(customerApp)")
+  &&publicFirebaseContext.includes('customerFunctions = getFunctions(customerApp, "asia-southeast1")')
+  &&publicFirebaseContext.includes("customerBrokerAuth = getAuth(customerBrokerApp)")
+  &&publicFirebaseContext.includes("customerBrokerFunctions = getFunctions(")
+  &&staticCustomerProfileService.includes("signInWithPopup(")
+  &&staticCustomerProfileService.includes("customerBrokerAuth")
+  &&staticCustomerProfileService.includes("customerBrokerFunctions")
+  &&!staticCustomerProfileService.includes("signInWithPopup(customerAuth")
+  &&staticCustomerProfileService.includes("createDeliveryCustomerSession")
+  &&staticCustomerProfileService.includes("signInWithCustomToken(customerAuth, customToken)")
+  &&staticCustomerProfileService.includes("claims?.customerContext === true")
+  &&staticCustomerProfileService.includes('user?.uid?.startsWith("cust_")')
   &&staticCustomerProfileService.includes("signOut(customerAuth)")
   &&staticCustomerProfileService.includes("customerProfileDoc(user.uid)")
   &&!staticCustomerProfileService.includes("loadGoogleCustomerLoginSetting")
-  &&!staticCustomerProfileService.includes("applyStaffDeliveryState")
+  &&!staticCustomerProfileService.includes("getStaffSession")
+  &&publicStorefrontService.includes("customerStorage")
+  &&staticDataService.includes("const runtimeDb = publicCustomerRoute ? customerDb : db")
+  &&staticDataService.includes("const runtimeStorage = publicCustomerRoute ? customerStorage : storage")
+  &&deliveryCustomerAuthFunction.includes('const CUSTOMER_UID_PREFIX = "cust_"')
+  &&deliveryCustomerAuthFunction.includes('sign_in_provider === "google.com"')
+  &&deliveryCustomerAuthFunction.includes("customerContext: true")
+  &&deliveryCustomerAuthFunction.includes("setCustomUserClaims")
+  &&functionsIndex.includes("exports.createDeliveryCustomerSession = deliveryCustomerAuth.createDeliveryCustomerSession")
+  &&firestoreRules.includes("function customerContext()")
+  &&firestoreRules.includes("request.auth.token.get('customerContext', false) == true")
+  &&firestoreRules.includes("function signedIn() { return authenticated() && !customerContext(); }")
+  &&storageRules.includes("function customerContext()")
+  &&storageRules.includes("return authenticated() && !customerContext();")
   &&staticDeliveryStaffGuard.includes("intentionally isolated from staff auth")
   &&!staticDeliveryStaffGuard.includes("googleLoginButton.hidden = true")
   &&staticDeliveryAddressesCss.includes("#customerLogoutButton")
@@ -244,7 +275,7 @@ assert(
   &&staticDeliveryAddressesCss.includes("right: 10px;")
   &&staticDeliveryAddressesCss.includes("background: transparent !important;")
   &&staticDeliveryAddressesCss.includes("border: 0 !important;"),
-  "Delivery customer auth must stay isolated from staff auth with icon-only top-right logout"
+  "Delivery customer context must be isolated from staff identity, privileges, data, storage, and Functions"
 );
 assert(
   cashierPage.includes('className="cashier-hero-actions"')
@@ -340,8 +371,6 @@ assert(posCatalogCss.includes(".catalog-tabs")&&posCatalogCss.includes(".product
 assert(paritySync.includes('"retail-pos-catalog.css"'),"POS catalog CSS must remain sourced from Laravel MASTER parity sync");
 const posProductsPage=read("react-app/src/pages/PosProductsPage.jsx");
 const posProductsData=read("react-app/src/data/retailProductsData.js");
-const firestoreRules=read("firestore.rules");
-const storageRules=read("storage.rules");
 assert(appRoutes.includes('import { PosProductsPage } from "@/pages/PosProductsPage";')&&appRoutes.includes('<Route path="/pos/products" element={<PosProductsPage />} />'),"React POS Products route must be mounted");
 assert(posNavigation.includes('key: "pos.products"')&&posNavigation.includes('href: "/pos/products"')&&read("react-app/src/pages/PosCatalogPage.jsx").includes('href="/pos/products"'),"Migrated POS product links must stay inside React/Firebase routes");
 assert(posNavigation.includes('href: "/pos/sales"')&&posNavigation.includes('href: "/pos/tax-invoices"')&&posNavigation.includes('href: "/pos/returns"')&&posNavigation.includes('href: "/pos/shifts"')&&posNavigation.includes("translatedOrFallback"),"POS sales-group navigation must stay inside React and fall back to MASTER labels");

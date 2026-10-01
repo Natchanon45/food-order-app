@@ -61,9 +61,9 @@ PENGUIN branding checkpoint (2026-10-01):
 - Public-facing brand is now **PENGUIN**; compact fallback mark is `PG`. The previous visible KINJAI / KJ branding is legacy-only and must not surface in the UI.
 - Uploaded Platform App Icon is the first-choice header icon globally; Logo remains primary for login/large logo surfaces.
 - Internal repo/Firebase/schema/DOM/translation identifiers are intentionally unchanged.
-- Next release identity: React `0.4.280 / 2026.10.02.322`; public storefront `0.16.32 / 2026.10.02.037`.
+- Next release identity: React `0.4.280 / 2026.10.02.323`; public storefront `0.16.32 / 2026.10.02.038`.
 - Primary production Hosting origin: `https://penguin-food.web.app`. Legacy `https://natchanon-food-order-delivery.web.app` remains reachable during transition but is no longer in deploy target `foodapp`.
-- Delivery customer Google authentication is isolated from staff auth using named Firebase app `penguin-delivery-customer`; staff/Owner/Super Admin remain on the default Firebase app. Delivery no longer uses `platformSettings/googleCustomerLogin` as its runtime gate.
+- Delivery customer auth is privilege-isolated from staff auth: Google popup runs only in broker app `penguin-google-customer-broker-v1`, callable `createDeliveryCustomerSession` exchanges it for a namespaced `cust_...` custom-token session in `penguin-storefront-customer-v2`, and Firestore/Storage rules explicitly exclude `customerContext` tokens from all staff-role paths. Staff/Owner/Super Admin remain on `[DEFAULT]`; Delivery logout affects only customer/broker apps.
 - Pull, test/build, commit generated assets, and deploy Hosting before visual verification.
 - If the uploaded Logo / App Icon artwork still contains FOD, KINJAI, or KJ, upload new PENGUIN / PG artwork from Platform Branding after deploy.
 

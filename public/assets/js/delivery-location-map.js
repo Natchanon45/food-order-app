@@ -1,6 +1,7 @@
 import "./public-i18n-bootstrap.js?v=20260930-001";
-import { functions, httpsCallable } from "./firebase-config.js?v=20260630-073";
-import { getStoredTenant } from "./tenant-context.js?v=20260903-201";
+import { customerFunctions as functions } from "./public-firebase-context.js?v=20261002-001";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-functions.js";
+import { getStoredTenant } from "./tenant-context.js?v=20261002-006";
 import { t } from "./i18n.js?v=20260930-001";
 
 // DELIVERY_GOOGLE_MAP_PICKER_20260903_001

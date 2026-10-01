@@ -1,9 +1,10 @@
 import "./public-page-static-i18n.js?v=20261001-003";
 
-await import("./public-tenant-resolver.js?v=20260916-005");
+await import("./public-tenant-resolver.js?v=20261002-006");
 
-import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20260930-004';
-import { functions, httpsCallable } from "./firebase-config.js?v=20260630-073";
+import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20261002-007';
+import { customerFunctions as functions } from "./public-firebase-context.js?v=20261002-001";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-functions.js";
 import { money, toast } from "./ui.js?v=20260930-001";
 import { t } from "./i18n.js?v=20261001-003";
 import { generatePromptPayPayload } from "./promptpay.js";
@@ -13,7 +14,7 @@ import {
   watchCustomerAuth,
   getCustomerFavorites,
   saveCustomerFavorites,
-} from "./customer-profile-service.js?v=20261002-007";
+} from "./customer-profile-service.js?v=20261002-008";
 
 const menuGrid = document.querySelector("#menuGrid");
 const deliveryHeroStoreName = document.querySelector("#deliveryHeroStoreName");

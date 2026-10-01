@@ -8,7 +8,7 @@ import {
   logoutCustomer,
   getCustomerProfile,
   saveCustomerProfile,
-} from './customer-profile-service.js?v=20261002-007';
+} from './customer-profile-service.js?v=20261002-008';
 import { toast } from './ui.js?v=20260930-001';
 import { t } from './i18n.js?v=20260930-001';
 

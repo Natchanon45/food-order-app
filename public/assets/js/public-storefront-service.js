@@ -1,6 +1,7 @@
-import { dataService } from "./data-service.js?v=20260930-004";
-import { storage, ref, uploadBytes } from "./firebase-config.js?v=20260630-073";
-import { getStoredTenant } from "./tenant-context.js?v=20260916-005";
+import { dataService } from "./data-service.js?v=20261002-006";
+import { ref, uploadBytes } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-storage.js";
+import { customerStorage } from "./public-firebase-context.js?v=20261002-001";
+import { getStoredTenant } from "./tenant-context.js?v=20261002-006";
 
 const pendingOrderIds = new Map();
 const VALID_ORDER_ID = /^[a-zA-Z0-9_-]{8,128}$/;
@@ -77,12 +78,12 @@ export const publicStorefrontService = {
   async uploadSlip(file, orderId) {
     if (!file) return { path: "" };
     if (file.size > 8 * 1024 * 1024) throw new Error("SLIP_TOO_LARGE");
-    if (!storage) throw new Error("STORAGE_NOT_READY");
+    if (!customerStorage) throw new Error("STORAGE_NOT_READY");
     const tenant = this.getActiveShop();
     if (!tenant?.id) throw new Error("TENANT_NOT_READY");
     const extension = (String(file.name || "").split(".").pop() || "jpg").replace(/[^a-zA-Z0-9]/g, "") || "jpg";
     const path = `tenants/${tenant.id}/payment-slips/${orderId}/${Date.now()}.${extension}`;
-    const fileRef = ref(storage, path);
+    const fileRef = ref(customerStorage, path);
     const contentType = file.type && file.type.startsWith("image/") ? file.type : "image/jpeg";
     await uploadBytes(fileRef, file, { contentType, customMetadata: { tenantId: tenant.id, orderId } });
     return { path };

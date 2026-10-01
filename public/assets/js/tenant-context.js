@@ -1,4 +1,5 @@
 import { db, isFirebaseConfigured, collection, getDocs, query, where } from './firebase-config.js?v=20260630-073';
+import { customerDb, isTenantPublicRoute } from './public-firebase-context.js?v=20261002-001';
 
 const ACTIVE_TENANT_KEY = "food_order_active_tenant";
 const LEGACY_ACTIVE_SHOP_KEY = "food_order_active_shop";
@@ -50,8 +51,9 @@ export function clearActiveTenant() {
 }
 
 async function fetchTenantBySlug(slug) {
-  if (!isFirebaseConfigured || !db || !slug) return null;
-  const snapshot = await getDocs(query(collection(db, "tenants"), where("slug", "==", slug)));
+  const runtimeDb = isTenantPublicRoute() ? customerDb : db;
+  if (!isFirebaseConfigured || !runtimeDb || !slug) return null;
+  const snapshot = await getDocs(query(collection(runtimeDb, "tenants"), where("slug", "==", slug)));
   if (snapshot.empty) return null;
   const docSnapshot = snapshot.docs[0];
   const data = docSnapshot.data();

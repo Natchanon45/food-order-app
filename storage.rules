@@ -2,8 +2,19 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    function signedIn() {
+    function authenticated() {
       return request.auth != null;
+    }
+
+    function customerContext() {
+      return authenticated()
+        && request.auth.uid.matches('cust_.*')
+        && request.auth.token.get('customerContext', false) == true
+        && request.auth.token.get('customerGoogle', false) == true;
+    }
+
+    function signedIn() {
+      return authenticated() && !customerContext();
     }
 
     function staffProfile() {

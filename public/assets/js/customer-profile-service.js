@@ -1,23 +1,23 @@
-import { firebaseConfig, auth as staffAuth, db as staffDb, doc, getDoc, setDoc, serverTimestamp } from "./firebase-config.js?v=20260630-073";
-import { tenantDocumentPath, resolveTenantContext } from "./tenant-context.js";
-import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import { tenantDocumentPath, resolveTenantContext } from "./tenant-context.js?v=20261002-006";
 import {
-  getAuth,
+  customerAuth,
+  customerDb,
+  customerBrokerAuth,
+  customerBrokerFunctions,
+} from "./public-firebase-context.js?v=20261002-001";
+import {
   GoogleAuthProvider,
+  getIdTokenResult,
+  signInWithCustomToken,
   signInWithPopup,
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-functions.js";
 
 const GUEST_KEY = "food_order_guest_delivery_profile";
 const GUEST_FAVORITES_PREFIX = "food_order_guest_menu_favorites";
-const CUSTOMER_APP_NAME = "penguin-delivery-customer";
-const customerApp = getApps().find(app => app.name === CUSTOMER_APP_NAME)
-  || initializeApp(firebaseConfig, CUSTOMER_APP_NAME);
-const customerAuth = getAuth(customerApp);
-const customerDb = getFirestore(customerApp);
-
 function normalizeFavoriteMenuIds(values = []) {
   return [...new Set((Array.isArray(values) ? values : [])
     .map(value => String(value || "").trim())
@@ -42,10 +42,6 @@ function saveGuestFavorites(values = []) {
   localStorage.setItem(guestFavoritesKey(), JSON.stringify(ids));
   return ids;
 }
-export function isCustomerAccountAvailable() {
-  return Boolean(customerAuth);
-}
-
 function getGuestProfile() {
   const saved = localStorage.getItem(GUEST_KEY);
   return saved ? JSON.parse(saved) : { displayName: "", phone: "", addresses: [] };
@@ -60,36 +56,91 @@ function customerProfileDoc(uid) {
   return doc(customerDb, ...tenantDocumentPath("customerProfiles", uid, resolveTenantContext()));
 }
 
-export function watchCustomerAuth(callback) {
-  return onAuthStateChanged(customerAuth, user => callback(user, null));
+async function customerSessionClaims(user) {
+  if (!user) return null;
+  try {
+    return (await getIdTokenResult(user)).claims || null;
+  } catch {
+    return null;
+  }
 }
 
-export async function getStaffSession(user = staffAuth.currentUser) {
-  if (!user) return null;
-  const snapshot = await getDoc(doc(staffDb, "users", user.uid));
-  if (!snapshot.exists()) return null;
-  const profile = snapshot.data();
-  return profile?.role ? { uid: user.uid, email: user.email, ...profile } : null;
+async function customerContextSession(user) {
+  const claims = await customerSessionClaims(user);
+  return Boolean(
+    user?.uid?.startsWith("cust_")
+    && claims?.customerContext === true
+    && claims?.customerGoogle === true
+  );
+}
+
+async function customerVerifiedEmail(user) {
+  if (!user) return "";
+  if (user.email) return String(user.email).trim().toLowerCase();
+  const claims = await customerSessionClaims(user);
+  return String(claims?.customerEmail || "").trim().toLowerCase();
+}
+
+export function watchCustomerAuth(callback) {
+  return onAuthStateChanged(customerAuth, async user => {
+    if (!user) {
+      await callback(null);
+      return;
+    }
+    if (await customerContextSession(user)) {
+      await callback(user);
+      return;
+    }
+    await signOut(customerAuth).catch(() => {});
+    await callback(null);
+  });
 }
 
 export async function loginCustomerWithGoogle() {
-  const provider = new GoogleAuthProvider();
-  provider.setCustomParameters({ prompt: "select_account" });
-  const credential = await signInWithPopup(customerAuth, provider);
-  const googleIdentity = credential.user?.providerData?.some(
-    item => item?.providerId === "google.com"
-  );
-  if (!googleIdentity) {
+  try {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+    const temporaryCredential = await signInWithPopup(
+      customerBrokerAuth,
+      provider
+    );
+    const googleIdentity = temporaryCredential.user?.providerData?.some(
+      item => item?.providerId === "google.com"
+    );
+    if (!googleIdentity) {
+      throw Object.assign(
+        new Error("CUSTOMER_GOOGLE_ACCOUNT_REQUIRED"),
+        { code: "CUSTOMER_GOOGLE_ACCOUNT_REQUIRED" }
+      );
+    }
+
+    const tenant = resolveTenantContext();
+    const createCustomerSession = httpsCallable(
+      customerBrokerFunctions,
+      "createDeliveryCustomerSession"
+    );
+    const response = await createCustomerSession({ tenantId: tenant.id });
+    const customToken = String(response.data?.customToken || "");
+    if (!customToken) throw new Error("CUSTOMER_SESSION_TOKEN_REQUIRED");
+
+    await signOut(customerBrokerAuth).catch(() => {});
     await signOut(customerAuth).catch(() => {});
-    const error = new Error("CUSTOMER_GOOGLE_ACCOUNT_REQUIRED");
-    error.code = "CUSTOMER_GOOGLE_ACCOUNT_REQUIRED";
+    const credential = await signInWithCustomToken(customerAuth, customToken);
+    if (!(await customerContextSession(credential.user))) {
+      throw new Error("CUSTOMER_SESSION_INVALID");
+    }
+    return credential;
+  } catch (error) {
+    await signOut(customerBrokerAuth).catch(() => {});
     throw error;
   }
-  return credential;
 }
 
 export async function logoutCustomer() {
-  await signOut(customerAuth);
+  await Promise.all([
+    signOut(customerAuth),
+    signOut(customerBrokerAuth).catch(() => {}),
+  ]);
 }
 
 export async function getCustomerProfile(user = customerAuth.currentUser) {
@@ -111,10 +162,11 @@ export async function getCustomerProfile(user = customerAuth.currentUser) {
 
   if (hasGuestData) {
     const tenant = resolveTenantContext();
+    const verifiedEmail = await customerVerifiedEmail(user);
     const payload = {
       tenantId: tenant.id,
       displayName: guest.displayName || user.displayName || "",
-      email: user.email || "",
+      email: verifiedEmail,
       phone: guest.phone || "",
       addresses: guestAddresses,
     };
@@ -130,15 +182,21 @@ export async function getCustomerProfile(user = customerAuth.currentUser) {
     }
   }
 
-  return { displayName: user.displayName || "", email: user.email || "", phone: "", addresses: [] };
+  return {
+    displayName: user.displayName || "",
+    email: await customerVerifiedEmail(user),
+    phone: "",
+    addresses: []
+  };
 }
 
 export async function saveCustomerProfile(profile, user = customerAuth.currentUser) {
   const tenant = resolveTenantContext();
+  const verifiedEmail = user ? await customerVerifiedEmail(user) : "";
   const payload = {
     tenantId: tenant.id,
     displayName: profile.displayName || "",
-    email: user?.email || profile.email || "",
+    email: verifiedEmail || profile.email || "",
     phone: profile.phone || "",
     addresses: (profile.addresses || []).slice(0, 5)
   };

@@ -1,12 +1,13 @@
 import "./public-i18n-bootstrap.js?v=20260930-001";
-import { functions, httpsCallable } from "./firebase-config.js?v=20260630-073";
+import { customerFunctions as functions } from "./public-firebase-context.js?v=20261002-001";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-functions.js";
 
 // DELIVERY_LOCATION_ADDRESS_RESOLVER_20260827_003
 
 import {
   watchCustomerAuth,
   getCustomerProfile,
-} from './customer-profile-service.js?v=20261002-007';
+} from './customer-profile-service.js?v=20261002-008';
 
 const NEARBY_SAVED_ADDRESS_METERS = 100;
 const REVERSE_GEOCODE_DEBOUNCE_MS = 250;

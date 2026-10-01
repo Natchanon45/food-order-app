@@ -2209,6 +2209,119 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Delivery customer privilege isolation from staff identity
+
+Requirement:
+- A system user/staff account may use any email provider, including a Google account.
+- A customer on a tenant Delivery storefront may authenticate only through Google.
+- The same Google identity may be Owner/Staff of Tenant A while acting purely as a Customer of Tenant B.
+- Delivery must never inherit/show staff roles or staff privileges from that identity.
+- Delivery logout must affect only the customer session and must not sign out the staff/Owner/Admin session.
+
+Why the previous named-app split was insufficient:
+- Browser sessions were already separated with a named Firebase app, but both sessions still authenticated against the same Firebase Auth directory.
+- A direct Google token from the customer named app could therefore have the same Firebase UID/email as an existing staff/Owner identity.
+- Firestore/Storage staff rules that authorize by UID/email could still recognize that identity as staff even though the UI treated it as a customer.
+- Identity Platform multi-tenancy was investigated as the strongest native directory split, but the current project is not upgraded to GCIP. The API rejected enabling tenants with `Tenant can only be enabled in GCIP`.
+- No GCIP/billing-affecting project upgrade was performed.
+
+Implemented architecture:
+- Staff / Owner / Super Admin remain on Firebase app `[DEFAULT]`.
+- Added customer data app `penguin-storefront-customer-v2`:
+  - `customerAuth`,
+  - `customerDb`,
+  - `customerStorage`,
+  - `customerFunctions`.
+- Added separate Google verification broker app `penguin-google-customer-broker-v1`.
+  - Google popup occurs only on the broker app.
+  - The temporary Google token never becomes the authenticated token on the customer Firestore/Storage app.
+- Added callable Function `createDeliveryCustomerSession`:
+  - accepts only Firebase authentication whose `sign_in_provider` is `google.com`,
+  - requires verified Google email,
+  - derives a dedicated namespaced customer UID `cust_<sha256-prefix>`,
+  - creates/maintains a Firebase Auth customer user without reusing the staff email identity,
+  - sets persistent custom claims `customerContext=true`, `customerGoogle=true`, and `customerEmail`,
+  - returns a custom token for the customer-only UID,
+  - migrates an existing tenant-scoped customer profile from the legacy Google UID to the new customer UID when needed.
+- Customer browser flow:
+  1. Google popup on broker auth,
+  2. call `createDeliveryCustomerSession`,
+  3. sign broker out,
+  4. sign customer data app in with the returned custom token,
+  5. persist customer profile/favorites under `tenants/{tenantId}/customerProfiles/{cust_uid}`.
+- Customer logout signs out only customer/broker apps; default staff auth is untouched.
+
+Authorization isolation:
+- Firestore Rules now define `customerContext()` requiring:
+  - UID prefix `cust_`,
+  - `customerContext=true`,
+  - `customerGoogle=true`.
+- Firestore staff `signedIn()` explicitly excludes `customerContext()`.
+- Tenant owner/member/admin/cashier/kitchen/POS/waiting-queue staff helpers therefore cannot grant staff privileges to a customer-context token even when the Google email belongs to a tenant owner.
+- Tenant/root `customerProfiles` are restricted to the customer's own customer-context UID.
+- Storage Rules apply the same customer-context exclusion to every staff/admin role helper.
+- Public payment-slip uploads remain governed by the existing image validation rule and do not require staff privileges.
+
+Public storefront data isolation:
+- Added `public-firebase-context.js` as the canonical public/customer Firebase context.
+- Public tenant resolution uses `customerDb`, not the default staff Firestore instance.
+- `data-service.js` selects `customerDb/customerStorage` for tenant public routes and retains default `db/storage` for staff routes.
+- Delivery menu/settings/order/table data, Delivery/Takeaway/Order compatibility routes, Delivery success, payment-slip Storage, route/geocode Functions, customer profile, and favorites no longer use the default staff Firebase context on public tenant routes.
+- Delivery UI contains no `currentStaff` / staff-role rendering path.
+- Legacy `delivery-staff-guard.js` remains a no-op compatibility module.
+- Customer Google login is not gated by the legacy `platformSettings/googleCustomerLogin` document.
+
+Tenant behavior:
+- One Google identity can have a staff role for Tenant A through the default staff context.
+- The same person can explicitly Google-login as a Customer on Tenant B and receives the dedicated `cust_...` customer context.
+- Customer profile/address/favorites remain independently tenant-scoped even though the customer UID is stable across tenants.
+- Staff session survives customer login/logout because the sessions use separate Firebase app instances.
+
+Cache / compatibility:
+- Bumped the active public resolver, storefront service, customer profile service, Delivery map/address/runtime, Delivery success, Takeaway, Order compatibility imports so browsers cannot retain the previous mixed-auth module graph.
+- Renamed the persistent customer named app to `penguin-storefront-customer-v2` so stale pre-isolation customer Auth persistence is not reused.
+
+Regression protection:
+- React foundation contract now requires:
+  - separate customer data and Google broker Firebase apps,
+  - broker-only Google popup,
+  - custom-token exchange,
+  - `cust_` namespace + customer claims,
+  - Function export and Google-provider validation,
+  - customer Firestore/Storage/public Functions contexts,
+  - Firestore/Storage staff-role exclusion for customer-context tokens,
+  - no staff state in Delivery account UI.
+
+Release candidate:
+- React `0.4.280 / 2026.10.02.323`
+- Public storefront `0.16.32 / 2026.10.02.038`
+- Generated React bundle `/react/assets/index-DiTVe5F5.js`.
+
+Verification:
+- `node --check functions/delivery-customer-auth.js` PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.323`.
+- `git diff --check` PASS.
+- Firebase dry run for `firestore:rules,storage,functions:createDeliveryCustomerSession` PASS.
+- Firestore Rules compiled successfully in Firebase CLI dry run.
+- Storage Rules compiled successfully in Firebase CLI dry run.
+- Function source analysis/package validation completed successfully in Firebase CLI dry run.
+- Existing firebase-functions version warning remains unchanged and was not upgraded during this targeted change.
+
+Deploy state:
+- No Firebase Function / Firestore Rules / Storage Rules / Hosting production deployment has been performed for this candidate yet.
+- The candidate must not be deployed as Hosting-only because the new browser flow depends on the new callable and customer-context Rules.
+- Production rollout requires the explicitly authorized scopes in this order:
+  1. `functions:createDeliveryCustomerSession`
+  2. Firestore Rules
+  3. Storage Rules
+  4. Hosting target `foodapp`
+- No merge to `main`.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title

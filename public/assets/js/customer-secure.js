@@ -1,7 +1,7 @@
-await import("./public-tenant-resolver.js?v=20260916-004");
+await import("./public-tenant-resolver.js?v=20261002-006");
 await import("./table-qr-resolver.js?v=20260903-231");
 
-import { publicStorefrontService as dataService } from "./public-storefront-service.js?v=20260930-003";
+import { publicStorefrontService as dataService } from "./public-storefront-service.js?v=20261002-007";
 import { demoStore } from "./demo-store.js";
 const usingDemoMode = false;
 

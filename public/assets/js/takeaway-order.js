@@ -1,10 +1,10 @@
 import "./public-page-static-i18n.js?v=20260930-001";
 
-await import("./public-tenant-resolver.js?v=20260916-005");
+await import("./public-tenant-resolver.js?v=20261002-006");
 
 import "./sweet-dialog.js?v=20260726-034";
 import "./cart-item-layout.js?v=20260702-002";
-import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20260916-005';
+import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20261002-007';
 import { money, toast } from "./ui.js?v=20260930-001";
 import { t } from "./i18n.js?v=20260930-001";
 

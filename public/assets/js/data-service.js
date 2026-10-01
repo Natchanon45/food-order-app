@@ -3,15 +3,23 @@ import {
   updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, runTransaction,
   ref as storageRef, uploadBytes, getDownloadURL
 } from "./firebase-config.js?v=20260630-073";
+import {
+  customerDb,
+  customerStorage,
+  isTenantPublicRoute,
+} from "./public-firebase-context.js?v=20261002-001";
 import { demoStore } from "./demo-store.js";
 import { resolveShopContext, shopCollectionPath, shopDocumentPath } from "./tenant-context.js";
 
 export const usingDemoMode = !isFirebaseConfigured;
 const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
+const publicCustomerRoute = isTenantPublicRoute();
+const runtimeDb = publicCustomerRoute ? customerDb : db;
+const runtimeStorage = publicCustomerRoute ? customerStorage : storage;
 
 function activeShop() { return resolveShopContext(); }
-function shopCollection(name) { return collection(db, ...shopCollectionPath(name, activeShop())); }
-function shopDocument(name, id) { return doc(db, ...shopDocumentPath(name, id, activeShop())); }
+function shopCollection(name) { return collection(runtimeDb, ...shopCollectionPath(name, activeShop())); }
+function shopDocument(name, id) { return doc(runtimeDb, ...shopDocumentPath(name, id, activeShop())); }
 function mapDocs(snapshot) { return snapshot.docs.map(item => ({ id: item.id, ...item.data() })); }
 function normalizeMenu(menu) {
   const clampPosition = value => Math.max(0, Math.min(100, Number.isFinite(Number(value)) ? Number(value) : 50));
@@ -164,10 +172,10 @@ export const dataService = {
   },
 
   async uploadMenuImage(menuId, blob) {
-    if (!storage) throw new Error("STORAGE_NOT_READY");
+    if (!runtimeStorage) throw new Error("STORAGE_NOT_READY");
     if (!menuId || !blob) throw new Error("IMAGE_UPLOAD_REQUIRED");
     const path = `menu-images/${menuId}/${Date.now()}.webp`;
-    const fileRef = storageRef(storage, path);
+    const fileRef = storageRef(runtimeStorage, path);
     await uploadBytes(fileRef, blob, { contentType: "image/webp" });
     return { url: await getDownloadURL(fileRef), path };
   },
@@ -278,7 +286,7 @@ export const dataService = {
     if (!table) throw new Error("INVALID_TABLE_SESSION");
     const tableRef = shopDocument("tables", table.id);
     const orderRef = order?.id ? shopDocument("orders", String(order.id)) : doc(shopCollection("orders"));
-    await runTransaction(db, async transaction => {
+    await runTransaction(runtimeDb, async transaction => {
       const tableSnapshot = await transaction.get(tableRef);
       if (!tableSnapshot.exists()) throw new Error("INVALID_TABLE_SESSION");
       const tableData = tableSnapshot.data();
@@ -325,7 +333,7 @@ export const dataService = {
     const fromTableRef = shopDocument("tables", fromTable.id);
     const toTableRef = shopDocument("tables", toTable.id);
     const orderRefs = orderIds.map(id => shopDocument("orders", id));
-    await runTransaction(db, async transaction => {
+    await runTransaction(runtimeDb, async transaction => {
       const [fromSnapshot, toSnapshot, ...orderSnapshots] = await Promise.all([transaction.get(fromTableRef), transaction.get(toTableRef), ...orderRefs.map(ref => transaction.get(ref))]);
       if (!fromSnapshot.exists()) throw new Error("SOURCE_TABLE_NOT_ACTIVE");
       const source = fromSnapshot.data();
