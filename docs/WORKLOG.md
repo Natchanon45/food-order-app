@@ -2195,8 +2195,16 @@ Verification:
 - `git diff --check` PASS.
 
 Deploy state:
-- Commit/push/deploy and Production browser verification are performed after this WORKLOG entry.
-- No Firestore Rules / Storage / Functions change is required for this split.
+- Commit: `e20ac7f0` — `fix: isolate Delivery customer Google auth`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` with React Build `2026.10.02.322`.
+- Production Microsoft Edge Mobile viewport verification on `/s/saas-test-shop/delivery` confirmed:
+  - Guest state shows `เข้าสู่ระบบด้วย Google`,
+  - Logout is hidden,
+  - Customer account identity block is hidden,
+  - Guest mode text is visible,
+  - this works while Firestore `platformSettings/googleCustomerLogin.enabled` remains false, proving Delivery is no longer gated by that Platform setting.
+- No Firestore Rules / Storage / Functions deployment was required for this split.
 - No merge to `main`.
 
 ---

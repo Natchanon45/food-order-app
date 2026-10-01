@@ -63,6 +63,7 @@ PENGUIN branding checkpoint (2026-10-01):
 - Internal repo/Firebase/schema/DOM/translation identifiers are intentionally unchanged.
 - Next release identity: React `0.4.280 / 2026.10.02.322`; public storefront `0.16.32 / 2026.10.02.037`.
 - Primary production Hosting origin: `https://penguin-food.web.app`. Legacy `https://natchanon-food-order-delivery.web.app` remains reachable during transition but is no longer in deploy target `foodapp`.
+- Delivery customer Google authentication is isolated from staff auth using named Firebase app `penguin-delivery-customer`; staff/Owner/Super Admin remain on the default Firebase app. Delivery no longer uses `platformSettings/googleCustomerLogin` as its runtime gate.
 - Pull, test/build, commit generated assets, and deploy Hosting before visual verification.
 - If the uploaded Logo / App Icon artwork still contains FOD, KINJAI, or KJ, upload new PENGUIN / PG artwork from Platform Branding after deploy.
 
