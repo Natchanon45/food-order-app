@@ -1281,6 +1281,61 @@ Remaining:
 
 ---
 
+## 2026-10-01 — PENGUIN residual branding audit and static fallback cleanup
+
+Request:
+- Continue the branding rollout from the latest GitHub state without resetting or discarding newer work.
+- Audit residual visible FOD / LUKKAJA / Food Order Delivery / FOOD ORDER QR / KINJAI / KJ strings while preserving internal identifiers.
+
+Repository finding:
+- Current GitHub HEAD at the start of this continuation was `588d3b91 build: finalize PENGUIN branding rollout`.
+- The current handoff explicitly makes `PENGUIN / PG` authoritative and marks `KINJAI / KJ` as legacy, so this pass preserved the newer PENGUIN direction instead of reverting it to the stale KINJAI handoff text.
+- Desktop Commander MCP command execution was not available in this chat, so the audit and edits were performed on GitHub branch `feature/react-firebase-port` only.
+
+Audit result:
+- Listed React source pages contain no remaining visible FOD / LUKKAJA / KINJAI / KJ branding.
+- `AdminPage.jsx` still contains intentional internal `FOD_WALLET_TOPUP_*` error identifiers; these were not changed.
+- Static compatibility audit found legacy visible fallback text in Verify, Delivery Success, Privacy, and Terms.
+
+Change:
+- `public/verify/index.html`: fallback brand mark `KJ` -> `PG`.
+- `public/delivery/success/index.html`: fallback brand mark `KJ` -> `PG`; receipt shop fallback `KINJAI` -> `PENGUIN`.
+- `public/privacy/index.html` and `public/terms/index.html`: visible `KINJAI / KJ` -> `PENGUIN / PG`.
+- Prepared a new Hosting candidate identity after the previous finalized bundle:
+  - React: `0.4.280 / 2026.10.01.308`
+  - Public storefront: `0.16.32 / 2026.10.01.023`
+- Updated README and current handoff release identity accordingly.
+
+Important files:
+- `public/verify/index.html`
+- `public/delivery/success/index.html`
+- `public/privacy/index.html`
+- `public/terms/index.html`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `README.md`
+- `docs/NEXT_CHAT_HANDOFF.md`
+
+Verification:
+- GitHub source audit completed for the requested React pages and listed static/compatibility pages.
+- No visible residual terms were found in the listed React source; only compatibility-sensitive internal FOD wallet codes remain.
+- Full `npm run test:operational`, `npm run test:react-parity`, `npm run build:react`, generated-file review, and `git diff --check` still must run on the Mac after pulling because Desktop Commander is unavailable in this chat.
+
+Deploy state:
+- Code/release commit: `95ade704` — `fix: remove legacy branding fallbacks`.
+- This WORKLOG update is documentation-only and follows the completed code change.
+- No merge to `main`.
+- No Firebase deploy performed in this pass.
+
+Remaining:
+- Pull `feature/react-firebase-port` on the Mac.
+- Run operational/parity tests, React build, and `git diff --check`.
+- Commit/push generated build files if the build changes them.
+- Deploy Hosting target `foodapp` only.
+- Visually verify App Icon/header branding, Login Logo, favicon/apple-touch-icon, PENGUIN/PG fallbacks, and TH / EN / MY / LO / KM.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
