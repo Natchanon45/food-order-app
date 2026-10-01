@@ -1447,6 +1447,52 @@ Remaining:
 
 ---
 
+## 2026-10-01 — Admin QR Back button icon and left alignment
+
+Symptom / request:
+- On `/admin/qr`, the Back button was displayed in the right-side header action group next to language/profile.
+- User requested a left-arrow icon and left alignment.
+
+Root cause:
+- `AdminQrPage.jsx` rendered the Back link inside the generic `.app-header-actions` group, so it naturally stayed on the right.
+- Unlike Admin Users, Admin QR had no dedicated leading header group for Brand + Back.
+
+Change:
+- Added `.admin-qr-header-leading` and moved the Back link beside the Admin QR brand on the left.
+- Added Bootstrap icon `bi-arrow-left` and a separate label span.
+- Kept Locale Switcher and User Menu in the right-side `.admin-qr-header-actions` group.
+- Added responsive Admin QR header CSS following the established Admin Users header pattern.
+- Added a React foundation regression assertion requiring the icon-led Back action to remain before the right-side actions.
+- Prepared a fresh Hosting identity for this deployment:
+  - React `0.4.280 / 2026.10.01.310`
+  - Public storefront `0.16.32 / 2026.10.01.025`
+
+Important files:
+- `react-app/src/pages/AdminQrPage.jsx`
+- `react-app/public/parity/css/menu-qr.css`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `README.md`
+- `docs/NEXT_CHAT_HANDOFF.md`
+- Generated React Hosting entrypoints and bundle.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS, including React foundation, migration, parity matrix, P0 actions, callable, tenant access, and UI layer contracts.
+- Initial build attempt failed because this Mac checkout's `node_modules` contained only `.cache` and no Vite binary.
+- Ran `npm install --include=dev`; dependency installation completed without a tracked package-lock change.
+- `npm run build:react` PASS.
+- Generated build contract PASS for Build `2026.10.01.310` and bundle `/react/assets/index-1sdlQ35c.js`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Commit/push/deploy are performed after this WORKLOG entry.
+- No merge to `main`.
+- Firebase scope for this change is Hosting only.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title

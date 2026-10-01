@@ -166,6 +166,8 @@ const staticDeliveryEntry=read("public/delivery/index.html");
 const staticDeliveryRuntime=read("public/assets/js/delivery.js");
 const publicTranslations=read("public/assets/js/public-translations.js");
 const paritySync=read("tools/sync-react-parity-assets.py");
+const adminQrPage=read("react-app/src/pages/AdminQrPage.jsx");
+const menuQrCss=read("react-app/public/parity/css/menu-qr.css");
 const adminRetailParity=read("react-app/public/parity/css/admin-retail-pos-parity.css");
 const adminSalesRetailParity=read("react-app/public/parity/css/admin-sales-report-retail-pos-parity.css");
 const parityStyleHook=read("react-app/src/hooks/useParityPage.jsx");
@@ -178,6 +180,14 @@ const pgHeaderPages=[
   "react-app/src/pages/KitchenPage.jsx",
   "react-app/src/pages/QuickOrderPage.jsx",
 ].map(read);
+assert(
+  adminQrPage.includes('className="btn btn-sm admin-qr-header-back"')
+  &&adminQrPage.includes('bi bi-arrow-left app-icon')
+  &&adminQrPage.indexOf('admin-qr-header-back')<adminQrPage.indexOf('admin-qr-header-actions')
+  &&menuQrCss.includes(".admin-qr-header-leading")
+  &&menuQrCss.includes(".admin-qr-header-actions"),
+  "Admin QR Back action must stay icon-led and left-aligned with the header brand"
+);
 assert(posPage.includes("initialDataReady")&&posPage.includes("!initialDataReady"),"POS full-page readiness must wait for initial Firebase data");
 assert(
   adminRetailParity.includes('content: "PG"')&&!adminRetailParity.includes('content: "KJ"')
