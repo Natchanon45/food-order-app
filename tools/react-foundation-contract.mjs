@@ -331,10 +331,10 @@ const adminUsersCss=read("react-app/public/parity/css/admin-users.css");
 assert(adminUsersPage.includes('className="btn btn-sm admin-users-header-back"')&&adminUsersPage.includes('bi bi-arrow-left app-icon'),"Admin Users back button must keep the left-arrow icon");
 assert(
   adminUsersPage.includes('className="admin-users-header-leading"')
-  &&adminUsersPage.indexOf('className="brand-mark"')<adminUsersPage.indexOf('admin-users-header-back')
-  &&adminUsersPage.indexOf('admin-users-header-back')<adminUsersPage.indexOf('admin-users-header-title')
-  &&adminUsersPage.indexOf('admin-users-header-title')<adminUsersPage.indexOf('data-header-actions'),
-  "Admin Users mobile header must keep Logo first, Back second, title third, and account actions last"
+  &&adminUsersPage.indexOf('className="brand-mark"')<adminUsersPage.indexOf('admin-users-header-title')
+  &&adminUsersPage.indexOf('admin-users-header-title')<adminUsersPage.indexOf('admin-users-header-back')
+  &&adminUsersPage.indexOf('admin-users-header-back')<adminUsersPage.indexOf('data-header-actions'),
+  "Admin Users mobile header must keep Logo first, title second, Back third, and account actions last"
 );
 assert(adminUsersPage.indexOf("<LocaleSwitcher")<adminUsersPage.indexOf("<UserMenu"),"Admin Users right actions must keep locale immediately before User Menu");
 assert(adminUsersPage.includes("initialUsersReady")&&adminUsersPage.includes("!initialUsersReady"),"Admin Users full-page readiness must wait for the initial staff list");
@@ -350,10 +350,20 @@ assert(
   &&adminUsersCss.includes(".staff-user-card")
   &&adminUsersCss.includes(".staff-user-card-fields")
   &&adminUsersCss.includes(".staff-user-card-footer")
-  &&adminUsersCss.includes(".staff-user-active input:checked")
+  &&adminUsersPage.includes("const isActive = draft.active !== false")
+  &&adminUsersPage.includes('role="switch"')
+  &&adminUsersPage.includes('className={"staff-user-switch" + (isActive ? " is-on" : " is-off")}')
+  &&adminUsersPage.includes("active: !isActive")
+  &&adminUsersCss.includes(".staff-user-switch.is-on")
+  &&adminUsersCss.includes("background: #16a34a;")
+  &&adminUsersCss.includes(".staff-user-switch.is-off")
+  &&adminUsersCss.includes(".admin-users-header-back .app-icon::before")
+  &&adminUsersCss.includes("vertical-align: middle !important")
+  &&adminUsersCss.includes(".staff-user-avatar")
+  &&adminUsersCss.includes("margin-top: 18px")
   &&adminUsersCss.includes("display: none;")
   &&adminUsersCss.includes(".staff-create-trigger"),
-  "Admin Users must keep separate clean Mobile cards and the untouched Desktop table"
+  "Admin Users must keep separate Mobile cards, isolated controlled switches, centered icons, and the untouched Desktop table"
 );
 assert(adminPage.includes('import Sortable from "sortablejs";'),"React Admin sort manager must use SortableJS like Laravel MASTER");
 assert(adminPage.includes('handle: ".sort-handle"')&&adminPage.includes("animation: 120")&&adminPage.includes("delay: 80")&&adminPage.includes("delayOnTouchOnly: true")&&adminPage.includes("touchStartThreshold: 4")&&adminPage.includes("forceFallback: Boolean(touchDevice)")&&adminPage.includes("fallbackOnBody: Boolean(touchDevice)")&&adminPage.includes('fallbackClass: "sort-fallback"')&&adminPage.includes("scrollSensitivity: 60")&&adminPage.includes("scrollSpeed: 14"),"React Admin sort manager must preserve the low-latency touch movement profile");

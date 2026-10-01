@@ -178,8 +178,8 @@ export function AdminUsersPage() {
       <header className="app-header">
         <div className="admin-users-header-leading">
           <span className="brand-mark">PG</span>
-          <Link className="btn btn-sm admin-users-header-back" to="/admin"><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{t("admin_users.header.back")}</span></Link>
           <span className="admin-users-header-title">{t("admin_users.header.title")}</span>
+          <Link className="btn btn-sm admin-users-header-back" to="/admin"><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{t("admin_users.header.back")}</span></Link>
         </div>
         <div className="app-header-actions admin-users-header-actions" data-header-actions>
           <LocaleSwitcher style={{ marginLeft: 0, marginRight: 0 }} />
@@ -211,6 +211,7 @@ export function AdminUsersPage() {
               : users.length ? users.map(user => {
                 const draft = drafts[user.uid] || {};
                 const isSelf = user.uid === authUser?.uid;
+                const isActive = draft.active !== false;
                 return (
                   <article className="staff-user-card" key={"mobile-" + user.uid}>
                     <div className="staff-user-card-head">
@@ -236,10 +237,20 @@ export function AdminUsersPage() {
                     </div>
 
                     <div className="staff-user-card-footer">
-                      <label className="staff-user-active">
+                      <div className="staff-user-active">
                         <span>{t("admin_users.list.columns.active")}</span>
-                        <input type="checkbox" data-mobile-active-uid={user.uid} checked={draft.active !== false} onChange={e => patchDraft(user.uid, { active: e.target.checked })} />
-                      </label>
+                        <button
+                          className={"staff-user-switch" + (isActive ? " is-on" : " is-off")}
+                          type="button"
+                          role="switch"
+                          aria-checked={isActive}
+                          aria-label={t("admin_users.list.columns.active")}
+                          data-mobile-active-uid={user.uid}
+                          onClick={() => patchDraft(user.uid, { active: !isActive })}
+                        >
+                          <span className="staff-user-switch-knob" aria-hidden="true"></span>
+                        </button>
+                      </div>
                       <button className="btn btn-primary btn-sm staff-user-save" type="button" data-mobile-save-user={user.uid} disabled={isSelf || savingUid === user.uid} onClick={() => saveUser(user)}>
                         <i className={"bi " + (savingUid === user.uid ? "bi-hourglass-split" : "bi-floppy")} aria-hidden="true"></i>
                         <span>{t(savingUid === user.uid ? "admin_users.actions.saving" : "admin_users.actions.save")}</span>

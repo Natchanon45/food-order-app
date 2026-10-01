@@ -1938,6 +1938,60 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Admin Users exact header order and isolated Mobile switches
+
+Request:
+- Correct the Mobile Admin Users header to the exact order: Logo → page title `จัดการพนักงาน` → Back button.
+- Vertically center the Back arrow icon.
+- Center the employee avatar icon against the editable Name input row.
+- Fix Mobile Active switch behavior so loaded active users render green and manually toggling one user does not cause switches to become visually white or affect other users.
+
+Root cause:
+- The prior header order was Logo → Back → title, which did not match the requested visual order.
+- Shared `.app-icon` baseline alignment could still make the Back arrow appear slightly low/high inside the compact button.
+- The employee avatar was aligned to the top of the identity block, i.e. against the Name label instead of the input row.
+- The previous Mobile switch remained an `input[type=checkbox]`; shared checkbox/theme CSS could override its custom pseudo-element styling after interaction.
+
+Change:
+- Header source order is now explicitly Logo → title → Back → right-side language/profile actions.
+- Scoped Back icon CSS uses a fixed inline-grid icon box, `place-items:center`, `vertical-align:middle`, and a normalized `::before` line-height.
+- Mobile employee avatar receives a measured top offset so its center aligns with the Name input rather than the field label.
+- Replaced the Mobile Active checkbox with a controlled `button role="switch"`.
+- Each card derives `isActive` from its own `drafts[user.uid]` entry:
+  - active/true = green track + white knob,
+  - inactive/false = white track + gray knob,
+  - click patches only that card's UID with `active: !isActive`.
+- Desktop checkbox behavior remains unchanged.
+- Strengthened React foundation coverage for exact header order, arrow centering, avatar alignment, controlled switch markup, green ON state, and per-user draft toggling.
+
+Release:
+- React `0.4.280 / 2026.10.02.319`
+- Public storefront `0.16.32 / 2026.10.02.034`
+
+Important files:
+- `react-app/src/pages/AdminUsersPage.jsx`
+- `react-app/public/parity/css/admin-users.css`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- Generated React Hosting entrypoints/parity CSS/bundle.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.319` and bundle `/react/assets/index-CLzLZayu.js`.
+- `git diff --check` PASS.
+- Regression contract verifies Logo < title < Back < account actions.
+- Regression contract verifies Mobile switches are controlled by per-user `draft.active` and ON state remains green.
+
+Deploy state:
+- Commit/push/deploy are performed after this WORKLOG entry.
+- No merge to `main`.
+- Firebase scope is Hosting only.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
