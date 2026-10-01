@@ -1623,6 +1623,46 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Move Cashier walk-in order action into Hero
+
+Request:
+- Move the Cashier `รับออเดอร์หน้าร้าน` / walk-in Quick Order action out of the takeaway tools bar and into the Cashier Hero card.
+
+Change:
+- Moved the `/cashier/quick-order` action into a new `.cashier-hero-actions` area inside the Hero.
+- Desktop Hero now keeps title/description on the left and the walk-in action on the right.
+- Mobile Hero stacks the action below the Hero copy and keeps the full text label visible.
+- Removed the walk-in action from `.cashier-actions`, so the takeaway tools bar now contains only waiting queue, Take Away QR, open Take Away order, and copy link actions.
+- Styled the Hero action as a high-contrast white CTA with the existing lightning icon.
+- Added React foundation regression coverage requiring the walk-in action to stay inside the Hero and outside the takeaway action bar.
+
+Release:
+- React `0.4.280 / 2026.10.02.313`
+- Public storefront `0.16.32 / 2026.10.02.028`
+
+Important files:
+- `react-app/src/pages/CashierPage.jsx`
+- `react-app/public/parity/css/cashier-refresh.css`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- Generated React Hosting entrypoints and bundle.
+
+Verification:
+- First foundation test run exposed an ordering bug in the newly added test declaration; corrected the declaration order before proceeding.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.313` and bundle `/react/assets/index-BfhqKTuk.js`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Commit/push/deploy are performed after this WORKLOG entry.
+- No merge to `main`.
+- Firebase scope is Hosting only.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title

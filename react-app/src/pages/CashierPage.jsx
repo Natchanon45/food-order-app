@@ -923,12 +923,17 @@ export function CashierPage() {
       <main className="container cashier-shell">
         <section className="hero cashier-hero">
           <div className="cashier-hero-copy"><h1>{t("cashier.hero.title")}</h1><p>{t("cashier.hero.description")}</p></div>
+          <div className="cashier-hero-actions">
+            <a className="btn cashier-hero-order-btn" href={cashierRoute("/quick-order")} aria-label={t("quick_order.entry.button")} title={t("quick_order.entry.description")}>
+              <i className="bi bi-lightning-charge app-icon" aria-hidden="true"></i>
+              <span>{t("quick_order.entry.button")}</span>
+            </a>
+          </div>
         </section>
 
         <section className="cashier-action-bar" aria-label={t("cashier.takeaway_tools.aria_label")}>
           <div className="cashier-action-title"><strong>{t("cashier.takeaway_tools.title")}</strong><span>{t("cashier.takeaway_tools.subtitle")}</span></div>
           <div className="cashier-actions">
-            <a className="btn btn-dark" href={cashierRoute("/quick-order")} aria-label={t("quick_order.entry.button")} title={t("quick_order.entry.description")}><i className="bi bi-lightning-charge app-icon"></i><span>{t("quick_order.entry.button")}</span></a>
             <a className="btn btn-primary" href={cashierRoute("/waiting-queue")} aria-label={t("cashier.takeaway_tools.waiting_queue_aria")} title={t("cashier.takeaway_tools.waiting_queue_aria")}><i className="bi bi-person-standing app-icon"></i><span>{t("cashier.takeaway_tools.waiting_queue")}</span></a>
             <button className="btn btn-primary" type="button" id="showTakeawayQr" aria-label={t("cashier.takeaway_tools.show_qr_aria")} title={t("cashier.takeaway_tools.show_qr_aria")} onClick={() => takeawayUrl ? setTakeawayQrOpen(true) : showToast(translated(t, "cashier.takeaway_tools.store_unavailable", "Store information is unavailable. Refresh the page and try again."), "error")}><i className="bi bi-qr-code app-icon"></i><span>{t("cashier.takeaway_tools.qr_label")}</span></button>
             <a className="btn btn-warning" id="openTakeawayOrder" href={takeawayUrl || undefined} target="_blank" rel="noopener noreferrer" aria-label={t("cashier.takeaway_tools.open_order_aria")} title={t("cashier.takeaway_tools.open_order_aria")}><i className="bi bi-plus-lg app-icon"></i><span>{t("cashier.takeaway_tools.open_order")}</span></a>

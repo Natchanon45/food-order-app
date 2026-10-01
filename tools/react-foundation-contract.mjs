@@ -171,6 +171,8 @@ const staticDeliveryEntry=read("public/delivery/index.html");
 const staticDeliveryRuntime=read("public/assets/js/delivery.js");
 const publicTranslations=read("public/assets/js/public-translations.js");
 const paritySync=read("tools/sync-react-parity-assets.py");
+const cashierPage=read("react-app/src/pages/CashierPage.jsx");
+const cashierRefreshCss=read("react-app/public/parity/css/cashier-refresh.css");
 const adminQrPage=read("react-app/src/pages/AdminQrPage.jsx");
 const menuQrCss=read("react-app/public/parity/css/menu-qr.css");
 const adminRetailParity=read("react-app/public/parity/css/admin-retail-pos-parity.css");
@@ -204,6 +206,15 @@ assert(
   "PENGUIN production origin must stay canonical across Hosting, Firebase Auth, messaging, and signup links"
 );
 assert(functionsIndex.includes('exports.lalamoveWebhook = lalamoveWebhook.lalamoveWebhook'),"Lalamove Hosting webhook must stay exported from Functions index");
+assert(
+  cashierPage.includes('className="cashier-hero-actions"')
+  &&cashierPage.includes('className="btn cashier-hero-order-btn"')
+  &&cashierPage.indexOf('cashier-hero-order-btn')<cashierPage.indexOf('cashier-action-bar')
+  &&!cashierPage.match(/cashier-actions[\s\S]{0,260}quick-order/)
+  &&cashierRefreshCss.includes(".cashier-hero-order-btn")
+  &&cashierRefreshCss.includes("flex-direction: column"),
+  "Cashier walk-in order action must stay inside the Hero and outside the takeaway action bar"
+);
 assert(posPage.includes("initialDataReady")&&posPage.includes("!initialDataReady"),"POS full-page readiness must wait for initial Firebase data");
 assert(
   adminRetailParity.includes('content: "PG"')&&!adminRetailParity.includes('content: "KJ"')
@@ -328,8 +339,6 @@ const salesReportModernCss=read("react-app/public/parity/css/sales-report-modern
 const salesReportParityCss=read("react-app/public/parity/css/admin-sales-report-retail-pos-parity.css");
 assert(salesReportModernCss.includes("width: min(1320px, 100%);"),"Sales Report desktop width contract missing");
 assert(salesReportParityCss.includes("body.sales-report-workspace .sales-report-page")&&salesReportParityCss.includes("width: min(1320px, 100%);"),"Sales Report final parity bundle must preserve 1320px desktop width");
-const cashierPage=read("react-app/src/pages/CashierPage.jsx");
-const cashierRefreshCss=read("react-app/public/parity/css/cashier-refresh.css");
 assert(cashierRefreshCss.includes("gap: 5px !important;")&&cashierRefreshCss.includes("transform: none;")&&cashierRefreshCss.includes("place-items: center;"),"Cashier top action-bar icon spacing/alignment parity missing");
 const sharedIconsCss=read("react-app/public/parity/css/icons.css");
 assert(sharedIconsCss.includes(".btn:has(> .app-icon + span):not(.btn-icon-only)")&&sharedIconsCss.includes(".btn:has(> i + span):not(.btn-icon-only)")&&sharedIconsCss.includes(".btn:has(> svg + span):not(.btn-icon-only)")&&sharedIconsCss.includes("gap: 7px;"),"Shared React icon/text button spacing contract missing");

@@ -15,6 +15,10 @@
   isolation: isolate;
   min-height: 142px;
   padding: 30px 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
   overflow: hidden;
   background: linear-gradient(125deg, #101c16 0%, #0b4f2b 58%, #0b7b3b 100%);
   box-shadow: 0 20px 45px rgba(11, 67, 37, 0.16);
@@ -41,6 +45,55 @@
 
 .cashier-hero p {
   font-size: 16px;
+}
+
+.cashier-hero-copy {
+  min-width: 0;
+}
+
+.cashier-hero-actions {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.cashier-hero-order-btn {
+  min-height: 48px;
+  padding: 12px 18px;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  background: #fff;
+  color: #123322;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
+  white-space: nowrap;
+}
+
+.cashier-hero-order-btn:hover {
+  background: #f3fff7;
+  transform: translateY(-1px);
+}
+
+.cashier-hero-order-btn .app-icon {
+  width: 1.15em;
+  height: 1.15em;
+  display: inline-grid !important;
+  place-items: center !important;
+  margin: 0;
+  color: #0b7b3b;
+  font-size: 1.1em;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.cashier-hero-order-btn .app-icon::before {
+  display: block;
+  line-height: 1;
 }
 
 .cashier-action-bar {
@@ -209,11 +262,22 @@
   .cashier-hero {
     min-height: 0;
     padding: 25px 22px 22px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
     border-radius: 20px;
   }
   .cashier-hero::after { right: -150px; top: -150px; }
   .cashier-hero h1 { font-size: 30px; }
   .cashier-hero p { max-width: 280px; font-size: 14px; line-height: 1.55; }
+  .cashier-hero-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .cashier-hero-order-btn {
+    min-height: 46px;
+    padding: 11px 16px;
+  }
   .cashier-action-bar {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
