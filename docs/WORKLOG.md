@@ -1541,6 +1541,52 @@ Deploy state:
 
 ---
 
+## 2026-10-01 — PENGUIN Firebase Hosting origin cutover
+
+Request:
+- Change the primary Firebase Hosting URL from `https://natchanon-food-order-delivery.web.app` to `https://penguin-food.web.app` while keeping the existing Firebase project/data and without merging to `main`.
+
+Firebase / Hosting migration:
+- Created Firebase Hosting site `penguin-food` inside existing project `chat-45754`.
+- Cleared and re-applied Hosting target `foodapp` so it points only to `penguin-food`.
+- Kept legacy site `natchanon-food-order-delivery` in the project but removed it from the active deploy target; existing printed/legacy links remain available during transition.
+- Added `penguin-food.web.app` to Firebase Authentication Authorized Domains while preserving the previous domain and default Firebase domains.
+
+Application origin changes:
+- React Firebase client `authDomain` -> `penguin-food.web.app`.
+- Static Firebase config `authDomain` -> `penguin-food.web.app`.
+- Firebase Messaging service worker `authDomain` -> `penguin-food.web.app`.
+- Public trial signup now uses centralized `PUBLIC_APP_ORIGIN = https://penguin-food.web.app` for generated tenant preview links.
+- Migrated the one existing `publicTenantSignups` document whose `previewUrl` still used the old Hosting origin.
+
+External-integration audit:
+- Platform Google Customer Login is currently disabled and has no OAuth Web Client ID stored, so there is no Google OAuth Authorized JavaScript Origin to migrate in this state.
+- Platform Lalamove is configured and connection-verified in Sandbox. Webhook re-registration is intentionally performed only after the new Hosting site is live.
+- No Firebase project ID, Firestore collection, Storage bucket, Functions region, schema, or internal identifier was renamed.
+
+Regression protection:
+- React foundation contract now requires `.firebaserc` target `foodapp` to resolve to `penguin-food`.
+- Contract requires React/static/messaging Firebase configs to use the new auth domain and prevents the old Hosting domain from reappearing in those sources.
+- Contract requires public signup links to use the new canonical origin.
+
+Release:
+- React `0.4.280 / 2026.10.01.312`
+- Public storefront `0.16.32 / 2026.10.01.027`
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for `2026.10.01.312` and `/react/assets/index-BuQZRrDh.js`.
+- `git diff --check` PASS.
+- Source audit found no remaining old Hosting origin in active source outside historical docs/dead generated bundles.
+
+Deploy state:
+- Commit/push, targeted signup Function deploy, new Hosting deploy, production URL verification, and Lalamove webhook re-registration are performed after this WORKLOG entry.
+- No merge to `main`.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title

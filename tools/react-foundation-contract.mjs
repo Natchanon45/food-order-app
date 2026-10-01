@@ -162,6 +162,11 @@ const staticHome=read("public/index.html");
 const staticHomeSession=read("public/assets/js/home-session-fa.js");
 const staticAuthService=read("public/assets/js/auth-service.js");
 const staticHomeTranslations=read("public/assets/js/home-translations.js");
+const hostingRc=read(".firebaserc");
+const reactFirebaseClient=read("react-app/src/firebase/client.js");
+const staticFirebaseConfig=read("public/assets/js/firebase-config.js");
+const messagingServiceWorker=read("public/firebase-messaging-sw.js");
+const publicSignupFunction=read("functions/public-signup.js");
 const staticDeliveryEntry=read("public/delivery/index.html");
 const staticDeliveryRuntime=read("public/assets/js/delivery.js");
 const publicTranslations=read("public/assets/js/public-translations.js");
@@ -190,6 +195,13 @@ assert(
   &&menuQrCss.includes("place-items: center !important")
   &&menuQrCss.includes("vertical-align: middle !important"),
   "Admin QR Back action must stay icon-led, vertically centered, and left-aligned with the header brand"
+);
+assert(
+  hostingRc.includes('"penguin-food"')&&!hostingRc.includes('"natchanon-food-order-delivery"')
+  &&[reactFirebaseClient,staticFirebaseConfig,messagingServiceWorker].every(source=>source.includes('authDomain: "penguin-food.web.app"')&&!source.includes("natchanon-food-order-delivery.web.app"))
+  &&publicSignupFunction.includes('const PUBLIC_APP_ORIGIN = "https://penguin-food.web.app"')
+  &&!publicSignupFunction.includes("natchanon-food-order-delivery.web.app"),
+  "PENGUIN production origin must stay canonical across Hosting, Firebase Auth, messaging, and signup links"
 );
 assert(posPage.includes("initialDataReady")&&posPage.includes("!initialDataReady"),"POS full-page readiness must wait for initial Firebase data");
 assert(

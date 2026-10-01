@@ -7,6 +7,7 @@ const { loadPricing, pricingSnapshot } = require("./subscription-pricing-core");
 const PLAN_ID = "premium";
 const TRIAL_DAYS = 30;
 const BUSINESS_UNITS = ["order_delivery", "retail_pos"];
+const PUBLIC_APP_ORIGIN = "https://penguin-food.web.app";
 
 function clean(value = "") { return String(value || "").trim(); }
 function normalizeEmail(value = "") { return clean(value).toLowerCase(); }
@@ -65,7 +66,7 @@ exports.requestTrialTenantSignup = onCall({ region: "asia-southeast1" }, async r
       plan: PLAN_ID,
       pricingSnapshot: signupPricing,
       status: "email_verification_required",
-      previewUrl: `https://natchanon-food-order-delivery.web.app/s/${slug}/`,
+      previewUrl: `${PUBLIC_APP_ORIGIN}/s/${slug}/`,
       updatedAt: now,
       createdAt: now
     };
@@ -73,7 +74,7 @@ exports.requestTrialTenantSignup = onCall({ region: "asia-southeast1" }, async r
     tx.set(pendingSlugRef, { uid, slug, email, status: "pending", updatedAt: now, createdAt: now }, { merge: true });
   });
 
-  return { ok: true, slug, email, previewUrl: `https://natchanon-food-order-delivery.web.app/s/${slug}/` };
+  return { ok: true, slug, email, previewUrl: `${PUBLIC_APP_ORIGIN}/s/${slug}/` };
 });
 
 exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async request => {

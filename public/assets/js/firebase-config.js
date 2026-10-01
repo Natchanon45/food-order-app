@@ -17,7 +17,7 @@ import {
 
 export const firebaseConfig = {
   apiKey: "AIzaSyAX4e6-nbiS9Y8tpqW8rKbMkryAwZXSmCo",
-  authDomain: "natchanon-food-order-delivery.web.app",
+  authDomain: "penguin-food.web.app",
   databaseURL: "https://chat-45754-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "chat-45754",
   storageBucket: "chat-45754.firebasestorage.app",

@@ -6,7 +6,7 @@ import { connectStorageEmulator, getStorage } from "firebase/storage";
 
 export const firebaseConfig = Object.freeze({
   apiKey: "AIzaSyAX4e6-nbiS9Y8tpqW8rKbMkryAwZXSmCo",
-  authDomain: "natchanon-food-order-delivery.web.app",
+  authDomain: "penguin-food.web.app",
   databaseURL: "https://chat-45754-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "chat-45754", storageBucket: "chat-45754.firebasestorage.app",
   messagingSenderId: "1046915702525", appId: "1:1046915702525:web:869e1a0d1407375610e894",
