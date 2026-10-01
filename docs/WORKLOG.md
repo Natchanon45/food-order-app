@@ -1710,6 +1710,57 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Staff login transient Firebase network recovery
+
+Symptom:
+- A normal tenant user could log in on the new PENGUIN Hosting origin, but a Super Admin attempt in Edge displayed the Thai network error mapped from `auth/network-request-failed`.
+- The issue appeared after the Hosting-origin cutover to `penguin-food.web.app`.
+
+Production diagnosis:
+- `https://penguin-food.web.app/__/auth/iframe` and `/__/auth/handler` return HTTP 200.
+- Identity Toolkit accepts requests from the PENGUIN origin; the Firebase Web API key is not rejecting the new referrer.
+- An isolated Microsoft Edge production test with a deliberately invalid account reached Identity Toolkit normally and returned `auth/invalid-credential`.
+- Firebase Authentication shows the affected Super Admin account is verified, enabled, and its `lastLoginAt` advanced during the failed UI attempt, proving the server accepted the password sign-in request.
+- Firestore `users/{uid}` for that account is valid: `role=super_admin`, `active=true`.
+- This narrows the observed failure to a transient browser-side Firebase Auth/transport response after the server had already accepted authentication, rather than bad credentials or a broken Super Admin profile.
+
+Revenue-share state checked during diagnosis:
+- The tenant matching the screenshot is `ร้านทดสอบ SaaS`, with daily revenue share enabled at 3%.
+- A temporary unlock override for period `2026-10-01` was already recorded by the Super Admin UID at approximately 00:32 local time.
+- Current tenant fields show `revenueShareSuspended=false`; no direct tenant-state mutation was performed by this diagnostic/fix pass.
+
+Change:
+- Added one bounded retry for transient Firebase Auth errors (`network-request-failed`, `unavailable`, `deadline-exceeded`).
+- Before repeating password sign-in, the flow waits briefly and reuses `auth.currentUser` when Firebase already established the intended account session.
+- Added the same one-time transient retry to the Firestore user/tenant profile reads performed during login.
+- Invalid credentials, disabled accounts, tenant suspension/expiry, and other non-transient errors are not retried or bypassed.
+- Added a React foundation regression contract for this recovery behavior.
+
+Release:
+- React `0.4.280 / 2026.10.02.315`
+- Public storefront `0.16.32 / 2026.10.02.030`
+
+Important files:
+- `react-app/src/auth/authFlow.js`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- Generated React Hosting entrypoints and bundle.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.315` and bundle `/react/assets/index-n1S5kih7.js`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Commit/push/deploy and production transient-network simulation are performed after this WORKLOG entry.
+- No merge to `main`.
+- Firebase scope is Hosting only.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title

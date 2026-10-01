@@ -88,6 +88,15 @@ assert(tenant.includes('doc(db, "tenants", profile.tenantId)')&&tenant.includes(
 assert(tenant.includes("tenantAccessDecision(data, profile.role)")&&tenant.includes("ACCESS_RECHECK_MS"),"Tenant access must re-evaluate Firestore and time-based subscription state");
 const authFlow=read("react-app/src/auth/authFlow.js");
 assert(authFlow.includes("tenantAccessDecision(tenant, profile.role)")&&authFlow.includes("tenantAccessError(decision)"),"Login tenant access decision contract missing");
+assert(
+  authFlow.includes("AUTH_TRANSIENT_RETRY_MS = 700")
+  &&authFlow.includes("transientFirebaseNetworkError")
+  &&authFlow.includes("getDocWithTransientRetry")
+  &&authFlow.includes("signInStaffWithTransientRetry")
+  &&authFlow.includes("auth.currentUser")
+  &&authFlow.includes('code.includes("network-request-failed")'),
+  "Staff login must recover once from transient Firebase Auth/Firestore network errors"
+);
 assert(app.includes("RevenueShareSuspensionGuard")&&app.includes('to="/reports/revenue-share"'),"Revenue-share suspension redirect guard missing");
 const revenueSharePage=read("react-app/src/pages/RevenueShareReportPage.jsx");
 assert(revenueSharePage.includes("revenueShareSuspensionNotice")&&revenueSharePage.includes("revenue_share_report.suspension.missing_payment"),"Revenue-share suspension warning UI missing");

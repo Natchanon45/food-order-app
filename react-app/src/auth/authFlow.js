@@ -26,9 +26,32 @@ export const STAFF_ROLES = Object.freeze([
 const requestTrialTenantSignup = httpsCallable(functions, "requestTrialTenantSignup");
 const activateTrialTenantSignup = httpsCallable(functions, "activateTrialTenantSignup");
 
+const AUTH_TRANSIENT_RETRY_MS = 700;
+
+function transientFirebaseNetworkError(error) {
+  const code = String(error?.code || error?.message || "").toLowerCase();
+  return code.includes("network-request-failed")
+    || code.includes("unavailable")
+    || code.includes("deadline-exceeded");
+}
+
+function delay(ms) {
+  return new Promise(resolve => window.setTimeout(resolve, ms));
+}
+
+async function getDocWithTransientRetry(reference) {
+  try {
+    return await getDoc(reference);
+  } catch (error) {
+    if (!transientFirebaseNetworkError(error)) throw error;
+    await delay(AUTH_TRANSIENT_RETRY_MS);
+    return getDoc(reference);
+  }
+}
+
 export async function loadProfile(user) {
   if (!user?.uid) return null;
-  const snapshot = await getDoc(doc(db, "users", user.uid));
+  const snapshot = await getDocWithTransientRetry(doc(db, "users", user.uid));
   if (!snapshot.exists()) throw new Error("ACCOUNT_PROFILE_NOT_AVAILABLE");
   const profile = { uid: user.uid, email: user.email || "", ...snapshot.data() };
   if (profile.active === false || !STAFF_ROLES.includes(profile.role)) {
@@ -36,7 +59,7 @@ export async function loadProfile(user) {
   }
   if (profile.role !== "super_admin") {
     if (!profile.tenantId) throw new Error("TENANT_REQUIRED");
-    const tenantSnapshot = await getDoc(doc(db, "tenants", profile.tenantId));
+    const tenantSnapshot = await getDocWithTransientRetry(doc(db, "tenants", profile.tenantId));
     if (!tenantSnapshot.exists()) throw new Error("TENANT_NOT_FOUND");
     const tenant = tenantSnapshot.data();
     const decision = tenantAccessDecision(tenant, profile.role);
@@ -45,8 +68,25 @@ export async function loadProfile(user) {
   return profile;
 }
 
+async function signInStaffWithTransientRetry(email, password) {
+  try {
+    return await signInWithEmailAndPassword(auth, email, password);
+  } catch (error) {
+    if (!transientFirebaseNetworkError(error)) throw error;
+    await delay(AUTH_TRANSIENT_RETRY_MS);
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    if (
+      auth.currentUser
+      && String(auth.currentUser.email || "").trim().toLowerCase() === normalizedEmail
+    ) {
+      return { user: auth.currentUser };
+    }
+    return signInWithEmailAndPassword(auth, email, password);
+  }
+}
+
 export async function authenticateStaff(email, password) {
-  const credential = await signInWithEmailAndPassword(auth, email, password);
+  const credential = await signInStaffWithTransientRetry(email, password);
   try {
     return await loadProfile(credential.user);
   } catch (error) {
