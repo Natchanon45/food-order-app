@@ -371,8 +371,8 @@ export function AdminSalesReportPage() {
   return (
     <>
       <header className="app-header super-admin-header">
-        <div className="super-admin-header-leading">
-          <div className="brand"><span className="brand-mark">PG</span><i className="bi bi-bar-chart-line app-icon" aria-hidden="true"></i><span>{t("sales_report.header.title")}</span></div>
+        <div className="super-admin-header-leading sales-report-header-leading">
+          <div className="brand sales-report-header-brand"><span className="brand-mark">PG</span><i className="bi bi-bar-chart-line app-icon" aria-hidden="true"></i><span>{t("sales_report.header.title")}</span></div>
           <Link className="btn btn-dark btn-sm sales-back-link super-admin-header-back" to="/admin"><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{t("sales_report.header.back")}</span></Link>
         </div>
         <div className="app-header-actions" data-header-actions>
@@ -417,11 +417,35 @@ export function AdminSalesReportPage() {
           </div>
         </section>
 
-        <section className="summary-grid sales-summary-grid">
-          <article className="summary-card primary"><span><i className="bi bi-cash-stack" aria-hidden="true"></i>{t("sales_report.summary.net_sales")}</span><strong id="totalSales">{money(summary.total)}</strong><small>{t("sales_report.units.baht")}</small><span className="summary-icon"><i className="bi bi-currency-dollar" aria-hidden="true"></i></span></article>
-          <article className="summary-card"><span><i className="bi bi-receipt-cutoff" aria-hidden="true"></i>{t("sales_report.summary.receipt_count")}</span><strong id="receiptCount">{formatNumber(summary.count, { maximumFractionDigits: 0 })}</strong><small>{t("sales_report.units.receipt")}</small><span className="summary-icon"><i className="bi bi-file-earmark-text" aria-hidden="true"></i></span></article>
-          <article className="summary-card"><span><i className="bi bi-calculator" aria-hidden="true"></i>{t("sales_report.summary.average_receipt")}</span><strong id="averageReceipt">{money(summary.average)}</strong><small>{t("sales_report.units.baht")}</small><span className="summary-icon"><i className="bi bi-percent" aria-hidden="true"></i></span></article>
-          <article className="summary-card"><span><i className="bi bi-bag-check" aria-hidden="true"></i>{t("sales_report.summary.sold_items")}</span><strong id="soldItemCount">{formatNumber(summary.items, { maximumFractionDigits: 0 })}</strong><small>{t("sales_report.units.item")}</small><span className="summary-icon"><i className="bi bi-box-seam" aria-hidden="true"></i></span></article>
+        <section className="sales-summary-grid sales-kpi-grid" aria-label={t("sales_report.hero.title")}>
+          <article className="sales-kpi-card sales-kpi-card--primary">
+            <div className="sales-kpi-card__head">
+              <span className="sales-kpi-card__icon" aria-hidden="true"><i className="bi bi-cash-stack"></i></span>
+              <span className="sales-kpi-card__label">{t("sales_report.summary.net_sales")}</span>
+            </div>
+            <div className="sales-kpi-card__metric"><strong id="totalSales">{money(summary.total)}</strong><small>{t("sales_report.units.baht")}</small></div>
+          </article>
+          <article className="sales-kpi-card sales-kpi-card--receipt">
+            <div className="sales-kpi-card__head">
+              <span className="sales-kpi-card__icon" aria-hidden="true"><i className="bi bi-receipt-cutoff"></i></span>
+              <span className="sales-kpi-card__label">{t("sales_report.summary.receipt_count")}</span>
+            </div>
+            <div className="sales-kpi-card__metric"><strong id="receiptCount">{formatNumber(summary.count, { maximumFractionDigits: 0 })}</strong><small>{t("sales_report.units.receipt")}</small></div>
+          </article>
+          <article className="sales-kpi-card sales-kpi-card--average">
+            <div className="sales-kpi-card__head">
+              <span className="sales-kpi-card__icon" aria-hidden="true"><i className="bi bi-calculator"></i></span>
+              <span className="sales-kpi-card__label">{t("sales_report.summary.average_receipt")}</span>
+            </div>
+            <div className="sales-kpi-card__metric"><strong id="averageReceipt">{money(summary.average)}</strong><small>{t("sales_report.units.baht")}</small></div>
+          </article>
+          <article className="sales-kpi-card sales-kpi-card--items">
+            <div className="sales-kpi-card__head">
+              <span className="sales-kpi-card__icon" aria-hidden="true"><i className="bi bi-bag-check"></i></span>
+              <span className="sales-kpi-card__label">{t("sales_report.summary.sold_items")}</span>
+            </div>
+            <div className="sales-kpi-card__metric"><strong id="soldItemCount">{formatNumber(summary.items, { maximumFractionDigits: 0 })}</strong><small>{t("sales_report.units.item")}</small></div>
+          </article>
         </section>
 
         <section className="grid grid-2 report-breakdown-grid">

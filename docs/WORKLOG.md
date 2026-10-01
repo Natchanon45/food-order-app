@@ -2337,6 +2337,81 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Sales Report Mobile KPI card redesign and Back alignment
+
+Request:
+- Redesign the Sales Report summary cards because the current Mobile cards looked visually stacked/overlapping.
+- Move the Back action into the left header cluster.
+- Vertically center the Back arrow icon.
+
+Root cause:
+- The four Sales Report KPI cards still used the shared `.summary-card` class while multiple Sales Report/theme styles also decorated that class.
+- The old KPI markup used a second `.summary-icon` absolutely positioned inside each card, which competed with the title/value area on narrow screens and compounded the layered-card appearance.
+- Mobile `.super-admin-header-leading` remained `flex: 1 1 auto`; the leading group expanded across the header and visually pushed the Back action toward the right instead of keeping it next to the title.
+
+Change:
+- Replaced the four KPI summary cards with a dedicated Sales Report component structure:
+  - `.sales-kpi-grid`
+  - `.sales-kpi-card`
+  - `.sales-kpi-card__head`
+  - `.sales-kpi-card__icon`
+  - `.sales-kpi-card__label`
+  - `.sales-kpi-card__metric`
+- Removed the old absolute decorative `.summary-icon` markup from these four KPI cards.
+- New cards use:
+  - one clean top accent line,
+  - one inline icon block in the title row,
+  - value/unit grouped in a separate lower metric block,
+  - uniform height/padding,
+  - clipped overflow,
+  - lighter border/shadow instead of layered shadows.
+- Desktop keeps 4 KPI cards per row.
+- Mobile keeps 2 KPI cards per row with tighter spacing, smaller icon/label/value sizing, and independent card boundaries.
+- Added scoped accent variants for Net Sales, Receipt Count, Average Receipt, and Sold Items without changing report calculations.
+- Header now uses explicit Sales Report classes:
+  - `.sales-report-header-leading`
+  - `.sales-report-header-brand`
+- The Sales Report header leading group uses `flex: 0 1 auto`, preventing it from consuming the entire row and keeping Logo/title/Back together on the left.
+- Language/Profile actions remain pinned right.
+- Back arrow receives a fixed inline-grid icon box with `place-items:center`, normalized line-height, and `vertical-align:middle` so it is centered on the Y axis.
+- Filter/report logic and data calculations were not changed.
+
+Laravel comparison:
+- Connected Laravel reference checkout remains on `feature/for_dev`, not documented MASTER `main`.
+- No Laravel files were changed.
+
+Regression protection:
+- React foundation contract now requires:
+  - Sales Report left-cluster header classes,
+  - vertically centered Back arrow,
+  - dedicated KPI component markup,
+  - no regression to the old primary `.summary-card` markup,
+  - 4-column desktop KPI layout,
+  - 2-column Mobile KPI layout,
+  - clipped KPI overflow and tabular numeric values.
+
+Release:
+- React `0.4.280 / 2026.10.02.324`
+- Public storefront `0.16.32 / 2026.10.02.039`
+- Generated React bundle `/react/assets/index-DZ6k_9XI.js`.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- React foundation contract PASS.
+- React migration/parity matrix/P0 action/callable/tenant-access/UI-layer contracts PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.324`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Commit/push/deploy are performed after this WORKLOG entry.
+- Firebase scope for this UI-only change is Hosting only.
+- No Functions / Firestore Rules / Storage Rules changes are required.
+- No merge to `main`.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title

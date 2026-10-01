@@ -446,10 +446,35 @@ assert(adminTenantsPage.includes("initialTenantsReady")&&adminTenantsPage.includ
 const initialTenantEffect=adminTenantsPage.slice(adminTenantsPage.indexOf("// Critical page data starts immediately"),adminTenantsPage.indexOf("useEffect(() => {",adminTenantsPage.indexOf("// Critical page data starts immediately")+1));
 assert(initialTenantEffect.indexOf("loadTenantList();")>=0&&initialTenantEffect.indexOf("loadTenantList();")<initialTenantEffect.indexOf("backfillTenantSubscriptions"),"Admin Tenants must start tenant loading before subscription backfill");
 assert(adminTenantsPage.includes("loadTenantList({ silent: true })"),"Admin Tenants backfill refresh must remain silent after initial render");
+const salesReportPage=read("react-app/src/pages/AdminSalesReportPage.jsx");
 const salesReportModernCss=read("react-app/public/parity/css/sales-report-modern.css");
 const salesReportParityCss=read("react-app/public/parity/css/admin-sales-report-retail-pos-parity.css");
 assert(salesReportModernCss.includes("width: min(1320px, 100%);"),"Sales Report desktop width contract missing");
 assert(salesReportParityCss.includes("body.sales-report-workspace .sales-report-page")&&salesReportParityCss.includes("width: min(1320px, 100%);"),"Sales Report final parity bundle must preserve 1320px desktop width");
+assert(
+  salesReportPage.includes('className="super-admin-header-leading sales-report-header-leading"')
+  &&salesReportPage.includes('className="brand sales-report-header-brand"')
+  &&salesReportPage.includes('className="btn btn-dark btn-sm sales-back-link super-admin-header-back"')
+  &&salesReportModernCss.includes("body.sales-report-workspace .sales-report-header-leading")
+  &&salesReportModernCss.includes("flex: 0 1 auto !important;")
+  &&salesReportModernCss.includes("body.sales-report-workspace .sales-back-link .app-icon::before")
+  &&salesReportModernCss.includes("place-items: center !important;")
+  &&salesReportModernCss.includes("vertical-align: middle !important;"),
+  "Sales Report mobile header must keep Back clustered left with a vertically centered arrow"
+);
+assert(
+  salesReportPage.includes('className="sales-summary-grid sales-kpi-grid"')
+  &&salesReportPage.includes('className="sales-kpi-card sales-kpi-card--primary"')
+  &&salesReportPage.includes('className="sales-kpi-card__head"')
+  &&salesReportPage.includes('className="sales-kpi-card__metric"')
+  &&!salesReportPage.includes('className="summary-card primary"')
+  &&salesReportModernCss.includes("body.sales-report-workspace .sales-kpi-card")
+  &&salesReportModernCss.includes("grid-template-columns: repeat(4, minmax(0, 1fr));")
+  &&salesReportModernCss.includes("grid-template-columns: repeat(2, minmax(0, 1fr));")
+  &&salesReportModernCss.includes("overflow: hidden;")
+  &&salesReportModernCss.includes("font-variant-numeric: tabular-nums;"),
+  "Sales Report KPI cards must use the dedicated non-overlapping responsive card system"
+);
 assert(cashierRefreshCss.includes("gap: 5px !important;")&&cashierRefreshCss.includes("transform: none;")&&cashierRefreshCss.includes("place-items: center;"),"Cashier top action-bar icon spacing/alignment parity missing");
 const sharedIconsCss=read("react-app/public/parity/css/icons.css");
 assert(sharedIconsCss.includes(".btn:has(> .app-icon + span):not(.btn-icon-only)")&&sharedIconsCss.includes(".btn:has(> i + span):not(.btn-icon-only)")&&sharedIconsCss.includes(".btn:has(> svg + span):not(.btn-icon-only)")&&sharedIconsCss.includes("gap: 7px;"),"Shared React icon/text button spacing contract missing");
