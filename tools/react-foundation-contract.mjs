@@ -179,6 +179,7 @@ const publicSignupFunction=read("functions/public-signup.js");
 const staticDeliveryEntry=read("public/delivery/index.html");
 const staticDeliveryAddresses=read("public/assets/js/delivery-addresses.js");
 const staticCustomerProfileService=read("public/assets/js/customer-profile-service.js");
+const staticDeliveryStaffGuard=read("public/assets/js/delivery-staff-guard.js");
 const staticDeliveryAddressesCss=read("public/assets/css/delivery-addresses.css");
 const staticDeliveryRuntime=read("public/assets/js/delivery.js");
 const publicTranslations=read("public/assets/js/public-translations.js");
@@ -224,17 +225,26 @@ assert(
   &&staticDeliveryEntry.includes('bi bi-box-arrow-right app-icon')
   &&staticDeliveryAddresses.includes("customerLogoutButton.innerHTML = '<i class=\"bi bi-box-arrow-right app-icon\"")
   &&staticDeliveryAddresses.includes("customerLogoutButton.setAttribute('aria-label', logoutLabel)")
-  &&staticCustomerProfileService.includes('customerLogoutButton.setAttribute("aria-label", "ออกจากระบบพนักงาน")')
-  &&staticCustomerProfileService.includes('bi bi-box-arrow-right app-icon')
-  &&!staticDeliveryAddresses.includes("customerLogoutButton.textContent = staffSignedIn")
-  &&!staticCustomerProfileService.includes('customerLogoutButton.textContent = "ออกจากระบบพนักงาน"')
+  &&!staticDeliveryAddresses.includes("currentStaff")
+  &&!staticDeliveryAddresses.includes("staffSignedIn")
+  &&staticDeliveryAddresses.includes("const showGoogle = !signedIn")
+  &&staticCustomerProfileService.includes('const CUSTOMER_APP_NAME = "penguin-delivery-customer"')
+  &&staticCustomerProfileService.includes("getAuth(customerApp)")
+  &&staticCustomerProfileService.includes("getFirestore(customerApp)")
+  &&staticCustomerProfileService.includes("signInWithPopup(customerAuth, provider)")
+  &&staticCustomerProfileService.includes("signOut(customerAuth)")
+  &&staticCustomerProfileService.includes("customerProfileDoc(user.uid)")
+  &&!staticCustomerProfileService.includes("loadGoogleCustomerLoginSetting")
+  &&!staticCustomerProfileService.includes("applyStaffDeliveryState")
+  &&staticDeliveryStaffGuard.includes("intentionally isolated from staff auth")
+  &&!staticDeliveryStaffGuard.includes("googleLoginButton.hidden = true")
   &&staticDeliveryAddressesCss.includes("#customerLogoutButton")
   &&staticDeliveryAddressesCss.includes("position: absolute;")
   &&staticDeliveryAddressesCss.includes("top: 10px;")
   &&staticDeliveryAddressesCss.includes("right: 10px;")
   &&staticDeliveryAddressesCss.includes("background: transparent !important;")
   &&staticDeliveryAddressesCss.includes("border: 0 !important;"),
-  "Delivery staff/customer logout must stay icon-only and pinned to the account card top-right"
+  "Delivery customer auth must stay isolated from staff auth with icon-only top-right logout"
 );
 assert(
   cashierPage.includes('className="cashier-hero-actions"')

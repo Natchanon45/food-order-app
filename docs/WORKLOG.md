@@ -2134,6 +2134,73 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Isolate Delivery customer Google auth from staff auth
+
+Requirement correction:
+- Google login must belong only to Delivery customers.
+- Customer Google identity/session must not be mixed with staff / Owner / Super Admin authentication or the employee-management flow.
+- After customer logout, the Delivery page must return to Guest mode and show Google login again.
+
+Root cause:
+- The previous Delivery customer implementation reused the default Firebase Auth instance used by staff.
+- Customer-vs-staff behavior was decided after sign-in by checking whether the authenticated UID had a `users/{uid}` staff profile.
+- This coupled Delivery customer UI to staff auth state and allowed a staff session to hide Google customer login.
+- Delivery also gated Google login through `platformSettings/googleCustomerLogin`, even though Firebase Authentication's Google provider is already enabled and the PENGUIN Hosting domain is authorized.
+
+Architecture change:
+- Added a dedicated named Firebase app for Delivery customers:
+  - app name: `penguin-delivery-customer`
+  - `customerAuth = getAuth(customerApp)`
+  - `customerDb = getFirestore(customerApp)`
+- The default Firebase app remains the staff / Owner / Super Admin session.
+- Customer Google sign-in now calls `signInWithPopup(customerAuth, GoogleAuthProvider)` only.
+- Customer logout now calls `signOut(customerAuth)` only.
+- Customer profile and favorites read/write through `customerDb`, so Firestore rules authenticate against the customer app's Google user rather than the staff session.
+- Customer profile data remains tenant-scoped under `tenants/{tenantId}/customerProfiles/{customerUid}`.
+- Staff helper `getStaffSession()` remains available for explicitly staff-only code and uses `staffAuth/staffDb`; it is no longer part of the customer account flow.
+- Delivery account UI no longer tracks `currentStaff`, `staffSignedIn`, or staff account labels.
+- Guest Delivery state always offers Google login when no customer is signed in.
+- Customer logout returns immediately to Guest UI and re-shows Google login.
+- `delivery-staff-guard.js` is retained only as a no-op compatibility module so a stale/legacy module graph cannot hide customer Google login because a staff session exists.
+- Delivery no longer reads `platformSettings/googleCustomerLogin` as a runtime feature gate. The existing Platform setting is now legacy configuration and does not control Delivery customer authentication.
+- Google identity is explicitly validated from provider data (`providerId === "google.com"`); customer flow has no email/password login path.
+- Admin employee management remains based on staff-only callable/user data, so customer Google accounts are not listed as employees.
+
+Important separation note:
+- Both named Firebase apps still use the existing Firebase project `chat-45754`. Therefore Google customer identities still exist in that project's Firebase Authentication provider directory.
+- Application sessions, Firestore profile collections, staff UI, employee callables, and browser auth state are now separated.
+- A completely separate Firebase Authentication directory would require a separate Identity Platform tenant or Firebase project and was not introduced in this migration.
+
+Cache / compatibility:
+- Bumped every active Delivery import of `customer-profile-service.js` to the same cache version.
+- Bumped Delivery entrypoint cache versions for addresses, location-address resolver, and main Delivery runtime.
+- Added React foundation regression coverage requiring:
+  - named customer Firebase app,
+  - separate `customerAuth/customerDb`,
+  - Google-only popup login,
+  - customer-only logout,
+  - no Platform Google-login gate in customer runtime,
+  - no staff state in Delivery account UI,
+  - no-op legacy staff guard.
+
+Release:
+- React `0.4.280 / 2026.10.02.322`
+- Public storefront `0.16.32 / 2026.10.02.037`
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.322` and bundle `/react/assets/index-BqVvgMY_.js`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Commit/push/deploy and Production browser verification are performed after this WORKLOG entry.
+- No Firestore Rules / Storage / Functions change is required for this split.
+- No merge to `main`.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title

@@ -8,8 +8,7 @@ import {
   logoutCustomer,
   getCustomerProfile,
   saveCustomerProfile,
-  isCustomerAccountAvailable,
-} from './customer-profile-service.js?v=20261002-006';
+} from './customer-profile-service.js?v=20261002-007';
 import { toast } from './ui.js?v=20260930-001';
 import { t } from './i18n.js?v=20260930-001';
 
@@ -36,7 +35,6 @@ const customerAccountName = document.querySelector('#customerAccountName');
 const customerModeText = document.querySelector('#customerModeText');
 
 let currentUser = null;
-let currentStaff = null;
 let currentProfile = { displayName: '', phone: '', addresses: [] };
 let selectedAddressId = '';
 let editingAddressId = '';
@@ -138,36 +136,27 @@ function newAddressId() {
 
 function renderAccount() {
   const signedIn = Boolean(currentUser);
-  const staffSignedIn = Boolean(currentStaff);
-  const accountAvailable = isCustomerAccountAvailable();
-  const showGoogle = accountAvailable && !signedIn && !staffSignedIn;
-  const showLogout = signedIn || staffSignedIn;
+  const showGoogle = !signedIn;
 
   googleLoginButton.hidden = !showGoogle;
   googleLoginButton.disabled = !showGoogle;
   googleLoginButton.style.display = showGoogle ? '' : 'none';
 
-  customerLogoutButton.hidden = !showLogout;
-  customerLogoutButton.style.display = showLogout ? '' : 'none';
-  const logoutLabel = staffSignedIn
-    ? 'ออกจากระบบพนักงาน'
-    : t('delivery.checkout.customer.logout');
+  customerLogoutButton.hidden = !signedIn;
+  customerLogoutButton.style.display = signedIn ? '' : 'none';
+  const logoutLabel = t('delivery.checkout.customer.logout');
   customerLogoutButton.setAttribute('aria-label', logoutLabel);
   customerLogoutButton.setAttribute('title', logoutLabel);
   customerLogoutButton.innerHTML = '<i class="bi bi-box-arrow-right app-icon" aria-hidden="true"></i>';
 
-  customerAccount.hidden = !showLogout;
-  customerAccountName.textContent = staffSignedIn
-    ? `${currentStaff.displayName || currentStaff.email || ''} • ${currentStaff.role || ''}`
-    : signedIn
-      ? (currentUser.displayName || t('delivery.checkout.customer.google_account'))
-      : '';
+  customerAccount.hidden = !signedIn;
+  customerAccountName.textContent = signedIn
+    ? (currentUser.displayName || t('delivery.checkout.customer.google_account'))
+    : '';
 
-  customerModeText.textContent = staffSignedIn
-    ? 'กำลังใช้บัญชีพนักงาน ที่อยู่ Delivery จะบันทึกเฉพาะอุปกรณ์นี้'
-    : signedIn
-      ? t('delivery.checkout.customer.signed_in_mode')
-      : t('delivery.checkout.customer.guest_mode');
+  customerModeText.textContent = signedIn
+    ? t('delivery.checkout.customer.signed_in_mode')
+    : t('delivery.checkout.customer.guest_mode');
 }
 function renderAddressBook() {
   const addresses = currentProfile.addresses || [];
@@ -301,11 +290,9 @@ googleLoginButton.addEventListener('click', async () => {
 customerLogoutButton.addEventListener('click', async () => {
   await logoutCustomer();
 
-  // Firebase auth state propagation is asynchronous. Reset the local account
-  // state immediately so a button hidden by a previous staff/customer session
-  // does not remain display:none until the next page refresh.
+  // Customer auth uses its own named Firebase app. Reset this page's local
+  // customer state immediately while the customerAuth observer propagates sign-out.
   currentUser = null;
-  currentStaff = null;
   renderAccount();
 
   toast(t('delivery.checkout.customer.logout_done'));
@@ -517,9 +504,8 @@ submitOrderButton.addEventListener('click', async event => {
   }
 }, true);
 
-watchCustomerAuth(async (user, staff) => {
+watchCustomerAuth(async user => {
   currentUser = user;
-  currentStaff = staff;
   renderAccount();
   await loadProfile();
 });

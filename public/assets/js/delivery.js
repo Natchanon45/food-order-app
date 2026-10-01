@@ -13,7 +13,7 @@ import {
   watchCustomerAuth,
   getCustomerFavorites,
   saveCustomerFavorites,
-} from "./customer-profile-service.js?v=20260915-005";
+} from "./customer-profile-service.js?v=20261002-007";
 
 const menuGrid = document.querySelector("#menuGrid");
 const deliveryHeroStoreName = document.querySelector("#deliveryHeroStoreName");
