@@ -1755,9 +1755,12 @@ Verification:
 - `git diff --check` PASS.
 
 Deploy state:
-- Commit/push/deploy and production transient-network simulation are performed after this WORKLOG entry.
+- Commit: `205bfcff` — `fix: retry transient staff login failures`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` with React Build `2026.10.02.315`.
+- Production Microsoft Edge headless simulation deliberately aborted the first Identity Toolkit password request; the login flow issued exactly 2 sign-in requests and recovered to the normal invalid-credential message on the second request, proving the bounded retry works.
+- No Functions / Rules / Storage deployment was performed for this login fix.
 - No merge to `main`.
-- Firebase scope is Hosting only.
 
 ---
 
