@@ -2311,13 +2311,28 @@ Verification:
 - Existing firebase-functions version warning remains unchanged and was not upgraded during this targeted change.
 
 Deploy state:
-- No Firebase Function / Firestore Rules / Storage Rules / Hosting production deployment has been performed for this candidate yet.
-- The candidate must not be deployed as Hosting-only because the new browser flow depends on the new callable and customer-context Rules.
-- Production rollout requires the explicitly authorized scopes in this order:
-  1. `functions:createDeliveryCustomerSession`
-  2. Firestore Rules
-  3. Storage Rules
-  4. Hosting target `foodapp`
+- User explicitly authorized the full production rollout.
+- Deployed `functions:createDeliveryCustomerSession` successfully to `asia-southeast1`.
+- Deployed Firestore Rules successfully; Firebase CLI compiled and released `firestore.rules`.
+- Deployed Storage Rules successfully; Firebase CLI compiled and released `storage.rules`.
+- Deployed Firebase Hosting target `foodapp` successfully to `https://penguin-food.web.app`.
+- Production release is React `0.4.280 / 2026.10.02.323`; public storefront `0.16.32 / 2026.10.02.038`.
+- Production callable negative-contract check:
+  - unauthenticated POST to `createDeliveryCustomerSession` returns HTTP 401,
+  - callable returns `UNAUTHENTICATED` with `Delivery customer sign-in requires Google authentication`.
+- Production Microsoft Edge Mobile viewport verification on `/s/saas-test-shop/delivery` confirmed:
+  - HTTP 200,
+  - Google login is visible with label `เข้าสู่ระบบด้วย Google`,
+  - Delivery logout is hidden in Guest state,
+  - customer identity block is hidden in Guest state,
+  - public menus load successfully (37 rendered cards in the test tenant),
+  - loaded Delivery runtime is cache-busted at `delivery.js?v=20261002-006`,
+  - Firebase app registry contains `[DEFAULT]`, `penguin-storefront-customer-v2`, and `penguin-google-customer-broker-v1`,
+  - all three app Auth instances are signed out in a fresh Guest browser,
+  - follow-up response audit observed no HTTP responses >= 400.
+- Headless geolocation denial is expected in the production browser test and is unrelated to customer authentication.
+- A fully authenticated Google popup exchange is intentionally not automated because it requires an actual user Google session; the deployed callable enforces Google provider server-side and the browser/rules contracts cover the remaining isolation path.
+- Implementation commit: `3125a295` — `fix: isolate Delivery customer privileges`.
 - No merge to `main`.
 
 ---
