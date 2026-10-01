@@ -1532,9 +1532,12 @@ Verification:
 - `git diff --check` PASS.
 
 Deploy state:
-- Commit/push/deploy are performed after this WORKLOG entry.
+- Commit: `784232b9` — `fix: center Admin QR back icon`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to project `chat-45754` with React Build `2026.10.01.311`.
+- Hosting emitted the known warning that rewrite function `lalamoveWebhook` has no valid endpoint; no Functions deployment was performed.
 - No merge to `main`.
-- Intended Firebase scope is Hosting only.
+- Firebase scope was Hosting only.
 
 ---
 
