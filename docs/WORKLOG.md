@@ -2405,9 +2405,16 @@ Verification:
 - `git diff --check` PASS.
 
 Deploy state:
-- Commit/push/deploy are performed after this WORKLOG entry.
-- Firebase scope for this UI-only change is Hosting only.
-- No Functions / Firestore Rules / Storage Rules changes are required.
+- Implementation commit: `4f2add56` — `fix: redesign Sales Report mobile cards`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` with React Build `2026.10.02.324`.
+- No Functions / Firestore Rules / Storage Rules deployment was performed for this UI-only change.
+- Production verification:
+  - `/admin/sales-report` returns HTTP 200,
+  - production `sales-report-modern.css?v=2026.10.02.324` contains the dedicated `.sales-kpi-card` system,
+  - production CSS contains the Mobile 2-column KPI rule,
+  - production CSS contains the Sales Report left-cluster header rule,
+  - production CSS contains the centered Back-arrow `place-items:center` rule.
 - No merge to `main`.
 
 ---
