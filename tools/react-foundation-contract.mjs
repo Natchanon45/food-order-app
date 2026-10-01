@@ -166,7 +166,26 @@ const staticDeliveryEntry=read("public/delivery/index.html");
 const staticDeliveryRuntime=read("public/assets/js/delivery.js");
 const publicTranslations=read("public/assets/js/public-translations.js");
 const paritySync=read("tools/sync-react-parity-assets.py");
+const adminRetailParity=read("react-app/public/parity/css/admin-retail-pos-parity.css");
+const adminSalesRetailParity=read("react-app/public/parity/css/admin-sales-report-retail-pos-parity.css");
+const parityStyleHook=read("react-app/src/hooks/useParityPage.jsx");
+const pgHeaderPages=[
+  "react-app/src/pages/AdminQrPage.jsx",
+  "react-app/src/pages/AdminUsersPage.jsx",
+  "react-app/src/pages/CashierPage.jsx",
+  "react-app/src/pages/CashierReceiptPage.jsx",
+  "react-app/src/pages/CashierTableQrPage.jsx",
+  "react-app/src/pages/KitchenPage.jsx",
+  "react-app/src/pages/QuickOrderPage.jsx",
+].map(read);
 assert(posPage.includes("initialDataReady")&&posPage.includes("!initialDataReady"),"POS full-page readiness must wait for initial Firebase data");
+assert(
+  adminRetailParity.includes('content: "PG"')&&!adminRetailParity.includes('content: "KJ"')
+  &&adminSalesRetailParity.includes('content: "PG"')&&!adminSalesRetailParity.includes('content: "KJ"')
+  &&pgHeaderPages.every(page=>page.includes('<span className="brand-mark">PG</span>')&&!page.includes('<span className="brand-mark">FO</span>')),
+  "React operational header fallback marks must stay PG"
+);
+assert(parityStyleHook.includes("REACT_RELEASE.build")&&parityStyleHook.includes("?v="),"React page parity CSS must be cache-busted by the release Build");
 const releaseBuildMatch=releaseConfig.match(/build:\s*"([^"]+)"/);
 assert(
   releaseConfig.includes('product: "PENGUIN"')

@@ -177,7 +177,7 @@ export function AdminUsersPage() {
     <>
       <header className="app-header">
         <div className="admin-users-header-leading">
-          <div className="brand"><span className="brand-mark">FO</span>{t("admin_users.header.title")}</div>
+          <div className="brand"><span className="brand-mark">PG</span>{t("admin_users.header.title")}</div>
           <Link className="btn btn-sm admin-users-header-back" to="/admin"><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{t("admin_users.header.back")}</span></Link>
         </div>
         <div className="app-header-actions admin-users-header-actions" data-header-actions>

@@ -79,7 +79,7 @@ export function AdminQrPage() {
   return (
     <>
       <header className="app-header">
-        <div className="brand"><span className="brand-mark">FO</span>{t("admin_qr.header.title")}</div>
+        <div className="brand"><span className="brand-mark">PG</span>{t("admin_qr.header.title")}</div>
         <div className="app-header-actions" data-header-actions>
           <Link className="btn btn-sm" to="/admin">{t("admin_qr.header.back")}</Link>
           <LocaleSwitcher style={{ marginLeft: 0, marginRight: 0 }} />

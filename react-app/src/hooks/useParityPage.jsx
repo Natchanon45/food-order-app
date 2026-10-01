@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
+import { REACT_RELEASE } from "@/config/release";
 
 const BASE = "/react/parity/css/";
 
 function ensureStylesheet(name) {
-  const href = BASE + name;
+  const href = `${BASE}${name}?v=${encodeURIComponent(REACT_RELEASE.build)}`;
   const existing = document.head.querySelector(`link[data-parity-page-style="${name}"]`);
   if (existing) {
     return Promise.resolve(existing);

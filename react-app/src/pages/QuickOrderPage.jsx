@@ -743,7 +743,7 @@ export function QuickOrderPage() {
     <>
       <header className="app-header">
         <div className="quick-header-left">
-          <div className="brand"><span className="brand-mark">FO</span>{t("quick_order.header.title")}</div>
+          <div className="brand"><span className="brand-mark">PG</span>{t("quick_order.header.title")}</div>
           <Link className="btn quick-header-back" to="/cashier"><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{t("quick_order.actions.back_cashier")}</span></Link>
         </div>
         <div className="app-header-actions" data-header-actions>

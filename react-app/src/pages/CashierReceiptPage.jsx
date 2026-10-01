@@ -218,7 +218,7 @@ export function CashierReceiptPage() {
     <>
       <header className="app-header">
         <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-          <div className="brand"><span className="brand-mark">FO</span>{t("cashier_documents.receipt.header_title")}</div>
+          <div className="brand"><span className="brand-mark">PG</span>{t("cashier_documents.receipt.header_title")}</div>
           <Link className="btn btn-sm" to="/cashier"><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{t("cashier_documents.receipt.back")}</span></Link>
         </div>
         <div className="app-header-actions" data-header-actions>
