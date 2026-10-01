@@ -167,7 +167,18 @@ const staticDeliveryRuntime=read("public/assets/js/delivery.js");
 const publicTranslations=read("public/assets/js/public-translations.js");
 const paritySync=read("tools/sync-react-parity-assets.py");
 assert(posPage.includes("initialDataReady")&&posPage.includes("!initialDataReady"),"POS full-page readiness must wait for initial Firebase data");
-assert(releaseConfig.includes('product: "PENGUIN"')&&releaseConfig.includes('version: "0.4.280"')&&releaseConfig.includes('build: "2026.10.01.307"')&&parityFooter.includes("REACT_RELEASE.version")&&parityFooter.includes("REACT_RELEASE.build"),"React release identity must stay centralized across footer/developer surfaces");
+const releaseBuildMatch=releaseConfig.match(/build:\s*"([^"]+)"/);
+assert(
+  releaseConfig.includes('product: "PENGUIN"')
+  &&releaseConfig.includes('version: "0.4.280"')
+  &&releaseBuildMatch
+  &&/^\\d{4}\\.\\d{2}\\.\\d{2}\\.\\d{3}$/.test(releaseBuildMatch[1])
+  &&parityFooter.includes("REACT_RELEASE.version")
+  &&parityFooter.includes("REACT_RELEASE.build")
+  &&developerPanel.includes("REACT_RELEASE.version")
+  &&developerPanel.includes("REACT_RELEASE.build"),
+  "React release identity must stay centralized across footer/developer surfaces"
+);
 assert(staticI18n.includes("globalThis.APP_I18N_DICTIONARIES")&&staticI18n.includes("activeDictionaries()")&&staticI18n.includes("app:i18n-configured"),"Static i18n must share dictionaries across cache-versioned module instances and publish configuration");
 assert(staticUi.includes("localizedFooterText")&&staticUi.includes("data-static-app-footer")&&staticUi.includes("app:i18n-configured")&&staticUi.includes("footerFallback"),"Static footer must never expose raw translation keys while i18n is still configuring");
 assert(staticUi.includes('./i18n.js?v=20261001-002')&&staticHomeSession.includes('./i18n.js?v=20261001-002')&&staticHome.includes('/assets/js/ui.js?v=20261001-002')&&staticHome.includes('/assets/js/home-session-fa.js?v=20261001-002'),"Static Home must keep one cache identity for shared i18n modules");
