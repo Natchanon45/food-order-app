@@ -1208,6 +1208,79 @@ Remaining:
 
 ---
 
+## 2026-10-01 — Visible brand renamed from KINJAI / KJ to PENGUIN / PG
+
+Request:
+- Rename the public-facing product brand from `KINJAI` to `PENGUIN`.
+- Rename the compact fallback mark from `KJ` to `PG`.
+- Preserve all internal identifiers, Firebase project/repository names, Firestore schema/collections, FOD wallet/error codes, DOM/data identifiers, and other compatibility-sensitive names.
+
+Change:
+- React visible branding now uses `PENGUIN`; compact textual fallback marks use `PG`.
+- Updated React entry title, Home/Login/Admin/Platform/Revenue Share/Waiting Queue and operational page branding, QR branding, loading contexts, store-name fallbacks, and Platform Branding image alt/fallback text.
+- Updated the React parity translation dictionary and Waiting Queue translation bundle from KINJAI to PENGUIN across TH / EN / MY / LO / KM.
+- Updated `normalizeVisibleBranding()` so legacy visible names are normalized at runtime:
+  - Food Order/Delivery With QR -> PENGUIN
+  - Food Order Delivery -> PENGUIN
+  - FOOD ORDER QR -> PENGUIN QR
+  - LUKKAJA -> PENGUIN
+  - KINJAI -> PENGUIN
+  - standalone FOD -> PG
+  - standalone KJ -> PG
+- Updated static Home / Delivery / Takeaway / Order / Queue branding and shared static CSS fallback mark.
+- Updated all static translation bundles under `public/assets/js/*translations*.js` plus app-info, footer, Home session label, and Admin Delivery QR paper branding.
+- Kept tenant-facing Delivery Hero behavior intact: it still shows the store/tenant name rather than the platform brand.
+- Updated branding regression tests and generated-build verification for PENGUIN.
+- Updated README and current handoff branding checkpoint.
+- Prepared a fresh Hosting identity: React `0.4.280 / 2026.10.01.307`; public storefront `0.16.32 / 2026.10.01.022`.
+
+Important files:
+- `react-app/index.html`
+- `react-app/src/i18n/I18nProvider.jsx`
+- `react-app/src/i18n/parity-translations.json`
+- `react-app/src/config/release.js`
+- `react-app/src/components/PlatformBrandingRuntime.jsx`
+- `react-app/src/pages/HomePage.jsx`
+- React Admin / Platform / Receipt / Revenue Share / Waiting Queue pages
+- `react-app/public/parity/css/app.css`
+- `public/index.html`
+- `public/delivery/index.html`
+- `public/takeaway/index.html`
+- `public/order/index.html`
+- `public/queue/index.html`
+- `public/assets/css/app.css`
+- `public/assets/js/app-info.js`
+- `public/assets/js/*translations*.js`
+- `tools/react-foundation-contract.mjs`
+- `tools/generated-react-build-contract.mjs`
+- `README.md`
+- `docs/NEXT_CHAT_HANDOFF.md`
+
+Verification:
+- Active-branch source spot audit confirms current static Home / Delivery / Takeaway / Order / Queue entrypoints no longer contain visible KINJAI / KJ text.
+- React parity translations contain 0 KINJAI and 0 standalone KJ occurrences; PENGUIN / PG are present instead.
+- Public Home, Public storefront, Platform, Cashier document, Waiting Queue, and other static translation bundles checked in this pass contain 0 KINJAI and 0 standalone KJ occurrences.
+- The only intentional source references to KINJAI / KJ that remain are compatibility-normalization / regression-test strings and documentation explaining the previous brand.
+- Full local test/build/generated-asset verification and Hosting deploy still need to run on the Mac.
+
+Deploy state:
+- Core branding commit: `490b592a` — `feat: rename core brand to PENGUIN`.
+- React operational pages: `2deedd80`.
+- React admin/workspace pages: `19508460`.
+- Static storefront surfaces: `3247d092`.
+- Static translation bundles: `0392ea73`, `ac2eacec`.
+- Branding regression/docs: `2db744e9`.
+- Branch: `feature/react-firebase-port`.
+- No merge to `main`.
+- No Firebase deployment performed by the assistant.
+
+Remaining:
+- Pull the branch, run operational/parity tests, build React, verify generated assets, commit/push generated files if changed, then deploy Hosting.
+- After deploy, verify header fallback `PG`, visible product name `PENGUIN`, Login, Home, Platform, QR paper, Footer, TH / EN / MY / LO / KM, and customer storefront pages.
+- If currently uploaded Logo / App Icon artwork itself contains FOD / KINJAI / KJ text, upload replacement PENGUIN / PG artwork through Platform Branding; code cannot rewrite text embedded inside an uploaded image.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
