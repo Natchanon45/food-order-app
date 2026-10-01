@@ -185,8 +185,11 @@ assert(
   &&adminQrPage.includes('bi bi-arrow-left app-icon')
   &&adminQrPage.indexOf('admin-qr-header-back')<adminQrPage.indexOf('admin-qr-header-actions')
   &&menuQrCss.includes(".admin-qr-header-leading")
-  &&menuQrCss.includes(".admin-qr-header-actions"),
-  "Admin QR Back action must stay icon-led and left-aligned with the header brand"
+  &&menuQrCss.includes(".admin-qr-header-actions")
+  &&menuQrCss.includes(".admin-qr-header-back .app-icon::before")
+  &&menuQrCss.includes("place-items: center !important")
+  &&menuQrCss.includes("vertical-align: middle !important"),
+  "Admin QR Back action must stay icon-led, vertically centered, and left-aligned with the header brand"
 );
 assert(posPage.includes("initialDataReady")&&posPage.includes("!initialDataReady"),"POS full-page readiness must wait for initial Firebase data");
 assert(

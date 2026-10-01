@@ -1496,6 +1496,48 @@ Deploy state:
 
 ---
 
+## 2026-10-01 — Admin QR Back icon vertical centering
+
+Symptom / request:
+- After moving the `/admin/qr` Back button to the left and adding `bi-arrow-left`, the arrow glyph still looked slightly off-center on the Y axis.
+
+Root cause:
+- Shared `.app-icon` intentionally uses inline-icon baseline alignment (`vertical-align: -.18em`), and Bootstrap Icon glyphs are emitted through `::before`.
+- The Back button container was already flex-centered, but the glyph itself still inherited inline/baseline behavior inside its fixed icon box.
+
+Change:
+- Scoped the correction to `.admin-qr-header-back .app-icon` only.
+- The icon now uses an explicit `1.25em × 1.25em` box, `inline-grid`, `place-items: center`, `align-self: center`, and `vertical-align: middle`.
+- The icon `::before` is forced to a block with `line-height: 1`, keeping the Bootstrap glyph centered inside the icon box.
+- No global icon rule was changed, so other page/button icon alignment is unaffected.
+- Extended the React foundation contract to guard the vertical-centering CSS.
+- Prepared fresh Hosting identity:
+  - React `0.4.280 / 2026.10.01.311`
+  - Public storefront `0.16.32 / 2026.10.01.026`
+
+Important files:
+- `react-app/public/parity/css/menu-qr.css`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `README.md`
+- `docs/NEXT_CHAT_HANDOFF.md`
+- Generated React Hosting entrypoints/bundle.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.01.311` and bundle `/react/assets/index-diPa2Spe.js`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Commit/push/deploy are performed after this WORKLOG entry.
+- No merge to `main`.
+- Intended Firebase scope is Hosting only.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
