@@ -329,7 +329,7 @@ assert(storageRules.includes("['owner', 'admin', 'manager', 'super_admin']"),"PO
 const adminUsersPage=read("react-app/src/pages/AdminUsersPage.jsx");
 const adminUsersCss=read("react-app/public/parity/css/admin-users.css");
 assert(adminUsersPage.includes('className="btn btn-sm admin-users-header-back"')&&adminUsersPage.includes('bi bi-arrow-left app-icon'),"Admin Users back button must keep the left-arrow icon");
-assert(adminUsersPage.includes('className="admin-users-header-leading"')&&adminUsersPage.indexOf('admin-users-header-back')<adminUsersPage.indexOf('data-header-actions'),"Admin Users back button must stay in the left leading group");
+assert(adminUsersPage.includes('className="admin-users-header-leading"')&&adminUsersPage.indexOf('admin-users-header-back')<adminUsersPage.indexOf('className="brand"')&&adminUsersPage.indexOf('admin-users-header-back')<adminUsersPage.indexOf('data-header-actions'),"Admin Users back button must stay leftmost in the header leading group");
 assert(adminUsersPage.indexOf("<LocaleSwitcher")<adminUsersPage.indexOf("<UserMenu"),"Admin Users right actions must keep locale immediately before User Menu");
 assert(adminUsersPage.includes("initialUsersReady")&&adminUsersPage.includes("!initialUsersReady"),"Admin Users full-page readiness must wait for the initial staff list");
 assert(adminUsersCss.includes(".admin-users-header-leading")&&adminUsersCss.includes(".admin-users-header-actions")&&adminUsersCss.includes("margin-left: auto;")&&adminUsersCss.includes(".admin-users-header-back")&&adminUsersCss.includes("gap: 7px;")&&!adminUsersCss.includes("order: 99;"),"Admin Users header left/right placement contract missing");
@@ -340,6 +340,10 @@ assert(
   &&adminUsersCss.includes(".admin-users-page .app-header")
   &&adminUsersCss.includes("flex-wrap: nowrap !important")
   &&adminUsersCss.includes(".user-table .user-mobile-card")
+  &&adminUsersCss.includes("grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)")
+  &&adminUsersCss.includes(".user-table .user-name-cell")
+  &&adminUsersCss.includes(".user-table .user-email-cell")
+  &&adminUsersCss.includes(".user-table .user-active-cell")
   &&adminUsersCss.includes("content: attr(data-label)")
   &&adminUsersCss.includes(".staff-create-trigger")
   &&adminUsersCss.includes("width: 100%;"),

@@ -1825,6 +1825,56 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Admin Users mobile card cleanup refinement
+
+Request:
+- Refine the previous Mobile Admin Users redesign because the Back action still did not feel left-aligned enough and the editable employee cards remained visually busy.
+
+Change:
+- Header:
+  - moved the Back link before the Brand in source order, making it the true leftmost header action,
+  - preserved the one-row Mobile header and right-side language/profile group.
+- Employee cards:
+  - replaced the previous label/value row stack with a cleaner 2-column card grid,
+  - Name spans the full card width,
+  - Email sits directly under Name as compact muted secondary text,
+  - Role and Business Scope share one aligned 2-column row,
+  - Active state and Save action share the bottom row,
+  - removed per-cell divider lines and reduced label size,
+  - tightened input typography/padding while retaining touch-friendly 40–42px controls,
+  - kept Desktop table layout unchanged.
+- Strengthened the React foundation contract so Back must precede Brand and the Mobile card must retain the structured 2-column layout.
+
+Laravel comparison:
+- Existing Laravel Admin Users files were reviewed again as a reference only.
+- The connected Laravel checkout remains on `feature/for_dev`, not the requested MASTER `main`; no Laravel files were changed.
+
+Release:
+- React `0.4.280 / 2026.10.02.317`
+- Public storefront `0.16.32 / 2026.10.02.032`
+
+Important files:
+- `react-app/src/pages/AdminUsersPage.jsx`
+- `react-app/public/parity/css/admin-users.css`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- Generated React Hosting entrypoints/parity CSS/bundle.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.317` and bundle `/react/assets/index-BVmjZh5h.js`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Commit/push/deploy are performed after this WORKLOG entry.
+- No merge to `main`.
+- Firebase scope is Hosting only.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
