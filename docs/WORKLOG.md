@@ -2087,9 +2087,19 @@ Verification:
 - `git diff --check` PASS.
 
 Deploy state:
-- Commit/push/deploy and production browser position verification are performed after this WORKLOG entry.
+- Commit: `44a26027` — `fix: make Delivery logout icon-only`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` with React Build `2026.10.02.321`.
+- Production Microsoft Edge Mobile viewport verification on `/s/saas-test-shop/delivery` confirmed:
+  - visible Logout text is empty,
+  - `bi-box-arrow-right` is present,
+  - computed position is absolute,
+  - computed background is transparent,
+  - computed border is 0,
+  - the action sits approximately 11px from the account card's top/right edges,
+  - accessible `aria-label` remains available without visible button text.
+- No Functions / Rules / Storage deployment was performed.
 - No merge to `main`.
-- Firebase scope is Hosting only.
 
 ---
 
