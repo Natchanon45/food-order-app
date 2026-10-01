@@ -941,7 +941,7 @@ export function AdminTenantsPage() {
   };
 
   if (authState.status === "loading" || !stylesReady || (profile?.role === "super_admin" && !initialTenantsReady)) {
-    return <PageReadyOverlay context="KINJAI" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={74} />;
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={74} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fadmin%2Ftenants" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;
@@ -963,7 +963,7 @@ export function AdminTenantsPage() {
     <>
       <header className="app-header super-admin-header">
         <div className="super-admin-header-leading">
-          <div className="brand"><span className="brand-mark">KJ</span><span>{t("admin_tenants.header.title")}</span></div>
+          <div className="brand"><span className="brand-mark">PG</span><span>{t("admin_tenants.header.title")}</span></div>
           <Link className="btn btn-sm super-admin-header-back" to="/platform"><i className="bi bi-arrow-left" aria-hidden="true"></i><span>{t("admin_tenants.header.back")}</span></Link>
         </div>
         <div className="app-header-actions" data-header-actions>

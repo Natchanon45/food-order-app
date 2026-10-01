@@ -1376,7 +1376,7 @@ export function AdminPage() {
   };
 
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="KINJAI" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={82} />;
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={82} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fadmin" replace />;
   if (!["owner", "admin"].includes(profile.role)) return <Navigate to="/" replace />;
@@ -1443,7 +1443,7 @@ export function AdminPage() {
   return (
     <>
       <header className="app-header">
-        <div className="brand"><span className="brand-mark">KJ</span>{t("admin.header.title")}</div>
+        <div className="brand"><span className="brand-mark">PG</span>{t("admin.header.title")}</div>
         <div className="app-header-actions" data-header-actions>
           <LocaleSwitcher style={{ marginLeft: 0, marginRight: 0 }} />
           <UserMenu profile={profile} />
