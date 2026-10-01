@@ -88,7 +88,9 @@ function applyStaffDeliveryState(staff) {
   if (customerLogoutButton) {
     customerLogoutButton.hidden = false;
     customerLogoutButton.style.display = "";
-    customerLogoutButton.textContent = "ออกจากระบบพนักงาน";
+    customerLogoutButton.setAttribute("aria-label", "ออกจากระบบพนักงาน");
+    customerLogoutButton.setAttribute("title", "ออกจากระบบพนักงาน");
+    customerLogoutButton.innerHTML = '<i class="bi bi-box-arrow-right app-icon" aria-hidden="true"></i>';
   }
   if (customerAccount) customerAccount.hidden = false;
   if (customerAccountName) customerAccountName.textContent = `${staff.displayName || staff.email} • ${staff.role}`;

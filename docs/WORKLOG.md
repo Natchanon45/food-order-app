@@ -2040,6 +2040,59 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Delivery account logout becomes icon-only top-right action
+
+Request:
+- On the Delivery checkout account card, remove the visible Logout button treatment and text.
+- Keep only a logout icon and move it flush toward the card's upper-right corner.
+
+Implementation:
+- Added explicit `delivery-account-card` semantics to the account/address card.
+- Moved `#customerLogoutButton` out of the normal Google-login action row and made it a direct child of the account card.
+- The logout control now contains only Bootstrap icon `bi-box-arrow-right`; no visible text is rendered.
+- Staff/customer runtime code now updates only accessible `aria-label` / `title` values and re-renders the icon; it no longer writes visible Logout text.
+- Styled the control as an absolute 30×30 icon action at `top:10px; right:10px` with:
+  - transparent background,
+  - no border,
+  - no button shadow,
+  - vertically/horizontally centered icon.
+- Added right padding to the account-card section title so the icon cannot overlap the heading.
+- When a staff/customer session is active, the now-empty Google-login action row is removed from layout to avoid leftover vertical spacing.
+- Updated both the active static Delivery CSS and the React parity copy so future Delivery React work preserves the same UI intent.
+- Bumped Delivery CSS/JS cache-busting query strings so browsers receive the new static assets immediately.
+- Added a React foundation regression contract requiring icon-only markup/runtime and top-right transparent positioning.
+
+Laravel reference:
+- The Laravel Delivery view was inspected before editing.
+- The connected Laravel checkout is currently on `feature/for_dev`, not the documented MASTER `main`; no Laravel files were modified.
+
+Release:
+- React `0.4.280 / 2026.10.02.321`
+- Public storefront `0.16.32 / 2026.10.02.036`
+
+Important files:
+- `public/delivery/index.html`
+- `public/assets/css/delivery-addresses.css`
+- `public/assets/js/delivery-addresses.js`
+- `public/assets/js/customer-profile-service.js`
+- `react-app/public/parity/css/delivery-addresses.css`
+- `tools/react-foundation-contract.mjs`
+- release metadata and generated Hosting bundle/entrypoints.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.321` and bundle `/react/assets/index-r8H7Y1KS.js`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Commit/push/deploy and production browser position verification are performed after this WORKLOG entry.
+- No merge to `main`.
+- Firebase scope is Hosting only.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title

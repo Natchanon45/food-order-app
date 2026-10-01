@@ -9,7 +9,7 @@ import {
   getCustomerProfile,
   saveCustomerProfile,
   isCustomerAccountAvailable,
-} from './customer-profile-service.js?v=20260915-005';
+} from './customer-profile-service.js?v=20261002-006';
 import { toast } from './ui.js?v=20260930-001';
 import { t } from './i18n.js?v=20260930-001';
 
@@ -149,9 +149,12 @@ function renderAccount() {
 
   customerLogoutButton.hidden = !showLogout;
   customerLogoutButton.style.display = showLogout ? '' : 'none';
-  customerLogoutButton.textContent = staffSignedIn
+  const logoutLabel = staffSignedIn
     ? 'ออกจากระบบพนักงาน'
     : t('delivery.checkout.customer.logout');
+  customerLogoutButton.setAttribute('aria-label', logoutLabel);
+  customerLogoutButton.setAttribute('title', logoutLabel);
+  customerLogoutButton.innerHTML = '<i class="bi bi-box-arrow-right app-icon" aria-hidden="true"></i>';
 
   customerAccount.hidden = !showLogout;
   customerAccountName.textContent = staffSignedIn

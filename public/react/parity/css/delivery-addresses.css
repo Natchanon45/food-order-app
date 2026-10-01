@@ -33,10 +33,26 @@
   text-overflow: ellipsis;
 }
 
+.delivery-account-card {
+  position: relative;
+}
+
+.delivery-account-card > .section-title {
+  padding-right: 38px;
+}
+
 .card:has(#customerModeText) > .grid.grid-2 {
   grid-template-columns: minmax(0, 1fr);
   align-items: stretch !important;
   gap: 12px;
+}
+
+.delivery-account-card:has(#customerLogoutButton:not([hidden])) > .grid.grid-2 {
+  gap: 0;
+}
+
+.delivery-account-card:has(#customerLogoutButton:not([hidden])) > .grid.grid-2 > div:last-child {
+  display: none !important;
 }
 
 .card:has(#customerModeText) > .grid.grid-2 > div:last-child {
@@ -197,8 +213,7 @@
   line-height: 18px;
 }
 
-#googleLoginButton,
-#customerLogoutButton {
+#googleLoginButton {
   width: 100%;
   min-height: 44px;
   justify-content: center;
@@ -208,9 +223,59 @@
   font-size: 14px;
 }
 
-#googleLoginButton span,
-#customerLogoutButton span {
+#googleLoginButton span {
   white-space: nowrap !important;
+}
+
+#customerLogoutButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: inline-grid;
+  width: 30px;
+  height: 30px;
+  min-height: 0;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0;
+  background: transparent !important;
+  color: var(--muted);
+  box-shadow: none !important;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  appearance: none;
+}
+
+#customerLogoutButton:hover {
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--green-dark);
+  box-shadow: none !important;
+  transform: none;
+}
+
+#customerLogoutButton:focus-visible {
+  outline: 2px solid rgba(21, 148, 71, .3);
+  outline-offset: 2px;
+}
+
+#customerLogoutButton .app-icon {
+  width: 1em;
+  height: 1em;
+  display: inline-grid !important;
+  place-items: center !important;
+  margin: 0;
+  line-height: 1;
+  vertical-align: middle !important;
+}
+
+#customerLogoutButton .app-icon::before {
+  display: block;
+  line-height: 1;
 }
 
 @container (max-width: 460px) {

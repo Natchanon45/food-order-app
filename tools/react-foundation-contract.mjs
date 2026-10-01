@@ -177,6 +177,9 @@ const staticFirebaseConfig=read("public/assets/js/firebase-config.js");
 const messagingServiceWorker=read("public/firebase-messaging-sw.js");
 const publicSignupFunction=read("functions/public-signup.js");
 const staticDeliveryEntry=read("public/delivery/index.html");
+const staticDeliveryAddresses=read("public/assets/js/delivery-addresses.js");
+const staticCustomerProfileService=read("public/assets/js/customer-profile-service.js");
+const staticDeliveryAddressesCss=read("public/assets/css/delivery-addresses.css");
 const staticDeliveryRuntime=read("public/assets/js/delivery.js");
 const publicTranslations=read("public/assets/js/public-translations.js");
 const paritySync=read("tools/sync-react-parity-assets.py");
@@ -215,6 +218,24 @@ assert(
   "PENGUIN production origin must stay canonical across Hosting, Firebase Auth, messaging, and signup links"
 );
 assert(functionsIndex.includes('exports.lalamoveWebhook = lalamoveWebhook.lalamoveWebhook'),"Lalamove Hosting webhook must stay exported from Functions index");
+assert(
+  staticDeliveryEntry.includes('class="card delivery-account-card"')
+  &&staticDeliveryEntry.includes('id="customerLogoutButton"')
+  &&staticDeliveryEntry.includes('bi bi-box-arrow-right app-icon')
+  &&staticDeliveryAddresses.includes("customerLogoutButton.innerHTML = '<i class=\"bi bi-box-arrow-right app-icon\"")
+  &&staticDeliveryAddresses.includes("customerLogoutButton.setAttribute('aria-label', logoutLabel)")
+  &&staticCustomerProfileService.includes('customerLogoutButton.setAttribute("aria-label", "ออกจากระบบพนักงาน")')
+  &&staticCustomerProfileService.includes('bi bi-box-arrow-right app-icon')
+  &&!staticDeliveryAddresses.includes("customerLogoutButton.textContent = staffSignedIn")
+  &&!staticCustomerProfileService.includes('customerLogoutButton.textContent = "ออกจากระบบพนักงาน"')
+  &&staticDeliveryAddressesCss.includes("#customerLogoutButton")
+  &&staticDeliveryAddressesCss.includes("position: absolute;")
+  &&staticDeliveryAddressesCss.includes("top: 10px;")
+  &&staticDeliveryAddressesCss.includes("right: 10px;")
+  &&staticDeliveryAddressesCss.includes("background: transparent !important;")
+  &&staticDeliveryAddressesCss.includes("border: 0 !important;"),
+  "Delivery staff/customer logout must stay icon-only and pinned to the account card top-right"
+);
 assert(
   cashierPage.includes('className="cashier-hero-actions"')
   &&cashierPage.includes('className="btn cashier-hero-order-btn"')
