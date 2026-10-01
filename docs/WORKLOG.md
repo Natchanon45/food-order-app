@@ -1930,9 +1930,11 @@ Verification:
 - `git diff --check` PASS.
 
 Deploy state:
-- Commit/push/deploy are performed after this WORKLOG entry.
+- Commit: `6cfdf616` — `fix: rebuild Admin Users mobile cards`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` with React Build `2026.10.02.318`.
+- No Functions / Rules / Storage deployment was performed for this UI redesign.
 - No merge to `main`.
-- Firebase scope is Hosting only.
 
 ---
 
