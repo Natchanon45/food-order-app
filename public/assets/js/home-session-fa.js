@@ -123,7 +123,7 @@ if (user) {
     document.body.classList.add("staff-home");
     document.body.dataset.roles = profile.role;
     const brandLabel = document.querySelector(".brand-label");
-    if (brandLabel) brandLabel.textContent = "PENGUIN";
+    if (brandLabel) brandLabel.textContent = "KINJAI";
     const ownerRoleAliases = new Set(["owner", "admin", "cashier", "kitchen", "manager"]);
     const revenueShareEnabled = await resolveRevenueShareAccess(profile);
 

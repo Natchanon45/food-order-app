@@ -2,7 +2,7 @@ export default {
     "th": {
         "platform": {
             "meta": {
-                "title": "ระบบกลาง PENGUIN"
+                "title": "ระบบกลาง KINJAI"
             },
             "header": {
                 "title": "ระบบกลาง"
@@ -38,7 +38,7 @@ export default {
     "en": {
         "platform": {
             "meta": {
-                "title": "PENGUIN platform"
+                "title": "KINJAI platform"
             },
             "header": {
                 "title": "Platform"

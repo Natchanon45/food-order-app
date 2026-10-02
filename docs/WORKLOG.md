@@ -3139,3 +3139,68 @@ Deploy state:
 
 Remaining:
 - None, or list exact follow-up.
+
+---
+
+## 2026-10-02 — KINJAI visible branding completion
+
+Symptom / request:
+- Resume the branding migration and make all user-visible product branding read KINJAI, with compact fallback KJ, while preserving internal FOD/Firebase/repository/schema identifiers.
+- Re-audit React and static/compatibility pages because customer Delivery / Takeaway / Success still use static assets in parts of the migration.
+
+Root cause:
+- The branch had a newer visible-brand pass using PENGUIN / PG, while the current requested product identity is KINJAI / KJ.
+- Branding appeared across React fallbacks, static HTML shells, five-locale translation payloads, QR/receipt labels, parity CSS pseudo-content, release metadata, and regression contracts.
+- Remaining uppercase FOD matches are internal translation keys, DOM identifiers, and error codes such as FOD_WALLET_*; renaming them would risk logic compatibility and was intentionally avoided.
+
+Change:
+- Replaced visible PENGUIN / PG branding with KINJAI / KJ across React source, static/compatibility HTML/JS/CSS, QR/receipt surfaces, and TH/EN/MY/LO/KM translation payloads.
+- Preserved runtime compatibility normalization so legacy LUKKAJA, PENGUIN, Food Order Delivery, FOOD ORDER QR, and standalone visible FOD/PG are normalized to KINJAI / KJ.
+- Kept PlatformBrandingRuntime asset precedence:
+  - header .brand-mark: App Icon -> Logo -> KJ fallback,
+  - login/large brand: Logo -> App Icon -> KJ fallback,
+  - favicon: Favicon -> App Icon -> Logo,
+  - apple-touch-icon: App Icon first.
+- Updated React parity/generated-build contracts so KINJAI / KJ is the required visible identity while old visible brands are rejected.
+- Updated current README/handoff branding checkpoint without renaming existing Firebase/Hosting/auth identifiers.
+- Prepared fresh release identity for the next Hosting deploy:
+  - React 0.4.280 / 2026.10.02.335
+  - public storefront 0.16.32 / 2026.10.02.050
+
+Important files:
+- react-app/src/components/PlatformBrandingRuntime.jsx
+- react-app/src/i18n/I18nProvider.jsx
+- react-app/src/i18n/parity-translations.json
+- React page branding surfaces under react-app/src/pages/
+- react-app/public/parity/css/app.css
+- react-app/public/parity/css/admin-retail-pos-parity.css
+- react-app/public/parity/css/admin-sales-report-retail-pos-parity.css
+- public/assets/js/public-translations.js
+- public/assets/js/platform-translations.js
+- public/assets/js/home-translations.js
+- static canonical/compatibility HTML entrypoints under public/
+- tools/react-foundation-contract.mjs
+- tools/generated-react-build-contract.mjs
+- react-app/src/config/release.js
+- public/assets/js/app-info.js
+- README.md
+- docs/NEXT_CHAT_HANDOFF.md
+
+Verification:
+- Source/static audit found no residual user-visible PENGUIN / PG / LUKKAJA / Food Order Delivery / FOOD ORDER QR outside explicit compatibility/test guards.
+- FOD_WALLET_*, fod_*, DOM ids, Firebase project/auth app names, and other internal identifiers remain unchanged.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS.
+- React foundation/migration/parity matrix/P0 action/callable/tenant-access/UI-layer contracts PASS.
+- npm run build:react PASS after the release-identity bump.
+- Generated React build contract PASS for Build 2026.10.02.335 using /react/assets/index-Cg42g7Sl.js.
+- git diff --check PASS.
+
+Deploy state:
+- Not deployed yet in this worklog entry.
+- Hosting only is intended for the next deploy; no Firestore Rules / Storage Rules / Functions change is part of this branding pass.
+- No merge to main.
+
+Remaining:
+- Deploy Firebase Hosting target foodapp using the prepared fresh Build pair.
+- After Hosting deploy, visually verify Header App Icon, Login Logo, favicon/apple-touch-icon, and TH/EN/MY/LO/KM on canonical customer/staff/admin routes.

@@ -157,7 +157,7 @@ export function PlatformOwnersPage() {
   }, [confirmSecret, secret, mode, t]);
 
   if (authState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={76} />;
+    return <PageReadyOverlay context="KINJAI" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={76} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fplatform%2Fowners" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;
@@ -166,7 +166,7 @@ export function PlatformOwnersPage() {
     <>
       <header className="app-header super-admin-header">
         <div className="super-admin-header-leading">
-          <div className="brand"><span className="brand-mark">PG</span><span>{t("platform_owners.header.title")}</span></div>
+          <div className="brand"><span className="brand-mark">KJ</span><span>{t("platform_owners.header.title")}</span></div>
           <Link className="btn btn-sm super-admin-header-back" to="/platform"><i className="bi bi-arrow-left" aria-hidden="true"></i><span>{t("platform_owners.header.back")}</span></Link>
         </div>
         <div className="app-header-actions" data-header-actions>

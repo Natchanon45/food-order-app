@@ -348,7 +348,7 @@ export function CashierTableQrPage() {
     <>
       <header className="app-header">
         <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-          <div className="brand"><span className="brand-mark">PG</span>{t("cashier_documents.table_qr.header_title")}</div>
+          <div className="brand"><span className="brand-mark">KJ</span>{t("cashier_documents.table_qr.header_title")}</div>
           <Link className="btn btn-sm" to="/cashier"><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{t("cashier_documents.table_qr.back")}</span></Link>
         </div>
         <div className="app-header-actions" data-header-actions>
@@ -460,7 +460,7 @@ export function CashierTableQrPage() {
               <article className="card qr-card print-target">
                 <div className="qr-ticket">
                   <div className="qr-ticket-header">
-                    <div className="qr-ticket-brand">PENGUIN QR</div>
+                    <div className="qr-ticket-brand">KINJAI QR</div>
                     <div className="qr-ticket-title">{t("cashier_documents.table_qr.ticket_title")}</div>
                     <div className="qr-ticket-table">{ticket.table.name}</div>
                   </div>

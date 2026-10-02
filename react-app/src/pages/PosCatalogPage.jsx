@@ -218,7 +218,7 @@ export function PosCatalogPage() {
         : breakdown.ready ? tr("dynamic.no_importable") : tr("dynamic.only_drafts");
 
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={92} />;
+    return <PageReadyOverlay context="KINJAI" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={92} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fpos%2Fcatalog" replace />;
   if (profile.role !== "owner" || tenantState.status === "error" || !tenant) return <Navigate to="/" replace />;

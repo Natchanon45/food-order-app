@@ -20,7 +20,7 @@ function ensureStylesheet(name) {
   });
 }
 
-export function useParityPage({ bodyClass = "", title = "PENGUIN", styles = [], attributes = {}, disabledGlobalStyles = [] }) {
+export function useParityPage({ bodyClass = "", title = "KINJAI", styles = [], attributes = {}, disabledGlobalStyles = [] }) {
   const [stylesReady, setStylesReady] = useState(styles.length === 0);
   const styleKey = styles.join("|");
   const disabledStyleKey = disabledGlobalStyles.join("|");

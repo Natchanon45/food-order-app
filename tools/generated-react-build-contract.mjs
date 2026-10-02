@@ -33,7 +33,7 @@ assert(
   receipt.source.includes(build),
   `Generated React bundle ${receipt.ref} is stale: expected release Build ${build}`
 );
-assert(receipt.source.includes("PENGUIN"), `Generated React bundle ${receipt.ref} is missing the PENGUIN visible brand`);
+assert(receipt.source.includes("KINJAI"), `Generated React bundle ${receipt.ref} is missing the KINJAI visible brand`);
 
 const backIndex = receipt.source.indexOf("cashier_documents.receipt.back");
 assert(backIndex >= 0, "Cashier Receipt back label missing from generated bundle");

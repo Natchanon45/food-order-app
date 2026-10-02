@@ -512,7 +512,7 @@ export function WaitingQueuePage() {
   };
 
   if (authStatus === "loading" || tenantState.status === "loading" || !stylesReady || (tenant && loading)) {
-    return <PageReadyOverlay context="PENGUIN" title={wq("hero.loading_actor")} message={wq("controls.syncing")} progress={82} />;
+    return <PageReadyOverlay context="KINJAI" title={wq("hero.loading_actor")} message={wq("controls.syncing")} progress={82} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fwaiting-queue" replace />;
   if (!ROLES.has(profile.role) || tenantState.status === "error" || !tenant) return <Navigate to="/" replace />;
@@ -524,7 +524,7 @@ export function WaitingQueuePage() {
   return (
     <>
       <header className="app-header waiting-app-header">
-        <div className="brand"><span className="brand-mark">PG</span><i className="bi bi-person-standing app-icon" aria-hidden="true"></i><span>{wq("header.title")}</span></div>
+        <div className="brand"><span className="brand-mark">KJ</span><i className="bi bi-person-standing app-icon" aria-hidden="true"></i><span>{wq("header.title")}</span></div>
         <a className="btn btn-dark btn-sm waiting-home-link" href="/?from=waiting-queue" aria-label={wq("header.back")} title={wq("header.back")}><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{wq("header.back")}</span></a>
         <LocaleSwitcher className="waiting-locale-switcher" />
       </header>

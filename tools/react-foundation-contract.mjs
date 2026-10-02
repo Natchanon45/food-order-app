@@ -16,7 +16,7 @@ for(const source of ["/cashier/**","/kitchen/**","/pos/**","/admin/**"])assert(r
 
 const dict=JSON.parse(read("react-app/src/i18n/parity-translations.json"));
 for(const locale of ["th","en","my","lo","km"]) {
-  assert(dict?.[locale]?.home?.meta?.title==="PENGUIN",`home locale missing: ${locale}`);
+  assert(dict?.[locale]?.home?.meta?.title==="KINJAI",`home locale missing: ${locale}`);
   assert(Boolean(dict?.[locale]?.auth?.login?.staff_title),`login locale missing: ${locale}`);
   assert(Boolean(dict?.[locale]?.auth?.register?.title),`register locale missing: ${locale}`);
 }
@@ -27,7 +27,7 @@ const collectTranslationValues=value=>{
   if(value&&typeof value==="object")Object.values(value).forEach(collectTranslationValues);
 };
 collectTranslationValues(dict);
-assert(!translationValues.some(value=>/(LUKKAJA|KINJAI|Food Order\/Delivery With QR|Food Order Delivery|FOOD ORDER QR|\bFOD\b|\bKJ\b)/.test(value)),"visible legacy branding remains in React translations");
+assert(!translationValues.some(value=>/(LUKKAJA|PENGUIN|Food Order\/Delivery With QR|Food Order Delivery|FOOD ORDER QR|\bFOD\b|\bPG\b)/.test(value)),"visible legacy branding remains in React translations");
 const app=read("react-app/src/app/App.jsx");
 for(const route of ["/","/login","/register"])assert(app.includes(`path="${route}"`),`route missing: ${route}`);
 for(const route of ["/cashier","/cashier/quick-order","/cashier/receipt","/cashier/table-qr","/cashier/waiting-queue"]) {
@@ -104,7 +104,7 @@ const revenueShareCss=read("react-app/public/parity/css/revenue-share-report.css
 assert(revenueShareCss.includes(".report-suspension-notice"),"Revenue-share report parity CSS/suspension banner missing");
 assert(read("tools/sync-react-parity-assets.py").includes('"revenue-share-report.css"'),"Revenue-share CSS must be included in parity asset sync");
 const reactIndex=read("react-app/index.html");
-assert(reactIndex.includes("<title>PENGUIN</title>")&&!reactIndex.includes("<title>KINJAI</title>")&&!reactIndex.includes("<title>LUKKAJA</title>"),"React entry title must remain PENGUIN");
+assert(reactIndex.includes("<title>KINJAI</title>")&&!reactIndex.includes("<title>PENGUIN</title>")&&!reactIndex.includes("<title>LUKKAJA</title>"),"React entry title must remain KINJAI");
 assert(reactIndex.includes("page-ready-overlay"),"Laravel-parity pre-React loading overlay missing");
 assert(reactIndex.includes('/react/parity/css/app.css'),"global app.css must load on every React route");
 const pageReadyCss=read("react-app/public/parity/css/page-ready-state.css");
@@ -112,12 +112,12 @@ assert(pageReadyCss.includes(".page-ready-spinner {")&&pageReadyCss.includes("di
 assert(pageReadyCss.includes(".page-ready-simple {")&&pageReadyCss.includes("justify-items: center;")&&pageReadyCss.includes("text-align: center;"),"React simple page-ready loader must remain centered");
 const globalAppCss=read("react-app/public/parity/css/app.css");
 assert(globalAppCss.includes(".brand-mark::after"),"global brand-mark pseudo element missing");
-assert(globalAppCss.includes('content: "PG"'),"global compact brand fallback must be PG");
+assert(globalAppCss.includes('content: "KJ"'),"global compact brand fallback must be KJ");
 assert(globalAppCss.includes("align-items: center !important;")&&globalAppCss.includes("justify-content: center !important;"),"global FOD vertical centering contract missing");
 const brandingRuntime=read("react-app/src/components/PlatformBrandingRuntime.jsx");
 assert(brandingRuntime.includes(".brand-mark.platform-brand-image-target::after{content:none!important"),"branding image override must suppress fallback pseudo label");
 const i18nProvider=read("react-app/src/i18n/I18nProvider.jsx");
-assert(i18nProvider.includes("normalizeVisibleBranding")&&i18nProvider.includes('.replaceAll("LUKKAJA", "PENGUIN")')&&i18nProvider.includes('.replaceAll("KINJAI", "PENGUIN")')&&i18nProvider.includes('.replace(/\\bFOD\\b/g, "PG")')&&i18nProvider.includes('.replace(/\\bKJ\\b/g, "PG")'),"React runtime branding normalization missing");
+assert(i18nProvider.includes("normalizeVisibleBranding")&&i18nProvider.includes('.replaceAll("LUKKAJA", "KINJAI")')&&i18nProvider.includes('.replaceAll("PENGUIN", "KINJAI")')&&i18nProvider.includes('.replace(/\\bFOD\\b/g, "KJ")')&&i18nProvider.includes('.replace(/\\bPG\\b/g, "KJ")'),"React runtime branding normalization missing");
 const adminWorkspaceCss=read("react-app/public/parity/css/admin-workspace.css");
 assert(adminWorkspaceCss.includes(".admin-card-toggle .app-icon::before"),"admin collapse icon centering rule missing");
 assert(adminWorkspaceCss.includes("display: inline-flex !important;")&&adminWorkspaceCss.includes("justify-content: center !important;"),"admin collapse icon must stay centered");
@@ -166,7 +166,7 @@ for(const key of ["kitchen","cashier","admin","admin_users","pos","pos_catalog"]
 assert(homeDashboardCss.includes('--dash-icon-fg: #c2410c; --dash-icon-bg: #ffedd5;')&&homeDashboardCss.includes('--dash-icon-fg: #1d4ed8; --dash-icon-bg: #dbeafe;')&&homeDashboardCss.includes('--dash-icon-fg: #7c3aed; --dash-icon-bg: #ede9fe;'),"Home dashboard Kitchen/Cashier/Staff icon palettes must remain distinct");
 assert(!homeDashboardCss.includes('.nav-card[href="/kitchen"]'),"Home dashboard colors must not depend on Laravel-only href routes");
 assert(homePage.includes("const stylesReady = useParityPage")&&homePage.includes("|| !stylesReady"),"React Home must keep PageReadyOverlay active until Home-specific parity CSS is loaded");
-assert(homePage.includes('<span className="brand-mark">PG</span>')&&homePage.includes('<span className="brand-label">{staff ? "PENGUIN" : "PENGUIN"}</span>'),"React Home visible brand must be PENGUIN / PG");
+assert(homePage.includes('<span className="brand-mark">KJ</span>')&&homePage.includes('<span className="brand-label">{staff ? "KINJAI" : "KINJAI"}</span>'),"React Home visible brand must be KINJAI / KJ");
 assert(
   homePage.includes('className="dashboard-section dashboard-section-order-delivery"')
   &&!homePage.includes('cardKey="waiting_queue"')
@@ -341,15 +341,15 @@ assert(
 );
 assert(posPage.includes("initialDataReady")&&posPage.includes("!initialDataReady"),"POS full-page readiness must wait for initial Firebase data");
 assert(
-  adminRetailParity.includes('content: "PG"')&&!adminRetailParity.includes('content: "KJ"')
-  &&adminSalesRetailParity.includes('content: "PG"')&&!adminSalesRetailParity.includes('content: "KJ"')
-  &&pgHeaderPages.every(page=>page.includes('<span className="brand-mark">PG</span>')&&!page.includes('<span className="brand-mark">FO</span>')),
-  "React operational header fallback marks must stay PG"
+  adminRetailParity.includes('content: "KJ"')&&!adminRetailParity.includes('content: "PG"')
+  &&adminSalesRetailParity.includes('content: "KJ"')&&!adminSalesRetailParity.includes('content: "PG"')
+  &&pgHeaderPages.every(page=>page.includes('<span className="brand-mark">KJ</span>')&&!page.includes('<span className="brand-mark">FO</span>')),
+  "React operational header fallback marks must stay KJ"
 );
 assert(parityStyleHook.includes("REACT_RELEASE.build")&&parityStyleHook.includes("?v="),"React page parity CSS must be cache-busted by the release Build");
 const releaseBuildMatch=releaseConfig.match(/build:\s*"([^"]+)"/);
 assert(
-  releaseConfig.includes('product: "PENGUIN"')
+  releaseConfig.includes('product: "KINJAI"')
   &&releaseConfig.includes('version: "0.4.280"')
   &&releaseBuildMatch
   &&/^\d{4}\.\d{2}\.\d{2}\.\d{3}$/.test(releaseBuildMatch[1])

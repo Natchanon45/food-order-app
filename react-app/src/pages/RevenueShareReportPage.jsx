@@ -388,7 +388,7 @@ export function RevenueShareReportPage() {
     : t("revenue_share_report.explanation.disabled");
 
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={90} />;
+    return <PageReadyOverlay context="KINJAI" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={90} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Freports%2Frevenue-share" replace />;
   if (!["owner", "admin"].includes(profile.role)) return <Navigate to="/" replace />;
@@ -398,7 +398,7 @@ export function RevenueShareReportPage() {
     <>
       <header className="app-header">
         <div className="revenue-share-header-leading">
-          <div className="brand"><span className="brand-mark">PG</span><span>{t("revenue_share_report.header.title")}</span></div>
+          <div className="brand"><span className="brand-mark">KJ</span><span>{t("revenue_share_report.header.title")}</span></div>
           <Link className="btn btn-sm revenue-share-header-back" to="/"><i className="bi bi-arrow-left" aria-hidden="true"></i><span>{t("revenue_share_report.header.back")}</span></Link>
         </div>
         <div className="app-header-actions" data-header-actions>

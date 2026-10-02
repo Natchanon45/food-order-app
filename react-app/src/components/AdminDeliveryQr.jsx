@@ -142,7 +142,7 @@ function QrCard({ id, path, title, subtitle, paperTitle, linkLabel, label, filen
       <div className="delivery-qr-manager">
         <div className="delivery-qr-preview" id={`${id}Preview`}>
           <div className="delivery-qr-paper" ref={paperRef}>
-            <div className="delivery-qr-brand">PENGUIN</div>
+            <div className="delivery-qr-brand">KINJAI</div>
             <strong id={`${id}ShopName`}>{shopName || t("admin.delivery_qr.brand_shop_fallback")}</strong>
             <div className="delivery-qr-title">{paperTitle}</div>
             <img id={`${id}Image`} ref={imageRef} src={imageUrl} width="280" height="280" alt={title} />

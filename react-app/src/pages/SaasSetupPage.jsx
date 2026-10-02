@@ -134,7 +134,7 @@ export function SaasSetupPage() {
   };
 
   if (authState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="PENGUIN" title={globalT("shared.state.loading")} message={globalT("shared.state.please_wait")} progress={80} />;
+    return <PageReadyOverlay context="KINJAI" title={globalT("shared.state.loading")} message={globalT("shared.state.please_wait")} progress={80} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fsuper-admin%2Fsaas-setup" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;
@@ -143,7 +143,7 @@ export function SaasSetupPage() {
     <>
       <header className="app-header super-admin-header">
         <div className="super-admin-header-leading">
-          <div className="brand"><span className="brand-mark">PG</span><span>{t("header.brand")}</span></div>
+          <div className="brand"><span className="brand-mark">KJ</span><span>{t("header.brand")}</span></div>
           <Link className="btn btn-sm super-admin-header-back" to="/">
             <i className="bi bi-arrow-left" aria-hidden="true"></i><span>{t("header.back")}</span>
           </Link>

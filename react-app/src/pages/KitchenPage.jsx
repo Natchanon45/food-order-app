@@ -511,7 +511,7 @@ export function KitchenPage() {
   return (
     <>
       <header className="app-header">
-        <div className="brand"><span className="brand-mark">PG</span>{t("kitchen.brand")}</div>
+        <div className="brand"><span className="brand-mark">KJ</span>{t("kitchen.brand")}</div>
         <div className="app-header-actions" data-header-actions>
           <LocaleSwitcher style={{ marginLeft: 0, marginRight: 0 }} />
           <CashierOrderNotifier orders={orders} onToast={showToast} surface="kitchen" />
