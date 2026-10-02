@@ -3023,9 +3023,19 @@ Verification:
 - Post-build source audit confirms Quick Order is nested inside the title row and remains above the takeaway tools section.
 
 Deploy state:
-- Commit/push/deploy are performed after this WORKLOG entry.
-- Firebase scope is Hosting only.
-- No Functions / Firestore Rules / Storage Rules changes are required.
+- Implementation commit: `93e2e19a` — `fix: align Cashier quick order with Hero title`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- No Functions / Firestore Rules / Storage Rules deployment was performed.
+- Authenticated Production verification on `/cashier` at 430×932 confirmed:
+  - footer Build `2026.10.02.333`,
+  - generated bundle `/react/assets/index-C306tXpI.js`,
+  - visible title is `หน้าแคชเชียร์`,
+  - visible Quick Order label is `รับออเดอร์`,
+  - title center Y = ~112.99px,
+  - button center Y = 113.00px,
+  - therefore title/button are vertically aligned on the same Hero row,
+  - Hero description begins below the title/action row.
 - No merge to `main`.
 
 ---
