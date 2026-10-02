@@ -2900,8 +2900,21 @@ Release:
 - Public storefront `0.16.32 / 2026.10.02.046`
 
 Deploy state:
-- Tests/build/commit/push/deploy are performed after this WORKLOG entry.
-- Hosting only; no Functions / Firestore Rules / Storage Rules change.
+- Cache-fix implementation commit: `e5f5da54` — `fix: prevent stale canonical Home cache`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Root response now returns `Cache-Control: no-cache, no-store, must-revalidate`.
+- Production root HTML references `home-dashboard.css?v=20261002-046` and contains the scoped Order/Delivery section with no Waiting Queue main-card markup/injector.
+- Authenticated Production browser flow verified at 430×932:
+  - `/waiting-queue` loads React Build `2026.10.02.331`,
+  - Back link is `/?from=waiting-queue`,
+  - Back performs full navigation and canonical Home cleans the visible URL to `/`,
+  - `Order / Delivery` title height is 20px with 20px line-height and `white-space:nowrap` (one line),
+  - description width is 210px and height ~28.34px with ~14.175px line-height (two lines),
+  - main nav grid computes to `180px 180px`,
+  - visible main cards are Kitchen, Cashier, System Admin, and Staff Admin at 180px each,
+  - Waiting Queue main cards = 0.
+- Hosting only; no Functions / Firestore Rules / Storage Rules deployment.
 - No merge to `main`.
 
 ---
