@@ -525,7 +525,7 @@ export function WaitingQueuePage() {
     <>
       <header className="app-header waiting-app-header">
         <div className="brand"><span className="brand-mark">PG</span><i className="bi bi-person-standing app-icon" aria-hidden="true"></i><span>{wq("header.title")}</span></div>
-        <a className="btn btn-dark btn-sm waiting-home-link" href="/" aria-label={wq("header.back")} title={wq("header.back")}><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{wq("header.back")}</span></a>
+        <a className="btn btn-dark btn-sm waiting-home-link" href="/?from=waiting-queue" aria-label={wq("header.back")} title={wq("header.back")}><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{wq("header.back")}</span></a>
         <LocaleSwitcher className="waiting-locale-switcher" />
       </header>
 

@@ -4,9 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#159447">
+<script>
+  if (location.pathname === "/" && new URLSearchParams(location.search).get("from") === "waiting-queue") {
+    history.replaceState(null, "", "/");
+  }
+</script>
 <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
 <link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240">
-<link rel="stylesheet" href="/assets/css/home-dashboard.css?v=20261002-045">
+<link rel="stylesheet" href="/assets/css/home-dashboard.css?v=20261002-046">
 <link rel="stylesheet" href="/assets/css/public-contact.css?v=20260803-005">
 <link rel="stylesheet" href="/assets/css/public-utility-actions.css?v=20260811-096">
 <link rel="stylesheet" href="/assets/css/waiting-queue-legacy-customer.css?v=20260801-002">

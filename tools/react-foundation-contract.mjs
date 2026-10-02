@@ -178,9 +178,9 @@ assert(
   "React Home Order / Delivery header must stay one-line with a two-line-capable description and no Waiting Queue main card"
 );
 assert(
-  waitingQueuePage.includes('<a className="btn btn-dark btn-sm waiting-home-link" href="/"')
+  waitingQueuePage.includes('<a className="btn btn-dark btn-sm waiting-home-link" href="/?from=waiting-queue"')
   &&!waitingQueuePage.includes('<Link className="btn btn-dark btn-sm waiting-home-link"'),
-  "Waiting Queue Back must full-navigate to canonical static Home instead of rendering the alternate React Home route"
+  "Waiting Queue Back must full-navigate with a fresh cache key to canonical static Home instead of rendering the alternate React Home route"
 );
 const posPage=read("react-app/src/pages/PosPage.jsx");
 const posNavigation=read("react-app/src/components/PosNavigation.jsx");
@@ -198,6 +198,7 @@ const staticI18n=read("public/assets/js/i18n.js");
 const staticUi=read("public/assets/js/ui.js");
 const staticHome=read("public/index.html");
 const staticHomeDashboardCss=read("public/assets/css/home-dashboard.css");
+const firebaseHostingConfig=read("firebase.json");
 const staticHomeSession=read("public/assets/js/home-session-fa.js");
 assert(
   staticHome.includes('class="dashboard-section dashboard-section-order-delivery"')
@@ -206,8 +207,13 @@ assert(
   &&staticHomeDashboardCss.includes(".dashboard-section-order-delivery .dashboard-section-head")
   &&staticHomeDashboardCss.includes("grid-template-columns: max-content minmax(0, 1fr);")
   &&staticHomeDashboardCss.includes("white-space: nowrap;")
-  &&staticHomeDashboardCss.includes("max-width: 210px;"),
-  "Canonical static Home must keep Order / Delivery one-line, allow the description to wrap, and omit Waiting Queue from the main dashboard"
+  &&staticHomeDashboardCss.includes("max-width: 210px;")
+  &&staticHome.includes('get("from") === "waiting-queue"')
+  &&staticHome.includes('history.replaceState(null, "", "/")')
+  &&firebaseHostingConfig.includes('"source": "/"')
+  &&firebaseHostingConfig.includes('"source": "/index.html"')
+  &&firebaseHostingConfig.includes('"value": "no-cache, no-store, must-revalidate"'),
+  "Canonical static Home must keep the requested layout, omit Waiting Queue, and never remain stale behind Hosting cache"
 );
 const staticAuthService=read("public/assets/js/auth-service.js");
 const staticHomeTranslations=read("public/assets/js/home-translations.js");

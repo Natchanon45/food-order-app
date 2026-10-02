@@ -2871,6 +2871,41 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Canonical Home root cache invalidation
+
+Follow-up symptom:
+- The first Home layout/Waiting Queue fix was deployed with React Build `2026.10.02.330` / public Build `2026.10.02.045`.
+- Direct server content was already correct, but an authenticated browser session could still display the previous Home including the Waiting Queue card and public Build `.044`.
+- Returning from Waiting Queue could therefore still land on a visually stale Home despite the source/deploy being updated.
+
+Root cause:
+- Firebase Hosting returned the root document with `Cache-Control: max-age=3600`.
+- `curl https://penguin-food.web.app/` showed the new Home markup, but the existing Chrome profile could legally reuse the prior root HTML for up to one hour.
+- Operational React routes already had `no-cache, no-store`; canonical root Home did not.
+
+Change:
+- Added explicit Firebase Hosting headers for both `/` and `/index.html`:
+  - `Cache-Control: no-cache, no-store, must-revalidate`.
+- Waiting Queue Back now full-navigates to `/?from=waiting-queue` instead of plain `/`.
+  - The query creates a fresh navigation/cache key even for a browser that still has an older cached root response.
+- Canonical Home strips that one-time query immediately after the new document loads using `history.replaceState(null, "", "/")`, so the visible address remains clean.
+- Home dashboard stylesheet cache key bumped to `home-dashboard.css?v=20261002-046`.
+- Added regression coverage requiring:
+  - root and index no-cache Hosting configuration,
+  - fresh Waiting Queue Back URL,
+  - canonical Home query cleanup.
+
+Release:
+- React `0.4.280 / 2026.10.02.331`
+- Public storefront `0.16.32 / 2026.10.02.046`
+
+Deploy state:
+- Tests/build/commit/push/deploy are performed after this WORKLOG entry.
+- Hosting only; no Functions / Firestore Rules / Storage Rules change.
+- No merge to `main`.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
