@@ -2683,9 +2683,18 @@ Verification:
 - `git diff --check` PASS.
 
 Deploy state:
-- Commit/push/deploy are performed after this WORKLOG entry.
-- Firebase scope is Hosting only.
-- No Functions / Firestore Rules / Storage Rules changes are required.
+- Implementation commit: `36d1a507` — `fix: align receipt table with native scroll`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` with React Build `2026.10.02.328`.
+- No Functions / Firestore Rules / Storage Rules deployment was performed.
+- Production verification:
+  - `/admin/sales-report` returns HTTP 200,
+  - production CSS contains native `overflow-x:auto`, momentum scrolling, and horizontal overscroll containment,
+  - production CSS no longer contains `touch-action:pan-y`,
+  - production CSS contains `contain:inline-size` on the receipt wrapper,
+  - production bundle is `/react/assets/index-DOhou3DW.js`,
+  - production bundle contains the receipt scroll wrapper,
+  - production bundle no longer contains the custom `useHorizontalScroller` function or `receiptScrollRef`.
 - No merge to `main`.
 
 ---
