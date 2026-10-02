@@ -2961,9 +2961,18 @@ Verification:
 - Post-build source audit confirms exactly the three receive-payment action paths use `bi-cash-coin`.
 
 Deploy state:
-- Commit/push/deploy are performed after this WORKLOG entry.
-- Firebase scope is Hosting only.
-- No Functions / Firestore Rules / Storage Rules changes are required.
+- Implementation commit: `c727b4df` — `fix: use payment icon for cashier receive actions`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- No Functions / Firestore Rules / Storage Rules deployment was performed.
+- Authenticated Production verification on `/cashier` at 430×932 confirmed:
+  - footer Build `2026.10.02.332`,
+  - generated bundle `/react/assets/index-CVnawH9r.js`,
+  - visible `รับชำระ` action has class `.cashier-payment-action`,
+  - icon class is `bi bi-cash-coin app-icon`,
+  - Bootstrap glyph content resolves correctly,
+  - icon box is 18×18 inside the 40×40 Mobile action button,
+  - measured icon/button center delta is exactly `x=0, y=0`.
 - No merge to `main`.
 
 ---
