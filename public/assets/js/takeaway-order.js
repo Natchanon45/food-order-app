@@ -1,6 +1,6 @@
 import "./public-page-static-i18n.js?v=20260930-001";
 
-await import("./public-tenant-resolver.js?v=20261002-006");
+await import("./public-tenant-resolver.js?v=20261003-010");
 
 import "./sweet-dialog.js?v=20260726-034";
 import "./cart-item-layout.js?v=20260702-002";

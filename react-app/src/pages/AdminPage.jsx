@@ -1376,7 +1376,7 @@ export function AdminPage() {
   };
 
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="KINJAI" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={82} />;
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={82} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fadmin" replace />;
   if (!["owner", "admin"].includes(profile.role)) return <Navigate to="/" replace />;
@@ -1432,6 +1432,24 @@ export function AdminPage() {
     return label === key ? String(status || "-") : label;
   };
   const tenantLalamoveMode = lalamoveForm.accountMode === "tenant";
+  const centralLalamoveMode = lalamoveForm.accountMode === "fod_central";
+  const lalamoveApiKeyMask = tenantLalamoveMode
+    ? String(lalamove.tenantApiKeyMasked || "")
+    : centralLalamoveMode && lalamove.fodCentralApproved === true
+      ? String(lalamove.platformApiKeyMasked || "")
+      : "";
+  const lalamoveApiSecretMask = tenantLalamoveMode
+    ? String(lalamove.tenantApiSecretMasked || "")
+    : centralLalamoveMode && lalamove.fodCentralApproved === true
+      ? String(lalamove.platformApiSecretMasked || "")
+      : "";
+  const walletDestinationTypeLabel = (() => {
+    const code = String(walletDestination.accountType || "").trim();
+    if (!code) return walletDestination.accountTypeLabel || "-";
+    const key = `platform.slip_verification.receiver_account_types.${code}`;
+    const translated = t(key);
+    return translated !== key ? translated : (walletDestination.accountTypeLabel || code);
+  })();
   const lalamoveStatusKey = previewLalamoveAvailable
     ? "admin.delivery_settings.lalamove_status_ready"
     : previewLalamoveMode === "fod_central" && !lalamove.fodCentralApproved
@@ -1443,7 +1461,7 @@ export function AdminPage() {
   return (
     <>
       <header className="app-header">
-        <div className="brand"><span className="brand-mark">KJ</span>{t("admin.header.title")}</div>
+        <div className="brand"><span className="brand-mark">PG</span>{t("admin.header.title")}</div>
         <div className="app-header-actions" data-header-actions>
           <LocaleSwitcher style={{ marginLeft: 0, marginRight: 0 }} />
           <UserMenu profile={profile} />
@@ -1471,7 +1489,6 @@ export function AdminPage() {
           <Link className="admin-sales-report-spotlight__action" to="/admin/sales-report">
             <i className="bi bi-eye" aria-hidden="true"></i>
             <span>{t("admin.sales_report.button")}</span>
-            <i className="bi bi-arrow-right-short admin-sales-report-spotlight__arrow" aria-hidden="true"></i>
           </Link>
         </section>
 
@@ -1541,11 +1558,11 @@ export function AdminPage() {
               <div className={"grid grid-2" + (!tenantLalamoveMode ? " is-lalamove-readonly" : "")} id="lalamoveTenantCredentials" aria-disabled={tenantLalamoveMode ? "false" : "true"}>
                 <div className="field">
                   <label htmlFor="lalamoveTenantApiKey">{t("admin.delivery_settings.lalamove_api_key")}</label>
-                  <input className="input" id="lalamoveTenantApiKey" type="password" autoComplete="off" disabled={!tenantLalamoveMode} value={lalamoveForm.apiKey} placeholder={lalamove.tenantApiKeyMasked || "pk_..."} onChange={e => patchLalamove({ apiKey: e.target.value })} />
+                  <input className="input" id="lalamoveTenantApiKey" type="password" autoComplete="off" disabled={!tenantLalamoveMode} value={lalamoveForm.apiKey} placeholder={lalamoveApiKeyMask || "pk_..."} onChange={e => patchLalamove({ apiKey: e.target.value })} />
                 </div>
                 <div className="field">
                   <label htmlFor="lalamoveTenantApiSecret">{t("admin.delivery_settings.lalamove_api_secret")}</label>
-                  <input className="input" id="lalamoveTenantApiSecret" type="password" autoComplete="off" disabled={!tenantLalamoveMode} value={lalamoveForm.apiSecret} placeholder={lalamove.tenantApiSecretMasked || "sk_..."} onChange={e => patchLalamove({ apiSecret: e.target.value })} />
+                  <input className="input" id="lalamoveTenantApiSecret" type="password" autoComplete="off" disabled={!tenantLalamoveMode} value={lalamoveForm.apiSecret} placeholder={lalamoveApiSecretMask || "sk_..."} onChange={e => patchLalamove({ apiSecret: e.target.value })} />
                 </div>
               </div>
 
@@ -1566,7 +1583,7 @@ export function AdminPage() {
 
                 <div className="admin-lalamove-wallet-topup" id="lalamoveFodWalletTopupPanel" hidden={!walletTopupReady}>
                   <div className="admin-lalamove-wallet-topup-destination">
-                    <div><span>{t("admin.delivery_settings.fod_wallet_topup_destination")}</span><strong id="lalamoveFodWalletDestinationType">{walletDestination.accountTypeLabel || walletDestination.accountType || "-"}</strong></div>
+                    <div><span>{t("admin.delivery_settings.fod_wallet_topup_destination")}</span><strong id="lalamoveFodWalletDestinationType">{walletDestinationTypeLabel}</strong></div>
                     <div><span>{t("admin.delivery_settings.fod_wallet_topup_account_name")}</span><strong id="lalamoveFodWalletDestinationName">{walletDestination.accountName || "-"}</strong></div>
                     <div><span>{t("admin.delivery_settings.fod_wallet_topup_account_number")}</span><strong id="lalamoveFodWalletDestinationNumber">{walletDestination.accountNumber || "-"}</strong></div>
                   </div>

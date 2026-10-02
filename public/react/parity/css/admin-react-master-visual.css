@@ -222,15 +222,6 @@ body.admin-vr-page .admin-sales-report-spotlight__action .bi::before {
   line-height: 1 !important;
 }
 
-body.admin-vr-page .admin-sales-report-spotlight__arrow {
-  width: 15px;
-  height: 15px;
-  display: inline-grid !important;
-  place-items: center !important;
-  margin-left: 1px;
-  font-size: 15px;
-}
-
 @media (max-width: 640px) {
   body.admin-vr-page .admin-sales-report-spotlight {
     min-height: 98px;
@@ -264,10 +255,6 @@ body.admin-vr-page .admin-sales-report-spotlight__arrow {
     padding: 8px 10px;
     border-radius: 10px;
     font-size: 11px;
-  }
-
-  body.admin-vr-page .admin-sales-report-spotlight__arrow {
-    display: none !important;
   }
 }
 

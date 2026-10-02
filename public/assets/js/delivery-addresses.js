@@ -276,12 +276,17 @@ googleLoginButton.addEventListener('click', async () => {
     const messages = {
       popup_failed_to_open: t('delivery.checkout.customer.google_errors.popup_failed_to_open'),
       popup_closed: t('delivery.checkout.customer.google_errors.popup_closed'),
+      'auth/popup-blocked': t('delivery.checkout.customer.google_errors.popup_failed_to_open'),
+      'auth/popup-closed-by-user': t('delivery.checkout.customer.google_errors.popup_closed'),
+      'auth/cancelled-popup-request': t('delivery.checkout.customer.google_errors.popup_closed'),
       GOOGLE_LOGIN_NOT_READY: t('delivery.checkout.customer.google_errors.not_ready'),
       GOOGLE_LOGIN_ALREADY_OPEN: t('delivery.checkout.customer.google_errors.already_open'),
       GOOGLE_ACCESS_TOKEN_INVALID: t('delivery.checkout.customer.google_errors.invalid_token'),
     };
-    const code = error?.code || error?.message || '';
-    toast(messages[code] || t('delivery.checkout.customer.google_login_failed'), 'error');
+    const code = String(error?.code || error?.message || 'UNKNOWN_GOOGLE_LOGIN_ERROR');
+    const stage = String(error?.customerStage || 'unknown');
+    const baseMessage = messages[code] || t('delivery.checkout.customer.google_login_failed');
+    toast(`${baseMessage} [${stage}: ${code}]`, 'error');
   } finally {
     setGoogleButtonBusy(false);
   }

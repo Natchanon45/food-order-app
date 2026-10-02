@@ -1,10 +1,12 @@
 import { dataService } from "./data-service.js?v=20261002-006";
 import { ref, uploadBytes } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-storage.js";
-import { customerStorage } from "./public-firebase-context.js?v=20261002-001";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-functions.js";
+import { customerFunctions, customerStorage } from "./public-firebase-context.js?v=20261002-001";
 import { getStoredTenant } from "./tenant-context.js?v=20261002-006";
 
 const pendingOrderIds = new Map();
 const VALID_ORDER_ID = /^[a-zA-Z0-9_-]{8,128}$/;
+const quotePublicLalamoveDelivery = httpsCallable(customerFunctions, "quotePublicLalamoveDelivery");
 
 function slug() {
   const match = location.pathname.match(/^\/s\/([^/]+)/i);
@@ -46,6 +48,16 @@ export const publicStorefrontService = {
   prepareOrderId(channel, identity = "", providedId = "") { return preparedOrderId(channel, identity, providedId).id; },
   async listMenus() { return dataService.listMenus(); },
   async getStoreSettings() { return dataService.getStoreSettings(); },
+  async getLalamoveQuotation(location = {}, address = "", paymentMethod = "") {
+    const response = await quotePublicLalamoveDelivery({
+      slug: slug(),
+      latitude: Number(location.latitude),
+      longitude: Number(location.longitude),
+      address: String(address || "").trim(),
+      paymentMethod: String(paymentMethod || "").trim().toLowerCase(),
+    });
+    return response?.data || {};
+  },
   async getTable(value) {
     const session = tableSession();
     const table = await dataService.getTable(value || session.table);

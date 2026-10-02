@@ -3204,3 +3204,1084 @@ Deploy state:
 Remaining:
 - Deploy Firebase Hosting target foodapp using the prepared fresh Build pair.
 - After Hosting deploy, visually verify Header App Icon, Login Logo, favicon/apple-touch-icon, and TH/EN/MY/LO/KM on canonical customer/staff/admin routes.
+
+---
+
+## 2026-10-02 — Compact logo fallback corrected from KJ to PG
+
+Symptom / request:
+- Production Login still showed `KJ` inside the fallback logo mark; user clarified the correct compact mark is `PG` while the public product name remains KINJAI.
+
+Root cause:
+- The previous branding pass treated `PG` as legacy visible branding and normalized it to `KJ`, so Login, shared headers, static pages, CSS pseudo fallbacks, and translation help all inherited the wrong compact mark.
+
+Change:
+- Changed compact visible fallback marks from `KJ` to `PG` across React pages, shared storefront headers, static customer/legal pages, and parity CSS.
+- Login large fallback is now `PG`; uploaded Logo/App Icon precedence remains unchanged.
+- React i18n no longer converts `PG` to `KJ`; legacy standalone FOD fallback now normalizes to `PG`.
+- Updated TH/EN/MY/LO/KM Platform Branding help text and regression contracts to require `PG` and reject visible `KJ`.
+- Prepared fresh Hosting identity: React `0.4.280 / 2026.10.02.336`; public storefront `0.16.32 / 2026.10.02.051`.
+
+Verification:
+- `npm run test:operational` PASS after installing the missing local Functions dependencies on this Mac.
+- `npm run test:react-parity` PASS, including foundation, migration, parity matrix, P0 actions, callables, tenant access, and UI-layer contracts.
+- `npm run build:react` PASS; generated build contract PASS for `2026.10.02.336` using `/react/assets/index-82zySSDJ.js`.
+- `git diff --check` PASS.
+- Visible-source scan found no remaining `KJ` under React/static UI sources; Login source now renders `<div className="login-logo">PG</div>`.
+
+Deploy state:
+- Firebase CLI login completed on the current Mac.
+- Hosting-only deploy completed successfully to project `chat-45754`, target `foodapp` / site `penguin-food`.
+- Production URL: `https://penguin-food.web.app`.
+- Deployed React Build: `0.4.280 / 2026.10.02.336`; public storefront Build: `0.16.32 / 2026.10.02.051`.
+- No Firestore Rules / Storage Rules / Functions deployment was performed.
+- Not committed, not pushed, and not merged in this entry.
+
+---
+
+## 2026-10-02 — Sales Report receipt columns fill available width
+
+Symptom / request:
+- On `/admin/sales-report`, the receipt table stopped before the right edge of its card on Desktop, leaving a large empty area instead of distributing the columns across the available width.
+
+Root cause:
+- React Sales Report forced the receipt table to `width: max-content !important`; with short/empty data the table therefore sized itself to content rather than the full receipt card.
+
+Change:
+- Changed the receipt table to `width: 100% !important` while retaining `min-width: 980px`.
+- Desktop now expands columns across the full card width; narrower screens still keep the 980px minimum and use the existing horizontal scroll wrapper.
+- Updated the React foundation contract to guard the full-width Desktop behavior.
+- Prepared fresh Hosting identity: React `0.4.280 / 2026.10.02.337`; public storefront `0.16.32 / 2026.10.02.052`.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS; generated build contract PASS for `2026.10.02.337` using `/react/assets/index-D8xzs6_Y.js`.
+- `git diff --check` PASS.
+- Production `/admin/sales-report` responds 200 and serves `/react/assets/index-D8xzs6_Y.js`.
+- Production `/react/parity/css/sales-report-modern.css` confirms `width: 100% !important` with `min-width: 980px !important`.
+
+Deploy state:
+- Firebase Hosting-only deploy completed successfully to project `chat-45754`, target `foodapp` / site `penguin-food`.
+- No Firestore Rules / Storage Rules / Functions deployment.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-02 — Remove Sales Report button arrow icon
+
+Symptom / request:
+- On `/admin`, the Sales Report spotlight action showed an extra right-arrow icon after the `รายงาน` label. User requested removing that arrow while keeping the existing eye icon and button text.
+
+Root cause:
+- `AdminPage.jsx` explicitly rendered Bootstrap Icon `bi-arrow-right-short` with class `admin-sales-report-spotlight__arrow`; matching CSS also remained in the Admin visual stylesheet.
+
+Change:
+- Removed the `bi-arrow-right-short` element from the Sales Report action.
+- Kept the `bi-eye` icon and translated report label unchanged.
+- Removed the now-unused desktop/mobile `.admin-sales-report-spotlight__arrow` CSS rules.
+- Added a React foundation regression guard so the arrow icon/class cannot reappear.
+- Prepared fresh Hosting identity: React `0.4.280 / 2026.10.02.338`; public storefront `0.16.32 / 2026.10.02.053`.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS; generated build contract PASS for `2026.10.02.338` using `/react/assets/index-C8gNVWfu.js`.
+- `git diff --check` PASS.
+- Production `/admin` responds 200 and serves `/react/assets/index-C8gNVWfu.js`.
+- Production bundle contains zero occurrences of `admin-sales-report-spotlight__arrow` and zero occurrences of `bi-arrow-right-short`.
+
+Deploy state:
+- Firebase Hosting-only deploy completed successfully to project `chat-45754`, target `foodapp` / site `penguin-food`.
+- No Firestore Rules / Storage Rules / Functions deployment.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-02 — PENGUIN visible-brand cleanup + Admin mobile table swipe repair
+
+Symptom / request:
+- Admin Mobile still exposed residual visible `KINJAI` text in QR cards, Lalamove account/approval/credit wording, footer/title surfaces, and related translations.
+- The `จัดการโต๊ะ` table overflowed horizontally on Mobile, but swiping left/right did not reliably move the table even though a horizontal scrollbar was visible.
+
+Root cause:
+- The previous branding pass left `KINJAI` as the primary visible product text in React/static translation payloads and direct QR/runtime labels while only the compact mark had been corrected to `PG`.
+- React pages marked horizontal regions with `data-horizontal-scroll`, but the existing `horizontal-scroll-restore.js` helper was not loaded by the React entry. Native touch scrolling alone was not reliable enough for the Admin table gesture.
+
+Change:
+- Standardized visible product branding to `PENGUIN` with compact fallback `PG` across React source, static HTML/JS, TH/EN/MY/LO/KM translations, QR/receipt/privacy/terms/platform/admin surfaces, release metadata, and current handoff docs.
+- Preserved internal identifiers such as `fod_*`, `FOD_WALLET_*`, Firebase project/app identifiers, repository names, and the `penguin-food.web.app` Hosting origin.
+- Kept a compatibility normalization rule `KINJAI -> PENGUIN` so stale/legacy translated text cannot surface the old visible brand.
+- Added React entry loading for `/assets/js/horizontal-scroll-restore.js?v=20261002-001`.
+- Extended the helper with touch-drag support for `[data-horizontal-scroll]`: horizontal-intent detection, `touch-action: pan-y`, non-passive horizontal `touchmove`, clamped `scrollLeft`, and preservation of normal vertical page scrolling.
+- Added regression contracts for PENGUIN/PG branding, the Admin Mobile table horizontal-scroll wrapper, and the React touch-scroll helper.
+- Prepared fresh Hosting identity: React `0.4.280 / 2026.10.02.339`; public storefront `0.16.32 / 2026.10.02.054`.
+
+Verification:
+- Visible-source scan found no renderable `KINJAI` under React/static UI sources; the only remaining source occurrence is the intentional compatibility rule `.replaceAll("KINJAI", "PENGUIN")`.
+- QR card source renders `PENGUIN`.
+- Lalamove Thai translations now include `ใช้บัญชีกลาง PENGUIN`, `รอ PENGUIN อนุมัติ`, and `PENGUIN เครดิตสำหรับ Lalamove`; corresponding EN/MY/LO/KM values were updated too.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS; generated build contract PASS for `2026.10.02.339` using `/react/assets/index-BexpQRhU.js`.
+- `git diff --check` PASS.
+- Headless Chrome touch simulation on a 300px-wide horizontal viewport moved `scrollLeft` from 0 to 150 (max 600), with `touchAction: pan-y` and the touch binding active.
+- Production `/admin` responds 200, serves `/react/assets/index-BexpQRhU.js`, has `<title>PENGUIN</title>`, loads the horizontal-scroll helper, and the production helper contains `bindTouchDrag` / `touchmove`.
+- Production bundle contains the updated PENGUIN Lalamove wording; production app-info reports product/name `PENGUIN` and public Build `2026.10.02.054`.
+
+Deploy state:
+- Firebase Hosting-only deploy completed successfully to project `chat-45754`, target `foodapp` / site `penguin-food`.
+- No Firestore Rules / Storage Rules / Functions deployment.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-02 — Waiting Queue mobile header action-bar compaction
+
+Symptom / request:
+- On `/cashier/waiting-queue` at Mobile width, the top action bar spaced the Back action too far away from the left-side brand/title cluster.
+- The Back button showed only the arrow on narrow screens, and the arrow icon did not look vertically centered inside the control.
+
+Root cause:
+- The shared `.app-header` uses `justify-content: space-between`, while Waiting Queue rendered Brand, Back, and Locale as three separate direct children.
+- Waiting Queue also had a `max-width:480px` rule that hid the Back label and forced the Back button into a 42px icon-only square.
+- The Back icon did not have a dedicated fixed inline-grid box like the already-correct Admin Users/QR back actions.
+
+Change:
+- Added `.waiting-header-leading` to group Brand + Back on the left; Locale remains pinned to the far right.
+- Reduced header/left-cluster gaps on Mobile.
+- Removed the narrow-screen icon-only Back behavior; `ย้อนกลับ` / translated Back text remains visible.
+- Added a dedicated 1.15em inline-grid box for the arrow icon with centered placement, line-height 1, and vertical-align middle.
+- Kept the canonical full navigation `/?from=waiting-queue` behavior unchanged.
+- Added React foundation regression coverage for left grouping, label visibility, locale placement, and vertical icon centering.
+- Prepared/deployed fresh Hosting identity: React `0.4.280 / 2026.10.02.340`; public storefront `0.16.32 / 2026.10.02.055`.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS; generated build contract PASS for `2026.10.02.340` using `/react/assets/index-D69y-0AT.js`.
+- `git diff --check` PASS.
+- Headless Chrome layout check at 440px: Brand→Back gap = 6px; Back text display = visible; Back icon center delta vs button center ≈ 0.008px; no header horizontal overflow.
+- Production `/cashier/waiting-queue` responds 200 and serves `/react/assets/index-D69y-0AT.js`.
+- Production Waiting Queue CSS contains the new `.waiting-header-leading`, centered Back icon rules, and visible Mobile Back label rule.
+
+Deploy state:
+- Firebase Hosting-only deploy completed successfully to project `chat-45754`, target `foodapp` / site `penguin-food`.
+- No Firestore Rules / Storage Rules / Functions deployment.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-02 — Waiting Queue mobile header icon spacing + Hero left alignment
+
+Symptom / request:
+- On `/cashier/waiting-queue` Mobile, the person icon still sat slightly too far from the `คิวรอโต๊ะ` label.
+- The Hero content was visually centered on Mobile rather than consistently left-aligned.
+- Flow badges 1–4 lost the desktop chevron separators because Mobile CSS hid `.waiting-flow i`.
+
+Root cause:
+- The mobile header inherited a 6px brand gap for every child, so the person-icon-to-title spacing was still wider than desired.
+- The later, more-specific `body.waiting-queue-workspace .waiting-page-header` rule kept `align-items:center`, overriding the earlier responsive `align-items:flex-start` rule and causing the shrink-to-content heading block to sit centered.
+- The `max-width:760px` rule explicitly used `.waiting-flow i{display:none}`, and the `max-width:480px` layout converted the flow into a centered 2×2 grid.
+
+Change:
+- Reduced only the person-icon-to-title gap on narrow screens using a -3px right margin on the header app icon.
+- Added Mobile-specific `align-items:flex-start`, full-width `.waiting-page-heading`, and `text-align:left`.
+- Restored visible chevrons on Mobile.
+- Changed the <=480px flow to a compact, no-wrap, left-aligned flex sequence so badges 1 → 2 → 3 → 4 match Desktop visual order.
+- Added regression coverage for the tighter header icon spacing, Mobile Hero left alignment, visible chevrons, and no-wrap flow.
+- Prepared/deployed fresh Hosting identity: React `0.4.280 / 2026.10.02.341`; public storefront `0.16.32 / 2026.10.02.056`.
+
+Verification:
+- Synthetic Chrome layout test at 344px: person-icon→title gap = 3px; Hero heading x = 22px inside the 328px card; `text-align:left`; Hero `align-items:flex-start`; 3 chevrons visible; all four badges fit on one row; no horizontal page overflow.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS; generated build contract PASS for `2026.10.02.341` using `/react/assets/index-Q376s-R6.js`.
+- `git diff --check` PASS.
+- Production `/cashier/waiting-queue` responds 200 and serves `/react/assets/index-Q376s-R6.js`.
+- Production Waiting Queue CSS contains the -3px header icon spacing, Mobile full-width left-aligned heading, no-wrap flow, and visible Mobile chevron rules.
+
+Deploy state:
+- Firebase Hosting-only deploy completed successfully to project `chat-45754`, target `foodapp` / site `penguin-food`.
+- No Firestore Rules / Storage Rules / Functions deployment.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-02 — Delivery Google login post-OAuth diagnostic staging
+
+Symptom / request:
+- Google OAuth redirect mismatch was corrected, but Delivery still ended with the generic toast `เข้าสู่ระบบ Google ไม่สำเร็จ` after attempting Google sign-in.
+- The existing UI hid the actual Firebase/Auth/Functions error, so it was impossible to distinguish popup failure from callable/custom-token failure without DevTools.
+
+Investigation:
+- Production popup network was inspected directly. Firebase sends the exact OAuth client `1046915702525-dchkgc1n6t3g39f2no8afqvfg5cmgr5f.apps.googleusercontent.com` with redirect URI `https://penguin-food.web.app/__/auth/handler`.
+- Google accepts that client + redirect pair and proceeds to the normal sign-in page; `redirect_uri_mismatch` is no longer reproducible.
+- Firebase public project config confirms `penguin-food.web.app` is in Authorized Domains.
+- Delivery route `/s/saas-test-shop/delivery` resolves tenant ID `13c9bb08-927b-4f9c-a2ef-b320ef7eed99`.
+- `createDeliveryCustomerSession` exists in `asia-southeast1` and answers CORS preflight from `https://penguin-food.web.app`.
+
+Change:
+- Added explicit login stages in `customer-profile-service.js`: `google_popup`, `customer_session`, `custom_token`, and `session_verify`.
+- Preserved the original Firebase error object/code while attaching `customerStage`.
+- Corrected frontend mappings for real Firebase popup codes including `auth/popup-blocked`, `auth/popup-closed-by-user`, and `auth/cancelled-popup-request`.
+- Unknown login failures now display the localized base message plus `[stage: code]` so the next production attempt identifies the exact failing layer without opening DevTools.
+- Prepared/deployed Hosting identity: React `0.4.280 / 2026.10.02.342`; public storefront `0.16.32 / 2026.10.02.057`.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS; generated build contract PASS for `2026.10.02.342` using `/react/assets/index-C9TX2XyU.js`.
+- `git diff --check` PASS.
+- Production Delivery responds 200.
+- Production `delivery-addresses.js` contains the new stage/code diagnostic path and corrected Firebase popup error mappings.
+- Production app-info reports public Build `2026.10.02.057`.
+
+Deploy state:
+- Firebase Hosting-only deploy completed successfully to project `chat-45754`, target `foodapp` / site `penguin-food`.
+- No Firestore Rules / Storage Rules / Functions deployment.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-02 — Delivery Google customer custom-token IAM repair
+
+Symptom / request:
+- After Google OAuth succeeded, Delivery still failed with toast diagnostic `[customer_session: functions/internal]`.
+
+Root cause:
+- Cloud Function logs for `createDeliveryCustomerSession` showed an unhandled Firebase Admin error at `createCustomToken()`:
+  `Permission 'iam.serviceAccounts.signBlob' denied`.
+- The Gen 2 runtime service account is `1046915702525-compute@developer.gserviceaccount.com`.
+- Its own service-account IAM policy did not include `roles/iam.serviceAccountTokenCreator`, so Firebase Admin could not sign the custom customer token.
+
+Change:
+- Added `roles/iam.serviceAccountTokenCreator` to the runtime service account's **own service-account IAM policy**, with the runtime service account itself as the member.
+- Scope is limited to that single service account; no project-wide Token Creator grant was added.
+- No application code change was required for the IAM repair.
+
+Verification:
+- Service-account IAM policy update succeeded.
+- Post-update policy confirms the runtime account now has `roles/iam.serviceAccountTokenCreator`.
+- Existing Hosting diagnostic Build remains React `0.4.280 / 2026.10.02.342`, public `0.16.32 / 2026.10.02.057`.
+- User should retry Google sign-in after IAM propagation; if another stage fails, the deployed diagnostic toast will identify it.
+
+Deploy state:
+- IAM change applied directly in Google Cloud/Firebase; no additional Hosting/Functions deploy was required.
+- No Firestore Rules / Storage Rules deployment.
+
+---
+
+## 2026-10-02 — Delivery customer-name / logout row alignment
+
+Symptom / request:
+- On signed-in Delivery, the customer name appeared below the account section title while the logout icon was absolutely positioned in the top-right of the card, so they were not on the same visual row.
+
+Root cause:
+- `#customerLogoutButton` used `position:absolute; top:10px; right:10px`, anchoring it to the card instead of the signed-in customer row.
+
+Change:
+- Moved `#customerLogoutButton` into a new `.delivery-account-user-row` beside `#customerAccount`.
+- The row now uses flex alignment with `align-items:center` and `justify-content:space-between`.
+- Logout is now `position:static`, fixed at 30×30px, and vertically centered in the row.
+- Customer name stays left, truncates safely, and the logout icon stays at the right edge.
+- Removed the extra account-section title right padding that was only needed for the previous absolute button.
+- Bumped Delivery CSS cache key to `20261002-037`.
+- Prepared/deployed Hosting identity: React `0.4.280 / 2026.10.02.343`; public storefront `0.16.32 / 2026.10.02.058`.
+
+Verification:
+- Synthetic Chrome layout test at a 391px account card: customer-name center Y and logout-button center Y are identical (delta 0px); button is fully inside the row; no overflow.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS; generated build contract PASS for `2026.10.02.343` using `/react/assets/index-AW4AgMLr.js`.
+- `git diff --check` PASS.
+- Production Delivery responds 200.
+- Production markup contains `.delivery-account-user-row`; production CSS confirms centered flex alignment and static logout positioning.
+
+Deploy state:
+- Firebase Hosting-only deploy completed successfully to project `chat-45754`, target `foodapp` / site `penguin-food`.
+- No Firestore Rules / Storage Rules / Functions deployment.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-02 — Revenue Share loading-spinner spacing
+
+Symptom / request:
+- On `/reports/revenue-share`, the loading spinner inside the Hero refresh button sat too close to the `กำลังโหลด...` label.
+- The same spinner component is reused by the slip-upload submit button, so both loading-button states needed consistent spacing.
+
+Root cause:
+- The Revenue Share Hero button had no dedicated inline-flex gap rule.
+- Even after adding an 8px flex gap, the rotating 17px spinner's transformed bounding box visually reduced the apparent spacing to roughly 4–5px while spinning.
+
+Change:
+- Made the Hero refresh button and slip-submit button explicit inline-flex controls with centered vertical alignment and `gap:8px`.
+- Added `margin-right:4px` specifically to `.tenant-button-spinner` inside those Revenue Share buttons so the rotating spinner keeps a comfortable visible separation without widening normal non-loading icons.
+- Updated the React foundation regression contract to guard the spinner/text spacing.
+- Prepared/deployed Hosting identity: React `0.4.280 / 2026.10.02.344`; public storefront `0.16.32 / 2026.10.02.059`.
+
+Verification:
+- Synthetic Chrome layout check confirmed computed button gap = 8px, spinner right margin = 4px, and the effective visible spinner-to-label gap while rotating ≈ 11px.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS; generated build contract PASS for `2026.10.02.344` using `/react/assets/index-WbMiYSgu.js`.
+- `git diff --check` PASS.
+- Production `/reports/revenue-share` responds 200 and serves `/react/assets/index-WbMiYSgu.js`.
+- Production Revenue Share CSS contains the new centered inline-flex gap and spinner-specific margin.
+
+Deploy state:
+- Firebase Hosting-only deploy completed successfully to project `chat-45754`, target `foodapp` / site `penguin-food`.
+- No Firestore Rules / Storage Rules / Functions deployment.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-02 — Change Password modal vertical centering on Mobile
+
+Symptom / request:
+- On `/admin` Mobile, the shared `เปลี่ยนรหัสผ่าน` modal sat too low in the viewport instead of being visually centered on the Y axis.
+
+Root cause:
+- The shared Mobile rule explicitly changed `.owner-password-backdrop` to `align-items:end`, forcing the dialog toward the bottom edge.
+- After switching the backdrop back to centered alignment, the visible dialog was still 8px above the true viewport center because the modal is a `<form>` inheriting a global `margin-bottom:16px`; CSS Grid centered the form's margin box rather than the visible border box.
+
+Change:
+- Mobile `.owner-password-backdrop` now uses `align-items:center` and `justify-items:center`.
+- Added `margin:0` to `.owner-password-dialog` so the visible modal frame itself is centered exactly.
+- Preserved the existing Mobile max-height / internal scrolling behavior for short viewports.
+- Added React foundation regression coverage preventing the bottom-aligned Mobile rule from returning and requiring the modal margin reset.
+- Prepared/deployed Hosting identity: React `0.4.280 / 2026.10.02.345`; public storefront `0.16.32 / 2026.10.02.060`.
+
+Verification:
+- Synthetic Chrome layout test at 440×956: dialog center Y = 478px, viewport center Y = 478px, delta = 0px.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS; generated build contract PASS for `2026.10.02.345` using `/react/assets/index-2QlW0qOs.js`.
+- `git diff --check` PASS.
+- Production `/admin` responds 200 and serves `/react/assets/index-2QlW0qOs.js`.
+- Production parity CSS confirms centered Mobile backdrop alignment and `margin:0` on the password dialog.
+
+Deploy state:
+- Firebase Hosting-only deploy completed successfully to project `chat-45754`, target `foodapp` / site `penguin-food`.
+- No Firestore Rules / Storage Rules / Functions deployment.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-02 — Revenue Share history date display format
+
+Symptom / request:
+- In `/reports/revenue-share` → `ประวัติการส่งสลิป`, daily payment period labels were rendered as raw ISO dates such as `2026-09-03`.
+- User requested display format `DD/MM/YYYY`, e.g. `03/09/2026`.
+
+Root cause:
+- The history card rendered `item.period.label` directly. Daily period labels are stored as `YYYY-MM-DD`, so the storage/query format leaked into the UI.
+
+Change:
+- Added `displayHistoryPeriodLabel()` in `RevenueShareReportPage.jsx`.
+- Exact `YYYY-MM-DD` values are now rendered as `DD/MM/YYYY`.
+- Non-daily/custom labels are preserved unchanged, so stored/query values and report filtering behavior are not modified.
+- Added React foundation regression coverage for the conversion and history rendering call.
+- Prepared/deployed Hosting identity: React `0.4.280 / 2026.10.02.346`; public storefront `0.16.32 / 2026.10.02.061`.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS; generated build contract PASS for `2026.10.02.346` using `/react/assets/index-DFpffcm5.js`.
+- `git diff --check` PASS.
+- Production `/reports/revenue-share` responds 200 and serves `/react/assets/index-DFpffcm5.js`.
+- Production app-info reports public Build `2026.10.02.061`.
+
+Deploy state:
+- Firebase Hosting-only deploy completed successfully to project `chat-45754`, target `foodapp` / site `penguin-food`.
+- No Firestore Rules / Storage Rules / Functions deployment.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-02 — Admin Lalamove account Laravel parity + central approval state sync
+
+Symptom / request:
+- React `/admin` “บัญชี Lalamove ของร้าน” did not visually match the Laravel reference: it showed `รอ PENGUIN อนุมัติ`, hid the transfer/top-up area, and used the longer `บันทึกบัญชี Lalamove` action label.
+- Laravel reference showed a ready central account and the complete credit top-up panel.
+
+Laravel source comparison:
+- Cloned `Natchanon45/food-order-app-laravel9-php80` `main` at `29e3ad7` to a temporary read-only comparison checkout.
+- React already contains the same Lalamove wallet/top-up IDs/classes and readiness rule as Laravel:
+  destination summary, amount control, slip picker, submit action, help text, credit policy, top-up history, and ledger.
+- React `admin-delivery-fee-row-alignment.css` matches the Laravel source for the Lalamove/wallet section.
+- Therefore the missing top-up UI was not a CSS/markup omission. The Firebase tenant state had `accountMode=fod_central` but `fodCentralApproved=false`; the Laravel reference tenant was already in the ready/approved state.
+
+Change:
+- Synced the SaaS test tenant central-account approval state to `fodCentralApproved=true` with an approval timestamp, preserving all other tenant Lalamove settings.
+- Verified the platform central Lalamove credentials are configured/verified and the Firebase slip receiver destination is configured, so the existing Laravel-equivalent readiness logic now exposes the top-up panel.
+- Did **not** fabricate or overwrite wallet credits. Firebase wallet balance remains its real value; the Laravel screenshot’s 500-credit balance was not copied.
+- Did **not** overwrite the Firebase payment receiving account from the screenshot; the system continues to use its configured receiver data.
+- Shortened the visible save action to Laravel screenshot parity: TH `บันทึก`, EN `Save`, with compact equivalents for MY/LO/KM.
+- Added React foundation guards for the compact save label and for retention of the complete Laravel-parity Lalamove wallet/top-up structure/readiness semantics.
+- Prepared/deployed Hosting identity: React `0.4.280 / 2026.10.02.347`; public storefront `0.16.32 / 2026.10.02.062`.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS; generated build contract PASS for `2026.10.02.347` using `/react/assets/index-DAJtroOY.js`.
+- `git diff --check` PASS.
+- Post-change Firebase state: central approval true; account mode `fod_central`; platform Lalamove API key/secret present; central connection verified; receiver destination configured.
+- Production `/admin` responds 200 and serves `/react/assets/index-DAJtroOY.js`.
+- Production bundle has zero occurrences of the old Thai save label `บันทึกบัญชี Lalamove`.
+
+Deploy state:
+- Firebase Hosting-only deploy completed successfully to project `chat-45754`, target `foodapp` / site `penguin-food`.
+- Tenant approval state was synchronized directly in Firestore to match the Laravel-approved central-account state.
+- No Firestore Rules / Storage Rules / Functions deployment.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-02 — Super Admin Tenant central-Lalamove approval gate restored
+
+Symptom / request:
+- Production `/admin/tenants` showed tenant Lalamove state as disabled and did not expose the central-account approval/revoke action found in Laravel MASTER.
+- A tenant must not be able to top up or consume PENGUIN central Lalamove credits before explicit Super Admin approval.
+
+Root cause:
+- React `TenantCard` already had the Laravel-equivalent approval button and toggle handler, but visibility depends on `tenant.lalamove.accountMode === "fod_central"`.
+- Production tenant-list data could arrive without the nested `lalamove` state, so React normalized it to `disabled` and hid the action even when Firestore `tenants/{tenantId}/settings/lalamove` was actually `fod_central`.
+
+Change:
+- `platformTenantService.listTenants()` now hydrates each tenant's authoritative public `settings/lalamove` and `settings/lalamoveWallet` documents after the callable tenant list returns.
+- Normalized legacy backend mode `partner` to the UI mode `tenant`.
+- Preserved Laravel behavior: approval/revoke action renders only for `fod_central`.
+- Kept the existing callable `updateTenantLalamoveApproval` as the only UI approval mutation path.
+- Restored the SaaS test tenant to `fodCentralApproved=false` and cleared its approval timestamp, undoing the temporary manual approval from the previous parity investigation.
+- Added React contract coverage for authoritative Lalamove hydration and the approval button.
+- Added operational contract coverage that central Lalamove dispatch requires `fodCentralApproved=true`, and central-wallet top-up rejects unapproved tenants.
+- Release identity: React `0.4.280 / 2026.10.02.348`; public storefront `0.16.32 / 2026.10.02.063`.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated build contract PASS for `2026.10.02.348`, bundle `/react/assets/index-C3nqvAra.js`.
+- `git diff --check` PASS.
+- Post-deploy production bundle contains both the authoritative Lalamove hydration marker and the approval-action marker.
+- Firestore check for `saas-test-shop`: `accountMode=fod_central`, `fodCentralApproved=false`, approval timestamp null.
+
+Deploy state:
+- Firebase Hosting-only deploy completed successfully to project `chat-45754`, target `foodapp` / site `penguin-food`.
+- No Firestore Rules / Storage Rules / Functions deployment.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-02 — Super Admin Lalamove approval no longer blocks on full tenant reload
+
+Symptom / request:
+- Clicking `อนุมัติ PENGUIN Lalamove` on `/admin/tenants` often felt like the page was hanging.
+
+Root cause:
+- Cloud Function logs showed the first `updateTenantLalamoveApproval` request after idle incurred a Gen 2 cold start of about 5 seconds.
+- After the callable completed, React then executed `await loadTenantList()`, which set the whole tenant page back to loading and rehydrated Lalamove + wallet documents for every tenant. This second full refresh made the UI continue looking stuck even though the approval write had already succeeded.
+
+Change:
+- Added per-tenant `lalamoveApprovalBusy` state.
+- Only the clicked approval/revoke button is disabled while the callable is pending and displays the existing tenant spinner.
+- The callable result is now merged directly into that tenant's local `lalamove` state.
+- Removed the blocking `await loadTenantList()` from the approval handler; the page no longer reloads every tenant after one approval.
+- Added foundation/P0 regression coverage so approval cannot regress to a full tenant-list reload.
+- Release identity: React `0.4.280 / 2026.10.02.349`; public storefront `0.16.32 / 2026.10.02.064`.
+
+Verification:
+- Recent Cloud Function log confirmed cold-start startup delay on the approval callable; this is separate from the removed client-side full reload.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated build contract PASS for `2026.10.02.349`, bundle `/react/assets/index-C4IpzRU2.js`.
+- `git diff --check` PASS.
+- Production `/admin/tenants` responds 200 and serves `/react/assets/index-C4IpzRU2.js`.
+- Production bundle includes the updated Lalamove approval and tenant-state hydration code.
+
+Deploy state:
+- Firebase Hosting-only deploy completed successfully to project `chat-45754`, target `foodapp` / site `penguin-food`.
+- No Firestore Rules / Storage Rules / Functions deployment.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-02 — Approved central Lalamove masked credentials + bank-name display
+
+Symptom / request:
+- After Super Admin approved PENGUIN central Lalamove, tenant Admin still showed generic `pk_...` / `sk_...` placeholders instead of partially masked central credentials like Laravel MASTER.
+- Wallet top-up transfer destination showed the raw Slip2Go bank code `01014` instead of the bank name.
+
+Root cause:
+- `getTenantLalamoveSettings` returned only tenant/Partner credential masks (`tenantApiKeyMasked`, `tenantApiSecretMasked`). It did not expose a safe masked view of the approved platform-central credentials, so central mode fell back to generic placeholders.
+- Wallet destination already carried the configured receiver bank code, and the React parity dictionary already had the Laravel bank-name map, but Admin rendered `accountTypeLabel || accountType` directly.
+
+Change:
+- `tenantLalamoveStatus()` now returns only **masked** central credentials after `fodCentralApproved === true`:
+  - `platformApiKeyMasked`
+  - `platformApiSecretMasked`
+  - matching configured flags
+- Before approval these values remain empty, so no central credential mask is exposed prematurely.
+- Admin chooses Partner masks for tenant mode and platform-central masks for approved `fod_central` mode.
+- Wallet destination bank code now resolves through `platform.slip_verification.receiver_account_types.{code}`; Thai `01014` displays `ธนาคารไทยพาณิชย์ (SCB)`.
+- Added frontend and operational regression guards for approved-only central masks and bank-name parity.
+- Release identity: React `0.4.280 / 2026.10.02.350`; public storefront `0.16.32 / 2026.10.02.065`.
+
+Verification:
+- `node --check functions/tenant-lalamove-wallet.js` PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated build contract PASS for `2026.10.02.350`, bundle `/react/assets/index-CR3_D_1E.js`.
+- `git diff --check` PASS.
+- Production function `getTenantLalamoveSettings` is ACTIVE on revision `gettenantlalamovesettings-00002-yad` with update time `2026-10-02T14:44:11.502898764Z`.
+- Production platform-central key and secret are configured with valid environment prefixes; no raw credential was printed during verification.
+- Production bundle contains `platformApiKeyMasked`, `platformApiSecretMasked`, bank-map lookup, and `ธนาคารไทยพาณิชย์ (SCB)`.
+- Production `/admin` responds 200 and app-info reports public Build `2026.10.02.065`.
+
+Deploy state:
+- Deployed only Cloud Function `getTenantLalamoveSettings` plus Hosting target `foodapp`.
+- No Firestore Rules / Storage Rules deployment.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-02 — Public Delivery now uses live Lalamove quotation
+
+Symptom / request:
+- Tenant Admin had approved and selected the PENGUIN central Lalamove account and had sufficient central-wallet credit, but `/s/{slug}/delivery` still calculated delivery using the store's Google Routes distance tiers (for example the 10+ km / 100 Baht tier) instead of calling Lalamove.
+
+Root cause:
+- The Firebase customer Delivery runtime had no public Lalamove quotation bridge. `public/assets/js/delivery.js` always used `computeDeliveryRoute` plus `deliveryFeeOptions`.
+- Firebase already had `quoteTenantLalamoveDispatch`, but that callable intentionally requires an authenticated staff user and an existing delivery order, so it cannot be used by the public checkout.
+- Laravel MASTER already has a separate public quotation flow before order creation; that path had not yet been ported to Firebase.
+
+Change:
+- Added public callable `quotePublicLalamoveDelivery`.
+  - Resolves the storefront by slug.
+  - Requires the tenant's store setting `deliveryProvider=lalamove`.
+  - Reuses the existing tenant/central Lalamove account resolver, including central Super Admin approval and verified API credentials.
+  - Requests a live Lalamove MOTORCYCLE quotation for the store/customer coordinates.
+  - Supports the existing COD special-request check.
+  - Returns quotation data plus safe account mode/environment only; API key/secret are never returned.
+- Added `publicStorefrontService.getLalamoveQuotation()` through the isolated customer Functions app.
+- Ported Laravel Lalamove checkout behavior into the Firebase Delivery runtime:
+  - Lalamove mode no longer falls back to the store's manual distance tiers.
+  - Location/payment-method changes request or refresh the live Lalamove quotation.
+  - The delivery selector/status shows the Lalamove live fee.
+  - Checkout is blocked when the live quote is missing/failed/out of range.
+  - Orders persist `deliveryProvider=lalamove`, `deliveryFeeMode=lalamove_quotation`, quotation ID/expiry/currency/account mode/environment, and the complete safe dispatch quote snapshot.
+- Free-shipping promotion semantics are preserved: the customer-facing `deliveryFee` may be 0, while `deliveryBaseFee` and `lalamoveDispatchFee` retain the actual Lalamove provider fee for dispatch/wallet accounting.
+- Added foundation and operational regression guards for the public quotation bridge and Lalamove order metadata.
+- Cache identities bumped for Delivery and the storefront service.
+- Release identity: React `0.4.280 / 2026.10.02.351`; public storefront `0.16.32 / 2026.10.02.066`.
+
+Verification:
+- `node --check functions/lalamove-dispatch.js` PASS.
+- `node --check public/assets/js/delivery.js` PASS.
+- `node --check public/assets/js/public-storefront-service.js` PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- React callable contract PASS; no missing Functions exports.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for `2026.10.02.351`, bundle `/react/assets/index-X-Oom4WM.js`.
+- `git diff --check` PASS.
+- Production public callable was invoked anonymously for `saas-test-shop` at the Delivery coordinates shown during testing and returned HTTP 200 with a real quotation:
+  - quotation ID present
+  - fee 70 THB
+  - distance 8.5 km
+  - accountMode `fod_central`
+  - accountEnvironment `sandbox`
+  - expiry present
+  - no credential fields returned
+- Production Delivery HTML serves `delivery.js?v=20261002-007`.
+- Production Delivery runtime contains the live quotation call, `deliveryProvider=lalamove`, and `lalamove_quotation` order mode.
+- Production storefront service contains `quotePublicLalamoveDelivery`.
+- Production app-info reports public Build `2026.10.02.066`; `/s/saas-test-shop/delivery` responds 200.
+
+Deploy state:
+- Deployed only Cloud Function `quotePublicLalamoveDelivery` plus Hosting target `foodapp` to Firebase project `chat-45754`.
+- No Firestore Rules / Storage Rules deployment.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-02 — Cashier cancel-all Chrome hang fix
+
+Symptom:
+- After Cashier -> "ยกเลิกทุกรายการ" -> confirm, Chrome became unresponsive across the whole application and required macOS Force Quit.
+
+Evidence / root cause:
+- macOS unified log confirms Google Chrome PID 27379 was force-quit at 22:32:39.
+- No crash/minidump or memory-pressure termination was recorded, which is consistent with a renderer/main-thread hang rather than a normal crash.
+- The shared React Top Layer manager had a Popover feedback loop: every layer enforcement unconditionally called hidePopover() then showPopover(); those operations emit "toggle", and the global toggle listener scheduled another enforcement. A Cashier cancellation completes by showing an app Toast, which could start this repeated hide/show cycle.
+
+Fix:
+- Made react-app/src/ui/toast-top-layer.js promotion idempotent.
+- An already-open overlay in the correct host is no longer hidden and reopened.
+- Popovers are only hidden before moving to a different native-modal host, and only opened when currently closed.
+- Preserved the required Toast > Sweet Dialog > Modal policy.
+- Added a UI-layer contract regression guard for the idempotent promotion behavior.
+- Release bumped to React 0.4.280 / 2026.10.02.352 and public storefront 0.16.32 / 2026.10.02.067.
+
+Verification:
+- Chrome/Playwright runtime test with native modal + Sweet Dialog + Toast: each overlay produced exactly 1 open toggle and 1 close toggle; no feedback loop.
+- node --check react-app/src/ui/toast-top-layer.js PASS.
+- npm run test:ui-layers PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS.
+- npm run build:react PASS.
+- Generated React build contract PASS: /react/assets/index-FEe-Lw0s.js, Build 2026.10.02.352.
+- git diff --check PASS.
+- Hosting-only deploy to Firebase project chat-45754 / target foodapp succeeded.
+- Production /cashier now serves /react/assets/index-FEe-Lw0s.js.
+- Post-deploy production Playwright test again confirmed exactly 1 open + 1 close toggle for Toast and Sweet Dialog inside a native modal.
+
+Deploy state:
+- Hosting deployed successfully.
+- No Functions, Firestore Rules, or Storage Rules deployed for this fix.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-03 — Cashier/Kitchen click-freeze: React overlay ownership hardening
+
+Symptom:
+- After using several actions on Cashier or Kitchen, the page could eventually stop accepting clicks.
+- The issue could occur whether or not a visible Toast appeared, so the earlier Popover toggle-loop fix did not fully explain the symptom.
+
+Investigation:
+- Production tenant saas-test-shop has only 18 order documents (~0.15 MB REST payload), so an oversized realtime order snapshot was ruled out.
+- No Chrome GPU/ANGLE/Metal context-loss or memory-pressure crash was found in the inspected macOS logs.
+- Cashier/Kitchen entrypoints load the React bundle only; legacy cashier.js/kitchen.js are not double-bound.
+- Shared Auth/Tenant recheck, notifier timer, branding observer and validation observer showed no recursive loop.
+- A stricter DOM stress test exposed that the .353 Top Layer manager could move a React-owned .sweet-dialog-backdrop from its component host to document.body.
+- Cashier TableMoveDialog is React-owned JSX using .sweet-dialog-backdrop.show. Manual reparenting can break React DOM ownership and can leave an orphan fixed full-screen backdrop. Because .sweet-dialog-backdrop.show has pointer-events:auto, such an orphan can intercept every click and make the page appear frozen.
+
+Fix:
+- Top Layer runtime now treats only overlays that originate as direct children of document.body as portable.
+- React-owned overlays nested under #root/component hosts are never manually reparented or promoted.
+- Ordinary Cashier/Kitchen pages never enter Chromium Popover Top Layer.
+- Body-originating imperative overlays may still move into a native showModal() host when required, and are restored to document.body after the native modal closes.
+- The Popover toggle self-listener remains removed.
+- UI-layer static contract now guards React DOM ownership, portable-overlay restoration, idempotent native-modal promotion, and absence of toggle self-scheduling.
+- React release: 0.4.280 / 2026.10.03.354.
+- Public release: 0.16.32 / 2026.10.03.069.
+
+Verification:
+- Local Chrome runtime ownership stress: 1,000 React-owned backdrop mount/unmount cycles; ownership moves 0, ordinary Popovers 0, orphan backdrops 0, overlays left 0.
+- Native modal test: body-originating imperative overlay promoted correctly; nested React-owned overlay stayed in its component host; portable overlay restored to body after modal close.
+- Local heap after GC: 1.14 MB -> 1.27 MB.
+- node --check react-app/src/ui/toast-top-layer.js PASS.
+- npm run test:ui-layers PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS.
+- npm run build:react PASS.
+- Generated React build contract PASS for 2026.10.03.354, bundle /react/assets/index-iXAtx9sU.js.
+- git diff --check PASS.
+- Hosting-only deploy to Firebase project chat-45754 / target foodapp succeeded.
+- Production Cashier serves /react/assets/index-iXAtx9sU.js; public app-info reports 2026.10.03.069.
+- Post-deploy production Chrome stress: 700 React-owned backdrop cycles; ownership moves 0, Popovers 0, orphan backdrops 0, overlays left 0; heap 7.51 MB -> 7.58 MB after GC.
+
+Deploy state:
+- Hosting deployed successfully.
+- No Functions, Firestore Rules, or Storage Rules deployed for this fix.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-03 — Public unavailable storefront refresh + OS system font
+
+Request:
+- Refresh the public "ร้านไม่พร้อมให้บริการ" state shown on Delivery when a tenant is expired, suspended, inactive, missing, or otherwise unavailable.
+- The unavailable state must use the operating system font stack and must not load or declare a custom @font-face.
+
+Change:
+- Rebuilt the standalone unavailable storefront emitted by public/assets/js/public-tenant-resolver.js.
+- Added a cleaner responsive status card with:
+  - storefront status icon
+  - PENGUIN / หน้าร้านออนไลน์ context label
+  - clearer title/detail hierarchy
+  - compact recovery note
+  - Back and Reload actions
+  - desktop two-column actions and mobile single-column actions
+- Font is now explicitly isolated to the OS stack:
+  - system-ui
+  - -apple-system
+  - BlinkMacSystemFont
+  - Segoe UI
+  - sans-serif
+- No @font-face declaration or external stylesheet is used by the standalone unavailable document.
+- Added HTML escaping for reason/detail before inserting them into the standalone document.
+- Updated public-tenant-resolver cache identity to 20261003-007 across Delivery, Delivery Success, Takeaway, Order, and their module import bridges.
+- Added a React foundation regression contract requiring the system-font stack, the refreshed standalone state, Retry action, and absence of @font-face.
+- Release identity: React 0.4.280 / 2026.10.03.355; public storefront 0.16.32 / 2026.10.03.070.
+
+Important files:
+- public/assets/js/public-tenant-resolver.js
+- public/delivery/index.html
+- public/delivery/success/index.html
+- public/takeaway/index.html
+- public/order/index.html
+- public/assets/js/delivery-bootstrap.js
+- public/assets/js/customer-secure.js
+- public/assets/js/delivery.js
+- public/assets/js/table-qr-resolver.js
+- public/assets/js/takeaway-order.js
+- tools/react-foundation-contract.mjs
+- react-app/src/config/release.js
+- public/assets/js/app-info.js
+- README.md
+- docs/NEXT_CHAT_HANDOFF.md
+
+Verification:
+- node --check public/assets/js/public-tenant-resolver.js PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS.
+- React foundation contract PASS including unavailable-storefront system-font guard.
+- npm run build:react PASS.
+- Generated React build contract PASS for 2026.10.03.355, bundle /react/assets/index-B5zy5bxI.js.
+- git diff --check PASS.
+- Hosting-only deploy to Firebase project chat-45754 / target foodapp succeeded.
+- Production public-tenant-resolver.js?v=20261003-007 contains the required system font stack and contains no @font-face.
+- Production renderer browser harness using the deployed resolver:
+  - Desktop 1440x900: card 480px wide, centered X/Y, two action columns.
+  - Mobile 390x844: card 354px wide, centered X/Y, one action column.
+  - body/title/button computed font family all resolve through system-ui / -apple-system / Segoe UI / sans-serif.
+  - external stylesheet count 0 and @font-face count 0 in the standalone state.
+- saas-test-shop itself is currently active again, so the production visual harness invoked the exact deployed renderer without changing tenant/Firestore state.
+
+Deploy state:
+- Hosting deployed successfully.
+- No Functions, Firestore Rules, or Storage Rules deployed for this change.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-03 — Correct unavailable storefront font to Kanit system UI font
+
+Correction:
+- The previous unavailable-storefront pass interpreted "system font" as the operating-system UI stack.
+- Project UI source of truth is Kanit Local, matching public/assets/css/app.css.
+
+Change:
+- Removed the unavailable page's OS system stack completely.
+- Added the same local Kanit font faces used by the application:
+  - /assets/fonts/Kanit-Regular.ttf for weight 400
+  - /assets/fonts/Kanit-SemiBold.ttf for weights 600/700/800/900
+- The standalone unavailable document now uses only "Kanit Local" through --app-ui-font.
+- Removed system-ui/-apple-system/Segoe UI from this standalone state.
+- Updated regression contract to require local Kanit assets and reject system-ui.
+- Bumped public-tenant-resolver cache identity to 20261003-008 across Order, Delivery, Delivery Success, Takeaway and module bridges.
+- Release identity: React 0.4.280 / 2026.10.03.356; public storefront 0.16.32 / 2026.10.03.071.
+
+Verification:
+- node --check public/assets/js/public-tenant-resolver.js PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS.
+- React foundation contract PASS with Kanit-only unavailable-state guard.
+- npm run build:react PASS.
+- Generated React build contract PASS for 2026.10.03.356, bundle /react/assets/index-CHubCyBg.js.
+- git diff --check PASS.
+- Hosting-only deploy to Firebase project chat-45754 / target foodapp succeeded.
+- Production browser verification on penguin-food.web.app:
+  - Kanit-Regular.ttf HTTP 200, content-type font/ttf
+  - Kanit-SemiBold.ttf HTTP 200, content-type font/ttf
+  - body computed font: "Kanit Local" weight 400
+  - unavailable title computed font: "Kanit Local" weight 700
+  - detail computed font: "Kanit Local" weight 400
+  - action button computed font: "Kanit Local" weight 600
+  - document.fonts confirms regular, semibold and bold faces loaded
+  - no system-ui token remains in the deployed standalone renderer
+  - card remains centered X/Y.
+
+Deploy state:
+- Hosting deployed successfully.
+- No Functions, Firestore Rules, or Storage Rules deployed for this correction.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-03 — Unavailable storefront: store name + action icons
+
+Request:
+- Show the resolved store name on the unavailable storefront state.
+- Add icons to Back and Reload actions while keeping Kanit as the project UI font.
+
+Change:
+- showUnavailableStorefront() now accepts an optional storeName.
+- Inactive/expired tenants pass the already-resolved tenant.name into the unavailable state; no additional Firestore query is required.
+- Added .storefront-state__store-name between the PENGUIN storefront context label and the unavailable-status heading.
+- Added inline SVG icons:
+  - chevron-left for ย้อนกลับ
+  - refresh arrow for โหลดใหม่อีกครั้ง
+- Action buttons now use inline-flex, center alignment and an 8px icon/text gap.
+- Store name and actions continue to use local Kanit only.
+- Updated regression contract to require tenant.name wiring, store-name UI, both action IDs and both SVG path markers.
+- Resolver cache identity: 20261003-009.
+- Release identity: React 0.4.280 / 2026.10.03.357; public storefront 0.16.32 / 2026.10.03.072.
+
+Verification:
+- node --check public/assets/js/public-tenant-resolver.js PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS.
+- React foundation contract PASS.
+- npm run build:react PASS.
+- Generated React build contract PASS for 2026.10.03.357, bundle /react/assets/index-DrxgK4iz.js.
+- git diff --check PASS.
+- Hosting-only deploy to Firebase project chat-45754 / target foodapp succeeded.
+- Production resolver browser harness verified:
+  - storeName renders as ร้านทดสอบ SaaS from the passed resolved tenant value
+  - store name computed font is "Kanit Local"
+  - Back and Retry each contain exactly one SVG icon
+  - both buttons use flex layout, align-items:center and 8px icon/text gap
+  - Production public Build 2026.10.03.072
+  - Resolver cache 20261003-009.
+
+Deploy state:
+- Hosting deployed successfully.
+- No Functions, Firestore Rules, or Storage Rules deployed.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-03 — Unavailable storefront store name uses Admin shopName
+
+Issue:
+- The unavailable storefront showed tenant.name ("ร้านทดสอบ SaaS") instead of the store name configured on the Admin page.
+- The Admin page source of truth is tenants/{tenantId}/settings/store.shopName.
+
+Fix:
+- Added configuredStoreName(tenant) to public-tenant-resolver.js.
+- The unavailable storefront now reads tenants/{tenantId}/settings/store and uses settings.shopName.
+- tenant.name remains fallback only when shopName is missing or settings cannot be read.
+- No extra query is performed for active storefront rendering; the settings read is only needed when rendering the inactive/expired storefront state.
+- Regression contract now requires the exact Admin settings/store document path and shopName field.
+- Resolver cache identity: 20261003-010.
+- Release identity: React 0.4.280 / 2026.10.03.358; public storefront 0.16.32 / 2026.10.03.073.
+
+Verification:
+- Live data check for saas-test-shop:
+  - tenant.name = ร้านทดสอบ SaaS
+  - Admin settings/store.shopName = ตั่วเฮียอาหารอีสาน
+- node --check public/assets/js/public-tenant-resolver.js PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS.
+- npm run build:react PASS.
+- Generated React build contract PASS for 2026.10.03.358, bundle /react/assets/index-Dv9vHDtl.js.
+- git diff --check PASS.
+- Hosting-only deploy to Firebase project chat-45754 / target foodapp succeeded.
+- Post-deploy production check of /s/saas-test-shop/delivery:
+  - unavailable state rendered
+  - displayed storeName = ตั่วเฮียอาหารอีสาน
+  - heading = ร้านไม่พร้อมให้บริการ
+  - Production public Build = 2026.10.03.073
+  - deployed resolver contains direct settings/store.shopName read.
+
+Deploy state:
+- Hosting deployed successfully.
+- No Functions, Firestore Rules, or Storage Rules deployed.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-03 — Lalamove completion closes Cashier/Kitchen correctly
+
+Issue:
+- A Delivery order could have lalamoveOrderStatus=COMPLETED while local status remained ready.
+- That left the same fulfilled order visible in both Cashier and Kitchen.
+- Manual Lalamove refresh updated provider fields but did not canonicalize the local operational status.
+- The webhook also incorrectly treated COD delivery completion as merchant payment settlement.
+
+Fix:
+- Added functions/lalamove-order-lifecycle.js as the shared completion policy for refresh + webhook.
+- Prepaid/paid Lalamove COMPLETED:
+  - local status -> paid
+  - paymentStatus stays paid
+  - completedAt + lalamoveCompletedAt are recorded
+- COD Lalamove COMPLETED:
+  - local fulfillment status -> completed
+  - paymentStatus/paidAt are NOT changed
+  - completedAt + lalamoveCompletedAt + lalamoveCodDeliveryCompletedAt are recorded
+  - lalamoveCodSettlementStatus defaults to pending
+- This separates delivery fulfillment from COD remittance/settlement.
+- refreshTenantLalamoveDispatch repairs an already-persisted COMPLETED order before checking live credentials or calling Lalamove again.
+- Duplicate/stale webhook events can repair an old COMPLETED record idempotently.
+- Cashier and Kitchen both hide Lalamove COMPLETED records immediately even if an old document is still stale.
+- Cashier/Kitchen also trigger silent backend repair for stale COMPLETED records.
+- Order notifier now treats paid/completed as terminal.
+
+Regression coverage:
+- Prepaid completion closes to paid.
+- COD completion closes fulfillment to completed without adding paymentStatus=paid or paidAt.
+- Unexpected unpaid non-COD completion is not financially closed.
+- Stale completion repair detection is covered.
+- Cashier/Kitchen stale-completed filters and repair callables are contract-protected.
+
+Release / deploy:
+- Final React release: 0.4.280 / 2026.10.03.360.
+- Final public release: 0.16.32 / 2026.10.03.075.
+- Generated bundle: /react/assets/index-BIzLSVPo.js.
+- placeTenantLalamoveDispatch, refreshTenantLalamoveDispatch and lalamoveWebhook were deployed.
+- refreshTenantLalamoveDispatch was redeployed after adding persisted-status self-repair.
+- Hosting target foodapp was deployed with Build 2026.10.03.360.
+- No Firestore Rules or Storage Rules were deployed.
+
+Production verification:
+- Target Lalamove order 3597155702936359090 no longer appears on /cashier or /kitchen.
+- Canonical Firestore state for that PromptPay order is status=paid, paymentStatus=paid, lalamoveOrderStatus=COMPLETED.
+- completedAt and lalamoveCompletedAt are both populated.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-03 — Quick Order payment button icon spacing/alignment
+
+Request:
+- Cash payment dialog footer buttons needed icons with a clear one-space gap before the label.
+- Payment-success dialog icons were visually off-center on the Y axis.
+
+Implementation:
+- Added Bootstrap Icons to the Cash dialog footer:
+  - Cancel: bi-x-circle
+  - Receive cash/send to kitchen: bi-cash-coin
+- Scoped Quick Order payment/footer buttons to inline-flex, align-items:center, justify-content:center, gap:7px.
+- Normalized app-icon line-height, margin, align-self, and vertical-align inside the two payment dialogs.
+- Kept the existing result actions:
+  - New order: bi-plus-circle
+  - Print receipt: bi-printer
+- Added P0 regression contracts for icon presence and scoped alignment CSS.
+
+Verification:
+- test:operational PASS.
+- test:react-parity PASS.
+- build:react PASS.
+- git diff --check PASS.
+- Production bundle: /react/assets/index-D5v5DE0O.js.
+- Production DOM geometry verified all four buttons at 48px height, 7px icon/text gap, and 0px icon-vs-button Y-center offset.
+
+Release / deploy:
+- React 0.4.280 / Build 2026.10.03.361.
+- Public 0.16.32 / Build 2026.10.03.076.
+- Firebase Hosting target foodapp deployed successfully.
+- No Functions, Firestore Rules, or Storage Rules deploy for this change.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-03 — Quick Order menu overlay readability refinement
+
+Request:
+- Keep menu name and category aligned on the left.
+- Make name/category text slightly smaller.
+- Move the price badge to the right.
+- Reduce price badge opacity so it covers less of the food image.
+
+Implementation:
+- Wrapped menu name/category in .quick-menu-copy.
+- Changed the bottom overlay to a left-copy/right-price flex layout.
+- Menu name font reduced to .74rem; category to .59rem.
+- Price badge kept compact at .65rem with max-width 48%.
+- Price badge background reduced to rgba(255,255,255,.76), border/shadow softened.
+- Preserved two-line name clamping and single-line category truncation.
+- Added P0 regression contracts for overlay structure and styling.
+
+Verification:
+- test:operational PASS.
+- test:react-parity PASS.
+- build:react PASS.
+- git diff --check PASS.
+- Production bundle: /react/assets/index-CLpfZC4G.js.
+- Desktop and 390px mobile Production DOM checks confirm left copy/right price separation, no overlap, no horizontal overflow, and the expected translucent price badge.
+
+Release / deploy:
+- React 0.4.280 / Build 2026.10.03.362.
+- Public 0.16.32 / Build 2026.10.03.077.
+- Firebase Hosting target foodapp deployed successfully.
+- No Functions, Firestore Rules, or Storage Rules deploy for this change.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-03 — Move Waiting Queue into Cashier Hero
+
+Request:
+- Waiting Queue does not belong inside the "เครื่องมือสั่งกลับบ้าน" action card.
+- Move it beside the Hero "รับออเดอร์" action.
+- Keep both Hero actions paired on mobile, even at narrow widths.
+
+Implementation:
+- Moved the Waiting Queue link from .cashier-actions into .cashier-hero-actions.
+- Hero now has two primary actions:
+  - รับออเดอร์ -> /cashier/quick-order
+  - คิวรอโต๊ะ -> /cashier/waiting-queue
+- Added .cashier-hero-queue-btn styling.
+- Hero action group is nowrap with compact spacing.
+- Mobile <=600px reduces action height, padding, icon gap, and font size.
+- Mobile <=390px tightens the paired actions further.
+- Very narrow <=360px keeps the page title full-width, then moves the paired action group to the next row while keeping both buttons side by side.
+- Removed Waiting Queue from the Takeaway tools action bar.
+- Added P0 regression checks preventing Waiting Queue from returning to the Takeaway tools block and protecting mobile paired action behavior.
+
+Verification:
+- test:operational PASS.
+- test:react-parity PASS.
+- build:react PASS.
+- git diff --check PASS.
+- Final Production bundle: /react/assets/index-CytYvmHS.js.
+- Production viewport checks PASS at 1600, 440, 390, 360, 344 and 320 px:
+  - exactly two Hero actions
+  - both actions stay on the same row
+  - no button overlap
+  - no title/action overlap
+  - title text fits
+  - no horizontal document overflow
+  - Waiting Queue absent from Takeaway tools card.
+
+Release / deploy:
+- React 0.4.280 / Build 2026.10.03.364.
+- Public 0.16.32 / Build 2026.10.03.079.
+- Firebase Hosting target foodapp deployed successfully.
+- No Functions, Firestore Rules, or Storage Rules deploy for this change.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-03 — Compact Cashier Takeaway tools into one mobile row
+
+Request:
+- Keep the three Takeaway tool buttons on the same row as the "เครื่องมือสั่งกลับบ้าน" title.
+- Reduce the height of the Takeaway tools card on mobile.
+
+Implementation:
+- Mobile <=600px now keeps .cashier-action-bar as a single flex row.
+- Title/subtitle stay on the left; QR, open Takeaway and copy-link actions stay on the right.
+- Mobile actions remain icon-only.
+- Action buttons reduced to 40x40px with 6px gaps.
+- <=390px tightens padding/gaps further.
+- <=360px hides the subtitle and uses 38x38px actions to preserve one-row layout on very narrow screens.
+- Added P0 regression coverage for the mobile single-row Takeaway tools layout.
+
+Verification:
+- test:operational PASS.
+- test:react-parity PASS.
+- build:react PASS.
+- git diff --check PASS.
+- Production bundle: /react/assets/index-8laqNV5Y.js.
+- Production viewport checks PASS at 440, 390, 344 and 320 px:
+  - exactly three Takeaway tool buttons
+  - title and actions remain in the same row
+  - all three buttons remain in one row
+  - no title/action overlap
+  - no horizontal document overflow
+  - card height measured 62px at 440px, 60px at 390px, and 58px at 344/320px.
+
+Release / deploy:
+- React 0.4.280 / Build 2026.10.03.365.
+- Public 0.16.32 / Build 2026.10.03.080.
+- Firebase Hosting target foodapp deployed successfully.
+- No Functions, Firestore Rules, or Storage Rules deploy for this change.
+- Not committed, not pushed, and not merged.

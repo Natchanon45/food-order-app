@@ -38,6 +38,57 @@ function bindHorizontalWheel(element) {
   }, { passive: false });
 }
 
+function bindTouchDrag(element) {
+  if (!element || !element.matches?.('[data-horizontal-scroll]') || element.dataset.horizontalTouchBound === '1') return;
+  element.dataset.horizontalTouchBound = '1';
+  element.style.touchAction = 'pan-y';
+
+  let tracking = false;
+  let decided = false;
+  let horizontal = false;
+  let startX = 0;
+  let startY = 0;
+  let startLeft = 0;
+
+  const reset = () => {
+    tracking = false;
+    decided = false;
+    horizontal = false;
+  };
+
+  element.addEventListener('touchstart', event => {
+    if (!canScrollX(element) || event.touches.length !== 1) return;
+    if (event.target.closest('button,a,input,select,textarea,[role="button"]')) return;
+    const touch = event.touches[0];
+    tracking = true;
+    decided = false;
+    horizontal = false;
+    startX = touch.clientX;
+    startY = touch.clientY;
+    startLeft = element.scrollLeft;
+  }, { passive: true });
+
+  element.addEventListener('touchmove', event => {
+    if (!tracking || event.touches.length !== 1) return;
+    const touch = event.touches[0];
+    const diffX = touch.clientX - startX;
+    const diffY = touch.clientY - startY;
+
+    if (!decided) {
+      if (Math.abs(diffX) < 5 && Math.abs(diffY) < 5) return;
+      horizontal = Math.abs(diffX) > Math.abs(diffY);
+      decided = true;
+    }
+    if (!horizontal) return;
+
+    element.scrollLeft = clampScrollLeft(element, startLeft - diffX);
+    event.preventDefault();
+  }, { passive: false });
+
+  element.addEventListener('touchend', reset, { passive: true });
+  element.addEventListener('touchcancel', reset, { passive: true });
+}
+
 function bindMouseDrag(element) {
   if (!element || element.dataset.horizontalDragBound === '1') return;
   element.dataset.horizontalDragBound = '1';
@@ -80,6 +131,7 @@ function bindMouseDrag(element) {
 
 function enhance(element) {
   bindHorizontalWheel(element);
+  bindTouchDrag(element);
   bindMouseDrag(element);
 }
 
@@ -89,10 +141,15 @@ function enhanceAll(root = document) {
 
 enhanceAll();
 
+function containsScrollableTarget(node) {
+  if (!(node instanceof Element)) return false;
+  return SELECTORS.some(selector => node.matches?.(selector) || node.querySelector?.(selector));
+}
+
 const observer = new MutationObserver(records => {
   records.forEach(record => {
     record.addedNodes.forEach(node => {
-      if (!(node instanceof Element)) return;
+      if (!containsScrollableTarget(node)) return;
       enhanceAll(node);
       SELECTORS.forEach(selector => {
         if (node.matches?.(selector)) enhance(node);

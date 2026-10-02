@@ -127,9 +127,9 @@ extract_runtime_css("retail-pos-promptpay-payment.js", "retail-pos-promptpay-pay
 for name in ["thai-qr-payment.svg", "promptpay.svg", "thai-qr-payment-mark.png"]:
     shutil.copy2(source / "public/assets/images/payment-branding" / name, payment_branding_dir / name)
 
-for name in ["toast-top-layer.js"]:
-    shutil.copy2(source / "public/assets/js" / name, js_dir / name)
-
+# React's Top Layer manager is runtime safety code, not a visual parity asset.
+# Never overwrite react-app/src/ui/toast-top-layer.js from Laravel here; doing
+# so can silently restore an older Popover implementation after a parity sync.
 views = {
     "home-page.css": source / "resources/views/migrated/home.blade.php",
     "login-page.css": source / "resources/views/migrated/login.blade.php",

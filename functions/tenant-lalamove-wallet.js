@@ -156,6 +156,10 @@ async function tenantLalamoveStatus(ref) {
     fodCentralApproved: centralApproved,
     fodCentralApprovedAt: dateValue(publicData.fodCentralApprovedAt),
     platformReady: platform.ready,
+    platformApiKeyConfigured: centralApproved && Boolean(platform.apiKey),
+    platformApiKeyMasked: centralApproved ? mask(platform.apiKey) : "",
+    platformApiSecretConfigured: centralApproved && Boolean(platform.apiSecret),
+    platformApiSecretMasked: centralApproved ? mask(platform.apiSecret) : "",
   };
 }
 

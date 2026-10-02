@@ -70,7 +70,7 @@ export function AdminQrPage() {
   };
 
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="KINJAI" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={88} />;
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={88} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fadmin%2Fqr" replace />;
   if (!["owner", "admin"].includes(profile.role)) return <Navigate to="/" replace />;
@@ -80,7 +80,7 @@ export function AdminQrPage() {
     <>
       <header className="app-header">
         <div className="admin-qr-header-leading">
-          <div className="brand"><span className="brand-mark">KJ</span>{t("admin_qr.header.title")}</div>
+          <div className="brand"><span className="brand-mark">PG</span>{t("admin_qr.header.title")}</div>
           <Link className="btn btn-sm admin-qr-header-back" to="/admin">
             <i className="bi bi-arrow-left app-icon" aria-hidden="true"></i>
             <span>{t("admin_qr.header.back")}</span>
@@ -115,7 +115,7 @@ export function AdminQrPage() {
                 <article className="card qr-card" key={table.id || table.code}>
                   <div className="qr-ticket">
                     <div className="qr-ticket-header">
-                      <div className="qr-ticket-brand">KINJAI QR</div>
+                      <div className="qr-ticket-brand">PENGUIN QR</div>
                       <div className="qr-ticket-title">{t("admin_qr.ticket.scan_to_order")}</div>
                       <div className="qr-ticket-table">{table.name}</div>
                     </div>

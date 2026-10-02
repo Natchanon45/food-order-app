@@ -218,7 +218,7 @@ export function CashierReceiptPage() {
     <>
       <header className="app-header">
         <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-          <div className="brand"><span className="brand-mark">KJ</span>{t("cashier_documents.receipt.header_title")}</div>
+          <div className="brand"><span className="brand-mark">PG</span>{t("cashier_documents.receipt.header_title")}</div>
           <Link className="btn btn-sm" to="/cashier"><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{t("cashier_documents.receipt.back")}</span></Link>
         </div>
         <div className="app-header-actions" data-header-actions>
@@ -243,7 +243,7 @@ export function CashierReceiptPage() {
           {missingMessage ? <div className="empty">{missingMessage}</div> : first ? (
             <>
               <div className="receipt-header">
-                <h1 id="shopName">{settings.shopName || settings.storeName || tenant.name || "KINJAI"}</h1>
+                <h1 id="shopName">{settings.shopName || settings.storeName || tenant.name || "PENGUIN"}</h1>
                 <div id="shopAddress">{settings.shopAddress || settings.address || ""}</div>
                 <div id="shopPhone">{settings.shopPhone ? t("cashier_documents.receipt.shop_phone", { phone: settings.shopPhone }) : ""}</div>
                 <strong id="receiptTitle">{t(combined ? "cashier_documents.receipt.combined_title" : "cashier_documents.receipt.title")}</strong>

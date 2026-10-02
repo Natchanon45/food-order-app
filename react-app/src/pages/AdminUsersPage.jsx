@@ -167,7 +167,7 @@ export function AdminUsersPage() {
   };
 
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (profile?.role === "owner" && tenantState.status === "ready" && !initialUsersReady)) {
-    return <PageReadyOverlay context="KINJAI" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={84} />;
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={84} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fadmin%2Fusers" replace />;
   if (profile.role !== "owner") return <Navigate to="/" replace />;
@@ -177,7 +177,7 @@ export function AdminUsersPage() {
     <>
       <header className="app-header">
         <div className="admin-users-header-leading">
-          <span className="brand-mark">KJ</span>
+          <span className="brand-mark">PG</span>
           <span className="admin-users-header-title">{t("admin_users.header.title")}</span>
           <Link className="btn btn-sm admin-users-header-back" to="/admin"><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{t("admin_users.header.back")}</span></Link>
         </div>

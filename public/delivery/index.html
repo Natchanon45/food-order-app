@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#159447" />
     <meta
       name="description"
-      content="KINJAI is an online food ordering and delivery application for browsing menus, placing orders, entering delivery details, and making payments."
+      content="PENGUIN is an online food ordering and delivery application for browsing menus, placing orders, entering delivery details, and making payments."
     />
     <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096" />
     <link rel="stylesheet" href="/assets/css/menu-qr.css?v=20260623-7" />
@@ -20,7 +20,7 @@
     />
     <link
       rel="stylesheet"
-      href="/assets/css/delivery-addresses.css?v=20261002-036"
+      href="/assets/css/delivery-addresses.css?v=20261002-037"
     />
     <link rel="stylesheet" href="/assets/css/delivery-location-map.css?v=20260903-234" />
     <link rel="stylesheet" href="/assets/css/delivery-promotions.css?v=20260930-004" />
@@ -38,13 +38,13 @@
     <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-095" />
     <link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260731-079" />
     <link rel="stylesheet" href="/assets/css/public-menu-image-frame.css?v=20260916-002" />
-    <title>KINJAI</title>
+    <title>PENGUIN</title>
   </head>
   <body class="order-delivery-workspace delivery-page">
     <div id="demoBanner"></div>
     <header class="app-header">
       <div class="brand">
-        <span class="brand-mark">KJ</span><span>KINJAI</span>
+        <span class="brand-mark">PG</span><span>PENGUIN</span>
       </div>
       <span class="badge">จัดส่งถึงบ้าน</span>
     </header>
@@ -89,20 +89,22 @@
           </section>
           <section class="card delivery-account-card" style="margin-top: 18px">
             <div class="section-title"><h2><i class="bi bi-person-vcard app-icon" aria-hidden="true"></i><span>บัญชีและที่อยู่จัดส่ง</span></h2></div>
-            <button
-              type="button"
-              id="customerLogoutButton"
-              class="delivery-account-logout"
-              aria-label="ออกจากระบบ"
-              title="ออกจากระบบ"
-              hidden
-            >
-              <i class="bi bi-box-arrow-right app-icon" aria-hidden="true"></i>
-            </button>
             <div class="grid grid-2" style="align-items: center">
               <div>
-                <div id="customerAccount" hidden>
-                  <strong id="customerAccountName"></strong>
+                <div class="delivery-account-user-row">
+                  <div id="customerAccount" hidden>
+                    <strong id="customerAccountName"></strong>
+                  </div>
+                  <button
+                    type="button"
+                    id="customerLogoutButton"
+                    class="delivery-account-logout"
+                    aria-label="ออกจากระบบ"
+                    title="ออกจากระบบ"
+                    hidden
+                  >
+                    <i class="bi bi-box-arrow-right app-icon" aria-hidden="true"></i>
+                  </button>
                 </div>
                 <div id="customerModeText" class="menu-category">
                   โหมด Guest: ที่อยู่จะจำเฉพาะอุปกรณ์และเบราว์เซอร์นี้
@@ -380,7 +382,7 @@
     ></script>
     <script
       type="module"
-      src="/assets/js/public-tenant-resolver.js?v=20261002-006"
+      src="/assets/js/public-tenant-resolver.js?v=20261003-010"
     ></script>
     <script type="module" src="/assets/js/public-i18n-bootstrap.js?v=20261002-007"></script>
     <script type="module" src="/assets/js/ui.js?v=20260930-001"></script>
@@ -394,7 +396,7 @@
       type="module"
       src="/assets/js/delivery-address-status-sync.js?v=20260930-001"
     ></script>
-    <script type="module" src="/assets/js/delivery.js?v=20261002-006"></script>
+    <script type="module" src="/assets/js/delivery.js?v=20261002-007"></script>
     <script
       type="module"
       src="/assets/js/delivery-payment-lock.js?v=20260930-004"

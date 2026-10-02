@@ -20,6 +20,7 @@ const adminUsersPage = read("react-app/src/pages/AdminUsersPage.jsx");
 const adminStaff = read("react-app/src/data/adminStaff.js");
 const staffAdminFunction = read("functions/staff-admin.js");
 const quickOrderPage = read("react-app/src/pages/QuickOrderPage.jsx");
+const quickOrderCss = read("react-app/public/parity/css/quick-order.css");
 const cashierReceiptPage = read("react-app/src/pages/CashierReceiptPage.jsx");
 const cashierTableQrPage = read("react-app/src/pages/CashierTableQrPage.jsx");
 const cashier = read("react-app/src/pages/CashierPage.jsx");
@@ -117,6 +118,37 @@ requireAll("Quick Order operational persistence", operational, [
   "export async function saveQuickOrderHeldBill(tenantId, bill)",
   'export async function releaseQuickOrderHeldBill(tenantId, id, disposition = "resume"',
 ]);
+requireAll("Quick Order payment dialog button icons", quickOrderPage, [
+  'id="quickCashCancel"',
+  'bi bi-x-circle app-icon',
+  'id="quickCashConfirm"',
+  'bi bi-cash-coin app-icon',
+  'id="quickPaymentNoReceipt"',
+  'bi bi-plus-circle app-icon',
+  'id="quickPaymentPrintReceipt"',
+  'bi bi-printer app-icon',
+]);
+requireAll("Quick Order payment dialog icon alignment", quickOrderCss, [
+  ".quick-cash-dialog-actions .btn,",
+  ".quick-payment-result-actions .btn {",
+  "gap: 7px;",
+  "align-self: center;",
+  "vertical-align: 0;",
+]);
+requireAll("Quick Order menu card overlay layout", quickOrderPage, [
+  'className="quick-menu-copy"',
+  'className="quick-menu-name"',
+  'className="quick-menu-category"',
+  'className="quick-menu-price-badge"',
+]);
+requireAll("Quick Order menu card overlay styling", quickOrderCss, [
+  ".quick-menu-copy {",
+  "justify-content: space-between;",
+  "font-size: .74rem;",
+  "font-size: .59rem;",
+  "background: rgba(255, 255, 255, .76);",
+  "max-width: 48%;",
+]);
 requireAll("Cashier receipt is print-only", cashierReceiptPage, [
   "window.print()",
 ]);
@@ -152,6 +184,37 @@ requireAll("Cashier pickup", cashier, [
 requireAll("Cashier table/walk-in operations", cashier, [
   "assignWalkInTable(tenant.id, order.id, tableCode)",
   "moveTableSession(tenant.id",
+]);
+requireAll("Cashier Hero primary actions", cashier, [
+  'className="cashier-hero-actions"',
+  'className="btn cashier-hero-order-btn"',
+  'className="btn cashier-hero-order-btn cashier-hero-queue-btn"',
+  'href={cashierRoute("/quick-order")}',
+  'href={cashierRoute("/waiting-queue")}',
+]);
+if (cashier.includes('className="btn btn-primary" href={cashierRoute("/waiting-queue")}')) {
+  fail("Waiting Queue must not remain inside the Takeaway tools action bar");
+}
+requireAll("Cashier Hero mobile paired actions", read("react-app/public/parity/css/cashier-refresh.css"), [
+  ".cashier-hero-actions {",
+  "flex-wrap: nowrap;",
+  ".cashier-hero-queue-btn {",
+  "font-size: 10.75px;",
+  "@media (max-width: 360px) {",
+  "flex: 0 0 100%;",
+  "margin-left: auto;",
+]);
+requireAll("Cashier Takeaway tools mobile single row", read("react-app/public/parity/css/cashier-refresh.css"), [
+  ".cashier-action-bar {",
+  "display: flex;",
+  "justify-content: space-between;",
+  ".cashier-action-title {",
+  "flex: 1 1 auto;",
+  ".cashier-actions {",
+  "flex: 0 0 auto;",
+  "flex: 0 0 40px;",
+  ".cashier-action-title span {",
+  "display: none;",
 ]);
 requireAll("Cashier Lalamove actions", cashier, [
   "quoteLalamoveDispatch(tenant.id, order.id)",
@@ -218,7 +281,7 @@ requireAll("Admin tenant destructive/review actions", tenants, [
   'reviewRevenueSharePayment({ tenantId: item.tenant.id, paymentId: item.id, action: "approve" })',
   'action: "reject"',
   "await unlockTenantRevenueShare({ tenantId: tenant.id })",
-  "await updateTenantLalamoveApproval({ tenantId: tenant.id, approved: !approved })",
+  "const result = await updateTenantLalamoveApproval({ tenantId: tenant.id, approved: nextApproved })",
   "await reviewTenantLalamoveWalletTopup({",
   "const result = await updateTenantSubscription(payload)",
 ]);

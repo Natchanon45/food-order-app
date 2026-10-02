@@ -160,7 +160,7 @@ export function HomePage() {
   ) {
     return (
       <PageReadyOverlay
-        context="KINJAI"
+        context="PENGUIN"
         title={t("shared.state.loading")}
         message={t("shared.state.please_wait")}
         progress={68}
@@ -172,8 +172,8 @@ export function HomePage() {
     <>
       <header className="app-header">
         <div className="brand">
-          <span className="brand-mark">KJ</span>
-          <span className="brand-label">{staff ? "KINJAI" : "KINJAI"}</span>
+          <span className="brand-mark">PG</span>
+          <span className="brand-label">{staff ? "PENGUIN" : "PENGUIN"}</span>
         </div>
         <div className="app-header-actions" data-header-actions style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8, marginLeft: "auto", minWidth: 0, flex: "0 0 auto" }}>
           <LocaleSwitcher style={{ marginLeft: 0, marginRight: 0, order: -100 }} />
@@ -184,7 +184,7 @@ export function HomePage() {
       {!staff ? (
         <main className="container" id="publicLanding">
           <section className="hero public-landing-hero">
-            <h1><i className="bi bi-shop-window app-icon public-heading-icon" aria-hidden="true"></i><span>KINJAI</span></h1>
+            <h1><i className="bi bi-shop-window app-icon public-heading-icon" aria-hidden="true"></i><span>PENGUIN</span></h1>
             <p>{t("home.public.hero.description")}</p>
           </section>
 
@@ -306,7 +306,7 @@ export function HomePage() {
       ) : (
         <main className="container" id="staffDashboard">
           <section className="hero staff-hero">
-            <h1>{profile.role === "owner" ? t("home.staff.owner.title") : "KINJAI / Order / Delivery / POS"}</h1>
+            <h1>{profile.role === "owner" ? t("home.staff.owner.title") : "PENGUIN / Order / Delivery / POS"}</h1>
             <p>{profile.role === "owner" ? shopName : t("home.staff.hero_description")}</p>
           </section>
 

@@ -38,7 +38,39 @@
 }
 
 .delivery-account-card > .section-title {
-  padding-right: 38px;
+  padding-right: 0;
+}
+
+.delivery-account-user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.delivery-account-user-row:has(#customerAccount:not([hidden])) {
+  min-height: 30px;
+  margin-bottom: 4px;
+}
+
+#customerAccount {
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+}
+
+#customerAccount:not([hidden]) {
+  display: flex;
+}
+
+#customerAccountName {
+  display: block;
+  min-width: 0;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .card:has(#customerModeText) > .grid.grid-2 {
@@ -228,14 +260,15 @@
 }
 
 #customerLogoutButton {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+  position: static;
   z-index: 2;
   display: inline-grid;
   width: 30px;
   height: 30px;
-  min-height: 0;
+  min-width: 30px;
+  min-height: 30px;
+  flex: 0 0 30px;
+  align-self: center;
   place-items: center;
   margin: 0;
   padding: 0;

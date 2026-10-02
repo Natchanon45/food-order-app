@@ -1,4 +1,4 @@
-await import("./public-tenant-resolver.js?v=20261002-006");
+await import("./public-tenant-resolver.js?v=20261003-010");
 
 import { dataService } from "./data-service.js";
 

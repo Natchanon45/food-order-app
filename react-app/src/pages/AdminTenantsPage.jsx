@@ -207,7 +207,7 @@ function TenantSubscription({ tenant, t, intlLocale, onAction }) {
   );
 }
 
-function TenantCard({ tenant, summary = {}, t, formatNumber, intlLocale, onEdit, onShare, onUnlock, onLalamoveApproval, onWallet, onDelete, onSubscriptionAction }) {
+function TenantCard({ tenant, summary = {}, t, formatNumber, intlLocale, onEdit, onShare, onUnlock, onLalamoveApproval, lalamoveApprovalBusy = false, onWallet, onDelete, onSubscriptionAction }) {
   const active = tenant.active !== false;
   const shareEnabled = tenant.billingMode === "revenue_share" || summary.revenueShareEnabled === true;
   const ownerLabel = tenant.ownerUid
@@ -279,8 +279,17 @@ function TenantCard({ tenant, summary = {}, t, formatNumber, intlLocale, onEdit,
           </button>
         ) : null}
         {tenant.lalamove?.accountMode === "fod_central" ? (
-          <button className="btn btn-sm" type="button" data-lalamove-approval={tenant.id} onClick={() => onLalamoveApproval(tenant)}>
-            <i className={`bi ${tenant.lalamove?.fodCentralApproved ? "bi-shield-x" : "bi-shield-check"}`} aria-hidden="true"></i>
+          <button
+            className="btn btn-sm"
+            type="button"
+            data-lalamove-approval={tenant.id}
+            disabled={lalamoveApprovalBusy}
+            aria-busy={lalamoveApprovalBusy ? "true" : "false"}
+            onClick={() => onLalamoveApproval(tenant)}
+          >
+            {lalamoveApprovalBusy
+              ? <span className="tenant-button-spinner" aria-hidden="true"></span>
+              : <i className={`bi ${tenant.lalamove?.fodCentralApproved ? "bi-shield-x" : "bi-shield-check"}`} aria-hidden="true"></i>}
             <span>{t(tenant.lalamove?.fodCentralApproved ? "admin_tenants.tenant.lalamove_revoke" : "admin_tenants.tenant.lalamove_approve")}</span>
           </button>
         ) : null}
@@ -448,6 +457,7 @@ export function AdminTenantsPage() {
   const [wallet, setWallet] = useState(null);
   const [walletLoading, setWalletLoading] = useState(false);
   const [walletReviewBusy, setWalletReviewBusy] = useState("");
+  const [lalamoveApprovalBusy, setLalamoveApprovalBusy] = useState("");
   const [walletSlipItem, setWalletSlipItem] = useState(null);
   const [walletSlipUrl, setWalletSlipUrl] = useState("");
 
@@ -815,10 +825,21 @@ export function AdminTenantsPage() {
         type: "warning",
       },
     );
-    if (!confirmed) return;
+    if (!confirmed || lalamoveApprovalBusy) return;
+    const nextApproved = !approved;
+    setLalamoveApprovalBusy(tenant.id);
     try {
-      await updateTenantLalamoveApproval({ tenantId: tenant.id, approved: !approved });
-      await loadTenantList();
+      const result = await updateTenantLalamoveApproval({ tenantId: tenant.id, approved: nextApproved });
+      const serverState = result?.item && typeof result.item === "object" ? result.item : {};
+      setTenants(current => current.map(item => item.id === tenant.id ? {
+        ...item,
+        lalamove: {
+          ...(item.lalamove || {}),
+          ...serverState,
+          accountMode: "fod_central",
+          fodCentralApproved: serverState.fodCentralApproved === true || nextApproved,
+        },
+      } : item));
       const message = t(approved ? "admin_tenants.tenant.lalamove_revoke_success" : "admin_tenants.tenant.lalamove_approve_success");
       setStatus(message);
       showToast(message);
@@ -827,6 +848,8 @@ export function AdminTenantsPage() {
       const message = t("admin_tenants.tenant.lalamove_approval_failed");
       setStatus(message);
       showToast(message, "error");
+    } finally {
+      setLalamoveApprovalBusy("");
     }
   };
 
@@ -941,7 +964,7 @@ export function AdminTenantsPage() {
   };
 
   if (authState.status === "loading" || !stylesReady || (profile?.role === "super_admin" && !initialTenantsReady)) {
-    return <PageReadyOverlay context="KINJAI" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={74} />;
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={74} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fadmin%2Ftenants" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;
@@ -963,7 +986,7 @@ export function AdminTenantsPage() {
     <>
       <header className="app-header super-admin-header">
         <div className="super-admin-header-leading">
-          <div className="brand"><span className="brand-mark">KJ</span><span>{t("admin_tenants.header.title")}</span></div>
+          <div className="brand"><span className="brand-mark">PG</span><span>{t("admin_tenants.header.title")}</span></div>
           <Link className="btn btn-sm super-admin-header-back" to="/platform"><i className="bi bi-arrow-left" aria-hidden="true"></i><span>{t("admin_tenants.header.back")}</span></Link>
         </div>
         <div className="app-header-actions" data-header-actions>
@@ -1098,6 +1121,7 @@ export function AdminTenantsPage() {
                       onShare={openShare}
                       onUnlock={unlockShare}
                       onLalamoveApproval={toggleLalamoveApproval}
+                      lalamoveApprovalBusy={lalamoveApprovalBusy === tenant.id}
                       onWallet={openWallet}
                       onDelete={removeTenant}
                       onSubscriptionAction={updateSubscription}

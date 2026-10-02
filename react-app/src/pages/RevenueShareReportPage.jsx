@@ -101,6 +101,11 @@ export function RevenueShareReportPage() {
       year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
     }).format(parsed);
   };
+  const displayHistoryPeriodLabel = value => {
+    const raw = String(value || "").trim();
+    const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return match ? `${match[3]}/${match[2]}/${match[1]}` : (raw || "-");
+  };
   const periodLabel = period === "daily" ? displayDate(date)
     : period === "monthly" ? displayMonth(month)
       : period === "yearly" ? String(year)
@@ -388,7 +393,7 @@ export function RevenueShareReportPage() {
     : t("revenue_share_report.explanation.disabled");
 
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="KINJAI" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={90} />;
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={90} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Freports%2Frevenue-share" replace />;
   if (!["owner", "admin"].includes(profile.role)) return <Navigate to="/" replace />;
@@ -398,7 +403,7 @@ export function RevenueShareReportPage() {
     <>
       <header className="app-header">
         <div className="revenue-share-header-leading">
-          <div className="brand"><span className="brand-mark">KJ</span><span>{t("revenue_share_report.header.title")}</span></div>
+          <div className="brand"><span className="brand-mark">PG</span><span>{t("revenue_share_report.header.title")}</span></div>
           <Link className="btn btn-sm revenue-share-header-back" to="/"><i className="bi bi-arrow-left" aria-hidden="true"></i><span>{t("revenue_share_report.header.back")}</span></Link>
         </div>
         <div className="app-header-actions" data-header-actions>
@@ -574,7 +579,7 @@ export function RevenueShareReportPage() {
                 return (
                   <article className="report-history-item" key={item.id}>
                     <div className="report-history-main">
-                      <strong>{item.period?.label || "-"}</strong>
+                      <strong>{displayHistoryPeriodLabel(item.period?.label)}</strong>
                       <small>{t("revenue_share_report.payment.submitted_at", { date: displayDateTime(item.submittedAt) })}</small>
                     </div>
                     <div className="report-history-value">

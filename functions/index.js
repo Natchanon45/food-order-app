@@ -271,6 +271,7 @@ const lalamoveWebhook = require("./lalamove-webhook");
 exports.lalamoveWebhook = lalamoveWebhook.lalamoveWebhook;
 
 const lalamoveDispatch = require("./lalamove-dispatch");
+exports.quotePublicLalamoveDelivery = lalamoveDispatch.quotePublicLalamoveDelivery;
 exports.quoteTenantLalamoveDispatch = lalamoveDispatch.quoteTenantLalamoveDispatch;
 exports.placeTenantLalamoveDispatch = lalamoveDispatch.placeTenantLalamoveDispatch;
 exports.refreshTenantLalamoveDispatch = lalamoveDispatch.refreshTenantLalamoveDispatch;

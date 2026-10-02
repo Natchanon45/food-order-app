@@ -66,7 +66,7 @@ if (!ids.length) {
     const verifyUrl = `${location.origin}/verify/?${verifyParams.toString()}`;
 
     document.querySelector("#shopName").textContent =
-      settings.shopName || "KINJAI";
+      settings.shopName || "PENGUIN";
     document.querySelector("#shopAddress").textContent =
       settings.shopAddress || "";
     document.querySelector("#shopPhone").textContent = settings.shopPhone

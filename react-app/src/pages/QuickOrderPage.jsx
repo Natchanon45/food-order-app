@@ -743,7 +743,7 @@ export function QuickOrderPage() {
     <>
       <header className="app-header">
         <div className="quick-header-left">
-          <div className="brand"><span className="brand-mark">KJ</span>{t("quick_order.header.title")}</div>
+          <div className="brand"><span className="brand-mark">PG</span>{t("quick_order.header.title")}</div>
           <Link className="btn quick-header-back" to="/cashier"><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{t("quick_order.actions.back_cashier")}</span></Link>
         </div>
         <div className="app-header-actions" data-header-actions>
@@ -827,8 +827,10 @@ export function QuickOrderPage() {
                         style={{ objectPosition: `${imageX}% ${imageY}%` }}
                       />
                       <span className="quick-menu-info-overlay" aria-hidden="true">
-                        <strong className="quick-menu-name">{menu.name || ""}</strong>
-                        <small className="quick-menu-category">{categoryKey(menu.category)}</small>
+                        <span className="quick-menu-copy">
+                          <strong className="quick-menu-name">{menu.name || ""}</strong>
+                          <small className="quick-menu-category">{categoryKey(menu.category)}</small>
+                        </span>
                         <span className="quick-menu-price-badge">{money(menu.price || 0)}</span>
                       </span>
                     </button>
@@ -977,8 +979,8 @@ export function QuickOrderPage() {
             </section>
           </div>
           <div className="quick-cash-dialog-actions">
-            <button className="btn" id="quickCashCancel" type="button" onClick={() => setCashOpen(false)}>{t("quick_order.payment.cancel")}</button>
-            <button className="btn btn-primary" id="quickCashConfirm" type="button" disabled={busy || !cashState.sufficient} onClick={() => submitOrder({ cashConfirmed: true })}>{busy ? t("quick_order.actions.submitting") : t("quick_order.payment.confirm_cash")}</button>
+            <button className="btn" id="quickCashCancel" type="button" onClick={() => setCashOpen(false)}><i className="bi bi-x-circle app-icon" aria-hidden="true"></i><span>{t("quick_order.payment.cancel")}</span></button>
+            <button className="btn btn-primary" id="quickCashConfirm" type="button" disabled={busy || !cashState.sufficient} onClick={() => submitOrder({ cashConfirmed: true })}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{busy ? t("quick_order.actions.submitting") : t("quick_order.payment.confirm_cash")}</span></button>
           </div>
         </div>
       </dialog>

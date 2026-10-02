@@ -27,14 +27,16 @@ function hidePopover(element) {
   } catch {}
 }
 
-function topModalHost() {
+function topNativeModalHost() {
   try {
     const modalDialogs = [...document.querySelectorAll("dialog:modal")];
     if (modalDialogs.length) return modalDialogs.at(-1);
   } catch {}
 
+  // Older Chromium builds may not support :modal reliably. An open native
+  // dialog is the conservative fallback; ordinary pages return null.
   const openDialogs = [...document.querySelectorAll("dialog[open]")];
-  return openDialogs.at(-1) || document.body;
+  return openDialogs.at(-1) || null;
 }
 
 function ensureManualPopover(element, host) {
@@ -49,9 +51,34 @@ function ensureManualPopover(element, host) {
 }
 
 function repromote(element) {
-  hidePopover(element);
-  const host = topModalHost();
+  const host = topNativeModalHost();
+
+  // Only overlays that originate as direct children of <body> are portable.
+  // React-owned overlays live under #root (or another component host); moving
+  // those nodes manually would break React ownership and can leave a full-
+  // screen orphan backdrop intercepting every click after unmount.
+  if (element.parentElement === document.body) element.dataset.uiLayerPortable = "true";
+  const portable = element.dataset.uiLayerPortable === "true";
+
+  // Ordinary Cashier/Kitchen pages need only the z-index policy. Never
+  // reparent React-owned nodes and never enter Chromium's Popover Top Layer.
+  if (!host) {
+    hidePopover(element);
+    if (element.hasAttribute("popover")) element.removeAttribute("popover");
+    if (portable && element.parentElement !== document.body) document.body.appendChild(element);
+    return;
+  }
+
+  // A nested React-owned overlay is intentionally left where React rendered
+  // it. Body-originating imperative overlays may be moved into a native modal
+  // so they can remain above showModal()'s browser Top Layer.
+  if (!portable) return;
+
+  const hostChanged = element.parentElement !== host;
+  if (hostChanged && isPopoverOpen(element)) hidePopover(element);
   if (!ensureManualPopover(element, host)) return;
+  if (isPopoverOpen(element)) return;
+
   try {
     element.showPopover();
   } catch {
@@ -135,11 +162,8 @@ new MutationObserver(mutations => {
   attributeFilter: ["class", "hidden", "open"],
 });
 
-document.addEventListener("toggle", event => {
-  const target = event.target;
-  if (target instanceof HTMLElement && (target.matches(TOAST_SELECTOR) || target.matches(SWEET_SELECTOR))) {
-    scheduleEnforce();
-  }
-}, true);
-
+// Class/open mutations and added nodes already cover every application-owned
+// layer transition. Do not listen to the Popover "toggle" event here: that
+// event is emitted by showPopover()/hidePopover() themselves and can create a
+// self-scheduling browser Top Layer feedback loop.
 window.__enforceUiLayerOrder = enforceLayerOrder;

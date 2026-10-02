@@ -417,7 +417,7 @@ body.sales-report-workspace .receipt-table-scroll {
 
 body.sales-report-workspace .receipt-table-scroll > .receipt-table {
   display: table !important;
-  width: max-content !important;
+  width: 100% !important;
   min-width: 980px !important;
   max-width: none !important;
   overflow: visible !important;

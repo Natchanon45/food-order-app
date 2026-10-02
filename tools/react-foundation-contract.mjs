@@ -14,12 +14,37 @@ assert(rewrites[0]?.source==="/react"&&rewrites[0]?.destination==="/react/index.
 assert(rewrites[1]?.source==="/react/**"&&rewrites[1]?.destination==="/react/index.html","/react/** rewrite missing");
 for(const source of ["/cashier/**","/kitchen/**","/pos/**","/admin/**"])assert(rewrites.some(r=>r.source===source),`legacy rewrite lost: ${source}`);
 
+const publicTenantResolver=read("public/assets/js/public-tenant-resolver.js");
+assert(
+  publicTenantResolver.includes('font-family:"Kanit Local"')
+  && publicTenantResolver.includes('url("/assets/fonts/Kanit-Regular.ttf")')
+  && publicTenantResolver.includes('url("/assets/fonts/Kanit-SemiBold.ttf")')
+  && publicTenantResolver.includes('--app-ui-font:"Kanit Local"')
+  && !publicTenantResolver.includes("--system-font")
+  && !publicTenantResolver.includes("system-ui")
+  && publicTenantResolver.includes('class="storefront-state"')
+  && publicTenantResolver.includes('class="storefront-state__store-name"')
+  && publicTenantResolver.includes('doc(customerDb, "tenants", tenantId, "settings", "store")')
+  && publicTenantResolver.includes('storeSnapshot.data()?.shopName')
+  && publicTenantResolver.includes('const shopName = await configuredStoreName(tenant)')
+  && publicTenantResolver.includes('id="storefrontUnavailableBack"')
+  && publicTenantResolver.includes('id="storefrontUnavailableRetry"')
+  && publicTenantResolver.includes('<path d="m15 18-6-6 6-6"></path>')
+  && publicTenantResolver.includes('<path d="M20 4v7h-7"></path>'),
+  "Public unavailable storefront must use Kanit, show the resolved store name, and keep icon actions"
+);
+
 const dict=JSON.parse(read("react-app/src/i18n/parity-translations.json"));
 for(const locale of ["th","en","my","lo","km"]) {
-  assert(dict?.[locale]?.home?.meta?.title==="KINJAI",`home locale missing: ${locale}`);
+  assert(dict?.[locale]?.home?.meta?.title==="PENGUIN",`home locale missing: ${locale}`);
   assert(Boolean(dict?.[locale]?.auth?.login?.staff_title),`login locale missing: ${locale}`);
   assert(Boolean(dict?.[locale]?.auth?.register?.title),`register locale missing: ${locale}`);
 }
+assert(
+  dict?.th?.admin?.delivery_settings?.lalamove_save_account==="บันทึก"
+  &&dict?.en?.admin?.delivery_settings?.lalamove_save_account==="Save",
+  "Admin Lalamove save action must use the compact Laravel-parity label"
+);
 const translationValues=[];
 const collectTranslationValues=value=>{
   if(typeof value==="string"){translationValues.push(value);return;}
@@ -27,7 +52,7 @@ const collectTranslationValues=value=>{
   if(value&&typeof value==="object")Object.values(value).forEach(collectTranslationValues);
 };
 collectTranslationValues(dict);
-assert(!translationValues.some(value=>/(LUKKAJA|PENGUIN|Food Order\/Delivery With QR|Food Order Delivery|FOOD ORDER QR|\bFOD\b|\bPG\b)/.test(value)),"visible legacy branding remains in React translations");
+assert(!translationValues.some(value=>/(LUKKAJA|KINJAI|Food Order\/Delivery With QR|Food Order Delivery|FOOD ORDER QR|\bFOD\b|\bKJ\b)/.test(value)),"visible legacy branding remains in React translations");
 const app=read("react-app/src/app/App.jsx");
 for(const route of ["/","/login","/register"])assert(app.includes(`path="${route}"`),`route missing: ${route}`);
 for(const route of ["/cashier","/cashier/quick-order","/cashier/receipt","/cashier/table-qr","/cashier/waiting-queue"]) {
@@ -102,29 +127,86 @@ const revenueSharePage=read("react-app/src/pages/RevenueShareReportPage.jsx");
 assert(revenueSharePage.includes("revenueShareSuspensionNotice")&&revenueSharePage.includes("revenue_share_report.suspension.missing_payment"),"Revenue-share suspension warning UI missing");
 const revenueShareCss=read("react-app/public/parity/css/revenue-share-report.css");
 assert(revenueShareCss.includes(".report-suspension-notice"),"Revenue-share report parity CSS/suspension banner missing");
+assert(
+  revenueSharePage.includes("const displayHistoryPeriodLabel = value =>")
+  &&revenueSharePage.includes('raw.match(/^(\\d{4})-(\\d{2})-(\\d{2})$/)')
+  &&revenueSharePage.includes('displayHistoryPeriodLabel(item.period?.label)'),
+  "Revenue-share payment history daily labels must display YYYY-MM-DD as DD/MM/YYYY"
+);
+assert(
+  revenueShareCss.includes(".revenue-share-hero .btn{flex:0 0 auto;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px")
+  &&revenueShareCss.includes(".report-submit-slip{min-height:60px;margin-top:23px;padding-inline:18px;display:inline-flex;align-items:center;justify-content:center;gap:8px")
+  &&revenueShareCss.includes(".revenue-share-hero .tenant-button-spinner,.report-submit-slip .tenant-button-spinner{margin-right:4px}"),
+  "Revenue-share loading buttons must keep spinner/text spacing and vertical alignment"
+);
 assert(read("tools/sync-react-parity-assets.py").includes('"revenue-share-report.css"'),"Revenue-share CSS must be included in parity asset sync");
 const reactIndex=read("react-app/index.html");
-assert(reactIndex.includes("<title>KINJAI</title>")&&!reactIndex.includes("<title>PENGUIN</title>")&&!reactIndex.includes("<title>LUKKAJA</title>"),"React entry title must remain KINJAI");
+assert(reactIndex.includes("<title>PENGUIN</title>")&&!reactIndex.includes("<title>KINJAI</title>")&&!reactIndex.includes("<title>LUKKAJA</title>"),"React entry title must remain PENGUIN");
 assert(reactIndex.includes("page-ready-overlay"),"Laravel-parity pre-React loading overlay missing");
 assert(reactIndex.includes('/react/parity/css/app.css'),"global app.css must load on every React route");
+const horizontalScrollRestore=read("public/assets/js/horizontal-scroll-restore.js");
+assert(
+  reactIndex.includes('/assets/js/horizontal-scroll-restore.js?v=20261002-002')
+  &&horizontalScrollRestore.includes("function bindTouchDrag(element)")
+  &&horizontalScrollRestore.includes("element.style.touchAction = 'pan-y'")
+  &&horizontalScrollRestore.includes("element.addEventListener('touchmove'")
+  &&horizontalScrollRestore.includes("{ passive: false }")
+  &&horizontalScrollRestore.includes("bindTouchDrag(element);")
+  &&horizontalScrollRestore.includes("function containsScrollableTarget(node)")
+  &&horizontalScrollRestore.includes("if (!containsScrollableTarget(node)) return;"),
+  "React horizontal-scroll helper must load globally, preserve touch drag support, and ignore unrelated DOM mutations"
+);
 const pageReadyCss=read("react-app/public/parity/css/page-ready-state.css");
 assert(pageReadyCss.includes(".page-ready-spinner {")&&pageReadyCss.includes("display: block;")&&pageReadyCss.includes("box-sizing: border-box;"),"Page-ready spinner must keep a real 44x44 block box");
 assert(pageReadyCss.includes(".page-ready-simple {")&&pageReadyCss.includes("justify-items: center;")&&pageReadyCss.includes("text-align: center;"),"React simple page-ready loader must remain centered");
 const globalAppCss=read("react-app/public/parity/css/app.css");
 assert(globalAppCss.includes(".brand-mark::after"),"global brand-mark pseudo element missing");
-assert(globalAppCss.includes('content: "KJ"'),"global compact brand fallback must be KJ");
+assert(globalAppCss.includes('content: "PG"'),"global compact brand fallback must be PG");
 assert(globalAppCss.includes("align-items: center !important;")&&globalAppCss.includes("justify-content: center !important;"),"global FOD vertical centering contract missing");
 const brandingRuntime=read("react-app/src/components/PlatformBrandingRuntime.jsx");
 assert(brandingRuntime.includes(".brand-mark.platform-brand-image-target::after{content:none!important"),"branding image override must suppress fallback pseudo label");
+assert(
+  brandingRuntime.includes("const hasBrandTarget = node =>")
+  && brandingRuntime.includes("[...record.addedNodes].some(hasBrandTarget)"),
+  "Platform branding observer must ignore unrelated realtime DOM mutations"
+);
 const i18nProvider=read("react-app/src/i18n/I18nProvider.jsx");
-assert(i18nProvider.includes("normalizeVisibleBranding")&&i18nProvider.includes('.replaceAll("LUKKAJA", "KINJAI")')&&i18nProvider.includes('.replaceAll("PENGUIN", "KINJAI")')&&i18nProvider.includes('.replace(/\\bFOD\\b/g, "KJ")')&&i18nProvider.includes('.replace(/\\bPG\\b/g, "KJ")'),"React runtime branding normalization missing");
+assert(i18nProvider.includes("normalizeVisibleBranding")&&i18nProvider.includes('.replaceAll("LUKKAJA", "PENGUIN")')&&i18nProvider.includes('.replaceAll("KINJAI", "PENGUIN")')&&i18nProvider.includes('.replace(/\\bFOD\\b/g, "PG")')&&!i18nProvider.includes('.replaceAll("PENGUIN", "KINJAI")')&&!i18nProvider.includes('.replace(/\\bPG\\b/g, "KJ")'),"React runtime branding normalization missing");
 const adminWorkspaceCss=read("react-app/public/parity/css/admin-workspace.css");
 assert(adminWorkspaceCss.includes(".admin-card-toggle .app-icon::before"),"admin collapse icon centering rule missing");
 assert(adminWorkspaceCss.includes("display: inline-flex !important;")&&adminWorkspaceCss.includes("justify-content: center !important;"),"admin collapse icon must stay centered");
 const toastCss=read("react-app/public/parity/css/toast-system.css");
 assert(toastCss.includes(".app-toast > .app-toast-message:first-child"),"iconless toast full-width fallback missing");
 const waitingQueuePage=read("react-app/src/pages/WaitingQueuePage.jsx");
+const waitingQueueCss=read("react-app/public/parity/css/waiting-queue.css");
 assert(waitingQueuePage.includes("app-toast-icon")&&waitingQueuePage.includes("app-toast-message"),"Waiting Queue toast must use standard icon + message structure");
+assert(
+  waitingQueuePage.includes('className="waiting-header-leading"')
+  &&waitingQueuePage.includes('<span>{wq("header.back")}</span>')
+  &&waitingQueuePage.indexOf('className="brand"')<waitingQueuePage.indexOf('className="btn btn-dark btn-sm waiting-home-link"')
+  &&waitingQueuePage.indexOf('className="btn btn-dark btn-sm waiting-home-link"')<waitingQueuePage.indexOf("<LocaleSwitcher />")
+  &&waitingQueueCss.includes(".waiting-header-leading{display:flex;align-items:center;gap:8px")
+  &&waitingQueueCss.includes(".waiting-app-header>.app-locale-switcher{margin-left:auto!important}")
+  &&waitingQueueCss.includes(".waiting-home-link>.app-icon{width:1.15em;height:1.15em")
+  &&waitingQueueCss.includes("place-items:center!important")
+  &&waitingQueueCss.includes("vertical-align:middle!important")
+  &&waitingQueueCss.includes(".waiting-home-link span{display:inline!important}")
+  &&waitingQueueCss.includes(".waiting-header-leading .brand>.app-icon{margin-right:-3px}"),
+  "Waiting Queue header must keep Brand + labeled Back clustered left, locale right, and the Back icon vertically centered"
+);
+assert(
+  waitingQueuePage.includes('<span>{wq("hero.step_receive")}</span><i className="bi bi-chevron-right"></i>')
+  &&waitingQueuePage.includes('<span>{wq("hero.step_call")}</span><i className="bi bi-chevron-right"></i>')
+  &&waitingQueuePage.includes('<span>{wq("hero.step_table")}</span><i className="bi bi-chevron-right"></i>')
+  &&waitingQueueCss.includes("body.waiting-queue-workspace .waiting-page-heading {")
+  &&waitingQueueCss.includes("text-align: left;")
+  &&waitingQueueCss.includes("body[data-module=\"waiting-queue\"] .waiting-flow {")
+  &&waitingQueueCss.includes("flex-wrap: nowrap;")
+  &&waitingQueueCss.includes("justify-content: flex-start;")
+  &&waitingQueueCss.includes("body[data-module=\"waiting-queue\"] .waiting-flow i {")
+  &&waitingQueueCss.includes("display: inline-grid;"),
+  "Waiting Queue mobile Hero must align left and keep all four flow badges separated by visible chevrons"
+);
 assert(waitingQueuePage.includes("waiting-queue-number-wrap")&&waitingQueuePage.includes("waiting-table-match"),"Waiting Queue staff card markup must match Laravel structure");
 assert(waitingQueuePage.includes("addDialogRef")&&waitingQueuePage.includes("dialog.showModal()")&&!waitingQueuePage.includes('open={addOpen}'),"Waiting Queue dialogs must use native showModal top layer like Laravel");
 assert(waitingQueuePage.includes('wq("seat.open")')&&!waitingQueuePage.includes('wq("actions.seat")'),"Waiting Queue seat action must use the Laravel seat.open translation");
@@ -140,15 +222,52 @@ assert(waitingQueueI18n.includes("nested(masterSelected, rawKey)"),"Waiting Queu
 const validationUi=read("react-app/src/components/FormValidationUi.jsx");
 assert(validationUi.includes("form.noValidate = true")&&validationUi.includes("bootstrap-invalid-feedback"),"Global Laravel-style React form validation layer missing");
 assert(validationUi.includes('"#registerForm"')&&validationUi.includes("shared.validation.required"),"React validation exclusions/translations must match Laravel");
+assert(
+  validationUi.includes("function containsValidationTarget(node)")
+  && validationUi.includes("if (containsValidationTarget(node)) scan(node);"),
+  "Global form validation observer must ignore unrelated realtime DOM mutations"
+);
 const adminPage=read("react-app/src/pages/AdminPage.jsx");
+assert(
+  adminPage.includes('const centralLalamoveMode = lalamoveForm.accountMode === "fod_central"')
+  &&adminPage.includes('String(lalamove.platformApiKeyMasked || "")')
+  &&adminPage.includes('String(lalamove.platformApiSecretMasked || "")')
+  &&adminPage.includes('platform.slip_verification.receiver_account_types.${code}')
+  &&adminPage.includes('{walletDestinationTypeLabel}')
+  &&dict?.th?.platform?.slip_verification?.receiver_account_types?.["01014"]==="ธนาคารไทยพาณิชย์ (SCB)",
+  "Admin central Lalamove masks and wallet destination bank-name parity are missing"
+);
+assert(
+  adminPage.includes('id="lalamoveAccountCard"')
+  &&adminPage.includes('id="lalamoveFodWalletTopupPanel"')
+  &&adminPage.includes('className="admin-lalamove-wallet-topup-destination"')
+  &&adminPage.includes('id="lalamoveFodWalletTopupAmount"')
+  &&adminPage.includes('id="lalamoveFodWalletSlipPicker"')
+  &&adminPage.includes('id="lalamoveFodWalletTopupSubmit"')
+  &&adminPage.includes('className="admin-lalamove-wallet-credit-policy"')
+  &&adminPage.includes('const walletTopupReady = Boolean(!walletLoadError && walletTopup.storageReady && walletTopup.allowed && walletDestination.configured);'),
+  "Admin Lalamove central-wallet UI must retain Laravel top-up structure and readiness semantics"
+);
 const adminMasterVisualCss=read("react-app/public/parity/css/admin-react-master-visual.css");
 assert(adminPage.includes('form={isTable ? "tableForm" : "menuForm"}'),"Admin menu/table modal footer must submit the real form so validation runs");
 assert(adminPage.includes('<form id="menuForm" className="grid" noValidate')&&adminPage.includes('<form id="tableForm" className="grid" noValidate'),"Admin menu/table forms must use shared validation UI instead of native browser bubbles");
+const adminMobileTableCss=read("react-app/public/parity/css/admin-mobile-table.css");
+assert(
+  adminPage.includes('className="admin-table-scroll admin-table-list-scroll" data-horizontal-scroll="true"')
+  &&adminMobileTableCss.includes("body.admin-vr-page .admin-table-scroll")
+  &&adminMobileTableCss.includes("overflow-x: auto !important;")
+  &&adminMobileTableCss.includes("body.admin-vr-page .admin-table-list-scroll .table-list")
+  &&adminMobileTableCss.includes("min-width: 600px !important;"),
+  "Admin table list must keep a horizontally scrollable mobile viewport"
+);
 assert(
   adminPage.includes('className="admin-sales-report-spotlight"')
   &&adminPage.includes('className="admin-sales-report-spotlight__icon"')
   &&adminPage.includes('className="admin-sales-report-spotlight__content"')
   &&adminPage.includes('className="admin-sales-report-spotlight__action"')
+  &&adminPage.includes('bi bi-eye')
+  &&!adminPage.includes('bi bi-arrow-right-short admin-sales-report-spotlight__arrow')
+  &&!adminMasterVisualCss.includes(".admin-sales-report-spotlight__arrow")
   &&!adminPage.includes('className="card admin-vr-card" style={{ marginBottom: 16 }} data-admin-card-role="sales-report"')
   &&adminMasterVisualCss.includes(".admin-sales-report-spotlight")
   &&adminMasterVisualCss.includes("grid-template-columns: 50px minmax(0, 1fr) auto;")
@@ -166,7 +285,7 @@ for(const key of ["kitchen","cashier","admin","admin_users","pos","pos_catalog"]
 assert(homeDashboardCss.includes('--dash-icon-fg: #c2410c; --dash-icon-bg: #ffedd5;')&&homeDashboardCss.includes('--dash-icon-fg: #1d4ed8; --dash-icon-bg: #dbeafe;')&&homeDashboardCss.includes('--dash-icon-fg: #7c3aed; --dash-icon-bg: #ede9fe;'),"Home dashboard Kitchen/Cashier/Staff icon palettes must remain distinct");
 assert(!homeDashboardCss.includes('.nav-card[href="/kitchen"]'),"Home dashboard colors must not depend on Laravel-only href routes");
 assert(homePage.includes("const stylesReady = useParityPage")&&homePage.includes("|| !stylesReady"),"React Home must keep PageReadyOverlay active until Home-specific parity CSS is loaded");
-assert(homePage.includes('<span className="brand-mark">KJ</span>')&&homePage.includes('<span className="brand-label">{staff ? "KINJAI" : "KINJAI"}</span>'),"React Home visible brand must be KINJAI / KJ");
+assert(homePage.includes('<span className="brand-mark">PG</span>')&&homePage.includes('<span className="brand-label">{staff ? "PENGUIN" : "PENGUIN"}</span>'),"React Home visible brand must be PENGUIN / PG");
 assert(
   homePage.includes('className="dashboard-section dashboard-section-order-delivery"')
   &&!homePage.includes('cardKey="waiting_queue"')
@@ -274,6 +393,17 @@ assert(
 );
 assert(functionsIndex.includes('exports.lalamoveWebhook = lalamoveWebhook.lalamoveWebhook'),"Lalamove Hosting webhook must stay exported from Functions index");
 assert(
+  functionsIndex.includes("exports.quotePublicLalamoveDelivery = lalamoveDispatch.quotePublicLalamoveDelivery")
+  &&publicStorefrontService.includes('httpsCallable(customerFunctions, "quotePublicLalamoveDelivery")')
+  &&publicStorefrontService.includes("getLalamoveQuotation")
+  &&staticDeliveryRuntime.includes("function usesLalamove()")
+  &&staticDeliveryRuntime.includes("dataService.getLalamoveQuotation")
+  &&staticDeliveryRuntime.includes('deliveryProvider: usesLalamove() ? "lalamove" : "self"')
+  &&staticDeliveryRuntime.includes('"lalamove_quotation"')
+  &&staticDeliveryRuntime.includes("lalamoveDispatchQuote"),
+  "Public Delivery must use a live Lalamove quotation when the tenant selects Lalamove"
+);
+assert(
   staticDeliveryEntry.includes('class="card delivery-account-card"')
   &&staticDeliveryEntry.includes('id="customerLogoutButton"')
   &&staticDeliveryEntry.includes('bi bi-box-arrow-right app-icon')
@@ -317,10 +447,17 @@ assert(
   &&storageRules.includes("return authenticated() && !customerContext();")
   &&staticDeliveryStaffGuard.includes("intentionally isolated from staff auth")
   &&!staticDeliveryStaffGuard.includes("googleLoginButton.hidden = true")
+  &&staticDeliveryEntry.includes('class="delivery-account-user-row"')
+  &&staticDeliveryAddressesCss.includes(".delivery-account-user-row {")
+  &&staticDeliveryAddressesCss.includes("align-items: center;")
+  &&staticDeliveryAddressesCss.includes("justify-content: space-between;")
+  &&staticDeliveryAddressesCss.includes("#customerAccount:not([hidden])")
   &&staticDeliveryAddressesCss.includes("#customerLogoutButton")
-  &&staticDeliveryAddressesCss.includes("position: absolute;")
-  &&staticDeliveryAddressesCss.includes("top: 10px;")
-  &&staticDeliveryAddressesCss.includes("right: 10px;")
+  &&staticDeliveryAddressesCss.includes("position: static;")
+  &&staticDeliveryAddressesCss.includes("align-self: center;")
+  &&staticDeliveryAddressesCss.includes("flex: 0 0 30px;")
+  &&!staticDeliveryAddressesCss.includes("top: 10px;")
+  &&!staticDeliveryAddressesCss.includes("right: 10px;")
   &&staticDeliveryAddressesCss.includes("background: transparent !important;")
   &&staticDeliveryAddressesCss.includes("border: 0 !important;"),
   "Delivery customer context must be isolated from staff identity, privileges, data, storage, and Functions"
@@ -341,15 +478,15 @@ assert(
 );
 assert(posPage.includes("initialDataReady")&&posPage.includes("!initialDataReady"),"POS full-page readiness must wait for initial Firebase data");
 assert(
-  adminRetailParity.includes('content: "KJ"')&&!adminRetailParity.includes('content: "PG"')
-  &&adminSalesRetailParity.includes('content: "KJ"')&&!adminSalesRetailParity.includes('content: "PG"')
-  &&pgHeaderPages.every(page=>page.includes('<span className="brand-mark">KJ</span>')&&!page.includes('<span className="brand-mark">FO</span>')),
-  "React operational header fallback marks must stay KJ"
+  adminRetailParity.includes('content: "PG"')&&!adminRetailParity.includes('content: "KJ"')
+  &&adminSalesRetailParity.includes('content: "PG"')&&!adminSalesRetailParity.includes('content: "KJ"')
+  &&pgHeaderPages.every(page=>page.includes('<span className="brand-mark">PG</span>')&&!page.includes('<span className="brand-mark">KJ</span>')&&!page.includes('<span className="brand-mark">FO</span>')),
+  "React operational header fallback marks must stay PG"
 );
 assert(parityStyleHook.includes("REACT_RELEASE.build")&&parityStyleHook.includes("?v="),"React page parity CSS must be cache-busted by the release Build");
 const releaseBuildMatch=releaseConfig.match(/build:\s*"([^"]+)"/);
 assert(
-  releaseConfig.includes('product: "KINJAI"')
+  releaseConfig.includes('product: "PENGUIN"')
   &&releaseConfig.includes('version: "0.4.280"')
   &&releaseBuildMatch
   &&/^\d{4}\.\d{2}\.\d{2}\.\d{3}$/.test(releaseBuildMatch[1])
@@ -507,7 +644,34 @@ assert(adminPage.includes("categorySortListRef")&&adminPage.includes("itemSortLi
 assert(adminPage.includes('className={"sort-item" + (selectedSortCategory === name ? " active-category" : "")}')&&adminPage.includes('className="btn"')&&adminPage.includes('onClick={() => setSelectedSortCategory(name)}'),"React Admin category sorting must separate the draggable row from the category-select button like Laravel MASTER");
 assert(!adminPage.includes('type="button"\n                    className={"sort-item"')&&!adminPage.includes('onDragStart={() => setDragItem')&&!adminPage.includes("moveCategoryByDrop")&&!adminPage.includes("moveMenuByDrop"),"React Admin sort manager must not regress to clickable-row or HTML5-only drag/drop");
 
+const platformTenantService=read("react-app/src/data/platformTenantService.js");
+for(const marker of [
+  'hydrateTenantLalamoveState',
+  'getDoc(doc(db, "tenants", tenantId, "settings", "lalamove"))',
+  'getDoc(doc(db, "tenants", tenantId, "settings", "lalamoveWallet"))',
+  'fodCentralApproved: lalamove?.fodCentralApproved === true',
+  'return Promise.all(tenants.map(hydrateTenantLalamoveState))'
+]) assert(platformTenantService.includes(marker),"tenant Lalamove hydration contract missing: "+marker);
+
 const adminTenantsPage=read("react-app/src/pages/AdminTenantsPage.jsx");
+assert(
+  adminTenantsPage.includes('tenant.lalamove?.accountMode === "fod_central"')
+  &&adminTenantsPage.includes('data-lalamove-approval={tenant.id}')
+  &&adminTenantsPage.includes('setLalamoveApprovalBusy(tenant.id)')
+  &&adminTenantsPage.includes('const result = await updateTenantLalamoveApproval({ tenantId: tenant.id, approved: nextApproved })')
+  &&adminTenantsPage.includes('setTenants(current => current.map(item => item.id === tenant.id ? {')
+  &&adminTenantsPage.includes('lalamoveApprovalBusy={lalamoveApprovalBusy === tenant.id}'),
+  "Super Admin tenant page must expose a non-blocking central Lalamove approval action only for fod_central tenants"
+);
+const lalamoveApprovalHandler=adminTenantsPage.slice(
+  adminTenantsPage.indexOf("const toggleLalamoveApproval = async tenant =>"),
+  adminTenantsPage.indexOf("const refreshWallet = async tenant =>")
+);
+assert(
+  !lalamoveApprovalHandler.includes("await loadTenantList()")
+  &&lalamoveApprovalHandler.includes('setLalamoveApprovalBusy("")'),
+  "Lalamove approval must update the target tenant locally without blocking on a full tenant-list reload"
+);
 assert(adminTenantsPage.includes("initialTenantsReady")&&adminTenantsPage.includes('profile?.role === "super_admin" && !initialTenantsReady'),"Admin Tenants full-page readiness must wait for the initial tenant list");
 const initialTenantEffect=adminTenantsPage.slice(adminTenantsPage.indexOf("// Critical page data starts immediately"),adminTenantsPage.indexOf("useEffect(() => {",adminTenantsPage.indexOf("// Critical page data starts immediately")+1));
 assert(initialTenantEffect.indexOf("loadTenantList();")>=0&&initialTenantEffect.indexOf("loadTenantList();")<initialTenantEffect.indexOf("backfillTenantSubscriptions"),"Admin Tenants must start tenant loading before subscription backfill");
@@ -555,7 +719,7 @@ assert(
   &&!salesReportModernCss.includes("touch-action: pan-y;")
   &&salesReportModernCss.includes("body.sales-report-workspace .receipt-table-scroll > .receipt-table")
   &&salesReportModernCss.includes("display: table !important;")
-  &&salesReportModernCss.includes("width: max-content !important;")
+  &&salesReportModernCss.includes("width: 100% !important;")
   &&salesReportModernCss.includes("min-width: 980px !important;")
   &&salesReportModernCss.includes("max-width: none !important;")
   &&salesReportModernCss.includes("overflow: visible !important;"),
@@ -580,7 +744,13 @@ assert(userMenu.includes("data-user-menu-key={item.key}"),"React UserMenu must e
 assert(!sharedIconsCss.includes('.user-menu-link[href="/admin/users"]'),"User menu icon colors must not depend on Laravel-only href routes");
 assert(userMenu.includes('import { createPortal } from "react-dom";')&&userMenu.includes("return createPortal(")&&userMenu.includes("document.body,"),"Owner password dialog must portal to document.body so fixed positioning uses the viewport, not the sticky/backdrop-filter header");
 assert(userMenu.includes('className="owner-password-backdrop" data-ui-layer="modal"'),"Owner password dialog must participate in the shared modal layer policy");
-assert(sharedIconsCss.includes(".owner-password-backdrop {")&&sharedIconsCss.includes(".owner-password-dialog {")&&sharedIconsCss.includes("z-index: var(--ui-layer-modal-z, 2147483000);"),"Owner password dialog shared CSS missing from parity icons.css");
+assert(sharedIconsCss.includes(".owner-password-backdrop {")&&sharedIconsCss.includes(".owner-password-dialog {")&&sharedIconsCss.includes("margin: 0;")&&sharedIconsCss.includes("z-index: var(--ui-layer-modal-z, 2147483000);"),"Owner password dialog shared CSS missing from parity icons.css");
+assert(
+  sharedIconsCss.includes("@media (max-width: 600px) {")
+  &&sharedIconsCss.includes(".owner-password-backdrop { align-items: center; justify-items: center; padding: 10px; }")
+  &&!sharedIconsCss.includes(".owner-password-backdrop { align-items: end; padding: 10px; }"),
+  "Owner password modal must stay vertically centered on mobile"
+);
 const layerCss=read("react-app/public/parity/css/ui-layer-stack.css");
 assert(layerCss.includes(".owner-password-backdrop,")&&layerCss.includes("--ui-layer-modal-z: 2147483000;")&&layerCss.includes("--ui-layer-dialog-z: 2147483600;")&&layerCss.includes("--ui-layer-toast-z: 2147483647;"),"Owner password modal must remain below SweetAlert and Toast layers");
 assert(cashierPage.includes("bi bi-printer app-icon")&&cashierPage.includes("bi bi-x-circle app-icon"),"Cashier order action icons must use Laravel MASTER app-icon markup");

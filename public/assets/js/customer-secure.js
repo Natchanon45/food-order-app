@@ -1,4 +1,4 @@
-await import("./public-tenant-resolver.js?v=20261002-006");
+await import("./public-tenant-resolver.js?v=20261003-010");
 await import("./table-qr-resolver.js?v=20260903-231");
 
 import { publicStorefrontService as dataService } from "./public-storefront-service.js?v=20261002-007";

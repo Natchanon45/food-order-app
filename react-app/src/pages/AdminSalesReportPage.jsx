@@ -362,7 +362,7 @@ export function AdminSalesReportPage() {
   };
 
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="KINJAI" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={86} />;
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={86} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fadmin%2Fsales-report" replace />;
   if (!["owner", "admin"].includes(profile.role)) return <Navigate to="/" replace />;
@@ -372,7 +372,7 @@ export function AdminSalesReportPage() {
     <>
       <header className="app-header super-admin-header">
         <div className="super-admin-header-leading sales-report-header-leading">
-          <div className="brand sales-report-header-brand"><span className="brand-mark">KJ</span><i className="bi bi-bar-chart-line app-icon" aria-hidden="true"></i><span>{t("sales_report.header.title")}</span></div>
+          <div className="brand sales-report-header-brand"><span className="brand-mark">PG</span><i className="bi bi-bar-chart-line app-icon" aria-hidden="true"></i><span>{t("sales_report.header.title")}</span></div>
           <Link className="btn btn-dark btn-sm sales-back-link super-admin-header-back" to="/admin"><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{t("sales_report.header.back")}</span></Link>
         </div>
         <div className="app-header-actions" data-header-actions>

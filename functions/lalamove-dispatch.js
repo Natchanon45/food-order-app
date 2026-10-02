@@ -1,6 +1,10 @@
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { createHmac, randomUUID } = require("crypto");
+const {
+  lalamoveCompletionPatch,
+  lalamoveCompletionNeedsRepair,
+} = require("./lalamove-order-lifecycle");
 
 const REGION = "asia-southeast1";
 const FINISHED = new Set(["COMPLETED", "CANCELED", "CANCELLED", "REJECTED", "EXPIRED"]);
@@ -279,6 +283,59 @@ async function freshQuotation(context) {
   ));
 }
 
+async function publicStorefrontLalamoveContext(slugValue) {
+  const slug = String(slugValue || "").trim().toLowerCase();
+  if (!slug) throw new HttpsError("invalid-argument", "STOREFRONT_SLUG_REQUIRED");
+  const db = getFirestore();
+  const slugSnap = await db.collection("tenantSlugs").doc(slug).get();
+  if (!slugSnap.exists || slugSnap.data()?.active === false) {
+    throw new HttpsError("not-found", "STOREFRONT_NOT_FOUND");
+  }
+  const tenantId = String(slugSnap.data()?.tenantId || "").trim();
+  if (!tenantId) throw new HttpsError("not-found", "TENANT_NOT_FOUND");
+  const tenantRef = db.collection("tenants").doc(tenantId);
+  const settingsSnap = await tenantRef.collection("settings").doc("store").get();
+  const settings = settingsSnap.data() || {};
+  if (String(settings.deliveryProvider || "self").toLowerCase() !== "lalamove") {
+    throw new HttpsError("failed-precondition", "LALAMOVE_NOT_ENABLED_FOR_TENANT");
+  }
+  const account = await accountFor(tenantRef);
+  if (!account.ready) {
+    throw new HttpsError("failed-precondition", "LALAMOVE_ACCOUNT_NOT_READY");
+  }
+  return { tenantId, tenantRef, settings, account };
+}
+
+async function publicLalamoveQuotation(request) {
+  const context = await publicStorefrontLalamoveContext(request.data?.slug);
+  const latitude = coordinate(request.data?.latitude, -90, 90);
+  const longitude = coordinate(request.data?.longitude, -180, 180);
+  if (latitude === null || longitude === null) {
+    throw new HttpsError("invalid-argument", "LALAMOVE_DELIVERY_LOCATION_REQUIRED");
+  }
+  const paymentMethod = String(request.data?.paymentMethod || "").trim().toLowerCase();
+  if (paymentMethod && !["promptpay", "cod"].includes(paymentMethod)) {
+    throw new HttpsError("invalid-argument", "LALAMOVE_PAYMENT_METHOD_INVALID");
+  }
+  const address = String(request.data?.address || "").trim().slice(0, 500);
+  const quote = await freshQuotation({
+    ...context,
+    order: {
+      deliveryLatitude: latitude,
+      deliveryLongitude: longitude,
+      deliveryAddress: address,
+      paymentMethod,
+    },
+  });
+  return {
+    item: {
+      ...quote,
+      accountMode: String(context.account.mode || "disabled"),
+      accountEnvironment: String(context.account.credentials?.environment || "sandbox"),
+    },
+  };
+}
+
 async function usableQuotation(context) {
   const stored = context.order.lalamoveDispatchQuote && typeof context.order.lalamoveDispatchQuote === "object"
     ? context.order.lalamoveDispatchQuote : {};
@@ -518,6 +575,16 @@ async function quoteAction(request) {
   return { item: dispatchState({ ...order, ...patch }) };
 }
 
+exports.quotePublicLalamoveDelivery = onCall({ region: REGION, timeoutSeconds: 30 }, async request => {
+  try {
+    return await publicLalamoveQuotation(request);
+  } catch (error) {
+    if (error instanceof HttpsError) throw error;
+    console.error("PUBLIC_LALAMOVE_QUOTE_FAILED", error);
+    throw new HttpsError("internal", "LALAMOVE_QUOTATION_FAILED");
+  }
+});
+
 exports.quoteTenantLalamoveDispatch = onCall({ region: REGION, timeoutSeconds: 30 }, async request => {
   try {
     return await quoteAction(request);
@@ -651,6 +718,7 @@ exports.placeTenantLalamoveDispatch = onCall({ region: REGION, timeoutSeconds: 4
   }
 
   const nowIso = new Date().toISOString();
+  const completion = lalamoveCompletionPatch(order, placed.status, nowIso);
   const patch = {
     ...accountPatch(context.profile.tenantId, context.account),
     ...quotePatch(order, quote),
@@ -662,6 +730,7 @@ exports.placeTenantLalamoveDispatch = onCall({ region: REGION, timeoutSeconds: 4
     lalamoveDispatchApprovedFee: difference > 0.009 ? Number(quote.fee || 0) : null,
     lalamoveOrderLastSyncedAt: nowIso,
     ...(Number.isFinite(Number(placed.fee)) ? { lalamoveDispatchFee: Number(placed.fee) } : {}),
+    ...completion,
     ...(walletDebit ? {
       lalamoveWalletDebitTransactionId: walletDebit.id,
       lalamoveWalletDebitedAmount: walletDebit.amount,
@@ -690,6 +759,20 @@ exports.refreshTenantLalamoveDispatch = onCall({ region: REGION, timeoutSeconds:
   const context = await loadContext(request, { requireReady: false });
   const orderId = String(context.order.lalamoveOrderId || "").trim();
   if (!orderId) return { item: dispatchState(context.order) };
+
+  // Repair stale terminal data from the already persisted provider status before
+  // requiring live credentials or making another Lalamove API request.
+  if (lalamoveCompletionNeedsRepair(context.order)) {
+    const repairedAt = new Date().toISOString();
+    const repair = lalamoveCompletionPatch(
+      context.order,
+      context.order.lalamoveOrderStatus,
+      repairedAt,
+    );
+    await context.orderRef.set({ ...repair, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+    return { item: dispatchState({ ...context.order, ...repair }), cached: true, repaired: true };
+  }
+
   if (!context.account.ready) throw new HttpsError("failed-precondition", "LALAMOVE_ACCOUNT_NOT_READY");
 
   const lastSync = new Date(String(context.order.lalamoveOrderLastSyncedAt || "")).getTime();
@@ -704,12 +787,14 @@ exports.refreshTenantLalamoveDispatch = onCall({ region: REGION, timeoutSeconds:
   if (!provider.ok) throw providerError("LALAMOVE_ORDER_STATUS_FAILED", provider);
   const current = orderFromResponse(provider);
   const nowIso = new Date().toISOString();
+  const completion = lalamoveCompletionPatch(context.order, current.status, nowIso);
   const patch = {
     lalamoveOrderStatus: current.status,
     lalamoveDriverId: current.driverId,
     lalamoveShareLink: current.shareLink,
     lalamoveOrderLastSyncedAt: nowIso,
     ...(Number.isFinite(Number(current.fee)) ? { lalamoveDispatchFee: Number(current.fee) } : {}),
+    ...completion,
     updatedAt: FieldValue.serverTimestamp(),
   };
   await context.orderRef.set(patch, { merge: true });

@@ -33,7 +33,7 @@ function upsertLink(rel, href, id) {
   link.href = href;
 }
 
-function applyBrandImage(selector, imageUrl = "", alt = "KINJAI") {
+function applyBrandImage(selector, imageUrl = "", alt = "PENGUIN") {
   document.querySelectorAll(selector).forEach(target => {
     if (!target.dataset.brandingFallbackHtml) target.dataset.brandingFallbackHtml = target.innerHTML;
     const applied = target.dataset.brandingImageUrl || "";
@@ -63,10 +63,10 @@ export function applyPlatformBranding(branding = {}) {
   const appIconUrl = String(branding.appIconUrl || "").trim();
 
   // Header mark is the application icon. Use the uploaded App Icon first.
-  applyBrandImage(".brand-mark", appIconUrl || logoUrl, "KINJAI");
+  applyBrandImage(".brand-mark", appIconUrl || logoUrl, "PENGUIN");
 
   // Login/large brand areas are logo surfaces. Keep Logo as the primary asset.
-  applyBrandImage(".login-logo", logoUrl || appIconUrl, "KINJAI");
+  applyBrandImage(".login-logo", logoUrl || appIconUrl, "PENGUIN");
 
   const favicon = branding.faviconUrl || appIconUrl || logoUrl || "";
   upsertLink("icon", favicon, "platformDynamicFavicon");
@@ -90,8 +90,18 @@ export function PlatformBrandingRuntime() {
   useEffect(() => {
     let alive = true;
     let branding = {};
-    const observer = new MutationObserver(() => {
-      if (alive) applyPlatformBranding(branding);
+    const hasBrandTarget = node => node instanceof Element && (
+      node.matches?.(".brand-mark, .login-logo")
+      || node.querySelector?.(".brand-mark, .login-logo")
+    );
+    const observer = new MutationObserver(records => {
+      if (!alive) return;
+      for (const record of records) {
+        if ([...record.addedNodes].some(hasBrandTarget)) {
+          applyPlatformBranding(branding);
+          return;
+        }
+      }
     });
     observer.observe(document.body, { childList: true, subtree: true });
 

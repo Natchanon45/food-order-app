@@ -66,6 +66,13 @@ function isLalamoveDelivery(order) {
   return order?.orderType === "delivery" && String(order?.deliveryProvider || "").toLowerCase() === "lalamove";
 }
 function lalamoveStatus(order) { return String(order?.lalamoveOrderStatus || "").toUpperCase(); }
+function lalamoveDeliveryCompleted(order) {
+  return isLalamoveDelivery(order) && lalamoveStatus(order) === "COMPLETED";
+}
+function lalamoveCompletionStale(order) {
+  return lalamoveDeliveryCompleted(order)
+    && !["paid", "completed"].includes(String(order?.status || "").toLowerCase());
+}
 function lalamoveDispatchFinished(order) { return FINISHED_LALAMOVE.has(lalamoveStatus(order)); }
 function lalamoveCanCancel(order) {
   return Boolean(order?.lalamoveOrderId)
@@ -95,7 +102,8 @@ function isWaitingQueuePlaceholder(order) {
 }
 function activeOrders(orders) {
   return orders.filter(order => {
-    if (isWaitingQueuePlaceholder(order) || order.status === "cancelled") return false;
+    if (isWaitingQueuePlaceholder(order) || ["cancelled", "completed"].includes(order.status)) return false;
+    if (lalamoveDeliveryCompleted(order)) return false;
     if (order.status !== "paid") return true;
     return isLalamoveDelivery(order) && !lalamoveDispatchFinished(order);
   });
@@ -418,6 +426,7 @@ export function CashierPage() {
   const [moveGroup, setMoveGroup] = useState(null);
   const [moveTargetId, setMoveTargetId] = useState("");
   const refreshAt = useRef(new Map());
+  const completionRepairRef = useRef(new Set());
   const allowedRole = ["owner", "admin", "manager", "cashier"].includes(profile?.role);
 
   const money = value => formatNumber(Number(value || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -440,6 +449,19 @@ export function CashierPage() {
   const takeawayUrl = tenant?.slug
     ? new URL(`/s/${encodeURIComponent(tenant.slug)}/takeaway/`, location.origin).toString()
     : "";
+
+  useEffect(() => {
+    if (!tenant?.id || !allowedRole) return;
+    normalizedOrders.filter(lalamoveCompletionStale).forEach(order => {
+      const orderId = String(order.id || "");
+      if (!orderId || completionRepairRef.current.has(orderId)) return;
+      completionRepairRef.current.add(orderId);
+      refreshLalamoveDispatch(tenant.id, orderId).catch(error => {
+        console.warn("CASHIER_LALAMOVE_COMPLETION_REPAIR_FAILED", orderId, error);
+        window.setTimeout(() => completionRepairRef.current.delete(orderId), LALAMOVE_STATUS_COOLDOWN_MS);
+      });
+    });
+  }, [tenant?.id, allowedRole, normalizedOrders]);
 
   useEffect(() => {
     if (!tenant?.id || !allowedRole) return undefined;
@@ -910,7 +932,7 @@ export function CashierPage() {
   return (
     <>
       <header className="app-header">
-        <div className="brand"><span className="brand-mark">KJ</span>{t("cashier.header.title")}</div>
+        <div className="brand"><span className="brand-mark">PG</span>{t("cashier.header.title")}</div>
         <div className="app-header-actions" data-header-actions>
           <LocaleSwitcher style={{ marginLeft: 0, marginRight: 0 }} />
           <CashierOrderNotifier orders={orders} onToast={showToast} surface="cashier" />
@@ -930,6 +952,10 @@ export function CashierPage() {
                   <i className="bi bi-lightning-charge app-icon" aria-hidden="true"></i>
                   <span>{translated(t, "quick_order.entry.short_button", t("kitchen.actions.accept"))}</span>
                 </a>
+                <a className="btn cashier-hero-order-btn cashier-hero-queue-btn" href={cashierRoute("/waiting-queue")} aria-label={t("cashier.takeaway_tools.waiting_queue_aria")} title={t("cashier.takeaway_tools.waiting_queue_aria")}>
+                  <i className="bi bi-person-standing app-icon" aria-hidden="true"></i>
+                  <span>{t("cashier.takeaway_tools.waiting_queue")}</span>
+                </a>
               </div>
             </div>
             <p>{t("cashier.hero.description")}</p>
@@ -939,7 +965,6 @@ export function CashierPage() {
         <section className="cashier-action-bar" aria-label={t("cashier.takeaway_tools.aria_label")}>
           <div className="cashier-action-title"><strong>{t("cashier.takeaway_tools.title")}</strong><span>{t("cashier.takeaway_tools.subtitle")}</span></div>
           <div className="cashier-actions">
-            <a className="btn btn-primary" href={cashierRoute("/waiting-queue")} aria-label={t("cashier.takeaway_tools.waiting_queue_aria")} title={t("cashier.takeaway_tools.waiting_queue_aria")}><i className="bi bi-person-standing app-icon"></i><span>{t("cashier.takeaway_tools.waiting_queue")}</span></a>
             <button className="btn btn-primary" type="button" id="showTakeawayQr" aria-label={t("cashier.takeaway_tools.show_qr_aria")} title={t("cashier.takeaway_tools.show_qr_aria")} onClick={() => takeawayUrl ? setTakeawayQrOpen(true) : showToast(translated(t, "cashier.takeaway_tools.store_unavailable", "Store information is unavailable. Refresh the page and try again."), "error")}><i className="bi bi-qr-code app-icon"></i><span>{t("cashier.takeaway_tools.qr_label")}</span></button>
             <a className="btn btn-warning" id="openTakeawayOrder" href={takeawayUrl || undefined} target="_blank" rel="noopener noreferrer" aria-label={t("cashier.takeaway_tools.open_order_aria")} title={t("cashier.takeaway_tools.open_order_aria")}><i className="bi bi-plus-lg app-icon"></i><span>{t("cashier.takeaway_tools.open_order")}</span></a>
             <button className="btn cashier-copy-action" type="button" id="copyTakeawayUrl" aria-label={t("cashier.takeaway_tools.copy_link_aria")} title={t("cashier.takeaway_tools.copy_link_aria")} onClick={copyTakeawayLink}><i className="bi bi-clipboard app-icon"></i><span>{t("cashier.takeaway_tools.copy_link")}</span></button>

@@ -1,6 +1,10 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { createHmac, timingSafeEqual } = require("crypto");
+const {
+  lalamoveCompletionPatch,
+  lalamoveCompletionNeedsRepair,
+} = require("./lalamove-order-lifecycle");
 
 const REGION = "asia-southeast1";
 const PATH = "/api/lalamove/webhook";
@@ -89,6 +93,15 @@ exports.lalamoveWebhook = onRequest({ region: REGION, timeoutSeconds: 20 }, asyn
     const lastTimestamp = Number(current.lalamoveWebhookLastTimestamp || 0);
     const lastEventId = String(current.lalamoveWebhookLastEventId || "");
     if ((eventId && eventId === lastEventId) || (timestamp > 0 && timestamp < lastTimestamp)) {
+      if (lalamoveCompletionNeedsRepair(current)) {
+        const repair = lalamoveCompletionPatch(
+          current,
+          current.lalamoveOrderStatus,
+          nowIso(),
+        );
+        transaction.set(orderRef, { ...repair, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+        return { repaired: true };
+      }
       return { duplicate: true };
     }
 
@@ -115,18 +128,7 @@ exports.lalamoveWebhook = onRequest({ region: REGION, timeoutSeconds: 20 }, asyn
     }
 
     if (status === "COMPLETED") {
-      updates.lalamoveCompletedAt = nowIso();
-      const isCod = String(current.paymentMethod || "").toLowerCase() === "cod"
-        && current.lalamoveCodEnabled === true;
-      if (isCod) {
-        updates.paymentStatus = "paid";
-        updates.paidAt = nowIso();
-        updates.lalamoveCodCollectedAt = nowIso();
-      }
-      if (isCod || String(current.paymentStatus || "").toLowerCase() === "paid") {
-        updates.status = "paid";
-        updates.completedAt = nowIso();
-      }
+      Object.assign(updates, lalamoveCompletionPatch(current, status, nowIso()));
     }
 
     transaction.set(orderRef, updates, { merge: true });
@@ -134,6 +136,7 @@ exports.lalamoveWebhook = onRequest({ region: REGION, timeoutSeconds: 20 }, asyn
   });
 
   if (outcome.duplicate) return json(res, 200, { ok: true, duplicate: true });
+  if (outcome.repaired) return json(res, 200, { ok: true, repaired: true });
   if (outcome.ignored) return json(res, 200, { ok: true, ignored: true });
   return json(res, 200, { ok: true });
 });

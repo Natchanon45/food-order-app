@@ -57,12 +57,12 @@ Customer React production-test checkpoint (2026-09-30 evening):
 - User confirmed Firebase Hosting deploy completed. Current next step is real production testing on desktop + mobile before starting Takeaway React.
 - Takeaway / Delivery / Delivery Success remain outside this Order-only test cutover; Retail POS remains paused.
 
-KINJAI branding checkpoint (2026-10-02):
-- Public-facing brand is now KINJAI; compact fallback mark is KJ. Visible PENGUIN / PG, LUKKAJA, Food Order Delivery, FOOD ORDER QR, and standalone FOD branding must not surface in the UI.
+PENGUIN branding checkpoint (2026-10-02):
+- Public-facing brand is PENGUIN; compact fallback mark is PG. Visible KINJAI, LUKKAJA, Food Order Delivery, FOOD ORDER QR, standalone FOD, and KJ branding must not surface in the UI.
 - Uploaded Platform App Icon is the first-choice header icon globally; Logo remains primary for login/large logo surfaces.
-- Header fallback order: App Icon -> Logo -> KJ. Login/large-brand order: Logo -> App Icon -> KJ. Favicon order: Favicon -> App Icon -> Logo.
+- Header fallback order: App Icon -> Logo -> PG. Login/large-brand order: Logo -> App Icon -> PG. Favicon order: Favicon -> App Icon -> Logo.
 - Internal repo/Firebase/schema/DOM/translation identifiers are intentionally unchanged, including fod_* keys, FOD_WALLET_* error codes, Firebase project identifiers, and the existing penguin-food.web.app Hosting/auth origin.
-- Next release identity: React 0.4.280 / 2026.10.02.335; public storefront 0.16.32 / 2026.10.02.050.
+- Next release identity: React 0.4.280 / 2026.10.03.365; public storefront 0.16.32 / 2026.10.03.080.
 - Primary production Hosting origin remains https://penguin-food.web.app. Legacy https://natchanon-food-order-delivery.web.app remains reachable during transition but is no longer in deploy target foodapp.
 - Delivery customer auth remains privilege-isolated from staff auth: Google popup runs only in broker app penguin-google-customer-broker-v1, callable createDeliveryCustomerSession exchanges it for a namespaced cust_... custom-token session in penguin-storefront-customer-v2, and Firestore/Storage rules explicitly exclude customerContext tokens from all staff-role paths. Staff/Owner/Super Admin remain on [DEFAULT]; Delivery logout affects only customer/broker apps.
 - Pull, test/build, commit generated assets, and deploy Hosting before Production visual verification.

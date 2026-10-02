@@ -21,13 +21,12 @@ const interpolate = (value, replacements = {}) => String(value).replace(/:([A-Za
 const normalizeVisibleBranding = value => {
   if (typeof value === "string") {
     return value
-      .replaceAll("Food Order/Delivery With QR", "KINJAI")
-      .replaceAll("Food Order Delivery", "KINJAI")
-      .replaceAll("FOOD ORDER QR", "KINJAI QR")
-      .replaceAll("LUKKAJA", "KINJAI")
-      .replaceAll("PENGUIN", "KINJAI")
-      .replace(/\bFOD\b/g, "KJ")
-      .replace(/\bPG\b/g, "KJ");
+      .replaceAll("Food Order/Delivery With QR", "PENGUIN")
+      .replaceAll("Food Order Delivery", "PENGUIN")
+      .replaceAll("FOOD ORDER QR", "PENGUIN QR")
+      .replaceAll("LUKKAJA", "PENGUIN")
+      .replaceAll("KINJAI", "PENGUIN")
+      .replace(/\bFOD\b/g, "PG");
   }
   if (Array.isArray(value)) return value.map(normalizeVisibleBranding);
   if (value && typeof value === "object") {

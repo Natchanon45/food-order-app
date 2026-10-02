@@ -96,7 +96,19 @@ export function watchCustomerAuth(callback) {
   });
 }
 
+function withCustomerLoginStage(error, stage) {
+  if (error && typeof error === "object") {
+    if (!error.customerStage) error.customerStage = stage;
+    return error;
+  }
+  return Object.assign(new Error(String(error || "CUSTOMER_LOGIN_FAILED")), {
+    code: String(error || "CUSTOMER_LOGIN_FAILED"),
+    customerStage: stage,
+  });
+}
+
 export async function loginCustomerWithGoogle() {
+  let stage = "google_popup";
   try {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: "select_account" });
@@ -114,6 +126,7 @@ export async function loginCustomerWithGoogle() {
       );
     }
 
+    stage = "customer_session";
     const tenant = resolveTenantContext();
     const createCustomerSession = httpsCallable(
       customerBrokerFunctions,
@@ -121,18 +134,27 @@ export async function loginCustomerWithGoogle() {
     );
     const response = await createCustomerSession({ tenantId: tenant.id });
     const customToken = String(response.data?.customToken || "");
-    if (!customToken) throw new Error("CUSTOMER_SESSION_TOKEN_REQUIRED");
+    if (!customToken) {
+      throw Object.assign(new Error("CUSTOMER_SESSION_TOKEN_REQUIRED"), {
+        code: "CUSTOMER_SESSION_TOKEN_REQUIRED",
+      });
+    }
 
+    stage = "custom_token";
     await signOut(customerBrokerAuth).catch(() => {});
     await signOut(customerAuth).catch(() => {});
     const credential = await signInWithCustomToken(customerAuth, customToken);
+
+    stage = "session_verify";
     if (!(await customerContextSession(credential.user))) {
-      throw new Error("CUSTOMER_SESSION_INVALID");
+      throw Object.assign(new Error("CUSTOMER_SESSION_INVALID"), {
+        code: "CUSTOMER_SESSION_INVALID",
+      });
     }
     return credential;
   } catch (error) {
     await signOut(customerBrokerAuth).catch(() => {});
-    throw error;
+    throw withCustomerLoginStage(error, stage);
   }
 }
 

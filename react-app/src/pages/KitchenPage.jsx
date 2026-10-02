@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
 import { CashierOrderNotifier } from "@/components/CashierOrderNotifier";
@@ -10,6 +10,7 @@ import { sweetConfirm } from "@/components/sweetDialog";
 import {
   cancelOperationalOrder,
   loadOperationalSnapshot,
+  refreshLalamoveDispatch,
   updateOperationalOrder,
   watchOperationalOrders,
 } from "@/data/operationalData";
@@ -68,13 +69,20 @@ function lalamoveStatus(order) { return String(order?.lalamoveOrderStatus || "")
 function isLalamoveDelivery(order) {
   return isDelivery(order) && String(order?.deliveryProvider || "").toLowerCase() === "lalamove";
 }
+function lalamoveDeliveryCompleted(order) {
+  return isLalamoveDelivery(order) && lalamoveStatus(order) === "COMPLETED";
+}
+function lalamoveCompletionStale(order) {
+  return lalamoveDeliveryCompleted(order)
+    && !["paid", "completed"].includes(String(order?.status || "").toLowerCase());
+}
 function lalamoveDispatchActive(order) {
   return isLalamoveDelivery(order)
     && Boolean(order?.lalamoveOrderId)
     && !["PICKED_UP", "COMPLETED", "CANCELED", "CANCELLED", "REJECTED", "EXPIRED"].includes(lalamoveStatus(order));
 }
 function isKitchenLocked(order) {
-  return ["served", "paid", "cancelled"].includes(order?.status) || lalamoveDispatchActive(order);
+  return ["served", "paid", "completed", "cancelled"].includes(order?.status) || lalamoveDispatchActive(order);
 }
 function recalculateOrder(order, items) {
   const subtotalAmount = items.filter(item => !item.cancelled)
@@ -280,6 +288,7 @@ export function KitchenPage() {
   const [menus, setMenus] = useState([]);
   const [editor, setEditor] = useState(null);
   const [editorBusy, setEditorBusy] = useState(false);
+  const completionRepairRef = useRef(new Set());
   const allowedRole = ["owner", "admin", "kitchen"].includes(profile?.role);
 
   const money = value => `${formatNumber(Number(value || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${t("kitchen.units.currency")}`;
@@ -318,8 +327,21 @@ export function KitchenPage() {
     return () => { alive = false; stop?.(); };
   }, [tenant?.id, allowedRole, t]);
 
+  useEffect(() => {
+    if (!tenant?.id || !allowedRole) return;
+    orders.filter(lalamoveCompletionStale).forEach(order => {
+      const orderId = String(order.id || "");
+      if (!orderId || completionRepairRef.current.has(orderId)) return;
+      completionRepairRef.current.add(orderId);
+      refreshLalamoveDispatch(tenant.id, orderId).catch(error => {
+        console.warn("KITCHEN_LALAMOVE_COMPLETION_REPAIR_FAILED", orderId, error);
+        window.setTimeout(() => completionRepairRef.current.delete(orderId), 10000);
+      });
+    });
+  }, [tenant?.id, allowedRole, orders]);
+
   const cards = useMemo(() => {
-    const active = orders.filter(order => ACTIVE_STATUSES.has(order.status));
+    const active = orders.filter(order => ACTIVE_STATUSES.has(order.status) && !lalamoveDeliveryCompleted(order));
     const tableGroups = new Map();
     active.filter(isTableOrder).forEach(order => {
       const key = tableGroupKey(order);
@@ -511,7 +533,7 @@ export function KitchenPage() {
   return (
     <>
       <header className="app-header">
-        <div className="brand"><span className="brand-mark">KJ</span>{t("kitchen.brand")}</div>
+        <div className="brand"><span className="brand-mark">PG</span>{t("kitchen.brand")}</div>
         <div className="app-header-actions" data-header-actions>
           <LocaleSwitcher style={{ marginLeft: 0, marginRight: 0 }} />
           <CashierOrderNotifier orders={orders} onToast={showToast} surface="kitchen" />

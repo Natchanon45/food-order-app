@@ -1,8 +1,8 @@
 import "./public-page-static-i18n.js?v=20261001-003";
 
-await import("./public-tenant-resolver.js?v=20261002-006");
+await import("./public-tenant-resolver.js?v=20261003-010");
 
-import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20261002-007';
+import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20261002-008';
 import { customerFunctions as functions } from "./public-firebase-context.js?v=20261002-001";
 import { httpsCallable } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-functions.js";
 import { money, toast } from "./ui.js?v=20260930-001";
@@ -89,6 +89,11 @@ let currentDeliveryDistanceKm = null;
 let currentDeliveryRoute = null;
 let deliveryRouteRequestSerial = 0;
 let deliveryRoutePromise = Promise.resolve(null);
+let currentLalamoveQuotation = null;
+let currentLalamoveQuoteLocation = null;
+let currentLalamoveQuotePaymentMethod = "";
+let currentLalamoveQuoteError = "";
+let deliveryDistancePending = false;
 
 const DELIVERY_FEE_MODE_AUTOMATIC = "automatic";
 const DELIVERY_FEE_MODE_MANUAL_FALLBACK = "manual-fallback";
@@ -144,6 +149,44 @@ function customerDeliveryLocation() {
   };
 }
 
+function usesLalamove() {
+  return String(storeSettings.deliveryProvider || "self").toLowerCase() === "lalamove";
+}
+
+function lalamoveZone() {
+  if (!currentLalamoveQuotation?.quotationId) return null;
+  const fee = Number(currentLalamoveQuotation.fee);
+  if (!Number.isFinite(fee) || fee < 0) return null;
+  return { id: "lalamove", label: "Lalamove", fee };
+}
+
+function lalamoveQuotationFreshFor(location) {
+  if (!currentLalamoveQuotation?.quotationId || !currentLalamoveQuoteLocation || !location) return false;
+  const currentPaymentMethod = String(paymentMethod?.value || "").toLowerCase();
+  if (currentLalamoveQuotePaymentMethod !== currentPaymentMethod) return false;
+  const expiresAt = Date.parse(String(currentLalamoveQuotation.expiresAt || ""));
+  if (!Number.isFinite(expiresAt) || expiresAt <= Date.now() + 15000) return false;
+  const latitudeDelta = Math.abs(Number(location.latitude) - Number(currentLalamoveQuoteLocation.latitude));
+  const longitudeDelta = Math.abs(Number(location.longitude) - Number(currentLalamoveQuoteLocation.longitude));
+  return latitudeDelta <= 0.00001 && longitudeDelta <= 0.00001;
+}
+
+function radians(degrees) {
+  return degrees * Math.PI / 180;
+}
+
+function haversineDistanceKm(from, to) {
+  if (!from || !to) return null;
+  const earthRadiusKm = 6371.0088;
+  const latitudeDelta = radians(to.latitude - from.latitude);
+  const longitudeDelta = radians(to.longitude - from.longitude);
+  const latitude1 = radians(from.latitude);
+  const latitude2 = radians(to.latitude);
+  const value = Math.sin(latitudeDelta / 2) ** 2
+    + Math.cos(latitude1) * Math.cos(latitude2) * Math.sin(longitudeDelta / 2) ** 2;
+  return earthRadiusKm * (2 * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value)));
+}
+
 function setDeliveryFeeMode(mode) {
   if (!deliveryZone) return;
 
@@ -165,6 +208,7 @@ function setDeliveryFeeMode(mode) {
 }
 
 function manualDeliveryFeeFallbackAllowed() {
+  if (usesLalamove()) return false;
   return currentDeliveryDistanceKm === null
     && deliveryZone?.dataset.deliveryFeeMode === DELIVERY_FEE_MODE_MANUAL_FALLBACK;
 }
@@ -183,6 +227,7 @@ function configuredMaxDeliveryDistanceKm() {
 }
 
 function deliveryZoneForDistance(distanceKm) {
+  if (usesLalamove()) return lalamoveZone();
   if (distanceKm === null || distanceKm === undefined || distanceKm === "") {
     return null;
   }
@@ -202,6 +247,14 @@ function deliveryZoneForDistance(distanceKm) {
 function syncDeliveryZoneFromDistance() {
   if (!deliveryZone) {
     return null;
+  }
+
+  if (usesLalamove()) {
+    setDeliveryFeeMode(DELIVERY_FEE_MODE_AUTOMATIC);
+    const zone = lalamoveZone();
+    deliveryZone.value = zone?.id || "";
+    updateCart();
+    return zone;
   }
 
   if (currentDeliveryDistanceKm === null) {
@@ -228,15 +281,19 @@ function syncDeliveryZoneFromDistance() {
   }
 
   deliveryZone.value = zone.id;
-
-  /*
-   * Programmatically changing select.value does not emit a
-   * change event. Refresh totals explicitly so delivery fee,
-   * cart total and PromptPay QR always follow the map pin.
-   */
   updateCart();
-
   return zone;
+}
+
+function lalamoveQuoteErrorMessage(errorText = currentLalamoveQuoteError) {
+  const detail = String(errorText || "");
+  if (detail.includes("ERR_OUT_OF_SERVICE_AREA")) {
+    return t("delivery.checkout.distance.lalamove_out_of_service_area");
+  }
+  if (detail.includes("LALAMOVE_COD_UNAVAILABLE")) {
+    return t("delivery.checkout.distance.lalamove_cod_unavailable");
+  }
+  return t("delivery.checkout.distance.lalamove_unavailable");
 }
 
 function renderDeliveryDistanceStatus() {
@@ -256,6 +313,39 @@ function renderDeliveryDistanceStatus() {
     deliveryDistanceStatus.classList.remove("is-ready", "is-error");
     return;
   }
+
+  if (usesLalamove()) {
+    deliveryDistanceStatus.hidden = false;
+    if (deliveryDistancePending) {
+      deliveryDistanceStatus.classList.remove("is-ready", "is-error");
+      deliveryDistanceStatus.textContent = t("delivery.checkout.distance.lalamove_loading");
+      return;
+    }
+    if (!lalamoveZone() || currentDeliveryDistanceKm === null) {
+      deliveryDistanceStatus.classList.remove("is-ready");
+      deliveryDistanceStatus.classList.add("is-error");
+      deliveryDistanceStatus.textContent = lalamoveQuoteErrorMessage();
+      return;
+    }
+    const maxDistance = configuredMaxDeliveryDistanceKm();
+    if (maxDistance !== null && currentDeliveryDistanceKm > maxDistance) {
+      deliveryDistanceStatus.classList.remove("is-ready");
+      deliveryDistanceStatus.classList.add("is-error");
+      deliveryDistanceStatus.textContent = t("delivery.checkout.distance.out_of_range", {
+        distance: currentDeliveryDistanceKm.toFixed(2),
+        max: maxDistance.toFixed(2),
+      });
+      return;
+    }
+    deliveryDistanceStatus.classList.remove("is-error");
+    deliveryDistanceStatus.classList.add("is-ready");
+    deliveryDistanceStatus.textContent = t("delivery.checkout.distance.lalamove_ready", {
+      distance: currentDeliveryDistanceKm.toFixed(2),
+      fee: money(lalamoveZone().fee),
+    });
+    return;
+  }
+
   if (!currentDeliveryRoute) return;
   const maxDistance = Number(currentDeliveryRoute.maxDistanceKm || configuredMaxDeliveryDistanceKm() || 0) || null;
   deliveryDistanceStatus.hidden = false;
@@ -278,16 +368,25 @@ function refreshDeliveryDistance() {
   const from = storeLocation();
   const to = customerDeliveryLocation();
   const requestSerial = ++deliveryRouteRequestSerial;
-  currentDeliveryDistanceKm = null;
   currentDeliveryRoute = null;
 
   if (!from) {
+    currentDeliveryDistanceKm = null;
+    currentLalamoveQuotation = null;
+    currentLalamoveQuoteLocation = null;
+    currentLalamoveQuoteError = "";
+    deliveryDistancePending = false;
     syncDeliveryZoneFromDistance();
     renderDeliveryDistanceStatus();
     deliveryRoutePromise = Promise.resolve(null);
     return deliveryRoutePromise;
   }
   if (!to) {
+    currentDeliveryDistanceKm = null;
+    currentLalamoveQuotation = null;
+    currentLalamoveQuoteLocation = null;
+    currentLalamoveQuoteError = "";
+    deliveryDistancePending = false;
     setDeliveryFeeMode(DELIVERY_FEE_MODE_AUTOMATIC);
     if (deliveryZone) deliveryZone.value = "";
     updateCart();
@@ -296,6 +395,83 @@ function refreshDeliveryDistance() {
     return deliveryRoutePromise;
   }
 
+  if (usesLalamove()) {
+    if (lalamoveQuotationFreshFor(to)) {
+      const quotedDistance = Number(currentLalamoveQuotation?.distanceKm);
+      currentDeliveryDistanceKm = Number.isFinite(quotedDistance) && quotedDistance >= 0
+        ? quotedDistance
+        : haversineDistanceKm(from, to);
+      deliveryDistancePending = false;
+      renderDeliveryZones();
+      syncDeliveryZoneFromDistance();
+      renderDeliveryDistanceStatus();
+      deliveryRoutePromise = Promise.resolve(currentLalamoveQuotation);
+      return deliveryRoutePromise;
+    }
+
+    currentLalamoveQuotation = null;
+    currentLalamoveQuoteLocation = null;
+    currentLalamoveQuoteError = "";
+    currentDeliveryDistanceKm = null;
+    deliveryDistancePending = true;
+    renderDeliveryZones();
+    syncDeliveryZoneFromDistance();
+    renderDeliveryDistanceStatus();
+
+    const address = document.querySelector("#deliveryAddress")?.value.trim() || "";
+    const quotePaymentMethod = String(paymentMethod?.value || "").toLowerCase();
+    deliveryRoutePromise = dataService.getLalamoveQuotation(to, address, quotePaymentMethod)
+      .then(response => {
+        if (requestSerial !== deliveryRouteRequestSerial) return null;
+        const quotation = response?.item || null;
+        const fee = Number(quotation?.fee);
+        if (!quotation?.quotationId || !Number.isFinite(fee) || fee < 0) {
+          throw new Error("LALAMOVE_QUOTATION_INVALID");
+        }
+        currentLalamoveQuotation = quotation;
+        currentLalamoveQuoteLocation = {
+          latitude: Number(to.latitude),
+          longitude: Number(to.longitude),
+        };
+        currentLalamoveQuotePaymentMethod = quotePaymentMethod;
+        currentLalamoveQuoteError = "";
+        const quotedDistance = Number(quotation.distanceKm);
+        currentDeliveryDistanceKm = Number.isFinite(quotedDistance) && quotedDistance >= 0
+          ? quotedDistance
+          : haversineDistanceKm(from, to);
+        deliveryDistancePending = false;
+        renderDeliveryZones();
+        syncDeliveryZoneFromDistance();
+        renderDeliveryDistanceStatus();
+        return quotation;
+      })
+      .catch(error => {
+        if (requestSerial !== deliveryRouteRequestSerial) return null;
+        console.warn("[lalamove-quotation] quotation unavailable", error);
+        currentLalamoveQuotation = null;
+        currentLalamoveQuoteLocation = null;
+        currentLalamoveQuoteError = String(
+          error?.details?.providerError
+          || error?.serverResponse?.providerError
+          || error?.code
+          || error?.message
+          || ""
+        );
+        currentDeliveryDistanceKm = null;
+        deliveryDistancePending = false;
+        renderDeliveryZones();
+        syncDeliveryZoneFromDistance();
+        renderDeliveryDistanceStatus();
+        return null;
+      });
+    return deliveryRoutePromise;
+  }
+
+  currentLalamoveQuotation = null;
+  currentLalamoveQuoteLocation = null;
+  currentLalamoveQuoteError = "";
+  currentDeliveryDistanceKm = null;
+  deliveryDistancePending = true;
   setDeliveryFeeMode(DELIVERY_FEE_MODE_AUTOMATIC);
   if (deliveryZone) deliveryZone.value = "";
   updateCart();
@@ -316,6 +492,7 @@ function refreshDeliveryDistance() {
     if (!route || !Number.isFinite(distance) || distance <= 0) throw new Error("GOOGLE_ROUTE_INVALID");
     currentDeliveryRoute = route;
     currentDeliveryDistanceKm = distance;
+    deliveryDistancePending = false;
     if (route.zone?.id && deliveryZone?.querySelector(`option[value="${CSS.escape(String(route.zone.id))}"]`)) {
       deliveryZone.value = String(route.zone.id);
     }
@@ -327,6 +504,7 @@ function refreshDeliveryDistance() {
     console.error("[delivery-route] Google Routes failed", error);
     currentDeliveryRoute = null;
     currentDeliveryDistanceKm = null;
+    deliveryDistancePending = false;
     if (deliveryZone) deliveryZone.value = "";
     updateCart();
     if (deliveryDistanceStatus) {
@@ -341,6 +519,12 @@ function refreshDeliveryDistance() {
 }
 
 function deliveryDistanceAllowed() {
+  if (deliveryDistancePending) return false;
+  if (usesLalamove()) {
+    if (!lalamoveZone() || currentDeliveryDistanceKm === null) return false;
+    const maxDistance = configuredMaxDeliveryDistanceKm();
+    return maxDistance === null || currentDeliveryDistanceKm <= maxDistance;
+  }
   if (currentDeliveryDistanceKm === null) {
     return manualDeliveryFeeFallbackAllowed() && Boolean(selectedZone());
   }
@@ -786,6 +970,16 @@ function renderDeliveryZones() {
   const zones = deliveryZones().filter(zone => zone.id !== "pickup");
   const previousValue = deliveryZone.value;
 
+  if (usesLalamove()) {
+    const zone = lalamoveZone();
+    deliveryZone.innerHTML = zone
+      ? `<option value="lalamove">Lalamove • ${money(zone.fee)} ${t("delivery.checkout.units.baht")}</option>`
+      : `<option value="">Lalamove</option>`;
+    deliveryZone.value = zone ? "lalamove" : "";
+    setDeliveryFeeMode(DELIVERY_FEE_MODE_AUTOMATIC);
+    return;
+  }
+
   deliveryZone.innerHTML = zones.map(zone =>
     `<option value="${escapeHtml(zone.id)}">${escapeHtml(zone.label)} • ${money(zone.fee)} ${t("delivery.checkout.units.baht")}</option>`
   ).join("");
@@ -805,6 +999,7 @@ function renderDeliveryZones() {
 }
 
 function selectedZone() {
+  if (usesLalamove()) return lalamoveZone();
   if (currentDeliveryRoute?.inRange === true && currentDeliveryRoute?.zone?.id) {
     return currentDeliveryRoute.zone;
   }
@@ -1055,7 +1250,10 @@ categoryTabs.addEventListener("click", event => {
   renderMenus();
 });
 document.querySelector("#searchInput").addEventListener("input", renderMenus);
-paymentMethod.addEventListener("change", renderPromptPay);
+paymentMethod.addEventListener("change", () => {
+  renderPromptPay();
+  if (usesLalamove()) refreshDeliveryDistance();
+});
 deliveryZone.addEventListener("change", updateCart);
 deliveryFreeGiftList?.addEventListener(
   "change",
@@ -1193,14 +1391,29 @@ submitOrderButton.addEventListener("click", async () => {
 
   const deliveryLocation = customerDeliveryLocation();
   const storeCoordinates = storeLocation();
-  const automaticDistanceAvailable = Boolean(
-    storeCoordinates
+  const lalamoveDeliveryAvailable = Boolean(
+    usesLalamove()
+    && storeCoordinates
     && deliveryLocation
     && currentDeliveryDistanceKm !== null
-    && currentDeliveryRoute
+    && lalamoveZone()
   );
+  const automaticDistanceAvailable = usesLalamove()
+    ? lalamoveDeliveryAvailable
+    : Boolean(
+        storeCoordinates
+        && deliveryLocation
+        && currentDeliveryDistanceKm !== null
+        && currentDeliveryRoute
+      );
 
-  if (storeCoordinates && deliveryLocation && !currentDeliveryRoute) {
+  if (usesLalamove() && !lalamoveDeliveryAvailable) {
+    toast(lalamoveQuoteErrorMessage(), "error");
+    deliveryDistanceStatus?.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+
+  if (!usesLalamove() && storeCoordinates && deliveryLocation && !currentDeliveryRoute) {
     toast(t("delivery.checkout.distance.route_failed"), "error");
     deliveryDistanceStatus?.scrollIntoView({ behavior: "smooth", block: "center" });
     return;
@@ -1278,9 +1491,11 @@ submitOrderButton.addEventListener("click", async () => {
     }));
   const items = [...paidItems, ...giftItems];
 
-  const zone = automaticDistanceAvailable
-    ? currentDeliveryRoute?.zone || null
-    : selectedZone();
+  const zone = usesLalamove()
+    ? lalamoveZone()
+    : automaticDistanceAvailable
+      ? currentDeliveryRoute?.zone || null
+      : selectedZone();
 
   if (!zone) {
     toast(t("delivery.checkout.distance.fee_rule_missing"), "error");
@@ -1315,15 +1530,18 @@ submitOrderButton.addEventListener("click", async () => {
       recipientName,
       recipientPhone,
       deliveryAddress,
+      deliveryProvider: usesLalamove() ? "lalamove" : "self",
       deliveryZone: zone.id,
       deliveryZoneLabel: zone.label,
       deliveryBaseFee: finalBaseFee,
       deliveryFee: finalDeliveryFee,
       deliveryFeeDiscount: Math.max(0, finalBaseFee - finalDeliveryFee),
       freeShippingApplied: Boolean(finalFreeShipping),
-      deliveryFeeMode: automaticDistanceAvailable
-        ? "google_routes"
-        : "manual_fallback",
+      deliveryFeeMode: usesLalamove()
+        ? "lalamove_quotation"
+        : automaticDistanceAvailable
+          ? "google_routes"
+          : "manual_fallback",
       freeGiftMenuIds: [...selectedFreeGiftMenuIds],
       subtotalAmount: currentSubtotal,
       totalAmount: finalTotal,
@@ -1341,7 +1559,36 @@ submitOrderButton.addEventListener("click", async () => {
       orderPayload.deliveryLongitude = deliveryLocation.longitude;
     }
 
-    if (automaticDistanceAvailable) {
+    if (usesLalamove()) {
+      const quote = currentLalamoveQuotation || {};
+      const quotedFee = Math.max(0, Number(quote.fee || finalBaseFee) || 0);
+      orderPayload.deliveryDistanceKm = Number(currentDeliveryDistanceKm.toFixed(3));
+      orderPayload.deliveryDistanceMeters = Math.max(
+        0,
+        Number(quote.distanceMeters || Math.round(currentDeliveryDistanceKm * 1000)) || 0
+      );
+      orderPayload.deliveryRouteProvider = "lalamove";
+      orderPayload.lalamoveQuotationId = String(quote.quotationId || "");
+      orderPayload.lalamoveQuotationExpiresAt = String(quote.expiresAt || "");
+      orderPayload.lalamoveCurrency = String(quote.currency || "THB");
+      orderPayload.lalamoveAccountMode = String(quote.accountMode || "");
+      orderPayload.lalamoveAccountEnvironment = String(quote.accountEnvironment || "");
+      orderPayload.lalamoveDispatchQuote = {
+        quotationId: String(quote.quotationId || ""),
+        expiresAt: String(quote.expiresAt || ""),
+        fee: quotedFee,
+        currency: String(quote.currency || "THB"),
+        distanceKm: Number.isFinite(Number(quote.distanceKm)) ? Number(quote.distanceKm) : Number(currentDeliveryDistanceKm.toFixed(3)),
+        distanceMeters: Math.max(0, Number(quote.distanceMeters || 0) || 0),
+        priceBreakdown: quote.priceBreakdown || {},
+        specialRequests: Array.isArray(quote.specialRequests) ? quote.specialRequests : [],
+        stops: Array.isArray(quote.stops) ? quote.stops : [],
+      };
+      orderPayload.lalamoveDispatchFee = quotedFee;
+      orderPayload.lalamoveDispatchPriceDifference = 0;
+      orderPayload.lalamoveDispatchRequiresApproval = false;
+      orderPayload.lalamoveDispatchQuotedAt = new Date().toISOString();
+    } else if (automaticDistanceAvailable) {
       orderPayload.deliveryDistanceKm = Number(currentDeliveryDistanceKm.toFixed(3));
       orderPayload.deliveryDistanceMeters = Number(currentDeliveryRoute?.distanceMeters || 0);
       orderPayload.deliveryDurationSeconds = Number(currentDeliveryRoute?.durationSeconds || 0);

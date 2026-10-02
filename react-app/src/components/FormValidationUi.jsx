@@ -214,6 +214,14 @@ function scan(root = document) {
   scope.querySelectorAll?.("form").forEach(bindForm);
 }
 
+function containsValidationTarget(node) {
+  if (!(node instanceof Element)) return false;
+  return isControl(node)
+    || node.matches?.("form")
+    || Boolean(node.querySelector?.(CONTROL_SELECTOR))
+    || Boolean(node.querySelector?.("form"));
+}
+
 export function resetFormValidationUi(form) {
   if (!form) return;
   form.classList.remove("was-validated");
@@ -245,7 +253,7 @@ export function FormValidationUi() {
     const observer = new MutationObserver(mutations => {
       for (const mutation of mutations) {
         mutation.addedNodes.forEach(node => {
-          if (node.nodeType === Node.ELEMENT_NODE) scan(node);
+          if (containsValidationTarget(node)) scan(node);
         });
       }
     });

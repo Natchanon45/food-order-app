@@ -428,19 +428,26 @@
   display: flex;
   min-height: 62%;
   padding: 30px 8px 8px;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-end;
-  gap: 3px;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 6px;
   background: linear-gradient(180deg, rgba(13,111,52,0) 0%, rgba(13,111,52,.34) 28%, rgba(13,111,52,.78) 64%, rgba(16,35,23,.96) 100%);
   color: #fff;
   text-align: left;
   pointer-events: none;
 }
 
+.quick-menu-copy {
+  display: grid;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 2px;
+  align-self: flex-end;
+  text-align: left;
+}
+
 .quick-menu-info-overlay .quick-menu-name,
-.quick-menu-info-overlay .quick-menu-category,
-.quick-menu-info-overlay .quick-menu-price-badge {
+.quick-menu-info-overlay .quick-menu-category {
   color: #fff;
 }
 
@@ -448,9 +455,9 @@
   display: -webkit-box;
   width: 100%;
   overflow: hidden;
-  font-size: .8rem;
+  font-size: .74rem;
   font-weight: 800;
-  line-height: 1.18;
+  line-height: 1.16;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
@@ -459,30 +466,32 @@
   display: block;
   width: 100%;
   overflow: hidden;
-  color: rgba(255, 255, 255, .84);
-  font-size: .64rem;
+  color: rgba(255, 255, 255, .8);
+  font-size: .59rem;
   font-weight: 400;
-  line-height: 1.15;
+  line-height: 1.12;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .quick-menu-info-overlay .quick-menu-price-badge {
   display: inline-flex;
+  flex: 0 0 auto;
   width: auto;
-  max-width: 100%;
+  max-width: 48%;
+  min-height: 22px;
   align-items: center;
   justify-content: center;
-  margin-top: 2px;
-  padding: 4px 8px;
-  border: 1px solid rgba(255, 255, 255, .66);
+  align-self: flex-end;
+  padding: 3px 7px;
+  border: 1px solid rgba(255, 255, 255, .48);
   border-radius: 999px;
-  background: rgba(255, 255, 255, .94);
+  background: rgba(255, 255, 255, .76);
   color: #0d6f34;
-  font-size: .68rem;
+  font-size: .65rem;
   font-weight: 800;
   line-height: 1;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, .13);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .08);
   white-space: nowrap;
 }
 
@@ -1192,6 +1201,38 @@
 
 .quick-cash-dialog-actions .btn {
   min-height: 48px;
+}
+
+.quick-cash-dialog-actions .btn,
+.quick-payment-result-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  line-height: 1.2;
+}
+
+.quick-cash-dialog-actions .btn > i.app-icon,
+.quick-payment-result-actions .btn > i.app-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  margin: 0;
+  line-height: 1;
+  vertical-align: 0;
+}
+
+.quick-cash-dialog-actions .btn > i.app-icon::before,
+.quick-payment-result-actions .btn > i.app-icon::before {
+  display: block;
+  line-height: 1;
+}
+
+.quick-cash-dialog-actions .btn > span,
+.quick-payment-result-actions .btn > span {
+  display: inline-block;
+  line-height: 1.2;
 }
 
 .quick-payment-result-dialog {

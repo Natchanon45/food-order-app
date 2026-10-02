@@ -71,6 +71,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  flex-wrap: nowrap;
+  gap: 8px;
 }
 
 .cashier-hero-order-btn {
@@ -90,6 +92,15 @@
 .cashier-hero-order-btn:hover {
   background: #f3fff7;
   transform: translateY(-1px);
+}
+
+.cashier-hero-queue-btn {
+  border-color: rgba(255, 255, 255, 0.58);
+  background: rgba(255, 255, 255, 0.90);
+}
+
+.cashier-hero-queue-btn:hover {
+  background: #fff;
 }
 
 .cashier-hero-order-btn .app-icon {
@@ -283,58 +294,143 @@
   }
   .cashier-hero::after { right: -150px; top: -150px; }
   .cashier-hero-title-row {
-    gap: 10px;
+    align-items: center;
+    gap: 8px;
   }
   .cashier-hero h1 {
-    font-size: 26px;
+    flex: 1 1 auto;
+    font-size: 24px;
     white-space: nowrap;
   }
   .cashier-hero p { max-width: 280px; font-size: 14px; line-height: 1.55; }
   .cashier-hero-actions {
     width: auto;
+    min-width: 0;
     justify-content: flex-end;
+    gap: 5px;
   }
   .cashier-hero-order-btn {
-    min-height: 40px;
-    padding: 9px 12px;
-    gap: 6px !important;
-    font-size: 13px;
+    min-height: 38px;
+    min-width: 0;
+    padding: 8px 9px;
+    gap: 4px !important;
+    font-size: 11.5px;
+    line-height: 1;
+  }
+  .cashier-hero-order-btn .app-icon {
+    width: 1em;
+    height: 1em;
+    font-size: 1em;
   }
   .cashier-action-bar {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 12px;
-    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 12px;
     border-radius: 16px;
+  }
+  .cashier-action-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 0;
+  }
+  .cashier-action-title strong {
+    font-size: 13px;
+    line-height: 1.2;
+  }
+  .cashier-action-title span {
+    margin-top: 2px;
+    font-size: 10px;
+    line-height: 1.2;
   }
   .cashier-actions {
     display: flex;
+    flex: 0 0 auto;
     flex-wrap: nowrap;
     justify-content: flex-end;
-    justify-self: end;
     align-items: center;
-    width: max-content;
-    max-width: 100%;
+    width: auto;
+    max-width: none;
     margin-left: auto;
-    gap: 8px;
+    gap: 6px;
   }
   .cashier-actions .btn {
-    flex: 0 0 44px;
-    width: 44px;
-    min-width: 44px;
-    min-height: 44px;
-    padding: 10px;
+    flex: 0 0 40px;
+    width: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 8px;
     gap: 0;
   }
   .cashier-actions .btn .app-icon {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     margin: 0;
-    font-size: 20px;
+    font-size: 18px;
     line-height: 1;
   }
   .cashier-actions .btn > span { display: none; }
   .cashier-copy-action { grid-column: auto; }
+
+  @media (max-width: 390px) {
+    .cashier-hero {
+      padding-left: 14px;
+      padding-right: 14px;
+    }
+    .cashier-hero-title-row {
+      gap: 6px;
+    }
+    .cashier-hero h1 {
+      font-size: 22px;
+    }
+    .cashier-hero-actions {
+      gap: 4px;
+    }
+    .cashier-hero-order-btn {
+      min-height: 36px;
+      padding: 7px 7px;
+      gap: 3px !important;
+      font-size: 10.75px;
+    }
+    .cashier-action-bar {
+      gap: 6px;
+      padding: 9px 10px;
+    }
+    .cashier-action-title strong {
+      font-size: 12.5px;
+    }
+    .cashier-action-title span {
+      font-size: 9.5px;
+    }
+    .cashier-actions {
+      gap: 5px;
+    }
+  }
+
+  @media (max-width: 360px) {
+    .cashier-hero-title-row {
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+    .cashier-hero h1 {
+      flex: 0 0 100%;
+      width: 100%;
+    }
+    .cashier-hero-actions {
+      margin-left: auto;
+    }
+    .cashier-action-title span {
+      display: none;
+    }
+    .cashier-actions .btn {
+      flex-basis: 38px;
+      width: 38px;
+      min-width: 38px;
+      min-height: 38px;
+      padding: 7px;
+    }
+  }
 
   .cashier-page .order-card .order-actions {
     display: flex;

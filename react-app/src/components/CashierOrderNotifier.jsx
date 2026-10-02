@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useI18n } from "@/i18n/I18nProvider";
 
 const ENABLED_KEY = "food_order_order_alerts_enabled_v3";
-const CLOSED = new Set(["cancelled", "deleted", "voided"]);
+const CLOSED = new Set(["paid", "completed", "cancelled", "deleted", "voided"]);
 
 function initialEnabled() {
   try {

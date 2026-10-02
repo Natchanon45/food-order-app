@@ -257,7 +257,7 @@ function mountDeliveryAddToast() {
 }
 
 const footerFallback = Object.freeze({
-  product: "KINJAI",
+  product: "PENGUIN",
   version: `Version ${APP_VERSION}`,
   build: `Build ${APP_INFO.build}`,
   iconCredit: "Uicons by Flaticon",
