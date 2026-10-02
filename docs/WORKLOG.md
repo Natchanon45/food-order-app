@@ -2767,9 +2767,17 @@ Verification:
 - `git diff --check` PASS.
 
 Deploy state:
-- Commit/push/deploy are performed after this WORKLOG entry.
-- Firebase scope is Hosting only.
-- No Functions / Firestore Rules / Storage Rules changes are required.
+- Implementation commit: `98d6f8f1` — `fix: remove receipt nested scroller`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` with React Build `2026.10.02.329`.
+- No Functions / Firestore Rules / Storage Rules deployment was performed.
+- Authenticated Production verification on yearly 2026 / พ.ศ. 2569 with 8 real receipts:
+  - footer reports Build `2026.10.02.329`,
+  - outer wrapper: `clientWidth=372`, `scrollWidth=980`,
+  - inner table: `display=table`, `overflow-x=visible`, `max-width=none`,
+  - identical touch swipe moved outer wrapper from `scrollLeft=0` to `scrollLeft=489`,
+  - inner table remained `scrollLeft=0`.
+- This confirms Production now has exactly one horizontal scroll owner and the previously locked receipt swipe is resolved in the live browser runtime.
 - No merge to `main`.
 
 ---
