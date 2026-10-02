@@ -477,6 +477,22 @@ body.staff-home .nav-card[href="/pos/catalog"] .nav-card-icon { --dash-icon-fg: 
     line-height: 1.35;
     text-align: right;
   }
+  body.staff-home .dashboard-section-order-delivery .dashboard-section-head {
+    grid-template-columns: max-content minmax(0, 1fr);
+    align-items: start;
+  }
+  body.staff-home .dashboard-section-order-delivery .dashboard-section-head h2 {
+    font-size: 16px;
+    line-height: 1.25;
+    white-space: nowrap;
+  }
+  body.staff-home .dashboard-section-order-delivery .dashboard-section-head p {
+    justify-self: end;
+    max-width: 210px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
   body.staff-home .nav-cards,
   body.staff-home .nav-cards-pos {
     display: grid;

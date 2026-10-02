@@ -1,7 +1,7 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.02.329",
+  build: "2026.10.02.330",
   branch: "feature/react-firebase-port",
   commit: "CANONICAL-URL-CUTOVER",
   dataService: "Firebase / Firestore",

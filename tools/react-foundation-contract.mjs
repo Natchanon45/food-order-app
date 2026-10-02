@@ -159,7 +159,7 @@ assert(
 );
 const homePage=read("react-app/src/pages/HomePage.jsx");
 const homeDashboardCss=read("react-app/public/parity/css/home-dashboard.css");
-for(const key of ["kitchen","cashier","waiting_queue","admin","admin_users","pos","pos_catalog"]){
+for(const key of ["kitchen","cashier","admin","admin_users","pos","pos_catalog"]){
   assert(homePage.includes(`cardKey="${key}"`),`Home dashboard semantic card key missing: ${key}`);
   assert(homeDashboardCss.includes(`[data-dashboard-card="${key}"]`),`Home dashboard semantic color selector missing: ${key}`);
 }
@@ -167,6 +167,21 @@ assert(homeDashboardCss.includes('--dash-icon-fg: #c2410c; --dash-icon-bg: #ffed
 assert(!homeDashboardCss.includes('.nav-card[href="/kitchen"]'),"Home dashboard colors must not depend on Laravel-only href routes");
 assert(homePage.includes("const stylesReady = useParityPage")&&homePage.includes("|| !stylesReady"),"React Home must keep PageReadyOverlay active until Home-specific parity CSS is loaded");
 assert(homePage.includes('<span className="brand-mark">PG</span>')&&homePage.includes('<span className="brand-label">{staff ? "PENGUIN" : "PENGUIN"}</span>'),"React Home visible brand must be PENGUIN / PG");
+assert(
+  homePage.includes('className="dashboard-section dashboard-section-order-delivery"')
+  &&!homePage.includes('cardKey="waiting_queue"')
+  &&homeDashboardCss.includes(".dashboard-section-order-delivery .dashboard-section-head")
+  &&homeDashboardCss.includes("grid-template-columns: max-content minmax(0, 1fr);")
+  &&homeDashboardCss.includes("white-space: nowrap;")
+  &&homeDashboardCss.includes("max-width: 210px;")
+  &&homeDashboardCss.includes("text-wrap: balance;"),
+  "React Home Order / Delivery header must stay one-line with a two-line-capable description and no Waiting Queue main card"
+);
+assert(
+  waitingQueuePage.includes('<a className="btn btn-dark btn-sm waiting-home-link" href="/"')
+  &&!waitingQueuePage.includes('<Link className="btn btn-dark btn-sm waiting-home-link"'),
+  "Waiting Queue Back must full-navigate to canonical static Home instead of rendering the alternate React Home route"
+);
 const posPage=read("react-app/src/pages/PosPage.jsx");
 const posNavigation=read("react-app/src/components/PosNavigation.jsx");
 const posData=read("react-app/src/data/retailPosData.js");
@@ -182,7 +197,18 @@ const parityFooter=read("react-app/src/components/ParityFooter.jsx");
 const staticI18n=read("public/assets/js/i18n.js");
 const staticUi=read("public/assets/js/ui.js");
 const staticHome=read("public/index.html");
+const staticHomeDashboardCss=read("public/assets/css/home-dashboard.css");
 const staticHomeSession=read("public/assets/js/home-session-fa.js");
+assert(
+  staticHome.includes('class="dashboard-section dashboard-section-order-delivery"')
+  &&!staticHome.includes('waiting-queue-home-card')
+  &&!staticHome.includes('waiting-queue-entry.js')
+  &&staticHomeDashboardCss.includes(".dashboard-section-order-delivery .dashboard-section-head")
+  &&staticHomeDashboardCss.includes("grid-template-columns: max-content minmax(0, 1fr);")
+  &&staticHomeDashboardCss.includes("white-space: nowrap;")
+  &&staticHomeDashboardCss.includes("max-width: 210px;"),
+  "Canonical static Home must keep Order / Delivery one-line, allow the description to wrap, and omit Waiting Queue from the main dashboard"
+);
 const staticAuthService=read("public/assets/js/auth-service.js");
 const staticHomeTranslations=read("public/assets/js/home-translations.js");
 const hostingRc=read(".firebaserc");

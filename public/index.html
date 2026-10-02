@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#159447">
 <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
 <link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240">
-<link rel="stylesheet" href="/assets/css/home-dashboard.css?v=20260802-073">
+<link rel="stylesheet" href="/assets/css/home-dashboard.css?v=20261002-045">
 <link rel="stylesheet" href="/assets/css/public-contact.css?v=20260803-005">
 <link rel="stylesheet" href="/assets/css/public-utility-actions.css?v=20260811-096">
 <link rel="stylesheet" href="/assets/css/waiting-queue-legacy-customer.css?v=20260801-002">
@@ -145,7 +145,7 @@
         <h1>PENGUIN / Order / Delivery / POS</h1>
         <p><span data-i18n="home.staff.hero_description">รวมเมนูใช้งานหลักของร้านไว้ในหน้าเดียว</span></p>
     </section>
-    <section class="dashboard-section" aria-labelledby="frontServiceTitle">
+    <section class="dashboard-section dashboard-section-order-delivery" aria-labelledby="frontServiceTitle">
         <div class="dashboard-section-head">
             <h2 id="frontServiceTitle">Order / Delivery</h2>
             <p><span data-i18n="home.staff.order_delivery.description">เมนูหลักของร้านอาหารสำหรับพนักงานและผู้ดูแลร้าน</span></p>
@@ -153,7 +153,6 @@
         <div class="nav-cards" aria-label="เมนู Order และ Delivery" data-i18n-aria-label="home.staff.order_delivery.aria_label">
             <a class="card nav-card" href="/kitchen" data-dashboard-role="owner,admin,kitchen,super_admin" data-description="จัดคิวอาหารและอัปเดตสถานะจากครัว" data-i18n-data-description="home.staff.card_descriptions.kitchen" hidden><span class="nav-card-icon"><i class="fi fi-rr-restaurant app-icon" aria-hidden="true"></i></span><span class="nav-card-label"><span data-i18n="home.staff.cards.kitchen">หน้าครัว</span></span></a>
             <a class="card nav-card" href="/cashier" data-dashboard-role="owner,admin,cashier,super_admin" data-description="รับชำระและติดตามออเดอร์หน้าร้าน" data-i18n-data-description="home.staff.card_descriptions.cashier" hidden><span class="nav-card-icon"><i class="fi fi-rr-receipt app-icon" aria-hidden="true"></i></span><span class="nav-card-label"><span data-i18n="home.staff.cards.cashier">แคชเชียร์ร้านอาหาร</span></span></a>
-            <a class="card nav-card waiting-queue-home-card" href="/waiting-queue/" data-dashboard-role="owner,admin,manager,cashier,super_admin" data-waiting-queue-home-card="1" data-description="รับคิว เรียกคิว จัดโต๊ะ และเปิดโต๊ะเมื่อถึงลำดับ" data-i18n-data-description="home.staff.card_descriptions.waiting_queue" aria-label="คิวรอโต๊ะ" data-i18n-aria-label="home.staff.cards.waiting_queue" title="คิวรอโต๊ะ" data-i18n-title="home.staff.cards.waiting_queue" hidden><span class="nav-card-icon"><i class="bi bi-person-standing app-icon waiting-queue-home-icon" aria-hidden="true"></i></span><span class="nav-card-label"><span data-i18n="home.staff.cards.waiting_queue">คิวรอโต๊ะ</span></span></a>
             <a class="card nav-card" href="/admin" data-dashboard-role="owner,admin,super_admin" data-description="ดูแลร้าน เมนู โต๊ะ และช่องทางจัดส่ง" data-i18n-data-description="home.staff.card_descriptions.system_admin" hidden><span class="nav-card-icon"><i class="fi fi-rr-settings-sliders app-icon" aria-hidden="true"></i></span><span class="nav-card-label"><span data-i18n="home.staff.cards.system_admin">จัดการระบบ</span></span></a>
             <a class="card nav-card" href="/admin/users" data-dashboard-role="owner,super_admin" data-description="จัดการบัญชี บทบาท และสิทธิ์พนักงาน" data-i18n-data-description="home.staff.card_descriptions.staff_admin" hidden><span class="nav-card-icon"><i class="fi fi-rr-users app-icon" aria-hidden="true"></i></span><span class="nav-card-label"><span data-i18n="home.staff.cards.staff_admin">จัดการพนักงาน</span></span></a>
         </div>
@@ -180,7 +179,6 @@
 </main>
 <script type="module" src="/assets/js/ui.js?v=20261001-002"></script>
 <script type="module" src="/assets/js/home-session-fa.js?v=20261001-002"></script>
-<script type="module" src="/assets/js/waiting-queue-entry.js?v=20260802-001"></script>
 <script defer src="/assets/js/waiting-queue-legacy-customer.js?v=20260801-002"></script>
 <script type="module" src="/assets/js/public-contact.js?v=20260903-218"></script>
 <script type="module" src="/assets/js/public-pricing.js?v=20260920-001"></script>

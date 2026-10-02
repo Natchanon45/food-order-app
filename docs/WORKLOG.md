@@ -2782,6 +2782,95 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Canonical Home Order/Delivery header, Waiting Queue removal, and queue-back grid repair
+
+Request:
+- Keep `Order / Delivery` on one line on Mobile.
+- Allow `เมนูหลักของร้านอาหารสำหรับพนักงานและผู้ดูแลร้าน` to wrap to two lines.
+- Remove `คิวรอโต๊ะ` from the main Home dashboard.
+- Fix the Home menu grid becoming one card per row after pressing Back from Waiting Queue.
+
+Root cause:
+- Production has two Home implementations:
+  1. canonical static Home at `/` from `public/index.html`,
+  2. React `HomePage.jsx` that can be rendered inside the SPA when navigating client-side from a React route.
+- Direct Home loads the static implementation and displayed the intended 2-column Mobile grid.
+- Waiting Queue is a React route. Its Back action used React `<Link to="/">`, so pressing Back did not reload canonical static Home; it rendered React Home inside the existing SPA document instead.
+- This explains why the user saw a different Home layout only after returning from Waiting Queue.
+- The canonical static Home also contained a Waiting Queue card, and `waiting-queue-entry.js` could dynamically inject the same card again if missing.
+- The Mobile Order/Delivery section header used fixed ratio columns `minmax(92px,.8fr) minmax(0,1.2fr)`, which made the title column too narrow and forced `Order / Delivery` onto two lines.
+
+Change:
+- Canonical static Home:
+  - removed the Waiting Queue navigation card from `public/index.html`,
+  - removed the `waiting-queue-entry.js` script from Home so it cannot dynamically re-add the queue card,
+  - added `.dashboard-section-order-delivery` to scope the requested header layout,
+  - cache-busted `/assets/css/home-dashboard.css` to `v=20261002-045`.
+- React Home parity:
+  - removed the `waiting_queue` `DashboardCard`,
+  - added the same `.dashboard-section-order-delivery` class.
+- Waiting Queue:
+  - changed the Back control from React `<Link to="/">` to a normal `<a href="/">`,
+  - this forces a full navigation to canonical static Home and prevents the alternate React Home from appearing after Back.
+- Home dashboard CSS in both static and React parity copies:
+  - scoped Mobile Order/Delivery header to `grid-template-columns:max-content minmax(0,1fr)`,
+  - title uses `white-space:nowrap` and 16px Mobile size,
+  - description remains normal wrapping with `max-width:210px` and balanced wrapping,
+  - existing 2-column Mobile nav-card grid is preserved.
+- Waiting Queue remains available from its direct route and other intentional navigation surfaces; only the main Home dashboard card was removed.
+
+Measured Mobile layout verification at 430px:
+- `Order / Delivery` title:
+  - width ~139.48px,
+  - height 20px,
+  - line-height 20px,
+  - `white-space:nowrap`,
+  - therefore exactly one line.
+- Description:
+  - width 210px,
+  - height ~28.34px,
+  - line-height ~14.175px,
+  - therefore two lines.
+- Home nav grid:
+  - `180px 180px`,
+  - four test cards remained 180px each,
+  - therefore two columns.
+
+Laravel comparison:
+- Connected Laravel reference checkout remains on `feature/for_dev`, not documented MASTER `main`.
+- No Laravel files were changed.
+
+Regression protection:
+- React foundation contract now requires:
+  - Waiting Queue absent from React Home main cards,
+  - canonical static Home contains no Waiting Queue card or injector script,
+  - Order/Delivery scoped header class in both Home implementations,
+  - max-content Mobile title column,
+  - nowrap title and two-line-capable description,
+  - Waiting Queue Back uses `<a href="/">` and not React `<Link>`.
+
+Release:
+- React `0.4.280 / 2026.10.02.330`
+- Public storefront `0.16.32 / 2026.10.02.045`
+- Generated React bundle `/react/assets/index-iSFhZ0mq.js`.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- React foundation/migration/parity matrix/P0 action/callable/tenant-access/UI-layer contracts PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.330`.
+- `git diff --check` PASS.
+- Post-build audit confirms canonical `public/index.html` contains no Waiting Queue Home card/injector and Waiting Queue Back source is the full-navigation anchor.
+
+Deploy state:
+- Commit/push/deploy are performed after this WORKLOG entry.
+- Firebase scope is Hosting only.
+- No Functions / Firestore Rules / Storage Rules changes are required.
+- No merge to `main`.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title

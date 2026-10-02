@@ -310,7 +310,7 @@ export function HomePage() {
             <p>{profile.role === "owner" ? shopName : t("home.staff.hero_description")}</p>
           </section>
 
-          <section className="dashboard-section" aria-labelledby="frontServiceTitle">
+          <section className="dashboard-section dashboard-section-order-delivery" aria-labelledby="frontServiceTitle">
             <div className="dashboard-section-head">
               <h2 id="frontServiceTitle">Order / Delivery</h2>
               <p>{t("home.staff.order_delivery.description")}</p>
@@ -318,7 +318,6 @@ export function HomePage() {
             <div className="nav-cards" aria-label={t("home.staff.order_delivery.aria_label")}>
               <DashboardCard profile={profile} roles={["owner","admin","kitchen","super_admin"]} href="/kitchen" cardKey="kitchen" icon="fi fi-rr-restaurant app-icon" label={t("home.staff.cards.kitchen")} description={t("home.staff.card_descriptions.kitchen")} />
               <DashboardCard profile={profile} roles={["owner","admin","cashier","super_admin"]} href="/cashier" cardKey="cashier" icon="fi fi-rr-receipt app-icon" label={t("home.staff.cards.cashier")} description={t("home.staff.card_descriptions.cashier")} />
-              <DashboardCard profile={profile} roles={["owner","admin","manager","cashier","super_admin"]} href="/waiting-queue" cardKey="waiting_queue" icon="bi bi-person-standing app-icon waiting-queue-home-icon" label={t("home.staff.cards.waiting_queue")} description={t("home.staff.card_descriptions.waiting_queue")} />
               <DashboardCard profile={profile} roles={["owner","admin","super_admin"]} href="/admin" cardKey="admin" icon="fi fi-rr-settings-sliders app-icon" label={t("home.staff.cards.system_admin")} description={t("home.staff.card_descriptions.system_admin")} />
               <DashboardCard profile={profile} roles={["owner","super_admin"]} href="/admin/users" cardKey="admin_users" icon="fi fi-rr-users app-icon" label={t("home.staff.cards.staff_admin")} description={t("home.staff.card_descriptions.staff_admin")} />
             </div>
