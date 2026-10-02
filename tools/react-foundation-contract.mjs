@@ -489,6 +489,22 @@ assert(
   &&salesReportModernCss.includes("font-variant-numeric: tabular-nums;"),
   "Sales Report KPI cards must use the dedicated non-overlapping responsive card system"
 );
+assert(
+  salesReportPage.includes("function useHorizontalScroller(ref)")
+  &&salesReportPage.includes('ref={receiptScrollRef} className="table-scroll receipt-table-scroll"')
+  &&salesReportPage.includes('element.addEventListener("wheel", onWheel, { passive: false })')
+  &&salesReportPage.includes('element.addEventListener("pointermove", onPointerMove, { passive: false })')
+  &&salesReportPage.includes("element.setPointerCapture?.(event.pointerId)")
+  &&salesReportModernCss.includes("body.sales-report-workspace .receipt-table-scroll")
+  &&salesReportModernCss.includes("overflow-x: auto !important;")
+  &&salesReportModernCss.includes("-webkit-overflow-scrolling: touch;")
+  &&salesReportModernCss.includes("overscroll-behavior-x: contain;")
+  &&salesReportModernCss.includes("touch-action: pan-x pan-y;")
+  &&salesReportModernCss.includes("cursor: grabbing;")
+  &&salesReportModernCss.includes("width: max-content;")
+  &&salesReportModernCss.includes("min-width: 980px;"),
+  "Sales Report receipt table must support touch, trackpad/wheel, and mouse-drag horizontal scrolling"
+);
 assert(cashierRefreshCss.includes("gap: 5px !important;")&&cashierRefreshCss.includes("transform: none;")&&cashierRefreshCss.includes("place-items: center;"),"Cashier top action-bar icon spacing/alignment parity missing");
 const sharedIconsCss=read("react-app/public/parity/css/icons.css");
 assert(sharedIconsCss.includes(".btn:has(> .app-icon + span):not(.btn-icon-only)")&&sharedIconsCss.includes(".btn:has(> i + span):not(.btn-icon-only)")&&sharedIconsCss.includes(".btn:has(> svg + span):not(.btn-icon-only)")&&sharedIconsCss.includes("gap: 7px;"),"Shared React icon/text button spacing contract missing");

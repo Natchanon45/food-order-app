@@ -2491,6 +2491,73 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Sales Report receipt table horizontal scrolling repair
+
+Symptom:
+- On Mobile / Chrome Responsive, the `รายการแยกตามใบเสร็จ` table visibly overflowed horizontally and showed a scrollbar, but the user could not drag/scroll left-right through the remaining receipt columns.
+
+Root cause:
+- The React Sales Report markup retained `data-horizontal-scroll="true"`, but the migrated React route does not load the legacy `horizontal-scroll-restore.js` runtime that used to enhance those elements with wheel and mouse-drag behavior.
+- Base CSS provided only `overflow:auto`; it did not explicitly restore touch momentum, horizontal overscroll containment, or the old drag affordance on this React table.
+- This is especially visible in Chrome Responsive testing: the table can be wider than its viewport and display a scrollbar, while click-dragging the table content itself does not natively move `scrollLeft`.
+
+Change:
+- Added a React `useHorizontalScroller(ref)` behavior directly to `AdminSalesReportPage`.
+- The receipt table wrapper now has:
+  - `receiptScrollRef`,
+  - semantic class `.receipt-table-scroll`,
+  - existing `data-horizontal-scroll="true"` retained.
+- Horizontal interaction now supports:
+  - native touch swipe,
+  - trackpad horizontal delta,
+  - mouse wheel mapped to horizontal movement while horizontal overflow exists,
+  - left-button mouse drag across table cells,
+  - pointer capture so drag remains stable while the cursor moves,
+  - click suppression only after a real drag so row action links/buttons are not accidentally triggered.
+- Drag start deliberately ignores `button`, `a`, `input`, `select`, `textarea`, and role-button targets so receipt View/Print controls remain clickable.
+- Added explicit table-scroll CSS:
+  - `overflow-x:auto !important`,
+  - `overflow-y:hidden !important`,
+  - `-webkit-overflow-scrolling:touch`,
+  - `overscroll-behavior-x:contain`,
+  - `touch-action:pan-x pan-y`,
+  - visible thin scrollbar,
+  - grab/grabbing cursor for desktop testing.
+- Receipt table now uses `width:max-content` with existing `min-width:980px`, guaranteeing real horizontal overflow on narrow viewports instead of collapsing columns into the card width.
+- No receipt data, filtering, pagination, or report calculations were changed.
+
+Regression protection:
+- React foundation contract now requires:
+  - `useHorizontalScroller`,
+  - receipt scroll ref/class,
+  - non-passive wheel and pointer-move listeners,
+  - pointer capture,
+  - touch momentum/overscroll/touch-action CSS,
+  - grab state,
+  - max-content + 980px receipt table width.
+
+Release:
+- React `0.4.280 / 2026.10.02.326`
+- Public storefront `0.16.32 / 2026.10.02.041`
+- Generated React bundle `/react/assets/index-BUguVrxt.js`.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- React foundation contract PASS.
+- React migration/parity matrix/P0 action/callable/tenant-access/UI-layer contracts PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.326`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Commit/push/deploy are performed after this WORKLOG entry.
+- Firebase scope is Hosting only.
+- No Functions / Firestore Rules / Storage Rules changes are required.
+- No merge to `main`.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title

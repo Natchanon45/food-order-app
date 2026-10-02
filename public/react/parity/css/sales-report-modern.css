@@ -382,8 +382,48 @@ body.sales-report-workspace .best-period-card {
 }
 
 body.sales-report-workspace .table-scroll {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
   border: 1px solid #dcebe1;
   border-radius: 16px;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x pan-y;
+  scrollbar-width: thin;
+  scrollbar-color: #9faaa3 #edf3ef;
+  cursor: grab;
+}
+
+body.sales-report-workspace .table-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+body.sales-report-workspace .table-scroll::-webkit-scrollbar-track {
+  background: #edf3ef;
+  border-radius: 999px;
+}
+
+body.sales-report-workspace .table-scroll::-webkit-scrollbar-thumb {
+  background: #9faaa3;
+  border-radius: 999px;
+}
+
+body.sales-report-workspace .table-scroll.is-horizontal-dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+body.sales-report-workspace .receipt-table-scroll {
+  position: relative;
+  isolation: isolate;
+}
+
+body.sales-report-workspace .receipt-table-scroll .receipt-table {
+  width: max-content;
+  min-width: 980px;
 }
 
 body.sales-report-workspace .receipt-table {

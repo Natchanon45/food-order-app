@@ -78,6 +78,90 @@ function printUrl(receipt) {
     : `${prefix}/cashier/receipt/?order=${encodeURIComponent(ids[0])}`;
 }
 
+function useHorizontalScroller(ref) {
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return undefined;
+
+    const canScroll = () => element.scrollWidth > element.clientWidth + 2;
+    const maxLeft = () => Math.max(0, element.scrollWidth - element.clientWidth);
+    const clamp = value => Math.max(0, Math.min(maxLeft(), value));
+    let dragging = false;
+    let moved = false;
+    let startX = 0;
+    let startLeft = 0;
+    let pointerId = null;
+
+    const onWheel = event => {
+      if (!canScroll()) return;
+      const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY)
+        ? event.deltaX
+        : event.deltaY;
+      if (!delta) return;
+      const before = element.scrollLeft;
+      const next = clamp(before + delta);
+      if (next === before) return;
+      element.scrollLeft = next;
+      event.preventDefault();
+    };
+
+    const onPointerDown = event => {
+      if (event.pointerType !== "mouse" || event.button !== 0 || !canScroll()) return;
+      if (event.target.closest("button,a,input,select,textarea,[role='button']")) return;
+      dragging = true;
+      moved = false;
+      startX = event.clientX;
+      startLeft = element.scrollLeft;
+      pointerId = event.pointerId;
+      element.classList.add("is-horizontal-dragging");
+      element.setPointerCapture?.(event.pointerId);
+    };
+
+    const onPointerMove = event => {
+      if (!dragging) return;
+      const diff = event.clientX - startX;
+      if (Math.abs(diff) > 3) moved = true;
+      element.scrollLeft = clamp(startLeft - diff);
+      if (moved) event.preventDefault();
+    };
+
+    const stopDrag = event => {
+      if (!dragging) return;
+      dragging = false;
+      element.classList.remove("is-horizontal-dragging");
+      if (pointerId != null && element.hasPointerCapture?.(pointerId)) {
+        element.releasePointerCapture(pointerId);
+      }
+      pointerId = null;
+      if (event?.type === "pointercancel") moved = false;
+    };
+
+    const suppressClickAfterDrag = event => {
+      if (!moved) return;
+      event.preventDefault();
+      event.stopPropagation();
+      moved = false;
+    };
+
+    element.addEventListener("wheel", onWheel, { passive: false });
+    element.addEventListener("pointerdown", onPointerDown);
+    element.addEventListener("pointermove", onPointerMove, { passive: false });
+    element.addEventListener("pointerup", stopDrag);
+    element.addEventListener("pointercancel", stopDrag);
+    element.addEventListener("click", suppressClickAfterDrag, true);
+
+    return () => {
+      element.removeEventListener("wheel", onWheel);
+      element.removeEventListener("pointerdown", onPointerDown);
+      element.removeEventListener("pointermove", onPointerMove);
+      element.removeEventListener("pointerup", stopDrag);
+      element.removeEventListener("pointercancel", stopDrag);
+      element.removeEventListener("click", suppressClickAfterDrag, true);
+      element.classList.remove("is-horizontal-dragging");
+    };
+  }, [ref]);
+}
+
 function Breakdown({ entries, money, empty }) {
   const max = Math.max(0, ...entries.map(entry => entry.value));
   if (!entries.length) return <div className="empty-report">{empty}</div>;
@@ -118,6 +202,8 @@ export function AdminSalesReportPage() {
   const [orderType, setOrderType] = useState("all");
   const [paymentMethod, setPaymentMethod] = useState("all");
   const [search, setSearch] = useState("");
+  const receiptScrollRef = useRef(null);
+  useHorizontalScroller(receiptScrollRef);
   const [orders, setOrders] = useState([]);
   const [loadError, setLoadError] = useState("");
   const [page, setPage] = useState(1);
@@ -491,7 +577,7 @@ export function AdminSalesReportPage() {
 
         <section className="card receipt-section">
           <div className="section-title receipt-heading"><div><h2><i className="bi bi-table" aria-hidden="true"></i><span>{t("sales_report.sections.receipts")}</span></h2><div className="menu-category" id="receiptRangeLabel">{range.label}</div></div><span className="badge" id="receiptResultCount">{t("sales_report.receipt.result_count", { count: formatNumber(filteredReceipts.length, { maximumFractionDigits: 0 }) })}</span></div>
-          <div className="table-scroll" data-horizontal-scroll="true">
+          <div ref={receiptScrollRef} className="table-scroll receipt-table-scroll" data-horizontal-scroll="true" aria-label={t("sales_report.sections.receipts")}>
             <table className="table-list receipt-table">
               <thead><tr><th>{t("sales_report.receipt.number")}</th><th>{t("sales_report.receipt.date_time")}</th><th>{t("sales_report.receipt.channel")}</th><th>{t("sales_report.receipt.customer_table")}</th><th>{t("sales_report.receipt.payment")}</th><th>{t("sales_report.receipt.quantity")}</th><th className="number">{t("sales_report.receipt.net_total")}</th><th></th></tr></thead>
               <tbody id="receiptRows">
