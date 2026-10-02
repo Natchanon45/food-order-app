@@ -415,9 +415,12 @@ body.sales-report-workspace .receipt-table-scroll {
   contain: inline-size;
 }
 
-body.sales-report-workspace .receipt-table-scroll .receipt-table {
-  width: max-content;
-  min-width: 980px;
+body.sales-report-workspace .receipt-table-scroll > .receipt-table {
+  display: table !important;
+  width: max-content !important;
+  min-width: 980px !important;
+  max-width: none !important;
+  overflow: visible !important;
 }
 
 body.sales-report-workspace .receipt-table {

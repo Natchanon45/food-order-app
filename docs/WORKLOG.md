@@ -2699,6 +2699,81 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Sales Report receipt nested horizontal-scroll root-cause fix
+
+Symptom:
+- User repeatedly confirmed that `ยอดขายแยกรายเดือน` could be swiped horizontally in Chrome Responsive / iPhone emulation, while `รายการแยกตามใบเสร็จ` remained locked.
+- Earlier custom-drag and native-wrapper changes did not solve the live Production interaction.
+
+Root cause investigation:
+- Used a read-only clone of the current Chrome Firebase Auth persistence to open the authenticated Production Sales Report in a separate headless Chrome instance.
+- Reproduced the exact yearly 2026 / พ.ศ. 2569 state with 8 receipts.
+- Production live computed state before the fix:
+  - monthly chart: one scroll container, `display:flex`, `overflow-x:auto`;
+  - receipt wrapper: `clientWidth=372`, `scrollWidth=980`, `overflow-x:auto`;
+  - inner receipt `<table>`: unexpectedly `display:block`, `overflow-x:auto`, `clientWidth=scrollWidth=980`.
+- The global `shared-responsive.css` Mobile safety rule changes all non-receipt-page tables to `display:block; width:100%; overflow-x:auto`.
+- Therefore the receipt area had two nested horizontal scroll containers:
+  1. `.receipt-table-scroll` outer wrapper (actually scrollable);
+  2. inner `.receipt-table` (classified as a scroll container but with no own horizontal overflow).
+- Touch hit-testing on real receipt rows landed on `<td>` inside the inner table. Browser panning bound to the nearest inner overflow container, which could not move, and did not transfer the horizontal gesture to the outer wrapper.
+- Live Production touch simulation confirmed the bug:
+  - before swipe: wrapper `scrollLeft=0`, table `scrollLeft=0`;
+  - after swipe: wrapper `scrollLeft=0`, table `scrollLeft=0`.
+- A temporary CSS override was injected into the same authenticated Production clone:
+  - inner table `display:table !important`,
+  - `overflow:visible !important`,
+  - `max-width:none !important`,
+  - `width:max-content !important`,
+  - `min-width:980px !important`.
+- The identical touch swipe then moved the outer wrapper to `scrollLeft=303` while inner table stayed at `0`, proving the root cause and fix.
+
+Change:
+- `sales-report-modern.css` now explicitly overrides the global Mobile table safety rule for the Sales Report receipt table:
+  - `display: table !important`;
+  - `width: max-content !important`;
+  - `min-width: 980px !important`;
+  - `max-width: none !important`;
+  - `overflow: visible !important`.
+- `.receipt-table-scroll` remains the only horizontal scroll container.
+- No custom pointer/touch interception is reintroduced.
+- Existing native momentum scrolling and scrollbar styling remain intact.
+
+Regression protection:
+- React foundation contract now requires:
+  - dedicated direct-child receipt-table selector;
+  - `display:table !important`;
+  - max-content width / 980px minimum width;
+  - `max-width:none !important`;
+  - `overflow:visible !important`;
+  - no custom pointer interception;
+  - no `touch-action:pan-y` lock.
+- This specifically protects against the global `shared-responsive.css` table rule becoming the inner horizontal scroller again.
+
+Release:
+- React `0.4.280 / 2026.10.02.329`
+- Public storefront `0.16.32 / 2026.10.02.044`
+- Generated React bundle `/react/assets/index-62pKsOHK.js`.
+
+Verification:
+- Authenticated Production clone reproduced 8 real receipt rows for yearly 2026 before source change.
+- Temporary override on Production clone changed the same real touch gesture from `scrollLeft=0` to outer wrapper `scrollLeft=303`.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- React foundation contract PASS.
+- React migration/parity matrix/P0 action/callable/tenant-access/UI-layer contracts PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.329`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Commit/push/deploy are performed after this WORKLOG entry.
+- Firebase scope is Hosting only.
+- No Functions / Firestore Rules / Storage Rules changes are required.
+- No merge to `main`.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title

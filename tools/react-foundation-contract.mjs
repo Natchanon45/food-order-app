@@ -501,9 +501,13 @@ assert(
   &&salesReportModernCss.includes("overscroll-behavior-x: contain;")
   &&salesReportModernCss.includes("scrollbar-color: var(--green) transparent;")
   &&!salesReportModernCss.includes("touch-action: pan-y;")
-  &&salesReportModernCss.includes("width: max-content;")
-  &&salesReportModernCss.includes("min-width: 980px;"),
-  "Sales Report receipt table must use native horizontal scrolling like the monthly sales chart without custom pointer interception"
+  &&salesReportModernCss.includes("body.sales-report-workspace .receipt-table-scroll > .receipt-table")
+  &&salesReportModernCss.includes("display: table !important;")
+  &&salesReportModernCss.includes("width: max-content !important;")
+  &&salesReportModernCss.includes("min-width: 980px !important;")
+  &&salesReportModernCss.includes("max-width: none !important;")
+  &&salesReportModernCss.includes("overflow: visible !important;"),
+  "Sales Report receipt table must keep the wrapper as the only horizontal scroll container and override the global mobile table scroller"
 );
 assert(cashierRefreshCss.includes("gap: 5px !important;")&&cashierRefreshCss.includes("transform: none;")&&cashierRefreshCss.includes("place-items: center;"),"Cashier top action-bar icon spacing/alignment parity missing");
 const sharedIconsCss=read("react-app/public/parity/css/icons.css");
