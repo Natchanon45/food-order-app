@@ -490,24 +490,20 @@ assert(
   "Sales Report KPI cards must use the dedicated non-overlapping responsive card system"
 );
 assert(
-  salesReportPage.includes("function useHorizontalScroller(ref)")
-  &&salesReportPage.includes('ref={receiptScrollRef} className="table-scroll receipt-table-scroll"')
-  &&salesReportPage.includes('element.addEventListener("wheel", onWheel, { passive: false })')
-  &&salesReportPage.includes('element.addEventListener("pointermove", onPointerMove, { passive: false })')
-  &&salesReportPage.includes("event.pointerType === \"mouse\" ? \"x\" : null")
-  &&salesReportPage.includes("const diffY = event.clientY - startY")
-  &&salesReportPage.includes("Math.abs(diffX) <= Math.abs(diffY)")
-  &&salesReportPage.includes("element.setPointerCapture?.(event.pointerId)")
-  &&!salesReportPage.includes('if (event.pointerType !== "mouse"')
+  salesReportPage.includes('className="table-scroll receipt-table-scroll"')
+  &&salesReportPage.includes('data-horizontal-scroll="true"')
+  &&!salesReportPage.includes("function useHorizontalScroller(ref)")
+  &&!salesReportPage.includes("receiptScrollRef")
+  &&!salesReportPage.includes('element.addEventListener("pointermove"')
   &&salesReportModernCss.includes("body.sales-report-workspace .receipt-table-scroll")
   &&salesReportModernCss.includes("overflow-x: auto !important;")
   &&salesReportModernCss.includes("-webkit-overflow-scrolling: touch;")
   &&salesReportModernCss.includes("overscroll-behavior-x: contain;")
-  &&salesReportModernCss.includes("touch-action: pan-y;")
-  &&salesReportModernCss.includes("cursor: grabbing;")
+  &&salesReportModernCss.includes("scrollbar-color: var(--green) transparent;")
+  &&!salesReportModernCss.includes("touch-action: pan-y;")
   &&salesReportModernCss.includes("width: max-content;")
   &&salesReportModernCss.includes("min-width: 980px;"),
-  "Sales Report receipt table must support touch, trackpad/wheel, and mouse-drag horizontal scrolling"
+  "Sales Report receipt table must use native horizontal scrolling like the monthly sales chart without custom pointer interception"
 );
 assert(cashierRefreshCss.includes("gap: 5px !important;")&&cashierRefreshCss.includes("transform: none;")&&cashierRefreshCss.includes("place-items: center;"),"Cashier top action-bar icon spacing/alignment parity missing");
 const sharedIconsCss=read("react-app/public/parity/css/icons.css");

@@ -2627,6 +2627,69 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Sales Report receipt table switched to native scrolling parity
+
+User comparison:
+- `ยอดขายแยกรายเดือน` can be dragged horizontally in the same Chrome Responsive device mode.
+- `รายการแยกตามใบเสร็จ` cannot.
+- Therefore the problem is local to the receipt-table scroll implementation, not DevTools touch emulation itself.
+
+Root cause:
+- The monthly chart relies on browser-native `overflow-x:auto` behavior.
+- The receipt table had accumulated a custom pointer/wheel drag layer plus `touch-action:pan-y`.
+- `touch-action:pan-y` explicitly removes horizontal panning from the browser and requires the JavaScript pointer handler to take over.
+- If that handler does not receive/own the emulated gesture exactly as expected, horizontal movement is effectively locked.
+- This diverged from the already-working monthly chart behavior.
+
+Change:
+- Removed `useHorizontalScroller()` completely from the Sales Report React page.
+- Removed receipt scroll ref and all custom:
+  - wheel interception,
+  - pointerdown/pointermove handling,
+  - pointer capture,
+  - preventDefault drag logic,
+  - click suppression.
+- Receipt table now uses browser-native horizontal scrolling only, matching the monthly chart model.
+- Removed `touch-action:pan-y`; default browser touch handling is restored.
+- Kept native-friendly scroll properties:
+  - `overflow-x:auto !important`,
+  - `overflow-y:hidden !important`,
+  - `-webkit-overflow-scrolling:touch`,
+  - `overscroll-behavior-x:contain`.
+- Aligned scrollbar styling with the monthly chart using the green thumb / transparent track.
+- Receipt table still uses `width:max-content` and `min-width:980px` so narrow screens have real horizontal overflow.
+- Added `contain:inline-size` to the receipt wrapper so the oversized table cannot expand the card instead of scrolling.
+
+Regression protection:
+- React foundation contract now requires native receipt scrolling and explicitly rejects:
+  - `useHorizontalScroller`,
+  - receipt scroll refs,
+  - pointermove interception,
+  - `touch-action:pan-y`.
+- Contract preserves max-content / 980px table overflow and native momentum scrolling.
+
+Release:
+- React `0.4.280 / 2026.10.02.328`
+- Public storefront `0.16.32 / 2026.10.02.043`
+- Generated React bundle `/react/assets/index-DOhou3DW.js`.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- React foundation contract PASS.
+- React migration/parity matrix/P0 action/callable/tenant-access/UI-layer contracts PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.328`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Commit/push/deploy are performed after this WORKLOG entry.
+- Firebase scope is Hosting only.
+- No Functions / Firestore Rules / Storage Rules changes are required.
+- No merge to `main`.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
