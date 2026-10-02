@@ -922,12 +922,17 @@ export function CashierPage() {
 
       <main className="container cashier-shell">
         <section className="hero cashier-hero">
-          <div className="cashier-hero-copy"><h1>{t("cashier.hero.title")}</h1><p>{t("cashier.hero.description")}</p></div>
-          <div className="cashier-hero-actions">
-            <a className="btn cashier-hero-order-btn" href={cashierRoute("/quick-order")} aria-label={t("quick_order.entry.button")} title={t("quick_order.entry.description")}>
-              <i className="bi bi-lightning-charge app-icon" aria-hidden="true"></i>
-              <span>{t("quick_order.entry.button")}</span>
-            </a>
+          <div className="cashier-hero-copy">
+            <div className="cashier-hero-title-row">
+              <h1>{t("cashier.hero.title")}</h1>
+              <div className="cashier-hero-actions">
+                <a className="btn cashier-hero-order-btn" href={cashierRoute("/quick-order")} aria-label={t("quick_order.entry.button")} title={t("quick_order.entry.description")}>
+                  <i className="bi bi-lightning-charge app-icon" aria-hidden="true"></i>
+                  <span>{translated(t, "quick_order.entry.short_button", t("kitchen.actions.accept"))}</span>
+                </a>
+              </div>
+            </div>
+            <p>{t("cashier.hero.description")}</p>
           </div>
         </section>
 

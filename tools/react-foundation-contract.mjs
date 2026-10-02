@@ -324,13 +324,18 @@ assert(
   "Delivery customer context must be isolated from staff identity, privileges, data, storage, and Functions"
 );
 assert(
-  cashierPage.includes('className="cashier-hero-actions"')
+  cashierPage.includes('className="cashier-hero-title-row"')
+  &&cashierPage.includes('className="cashier-hero-actions"')
   &&cashierPage.includes('className="btn cashier-hero-order-btn"')
+  &&cashierPage.includes('translated(t, "quick_order.entry.short_button", t("kitchen.actions.accept"))')
   &&cashierPage.indexOf('cashier-hero-order-btn')<cashierPage.indexOf('cashier-action-bar')
   &&!cashierPage.match(/cashier-actions[\s\S]{0,260}quick-order/)
+  &&cashierRefreshCss.includes(".cashier-hero-title-row")
+  &&cashierRefreshCss.includes("justify-content: space-between;")
+  &&cashierRefreshCss.includes("white-space: nowrap;")
   &&cashierRefreshCss.includes(".cashier-hero-order-btn")
-  &&cashierRefreshCss.includes("flex-direction: column"),
-  "Cashier walk-in order action must stay inside the Hero and outside the takeaway action bar"
+  &&!cashierRefreshCss.includes("flex-direction: column"),
+  "Cashier walk-in order action must stay inside the Hero, share the title row, and use the short order label"
 );
 assert(posPage.includes("initialDataReady")&&posPage.includes("!initialDataReady"),"POS full-page readiness must wait for initial Firebase data");
 assert(

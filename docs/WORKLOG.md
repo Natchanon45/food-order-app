@@ -2977,6 +2977,59 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Cashier Hero order action moved into title row
+
+Request clarification:
+- Keep the Quick Order action inside the green Cashier Hero.
+- Move it from the lower Hero row to the same horizontal row as `หน้าแคชเชียร์`.
+- Shorten the visible label from `รับออเดอร์หน้าร้าน` to `รับออเดอร์`.
+
+Change:
+- Reworked the Cashier Hero markup so `cashier.hero.title` and the Quick Order action share a dedicated `.cashier-hero-title-row`.
+- The Hero description remains on its own row directly beneath the title/action row.
+- Quick Order remains inside `.cashier-hero` and still links to `/cashier/quick-order`.
+- Visible button text uses a short localized label:
+  - `quick_order.entry.short_button` when available,
+  - otherwise the existing localized `kitchen.actions.accept` value (Thai = `รับออเดอร์`).
+- Accessibility label/title remain the full Quick Order description/button text.
+- Desktop Hero now uses one full-width content block with a title/action flex row.
+- Mobile Hero:
+  - title and button stay on the same row,
+  - title is kept on one line,
+  - Quick Order action is compacted to 40px minimum height with reduced padding/gap,
+  - description remains below and is not pushed into a separate action row.
+
+Regression protection:
+- React foundation contract now requires:
+  - `.cashier-hero-title-row` markup,
+  - Quick Order action before the takeaway tools section,
+  - short localized button label,
+  - title-row `justify-content:space-between`,
+  - nowrap Mobile title,
+  - no regression to the old Mobile `flex-direction:column` Hero action layout.
+
+Release:
+- React `0.4.280 / 2026.10.02.333`
+- Public storefront `0.16.32 / 2026.10.02.048`
+- Generated React bundle `/react/assets/index-C306tXpI.js`.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- React foundation/migration/parity matrix/P0 action/callable/tenant-access/UI-layer contracts PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.333`.
+- `git diff --check` PASS.
+- Post-build source audit confirms Quick Order is nested inside the title row and remains above the takeaway tools section.
+
+Deploy state:
+- Commit/push/deploy are performed after this WORKLOG entry.
+- Firebase scope is Hosting only.
+- No Functions / Firestore Rules / Storage Rules changes are required.
+- No merge to `main`.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
