@@ -2613,9 +2613,16 @@ Verification:
 - `git diff --check` PASS.
 
 Deploy state:
-- Commit/push/deploy are performed after this WORKLOG entry.
-- Firebase scope is Hosting only.
-- No Functions / Firestore Rules / Storage Rules changes are required.
+- Implementation commit: `187a0fe2` — `fix: unlock Sales Report touch drag`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` with React Build `2026.10.02.327`.
+- No Functions / Firestore Rules / Storage Rules deployment was performed.
+- Production verification:
+  - `/admin/sales-report` returns HTTP 200,
+  - production CSS contains `touch-action:pan-y`,
+  - production CSS contains horizontal overflow and grabbing state,
+  - production bundle is `/react/assets/index-BTd5KA2I.js`,
+  - production bundle contains the receipt scroll class, pointer-type handling, Y-axis intent tracking, and pointer capture code.
 - No merge to `main`.
 
 ---
