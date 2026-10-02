@@ -3098,9 +3098,18 @@ Verification:
 - Static source audit confirms no `common.pagination` key remains in Delivery pagination.
 
 Deploy state:
-- Commit/push/deploy are performed after this WORKLOG entry.
-- Firebase scope is Hosting only.
-- No Functions / Firestore Rules / Storage Rules changes are required.
+- Implementation commit: `9aa29f8b` — `fix: translate Delivery pagination summary`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- No Functions / Firestore Rules / Storage Rules deployment was performed.
+- Production verification on `/s/saas-test-shop/delivery` at Desktop viewport confirmed:
+  - Thai summary = `หน้า 1 จาก 4 • 37 เมนู`,
+  - English summary = `Page 1 of 4 • 37 items`,
+  - Myanmar / Lao / Khmer summaries resolve to localized text,
+  - raw `common.pagination.*` visible-text scan = empty for all five locales,
+  - Previous / Next / Page aria labels are localized in all five locales,
+  - page loads `public-i18n-bootstrap.js?v=20261002-007`,
+  - page loads `dom-menu-pagination.js?v=20261002-001`.
 - No merge to `main`.
 
 ---
