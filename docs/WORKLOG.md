@@ -2919,6 +2919,55 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Cashier receive-payment icon semantic refresh
+
+Request:
+- Replace the current check-mark icon on the Cashier `รับชำระ` action with an icon that visually represents payment, such as cash / coins / banknotes.
+- Apply the change directly without requiring a follow-up confirmation.
+
+Change:
+- Replaced `bi-check-circle` with Bootstrap Icons `bi-cash-coin` on all actionable Cashier receive-payment buttons:
+  - Delivery order payment,
+  - Takeaway order payment,
+  - grouped table-bill payment.
+- Added semantic class `.cashier-payment-action` to those three buttons so the payment icon can be aligned independently without affecting other confirmation actions.
+- Kept `bi-check-circle` on actions that still semantically mean confirmation/completion, including:
+  - Lalamove approval/call,
+  - hand-over complete,
+  - table assignment,
+  - already-paid state.
+- Added a scoped `bi-cash-coin` alignment rule in `cashier-refresh.css` so the new glyph stays visually centered inside the icon-only Mobile action button.
+- Confirmed bundled Bootstrap Icons 1.13.1 contains `bi-cash-coin`.
+
+Regression protection:
+- React foundation contract now requires exactly three `bi-cash-coin` payment-action icons.
+- Contract requires both single-order `actions.pay(order)` and grouped `actions.payTable(sorted)` paths to use the payment icon.
+- Contract requires the scoped Cashier payment icon alignment rule.
+- Other check-circle actions are intentionally left unchanged.
+
+Release:
+- React `0.4.280 / 2026.10.02.332`
+- Public storefront `0.16.32 / 2026.10.02.047`
+- Generated React bundle `/react/assets/index-CVnawH9r.js`.
+
+Verification:
+- Bootstrap Icons vendor audit confirms `bi-cash-coin::before` exists.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- React foundation/migration/parity matrix/P0 action/callable/tenant-access/UI-layer contracts PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.332`.
+- `git diff --check` PASS.
+- Post-build source audit confirms exactly the three receive-payment action paths use `bi-cash-coin`.
+
+Deploy state:
+- Commit/push/deploy are performed after this WORKLOG entry.
+- Firebase scope is Hosting only.
+- No Functions / Firestore Rules / Storage Rules changes are required.
+- No merge to `main`.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title

@@ -231,7 +231,7 @@ function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, actions }) {
       <a className="btn btn-dark" href={cashierRoute(`/receipt/?order=${encodeURIComponent(order.id)}`)} target="_blank" rel="noopener noreferrer"><i className="bi bi-printer app-icon"></i><span>{t("cashier.common.print")}</span></a>
       {slipUrl ? <a className="btn btn-warning" href={slipUrl} target="_blank" rel="noopener noreferrer"><i className="bi bi-eye app-icon"></i><span>{t("cashier.payment.view_slip")}</span></a>
         : order.paymentSlipPath ? <button className="btn btn-warning" type="button" disabled><i className="bi bi-eye app-icon"></i><span>{t("cashier.payment.loading_slip")}</span></button> : null}
-      {order.paymentStatus !== "paid" && !isLalamoveCod(order) ? <button className="btn btn-primary" type="button" disabled={busy} onClick={() => actions.pay(order)}><i className="bi bi-check-circle app-icon"></i><span>{t("cashier.payment.receive")}</span></button> : null}
+      {order.paymentStatus !== "paid" && !isLalamoveCod(order) ? <button className="btn btn-primary cashier-payment-action" type="button" disabled={busy} onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{t("cashier.payment.receive")}</span></button> : null}
       {dispatchedLocked
         ? <button className="btn btn-primary" type="button" disabled title={t("cashier.lalamove.local_cancel_locked")}><i className="bi bi-truck app-icon"></i><span>{t("cashier.lalamove.dispatched")}</span></button>
         : <button className="btn btn-danger" type="button" disabled={busy} onClick={() => actions.cancelOrder(order)}><i className="bi bi-x-circle app-icon"></i><span>{t("cashier.actions.cancel_all")}</span></button>}
@@ -249,7 +249,7 @@ function TakeawayCard({ order, t, money, formatTime, busy, actions }) {
     <div className="order-head" style={{ marginTop: 10 }}><strong>{t("cashier.takeaway.net_total")}</strong><strong className="price">{money(order.totalAmount)} {t("cashier.common.baht")}</strong></div>
     <div className="order-actions" style={{ marginTop: 12 }}>
       <a className="btn btn-dark" href={cashierRoute(`/receipt/?order=${encodeURIComponent(order.id)}`)} target="_blank" rel="noopener noreferrer"><i className="bi bi-printer app-icon"></i><span>{t("cashier.common.print")}</span></a>
-      {!paid ? <button className="btn btn-primary" type="button" disabled={busy} onClick={() => actions.pay(order)}><i className="bi bi-check-circle app-icon"></i><span>{t("cashier.payment.receive")}</span></button> : null}
+      {!paid ? <button className="btn btn-primary cashier-payment-action" type="button" disabled={busy} onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{t("cashier.payment.receive")}</span></button> : null}
       {ready && order.pickupStatus !== "called" ? <button className="btn btn-warning" type="button" disabled={busy} onClick={() => actions.callPickup(order)}><i className="bi bi-receipt app-icon"></i><span>{t("cashier.actions.call_pickup")}</span></button> : null}
       {ready || order.pickupStatus === "called" ? <button className="btn cashier-pickup-done-action" type="button" disabled={busy} onClick={() => actions.pickupDone(order)}><i className="bi bi-check-circle app-icon"></i><span>{t("cashier.actions.handed_over")}</span></button> : null}
       <button className="btn btn-danger" type="button" disabled={busy} onClick={() => actions.cancelOrder(order)}><i className="bi bi-x-circle app-icon"></i><span>{t("cashier.actions.cancel_all")}</span></button>
@@ -326,7 +326,7 @@ function TableBillCard({ group, t, money, formatTime, busy, actions }) {
       <a className="btn btn-dark" href={cashierRoute(`/receipt/?orders=${encodeURIComponent(ids)}`)} target="_blank" rel="noopener noreferrer"><i className="bi bi-printer app-icon"></i><span>{t("cashier.common.print")}</span></a>
       {unpaid.length ? <>
         <button className="btn btn-warning" type="button" disabled={busy} onClick={() => actions.moveTable(sorted)}><i className="bi bi-arrow-left-right app-icon"></i><span>{t("cashier.table_move.button")}</span></button>
-        <button className="btn btn-primary" type="button" disabled={busy} onClick={() => actions.payTable(sorted)}><i className="bi bi-check-circle app-icon"></i><span>{t("cashier.payment.receive")}</span></button>
+        <button className="btn btn-primary cashier-payment-action" type="button" disabled={busy} onClick={() => actions.payTable(sorted)}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{t("cashier.payment.receive")}</span></button>
       </> : <button className="btn btn-primary" type="button" disabled><i className="bi bi-check-circle app-icon"></i><span>{t("cashier.payment.paid_short")}</span></button>}
     </div>
   </article>;

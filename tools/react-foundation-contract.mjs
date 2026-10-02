@@ -564,6 +564,15 @@ assert(sharedIconsCss.includes(".owner-password-backdrop {")&&sharedIconsCss.inc
 const layerCss=read("react-app/public/parity/css/ui-layer-stack.css");
 assert(layerCss.includes(".owner-password-backdrop,")&&layerCss.includes("--ui-layer-modal-z: 2147483000;")&&layerCss.includes("--ui-layer-dialog-z: 2147483600;")&&layerCss.includes("--ui-layer-toast-z: 2147483647;"),"Owner password modal must remain below SweetAlert and Toast layers");
 assert(cashierPage.includes("bi bi-printer app-icon")&&cashierPage.includes("bi bi-x-circle app-icon"),"Cashier order action icons must use Laravel MASTER app-icon markup");
+assert(
+  (cashierPage.match(/bi bi-cash-coin app-icon/g)||[]).length===3
+  &&(cashierPage.match(/cashier-payment-action/g)||[]).length===3
+  &&cashierPage.includes('onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon"')
+  &&cashierPage.includes('onClick={() => actions.payTable(sorted)}><i className="bi bi-cash-coin app-icon"')
+  &&cashierRefreshCss.includes(".cashier-payment-action .bi-cash-coin.app-icon::before")
+  &&cashierRefreshCss.includes("transform: translateY(0);"),
+  "Cashier receive-payment actions must use the centered cash/coin icon while non-payment confirmation actions retain their semantic icons"
+);
 assert(cashierPage.includes("CashierOrderNotifier"),"Cashier Laravel order notifier parity missing");
 assert(cashierPage.includes("CASHIER_INITIAL_LOAD_TIMEOUT")&&cashierPage.includes("watchOperationalOrders")&&!cashierPage.includes("loadOperationalSnapshot"),"Cashier must open from realtime orders and must not deadlock on the heavy snapshot");
 const authProvider=read("react-app/src/auth/AuthProvider.jsx");

@@ -175,6 +175,10 @@
   transform: translateY(-1px);
 }
 
+.cashier-page .order-card .order-actions .cashier-payment-action .bi-cash-coin.app-icon::before {
+  transform: translateY(0);
+}
+
 .cashier-page .order-card .order-actions .btn .bi-x-circle.app-icon::before {
   transform: translateY(1px);
 }
