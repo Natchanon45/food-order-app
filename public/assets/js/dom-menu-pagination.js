@@ -3,11 +3,20 @@ import { t } from "./i18n.js?v=20260930-001";
 // DELIVERY_MENU_PAGINATION_ICONS_20260829_001
 const menuGrid = document.querySelector("#menuGrid");
 const pagination = document.querySelector("#menuPagination");
+function translated(key, replacements, fallback) {
+  const value = t(key, replacements);
+  return value === key ? fallback : value;
+}
+
 const copy = {
-  previous: t("common.pagination.previous"),
-  next: t("common.pagination.next"),
-  page: page => t("common.pagination.page", { page }),
-  summary: (current, total, count) => t("common.pagination.summary", { current, total, count }),
+  previous: translated("delivery.checkout.menu.previous_page", {}, "หน้าก่อนหน้า"),
+  next: translated("delivery.checkout.menu.next_page", {}, "หน้าถัดไป"),
+  page: page => translated("delivery.checkout.menu.page_aria", { page }, `หน้า ${page}`),
+  summary: (current, total, count) => translated(
+    "delivery.checkout.menu.page_summary",
+    { current, total, count },
+    `หน้า ${current} จาก ${total} • ${count} เมนู`,
+  ),
 };
 let currentPage = 1;
 let rendering = false;

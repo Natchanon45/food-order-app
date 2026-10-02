@@ -3,7 +3,7 @@ async function startDeliveryStorefront() {
   await import("./delivery-addresses.js?v=20260621-28");
   await import("./delivery-address-status-sync.js?v=20260621-28");
   await import("./delivery.js?v=20260621-28");
-  await import("./dom-menu-pagination.js?v=20260621-28");
+  await import("./dom-menu-pagination.js?v=20261002-001");
   await import("./mobile-menu-scroll.js?v=20260621-28");
 }
 

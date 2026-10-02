@@ -234,6 +234,8 @@ const storageRules=read("storage.rules");
 const staticDeliveryStaffGuard=read("public/assets/js/delivery-staff-guard.js");
 const staticDeliveryAddressesCss=read("public/assets/css/delivery-addresses.css");
 const staticDeliveryRuntime=read("public/assets/js/delivery.js");
+const staticDeliveryPagination=read("public/assets/js/dom-menu-pagination.js");
+const publicI18nBootstrap=read("public/assets/js/public-i18n-bootstrap.js");
 const publicTranslations=read("public/assets/js/public-translations.js");
 const paritySync=read("tools/sync-react-parity-assets.py");
 const cashierPage=read("react-app/src/pages/CashierPage.jsx");
@@ -372,6 +374,19 @@ assert(packageJson.includes('"verify:react-build": "node tools/generated-react-b
 assert(generatedBuildContract.includes("Cashier Receipt generated bundle is missing the Back arrow icon")&&generatedBuildContract.includes("Cashier Receipt generated bundle is missing the Print check icon")&&generatedBuildContract.includes("is stale: expected release Build"),"Generated React build contract must guard release identity and Receipt action icons");
 assert(read("react-app/src/components/UserMenu.jsx").includes("loggingOut")&&read("react-app/src/components/UserMenu.jsx").includes("<PageReadyOverlay"),"React logout must show a blocking loading overlay before redirecting to Login");
 assert(staticDeliveryEntry.includes('id="deliveryHeroStoreName"')&&!staticDeliveryEntry.includes('<span>PENGUIN</span></h1>')&&!staticDeliveryEntry.includes('<span>KINJAI</span></h1>')&&staticDeliveryRuntime.includes("renderDeliveryStoreHero")&&staticDeliveryRuntime.includes("settings?.shopName")&&staticDeliveryRuntime.includes("activeShop?.name"),"Delivery customer Hero must render the tenant store name, not the platform brand");
+assert(
+  !staticDeliveryPagination.includes("common.pagination.")
+  &&staticDeliveryPagination.includes('"delivery.checkout.menu.previous_page"')
+  &&staticDeliveryPagination.includes('"delivery.checkout.menu.next_page"')
+  &&staticDeliveryPagination.includes('"delivery.checkout.menu.page_aria"')
+  &&staticDeliveryPagination.includes('"delivery.checkout.menu.page_summary"')
+  &&staticDeliveryPagination.includes("value === key ? fallback : value")
+  &&(publicTranslations.match(/"page_summary"\s*:/g)||[]).length>=10
+  &&staticDeliveryEntry.includes('/assets/js/public-i18n-bootstrap.js?v=20261002-007')
+  &&staticDeliveryEntry.includes('/assets/js/dom-menu-pagination.js?v=20261002-001')
+  &&publicI18nBootstrap.includes('./public-translations.js?v=20261002-007'),
+  "Delivery pagination must use Delivery-localized copy with a fallback and must never expose raw common.pagination keys"
+);
 for(const key of ["calculating","fee_rule_missing","out_of_range","ready_with_limit","route_failed","store_location_missing","unavailable"]){
   const count=(publicTranslations.match(new RegExp(`"${key}"\\s*:`,"g"))||[]).length;
   assert(count===5,`Delivery distance translation must exist in all five public locales: ${key}`);

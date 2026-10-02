@@ -3040,6 +3040,71 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Delivery pagination raw translation key repair
+
+Symptom:
+- Desktop Delivery page displayed the literal translation key `common.pagination.summary` directly beneath the menu page buttons.
+- The same pagination implementation also used missing raw keys for Previous / Next / Page aria labels, although those were not visibly rendered as text.
+
+Root cause:
+- `public/assets/js/dom-menu-pagination.js` referenced `common.pagination.previous`, `common.pagination.next`, `common.pagination.page`, and `common.pagination.summary`.
+- The public storefront translation dictionary does not define a top-level `common.pagination` namespace.
+- Delivery copy is scoped under `delivery.checkout.menu`.
+- The i18n helper intentionally returns the input key when no translation exists, so the missing summary key became visible UI text.
+
+Change:
+- Delivery paginator now uses the correct namespace:
+  - `delivery.checkout.menu.previous_page`,
+  - `delivery.checkout.menu.next_page`,
+  - `delivery.checkout.menu.page_aria`,
+  - `delivery.checkout.menu.page_summary`.
+- Added all four pagination strings to the Delivery checkout menu dictionary for all five supported locales:
+  - Thai,
+  - English,
+  - Myanmar,
+  - Lao,
+  - Khmer.
+- Added a local `translated()` guard in `dom-menu-pagination.js`.
+  - If a translation is ever missing again, the paginator uses readable Thai fallback copy rather than exposing an internal translation key.
+- Cache-busted the Delivery translation/pagination runtime:
+  - `public-i18n-bootstrap.js?v=20261002-007`,
+  - `public-translations.js?v=20261002-007`,
+  - `dom-menu-pagination.js?v=20261002-001`.
+- Updated the optional Delivery bootstrap importer to the same pagination module version.
+
+Regression protection:
+- React foundation contract now verifies that Delivery pagination:
+  - contains no `common.pagination.*` references,
+  - uses all four `delivery.checkout.menu.*` keys,
+  - retains a readable fallback guard,
+  - loads the new cache identities from the Delivery HTML and i18n bootstrap,
+  - retains at least the expected public pagination translations.
+
+Release:
+- React `0.4.280 / 2026.10.02.334`
+- Public storefront `0.16.32 / 2026.10.02.049`
+- Generated React bundle `/react/assets/index-CDvS30sS.js`.
+
+Verification:
+- `node --check public/assets/js/public-translations.js` PASS.
+- `node --check public/assets/js/dom-menu-pagination.js` PASS.
+- Runtime dictionary audit confirmed Previous / Next / Page / Summary are present at `delivery.checkout.menu` for all five locales.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- React foundation/migration/parity matrix/P0 action/callable/tenant-access/UI-layer contracts PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.334`.
+- `git diff --check` PASS.
+- Static source audit confirms no `common.pagination` key remains in Delivery pagination.
+
+Deploy state:
+- Commit/push/deploy are performed after this WORKLOG entry.
+- Firebase scope is Hosting only.
+- No Functions / Firestore Rules / Storage Rules changes are required.
+- No merge to `main`.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title
