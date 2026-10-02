@@ -2551,9 +2551,17 @@ Verification:
 - `git diff --check` PASS.
 
 Deploy state:
-- Commit/push/deploy are performed after this WORKLOG entry.
-- Firebase scope is Hosting only.
-- No Functions / Firestore Rules / Storage Rules changes are required.
+- Implementation commit: `bacf59d3` — `fix: restore Sales Report horizontal scroll`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` with React Build `2026.10.02.326`.
+- No Functions / Firestore Rules / Storage Rules deployment was performed for this UI-only interaction repair.
+- Production verification:
+  - `/admin/sales-report` returns HTTP 200,
+  - production `sales-report-modern.css` contains `overflow-x:auto !important`,
+  - touch momentum and `touch-action:pan-x pan-y` are present,
+  - grab/grabbing interaction styling is present,
+  - receipt table uses `width:max-content` and `min-width:980px`,
+  - production bundle `/react/assets/index-BUguVrxt.js` contains `receipt-table-scroll`, `is-horizontal-dragging`, and `data-horizontal-scroll`.
 - No merge to `main`.
 
 ---
