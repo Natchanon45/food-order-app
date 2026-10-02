@@ -2566,6 +2566,60 @@ Deploy state:
 
 ---
 
+## 2026-10-02 — Sales Report touch drag unlock for Chrome Responsive
+
+Symptom:
+- After the first horizontal-scroll repair, the receipt table still felt locked in Chrome DevTools Responsive mode even though the scrollbar and overflow were present.
+
+Root cause:
+- The first React drag handler deliberately accepted only `pointerType === "mouse"`.
+- Chrome DevTools Responsive commonly emulates pointer input as `touch`, so drag gestures generated from the desktop mouse were not entering the custom horizontal drag path.
+- CSS still allowed browser handling on both axes via `touch-action: pan-x pan-y`, so the app did not own the horizontal gesture in touch-emulation mode.
+
+Change:
+- Expanded the Sales Report receipt-table drag handler to support mouse, touch, and pen pointer events.
+- Mouse retains immediate horizontal drag behavior.
+- Touch/pen now use axis intent detection:
+  - wait until movement exceeds a small threshold,
+  - if vertical movement dominates, leave the gesture to normal page scrolling,
+  - if horizontal movement dominates, switch to table drag, capture the pointer, and update `scrollLeft`.
+- Added `startY` and `dragAxis` tracking so horizontal table drag does not block vertical page scrolling.
+- Removed the mouse-only early-return gate.
+- Changed receipt scroll CSS from `touch-action: pan-x pan-y` to `touch-action: pan-y`.
+  - Browser keeps native vertical scrolling.
+  - Horizontal gesture is reserved for the custom receipt-table scroller.
+- View/Print buttons and other interactive controls remain excluded from drag start.
+
+Regression protection:
+- React foundation contract now requires:
+  - touch/pen axis detection,
+  - `diffY` comparison,
+  - absence of the old mouse-only gate,
+  - pointer capture,
+  - `touch-action: pan-y`.
+
+Release:
+- React `0.4.280 / 2026.10.02.327`
+- Public storefront `0.16.32 / 2026.10.02.042`
+- Generated React bundle `/react/assets/index-BTd5KA2I.js`.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- React foundation contract PASS.
+- React migration/parity matrix/P0 action/callable/tenant-access/UI-layer contracts PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.02.327`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Commit/push/deploy are performed after this WORKLOG entry.
+- Firebase scope is Hosting only.
+- No Functions / Firestore Rules / Storage Rules changes are required.
+- No merge to `main`.
+
+---
+
 ## Entry template for future changes
 
 ### YYYY-MM-DD — Short title

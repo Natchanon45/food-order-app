@@ -391,7 +391,7 @@ body.sales-report-workspace .table-scroll {
   border-radius: 16px;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
-  touch-action: pan-x pan-y;
+  touch-action: pan-y;
   scrollbar-width: thin;
   scrollbar-color: #9faaa3 #edf3ef;
   cursor: grab;

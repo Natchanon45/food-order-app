@@ -88,7 +88,9 @@ function useHorizontalScroller(ref) {
     const clamp = value => Math.max(0, Math.min(maxLeft(), value));
     let dragging = false;
     let moved = false;
+    let dragAxis = null;
     let startX = 0;
+    let startY = 0;
     let startLeft = 0;
     let pointerId = null;
 
@@ -106,28 +108,52 @@ function useHorizontalScroller(ref) {
     };
 
     const onPointerDown = event => {
-      if (event.pointerType !== "mouse" || event.button !== 0 || !canScroll()) return;
+      if (!canScroll()) return;
+      if (event.pointerType === "mouse" && event.button !== 0) return;
       if (event.target.closest("button,a,input,select,textarea,[role='button']")) return;
+
       dragging = true;
       moved = false;
+      dragAxis = event.pointerType === "mouse" ? "x" : null;
       startX = event.clientX;
+      startY = event.clientY;
       startLeft = element.scrollLeft;
       pointerId = event.pointerId;
-      element.classList.add("is-horizontal-dragging");
-      element.setPointerCapture?.(event.pointerId);
+
+      if (dragAxis === "x") {
+        element.classList.add("is-horizontal-dragging");
+        element.setPointerCapture?.(event.pointerId);
+        event.preventDefault();
+      }
     };
 
     const onPointerMove = event => {
       if (!dragging) return;
-      const diff = event.clientX - startX;
-      if (Math.abs(diff) > 3) moved = true;
-      element.scrollLeft = clamp(startLeft - diff);
+
+      const diffX = event.clientX - startX;
+      const diffY = event.clientY - startY;
+
+      if (!dragAxis) {
+        if (Math.max(Math.abs(diffX), Math.abs(diffY)) < 5) return;
+        if (Math.abs(diffX) <= Math.abs(diffY)) {
+          dragAxis = "y";
+          return;
+        }
+        dragAxis = "x";
+        element.classList.add("is-horizontal-dragging");
+        element.setPointerCapture?.(event.pointerId);
+      }
+
+      if (dragAxis !== "x") return;
+      if (Math.abs(diffX) > 3) moved = true;
+      element.scrollLeft = clamp(startLeft - diffX);
       if (moved) event.preventDefault();
     };
 
     const stopDrag = event => {
       if (!dragging) return;
       dragging = false;
+      dragAxis = null;
       element.classList.remove("is-horizontal-dragging");
       if (pointerId != null && element.hasPointerCapture?.(pointerId)) {
         element.releasePointerCapture(pointerId);
