@@ -438,13 +438,16 @@ export function PosSalesPage() {
               <option value="promptpay">{t("pos_sales.filters.transfer")}</option>
             </select>
             <button id="todayBtn" className="btn btn-secondary" type="button" onClick={setToday}>
-              {t("pos_sales.filters.today")}
+              <i className="bi bi-calendar3 pos-context-icon" data-icon-tone="blue" aria-hidden="true"></i>
+              <span>{t("pos_sales.filters.today")}</span>
             </button>
             <button id="monthBtn" className="btn btn-secondary" type="button" onClick={setThisMonth}>
-              {t("pos_sales.filters.month")}
+              <i className="bi bi-calendar3 pos-context-icon" data-icon-tone="blue" aria-hidden="true"></i>
+              <span>{t("pos_sales.filters.month")}</span>
             </button>
             <button id="clearFilterBtn" className="btn btn-secondary" type="button" onClick={clearFilters}>
-              {t("pos_sales.filters.all")}
+              <i className="bi bi-x-circle pos-context-icon" data-icon-tone="rose" aria-hidden="true"></i>
+              <span>{t("pos_sales.filters.all")}</span>
             </button>
           </div>
         </section>
@@ -467,7 +470,7 @@ export function PosSalesPage() {
           <section className="panel ranking-panel">
             <div className="section-heading">
               <div>
-                <h2>{t("pos_sales.ranking.title")}</h2>
+                <h2><i className="bi bi-cart3 pos-context-icon" data-icon-tone="emerald" aria-hidden="true"></i><span>{t("pos_sales.ranking.title")}</span></h2>
                 <p>{t("pos_sales.ranking.description")}</p>
               </div>
             </div>
@@ -490,7 +493,7 @@ export function PosSalesPage() {
           <section className="panel payment-panel">
             <div className="section-heading">
               <div>
-                <h2>{t("pos_sales.payment.title")}</h2>
+                <h2><i className="bi bi-credit-card pos-context-icon" data-icon-tone="blue" aria-hidden="true"></i><span>{t("pos_sales.payment.title")}</span></h2>
                 <p>{t("pos_sales.payment.description")}</p>
               </div>
             </div>
@@ -506,7 +509,7 @@ export function PosSalesPage() {
         <section className="panel sales-panel">
           <div className="section-heading">
             <div>
-              <h2>{t("pos_sales.sales.title")}</h2>
+              <h2><i className="bi bi-cart3 pos-context-icon" data-icon-tone="emerald" aria-hidden="true"></i><span>{t("pos_sales.sales.title")}</span></h2>
               <p id="reportPeriodText">{reportPeriodText}</p>
             </div>
             <button id="exportCsvBtn" className="btn btn-pay" type="button" onClick={exportCsv}>

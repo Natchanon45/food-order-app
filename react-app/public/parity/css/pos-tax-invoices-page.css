@@ -6,3 +6,7 @@
     .profile-sync-badge{display:inline-flex;align-items:center;min-height:22px;margin-left:6px;padding:0 8px;border-radius:999px;background:#f1f5f9;color:#475569;font-size:12px;font-weight:500;vertical-align:middle}
     .profile-sync-badge.is-synced{background:#e7f8ef;color:#0b6b32}
     .profile-sync-badge.is-pending{background:#fff7ed;color:#c2410c}
+
+
+/* task2 visual parity: supporting Tax Invoice History uses the available desktop width. */
+.tax-invoices-page .shell{width:100%;max-width:none;margin:0;padding:26px 18px 38px}

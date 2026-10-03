@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.03.375",
+  build: "2026.10.03.376",
   branch: "feature/react-firebase-port",
-  commit: "POS-RETURNS-REACT-CUTOVER",
+  commit: "POS-VISUAL-PARITY",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Retail POS returns React cutover",
+  milestone: "Retail POS sales tax returns visual parity",
   whatsNew: [
-    "Serve Retail POS returns on the canonical /pos/returns URL with the React runtime",
-    "Preserve legacy return and VOID confirmation, stock restoration, loyalty adjustment, history, receipt, and barcode scan behavior",
-    "Keep logical IDs and Firestore document IDs compatible with existing Retail POS data",
+    "Match Sales quick-filter and report-heading icon badges to the current task2 Retail POS reference",
+    "Match Tax Invoice History header, icon chips, document cards, and desktop width to the task2 reference",
+    "Restore Returns search modes, section icons, and floating developer/version control consistently",
   ],
 });

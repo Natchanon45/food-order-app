@@ -83,14 +83,14 @@ export function PosReturnsPage() {
   const tenantState = useTenant();
   const { profile } = authState;
   const { tenant } = tenantState;
-  const { locale, t, formatNumber, formatDate } = useI18n();
+  const { t, formatNumber, formatDate } = useI18n();
   const tr = useCallback((key, replacements = {}) => t(`pos_returns.runtime.${key}`, replacements), [t]);
   const stylesReady = useParityPage({
     title: t("pos_returns.meta.title"),
     bodyClass: "pos-returns-page",
     disabledGlobalStyles: ["app.css", "icons.css", "shared-responsive.css"],
     styles: [
-      "retail-pos-font-local.css", "pos-locale-switcher-placement.css", "retail-pos.css",
+      "app-version-badge-runtime.css", "retail-pos-font-local.css", "pos-locale-switcher-placement.css", "retail-pos.css",
       "retail-returns.css", "retail-returns-mobile.css", "retail-return-receipt.css",
       "retail-barcode-scan-tools.css", "retail-pos-navigation.css",
     ],
@@ -112,6 +112,7 @@ export function PosReturnsPage() {
   const [receiptSettings, setReceiptSettings] = useState({});
   const [initialDataReady, setInitialDataReady] = useState(false);
   const [loadError, setLoadError] = useState("");
+  const [searchMode, setSearchMode] = useState("receipt");
   const [searchQuery, setSearchQuery] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
   const [searchPerformed, setSearchPerformed] = useState(false);
@@ -205,18 +206,25 @@ export function PosReturnsPage() {
   const resultRows = useMemo(() => {
     if (!searchPerformed) return [];
     const queryText = appliedSearch.trim().toLowerCase();
-    return sales.filter(sale => {
-      const hasRemaining = (sale.items || []).some(item => remainingQty(history, sale, item) > 0);
-      if (!hasRemaining) return false;
-      const itemText = (sale.items || [])
-        .map(item => `${item.name || item.productName || ""} ${item.id || item.productId || ""} ${item.barcode || ""}`)
-        .join(" ").toLowerCase();
-      return !queryText
-        || saleNumberOf(sale).toLowerCase().includes(queryText)
-        || String(sale.id || "").toLowerCase().includes(queryText)
-        || itemText.includes(queryText);
-    }).slice(0, 30);
-  }, [sales, history, searchPerformed, appliedSearch]);
+    if (!queryText) return [];
+    const returnable = sales.filter(sale =>
+      (sale.items || []).some(item => remainingQty(history, sale, item) > 0));
+    if (searchMode === "receipt") {
+      const exact = returnable.filter(sale =>
+        saleNumberOf(sale).toLowerCase() === queryText
+        || String(sale.id || "").toLowerCase() === queryText);
+      const partial = returnable.filter(sale =>
+        saleNumberOf(sale).toLowerCase().includes(queryText)
+        || String(sale.id || "").toLowerCase().includes(queryText));
+      return [...exact, ...partial.filter(sale => !exact.includes(sale))].slice(0, 30);
+    }
+    if (searchMode === "product") {
+      return returnable.filter(sale => (sale.items || []).some(item =>
+        `${item.name || ""} ${item.productName || ""}`.trim().toLowerCase().includes(queryText))).slice(0, 30);
+    }
+    return returnable.filter(sale => (sale.items || []).some(item =>
+      String(item.barcode || "").trim().toLowerCase().includes(queryText))).slice(0, 30);
+  }, [sales, history, searchPerformed, appliedSearch, searchMode]);
 
   const rows = useMemo(() => (selectedSale?.items || []).map(item => {
     const id = itemIdOf(item);
@@ -248,6 +256,13 @@ export function PosReturnsPage() {
     setAppliedSearch(String(value || ""));
     setSearchPerformed(true);
   }, [searchQuery]);
+  const changeSearchMode = value => {
+    setSearchMode(value);
+    setSearchQuery("");
+    setAppliedSearch("");
+    setSearchPerformed(false);
+    requestAnimationFrame(() => document.querySelector("#returnSaleSearch")?.focus());
+  };
   const chooseSale = sale => {
     setSelectedSaleId(sale.id);
     setQtys({});
@@ -405,6 +420,7 @@ export function PosReturnsPage() {
   const acceptScan = useCallback(code => {
     const value = String(code || "").trim();
     if (!value) return false;
+    setSearchMode("barcode");
     setSearchQuery(value);
     setAppliedSearch(value);
     setSearchPerformed(true);
@@ -464,15 +480,26 @@ export function PosReturnsPage() {
     return <PageReadyOverlay error title={t("pos_returns.meta.title")} message={loadError} onRetry={refresh} />;
   }
 
-  const legacyThaiSearchDescription = "ค้นหาเลขที่บิลหรือข้อมูลสินค้าเพื่อเริ่มคืนสินค้า";
-  const legacyThaiSearchPlaceholder = "สแกนบาร์โค้ด หรือค้นหาเลขที่บิล ชื่อสินค้า และรหัสสินค้า";
-  const legacyThaiSearchPrompt = "ค้นหาบิลที่ต้องการคืนสินค้า";
-  const legacyThaiSearchNone = "ไม่พบบิลที่ยังมีสินค้าคืนได้";
-  const searchDescription = locale === "th" ? legacyThaiSearchDescription : t("pos_returns.search.description");
-  const searchPlaceholder = locale === "th" ? legacyThaiSearchPlaceholder : tr("search_prompt");
-  const resultEmpty = appliedSearch.trim()
-    ? (locale === "th" ? legacyThaiSearchNone : tr("search_none"))
-    : (locale === "th" ? legacyThaiSearchPrompt : tr("search_prompt"));
+  const searchCopy = {
+    receipt: {
+      placeholder: t("pos_returns.search.receipt_placeholder"),
+      prompt: t("pos_returns.search.receipt_prompt"),
+      none: t("pos_returns.search.receipt_none"),
+    },
+    product: {
+      placeholder: t("pos_returns.search.product_placeholder"),
+      prompt: t("pos_returns.search.product_prompt"),
+      none: t("pos_returns.search.product_none"),
+    },
+    barcode: {
+      placeholder: t("pos_returns.search.barcode_placeholder"),
+      prompt: t("pos_returns.search.barcode_prompt"),
+      none: t("pos_returns.search.barcode_none"),
+    },
+  }[searchMode];
+  const searchDescription = t("pos_returns.search.description");
+  const searchPlaceholder = searchCopy.placeholder;
+  const resultEmpty = appliedSearch.trim() ? searchCopy.none : searchCopy.prompt;
   const loyaltyParts = [];
   if (plannedLoyalty?.pointsEarnedToDeduct > 0) {
     loyaltyParts.push(tr("loyalty_deduct_preview", { count: qtyNumber(plannedLoyalty.pointsEarnedToDeduct) }));
@@ -495,9 +522,17 @@ export function PosReturnsPage() {
     <main className="return-container" data-pos-management>
       <section className="panel return-search-panel">
         <div className="section-heading"><div>
-          <h2>{t("pos_returns.search.title")}</h2>
+          <h2><i className="bi bi-receipt pos-context-icon" data-icon-tone="green" aria-hidden="true"></i><span>{t("pos_returns.search.title")}</span></h2>
           <p>{searchDescription}</p>
         </div></div>
+        <div className="return-search-mode-row">
+          <select id="returnSearchMode" aria-label={t("pos_returns.search.mode_label")} value={searchMode}
+            onChange={event => changeSearchMode(event.target.value)}>
+            <option value="receipt">{t("pos_returns.search.mode_receipt")}</option>
+            <option value="product">{t("pos_returns.search.mode_product")}</option>
+            <option value="barcode">{t("pos_returns.search.mode_barcode")}</option>
+          </select>
+        </div>
         <div className="return-search-row">
           <div className="barcode-input-group">
             <input id="returnSaleSearch" autoComplete="off" value={searchQuery}
@@ -525,7 +560,7 @@ export function PosReturnsPage() {
           })}
         </div>
         <div id="returnSaleEmpty" className="empty-state" hidden={resultRows.length > 0}>
-          {searchPerformed ? resultEmpty : (locale === "th" ? legacyThaiSearchPrompt : tr("search_prompt"))}
+          {searchPerformed ? resultEmpty : searchCopy.prompt}
         </div>
       </section>
       <section id="returnEditorPanel" ref={editorRef} className="panel return-editor-panel" hidden={!selectedSale}>
@@ -583,7 +618,7 @@ export function PosReturnsPage() {
         </> : null}
       </section>
       <section className="panel return-history-panel">
-        <div className="section-heading"><div><h2>{t("pos_returns.history.title")}</h2><p>{t("pos_returns.history.description")}</p></div></div>
+        <div className="section-heading"><div><h2><i className="bi bi-arrow-counterclockwise pos-context-icon" data-icon-tone="rose" aria-hidden="true"></i><span>{t("pos_returns.history.title")}</span></h2><p>{t("pos_returns.history.description")}</p></div></div>
         <label className="return-history-search">{t("pos_returns.history.search_label")}
           <input id="returnHistorySearch" value={historySearch} onChange={event => setHistorySearch(event.target.value)}
             placeholder={t("pos_returns.history.search_placeholder")} />

@@ -4770,3 +4770,57 @@ Release / deploy:
 - No Functions, Firestore Rules, or Storage Rules were deployed.
 - No merge to main.
 - After user acceptance of /pos/returns, the next sales-group POS menu is /pos/shifts.
+
+
+---
+
+## 2026-10-03 — Retail POS visual parity pass: Sales + Tax Invoice History + Returns
+
+Request:
+- User explicitly asked to fix visual parity before continuing POS route migration and authorized direct fixes without additional confirmation.
+- Side-by-side screenshots showed React behavior was working but appearance still differed from the current task2 Retail POS reference, including inconsistent floating developer/version control.
+
+Reference / root causes:
+- Current task2 screenshots and the Laravel/POS source on /Users/natchanonsripleng/Desktop/Sites/food-order-app-php80 are the visual MASTER for this pass.
+- The archived pre-cutover fixture is not sufficient for every visual detail because task2 has later enhancements, especially Returns search modes and semantic icon badges.
+- Legacy task2 automatically decorates controls/headings through retail-pos-icons.js imported by retail-pos-navigation.js. React does not run that DOM enhancer, so authored React controls were missing the same semantic icons.
+- Returns did not load app-version-badge-runtime.css even though AppDeveloperPanel was mounted, causing the floating developer/version button to disappear on that page.
+- React Returns had dropped the current task2 search-mode selector and had replaced mode-specific copy/filtering with one generic search behavior.
+- React Tax Invoice History contained an extra React-only Back POS action in the header and retained the older narrow 1180px shell while the supplied task2 reference uses the available desktop width.
+
+Implementation:
+- Sales:
+  - Restored calendar3/blue icons on Today and This Month.
+  - Restored x-circle/rose icon on All.
+  - Restored cart3/emerald icon on Best Sellers and sales-list headings.
+  - Restored credit-card/blue icon on Payment Mix.
+- Tax Invoice History:
+  - Removed the extra Back POS header action so header actions match the supplied task2 reference: Refresh + locale + POS menu.
+  - Restored semantic icon badges for issue heading, sync/source filter chips, sync-health chips, and buyer/company card heading.
+  - Added supporting-header/supporting-page attributes used by the POS responsive system.
+  - Added a task2 visual override so the desktop Tax Invoice History shell uses the available viewport width instead of the old 1180px cap.
+- Returns:
+  - Restored search selector with Receipt/Bill Number, Product Name, and Barcode modes using the existing five-language translation catalog.
+  - Restored task2 mode-specific placeholder/prompt/no-result copy and filtering semantics, including exact-first receipt matching and max 30 results.
+  - Barcode camera scans switch to Barcode mode before applying the scanned value.
+  - Restored receipt/green search heading icon and arrow-counterclockwise/rose history heading icon.
+  - Added app-version-badge-runtime.css so the same floating developer/version control is present consistently.
+- Updated React foundation visual contracts so these visual decisions cannot silently regress.
+
+Verification before commit/deploy:
+- npm run test:react-foundation PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS, including migration, parity matrix, P0 actions, callables, tenant access, and UI-layer contracts.
+- npm run build:react PASS.
+- Generated React build contract PASS for React 0.4.280 / Build 2026.10.03.376 using /react/assets/index-D1nG9iYR.js.
+- git diff --check PASS.
+- Canonical /pos/sales, /pos/tax-invoices, and /pos/returns entrypoints all match the current React shell after build.
+- Generated Tax Invoice History CSS contains the full-width task2 override.
+- Sales, Tax Invoice History, and Returns all mount AppDeveloperPanel; Returns now also loads its required floating-control CSS.
+
+Release / deploy:
+- React 0.4.280 / Build 2026.10.03.376.
+- Public 0.16.32 / Build 2026.10.03.091.
+- Hosting deployment pending implementation commit/push checkpoint.
+- No Functions, Firestore Rules, or Storage Rules changes are required.
+- Do not proceed to /pos/shifts until these three Production screens are visually re-verified against task2.
