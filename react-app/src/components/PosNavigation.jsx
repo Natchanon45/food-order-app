@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { signOut } from "firebase/auth";
 import { clearRetailPosSession, getRetailPosSession } from "@/auth/retailPosSession";
 import { PosUserProfile } from "@/components/PosUserProfile";
@@ -155,6 +156,7 @@ export function PosNavigation({ profile, currentKey = "" }) {
         <i className="bi bi-list" aria-hidden="true"></i>
         <span className="pos-menu-trigger-label">{t("pos_navigation.menu")}</span>
       </button>
+      {typeof document !== "undefined" ? createPortal(
       <div id="posMenuPopover" className={`pos-menu-popover${open ? " open" : ""}`}>
         <div className="pos-menu-backdrop" data-close-menu onClick={() => setOpen(false)}></div>
         <aside className="pos-menu-panel" aria-hidden={!open}>
@@ -166,7 +168,10 @@ export function PosNavigation({ profile, currentKey = "" }) {
             </button>
           </div>
           <PosUserProfile profile={posProfile} roleLabel={roleLabel} />
-          <a className="btn btn-secondary pos-central-home" href="/" data-pos-icon="house">{t("pos_navigation.central_home")}</a>
+          <a className="btn btn-secondary pos-central-home" href="/" data-pos-icon="house">
+            <i className="bi bi-house pos-context-icon" data-icon-tone="emerald" aria-hidden="true"></i>
+            <span>{t("pos_navigation.central_home")}</span>
+          </a>
           <nav>
             {groups.length ? groups.map(group => {
               const groupOpen = openGroups.has(group.id);
@@ -200,7 +205,8 @@ export function PosNavigation({ profile, currentKey = "" }) {
             </button>
           </div>
         </aside>
-      </div>
+      </div>,
+      document.body) : null}
     </>
   );
 }

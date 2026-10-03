@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.03.088',
+  build: '2026.10.03.089',
   branch: 'feature/react-firebase-port',
-  commit: 'CANONICAL-URL-CUTOVER',
+  commit: 'POS-NAV-PROFILE-PARITY',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS tax-invoice history React cutover',
-  updatedAt: '2026-10-03T13:35:53+0700',
+  milestone: 'Retail POS shared profile and menu parity',
+  updatedAt: '2026-10-03T14:48:47+0700',
   whatsNew: [
-    'Cut over canonical /pos/tax-invoices to the React runtime while preserving its legacy URL',
-    'Preserve tax invoice issue, DBD lookup, buyer profiles, void, sync recovery, filters, and print actions',
-    'Reuse the existing tax sync/offline engine without changing Firestore schema or identifiers'
+    'Render the shared POS drawer at document.body like the legacy production menu',
+    'Restore dark POS menu and user-profile text instead of inheriting the white POS header color',
+    'Restore the central-home icon while preserving existing POS permissions and navigation'
   ]
 };
 

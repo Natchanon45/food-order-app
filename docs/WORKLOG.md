@@ -4669,3 +4669,39 @@ Deploy / Production verification:
 - Chrome has JavaScript-from-Apple-Events and Accessibility automation disabled, so Remote could not read the rendered wallet DOM directly; backend revision/authenticated execution is verified.
 - No wallet balances, top-ups, ledger entries, or tenant credit data were fabricated or modified.
 - No Hosting deploy occurred, so React/Public Build numbers were intentionally not bumped.
+
+
+---
+
+## 2026-10-03 — Retail POS shared User Profile + Menu Drawer parity repair
+
+Request / visual mismatch:
+- User asked to stop advancing POS routes until the shared User Profile and POS menu drawer matched the current legacy/reference UI.
+- Production PENGUIN screenshot showed the POS drawer title and user name in white, while the reference drawer shows dark text; the “กลับหน้าระบบกลาง” action also lacked its house icon.
+
+Root cause:
+- React PosNavigation rendered the drawer popover as a child of the white-text .pos-header, so generic drawer text inherited color:#fff.
+- Legacy retail-pos-navigation.js appends the popover directly to document.body, so it does not inherit the POS header color.
+- React kept data-pos-icon="house" on the central-home action but did not run the legacy icon enhancer for that authored React element, leaving the icon absent.
+
+Implementation:
+- PosNavigation now renders #posMenuPopover through React createPortal(..., document.body), matching the legacy DOM ownership and removing header color inheritance.
+- Added the authored Bootstrap house icon with pos-context-icon / emerald tone to the central-home action.
+- Added an explicit color:var(--black) safeguard to the React POS drawer panel.
+- Kept Retail POS session-first name/email/role resolution, permission-aware menu groups, current-route highlighting, logout behavior, and all existing internal IDs unchanged.
+- Added React foundation regression guards for body portal mounting, central-home icon parity, and explicit dark drawer text.
+
+Verification:
+- npm run test:operational PASS.
+- npm run test:react-parity PASS.
+- npm run build:react PASS.
+- Generated React build contract PASS for React 0.4.280 / Build 2026.10.03.374 using /react/assets/index-DEpGoUYI.js.
+- git diff --check PASS.
+- Intermediate pre-bump bundle generated with reused Build .373 was removed and was never deployed.
+- No Functions, Firestore Rules or Storage Rules changes are required.
+
+Release / deploy:
+- React 0.4.280 / Build 2026.10.03.374.
+- Public 0.16.32 / Build 2026.10.03.089.
+- Hosting deployment pending commit/push checkpoint.
+- No merge to main.

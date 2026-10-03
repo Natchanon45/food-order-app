@@ -309,6 +309,7 @@ const posData=read("react-app/src/data/retailPosData.js");
 const posCatalogCss=read("react-app/public/parity/css/retail-pos-catalog.css");
 const posBarcodeCss=read("react-app/public/parity/css/retail-pos-barcode-scanner.css");
 const posDisplayLinkCss=read("react-app/public/parity/css/retail-pos-customer-display-link.css");
+const posNavigationCss=read("react-app/public/parity/css/retail-pos-navigation.css");
 const posPaymentEnterCss=read("react-app/public/parity/css/retail-pos-payment-enter.css");
 const posPromptpayPaymentCss=read("react-app/public/parity/css/retail-pos-promptpay-payment.css");
 const developerPanel=read("react-app/src/components/AppDeveloperPanel.jsx");
@@ -586,6 +587,8 @@ assert(posPage.includes("setRenderLimit(current => current + 99)")&&posPage.incl
 assert(posPage.includes('await sweetAlert(t("pos.held.no_items_message")')&&posPage.includes('await sweetAlert(t("pos.held.saved_synced")')&&posPage.includes('className="held-bill-card"')&&posPage.includes("openHeldBills"),"POS held-bill SweetAlert/card/refresh parity missing");
 assert(posNavigation.includes('tone: "emerald"')&&posNavigation.includes('tone: "blue"')&&posNavigation.includes('tone: "rose"')&&posNavigation.includes('tone: "violet"')&&posNavigation.includes('tone: "teal"')&&posNavigation.includes('tone: "orange"')&&posNavigation.includes('data-icon-tone={group.tone || "green"}')&&posNavigation.includes('data-icon-tone={item.tone || "green"}'),"POS navigation icon tones must match Laravel MASTER");
 assert(posNavigation.includes("const roleLabel = useMemo")&&posNavigation.includes("pos_users.role_names.")&&posNavigation.includes("<PosUserProfile profile={posProfile} roleLabel={roleLabel} />")&&posNavigation.includes("getRetailPosSession()")&&retailPosSession.includes("export function getRetailPosSession()")&&posUserProfile.includes('className="pos-menu-user"')&&posUserProfile.includes("bi bi-person-circle pos-menu-user-icon")&&posUserProfile.includes("<strong>{name}</strong>")&&posUserProfile.includes("role}{email ?"),"React POS User Profile must preserve the legacy POS session/name/role/email structure");
+assert(posNavigation.includes('import { createPortal } from "react-dom";')&&posNavigation.includes("createPortal(")&&posNavigation.includes("document.body) : null")&&posNavigation.includes('bi bi-house pos-context-icon')&&posNavigation.includes('data-icon-tone="emerald"'),"React POS drawer must portal to document.body like legacy and render the central-home icon explicitly");
+assert(posNavigationCss.includes(".pos-menu-panel{background:#f8fbf9;color:var(--black);"),"React POS drawer must keep explicit dark text even when mounted from a white-text header context");
 const legacyPosSaleMaster=read("tests/fixtures/retail-pos-legacy/pos-index.html");
 assert(legacyPosSaleMaster.includes('id="productGrid"')&&legacyPosSaleMaster.includes('id="cartList"')&&legacyPosSaleMaster.includes('id="payBtn"')&&legacyPosSaleMaster.includes('id="paymentDialog"'),"Retail POS sale legacy MASTER fixture must preserve the pre-React root UI/action inventory");
 const legacyPosSalesMaster=read("tests/fixtures/retail-pos-legacy/pos-sales-index.html");
