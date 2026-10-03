@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.03.080',
+  build: '2026.10.03.087',
   branch: 'feature/react-firebase-port',
   commit: 'CANONICAL-URL-CUTOVER',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'PENGUIN visible branding restoration',
-  updatedAt: '2026-10-03T04:05:51+0700',
+  milestone: 'Retail POS sales-history React cutover',
+  updatedAt: '2026-10-03T13:02:31+0700',
   whatsNew: [
-    'Keep the language switcher immediately before the user profile across authenticated headers',
-    'Add the shared Version / Build footer to the Super Admin control center',
-    'Normalize dynamic locale and profile actions into one responsive right-aligned header group'
+    'Cut over canonical /pos/sales to the React runtime while preserving its legacy URL',
+    'Keep Retail POS sales filters, realtime summaries, CSV export, and receipt actions compatible',
+    'Leave remaining Retail POS subroutes on their existing legacy entrypoints until migrated individually'
   ]
 };
 

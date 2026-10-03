@@ -4285,3 +4285,285 @@ Release / deploy:
 - Firebase Hosting target foodapp deployed successfully.
 - No Functions, Firestore Rules, or Storage Rules deploy for this change.
 - Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-03 — POS Customer Display PromptPay QR / timestamp / paid-state repair
+
+Observed from Production /pos/customer-display:
+- PromptPay payment area showed a broken/missing QR image.
+- Footer showed "อัปเดตล่าสุด Invalid Date".
+- "ขอบคุณที่ใช้บริการ" was visible while the display was still in an editing/unpaid state.
+
+Root causes:
+- Legacy POS Customer Display only supported paymentQr.qrImageUrl, while React Quick Order sends an EMV PromptPay paymentQr.payload and expects the display to render the QR locally.
+- Legacy display passed a Firestore Timestamp object directly to new Date(...), producing Invalid Date.
+- Legacy renderer forced paidState.hidden = false on every render.
+- React counterpart also needed a stronger timestamp normalizer and an explicit paid-state gate.
+
+Implementation:
+- public/assets/js/retail-customer-display.js now imports local qrDataUrl and renders paymentQr.payload locally when qrImageUrl is absent.
+- Remote qrImageUrl still remains first choice when present; image error falls back to local payload QR.
+- Added timestampMillis() supporting Firestore Timestamp, seconds objects, Date, numbers and parseable date strings.
+- Paid-state now displays only when snapshot.status === "paid".
+- React PosCustomerDisplayPage uses the same robust timestamp normalization and paid-state condition.
+- Added .paid-state[hidden]{display:none!important} to legacy and React parity Customer Display CSS.
+- Bumped legacy Customer Display JS/CSS cache query to 20261003-007.
+- Updated React foundation regression contracts for local QR fallback, timestamp normalization and paid-state visibility.
+- Retail POS active-focus handoff updated: POS migration resumed from the existing checkpoint.
+
+Verification:
+- node --check public/assets/js/retail-customer-display.js PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS.
+- npm run build:react PASS.
+- Generated React build contract PASS for 2026.10.03.366, bundle /react/assets/index-CSiB7wXc.js.
+- git diff --check PASS.
+- Hosting-only deploy to Firebase project chat-45754 / target foodapp succeeded.
+- Production display ID quick-order-ViRMqdkm3INfLvUMcbL2Ue70IGQ2:
+  - connected state renders normally
+  - footer shows a valid local time, not Invalid Date
+  - editing state keeps paid-state hidden with computed display:none
+- Isolated copied-browser synthetic PromptPay payload check:
+  - payment panel visible
+  - local QR src is data:image/svg+xml
+  - rendered image natural size 320x320
+  - QR error hidden / empty
+  - paid-state remains hidden
+  - no failed/4xx resource requests during the final synthetic QR check.
+
+Release / deploy:
+- React 0.4.280 / Build 2026.10.03.366.
+- Public 0.16.32 / Build 2026.10.03.081.
+- Firebase Hosting deployed successfully.
+- No Functions, Firestore Rules, or Storage Rules deployed.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-03 — POS Customer Display Laravel QR visual parity correction
+
+Request:
+- Production QR was functional but did not visually match Laravel MASTER.
+- User supplied side-by-side screenshots and required the Firebase POS Customer Display to match the Laravel presentation.
+
+Correction:
+- The previous assumption that the thank-you strip should appear only after paid was incorrect for MASTER parity.
+- Laravel keeps the thank-you strip visible while the live PromptPay QR is displayed.
+- The legacy Customer Display also lacked the Laravel/React total-summary wrapper and QR responsive/consistency layers.
+
+Implementation:
+- Added the Thai QR Payment header artwork, PromptPay logo, and centered Thai QR mark around the live QR.
+- Added total-summary markup to compact the checkout totals like MASTER.
+- Loaded retail-customer-display-responsive.css and retail-customer-display-qr-consistency.css on legacy /pos/customer-display.
+- Kept local paymentQr.payload rendering and robust Firestore timestamp normalization from the prior repair.
+- Restored the visible thank-you strip in both legacy and React Customer Display implementations.
+- Added regression contracts for MASTER QR frame, total-summary, responsive layers, and visible thank-you strip.
+
+Verification / deploy:
+- operational + full React parity suites PASS; generated React build contract PASS.
+- Final React 0.4.280 / Build 2026.10.03.368; public 0.16.32 / Build 2026.10.03.083.
+- Hosting-only deploy completed successfully; no Functions/Rules/Storage deployment.
+- Production display quick-order-ViRMqdkm3INfLvUMcbL2Ue70IGQ2: total 240.00, branded QR renders at 320x320 source, Thai QR/PromptPay/center-mark present, thank-you strip visible, no Invalid Date, no 4xx assets.
+- 1698x800 viewport parity check produced a 176px branded QR frame, matching the compact Laravel desktop/laptop scale.
+- Not committed, not pushed, not merged.
+
+---
+
+## 2026-10-03 — POS Customer Display final Laravel header/language/thank-you parity
+
+Request:
+- Fix the remaining differences against Laravel MASTER:
+  1. lower-left/lower-right radius of the "ขอบคุณที่ใช้บริการ" strip
+  2. language menu must expose all 5 system languages, not only Thai/English
+  3. top-right Fullscreen and Pair-device controls must be icon-only
+
+Root causes:
+- The final customer-display consistency layer still inherited older thank-you shape rules.
+- public/assets/js/retail-pos-i18n-bootstrap.js hard-coded only th/en menu entries and only translated DOM text when locale=en, even though i18n.js already supports th/en/my/lo/km.
+- The legacy/React customer-display Fullscreen and Pair-device controls still rendered visible text on desktop.
+
+Implementation:
+- Expanded public/assets/js/retail-pos-translations.js to th/en/my/lo/km for all 20 existing POS namespaces, sourcing my/lo/km from React parity translations.
+- Static POS i18n bootstrap now exposes ไทย / English / မြန်မာ / ລາວ / ខ្មែរ and translates any non-Thai locale.
+- Fullscreen and Pair-device controls are icon-only in both legacy Customer Display and React PosCustomerDisplayPage while retaining aria-label/title accessibility.
+- Final Customer Display consistency CSS fixes Fullscreen/Pair-device control sizing to circles and forces the thank-you strip to 14px rounded corners on all sides.
+- Customer Display asset cache query advanced to 20261003-010.
+
+Verification:
+- node --check for retail-customer-display.js, retail-pos-i18n-bootstrap.js and retail-pos-translations.js PASS.
+- test:operational PASS.
+- test:react-parity PASS.
+- build:react PASS.
+- git diff --check PASS.
+- Production locale verification PASS for th/en/my/lo/km; each locale changed the visible Customer Display title/strings and marked the correct dropdown option.
+- Production dropdown contains exactly 5 locales in order th,en,my,lo,km.
+- Production Fullscreen and Pair-device buttons have no visible text; both are square/circular icon controls (38x38 desktop), locale trigger 42x42.
+- Production thank-you strip computed bottom-left and bottom-right radii are 14px; at 1698x956 it is fully inside the total card and visible.
+- No 4xx/failed resources in the locale verification run.
+
+Release / deploy:
+- React 0.4.280 / Build 2026.10.03.369.
+- Public 0.16.32 / Build 2026.10.03.084.
+- React bundle /react/assets/index-wa8Ll_vj.js.
+- Firebase Hosting target foodapp deployed successfully.
+- No Functions, Firestore Rules, or Storage Rules deployed.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-03 — Retail POS React migration phase 1: User Profile shell
+
+Direction:
+- Retail POS migration resumed.
+- For Retail POS specifically, the existing production HTML + CSS + JavaScript UI/behavior is the migration MASTER.
+- The migration changes implementation to React without redesigning the current POS appearance or behavior.
+
+Scope:
+- Shared Retail POS User Profile block inside the POS navigation drawer.
+
+Findings:
+- Legacy POS renders the profile as icon -> session user name -> role name + email inside .pos-menu-user.
+- React PosNavigation already had similar markup, but it read primarily from the global Auth profile rather than the Retail POS session.
+- React PosProductsPage additionally rendered the global UserMenu, creating a profile/menu surface that does not exist in the legacy POS.
+- React PosCatalogPage also rendered the global UserMenu although the legacy Catalog supporting header has only Back + locale controls.
+
+Implementation:
+- Added getRetailPosSession() to the React Retail POS session module.
+- Added dedicated React PosUserProfile component using the exact legacy POS classes and DOM order.
+- PosNavigation now resolves the Retail POS session first for name/email/role and falls back to the global Auth profile only when session fields are absent.
+- PosProductsPage no longer renders the global UserMenu; it keeps PosNavigation + LocaleSwitcher like legacy Products.
+- PosCatalogPage no longer renders the global UserMenu; it keeps Back + LocaleSwitcher like the legacy Catalog support page.
+- Added React foundation regression coverage for session-backed POS profile structure and to prevent global UserMenu from returning to POS Products/Catalog.
+
+Important files:
+- react-app/src/auth/retailPosSession.js
+- react-app/src/components/PosUserProfile.jsx
+- react-app/src/components/PosNavigation.jsx
+- react-app/src/pages/PosProductsPage.jsx
+- react-app/src/pages/PosCatalogPage.jsx
+- tools/react-foundation-contract.mjs
+
+Verification:
+- npm run test:react-foundation PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS.
+- npm run build:react PASS.
+- Generated React build contract PASS for 2026.10.03.370, bundle /react/assets/index-pHPpivGi.js.
+- git diff --check PASS.
+- Legacy canonical /pos intentionally remains unchanged at this phase; no POS canonical cutover was performed yet.
+
+Release / deploy:
+- React 0.4.280 / Build 2026.10.03.370.
+- Public 0.16.32 / Build 2026.10.03.085.
+- Firebase Hosting target foodapp deployed successfully.
+- No Functions, Firestore Rules, or Storage Rules deployed.
+- Not committed, not pushed, and not merged.
+
+---
+
+## 2026-10-03 — Retail POS React migration phase 2: canonical Sale page /pos
+
+Direction:
+- Retail POS current production HTML + CSS + JavaScript remains the UI/behavior MASTER.
+- Migrate one canonical POS menu at a time without redesign.
+- This phase cuts over only the Sale root /pos. All POS subroutes remain legacy until their own migration phase.
+
+Legacy inventory / parity:
+- Archived the pre-cutover public/pos/index.html as tests/fixtures/retail-pos-legacy/pos-index.html so future React work can continue to compare against the exact legacy Sale markup.
+- Legacy Sale root has 32 IDs; React PosPage contains every legacy ID, with additional features that correspond to the existing runtime enhancement scripts (catalog tabs, scanner, customer/loyalty, PromptPay, etc.).
+- Products, Sales, Customer Display, Login and every other existing /pos/* directory remain legacy HTML/JS files.
+
+Access/session corrections:
+- React POS root now uses the Retail POS session profile when available and global Auth profile as fallback.
+- Removed hard-coded owner/admin/manager/cashier root-role gating so custom/stock POS roles follow the legacy permission model.
+- Root access checks pos.sale permission and uses firstAllowedPosPage() for users whose first allowed menu is another POS page.
+- Permission redirects use full location.replace() so they land on still-legacy POS subroutes instead of React Router accidentally rendering a not-yet-cut-over menu.
+- Unauthenticated root redirects into the POS login flow with next=/pos.
+- React POS logout returns to /pos/login/ like the legacy navigation.
+
+Canonical cutover:
+- tools/sync-react-legacy-entrypoints.py now syncs only public/pos/index.html into the React shell.
+- Existing concrete files such as public/pos/products/index.html, sales/index.html, customer-display/index.html, etc. remain untouched and continue to win as static Hosting files.
+- Added no-cache header for canonical /pos.
+- Generated-build regression asserts public/pos/index.html references the same current React bundle as the other canonical React entries.
+- React foundation contracts protect the legacy Sale fixture, session/profile behavior, full-page permission redirects, and legacy subroute fallback.
+
+Verification:
+- test:operational PASS.
+- test:react-parity PASS.
+- build:react PASS.
+- generated React build contract PASS for 2026.10.03.371, bundle /react/assets/index-O2_aXRTd.js.
+- git diff --check PASS.
+- Production /pos serves React bundle index-O2_aXRTd.js and renders productGrid, cartList, payBtn, locale and POS navigation.
+- Production User Profile matches legacy DOM/text exactly: คุณพัชรินทร์ ศรีเปล่ง / เจ้าของร้าน • patcharin.sripleng@gmail.com.
+- Desktop drawer geometry: panel x=1030, width=410; profile x=1052, width=366; five menu groups; current route /pos; no global UserMenu duplicate.
+- Production /pos/products and /pos/sales still serve legacy HTML + retail-pos-navigation.js.
+- Production /pos/customer-display remains legacy.
+- Mobile checks PASS at 440, 390, 344 and 320 px with no horizontal document overflow; header/actions remain in bounds and all 5 locale options remain available.
+- Firestore Listen requests reported as ERR_ABORTED only when the isolated Playwright context was intentionally closed; no application 4xx failure was observed.
+
+Release / deploy:
+- React 0.4.280 / Build 2026.10.03.371.
+- Public 0.16.32 / Build 2026.10.03.086.
+- Firebase Hosting target foodapp deployed successfully.
+- No Functions, Firestore Rules, or Storage Rules deployed.
+- Not committed, not pushed, and not merged.
+- Next POS menu migration: /pos/sales (ประวัติการขาย).
+
+---
+
+## 2026-10-03 — Retail POS React migration phase 3: canonical Sales history /pos/sales
+
+Direction:
+- Continue the one-menu-at-a-time Retail POS migration after canonical /pos.
+- Keep the current production Retail POS HTML + CSS + JavaScript as the migration UI/behavior MASTER.
+- Cut over only /pos/sales in this phase; other concrete /pos/* subroutes stay on their existing legacy entrypoints.
+
+Legacy inventory / parity:
+- Archived pre-cutover public/pos/sales/index.html as tests/fixtures/retail-pos-legacy/pos-sales-index.html before changing the canonical entrypoint.
+- Preserved the legacy filter, 11 summary metrics, best-seller ranking, payment mix, sales table, CSV export, receipt dialog, reprint action, customer masking, VAT details and loyalty details.
+- Preserved the complete legacy sales-history ID/action inventory with regression assertions.
+- React uses the existing 5-language TH/EN/MY/LO/KM translation namespaces instead of introducing new internal identifiers.
+
+Implementation:
+- Reworked PosSalesPage to use the Retail POS session and pos.sales permission model, including /pos/login next routing and full-page first-allowed permission redirects.
+- Added Firestore watchPosSales() so Sales history keeps the realtime behavior of the legacy page after initial data readiness.
+- Aligned sale totals, VAT/before-VAT logic, discount totals, ranking and CSV fields with public/assets/js/retail-sales.js rather than the older React draft calculation.
+- Added receipt/store/customer/VAT/loyalty rendering using the existing receipt translation keys and the same masking behavior as retail-receipt-privacy.js.
+- Added React-only receipt enhancer parity CSS matching the styles previously injected by retail-sales-receipt-enhancer.js.
+- tools/sync-react-legacy-entrypoints.py now syncs public/pos/sales/index.html to the current React shell while leaving all other not-yet-migrated POS subroutes untouched.
+- Added no-cache Hosting headers for /pos/sales and /pos/sales/**.
+- Generated-build contract now requires /pos and /pos/sales to reference the same current React bundle.
+- React foundation contract now protects the archived Sales fixture, all legacy Sales IDs, realtime watcher, POS session/permission routing and canonical entrypoint sync.
+
+Important files:
+- react-app/src/pages/PosSalesPage.jsx
+- react-app/src/data/retailPosData.js
+- react-app/public/parity/css/retail-sales-react-parity.css
+- tests/fixtures/retail-pos-legacy/pos-sales-index.html
+- tools/sync-react-legacy-entrypoints.py
+- tools/generated-react-build-contract.mjs
+- tools/react-foundation-contract.mjs
+- firebase.json
+- react-app/src/config/release.js
+- public/assets/js/app-info.js
+- README.md
+
+Verification:
+- npm run test:operational PASS.
+- npm run test:react-parity PASS.
+- npm run build:react PASS.
+- generated React build contract PASS for React 0.4.280 / Build 2026.10.03.372 using /react/assets/index-Dm-TQAhU.js.
+- git diff --check PASS.
+- public/pos/sales/index.html exactly matches public/react/index.html after postbuild sync.
+- TH/EN/MY/LO/KM each contain pos_sales, pos_sales_runtime and pos.receipt translation data.
+- Global PlatformBrandingRuntime remains mounted: uploaded App Icon targets .brand-mark, Login Logo targets .login-logo, and favicon/apple-touch-icon are updated from Platform Branding at runtime.
+
+Release / deploy:
+- React 0.4.280 / Build 2026.10.03.372.
+- Public 0.16.32 / Build 2026.10.03.087.
+- Hosting has NOT been deployed for this phase yet.
+- No Functions, Firestore Rules, or Storage Rules deployment is required for this read/report cutover.
+- No merge to main.
+- Next POS menu after user acceptance of /pos/sales: /pos/tax-invoices.

@@ -234,3 +234,53 @@
     font-size: clamp(1.5rem, 3.1dvh, 2.35rem) !important;
   }
 }
+
+
+/* Laravel MASTER header/action + thank-you shape parity — 2026-10-03 */
+.display-header-actions {
+  gap: 10px !important;
+}
+.display-header-button,
+.pairing-toggle {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 42px !important;
+  width: 42px !important;
+  min-width: 42px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  border-radius: 999px !important;
+}
+.display-header-button > span,
+.pairing-toggle-copy {
+  display: none !important;
+}
+.pairing-mini-icon {
+  display: grid !important;
+  place-items: center !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+.display-header-button > i,
+.pairing-mini-icon > i {
+  display: block !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+.paid-state {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+@media (min-width: 1100px) {
+  .display-header-button,
+  .pairing-toggle {
+    flex-basis: 38px !important;
+    width: 38px !important;
+    min-width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+  }
+}

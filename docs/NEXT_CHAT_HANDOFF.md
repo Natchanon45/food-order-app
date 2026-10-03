@@ -1,6 +1,6 @@
 # Next Chat Handoff — React + Firebase Migration
 
-Updated: 2026-09-30
+Updated: 2026-10-03
 Project: Food Order / Delivery / Retail POS
 Repository: `Natchanon45/food-order-app`
 
@@ -27,11 +27,10 @@ Do not rely on old chat memory instead of these files and current Git state.
 
 - Active path: `/Users/natchanonsripleng/Desktop/Sites/food-order-app`
 - Active branch: `feature/react-firebase-port`
-- HEAD at handoff: `013fd5ad feat: centralize subscription pricing and header layout`
-- There is substantial uncommitted and untracked migration work.
-- Preserve all of it.
+- Base HEAD before the current Retail POS phase: `e8ea76a7 feat: finalize React operational parity and Lalamove flow`.
+- Retail POS phase 1–3 work was intentionally continued on top of the existing working tree; preserve any remaining uncommitted/untracked work.
 - Do not reset / clean / discard.
-- No commit / push / merge has been requested for the current migration work.
+- Never merge to `main` unless the user explicitly requests it.
 
 Laravel MASTER reference:
 - `/Users/natchanonsripleng/Desktop/Sites/food-order-app-php80`
@@ -43,11 +42,13 @@ Local React dev server:
 
 ## Current objective
 
-Complete React + Firebase parity with Laravel MASTER without redesigning.
+Complete React + Firebase parity without redesigning. Laravel MASTER remains authoritative for non-POS migration areas unless a newer user instruction overrides it.
 
-Active focus as of 2026-09-30: **pause the Retail POS migration at the checkpoint documented below and finish the customer ordering flows first — `/order`, `/delivery`, and `/takeaway` — including their shared dependencies and 1:1 Laravel MASTER parity.**
+Active focus as of 2026-10-03: **Retail POS migration has resumed from the existing POS checkpoint after the customer ordering flows were production-verified. Continue the existing POS work in place; do not restart or re-port completed POS work from scratch.**
 
-After Order / Delivery / Takeaway are complete and verified, resume the Retail POS work from the POS checkpoint in this document. Do not restart or re-port the completed POS work from scratch.
+Retail POS migration rule (user-confirmed 2026-10-03): **for Retail POS, the current production HTML + CSS + JavaScript implementation under `public/pos` is the UI/behavior MASTER. Keep its current appearance and behavior 1:1 while replacing the implementation with React. Do not redesign POS or overwrite its current UX with Laravel styling. Migrate shared User Profile first, then canonical POS routes one menu at a time.**
+
+Retail POS current checkpoint: **shared User Profile shell and canonical Sale page `/pos` are React on Production (Build 2026.10.03.371). Canonical Sales history `/pos/sales` is now cut over locally to React and passes the final Build 2026.10.03.372 gates, but this Sales phase has not been Hosting-deployed yet. Other concrete POS subroutes remain legacy static HTML/JS until migrated individually. After user acceptance of `/pos/sales`, the next menu is `/pos/tax-invoices`.**
 
 Customer React production-test checkpoint (2026-09-30 evening):
 - Table Order React is deployed for cross-device/mobile testing on the canonical customer URL `/s/{slug}/order` without requiring `/react`.
@@ -55,14 +56,14 @@ Customer React production-test checkpoint (2026-09-30 evening):
 - React Version `0.4.280` / Build `2026.09.30.295`; public storefront Version `0.16.32` / Build `2026.09.30.010`.
 - Generated production candidate shell references `/react/assets/index-BoWOX-Jp.js`.
 - User confirmed Firebase Hosting deploy completed. Current next step is real production testing on desktop + mobile before starting Takeaway React.
-- Takeaway / Delivery / Delivery Success remain outside this Order-only test cutover; Retail POS remains paused.
+- Historical note: Takeaway / Delivery / Delivery Success were outside this Order-only test cutover. Retail POS was paused at that point but resumed on 2026-10-03 as documented above.
 
 PENGUIN branding checkpoint (2026-10-02):
 - Public-facing brand is PENGUIN; compact fallback mark is PG. Visible KINJAI, LUKKAJA, Food Order Delivery, FOOD ORDER QR, standalone FOD, and KJ branding must not surface in the UI.
 - Uploaded Platform App Icon is the first-choice header icon globally; Logo remains primary for login/large logo surfaces.
 - Header fallback order: App Icon -> Logo -> PG. Login/large-brand order: Logo -> App Icon -> PG. Favicon order: Favicon -> App Icon -> Logo.
 - Internal repo/Firebase/schema/DOM/translation identifiers are intentionally unchanged, including fod_* keys, FOD_WALLET_* error codes, Firebase project identifiers, and the existing penguin-food.web.app Hosting/auth origin.
-- Next release identity: React 0.4.280 / 2026.10.03.365; public storefront 0.16.32 / 2026.10.03.080.
+- Current local release identity: React 0.4.280 / 2026.10.03.372; public storefront 0.16.32 / 2026.10.03.087. Build 2026.10.03.372 is prepared for the /pos/sales React cutover and is not Hosting-deployed yet.
 - Primary production Hosting origin remains https://penguin-food.web.app. Legacy https://natchanon-food-order-delivery.web.app remains reachable during transition but is no longer in deploy target foodapp.
 - Delivery customer auth remains privilege-isolated from staff auth: Google popup runs only in broker app penguin-google-customer-broker-v1, callable createDeliveryCustomerSession exchanges it for a namespaced cust_... custom-token session in penguin-storefront-customer-v2, and Firestore/Storage rules explicitly exclude customerContext tokens from all staff-role paths. Staff/Owner/Super Admin remain on [DEFAULT]; Delivery logout affects only customer/broker apps.
 - Pull, test/build, commit generated assets, and deploy Hosting before Production visual verification.

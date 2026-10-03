@@ -11,7 +11,21 @@ import { qrDataUrl } from "@/utils/localQr";
 
 const DEFAULT_DISPLAY_ID = "main-register";
 const safeId = value => String(value || "").trim().replace(/[^a-zA-Z0-9_-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") || DEFAULT_DISPLAY_ID;
-const millis = value => value?.toMillis?.() ?? (value?.seconds ? Number(value.seconds) * 1000 : Number(value || 0));
+const millis = value => {
+  if (!value) return 0;
+  if (typeof value?.toMillis === "function") {
+    const result = Number(value.toMillis());
+    return Number.isFinite(result) ? result : 0;
+  }
+  if (Number.isFinite(Number(value?.seconds))) return Number(value.seconds) * 1000;
+  if (value instanceof Date) {
+    const result = value.getTime();
+    return Number.isFinite(result) ? result : 0;
+  }
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  const parsed = Date.parse(String(value));
+  return Number.isFinite(parsed) ? parsed : 0;
+};
 const money = (value, formatNumber) => formatNumber(Number(value || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export function PosCustomerDisplayPage() {
@@ -108,12 +122,11 @@ export function PosCustomerDisplayPage() {
         </div>
         <div id="displayHeaderActions" className="display-header-actions" data-pos-locale-switcher-target>
           <button id="customerDisplayFullscreen" className="display-header-button" type="button" aria-label={t(fullscreen ? "pos_customer_display.header.fullscreen_exit" : "pos_customer_display.header.fullscreen_open")} title={t(fullscreen ? "pos_customer_display.header.fullscreen_exit" : "pos_customer_display.header.fullscreen_open")} onClick={toggleFullscreen}>
-            <i className={"bi " + (fullscreen ? "bi-fullscreen-exit" : "bi-arrows-fullscreen")} aria-hidden="true"></i><span>{t(fullscreen ? "pos_customer_display.header.fullscreen_exit" : "pos_customer_display.header.fullscreen")}</span>
+            <i className={"bi " + (fullscreen ? "bi-fullscreen-exit" : "bi-arrows-fullscreen")} aria-hidden="true"></i>
           </button>
           <div id="displayPairingCard" className={"pairing-card pairing-card-compact" + (pairingOpen ? " is-open" : "")}>
             <button className="pairing-toggle" type="button" aria-label={t("pos_customer_display.pairing.show_aria")} title={t("pos_customer_display.pairing.show_aria")} aria-expanded={pairingOpen} onClick={() => setPairingOpen(value => !value)}>
               <span className="pairing-mini-icon" aria-hidden="true"><i className="bi bi-qr-code"></i></span>
-              <span className="pairing-toggle-copy"><strong>{t("pos_customer_display.pairing.toggle")}</strong></span>
             </button>
             <div id="pairingPanel" className="pairing-panel" aria-label={t("pos_customer_display.pairing.panel_aria")}>
               <div className="pairing-copy">

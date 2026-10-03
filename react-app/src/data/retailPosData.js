@@ -4,6 +4,7 @@ import {
   getDoc,
   getDocs,
   limit,
+  onSnapshot,
   orderBy,
   query,
   runTransaction,
@@ -82,6 +83,18 @@ export async function listPosSales(tenantId) {
     limit(500),
   ));
   return snapshot.docs.map(snapshotRow);
+}
+
+export function watchPosSales(tenantId, onRows, onError = null) {
+  if (!tenantId || typeof onRows !== "function") return () => {};
+  return onSnapshot(
+    query(tenantCollection(tenantId, "sales"), orderBy("createdAt", "desc")),
+    snapshot => onRows(snapshot.docs.map(snapshotRow)),
+    error => {
+      console.warn("POS_SALES_WATCH_FAILED", error);
+      if (typeof onError === "function") onError(error);
+    },
+  );
 }
 
 export async function getPosSale(tenantId, saleId) {

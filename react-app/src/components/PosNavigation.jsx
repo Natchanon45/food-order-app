@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { signOut } from "firebase/auth";
-import { clearRetailPosSession } from "@/auth/retailPosSession";
+import { clearRetailPosSession, getRetailPosSession } from "@/auth/retailPosSession";
+import { PosUserProfile } from "@/components/PosUserProfile";
 import { auth } from "@/firebase/client";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useTenant } from "@/tenant/TenantProvider";
@@ -63,9 +64,35 @@ export function getPosPermissions(profile, roleRows = null) {
   return new Set(["pos.sale"]);
 }
 
+export function firstAllowedPosPage(profile, roleRows = null) {
+  const permissions = getPosPermissions(profile, roleRows);
+  return POS_MENU_GROUPS
+    .flatMap(group => group.items)
+    .find(item => permissions.has(item.key))?.href || "/pos/forbidden";
+}
+
 export function PosNavigation({ profile, currentKey = "" }) {
   const { t } = useI18n();
   const { tenant } = useTenant();
+  const sessionProfile = useMemo(() => getRetailPosSession(), [
+    profile?.uid,
+    profile?.id,
+    profile?.tenantId,
+    profile?.email,
+    profile?.displayName,
+    profile?.name,
+    profile?.role,
+    profile?.roleId,
+  ]);
+  const posProfile = useMemo(() => ({
+    ...(profile || {}),
+    ...(sessionProfile || {}),
+    displayName: sessionProfile?.name || profile?.displayName || profile?.name || profile?.email || "",
+    name: sessionProfile?.name || profile?.name || profile?.displayName || profile?.email || "",
+    email: sessionProfile?.email || profile?.email || "",
+    role: sessionProfile?.role || profile?.role || profile?.roleId || "",
+    roleId: sessionProfile?.roleId || sessionProfile?.role || profile?.roleId || profile?.role || "",
+  }), [profile, sessionProfile]);
   const currentGroup = POS_MENU_GROUPS.find(group => group.items.some(item => item.key === currentKey))?.id || "sales";
   const [open, setOpen] = useState(false);
   const [openGroups, setOpenGroups] = useState(() => new Set([currentGroup]));
@@ -82,13 +109,13 @@ export function PosNavigation({ profile, currentKey = "" }) {
     return () => { alive = false; };
   }, [tenant?.id]);
 
-  const permissions = useMemo(() => getPosPermissions(profile, roleRows), [profile?.role, profile?.roleId, roleRows]);
+  const permissions = useMemo(() => getPosPermissions(posProfile, roleRows), [posProfile, roleRows]);
   const groups = useMemo(() => POS_MENU_GROUPS
     .map(group => ({ ...group, items: group.items.filter(item => permissions.has(item.key)) }))
     .filter(group => group.items.length), [permissions]);
 
   const roleLabel = useMemo(() => {
-    const roleId = String(profile?.roleId || profile?.role || "").trim();
+    const roleId = String(posProfile?.roleId || posProfile?.role || "").trim();
     let customName = "";
     try {
       const roles = Array.isArray(roleRows) ? roleRows : JSON.parse(localStorage.getItem("retail_pos_roles_v1") || "[]");
@@ -99,7 +126,7 @@ export function PosNavigation({ profile, currentKey = "" }) {
     const key = `pos_users.role_names.${roleId}`;
     const translated = roleId ? t(key) : "";
     return translated && translated !== key ? translated : customName || roleId || "-";
-  }, [profile?.role, profile?.roleId, roleRows, t]);
+  }, [posProfile?.role, posProfile?.roleId, roleRows, t]);
 
   useEffect(() => {
     document.body.classList.toggle("pos-menu-open", open);
@@ -118,7 +145,7 @@ export function PosNavigation({ profile, currentKey = "" }) {
     clearRetailPosSession();
     localStorage.removeItem("food_order_active_tenant");
     localStorage.removeItem("food_order_active_shop");
-    location.replace("/login");
+    location.replace("/pos/login/");
   };
 
   return (
@@ -138,11 +165,7 @@ export function PosNavigation({ profile, currentKey = "" }) {
               <i className="bi bi-x-lg" aria-hidden="true"></i>
             </button>
           </div>
-          <div className="pos-menu-user">
-            <i className="bi bi-person-circle pos-menu-user-icon" aria-hidden="true"></i>
-            <strong>{profile?.displayName || profile?.name || profile?.email || "-"}</strong>
-            <span>{roleLabel} • {profile?.email || ""}</span>
-          </div>
+          <PosUserProfile profile={posProfile} roleLabel={roleLabel} />
           <a className="btn btn-secondary pos-central-home" href="/" data-pos-icon="house">{t("pos_navigation.central_home")}</a>
           <nav>
             {groups.length ? groups.map(group => {

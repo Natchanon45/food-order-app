@@ -1,4 +1,5 @@
 import { watchRecords } from './retail-db.js?v=20260629-032';
+import { qrDataUrl } from './local-qr.js?v=20260722-037';
 
 const DISPLAY_COLLECTION = 'customerDisplays';
 const DEFAULT_DISPLAY_ID = 'main-register';
@@ -50,6 +51,22 @@ function money(value) {
   return Number(value || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function timestampMillis(value) {
+  if (!value) return 0;
+  if (typeof value?.toMillis === 'function') {
+    const millis = Number(value.toMillis());
+    return Number.isFinite(millis) ? millis : 0;
+  }
+  if (Number.isFinite(Number(value?.seconds))) return Number(value.seconds) * 1000;
+  if (value instanceof Date) {
+    const millis = value.getTime();
+    return Number.isFinite(millis) ? millis : 0;
+  }
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  const parsed = Date.parse(String(value));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 function esc(value) {
   return String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
 }
@@ -91,12 +108,31 @@ function renderPaymentQr(snapshot = {}) {
       : (payment.accountName || payment.shopName || '-');
     els.paymentQrVerify.dataset.verified = verified ? 'yes' : 'no';
   }
-  if (payment.qrImageUrl && !payment.error) {
-    els.paymentQrImage.src = payment.qrImageUrl;
+  let localQr = '';
+  if (payment.payload && !payment.error) {
+    try { localQr = qrDataUrl(payment.payload, { size: 320, margin: 4 }); }
+    catch (error) { console.warn('[customer-display] local payment QR failed', error); }
+  }
+  const primaryQr = String(payment.qrImageUrl || '').trim();
+  const initialQr = primaryQr || localQr;
+  if (initialQr && !payment.error) {
+    els.paymentQrImage.onerror = () => {
+      if (localQr && els.paymentQrImage.src !== localQr) {
+        els.paymentQrImage.src = localQr;
+        return;
+      }
+      els.paymentQrImage.onerror = null;
+      els.paymentQrImage.removeAttribute('src');
+      els.paymentQrImage.hidden = true;
+      els.paymentQrError.hidden = false;
+      els.paymentQrError.textContent = 'รอ QR จาก POS';
+    };
+    els.paymentQrImage.src = initialQr;
     els.paymentQrImage.hidden = false;
     els.paymentQrError.hidden = true;
     els.paymentQrError.textContent = '';
   } else {
+    els.paymentQrImage.onerror = null;
     els.paymentQrImage.removeAttribute('src');
     els.paymentQrImage.hidden = true;
     els.paymentQrError.hidden = false;
@@ -111,9 +147,8 @@ function installPairingCard() {
   card.id = 'displayPairingCard';
   card.className = 'pairing-card pairing-card-compact';
   card.innerHTML = `
-    <button class="pairing-toggle" type="button" aria-label="แสดง QR เชื่อมอุปกรณ์" aria-controls="pairingPanel">
+    <button class="pairing-toggle" type="button" aria-label="แสดง QR เชื่อมอุปกรณ์" title="แสดง QR เชื่อมอุปกรณ์" aria-controls="pairingPanel">
       <span class="pairing-mini-icon" aria-hidden="true"><i class="bi bi-qr-code"></i></span>
-      <span class="pairing-toggle-copy"><strong>เชื่อมอุปกรณ์</strong></span>
     </button>
     <div id="pairingPanel" class="pairing-panel" aria-label="QR เชื่อมอุปกรณ์ขายเข้าจอนี้">
       <div class="pairing-copy">
@@ -134,8 +169,10 @@ function installPairingCard() {
 function renderFullscreenButton() {
   if (!els.fullscreen) return;
   const active = Boolean(document.fullscreenElement);
-  els.fullscreen.setAttribute('aria-label', active ? 'ออกจากเต็มจอ' : 'เปิดเต็มจอ');
-  els.fullscreen.innerHTML = `<i class="bi ${active ? 'bi-fullscreen-exit' : 'bi-arrows-fullscreen'}" aria-hidden="true"></i><span>${active ? 'ออกจากเต็มจอ' : 'เต็มจอ'}</span>`;
+  const label = active ? 'ออกจากเต็มจอ' : 'เปิดเต็มจอ';
+  els.fullscreen.setAttribute('aria-label', label);
+  els.fullscreen.setAttribute('title', label);
+  els.fullscreen.innerHTML = `<i class="bi ${active ? 'bi-fullscreen-exit' : 'bi-arrows-fullscreen'}" aria-hidden="true"></i>`;
 }
 
 async function toggleFullscreen() {
@@ -149,7 +186,8 @@ async function toggleFullscreen() {
 
 function render(snapshot = {}) {
   const items = sortItems(Array.isArray(snapshot.items) ? snapshot.items : []);
-  els.status.textContent = snapshot.updatedAt ? `เชื่อมต่อแล้ว • ${snapshot.displayId || requestedDisplayId}` : `รอข้อมูลจาก ${requestedDisplayId}`;
+  const updatedAt = timestampMillis(snapshot.updatedAt);
+  els.status.textContent = updatedAt ? `เชื่อมต่อแล้ว • ${snapshot.displayId || requestedDisplayId}` : `รอข้อมูลจาก ${requestedDisplayId}`;
   els.customerName.textContent = snapshot.customerDisplayName || snapshot.customerName || 'ลูกค้าทั่วไป';
   els.customerPhone.textContent = snapshot.customerDisplayPhone || '';
   els.cartCount.textContent = `${Number(snapshot.itemCount || 0).toLocaleString('th-TH')} รายการ`;
@@ -161,8 +199,9 @@ function render(snapshot = {}) {
   els.vatMode.textContent = snapshot.vatMode === 'exclude' ? 'ราคาไม่รวม VAT' : snapshot.vatMode === 'include' ? 'ราคารวม VAT' : '-';
   els.grandTotal.textContent = money(snapshot.total);
   renderPaymentQr(snapshot);
+  // Laravel MASTER keeps the thank-you strip visible while the live QR is shown.
   els.paidState.hidden = false;
-  els.updatedAt.textContent = snapshot.updatedAt ? `อัปเดตล่าสุด ${new Date(snapshot.updatedAt).toLocaleTimeString('th-TH')}` : '';
+  els.updatedAt.textContent = updatedAt ? `อัปเดตล่าสุด ${new Date(updatedAt).toLocaleTimeString('th-TH')}` : '';
 }
 
 function localSnapshot() {

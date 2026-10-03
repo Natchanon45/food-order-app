@@ -60,6 +60,15 @@ async function tenantRoles(tenantId) {
   }
 }
 
+export function getRetailPosSession() {
+  try {
+    const session = JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
+    return session && typeof session === "object" ? session : null;
+  } catch {
+    return null;
+  }
+}
+
 export function clearRetailPosSession() {
   localStorage.removeItem(SESSION_KEY);
   localStorage.removeItem(CURRENT_USER_KEY);

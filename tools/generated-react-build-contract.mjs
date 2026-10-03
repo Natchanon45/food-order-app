@@ -28,12 +28,18 @@ function bundleFromEntry(relativeEntry) {
 
 const build = currentReactBuild();
 const receipt = bundleFromEntry("public/cashier/receipt/index.html");
+const posSale = bundleFromEntry("public/pos/index.html");
+const posSalesHistory = bundleFromEntry("public/pos/sales/index.html");
 
 assert(
   receipt.source.includes(build),
   `Generated React bundle ${receipt.ref} is stale: expected release Build ${build}`
 );
 assert(receipt.source.includes("PENGUIN"), `Generated React bundle ${receipt.ref} is missing the PENGUIN visible brand`);
+assert.equal(posSale.ref, receipt.ref, "Canonical /pos root must use the current React bundle");
+assert.equal(posSalesHistory.ref, receipt.ref, "Canonical /pos/sales must use the current React bundle");
+assert(posSale.source.includes("pos.sale"), "Canonical /pos generated bundle is missing the Retail POS sale route");
+assert(posSalesHistory.source.includes("pos.sales"), "Canonical /pos/sales generated bundle is missing the Retail POS sales-history route");
 
 const backIndex = receipt.source.indexOf("cashier_documents.receipt.back");
 assert(backIndex >= 0, "Cashier Receipt back label missing from generated bundle");

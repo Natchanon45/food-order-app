@@ -6,7 +6,9 @@
 <meta name="theme-color" content="#159447">
 <title>Customer Display</title>
 <link rel="stylesheet" href="/assets/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1.13.1">
-<link rel="stylesheet" href="/assets/css/retail-customer-display.css?v=20260802-006">
+<link rel="stylesheet" href="/assets/css/retail-customer-display.css?v=20261003-010">
+<link rel="stylesheet" href="/react/parity/css/retail-customer-display-responsive.css?v=20261003-010">
+<link rel="stylesheet" href="/react/parity/css/retail-customer-display-qr-consistency.css?v=20261003-010">
 </head>
 <body>
 <div class="display-shell">
@@ -14,8 +16,8 @@
     <div class="brand"><div><strong>จอลูกค้า POS</strong><span>รายการสินค้าและยอดชำระแบบเรียลไทม์</span></div></div>
     <div id="displayStatus" class="display-status">รอข้อมูลจาก POS</div>
     <div id="displayHeaderActions" class="display-header-actions" data-pos-locale-switcher-target>
-      <button id="customerDisplayFullscreen" class="display-header-button" type="button" aria-label="เปิดเต็มจอ">
-        <i class="bi bi-arrows-fullscreen" aria-hidden="true"></i><span>เต็มจอ</span>
+      <button id="customerDisplayFullscreen" class="display-header-button" type="button" aria-label="เปิดเต็มจอ" title="เปิดเต็มจอ">
+        <i class="bi bi-arrows-fullscreen" aria-hidden="true"></i>
       </button>
     </div>
   </header>
@@ -29,12 +31,14 @@
       <div id="cartList" class="cart-list"><div class="cart-empty">ยังไม่มีสินค้าในบิล</div></div>
     </section>
     <section class="total-card">
-      <div class="total-row"><span>รวมสินค้า</span><strong id="subtotal">0.00</strong></div>
-      <div class="total-row"><span>ส่วนลด</span><strong id="discount">0.00</strong></div>
-      <div class="total-row"><span>ยอดก่อน VAT</span><strong id="beforeVat">0.00</strong></div>
-      <div class="total-row"><span>VAT</span><strong id="vatAmount">0.00</strong></div>
-      <div class="total-row"><span>โหมด VAT</span><strong id="vatMode">-</strong></div>
-      <div class="total-row grand-row"><span>ยอดสุทธิ</span><strong id="grandTotal">0.00</strong></div>
+      <div class="total-summary">
+        <div class="total-row"><span>รวมสินค้า</span><strong id="subtotal">0.00</strong></div>
+        <div class="total-row"><span>ส่วนลด</span><strong id="discount">0.00</strong></div>
+        <div class="total-row"><span>ยอดก่อน VAT</span><strong id="beforeVat">0.00</strong></div>
+        <div class="total-row"><span>VAT</span><strong id="vatAmount">0.00</strong></div>
+        <div class="total-row"><span>โหมด VAT</span><strong id="vatMode">-</strong></div>
+        <div class="total-row grand-row"><span>ยอดสุทธิ</span><strong id="grandTotal">0.00</strong></div>
+      </div>
       <section id="paymentQrPanel" class="payment-qr-card" hidden>
         <div class="payment-qr-copy">
           <span>ชำระผ่าน PromptPay / โอนเงิน</span>
@@ -42,16 +46,27 @@
           <p id="paymentQrVerify"></p>
         </div>
         <div class="payment-qr-image-wrap">
-          <img id="paymentQrImage" class="payment-qr-image" alt="QR PromptPay สำหรับชำระเงิน" hidden>
-          <div id="paymentQrError" class="payment-qr-error" hidden></div>
+          <div class="thai-qr-payment-header" aria-label="Thai QR Payment">
+            <img class="thai-qr-payment-logo" src="/assets/images/payment-branding/thai-qr-payment.svg" alt="Thai QR Payment">
+          </div>
+          <div class="payment-qr-body">
+            <div class="promptpay-brand">
+              <img class="promptpay-brand-logo" src="/assets/images/payment-branding/promptpay.svg" alt="PromptPay">
+            </div>
+            <div class="payment-qr-code">
+              <img id="paymentQrImage" class="payment-qr-image" alt="QR PromptPay สำหรับชำระเงิน" hidden>
+              <span class="thai-qr-center-mark" aria-hidden="true"><img src="/assets/images/payment-branding/thai-qr-payment-mark.png" alt=""></span>
+              <div id="paymentQrError" class="payment-qr-error" hidden></div>
+            </div>
+          </div>
         </div>
       </section>
-      <div id="paidState" class="paid-state" hidden>ขอบคุณที่ใช้บริการ</div>
+      <div id="paidState" class="paid-state">ขอบคุณที่ใช้บริการ</div>
     </section>
   </main>
   <footer class="display-footer"><span></span><span id="updatedAt"></span></footer>
 </div>
-<script type="module" src="/assets/js/retail-customer-display.js?v=20260802-006"></script>
-<script type="module" src="/assets/js/retail-pos-i18n-bootstrap.js?v=20260903-249" data-pos-i18n-generated="1"></script>
+<script type="module" src="/assets/js/retail-customer-display.js?v=20261003-010"></script>
+<script type="module" src="/assets/js/retail-pos-i18n-bootstrap.js?v=20261003-010" data-pos-i18n-generated="1"></script>
 </body>
 </html>

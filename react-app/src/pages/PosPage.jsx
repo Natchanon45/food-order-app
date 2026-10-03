@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
-import { canUseRetailPos } from "@/auth/retailPosSession";
+import { canUseRetailPos, getRetailPosSession } from "@/auth/retailPosSession";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { AppDeveloperPanel } from "@/components/AppDeveloperPanel";
-import { PosNavigation } from "@/components/PosNavigation";
+import { firstAllowedPosPage, getPosPermissions, PosNavigation } from "@/components/PosNavigation";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { sweetAlert, sweetConfirm, sweetPrompt } from "@/components/sweetDialog";
 import {
@@ -29,7 +28,6 @@ import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
 import { generatePromptPayPayload } from "@/utils/promptPay";
 
-const ALLOWED_ROLES = new Set(["owner", "admin", "manager", "cashier"]);
 const safeDisplayId = value => {
   const cleaned = String(value || "").trim().replace(/[^a-zA-Z0-9_-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
   return cleaned || "main-register";
@@ -154,6 +152,49 @@ export function PosPage() {
   const [savingSale, setSavingSale] = useState(false);
   const [scanStatus, setScanStatus] = useState("กำลังเตรียมกล้อง...");
 
+  const posSession = useMemo(() => getRetailPosSession(), [
+    authUser?.uid,
+    profile?.id,
+    profile?.uid,
+    profile?.tenantId,
+    profile?.role,
+    profile?.roleId,
+  ]);
+  const posAccessProfile = useMemo(() => ({
+    ...(profile || {}),
+    ...(posSession || {}),
+    role: posSession?.role || profile?.role || profile?.roleId || "",
+    roleId: posSession?.roleId || posSession?.role || profile?.roleId || profile?.role || "",
+  }), [profile, posSession]);
+  const posPermissions = useMemo(() => getPosPermissions(posAccessProfile), [posAccessProfile]);
+  const hasSaleAccess = posPermissions.has("pos.sale");
+  const posRedirectTarget = useMemo(() => {
+    if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady) return "";
+    const requested = `${location.pathname}${location.search}`;
+    if (!profile) return `/pos/login/?next=${encodeURIComponent(requested)}`;
+    if (!canUseRetailPos(posAccessProfile) || tenantState.status === "error" || !tenant) return "/";
+    if (!hasSaleAccess) {
+      const firstAllowed = firstAllowedPosPage(posAccessProfile);
+      if (firstAllowed === "/pos/forbidden") {
+        return `/pos/forbidden/?permission=pos.sale&next=${encodeURIComponent(requested)}`;
+      }
+      return `${firstAllowed}?from=permission`;
+    }
+    return "";
+  }, [
+    authState.status,
+    tenantState.status,
+    tenant?.id,
+    profile,
+    posAccessProfile,
+    hasSaleAccess,
+    stylesReady,
+  ]);
+
+  useEffect(() => {
+    if (posRedirectTarget) location.replace(posRedirectTarget);
+  }, [posRedirectTarget]);
+
   const money = value => formatNumber(round2(value), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const displayConfig = useMemo(() => {
     let saved = {};
@@ -214,8 +255,8 @@ export function PosPage() {
   };
 
   useEffect(() => {
-    if (tenant?.id && ALLOWED_ROLES.has(profile?.role)) refresh();
-  }, [tenant?.id, profile?.role]);
+    if (tenant?.id && profile && canUseRetailPos(posAccessProfile) && hasSaleAccess) refresh();
+  }, [tenant?.id, profile, posAccessProfile, hasSaleAccess]);
 
   const catalogRanking = useMemo(() => {
     const ranking = new Map();
@@ -868,12 +909,11 @@ export function PosPage() {
     authState.status === "loading"
     || tenantState.status === "loading"
     || !stylesReady
-    || (tenantState.status === "ready" && tenant?.id && ALLOWED_ROLES.has(profile?.role) && !initialDataReady)
+    || Boolean(posRedirectTarget)
+    || (tenantState.status === "ready" && tenant?.id && profile && canUseRetailPos(posAccessProfile) && hasSaleAccess && !initialDataReady)
   ) {
     return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={92} />;
   }
-  if (!profile) return <Navigate to="/login?next=%2Fpos" replace />;
-  if (!ALLOWED_ROLES.has(profile.role) || !canUseRetailPos(profile) || tenantState.status === "error" || !tenant) return <Navigate to="/" replace />;
 
   return (
     <>
@@ -884,7 +924,7 @@ export function PosPage() {
         <div className="header-actions tw:shrink-0">
           <a className="btn btn-secondary tw:inline-flex tw:size-10 tw:shrink-0 tw:items-center tw:justify-center tw:p-0" href={`/pos/customer-display?displayId=${encodeURIComponent(displayConfig.displayId)}`} target="_blank" rel="noopener" aria-label={t("pos.header.customer_display_aria")} title={t("pos.header.customer_display_aria")}><i className="bi bi-display" aria-hidden="true"></i></a>
           <LocaleSwitcher style={{ marginLeft: 0, marginRight: 0 }} />
-          <PosNavigation profile={profile} currentKey="pos.sale" />
+          <PosNavigation profile={posAccessProfile} currentKey="pos.sale" />
         </div>
       </header>
 

@@ -1,4 +1,4 @@
-import translations from "./retail-pos-translations.js?v=20260903-253";
+import translations from "./retail-pos-translations.js?v=20261003-010";
 import { configureI18n, getIntlLocale, getLocale, setLocale } from "./i18n.js?v=20260903-202";
 
 configureI18n(translations, { fallbackLocale: "th" });
@@ -83,7 +83,7 @@ function interpolateTemplate(entry, match) {
 }
 
 function translateTrimmed(trimmed) {
-  if (locale !== "en" || !trimmed) return trimmed;
+  if (locale === "th" || !trimmed) return trimmed;
   if (exact.has(trimmed)) return exact.get(trimmed);
   for (const entry of templates) {
     const match = trimmed.match(entry.pattern);
@@ -93,7 +93,7 @@ function translateTrimmed(trimmed) {
 }
 
 function translateValue(value) {
-  if (locale !== "en") return value;
+  if (locale === "th") return value;
   const source = String(value ?? "");
   const trimmed = source.trim();
   if (!trimmed) return source;
@@ -115,7 +115,7 @@ function isProtected(element) {
 }
 
 function translateElementAttributes(element) {
-  if (locale !== "en" || !element) return;
+  if (locale === "th" || !element) return;
   ["placeholder", "title", "aria-label", "alt"].forEach(attribute => {
     if (!element.hasAttribute?.(attribute)) return;
     const current = element.getAttribute(attribute);
@@ -125,7 +125,7 @@ function translateElementAttributes(element) {
 }
 
 function translateNode(node) {
-  if (locale !== "en" || !node) return;
+  if (locale === "th" || !node) return;
   if (node.nodeType === Node.TEXT_NODE) {
     if (isProtected(node.parentElement)) return;
     const translated = translateValue(node.nodeValue);
@@ -160,7 +160,7 @@ function mountLocaleSwitcher() {
   const root = document.createElement("div");
   root.className = "app-locale-switcher";
   root.dataset.posStaticLocaleSwitcher = "1";
-  root.innerHTML = `<details class="app-locale-menu"><summary class="app-locale-trigger" aria-label="Language" title="Language"><i class="bi bi-globe2" aria-hidden="true"></i><span class="visually-hidden">Language</span></summary><div class="app-locale-menu__panel" role="menu" aria-label="Language"><button type="button" class="app-locale-option" data-locale-option="th" lang="th" role="menuitemradio" aria-checked="${locale === "th"}"><span>ไทย</span><i class="bi bi-check-lg" aria-hidden="true"></i></button><button type="button" class="app-locale-option" data-locale-option="en" lang="en" role="menuitemradio" aria-checked="${locale === "en"}"><span>English</span><i class="bi bi-check-lg" aria-hidden="true"></i></button></div></details>`;
+  root.innerHTML = `<details class="app-locale-menu"><summary class="app-locale-trigger" aria-label="Language" title="Language"><i class="bi bi-globe2" aria-hidden="true"></i><span class="visually-hidden">Language</span></summary><div class="app-locale-menu__panel" role="menu" aria-label="Language"><button type="button" class="app-locale-option" data-locale-option="th" lang="th" role="menuitemradio" aria-checked="${locale === "th"}"><span>ไทย</span><i class="bi bi-check-lg" aria-hidden="true"></i></button><button type="button" class="app-locale-option" data-locale-option="en" lang="en" role="menuitemradio" aria-checked="${locale === "en"}"><span>English</span><i class="bi bi-check-lg" aria-hidden="true"></i></button><button type="button" class="app-locale-option" data-locale-option="my" lang="my" role="menuitemradio" aria-checked="${locale === "my"}"><span>မြန်မာ</span><i class="bi bi-check-lg" aria-hidden="true"></i></button><button type="button" class="app-locale-option" data-locale-option="lo" lang="lo" role="menuitemradio" aria-checked="${locale === "lo"}"><span>ລາວ</span><i class="bi bi-check-lg" aria-hidden="true"></i></button><button type="button" class="app-locale-option" data-locale-option="km" lang="km" role="menuitemradio" aria-checked="${locale === "km"}"><span>ខ្មែរ</span><i class="bi bi-check-lg" aria-hidden="true"></i></button></div></details>`;
   root.querySelectorAll("[data-locale-option]").forEach(button => button.addEventListener("click", () => {
     setLocale(button.dataset.localeOption);
     location.reload();
@@ -190,7 +190,7 @@ function mountLocaleSwitcher() {
   document.body.prepend(fallback);
 }
 
-if (locale === "en") {
+if (locale !== "th") {
   document.title = translateTrimmed(document.title);
   translateNode(document.body);
   const observer = new MutationObserver(records => {

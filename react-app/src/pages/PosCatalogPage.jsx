@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
-import { UserMenu } from "@/components/UserMenu";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import {
   importCatalogProducts,
@@ -227,7 +226,7 @@ export function PosCatalogPage() {
     <>
       <header className="pos-header" data-pos-supporting-header>
         <div className="app-title"><div><strong>{tr("title")}</strong><small>{tr("subtitle")}</small></div></div>
-        <div className="header-actions"><a className="btn btn-secondary" href="/pos/products">{tr("back_products")}</a><LocaleSwitcher /><UserMenu profile={profile} /></div>
+        <div className="header-actions"><a className="btn btn-secondary" href="/pos/products">{tr("back_products")}</a><LocaleSwitcher /></div>
       </header>
 
       <main className="catalog-shell" data-pos-supporting="catalog">

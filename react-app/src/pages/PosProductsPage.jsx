@@ -5,7 +5,6 @@ import { useAuth } from "@/auth/AuthProvider";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { PosNavigation } from "@/components/PosNavigation";
-import { UserMenu } from "@/components/UserMenu";
 import { sweetAlert, sweetConfirm } from "@/components/sweetDialog";
 import {
   adjustRetailStock,
@@ -585,7 +584,6 @@ export function PosProductsPage() {
         <div className="header-actions">
           <PosNavigation profile={profile} currentKey="pos.products" />
           <LocaleSwitcher />
-          <UserMenu profile={profile} />
         </div>
       </header>
 

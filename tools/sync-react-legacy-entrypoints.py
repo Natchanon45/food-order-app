@@ -6,6 +6,8 @@ SOURCE = ROOT / "public/react/index.html"
 TARGETS = [
     "public/login/index.html",
     "public/register/index.html",
+    "public/pos/index.html",
+    "public/pos/sales/index.html",
     "public/kitchen/index.html",
     "public/cashier/index.html",
     "public/cashier/receipt/index.html",
