@@ -5025,6 +5025,14 @@ Verification:
 Release / deploy:
 - React 0.4.280 / Build 2026.10.03.380.
 - Public 0.16.32 / Build 2026.10.03.095.
-- Hosting deployment pending implementation commit/push checkpoint.
-- No Functions, Firestore Rules, or Storage Rules changes are required.
+- Implementation commit 29d5360e (fix: enforce global toast alert policy) was pushed to origin/feature/react-firebase-port before deploy.
+- Firebase Hosting target foodapp deployed successfully; no Functions, Firestore Rules, or Storage Rules were deployed.
+- Production /pos/shifts, /pos/returns, and /pos return HTTP 200 with no-cache/no-store/must-revalidate and /react/assets/index-DCJz_imo.js.
+- Production shells load /react/parity/css/toast-global-policy.css and the asset returns HTTP 200 with the required 75vh, green, red, and 8px-gap rules.
+- Production CSS browser geometry smoke (1600x900 viewport) PASS:
+  - center = 800 x 675 exactly,
+  - z-index = 2147483647,
+  - success icon = rgb(34,197,94),
+  - error icon = rgb(239,68,68),
+  - gap = 8px.
 - No merge to main.
