@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.03.093',
+  build: '2026.10.03.094',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-SHIFTS-VISUAL-PARITY',
+  commit: 'POS-SWEET-CONFIRM-PARITY',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS shifts final visual parity',
-  updatedAt: '2026-10-03T17:21:54+0700',
+  milestone: 'Retail POS confirmation dialog parity',
+  updatedAt: '2026-10-03T20:17:09+0700',
   whatsNew: [
-    'Match task2 shift form valid-field green states in the authored React UI',
-    'Match task2 full Buddhist-year date and time formatting in shift metadata and history',
-    'Retain the shift offline-sync, granular permissions, and canonical React cutover behavior'
+    'Replace browser-native confirmation prompts in canonical Shifts, Returns, and Tax Invoice History with the centered app dialog',
+    'Match task2 warning icon, confirm/cancel actions, multilingual labels, and dialog layer behavior',
+    'Keep destructive actions unchanged until explicit confirmation in the app dialog'
   ]
 };
 

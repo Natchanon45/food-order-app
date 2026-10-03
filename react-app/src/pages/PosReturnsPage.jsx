@@ -5,6 +5,7 @@ import { AppDeveloperPanel } from "@/components/AppDeveloperPanel";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { firstAllowedPosPage, getPosPermissions, PosNavigation } from "@/components/PosNavigation";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
+import { sweetConfirm } from "@/components/sweetDialog";
 import {
   listPosCustomers, listPosProducts, listPosSales,
   loadPosLoyaltySettings, loadPosReceiptSettings, watchPosSales,
@@ -90,7 +91,7 @@ export function PosReturnsPage() {
     bodyClass: "pos-returns-page",
     disabledGlobalStyles: ["app.css", "icons.css", "shared-responsive.css"],
     styles: [
-      "app-version-badge-runtime.css", "retail-pos-font-local.css", "pos-locale-switcher-placement.css", "retail-pos.css",
+      "app-version-badge-runtime.css", "retail-pos-font-local.css", "sweet-dialog.css", "pos-locale-switcher-placement.css", "retail-pos.css",
       "retail-returns.css", "retail-returns-mobile.css", "retail-return-receipt.css",
       "retail-barcode-scan-tools.css", "retail-pos-navigation.css",
     ],
@@ -336,11 +337,16 @@ export function PosReturnsPage() {
     }
     const points = pointParts.length ? tr("points_line", { detail: pointParts.join(" / ") }) : "";
     const confirmKey = currentReturnType === "void" ? "confirm_void" : "confirm_return";
-    const approved = window.confirm(tr(confirmKey, {
+    const approved = await sweetConfirm(tr(confirmKey, {
       count: qtyNumber(items.reduce((sum, item) => sum + item.qty, 0)),
       amount: money(total),
       points,
-    }));
+    }), {
+      title: t("shared.dialog.confirm_title"),
+      type: "warning",
+      confirmText: t("shared.actions.confirm"),
+      cancelText: t("shared.actions.cancel"),
+    });
     if (!approved) return;
 
     setBusy(true);

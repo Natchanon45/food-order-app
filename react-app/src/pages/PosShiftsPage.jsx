@@ -5,6 +5,7 @@ import { AppDeveloperPanel } from "@/components/AppDeveloperPanel";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { firstAllowedPosPage, getPosPermissions, PosNavigation } from "@/components/PosNavigation";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
+import { sweetConfirm } from "@/components/sweetDialog";
 import { listPosSales, watchPosSales } from "@/data/retailPosData";
 import { loadPosRoleSettings } from "@/data/retailPosSystemData";
 import {
@@ -65,6 +66,7 @@ export function PosShiftsPage() {
     styles: [
       "app-version-badge-runtime.css",
       "retail-pos-font-local.css",
+      "sweet-dialog.css",
       "pos-locale-switcher-placement.css",
       "retail-pos.css",
       "retail-shifts.css",
@@ -363,9 +365,15 @@ export function PosShiftsPage() {
     }
   };
 
-  const clearHistory = () => {
+  const clearHistory = async () => {
     if (!canClearHistory || !history.length) return;
-    if (!window.confirm(tr("runtime.clear_confirm"))) return;
+    const confirmed = await sweetConfirm(tr("runtime.clear_confirm"), {
+      title: t("shared.dialog.confirm_title"),
+      type: "warning",
+      confirmText: t("shared.actions.confirm"),
+      cancelText: t("shared.actions.cancel"),
+    });
+    if (!confirmed) return;
     clearLocalPosShiftHistory(tenant.id);
     setShifts(current => current.filter(row => row.status !== "closed"));
     showToast(tr("runtime.cleared"));

@@ -5,6 +5,7 @@ import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { AppDeveloperPanel } from "@/components/AppDeveloperPanel";
 import { firstAllowedPosPage, getPosPermissions, PosNavigation } from "@/components/PosNavigation";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
+import { sweetConfirm } from "@/components/sweetDialog";
 import { listPosSales, listPosTaxInvoices } from "@/data/retailPosData";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
@@ -99,7 +100,7 @@ export function PosTaxInvoicesPage() {
     attributes: { "data-module": "retail-pos-tax-invoices" },
     bodyClass: "tax-invoices-page",
     disabledGlobalStyles: ["app.css", "icons.css", "shared-responsive.css"],
-    styles: ["app-version-badge-runtime.css", "pos-locale-switcher-placement.css", "retail-pos.css", "retail-pos-navigation.css", "pos-tax-invoices-page.css"],
+    styles: ["app-version-badge-runtime.css", "sweet-dialog.css", "pos-locale-switcher-placement.css", "retail-pos.css", "retail-pos-navigation.css", "pos-tax-invoices-page.css"],
   });
   const lateDialogRef = useRef(null), profileDialogRef = useRef(null), voidDialogRef = useRef(null), editDialogRef = useRef(null);
   const [invoices, setInvoices] = useState([]), [sales, setSales] = useState([]), [profiles, setProfiles] = useState([]);
@@ -285,7 +286,15 @@ export function PosTaxInvoicesPage() {
     catch (error) { setProfileError(String(error?.message || tr("profile_save_failed"))); } finally { setProfileBusy(false); }
   };
   const deleteProfile = async () => {
-    if (!profileForm.id || !window.confirm(tr("profile_delete_confirm"))) return; setProfileBusy(true);
+    if (!profileForm.id) return;
+    const confirmed = await sweetConfirm(tr("profile_delete_confirm"), {
+      title: t("shared.dialog.confirm_title"),
+      type: "warning",
+      confirmText: t("shared.actions.confirm"),
+      cancelText: t("shared.actions.cancel"),
+    });
+    if (!confirmed) return;
+    setProfileBusy(true);
     try { const api = await legacyTaxApi(); api.deleteTaxBuyerProfile(profileForm.id); try { await api.syncTaxBuyerProfiles(); } catch {} const rows = api.listTaxBuyerProfiles(); setProfiles(rows); applyProfile(rows[0] || {}); }
     finally { setProfileBusy(false); }
   };

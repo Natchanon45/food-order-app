@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.03.378",
+  build: "2026.10.03.379",
   branch: "feature/react-firebase-port",
-  commit: "POS-SHIFTS-VISUAL-PARITY",
+  commit: "POS-SWEET-CONFIRM-PARITY",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Retail POS shifts final visual parity",
+  milestone: "Retail POS confirmation dialog parity",
   whatsNew: [
-    "Match task2 shift form valid-field green states in the authored React UI",
-    "Match task2 full Buddhist-year date/time formatting in shift metadata and history",
-    "Retain the Build .377 shift offline-sync, granular permissions, and canonical React cutover behavior",
+    "Replace browser-native confirmation prompts in canonical Shifts, Returns, and Tax Invoice History with the centered app dialog",
+    "Match task2 warning icon, confirm/cancel actions, multilingual labels, and dialog layer behavior",
+    "Keep destructive actions unchanged until the user explicitly confirms in the app dialog",
   ],
 });

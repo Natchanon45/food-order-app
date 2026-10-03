@@ -4918,3 +4918,52 @@ Release / deploy / post-deploy visual correction:
 - Chrome tab was returned to canonical https://penguin-food.web.app/pos/shifts without a verification query.
 - Production verification remained read-only: no real shift was opened, closed, or history-cleared for testing.
 - No merge to main.
+
+
+---
+
+## 2026-10-03 — Retail POS confirmation-dialog parity: remove browser-native confirm
+
+Request / issue:
+- User compared PENGUIN /pos/shifts with task2 and showed that PENGUIN still opened Chrome's native confirm banner for “ล้างประวัติ”, while task2 uses the centered app warning dialog with Cancel/Confirm actions.
+- This was a migration parity miss because the Shifts React page still called window.confirm().
+
+Audit:
+- Scanned canonical React POS pages already cut over to Production.
+- Native confirmation remained in three canonical React pages:
+  - PosShiftsPage: clear shift history.
+  - PosReturnsPage: return/VOID confirmation.
+  - PosTaxInvoicesPage: delete tax-buyer profile.
+- PosCustomersPage and PosSuppliersPage also contain native confirm in their draft React implementations, but those pages are not part of the current canonical React cutover, so they were intentionally left for their own migration phase.
+
+Implementation:
+- Shifts, Returns, and Tax Invoice History now import the shared React sweetConfirm helper and load sweet-dialog.css.
+- Confirmation dialogs use the existing five-language shared keys:
+  - shared.dialog.confirm_title
+  - shared.actions.confirm
+  - shared.actions.cancel
+- All three use warning type so the icon, centered card, overlay, and action order match the task2 dialog.
+- Shifts clear-history action is now async and performs no destructive change unless sweetConfirm resolves true.
+- Returns return/VOID submit waits for sweetConfirm before writing the return transaction.
+- Tax buyer-profile delete waits for sweetConfirm before deleting/syncing the profile.
+- Removed all window.confirm/native confirm calls from these three canonical React Production pages.
+- React foundation contract now prevents native-confirm regression on all three pages and requires the shared sweet-dialog import/CSS/title behavior.
+- Existing UI-layer contract remains Toast 2147483647 > Dialog 2147483600 > Modal 2147483000.
+
+Verification before deploy:
+- Native confirm grep for canonical React Shifts/Returns/Tax Invoice History: no matches.
+- npm run test:react-foundation PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS, including UI-layer contract.
+- npm run build:react PASS.
+- Generated React build contract PASS for React 0.4.280 / Build 2026.10.03.379 using /react/assets/index-f9vG_Kov.js.
+- git diff --check PASS.
+- An intermediate Build .378 bundle created during the first compile was removed only after confirming it was unreferenced and was never deployed.
+
+Release / deploy:
+- React 0.4.280 / Build 2026.10.03.379.
+- Public 0.16.32 / Build 2026.10.03.094.
+- Hosting deployment pending implementation commit/push checkpoint.
+- After deploy, verify /pos/shifts by opening the Clear History dialog and pressing Cancel only; do not confirm/destructively clear Production history.
+- No Functions, Firestore Rules, or Storage Rules changes are required.
+- No merge to main.
