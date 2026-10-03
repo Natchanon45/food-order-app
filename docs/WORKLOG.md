@@ -4761,7 +4761,12 @@ Release / deploy:
 - React 0.4.280 / Build 2026.10.03.375.
 - Public 0.16.32 / Build 2026.10.03.090.
 - Intermediate Returns bundles generated under the already-deployed Build .374 were never deployed and were removed only when confirmed unreferenced.
-- Hosting deployment is pending the implementation commit/push checkpoint.
-- No Functions, Firestore Rules, or Storage Rules changes are required.
+- Implementation commit 29c309cf (feat: migrate POS returns to React) was pushed to origin/feature/react-firebase-port before deploy.
+- Firebase Hosting target foodapp deployed successfully from implementation commit 29c309cf.
+- Production https://penguin-food.web.app/pos/returns/ returned HTTP 200 with no-cache/no-store/must-revalidate and the expected /react/assets/index--8wcUKVM.js bundle.
+- Production scanner parity CSS returned HTTP 200 and contains both scanner-button and camera-dialog styles.
+- Opened the user's authenticated Chrome tab on canonical /pos/returns and visually verified the production header, one-field search, barcode button, search action, initial empty state, and return-history panel rendered correctly without a white page or layout break.
+- The temporary Production verification query was removed afterward, leaving the tab on canonical /pos/returns.
+- No Functions, Firestore Rules, or Storage Rules were deployed.
 - No merge to main.
 - After user acceptance of /pos/returns, the next sales-group POS menu is /pos/shifts.
