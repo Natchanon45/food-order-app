@@ -45,7 +45,7 @@ Local React dev server:
 
 Complete React + Firebase parity without redesigning. Laravel MASTER remains authoritative for non-POS migration areas unless a newer user instruction overrides it.
 
-Active focus as of 2026-10-03: **Retail POS migration has resumed from the existing POS checkpoint after the customer ordering flows were production-verified. Continue the existing POS work in place; do not restart or re-port completed POS work from scratch.**
+Active focus as of 2026-10-03: **Retail POS migration is temporarily paused at the completed /pos/tax-invoices Production checkpoint. Current priority is Revenue Share / PENGUIN Wallet for Lalamove. The stale Production getTenantRevenueShareSummary callable was repaired by deploying only that Function; revision gettenantrevenuesharesummary-00006-vuf / hash bdd8e23412e82d99658c00184861525e8640f558 is ACTIVE, and authenticated requests after the user's Revenue Share tab refresh completed without execution errors. Resume Retail POS from /pos/returns only after this Revenue Share/Lalamove work is accepted.**
 
 Retail POS migration rule (user-confirmed 2026-10-03): **for Retail POS, the current production HTML + CSS + JavaScript implementation under `public/pos` is the UI/behavior MASTER. Keep its current appearance and behavior 1:1 while replacing the implementation with React. Do not redesign POS or overwrite its current UX with Laravel styling. Migrate shared User Profile first, then canonical POS routes one menu at a time.**
 

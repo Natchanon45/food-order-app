@@ -4633,3 +4633,39 @@ Release / deploy:
 - No Functions, Firestore Rules, or Storage Rules were deployed.
 - No merge to main.
 - Next POS menu after user acceptance of /pos/tax-invoices: /pos/returns.
+
+---
+
+## 2026-10-03 — Pause Retail POS; diagnose Revenue Share PENGUIN Wallet status
+
+Direction:
+- Retail POS work is paused at the completed /pos/tax-invoices Production checkpoint.
+- Current priority is making the PENGUIN Credits for Lalamove section on /reports/revenue-share operational.
+
+Symptom:
+- Production Revenue Share shows the wallet card but labels it “PENGUIN Wallet structure not installed”, with all wallet metrics at zero and no ledger/failure rows.
+
+Root cause:
+- React RevenueShareReportPage already renders the wallet payload from getTenantRevenueShareSummary.
+- Current functions/revenue-share.js already includes tenantWalletReport(), reading settings/lalamoveWallet, lalamoveWalletTransactions and lalamoveWalletTopups and returning storageReady=true plus period/top-up/ledger metrics and Lalamove failures.
+- The Production getTenantRevenueShareSummary function is stale: its deployed source generation is 1789849619825406 (2026-09-20 03:26:59 Asia/Bangkok), while tenantWalletReport was introduced in commit d8c5eaf4 on 2026-09-30.
+- Production therefore returns the older summary shape without wallet/lalamoveFailures. React falls back to wallet={} and correctly shows its storage-missing fallback even though Firestore does not require a pre-created table.
+
+Verification:
+- node --check functions/revenue-share.js PASS.
+- npm run test:operational PASS.
+- git diff --check PASS before this worklog update.
+- Firebase functions:list confirms getTenantRevenueShareSummary is ACTIVE but on the older source generation; getTenantLalamoveWallet/getTenantRevenueShareAccess have newer deployed generations.
+- No wallet balance, ledger or tenant credit data was fabricated or mutated during diagnosis.
+
+Deploy / Production verification:
+- User explicitly approved the targeted Function repair.
+- Deployed only Cloud Function getTenantRevenueShareSummary to Firebase project chat-45754; no Hosting, Firestore Rules, Storage Rules, or other Functions were deployed.
+- Deployment completed successfully on Node.js 22 Gen 2 revision gettenantrevenuesharesummary-00006-vuf.
+- Production function hash is bdd8e23412e82d99658c00184861525e8640f558; source generation 1791012507355561 (2026-10-03T07:28:27.355561Z).
+- Unauthenticated callable smoke returns HTTP 401 / Authentication required, confirming the new endpoint is active and enforcing auth.
+- Reloaded the user's existing authenticated Chrome tab at /reports/revenue-share after deployment.
+- Function logs then recorded authenticated requests at 2026-10-03T07:31:21Z and 07:31:28Z with auth=VALID and no wallet/report execution error.
+- Chrome has JavaScript-from-Apple-Events and Accessibility automation disabled, so Remote could not read the rendered wallet DOM directly; backend revision/authenticated execution is verified.
+- No wallet balances, top-ups, ledger entries, or tenant credit data were fabricated or modified.
+- No Hosting deploy occurred, so React/Public Build numbers were intentionally not bumped.
