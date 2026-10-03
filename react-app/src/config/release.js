@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.03.377",
+  build: "2026.10.03.378",
   branch: "feature/react-firebase-port",
-  commit: "POS-SHIFTS-REACT-CUTOVER",
+  commit: "POS-SHIFTS-VISUAL-PARITY",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Retail POS shifts React cutover",
+  milestone: "Retail POS shifts final visual parity",
   whatsNew: [
-    "Serve staff shifts on canonical /pos/shifts with task2 visual and behavior parity",
-    "Preserve open/close, cash variance, history, five granular shift permissions, and realtime shift sales totals",
-    "Keep local pending shift state and retry sync so POS sales can continue to see an offline-open shift",
+    "Match task2 shift form valid-field green states in the authored React UI",
+    "Match task2 full Buddhist-year date/time formatting in shift metadata and history",
+    "Retain the Build .377 shift offline-sync, granular permissions, and canonical React cutover behavior",
   ],
 });

@@ -28,8 +28,8 @@ Do not rely on old chat memory instead of these files and current Git state.
 
 - Active path: `/Users/natchanonsripleng/Desktop/Sites/food-order-app`
 - Active branch: `feature/react-firebase-port`
-- Latest committed Production checkpoint before the current Shifts phase: `7bafa32c docs: record POS visual parity production deploy`.
-- Shared POS User Profile/Menu parity and Sales/Tax Invoice History/Returns visual parity are accepted. Canonical Staff Shifts `/pos/shifts` is the current prepared working change on Build 2026.10.03.377; preserve all remaining uncommitted/untracked work.
+- Staff Shifts implementation commit `52191579 feat: migrate POS staff shifts to React` is Hosting-deployed on Build 2026.10.03.377.
+- Read-only Production visual verification found two final task2 deltas (full Buddhist year and valid-input green state). Corrective Build 2026.10.03.378 is the current prepared working change; preserve all remaining uncommitted/untracked work.
 - Do not reset / clean / discard.
 - Never merge to `main` unless the user explicitly requests it.
 
@@ -45,11 +45,11 @@ Local React dev server:
 
 Complete React + Firebase parity without redesigning. Laravel MASTER remains authoritative for non-POS migration areas unless a newer user instruction overrides it.
 
-Active focus as of 2026-10-03: **Canonical Staff Shifts `/pos/shifts` is prepared locally as React Build 2026.10.03.377 and passes the final gates. It preserves task2 visual parity, all 24 legacy IDs, five granular shift permissions, realtime shift sales totals, local pending/offline open/close state, retry sync, and legacy shift field aliases. The next steps are commit/push, Hosting-only deploy, and read-only Production visual verification against the current task2 page. Do not open or close a real Production shift merely for testing.**
+Active focus as of 2026-10-03: **Canonical Staff Shifts `/pos/shifts` is React on Production from implementation commit `52191579`. Build 2026.10.03.377 was read-only verified and exposed only two remaining task2 visual deltas: short Buddhist-year timestamps and missing green valid-field treatment. Corrective Build 2026.10.03.378 / Public Build 2026.10.03.093 fixes those two visual details and passes the full gates; commit/push + Hosting-only deploy remain. Do not open, close, or clear a real Production shift merely for testing.**
 
 Retail POS migration rule (user-confirmed 2026-10-03): **for Retail POS, the current production HTML + CSS + JavaScript implementation under `public/pos` is the UI/behavior MASTER. Keep its current appearance and behavior 1:1 while replacing the implementation with React. Do not redesign POS or overwrite its current UX with Laravel styling. Migrate shared User Profile first, then canonical POS routes one menu at a time.**
 
-Retail POS current checkpoint: **canonical Sale `/pos`, Sales history `/pos/sales`, Tax Invoice History `/pos/tax-invoices`, and Returns `/pos/returns` are React on Production Build 2026.10.03.376. Canonical Staff Shifts `/pos/shifts` is cut over locally to the React shell on prepared Build 2026.10.03.377 and retains task2 open/close/history/cash-variance behavior plus offline pending sync. Other not-yet-migrated concrete POS subroutes remain legacy static HTML/JS. After Shifts Production acceptance, audit the actual remaining POS menu routes before selecting the next migration target.**
+Retail POS current checkpoint: **canonical Sale `/pos`, Sales history `/pos/sales`, Tax Invoice History `/pos/tax-invoices`, Returns `/pos/returns`, and Staff Shifts `/pos/shifts` are React. Staff Shifts Build 2026.10.03.377 is currently Production and preserves all 24 legacy IDs, five granular permissions, task2 open/close/history/cash-variance behavior, and offline pending sync. Corrective Build 2026.10.03.378 is prepared to match task2 full Buddhist-year timestamps and valid-field green states. Other not-yet-migrated concrete POS subroutes remain legacy static HTML/JS. After Shifts final acceptance, audit the actual remaining POS menu routes before selecting the next migration target.**
 
 Customer React production-test checkpoint (2026-09-30 evening):
 - Table Order React is deployed for cross-device/mobile testing on the canonical customer URL `/s/{slug}/order` without requiring `/react`.
@@ -64,7 +64,7 @@ PENGUIN branding checkpoint (2026-10-02):
 - Uploaded Platform App Icon is the first-choice header icon globally; Logo remains primary for login/large logo surfaces.
 - Header fallback order: App Icon -> Logo -> PG. Login/large-brand order: Logo -> App Icon -> PG. Favicon order: Favicon -> App Icon -> Logo.
 - Internal repo/Firebase/schema/DOM/translation identifiers are intentionally unchanged, including fod_* keys, FOD_WALLET_* error codes, Firebase project identifiers, and the existing penguin-food.web.app Hosting/auth origin.
-- Current prepared release identity: React 0.4.280 / 2026.10.03.377; public storefront 0.16.32 / 2026.10.03.092. Production remains Build 2026.10.03.376 until the canonical Staff Shifts Hosting deploy completes.
+- Current prepared release identity: React 0.4.280 / 2026.10.03.378; public storefront 0.16.32 / 2026.10.03.093. Production currently has Shifts Build 2026.10.03.377; corrective Build 2026.10.03.378 is pending commit/push and Hosting deploy.
 - Primary production Hosting origin remains https://penguin-food.web.app. Legacy https://natchanon-food-order-delivery.web.app remains reachable during transition but is no longer in deploy target foodapp.
 - Delivery customer auth remains privilege-isolated from staff auth: Google popup runs only in broker app penguin-google-customer-broker-v1, callable createDeliveryCustomerSession exchanges it for a namespaced cust_... custom-token session in penguin-storefront-customer-v2, and Firestore/Storage rules explicitly exclude customerContext tokens from all staff-role paths. Staff/Owner/Super Admin remain on [DEFAULT]; Delivery logout affects only customer/broker apps.
 - Pull, test/build, commit generated assets, and deploy Hosting before Production visual verification.

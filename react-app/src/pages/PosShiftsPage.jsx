@@ -266,7 +266,15 @@ export function PosShiftsPage() {
     maximumFractionDigits: 2,
   });
   const dateTime = value => value
-    ? formatDate(asDate(value), { dateStyle: "short", timeStyle: "medium" })
+    ? asDate(value).toLocaleString("th-TH", {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      })
     : "-";
 
   const saveTerminal = value => {
@@ -398,17 +406,20 @@ export function PosShiftsPage() {
         <form id="openShiftForm" className="shift-form" onSubmit={openShift}>
           <label>{tr("open.cashier")}
             <input id="cashierName" required maxLength={100} value={cashierName}
+              data-validation-state={clean(cashierName) ? "valid" : undefined}
               disabled={!canOpen || busy}
               onChange={event => setCashierName(event.target.value)}
               placeholder={tr("open.cashier_hint")} />
           </label>
           <label>{tr("open.terminal")}
             <input id="terminalCode" required maxLength={50} value={terminalCode}
+              data-validation-state={clean(terminalCode) ? "valid" : undefined}
               disabled={!canOpen || busy}
               onChange={event => saveTerminal(event.target.value)} />
           </label>
           <label>{tr("open.cash")}
             <input id="openingCash" required type="number" min="0" step="0.01" value={openingCash}
+              data-validation-state={Number.isFinite(Number(openingCash)) && Number(openingCash) >= 0 ? "valid" : undefined}
               disabled={!canOpen || busy}
               onChange={event => setOpeningCash(event.target.value)} />
           </label>
@@ -447,6 +458,7 @@ export function PosShiftsPage() {
           <form id="closeShiftForm" className="close-shift-form" onSubmit={closeShift}>
             <label>{tr("active.actual")}
               <input id="actualCash" required type="number" min="0" step="0.01" value={actualCash}
+                data-validation-state={Number.isFinite(Number(actualCash)) && Number(actualCash) >= 0 ? "valid" : undefined}
                 disabled={!canClose || busy}
                 onChange={event => setActualCash(event.target.value)} />
             </label>

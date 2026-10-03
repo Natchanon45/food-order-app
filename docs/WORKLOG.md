@@ -4895,10 +4895,21 @@ Verification before commit/deploy:
 - Existing local-login system-controls.css 404 remains outside this Shifts phase.
 - Intermediate .376/.377 bundles created before final code were removed only after confirming they were unreferenced and were never deployed.
 
-Release / deploy:
-- React 0.4.280 / Build 2026.10.03.377.
-- Public 0.16.32 / Build 2026.10.03.092.
-- Hosting deployment pending implementation commit/push checkpoint.
-- No Functions, Firestore Rules, or Storage Rules changes are required.
-- Production verification must be read-only: do not open/close a real shift merely for testing.
+Release / deploy / post-deploy visual correction:
+- Initial Shifts implementation commit 52191579 (feat: migrate POS staff shifts to React) was pushed to origin/feature/react-firebase-port.
+- Firebase Hosting target foodapp deployed Build 2026.10.03.377 / Public Build 2026.10.03.092 successfully; no Functions, Firestore Rules, or Storage Rules were deployed.
+- Production /pos/shifts returned HTTP 200 with no-cache/no-store/must-revalidate and /react/assets/index-CmuUq0DB.js.
+- Read-only authenticated Production screenshot confirmed the React page rendered the task2 layout/icons/floating developer control without opening, closing, or clearing a real shift.
+- That screenshot exposed two remaining task2 visual differences:
+  - React history timestamps used the short Buddhist year (for example 16/7/69) while task2 uses the full Buddhist year (for example 27/7/2569 22:29:37).
+  - task2 form-validation-ui marks valid required shift fields with green border/background/shadow; the authored React controls stayed neutral because React does not run that DOM enhancer.
+- Corrective implementation:
+  - PosShiftsPage now formats shift metadata/history with toLocaleString("th-TH") and numeric full year/month/day/time.
+  - Required cashier/terminal/opening-cash/actual-cash controls author data-validation-state="valid" when their current value is valid.
+  - retail-shifts.css now carries the same valid-field green visual treatment used by task2 form-validation-ui.
+  - React foundation contract locks both full-year formatting and valid-field styling.
+- Corrective release candidate: React 0.4.280 / Build 2026.10.03.378; Public 0.16.32 / Build 2026.10.03.093; generated bundle /react/assets/index-Cv45MZfk.js.
+- Full operational/parity/build/generated-contract/git-diff gates PASS for the corrective Build .378.
+- Build .378 Hosting deploy is pending its corrective commit/push checkpoint.
+- Production verification remains read-only: do not open/close a real shift merely for testing.
 - No merge to main.

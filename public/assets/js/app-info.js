@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.03.092',
+  build: '2026.10.03.093',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-SHIFTS-REACT-CUTOVER',
+  commit: 'POS-SHIFTS-VISUAL-PARITY',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS shifts React cutover',
-  updatedAt: '2026-10-03T17:09:57+0700',
+  milestone: 'Retail POS shifts final visual parity',
+  updatedAt: '2026-10-03T17:21:54+0700',
   whatsNew: [
-    'Cut over canonical /pos/shifts to React with current task2 visual parity',
-    'Preserve shift open/close, cash variance, history, granular permissions, and realtime sales totals',
-    'Preserve local pending shift state and retry synchronization for offline continuity'
+    'Match task2 shift form valid-field green states in the authored React UI',
+    'Match task2 full Buddhist-year date and time formatting in shift metadata and history',
+    'Retain the shift offline-sync, granular permissions, and canonical React cutover behavior'
   ]
 };
 
