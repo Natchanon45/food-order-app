@@ -28,8 +28,8 @@ Do not rely on old chat memory instead of these files and current Git state.
 
 - Active path: `/Users/natchanonsripleng/Desktop/Sites/food-order-app`
 - Active branch: `feature/react-firebase-port`
-- Current committed branch checkpoint before Retail POS phase 4: `c7a5cd1f build: refresh Retail POS sales React bundle`.
-- Retail POS phases 1–3 are committed; phase 4 /pos/tax-invoices is the current working change. Preserve all remaining uncommitted/untracked work.
+- Latest Retail POS implementation/deploy commit: `a1c90558 feat: migrate POS tax invoice history to React`.
+- Retail POS phases 1–4 are committed. Preserve any remaining uncommitted/untracked work.
 - Do not reset / clean / discard.
 - Never merge to `main` unless the user explicitly requests it.
 
@@ -49,7 +49,7 @@ Active focus as of 2026-10-03: **Retail POS migration has resumed from the exist
 
 Retail POS migration rule (user-confirmed 2026-10-03): **for Retail POS, the current production HTML + CSS + JavaScript implementation under `public/pos` is the UI/behavior MASTER. Keep its current appearance and behavior 1:1 while replacing the implementation with React. Do not redesign POS or overwrite its current UX with Laravel styling. Migrate shared User Profile first, then canonical POS routes one menu at a time.**
 
-Retail POS current checkpoint: **shared User Profile shell and canonical Sale page `/pos` are React on Production (Build 2026.10.03.371), and canonical Sales history `/pos/sales` is React on Production (Build 2026.10.03.372). Canonical Tax Invoice History `/pos/tax-invoices` is now cut over locally to React, preserves the 52-ID legacy inventory plus the production tax sync/offline engine, and passes the final Build 2026.10.03.373 gates; this Tax Invoice phase is pending Hosting deploy after its branch commit/push checkpoint. Other not-yet-migrated concrete POS subroutes remain legacy static HTML/JS. After user acceptance of `/pos/tax-invoices`, the next menu is `/pos/returns`.**
+Retail POS current checkpoint: **shared User Profile shell and canonical Sale page `/pos` are React on Production (Build 2026.10.03.371), canonical Sales history `/pos/sales` is React on Production (Build 2026.10.03.372), and canonical Tax Invoice History `/pos/tax-invoices` is React on Production (Build 2026.10.03.373). Tax Invoice History preserves the 52-ID legacy inventory plus the production tax sync/offline engine; implementation/deploy commit is `a1c90558`. Other not-yet-migrated concrete POS subroutes remain legacy static HTML/JS. After user acceptance of `/pos/tax-invoices`, the next menu is `/pos/returns`.**
 
 Customer React production-test checkpoint (2026-09-30 evening):
 - Table Order React is deployed for cross-device/mobile testing on the canonical customer URL `/s/{slug}/order` without requiring `/react`.
@@ -64,7 +64,7 @@ PENGUIN branding checkpoint (2026-10-02):
 - Uploaded Platform App Icon is the first-choice header icon globally; Logo remains primary for login/large logo surfaces.
 - Header fallback order: App Icon -> Logo -> PG. Login/large-brand order: Logo -> App Icon -> PG. Favicon order: Favicon -> App Icon -> Logo.
 - Internal repo/Firebase/schema/DOM/translation identifiers are intentionally unchanged, including fod_* keys, FOD_WALLET_* error codes, Firebase project identifiers, and the existing penguin-food.web.app Hosting/auth origin.
-- Current local release identity: React 0.4.280 / 2026.10.03.373; public storefront 0.16.32 / 2026.10.03.088. Build 2026.10.03.372 is already Hosting-deployed for /pos/sales; Build 2026.10.03.373 is the prepared /pos/tax-invoices React cutover and is pending Hosting deploy.
+- Current release identity: React 0.4.280 / 2026.10.03.373; public storefront 0.16.32 / 2026.10.03.088. Build 2026.10.03.372 is Hosting-deployed for /pos/sales and Build 2026.10.03.373 is Hosting-deployed for /pos/tax-invoices.
 - Primary production Hosting origin remains https://penguin-food.web.app. Legacy https://natchanon-food-order-delivery.web.app remains reachable during transition but is no longer in deploy target foodapp.
 - Delivery customer auth remains privilege-isolated from staff auth: Google popup runs only in broker app penguin-google-customer-broker-v1, callable createDeliveryCustomerSession exchanges it for a namespaced cust_... custom-token session in penguin-storefront-customer-v2, and Firestore/Storage rules explicitly exclude customerContext tokens from all staff-role paths. Staff/Owner/Super Admin remain on [DEFAULT]; Delivery logout affects only customer/broker apps.
 - Pull, test/build, commit generated assets, and deploy Hosting before Production visual verification.

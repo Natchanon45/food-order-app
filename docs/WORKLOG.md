@@ -4626,7 +4626,10 @@ Verification:
 Release / deploy:
 - React 0.4.280 / Build 2026.10.03.373.
 - Public 0.16.32 / Build 2026.10.03.088.
-- Hosting deployment for this phase is pending the branch commit/push checkpoint.
-- No Functions, Firestore Rules, or Storage Rules changes/deployment are required for this phase.
+- Implementation commit a1c90558 (feat: migrate POS tax invoice history to React) pushed to origin/feature/react-firebase-port before deploy.
+- Firebase Hosting target foodapp deployed successfully from implementation commit a1c90558.
+- Production https://penguin-food.web.app/pos/tax-invoices/ returned HTTP 200 with no-cache/no-store/must-revalidate and the expected /react/assets/index-OgvHpgF6.js bundle.
+- Production tax sync/offline engine asset returned HTTP 200 with createFullTaxInvoiceFromSale, voidFullTaxInvoice, retryTaxInvoiceSync and syncPendingTaxInvoices exports present; Tax Invoice History parity CSS also returned HTTP 200.
+- No Functions, Firestore Rules, or Storage Rules were deployed.
 - No merge to main.
 - Next POS menu after user acceptance of /pos/tax-invoices: /pos/returns.
