@@ -4963,7 +4963,10 @@ Verification before deploy:
 Release / deploy:
 - React 0.4.280 / Build 2026.10.03.379.
 - Public 0.16.32 / Build 2026.10.03.094.
-- Hosting deployment pending implementation commit/push checkpoint.
-- After deploy, verify /pos/shifts by opening the Clear History dialog and pressing Cancel only; do not confirm/destructively clear Production history.
-- No Functions, Firestore Rules, or Storage Rules changes are required.
+- Implementation commit f062ad45 (fix: replace POS native confirms with app dialog) was pushed to origin/feature/react-firebase-port before deploy.
+- Firebase Hosting target foodapp deployed successfully; no Functions, Firestore Rules, or Storage Rules were deployed.
+- Production /pos/shifts, /pos/returns, and /pos/tax-invoices each return HTTP 200 with no-cache/no-store/must-revalidate and the expected /react/assets/index-f9vG_Kov.js bundle.
+- Production sweet-dialog.css returns HTTP 200, and the deployed bundle contains the shared dialog path while containing no window.confirm() call for these canonical pages.
+- A safe UI verification attempt was made by opening the Shifts page and intending to click Clear History then Cancel only. macOS switched the active application to Edge during coordinate automation, so the click did not occur in PENGUIN and no Production data was changed. Coordinate clicking was not retried.
+- Final verification therefore relies on the deployed bundle/CSS plus the regression contract; no destructive Production action was executed.
 - No merge to main.

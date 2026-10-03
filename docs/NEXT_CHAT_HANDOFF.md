@@ -28,8 +28,8 @@ Do not rely on old chat memory instead of these files and current Git state.
 
 - Active path: `/Users/natchanonsripleng/Desktop/Sites/food-order-app`
 - Active branch: `feature/react-firebase-port`
-- Staff Shifts implementation commit `52191579 feat: migrate POS staff shifts to React` and corrective visual commit `e4d51e06 fix: finalize POS shifts visual parity` are pushed; Build 2026.10.03.378 is currently Production.
-- Confirmation-dialog parity Build 2026.10.03.379 is the current prepared working change. Preserve any remaining uncommitted/untracked work.
+- Staff Shifts implementation commit `52191579 feat: migrate POS staff shifts to React`, corrective visual commit `e4d51e06 fix: finalize POS shifts visual parity`, and confirmation-dialog parity commit `f062ad45 fix: replace POS native confirms with app dialog` are pushed.
+- Build 2026.10.03.379 is Hosting-deployed. Preserve any remaining uncommitted/untracked work.
 - Do not reset / clean / discard.
 - Never merge to `main` unless the user explicitly requests it.
 
@@ -45,11 +45,11 @@ Local React dev server:
 
 Complete React + Firebase parity without redesigning. Laravel MASTER remains authoritative for non-POS migration areas unless a newer user instruction overrides it.
 
-Active focus as of 2026-10-03: **User found a remaining native Chrome confirm on `/pos/shifts` Clear History while task2 uses the centered app warning dialog. Build 2026.10.03.379 replaces native confirm in all currently canonical React POS pages that still had it: Shifts clear history, Returns return/VOID confirmation, and Tax Invoice History buyer-profile deletion. Each now uses shared sweetConfirm + sweet-dialog.css + multilingual shared confirm/cancel labels, and the foundation contract prevents native-confirm regression. Full gates pass locally; commit/push and Hosting-only deploy remain. After deploy, verify Shifts by opening the Clear History dialog and pressing Cancel only.**
+Active focus as of 2026-10-03: **User found a remaining native Chrome confirm on `/pos/shifts` Clear History while task2 uses the centered app warning dialog. Build 2026.10.03.379 / commit `f062ad45` is now Hosting-deployed and replaces native confirm in all currently canonical React POS pages that still had it: Shifts clear history, Returns return/VOID confirmation, and Tax Invoice History buyer-profile deletion. Each uses shared sweetConfirm + sweet-dialog.css + multilingual shared confirm/cancel labels. Production bundle/CSS and regression contracts verify the change; a coordinate-based UI click was intentionally not retried after macOS switched the active app to Edge, so no Production data was changed.**
 
 Retail POS migration rule (user-confirmed 2026-10-03): **for Retail POS, the current production HTML + CSS + JavaScript implementation under `public/pos` is the UI/behavior MASTER. Keep its current appearance and behavior 1:1 while replacing the implementation with React. Do not redesign POS or overwrite its current UX with Laravel styling. Migrate shared User Profile first, then canonical POS routes one menu at a time.**
 
-Retail POS current checkpoint: **canonical Sale `/pos`, Sales history `/pos/sales`, Tax Invoice History `/pos/tax-invoices`, Returns `/pos/returns`, and Staff Shifts `/pos/shifts` are React. Production is still Build 2026.10.03.378 until the confirmation-dialog parity release is deployed. Build 2026.10.03.379 removes browser-native confirms from Shifts/Returns/Tax Invoice History while leaving their destructive behavior gated behind explicit app-dialog confirmation. Other not-yet-migrated concrete POS subroutes remain legacy static HTML/JS.**
+Retail POS current checkpoint: **canonical Sale `/pos`, Sales history `/pos/sales`, Tax Invoice History `/pos/tax-invoices`, Returns `/pos/returns`, and Staff Shifts `/pos/shifts` are React on Production Build 2026.10.03.379. Browser-native confirms are removed from the canonical Shifts/Returns/Tax Invoice History flows and destructive actions remain gated behind explicit centered app-dialog confirmation. Other not-yet-migrated concrete POS subroutes remain legacy static HTML/JS.**
 
 Customer React production-test checkpoint (2026-09-30 evening):
 - Table Order React is deployed for cross-device/mobile testing on the canonical customer URL `/s/{slug}/order` without requiring `/react`.
@@ -64,7 +64,7 @@ PENGUIN branding checkpoint (2026-10-02):
 - Uploaded Platform App Icon is the first-choice header icon globally; Logo remains primary for login/large logo surfaces.
 - Header fallback order: App Icon -> Logo -> PG. Login/large-brand order: Logo -> App Icon -> PG. Favicon order: Favicon -> App Icon -> Logo.
 - Internal repo/Firebase/schema/DOM/translation identifiers are intentionally unchanged, including fod_* keys, FOD_WALLET_* error codes, Firebase project identifiers, and the existing penguin-food.web.app Hosting/auth origin.
-- Current prepared release identity: React 0.4.280 / 2026.10.03.379; public storefront 0.16.32 / 2026.10.03.094. Production remains Build 2026.10.03.378 until the POS confirmation-dialog parity Hosting deploy completes.
+- Current release identity: React 0.4.280 / 2026.10.03.379; public storefront 0.16.32 / 2026.10.03.094. Build 2026.10.03.379 is Hosting-deployed for POS confirmation-dialog parity.
 - Primary production Hosting origin remains https://penguin-food.web.app. Legacy https://natchanon-food-order-delivery.web.app remains reachable during transition but is no longer in deploy target foodapp.
 - Delivery customer auth remains privilege-isolated from staff auth: Google popup runs only in broker app penguin-google-customer-broker-v1, callable createDeliveryCustomerSession exchanges it for a namespaced cust_... custom-token session in penguin-storefront-customer-v2, and Firestore/Storage rules explicitly exclude customerContext tokens from all staff-role paths. Staff/Owner/Super Admin remain on [DEFAULT]; Delivery logout affects only customer/broker apps.
 - Pull, test/build, commit generated assets, and deploy Hosting before Production visual verification.
