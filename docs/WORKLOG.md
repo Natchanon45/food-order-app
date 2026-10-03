@@ -4563,7 +4563,70 @@ Verification:
 Release / deploy:
 - React 0.4.280 / Build 2026.10.03.372.
 - Public 0.16.32 / Build 2026.10.03.087.
-- Hosting has NOT been deployed for this phase yet.
-- No Functions, Firestore Rules, or Storage Rules deployment is required for this read/report cutover.
+- Firebase Hosting target foodapp deployed successfully from clean branch HEAD c7a5cd1f.
+- Production https://penguin-food.web.app/pos/sales/ returned HTTP 200 with no-cache/no-store/must-revalidate and bundle /react/assets/index-Dm-TQAhU.js.
+- No Functions, Firestore Rules, or Storage Rules were deployed.
 - No merge to main.
 - Next POS menu after user acceptance of /pos/sales: /pos/tax-invoices.
+
+
+---
+
+## 2026-10-03 — Retail POS React migration phase 4: canonical Tax invoice history /pos/tax-invoices
+
+Direction:
+- Continue the one-menu-at-a-time Retail POS migration after /pos/sales.
+- Keep the pre-cutover production HTML/CSS/JavaScript under public/pos as the UI/behavior MASTER for this POS phase.
+- Cut over only /pos/tax-invoices; remaining not-yet-migrated concrete POS subroutes stay on their legacy entrypoints.
+
+Legacy inventory / root cause:
+- The existing React PosTaxInvoicesPage draft was only a minimal list/print surface and did not cover the production tax-invoice history workflow.
+- Archived pre-cutover public/pos/tax-invoices/index.html as tests/fixtures/retail-pos-legacy/pos-tax-invoices-index.html.
+- The archived MASTER contains 52 DOM IDs/actions. React now preserves all 52/52 IDs under regression contract.
+- Production behavior that had to be retained includes late full-tax-invoice issue from an old receipt, DBD lookup/manual fallback, buyer tax profiles, local+remote merge, sync/source filters, sync health, retry/recovery diagnostics, stale/quality review, pending-buyer edit, void, source-receipt links and print/open actions.
+
+Implementation:
+- Reworked PosTaxInvoicesPage around the Retail POS session and pos.tax_invoices permission model, including POS-login next routing, first-allowed full navigation and readiness/error overlays.
+- React owns the canonical UI/state while reusing the existing production tax/offline/sync engine from /assets/js/retail-pos-full-tax-invoice.js. No Firestore collection, field, running-number, local-storage or other internal identifier was renamed.
+- Remote invoices are loaded through the React Firestore data layer and merged with local pending invoices from retail_pos_tax_invoices_v1 using the same local/remote source semantics as legacy.
+- Receipt search refreshes current sales before matching, then reuses the existing production createFullTaxInvoiceFromSale workflow.
+- Preserved exact direct sync-filter semantics so error/pending/support/stale/review can overlap like legacy, rather than masking stale/review behind a higher-priority display state.
+- Preserved legacy sync badges for failed, pending, local-only, temporary-number, stale, support-escalation and quality-review states.
+- Preserved buyer-profile local/synced/pending states and performs profile sync when opening the profile dialog.
+- DBD lookup has independent loading state in both issue and edit-buyer dialogs and retains the manual DataWarehouse fallback/copy path.
+- Extracted the pre-cutover inline Tax Invoice History CSS into pos-tax-invoices-page.css for the React parity asset rather than redesigning the page.
+- tools/sync-react-legacy-entrypoints.py now syncs public/pos/tax-invoices/index.html to the current React shell.
+- Added no-cache Hosting headers for /pos/tax-invoices and /pos/tax-invoices/**.
+- Generated-build and React-foundation contracts now require the canonical tax-invoice entrypoint, current bundle, pos.tax_invoices route token, legacy 52-ID inventory, session/permission flow and production tax sync/offline behavior bridge.
+
+Important files:
+- react-app/src/pages/PosTaxInvoicesPage.jsx
+- react-app/public/parity/css/pos-tax-invoices-page.css
+- public/react/parity/css/pos-tax-invoices-page.css
+- tests/fixtures/retail-pos-legacy/pos-tax-invoices-index.html
+- tools/sync-react-legacy-entrypoints.py
+- tools/generated-react-build-contract.mjs
+- tools/react-foundation-contract.mjs
+- firebase.json
+- react-app/src/config/release.js
+- public/assets/js/app-info.js
+- README.md
+
+Verification:
+- npm run test:operational PASS.
+- npm run test:react-parity PASS, including foundation, migration, parity matrix, P0 actions, callable, tenant-access and UI-layer contracts.
+- npm run build:react PASS.
+- Generated React build contract PASS for React 0.4.280 / Build 2026.10.03.373 using /react/assets/index-OgvHpgF6.js.
+- git diff --check PASS.
+- Legacy Tax Invoice History fixture ID inventory: 52/52 present in React.
+- Local built canonical /pos/tax-invoices/ returned HTTP 200 and referenced /react/assets/index-OgvHpgF6.js; the production tax engine asset returned JavaScript with create/void/retry exports present.
+- Headless Chrome smoke confirmed the unauthenticated canonical route first navigates to /pos/login/?next=%2Fpos%2Ftax-invoices%2F. The subsequent POS-login-to-central-login redirect is the existing unauthenticated login flow.
+- The local smoke also exposed an existing system-controls.css 404 on the login surface; it is outside this Tax Invoice History cutover and was not expanded into this phase.
+
+Release / deploy:
+- React 0.4.280 / Build 2026.10.03.373.
+- Public 0.16.32 / Build 2026.10.03.088.
+- Hosting deployment for this phase is pending the branch commit/push checkpoint.
+- No Functions, Firestore Rules, or Storage Rules changes/deployment are required for this phase.
+- No merge to main.
+- Next POS menu after user acceptance of /pos/tax-invoices: /pos/returns.

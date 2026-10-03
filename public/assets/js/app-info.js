@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.03.087',
+  build: '2026.10.03.088',
   branch: 'feature/react-firebase-port',
   commit: 'CANONICAL-URL-CUTOVER',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS sales-history React cutover',
-  updatedAt: '2026-10-03T13:02:31+0700',
+  milestone: 'Retail POS tax-invoice history React cutover',
+  updatedAt: '2026-10-03T13:35:53+0700',
   whatsNew: [
-    'Cut over canonical /pos/sales to the React runtime while preserving its legacy URL',
-    'Keep Retail POS sales filters, realtime summaries, CSV export, and receipt actions compatible',
-    'Leave remaining Retail POS subroutes on their existing legacy entrypoints until migrated individually'
+    'Cut over canonical /pos/tax-invoices to the React runtime while preserving its legacy URL',
+    'Preserve tax invoice issue, DBD lookup, buyer profiles, void, sync recovery, filters, and print actions',
+    'Reuse the existing tax sync/offline engine without changing Firestore schema or identifiers'
   ]
 };
 

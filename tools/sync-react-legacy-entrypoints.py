@@ -8,6 +8,7 @@ TARGETS = [
     "public/register/index.html",
     "public/pos/index.html",
     "public/pos/sales/index.html",
+    "public/pos/tax-invoices/index.html",
     "public/kitchen/index.html",
     "public/cashier/index.html",
     "public/cashier/receipt/index.html",
