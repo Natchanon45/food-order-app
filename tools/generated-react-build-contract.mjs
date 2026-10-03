@@ -27,6 +27,12 @@ function bundleFromEntry(relativeEntry) {
 }
 
 const build = currentReactBuild();
+const reactIndex = read("public/react/index.html");
+const toastPolicyPath = path.join(root, "public/react/parity/css/toast-global-policy.css");
+assert(reactIndex.includes("/react/parity/css/toast-global-policy.css"), "Generated React shell must load the global Toast presentation policy");
+assert(fs.existsSync(toastPolicyPath), "Generated React Toast presentation policy file is missing");
+const generatedToastPolicy = fs.readFileSync(toastPolicyPath, "utf8");
+assert(generatedToastPolicy.includes("top: 75vh !important;") && generatedToastPolicy.includes("color: #22c55e !important;") && generatedToastPolicy.includes("color: #ef4444 !important;"), "Generated React Toast policy is missing the 75vh/green-success/red-error rules");
 const receipt = bundleFromEntry("public/cashier/receipt/index.html");
 const posSale = bundleFromEntry("public/pos/index.html");
 const posSalesHistory = bundleFromEntry("public/pos/sales/index.html");

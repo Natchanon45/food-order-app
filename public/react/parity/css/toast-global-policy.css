@@ -1,0 +1,101 @@
+/*
+ * React-owned global Toast presentation policy.
+ * User rule (2026-10-03):
+ * - Toast is always the highest application layer.
+ * - Center horizontally.
+ * - Center vertically in the lower half of the viewport => 75vh.
+ * - Success uses green circle-check + message.
+ * - Unsuccess/error uses red circle-x + message.
+ *
+ * Keep this file outside sync-react-parity-assets.py so Laravel parity sync
+ * cannot restore older 66/68vh page-specific Toast positioning.
+ */
+
+html body :is(.app-toast, .toast, [data-app-toast], [data-ui-layer="toast"]):is(.app-toast, .toast, [data-app-toast], [data-ui-layer="toast"]) {
+  position: fixed !important;
+  inset: auto !important;
+  left: 50% !important;
+  top: 75vh !important;
+  right: auto !important;
+  bottom: auto !important;
+  z-index: var(--ui-layer-toast-z, 2147483647) !important;
+  margin: 0 !important;
+  width: max-content !important;
+  min-width: 0 !important;
+  max-width: min(560px, calc(100vw - 24px)) !important;
+  min-height: 0 !important;
+  height: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 10px 14px !important;
+  border: 0 !important;
+  border-radius: 14px !important;
+  background: #111 !important;
+  color: #fff !important;
+  text-align: center !important;
+  box-shadow: 0 16px 42px rgba(0, 0, 0, .34) !important;
+  transform: translate(-50%, calc(-50% + 12px)) !important;
+  opacity: 0 !important;
+  transition: opacity .2s ease, transform .2s ease !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+}
+
+html body :is(.app-toast, .toast, [data-app-toast], [data-ui-layer="toast"]):is(.app-toast, .toast, [data-app-toast], [data-ui-layer="toast"]).show {
+  opacity: 1 !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+html body :is(.app-toast, .toast, [data-app-toast], [data-ui-layer="toast"]):is(.app-toast, .toast, [data-app-toast], [data-ui-layer="toast"]) .app-toast-icon {
+  width: 20px !important;
+  height: 20px !important;
+  flex: 0 0 20px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+}
+
+html body :is(.app-toast, .toast, [data-app-toast], [data-ui-layer="toast"]):is(.app-toast, .toast, [data-app-toast], [data-ui-layer="toast"]) .app-toast-icon :is(.app-icon, .bi) {
+  width: 20px !important;
+  height: 20px !important;
+  margin: 0 !important;
+  font-size: 20px !important;
+  line-height: 1 !important;
+}
+
+html body :is(.app-toast, .toast, [data-app-toast], [data-ui-layer="toast"]):is(.app-toast, .toast, [data-app-toast], [data-ui-layer="toast"]).success .app-toast-icon {
+  color: #22c55e !important;
+}
+
+html body :is(.app-toast, .toast, [data-app-toast], [data-ui-layer="toast"]):is(.app-toast, .toast, [data-app-toast], [data-ui-layer="toast"]).error .app-toast-icon {
+  color: #ef4444 !important;
+}
+
+html body :is(.app-toast, .toast, [data-app-toast], [data-ui-layer="toast"]):is(.app-toast, .toast, [data-app-toast], [data-ui-layer="toast"]) .app-toast-message {
+  min-width: 0 !important;
+  display: block !important;
+  color: #fff !important;
+  overflow-wrap: anywhere !important;
+  font: inherit !important;
+  line-height: 1.35 !important;
+}
+
+@media (max-width: 480px) {
+  html body :is(.app-toast, .toast, [data-app-toast], [data-ui-layer="toast"]):is(.app-toast, .toast, [data-app-toast], [data-ui-layer="toast"]) {
+    top: 75vh !important;
+    max-width: calc(100vw - 20px) !important;
+    gap: 8px !important;
+    padding: 10px 12px !important;
+  }
+
+  html body :is(.app-toast, .toast, [data-app-toast], [data-ui-layer="toast"]):is(.app-toast, .toast, [data-app-toast], [data-ui-layer="toast"]) .app-toast-icon,
+  html body :is(.app-toast, .toast, [data-app-toast], [data-ui-layer="toast"]):is(.app-toast, .toast, [data-app-toast], [data-ui-layer="toast"]) .app-toast-icon :is(.app-icon, .bi) {
+    width: 18px !important;
+    height: 18px !important;
+    flex-basis: 18px !important;
+    font-size: 18px !important;
+  }
+}

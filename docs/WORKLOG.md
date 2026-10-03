@@ -4970,3 +4970,61 @@ Release / deploy:
 - A safe UI verification attempt was made by opening the Shifts page and intending to click Clear History then Cancel only. macOS switched the active application to Edge during coordinate automation, so the click did not occur in PENGUIN and no Production data was changed. Coordinate clicking was not retried.
 - Final verification therefore relies on the deployed bundle/CSS plus the regression contract; no destructive Production action was executed.
 - No merge to main.
+
+
+---
+
+## 2026-10-03 — Global Toast alert policy: top layer + 75vh + status icons
+
+User rule:
+- Toast alert must always be the highest UI layer.
+- Toast horizontal center is the viewport center.
+- Toast vertical center is the midpoint from viewport center to viewport bottom, i.e. exactly 75vh.
+- Success Toast must show a green circle-check icon, a visual space, then the message.
+- Unsuccessful/error Toast must show a red circle-x icon, a visual space, then the message.
+
+Root cause / audit:
+- UI-layer order already enforced Toast > Sweet Dialog > Modal through ui-layer-stack.css and toast-top-layer.js.
+- Toast presentation was inconsistent:
+  - legacy/page CSS still used 68vh and mobile 66vh,
+  - toast-system.css used a bottom:25vh anchor which placed the Toast edge rather than its center at the requested point,
+  - Shifts and Returns rendered simple text-only .toast nodes,
+  - most imperative .app-toast helpers already rendered check-circle/x-circle icons.
+- Because Laravel parity CSS can be re-synced later, changing only copied parity files would risk silently restoring the old position.
+
+Implementation:
+- Added React-owned global stylesheet react-app/public/parity/css/toast-global-policy.css and load it globally from react-app/index.html after ui-layer-stack.css.
+- The policy intentionally remains outside tools/sync-react-parity-assets.py so future Laravel parity sync cannot overwrite it.
+- The global selector has enough specificity to override older app.css/retail-pos.css 66vh/68vh declarations, including !important variants.
+- Every React Toast selector (.app-toast, .toast, [data-app-toast], [data-ui-layer=toast]) is fixed at left:50%, top:75vh and shown with translate(-50%,-50%).
+- Global Toast z-index remains --ui-layer-toast-z = 2147483647, above shared dialog and modal layers.
+- Toast width is content-sized with a safe 560px viewport-aware maximum and retains the dark surface.
+- Success icon color: #22c55e; error icon color: #ef4444; icon/message gap: 8px.
+- Mobile uses the same exact 75vh center instead of the previous 66vh/24vh variants.
+- PosShiftsPage now renders the shared icon + message Toast structure and tracks toastType.
+- PosReturnsPage now renders the same structure; unsupported-camera and camera-open-failure Toasts are explicitly error type so they use the red x-circle.
+- docs/UI_LAYER_POLICY.md now records the positioning and icon rule as a mandatory global UI policy.
+- UI-layer and React foundation contracts lock the new rule, and generated build contract requires the built Toast policy asset/link.
+
+Verification:
+- Browser geometry smoke with a 1600x900 viewport:
+  - success Toast centerX = 800,
+  - centerY = 675 = 75vh,
+  - z-index = 2147483647,
+  - success icon color = rgb(34, 197, 94),
+  - error icon color = rgb(239, 68, 68),
+  - error icon class contains bi-x-circle,
+  - gap = 8px,
+  - PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS, including UI layer contract Toast 2147483647 > Dialog 2147483600 > Modal 2147483000.
+- npm run build:react PASS.
+- Generated React build contract PASS for React 0.4.280 / Build 2026.10.03.380 using /react/assets/index-DCJz_imo.js.
+- git diff --check PASS.
+
+Release / deploy:
+- React 0.4.280 / Build 2026.10.03.380.
+- Public 0.16.32 / Build 2026.10.03.095.
+- Hosting deployment pending implementation commit/push checkpoint.
+- No Functions, Firestore Rules, or Storage Rules changes are required.
+- No merge to main.

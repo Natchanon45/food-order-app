@@ -7,6 +7,7 @@ const assert = (condition, message) => {
 
 const css = read("react-app/public/parity/css/ui-layer-stack.css");
 const toastCss = read("react-app/public/parity/css/toast-system.css");
+const toastPolicy = read("react-app/public/parity/css/toast-global-policy.css");
 const sweetCss = read("react-app/public/parity/css/sweet-dialog.css");
 const manager = read("react-app/src/ui/toast-top-layer.js");
 const index = read("react-app/index.html");
@@ -26,6 +27,9 @@ const toast = token("ui-layer-toast-z");
 assert(Number.isFinite(modal) && Number.isFinite(dialog) && Number.isFinite(toast), "UI layer numeric tokens missing");
 assert(toast > dialog && dialog > modal, "Required UI layer order must be Toast > Sweet Dialog > Modal");
 assert(toastCss.includes("--ui-layer-toast-z"), "Toast CSS must use the global Toast layer token");
+assert(toastPolicy.includes("top: 75vh !important;") && toastPolicy.includes("left: 50% !important;") && toastPolicy.includes("translate(-50%, -50%)"), "Global React Toast policy must center Toast at 75vh");
+assert(toastPolicy.includes(".success .app-toast-icon") && toastPolicy.includes("color: #22c55e !important;") && toastPolicy.includes(".error .app-toast-icon") && toastPolicy.includes("color: #ef4444 !important;"), "Global React Toast policy must use green success and red error icons");
+assert(toastPolicy.includes("bi-check-circle") === false && toastPolicy.includes("bi-x-circle") === false, "Toast icon glyph selection belongs in Toast markup/runtime, not CSS");
 assert(sweetCss.includes("--ui-layer-dialog-z"), "Sweet Dialog CSS must use the global dialog layer token");
 assert(css.includes('.sweet-dialog-backdrop[popover]') && css.includes('width: 100vw !important;') && css.includes('height: 100dvh !important;') && css.includes('border: 0 !important;') && css.includes('margin: 0 !important;'), "Promoted Sweet Dialog popovers must reset browser UA frame and remain full viewport");
 assert(css.includes('.app-toast[popover]') && css.includes('outline: 0 !important;'), "Promoted Toast popovers must reset browser UA frame");
@@ -51,7 +55,7 @@ assert(
 );
 assert(!manager.includes('document.addEventListener("toggle"'), "Top Layer manager must not self-schedule from Popover toggle events");
 assert(manager.includes('attributeFilter: ["class", "hidden", "open"]'), "Top Layer manager must react to native dialog open/close changes");
-assert(index.includes("/react/parity/css/ui-layer-stack.css") && main.includes('import "@/ui/toast-top-layer"'), "React must load global layer CSS and Top Layer manager");
+assert(index.includes("/react/parity/css/ui-layer-stack.css") && index.includes("/react/parity/css/toast-global-policy.css") && main.includes('import "@/ui/toast-top-layer"'), "React must load global layer CSS, Toast presentation policy, and Top Layer manager");
 assert(sync.includes('"ui-layer-stack.css"'), "Parity sync must include global layer CSS");
 assert(!sync.includes('for name in ["toast-top-layer.js"]'), "Laravel parity sync must never overwrite the React Top Layer runtime manager");
 assert(policy.includes("Toast > Sweet Dialog > Modal"), "UI layer policy documentation missing required order");

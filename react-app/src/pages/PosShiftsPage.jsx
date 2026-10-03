@@ -90,6 +90,7 @@ export function PosShiftsPage() {
   const [closeError, setCloseError] = useState("");
   const [busy, setBusy] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState("success");
   const posSession = useMemo(() => getRetailPosSession(), [
     authUser?.uid,
     profile?.id,
@@ -142,7 +143,8 @@ export function PosShiftsPage() {
     if (redirectTarget) location.replace(redirectTarget);
   }, [redirectTarget]);
 
-  const showToast = useCallback(message => {
+  const showToast = useCallback((message, type = "success") => {
+    setToastType(type === "error" ? "error" : "success");
     setToastMessage(message);
     window.clearTimeout(showToast.timer);
     showToast.timer = window.setTimeout(() => setToastMessage(""), 2200);
@@ -530,7 +532,10 @@ export function PosShiftsPage() {
       </section>
     </main>
 
-    <div id="toast" className={"toast" + (toastMessage ? " show" : "")} role="status">{toastMessage}</div>
+    <div id="toast" className={`toast ${toastType}${toastMessage ? " show" : ""}`} role={toastType === "error" ? "alert" : "status"} aria-live="polite">
+      <span className="app-toast-icon" aria-hidden="true"><i className={`bi bi-${toastType === "error" ? "x-circle" : "check-circle"} app-icon`}></i></span>
+      <span className="app-toast-message">{toastMessage}</span>
+    </div>
     <AppDeveloperPanel />
   </>;
 }

@@ -13,6 +13,18 @@ From highest to lowest:
 
 A Toast alert must never be covered by a SweetAlert, modal, native dialog, loading overlay, menu, or page content.
 
+## Global Toast presentation rule
+
+The Toast position and status icon are also global UI rules, not page-specific styling:
+
+- Horizontal position: exact viewport center.
+- Vertical position: the midpoint between the viewport center and the bottom edge, i.e. the Toast center is at `75vh`.
+- Use the same `75vh` center on desktop and mobile; do not restore older `66vh` / `68vh` page overrides.
+- Success Toast: Bootstrap `check-circle` icon in green (`#22c55e`), then one visual space/gap, then the message.
+- Unsuccessful/error Toast: Bootstrap `x-circle` icon in red (`#ef4444`), then one visual space/gap, then the message.
+- The Toast surface remains dark so the colored status icon and white message remain readable.
+- React owns this presentation override in `react-app/public/parity/css/toast-global-policy.css`; it is intentionally outside the Laravel parity-copy list so a future parity sync cannot silently restore an older Toast position.
+
 ## Shared layer tokens
 
 Do not invent page-specific z-index values for these three application layers.

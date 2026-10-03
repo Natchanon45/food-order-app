@@ -128,6 +128,7 @@ export function PosReturnsPage() {
   const [historySearch, setHistorySearch] = useState("");
   const [receiptRecord, setReceiptRecord] = useState(null);
   const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState("success");
   const [scanStatus, setScanStatus] = useState("");
 
   const posSession = useMemo(() => getRetailPosSession(), [
@@ -154,7 +155,8 @@ export function PosReturnsPage() {
     return "";
   }, [authState.status, tenantState.status, tenant, profile, posAccessProfile, hasAccess, stylesReady]);
   useEffect(() => { if (redirectTarget) location.replace(redirectTarget); }, [redirectTarget]);
-  const showToast = useCallback(message => {
+  const showToast = useCallback((message, type = "success") => {
+    setToastType(type === "error" ? "error" : "success");
     setToastMessage(message);
     clearTimeout(showToast.timer);
     showToast.timer = setTimeout(() => setToastMessage(""), 2200);
@@ -438,7 +440,7 @@ export function PosReturnsPage() {
 
   const startScanner = async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
-      showToast("อุปกรณ์นี้ไม่สามารถเปิดกล้องได้");
+      showToast("อุปกรณ์นี้ไม่สามารถเปิดกล้องได้", "error");
       return;
     }
     setScanStatus("กำลังเตรียมกล้อง...");
@@ -472,7 +474,7 @@ export function PosReturnsPage() {
     } catch (scanError) {
       console.warn("POS_RETURN_SCAN_FAILED", scanError);
       stopScanner();
-      showToast("เปิดกล้องไม่สำเร็จ กรุณาอนุญาตการใช้งานกล้อง");
+      showToast("เปิดกล้องไม่สำเร็จ กรุณาอนุญาตการใช้งานกล้อง", "error");
     }
   };
   useEffect(() => () => stopScanner(), [stopScanner]);
@@ -699,7 +701,10 @@ export function PosReturnsPage() {
         <p id="posScanStatus" className="pos-scan-status">{scanStatus}</p>
       </div>
     </dialog>
-    <div id="toast" className={`toast${toastMessage ? " show" : ""}`} role="status">{toastMessage}</div>
+    <div id="toast" className={`toast ${toastType}${toastMessage ? " show" : ""}`} role={toastType === "error" ? "alert" : "status"} aria-live="polite">
+      <span className="app-toast-icon" aria-hidden="true"><i className={`bi bi-${toastType === "error" ? "x-circle" : "check-circle"} app-icon`}></i></span>
+      <span className="app-toast-message">{toastMessage}</span>
+    </div>
     <AppDeveloperPanel />
   </>;
 }
