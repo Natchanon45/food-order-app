@@ -10,6 +10,7 @@ TARGETS = [
     "public/pos/sales/index.html",
     "public/pos/tax-invoices/index.html",
     "public/pos/returns/index.html",
+    "public/pos/shifts/index.html",
     "public/kitchen/index.html",
     "public/cashier/index.html",
     "public/cashier/receipt/index.html",

@@ -4831,3 +4831,74 @@ Release / deploy:
 - Initial screenshots taken during readiness loading were discarded and not used for visual acceptance; final screenshots were captured only after the authenticated pages finished rendering.
 - Canonical URLs were left without verification query parameters.
 - Do not proceed to /pos/shifts until the user has had a chance to inspect this visual-parity Production release.
+
+
+---
+
+## 2026-10-03 — Retail POS React migration phase 6: canonical Staff Shifts /pos/shifts
+
+Direction / reference:
+- User accepted the Sales/Tax/Returns visual-parity release and asked to continue directly.
+- Current task2 page at https://task2.dev2.zmartb.co/pos/shifts/ and its Laravel/POS source under /Users/natchanonsripleng/Desktop/Sites/food-order-app-php80 are the visual/behavior reference for this phase.
+- Captured authenticated before-cutover screenshots of task2 and PENGUIN shifts. The legacy PENGUIN screen was already visually close to task2, so the React migration must preserve that screen rather than redesign it.
+- Archived pre-cutover public/pos/shifts/index.html as tests/fixtures/retail-pos-legacy/pos-shifts-index.html.
+
+Gaps found in the previous React draft:
+- PosShiftsPage was only 29 lines and did not preserve the legacy 24-ID DOM/action inventory.
+- It used page-level pos.shifts permission only; task2 has five action permissions: pos.shifts.open, pos.shifts.close, pos.shifts.view_amount, pos.shifts.view_history, pos.shifts.clear_history.
+- It wrote shifts directly to Firestore and lacked task2's local pending/offline retry behavior.
+- Its displayed copy differed from task2 (for example “กะพนักงาน”, “เปิดกะพนักงาน”, “กะที่กำลังเปิด”) rather than the five-language pos_operations.shifts catalog.
+- Shift sales totals only matched explicit shiftId and subtracted refund totals. task2 also includes untagged sales inside the shift time window and uses gross sale totals.
+- History field names differed between Firebase React draft and legacy/task2 (totalSales/closingCash versus salesTotal/actualCash), risking older shift rows displaying zero.
+- Direct open used one deterministic ID per user/terminal/day, which could overwrite/reuse a closed shift when the same cashier opened another shift on the same day.
+
+Implementation:
+- Rebuilt PosShiftsPage around Retail POS session-first auth, canonical POS-login next routing, first-allowed full-page redirect, PageReadyOverlay, LocaleSwitcher, PosNavigation, and AppDeveloperPanel.
+- Preserved all 24/24 legacy IDs including noActiveShift, activeShiftPanel, openShiftForm, closeShiftForm, amount/stat IDs, shiftHistoryBody, clearShiftHistory, and toast.
+- Restored task2 visual copy/classes and semantic icons:
+  - clock-history/violet shift headings,
+  - play-circle/emerald Open Shift action,
+  - bar-chart-line/indigo History heading,
+  - rose Close/Clear actions,
+  - existing retail-shifts.css responsive/mobile layout,
+  - app-version-badge-runtime.css floating developer/version control.
+- Restored the five granular shift permissions. Built-in owner/admin/manager/cashier fallback semantics match current task2; if stored role data already contains granular shift permissions, those explicit permissions win.
+- Sales totals now match task2: explicit shiftId first, then untagged sales whose createdAt is between shift open/close times, with gross sale totals split into cash versus non-cash.
+- Amount values and history amount columns are hidden when pos.shifts.view_amount is absent; history is hidden without pos.shifts.view_history; Open/Close forms are disabled without their corresponding permissions; Clear History is hidden without pos.shifts.clear_history.
+- Added react-app/src/data/retailPosShifts.js:
+  - local active/history keys remain retail_pos_active_shift_v1 and retail_pos_shift_history_v1,
+  - pending operations use retail_pos_shift_sync_queue_v1,
+  - local open/close state is written before remote synchronization,
+  - online retry queue uses pending/syncing/conflict states and retail:shift-sync events,
+  - remote shift snapshots are overlaid with pending local operations,
+  - when multiple shifts are open remotely, the current user's open shift is selected before any other shift, matching task2 semantics.
+- Shared retailPosData now:
+  - checks local active/pending-close state before returning the active shift to the Sale page,
+  - exposes watchPosShifts,
+  - supports exact shiftId/openedAt and closedAt for idempotent offline replay,
+  - uses unique random shift IDs for multiple same-day shifts,
+  - stores legacy-compatible aliases (salesTotal/actualCash/cashSales/transferSales) alongside React fields.
+- Canonical /pos/shifts is added to the React postbuild sync and Hosting no-cache headers.
+- Generated build and foundation contracts now require the canonical shifts bundle, 24-ID fixture inventory, five granular permissions, task2 icon/floating parity, gross/time-fallback totals, offline queue markers, and shared active/pending-close compatibility.
+
+Verification before commit/deploy:
+- node --check react-app/src/data/retailPosData.js PASS.
+- node --check react-app/src/data/retailPosShifts.js PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS, including foundation, migration, parity matrix, P0 actions, callables, tenant access, and UI-layer contracts.
+- npm run build:react PASS.
+- Generated React build contract PASS for React 0.4.280 / Build 2026.10.03.377 using /react/assets/index-CmuUq0DB.js.
+- git diff --check PASS.
+- Canonical public/pos/shifts/index.html matches public/react/index.html after build.
+- Legacy Shifts fixture ID inventory: 24/24 present in React.
+- Local headless Chrome smoke: /pos/shifts/ HTTP 200, no pageerror, then expected unauthenticated routing through /pos/login/?next=%2Fpos%2Fshifts%2F.
+- Existing local-login system-controls.css 404 remains outside this Shifts phase.
+- Intermediate .376/.377 bundles created before final code were removed only after confirming they were unreferenced and were never deployed.
+
+Release / deploy:
+- React 0.4.280 / Build 2026.10.03.377.
+- Public 0.16.32 / Build 2026.10.03.092.
+- Hosting deployment pending implementation commit/push checkpoint.
+- No Functions, Firestore Rules, or Storage Rules changes are required.
+- Production verification must be read-only: do not open/close a real shift merely for testing.
+- No merge to main.

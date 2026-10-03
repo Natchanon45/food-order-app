@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.03.376",
+  build: "2026.10.03.377",
   branch: "feature/react-firebase-port",
-  commit: "POS-VISUAL-PARITY",
+  commit: "POS-SHIFTS-REACT-CUTOVER",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Retail POS sales tax returns visual parity",
+  milestone: "Retail POS shifts React cutover",
   whatsNew: [
-    "Match Sales quick-filter and report-heading icon badges to the current task2 Retail POS reference",
-    "Match Tax Invoice History header, icon chips, document cards, and desktop width to the task2 reference",
-    "Restore Returns search modes, section icons, and floating developer/version control consistently",
+    "Serve staff shifts on canonical /pos/shifts with task2 visual and behavior parity",
+    "Preserve open/close, cash variance, history, five granular shift permissions, and realtime shift sales totals",
+    "Keep local pending shift state and retry sync so POS sales can continue to see an offline-open shift",
   ],
 });

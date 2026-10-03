@@ -121,10 +121,32 @@ export async function loadPosTaxSettings(tenantId) {
   };
 }
 
+const POS_ACTIVE_SHIFT_KEY = "retail_pos_active_shift_v1";
+const POS_SHIFT_SYNC_QUEUE_KEY = "retail_pos_shift_sync_queue_v1";
+
+function readPosLocalJson(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
+}
+
 export async function loadActivePosShift(tenantId, userId = currentUserId()) {
+  const local = readPosLocalJson(POS_ACTIVE_SHIFT_KEY, null);
+  const localBelongs = local
+    && String(local.tenantId || tenantId) === String(tenantId)
+    && local.status === "open"
+    && (!userId || String(local.createdBy || local.cashierId || "") === String(userId));
+  if (localBelongs) return local;
+
+  const queue = readPosLocalJson(POS_SHIFT_SYNC_QUEUE_KEY, []);
+  const closingIds = new Set((Array.isArray(queue) ? queue : [])
+    .filter(row => String(row?.tenantId || "") === String(tenantId)
+      && row?.action === "close"
+      && ["pending", "syncing", "conflict"].includes(String(row?.status || "")))
+    .map(row => String(row?.shiftId || "")));
   const snapshot = await getDocs(query(tenantCollection(tenantId, "shifts"), orderBy("updatedAt", "desc")));
   const rows = snapshot.docs.map(snapshotRow);
-  return rows.find(row => row.status === "open" && (!userId || row.createdBy === userId)) || null;
+  return rows.find(row => row.status === "open"
+    && !closingIds.has(String(row.id))
+    && (!userId || String(row.createdBy || row.cashierId || "") === String(userId))) || null;
 }
 
 function saleTotalsForSummary(summary = {}, sale = {}) {
@@ -957,42 +979,64 @@ export async function listPosShifts(tenantId) {
   const snapshot = await getDocs(tenantCollection(tenantId, "shifts"));
   return snapshot.docs.map(snapshotRow).sort((a,b) => dateValueMs(b.openedAt || b.createdAt) - dateValueMs(a.openedAt || a.createdAt));
 }
-export async function openPosShift({ tenantId, openingCash = 0, terminalCode = "POS-01", cashierName = "", note = "" }) {
-  const userId = currentUserId(), openedAt = new Date().toISOString();
-  const shiftId = safeId(`shift_${tenantId}_${terminalCode}_${userId}_${dateKeyFrom(openedAt)}`);
+export function watchPosShifts(tenantId, onRows, onError = null) {
+  if (!tenantId || typeof onRows !== "function") return () => {};
+  return onSnapshot(
+    query(tenantCollection(tenantId, "shifts"), orderBy("updatedAt", "desc")),
+    snapshot => onRows(snapshot.docs.map(snapshotRow)),
+    error => {
+      console.warn("POS_SHIFTS_WATCH_FAILED", error);
+      if (typeof onError === "function") onError(error);
+    },
+  );
+}
+export async function openPosShift({
+  tenantId, openingCash = 0, terminalCode = "POS-01", cashierName = "", note = "",
+  shiftId: requestedShiftId = "", openedAt: requestedOpenedAt = "",
+}) {
+  const userId = currentUserId();
+  const openedAt = requestedOpenedAt || new Date().toISOString();
+  const shiftId = requestedShiftId || safeId(`shift-${crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`}`);
   let committed = null;
   await runTransaction(db, async transaction => {
     const ref = tenantDoc(tenantId, "shifts", shiftId), snap = await transaction.get(ref);
-    if (snap.exists() && snap.data()?.status === "open") { committed = snapshotRow(snap); return; }
+    if (snap.exists()) { committed = snapshotRow(snap); return; }
     const shiftNumber = await reservePosOperationNumber(transaction, tenantId, "SHIFT", shiftId, openedAt, userId);
+    const cleanNote = String(note || "");
     const row = {
       id:shiftId,shiftNumber,tenantId,shopId:tenantId,deviceId:deviceId(),schemaVersion:POS_FIRESTORE_VERSION,
       deleted:false,channel:POS_CHANNEL,status:"open",terminalCode:String(terminalCode || "POS-01"),cashierId:userId,
       cashierName:String(cashierName || auth.currentUser?.displayName || auth.currentUser?.email || "Cashier"),
-      openingCash:round2(openingCash),closingCash:0,expectedCash:0,cashDifference:0,totalSales:0,totalCashSales:0,
-      totalNonCashSales:0,billCount:0,openedAt,closedAt:"",note:String(note || ""),createdBy:userId,updatedBy:userId,
+      openingCash:round2(openingCash),closingCash:0,actualCash:0,expectedCash:0,cashDifference:0,
+      totalSales:0,salesTotal:0,totalCashSales:0,cashSales:0,totalNonCashSales:0,transferSales:0,billCount:0,
+      openedAt,closedAt:"",note:cleanNote,openNote:cleanNote,createdBy:userId,updatedBy:userId,
       createdAt:openedAt,updatedAt:Date.now(),createdAtServer:serverTimestamp(),updatedAtServer:serverTimestamp(),
     };
     transaction.set(ref,row,{merge:true}); committed=row;
   });
-  localStorage.setItem("retail_pos_active_shift_v1",JSON.stringify(committed));
+  localStorage.setItem(POS_ACTIVE_SHIFT_KEY,JSON.stringify(committed));
   return committed;
 }
-export async function closePosShift({ tenantId, shiftId, closingCash = 0, totals = {}, note = "" }) {
-  const userId=currentUserId(),closedAt=new Date().toISOString();
+export async function closePosShift({
+  tenantId, shiftId, closingCash = 0, totals = {}, note = "", closedAt: requestedClosedAt = "",
+}) {
+  const userId=currentUserId(),closedAt=requestedClosedAt || new Date().toISOString();
   const ref=tenantDoc(tenantId,"shifts",shiftId); let committed=null;
   await runTransaction(db,async transaction=>{
     const snap=await transaction.get(ref); if(!snap.exists()) throw new Error("SHIFT_NOT_FOUND");
     const row=snapshotRow(snap); if(row.status!=="open"){committed=row;return;}
-    const expectedCash=round2(Number(row.openingCash||0)+Number(totals.totalCashSales||0));
+    const expectedCash=round2(Number(row.openingCash||0)+Number(totals.totalCashSales||totals.cashSales||0));
     const closeCash=round2(closingCash);
-    const closed={...row,status:"closed",closingCash:closeCash,expectedCash,cashDifference:round2(closeCash-expectedCash),
-      totalSales:round2(totals.totalSales),totalCashSales:round2(totals.totalCashSales),totalNonCashSales:round2(totals.totalNonCashSales),
+    const totalSales=round2(totals.totalSales ?? totals.salesTotal);
+    const cashSales=round2(totals.totalCashSales ?? totals.cashSales);
+    const transferSales=round2(totals.totalNonCashSales ?? totals.transferSales);
+    const closed={...row,status:"closed",closingCash:closeCash,actualCash:closeCash,expectedCash,cashDifference:round2(closeCash-expectedCash),
+      totalSales,salesTotal:totalSales,totalCashSales:cashSales,cashSales,totalNonCashSales:transferSales,transferSales,
       billCount:Number(totals.billCount||0),closedAt,closedBy:userId,closeNote:String(note||""),updatedBy:userId,
       updatedAt:Date.now(),updatedAtServer:serverTimestamp()};
     transaction.set(ref,closed,{merge:true}); committed=closed;
   });
-  localStorage.removeItem("retail_pos_active_shift_v1");
+  localStorage.removeItem(POS_ACTIVE_SHIFT_KEY);
   return committed;
 }
 export async function listPosTaxInvoices(tenantId) {
