@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.03.089',
+  build: '2026.10.03.090',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-NAV-PROFILE-PARITY',
+  commit: 'POS-RETURNS-REACT-CUTOVER',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS shared profile and menu parity',
-  updatedAt: '2026-10-03T14:48:47+0700',
+  milestone: 'Retail POS returns React cutover',
+  updatedAt: '2026-10-03T15:22:01+0700',
   whatsNew: [
-    'Render the shared POS drawer at document.body like the legacy production menu',
-    'Restore dark POS menu and user-profile text instead of inheriting the white POS header color',
-    'Restore the central-home icon while preserving existing POS permissions and navigation'
+    'Cut over canonical /pos/returns to the React runtime while preserving the current Retail POS screen',
+    'Preserve return and VOID confirmation, stock restoration, loyalty adjustment, receipt, and barcode scan behavior',
+    'Retain logical-ID and Firestore-document-ID compatibility for existing POS data'
   ]
 };
 

@@ -28,8 +28,8 @@ Do not rely on old chat memory instead of these files and current Git state.
 
 - Active path: `/Users/natchanonsripleng/Desktop/Sites/food-order-app`
 - Active branch: `feature/react-firebase-port`
-- Latest Retail POS implementation/deploy commit: `a1c90558 feat: migrate POS tax invoice history to React`.
-- Retail POS phases 1–4 are committed. Preserve any remaining uncommitted/untracked work.
+- Current committed branch checkpoint before Returns phase: `05eb2eca docs: record POS profile menu production parity`.
+- Shared POS User Profile/Menu parity is accepted by the user. Retail POS Returns phase is the current working change; preserve all remaining uncommitted/untracked work.
 - Do not reset / clean / discard.
 - Never merge to `main` unless the user explicitly requests it.
 
@@ -45,11 +45,11 @@ Local React dev server:
 
 Complete React + Firebase parity without redesigning. Laravel MASTER remains authoritative for non-POS migration areas unless a newer user instruction overrides it.
 
-Active focus as of 2026-10-03: **Revenue Share / PENGUIN Wallet repair is accepted. Retail POS is active again, but do not advance to another POS route until the shared User Profile + Menu Drawer is accepted. Build 2026.10.03.374 fixes the drawer structure by portaling it to document.body like legacy, restores dark menu/profile text, and restores the central-home house icon. After acceptance, continue the next not-yet-migrated menu from /pos/returns.**
+Active focus as of 2026-10-03: **Shared POS User Profile/Menu Drawer parity is accepted. Canonical Returns `/pos/returns` is now cut over locally to React and passes the final Build 2026.10.03.375 gates. This Returns phase preserves legacy search, partial return/VOID confirmation, stock restoration, loyalty adjustments, history, receipt/print, barcode scanning, and logical-ID/Firestore-document-ID compatibility. Hosting deployment is pending the implementation commit/push checkpoint. Do not start `/pos/shifts` until Returns is production-verified/accepted.**
 
 Retail POS migration rule (user-confirmed 2026-10-03): **for Retail POS, the current production HTML + CSS + JavaScript implementation under `public/pos` is the UI/behavior MASTER. Keep its current appearance and behavior 1:1 while replacing the implementation with React. Do not redesign POS or overwrite its current UX with Laravel styling. Migrate shared User Profile first, then canonical POS routes one menu at a time.**
 
-Retail POS current checkpoint: **canonical Sale `/pos`, Sales history `/pos/sales`, and Tax Invoice History `/pos/tax-invoices` are React on Production. Shared User Profile + Menu Drawer parity repair is deployed on Build 2026.10.03.374 / commit `4a09c66c`: drawer is mounted at document.body like legacy, title/name are dark, and “กลับหน้าระบบกลาง” has the house icon. The user's authenticated /pos tab was reloaded after deploy. Do not move to `/pos/returns` until the user visually accepts this shared drawer. Other not-yet-migrated concrete POS subroutes remain legacy static HTML/JS.**
+Retail POS current checkpoint: **canonical Sale `/pos`, Sales history `/pos/sales`, and Tax Invoice History `/pos/tax-invoices` are React on Production; shared User Profile/Menu parity is deployed and accepted. Canonical Returns `/pos/returns` is prepared locally as React Build 2026.10.03.375 with the archived 21-ID legacy inventory and transaction-safe stock/loyalty/refund/audit behavior. Returns is pending Hosting deploy after commit/push. Other not-yet-migrated concrete POS subroutes remain legacy static HTML/JS. After Returns acceptance, the next sales-group menu is `/pos/shifts`.**
 
 Customer React production-test checkpoint (2026-09-30 evening):
 - Table Order React is deployed for cross-device/mobile testing on the canonical customer URL `/s/{slug}/order` without requiring `/react`.
@@ -64,7 +64,7 @@ PENGUIN branding checkpoint (2026-10-02):
 - Uploaded Platform App Icon is the first-choice header icon globally; Logo remains primary for login/large logo surfaces.
 - Header fallback order: App Icon -> Logo -> PG. Login/large-brand order: Logo -> App Icon -> PG. Favicon order: Favicon -> App Icon -> Logo.
 - Internal repo/Firebase/schema/DOM/translation identifiers are intentionally unchanged, including fod_* keys, FOD_WALLET_* error codes, Firebase project identifiers, and the existing penguin-food.web.app Hosting/auth origin.
-- Current release identity: React 0.4.280 / 2026.10.03.374; public storefront 0.16.32 / 2026.10.03.089. Build 2026.10.03.374 is Hosting-deployed for the shared POS User Profile/Menu parity repair.
+- Current prepared release identity: React 0.4.280 / 2026.10.03.375; public storefront 0.16.32 / 2026.10.03.090. Build 2026.10.03.374 is Hosting-deployed for shared POS User Profile/Menu parity; Build 2026.10.03.375 is the prepared canonical Returns React cutover pending Hosting deploy.
 - Primary production Hosting origin remains https://penguin-food.web.app. Legacy https://natchanon-food-order-delivery.web.app remains reachable during transition but is no longer in deploy target foodapp.
 - Delivery customer auth remains privilege-isolated from staff auth: Google popup runs only in broker app penguin-google-customer-broker-v1, callable createDeliveryCustomerSession exchanges it for a namespaced cust_... custom-token session in penguin-storefront-customer-v2, and Firestore/Storage rules explicitly exclude customerContext tokens from all staff-role paths. Staff/Owner/Super Admin remain on [DEFAULT]; Delivery logout affects only customer/broker apps.
 - Pull, test/build, commit generated assets, and deploy Hosting before Production visual verification.

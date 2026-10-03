@@ -4711,3 +4711,57 @@ Release / deploy:
 - Source audit confirms React keeps the same five legacy menu groups, item labels, permission keys, icon tones, and route ordering; React uses canonical no-trailing-slash hrefs while legacy uses equivalent trailing-slash hrefs.
 - No Functions, Firestore Rules or Storage Rules were deployed.
 - No merge to main.
+
+
+---
+
+## 2026-10-03 — Retail POS React migration phase 5: canonical Returns /pos/returns
+
+Direction:
+- User accepted the shared POS User Profile/Menu Drawer repair and approved continuing the POS migration.
+- Continue one menu at a time; current phase is /pos/returns only.
+- Pre-cutover production HTML/CSS/JavaScript remains the Retail POS UI/behavior MASTER.
+
+Legacy inventory / gaps found:
+- Archived pre-cutover public/pos/returns/index.html as tests/fixtures/retail-pos-legacy/pos-returns-index.html.
+- Legacy Returns contains 21 page IDs/actions; React now preserves all 21/21 under regression contract.
+- The previous React draft was not parity-complete: it added a non-legacy search-mode selector, submitted VOID immediately, and omitted loyalty reversal/restore, sale refund status, audit log, return receipt/print, and camera barcode scanning.
+- Legacy VOID behavior is two-step: select all remaining quantities + set original refund method/reason, then use the normal confirmation flow.
+- Legacy transaction also restores stock, writes stock movements, adjusts customer loyalty + loyalty ledger, updates sale returns/refundTotal/refundStatus/status, and writes the return audit event atomically.
+
+Implementation:
+- Reworked PosReturnsPage around Retail POS session-first auth, pos.returns permission, POS-login next routing, first-allowed full navigation, and readiness/error overlays.
+- Restored the single legacy search field: sale number/id plus product name/id/barcode, only sales with remaining returnable quantity, max 30 results.
+- Restored legacy quantity behavior: step 0.001, clamp to remaining, select-on-focus, and Enter advances to the next quantity field.
+- Restored VOID as a preparation action rather than an immediate write; final submit uses the same confirmation path and derives full VOID vs partial return from cumulative returned quantity.
+- Added react-app/src/data/retailPosReturns.js to preserve the production return transaction semantics: quantity validation, stock restoration, stock movement, customer point reversal/restore, loyaltyLedger, sale refund status/status/loyalty updates, and auditLogs.
+- Preserved RETURN-... versus VOID-... document prefixes used by the current production flow.
+- Added logical-ID / Firestore-document-ID compatibility. React snapshots now retain _documentId and Returns uses it for legacy sale/product/customer documents whose stored logical ID differs from the Firestore document ID.
+- Restored legacy loyalty preview and history adjustment visibility.
+- Recreated the return receipt dialog/80 mm print surface with the legacy receipt IDs and existing retail-return-receipt.css.
+- Added the legacy-style camera barcode flow with BarcodeDetector first and ZXing fallback; scanner styling is in retail-barcode-scan-tools.css.
+- Thai search description, placeholder, initial prompt, and no-result copy are held to the current legacy screen while other locales use the existing five-language translation catalog.
+- tools/sync-react-legacy-entrypoints.py now cuts over public/pos/returns/index.html to the React shell.
+- Added no-cache Hosting headers for /pos/returns and /pos/returns/**.
+- Generated-build and foundation contracts now require canonical Returns, the 21-ID legacy inventory, session/permission flow, VOID-confirm behavior, loyalty/scanner/receipt actions, transaction markers, and legacy document-ID compatibility.
+
+Verification:
+- node --check react-app/src/data/retailPosReturns.js PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS, including foundation, migration, parity matrix, P0 actions, callables, tenant access, and UI-layer contracts.
+- npm run build:react PASS.
+- Generated React build contract PASS for React 0.4.280 / Build 2026.10.03.375 using /react/assets/index--8wcUKVM.js.
+- git diff --check PASS.
+- Canonical public/pos/returns/index.html matches public/react/index.html after build.
+- Legacy Returns fixture ID inventory: 21/21 present in React.
+- Local headless Chrome smoke: /pos/returns/ HTTP 200, no Returns pageerror, then the expected unauthenticated redirect to /pos/login/?next=%2Fpos%2Freturns%2F.
+- The existing local-login system-controls.css 404 remains outside this Returns phase and was not expanded into the migration.
+
+Release / deploy:
+- React 0.4.280 / Build 2026.10.03.375.
+- Public 0.16.32 / Build 2026.10.03.090.
+- Intermediate Returns bundles generated under the already-deployed Build .374 were never deployed and were removed only when confirmed unreferenced.
+- Hosting deployment is pending the implementation commit/push checkpoint.
+- No Functions, Firestore Rules, or Storage Rules changes are required.
+- No merge to main.
+- After user acceptance of /pos/returns, the next sales-group POS menu is /pos/shifts.

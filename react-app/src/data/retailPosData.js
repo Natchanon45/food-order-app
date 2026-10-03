@@ -48,7 +48,7 @@ function deviceId() {
 }
 
 function snapshotRow(snapshot) {
-  return { id: snapshot.id, ...snapshot.data() };
+  return { id: snapshot.id, ...snapshot.data(), _documentId: snapshot.id };
 }
 
 export async function listPosProducts(tenantId) {
