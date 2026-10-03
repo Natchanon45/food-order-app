@@ -4908,8 +4908,13 @@ Release / deploy / post-deploy visual correction:
   - Required cashier/terminal/opening-cash/actual-cash controls author data-validation-state="valid" when their current value is valid.
   - retail-shifts.css now carries the same valid-field green visual treatment used by task2 form-validation-ui.
   - React foundation contract locks both full-year formatting and valid-field styling.
-- Corrective release candidate: React 0.4.280 / Build 2026.10.03.378; Public 0.16.32 / Build 2026.10.03.093; generated bundle /react/assets/index-Cv45MZfk.js.
+- Corrective release: React 0.4.280 / Build 2026.10.03.378; Public 0.16.32 / Build 2026.10.03.093; generated bundle /react/assets/index-Cv45MZfk.js.
 - Full operational/parity/build/generated-contract/git-diff gates PASS for the corrective Build .378.
-- Build .378 Hosting deploy is pending its corrective commit/push checkpoint.
-- Production verification remains read-only: do not open/close a real shift merely for testing.
+- Corrective commit e4d51e06 (fix: finalize POS shifts visual parity) was pushed to origin/feature/react-firebase-port before deploy.
+- Firebase Hosting target foodapp deployed Build .378 successfully; no Functions, Firestore Rules, or Storage Rules were deployed.
+- Production canonical /pos/shifts resolves to /react/assets/index-Cv45MZfk.js with no-cache/no-store/must-revalidate.
+- Production retail-shifts.css contains the task2 valid-field green border/background rules and the Production bundle contains the th-TH formatter marker used for full Buddhist-year timestamps.
+- A final .378 screen capture could not be used because macOS locked the display during capture; the resulting image was the Lock Screen. No false visual-verification claim was recorded. The .377 authenticated screenshot had already verified the full Shifts layout/icons/floating control; .378 changes only the two source/CSS-verified visual deltas above.
+- Chrome tab was returned to canonical https://penguin-food.web.app/pos/shifts without a verification query.
+- Production verification remained read-only: no real shift was opened, closed, or history-cleared for testing.
 - No merge to main.
