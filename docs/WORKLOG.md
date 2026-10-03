@@ -4821,6 +4821,13 @@ Verification before commit/deploy:
 Release / deploy:
 - React 0.4.280 / Build 2026.10.03.376.
 - Public 0.16.32 / Build 2026.10.03.091.
-- Hosting deployment pending implementation commit/push checkpoint.
-- No Functions, Firestore Rules, or Storage Rules changes are required.
-- Do not proceed to /pos/shifts until these three Production screens are visually re-verified against task2.
+- Implementation commit b9e984cb (fix: align POS sales tax and returns visuals) was pushed to origin/feature/react-firebase-port before deploy.
+- Firebase Hosting target foodapp deployed successfully; no Functions, Firestore Rules, or Storage Rules were deployed.
+- Production /pos/sales, /pos/tax-invoices, and /pos/returns each returned HTTP 200 with no-cache/no-store/must-revalidate and the expected /react/assets/index-D1nG9iYR.js bundle.
+- Production visual verification in the user's authenticated Chrome session:
+  - Sales: Today/This Month/All semantic icons render; Best Sellers and Payment Mix heading badges render; floating developer/version dot is present.
+  - Tax Invoice History: extra Back POS action is gone; desktop content uses the task2 full width; filter/health/header card icons render; floating developer/version dot is present.
+  - Returns: Receipt/Bill Number search mode selector is restored with task2 receipt-mode copy; section icons render; floating developer/version dot is present.
+- Initial screenshots taken during readiness loading were discarded and not used for visual acceptance; final screenshots were captured only after the authenticated pages finished rendering.
+- Canonical URLs were left without verification query parameters.
+- Do not proceed to /pos/shifts until the user has had a chance to inspect this visual-parity Production release.

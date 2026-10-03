@@ -28,8 +28,8 @@ Do not rely on old chat memory instead of these files and current Git state.
 
 - Active path: `/Users/natchanonsripleng/Desktop/Sites/food-order-app`
 - Active branch: `feature/react-firebase-port`
-- Latest committed Production checkpoint before the current visual pass: `6345627c docs: record POS returns production cutover`.
-- Shared POS User Profile/Menu parity is accepted. Sales/Tax Invoice History/Returns visual parity Build 2026.10.03.376 is the current working change; preserve all remaining uncommitted/untracked work.
+- Latest Retail POS implementation/deploy commit: `b9e984cb fix: align POS sales tax and returns visuals`.
+- Shared POS User Profile/Menu parity is accepted. Sales/Tax Invoice History/Returns visual parity Build 2026.10.03.376 is Hosting-deployed and visually verified in the authenticated Chrome session; preserve any remaining uncommitted/untracked work.
 - Do not reset / clean / discard.
 - Never merge to `main` unless the user explicitly requests it.
 
@@ -45,11 +45,11 @@ Local React dev server:
 
 Complete React + Firebase parity without redesigning. Laravel MASTER remains authoritative for non-POS migration areas unless a newer user instruction overrides it.
 
-Active focus as of 2026-10-03: **Visual parity comes before further POS migration. The user supplied direct task2-vs-PENGUIN screenshots for `/pos/sales`, `/pos/tax-invoices`, and `/pos/returns` and authorized fixes without further confirmation. Build 2026.10.03.376 restores task2 semantic icons, Tax header/width parity, Returns search modes, and consistent floating developer/version controls. Full gates pass locally; Hosting deploy is pending the implementation commit/push checkpoint. Do not start `/pos/shifts` until these three Production screens are re-verified visually.**
+Active focus as of 2026-10-03: **Visual parity comes before further POS migration. The user supplied direct task2-vs-PENGUIN screenshots for `/pos/sales`, `/pos/tax-invoices`, and `/pos/returns` and authorized fixes without further confirmation. Build 2026.10.03.376 / commit `b9e984cb` is now Hosting-deployed and Production-verified: Sales semantic icons/floating control, Tax header/full-width/icon chips/floating control, and Returns search modes/section icons/floating control all render in the authenticated session. Do not start `/pos/shifts` until the user has inspected this visual release.**
 
 Retail POS migration rule (user-confirmed 2026-10-03): **for Retail POS, the current production HTML + CSS + JavaScript implementation under `public/pos` is the UI/behavior MASTER. Keep its current appearance and behavior 1:1 while replacing the implementation with React. Do not redesign POS or overwrite its current UX with Laravel styling. Migrate shared User Profile first, then canonical POS routes one menu at a time.**
 
-Retail POS current checkpoint: **canonical Sale `/pos`, Sales history `/pos/sales`, Tax Invoice History `/pos/tax-invoices`, and Returns `/pos/returns` are React. Production is still Build 2026.10.03.375 until the current visual-parity release is deployed. Build 2026.10.03.376 is prepared locally to match the supplied current task2 reference: Sales filter/report icons; Tax header/icon chips/cards/full-width desktop shell; Returns Receipt/Product/Barcode search modes, section icons, and floating developer/version control. Existing return/VOID stock/loyalty/refund/audit behavior remains unchanged. Other not-yet-migrated concrete POS subroutes remain legacy static HTML/JS.**
+Retail POS current checkpoint: **canonical Sale `/pos`, Sales history `/pos/sales`, Tax Invoice History `/pos/tax-invoices`, and Returns `/pos/returns` are React on Production Build 2026.10.03.376. This visual-parity release matches the supplied current task2 reference for Sales filter/report icons, Tax header/icon chips/cards/full-width desktop shell, and Returns Receipt/Product/Barcode search modes, section icons, and floating developer/version control. Existing return/VOID stock/loyalty/refund/audit behavior remains unchanged. Other not-yet-migrated concrete POS subroutes remain legacy static HTML/JS.**
 
 Customer React production-test checkpoint (2026-09-30 evening):
 - Table Order React is deployed for cross-device/mobile testing on the canonical customer URL `/s/{slug}/order` without requiring `/react`.
@@ -64,7 +64,7 @@ PENGUIN branding checkpoint (2026-10-02):
 - Uploaded Platform App Icon is the first-choice header icon globally; Logo remains primary for login/large logo surfaces.
 - Header fallback order: App Icon -> Logo -> PG. Login/large-brand order: Logo -> App Icon -> PG. Favicon order: Favicon -> App Icon -> Logo.
 - Internal repo/Firebase/schema/DOM/translation identifiers are intentionally unchanged, including fod_* keys, FOD_WALLET_* error codes, Firebase project identifiers, and the existing penguin-food.web.app Hosting/auth origin.
-- Current prepared release identity: React 0.4.280 / 2026.10.03.376; public storefront 0.16.32 / 2026.10.03.091. Production remains Build 2026.10.03.375 until the Sales/Tax/Returns visual-parity Hosting deploy completes.
+- Current release identity: React 0.4.280 / 2026.10.03.376; public storefront 0.16.32 / 2026.10.03.091. Build 2026.10.03.376 is Hosting-deployed for the Sales/Tax/Returns visual-parity pass.
 - Primary production Hosting origin remains https://penguin-food.web.app. Legacy https://natchanon-food-order-delivery.web.app remains reachable during transition but is no longer in deploy target foodapp.
 - Delivery customer auth remains privilege-isolated from staff auth: Google popup runs only in broker app penguin-google-customer-broker-v1, callable createDeliveryCustomerSession exchanges it for a namespaced cust_... custom-token session in penguin-storefront-customer-v2, and Firestore/Storage rules explicitly exclude customerContext tokens from all staff-role paths. Staff/Owner/Super Admin remain on [DEFAULT]; Delivery logout affects only customer/broker apps.
 - Pull, test/build, commit generated assets, and deploy Hosting before Production visual verification.
