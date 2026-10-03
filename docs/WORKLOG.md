@@ -4703,5 +4703,11 @@ Verification:
 Release / deploy:
 - React 0.4.280 / Build 2026.10.03.374.
 - Public 0.16.32 / Build 2026.10.03.089.
-- Hosting deployment pending commit/push checkpoint.
+- Implementation commit 4a09c66c (fix: align shared POS profile and menu drawer) pushed to origin/feature/react-firebase-port before deploy.
+- Firebase Hosting target foodapp deployed successfully.
+- Production /pos returns HTTP 200 with no-cache/no-store/must-revalidate and the expected /react/assets/index-DEpGoUYI.js bundle.
+- Production POS navigation CSS contains the explicit dark drawer text safeguard, and the bundle contains the authored house icon plus document.body portal marker.
+- Reloaded the user's existing authenticated Chrome /pos tab after deployment.
+- Source audit confirms React keeps the same five legacy menu groups, item labels, permission keys, icon tones, and route ordering; React uses canonical no-trailing-slash hrefs while legacy uses equivalent trailing-slash hrefs.
+- No Functions, Firestore Rules or Storage Rules were deployed.
 - No merge to main.
