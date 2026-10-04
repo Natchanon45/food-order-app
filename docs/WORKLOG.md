@@ -6242,6 +6242,9 @@ Verification before deploy:
 - No Production write operation executed.
 
 Deploy state:
-- Commit/push and Hosting-only deploy pending.
-- No Firestore Rules, Storage Rules, or Functions changes.
+- Implementation commit `c939e95a` — `fix: improve returns loyalty icon contrast` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.04.400` and Public `0.16.32 / 2026.10.04.115`.
+- Production `/pos/returns` serves `/react/assets/index-DhA4-qjk.js`.
+- Production 440x956 contrast contract PASS: Loyalty badge/icon/`::before` computed color `rgb(255,255,255)`, text shadow active, center offset X=0px / Y≈0.008px, zero document overflow/page/request/HTTP errors.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions changes/deploys.
 - No merge to `main`.
