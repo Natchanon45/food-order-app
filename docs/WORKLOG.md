@@ -6112,6 +6112,12 @@ Verification before deploy:
 - No return, VOID, stock, loyalty, refund, or other Production write operation executed.
 
 Deploy state:
-- Commit/push and Hosting-only deploy pending.
-- No Firestore Rules, Storage Rules, or Functions changes.
+- Implementation commit `b315954c` — `feat: redesign POS returns dashboard` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.04.397` and Public `0.16.32 / 2026.10.04.112`.
+- Production `/pos/returns` returns HTTP 200 with `Cache-Control: no-cache, no-store, must-revalidate` and serves `/react/assets/index-Brq0G_vR.js`.
+- Authenticated Production contract PASS at 1440x900 and 440x956: Visual Control Center CSS loaded, gradient Hero + four metrics + refund-method ring + loyalty strip rendered, history/search interactions passed, current menu remained `/pos/returns`, and no document overflow/raw translation/page/request/HTTP errors occurred.
+- Current test tenant has zero return-history rows, so activity/history correctly render empty states; their two-column desktop / one-column Mobile structure is guarded by source contracts.
+- No return, VOID, stock, loyalty, refund, or other Production write operation executed during verification.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions changes/deploys.
+- Next visual redesign route: `/pos/shifts`.
 - No merge to `main`.
