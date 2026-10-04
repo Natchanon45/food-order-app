@@ -6294,6 +6294,13 @@ Verification before deploy:
 - No shift open/close/clear-history or other Production write operation executed.
 
 Deploy state:
-- Commit/push and Hosting-only deploy pending.
-- No Firestore Rules, Storage Rules, or Functions changes.
+- Implementation commit `054fc351` — `feat: redesign POS shifts dashboard` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.04.401` and Public `0.16.32 / 2026.10.04.116`.
+- Production `/pos/shifts` returns HTTP 200 with `Cache-Control: no-cache, no-store, must-revalidate` and serves `/react/assets/index-oovR8-uT.js`.
+- Authenticated Production contract PASS at 1440x900 and 440x956 using a copied browser profile with Firestore Write-channel / commit / batchWrite endpoints blocked. Blocked write attempts observed: 0.
+- Production state during verification: no active shift, 7 closed shift-history rows. Hero closed state + four metrics, 7 real timeline bars, conic payment-mix ring, and current `/pos/shifts` menu state rendered correctly.
+- Mobile 440x956 converted all 7 history rows to contained `display:grid` cards; first row/table width 386px; document horizontal overflow 0; no raw translation/page/request/HTTP errors.
+- No shift open/close/clear-history or other Production write operation executed.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions changes/deploys.
+- Next visual redesign route: `/pos/products`.
 - No merge to `main`.
