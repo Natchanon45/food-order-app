@@ -5281,8 +5281,13 @@ Release / deploy / visual correction:
 - Authenticated read-only Chrome verification loaded the actual React page, cleared readiness, rendered the current 19 movement rows, four summary cards, filters, product scanner, CSV action, table, and floating developer control.
 - Comparing the authenticated .383 screenshot with task2 exposed one remaining visual delta only: the report heading icon was authored as arrow-left-right/sky, while current task2 uses the fallback bookmark-star/green icon for “รายการความเคลื่อนไหว”.
 - Corrective implementation changes that heading icon to bi-bookmark-star with green tone and updates the regression contract.
-- Corrective release candidate: React 0.4.280 / Build 2026.10.04.384; Public 0.16.32 / Build 2026.10.04.099; generated bundle /react/assets/index-BmPYYVQw.js.
+- Corrective release: React 0.4.280 / Build 2026.10.04.384; Public 0.16.32 / Build 2026.10.04.099; generated bundle /react/assets/index-BmPYYVQw.js.
 - Full operational/parity/build/generated-contract/git-diff gates PASS for Build .384.
-- Build .384 Hosting deploy is pending its corrective commit/push checkpoint.
-- Production verification remains read-only.
+- Corrective commit d958d964 (fix: finalize POS stock movements visual parity) was pushed to origin/feature/react-firebase-port before deploy.
+- Firebase Hosting target foodapp deployed Build .384 successfully; no Functions, Firestore Rules, or Storage Rules were deployed.
+- Production /pos/stock-movements returned HTTP 200 with no-cache/no-store/must-revalidate and /react/assets/index-BmPYYVQw.js; deployed bundle contains pos.stock_movements and bookmark-star.
+- Final authenticated read-only Chrome verification confirmed the task2 bookmark-star/green report heading, Today/Month/All icons, CSV icon, barcode scanner, current movement rows, summary cards, and floating developer/version control.
+- No Production stock movement or catalog data was modified during verification.
+- Chrome PENGUIN tab was returned to canonical /pos/stock-movements without a verification query.
+- Stock Movements phase is complete. Next actual POS menu route: /pos/stock-counts.
 - No merge to main.
