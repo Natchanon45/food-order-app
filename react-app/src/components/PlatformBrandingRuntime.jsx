@@ -13,8 +13,12 @@ function ensureStyles() {
     ".brand-mark{display:inline-flex!important;align-items:center!important;justify-content:center!important;line-height:1!important;vertical-align:middle!important}" +
     ".brand-mark::after{display:flex!important;width:100%!important;height:100%!important;align-items:center!important;justify-content:center!important;margin:0!important;padding:0!important;line-height:1!important;transform:translateY(-1px)!important}" +
     ".brand-mark.platform-brand-image-target::after{content:none!important;transform:none!important}" +
-    ".brand-mark.platform-brand-image-target,.login-logo.platform-brand-image-target{padding:0!important;background:transparent!important;overflow:hidden!important}" +
-    ".platform-brand-image-target>img{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;object-position:center center!important;margin:auto!important}";
+    ".brand-mark.platform-brand-image-target{box-sizing:border-box!important;width:42px!important;min-width:42px!important;height:42px!important;padding:3px!important;background:transparent!important;overflow:hidden!important;border-radius:12px!important}" +
+    ".login-logo.platform-brand-image-target{box-sizing:border-box!important;width:min(220px,84%)!important;max-width:220px!important;height:110px!important;padding:0!important;background:transparent!important;overflow:hidden!important;border-radius:0!important}" +
+    ".platform-brand-image-target>img{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;object-position:center center!important;margin:auto!important}" +
+    ".brand-mark.platform-brand-image-target>img{border-radius:9px!important}" +
+    ".login-logo.platform-brand-image-target>img{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;border-radius:0!important}" +
+    "@media(max-width:760px){.brand-mark.platform-brand-image-target{width:36px!important;min-width:36px!important;height:36px!important;padding:2px!important;border-radius:10px!important}.login-logo.platform-brand-image-target{width:min(190px,86%)!important;max-width:190px!important;height:95px!important}}";
   document.head.appendChild(style);
 }
 

@@ -6821,3 +6821,94 @@ Deploy state:
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
 - Next visual redesign route: `/pos/stock-movements`.
 - No merge to `main`.
+
+---
+## 2026-10-05 — Platform Branding dimensions, Login logo, header icon, and legacy Home runtime
+
+User report:
+- Uploaded Logo was still too small on the Login page.
+- Uploaded App/PWA Icon replaced PG on Order/Delivery pages but looked horizontally cropped.
+- The canonical homepage `/` still showed the legacy PG mark.
+- Super Admin Branding did not tell the operator what image dimensions/aspect ratios to prepare.
+
+Root cause:
+- React Login still used the legacy 64x64 `.login-logo` geometry that had originally been intended for the PG initials. A horizontal logo was therefore reduced to a tiny strip.
+- Header `.brand-mark` retained the old 46x38 PG geometry; dynamically inserted square App Icons inherited that non-square box.
+- The canonical homepage `/` is still the legacy static page from `public/index.html`, so it never mounts React `PlatformBrandingRuntime`.
+- The first static branding subscription could start before Firebase Auth restoration completed, allowing an authenticated Home session to remain on the PG fallback if the branding read was rejected before auth became ready.
+- Super Admin showed format/file-size help but no concrete recommended pixel dimensions.
+
+Implementation:
+- React `PlatformBrandingRuntime`:
+  - Header App Icon target is now an explicit square 42x42 box on desktop with 3px safe padding.
+  - Mobile Header App Icon is 36x36 with 2px safe padding.
+  - Images remain `object-fit: contain` and are never crop-filled.
+  - Login Logo becomes a wide 2:1 surface:
+    - Desktop 220x110,
+    - Mobile 190x95.
+  - Login image width/height/max-width/max-height are explicitly locked to the target and use `object-fit: contain`.
+- Added legacy `public/assets/js/platform-branding-runtime.js` for the canonical static Home:
+  - consumes `platformSettings/branding`,
+  - resolves Storage paths,
+  - applies App Icon to `.brand-mark`,
+  - updates favicon / Apple touch icon,
+  - waits for the first Firebase Auth state before subscribing,
+  - retains the PG fallback when no branding exists.
+- Loaded the static branding runtime from `public/index.html` with cache key `20261005-123`.
+- Super Admin Branding:
+  - added a visible recommended-size badge for every asset,
+  - changed the Logo preview to a wide 2:1 frame so it no longer previews a horizontal logo in an 88x88 square,
+  - all recommendation text is available in TH / EN / MY / LO / KM.
+- Recommended source assets:
+  - Logo PENGUIN: 1200x600 px, 2:1.
+  - Favicon: 128x128 px, 1:1.
+  - App / PWA Icon: 512x512 px, 1:1, with 12–15% visual safe area.
+- Existing validation remains compatible:
+  - Logo PNG/JPG/WebP <= 4 MB.
+  - Favicon PNG/ICO <= 2 MB.
+  - App Icon remains square and at least 192x192.
+- Branding Storage paths, Firestore document path, permissions, and fallback semantics were not changed.
+
+Release prepared:
+- React `0.4.280 / 2026.10.05.408`.
+- Public `0.16.32 / 2026.10.05.123`.
+- Generated bundle: `/react/assets/index-D8ewk-h8.js`.
+
+Verification before deploy:
+- Static branding runtime `node --check` PASS.
+- `parity-translations.json` JSON validation PASS.
+- React foundation contract PASS, including:
+  - square contained Header App Icon geometry,
+  - wide Login Logo geometry,
+  - static Home branding runtime + Auth-ready subscription,
+  - Super Admin dimension recommendation UI + five-language labels.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS:
+  - migration coverage 53 routes / 21 POS,
+  - parity matrix PASS,
+  - P0 actions PASS,
+  - callables 54 refs / 0 missing,
+  - tenant-access PASS,
+  - UI-layer PASS.
+- `npm run build:react` PASS; generated build contract PASS for Build `.408`.
+- `git diff --check` PASS.
+- Authenticated local-build browser contract PASS against the currently uploaded Production Branding with Firestore write endpoints blocked.
+- Current uploaded assets observed:
+  - Logo natural size = 2172x1086 (exact 2:1),
+  - App Icon natural size = 512x512.
+- Desktop:
+  - Home `/`: App Icon applied, target 42x42, image 36x36, object-fit contain.
+  - Login: Logo target 220x110; image 220x110; object-fit contain.
+  - Kitchen: App Icon target 42x42; image 36x36; object-fit contain.
+  - Admin: App Icon target 42x42; image 36x36; object-fit contain.
+- Mobile 390x844:
+  - Login Logo = 190x95.
+  - Home App Icon = 36x36 with 32x32 contained image.
+  - document horizontal overflow = 0.
+- Page errors = 0; request failures = 0; HTTP errors = 0.
+- Firestore write attempts observed = 0.
+
+Deploy state:
+- Commit/push and Hosting-only deployment pending.
+- No Firestore Rules, Storage Rules, Functions, or Firestore data changes required.
+- No merge to `main`.

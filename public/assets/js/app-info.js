@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.05.122',
+  build: '2026.10.05.123',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-PRODUCT-FOOTER-DRAG-POLISH',
+  commit: 'PLATFORM-BRANDING-ASSET-GEOMETRY',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS Product modal footer and drag-sort polish',
-  updatedAt: '2026-10-05T01:44:57+0700',
+  milestone: 'Platform branding asset geometry and guidance',
+  updatedAt: '2026-10-05T02:36:44+0700',
   whatsNew: [
-    'Make the Product editor footer sit flush against the modal bottom edge without an outer gap',
-    'Smooth category/product drag sorting with straight drag cards, tuned Sortable animation, and gentler placeholders',
-    'Preserve Product/Category CRUD, catalog ordering semantics, permissions, and tenant boundaries'
+    'Use a wide Login logo surface, contained square header App Icon geometry, and shared branding on the legacy homepage',
+    'Show recommended Logo, Favicon, and App/PWA Icon dimensions directly in Super Admin Branding',
+    'Preserve existing branding storage paths, permissions, tenant behavior, and PG fallbacks'
   ]
 };
 

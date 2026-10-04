@@ -164,12 +164,44 @@ assert(globalAppCss.includes(".brand-mark::after"),"global brand-mark pseudo ele
 assert(globalAppCss.includes('content: "PG"'),"global compact brand fallback must be PG");
 assert(globalAppCss.includes("align-items: center !important;")&&globalAppCss.includes("justify-content: center !important;"),"global FOD vertical centering contract missing");
 const brandingRuntime=read("react-app/src/components/PlatformBrandingRuntime.jsx");
+const platformPage=read("react-app/src/pages/PlatformPage.jsx");
+const platformControlCenterCss=read("react-app/public/parity/css/platform-control-center.css");
 assert(brandingRuntime.includes(".brand-mark.platform-brand-image-target::after{content:none!important"),"branding image override must suppress fallback pseudo label");
+assert(
+  brandingRuntime.includes("width:42px!important")
+  && brandingRuntime.includes("height:42px!important")
+  && brandingRuntime.includes("padding:3px!important")
+  && brandingRuntime.includes("width:min(220px,84%)!important")
+  && brandingRuntime.includes("height:110px!important")
+  && brandingRuntime.includes("width:36px!important")
+  && brandingRuntime.includes("width:min(190px,86%)!important")
+  && brandingRuntime.includes("height:95px!important"),
+  "Platform branding runtime must use square contained header icons and a wide login logo surface"
+);
 assert(
   brandingRuntime.includes("const hasBrandTarget = node =>")
   && brandingRuntime.includes("[...record.addedNodes].some(hasBrandTarget)"),
   "Platform branding observer must ignore unrelated realtime DOM mutations"
 );
+assert(
+  platformPage.includes('recommendationKey: "logo_recommended"')
+  && platformPage.includes('recommendationKey: "favicon_recommended"')
+  && platformPage.includes('recommendationKey: "app_icon_recommended"')
+  && platformPage.includes('className="platform-branding-size"')
+  && platformPage.includes('platform-branding-item-${item.key}')
+  && platformControlCenterCss.includes(".platform-branding-copy .platform-branding-size")
+  && platformControlCenterCss.includes(".platform-branding-item-logo .platform-branding-preview"),
+  "Super Admin Branding must show per-asset recommended dimensions"
+);
+for(const locale of ["th","en","my","lo","km"]){
+  const branding=dict[locale]?.platform?.branding;
+  assert(
+    branding?.logo_recommended
+    &&branding?.favicon_recommended
+    &&branding?.app_icon_recommended,
+    `Platform Branding recommended-size translations missing: ${locale}`
+  );
+}
 const i18nProvider=read("react-app/src/i18n/I18nProvider.jsx");
 assert(i18nProvider.includes("normalizeVisibleBranding")&&i18nProvider.includes('.replaceAll("LUKKAJA", "PENGUIN")')&&i18nProvider.includes('.replaceAll("KINJAI", "PENGUIN")')&&i18nProvider.includes('.replace(/\\bFOD\\b/g, "PG")')&&!i18nProvider.includes('.replaceAll("PENGUIN", "KINJAI")')&&!i18nProvider.includes('.replace(/\\bPG\\b/g, "KJ")'),"React runtime branding normalization missing");
 const adminWorkspaceCss=read("react-app/public/parity/css/admin-workspace.css");
@@ -339,6 +371,7 @@ const parityFooter=read("react-app/src/components/ParityFooter.jsx");
 const staticI18n=read("public/assets/js/i18n.js");
 const staticUi=read("public/assets/js/ui.js");
 const staticHome=read("public/index.html");
+const staticBrandingRuntime=read("public/assets/js/platform-branding-runtime.js");
 const staticHomeDashboardCss=read("public/assets/css/home-dashboard.css");
 const firebaseHostingConfig=read("firebase.json");
 const staticHomeSession=read("public/assets/js/home-session-fa.js");
@@ -356,6 +389,15 @@ assert(
   &&firebaseHostingConfig.includes('"source": "/index.html"')
   &&firebaseHostingConfig.includes('"value": "no-cache, no-store, must-revalidate"'),
   "Canonical static Home must keep the requested layout, omit Waiting Queue, and never remain stale behind Hosting cache"
+);
+assert(
+  staticHome.includes('/assets/js/platform-branding-runtime.js?v=20261005-123')
+  &&staticBrandingRuntime.includes('doc(db, "platformSettings", "branding")')
+  &&staticBrandingRuntime.includes("onAuthStateChanged(auth")
+  &&staticBrandingRuntime.includes('applyBrandImage(".brand-mark", appIconUrl || logoUrl')
+  &&staticBrandingRuntime.includes("width:42px!important")
+  &&staticBrandingRuntime.includes("object-fit:contain!important"),
+  "Canonical static Home must consume the shared Super Admin Branding App Icon instead of remaining PG-only"
 );
 const staticAuthService=read("public/assets/js/auth-service.js");
 const staticHomeTranslations=read("public/assets/js/home-translations.js");

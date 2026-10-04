@@ -22,9 +22,9 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 
 const BRANDING_ITEMS = [
-  { key: "logo", fallback: "PENGUIN", accept: "image/png,image/jpeg,image/webp" },
-  { key: "favicon", fallbackIcon: "bi bi-window", accept: "image/png,image/x-icon,image/vnd.microsoft.icon" },
-  { key: "appIcon", fallbackIcon: "bi bi-app", accept: "image/png,image/jpeg,image/webp" },
+  { key: "logo", fallback: "PENGUIN", accept: "image/png,image/jpeg,image/webp", recommendationKey: "logo_recommended" },
+  { key: "favicon", fallbackIcon: "bi bi-window", accept: "image/png,image/x-icon,image/vnd.microsoft.icon", recommendationKey: "favicon_recommended" },
+  { key: "appIcon", fallbackIcon: "bi bi-app", accept: "image/png,image/jpeg,image/webp", recommendationKey: "app_icon_recommended" },
 ];
 
 const EMPTY_BRANDING = {
@@ -643,7 +643,7 @@ export function PlatformPage() {
                 const configured = Boolean(brandingFiles[item.key] || (!brandingClear[item.key] && branding[configuredKey]));
                 const inputId = `platformBrandingInput-${item.key}`;
                 return (
-                  <article className="platform-branding-item" key={item.key}>
+                  <article className={`platform-branding-item platform-branding-item-${item.key}`} key={item.key}>
                     <div className="platform-branding-preview" data-branding-preview={item.key}>
                       {previewUrl ? <img src={previewUrl} alt="" /> : null}
                       <span data-branding-fallback hidden={Boolean(previewUrl)}>{item.fallbackIcon ? <i className={item.fallbackIcon} aria-hidden="true"></i> : item.fallback}</span>
@@ -651,6 +651,7 @@ export function PlatformPage() {
                     <div className="platform-branding-copy">
                       <strong>{t(`platform.branding.${item.key === "appIcon" ? "app_icon" : item.key}`)}</strong>
                       <small>{t(`platform.branding.${item.key === "appIcon" ? "app_icon_help" : item.key + "_help"}`)}</small>
+                      <small className="platform-branding-size"><i className="bi bi-aspect-ratio" aria-hidden="true"></i><span>{t(`platform.branding.${item.recommendationKey}`)}</span></small>
                       <small data-branding-status={item.key}>
                         {brandingClear[item.key]
                           ? t("platform.branding.clear_pending")

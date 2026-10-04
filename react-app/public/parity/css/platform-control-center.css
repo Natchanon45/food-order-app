@@ -753,3 +753,53 @@
     animation-duration: .01ms !important;
   }
 }
+
+/* Branding asset-size guidance — 2026-10-05 */
+.platform-branding-copy .platform-branding-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 2px;
+  padding: 5px 8px;
+  border: 1px solid #cce7d6;
+  border-radius: 999px;
+  background: #eefaf3;
+  color: #0f7a43;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.platform-branding-copy .platform-branding-size i {
+  flex: 0 0 auto;
+  font-size: 12px;
+  line-height: 1;
+}
+.platform-branding-copy .platform-branding-size span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.platform-branding-item-logo {
+  grid-template-columns: 132px minmax(0, 1fr);
+}
+.platform-branding-item-logo .platform-branding-preview {
+  width: 132px;
+  height: 66px;
+  align-self: start;
+  border-radius: 14px;
+}
+@media (max-width: 460px) {
+  .platform-branding-item-logo {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "preview"
+      "copy"
+      "buttons";
+  }
+  .platform-branding-item-logo .platform-branding-preview {
+    width: min(180px, 100%);
+    height: 90px;
+  }
+}
