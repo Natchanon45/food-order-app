@@ -5581,3 +5581,64 @@ Release / deploy:
 - No Production data-changing POS action was executed.
 - Modern Card v2.1 is complete on Production Build 2026.10.04.387.
 - No merge to main.
+
+
+---
+
+## 2026-10-04 — POS Modern Card v2.2: multi-open scroll resilience
+
+User issue:
+- When several POS menu cards were expanded together, lower menu content could extend below the visible drawer area and appear inaccessible.
+- User chose to keep multi-open accordion behavior rather than collapse to one group at a time.
+
+Root cause / fix direction:
+- The drawer already had a scrollable nav, but the center section still relied on flex auto sizing and opened groups were not forced to remain non-shrinking.
+- Newly expanded lower groups also did not move into the visible nav viewport automatically.
+- The fix keeps top/header/profile/central-home and bottom/logout fixed while only the center menu list scrolls.
+
+Implementation:
+- Shared Modern Card v2.1 visual sizing/color remains unchanged.
+- Drawer now explicitly uses:
+  - height/max-height 100dvh,
+  - flex column,
+  - min-height 0,
+  - overflow hidden.
+- Header, profile, central-home, and footer are flex:0 0 auto.
+- Center nav now uses flex:1 1 0%, min-height:0, height:0, overflow-y:auto, overflow-x:hidden, stable scrollbar gutter, touch momentum scrolling, and extra bottom padding.
+- Menu cards and open submenu lists are non-shrinking.
+- Safe-area bottom padding is preserved for the footer.
+- Every group has a data-menu-group-card identifier.
+- React PosNavigation auto-scrolls a newly opened group into the nearest visible nav area with double requestAnimationFrame after render.
+- Legacy retail-pos-navigation.js applies the same data attribute and scrollIntoView behavior after group expansion.
+- Multiple groups can still remain open simultaneously.
+
+Legacy cache safety:
+- Remaining legacy POS routes bump both shared navigation CSS and JS to v=20261004-103 because both layout and expansion behavior changed.
+- React routes use Build 2026.10.04.388 as the parity asset cache key.
+
+Regression / direct all-open test:
+- React foundation contract now locks:
+  - v2.2 flex/scroll/safe-area rules,
+  - React data-menu-group-card + auto-scroll behavior,
+  - legacy data-menu-group-card + auto-scroll behavior.
+- Synthetic browser test opened all 5 groups with 18 submenu items:
+  - Desktop 1600x900: nav client 590px, scroll height 680px, max internal scroll 90px; footer stayed fixed at 822–884px; after scroll, last group fit entirely inside nav viewport.
+  - Mobile 390x844: nav client 567px, scroll height 646px, max internal scroll 79px; footer stayed fixed at 774–832px; after scroll, last group fit entirely inside nav viewport.
+  - document width matched viewport on both sizes; no horizontal overflow.
+  - ALL_OPEN_SCROLL=PASS.
+
+Full verification:
+- public/assets/js/retail-pos-navigation.js node syntax check PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS.
+- npm run build:react PASS.
+- Generated React build contract PASS for React 0.4.280 / Build 2026.10.04.388 using /react/assets/index-C9WRcpgj.js.
+- git diff --check PASS.
+
+Release / deploy:
+- Prepared React 0.4.280 / Build 2026.10.04.388.
+- Prepared Public 0.16.32 / Build 2026.10.04.103.
+- Implementation commit/push and Hosting-only deploy pending.
+- Production verification should open all permitted groups on both one React POS route and one legacy POS route, verify internal nav scrolling and fixed footer, and remain read-only.
+- No Functions, Firestore Rules, or Storage Rules changes.
+- No merge to main.

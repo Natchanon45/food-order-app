@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.04.102',
+  build: '2026.10.04.103',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-MENU-MODERN-CARD-V21',
+  commit: 'POS-MENU-MULTI-OPEN-SCROLL',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS Modern Card v2.1 sizing and color',
-  updatedAt: '2026-10-04T15:28:47+0700',
+  milestone: 'Retail POS multi-open menu scroll resilience',
+  updatedAt: '2026-10-04T15:48:57+0700',
   whatsNew: [
-    'Make the approved POS drawer wider, taller, and more spacious on desktop and mobile',
-    'Increase profile, group, submenu, icon, and logout sizing for easier scanning and touch targets',
-    'Strengthen category and active-row colors while keeping the same Modern Card structure'
+    'Keep the POS drawer header/profile/home/logout fixed while only the menu list scrolls',
+    'Allow all menu groups to remain expanded without hiding lower items behind the footer',
+    'Auto-scroll newly expanded lower groups into view on React and legacy POS pages'
   ]
 };
 

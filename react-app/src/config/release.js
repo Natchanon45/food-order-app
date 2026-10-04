@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.04.387",
+  build: "2026.10.04.388",
   branch: "feature/react-firebase-port",
-  commit: "POS-MENU-MODERN-CARD-V21",
+  commit: "POS-MENU-MULTI-OPEN-SCROLL",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Retail POS Modern Card v2.1 sizing and color",
+  milestone: "Retail POS multi-open menu scroll resilience",
   whatsNew: [
-    "Make the approved POS drawer wider, taller, and more spacious on desktop and mobile",
-    "Increase profile, group, submenu, icon, and logout sizing for easier scanning and touch targets",
-    "Strengthen category and active-row colors while keeping the same Modern Card structure and multi-open behavior",
+    "Keep header, profile, central-home, and logout fixed while only the POS menu list scrolls",
+    "Allow every menu group to remain expanded without hiding lower items behind the footer",
+    "Auto-scroll a newly expanded lower group into the visible menu area on React and legacy POS pages",
   ],
 });

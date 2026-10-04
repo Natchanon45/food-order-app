@@ -557,7 +557,7 @@ function renderMenu() {
       const items = group.items.filter((item) => hasPermission(item.key));
       if (!items.length) return "";
       const open = items.some((item) => normalizePath(item.href) === current);
-      return `<section class="pos-menu-group ${open ? "is-open" : ""}" data-menu-tone="${esc(group.tone || "green")}"><button type="button" data-menu-group="${esc(group.id)}" aria-expanded="${open ? "true" : "false"}"><span class="pos-menu-group-title">${menuIcon(group.icon, group.tone, "pos-menu-group-icon")}<span class="pos-menu-group-label">${esc(group.label)}</span></span><i class="bi ${open ? "bi-chevron-up" : "bi-chevron-down"} pos-menu-chevron" aria-hidden="true"></i></button><ul class="pos-menu-links">${items.map((item) => `<li><a class="pos-menu-link ${normalizePath(item.href) === current ? "is-current" : ""}" href="${esc(item.href)}" data-pos-icon="${esc(item.icon || "")}" data-icon-tone="${esc(item.tone || "green")}" ${normalizePath(item.href) === current ? 'aria-current="page"' : ""}>${menuIcon(item.icon, item.tone, "pos-menu-item-icon")}<span>${esc(item.label)}</span><i class="bi bi-chevron-right pos-menu-link-chevron" aria-hidden="true"></i></a></li>`).join("")}</ul></section>`;
+      return `<section class="pos-menu-group ${open ? "is-open" : ""}" data-menu-tone="${esc(group.tone || "green")}" data-menu-group-card="${esc(group.id)}"><button type="button" data-menu-group="${esc(group.id)}" aria-expanded="${open ? "true" : "false"}"><span class="pos-menu-group-title">${menuIcon(group.icon, group.tone, "pos-menu-group-icon")}<span class="pos-menu-group-label">${esc(group.label)}</span></span><i class="bi ${open ? "bi-chevron-up" : "bi-chevron-down"} pos-menu-chevron" aria-hidden="true"></i></button><ul class="pos-menu-links">${items.map((item) => `<li><a class="pos-menu-link ${normalizePath(item.href) === current ? "is-current" : ""}" href="${esc(item.href)}" data-pos-icon="${esc(item.icon || "")}" data-icon-tone="${esc(item.tone || "green")}" ${normalizePath(item.href) === current ? 'aria-current="page"' : ""}>${menuIcon(item.icon, item.tone, "pos-menu-item-icon")}<span>${esc(item.label)}</span><i class="bi bi-chevron-right pos-menu-link-chevron" aria-hidden="true"></i></a></li>`).join("")}</ul></section>`;
     }).join("") || '<div class="pos-menu-empty">ไม่มีเมนูที่ได้รับอนุญาต</div>';
   popover.innerHTML = `<div class="pos-menu-backdrop" data-close-menu></div><aside class="pos-menu-panel"><div class="pos-menu-head"><h2 class="pos-menu-title">เมนู POS</h2><button class="icon-btn" type="button" data-close-menu><i class="bi bi-x-lg" aria-hidden="true"></i></button></div><div class="pos-menu-user"><i class="bi bi-person-circle pos-menu-user-icon" aria-hidden="true"></i><strong>${esc(user?.name || "-")}</strong><span>${esc(role?.name || "ไม่ระบุสิทธิ์")} • ${esc(user?.email || "")}</span></div><a class="btn btn-secondary pos-central-home" href="/" data-pos-icon="house"><i class="bi bi-house pos-context-icon" data-icon-tone="emerald" aria-hidden="true"></i><span>กลับหน้าระบบกลาง</span></a><nav>${groups}</nav><div class="pos-menu-footer"><button id="posLogoutBtn" class="btn btn-danger" type="button" data-pos-icon="box-arrow-right"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>ออกจากระบบ</span></button></div></aside>`;
   document.body.appendChild(popover);
@@ -579,6 +579,19 @@ function renderMenu() {
       const icon = groupButton.querySelector(".pos-menu-chevron");
       icon?.classList.toggle("bi-chevron-up", Boolean(isOpen));
       icon?.classList.toggle("bi-chevron-down", !isOpen);
+      if (isOpen && group) {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            const nav = group.closest("nav");
+            if (!nav) return;
+            const navRect = nav.getBoundingClientRect();
+            const groupRect = group.getBoundingClientRect();
+            if (groupRect.top < navRect.top || groupRect.bottom > navRect.bottom) {
+              group.scrollIntoView({ block: "nearest", behavior: "smooth" });
+            }
+          });
+        });
+      }
     }
     if (event.target.closest("#posLogoutBtn")) {
       await logout();

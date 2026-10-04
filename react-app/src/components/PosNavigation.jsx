@@ -134,12 +134,33 @@ export function PosNavigation({ profile, currentKey = "" }) {
     return () => document.body.classList.remove("pos-menu-open");
   }, [open]);
 
-  const toggleGroup = groupId => setOpenGroups(current => {
-    const next = new Set(current);
-    if (next.has(groupId)) next.delete(groupId);
-    else next.add(groupId);
-    return next;
-  });
+  const scrollOpenedGroupIntoView = groupId => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const nav = document.querySelector("#posMenuPopover .pos-menu-panel nav");
+        if (!nav) return;
+        const group = [...nav.querySelectorAll("[data-menu-group-card]")]
+          .find(node => node.dataset.menuGroupCard === groupId);
+        if (!group) return;
+        const navRect = nav.getBoundingClientRect();
+        const groupRect = group.getBoundingClientRect();
+        if (groupRect.top < navRect.top || groupRect.bottom > navRect.bottom) {
+          group.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }
+      });
+    });
+  };
+
+  const toggleGroup = groupId => {
+    const opening = !openGroups.has(groupId);
+    setOpenGroups(current => {
+      const next = new Set(current);
+      if (next.has(groupId)) next.delete(groupId);
+      else next.add(groupId);
+      return next;
+    });
+    if (opening) scrollOpenedGroupIntoView(groupId);
+  };
 
   const logout = async () => {
     await signOut(auth).catch(() => {});
@@ -177,7 +198,7 @@ export function PosNavigation({ profile, currentKey = "" }) {
               const groupOpen = openGroups.has(group.id);
               return (
                 <section className={`pos-menu-group${groupOpen ? " is-open" : ""}`} key={group.id}
-                  data-menu-tone={group.tone || "green"}>
+                  data-menu-tone={group.tone || "green"} data-menu-group-card={group.id}>
                   <button type="button" data-menu-group={group.id} aria-expanded={groupOpen} onClick={() => toggleGroup(group.id)}>
                     <span className="pos-menu-group-title">
                       <i className={`bi bi-${group.icon} pos-menu-group-icon`} data-icon-tone={group.tone || "green"} aria-hidden="true"></i>

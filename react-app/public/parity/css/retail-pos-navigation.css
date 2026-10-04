@@ -550,3 +550,53 @@
   .pos-menu-footer{padding-top:11px!important}
   .pos-menu-footer #posLogoutBtn{min-height:46px!important}
 }
+
+
+/* POS menu Modern Card v2.2 — multi-open scroll resilience (user-approved 2026-10-04). */
+.pos-menu-panel{
+  height:100dvh!important;
+  max-height:100dvh!important;
+  min-height:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+}
+.pos-menu-head,
+.pos-menu-user,
+.pos-menu-panel>.pos-central-home,
+.pos-menu-footer{
+  flex:0 0 auto!important;
+}
+.pos-menu-panel nav{
+  flex:1 1 0%!important;
+  min-height:0!important;
+  height:0!important;
+  max-height:none!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior-y:contain!important;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-gutter:stable;
+  padding-bottom:24px!important;
+}
+.pos-menu-group{
+  flex:0 0 auto!important;
+  min-height:min-content!important;
+  scroll-margin-block:8px 22px;
+}
+.pos-menu-links,
+.pos-menu-group.is-open .pos-menu-links{
+  flex:0 0 auto!important;
+}
+.pos-menu-footer{
+  padding-bottom:env(safe-area-inset-bottom,0px)!important;
+}
+@media(max-width:800px){
+  .pos-menu-panel nav{padding-bottom:22px!important}
+  .pos-menu-group{scroll-margin-block:7px 20px}
+}
+@media(max-width:520px){
+  .pos-menu-panel nav{padding-bottom:20px!important}
+  .pos-menu-group{scroll-margin-block:6px 18px}
+}
