@@ -6065,6 +6065,10 @@ Verification before deploy:
 - No Production tax write/sync operation executed.
 
 Deploy state:
-- Commit/push and Hosting-only deploy pending.
-- No Firestore Rules, Storage Rules, or Functions changes.
+- Implementation commit `2bf35ab3` — `fix: align tax mobile header actions` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.04.396` and Public `0.16.32 / 2026.10.04.111`.
+- Production `/pos/tax-invoices` serves `/react/assets/index-BYWswr6j.js`.
+- Production 440x956 contract PASS: Refresh x=296, Language x=342, Menu x=388; all y=16 and 40x40, action row is `nowrap`, Refresh/Menu labels are hidden, no document overflow/page/request/HTTP errors.
+- Production verification intercepted only the legacy tax sync module with read-only no-op functions; no issue/void/retry/profile/sync write operation executed.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions changes/deploys.
 - No merge to `main`.
