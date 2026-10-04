@@ -6023,6 +6023,11 @@ Verification before deploy:
 - Current test tenant has zero tax-invoice rows, so timeline bars and real document cards remain in their empty state; their structure/responsive behavior is guarded by source contracts.
 
 Deploy state:
-- Commit/push and Hosting-only deploy pending.
-- No Firestore Rules, Storage Rules, or Functions changes.
+- Implementation commit `8e75ecc4` — `feat: redesign POS tax invoice dashboard` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.04.395` and Public `0.16.32 / 2026.10.04.110`.
+- Production `/pos/tax-invoices` returns HTTP 200 with `Cache-Control: no-cache, no-store, must-revalidate` and serves `/react/assets/index-C5i_1B2D.js`.
+- Authenticated Production contract PASS at 1440x900 and 440x956: Visual Control Center CSS loaded, gradient Hero + four metrics + sync-health ring rendered, current menu remained `/pos/tax-invoices`, pending/all filter and empty-search state worked, no document overflow/raw translation/page/request/HTTP errors occurred.
+- Production verification intercepted only the legacy tax sync module with read-only no-op functions; no issue/void/retry/profile/sync write operation executed.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions changes/deploys.
+- Next visual redesign route: `/pos/returns`.
 - No merge to `main`.
