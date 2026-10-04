@@ -5234,7 +5234,7 @@ Visual parity / legacy JS enhancement parity:
 - Authored the icons that legacy retail-pos-icons.js injects dynamically:
   - Today / This Month: calendar3 blue
   - All: x-circle rose
-  - report heading: arrow-left-right sky
+  - report heading: bookmark-star green
   - Export CSV: download blue
 - Restored the barcode scanner button dynamically added by legacy retail-barcode-scan-tools.js to movementProductFilter.
 - Restored the search-clear button beside the scanner.
@@ -5273,10 +5273,16 @@ Verification before commit/deploy:
 - Existing local system-controls.css 404 remains the known local-only issue outside this phase.
 - Intermediate unreferenced bundle index-CdyIPQMI.js was removed; it was never deployed.
 
-Release / deploy:
-- React 0.4.280 / Build 2026.10.04.383.
-- Public 0.16.32 / Build 2026.10.04.098.
-- Hosting deployment pending implementation commit/push checkpoint.
-- Production verification after deploy must remain read-only.
-- No Functions, Firestore Rules, or Storage Rules changes are required.
+Release / deploy / visual correction:
+- Initial Stock Movements cutover: React 0.4.280 / Build 2026.10.04.383; Public 0.16.32 / Build 2026.10.04.098.
+- Implementation commit 0bd89a9a (feat: migrate POS stock movements to React) was pushed to origin/feature/react-firebase-port before deploy.
+- Firebase Hosting target foodapp deployed Build .383 successfully; no Functions, Firestore Rules, or Storage Rules were deployed.
+- Production /pos/stock-movements returned HTTP 200 with no-cache/no-store/must-revalidate and /react/assets/index-n_l_BCmi.js. Scanner CSS and global Toast CSS returned HTTP 200.
+- Authenticated read-only Chrome verification loaded the actual React page, cleared readiness, rendered the current 19 movement rows, four summary cards, filters, product scanner, CSV action, table, and floating developer control.
+- Comparing the authenticated .383 screenshot with task2 exposed one remaining visual delta only: the report heading icon was authored as arrow-left-right/sky, while current task2 uses the fallback bookmark-star/green icon for “รายการความเคลื่อนไหว”.
+- Corrective implementation changes that heading icon to bi-bookmark-star with green tone and updates the regression contract.
+- Corrective release candidate: React 0.4.280 / Build 2026.10.04.384; Public 0.16.32 / Build 2026.10.04.099; generated bundle /react/assets/index-BmPYYVQw.js.
+- Full operational/parity/build/generated-contract/git-diff gates PASS for Build .384.
+- Build .384 Hosting deploy is pending its corrective commit/push checkpoint.
+- Production verification remains read-only.
 - No merge to main.

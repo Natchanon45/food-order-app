@@ -590,7 +590,7 @@ export function PosStockMovementsPage() {
       <section className="panel movement-report-panel">
         <div className="movement-report-heading section-heading">
           <div>
-            <h1><i className="bi bi-arrow-left-right pos-context-icon" data-icon-tone="sky" aria-hidden="true"></i><span>{tr("report.title")}</span></h1>
+            <h1><i className="bi bi-bookmark-star pos-context-icon" data-icon-tone="green" aria-hidden="true"></i><span>{tr("report.title")}</span></h1>
             <p id="movementPeriodText">{periodText}</p>
           </div>
           <button id="exportMovementCsv" className="btn btn-pay" type="button"
