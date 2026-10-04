@@ -948,6 +948,7 @@ body[data-module="retail-pos-products"] .section-heading h2>.pos-context-icon{
 #productDialog.product-editor-dialog{
   width:min(880px,calc(100% - 32px))!important;
   max-height:calc(100dvh - 28px);
+  overflow:hidden;
   border:1px solid rgba(15,111,68,.13);
   border-radius:24px!important;
   background:#fbfdfc;
@@ -959,7 +960,13 @@ body[data-module="retail-pos-products"] .section-heading h2>.pos-context-icon{
   backdrop-filter:blur(3px);
 }
 .product-editor-form{
+  max-height:calc(100dvh - 30px);
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
   padding:0 24px 24px!important;
+  border-radius:24px;
   background:
     radial-gradient(circle at 96% 0,rgba(14,165,233,.055),transparent 20rem),
     linear-gradient(180deg,#fff 0%,#fbfdfc 100%);
@@ -1329,13 +1336,17 @@ body[data-module="retail-pos-products"] .section-heading h2>.pos-context-icon{
   margin-top:14px!important;
 }
 
-/* Modal-friendly scrollbar */
-#productDialog::-webkit-scrollbar,
-#categoryDialog::-webkit-scrollbar{
+/* Modal-friendly scrollbar: scroll inside the rounded dialog shell. */
+.product-editor-form::-webkit-scrollbar,
+.category-editor-form::-webkit-scrollbar{
   width:8px;
 }
-#productDialog::-webkit-scrollbar-thumb,
-#categoryDialog::-webkit-scrollbar-thumb{
+.product-editor-form::-webkit-scrollbar-track,
+.category-editor-form::-webkit-scrollbar-track{
+  background:transparent;
+}
+.product-editor-form::-webkit-scrollbar-thumb,
+.category-editor-form::-webkit-scrollbar-thumb{
   border:2px solid transparent;
   border-radius:999px;
   background:#b8cbc1;
@@ -1349,7 +1360,9 @@ body[data-module="retail-pos-products"] .section-heading h2>.pos-context-icon{
     border-radius:20px!important;
   }
   .product-editor-form{
+    max-height:calc(100dvh - 18px);
     padding:0 14px 14px!important;
+    border-radius:20px;
   }
   .product-editor-head{
     margin:0 -14px 14px!important;

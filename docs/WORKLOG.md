@@ -6610,3 +6610,70 @@ Deploy state:
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
 - Next visual redesign route: `/pos/stock-movements`.
 - No merge to `main`.
+
+---
+## 2026-10-05 — Product editor scrollbar containment
+
+User report:
+- The scrollbar on the Add/Edit Product modal visually extended past the rounded modal shell at the lower-right edge.
+
+Root cause:
+- The outer native `<dialog>` was still the scrolling element.
+- Its scrollbar track rendered against the dialog box itself, so the browser scrollbar visually crossed the rounded border.
+- The inner Product form also matched the dialog max-height exactly, leaving its scroll area touching the bottom border by about 1px.
+
+Implementation:
+- Set `#productDialog.product-editor-dialog` to `overflow:hidden`.
+- Moved vertical scrolling to `.product-editor-form` with:
+  - `overflow-y:auto`,
+  - `overflow-x:hidden`,
+  - `overscroll-behavior:contain`,
+  - `scrollbar-gutter:stable`.
+- Moved custom WebKit scrollbar styling from the outer dialog to the inner Product/Category editor forms.
+- Reduced the inner Product form max-height by 2px relative to the outer dialog:
+  - Desktop: dialog `100dvh - 28px`, form `100dvh - 30px`.
+  - Mobile: dialog `100dvh - 16px`, form `100dvh - 18px`.
+- Kept the Product modal sticky header/footer behavior intact.
+- Added regression coverage requiring the scrollbar to live inside the rounded dialog shell.
+
+Release prepared:
+- React `0.4.280 / 2026.10.05.406`.
+- Public `0.16.32 / 2026.10.05.121`.
+- Generated bundle: `/react/assets/index-BlRVV_jM.js`.
+
+Verification before deploy:
+- React foundation contract PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS:
+  - migration coverage 53 routes / 21 POS,
+  - parity matrix PASS,
+  - P0 action contract PASS,
+  - callable contract 54 refs / 0 missing,
+  - tenant-access PASS,
+  - UI-layer PASS.
+- `npm run build:react` PASS; generated build contract PASS for Build `.406`.
+- `git diff --check` PASS.
+- Authenticated local-build browser contract PASS with Firestore write endpoints blocked.
+- Desktop 1440x900:
+  - dialog overflow = hidden,
+  - Product form overflow-y = auto,
+  - scrollbar gutter = stable,
+  - dialog bounds = top 14 / bottom 886,
+  - inner form bounds = top 15 / bottom 885,
+  - form clientHeight = 870 / scrollHeight = 1325,
+  - max scroll = 455 and form reached exactly scrollTop 455,
+  - sticky header remained at top 15,
+  - sticky footer remained inside the dialog,
+  - document horizontal overflow = 0.
+- Mobile 440x956:
+  - dialog bounds = left 19 / right 421 / top 8 / bottom 948,
+  - form remains inside at left 20 / right 420,
+  - form clientHeight = 938 / scrollHeight = 1607,
+  - document horizontal overflow = 0.
+- Page errors = 0; request failures = 0; HTTP errors = 0.
+- Firestore write attempts observed = 0.
+
+Deploy state:
+- Commit/push and Hosting-only deploy pending.
+- No Firestore Rules, Storage Rules, Functions, or Firestore data changes required.
+- No merge to `main`.

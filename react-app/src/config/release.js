@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.05.405",
+  build: "2026.10.05.406",
   branch: "feature/react-firebase-port",
-  commit: "POS-PRODUCT-EDITOR-POLISH",
+  commit: "POS-PRODUCT-MODAL-SCROLLBAR-CLIP",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Retail POS Product editor and pagination polish",
+  milestone: "Retail POS Product modal scrollbar containment",
   whatsNew: [
-    "Default Products pagination to 10 rows with 10/25/50/100 page-size choices and balanced ellipsis spacing",
-    "Redesign Product and Category dialogs with complete semantic icons and a custom drag/drop image upload surface",
-    "Preserve product/category CRUD, stock operations, barcode scanning, drag sorting, permissions, and tenant boundaries",
+    "Keep the Product editor scrollbar fully inside the rounded modal shell",
+    "Move Product editor scrolling from the outer dialog to the inner form while preserving sticky header/footer behavior",
+    "Preserve Product editor fields, image drag/drop, CRUD logic, permissions, and tenant boundaries",
   ],
 });
