@@ -5829,6 +5829,8 @@ Verification:
 - `git diff --check` PASS.
 
 Deploy state:
-- Implementation is ready for commit/push to `feature/react-firebase-port`.
-- Firebase Hosting-only deployment is next; no Functions, Firestore Rules, or Storage Rules changes are required.
+- Implementation commit `1dd39dab` — `fix: space POS logout icon` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production asset verification PASS: `/pos/customers` references `retail-pos-navigation.css?v=20261004-106`; both legacy and React parity navigation CSS expose `column-gap:12px!important`; `/pos` serves the `index-Cu6KBM8B.js` React bundle.
+- Deployment scope was Hosting only; no Functions, Firestore Rules, or Storage Rules changes.
 - No merge to `main`.
