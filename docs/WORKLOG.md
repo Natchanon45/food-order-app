@@ -6488,6 +6488,15 @@ Verification before deploy:
 - No product/category/stock/sort/history write operation executed.
 
 Deploy state:
-- Commit/push and Hosting-only deploy pending.
-- No Firestore Rules, Storage Rules, Functions, or Firestore data changes required.
+- Implementation commit `8215a9dd` — `feat: redesign POS products dashboard` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.05.404` and Public `0.16.32 / 2026.10.05.119`.
+- Production `/pos/products` returns HTTP 200 with `Cache-Control: no-cache, no-store, must-revalidate` and serves `/react/assets/index-DrUXxFOa.js`.
+- Authenticated Production contract PASS at 1440x900 and 440x956 using a copied browser profile with Firestore Write-channel / commit / batchWrite endpoints blocked.
+- Production verification data: 1,997 products, stock total 23,669 at verification time, 0 low-stock, 0 out-of-stock, six category bars, 20 first-page product rows, and 60 first-page semantic row-action icons.
+- Read-only impossible-search and Out-of-stock filter checks passed; filters were restored to All.
+- Mobile 440x956 rendered the same 20 rows as contained `display:grid` cards with row/table width 392px and document horizontal overflow 0.
+- No raw translation keys, page errors, request failures, or HTTP errors. Firestore write attempts observed: 0.
+- No product/category/stock/sort/history write operation executed.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
+- Next visual redesign route: `/pos/stock-movements`.
 - No merge to `main`.
