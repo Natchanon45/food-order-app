@@ -729,11 +729,17 @@
   color:#fff!important;
   box-shadow:0 10px 22px rgba(124,58,237,.22);
 }
+.returns-loyalty-strip>div:first-child .returns-loyalty-icon,
+.returns-loyalty-strip>div:first-child .returns-loyalty-icon>i,
+.returns-loyalty-strip>div:first-child .returns-loyalty-icon>i::before{
+  color:#fff!important;
+}
 .returns-loyalty-icon>i{
   display:block;
   margin:0!important;
   line-height:1!important;
   font-size:1.15rem;
+  text-shadow:0 1px 3px rgba(52,16,101,.5);
 }
 .returns-loyalty-strip>div:first-child strong{
   font-size:.98rem;

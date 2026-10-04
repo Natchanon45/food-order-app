@@ -6209,3 +6209,39 @@ Deploy state:
 - Production 440x956 geometry contract PASS: Loyalty badge 48x48, computed `display:grid`, centered alignment, inner icon center offset X=0px / Y≈0.008px, zero document overflow, no page/request/HTTP errors.
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions changes/deploys.
 - No merge to `main`.
+
+---
+## 2026-10-04 — Returns Loyalty star contrast fix
+
+Request:
+- After centering the Loyalty adjustment badge, the star glyph was still too low-contrast on the purple background.
+
+Root cause:
+- The generic selector `.returns-loyalty-strip>div:first-child span{color:#806f91!important}` had higher specificity than the badge's parent color and forced the Bootstrap icon glyph to the muted text color.
+
+Implementation:
+- Added a higher-specificity rule for the Loyalty badge, icon, and icon `::before` to force `color:#fff!important`.
+- Added a subtle purple text shadow to the star so it stays legible across the badge gradient.
+- Kept the previous 48x48 centered badge geometry unchanged.
+- Added a regression assertion for explicit high-contrast white icon styling.
+
+Release prepared:
+- React `0.4.280 / 2026.10.04.400`.
+- Public `0.16.32 / 2026.10.04.115`.
+- Generated bundle: `/react/assets/index-DhA4-qjk.js`.
+
+Verification before deploy:
+- React foundation contract PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS; generated build contract PASS for Build `.400`.
+- `git diff --check` PASS.
+- Authenticated local-build browser contrast contract PASS at 1440x900 and 440x956.
+- Computed icon color and `::before` color are both exactly `rgb(255, 255, 255)` on Desktop and Mobile.
+- Computed text shadow is active, center offset remains X=0px / Y≈0.008px, and no document overflow/page errors occurred.
+- No Production write operation executed.
+
+Deploy state:
+- Commit/push and Hosting-only deploy pending.
+- No Firestore Rules, Storage Rules, or Functions changes.
+- No merge to `main`.

@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.04.114',
+  build: '2026.10.04.115',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-RETURNS-LOYALTY-ICON',
+  commit: 'POS-RETURNS-LOYALTY-ICON-CONTRAST',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS Returns Loyalty icon alignment',
-  updatedAt: '2026-10-04T23:17:02+0700',
+  milestone: 'Retail POS Returns Loyalty icon contrast',
+  updatedAt: '2026-10-04T23:24:00+0700',
   whatsNew: [
-    'Center the Loyalty adjustment icon inside its purple visual badge on desktop and mobile',
-    'Prevent generic Loyalty span styling from overriding the icon badge layout',
-    'Preserve Returns workflow, refund, stock, loyalty, permissions, and responsive behavior'
+    'Force the Loyalty star glyph to high-contrast white on the purple badge',
+    'Add a subtle dark glow so the icon remains readable on both purple gradient tones',
+    'Preserve Returns layout, workflow, refund, stock, loyalty, permissions, and responsive behavior'
   ]
 };
 
