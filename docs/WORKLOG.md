@@ -5466,9 +5466,28 @@ Regression / visual verification before deploy:
   - PASS.
 
 Release / deploy:
-- Prepared React 0.4.280 / Build 2026.10.04.386.
-- Prepared Public 0.16.32 / Build 2026.10.04.101.
-- Implementation commit/push and Hosting-only deploy pending.
-- After deploy, verify the menu on at least one canonical React POS route and one remaining legacy POS route using read-only navigation interactions.
-- No Functions, Firestore Rules, or Storage Rules changes are required.
+- React 0.4.280 / Build 2026.10.04.386.
+- Public 0.16.32 / Build 2026.10.04.101.
+- Implementation commit 9fde6f47 (feat: redesign POS menu with modern card layout) was pushed to origin/feature/react-firebase-port.
+- Firebase Hosting target foodapp deployed successfully; no Functions, Firestore Rules, or Storage Rules were deployed.
+- Production HTTP checks:
+  - /pos/stock-counts returns HTTP 200 with no-cache/no-store/must-revalidate and /react/assets/index-BETob66p.js.
+  - /pos/purchases returns HTTP 200 and references retail-pos-navigation.css/js with v=20261004-101.
+  - deployed React and legacy navigation CSS/JS contain the Modern Card v2 markers/tone/chevron rules.
+- Authenticated read-only Production verification used the copied owner Chrome profile so the user's active Chrome tabs were not disturbed.
+- React route verification on /pos/stock-counts:
+  - drawer width 372px; panel height 900px; nav overflow-y auto; footer bottom 886px,
+  - profile uses the approved pale-green gradient card,
+  - 5 menu groups render, current “ตรวจนับสต็อก” has aria-current=page and the active green gradient,
+  - all 15 permitted submenu links render right chevrons,
+  - opening Sales while Stock is already open results in two simultaneous open groups,
+  - no HTTP or page errors.
+- Legacy route verification on /pos/purchases:
+  - same 372px Modern Card drawer and profile/home/footer structure,
+  - current “รับสินค้าเข้า” has the same active treatment,
+  - all 15 permitted submenu links render right chevrons,
+  - opening Stock while Purchasing is already open results in two simultaneous open groups,
+  - no HTTP or page errors.
+- Only drawer expansion interactions were used; no Production data-changing POS action was executed.
+- Modern Card v2 shared POS menu redesign is complete on Production Build 2026.10.04.386.
 - No merge to main.
