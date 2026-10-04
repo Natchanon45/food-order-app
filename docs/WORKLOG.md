@@ -7045,5 +7045,31 @@ Verification before deploy:
 - Firestore write attempts observed = 0.
 
 Deploy state:
-- Commit/push and Hosting-only deployment pending.
-- No Firestore Rules, Storage Rules, Functions, or Firestore data deployment required.
+- Implementation commit `13eb7b36` — `feat: redesign POS stock movements` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.05.409` and Public `0.16.32 / 2026.10.05.124`.
+- Production `/pos/stock-movements` returns HTTP 200 with `Cache-Control: no-cache, no-store, must-revalidate` and serves `/react/assets/index-IjrAvTJl.js`.
+- Authenticated Production visual contract PASS with Firestore Write/commit/batchWrite blocked.
+- Production Desktop 1440x900:
+  - hero height ~= 247px,
+  - four hero metrics,
+  - four KPI cards,
+  - 3 activity bars,
+  - Movement Mix rendered,
+  - 89 movement rows,
+  - barcode filter present,
+  - CSV action visible for authorized user,
+  - raw translation keys = 0,
+  - document horizontal overflow = 0.
+- Production Mobile 390x844:
+  - hero rendered,
+  - four KPI cards,
+  - report width = 374px,
+  - movement card width = 348px,
+  - table min-width = 0,
+  - table wrapper overflow = visible,
+  - scanner and CSV labels collapse to icon-only,
+  - document horizontal overflow = 0.
+- Page errors = 0; request failures = 0; HTTP errors = 0; Firestore write attempts observed = 0.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
+- Next visual redesign route: `/pos/stock-counts`.
+- No merge to `main`.
