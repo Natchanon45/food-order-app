@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.04.099',
+  build: '2026.10.04.100',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-STOCK-MOVEMENTS-VISUAL-PARITY',
+  commit: 'POS-STOCK-COUNTS-REACT-CUTOVER',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS stock movements final visual parity',
-  updatedAt: '2026-10-04T12:44:22+0700',
+  milestone: 'Retail POS stock counts React cutover',
+  updatedAt: '2026-10-04T14:04:31+0700',
   whatsNew: [
-    'Match the task2 Stock Movements report-heading bookmark icon exactly',
-    'Retain the Stock Movements React cutover, permissions, realtime data, CSV export, and barcode filtering',
-    'Retain task2 filter icons, scanner controls, mobile card behavior, global Toast/dialog rules, and bounded readiness'
+    'Serve canonical /pos/stock-counts from React with the full legacy count and history surface',
+    'Preserve stock-count permissions, realtime data, barcode scanning, translated confirmations, and mobile-card behavior',
+    'Preserve legacy count/history schema and stock-role Firestore compatibility without changing Rules'
   ]
 };
 

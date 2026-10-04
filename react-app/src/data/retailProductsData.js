@@ -453,33 +453,73 @@ export async function listRetailStockCounts(tenantId) {
     .slice(0,300);
 }
 
+export function watchRetailStockCounts(tenantId, onRows, onError = () => {}) {
+  const id = requireContext(tenantId);
+  return onSnapshot(tenantCollection(id, "stockCounts"), snapshot => {
+    onRows(snapshot.docs.map(row)
+      .sort((a,b)=>timeValue(b.createdAtServer||b.createdAt||b.updatedAt)-timeValue(a.createdAtServer||a.createdAt||a.updatedAt))
+      .slice(0,300));
+  }, onError);
+}
+
 export async function commitRetailStockCount(tenantId, input = {}) {
   const id=requireContext(tenantId), uid=auth.currentUser?.uid||"";
   if(!uid) throw new Error("AUTH_REQUIRED");
-  const countId=crypto.randomUUID?.()||`count-${Date.now()}`;
+  const countId=cleanName(input.id)||`COUNT-${Date.now()}`;
   const createdAt=nowIso(), rows=(input.items||[]).filter(item=>item.actual!==""&&item.actual!=null);
   if(!rows.length) throw new Error("COUNT_ITEMS_REQUIRED");
   let committed=null;
   await runTransaction(db, async transaction=>{
-    const normalized=[];
-    for(const item of rows){
-      const productId=String(item.productId||item.id||""), ref=tenantDoc(id,"products",productId), snap=await transaction.get(ref);
+    const refs=rows.map(item=>{
+      const productId=String(item.productId||item.id||"").trim();
+      const documentId=String(item.documentId||item._documentId||productId).trim();
+      if(!productId||!documentId) throw new Error("PRODUCT_NOT_FOUND");
+      return {item,productId,documentId,ref:tenantDoc(id,"products",documentId)};
+    });
+    const snapshots=await Promise.all(refs.map(entry=>transaction.get(entry.ref)));
+    const normalized=refs.map((entry,index)=>{
+      const snap=snapshots[index];
       if(!snap.exists()) throw new Error("PRODUCT_NOT_FOUND");
-      const product=normalizeProduct({id:snap.id,...snap.data()}), before=Number(product.stock||0), actual=Number(item.actual);
+      const product=normalizeProduct({_documentId:snap.id,...snap.data(),id:entry.productId});
+      const before=Number(product.stock||0), actual=Number(entry.item.actual);
       if(!Number.isFinite(actual)||actual<0) throw new Error("INVALID_QUANTITY");
       const difference=actual-before, cost=Number(product.cost||0);
-      normalized.push({productId,productName:product.name,unit:product.unit||"ชิ้น",system:before,actual,difference,varianceValue:difference*cost,cost});
-      if(actual!==before){
-        transaction.update(ref,{stock:actual,tenantId:id,shopId:product.shopId||id,updatedAt:Date.now(),updatedAtServer:serverTimestamp()});
-        const movement={...movementPayload({tenantId:id,product,before,after:actual,action:"set",type:"count",note:`ตรวจนับสต็อก ${input.name||countId}`}),referenceType:"stock_count",referenceId:countId,referenceNumber:input.name||countId};
-        transaction.set(tenantDoc(id,"stockMovements",movement.id),movement,{merge:true});
-      }
-    }
+      return {...entry,product,before,actual,difference,cost,
+        line:{
+          productId:entry.productId,
+          productName:product.name,
+          unit:product.unit||"ชิ้น",
+          system:before,
+          actual,
+          difference,
+          systemQty:before,
+          actualQty:actual,
+          variance:difference,
+          varianceValue:difference*cost,
+          cost,
+        }};
+    });
+    normalized.forEach(entry=>{
+      if(entry.actual===entry.before) return;
+      transaction.update(entry.ref,{stock:entry.actual,tenantId:id,shopId:entry.product.shopId||id,updatedAt:Date.now(),updatedAtServer:serverTimestamp()});
+      const movement={...movementPayload({
+        tenantId:id,
+        product:entry.product,
+        before:entry.before,
+        after:entry.actual,
+        action:"set",
+        type:"adjustment",
+        note:cleanName(input.movementNote)||`ตรวจนับสต็อก ${countId}`,
+      }),referenceType:"stock_count",referenceId:countId,referenceNumber:countId};
+      transaction.set(tenantDoc(id,"stockMovements",movement.id),movement,{merge:true});
+    });
+    const lines=normalized.map(entry=>entry.line);
     const summary={
       id:countId,tenantId:id,shopId:id,name:cleanName(input.name)||`ตรวจนับ ${createdAt.slice(0,10)}`,countDate:String(input.countDate||createdAt.slice(0,10)),
-      countedBy:cleanName(input.countedBy)||auth.currentUser?.displayName||auth.currentUser?.email||"",note:cleanName(input.note),items:normalized,
-      countedItems:normalized.length,shortQty:normalized.filter(r=>r.difference<0).reduce((a,r)=>a+Math.abs(r.difference),0),
-      overQty:normalized.filter(r=>r.difference>0).reduce((a,r)=>a+r.difference,0),varianceValue:normalized.reduce((a,r)=>a+r.varianceValue,0),
+      countedBy:cleanName(input.countedBy)||auth.currentUser?.displayName||auth.currentUser?.email||"",note:cleanName(input.note),items:lines,
+      itemCount:lines.length,countedItems:lines.length,differenceCount:lines.filter(r=>r.difference!==0).length,
+      shortQty:lines.filter(r=>r.difference<0).reduce((a,r)=>a+Math.abs(r.difference),0),
+      overQty:lines.filter(r=>r.difference>0).reduce((a,r)=>a+r.difference,0),varianceValue:lines.reduce((a,r)=>a+r.varianceValue,0),
       createdBy:uid,updatedBy:uid,createdAt,updatedAt:Date.now(),createdAtServer:serverTimestamp(),updatedAtServer:serverTimestamp()
     };
     transaction.set(tenantDoc(id,"stockCounts",countId),summary,{merge:true});

@@ -13,6 +13,7 @@ TARGETS = [
     "public/pos/shifts/index.html",
     "public/pos/products/index.html",
     "public/pos/stock-movements/index.html",
+    "public/pos/stock-counts/index.html",
     "public/kitchen/index.html",
     "public/cashier/index.html",
     "public/cashier/receipt/index.html",

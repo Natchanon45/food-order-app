@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.04.384",
+  build: "2026.10.04.385",
   branch: "feature/react-firebase-port",
-  commit: "POS-STOCK-MOVEMENTS-VISUAL-PARITY",
+  commit: "POS-STOCK-COUNTS-REACT-CUTOVER",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Retail POS stock movements final visual parity",
+  milestone: "Retail POS stock counts React cutover",
   whatsNew: [
-    "Match the task2 Stock Movements report-heading bookmark icon exactly",
-    "Retain the Build .383 React cutover, 17-ID parity, permissions, realtime data, CSV export, and barcode filtering",
-    "Retain task2 filter icons, scanner/clear controls, mobile card behavior, global Toast/dialog rules, and bounded readiness",
+    "Serve canonical /pos/stock-counts from React while preserving the 21-ID legacy count/history surface",
+    "Keep stock-count permissions, realtime products/history, barcode scanning, translated confirmations, and legacy mobile-card behavior",
+    "Preserve legacy count/history schema compatibility and stock-role Firestore compatibility without a Rules deployment",
   ],
 });

@@ -5291,3 +5291,82 @@ Release / deploy / visual correction:
 - Chrome PENGUIN tab was returned to canonical /pos/stock-movements without a verification query.
 - Stock Movements phase is complete. Next actual POS menu route: /pos/stock-counts.
 - No merge to main.
+
+
+---
+
+## 2026-10-04 — Retail POS React migration phase 9: canonical Stock Counts /pos/stock-counts
+
+Direction / legacy reference:
+- Continued from completed Stock Movements Production Build 2026.10.04.384.
+- Preserved the existing uncommitted Stock Counts migration work; no reset/clean/discard was used.
+- Current PENGUIN legacy /pos/stock-counts and task2 /pos/stock-counts were inspected read-only at both the top/counting area and lower summary/history area before cutover.
+- PENGUIN/task2 visual structure matches; visible quantity differences are environment data, not layout defects.
+- Archived pre-cutover public/pos/stock-counts/index.html as tests/fixtures/retail-pos-legacy/pos-stock-counts-index.html.
+- Legacy fixture exposes 21 stable IDs across count metadata, search/filter, table, summary, actions, history, and Toast; React preserves 21/21.
+
+Access / readiness / realtime:
+- Preserved Retail POS session-first auth, /pos/login next routing, first-allowed full-page permission redirect, LocaleSwitcher, PosNavigation, PageReadyOverlay, and AppDeveloperPanel.
+- Page permission: pos.stock_counts.
+- Granular permissions preserved:
+  - pos.stock_counts.perform
+  - pos.stock_counts.view_value
+  - pos.stock_counts.view_history
+- Legacy built-in stock/admin/manager behavior is preserved when no explicit granular permissions are stored.
+- Cached role settings are usable immediately; remote role settings are bounded by a 6-second timeout.
+- Initial Products + Stock Counts loading is bounded by 10 seconds so readiness cannot hang indefinitely.
+- Realtime Firestore watchers are used for products and stockCounts.
+
+Count behavior / visual parity:
+- Preserved count name/date/staff/note fields, product search/filter, fill-system, clear-actual, actual quantity input, Enter-to-next-row behavior, variance calculations, summary, reset/confirm, and history search.
+- Barcode search preserves native BarcodeDetector first with ZXing fallback and focuses the matched product actual-count field.
+- Scanner not-found/success/camera failures use typed global Toast feedback.
+- Destructive stock adjustment confirmation uses shared sweetConfirm; no browser-native confirm remains.
+- Authored the legacy semantic icons directly in React:
+  - new-count/history heading and fill-system: clipboard-check
+  - clear actual: x
+  - reset/new: plus
+  - confirm/apply stock: check
+- Existing retail-stock-counts.css retains the legacy mobile card layout.
+- Five-language pos_stock.counts translations are used throughout.
+- Removed hard-coded Thai-only “ทุน” and “บาท” from JSX; cost/currency/date display now uses existing translation keys and locale-aware formatting.
+
+Firestore / compatibility safeguards:
+- commitRetailStockCount reads all selected product documents before transaction writes and writes stock to the normalized product _documentId when legacy document IDs differ from logical product IDs.
+- Count IDs retain the legacy COUNT-<timestamp> shape.
+- Stock-count history writes both legacy and React-compatible item fields:
+  - legacy: systemQty, actualQty, variance
+  - React: system, actual, difference
+  - shared: varianceValue, cost
+- Summary writes both itemCount and countedItems plus differenceCount/shortQty/overQty/varianceValue.
+- Important Rules compatibility: current Firestore Rules allow the built-in stock role to create stockCounts and update product stock, but its stockMovements branch only allows adjustment/purchase types.
+- No other app path depends on stockMovements.type === count, while the Stock Movements page classifies stock-count activity from its translated note/reference.
+- Therefore stock-count movement records use type=adjustment plus referenceType=stock_count/referenceId and translated movementNote. This preserves the legacy “ตรวจนับสต็อก” UI and lets the stock role complete the transaction without any Firestore Rules deployment.
+- No Firestore Rules, Storage Rules, or Functions changes are required for this cutover.
+
+Canonical cutover / contracts:
+- tools/sync-react-legacy-entrypoints.py now syncs public/pos/stock-counts/index.html from the React shell.
+- firebase.json adds no-cache/no-store/must-revalidate headers for /pos/stock-counts and /pos/stock-counts/**.
+- Generated build contract requires canonical /pos/stock-counts to use the current React bundle and contain pos.stock_counts.
+- React foundation regression coverage locks the 21-ID inventory, session/access behavior, three granular permissions, bounded readiness, realtime watchers, scanner/Toast/dialog behavior, semantic icons, five-language/no-hardcoded-Thai display, legacy/React schema compatibility, stock-role Rules compatibility, CSS parity, canonical sync, and Hosting cache-bust.
+
+Verification before commit/deploy:
+- node --check react-app/src/data/retailProductsData.js PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS, including foundation, migration, parity matrix, P0 actions, callables, tenant access, and UI-layer contracts.
+- npm run build:react PASS.
+- Generated React build contract PASS for React 0.4.280 / Build 2026.10.04.385 using /react/assets/index-CSEK50NQ.js.
+- git diff --check PASS.
+- Canonical public/pos/stock-counts/index.html matches public/react/index.html.
+- Legacy Stock Counts inventory: 21/21 IDs present in React.
+- No native confirm remains.
+- Local headless Chrome smoke: /pos/stock-counts/ HTTP 200, no pageerror, then expected unauthenticated POS-login/central-login routing.
+- Existing local system-controls.css 404 remains the known local-only issue outside this phase.
+- Intermediate unreferenced bundle index-aH_Z77cA.js was removed; it was never deployed.
+
+Release / deploy:
+- Prepared React 0.4.280 / Build 2026.10.04.385.
+- Prepared Public 0.16.32 / Build 2026.10.04.100.
+- Implementation commit/push and Hosting-only deploy are pending.
+- Production verification must remain read-only; do not confirm a stock count because that changes live stock.
+- No merge to main.

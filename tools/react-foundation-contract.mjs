@@ -646,6 +646,7 @@ assert(posCatalogCss.includes(".catalog-tabs")&&posCatalogCss.includes(".product
 assert(paritySync.includes('"retail-pos-catalog.css"'),"POS catalog CSS must remain sourced from Laravel MASTER parity sync");
 const posProductsPage=read("react-app/src/pages/PosProductsPage.jsx");
 const posStockMovementsPage=read("react-app/src/pages/PosStockMovementsPage.jsx");
+const posStockCountsPage=read("react-app/src/pages/PosStockCountsPage.jsx");
 const posCatalogPage=read("react-app/src/pages/PosCatalogPage.jsx");
 const posProductsData=read("react-app/src/data/retailProductsData.js");
 assert(!posProductsPage.includes('from "@/components/UserMenu"')&&!posProductsPage.includes("<UserMenu"),"React POS Products must not add the global UserMenu on top of the legacy POS profile/menu shell");
@@ -703,6 +704,37 @@ assert(posBarcodeScanCss.includes(".movement-product-input input{padding-right:1
 assert(posStockMovementsPage.includes('t(`pos_stock.movements.${key}`')&&posStockMovementsPage.includes('tr("header.title")')&&posStockMovementsPage.includes('tr("report.title")'),"React POS Stock Movements must use the five-language pos_stock.movements translation catalog");
 assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/stock-movements/index.html"'),"React postbuild must sync canonical /pos/stock-movements to the React shell");
 assert(firebaseHostingConfig.includes('"source": "/pos/stock-movements"')&&firebaseHostingConfig.includes('"source": "/pos/stock-movements/**"'),"Hosting must cache-bust canonical React POS Stock Movements");
+
+
+const legacyPosStockCountsMaster=read("tests/fixtures/retail-pos-legacy/pos-stock-counts-index.html");
+const legacyPosStockCountIds=[...legacyPosStockCountsMaster.matchAll(/id="([^"]+)"/g)].map(match=>match[1]);
+assert(legacyPosStockCountIds.length===21&&legacyPosStockCountIds.includes("countName")&&legacyPosStockCountIds.includes("countTableBody")&&legacyPosStockCountIds.includes("countedItems")&&legacyPosStockCountIds.includes("countHistory")&&legacyPosStockCountIds.includes("confirmCountBtn")&&legacyPosStockCountIds.includes("toast"),"Retail POS Stock Counts legacy MASTER fixture must preserve the pre-React 21-ID UI/action inventory");
+for(const id of legacyPosStockCountIds) assert(posStockCountsPage.includes(`id="${id}"`),`React POS Stock Counts legacy ID missing: ${id}`);
+assert(appRoutes.includes('import { PosStockCountsPage }')&&appRoutes.includes('path="/pos/stock-counts"'),"React POS Stock Counts route must be mounted");
+assert(posStockCountsPage.includes("getRetailPosSession")&&posStockCountsPage.includes('pagePermissions.has("pos.stock_counts")')&&posStockCountsPage.includes("firstAllowedPosPage(posAccessProfile, roleRows)")&&posStockCountsPage.includes("/pos/login/?next="),"React POS Stock Counts session/page-permission parity missing");
+for(const permission of ["pos.stock_counts.perform","pos.stock_counts.view_value","pos.stock_counts.view_history"]) assert(posStockCountsPage.includes(permission),`React POS Stock Counts granular permission missing: ${permission}`);
+assert(posStockCountsPage.includes('localStorage.getItem("retail_pos_roles_v1")')&&posStockCountsPage.includes("ROLE_SETTINGS_TIMEOUT_MS = 6000")&&posStockCountsPage.includes("POS_ROLE_SETTINGS_TIMEOUT"),"React POS Stock Counts must use cached/built-in role readiness with a bounded role-settings wait");
+assert(posStockCountsPage.includes("INITIAL_DATA_TIMEOUT_MS = 10000")&&posStockCountsPage.includes("POS_STOCK_COUNTS_INITIAL_LOAD_TIMEOUT"),"React POS Stock Counts initial data load must not block indefinitely");
+assert(posStockCountsPage.includes("watchRetailProducts")&&posStockCountsPage.includes("watchRetailStockCounts"),"React POS Stock Counts must keep realtime Firestore product/count watchers");
+
+assert(posStockCountsPage.includes('id="scanCountSearchBtn"')&&posStockCountsPage.includes('id="posScanDialog"')&&posStockCountsPage.includes('id="posScanVideo"')&&posStockCountsPage.includes('id="posScanStatus"')&&posStockCountsPage.includes('"BarcodeDetector" in window')&&posStockCountsPage.includes("BrowserMultiFormatReader"),"React POS Stock Counts must preserve legacy barcode scanner behavior");
+assert(posStockCountsPage.includes('const [toastType, setToastType] = useState("success")')&&posStockCountsPage.includes('"x-circle" : "check-circle"')&&posStockCountsPage.includes('scannerText("not_found")'),"React POS Stock Counts scanner must use typed global Toast feedback");
+assert(posStockCountsPage.includes("sweetConfirm")&&!posStockCountsPage.includes("window.confirm(")&&!posStockCountsPage.includes("confirm(message)"),"React POS Stock Counts confirmation must use the shared centered app dialog");
+assert(posStockCountsPage.includes('bi bi-clipboard-check pos-context-icon')&&posStockCountsPage.includes('bi bi-x-lg pos-context-icon')&&posStockCountsPage.includes('bi bi-plus-lg pos-context-icon')&&posStockCountsPage.includes('bi bi-check-lg pos-context-icon'),"React POS Stock Counts must author the semantic icons injected by legacy retail-pos-icons");
+assert(posStockCountsPage.includes('t(`pos_stock.counts.${key}`')&&posStockCountsPage.includes('tr("header.title")')&&posStockCountsPage.includes('tr("history.title")'),"React POS Stock Counts must use the five-language pos_stock.counts translation catalog");
+assert(!posStockCountsPage.includes("ทุน")&&!posStockCountsPage.includes("บาท"),"React POS Stock Counts JSX must not hard-code Thai-only cost/currency labels");
+assert(posStockCountsPage.includes('t("pos_products.runtime.cost"')&&posStockCountsPage.includes('t("pos_stock.common.amount_thb"')&&posStockCountsPage.includes("formatDate("),"React POS Stock Counts cost/currency/date display must remain locale-aware");
+assert(posStockCountsPage.includes('movementNote: tr("movement_note", { id: countId })')&&posStockCountsPage.includes("documentId: row.product._documentId || row.product.id"),"React POS Stock Counts commit payload must preserve translated movement notes and legacy product document IDs");
+
+assert(posProductsData.includes("export function watchRetailStockCounts")&&posProductsData.includes('tenantCollection(id, "stockCounts")'),"POS Stock Counts realtime data mapping missing");
+assert(posProductsData.includes('const countId=cleanName(input.id)||`COUNT-${Date.now()}`')&&posProductsData.includes("documentId||item._documentId||productId"),"POS Stock Counts must preserve legacy count IDs and legacy Firestore product document IDs");
+for(const field of ["systemQty:before","actualQty:actual","variance:difference","itemCount:lines.length","system:before","difference","countedItems:lines.length"]) assert(posProductsData.includes(field),`POS Stock Counts legacy/React history compatibility field missing: ${field}`);
+assert(posProductsData.includes('type:"adjustment"')&&!posProductsData.includes('type:"count"')&&posProductsData.includes('referenceType:"stock_count"')&&posProductsData.includes("input.movementNote"),"POS Stock Counts movements must stay rules-compatible for stock role while retaining stock-count references");
+assert(firestoreRules.includes("request.resource.data.type in ['adjustment', 'purchase']"),"Stock Counts rules-compatibility safeguard requires the current stock-movement role type allowance");
+assert(paritySync.includes('"retail-stock-counts.css"'),"POS Stock Counts CSS must remain sourced from the legacy MASTER parity sync");
+assert(posStockCountsPage.includes('"retail-barcode-scan-tools.css"'),"React POS Stock Counts must load the legacy barcode scanner parity CSS");
+assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/stock-counts/index.html"'),"React postbuild must sync canonical /pos/stock-counts to the React shell");
+assert(firebaseHostingConfig.includes('"source": "/pos/stock-counts"')&&firebaseHostingConfig.includes('"source": "/pos/stock-counts/**"'),"Hosting must cache-bust canonical React POS Stock Counts");
 
 assert(firestoreRules.includes("function tenantProductManagerRole")&&firestoreRules.includes("function tenantStockMovementRole")&&firestoreRules.includes("settingId == 'catalog-order' && tenantProductManagerRole(tenantId)"),"POS Products Firestore role/routing rules missing");
 assert(storageRules.includes("['owner', 'admin', 'manager', 'super_admin']"),"POS product image Storage role parity missing");
