@@ -770,6 +770,7 @@ const posProductsVisualCss=read("react-app/public/parity/css/retail-products-vis
 const posStockMovementsPage=read("react-app/src/pages/PosStockMovementsPage.jsx");
 const posStockMovementsVisualCss=read("react-app/public/parity/css/retail-stock-movements-visual-dashboard.css");
 const posStockCountsPage=read("react-app/src/pages/PosStockCountsPage.jsx");
+const posStockCountsVisualCss=read("react-app/public/parity/css/retail-stock-counts-visual-dashboard.css");
 const posPurchasesPage=read("react-app/src/pages/PosPurchasesPage.jsx");
 const posPurchasingData=read("react-app/src/data/retailPurchasingData.js");
 const posPurchaseBarcodeCss=read("react-app/public/parity/css/retail-barcode-scan-tools.css");
@@ -872,6 +873,57 @@ assert(posStockCountsPage.includes('t(`pos_stock.counts.${key}`')&&posStockCount
 assert(!posStockCountsPage.includes("ทุน")&&!posStockCountsPage.includes("บาท"),"React POS Stock Counts JSX must not hard-code Thai-only cost/currency labels");
 assert(posStockCountsPage.includes('t("pos_products.runtime.cost"')&&posStockCountsPage.includes('t("pos_stock.common.amount_thb"')&&posStockCountsPage.includes("formatDate("),"React POS Stock Counts cost/currency/date display must remain locale-aware");
 assert(posStockCountsPage.includes('movementNote: tr("movement_note", { id: countId })')&&posStockCountsPage.includes("documentId: row.product._documentId || row.product.id"),"React POS Stock Counts commit payload must preserve translated movement notes and legacy product document IDs");
+
+assert(
+  posStockCountsPage.includes('"retail-stock-counts-visual-dashboard.css"')
+  && posStockCountsPage.includes('className="count-visual-hero"')
+  && posStockCountsPage.includes('className="count-progress-ring"')
+  && posStockCountsPage.includes('className="panel count-variance-panel"')
+  && posStockCountsPage.includes("const countVisual = useMemo"),
+  "React POS Stock Counts visual control-center structure missing",
+);
+assert(
+  posStockCountsPage.includes('canViewValue ? money(summary.value) : "—"')
+  && posStockCountsPage.includes('id="varianceValue" hidden={!canViewValue}')
+  && posStockCountsPage.includes('className="count-value-mask" hidden={canViewValue}'),
+  "React POS Stock Counts visual summary must preserve view_value masking",
+);
+assert(
+  posStockCountsPage.includes('className="panel count-history-panel" hidden={!canViewHistory}')
+  && posStockCountsPage.includes('className="count-history-total-badge"'),
+  "React POS Stock Counts history redesign must preserve view_history visibility",
+);
+assert(
+  posStockCountsVisualCss.includes("linear-gradient(120deg,#083b2d")
+  && posStockCountsVisualCss.includes(".count-progress-ring")
+  && posStockCountsVisualCss.includes("conic-gradient(#10b981")
+  && posStockCountsVisualCss.includes(".count-variance-track")
+  && posStockCountsVisualCss.includes(".count-table tr::before")
+  && posStockCountsVisualCss.includes("@media(max-width:620px)"),
+  "React POS Stock Counts colorful visual dashboard/responsive treatment missing",
+);
+assert(
+  posStockCountsPage.includes('bi bi-clipboard2-data')
+  && posStockCountsPage.includes('bi bi-pie-chart-fill')
+  && posStockCountsPage.includes('bi bi-arrow-left-right')
+  && posStockCountsPage.includes('bi bi-clock-history')
+  && posStockCountsPage.includes('bi bi-cash-stack'),
+  "React POS Stock Counts visual semantic icons missing",
+);
+for (const locale of ["th", "en", "my", "lo", "km"]) {
+  const visual = dict[locale]?.pos_stock?.counts?.visual;
+  assert(
+    visual
+      && visual.kicker
+      && visual.hero_description
+      && visual.total_products
+      && visual.progress_title
+      && visual.variance_title
+      && visual.history_empty_hint,
+    `React POS Stock Counts visual translations missing: ${locale}`,
+  );
+}
+
 
 assert(posProductsData.includes("export function watchRetailStockCounts")&&posProductsData.includes('tenantCollection(id, "stockCounts")'),"POS Stock Counts realtime data mapping missing");
 assert(posProductsData.includes('const countId=cleanName(input.id)||`COUNT-${Date.now()}`')&&posProductsData.includes("documentId||item._documentId||productId"),"POS Stock Counts must preserve legacy count IDs and legacy Firestore product document IDs");

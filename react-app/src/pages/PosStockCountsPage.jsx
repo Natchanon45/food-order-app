@@ -102,6 +102,7 @@ export function PosStockCountsPage() {
   const stylesReady = useParityPage({
     title: tr("meta.title"),
     bodyClass: "pos-stock-counts-page",
+    attributes: { "data-module": "retail-pos-stock-counts" },
     disabledGlobalStyles: ["app.css", "icons.css", "shared-responsive.css"],
     styles: [
       "app-version-badge-runtime.css",
@@ -109,6 +110,7 @@ export function PosStockCountsPage() {
       "pos-locale-switcher-placement.css",
       "retail-pos.css",
       "retail-stock-counts.css",
+      "retail-stock-counts-visual-dashboard.css",
       "retail-barcode-scan-tools.css",
       "retail-pos-navigation.css",
       "sweet-dialog.css",
@@ -428,6 +430,27 @@ export function PosStockCountsPage() {
     value: countedRows.reduce((sum, row) => sum + row.value, 0),
   }), [countedRows]);
 
+  const countVisual = useMemo(() => {
+    const total = products.length;
+    const counted = summary.counted;
+    const remaining = Math.max(0, total - counted);
+    const differences = countedRows.filter(row => row.variance !== 0);
+    const progress = total > 0 ? Math.min(100, (counted / total) * 100) : 0;
+    const changedUnits = summary.short + summary.over;
+    const shortShare = changedUnits > 0 ? (summary.short / changedUnits) * 100 : 0;
+    const overShare = changedUnits > 0 ? (summary.over / changedUnits) * 100 : 0;
+    return {
+      total,
+      counted,
+      remaining,
+      differences: differences.length,
+      progress,
+      changedUnits,
+      shortShare,
+      overShare,
+    };
+  }, [products.length, countedRows, summary]);
+
   const filteredHistory = useMemo(() => {
     const query = historySearch.trim().toLowerCase();
     return history.filter(record => !query || [
@@ -560,6 +583,96 @@ export function PosStockCountsPage() {
     </header>
 
     <main data-pos-management className="count-container">
+      <section className="count-visual-hero">
+        <span className="count-hero-shape count-hero-shape-one"></span>
+        <span className="count-hero-shape count-hero-shape-two"></span>
+        <div className="count-hero-grid">
+          <div className="count-hero-copy">
+            <div className="count-hero-kicker">
+              <i className="bi bi-clipboard2-data" aria-hidden="true"></i>
+              <span>{tr("visual.kicker")}</span>
+            </div>
+            <h1>{tr("header.title")}</h1>
+            <p>{tr("visual.hero_description")}</p>
+            <div className="count-hero-date">
+              <i className="bi bi-calendar-check" aria-hidden="true"></i>
+              <span>{formatDate(new Date(`${countDate}T00:00:00`), { year: "numeric", month: "short", day: "numeric" })}</span>
+            </div>
+          </div>
+          <div className="count-hero-metrics">
+            <article>
+              <span><i className="bi bi-box-seam" aria-hidden="true"></i>{tr("visual.total_products")}</span>
+              <strong>{formatNumber(countVisual.total)}</strong>
+            </article>
+            <article>
+              <span><i className="bi bi-check2-circle" aria-hidden="true"></i>{tr("summary.counted_items")}</span>
+              <strong>{formatNumber(countVisual.counted)}</strong>
+            </article>
+            <article>
+              <span><i className="bi bi-hourglass-split" aria-hidden="true"></i>{tr("visual.remaining")}</span>
+              <strong>{formatNumber(countVisual.remaining)}</strong>
+            </article>
+            <article>
+              <span><i className="bi bi-exclamation-diamond" aria-hidden="true"></i>{tr("visual.variance_items")}</span>
+              <strong>{formatNumber(countVisual.differences)}</strong>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section className="count-insight-grid">
+        <article className="panel count-progress-panel">
+          <div className="count-visual-heading">
+            <span className="count-visual-icon count-visual-icon-progress"><i className="bi bi-pie-chart-fill" aria-hidden="true"></i></span>
+            <div>
+              <h2>{tr("visual.progress_title")}</h2>
+              <p>{tr("visual.progress_description")}</p>
+            </div>
+          </div>
+          <div className="count-progress-content">
+            <div className="count-progress-ring" style={{ "--count-progress": `${countVisual.progress * 3.6}deg` }}>
+              <div>
+                <strong>{formatNumber(Math.round(countVisual.progress))}%</strong>
+                <span>{tr("visual.completed")}</span>
+              </div>
+            </div>
+            <div className="count-progress-legend">
+              <div><span className="count-dot count-dot-complete"></span><span>{tr("summary.counted_items")}</span><strong>{formatNumber(countVisual.counted)}</strong></div>
+              <div><span className="count-dot count-dot-remaining"></span><span>{tr("visual.remaining")}</span><strong>{formatNumber(countVisual.remaining)}</strong></div>
+              <small>{tr("visual.progress_hint")}</small>
+            </div>
+          </div>
+        </article>
+
+        <article className="panel count-variance-panel">
+          <div className="count-visual-heading">
+            <span className="count-visual-icon count-visual-icon-variance"><i className="bi bi-arrow-left-right" aria-hidden="true"></i></span>
+            <div>
+              <h2>{tr("visual.variance_title")}</h2>
+              <p>{tr("visual.variance_description")}</p>
+            </div>
+          </div>
+          <div className="count-variance-metrics">
+            <div className="count-variance-short">
+              <span>{tr("summary.short_qty")}</span>
+              <strong>-{formatNumber(summary.short)}</strong>
+            </div>
+            <div className="count-variance-over">
+              <span>{tr("summary.over_qty")}</span>
+              <strong>+{formatNumber(summary.over)}</strong>
+            </div>
+          </div>
+          <div className="count-variance-track" aria-hidden="true">
+            <span className="count-variance-short-bar" style={{ width: `${countVisual.shortShare}%` }}></span>
+            <span className="count-variance-over-bar" style={{ width: `${countVisual.overShare}%` }}></span>
+          </div>
+          <div className="count-value-summary">
+            <span>{tr("summary.variance_value")}</span>
+            <strong>{canViewValue ? money(summary.value) : "—"}</strong>
+          </div>
+        </article>
+      </section>
+
       <section className="panel count-panel">
         <div className="count-heading section-heading">
           <div>
@@ -632,7 +745,9 @@ export function PosStockCountsPage() {
               <th className="number" hidden={!canViewValue}>{tr("columns.variance_value")}</th>
             </tr></thead>
             <tbody id="countTableBody">
-              {visibleRows.map(row => <tr key={row.product.id} data-id={row.product.id}>
+              {visibleRows.map(row => <tr
+                className={`count-row ${!row.has ? "is-uncounted" : row.variance > 0 ? "is-over" : row.variance < 0 ? "is-short" : "is-match"}`}
+                key={row.product.id} data-id={row.product.id}>
                 <td className="count-product">
                   <strong>{row.product.name || row.product.id}</strong>
                   <span>{row.product.id} • {row.product.barcode || ""}{canViewValue ? ` • ${t("pos_products.runtime.cost", { amount: money(row.cost) })}` : ""}</span>
@@ -658,13 +773,34 @@ export function PosStockCountsPage() {
             </tbody>
           </table>
         </div>
-        <div id="countEmpty" className="empty-state" hidden={visibleRows.length > 0}>{t("pos_products.table.empty")}</div>
+        <div id="countEmpty" className="empty-state count-empty" hidden={visibleRows.length > 0}>
+          <span className="count-empty-icon"><i className="bi bi-search" aria-hidden="true"></i></span>
+          <strong>{t("pos_products.table.empty")}</strong>
+          <small>{tr("visual.empty_hint")}</small>
+        </div>
 
         <div className="count-summary">
-          <div><span>{tr("summary.counted_items")}</span><strong id="countedItems">{formatNumber(summary.counted)}</strong></div>
-          <div><span>{tr("summary.short_qty")}</span><strong id="shortQty">{formatNumber(summary.short)}</strong></div>
-          <div><span>{tr("summary.over_qty")}</span><strong id="overQty">{formatNumber(summary.over)}</strong></div>
-          <div><span>{tr("summary.variance_value")}</span><strong id="varianceValue" hidden={!canViewValue}>{money(summary.value)}</strong></div>
+          <div className="count-summary-card count-summary-counted">
+            <span className="count-summary-icon"><i className="bi bi-check2-square" aria-hidden="true"></i></span>
+            <span>{tr("summary.counted_items")}</span>
+            <strong id="countedItems">{formatNumber(summary.counted)}</strong>
+          </div>
+          <div className="count-summary-card count-summary-short">
+            <span className="count-summary-icon"><i className="bi bi-arrow-down-right" aria-hidden="true"></i></span>
+            <span>{tr("summary.short_qty")}</span>
+            <strong id="shortQty">{formatNumber(summary.short)}</strong>
+          </div>
+          <div className="count-summary-card count-summary-over">
+            <span className="count-summary-icon"><i className="bi bi-arrow-up-right" aria-hidden="true"></i></span>
+            <span>{tr("summary.over_qty")}</span>
+            <strong id="overQty">{formatNumber(summary.over)}</strong>
+          </div>
+          <div className="count-summary-card count-summary-value">
+            <span className="count-summary-icon"><i className="bi bi-cash-stack" aria-hidden="true"></i></span>
+            <span>{tr("summary.variance_value")}</span>
+            <strong id="varianceValue" hidden={!canViewValue}>{money(summary.value)}</strong>
+            <strong className="count-value-mask" hidden={canViewValue}>—</strong>
+          </div>
         </div>
         <p id="countError" className="error-text">{countError}</p>
         <div className="count-footer-actions">
@@ -681,11 +817,15 @@ export function PosStockCountsPage() {
         </div>
       </section>
       <section className="panel count-history-panel" hidden={!canViewHistory}>
-        <div className="section-heading">
-          <div>
-            <h2><i className="bi bi-clipboard-check pos-context-icon" data-icon-tone="lime" aria-hidden="true"></i><span>{tr("history.title")}</span></h2>
-            <p>{tr("history.description")}</p>
+        <div className="section-heading count-history-heading">
+          <div className="count-history-title">
+            <span className="count-history-title-icon"><i className="bi bi-clock-history" aria-hidden="true"></i></span>
+            <div>
+              <h2><i className="bi bi-clipboard-check pos-context-icon" data-icon-tone="lime" aria-hidden="true"></i><span>{tr("history.title")}</span></h2>
+              <p>{tr("history.description")}</p>
+            </div>
           </div>
+          <span className="count-history-total-badge"><i className="bi bi-archive" aria-hidden="true"></i>{formatNumber(filteredHistory.length)}</span>
         </div>
         <label className="count-history-search">{tr("history.search_label")}
           <input id="historySearch" value={historySearch}
@@ -697,7 +837,7 @@ export function PosStockCountsPage() {
             const differences = (Array.isArray(record.items) ? record.items : [])
               .filter(item => Number(item.difference ?? item.variance ?? 0) !== 0);
             const differenceCount = Number(record.differenceCount ?? differences.length);
-            return <article className="count-history-item" key={record.id}>
+            return <article className={`count-history-item ${differenceCount > 0 ? "has-difference" : "is-balanced"}`} key={record.id}>
               <div className="count-history-head">
                 <div>
                   <strong>{record.name || record.id}</strong>
@@ -731,7 +871,11 @@ export function PosStockCountsPage() {
             </article>;
           })}
         </div>
-        <div id="countHistoryEmpty" className="empty-state" hidden={filteredHistory.length > 0}>{tr("history.empty")}</div>
+        <div id="countHistoryEmpty" className="empty-state count-history-empty" hidden={filteredHistory.length > 0}>
+          <span className="count-empty-icon"><i className="bi bi-archive" aria-hidden="true"></i></span>
+          <strong>{tr("history.empty")}</strong>
+          <small>{tr("visual.history_empty_hint")}</small>
+        </div>
       </section>
     </main>
 

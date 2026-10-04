@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.05.409",
+  build: "2026.10.05.410",
   branch: "feature/react-firebase-port",
-  commit: "POS-STOCK-MOVEMENTS-CONTROL-CENTER",
+  commit: "POS-STOCK-COUNTS-CONTROL-CENTER",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Retail POS Stock Movement Control Center",
+  milestone: "Retail POS Stock Count Control Center",
   whatsNew: [
-    "Redesign Stock Movements as a colorful visual control center with KPI cards, activity chart, and movement mix",
-    "Improve filters, movement rows, semantic icons, and mobile readability without changing stock logic",
-    "Preserve realtime watchers, CSV export, barcode filtering, permissions, and tenant boundaries",
+    "Redesign Stock Counts with a visual progress dashboard, variance overview, richer count workspace, and history cards",
+    "Improve mobile count-entry readability and semantic status styling without changing stock-count commit behavior",
+    "Preserve realtime watchers, barcode scanning, permissions, count history, and tenant boundaries",
   ],
 });

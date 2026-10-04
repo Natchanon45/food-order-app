@@ -4360,7 +4360,22 @@
           "saved_synced": "บันทึกรอบตรวจนับ :id แล้ว • ส่งเข้าระบบแล้ว",
           "saved_pending": "บันทึกรอบตรวจนับ :id แล้ว • รอส่งเมื่อออนไลน์"
         },
-        "movement_note": "ตรวจนับสต็อก :id"
+        "movement_note": "ตรวจนับสต็อก :id",
+        "visual": {
+          "kicker": "Stock Count Control Center",
+          "hero_description": "ตรวจนับสินค้าจริง เทียบยอดระบบ และเห็นผลต่างได้ชัดเจนก่อนยืนยันปรับสต็อก",
+          "total_products": "สินค้าทั้งหมด",
+          "remaining": "ยังไม่ตรวจนับ",
+          "variance_items": "รายการมีผลต่าง",
+          "progress_title": "ความคืบหน้าการตรวจนับ",
+          "progress_description": "ติดตามจำนวนสินค้าที่กรอกยอดจริงเทียบกับสินค้าทั้งหมด",
+          "completed": "ตรวจแล้ว",
+          "progress_hint": "ความคืบหน้าจะอัปเดตทันทีเมื่อกรอกยอดนับจริง",
+          "variance_title": "ภาพรวมผลต่าง",
+          "variance_description": "เปรียบเทียบจำนวนขาดและเกินจากรายการที่ตรวจนับแล้ว",
+          "empty_hint": "ลองเปลี่ยนคำค้นหา หรือตัวกรองรายการ",
+          "history_empty_hint": "เมื่อบันทึกรอบตรวจนับแล้ว ประวัติจะปรากฏที่นี่"
+        }
       },
       "movements": {
         "meta": {
@@ -10043,7 +10058,22 @@
           "saved_synced": "Stock count :id saved • synced",
           "saved_pending": "Stock count :id saved • waiting to sync"
         },
-        "movement_note": "Stock count :id"
+        "movement_note": "Stock count :id",
+        "visual": {
+          "kicker": "Stock Count Control Center",
+          "hero_description": "Count physical stock, compare it with recorded quantities, and review variances clearly before adjusting inventory.",
+          "total_products": "Total products",
+          "remaining": "Not counted",
+          "variance_items": "Items with variance",
+          "progress_title": "Count progress",
+          "progress_description": "Track physical-count entries against the full product catalog.",
+          "completed": "completed",
+          "progress_hint": "Progress updates immediately as physical quantities are entered.",
+          "variance_title": "Variance overview",
+          "variance_description": "Compare shortages and overages from products already counted.",
+          "empty_hint": "Try changing the search term or list filter.",
+          "history_empty_hint": "Saved stock-count sessions will appear here."
+        }
       },
       "movements": {
         "meta": {
@@ -15789,7 +15819,22 @@
           "saved_synced": "စတော့ရှယ်ယာအရေအတွက် :id သိမ်းပြီး • ထပ်တူပြုထားသည်။",
           "saved_pending": "စတော့အရေအတွက် :id သိမ်းပြီး • စင့်ခ်လုပ်ရန် စောင့်ဆိုင်းနေပါသည်။"
         },
-        "movement_note": "စတော့အရေအတွက် :id"
+        "movement_note": "စတော့အရေအတွက် :id",
+        "visual": {
+          "kicker": "Stock Count Control Center",
+          "hero_description": "ပစ္စည်းလက်ကျန်ကို အမှန်တကယ်ရေတွက်ပြီး စနစ်ထဲရှိပမာဏနှင့် နှိုင်းယှဉ်ကာ စတော့မပြင်မီ ကွာခြားချက်များကို ရှင်းလင်းစွာ စစ်ဆေးပါ။",
+          "total_products": "ပစ္စည်းစုစုပေါင်း",
+          "remaining": "မရေတွက်ရသေး",
+          "variance_items": "ကွာခြားချက်ရှိသောပစ္စည်း",
+          "progress_title": "ရေတွက်မှုတိုးတက်မှု",
+          "progress_description": "ရေတွက်ပြီးသောပစ္စည်းနှင့် စုစုပေါင်းပစ္စည်းကို နှိုင်းယှဉ်ကြည့်ပါ။",
+          "completed": "ပြီးစီး",
+          "progress_hint": "အမှန်တကယ်ပမာဏထည့်သွင်းသည့်အခါ တိုးတက်မှုချက်ချင်းပြောင်းလဲမည်။",
+          "variance_title": "ကွာခြားချက်အကျဉ်းချုပ်",
+          "variance_description": "ရေတွက်ပြီးသောပစ္စည်းများ၏ လျော့နည်းမှုနှင့် ပိုလျှံမှုကို နှိုင်းယှဉ်ပါ။",
+          "empty_hint": "ရှာဖွေစာသား သို့မဟုတ် စစ်ထုတ်မှုကို ပြောင်းကြည့်ပါ။",
+          "history_empty_hint": "သိမ်းဆည်းထားသော စတော့ရေတွက်မှုများကို ဤနေရာတွင် ပြမည်။"
+        }
       },
       "movements": {
         "meta": {
@@ -21535,7 +21580,22 @@
           "saved_synced": "ຈຳນວນຫຼັກຊັບ :id ບັນທຶກ • ຊິງຄ໌ແລ້ວ",
           "saved_pending": "ຈຳນວນຫຼັກຊັບ :id ບັນທຶກ • ລໍຖ້າການຊິ້ງຂໍ້ມູນ"
         },
-        "movement_note": "ຈຳນວນຫຸ້ນ :id"
+        "movement_note": "ຈຳນວນຫຸ້ນ :id",
+        "visual": {
+          "kicker": "Stock Count Control Center",
+          "hero_description": "ກວດນັບສິນຄ້າຈິງ ປຽບທຽບກັບຈຳນວນໃນລະບົບ ແລະເບິ່ງຜົນຕ່າງໃຫ້ຊັດກ່ອນຢືນຢັນປັບສະຕັອກ.",
+          "total_products": "ສິນຄ້າທັງໝົດ",
+          "remaining": "ຍັງບໍ່ໄດ້ນັບ",
+          "variance_items": "ລາຍການທີ່ມີຜົນຕ່າງ",
+          "progress_title": "ຄວາມຄືບໜ້າການກວດນັບ",
+          "progress_description": "ຕິດຕາມສິນຄ້າທີ່ກອກຈຳນວນຈິງທຽບກັບສິນຄ້າທັງໝົດ.",
+          "completed": "ສຳເລັດ",
+          "progress_hint": "ຄວາມຄືບໜ້າຈະປ່ຽນທັນທີເມື່ອກອກຈຳນວນນັບຈິງ.",
+          "variance_title": "ພາບລວມຜົນຕ່າງ",
+          "variance_description": "ປຽບທຽບຈຳນວນຂາດແລະເກີນຈາກສິນຄ້າທີ່ກວດນັບແລ້ວ.",
+          "empty_hint": "ລອງປ່ຽນຄຳຄົ້ນຫາ ຫຼືຕົວກອງ.",
+          "history_empty_hint": "ຮອບກວດນັບທີ່ບັນທຶກແລ້ວຈະສະແດງຢູ່ບ່ອນນີ້."
+        }
       },
       "movements": {
         "meta": {
@@ -27281,7 +27341,22 @@
           "saved_synced": "ចំនួនភាគហ៊ុន :id បានរក្សាទុក • បានធ្វើសមកាលកម្ម",
           "saved_pending": "ចំនួនស្តុក :id បានរក្សាទុក • រង់ចាំធ្វើសមកាលកម្ម"
         },
-        "movement_note": "ចំនួនស្តុក :id"
+        "movement_note": "ចំនួនស្តុក :id",
+        "visual": {
+          "kicker": "Stock Count Control Center",
+          "hero_description": "រាប់ស្តុកជាក់ស្តែង ប្រៀបធៀបជាមួយបរិមាណក្នុងប្រព័ន្ធ និងពិនិត្យភាពខុសគ្នាឱ្យច្បាស់មុនពេលកែសម្រួលស្តុក។",
+          "total_products": "ផលិតផលសរុប",
+          "remaining": "មិនទាន់រាប់",
+          "variance_items": "ធាតុមានភាពខុសគ្នា",
+          "progress_title": "វឌ្ឍនភាពការរាប់",
+          "progress_description": "តាមដានផលិតផលដែលបានបញ្ចូលចំនួនជាក់ស្តែងធៀបនឹងផលិតផលសរុប។",
+          "completed": "បានបញ្ចប់",
+          "progress_hint": "វឌ្ឍនភាពនឹងធ្វើបច្ចុប្បន្នភាពភ្លាមៗពេលបញ្ចូលចំនួនជាក់ស្តែង។",
+          "variance_title": "សង្ខេបភាពខុសគ្នា",
+          "variance_description": "ប្រៀបធៀបបរិមាណខ្វះ និងលើសពីផលិតផលដែលបានរាប់។",
+          "empty_hint": "សាកល្បងប្តូរពាក្យស្វែងរក ឬតម្រងបញ្ជី។",
+          "history_empty_hint": "ជុំរាប់ស្តុកដែលបានរក្សាទុកនឹងបង្ហាញនៅទីនេះ។"
+        }
       },
       "movements": {
         "meta": {

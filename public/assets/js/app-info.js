@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.05.124',
+  build: '2026.10.05.125',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-STOCK-MOVEMENTS-CONTROL-CENTER',
+  commit: 'POS-STOCK-COUNTS-CONTROL-CENTER',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS Stock Movement Control Center',
-  updatedAt: '2026-10-05T03:43:36+0700',
+  milestone: 'Retail POS Stock Count Control Center',
+  updatedAt: '2026-10-05T03:55:20+0700',
   whatsNew: [
-    'Redesign Stock Movements as a colorful visual control center with KPI cards, activity chart, and movement mix',
-    'Improve filters, movement rows, semantic icons, and mobile readability without changing stock logic',
-    'Preserve realtime watchers, CSV export, barcode filtering, permissions, and tenant boundaries'
+    'Redesign Stock Counts with a visual progress dashboard, variance overview, richer count workspace, and history cards',
+    'Improve mobile count-entry readability and semantic status styling without changing stock-count commit behavior',
+    'Preserve realtime watchers, barcode scanning, permissions, count history, and tenant boundaries'
   ]
 };
 

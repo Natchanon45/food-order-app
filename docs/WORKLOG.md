@@ -7073,3 +7073,125 @@ Deploy state:
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
 - Next visual redesign route: `/pos/stock-counts`.
 - No merge to `main`.
+
+---
+## 2026-10-05 — POS Stock Counts Visual Control Center
+
+User request:
+- Continue the approved Retail POS visual redesign plan after Stock Movements.
+- Next route: `/pos/stock-counts`.
+- Keep the screen graphic-rich, colorful, easy to scan, responsive, while preserving all stock-count behavior.
+
+Design / implementation:
+- Preserved the existing React Stock Counts route, all 21 legacy IDs, count inputs, scanner, realtime watchers, permission gates, confirmation flow, Firestore commit payload, and tenant scope.
+- Added React-only `retail-stock-counts-visual-dashboard.css`; legacy MASTER CSS remains untouched.
+- Added a green Stock Count Control Center hero with safe/non-monetary live metrics:
+  - total product catalog count,
+  - products counted,
+  - products remaining,
+  - counted products with variance.
+- Added Count Progress visualization:
+  - conic progress ring,
+  - counted vs remaining legend,
+  - updates only from the existing in-memory `actuals` state.
+- Added Variance Overview:
+  - shortage quantity,
+  - overage quantity,
+  - split variance bar,
+  - net variance monetary value only when `pos.stock_counts.view_value` is available; otherwise displays `—`.
+- Reworked the existing count workspace visually:
+  - richer title/action area,
+  - grouped count metadata fields,
+  - stronger search/barcode/filter surface,
+  - row accents for uncounted / matching / shortage / overage states,
+  - actual-count input remains the same editable control,
+  - graphical empty state.
+- Rebuilt the four existing summary values as visual metric cards with semantic icons while preserving IDs:
+  - `countedItems`,
+  - `shortQty`,
+  - `overQty`,
+  - `varianceValue`.
+- Preserved `varianceValue hidden={!canViewValue}` and added only a visual `—` mask for unauthorized users.
+- Reworked history visually:
+  - clock-history title icon,
+  - visible filtered-history count,
+  - balanced/difference accent cards,
+  - graphical empty state.
+- Preserved the entire history section `hidden={!canViewHistory}`.
+- Mobile:
+  - Hero and metrics reflow,
+  - insight panels stack,
+  - count table remains card layout with status accent,
+  - actual-count input remains prominent and usable,
+  - summary cards use a compact 2-column layout,
+  - history cards remain contained,
+  - no horizontal scrolling.
+- Added new Visual Control Center labels in TH / EN / MY / LO / KM.
+
+Behavior / data boundary:
+- `commitRetailStockCount()` was not changed.
+- Required-field validation, at-least-one-actual validation, and `sweetConfirm` flow are unchanged.
+- Count IDs, translated movement notes, product legacy document IDs, stock adjustment behavior, and rules-compatible adjustment movement type are unchanged.
+- `watchRetailProducts` and `watchRetailStockCounts` are unchanged.
+- BarcodeDetector + ZXing fallback is unchanged.
+- `pos.stock_counts.perform`, `pos.stock_counts.view_value`, `pos.stock_counts.view_history`, and page permission behavior are unchanged.
+- No Firestore schema/index/rules/storage/functions changes.
+- No merge to `main`.
+
+Release prepared:
+- React `0.4.280 / 2026.10.05.410`.
+- Public `0.16.32 / 2026.10.05.125`.
+- Generated bundle: `/react/assets/index-B_FUnTNp.js`.
+
+Verification before deploy:
+- Stock Counts JSX esbuild syntax PASS.
+- Translation JSON validation PASS.
+- React foundation contract PASS, including:
+  - visual control-center structure,
+  - responsive CSS,
+  - semantic icons,
+  - five-language visual translations,
+  - `view_value` masking,
+  - `view_history` boundary.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS:
+  - migration coverage = 53 routes / 21 POS,
+  - parity matrix PASS,
+  - P0 actions PASS,
+  - callables = 54 refs / 0 missing,
+  - tenant-access PASS,
+  - UI-layer PASS.
+- `npm run build:react` PASS; generated React build contract PASS for Build `.410`.
+- `git diff --check` PASS.
+- Authenticated local-build browser contract PASS against current Production Firestore data with all Firestore write endpoints blocked.
+- Desktop 1440x900:
+  - Hero height ~= 243px,
+  - 4 Hero metrics,
+  - 2 insight panels,
+  - Progress ring = 164x164,
+  - Product metrics = 1,997 total / 0 counted / 1,997 remaining / 0 variance at initial untouched state,
+  - 1,997 product rows loaded,
+  - actual inputs with a value = 0,
+  - 4 summary cards,
+  - history permission is available for current owner account; current history cards = 0,
+  - barcode scanner button present,
+  - confirm action present but NOT clicked,
+  - raw translation keys = 0,
+  - document horizontal overflow = 0.
+- Mobile 390x844:
+  - Hero rendered,
+  - insight grid stacks to one column,
+  - count panel = 374px,
+  - product card = 348px,
+  - table min-width = 0,
+  - table wrapper overflow = visible,
+  - 4 summary cards,
+  - actual input = 122px,
+  - history grid = 348px,
+  - document horizontal overflow = 0.
+- No input was entered, no Fill System/Clear/Reset/Confirm action was clicked.
+- Page errors = 0; request failures = 0; HTTP errors = 0.
+- Firestore write attempts observed = 0.
+
+Deploy state:
+- Commit/push and Hosting-only deployment pending.
