@@ -225,7 +225,7 @@ html[data-module="retail-pos-sales"] body{
   background:
     linear-gradient(to top,rgba(15,118,80,.08) 1px,transparent 1px) 0 0/100% 25%,
     linear-gradient(180deg,#fafffc 0%,#f4faf7 100%);
-  overflow:hidden;
+  overflow:visible;
 }
 .sales-chart-empty{
   margin:auto;color:#8b9b93;font-size:.85rem
@@ -250,9 +250,13 @@ html[data-module="retail-pos-sales"] body{
   color:#7b8c83;font-size:.66rem;white-space:nowrap;
 }
 .sales-chart-tooltip{
-  position:absolute;left:50%;bottom:calc(var(--bar-height,0%) + 6px);transform:translateX(-50%);
-  padding:4px 7px;border-radius:8px;
-  background:#123d2d;color:#fff;font-size:.63rem;font-weight:800;white-space:nowrap;
+  position:absolute;left:50%;
+  bottom:min(calc(var(--bar-height,0%) + 6px),calc(100% - 30px));
+  transform:translateX(-50%);
+  z-index:5;
+  max-width:calc(100vw - 40px);
+  padding:5px 8px;border-radius:8px;
+  background:#123d2d;color:#fff;font-size:.68rem;font-weight:800;white-space:nowrap;
   opacity:0;pointer-events:none;transition:opacity .16s ease
 }
 .sales-chart-column:hover .sales-chart-tooltip{opacity:1}
@@ -373,10 +377,22 @@ html[data-module="retail-pos-sales"] body{
 .sale-primary-copy strong,.sale-primary-copy span{display:block}
 .sale-primary-copy strong{color:#173e30;font-size:.86rem}
 .sale-primary-copy span{margin-top:2px;color:#7a8d83;font-size:.7rem;font-weight:500}
+.sale-amount-group{
+  display:inline-flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+  white-space:nowrap;
+}
 .sale-amount strong{
   display:inline-block;
   padding:7px 10px;border-radius:11px;
   background:#eaf8f1;color:#08774c;font-size:.9rem
+}
+.sale-amount .view-sale{
+  min-height:34px;
+  padding:7px 10px;
+  white-space:nowrap
 }
 .vat-stack{display:grid;gap:2px}
 .vat-stack strong{font-size:.8rem;color:#33483f}
@@ -458,20 +474,33 @@ html[data-module="retail-pos-sales"] body{
   .sales-table tbody td.sale-id{
     grid-column:1/-1;
     display:block!important;
+    width:100%!important;
+    max-width:none!important;
+    box-sizing:border-box!important;
     padding:12px!important;
     background:linear-gradient(90deg,#f0faf5,#f8fcfa);
   }
   .sales-table tbody td.sale-id::before{display:none!important}
-  .sale-primary-cell{min-width:0;width:100%}
-  .sale-primary-copy{min-width:0}
+  .sale-primary-cell{min-width:0!important;width:100%!important}
+  .sale-primary-copy{min-width:0;width:100%}
   .sale-primary-copy strong{overflow-wrap:anywhere}
-  .sales-table tbody td.sale-actions{
-    grid-column:1/-1;
-    border-bottom:0!important;
-    justify-content:flex-end
+  .sales-table tbody td.sale-amount{
+    grid-column:1/-1!important;
+    border-bottom:0!important
   }
-  .sales-table tbody td.sale-actions::before{display:none!important}
-  .view-sale{width:100%;min-height:40px}
+  .sale-amount-group{
+    margin-left:auto;
+    display:inline-flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:8px
+  }
+  .sale-amount .view-sale{
+    width:auto!important;
+    min-width:max-content;
+    min-height:36px!important;
+    padding:7px 11px!important
+  }
 }
 @media(max-width:430px){
   .sales-hero-metrics{grid-template-columns:1fr 1fr}
@@ -480,5 +509,6 @@ html[data-module="retail-pos-sales"] body{
   .sales-stats .stat-card{min-height:110px}
   .sales-chart-label{font-size:.6rem}
   .sales-table tbody tr{grid-template-columns:1fr}
-  .sales-table tbody td,.sales-table tbody td.sale-id,.sales-table tbody td.sale-actions{grid-column:1}
+  .sales-table tbody td,.sales-table tbody td.sale-id{grid-column:1}
+  .sales-table tbody td.sale-amount{grid-column:1!important}
 }

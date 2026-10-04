@@ -597,10 +597,9 @@ export function PosSalesPage() {
               {salesTrend.length ? salesTrend.map(item => {
                 const height = Math.max(6, Math.min(100, (Number(item.total || 0) / trendMax) * 100));
                 return (
-                  <div className="sales-chart-column" key={item.key}
-                    title={t("pos_sales_runtime.runtime.amount", { amount: money(item.total) })}>
+                  <div className="sales-chart-column" key={item.key}>
                     <span className="sales-chart-tooltip" style={{ "--bar-height": `${height}%` }}>
-                      {money(item.total)}
+                      {t("pos_sales_runtime.runtime.amount", { amount: money(item.total) })}
                     </span>
                     <div className="sales-chart-bar" style={{ height: `${height}%` }}></div>
                     <span className="sales-chart-label">{item.label}</span>
@@ -690,7 +689,6 @@ export function PosSalesPage() {
                   <th>{t("pos_sales.sales.vat")}</th>
                   <th className="number">{t("pos_sales.sales.discount")}</th>
                   <th className="number">{t("pos_sales.sales.net_sales")}</th>
-                  <th></th>
                 </tr>
               </thead>
               <tbody id="salesTableBody">
@@ -720,12 +718,14 @@ export function PosSalesPage() {
                         </div>
                       </td>
                       <td className="number" data-label={t("pos_sales.sales.discount")}>{money(saleDiscount(sale))}</td>
-                      <td className="number sale-amount" data-label={t("pos_sales.sales.net_sales")}><strong>{money(saleTotalAmount(sale))}</strong></td>
-                      <td className="sale-actions">
-                        <button type="button" className="view-sale" data-sale-id={sale.id} onClick={() => openSale(sale)}>
-                          <i className="bi bi-receipt" aria-hidden="true"></i>
-                          <span>{t("pos_sales_runtime.runtime.view_bill")}</span>
-                        </button>
+                      <td className="number sale-amount" data-label={t("pos_sales.sales.net_sales")}>
+                        <div className="sale-amount-group">
+                          <strong>{money(saleTotalAmount(sale))}</strong>
+                          <button type="button" className="view-sale" data-sale-id={sale.id} onClick={() => openSale(sale)}>
+                            <i className="bi bi-receipt" aria-hidden="true"></i>
+                            <span>{t("pos_sales_runtime.runtime.view_bill")}</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

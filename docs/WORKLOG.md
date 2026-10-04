@@ -5944,3 +5944,40 @@ Deploy state:
 - No Production write operation was executed during verification.
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions changes/deploys.
 - No merge to `main`.
+
+---
+## 2026-10-04 — Sales chart tooltip and mobile receipt-card polish
+
+Request:
+- Fix the Sales History bar-chart tooltip being clipped/incomplete.
+- Make the mobile receipt number/date header span the full card width.
+- Move `ดูบิล` beside the net-sales amount instead of keeping it as a separate full-width row.
+
+Implementation:
+- Removed the duplicate native browser `title` tooltip from sales-chart columns and kept one custom tooltip.
+- Custom chart tooltip is clamped inside the plot with visible overflow and now renders the localized full amount text such as `2,021.00 บาท`.
+- Removed the inherited mobile `max-width:190px` limitation from `.sale-id`; the receipt number/date header now spans the full mobile card.
+- Moved the View Bill button into `.sale-amount-group` beside the net-sales amount and removed the standalone action table cell.
+- Added regression assertions for tooltip clipping, full-width mobile receipt header, and the grouped net-sales/View Bill action.
+
+Release prepared:
+- React `0.4.280 / 2026.10.04.394`.
+- Public `0.16.32 / 2026.10.04.109`.
+- Generated bundle: `/react/assets/index-DRPvJgwt.js`.
+
+Verification before deploy:
+- React foundation contract PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS; generated build contract PASS for `.394`.
+- `git diff --check` PASS.
+- Authenticated local-build browser test using Production data/session PASS.
+- Tallest bar tooltip rendered `2,021.00 บาท`, remained inside the chart/viewport, and no duplicate native title remained.
+- iPhone 16 Pro Max size 440x956: receipt row width 390px; sale ID/date header width 388px (99.5%), computed max-width `none`; net-sales amount and View Bill button share the same line; no standalone action cell remains.
+- Receipt View/Close interaction PASS; no document overflow, page errors, request failures, or HTTP errors.
+- No Production write operation was executed.
+
+Deploy state:
+- Commit/push and Hosting-only deploy pending.
+- No Firestore Rules, Storage Rules, or Functions changes.
+- No merge to `main`.
