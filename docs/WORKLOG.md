@@ -6248,3 +6248,52 @@ Deploy state:
 - Production 440x956 contrast contract PASS: Loyalty badge/icon/`::before` computed color `rgb(255,255,255)`, text shadow active, center offset X=0px / Y≈0.008px, zero document overflow/page/request/HTTP errors.
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions changes/deploys.
 - No merge to `main`.
+
+---
+## 2026-10-04 — Staff Shifts Shift Operations Dashboard redesign
+
+Request / design direction:
+- Continue the user-approved colorful/graphic-rich POS redesign policy after Returns.
+- Redesign `/pos/shifts` directly in React while preserving open/close shift behavior, offline sync, cash calculations, granular permissions, and tenant boundaries.
+
+Implementation:
+- Added `retail-shifts-visual-dashboard.css` as the final route stylesheet.
+- Added a state-aware Shift Operations Hero:
+  - open shift = green live visual state,
+  - no active shift = neutral slate closed state.
+- Hero shows four permission-safe metrics using current active-shift data when open and history aggregates only when both amount/history permissions allow them.
+- Added a recent-shift sales activity bar chart based on the latest closed shifts; bar accents reflect cash difference state.
+- Added a cash / transfer sales mix ring using current active-shift totals or permitted history aggregates.
+- Preserved `pos.shifts.view_amount` and `pos.shifts.view_history` boundaries so history aggregates cannot leak through Hero/Donut to users without history access.
+- Reworked open-shift inputs into visual field cards with Staff / Terminal / Opening Cash / Note icons.
+- Reworked active-shift KPI cards with semantic icons and richer cash/sales/bill/expected-cash hierarchy.
+- Reworked close-shift fields, cash-difference card, and destructive close action styling without changing IDs, submit handlers, validation, or calculations.
+- Reworked Shift History into elevated desktop rows and responsive Mobile cards using `data-label`; Mobile no longer depends on the old 850px horizontal-scroll table/instruction.
+- Existing 24 legacy stable IDs, SweetConfirm clear-history action, Toast behavior, gross-sale calculation semantics, shift-id/time fallback, local pending queue, sync conflict handling, and data-layer functions remain unchanged.
+- Added regression contracts for the new Hero, trend chart, sales mix ring, field hierarchy, Mobile history cards, and permission boundaries.
+
+Release prepared:
+- React `0.4.280 / 2026.10.04.401`.
+- Public `0.16.32 / 2026.10.04.116`.
+- Generated bundle: `/react/assets/index-oovR8-uT.js`.
+
+Verification before deploy:
+- Shifts JSX syntax check through esbuild PASS.
+- React foundation contract PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS: 53 routes / 21 POS, parity matrix PASS, P0 action contract PASS, callable contract 54 refs / 0 missing, tenant-access PASS, UI-layer PASS.
+- `npm run build:react` PASS; generated build contract PASS for Build `.401`.
+- `git diff --check` PASS.
+- Authenticated local-build browser contract PASS at 1440x900 and 440x956 using a copied browser profile so the primary authenticated profile/local shift cache was not modified.
+- Firestore Write-channel / commit / batchWrite endpoints were explicitly blocked during browser verification; blocked write attempts observed: 0.
+- Current Production data used by the copied profile has no active shift and 7 closed shift-history rows.
+- Hero closed state + 4 metrics rendered; 7 timeline bars rendered from actual history; payment-mix conic ring rendered; current menu remained `/pos/shifts`.
+- Open-shift form has 4 field icons; test values `READ ONLY TEST / TEST-01 / 123.45 / visual only` were entered only into copied-profile React state and no submit occurred.
+- Desktop Shift History rendered 7 rows; at 440x956 the same 7 rows rendered as contained `display:grid` cards, first card width 386px, table width 386px, document horizontal overflow 0.
+- No raw translation keys, page errors, request failures, or HTTP errors.
+- No shift open/close/clear-history or other Production write operation executed.
+
+Deploy state:
+- Commit/push and Hosting-only deploy pending.
+- No Firestore Rules, Storage Rules, or Functions changes.
+- No merge to `main`.

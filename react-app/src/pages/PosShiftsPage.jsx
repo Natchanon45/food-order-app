@@ -71,6 +71,7 @@ export function PosShiftsPage() {
       "retail-pos.css",
       "retail-shifts.css",
       "retail-pos-navigation.css",
+      "retail-shifts-visual-dashboard.css",
     ],
   });
 
@@ -256,6 +257,63 @@ export function PosShiftsPage() {
       timeMs(right.updatedAt || right.closedAt || right.openedAt)
       - timeMs(left.updatedAt || left.closedAt || left.openedAt))
     .slice(0, 30), [shifts]);
+
+  const shiftVisualStats = useMemo(() => {
+    const source = history;
+    let salesTotal = 0;
+    let billCount = 0;
+    let positiveCount = 0;
+    let negativeCount = 0;
+    let exactCount = 0;
+    let cashTotal = 0;
+    let nonCashTotal = 0;
+    let differenceTotal = 0;
+    source.forEach(shift => {
+      const salesValue = Number(shift.salesTotal ?? shift.totalSales ?? 0);
+      const cashValue = Number(shift.cashSales ?? shift.totalCashSales ?? 0);
+      const nonCashValue = Number(shift.transferSales ?? shift.totalNonCashSales ?? 0);
+      const difference = Number(shift.cashDifference || 0);
+      salesTotal += salesValue;
+      cashTotal += cashValue;
+      nonCashTotal += nonCashValue;
+      billCount += Number(shift.billCount || 0);
+      differenceTotal += difference;
+      if (difference > 0) positiveCount += 1;
+      else if (difference < 0) negativeCount += 1;
+      else exactCount += 1;
+    });
+    return {
+      salesTotal,
+      cashTotal,
+      nonCashTotal,
+      billCount,
+      positiveCount,
+      negativeCount,
+      exactCount,
+      differenceTotal,
+    };
+  }, [history]);
+
+  const shiftTimeline = useMemo(() => history
+    .slice(0, 10)
+    .reverse()
+    .map(shift => ({
+      id: shift.id,
+      label: formatDate(asDate(shift.closedAt || shift.updatedAt || shift.openedAt), { day: "2-digit", month: "short" }),
+      sales: Number(shift.salesTotal ?? shift.totalSales ?? 0),
+      difference: Number(shift.cashDifference || 0),
+    })), [history, formatDate]);
+  const shiftTimelineMax = Math.max(1, ...shiftTimeline.map(item => item.sales));
+
+  const visualCashSales = activeShift ? Number(totals.totalCashSales || 0) : shiftVisualStats.cashTotal;
+  const visualNonCashSales = activeShift ? Number(totals.totalNonCashSales || 0) : shiftVisualStats.nonCashTotal;
+  const visualSalesTotal = visualCashSales + visualNonCashSales;
+  const cashPercent = visualSalesTotal > 0 ? (visualCashSales / visualSalesTotal) * 100 : 0;
+  const nonCashPercent = Math.max(0, 100 - cashPercent);
+  const salesMixGradient = visualSalesTotal > 0
+    ? `conic-gradient(#10b981 0 ${cashPercent}%,#6366f1 ${cashPercent}% 100%)`
+    : "conic-gradient(#e5eee9 0 100%)";
+
   useEffect(() => {
     if (!activeShift) {
       setActualCash("");
@@ -405,6 +463,91 @@ export function PosShiftsPage() {
     </header>
 
     <main data-pos-management className="shift-container">
+      <section className={"shifts-visual-hero" + (activeShift ? " is-open" : " is-closed")}>
+        <div className="shifts-hero-copy">
+          <span className="shifts-hero-kicker">
+            <i className={activeShift ? "bi bi-lightning-charge-fill" : "bi bi-clock-history"} aria-hidden="true"></i>
+            {tr("header.title")}
+          </span>
+          <h1>{activeShift ? tr("active.title") : tr("open.title")}</h1>
+          <p>{activeShift
+            ? `${activeShift.cashierName || "-"} • ${activeShift.terminalCode || "-"} • ${tr("runtime.opened_at", { date: dateTime(activeShift.openedAt) })}`
+            : tr("open.description")}</p>
+          <div className="shifts-hero-status">
+            <span className={"shift-live-dot" + (activeShift ? " is-open" : "")}></span>
+            <strong>{activeShift ? tr("active.open") : tr("open.closed")}</strong>
+          </div>
+        </div>
+        <div className="shifts-hero-metrics">
+          <article>
+            <span><i className="bi bi-clock-history" aria-hidden="true"></i>{activeShift ? tr("active.opening_cash") : tr("history.title")}</span>
+            <strong>{activeShift
+              ? (canViewAmount ? money(activeShift.openingCash) : "—")
+              : (canViewHistory ? formatNumber(history.length) : "—")}</strong>
+          </article>
+          <article>
+            <span><i className="bi bi-graph-up-arrow" aria-hidden="true"></i>{tr("active.sales")}</span>
+            <strong>{activeShift
+              ? (canViewAmount ? money(totals.totalSales) : "—")
+              : (canViewAmount && canViewHistory ? money(shiftVisualStats.salesTotal) : "—")}</strong>
+          </article>
+          <article>
+            <span><i className="bi bi-receipt" aria-hidden="true"></i>{tr("active.bills")}</span>
+            <strong>{activeShift
+              ? formatNumber(totals.billCount)
+              : (canViewHistory ? formatNumber(shiftVisualStats.billCount) : "—")}</strong>
+          </article>
+          <article>
+            <span><i className="bi bi-cash-stack" aria-hidden="true"></i>{activeShift ? tr("active.expected") : tr("history.difference")}</span>
+            <strong className={!activeShift && canViewHistory && shiftVisualStats.differenceTotal < 0 ? "is-negative" : ""}>
+              {activeShift
+                ? (canViewAmount ? money(expectedCash) : "—")
+                : (canViewAmount && canViewHistory ? money(shiftVisualStats.differenceTotal) : "—")}
+            </strong>
+          </article>
+        </div>
+      </section>
+
+      {(canViewHistory || canViewAmount) ? <section className="shifts-insight-grid">
+        {canViewHistory ? <article className="panel shifts-trend-panel">
+          <div className="shifts-insight-head">
+            <div>
+              <span className="shifts-insight-icon"><i className="bi bi-bar-chart-fill" aria-hidden="true"></i></span>
+              <div><h2>{tr("history.title")}</h2><p>{tr("history.description")}</p></div>
+            </div>
+            <strong>{formatNumber(history.length)}</strong>
+          </div>
+          {canViewAmount ? <div className="shifts-timeline" aria-label={tr("history.title")}>
+            {shiftTimeline.length ? shiftTimeline.map(item => {
+              const height = Math.max(8, Math.min(100, (item.sales / shiftTimelineMax) * 100));
+              return <div className="shifts-timeline-column" key={item.id}>
+                <span className="shifts-timeline-tooltip" style={{ "--shift-bar-height": `${height}%` }}>
+                  {money(item.sales)} • {tr("history.difference")} {money(item.difference)}
+                </span>
+                <div className={"shifts-timeline-bar" + (item.difference < 0 ? " has-shortage" : item.difference > 0 ? " has-overage" : "")} style={{ height: `${height}%` }}></div>
+                <span className="shifts-timeline-label">{item.label}</span>
+              </div>;
+            }) : <div className="shifts-timeline-empty">{tr("history.empty")}</div>}
+          </div> : <div className="shifts-locked-visual">—</div>}
+        </article> : null}
+
+        {canViewAmount && (activeShift || canViewHistory) ? <article className="panel shifts-mix-panel">
+          <div className="shifts-insight-head">
+            <div>
+              <span className="shifts-insight-icon mix"><i className="bi bi-pie-chart-fill" aria-hidden="true"></i></span>
+              <div><h2>{tr("active.sales")}</h2><p>{activeShift ? tr("active.title") : tr("history.description")}</p></div>
+            </div>
+          </div>
+          <div className="shifts-sales-ring" style={{ background: salesMixGradient }}>
+            <div><span>{tr("active.sales")}</span><strong>{money(visualSalesTotal)}</strong></div>
+          </div>
+          <div className="shifts-sales-legend">
+            <div><span><i className="cash"></i>{tr("active.cash_sales")}</span><strong>{cashPercent.toFixed(1)}%</strong></div>
+            <div><span><i className="transfer"></i>{tr("active.transfer_sales")}</span><strong>{nonCashPercent.toFixed(1)}%</strong></div>
+          </div>
+        </article> : null}
+      </section> : null}
+
       <section id="noActiveShift" className="panel shift-card" hidden={Boolean(activeShift)}>
         <div className="shift-heading">
           <div>
@@ -414,26 +557,26 @@ export function PosShiftsPage() {
           <span className="status-badge closed">{tr("open.closed")}</span>
         </div>
         <form id="openShiftForm" className="shift-form" onSubmit={openShift}>
-          <label>{tr("open.cashier")}
+          <label><span className="shift-field-label"><i className="bi bi-person-badge" aria-hidden="true"></i>{tr("open.cashier")}</span>
             <input id="cashierName" required maxLength={100} value={cashierName}
               data-validation-state={clean(cashierName) ? "valid" : undefined}
               disabled={!canOpen || busy}
               onChange={event => setCashierName(event.target.value)}
               placeholder={tr("open.cashier_hint")} />
           </label>
-          <label>{tr("open.terminal")}
+          <label><span className="shift-field-label"><i className="bi bi-display" aria-hidden="true"></i>{tr("open.terminal")}</span>
             <input id="terminalCode" required maxLength={50} value={terminalCode}
               data-validation-state={clean(terminalCode) ? "valid" : undefined}
               disabled={!canOpen || busy}
               onChange={event => saveTerminal(event.target.value)} />
           </label>
-          <label>{tr("open.cash")}
+          <label><span className="shift-field-label"><i className="bi bi-cash-stack" aria-hidden="true"></i>{tr("open.cash")}</span>
             <input id="openingCash" required type="number" min="0" step="0.01" value={openingCash}
               data-validation-state={Number.isFinite(Number(openingCash)) && Number(openingCash) >= 0 ? "valid" : undefined}
               disabled={!canOpen || busy}
               onChange={event => setOpeningCash(event.target.value)} />
           </label>
-          <label className="full">{tr("open.note")}
+          <label className="full"><span className="shift-field-label"><i className="bi bi-sticky" aria-hidden="true"></i>{tr("open.note")}</span>
             <input id="openNote" maxLength={200} value={openNote}
               disabled={!canOpen || busy}
               onChange={event => setOpenNote(event.target.value)}
@@ -458,28 +601,28 @@ export function PosShiftsPage() {
             <span className="status-badge open">{tr("active.open")}</span>
           </div>
           <section className="shift-stats">
-            <article><span>{tr("active.opening_cash")}</span><strong id="openingCashDisplay" hidden={!canViewAmount}>{money(activeShift.openingCash)}</strong></article>
-            <article><span>{tr("active.sales")}</span><strong id="shiftSalesTotal" hidden={!canViewAmount}>{money(totals.totalSales)}</strong></article>
-            <article><span>{tr("active.cash_sales")}</span><strong id="shiftCashSales" hidden={!canViewAmount}>{money(totals.totalCashSales)}</strong></article>
-            <article><span>{tr("active.transfer_sales")}</span><strong id="shiftTransferSales" hidden={!canViewAmount}>{money(totals.totalNonCashSales)}</strong></article>
-            <article><span>{tr("active.bills")}</span><strong id="shiftBillCount">{formatNumber(totals.billCount)}</strong></article>
-            <article><span>{tr("active.expected")}</span><strong id="expectedCash" hidden={!canViewAmount}>{money(expectedCash)}</strong></article>
+            <article><span><i className="bi bi-wallet2" aria-hidden="true"></i>{tr("active.opening_cash")}</span><strong id="openingCashDisplay" hidden={!canViewAmount}>{money(activeShift.openingCash)}</strong></article>
+            <article><span><i className="bi bi-graph-up-arrow" aria-hidden="true"></i>{tr("active.sales")}</span><strong id="shiftSalesTotal" hidden={!canViewAmount}>{money(totals.totalSales)}</strong></article>
+            <article><span><i className="bi bi-cash-coin" aria-hidden="true"></i>{tr("active.cash_sales")}</span><strong id="shiftCashSales" hidden={!canViewAmount}>{money(totals.totalCashSales)}</strong></article>
+            <article><span><i className="bi bi-qr-code-scan" aria-hidden="true"></i>{tr("active.transfer_sales")}</span><strong id="shiftTransferSales" hidden={!canViewAmount}>{money(totals.totalNonCashSales)}</strong></article>
+            <article><span><i className="bi bi-receipt" aria-hidden="true"></i>{tr("active.bills")}</span><strong id="shiftBillCount">{formatNumber(totals.billCount)}</strong></article>
+            <article><span><i className="bi bi-safe2" aria-hidden="true"></i>{tr("active.expected")}</span><strong id="expectedCash" hidden={!canViewAmount}>{money(expectedCash)}</strong></article>
           </section>
           <form id="closeShiftForm" className="close-shift-form" onSubmit={closeShift}>
-            <label>{tr("active.actual")}
+            <label><span className="shift-field-label"><i className="bi bi-calculator" aria-hidden="true"></i>{tr("active.actual")}</span>
               <input id="actualCash" required type="number" min="0" step="0.01" value={actualCash}
                 data-validation-state={Number.isFinite(Number(actualCash)) && Number(actualCash) >= 0 ? "valid" : undefined}
                 disabled={!canClose || busy}
                 onChange={event => setActualCash(event.target.value)} />
             </label>
-            <label>{tr("active.note")}
+            <label><span className="shift-field-label"><i className="bi bi-journal-text" aria-hidden="true"></i>{tr("active.note")}</span>
               <input id="closeNote" maxLength={200} value={closeNote}
                 disabled={!canClose || busy}
                 onChange={event => setCloseNote(event.target.value)}
                 placeholder={tr("open.optional")} />
             </label>
             <div className={"difference-box" + (cashDifference > 0 ? " positive" : cashDifference < 0 ? " negative" : "")}>
-              <span>{tr("active.difference")}</span>
+              <span><i className="bi bi-scales" aria-hidden="true"></i>{tr("active.difference")}</span>
               <strong id="cashDifference" hidden={!canViewAmount}>{money(cashDifference)}</strong>
             </div>
             <p id="closeShiftError" className="error-text">{closeError}</p>
@@ -517,12 +660,12 @@ export function PosShiftsPage() {
                 const difference = Number(shift.cashDifference || 0);
                 const differenceClass = difference > 0 ? "diff-positive" : difference < 0 ? "diff-negative" : "";
                 return <tr key={shift.id}>
-                  <td><strong>{shift.cashierName || "-"}</strong><div className="product-sub">{shift.terminalCode || "-"}</div></td>
-                  <td>{dateTime(shift.openedAt)}</td>
-                  <td>{dateTime(shift.closedAt)}</td>
-                  <td className="number" hidden={!canViewAmount}>{money(shift.salesTotal ?? shift.totalSales)}</td>
-                  <td className="number" hidden={!canViewAmount}>{money(shift.actualCash ?? shift.closingCash)}</td>
-                  <td className={"number " + differenceClass} hidden={!canViewAmount}>{money(difference)}</td>
+                  <td data-label={tr("history.cashier")}><strong>{shift.cashierName || "-"}</strong><div className="product-sub">{shift.terminalCode || "-"}</div></td>
+                  <td data-label={tr("history.opened")}>{dateTime(shift.openedAt)}</td>
+                  <td data-label={tr("history.closed")}>{dateTime(shift.closedAt)}</td>
+                  <td data-label={tr("history.sales")} className="number" hidden={!canViewAmount}>{money(shift.salesTotal ?? shift.totalSales)}</td>
+                  <td data-label={tr("history.actual")} className="number" hidden={!canViewAmount}>{money(shift.actualCash ?? shift.closingCash)}</td>
+                  <td data-label={tr("history.difference")} className={"number " + differenceClass} hidden={!canViewAmount}>{money(difference)}</td>
                 </tr>;
               })}
             </tbody>

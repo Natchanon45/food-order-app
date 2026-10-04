@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.04.400",
+  build: "2026.10.04.401",
   branch: "feature/react-firebase-port",
-  commit: "POS-RETURNS-LOYALTY-ICON-CONTRAST",
+  commit: "POS-SHIFT-OPERATIONS-DASHBOARD",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Retail POS Returns Loyalty icon contrast",
+  milestone: "Retail POS Shift Operations Dashboard",
   whatsNew: [
-    "Force the Loyalty star glyph to high-contrast white on the purple badge",
-    "Add a subtle dark glow so the icon remains readable on both purple gradient tones",
-    "Preserve Returns layout, workflow, refund, stock, loyalty, permissions, and responsive behavior",
+    "Redesign Staff Shifts as a colorful Shift Operations Dashboard with active/inactive visual states",
+    "Add shift sales trend, cash/payment mix ring, richer cash reconciliation cards, and mobile history cards",
+    "Preserve offline-first shift sync, granular permissions, opening/closing cash logic, history, and tenant boundaries",
   ],
 });

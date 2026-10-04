@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.04.115',
+  build: '2026.10.04.116',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-RETURNS-LOYALTY-ICON-CONTRAST',
+  commit: 'POS-SHIFT-OPERATIONS-DASHBOARD',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS Returns Loyalty icon contrast',
-  updatedAt: '2026-10-04T23:24:00+0700',
+  milestone: 'Retail POS Shift Operations Dashboard',
+  updatedAt: '2026-10-04T23:38:58+0700',
   whatsNew: [
-    'Force the Loyalty star glyph to high-contrast white on the purple badge',
-    'Add a subtle dark glow so the icon remains readable on both purple gradient tones',
-    'Preserve Returns layout, workflow, refund, stock, loyalty, permissions, and responsive behavior'
+    'Redesign Staff Shifts as a colorful Shift Operations Dashboard with active/inactive visual states',
+    'Add shift sales trend, cash/payment mix ring, richer cash reconciliation cards, and mobile history cards',
+    'Preserve offline-first shift sync, granular permissions, opening/closing cash logic, history, and tenant boundaries'
   ]
 };
 
