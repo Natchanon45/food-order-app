@@ -1,6 +1,7 @@
 import { RetailCollections, getRecord, getTenantId } from './retail-db.js?v=20260629-032';
 import { saveSettingsDocumentsLocalFirst } from './retail-pos-settings-sync.js?v=20260716-015';
 import { sweetConfirm } from './sweet-dialog.js?v=20260731-094';
+import { DEFAULT_POS_THEME, applyPosTheme, normalizePosTheme } from './retail-pos-theme.js?v=20261004-105';
 
 const SETTINGS_KEY = "retail_pos_store_settings_v1";
 const tenantSettingsKey = () => `${SETTINGS_KEY}_${getTenantId()}`;
@@ -23,7 +24,8 @@ const defaults = {
   receiptPrintMode: "ask",
   promptPayEnabled: "no",
   promptPayId: "",
-  promptPayAccountName: ""
+  promptPayAccountName: "",
+  posTheme: DEFAULT_POS_THEME
 };
 
 const els = {
@@ -46,6 +48,7 @@ const els = {
   promptPayEnabled: document.querySelector("#promptPayEnabled"),
   promptPayId: document.querySelector("#promptPayId"),
   promptPayAccountName: document.querySelector("#promptPayAccountName"),
+  themeRadios: [...document.querySelectorAll('input[name="posTheme"]')],
   previewShopName: document.querySelector("#previewShopName"),
   previewShopAddress: document.querySelector("#previewShopAddress"),
   previewShopPhone: document.querySelector("#previewShopPhone"),
@@ -79,11 +82,12 @@ function readLocalSettings() {
 async function readSettings() {
   const local = readLocalSettings();
   try {
-    const [store, receipt, tax, payment] = await Promise.all([
+    const [store, receipt, tax, payment, theme] = await Promise.all([
       getRecord(RetailCollections.settings, "store"),
       getRecord(RetailCollections.settings, "receipt"),
       getRecord(RetailCollections.settings, "tax"),
-      getRecord(RetailCollections.settings, "payment")
+      getRecord(RetailCollections.settings, "payment"),
+      getRecord(RetailCollections.settings, "pos-theme")
     ]);
     const tenantId = getTenantId();
     const resolved = {
@@ -93,6 +97,7 @@ async function readSettings() {
       ...(receipt || {}),
       ...(tax || {}),
       ...(payment || {}),
+      posTheme: normalizePosTheme(theme?.theme || local.posTheme || defaults.posTheme),
       tenantId,
       shopId: tenantId,
       syncStatus: "synced"
@@ -165,7 +170,8 @@ function collectSettings() {
     receiptPrintMode: normalizePrintMode(els.receiptPrintMode?.value),
     promptPayEnabled: normalizePromptPayEnabled(els.promptPayEnabled?.value),
     promptPayId: normalizePromptPayId(els.promptPayId?.value),
-    promptPayAccountName: els.promptPayAccountName?.value.trim() || ""
+    promptPayAccountName: els.promptPayAccountName?.value.trim() || "",
+    posTheme: normalizePosTheme(els.themeRadios.find(input => input.checked)?.value || defaults.posTheme)
   };
 }
 
@@ -188,6 +194,9 @@ function fillForm(settings) {
   if (els.promptPayEnabled) els.promptPayEnabled.value = normalizePromptPayEnabled(settings.promptPayEnabled);
   if (els.promptPayId) els.promptPayId.value = normalizePromptPayId(settings.promptPayId);
   if (els.promptPayAccountName) els.promptPayAccountName.value = settings.promptPayAccountName || "";
+  const posTheme = normalizePosTheme(settings.posTheme || defaults.posTheme);
+  els.themeRadios.forEach(input => { input.checked = input.value === posTheme; });
+  applyPosTheme(posTheme);
   updatePreview();
 }
 
@@ -266,12 +275,19 @@ async function saveSettings(settings) {
     promptPayId: settings.promptPayId,
     promptPayAccountName: settings.promptPayAccountName
   };
+  const themeSettings = {
+    id: "pos-theme",
+    type: "pos-theme",
+    theme: normalizePosTheme(settings.posTheme)
+  };
   const result = await saveSettingsDocumentsLocalFirst([
     storeSettings,
     receiptSettings,
     taxSettings,
-    paymentSettings
+    paymentSettings,
+    themeSettings
   ]);
+  applyPosTheme(themeSettings.theme);
   const saved = {
     ...localSettings,
     syncStatus: result.pending ? "pending_sync" : "synced",
@@ -283,7 +299,12 @@ async function saveSettings(settings) {
 }
 
 els.form.addEventListener("input", updatePreview);
-els.form.addEventListener("change", updatePreview);
+els.form.addEventListener("change", event => {
+  if (event.target?.matches?.('input[name="posTheme"]')) {
+    applyPosTheme(normalizePosTheme(event.target.value), { cache: false });
+  }
+  updatePreview();
+});
 
 els.form.addEventListener("submit", async event => {
   event.preventDefault();

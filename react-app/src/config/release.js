@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.04.389",
+  build: "2026.10.04.390",
   branch: "feature/react-firebase-port",
-  commit: "POS-MENU-NATURAL-HEIGHT-STACK",
+  commit: "POS-TENANT-MENU-THEMES",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Retail POS expanded-card overlap fix",
+  milestone: "Retail POS tenant-selectable menu themes",
   whatsNew: [
-    "Stack expanded POS menu cards by their real content height instead of CSS Grid row tracks",
-    "Keep multiple groups open without cards overlapping or covering the next category",
-    "Preserve the v2.1 visual design and v2.2 internal scrolling/auto-scroll behavior",
+    "Add five tenant-selectable POS menu themes with Modern Card preserved as the default",
+    "Add Summary Dashboard and Dark Mode Hi-Tech themes plus Minimal Clean and Section Sidebar alternatives",
+    "Persist the chosen theme in tenant settings while preserving POS permissions, routes, data logic, and React/legacy compatibility",
   ],
 });

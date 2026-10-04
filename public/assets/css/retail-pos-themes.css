@@ -1,0 +1,396 @@
+/* Retail POS selectable navigation themes.
+   Theme preference is tenant-scoped via settings/pos-theme.
+   Modern Card remains the default and inherits retail-pos-navigation.css v2.3. */
+
+.pos-menu-panel,
+.pos-menu-user,
+.pos-menu-panel>.pos-central-home,
+.pos-menu-group,
+.pos-menu-group>button,
+.pos-menu-panel .pos-menu-link,
+.pos-menu-footer #posLogoutBtn{
+  transition:background-color .18s ease,border-color .18s ease,color .18s ease,box-shadow .18s ease;
+}
+
+.pos-theme-summary{
+  display:none;
+  flex:0 0 auto;
+}
+.pos-theme-summary-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.pos-theme-summary-title{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+}
+.pos-theme-summary-title i{
+  width:32px;
+  height:32px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+}
+.pos-theme-summary-title strong{
+  display:block;
+  font-size:.94rem;
+  line-height:1.2;
+}
+.pos-theme-summary-title small{
+  display:block;
+  margin-top:2px;
+  font-size:.72rem;
+  opacity:.82;
+}
+.pos-theme-summary-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+.pos-theme-stat{
+  min-width:0;
+  padding:9px 10px;
+  border-radius:11px;
+}
+.pos-theme-stat span{
+  display:block;
+  font-size:.68rem;
+  line-height:1.25;
+}
+.pos-theme-stat strong{
+  display:block;
+  margin-top:3px;
+  font-size:.92rem;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* Theme 1 — Minimal Clean */
+html[data-pos-theme="minimal-clean"] .pos-menu-popover.open .pos-menu-backdrop{
+  background:rgba(17,24,39,.48)!important;
+  backdrop-filter:blur(1px)!important;
+}
+html[data-pos-theme="minimal-clean"] .pos-menu-panel{
+  background:#fff!important;
+  border-left-color:#e5e7eb!important;
+  box-shadow:-18px 0 44px rgba(15,23,42,.14)!important;
+}
+html[data-pos-theme="minimal-clean"] .pos-menu-user{
+  border-color:#e5e7eb!important;
+  background:#f8faf9!important;
+  box-shadow:none!important;
+}
+html[data-pos-theme="minimal-clean"] .pos-menu-user-icon{
+  background:#e5f7eb!important;
+  color:#12833f!important;
+}
+html[data-pos-theme="minimal-clean"] .pos-menu-panel>.pos-central-home{
+  border-color:#dceadf!important;
+  background:#edf8f0!important;
+  color:#176a37!important;
+  box-shadow:none!important;
+}
+html[data-pos-theme="minimal-clean"] .pos-menu-group,
+html[data-pos-theme="minimal-clean"] .pos-menu-group[data-menu-tone]{
+  --group-accent:#188445;
+  --group-soft:#f7faf8;
+  --group-line:#e2e8e4;
+  border-color:#e2e8e4!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+html[data-pos-theme="minimal-clean"] .pos-menu-group>button,
+html[data-pos-theme="minimal-clean"] .pos-menu-group.is-open>button{
+  background:#fff!important;
+  color:#243329!important;
+}
+html[data-pos-theme="minimal-clean"] .pos-menu-group.is-open>button{
+  border-bottom:1px solid #edf1ee!important;
+}
+html[data-pos-theme="minimal-clean"] .pos-menu-group-icon,
+html[data-pos-theme="minimal-clean"] .pos-menu-item-icon{
+  background:#edf8f0!important;
+  color:#148141!important;
+}
+html[data-pos-theme="minimal-clean"] .pos-menu-links{
+  background:#fff!important;
+  border-top:0!important;
+}
+html[data-pos-theme="minimal-clean"] .pos-menu-panel .pos-menu-link:hover{
+  background:#f5faf7!important;
+}
+html[data-pos-theme="minimal-clean"] .pos-menu-panel .pos-menu-link.is-current,
+html[data-pos-theme="minimal-clean"] .pos-menu-panel .pos-menu-link[aria-current="page"]{
+  background:#e9f8ee!important;
+  color:#0e7337!important;
+  box-shadow:inset 3px 0 0 #159447!important;
+}
+
+/* Theme 3 — Sidebar divided into sections */
+html[data-pos-theme="section-sidebar"] .pos-menu-panel{
+  width:min(400px,96vw)!important;
+  background:#fff!important;
+  border-left-color:#dfe8e2!important;
+  box-shadow:-20px 0 50px rgba(15,35,23,.16)!important;
+}
+html[data-pos-theme="section-sidebar"] .pos-menu-user{
+  background:#f7faf8!important;
+  border-color:#e0e9e3!important;
+  box-shadow:none!important;
+}
+html[data-pos-theme="section-sidebar"] .pos-menu-panel>.pos-central-home{
+  background:#dff5e7!important;
+  border-color:#c7e9d2!important;
+  color:#0d7337!important;
+}
+html[data-pos-theme="section-sidebar"] .pos-menu-panel nav{
+  gap:4px!important;
+  padding-right:2px!important;
+}
+html[data-pos-theme="section-sidebar"] .pos-menu-group,
+html[data-pos-theme="section-sidebar"] .pos-menu-group[data-menu-tone]{
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+html[data-pos-theme="section-sidebar"] .pos-menu-group>button,
+html[data-pos-theme="section-sidebar"] .pos-menu-group.is-open>button{
+  min-height:32px!important;
+  padding:8px 8px 4px!important;
+  background:transparent!important;
+  color:#52655a!important;
+  cursor:default!important;
+}
+html[data-pos-theme="section-sidebar"] .pos-menu-group-icon,
+html[data-pos-theme="section-sidebar"] .pos-menu-chevron{
+  display:none!important;
+}
+html[data-pos-theme="section-sidebar"] .pos-menu-group-label{
+  font-size:.75rem!important;
+  font-weight:750!important;
+  letter-spacing:.02em;
+  color:#52655a!important;
+}
+html[data-pos-theme="section-sidebar"] .pos-menu-links,
+html[data-pos-theme="section-sidebar"] .pos-menu-group.is-open .pos-menu-links{
+  display:grid!important;
+  gap:3px!important;
+  padding:2px 4px 8px!important;
+  border:0!important;
+  background:transparent!important;
+}
+html[data-pos-theme="section-sidebar"] .pos-menu-panel .pos-menu-link{
+  min-height:43px!important;
+  border-radius:10px!important;
+  padding:7px 9px!important;
+}
+html[data-pos-theme="section-sidebar"] .pos-menu-panel .pos-menu-link:hover{
+  background:#f0f7f2!important;
+}
+html[data-pos-theme="section-sidebar"] .pos-menu-panel .pos-menu-link.is-current,
+html[data-pos-theme="section-sidebar"] .pos-menu-panel .pos-menu-link[aria-current="page"]{
+  background:#dff4e6!important;
+  color:#0b7437!important;
+  box-shadow:inset 3px 0 0 #159447!important;
+}
+
+/* Theme 4 — Summary dashboard */
+html[data-pos-theme="summary"] .pos-menu-panel{
+  width:min(430px,96vw)!important;
+  background:#fbfefc!important;
+}
+html[data-pos-theme="summary"] .pos-theme-summary{
+  display:grid!important;
+  gap:9px;
+  margin:0 0 13px;
+}
+html[data-pos-theme="summary"] .pos-theme-summary-head{
+  min-height:58px;
+  padding:10px 12px;
+  border:1px solid #0b813d;
+  border-radius:13px;
+  background:linear-gradient(135deg,#087a3d,#13a34f);
+  color:#fff;
+  box-shadow:0 6px 15px rgba(9,126,59,.16);
+}
+html[data-pos-theme="summary"] .pos-theme-summary-title i{
+  background:rgba(255,255,255,.18);
+  color:#fff;
+}
+html[data-pos-theme="summary"] .pos-theme-summary-grid{
+  gap:8px;
+}
+html[data-pos-theme="summary"] .pos-theme-stat{
+  border:1px solid #dce8df;
+  background:#fff;
+  box-shadow:0 2px 7px rgba(20,52,30,.035);
+}
+html[data-pos-theme="summary"] .pos-theme-stat:nth-child(1){
+  background:#eef9f1;
+  border-color:#cce9d4;
+}
+html[data-pos-theme="summary"] .pos-theme-stat:nth-child(2){
+  background:#edf5ff;
+  border-color:#d8e6f7;
+}
+html[data-pos-theme="summary"] .pos-theme-stat:nth-child(3){
+  background:#f7f0ff;
+  border-color:#e8daf7;
+}
+html[data-pos-theme="summary"] .pos-theme-stat span{
+  color:#647269;
+}
+html[data-pos-theme="summary"] .pos-theme-stat strong{
+  color:#113b23;
+}
+html[data-pos-theme="summary"] .pos-menu-group,
+html[data-pos-theme="summary"] .pos-menu-group[data-menu-tone]{
+  --group-line:#e1e9e4;
+  border-color:#e1e9e4!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+html[data-pos-theme="summary"] .pos-menu-group>button,
+html[data-pos-theme="summary"] .pos-menu-group.is-open>button{
+  background:#fff!important;
+}
+html[data-pos-theme="summary"] .pos-menu-group.is-open>button{
+  color:#0d783a!important;
+  border-bottom:1px solid #edf2ee!important;
+}
+html[data-pos-theme="summary"] .pos-menu-panel .pos-menu-link.is-current,
+html[data-pos-theme="summary"] .pos-menu-panel .pos-menu-link[aria-current="page"]{
+  background:#e4f7ea!important;
+  color:#087438!important;
+  box-shadow:inset 3px 0 0 #159447!important;
+}
+
+/* Theme 5 — Dark Mode Hi-Tech */
+html[data-pos-theme="dark-hitech"] .pos-menu-popover.open .pos-menu-backdrop{
+  background:rgba(0,10,13,.76)!important;
+  backdrop-filter:blur(3px)!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-panel{
+  background:linear-gradient(180deg,#0c2024 0%,#07171b 100%)!important;
+  border-left-color:#164047!important;
+  box-shadow:-28px 0 70px rgba(0,0,0,.42)!important;
+  color:#e8fff6!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-head h2,
+html[data-pos-theme="dark-hitech"] .pos-menu-user strong,
+html[data-pos-theme="dark-hitech"] .pos-menu-group-label{
+  color:#edfff7!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-head .icon-btn{
+  color:#dcfff2!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-head .icon-btn:hover{
+  background:#14333a!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-user{
+  border-color:#1b4448!important;
+  background:linear-gradient(135deg,#112f31 0%,#0e272b 100%)!important;
+  box-shadow:0 7px 18px rgba(0,0,0,.18)!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-user-icon{
+  background:#0a655b!important;
+  color:#67ffe1!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-user span{
+  color:#a8c7bd!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-panel>.pos-central-home{
+  border-color:#0f805d!important;
+  background:linear-gradient(90deg,#057244,#0b8d50)!important;
+  color:#fff!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-panel>.pos-central-home .pos-context-icon{
+  background:#0c9d70!important;
+  color:#ddfff3!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-panel nav{
+  scrollbar-color:#236b66 transparent!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-group,
+html[data-pos-theme="dark-hitech"] .pos-menu-group[data-menu-tone]{
+  --group-accent:#5ff0d0;
+  --group-soft:#123238;
+  --group-line:#1c3d42;
+  border-color:#1c3d42!important;
+  background:#0d252a!important;
+  box-shadow:0 4px 14px rgba(0,0,0,.16)!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-group>button,
+html[data-pos-theme="dark-hitech"] .pos-menu-group.is-open>button{
+  background:#0f292e!important;
+  color:#dff9ef!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-group.is-open>button{
+  background:linear-gradient(90deg,#123a38,#10282d)!important;
+  color:#63f3d4!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-group-icon,
+html[data-pos-theme="dark-hitech"] .pos-menu-item-icon{
+  background:#0c4b49!important;
+  color:#63f3d4!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-links{
+  background:#0b2227!important;
+  border-top-color:#17383d!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-panel .pos-menu-link{
+  color:#d7eee7!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-panel .pos-menu-link:hover{
+  background:#11373a!important;
+  color:#78f7dc!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-panel .pos-menu-link.is-current,
+html[data-pos-theme="dark-hitech"] .pos-menu-panel .pos-menu-link[aria-current="page"]{
+  background:linear-gradient(90deg,#075c48,#0b403b)!important;
+  color:#ecfff8!important;
+  box-shadow:inset 3px 0 0 #55f1ce!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-link-chevron,
+html[data-pos-theme="dark-hitech"] .pos-menu-chevron{
+  color:#8cb7ad!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-footer{
+  border-top-color:#17363a!important;
+  background:#07171b!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-footer #posLogoutBtn{
+  background:linear-gradient(90deg,#d93b3b,#ef4b45)!important;
+  border-color:#ef4b45!important;
+  color:#fff!important;
+}
+html[data-pos-theme="dark-hitech"] .pos-menu-empty{
+  border-color:#24444a!important;
+  background:#0e272c!important;
+  color:#c9e6dd!important;
+}
+
+@media(max-width:520px){
+  html[data-pos-theme="section-sidebar"] .pos-menu-panel,
+  html[data-pos-theme="summary"] .pos-menu-panel{
+    width:100vw!important;
+  }
+  .pos-theme-summary-grid{
+    gap:6px;
+  }
+  .pos-theme-stat{
+    padding:8px;
+  }
+  .pos-theme-stat span{
+    font-size:.63rem;
+  }
+  .pos-theme-stat strong{
+    font-size:.84rem;
+  }
+}

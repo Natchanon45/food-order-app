@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.04.104',
+  build: '2026.10.04.105',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-MENU-NATURAL-HEIGHT-STACK',
+  commit: 'POS-TENANT-MENU-THEMES',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS expanded-card overlap fix',
-  updatedAt: '2026-10-04T16:03:43+0700',
+  milestone: 'Retail POS tenant-selectable menu themes',
+  updatedAt: '2026-10-04T16:56:47+0700',
   whatsNew: [
-    'Stack expanded POS menu cards by their real content height instead of CSS Grid row tracks',
-    'Keep multiple groups open without cards overlapping or covering the next category',
-    'Preserve the approved visual design plus internal scrolling and auto-scroll behavior'
+    'Add five tenant-selectable POS menu themes with Modern Card preserved as the default',
+    'Add Summary Dashboard and Dark Mode Hi-Tech plus Minimal Clean and Section Sidebar alternatives',
+    'Persist the theme per tenant while preserving permissions, routes, and React/legacy POS behavior'
   ]
 };
 

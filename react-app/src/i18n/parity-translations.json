@@ -4255,6 +4255,11 @@
         "tax_id": "กรุณากรอกเลขประจำตัวผู้เสียภาษีเมื่อเปิดใช้ VAT",
         "promptpay_id": "กรุณากรอกเบอร์ PromptPay หรือเลขนิติบุคคลก่อนเปิดใช้ QR โอนเงิน",
         "promptpay_length": "PromptPay ต้องเป็นเบอร์โทร 10 หลัก หรือเลขนิติบุคคล/เลขภาษี 13 หลัก"
+      },
+      "theme": {
+        "title": "ธีมเมนู POS",
+        "description": "เลือกหน้าตาเมนูของร้านนี้ การตั้งค่าจะใช้กับผู้ใช้ POS ทุกคนในร้าน",
+        "note": "ธีมมีผลเฉพาะหน้าตาเมนู POS ไม่เปลี่ยนสิทธิ์ เมนูที่เข้าถึงได้ หรือข้อมูลการขายของร้าน"
       }
     },
     "pos_stock": {
@@ -5942,6 +5947,39 @@
       "people": ":count คน",
       "queues": ":count คิว",
       "wait_range": ":min–:max นาที"
+    },
+    "pos_theme": {
+      "options": {
+        "minimal_clean": {
+          "name": "Minimal Clean",
+          "description": "เรียบง่าย สะอาดตา ใช้งานง่าย"
+        },
+        "modern_card": {
+          "name": "Modern Card",
+          "description": "การ์ดสวยงาม ไอคอนเด่น เป็นระเบียบ"
+        },
+        "section_sidebar": {
+          "name": "Sidebar แบ่งแยกหมวด",
+          "description": "จัดเป็นหมวดหมู่ชัดเจน ดูเป็นระบบที่สุด"
+        },
+        "summary": {
+          "name": "พร้อมข้อมูลสรุป",
+          "description": "มีสถิติสำคัญให้ดูทันทีในเมนู"
+        },
+        "dark_hitech": {
+          "name": "Dark Mode Hi-Tech",
+          "description": "โทนเข้ม ทันสมัย ใช้สีแบรนด์ PENGUIN"
+        }
+      },
+      "summary": {
+        "title": "สรุปวันนี้",
+        "subtitle": "ข้อมูลล่าสุดของร้าน",
+        "loading": "กำลังโหลดข้อมูล…",
+        "today_sales": "ยอดขายวันนี้",
+        "bill_count": "จำนวนบิล",
+        "in_stock": "สินค้ามีสต็อก",
+        "load_failed": "ไม่สามารถโหลดข้อมูลสรุป"
+      }
     }
   },
   "en": {
@@ -9862,6 +9900,11 @@
         "tax_id": "Enter a Tax ID when VAT is enabled.",
         "promptpay_id": "Enter a PromptPay phone or Business ID before enabling transfer QR.",
         "promptpay_length": "PromptPay must be a 10-digit phone number or 13-digit Business/Tax ID."
+      },
+      "theme": {
+        "title": "POS menu theme",
+        "description": "Choose the menu appearance for this store. This setting applies to every POS user in the store.",
+        "note": "The theme changes only the POS menu appearance. Permissions, accessible menus, and sales data are unchanged."
       }
     },
     "pos_stock": {
@@ -11612,6 +11655,39 @@
       "people": ":count people",
       "queues": ":count queues",
       "wait_range": ":min–:max min"
+    },
+    "pos_theme": {
+      "options": {
+        "minimal_clean": {
+          "name": "Minimal Clean",
+          "description": "Simple, clean, and easy to use"
+        },
+        "modern_card": {
+          "name": "Modern Card",
+          "description": "Colorful cards, clear icons, and organized navigation"
+        },
+        "section_sidebar": {
+          "name": "Section Sidebar",
+          "description": "Clearly divided sections for a highly structured menu"
+        },
+        "summary": {
+          "name": "Summary Dashboard",
+          "description": "See key store metrics directly in the menu"
+        },
+        "dark_hitech": {
+          "name": "Dark Mode Hi-Tech",
+          "description": "Modern dark styling with PENGUIN brand accents"
+        }
+      },
+      "summary": {
+        "title": "Today's summary",
+        "subtitle": "Latest store activity",
+        "loading": "Loading summary…",
+        "today_sales": "Today's sales",
+        "bill_count": "Bills",
+        "in_stock": "Items in stock",
+        "load_failed": "Summary unavailable"
+      }
     }
   },
   "my": {
@@ -15532,6 +15608,11 @@
         "tax_id": "VAT ကိုဖွင့်ထားသောအခါ အခွန် ID ကိုထည့်ပါ။",
         "promptpay_id": "လွှဲပြောင်းခြင်း QR ကိုမဖွင့်မီ PromptPay ဖုန်း သို့မဟုတ် Business ID ကိုထည့်ပါ။",
         "promptpay_length": "PromptPay ဂဏန်း 10 လုံး ဖုန်းနံပါတ် သို့မဟုတ် ဂဏန်း 13 လုံး လုပ်ငန်း/အခွန် ID ဖြစ်ရမည်။"
+      },
+      "theme": {
+        "title": "POS မီနူး အပြင်အဆင်",
+        "description": "ဤဆိုင်အတွက် POS မီနူးပုံစံကို ရွေးပါ။ ဤဆက်တင်ကို ဆိုင်ရှိ POS အသုံးပြုသူအားလုံးတွင် အသုံးပြုမည်။",
+        "note": "Theme သည် POS မီနူး၏ပုံစံကိုသာ ပြောင်းလဲပြီး ခွင့်ပြုချက်များ၊ အသုံးပြုနိုင်သောမီနူးများနှင့် အရောင်းဒေတာကို မပြောင်းလဲပါ။"
       }
     },
     "pos_stock": {
@@ -17282,6 +17363,39 @@
       "people": ":count လူ",
       "queues": ":count တန်းစီသည်။",
       "wait_range": ":min–:max မိနစ်"
+    },
+    "pos_theme": {
+      "options": {
+        "minimal_clean": {
+          "name": "Minimal Clean",
+          "description": "ရိုးရှင်း သန့်ရှင်းပြီး အသုံးပြုရလွယ်ကူသည်"
+        },
+        "modern_card": {
+          "name": "Modern Card",
+          "description": "အရောင်အသွေးစုံ ကတ်များနှင့် ရှင်းလင်းသော အိုင်ကွန်များ"
+        },
+        "section_sidebar": {
+          "name": "ကဏ္ဍခွဲ Sidebar",
+          "description": "မီနူးများကို ကဏ္ဍအလိုက် ရှင်းလင်းစွာ စုစည်းထားသည်"
+        },
+        "summary": {
+          "name": "အကျဉ်းချုပ်ပါရှိသော",
+          "description": "ဆိုင်၏ အရေးကြီးသောအချက်အလက်များကို မီနူးတွင် ချက်ချင်းကြည့်နိုင်သည်"
+        },
+        "dark_hitech": {
+          "name": "Dark Mode Hi-Tech",
+          "description": "PENGUIN အရောင်များနှင့် ခေတ်မီ အမှောင်ပုံစံ"
+        }
+      },
+      "summary": {
+        "title": "ယနေ့အကျဉ်းချုပ်",
+        "subtitle": "ဆိုင်၏ နောက်ဆုံးအချက်အလက်",
+        "loading": "အကျဉ်းချုပ်ကို ဖွင့်နေသည်…",
+        "today_sales": "ယနေ့ရောင်းအား",
+        "bill_count": "ဘောက်ချာအရေအတွက်",
+        "in_stock": "စတော့ရှိပစ္စည်း",
+        "load_failed": "အကျဉ်းချုပ်ကို မဖွင့်နိုင်ပါ"
+      }
     }
   },
   "lo": {
@@ -21202,6 +21316,11 @@
         "tax_id": "ໃສ່ ID ພາສີເມື່ອ VAT ຖືກເປີດໃຊ້.",
         "promptpay_id": "ໃສ່ໂທລະສັບ PromptPay ຫຼື Business ID ກ່ອນທີ່ຈະເປີດໃຊ້ການໂອນຍ້າຍ QR.",
         "promptpay_length": "PromptPay ຕ້ອງເປັນເບີໂທລະສັບ 10 ຕົວເລກ ຫຼື ID ທຸລະກິດ/ອາກອນ 13 ຕົວເລກ."
+      },
+      "theme": {
+        "title": "ທີມເມນູ POS",
+        "description": "ເລືອກຮູບແບບເມນູສຳລັບຮ້ານນີ້ ການຕັ້ງຄ່ານີ້ຈະໃຊ້ກັບຜູ້ໃຊ້ POS ທຸກຄົນໃນຮ້ານ",
+        "note": "ທີມປ່ຽນສະເພາະຮູບລັກຂອງເມນູ POS ບໍ່ປ່ຽນສິດ ເມນູທີ່ເຂົ້າໄດ້ ຫຼືຂໍ້ມູນການຂາຍ"
       }
     },
     "pos_stock": {
@@ -22952,6 +23071,39 @@
       "people": ":count ຄົນ",
       "queues": ":count ຄິວ",
       "wait_range": ":min–:max ນທ"
+    },
+    "pos_theme": {
+      "options": {
+        "minimal_clean": {
+          "name": "Minimal Clean",
+          "description": "ຮຽບງ່າຍ ສະອາດ ແລະໃຊ້ງານງ່າຍ"
+        },
+        "modern_card": {
+          "name": "Modern Card",
+          "description": "ກາດສວຍງາມ ໄອຄອນຊັດເຈນ ແລະເປັນລະບຽບ"
+        },
+        "section_sidebar": {
+          "name": "Sidebar ແບ່ງໝວດ",
+          "description": "ແບ່ງເມນູເປັນໝວດຢ່າງຊັດເຈນ"
+        },
+        "summary": {
+          "name": "ພ້ອມຂໍ້ມູນສະຫຼຸບ",
+          "description": "ເບິ່ງສະຖິຕິສຳຄັນຂອງຮ້ານໄດ້ທັນທີໃນເມນູ"
+        },
+        "dark_hitech": {
+          "name": "Dark Mode Hi-Tech",
+          "description": "ໂທນມືດທັນສະໄໝ ພ້ອມສີແບຣນ PENGUIN"
+        }
+      },
+      "summary": {
+        "title": "ສະຫຼຸບມື້ນີ້",
+        "subtitle": "ຂໍ້ມູນລ່າສຸດຂອງຮ້ານ",
+        "loading": "ກຳລັງໂຫຼດຂໍ້ມູນ…",
+        "today_sales": "ຍອດຂາຍມື້ນີ້",
+        "bill_count": "ຈຳນວນບິນ",
+        "in_stock": "ສິນຄ້າມີສະຕັອກ",
+        "load_failed": "ບໍ່ສາມາດໂຫຼດຂໍ້ມູນສະຫຼຸບ"
+      }
     }
   },
   "km": {
@@ -26872,6 +27024,11 @@
         "tax_id": "បញ្ចូលលេខសម្គាល់ពន្ធនៅពេលដែល VAT ត្រូវបានបើក។",
         "promptpay_id": "បញ្ចូលទូរសព្ទ PromptPay ឬលេខសម្គាល់អាជីវកម្ម មុនពេលបើកការផ្ទេរ QR។",
         "promptpay_length": "PromptPay ត្រូវតែជាលេខទូរស័ព្ទ 10 ខ្ទង់ ឬលេខសម្គាល់អាជីវកម្ម/ពន្ធ 13 ខ្ទង់។"
+      },
+      "theme": {
+        "title": "រចនាប័ទ្មម៉ឺនុយ POS",
+        "description": "ជ្រើសរើសរូបរាងម៉ឺនុយសម្រាប់ហាងនេះ។ ការកំណត់នេះនឹងអនុវត្តចំពោះអ្នកប្រើ POS ទាំងអស់ក្នុងហាង។",
+        "note": "រចនាប័ទ្មផ្លាស់ប្តូរតែរូបរាងម៉ឺនុយ POS ប៉ុណ្ណោះ មិនប៉ះពាល់សិទ្ធិ ម៉ឺនុយដែលអាចចូលប្រើ ឬទិន្នន័យលក់ទេ។"
       }
     },
     "pos_stock": {
@@ -28622,6 +28779,39 @@
       "people": ":count នាក់។",
       "queues": ":count ជួរ",
       "wait_range": ":min–:max នាទី"
+    },
+    "pos_theme": {
+      "options": {
+        "minimal_clean": {
+          "name": "Minimal Clean",
+          "description": "សាមញ្ញ ស្អាត និងងាយស្រួលប្រើ"
+        },
+        "modern_card": {
+          "name": "Modern Card",
+          "description": "កាតស្អាត រូបតំណាងច្បាស់ និងមានរបៀបរៀបរយ"
+        },
+        "section_sidebar": {
+          "name": "Sidebar បែងចែកផ្នែក",
+          "description": "រៀបចំម៉ឺនុយជាផ្នែកច្បាស់លាស់ និងមានប្រព័ន្ធ"
+        },
+        "summary": {
+          "name": "ជាមួយព័ត៌មានសង្ខេប",
+          "description": "មើលស្ថិតិសំខាន់ៗរបស់ហាងភ្លាមៗក្នុងម៉ឺនុយ"
+        },
+        "dark_hitech": {
+          "name": "Dark Mode Hi-Tech",
+          "description": "រចនាប័ទ្មងងឹតទំនើបជាមួយពណ៌ម៉ាក PENGUIN"
+        }
+      },
+      "summary": {
+        "title": "សង្ខេបថ្ងៃនេះ",
+        "subtitle": "ព័ត៌មានថ្មីបំផុតរបស់ហាង",
+        "loading": "កំពុងផ្ទុកសង្ខេប…",
+        "today_sales": "ការលក់ថ្ងៃនេះ",
+        "bill_count": "ចំនួនវិក្កយបត្រ",
+        "in_stock": "ទំនិញមានស្តុក",
+        "load_failed": "មិនអាចផ្ទុកព័ត៌មានសង្ខេបបាន"
+      }
     }
   }
 }

@@ -5,6 +5,13 @@ import {
 } from "./retail-pos-auth.js?v=20260630-076";
 import "./form-validation-ui.js?v=20260731-080";
 import "./retail-pos-icons.js?v=20260716-013";
+import {
+  applyPosTheme,
+  getCachedPosTheme,
+  loadAndApplyPosTheme,
+  loadPosThemeSummary,
+  normalizePosTheme,
+} from "./retail-pos-theme.js?v=20261004-105";
 
 const ROLE_KEY = "retail_pos_roles_v1";
 const MIGRATION_KEY = "retail_pos_permission_schema_v8";
@@ -533,6 +540,25 @@ function removeLegacyMenuLinks(header) {
     if (known.has(normalizePath(link.href))) link.remove();
   });
 }
+
+const POS_INTL_LOCALE = {
+  th: "th-TH",
+  en: "en-US",
+  my: "my-MM",
+  lo: "lo-LA",
+  km: "km-KH",
+};
+
+function themeNumber(value, options = {}) {
+  const locale = POS_INTL_LOCALE[document.documentElement.lang] || "th-TH";
+  return new Intl.NumberFormat(locale, options).format(Number(value || 0));
+}
+
+function themeCurrency(value) {
+  const locale = POS_INTL_LOCALE[document.documentElement.lang] || "th-TH";
+  return new Intl.NumberFormat(locale, { style: "currency", currency: "THB" }).format(Number(value || 0));
+}
+
 function renderMenu() {
   const header = document.querySelector(".pos-header .header-actions");
   if (!header || document.querySelector("#posMenuTrigger")) return;
@@ -540,6 +566,7 @@ function renderMenu() {
   const user = getCurrentUser(),
     role = getCurrentRole(),
     current = normalizePath(location.pathname);
+  let activeTheme = applyPosTheme(getCachedPosTheme(), { cache: false });
   const trigger = document.createElement("button");
   trigger.id = "posMenuTrigger";
   trigger.type = "button";
@@ -556,11 +583,65 @@ function renderMenu() {
     MENU_GROUPS.map((group) => {
       const items = group.items.filter((item) => hasPermission(item.key));
       if (!items.length) return "";
-      const open = items.some((item) => normalizePath(item.href) === current);
+      const open = activeTheme === "section-sidebar"
+        || items.some((item) => normalizePath(item.href) === current);
       return `<section class="pos-menu-group ${open ? "is-open" : ""}" data-menu-tone="${esc(group.tone || "green")}" data-menu-group-card="${esc(group.id)}"><button type="button" data-menu-group="${esc(group.id)}" aria-expanded="${open ? "true" : "false"}"><span class="pos-menu-group-title">${menuIcon(group.icon, group.tone, "pos-menu-group-icon")}<span class="pos-menu-group-label">${esc(group.label)}</span></span><i class="bi ${open ? "bi-chevron-up" : "bi-chevron-down"} pos-menu-chevron" aria-hidden="true"></i></button><ul class="pos-menu-links">${items.map((item) => `<li><a class="pos-menu-link ${normalizePath(item.href) === current ? "is-current" : ""}" href="${esc(item.href)}" data-pos-icon="${esc(item.icon || "")}" data-icon-tone="${esc(item.tone || "green")}" ${normalizePath(item.href) === current ? 'aria-current="page"' : ""}>${menuIcon(item.icon, item.tone, "pos-menu-item-icon")}<span>${esc(item.label)}</span><i class="bi bi-chevron-right pos-menu-link-chevron" aria-hidden="true"></i></a></li>`).join("")}</ul></section>`;
     }).join("") || '<div class="pos-menu-empty">ไม่มีเมนูที่ได้รับอนุญาต</div>';
-  popover.innerHTML = `<div class="pos-menu-backdrop" data-close-menu></div><aside class="pos-menu-panel"><div class="pos-menu-head"><h2 class="pos-menu-title">เมนู POS</h2><button class="icon-btn" type="button" data-close-menu><i class="bi bi-x-lg" aria-hidden="true"></i></button></div><div class="pos-menu-user"><i class="bi bi-person-circle pos-menu-user-icon" aria-hidden="true"></i><strong>${esc(user?.name || "-")}</strong><span>${esc(role?.name || "ไม่ระบุสิทธิ์")} • ${esc(user?.email || "")}</span></div><a class="btn btn-secondary pos-central-home" href="/" data-pos-icon="house"><i class="bi bi-house pos-context-icon" data-icon-tone="emerald" aria-hidden="true"></i><span>กลับหน้าระบบกลาง</span></a><nav>${groups}</nav><div class="pos-menu-footer"><button id="posLogoutBtn" class="btn btn-danger" type="button" data-pos-icon="box-arrow-right"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>ออกจากระบบ</span></button></div></aside>`;
+  popover.innerHTML = `<div class="pos-menu-backdrop" data-close-menu></div><aside class="pos-menu-panel"><div class="pos-menu-head"><h2 class="pos-menu-title">เมนู POS</h2><button class="icon-btn" type="button" data-close-menu><i class="bi bi-x-lg" aria-hidden="true"></i></button></div><div class="pos-menu-user"><i class="bi bi-person-circle pos-menu-user-icon" aria-hidden="true"></i><strong>${esc(user?.name || "-")}</strong><span>${esc(role?.name || "ไม่ระบุสิทธิ์")} • ${esc(user?.email || "")}</span></div><a class="btn btn-secondary pos-central-home" href="/" data-pos-icon="house"><i class="bi bi-house pos-context-icon" data-icon-tone="emerald" aria-hidden="true"></i><span>กลับหน้าระบบกลาง</span></a><section class="pos-theme-summary" aria-label="สรุปวันนี้"><div class="pos-theme-summary-head"><div class="pos-theme-summary-title"><i class="bi bi-bar-chart-fill" aria-hidden="true"></i><div><strong>สรุปวันนี้</strong><small data-theme-summary-status>ข้อมูลล่าสุดของร้าน</small></div></div></div><div class="pos-theme-summary-grid"><div class="pos-theme-stat"><span>ยอดขายวันนี้</span><strong data-theme-sales-total>฿0.00</strong></div><div class="pos-theme-stat"><span>จำนวนบิล</span><strong data-theme-bill-count>0</strong></div><div class="pos-theme-stat"><span>สินค้ามีสต็อก</span><strong data-theme-in-stock>0</strong></div></div></section><nav>${groups}</nav><div class="pos-menu-footer"><button id="posLogoutBtn" class="btn btn-danger" type="button" data-pos-icon="box-arrow-right"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>ออกจากระบบ</span></button></div></aside>`;
   document.body.appendChild(popover);
+  let summaryLoaded = false;
+  let summaryLoading = false;
+
+  function expandAllThemeGroups() {
+    popover.querySelectorAll(".pos-menu-group").forEach(group => {
+      group.classList.add("is-open");
+      const button = group.querySelector("[data-menu-group]");
+      button?.setAttribute("aria-expanded", "true");
+      const icon = button?.querySelector(".pos-menu-chevron");
+      icon?.classList.add("bi-chevron-up");
+      icon?.classList.remove("bi-chevron-down");
+    });
+  }
+
+  async function refreshThemeSummary() {
+    if (summaryLoading || (summaryLoaded && activeTheme === "summary")) return;
+    summaryLoading = true;
+    const status = popover.querySelector("[data-theme-summary-status]");
+    if (status) status.textContent = "กำลังโหลดข้อมูล…";
+    try {
+      const canViewSalesSummary = hasPermission("pos.sales");
+      const canViewStockSummary = hasPermission("pos.products");
+      const summary = await loadPosThemeSummary({
+        includeSales: canViewSalesSummary,
+        includeProducts: canViewStockSummary,
+      });
+      popover.querySelector("[data-theme-sales-total]").textContent = canViewSalesSummary ? themeCurrency(summary.salesTotal) : "—";
+      popover.querySelector("[data-theme-bill-count]").textContent = canViewSalesSummary ? themeNumber(summary.billCount) : "—";
+      popover.querySelector("[data-theme-in-stock]").textContent = canViewStockSummary ? themeNumber(summary.inStock) : "—";
+      if (status) status.textContent = "ข้อมูลล่าสุดของร้าน";
+      summaryLoaded = true;
+    } catch (error) {
+      console.warn("[retail-pos-navigation] theme summary failed", error);
+      if (status) status.textContent = "ไม่สามารถโหลดข้อมูลสรุป";
+    } finally {
+      summaryLoading = false;
+    }
+  }
+
+  function syncThemeUi(theme) {
+    activeTheme = normalizePosTheme(theme);
+    if (activeTheme === "section-sidebar") expandAllThemeGroups();
+    if (activeTheme === "summary" && popover.classList.contains("open")) refreshThemeSummary();
+  }
+
+  window.addEventListener("pos-theme-applied", event => {
+    if (event?.detail?.theme) syncThemeUi(event.detail.theme);
+  });
+
+  loadAndApplyPosTheme().then(syncThemeUi).catch(error => {
+    console.warn("[retail-pos-navigation] theme load failed", error);
+  });
+
   function close() {
     popover.classList.remove("open");
     document.body.classList.remove("pos-menu-open");
@@ -568,11 +649,12 @@ function renderMenu() {
   trigger.addEventListener("click", () => {
     popover.classList.add("open");
     document.body.classList.add("pos-menu-open");
+    syncThemeUi(activeTheme);
   });
   popover.addEventListener("click", async (event) => {
     if (event.target.closest("[data-close-menu]")) close();
     const groupButton = event.target.closest("[data-menu-group]");
-    if (groupButton) {
+    if (groupButton && activeTheme !== "section-sidebar") {
       const group = groupButton.closest(".pos-menu-group");
       const isOpen = group?.classList.toggle("is-open");
       groupButton.setAttribute("aria-expanded", isOpen ? "true" : "false");

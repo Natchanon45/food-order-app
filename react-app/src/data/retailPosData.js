@@ -13,6 +13,7 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { auth, db } from "@/firebase/client";
+import { normalizePosTheme } from "@/config/posThemes";
 
 export const POS_FIRESTORE_VERSION = "P9-B003-react";
 const POS_CHANNEL = "retail-pos";
@@ -1059,8 +1060,9 @@ export async function savePosCustomer(tenantId,input={},editingId="") {
 }
 export async function deletePosCustomer(tenantId,id){if(id)await deleteDoc(tenantDoc(tenantId,"customers",id))}
 export async function loadPosStoreSettings(tenantId){
-  const ids=["store","tax","payment","receipt","loyalty"],snaps=await Promise.all(ids.map(id=>getDoc(tenantDoc(tenantId,"settings",id))));
-  return Object.fromEntries(ids.map((id,index)=>[id,snaps[index].exists()?snaps[index].data():{}]));
+  const ids=["store","tax","payment","receipt","loyalty","pos-theme"],snaps=await Promise.all(ids.map(id=>getDoc(tenantDoc(tenantId,"settings",id))));
+  const rows=Object.fromEntries(ids.map((id,index)=>[id,snaps[index].exists()?snaps[index].data():{}]));
+  return {...rows,posTheme:rows["pos-theme"]||{}};
 }
 export async function savePosStoreSettings(tenantId,data={}){
   const userId=currentUserId(),now=Date.now(),meta={tenantId,shopId:tenantId,updatedBy:userId,updatedAt:now,updatedAtServer:serverTimestamp()};
@@ -1069,6 +1071,7 @@ export async function savePosStoreSettings(tenantId,data={}){
   const payment={id:"payment",...meta,promptPayEnabled:data.promptPayEnabled===true||data.promptPayEnabled==="yes",promptPayId:String(data.promptPayId||""),promptPayAccountName:String(data.promptPayAccountName||"")};
   const receipt={id:"receipt",...meta,receiptPaperSize:["58","80","a4"].includes(String(data.receiptPaperSize))?String(data.receiptPaperSize):"80",receiptPrintMode:data.receiptPrintMode==="auto"?"auto":"none",receiptThanks:String(data.receiptThanks||"ขอบคุณที่ใช้บริการ"),receiptFooter:String(data.receiptFooter||"")};
   const loyalty={id:"loyalty",...meta,enabled:data.loyaltyEnabled!==false&&data.loyaltyEnabled!=="no",spendPerPoint:Math.max(.01,Number(data.spendPerPoint||10)),pointValue:Math.max(.01,Number(data.pointValue||1))};
-  await Promise.all([[store,"store"],[tax,"tax"],[payment,"payment"],[receipt,"receipt"],[loyalty,"loyalty"]].map(([row,id])=>setDoc(tenantDoc(tenantId,"settings",id),row,{merge:true})));
-  return {store,tax,payment,receipt,loyalty};
+  const posTheme={id:"pos-theme",type:"pos-theme",...meta,theme:normalizePosTheme(data.posTheme)};
+  await Promise.all([[store,"store"],[tax,"tax"],[payment,"payment"],[receipt,"receipt"],[loyalty,"loyalty"],[posTheme,"pos-theme"]].map(([row,id])=>setDoc(tenantDoc(tenantId,"settings",id),row,{merge:true})));
+  return {store,tax,payment,receipt,loyalty,posTheme};
 }

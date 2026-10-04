@@ -304,6 +304,16 @@ assert(
 const posPage=read("react-app/src/pages/PosPage.jsx");
 const posNavigation=read("react-app/src/components/PosNavigation.jsx");
 const retailPosNavigation=read("public/assets/js/retail-pos-navigation.js");
+const legacyPosThemeRuntime=read("public/assets/js/retail-pos-theme.js");
+const posThemeConfig=read("react-app/src/config/posThemes.js");
+const posThemeData=read("react-app/src/data/posThemeData.js");
+const posThemeHook=read("react-app/src/hooks/usePosTheme.js");
+const posThemesCss=read("react-app/public/parity/css/retail-pos-themes.css");
+const legacyPosThemesCss=read("public/assets/css/retail-pos-themes.css");
+const legacyPosSettingsHtml=read("public/pos/settings/index.html");
+const legacyPosSettingsJs=read("public/assets/js/retail-pos-settings.js");
+const posSettingsPage=read("react-app/src/pages/PosSettingsPage.jsx");
+const posThemeTranslations=JSON.parse(read("react-app/src/i18n/parity-translations.json"));
 const posUserProfile=read("react-app/src/components/PosUserProfile.jsx");
 const retailPosSession=read("react-app/src/auth/retailPosSession.js");
 const posData=read("react-app/src/data/retailPosData.js");
@@ -603,6 +613,43 @@ assert(posNavigationCss.includes("POS menu Modern Card v2.2")&&posNavigationCss.
 assert(posNavigationCss.includes("POS menu Modern Card v2.3")&&posNavigationCss.includes("display:flex!important")&&posNavigationCss.includes("flex-direction:column!important")&&posNavigationCss.includes("align-items:stretch!important")&&posNavigationCss.includes("height:auto!important")&&posNavigationCss.includes("min-height:0!important"),"POS Modern Card v2.3 must stack expanded cards by natural height instead of CSS Grid tracks so cards cannot overlap");
 assert(posNavigation.includes("scrollOpenedGroupIntoView")&&posNavigation.includes("data-menu-group-card={group.id}")&&posNavigation.includes('scrollIntoView({ block: "nearest", behavior: "smooth" })'),"React POS multi-open drawer must auto-scroll newly opened groups into the visible nav area");
 assert(retailPosNavigation.includes('data-menu-group-card="${esc(group.id)}"')&&retailPosNavigation.includes('group.scrollIntoView({ block: "nearest", behavior: "smooth" })'),"Legacy POS multi-open drawer must auto-scroll newly opened groups into the visible nav area");
+
+const posThemeIds=["minimal-clean","modern-card","section-sidebar","summary","dark-hitech"];
+assert(posThemeConfig.includes('DEFAULT_POS_THEME = "modern-card"')&&legacyPosThemeRuntime.includes("DEFAULT_POS_THEME = 'modern-card'"),"POS theme system must preserve Modern Card as the backward-compatible default");
+for(const themeId of posThemeIds){
+  assert(posThemeConfig.includes(`id: "${themeId}"`),`React POS theme option missing: ${themeId}`);
+  assert(legacyPosThemeRuntime.includes(`id: '${themeId}'`),`Legacy POS theme option missing: ${themeId}`);
+  assert(legacyPosSettingsHtml.includes(`value="${themeId}"`),`Legacy POS Settings theme radio missing: ${themeId}`);
+  assert(posSettingsPage.includes(`POS_THEME_OPTIONS.map`),`React POS Settings must render the shared theme option catalog: ${themeId}`);
+}
+assert(posThemeHook.includes("loadPosThemeSetting")&&posThemeHook.includes("readCachedPosTheme")&&posThemeHook.includes("pos-theme-applied"),"React POS theme hook must apply cached tenant theme immediately and reconcile the Firestore setting");
+assert(posThemeData.includes('POS_THEME_SETTINGS_ID = "pos-theme"')&&posThemeData.includes('doc(db, "tenants"')&&posThemeData.includes('"settings", POS_THEME_SETTINGS_ID')&&posThemeData.includes("savePosThemeSetting"),"React POS theme preference must use tenant-scoped settings/pos-theme");
+assert(legacyPosThemeRuntime.includes("POS_THEME_SETTINGS_ID = 'pos-theme'")&&legacyPosThemeRuntime.includes("getRecord(RetailCollections.settings, POS_THEME_SETTINGS_ID)")&&legacyPosThemeRuntime.includes("document.documentElement.dataset.posTheme"),"Legacy POS theme runtime must read tenant settings/pos-theme and apply a document-level theme token");
+assert(posData.includes('["store","tax","payment","receipt","loyalty","pos-theme"]')&&posData.includes('const posTheme={id:"pos-theme",type:"pos-theme"')&&posData.includes('[posTheme,"pos-theme"]'),"React POS Store Settings load/save must persist the tenant theme document with the existing settings transaction group");
+assert(legacyPosSettingsJs.includes('id: "pos-theme"')&&legacyPosSettingsJs.includes('type: "pos-theme"')&&legacyPosSettingsJs.includes("saveSettingsDocumentsLocalFirst")&&legacyPosSettingsJs.includes("applyPosTheme(themeSettings.theme)"),"Legacy POS Settings must save the tenant theme through the existing local-first settings sync and apply it immediately");
+assert(legacyPosSettingsHtml.includes('class="pos-theme-picker"')&&legacyPosSettingsHtml.includes('name="posTheme"')&&legacyPosSettingsHtml.includes("ธีมมีผลเฉพาะหน้าตาเมนู POS"),"Legacy POS Settings must expose the five-card theme picker and explain that permissions/data are unchanged");
+assert(posSettingsPage.includes('className="pos-theme-picker"')&&posSettingsPage.includes('name="posTheme"')&&posSettingsPage.includes('t("pos_settings.theme.note")'),"React POS Settings must expose the same translated five-card theme picker");
+assert(posSettingsPage.includes('applyPosTheme(value,tenant?.id,{cache:false})')&&posSettingsPage.includes('applyPosTheme(posTheme,tenant.id)')&&legacyPosSettingsJs.includes('applyPosTheme(normalizePosTheme(event.target.value), { cache: false })')&&legacyPosSettingsJs.includes('applyPosTheme(themeSettings.theme)'),"POS theme preview must stay temporary until Save while saved theme changes update the persistent cache");
+assert(posThemesCss.includes('html[data-pos-theme="minimal-clean"]')&&posThemesCss.includes('html[data-pos-theme="section-sidebar"]')&&posThemesCss.includes('html[data-pos-theme="summary"]')&&posThemesCss.includes('html[data-pos-theme="dark-hitech"]'),"React POS theme stylesheet must implement themes 1, 3, 4, and 5 while Modern Card inherits the approved v2.3 base");
+assert(legacyPosThemesCss.includes('html[data-pos-theme="minimal-clean"]')&&legacyPosThemesCss.includes('html[data-pos-theme="section-sidebar"]')&&legacyPosThemesCss.includes('html[data-pos-theme="summary"]')&&legacyPosThemesCss.includes('html[data-pos-theme="dark-hitech"]'),"Legacy POS theme stylesheet must match the React theme catalog");
+assert(posThemesCss.includes(".pos-theme-summary{")&&posThemesCss.includes('html[data-pos-theme="summary"] .pos-theme-summary')&&posThemesCss.includes('display:grid!important'),"Theme 4 must reveal its summary dashboard only when the Summary theme is active");
+assert(posNavigation.includes('posTheme !== "section-sidebar"')&&posNavigation.includes("setOpenGroups(new Set(groups.map(group => group.id)))")&&retailPosNavigation.includes('activeTheme === "section-sidebar"')&&retailPosNavigation.includes("expandAllThemeGroups"),"Theme 3 must keep all permitted groups visible as a sectioned sidebar on React and legacy POS");
+assert(posNavigation.includes('posTheme !== "summary"')&&posNavigation.includes("loadPosThemeSummary")&&retailPosNavigation.includes('activeTheme === "summary"')&&retailPosNavigation.includes("refreshThemeSummary"),"Theme 4 summary data must load lazily only for the Summary theme");
+assert(posNavigation.includes('permissions.has("pos.sales")')&&posNavigation.includes('permissions.has("pos.products")')&&posThemeData.includes("includeSales ? listPosSales")&&posThemeData.includes("includeProducts ? listRetailProducts"),"React Theme 4 summary must query only datasets the POS role is allowed to view");
+assert(retailPosNavigation.includes('hasPermission("pos.sales")')&&retailPosNavigation.includes('hasPermission("pos.products")')&&legacyPosThemeRuntime.includes("includeSales ? listRecords(RetailCollections.sales)")&&legacyPosThemeRuntime.includes("includeProducts ? listRecords(RetailCollections.products)"),"Legacy Theme 4 summary must preserve POS permission boundaries before reading sales/product metrics");
+assert(!posThemeData.includes("deleteDoc(")&&!posThemeData.includes("runTransaction(")&&!legacyPosThemeRuntime.includes("saveRecord("),"POS menu theme rendering/summary data must remain read-only apart from the explicit settings/pos-theme save path");
+assert(firestoreRules.includes("match /settings/{settingId} { allow read: if true; allow create, update, delete: if (tenantAdminRole(tenantId)")&&firestoreRules.includes("settingId != 'lalamove'")&&firestoreRules.includes("settingId != 'lalamoveWallet'"),"Existing tenant settings Rules must continue to allow admins to save pos-theme without a Rules deployment");
+for(const locale of ["th","en","my","lo","km"]){
+  const catalog=posThemeTranslations[locale];
+  assert(catalog?.pos_settings?.theme?.title&&catalog?.pos_settings?.theme?.description&&catalog?.pos_settings?.theme?.note,`POS Settings theme translations incomplete: ${locale}`);
+  for(const key of ["minimal_clean","modern_card","section_sidebar","summary","dark_hitech"]){
+    assert(catalog?.pos_theme?.options?.[key]?.name&&catalog?.pos_theme?.options?.[key]?.description,`POS theme option translation missing: ${locale} ${key}`);
+  }
+  for(const key of ["title","subtitle","loading","today_sales","bill_count","in_stock","load_failed"]){
+    assert(catalog?.pos_theme?.summary?.[key],`POS Theme 4 summary translation missing: ${locale} ${key}`);
+  }
+}
+
 const legacyPosSaleMaster=read("tests/fixtures/retail-pos-legacy/pos-index.html");
 assert(legacyPosSaleMaster.includes('id="productGrid"')&&legacyPosSaleMaster.includes('id="cartList"')&&legacyPosSaleMaster.includes('id="payBtn"')&&legacyPosSaleMaster.includes('id="paymentDialog"'),"Retail POS sale legacy MASTER fixture must preserve the pre-React root UI/action inventory");
 const legacyPosSalesMaster=read("tests/fixtures/retail-pos-legacy/pos-sales-index.html");

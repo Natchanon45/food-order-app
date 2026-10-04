@@ -5731,3 +5731,62 @@ Release / deploy:
 - No Production data-changing POS action was executed.
 - Modern Card v2.3 expanded-card overlap fix is complete on Production Build 2026.10.04.389.
 - No merge to main.
+
+---
+
+## 2026-10-04 — Retail POS tenant-selectable menu themes (5 choices)
+
+User direction:
+- Keep the current approved Modern Card menu, but make POS menu appearance selectable per store/tenant.
+- Support five choices: Minimal Clean, Modern Card, Sidebar divided into sections, Summary Dashboard, and Dark Mode Hi-Tech.
+- Theme choice must work across already-migrated React POS routes and remaining legacy POS routes without changing permissions, routing, or operational data logic.
+
+Implementation:
+- Added tenant-scoped theme preference document at `tenants/{tenantId}/settings/pos-theme` with field `theme`.
+- Default/fallback remains `modern-card`, so tenants with no setting keep the current Production appearance.
+- Added React theme runtime/config in `react-app/src/config/posThemes.js`, `react-app/src/hooks/usePosTheme.js`, and `react-app/src/data/posThemeData.js`.
+- Added legacy theme runtime in `public/assets/js/retail-pos-theme.js`.
+- Added matching `retail-pos-themes.css` to React parity assets and legacy public assets.
+- Modern Card intentionally inherits the approved v2.1/v2.2/v2.3 drawer implementation rather than duplicating or replacing it.
+- Theme 1 Minimal Clean reduces visual decoration while retaining the same menu structure and permissions.
+- Theme 3 Section Sidebar keeps every permitted category expanded and presents category headings as fixed section labels.
+- Theme 4 Summary Dashboard adds a read-only summary inside the drawer: today's sales, bill count, and products with stock.
+- Theme 4 preserves permission boundaries: sales/bill metrics are queried only with `pos.sales`; stock is queried only with `pos.products`; unauthorized metrics render `—` and their collection is not queried.
+- Theme 5 Dark Mode Hi-Tech uses a dark teal/green PENGUIN visual treatment while preserving all existing navigation semantics.
+- Theme changes affect presentation only. Menu permissions, first-allowed-route behavior, POS session handling, Firestore collection/schema names, sale/stock writes, and other operational logic are unchanged.
+
+POS Settings:
+- Added a responsive five-card theme picker to current legacy `/pos/settings`.
+- Added the same picker to React `PosSettingsPage` for its later canonical cutover.
+- Existing legacy local-first settings sync now includes `pos-theme`.
+- React store settings load/save now includes `pos-theme`.
+- Selecting a theme previews it immediately, but an unsaved preview is not persisted to the theme cache. The persistent cache is updated only after the saved Firestore setting is loaded/saved.
+- Existing Firestore tenant settings rule already permits tenant admins to write `pos-theme`; no Firestore Rules change is required.
+
+Localization:
+- Added Theme Settings, all five option names/descriptions, and Theme 4 summary labels for Thai, English, Myanmar, Lao, and Khmer.
+- Bumped legacy POS translation/bootstrap cache identity to `20261004-105`.
+
+Regression contracts:
+- React foundation contract now locks the five theme IDs, Modern Card fallback, tenant settings persistence, legacy + React runtime coverage, Theme 3 behavior, Theme 4 lazy/permission-aware reads, theme CSS coverage, all five-language translation sets, and read-only summary behavior.
+
+Verification:
+- `node --check` PASS for `retail-pos-theme.js`, `retail-pos-navigation.js`, `retail-pos-settings.js`, and `retail-pos-i18n-bootstrap.js`.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for React Build `2026.10.04.390` using `/react/assets/index-Bx4RMv0N.js`.
+- `git diff --check` PASS.
+- Synthetic real-Chrome geometry test PASS for all five themes at desktop 1440x900 and mobile 390x844.
+- All five themes had zero adjacent-card overlap and no horizontal overflow; Theme 4 summary was visible only for Summary theme.
+- Actual local legacy `/pos/settings` was then exercised through the existing Google Chrome executable at 1440x900 and 390x844 with a non-writing owner preview session: all five radios rendered, each theme applied to the shared drawer, Theme 3 opened all 5 groups, Theme 4 alone displayed the summary block, no menu-card overlap/horizontal overflow occurred, and there were zero HTTP/page errors.
+- Unsaved theme previews on actual `/pos/settings` were verified not to alter the persisted theme cache after the saved `modern-card` value had stabilized.
+- Playwright's bundled browser was not installed on the Mac; browser checks used the existing local Google Chrome executable and completed successfully.
+
+Release / deploy state:
+- React Version `0.4.280` / Build `2026.10.04.390`.
+- Public Version `0.16.32` / Build `2026.10.04.105`.
+- Hosting has NOT been deployed for this theme phase yet.
+- No Functions, Firestore Rules, or Storage Rules changes are required for this phase.
+- No commit / push / merge performed yet.
+- Active branch remains `feature/react-firebase-port`; local HEAD and origin were both `bc777dc323cc` before this uncommitted theme work.

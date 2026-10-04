@@ -1,4 +1,4 @@
-import translations from "./retail-pos-translations.js?v=20261003-010";
+import translations from "./retail-pos-translations.js?v=20261004-105";
 import { configureI18n, getIntlLocale, getLocale, setLocale } from "./i18n.js?v=20260903-202";
 
 configureI18n(translations, { fallbackLocale: "th" });

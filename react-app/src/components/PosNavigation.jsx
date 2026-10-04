@@ -7,6 +7,8 @@ import { auth } from "@/firebase/client";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useTenant } from "@/tenant/TenantProvider";
 import { loadPosRoleSettings } from "@/data/retailPosSystemData";
+import { loadPosThemeSummary } from "@/data/posThemeData";
+import { usePosTheme } from "@/hooks/usePosTheme";
 
 export const POS_MENU_GROUPS = [
   { id: "sales", label: "ขายหน้าร้าน", icon: "cart3", tone: "emerald", items: [
@@ -73,8 +75,9 @@ export function firstAllowedPosPage(profile, roleRows = null) {
 }
 
 export function PosNavigation({ profile, currentKey = "" }) {
-  const { t } = useI18n();
+  const { t, formatNumber, formatCurrency } = useI18n();
   const { tenant } = useTenant();
+  const { theme: posTheme } = usePosTheme(tenant?.id);
   const sessionProfile = useMemo(() => getRetailPosSession(), [
     profile?.uid,
     profile?.id,
@@ -98,6 +101,8 @@ export function PosNavigation({ profile, currentKey = "" }) {
   const [open, setOpen] = useState(false);
   const [openGroups, setOpenGroups] = useState(() => new Set([currentGroup]));
   const [roleRows, setRoleRows] = useState(null);
+  const [themeSummary, setThemeSummary] = useState({ salesTotal: 0, billCount: 0, inStock: 0 });
+  const [summaryLoading, setSummaryLoading] = useState(false);
 
   useEffect(() => {
     if (!tenant?.id) return undefined;
@@ -111,9 +116,35 @@ export function PosNavigation({ profile, currentKey = "" }) {
   }, [tenant?.id]);
 
   const permissions = useMemo(() => getPosPermissions(posProfile, roleRows), [posProfile, roleRows]);
+  const canViewSalesSummary = permissions.has("pos.sales");
+  const canViewStockSummary = permissions.has("pos.products");
   const groups = useMemo(() => POS_MENU_GROUPS
     .map(group => ({ ...group, items: group.items.filter(item => permissions.has(item.key)) }))
     .filter(group => group.items.length), [permissions]);
+
+  useEffect(() => {
+    if (posTheme !== "section-sidebar" || !groups.length) return;
+    setOpenGroups(new Set(groups.map(group => group.id)));
+  }, [posTheme, groups]);
+
+  useEffect(() => {
+    if (!open || posTheme !== "summary" || !tenant?.id) return undefined;
+    let alive = true;
+    setSummaryLoading(true);
+    if (!canViewSalesSummary && !canViewStockSummary) {
+      setSummaryLoading(false);
+      return undefined;
+    }
+    loadPosThemeSummary(tenant.id, {
+      includeSales: canViewSalesSummary,
+      includeProducts: canViewStockSummary,
+    }).then(summary => {
+      if (!alive) return;
+      setThemeSummary(summary);
+    }).catch(error => console.warn("POS_THEME_SUMMARY_LOAD_FAILED", error))
+      .finally(() => { if (alive) setSummaryLoading(false); });
+    return () => { alive = false; };
+  }, [open, posTheme, tenant?.id, canViewSalesSummary, canViewStockSummary]);
 
   const roleLabel = useMemo(() => {
     const roleId = String(posProfile?.roleId || posProfile?.role || "").trim();
@@ -152,6 +183,7 @@ export function PosNavigation({ profile, currentKey = "" }) {
   };
 
   const toggleGroup = groupId => {
+    if (posTheme === "section-sidebar") return;
     const opening = !openGroups.has(groupId);
     setOpenGroups(current => {
       const next = new Set(current);
@@ -193,6 +225,31 @@ export function PosNavigation({ profile, currentKey = "" }) {
             <i className="bi bi-house pos-context-icon" data-icon-tone="emerald" aria-hidden="true"></i>
             <span>{t("pos_navigation.central_home")}</span>
           </a>
+          <section className="pos-theme-summary" aria-label={t("pos_theme.summary.title")}>
+            <div className="pos-theme-summary-head">
+              <div className="pos-theme-summary-title">
+                <i className="bi bi-bar-chart-fill" aria-hidden="true"></i>
+                <div>
+                  <strong>{t("pos_theme.summary.title")}</strong>
+                  <small>{summaryLoading ? t("pos_theme.summary.loading") : t("pos_theme.summary.subtitle")}</small>
+                </div>
+              </div>
+            </div>
+            <div className="pos-theme-summary-grid">
+              <div className="pos-theme-stat">
+                <span>{t("pos_theme.summary.today_sales")}</span>
+                <strong>{canViewSalesSummary ? (summaryLoading ? "…" : formatCurrency(themeSummary.salesTotal)) : "—"}</strong>
+              </div>
+              <div className="pos-theme-stat">
+                <span>{t("pos_theme.summary.bill_count")}</span>
+                <strong>{canViewSalesSummary ? (summaryLoading ? "…" : formatNumber(themeSummary.billCount)) : "—"}</strong>
+              </div>
+              <div className="pos-theme-stat">
+                <span>{t("pos_theme.summary.in_stock")}</span>
+                <strong>{canViewStockSummary ? (summaryLoading ? "…" : formatNumber(themeSummary.inStock)) : "—"}</strong>
+              </div>
+            </div>
+          </section>
           <nav>
             {groups.length ? groups.map(group => {
               const groupOpen = openGroups.has(group.id);
