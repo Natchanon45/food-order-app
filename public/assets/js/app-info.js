@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.05.119',
+  build: '2026.10.05.120',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-PRODUCT-STOCK-COMMAND-CENTER',
+  commit: 'POS-PRODUCT-EDITOR-POLISH',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS Product & Stock Command Center',
-  updatedAt: '2026-10-05T00:54:31+0700',
+  milestone: 'Retail POS Product editor and pagination polish',
+  updatedAt: '2026-10-05T01:18:00+0700',
   whatsNew: [
-    'Redesign Products & Stock with a colorful command-center hero and stock-health visuals',
-    'Add category mix analytics, inventory retail value, responsive product cards, and semantic action icons',
-    'Preserve realtime product/category/stock watchers, barcode scan, drag sorting, permissions, and tenant boundaries'
+    'Default Products pagination to 10 rows with 10/25/50/100 page-size choices and balanced ellipsis spacing',
+    'Redesign Product and Category dialogs with complete semantic icons and a custom drag/drop image upload surface',
+    'Preserve product/category CRUD, stock operations, barcode scanning, drag sorting, permissions, and tenant boundaries'
   ]
 };
 

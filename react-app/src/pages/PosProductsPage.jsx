@@ -30,7 +30,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
 
-const PRODUCT_PAGE_SIZES = [10, 20, 50, 100];
+const PRODUCT_PAGE_SIZES = [10, 25, 50, 100];
 const CATEGORY_PAGE_SIZES = [10, 20, 50];
 const PRODUCT_PATTERN = /^P\d{9}$/;
 const emptyProduct = () => ({
@@ -140,6 +140,7 @@ export function PosProductsPage() {
   });
 
   const productDialogRef = useRef(null);
+  const imageInputRef = useRef(null);
   const categoryDialogRef = useRef(null);
   const stockDialogRef = useRef(null);
   const scanDialogRef = useRef(null);
@@ -172,7 +173,7 @@ export function PosProductsPage() {
   const [productSearch, setProductSearch] = useState("");
   const [stockFilter, setStockFilter] = useState("all");
   const [productPage, setProductPage] = useState(1);
-  const [productPageSize, setProductPageSize] = useState(20);
+  const [productPageSize, setProductPageSize] = useState(10);
 
   const [categorySearch, setCategorySearch] = useState("");
   const [categoryStatus, setCategoryStatus] = useState("all");
@@ -187,6 +188,7 @@ export function PosProductsPage() {
   const [categoryPickerSearch, setCategoryPickerSearch] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
+  const [imageDropActive, setImageDropActive] = useState(false);
   const [removeImage, setRemoveImage] = useState(false);
 
   const [categoryEditing, setCategoryEditing] = useState(null);
@@ -534,6 +536,7 @@ export function PosProductsPage() {
     setCategoryPickerSearch(next.category);
     setProductFormError("");
     setImageFile(null);
+    setImageDropActive(false);
     setRemoveImage(false);
     setImagePreview(next.imageUrl || "");
     productDialogRef.current?.showModal?.();
@@ -545,9 +548,31 @@ export function PosProductsPage() {
     setCategoryPickerSearch(product.category || "");
     setProductFormError("");
     setImageFile(null);
+    setImageDropActive(false);
     setRemoveImage(false);
     setImagePreview(product.imageUrl || "");
     productDialogRef.current?.showModal?.();
+  };
+
+  const selectProductImage = file => {
+    if (!file) return;
+    if (!String(file.type || "").startsWith("image/")) {
+      showToast(tr("runtime.image_choose"), "error");
+      return;
+    }
+    setImageFile(file);
+    setRemoveImage(false);
+    setImageDropActive(false);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const clearProductImage = () => {
+    setImageFile(null);
+    setRemoveImage(true);
+    setImageDropActive(false);
+    setImagePreview("");
+    setProductForm(current => ({ ...current, imageUrl: "" }));
+    if (imageInputRef.current) imageInputRef.current.value = "";
   };
 
   const chooseProductCategory = category => {
@@ -1034,7 +1059,7 @@ export function PosProductsPage() {
             <div className="sort-column"><div className="sort-column-head"><div><h3>{tr("sort_manager.category_title")}</h3><span>{tr("sort_manager.category_help")}</span></div></div><div className="sort-list" ref={categorySortRef}>{orderedCategoryIds.map((id, index) => <div className={"sort-row" + (id === selectedSortCategory ? " active" : "") + (id === "quick" ? " best-seller" : "")} data-category-id={id} key={id}><span className="sort-handle"><i className="bi bi-grip-vertical"></i></span><button type="button" className="sort-row-main" onClick={() => setSelectedSortCategory(id)}><span className="sort-row-title">{id === "quick" ? tr("sort_manager.best_sellers") : id === "all" ? tr("sort_manager.all") : id.slice(9)}</span></button><span className="sort-order-badge">{index + 1}</span></div>)}</div></div>
             <div className="sort-column"><div className="sort-column-head"><div><h3>{tr("sort_manager.products_title", { category: selectedSortCategory === "quick" ? tr("sort_manager.best_sellers") : selectedSortCategory === "all" ? tr("sort_manager.all") : selectedSortCategory.slice(9) })}</h3><span>{tr("sort_manager.products_help")}</span></div></div>
               <div className="sort-list" ref={productSortRef}>{selectedSortCategory === "quick" ? <div className="sort-empty">{tr("sort_manager.best_sellers_locked")}</div> : selectedSortCategory === "all" ? <div className="sort-empty">{tr("sort_manager.all_auto")}</div> : sortProducts.length ? sortProducts.map((product, index) => <div className="sort-row" data-product-id={product.id} key={product.id}><span className="sort-handle"><i className="bi bi-grip-vertical"></i></span><div className="sort-row-main"><span className="sort-row-title">{product.name}</span><span className="sort-row-meta">{product.id} • {product.barcode || tr("sort_manager.no_barcode")}</span></div><span className="sort-order-badge">{index + 1}</span></div>) : <div className="sort-empty">{tr("sort_manager.category_empty")}</div>}</div>
-              <div className="sort-footer"><p className="sort-note">{tr("sort_manager.note")}</p><button className="sort-save" type="button" disabled={saving} onClick={saveSort}>{saving ? tr("sort_manager.saving") : tr("sort_manager.save")}</button></div>
+              <div className="sort-footer"><p className="sort-note">{tr("sort_manager.note")}</p><button className="sort-save" type="button" disabled={saving} onClick={saveSort}><i className={`bi bi-${saving ? "arrow-repeat sort-save-spin" : "floppy"}`} aria-hidden="true"></i><span>{saving ? tr("sort_manager.saving") : tr("sort_manager.save")}</span></button></div>
             </div>
           </div>
         </section>
@@ -1045,11 +1070,20 @@ export function PosProductsPage() {
         </section>
       </main>
 
-      <dialog data-pos-management-dialog id="productDialog" ref={productDialogRef}>
-        <form id="productForm" className="payment-form" onSubmit={submitProduct}>
-          <div className="dialog-head"><h2 id="productDialogTitle">{editingProductId ? tr("product_form.edit_title") : tr("product_form.add_title")}</h2><button id="closeProductDialog" type="button" className="icon-btn" onClick={() => productDialogRef.current?.close?.()}><i className="bi bi-x-lg"></i></button></div>
+      <dialog data-pos-management-dialog id="productDialog" ref={productDialogRef} className="product-editor-dialog">
+        <form id="productForm" className="payment-form product-editor-form" onSubmit={submitProduct}>
+          <div className="dialog-head product-editor-head">
+            <div className="dialog-title-cluster">
+              <span className="dialog-title-icon product"><i className="bi bi-box-seam-fill" aria-hidden="true"></i></span>
+              <div>
+                <h2 id="productDialogTitle">{editingProductId ? tr("product_form.edit_title") : tr("product_form.add_title")}</h2>
+                <p>{tr("products.description")}</p>
+              </div>
+            </div>
+            <button id="closeProductDialog" type="button" className="icon-btn" aria-label={tr("common.close")} onClick={() => productDialogRef.current?.close?.()}><i className="bi bi-x-lg"></i></button>
+          </div>
           <input id="editingProductId" type="hidden" value={editingProductId} readOnly />
-          <div className="form-grid">
+          <div className="form-grid product-core-grid">
             <label>{tr("product_form.id")}<input id="productId" required maxLength={10} value={productForm.id} disabled={Boolean(editingProductId)} onChange={event => setProductForm(current => ({ ...current, id: event.target.value.toUpperCase() }))} placeholder={tr("product_form.id_placeholder")} /></label>
             <label>{tr("product_form.barcode")}<input id="productBarcode" required maxLength={50} inputMode="numeric" value={productForm.barcode} onChange={event => setProductForm(current => ({ ...current, barcode: event.target.value }))} /></label>
             <label className="full">{tr("product_form.name")}<input id="productName" required maxLength={120} value={productForm.name} onChange={event => setProductForm(current => ({ ...current, name: event.target.value }))} /></label>
@@ -1058,23 +1092,95 @@ export function PosProductsPage() {
             <label>{tr("product_form.initial_stock")}<input id="productStock" required type="number" min="0" step="1" value={productForm.stock} onChange={event => setProductForm(current => ({ ...current, stock: event.target.value }))} /></label>
             <label>{tr("product_form.min_stock")}<input id="productMinStock" required type="number" min="0" step="1" value={productForm.minStock} onChange={event => setProductForm(current => ({ ...current, minStock: event.target.value }))} /></label>
             <section className="merch-form-section">
-              <h3>{tr("merch.title")}</h3><div className="merch-grid">
+              <h3><span className="merch-section-icon"><i className="bi bi-shop-window" aria-hidden="true"></i></span>{tr("merch.title")}</h3>
+              <div className="merch-grid">
                 {canViewCost ? <label>{tr("merch.cost")}<input type="number" min="0" step="0.01" value={productForm.cost} onChange={event => setProductForm(current => ({ ...current, cost: event.target.value }))} placeholder={tr("merch.cost_placeholder")} /></label> : null}
                 <label>{tr("merch.category")}<div className="category-combobox"><input type="search" value={categoryPickerSearch} onFocus={() => setCategoryPickerOpen(true)} onChange={event => { setCategoryPickerSearch(event.target.value); setProductForm(current => ({ ...current, categoryId: "", category: "" })); setCategoryPickerOpen(true); }} placeholder={tr("merch.category_search")} />{categoryPickerOpen ? <div className="category-combobox-options"><button type="button" className="category-combobox-create" onClick={() => openCategoryEditor(null, { fromProduct: true })}><i className="bi bi-plus-circle"></i><span>{tr("merch.create_category")}</span></button>{productCategoryOptions.map(category => <button type="button" key={category.id} onClick={() => chooseProductCategory(category)}><span>{category.name}</span></button>)}{!productCategoryOptions.length ? <p className="category-combobox-empty">{tr("merch.category_not_found")}</p> : null}</div> : null}</div></label>
                 <label>{tr("merch.sort_order")}<input type="number" min="0" step="1" value={productForm.sortOrder} onChange={event => setProductForm(current => ({ ...current, sortOrder: event.target.value }))} /></label>
-                <label className="full">{tr("merch.upload_image")}<input type="file" accept="image/*" onChange={event => { const file = event.target.files?.[0] || null; setImageFile(file); setRemoveImage(false); if (imagePreview.startsWith("blob:")) URL.revokeObjectURL(imagePreview); setImagePreview(file ? URL.createObjectURL(file) : clean(productForm.imageUrl)); }} /></label>
+                <div className="full product-upload-field">
+                  <span className="product-upload-label">{tr("merch.upload_image")}</span>
+                  <div
+                    className={"product-upload-dropzone" + (imageDropActive ? " is-dragover" : "") + (imageFile || imagePreview ? " has-file" : "")}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={tr("merch.upload_image")}
+                    onClick={() => imageInputRef.current?.click?.()}
+                    onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); imageInputRef.current?.click?.(); } }}
+                    onDragEnter={event => { event.preventDefault(); setImageDropActive(true); }}
+                    onDragOver={event => { event.preventDefault(); event.dataTransfer.dropEffect = "copy"; setImageDropActive(true); }}
+                    onDragLeave={event => { event.preventDefault(); setImageDropActive(false); }}
+                    onDrop={event => { event.preventDefault(); setImageDropActive(false); selectProductImage(event.dataTransfer.files?.[0] || null); }}
+                  >
+                    <input id="productImageInput" ref={imageInputRef} className="product-upload-input" type="file" accept="image/*" tabIndex={-1} onChange={event => selectProductImage(event.target.files?.[0] || null)} />
+                    <div className="product-upload-content">
+                      <span className="product-upload-icon"><i className="bi bi-cloud-arrow-up-fill" aria-hidden="true"></i></span>
+                      <div className="product-upload-title">{tr("merch.drop_title")}</div>
+                      <div className="product-upload-help">{tr("merch.drop_help")}</div>
+                      {imageFile ? <div className="product-upload-file"><i className="bi bi-file-earmark-image" aria-hidden="true"></i><span>{tr("merch.selected")}: {imageFile.name}</span></div> : null}
+                    </div>
+                  </div>
+                </div>
                 <label className="full">{tr("merch.image_url")}<input type="url" maxLength={1000} value={productForm.imageUrl} onChange={event => { setProductForm(current => ({ ...current, imageUrl: event.target.value })); if (!imageFile) setImagePreview(event.target.value); }} placeholder={tr("merch.image_url_placeholder")} /></label>
-                <div className="full image-editor-row"><div className="product-image-preview">{imagePreview ? <img src={imagePreview} alt={tr("merch.image_alt")} /> : clean(productForm.name).slice(0, 2).toUpperCase() || tr("merch.no_image")}</div><button className="btn btn-danger" type="button" onClick={() => { setImageFile(null); setRemoveImage(true); setImagePreview(""); setProductForm(current => ({ ...current, imageUrl: "" })); }}>{tr("merch.remove_image")}</button></div>
-              </div><div className="merch-options"><label><input type="checkbox" checked={productForm.showOnPos !== false} onChange={event => setProductForm(current => ({ ...current, showOnPos: event.target.checked }))} /> {tr("merch.show_on_pos")}</label></div>{canViewCost ? <p className="product-sub">{tr("merch.cost_help")}</p> : null}
+                <div className="full image-editor-row">
+                  <div className="product-image-preview">{imagePreview ? <img src={imagePreview} alt={tr("merch.image_alt")} /> : clean(productForm.name).slice(0, 2).toUpperCase() || tr("merch.no_image")}</div>
+                  <div className="product-image-preview-actions">
+                    <strong>{tr("merch.image_alt")}</strong>
+                    <span>{imageFile?.name || (imagePreview ? tr("merch.selected") : tr("merch.no_image"))}</span>
+                    <button className="btn btn-danger" type="button" onClick={clearProductImage}><i className="bi bi-trash3" aria-hidden="true"></i><span>{tr("merch.remove_image")}</span></button>
+                  </div>
+                </div>
+              </div>
+              <div className="merch-options"><label><input type="checkbox" checked={productForm.showOnPos !== false} onChange={event => setProductForm(current => ({ ...current, showOnPos: event.target.checked }))} /> <span>{tr("merch.show_on_pos")}</span></label></div>
+              {canViewCost ? <p className="product-sub">{tr("merch.cost_help")}</p> : null}
             </section>
           </div>
-          <p id="productFormError" className="error-text">{productFormError}</p><div className="dialog-actions"><button id="cancelProductBtn" type="button" className="btn btn-secondary" onClick={() => productDialogRef.current?.close?.()}>{tr("common.cancel")}</button><button type="submit" className="btn btn-pay" disabled={saving}>{tr("product_form.save")}</button></div>
+          <p id="productFormError" className="error-text">{productFormError}</p>
+          <div className="dialog-actions product-editor-actions">
+            <button id="cancelProductBtn" type="button" className="btn btn-secondary" onClick={() => productDialogRef.current?.close?.()}><i className="bi bi-x-circle" aria-hidden="true"></i><span>{tr("common.cancel")}</span></button>
+            <button type="submit" className="btn btn-pay" disabled={saving}><i className={`bi bi-${saving ? "arrow-repeat dialog-action-spin" : "floppy"}`} aria-hidden="true"></i><span>{tr("product_form.save")}</span></button>
+          </div>
         </form>
       </dialog>
 
-      <dialog data-pos-management-dialog id="categoryDialog" ref={categoryDialogRef}><form id="categoryForm" className="payment-form" onSubmit={submitCategory}><div className="dialog-head"><h2 id="categoryDialogTitle">{categoryEditing?.id && !categoryEditing?.derived ? tr("category_form.edit_title") : tr("category_form.add_title")}</h2><button id="closeCategoryDialog" type="button" className="icon-btn" onClick={closeCategoryEditor}><i className="bi bi-x-lg"></i></button></div><label>{tr("category_form.name")}<input id="categoryName" type="text" maxLength={80} required value={categoryName} onChange={event => setCategoryName(event.target.value)} placeholder={tr("category_form.placeholder")} /></label><p id="categoryDialogHint" className="category-dialog-hint">{categoryEditing?.productCount ? tr("category_form.hint_with_count", { count: formatNumber(categoryEditing.productCount) }) : tr("category_form.hint_empty")}</p><p id="categoryFormError" className="error-text">{categoryFormError}</p><div className="dialog-actions"><button id="cancelCategoryBtn" type="button" className="btn btn-secondary" onClick={closeCategoryEditor}>{tr("common.cancel")}</button><button id="saveCategoryBtn" type="submit" className="btn btn-pay" disabled={saving}>{tr("category_form.save")}</button></div></form></dialog>
+      <dialog data-pos-management-dialog id="categoryDialog" ref={categoryDialogRef} className="category-editor-dialog">
+        <form id="categoryForm" className="payment-form category-editor-form" onSubmit={submitCategory}>
+          <div className="dialog-head category-editor-head">
+            <div className="dialog-title-cluster">
+              <span className="dialog-title-icon category"><i className="bi bi-tags-fill" aria-hidden="true"></i></span>
+              <div>
+                <h2 id="categoryDialogTitle">{categoryEditing?.id && !categoryEditing?.derived ? tr("category_form.edit_title") : tr("category_form.add_title")}</h2>
+                <p>{tr("categories.description")}</p>
+              </div>
+            </div>
+            <button id="closeCategoryDialog" type="button" className="icon-btn" aria-label={tr("common.close")} onClick={closeCategoryEditor}><i className="bi bi-x-lg"></i></button>
+          </div>
+          <div className="category-editor-body">
+            <label className="category-name-field"><span><i className="bi bi-tag-fill" aria-hidden="true"></i>{tr("category_form.name")}</span><input id="categoryName" type="text" maxLength={80} required value={categoryName} onChange={event => setCategoryName(event.target.value)} placeholder={tr("category_form.placeholder")} /></label>
+            <div id="categoryDialogHint" className="category-dialog-hint-card"><span className="category-hint-icon"><i className="bi bi-info-circle-fill" aria-hidden="true"></i></span><p>{categoryEditing?.productCount ? tr("category_form.hint_with_count", { count: formatNumber(categoryEditing.productCount) }) : tr("category_form.hint_empty")}</p></div>
+            <p id="categoryFormError" className="error-text">{categoryFormError}</p>
+          </div>
+          <div className="dialog-actions category-editor-actions">
+            <button id="cancelCategoryBtn" type="button" className="btn btn-secondary" onClick={closeCategoryEditor}><i className="bi bi-x-circle" aria-hidden="true"></i><span>{tr("common.cancel")}</span></button>
+            <button id="saveCategoryBtn" type="submit" className="btn btn-pay" disabled={saving}><i className={`bi bi-${saving ? "arrow-repeat dialog-action-spin" : "floppy"}`} aria-hidden="true"></i><span>{tr("category_form.save")}</span></button>
+          </div>
+        </form>
+      </dialog>
 
-      <dialog data-pos-management-dialog id="stockDialog" ref={stockDialogRef}><form id="stockForm" className="payment-form" onSubmit={submitStock}><div className="dialog-head"><h2>{tr("stock_form.title")}</h2><button id="closeStockDialog" type="button" className="icon-btn" onClick={() => stockDialogRef.current?.close?.()}><i className="bi bi-x-lg"></i></button></div><input id="stockProductId" type="hidden" value={stockForm.productId} readOnly /><div id="stockProductName" className="stock-product-name">{selectedStockProduct ? tr("stock_form.remaining", { product: selectedStockProduct.name, stock: formatNumber(selectedStockProduct.stock) + " " + selectedStockProduct.unit }) : ""}</div><label>{tr("stock_form.action")}<select id="stockAction" value={stockForm.action} onChange={event => setStockForm(current => ({ ...current, action: event.target.value }))}><option value="add">{tr("stock_form.add")}</option><option value="remove">{tr("stock_form.remove")}</option><option value="set">{tr("stock_form.set")}</option></select></label><label>{tr("stock_form.quantity")}<input id="stockQuantity" required type="number" min="0" step="1" value={stockForm.quantity} onChange={event => setStockForm(current => ({ ...current, quantity: event.target.value }))} /></label><label>{tr("stock_form.note")}<input id="stockNote" maxLength={150} value={stockForm.note} onChange={event => setStockForm(current => ({ ...current, note: event.target.value }))} placeholder={tr("stock_form.note_placeholder")} /></label><p id="stockFormError" className="error-text">{stockFormError}</p><div className="dialog-actions"><button id="cancelStockBtn" type="button" className="btn btn-secondary" onClick={() => stockDialogRef.current?.close?.()}>{tr("common.cancel")}</button><button type="submit" className="btn btn-pay" disabled={saving}>{tr("stock_form.confirm")}</button></div></form></dialog>
+      <dialog data-pos-management-dialog id="stockDialog" ref={stockDialogRef}>
+        <form id="stockForm" className="payment-form" onSubmit={submitStock}>
+          <div className="dialog-head"><h2><i className="bi bi-box-arrow-in-down pos-context-icon" aria-hidden="true"></i>{tr("stock_form.title")}</h2><button id="closeStockDialog" type="button" className="icon-btn" aria-label={tr("common.close")} onClick={() => stockDialogRef.current?.close?.()}><i className="bi bi-x-lg"></i></button></div>
+          <input id="stockProductId" type="hidden" value={stockForm.productId} readOnly />
+          <div id="stockProductName" className="stock-product-name">{selectedStockProduct ? tr("stock_form.remaining", { product: selectedStockProduct.name, stock: formatNumber(selectedStockProduct.stock) + " " + selectedStockProduct.unit }) : ""}</div>
+          <label>{tr("stock_form.action")}<select id="stockAction" value={stockForm.action} onChange={event => setStockForm(current => ({ ...current, action: event.target.value }))}><option value="add">{tr("stock_form.add")}</option><option value="remove">{tr("stock_form.remove")}</option><option value="set">{tr("stock_form.set")}</option></select></label>
+          <label>{tr("stock_form.quantity")}<input id="stockQuantity" required type="number" min="0" step="1" value={stockForm.quantity} onChange={event => setStockForm(current => ({ ...current, quantity: event.target.value }))} /></label>
+          <label>{tr("stock_form.note")}<input id="stockNote" maxLength={150} value={stockForm.note} onChange={event => setStockForm(current => ({ ...current, note: event.target.value }))} placeholder={tr("stock_form.note_placeholder")} /></label>
+          <p id="stockFormError" className="error-text">{stockFormError}</p>
+          <div className="dialog-actions">
+            <button id="cancelStockBtn" type="button" className="btn btn-secondary" onClick={() => stockDialogRef.current?.close?.()}><i className="bi bi-x-circle" aria-hidden="true"></i><span>{tr("common.cancel")}</span></button>
+            <button type="submit" className="btn btn-pay" disabled={saving}><i className="bi bi-check2-circle" aria-hidden="true"></i><span>{tr("stock_form.confirm")}</span></button>
+          </div>
+        </form>
+      </dialog>
 
       <dialog id="posScanDialog" ref={scanDialogRef} className="pos-scan-dialog">
         <div className="pos-scan-sheet">

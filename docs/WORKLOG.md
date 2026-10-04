@@ -6500,3 +6500,91 @@ Deploy state:
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
 - Next visual redesign route: `/pos/stock-movements`.
 - No merge to `main`.
+
+---
+## 2026-10-05 — Products pagination and editor modal polish
+
+User request:
+- Improve the visual spacing around pagination ellipses.
+- Default Products page size to 10 and use 10 / 25 / 50 / 100 choices.
+- Redesign Add/Edit Product so image upload is a custom drag/drop or click surface instead of a visible native file input.
+- Complete action icons in Product/Stock dialogs.
+- Redesign Add/Edit Product Category and complete its icons.
+- Add an icon to Save Order.
+
+Implementation:
+- Changed `PRODUCT_PAGE_SIZES` from 10/20/50/100 to 10/25/50/100.
+- Changed the Products initial page size from 20 to 10.
+- Added balanced pagination continuation spacing for both Product and Category pagination:
+  - 6px control gap,
+  - 28px ellipsis footprint on desktop/tablet,
+  - 24px on small mobile,
+  - subtle background so the continuation marker is visually separated from page buttons.
+- Rebuilt `#productDialog` presentation as `.product-editor-dialog` while preserving the existing form IDs and submit logic.
+- Added a structured visual title area, semantic Product icon, improved input surfaces, merchandising section treatment, responsive footer actions, and complete Cancel/Save/Remove Image icons.
+- Replaced the visible native image file control with `#productImageInput` hidden behind a custom `.product-upload-dropzone`:
+  - click the surface to open the file chooser,
+  - keyboard Enter/Space support,
+  - drag-enter/drag-over/drop handling,
+  - image MIME guard,
+  - selected filename chip,
+  - local image preview,
+  - no upload occurs until the existing Save Product flow runs.
+- Rebuilt `#categoryDialog` presentation as `.category-editor-dialog` with Category title icon, field icon, information hint card, and complete Cancel/Save icons.
+- Added Cancel/Confirm icons to the Adjust Stock dialog for button consistency.
+- Added a floppy/save icon to `.sort-save`, with a spinner icon while saving.
+- Added regression guards for default page size/options, custom dropzone, Product/Category editor classes/icons, pagination ellipsis styling, and Save Order icon.
+- Product/category CRUD, Firestore collection paths, image Storage path, stock transactions, barcode scanner, drag sorting, permissions, and tenant boundaries were not changed.
+
+Release prepared:
+- React `0.4.280 / 2026.10.05.405`.
+- Public `0.16.32 / 2026.10.05.120`.
+- Generated bundle: `/react/assets/index-DTV0vbyr.js`.
+
+Verification before deploy:
+- Products JSX esbuild syntax check PASS.
+- React foundation contract PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS:
+  - migration coverage PASS: 53 routes / 21 POS,
+  - parity matrix PASS,
+  - P0 action contract PASS,
+  - callable contract PASS: 54 refs / 0 missing,
+  - tenant-access PASS,
+  - UI-layer PASS.
+- `npm run build:react` PASS; generated React build contract PASS for Build `.405`.
+- `git diff --check` PASS.
+- Authenticated local-build browser contract PASS at 1440x900 and 440x956 with Firestore Write-channel / commit / batchWrite blocked.
+- Pagination:
+  - first page rendered 10 rows,
+  - selected page size = 10,
+  - choices = 10 / 25 / 50 / 100,
+  - Product ellipsis = 28px, 1px side margins, 6px control gap,
+  - Category ellipsis = 28px, 1px side margins, 6px control gap.
+- Product editor:
+  - dialog width = 880px on Desktop,
+  - custom dropzone visible,
+  - native file input computed display = none,
+  - dialog title and footer action icons present,
+  - Remove Image icon present.
+- Synthetic local image selection `product-preview.png`:
+  - selected filename chip appeared,
+  - image preview rendered,
+  - dropzone entered has-file state,
+  - product was NOT saved/uploaded.
+- Category editor:
+  - dialog width = 560px,
+  - title/hint/action icons present.
+- Save Order icon present.
+- Mobile 440x956:
+  - Product dialog left/right = 19px / 421px,
+  - width = 402px,
+  - dropzone width = 344px,
+  - document horizontal overflow = 0.
+- Page errors = 0; request failures = 0; HTTP errors = 0.
+- Firestore write attempts observed = 0.
+
+Deploy state:
+- Commit/push and Hosting-only deployment pending.
+- No Firestore Rules, Storage Rules, Functions, or Firestore data changes required.
+- No merge to `main`.
