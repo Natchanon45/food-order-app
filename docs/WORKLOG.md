@@ -5782,11 +5782,15 @@ Verification:
 - Actual local legacy `/pos/settings` was then exercised through the existing Google Chrome executable at 1440x900 and 390x844 with a non-writing owner preview session: all five radios rendered, each theme applied to the shared drawer, Theme 3 opened all 5 groups, Theme 4 alone displayed the summary block, no menu-card overlap/horizontal overflow occurred, and there were zero HTTP/page errors.
 - Unsaved theme previews on actual `/pos/settings` were verified not to alter the persisted theme cache after the saved `modern-card` value had stabilized.
 - Playwright's bundled browser was not installed on the Mac; browser checks used the existing local Google Chrome executable and completed successfully.
+- After Hosting deploy, authenticated read-only Production verification passed on React `/pos/sales` and legacy `/pos/purchases` at 1440x900 and 390x844 for all five themes. Every theme had zero menu-card overlap and no horizontal overflow; Theme 3 kept all 5 permitted groups open; Theme 4 alone displayed the summary block; HTTP and page error counts were zero.
+- Production `/pos/settings` was also verified at 1440x900 and 390x844. All five theme previews applied immediately and the persisted theme-cache entries stayed unchanged until Save; no Production data-changing action was executed.
+- The earlier isolated local static-server 404 was rechecked on the final bundle and did not reproduce: HTTP 4xx/5xx, failed requests, and page errors were all empty, so no asset or logic change was required.
 
 Release / deploy state:
 - React Version `0.4.280` / Build `2026.10.04.390`.
 - Public Version `0.16.32` / Build `2026.10.04.105`.
-- Hosting has NOT been deployed for this theme phase yet.
-- No Functions, Firestore Rules, or Storage Rules changes are required for this phase.
-- No commit / push / merge performed yet.
-- Active branch remains `feature/react-firebase-port`; local HEAD and origin were both `bc777dc323cc` before this uncommitted theme work.
+- Implementation commit `3204418f` (`feat: add tenant-selectable POS menu themes`) was pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Deployment scope was Hosting only. No Functions, Firestore Rules, or Storage Rules were deployed for this phase.
+- No merge to `main`.
+- Next POS route migration remains `/pos/purchases`.
