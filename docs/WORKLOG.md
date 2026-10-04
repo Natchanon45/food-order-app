@@ -6160,6 +6160,12 @@ Verification before deploy:
 - No return, VOID, stock, loyalty, refund, receipt-print, or other Production write operation executed.
 
 Deploy state:
-- Commit/push and Hosting-only deploy pending.
-- No Firestore Rules, Storage Rules, or Functions changes.
+- Implementation commit `67b5a082` — `fix: polish POS returns lower workflow` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.04.398` and Public `0.16.32 / 2026.10.04.113`.
+- Production `/pos/returns` returns HTTP 200 with `Cache-Control: no-cache, no-store, must-revalidate` and serves `/react/assets/index-GcRlUtI8.js`.
+- Authenticated Production lower-workflow contract PASS at 1440x900 and 440x956: receipt search returned 8 real returnable sales, selected editor opened, 4 field cards / 4 field icons / 2 Loyalty metric icons rendered, Select Bill / Select New Bill / VOID / Confirm icons rendered, summary/history gradients rendered, and no document overflow/raw translation/page/request/HTTP errors occurred.
+- Quantity 1 was entered only into React state to verify the visual total and action state (`44.00 บาท`); Confirm used `check2-circle`, VOID used `x-octagon`; neither action was clicked.
+- No return, VOID, stock, loyalty, refund, receipt-print, or other Production write operation executed during verification.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions changes/deploys.
+- Next visual redesign route: `/pos/shifts`.
 - No merge to `main`.
