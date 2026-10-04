@@ -472,6 +472,15 @@
   background:transparent!important;
   box-shadow:none!important;
 }
+.shift-form>.btn .pos-context-icon,
+.shift-form>.btn .pos-context-icon::before{
+  color:#fff!important;
+  opacity:1!important;
+}
+.shift-form>.btn .pos-context-icon{
+  font-size:1.05rem!important;
+  text-shadow:0 1px 3px rgba(4,72,45,.5);
+}
 .shift-stats{
   grid-template-columns:repeat(3,minmax(0,1fr))!important;
   gap:12px!important;

@@ -6304,3 +6304,51 @@ Deploy state:
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions changes/deploys.
 - Next visual redesign route: `/pos/products`.
 - No merge to `main`.
+
+---
+## 2026-10-05 — Shift clear-history persistence + open button icon contrast
+
+Reported:
+- The Open Shift & Start Selling button icon was too dark/low-contrast on the green action button.
+- Clearing Shift History removed rows only temporarily; leaving/re-entering or reloading `/pos/shifts` restored the same Firestore history.
+
+Root cause:
+- The Open Shift action reused `.pos-context-icon` tone styling, so the icon inherited a dark green color on top of the green gradient button.
+- `clearLocalPosShiftHistory()` deleted only `retail_pos_shift_history_v1`. On reload, `listPosShiftsParity()` / `watchPosShiftsParity()` read the same closed shifts from Firestore and merged them back into local history.
+
+Implementation:
+- Added device-local, tenant-scoped clear watermark key `retail_pos_shift_history_clear_v1`.
+- `clearLocalPosShiftHistory(tenantId)` now records the current timestamp for that tenant, clears the local history rows for that tenant, announces the local shift update, and does not delete any Firestore shift document.
+- Closed shifts whose close/update timestamp is at or before the tenant's clear watermark are filtered from local history, Firestore/server rows, queued close overlays, server-to-local history merges, and `localShiftHistoryRows()`.
+- Open shifts are never filtered by the history clear watermark.
+- Any shift closed after the clear watermark remains visible normally, so clearing history is not a permanent blanket hide.
+- Added the clear-watermark key to cross-tab storage listeners.
+- Forced the Open Shift button icon and glyph `::before` to white with full opacity and a subtle dark-green text shadow.
+- Added regression contracts for persistent tenant-scoped clear-history filtering and the high-contrast Open Shift icon.
+
+Release prepared:
+- React `0.4.280 / 2026.10.05.402`.
+- Public `0.16.32 / 2026.10.05.117`.
+- Generated bundle: `/react/assets/index-iid6CYwD.js`.
+
+Verification before deploy:
+- `react-app/src/data/retailPosShifts.js` syntax check through esbuild PASS.
+- React foundation contract PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS; generated build contract PASS for Build `.402`.
+- `git diff --check` PASS.
+- Authenticated local-build browser test used a copied Chrome profile and blocked Firestore Write-channel / commit / batchWrite endpoints.
+- Before clear: 8 real closed shift rows and 8 timeline bars were visible.
+- Open Shift icon computed color = `rgb(255, 255, 255)` and icon `::before` color = `rgb(255, 255, 255)`; opacity 1; shadow active.
+- Clicking Clear History + SweetConfirm in the copied profile reduced history/timeline to 0 and displayed the empty state.
+- Local clear state stored a tenant-scoped timestamp in `retail_pos_shift_history_clear_v1`.
+- After full page reload, history remained 0 and timeline remained 0; no raw translation or horizontal overflow.
+- A synthetic closed shift timestamped one minute after the clear watermark was injected only into the copied profile local history; local Build `.402` showed exactly that one new shift and one timeline bar while keeping all pre-clear server rows hidden.
+- No Firestore write attempts, page errors, request failures, or HTTP errors occurred.
+- No real shift open/close/clear-server-history operation executed.
+
+Deploy state:
+- Commit/push and Hosting-only deploy pending.
+- No Firestore Rules, Storage Rules, Functions, or Firestore data deletion required.
+- No merge to `main`.

@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.04.116',
+  build: '2026.10.05.117',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-SHIFT-OPERATIONS-DASHBOARD',
+  commit: 'POS-SHIFTS-CLEAR-HISTORY-PERSISTENCE',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS Shift Operations Dashboard',
-  updatedAt: '2026-10-04T23:38:58+0700',
+  milestone: 'Retail POS Shifts clear-history persistence',
+  updatedAt: '2026-10-05T00:02:22+0700',
   whatsNew: [
-    'Redesign Staff Shifts as a colorful Shift Operations Dashboard with active/inactive visual states',
-    'Add shift sales trend, cash/payment mix ring, richer cash reconciliation cards, and mobile history cards',
-    'Preserve offline-first shift sync, granular permissions, opening/closing cash logic, history, and tenant boundaries'
+    'Keep cleared shift history hidden on the current device after reload without deleting Firestore records',
+    'Show the Open Shift action icon in high-contrast white on the green button',
+    'Preserve new future shift history, offline sync, permissions, cash calculations, and tenant boundaries'
   ]
 };
 

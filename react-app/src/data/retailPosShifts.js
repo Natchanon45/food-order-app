@@ -9,6 +9,7 @@ import {
 
 export const POS_ACTIVE_SHIFT_KEY = "retail_pos_active_shift_v1";
 export const POS_SHIFT_HISTORY_KEY = "retail_pos_shift_history_v1";
+export const POS_SHIFT_HISTORY_CLEAR_KEY = "retail_pos_shift_history_clear_v1";
 export const POS_SHIFT_QUEUE_KEY = "retail_pos_shift_sync_queue_v1";
 const DEVICE_KEY = "retail_pos_device_id_v1";
 const RETRY_DELAYS = [1000, 3000, 10000, 30000];
@@ -50,6 +51,22 @@ const historyRows = () => {
   const rows = readJson(POS_SHIFT_HISTORY_KEY, []);
   return Array.isArray(rows) ? rows : [];
 };
+const historyClearState = () => {
+  const state = readJson(POS_SHIFT_HISTORY_CLEAR_KEY, {});
+  return state && typeof state === "object" && !Array.isArray(state) ? state : {};
+};
+const historyClearedAt = tenantId => Number(historyClearState()[String(tenantId || "")] || 0);
+const closedShiftTime = shift => shiftTime(
+  shift?.closedAt
+  || shift?.updatedAt
+  || shift?.createdAt
+  || shift?.openedAt,
+);
+const isClearedHistoryShift = (shift, tenantId) => {
+  if (!shift || String(shift.status || "") !== "closed") return false;
+  const cutoff = historyClearedAt(tenantId);
+  return cutoff > 0 && closedShiftTime(shift) <= cutoff;
+};
 const announce = () => window.dispatchEvent(new Event("retail:shift-sync"));
 function writeQueue(rows) {
   writeJson(POS_SHIFT_QUEUE_KEY, rows.slice(-500));
@@ -85,6 +102,7 @@ function removeQueue(operation, tenantId) {
 function writeHistoryShift(shift) {
   const rows = historyRows();
   const tenantId = shift?.tenantId || "";
+  if (isClearedHistoryShift(shift, tenantId)) return;
   writeJson(POS_SHIFT_HISTORY_KEY, [
     shift,
     ...rows.filter(row =>
@@ -244,14 +262,18 @@ export function getLocalActivePosShift(tenantId, userId = "") {
 }
 
 export function overlayPendingPosShifts(tenantId, rows = []) {
+  const visibleHistory = row => !isClearedHistoryShift(row, tenantId);
   const local = [
-    ...historyRows().filter(row => belongs(row, tenantId)),
+    ...historyRows().filter(row => belongs(row, tenantId) && visibleHistory(row)),
     readJson(POS_ACTIVE_SHIFT_KEY, null),
   ].filter(row => row && belongs(row, tenantId));
   const byId = new Map(local.map(row => [String(row.id), row]));
-  (rows || []).forEach(row => byId.set(String(row.id), row));
+  (rows || [])
+    .filter(visibleHistory)
+    .forEach(row => byId.set(String(row.id), row));
   queueRows().filter(row => belongs(row, tenantId))
     .sort((left, right) => String(left.queuedAt || "").localeCompare(String(right.queuedAt || "")))
+    .filter(record => visibleHistory(record.shift))
     .forEach(record => byId.set(String(record.shiftId), record.shift));
   return [...byId.values()].sort((left, right) =>
     shiftTime(right.updatedAt || right.closedAt || right.openedAt)
@@ -277,7 +299,12 @@ export function watchPosShiftsParity(tenantId, onRows, onError = null) {
   }, onError);
   const localListener = () => emit();
   const storageListener = event => {
-    if (!event.key || [POS_ACTIVE_SHIFT_KEY, POS_SHIFT_HISTORY_KEY, POS_SHIFT_QUEUE_KEY].includes(event.key)) emit();
+    if (!event.key || [
+      POS_ACTIVE_SHIFT_KEY,
+      POS_SHIFT_HISTORY_KEY,
+      POS_SHIFT_HISTORY_CLEAR_KEY,
+      POS_SHIFT_QUEUE_KEY,
+    ].includes(event.key)) emit();
   };
   window.addEventListener("retail:shift-sync", localListener);
   window.addEventListener("storage", storageListener);
@@ -405,12 +432,22 @@ export async function syncPendingPosShifts() {
 }
 
 export function clearLocalPosShiftHistory(tenantId) {
+  const key = String(tenantId || "");
+  if (!key) return 0;
+  const clearedAt = Date.now();
   const keep = historyRows().filter(row => !belongs(row, tenantId));
   writeJson(POS_SHIFT_HISTORY_KEY, keep);
+  writeJson(POS_SHIFT_HISTORY_CLEAR_KEY, {
+    ...historyClearState(),
+    [key]: clearedAt,
+  });
+  announce();
+  return clearedAt;
 }
 
 export function localShiftHistoryRows(tenantId) {
-  return historyRows().filter(row => belongs(row, tenantId));
+  return historyRows().filter(row =>
+    belongs(row, tenantId) && !isClearedHistoryShift(row, tenantId));
 }
 
 if (typeof window !== "undefined") {
