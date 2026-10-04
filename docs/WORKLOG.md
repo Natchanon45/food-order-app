@@ -6585,6 +6585,28 @@ Verification before deploy:
 - Firestore write attempts observed = 0.
 
 Deploy state:
-- Commit/push and Hosting-only deployment pending.
-- No Firestore Rules, Storage Rules, Functions, or Firestore data changes required.
+- Implementation commit `6193437c` — `fix: polish POS product editors` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.05.405` and Public `0.16.32 / 2026.10.05.120`.
+- Production `/pos/products` returns HTTP 200 with `Cache-Control: no-cache, no-store, must-revalidate` and serves `/react/assets/index-DTV0vbyr.js`.
+- Authenticated Production contract PASS at 1440x900 and 440x956 with Firestore Write-channel / commit / batchWrite blocked.
+- Production pagination verification:
+  - first page = 10 rows,
+  - selected page size = 10,
+  - choices = 10 / 25 / 50 / 100,
+  - Product and Category ellipses = 28px,
+  - both pagination control gaps = 6px.
+- Production Product editor:
+  - width = 880px Desktop,
+  - custom dropzone height = 168px,
+  - native input computed display = none,
+  - title/footer/remove-image icons present.
+- Production Category editor:
+  - width = 560px,
+  - title/hint/footer icons present.
+- Save Order icon present.
+- Mobile 440x956 Product editor: left/right = 19px / 421px, width = 402px, dropzone width = 344px, document horizontal overflow = 0.
+- Raw translation keys = 0; page errors = 0; request failures = 0; HTTP errors = 0; Firestore write attempts observed = 0.
+- No Product/Category/Stock/Sort write operation was executed during verification.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
+- Next visual redesign route: `/pos/stock-movements`.
 - No merge to `main`.
