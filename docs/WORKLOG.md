@@ -6909,6 +6909,22 @@ Verification before deploy:
 - Firestore write attempts observed = 0.
 
 Deploy state:
-- Commit/push and Hosting-only deployment pending.
-- No Firestore Rules, Storage Rules, Functions, or Firestore data changes required.
+- Implementation commit `42e9faef` — `fix: align platform branding assets` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.05.408` and Public `0.16.32 / 2026.10.05.123`.
+- Production `/login` serves `/react/assets/index-D8ewk-h8.js`; canonical Home `/` serves `/assets/js/platform-branding-runtime.js?v=20261005-123`.
+- Authenticated Production branding-geometry contract PASS with the currently uploaded Branding and Firestore Write/commit/batchWrite blocked.
+- Production Desktop:
+  - Home `/`: App Icon target = 42x42, inner image = 36x36, natural source = 512x512, object-fit contain.
+  - Login: Logo target/image = 220x110, natural source = 2172x1086 (2:1), object-fit contain.
+  - Kitchen: App Icon target = 42x42, inner image = 36x36, no crop.
+  - Admin: App Icon target = 42x42, inner image = 36x36, no crop.
+- Production Mobile 390x844:
+  - Login Logo = 190x95.
+  - Home App Icon = 36x36 with 32x32 contained image.
+  - document horizontal overflow = 0.
+- Home confirms the static Branding runtime is active and no longer remains PG-only when Branding exists.
+- Page errors = 0; request failures = 0; HTTP errors = 0; Firestore write attempts observed = 0.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
+- No Branding settings were changed during verification; existing uploaded assets were read only.
+- Next visual redesign route: `/pos/stock-movements`.
 - No merge to `main`.
