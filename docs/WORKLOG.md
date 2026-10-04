@@ -5715,9 +5715,19 @@ Regression / verification:
 - git diff --check PASS.
 
 Release / deploy:
-- Prepared React 0.4.280 / Build 2026.10.04.389.
-- Prepared Public 0.16.32 / Build 2026.10.04.104.
-- Implementation commit/push and Hosting-only deploy pending.
-- Production verification must expand all permitted groups on one React route and one legacy route and assert no adjacent card overlap.
-- No Functions, Firestore Rules, or Storage Rules changes.
+- React 0.4.280 / Build 2026.10.04.389.
+- Public 0.16.32 / Build 2026.10.04.104.
+- Implementation commit 5bae6a5b (fix: prevent expanded POS menu card overlap) was pushed to origin/feature/react-firebase-port.
+- Firebase Hosting target foodapp deployed successfully; no Functions, Firestore Rules, or Storage Rules were deployed.
+- Production HTTP checks:
+  - React /pos returns HTTP 200 with no-cache/no-store/must-revalidate and /react/assets/index-D2SmItWg.js.
+  - Legacy /pos/purchases returns HTTP 200 and references retail-pos-navigation.css?v=20261004-104.
+  - deployed navigation CSS contains Modern Card v2.3 flex-column natural-height rules.
+- Authenticated read-only Production verification with all 5 permitted groups open:
+  - React desktop /pos: nav flex-column, client 590px / scroll 1160px / scrollTop 568px; card heights 315/217/217/119/217px; every adjacent pair overlapNext=-12px (true 12px gap); last group fully visible; footer fixed at 822–884px; no HTTP/page errors.
+  - Legacy desktop /pos/purchases: same 590/1160/568 metrics, same card heights, same -12px gaps, last group fully visible, footer fixed, no HTTP/page errors.
+  - React mobile 390x844 /pos: nav client 567px / scroll 1064px / scrollTop 495px; card heights 293/201/201/109/201px; every adjacent pair overlapNext=-9px; last group fully visible; footer fixed at 774–832px; document width exactly 390px; no horizontal overflow or HTTP/page errors.
+- Production browser contract result: PRODUCTION_V23_NO_OVERLAP=PASS.
+- No Production data-changing POS action was executed.
+- Modern Card v2.3 expanded-card overlap fix is complete on Production Build 2026.10.04.389.
 - No merge to main.
