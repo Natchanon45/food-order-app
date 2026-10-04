@@ -5636,9 +5636,19 @@ Full verification:
 - git diff --check PASS.
 
 Release / deploy:
-- Prepared React 0.4.280 / Build 2026.10.04.388.
-- Prepared Public 0.16.32 / Build 2026.10.04.103.
-- Implementation commit/push and Hosting-only deploy pending.
-- Production verification should open all permitted groups on both one React POS route and one legacy POS route, verify internal nav scrolling and fixed footer, and remain read-only.
-- No Functions, Firestore Rules, or Storage Rules changes.
+- React 0.4.280 / Build 2026.10.04.388.
+- Public 0.16.32 / Build 2026.10.04.103.
+- Implementation commit 2fac007c (fix: make multi-open POS menu fully scrollable) was pushed to origin/feature/react-firebase-port.
+- Firebase Hosting target foodapp deployed successfully; no Functions, Firestore Rules, or Storage Rules were deployed.
+- Production HTTP checks:
+  - React /pos/sales returns HTTP 200 with no-cache/no-store/must-revalidate and /react/assets/index-C9WRcpgj.js.
+  - Legacy /pos/purchases returns HTTP 200 and references retail-pos-navigation.css/js?v=20261004-103.
+  - deployed React/legacy CSS contains Modern Card v2.2 flex-scroll rules; deployed legacy JS contains auto-scroll logic.
+- Authenticated read-only Production all-open verification with copied owner profile:
+  - React desktop /pos/sales: before 1/5 group open; after 5/5 groups open with 15 submenu links, nav client 590px / scroll 680px / max scroll 90px / scrollTop 90px, last group fully visible, footer stayed at 822–884px, no HTTP/page errors.
+  - Legacy desktop /pos/purchases: same 5/5, 15 links, 590/680/90/90 scroll metrics, last group fully visible, footer stayed at 822–884px, no HTTP/page errors.
+  - React mobile 390x844 /pos/sales: after 5/5 groups open with 15 links, nav client 567px / scroll 646px / max scroll 79px / scrollTop 79px, last group fully visible, footer stayed at 774–832px, document width exactly 390px, no horizontal overflow and no HTTP/page errors.
+- Production browser contract result: PRODUCTION_ALL_OPEN_SCROLL=PASS.
+- Only drawer expansion/scroll interactions were used; no Production data-changing POS action was executed.
+- Modern Card v2.2 multi-open scroll fix is complete on Production Build 2026.10.04.388.
 - No merge to main.
