@@ -7,3 +7,10 @@
 .movement-product-input input::-webkit-calendar-picker-indicator{display:none!important}
 .movement-filter-clear{position:absolute;right:52px;top:50%;z-index:4;display:grid;place-items:center;width:34px;height:34px;min-height:34px;padding:0;transform:translateY(-50%);border:0;border-radius:9px;background:#eef3f0;color:#475569;font-size:1rem}
 .movement-filter-clear[hidden]{display:none!important}
+
+/* Purchases parity: legacy runtime mounts a compact scanner next to Add Product. */
+.scan-barcode-btn.scan-toolbar-btn{width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important;display:inline-grid!important;place-items:center!important;background:#000!important;color:#fff!important;border:0!important;border-radius:10px!important;padding:0!important;box-shadow:none!important}
+.scan-barcode-btn.scan-toolbar-btn span{display:none!important}
+.scan-toolbar-btn+.btn,#scanPurchaseLineBtn+#addPurchaseLineBtn{height:38px!important;min-height:38px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important}
+.purchase-lines-heading #scanPurchaseLineBtn{margin-left:auto!important}
+.purchase-lines-heading,.section-heading{gap:6px!important}

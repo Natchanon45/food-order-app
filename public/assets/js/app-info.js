@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.04.106',
+  build: '2026.10.04.107',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-NAV-LOGOUT-SPACING',
+  commit: 'POS-PURCHASES-REACT',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS navigation polish',
-  updatedAt: '2026-10-04T19:49:42+0700',
+  milestone: 'Retail POS Purchases React migration',
+  updatedAt: '2026-10-04T20:17:10+0700',
   whatsNew: [
-    'Improve spacing between the logout icon and label in the shared POS navigation drawer',
-    'Keep the logout action centered consistently across React and remaining legacy POS routes',
-    'Preserve the existing five-theme POS navigation behavior and permissions'
+    'Migrate POS goods receiving to canonical React with legacy UI and workflow parity',
+    'Preserve purchase reports, CSV export, barcode scanning, granular permissions, and weighted-average stock costing',
+    'Keep the shared tenant-selectable POS navigation themes across the migrated route'
   ]
 };
 

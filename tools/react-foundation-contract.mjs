@@ -703,6 +703,9 @@ assert(paritySync.includes('"retail-pos-catalog.css"'),"POS catalog CSS must rem
 const posProductsPage=read("react-app/src/pages/PosProductsPage.jsx");
 const posStockMovementsPage=read("react-app/src/pages/PosStockMovementsPage.jsx");
 const posStockCountsPage=read("react-app/src/pages/PosStockCountsPage.jsx");
+const posPurchasesPage=read("react-app/src/pages/PosPurchasesPage.jsx");
+const posPurchasingData=read("react-app/src/data/retailPurchasingData.js");
+const posPurchaseBarcodeCss=read("react-app/public/parity/css/retail-barcode-scan-tools.css");
 const posCatalogPage=read("react-app/src/pages/PosCatalogPage.jsx");
 const posProductsData=read("react-app/src/data/retailProductsData.js");
 assert(!posProductsPage.includes('from "@/components/UserMenu"')&&!posProductsPage.includes("<UserMenu"),"React POS Products must not add the global UserMenu on top of the legacy POS profile/menu shell");
@@ -791,6 +794,29 @@ assert(paritySync.includes('"retail-stock-counts.css"'),"POS Stock Counts CSS mu
 assert(posStockCountsPage.includes('"retail-barcode-scan-tools.css"'),"React POS Stock Counts must load the legacy barcode scanner parity CSS");
 assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/stock-counts/index.html"'),"React postbuild must sync canonical /pos/stock-counts to the React shell");
 assert(firebaseHostingConfig.includes('"source": "/pos/stock-counts"')&&firebaseHostingConfig.includes('"source": "/pos/stock-counts/**"'),"Hosting must cache-bust canonical React POS Stock Counts");
+
+const legacyPosPurchasesMaster=read("tests/fixtures/retail-pos-legacy/pos-purchases-index.html");
+const legacyPosPurchaseIds=[...legacyPosPurchasesMaster.matchAll(/id="([^"]+)"/g)].map(match=>match[1]);
+assert(legacyPosPurchaseIds.length===16&&legacyPosPurchaseIds.includes("purchaseForm")&&legacyPosPurchaseIds.includes("supplierName")&&legacyPosPurchaseIds.includes("purchaseLines")&&legacyPosPurchaseIds.includes("purchaseTotal")&&legacyPosPurchaseIds.includes("purchaseHistory")&&legacyPosPurchaseIds.includes("toast"),"Retail POS Purchases legacy MASTER fixture must preserve the pre-React 16-ID UI/action inventory");
+for(const id of legacyPosPurchaseIds) assert(posPurchasesPage.includes(`id="${id}"`),`React POS Purchases legacy ID missing: ${id}`);
+for(const id of ["scanPurchaseLineBtn","purchaseDateFrom","purchaseDateTo","purchaseThisMonth","purchaseAll","exportPurchaseCsv","purchaseCount","purchaseGrandTotal","purchaseQtyTotal","supplierCount","supplierRanking","purchaseProductRanking","posScanDialog","posScanVideo","posScanStatus"]) assert(posPurchasesPage.includes(`id="${id}"`),`React POS Purchases runtime/report ID missing: ${id}`);
+assert(appRoutes.includes('import { PosPurchasesPage }')&&appRoutes.includes('path="/pos/purchases"'),"React POS Purchases route must be mounted");
+assert(posPurchasesPage.includes("getRetailPosSession")&&posPurchasesPage.includes('pagePermissions.has("pos.purchases")')&&posPurchasesPage.includes("firstAllowedPosPage(posAccessProfile, roleRows)")&&posPurchasesPage.includes("/pos/login/?next="),"React POS Purchases session/page-permission parity missing");
+for(const permission of ["pos.purchases.create","pos.purchases.view_cost"]) assert(posPurchasesPage.includes(permission),`React POS Purchases granular permission missing: ${permission}`);
+assert(posPurchasesPage.includes('localStorage.getItem("retail_pos_roles_v1")')&&posPurchasesPage.includes("ROLE_SETTINGS_TIMEOUT_MS = 6000")&&posPurchasesPage.includes("POS_ROLE_SETTINGS_TIMEOUT"),"React POS Purchases must use cached/built-in role readiness with a bounded role-settings wait");
+assert(posPurchasesPage.includes("INITIAL_DATA_TIMEOUT_MS = 10000")&&posPurchasesPage.includes("POS_PURCHASES_INITIAL_LOAD_TIMEOUT"),"React POS Purchases initial data load must not block indefinitely");
+assert(posPurchasesPage.includes("watchRetailProducts")&&posPurchasesPage.includes("watchPosSuppliers")&&posPurchasesPage.includes("watchPosPurchases"),"React POS Purchases must keep realtime product/supplier/purchase watchers");
+assert(posPurchasesPage.includes('t(`pos_purchasing.purchases.${key}`')&&posPurchasesPage.includes('tr("form.title")')&&posPurchasesPage.includes('tr("history.title")')&&posPurchasesPage.includes('tr("report.export_csv")'),"React POS Purchases must use the five-language pos_purchasing.purchases translation catalog");
+assert(posPurchasesPage.includes('hidden={!canCreate}')&&posPurchasesPage.includes('hidden={!canViewCost}')&&posPurchasesPage.includes('currentKey="pos.purchases"'),"React POS Purchases create/cost permission visibility and shared POS shell missing");
+assert(posPurchasesPage.includes('"BarcodeDetector" in window')&&posPurchasesPage.includes("BrowserMultiFormatReader")&&posPurchasesPage.includes('scannerText("not_found")')&&posPurchasesPage.includes('const [toastType, setToastType] = useState("success")'),"React POS Purchases barcode scanner/typed Toast parity missing");
+assert(posPurchasesPage.includes("sweetAlert")&&posPurchasesPage.includes('tr("report.no_export_data")')&&posPurchasesPage.includes('retail-purchases-${dateFrom || "all"}-${dateTo || "all"}.csv'),"React POS Purchases CSV export/no-data warning parity missing");
+assert(posPurchasesPage.includes('bi bi-truck pos-context-icon')&&posPurchasesPage.includes('bi bi-plus-lg pos-context-icon')&&posPurchasesPage.includes('bi bi-download pos-context-icon')&&posPurchasesPage.includes('bi bi-bar-chart-line pos-context-icon'),"React POS Purchases must author the semantic icons injected by the legacy runtime");
+assert(posPurchasingData.includes("export function watchPosSuppliers")&&posPurchasingData.includes("export function watchPosPurchases")&&posPurchasingData.includes('purchaseId||`PO-${Date.now()}`')&&posPurchasingData.includes("documentId:String(i.documentId||i._documentId||i.productId)")&&posPurchasingData.includes("Promise.all(refs.map(entry=>tx.get(entry.ref)))"),"POS Purchases data layer must preserve PO IDs, legacy product document IDs, and transaction read-before-write safety");
+assert(posPurchasingData.includes("creditDays")&&posPurchasingData.includes('referenceType:"purchase"')&&posPurchasingData.includes("referenceNumber:id"),"POS Purchases data layer must preserve payable credit fields and stock-movement purchase references");
+assert(posPurchaseBarcodeCss.includes(".scan-barcode-btn.scan-toolbar-btn")&&posPurchaseBarcodeCss.includes(".purchase-lines-heading #scanPurchaseLineBtn"),"React POS Purchases scanner toolbar CSS parity missing");
+assert(paritySync.includes('extract_runtime_css("retail-barcode-scan-tools.js", "retail-barcode-scan-tools.css")'),"POS Purchases scanner CSS must remain sourced from the legacy runtime during parity sync");
+assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/purchases/index.html"'),"React postbuild must sync canonical /pos/purchases to the React shell");
+assert(firebaseHostingConfig.includes('"source": "/pos/purchases"')&&firebaseHostingConfig.includes('"source": "/pos/purchases/**"'),"Hosting must cache-bust canonical React POS Purchases");
 
 assert(firestoreRules.includes("function tenantProductManagerRole")&&firestoreRules.includes("function tenantStockMovementRole")&&firestoreRules.includes("settingId == 'catalog-order' && tenantProductManagerRole(tenantId)"),"POS Products Firestore role/routing rules missing");
 assert(storageRules.includes("['owner', 'admin', 'manager', 'super_admin']"),"POS product image Storage role parity missing");

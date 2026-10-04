@@ -1,8 +1,8 @@
-import { collection, deleteDoc, doc, getDoc, getDocs, runTransaction, serverTimestamp, setDoc } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, runTransaction, serverTimestamp, setDoc } from "firebase/firestore";
 import { auth, db } from "@/firebase/client";
 const tenantCollection=(tenantId,name)=>collection(db,"tenants",tenantId,name);
 const tenantDoc=(tenantId,name,id)=>doc(db,"tenants",tenantId,name,String(id));
-const row=s=>({id:s.id,...s.data()});
+const row=s=>({_documentId:s.id,id:s.id,...s.data()});
 const nowIso=()=>new Date().toISOString();
 const round2=v=>Math.round((Number(v||0)+Number.EPSILON)*100)/100;
 const requireUser=()=>{const id=auth.currentUser?.uid||"";if(!id)throw new Error("AUTH_REQUIRED");return id};
@@ -13,6 +13,11 @@ const time=v=>v?.toMillis?.()||new Date(v||0).getTime()||Number(v||0);
 export async function listPosSuppliers(tenantId){
  const snap=await getDocs(tenantCollection(tenantId,"suppliers"));
  return snap.docs.map(row).sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"th"));
+}
+export function watchPosSuppliers(tenantId,onRows,onError=()=>{}){
+ return onSnapshot(tenantCollection(tenantId,"suppliers"),snap=>{
+   onRows(snap.docs.map(row).sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"th")));
+ },onError);
 }
 export async function savePosSupplier(tenantId,input={},editingId=""){
  const userId=requireUser(), id=String(editingId||input.id||("supplier-"+crypto.randomUUID())).trim(), name=String(input.name||"").trim();
@@ -25,21 +30,41 @@ export async function listPosPurchases(tenantId){
  const snap=await getDocs(tenantCollection(tenantId,"purchases"));
  return snap.docs.map(row).sort((a,b)=>time(b.purchaseDate||b.createdAt)-time(a.purchaseDate||a.createdAt));
 }
-export async function receivePosPurchase({tenantId,supplierName,supplierId="",invoiceNo="",purchaseDate,note="",items=[]}){
- const userId=requireUser(),createdAt=nowIso(),purchaseId=safe("purchase-"+crypto.randomUUID()),date=String(purchaseDate||createdAt.slice(0,10));
- const suppliers=await listPosSuppliers(tenantId),supplier=suppliers.find(s=>s.id===supplierId)||suppliers.find(s=>String(s.name||"").toLowerCase()===String(supplierName||"").trim().toLowerCase())||null;
- const cleanItems=items.filter(i=>i.productId&&Number(i.qty)>0&&Number(i.unitCost)>=0).map(i=>({productId:String(i.productId),productName:String(i.productName||""),qty:Number(i.qty),unitCost:Number(i.unitCost)}));
- if(!String(supplierName||"").trim())throw new Error("SUPPLIER_REQUIRED"); if(!cleanItems.length)throw new Error("PURCHASE_ITEMS_REQUIRED");
+export function watchPosPurchases(tenantId,onRows,onError=()=>{}){
+ return onSnapshot(tenantCollection(tenantId,"purchases"),snap=>{
+   onRows(snap.docs.map(row).sort((a,b)=>time(b.purchaseDate||b.createdAt)-time(a.purchaseDate||a.createdAt)));
+ },onError);
+}
+export async function receivePosPurchase({tenantId,purchaseId="",supplierName,supplierId="",invoiceNo="",purchaseDate,note="",items=[]}){
+ const userId=requireUser(),createdAt=nowIso(),id=safe(String(purchaseId||`PO-${Date.now()}`)),date=String(purchaseDate||"").trim();
+ const normalizedSupplierName=String(supplierName||"").trim();
+ if(!normalizedSupplierName||!date)throw new Error("PURCHASE_REQUIRED_FIELDS");
+ const suppliers=await listPosSuppliers(tenantId),supplier=suppliers.find(s=>s.id===supplierId)||suppliers.find(s=>String(s.name||"").trim().toLowerCase()===normalizedSupplierName.toLowerCase())||null;
+ const cleanItems=items.filter(i=>i.productId&&Number(i.qty)>0&&Number(i.unitCost)>=0).map(i=>({productId:String(i.productId),documentId:String(i.documentId||i._documentId||i.productId),productName:String(i.productName||""),qty:Number(i.qty),unitCost:Number(i.unitCost)}));
+ if(!cleanItems.length)throw new Error("PURCHASE_ITEMS_REQUIRED");
+ if(new Set(cleanItems.map(item=>item.productId)).size!==cleanItems.length)throw new Error("PURCHASE_DUPLICATE_PRODUCT");
  let committed=null;
  await runTransaction(db,async tx=>{
-   const productRows=[];
-   for(const item of cleanItems){const ref=tenantDoc(tenantId,"products",item.productId),snap=await tx.get(ref);if(!snap.exists())throw new Error("PRODUCT_NOT_FOUND");const p={id:snap.id,...snap.data()},oldStock=Number(p.stock||0),known=p.cost!==null&&p.cost!==undefined&&Number.isFinite(Number(p.cost)),oldCost=known?Number(p.cost):item.unitCost,newStock=oldStock+item.qty,newCost=newStock?((oldStock*oldCost)+(item.qty*item.unitCost))/newStock:item.unitCost;productRows.push({item,p,ref,oldStock,newStock,oldCost:known?oldCost:null,newCost:Number(newCost.toFixed(4))})}
-   const total=round2(cleanItems.reduce((a,i)=>a+i.qty*i.unitCost,0)),dueDate=addDays(date,supplier?.creditDays||0);
-   const purchase={id:purchaseId,tenantId,shopId:tenantId,supplierId:supplier?.id||supplierId||"",supplierName:String(supplierName).trim(),invoiceNo:String(invoiceNo||"").trim(),purchaseDate:date,dueDate,note:String(note||"").trim(),items:productRows.map(x=>({...x.item,oldStock:x.oldStock,newStock:x.newStock,oldCost:x.oldCost,newCost:x.newCost,lineTotal:round2(x.item.qty*x.item.unitCost)})),total,paidAmount:0,balance:total,paymentStatus:total>0?"unpaid":"paid",payments:[],createdBy:userId,updatedBy:userId,createdAt,updatedAt:Date.now(),createdAtServer:serverTimestamp(),updatedAtServer:serverTimestamp()};
-   tx.set(tenantDoc(tenantId,"purchases",purchaseId),purchase);
-   productRows.forEach(x=>{tx.update(x.ref,{stock:x.newStock,cost:x.newCost,tenantId,shopId:x.p.shopId||tenantId,updatedAt:Date.now(),updatedAtServer:serverTimestamp()});const movementId=crypto.randomUUID();tx.set(tenantDoc(tenantId,"stockMovements",movementId),{id:movementId,tenantId,shopId:tenantId,productId:x.p.id,productName:x.p.name,type:"purchase",direction:"in",qty:x.item.qty,before:x.oldStock,after:x.newStock,stockBefore:x.oldStock,stockAfter:x.newStock,note:"รับสินค้าเข้า "+purchaseId,referenceType:"purchase",referenceId:purchaseId,referenceNumber:invoiceNo||purchaseId,createdBy:userId,updatedBy:userId,createdAt,updatedAt:Date.now(),createdAtServer:serverTimestamp(),updatedAtServer:serverTimestamp()})});
+   const refs=cleanItems.map(item=>({item,ref:tenantDoc(tenantId,"products",item.documentId||item.productId)}));
+   const snapshots=await Promise.all(refs.map(entry=>tx.get(entry.ref)));
+   const productRows=refs.map((entry,index)=>{
+     const snap=snapshots[index];
+     if(!snap.exists())throw new Error("PRODUCT_NOT_FOUND");
+     const p={_documentId:snap.id,id:snap.id,...snap.data()};
+     const oldStock=Number(p.stock||0),known=p.cost!==null&&p.cost!==undefined&&Number.isFinite(Number(p.cost)),oldCost=known?Number(p.cost):entry.item.unitCost,newStock=oldStock+entry.item.qty,newCost=newStock?((oldStock*oldCost)+(entry.item.qty*entry.item.unitCost))/newStock:entry.item.unitCost;
+     return{item:entry.item,p,ref:entry.ref,oldStock,newStock,oldCost:known?oldCost:null,newCost:Number(newCost.toFixed(4))};
+   });
+   const creditDays=Math.max(0,Number(supplier?.creditDays||0)),total=round2(cleanItems.reduce((a,i)=>a+i.qty*i.unitCost,0)),dueDate=addDays(date,creditDays);
+   const purchase={id,tenantId,shopId:tenantId,supplierId:supplier?.id||supplierId||"",supplierName:normalizedSupplierName,invoiceNo:String(invoiceNo||"").trim(),purchaseDate:date,creditDays,dueDate,paymentStatus:total>0?"unpaid":"paid",paidAmount:0,balance:total,payments:[],note:String(note||"").trim(),createdAt,total,items:productRows.map(x=>({productId:x.item.productId,productName:x.item.productName||x.p.name||"",qty:x.item.qty,unitCost:x.item.unitCost,oldStock:x.oldStock,newStock:x.newStock,oldCost:x.oldCost,newCost:x.newCost,lineTotal:round2(x.item.qty*x.item.unitCost)})),createdBy:userId,updatedBy:userId,updatedAt:Date.now(),createdAtServer:serverTimestamp(),updatedAtServer:serverTimestamp()};
+   tx.set(tenantDoc(tenantId,"purchases",id),purchase);
+   productRows.forEach(x=>{
+     tx.update(x.ref,{stock:x.newStock,cost:x.newCost,tenantId,shopId:x.p.shopId||tenantId,updatedAt:Date.now(),updatedAtServer:serverTimestamp()});
+     const movementId=`movement-${crypto.randomUUID()}`;
+     tx.set(tenantDoc(tenantId,"stockMovements",movementId),{id:movementId,tenantId,shopId:tenantId,productId:x.item.productId,productName:x.item.productName||x.p.name||"",type:"purchase",direction:"in",qty:x.item.qty,before:x.oldStock,after:x.newStock,stockBefore:x.oldStock,stockAfter:x.newStock,note:"รับสินค้าเข้า "+id,referenceType:"purchase",referenceId:id,referenceNumber:id,createdBy:userId,updatedBy:userId,createdAt,updatedAt:Date.now(),createdAtServer:serverTimestamp(),updatedAtServer:serverTimestamp()});
+   });
    committed=purchase;
- }); return committed;
+ });
+ return committed;
 }
 export async function recordPosPayablePayment(tenantId,purchaseId,input={}){
  const userId=requireUser(),ref=tenantDoc(tenantId,"purchases",purchaseId);let committed=null;

@@ -5834,3 +5834,53 @@ Deploy state:
 - Production asset verification PASS: `/pos/customers` references `retail-pos-navigation.css?v=20261004-106`; both legacy and React parity navigation CSS expose `column-gap:12px!important`; `/pos` serves the `index-Cu6KBM8B.js` React bundle.
 - Deployment scope was Hosting only; no Functions, Firestore Rules, or Storage Rules changes.
 - No merge to `main`.
+
+---
+
+## 2026-10-04 — Canonical React migration for POS Purchases
+
+Scope / request:
+- Continue the Retail POS React migration with `/pos/purchases` as the next canonical route.
+- Preserve the current Production legacy Purchases UI/behavior 1:1 while keeping the approved shared POS theme/navigation drawer.
+
+Legacy MASTER inventory:
+- Captured the pre-cutover `public/pos/purchases/index.html` as `tests/fixtures/retail-pos-legacy/pos-purchases-index.html` before the React shell replaces the route.
+- Preserved the 16 static legacy IDs plus the report/scanner runtime controls added by `retail-purchases-report.js` and `retail-barcode-scan-tools.js`.
+- Preserved supplier hints, multi-line receiving, stock-before display, weighted-average cost, duplicate-product validation, purchase history/search, date report filters, summary stats, supplier/product rankings, CSV export, and barcode selection behavior.
+
+React implementation:
+- Rebuilt `PosPurchasesPage` around the existing five-language `pos_purchasing.purchases` catalog and the current legacy Purchases CSS.
+- Added the canonical POS session/access flow (`getRetailPosSession`, `canUseRetailPos`, first-allowed-route redirect), bounded role-settings readiness, PageReadyOverlay, and realtime product/supplier/purchase watchers.
+- Enforced granular `pos.purchases.create` and `pos.purchases.view_cost` behavior in React without changing the page-level `pos.purchases` permission.
+- Added the legacy report/filter/ranking/CSV experience and shared SweetAlert warning for empty CSV exports.
+- Added the legacy barcode scanner behavior with BarcodeDetector and ZXing fallback plus typed Toast feedback.
+- Kept the shared tenant-selectable POS navigation/theme layer and `currentKey="pos.purchases"`.
+
+Data integrity:
+- Extended `retailPurchasingData` with realtime supplier/purchase watchers and legacy Firestore document-ID preservation.
+- Purchase receiving now uses `PO-{timestamp}` IDs, validates duplicate products, reads all product documents before transaction writes, updates stock and weighted-average cost atomically, writes purchase stock movements, and preserves credit-days/due-date/payable fields.
+- No Firestore Rules, Storage Rules, or Cloud Functions change is required; existing purchase/product/stock-movement role rules cover this flow.
+
+Cutover / cache:
+- Added `/pos/purchases` to `sync-react-legacy-entrypoints.py` so postbuild replaces the canonical legacy entry with the React shell.
+- Added no-cache Hosting headers for `/pos/purchases` and `/pos/purchases/**`.
+- Scanner runtime CSS is now extracted by the parity sync and loaded by the React route.
+- Prepared React `0.4.280 / 2026.10.04.392` and Public `0.16.32 / 2026.10.04.107`; generated bundle is `/react/assets/index-C4OBjI8J.js`.
+
+Verification:
+- `node --check react-app/src/data/retailPurchasingData.js` PASS.
+- React Purchases JSX syntax check through esbuild PASS.
+- React foundation contract PASS with new Purchases legacy-ID/report/scanner/permission/data-safety assertions.
+- Purchase translation-key coverage PASS for TH / EN / MY / LO / KM.
+- Laravel MASTER Purchases/report CSS parity check PASS (only trailing-newline difference on the main stylesheet).
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS: migration coverage 53 routes / 21 POS, parity matrix PASS, P0 contract PASS, callable contract 54 refs / 0 missing, tenant-access PASS, UI-layer PASS.
+- `npm run build:react` PASS; generated React build contract PASS for `2026.10.04.392` / `/react/assets/index-C4OBjI8J.js`.
+- `git diff --check` PASS.
+- Authenticated read-only browser test used the existing Production origin/session while intercepting the new local React shell/assets before deployment: Desktop 1440x900 and Mobile 390x844 both PASS, all 28 expected static/runtime IDs present, no raw translation keys, no document-level horizontal overflow, mobile purchase table scrolls internally, Modern Card theme/menu present, and zero page/request/HTTP errors.
+- No purchase submit, stock write, supplier write, or other Production data-changing action was executed during browser verification.
+
+Deploy state:
+- Implementation is ready for commit/push to `feature/react-firebase-port`.
+- Firebase Hosting-only deployment is next after the commit; do not deploy Functions, Firestore Rules, or Storage Rules.
+- No merge to `main`.

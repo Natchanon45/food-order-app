@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.04.391",
+  build: "2026.10.04.392",
   branch: "feature/react-firebase-port",
-  commit: "POS-NAV-LOGOUT-SPACING",
+  commit: "POS-PURCHASES-REACT",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Retail POS navigation polish",
+  milestone: "Retail POS Purchases React migration",
   whatsNew: [
-    "Improve spacing between the logout icon and label in the shared POS navigation drawer",
-    "Keep the logout action centered consistently across React and remaining legacy POS routes",
-    "Preserve the existing five-theme POS navigation behavior and permissions",
+    "Migrate POS goods receiving to canonical React with legacy UI and workflow parity",
+    "Preserve purchase reports, CSV export, barcode scanning, granular permissions, and weighted-average stock costing",
+    "Keep the shared tenant-selectable POS navigation themes across the migrated route",
   ],
 });
