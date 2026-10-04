@@ -6349,6 +6349,14 @@ Verification before deploy:
 - No real shift open/close/clear-server-history operation executed.
 
 Deploy state:
-- Commit/push and Hosting-only deploy pending.
-- No Firestore Rules, Storage Rules, Functions, or Firestore data deletion required.
+- Implementation commit `9fa96b9d` — `fix: persist cleared POS shift history` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.05.402` and Public `0.16.32 / 2026.10.05.117`.
+- Production `/pos/shifts` returns HTTP 200 with `Cache-Control: no-cache, no-store, must-revalidate` and serves `/react/assets/index-iid6CYwD.js`.
+- Authenticated Production clear-history contract PASS using a copied profile with Firestore Write-channel / commit / batchWrite endpoints blocked: 8 visible closed shifts -> Clear History + SweetConfirm -> 0 -> full Reload -> 0.
+- Production Open Shift icon computed color and glyph `::before` are both `rgb(255,255,255)` with shadow active.
+- A synthetic local shift timestamped after the clear cutoff rendered as the only history row/timeline bar, proving future closed shifts remain visible while pre-clear server history stays hidden.
+- Mobile 440x956 remained contained with row width 386px and document horizontal overflow 0; no raw translation/page/request/HTTP errors.
+- Firestore write attempts observed: 0. No real shift open/close or server-history deletion occurred.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data deletion.
+- Next visual redesign route: `/pos/products`.
 - No merge to `main`.
