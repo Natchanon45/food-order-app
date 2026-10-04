@@ -6169,3 +6169,40 @@ Deploy state:
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions changes/deploys.
 - Next visual redesign route: `/pos/shifts`.
 - No merge to `main`.
+
+---
+## 2026-10-04 — Returns Loyalty icon centering
+
+Request:
+- The purple Loyalty adjustment icon looked too close to the upper-left corner, especially on Mobile.
+
+Root cause:
+- The base Loyalty badge defined `display:grid; place-items:center`, but a later generic selector `.returns-loyalty-strip span{display:block}` overrode the badge display because the badge itself is a `span`.
+- The lower-workflow polish changed the badge size/gradient but did not restore the grid layout with stronger specificity.
+
+Implementation:
+- Restored `.returns-loyalty-icon` to `display:grid!important; place-items:center!important`.
+- Fixed it to a 48x48 flex basis, centered it on the row, removed incidental margin, and normalized the inner Bootstrap icon line-height.
+- Added a regression contract to protect the centered Loyalty badge layout.
+
+Release prepared:
+- React `0.4.280 / 2026.10.04.399`.
+- Public `0.16.32 / 2026.10.04.114`.
+- Generated bundle: `/react/assets/index-CRrAu_gf.js`.
+
+Verification before deploy:
+- React foundation contract PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS; generated build contract PASS for Build `.399`.
+- `git diff --check` PASS.
+- Authenticated local-build browser geometry contract PASS at 1440x900 and 440x956.
+- Badge measured exactly 48x48 with computed `display:grid`, `align-items:center`, `justify-items:center`.
+- Inner icon center offset from badge center: Desktop X=0px / Y≈0.008px; Mobile X=0px / Y≈0.008px.
+- No document horizontal overflow, page errors, request failures, or HTTP errors.
+- No Production write operation executed.
+
+Deploy state:
+- Commit/push and Hosting-only deploy pending.
+- No Firestore Rules, Storage Rules, or Functions changes.
+- No merge to `main`.

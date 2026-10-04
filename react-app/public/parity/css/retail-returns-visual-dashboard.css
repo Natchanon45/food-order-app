@@ -719,10 +719,21 @@
 }
 .returns-loyalty-icon{
   width:48px!important;height:48px!important;
+  flex:0 0 48px!important;
+  display:grid!important;
+  place-items:center!important;
+  align-self:center;
+  margin:0!important;
   border-radius:15px!important;
   background:linear-gradient(135deg,#7c3aed,#a855f7)!important;
   color:#fff!important;
   box-shadow:0 10px 22px rgba(124,58,237,.22);
+}
+.returns-loyalty-icon>i{
+  display:block;
+  margin:0!important;
+  line-height:1!important;
+  font-size:1.15rem;
 }
 .returns-loyalty-strip>div:first-child strong{
   font-size:.98rem;
