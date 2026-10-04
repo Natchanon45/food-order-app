@@ -6121,3 +6121,45 @@ Deploy state:
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions changes/deploys.
 - Next visual redesign route: `/pos/shifts`.
 - No merge to `main`.
+
+---
+## 2026-10-04 — Returns lower workflow visual polish and action icons
+
+Request:
+- The Returns page still looked too plain from the Loyalty adjustment section downward.
+- Several important buttons were still text-only and needed icons.
+
+Implementation:
+- Strengthened the Loyalty adjustment strip with a richer violet/blue layered background, stronger icon badge, and icon-bearing deduction/restoration metric chips.
+- Elevated the sale-search area into a workflow entry card with a colored side rail, stronger heading badge, raised search controls, richer sale-result cards, and icon-bearing Select Bill actions.
+- Added semantic icons to Select Bill, Select New Bill, full-sale VOID, Confirm Return, Return Receipt history action, Close receipt, and Print receipt buttons.
+- Reworked the selected-sale editor lower half into card-like form fields with Calendar / Wallet / Reason / Note icons, clearer focus treatments, richer return-quantity inputs, a stronger refund-total summary card, and a more visible loyalty-preview card.
+- Restyled VOID as a destructive rose action and Confirm Return as a strong green gradient action while preserving their existing IDs/click handlers and disabled behavior.
+- Reworked Return History into a more visual activity board with a colored top rail, rose heading badge, search card, hoverable history cards, richer receipt action, and a graphic empty state.
+- Mobile keeps the editor contained at 440px with no document overflow; VOID and Confirm actions use a balanced two-column grid, collapsing to one column on very narrow screens.
+- Added regression contracts for the new action icons, editor field icon hierarchy, and lower-workflow visual treatment.
+
+Release prepared:
+- React `0.4.280 / 2026.10.04.398`.
+- Public `0.16.32 / 2026.10.04.113`.
+- Generated bundle: `/react/assets/index-GcRlUtI8.js`.
+
+Verification before deploy:
+- Returns JSX syntax check through esbuild PASS.
+- React foundation contract PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS; generated build contract PASS for Build `.398`.
+- `git diff --check` PASS.
+- Authenticated local-build browser contract against Production data/session PASS at 1440x900 and 440x956.
+- Receipt search `POS-` returned 8 real returnable sales; first bill was selected and the editor opened without any write.
+- Editor has 4 field cards / 4 field icons; Loyalty strip has 2 metric icons; Select Bill / Select New Bill / VOID / Confirm Return icons are present.
+- Entering quantity 1 changed only React state and produced a visible 44.00 refund total; Confirm remained enabled with the new check-circle icon and green gradient; VOID remained available with the rose treatment. No confirm action was clicked.
+- At 440x956, editor remained inside the viewport with zero document overflow; first field width 388px; VOID/Confirm render as a two-column grid at 189px each.
+- No raw translation keys, page errors, request failures, or HTTP errors.
+- No return, VOID, stock, loyalty, refund, receipt-print, or other Production write operation executed.
+
+Deploy state:
+- Commit/push and Hosting-only deploy pending.
+- No Firestore Rules, Storage Rules, or Functions changes.
+- No merge to `main`.

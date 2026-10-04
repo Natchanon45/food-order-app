@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.04.112',
+  build: '2026.10.04.113',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-RETURNS-CONTROL-CENTER',
+  commit: 'POS-RETURNS-LOWER-WORKFLOW-POLISH',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS Returns & Refund Control Center',
-  updatedAt: '2026-10-04T22:48:39+0700',
+  milestone: 'Retail POS Returns lower workflow polish',
+  updatedAt: '2026-10-04T23:07:37+0700',
   whatsNew: [
-    'Redesign Returns & Refunds as a colorful visual control center with stronger information hierarchy',
-    'Add refund-value trend, refund-method ring, return/void metrics, loyalty impact, and richer history cards',
-    'Preserve transaction-safe stock, loyalty, refund status, VOID, barcode scan, receipt print, permissions, and tenant boundaries'
+    'Polish the Returns lower workflow with richer loyalty, search, editor, summary, and history surfaces',
+    'Add semantic icons to bill selection, new bill, VOID, confirm return, history receipt, and receipt print actions',
+    'Preserve transaction-safe stock, loyalty, refund status, VOID, barcode scan, permissions, and tenant boundaries'
   ]
 };
 

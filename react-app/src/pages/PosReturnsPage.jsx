@@ -658,8 +658,8 @@ export function PosReturnsPage() {
           <div><strong>{tr("loyalty_title")}</strong><span>{t("pos_returns.history.description")}</span></div>
         </div>
         <div className="returns-loyalty-metrics">
-          <span>{tr("history_deduct", { count: qtyNumber(visualStats.loyaltyDeducted) })}</span>
-          <span>{tr("history_restore", { count: qtyNumber(visualStats.loyaltyRestored) })}</span>
+          <span><i className="bi bi-dash-circle" aria-hidden="true"></i>{tr("history_deduct", { count: qtyNumber(visualStats.loyaltyDeducted) })}</span>
+          <span><i className="bi bi-plus-circle" aria-hidden="true"></i>{tr("history_restore", { count: qtyNumber(visualStats.loyaltyRestored) })}</span>
         </div>
       </section>
 
@@ -698,7 +698,9 @@ export function PosReturnsPage() {
             return <article className="return-sale-card" key={sale.id}>
               <div><strong>{saleNumberOf(sale)}</strong><span>{dateTime(sale.createdAt)} • {tr("available", { count: qtyNumber(available) })}</span></div>
               <div className="return-sale-total"><strong>{money(sale.totalAmount ?? sale.total)} บาท</strong><span>{tr("item_count", { count: formatNumber((sale.items || []).length) })}</span></div>
-              <button type="button" data-sale-id={sale.id} onClick={() => chooseSale(sale)}>{tr("select_bill")}</button>
+              <button type="button" data-sale-id={sale.id} onClick={() => chooseSale(sale)}>
+                <i className="bi bi-arrow-right-circle" aria-hidden="true"></i><span>{tr("select_bill")}</span>
+              </button>
             </article>;
           })}
         </div>
@@ -714,7 +716,7 @@ export function PosReturnsPage() {
               {selectedSale.customerName ? " • " + tr("member", { code: selectedSale.customerCode || "", name: selectedSale.customerName }) : ""}
             </p></div>
             <button id="clearSelectedSale" className="btn btn-secondary" type="button" onClick={clearSelected}>
-              {t("pos_returns.editor.new_bill")}
+              <i className="bi bi-arrow-repeat" aria-hidden="true"></i><span>{t("pos_returns.editor.new_bill")}</span>
             </button>
           </div>
           <div className="table-wrap"><table className="return-table">
@@ -738,31 +740,34 @@ export function PosReturnsPage() {
             </tbody>
           </table></div>
           <div className="return-form-grid">
-            <label>{t("pos_returns.form.date")}<input id="returnDate" type="date" required value={returnDate} onChange={event => setReturnDate(event.target.value)} /></label>
-            <label>{t("pos_returns.form.refund_method")}<select id="refundMethod" value={refundMethod} onChange={event => setRefundMethod(event.target.value)}>
+            <label><span className="return-field-label"><i className="bi bi-calendar3" aria-hidden="true"></i>{t("pos_returns.form.date")}</span><input id="returnDate" type="date" required value={returnDate} onChange={event => setReturnDate(event.target.value)} /></label>
+            <label><span className="return-field-label"><i className="bi bi-wallet2" aria-hidden="true"></i>{t("pos_returns.form.refund_method")}</span><select id="refundMethod" value={refundMethod} onChange={event => setRefundMethod(event.target.value)}>
               <option value="cash">{t("pos_returns.form.cash")}</option><option value="transfer">{t("pos_returns.form.transfer")}</option>
               <option value="original">{t("pos_returns.form.original")}</option><option value="credit">{t("pos_returns.form.credit")}</option>
             </select></label>
-            <label className="full">{t("pos_returns.form.reason")}<input id="returnReason" maxLength={200} required
+            <label className="full"><span className="return-field-label"><i className="bi bi-chat-square-text" aria-hidden="true"></i>{t("pos_returns.form.reason")}</span><input id="returnReason" maxLength={200} required
               value={reason} onChange={event => setReason(event.target.value)} placeholder={t("pos_returns.form.reason_placeholder")} /></label>
-            <label className="full">{t("pos_returns.form.note")}<input id="returnNote" maxLength={300} value={note} onChange={event => setNote(event.target.value)} /></label>
+            <label className="full"><span className="return-field-label"><i className="bi bi-sticky" aria-hidden="true"></i>{t("pos_returns.form.note")}</span><input id="returnNote" maxLength={300} value={note} onChange={event => setNote(event.target.value)} /></label>
           </div>
-          <div className="return-summary"><span>{t("pos_returns.summary.total")}</span><strong id="returnTotal">{money(total)} บาท</strong></div>
+          <div className="return-summary"><span><i className="bi bi-cash-stack" aria-hidden="true"></i>{t("pos_returns.summary.total")}</span><strong id="returnTotal">{money(total)} บาท</strong></div>
           <div id="returnLoyaltyPreview" className="return-loyalty-preview" hidden={!loyaltyParts.length}>
-            <strong>{tr("loyalty_title")}</strong><span id="returnLoyaltyText">{loyaltyParts.join(" • ")}</span>
+            <strong><i className="bi bi-stars" aria-hidden="true"></i>{tr("loyalty_title")}</strong><span id="returnLoyaltyText">{loyaltyParts.join(" • ")}</span>
           </div>
           <p id="returnError" className="error-text">{error}</p>
           <div className="return-actions">
-            <button id="voidSaleBtn" className="btn btn-secondary" type="button" disabled={busy} onClick={selectAllRemainingForVoid}>{t("pos_returns.actions.void")}</button>
+            <button id="voidSaleBtn" className="btn btn-secondary" type="button" disabled={busy} onClick={selectAllRemainingForVoid}>
+              <i className="bi bi-x-octagon" aria-hidden="true"></i><span>{t("pos_returns.actions.void")}</span>
+            </button>
             <button id="confirmReturnBtn" className="btn btn-pay" type="button" disabled={busy || total <= 0} onClick={submitReturn}>
-              {busy ? tr("saving") : t("pos_returns.actions.confirm")}
+              <i className={busy ? "bi bi-arrow-repeat" : "bi bi-check2-circle"} aria-hidden="true"></i>
+              <span>{busy ? tr("saving") : t("pos_returns.actions.confirm")}</span>
             </button>
           </div>
         </> : null}
       </section>
       <section className="panel return-history-panel">
         <div className="section-heading"><div><h2><i className="bi bi-arrow-counterclockwise pos-context-icon" data-icon-tone="rose" aria-hidden="true"></i><span>{t("pos_returns.history.title")}</span></h2><p>{t("pos_returns.history.description")}</p></div></div>
-        <label className="return-history-search">{t("pos_returns.history.search_label")}
+        <label className="return-history-search"><span><i className="bi bi-search" aria-hidden="true"></i>{t("pos_returns.history.search_label")}</span>
           <input id="returnHistorySearch" value={historySearch} onChange={event => setHistorySearch(event.target.value)}
             placeholder={t("pos_returns.history.search_placeholder")} />
         </label>
@@ -787,7 +792,7 @@ export function PosReturnsPage() {
                   <span>{item.productName || item.name || item.productId} × {qtyNumber(item.qty)}</span><strong>{money(item.lineTotal)}</strong>
                 </div>)}</div>
               <div className="return-history-actions"><button type="button" data-return-receipt={record.id} onClick={() => openReceipt(record)}>
-                {t("pos_returns.receipt.history_action")}
+                <i className="bi bi-receipt-cutoff" aria-hidden="true"></i><span>{t("pos_returns.receipt.history_action")}</span>
               </button></div>
             </article>;
           })}
@@ -824,8 +829,8 @@ export function PosReturnsPage() {
             <div id="rrNoteRow" hidden={!receiptRecord?.note}><strong>{t("pos_returns.receipt.note")}</strong> <span id="rrNote">{receiptRecord?.note || "-"}</span></div></div>
           <p className="return-receipt-footer">{t("pos_returns.receipt.footer")}</p>
         </section>
-        <div className="return-receipt-actions no-print"><button id="closeReturnReceiptBtn" className="btn btn-secondary" type="button" onClick={closeReceipt}>{t("pos_returns.receipt.close")}</button>
-          <button id="printReturnReceipt" className="btn btn-pay" type="button" onClick={printReceipt}>{t("pos_returns.receipt.print")}</button></div>
+        <div className="return-receipt-actions no-print"><button id="closeReturnReceiptBtn" className="btn btn-secondary" type="button" onClick={closeReceipt}><i className="bi bi-x-circle" aria-hidden="true"></i><span>{t("pos_returns.receipt.close")}</span></button>
+          <button id="printReturnReceipt" className="btn btn-pay" type="button" onClick={printReceipt}><i className="bi bi-printer" aria-hidden="true"></i><span>{t("pos_returns.receipt.print")}</span></button></div>
       </div>
     </dialog>
     <dialog id="posScanDialog" ref={scanDialogRef} className="pos-scan-dialog">
