@@ -6031,3 +6031,40 @@ Deploy state:
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions changes/deploys.
 - Next visual redesign route: `/pos/returns`.
 - No merge to `main`.
+
+---
+## 2026-10-04 — Tax Invoice mobile header action row
+
+Request:
+- On Mobile, keep the three Tax Invoice header controls on one line.
+- Remove visible button text on Mobile and keep icon-only controls.
+
+Implementation:
+- Scoped the change to the Tax Invoice route's Visual Dashboard stylesheet.
+- Mobile header now uses a non-wrapping action row for Refresh, Language, and POS Menu.
+- Refresh / Language / Menu controls use equal 40x40 touch targets.
+- Refresh and POS Menu visible labels are hidden only at <=760px; accessible aria/title labels remain unchanged.
+- Desktop keeps the existing Refresh and Menu text.
+- Added a regression assertion to protect the one-row icon-only mobile header layout.
+
+Release prepared:
+- React `0.4.280 / 2026.10.04.396`.
+- Public `0.16.32 / 2026.10.04.111`.
+- Generated bundle: `/react/assets/index-BYWswr6j.js`.
+
+Verification before deploy:
+- React foundation contract PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS; generated React build contract PASS for Build `.396`.
+- `git diff --check` PASS.
+- Authenticated local-build browser test at 440x956 PASS using a read-only tax-sync stub.
+- Mobile action row metrics: Refresh x=296, Language x=342, Menu x=388; all y=16 and all 40x40; flex-wrap is `nowrap`.
+- Refresh/Menu text computed `display:none` on Mobile; desktop text remains visible.
+- No document horizontal overflow, page errors, request failures, or HTTP errors.
+- No Production tax write/sync operation executed.
+
+Deploy state:
+- Commit/push and Hosting-only deploy pending.
+- No Firestore Rules, Storage Rules, or Functions changes.
+- No merge to `main`.
