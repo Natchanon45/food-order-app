@@ -6203,6 +6203,9 @@ Verification before deploy:
 - No Production write operation executed.
 
 Deploy state:
-- Commit/push and Hosting-only deploy pending.
-- No Firestore Rules, Storage Rules, or Functions changes.
+- Implementation commit `9001d816` — `fix: center returns loyalty icon` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.04.399` and Public `0.16.32 / 2026.10.04.114`.
+- Production `/pos/returns` serves `/react/assets/index-CRrAu_gf.js`.
+- Production 440x956 geometry contract PASS: Loyalty badge 48x48, computed `display:grid`, centered alignment, inner icon center offset X=0px / Y≈0.008px, zero document overflow, no page/request/HTTP errors.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions changes/deploys.
 - No merge to `main`.
