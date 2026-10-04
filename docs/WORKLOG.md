@@ -5382,3 +5382,93 @@ Release / deploy:
 - Canonical Stock Counts phase is complete on Production Build 2026.10.04.385.
 - Next POS migration target in actual menu order: /pos/purchases.
 - No merge to main.
+
+
+---
+
+## 2026-10-04 — Shared Retail POS navigation redesign: Modern Card v2
+
+User direction / exception:
+- User explicitly requested a new POS menu design because the existing drawer looked visually scattered.
+- After reviewing design options, user selected “แบบที่ 2 / Modern Card” and approved the expanded-submenu mockup for implementation.
+- This is an intentional user-approved exception to the earlier POS 1:1 visual-parity rule, but only for the shared POS navigation drawer. Route-specific POS screens and behavior remain governed by their existing migration/parity rules.
+- Do not revert the shared POS menu back to the old drawer merely to match the old task2/legacy visual.
+
+Scope:
+- Apply the same Modern Card v2 menu to:
+  - React POS routes through react-app/src/components/PosNavigation.jsx and React parity CSS.
+  - Remaining legacy POS routes through public/assets/js/retail-pos-navigation.js and public/assets/css/retail-pos-navigation.css.
+- POS permissions, route hrefs, role resolution, logout behavior, central-home behavior, and multi-group accordion behavior are unchanged.
+
+Modern Card v2 design:
+- Drawer width reduced to a compact 372px maximum on desktop; 360px maximum on small mobile.
+- Header is compact with a simple close action.
+- User Profile is a dedicated pale-green card with circular user icon, name, and role/email hierarchy.
+- “กลับหน้าระบบกลาง” is a separate muted action row beneath the profile card.
+- Menu groups are independent rounded cards with semantic group tones:
+  - sales emerald
+  - stock teal
+  - purchasing orange
+  - customer pink
+  - system slate
+- Multiple groups can remain expanded at the same time.
+- Open groups receive a subtle tone-specific pastel header treatment.
+- Submenus are compact list rows rather than widely separated cards.
+- Every submenu row has a right-chevron affordance.
+- Current route uses aria-current=page and a stronger pale-green active row.
+- Menu item icon tones remain the established POS semantic tones.
+- Navigation content scrolls independently while the profile/home area stays above it and Logout remains in a dedicated bottom footer region.
+- Logout remains a full-width red action.
+- Backdrop and panel shadow were softened for a cleaner contemporary sheet/card feel.
+- Desktop and mobile spacing were deliberately compacted to show more actions without the old scattered appearance.
+
+Shared implementation:
+- React PosNavigation now authors data-menu-tone per group, aria-current on the current link, and submenu right chevrons.
+- Legacy retail-pos-navigation.js authors the same data-menu-tone/current/chevron markup so still-static POS routes use the same design.
+- Legacy central-home and logout actions now author their icons directly; the existing retail-pos-icons enhancer detects authored icons and does not duplicate them.
+- Modern Card v2 CSS is appended to both:
+  - public/assets/css/retail-pos-navigation.css
+  - react-app/public/parity/css/retail-pos-navigation.css
+- Generated React parity copy public/react/parity/css/retail-pos-navigation.css is updated by the React build.
+
+Cache safety:
+- React parity styles already use REACT_RELEASE.build in useParityPage, so Build 2026.10.04.386 cache-busts the new navigation CSS automatically.
+- The eight remaining legacy POS HTML routes had old fixed navigation asset query keys. Both retail-pos-navigation.css and retail-pos-navigation.js were bumped to v=20261004-101 on:
+  - /pos/purchases
+  - /pos/payables
+  - /pos/suppliers
+  - /pos/customers
+  - /pos/settings
+  - /pos/backup
+  - /pos/users
+  - /pos/forbidden
+- This prevents browsers from showing the old drawer after Hosting deploy without requiring a hard refresh.
+
+Regression / visual verification before deploy:
+- public/assets/js/retail-pos-navigation.js node syntax check PASS.
+- React foundation contract now locks group tone, active-page semantics, submenu chevrons, compact Modern Card CSS markers, independent nav scrolling, and footer layout.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS, including UI-layer contract.
+- npm run build:react PASS.
+- Generated React build contract PASS for React 0.4.280 / Build 2026.10.04.386 using /react/assets/index-BETob66p.js.
+- git diff --check PASS.
+- Desktop visual preview at 1600x900:
+  - drawer width = 372px,
+  - two expanded groups fit cleanly,
+  - navigation/client area and bottom footer remain separated,
+  - active submenu treatment and semantic group cards match the approved Modern Card direction.
+- Mobile geometry preview at 390x844:
+  - document scroll width = 390px,
+  - drawer width = 360px,
+  - no horizontal overflow,
+  - nav area = 569px,
+  - logout footer bottom = 834px (10px bottom panel padding),
+  - PASS.
+
+Release / deploy:
+- Prepared React 0.4.280 / Build 2026.10.04.386.
+- Prepared Public 0.16.32 / Build 2026.10.04.101.
+- Implementation commit/push and Hosting-only deploy pending.
+- After deploy, verify the menu on at least one canonical React POS route and one remaining legacy POS route using read-only navigation interactions.
+- No Functions, Firestore Rules, or Storage Rules changes are required.
+- No merge to main.

@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.04.100',
+  build: '2026.10.04.101',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-STOCK-COUNTS-REACT-CUTOVER',
+  commit: 'POS-MENU-MODERN-CARD-V2',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS stock counts React cutover',
-  updatedAt: '2026-10-04T14:04:31+0700',
+  milestone: 'Retail POS Modern Card menu redesign',
+  updatedAt: '2026-10-04T15:06:24+0700',
   whatsNew: [
-    'Serve canonical /pos/stock-counts from React with the full legacy count and history surface',
-    'Preserve stock-count permissions, realtime data, barcode scanning, translated confirmations, and mobile-card behavior',
-    'Preserve legacy count/history schema and stock-role Firestore compatibility without changing Rules'
+    'Apply the approved Modern Card v2 POS drawer across React and remaining legacy POS pages',
+    'Keep expandable card groups with compact profile, central-home, active submenu, and logout sections',
+    'Keep the drawer responsive with independent menu scrolling and bottom-anchored logout'
   ]
 };
 

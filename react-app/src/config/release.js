@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.04.385",
+  build: "2026.10.04.386",
   branch: "feature/react-firebase-port",
-  commit: "POS-STOCK-COUNTS-REACT-CUTOVER",
+  commit: "POS-MENU-MODERN-CARD-V2",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Retail POS stock counts React cutover",
+  milestone: "Retail POS Modern Card menu redesign",
   whatsNew: [
-    "Serve canonical /pos/stock-counts from React while preserving the 21-ID legacy count/history surface",
-    "Keep stock-count permissions, realtime products/history, barcode scanning, translated confirmations, and legacy mobile-card behavior",
-    "Preserve legacy count/history schema compatibility and stock-role Firestore compatibility without a Rules deployment",
+    "Apply the user-approved Modern Card v2 POS drawer across React and remaining legacy POS pages",
+    "Keep multiple menu groups expandable while making profile, central-home, category cards, active submenu, and logout more compact and structured",
+    "Keep the menu responsive with independent navigation scrolling and a bottom-anchored logout action",
   ],
 });

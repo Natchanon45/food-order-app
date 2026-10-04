@@ -303,6 +303,7 @@ assert(
 );
 const posPage=read("react-app/src/pages/PosPage.jsx");
 const posNavigation=read("react-app/src/components/PosNavigation.jsx");
+const retailPosNavigation=read("public/assets/js/retail-pos-navigation.js");
 const posUserProfile=read("react-app/src/components/PosUserProfile.jsx");
 const retailPosSession=read("react-app/src/auth/retailPosSession.js");
 const posData=read("react-app/src/data/retailPosData.js");
@@ -595,6 +596,9 @@ assert(posNavigation.includes('tone: "emerald"')&&posNavigation.includes('tone: 
 assert(posNavigation.includes("const roleLabel = useMemo")&&posNavigation.includes("pos_users.role_names.")&&posNavigation.includes("<PosUserProfile profile={posProfile} roleLabel={roleLabel} />")&&posNavigation.includes("getRetailPosSession()")&&retailPosSession.includes("export function getRetailPosSession()")&&posUserProfile.includes('className="pos-menu-user"')&&posUserProfile.includes("bi bi-person-circle pos-menu-user-icon")&&posUserProfile.includes("<strong>{name}</strong>")&&posUserProfile.includes("role}{email ?"),"React POS User Profile must preserve the legacy POS session/name/role/email structure");
 assert(posNavigation.includes('import { createPortal } from "react-dom";')&&posNavigation.includes("createPortal(")&&posNavigation.includes("document.body) : null")&&posNavigation.includes('bi bi-house pos-context-icon')&&posNavigation.includes('data-icon-tone="emerald"'),"React POS drawer must portal to document.body like legacy and render the central-home icon explicitly");
 assert(posNavigationCss.includes(".pos-menu-panel{background:#f8fbf9;color:var(--black);"),"React POS drawer must keep explicit dark text even when mounted from a white-text header context");
+assert(posNavigation.includes('data-menu-tone={group.tone || "green"}')&&posNavigation.includes('aria-current={item.key === currentKey ? "page" : undefined}')&&posNavigation.includes('bi bi-chevron-right pos-menu-link-chevron'),"React POS Modern Card v2 navigation must preserve group tone, active-page semantics, and submenu chevrons");
+assert(retailPosNavigation.includes('data-menu-tone="${esc(group.tone || "green")}"')&&retailPosNavigation.includes('bi bi-chevron-right pos-menu-link-chevron')&&retailPosNavigation.includes('aria-current="page"'),"Legacy POS Modern Card v2 navigation must preserve group tone, active-page semantics, and submenu chevrons");
+assert(posNavigationCss.includes("POS menu redesign — Modern Card v2")&&posNavigationCss.includes("width:min(372px,94vw)!important")&&posNavigationCss.includes("overflow-y:auto")&&posNavigationCss.includes("flex:0 0 auto")&&posNavigationCss.includes(".pos-menu-link.is-current")&&posNavigationCss.includes("grid-template-columns:28px minmax(0,1fr) 14px!important"),"POS Modern Card v2 CSS must keep compact card layout, independent nav scrolling, footer region, and active submenu treatment");
 const legacyPosSaleMaster=read("tests/fixtures/retail-pos-legacy/pos-index.html");
 assert(legacyPosSaleMaster.includes('id="productGrid"')&&legacyPosSaleMaster.includes('id="cartList"')&&legacyPosSaleMaster.includes('id="payBtn"')&&legacyPosSaleMaster.includes('id="paymentDialog"'),"Retail POS sale legacy MASTER fixture must preserve the pre-React root UI/action inventory");
 const legacyPosSalesMaster=read("tests/fixtures/retail-pos-legacy/pos-sales-index.html");

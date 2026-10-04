@@ -176,7 +176,8 @@ export function PosNavigation({ profile, currentKey = "" }) {
             {groups.length ? groups.map(group => {
               const groupOpen = openGroups.has(group.id);
               return (
-                <section className={`pos-menu-group${groupOpen ? " is-open" : ""}`} key={group.id}>
+                <section className={`pos-menu-group${groupOpen ? " is-open" : ""}`} key={group.id}
+                  data-menu-tone={group.tone || "green"}>
                   <button type="button" data-menu-group={group.id} aria-expanded={groupOpen} onClick={() => toggleGroup(group.id)}>
                     <span className="pos-menu-group-title">
                       <i className={`bi bi-${group.icon} pos-menu-group-icon`} data-icon-tone={group.tone || "green"} aria-hidden="true"></i>
@@ -187,9 +188,11 @@ export function PosNavigation({ profile, currentKey = "" }) {
                   <ul className="pos-menu-links">
                     {group.items.map(item => (
                       <li key={item.key}>
-                        <a className={`pos-menu-link${item.key === currentKey ? " is-current" : ""}`} href={item.href} onClick={() => setOpen(false)}>
+                        <a className={`pos-menu-link${item.key === currentKey ? " is-current" : ""}`} href={item.href}
+                          aria-current={item.key === currentKey ? "page" : undefined} onClick={() => setOpen(false)}>
                           <i className={`bi bi-${item.icon} pos-menu-item-icon`} data-icon-tone={item.tone || "green"} aria-hidden="true"></i>
                           <span>{translatedOrFallback(t, permissionTranslationKey(item.key), item.label)}</span>
+                          <i className="bi bi-chevron-right pos-menu-link-chevron" aria-hidden="true"></i>
                         </a>
                       </li>
                     ))}
