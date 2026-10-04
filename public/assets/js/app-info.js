@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.04.107',
+  build: '2026.10.04.108',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-PURCHASES-REACT',
+  commit: 'POS-SALES-VISUAL-DASHBOARD',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS Purchases React migration',
-  updatedAt: '2026-10-04T20:17:10+0700',
+  milestone: 'Retail POS Visual Analytics redesign',
+  updatedAt: '2026-10-04T20:47:46+0700',
   whatsNew: [
-    'Migrate POS goods receiving to canonical React with legacy UI and workflow parity',
-    'Preserve purchase reports, CSV export, barcode scanning, granular permissions, and weighted-average stock costing',
-    'Keep the shared tenant-selectable POS navigation themes across the migrated route'
+    'Redesign Sales History as a colorful Visual Analytics dashboard with stronger information hierarchy',
+    'Add real-data sales trend, payment donut, graphical KPI cards, product ranking bars, and mobile receipt cards',
+    'Preserve sales filters, realtime data, receipt details, CSV export, permissions, and shared POS themes'
   ]
 };
 

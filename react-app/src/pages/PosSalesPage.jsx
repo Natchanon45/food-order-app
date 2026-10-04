@@ -91,6 +91,7 @@ export function PosSalesPage() {
   const { t, formatNumber, formatDate } = useI18n();
   const stylesReady = useParityPage({
     title: t("pos_sales.meta.title"),
+    bodyClass: "pos-sales-page",
     attributes: { "data-module": "retail-pos-sales" },
     disabledGlobalStyles: ["app.css", "icons.css", "shared-responsive.css"],
     styles: [
@@ -102,6 +103,7 @@ export function PosSalesPage() {
       "retail-pos-navigation.css",
       "sweet-dialog.css",
       "retail-sales-react-parity.css",
+      "retail-sales-visual-dashboard.css",
     ],
   });
   const dialogRef = useRef(null);
@@ -263,6 +265,37 @@ export function PosSalesPage() {
     ).slice(0, 10);
   }, [filteredSales, t]);
 
+  const salesTrend = useMemo(() => {
+    const ordered = [...filteredSales].sort((a, b) => asDate(a.createdAt) - asDate(b.createdAt));
+    if (!ordered.length) return [];
+    const sameDay = localDateKey(ordered[0].createdAt) === localDateKey(ordered[ordered.length - 1].createdAt);
+    const buckets = new Map();
+    ordered.forEach(sale => {
+      const date = asDate(sale.createdAt);
+      const key = sameDay
+        ? `${String(date.getHours()).padStart(2, "0")}:00`
+        : localDateKey(date);
+      const current = buckets.get(key) || {
+        key,
+        label: sameDay
+          ? key
+          : formatDate(inputDate(key), { day: "2-digit", month: "short" }),
+        total: 0,
+        bills: 0,
+      };
+      current.total += saleTotalAmount(sale);
+      current.bills += 1;
+      buckets.set(key, current);
+    });
+    return [...buckets.values()].slice(-14);
+  }, [filteredSales, formatDate]);
+
+  const trendMax = useMemo(
+    () => Math.max(1, ...salesTrend.map(item => Number(item.total || 0))),
+    [salesTrend],
+  );
+  const rankingMaxQty = Number(ranking[0]?.qty || 1);
+
   const reportPeriodText = useMemo(() => {
     if (!dateFrom && !dateTo) return t("pos_sales_runtime.runtime.period_all");
     if (dateFrom && dateTo) {
@@ -421,18 +454,64 @@ export function PosSalesPage() {
         </div>
       </header>
 
-      <main data-pos-management className="sales-container no-print">
-        <section className="panel report-filter-panel">
+<main data-pos-management className="sales-container no-print">
+        <section className="sales-visual-hero">
+          <div className="sales-hero-grid">
+            <div className="sales-hero-copy">
+              <div className="sales-hero-kicker">
+                <i className="bi bi-graph-up-arrow" aria-hidden="true"></i>
+                <span>{t("pos_sales.header.title")}</span>
+              </div>
+              <h1>{t("pos_sales.header.title")}</h1>
+              <p>{t("pos_sales.header.subtitle")}</p>
+              <div className="sales-hero-period">
+                <i className="bi bi-calendar3" aria-hidden="true"></i>
+                <span>{reportPeriodText}</span>
+              </div>
+            </div>
+            <div className="sales-hero-metrics">
+              <article className="sales-hero-metric">
+                <span><i className="bi bi-cash-coin" aria-hidden="true"></i>{t("pos_sales.stats.net_sales")}</span>
+                <strong>{money(stats.saleTotal)}</strong>
+              </article>
+              <article className="sales-hero-metric">
+                <span><i className="bi bi-receipt" aria-hidden="true"></i>{t("pos_sales.stats.bills")}</span>
+                <strong>{numberText(filteredSales.length)}</strong>
+              </article>
+              <article className="sales-hero-metric">
+                <span><i className="bi bi-speedometer2" aria-hidden="true"></i>{t("pos_sales.stats.average")}</span>
+                <strong>{money(stats.averageSale)}</strong>
+              </article>
+              <article className="sales-hero-metric">
+                <span><i className="bi bi-trophy" aria-hidden="true"></i>{t("pos_sales.stats.highest")}</span>
+                <strong>{money(stats.highestSale)}</strong>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section className="panel report-filter-panel sales-filter-card">
+          <div className="sales-filter-heading">
+            <strong>{t("pos_sales.header.title")}</strong>
+            <span><i className="bi bi-funnel" aria-hidden="true"></i>{reportPeriodText}</span>
+          </div>
           <div className="sales-toolbar">
             <input
               id="saleSearch"
               value={search}
               onChange={event => setSearch(event.target.value)}
               placeholder={t("pos_sales.filters.search_placeholder")}
+              aria-label={t("pos_sales.filters.search_placeholder")}
             />
-            <input id="dateFrom" type="date" value={dateFrom} onChange={event => setDateFrom(event.target.value)} />
-            <input id="dateTo" type="date" value={dateTo} onChange={event => setDateTo(event.target.value)} />
-            <select id="paymentFilter" value={paymentFilter} onChange={event => setPaymentFilter(event.target.value)}>
+            <input id="dateFrom" type="date" value={dateFrom}
+              aria-label={t("pos_sales.sales.date_time")}
+              onChange={event => setDateFrom(event.target.value)} />
+            <input id="dateTo" type="date" value={dateTo}
+              aria-label={t("pos_sales.sales.date_time")}
+              onChange={event => setDateTo(event.target.value)} />
+            <select id="paymentFilter" value={paymentFilter}
+              aria-label={t("pos_sales.sales.payment")}
+              onChange={event => setPaymentFilter(event.target.value)}>
               <option value="all">{t("pos_sales.filters.all_payment")}</option>
               <option value="cash">{t("pos_sales.filters.cash")}</option>
               <option value="promptpay">{t("pos_sales.filters.transfer")}</option>
@@ -442,7 +521,7 @@ export function PosSalesPage() {
               <span>{t("pos_sales.filters.today")}</span>
             </button>
             <button id="monthBtn" className="btn btn-secondary" type="button" onClick={setThisMonth}>
-              <i className="bi bi-calendar3 pos-context-icon" data-icon-tone="blue" aria-hidden="true"></i>
+              <i className="bi bi-calendar-range pos-context-icon" data-icon-tone="violet" aria-hidden="true"></i>
               <span>{t("pos_sales.filters.month")}</span>
             </button>
             <button id="clearFilterBtn" className="btn btn-secondary" type="button" onClick={clearFilters}>
@@ -453,63 +532,147 @@ export function PosSalesPage() {
         </section>
 
         <section className="sales-stats">
-          <article className="stat-card"><span>{t("pos_sales.stats.bills")}</span><strong id="saleCount">{numberText(filteredSales.length)}</strong></article>
-          <article className="stat-card"><span>{t("pos_sales.stats.net_sales")}</span><strong id="saleTotal">{money(stats.saleTotal)}</strong></article>
-          <article className="stat-card"><span>{t("pos_sales.stats.before_vat")}</span><strong id="beforeVatTotal">{money(stats.beforeVatTotal)}</strong></article>
-          <article className="stat-card"><span>{t("pos_sales.stats.vat_total")}</span><strong id="vatTotal">{money(stats.vatTotal)}</strong></article>
-          <article className="stat-card"><span>{t("pos_sales.stats.vat_bills")}</span><strong id="vatBillCount">{numberText(stats.vatBillCount)}</strong></article>
-          <article className="stat-card"><span>{t("pos_sales.stats.cash_total")}</span><strong id="cashTotal">{money(stats.cashTotal)}</strong></article>
-          <article className="stat-card"><span>{t("pos_sales.stats.transfer_total")}</span><strong id="transferTotal">{money(stats.transferTotal)}</strong></article>
-          <article className="stat-card"><span>{t("pos_sales.stats.discount_total")}</span><strong id="discountTotal">{money(stats.discountTotal)}</strong></article>
-          <article className="stat-card"><span>{t("pos_sales.stats.item_qty")}</span><strong id="itemQtyTotal">{numberText(stats.itemQtyTotal)}</strong></article>
-          <article className="stat-card"><span>{t("pos_sales.stats.average")}</span><strong id="averageSale">{money(stats.averageSale)}</strong></article>
-          <article className="stat-card"><span>{t("pos_sales.stats.highest")}</span><strong id="highestSale">{money(stats.highestSale)}</strong></article>
+          <article className="stat-card">
+            <div className="stat-icon"><i className="bi bi-cash-stack" aria-hidden="true"></i></div>
+            <span>{t("pos_sales.stats.net_sales")}</span><strong id="saleTotal">{money(stats.saleTotal)}</strong>
+          </article>
+          <article className="stat-card">
+            <div className="stat-icon"><i className="bi bi-receipt-cutoff" aria-hidden="true"></i></div>
+            <span>{t("pos_sales.stats.bills")}</span><strong id="saleCount">{numberText(filteredSales.length)}</strong>
+          </article>
+          <article className="stat-card">
+            <div className="stat-icon"><i className="bi bi-speedometer2" aria-hidden="true"></i></div>
+            <span>{t("pos_sales.stats.average")}</span><strong id="averageSale">{money(stats.averageSale)}</strong>
+          </article>
+          <article className="stat-card">
+            <div className="stat-icon"><i className="bi bi-trophy" aria-hidden="true"></i></div>
+            <span>{t("pos_sales.stats.highest")}</span><strong id="highestSale">{money(stats.highestSale)}</strong>
+          </article>
+          <article className="stat-card">
+            <div className="stat-icon"><i className="bi bi-bag-check" aria-hidden="true"></i></div>
+            <span>{t("pos_sales.stats.item_qty")}</span><strong id="itemQtyTotal">{numberText(stats.itemQtyTotal)}</strong>
+          </article>
+          <article className="stat-card">
+            <div className="stat-icon"><i className="bi bi-wallet2" aria-hidden="true"></i></div>
+            <span>{t("pos_sales.stats.cash_total")}</span><strong id="cashTotal">{money(stats.cashTotal)}</strong>
+          </article>
+          <article className="stat-card">
+            <div className="stat-icon"><i className="bi bi-qr-code" aria-hidden="true"></i></div>
+            <span>{t("pos_sales.stats.transfer_total")}</span><strong id="transferTotal">{money(stats.transferTotal)}</strong>
+          </article>
+          <article className="stat-card">
+            <div className="stat-icon"><i className="bi bi-tags" aria-hidden="true"></i></div>
+            <span>{t("pos_sales.stats.discount_total")}</span><strong id="discountTotal">{money(stats.discountTotal)}</strong>
+          </article>
+          <article className="stat-card">
+            <div className="stat-icon"><i className="bi bi-calculator" aria-hidden="true"></i></div>
+            <span>{t("pos_sales.stats.before_vat")}</span><strong id="beforeVatTotal">{money(stats.beforeVatTotal)}</strong>
+          </article>
+          <article className="stat-card">
+            <div className="stat-icon"><i className="bi bi-percent" aria-hidden="true"></i></div>
+            <span>{t("pos_sales.stats.vat_total")}</span><strong id="vatTotal">{money(stats.vatTotal)}</strong>
+          </article>
+          <article className="stat-card">
+            <div className="stat-icon"><i className="bi bi-file-earmark-check" aria-hidden="true"></i></div>
+            <span>{t("pos_sales.stats.vat_bills")}</span><strong id="vatBillCount">{numberText(stats.vatBillCount)}</strong>
+          </article>
         </section>
 
-        <section className="report-grid">
-          <section className="panel ranking-panel">
-            <div className="section-heading">
-              <div>
-                <h2><i className="bi bi-cart3 pos-context-icon" data-icon-tone="emerald" aria-hidden="true"></i><span>{t("pos_sales.ranking.title")}</span></h2>
-                <p>{t("pos_sales.ranking.description")}</p>
+        <section className="sales-insight-grid">
+          <section className="panel sales-trend-panel">
+            <div className="sales-trend-head">
+              <div className="sales-trend-title">
+                <div className="sales-trend-icon"><i className="bi bi-bar-chart-line-fill" aria-hidden="true"></i></div>
+                <div>
+                  <h2>{t("pos_sales.stats.net_sales")}</h2>
+                  <p>{reportPeriodText}</p>
+                </div>
+              </div>
+              <div className="sales-trend-total">
+                <span>{t("pos_sales.stats.net_sales")}</span>
+                <strong>{money(stats.saleTotal)}</strong>
               </div>
             </div>
-            <div id="bestSellerList" className="ranking-list">
-              {ranking.map((item, index) => (
-                <article className="ranking-item" key={item.id}>
-                  <div className="ranking-position">{index + 1}</div>
-                  <div className="ranking-info"><strong>{item.name}</strong><span>{item.id}</span></div>
-                  <div className="ranking-total">
-                    <strong>{t("pos_sales_runtime.runtime.pieces", { count: numberText(item.qty) })}</strong>
-                    <span>{t("pos_sales_runtime.runtime.amount", { amount: money(item.revenue) })}</span>
+            <div className="sales-chart" aria-label={t("pos_sales.stats.net_sales")}>
+              {salesTrend.length ? salesTrend.map(item => {
+                const height = Math.max(6, Math.min(100, (Number(item.total || 0) / trendMax) * 100));
+                return (
+                  <div className="sales-chart-column" key={item.key}
+                    title={t("pos_sales_runtime.runtime.amount", { amount: money(item.total) })}>
+                    <span className="sales-chart-tooltip" style={{ "--bar-height": `${height}%` }}>
+                      {money(item.total)}
+                    </span>
+                    <div className="sales-chart-bar" style={{ height: `${height}%` }}></div>
+                    <span className="sales-chart-label">{item.label}</span>
                   </div>
-                </article>
-              ))}
-            </div>
-            <div id="bestSellerEmpty" className="empty-state" hidden={ranking.length > 0}>
-              {t("pos_sales.ranking.empty")}
+                );
+              }) : <div className="sales-chart-empty">{t("pos_sales.sales.empty")}</div>}
             </div>
           </section>
+
           <section className="panel payment-panel">
             <div className="section-heading">
               <div>
-                <h2><i className="bi bi-credit-card pos-context-icon" data-icon-tone="blue" aria-hidden="true"></i><span>{t("pos_sales.payment.title")}</span></h2>
+                <h2><i className="bi bi-pie-chart-fill pos-context-icon" data-icon-tone="blue" aria-hidden="true"></i><span>{t("pos_sales.payment.title")}</span></h2>
                 <p>{t("pos_sales.payment.description")}</p>
               </div>
             </div>
+            <div className="payment-visual">
+              <div className="payment-donut" style={{ "--cash-pct": `${stats.cashPercent}%` }}>
+                <div className="payment-donut-center">
+                  <span>{t("pos_sales.stats.net_sales")}</span>
+                  <strong>{money(stats.saleTotal)}</strong>
+                </div>
+              </div>
+            </div>
             <div className="payment-summary-list">
-              <div><span>{t("pos_sales.payment.cash")}</span><strong id="cashPercent">{stats.cashPercent.toFixed(1)}%</strong></div>
-              <div className="payment-bar"><i id="cashBar" style={{ width: `${stats.cashPercent}%` }} /></div>
-              <div><span>{t("pos_sales.payment.transfer")}</span><strong id="transferPercent">{stats.transferPercent.toFixed(1)}%</strong></div>
-              <div className="payment-bar"><i id="transferBar" style={{ width: `${stats.transferPercent}%` }} /></div>
+              <div className="payment-summary-row">
+                <div>
+                  <span className="payment-legend"><i className="payment-dot"></i>{t("pos_sales.payment.cash")}</span>
+                  <strong id="cashPercent">{stats.cashPercent.toFixed(1)}%</strong>
+                </div>
+                <div className="payment-bar"><i id="cashBar" style={{ width: `${stats.cashPercent}%` }} /></div>
+              </div>
+              <div className="payment-summary-row transfer">
+                <div>
+                  <span className="payment-legend"><i className="payment-dot"></i>{t("pos_sales.payment.transfer")}</span>
+                  <strong id="transferPercent">{stats.transferPercent.toFixed(1)}%</strong>
+                </div>
+                <div className="payment-bar"><i id="transferBar" style={{ width: `${stats.transferPercent}%` }} /></div>
+              </div>
             </div>
           </section>
+        </section>
+
+        <section className="panel ranking-panel">
+          <div className="section-heading">
+            <div>
+              <h2><i className="bi bi-stars pos-context-icon" data-icon-tone="emerald" aria-hidden="true"></i><span>{t("pos_sales.ranking.title")}</span></h2>
+              <p>{t("pos_sales.ranking.description")}</p>
+            </div>
+          </div>
+          <div id="bestSellerList" className="ranking-list">
+            {ranking.map((item, index) => (
+              <article className="ranking-item" key={item.id}
+                style={{ "--rank-width": `${Math.max(8, Math.min(100, (Number(item.qty || 0) / rankingMaxQty) * 100))}%` }}>
+                <div className="ranking-position">{index + 1}</div>
+                <div className="ranking-info"><strong>{item.name}</strong><span>{item.id}</span></div>
+                <div className="ranking-total">
+                  <strong>{t("pos_sales_runtime.runtime.pieces", { count: numberText(item.qty) })}</strong>
+                  <span>{t("pos_sales_runtime.runtime.amount", { amount: money(item.revenue) })}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div id="bestSellerEmpty" className="empty-state" hidden={ranking.length > 0}>
+            {t("pos_sales.ranking.empty")}
+          </div>
         </section>
 
         <section className="panel sales-panel">
           <div className="section-heading">
             <div>
-              <h2><i className="bi bi-cart3 pos-context-icon" data-icon-tone="emerald" aria-hidden="true"></i><span>{t("pos_sales.sales.title")}</span></h2>
+              <h2><i className="bi bi-receipt pos-context-icon" data-icon-tone="emerald" aria-hidden="true"></i><span>{t("pos_sales.sales.title")}</span></h2>
               <p id="reportPeriodText">{reportPeriodText}</p>
             </div>
             <button id="exportCsvBtn" className="btn btn-pay" type="button" onClick={exportCsv}>
@@ -522,12 +685,9 @@ export function PosSalesPage() {
               <thead>
                 <tr>
                   <th>{t("pos_sales.sales.bill")}</th>
-                  <th>{t("pos_sales.sales.date_time")}</th>
                   <th className="number">{t("pos_sales.sales.net_qty")}</th>
                   <th>{t("pos_sales.sales.payment")}</th>
                   <th>{t("pos_sales.sales.vat")}</th>
-                  <th className="number">{t("pos_sales.sales.before_vat")}</th>
-                  <th className="number">{t("pos_sales.sales.vat")}</th>
                   <th className="number">{t("pos_sales.sales.discount")}</th>
                   <th className="number">{t("pos_sales.sales.net_sales")}</th>
                   <th></th>
@@ -538,17 +698,29 @@ export function PosSalesPage() {
                   const method = paymentMethod(sale);
                   return (
                     <tr key={sale.id}>
-                      <td className="sale-id">{saleDisplayNumber(sale)}</td>
-                      <td className="sale-date" data-label={t("pos.receipt.date")}>{dateTimeText(sale.createdAt)}</td>
+                      <td className="sale-id">
+                        <div className="sale-primary-cell">
+                          <span className="sale-primary-icon"><i className="bi bi-receipt" aria-hidden="true"></i></span>
+                          <div className="sale-primary-copy">
+                            <strong>{saleDisplayNumber(sale)}</strong>
+                            <span className="sale-date">{dateTimeText(sale.createdAt)}</span>
+                          </div>
+                        </div>
+                      </td>
                       <td className="number" data-label={t("pos_sales.sales.net_qty")}>{numberText(saleQty(sale))}</td>
                       <td data-label={t("pos_sales.sales.payment")}>
                         <span className={`payment-badge ${method}`}>{paymentName(method)}</span>
                       </td>
-                      <td data-label={t("pos_sales.sales.vat")}>{vatModeName(sale)}</td>
-                      <td className="number" data-label={t("pos_sales.sales.before_vat")}>{isVatSale(sale) ? money(beforeVatOf(sale)) : "-"}</td>
-                      <td className="number" data-label={t("pos_sales.sales.vat")}>{isVatSale(sale) ? money(sale.vatAmount) : "-"}</td>
+                      <td data-label={t("pos_sales.sales.vat")}>
+                        <div className="vat-stack">
+                          <strong>{vatModeName(sale)}</strong>
+                          <span>{isVatSale(sale)
+                            ? `${t("pos_sales.sales.before_vat")} ${money(beforeVatOf(sale))} • ${t("pos_sales.sales.vat")} ${money(sale.vatAmount)}`
+                            : "-"}</span>
+                        </div>
+                      </td>
                       <td className="number" data-label={t("pos_sales.sales.discount")}>{money(saleDiscount(sale))}</td>
-                      <td className="number" data-label={t("pos_sales.sales.net_sales")}><strong>{money(saleTotalAmount(sale))}</strong></td>
+                      <td className="number sale-amount" data-label={t("pos_sales.sales.net_sales")}><strong>{money(saleTotalAmount(sale))}</strong></td>
                       <td className="sale-actions">
                         <button type="button" className="view-sale" data-sale-id={sale.id} onClick={() => openSale(sale)}>
                           <i className="bi bi-receipt" aria-hidden="true"></i>

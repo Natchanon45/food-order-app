@@ -5889,3 +5889,54 @@ Deploy state:
 - Deployment scope was Hosting only; no Functions, Firestore Rules, or Storage Rules were deployed.
 - Next POS migration: `/pos/payables`.
 - No merge to `main`.
+
+---
+## 2026-10-04 — Sales History Visual Analytics redesign
+
+Request / design direction:
+- User explicitly rejected the plain legacy Sales History presentation and asked for a new modern design directly in code, not a mockup.
+- New POS visual policy begins at `/pos/sales`: use stronger information hierarchy, more color, and graphic-rich data visualization while preserving business behavior.
+
+Implementation:
+- Reworked `PosSalesPage` into a Visual Analytics dashboard without changing its Firestore source, route, permissions, receipt detail flow, CSV export, or filter semantics.
+- Added a dark-green gradient summary Hero with current report period plus net-sales / bill-count / average-bill / highest-bill highlights.
+- Rebuilt all 11 existing KPI values as semantic color-coded metric cards with icons and stronger typography.
+- Added a real-data sales trend chart derived from the currently filtered sale rows; same-day data groups by hour and multi-day data groups by date.
+- Replaced the simple payment progress-only block with a cash-vs-transfer donut graphic plus percentage/progress details.
+- Rebuilt best-seller ranking cards with medal-style positions and quantity-relative progress graphics.
+- Simplified the desktop sales table into easier visual groups: bill/date, net quantity, payment, VAT summary, discount, net sale, action.
+- On mobile, sales rows become responsive receipt cards instead of a wide horizontally scrolling table.
+- Preserved all legacy/stable action IDs used by filters, summaries, export, receipt dialog, and regression tests.
+- Added `retail-sales-visual-dashboard.css` as the final route stylesheet so this approved redesign intentionally overrides the older parity CSS without changing other POS routes.
+- Updated the React foundation contract from old icon-parity assumptions to the approved Visual Analytics structure/responsive contract.
+- Updated the POS handoff rule: from Sales History onward, route-specific screens may be intentionally redesigned while business logic, permissions, tenant/data boundaries, actions, export/print, and important stable contracts remain protected.
+
+Release prepared:
+- React `0.4.280 / 2026.10.04.393`.
+- Public `0.16.32 / 2026.10.04.108`.
+- Generated bundle: `/react/assets/index-CSkz0Ktp.js`.
+
+Verification before deploy:
+- JSX syntax check through esbuild PASS.
+- `node tools/react-foundation-contract.mjs` PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS: migration coverage 53 routes / 21 POS, parity matrix PASS, P0 action contract PASS, callable contract 54 refs / 0 missing, tenant-access PASS, UI-layer PASS.
+- `npm run build:react` PASS; generated build contract PASS for Build `.393` and `/react/assets/index-CSkz0Ktp.js`.
+- `git diff --check` PASS.
+- Authenticated local-build browser contract against real Production data/session PASS at 1440x900 and 390x844:
+  - Visual dashboard stylesheet loaded.
+  - Hero gradient visible.
+  - 11 KPI cards visible.
+  - Current data produced 2 real sales-trend buckets, 10 ranked products, and 4 sales rows.
+  - Payment donut rendered from real payment percentages.
+  - No document horizontal overflow on desktop or mobile.
+  - Mobile sales row computed as grid/card layout.
+  - Today/Clear filters and receipt View/Close interaction passed.
+  - Current POS menu remained `/pos/sales`.
+  - No raw translation keys, page errors, request errors, or HTTP 4xx/5xx.
+- No Production write operation was executed during verification.
+
+Deploy state:
+- Commit/push and Firebase Hosting-only deploy pending.
+- No Firestore Rules, Storage Rules, or Functions changes.
+- No merge to `main`.
