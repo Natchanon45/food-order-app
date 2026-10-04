@@ -5881,6 +5881,11 @@ Verification:
 - No purchase submit, stock write, supplier write, or other Production data-changing action was executed during browser verification.
 
 Deploy state:
-- Implementation is ready for commit/push to `feature/react-firebase-port`.
-- Firebase Hosting-only deployment is next after the commit; do not deploy Functions, Firestore Rules, or Storage Rules.
+- Implementation commit `9314bc29` — `feat: migrate POS purchases to React` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.04.392` and Public `0.16.32 / 2026.10.04.107`.
+- Production `/pos/purchases` returns HTTP 200 with `Cache-Control: no-cache, no-store, must-revalidate` and serves `/react/assets/index-C4OBjI8J.js`.
+- Authenticated Production browser contract PASS at 1440x900 and 390x844: 28/28 expected IDs present, no raw translation keys, no document overflow, mobile table scroll contained internally, add/remove-row and this-month/all/search interactions pass, current POS menu is `/pos/purchases`, and zero page/request/HTTP errors remain after excluding expected aborted Firestore Listen long-polls.
+- No purchase submit, stock write, supplier write, or other Production data-changing action was executed.
+- Deployment scope was Hosting only; no Functions, Firestore Rules, or Storage Rules were deployed.
+- Next POS migration: `/pos/payables`.
 - No merge to `main`.
