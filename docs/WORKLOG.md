@@ -5151,9 +5151,29 @@ Verification before commit/deploy:
 - Existing local system-controls.css 404 remains outside this Products phase.
 - Intermediate Build .380 bundle index-DCNt6XXX.js was removed only after confirming no generated entrypoint referenced it; it was never deployed.
 
-Release / deploy:
-- React 0.4.280 / Build 2026.10.04.381.
-- Public 0.16.32 / Build 2026.10.04.096.
-- Hosting deployment pending implementation commit/push checkpoint.
+Release / deploy / readiness correction:
+- Initial Products cutover: React 0.4.280 / Build 2026.10.04.381; Public 0.16.32 / Build 2026.10.04.096.
+- Initial implementation commit 005b7d83 (feat: migrate POS products to React) was pushed to origin/feature/react-firebase-port and Firebase Hosting target foodapp deployed successfully.
+- Production /pos/products returned HTTP 200 with no-cache/no-store/must-revalidate and /react/assets/index-cKnVsVFm.js.
+- During authenticated read-only verification, one live Chrome tab redirected through the central app while a read-only copied Chrome profile with the same valid owner POS session/tenant stayed on /pos/products but exposed an indefinite readiness screen.
+- Root cause found in Products-only readiness logic: role settings were a hard gate even for owner/built-in roles, while loadPosRoleSettings() uses a Firestore getDoc without its own timeout. A delayed role-settings read could therefore keep the whole Products screen in loading state.
+- Corrective readiness implementation:
+  - load cached retail_pos_roles_v1 immediately;
+  - owner/admin/manager/cashier/stock/kitchen built-in roles are ready immediately and use existing safe permission fallbacks;
+  - custom roles use cached role rows when available and remain permission-gated when no cache exists;
+  - role-settings refresh runs in the background with a 6-second timeout;
+  - initial Products data load has a 10-second timeout so the full screen cannot remain blocked indefinitely; after that, realtime Firestore watchers continue recovery.
+- No permission bypass was added.
+- Corrective release candidate: React 0.4.280 / Build 2026.10.04.382; Public 0.16.32 / Build 2026.10.04.097; generated bundle /react/assets/index-BN-Zs4j0.js.
+- Full operational/parity/build/generated-contract/git-diff gates PASS for Build .382.
+- Pre-deploy authenticated smoke used a read-only copy of the actual Chrome Default profile on the production origin while intercepting only the React bundle with local Build .382:
+  - route remained /pos/products,
+  - readiness overlay cleared,
+  - productTableBody rendered,
+  - 20 visible table rows rendered from 1,997 products,
+  - categoryManagerRoot, sortManagerRoot, movementList, and Toast all rendered,
+  - no HTTP errors and no console errors,
+  - PASS.
+- Build .382 Hosting deploy is pending corrective commit/push checkpoint.
 - No Functions, Firestore Rules, or Storage Rules changes are required.
 - No merge to main.

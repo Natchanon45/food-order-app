@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.04.096',
+  build: '2026.10.04.097',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-PRODUCTS-REACT-CUTOVER',
+  commit: 'POS-PRODUCTS-READINESS',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS products React cutover',
-  updatedAt: '2026-10-04T11:51:51+0700',
+  milestone: 'Retail POS products readiness resilience',
+  updatedAt: '2026-10-04T12:07:42+0700',
   whatsNew: [
-    'Serve canonical /pos/products from React with the full legacy product/category/stock/sort surface',
-    'Preserve realtime data, barcode scanning, permissions, dialogs, Toast behavior, and catalog sorting',
-    'Protect legacy Firestore product document IDs during edit, stock adjustment, delete, and sort writes'
+    'Use cached or built-in POS roles immediately so Products cannot hang behind a slow role-settings read',
+    'Timeout initial Products data loading safely and let realtime Firestore watchers continue recovery',
+    'Retain the Products cutover, permissions, barcode scanning, sorting, and legacy document-ID safeguards'
   ]
 };
 

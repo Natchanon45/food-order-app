@@ -48,6 +48,25 @@ const movementTime = value => {
 };
 const pagesAround = (current, total) => Array.from({ length: total }, (_, index) => index + 1)
   .filter(page => page === 1 || page === total || Math.abs(page - current) <= 2);
+const BUILTIN_POS_ROLES = new Set(["owner", "admin", "manager", "cashier", "stock", "kitchen"]);
+const ROLE_SETTINGS_TIMEOUT_MS = 6000;
+const INITIAL_DATA_TIMEOUT_MS = 10000;
+const cachedPosRoles = () => {
+  try {
+    const rows = JSON.parse(localStorage.getItem("retail_pos_roles_v1") || "[]");
+    return Array.isArray(rows) ? rows : [];
+  } catch {
+    return [];
+  }
+};
+const withTimeout = (promise, timeoutMs, code) => Promise.race([
+  promise,
+  new Promise((_, reject) => window.setTimeout(() => {
+    const error = new Error(code);
+    error.code = code;
+    reject(error);
+  }, timeoutMs)),
+]);
 
 function hasPosPermission(profile, roleRows, permission) {
   if (!profile) return false;
@@ -139,8 +158,12 @@ export function PosProductsPage() {
   const [catalogOrder, setCatalogOrder] = useState([]);
   const [initialReady, setInitialReady] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [roleRows, setRoleRows] = useState([]);
-  const [rolesReady, setRolesReady] = useState(false);
+  const [roleRows, setRoleRows] = useState(() => cachedPosRoles());
+  const [rolesReady, setRolesReady] = useState(() => {
+    const session = getRetailPosSession();
+    const roleId = String(session?.roleId || session?.role || "");
+    return BUILTIN_POS_ROLES.has(roleId) || cachedPosRoles().length > 0;
+  });
   const [scanStatus, setScanStatus] = useState("");
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState("success");
@@ -251,19 +274,34 @@ export function PosProductsPage() {
       setRolesReady(true);
       return () => { alive = false; };
     }
-    setRolesReady(false);
-    loadPosRoleSettings(tenant.id).then(rows => {
+
+    const cached = cachedPosRoles();
+    const roleId = String(posAccessProfile?.roleId || posAccessProfile?.role || "");
+    if (cached.length) setRoleRows(cached);
+    setRolesReady(BUILTIN_POS_ROLES.has(roleId) || cached.length > 0);
+
+    withTimeout(loadPosRoleSettings(tenant.id), ROLE_SETTINGS_TIMEOUT_MS, "POS_ROLE_SETTINGS_TIMEOUT").then(rows => {
       if (!alive) return;
-      setRoleRows(Array.isArray(rows) ? rows : []);
-      try { localStorage.setItem("retail_pos_roles_v1", JSON.stringify(rows || [])); } catch {}
+      const normalized = Array.isArray(rows) ? rows : [];
+      setRoleRows(normalized);
+      try { localStorage.setItem("retail_pos_roles_v1", JSON.stringify(normalized)); } catch {}
     }).catch(error => {
       console.warn("POS_PRODUCTS_ROLE_SETTINGS_LOAD_FAILED", error);
-      if (alive) setRoleRows([]);
+      if (!alive) return;
+      if (!cached.length && !BUILTIN_POS_ROLES.has(roleId)) setRoleRows([]);
     }).finally(() => {
       if (alive) setRolesReady(true);
     });
     return () => { alive = false; };
-  }, [tenant?.id, profile?.id, profile?.uid, profile?.role, profile?.roleId]);
+  }, [
+    tenant?.id,
+    profile?.id,
+    profile?.uid,
+    profile?.role,
+    profile?.roleId,
+    posAccessProfile?.role,
+    posAccessProfile?.roleId,
+  ]);
 
   const refresh = useCallback(async () => {
     if (!tenant?.id) return;
@@ -283,9 +321,11 @@ export function PosProductsPage() {
     let alive = true;
     if (!tenant?.id || !profile || !rolesReady || !canView || redirectTarget) return () => { alive = false; };
     setInitialReady(false);
-    refresh().catch(error => {
+    withTimeout(refresh(), INITIAL_DATA_TIMEOUT_MS, "POS_PRODUCTS_INITIAL_LOAD_TIMEOUT").catch(error => {
       console.error("POS_PRODUCTS_LOAD_FAILED", error);
-      showToast(error?.message || tr("products.empty"), "error");
+      if (error?.code !== "POS_PRODUCTS_INITIAL_LOAD_TIMEOUT") {
+        showToast(error?.message || tr("products.empty"), "error");
+      }
     }).finally(() => {
       if (alive) setInitialReady(true);
     });
