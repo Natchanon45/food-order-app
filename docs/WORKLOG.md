@@ -7194,4 +7194,33 @@ Verification before deploy:
 - Firestore write attempts observed = 0.
 
 Deploy state:
-- Commit/push and Hosting-only deployment pending.
+- Implementation commit `ff93c131` — `feat: redesign POS stock counts` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.05.410` and Public `0.16.32 / 2026.10.05.125`.
+- Production `/pos/stock-counts` returns HTTP 200 with `Cache-Control: no-cache, no-store, must-revalidate` and serves `/react/assets/index-B_FUnTNp.js`.
+- Authenticated Production visual contract PASS with Firestore Write/commit/batchWrite blocked.
+- Production Desktop 1440x900:
+  - Hero ~= 243px,
+  - 4 Hero metrics,
+  - 2 insight panels,
+  - Progress ring = 164x164,
+  - metrics = 1,997 total / 0 counted / 1,997 remaining / 0 variance at untouched state,
+  - 1,997 product rows,
+  - actual inputs with a value = 0,
+  - 4 summary cards,
+  - history permission available; current history cards = 0,
+  - raw translation keys = 0,
+  - document horizontal overflow = 0.
+- Production Mobile 390x844:
+  - Hero rendered,
+  - count panel = 374px,
+  - product card = 348px,
+  - table min-width = 0,
+  - table overflow = visible,
+  - actual input = 122px,
+  - history grid = 348px,
+  - document horizontal overflow = 0.
+- No input/action that changes count state was used during verification.
+- Page errors = 0; request failures = 0; HTTP errors = 0; Firestore write attempts observed = 0.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
+- Next visual redesign route: `/pos/purchases`.
+- No merge to `main`.
