@@ -5937,6 +5937,10 @@ Verification before deploy:
 - No Production write operation was executed during verification.
 
 Deploy state:
-- Commit/push and Firebase Hosting-only deploy pending.
-- No Firestore Rules, Storage Rules, or Functions changes.
+- Implementation commit `89a980a5` — `feat: redesign POS sales analytics` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.04.393` and Public `0.16.32 / 2026.10.04.108`.
+- Production `/pos/sales` returns HTTP 200 with `Cache-Control: no-cache, no-store, must-revalidate` and serves `/react/assets/index-CSkz0Ktp.js`.
+- Authenticated Production browser contract PASS at 1440x900 and 390x844: Visual Analytics CSS loaded, gradient Hero visible, 11 KPI cards present, real sales trend bars and payment donut rendered, Top-10 ranking and 4 current sale rows present, zero document horizontal overflow, mobile sale rows render as cards/grid, Today/Clear filters and receipt View/Close passed, current menu remains `/pos/sales`, and no raw translation/page/request/HTTP errors were observed.
+- No Production write operation was executed during verification.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions changes/deploys.
 - No merge to `main`.
