@@ -5491,3 +5491,83 @@ Release / deploy:
 - Only drawer expansion interactions were used; no Production data-changing POS action was executed.
 - Modern Card v2 shared POS menu redesign is complete on Production Build 2026.10.04.386.
 - No merge to main.
+
+
+---
+
+## 2026-10-04 — POS Modern Card v2.1: larger spacing, wider drawer, stronger color
+
+User feedback:
+- Modern Card v2 structure was accepted, but the drawer felt too small/narrow, vertical spacing was too tight, and colors were too pale.
+- Keep the approved Modern Card structure and multi-open behavior; increase scale, breathing room, and visual contrast instead of redesigning again.
+
+v2.1 visual changes:
+- Desktop drawer max width: 372px -> 420px.
+- Tablet drawer max width: 410px / 97vw.
+- Small mobile drawer: up to the full 390px viewport with no horizontal overflow.
+- Panel padding increased to 20px 18px 16px on desktop.
+- Header height/font increased.
+- Profile card:
+  - larger 44px avatar,
+  - larger name/subtitle text,
+  - 14px/15px padding,
+  - stronger green gradient and border/shadow.
+- Central-home action:
+  - 46px min height,
+  - larger icon and text,
+  - stronger neutral-green background/border.
+- Category cards:
+  - 54px desktop header height,
+  - 35px icons,
+  - 15px card radius,
+  - more vertical gap between groups,
+  - stronger emerald/teal/orange/pink/slate borders and pastel fills.
+- Submenu rows:
+  - 45px desktop height,
+  - larger 30px icons,
+  - larger font and 10px icon/text gap,
+  - stronger hover treatment.
+- Active submenu:
+  - stronger green gradient (#bfeccc -> #d9f5e2),
+  - 3px green inset indicator,
+  - heavier text and stronger chevron.
+- Logout:
+  - 48px desktop height,
+  - stronger red surface and shadow.
+- Mobile keeps the same hierarchy but uses slightly smaller 50px category / 42px submenu rows to preserve usability without crowding.
+- Independent nav scrolling and bottom logout remain unchanged.
+
+Cache / regression:
+- React uses Build 2026.10.04.387 as its parity-asset cache key.
+- Remaining legacy POS routes bumped navigation CSS only from v=20261004-101 to v=20261004-102; navigation JS remains v=20261004-101 because markup/behavior did not change in v2.1.
+- React foundation contract now locks the v2.1 420px width, 54px/45px row sizing, stronger active gradient, independent nav scrolling, and active/current treatment.
+
+Verification:
+- Desktop geometry preview 1600x900:
+  - drawer width 420px,
+  - panel padding 20/18/16,
+  - profile height 74px,
+  - category header 55px,
+  - submenu row 45px,
+  - footer height 62px,
+  - no horizontal overflow.
+- Mobile geometry preview 390x844:
+  - drawer width 390px,
+  - document width 390px,
+  - profile height 67px,
+  - category header 50px,
+  - submenu row 42px,
+  - footer bottom 832px,
+  - no horizontal overflow.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS.
+- npm run build:react PASS.
+- Generated React build contract PASS for React 0.4.280 / Build 2026.10.04.387 using /react/assets/index-DwT01RT7.js.
+- git diff --check PASS.
+
+Release / deploy:
+- Prepared React 0.4.280 / Build 2026.10.04.387.
+- Prepared Public 0.16.32 / Build 2026.10.04.102.
+- Hosting-only deploy pending implementation commit/push.
+- No Functions, Firestore Rules, or Storage Rules changes.
+- No merge to main.
