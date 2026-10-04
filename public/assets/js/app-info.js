@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.04.103',
+  build: '2026.10.04.104',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-MENU-MULTI-OPEN-SCROLL',
+  commit: 'POS-MENU-NATURAL-HEIGHT-STACK',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS multi-open menu scroll resilience',
-  updatedAt: '2026-10-04T15:48:57+0700',
+  milestone: 'Retail POS expanded-card overlap fix',
+  updatedAt: '2026-10-04T16:03:43+0700',
   whatsNew: [
-    'Keep the POS drawer header/profile/home/logout fixed while only the menu list scrolls',
-    'Allow all menu groups to remain expanded without hiding lower items behind the footer',
-    'Auto-scroll newly expanded lower groups into view on React and legacy POS pages'
+    'Stack expanded POS menu cards by their real content height instead of CSS Grid row tracks',
+    'Keep multiple groups open without cards overlapping or covering the next category',
+    'Preserve the approved visual design plus internal scrolling and auto-scroll behavior'
   ]
 };
 

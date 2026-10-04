@@ -5652,3 +5652,72 @@ Release / deploy:
 - Only drawer expansion/scroll interactions were used; no Production data-changing POS action was executed.
 - Modern Card v2.2 multi-open scroll fix is complete on Production Build 2026.10.04.388.
 - No merge to main.
+
+
+---
+
+## 2026-10-04 — POS Modern Card v2.3: expanded-card overlap root-cause fix
+
+User issue:
+- Even after v2.2 made the center menu scrollable, screenshots showed expanded menu cards visually colliding/overlapping the next category.
+- The issue was most obvious when Sales, Stock, and Purchasing were opened together.
+
+Production root-cause diagnosis:
+- Actual Production DOM inspection on /pos with all permitted groups open showed the nav remained CSS Grid.
+- Grid template rows were fixed at approximately 103px each:
+  - gridTemplateRows = 103px 103px 103px 103px 103px.
+- Actual expanded card heights were much larger:
+  - Sales 315px,
+  - Stock 217px,
+  - Purchasing 217px,
+  - Customer 119px,
+  - System 217px.
+- Because a grid item can visually overflow its assigned row track, the next grid row began before the previous expanded card ended:
+  - Sales overlapped the next row by 200px,
+  - Stock by 102px,
+  - Purchasing by 102px,
+  - Customer by 4px.
+- This exactly matched the user's screenshots.
+- v2.2 scrolling was functioning correctly; the remaining problem was grid track sizing, not scrollability.
+
+v2.3 fix:
+- Keep all v2.1 visual sizing/colors and all v2.2 scroll/auto-scroll behavior.
+- Change only the center nav layout model from CSS Grid to a natural-height flex column:
+  - display:flex,
+  - flex-direction:column,
+  - align-items:stretch,
+  - justify-content:flex-start.
+- Expanded menu groups remain flex:0 0 auto and use height:auto/min-height:0.
+- Group button/submenu remain static normal-flow content at width:100%.
+- Open submenu height remains auto.
+- This makes every following category start only after the previous category's actual rendered content height plus the configured 12px gap.
+
+Real Production DOM pre-deploy injection test:
+- Injected only the local v2.3 override into the current Production /pos DOM before deploy.
+- nav changed to flex / column.
+- All 5 groups remained open.
+- Actual group heights remained 315 / 217 / 217 / 119 / 217px.
+- Total nav scroll height became 1160px with max scroll 570px, reflecting the real expanded content instead of compressed grid tracks.
+- Every adjacent group pair had overlapNext = -12px, meaning a true 12px gap and zero overlap.
+- V23_INJECTED_REAL_DOM=PASS.
+
+Cache safety:
+- React uses Build 2026.10.04.389 as the parity CSS cache key.
+- Remaining legacy POS routes bump retail-pos-navigation.css from v=20261004-103 to v=20261004-104.
+- Legacy navigation JS stays v=20261004-103 because v2.3 changes layout CSS only.
+
+Regression / verification:
+- React foundation contract now locks v2.3 flex-column/natural-height rules in addition to existing v2.2 scrolling and auto-scroll rules.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS.
+- npm run build:react PASS.
+- Generated React build contract PASS for React 0.4.280 / Build 2026.10.04.389 using /react/assets/index-D2SmItWg.js.
+- git diff --check PASS.
+
+Release / deploy:
+- Prepared React 0.4.280 / Build 2026.10.04.389.
+- Prepared Public 0.16.32 / Build 2026.10.04.104.
+- Implementation commit/push and Hosting-only deploy pending.
+- Production verification must expand all permitted groups on one React route and one legacy route and assert no adjacent card overlap.
+- No Functions, Firestore Rules, or Storage Rules changes.
+- No merge to main.

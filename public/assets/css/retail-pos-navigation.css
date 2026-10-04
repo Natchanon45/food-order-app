@@ -600,3 +600,29 @@
   .pos-menu-panel nav{padding-bottom:20px!important}
   .pos-menu-group{scroll-margin-block:6px 18px}
 }
+
+
+/* POS menu Modern Card v2.3 — natural-height stack; fixes expanded-card overlap. */
+.pos-menu-panel nav{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  align-content:normal!important;
+  justify-content:flex-start!important;
+}
+.pos-menu-group{
+  display:block!important;
+  flex:0 0 auto!important;
+  min-height:0!important;
+  height:auto!important;
+}
+.pos-menu-group>button,
+.pos-menu-links,
+.pos-menu-group.is-open .pos-menu-links{
+  position:static!important;
+  width:100%!important;
+}
+.pos-menu-group.is-open .pos-menu-links{
+  height:auto!important;
+  min-height:0!important;
+}
