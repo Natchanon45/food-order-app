@@ -1,27 +1,142 @@
 {
   "th": {
-    "delivery": { "checkout": { "promotion": {
-      "gift_required": "กรุณาเลือกของแถมอย่างน้อย 1 รายการก่อนสั่งซื้อ"
-    } } }
+    "delivery": {
+      "checkout": {
+        "promotion": {
+          "gift_required": "กรุณาเลือกของแถมอย่างน้อย 1 รายการก่อนสั่งซื้อ"
+        }
+      }
+    },
+    "pos_products": {
+      "scanner": {
+        "title": "สแกนบาร์โค้ด",
+        "help": "วางบาร์โค้ดให้อยู่ในกรอบสีเขียว",
+        "preparing": "กำลังเตรียมกล้อง...",
+        "scanning": "กำลังสแกน...",
+        "loading": "กำลังโหลดตัวอ่านบาร์โค้ด...",
+        "found": "พบรหัส: :code",
+        "success": "สแกนบาร์โค้ดสำเร็จ",
+        "unsupported": "อุปกรณ์นี้ไม่สามารถเปิดกล้องได้",
+        "failed": "เปิดกล้องไม่สำเร็จ กรุณาอนุญาตการใช้งานกล้อง",
+        "button": "สแกนบาร์โค้ด",
+        "close": "ปิดกล้อง"
+      },
+      "runtime": {
+        "category_reserved_name": "ชื่อนี้สงวนไว้สำหรับหมวดระบบ กรุณาใช้ชื่ออื่น",
+        "category_duplicate": "มีหมวดสินค้าชื่อนี้อยู่แล้ว"
+      }
+    }
   },
   "en": {
-    "delivery": { "checkout": { "promotion": {
-      "gift_required": "Please select at least 1 free gift before placing your order."
-    } } }
+    "delivery": {
+      "checkout": {
+        "promotion": {
+          "gift_required": "Please select at least 1 free gift before placing your order."
+        }
+      }
+    },
+    "pos_products": {
+      "scanner": {
+        "title": "Scan barcode",
+        "help": "Place the barcode inside the green frame",
+        "preparing": "Preparing camera...",
+        "scanning": "Scanning...",
+        "loading": "Loading barcode reader...",
+        "found": "Code found: :code",
+        "success": "Barcode scanned successfully",
+        "unsupported": "This device cannot open the camera",
+        "failed": "Could not open the camera. Please allow camera access.",
+        "button": "Scan barcode",
+        "close": "Close camera"
+      },
+      "runtime": {
+        "category_reserved_name": "This name is reserved for a system category. Please use another name.",
+        "category_duplicate": "A category with this name already exists."
+      }
+    }
   },
   "my": {
-    "delivery": { "checkout": { "promotion": {
-      "gift_required": "အော်ဒါမတင်မီ အခမဲ့လက်ဆောင် အနည်းဆုံး ၁ ခု ရွေးချယ်ပါ။"
-    } } }
+    "delivery": {
+      "checkout": {
+        "promotion": {
+          "gift_required": "အော်ဒါမတင်မီ အခမဲ့လက်ဆောင် အနည်းဆုံး ၁ ခု ရွေးချယ်ပါ။"
+        }
+      }
+    },
+    "pos_products": {
+      "scanner": {
+        "title": "ဘားကုဒ်စကင်ဖတ်ရန်",
+        "help": "ဘားကုဒ်ကို အစိမ်းရောင်ဘောင်အတွင်း ထားပါ",
+        "preparing": "ကင်မရာပြင်ဆင်နေသည်...",
+        "scanning": "စကင်ဖတ်နေသည်...",
+        "loading": "ဘားကုဒ်ဖတ်စက် တင်နေသည်...",
+        "found": "ကုဒ်တွေ့သည်: :code",
+        "success": "ဘားကုဒ်စကင်ဖတ်ပြီးပါပြီ",
+        "unsupported": "ဤစက်တွင် ကင်မရာဖွင့်၍မရပါ",
+        "failed": "ကင်မရာဖွင့်၍မရပါ။ ကင်မရာအသုံးပြုခွင့်ပေးပါ။",
+        "button": "ဘားကုဒ်စကင်ဖတ်ရန်",
+        "close": "ကင်မရာပိတ်ရန်"
+      },
+      "runtime": {
+        "category_reserved_name": "ဤအမည်ကို စနစ်အမျိုးအစားအတွက် သီးသန့်ထားသည်။ အခြားအမည်ကို အသုံးပြုပါ။",
+        "category_duplicate": "ဤအမည်ဖြင့် အမျိုးအစားတစ်ခု ရှိပြီးသားဖြစ်သည်။"
+      }
+    }
   },
   "lo": {
-    "delivery": { "checkout": { "promotion": {
-      "gift_required": "ກະລຸນາເລືອກຂອງຂວັນຟຣີຢ່າງນ້ອຍ 1 ລາຍການກ່ອນສັ່ງຊື້"
-    } } }
+    "delivery": {
+      "checkout": {
+        "promotion": {
+          "gift_required": "ກະລຸນາເລືອກຂອງຂວັນຟຣີຢ່າງນ້ອຍ 1 ລາຍການກ່ອນສັ່ງຊື້"
+        }
+      }
+    },
+    "pos_products": {
+      "scanner": {
+        "title": "ສະແກນບາໂຄດ",
+        "help": "ວາງບາໂຄດໃນກອບສີຂຽວ",
+        "preparing": "ກຳລັງກຽມກ້ອງ...",
+        "scanning": "ກຳລັງສະແກນ...",
+        "loading": "ກຳລັງໂຫຼດຕົວອ່ານບາໂຄດ...",
+        "found": "ພົບລະຫັດ: :code",
+        "success": "ສະແກນບາໂຄດສຳເລັດ",
+        "unsupported": "ອຸປະກອນນີ້ບໍ່ສາມາດເປີດກ້ອງໄດ້",
+        "failed": "ເປີດກ້ອງບໍ່ສຳເລັດ ກະລຸນາອະນຸຍາດໃຊ້ກ້ອງ",
+        "button": "ສະແກນບາໂຄດ",
+        "close": "ປິດກ້ອງ"
+      },
+      "runtime": {
+        "category_reserved_name": "ຊື່ນີ້ສະຫງວນໄວ້ສຳລັບໝວດຂອງລະບົບ ກະລຸນາໃຊ້ຊື່ອື່ນ",
+        "category_duplicate": "ມີໝວດສິນຄ້າຊື່ນີ້ແລ້ວ"
+      }
+    }
   },
   "km": {
-    "delivery": { "checkout": { "promotion": {
-      "gift_required": "សូមជ្រើសរើសអំណោយឥតគិតថ្លៃយ៉ាងហោចណាស់ 1 មុនពេលបញ្ជាទិញ។"
-    } } }
+    "delivery": {
+      "checkout": {
+        "promotion": {
+          "gift_required": "សូមជ្រើសរើសអំណោយឥតគិតថ្លៃយ៉ាងហោចណាស់ 1 មុនពេលបញ្ជាទិញ។"
+        }
+      }
+    },
+    "pos_products": {
+      "scanner": {
+        "title": "ស្កេនបាកូដ",
+        "help": "ដាក់បាកូដនៅក្នុងស៊ុមពណ៌បៃតង",
+        "preparing": "កំពុងរៀបចំកាមេរ៉ា...",
+        "scanning": "កំពុងស្កេន...",
+        "loading": "កំពុងផ្ទុកកម្មវិធីអានបាកូដ...",
+        "found": "រកឃើញកូដ: :code",
+        "success": "ស្កេនបាកូដបានជោគជ័យ",
+        "unsupported": "ឧបករណ៍នេះមិនអាចបើកកាមេរ៉ាបានទេ",
+        "failed": "មិនអាចបើកកាមេរ៉ាបានទេ។ សូមអនុញ្ញាតការប្រើកាមេរ៉ា។",
+        "button": "ស្កេនបាកូដ",
+        "close": "បិទកាមេរ៉ា"
+      },
+      "runtime": {
+        "category_reserved_name": "ឈ្មោះនេះត្រូវបានរក្សាទុកសម្រាប់ប្រភេទប្រព័ន្ធ។ សូមប្រើឈ្មោះផ្សេង។",
+        "category_duplicate": "មានប្រភេទទំនិញដែលមានឈ្មោះនេះរួចហើយ។"
+      }
+    }
   }
 }

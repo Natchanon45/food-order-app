@@ -5036,3 +5036,124 @@ Release / deploy:
   - error icon = rgb(239,68,68),
   - gap = 8px.
 - No merge to main.
+
+
+---
+
+## 2026-10-03 — Retail POS remaining-route audit after global Toast release
+
+Request:
+- Continue immediately with the next Retail POS migration task after Build 2026.10.03.380.
+
+Audit result:
+- Canonical React routes already in Production, in POS menu order:
+  - /pos
+  - /pos/sales
+  - /pos/tax-invoices
+  - /pos/returns
+  - /pos/shifts
+- The next menu route still served by the current legacy static implementation is /pos/products (สินค้าและสต็อก).
+- Remaining menu routes after Products are /pos/stock-movements, /pos/stock-counts, /pos/purchases, /pos/payables, /pos/suppliers, /pos/customers, /pos/settings, /pos/backup, and /pos/users.
+- React route components already exist for all of those paths, but most later components are still small migration drafts; existence of a React route is not considered a completed canonical cutover.
+- Current /pos/products legacy page has 60 stable IDs and a substantial product/category/stock/sort feature surface. Existing PosProductsPage is also substantial but currently preserves only 12/60 legacy IDs, so it must not be cut over without a full parity pass.
+- Authenticated screenshots of current PENGUIN legacy /pos/products and task2 /pos/products were captured before migration. Their visible desktop layout is already closely aligned; data counts differ between environments as expected and are not a parity defect.
+
+Decision:
+- Next migration target is canonical /pos/products, following the actual POS navigation order.
+- Preserve current production/task2 UI/behavior rather than redesigning.
+- Archive the pre-cutover PENGUIN legacy HTML fixture before changing the canonical entrypoint.
+- Compare all product/category/stock/sort permissions, actions, dialogs, barcode behavior, responsive behavior, and 60-ID inventory before cutover.
+- No code cutover/deploy was performed by this audit entry.
+
+
+---
+
+## 2026-10-04 — Retail POS React migration phase 7: canonical Products /pos/products
+
+Direction:
+- Continued immediately after the global Toast release.
+- Audited remaining POS menu routes and selected /pos/products as the next canonical migration target because it is the first still-legacy route in the actual POS navigation order.
+- Preserved the uncommitted Products migration work already present in the working tree; no reset/clean/discard was used.
+- Current production legacy /pos/products remains the UI/behavior MASTER for this route.
+
+Legacy inventory / parity:
+- Archived pre-cutover public/pos/products/index.html as tests/fixtures/retail-pos-legacy/pos-products-index.html.
+- Legacy Products page exposes 60 stable IDs across:
+  - product stats/list/filter/pagination,
+  - category manager,
+  - category pagination,
+  - category/product sort manager,
+  - stock movement history,
+  - product/category/stock dialogs,
+  - Toast.
+- React Products now preserves all 60/60 legacy IDs.
+- Granular permissions preserved:
+  - pos.products.create
+  - pos.products.edit
+  - pos.products.delete
+  - pos.products.adjust_stock
+  - pos.products.view_cost
+  - pos.products.clear_history
+- Retail POS session-first auth, /pos/login next routing, first-allowed full navigation, LocaleSwitcher, PosNavigation, and AppDeveloperPanel are preserved.
+
+Behavior/data implementation:
+- Realtime Firestore watchers added/preserved for products, categories, stock movements, and catalog-order settings.
+- Category manager preserves search/status/sort/page-size/pagination, derived categories, create/edit/delete, aliases, rename migration, reserved-name validation, duplicate validation, and catalog-order rename migration.
+- Product form preserves product code/barcode/name/price/unit/stock/min-stock plus merchandising fields, image upload/URL/removal, cost visibility permission, category picker/create-category flow, sort order, and show-on-POS.
+- Stock adjustment remains transactional and writes stock movement records.
+- Product/category delete and clear-history actions use the shared centered sweet confirmation dialog; no browser-native confirm is used.
+- Barcode scanning is rendered in React and supports native BarcodeDetector first with ZXing fallback, scan feedback, camera cleanup, and typed success/error Toasts.
+- Sortable category/product behavior matches the current legacy MASTER values:
+  - animation 180
+  - forceFallback true
+  - fallbackOnBody true
+  - fallbackTolerance 3
+  - delay 120
+  - delayOnTouchOnly true
+  - touchStartThreshold 4
+- Typed Toast + message structure and global Toast policy are preserved.
+
+Legacy Firestore document compatibility:
+- Product normalization deduplicates logical product IDs while retaining _documentId/_documentIds.
+- Product edit writes the canonical logical-ID document and removes old duplicate legacy document IDs in the same batch.
+- Product delete removes all known duplicate document IDs.
+- Stock adjustment accepts the normalized product object and writes to _documentId when present instead of assuming logical product.id is the Firestore document ID.
+- Product sort-order writes also use _documentId when present.
+- This closes the edge case where old data could be readable but stock/sort writes targeted a non-existent canonical document.
+
+Canonical cutover:
+- tools/sync-react-legacy-entrypoints.py now syncs public/pos/products/index.html from the React shell.
+- firebase.json adds no-cache/no-store/must-revalidate headers for /pos/products and /pos/products/**.
+- Generated build contract requires canonical /pos/products to use the current React bundle and contain pos.products.
+- React foundation contract locks:
+  - 60-ID fixture parity,
+  - session/page permissions,
+  - six granular permissions,
+  - current Sortable profile,
+  - realtime watchers,
+  - barcode scanner,
+  - typed Toast/floating control,
+  - shared confirmation dialog,
+  - Firestore/storage mappings,
+  - legacy document-ID safeguards,
+  - canonical sync/no-cache config.
+
+Verification before commit/deploy:
+- node --check react-app/src/data/retailProductsData.js PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS, including UI-layer contract.
+- npm run build:react PASS.
+- Generated React build contract PASS for React 0.4.280 / Build 2026.10.04.381 using /react/assets/index-cKnVsVFm.js.
+- git diff --check PASS.
+- Canonical public/pos/products/index.html matches public/react/index.html.
+- Legacy Products ID inventory: 60/60 present in React.
+- Local headless Chrome smoke: /pos/products/ HTTP 200, no pageerror, then expected unauthenticated POS/login routing.
+- Existing local system-controls.css 404 remains outside this Products phase.
+- Intermediate Build .380 bundle index-DCNt6XXX.js was removed only after confirming no generated entrypoint referenced it; it was never deployed.
+
+Release / deploy:
+- React 0.4.280 / Build 2026.10.04.381.
+- Public 0.16.32 / Build 2026.10.04.096.
+- Hosting deployment pending implementation commit/push checkpoint.
+- No Functions, Firestore Rules, or Storage Rules changes are required.
+- No merge to main.

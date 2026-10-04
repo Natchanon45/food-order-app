@@ -1,5 +1,5 @@
 import {
-  collection, deleteDoc, doc, getDoc, getDocs, runTransaction,
+  collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, runTransaction,
   serverTimestamp, setDoc, writeBatch,
 } from "firebase/firestore";
 import { deleteObject, getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage";
@@ -42,11 +42,9 @@ const normalizeProduct = source => ({
   showOnPos: source?.showOnPos !== false,
 });
 
-export async function listRetailProducts(tenantId) {
-  const id = requireContext(tenantId);
-  const snapshot = await getDocs(tenantCollection(id, "products"));
+function normalizeProductDocuments(documents = []) {
   const byId = new Map();
-  snapshot.docs.forEach(document => {
+  documents.forEach(document => {
     const product = normalizeProduct({ _documentId: document.id, ...document.data() });
     const productId = String(product.id || document.id);
     if (!productId) return;
@@ -67,27 +65,85 @@ export async function listRetailProducts(tenantId) {
   return [...byId.values()];
 }
 
-export async function listRetailCategories(tenantId) {
-  const id = requireContext(tenantId);
-  const snapshot = await getDocs(tenantCollection(id, "categories"));
-  return snapshot.docs.map(row).map(item => ({
+function normalizeCategoryDocuments(documents = []) {
+  return documents.map(row).map(item => ({
     ...item,
     id: String(item.id || ""),
     name: cleanName(item.name),
+    aliases: Array.isArray(item.aliases) ? item.aliases.map(cleanName).filter(Boolean) : [],
     sortOrder: Number(item.sortOrder ?? 0),
     active: item.active !== false,
   })).sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name, "th"));
 }
 
-export async function saveRetailCategory(tenantId, category = {}) {
+function normalizeMovementDocuments(documents = []) {
+  return documents.map(row)
+    .sort((a, b) => timeValue(b.createdAtServer || b.createdAt || b.updatedAt) - timeValue(a.createdAtServer || a.createdAt || a.updatedAt))
+    .slice(0, 500);
+}
+
+export async function listRetailProducts(tenantId) {
+  const id = requireContext(tenantId);
+  const snapshot = await getDocs(tenantCollection(id, "products"));
+  return normalizeProductDocuments(snapshot.docs);
+}
+
+export function watchRetailProducts(tenantId, onRows, onError = () => {}) {
+  const id = requireContext(tenantId);
+  return onSnapshot(tenantCollection(id, "products"),
+    snapshot => onRows(normalizeProductDocuments(snapshot.docs)),
+    onError);
+}
+
+export async function listRetailCategories(tenantId) {
+  const id = requireContext(tenantId);
+  const snapshot = await getDocs(tenantCollection(id, "categories"));
+  return normalizeCategoryDocuments(snapshot.docs);
+}
+
+export function watchRetailCategories(tenantId, onRows, onError = () => {}) {
+  const id = requireContext(tenantId);
+  return onSnapshot(tenantCollection(id, "categories"),
+    snapshot => onRows(normalizeCategoryDocuments(snapshot.docs)),
+    onError);
+}
+
+export async function saveRetailCategory(tenantId, category = {}, sourceCategory = null) {
   const id = requireContext(tenantId);
   const name = cleanName(category.name);
   if (!name) throw new Error("CATEGORY_NAME_REQUIRED");
-  const categories = await listRetailCategories(id);
-  const duplicate = categories.find(item => nameKey(item.name) === nameKey(name) && String(item.id) !== String(category.id || ""));
-  if (duplicate) return duplicate;
-  const categoryId = String(category.id || `cat-${crypto.randomUUID()}`);
+  if (new Set(["ขายดี", "ทั้งหมด"].map(nameKey)).has(nameKey(name))) {
+    throw new Error("CATEGORY_RESERVED_NAME");
+  }
+
+  const [categories, products] = await Promise.all([
+    listRetailCategories(id),
+    listRetailProducts(id),
+  ]);
+  const source = sourceCategory || null;
+  const sourceId = String(source?.id || category.id || "");
+  const sourceIsDerived = Boolean(source?.derived);
+  const requestedId = sourceIsDerived && sourceId.startsWith("derived:") ? "" : sourceId;
+  const categoryId = String(requestedId || `cat-${crypto.randomUUID()}`);
   const existing = categories.find(item => String(item.id) === categoryId);
+
+  const duplicate = categories.find(item => {
+    if (String(item.id) === categoryId) return false;
+    const names = [item.name, ...(Array.isArray(item.aliases) ? item.aliases : [])];
+    return names.some(value => nameKey(value) === nameKey(name));
+  });
+  if (duplicate) throw new Error("CATEGORY_DUPLICATE");
+
+  const previousNames = [
+    source?.name,
+    ...(Array.isArray(source?.aliases) ? source.aliases : []),
+    existing?.name,
+    ...(Array.isArray(existing?.aliases) ? existing.aliases : []),
+  ].map(cleanName).filter(Boolean);
+  const aliases = [...new Set(previousNames)]
+    .filter(value => nameKey(value) !== nameKey(name))
+    .slice(0, 20);
+
   const now = Date.now();
   const payload = {
     ...(existing || {}),
@@ -96,6 +152,7 @@ export async function saveRetailCategory(tenantId, category = {}) {
     tenantId: id,
     shopId: id,
     name,
+    aliases,
     active: category.active !== false,
     sortOrder: Number(category.sortOrder ?? existing?.sortOrder ?? categories.length * 10),
     updatedBy: auth.currentUser.uid,
@@ -108,6 +165,53 @@ export async function saveRetailCategory(tenantId, category = {}) {
     payload.createdAtServer = serverTimestamp();
   }
   await setDoc(tenantDoc(id, "categories", categoryId), payload, { merge: true });
+
+  if (source) {
+    const sourceNames = [source.name, ...(source.aliases || [])].map(cleanName).filter(Boolean);
+    const sourceKeys = new Set(sourceNames.map(nameKey).filter(Boolean));
+    const affected = products.filter(product => {
+      const productCategoryId = String(product.categoryId || "");
+      const productCategoryKey = nameKey(product.category);
+      if (sourceIsDerived) return sourceKeys.has(productCategoryKey);
+      if (sourceId && productCategoryId === sourceId) return true;
+      return !productCategoryId && sourceKeys.has(productCategoryKey);
+    });
+    for (let offset = 0; offset < affected.length; offset += 400) {
+      const batch = writeBatch(db);
+      affected.slice(offset, offset + 400).forEach(product => {
+        batch.set(tenantDoc(id, "products", product._documentId || product.id), {
+          categoryId,
+          category: name,
+          updatedBy: auth.currentUser.uid,
+          updatedAt: Date.now(),
+          updatedAtServer: serverTimestamp(),
+        }, { merge: true });
+      });
+      await batch.commit();
+    }
+
+    if (sourceKeys.size && [...sourceKeys].some(key => key !== nameKey(name))) {
+      const orderRef = tenantDoc(id, "settings", "catalog-order");
+      const orderSnapshot = await getDoc(orderRef);
+      const order = orderSnapshot.exists() && Array.isArray(orderSnapshot.data()?.categoryOrder)
+        ? orderSnapshot.data().categoryOrder.map(String)
+        : [];
+      if (order.length) {
+        const replacement = `category:${name}`;
+        const previousIds = new Set(sourceNames.map(value => `category:${value}`));
+        const nextOrder = [...new Set(order.map(value => previousIds.has(String(value)) ? replacement : String(value)))];
+        await setDoc(orderRef, {
+          id: "catalog-order",
+          type: "catalog-order",
+          tenantId: id,
+          categoryOrder: nextOrder,
+          updatedBy: auth.currentUser.uid,
+          updatedAt: Date.now(),
+          updatedAtServer: serverTimestamp(),
+        }, { merge: true });
+      }
+    }
+  }
   return { ...payload, id: categoryId };
 }
 
@@ -116,9 +220,10 @@ export async function deleteRetailCategory(tenantId, categoryId) {
   const [categories, products] = await Promise.all([listRetailCategories(id), listRetailProducts(id)]);
   const category = categories.find(item => String(item.id) === String(categoryId));
   if (!category) return;
+  const categoryKeys = new Set([category.name, ...(category.aliases || [])].map(nameKey).filter(Boolean));
   const inUse = products.some(product =>
     String(product.categoryId || "") === String(category.id)
-    || nameKey(product.category) === nameKey(category.name)
+    || categoryKeys.has(nameKey(product.category))
   );
   if (inUse) {
     const error = new Error("CATEGORY_IN_USE");
@@ -131,9 +236,14 @@ export async function deleteRetailCategory(tenantId, categoryId) {
 export async function listRetailStockMovements(tenantId) {
   const id = requireContext(tenantId);
   const snapshot = await getDocs(tenantCollection(id, "stockMovements"));
-  return snapshot.docs.map(row)
-    .sort((a, b) => timeValue(b.createdAtServer || b.createdAt || b.updatedAt) - timeValue(a.createdAtServer || a.createdAt || a.updatedAt))
-    .slice(0, 500);
+  return normalizeMovementDocuments(snapshot.docs);
+}
+
+export function watchRetailStockMovements(tenantId, onRows, onError = () => {}) {
+  const id = requireContext(tenantId);
+  return onSnapshot(tenantCollection(id, "stockMovements"),
+    snapshot => onRows(normalizeMovementDocuments(snapshot.docs)),
+    onError);
 }
 
 function movementPayload({ tenantId, product, before, after, note, action = "set", type = "adjustment" }) {
@@ -203,6 +313,13 @@ export async function saveRetailProduct(tenantId, input = {}, editingId = "") {
     updatedAtServer: serverTimestamp(),
     ...(!old ? { createdBy: auth.currentUser.uid, createdAt: Date.now(), createdAtServer: serverTimestamp() } : {}),
   }, { merge: true });
+  if (old) {
+    const legacyDocumentIds = [...new Set([
+      ...(Array.isArray(old._documentIds) ? old._documentIds : []),
+      old._documentId,
+    ].map(value => String(value || "").trim()).filter(value => value && value !== productId))];
+    legacyDocumentIds.forEach(documentId => batch.delete(tenantDoc(id, "products", documentId)));
+  }
   const before = Number(old?.stock || 0);
   if ((!old && stock > 0) || (old && before !== stock)) {
     const movement = movementPayload({
@@ -233,14 +350,20 @@ export async function deleteRetailProduct(tenantId, product = {}) {
   await batch.commit();
 }
 
-export async function adjustRetailStock(tenantId, productId, action, quantity, note = "") {
+export async function adjustRetailStock(tenantId, productInput, action, quantity, note = "") {
   const id = requireContext(tenantId);
-  const productRef = tenantDoc(id, "products", productId);
+  const source = productInput && typeof productInput === "object"
+    ? productInput
+    : { id: String(productInput || "") };
+  const productId = String(source.id || "").trim();
+  const documentId = String(source._documentId || productId).trim();
+  if (!productId || !documentId) throw new Error("PRODUCT_NOT_FOUND");
+  const productRef = tenantDoc(id, "products", documentId);
   const movementId = crypto.randomUUID();
   return runTransaction(db, async transaction => {
     const snapshot = await transaction.get(productRef);
     if (!snapshot.exists()) throw new Error("PRODUCT_NOT_FOUND");
-    const product = normalizeProduct({ id: snapshot.id, ...snapshot.data() });
+    const product = normalizeProduct({ _documentId: snapshot.id, ...snapshot.data(), id: productId || snapshot.id });
     const before = Number(product.stock || 0);
     const amount = Number(quantity);
     if (!Number.isFinite(amount) || amount < 0) throw new Error("INVALID_QUANTITY");
@@ -278,7 +401,8 @@ export async function saveRetailCatalogOrder(tenantId, categoryOrder = [], chang
   for (let offset = 0; offset < changedProducts.length; offset += 400) {
     const batch = writeBatch(db);
     changedProducts.slice(offset, offset + 400).forEach(product => {
-      batch.set(tenantDoc(id, "products", product.id), {
+      const documentId = String(product._documentId || product.id);
+      batch.set(tenantDoc(id, "products", documentId), {
         sortOrder: Number(product.sortOrder || 0),
         updatedBy: auth.currentUser.uid,
         updatedAt: Date.now(),
@@ -294,6 +418,14 @@ export async function loadRetailCatalogOrder(tenantId) {
   const snapshot = await getDoc(tenantDoc(id, "settings", "catalog-order"));
   const data = snapshot.exists() ? snapshot.data() : {};
   return Array.isArray(data.categoryOrder) ? data.categoryOrder.map(String) : [];
+}
+
+export function watchRetailCatalogOrder(tenantId, onRows, onError = () => {}) {
+  const id = requireContext(tenantId);
+  return onSnapshot(tenantDoc(id, "settings", "catalog-order"), snapshot => {
+    const data = snapshot.exists() ? snapshot.data() : {};
+    onRows(Array.isArray(data.categoryOrder) ? data.categoryOrder.map(String) : []);
+  }, onError);
 }
 
 export async function uploadRetailProductImage(tenantId, productId, file) {

@@ -29,7 +29,7 @@ Do not rely on old chat memory instead of these files and current Git state.
 - Active path: `/Users/natchanonsripleng/Desktop/Sites/food-order-app`
 - Active branch: `feature/react-firebase-port`
 - Staff Shifts implementation commit `52191579 feat: migrate POS staff shifts to React`, corrective visual commit `e4d51e06 fix: finalize POS shifts visual parity`, and confirmation-dialog parity commit `f062ad45 fix: replace POS native confirms with app dialog` are pushed.
-- Build 2026.10.03.380 is Hosting-deployed for the global Toast policy. Preserve any remaining uncommitted/untracked work.
+- Build 2026.10.03.380 is currently Hosting-deployed for the global Toast policy. Canonical Products /pos/products Build 2026.10.04.381 is the current prepared working change; preserve any remaining uncommitted/untracked work.
 - Do not reset / clean / discard.
 - Never merge to `main` unless the user explicitly requests it.
 
@@ -45,11 +45,11 @@ Local React dev server:
 
 Complete React + Firebase parity without redesigning. Laravel MASTER remains authoritative for non-POS migration areas unless a newer user instruction overrides it.
 
-Active focus as of 2026-10-03: **Global Toast policy Build 2026.10.03.380 / commit `29d5360e` is Hosting-deployed and Production-verified. User-defined rule: Toast is always the highest layer; horizontal center; vertical center at exactly 75vh; success uses green check-circle + 8px gap + message; unsuccessful/error uses red x-circle + 8px gap + message. Production geometry smoke at 1600x900 measured center 800x675, z-index 2147483647, correct green/red icon colors. React-owned toast-global-policy.css overrides legacy 66vh/68vh positions and remains outside Laravel parity sync.**
+Active focus as of 2026-10-04: **Canonical Products `/pos/products` is prepared locally as React Build 2026.10.04.381 and passes the final gates. It preserves all 60 legacy IDs, product/category/stock/sort functionality, six granular product permissions, realtime Firestore watchers, native BarcodeDetector + ZXing fallback, shared confirmation dialogs, global typed Toast behavior, and AppDeveloperPanel. Legacy Firestore product document IDs are protected during edit/delete/stock/sort writes through _documentId/_documentIds compatibility. The next steps are commit/push, Hosting-only deploy, then authenticated Production visual/behavior verification.**
 
 Retail POS migration rule (user-confirmed 2026-10-03): **for Retail POS, the current production HTML + CSS + JavaScript implementation under `public/pos` is the UI/behavior MASTER. Keep its current appearance and behavior 1:1 while replacing the implementation with React. Do not redesign POS or overwrite its current UX with Laravel styling. Migrate shared User Profile first, then canonical POS routes one menu at a time.**
 
-Retail POS current checkpoint: **canonical Sale `/pos`, Sales history `/pos/sales`, Tax Invoice History `/pos/tax-invoices`, Returns `/pos/returns`, and Staff Shifts `/pos/shifts` are React on Production Build 2026.10.03.380. The global Toast release changes no POS business logic; it standardizes top-layer positioning at 75vh and success/error icon semantics globally. Other not-yet-migrated concrete POS subroutes remain legacy static HTML/JS.**
+Retail POS current checkpoint: **canonical Sale `/pos`, Sales history `/pos/sales`, Tax Invoice History `/pos/tax-invoices`, Returns `/pos/returns`, and Staff Shifts `/pos/shifts` are React on Production Build 2026.10.03.380. Canonical Products `/pos/products` is cut over locally to the React shell on prepared Build 2026.10.04.381. Remaining not-yet-migrated menu routes after Products are `/pos/stock-movements`, `/pos/stock-counts`, `/pos/purchases`, `/pos/payables`, `/pos/suppliers`, `/pos/customers`, `/pos/settings`, `/pos/backup`, and `/pos/users`.**
 
 Customer React production-test checkpoint (2026-09-30 evening):
 - Table Order React is deployed for cross-device/mobile testing on the canonical customer URL `/s/{slug}/order` without requiring `/react`.
@@ -64,7 +64,7 @@ PENGUIN branding checkpoint (2026-10-02):
 - Uploaded Platform App Icon is the first-choice header icon globally; Logo remains primary for login/large logo surfaces.
 - Header fallback order: App Icon -> Logo -> PG. Login/large-brand order: Logo -> App Icon -> PG. Favicon order: Favicon -> App Icon -> Logo.
 - Internal repo/Firebase/schema/DOM/translation identifiers are intentionally unchanged, including fod_* keys, FOD_WALLET_* error codes, Firebase project identifiers, and the existing penguin-food.web.app Hosting/auth origin.
-- Current release identity: React 0.4.280 / 2026.10.03.380; public storefront 0.16.32 / 2026.10.03.095. Build 2026.10.03.380 is Hosting-deployed for the global Toast policy.
+- Current prepared release identity: React 0.4.280 / 2026.10.04.381; public storefront 0.16.32 / 2026.10.04.096. Production remains Build 2026.10.03.380 until the Products Hosting deploy completes.
 - Primary production Hosting origin remains https://penguin-food.web.app. Legacy https://natchanon-food-order-delivery.web.app remains reachable during transition but is no longer in deploy target foodapp.
 - Delivery customer auth remains privilege-isolated from staff auth: Google popup runs only in broker app penguin-google-customer-broker-v1, callable createDeliveryCustomerSession exchanges it for a namespaced cust_... custom-token session in penguin-storefront-customer-v2, and Firestore/Storage rules explicitly exclude customerContext tokens from all staff-role paths. Staff/Owner/Super Admin remain on [DEFAULT]; Delivery logout affects only customer/broker apps.
 - Pull, test/build, commit generated assets, and deploy Hosting before Production visual verification.

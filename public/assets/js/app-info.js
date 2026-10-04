@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.03.095',
+  build: '2026.10.04.096',
   branch: 'feature/react-firebase-port',
-  commit: 'GLOBAL-TOAST-POLICY',
+  commit: 'POS-PRODUCTS-REACT-CUTOVER',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Global Toast alert policy',
-  updatedAt: '2026-10-03T20:35:30+0700',
+  milestone: 'Retail POS products React cutover',
+  updatedAt: '2026-10-04T11:51:51+0700',
   whatsNew: [
-    'Keep every React Toast above dialogs and modals and center it at 75vh',
-    'Use a green circle-check before success messages and a red circle-x before unsuccessful messages',
-    'Apply the Toast rule globally so older page-specific Toast positions cannot override it'
+    'Serve canonical /pos/products from React with the full legacy product/category/stock/sort surface',
+    'Preserve realtime data, barcode scanning, permissions, dialogs, Toast behavior, and catalog sorting',
+    'Protect legacy Firestore product document IDs during edit, stock adjustment, delete, and sort writes'
   ]
 };
 

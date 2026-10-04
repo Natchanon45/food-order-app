@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.03.380",
+  build: "2026.10.04.381",
   branch: "feature/react-firebase-port",
-  commit: "GLOBAL-TOAST-POLICY",
+  commit: "POS-PRODUCTS-REACT-CUTOVER",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Global Toast alert policy",
+  milestone: "Retail POS products React cutover",
   whatsNew: [
-    "Keep every React Toast above dialogs and modals and center it at 75vh",
-    "Use a green circle-check before success messages and a red circle-x before unsuccessful messages",
-    "Apply the Toast rule globally so page-specific 66vh/68vh styles cannot override it",
+    "Serve canonical /pos/products from React while preserving the 60-ID legacy product/category/stock/sort surface",
+    "Keep realtime products, categories, stock movements, catalog order, barcode scanning, permissions, dialogs, and Toast behavior",
+    "Protect legacy Firestore product document IDs during edit, stock adjustment, delete, and sort-order writes",
   ],
 });

@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Sortable from "sortablejs";
 import { useAuth } from "@/auth/AuthProvider";
+import { canUseRetailPos, getRetailPosSession } from "@/auth/retailPosSession";
+import { AppDeveloperPanel } from "@/components/AppDeveloperPanel";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
-import { PosNavigation } from "@/components/PosNavigation";
+import { firstAllowedPosPage, getPosPermissions, PosNavigation } from "@/components/PosNavigation";
 import { sweetAlert, sweetConfirm } from "@/components/sweetDialog";
 import {
   adjustRetailStock,
@@ -16,10 +17,15 @@ import {
   listRetailStockMovements,
   loadRetailCatalogOrder,
   saveRetailCatalogOrder,
+  watchRetailCatalogOrder,
+  watchRetailCategories,
+  watchRetailProducts,
+  watchRetailStockMovements,
   saveRetailCategory,
   saveRetailProduct,
   uploadRetailProductImage,
 } from "@/data/retailProductsData";
+import { loadPosRoleSettings } from "@/data/retailPosSystemData";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
@@ -43,58 +49,72 @@ const movementTime = value => {
 const pagesAround = (current, total) => Array.from({ length: total }, (_, index) => index + 1)
   .filter(page => page === 1 || page === total || Math.abs(page - current) <= 2);
 
-function hasPosPermission(profile, permission) {
+function hasPosPermission(profile, roleRows, permission) {
   if (!profile) return false;
-  if (profile.role === "owner" || profile.roleId === "owner") return true;
-  try {
-    const roles = JSON.parse(localStorage.getItem("retail_pos_roles_v1") || "[]");
-    const roleId = String(profile.roleId || profile.role || "");
-    const role = Array.isArray(roles) ? roles.find(item => String(item?.id || "") === roleId) : null;
-    if (role?.permissions?.length) return role.permissions.includes(permission);
-  } catch {}
-  if (profile.role === "admin" || profile.role === "manager") {
+  const roleId = String(profile.roleId || profile.role || "");
+  if (roleId === "owner") return true;
+  const roles = Array.isArray(roleRows) ? roleRows : [];
+  const role = roles.find(item => String(item?.id || "") === roleId);
+  if (Array.isArray(role?.permissions) && role.permissions.length) {
+    if (role.permissions.includes("*")) return true;
+    return role.permissions.includes(permission);
+  }
+  if (roleId === "admin" || roleId === "manager") {
     return !["pos.backup", "pos.users", "pos.backup.restore"].includes(permission);
   }
-  if (profile.role === "stock") {
+  if (roleId === "stock") {
     return ["pos.products", "pos.products.adjust_stock", "pos.stock_movements", "pos.stock_counts",
       "pos.purchases", "pos.suppliers"].includes(permission);
   }
   return false;
 }
 
-function showToast(message, type = "success") {
-  const el = document.createElement("div");
-  el.className = "app-toast " + (type === "error" ? "error" : "success");
-  el.setAttribute("role", type === "error" ? "alert" : "status");
-  el.innerHTML = '<span class="app-toast-icon" aria-hidden="true"><i class="bi bi-' +
-    (type === "error" ? "x-circle" : "check-circle") +
-    ' app-icon"></i></span><span class="app-toast-message"></span>';
-  el.querySelector(".app-toast-message").textContent = String(message || "");
-  document.body.appendChild(el);
-  requestAnimationFrame(() => el.classList.add("show"));
-  window.setTimeout(() => {
-    el.classList.remove("show");
-    window.setTimeout(() => el.remove(), 250);
-  }, 2600);
+let zxingLoader = null;
+function loadZxing() {
+  if (globalThis.ZXing) return Promise.resolve(globalThis.ZXing);
+  if (zxingLoader) return zxingLoader;
+  zxingLoader = new Promise((resolve, reject) => {
+    const old = document.querySelector('script[data-zxing="1"]');
+    if (old) {
+      old.addEventListener("load", () => resolve(globalThis.ZXing), { once: true });
+      old.addEventListener("error", reject, { once: true });
+      return;
+    }
+    const script = document.createElement("script");
+    script.dataset.zxing = "1";
+    script.src = "https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js";
+    script.onload = () => globalThis.ZXing ? resolve(globalThis.ZXing) : reject(new Error("ZXing not available"));
+    script.onerror = reject;
+    document.head.appendChild(script);
+  }).catch(error => {
+    zxingLoader = null;
+    throw error;
+  });
+  return zxingLoader;
 }
 
 export function PosProductsPage() {
   const authState = useAuth();
   const tenantState = useTenant();
-  const { profile } = authState;
+  const { profile, user: authUser } = authState;
   const { tenant } = tenantState;
   const { t, formatNumber } = useI18n();
-  const tr = (key, replacements = {}) => t("pos_products." + key, replacements);
+  const tr = useCallback((key, replacements = {}) => t("pos_products." + key, replacements), [t]);
   const stylesReady = useParityPage({
     title: tr("meta.title"),
     attributes: { "data-module": "retail-pos-products" },
+    disabledGlobalStyles: ["app.css", "icons.css", "shared-responsive.css"],
     styles: [
+      "app-version-badge-runtime.css",
+      "retail-pos-font-local.css",
+      "pos-locale-switcher-placement.css",
       "retail-pos.css",
       "retail-products.css",
       "retail-products-sort-manager.css",
       "retail-pos-navigation.css",
       "retail-product-categories.css",
       "retail-product-merchandising.css",
+      "retail-barcode-scan-tools.css",
       "sweet-dialog.css",
     ],
   });
@@ -102,6 +122,15 @@ export function PosProductsPage() {
   const productDialogRef = useRef(null);
   const categoryDialogRef = useRef(null);
   const stockDialogRef = useRef(null);
+  const scanDialogRef = useRef(null);
+  const scanVideoRef = useRef(null);
+  const scanStreamRef = useRef(null);
+  const scanDetectorRef = useRef(null);
+  const scanFrameRef = useRef(0);
+  const zxingReaderRef = useRef(null);
+  const zxingControlsRef = useRef(null);
+  const scanTargetRef = useRef("");
+  const toastTimerRef = useRef(0);
   const categorySortRef = useRef(null);
   const productSortRef = useRef(null);
   const [products, setProducts] = useState([]);
@@ -110,11 +139,16 @@ export function PosProductsPage() {
   const [catalogOrder, setCatalogOrder] = useState([]);
   const [initialReady, setInitialReady] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [roleRows, setRoleRows] = useState([]);
+  const [rolesReady, setRolesReady] = useState(false);
+  const [scanStatus, setScanStatus] = useState("");
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState("success");
 
   const [productSearch, setProductSearch] = useState("");
   const [stockFilter, setStockFilter] = useState("all");
   const [productPage, setProductPage] = useState(1);
-  const [productPageSize, setProductPageSize] = useState(10);
+  const [productPageSize, setProductPageSize] = useState(20);
 
   const [categorySearch, setCategorySearch] = useState("");
   const [categoryStatus, setCategoryStatus] = useState("all");
@@ -146,15 +180,92 @@ export function PosProductsPage() {
     Number(localStorage.getItem("retail_pos_movement_cleared_at") || 0)
   );
 
-  const canView = hasPosPermission(profile, "pos.products");
-  const canCreate = hasPosPermission(profile, "pos.products.create");
-  const canEdit = hasPosPermission(profile, "pos.products.edit");
-  const canDelete = hasPosPermission(profile, "pos.products.delete");
-  const canAdjust = hasPosPermission(profile, "pos.products.adjust_stock");
-  const canViewCost = hasPosPermission(profile, "pos.products.view_cost");
-  const canClearHistory = hasPosPermission(profile, "pos.products.clear_history");
+  const showToast = useCallback((message, type = "success") => {
+    setToastType(type === "error" ? "error" : "success");
+    setToastMessage(String(message || ""));
+    window.clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = window.setTimeout(() => setToastMessage(""), 2600);
+  }, []);
+  useEffect(() => () => window.clearTimeout(toastTimerRef.current), []);
 
-  const refresh = async () => {
+  const posSession = useMemo(() => getRetailPosSession(), [
+    authUser?.uid,
+    profile?.id,
+    profile?.uid,
+    profile?.tenantId,
+    profile?.role,
+    profile?.roleId,
+  ]);
+  const posAccessProfile = useMemo(() => ({
+    ...(profile || {}),
+    ...(posSession || {}),
+    role: posSession?.role || profile?.role || profile?.roleId || "",
+    roleId: posSession?.roleId || posSession?.role || profile?.roleId || profile?.role || "",
+  }), [profile, posSession]);
+
+  const pagePermissions = useMemo(
+    () => getPosPermissions(posAccessProfile, roleRows),
+    [posAccessProfile, roleRows],
+  );
+  const canView = pagePermissions.has("pos.products")
+    || hasPosPermission(posAccessProfile, roleRows, "pos.products");
+  const canCreate = hasPosPermission(posAccessProfile, roleRows, "pos.products.create");
+  const canEdit = hasPosPermission(posAccessProfile, roleRows, "pos.products.edit");
+  const canDelete = hasPosPermission(posAccessProfile, roleRows, "pos.products.delete");
+  const canAdjust = hasPosPermission(posAccessProfile, roleRows, "pos.products.adjust_stock");
+  const canViewCost = hasPosPermission(posAccessProfile, roleRows, "pos.products.view_cost");
+  const canClearHistory = hasPosPermission(posAccessProfile, roleRows, "pos.products.clear_history");
+
+  const redirectTarget = useMemo(() => {
+    if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady) return "";
+    const requested = location.pathname + location.search;
+    if (!profile) return "/pos/login/?next=" + encodeURIComponent(requested);
+    if (!canUseRetailPos(posAccessProfile) || tenantState.status === "error" || !tenant) return "/";
+    if (!rolesReady) return "";
+    if (!canView) {
+      const first = firstAllowedPosPage(posAccessProfile, roleRows);
+      return first === "/pos/forbidden"
+        ? "/pos/forbidden/?permission=pos.products&next=" + encodeURIComponent(requested)
+        : first + "?from=permission";
+    }
+    return "";
+  }, [
+    authState.status,
+    tenantState.status,
+    tenant,
+    profile,
+    posAccessProfile,
+    canView,
+    roleRows,
+    rolesReady,
+    stylesReady,
+  ]);
+  useEffect(() => {
+    if (redirectTarget) location.replace(redirectTarget);
+  }, [redirectTarget]);
+
+  useEffect(() => {
+    let alive = true;
+    if (!tenant?.id || !profile) {
+      setRoleRows([]);
+      setRolesReady(true);
+      return () => { alive = false; };
+    }
+    setRolesReady(false);
+    loadPosRoleSettings(tenant.id).then(rows => {
+      if (!alive) return;
+      setRoleRows(Array.isArray(rows) ? rows : []);
+      try { localStorage.setItem("retail_pos_roles_v1", JSON.stringify(rows || [])); } catch {}
+    }).catch(error => {
+      console.warn("POS_PRODUCTS_ROLE_SETTINGS_LOAD_FAILED", error);
+      if (alive) setRoleRows([]);
+    }).finally(() => {
+      if (alive) setRolesReady(true);
+    });
+    return () => { alive = false; };
+  }, [tenant?.id, profile?.id, profile?.uid, profile?.role, profile?.roleId]);
+
+  const refresh = useCallback(async () => {
     if (!tenant?.id) return;
     const [nextProducts, nextCategories, nextMovements, nextOrder] = await Promise.all([
       listRetailProducts(tenant.id),
@@ -166,33 +277,32 @@ export function PosProductsPage() {
     setCategories(nextCategories);
     setMovements(nextMovements);
     setCatalogOrder(nextOrder);
-  };
+  }, [tenant?.id]);
 
   useEffect(() => {
     let alive = true;
-    if (!tenant?.id || !canView) {
-      setInitialReady(true);
-      return undefined;
-    }
-    Promise.all([
-      listRetailProducts(tenant.id),
-      listRetailCategories(tenant.id),
-      listRetailStockMovements(tenant.id),
-      loadRetailCatalogOrder(tenant.id).catch(() => []),
-    ]).then(([nextProducts, nextCategories, nextMovements, nextOrder]) => {
-      if (!alive) return;
-      setProducts(nextProducts);
-      setCategories(nextCategories);
-      setMovements(nextMovements);
-      setCatalogOrder(nextOrder);
-    }).catch(error => {
+    if (!tenant?.id || !profile || !rolesReady || !canView || redirectTarget) return () => { alive = false; };
+    setInitialReady(false);
+    refresh().catch(error => {
       console.error("POS_PRODUCTS_LOAD_FAILED", error);
       showToast(error?.message || tr("products.empty"), "error");
     }).finally(() => {
       if (alive) setInitialReady(true);
     });
     return () => { alive = false; };
-  }, [tenant?.id, canView]);
+  }, [tenant?.id, profile, rolesReady, canView, redirectTarget, refresh]);
+
+  useEffect(() => {
+    if (!tenant?.id || !profile || !rolesReady || !canView || redirectTarget || !initialReady) return undefined;
+    const onError = error => console.warn("POS_PRODUCTS_WATCH_FAILED", error);
+    const stops = [
+      watchRetailProducts(tenant.id, setProducts, onError),
+      watchRetailCategories(tenant.id, setCategories, onError),
+      watchRetailStockMovements(tenant.id, setMovements, onError),
+      watchRetailCatalogOrder(tenant.id, setCatalogOrder, onError),
+    ];
+    return () => stops.forEach(stop => stop?.());
+  }, [tenant?.id, profile, rolesReady, canView, redirectTarget, initialReady]);
 
   useEffect(() => () => {
     if (imagePreview.startsWith("blob:")) URL.revokeObjectURL(imagePreview);
@@ -225,40 +335,53 @@ export function PosProductsPage() {
   useEffect(() => { if (productPage > productPageCount) setProductPage(productPageCount); }, [productPage, productPageCount]);
 
   const enrichedCategories = useMemo(() => {
-    const managedKeys = new Set(categories.map(item => nameKey(item.name)));
+    const managedById = new Map(categories.map(item => [String(item.id || ""), item]));
+    const managedKeys = new Set(categories.flatMap(item =>
+      [item.name, ...(Array.isArray(item.aliases) ? item.aliases : [])].map(nameKey).filter(Boolean)
+    ));
     const derived = new Map();
     products.forEach(product => {
+      const productCategoryId = String(product.categoryId || "");
       const name = clean(product.category || "ทั่วไป") || "ทั่วไป";
       const key = nameKey(name);
-      if (managedKeys.has(key) || derived.has(key)) return;
+      if ((productCategoryId && managedById.has(productCategoryId)) || managedKeys.has(key) || derived.has(key)) return;
       derived.set(key, {
-        id: String(product.categoryId || ""),
+        id: `derived:${name}`,
+        sourceCategoryId: productCategoryId,
         name,
+        aliases: [],
         sortOrder: Number(product.categorySortOrder || 999999),
         active: true,
         derived: true,
       });
     });
-    return [...categories, ...derived.values()].map(item => ({
-      ...item,
-      productCount: products.filter(product =>
-        String(product.categoryId || "") === String(item.id || "")
-        || nameKey(product.category) === nameKey(item.name)
-      ).length,
-    }));
+    return [...categories, ...derived.values()].map(item => {
+      const keys = new Set([item.name, ...(item.aliases || [])].map(nameKey).filter(Boolean));
+      return {
+        ...item,
+        productCount: products.filter(product => {
+          const productCategoryId = String(product.categoryId || "");
+          if (!item.derived && productCategoryId) return productCategoryId === String(item.id || "");
+          return keys.has(nameKey(product.category));
+        }).length,
+      };
+    });
   }, [categories, products]);
 
   const visibleCategories = useMemo(() => {
     const query = nameKey(categorySearch);
     return enrichedCategories.filter(item => {
-      if (query && !nameKey(item.name).includes(query)) return false;
-      if (categoryStatus === "used" && item.productCount <= 0) return false;
-      if (categoryStatus === "empty" && (item.productCount > 0 || item.derived)) return false;
+      const names = [item.name, ...(item.aliases || [])];
+      if (query && !names.some(name => nameKey(name).includes(query))) return false;
+      if (categoryStatus === "used" && (item.derived || item.productCount <= 0)) return false;
+      if (categoryStatus === "empty" && (item.derived || item.productCount > 0)) return false;
       if (categoryStatus === "derived" && !item.derived) return false;
       return true;
     }).sort((a, b) => {
       if (categorySort === "count-desc") return b.productCount - a.productCount || a.name.localeCompare(b.name, "th");
-      if (categorySort === "empty-first") return Number(a.productCount > 0) - Number(b.productCount > 0) || a.name.localeCompare(b.name, "th");
+      if (categorySort === "empty-first") return Number(a.productCount > 0) - Number(b.productCount > 0)
+        || Number(a.derived) - Number(b.derived)
+        || a.name.localeCompare(b.name, "th");
       if (categorySort === "manual") return Number(a.sortOrder || 0) - Number(b.sortOrder || 0) || a.name.localeCompare(b.name, "th");
       return a.name.localeCompare(b.name, "th");
     });
@@ -292,24 +415,19 @@ export function PosProductsPage() {
   }, [products, selectedSortCategory]);
 
   useEffect(() => {
-    const touchDevice = "ontouchstart" in window || Number(navigator.maxTouchPoints || 0) > 0;
     const base = {
-      animation: 120,
+      animation: 180,
       handle: ".sort-handle",
       ghostClass: "sort-ghost",
       chosenClass: "sort-chosen",
       dragClass: "sort-drag",
       fallbackClass: "sort-fallback",
-      forceFallback: Boolean(touchDevice),
-      fallbackOnBody: Boolean(touchDevice),
-      fallbackTolerance: 5,
-      delay: 80,
+      forceFallback: true,
+      fallbackOnBody: true,
+      fallbackTolerance: 3,
+      delay: 120,
       delayOnTouchOnly: true,
       touchStartThreshold: 4,
-      scroll: true,
-      scrollSensitivity: 60,
-      scrollSpeed: 14,
-      bubbleScroll: true,
     };
     const categorySortable = categorySortRef.current ? new Sortable(categorySortRef.current, {
       ...base,
@@ -391,10 +509,10 @@ export function PosProductsPage() {
     setCategoryFormError("");
     try {
       const saved = await saveRetailCategory(tenant.id, {
-        id: categoryEditing?.derived ? (categoryEditing.id || "") : (categoryEditing?.id || ""),
+        id: categoryEditing?.derived ? "" : (categoryEditing?.id || ""),
         name: categoryName,
         sortOrder: categoryEditing?.sortOrder ?? categories.length * 10,
-      });
+      }, categoryEditing);
       const nextCategories = await listRetailCategories(tenant.id);
       setCategories(nextCategories);
       categoryDialogRef.current?.close?.();
@@ -409,7 +527,13 @@ export function PosProductsPage() {
         window.setTimeout(() => productDialogRef.current?.showModal?.(), 20);
       }
     } catch (error) {
-      setCategoryFormError(error?.message || tr("runtime.category_manage_failed"));
+      const code = String(error?.message || "");
+      const messages = {
+        CATEGORY_NAME_REQUIRED: tr("runtime.category_name_required"),
+        CATEGORY_RESERVED_NAME: tr("runtime.category_reserved_name"),
+        CATEGORY_DUPLICATE: tr("runtime.category_duplicate"),
+      };
+      setCategoryFormError(messages[code] || code || tr("runtime.category_manage_failed"));
     } finally {
       setSaving(false);
     }
@@ -516,7 +640,7 @@ export function PosProductsPage() {
     }
     setSaving(true);
     try {
-      await adjustRetailStock(tenant.id, stockForm.productId, stockForm.action, quantity, stockForm.note || tr("runtime.stock_default_note"));
+      await adjustRetailStock(tenant.id, selectedStockProduct || { id: stockForm.productId }, stockForm.action, quantity, stockForm.note || tr("runtime.stock_default_note"));
       stockDialogRef.current?.close?.();
       await refresh();
       showToast(tr("runtime.stock_adjusted"));
@@ -551,6 +675,111 @@ export function PosProductsPage() {
     }
   };
 
+  const signalScanSuccess = useCallback(() => {
+    try { navigator.vibrate?.(80); } catch {}
+    try {
+      const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextCtor) return;
+      const context = new AudioContextCtor();
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.frequency.value = 880;
+      gain.gain.setValueAtTime(.04, context.currentTime);
+      gain.gain.exponentialRampToValueAtTime(.001, context.currentTime + .12);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start();
+      oscillator.stop(context.currentTime + .12);
+      oscillator.addEventListener("ended", () => context.close(), { once: true });
+    } catch {}
+  }, []);
+
+  const stopScanner = useCallback((closeDialog = true) => {
+    window.cancelAnimationFrame(scanFrameRef.current);
+    scanFrameRef.current = 0;
+    try { zxingControlsRef.current?.stop?.(); } catch {}
+    try { zxingReaderRef.current?.reset?.(); } catch {}
+    zxingControlsRef.current = null;
+    zxingReaderRef.current = null;
+    scanDetectorRef.current = null;
+    if (scanStreamRef.current) {
+      scanStreamRef.current.getTracks().forEach(track => track.stop());
+      scanStreamRef.current = null;
+    }
+    if (scanVideoRef.current) scanVideoRef.current.srcObject = null;
+    if (closeDialog && scanDialogRef.current?.open) scanDialogRef.current.close();
+  }, []);
+
+  const acceptScan = useCallback(codeValue => {
+    const code = clean(codeValue);
+    if (!code) return false;
+    setScanStatus(tr("scanner.found", { code }));
+    if (scanTargetRef.current === "barcode") {
+      setProductForm(current => ({ ...current, barcode: code }));
+    } else {
+      setProductSearch(code);
+      setProductPage(1);
+    }
+    signalScanSuccess();
+    showToast(tr("scanner.success"));
+    stopScanner();
+    return true;
+  }, [showToast, signalScanSuccess, stopScanner, tr]);
+
+  const nativeScanLoop = useCallback(async function scanLoop() {
+    if (!scanStreamRef.current || !scanDetectorRef.current || !scanVideoRef.current) return;
+    try {
+      const codes = await scanDetectorRef.current.detect(scanVideoRef.current);
+      const value = clean(codes?.[0]?.rawValue);
+      if (value && acceptScan(value)) return;
+    } catch {}
+    scanFrameRef.current = window.requestAnimationFrame(scanLoop);
+  }, [acceptScan]);
+
+  const startScanner = useCallback(async target => {
+    scanTargetRef.current = target === "barcode" ? "barcode" : "search";
+    if (!navigator.mediaDevices?.getUserMedia) {
+      showToast(tr("scanner.unsupported"), "error");
+      return;
+    }
+    setScanStatus(tr("scanner.preparing"));
+    if (!scanDialogRef.current?.open) scanDialogRef.current?.showModal?.();
+    try {
+      if ("BarcodeDetector" in window) {
+        scanDetectorRef.current = new window.BarcodeDetector({
+          formats: ["ean_13", "ean_8", "code_128", "code_39", "upc_a", "upc_e", "qr_code"],
+        });
+        scanStreamRef.current = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "environment" } },
+          audio: false,
+        });
+        scanVideoRef.current.srcObject = scanStreamRef.current;
+        await scanVideoRef.current.play();
+        setScanStatus(tr("scanner.scanning"));
+        nativeScanLoop();
+        return;
+      }
+      setScanStatus(tr("scanner.loading"));
+      const ZXing = await loadZxing();
+      zxingReaderRef.current = new ZXing.BrowserMultiFormatReader();
+      setScanStatus(tr("scanner.scanning"));
+      zxingControlsRef.current = await zxingReaderRef.current.decodeFromVideoDevice(
+        null,
+        scanVideoRef.current,
+        result => {
+          const value = clean(result?.getText?.() || result?.text || "");
+          if (value) acceptScan(value);
+        },
+      );
+    } catch (error) {
+      console.warn("POS_PRODUCTS_BARCODE_SCANNER_FAILED", error);
+      stopScanner();
+      showToast(tr("scanner.failed"), "error");
+    }
+  }, [acceptScan, nativeScanLoop, showToast, stopScanner, tr]);
+
+  useEffect(() => () => stopScanner(false), [stopScanner]);
+
   const visibleMovements = useMemo(() => movements
     .filter(item => movementTime(item.createdAtServer || item.createdAt || item.updatedAt) > movementClearedAt)
     .slice(0, 50), [movements, movementClearedAt]);
@@ -567,11 +796,15 @@ export function PosProductsPage() {
     showToast(tr("runtime.history_cleared"));
   };
 
-  if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || !initialReady) {
+  const needsReady = authState.status === "loading"
+    || tenantState.status === "loading"
+    || !stylesReady
+    || Boolean(redirectTarget)
+    || (Boolean(profile && tenant) && !rolesReady)
+    || Boolean(tenant?.id && profile && rolesReady && canView && !initialReady);
+  if (needsReady) {
     return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={92} />;
   }
-  if (!profile) return <Navigate to="/login?next=%2Fpos%2Fproducts" replace />;
-  if (!tenant || !canView) return <Navigate to="/pos" replace />;
 
   const selectedStockProduct = products.find(item => item.id === stockForm.productId);
   const pageNumbers = pagesAround(safeProductPage, productPageCount);
@@ -582,17 +815,17 @@ export function PosProductsPage() {
       <header className="pos-header" data-pos-management-header>
         <div className="app-title"><div><strong>{tr("header.title")}</strong><small>{tr("header.subtitle")}</small></div></div>
         <div className="header-actions">
-          <PosNavigation profile={profile} currentKey="pos.products" />
           <LocaleSwitcher />
+          <PosNavigation profile={posAccessProfile} currentKey="pos.products" />
         </div>
       </header>
 
       <main data-pos-management className="management-container">
         <section className="stats-grid">
-          <article className="stat-card"><span>{tr("stats.product_count")}</span><strong>{formatNumber(stats.count)}</strong></article>
-          <article className="stat-card"><span>{tr("stats.stock_total")}</span><strong>{formatNumber(stats.stock)}</strong></article>
-          <article className="stat-card warning"><span>{tr("stats.low_stock")}</span><strong>{formatNumber(stats.low)}</strong></article>
-          <article className="stat-card danger"><span>{tr("stats.out_of_stock")}</span><strong>{formatNumber(stats.out)}</strong></article>
+          <article className="stat-card"><span>{tr("stats.product_count")}</span><strong id="productCount">{formatNumber(stats.count)}</strong></article>
+          <article className="stat-card"><span>{tr("stats.stock_total")}</span><strong id="stockTotal">{formatNumber(stats.stock)}</strong></article>
+          <article className="stat-card warning"><span>{tr("stats.low_stock")}</span><strong id="lowStockCount">{formatNumber(stats.low)}</strong></article>
+          <article className="stat-card danger"><span>{tr("stats.out_of_stock")}</span><strong id="outStockCount">{formatNumber(stats.out)}</strong></article>
         </section>
 
         <section className="panel management-panel">
@@ -601,7 +834,12 @@ export function PosProductsPage() {
             {canCreate ? <button id="addProductBtn" className="btn btn-pay" type="button" onClick={openAddProduct}>{tr("products.add")}</button> : null}
           </div>
           <div className="toolbar">
-            <input id="productSearch" value={productSearch} onChange={event => { setProductSearch(event.target.value); setProductPage(1); }} placeholder={tr("products.search_placeholder")} />
+            <div className="barcode-input-group">
+              <input id="productSearch" value={productSearch} onChange={event => { setProductSearch(event.target.value); setProductPage(1); }} placeholder={tr("products.search_placeholder")} />
+              <button id="scanProductSearchBtn" className="scan-barcode-btn" type="button" onClick={() => startScanner("search")} aria-label={tr("scanner.button")} title={tr("scanner.button")}>
+                <i className="bi bi-upc-scan scan-barcode-icon" aria-hidden="true"></i><span>{tr("scanner.button")}</span>
+              </button>
+            </div>
             <select id="stockFilter" value={stockFilter} onChange={event => { setStockFilter(event.target.value); setProductPage(1); }}>
               <option value="all">{tr("products.filter_all")}</option><option value="low">{tr("products.filter_low")}</option><option value="out">{tr("products.filter_out")}</option>
             </select>
@@ -622,13 +860,13 @@ export function PosProductsPage() {
                         <div><div className="product-name">{product.name}</div><div className="product-sub">{tr("runtime.low_stock_alert", { stock: formatNumber(product.minStock || 0) })}{canViewCost ? <> • {product.cost != null ? tr("runtime.cost", { amount: Number(product.cost).toFixed(2) }) : tr("runtime.cost_unset")}</> : null}</div><div className="merch-tags">{category ? <span className="merch-tag">{category}</span> : null}{product.showOnPos === false ? <span className="merch-tag hidden">{tr("merch.hidden_on_pos")}</span> : null}</div></div>
                       </div>
                     </td>
-                    <td>{product.barcode}</td><td className="number">{Number(product.price || 0).toFixed(2)}</td>
+                    <td>{product.barcode}</td><td className="number">{formatNumber(Number(product.price || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     <td className="number"><span className={"stock-badge" + (out ? " out" : low ? " low" : "")}>{formatNumber(product.stock || 0)}</span></td>
                     <td>{product.unit}</td>
                     <td><div className="row-actions">
-                      {canAdjust ? <button type="button" className="stock" onClick={() => openStock(product)}>{tr("common.adjust_stock")}</button> : null}
-                      {canEdit ? <button type="button" onClick={() => openEditProduct(product)}>{tr("common.edit")}</button> : null}
-                      {canDelete ? <button type="button" className="delete" onClick={() => removeProduct(product)}>{tr("common.delete")}</button> : null}
+                      {canAdjust ? <button type="button" className="stock" data-action="stock" data-id={product.id} onClick={() => openStock(product)}>{tr("common.adjust_stock")}</button> : null}
+                      {canEdit ? <button type="button" data-action="edit" data-id={product.id} onClick={() => openEditProduct(product)}>{tr("common.edit")}</button> : null}
+                      {canDelete ? <button type="button" className="delete" data-action="delete" data-id={product.id} onClick={() => removeProduct(product)}>{tr("common.delete")}</button> : null}
                     </div></td>
                   </tr>;
                 })}
@@ -646,17 +884,17 @@ export function PosProductsPage() {
         </section>
 
         <section className="panel category-manager-panel" id="productCategoryManager">
-          <div className="section-heading category-manager-heading"><div><div className="category-manager-title-row"><h2>{tr("categories.title")}</h2><span className="category-count-badge">{tr("categories.count", { count: formatNumber(enrichedCategories.length) })}</span></div><p>{tr("categories.description")}</p></div>{canCreate ? <button className="btn btn-pay" type="button" onClick={() => openCategoryEditor()}><i className="bi bi-plus-lg"></i><span>{tr("categories.add")}</span></button> : null}</div>
+          <div className="section-heading category-manager-heading"><div><div className="category-manager-title-row"><h2>{tr("categories.title")}</h2><span id="categoryCountBadge" className="category-count-badge">{tr("categories.count", { count: formatNumber(enrichedCategories.length) })}</span></div><p>{tr("categories.description")}</p></div>{canCreate ? <button id="addCategoryBtn" className="btn btn-pay" type="button" onClick={() => openCategoryEditor()}><i className="bi bi-plus-lg"></i><span>{tr("categories.add")}</span></button> : null}</div>
           <div className="category-manager-toolbar">
-            <div className="category-search-control"><i className="bi bi-search"></i><input type="search" value={categorySearch} onChange={event => { setCategorySearch(event.target.value); setCategoryPage(1); }} placeholder={tr("categories.search_placeholder")} />{categorySearch ? <button className="category-search-clear" type="button" onClick={() => setCategorySearch("")}><i className="bi bi-x-lg"></i></button> : null}</div>
+            <div className="category-search-control"><i className="bi bi-search"></i><input id="categorySearch" type="search" value={categorySearch} onChange={event => { setCategorySearch(event.target.value); setCategoryPage(1); }} placeholder={tr("categories.search_placeholder")} />{categorySearch ? <button id="clearCategorySearch" className="category-search-clear" type="button" onClick={() => setCategorySearch("")}><i className="bi bi-x-lg"></i></button> : null}</div>
             <div className="category-toolbar-controls">
-              <label className="category-filter-control">{tr("categories.status")}<select value={categoryStatus} onChange={event => { setCategoryStatus(event.target.value); setCategoryPage(1); }}><option value="all">{tr("categories.status_all")}</option><option value="used">{tr("categories.status_used")}</option><option value="empty">{tr("categories.status_empty")}</option><option value="derived">{tr("categories.status_derived")}</option></select></label>
-              <label className="category-filter-control">{tr("categories.sort")}<select value={categorySort} onChange={event => setCategorySort(event.target.value)}><option value="name">{tr("categories.sort_name")}</option><option value="count-desc">{tr("categories.sort_count")}</option><option value="empty-first">{tr("categories.sort_empty")}</option><option value="manual">{tr("categories.sort_manual")}</option></select></label>
-              <label className="category-filter-control">{tr("categories.page_size")}<select value={categoryPageSize} onChange={event => { setCategoryPageSize(Number(event.target.value)); setCategoryPage(1); }}>{CATEGORY_PAGE_SIZES.map(size => <option key={size} value={size}>{tr("categories.page_size_option", { count: size })}</option>)}</select></label>
+              <label className="category-filter-control">{tr("categories.status")}<select id="categoryStatusFilter" value={categoryStatus} onChange={event => { setCategoryStatus(event.target.value); setCategoryPage(1); }}><option value="all">{tr("categories.status_all")}</option><option value="used">{tr("categories.status_used")}</option><option value="empty">{tr("categories.status_empty")}</option><option value="derived">{tr("categories.status_derived")}</option></select></label>
+              <label className="category-filter-control">{tr("categories.sort")}<select id="categorySort" value={categorySort} onChange={event => setCategorySort(event.target.value)}><option value="name">{tr("categories.sort_name")}</option><option value="count-desc">{tr("categories.sort_count")}</option><option value="empty-first">{tr("categories.sort_empty")}</option><option value="manual">{tr("categories.sort_manual")}</option></select></label>
+              <label className="category-filter-control">{tr("categories.page_size")}<select id="categoryPageSize" value={categoryPageSize} onChange={event => { setCategoryPageSize(Number(event.target.value)); setCategoryPage(1); }}>{CATEGORY_PAGE_SIZES.map(size => <option key={size} value={size}>{tr("categories.page_size_option", { count: size })}</option>)}</select></label>
             </div>
           </div>
-          <div className="category-manager-summary"><span className="category-summary-chip"><strong>{formatNumber(visibleCategories.length)}</strong>{tr("categories.summary_visible")}</span><span className="category-summary-chip"><strong>{formatNumber(usedCategoryCount)}</strong>{tr("categories.status_used")}</span><span className="category-summary-chip"><strong>{formatNumber(emptyCategoryCount)}</strong>{tr("categories.status_empty")}</span></div>
-          <div className="category-manager-root">
+          <div id="categoryManagerSummary" className="category-manager-summary"><span className="category-summary-chip"><strong>{formatNumber(visibleCategories.length)}</strong>{tr("categories.summary_visible")}</span><span className="category-summary-chip"><strong>{formatNumber(usedCategoryCount)}</strong>{tr("categories.status_used")}</span><span className="category-summary-chip"><strong>{formatNumber(emptyCategoryCount)}</strong>{tr("categories.status_empty")}</span></div>
+          <div id="categoryManagerRoot" className="category-manager-root">
             {categoryPageRows.length ? <><div className="category-list-head"><span>{tr("categories.title")}</span><span>{tr("categories.product_count")}</span><span>{tr("categories.status")}</span><span>{tr("categories.manage")}</span></div>
               {categoryPageRows.map(item => {
                 const status = item.derived ? ["derived", tr("categories.status_derived")] : item.productCount > 0 ? ["used", tr("categories.status_used")] : ["empty", tr("categories.status_empty")];
@@ -664,11 +902,11 @@ export function PosProductsPage() {
               })}
             </> : <div className="category-manager-empty"><strong>{enrichedCategories.length ? tr("categories.no_match") : tr("categories.empty_title")}</strong><span>{enrichedCategories.length ? tr("categories.no_match_help") : tr("categories.empty_help")}</span></div>}
           </div>
-          {visibleCategories.length > categoryPageSize ? <nav className="category-pagination"><div className="category-pagination-summary">{tr("common.showing_short", { start: formatNumber((safeCategoryPage - 1) * categoryPageSize + 1), end: formatNumber(Math.min(safeCategoryPage * categoryPageSize, visibleCategories.length)), total: formatNumber(visibleCategories.length) })}</div><div className="category-page-controls"><button type="button" disabled={safeCategoryPage <= 1} onClick={() => setCategoryPage(page => page - 1)}><i className="bi bi-chevron-left"></i></button>{categoryNumbers.map((page, index) => <span key={page}>{index > 0 && page - categoryNumbers[index - 1] > 1 ? <span className="category-page-ellipsis">…</span> : null}<button type="button" className={"category-page-number" + (page === safeCategoryPage ? " active" : "")} onClick={() => setCategoryPage(page)}>{page}</button></span>)}<button type="button" disabled={safeCategoryPage >= categoryPageCount} onClick={() => setCategoryPage(page => page + 1)}><i className="bi bi-chevron-right"></i></button></div></nav> : null}
+          {visibleCategories.length > categoryPageSize ? <nav id="categoryPagination" className="category-pagination"><div className="category-pagination-summary">{tr("common.showing_short", { start: formatNumber((safeCategoryPage - 1) * categoryPageSize + 1), end: formatNumber(Math.min(safeCategoryPage * categoryPageSize, visibleCategories.length)), total: formatNumber(visibleCategories.length) })}</div><div className="category-page-controls"><button type="button" disabled={safeCategoryPage <= 1} onClick={() => setCategoryPage(page => page - 1)}><i className="bi bi-chevron-left"></i></button>{categoryNumbers.map((page, index) => <span key={page}>{index > 0 && page - categoryNumbers[index - 1] > 1 ? <span className="category-page-ellipsis">…</span> : null}<button type="button" className={"category-page-number" + (page === safeCategoryPage ? " active" : "")} onClick={() => setCategoryPage(page)}>{page}</button></span>)}<button type="button" disabled={safeCategoryPage >= categoryPageCount} onClick={() => setCategoryPage(page => page + 1)}><i className="bi bi-chevron-right"></i></button></div></nav> : null}
         </section>
 
         <section className="panel sort-manager-panel" id="productSortManager"><div className="section-heading"><div><h2>{tr("sort_manager.title")}</h2><p>{tr("sort_manager.description")}</p></div></div>
-          <div className="sort-manager-root">
+          <div id="sortManagerRoot" className="sort-manager-root">
             <div className="sort-column"><div className="sort-column-head"><div><h3>{tr("sort_manager.category_title")}</h3><span>{tr("sort_manager.category_help")}</span></div></div><div className="sort-list" ref={categorySortRef}>{orderedCategoryIds.map((id, index) => <div className={"sort-row" + (id === selectedSortCategory ? " active" : "") + (id === "quick" ? " best-seller" : "")} data-category-id={id} key={id}><span className="sort-handle"><i className="bi bi-grip-vertical"></i></span><button type="button" className="sort-row-main" onClick={() => setSelectedSortCategory(id)}><span className="sort-row-title">{id === "quick" ? tr("sort_manager.best_sellers") : id === "all" ? tr("sort_manager.all") : id.slice(9)}</span></button><span className="sort-order-badge">{index + 1}</span></div>)}</div></div>
             <div className="sort-column"><div className="sort-column-head"><div><h3>{tr("sort_manager.products_title", { category: selectedSortCategory === "quick" ? tr("sort_manager.best_sellers") : selectedSortCategory === "all" ? tr("sort_manager.all") : selectedSortCategory.slice(9) })}</h3><span>{tr("sort_manager.products_help")}</span></div></div>
               <div className="sort-list" ref={productSortRef}>{selectedSortCategory === "quick" ? <div className="sort-empty">{tr("sort_manager.best_sellers_locked")}</div> : selectedSortCategory === "all" ? <div className="sort-empty">{tr("sort_manager.all_auto")}</div> : sortProducts.length ? sortProducts.map((product, index) => <div className="sort-row" data-product-id={product.id} key={product.id}><span className="sort-handle"><i className="bi bi-grip-vertical"></i></span><div className="sort-row-main"><span className="sort-row-title">{product.name}</span><span className="sort-row-meta">{product.id} • {product.barcode || tr("sort_manager.no_barcode")}</span></div><span className="sort-order-badge">{index + 1}</span></div>) : <div className="sort-empty">{tr("sort_manager.category_empty")}</div>}</div>
@@ -678,22 +916,23 @@ export function PosProductsPage() {
         </section>
 
         <section className="panel movement-panel"><div className="section-heading"><div><h2>{tr("movements.title")}</h2><p>{tr("movements.description")}</p></div>{canClearHistory ? <button id="clearMovementBtn" className="btn btn-danger" type="button" onClick={clearMovements}>{tr("movements.clear")}</button> : null}</div>
-          <div className="movement-list">{visibleMovements.map(item => { const before = Number(item.before ?? item.stockBefore ?? 0), after = Number(item.after ?? item.stockAfter ?? before), delta = after - before; return <article className="movement-item" key={item.id}><div><strong>{item.productName || item.productId}</strong><div className="movement-meta">{item.productId} • {item.note || tr("runtime.stock_default_note")} • {new Date(movementTime(item.createdAtServer || item.createdAt || item.updatedAt)).toLocaleString()} • {tr("common.synced")}</div></div><div className={"movement-qty " + (delta >= 0 ? "plus" : "minus")}>{delta > 0 ? "+" : ""}{formatNumber(delta)} ({formatNumber(before)} → {formatNumber(after)})</div></article>; })}</div>
-          {!visibleMovements.length ? <div className="empty-state">{tr("movements.empty")}</div> : null}
+          <div id="movementList" className="movement-list">{visibleMovements.map(item => { const before = Number(item.before ?? item.stockBefore ?? 0), after = Number(item.after ?? item.stockAfter ?? before), delta = after - before; return <article className="movement-item" key={item.id}><div><strong>{item.productName || item.productId}</strong><div className="movement-meta">{item.productId} • {item.note || tr("runtime.stock_default_note")} • {new Date(movementTime(item.createdAtServer || item.createdAt || item.updatedAt)).toLocaleString()} • {tr("common.synced")}</div></div><div className={"movement-qty " + (delta >= 0 ? "plus" : "minus")}>{delta > 0 ? "+" : ""}{formatNumber(delta)} ({formatNumber(before)} → {formatNumber(after)})</div></article>; })}</div>
+          {!visibleMovements.length ? <div id="movementEmpty" className="empty-state">{tr("movements.empty")}</div> : null}
         </section>
       </main>
 
       <dialog data-pos-management-dialog id="productDialog" ref={productDialogRef}>
-        <form className="payment-form" onSubmit={submitProduct}>
-          <div className="dialog-head"><h2>{editingProductId ? tr("product_form.edit_title") : tr("product_form.add_title")}</h2><button type="button" className="icon-btn" onClick={() => productDialogRef.current?.close?.()}><i className="bi bi-x-lg"></i></button></div>
+        <form id="productForm" className="payment-form" onSubmit={submitProduct}>
+          <div className="dialog-head"><h2 id="productDialogTitle">{editingProductId ? tr("product_form.edit_title") : tr("product_form.add_title")}</h2><button id="closeProductDialog" type="button" className="icon-btn" onClick={() => productDialogRef.current?.close?.()}><i className="bi bi-x-lg"></i></button></div>
+          <input id="editingProductId" type="hidden" value={editingProductId} readOnly />
           <div className="form-grid">
-            <label>{tr("product_form.id")}<input required maxLength={10} value={productForm.id} disabled={Boolean(editingProductId)} onChange={event => setProductForm(current => ({ ...current, id: event.target.value.toUpperCase() }))} placeholder={tr("product_form.id_placeholder")} /></label>
-            <label>{tr("product_form.barcode")}<input required maxLength={50} inputMode="numeric" value={productForm.barcode} onChange={event => setProductForm(current => ({ ...current, barcode: event.target.value }))} /></label>
-            <label className="full">{tr("product_form.name")}<input required maxLength={120} value={productForm.name} onChange={event => setProductForm(current => ({ ...current, name: event.target.value }))} /></label>
-            <label>{tr("product_form.price")}<input required type="number" min="0" step="0.01" value={productForm.price} onChange={event => setProductForm(current => ({ ...current, price: event.target.value }))} /></label>
-            <label>{tr("product_form.unit")}<input required maxLength={30} value={productForm.unit} onChange={event => setProductForm(current => ({ ...current, unit: event.target.value }))} placeholder={tr("product_form.unit_placeholder")} /></label>
-            <label>{tr("product_form.initial_stock")}<input required type="number" min="0" step="1" value={productForm.stock} onChange={event => setProductForm(current => ({ ...current, stock: event.target.value }))} /></label>
-            <label>{tr("product_form.min_stock")}<input required type="number" min="0" step="1" value={productForm.minStock} onChange={event => setProductForm(current => ({ ...current, minStock: event.target.value }))} /></label>
+            <label>{tr("product_form.id")}<input id="productId" required maxLength={10} value={productForm.id} disabled={Boolean(editingProductId)} onChange={event => setProductForm(current => ({ ...current, id: event.target.value.toUpperCase() }))} placeholder={tr("product_form.id_placeholder")} /></label>
+            <label>{tr("product_form.barcode")}<input id="productBarcode" required maxLength={50} inputMode="numeric" value={productForm.barcode} onChange={event => setProductForm(current => ({ ...current, barcode: event.target.value }))} /></label>
+            <label className="full">{tr("product_form.name")}<input id="productName" required maxLength={120} value={productForm.name} onChange={event => setProductForm(current => ({ ...current, name: event.target.value }))} /></label>
+            <label>{tr("product_form.price")}<input id="productPrice" required type="number" min="0" step="0.01" value={productForm.price} onChange={event => setProductForm(current => ({ ...current, price: event.target.value }))} /></label>
+            <label>{tr("product_form.unit")}<input id="productUnit" required maxLength={30} value={productForm.unit} onChange={event => setProductForm(current => ({ ...current, unit: event.target.value }))} placeholder={tr("product_form.unit_placeholder")} /></label>
+            <label>{tr("product_form.initial_stock")}<input id="productStock" required type="number" min="0" step="1" value={productForm.stock} onChange={event => setProductForm(current => ({ ...current, stock: event.target.value }))} /></label>
+            <label>{tr("product_form.min_stock")}<input id="productMinStock" required type="number" min="0" step="1" value={productForm.minStock} onChange={event => setProductForm(current => ({ ...current, minStock: event.target.value }))} /></label>
             <section className="merch-form-section">
               <h3>{tr("merch.title")}</h3><div className="merch-grid">
                 {canViewCost ? <label>{tr("merch.cost")}<input type="number" min="0" step="0.01" value={productForm.cost} onChange={event => setProductForm(current => ({ ...current, cost: event.target.value }))} placeholder={tr("merch.cost_placeholder")} /></label> : null}
@@ -705,13 +944,35 @@ export function PosProductsPage() {
               </div><div className="merch-options"><label><input type="checkbox" checked={productForm.showOnPos !== false} onChange={event => setProductForm(current => ({ ...current, showOnPos: event.target.checked }))} /> {tr("merch.show_on_pos")}</label></div>{canViewCost ? <p className="product-sub">{tr("merch.cost_help")}</p> : null}
             </section>
           </div>
-          <p className="error-text">{productFormError}</p><div className="dialog-actions"><button type="button" className="btn btn-secondary" onClick={() => productDialogRef.current?.close?.()}>{tr("common.cancel")}</button><button type="submit" className="btn btn-pay" disabled={saving}>{tr("product_form.save")}</button></div>
+          <p id="productFormError" className="error-text">{productFormError}</p><div className="dialog-actions"><button id="cancelProductBtn" type="button" className="btn btn-secondary" onClick={() => productDialogRef.current?.close?.()}>{tr("common.cancel")}</button><button type="submit" className="btn btn-pay" disabled={saving}>{tr("product_form.save")}</button></div>
         </form>
       </dialog>
 
-      <dialog data-pos-management-dialog id="categoryDialog" ref={categoryDialogRef}><form className="payment-form" onSubmit={submitCategory}><div className="dialog-head"><h2>{categoryEditing?.id && !categoryEditing?.derived ? tr("category_form.edit_title") : tr("category_form.add_title")}</h2><button type="button" className="icon-btn" onClick={closeCategoryEditor}><i className="bi bi-x-lg"></i></button></div><label>{tr("category_form.name")}<input type="text" maxLength={80} required value={categoryName} onChange={event => setCategoryName(event.target.value)} placeholder={tr("category_form.placeholder")} /></label><p className="category-dialog-hint">{categoryEditing?.productCount ? tr("category_form.hint_with_count", { count: formatNumber(categoryEditing.productCount) }) : tr("category_form.hint_empty")}</p><p className="error-text">{categoryFormError}</p><div className="dialog-actions"><button type="button" className="btn btn-secondary" onClick={closeCategoryEditor}>{tr("common.cancel")}</button><button type="submit" className="btn btn-pay" disabled={saving}>{tr("category_form.save")}</button></div></form></dialog>
+      <dialog data-pos-management-dialog id="categoryDialog" ref={categoryDialogRef}><form id="categoryForm" className="payment-form" onSubmit={submitCategory}><div className="dialog-head"><h2 id="categoryDialogTitle">{categoryEditing?.id && !categoryEditing?.derived ? tr("category_form.edit_title") : tr("category_form.add_title")}</h2><button id="closeCategoryDialog" type="button" className="icon-btn" onClick={closeCategoryEditor}><i className="bi bi-x-lg"></i></button></div><label>{tr("category_form.name")}<input id="categoryName" type="text" maxLength={80} required value={categoryName} onChange={event => setCategoryName(event.target.value)} placeholder={tr("category_form.placeholder")} /></label><p id="categoryDialogHint" className="category-dialog-hint">{categoryEditing?.productCount ? tr("category_form.hint_with_count", { count: formatNumber(categoryEditing.productCount) }) : tr("category_form.hint_empty")}</p><p id="categoryFormError" className="error-text">{categoryFormError}</p><div className="dialog-actions"><button id="cancelCategoryBtn" type="button" className="btn btn-secondary" onClick={closeCategoryEditor}>{tr("common.cancel")}</button><button id="saveCategoryBtn" type="submit" className="btn btn-pay" disabled={saving}>{tr("category_form.save")}</button></div></form></dialog>
 
-      <dialog data-pos-management-dialog id="stockDialog" ref={stockDialogRef}><form className="payment-form" onSubmit={submitStock}><div className="dialog-head"><h2>{tr("stock_form.title")}</h2><button type="button" className="icon-btn" onClick={() => stockDialogRef.current?.close?.()}><i className="bi bi-x-lg"></i></button></div><div className="stock-product-name">{selectedStockProduct ? tr("stock_form.remaining", { product: selectedStockProduct.name, stock: formatNumber(selectedStockProduct.stock) + " " + selectedStockProduct.unit }) : ""}</div><label>{tr("stock_form.action")}<select value={stockForm.action} onChange={event => setStockForm(current => ({ ...current, action: event.target.value }))}><option value="add">{tr("stock_form.add")}</option><option value="remove">{tr("stock_form.remove")}</option><option value="set">{tr("stock_form.set")}</option></select></label><label>{tr("stock_form.quantity")}<input required type="number" min="0" step="1" value={stockForm.quantity} onChange={event => setStockForm(current => ({ ...current, quantity: event.target.value }))} /></label><label>{tr("stock_form.note")}<input maxLength={150} value={stockForm.note} onChange={event => setStockForm(current => ({ ...current, note: event.target.value }))} placeholder={tr("stock_form.note_placeholder")} /></label><p className="error-text">{stockFormError}</p><div className="dialog-actions"><button type="button" className="btn btn-secondary" onClick={() => stockDialogRef.current?.close?.()}>{tr("common.cancel")}</button><button type="submit" className="btn btn-pay" disabled={saving}>{tr("stock_form.confirm")}</button></div></form></dialog>
+      <dialog data-pos-management-dialog id="stockDialog" ref={stockDialogRef}><form id="stockForm" className="payment-form" onSubmit={submitStock}><div className="dialog-head"><h2>{tr("stock_form.title")}</h2><button id="closeStockDialog" type="button" className="icon-btn" onClick={() => stockDialogRef.current?.close?.()}><i className="bi bi-x-lg"></i></button></div><input id="stockProductId" type="hidden" value={stockForm.productId} readOnly /><div id="stockProductName" className="stock-product-name">{selectedStockProduct ? tr("stock_form.remaining", { product: selectedStockProduct.name, stock: formatNumber(selectedStockProduct.stock) + " " + selectedStockProduct.unit }) : ""}</div><label>{tr("stock_form.action")}<select id="stockAction" value={stockForm.action} onChange={event => setStockForm(current => ({ ...current, action: event.target.value }))}><option value="add">{tr("stock_form.add")}</option><option value="remove">{tr("stock_form.remove")}</option><option value="set">{tr("stock_form.set")}</option></select></label><label>{tr("stock_form.quantity")}<input id="stockQuantity" required type="number" min="0" step="1" value={stockForm.quantity} onChange={event => setStockForm(current => ({ ...current, quantity: event.target.value }))} /></label><label>{tr("stock_form.note")}<input id="stockNote" maxLength={150} value={stockForm.note} onChange={event => setStockForm(current => ({ ...current, note: event.target.value }))} placeholder={tr("stock_form.note_placeholder")} /></label><p id="stockFormError" className="error-text">{stockFormError}</p><div className="dialog-actions"><button id="cancelStockBtn" type="button" className="btn btn-secondary" onClick={() => stockDialogRef.current?.close?.()}>{tr("common.cancel")}</button><button type="submit" className="btn btn-pay" disabled={saving}>{tr("stock_form.confirm")}</button></div></form></dialog>
+
+      <dialog id="posScanDialog" ref={scanDialogRef} className="pos-scan-dialog">
+        <div className="pos-scan-sheet">
+          <div className="pos-scan-head">
+            <div><h2>{tr("scanner.title")}</h2><p>{tr("scanner.help")}</p></div>
+            <button className="pos-scan-close" type="button" aria-label={tr("scanner.close")} onClick={() => stopScanner()}>
+              <i className="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div className="pos-scan-view">
+            <video ref={scanVideoRef} id="posScanVideo" playsInline muted></video>
+            <div className="pos-scan-guide"></div><div className="pos-scan-line"></div>
+          </div>
+          <p id="posScanStatus" className="pos-scan-status">{scanStatus}</p>
+        </div>
+      </dialog>
+
+      <div id="toast" className={`toast ${toastType}${toastMessage ? " show" : ""}`} role={toastType === "error" ? "alert" : "status"} aria-live="polite">
+        <span className="app-toast-icon" aria-hidden="true"><i className={`bi bi-${toastType === "error" ? "x-circle" : "check-circle"} app-icon`}></i></span>
+        <span className="app-toast-message">{toastMessage}</span>
+      </div>
+      <AppDeveloperPanel />
     </>
   );
 }
