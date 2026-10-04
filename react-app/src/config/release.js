@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.04.396",
+  build: "2026.10.04.397",
   branch: "feature/react-firebase-port",
-  commit: "POS-TAX-MOBILE-HEADER",
+  commit: "POS-RETURNS-CONTROL-CENTER",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Retail POS Tax mobile header polish",
+  milestone: "Retail POS Returns & Refund Control Center",
   whatsNew: [
-    "Keep Refresh, Language, and POS Menu controls on one mobile header row",
-    "Use icon-only mobile header actions while retaining accessible labels and desktop text",
-    "Preserve Tax Document Control Center behavior, sync safety, permissions, and responsive content",
+    "Redesign Returns & Refunds as a colorful visual control center with stronger information hierarchy",
+    "Add refund-value trend, refund-method ring, return/void metrics, loyalty impact, and richer history cards",
+    "Preserve transaction-safe stock, loyalty, refund status, VOID, barcode scan, receipt print, permissions, and tenant boundaries",
   ],
 });

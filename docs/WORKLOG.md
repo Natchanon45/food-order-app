@@ -6072,3 +6072,46 @@ Deploy state:
 - Production verification intercepted only the legacy tax sync module with read-only no-op functions; no issue/void/retry/profile/sync write operation executed.
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions changes/deploys.
 - No merge to `main`.
+
+---
+## 2026-10-04 — Returns & Refund Control Center visual redesign
+
+Request / design direction:
+- Continue the user-approved graphic-rich POS redesign policy after Sales History and Tax Invoice History.
+- Redesign `/pos/returns` directly in code while preserving all stock, refund, loyalty, VOID, receipt, permission, and tenant behavior.
+
+Implementation:
+- Reworked Returns & Refunds into a visual control center without changing `createPosReturnParity`, Firestore transaction boundaries, product stock updates, loyalty ledger, sale refund status, audit logs, or permission/session flow.
+- Added a dark-green gradient Hero with total refund amount plus four filtered-history metrics: history count, normal returns, full VOID returns, and returned quantity.
+- Added a refund-value activity chart grouped by recent return dates.
+- Added a four-segment refund-method ring for cash / transfer / original channel / store credit.
+- Added a loyalty-impact strip showing aggregate earned-point deductions and used-point restorations from the filtered history.
+- Reworked search-result cards into contained responsive cards; Mobile no longer depends on the old fixed 520px horizontal-scroll card.
+- Refined the return editor visual hierarchy while preserving all 21 legacy stable IDs, quantity validation, full-sale VOID helper, loyalty preview, SweetConfirm, barcode scan, and receipt print actions.
+- Reworked return history into a two-column desktop card grid with stronger refund/reason/loyalty/item/action hierarchy; Mobile collapses to one column with a full-width receipt action.
+- Added `retail-returns-visual-dashboard.css` as the final route stylesheet so the approved redesign intentionally overrides the old visual treatment while preserving underlying behavior.
+- Updated React foundation regression contracts for the new Hero, timeline, refund ring, responsive search cards, and history grid.
+
+Release prepared:
+- React `0.4.280 / 2026.10.04.397`.
+- Public `0.16.32 / 2026.10.04.112`.
+- Generated bundle: `/react/assets/index-Brq0G_vR.js`.
+
+Verification before deploy:
+- Returns JSX syntax check through esbuild PASS.
+- React foundation contract PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS: migration coverage 53 routes / 21 POS, parity matrix PASS, P0 action contract PASS, callable contract 54 refs / 0 missing, tenant-access PASS, UI-layer PASS.
+- `npm run build:react` PASS; generated build contract PASS for Build `.397`.
+- `git diff --check` PASS.
+- Authenticated local-build browser contract against Production data/session PASS at 1440x900 and 440x956.
+- Visual dashboard CSS loaded; Hero gradient + four metrics + four refund-method rows + two loyalty-impact metrics rendered.
+- Current test tenant has zero return-history rows, so the real timeline/history display their empty states. Source regression contracts guard two-column desktop history, one-column Mobile history, and contained search cards.
+- History search empty-state, search-mode switch to Product, sale-search empty-state, current POS menu state, and responsive layout passed.
+- No document horizontal overflow, raw translation keys, page errors, request failures, or HTTP errors.
+- No return, VOID, stock, loyalty, refund, or other Production write operation executed.
+
+Deploy state:
+- Commit/push and Hosting-only deploy pending.
+- No Firestore Rules, Storage Rules, or Functions changes.
+- No merge to `main`.

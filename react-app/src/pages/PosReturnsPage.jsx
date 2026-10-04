@@ -93,7 +93,7 @@ export function PosReturnsPage() {
     styles: [
       "app-version-badge-runtime.css", "retail-pos-font-local.css", "sweet-dialog.css", "pos-locale-switcher-placement.css", "retail-pos.css",
       "retail-returns.css", "retail-returns-mobile.css", "retail-return-receipt.css",
-      "retail-barcode-scan-tools.css", "retail-pos-navigation.css",
+      "retail-barcode-scan-tools.css", "retail-pos-navigation.css", "retail-returns-visual-dashboard.css",
     ],
   });
 
@@ -380,6 +380,53 @@ export function PosReturnsPage() {
         .some(value => String(value || "").toLowerCase().includes(queryText));
     });
   }, [history, historySearch]);
+  const visualStats = useMemo(() => {
+    const methods = { cash: 0, transfer: 0, original: 0, credit: 0 };
+    let refundTotal = 0, itemQty = 0, returnCount = 0, voidCount = 0, loyaltyDeducted = 0, loyaltyRestored = 0;
+    filteredHistory.forEach(record => {
+      const amount = Number(record.refundTotal || 0);
+      refundTotal += amount;
+      itemQty += (record.items || []).reduce((sum, item) => sum + Number(item.qty || 0), 0);
+      if ((record.returnType || record.mode) === "void") voidCount += 1; else returnCount += 1;
+      const method = String(record.refundMethod || "original");
+      if (Object.prototype.hasOwnProperty.call(methods, method)) methods[method] += amount;
+      else methods.original += amount;
+      loyaltyDeducted += Number(record.loyaltyAdjustment?.pointsEarnedDeducted || 0);
+      loyaltyRestored += Number(record.loyaltyAdjustment?.pointsUsedRestored || 0);
+    });
+    const mixTotal = Object.values(methods).reduce((sum, value) => sum + value, 0);
+    const percentages = Object.fromEntries(Object.entries(methods).map(([key, value]) => [
+      key, mixTotal > 0 ? (value / mixTotal) * 100 : 0,
+    ]));
+    return {
+      refundTotal, itemQty, returnCount, voidCount, loyaltyDeducted, loyaltyRestored,
+      methods, percentages, mixTotal,
+    };
+  }, [filteredHistory]);
+  const returnTimeline = useMemo(() => {
+    const buckets = new Map();
+    filteredHistory.forEach(record => {
+      const source = String(record.returnDate || "");
+      const date = source.includes("-") ? asDate(source + "T00:00:00") : asDate(record.createdAt);
+      const key = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
+      const current = buckets.get(key) || { key, date, count: 0, amount: 0 };
+      current.count += 1;
+      current.amount += Number(record.refundTotal || 0);
+      buckets.set(key, current);
+    });
+    return [...buckets.values()]
+      .sort((a, b) => a.date - b.date)
+      .slice(-10)
+      .map(item => ({ ...item, label: formatDate(item.date, { day: "2-digit", month: "short" }) }));
+  }, [filteredHistory, formatDate]);
+  const returnTimelineMax = Math.max(1, ...returnTimeline.map(item => item.amount));
+  const refundMixStops = useMemo(() => {
+    const { cash, transfer, original, credit } = visualStats.percentages;
+    const cashEnd = cash;
+    const transferEnd = cashEnd + transfer;
+    const originalEnd = transferEnd + original;
+    return `conic-gradient(#10b981 0 ${cashEnd}%,#6366f1 ${cashEnd}% ${transferEnd}%,#0ea5e9 ${transferEnd}% ${originalEnd}%,#f59e0b ${originalEnd}% 100%)`;
+  }, [visualStats.percentages]);
 
   const refundName = value => {
     const key = { cash: "refund_cash", transfer: "refund_transfer", original: "refund_original", credit: "refund_credit" }[value];
@@ -528,6 +575,94 @@ export function PosReturnsPage() {
     </header>
 
     <main className="return-container" data-pos-management>
+      <section className="returns-visual-hero">
+        <div className="returns-hero-copy">
+          <span className="returns-hero-kicker"><i className="bi bi-arrow-counterclockwise" aria-hidden="true"></i>{t("pos_returns.header.title")}</span>
+          <h1>{t("pos_returns.header.title")}</h1>
+          <p>{t("pos_returns.header.subtitle")}</p>
+          <div className="returns-hero-total">
+            <span>{t("pos_returns.summary.total")}</span>
+            <strong>{tr("amount", { amount: money(visualStats.refundTotal) })}</strong>
+          </div>
+        </div>
+        <div className="returns-hero-metrics">
+          <article>
+            <span><i className="bi bi-receipt" aria-hidden="true"></i>{t("pos_returns.history.title")}</span>
+            <strong>{formatNumber(filteredHistory.length)}</strong>
+          </article>
+          <article>
+            <span><i className="bi bi-box-arrow-in-left" aria-hidden="true"></i>{tr("type_return")}</span>
+            <strong>{formatNumber(visualStats.returnCount)}</strong>
+          </article>
+          <article>
+            <span><i className="bi bi-x-octagon" aria-hidden="true"></i>{tr("type_void")}</span>
+            <strong>{formatNumber(visualStats.voidCount)}</strong>
+          </article>
+          <article>
+            <span><i className="bi bi-box-seam" aria-hidden="true"></i>{t("pos_returns.table.return_now")}</span>
+            <strong>{qtyNumber(visualStats.itemQty)}</strong>
+          </article>
+        </div>
+      </section>
+
+      <section className="returns-insight-grid">
+        <article className="panel returns-trend-panel">
+          <div className="returns-insight-head">
+            <div>
+              <span className="returns-insight-icon"><i className="bi bi-graph-down-arrow" aria-hidden="true"></i></span>
+              <div><h2>{t("pos_returns.summary.total")}</h2><p>{t("pos_returns.history.description")}</p></div>
+            </div>
+            <strong>{money(visualStats.refundTotal)}</strong>
+          </div>
+          <div className="returns-timeline" aria-label={t("pos_returns.history.title")}>
+            {returnTimeline.length ? returnTimeline.map(item => {
+              const height = Math.max(8, Math.min(100, (Number(item.amount || 0) / returnTimelineMax) * 100));
+              return <div className="returns-timeline-column" key={item.key}>
+                <span className="returns-timeline-tooltip" style={{ "--returns-bar-height": `${height}%` }}>
+                  {formatNumber(item.count)} • {tr("amount", { amount: money(item.amount) })}
+                </span>
+                <div className="returns-timeline-bar" style={{ height: `${height}%` }}></div>
+                <span className="returns-timeline-label">{item.label}</span>
+              </div>;
+            }) : <div className="returns-timeline-empty">{t("pos_returns.history.empty")}</div>}
+          </div>
+        </article>
+
+        <article className="panel returns-refund-panel">
+          <div className="returns-insight-head">
+            <div>
+              <span className="returns-insight-icon refund"><i className="bi bi-wallet2" aria-hidden="true"></i></span>
+              <div><h2>{t("pos_returns.form.refund_method")}</h2><p>{t("pos_returns.summary.total")}</p></div>
+            </div>
+          </div>
+          <div className="returns-refund-ring" style={{ background: visualStats.mixTotal > 0 ? refundMixStops : "conic-gradient(#e6efea 0 100%)" }}>
+            <div><span>{t("pos_returns.summary.total")}</span><strong>{money(visualStats.refundTotal)}</strong></div>
+          </div>
+          <div className="returns-refund-legend">
+            {[
+              ["cash", tr("refund_cash"), "#10b981"],
+              ["transfer", tr("refund_transfer"), "#6366f1"],
+              ["original", tr("refund_original"), "#0ea5e9"],
+              ["credit", tr("refund_credit"), "#f59e0b"],
+            ].map(([key, label, color]) => <div className="returns-refund-row" key={key}>
+              <span><i style={{ background: color }}></i>{label}</span>
+              <strong>{visualStats.percentages[key].toFixed(1)}%</strong>
+            </div>)}
+          </div>
+        </article>
+      </section>
+
+      <section className="panel returns-loyalty-strip">
+        <div>
+          <span className="returns-loyalty-icon"><i className="bi bi-stars" aria-hidden="true"></i></span>
+          <div><strong>{tr("loyalty_title")}</strong><span>{t("pos_returns.history.description")}</span></div>
+        </div>
+        <div className="returns-loyalty-metrics">
+          <span>{tr("history_deduct", { count: qtyNumber(visualStats.loyaltyDeducted) })}</span>
+          <span>{tr("history_restore", { count: qtyNumber(visualStats.loyaltyRestored) })}</span>
+        </div>
+      </section>
+
       <section className="panel return-search-panel">
         <div className="section-heading"><div>
           <h2><i className="bi bi-receipt pos-context-icon" data-icon-tone="green" aria-hidden="true"></i><span>{t("pos_returns.search.title")}</span></h2>
