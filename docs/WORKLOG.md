@@ -6928,3 +6928,122 @@ Deploy state:
 - No Branding settings were changed during verification; existing uploaded assets were read only.
 - Next visual redesign route: `/pos/stock-movements`.
 - No merge to `main`.
+
+---
+## 2026-10-05 — POS Stock Movements Visual Control Center
+
+User request:
+- Continue the approved Retail POS redesign plan after Products.
+- Next route in the plan: `/pos/stock-movements`.
+- Keep the page modern, colorful, easy to scan, and richer in visual/graphic information rather than a plain report table.
+
+Design / implementation:
+- Kept the existing React route, Firestore readers/watchers, movement classification, filters, CSV export, barcode filter scanner, permissions, tenant isolation, and all legacy IDs intact.
+- Added `retail-stock-movements-visual-dashboard.css` as a React-only visual layer; the Laravel/legacy MASTER CSS remains untouched.
+- Added a green Stock Flow Control Center hero with:
+  - current report period,
+  - movement count,
+  - number of products with movement,
+  - dominant movement type,
+  - largest absolute stock change.
+- Added a visual filter card with result count while preserving:
+  - keyword search,
+  - date from/to,
+  - type filter,
+  - Today / This Month / All shortcuts.
+- Rebuilt the four existing KPI summaries as colored cards with semantic icons:
+  - movement count,
+  - stock in,
+  - stock out,
+  - net change.
+- Added an Activity chart from the already-loaded filtered movement rows:
+  - same-day data buckets by hour,
+  - multi-day data buckets by day,
+  - last eight visible buckets,
+  - counts movements only and therefore does not reveal stock quantities.
+- Added Movement Mix graphics that show event count by movement type.
+- Added a quantity-derived flow-balance graphic only when `pos.stock_movements.view_quantity` is available.
+- Added visual permission masking:
+  - largest-change value shows `—` without quantity permission,
+  - flow-balance total shows `—` without quantity permission,
+  - existing `movementIn / movementOut / movementNet` controls retain their original `hidden={!canViewQuantity}` behavior.
+- Restyled the report area:
+  - semantic report icon,
+  - dedicated product/barcode filter surface,
+  - movement type icons,
+  - colored row accents by purchase/sale/return/count/adjustment,
+  - richer date/product hierarchy,
+  - graphical empty state.
+- Mobile:
+  - hero/KPIs reflow without horizontal scroll,
+  - insight panels stack vertically,
+  - CSV becomes icon-only,
+  - barcode scanner becomes icon-only,
+  - movement table keeps the approved card layout with colored type accent.
+- Added TH / EN / MY / LO / KM labels for the new Visual Control Center surfaces.
+
+Important files:
+- `react-app/src/pages/PosStockMovementsPage.jsx`
+- `react-app/public/parity/css/retail-stock-movements-visual-dashboard.css`
+- `react-app/src/i18n/parity-translations.json`
+- `tools/react-foundation-contract.mjs`
+- release metadata files.
+
+Behavior/data boundary:
+- No Stock Movement write logic changed.
+- No Firestore collection/schema/index/rule change.
+- Movement type detection remains the exact legacy note-based logic.
+- Before/after/delta math remains unchanged.
+- Realtime `stockMovements` and `products` watchers remain unchanged.
+- CSV behavior/file naming remains unchanged.
+- BarcodeDetector + ZXing fallback remains unchanged.
+- Page-level and granular POS permissions remain unchanged.
+- No merge to `main`.
+
+Release prepared:
+- React `0.4.280 / 2026.10.05.409`.
+- Public `0.16.32 / 2026.10.05.124`.
+- Generated bundle: `/react/assets/index-IjrAvTJl.js`.
+
+Verification before deploy:
+- Stock Movements JSX esbuild syntax check PASS.
+- Translation JSON validation PASS.
+- React foundation contract PASS, including new visual structure, responsive CSS, semantic icons, five-locale labels, and quantity-permission masking.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS:
+  - migration coverage = 53 routes / 21 POS,
+  - parity matrix PASS,
+  - P0 actions PASS,
+  - callables = 54 refs / 0 missing,
+  - tenant-access PASS,
+  - UI-layer PASS.
+- `npm run build:react` PASS and generated build contract PASS for Build `.409`.
+- `git diff --check` PASS.
+- Authenticated local-build browser contract PASS using current Production Firestore data with Firestore write endpoints blocked.
+- Desktop 1440x900:
+  - hero height ~= 247px,
+  - four hero metrics,
+  - four KPI cards,
+  - 3 activity buckets in current data (29 Sep / 04 Oct / 05 Oct),
+  - 89 current filtered movement rows,
+  - Movement Mix rendered,
+  - barcode filter present,
+  - CSV action visible for authorized user,
+  - raw translation keys = 0,
+  - document horizontal overflow = 0.
+- Mobile 390x844:
+  - hero rendered,
+  - four KPI cards,
+  - insight grid stacks to one column,
+  - report width = 374px,
+  - movement card width = 348px,
+  - movement table min-width = 0,
+  - table wrapper overflow = visible,
+  - scanner and CSV labels collapse to icon-only,
+  - document horizontal overflow = 0.
+- Page errors = 0; request failures = 0; HTTP errors = 0.
+- Firestore write attempts observed = 0.
+
+Deploy state:
+- Commit/push and Hosting-only deployment pending.
+- No Firestore Rules, Storage Rules, Functions, or Firestore data deployment required.

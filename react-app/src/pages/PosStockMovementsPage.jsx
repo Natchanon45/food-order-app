@@ -21,6 +21,13 @@ const BUILTIN_POS_ROLES = new Set(["owner", "admin", "manager", "cashier", "stoc
 const ROLE_SETTINGS_TIMEOUT_MS = 6000;
 const INITIAL_DATA_TIMEOUT_MS = 10000;
 const MOVEMENT_TYPES = ["purchase", "sale", "return", "count", "adjustment"];
+const MOVEMENT_ICONS = Object.freeze({
+  purchase: "box-arrow-in-down",
+  sale: "cart-check",
+  return: "arrow-counterclockwise",
+  count: "clipboard2-check",
+  adjustment: "sliders",
+});
 
 const cachedPosRoles = () => {
   try {
@@ -120,12 +127,13 @@ export function PosStockMovementsPage() {
   const tenantState = useTenant();
   const { profile, user: authUser } = authState;
   const { tenant } = tenantState;
-  const { t, formatNumber } = useI18n();
+  const { t, formatNumber, formatDate } = useI18n();
   const tr = useCallback((key, replacements = {}) => t(`pos_stock.movements.${key}`, replacements), [t]);
 
   const stylesReady = useParityPage({
     title: tr("meta.title"),
     bodyClass: "pos-stock-movements-page",
+    attributes: { "data-module": "retail-pos-stock-movements" },
     disabledGlobalStyles: ["app.css", "icons.css", "shared-responsive.css"],
     styles: [
       "app-version-badge-runtime.css",
@@ -133,6 +141,7 @@ export function PosStockMovementsPage() {
       "pos-locale-switcher-placement.css",
       "retail-pos.css",
       "retail-stock-movements.css",
+      "retail-stock-movements-visual-dashboard.css",
       "retail-barcode-scan-tools.css",
       "retail-pos-navigation.css",
       "sweet-dialog.css",
@@ -455,6 +464,54 @@ export function PosStockMovementsPage() {
     return summary;
   }, { count: 0, incoming: 0, outgoing: 0, net: 0 }), [filtered]);
 
+  const movementMix = useMemo(() => MOVEMENT_TYPES.map(value => {
+    const matching = filtered.filter(item => item.type === value);
+    return {
+      type: value,
+      count: matching.length,
+      units: matching.reduce((sum, item) => sum + Math.abs(Number(item.delta || 0)), 0),
+    };
+  }).filter(item => item.count > 0), [filtered]);
+
+  const movementInsights = useMemo(() => {
+    const dominant = [...movementMix].sort((a, b) => b.count - a.count)[0];
+    return {
+      products: new Set(filtered.map(item => String(item.productId || "")).filter(Boolean)).size,
+      dominantType: dominant?.type || "adjustment",
+      largestChange: filtered.reduce((largest, item) => Math.max(largest, Math.abs(Number(item.delta || 0))), 0),
+    };
+  }, [filtered, movementMix]);
+
+  const movementTrend = useMemo(() => {
+    const ordered = [...filtered].sort(
+      (a, b) => asDate(movementCreatedAt(a)) - asDate(movementCreatedAt(b)),
+    );
+    if (!ordered.length) return [];
+    const sameDay = dateKey(movementCreatedAt(ordered[0]))
+      === dateKey(movementCreatedAt(ordered[ordered.length - 1]));
+    const buckets = new Map();
+    ordered.forEach(item => {
+      const date = asDate(movementCreatedAt(item));
+      const key = sameDay
+        ? `${dateKey(date)}-${String(date.getHours()).padStart(2, "0")}`
+        : dateKey(date);
+      const current = buckets.get(key) || {
+        key,
+        label: sameDay
+          ? `${String(date.getHours()).padStart(2, "0")}:00`
+          : formatDate(date, { day: "2-digit", month: "short" }),
+        count: 0,
+      };
+      current.count += 1;
+      buckets.set(key, current);
+    });
+    return [...buckets.values()].slice(-8);
+  }, [filtered, formatDate]);
+  const movementTrendMax = useMemo(
+    () => Math.max(1, ...movementTrend.map(item => item.count)),
+    [movementTrend],
+  );
+
   const periodText = useMemo(() => {
     if (!from && !to) return tr("report.all_data");
     if (from && to) {
@@ -552,7 +609,54 @@ export function PosStockMovementsPage() {
     </header>
 
     <main data-pos-management className="movement-container">
+      <section className="movement-visual-hero">
+        <div className="movement-hero-orbit movement-hero-orbit-one"></div>
+        <div className="movement-hero-orbit movement-hero-orbit-two"></div>
+        <div className="movement-hero-grid">
+          <div className="movement-hero-copy">
+            <div className="movement-hero-kicker">
+              <i className="bi bi-boxes" aria-hidden="true"></i>
+              <span>{tr("visual.kicker")}</span>
+            </div>
+            <h1>{tr("header.title")}</h1>
+            <p>{tr("visual.hero_description")}</p>
+            <div className="movement-hero-period">
+              <i className="bi bi-calendar3" aria-hidden="true"></i>
+              <span>{periodText}</span>
+            </div>
+          </div>
+          <div className="movement-hero-metrics">
+            <article className="movement-hero-metric">
+              <span><i className="bi bi-arrow-left-right" aria-hidden="true"></i>{tr("stats.count")}</span>
+              <strong>{number(stats.count)}</strong>
+            </article>
+            <article className="movement-hero-metric">
+              <span><i className="bi bi-box-seam" aria-hidden="true"></i>{tr("visual.active_products")}</span>
+              <strong>{number(movementInsights.products)}</strong>
+            </article>
+            <article className="movement-hero-metric">
+              <span><i className="bi bi-stars" aria-hidden="true"></i>{tr("visual.dominant_type")}</span>
+              <strong className="movement-hero-text-value">{typeLabel(movementInsights.dominantType)}</strong>
+            </article>
+            <article className="movement-hero-metric">
+              <span><i className="bi bi-lightning-charge" aria-hidden="true"></i>{tr("visual.largest_change")}</span>
+              <strong>{canViewQuantity ? number(movementInsights.largestChange) : "—"}</strong>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <section className="panel movement-filter-panel">
+        <div className="movement-filter-heading">
+          <div>
+            <span className="movement-filter-icon"><i className="bi bi-funnel" aria-hidden="true"></i></span>
+            <div>
+              <strong>{tr("visual.filters_title")}</strong>
+              <small>{periodText}</small>
+            </div>
+          </div>
+          <span className="movement-filter-result"><i className="bi bi-layers" aria-hidden="true"></i>{number(filtered.length)}</span>
+        </div>
         <div className="movement-toolbar">
           <input id="movementSearch" value={search} onChange={event => setSearch(event.target.value)}
             placeholder={tr("search_placeholder")} />
@@ -578,20 +682,110 @@ export function PosStockMovementsPage() {
       </section>
 
       <section className="movement-stats">
-        <article><span>{tr("stats.count")}</span><strong id="movementCount">{number(stats.count)}</strong></article>
-        <article><span>{tr("stats.incoming")}</span><strong id="movementIn" hidden={!canViewQuantity}>{number(stats.incoming)}</strong></article>
-        <article><span>{tr("stats.outgoing")}</span><strong id="movementOut" hidden={!canViewQuantity}>{number(stats.outgoing)}</strong></article>
-        <article><span>{tr("stats.net")}</span><strong id="movementNet" hidden={!canViewQuantity}
-          className={stats.net > 0 ? "movement-positive" : stats.net < 0 ? "movement-negative" : ""}>
-          {stats.net > 0 ? "+" : ""}{number(stats.net)}
-        </strong></article>
+        <article className="movement-stat-card">
+          <div className="movement-stat-icon movement-stat-icon-count"><i className="bi bi-list-check" aria-hidden="true"></i></div>
+          <span>{tr("stats.count")}</span><strong id="movementCount">{number(stats.count)}</strong>
+          <small>{tr("visual.filtered_result")}</small>
+        </article>
+        <article className="movement-stat-card">
+          <div className="movement-stat-icon movement-stat-icon-in"><i className="bi bi-box-arrow-in-down" aria-hidden="true"></i></div>
+          <span>{tr("stats.incoming")}</span><strong id="movementIn" hidden={!canViewQuantity}>{number(stats.incoming)}</strong>
+          <span className="movement-permission-mask" hidden={canViewQuantity}>—</span>
+          <small>{tr("types.purchase")}</small>
+        </article>
+        <article className="movement-stat-card">
+          <div className="movement-stat-icon movement-stat-icon-out"><i className="bi bi-box-arrow-up" aria-hidden="true"></i></div>
+          <span>{tr("stats.outgoing")}</span><strong id="movementOut" hidden={!canViewQuantity}>{number(stats.outgoing)}</strong>
+          <span className="movement-permission-mask" hidden={canViewQuantity}>—</span>
+          <small>{tr("types.sale")}</small>
+        </article>
+        <article className="movement-stat-card">
+          <div className="movement-stat-icon movement-stat-icon-net"><i className="bi bi-activity" aria-hidden="true"></i></div>
+          <span>{tr("stats.net")}</span><strong id="movementNet" hidden={!canViewQuantity}
+            className={stats.net > 0 ? "movement-positive" : stats.net < 0 ? "movement-negative" : ""}>
+            {stats.net > 0 ? "+" : ""}{number(stats.net)}
+          </strong>
+          <span className="movement-permission-mask" hidden={canViewQuantity}>—</span>
+          <small>{tr("visual.net_hint")}</small>
+        </article>
+      </section>
+
+      <section className="movement-insight-grid">
+        <article className="panel movement-activity-panel">
+          <div className="movement-insight-heading">
+            <div className="movement-insight-title">
+              <span className="movement-insight-icon movement-insight-icon-trend"><i className="bi bi-bar-chart-line-fill" aria-hidden="true"></i></span>
+              <div>
+                <h2>{tr("visual.activity_title")}</h2>
+                <p>{tr("visual.activity_description")}</p>
+              </div>
+            </div>
+            <strong>{number(stats.count)}</strong>
+          </div>
+          <div className="movement-activity-chart" data-points={movementTrend.length}>
+            {movementTrend.length ? movementTrend.map(item => {
+              const height = Math.max(10, (item.count / movementTrendMax) * 100);
+              return <div className="movement-activity-column" key={item.key}>
+                <span className="movement-activity-tooltip">{number(item.count)} {tr("visual.events")}</span>
+                <span className="movement-activity-bar" style={{ "--movement-height": `${height}%`, height: `${height}%` }}></span>
+                <span className="movement-activity-label">{item.label}</span>
+              </div>;
+            }) : <div className="movement-chart-empty">
+              <i className="bi bi-bar-chart" aria-hidden="true"></i>
+              <span>{tr("report.empty")}</span>
+            </div>}
+          </div>
+        </article>
+
+        <article className="panel movement-mix-panel">
+          <div className="movement-insight-heading">
+            <div className="movement-insight-title">
+              <span className="movement-insight-icon movement-insight-icon-mix"><i className="bi bi-pie-chart-fill" aria-hidden="true"></i></span>
+              <div>
+                <h2>{tr("visual.mix_title")}</h2>
+                <p>{tr("visual.mix_description")}</p>
+              </div>
+            </div>
+          </div>
+          <div className="movement-mix-list">
+            {movementMix.length ? movementMix.map(item => {
+              const percent = stats.count > 0 ? (item.count / stats.count) * 100 : 0;
+              return <div className={`movement-mix-item movement-mix-${item.type}`} key={item.type}>
+                <div className="movement-mix-line">
+                  <span><i className="bi bi-circle-fill" aria-hidden="true"></i>{typeLabel(item.type)}</span>
+                  <strong>{number(item.count)}</strong>
+                </div>
+                <div className="movement-mix-track">
+                  <span style={{ width: `${Math.max(4, percent)}%` }}></span>
+                </div>
+              </div>;
+            }) : <div className="movement-mix-empty">{tr("report.empty")}</div>}
+          </div>
+          <div className="movement-balance-card">
+            <div>
+              <span>{tr("visual.flow_balance")}</span>
+              <strong>{canViewQuantity ? number(stats.incoming + stats.outgoing) : "—"}</strong>
+            </div>
+            <div className="movement-balance-track" aria-hidden="true">
+              <span className="movement-balance-in" style={{
+                width: canViewQuantity && stats.incoming + stats.outgoing > 0
+                  ? `${(stats.incoming / (stats.incoming + stats.outgoing)) * 100}%`
+                  : "50%",
+              }}></span>
+            </div>
+            <small>{tr("visual.flow_balance_hint")}</small>
+          </div>
+        </article>
       </section>
 
       <section className="panel movement-report-panel">
         <div className="movement-report-heading section-heading">
-          <div>
-            <h1><i className="bi bi-bookmark-star pos-context-icon" data-icon-tone="green" aria-hidden="true"></i><span>{tr("report.title")}</span></h1>
-            <p id="movementPeriodText">{periodText}</p>
+          <div className="movement-report-title">
+            <span className="movement-report-icon"><i className="bi bi-clock-history" aria-hidden="true"></i></span>
+            <div>
+              <h1><i className="bi bi-bookmark-star pos-context-icon" data-icon-tone="green" aria-hidden="true"></i><span>{tr("report.title")}</span></h1>
+              <p id="movementPeriodText">{periodText}</p>
+            </div>
           </div>
           <button id="exportMovementCsv" className="btn btn-pay" type="button"
             hidden={!canExport} onClick={exportCsv}>
@@ -600,6 +794,10 @@ export function PosStockMovementsPage() {
           </button>
         </div>
         <div className="movement-product-filter">
+          <div className="movement-product-filter-label">
+            <i className="bi bi-search" aria-hidden="true"></i>
+            <span>{tr("visual.product_filter")}</span>
+          </div>
           <div className="barcode-input-group movement-product-input">
             <input id="movementProductFilter" list="movementProductOptions" autoComplete="off"
               value={productSearch} onChange={event => setProductSearch(event.target.value)}
@@ -633,14 +831,20 @@ export function PosStockMovementsPage() {
               <th className="number" hidden={!canViewQuantity}>{tr("columns.after")}</th>
             </tr></thead>
             <tbody id="movementTableBody">
-              {filtered.map(item => <tr key={item.id}>
-                <td className="movement-date">{asDate(movementCreatedAt(item)).toLocaleString("th-TH")}</td>
+              {filtered.map(item => <tr className={`movement-row movement-row-${item.type}`} key={item.id}>
+                <td className="movement-date">
+                  <span className="movement-date-icon"><i className="bi bi-clock" aria-hidden="true"></i></span>
+                  <span>{asDate(movementCreatedAt(item)).toLocaleString("th-TH")}</span>
+                </td>
                 <td className="movement-product">
                   <strong>{item.productName || item.productId || "-"}</strong>
                   <span>{item.productId || "-"}</span>
                 </td>
                 <td data-label={tr("columns.type")}>
-                  <span className={`movement-badge movement-${item.type}`}>{typeLabel(item.type)}</span>
+                  <span className={`movement-badge movement-${item.type}`}>
+                    <i className={`bi bi-${MOVEMENT_ICONS[item.type] || MOVEMENT_ICONS.adjustment}`} aria-hidden="true"></i>
+                    <span>{typeLabel(item.type)}</span>
+                  </span>
                 </td>
                 <td className="movement-note" data-label={tr("columns.note")}>{item.note || "-"}</td>
                 <td className="number" data-label={tr("columns.before")} hidden={!canViewQuantity}>{number(item.before)}</td>
@@ -654,7 +858,9 @@ export function PosStockMovementsPage() {
           </table>
         </div>
         <div id="movementEmpty" className="empty-state movement-empty" hidden={filtered.length > 0}>
-          {tr("report.empty")}
+          <span className="movement-empty-icon"><i className="bi bi-inboxes" aria-hidden="true"></i></span>
+          <strong>{tr("report.empty")}</strong>
+          <small>{tr("visual.empty_hint")}</small>
         </div>
       </section>
     </main>

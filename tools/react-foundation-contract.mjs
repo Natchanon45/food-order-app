@@ -768,6 +768,7 @@ assert(paritySync.includes('"retail-pos-catalog.css"'),"POS catalog CSS must rem
 const posProductsPage=read("react-app/src/pages/PosProductsPage.jsx");
 const posProductsVisualCss=read("react-app/public/parity/css/retail-products-visual-dashboard.css");
 const posStockMovementsPage=read("react-app/src/pages/PosStockMovementsPage.jsx");
+const posStockMovementsVisualCss=read("react-app/public/parity/css/retail-stock-movements-visual-dashboard.css");
 const posStockCountsPage=read("react-app/src/pages/PosStockCountsPage.jsx");
 const posPurchasesPage=read("react-app/src/pages/PosPurchasesPage.jsx");
 const posPurchasingData=read("react-app/src/data/retailPurchasingData.js");
@@ -1116,3 +1117,50 @@ const firebaseConfig=read("firebase.json");
 assert(firebaseConfig.includes('\"source\": \"/react/**\"')&&firebaseConfig.includes("no-cache, no-store, must-revalidate"),"React hosting no-cache contract missing");
 assert(!app.includes("WaitingQueueDebugBoundary"),"temporary Waiting Queue debug boundary must not ship");
 console.log("React foundation contract: PASS");
+
+
+/* POS Stock Movements visual control-center regression — 2026-10-05 */
+assert(
+  posStockMovementsPage.includes('"retail-stock-movements-visual-dashboard.css"')
+  && posStockMovementsPage.includes('className="movement-visual-hero"')
+  && posStockMovementsPage.includes('className="movement-activity-chart"')
+  && posStockMovementsPage.includes('className="panel movement-mix-panel"')
+  && posStockMovementsPage.includes("const movementTrend = useMemo")
+  && posStockMovementsPage.includes("const movementMix = useMemo"),
+  "React POS Stock Movements visual control-center structure missing",
+);
+assert(
+  posStockMovementsPage.includes('canViewQuantity ? number(movementInsights.largestChange) : "—"')
+  && posStockMovementsPage.includes('canViewQuantity ? number(stats.incoming + stats.outgoing) : "—"'),
+  "React POS Stock Movements visual analytics must not expose quantity-derived values without view_quantity permission",
+);
+assert(
+  posStockMovementsVisualCss.includes("linear-gradient(120deg,#073c2c")
+  && posStockMovementsVisualCss.includes(".movement-activity-bar")
+  && posStockMovementsVisualCss.includes(".movement-mix-track")
+  && posStockMovementsVisualCss.includes(".movement-stat-card::before")
+  && posStockMovementsVisualCss.includes(".movement-table tr::before")
+  && posStockMovementsVisualCss.includes("@media(max-width:620px)"),
+  "React POS Stock Movements colorful visual dashboard/responsive treatment missing",
+);
+assert(
+  posStockMovementsPage.includes("MOVEMENT_ICONS")
+  && posStockMovementsPage.includes('bi bi-boxes')
+  && posStockMovementsPage.includes('bi bi-bar-chart-line-fill')
+  && posStockMovementsPage.includes('bi bi-pie-chart-fill')
+  && posStockMovementsPage.includes('bi bi-clock-history'),
+  "React POS Stock Movements visual semantic icons missing",
+);
+for (const locale of ["th", "en", "my", "lo", "km"]) {
+  const visual = dict[locale]?.pos_stock?.movements?.visual;
+  assert(
+    visual
+      && visual.kicker
+      && visual.hero_description
+      && visual.active_products
+      && visual.activity_title
+      && visual.mix_title
+      && visual.product_filter,
+    `React POS Stock Movements visual translations missing: ${locale}`,
+  );
+}

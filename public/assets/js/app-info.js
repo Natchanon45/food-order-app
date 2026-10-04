@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.05.123',
+  build: '2026.10.05.124',
   branch: 'feature/react-firebase-port',
-  commit: 'PLATFORM-BRANDING-ASSET-GEOMETRY',
+  commit: 'POS-STOCK-MOVEMENTS-CONTROL-CENTER',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Platform branding asset geometry and guidance',
-  updatedAt: '2026-10-05T02:36:44+0700',
+  milestone: 'Retail POS Stock Movement Control Center',
+  updatedAt: '2026-10-05T03:43:36+0700',
   whatsNew: [
-    'Use a wide Login logo surface, contained square header App Icon geometry, and shared branding on the legacy homepage',
-    'Show recommended Logo, Favicon, and App/PWA Icon dimensions directly in Super Admin Branding',
-    'Preserve existing branding storage paths, permissions, tenant behavior, and PG fallbacks'
+    'Redesign Stock Movements as a colorful visual control center with KPI cards, activity chart, and movement mix',
+    'Improve filters, movement rows, semantic icons, and mobile readability without changing stock logic',
+    'Preserve realtime watchers, CSV export, barcode filtering, permissions, and tenant boundaries'
   ]
 };
 

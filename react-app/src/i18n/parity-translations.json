@@ -4421,6 +4421,25 @@
           "void": "ยกเลิกบิล :return จาก :sale",
           "count": "ตรวจนับสต็อก :reference",
           "adjustment": "ปรับสต็อก"
+        },
+        "visual": {
+          "kicker": "Stock Flow Control Center",
+          "hero_description": "มองภาพรวมการรับเข้า จ่ายออก คืนสินค้า ตรวจนับ และปรับสต็อกได้ในหน้าเดียว พร้อมติดตามกิจกรรมล่าสุดแบบอ่านง่าย",
+          "active_products": "สินค้าที่มีการเคลื่อนไหว",
+          "dominant_type": "ประเภทหลัก",
+          "largest_change": "เปลี่ยนแปลงสูงสุด",
+          "filters_title": "ตัวกรองความเคลื่อนไหว",
+          "filtered_result": "รายการที่ตรงตัวกรอง",
+          "net_hint": "รับเข้าเทียบกับจ่ายออก",
+          "activity_title": "จังหวะความเคลื่อนไหว",
+          "activity_description": "จำนวนเหตุการณ์ตามช่วงเวลาจากข้อมูลที่กำลังแสดง",
+          "events": "รายการ",
+          "mix_title": "สัดส่วนประเภท",
+          "mix_description": "แยกจำนวนเหตุการณ์ตามประเภทความเคลื่อนไหว",
+          "flow_balance": "ปริมาณการเคลื่อนไหวรวม",
+          "flow_balance_hint": "แถบสีเขียวแสดงสัดส่วนรับเข้าเมื่อมีสิทธิ์ดูจำนวน",
+          "product_filter": "ค้นหาเฉพาะสินค้า",
+          "empty_hint": "ลองเปลี่ยนช่วงวันที่ ประเภท หรือคำค้นหา"
         }
       }
     },
@@ -10085,6 +10104,25 @@
           "void": "Voided sale :return from :sale",
           "count": "Stock count :reference",
           "adjustment": "Stock adjustment"
+        },
+        "visual": {
+          "kicker": "Stock Flow Control Center",
+          "hero_description": "See receipts, stock-outs, returns, counts, and adjustments in one visual workspace with an easy-to-read activity overview.",
+          "active_products": "Active products",
+          "dominant_type": "Leading type",
+          "largest_change": "Largest change",
+          "filters_title": "Movement filters",
+          "filtered_result": "Filtered movements",
+          "net_hint": "Stock in versus stock out",
+          "activity_title": "Movement activity",
+          "activity_description": "Number of events across the time range currently being viewed.",
+          "events": "events",
+          "mix_title": "Movement mix",
+          "mix_description": "Movement-event distribution by type.",
+          "flow_balance": "Total moved units",
+          "flow_balance_hint": "The green share represents stock-in when quantity access is allowed.",
+          "product_filter": "Filter by product",
+          "empty_hint": "Try changing the date range, movement type, or search terms."
         }
       }
     },
@@ -15812,6 +15850,25 @@
           "void": ":sale မှ :return အရောင်းပျက်သည်",
           "count": "စတော့အရေအတွက် :reference",
           "adjustment": "စတော့များတော့"
+        },
+        "visual": {
+          "kicker": "Stock Flow Control Center",
+          "hero_description": "ကုန်ဝင်၊ ကုန်ထွက်၊ ပြန်အပ်၊ ရေတွက်မှုနှင့် စတော့ချိန်ညှိမှုများကို တစ်နေရာတည်းတွင် ရှင်းလင်းစွာ ကြည့်နိုင်သည်။",
+          "active_products": "လှုပ်ရှားမှုရှိသောပစ္စည်းများ",
+          "dominant_type": "အများဆုံးအမျိုးအစား",
+          "largest_change": "အများဆုံးပြောင်းလဲမှု",
+          "filters_title": "လှုပ်ရှားမှု စစ်ထုတ်မှု",
+          "filtered_result": "စစ်ထုတ်ထားသောစာရင်း",
+          "net_hint": "Stock in နှင့် Stock out နှိုင်းယှဉ်မှု",
+          "activity_title": "လှုပ်ရှားမှု အခြေအနေ",
+          "activity_description": "လက်ရှိပြသနေသောအချိန်ကာလအတွင်း ဖြစ်ရပ်အရေအတွက်။",
+          "events": "ဖြစ်ရပ်",
+          "mix_title": "အမျိုးအစားခွဲဝေမှု",
+          "mix_description": "လှုပ်ရှားမှုအမျိုးအစားအလိုက် ဖြစ်ရပ်အရေအတွက်။",
+          "flow_balance": "စုစုပေါင်း လှုပ်ရှားသောပမာဏ",
+          "flow_balance_hint": "အရေအတွက်ကြည့်ခွင့်ရှိပါက အစိမ်းရောင်သည် Stock in အချိုးကို ပြသည်။",
+          "product_filter": "ပစ္စည်းအလိုက်ရှာရန်",
+          "empty_hint": "ရက်စွဲ၊ အမျိုးအစား သို့မဟုတ် ရှာဖွေစကားလုံးကို ပြောင်းကြည့်ပါ။"
         }
       }
     },
@@ -21539,6 +21596,25 @@
           "void": "ຍົກເລີກການຂາຍ :return ຈາກ :sale",
           "count": "ຈຳນວນຫຸ້ນ :reference",
           "adjustment": "ການປັບຕົວຫຼັກຊັບ"
+        },
+        "visual": {
+          "kicker": "Stock Flow Control Center",
+          "hero_description": "ເບິ່ງພາບລວມການຮັບເຂົ້າ, ຈ່າຍອອກ, ຄືນສິນຄ້າ, ກວດນັບ ແລະປັບສະຕັອກໄດ້ໃນໜ້າດຽວ.",
+          "active_products": "ສິນຄ້າທີ່ມີການເຄື່ອນໄຫວ",
+          "dominant_type": "ປະເພດຫຼັກ",
+          "largest_change": "ການປ່ຽນແປງສູງສຸດ",
+          "filters_title": "ຕົວກອງການເຄື່ອນໄຫວ",
+          "filtered_result": "ລາຍການທີ່ກົງຕົວກອງ",
+          "net_hint": "ຮັບເຂົ້າທຽບກັບຈ່າຍອອກ",
+          "activity_title": "ຈັງຫວະການເຄື່ອນໄຫວ",
+          "activity_description": "ຈຳນວນເຫດການຕາມຊ່ວງເວລາຂອງຂໍ້ມູນທີ່ກຳລັງສະແດງ.",
+          "events": "ລາຍການ",
+          "mix_title": "ສັດສ່ວນປະເພດ",
+          "mix_description": "ແຍກຈຳນວນເຫດການຕາມປະເພດການເຄື່ອນໄຫວ.",
+          "flow_balance": "ປະລິມານເຄື່ອນໄຫວລວມ",
+          "flow_balance_hint": "ແຖບສີຂຽວສະແດງສັດສ່ວນຮັບເຂົ້າເມື່ອມີສິດເບິ່ງຈຳນວນ.",
+          "product_filter": "ຄົ້ນຫາສະເພາະສິນຄ້າ",
+          "empty_hint": "ລອງປ່ຽນຊ່ວງວັນທີ, ປະເພດ ຫຼືຄຳຄົ້ນຫາ."
         }
       }
     },
@@ -27266,6 +27342,25 @@
           "void": "ការលក់លុបចោល :return ពី :sale",
           "count": "ចំនួនស្តុក :reference",
           "adjustment": "ការកែតម្រូវភាគហ៊ុន"
+        },
+        "visual": {
+          "kicker": "Stock Flow Control Center",
+          "hero_description": "មើលសរុបការទទួលចូល ការចេញស្តុក ការត្រឡប់ ការរាប់ និងការកែសម្រួលស្តុកនៅក្នុងកន្លែងតែមួយ។",
+          "active_products": "ទំនិញមានចលនា",
+          "dominant_type": "ប្រភេទសំខាន់",
+          "largest_change": "ការផ្លាស់ប្តូរធំបំផុត",
+          "filters_title": "តម្រងចលនាស្តុក",
+          "filtered_result": "ចលនាដែលត្រូវនឹងតម្រង",
+          "net_hint": "ប្រៀបធៀបចូល និងចេញស្តុក",
+          "activity_title": "សកម្មភាពចលនា",
+          "activity_description": "ចំនួនព្រឹត្តិការណ៍តាមពេលវេលានៃទិន្នន័យដែលកំពុងបង្ហាញ។",
+          "events": "ព្រឹត្តិការណ៍",
+          "mix_title": "សមាមាត្រប្រភេទ",
+          "mix_description": "បែងចែកចំនួនព្រឹត្តិការណ៍តាមប្រភេទចលនា។",
+          "flow_balance": "បរិមាណចលនាសរុប",
+          "flow_balance_hint": "ផ្នែកពណ៌បៃតងបង្ហាញសមាមាត្រទទួលចូល នៅពេលមានសិទ្ធិមើលបរិមាណ។",
+          "product_filter": "ស្វែងរកតាមទំនិញ",
+          "empty_hint": "សាកល្បងប្តូរចន្លោះកាលបរិច្ឆេទ ប្រភេទ ឬពាក្យស្វែងរក។"
         }
       }
     },
