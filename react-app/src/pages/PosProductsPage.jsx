@@ -133,6 +133,7 @@ export function PosProductsPage() {
       "retail-pos-navigation.css",
       "retail-product-categories.css",
       "retail-product-merchandising.css",
+      "retail-products-visual-dashboard.css",
       "retail-barcode-scan-tools.css",
       "sweet-dialog.css",
     ],
@@ -354,6 +355,41 @@ export function PosProductsPage() {
     low: products.filter(item => Number(item.stock || 0) > 0 && Number(item.stock || 0) <= Number(item.minStock || 0)).length,
     out: products.filter(item => Number(item.stock || 0) <= 0).length,
   }), [products]);
+
+  const productVisualStats = useMemo(() => {
+    const categoryMap = new Map();
+    let retailValue = 0;
+    let visibleOnPos = 0;
+    products.forEach(product => {
+      const stock = Math.max(0, Number(product.stock || 0));
+      const price = Math.max(0, Number(product.price || 0));
+      retailValue += stock * price;
+      if (product.showOnPos !== false) visibleOnPos += 1;
+      const category = clean(product.category || tr("visual.uncategorized")) || tr("visual.uncategorized");
+      categoryMap.set(category, (categoryMap.get(category) || 0) + 1);
+    });
+    const healthy = Math.max(0, stats.count - stats.low - stats.out);
+    const categories = [...categoryMap.entries()]
+      .map(([name, count]) => ({ name, count }))
+      .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name, "th"))
+      .slice(0, 6);
+    return {
+      healthy,
+      retailValue,
+      visibleOnPos,
+      hiddenOnPos: Math.max(0, stats.count - visibleOnPos),
+      categoryCount: categoryMap.size,
+      categories,
+    };
+  }, [products, stats.count, stats.low, stats.out, tr]);
+  const stockHealthTotal = Math.max(1, stats.count);
+  const stockHealthyPercent = (productVisualStats.healthy / stockHealthTotal) * 100;
+  const stockLowPercent = (stats.low / stockHealthTotal) * 100;
+  const stockOutPercent = Math.max(0, 100 - stockHealthyPercent - stockLowPercent);
+  const stockHealthGradient = stats.count
+    ? `conic-gradient(#10b981 0 ${stockHealthyPercent}%,#f59e0b ${stockHealthyPercent}% ${stockHealthyPercent + stockLowPercent}%,#ef4444 ${stockHealthyPercent + stockLowPercent}% 100%)`
+    : "conic-gradient(#e5eee9 0 100%)";
+  const maxCategoryProducts = Math.max(1, ...productVisualStats.categories.map(item => item.count));
 
   const productRows = useMemo(() => {
     const keyword = productSearch.trim().toLowerCase();
@@ -861,17 +897,64 @@ export function PosProductsPage() {
       </header>
 
       <main data-pos-management className="management-container">
-        <section className="stats-grid">
-          <article className="stat-card"><span>{tr("stats.product_count")}</span><strong id="productCount">{formatNumber(stats.count)}</strong></article>
-          <article className="stat-card"><span>{tr("stats.stock_total")}</span><strong id="stockTotal">{formatNumber(stats.stock)}</strong></article>
-          <article className="stat-card warning"><span>{tr("stats.low_stock")}</span><strong id="lowStockCount">{formatNumber(stats.low)}</strong></article>
-          <article className="stat-card danger"><span>{tr("stats.out_of_stock")}</span><strong id="outStockCount">{formatNumber(stats.out)}</strong></article>
+        <section className="products-visual-hero">
+          <div className="products-hero-copy">
+            <span className="products-hero-kicker"><i className="bi bi-box-seam-fill" aria-hidden="true"></i>{tr("visual.eyebrow")}</span>
+            <h1>{tr("products.title")}</h1>
+            <p>{tr("visual.hero_description")}</p>
+            <div className="products-hero-chips">
+              <span><i className="bi bi-tags-fill" aria-hidden="true"></i>{tr("visual.category_count", { count: formatNumber(productVisualStats.categoryCount) })}</span>
+              <span><i className="bi bi-eye-fill" aria-hidden="true"></i>{tr("visual.pos_visible", { count: formatNumber(productVisualStats.visibleOnPos) })}</span>
+              <span><i className="bi bi-eye-slash-fill" aria-hidden="true"></i>{tr("visual.pos_hidden", { count: formatNumber(productVisualStats.hiddenOnPos) })}</span>
+            </div>
+          </div>
+          <div className="stats-grid products-hero-metrics">
+            <article className="stat-card"><span><i className="bi bi-boxes" aria-hidden="true"></i>{tr("stats.product_count")}</span><strong id="productCount">{formatNumber(stats.count)}</strong></article>
+            <article className="stat-card"><span><i className="bi bi-layers-fill" aria-hidden="true"></i>{tr("stats.stock_total")}</span><strong id="stockTotal">{formatNumber(stats.stock)}</strong></article>
+            <article className="stat-card warning"><span><i className="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>{tr("stats.low_stock")}</span><strong id="lowStockCount">{formatNumber(stats.low)}</strong></article>
+            <article className="stat-card danger"><span><i className="bi bi-x-octagon-fill" aria-hidden="true"></i>{tr("stats.out_of_stock")}</span><strong id="outStockCount">{formatNumber(stats.out)}</strong></article>
+          </div>
         </section>
 
-        <section className="panel management-panel">
+        <section className="products-insight-grid">
+          <article className="panel products-category-insight">
+            <div className="products-insight-head">
+              <div><span className="products-insight-icon category"><i className="bi bi-bar-chart-fill" aria-hidden="true"></i></span><div><h2>{tr("visual.category_mix_title")}</h2><p>{tr("visual.category_mix_description")}</p></div></div>
+              <span className="products-value-pill"><i className="bi bi-cash-coin" aria-hidden="true"></i>{tr("visual.retail_value")} <strong>{formatNumber(productVisualStats.retailValue, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></span>
+            </div>
+            <div className="products-category-bars">
+              {productVisualStats.categories.length ? productVisualStats.categories.map((item, index) => {
+                const width = Math.max(8, (item.count / maxCategoryProducts) * 100);
+                return <div className="products-category-bar-row" key={item.name}>
+                  <span className="products-category-rank">{index + 1}</span>
+                  <div className="products-category-bar-main">
+                    <div><strong>{item.name}</strong><span>{tr("visual.product_count_short", { count: formatNumber(item.count) })}</span></div>
+                    <div className="products-category-track"><span style={{ width: `${width}%` }}></span></div>
+                  </div>
+                </div>;
+              }) : <div className="products-insight-empty">{tr("products.empty")}</div>}
+            </div>
+          </article>
+
+          <article className="panel products-health-panel">
+            <div className="products-insight-head">
+              <div><span className="products-insight-icon health"><i className="bi bi-pie-chart-fill" aria-hidden="true"></i></span><div><h2>{tr("visual.stock_health_title")}</h2><p>{tr("visual.stock_health_description")}</p></div></div>
+            </div>
+            <div className="products-health-ring" style={{ background: stockHealthGradient }}>
+              <div><span>{tr("visual.healthy")}</span><strong>{formatNumber(productVisualStats.healthy)}</strong></div>
+            </div>
+            <div className="products-health-legend">
+              <div><span><i className="healthy"></i>{tr("visual.healthy")}</span><strong>{stockHealthyPercent.toFixed(1)}%</strong></div>
+              <div><span><i className="low"></i>{tr("stats.low_stock")}</span><strong>{stockLowPercent.toFixed(1)}%</strong></div>
+              <div><span><i className="out"></i>{tr("stats.out_of_stock")}</span><strong>{stockOutPercent.toFixed(1)}%</strong></div>
+            </div>
+          </article>
+        </section>
+
+        <section className="panel management-panel products-list-panel">
           <div className="section-heading product-list-heading">
-            <div><h2>{tr("products.title")}</h2><p>{tr("products.description")}</p></div>
-            {canCreate ? <button id="addProductBtn" className="btn btn-pay" type="button" onClick={openAddProduct}>{tr("products.add")}</button> : null}
+            <div><h2><i className="bi bi-box2-heart pos-context-icon" aria-hidden="true"></i>{tr("products.title")}</h2><p>{tr("products.description")}</p></div>
+            {canCreate ? <button id="addProductBtn" className="btn btn-pay" type="button" onClick={openAddProduct}><i className="bi bi-plus-circle" aria-hidden="true"></i><span>{tr("products.add")}</span></button> : null}
           </div>
           <div className="toolbar">
             <div className="barcode-input-group">
@@ -892,21 +975,22 @@ export function PosProductsPage() {
                   const low = Number(product.stock || 0) > 0 && Number(product.stock || 0) <= Number(product.minStock || 0);
                   const out = Number(product.stock || 0) <= 0;
                   const category = clean(product.category);
-                  return <tr key={product.id}>
-                    <td>{product.id}</td>
-                    <td>
+                  return <tr key={product.id} className={out ? "is-out" : low ? "is-low" : "is-healthy"}>
+                    <td data-label={tr("products.columns.id")}><span className="product-code-pill">{product.id}</span></td>
+                    <td data-label={tr("products.columns.product")}>
                       <div className="product-cell">
                         <div className="product-thumb">{product.imageUrl ? <img src={product.imageUrl} alt={product.name} loading="lazy" /> : clean(product.name).slice(0, 2).toUpperCase()}</div>
                         <div><div className="product-name">{product.name}</div><div className="product-sub">{tr("runtime.low_stock_alert", { stock: formatNumber(product.minStock || 0) })}{canViewCost ? <> • {product.cost != null ? tr("runtime.cost", { amount: Number(product.cost).toFixed(2) }) : tr("runtime.cost_unset")}</> : null}</div><div className="merch-tags">{category ? <span className="merch-tag">{category}</span> : null}{product.showOnPos === false ? <span className="merch-tag hidden">{tr("merch.hidden_on_pos")}</span> : null}</div></div>
                       </div>
                     </td>
-                    <td>{product.barcode}</td><td className="number">{formatNumber(Number(product.price || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    <td className="number"><span className={"stock-badge" + (out ? " out" : low ? " low" : "")}>{formatNumber(product.stock || 0)}</span></td>
-                    <td>{product.unit}</td>
-                    <td><div className="row-actions">
-                      {canAdjust ? <button type="button" className="stock" data-action="stock" data-id={product.id} onClick={() => openStock(product)}>{tr("common.adjust_stock")}</button> : null}
-                      {canEdit ? <button type="button" data-action="edit" data-id={product.id} onClick={() => openEditProduct(product)}>{tr("common.edit")}</button> : null}
-                      {canDelete ? <button type="button" className="delete" data-action="delete" data-id={product.id} onClick={() => removeProduct(product)}>{tr("common.delete")}</button> : null}
+                    <td data-label={tr("products.columns.barcode")}><span className="product-barcode-text"><i className="bi bi-upc" aria-hidden="true"></i>{product.barcode}</span></td>
+                    <td data-label={tr("products.columns.price")} className="number product-price-cell">{formatNumber(Number(product.price || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td data-label={tr("products.columns.stock")} className="number"><span className={"stock-badge" + (out ? " out" : low ? " low" : "")}>{formatNumber(product.stock || 0)}</span></td>
+                    <td data-label={tr("products.columns.unit")}>{product.unit}</td>
+                    <td data-label={tr("visual.actions")}><div className="row-actions">
+                      {canAdjust ? <button type="button" className="stock" data-action="stock" data-id={product.id} onClick={() => openStock(product)}><i className="bi bi-box-arrow-in-down" aria-hidden="true"></i><span>{tr("common.adjust_stock")}</span></button> : null}
+                      {canEdit ? <button type="button" data-action="edit" data-id={product.id} onClick={() => openEditProduct(product)}><i className="bi bi-pencil-square" aria-hidden="true"></i><span>{tr("common.edit")}</span></button> : null}
+                      {canDelete ? <button type="button" className="delete" data-action="delete" data-id={product.id} onClick={() => removeProduct(product)}><i className="bi bi-trash3" aria-hidden="true"></i><span>{tr("common.delete")}</span></button> : null}
                     </div></td>
                   </tr>;
                 })}
@@ -924,7 +1008,7 @@ export function PosProductsPage() {
         </section>
 
         <section className="panel category-manager-panel" id="productCategoryManager">
-          <div className="section-heading category-manager-heading"><div><div className="category-manager-title-row"><h2>{tr("categories.title")}</h2><span id="categoryCountBadge" className="category-count-badge">{tr("categories.count", { count: formatNumber(enrichedCategories.length) })}</span></div><p>{tr("categories.description")}</p></div>{canCreate ? <button id="addCategoryBtn" className="btn btn-pay" type="button" onClick={() => openCategoryEditor()}><i className="bi bi-plus-lg"></i><span>{tr("categories.add")}</span></button> : null}</div>
+          <div className="section-heading category-manager-heading"><div><div className="category-manager-title-row"><h2><i className="bi bi-tags-fill pos-context-icon" aria-hidden="true"></i>{tr("categories.title")}</h2><span id="categoryCountBadge" className="category-count-badge">{tr("categories.count", { count: formatNumber(enrichedCategories.length) })}</span></div><p>{tr("categories.description")}</p></div>{canCreate ? <button id="addCategoryBtn" className="btn btn-pay" type="button" onClick={() => openCategoryEditor()}><i className="bi bi-plus-lg"></i><span>{tr("categories.add")}</span></button> : null}</div>
           <div className="category-manager-toolbar">
             <div className="category-search-control"><i className="bi bi-search"></i><input id="categorySearch" type="search" value={categorySearch} onChange={event => { setCategorySearch(event.target.value); setCategoryPage(1); }} placeholder={tr("categories.search_placeholder")} />{categorySearch ? <button id="clearCategorySearch" className="category-search-clear" type="button" onClick={() => setCategorySearch("")}><i className="bi bi-x-lg"></i></button> : null}</div>
             <div className="category-toolbar-controls">
@@ -945,7 +1029,7 @@ export function PosProductsPage() {
           {visibleCategories.length > categoryPageSize ? <nav id="categoryPagination" className="category-pagination"><div className="category-pagination-summary">{tr("common.showing_short", { start: formatNumber((safeCategoryPage - 1) * categoryPageSize + 1), end: formatNumber(Math.min(safeCategoryPage * categoryPageSize, visibleCategories.length)), total: formatNumber(visibleCategories.length) })}</div><div className="category-page-controls"><button type="button" disabled={safeCategoryPage <= 1} onClick={() => setCategoryPage(page => page - 1)}><i className="bi bi-chevron-left"></i></button>{categoryNumbers.map((page, index) => <span key={page}>{index > 0 && page - categoryNumbers[index - 1] > 1 ? <span className="category-page-ellipsis">…</span> : null}<button type="button" className={"category-page-number" + (page === safeCategoryPage ? " active" : "")} onClick={() => setCategoryPage(page)}>{page}</button></span>)}<button type="button" disabled={safeCategoryPage >= categoryPageCount} onClick={() => setCategoryPage(page => page + 1)}><i className="bi bi-chevron-right"></i></button></div></nav> : null}
         </section>
 
-        <section className="panel sort-manager-panel" id="productSortManager"><div className="section-heading"><div><h2>{tr("sort_manager.title")}</h2><p>{tr("sort_manager.description")}</p></div></div>
+        <section className="panel sort-manager-panel" id="productSortManager"><div className="section-heading"><div><h2><i className="bi bi-grid-3x3-gap-fill pos-context-icon" aria-hidden="true"></i>{tr("sort_manager.title")}</h2><p>{tr("sort_manager.description")}</p></div></div>
           <div id="sortManagerRoot" className="sort-manager-root">
             <div className="sort-column"><div className="sort-column-head"><div><h3>{tr("sort_manager.category_title")}</h3><span>{tr("sort_manager.category_help")}</span></div></div><div className="sort-list" ref={categorySortRef}>{orderedCategoryIds.map((id, index) => <div className={"sort-row" + (id === selectedSortCategory ? " active" : "") + (id === "quick" ? " best-seller" : "")} data-category-id={id} key={id}><span className="sort-handle"><i className="bi bi-grip-vertical"></i></span><button type="button" className="sort-row-main" onClick={() => setSelectedSortCategory(id)}><span className="sort-row-title">{id === "quick" ? tr("sort_manager.best_sellers") : id === "all" ? tr("sort_manager.all") : id.slice(9)}</span></button><span className="sort-order-badge">{index + 1}</span></div>)}</div></div>
             <div className="sort-column"><div className="sort-column-head"><div><h3>{tr("sort_manager.products_title", { category: selectedSortCategory === "quick" ? tr("sort_manager.best_sellers") : selectedSortCategory === "all" ? tr("sort_manager.all") : selectedSortCategory.slice(9) })}</h3><span>{tr("sort_manager.products_help")}</span></div></div>
@@ -955,7 +1039,7 @@ export function PosProductsPage() {
           </div>
         </section>
 
-        <section className="panel movement-panel"><div className="section-heading"><div><h2>{tr("movements.title")}</h2><p>{tr("movements.description")}</p></div>{canClearHistory ? <button id="clearMovementBtn" className="btn btn-danger" type="button" onClick={clearMovements}>{tr("movements.clear")}</button> : null}</div>
+        <section className="panel movement-panel products-movement-panel"><div className="section-heading"><div><h2><i className="bi bi-arrow-left-right pos-context-icon" aria-hidden="true"></i>{tr("movements.title")}</h2><p>{tr("movements.description")}</p></div>{canClearHistory ? <button id="clearMovementBtn" className="btn btn-danger" type="button" onClick={clearMovements}><i className="bi bi-trash3" aria-hidden="true"></i><span>{tr("movements.clear")}</span></button> : null}</div>
           <div id="movementList" className="movement-list">{visibleMovements.map(item => { const before = Number(item.before ?? item.stockBefore ?? 0), after = Number(item.after ?? item.stockAfter ?? before), delta = after - before; return <article className="movement-item" key={item.id}><div><strong>{item.productName || item.productId}</strong><div className="movement-meta">{item.productId} • {item.note || tr("runtime.stock_default_note")} • {new Date(movementTime(item.createdAtServer || item.createdAt || item.updatedAt)).toLocaleString()} • {tr("common.synced")}</div></div><div className={"movement-qty " + (delta >= 0 ? "plus" : "minus")}>{delta > 0 ? "+" : ""}{formatNumber(delta)} ({formatNumber(before)} → {formatNumber(after)})</div></article>; })}</div>
           {!visibleMovements.length ? <div id="movementEmpty" className="empty-state">{tr("movements.empty")}</div> : null}
         </section>

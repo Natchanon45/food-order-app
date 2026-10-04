@@ -6410,3 +6410,84 @@ Deploy state:
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
 - Next visual redesign route: `/pos/products`.
 - No merge to `main`.
+
+---
+## 2026-10-05 — Products & Stock Product Command Center redesign
+
+Design direction:
+- Continue the user-approved colorful, graphic-rich POS management redesign after Staff Shifts.
+- Redesign `/pos/products` without changing the existing 60 stable legacy IDs, CRUD behavior, barcode scanning, drag sorting, stock transactions, permissions, Firestore paths, or tenant boundaries.
+
+Implementation:
+- Added route-local `retail-products-visual-dashboard.css` as the final Products presentation layer.
+- Replaced the plain four-card summary with a Product & Stock Command Center Hero while preserving:
+  - `#productCount`
+  - `#stockTotal`
+  - `#lowStockCount`
+  - `#outStockCount`
+- Added Hero context chips for category count, products visible on POS, and products hidden from POS.
+- Added permission-neutral inventory retail-value aggregation using current on-hand stock x sale price.
+- Added Stock Health conic ring:
+  - healthy stock,
+  - low stock,
+  - out of stock.
+- Added Top Category Mix bars for the six largest product categories.
+- Added semantic icons to the Hero KPIs, Add Product, Adjust Stock, Edit, Delete, category, sort-manager, and stock-movement headings/actions.
+- Reworked the product table into elevated status-aware rows on Desktop:
+  - green healthy accent,
+  - amber low-stock accent,
+  - red out-of-stock accent,
+  - product-code pills,
+  - barcode icon/text,
+  - richer thumbnails and action treatments.
+- Added `data-label` to product cells and replaced the legacy 850px Mobile horizontal-scroll table with contained responsive product cards.
+- Mobile action buttons collapse to icon-first controls and the legacy “scroll left-right” instruction is suppressed.
+- Enhanced Product Categories, catalog sort manager, and stock-adjustment history surfaces so the whole route follows the same visual system instead of only the top section.
+- Added Products visual translations for TH / EN / MY / LO / KM.
+- Added regression contracts for the Hero, stock-health ring, category bars, semantic icons, translations, and Mobile contained-card layout.
+
+Release prepared:
+- React `0.4.280 / 2026.10.05.404`.
+- Public `0.16.32 / 2026.10.05.119`.
+- Generated bundle: `/react/assets/index-DrUXxFOa.js`.
+
+Verification before deploy:
+- Products JSX syntax check through esbuild PASS.
+- `parity-translations.json` JSON validation PASS.
+- React foundation contract PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS:
+  - React migration coverage 53 routes / 21 POS,
+  - parity matrix PASS,
+  - P0 action contract PASS,
+  - callable contract 54 refs / 0 missing,
+  - tenant-access PASS,
+  - UI-layer PASS.
+- `npm run build:react` PASS; generated build contract PASS for Build `.404`.
+- `git diff --check` PASS.
+- Authenticated local-build browser contract PASS at 1440x900 and 440x956 using a copied browser profile with Firestore Write-channel / commit / batchWrite blocked.
+- Current Production data used by the copied profile:
+  - 1,997 products,
+  - total stock 23,687,
+  - 0 low-stock products,
+  - 0 out-of-stock products,
+  - 6 category bars,
+  - 20 visible rows on the first product page.
+- Desktop: Hero gradient + four KPI cards + Stock Health ring + six category bars rendered; first-page product actions rendered 60 semantic action icons.
+- Read-only interaction check:
+  - impossible search term showed the existing empty state,
+  - Out-of-stock filter returned 0 rows for current data,
+  - filters were returned to All.
+- Mobile 440x956:
+  - same 20 product rows rendered as `display:grid` cards,
+  - row width 392px,
+  - table width 392px,
+  - document horizontal overflow 0.
+- No raw translation keys, page errors, request failures, or HTTP errors.
+- Firestore write attempts observed: 0.
+- No product/category/stock/sort/history write operation executed.
+
+Deploy state:
+- Commit/push and Hosting-only deploy pending.
+- No Firestore Rules, Storage Rules, Functions, or Firestore data changes required.
+- No merge to `main`.

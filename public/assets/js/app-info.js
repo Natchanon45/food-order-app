@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.05.118',
+  build: '2026.10.05.119',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-SHIFTS-ICON-BADGE-SQUARE',
+  commit: 'POS-PRODUCT-STOCK-COMMAND-CENTER',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS Shifts icon badge geometry',
-  updatedAt: '2026-10-05T00:40:22+0700',
+  milestone: 'Retail POS Product & Stock Command Center',
+  updatedAt: '2026-10-05T00:54:31+0700',
   whatsNew: [
-    'Keep the closed-shift and history heading icon badges square instead of flex-compressed',
-    'Lock the heading badges to true 42x42 geometry on desktop and mobile',
-    'Preserve Shift Operations Dashboard behavior, clear-history persistence, permissions, and tenant boundaries'
+    'Redesign Products & Stock with a colorful command-center hero and stock-health visuals',
+    'Add category mix analytics, inventory retail value, responsive product cards, and semantic action icons',
+    'Preserve realtime product/category/stock watchers, barcode scan, drag sorting, permissions, and tenant boundaries'
   ]
 };
 

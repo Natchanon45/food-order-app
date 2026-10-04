@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.05.403",
+  build: "2026.10.05.404",
   branch: "feature/react-firebase-port",
-  commit: "POS-SHIFTS-ICON-BADGE-SQUARE",
+  commit: "POS-PRODUCT-STOCK-COMMAND-CENTER",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Retail POS Shifts icon badge geometry",
+  milestone: "Retail POS Product & Stock Command Center",
   whatsNew: [
-    "Keep the closed-shift and history heading icon badges square instead of flex-compressed",
-    "Lock the heading badges to true 42x42 geometry on desktop and mobile",
-    "Preserve Shift Operations Dashboard behavior, clear-history persistence, permissions, and tenant boundaries",
+    "Redesign Products & Stock with a colorful command-center hero and stock-health visuals",
+    "Add category mix analytics, inventory retail value, responsive product cards, and semantic action icons",
+    "Preserve realtime product/category/stock watchers, barcode scan, drag sorting, permissions, and tenant boundaries",
   ],
 });

@@ -3147,6 +3147,22 @@
         "title": "จัดการสินค้าและสต็อก",
         "subtitle": "POS ร้านค้าปลีก"
       },
+      "visual": {
+        "eyebrow": "ศูนย์ควบคุมสินค้าและสต็อก",
+        "hero_description": "ดูภาพรวมสินค้า สุขภาพสต็อก หมวดหมู่ และมูลค่าสินค้าจากหน้าจอเดียว",
+        "category_count": ":count หมวด",
+        "pos_visible": "แสดงบน POS :count",
+        "pos_hidden": "ซ่อนจาก POS :count",
+        "category_mix_title": "สัดส่วนหมวดสินค้า",
+        "category_mix_description": "จัดอันดับหมวดตามจำนวนสินค้า",
+        "retail_value": "มูลค่าขายคงคลัง",
+        "product_count_short": ":count สินค้า",
+        "stock_health_title": "สุขภาพสต็อก",
+        "stock_health_description": "แยกสินค้าปกติ ใกล้หมด และหมดสต็อก",
+        "healthy": "สต็อกปกติ",
+        "uncategorized": "ไม่ระบุหมวด",
+        "actions": "จัดการ"
+      },
       "stats": {
         "product_count": "จำนวนสินค้า",
         "stock_total": "สินค้าคงเหลือรวม",
@@ -9130,6 +9146,22 @@
         "title": "Products & Stock",
         "subtitle": "Retail POS"
       },
+      "visual": {
+        "eyebrow": "Product & Stock Command Center",
+        "hero_description": "See product coverage, stock health, category mix, and inventory retail value in one place.",
+        "category_count": ":count categories",
+        "pos_visible": "Visible on POS :count",
+        "pos_hidden": "Hidden from POS :count",
+        "category_mix_title": "Category mix",
+        "category_mix_description": "Rank categories by number of products.",
+        "retail_value": "Inventory retail value",
+        "product_count_short": ":count products",
+        "stock_health_title": "Stock health",
+        "stock_health_description": "Healthy, low-stock, and out-of-stock product mix.",
+        "healthy": "Healthy stock",
+        "uncategorized": "Uncategorized",
+        "actions": "Actions"
+      },
       "stats": {
         "product_count": "Products",
         "stock_total": "Total stock",
@@ -14837,6 +14869,22 @@
       "header": {
         "title": "ထုတ်ကုန် & စတော့ခ်",
         "subtitle": "Retail POS"
+      },
+      "visual": {
+        "eyebrow": "ကုန်ပစ္စည်းနှင့် စတော့ခ် ထိန်းချုပ်မှု",
+        "hero_description": "ကုန်ပစ္စည်းအခြေအနေ၊ စတော့ခ်ကျန်းမာရေး၊ အမျိုးအစားခွဲခြားမှုနှင့် လက်ကျန်ရောင်းတန်ဖိုးကို တစ်နေရာတည်းတွင် ကြည့်ပါ။",
+        "category_count": ":count အမျိုးအစား",
+        "pos_visible": "POS တွင်ပြ :count",
+        "pos_hidden": "POS မှဖျောက် :count",
+        "category_mix_title": "အမျိုးအစားခွဲခြားမှု",
+        "category_mix_description": "ကုန်ပစ္စည်းအရေအတွက်အလိုက် အမျိုးအစားများကို အဆင့်စီပါ။",
+        "retail_value": "လက်ကျန် ရောင်းတန်ဖိုး",
+        "product_count_short": ":count ကုန်ပစ္စည်း",
+        "stock_health_title": "စတော့ခ်ကျန်းမာရေး",
+        "stock_health_description": "ပုံမှန်၊ စတော့နည်းနှင့် စတော့ကုန် ကုန်ပစ္စည်းအချိုး။",
+        "healthy": "စတော့ခ်ပုံမှန်",
+        "uncategorized": "အမျိုးအစားမသတ်မှတ်",
+        "actions": "လုပ်ဆောင်ချက်"
       },
       "stats": {
         "product_count": "ထုတ်ကုန်များ",
@@ -20546,6 +20594,22 @@
         "title": "ຜະລິດຕະພັນ & ຫຼັກຊັບ",
         "subtitle": "Retail POS"
       },
+      "visual": {
+        "eyebrow": "ສູນຄວບຄຸມສິນຄ້າແລະສະຕັອກ",
+        "hero_description": "ເບິ່ງພາບລວມສິນຄ້າ, ສຸຂະພາບສະຕັອກ, ສັດສ່ວນໝວດໝູ່ ແລະມູນຄ່າຂາຍຄົງເຫຼືອໃນໜ້າດຽວ.",
+        "category_count": ":count ໝວດ",
+        "pos_visible": "ສະແດງໃນ POS :count",
+        "pos_hidden": "ເຊື່ອງຈາກ POS :count",
+        "category_mix_title": "ສັດສ່ວນໝວດສິນຄ້າ",
+        "category_mix_description": "ຈັດອັນດັບໝວດຕາມຈຳນວນສິນຄ້າ.",
+        "retail_value": "ມູນຄ່າຂາຍຄົງເຫຼືອ",
+        "product_count_short": ":count ສິນຄ້າ",
+        "stock_health_title": "ສຸຂະພາບສະຕັອກ",
+        "stock_health_description": "ສັດສ່ວນສິນຄ້າປົກກະຕິ, ໃກ້ໝົດ ແລະໝົດສະຕັອກ.",
+        "healthy": "ສະຕັອກປົກກະຕິ",
+        "uncategorized": "ບໍ່ລະບຸໝວດ",
+        "actions": "ຈັດການ"
+      },
       "stats": {
         "product_count": "ຜະລິດຕະພັນ",
         "stock_total": "ຫຸ້ນທັງໝົດ",
@@ -26253,6 +26317,22 @@
       "header": {
         "title": "ផលិតផល និងស្តុក",
         "subtitle": "Retail POS"
+      },
+      "visual": {
+        "eyebrow": "មជ្ឈមណ្ឌលគ្រប់គ្រងផលិតផល និងស្តុក",
+        "hero_description": "មើលស្ថានភាពផលិតផល សុខភាពស្តុក សមាមាត្រប្រភេទ និងតម្លៃលក់ស្តុកនៅកន្លែងតែមួយ។",
+        "category_count": ":count ប្រភេទ",
+        "pos_visible": "បង្ហាញលើ POS :count",
+        "pos_hidden": "លាក់ពី POS :count",
+        "category_mix_title": "សមាមាត្រប្រភេទផលិតផល",
+        "category_mix_description": "ចាត់ថ្នាក់ប្រភេទតាមចំនួនផលិតផល។",
+        "retail_value": "តម្លៃលក់ស្តុក",
+        "product_count_short": ":count ផលិតផល",
+        "stock_health_title": "សុខភាពស្តុក",
+        "stock_health_description": "សមាមាត្រស្តុកធម្មតា ស្តុកទាប និងអស់ស្តុក។",
+        "healthy": "ស្តុកធម្មតា",
+        "uncategorized": "មិនបានកំណត់ប្រភេទ",
+        "actions": "គ្រប់គ្រង"
       },
       "stats": {
         "product_count": "ផលិតផល",
