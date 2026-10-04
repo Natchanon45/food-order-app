@@ -6674,6 +6674,26 @@ Verification before deploy:
 - Firestore write attempts observed = 0.
 
 Deploy state:
-- Commit/push and Hosting-only deploy pending.
-- No Firestore Rules, Storage Rules, Functions, or Firestore data changes required.
+- Implementation commit `505c08e9` — `fix: contain product modal scrollbar` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.05.406` and Public `0.16.32 / 2026.10.05.121`.
+- Production `/pos/products` returns HTTP 200 with `Cache-Control: no-cache, no-store, must-revalidate` and serves `/react/assets/index-BlRVV_jM.js`.
+- Authenticated Production scrollbar contract PASS at 1440x900 and 440x956 with Firestore Write-channel / commit / batchWrite blocked.
+- Production Desktop:
+  - outer dialog overflow = hidden,
+  - inner Product form overflow-y = auto,
+  - scrollbar gutter = stable,
+  - dialog bottom = 886px,
+  - inner scroll form bottom = 885px,
+  - form clientHeight / scrollHeight = 870 / 1325,
+  - max scroll reached exactly at 455,
+  - sticky header/footer remained inside the modal.
+- Production Mobile 440x956:
+  - dialog bounds = left 19 / right 421 / top 8 / bottom 948,
+  - inner form bounds = left 20 / right 420 / top 9 / bottom 947,
+  - form clientHeight / scrollHeight = 938 / 1607,
+  - document horizontal overflow = 0.
+- Page errors = 0; request failures = 0; HTTP errors = 0; Firestore write attempts observed = 0.
+- No Product/Category/Stock/Sort write operation was executed during verification.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
+- Next visual redesign route: `/pos/stock-movements`.
 - No merge to `main`.
