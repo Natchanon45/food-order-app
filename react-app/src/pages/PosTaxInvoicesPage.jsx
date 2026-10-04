@@ -100,7 +100,7 @@ export function PosTaxInvoicesPage() {
     attributes: { "data-module": "retail-pos-tax-invoices" },
     bodyClass: "tax-invoices-page",
     disabledGlobalStyles: ["app.css", "icons.css", "shared-responsive.css"],
-    styles: ["app-version-badge-runtime.css", "sweet-dialog.css", "pos-locale-switcher-placement.css", "retail-pos.css", "retail-pos-navigation.css", "pos-tax-invoices-page.css"],
+    styles: ["app-version-badge-runtime.css", "sweet-dialog.css", "pos-locale-switcher-placement.css", "retail-pos.css", "retail-pos-navigation.css", "pos-tax-invoices-page.css", "pos-tax-invoices-visual-dashboard.css"],
   });
   const lateDialogRef = useRef(null), profileDialogRef = useRef(null), voidDialogRef = useRef(null), editDialogRef = useRef(null);
   const [invoices, setInvoices] = useState([]), [sales, setSales] = useState([]), [profiles, setProfiles] = useState([]);
@@ -213,6 +213,53 @@ export function PosTaxInvoicesPage() {
     remote: invoices.filter(i => i._syncSourceRemote && !i._syncSourceLocal).length, local: invoices.filter(i => i._syncSourceLocal && !i._syncSourceRemote).length,
     both: invoices.filter(i => i._syncSourceLocal && i._syncSourceRemote).length,
   }), [invoices]);
+  const visualStats = useMemo(() => {
+    const buyerKeys = new Set();
+    let totalAmount = 0, vatAmount = 0, issued = 0, voided = 0;
+    filtered.forEach(invoice => {
+      totalAmount += Number(invoice.totalAmount || 0);
+      vatAmount += Number(invoice.vatAmount || 0);
+      if (invoice.status === "void") voided += 1; else issued += 1;
+      const buyer = invoice.buyer || {};
+      const buyerKey = normalizeTaxId(buyer.buyerTaxId) || normalizeText(buyer.buyerName);
+      if (buyerKey) buyerKeys.add(buyerKey);
+    });
+    const healthyCount = invoices.filter(invoice =>
+      !invoice?.syncError
+      && !isPendingSync(invoice)
+      && !shouldShowStaleSync(invoice)
+      && !needsQualityReview(invoice)
+      && !shouldEscalateSync(invoice)
+    ).length;
+    return {
+      totalAmount,
+      vatAmount,
+      issued,
+      voided,
+      buyers: buyerKeys.size,
+      healthyCount,
+      healthPercent: invoices.length ? Math.round((healthyCount / invoices.length) * 100) : 100,
+    };
+  }, [filtered, invoices]);
+  const taxTimeline = useMemo(() => {
+    const buckets = new Map();
+    filtered.forEach(invoice => {
+      const date = asDate(invoice.issuedAt || invoice.createdAt || invoice.updatedAt);
+      const key = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
+      const current = buckets.get(key) || { key, date, count: 0, amount: 0 };
+      current.count += 1;
+      current.amount += Number(invoice.totalAmount || 0);
+      buckets.set(key, current);
+    });
+    return [...buckets.values()]
+      .sort((a, b) => a.date - b.date)
+      .slice(-10)
+      .map(item => ({
+        ...item,
+        label: formatDate(item.date, { day: "2-digit", month: "short" }),
+      }));
+  }, [filtered, formatDate]);
+  const timelineMax = Math.max(1, ...taxTimeline.map(item => item.count));
   const syncFilterLabel = syncFilter === "error" ? tr("sync_failed") : syncFilter === "pending" ? tr("pending_sync") : syncFilter === "support" ? tr("send_support") : syncFilter === "stale" ? tr("sync_stale") : syncFilter === "review" ? tr("review_data") : tr("all");
   const sourceFilterLabel = sourceFilter === "remote" ? tr("remote_only") : sourceFilter === "local" ? tr("local_only") : sourceFilter === "both" ? tr("both") : tr("all_sources");
   const resetFilters = () => { setSearch(""); setSyncFilter("all"); setSourceFilter("all"); };
@@ -370,20 +417,72 @@ export function PosTaxInvoicesPage() {
         <button id="refreshBtn" className="btn btn-primary" type="button" disabled={refreshBusy} onClick={() => refresh({ sync: true })}><i className={"bi " + (refreshBusy ? "bi-hourglass-split" : "bi-arrow-clockwise")} aria-hidden="true"></i><span>{refreshBusy ? tr("loading") : t("pos_tax_invoices.refresh")}</span></button>
         <LocaleSwitcher style={{ marginLeft: 0, marginRight: 0 }} /><PosNavigation profile={posAccessProfile} currentKey="pos.tax_invoices" /></div></header>
     <main className="shell" data-pos-supporting="tax-invoices">
+      <section className="tax-visual-hero">
+        <div className="tax-hero-copy">
+          <span className="tax-hero-kicker"><i className="bi bi-file-earmark-bar-graph" aria-hidden="true"></i>{t("pos_tax_invoices.title")}</span>
+          <h1>{t("pos_tax_invoices.title")}</h1>
+          <p>{t("pos_tax_invoices.subtitle")}</p>
+          <div className="tax-hero-total">
+            <span>{t("pos_tax_invoices.title")}</span>
+            <strong>{money(visualStats.totalAmount)}</strong>
+          </div>
+        </div>
+        <div className="tax-hero-metrics">
+          <article><span><i className="bi bi-files" aria-hidden="true"></i>{tr("all")}</span><strong>{formatNumber(filtered.length)}</strong></article>
+          <article><span><i className="bi bi-patch-check" aria-hidden="true"></i>{tr("issued")}</span><strong>{formatNumber(visualStats.issued)}</strong></article>
+          <article><span><i className="bi bi-x-octagon" aria-hidden="true"></i>{tr("voided")}</span><strong>{formatNumber(visualStats.voided)}</strong></article>
+          <article><span><i className="bi bi-percent" aria-hidden="true"></i>VAT</span><strong>{money(visualStats.vatAmount)}</strong></article>
+        </div>
+      </section>
+
+      <section className="tax-insight-grid">
+        <article className="panel tax-trend-panel">
+          <div className="tax-insight-head">
+            <div><span className="tax-insight-icon"><i className="bi bi-bar-chart-line-fill" aria-hidden="true"></i></span><div><h2>{t("pos_tax_invoices.title")}</h2><p>{tr("summary", { total: counts.all, status: syncFilterLabel, source: sourceFilterLabel, shown: filtered.length })}</p></div></div>
+            <strong>{formatNumber(filtered.length)}</strong>
+          </div>
+          <div className="tax-timeline" aria-label={t("pos_tax_invoices.title")}>
+            {taxTimeline.length ? taxTimeline.map(item => {
+              const height = Math.max(8, Math.min(100, (item.count / timelineMax) * 100));
+              return <div className="tax-timeline-column" key={item.key}>
+                <span className="tax-timeline-tooltip" style={{ "--tax-bar-height": `${height}%` }}>{formatNumber(item.count)} • {money(item.amount)}</span>
+                <div className="tax-timeline-bar" style={{ height: `${height}%` }}></div>
+                <span className="tax-timeline-label">{item.label}</span>
+              </div>;
+            }) : <div className="tax-timeline-empty">{t("pos_tax_invoices.empty")}</div>}
+          </div>
+        </article>
+
+        <article className="panel tax-health-panel">
+          <div className="tax-health-top">
+            <span className={"tax-health-icon" + healthClass}><i className={healthHasErrors ? "bi bi-exclamation-triangle-fill" : healthHasWarnings ? "bi bi-exclamation-circle-fill" : "bi bi-shield-check"} aria-hidden="true"></i></span>
+            <div><h2>{healthTitle}</h2><p>{tr("last_checked")} {syncHealth.checkedAt ? dateText(syncHealth.checkedAt) : tr("not_checked")}</p></div>
+          </div>
+          <div className="tax-health-ring" style={{ "--tax-health": `${visualStats.healthPercent}%` }}>
+            <div><strong>{visualStats.healthPercent}%</strong><span>{tr("synced")}</span></div>
+          </div>
+          <div className="tax-health-legend">
+            <button type="button" onClick={() => setSyncFilter("error")}><i className="tax-dot error"></i>{tr("sync_failed")} <strong>{counts.error}</strong></button>
+            <button type="button" onClick={() => setSyncFilter("pending")}><i className="tax-dot pending"></i>{tr("pending_sync")} <strong>{counts.pending}</strong></button>
+            <button type="button" onClick={() => setSyncFilter("review")}><i className="tax-dot review"></i>{tr("review_data")} <strong>{counts.review}</strong></button>
+          </div>
+        </article>
+      </section>
+
       <section className="panel issue-panel"><h2><i className="bi bi-receipt pos-context-icon" data-icon-tone="green" aria-hidden="true"></i><span>{t("pos_tax_invoices.issue_title")}</span></h2><p>{t("pos_tax_invoices.issue_description")}</p>
         <div className="issue-row"><label>{t("pos_tax_invoices.source_receipt")}<input id="sourceSaleSearch" value={sourceQuery} onChange={e => setSourceQuery(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); findSourceSale(); } }} autoComplete="off" placeholder={t("pos_tax_invoices.source_placeholder")} /></label>
           <button id="findSourceSaleBtn" className="btn btn-primary" type="button" disabled={sourceBusy} onClick={findSourceSale}><i className={"bi " + (sourceBusy ? "bi-hourglass-split" : "bi-search")} aria-hidden="true"></i><span>{sourceBusy ? tr("searching") : t("pos_tax_invoices.find_receipt")}</span></button></div>
         <div id="sourceSaleResult" className={"issue-result" + (sourceResult?.error ? " is-error" : "")}>{sourceResult?.error || sourceResult?.message || null}
           {sourceResult?.sale ? <div className="issue-sale-card"><div><strong>{saleKey(sourceResult.sale)}</strong><div>{dateText(sourceResult.sale.createdAt)} • {tr("net_total", { amount: money(sourceResult.sale.totalAmount ?? sourceResult.sale.total) })}</div></div>
             {sourceResult.existing ? <button className="btn btn-secondary" type="button" onClick={() => openInvoice(sourceResult.existing)}>{tr("open_existing")}</button> : sourceResult.issued ? <a className="btn btn-primary" href={taxInvoiceUrl(sourceResult.issued)} target="_blank" rel="noopener">{tr("open_print")}</a> : <button className="btn btn-primary" type="button" onClick={() => showLateDialog(sourceResult.sale)}>{tr("issue_invoice")}</button>}</div> : null}</div></section>
-      <section className="panel"><div className="filter-row"><input id="taxInvoiceSearch" className="search" value={search} onChange={e => setSearch(e.target.value)} placeholder={t("pos_tax_invoices.search_placeholder")} />
+      <section className="panel tax-workspace-panel"><div className="filter-row"><input id="taxInvoiceSearch" className="search" value={search} onChange={e => setSearch(e.target.value)} placeholder={t("pos_tax_invoices.search_placeholder")} />
         <button id="taxProfileBtn" className="btn btn-secondary" type="button" onClick={openProfiles}><i className="bi bi-people" aria-hidden="true"></i><span>{t("pos_tax_invoices.profiles")}</span></button>
         <a className="btn btn-secondary" href="/pos/tax-invoice/" target="_blank" rel="noopener"><i className="bi bi-file-earmark-text" aria-hidden="true"></i><span>{t("pos_tax_invoices.blank_print")}</span></a></div>
         <div className="tax-sync-filters" aria-label={t("pos_tax_invoices.sync_filter_label")}>{filterButtons.map(([key,label,icon,tone]) => <button key={key} className={"tax-sync-filter" + (syncFilter === key ? " is-active" : "")} data-tax-sync-filter={key} type="button" onClick={() => setSyncFilter(key)}><i className={"bi bi-" + icon + " pos-context-icon"} data-icon-tone={tone} aria-hidden="true"></i>{key === "all" ? t("pos_tax_invoices.all") : tr(label)} <span data-tax-sync-count>{counts[key] || 0}</span></button>)}</div>
         <div className="tax-sync-filters" aria-label={t("pos_tax_invoices.source_filter_label")}>{sourceButtons.map(([key,label,icon,tone]) => <button key={key} className={"tax-sync-filter" + (sourceFilter === key ? " is-active" : "")} data-tax-source-filter={key} type="button" onClick={() => setSourceFilter(key)}><i className={"bi bi-" + icon + " pos-context-icon"} data-icon-tone={tone} aria-hidden="true"></i>{key === "all" ? t("pos_tax_invoices.all_sources") : tr(label)} <span data-tax-source-count>{counts[key] || 0}</span></button>)}<button id="copyTaxViewLinkBtn" className="btn btn-secondary" type="button" onClick={copyViewLink}><i className={"bi " + (viewCopied ? "bi-check-lg" : "bi-link-45deg")} aria-hidden="true"></i><span>{viewCopied ? tr("copied") : t("pos_tax_invoices.copy_view_link")}</span></button></div>        <div id="taxSyncHealth" className={"tax-sync-health" + healthClass} aria-live="polite"><div className="tax-sync-health-main"><p className="tax-sync-health-title">{healthTitle}</p><p className="tax-sync-health-state">{tr("last_checked")} <strong>{syncHealth.checkedAt ? dateText(syncHealth.checkedAt) : tr("not_checked")}</strong>{healthErrors.length ? " • " + healthErrors.join(" • ") : ""}</p></div>
           <div className="tax-sync-health-grid"><button className="tax-sync-health-chip" type="button" onClick={resetFilters}>{healthIcon("x-circle","rose")}{tr("all")} <strong>{counts.all}</strong></button><button className={"tax-sync-health-chip" + (counts.error ? " is-error" : "")} type="button" onClick={() => setSyncFilter("error")}>{healthIcon("cursor")}{tr("sync_failed")} <strong>{counts.error}</strong></button><button className={"tax-sync-health-chip" + (counts.pending ? " is-warning" : "")} type="button" onClick={() => setSyncFilter("pending")}>{healthIcon("cursor")}{tr("pending_sync")} <strong>{counts.pending}</strong></button><button className={"tax-sync-health-chip" + (counts.stale ? " is-warning" : "")} type="button" onClick={() => setSyncFilter("stale")}>{healthIcon("cursor")}{tr("sync_stale")} <strong>{counts.stale}</strong></button><button className={"tax-sync-health-chip" + (counts.review ? " is-warning" : "")} type="button" onClick={() => setSyncFilter("review")}>{healthIcon("cursor")}{tr("review_data")} <strong>{counts.review}</strong></button><button className="tax-sync-health-chip" type="button" onClick={() => setSourceFilter("remote")}>{healthIcon("sliders","slate")}{tr("source_remote")} <strong>{counts.remote}</strong></button><button className={"tax-sync-health-chip" + (counts.local ? " is-muted" : "")} type="button" onClick={() => setSourceFilter("local")}>{healthIcon("cursor")}{tr("source_local")} <strong>{counts.local}</strong></button><button className="tax-sync-health-chip" type="button" onClick={() => setSourceFilter("both")}>{healthIcon("cursor")}{tr("both")} <strong>{counts.both}</strong></button></div></div>
         <div id="summaryText" className="summary">{tr("summary", { total: counts.all, status: syncFilterLabel, source: sourceFilterLabel, shown: filtered.length })}</div>
-        <div id="taxInvoiceList" className="list">{filtered.map(invoice => { const buyer = invoice.buyer || {}, seller = invoice.seller || {}, id = keyOf(invoice), diag = syncDiagnosticText(invoice), receiptUrl = sourceReceiptUrl(invoice); return <article className="tax-card" key={id}><div className="tax-card-main"><div className="tax-card-badges"><div className="tax-doc-no">{invoice.invoiceNumber || id || "-"}</div>{syncBadges(invoice)}</div><h2><i className="bi bi-bookmark-star pos-context-icon" data-icon-tone="green" aria-hidden="true"></i><span>{buyer.buyerName || "-"}</span></h2><div className="tax-meta"><span>{tr("data_source")}: {invoiceSourceText(invoice)}</span><span>{tr("tax_id")}: {buyer.buyerTaxId || "-"}</span><span>{tr("receipt")}: {invoice.saleNumber || invoice.saleId || "-"}</span><span>{dateText(invoice.issuedAt || invoice.createdAt)}</span></div><p>{buyer.buyerAddress || ""}</p><small>{tr("seller")}: {seller.sellerName || "-"} • {invoice.status === "void" ? tr("voided") : tr("issued")}{invoice.voidReason ? " • " + tr("reason") + ": " + invoice.voidReason : ""}{diag ? " • " + diag : ""}</small></div><div className="tax-card-side"><strong>{money(invoice.totalAmount)}</strong><span>VAT {money(invoice.vatAmount)}</span><div className="tax-actions"><a className="btn btn-primary" href={taxInvoiceUrl(invoice)} target="_blank" rel="noopener"><i className="bi bi-printer"></i><span>{tr("open_print")}</span></a>{receiptUrl ? <a className="btn btn-secondary" href={receiptUrl} target="_blank" rel="noopener"><i className="bi bi-receipt"></i><span>{tr("view_source_receipt")}</span></a> : null}{canEditPendingBuyer(invoice) ? <button className="btn btn-secondary" type="button" onClick={() => showEdit(invoice)}><i className="bi bi-pencil-square"></i><span>{tr("edit_buyer")}</span></button> : null}{canRetrySync(invoice) ? <button className="btn btn-secondary" type="button" onClick={() => copyDiagnostics(invoice)}><i className={"bi " + (copiedId === id ? "bi-check-lg" : "bi-clipboard")}></i><span>{copiedId === id ? tr("copied") : tr("copy_diagnostics")}</span></button> : null}{canRetrySync(invoice) ? <button className="btn btn-secondary" type="button" disabled={retryingId === id} onClick={() => retrySync(invoice)}><i className={"bi " + (retryingId === id ? "bi-hourglass-split" : "bi-arrow-repeat")}></i><span>{retryingId === id ? tr("syncing") : tr("retry_sync")}</span></button> : null}{invoice.status === "void" ? null : <button className="btn btn-danger" type="button" onClick={() => showVoid(invoice)}><i className="bi bi-x-circle"></i><span>{tr("void")}</span></button>}</div></div></article>; })}</div>
+        <div id="taxInvoiceList" className="list">{filtered.map(invoice => { const buyer = invoice.buyer || {}, seller = invoice.seller || {}, id = keyOf(invoice), diag = syncDiagnosticText(invoice), receiptUrl = sourceReceiptUrl(invoice); return <article className="tax-card" data-tax-status={invoice.status === "void" ? "void" : "issued"} data-tax-sync={syncFilterForInvoice(invoice)} key={id}><div className="tax-card-main"><div className="tax-card-badges"><div className="tax-doc-no">{invoice.invoiceNumber || id || "-"}</div>{syncBadges(invoice)}</div><h2><i className="bi bi-bookmark-star pos-context-icon" data-icon-tone="green" aria-hidden="true"></i><span>{buyer.buyerName || "-"}</span></h2><div className="tax-meta"><span>{tr("data_source")}: {invoiceSourceText(invoice)}</span><span>{tr("tax_id")}: {buyer.buyerTaxId || "-"}</span><span>{tr("receipt")}: {invoice.saleNumber || invoice.saleId || "-"}</span><span>{dateText(invoice.issuedAt || invoice.createdAt)}</span></div><p>{buyer.buyerAddress || ""}</p><small>{tr("seller")}: {seller.sellerName || "-"} • {invoice.status === "void" ? tr("voided") : tr("issued")}{invoice.voidReason ? " • " + tr("reason") + ": " + invoice.voidReason : ""}{diag ? " • " + diag : ""}</small></div><div className="tax-card-side"><strong>{money(invoice.totalAmount)}</strong><span>VAT {money(invoice.vatAmount)}</span><div className="tax-actions"><a className="btn btn-primary" href={taxInvoiceUrl(invoice)} target="_blank" rel="noopener"><i className="bi bi-printer"></i><span>{tr("open_print")}</span></a>{receiptUrl ? <a className="btn btn-secondary" href={receiptUrl} target="_blank" rel="noopener"><i className="bi bi-receipt"></i><span>{tr("view_source_receipt")}</span></a> : null}{canEditPendingBuyer(invoice) ? <button className="btn btn-secondary" type="button" onClick={() => showEdit(invoice)}><i className="bi bi-pencil-square"></i><span>{tr("edit_buyer")}</span></button> : null}{canRetrySync(invoice) ? <button className="btn btn-secondary" type="button" onClick={() => copyDiagnostics(invoice)}><i className={"bi " + (copiedId === id ? "bi-check-lg" : "bi-clipboard")}></i><span>{copiedId === id ? tr("copied") : tr("copy_diagnostics")}</span></button> : null}{canRetrySync(invoice) ? <button className="btn btn-secondary" type="button" disabled={retryingId === id} onClick={() => retrySync(invoice)}><i className={"bi " + (retryingId === id ? "bi-hourglass-split" : "bi-arrow-repeat")}></i><span>{retryingId === id ? tr("syncing") : tr("retry_sync")}</span></button> : null}{invoice.status === "void" ? null : <button className="btn btn-danger" type="button" onClick={() => showVoid(invoice)}><i className="bi bi-x-circle"></i><span>{tr("void")}</span></button>}</div></div></article>; })}</div>
         <div id="emptyState" className="empty" hidden={filtered.length > 0}>{hasActiveFilters ? <>{tr("filtered_empty")} <button className="btn btn-secondary" type="button" onClick={resetFilters}>{tr("clear_filters")}</button></> : t("pos_tax_invoices.empty")}</div>
       </section></main>    <dialog id="lateTaxInvoiceDialog" ref={lateDialogRef} className="tax-dialog"><form id="lateTaxInvoiceForm" className="tax-form" method="dialog" onSubmit={submitLate}><div><h2>{t("pos_tax_invoices.buyer_dialog_title")}</h2><p id="lateTaxInvoiceSaleText">{currentSourceSale ? tr("sale_summary", { receipt: saleKey(currentSourceSale), date: dateText(currentSourceSale.createdAt), amount: money(currentSourceSale.totalAmount ?? currentSourceSale.total) }) : "-"}</p></div>
       <label>{t("pos_tax_invoices.tax_id")}<div className="tax-id-control"><input id="lateBuyerTaxIdInput" value={lateBuyer.buyerTaxId} onChange={e => setLateBuyer({ ...lateBuyer, buyerTaxId: e.target.value })} autoComplete="off" inputMode="numeric" maxLength={13}/><button id="lateDbdLookupBtn" className="dbd-btn" type="button" disabled={lateBusy || lateDbdBusy} onClick={() => lookupDbd(lateBuyer,setLateBuyer,setLateError,setLateManualUrl,setLateDbdBusy, "dbd_issue_success")}><i className={"bi " + (lateDbdBusy ? "bi-hourglass-split" : "bi-search")}></i><span>{lateDbdBusy ? tr("searching") : "DBD"}</span></button></div></label>

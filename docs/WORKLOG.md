@@ -5984,3 +5984,45 @@ Deploy state:
 - Production contract PASS: tooltip text `2,021.00 บาท` is fully visible inside the chart/viewport with no native duplicate; at 440x956 the 390px receipt row has a 388px full-width bill/date header, net-sales amount and `ดูบิล` share one line, no standalone action cell remains, View Bill still opens, and no document/page/request/HTTP errors were observed.
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions changes/deploys.
 - No merge to `main`.
+
+---
+## 2026-10-04 — Tax Invoice History Visual Control Center redesign
+
+Request / design direction:
+- Continue the new POS visual-design policy after Sales History.
+- Redesign `/pos/tax-invoices` directly in code to be more modern, colorful, graphic-rich, and easier to scan while preserving all tax-document behavior.
+
+Implementation:
+- Reworked Tax Invoice History into a Tax Document Control Center without changing tenant scope, Firestore collections, document IDs, permissions, legacy tax sync bridge, DBD lookup, buyer profiles, void, print, or recovery behavior.
+- Added a dark-green gradient Hero with filtered document amount plus four summary metrics (shown documents, issued, voided, VAT).
+- Added a filtered document activity bar chart grouped by recent issue dates.
+- Added a sync-health ring calculated from actual invoice health state plus direct visual shortcuts for sync failed / pending / review.
+- Kept the original issue-from-receipt workflow but elevated it as a distinct action panel.
+- Reworked filter chips, health status, and search controls into clearer control surfaces.
+- Reworked tax-document cards into two-column desktop cards with semantic left-edge status colors, visual metadata blocks, stronger total/VAT hierarchy, and compact action controls.
+- Mobile collapses the document grid to one column, keeps controls inside the viewport, and changes action buttons to a touch-friendly grid.
+- Added `data-tax-status` and `data-tax-sync` presentation attributes only; they do not change business state.
+- Added `pos-tax-invoices-visual-dashboard.css` as the final route stylesheet so the redesign intentionally overrides the old visual layout while preserving stable IDs/actions.
+- Updated regression contracts for the new Hero, activity chart, sync-health ring, card status attributes, two-column desktop grid, and mobile responsive treatment.
+
+Release prepared:
+- React `0.4.280 / 2026.10.04.395`.
+- Public `0.16.32 / 2026.10.04.110`.
+- Generated bundle: `/react/assets/index-C5i_1B2D.js`.
+
+Verification before deploy:
+- Tax Invoice JSX syntax check through esbuild PASS.
+- React foundation contract PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS: migration coverage 53 routes / 21 POS, parity matrix PASS, P0 contract PASS, callable contract 54 refs / 0 missing, tenant-access PASS, UI-layer PASS.
+- `npm run build:react` PASS; generated build contract PASS for Build `.395`.
+- `git diff --check` PASS.
+- Authenticated local-build browser contract against Production data/session PASS at 1440x900 and 440x956.
+- During the browser test, the legacy tax sync module was intercepted with a read-only no-op stub so no pending invoice/profile sync, issue, void, retry, buyer update, or profile write could execute.
+- Visual dashboard stylesheet loaded, Hero gradient and four metrics rendered, sync-health conic ring rendered, current menu remained `/pos/tax-invoices`, filter/search behavior passed, and no document horizontal overflow / raw translation / page / request / HTTP errors occurred.
+- Current test tenant has zero tax-invoice rows, so timeline bars and real document cards remain in their empty state; their structure/responsive behavior is guarded by source contracts.
+
+Deploy state:
+- Commit/push and Hosting-only deploy pending.
+- No Firestore Rules, Storage Rules, or Functions changes.
+- No merge to `main`.

@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.04.109',
+  build: '2026.10.04.110',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-SALES-MOBILE-POLISH',
+  commit: 'POS-TAX-DOCUMENT-CONTROL-CENTER',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS Sales mobile polish',
-  updatedAt: '2026-10-04T21:18:00+0700',
+  milestone: 'Retail POS Tax Document Control Center',
+  updatedAt: '2026-10-04T21:32:00+0700',
   whatsNew: [
-    'Keep sales-chart tooltips fully visible and remove the duplicate native browser tooltip',
-    'Expand the mobile receipt number/date header to the full card width',
-    'Place View Bill directly beside the net-sales amount while preserving sales behavior and permissions'
+    'Redesign Tax Invoice History as a graphic-rich Tax Document Control Center',
+    'Add filtered document totals, VAT metrics, document activity bars, sync-health ring, and visual status cards',
+    'Preserve tax sync, offline recovery, DBD lookup, buyer profiles, void, print, permissions, and tenant boundaries'
   ]
 };
 
