@@ -5978,6 +5978,9 @@ Verification before deploy:
 - No Production write operation was executed.
 
 Deploy state:
-- Commit/push and Hosting-only deploy pending.
-- No Firestore Rules, Storage Rules, or Functions changes.
+- Implementation commit `efe9fe02` — `fix: polish POS sales mobile cards` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.04.394` and Public `0.16.32 / 2026.10.04.109`.
+- Production `/pos/sales` returns HTTP 200 with `Cache-Control: no-cache, no-store, must-revalidate` and serves `/react/assets/index-DRPvJgwt.js`.
+- Production contract PASS: tooltip text `2,021.00 บาท` is fully visible inside the chart/viewport with no native duplicate; at 440x956 the 390px receipt row has a 388px full-width bill/date header, net-sales amount and `ดูบิล` share one line, no standalone action cell remains, View Bill still opens, and no document/page/request/HTTP errors were observed.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions changes/deploys.
 - No merge to `main`.
