@@ -5566,8 +5566,18 @@ Verification:
 - git diff --check PASS.
 
 Release / deploy:
-- Prepared React 0.4.280 / Build 2026.10.04.387.
-- Prepared Public 0.16.32 / Build 2026.10.04.102.
-- Hosting-only deploy pending implementation commit/push.
-- No Functions, Firestore Rules, or Storage Rules changes.
+- React 0.4.280 / Build 2026.10.04.387.
+- Public 0.16.32 / Build 2026.10.04.102.
+- Implementation commit 462d8a48 (fix: enlarge and strengthen POS modern card menu) was pushed to origin/feature/react-firebase-port.
+- Firebase Hosting target foodapp deployed successfully; no Functions, Firestore Rules, or Storage Rules were deployed.
+- Production HTTP checks:
+  - /pos/stock-counts returns HTTP 200 with no-cache/no-store/must-revalidate and /react/assets/index-DwT01RT7.js.
+  - /pos/purchases returns HTTP 200 and references retail-pos-navigation.css?v=20261004-102.
+  - deployed React and legacy navigation CSS both contain the Modern Card v2.1 420px/45px rules.
+- Authenticated read-only Production verification with the copied owner profile:
+  - React /pos/stock-counts: drawer 420px, profile 74px, group 55px, active submenu 45px, two simultaneous open groups, 15 chevrons, nav overflow auto, footer bottom 884px, no HTTP/page errors.
+  - Legacy /pos/purchases: same 420/74/55/45 geometry, same stronger active green treatment, two simultaneous open groups, 15 chevrons, no HTTP/page errors.
+  - Mobile 390x844 on React /pos/stock-counts: drawer 390px, group 50px, submenu 42px, document width 390px, no horizontal overflow, no HTTP/page errors.
+- No Production data-changing POS action was executed.
+- Modern Card v2.1 is complete on Production Build 2026.10.04.387.
 - No merge to main.
