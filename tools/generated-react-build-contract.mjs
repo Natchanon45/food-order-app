@@ -40,6 +40,7 @@ const posTaxInvoicesHistory = bundleFromEntry("public/pos/tax-invoices/index.htm
 const posReturns = bundleFromEntry("public/pos/returns/index.html");
 const posShifts = bundleFromEntry("public/pos/shifts/index.html");
 const posProducts = bundleFromEntry("public/pos/products/index.html");
+const posStockMovements = bundleFromEntry("public/pos/stock-movements/index.html");
 
 assert(
   receipt.source.includes(build),
@@ -52,12 +53,14 @@ assert.equal(posTaxInvoicesHistory.ref, receipt.ref, "Canonical /pos/tax-invoice
 assert.equal(posReturns.ref, receipt.ref, "Canonical /pos/returns must use the current React bundle");
 assert.equal(posShifts.ref, receipt.ref, "Canonical /pos/shifts must use the current React bundle");
 assert.equal(posProducts.ref, receipt.ref, "Canonical /pos/products must use the current React bundle");
+assert.equal(posStockMovements.ref, receipt.ref, "Canonical /pos/stock-movements must use the current React bundle");
 assert(posSale.source.includes("pos.sale"), "Canonical /pos generated bundle is missing the Retail POS sale route");
 assert(posSalesHistory.source.includes("pos.sales"), "Canonical /pos/sales generated bundle is missing the Retail POS sales-history route");
 assert(posTaxInvoicesHistory.source.includes("pos.tax_invoices"), "Canonical /pos/tax-invoices generated bundle is missing the Retail POS tax-invoice-history route");
 assert(posReturns.source.includes("pos.returns"), "Canonical /pos/returns generated bundle is missing the Retail POS returns route");
 assert(posShifts.source.includes("pos.shifts"), "Canonical /pos/shifts generated bundle is missing the Retail POS shifts route");
 assert(posProducts.source.includes("pos.products"), "Canonical /pos/products generated bundle is missing the Retail POS products route");
+assert(posStockMovements.source.includes("pos.stock_movements"), "Canonical /pos/stock-movements generated bundle is missing the Retail POS stock-movements route");
 
 const backIndex = receipt.source.indexOf("cashier_documents.receipt.back");
 assert(backIndex >= 0, "Cashier Receipt back label missing from generated bundle");

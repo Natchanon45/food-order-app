@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.04.382",
+  build: "2026.10.04.383",
   branch: "feature/react-firebase-port",
-  commit: "POS-PRODUCTS-READINESS",
+  commit: "POS-STOCK-MOVEMENTS-REACT-CUTOVER",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Retail POS products readiness resilience",
+  milestone: "Retail POS stock movements React cutover",
   whatsNew: [
-    "Use cached or built-in POS roles immediately so Products cannot hang behind a slow role-settings read",
-    "Timeout initial Products data loading safely and let realtime Firestore watchers continue recovery",
-    "Retain the Build .381 Products cutover, 60-ID parity, permissions, barcode scanning, sorting, and legacy document-ID safeguards",
+    "Serve canonical /pos/stock-movements from React while preserving the 17-ID legacy report/filter surface",
+    "Keep exact legacy note-based movement classification, quantity/export permissions, realtime data, CSV export, and barcode product filtering",
+    "Preserve task2 semantic icons, scanner/clear controls, mobile card behavior, global Toast/dialog rules, and bounded readiness",
   ],
 });

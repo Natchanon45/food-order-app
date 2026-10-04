@@ -5190,3 +5190,93 @@ Release / deploy / readiness correction:
 - Canonical Products phase is complete on Production Build .382.
 - Next POS migration target in actual menu order: /pos/stock-movements.
 - No merge to main.
+
+
+---
+
+## 2026-10-04 — Retail POS React migration phase 8: canonical Stock Movements /pos/stock-movements
+
+Direction / continuation:
+- Continued from the completed canonical Products release. Products is already Production Build 2026.10.04.382; no Products work was reset or recommitted.
+- Preserved the uncommitted Stock Movements migration work already present in the working tree.
+- Current PENGUIN legacy /pos/stock-movements and task2 /pos/stock-movements were opened read-only and captured before cutover.
+- Their visible desktop structure is aligned; row/count differences are environment data differences, not a visual-parity defect.
+- Archived pre-cutover public/pos/stock-movements/index.html as tests/fixtures/retail-pos-legacy/pos-stock-movements-index.html.
+
+Legacy surface / behavior parity:
+- Legacy fixture contains 17 stable IDs across search/date/type filters, range buttons, four summary values, period text, product filter/datalist, CSV export, table body, and empty state.
+- React preserves all 17/17 legacy IDs.
+- Retail POS session-first auth, /pos/login next routing, first-allowed full-page redirect, LocaleSwitcher, PosNavigation, PageReadyOverlay, and AppDeveloperPanel are preserved.
+- Granular permissions preserved:
+  - pos.stock_movements.view_quantity
+  - pos.stock_movements.export
+- Amount/quantity columns and summary values are hidden without view_quantity.
+- CSV action is hidden without export permission.
+
+Data/readiness:
+- Stock movement and product data use realtime Firestore watchers.
+- Initial movement/product loading is bounded by a 10-second timeout so the page cannot remain indefinitely behind a slow initial read; realtime watchers continue recovery afterward.
+- POS role settings use cached/built-in roles immediately and a bounded 6-second remote role-settings wait, matching the Products readiness correction.
+- Product filter options merge products from the catalog and product IDs/names/barcodes seen in movement rows.
+- Movement search/filtering preserves the current legacy semantics for name/product ID/note, date range, type, and product query.
+- Exact movement classification now matches the legacy script:
+  - note contains return marker -> return
+  - purchase/PO marker -> purchase
+  - sale marker -> sale
+  - stock-count marker -> count
+  - otherwise adjustment
+  - explicit item.type is intentionally not used as a fallback because the current legacy MASTER does not use it.
+- createdAt is preferred before createdAtServer/updatedAt so displayed/filter dates follow the current legacy page.
+- before/after delta remains after - before.
+- CSV export retains UTF-8 BOM, legacy column order, period-based filename, and centered app warning dialog when there is no export data.
+
+Visual parity / legacy JS enhancement parity:
+- Authored the icons that legacy retail-pos-icons.js injects dynamically:
+  - Today / This Month: calendar3 blue
+  - All: x-circle rose
+  - report heading: arrow-left-right sky
+  - Export CSV: download blue
+- Restored the barcode scanner button dynamically added by legacy retail-barcode-scan-tools.js to movementProductFilter.
+- Restored the search-clear button beside the scanner.
+- React scanner supports BarcodeDetector first and ZXing fallback, camera cleanup, vibrate/beep feedback, and typed global success/error Toasts.
+- Scanner UI reuses the five-language pos_products.scanner catalog.
+- Added the movement-product-input / movement-filter-clear styling to React-owned retail-barcode-scan-tools.css.
+- Removed retail-stock-movements-scroll.css from the page. That stale React-only override forced horizontal table scrolling and is not loaded by the current legacy MASTER; the canonical React page therefore retains the legacy mobile card layout instead.
+
+Canonical cutover:
+- tools/sync-react-legacy-entrypoints.py now syncs public/pos/stock-movements/index.html from the React shell.
+- firebase.json adds no-cache/no-store/must-revalidate headers for /pos/stock-movements and /pos/stock-movements/**.
+- Generated build contract requires canonical /pos/stock-movements to use the current React bundle and contain pos.stock_movements.
+- React foundation contract locks:
+  - 17-ID fixture inventory,
+  - session/page access and granular permissions,
+  - bounded role/data readiness,
+  - realtime watchers,
+  - exact legacy note classification and createdAt precedence,
+  - CSV behavior,
+  - scanner + typed Toast behavior,
+  - semantic icons,
+  - legacy mobile card layout / no stale scroll CSS,
+  - canonical sync/no-cache configuration.
+
+Verification before commit/deploy:
+- PENGUIN legacy and task2 pre-cutover desktop screenshots were captured read-only; both use the same filter/stats/report/scanner layout.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS, including foundation, migration, parity matrix, P0 actions, callables, tenant access, and UI-layer contracts.
+- npm run build:react PASS.
+- Generated React build contract PASS for React 0.4.280 / Build 2026.10.04.383 using /react/assets/index-n_l_BCmi.js.
+- git diff --check PASS.
+- Canonical public/pos/stock-movements/index.html matches public/react/index.html.
+- Legacy Stock Movements inventory: 17/17 IDs present in React.
+- Scanner DOM/actions present: scanMovementProductBtn, posScanDialog, posScanVideo, posScanStatus.
+- Local headless Chrome smoke: /pos/stock-movements/ HTTP 200, no pageerror, then expected unauthenticated POS-login/central-login routing.
+- Existing local system-controls.css 404 remains the known local-only issue outside this phase.
+- Intermediate unreferenced bundle index-CdyIPQMI.js was removed; it was never deployed.
+
+Release / deploy:
+- React 0.4.280 / Build 2026.10.04.383.
+- Public 0.16.32 / Build 2026.10.04.098.
+- Hosting deployment pending implementation commit/push checkpoint.
+- Production verification after deploy must remain read-only.
+- No Functions, Firestore Rules, or Storage Rules changes are required.
+- No merge to main.
