@@ -6791,6 +6791,33 @@ Verification before deploy:
 - Firestore write attempts observed = 0.
 
 Deploy state:
-- Commit/push and Hosting-only deployment pending.
-- No Firestore Rules, Storage Rules, Functions, or Firestore data changes required.
+- Implementation commit `4cc34ec6` — `fix: refine product modal footer and sorting` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.05.407` and Public `0.16.32 / 2026.10.05.122`.
+- Production `/pos/products` returns HTTP 200 with `Cache-Control: no-cache, no-store, must-revalidate` and serves `/react/assets/index-DPpXgGYq.js`.
+- Authenticated Production real-drag contract PASS with Firestore Write-channel / commit / batchWrite blocked.
+- Production Product editor footer:
+  - dialog bottom = 886,
+  - form bottom = 885,
+  - footer bottom = 885,
+  - gap = 1px dialog border only,
+  - form bottom padding = 0,
+  - footer bottom margin = 0.
+- Production category drag:
+  - 50 rows,
+  - first two category IDs swapped after actual mouse drag/drop,
+  - drag transform matrix rotation components = 0,
+  - opacity = 1,
+  - transition = none,
+  - border radius = 12px.
+- Production product drag:
+  - 26 rows in the selected real category,
+  - first two product IDs swapped after actual mouse drag/drop,
+  - drag transform matrix rotation components = 0,
+  - opacity = 1,
+  - transition = none,
+  - border radius = 12px.
+- Save Order was NOT clicked; no catalog order was persisted.
+- Document horizontal overflow = 0; raw translations = 0; page/request/HTTP errors = 0; Firestore write attempts = 0.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
+- Next visual redesign route: `/pos/stock-movements`.
 - No merge to `main`.
