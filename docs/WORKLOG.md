@@ -6402,6 +6402,11 @@ Verification before deploy:
 - Document horizontal overflow = 0; Firestore write attempts = 0; no page/request/HTTP errors.
 
 Deploy state:
-- Commit/push and Hosting-only deploy pending.
-- No Firestore Rules, Storage Rules, Functions, or Firestore data changes.
+- Implementation commit `e11ec9db` — `fix: keep shift heading icons square` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.05.403` and Public `0.16.32 / 2026.10.05.118`.
+- Production `/pos/shifts` serves `/react/assets/index-f4F8tfYx.js`.
+- Production geometry contract PASS at 1440x900 and 440x956: both the closed-shift heading badge and history heading badge measure exactly 42x42 with computed flex `0 0 42px`, min-width/min-height 42px, and aspect ratio 1/1.
+- Document horizontal overflow = 0; raw translations = 0; page/request/HTTP errors = 0; Firestore write attempts = 0.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
+- Next visual redesign route: `/pos/products`.
 - No merge to `main`.
