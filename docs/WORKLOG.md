@@ -6360,3 +6360,48 @@ Deploy state:
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data deletion.
 - Next visual redesign route: `/pos/products`.
 - No merge to `main`.
+
+---
+## 2026-10-05 — Shift heading icon badge geometry fix
+
+Reported:
+- The background badges behind the Shift section heading icons looked squeezed/thin instead of square.
+
+Root cause:
+- The route stylesheet declared 42x42 visual badges, but computed layout on Production was 28x42 because the flex item basis was still derived from the icon's intrinsic width.
+- Production geometry before the fix:
+  - "ยังไม่ได้เปิดกะ" icon badge: 28x42.
+  - "ประวัติกะ" icon badge: 28x42.
+
+Implementation:
+- Locked both heading icon badges to true square geometry with:
+  - `width/height:42px!important`
+  - `min-width/min-height:42px!important`
+  - `flex:0 0 42px!important`
+  - `aspect-ratio:1/1`
+- Applied the fix to both `.shift-heading h1 .pos-context-icon` and `.history-head h2 .pos-context-icon`.
+- Added a regression contract so future shared `.pos-context-icon` or flex changes cannot compress these badges again.
+
+Release prepared:
+- React `0.4.280 / 2026.10.05.403`.
+- Public `0.16.32 / 2026.10.05.118`.
+- Generated bundle: `/react/assets/index-f4F8tfYx.js`.
+
+Verification before deploy:
+- React foundation contract PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS; generated build contract PASS for Build `.403`.
+- `git diff --check` PASS.
+- Authenticated local-build browser geometry contract PASS using a copied profile with Firestore writes blocked.
+- Desktop:
+  - closed-shift heading badge = 42x42, flex `0 0 42px`.
+  - history heading badge = 42x42, flex `0 0 42px`.
+- Mobile 440x956:
+  - both badges remain 42x42 with min-width/min-height 42px and aspect ratio 1/1.
+- Document horizontal overflow = 0; Firestore write attempts = 0; no page/request/HTTP errors.
+
+Deploy state:
+- Commit/push and Hosting-only deploy pending.
+- No Firestore Rules, Storage Rules, Functions, or Firestore data changes.
+- No merge to `main`.

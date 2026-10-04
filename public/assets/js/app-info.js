@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.05.117',
+  build: '2026.10.05.118',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-SHIFTS-CLEAR-HISTORY-PERSISTENCE',
+  commit: 'POS-SHIFTS-ICON-BADGE-SQUARE',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS Shifts clear-history persistence',
-  updatedAt: '2026-10-05T00:02:22+0700',
+  milestone: 'Retail POS Shifts icon badge geometry',
+  updatedAt: '2026-10-05T00:40:22+0700',
   whatsNew: [
-    'Keep cleared shift history hidden on the current device after reload without deleting Firestore records',
-    'Show the Open Shift action icon in high-contrast white on the green button',
-    'Preserve new future shift history, offline sync, permissions, cash calculations, and tenant boundaries'
+    'Keep the closed-shift and history heading icon badges square instead of flex-compressed',
+    'Lock the heading badges to true 42x42 geometry on desktop and mobile',
+    'Preserve Shift Operations Dashboard behavior, clear-history persistence, permissions, and tenant boundaries'
   ]
 };
 

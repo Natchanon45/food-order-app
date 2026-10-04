@@ -382,7 +382,10 @@
   font-size:1.22rem!important;
 }
 .shift-heading h1 .pos-context-icon{
-  width:42px;height:42px;
+  width:42px!important;height:42px!important;
+  min-width:42px!important;min-height:42px!important;
+  flex:0 0 42px!important;
+  aspect-ratio:1/1;
   display:grid!important;
   place-items:center;
   margin:0!important;
@@ -606,7 +609,10 @@
   color:#173f30;
 }
 .history-head h2 .pos-context-icon{
-  width:42px;height:42px;
+  width:42px!important;height:42px!important;
+  min-width:42px!important;min-height:42px!important;
+  flex:0 0 42px!important;
+  aspect-ratio:1/1;
   display:grid!important;
   place-items:center;
   margin:0!important;

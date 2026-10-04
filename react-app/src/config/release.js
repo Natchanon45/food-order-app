@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.05.402",
+  build: "2026.10.05.403",
   branch: "feature/react-firebase-port",
-  commit: "POS-SHIFTS-CLEAR-HISTORY-PERSISTENCE",
+  commit: "POS-SHIFTS-ICON-BADGE-SQUARE",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Retail POS Shifts clear-history persistence",
+  milestone: "Retail POS Shifts icon badge geometry",
   whatsNew: [
-    "Keep cleared shift history hidden on the current device after reload without deleting Firestore records",
-    "Show the Open Shift action icon in high-contrast white on the green button",
-    "Preserve new future shift history, offline sync, permissions, cash calculations, and tenant boundaries",
+    "Keep the closed-shift and history heading icon badges square instead of flex-compressed",
+    "Lock the heading badges to true 42x42 geometry on desktop and mobile",
+    "Preserve Shift Operations Dashboard behavior, clear-history persistence, permissions, and tenant boundaries",
   ],
 });
