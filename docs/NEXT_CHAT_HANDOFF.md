@@ -29,7 +29,7 @@ Do not rely on old chat memory instead of these files and current Git state.
 - Active path: `/Users/natchanonsripleng/Desktop/Sites/food-order-app`
 - Active branch: `feature/react-firebase-port`
 - Staff Shifts implementation commit `52191579 feat: migrate POS staff shifts to React`, corrective visual commit `e4d51e06 fix: finalize POS shifts visual parity`, and confirmation-dialog parity commit `f062ad45 fix: replace POS native confirms with app dialog` are pushed.
-- Canonical Products /pos/products Build 2026.10.04.381 / commit `005b7d83` is Hosting-deployed. Corrective Products readiness Build 2026.10.04.382 is the current prepared working change; preserve any remaining uncommitted/untracked work.
+- Canonical Products /pos/products is complete on Production Build 2026.10.04.382 via implementation commit `005b7d83` and readiness corrective commit `525fcec0`. Preserve any remaining uncommitted/untracked work.
 - Do not reset / clean / discard.
 - Never merge to `main` unless the user explicitly requests it.
 
@@ -45,11 +45,11 @@ Local React dev server:
 
 Complete React + Firebase parity without redesigning. Laravel MASTER remains authoritative for non-POS migration areas unless a newer user instruction overrides it.
 
-Active focus as of 2026-10-04: **Canonical Products `/pos/products` is React on Production from Build 2026.10.04.381 / commit `005b7d83`, but authenticated verification exposed a Products-only indefinite readiness risk because role settings were a hard Firestore gate. Corrective Build 2026.10.04.382 loads cached/built-in role readiness immediately, refreshes role settings with a 6s timeout, and limits initial Products data blocking to 10s before realtime watchers continue recovery. No permission bypass was added. Pre-deploy smoke with a read-only copy of the actual Chrome Default profile on production origin passed: route stayed on /pos/products, 1,997 products loaded, first 20 rows rendered, category/sort/movement/Toast roots present, no HTTP/console errors. Commit/push + Hosting-only deploy remain.**
+Active focus as of 2026-10-04: **Canonical Products `/pos/products` is complete on Production Build 2026.10.04.382. Post-deploy authenticated copied-profile verification loaded the actual deployed bundle `index-BN-Zs4j0.js`, stayed on /pos/products, cleared readiness, rendered 20 rows from 1,997 products, rendered category/sort/movement/Toast/floating control, and had no Products HTTP errors. Products retains 60/60 legacy IDs, six granular permissions, realtime data, barcode scanner, category/sort/stock behavior, global Toast/dialog rules, and legacy Firestore document-ID compatibility. Next target in actual POS menu order: `/pos/stock-movements`.**
 
 Retail POS migration rule (user-confirmed 2026-10-03): **for Retail POS, the current production HTML + CSS + JavaScript implementation under `public/pos` is the UI/behavior MASTER. Keep its current appearance and behavior 1:1 while replacing the implementation with React. Do not redesign POS or overwrite its current UX with Laravel styling. Migrate shared User Profile first, then canonical POS routes one menu at a time.**
 
-Retail POS current checkpoint: **canonical Sale `/pos`, Sales history `/pos/sales`, Tax Invoice History `/pos/tax-invoices`, Returns `/pos/returns`, Staff Shifts `/pos/shifts`, and Products `/pos/products` are React. Products Build .381 is currently Production; corrective readiness Build .382 is prepared. Products preserves 60/60 legacy IDs, six granular permissions, realtime data, barcode scanning, sort/category/stock behavior, typed Toast/floating control, and legacy Firestore document-ID compatibility. Remaining not-yet-migrated menu routes are `/pos/stock-movements`, `/pos/stock-counts`, `/pos/purchases`, `/pos/payables`, `/pos/suppliers`, `/pos/customers`, `/pos/settings`, `/pos/backup`, and `/pos/users`.**
+Retail POS current checkpoint: **canonical Sale `/pos`, Sales history `/pos/sales`, Tax Invoice History `/pos/tax-invoices`, Returns `/pos/returns`, Staff Shifts `/pos/shifts`, and Products `/pos/products` are React on Production Build 2026.10.04.382. Remaining not-yet-migrated menu routes are `/pos/stock-movements`, `/pos/stock-counts`, `/pos/purchases`, `/pos/payables`, `/pos/suppliers`, `/pos/customers`, `/pos/settings`, `/pos/backup`, and `/pos/users`.**
 
 Customer React production-test checkpoint (2026-09-30 evening):
 - Table Order React is deployed for cross-device/mobile testing on the canonical customer URL `/s/{slug}/order` without requiring `/react`.
@@ -64,7 +64,7 @@ PENGUIN branding checkpoint (2026-10-02):
 - Uploaded Platform App Icon is the first-choice header icon globally; Logo remains primary for login/large logo surfaces.
 - Header fallback order: App Icon -> Logo -> PG. Login/large-brand order: Logo -> App Icon -> PG. Favicon order: Favicon -> App Icon -> Logo.
 - Internal repo/Firebase/schema/DOM/translation identifiers are intentionally unchanged, including fod_* keys, FOD_WALLET_* error codes, Firebase project identifiers, and the existing penguin-food.web.app Hosting/auth origin.
-- Current prepared release identity: React 0.4.280 / 2026.10.04.382; public storefront 0.16.32 / 2026.10.04.097. Production currently has Products Build 2026.10.04.381; corrective readiness Build .382 is pending commit/push and Hosting deploy.
+- Current release identity: React 0.4.280 / 2026.10.04.382; public storefront 0.16.32 / 2026.10.04.097. Build 2026.10.04.382 is Hosting-deployed for canonical Products final readiness.
 - Primary production Hosting origin remains https://penguin-food.web.app. Legacy https://natchanon-food-order-delivery.web.app remains reachable during transition but is no longer in deploy target foodapp.
 - Delivery customer auth remains privilege-isolated from staff auth: Google popup runs only in broker app penguin-google-customer-broker-v1, callable createDeliveryCustomerSession exchanges it for a namespaced cust_... custom-token session in penguin-storefront-customer-v2, and Firestore/Storage rules explicitly exclude customerContext tokens from all staff-role paths. Staff/Owner/Super Admin remain on [DEFAULT]; Delivery logout affects only customer/broker apps.
 - Pull, test/build, commit generated assets, and deploy Hosting before Production visual verification.

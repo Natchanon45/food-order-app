@@ -5174,6 +5174,19 @@ Release / deploy / readiness correction:
   - categoryManagerRoot, sortManagerRoot, movementList, and Toast all rendered,
   - no HTTP errors and no console errors,
   - PASS.
-- Build .382 Hosting deploy is pending corrective commit/push checkpoint.
-- No Functions, Firestore Rules, or Storage Rules changes are required.
+- Corrective commit 525fcec0 (fix: make POS products readiness resilient) was pushed to origin/feature/react-firebase-port.
+- Firebase Hosting target foodapp deployed Build .382 successfully; no Functions, Firestore Rules, or Storage Rules were deployed.
+- Production /pos/products returns HTTP 200 with no-cache/no-store/must-revalidate and /react/assets/index-BN-Zs4j0.js.
+- Post-deploy authenticated verification used the read-only Chrome-profile copy with the real Production session and no bundle interception:
+  - route remained /pos/products,
+  - actual deployed bundle index-BN-Zs4j0.js loaded,
+  - readiness overlay cleared,
+  - productTableBody rendered 20 rows,
+  - categoryManagerRoot, sortManagerRoot, movementList, Toast, and floating developer/version control all rendered,
+  - no HTTP errors,
+  - visual screenshot confirmed the normal Products desktop workspace with 1,997 products and 23,741 aggregate stock in this tenant,
+  - PASS.
+- The copied-profile console emitted one generic 404 log that was not present in the captured HTTP response list and did not affect Products rendering/actions; no Products HTTP error was observed.
+- Canonical Products phase is complete on Production Build .382.
+- Next POS migration target in actual menu order: /pos/stock-movements.
 - No merge to main.
