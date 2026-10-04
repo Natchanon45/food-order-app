@@ -494,7 +494,11 @@ export function PosProductsPage() {
 
   useEffect(() => {
     const base = {
-      animation: 180,
+      animation: 140,
+      easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+      direction: "vertical",
+      swapThreshold: 0.62,
+      invertSwap: false,
       handle: ".sort-handle",
       ghostClass: "sort-ghost",
       chosenClass: "sort-chosen",
@@ -502,10 +506,14 @@ export function PosProductsPage() {
       fallbackClass: "sort-fallback",
       forceFallback: true,
       fallbackOnBody: true,
-      fallbackTolerance: 3,
-      delay: 120,
+      fallbackTolerance: 5,
+      scroll: true,
+      scrollSensitivity: 80,
+      scrollSpeed: 12,
+      bubbleScroll: true,
+      delay: 100,
       delayOnTouchOnly: true,
-      touchStartThreshold: 4,
+      touchStartThreshold: 5,
     };
     const categorySortable = categorySortRef.current ? new Sortable(categorySortRef.current, {
       ...base,

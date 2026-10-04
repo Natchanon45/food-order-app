@@ -6697,3 +6697,100 @@ Deploy state:
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
 - Next visual redesign route: `/pos/stock-movements`.
 - No merge to `main`.
+
+---
+## 2026-10-05 — Product modal footer flush + smooth straight drag sorting
+
+User request:
+- Make the Add/Edit Product modal footer (Cancel / Save Product) sit flush against the lower modal edge with no outer whitespace.
+- Improve category/product drag sorting because the dragged cards felt jerky and visually tilted.
+
+Root cause:
+- The Product editor form still had bottom padding after the previous scrollbar-containment fix, creating a visible gap below the sticky action footer.
+- Sortable was still using the legacy motion profile:
+  - animation 180ms,
+  - fallback tolerance 3,
+  - touch threshold 4,
+  - no explicit easing/swap profile.
+- The legacy sort stylesheet also applied `transform: rotate(1deg)` to `.sort-drag/.sort-fallback`.
+- The React visual layer added a transform transition + hover lift on every sort row, which competed with Sortable's own transforms and made reordering feel less stable.
+
+Implementation:
+- Product editor footer:
+  - changed Product form padding from `0 24px 24px` to `0 24px`,
+  - Mobile from `0 14px 14px` to `0 14px`,
+  - added a dedicated sticky `.product-editor-actions` footer:
+    - bottom 0,
+    - negative left/right margin to reach the inner modal edges,
+    - internal button padding retained,
+    - subtle top divider/shadow,
+    - no outer bottom margin.
+- Sortable motion:
+  - animation = 140ms,
+  - easing = `cubic-bezier(0.22, 1, 0.36, 1)`,
+  - explicit vertical direction,
+  - swap threshold = 0.62,
+  - fallback tolerance = 5,
+  - touch delay = 100ms,
+  - touch start threshold = 5,
+  - scroll sensitivity = 80,
+  - scroll speed = 12,
+  - bubble scrolling retained.
+- Drag visuals:
+  - removed the hover translateY lift from sort rows,
+  - removed transform from normal visual transitions so Sortable owns position transforms,
+  - straightened drag/fallback cards (no rotate),
+  - replaced the heavy duplicate-style ghost with a soft dashed amber placeholder,
+  - kept the active drag card opaque and straight with a lighter shadow,
+  - disabled visual transition on the drag/fallback clone so it follows the pointer directly.
+- Updated regression contracts from the old legacy exact Sortable profile to the newly user-approved smooth-motion profile while retaining handle/fallback/order semantics.
+
+Release prepared:
+- React `0.4.280 / 2026.10.05.407`.
+- Public `0.16.32 / 2026.10.05.122`.
+- Generated bundle: `/react/assets/index-DPpXgGYq.js`.
+
+Verification before deploy:
+- React foundation contract PASS after updating the approved Sortable profile guard.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS:
+  - migration coverage 53 routes / 21 POS,
+  - parity matrix PASS,
+  - P0 actions PASS,
+  - callables 54 refs / 0 missing,
+  - tenant-access PASS,
+  - UI-layer PASS.
+- `npm run build:react` PASS; generated build contract PASS for Build `.407`.
+- `git diff --check` PASS.
+- Authenticated local-build browser test PASS with Firestore Write/commit/batchWrite blocked.
+- Product editor footer after scrolling to the bottom:
+  - dialog bottom = 886,
+  - form bottom = 885,
+  - footer bottom = 885,
+  - visible outer gap = 1px dialog border only,
+  - form bottom padding = 0,
+  - footer bottom margin = 0.
+- Actual category drag test:
+  - list count = 50,
+  - first two DOM IDs swapped after a real mouse drag/drop,
+  - fallback transform matrix had rotation components = 0,
+  - opacity = 1,
+  - border radius = 12px,
+  - transition = none.
+- Actual product drag test:
+  - list count = 26 in selected real category,
+  - first two product IDs swapped after real mouse drag/drop,
+  - fallback transform matrix had rotation components = 0,
+  - opacity = 1,
+  - border radius = 12px,
+  - transition = none.
+- The test did NOT click Save Order; no order data was persisted.
+- Document horizontal overflow = 0.
+- Raw translation keys = 0.
+- Page errors = 0; request failures = 0; HTTP errors = 0.
+- Firestore write attempts observed = 0.
+
+Deploy state:
+- Commit/push and Hosting-only deployment pending.
+- No Firestore Rules, Storage Rules, Functions, or Firestore data changes required.
+- No merge to `main`.
