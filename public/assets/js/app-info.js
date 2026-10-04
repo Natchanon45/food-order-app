@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.04.105',
+  build: '2026.10.04.106',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-TENANT-MENU-THEMES',
+  commit: 'POS-NAV-LOGOUT-SPACING',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS tenant-selectable menu themes',
-  updatedAt: '2026-10-04T16:56:47+0700',
+  milestone: 'Retail POS navigation polish',
+  updatedAt: '2026-10-04T19:49:42+0700',
   whatsNew: [
-    'Add five tenant-selectable POS menu themes with Modern Card preserved as the default',
-    'Add Summary Dashboard and Dark Mode Hi-Tech plus Minimal Clean and Section Sidebar alternatives',
-    'Persist the theme per tenant while preserving permissions, routes, and React/legacy POS behavior'
+    'Improve spacing between the logout icon and label in the shared POS navigation drawer',
+    'Keep the logout action centered consistently across React and remaining legacy POS routes',
+    'Preserve the existing five-theme POS navigation behavior and permissions'
   ]
 };
 

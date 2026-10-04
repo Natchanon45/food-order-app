@@ -5794,3 +5794,41 @@ Release / deploy state:
 - Deployment scope was Hosting only. No Functions, Firestore Rules, or Storage Rules were deployed for this phase.
 - No merge to `main`.
 - Next POS route migration remains `/pos/purchases`.
+
+---
+
+## 2026-10-04 — POS drawer logout icon spacing
+
+Symptom / request:
+- In the shared POS navigation drawer, the logout icon sat too close to the `ออกจากระบบ` label, clearly visible on legacy `/pos/customers`.
+
+Root cause:
+- The logout rule declared `gap`, but the button itself was not explicitly forced to a flex layout in the shared navigation CSS. Depending on the page-level button styles, the gap therefore did not reliably create space between the Bootstrap icon and label.
+
+Change:
+- Made `#posLogoutBtn` an explicit centered flex row in the shared POS navigation CSS.
+- Increased the icon/label spacing to a consistent 12px.
+- Applied the same source change to legacy and React parity CSS so migrated and not-yet-migrated POS routes remain visually aligned.
+- Bumped the legacy navigation stylesheet cache key on all remaining legacy POS routes so the fix is not hidden behind the previous cached CSS.
+- Added a React foundation regression assertion for the logout icon/label spacing.
+- Prepared release identity React `0.4.280 / 2026.10.04.391` and Public `0.16.32 / 2026.10.04.106`.
+
+Important files:
+- `public/assets/css/retail-pos-navigation.css`
+- `react-app/public/parity/css/retail-pos-navigation.css`
+- `tools/react-foundation-contract.mjs`
+- remaining legacy `public/pos/*/index.html` navigation cache references
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for `2026.10.04.391` using `/react/assets/index-Cu6KBM8B.js`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Implementation is ready for commit/push to `feature/react-firebase-port`.
+- Firebase Hosting-only deployment is next; no Functions, Firestore Rules, or Storage Rules changes are required.
+- No merge to `main`.

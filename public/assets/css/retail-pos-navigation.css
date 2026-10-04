@@ -486,8 +486,11 @@
   border-top-color:#dce8e0!important;
 }
 .pos-menu-footer #posLogoutBtn{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
   min-height:48px!important;
-  gap:10px!important;
+  column-gap:12px!important;
   border-radius:12px!important;
   background:#d92f2f!important;
   border-color:#d92f2f!important;
