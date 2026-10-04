@@ -5365,8 +5365,20 @@ Verification before commit/deploy:
 - Intermediate unreferenced bundle index-aH_Z77cA.js was removed; it was never deployed.
 
 Release / deploy:
-- Prepared React 0.4.280 / Build 2026.10.04.385.
-- Prepared Public 0.16.32 / Build 2026.10.04.100.
-- Implementation commit/push and Hosting-only deploy are pending.
-- Production verification must remain read-only; do not confirm a stock count because that changes live stock.
+- React 0.4.280 / Build 2026.10.04.385.
+- Public 0.16.32 / Build 2026.10.04.100.
+- Implementation commit 4aa5227a (feat: migrate POS stock counts to React) was pushed to origin/feature/react-firebase-port.
+- Firebase Hosting target foodapp deployed successfully; no Functions, Firestore Rules, or Storage Rules were deployed.
+- Production /pos/stock-counts returns HTTP 200 with Cache-Control: no-cache, no-store, must-revalidate and /react/assets/index-CSEK50NQ.js.
+- Authenticated read-only verification used the existing copied Chrome Default profile with the real Production owner POS session:
+  - stayed on /pos/stock-counts and loaded the deployed index-CSEK50NQ.js bundle,
+  - readiness overlay cleared,
+  - all 21/21 legacy IDs rendered,
+  - countTableBody rendered 1,997 product rows,
+  - heading/fill/clear/reset/confirm icons, barcode scanner, history panel, Toast target, and floating developer/version control rendered,
+  - no HTTP errors and no page errors,
+  - no count action was clicked and no Production stock/count data was modified.
+- Production mobile smoke at 390px: document/body scrollWidth exactly 390px, no horizontal overflow, count table switched to block/card mode, thead was hidden, rows/actions used grid layout, readiness cleared, and no HTTP/page errors occurred.
+- Canonical Stock Counts phase is complete on Production Build 2026.10.04.385.
+- Next POS migration target in actual menu order: /pos/purchases.
 - No merge to main.
