@@ -14,6 +14,6 @@
 .pos-scan-view{position:relative;display:grid;place-items:center;min-height:360px;border-radius:16px;overflow:hidden;background:#020617}
 .pos-scan-view video{width:100%;height:100%;min-height:360px;object-fit:cover}
 .pos-scan-guide{position:absolute;left:50%;top:50%;width:min(76%,360px);height:128px;transform:translate(-50%,-50%);border:2px solid #22c55e;border-radius:14px;box-shadow:0 0 0 999px rgba(2,6,23,.38)}
-.pos-scan-line{position:absolute;left:12%;right:12%;top:50%;height:2px;background:#ef4444;box-shadow:0 0 12px #ef4444}
+.pos-scan-line{position:absolute;left:50%;right:auto;top:50%;width:min(calc(76% - 12px),348px);height:2px;transform:translate(-50%,-50%);border-radius:999px;background:#ef4444;box-shadow:0 0 12px #ef4444}
 .pos-scan-status{margin:0;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.1);color:#e2e8f0;font-size:.86rem}
 @media(max-width:600px){.search-row{grid-template-columns:1fr!important}.pos-scan-view,.pos-scan-view video{min-height:55vh}.scan-barcode-btn{width:100%}}

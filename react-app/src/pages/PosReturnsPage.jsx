@@ -86,6 +86,7 @@ export function PosReturnsPage() {
   const { tenant } = tenantState;
   const { t, formatNumber, formatDate } = useI18n();
   const tr = useCallback((key, replacements = {}) => t(`pos_returns.runtime.${key}`, replacements), [t]);
+  const scannerText = useCallback((key, replacements = {}) => t(`pos_products.scanner.${key}`, replacements), [t]);
   const stylesReady = useParityPage({
     title: t("pos_returns.meta.title"),
     bodyClass: "pos-returns-page",
@@ -480,17 +481,17 @@ export function PosReturnsPage() {
     setAppliedSearch(value);
     setSearchPerformed(true);
     signalScan();
-    showToast("สแกนบาร์โค้ดสำเร็จ");
+    showToast(scannerText("success"));
     stopScanner();
     return true;
-  }, [showToast, stopScanner]);
+  }, [scannerText, showToast, stopScanner]);
 
   const startScanner = async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
-      showToast("อุปกรณ์นี้ไม่สามารถเปิดกล้องได้", "error");
+      showToast(scannerText("unsupported"), "error");
       return;
     }
-    setScanStatus("กำลังเตรียมกล้อง...");
+    setScanStatus(scannerText("preparing"));
     if (!scanDialogRef.current?.open) scanDialogRef.current?.showModal?.();
     const video = scanVideoRef.current;
     try {
@@ -498,7 +499,7 @@ export function PosReturnsPage() {
         const detector = new BarcodeDetector({ formats: ["ean_13", "ean_8", "code_128", "code_39", "upc_a", "upc_e", "qr_code"] });
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
         scanStreamRef.current = stream; video.srcObject = stream; await video.play();
-        setScanStatus("กำลังสแกน...");
+        setScanStatus(scannerText("scanning"));
         const loop = async () => {
           if (!scanStreamRef.current) return;
           try {
@@ -510,18 +511,18 @@ export function PosReturnsPage() {
         loop();
         return;
       }
-      setScanStatus("กำลังโหลดตัวอ่านบาร์โค้ด...");
+      setScanStatus(scannerText("loading"));
       const ZXing = await loadZxing();
       const reader = new ZXing.BrowserMultiFormatReader();
       zxingReaderRef.current = reader;
-      setScanStatus("กำลังสแกน...");
+      setScanStatus(scannerText("scanning"));
       zxingControlsRef.current = await reader.decodeFromVideoDevice(null, video, result => {
         if (result) acceptScan(String(result.getText?.() || result.text || ""));
       });
     } catch (scanError) {
       console.warn("POS_RETURN_SCAN_FAILED", scanError);
       stopScanner();
-      showToast("เปิดกล้องไม่สำเร็จ กรุณาอนุญาตการใช้งานกล้อง", "error");
+      showToast(scannerText("failed"), "error");
     }
   };
   useEffect(() => () => stopScanner(), [stopScanner]);
@@ -668,23 +669,21 @@ export function PosReturnsPage() {
           <h2><i className="bi bi-receipt pos-context-icon" data-icon-tone="green" aria-hidden="true"></i><span>{t("pos_returns.search.title")}</span></h2>
           <p>{searchDescription}</p>
         </div></div>
-        <div className="return-search-mode-row">
+        <div className="return-search-row">
           <select id="returnSearchMode" aria-label={t("pos_returns.search.mode_label")} value={searchMode}
             onChange={event => changeSearchMode(event.target.value)}>
             <option value="receipt">{t("pos_returns.search.mode_receipt")}</option>
             <option value="product">{t("pos_returns.search.mode_product")}</option>
             <option value="barcode">{t("pos_returns.search.mode_barcode")}</option>
           </select>
-        </div>
-        <div className="return-search-row">
           <div className="barcode-input-group">
             <input id="returnSaleSearch" autoComplete="off" value={searchQuery}
               onChange={event => setSearchQuery(event.target.value)}
               onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); runSearch(); } }}
               placeholder={searchPlaceholder} />
             <button id="scanReturnSearchBtn" className="scan-barcode-btn" type="button"
-              aria-label="สแกนบาร์โค้ด" title="สแกนบาร์โค้ด" onClick={startScanner}>
-              <i className="bi bi-upc-scan scan-barcode-icon" aria-hidden="true"></i><span>สแกนบาร์โค้ด</span>
+              aria-label={scannerText("button")} title={scannerText("button")} onClick={startScanner}>
+              <i className="bi bi-upc-scan scan-barcode-icon" aria-hidden="true"></i><span>{scannerText("button")}</span>
             </button>
           </div>
           <button id="returnSearchBtn" className="btn btn-pay" type="button" data-pos-icon="search" onClick={() => runSearch()}>
@@ -835,8 +834,8 @@ export function PosReturnsPage() {
     </dialog>
     <dialog id="posScanDialog" ref={scanDialogRef} className="pos-scan-dialog">
       <div className="pos-scan-sheet">
-        <div className="pos-scan-head"><div><h2>สแกนบาร์โค้ด</h2><p>วางบาร์โค้ดให้อยู่ในกรอบสีเขียว</p></div>
-          <button className="pos-scan-close" type="button" aria-label="ปิดกล้อง" onClick={stopScanner}><i className="bi bi-x-lg" aria-hidden="true"></i></button></div>
+        <div className="pos-scan-head"><div><h2>{scannerText("title")}</h2><p>{scannerText("help")}</p></div>
+          <button className="pos-scan-close" type="button" aria-label={scannerText("close")} onClick={stopScanner}><i className="bi bi-x-lg" aria-hidden="true"></i></button></div>
         <div className="pos-scan-view"><video ref={scanVideoRef} id="posScanVideo" playsInline muted></video><div className="pos-scan-guide"></div><div className="pos-scan-line"></div></div>
         <p id="posScanStatus" className="pos-scan-status">{scanStatus}</p>
       </div>

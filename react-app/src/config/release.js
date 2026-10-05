@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.05.422",
+  build: "2026.10.05.423",
   branch: "feature/react-firebase-port",
-  commit: "POS-SETTINGS-REACT-CUTOVER",
+  commit: "POS-SCANNER-I18N-RETURNS-SEARCH",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "React POS Settings control center",
+  milestone: "POS scanner localization and Returns search layout",
   whatsNew: [
-    "Migrate canonical /pos/settings to the React POS Settings Control Center",
-    "Preserve store, VAT, PromptPay, receipt, loyalty, map, and five-theme settings behavior",
-    "Keep store and loyalty writes permission-scoped while retaining tenant-safe Firestore paths",
+    "Localize POS barcode scanner buttons, dialogs, statuses, and error Toasts in all five languages",
+    "Keep the red scanner guide line inside the green scan frame",
+    "Place Returns search mode, search field, and Search button in one desktop row with responsive mobile stacking",
   ],
 });

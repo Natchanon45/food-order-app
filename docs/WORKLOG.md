@@ -8520,3 +8520,64 @@ Remaining POS migration:
 - `/pos/users`
 - Next route: `/pos/backup`.
 - No merge to `main`.
+---
+## 2026-10-05 — POS scanner raw-key cleanup, scan-frame fix, and Returns search row
+
+User request:
+- Products, Stock Movements, and Stock Counts showed raw scanner translation keys in the camera button/Toast/dialog.
+- The red scanner line extended to or beyond the green scan frame.
+- Returns "ค้นหาบิลขาย" controls should use one desktop row with three columns instead of placing the search-mode select on its own row.
+
+Root cause:
+- React scanner flows in Products, Stock Movements, Stock Counts, and Purchases referenced pos_products.scanner.* but that scanner dictionary did not exist in parity-translations.json, so i18n correctly fell back to the raw key.
+- The red line used left:12% / right:12% against the entire video viewport while the green guide used an independent min(76%, 360px) width, so their edges could visually collide/spill.
+- Returns rendered search mode in a separate wrapper before the input/button row.
+- Returns scanner still had Thai-only hard-coded camera labels/statuses instead of the shared scanner translation contract.
+
+Implementation:
+- Added complete scanner translation keys for TH / EN / MY / LO / KM: button, title, help, close, preparing, loading, scanning, found, success, unsupported, failed, and not_found.
+- Returns now uses the same localized pos_products.scanner contract for camera button, dialog, statuses, success Toast, unsupported-device Toast, and camera-failure Toast.
+- Reworked the red scan line to be centered and 12px narrower than the green guide frame, with a maximum width of 348px, so it remains fully inside the green border.
+- Applied the scan-line fix to both React parity scanner CSS sources and the legacy runtime CSS generators that feed parity.
+- Returns search mode, barcode/search input + scanner, and Search button now occupy one desktop grid row with three visible columns; <=700px stacks them into one column.
+- No sale, stock, return, tenant, permission, scanner decode, or Firestore write behavior changed.
+
+Important files:
+- react-app/src/i18n/parity-translations.json
+- react-app/src/pages/PosReturnsPage.jsx
+- react-app/public/parity/css/retail-pos-barcode-scanner.css
+- react-app/public/parity/css/retail-barcode-scan-tools.css
+- react-app/public/parity/css/retail-returns-visual-dashboard.css
+- public/assets/js/retail-pos-barcode-scanner.js
+- public/assets/js/retail-barcode-scan-tools.js
+- tools/react-foundation-contract.mjs
+- release metadata and generated React assets/shells
+
+Release candidate:
+- React 0.4.280 / Build 2026.10.05.423.
+- Public 0.16.32 / Build 2026.10.05.138.
+- Generated bundle /react/assets/index-CFOr-I3e.js.
+
+Verification before deploy:
+- npm run test:operational PASS.
+- npm run test:react-parity PASS.
+- npm run build:react PASS.
+- Generated React build contract PASS for Build .423 / index-CFOr-I3e.js.
+- git diff --check PASS.
+- Authenticated Production-data candidate overlay using real Google Chrome with Firestore writes blocked PASS on:
+  - /pos/products
+  - /pos/stock-movements
+  - /pos/stock-counts
+  - /pos/purchases
+  - /pos/returns
+- All five routes showed localized Thai scanner button/title/help and localized unsupported-camera Toast; zero raw pos_products.scanner.* text.
+- Scanner geometry measured green frame x=540..900 and red line x=546..894, confirming the red line is fully inset.
+- Returns desktop 1440x900: three visible controls share the same Y row.
+- Returns mobile 440x956: mode, input, and Search button stack vertically.
+- Horizontal overflow = 0; page errors = 0; request failures = 0; HTTP errors = 0; Firestore write attempts = 0.
+
+Deploy state:
+- Pending commit/push and Hosting deploy at the time this entry was written.
+- Hosting-only deployment is intended; no Rules, Storage, or Functions change is required.
+- No merge to main.
+- After this UI repair, POS migration resumes at /pos/backup, then /pos/users.

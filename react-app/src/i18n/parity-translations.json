@@ -3150,6 +3150,20 @@
         "title": "จัดการสินค้าและสต็อก",
         "subtitle": "POS ร้านค้าปลีก"
       },
+      "scanner": {
+        "button": "สแกนบาร์โค้ด",
+        "title": "สแกนบาร์โค้ด",
+        "help": "วางบาร์โค้ดให้อยู่ในกรอบสีเขียว",
+        "close": "ปิดกล้อง",
+        "preparing": "กำลังเตรียมกล้อง...",
+        "loading": "กำลังโหลดตัวอ่านบาร์โค้ด...",
+        "scanning": "กำลังสแกน...",
+        "found": "พบบาร์โค้ด :code",
+        "success": "สแกนบาร์โค้ดสำเร็จ",
+        "unsupported": "อุปกรณ์นี้ไม่สามารถเปิดกล้องได้",
+        "failed": "เปิดกล้องไม่สำเร็จ กรุณาอนุญาตการใช้งานกล้อง",
+        "not_found": "ไม่พบสินค้าที่ตรงกับบาร์โค้ดนี้"
+      },
       "visual": {
         "eyebrow": "ศูนย์ควบคุมสินค้าและสต็อก",
         "hero_description": "ดูภาพรวมสินค้า สุขภาพสต็อก หมวดหมู่ และมูลค่าสินค้าจากหน้าจอเดียว",
@@ -9342,6 +9356,20 @@
         "title": "Products & Stock",
         "subtitle": "Retail POS"
       },
+      "scanner": {
+        "button": "Scan barcode",
+        "title": "Scan barcode",
+        "help": "Place the barcode inside the green frame",
+        "close": "Close camera",
+        "preparing": "Preparing camera...",
+        "loading": "Loading barcode reader...",
+        "scanning": "Scanning...",
+        "found": "Barcode found: :code",
+        "success": "Barcode scanned successfully",
+        "unsupported": "This device cannot open the camera",
+        "failed": "Unable to open the camera. Please allow camera access.",
+        "not_found": "No product matches this barcode"
+      },
       "visual": {
         "eyebrow": "Product & Stock Command Center",
         "hero_description": "See product coverage, stock health, category mix, and inventory retail value in one place.",
@@ -15258,6 +15286,20 @@
       "header": {
         "title": "ထုတ်ကုန် & စတော့ခ်",
         "subtitle": "Retail POS"
+      },
+      "scanner": {
+        "button": "ဘားကုဒ် စကင်ဖတ်မည်",
+        "title": "ဘားကုဒ် စကင်ဖတ်မည်",
+        "help": "ဘားကုဒ်ကို အစိမ်းရောင်ဘောင်အတွင်းထားပါ",
+        "close": "ကင်မရာပိတ်မည်",
+        "preparing": "ကင်မရာ ပြင်ဆင်နေသည်...",
+        "loading": "ဘားကုဒ်ဖတ်စက် ဖွင့်နေသည်...",
+        "scanning": "စကင်ဖတ်နေသည်...",
+        "found": "ဘားကုဒ်တွေ့သည်: :code",
+        "success": "ဘားကုဒ် စကင်ဖတ်ပြီးပါပြီ",
+        "unsupported": "ဤစက်တွင် ကင်မရာဖွင့်၍မရပါ",
+        "failed": "ကင်မရာဖွင့်၍မရပါ။ ကင်မရာအသုံးပြုခွင့် ပေးပါ။",
+        "not_found": "ဤဘားကုဒ်နှင့်ကိုက်ညီသော ကုန်ပစ္စည်းမတွေ့ပါ"
       },
       "visual": {
         "eyebrow": "ကုန်ပစ္စည်းနှင့် စတော့ခ် ထိန်းချုပ်မှု",
@@ -21176,6 +21218,20 @@
         "title": "ຜະລິດຕະພັນ & ຫຼັກຊັບ",
         "subtitle": "Retail POS"
       },
+      "scanner": {
+        "button": "ສະແກນບາໂຄດ",
+        "title": "ສະແກນບາໂຄດ",
+        "help": "ວາງບາໂຄດໃຫ້ຢູ່ໃນກອບສີຂຽວ",
+        "close": "ປິດກ້ອງ",
+        "preparing": "ກຳລັງກຽມກ້ອງ...",
+        "loading": "ກຳລັງໂຫຼດຕົວອ່ານບາໂຄດ...",
+        "scanning": "ກຳລັງສະແກນ...",
+        "found": "ພົບບາໂຄດ: :code",
+        "success": "ສະແກນບາໂຄດສຳເລັດ",
+        "unsupported": "ອຸປະກອນນີ້ບໍ່ສາມາດເປີດກ້ອງໄດ້",
+        "failed": "ບໍ່ສາມາດເປີດກ້ອງໄດ້ ກະລຸນາອະນຸຍາດໃຊ້ກ້ອງ",
+        "not_found": "ບໍ່ພົບສິນຄ້າທີ່ກົງກັບບາໂຄດນີ້"
+      },
       "visual": {
         "eyebrow": "ສູນຄວບຄຸມສິນຄ້າແລະສະຕັອກ",
         "hero_description": "ເບິ່ງພາບລວມສິນຄ້າ, ສຸຂະພາບສະຕັອກ, ສັດສ່ວນໝວດໝູ່ ແລະມູນຄ່າຂາຍຄົງເຫຼືອໃນໜ້າດຽວ.",
@@ -27092,6 +27148,20 @@
       "header": {
         "title": "ផលិតផល និងស្តុក",
         "subtitle": "Retail POS"
+      },
+      "scanner": {
+        "button": "ស្កេនបាកូដ",
+        "title": "ស្កេនបាកូដ",
+        "help": "ដាក់បាកូដនៅក្នុងស៊ុមពណ៌បៃតង",
+        "close": "បិទកាមេរ៉ា",
+        "preparing": "កំពុងរៀបចំកាមេរ៉ា...",
+        "loading": "កំពុងផ្ទុកកម្មវិធីអានបាកូដ...",
+        "scanning": "កំពុងស្កេន...",
+        "found": "រកឃើញបាកូដ: :code",
+        "success": "ស្កេនបាកូដបានជោគជ័យ",
+        "unsupported": "ឧបករណ៍នេះមិនអាចបើកកាមេរ៉ាបានទេ",
+        "failed": "មិនអាចបើកកាមេរ៉ាបានទេ។ សូមអនុញ្ញាតការប្រើកាមេរ៉ា។",
+        "not_found": "រកមិនឃើញផលិតផលដែលត្រូវនឹងបាកូដនេះទេ"
       },
       "visual": {
         "eyebrow": "មជ្ឈមណ្ឌលគ្រប់គ្រងផលិតផល និងស្តុក",

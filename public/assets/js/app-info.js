@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.05.137',
+  build: '2026.10.05.138',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-SETTINGS-REACT-CUTOVER',
+  commit: 'POS-SCANNER-I18N-RETURNS-SEARCH',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'React POS Settings control center',
-  updatedAt: '2026-10-05T14:55:00+0700',
+  milestone: 'POS scanner localization and Returns search layout',
+  updatedAt: '2026-10-05T15:40:00+0700',
   whatsNew: [
-    'Migrate canonical /pos/settings to the React POS Settings Control Center',
-    'Preserve store, VAT, PromptPay, receipt, loyalty, map, and five-theme settings behavior',
-    'Keep store and loyalty writes permission-scoped while retaining tenant-safe Firestore paths'
+    'Localize POS barcode scanner buttons, dialogs, statuses, and error Toasts in all five languages',
+    'Keep the red scanner guide line inside the green scan frame',
+    'Place Returns search mode, search field, and Search button in one desktop row with responsive mobile stacking'
   ]
 };
 
