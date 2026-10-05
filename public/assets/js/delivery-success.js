@@ -1,6 +1,6 @@
 import "./public-page-static-i18n.js?v=20260930-001";
 
-import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20261005-131';
+import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20261005-136';
 import { money, formatTime, toast } from "./ui.js?v=20260930-001";
 import { t } from "./i18n.js?v=20260930-001";
 import { effectiveDeliveryAmounts, enrichDeliveryGiftItems } from "./delivery-order-display.js?v=20260903-243";

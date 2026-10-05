@@ -46,13 +46,9 @@ function preparedOrderId(channel, identity = "", providedId = "") {
 export const publicStorefrontService = {
   getActiveShop() { return dataService.getActiveShop() || getStoredTenant() || { slug: slug() }; },
   getOrderDeliveryShopName(settings = {}) {
-    const tenant = this.getActiveShop();
-    return String(
-      tenant?.name
-      || settings?.orderDeliveryShopName
-      || settings?.shopName
-      || ""
-    ).trim();
+    // Customer-facing shop name comes only from tenants/{tenantId}/settings/store.shopName.
+    // tenants/{tenantId}.name is the Super Admin tenant label and must never override it.
+    return String(settings?.shopName || "").trim();
   },
   prepareOrderId(channel, identity = "", providedId = "") { return preparedOrderId(channel, identity, providedId).id; },
   async listMenus() { return dataService.listMenus(); },

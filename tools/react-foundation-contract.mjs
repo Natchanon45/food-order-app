@@ -637,20 +637,21 @@ assert(
   staticDeliveryEntry.includes('id="deliveryHeroStoreName"')
   &&!staticDeliveryEntry.includes('<span>PENGUIN</span></h1>')
   &&!staticDeliveryEntry.includes('<span>KINJAI</span></h1>')
-  &&staticDeliveryEntry.includes('/assets/js/delivery.js?v=20261005-131')
+  &&staticDeliveryEntry.includes('/assets/js/delivery.js?v=20261005-136')
   &&staticDeliveryRuntime.includes("renderDeliveryStoreHero")
   &&staticDeliveryRuntime.includes("dataService.getOrderDeliveryShopName(settings)")
   &&publicStorefrontService.includes("getOrderDeliveryShopName(settings = {})")
-  &&publicStorefrontService.includes('tenant?.name\n      || settings?.orderDeliveryShopName\n      || settings?.shopName'),
-  "Delivery customer Hero must prefer the Order/Delivery tenant name over the generic store settings name"
+  &&publicStorefrontService.includes('return String(settings?.shopName || "").trim();')
+  &&!publicStorefrontService.includes('tenant?.name\n      || settings?.orderDeliveryShopName\n      || settings?.shopName'),
+  "Delivery customer Hero must use settings/store.shopName only and must not fall back to the Super Admin tenant name"
 );
 assert(
   staticDeliverySuccessEntry.includes('/assets/js/platform-branding-runtime.js?v=20261005-131')
-  &&staticDeliverySuccessEntry.includes('/assets/js/delivery-success.js?v=20261005-131')
-  &&staticDeliverySuccessRuntime.includes("./public-storefront-service.js?v=20261005-131")
+  &&staticDeliverySuccessEntry.includes('/assets/js/delivery-success.js?v=20261005-136')
+  &&staticDeliverySuccessRuntime.includes("./public-storefront-service.js?v=20261005-136")
   &&staticDeliverySuccessRuntime.includes('dataService.getOrderDeliveryShopName(settings)')
   &&staticDeliverySuccessEntry.includes('<span class="brand-mark">PG</span>'),
-  "Delivery Success must apply shared Super Admin Branding and use the same Order/Delivery shop name as checkout"
+  "Delivery Success must apply shared Super Admin Branding and use settings/store.shopName through the same storefront resolver"
 );
 assert(
   !staticDeliveryPagination.includes("common.pagination.")

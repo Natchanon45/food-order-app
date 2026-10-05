@@ -2,7 +2,7 @@ import "./public-page-static-i18n.js?v=20261001-003";
 
 await import("./public-tenant-resolver.js?v=20261003-010");
 
-import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20261005-131';
+import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20261005-136';
 import { customerFunctions as functions } from "./public-firebase-context.js?v=20261002-001";
 import { httpsCallable } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-functions.js";
 import { money, toast } from "./ui.js?v=20260930-001";
