@@ -7707,4 +7707,26 @@ Verification before deploy:
 - Firestore write attempts observed = 0.
 
 Deploy state:
-- Commit/push and Hosting-only deployment pending.
+- Implementation commit `c2355430` — `feat: migrate POS suppliers to React` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.05.413` and Public `0.16.32 / 2026.10.05.128`.
+- Production `/pos/suppliers` returns HTTP 200 with `Cache-Control: no-cache, no-store, must-revalidate` and serves `/react/assets/index-r4kSa7KA.js`.
+- Authenticated Production visual contract PASS with Firestore Write/commit/batchWrite blocked.
+- Production Desktop 1440x900:
+  - Hero ~= 241px,
+  - 4 Hero metrics,
+  - 4 KPI cards,
+  - current supplier cards = 0,
+  - Add Supplier dialog = 760x820,
+  - raw translation keys = 0,
+  - document horizontal overflow = 0.
+- Production Mobile 390x844:
+  - Hero ~= 334px,
+  - supplier panel = 374px,
+  - supplier grid = single column,
+  - Add Supplier dialog = 374x828 and contained,
+  - document horizontal overflow = 0.
+- Add Supplier dialog was opened only for layout inspection; no supplier save/edit/delete action was submitted.
+- Page errors = 0; request failures = 0; HTTP errors = 0; Firestore write attempts observed = 0.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
+- Next Retail POS migration/redesign route: `/pos/customers`.
+- No merge to `main`.
