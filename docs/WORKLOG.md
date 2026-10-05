@@ -7975,7 +7975,15 @@ Verification before deploy:
 - Page errors 0; request failures 0; HTTP errors 0; Firestore writes observed 0.
 
 Deploy state:
-- Commit/push and Hosting-only deployment pending.
-- No Firestore Rules, Storage Rules, Functions, or Firestore data changes required.
+- Implementation commit b871c917 — fix: polish public landing and branding — pushed to origin/feature/react-firebase-port.
+- Firebase Hosting target foodapp deployed successfully to https://penguin-food.web.app on React 0.4.280 / 2026.10.05.415 and Public 0.16.32 / 2026.10.05.130.
+- Production Home uses /assets/css/public-landing-refresh.css?v=20261005-130 and React pages serve /react/assets/index-B03opJZS.js.
+- Production browser contract PASS:
+  - Home annual promo hidden, colorful Hero/feature cards active, configured 512x512 App Icon visible, desktop/mobile overflow 0.
+  - Register Brand-to-Home gap = 28px; old annual price = 7,080 with red 3px line-through.
+  - Privacy / Terms / Delivery each load configured 512x512 App Icon through shared Branding runtime, 42x42 target / 36x36 contained image.
+  - Mobile 390x844 Home Hero/card width = 370px, promo hidden, horizontal overflow 0.
+  - Page errors = 0; request failures = 0; HTTP errors = 0; Firestore writes observed = 0.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
 - After this interruption, continue the existing unfinished /pos/settings migration in the primary worktree.
 - No merge to main.
