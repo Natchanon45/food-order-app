@@ -8637,6 +8637,21 @@ Verification before deploy:
   - 2 expected customer-display Firestore write attempts occurred while products were added during candidate verification; both were intercepted/blocked, so Production data was not changed.
 
 Deploy state:
-- Pending commit/push and Hosting deploy at the time this entry was written.
-- Hosting-only deployment intended; no Rules, Storage, or Functions change.
+- Implementation/build commit: `0dbedc6c` — `fix: restore POS mobile sale cart`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions deployment.
 - No merge to `main`.
+
+Production verification:
+- Production loaded React Build `2026.10.05.424` and `/react/assets/index-BIOAaUA1.js`.
+- 440x956: desktop cart remained hidden before sale; after adding one product, the bottom bar displayed `ตะกร้าขาย`, `1 รายการ • 19.00 บาท`, and `ดูบิล`.
+- 440x956 drawer opened fully with settled transform = 0, one cart row, net total, enabled Hold Bill, Held Bills state, and enabled checkout.
+- 440x956 checkout opened the existing `รับชำระเงิน` dialog and closed the mobile drawer; no sale was confirmed.
+- 768px: mobile/tablet bar displayed as a centered 720px-wide control while the desktop cart remained hidden.
+- 1024px: mobile bar was hidden and the desktop cart panel displayed normally.
+- Horizontal overflow = 0 at all verified widths.
+- Raw `pos.mobile_cart.*` keys = 0.
+- Page errors = 0; request failures = 0; HTTP errors = 0.
+- 4 expected customer-display Firestore write attempts occurred while products were added during Production verification; all were intercepted/blocked, so Production data was not modified.
+- POS migration can resume at `/pos/backup`, then `/pos/users`.
