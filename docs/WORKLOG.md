@@ -1,6 +1,6 @@
 # Development Worklog
 
-Updated: 2026-09-30
+Updated: 2026-10-05
 
 This file is the chronological engineering worklog for the React + Firebase migration.
 
@@ -8339,3 +8339,64 @@ Deploy state:
 - Deployment scope was Hosting only.
 - Primary worktree `/pos/settings` uncommitted work remains isolated and untouched.
 - No Functions/Rules/Storage deployment and no merge to main.
+
+---
+## 2026-10-05 — Delivery shop name source isolation
+
+User request:
+- Customer-facing store name must come only from the Store Settings field shown in Admin `/admin` → “ข้อมูลร้านและการรับชำระ” → “ชื่อร้าน”.
+- The Super Admin tenant name from `/admin/tenants` must not be used as the Delivery shop name.
+
+Root cause:
+- `publicStorefrontService.getOrderDeliveryShopName()` preferred `tenants/{tenantId}.name` before `settings/store.shopName`.
+- For `saas-test-shop`, those values are different:
+  - Store Settings `shopName`: `ตั่วเฮียส้มตำอาหารอีสาน`
+  - Super Admin tenant `name`: `ตั่วเฮียอาหารอิสาน`
+- That precedence caused the Delivery Hero and Delivery Success receipt to display the tenant-management label instead of the configured store name.
+
+Implementation:
+- `getOrderDeliveryShopName(settings)` now returns only `settings.shopName`.
+- Removed the tenant-name and `orderDeliveryShopName` fallback from this customer-facing resolver.
+- Delivery Hero and Delivery Success continue using the same shared resolver.
+- Cache-busted Delivery runtime imports to `20261005-136`.
+- Added/updated regression coverage so tenant name cannot regain precedence.
+- No tenant route, permission, session, Firestore schema, order, payment, stock, delivery-fee, or Lalamove business logic changed.
+
+Important files:
+- `public/assets/js/public-storefront-service.js`
+- `public/assets/js/delivery.js`
+- `public/assets/js/delivery-success.js`
+- `public/delivery/index.html`
+- `public/delivery/success/index.html`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- generated React entry shells and `/react/assets/index-jXBq8T8o.js`
+
+Release:
+- React 0.4.280 / Build 2026.10.05.421.
+- Public 0.16.32 / Build 2026.10.05.136.
+- Generated bundle `/react/assets/index-jXBq8T8o.js`.
+
+Verification:
+- Direct read-only Firestore REST check confirmed `settings/store.shopName = ตั่วเฮียส้มตำอาหารอีสาน` and tenant `name = ตั่วเฮียอาหารอิสาน`.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS: 53 routes / 21 POS; parity matrix, P0 actions, 54 callable refs / 0 missing, tenant access, UI layers.
+- `npm run build:react` PASS; generated build contract PASS for Build .421 and `/react/assets/index-jXBq8T8o.js`.
+- `git diff --check` PASS.
+- Local Hosting emulator + real Google Chrome PASS on 1440x900 and 390x844:
+  - Hero = `ตั่วเฮียส้มตำอาหารอีสาน`.
+  - Tenant label leak = false.
+  - horizontal overflow = 0.
+  - browser errors = 0.
+- Production after deploy PASS on desktop and mobile with the same results.
+- Production loaded `/assets/js/delivery.js?v=20261005-136`.
+
+Deploy state:
+- Implementation commit `fa457409` — `fix: source delivery shop name from store settings`.
+- Generated build commit `2c510c31` — `build: finalize storefront shop name release`.
+- Both pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Deployment scope was Hosting only; no Functions, Firestore Rules, Storage Rules, or data-changing production action.
+- Primary worktree unfinished `/pos/settings` changes remain preserved and untouched.
+- No merge to `main`.
