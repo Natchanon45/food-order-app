@@ -2147,7 +2147,62 @@ export function watchWaitingQueuePublicResponses(tenantId, callback, onError = c
 }
 
 export function watchPublicQueueBoard(tenantId, callback, onError = console.error) {
-  return watchTenantPublicRows(COLLECTIONS.board, tenantId, callback, onError);
+  return watchTenantPublicRows(
+    COLLECTIONS.board,
+    tenantId,
+    rows => callback(rows.filter(row => normalizeString(row.queueDate) === toDateKey())),
+    onError,
+  );
+}
+
+export async function cleanupStaleWaitingQueueProjections(tenantId) {
+  const normalizedTenantId = normalizeString(tenantId);
+  if (!normalizedTenantId || !db || !isOnline()) {
+    return { boardUpdated: 0, publicUpdated: 0, updated: 0 };
+  }
+
+  const today = toDateKey();
+  const [boardSnapshot, publicSnapshot] = await Promise.all([
+    getDocs(query(collection(db, COLLECTIONS.board), where("tenantId", "==", normalizedTenantId))),
+    getDocs(query(collection(db, COLLECTIONS.public), where("tenantId", "==", normalizedTenantId))),
+  ]);
+
+  const staleBoard = boardSnapshot.docs.filter(item => {
+    const row = item.data() || {};
+    return row.active === true && normalizeString(row.queueDate) !== today;
+  });
+  const stalePublic = publicSnapshot.docs.filter(item => {
+    const row = item.data() || {};
+    return row.active === true && normalizeString(row.queueDate) !== today;
+  });
+  const stale = [
+    ...staleBoard.map(item => ({ item, kind: "board" })),
+    ...stalePublic.map(item => ({ item, kind: "public" })),
+  ];
+  if (!stale.length) return { boardUpdated: 0, publicUpdated: 0, updated: 0 };
+
+  let boardUpdated = 0;
+  let publicUpdated = 0;
+  for (let offset = 0; offset < stale.length; offset += 400) {
+    const timestamp = nowMs();
+    const batch = writeBatch(db);
+    stale.slice(offset, offset + 400).forEach(({ item, kind }) => {
+      batch.set(item.ref, {
+        active: false,
+        updatedAt: serverTimestamp(),
+        updatedAtMs: timestamp,
+      }, { merge: true });
+      if (kind === "board") boardUpdated += 1;
+      else publicUpdated += 1;
+    });
+    await batch.commit();
+  }
+
+  return {
+    boardUpdated,
+    publicUpdated,
+    updated: boardUpdated + publicUpdated,
+  };
 }
 
 export async function recallWaitingQueue(queueId, options = {}) {

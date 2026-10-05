@@ -31,9 +31,17 @@ export function WaitingQueueDisplayPage() {
     return () => { clearInterval(timer); window.removeEventListener("online", on); window.removeEventListener("offline", off); };
   }, []);
 
-  const called = useMemo(() => rows.filter(row => ["called","acknowledged","preparing_table"].includes(row.status)).sort((a,b) => Number(b.calledAtMs || b.updatedAtMs || 0)-Number(a.calledAtMs || a.updatedAtMs || 0)), [rows]);
+  const todayKey = useMemo(() => {
+    const date = new Date(now);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  }, [now]);
+  const todayRows = useMemo(
+    () => rows.filter(row => String(row.queueDate || "") === todayKey),
+    [rows, todayKey],
+  );
+  const called = useMemo(() => todayRows.filter(row => ["called","acknowledged","preparing_table"].includes(row.status)).sort((a,b) => Number(b.calledAtMs || b.updatedAtMs || 0)-Number(a.calledAtMs || a.updatedAtMs || 0)), [todayRows]);
   const primary = called[0] || null;
-  const upcoming = useMemo(() => rows.filter(row => ["waiting","deferred"].includes(row.status)).sort((a,b) => Number(a.effectiveQueuedAtMs || a.queuedAtMs || 0)-Number(b.effectiveQueuedAtMs || b.queuedAtMs || 0)).slice(0,3), [rows]);
+  const upcoming = useMemo(() => todayRows.filter(row => ["waiting","deferred"].includes(row.status)).sort((a,b) => Number(a.effectiveQueuedAtMs || a.queuedAtMs || 0)-Number(b.effectiveQueuedAtMs || b.queuedAtMs || 0)).slice(0,3), [todayRows]);
 
   const ensureContext = async () => {
     const Ctx = window.AudioContext || window.webkitAudioContext;

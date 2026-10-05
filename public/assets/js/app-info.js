@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.05.132',
+  build: '2026.10.05.133',
   branch: 'feature/react-firebase-port',
-  commit: 'KITCHEN-CASHIER-VOICE-ORDER-ALERTS',
+  commit: 'WAITING-QUEUE-VERIFY-REPAIR',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Kitchen/Cashier melody and spoken order alerts',
-  updatedAt: '2026-10-05T11:25:00+0700',
+  milestone: 'Waiting Queue stale-board repair and Verify visual polish',
+  updatedAt: '2026-10-05T12:00:00+0700',
   whatsNew: [
-    'Enable Kitchen and Cashier order sound alerts by default with browser-safe audio arming',
-    'Play the Waiting Queue-style melody followed by natural Thai female speech',
-    'Announce Order, Delivery, Takeaway, or Walk-in together with the new order total'
+    'Prevent old Waiting Queue board rows from leaking across calendar days and deactivate stale public projections',
+    'Refresh the public Verify page with a responsive verification-card layout and clearer order summaries',
+    'Apply shared Super Admin Branding and tenant-side store naming on Verify'
   ]
 };
 

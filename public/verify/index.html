@@ -6,14 +6,35 @@
   <meta name="theme-color" content="#159447">
   <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
   <link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240">
+  <link rel="stylesheet" href="/assets/css/verify-page.css?v=20261005-133">
   <title>ตรวจสอบยอดล่าสุด</title>
 </head>
-<body>
-  <header class="app-header"><div class="brand"><span class="brand-mark">PG</span>ตรวจสอบยอดล่าสุด</div></header>
-  <main class="container">
-    <section class="hero"><h1>ตรวจสอบข้อมูลจากระบบ</h1><p>ยอดและสถานะด้านล่างอ่านจากข้อมูลล่าสุดของร้านค้า</p></section>
-    <section class="card" id="verifyResult"><div class="empty">กำลังตรวจสอบ...</div></section>
+<body class="verify-page">
+  <header class="app-header verify-header">
+    <div class="brand verify-brand">
+      <span class="brand-mark">PG</span>
+      <span class="verify-brand-title">ตรวจสอบยอดล่าสุด</span>
+    </div>
+  </header>
+  <main class="container verify-container">
+    <section class="hero verify-hero">
+      <div class="verify-hero-copy">
+        <span class="verify-hero-icon" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
+        <div>
+          <h1>ตรวจสอบข้อมูลจากระบบ</h1>
+          <p>ยอดและสถานะด้านล่างอ่านจากข้อมูลล่าสุดของร้านค้า</p>
+        </div>
+      </div>
+      <span class="verify-trust-badge"><i class="bi bi-cloud-check"></i><span>ข้อมูลล่าสุดจากระบบ</span></span>
+    </section>
+    <section class="card verify-result-card" id="verifyResult">
+      <div class="verify-loading">
+        <span class="verify-loading-icon" aria-hidden="true"><i class="bi bi-arrow-repeat"></i></span>
+        <span>กำลังตรวจสอบ...</span>
+      </div>
+    </section>
   </main>
-  <script type="module" src="/assets/js/verify.js?v=20260903-243"></script>
+  <script type="module" src="/assets/js/platform-branding-runtime.js?v=20261005-133"></script>
+  <script type="module" src="/assets/js/verify.js?v=20261005-133"></script>
 </body>
 </html>

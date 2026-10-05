@@ -8137,3 +8137,78 @@ Deploy state:
 - No order, payment, stock, Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
 - Primary worktree `/pos/settings` uncommitted work remains isolated and untouched.
 - No merge to main.
+---
+## 2026-10-05 — Waiting Queue stale public-board repair + Verify page visual/branding polish
+
+User report:
+- Waiting Queue display still showed W005 as currently called and W004 as next even though the staff Waiting Queue manager showed 0 queues.
+- Public /verify page was visually plain and still showed the PG fallback instead of configured Super Admin Branding.
+
+Production diagnosis:
+- Staff watchWaitingQueues already filters `queueDate === today`.
+- Public watchPublicQueueBoard previously filtered only `active === true` and did not filter queueDate.
+- Read-only Production inspection for tenant `13c9bb08-927b-4f9c-a2ef-b320ef7eed99` found stale active waitingQueueBoard projections:
+  - W001 / 2026-09-03 / called
+  - W001 / 2026-09-28 / called
+  - W004 / 2026-09-29 / waiting
+  - W005 / 2026-09-29 / called.
+- That mismatch explains why staff UI showed zero current-day queues while the public display kept showing W005/W004.
+
+Controlled Production cleanup:
+- Used the existing authenticated staff session and project Firebase config.
+- Did not delete queue history or touch `waitingQueues` source documents.
+- Set `active=false` only on stale active projections whose `queueDate != 2026-10-05`:
+  - 4 documents in `waitingQueueBoard`.
+  - 4 paired documents in `waitingQueuePublic`.
+- Post-cleanup public read confirmed `active=[]`, current queue empty, upcoming queue empty.
+
+Waiting Queue code repair:
+- `watchPublicQueueBoard()` now filters rows to the current local queue date.
+- `WaitingQueueDisplayPage` defensively filters board rows against a live `todayKey`, so a display left open across midnight cannot keep yesterday's queue visible.
+- Added `cleanupStaleWaitingQueueProjections(tenantId)` to deactivate stale active board/public projections while retaining history.
+- Staff Waiting Queue manager invokes the cleanup on load; no delete path was added.
+
+Verify page repair:
+- Added `public/assets/css/verify-page.css` with a responsive green visual verification-card layout.
+- Verify header now loads shared `platform-branding-runtime.js`, so configured Super Admin App Icon/Logo replaces PG fallback.
+- Hero, shop identity, latest-data badge, summary metric cards, delivery detail panel, and item/round cards were redesigned.
+- Verify store name now prefers resolved tenant name before `settings.orderDeliveryShopName` / `settings.shopName`, keeping the customer-facing order side consistent.
+- Existing order/payment/total/delivery-fee calculations and data reads are preserved.
+- User-supplied order verification page now renders tenant name `ตั่วเฮียอาหารอิสาน` instead of the generic store-settings name.
+
+Important files:
+- react-app/src/data/waitingQueueCore.js
+- react-app/src/pages/WaitingQueueDisplayPage.jsx
+- react-app/src/pages/WaitingQueuePage.jsx
+- public/verify/index.html
+- public/assets/js/verify.js
+- public/assets/css/verify-page.css
+- tools/react-foundation-contract.mjs
+- release metadata and generated React shells.
+
+Release prepared:
+- React 0.4.280 / 2026.10.05.418.
+- Public 0.16.32 / 2026.10.05.133.
+- Generated bundle `/react/assets/index-Qj2lEdVl.js`.
+
+Verification before deploy:
+- Syntax checks PASS for WaitingQueueDisplayPage, WaitingQueuePage, waitingQueueCore, and verify.js.
+- React foundation contract PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS: 53 routes / 21 POS, parity matrix, P0 actions, 54 callable refs / 0 missing, tenant access, UI layers.
+- npm run build:react PASS; generated build contract PASS for Build .418.
+- git diff --check PASS.
+- Production-data local overlay contract PASS with Firestore writes blocked:
+  - Waiting Queue display current hidden=true, upcoming=0, bundle index-Qj2lEdVl.js, overflow=0.
+  - Verify configured Branding image natural size 512x512; object-fit contain.
+  - Verify shop = ตั่วเฮียอาหารอิสาน.
+  - Verify summary metrics=6, delivery panel visible, active item rows=4.
+  - Desktop overflow=0; mobile 440x956 result/hero width=422px and overflow=0.
+  - raw translation keys=false.
+  - page errors=0; request failures=0; HTTP errors=0; browser verification writes=0.
+
+Deploy state:
+- Commit/push and Hosting-only deployment pending.
+- No Firestore Rules, Storage Rules, Functions, or source waitingQueues documents changed.
+- Primary worktree `/pos/settings` uncommitted work remains isolated and untouched.
+- No merge to main.

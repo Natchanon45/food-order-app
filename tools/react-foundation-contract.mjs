@@ -210,6 +210,8 @@ assert(adminWorkspaceCss.includes("display: inline-flex !important;")&&adminWork
 const toastCss=read("react-app/public/parity/css/toast-system.css");
 assert(toastCss.includes(".app-toast > .app-toast-message:first-child"),"iconless toast full-width fallback missing");
 const waitingQueuePage=read("react-app/src/pages/WaitingQueuePage.jsx");
+const waitingQueueDisplayPage=read("react-app/src/pages/WaitingQueueDisplayPage.jsx");
+const waitingQueueCore=read("react-app/src/data/waitingQueueCore.js");
 const waitingQueueCss=read("react-app/public/parity/css/waiting-queue.css");
 assert(waitingQueuePage.includes("app-toast-icon")&&waitingQueuePage.includes("app-toast-message"),"Waiting Queue toast must use standard icon + message structure");
 assert(
@@ -333,6 +335,15 @@ assert(
   &&!waitingQueuePage.includes('<Link className="btn btn-dark btn-sm waiting-home-link"'),
   "Waiting Queue Back must full-navigate with a fresh cache key to canonical static Home instead of rendering the alternate React Home route"
 );
+assert(
+  waitingQueueCore.includes('rows => callback(rows.filter(row => normalizeString(row.queueDate) === toDateKey()))')
+  &&waitingQueueDisplayPage.includes('const todayRows = useMemo(')
+  &&waitingQueueDisplayPage.includes('String(row.queueDate || "") === todayKey')
+  &&waitingQueueCore.includes("export async function cleanupStaleWaitingQueueProjections")
+  &&waitingQueueCore.includes('row.active === true && normalizeString(row.queueDate) !== today')
+  &&waitingQueuePage.includes("cleanupStaleWaitingQueueProjections(tenant.id)"),
+  "Waiting Queue public board must ignore old queue dates and staff manager must deactivate stale public projections"
+);
 const posPage=read("react-app/src/pages/PosPage.jsx");
 const posNavigation=read("react-app/src/components/PosNavigation.jsx");
 const retailPosNavigation=read("public/assets/js/retail-pos-navigation.js");
@@ -373,6 +384,9 @@ const staticUi=read("public/assets/js/ui.js");
 const staticHome=read("public/index.html");
 const staticPrivacyEntry=read("public/privacy/index.html");
 const staticTermsEntry=read("public/terms/index.html");
+const staticVerifyEntry=read("public/verify/index.html");
+const staticVerifyRuntime=read("public/assets/js/verify.js");
+const staticVerifyCss=read("public/assets/css/verify-page.css");
 const staticBrandingRuntime=read("public/assets/js/platform-branding-runtime.js");
 const staticHomeDashboardCss=read("public/assets/css/home-dashboard.css");
 const staticPublicLandingRefreshCss=read("public/assets/css/public-landing-refresh.css");
@@ -416,6 +430,23 @@ const staticDeliverySuccessRuntime=read("public/assets/js/delivery-success.js");
 assert(
   [staticPrivacyEntry, staticTermsEntry, staticDeliveryEntry].every(source=>source.includes('/assets/js/platform-branding-runtime.js?v=20261005-130')),
   "Public Privacy, Terms, and Delivery headers must consume the shared Super Admin Branding runtime instead of staying PG-only"
+);
+assert(
+  staticVerifyEntry.includes('class="verify-page"')
+  &&staticVerifyEntry.includes('/assets/css/verify-page.css?v=20261005-133')
+  &&staticVerifyEntry.includes('/assets/js/platform-branding-runtime.js?v=20261005-133')
+  &&staticVerifyEntry.includes('/assets/js/verify.js?v=20261005-133')
+  &&staticVerifyEntry.includes('<span class="brand-mark">PG</span>')
+  &&staticVerifyRuntime.includes("tenantContext?.name")
+  &&staticVerifyRuntime.includes("settings?.orderDeliveryShopName")
+  &&staticVerifyRuntime.includes('class="verify-summary-grid"')
+  &&staticVerifyRuntime.includes('class="verify-detail-panel"')
+  &&staticVerifyRuntime.includes('class="verify-items-panel"')
+  &&staticVerifyCss.includes(".verify-result-card")
+  &&staticVerifyCss.includes(".verify-metric-total")
+  &&staticVerifyCss.includes("linear-gradient(120deg,#0a392c")
+  &&staticVerifyCss.includes("@media(max-width:480px)"),
+  "Public Verify must use shared Branding, tenant-side store naming, and the responsive visual verification-card design"
 );
 assert(
   staticHome.includes('id="homePremiumAnnualPromo" hidden aria-hidden="true"')

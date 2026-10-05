@@ -15,12 +15,28 @@ const orderIds = (params.get("orders") || "")
   .map((value) => value.trim())
   .filter(Boolean);
 const root = document.querySelector("#verifyResult");
+let tenantContext = null;
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
 async function resolveTenantContext() {
   const snapshot = await getDoc(doc(db, "tenantSlugs", tenantSlug));
   if (!snapshot.exists() || snapshot.data().active === false) throw new Error(t("verify.errors.storefront_not_found"));
   const tenant = snapshot.data();
-  setActiveTenant({ id: tenant.tenantId, slug: tenant.slug || tenantSlug, name: tenant.name || tenant.shopName || tenantSlug });
+  tenantContext = {
+    id: tenant.tenantId,
+    slug: tenant.slug || tenantSlug,
+    name: tenant.name || tenant.shopName || tenantSlug,
+  };
+  setActiveTenant(tenantContext);
+  return tenantContext;
 }
 
 async function getOrder(id) { return dataService.getOrder(id); }
@@ -85,6 +101,57 @@ function verificationError(error) {
   return error?.message || t("verify.errors.generic");
 }
 
+function verifiedShopName(settings = {}) {
+  return String(
+    tenantContext?.name
+    || settings?.orderDeliveryShopName
+    || settings?.shopName
+    || t("verify.shop_fallback"),
+  ).trim();
+}
+
+function shopHeaderHtml(settings = {}) {
+  const address = String(settings.shopAddress || "").trim();
+  const phone = String(settings.shopPhone || "").trim();
+  const meta = [
+    address ? escapeHtml(address) : "",
+    phone ? `${escapeHtml(t("verify.fields.phone"))} ${escapeHtml(phone)}` : "",
+  ].filter(Boolean).join("<br>");
+  return `
+    <div class="verify-shop-head">
+      <div class="verify-shop-identity">
+        <span class="verify-shop-icon" aria-hidden="true"><i class="bi bi-shop"></i></span>
+        <div class="verify-shop-copy">
+          <h2>${escapeHtml(verifiedShopName(settings))}</h2>
+          <p>${meta || "&nbsp;"}</p>
+        </div>
+      </div>
+      <span class="verify-latest-badge"><i class="bi bi-patch-check"></i><span>${escapeHtml(t("verify.latest_badge"))}</span></span>
+    </div>
+  `;
+}
+
+function metricHtml(icon, label, value, { total = false } = {}) {
+  return `
+    <div class="verify-metric${total ? " verify-metric-total" : ""}">
+      <div class="verify-metric-label"><i class="bi bi-${icon}"></i><span>${escapeHtml(label)}</span></div>
+      <div class="verify-metric-value">${escapeHtml(value)}</div>
+    </div>
+  `;
+}
+
+function itemsHtml(order) {
+  const rows = activeItems(order)
+    .map((item) => `
+      <li>
+        <span>${escapeHtml(item.qty)} × ${escapeHtml(verifyItemName(item))}</span>
+        <strong>${escapeHtml(money(Number(item.qty) * Number(item.price)))}</strong>
+      </li>
+    `)
+    .join("") || `<li><span>${escapeHtml(t("verify.no_billable_items"))}</span><strong>—</strong></li>`;
+  return `<ul class="order-items verify-items">${rows}</ul>`;
+}
+
 try {
   if (!tenantSlug) throw new Error(t("verify.errors.missing_tenant"));
 
@@ -108,31 +175,24 @@ try {
     );
 
     root.innerHTML = `
-      <div class="section-title"><h2>${settings.shopName || t("verify.shop_fallback")}</h2><span class="badge">${t("verify.latest_badge")}</span></div>
-      <p>${settings.shopAddress || ""}${settings.shopPhone ? `<br>${t("verify.fields.phone")} ${settings.shopPhone}` : ""}</p>
-      <div class="grid grid-2">
-        <div><strong>${t("verify.fields.type")}</strong><br>${t("verify.summary.merged_table", { table: first.tableCode || "-" })}</div>
-        <div><strong>${t("verify.fields.rounds")}</strong><br>${t("verify.summary.round_count", { count: orders.length })}</div>
-        <div><strong>${t("verify.fields.date")}</strong><br>${formatTime(first.createdAt)}</div>
-        <div><strong>${t("verify.fields.payment")}</strong><br>${paid ? t("verify.payment.paid") : t("verify.payment.unpaid")}</div>
-        <div><strong>${t("verify.fields.net_total")}</strong><br>${money(total)} ${t("verify.units.baht")}</div>
-      </div>
-      <hr class="receipt-rule">
-      ${orders
-        .map(
-          (order) => `
-        <div class="card" style="margin-bottom:10px;${order.status === "cancelled" ? "opacity:.6" : ""}">
-          <strong>${t("verify.round.title", { round: order.roundNumber || 1 })}${order.status === "cancelled" ? t("verify.round.cancelled_suffix") : ""}</strong>
-          <ul class="order-items">${activeItems(order)
-            .map(
-              (item) =>
-                `<li>${item.qty} × ${verifyItemName(item)}<strong style="float:right">${money(Number(item.qty) * Number(item.price))}</strong></li>`,
-            )
-            .join("") || `<li>${t("verify.no_billable_items")}</li>`}</ul>
+      ${shopHeaderHtml(settings)}
+      <div class="verify-card-body">
+        <div class="verify-summary-grid">
+          ${metricHtml("diagram-3", t("verify.fields.type"), t("verify.summary.merged_table", { table: first.tableCode || "-" }))}
+          ${metricHtml("layers", t("verify.fields.rounds"), t("verify.summary.round_count", { count: orders.length }))}
+          ${metricHtml("calendar3", t("verify.fields.date"), formatTime(first.createdAt))}
+          ${metricHtml("credit-card", t("verify.fields.payment"), paid ? t("verify.payment.paid") : t("verify.payment.unpaid"))}
+          ${metricHtml("cash-stack", t("verify.fields.net_total"), `${money(total)} ${t("verify.units.baht")}`, { total: true })}
         </div>
-      `,
-        )
-        .join("")}
+        <div class="verify-rounds">
+          ${orders.map((order) => `
+            <section class="verify-round-card${order.status === "cancelled" ? " is-cancelled" : ""}">
+              <div class="verify-round-title"><i class="bi bi-receipt"></i><span>${escapeHtml(t("verify.round.title", { round: order.roundNumber || 1 }))}${order.status === "cancelled" ? escapeHtml(t("verify.round.cancelled_suffix")) : ""}</span></div>
+              ${itemsHtml(order)}
+            </section>
+          `).join("")}
+        </div>
+      </div>
     `;
   } else {
     if (!orderId) throw new Error(t("verify.errors.missing_order"));
@@ -146,34 +206,40 @@ try {
     const total = currentTotal(order);
 
     root.innerHTML = `
-      <div class="section-title"><h2>${settings.shopName || t("verify.shop_fallback")}</h2><span class="badge">${t("verify.latest_badge")}</span></div>
-      <p>${settings.shopAddress || ""}${settings.shopPhone ? `<br>${t("verify.fields.phone")} ${settings.shopPhone}` : ""}</p>
-      <div class="grid grid-2">
-        <div><strong>${t("verify.fields.order_number")}</strong><br>${orderId.slice(0, 12).toUpperCase()}</div>
-        <div><strong>${t("verify.fields.date")}</strong><br>${formatTime(order.createdAt)}</div>
-        <div><strong>${t("verify.fields.type")}</strong><br>${orderTypeText(order)}</div>
-        <div><strong>${t("verify.fields.latest_status")}</strong><br>${statusLabel(order.status)}</div>
-        <div><strong>${t("verify.fields.payment")}</strong><br>${paymentText(order)}</div>
-        <div><strong>${t("verify.fields.net_total")}</strong><br>${money(total)} ${t("verify.units.baht")}</div>
+      ${shopHeaderHtml(settings)}
+      <div class="verify-card-body">
+        <div class="verify-summary-grid">
+          ${metricHtml("hash", t("verify.fields.order_number"), orderId.slice(0, 12).toUpperCase())}
+          ${metricHtml("calendar3", t("verify.fields.date"), formatTime(order.createdAt))}
+          ${metricHtml("bag-check", t("verify.fields.type"), orderTypeText(order))}
+          ${metricHtml("activity", t("verify.fields.latest_status"), statusLabel(order.status))}
+          ${metricHtml("credit-card", t("verify.fields.payment"), paymentText(order))}
+          ${metricHtml("cash-stack", t("verify.fields.net_total"), `${money(total)} ${t("verify.units.baht")}`, { total: true })}
+        </div>
+        ${isDelivery ? `
+          <section class="verify-detail-panel">
+            <div class="verify-detail-title"><i class="bi bi-truck"></i><span>${escapeHtml(t("verify.order_type.delivery"))}</span></div>
+            <p>
+              <strong>${escapeHtml(t("verify.fields.recipient"))}:</strong> ${escapeHtml(order.recipientName || "-")}<br>
+              <strong>${escapeHtml(t("verify.fields.phone"))}:</strong> ${escapeHtml(order.recipientPhone || "-")}<br>
+              <strong>${escapeHtml(t("verify.fields.address"))}:</strong> ${escapeHtml(order.deliveryAddress || "-")}<br>
+              <strong>${escapeHtml(t("verify.fields.delivery_fee"))}:</strong> ${escapeHtml(money(deliveryFee))} ${escapeHtml(t("verify.units.baht"))}
+            </p>
+          </section>
+        ` : ""}
+        <section class="verify-items-panel">
+          ${itemsHtml(order)}
+        </section>
+        ${(order.items || []).some((item) => item.cancelled) ? `<p class="menu-category">${escapeHtml(t("verify.cancelled_items_note"))}</p>` : ""}
       </div>
-      ${
-        isDelivery
-          ? `<hr class="receipt-rule"><p><strong>${t("verify.fields.recipient")}:</strong> ${order.recipientName || "-"}<br><strong>${t("verify.fields.phone")}:</strong> ${order.recipientPhone || "-"}<br><strong>${t("verify.fields.address")}:</strong> ${order.deliveryAddress || "-"}<br><strong>${t("verify.fields.delivery_fee")}:</strong> ${money(deliveryFee)} ${t("verify.units.baht")}</p>`
-          : ""
-      }
-      <hr class="receipt-rule">
-      <ul class="order-items">${
-        activeItems(order)
-          .map(
-            (item) =>
-              `<li>${item.qty} × ${verifyItemName(item)}<strong style="float:right">${money(Number(item.qty) * Number(item.price))}</strong></li>`,
-          )
-          .join("") || `<li>${t("verify.no_billable_items")}</li>`
-      }</ul>
-      ${(order.items || []).some((item) => item.cancelled) ? `<p class="menu-category">${t("verify.cancelled_items_note")}</p>` : ""}
     `;
   }
 } catch (error) {
   console.error(error);
-  root.innerHTML = `<div class="empty">${verificationError(error)}</div>`;
+  root.innerHTML = `
+    <div class="verify-error">
+      <span class="verify-error-icon" aria-hidden="true"><i class="bi bi-exclamation-circle"></i></span>
+      <strong>${escapeHtml(verificationError(error))}</strong>
+    </div>
+  `;
 }

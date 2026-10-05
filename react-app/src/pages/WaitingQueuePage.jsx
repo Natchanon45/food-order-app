@@ -18,6 +18,7 @@ import {
   callCountdownSeconds,
   compatibleQueuesForTable,
   createWaitingQueue,
+  cleanupStaleWaitingQueueProjections,
   customerTrackingUrl,
   ensureWaitingNumberLease,
   estimateWaitRange,
@@ -168,6 +169,11 @@ export function WaitingQueuePage() {
       if (alive) { setLoading(false); toast(wq("runtime.load_failed"), "error"); }
     });
     stopPublic = watchWaitingQueuePublicResponses(tenant.id, rows => { if (alive) setPublicRows(rows); }, console.warn);
+    cleanupStaleWaitingQueueProjections(tenant.id)
+      .then(result => {
+        if (result.updated > 0) console.info("[waiting-queue] stale projections deactivated", result);
+      })
+      .catch(error => console.warn("WAITING_QUEUE_STALE_PROJECTION_CLEANUP_FAILED", error));
     ensureWaitingNumberLease(tenant.id).catch(() => {});
     const tableTimer = setInterval(() => refreshTables().catch(() => {}), 15000);
     const clockTimer = setInterval(() => setClock(Date.now()), 15000);
