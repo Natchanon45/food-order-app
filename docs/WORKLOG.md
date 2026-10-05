@@ -7342,4 +7342,34 @@ Verification before deploy:
 - Firestore write attempts observed = 0.
 
 Deploy state:
-- Commit/push and Hosting-only deployment pending.
+- Implementation commit `2478d4ac` — `feat: redesign POS purchases` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.05.411` and Public `0.16.32 / 2026.10.05.126`.
+- Production `/pos/purchases` returns HTTP 200 with `Cache-Control: no-cache, no-store, must-revalidate` and serves `/react/assets/index-CuLqseIF.js`.
+- Authenticated Production visual contract PASS with Firestore Write/commit/batchWrite blocked.
+- Production Desktop 1440x900:
+  - Hero ~= 243px,
+  - 4 Hero metrics,
+  - current report values = 0 purchases / 0 received qty / 0 suppliers / 0.00 amount,
+  - one untouched default purchase line with no selected product and qty = 1,
+  - 4 visible report KPI cards for current cost-authorized owner,
+  - activity/rankings/history correctly show empty state for current data,
+  - barcode scanner present,
+  - CSV visible for current cost-authorized owner,
+  - raw translation keys = 0,
+  - document horizontal overflow = 0.
+- Production Mobile 390x844:
+  - Hero ~= 334px,
+  - form panel = 374px,
+  - purchase line card = 348px,
+  - table min-width = 0,
+  - table wrapper overflow = visible,
+  - purchase line display = grid,
+  - scanner/Add Product labels collapse to icon-only,
+  - report KPI layout = 2 columns,
+  - history layout = 1 contained column,
+  - document horizontal overflow = 0.
+- No purchase form action was used during verification.
+- Page errors = 0; request failures = 0; HTTP errors = 0; Firestore write attempts observed = 0.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
+- Next Retail POS migration/redesign route: `/pos/payables`.
+- No merge to `main`.
