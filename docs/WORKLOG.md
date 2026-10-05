@@ -8126,7 +8126,14 @@ Verification before deploy:
   - page errors = 0; request failures = 0; HTTP errors = 0; Firestore writes = 0.
 
 Deploy state:
-- Commit/push and Hosting-only deployment pending.
-- No order, payment, stock, Firestore Rules, Storage Rules, Functions, or Firestore data changes are required.
+- Implementation commit f51e0345 — feat: add spoken order alerts — pushed to origin/feature/react-firebase-port.
+- Firebase Hosting target foodapp deployed successfully to https://penguin-food.web.app on React 0.4.280 / 2026.10.05.417 and Public 0.16.32 / 2026.10.05.132.
+- Production authenticated browser contract PASS:
+  - /cashier: enabled=true, armed=true, bell-fill, surface=cashier, horizontal overflow 0.
+  - /kitchen: enabled=true, armed=true, bell-fill, surface=kitchen, horizontal overflow 0.
+  - Production bundle /react/assets/index-CfzpwOg9.js contains the spoken phrase, Delivery/Takeaway/Walk-in channel labels, v4 alert preference key, and natural speech rate.
+  - page errors = 0; request failures = 0; HTTP errors = 0; Firestore writes = 0.
+- Deployment scope was Hosting only.
+- No order, payment, stock, Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
 - Primary worktree `/pos/settings` uncommitted work remains isolated and untouched.
 - No merge to main.
