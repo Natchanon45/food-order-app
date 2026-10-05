@@ -8264,6 +8264,17 @@ Verification before deploy:
   - page errors=0; request failures=0; HTTP errors=0; Firestore writes=0.
 
 Deploy state:
-- Commit/push and Hosting-only deployment pending.
+- Implementation commit f3529b9e — fix: add kitchen cancel action icons — pushed to origin/feature/react-firebase-port.
+- Firebase Hosting target foodapp deployed successfully to https://penguin-food.web.app on React 0.4.280 / 2026.10.05.419 and Public 0.16.32 / 2026.10.05.134.
+- Production authenticated browser contract PASS:
+  - bundle /react/assets/index-6wt5v3I8.js.
+  - footer Version 0.4.280 • Build 2026.10.05.419.
+  - 14 per-item Cancel buttons; all have `bi-x-circle app-icon` + label span.
+  - 2 Cancel entire order buttons; both have `bi-x-circle app-icon` + label span.
+  - Desktop buttons render flex with 7px icon/text gap.
+  - Mobile item cancel icons render 18x18px.
+  - Desktop/mobile horizontal overflow=0.
+  - page errors=0; request failures=0; HTTP errors=0; Firestore writes=0.
+- Deployment scope was Hosting only.
 - Primary worktree `/pos/settings` uncommitted work remains isolated and untouched.
 - No Functions/Rules/Storage deployment and no merge to main.
