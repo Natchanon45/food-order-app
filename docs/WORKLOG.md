@@ -7927,3 +7927,55 @@ Deploy state:
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
 - Next Retail POS migration/redesign route: `/pos/settings`.
 - No merge to `main`.
+---
+## 2026-10-05 — Public landing color, register pricing, and shared Branding repair
+
+User request:
+- Prioritize public unauthenticated pages before continuing Retail POS Settings.
+- Hide the annual promotional price block on unauthenticated Home for now, add more color, increase Register header spacing, use a red strike-through on 7,080, and replace PG fallback on Privacy / Terms / Delivery.
+
+Work isolation:
+- Primary worktree already had uncommitted /pos/settings migration work.
+- This repair was developed/tested/built in isolated worktree /tmp/penguin-public-fix-20261005 from clean remote HEAD 53ae1315.
+- Existing Settings files were not edited, reset, staged, or discarded.
+
+Implementation:
+- Privacy, Terms, and Delivery did not load platform-branding-runtime.js; added the shared runtime with cache identity 20261005-130.
+- Home now loads public-landing-refresh.css with a richer gradient Hero, three accent-colored feature cards, colorful pricing/CTA surfaces, and safe horizontal clipping.
+- #homePremiumAnnualPromo remains in the DOM for pricing compatibility but is hidden and aria-hidden.
+- Register keeps existing React pricing/signup behavior; CSS adds effective Brand-to-Home action spacing and a 3px red #dc2626 line-through on .old-price-slash.
+- Existing Branding geometry remains 42x42 desktop with a 36x36 contained image, preferring App Icon then Logo.
+
+Important files:
+- public/index.html
+- public/assets/css/public-landing-refresh.css
+- public/privacy/index.html
+- public/terms/index.html
+- public/delivery/index.html
+- react-app/public/parity/css/register-page.css
+- tools/react-foundation-contract.mjs
+- release metadata and generated React shell files.
+
+Release prepared:
+- React 0.4.280 / 2026.10.05.415.
+- Public 0.16.32 / 2026.10.05.130.
+- Generated bundle /react/assets/index-B03opJZS.js.
+
+Verification before deploy:
+- React foundation contract PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS: migration 53 routes / 21 POS, parity matrix, P0 actions, 54 callable refs / 0 missing, tenant access, UI layer.
+- npm run build:react PASS; generated build contract PASS for Build .415.
+- git diff --check PASS.
+- Browser contract used production origin/data with local Build .415 files and blocked Firestore Write/commit/batchWrite.
+- Home desktop: public landing visible, staff dashboard hidden, annual promo display none, colorful Hero/card treatment active, horizontal overflow 0.
+- Register desktop: Brand-to-Home gap 28px; old price 7,080; red line-through rgb(220, 38, 38), thickness 3px; overflow 0.
+- Privacy / Terms / Delivery: configured 512x512 App Icon loads through platform-brand-image-target, 42x42 target / 36x36 contained image, overflow 0.
+- Home mobile 390x844: promo hidden, Hero/card width 370px, horizontal overflow 0.
+- Page errors 0; request failures 0; HTTP errors 0; Firestore writes observed 0.
+
+Deploy state:
+- Commit/push and Hosting-only deployment pending.
+- No Firestore Rules, Storage Rules, Functions, or Firestore data changes required.
+- After this interruption, continue the existing unfinished /pos/settings migration in the primary worktree.
+- No merge to main.

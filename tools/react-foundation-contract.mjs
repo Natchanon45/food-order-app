@@ -371,8 +371,12 @@ const parityFooter=read("react-app/src/components/ParityFooter.jsx");
 const staticI18n=read("public/assets/js/i18n.js");
 const staticUi=read("public/assets/js/ui.js");
 const staticHome=read("public/index.html");
+const staticPrivacyEntry=read("public/privacy/index.html");
+const staticTermsEntry=read("public/terms/index.html");
 const staticBrandingRuntime=read("public/assets/js/platform-branding-runtime.js");
 const staticHomeDashboardCss=read("public/assets/css/home-dashboard.css");
+const staticPublicLandingRefreshCss=read("public/assets/css/public-landing-refresh.css");
+const registerPageCss=read("react-app/public/parity/css/register-page.css");
 const firebaseHostingConfig=read("firebase.json");
 const staticHomeSession=read("public/assets/js/home-session-fa.js");
 assert(
@@ -391,7 +395,7 @@ assert(
   "Canonical static Home must keep the requested layout, omit Waiting Queue, and never remain stale behind Hosting cache"
 );
 assert(
-  staticHome.includes('/assets/js/platform-branding-runtime.js?v=20261005-123')
+  staticHome.includes('/assets/js/platform-branding-runtime.js?v=20261005-130')
   &&staticBrandingRuntime.includes('doc(db, "platformSettings", "branding")')
   &&staticBrandingRuntime.includes("onAuthStateChanged(auth")
   &&staticBrandingRuntime.includes('applyBrandImage(".brand-mark", appIconUrl || logoUrl')
@@ -407,6 +411,27 @@ const staticFirebaseConfig=read("public/assets/js/firebase-config.js");
 const messagingServiceWorker=read("public/firebase-messaging-sw.js");
 const publicSignupFunction=read("functions/public-signup.js");
 const staticDeliveryEntry=read("public/delivery/index.html");
+assert(
+  [staticPrivacyEntry, staticTermsEntry, staticDeliveryEntry].every(source=>source.includes('/assets/js/platform-branding-runtime.js?v=20261005-130')),
+  "Public Privacy, Terms, and Delivery headers must consume the shared Super Admin Branding runtime instead of staying PG-only"
+);
+assert(
+  staticHome.includes('id="homePremiumAnnualPromo" hidden aria-hidden="true"')
+  &&staticHome.includes('/assets/css/public-landing-refresh.css?v=20261005-130')
+  &&staticPublicLandingRefreshCss.includes("#homePremiumAnnualPromo")
+  &&staticPublicLandingRefreshCss.includes(".public-feature-card:nth-child(1)")
+  &&staticPublicLandingRefreshCss.includes("linear-gradient(118deg,#0a3c2c")
+  &&staticPublicLandingRefreshCss.includes("overflow-x:clip"),
+  "Unauthenticated Home must hide the annual promo block and keep the colorful public landing refresh"
+);
+assert(
+  registerPageCss.includes(".register-header>.btn")
+  &&registerPageCss.includes("margin-left:10px")
+  &&registerPageCss.includes(".old-price-slash")
+  &&registerPageCss.includes("text-decoration-color:#dc2626")
+  &&registerPageCss.includes("text-decoration-thickness:3px"),
+  "Register must keep header action spacing and the red strike-through on the original annual price"
+);
 const staticDeliveryAddresses=read("public/assets/js/delivery-addresses.js");
 const staticCustomerProfileService=read("public/assets/js/customer-profile-service.js");
 const publicFirebaseContext=read("public/assets/js/public-firebase-context.js");
