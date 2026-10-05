@@ -8696,6 +8696,14 @@ Verification before deploy:
 - `git diff --check` PASS.
 
 Deploy state:
-- Pending implementation commit/push and Firebase Hosting deployment.
+- Implementation/build commit: `5cce7220` — `fix: dedupe POS scanner toast feedback`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
 - Hosting scope only; no Firestore Rules, Storage Rules, or Functions change.
 - No merge to `main`.
+
+Production verification:
+- `/pos/` loads `/react/assets/index-BHntQqAj.js`.
+- Deployed bundle contains React Build `2026.10.05.425` and release marker `POS-SCANNER-TOAST-DEDUP`.
+- Scanner contract now guarantees one processed camera result per scanner session and conditional success Toast only after a real cart add.
+- No production sale, stock, Firestore, or settings write was performed during this verification.
