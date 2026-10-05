@@ -7987,3 +7987,62 @@ Deploy state:
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
 - After this interruption, continue the existing unfinished /pos/settings migration in the primary worktree.
 - No merge to main.
+---
+## 2026-10-05 — Delivery Success Branding and Order/Delivery name-source repair
+
+User report:
+- Delivery Success header still showed PG instead of the configured platform branding image.
+- The Delivery storefront Hero showed a store name from the wrong business side.
+
+Production diagnosis (read-only):
+- /s/saas-test-shop/delivery Hero rendered: สาแก่ใจพาณิชย์.
+- tenantSlugs/saas-test-shop.name = ตั่วเฮียอาหารอิสาน.
+- tenants/{tenantId}.name = ตั่วเฮียอาหารอิสาน.
+- tenants/{tenantId}/settings/store.shopName = สาแก่ใจพาณิชย์.
+- No Firestore writes were performed during diagnosis.
+
+Root cause:
+- Delivery Success did not load platform-branding-runtime.js, so its .brand-mark remained literal PG.
+- Delivery Hero prioritized settings/store.shopName before the tenant Order/Delivery name. In this tenant those values differ, so the customer storefront displayed the wrong business-side name.
+
+Implementation:
+- Added publicStorefrontService.getOrderDeliveryShopName(settings) with precedence: active tenant name -> settings.orderDeliveryShopName -> settings.shopName.
+- Delivery Hero now resolves its customer-facing name through getOrderDeliveryShopName().
+- Delivery Success receipt now uses the same Order/Delivery name resolver, so checkout and receipt cannot disagree.
+- Delivery Success now loads platform-branding-runtime.js and therefore uses App Icon -> Logo -> PG fallback behavior.
+- Cache identities for Delivery runtime, Delivery Success runtime, and shared storefront service updated to 20261005-131.
+- No tenant/store documents, Firestore Rules, Storage Rules, Functions, order records, payment logic, or delivery calculations changed.
+
+Important files:
+- public/assets/js/public-storefront-service.js
+- public/assets/js/delivery.js
+- public/assets/js/delivery-success.js
+- public/delivery/index.html
+- public/delivery/success/index.html
+- tools/react-foundation-contract.mjs
+- release metadata / generated React shells.
+
+Release prepared:
+- React 0.4.280 / 2026.10.05.416.
+- Public 0.16.32 / 2026.10.05.131.
+- Generated bundle /react/assets/index-CnNkzj8Q.js.
+
+Verification before deploy:
+- Local production-data overlay contract PASS at 440x956:
+  - Delivery Hero = ตั่วเฮียอาหารอิสาน.
+  - Delivery header configured App Icon natural source = 512x512.
+  - Delivery Success receipt shop name = ตั่วเฮียอาหารอิสาน.
+  - Delivery Success brand mark replaced PG with platform-brand-image-target.
+  - Delivery Success App Icon natural source = 512x512; object-fit = contain.
+  - Delivery and Success horizontal overflow = 0.
+  - page errors = 0; request failures = 0; Firestore writes = 0.
+- React foundation contract PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS: 53 routes / 21 POS, parity matrix, P0 actions, 54 callable refs / 0 missing, tenant access, UI layers.
+- npm run build:react PASS; generated build contract PASS for Build .416.
+- git diff --check PASS.
+
+Deploy state:
+- Commit/push and Hosting-only deployment pending.
+- Primary worktree /pos/settings changes remain intentionally isolated and untouched.
+- No merge to main.

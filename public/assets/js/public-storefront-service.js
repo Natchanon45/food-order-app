@@ -45,6 +45,15 @@ function preparedOrderId(channel, identity = "", providedId = "") {
 
 export const publicStorefrontService = {
   getActiveShop() { return dataService.getActiveShop() || getStoredTenant() || { slug: slug() }; },
+  getOrderDeliveryShopName(settings = {}) {
+    const tenant = this.getActiveShop();
+    return String(
+      tenant?.name
+      || settings?.orderDeliveryShopName
+      || settings?.shopName
+      || ""
+    ).trim();
+  },
   prepareOrderId(channel, identity = "", providedId = "") { return preparedOrderId(channel, identity, providedId).id; },
   async listMenus() { return dataService.listMenus(); },
   async getStoreSettings() { return dataService.getStoreSettings(); },

@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.05.130',
+  build: '2026.10.05.131',
   branch: 'feature/react-firebase-port',
-  commit: 'PUBLIC-LANDING-BRANDING-PRICING-POLISH',
+  commit: 'DELIVERY-BRANDING-STORE-NAME-ROUTING',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Public landing, branding, and pricing polish',
-  updatedAt: '2026-10-05T10:35:00+0700',
+  milestone: 'Delivery branding and Order/Delivery store-name routing',
+  updatedAt: '2026-10-05T11:09:00+0700',
   whatsNew: [
-    'Refresh the unauthenticated Home with richer colors while hiding the annual promotional price block for now',
-    'Space the Register header action and show a clear red strike-through on the original annual price',
-    'Apply Super Admin App Icon branding on Privacy, Terms, and tenant Delivery headers instead of PG fallback'
+    'Apply the shared Super Admin App Icon on Delivery Success instead of the PG fallback',
+    'Prefer the tenant Order/Delivery name over generic store settings on the Delivery storefront',
+    'Keep the Delivery Success receipt store name aligned with the customer-facing Delivery storefront'
   ]
 };
 

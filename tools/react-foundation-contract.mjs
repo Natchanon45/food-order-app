@@ -411,6 +411,8 @@ const staticFirebaseConfig=read("public/assets/js/firebase-config.js");
 const messagingServiceWorker=read("public/firebase-messaging-sw.js");
 const publicSignupFunction=read("functions/public-signup.js");
 const staticDeliveryEntry=read("public/delivery/index.html");
+const staticDeliverySuccessEntry=read("public/delivery/success/index.html");
+const staticDeliverySuccessRuntime=read("public/assets/js/delivery-success.js");
 assert(
   [staticPrivacyEntry, staticTermsEntry, staticDeliveryEntry].every(source=>source.includes('/assets/js/platform-branding-runtime.js?v=20261005-130')),
   "Public Privacy, Terms, and Delivery headers must consume the shared Super Admin Branding runtime instead of staying PG-only"
@@ -600,7 +602,25 @@ const generatedBuildContract=read("tools/generated-react-build-contract.mjs");
 assert(packageJson.includes('"verify:react-build": "node tools/generated-react-build-contract.mjs"')&&packageJson.includes("npm run verify:react-build"),"React postbuild must verify generated deploy artifacts");
 assert(generatedBuildContract.includes("Cashier Receipt generated bundle is missing the Back arrow icon")&&generatedBuildContract.includes("Cashier Receipt generated bundle is missing the Print check icon")&&generatedBuildContract.includes("is stale: expected release Build"),"Generated React build contract must guard release identity and Receipt action icons");
 assert(read("react-app/src/components/UserMenu.jsx").includes("loggingOut")&&read("react-app/src/components/UserMenu.jsx").includes("<PageReadyOverlay"),"React logout must show a blocking loading overlay before redirecting to Login");
-assert(staticDeliveryEntry.includes('id="deliveryHeroStoreName"')&&!staticDeliveryEntry.includes('<span>PENGUIN</span></h1>')&&!staticDeliveryEntry.includes('<span>KINJAI</span></h1>')&&staticDeliveryRuntime.includes("renderDeliveryStoreHero")&&staticDeliveryRuntime.includes("settings?.shopName")&&staticDeliveryRuntime.includes("activeShop?.name"),"Delivery customer Hero must render the tenant store name, not the platform brand");
+assert(
+  staticDeliveryEntry.includes('id="deliveryHeroStoreName"')
+  &&!staticDeliveryEntry.includes('<span>PENGUIN</span></h1>')
+  &&!staticDeliveryEntry.includes('<span>KINJAI</span></h1>')
+  &&staticDeliveryEntry.includes('/assets/js/delivery.js?v=20261005-131')
+  &&staticDeliveryRuntime.includes("renderDeliveryStoreHero")
+  &&staticDeliveryRuntime.includes("dataService.getOrderDeliveryShopName(settings)")
+  &&publicStorefrontService.includes("getOrderDeliveryShopName(settings = {})")
+  &&publicStorefrontService.includes('tenant?.name\n      || settings?.orderDeliveryShopName\n      || settings?.shopName'),
+  "Delivery customer Hero must prefer the Order/Delivery tenant name over the generic store settings name"
+);
+assert(
+  staticDeliverySuccessEntry.includes('/assets/js/platform-branding-runtime.js?v=20261005-131')
+  &&staticDeliverySuccessEntry.includes('/assets/js/delivery-success.js?v=20261005-131')
+  &&staticDeliverySuccessRuntime.includes("./public-storefront-service.js?v=20261005-131")
+  &&staticDeliverySuccessRuntime.includes('dataService.getOrderDeliveryShopName(settings)')
+  &&staticDeliverySuccessEntry.includes('<span class="brand-mark">PG</span>'),
+  "Delivery Success must apply shared Super Admin Branding and use the same Order/Delivery shop name as checkout"
+);
 assert(
   !staticDeliveryPagination.includes("common.pagination.")
   &&staticDeliveryPagination.includes('"delivery.checkout.menu.previous_page"')

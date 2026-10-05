@@ -1,6 +1,6 @@
 import "./public-page-static-i18n.js?v=20260930-001";
 
-import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20261002-007';
+import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20261005-131';
 import { money, formatTime, toast } from "./ui.js?v=20260930-001";
 import { t } from "./i18n.js?v=20260930-001";
 import { effectiveDeliveryAmounts, enrichDeliveryGiftItems } from "./delivery-order-display.js?v=20260903-243";
@@ -124,7 +124,7 @@ async function load() {
   if (!rawOrder) throw new Error(t("delivery.success.errors.order_not_found"));
   const order = enrichDeliveryGiftItems(rawOrder, menus);
 
-  document.querySelector("#shopName").textContent = settings.shopName || t("delivery.success.receipt.shop_fallback");
+  document.querySelector("#shopName").textContent = dataService.getOrderDeliveryShopName(settings) || t("delivery.success.receipt.shop_fallback");
   document.querySelector("#shopAddress").textContent = settings.shopAddress || "";
   document.querySelector("#shopPhone").textContent = settings.shopPhone ? t("delivery.success.shop_phone", { phone: settings.shopPhone }) : "";
   document.querySelector("#receiptNumber").textContent = orderId.slice(0, 12).toUpperCase();

@@ -2,7 +2,7 @@ import "./public-page-static-i18n.js?v=20261001-003";
 
 await import("./public-tenant-resolver.js?v=20261003-010");
 
-import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20261002-008';
+import { publicStorefrontService as dataService } from './public-storefront-service.js?v=20261005-131';
 import { customerFunctions as functions } from "./public-firebase-context.js?v=20261002-001";
 import { httpsCallable } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-functions.js";
 import { money, toast } from "./ui.js?v=20260930-001";
@@ -68,16 +68,11 @@ let currentFavoriteUser = null;
 
 function renderDeliveryStoreHero(settings = {}) {
   if (!deliveryHeroStoreName) return;
-  const activeShop = dataService.getActiveShop?.() || {};
   const translatedFallback = t("shared.store.fallback_name");
   const fallback = translatedFallback && translatedFallback !== "shared.store.fallback_name"
     ? translatedFallback
     : "ร้านอาหาร";
-  deliveryHeroStoreName.textContent = String(
-    settings?.shopName
-    || activeShop?.name
-    || ""
-  ).trim() || fallback;
+  deliveryHeroStoreName.textContent = dataService.getOrderDeliveryShopName(settings) || fallback;
 }
 
 renderDeliveryStoreHero();
