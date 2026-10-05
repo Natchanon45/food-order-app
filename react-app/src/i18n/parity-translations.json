@@ -3637,6 +3637,20 @@
           "delete_failed": "ลบผู้จำหน่ายไม่สำเร็จ: :error",
           "deleted_synced": "ลบผู้จำหน่ายแล้ว • ส่งเข้าระบบแล้ว",
           "deleted_pending": "ลบผู้จำหน่ายแล้ว • รอส่งเมื่อออนไลน์"
+        },
+        "visual": {
+          "kicker": "Supplier Control Center",
+          "hero_description": "จัดการทะเบียนผู้จำหน่าย เงื่อนไขเครดิต ข้อมูลติดต่อ และภาพรวมประวัติการซื้อในหน้าจอเดียว",
+          "integrated": "เชื่อมต่อกับรับสินค้าเข้า เจ้าหนี้ และรายงานการซื้อ",
+          "average_credit": "เครดิตเฉลี่ย",
+          "total_hint": "ผู้จำหน่ายในทะเบียนทั้งหมด",
+          "history_hint": "ผู้จำหน่ายที่มีประวัติใบซื้อ",
+          "purchase_value_hint": "มูลค่าซื้อสะสมตามสิทธิ์ที่ได้รับ",
+          "purchase_count_hint": "จำนวนใบซื้อสะสมตามสิทธิ์ที่ได้รับ",
+          "search_label": "ค้นหาผู้จำหน่าย",
+          "filter_label": "ตัวกรองประวัติซื้อ",
+          "empty_hint": "ลองเปลี่ยนคำค้นหา หรือตัวกรองประวัติซื้อ",
+          "form_description": "บันทึกข้อมูลติดต่อ เลขภาษี และเงื่อนไขเครดิตของผู้จำหน่าย"
         }
       }
     },
@@ -9706,6 +9720,20 @@
           "delete_failed": "Unable to delete supplier: :error",
           "deleted_synced": "Supplier deleted • Synced",
           "deleted_pending": "Supplier deleted • Will sync when online"
+        },
+        "visual": {
+          "kicker": "Supplier Control Center",
+          "hero_description": "Manage supplier records, credit terms, contact details, and purchase-history context from one workspace.",
+          "integrated": "Connected to receiving, accounts payable, and purchasing reports",
+          "average_credit": "Average credit",
+          "total_hint": "All suppliers in the directory",
+          "history_hint": "Suppliers with purchase history",
+          "purchase_value_hint": "Lifetime purchase value when permitted",
+          "purchase_count_hint": "Lifetime purchase count when permitted",
+          "search_label": "Search suppliers",
+          "filter_label": "Purchase-history filter",
+          "empty_hint": "Try changing the search term or purchase-history filter.",
+          "form_description": "Store supplier contact, tax ID, and credit-term information."
         }
       }
     },
@@ -15500,6 +15528,20 @@
           "delete_failed": "ပေးသွင်းသူကို ဖျက်၍မရပါ- :error",
           "deleted_synced": "ပေးသွင်းသူကို ဖျက်လိုက်သည် • စင့်ခ်လုပ်ထားသည်။",
           "deleted_pending": "ပေးသွင်းသူကို ဖျက်လိုက်သည် • အွန်လိုင်းတွင် စင့်ခ်လုပ်ပါမည်။"
+        },
+        "visual": {
+          "kicker": "Supplier Control Center",
+          "hero_description": "ပေးသွင်းသူမှတ်တမ်း၊ ခရက်ဒစ်စည်းမျဉ်း၊ ဆက်သွယ်ရန်အချက်အလက်နှင့် ဝယ်ယူမှုမှတ်တမ်းအကျဉ်းကို တစ်နေရာတည်းတွင် စီမံပါ။",
+          "integrated": "ကုန်လက်ခံမှု၊ ပေးချေရမည့်စာရင်းနှင့် ဝယ်ယူမှုအစီရင်ခံစာများနှင့် ချိတ်ဆက်ထားသည်",
+          "average_credit": "ပျမ်းမျှခရက်ဒစ်",
+          "total_hint": "မှတ်ပုံတင်ထားသော ပေးသွင်းသူအားလုံး",
+          "history_hint": "ဝယ်ယူမှုမှတ်တမ်းရှိသော ပေးသွင်းသူများ",
+          "purchase_value_hint": "ခွင့်ပြုချက်ရှိပါက စုစုပေါင်းဝယ်ယူတန်ဖိုး",
+          "purchase_count_hint": "ခွင့်ပြုချက်ရှိပါက စုစုပေါင်းဝယ်ယူစာရွက်",
+          "search_label": "ပေးသွင်းသူ ရှာဖွေရန်",
+          "filter_label": "ဝယ်ယူမှုမှတ်တမ်း စစ်ထုတ်မှု",
+          "empty_hint": "ရှာဖွေစာသား သို့မဟုတ် ဝယ်ယူမှုမှတ်တမ်း စစ်ထုတ်မှုကို ပြောင်းကြည့်ပါ။",
+          "form_description": "ပေးသွင်းသူ၏ ဆက်သွယ်ရန်၊ အခွန် ID နှင့် ခရက်ဒစ်စည်းမျဉ်းကို သိမ်းဆည်းပါ။"
         }
       }
     },
@@ -21294,6 +21336,20 @@
           "delete_failed": "ບໍ່ສາມາດລຶບຜູ້ສະໜອງໄດ້: :error",
           "deleted_synced": "ຜູ່ສະໜອງຖືກລຶບ • ຊິງຄ໌ແລ້ວ",
           "deleted_pending": "ຜູ້ສະໜອງຖືກລຶບ • ຈະຊິ້ງຂໍ້ມູນເມື່ອອອນລາຍ"
+        },
+        "visual": {
+          "kicker": "Supplier Control Center",
+          "hero_description": "ຈັດການທະບຽນຜູ້ສະໜອງ, ເງື່ອນໄຂສິນເຊື່ອ, ຂໍ້ມູນຕິດຕໍ່ ແລະປະຫວັດການຊື້ໃນໜ້າດຽວ.",
+          "integrated": "ເຊື່ອມກັບການຮັບສິນຄ້າ, ເຈົ້າໜີ້ ແລະລາຍງານການຊື້",
+          "average_credit": "ສິນເຊື່ອສະເລ່ຍ",
+          "total_hint": "ຜູ້ສະໜອງທັງໝົດໃນທະບຽນ",
+          "history_hint": "ຜູ້ສະໜອງທີ່ມີປະຫວັດໃບຊື້",
+          "purchase_value_hint": "ມູນຄ່າການຊື້ສະສົມເມື່ອມີສິດ",
+          "purchase_count_hint": "ຈຳນວນໃບຊື້ສະສົມເມື່ອມີສິດ",
+          "search_label": "ຄົ້ນຫາຜູ້ສະໜອງ",
+          "filter_label": "ຕົວກອງປະຫວັດການຊື້",
+          "empty_hint": "ລອງປ່ຽນຄຳຄົ້ນຫາ ຫຼືຕົວກອງປະຫວັດການຊື້.",
+          "form_description": "ບັນທຶກຂໍ້ມູນຕິດຕໍ່, ID ພາສີ ແລະເງື່ອນໄຂສິນເຊື່ອ."
         }
       }
     },
@@ -27088,6 +27144,20 @@
           "delete_failed": "មិនអាចលុបអ្នកផ្គត់ផ្គង់បានទេ៖ :error",
           "deleted_synced": "អ្នកផ្គត់ផ្គង់បានលុប • បានធ្វើសមកាលកម្ម",
           "deleted_pending": "អ្នកផ្គត់ផ្គង់ត្រូវបានលុប • នឹងធ្វើសមកាលកម្មនៅពេលអ៊ីនធឺណិត"
+        },
+        "visual": {
+          "kicker": "Supplier Control Center",
+          "hero_description": "គ្រប់គ្រងបញ្ជីអ្នកផ្គត់ផ្គង់ លក្ខខណ្ឌឥណទាន ព័ត៌មានទំនាក់ទំនង និងបរិបទប្រវត្តិទិញនៅកន្លែងតែមួយ។",
+          "integrated": "ភ្ជាប់ជាមួយការទទួលទំនិញ គណនីត្រូវបង់ និងរបាយការណ៍ទិញ",
+          "average_credit": "ឥណទានមធ្យម",
+          "total_hint": "អ្នកផ្គត់ផ្គង់ទាំងអស់ក្នុងបញ្ជី",
+          "history_hint": "អ្នកផ្គត់ផ្គង់ដែលមានប្រវត្តិទិញ",
+          "purchase_value_hint": "តម្លៃទិញសរុបនៅពេលមានសិទ្ធិ",
+          "purchase_count_hint": "ចំនួនបញ្ជាទិញសរុបនៅពេលមានសិទ្ធិ",
+          "search_label": "ស្វែងរកអ្នកផ្គត់ផ្គង់",
+          "filter_label": "តម្រងប្រវត្តិទិញ",
+          "empty_hint": "សាកល្បងប្តូរពាក្យស្វែងរក ឬតម្រងប្រវត្តិទិញ។",
+          "form_description": "រក្សាទុកព័ត៌មានទំនាក់ទំនង លេខពន្ធ និងលក្ខខណ្ឌឥណទានរបស់អ្នកផ្គត់ផ្គង់។"
         }
       }
     },

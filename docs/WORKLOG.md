@@ -7557,3 +7557,154 @@ Deploy state:
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
 - Next Retail POS migration/redesign route: `/pos/suppliers`.
 - No merge to `main`.
+
+---
+## 2026-10-05 — POS Suppliers canonical React migration + Supplier Control Center
+
+User request:
+- Continue the Retail POS migration/redesign plan after Payables.
+- Next remaining route: `/pos/suppliers`.
+- Preserve supplier CRUD and purchasing behavior while applying the approved colorful Control Center design.
+
+Legacy behavior recovered/preserved:
+- Supplier directory reads supplier master data and purchase history.
+- “With purchase history” status is derived from matching purchases by:
+  - supplier ID, or
+  - normalized supplier name.
+- Filters remain:
+  - all,
+  - with purchase history,
+  - no purchase history.
+- Duplicate supplier names are rejected case-insensitively.
+- Supplier deletion is blocked when any purchase history exists.
+- Credit days remain a non-negative numeric field and continue feeding purchase/payable behavior.
+- Granular permissions remain:
+  - `pos.suppliers.create`,
+  - `pos.suppliers.edit`,
+  - `pos.suppliers.delete`,
+  - `pos.suppliers.view_purchase`.
+
+Migration / implementation:
+- Expanded `PosSuppliersPage.jsx` from the minimal draft to a complete canonical React implementation.
+- Added POS session/page guard parity:
+  - `getRetailPosSession()`,
+  - `canUseRetailPos()`,
+  - cached role rows,
+  - 6s bounded role-settings wait,
+  - first-allowed-route redirect,
+  - 10s bounded initial data load,
+  - shared PageReady overlay.
+- Added realtime Firestore watchers:
+  - `watchPosSuppliers`,
+  - `watchPosPurchases`.
+- Initial load still uses:
+  - `listPosSuppliers`,
+  - `listPosPurchases`.
+- Supplier save/delete continue to call the existing shared data layer:
+  - `savePosSupplier`,
+  - `deletePosSupplier`.
+- Replaced native confirm/alert destructive flow with shared centered `sweetConfirm` / `sweetAlert` while keeping the same business rules.
+- Added typed global Toast feedback.
+- Preserved all 25 legacy supplier IDs:
+  - `supplierTotal`, `activeSupplierTotal`, `supplierPurchaseTotal`, `supplierPurchaseCount`,
+  - `addSupplierBtn`, `supplierSearch`, `supplierFilter`, `supplierGrid`, `supplierEmpty`,
+  - `supplierDialog`, `supplierForm`, `supplierDialogTitle`, `editingSupplierId`,
+  - `supplierName`, `supplierContact`, `supplierPhone`, `supplierEmail`, `supplierTaxId`,
+  - `supplierCreditDays`, `supplierAddress`, `supplierNote`, `supplierFormError`,
+  - `closeSupplierDialog`, `cancelSupplierBtn`, `toast`.
+- Added canonical React shell sync for `public/pos/suppliers/index.html`.
+- Added no-cache Hosting headers for `/pos/suppliers` and `/pos/suppliers/**`.
+
+Visual redesign:
+- Added React-only `retail-suppliers-visual-dashboard.css`.
+- Added Supplier Control Center Hero:
+  - total suppliers,
+  - suppliers with purchase history,
+  - average credit days,
+  - purchase count when permitted.
+- Added four colored KPI cards.
+- Purchase-derived monetary/count surfaces remain hidden/masked without `pos.suppliers.view_purchase`.
+- Rebuilt supplier directory cards with:
+  - semantic supplier avatar,
+  - purchase-history status badge,
+  - contact/phone/email/address icons,
+  - credit-term strip,
+  - permission-aware purchase summary,
+  - edit/delete action icons.
+- Added richer search and purchase-history filter controls.
+- Added graphical empty state.
+- Rebuilt Supplier editor dialog:
+  - semantic title icon,
+  - icon-prefixed fields,
+  - contained internal scrollbar,
+  - responsive two-column desktop / one-column mobile form,
+  - centered cancel/save actions.
+- Added TH / EN / MY / LO / KM labels for new visual surfaces.
+
+Behavior/data boundary:
+- No Firestore collection/schema/index/rule changes.
+- No supplier CRUD transaction logic was rewritten.
+- Purchase history matching remains legacy-compatible.
+- Supplier deletion still refuses suppliers used by purchase history.
+- Purchase-derived UI remains behind `view_purchase`.
+- Tenant boundaries remain unchanged.
+- No merge to `main`.
+
+Release prepared:
+- React `0.4.280 / 2026.10.05.413`.
+- Public `0.16.32 / 2026.10.05.128`.
+- Generated bundle: `/react/assets/index-r4kSa7KA.js`.
+
+Verification before deploy:
+- Suppliers JSX esbuild syntax PASS.
+- Translation JSON validation PASS.
+- React foundation contract PASS, including:
+  - all 25 legacy IDs,
+  - session/role/page permission behavior,
+  - realtime supplier/purchase watchers,
+  - purchase-history matching/filter semantics,
+  - create/edit/delete/view_purchase permission boundaries,
+  - view_purchase masking,
+  - supplier CRUD/destructive confirmation behavior,
+  - five-language visual labels,
+  - responsive visual CSS,
+  - canonical shell sync,
+  - Hosting no-cache headers.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS:
+  - migration coverage = 53 routes / 21 POS,
+  - parity matrix PASS,
+  - P0 actions PASS,
+  - callables = 54 refs / 0 missing,
+  - tenant-access PASS,
+  - UI-layer PASS.
+- `npm run build:react` PASS; generated build contract PASS for Build `.413`.
+- `git diff --check` PASS.
+- Authenticated local-build browser contract PASS against current Production Firestore with Firestore Write/commit/batchWrite blocked.
+- Current Production supplier data = 0 suppliers.
+- Desktop 1440x900:
+  - Hero ~= 241px,
+  - 4 Hero metrics,
+  - 4 KPI cards,
+  - values = 0 suppliers / 0 with history / 0 average credit / 0 purchases,
+  - all 25 legacy IDs present,
+  - raw translation keys = 0,
+  - document horizontal overflow = 0.
+- Add Supplier dialog:
+  - opened for layout inspection only,
+  - Desktop = 760x820,
+  - 8 editable fields,
+  - internal overflow contained.
+- Mobile 390x844:
+  - Hero ~= 334px,
+  - panel = 374px,
+  - supplier grid = single column,
+  - Add action collapses to icon-only,
+  - dialog = 374x828 and contained within viewport,
+  - document horizontal overflow = 0.
+- No supplier save/edit/delete action was submitted.
+- Page errors = 0; request failures = 0; HTTP errors = 0.
+- Firestore write attempts observed = 0.
+
+Deploy state:
+- Commit/push and Hosting-only deployment pending.
