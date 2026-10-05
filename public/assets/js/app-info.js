@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.05.139',
+  build: '2026.10.05.140',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-MOBILE-CART-PARITY',
+  commit: 'POS-SCANNER-TOAST-DEDUP',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'React POS mobile sale cart parity',
-  updatedAt: '2026-10-05T16:45:00+0700',
+  milestone: 'React POS scanner toast de-duplication',
+  updatedAt: '2026-10-05T17:55:48+0700',
   whatsNew: [
-    'Restore Laravel-style mobile and tablet sale cart access on canonical React /pos',
-    'Provide cart drawer actions for checkout, hold bill, and held bills through 1023px',
-    'Keep mobile cart labels localized across all five POS languages'
+    'Show exactly one scanner Toast result per camera scan on canonical React /pos',
+    'Show scanner success only after the product is actually added to the sale cart',
+    'Ignore duplicate camera callbacks so one scan cannot add or notify twice'
   ]
 };
 

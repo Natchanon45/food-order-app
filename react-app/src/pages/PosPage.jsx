@@ -115,6 +115,7 @@ export function PosPage() {
   const scanStreamRef = useRef(null);
   const scanRafRef = useRef(0);
   const scanDetectorRef = useRef(null);
+  const scanHandledRef = useRef(false);
   const zxingReaderRef = useRef(null);
   const zxingControlsRef = useRef(null);
   const barcodeRef = useRef(null);
@@ -582,12 +583,23 @@ export function PosPage() {
   const addProductByCode = codeValue => {
     const code = String(codeValue || "").trim();
     const product = products.find(item => item.barcode === code || String(item.id || "").toLowerCase() === code.toLowerCase());
-    if (product) {
-      addProduct(product.id);
-      return true;
+
+    if (!product) {
+      showToast(t("pos.runtime.barcode_not_found"), "error");
+      return false;
     }
-    showToast(t("pos.runtime.barcode_not_found"), "error");
-    return false;
+
+    if (savingSale) return false;
+
+    const stock = Number(product.stock || 0);
+    const currentQuantity = Number(cart.find(item => item.id === product.id)?.qty || 0);
+    if (stock <= 0 || currentQuantity >= stock) {
+      showToast(t("pos.runtime.stock_limit"), "error");
+      return false;
+    }
+
+    addProduct(product.id);
+    return true;
   };
 
   const scanBarcode = event => {
@@ -616,10 +628,15 @@ export function PosPage() {
 
   const finishScan = value => {
     const code = String(value || "").trim();
-    if (!code) return;
+    if (!code || scanHandledRef.current) return;
+
+    scanHandledRef.current = true;
     setScanStatus(`พบรหัส: ${code}`);
-    addProductByCode(code);
-    showToast("สแกนบาร์โค้ดสำเร็จ");
+
+    if (addProductByCode(code)) {
+      showToast(t("pos_products.scanner.success"));
+    }
+
     stopScanner();
   };
 
@@ -655,6 +672,8 @@ export function PosPage() {
   };
 
   const startScanner = async () => {
+    scanHandledRef.current = false;
+
     if (!navigator.mediaDevices?.getUserMedia) {
       showToast("อุปกรณ์นี้ไม่สามารถเปิดกล้องได้", "error");
       barcodeRef.current?.focus?.();

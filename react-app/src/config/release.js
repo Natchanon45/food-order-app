@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.05.424",
+  build: "2026.10.05.425",
   branch: "feature/react-firebase-port",
-  commit: "POS-MOBILE-CART-PARITY",
+  commit: "POS-SCANNER-TOAST-DEDUP",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "React POS mobile sale cart parity",
+  milestone: "React POS scanner toast de-duplication",
   whatsNew: [
-    "Restore Laravel-style mobile and tablet sale cart access on canonical React /pos",
-    "Provide cart drawer actions for checkout, hold bill, and held bills through 1023px",
-    "Keep mobile cart labels localized across all five POS languages",
+    "Show exactly one scanner Toast result per camera scan on canonical React /pos",
+    "Show scanner success only after the product is actually added to the sale cart",
+    "Ignore duplicate camera callbacks so one scan cannot add or notify twice",
   ],
 });

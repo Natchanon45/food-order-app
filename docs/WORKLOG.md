@@ -8655,3 +8655,47 @@ Production verification:
 - Page errors = 0; request failures = 0; HTTP errors = 0.
 - 4 expected customer-display Firestore write attempts occurred while products were added during Production verification; all were intercepted/blocked, so Production data was not modified.
 - POS migration can resume at `/pos/backup`, then `/pos/users`.
+
+---
+## 2026-10-05 — POS camera scanner Toast de-duplication
+
+User request:
+- Canonical React `/pos` on mobile showed overlapping Toast feedback after a camera barcode scan, with success and error icons/messages appearing together.
+
+Root cause:
+- `finishScan()` always called the success Toast after `addProductByCode(code)`, even when the product lookup failed or the cart was already at the product stock limit.
+- Camera decoders can also emit the same result more than once before the stream fully stops, so one physical scan could re-enter the completion path.
+
+Implementation:
+- Added `scanHandledRef` so only the first camera result is processed until the next scanner session starts.
+- `addProductByCode()` now validates product existence, active sale-save state, available stock, and current cart quantity before returning success.
+- Camera scan success Toast now renders only when `addProductByCode()` returns true.
+- Error cases keep their existing typed error Toast and no longer receive an unconditional success Toast afterward.
+- Scanner success uses the existing five-language `pos_products.scanner.success` translation key.
+- Added a React foundation regression contract that requires the scanner callback guard and conditional success Toast.
+
+Important files:
+- `react-app/src/pages/PosPage.jsx`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `README.md`
+- generated React assets/shells
+
+Release candidate:
+- React 0.4.280 / Build 2026.10.05.425.
+- Public 0.16.32 / Build 2026.10.05.140.
+- Generated bundle `/react/assets/index-BHntQqAj.js`.
+
+Verification before deploy:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- React foundation scanner regression contract PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build .425 / `index-BHntQqAj.js`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Pending implementation commit/push and Firebase Hosting deployment.
+- Hosting scope only; no Firestore Rules, Storage Rules, or Functions change.
+- No merge to `main`.
