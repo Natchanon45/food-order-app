@@ -20,6 +20,29 @@
   min-height: 36px;
 }
 
+.kitchen-item-actions .btn[data-cancel-item],
+.kitchen-order-actions .btn[data-cancel-order] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.kitchen-item-actions .btn[data-cancel-item] .app-icon,
+.kitchen-order-actions .btn[data-cancel-order] .app-icon {
+  display: inline-grid !important;
+  place-items: center !important;
+  align-self: center !important;
+  line-height: 1 !important;
+  vertical-align: middle !important;
+}
+
+.kitchen-item-actions .btn[data-cancel-item] .bi-x-circle.app-icon::before,
+.kitchen-order-actions .btn[data-cancel-order] .bi-x-circle.app-icon::before {
+  display: block;
+  line-height: 1 !important;
+  transform: translateY(1px);
+}
+
 .kitchen-status-action {
   display: inline-flex;
   align-items: center;

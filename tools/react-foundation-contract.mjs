@@ -1260,11 +1260,21 @@ assert(
   "Cashier receive-payment actions must use the centered cash/coin icon while non-payment confirmation actions retain their semantic icons"
 );
 const kitchenPage=read("react-app/src/pages/KitchenPage.jsx");
+const kitchenItemEditorCss=read("react-app/public/parity/css/kitchen-item-editor.css");
 assert(
   kitchenPage.includes('data-cancel-item={order.id} data-item-index={index} onClick={() => onCancelItem(order, index)}><i className="bi bi-x-circle app-icon"')
   &&kitchenPage.includes('data-cancel-order={order.id} onClick={() => onCancelOrder(order)}><i className="bi bi-x-circle app-icon"')
   &&kitchenPage.includes('<span>{t("kitchen.actions.cancel_order")}</span>'),
   "Kitchen item/order cancel actions must use the same x-circle app-icon markup as Cashier"
+);
+assert(
+  kitchenItemEditorCss.includes('.kitchen-item-actions .btn[data-cancel-item],')
+  &&kitchenItemEditorCss.includes('.kitchen-order-actions .btn[data-cancel-order]')
+  &&kitchenItemEditorCss.includes('place-items: center !important;')
+  &&kitchenItemEditorCss.includes('align-self: center !important;')
+  &&kitchenItemEditorCss.includes('.bi-x-circle.app-icon::before')
+  &&kitchenItemEditorCss.includes('transform: translateY(1px);'),
+  "Kitchen cancel icons must keep Cashier-style vertical centering and x-circle optical alignment"
 );
 assert(
   cashierPage.includes('CashierOrderNotifier orders={orders} onToast={showToast} surface="cashier"')

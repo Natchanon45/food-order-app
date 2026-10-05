@@ -8278,3 +8278,53 @@ Deploy state:
 - Deployment scope was Hosting only.
 - Primary worktree `/pos/settings` uncommitted work remains isolated and untouched.
 - No Functions/Rules/Storage deployment and no merge to main.
+---
+## 2026-10-05 — Kitchen cancel icon Y-axis centering
+
+User request:
+- Center the icons on the Y axis for the Kitchen cancel-button work from the previous release.
+
+Root cause / comparison:
+- Cashier already used scoped button/icon centering: inline-flex button alignment, inline-grid app-icon alignment, and an x-circle optical `translateY(1px)` adjustment.
+- Kitchen had the x-circle app-icon markup from Build .419 but did not yet apply the same scoped vertical-centering/optical CSS contract.
+
+Implementation:
+- Added scoped Kitchen styles for both `button[data-cancel-item]` and `button[data-cancel-order]`.
+- Cancel buttons now force inline-flex / align-items center / justify-content center.
+- Their app icons now use inline-grid / place-items center / align-self center / line-height 1 / vertical-align middle.
+- Their x-circle `::before` glyph uses the same `translateY(1px)` optical correction as Cashier.
+- Cancellation callbacks and business behavior remain unchanged.
+- Added React foundation regression coverage for the Kitchen cancel icon centering contract.
+
+Important files:
+- react-app/public/parity/css/kitchen-item-editor.css
+- tools/react-foundation-contract.mjs
+- react-app/src/config/release.js
+- public/assets/js/app-info.js
+- generated React shell/bundle.
+
+Release prepared:
+- React 0.4.280 / 2026.10.05.420.
+- Public 0.16.32 / 2026.10.05.135.
+- Generated bundle `/react/assets/index-DLZUIbTn.js`.
+
+Verification before deploy:
+- KitchenPage syntax check PASS.
+- React foundation contract PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS: 53 routes / 21 POS; parity matrix, P0 actions, 54 callable refs / 0 missing, tenant access, UI layers.
+- npm run build:react PASS; generated build contract PASS for Build .420.
+- git diff --check PASS.
+- Authenticated Production-data local overlay with Firestore writes blocked PASS:
+  - Desktop: 14 per-item Cancel + 2 Cancel-entire-order buttons.
+  - Mobile: same 16 cancel actions.
+  - Every cancel icon element has button-center delta Y = 0px.
+  - Every icon has align-self=center and vertical-align=middle.
+  - Every x-circle pseudo glyph resolves to transform matrix(..., y=1px), matching Cashier optical alignment.
+  - Desktop/mobile horizontal overflow=0.
+  - page errors=0; request failures=0; HTTP errors=0; Firestore writes=0.
+
+Deploy state:
+- Commit/push and Hosting-only deployment pending.
+- Primary worktree `/pos/settings` uncommitted work remains isolated and untouched.
+- No Functions/Rules/Storage deployment and no merge to main.

@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.05.419",
+  build: "2026.10.05.420",
   branch: "feature/react-firebase-port",
-  commit: "KITCHEN-CANCEL-ACTION-ICONS",
+  commit: "KITCHEN-CANCEL-ICON-VERTICAL-CENTER",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Kitchen cancel action icon parity",
+  milestone: "Kitchen cancel icon vertical alignment",
   whatsNew: [
-    "Add the Cashier-style x-circle icon to every visible Kitchen cancel action",
-    "Keep Kitchen item and whole-order cancellation behavior unchanged",
-    "Preserve responsive icon sizing through the shared app-icon contract",
+    "Center Kitchen cancel icons on the button Y axis using the same alignment contract as Cashier",
+    "Apply the x-circle optical adjustment consistently to item and whole-order cancel actions",
+    "Keep all Kitchen cancellation behavior unchanged",
   ],
 });
