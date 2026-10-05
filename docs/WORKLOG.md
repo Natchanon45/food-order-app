@@ -8043,6 +8043,16 @@ Verification before deploy:
 - git diff --check PASS.
 
 Deploy state:
-- Commit/push and Hosting-only deployment pending.
+- Implementation commit 86e63fee — fix: align delivery branding and store name — pushed to origin/feature/react-firebase-port.
+- Firebase Hosting target foodapp deployed successfully to https://penguin-food.web.app on React 0.4.280 / 2026.10.05.416 and Public 0.16.32 / 2026.10.05.131.
+- Production browser contract PASS at 440x956:
+  - Delivery Hero = ตั่วเฮียอาหารอิสาน.
+  - Delivery App Icon natural source = 512x512, object-fit contain.
+  - Delivery Success receipt shop = ตั่วเฮียอาหารอิสาน.
+  - Delivery Success header uses platform-brand-image-target with configured 512x512 App Icon instead of PG.
+  - Delivery and Success horizontal overflow = 0.
+  - Production React bundle = /react/assets/index-CnNkzj8Q.js.
+  - page errors = 0; request failures = 0; HTTP errors = 0; Firestore writes = 0.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
 - Primary worktree /pos/settings changes remain intentionally isolated and untouched.
 - No merge to main.
