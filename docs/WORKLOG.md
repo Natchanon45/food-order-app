@@ -7373,3 +7373,162 @@ Deploy state:
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
 - Next Retail POS migration/redesign route: `/pos/payables`.
 - No merge to `main`.
+
+---
+## 2026-10-05 — POS Payables canonical React migration + Accounts Payable Control Center
+
+User request:
+- Continue the Retail POS plan after Purchases.
+- Next remaining route: `/pos/payables`.
+- Migrate the legacy page to canonical React and apply the approved modern/colorful Control Center visual policy without changing payable business behavior.
+
+Legacy behavior recovered before migration:
+- Legacy page IDs/actions were read from `public/pos/payables/index.html` and retained.
+- Legacy payable normalization:
+  - supplier lookup by supplier ID or normalized name,
+  - credit days fall back from purchase -> supplier -> 0,
+  - paid amount is summed from payment history when payments exist, otherwise legacy `paidAmount` is used,
+  - balance = max(0, total - paid),
+  - due date falls back to purchase date + supplier credit days,
+  - status = paid / partial / unpaid.
+- Due-soon = open balance and due in 0–7 days.
+- Overdue = open balance and due date before today.
+- Search/filter rows are sorted by due date.
+- Supplier summary ranks the top 8 open balances.
+- Payment form validates amount > 0 and no more than the current outstanding balance.
+- Granular permissions:
+  - `pos.payables.pay`,
+  - `pos.payables.view_amount`.
+- Legacy permission boundary:
+  - payment actions hidden without `pay`,
+  - outstanding/due-soon/overdue/supplier-balance and amount columns hidden without `view_amount`.
+
+Migration / implementation:
+- Replaced the minimal draft `PosPayablesPage.jsx` with a full canonical React implementation.
+- Added production POS session/page-guard behavior:
+  - `getRetailPosSession()`,
+  - `canUseRetailPos()`,
+  - cached role settings,
+  - 6s bounded role-settings load,
+  - first-allowed-route redirect,
+  - 10s bounded initial data load,
+  - shared PageReady overlay.
+- Added realtime Firestore watchers:
+  - `watchPosPurchases`,
+  - `watchPosSuppliers`.
+- Initial load uses `listPosPurchases` + `listPosSuppliers`.
+- React normalization preserves the legacy supplier-credit/payment-history compatibility rules described above.
+- Payable payment still calls the existing `recordPosPayablePayment()` transaction in `retailPurchasingData.js`; no write/business logic was moved or rewritten.
+- Added safe granular-permission fallback consistent with the old POS role model:
+  - owner / wildcard = allowed,
+  - explicit granular roles are respected exactly,
+  - manager/admin with no granular payable entries retain old default pay + view-amount capabilities.
+- Important privacy boundary:
+  - without `view_amount`, all amount KPI/table/supplier-ranking surfaces are hidden or masked,
+  - a user with `pay` but without `view_amount` gets an empty payment amount field rather than a prefilled outstanding balance,
+  - internal balance remains available only for submission validation.
+- Preserved legacy DOM/action IDs:
+  - `payableOutstanding`, `payableOpenCount`, `payableDueSoon`, `payableOverdue`,
+  - `payableSearch`, `payableStatusFilter`, `supplierPayableSummary`,
+  - `payableTableBody`, `payableEmpty`,
+  - `paymentDialog`, `supplierPaymentForm`, `paymentPurchaseId`, `paymentPurchaseInfo`,
+  - `supplierPaymentDate`, `supplierPaymentAmount`, `supplierPaymentMethod`,
+  - `supplierPaymentReference`, `supplierPaymentNote`, `supplierPaymentError`,
+  - `closePaymentDialog`, `cancelPaymentBtn`, `toast`.
+- Added canonical React shell sync for `public/pos/payables/index.html`.
+- Added no-cache Hosting headers for `/pos/payables` and `/pos/payables/**`.
+
+Visual redesign:
+- Added React-only `retail-payables-visual-dashboard.css`.
+- Added Accounts Payable Control Center hero:
+  - outstanding amount when permitted,
+  - open purchase count,
+  - due-soon count,
+  - overdue count,
+  - open-supplier count.
+- Added four colored KPI cards.
+- Added Due-Date Risk visualization based on counts only:
+  - overdue,
+  - due within 7 days,
+  - due later.
+- Added supplier outstanding ranking only when `view_amount` is allowed.
+- Added richer search/status filters.
+- Added status/risk-accent payable rows and semantic icons.
+- Mobile payable table becomes contained cards with no horizontal page scroll.
+- Rebuilt payment dialog with:
+  - semantic title/info card,
+  - icon-labelled payment fields,
+  - internal responsive layout,
+  - contained footer actions.
+- Added TH / EN / MY / LO / KM visual labels.
+
+Important files:
+- `react-app/src/pages/PosPayablesPage.jsx`
+- `react-app/public/parity/css/retail-payables-visual-dashboard.css`
+- `react-app/src/i18n/parity-translations.json`
+- `tools/react-foundation-contract.mjs`
+- `tools/sync-react-legacy-entrypoints.py`
+- `firebase.json`
+- release metadata files after Build bump.
+
+Release prepared:
+- React `0.4.280 / 2026.10.05.412`.
+- Public `0.16.32 / 2026.10.05.127`.
+- Generated bundle: `/react/assets/index-DNK0e-Xk.js`.
+
+Verification before deploy:
+- Payables JSX esbuild syntax PASS.
+- Translation JSON validation PASS.
+- React foundation contract PASS, including:
+  - all legacy IDs,
+  - session/role/page permission behavior,
+  - legacy supplier-credit/payment-history normalization,
+  - realtime watchers,
+  - `pay` / `view_amount` permission boundaries,
+  - no balance prefill without `view_amount`,
+  - five-language labels,
+  - responsive visual CSS,
+  - canonical shell sync,
+  - Hosting no-cache headers.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS:
+  - migration coverage = 53 routes / 21 POS,
+  - parity matrix PASS,
+  - P0 actions PASS,
+  - callables = 54 refs / 0 missing,
+  - tenant-access PASS,
+  - UI-layer PASS.
+- `npm run build:react` PASS; generated build contract PASS for Build `.412`.
+- `git diff --check` PASS.
+- Authenticated local-build browser contract PASS against Production Firestore with Firestore Write/commit/batchWrite blocked.
+- Current Production data has 0 payable rows:
+  - Hero = 0.00 amount / 0 open / 0 due soon / 0 overdue for current owner.
+  - Supplier ranking correctly renders empty.
+  - Payable list correctly renders empty state.
+- Desktop 1440x900:
+  - Hero ~= 247px,
+  - 4 Hero metrics,
+  - 4 KPI cards,
+  - 3 risk bars,
+  - all 22 legacy IDs present,
+  - amount surfaces visible for current owner,
+  - Payment dialog = 680x532,
+  - dialog amount is empty when opened without a selected payable,
+  - raw translation keys = 0,
+  - horizontal overflow = 0.
+- Mobile 390x844:
+  - Hero ~= 332px,
+  - Payables panel = 374px,
+  - table min-width = 0,
+  - table display = block/mobile cards,
+  - wrapper overflow = visible,
+  - payment dialog = 374px wide and contained,
+  - horizontal overflow = 0.
+- Payment dialog was opened for layout inspection only; no submit/payment action was performed.
+- Page errors = 0; request failures = 0; HTTP errors = 0.
+- Firestore write attempts observed = 0.
+
+Deploy state:
+- Commit/push and Hosting-only deployment pending.
+- No Firestore Rules, Storage Rules, Functions, or data migration required.
+- No merge to `main`.

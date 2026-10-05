@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.05.411",
+  build: "2026.10.05.412",
   branch: "feature/react-firebase-port",
-  commit: "POS-PURCHASES-CONTROL-CENTER",
+  commit: "POS-PAYABLES-CONTROL-CENTER",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Retail POS Purchase & Receiving Control Center",
+  milestone: "Retail POS Accounts Payable Control Center",
   whatsNew: [
-    "Redesign Purchases as a visual receiving control center with inbound KPIs, activity chart, rankings, and richer history cards",
-    "Improve purchase-entry readability, mobile line cards, and semantic actions without changing receiving or stock-update logic",
-    "Preserve realtime watchers, barcode scanning, CSV export, view_cost permissions, payable fields, and tenant boundaries",
+    "Migrate Accounts Payable to canonical React with realtime purchase/supplier normalization and the approved visual control-center design",
+    "Add due-date risk graphics, permission-aware payable KPIs, supplier ranking, responsive payable cards, and a polished payment dialog",
+    "Preserve supplier-credit due dates, payment history, pay/view_amount permissions, purchase transaction behavior, and tenant boundaries",
   ],
 });

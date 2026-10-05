@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.05.126',
+  build: '2026.10.05.127',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-PURCHASES-CONTROL-CENTER',
+  commit: 'POS-PAYABLES-CONTROL-CENTER',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS Purchase & Receiving Control Center',
-  updatedAt: '2026-10-05T09:05:47+0700',
+  milestone: 'Retail POS Accounts Payable Control Center',
+  updatedAt: '2026-10-05T09:24:13+0700',
   whatsNew: [
-    'Redesign Purchases as a visual receiving control center with inbound KPIs, activity chart, rankings, and richer history cards',
-    'Improve purchase-entry readability, mobile line cards, and semantic actions without changing receiving or stock-update logic',
-    'Preserve realtime watchers, barcode scanning, CSV export, view_cost permissions, payable fields, and tenant boundaries'
+    'Migrate Accounts Payable to canonical React with realtime purchase/supplier normalization and the approved visual control-center design',
+    'Add due-date risk graphics, permission-aware payable KPIs, supplier ranking, responsive payable cards, and a polished payment dialog',
+    'Preserve supplier-credit due dates, payment history, pay/view_amount permissions, purchase transaction behavior, and tenant boundaries'
   ]
 };
 

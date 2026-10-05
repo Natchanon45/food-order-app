@@ -3547,6 +3547,28 @@
           "review": "บันทึกการชำระไว้ในเครื่องแล้ว • รอตรวจสอบ",
           "saved_synced": "บันทึกการชำระเจ้าหนี้แล้ว • ส่งเข้าระบบแล้ว",
           "saved_pending": "บันทึกการชำระเจ้าหนี้แล้ว • รอส่งเมื่อออนไลน์"
+        },
+        "visual": {
+          "kicker": "Accounts Payable Control Center",
+          "hero_description": "ติดตามเจ้าหนี้จากการรับสินค้า เห็นรายการใกล้ครบกำหนด เกินกำหนด และสถานะการชำระได้ชัดเจนในหน้าเดียว",
+          "open_suppliers": "ผู้จำหน่ายที่มียอดค้าง :count ราย",
+          "outstanding_hint": "ยอดคงเหลือจากใบซื้อที่ยังปิดไม่ครบ",
+          "open_hint": "จำนวนใบซื้อที่ยังมียอดคงเหลือ",
+          "due_soon_hint": "มี :count รายการใกล้ครบกำหนด",
+          "overdue_hint": "มี :count รายการเกินกำหนด",
+          "overdue_count": "เกินกำหนด",
+          "due_soon_count": "ครบกำหนดใน 7 วัน",
+          "later_count": "ยังไม่ใกล้ครบกำหนด",
+          "risk_title": "สถานะกำหนดชำระ",
+          "risk_description": "แยกจำนวนใบซื้อค้างตามความเร่งด่วนของวันครบกำหนด",
+          "paid_count": "ชำระครบแล้ว",
+          "supplier_title": "ยอดค้างตามผู้จำหน่าย",
+          "supplier_description": "จัดอันดับผู้จำหน่ายตามยอดคงเหลือที่ยังต้องชำระ",
+          "search_label": "ค้นหารายการ",
+          "status_label": "สถานะเจ้าหนี้",
+          "empty_hint": "ลองเปลี่ยนคำค้นหา หรือเลือกสถานะอื่น",
+          "payment_description": "บันทึกรายการชำระโดยไม่เปลี่ยนข้อมูลใบซื้อเดิม",
+          "amount_hidden": "ยอดเงินถูกซ่อนตามสิทธิ์ผู้ใช้"
         }
       },
       "suppliers": {
@@ -9594,6 +9616,28 @@
           "review": "Payment saved locally • Requires review",
           "saved_synced": "Supplier payment saved • Synced",
           "saved_pending": "Supplier payment saved • Will sync when online"
+        },
+        "visual": {
+          "kicker": "Accounts Payable Control Center",
+          "hero_description": "Track supplier payables from receiving, with clear due-soon, overdue, and payment status in one workspace.",
+          "open_suppliers": ":count suppliers have outstanding balances",
+          "outstanding_hint": "Remaining balance from purchases that are not fully paid",
+          "open_hint": "Purchase receipts that still have an outstanding balance",
+          "due_soon_hint": ":count records are due soon",
+          "overdue_hint": ":count records are overdue",
+          "overdue_count": "Overdue",
+          "due_soon_count": "Due within 7 days",
+          "later_count": "Due later",
+          "risk_title": "Due-date status",
+          "risk_description": "Split open purchases by payment urgency and due date.",
+          "paid_count": "Fully paid",
+          "supplier_title": "Outstanding by supplier",
+          "supplier_description": "Rank suppliers by remaining amount payable.",
+          "search_label": "Search payables",
+          "status_label": "Payable status",
+          "empty_hint": "Try another search term or payment-status filter.",
+          "payment_description": "Record a supplier payment without changing the original purchase details.",
+          "amount_hidden": "Amount hidden by user permission"
         }
       },
       "suppliers": {
@@ -15366,6 +15410,28 @@
           "review": "ငွေပေးချေမှုကို ပြည်တွင်းတွင် သိမ်းဆည်းပြီး • ပြန်လည်သုံးသပ်ရန် လိုအပ်သည်။",
           "saved_synced": "ပေးသွင်းသူ ငွေပေးချေမှုကို သိမ်းဆည်းပြီး • စင့်ခ်လုပ်ထားသည်။",
           "saved_pending": "ပေးသွင်းသူ ငွေပေးချေမှုကို သိမ်းဆည်းပြီး • အွန်လိုင်းတွင် စင့်ခ်လုပ်ပါမည်။"
+        },
+        "visual": {
+          "kicker": "Accounts Payable Control Center",
+          "hero_description": "ကုန်လက်ခံမှုမှ ပေးချေရမည့်စာရင်းများ၊ မကြာမီပေးရမည့်စာရင်း၊ ရက်လွန်စာရင်းနှင့် ငွေပေးချေမှုအခြေအနေကို တစ်နေရာတည်းတွင် ကြည့်နိုင်သည်။",
+          "open_suppliers": "လက်ကျန်ရှိသော ပေးသွင်းသူ :count ဦး",
+          "outstanding_hint": "အပြည့်အဝမပေးရသေးသော ဝယ်ယူစာရင်းများ၏ လက်ကျန်",
+          "open_hint": "လက်ကျန်ရှိနေသေးသော ဝယ်ယူစာရင်းအရေအတွက်",
+          "due_soon_hint": "မကြာမီပေးရမည့် စာရင်း :count ခု",
+          "overdue_hint": "ရက်လွန်စာရင်း :count ခု",
+          "overdue_count": "ရက်လွန်",
+          "due_soon_count": "7 ရက်အတွင်းပေးရမည်",
+          "later_count": "နောက်မှပေးရမည်",
+          "risk_title": "ပေးချေရက် အခြေအနေ",
+          "risk_description": "လက်ကျန်ဝယ်ယူစာရင်းများကို ပေးချေရက်အရေးကြီးမှုအလိုက် ခွဲပြသည်။",
+          "paid_count": "အပြည့်ပေးပြီး",
+          "supplier_title": "ပေးသွင်းသူအလိုက် လက်ကျန်",
+          "supplier_description": "ပေးချေရန်ကျန်ငွေအလိုက် ပေးသွင်းသူများကို အစဉ်လိုက်ပြသည်။",
+          "search_label": "ပေးချေရမည့်စာရင်းရှာရန်",
+          "status_label": "ပေးချေရမည့်အခြေအနေ",
+          "empty_hint": "အခြားရှာဖွေစာသား သို့မဟုတ် အခြေအနေစစ်ထုတ်မှုကို စမ်းကြည့်ပါ။",
+          "payment_description": "မူရင်းဝယ်ယူစာရင်းကို မပြောင်းဘဲ ပေးသွင်းသူငွေပေးချေမှုကို မှတ်တမ်းတင်ပါ။",
+          "amount_hidden": "အသုံးပြုသူအခွင့်အရေးအရ ငွေပမာဏကို ဖျောက်ထားသည်"
         }
       },
       "suppliers": {
@@ -21138,6 +21204,28 @@
           "review": "ການຈ່າຍເງິນທີ່ບັນທຶກໄວ້ໃນພື້ນທີ່ • ຕ້ອງການການທົບທວນຄືນ",
           "saved_synced": "ບັນທຶກການຈ່າຍເງິນຈາກຜູ້ສະໜອງ • ຊິງຄ໌ແລ້ວ",
           "saved_pending": "ບັນທຶກການຈ່າຍເງິນຂອງຜູ້ສະໜອງໄວ້ • ຈະຊິ້ງຂໍ້ມູນເມື່ອອອນລາຍ"
+        },
+        "visual": {
+          "kicker": "Accounts Payable Control Center",
+          "hero_description": "ຕິດຕາມເຈົ້າໜີ້ຈາກການຮັບສິນຄ້າ ເຫັນລາຍການໃກ້ຄົບກຳນົດ, ເກີນກຳນົດ ແລະສະຖານະການຈ່າຍໃນໜ້າດຽວ.",
+          "open_suppliers": "ມີຜູ້ສະໜອງ :count ລາຍທີ່ຍັງມີຍອດຄ້າງ",
+          "outstanding_hint": "ຍອດຄົງເຫຼືອຈາກໃບຊື້ທີ່ຍັງຈ່າຍບໍ່ຄົບ",
+          "open_hint": "ຈຳນວນໃບຊື້ທີ່ຍັງມີຍອດຄົງເຫຼືອ",
+          "due_soon_hint": "ມີ :count ລາຍການໃກ້ຄົບກຳນົດ",
+          "overdue_hint": "ມີ :count ລາຍການເກີນກຳນົດ",
+          "overdue_count": "ເກີນກຳນົດ",
+          "due_soon_count": "ຄົບກຳນົດໃນ 7 ມື້",
+          "later_count": "ຍັງບໍ່ໃກ້ຄົບກຳນົດ",
+          "risk_title": "ສະຖານະກຳນົດຈ່າຍ",
+          "risk_description": "ແຍກໃບຊື້ຄ້າງຕາມຄວາມເລັ່ງດ່ວນຂອງວັນຄົບກຳນົດ.",
+          "paid_count": "ຈ່າຍຄົບແລ້ວ",
+          "supplier_title": "ຍອດຄ້າງຕາມຜູ້ສະໜອງ",
+          "supplier_description": "ຈັດອັນດັບຜູ້ສະໜອງຕາມຍອດທີ່ຍັງຕ້ອງຈ່າຍ.",
+          "search_label": "ຄົ້ນຫາເຈົ້າໜີ້",
+          "status_label": "ສະຖານະເຈົ້າໜີ້",
+          "empty_hint": "ລອງປ່ຽນຄຳຄົ້ນ ຫຼືຕົວກອງສະຖານະ.",
+          "payment_description": "ບັນທຶກການຈ່າຍໃຫ້ຜູ້ສະໜອງໂດຍບໍ່ປ່ຽນຂໍ້ມູນໃບຊື້ເດີມ.",
+          "amount_hidden": "ຍອດເງິນຖືກເຊື່ອງຕາມສິດຜູ້ໃຊ້"
         }
       },
       "suppliers": {
@@ -26910,6 +26998,28 @@
           "review": "ការបង់ប្រាក់ត្រូវបានរក្សាទុកក្នុងមូលដ្ឋាន • ទាមទារការពិនិត្យឡើងវិញ",
           "saved_synced": "ការទូទាត់របស់អ្នកផ្គត់ផ្គង់ត្រូវបានរក្សាទុក • បានធ្វើសមកាលកម្ម",
           "saved_pending": "ការទូទាត់របស់អ្នកផ្គត់ផ្គង់ត្រូវបានរក្សាទុក • នឹងធ្វើសមកាលកម្មនៅពេលអ៊ីនធឺណិត"
+        },
+        "visual": {
+          "kicker": "Accounts Payable Control Center",
+          "hero_description": "តាមដានបំណុលអ្នកផ្គត់ផ្គង់ពីការទទួលទំនិញ ជាមួយស្ថានភាពជិតដល់កំណត់ ហួសកំណត់ និងការទូទាត់ក្នុងកន្លែងតែមួយ។",
+          "open_suppliers": "អ្នកផ្គត់ផ្គង់ :count នាក់មានសមតុល្យនៅសល់",
+          "outstanding_hint": "សមតុល្យនៅសល់ពីការទិញដែលមិនទាន់បង់ពេញ",
+          "open_hint": "ចំនួនការទិញដែលនៅមានសមតុល្យ",
+          "due_soon_hint": "មាន :count ធាតុជិតដល់កំណត់",
+          "overdue_hint": "មាន :count ធាតុហួសកំណត់",
+          "overdue_count": "ហួសកំណត់",
+          "due_soon_count": "ដល់កំណត់ក្នុង 7 ថ្ងៃ",
+          "later_count": "ដល់កំណត់ពេលក្រោយ",
+          "risk_title": "ស្ថានភាពកាលបរិច្ឆេទបង់",
+          "risk_description": "បែងចែកការទិញដែលនៅសល់តាមភាពបន្ទាន់នៃថ្ងៃដល់កំណត់។",
+          "paid_count": "បានបង់ពេញ",
+          "supplier_title": "សមតុល្យតាមអ្នកផ្គត់ផ្គង់",
+          "supplier_description": "ចាត់ថ្នាក់អ្នកផ្គត់ផ្គង់តាមចំនួនទឹកប្រាក់ដែលនៅត្រូវបង់។",
+          "search_label": "ស្វែងរកបំណុល",
+          "status_label": "ស្ថានភាពបំណុល",
+          "empty_hint": "សាកល្បងពាក្យស្វែងរក ឬតម្រងស្ថានភាពផ្សេង។",
+          "payment_description": "កត់ត្រាការទូទាត់អ្នកផ្គត់ផ្គង់ដោយមិនផ្លាស់ប្តូរព័ត៌មានការទិញដើម។",
+          "amount_hidden": "ចំនួនទឹកប្រាក់ត្រូវបានលាក់តាមសិទ្ធិអ្នកប្រើ"
         }
       },
       "suppliers": {

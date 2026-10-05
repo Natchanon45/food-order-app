@@ -773,6 +773,8 @@ const posStockCountsPage=read("react-app/src/pages/PosStockCountsPage.jsx");
 const posStockCountsVisualCss=read("react-app/public/parity/css/retail-stock-counts-visual-dashboard.css");
 const posPurchasesPage=read("react-app/src/pages/PosPurchasesPage.jsx");
 const posPurchasesVisualCss=read("react-app/public/parity/css/retail-purchases-visual-dashboard.css");
+const posPayablesPage=read("react-app/src/pages/PosPayablesPage.jsx");
+const posPayablesVisualCss=read("react-app/public/parity/css/retail-payables-visual-dashboard.css");
 const posPurchasingData=read("react-app/src/data/retailPurchasingData.js");
 const posPurchaseBarcodeCss=read("react-app/public/parity/css/retail-barcode-scan-tools.css");
 const posCatalogPage=read("react-app/src/pages/PosCatalogPage.jsx");
@@ -963,6 +965,24 @@ assert(posPurchaseBarcodeCss.includes(".scan-barcode-btn.scan-toolbar-btn")&&pos
 assert(paritySync.includes('extract_runtime_css("retail-barcode-scan-tools.js", "retail-barcode-scan-tools.css")'),"POS Purchases scanner CSS must remain sourced from the legacy runtime during parity sync");
 assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/purchases/index.html"'),"React postbuild must sync canonical /pos/purchases to the React shell");
 assert(firebaseHostingConfig.includes('"source": "/pos/purchases"')&&firebaseHostingConfig.includes('"source": "/pos/purchases/**"'),"Hosting must cache-bust canonical React POS Purchases");
+
+assert(appRoutes.includes('import { PosPayablesPage }')&&appRoutes.includes('path="/pos/payables"'),"React POS Payables route must be mounted");
+for(const id of ["payableOutstanding","payableOpenCount","payableDueSoon","payableOverdue","payableSearch","payableStatusFilter","supplierPayableSummary","payableTableBody","payableEmpty","paymentDialog","supplierPaymentForm","paymentPurchaseId","paymentPurchaseInfo","supplierPaymentDate","supplierPaymentAmount","supplierPaymentMethod","supplierPaymentReference","supplierPaymentNote","supplierPaymentError","closePaymentDialog","cancelPaymentBtn","toast"]) assert(posPayablesPage.includes(`id="${id}"`),`React POS Payables legacy ID missing: ${id}`);
+assert(posPayablesPage.includes("getRetailPosSession")&&posPayablesPage.includes('pagePermissions.has("pos.payables")')&&posPayablesPage.includes("firstAllowedPosPage(posAccessProfile, roleRows)")&&posPayablesPage.includes("/pos/login/?next="),"React POS Payables session/page-permission parity missing");
+for(const permission of ["pos.payables.pay","pos.payables.view_amount"]) assert(posPayablesPage.includes(permission),`React POS Payables granular permission missing: ${permission}`);
+assert(posPayablesPage.includes('localStorage.getItem("retail_pos_roles_v1")')&&posPayablesPage.includes("ROLE_SETTINGS_TIMEOUT_MS = 6000")&&posPayablesPage.includes("POS_ROLE_SETTINGS_TIMEOUT"),"React POS Payables must use cached/built-in role readiness with a bounded role-settings wait");
+assert(posPayablesPage.includes("INITIAL_DATA_TIMEOUT_MS = 10000")&&posPayablesPage.includes("POS_PAYABLES_INITIAL_LOAD_TIMEOUT"),"React POS Payables initial data load must not block indefinitely");
+assert(posPayablesPage.includes("watchPosPurchases")&&posPayablesPage.includes("watchPosSuppliers"),"React POS Payables must keep realtime purchase/supplier watchers");
+assert(posPayablesPage.includes("purchase.creditDays ?? supplier?.creditDays ?? 0")&&posPayablesPage.includes("payments.length")&&posPayablesPage.includes("Math.max(0, total - paidAmount)")&&posPayablesPage.includes("purchase.dueDate || addDays"),"React POS Payables must preserve legacy supplier-credit/payment-history normalization");
+assert(posPayablesPage.includes('t(`pos_purchasing.payables.${key}`')&&posPayablesPage.includes('tr("header.title")')&&posPayablesPage.includes('tr("payment.title")'),"React POS Payables must use the five-language pos_purchasing.payables translation catalog");
+assert(posPayablesPage.includes('canViewAmount ? amountText(stats.outstanding) : "—"')&&posPayablesPage.includes('id="payableOutstanding" hidden={!canViewAmount}')&&posPayablesPage.includes('className="panel payable-supplier-panel" hidden={!canViewAmount}')&&posPayablesPage.includes('data-label={tr("columns.total")} hidden={!canViewAmount}'),"React POS Payables amount surfaces must preserve view_amount masking");
+assert(posPayablesPage.includes('hidden={!canPay} onClick={() => openPayment(row)}')&&posPayablesPage.includes('setPaymentAmount(canViewAmount ? Number(row.balance || 0).toFixed(2) : "")')&&posPayablesPage.includes("recordPosPayablePayment"),"React POS Payables payment action must preserve pay permission and avoid revealing balance without view_amount");
+assert(posPayablesPage.includes('"retail-payables-visual-dashboard.css"')&&posPayablesPage.includes('className="payable-visual-hero"')&&posPayablesPage.includes('className="panel payable-risk-panel"')&&posPayablesPage.includes('className="payment-dialog payable-payment-dialog"'),"React POS Payables Control Center structure missing");
+assert(posPayablesVisualCss.includes("linear-gradient(120deg,#083b2d")&&posPayablesVisualCss.includes(".payable-risk-track")&&posPayablesVisualCss.includes(".payable-stat-card::after")&&posPayablesVisualCss.includes(".payable-table td[data-label]::before")&&posPayablesVisualCss.includes("#paymentDialog.payable-payment-dialog")&&posPayablesVisualCss.includes("@media(max-width:620px)"),"React POS Payables colorful visual dashboard/responsive treatment missing");
+for(const locale of ["th","en","my","lo","km"]){const visual=dict[locale]?.pos_purchasing?.payables?.visual;assert(visual&&visual.kicker&&visual.hero_description&&visual.open_suppliers&&visual.risk_title&&visual.supplier_title&&visual.payment_description,`React POS Payables visual translations missing: ${locale}`);}
+assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/payables/index.html"'),"React postbuild must sync canonical /pos/payables to the React shell");
+assert(firebaseHostingConfig.includes('"source": "/pos/payables"')&&firebaseHostingConfig.includes('"source": "/pos/payables/**"'),"Hosting must cache-bust canonical React POS Payables");
+
 
 assert(firestoreRules.includes("function tenantProductManagerRole")&&firestoreRules.includes("function tenantStockMovementRole")&&firestoreRules.includes("settingId == 'catalog-order' && tenantProductManagerRole(tenantId)"),"POS Products Firestore role/routing rules missing");
 assert(storageRules.includes("['owner', 'admin', 'manager', 'super_admin']"),"POS product image Storage role parity missing");
