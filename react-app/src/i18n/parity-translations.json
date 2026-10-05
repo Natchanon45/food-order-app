@@ -4270,7 +4270,8 @@
         "paper_size": "ขนาดใบเสร็จ",
         "after_sale": "หลังบันทึกการขาย",
         "none": "ไม่พิมพ์ใบเสร็จ",
-        "auto": "พิมพ์ทันที"
+        "auto": "พิมพ์ทันที",
+        "ask": "ถามก่อนพิมพ์"
       },
       "message": {
         "title": "ข้อความบนใบเสร็จ",
@@ -4326,6 +4327,23 @@
         "title": "ธีมเมนู POS",
         "description": "เลือกหน้าตาเมนูของร้านนี้ การตั้งค่าจะใช้กับผู้ใช้ POS ทุกคนในร้าน",
         "note": "ธีมมีผลเฉพาะหน้าตาเมนู POS ไม่เปลี่ยนสิทธิ์ เมนูที่เข้าถึงได้ หรือข้อมูลการขายของร้าน"
+      },
+      "visual": {
+        "kicker": "POS Settings Control Center",
+        "hero_description": "ควบคุมข้อมูลร้าน ภาษี การรับชำระ ใบเสร็จ ธีมเมนู และระบบสมาชิกจากหน้าจอเดียว",
+        "store_status": "ข้อมูลร้าน",
+        "vat_status": "สถานะ VAT",
+        "promptpay_status": "PromptPay",
+        "loyalty_status": "ระบบสมาชิก",
+        "ready": "พร้อมใช้งาน",
+        "needs_setup": "ควรตั้งค่า",
+        "editable": "แก้ไขได้",
+        "read_only": "ดูอย่างเดียว",
+        "loyalty_description": "กำหนดการสะสมแต้มและมูลค่าที่ใช้เป็นส่วนลด",
+        "save_failed": "บันทึกการตั้งค่าไม่สำเร็จ: :error",
+        "reset_title": "ยืนยันคืนค่าเริ่มต้น",
+        "cancel": "ยกเลิก",
+        "saving": "กำลังบันทึก..."
       }
     },
     "pos_stock": {
@@ -10106,7 +10124,8 @@
         "paper_size": "Receipt size",
         "after_sale": "After saving a sale",
         "none": "Do not print",
-        "auto": "Print immediately"
+        "auto": "Print immediately",
+        "ask": "Ask before printing"
       },
       "message": {
         "title": "Receipt messages",
@@ -10162,6 +10181,23 @@
         "title": "POS menu theme",
         "description": "Choose the menu appearance for this store. This setting applies to every POS user in the store.",
         "note": "The theme changes only the POS menu appearance. Permissions, accessible menus, and sales data are unchanged."
+      },
+      "visual": {
+        "kicker": "POS Settings Control Center",
+        "hero_description": "Control store details, tax, payments, receipts, POS menu themes, and loyalty from one workspace.",
+        "store_status": "Store profile",
+        "vat_status": "VAT status",
+        "promptpay_status": "PromptPay",
+        "loyalty_status": "Loyalty",
+        "ready": "Ready",
+        "needs_setup": "Needs setup",
+        "editable": "Editable",
+        "read_only": "Read only",
+        "loyalty_description": "Configure point earning and redemption value.",
+        "save_failed": "Unable to save settings: :error",
+        "reset_title": "Confirm restore defaults",
+        "cancel": "Cancel",
+        "saving": "Saving..."
       }
     },
     "pos_stock": {
@@ -16005,7 +16041,8 @@
         "paper_size": "ပြေစာအရွယ်အစား",
         "after_sale": "သိမ်းပြီးမှ ရောင်းတာ။",
         "none": "မနှိပ်နဲ့",
-        "auto": "ချက်ချင်းပုံနှိပ်ပါ။"
+        "auto": "ချက်ချင်းပုံနှိပ်ပါ။",
+        "ask": "မပုံနှိပ်မီ မေးရန်"
       },
       "message": {
         "title": "ပြေစာများ",
@@ -16061,6 +16098,23 @@
         "title": "POS မီနူး အပြင်အဆင်",
         "description": "ဤဆိုင်အတွက် POS မီနူးပုံစံကို ရွေးပါ။ ဤဆက်တင်ကို ဆိုင်ရှိ POS အသုံးပြုသူအားလုံးတွင် အသုံးပြုမည်။",
         "note": "Theme သည် POS မီနူး၏ပုံစံကိုသာ ပြောင်းလဲပြီး ခွင့်ပြုချက်များ၊ အသုံးပြုနိုင်သောမီနူးများနှင့် အရောင်းဒေတာကို မပြောင်းလဲပါ။"
+      },
+      "visual": {
+        "kicker": "POS Settings Control Center",
+        "hero_description": "ဆိုင်အချက်အလက်၊ အခွန်၊ ငွေပေးချေမှု၊ ပြေစာ၊ POS မီနူး theme နှင့် loyalty ကို တစ်နေရာတည်းတွင် စီမံပါ။",
+        "store_status": "ဆိုင်အချက်အလက်",
+        "vat_status": "VAT အခြေအနေ",
+        "promptpay_status": "PromptPay",
+        "loyalty_status": "အဖွဲ့ဝင်စနစ်",
+        "ready": "အသင့်",
+        "needs_setup": "ပြင်ဆင်ရန်လို",
+        "editable": "ပြင်ဆင်နိုင်",
+        "read_only": "ကြည့်ရန်သာ",
+        "loyalty_description": "အမှတ်ရရှိမှုနှင့် လျှော့ဈေးတန်ဖိုးကို သတ်မှတ်ပါ။",
+        "save_failed": "Settings မသိမ်းနိုင်ပါ: :error",
+        "reset_title": "မူလတန်ဖိုး ပြန်ထားရန် အတည်ပြုပါ",
+        "cancel": "မလုပ်တော့",
+        "saving": "သိမ်းဆည်းနေသည်..."
       }
     },
     "pos_stock": {
@@ -21904,7 +21958,8 @@
         "paper_size": "ຂະໜາດໃບຮັບເງິນ",
         "after_sale": "ຫຼັງຈາກບັນທຶກການຂາຍ",
         "none": "ຢ່າພິມ",
-        "auto": "ພິມທັນທີ"
+        "auto": "ພິມທັນທີ",
+        "ask": "ຖາມກ່ອນພິມ"
       },
       "message": {
         "title": "ຂໍ້ຄວາມຮັບ",
@@ -21960,6 +22015,23 @@
         "title": "ທີມເມນູ POS",
         "description": "ເລືອກຮູບແບບເມນູສຳລັບຮ້ານນີ້ ການຕັ້ງຄ່ານີ້ຈະໃຊ້ກັບຜູ້ໃຊ້ POS ທຸກຄົນໃນຮ້ານ",
         "note": "ທີມປ່ຽນສະເພາະຮູບລັກຂອງເມນູ POS ບໍ່ປ່ຽນສິດ ເມນູທີ່ເຂົ້າໄດ້ ຫຼືຂໍ້ມູນການຂາຍ"
+      },
+      "visual": {
+        "kicker": "POS Settings Control Center",
+        "hero_description": "ຄວບຄຸມຂໍ້ມູນຮ້ານ, ພາສີ, ການຊຳລະ, ໃບຮັບເງິນ, ທີມເມນູ POS ແລະລະບົບຄະແນນໃນໜ້າດຽວ.",
+        "store_status": "ຂໍ້ມູນຮ້ານ",
+        "vat_status": "ສະຖານະ VAT",
+        "promptpay_status": "PromptPay",
+        "loyalty_status": "ລະບົບສະມາຊິກ",
+        "ready": "ພ້ອມໃຊ້",
+        "needs_setup": "ຄວນຕັ້ງຄ່າ",
+        "editable": "ແກ້ໄຂໄດ້",
+        "read_only": "ເບິ່ງຢ່າງດຽວ",
+        "loyalty_description": "ກຳນົດການສະສົມຄະແນນ ແລະມູນຄ່າແລກສ່ວນຫຼຸດ.",
+        "save_failed": "ບັນທຶກການຕັ້ງຄ່າບໍ່ສຳເລັດ: :error",
+        "reset_title": "ຢືນຢັນຄືນຄ່າເລີ່ມຕົ້ນ",
+        "cancel": "ຍົກເລີກ",
+        "saving": "ກຳລັງບັນທຶກ..."
       }
     },
     "pos_stock": {
@@ -27803,7 +27875,8 @@
         "paper_size": "ទំហំបង្កាន់ដៃ",
         "after_sale": "បន្ទាប់ពីរក្សាទុកការលក់",
         "none": "កុំបោះពុម្ព",
-        "auto": "បោះពុម្ពភ្លាមៗ"
+        "auto": "បោះពុម្ពភ្លាមៗ",
+        "ask": "សួរមុនពេលបោះពុម្ព"
       },
       "message": {
         "title": "ទទួលសារ",
@@ -27859,6 +27932,23 @@
         "title": "រចនាប័ទ្មម៉ឺនុយ POS",
         "description": "ជ្រើសរើសរូបរាងម៉ឺនុយសម្រាប់ហាងនេះ។ ការកំណត់នេះនឹងអនុវត្តចំពោះអ្នកប្រើ POS ទាំងអស់ក្នុងហាង។",
         "note": "រចនាប័ទ្មផ្លាស់ប្តូរតែរូបរាងម៉ឺនុយ POS ប៉ុណ្ណោះ មិនប៉ះពាល់សិទ្ធិ ម៉ឺនុយដែលអាចចូលប្រើ ឬទិន្នន័យលក់ទេ។"
+      },
+      "visual": {
+        "kicker": "POS Settings Control Center",
+        "hero_description": "គ្រប់គ្រងព័ត៌មានហាង ពន្ធ ការទូទាត់ បង្កាន់ដៃ រចនាប័ទ្មម៉ឺនុយ POS និងប្រព័ន្ធពិន្ទុនៅកន្លែងតែមួយ។",
+        "store_status": "ព័ត៌មានហាង",
+        "vat_status": "ស្ថានភាព VAT",
+        "promptpay_status": "PromptPay",
+        "loyalty_status": "សមាជិក",
+        "ready": "រួចរាល់",
+        "needs_setup": "ត្រូវកំណត់",
+        "editable": "អាចកែបាន",
+        "read_only": "មើលតែប៉ុណ្ណោះ",
+        "loyalty_description": "កំណត់ការទទួលពិន្ទុ និងតម្លៃប្តូរជាបញ្ចុះតម្លៃ។",
+        "save_failed": "មិនអាចរក្សាទុកការកំណត់: :error",
+        "reset_title": "បញ្ជាក់ការស្ដារលំនាំដើម",
+        "cancel": "បោះបង់",
+        "saving": "កំពុងរក្សាទុក..."
       }
     },
     "pos_stock": {

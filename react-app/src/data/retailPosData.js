@@ -1102,14 +1102,19 @@ export async function loadPosStoreSettings(tenantId){
   const rows=Object.fromEntries(ids.map((id,index)=>[id,snaps[index].exists()?snaps[index].data():{}]));
   return {...rows,posTheme:rows["pos-theme"]||{}};
 }
-export async function savePosStoreSettings(tenantId,data={}){
+export async function savePosStoreSettings(tenantId,data={},options={}){
   const userId=currentUserId(),now=Date.now(),meta={tenantId,shopId:tenantId,updatedBy:userId,updatedAt:now,updatedAtServer:serverTimestamp()};
-  const store={id:"store",...meta,shopName:String(data.shopName||""),shopAddress:String(data.shopAddress||""),shopPhone:String(data.shopPhone||""),storeLatitude:data.storeLatitude==null||data.storeLatitude===""?null:Number(data.storeLatitude),storeLongitude:data.storeLongitude==null||data.storeLongitude===""?null:Number(data.storeLongitude)};
-  const tax={id:"tax",...meta,taxId:String(data.taxId||""),vatRegistered:data.vatRegistered===true||data.vatRegistered==="yes",vatRate:Number(data.vatRate||7),defaultVatMode:data.defaultVatMode==="exclude"?"exclude":"include",taxBranchType:data.taxBranchType==="branch"?"branch":"headOffice",taxBranchCode:String(data.taxBranchCode||""),taxInvoiceName:String(data.taxInvoiceName||""),taxInvoiceAddress:String(data.taxInvoiceAddress||"")};
-  const payment={id:"payment",...meta,promptPayEnabled:data.promptPayEnabled===true||data.promptPayEnabled==="yes",promptPayId:String(data.promptPayId||""),promptPayAccountName:String(data.promptPayAccountName||"")};
-  const receipt={id:"receipt",...meta,receiptPaperSize:["58","80","a4"].includes(String(data.receiptPaperSize))?String(data.receiptPaperSize):"80",receiptPrintMode:data.receiptPrintMode==="auto"?"auto":"none",receiptThanks:String(data.receiptThanks||"ขอบคุณที่ใช้บริการ"),receiptFooter:String(data.receiptFooter||"")};
+  const taxId=String(data.taxId||"");
+  const store={id:"store",...meta,shopName:String(data.shopName||""),shopAddress:String(data.shopAddress||""),shopPhone:String(data.shopPhone||""),taxId,storeLatitude:data.storeLatitude==null||data.storeLatitude===""?null:Number(data.storeLatitude),storeLongitude:data.storeLongitude==null||data.storeLongitude===""?null:Number(data.storeLongitude)};
+  const tax={id:"tax",...meta,taxId,vatRegistered:data.vatRegistered===true||data.vatRegistered==="yes",vatRate:Number(data.vatRate||7),defaultVatMode:data.defaultVatMode==="exclude"?"exclude":"include",taxBranchType:data.taxBranchType==="branch"?"branch":"headOffice",taxBranchCode:String(data.taxBranchCode||""),taxInvoiceName:String(data.taxInvoiceName||""),taxInvoiceAddress:String(data.taxInvoiceAddress||""),vatCalculationBase:"after_discount_and_points",shortTaxInvoiceEnabled:true};
+  const payment={id:"payment",...meta,promptPayEnabled:data.promptPayEnabled===true||data.promptPayEnabled==="yes",promptPayId:String(data.promptPayId||"").replace(/[^\d]/g,"").slice(0,13),promptPayAccountName:String(data.promptPayAccountName||"")};
+  const receipt={id:"receipt",...meta,receiptPaperSize:["58","80","a4"].includes(String(data.receiptPaperSize))?String(data.receiptPaperSize):"80",receiptPrintMode:data.receiptPrintMode==="auto"?"auto":"ask",receiptThanks:String(data.receiptThanks||"ขอบคุณที่ใช้บริการ"),receiptFooter:String(data.receiptFooter||"เอกสารฉบับนี้ออกโดยระบบของร้านตามข้อมูลด้านบน")};
   const loyalty={id:"loyalty",...meta,enabled:data.loyaltyEnabled!==false&&data.loyaltyEnabled!=="no",spendPerPoint:Math.max(.01,Number(data.spendPerPoint||10)),pointValue:Math.max(.01,Number(data.pointValue||1))};
   const posTheme={id:"pos-theme",type:"pos-theme",...meta,theme:normalizePosTheme(data.posTheme)};
-  await Promise.all([[store,"store"],[tax,"tax"],[payment,"payment"],[receipt,"receipt"],[loyalty,"loyalty"],[posTheme,"pos-theme"]].map(([row,id])=>setDoc(tenantDoc(tenantId,"settings",id),row,{merge:true})));
-  return {store,tax,payment,receipt,loyalty,posTheme};
+  const rows=new Map([["store",store],["tax",tax],["payment",payment],["receipt",receipt],["loyalty",loyalty],["pos-theme",posTheme]]);
+  const requested=Array.isArray(options.sections)&&options.sections.length?options.sections:[...rows.keys()];
+  const sections=[...new Set(requested.map(String))].filter(id=>rows.has(id));
+  if(!sections.length) return loadPosStoreSettings(tenantId);
+  await Promise.all(sections.map(id=>setDoc(tenantDoc(tenantId,"settings",id),rows.get(id),{merge:true})));
+  return loadPosStoreSettings(tenantId);
 }

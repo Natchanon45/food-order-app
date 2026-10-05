@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.05.421",
+  build: "2026.10.05.422",
   branch: "feature/react-firebase-port",
-  commit: "STOREFRONT-SHOP-NAME-SOURCE",
+  commit: "POS-SETTINGS-REACT-CUTOVER",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Storefront shop name source isolation",
+  milestone: "React POS Settings control center",
   whatsNew: [
-    "Use Store Settings shopName as the only customer-facing Delivery shop-name source",
-    "Keep the Super Admin tenant name isolated from Delivery Hero and Delivery Success receipt",
-    "Preserve tenant routing, permissions, order data, and delivery business logic",
+    "Migrate canonical /pos/settings to the React POS Settings Control Center",
+    "Preserve store, VAT, PromptPay, receipt, loyalty, map, and five-theme settings behavior",
+    "Keep store and loyalty writes permission-scoped while retaining tenant-safe Firestore paths",
   ],
 });

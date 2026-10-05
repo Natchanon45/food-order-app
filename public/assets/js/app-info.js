@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.05.136',
+  build: '2026.10.05.137',
   branch: 'feature/react-firebase-port',
-  commit: 'STOREFRONT-SHOP-NAME-SOURCE',
+  commit: 'POS-SETTINGS-REACT-CUTOVER',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Storefront shop name source isolation',
-  updatedAt: '2026-10-05T13:25:00+0700',
+  milestone: 'React POS Settings control center',
+  updatedAt: '2026-10-05T14:55:00+0700',
   whatsNew: [
-    'Use Store Settings shopName as the only customer-facing Delivery shop-name source',
-    'Keep the Super Admin tenant name isolated from Delivery Hero and Delivery Success receipt',
-    'Preserve tenant routing, permissions, order data, and delivery business logic'
+    'Migrate canonical /pos/settings to the React POS Settings Control Center',
+    'Preserve store, VAT, PromptPay, receipt, loyalty, map, and five-theme settings behavior',
+    'Keep store and loyalty writes permission-scoped while retaining tenant-safe Firestore paths'
   ]
 };
 
