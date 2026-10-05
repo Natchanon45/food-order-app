@@ -17,6 +17,7 @@ TARGETS = [
     "public/pos/purchases/index.html",
     "public/pos/payables/index.html",
     "public/pos/suppliers/index.html",
+    "public/pos/customers/index.html",
     "public/kitchen/index.html",
     "public/cashier/index.html",
     "public/cashier/receipt/index.html",

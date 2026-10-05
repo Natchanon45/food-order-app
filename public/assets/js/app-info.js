@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.05.128',
+  build: '2026.10.05.129',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-SUPPLIERS-CONTROL-CENTER',
+  commit: 'POS-CUSTOMERS-LOYALTY-CONTROL-CENTER',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS Supplier Control Center',
-  updatedAt: '2026-10-05T09:54:21+0700',
+  milestone: 'Retail POS Customer & Loyalty Control Center',
+  updatedAt: '2026-10-05T10:12:19+0700',
   whatsNew: [
-    'Migrate Suppliers to canonical React with a colorful supplier control center and responsive editor',
-    'Preserve legacy purchase-history matching, supplier CRUD, delete protection, and granular purchase visibility',
-    'Keep realtime supplier/purchase watchers, session routing, role permissions, and tenant boundaries unchanged'
+    'Migrate Customers to canonical React with realtime member, sales, and loyalty-ledger context',
+    'Add a colorful customer control center, responsive member editor, purchase history, and points history',
+    'Preserve legacy customer-code, net purchase, permission, delete-protection, and tenant behavior'
   ]
 };
 

@@ -1,29 +1,60 @@
 <!doctype html>
 <html lang="th">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#159447">
-<title>ทะเบียนลูกค้า</title>
-<link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260801-096">
-<link rel="stylesheet" href="/assets/css/retail-customers.css?v=20260626-2">
-<link rel="stylesheet" href="/assets/css/retail-loyalty.css?v=20260624-1">
-<link rel="stylesheet" href="/assets/css/retail-pos-navigation.css?v=20261004-106">
-<link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-095">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#159447" />
+  <title>PENGUIN</title>
+  <link rel="stylesheet" href="/assets/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1.13.1">
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/4.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <link rel="stylesheet" href="/react/parity/css/unified-table-icon.css">
+  <link rel="stylesheet" href="/react/parity/css/sweet-dialog.css">
+  <link rel="stylesheet" href="/react/parity/css/i18n.css">
+  <link rel="stylesheet" href="/react/parity/css/app.css">
+  <link rel="stylesheet" href="/react/parity/css/icons.css">
+  <link rel="stylesheet" href="/react/parity/css/shared-responsive.css">
+  <link rel="stylesheet" href="/react/parity/css/theme-checkbox.css">
+  <link rel="stylesheet" href="/react/parity/css/page-ready-state.css">
+  <link rel="stylesheet" href="/react/parity/css/ui-layer-stack.css" data-ui-layer-policy>
+  <link rel="stylesheet" href="/react/parity/css/toast-global-policy.css" data-toast-policy>
+  <script defer src="/assets/js/horizontal-scroll-restore.js?v=20261002-002"></script>
+  <script>
+    (() => {
+      const recoveryKey = "lukkhaja_react_entry_recovery";
+      window.__lukkhajaReactEntryLoaded = () => {
+        try { sessionStorage.removeItem(recoveryKey); } catch {}
+      };
+      window.addEventListener("error", event => {
+        const target = event.target;
+        if (!(target instanceof HTMLScriptElement) || target.type !== "module") return;
+        const src = String(target.src || "");
+        if (!src.includes("/react/assets/")) return;
+        try {
+          if (sessionStorage.getItem(recoveryKey) === "1") return;
+          sessionStorage.setItem(recoveryKey, "1");
+        } catch {}
+        const url = new URL(location.href);
+        url.searchParams.set("__react_reload", String(Date.now()));
+        location.replace(url.toString());
+      }, true);
+    })();
+  </script>
+  <script type="module" crossorigin src="/react/assets/index-uKcL3CRx.js"></script>
+  <link rel="modulepreload" crossorigin href="/react/assets/rolldown-runtime-CbXtAM7H.js">
+  <link rel="modulepreload" crossorigin href="/react/assets/react-vendor-BcSqwNtZ.js">
+  <link rel="modulepreload" crossorigin href="/react/assets/firebase-CuKPBzBw.js">
 </head>
 <body>
-<header class="pos-header"><div class="app-title"><div><strong>ทะเบียนลูกค้า</strong><small>ข้อมูลติดต่อ ประวัติการซื้อ และแต้มสมาชิก</small></div></div><div class="header-actions"></div></header>
-<main class="customer-container"><section class="customer-stats"><article><span>ลูกค้าทั้งหมด</span><strong id="customerTotal">0</strong></article><article><span>ลูกค้าที่เคยซื้อ</span><strong id="activeCustomerTotal">0</strong></article><article><span>ยอดซื้อสะสม</span><strong id="customerSalesTotal">0.00</strong></article><article><span>จำนวนบิลลูกค้า</span><strong id="customerBillTotal">0</strong></article></section><section class="panel customer-panel"><div class="section-heading customer-list-heading"><div><h2>ลูกค้า</h2><p>จัดการข้อมูลติดต่อ ประวัติการซื้อ และแต้มสมาชิก</p></div><button id="addCustomerBtn" class="btn btn-pay" type="button">เพิ่มลูกค้า</button></div><div class="customer-toolbar"><input id="customerSearch" placeholder="ค้นหาชื่อ เบอร์โทร อีเมล หรือรหัสสมาชิก"><select id="customerFilter"><option value="all">ทั้งหมด</option><option value="active">เคยมีรายการซื้อ</option><option value="inactive">ยังไม่มีรายการซื้อ</option></select></div><div id="customerGrid" class="customer-grid"></div><div id="customerEmpty" class="empty-state">ยังไม่มีข้อมูลลูกค้า</div></section></main>
-<dialog id="customerDialog"><form id="customerForm" class="payment-form"><div class="dialog-head"><h2 id="customerDialogTitle">เพิ่มลูกค้า</h2><button id="closeCustomerDialog" type="button" class="icon-btn"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div><input id="editingCustomerId" type="hidden"><div class="customer-form-grid"><label class="full">ชื่อลูกค้า<input id="customerName" maxlength="120" required></label><label>เบอร์โทร<input id="customerPhone" maxlength="30" inputmode="tel"></label><label>อีเมล<input id="customerEmail" maxlength="120" type="email"></label><label class="full">ที่อยู่<textarea id="customerAddress" rows="3" maxlength="500"></textarea></label><label class="full">หมายเหตุ<textarea id="customerNote" rows="2" maxlength="300"></textarea></label></div><p id="customerFormError" class="error-text"></p><div class="dialog-actions"><button id="cancelCustomerBtn" type="button" class="btn btn-secondary">ยกเลิก</button><button type="submit" class="btn btn-pay">บันทึกลูกค้า</button></div></form></dialog>
-<dialog id="customerHistoryDialog"><div class="customer-history-dialog"><div class="dialog-head"><h2 id="customerHistoryTitle">ประวัติการซื้อ</h2><button id="closeCustomerHistory" type="button" class="icon-btn"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div><div id="customerHistoryList" class="customer-history-list"></div></div></dialog>
-<div id="toast" class="toast" role="status"></div>
-<script type="module" src="/assets/js/retail-toast-status.js?v=20260801-103"></script>
-<script type="module" src="/assets/js/retail-customers.js?v=20260731-094"></script>
-<script type="module" src="/assets/js/retail-customer-loyalty.js?v=20260624-1"></script>
-<script type="module" src="/assets/js/retail-loyalty-receipt.js?v=20260624-1"></script>
-<script type="module" src="/assets/js/retail-pos-navigation.js?v=20261004-105"></script>
-<script type="module" src="/assets/js/retail-customer-permissions.js?v=20260707-016"></script>
-<script type="module" src="/assets/js/retail-pos-i18n-bootstrap.js?v=20261004-105" data-pos-i18n-generated="1"></script>
-<script type="module" src="/assets/js/retail-pos-operations-i18n.js?v=20260903-248" data-pos-i18n-generated="1"></script>
+  <div id="root">
+    <div class="page-ready-overlay" id="pageReadyOverlay" role="status" aria-live="polite" aria-busy="true" aria-hidden="false">
+      <div class="page-ready-simple" aria-labelledby="pageReadyTitle">
+        <span class="page-ready-spinner" aria-hidden="true"></span>
+        <div class="page-ready-copy">
+          <h2 id="pageReadyTitle">กำลังโหลดข้อมูล...</h2>
+          <p>กรุณารอสักครู่....</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

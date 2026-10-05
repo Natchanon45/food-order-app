@@ -6080,6 +6080,97 @@
         "in_stock": "สินค้ามีสต็อก",
         "load_failed": "ไม่สามารถโหลดข้อมูลสรุป"
       }
+    },
+    "pos_customers": {
+      "meta": {
+        "title": "ทะเบียนลูกค้า"
+      },
+      "header": {
+        "title": "ทะเบียนลูกค้า",
+        "subtitle": "ข้อมูลสมาชิก ประวัติซื้อ และแต้มสะสม"
+      },
+      "stats": {
+        "total": "ลูกค้าทั้งหมด",
+        "active": "ลูกค้าที่เคยซื้อ",
+        "sales_total": "ยอดซื้อสะสม",
+        "bill_total": "จำนวนบิลลูกค้า"
+      },
+      "panel": {
+        "title": "ลูกค้าและสมาชิก",
+        "subtitle": "จัดการข้อมูลติดต่อ ประวัติการซื้อ และแต้มสมาชิก"
+      },
+      "add": "เพิ่มลูกค้า",
+      "search_placeholder": "ค้นหารหัส ชื่อ เบอร์โทร หรืออีเมล",
+      "filters": {
+        "all": "ทั้งหมด",
+        "active": "เคยมีรายการซื้อ",
+        "inactive": "ยังไม่มีรายการซื้อ"
+      },
+      "empty": "ยังไม่มีข้อมูลลูกค้า",
+      "form": {
+        "add_title": "เพิ่มลูกค้า",
+        "edit_title": "แก้ไขลูกค้า",
+        "name": "ชื่อลูกค้า",
+        "phone": "เบอร์โทร",
+        "email": "อีเมล",
+        "address": "ที่อยู่",
+        "note": "หมายเหตุ",
+        "cancel": "ยกเลิก",
+        "save": "บันทึกลูกค้า",
+        "close": "ปิด"
+      },
+      "history": {
+        "title": "ประวัติการซื้อ",
+        "no_history": "ยังไม่มีประวัติการซื้อ",
+        "bill_count": "จำนวนบิล",
+        "latest_purchase": "ซื้อล่าสุด",
+        "payment_cash": "เงินสด",
+        "payment_transfer": "PromptPay / โอนเงิน",
+        "items": ":count ชิ้น"
+      },
+      "loyalty": {
+        "title": "ประวัติแต้ม",
+        "empty": "ยังไม่มีประวัติแต้ม",
+        "sale": "รายการขาย",
+        "return": "คืนสินค้า",
+        "reference": "อ้างอิง :id",
+        "balance": "คงเหลือ :count แต้ม"
+      },
+      "runtime": {
+        "member_code": "สมาชิก :code",
+        "phone": "โทร :phone",
+        "points": ":count แต้ม",
+        "history": "ประวัติซื้อ",
+        "edit": "แก้ไข",
+        "delete": "ลบ",
+        "amount_thb": ":amount บาท",
+        "name_required": "กรุณากรอกชื่อลูกค้า",
+        "saving": "กำลังบันทึก...",
+        "added_synced": "เพิ่มสมาชิก :code แล้ว",
+        "edited_synced": "แก้ไขข้อมูลลูกค้าแล้ว",
+        "save_failed": "บันทึกลูกค้าไม่สำเร็จ: :error",
+        "delete_used": "ไม่สามารถลบได้ เพราะลูกค้ารายนี้มีประวัติการซื้อแล้ว",
+        "delete_confirm": "ลบลูกค้า “:name” หรือไม่?",
+        "delete_failed": "ลบลูกค้าไม่สำเร็จ: :error",
+        "deleted_synced": "ลบลูกค้าแล้ว"
+      },
+      "visual": {
+        "kicker": "Customer & Loyalty Control Center",
+        "hero_description": "จัดการสมาชิก ประวัติซื้อ ยอดใช้จ่าย และแต้มสะสมในหน้าจอเดียว พร้อมข้อมูลสำคัญที่อ่านง่าย",
+        "integrated": "เชื่อมต่อกับการขาย คืนสินค้า และระบบแต้มสมาชิก",
+        "average_points": "แต้มเฉลี่ย",
+        "total_hint": "สมาชิกทั้งหมดในทะเบียน",
+        "history_hint": "สมาชิกที่เคยมีรายการซื้อ",
+        "sales_hint": "ยอดซื้อสุทธิหลังหักคืนสินค้าตามสิทธิ์",
+        "bills_hint": "จำนวนบิลสะสมตามสิทธิ์",
+        "search_label": "ค้นหาลูกค้า",
+        "filter_label": "ตัวกรองประวัติซื้อ",
+        "never_purchased": "ยังไม่เคยซื้อ",
+        "empty_hint": "ลองเปลี่ยนคำค้นหาหรือตัวกรองประวัติซื้อ",
+        "form_description": "บันทึกข้อมูลติดต่อของสมาชิก โดยระบบจะรักษารหัสสมาชิกและแต้มเดิมไว้",
+        "history_description": "รายการซื้อเรียงจากล่าสุด พร้อมยอดสุทธิหลังหักคืนสินค้า",
+        "loyalty_description": "ประวัติรับ ใช้ คืน และหักแต้มของสมาชิก"
+      }
     }
   },
   "en": {
@@ -11887,6 +11978,97 @@
         "bill_count": "Bills",
         "in_stock": "Items in stock",
         "load_failed": "Summary unavailable"
+      }
+    },
+    "pos_customers": {
+      "meta": {
+        "title": "Customers"
+      },
+      "header": {
+        "title": "Customers",
+        "subtitle": "Members, purchase history, and loyalty points"
+      },
+      "stats": {
+        "total": "Total customers",
+        "active": "Customers with purchases",
+        "sales_total": "Lifetime net sales",
+        "bill_total": "Customer bills"
+      },
+      "panel": {
+        "title": "Customers & Members",
+        "subtitle": "Manage contact details, purchase history, and loyalty points."
+      },
+      "add": "Add customer",
+      "search_placeholder": "Search code, name, phone, or email",
+      "filters": {
+        "all": "All",
+        "active": "With purchases",
+        "inactive": "No purchases yet"
+      },
+      "empty": "No customer data yet.",
+      "form": {
+        "add_title": "Add Customer",
+        "edit_title": "Edit Customer",
+        "name": "Customer name",
+        "phone": "Phone",
+        "email": "Email",
+        "address": "Address",
+        "note": "Note",
+        "cancel": "Cancel",
+        "save": "Save customer",
+        "close": "Close"
+      },
+      "history": {
+        "title": "Purchase history",
+        "no_history": "No purchase history yet.",
+        "bill_count": "Bills",
+        "latest_purchase": "Latest purchase",
+        "payment_cash": "Cash",
+        "payment_transfer": "PromptPay / Transfer",
+        "items": ":count items"
+      },
+      "loyalty": {
+        "title": "Points history",
+        "empty": "No points history yet.",
+        "sale": "Sale",
+        "return": "Return",
+        "reference": "Reference :id",
+        "balance": "Balance :count points"
+      },
+      "runtime": {
+        "member_code": "Member :code",
+        "phone": "Phone :phone",
+        "points": ":count points",
+        "history": "History",
+        "edit": "Edit",
+        "delete": "Delete",
+        "amount_thb": "THB :amount",
+        "name_required": "Enter the customer name.",
+        "saving": "Saving...",
+        "added_synced": "Member :code added",
+        "edited_synced": "Customer updated",
+        "save_failed": "Unable to save customer: :error",
+        "delete_used": "This customer cannot be deleted because purchase history exists.",
+        "delete_confirm": "Delete customer “:name”?",
+        "delete_failed": "Unable to delete customer: :error",
+        "deleted_synced": "Customer deleted"
+      },
+      "visual": {
+        "kicker": "Customer & Loyalty Control Center",
+        "hero_description": "Manage members, purchase history, spending, and loyalty points in one easy-to-scan workspace.",
+        "integrated": "Connected to sales, returns, and loyalty points",
+        "average_points": "Average points",
+        "total_hint": "All members in the customer directory",
+        "history_hint": "Members with purchase history",
+        "sales_hint": "Net lifetime purchases after returns, when permitted",
+        "bills_hint": "Lifetime customer bill count, when permitted",
+        "search_label": "Search customers",
+        "filter_label": "Purchase-history filter",
+        "never_purchased": "No purchases yet",
+        "empty_hint": "Try changing the search term or purchase-history filter.",
+        "form_description": "Store member contact details while preserving the member code and existing points.",
+        "history_description": "Newest purchases first, with net totals after returns.",
+        "loyalty_description": "Earned, used, restored, and deducted loyalty-point activity."
       }
     }
   },
@@ -17696,6 +17878,97 @@
         "in_stock": "စတော့ရှိပစ္စည်း",
         "load_failed": "အကျဉ်းချုပ်ကို မဖွင့်နိုင်ပါ"
       }
+    },
+    "pos_customers": {
+      "meta": {
+        "title": "ဖောက်သည်များ"
+      },
+      "header": {
+        "title": "ဖောက်သည်များ",
+        "subtitle": "အဖွဲ့ဝင်များ၊ ဝယ်ယူမှုမှတ်တမ်းနှင့် အမှတ်များ"
+      },
+      "stats": {
+        "total": "ဖောက်သည်စုစုပေါင်း",
+        "active": "ဝယ်ယူဖူးသောဖောက်သည်",
+        "sales_total": "စုစုပေါင်းဝယ်ယူတန်ဖိုး",
+        "bill_total": "ဖောက်သည်ဘောင်ချာ"
+      },
+      "panel": {
+        "title": "ဖောက်သည်နှင့် အဖွဲ့ဝင်များ",
+        "subtitle": "ဆက်သွယ်ရန်အချက်အလက်၊ ဝယ်ယူမှုမှတ်တမ်းနှင့် အမှတ်များကို စီမံပါ။"
+      },
+      "add": "ဖောက်သည်ထည့်ပါ",
+      "search_placeholder": "ကုဒ်၊ အမည်၊ ဖုန်း သို့မဟုတ် အီးမေးလ် ရှာပါ",
+      "filters": {
+        "all": "အားလုံး",
+        "active": "ဝယ်ယူမှုရှိ",
+        "inactive": "မဝယ်ယူရသေး"
+      },
+      "empty": "ဖောက်သည်အချက်အလက် မရှိသေးပါ။",
+      "form": {
+        "add_title": "ဖောက်သည်ထည့်ပါ",
+        "edit_title": "ဖောက်သည်ပြင်ဆင်ရန်",
+        "name": "ဖောက်သည်အမည်",
+        "phone": "ဖုန်း",
+        "email": "အီးမေးလ်",
+        "address": "လိပ်စာ",
+        "note": "မှတ်ချက်",
+        "cancel": "မလုပ်တော့",
+        "save": "ဖောက်သည်သိမ်းရန်",
+        "close": "ပိတ်ရန်"
+      },
+      "history": {
+        "title": "ဝယ်ယူမှုမှတ်တမ်း",
+        "no_history": "ဝယ်ယူမှုမှတ်တမ်း မရှိသေးပါ။",
+        "bill_count": "ဘောင်ချာ",
+        "latest_purchase": "နောက်ဆုံးဝယ်ယူမှု",
+        "payment_cash": "ငွေသား",
+        "payment_transfer": "PromptPay / လွှဲငွေ",
+        "items": ":count ခု"
+      },
+      "loyalty": {
+        "title": "အမှတ်မှတ်တမ်း",
+        "empty": "အမှတ်မှတ်တမ်း မရှိသေးပါ။",
+        "sale": "ရောင်းချမှု",
+        "return": "ပြန်အပ်မှု",
+        "reference": "ရည်ညွှန်း :id",
+        "balance": "လက်ကျန် :count မှတ်"
+      },
+      "runtime": {
+        "member_code": "အဖွဲ့ဝင် :code",
+        "phone": "ဖုန်း :phone",
+        "points": ":count မှတ်",
+        "history": "မှတ်တမ်း",
+        "edit": "ပြင်ဆင်",
+        "delete": "ဖျက်ရန်",
+        "amount_thb": ":amount ဘတ်",
+        "name_required": "ဖောက်သည်အမည်ထည့်ပါ။",
+        "saving": "သိမ်းဆည်းနေသည်...",
+        "added_synced": "အဖွဲ့ဝင် :code ထည့်ပြီး",
+        "edited_synced": "ဖောက်သည်ပြင်ပြီး",
+        "save_failed": "ဖောက်သည်သိမ်းမရပါ: :error",
+        "delete_used": "ဝယ်ယူမှုမှတ်တမ်းရှိသဖြင့် ဤဖောက်သည်ကို ဖျက်မရပါ။",
+        "delete_confirm": "ဖောက်သည် “:name” ကို ဖျက်မလား။",
+        "delete_failed": "ဖောက်သည်ဖျက်မရပါ: :error",
+        "deleted_synced": "ဖောက်သည်ဖျက်ပြီး"
+      },
+      "visual": {
+        "kicker": "Customer & Loyalty Control Center",
+        "hero_description": "အဖွဲ့ဝင်၊ ဝယ်ယူမှုမှတ်တမ်း၊ အသုံးစရိတ်နှင့် အမှတ်များကို တစ်နေရာတည်းတွင် စီမံပါ။",
+        "integrated": "ရောင်းချမှု၊ ပြန်အပ်မှုနှင့် အမှတ်စနစ်နှင့် ချိတ်ဆက်ထားသည်",
+        "average_points": "ပျမ်းမျှအမှတ်",
+        "total_hint": "မှတ်ပုံတင်ထားသော အဖွဲ့ဝင်အားလုံး",
+        "history_hint": "ဝယ်ယူမှုမှတ်တမ်းရှိသော အဖွဲ့ဝင်များ",
+        "sales_hint": "ခွင့်ပြုချက်ရှိပါက ပြန်အပ်မှုနုတ်ပြီး စုစုပေါင်းဝယ်ယူမှု",
+        "bills_hint": "ခွင့်ပြုချက်ရှိပါက ဘောင်ချာစုစုပေါင်း",
+        "search_label": "ဖောက်သည်ရှာရန်",
+        "filter_label": "ဝယ်ယူမှုမှတ်တမ်း စစ်ထုတ်မှု",
+        "never_purchased": "မဝယ်ယူရသေး",
+        "empty_hint": "ရှာဖွေစာသား သို့မဟုတ် စစ်ထုတ်မှုကို ပြောင်းကြည့်ပါ။",
+        "form_description": "အဖွဲ့ဝင်ကုဒ်နှင့် လက်ရှိအမှတ်များကို ထိန်းသိမ်းထားပြီး ဆက်သွယ်ရန်အချက်အလက်ကို သိမ်းပါ။",
+        "history_description": "နောက်ဆုံးဝယ်ယူမှုကို အပေါ်ဆုံးတွင်ပြပြီး ပြန်အပ်မှုနုတ်ပြီးသော တန်ဖိုးကို ပြသည်။",
+        "loyalty_description": "ရရှိ၊ သုံး၊ ပြန်ရနှင့် နုတ်ယူထားသော အမှတ်လှုပ်ရှားမှုများ။"
+      }
     }
   },
   "lo": {
@@ -23504,6 +23777,97 @@
         "in_stock": "ສິນຄ້າມີສະຕັອກ",
         "load_failed": "ບໍ່ສາມາດໂຫຼດຂໍ້ມູນສະຫຼຸບ"
       }
+    },
+    "pos_customers": {
+      "meta": {
+        "title": "ລູກຄ້າ"
+      },
+      "header": {
+        "title": "ລູກຄ້າ",
+        "subtitle": "ສະມາຊິກ, ປະຫວັດການຊື້ ແລະຄະແນນສະສົມ"
+      },
+      "stats": {
+        "total": "ລູກຄ້າທັງໝົດ",
+        "active": "ລູກຄ້າທີ່ເຄີຍຊື້",
+        "sales_total": "ຍອດຊື້ສະສົມ",
+        "bill_total": "ຈຳນວນບິນລູກຄ້າ"
+      },
+      "panel": {
+        "title": "ລູກຄ້າ ແລະສະມາຊິກ",
+        "subtitle": "ຈັດການຂໍ້ມູນຕິດຕໍ່, ປະຫວັດການຊື້ ແລະຄະແນນ."
+      },
+      "add": "ເພີ່ມລູກຄ້າ",
+      "search_placeholder": "ຄົ້ນຫາລະຫັດ, ຊື່, ເບີໂທ ຫຼືອີເມວ",
+      "filters": {
+        "all": "ທັງໝົດ",
+        "active": "ເຄີຍຊື້",
+        "inactive": "ຍັງບໍ່ເຄີຍຊື້"
+      },
+      "empty": "ຍັງບໍ່ມີຂໍ້ມູນລູກຄ້າ",
+      "form": {
+        "add_title": "ເພີ່ມລູກຄ້າ",
+        "edit_title": "ແກ້ໄຂລູກຄ້າ",
+        "name": "ຊື່ລູກຄ້າ",
+        "phone": "ເບີໂທ",
+        "email": "ອີເມວ",
+        "address": "ທີ່ຢູ່",
+        "note": "ໝາຍເຫດ",
+        "cancel": "ຍົກເລີກ",
+        "save": "ບັນທຶກລູກຄ້າ",
+        "close": "ປິດ"
+      },
+      "history": {
+        "title": "ປະຫວັດການຊື້",
+        "no_history": "ຍັງບໍ່ມີປະຫວັດການຊື້",
+        "bill_count": "ຈຳນວນບິນ",
+        "latest_purchase": "ຊື້ລ່າສຸດ",
+        "payment_cash": "ເງິນສົດ",
+        "payment_transfer": "PromptPay / ໂອນເງິນ",
+        "items": ":count ຊິ້ນ"
+      },
+      "loyalty": {
+        "title": "ປະຫວັດຄະແນນ",
+        "empty": "ຍັງບໍ່ມີປະຫວັດຄະແນນ",
+        "sale": "ລາຍການຂາຍ",
+        "return": "ຄືນສິນຄ້າ",
+        "reference": "ອ້າງອີງ :id",
+        "balance": "ຄົງເຫຼືອ :count ຄະແນນ"
+      },
+      "runtime": {
+        "member_code": "ສະມາຊິກ :code",
+        "phone": "ໂທ :phone",
+        "points": ":count ຄະແນນ",
+        "history": "ປະຫວັດ",
+        "edit": "ແກ້ໄຂ",
+        "delete": "ລຶບ",
+        "amount_thb": ":amount ບາດ",
+        "name_required": "ກະລຸນາໃສ່ຊື່ລູກຄ້າ",
+        "saving": "ກຳລັງບັນທຶກ...",
+        "added_synced": "ເພີ່ມສະມາຊິກ :code ແລ້ວ",
+        "edited_synced": "ແກ້ໄຂລູກຄ້າແລ້ວ",
+        "save_failed": "ບັນທຶກລູກຄ້າບໍ່ສຳເລັດ: :error",
+        "delete_used": "ບໍ່ສາມາດລຶບໄດ້ ເພາະລູກຄ້ານີ້ມີປະຫວັດການຊື້",
+        "delete_confirm": "ລຶບລູກຄ້າ “:name” ບໍ?",
+        "delete_failed": "ລຶບລູກຄ້າບໍ່ສຳເລັດ: :error",
+        "deleted_synced": "ລຶບລູກຄ້າແລ້ວ"
+      },
+      "visual": {
+        "kicker": "Customer & Loyalty Control Center",
+        "hero_description": "ຈັດການສະມາຊິກ, ປະຫວັດການຊື້, ຍອດໃຊ້ຈ່າຍ ແລະຄະແນນໃນໜ້າດຽວ.",
+        "integrated": "ເຊື່ອມກັບການຂາຍ, ການຄືນສິນຄ້າ ແລະລະບົບຄະແນນ",
+        "average_points": "ຄະແນນສະເລ່ຍ",
+        "total_hint": "ສະມາຊິກທັງໝົດໃນທະບຽນ",
+        "history_hint": "ສະມາຊິກທີ່ມີປະຫວັດການຊື້",
+        "sales_hint": "ຍອດຊື້ສຸດທິຫຼັງຫັກຄືນສິນຄ້າເມື່ອມີສິດ",
+        "bills_hint": "ຈຳນວນບິນສະສົມເມື່ອມີສິດ",
+        "search_label": "ຄົ້ນຫາລູກຄ້າ",
+        "filter_label": "ຕົວກອງປະຫວັດການຊື້",
+        "never_purchased": "ຍັງບໍ່ເຄີຍຊື້",
+        "empty_hint": "ລອງປ່ຽນຄຳຄົ້ນຫາ ຫຼືຕົວກອງ.",
+        "form_description": "ບັນທຶກຂໍ້ມູນຕິດຕໍ່ ໂດຍຮັກສາລະຫັດສະມາຊິກ ແລະຄະແນນເດີມ.",
+        "history_description": "ລາຍການຊື້ລ່າສຸດຂຶ້ນກ່ອນ ພ້ອມຍອດສຸດທິຫຼັງຫັກຄືນ.",
+        "loyalty_description": "ປະຫວັດຮັບ, ໃຊ້, ຄືນ ແລະຫັກຄະແນນ."
+      }
     }
   },
   "km": {
@@ -29311,6 +29675,97 @@
         "bill_count": "ចំនួនវិក្កយបត្រ",
         "in_stock": "ទំនិញមានស្តុក",
         "load_failed": "មិនអាចផ្ទុកព័ត៌មានសង្ខេបបាន"
+      }
+    },
+    "pos_customers": {
+      "meta": {
+        "title": "អតិថិជន"
+      },
+      "header": {
+        "title": "អតិថិជន",
+        "subtitle": "សមាជិក ប្រវត្តិទិញ និងពិន្ទុ"
+      },
+      "stats": {
+        "total": "អតិថិជនសរុប",
+        "active": "អតិថិជនដែលធ្លាប់ទិញ",
+        "sales_total": "ការទិញសរុប",
+        "bill_total": "វិក្កយបត្រអតិថិជន"
+      },
+      "panel": {
+        "title": "អតិថិជន និងសមាជិក",
+        "subtitle": "គ្រប់គ្រងព័ត៌មានទំនាក់ទំនង ប្រវត្តិទិញ និងពិន្ទុសមាជិក។"
+      },
+      "add": "បន្ថែមអតិថិជន",
+      "search_placeholder": "ស្វែងរកលេខកូដ ឈ្មោះ ទូរស័ព្ទ ឬអ៊ីមែល",
+      "filters": {
+        "all": "ទាំងអស់",
+        "active": "ធ្លាប់ទិញ",
+        "inactive": "មិនទាន់ទិញ"
+      },
+      "empty": "មិនទាន់មានទិន្នន័យអតិថិជន",
+      "form": {
+        "add_title": "បន្ថែមអតិថិជន",
+        "edit_title": "កែសម្រួលអតិថិជន",
+        "name": "ឈ្មោះអតិថិជន",
+        "phone": "ទូរស័ព្ទ",
+        "email": "អ៊ីមែល",
+        "address": "អាសយដ្ឋាន",
+        "note": "ចំណាំ",
+        "cancel": "បោះបង់",
+        "save": "រក្សាទុកអតិថិជន",
+        "close": "បិទ"
+      },
+      "history": {
+        "title": "ប្រវត្តិទិញ",
+        "no_history": "មិនទាន់មានប្រវត្តិទិញ",
+        "bill_count": "វិក្កយបត្រ",
+        "latest_purchase": "ទិញចុងក្រោយ",
+        "payment_cash": "សាច់ប្រាក់",
+        "payment_transfer": "PromptPay / ផ្ទេរប្រាក់",
+        "items": ":count មុខ"
+      },
+      "loyalty": {
+        "title": "ប្រវត្តិពិន្ទុ",
+        "empty": "មិនទាន់មានប្រវត្តិពិន្ទុ",
+        "sale": "ការលក់",
+        "return": "ការត្រឡប់",
+        "reference": "យោង :id",
+        "balance": "នៅសល់ :count ពិន្ទុ"
+      },
+      "runtime": {
+        "member_code": "សមាជិក :code",
+        "phone": "ទូរស័ព្ទ :phone",
+        "points": ":count ពិន្ទុ",
+        "history": "ប្រវត្តិ",
+        "edit": "កែសម្រួល",
+        "delete": "លុប",
+        "amount_thb": ":amount បាត",
+        "name_required": "សូមបញ្ចូលឈ្មោះអតិថិជន",
+        "saving": "កំពុងរក្សាទុក...",
+        "added_synced": "បានបន្ថែមសមាជិក :code",
+        "edited_synced": "បានកែសម្រួលអតិថិជន",
+        "save_failed": "មិនអាចរក្សាទុកអតិថិជន: :error",
+        "delete_used": "មិនអាចលុបបាន ព្រោះអតិថិជននេះមានប្រវត្តិទិញ",
+        "delete_confirm": "លុបអតិថិជន “:name”?",
+        "delete_failed": "មិនអាចលុបអតិថិជន: :error",
+        "deleted_synced": "បានលុបអតិថិជន"
+      },
+      "visual": {
+        "kicker": "Customer & Loyalty Control Center",
+        "hero_description": "គ្រប់គ្រងសមាជិក ប្រវត្តិទិញ ការចំណាយ និងពិន្ទុនៅកន្លែងតែមួយ។",
+        "integrated": "ភ្ជាប់ជាមួយការលក់ ការត្រឡប់ និងប្រព័ន្ធពិន្ទុ",
+        "average_points": "ពិន្ទុមធ្យម",
+        "total_hint": "សមាជិកទាំងអស់ក្នុងបញ្ជី",
+        "history_hint": "សមាជិកដែលមានប្រវត្តិទិញ",
+        "sales_hint": "ការទិញសុទ្ធក្រោយការត្រឡប់ នៅពេលមានសិទ្ធិ",
+        "bills_hint": "ចំនួនវិក្កយបត្រសរុប នៅពេលមានសិទ្ធិ",
+        "search_label": "ស្វែងរកអតិថិជន",
+        "filter_label": "តម្រងប្រវត្តិទិញ",
+        "never_purchased": "មិនទាន់ទិញ",
+        "empty_hint": "សាកល្បងប្តូរពាក្យស្វែងរក ឬតម្រង។",
+        "form_description": "រក្សាទុកព័ត៌មានទំនាក់ទំនង ដោយរក្សាលេខសមាជិក និងពិន្ទុបច្ចុប្បន្ន។",
+        "history_description": "បង្ហាញការទិញថ្មីបំផុតមុន និងចំនួនសុទ្ធក្រោយការត្រឡប់។",
+        "loyalty_description": "សកម្មភាពពិន្ទុដែលទទួល ប្រើ ស្តារ និងកាត់ចេញ។"
       }
     }
   }

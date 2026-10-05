@@ -504,16 +504,54 @@ export async function releaseHeldPosBill(tenantId, id) {
   return true;
 }
 
-export async function listPosCustomers(tenantId) {
-  const snapshot = await getDocs(tenantCollection(tenantId, "customers"));
-  return snapshot.docs.map(snapshotRow).map(row => ({
+function normalizePosCustomerRow(row = {}) {
+  return {
     ...row,
     id: String(row.id || row.customerId || row.customerCode || ""),
     customerCode: String(row.customerCode || row.code || ""),
     name: String(row.name || ""),
     phone: String(row.phone || ""),
+    email: String(row.email || ""),
+    address: String(row.address || ""),
+    note: String(row.note || ""),
     points: Math.max(0, Math.floor(Number(row.points || 0))),
-  })).filter(row => row.id);
+  };
+}
+
+export async function listPosCustomers(tenantId) {
+  const snapshot = await getDocs(tenantCollection(tenantId, "customers"));
+  return snapshot.docs.map(snapshotRow).map(normalizePosCustomerRow).filter(row => row.id);
+}
+
+export function watchPosCustomers(tenantId, onRows, onError = null) {
+  if (!tenantId || typeof onRows !== "function") return () => {};
+  return onSnapshot(
+    tenantCollection(tenantId, "customers"),
+    snapshot => onRows(snapshot.docs.map(snapshotRow).map(normalizePosCustomerRow).filter(row => row.id)),
+    error => {
+      console.warn("POS_CUSTOMERS_WATCH_FAILED", error);
+      if (typeof onError === "function") onError(error);
+    },
+  );
+}
+
+export async function listPosLoyaltyLedger(tenantId) {
+  const snapshot = await getDocs(tenantCollection(tenantId, "loyaltyLedger"));
+  return snapshot.docs.map(snapshotRow)
+    .sort((a, b) => dateValueMs(b.createdAt || b.updatedAt) - dateValueMs(a.createdAt || a.updatedAt));
+}
+
+export function watchPosLoyaltyLedger(tenantId, onRows, onError = null) {
+  if (!tenantId || typeof onRows !== "function") return () => {};
+  return onSnapshot(
+    tenantCollection(tenantId, "loyaltyLedger"),
+    snapshot => onRows(snapshot.docs.map(snapshotRow)
+      .sort((a, b) => dateValueMs(b.createdAt || b.updatedAt) - dateValueMs(a.createdAt || a.updatedAt))),
+    error => {
+      console.warn("POS_LOYALTY_LEDGER_WATCH_FAILED", error);
+      if (typeof onError === "function") onError(error);
+    },
+  );
 }
 
 export async function loadPosLoyaltySettings(tenantId) {
