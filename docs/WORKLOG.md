@@ -7529,6 +7529,31 @@ Verification before deploy:
 - Firestore write attempts observed = 0.
 
 Deploy state:
-- Commit/push and Hosting-only deployment pending.
-- No Firestore Rules, Storage Rules, Functions, or data migration required.
+- Implementation commit `7bc34c25` — `feat: migrate POS payables to React` — pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app` on React `0.4.280 / 2026.10.05.412` and Public `0.16.32 / 2026.10.05.127`.
+- Production `/pos/payables` returns HTTP 200 with `Cache-Control: no-cache, no-store, must-revalidate` and serves `/react/assets/index-DNK0e-Xk.js`.
+- Authenticated Production visual contract PASS with Firestore Write/commit/batchWrite blocked.
+- Production Desktop 1440x900:
+  - Hero ~= 247px,
+  - 4 Hero metrics,
+  - values = 0.00 amount / 0 open / 0 due soon / 0 overdue for current owner,
+  - 4 KPI cards,
+  - 3 due-risk bars,
+  - current payable rows = 0 and empty state visible,
+  - amount surfaces visible for current owner,
+  - Payment dialog = 680x532,
+  - raw translation keys = 0,
+  - document horizontal overflow = 0.
+- Production Mobile 390x844:
+  - Hero ~= 332px,
+  - Payables panel = 374px,
+  - table min-width = 0,
+  - table display = mobile block/card mode,
+  - wrapper overflow = visible,
+  - Payment dialog = 374px wide and contained,
+  - document horizontal overflow = 0.
+- Modal was opened only for layout verification; no payment was submitted.
+- Page errors = 0; request failures = 0; HTTP errors = 0; Firestore write attempts observed = 0.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
+- Next Retail POS migration/redesign route: `/pos/suppliers`.
 - No merge to `main`.
