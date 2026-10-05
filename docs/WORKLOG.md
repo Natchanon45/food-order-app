@@ -8224,3 +8224,46 @@ Deploy state:
 - Controlled data repair changed only eight stale public projection documents to active=false while preserving history.
 - Primary worktree `/pos/settings` uncommitted work remains isolated and untouched.
 - No merge to main.
+---
+## 2026-10-05 — Kitchen cancel action icons
+
+User request:
+- Add icons to every visible Kitchen cancel button so the actions match Cashier.
+
+Implementation:
+- Kitchen per-item Cancel now uses `<i className="bi bi-x-circle app-icon">` followed by its translated label span.
+- Kitchen Cancel entire order now uses the same `bi-x-circle app-icon` + label-span structure as Cashier.
+- Existing cancel callbacks, confirmation dialogs, order/item mutation logic, permissions, and data behavior are unchanged.
+- Added a React foundation regression contract to require Cashier-style icon markup on both Kitchen cancel action types.
+
+Important files:
+- react-app/src/pages/KitchenPage.jsx
+- tools/react-foundation-contract.mjs
+- react-app/src/config/release.js
+- public/assets/js/app-info.js
+- generated React entry shells/bundle.
+
+Release prepared:
+- React 0.4.280 / 2026.10.05.419.
+- Public 0.16.32 / 2026.10.05.134.
+- Generated bundle `/react/assets/index-6wt5v3I8.js`.
+
+Verification before deploy:
+- KitchenPage esbuild syntax check PASS.
+- React foundation contract PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS: 53 routes / 21 POS, parity matrix, P0 actions, 54 callable refs / 0 missing, tenant access, UI layers.
+- npm run build:react PASS; generated build contract PASS for Build .419.
+- git diff --check PASS.
+- Authenticated Production-data local overlay with Firestore writes blocked PASS:
+  - 14 per-item Cancel buttons; all have `bi-x-circle app-icon` + label span.
+  - 2 Cancel entire order buttons; both have `bi-x-circle app-icon` + label span.
+  - Desktop buttons render flex with 7px icon/text gap.
+  - Mobile item cancel icons render 18x18px.
+  - Desktop/mobile horizontal overflow=0.
+  - page errors=0; request failures=0; HTTP errors=0; Firestore writes=0.
+
+Deploy state:
+- Commit/push and Hosting-only deployment pending.
+- Primary worktree `/pos/settings` uncommitted work remains isolated and untouched.
+- No Functions/Rules/Storage deployment and no merge to main.

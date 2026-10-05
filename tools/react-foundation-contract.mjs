@@ -1261,6 +1261,12 @@ assert(
 );
 const kitchenPage=read("react-app/src/pages/KitchenPage.jsx");
 assert(
+  kitchenPage.includes('data-cancel-item={order.id} data-item-index={index} onClick={() => onCancelItem(order, index)}><i className="bi bi-x-circle app-icon"')
+  &&kitchenPage.includes('data-cancel-order={order.id} onClick={() => onCancelOrder(order)}><i className="bi bi-x-circle app-icon"')
+  &&kitchenPage.includes('<span>{t("kitchen.actions.cancel_order")}</span>'),
+  "Kitchen item/order cancel actions must use the same x-circle app-icon markup as Cashier"
+);
+assert(
   cashierPage.includes('CashierOrderNotifier orders={orders} onToast={showToast} surface="cashier"')
   &&kitchenPage.includes('CashierOrderNotifier orders={orders} onToast={showToast} surface="kitchen"'),
   "Cashier/Kitchen shared order notifier mount missing",

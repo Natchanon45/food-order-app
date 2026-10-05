@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.05.133',
+  build: '2026.10.05.134',
   branch: 'feature/react-firebase-port',
-  commit: 'WAITING-QUEUE-VERIFY-REPAIR',
+  commit: 'KITCHEN-CANCEL-ACTION-ICONS',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Waiting Queue stale-board repair and Verify visual polish',
-  updatedAt: '2026-10-05T12:00:00+0700',
+  milestone: 'Kitchen cancel action icon parity',
+  updatedAt: '2026-10-05T12:40:00+0700',
   whatsNew: [
-    'Prevent old Waiting Queue board rows from leaking across calendar days and deactivate stale public projections',
-    'Refresh the public Verify page with a responsive verification-card layout and clearer order summaries',
-    'Apply shared Super Admin Branding and tenant-side store naming on Verify'
+    'Add the Cashier-style x-circle icon to every visible Kitchen cancel action',
+    'Keep Kitchen item and whole-order cancellation behavior unchanged',
+    'Preserve responsive icon sizing through the shared app-icon contract'
   ]
 };
 

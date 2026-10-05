@@ -183,7 +183,7 @@ function KitchenOrderCard({
             : locked ? <div className="kitchen-item-actions"><span className="badge">{lockedItemLabel(order, t)}</span></div>
               : <div className="kitchen-item-actions">
                   <button className="btn btn-sm" type="button" data-edit-item={order.id} data-item-index={index} onClick={() => onEditItem(order, index)}><i className="bi bi-pencil" aria-hidden="true"></i><span>{t("kitchen.actions.edit")}</span></button>
-                  <button className="btn btn-danger btn-sm" type="button" data-cancel-item={order.id} data-item-index={index} onClick={() => onCancelItem(order, index)}><i className="bi bi-x-circle" aria-hidden="true"></i><span>{t("kitchen.actions.cancel")}</span></button>
+                  <button className="btn btn-danger btn-sm" type="button" data-cancel-item={order.id} data-item-index={index} onClick={() => onCancelItem(order, index)}><i className="bi bi-x-circle app-icon" aria-hidden="true"></i><span>{t("kitchen.actions.cancel")}</span></button>
                 </div>}
         </li>
       ))}
@@ -198,7 +198,7 @@ function KitchenOrderCard({
           <i className={`bi bi-${icon}`} aria-hidden="true"></i><span>{label}</span>
         </button>
       ))}
-      {!locked ? <button className="btn btn-danger" type="button" data-cancel-order={order.id} onClick={() => onCancelOrder(order)}>{t("kitchen.actions.cancel_order")}</button> : null}
+      {!locked ? <button className="btn btn-danger" type="button" data-cancel-order={order.id} onClick={() => onCancelOrder(order)}><i className="bi bi-x-circle app-icon" aria-hidden="true"></i><span>{t("kitchen.actions.cancel_order")}</span></button> : null}
     </div>
   </Tag>;
 }
