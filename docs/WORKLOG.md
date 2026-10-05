@@ -8208,7 +8208,19 @@ Verification before deploy:
   - page errors=0; request failures=0; HTTP errors=0; browser verification writes=0.
 
 Deploy state:
-- Commit/push and Hosting-only deployment pending.
-- No Firestore Rules, Storage Rules, Functions, or source waitingQueues documents changed.
+- Implementation commit 7760b777 — fix: repair waiting queue display and verify page — pushed to origin/feature/react-firebase-port.
+- Firebase Hosting target foodapp deployed successfully to https://penguin-food.web.app on React 0.4.280 / 2026.10.05.418 and Public 0.16.32 / 2026.10.05.133.
+- Production browser contract PASS:
+  - Waiting Queue display current hidden=true, upcoming=0, active waitingQueueBoard rows=[], bundle /react/assets/index-Qj2lEdVl.js, overflow=0.
+  - Verify configured Branding image natural size 512x512; object-fit contain.
+  - Verify shop = ตั่วเฮียอาหารอิสาน.
+  - Verify summary metrics=6, delivery panel visible, active item rows=4.
+  - Verify CSS/runtime cache identities = verify-page.css?v=20261005-133, platform-branding-runtime.js?v=20261005-133, verify.js?v=20261005-133.
+  - Desktop overflow=0; mobile 440x956 result/hero width=422px and overflow=0.
+  - raw translation keys=false.
+  - page errors=0; request failures=0; HTTP errors=0; browser verification writes=0.
+- Deployment scope was Hosting only.
+- No Firestore Rules, Storage Rules, Functions, or source waitingQueues documents changed/deployed.
+- Controlled data repair changed only eight stale public projection documents to active=false while preserving history.
 - Primary worktree `/pos/settings` uncommitted work remains isolated and untouched.
 - No merge to main.
