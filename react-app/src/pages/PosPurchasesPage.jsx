@@ -115,6 +115,7 @@ export function PosPurchasesPage() {
   const stylesReady = useParityPage({
     title: tr("meta.title"),
     bodyClass: "pos-purchases-page",
+    attributes: { "data-module": "retail-pos-purchases" },
     disabledGlobalStyles: ["app.css", "icons.css", "shared-responsive.css"],
     styles: [
       "app-version-badge-runtime.css",
@@ -123,6 +124,7 @@ export function PosPurchasesPage() {
       "retail-pos.css",
       "retail-purchases.css",
       "retail-purchases-report.css",
+      "retail-purchases-visual-dashboard.css",
       "retail-barcode-scan-tools.css",
       "retail-pos-navigation.css",
       "sweet-dialog.css",
@@ -515,6 +517,31 @@ export function PosPurchasesPage() {
     };
   }, [reportRows]);
 
+  const purchaseTrend = useMemo(() => {
+    const buckets = new Map();
+    [...reportRows]
+      .sort((a, b) => String(a.purchaseDate || "").localeCompare(String(b.purchaseDate || "")))
+      .forEach(purchase => {
+        const raw = String(purchase.purchaseDate || "").slice(0, 10);
+        if (!raw) return;
+        const date = new Date(`${raw}T00:00:00`);
+        const current = buckets.get(raw) || {
+          key: raw,
+          label: formatDate(date, { day: "2-digit", month: "short" }),
+          count: 0,
+          qty: 0,
+        };
+        current.count += 1;
+        current.qty += (purchase.items || []).reduce((sum, item) => sum + Number(item.qty || 0), 0);
+        buckets.set(raw, current);
+      });
+    return [...buckets.values()].slice(-8);
+  }, [reportRows, formatDate]);
+  const purchaseTrendMax = useMemo(
+    () => Math.max(1, ...purchaseTrend.map(item => item.count)),
+    [purchaseTrend],
+  );
+
   const applyThisMonth = useCallback(() => {
     const now = new Date();
     setDateFrom(localDateKey(new Date(now.getFullYear(), now.getMonth(), 1)));
@@ -669,15 +696,56 @@ export function PosPurchasesPage() {
     </header>
 
     <main data-pos-management className="purchase-container">
+      <section className="purchase-visual-hero">
+        <span className="purchase-hero-orbit purchase-hero-orbit-one"></span>
+        <span className="purchase-hero-orbit purchase-hero-orbit-two"></span>
+        <div className="purchase-hero-grid">
+          <div className="purchase-hero-copy">
+            <div className="purchase-hero-kicker">
+              <i className="bi bi-truck" aria-hidden="true"></i>
+              <span>{tr("visual.kicker")}</span>
+            </div>
+            <h1>{tr("header.title")}</h1>
+            <p>{tr("visual.hero_description")}</p>
+            <div className="purchase-hero-status">
+              <i className="bi bi-arrow-down-square" aria-hidden="true"></i>
+              <span>{tr("visual.catalog_ready", { count: formatNumber(products.length) })}</span>
+            </div>
+          </div>
+          <div className="purchase-hero-metrics">
+            <article>
+              <span><i className="bi bi-receipt" aria-hidden="true"></i>{tr("report.purchase_count")}</span>
+              <strong>{formatNumber(reportStats.count)}</strong>
+            </article>
+            <article>
+              <span><i className="bi bi-box-seam" aria-hidden="true"></i>{tr("report.qty_total")}</span>
+              <strong>{formatNumber(reportStats.qtyTotal)}</strong>
+            </article>
+            <article>
+              <span><i className="bi bi-buildings" aria-hidden="true"></i>{tr("report.supplier_count")}</span>
+              <strong>{formatNumber(reportStats.supplierCount)}</strong>
+            </article>
+            <article>
+              <span><i className="bi bi-cash-stack" aria-hidden="true"></i>{tr("report.grand_total")}</span>
+              <strong>{canViewCost ? amountText(reportStats.grandTotal) : "—"}</strong>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <section className="panel purchase-form-panel">
-        <div className="section-heading">
-          <div>
+        <div className="section-heading purchase-form-heading">
+          <div className="purchase-form-title">
+            <span className="purchase-form-title-icon"><i className="bi bi-box-arrow-in-down" aria-hidden="true"></i></span>
+            <div>
             <h1>
               <i className="bi bi-truck pos-context-icon" data-icon-tone="orange" aria-hidden="true"></i>
               <span>{tr("form.title")}</span>
             </h1>
             <p>{tr("form.subtitle")}</p>
+            </div>
           </div>
+          <span className="purchase-form-line-badge"><i className="bi bi-list-check" aria-hidden="true"></i>{formatNumber(lines.length)}</span>
         </div>
 
         <form id="purchaseForm" onSubmit={submit}>
@@ -744,8 +812,8 @@ export function PosPurchasesPage() {
               <tbody id="purchaseLines">
                 {lines.map(line => {
                   const product = products.find(item => item.id === line.productId);
-                  return <tr key={line.id}>
-                    <td>
+                  return <tr className="purchase-line-row" key={line.id}>
+                    <td className="purchase-line-product" data-label={tr("columns.product")}>
                       <select className="line-product" value={line.productId}
                         disabled={!canCreate || busy}
                         onChange={event => updateLine(line.id, "productId", event.target.value)}>
@@ -754,23 +822,23 @@ export function PosPurchasesPage() {
                           <option key={item.id} value={item.id}>{item.name} ({item.id})</option>)}
                       </select>
                     </td>
-                    <td className="number line-stock">{formatNumber(Number(product?.stock || 0))}</td>
-                    <td>
+                    <td className="number line-stock" data-label={tr("columns.stock_before")}>{formatNumber(Number(product?.stock || 0))}</td>
+                    <td data-label={tr("columns.qty_received")}>
                       <input className="line-qty" type="number" min="0.001" step="0.001"
                         disabled={!canCreate || busy}
                         value={line.qty}
                         onChange={event => updateLine(line.id, "qty", event.target.value)} />
                     </td>
-                    <td hidden={!canViewCost}>
+                    <td data-label={tr("columns.unit_cost")} hidden={!canViewCost}>
                       <input className="line-cost" type="number" min="0" step="0.01"
                         disabled={!canCreate || busy}
                         value={line.unitCost}
                         onChange={event => updateLine(line.id, "unitCost", event.target.value)} />
                     </td>
-                    <td className="number line-total" hidden={!canViewCost}>
+                    <td className="number line-total" data-label={tr("columns.total")} hidden={!canViewCost}>
                       {money(Number(line.qty || 0) * Number(line.unitCost || 0))}
                     </td>
-                    <td>
+                    <td className="purchase-line-remove">
                       <button className="remove-line" type="button"
                         hidden={!canCreate} disabled={!canCreate || busy}
                         aria-label={tr("actions.remove")} title={tr("actions.remove")}
@@ -807,6 +875,16 @@ export function PosPurchasesPage() {
 
       <section className="panel purchase-history-panel">
         <section className="purchase-report">
+          <div className="purchase-report-visual-heading">
+            <div className="purchase-report-title">
+              <span className="purchase-report-title-icon"><i className="bi bi-graph-up-arrow" aria-hidden="true"></i></span>
+              <div>
+                <h2>{tr("visual.report_title")}</h2>
+                <p>{tr("visual.report_description")}</p>
+              </div>
+            </div>
+            <span className="purchase-report-result"><i className="bi bi-receipt-cutoff" aria-hidden="true"></i>{formatNumber(reportRows.length)}</span>
+          </div>
           <div className="purchase-report-filters">
             <input id="purchaseDateFrom" type="date" value={dateFrom}
               aria-label={tr("csv.date")}
@@ -832,22 +910,52 @@ export function PosPurchasesPage() {
           </div>
 
           <div className="purchase-report-stats">
-            <article>
+            <article className="purchase-stat-card purchase-stat-orders">
+              <span className="purchase-stat-icon"><i className="bi bi-receipt" aria-hidden="true"></i></span>
               <span>{tr("report.purchase_count")}</span>
               <strong id="purchaseCount">{formatNumber(reportStats.count)}</strong>
             </article>
-            <article hidden={!canViewCost}>
+            <article className="purchase-stat-card purchase-stat-value" hidden={!canViewCost}>
+              <span className="purchase-stat-icon"><i className="bi bi-cash-stack" aria-hidden="true"></i></span>
               <span>{tr("report.grand_total")}</span>
               <strong id="purchaseGrandTotal">{money(reportStats.grandTotal)}</strong>
             </article>
-            <article>
+            <article className="purchase-stat-card purchase-stat-qty">
+              <span className="purchase-stat-icon"><i className="bi bi-box-arrow-in-down" aria-hidden="true"></i></span>
               <span>{tr("report.qty_total")}</span>
               <strong id="purchaseQtyTotal">{formatNumber(reportStats.qtyTotal)}</strong>
             </article>
-            <article>
+            <article className="purchase-stat-card purchase-stat-suppliers">
+              <span className="purchase-stat-icon"><i className="bi bi-buildings" aria-hidden="true"></i></span>
               <span>{tr("report.supplier_count")}</span>
               <strong id="supplierCount">{formatNumber(reportStats.supplierCount)}</strong>
             </article>
+          </div>
+
+          <div className="purchase-activity-panel">
+            <div className="purchase-activity-heading">
+              <div>
+                <span className="purchase-activity-icon"><i className="bi bi-bar-chart-line-fill" aria-hidden="true"></i></span>
+                <div>
+                  <h3>{tr("visual.activity_title")}</h3>
+                  <p>{tr("visual.activity_description")}</p>
+                </div>
+              </div>
+              <strong>{formatNumber(reportStats.count)}</strong>
+            </div>
+            <div className="purchase-activity-chart">
+              {purchaseTrend.length ? purchaseTrend.map(item => {
+                const height = Math.max(10, (item.count / purchaseTrendMax) * 100);
+                return <div className="purchase-activity-column" key={item.key}>
+                  <span className="purchase-activity-tooltip">{formatNumber(item.count)} {tr("visual.orders")}</span>
+                  <span className="purchase-activity-bar" style={{ "--purchase-height": `${height}%`, height: `${height}%` }}></span>
+                  <span className="purchase-activity-label">{item.label}</span>
+                </div>;
+              }) : <div className="purchase-chart-empty">
+                <i className="bi bi-bar-chart" aria-hidden="true"></i>
+                <span>{tr("report.empty")}</span>
+              </div>}
+            </div>
           </div>
 
           <div className="purchase-ranking-grid">
@@ -880,14 +988,18 @@ export function PosPurchasesPage() {
           </div>
         </section>
 
-        <div className="section-heading">
-          <div>
-            <h2>
-              <i className="bi bi-bar-chart-line pos-context-icon" data-icon-tone="blue" aria-hidden="true"></i>
-              <span>{tr("history.title")}</span>
-            </h2>
-            <p>{tr("history.subtitle")}</p>
+        <div className="section-heading purchase-history-heading">
+          <div className="purchase-history-title">
+            <span className="purchase-history-title-icon"><i className="bi bi-clock-history" aria-hidden="true"></i></span>
+            <div>
+              <h2>
+                <i className="bi bi-bar-chart-line pos-context-icon" data-icon-tone="blue" aria-hidden="true"></i>
+                <span>{tr("history.title")}</span>
+              </h2>
+              <p>{tr("history.subtitle")}</p>
+            </div>
           </div>
+          <span className="purchase-history-count"><i className="bi bi-archive" aria-hidden="true"></i>{formatNumber(historyRows.length)}</span>
         </div>
 
         <label className="purchase-history-search">{tr("history.search_label")}
@@ -909,7 +1021,7 @@ export function PosPurchasesPage() {
                 day: "numeric",
               })
               : "-";
-            return <article className="purchase-history-item" key={purchase.id}>
+            return <article className="purchase-history-item purchase-history-visual-item" key={purchase.id}>
               <div className="purchase-history-head">
                 <div>
                   <strong>{purchase.supplierName || "-"}</strong>
@@ -934,8 +1046,10 @@ export function PosPurchasesPage() {
             </article>;
           })}
         </div>
-        <div id="purchaseHistoryEmpty" className="empty-state" hidden={historyRows.length > 0}>
-          {tr("history.empty")}
+        <div id="purchaseHistoryEmpty" className="empty-state purchase-history-empty" hidden={historyRows.length > 0}>
+          <span className="purchase-empty-icon"><i className="bi bi-inboxes" aria-hidden="true"></i></span>
+          <strong>{tr("history.empty")}</strong>
+          <small>{tr("visual.history_empty_hint")}</small>
         </div>
       </section>
     </main>

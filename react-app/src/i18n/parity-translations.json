@@ -3469,6 +3469,17 @@
           "total": "รวม",
           "new_cost": "ต้นทุนเฉลี่ยใหม่",
           "note": "หมายเหตุ"
+        },
+        "visual": {
+          "kicker": "Purchase & Receiving Control Center",
+          "hero_description": "รับสินค้าเข้า ติดตามใบซื้อ ซัพพลายเออร์ และปริมาณรับเข้าจากหน้าจอเดียว พร้อมภาพรวมที่อ่านง่าย",
+          "catalog_ready": "พร้อมรับเข้าจาก :count สินค้าในแคตตาล็อก",
+          "report_title": "ภาพรวมการรับสินค้า",
+          "report_description": "ติดตามจำนวนใบซื้อ ปริมาณรับเข้า และแนวโน้มตามช่วงวันที่ที่เลือก",
+          "activity_title": "จังหวะการรับสินค้า",
+          "activity_description": "จำนวนใบรับสินค้าในแต่ละวันจากช่วงข้อมูลที่กำลังแสดง",
+          "orders": "ใบซื้อ",
+          "history_empty_hint": "เมื่อบันทึกรับสินค้าแล้ว รายการจะปรากฏที่นี่"
         }
       },
       "payables": {
@@ -9505,6 +9516,17 @@
           "total": "Total",
           "new_cost": "New Average Cost",
           "note": "Note"
+        },
+        "visual": {
+          "kicker": "Purchase & Receiving Control Center",
+          "hero_description": "Receive stock and monitor purchase orders, suppliers, and inbound quantities from one easy-to-read workspace.",
+          "catalog_ready": "Ready to receive from :count catalog products",
+          "report_title": "Receiving overview",
+          "report_description": "Track purchase orders, inbound quantities, and activity across the selected date range.",
+          "activity_title": "Receiving activity",
+          "activity_description": "Number of purchase receipts per day in the currently selected report range.",
+          "orders": "orders",
+          "history_empty_hint": "Saved purchase receipts will appear here."
         }
       },
       "payables": {
@@ -15266,6 +15288,17 @@
           "total": "စုစုပေါင်း",
           "new_cost": "ပျမ်းမျှကုန်ကျစရိတ်အသစ်",
           "note": "မှတ်ချက်"
+        },
+        "visual": {
+          "kicker": "Purchase & Receiving Control Center",
+          "hero_description": "ကုန်လက်ခံခြင်း၊ ဝယ်ယူစာရွက်များ၊ ပေးသွင်းသူများနှင့် လက်ခံပမာဏကို တစ်နေရာတည်းတွင် ရှင်းလင်းစွာ ကြည့်နိုင်သည်။",
+          "catalog_ready": "ကတ်တလောက်ရှိ ပစ္စည်း :count မျိုးမှ လက်ခံရန် အသင့်",
+          "report_title": "ကုန်လက်ခံမှု အကျဉ်းချုပ်",
+          "report_description": "ရွေးချယ်ထားသောကာလအတွင်း ဝယ်ယူစာရွက်၊ လက်ခံပမာဏနှင့် လှုပ်ရှားမှုကို ကြည့်ပါ။",
+          "activity_title": "လက်ခံမှု လှုပ်ရှားချက်",
+          "activity_description": "လက်ရှိရွေးထားသောကာလအတွင်း နေ့အလိုက် ဝယ်ယူလက်ခံစာ အရေအတွက်။",
+          "orders": "စာရွက်",
+          "history_empty_hint": "သိမ်းဆည်းထားသော ကုန်လက်ခံစာများကို ဤနေရာတွင် ပြမည်။"
         }
       },
       "payables": {
@@ -21027,6 +21060,17 @@
           "total": "ທັງໝົດ",
           "new_cost": "ຄ່າໃຊ້ຈ່າຍສະເລ່ຍໃຫມ່",
           "note": "ໝາຍເຫດ"
+        },
+        "visual": {
+          "kicker": "Purchase & Receiving Control Center",
+          "hero_description": "ຮັບສິນຄ້າເຂົ້າ ແລະຕິດຕາມໃບຊື້, ຜູ້ສະໜອງ ແລະຈຳນວນຮັບເຂົ້າໄດ້ໃນໜ້າດຽວ.",
+          "catalog_ready": "ພ້ອມຮັບຈາກ :count ສິນຄ້າໃນແຄັດຕາລັອກ",
+          "report_title": "ພາບລວມການຮັບສິນຄ້າ",
+          "report_description": "ຕິດຕາມໃບຊື້, ຈຳນວນຮັບເຂົ້າ ແລະການເຄື່ອນໄຫວຕາມຊ່ວງວັນທີ.",
+          "activity_title": "ຈັງຫວະການຮັບສິນຄ້າ",
+          "activity_description": "ຈຳນວນໃບຮັບສິນຄ້າຕໍ່ວັນໃນຊ່ວງລາຍງານທີ່ເລືອກ.",
+          "orders": "ໃບຊື້",
+          "history_empty_hint": "ເມື່ອບັນທຶກຮັບສິນຄ້າແລ້ວ ລາຍການຈະສະແດງຢູ່ບ່ອນນີ້."
         }
       },
       "payables": {
@@ -26788,6 +26832,17 @@
           "total": "សរុប",
           "new_cost": "ការចំណាយជាមធ្យមថ្មី។",
           "note": "ចំណាំ"
+        },
+        "visual": {
+          "kicker": "Purchase & Receiving Control Center",
+          "hero_description": "ទទួលទំនិញចូល និងតាមដានបញ្ជាទិញ អ្នកផ្គត់ផ្គង់ និងបរិមាណទទួលចូលនៅក្នុងកន្លែងតែមួយ។",
+          "catalog_ready": "រួចរាល់សម្រាប់ទទួលពីផលិតផល :count ក្នុងកាតាឡុក",
+          "report_title": "សង្ខេបការទទួលទំនិញ",
+          "report_description": "តាមដានបញ្ជាទិញ បរិមាណទទួលចូល និងសកម្មភាពតាមចន្លោះកាលបរិច្ឆេទដែលបានជ្រើស។",
+          "activity_title": "សកម្មភាពទទួលទំនិញ",
+          "activity_description": "ចំនួនបង្កាន់ដៃទទួលទំនិញប្រចាំថ្ងៃក្នុងចន្លោះរបាយការណ៍ដែលបានជ្រើស។",
+          "orders": "បញ្ជាទិញ",
+          "history_empty_hint": "បង្កាន់ដៃទទួលទំនិញដែលបានរក្សាទុកនឹងបង្ហាញនៅទីនេះ។"
         }
       },
       "payables": {

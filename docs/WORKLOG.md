@@ -7224,3 +7224,122 @@ Deploy state:
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
 - Next visual redesign route: `/pos/purchases`.
 - No merge to `main`.
+
+---
+## 2026-10-05 — POS Purchases / Receiving Visual Control Center
+
+User request:
+- Continue the approved Retail POS redesign plan after Stock Counts.
+- Next route: `/pos/purchases`.
+- Make the receiving/purchase screen modern, colorful, graphic-rich, easy to scan, and mobile friendly while preserving all purchase/stock logic.
+
+Design / implementation:
+- Preserved the existing React Purchases route, all legacy IDs/actions, realtime Firestore readers, supplier/product watchers, scanner, CSV export, create permission, cost permission, and tenant boundary.
+- Added React-only `retail-purchases-visual-dashboard.css`; the legacy Purchases MASTER CSS remains intact underneath.
+- Added a Purchase & Receiving Control Center hero with:
+  - purchase count,
+  - total received quantity,
+  - supplier count,
+  - grand total only when `pos.purchases.view_cost` is allowed,
+  - catalog-ready indicator using the already-loaded product catalog.
+- Reworked the receiving form visually:
+  - semantic receiving icon/title,
+  - active line-count badge,
+  - grouped supplier/invoice/date/note fields,
+  - stronger add-product/barcode actions,
+  - richer line table,
+  - semantic remove control,
+  - contained total/clear/save actions.
+- Purchase lines keep the original editable controls and default behavior:
+  - initial form still contains exactly one blank line,
+  - that blank line keeps legacy default `qty: 1`,
+  - no product is selected until the user chooses/scans one.
+- Mobile line table becomes contained visual cards:
+  - product selector full width,
+  - stock/qty/cost/total labels exposed through `data-label`,
+  - scanner and Add Product buttons become icon-only,
+  - no horizontal page overflow.
+- Reworked the purchase report:
+  - visual report heading/result badge,
+  - date/month/all/CSV filters retained,
+  - four KPI cards,
+  - daily purchase-receipt activity chart based only on the already-loaded `reportRows`,
+  - top supplier ranking remains hidden without `view_cost`,
+  - top product ranking remains quantity based,
+  - no extra Firestore query added.
+- Reworked history:
+  - semantic history heading and count badge,
+  - richer receiving cards,
+  - graphical empty state.
+- Added TH / EN / MY / LO / KM labels for the new visual surfaces.
+
+Permission/data safety:
+- Hero grand total is `canViewCost ? amountText(reportStats.grandTotal) : "—"`.
+- Cost KPI, purchase grand total, supplier value ranking, line unit cost/line total, history totals and CSV cost export remain behind the existing `pos.purchases.view_cost` boundary.
+- Count/quantity/supplier-count/activity visuals do not derive from hidden cost values.
+- `pos.purchases.create` visibility/disabled behavior remains unchanged.
+- BarcodeDetector + ZXing fallback remains unchanged.
+- `watchRetailProducts`, `watchPosSuppliers`, and `watchPosPurchases` remain unchanged.
+- Purchase IDs, supplier credit fields, payable reference fields, stock movement purchase references, legacy product document IDs, and Firestore transaction read-before-write behavior remain unchanged.
+- No Firestore schema/index/rules/storage/functions changes.
+- No merge to `main`.
+
+Release prepared:
+- React `0.4.280 / 2026.10.05.411`.
+- Public `0.16.32 / 2026.10.05.126`.
+- Generated bundle: `/react/assets/index-CuLqseIF.js`.
+
+Verification before deploy:
+- Purchases JSX esbuild syntax PASS.
+- Translation JSON validation PASS.
+- React foundation contract PASS, including:
+  - Purchase Control Center structure,
+  - `view_cost` masking,
+  - responsive mobile card CSS,
+  - semantic icons,
+  - five-language visual labels.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS:
+  - migration coverage = 53 routes / 21 POS,
+  - parity matrix PASS,
+  - P0 actions PASS,
+  - callables = 54 refs / 0 missing,
+  - tenant-access PASS,
+  - UI-layer PASS.
+- `npm run build:react` PASS; generated React build contract PASS for Build `.411`.
+- `git diff --check` PASS.
+- Authenticated local-build browser contract PASS against current Production Firestore data with Firestore Write/commit/batchWrite blocked.
+- Current report range/data has 0 purchase receipts:
+  - Hero values = 0 purchases / 0 received qty / 0 suppliers / 0.00 amount for current authorized owner.
+  - Activity chart correctly renders the empty state.
+  - Supplier/Product rankings correctly render empty.
+  - History currently contains 0 cards.
+- Form untouched state:
+  - 1 default purchase line,
+  - selected products = 0,
+  - default qty value = 1 (legacy `createLine()` behavior),
+  - no form actions clicked.
+- Desktop 1440x900:
+  - Hero ~= 243px,
+  - 4 Hero metrics,
+  - 4 visible report KPI cards for current cost-authorized owner,
+  - scanner present,
+  - CSV action visible for current cost-authorized owner,
+  - raw translation keys = 0,
+  - document horizontal overflow = 0.
+- Mobile 390x844:
+  - Hero ~= 334px,
+  - form panel = 374px,
+  - purchase line card = 348px,
+  - table min-width = 0,
+  - table wrapper overflow = visible,
+  - purchase line display = grid,
+  - scanner/Add Product labels collapse to icon-only,
+  - report KPI layout = 2 columns,
+  - history layout = 1 contained column,
+  - document horizontal overflow = 0.
+- Page errors = 0; request failures = 0; HTTP errors = 0.
+- Firestore write attempts observed = 0.
+
+Deploy state:
+- Commit/push and Hosting-only deployment pending.
