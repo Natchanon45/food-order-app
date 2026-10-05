@@ -8325,6 +8325,17 @@ Verification before deploy:
   - page errors=0; request failures=0; HTTP errors=0; Firestore writes=0.
 
 Deploy state:
-- Commit/push and Hosting-only deployment pending.
+- Implementation commit 3372e619 — fix: center kitchen cancel icons — pushed to origin/feature/react-firebase-port.
+- Firebase Hosting target foodapp deployed successfully to https://penguin-food.web.app on React 0.4.280 / 2026.10.05.420 and Public 0.16.32 / 2026.10.05.135.
+- Production authenticated browser contract PASS:
+  - bundle /react/assets/index-DLZUIbTn.js.
+  - footer Version 0.4.280 • Build 2026.10.05.420.
+  - 14 per-item Cancel + 2 Cancel-entire-order buttons.
+  - Desktop center Y delta is 0px for all 16 cancel icons.
+  - Mobile center Y delta is 0px for all 16 cancel icons.
+  - Every x-circle pseudo glyph resolves to transform matrix(..., y=1px), matching Cashier optical alignment.
+  - Desktop/mobile horizontal overflow=0.
+  - page errors=0; request failures=0; HTTP errors=0; Firestore writes=0.
+- Deployment scope was Hosting only.
 - Primary worktree `/pos/settings` uncommitted work remains isolated and untouched.
 - No Functions/Rules/Storage deployment and no merge to main.
