@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.05.138',
+  build: '2026.10.05.139',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-SCANNER-I18N-RETURNS-SEARCH',
+  commit: 'POS-MOBILE-CART-PARITY',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'POS scanner localization and Returns search layout',
-  updatedAt: '2026-10-05T15:40:00+0700',
+  milestone: 'React POS mobile sale cart parity',
+  updatedAt: '2026-10-05T16:45:00+0700',
   whatsNew: [
-    'Localize POS barcode scanner buttons, dialogs, statuses, and error Toasts in all five languages',
-    'Keep the red scanner guide line inside the green scan frame',
-    'Place Returns search mode, search field, and Search button in one desktop row with responsive mobile stacking'
+    'Restore Laravel-style mobile and tablet sale cart access on canonical React /pos',
+    'Provide cart drawer actions for checkout, hold bill, and held bills through 1023px',
+    'Keep mobile cart labels localized across all five POS languages'
   ]
 };
 

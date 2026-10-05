@@ -121,6 +121,7 @@ def extract_runtime_css(script_name, output_name, include_appends=False):
     (css_dir / output_name).write_text(css + "\n")
 
 extract_runtime_css("app-version-badge.js", "app-version-badge-runtime.css")
+extract_runtime_css("retail-mobile-cart-bar.js", "retail-mobile-cart-bar.css")
 extract_runtime_css("retail-pos-payment-enter.js", "retail-pos-payment-enter.css", include_appends=True)
 extract_runtime_css("retail-pos-promptpay-payment.js", "retail-pos-promptpay-payment.css")
 extract_runtime_css("retail-barcode-scan-tools.js", "retail-barcode-scan-tools.css")

@@ -8592,3 +8592,51 @@ Production verification:
 - Horizontal overflow = 0 on all verified routes.
 - Page errors = 0; request failures = 0; HTTP errors = 0; Firestore write attempts = 0.
 - After this UI repair, POS migration resumes at `/pos/backup`, then `/pos/users`.
+
+---
+## 2026-10-05 — React /pos mobile sale cart parity with Laravel
+
+User request:
+- Canonical React `/pos` on Mobile could show/select products but could not continue the sale like Laravel MASTER.
+
+Root cause:
+- `retail-pos-tailwind-responsive.css` deliberately hides `.cart-panel` for viewports below 64rem / 1024px.
+- Current Laravel MASTER compensates with `public/assets/js/retail-mobile-cart-bar.js`, which mounts a bottom sale-cart bar and drawer through 1023px.
+- React migrated the cart/business handlers but did not mount an equivalent mobile/tablet cart UI, so after adding a product the desktop cart remained hidden and there was no visible route to checkout, Hold Bill, or Held Bills.
+
+Implementation:
+- Added a React-native mobile/tablet cart bar + drawer to `PosPage.jsx` using the existing React cart state and sale handlers.
+- Behavior follows current Laravel MASTER: bottom cart bar appears when the bill has value or held bills exist; drawer shows bill rows, quantity summary, net total; Checkout opens the existing React payment dialog; Hold Bill calls the existing hold flow; Held Bills opens the existing held-bill dialog; swipe-down, close button, backdrop, and Escape close the drawer.
+- Bar/drawer operate through 1023px, with centered tablet treatment from 601–1023px; at 1024px the normal desktop cart panel remains the sale surface.
+- Extracted the exact current Laravel mobile-cart CSS into React parity assets and added it to `tools/sync-react-parity-assets.py` so future Laravel parity syncs retain the behavior.
+- Synced the local legacy runtime copy of `public/assets/js/retail-mobile-cart-bar.js` to current Laravel MASTER.
+- Added `pos.mobile_cart.title` and `pos.mobile_cart.view_bill` in TH / EN / MY / LO / KM.
+- Added regression contracts for the mobile cart structure/actions, 1023px CSS boundary, Laravel parity extraction, and five-language labels.
+- No sale-completion logic, stock deduction, tax, payment math, tenant scope, permissions, or Firestore transaction behavior was changed.
+
+Release candidate:
+- React 0.4.280 / Build 2026.10.05.424.
+- Public 0.16.32 / Build 2026.10.05.139.
+- Generated bundle `/react/assets/index-BIOAaUA1.js`.
+
+Verification before deploy:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run test:react-foundation` PASS after the final markup adjustment.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build .424 / `index-BIOAaUA1.js`.
+- `git diff --check` PASS.
+- Authenticated Production-data candidate overlay with Firestore write endpoints blocked PASS:
+  - 440x956: desktop cart hidden; mobile bar hidden before adding a product; after adding a product the bar shows `ตะกร้าขาย`, item count/total, and `ดูบิล`.
+  - 440x956 drawer: opens fully (settled transform = 0), shows one cart row, net total, Hold Bill, Held Bills, and enabled checkout.
+  - 440x956 checkout: opens the existing `รับชำระเงิน` dialog and closes the drawer.
+  - 768px: mobile/tablet bar is visible, centered at 720px wide, while desktop cart remains hidden.
+  - 1024px: mobile bar is CSS-hidden and desktop cart panel is visible.
+  - horizontal overflow = 0 at all verified widths.
+  - page errors = 0; request failures = 0; HTTP errors = 0.
+  - 2 expected customer-display Firestore write attempts occurred while products were added during candidate verification; both were intercepted/blocked, so Production data was not changed.
+
+Deploy state:
+- Pending commit/push and Hosting deploy at the time this entry was written.
+- Hosting-only deployment intended; no Rules, Storage, or Functions change.
+- No merge to `main`.

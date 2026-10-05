@@ -2494,6 +2494,10 @@
         "held_bills": "บิลพัก",
         "pay": "รับชำระเงิน"
       },
+      "mobile_cart": {
+        "title": "ตะกร้าขาย",
+        "view_bill": "ดูบิล"
+      },
       "payment": {
         "title": "รับชำระเงิน",
         "total_due": "ยอดที่ต้องชำระ",
@@ -8700,6 +8704,10 @@
         "held_bills": "Held bills",
         "pay": "Take payment"
       },
+      "mobile_cart": {
+        "title": "Sale cart",
+        "view_bill": "View bill"
+      },
       "payment": {
         "title": "Take payment",
         "total_due": "Amount due",
@@ -14630,6 +14638,10 @@
         "hold_bill": "ဘေလ်ခေတ္တသိမ်း",
         "held_bills": "ခေတ္တသိမ်းထားသောဘေလ်များ",
         "pay": "ငွေလက်ခံမည်"
+      },
+      "mobile_cart": {
+        "title": "အရောင်းခြင်း",
+        "view_bill": "ဘေလ်ကြည့်မည်"
       },
       "payment": {
         "title": "ငွေလက်ခံမည်",
@@ -20562,6 +20574,10 @@
         "held_bills": "ບິນພັກ",
         "pay": "ຮັບຊຳລະ"
       },
+      "mobile_cart": {
+        "title": "ກະຕ່າຂາຍ",
+        "view_bill": "ເບິ່ງບິນ"
+      },
       "payment": {
         "title": "ຮັບຊຳລະ",
         "total_due": "ຍອດທີ່ຕ້ອງຈ່າຍ",
@@ -26492,6 +26508,10 @@
         "hold_bill": "ផ្អាកវិក្កយបត្រ",
         "held_bills": "វិក្កយបត្រផ្អាក",
         "pay": "ទទួលការទូទាត់"
+      },
+      "mobile_cart": {
+        "title": "កន្ត្រកលក់",
+        "view_bill": "មើលវិក្កយបត្រ"
       },
       "payment": {
         "title": "ទទួលការទូទាត់",

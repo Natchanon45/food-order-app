@@ -9,7 +9,7 @@ function ensureMobileCartStyle() {
   style.id = styleId;
   style.textContent = `
 .mobile-cart-bar,.mobile-cart-drawer,.mobile-cart-backdrop{display:none}
-@media(max-width:600px){
+@media(max-width:1023px){
   body{padding-bottom:calc(74px + env(safe-area-inset-bottom,0px))}
   body.mobile-cart-drawer-open{overflow:hidden}
   .mobile-cart-bar{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:9998;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;min-height:56px;padding:9px 12px;border:0;border-radius:18px;background:linear-gradient(135deg,#151515,#0d6f34);color:#fff;box-shadow:0 18px 42px rgba(15,23,42,.28);text-align:left;cursor:pointer}
@@ -39,9 +39,19 @@ function ensureMobileCartStyle() {
   .mobile-cart-row b{font-size:.9rem;white-space:nowrap}
   .mobile-cart-footer{flex:0 0 auto;border-top:1px solid #dde5df;padding-top:10px;display:grid;gap:8px}
   .mobile-cart-total{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:1.02rem;font-weight:600;color:#0d6f34}
+  .mobile-cart-secondary-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .mobile-cart-secondary{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-width:0;min-height:42px;padding:8px 10px;border:1px solid #d8e4dc;border-radius:12px;background:#f4f8f5;color:#163d28;font:inherit;font-size:.86rem;font-weight:600}
+  .mobile-cart-secondary i{font-size:1rem;line-height:1}
+  .mobile-cart-secondary:disabled{opacity:.45;cursor:not-allowed}
+  .mobile-cart-held-count{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#0f766e;color:#fff;font-size:.72rem;line-height:1}
   .mobile-cart-checkout{border:0;border-radius:14px;min-height:48px;background:#159447;color:#fff;font-weight:600;font-size:1rem}
   .mobile-cart-checkout:disabled{opacity:.45}
   .app-version-badge{bottom:calc(78px + env(safe-area-inset-bottom,0px))!important}
+}
+@media(min-width:601px) and (max-width:1023px){
+  .mobile-cart-bar{left:50%;right:auto;width:min(720px,calc(100% - 32px));transform:translateX(-50%)}
+  .mobile-cart-drawer{left:50%;right:auto;bottom:12px;width:min(720px,calc(100% - 32px));border-radius:24px;transform:translate(-50%,calc(100% + 28px))}
+  .mobile-cart-drawer.open{transform:translate(-50%,0)}
 }
 `;
   document.head.appendChild(style);
@@ -89,10 +99,16 @@ function createDrawer() {
     <div class="mobile-cart-items" data-mobile-cart-items></div>
     <footer class="mobile-cart-footer">
       <div class="mobile-cart-total"><span>ยอดสุทธิ</span><strong data-mobile-cart-drawer-total>0.00 บาท</strong></div>
+      <div class="mobile-cart-secondary-actions">
+        <button type="button" class="mobile-cart-secondary" data-mobile-cart-hold><i class="bi bi-pause-circle" aria-hidden="true"></i><span data-mobile-cart-hold-label>พักบิล</span></button>
+        <button type="button" class="mobile-cart-secondary" data-mobile-cart-held><i class="bi bi-receipt" aria-hidden="true"></i><span data-mobile-cart-held-label>บิลพัก</span><span class="mobile-cart-held-count" data-mobile-cart-held-count>0</span></button>
+      </div>
       <button type="button" class="mobile-cart-checkout" data-mobile-cart-checkout>รับชำระเงิน</button>
     </footer>`;
   drawer.querySelectorAll('[data-mobile-cart-close]').forEach(el => el.addEventListener('click', () => closeDrawer()));
   drawer.querySelector('[data-mobile-cart-checkout]')?.addEventListener('click', checkoutFromMobileCart);
+  drawer.querySelector('[data-mobile-cart-hold]')?.addEventListener('click', holdFromMobileCart);
+  drawer.querySelector('[data-mobile-cart-held]')?.addEventListener('click', heldBillsFromMobileCart);
   drawer.addEventListener('touchstart', event => { touchStartY = event.touches?.[0]?.clientY || 0; }, { passive: true });
   drawer.addEventListener('touchend', event => {
     const endY = event.changedTouches?.[0]?.clientY || 0;
@@ -100,6 +116,18 @@ function createDrawer() {
   }, { passive: true });
   document.body.appendChild(drawer);
   return drawer;
+}
+
+function sourceButtonLabel(selector, fallback) {
+  const source = document.querySelector(selector);
+  if (!source) return fallback;
+  const clone = source.cloneNode(true);
+  clone.querySelectorAll('.held-count,.pos-context-icon,.bi').forEach(node => node.remove());
+  return clone.textContent?.trim() || fallback;
+}
+
+function heldBillCount() {
+  return Math.max(0, Math.trunc(readNumber(document.querySelector('#heldBillsCount')?.textContent)));
 }
 
 function getCartRows() {
@@ -122,18 +150,24 @@ function updateMobileCartBar() {
     const itemCount = document.querySelector('#itemCount')?.textContent || '0 รายการ';
     const totalText = document.querySelector('#grandTotal')?.textContent || '0.00';
     const total = readNumber(totalText);
+    const heldCount = heldBillCount();
     const rows = getCartRows();
 
-    if (total <= 0 && drawerOpen) closeDrawer(false);
+    if (total <= 0 && heldCount <= 0 && drawerOpen) closeDrawer(false);
 
-    bar.querySelector('[data-mobile-cart-meta]').textContent = `${itemCount} • ${totalText} บาท`;
-    bar.querySelector('[data-mobile-cart-action-label]').textContent = drawerOpen ? 'รับชำระเงิน' : 'ดูบิล';
-    bar.classList.toggle('is-checkout', drawerOpen);
-    bar.hidden = total <= 0;
+    bar.querySelector('[data-mobile-cart-meta]').textContent = total > 0 ? `${itemCount} • ${totalText} บาท` : `${heldCount} ${sourceButtonLabel('#heldBillsBtn', 'บิลพัก')}`;
+    bar.querySelector('[data-mobile-cart-action-label]').textContent = drawerOpen ? (total > 0 ? 'รับชำระเงิน' : 'ปิด') : (total > 0 ? 'ดูบิล' : sourceButtonLabel('#heldBillsBtn', 'บิลพัก'));
+    bar.classList.toggle('is-checkout', drawerOpen && total > 0);
+    bar.hidden = drawerOpen || (total <= 0 && heldCount <= 0);
 
-    drawer.querySelector('[data-mobile-cart-drawer-meta]').textContent = itemCount;
+    drawer.querySelector('[data-mobile-cart-drawer-meta]').textContent = heldCount > 0 ? `${itemCount} • ${sourceButtonLabel('#heldBillsBtn', 'บิลพัก')} ${heldCount}` : itemCount;
     drawer.querySelector('[data-mobile-cart-drawer-total]').textContent = `${totalText} บาท`;
     drawer.querySelector('[data-mobile-cart-checkout]').disabled = total <= 0;
+    drawer.querySelector('[data-mobile-cart-hold]').disabled = rows.length <= 0;
+    drawer.querySelector('[data-mobile-cart-held]').disabled = heldCount <= 0;
+    drawer.querySelector('[data-mobile-cart-hold-label]').textContent = sourceButtonLabel('#holdBillBtn', 'พักบิล');
+    drawer.querySelector('[data-mobile-cart-held-label]').textContent = sourceButtonLabel('#heldBillsBtn', 'บิลพัก');
+    drawer.querySelector('[data-mobile-cart-held-count]').textContent = heldCount;
     drawer.querySelector('[data-mobile-cart-items]').innerHTML = rows.length
       ? rows.map(row => `<div class="mobile-cart-row"><div><strong>${row.name}</strong><span>${row.meta} • x${row.qty}</span></div><b>${row.total}</b></div>`).join('')
       : '<div class="mobile-cart-empty">ยังไม่มีสินค้าในบิล</div>';
@@ -143,9 +177,23 @@ function updateMobileCartBar() {
 }
 
 function handleBarClick() {
-  if (readNumber(document.querySelector('#grandTotal')?.textContent) <= 0) return;
-  if (drawerOpen) checkoutFromMobileCart();
-  else openDrawer();
+  const total = readNumber(document.querySelector('#grandTotal')?.textContent);
+  if (total <= 0 && heldBillCount() <= 0) return;
+  if (!drawerOpen) { openDrawer(); return; }
+  if (total > 0) checkoutFromMobileCart();
+  else closeDrawer();
+}
+
+function holdFromMobileCart() {
+  if (!getCartRows().length) return;
+  closeDrawer();
+  document.querySelector('#holdBillBtn')?.click();
+}
+
+function heldBillsFromMobileCart() {
+  if (heldBillCount() <= 0) return;
+  closeDrawer();
+  document.querySelector('#heldBillsBtn')?.click();
 }
 
 function checkoutFromMobileCart() {
@@ -155,7 +203,7 @@ function checkoutFromMobileCart() {
 }
 
 function openDrawer() {
-  if (readNumber(document.querySelector('#grandTotal')?.textContent) <= 0) return;
+  if (readNumber(document.querySelector('#grandTotal')?.textContent) <= 0 && heldBillCount() <= 0) return;
   drawerOpen = true;
   document.body.classList.add('mobile-cart-drawer-open');
   document.querySelector('[data-mobile-cart-backdrop]')?.classList.add('open');
@@ -175,7 +223,7 @@ function startMobileCartBar() {
   if (!document.querySelector('#cartList') || !document.querySelector('#grandTotal') || !document.querySelector('#payBtn')) return;
   ensureMobileCartStyle();
   updateMobileCartBar();
-  const targets = ['#itemCount', '#grandTotal', '#cartList'].map(selector => document.querySelector(selector)).filter(Boolean);
+  const targets = ['#itemCount', '#grandTotal', '#cartList', '#heldBillsCount'].map(selector => document.querySelector(selector)).filter(Boolean);
   const observer = new MutationObserver(updateMobileCartBar);
   targets.forEach(target => observer.observe(target, { childList: true, subtree: true, characterData: true }));
   window.addEventListener('resize', updateMobileCartBar);

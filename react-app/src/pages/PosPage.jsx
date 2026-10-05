@@ -93,6 +93,7 @@ export function PosPage() {
       "retail-loyalty.css",
       "retail-pos-navigation.css",
       "retail-pos-mobile-polish.css",
+      "retail-mobile-cart-bar.css",
       "retail-pos-customer-display-link.css",
       "sweet-dialog.css",
       "retail-pos-loyalty-placement.css",
@@ -121,6 +122,7 @@ export function PosPage() {
   const customerSearchRef = useRef(null);
   const replaceNumericRef = useRef(false);
   const displayTimerRef = useRef(0);
+  const mobileCartTouchStartRef = useRef(0);
   const displayOwnsStateRef = useRef(false);
   const displaySignatureRef = useRef("");
   const [products, setProducts] = useState([]);
@@ -150,6 +152,7 @@ export function PosPage() {
   const [loading, setLoading] = useState(true);
   const [initialDataReady, setInitialDataReady] = useState(false);
   const [savingSale, setSavingSale] = useState(false);
+  const [mobileCartOpen, setMobileCartOpen] = useState(false);
   const [scanStatus, setScanStatus] = useState("กำลังเตรียมกล้อง...");
 
   const posSession = useMemo(() => getRetailPosSession(), [
@@ -386,6 +389,27 @@ export function PosPage() {
   }, [cartSubtotal, baseDiscount, pointDiscount, tax, vatMode]);
 
   const itemCount = cart.reduce((sum, item) => sum + Number(item.qty || 0), 0);
+
+  useEffect(() => {
+    if (!mobileCartOpen) {
+      document.body.classList.remove("mobile-cart-drawer-open");
+      return undefined;
+    }
+    document.body.classList.add("mobile-cart-drawer-open");
+    const closeOnEscape = event => {
+      if (event.key === "Escape") setMobileCartOpen(false);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.classList.remove("mobile-cart-drawer-open");
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [mobileCartOpen]);
+
+  useEffect(() => {
+    if (mobileCartOpen && totals.total <= 0 && heldBills.length <= 0) setMobileCartOpen(false);
+  }, [mobileCartOpen, totals.total, heldBills.length]);
+
   const cashPayment = paymentMethod === "cash";
   const effectiveReceived = cashPayment ? Number(received || 0) : totals.total;
   const change = round2(Math.max(0, effectiveReceived - totals.total));
@@ -905,6 +929,34 @@ export function PosPage() {
     }
   };
 
+  const openMobileCart = () => {
+    if (totals.total <= 0 && heldBills.length <= 0) return;
+    setMobileCartOpen(true);
+  };
+
+  const checkoutFromMobileCart = () => {
+    if (totals.total <= 0) return;
+    setMobileCartOpen(false);
+    openPayment();
+  };
+
+  const holdFromMobileCart = () => {
+    if (!cart.length) return;
+    setMobileCartOpen(false);
+    holdBill();
+  };
+
+  const heldBillsFromMobileCart = () => {
+    if (!heldBills.length) return;
+    setMobileCartOpen(false);
+    openHeldBills();
+  };
+
+  const closeMobileCartOnSwipe = event => {
+    const endY = event.changedTouches?.[0]?.clientY || 0;
+    if (endY - mobileCartTouchStartRef.current > 80) setMobileCartOpen(false);
+  };
+
   if (
     authState.status === "loading"
     || tenantState.status === "loading"
@@ -1055,6 +1107,87 @@ export function PosPage() {
           <button id="payBtn" className="btn btn-pay tw:w-full" type="button" disabled={!cart.length || totals.total <= 0 || savingSale} onClick={openPayment}><i className="bi bi-credit-card pos-context-icon" data-icon-tone="blue" aria-hidden="true"></i><span>{t("pos.cart.pay")}</span></button>
         </aside>
       </main>
+
+      <button
+        type="button"
+        className="mobile-cart-bar"
+        data-mobile-cart-bar
+        hidden={mobileCartOpen || (totals.total <= 0 && heldBills.length <= 0)}
+        onClick={openMobileCart}
+      >
+        <span className="mobile-cart-icon" aria-hidden="true"><i className="bi bi-cart3"></i></span>
+        <span className="mobile-cart-main">
+          <span className="mobile-cart-title">{t("pos.mobile_cart.title")}</span>
+          <span className="mobile-cart-meta" data-mobile-cart-meta>
+            {totals.total > 0
+              ? `${t("pos.common.item_count", { count: formatNumber(itemCount) })} • ${t("pos.common.amount_thb", { amount: money(totals.total) })}`
+              : `${formatNumber(heldBills.length)} ${t("pos.cart.held_bills")}`}
+          </span>
+        </span>
+        <span className="mobile-cart-pay" data-mobile-cart-action-label>
+          {totals.total > 0 ? t("pos.mobile_cart.view_bill") : t("pos.cart.held_bills")}
+        </span>
+      </button>
+
+      <div
+        className={`mobile-cart-backdrop${mobileCartOpen ? " open" : ""}`}
+        data-mobile-cart-backdrop
+        onClick={() => setMobileCartOpen(false)}
+      ></div>
+
+      <section
+        className={`mobile-cart-drawer${mobileCartOpen ? " open" : ""}`}
+        data-mobile-cart-drawer
+        role="dialog"
+        aria-modal="true"
+        aria-label={t("pos.cart.title")}
+        onTouchStart={event => { mobileCartTouchStartRef.current = event.touches?.[0]?.clientY || 0; }}
+        onTouchEnd={closeMobileCartOnSwipe}
+      >
+        <div className="mobile-cart-handle" data-mobile-cart-close onClick={() => setMobileCartOpen(false)}></div>
+        <header className="mobile-cart-drawer-head">
+          <div>
+            <h3>{t("pos.cart.title")}</h3>
+            <small data-mobile-cart-drawer-meta>
+              {heldBills.length > 0
+                ? `${t("pos.common.item_count", { count: formatNumber(itemCount) })} • ${t("pos.cart.held_bills")} ${formatNumber(heldBills.length)}`
+                : t("pos.common.item_count", { count: formatNumber(itemCount) })}
+            </small>
+          </div>
+          <button type="button" className="mobile-cart-close" data-mobile-cart-close aria-label={t("pos.common.close")} onClick={() => setMobileCartOpen(false)}>
+            <i className="bi bi-x-lg" aria-hidden="true"></i>
+          </button>
+        </header>
+        <div className="mobile-cart-items" data-mobile-cart-items>
+          {cart.length ? cart.map(item => (
+            <div className="mobile-cart-row" key={item.id}>
+              <div>
+                <strong>{item.name}</strong>
+                <span>{t("pos.common.price_per_unit", { amount: money(item.price), unit: item.unit || "" })} • x{formatNumber(item.qty)}</span>
+              </div>
+              <b>{money(Number(item.price || 0) * Number(item.qty || 0))}</b>
+            </div>
+          )) : <div className="mobile-cart-empty">{t("pos.cart.empty")}</div>}
+        </div>
+        <footer className="mobile-cart-footer">
+          <div className="mobile-cart-total">
+            <span>{t("pos.cart.net_total")}</span>
+            <strong data-mobile-cart-drawer-total>{t("pos.common.amount_thb", { amount: money(totals.total) })}</strong>
+          </div>
+          <div className="mobile-cart-secondary-actions">
+            <button type="button" className="mobile-cart-secondary" data-mobile-cart-hold disabled={!cart.length || savingSale} onClick={holdFromMobileCart}>
+              <i className="bi bi-pause-circle" aria-hidden="true"></i><span>{t("pos.cart.hold_bill")}</span>
+            </button>
+            <button type="button" className="mobile-cart-secondary" data-mobile-cart-held disabled={!heldBills.length} onClick={heldBillsFromMobileCart}>
+              <i className="bi bi-receipt" aria-hidden="true"></i><span>{t("pos.cart.held_bills")}</span>
+              <span className="mobile-cart-held-count" data-mobile-cart-held-count>{formatNumber(heldBills.length)}</span>
+            </button>
+          </div>
+          <button type="button" className="mobile-cart-checkout" data-mobile-cart-checkout disabled={!cart.length || totals.total <= 0 || savingSale} onClick={checkoutFromMobileCart}>
+            {t("pos.cart.pay")}
+          </button>
+        </footer>
+      </section>
 
       <dialog id="posScanDialog" ref={scanDialogRef} className="pos-scan-dialog" onClose={() => stopScanner(false)} onCancel={event => { event.preventDefault(); stopScanner(); }}>
         <div className="pos-scan-sheet">
