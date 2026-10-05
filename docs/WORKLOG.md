@@ -8056,3 +8056,77 @@ Deploy state:
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or Firestore data changes/deploys.
 - Primary worktree /pos/settings changes remain intentionally isolated and untouched.
 - No merge to main.
+---
+## 2026-10-05 — Kitchen/Cashier melody + spoken new-order alerts
+
+User request:
+- Kitchen and Cashier new-order alerts were not audible.
+- Replace the plain alert with Waiting Queue-style melody + spoken Thai female announcement:
+  melody -> "มียอดสั่งซื้อใหม่" -> Order/Delivery/Takeaway/Walk-in -> order amount in baht.
+- Voice speed should be as natural as possible and use the Waiting Queue screen as the sound-pattern reference.
+
+Diagnosis:
+- Shared React CashierOrderNotifier defaulted a new browser to disabled and persisted `food_order_order_alerts_enabled_v3=0`, so many staff sessions never attempted audio playback.
+- It relied on one HTMLAudioElement WAV unlock/play path; browser autoplay blocking could leave it silent.
+- Cashier explicitly excluded `walkin` orders from alerts.
+- Waiting Queue display already used a browser-safe AudioContext chime pattern and explicit audio arming, which was used as the reference.
+
+Implementation:
+- Added `react-app/src/components/orderAlertAudio.js` as the shared order-alert audio controller.
+- New alert preference key `food_order_order_alerts_enabled_v4` defaults ON; an explicit v4 off choice remains respected.
+- Kitchen and Cashier continue sharing CashierOrderNotifier.
+- Audio arming now:
+  - opportunistically attempts AudioContext resume on mount,
+  - retries on pointer/touch/keyboard staff interaction,
+  - lets the bell button explicitly arm and play a confirmation chime when needed.
+- Replaced the old WAV-only alert with the Waiting Queue-style four-note melody (659.25 / 783.99 / 987.77 / 783.99 Hz).
+- After the melody, Web Speech API announces one phrase per new order, sequentially so simultaneous orders do not talk over each other.
+- Spoken Thai phrase format is exactly: `มียอดสั่งซื้อใหม่ {channel} {amount} บาท`.
+- Channel speech mapping:
+  - table / dine-in / other operational order -> ออเดอร์
+  - delivery -> เดลิเวอรี่
+  - takeaway -> เทคอะเวย์
+  - walkin / walk-in / walking -> วอล์กอิน.
+- Amount source prefers totalAmount / total / netTotal, with subtotal/items fallback.
+- Thai female voice selection prioritizes Kanya / Premwadee / Narisa / other non-male Thai voices; macOS on the development machine exposes Kanya (th_TH).
+- Speech uses `th-TH`, rate 0.96, pitch 1.03, volume 1 for a natural pace.
+- Cashier no longer excludes Walk-in orders.
+- Existing toast/title flashing and all order business logic remain unchanged.
+
+Important files:
+- react-app/src/components/CashierOrderNotifier.jsx
+- react-app/src/components/orderAlertAudio.js
+- tools/react-foundation-contract.mjs
+- release metadata and generated React shells.
+
+Release prepared:
+- React 0.4.280 / 2026.10.05.417.
+- Public 0.16.32 / 2026.10.05.132.
+- Generated bundle `/react/assets/index-CfzpwOg9.js`.
+
+Verification before deploy:
+- Order alert pure contract PASS:
+  - Order 120 -> `มียอดสั่งซื้อใหม่ ออเดอร์ 120 บาท`
+  - Delivery 259.5 -> `มียอดสั่งซื้อใหม่ เดลิเวอรี่ 259.5 บาท`
+  - Takeaway 80 -> `มียอดสั่งซื้อใหม่ เทคอะเวย์ 80 บาท`
+  - Walk-in item fallback 90 -> `มียอดสั่งซื้อใหม่ วอล์กอิน 90 บาท`.
+- Female voice priority contract selected Kanya over Niwat.
+- Trusted-click Chromium audio contract PASS under user-gesture autoplay policy:
+  - AudioContext armed = true / running,
+  - Waiting Queue-style chime played = true,
+  - SpeechSynthesis completed = true.
+- React foundation contract PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS: 53 routes / 21 POS, parity matrix, P0 actions, 54 callable refs / 0 missing, tenant access, UI layers.
+- npm run build:react PASS; generated build contract PASS for Build .417.
+- git diff --check PASS.
+- Authenticated local-build overlay against Production data with Firestore writes blocked PASS:
+  - Cashier order alert enabled=true, armed=true, bell-fill, no overflow.
+  - Kitchen order alert enabled=true, armed=true, bell-fill, no overflow.
+  - page errors = 0; request failures = 0; HTTP errors = 0; Firestore writes = 0.
+
+Deploy state:
+- Commit/push and Hosting-only deployment pending.
+- No order, payment, stock, Firestore Rules, Storage Rules, Functions, or Firestore data changes are required.
+- Primary worktree `/pos/settings` uncommitted work remains isolated and untouched.
+- No merge to main.

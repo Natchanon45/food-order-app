@@ -1228,12 +1228,43 @@ assert(
   &&cashierRefreshCss.includes("transform: translateY(0);"),
   "Cashier receive-payment actions must use the centered cash/coin icon while non-payment confirmation actions retain their semantic icons"
 );
-assert(cashierPage.includes("CashierOrderNotifier"),"Cashier Laravel order notifier parity missing");
+const kitchenPage=read("react-app/src/pages/KitchenPage.jsx");
+assert(
+  cashierPage.includes('CashierOrderNotifier orders={orders} onToast={showToast} surface="cashier"')
+  &&kitchenPage.includes('CashierOrderNotifier orders={orders} onToast={showToast} surface="kitchen"'),
+  "Cashier/Kitchen shared order notifier mount missing",
+);
 assert(cashierPage.includes("CASHIER_INITIAL_LOAD_TIMEOUT")&&cashierPage.includes("watchOperationalOrders")&&!cashierPage.includes("loadOperationalSnapshot"),"Cashier must open from realtime orders and must not deadlock on the heavy snapshot");
 const authProvider=read("react-app/src/auth/AuthProvider.jsx");
 assert(authProvider.includes("AUTH_INITIAL_TIMEOUT_MS")&&authProvider.includes("PROFILE_TIMEOUT_MS")&&authProvider.includes("auth.authStateReady")&&authProvider.includes("resolveUser(auth.currentUser)"),"AuthProvider initial-state/profile timeout fail-safe missing");
 const cashierNotifier=read("react-app/src/components/CashierOrderNotifier.jsx");
-assert(cashierNotifier.includes('id="orderAlertButton"')&&cashierNotifier.includes("food_order_order_alerts_enabled"),"Cashier order alert button/preference contract missing");
+const orderAlertAudio=read("react-app/src/components/orderAlertAudio.js");
+assert(
+  cashierNotifier.includes('id="orderAlertButton"')
+  &&cashierNotifier.includes('food_order_order_alerts_enabled_v4')
+  &&cashierNotifier.includes('localStorage.setItem(ENABLED_KEY, "1")')
+  &&cashierNotifier.includes("orders.filter(actualOrder)")
+  &&!cashierNotifier.includes('type !== "walkin"')
+  &&cashierNotifier.includes("announcementChainRef")
+  &&cashierNotifier.includes('document.addEventListener("pointerdown", unlockFromInteraction, true)')
+  &&cashierNotifier.includes("createOrderAlertAudioController"),
+  "Cashier/Kitchen order alerts must default on, include Walk-in, unlock from staff interaction, and queue spoken alerts",
+);
+assert(
+  orderAlertAudio.includes("มียอดสั่งซื้อใหม่")
+  &&orderAlertAudio.includes('return "เดลิเวอรี่"')
+  &&orderAlertAudio.includes('return "เทคอะเวย์"')
+  &&orderAlertAudio.includes('return "วอล์กอิน"')
+  &&orderAlertAudio.includes('return "ออเดอร์"')
+  &&orderAlertAudio.includes("659.25")
+  &&orderAlertAudio.includes("783.99")
+  &&orderAlertAudio.includes("987.77")
+  &&orderAlertAudio.includes("kanya")
+  &&orderAlertAudio.includes("premwadee")
+  &&orderAlertAudio.includes("utterance.rate = 0.96")
+  &&orderAlertAudio.includes('utterance.lang = voice?.lang || "th-TH"'),
+  "Order alert audio must keep the Waiting Queue-style melody plus natural Thai female speech with channel and amount",
+);
 const quickOrderPage=read("react-app/src/pages/QuickOrderPage.jsx");
 assert(quickOrderPage.includes('data-category="__best__"')&&quickOrderPage.includes("BEST_SELLER_LIMIT = 12"),"Quick Order best-seller category parity missing");
 assert(

@@ -1,19 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useI18n } from "@/i18n/I18nProvider";
+import { createOrderAlertAudioController } from "@/components/orderAlertAudio";
 
-const ENABLED_KEY = "food_order_order_alerts_enabled_v3";
+const ENABLED_KEY = "food_order_order_alerts_enabled_v4";
 const CLOSED = new Set(["paid", "completed", "cancelled", "deleted", "voided"]);
 
 function initialEnabled() {
   try {
     const stored = localStorage.getItem(ENABLED_KEY);
     if (stored === null) {
-      localStorage.setItem(ENABLED_KEY, "0");
-      return false;
+      localStorage.setItem(ENABLED_KEY, "1");
+      return true;
     }
     return stored === "1";
   } catch {
-    return false;
+    return true;
   }
 }
 
@@ -24,25 +25,22 @@ function actualOrder(order) {
   );
 }
 
-function eligible(order, surface = "cashier") {
-  if (!actualOrder(order)) return false;
-  const type = String(order.orderType || "").toLowerCase();
-  return surface === "kitchen" ? true : type !== "walkin";
-}
-
 export function CashierOrderNotifier({ orders = [], onToast, surface = "cashier" }) {
   const { t } = useI18n();
   const [enabled, setEnabledState] = useState(initialEnabled);
+  const [armed, setArmed] = useState(false);
   const seenRef = useRef(new Set());
   const initializedRef = useRef(false);
   const titleTimerRef = useRef(null);
   const titleResetTimerRef = useRef(null);
-  const audioRef = useRef(null);
-  const audioUnlockedRef = useRef(false);
+  const controllerRef = useRef(null);
+  const announcementChainRef = useRef(Promise.resolve());
+
+  if (!controllerRef.current) controllerRef.current = createOrderAlertAudioController();
 
   const rows = useMemo(
-    () => orders.filter(order => eligible(order, surface)),
-    [orders, surface],
+    () => orders.filter(actualOrder),
+    [orders],
   );
 
   const setEnabled = value => {
@@ -57,48 +55,6 @@ export function CashierOrderNotifier({ orders = [], onToast, surface = "cashier"
     window.clearTimeout(titleResetTimerRef.current);
     titleTimerRef.current = null;
     titleResetTimerRef.current = null;
-  };
-
-  const unlockOrderSound = () => {
-    const audio = audioRef.current;
-    if (!audio || audioUnlockedRef.current) return;
-    try {
-      audio.pause();
-      audio.currentTime = 0;
-      audio.muted = false;
-      audio.volume = 0.0001;
-      const playback = audio.play();
-      playback?.then?.(() => {
-        audioUnlockedRef.current = true;
-        window.setTimeout(() => {
-          try {
-            audio.pause();
-            audio.currentTime = 0;
-            audio.volume = 0.95;
-          } catch {}
-        }, 80);
-      }).catch?.(error => {
-        console.warn("[order-notifier] HTMLAudioElement unlock blocked", error);
-      });
-    } catch (error) {
-      console.warn("[order-notifier] HTMLAudioElement unlock failed", error);
-    }
-  };
-
-  const playOrderSound = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    try {
-      audio.pause();
-      audio.currentTime = 0;
-      audio.volume = 0.95;
-      const playback = audio.play();
-      playback?.catch?.(error => {
-        console.warn("[order-notifier] HTMLAudioElement playback blocked", error);
-      });
-    } catch (error) {
-      console.warn("[order-notifier] HTMLAudioElement playback failed", error);
-    }
   };
 
   const flashTitle = count => {
@@ -123,6 +79,31 @@ export function CashierOrderNotifier({ orders = [], onToast, surface = "cashier"
   };
 
   useEffect(() => {
+    if (!enabled || armed) return undefined;
+    let active = true;
+    const tryArm = () => {
+      controllerRef.current.arm().then(ok => {
+        if (active && ok) setArmed(true);
+      }).catch(() => {});
+    };
+    const unlockFromInteraction = event => {
+      if (event?.target?.closest?.("#orderAlertButton")) return;
+      tryArm();
+    };
+
+    tryArm();
+    document.addEventListener("pointerdown", unlockFromInteraction, true);
+    document.addEventListener("keydown", unlockFromInteraction, true);
+    document.addEventListener("touchstart", unlockFromInteraction, { capture: true, passive: true });
+    return () => {
+      active = false;
+      document.removeEventListener("pointerdown", unlockFromInteraction, true);
+      document.removeEventListener("keydown", unlockFromInteraction, true);
+      document.removeEventListener("touchstart", unlockFromInteraction, true);
+    };
+  }, [enabled, armed]);
+
+  useEffect(() => {
     const ids = rows.map(order => String(order.id));
 
     if (!initializedRef.current) {
@@ -136,47 +117,63 @@ export function CashierOrderNotifier({ orders = [], onToast, surface = "cashier"
 
     if (!enabled || !newOrders.length) return;
 
-    onToast?.(
-      t(
-        newOrders.length > 1
-          ? "notifications.order.incoming_count"
-          : "notifications.order.incoming",
-        { count: newOrders.length },
-      ),
+    const incoming = t(
+      newOrders.length > 1
+        ? "notifications.order.incoming_count"
+        : "notifications.order.incoming",
+      { count: newOrders.length },
     );
-    playOrderSound();
+    onToast?.(!armed ? `${incoming} • ${t("notifications.order.enable")}` : incoming);
     flashTitle(newOrders.length);
-  }, [rows, enabled, t, onToast]);
+
+    newOrders.forEach(order => {
+      announcementChainRef.current = announcementChainRef.current
+        .catch(() => {})
+        .then(async () => {
+          const result = await controllerRef.current.announce(order);
+          if (result?.chimePlayed) setArmed(true);
+        });
+    });
+  }, [rows, enabled, armed, t, onToast]);
 
   useEffect(() => () => {
     stopTitleAlert();
+    controllerRef.current?.cancel?.();
   }, []);
 
-  const toggle = () => {
-    const next = !enabled;
-    if (next) unlockOrderSound();
-    setEnabled(next);
+  const toggle = async () => {
+    if (!enabled || !armed) {
+      setEnabled(true);
+      const ok = await controllerRef.current.arm();
+      setArmed(ok);
+      if (ok) await controllerRef.current.playChime();
+      onToast?.(t(ok ? "notifications.order.enabled" : "notifications.order.enable"));
+      return;
+    }
+
+    controllerRef.current.cancel();
+    setArmed(false);
+    setEnabled(false);
+    onToast?.(t("notifications.order.disabled"));
   };
 
   const label = t(
-    enabled ? "notifications.order.disable" : "notifications.order.enable",
+    !enabled
+      ? "notifications.order.enable"
+      : armed
+        ? "notifications.order.disable"
+        : "notifications.order.enable",
   );
 
   return (
-    <>
-      <audio
-        ref={audioRef}
-        src="/assets/audio/order-notification.wav?v=20260930-001"
-        preload="auto"
-        aria-hidden="true"
-        style={{ display: "none" }}
-      />
-      <button
+    <button
       type="button"
       id="orderAlertButton"
       className="delivery-alert-toggle order-alert-toggle"
       data-enabled={enabled ? "true" : "false"}
-      aria-pressed={String(enabled)}
+      data-armed={armed ? "true" : "false"}
+      data-surface={surface}
+      aria-pressed={String(enabled && armed)}
       aria-label={label}
       title={label}
       onClick={toggle}
@@ -193,10 +190,9 @@ export function CashierOrderNotifier({ orders = [], onToast, surface = "cashier"
       }}
     >
       <i
-        className={`bi bi-${enabled ? "bell-fill" : "bell-slash"} app-icon`}
+        className={`bi bi-${!enabled ? "bell-slash" : armed ? "bell-fill" : "bell"} app-icon`}
         aria-hidden="true"
       />
-      </button>
-    </>
+    </button>
   );
 }

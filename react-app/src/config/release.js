@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.05.416",
+  build: "2026.10.05.417",
   branch: "feature/react-firebase-port",
-  commit: "DELIVERY-BRANDING-STORE-NAME-ROUTING",
+  commit: "KITCHEN-CASHIER-VOICE-ORDER-ALERTS",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Delivery branding and Order/Delivery store-name routing",
+  milestone: "Kitchen/Cashier melody and spoken order alerts",
   whatsNew: [
-    "Apply the shared Super Admin App Icon on Delivery Success instead of the PG fallback",
-    "Prefer the tenant Order/Delivery name over generic store settings on the Delivery storefront",
-    "Keep the Delivery Success receipt store name aligned with the customer-facing Delivery storefront",
+    "Enable Kitchen and Cashier order sound alerts by default with browser-safe audio arming",
+    "Play the Waiting Queue-style melody followed by natural Thai female speech",
+    "Announce Order, Delivery, Takeaway, or Walk-in together with the new order total",
   ],
 });
