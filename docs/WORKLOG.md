@@ -8577,7 +8577,18 @@ Verification before deploy:
 - Horizontal overflow = 0; page errors = 0; request failures = 0; HTTP errors = 0; Firestore write attempts = 0.
 
 Deploy state:
-- Pending commit/push and Hosting deploy at the time this entry was written.
-- Hosting-only deployment is intended; no Rules, Storage, or Functions change is required.
-- No merge to main.
-- After this UI repair, POS migration resumes at /pos/backup, then /pos/users.
+- Implementation/build commit: `ebf41cba` — `fix: localize POS scanner feedback`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions deployment.
+- No merge to `main`.
+
+Production verification:
+- Production loaded `/react/assets/index-CFOr-I3e.js` on Products, Stock Movements, Stock Counts, Purchases, and Returns.
+- All five routes showed localized Thai scanner button/title/help and the localized unsupported-camera Toast; raw `pos_products.scanner.*` text = 0.
+- Scanner geometry remained green frame x=540..900 and red line x=546..894, so the red line stayed fully inside the green border.
+- Returns desktop 1440x900: exactly 3 visible search controls share one row.
+- Returns mobile 440x956: search mode, input+scanner, and Search button stack vertically.
+- Horizontal overflow = 0 on all verified routes.
+- Page errors = 0; request failures = 0; HTTP errors = 0; Firestore write attempts = 0.
+- After this UI repair, POS migration resumes at `/pos/backup`, then `/pos/users`.
