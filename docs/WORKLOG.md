@@ -8400,3 +8400,123 @@ Deploy state:
 - Deployment scope was Hosting only; no Functions, Firestore Rules, Storage Rules, or data-changing production action.
 - Primary worktree unfinished `/pos/settings` changes remain preserved and untouched.
 - No merge to `main`.
+
+---
+## 2026-10-05 — Canonical POS Settings React migration
+
+User request / starting point:
+- User asked whether any POS route remained before `/pos/settings` and instructed work on POS to resume immediately.
+- Repository review confirmed the canonical POS migration was already complete through `/pos/customers`; there was no unfinished POS route before Settings.
+- The next route was therefore `/pos/settings`, followed by `/pos/backup` and `/pos/users`.
+- Local HEAD and origin were both `a0075185` before resuming the preserved Settings work.
+- Existing uncommitted Settings migration files were preserved exactly as required; no reset, clean, or discard was used.
+
+Scope:
+- Migrate canonical `/pos/settings` from the legacy static page to React/Firebase.
+- Keep the user-approved modern/colorful POS management-screen direction while preserving existing settings behavior, tenant scope, permissions, IDs, and Firestore document paths.
+
+Implementation:
+- Canonical `/pos/settings` now uses the React shell through the shared entrypoint sync workflow.
+- Added no-cache Hosting headers for `/pos/settings` and `/pos/settings/**`.
+- Completed the responsive POS Settings Control Center UI:
+  - Store information and store location map.
+  - Five tenant-selectable POS themes.
+  - VAT/tax configuration.
+  - PromptPay configuration.
+  - Receipt/paper/print configuration.
+  - Loyalty configuration and examples.
+  - Live receipt/settings preview.
+  - Desktop/tablet/mobile responsive layout and sticky actions.
+- Preserved the existing `AdminMap` provider/fallback behavior rather than creating another map implementation.
+- Kept the Theme setting under `tenants/{tenantId}/settings/pos-theme` and retained unsaved preview behavior with `cache:false`.
+
+Behavior repairs made while finalizing the migration:
+- Fixed the Reset confirmation call to the actual shared API signature `sweetConfirm(message, options)`; the previous in-progress code passed one object as the message and could display an invalid `[object Object]` prompt.
+- Reset now restores only Store/Tax/Payment/Receipt/Theme, matching the legacy Store Settings reset boundary; Loyalty is not reset by that action.
+- `savePosStoreSettings()` now supports permission-scoped document writes via `options.sections`.
+- Store editors write only `store`, `tax`, `payment`, `receipt`, and `pos-theme`.
+- Loyalty editors write only `loyalty`.
+- A user holding both permissions writes both groups.
+- After a save, Settings reload the authoritative tenant settings documents before updating the form.
+- Existing Firestore paths, collection/schema names, permission keys, session behavior, first-allowed-route behavior, and sale/stock/order logic remain unchanged.
+- No Firestore Rules change was required or deployed for this Hosting migration.
+
+Localization / contracts:
+- Added the Control Center text and `Ask before printing` copy in TH / EN / MY / LO / KM.
+- Updated React foundation contracts for the canonical React Settings cutover instead of incorrectly expecting the legacy Settings HTML after postbuild sync.
+- Added regression guards for:
+  - React Settings session/permission/readiness behavior.
+  - Five-theme picker and temporary preview.
+  - Granular Store-vs-Loyalty write boundaries.
+  - Correct shared Reset confirmation dialog usage.
+  - Responsive Control Center visual structure.
+  - Complete five-language Settings Control Center translations.
+
+Important files:
+- `react-app/src/pages/PosSettingsPage.jsx`
+- `react-app/src/data/retailPosData.js`
+- `react-app/src/i18n/parity-translations.json`
+- `react-app/public/parity/css/retail-settings-visual-dashboard.css`
+- `public/react/parity/css/retail-settings-visual-dashboard.css`
+- `firebase.json`
+- `tools/sync-react-legacy-entrypoints.py`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- generated React route shells and `/react/assets/index-D4ssICFj.js`
+
+Release:
+- React 0.4.280 / Build 2026.10.05.422.
+- Public 0.16.32 / Build 2026.10.05.137.
+- Generated bundle: `/react/assets/index-D4ssICFj.js`.
+
+Verification before deploy:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS:
+  - React foundation PASS.
+  - React migration coverage PASS: 53 routes / 21 POS.
+  - React parity matrix PASS.
+  - P0 action contract PASS.
+  - React callable contract PASS: 54 references / 0 missing.
+  - Tenant access contract PASS.
+  - UI layer contract PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build .422 / `index-D4ssICFj.js`.
+- `git diff --check` PASS.
+- Authenticated Production-data candidate overlay using real Google Chrome with Firestore writes blocked PASS:
+  - Desktop 1440x900 and mobile 440x956.
+  - 4 status metrics.
+  - 5 theme cards.
+  - Actual store name, VAT, PromptPay, receipt mode, and loyalty data loaded.
+  - Current POS drawer item = `/pos/settings`.
+  - Theme preview changed the document theme without a Firestore write.
+  - Reset dialog showed the correct title/message/cancel/confirm text and arrow-clockwise icon; test cancelled the dialog and did not reset data.
+  - No raw `pos_settings.*` keys.
+  - Horizontal overflow = 0.
+  - Page errors = 0; request failures = 0; HTTP errors = 0; Firestore write attempts = 0.
+
+Deploy state:
+- Implementation/build commit: `eb1e04f7` — `feat: migrate POS settings to React`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Deployment scope was Hosting only. No Firestore Rules, Storage Rules, or Functions deployment.
+- No production settings were changed during verification.
+
+Production verification:
+- `/pos/settings` loads `/react/assets/index-D4ssICFj.js`.
+- Desktop 1440x900 PASS.
+- Mobile 440x956 PASS.
+- 4 status metrics and 5 theme cards visible.
+- Store name = `ตั่วเฮียส้มตำอาหารอีสาน`.
+- VAT = enabled, PromptPay = enabled, receipt mode = auto, Loyalty = enabled from the existing tenant data.
+- Reset confirmation dialog renders the correct content and icon and was cancelled.
+- Current POS menu item is `/pos/settings`.
+- Horizontal overflow = 0.
+- Raw translation keys = 0.
+- Page errors = 0; request failures = 0; HTTP errors = 0; Firestore write attempts = 0.
+
+Remaining POS migration:
+- `/pos/backup`
+- `/pos/users`
+- Next route: `/pos/backup`.
+- No merge to `main`.
