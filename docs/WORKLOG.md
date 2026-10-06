@@ -9315,6 +9315,15 @@ Verification before deploy:
   - Horizontal overflow = 0; Firestore writes = 0; page errors = 0; request failures = 0; HTTP errors = 0.
 
 Deploy state:
-- Ready to commit/push and deploy Firebase Hosting only.
-- No Functions, Firestore Rules, or Storage Rules change required.
+- Implementation commit: `6c3368dc` — `style: align stock count accent to card`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Deployment scope was Hosting only; no Functions, Firestore Rules, or Storage Rules deployment.
 - No merge to `main`.
+
+Production verification:
+- Production loads `/react/assets/index-B1Imaa_2.js`.
+- Desktop 1440x900: green card edges x=45..1395 and accent x=45..1395; left/right delta = 0px.
+- Mobile 390x844: green card edges x=21..369 and accent x=21..369; left/right delta = 0px.
+- Therefore the top gradient line no longer extends beyond the green `รอบตรวจนับใหม่` card on either side.
+- Horizontal overflow = 0; Firestore writes = 0; page errors = 0; request failures = 0; HTTP errors = 0.
