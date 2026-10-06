@@ -9284,3 +9284,37 @@ Production verification:
 - Desktop row separator is one `1px solid #edf2ef` border on the grid row; all five desktop cells have `border-bottom:0`.
 - The gray left stripe remains a solid 4px row-state accent for uncounted items and was intentionally not changed.
 - Horizontal overflow = 0; Firestore writes = 0; page errors = 0; request failures = 0; HTTP errors = 0.
+
+---
+## 2026-10-06 — Align Stock Count top accent to the green `รอบตรวจนับใหม่` card edges
+
+User correction:
+- The remaining left/right 'tips' were not the accent touching the white workspace border; they were the portions of the green→cyan→blue line extending beyond the green `รอบตรวจนับใหม่` card itself.
+- Build `.433` reduced the line near the outer panel border, but that interpretation was still wrong because the white workspace has 20px inner padding.
+
+Implementation:
+- Desktop/tablet `.count-panel::before` now uses `left:20px; right:20px`, exactly matching the white workspace's 20px content padding and therefore the outer left/right edges of `.count-heading`.
+- Mobile (`max-width:620px`) overrides the accent to `left:12px; right:12px`, matching the mobile workspace padding and green card edges.
+- The line remains visible; only the overhanging portions outside the green card width were removed.
+- Continuous desktop row separators from Build `.433` and the intentional gray uncounted-row left accent are unchanged.
+
+Release candidate:
+- React `0.4.280` / Build `2026.10.06.434`.
+- Public `0.16.32` / Build `2026.10.06.149`.
+- Generated bundle `/react/assets/index-B1Imaa_2.js`.
+
+Verification before deploy:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `.434` / `index-B1Imaa_2.js`.
+- `git diff --check` PASS.
+- Authenticated candidate browser test with Production reads and Firestore writes blocked PASS:
+  - Desktop 1440x900: white panel x=24..1416; green card x=45..1395; computed accent x=45..1395; left/right delta = 0px.
+  - Mobile 390x844: white panel x=8..382; green card x=21..369; computed accent x=21..369; left/right delta = 0px.
+  - Horizontal overflow = 0; Firestore writes = 0; page errors = 0; request failures = 0; HTTP errors = 0.
+
+Deploy state:
+- Ready to commit/push and deploy Firebase Hosting only.
+- No Functions, Firestore Rules, or Storage Rules change required.
+- No merge to `main`.

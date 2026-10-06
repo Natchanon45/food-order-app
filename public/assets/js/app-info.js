@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.06.148',
+  build: '2026.10.06.149',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-STOCK-COUNT-BORDER-POLISH',
+  commit: 'POS-STOCK-COUNT-ACCENT-ALIGNMENT',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'POS Stock Count border polish',
-  updatedAt: '2026-10-06T21:51:00+0700',
+  milestone: 'POS Stock Count accent alignment',
+  updatedAt: '2026-10-06T22:08:00+0700',
   whatsNew: [
-    'Contain the Stock Count top accent line inside the rounded panel edges',
-    'Render one continuous separator per desktop stock-count row',
-    'Keep the left gray row-state accent unchanged for uncounted items'
+    'Align the Stock Count top accent line exactly with the green new-round card edges',
+    'Remove the remaining left/right protruding accent tips above the new-round card',
+    'Keep the continuous desktop row separators and gray uncounted-row accent unchanged'
   ]
 };
 

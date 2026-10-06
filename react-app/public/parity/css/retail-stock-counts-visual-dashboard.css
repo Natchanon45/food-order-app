@@ -315,8 +315,8 @@ html[data-module="retail-pos-stock-counts"] body{
   content:"";
   position:absolute;
   top:0;
-  left:1px;
-  right:1px;
+  left:20px;
+  right:20px;
   height:4px;
   border-radius:25px 25px 0 0;
   background:linear-gradient(90deg,#10b981 0%,#06b6d4 56%,#3b82f6 100%);
@@ -1236,6 +1236,10 @@ html[data-module="retail-pos-stock-counts"] body{
   .count-history-panel{
     padding:12px!important;
     border-radius:20px!important;
+  }
+  .count-panel::before{
+    left:12px;
+    right:12px;
   }
   .count-heading{
     flex-direction:column!important;
