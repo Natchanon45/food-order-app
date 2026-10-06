@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.06.147',
+  build: '2026.10.06.148',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-STOCK-COUNT-COMPACT-NEW-ROUND',
+  commit: 'POS-STOCK-COUNT-BORDER-POLISH',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'POS Stock Count compact new-round card',
-  updatedAt: '2026-10-06T21:36:00+0700',
+  milestone: 'POS Stock Count border polish',
+  updatedAt: '2026-10-06T21:51:00+0700',
   whatsNew: [
-    'Simplify the Stock Count new-round card to its icon, title, guidance, and two actions',
-    'Remove decorative kicker and progress badges from the new-round card',
-    'Reduce the new-round card height to fit its remaining content'
+    'Contain the Stock Count top accent line inside the rounded panel edges',
+    'Render one continuous separator per desktop stock-count row',
+    'Keep the left gray row-state accent unchanged for uncounted items'
   ]
 };
 

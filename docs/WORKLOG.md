@@ -9231,3 +9231,47 @@ Production verification:
 - Both action buttons remain on the right side in the same desktop row.
 - Mobile 390x844 retains only the requested title/description/actions and has no horizontal overflow.
 - Firestore writes = 0; page errors = 0; request failures = 0; HTTP errors = 0.
+
+---
+## 2026-10-06 — Stock Count top accent containment + continuous desktop row separators
+
+User report:
+- On `/pos/stock-counts`, the green→cyan→blue accent line at the top of the count workspace visibly protruded at the left/right rounded edges.
+- The desktop product rows showed segmented horizontal separators under the System Stock and Actual Count columns instead of one continuous separator for the whole row.
+- User also questioned the gray vertical line at the left side of uncounted rows and asked to leave it alone if intentional.
+
+Diagnosis:
+- `.count-panel::before` used `inset: 0 0 auto` with the parent intentionally `overflow: visible` so the inner sticky inventory shell continues to work. The accent therefore reached the exact outer rounded edge and could visibly protrude at the two corners.
+- Desktop rows are CSS Grid rows, but the separator was previously drawn independently on every `<td>` via `border-bottom`. The separate cell borders created visible breaks at grid-column boundaries.
+- The gray left stripe is intentional: `.count-table tbody tr.is-uncounted` sets the row accent to `#94a3b8`, and the first product cell renders a solid 4px `border-left`. It indicates an uncounted row, so it was intentionally retained.
+
+Implementation:
+- Inset the top accent by 1px on both left and right, reduced it to 4px high, and matched the inner top radius so it stays inside the rounded panel without adding overflow clipping.
+- Kept `.count-panel { overflow: visible; }` unchanged so the existing sticky list/header behavior is not broken.
+- On desktop (`min-width: 1024px`), moved the row separator to the grid `<tr>` as one `1px solid #edf2ef` line across the full row width.
+- Removed desktop cell-level bottom borders so System Stock, Actual Count, Variance, and Variance Value no longer create segmented lines.
+- Removed the separator from only the final row.
+- Did not change the gray left row-state accent.
+
+Release candidate:
+- React `0.4.280` / Build `2026.10.06.433`.
+- Public `0.16.32` / Build `2026.10.06.148`.
+- Generated bundle `/react/assets/index-MufM75qE.js`.
+
+Verification before deploy:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `.433` / `index-MufM75qE.js`.
+- `git diff --check` PASS.
+- Authenticated candidate browser test at desktop 1440x900 with Production reads and Firestore writes blocked PASS:
+  - top accent computed `left:1px`, `right:1px`, `height:4px`, contained inside the panel.
+  - row separator computed as one `1px solid` border on the row.
+  - every desktop row cell computed `border-bottom: 0`.
+  - uncounted left accent remains a solid 4px gray line (`rgb(148,163,184)`), confirming it is intentional rather than a dashed-border defect.
+  - horizontal overflow = 0; Firestore writes = 0; page errors = 0; request failures = 0; HTTP errors = 0.
+
+Deploy state:
+- Ready to commit/push and deploy Firebase Hosting only.
+- No Functions, Firestore Rules, or Storage Rules change required.
+- No merge to `main`.

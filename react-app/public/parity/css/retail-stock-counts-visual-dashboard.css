@@ -314,10 +314,13 @@ html[data-module="retail-pos-stock-counts"] body{
 .count-panel::before{
   content:"";
   position:absolute;
-  inset:0 0 auto;
-  height:5px;
-  border-radius:26px 26px 0 0;
+  top:0;
+  left:1px;
+  right:1px;
+  height:4px;
+  border-radius:25px 25px 0 0;
   background:linear-gradient(90deg,#10b981 0%,#06b6d4 56%,#3b82f6 100%);
+  pointer-events:none;
 }
 .count-heading{
   position:relative;
@@ -812,6 +815,10 @@ html[data-module="retail-pos-stock-counts"] body{
     display:grid;
     width:100%;
     align-items:center;
+    border-bottom:1px solid #edf2ef;
+  }
+  .count-table tbody tr:last-child{
+    border-bottom:0;
   }
   .count-table.has-value tbody tr{
     grid-template-columns:minmax(0,1fr) 140px 160px 120px 150px;
@@ -822,6 +829,7 @@ html[data-module="retail-pos-stock-counts"] body{
   .count-table tbody td{
     width:auto!important;
     min-width:0;
+    border-bottom:0!important;
   }
   .count-table thead{
     position:absolute!important;
