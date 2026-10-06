@@ -8807,6 +8807,18 @@ Verification before deploy:
   - Firestore write attempts = 0; page errors = 0; request failures = 0; HTTP errors = 0.
 
 Deploy state:
-- Pending commit/push and Firebase Hosting deploy.
-- Hosting-only deployment intended; no Firestore Rules, Storage Rules, or Functions change.
+- Implementation/build commit: `70a25822` — `style: modernize POS stock count list`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions deployment.
 - No merge to `main`.
+
+Production verification:
+- Production `/pos/stock-counts` loads `/react/assets/index-BjSA8h0S.js` and React Build `2026.10.06.427`.
+- Authenticated verification used live Production data with Firestore write endpoints blocked.
+- Desktop 1440x900 loaded 1,997 product rows; the sticky column guide stayed at y=74, exactly matching the POS action-bar bottom at y=74, with all five labels visible.
+- Recorded/system stock uses the blue treatment while Physical Count uses the violet treatment; variance and variance-value surfaces retain their semantic colors.
+- Tablet 768x900 keeps the native horizontally scrollable table and body horizontal overflow = 0.
+- Mobile 390x844 keeps card rows, colored numeric treatments, one-column controls, and horizontal overflow = 0.
+- Raw translation keys = 0.
+- Firestore write attempts = 0; page errors = 0; request failures = 0; HTTP errors = 0.
