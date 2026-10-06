@@ -9032,3 +9032,38 @@ Deploy state:
 - Ready to commit/push and deploy Hosting only.
 - No Functions, Firestore Rules, or Storage Rules change is required.
 - No merge to `main`.
+
+---
+## 2026-10-06 — Restaurant-side fixes deployed + production identity repair
+
+Release/deploy:
+- Commit `dbd84290` — `fix: complete restaurant cashier COD and identity separation`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- React release `0.4.280` / Build `2026.10.06.429`.
+- Public build `0.16.32` / Build `2026.10.06.144`.
+- Production bundle `/react/assets/index-C6VteOe4.js`.
+- Deployment scope was Hosting only; no Functions, Firestore Rules, or Storage Rules deployment.
+
+Production data repair:
+- Tenant `13c9bb08-927b-4f9c-a2ef-b320ef7eed99` was repaired with strict preconditions.
+- Before: `settings/store.shopName = สมใจการค้า`; `settings/retailPos` did not exist.
+- Created `settings/retailPos` preserving Retail POS identity `สมใจการค้า` plus existing address/phone and available POS profile fields.
+- Restored restaurant `settings/store.shopName = ตั่วเฮียส้มตำอาหารอีสาน`, matching the last verified Store Settings value before the Retail POS regression.
+- No restaurant address, phone, coordinates, delivery provider, Lalamove configuration, orders, stock, tax/payment documents, or other tenant data were changed by this repair.
+
+Production browser verification:
+- Cashier loaded `/react/assets/index-C6VteOe4.js`.
+- Active Lalamove delivery exposes both `ยกเลิก Lalamove` and whole-order `ยกเลิกทุกรายการ` while provider cancellation is still allowed.
+- Pending pre-delivery COD order remains unpaid and does not expose `รับชำระ`.
+- Kitchen active Lalamove delivery exposes whole-order cancellation; normal editable order still opens the edit modal.
+- Kitchen edit modal renders pencil title icon, x-circle Cancel icon, and floppy Save icon.
+- Retail POS `/pos/settings` shows `สมใจการค้า`.
+- Customer Delivery hero shows restaurant name `ตั่วเฮียส้มตำอาหารอีสาน` and loads `delivery.js?v=20261006-144`.
+- Desktop horizontal overflow = 0 on checked pages.
+- Page errors = 0; unexpected request failures = 0; HTTP errors = 0; verification writes = 0.
+- Production contract PASS.
+
+Branch state:
+- Continue on `feature/react-firebase-port`.
+- No merge to `main`.
