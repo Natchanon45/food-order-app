@@ -9112,6 +9112,17 @@ Verification before deploy:
   - Desktop horizontal overflow = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
 
 Deploy state:
-- Ready to commit/push and deploy Hosting only.
-- No Functions, Firestore Rules, or Storage Rules change required.
+- Implementation commit: `f3312f6d` — `fix: restore takeaway cancellation and Lalamove lock`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Deployment scope was Hosting only; no Functions, Firestore Rules, or Storage Rules deployment.
 - No merge to `main`.
+
+Production verification:
+- Production Cashier and Kitchen load `/react/assets/index-Cgt4ZKTo.js`.
+- Cashier shows an enabled whole-order cancel action for `TA-144212-UUC`; confirming it reached the Firestore write stream (2 intercepted write requests) while persistence was blocked for safe verification.
+- Kitchen shows an enabled whole-order cancel action for the same Take Away order; confirming it also reached the Firestore write stream (2 intercepted write requests) while persistence was blocked.
+- Active Lalamove Cashier card shows the separate enabled `ยกเลิก Lalamove` action, no local whole-order cancel action, and the original disabled local-cancel lock indicator.
+- Active Lalamove Kitchen card exposes no local whole-order cancellation while dispatch is active.
+- A fresh read-only Production query after verification confirmed `TA-144212-UUC` remains `pending / unpaid / waiting`; the verification did not cancel or mutate the real order.
+- Desktop horizontal overflow = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
