@@ -9425,3 +9425,14 @@ Deploy state:
 - Ready to commit/push and deploy Firebase Hosting only.
 - No Functions, Firestore Rules, or Storage Rules change required.
 - No merge to `main`.
+
+Production deploy + verification:
+- Implementation commit: `8fe441a0` — `fix: refine POS purchases mobile cards`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production loads `/react/assets/index-CGqSVzEw.js`.
+- Mobile 390x844: product select 319px wide; delete 34x34; select begins 7px below delete bottom; horizontal overflow = 0.
+- Desktop/Mobile `.purchase-report` bottom border = `0px none`; bottom margin = `0px`, so the extra line under the two ranking cards is gone.
+- Production verification: Firestore writes = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
+- Deployment scope was Hosting only; no Functions, Firestore Rules, or Storage Rules deployment.
+- No merge to `main`.
