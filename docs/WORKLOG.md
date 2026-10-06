@@ -8763,3 +8763,50 @@ Production verification:
 - Mobile 390x844: stacked heading, 1-column setup cards, touch-friendly controls, zero horizontal overflow.
 - Live store data loaded (1,997 products visible in the badge), raw translation keys = 0.
 - Page errors = 0; request failures = 0; HTTP errors = 0; Firestore write attempts = 0.
+
+---
+## 2026-10-06 — Stock Count list/search/table visual polish + sticky column guide
+
+User request:
+- On `/pos/stock-counts`, the area from `ค้นหาชื่อสินค้า รหัส หรือบาร์โค้ด` downward still looked too flat after the first workspace redesign.
+- User asked for a more modern/colorful list, clearer numeric differentiation, and a column-label guide pinned under the POS action bar so values remain understandable while scrolling.
+
+Implementation:
+- Rebuilt the search/filter area as a modern inventory-list control card with an accent rail, semantic list icon, translated title/description/filter label, and a live `visible / total` product badge.
+- Restyled search, scanner, and filter controls with clearer focus states, depth, and semantic icon colors.
+- Product rows now retain status accents at all times rather than only on hover.
+- Recorded/system stock values use blue badges.
+- Physical-count inputs use a violet surface/focus state and change visual state after a value is entered.
+- Variance uses semantic green/red/neutral badges; variance value uses a distinct sky/orange/neutral palette.
+- Product name/metadata typography and row spacing were strengthened.
+- Added a dedicated desktop column-label strip for Product / Recorded Stock / Physical Count / Variance / Variance Value.
+- On desktop >=1024px the label strip is `position: sticky` at `top:74px`, exactly matching the measured bottom of the sticky POS action bar, so labels remain visible while long stock lists scroll.
+- The original semantic table `<thead>` remains in the DOM but is visually clipped on desktop when the sticky guide is active.
+- Tablet keeps the horizontally scrollable native table header; mobile retains the card layout with `data-label` field labels.
+- Added `min-width:0` to the count panel to prevent the 980px table from forcing tablet body overflow.
+- Added list-title/list-description/filter-label translations for TH / EN / MY / LO / KM.
+- Updated React foundation regression guards for the modern list controls, sticky guide, color-coded values, sticky offset, and five-language copy.
+- No stock-count permissions, realtime watchers, barcode scanning, variance calculations, value masking, confirmation flow, adjustment movements, or Firestore persistence logic changed.
+
+Release candidate:
+- React 0.4.280 / Build 2026.10.06.427.
+- Public 0.16.32 / Build 2026.10.06.142.
+- Generated bundle `/react/assets/index-BjSA8h0S.js`.
+
+Verification before deploy:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS including foundation, migration coverage (53 routes / 21 POS), parity matrix, P0 action, callable (54 / 0 missing), tenant access, and UI layer contracts.
+- `npm run build:react` PASS; generated React build contract PASS for Build .427 / `index-BjSA8h0S.js`.
+- `git diff --check` PASS.
+- Authenticated Production-data candidate overlay with Firestore write endpoints blocked PASS:
+  - Desktop 1440x900 loaded 1,997 live product rows, sticky guide display=grid, top=74px, native table head clipped to 1px, and no raw translation keys.
+  - After scrolling 620px past the list header, sticky guide top remained 74px and matched the POS action-bar bottom at 74px exactly.
+  - System stock badge computed blue (`rgb(239,246,255)` / `rgb(29,78,216)`), while Physical Count input computed violet (`rgb(250,249,255)` / `rgb(91,33,182)`).
+  - Tablet 768x900 kept native horizontal table scrolling and body horizontal overflow=0.
+  - Mobile 390x844 retained card rows, colored number treatment, one-column controls, and horizontal overflow=0.
+  - Firestore write attempts = 0; page errors = 0; request failures = 0; HTTP errors = 0.
+
+Deploy state:
+- Pending commit/push and Firebase Hosting deploy.
+- Hosting-only deployment intended; no Firestore Rules, Storage Rules, or Functions change.
+- No merge to `main`.

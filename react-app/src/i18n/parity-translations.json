@@ -4457,7 +4457,10 @@
           "variance_title": "ภาพรวมผลต่าง",
           "variance_description": "เปรียบเทียบจำนวนขาดและเกินจากรายการที่ตรวจนับแล้ว",
           "empty_hint": "ลองเปลี่ยนคำค้นหา หรือตัวกรองรายการ",
-          "history_empty_hint": "เมื่อบันทึกรอบตรวจนับแล้ว ประวัติจะปรากฏที่นี่"
+          "history_empty_hint": "เมื่อบันทึกรอบตรวจนับแล้ว ประวัติจะปรากฏที่นี่",
+          "list_title": "รายการตรวจนับสินค้า",
+          "list_description": "ค้นหา กรอง และกรอกยอดนับจริงจากรายการสินค้าด้านล่าง",
+          "filter_label": "ตัวกรองรายการ"
         }
       },
       "movements": {
@@ -10329,7 +10332,10 @@
           "variance_title": "Variance overview",
           "variance_description": "Compare shortages and overages from products already counted.",
           "empty_hint": "Try changing the search term or list filter.",
-          "history_empty_hint": "Saved stock-count sessions will appear here."
+          "history_empty_hint": "Saved stock-count sessions will appear here.",
+          "list_title": "Stock count items",
+          "list_description": "Search, filter, and enter physical quantities from the product list below.",
+          "filter_label": "List filter"
         }
       },
       "movements": {
@@ -16264,7 +16270,10 @@
           "variance_title": "ကွာခြားချက်အကျဉ်းချုပ်",
           "variance_description": "ရေတွက်ပြီးသောပစ္စည်းများ၏ လျော့နည်းမှုနှင့် ပိုလျှံမှုကို နှိုင်းယှဉ်ပါ။",
           "empty_hint": "ရှာဖွေစာသား သို့မဟုတ် စစ်ထုတ်မှုကို ပြောင်းကြည့်ပါ။",
-          "history_empty_hint": "သိမ်းဆည်းထားသော စတော့ရေတွက်မှုများကို ဤနေရာတွင် ပြမည်။"
+          "history_empty_hint": "သိမ်းဆည်းထားသော စတော့ရေတွက်မှုများကို ဤနေရာတွင် ပြမည်။",
+          "list_title": "စတော့ရေတွက်ရန် ပစ္စည်းစာရင်း",
+          "list_description": "အောက်ပါပစ္စည်းစာရင်းမှ ရှာဖွေ၊ စစ်ထုတ်ပြီး အမှန်တကယ်ရေတွက်ပမာဏကို ဖြည့်ပါ။",
+          "filter_label": "စာရင်းစစ်ထုတ်မှု"
         }
       },
       "movements": {
@@ -22199,7 +22208,10 @@
           "variance_title": "ພາບລວມຜົນຕ່າງ",
           "variance_description": "ປຽບທຽບຈຳນວນຂາດແລະເກີນຈາກສິນຄ້າທີ່ກວດນັບແລ້ວ.",
           "empty_hint": "ລອງປ່ຽນຄຳຄົ້ນຫາ ຫຼືຕົວກອງ.",
-          "history_empty_hint": "ຮອບກວດນັບທີ່ບັນທຶກແລ້ວຈະສະແດງຢູ່ບ່ອນນີ້."
+          "history_empty_hint": "ຮອບກວດນັບທີ່ບັນທຶກແລ້ວຈະສະແດງຢູ່ບ່ອນນີ້.",
+          "list_title": "ລາຍການກວດນັບສິນຄ້າ",
+          "list_description": "ຄົ້ນຫາ ກອງ ແລະກອກຈຳນວນນັບຈິງຈາກລາຍການດ້ານລຸ່ມ",
+          "filter_label": "ຕົວກອງລາຍການ"
         }
       },
       "movements": {
@@ -28134,7 +28146,10 @@
           "variance_title": "សង្ខេបភាពខុសគ្នា",
           "variance_description": "ប្រៀបធៀបបរិមាណខ្វះ និងលើសពីផលិតផលដែលបានរាប់។",
           "empty_hint": "សាកល្បងប្តូរពាក្យស្វែងរក ឬតម្រងបញ្ជី។",
-          "history_empty_hint": "ជុំរាប់ស្តុកដែលបានរក្សាទុកនឹងបង្ហាញនៅទីនេះ។"
+          "history_empty_hint": "ជុំរាប់ស្តុកដែលបានរក្សាទុកនឹងបង្ហាញនៅទីនេះ។",
+          "list_title": "បញ្ជីរាប់ស្តុក",
+          "list_description": "ស្វែងរក ត្រង និងបញ្ចូលចំនួនជាក់ស្តែងពីបញ្ជីផលិតផលខាងក្រោម",
+          "filter_label": "តម្រងបញ្ជី"
         }
       },
       "movements": {

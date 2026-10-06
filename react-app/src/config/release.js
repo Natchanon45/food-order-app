@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.06.426",
+  build: "2026.10.06.427",
   branch: "feature/react-firebase-port",
-  commit: "POS-STOCK-COUNT-WORKSPACE-REFRESH",
+  commit: "POS-STOCK-COUNT-LIST-POLISH",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "POS Stock Count workspace refresh",
+  milestone: "POS Stock Count list polish",
   whatsNew: [
-    "Refresh the New Stock Count workspace with a modern emerald control-card header",
-    "Add live counted/difference badges and semantic icons to the stock-count setup fields",
-    "Preserve stock-count permissions, calculations, scanner behavior, and confirm/write logic",
+    "Modernize the Stock Count search/filter workspace and product rows",
+    "Differentiate recorded, physical, variance, and variance-value numbers with semantic colors",
+    "Keep the Stock Count column labels pinned below the POS action bar while scrolling on desktop",
   ],
 });

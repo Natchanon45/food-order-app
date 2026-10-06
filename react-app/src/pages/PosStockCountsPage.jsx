@@ -737,22 +737,51 @@ export function PosStockCountsPage() {
           </label>
         </div>
 
-        <div className="count-toolbar">
-          <div className="barcode-input-group">
-            <input id="countSearch" value={search}
-              onChange={event => setSearch(event.target.value)}
-              placeholder={tr("fields.search_placeholder")} />
-            <button id="scanCountSearchBtn" className="scan-barcode-btn" type="button"
-              aria-label={scannerText("button")} title={scannerText("button")} onClick={startScanner}>
-              <i className="bi bi-upc-scan scan-barcode-icon" aria-hidden="true"></i>
-              <span>{scannerText("button")}</span>
-            </button>
+        <div className="count-list-controls">
+          <div className="count-list-heading">
+            <span className="count-list-heading-icon"><i className="bi bi-boxes" aria-hidden="true"></i></span>
+            <div>
+              <strong>{tr("visual.list_title")}</strong>
+              <small>{tr("visual.list_description")}</small>
+            </div>
+            <span className="count-list-visible-badge">
+              <i className="bi bi-eye" aria-hidden="true"></i>
+              <strong>{formatNumber(visibleRows.length)}</strong>
+              <span>/ {formatNumber(countVisual.total)}</span>
+            </span>
           </div>
-          <select id="countFilter" value={filter} onChange={event => setFilter(event.target.value)}>
-            <option value="all">{tr("filters.all")}</option>
-            <option value="difference">{tr("filters.difference")}</option>
-            <option value="uncounted">{tr("filters.uncounted")}</option>
-          </select>
+
+          <div className="count-toolbar">
+            <label className="count-search-field">
+              <span className="count-toolbar-label"><i className="bi bi-search" aria-hidden="true"></i>{tr("fields.search_placeholder")}</span>
+              <div className="barcode-input-group">
+                <input id="countSearch" value={search}
+                  onChange={event => setSearch(event.target.value)}
+                  placeholder={tr("fields.search_placeholder")} />
+                <button id="scanCountSearchBtn" className="scan-barcode-btn" type="button"
+                  aria-label={scannerText("button")} title={scannerText("button")} onClick={startScanner}>
+                  <i className="bi bi-upc-scan scan-barcode-icon" aria-hidden="true"></i>
+                  <span>{scannerText("button")}</span>
+                </button>
+              </div>
+            </label>
+            <label className="count-filter-field">
+              <span className="count-toolbar-label"><i className="bi bi-funnel" aria-hidden="true"></i>{tr("visual.filter_label")}</span>
+              <select id="countFilter" value={filter} onChange={event => setFilter(event.target.value)}>
+                <option value="all">{tr("filters.all")}</option>
+                <option value="difference">{tr("filters.difference")}</option>
+                <option value="uncounted">{tr("filters.uncounted")}</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div className={`count-table-sticky-head ${canViewValue ? "has-value" : "no-value"}`} aria-hidden="true">
+          <span className="count-sticky-product"><i className="bi bi-box-seam" aria-hidden="true"></i>{tr("columns.product")}</span>
+          <span className="count-sticky-system"><i className="bi bi-database-check" aria-hidden="true"></i>{tr("columns.system")}</span>
+          <span className="count-sticky-actual"><i className="bi bi-pencil-square" aria-hidden="true"></i>{tr("columns.actual")}</span>
+          <span className="count-sticky-variance"><i className="bi bi-arrow-left-right" aria-hidden="true"></i>{tr("columns.variance")}</span>
+          <span className="count-sticky-value" hidden={!canViewValue}><i className="bi bi-cash-stack" aria-hidden="true"></i>{tr("columns.variance_value")}</span>
         </div>
 
         <div className="table-wrap">
@@ -772,22 +801,26 @@ export function PosStockCountsPage() {
                   <strong>{row.product.name || row.product.id}</strong>
                   <span>{row.product.id} • {row.product.barcode || ""}{canViewValue ? ` • ${t("pos_products.runtime.cost", { amount: money(row.cost) })}` : ""}</span>
                 </td>
-                <td className="number" data-label={tr("columns.system")}>{formatNumber(row.system)}</td>
-                <td className="number" data-label={tr("columns.actual")}>
-                  <input className="actual-input" type="number" min="0" step="0.001"
+                <td className="number system-cell" data-label={tr("columns.system")}>
+                  <span className="count-number-badge count-number-system">{formatNumber(row.system)}</span>
+                </td>
+                <td className="number actual-cell" data-label={tr("columns.actual")}>
+                  <input className={`actual-input ${row.has ? "has-value" : ""}`} type="number" min="0" step="0.001"
                     disabled={!canPerform || busy}
                     value={actuals[row.product.id] ?? ""}
                     placeholder="-"
                     onChange={event => updateActual(row.product.id, event.target.value)}
                     onKeyDown={event => handleActualKeyDown(event, row.product.id)} />
                 </td>
-                <td className={`number variance-cell ${row.variance > 0 ? "variance-positive" : row.variance < 0 ? "variance-negative" : ""}`}
+                <td className={`number variance-cell ${row.variance > 0 ? "variance-positive" : row.variance < 0 ? "variance-negative" : row.has ? "variance-neutral" : ""}`}
                   data-label={tr("columns.variance")}>
-                  {row.has ? `${row.variance > 0 ? "+" : ""}${formatNumber(row.variance)}` : "-"}
+                  <span className="count-number-badge count-number-variance">
+                    {row.has ? `${row.variance > 0 ? "+" : ""}${formatNumber(row.variance)}` : "-"}
+                  </span>
                 </td>
-                <td className={`number variance-value-cell ${row.value > 0 ? "variance-positive" : row.value < 0 ? "variance-negative" : ""}`}
+                <td className={`number variance-value-cell ${row.value > 0 ? "variance-positive" : row.value < 0 ? "variance-negative" : row.has ? "variance-neutral" : ""}`}
                   data-label={tr("columns.variance_value")} hidden={!canViewValue}>
-                  {row.has ? money(row.value) : "-"}
+                  <span className="count-number-badge count-number-value">{row.has ? money(row.value) : "-"}</span>
                 </td>
               </tr>)}
             </tbody>

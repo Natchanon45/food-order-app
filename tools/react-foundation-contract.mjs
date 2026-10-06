@@ -1000,6 +1000,11 @@ assert(
   && posStockCountsVisualCss.includes(".count-workspace-badges")
   && posStockCountsVisualCss.includes(".count-meta-field")
   && posStockCountsVisualCss.includes("linear-gradient(120deg,#0b513d")
+  && posStockCountsVisualCss.includes(".count-list-controls")
+  && posStockCountsVisualCss.includes(".count-table-sticky-head")
+  && posStockCountsVisualCss.includes("top:74px")
+  && posStockCountsVisualCss.includes(".count-number-system")
+  && posStockCountsVisualCss.includes(".count-number-value")
   && posStockCountsVisualCss.includes("@media(max-width:620px)"),
   "React POS Stock Counts colorful visual dashboard/responsive treatment missing",
 );
@@ -1008,11 +1013,16 @@ assert(
   && posStockCountsPage.includes('className="count-workspace-kicker"')
   && posStockCountsPage.includes('className="count-workspace-badges"')
   && posStockCountsPage.includes('className="count-meta-label"')
+  && posStockCountsPage.includes('className="count-list-controls"')
+  && posStockCountsPage.includes('className="count-list-heading"')
+  && posStockCountsPage.includes('count-table-sticky-head')
+  && posStockCountsPage.includes('count-number-system')
+  && posStockCountsPage.includes('count-number-value')
   && posStockCountsPage.includes('bi bi-bookmark-star')
   && posStockCountsPage.includes('bi bi-calendar3')
   && posStockCountsPage.includes('bi bi-person-check')
   && posStockCountsPage.includes('bi bi-chat-left-text'),
-  "React POS Stock Counts new-count workspace must keep the modern heading, live badges, and semantic field icons",
+  "React POS Stock Counts workspace must keep the modern heading, inventory controls, sticky labels, colored values, and semantic field icons",
 );
 assert(
   posStockCountsPage.includes('bi bi-clipboard2-data')
@@ -1031,7 +1041,10 @@ for (const locale of ["th", "en", "my", "lo", "km"]) {
       && visual.total_products
       && visual.progress_title
       && visual.variance_title
-      && visual.history_empty_hint,
+      && visual.history_empty_hint
+      && visual.list_title
+      && visual.list_description
+      && visual.filter_label,
     `React POS Stock Counts visual translations missing: ${locale}`,
   );
 }

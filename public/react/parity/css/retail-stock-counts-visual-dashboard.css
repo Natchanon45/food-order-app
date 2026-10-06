@@ -300,7 +300,9 @@ html[data-module="retail-pos-stock-counts"] body{
 /* Count workspace */
 .count-panel{
   position:relative;
-  overflow:hidden;
+  min-width:0;
+  max-width:100%;
+  overflow:visible;
   padding:20px!important;
   border:1px solid var(--count-line)!important;
   border-radius:26px!important;
@@ -314,6 +316,7 @@ html[data-module="retail-pos-stock-counts"] body{
   position:absolute;
   inset:0 0 auto;
   height:5px;
+  border-radius:26px 26px 0 0;
   background:linear-gradient(90deg,#10b981 0%,#06b6d4 56%,#3b82f6 100%);
 }
 .count-heading{
@@ -501,53 +504,194 @@ html[data-module="retail-pos-stock-counts"] body{
   background:#fff!important;
   box-shadow:0 0 0 4px rgba(16,163,107,.08)!important;
 }
+.count-list-controls{
+  position:relative;
+  overflow:hidden;
+  margin:18px 0 12px;
+  padding:14px;
+  border:1px solid #dbe9e2;
+  border-radius:20px;
+  background:
+    radial-gradient(circle at 92% 0,rgba(59,130,246,.08),transparent 14rem),
+    linear-gradient(180deg,#ffffff,#f7fbf9);
+  box-shadow:0 12px 28px rgba(18,73,50,.06);
+}
+.count-list-controls::before{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:4px;
+  background:linear-gradient(180deg,#10b981,#06b6d4 56%,#3b82f6);
+}
+.count-list-heading{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+.count-list-heading-icon{
+  width:38px;height:38px;
+  flex:0 0 38px;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  background:linear-gradient(145deg,#dcfce7,#ccfbf1);
+  color:#047857;
+  box-shadow:inset 0 0 0 1px rgba(5,150,105,.08);
+}
+.count-list-heading>div{
+  min-width:0;
+  flex:1 1 auto;
+}
+.count-list-heading strong{
+  display:block;
+  color:#173f31;
+  font-size:.9rem;
+  font-weight:850;
+}
+.count-list-heading small{
+  display:block;
+  margin-top:3px;
+  color:#7b8d83;
+  font-size:.68rem;
+  line-height:1.4;
+}
+.count-list-visible-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  flex:0 0 auto;
+  min-height:34px;
+  padding:7px 10px;
+  border:1px solid #dbeafe;
+  border-radius:11px;
+  background:#eff6ff;
+  color:#475569;
+  font-size:.7rem;
+  font-weight:750;
+}
+.count-list-visible-badge i{color:#2563eb}
+.count-list-visible-badge strong{
+  color:#1d4ed8;
+  font-size:.84rem;
+  font-variant-numeric:tabular-nums;
+}
+.count-list-visible-badge>span{
+  color:#94a3b8;
+  font-variant-numeric:tabular-nums;
+}
 .count-toolbar{
   grid-template-columns:minmax(300px,1fr) 230px!important;
   gap:10px!important;
-  margin:14px 0!important;
-  padding:11px;
-  border:1px solid #dce9e2;
-  border-radius:17px;
-  background:linear-gradient(180deg,#fbfefd,#f6faf8);
-  box-shadow:0 8px 20px rgba(20,73,50,.04);
+  margin:12px 0 0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.count-search-field,
+.count-filter-field{
+  display:grid;
+  gap:6px;
+  min-width:0;
+}
+.count-toolbar-label{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:0 2px;
+  color:#60756a;
+  font-size:.66rem;
+  font-weight:800;
+}
+.count-toolbar-label i{font-size:.72rem}
+.count-search-field .count-toolbar-label i{color:#0ea5e9}
+.count-filter-field .count-toolbar-label i{color:#8b5cf6}
+.count-toolbar .barcode-input-group{
+  display:flex;
+  align-items:center;
+  min-width:0;
+  padding:4px;
+  border:1px solid #d8e6de;
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 5px 15px rgba(20,73,50,.045);
+}
+.count-toolbar .barcode-input-group:focus-within{
+  border-color:#34a87a;
+  box-shadow:0 0 0 4px rgba(16,163,107,.075),0 8px 18px rgba(20,73,50,.05);
 }
 .count-toolbar input,
 .count-toolbar select{
   min-height:46px!important;
-  border:1px solid #d7e4dd!important;
+  border:1px solid #d8e6de!important;
   border-radius:13px!important;
   background:#fff!important;
+  color:#244c3a!important;
+  font-weight:650!important;
 }
+.count-toolbar .barcode-input-group input{
+  border:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+}
+.count-toolbar select{
+  box-shadow:0 5px 15px rgba(20,73,50,.045);
+}
+.count-toolbar input::placeholder{color:#8b9d94}
 .count-toolbar input:focus,
 .count-toolbar select:focus{
   border-color:#16a36b!important;
   outline:0;
-  box-shadow:0 0 0 4px rgba(16,163,107,.09)!important;
+  box-shadow:0 0 0 4px rgba(16,163,107,.08)!important;
 }
+.count-toolbar .barcode-input-group input:focus{box-shadow:none!important}
 .count-toolbar .scan-barcode-btn{
+  width:42px!important;
+  min-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
   border-radius:11px!important;
+  background:linear-gradient(145deg,#07110d,#102b20)!important;
+  box-shadow:0 7px 15px rgba(7,17,13,.18)!important;
+}
+.count-toolbar .scan-barcode-btn:hover{
+  background:linear-gradient(145deg,#0b3b2a,#0d6f4c)!important;
+}
+.count-table-sticky-head{
+  display:none;
 }
 .count-panel>.table-wrap{
   overflow:auto;
-  border:1px solid #e0e9e4;
+  border:1px solid #dfeae4;
   border-radius:18px;
   background:#fff;
+  box-shadow:0 10px 24px rgba(20,73,50,.045);
 }
 .count-table{
   min-width:980px!important;
+  table-layout:fixed;
   border-collapse:separate!important;
   border-spacing:0!important;
 }
+.count-table th:nth-child(2),
+.count-table td:nth-child(2){width:140px}
+.count-table th:nth-child(3),
+.count-table td:nth-child(3){width:160px}
+.count-table th:nth-child(4),
+.count-table td:nth-child(4){width:120px}
+.count-table th:nth-child(5),
+.count-table td:nth-child(5){width:150px}
 .count-table thead th{
   position:sticky;
   top:0;
   z-index:2;
   padding:12px 10px!important;
   border-bottom:1px solid #dce7e1!important;
-  background:#f5faf7!important;
-  color:#62766b!important;
-  font-size:.74rem!important;
-  font-weight:800!important;
+  background:linear-gradient(180deg,#f8fcfa,#f1f8f4)!important;
+  color:#587064!important;
+  font-size:.72rem!important;
+  font-weight:850!important;
 }
 .count-table tbody tr{
   --count-row-accent:#cbd5e1;
@@ -558,42 +702,104 @@ html[data-module="retail-pos-stock-counts"] body{
 .count-table tbody tr.is-match{--count-row-accent:#10b981;--count-row-soft:#f3fcf7}
 .count-table tbody tr.is-short{--count-row-accent:#f43f5e;--count-row-soft:#fff7f8}
 .count-table tbody tr.is-over{--count-row-accent:#8b5cf6;--count-row-soft:#faf7ff}
-.count-table tbody tr:hover{
-  background:var(--count-row-soft);
-  box-shadow:inset 4px 0 0 var(--count-row-accent);
-}
+.count-table tbody tr:hover{background:var(--count-row-soft)}
 .count-table td{
-  padding:12px 10px!important;
+  padding:13px 10px!important;
   border-bottom:1px solid #edf2ef!important;
   vertical-align:middle;
+  background:#fff;
+  transition:background-color .15s ease;
+}
+.count-table tbody tr:hover td{background:var(--count-row-soft)}
+.count-table tbody tr td:first-child{
+  border-left:4px solid var(--count-row-accent);
+  padding-left:12px!important;
 }
 .count-product strong{
-  color:#173f31;
-  font-size:.88rem;
+  color:#123c2d;
+  font-size:.9rem;
+  font-weight:820;
   line-height:1.35;
 }
 .count-product span{
-  color:#8a9992!important;
-  font-size:.68rem!important;
+  margin-top:4px!important;
+  color:#87998f!important;
+  font-size:.66rem!important;
+  font-weight:650;
+  letter-spacing:.01em;
 }
 .count-table input.actual-input{
   width:124px!important;
   min-height:42px;
-  border:1px solid #d4e2da!important;
+  border:1px solid #d8d4f3!important;
   border-radius:11px!important;
-  background:#fbfdfc;
-  font-weight:800;
+  background:#faf9ff!important;
+  color:#5b21b6;
+  font-weight:850;
   font-variant-numeric:tabular-nums;
 }
+.count-table input.actual-input.has-value{
+  border-color:#c4b5fd!important;
+  background:#f5f3ff!important;
+  color:#6d28d9;
+}
 .count-table input.actual-input:focus{
-  border-color:#16a36b!important;
+  border-color:#8b5cf6!important;
   outline:0;
-  box-shadow:0 0 0 4px rgba(16,163,107,.09)!important;
-  background:#fff;
+  box-shadow:0 0 0 4px rgba(139,92,246,.10)!important;
+  background:#fff!important;
 }
 .count-table .number{
   color:#294c3d;
   font-variant-numeric:tabular-nums;
+}
+.count-number-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:58px;
+  min-height:30px;
+  padding:5px 9px;
+  border:1px solid transparent;
+  border-radius:10px;
+  font-size:.78rem;
+  font-weight:850;
+  font-variant-numeric:tabular-nums;
+}
+.count-number-system{
+  border-color:#bfdbfe;
+  background:#eff6ff;
+  color:#1d4ed8;
+}
+.variance-cell.variance-positive .count-number-variance{
+  border-color:#a7f3d0;
+  background:#ecfdf5;
+  color:#047857;
+}
+.variance-cell.variance-negative .count-number-variance{
+  border-color:#fecdd3;
+  background:#fff1f2;
+  color:#be123c;
+}
+.variance-cell.variance-neutral .count-number-variance{
+  border-color:#d1fae5;
+  background:#f0fdf4;
+  color:#15803d;
+}
+.variance-value-cell.variance-positive .count-number-value{
+  border-color:#bae6fd;
+  background:#f0f9ff;
+  color:#0369a1;
+}
+.variance-value-cell.variance-negative .count-number-value{
+  border-color:#fed7aa;
+  background:#fff7ed;
+  color:#c2410c;
+}
+.variance-value-cell.variance-neutral .count-number-value{
+  border-color:#e2e8f0;
+  background:#f8fafc;
+  color:#64748b;
 }
 .variance-positive{
   color:#059669!important;
@@ -602,6 +808,76 @@ html[data-module="retail-pos-stock-counts"] body{
 .variance-negative{
   color:#e11d48!important;
   font-weight:850!important;
+}
+.variance-neutral{
+  color:#15803d!important;
+  font-weight:820!important;
+}
+@media(min-width:1024px){
+  .count-panel>.table-wrap{
+    overflow:visible;
+    border-radius:0 0 18px 18px;
+  }
+  .count-table{
+    min-width:0!important;
+  }
+  .count-table thead{
+    position:absolute!important;
+    width:1px!important;
+    height:1px!important;
+    overflow:hidden!important;
+    clip:rect(0 0 0 0)!important;
+    white-space:nowrap!important;
+  }
+  .count-table-sticky-head{
+    position:sticky;
+    top:74px;
+    z-index:80;
+    display:grid;
+    align-items:center;
+    min-height:48px;
+    margin:0 0 -1px;
+    padding:0 10px;
+    border:1px solid #d9e7e0;
+    border-radius:16px 16px 0 0;
+    background:rgba(248,252,250,.96);
+    box-shadow:0 8px 22px rgba(15,69,47,.10);
+    backdrop-filter:blur(12px);
+  }
+  .count-table-sticky-head.has-value{
+    grid-template-columns:minmax(0,1fr) 140px 160px 120px 150px;
+  }
+  .count-table-sticky-head.no-value{
+    grid-template-columns:minmax(0,1fr) 140px 160px 120px;
+  }
+  .count-table-sticky-head>span{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    min-width:0;
+    padding:10px;
+    color:#60756a;
+    font-size:.7rem;
+    font-weight:850;
+    white-space:nowrap;
+  }
+  .count-table-sticky-head>span:not(:first-child){
+    justify-content:flex-end;
+    border-left:1px solid #e6eeea;
+  }
+  .count-table-sticky-head i{
+    width:24px;height:24px;
+    display:grid;
+    place-items:center;
+    flex:0 0 24px;
+    border-radius:8px;
+    font-size:.72rem;
+  }
+  .count-sticky-product i{background:#ecfdf5;color:#059669}
+  .count-sticky-system i{background:#eff6ff;color:#2563eb}
+  .count-sticky-actual i{background:#f5f3ff;color:#7c3aed}
+  .count-sticky-variance i{background:#fff7ed;color:#ea580c}
+  .count-sticky-value i{background:#fff1f2;color:#e11d48}
 }
 
 /* Summary */
@@ -1003,14 +1279,43 @@ html[data-module="retail-pos-stock-counts"] body{
   .count-meta-label{font-size:.68rem}
   .count-meta-label i{width:25px;height:25px;flex-basis:25px}
   .count-meta input{min-height:44px}
+  .count-list-controls{
+    margin:14px 0 10px;
+    padding:11px;
+    border-radius:16px;
+  }
+  .count-list-heading{
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .count-list-heading-icon{
+    width:34px;height:34px;
+    flex-basis:34px;
+    border-radius:10px;
+  }
+  .count-list-heading>div{min-width:calc(100% - 94px)}
+  .count-list-heading strong{font-size:.8rem}
+  .count-list-heading small{font-size:.61rem}
+  .count-list-visible-badge{
+    min-height:30px;
+    padding:5px 8px;
+    font-size:.63rem;
+  }
   .count-toolbar{
     grid-template-columns:1fr!important;
-    gap:7px!important;
-    padding:9px;
-    border-radius:14px;
+    gap:8px!important;
+    margin-top:10px!important;
+    padding:0!important;
   }
+  .count-toolbar-label{font-size:.62rem}
   .count-toolbar input,
   .count-toolbar select{min-height:44px!important}
+  .count-toolbar .scan-barcode-btn{
+    width:40px!important;
+    min-width:40px!important;
+    height:40px!important;
+    min-height:40px!important;
+  }
 
   .count-panel>.table-wrap{
     overflow:visible!important;
@@ -1045,6 +1350,10 @@ html[data-module="retail-pos-stock-counts"] body{
   .count-table tr.is-short{--count-row-accent:#f43f5e}
   .count-table tr.is-over{--count-row-accent:#8b5cf6}
   .count-table td{padding:0!important}
+  .count-table tbody tr td:first-child{
+    border-left:0;
+    padding-left:0!important;
+  }
   .count-product strong{font-size:.87rem}
   .count-product span{font-size:.63rem!important}
   .count-table input.actual-input{

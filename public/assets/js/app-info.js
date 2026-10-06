@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.06.141',
+  build: '2026.10.06.142',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-STOCK-COUNT-WORKSPACE-REFRESH',
+  commit: 'POS-STOCK-COUNT-LIST-POLISH',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'POS Stock Count workspace refresh',
-  updatedAt: '2026-10-06T10:40:00+0700',
+  milestone: 'POS Stock Count list polish',
+  updatedAt: '2026-10-06T11:35:00+0700',
   whatsNew: [
-    'Refresh the New Stock Count workspace with a modern emerald control-card header',
-    'Add live counted/difference badges and semantic icons to the stock-count setup fields',
-    'Preserve stock-count permissions, calculations, scanner behavior, and confirm/write logic'
+    'Modernize the Stock Count search/filter workspace and product rows',
+    'Differentiate recorded, physical, variance, and variance-value numbers with semantic colors',
+    'Keep the Stock Count column labels pinned below the POS action bar while scrolling on desktop'
   ]
 };
 
