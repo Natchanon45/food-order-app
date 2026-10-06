@@ -9376,3 +9376,14 @@ Deploy state:
 - Ready to commit/push and deploy Firebase Hosting only.
 - No Functions, Firestore Rules, or Storage Rules change required.
 - No merge to `main`.
+
+Production deploy + verification:
+- Implementation commit: `4147b9bd` — `style: refine POS purchases responsive layout`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Deployment scope was Hosting only; no Functions, Firestore Rules, or Storage Rules deployment.
+- Production loads `/react/assets/index-BI5lL2JN.js`.
+- Desktop 1440x900: row width 1348px; delete is 38x38 icon-only with accessible label; column widths 404 / 148 / 229 / 270 / 189 / 108; horizontal overflow = 0.
+- Mobile 390x844: row width 348px; product area 319px; Stock/Qty/Cost/Total each 155px; delete 34x34 top-right; CSV action 328px wide with visible `ส่งออก CSV`; four summary cards remain 2x2; horizontal overflow = 0.
+- Production verification had Firestore writes = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
+- No merge to `main`.
