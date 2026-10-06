@@ -676,24 +676,8 @@ export function PosStockCountsPage() {
       <section className="panel count-panel">
         <div className="count-heading section-heading">
           <div className="count-heading-copy">
-            <span className="count-workspace-kicker">
-              <i className="bi bi-stars" aria-hidden="true"></i>
-              <span>{tr("visual.kicker")}</span>
-            </span>
             <h1><i className="bi bi-clipboard-check pos-context-icon" data-icon-tone="lime" aria-hidden="true"></i><span>{tr("new.title")}</span></h1>
             <p>{tr("new.description")}</p>
-            <div className="count-workspace-badges">
-              <span>
-                <i className="bi bi-check2-circle" aria-hidden="true"></i>
-                <span>{tr("summary.counted_items")}</span>
-                <strong>{formatNumber(countVisual.counted)} / {formatNumber(countVisual.total)}</strong>
-              </span>
-              <span>
-                <i className="bi bi-arrow-left-right" aria-hidden="true"></i>
-                <span>{tr("visual.variance_items")}</span>
-                <strong>{formatNumber(countVisual.differences)}</strong>
-              </span>
-            </div>
           </div>
           <div className="count-actions-top">
             <button id="fillSystemBtn" className="btn btn-secondary" type="button"

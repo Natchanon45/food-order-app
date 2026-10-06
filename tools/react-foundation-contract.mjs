@@ -1010,10 +1010,10 @@ assert(
   && posStockCountsVisualCss.includes("conic-gradient(#10b981")
   && posStockCountsVisualCss.includes(".count-variance-track")
   && posStockCountsVisualCss.includes(".count-table tr::before")
-  && posStockCountsVisualCss.includes(".count-workspace-kicker")
-  && posStockCountsVisualCss.includes(".count-workspace-badges")
   && posStockCountsVisualCss.includes(".count-meta-field")
   && posStockCountsVisualCss.includes("linear-gradient(120deg,#0b513d")
+  && posStockCountsVisualCss.includes("min-height:0!important")
+  && posStockCountsVisualCss.includes("padding:14px 18px!important")
   && posStockCountsVisualCss.includes(".count-list-controls")
   && posStockCountsVisualCss.includes(".count-list-sticky-shell")
   && posStockCountsVisualCss.includes(".count-table-sticky-head")
@@ -1031,8 +1031,12 @@ assert(
 );
 assert(
   posStockCountsPage.includes('className="count-heading-copy"')
-  && posStockCountsPage.includes('className="count-workspace-kicker"')
-  && posStockCountsPage.includes('className="count-workspace-badges"')
+  && !posStockCountsPage.includes('className="count-workspace-kicker"')
+  && !posStockCountsPage.includes('className="count-workspace-badges"')
+  && posStockCountsPage.includes('<h1><i className="bi bi-clipboard-check pos-context-icon"')
+  && posStockCountsPage.includes('<p>{tr("new.description")}</p>')
+  && posStockCountsPage.includes('id="fillSystemBtn"')
+  && posStockCountsPage.includes('id="clearActualBtn"')
   && posStockCountsPage.includes('className="count-meta-label"')
   && posStockCountsPage.includes('className="count-list-sticky-shell"')
   && posStockCountsPage.includes('className="count-list-controls"')
@@ -1045,7 +1049,7 @@ assert(
   && posStockCountsPage.includes('bi bi-calendar3')
   && posStockCountsPage.includes('bi bi-person-check')
   && posStockCountsPage.includes('bi bi-chat-left-text'),
-  "React POS Stock Counts workspace must keep the modern heading, inventory controls, sticky labels, colored values, and semantic field icons",
+  "React POS Stock Counts workspace must keep the compact new-count heading, both actions, inventory controls, sticky labels, colored values, and semantic field icons",
 );
 assert(
   posStockCountsPage.includes('bi bi-clipboard2-data')

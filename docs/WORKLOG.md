@@ -9183,3 +9183,40 @@ Production verification:
 - Both Cashier and Kitchen cancel actions are enabled and each reached the Firestore write stream during safe verification; all writes were intercepted before persistence.
 - Read-only Production recheck confirmed the order remains `pending / unpaid / waiting`, proving the verification did not cancel it.
 - Horizontal overflow = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
+
+---
+## 2026-10-06 — Compact Stock Count `รอบตรวจนับใหม่` card
+
+User request:
+- Simplify the green `รอบตรวจนับใหม่` card on `/pos/stock-counts`.
+- Keep only the icon, title, guidance text `กรอกยอดนับจริง แล้วตรวจสอบผลต่างก่อนยืนยันปรับสต็อก`, and the two actions on the right.
+- Remove the extra kicker/progress badges and reduce the card height to fit the remaining content.
+
+Implementation:
+- Removed `count-workspace-kicker` from the new-round card.
+- Removed both `count-workspace-badges` summary chips from the card.
+- Kept the clipboard icon, `new.title`, `new.description`, `fillSystemBtn`, and `clearActualBtn` unchanged functionally.
+- Reduced desktop card padding from 20x22 to 14x18, removed implicit minimum height, reduced gap/radius/shadow, and reset the title top margin.
+- Reduced the Mobile card padding/gap while retaining the existing responsive action layout.
+- No Stock Count permissions, form fields, calculation logic, scanner, filters, stock write behavior, or Firestore schema changed.
+
+Release candidate:
+- React `0.4.280` / Build `2026.10.06.432`.
+- Public `0.16.32` / Build `2026.10.06.147`.
+- Generated bundle `/react/assets/index-BgcT2htk.js`.
+
+Verification before deploy:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `.432` / `index-BgcT2htk.js`.
+- `git diff --check` PASS.
+- Authenticated candidate browser test using Production reads with Firestore writes blocked PASS:
+  - Desktop 1440x900: card height 91px; title/description + exactly two visible actions; no kicker; no badges; actions remain on the right in the same row; horizontal overflow = 0.
+  - Mobile 390x844: only title/description + two actions remain; no kicker/badges; horizontal overflow = 0.
+  - Page errors = 0; request failures = 0; HTTP errors = 0; Firestore writes = 0.
+
+Deploy state:
+- Ready to commit/push and deploy Firebase Hosting only.
+- No Functions, Firestore Rules, or Storage Rules change required.
+- No merge to `main`.

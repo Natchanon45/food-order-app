@@ -323,15 +323,16 @@ html[data-module="retail-pos-stock-counts"] body{
   position:relative;
   overflow:hidden;
   align-items:center!important;
-  gap:22px!important;
+  gap:18px!important;
+  min-height:0!important;
   margin:0 0 18px!important;
-  padding:20px 22px!important;
+  padding:14px 18px!important;
   border:1px solid rgba(255,255,255,.35)!important;
-  border-radius:22px;
+  border-radius:20px;
   background:
     radial-gradient(circle at 88% 18%,rgba(255,255,255,.18),transparent 11rem),
     linear-gradient(120deg,#0b513d 0%,#0d7d58 48%,#0ea879 100%);
-  box-shadow:0 16px 34px rgba(8,94,64,.16);
+  box-shadow:0 14px 30px rgba(8,94,64,.14);
 }
 .count-heading::before,
 .count-heading::after{
@@ -355,26 +356,14 @@ html[data-module="retail-pos-stock-counts"] body{
   z-index:1;
   min-width:0;
 }
-.count-workspace-kicker{
-  display:inline-flex;
-  align-items:center;
-  gap:7px;
-  padding:5px 9px;
-  border:1px solid rgba(255,255,255,.18);
-  border-radius:999px;
-  background:rgba(255,255,255,.12);
-  color:#d1fae5;
-  font-size:.66rem;
-  font-weight:850;
-  letter-spacing:.035em;
-}
 .count-heading-copy h1{
   display:flex;
   align-items:center;
   gap:10px;
-  margin:10px 0 0!important;
+  margin:0!important;
   color:#fff!important;
-  font-size:1.32rem!important;
+  font-size:1.24rem!important;
+  line-height:1.15;
   letter-spacing:-.015em;
 }
 .count-heading-copy h1 .pos-context-icon{
@@ -390,35 +379,10 @@ html[data-module="retail-pos-stock-counts"] body{
 }
 .count-heading p{
   max-width:720px;
-  margin:6px 0 0 50px!important;
-  color:rgba(255,255,255,.74)!important;
-  font-size:.76rem;
-  line-height:1.55;
-}
-.count-workspace-badges{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin:13px 0 0 50px;
-}
-.count-workspace-badges>span{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  min-height:30px;
-  padding:6px 9px;
-  border:1px solid rgba(255,255,255,.15);
-  border-radius:10px;
-  background:rgba(255,255,255,.105);
-  color:rgba(255,255,255,.78);
-  font-size:.66rem;
-  font-weight:700;
-}
-.count-workspace-badges i{color:#a7f3d0}
-.count-workspace-badges strong{
-  color:#fff;
-  font-size:.74rem;
-  font-variant-numeric:tabular-nums;
+  margin:4px 0 0 50px!important;
+  color:rgba(255,255,255,.78)!important;
+  font-size:.75rem;
+  line-height:1.45;
 }
 .count-actions-top{
   position:relative;
@@ -1268,17 +1232,13 @@ html[data-module="retail-pos-stock-counts"] body{
   .count-heading{
     flex-direction:column!important;
     align-items:stretch!important;
-    gap:13px!important;
+    gap:11px!important;
     margin-bottom:13px!important;
-    padding:16px!important;
+    padding:13px!important;
     border-radius:18px;
   }
-  .count-workspace-kicker{
-    padding:5px 8px;
-    font-size:.59rem;
-  }
   .count-heading-copy h1{
-    margin-top:9px!important;
+    margin:0!important;
     font-size:1.04rem!important;
   }
   .count-heading-copy h1 .pos-context-icon{
@@ -1290,16 +1250,6 @@ html[data-module="retail-pos-stock-counts"] body{
     font-size:.67rem!important;
     line-height:1.5;
   }
-  .count-workspace-badges{
-    gap:6px;
-    margin:10px 0 0!important;
-  }
-  .count-workspace-badges>span{
-    min-height:28px;
-    padding:5px 8px;
-    font-size:.59rem;
-  }
-  .count-workspace-badges strong{font-size:.66rem}
   .count-actions-top{
     grid-template-columns:1fr 1fr!important;
     gap:7px!important;

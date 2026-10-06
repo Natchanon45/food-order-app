@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.06.146',
+  build: '2026.10.06.147',
   branch: 'feature/react-firebase-port',
-  commit: 'TAKEAWAY-DOCID-CANONICALIZATION',
+  commit: 'POS-STOCK-COUNT-COMPACT-NEW-ROUND',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Takeaway legacy document ID compatibility',
-  updatedAt: '2026-10-06T14:05:00+0700',
+  milestone: 'POS Stock Count compact new-round card',
+  updatedAt: '2026-10-06T21:36:00+0700',
   whatsNew: [
-    'Use the real Firestore document ID for legacy Take Away orders even when embedded id differs',
-    'Restore Cashier and Kitchen actions for legacy Take Away records without duplicating documents',
-    'Preserve mismatched historical payload IDs as legacyId for compatibility and diagnostics'
+    'Simplify the Stock Count new-round card to its icon, title, guidance, and two actions',
+    'Remove decorative kicker and progress badges from the new-round card',
+    'Reduce the new-round card height to fit its remaining content'
   ]
 };
 
