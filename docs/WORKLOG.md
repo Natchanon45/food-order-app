@@ -9272,6 +9272,15 @@ Verification before deploy:
   - horizontal overflow = 0; Firestore writes = 0; page errors = 0; request failures = 0; HTTP errors = 0.
 
 Deploy state:
-- Ready to commit/push and deploy Firebase Hosting only.
-- No Functions, Firestore Rules, or Storage Rules change required.
+- Implementation commit: `8fcf6f96` — `style: polish stock count row borders`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Deployment scope was Hosting only; no Functions, Firestore Rules, or Storage Rules deployment.
 - No merge to `main`.
+
+Production verification:
+- Production loads `/react/assets/index-MufM75qE.js`.
+- Top workspace accent is contained inside the rounded panel: computed `left:1px`, `right:1px`, `height:4px`.
+- Desktop row separator is one `1px solid #edf2ef` border on the grid row; all five desktop cells have `border-bottom:0`.
+- The gray left stripe remains a solid 4px row-state accent for uncounted items and was intentionally not changed.
+- Horizontal overflow = 0; Firestore writes = 0; page errors = 0; request failures = 0; HTTP errors = 0.
