@@ -9387,3 +9387,41 @@ Production deploy + verification:
 - Mobile 390x844: row width 348px; product area 319px; Stock/Qty/Cost/Total each 155px; delete 34x34 top-right; CSV action 328px wide with visible `ส่งออก CSV`; four summary cards remain 2x2; horizontal overflow = 0.
 - Production verification had Firestore writes = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
 - No merge to `main`.
+
+---
+## 2026-10-07 — POS Purchases ranking divider removal + mobile item-card header fix
+
+User report:
+- Remove the horizontal divider directly below the two purchase ranking cards (`ผู้จำหน่ายยอดซื้อสูงสุด` / `สินค้าที่รับเข้ามากที่สุด`).
+- On Mobile, the product selector and top-right delete action still crowded/overlapped visually when multiple purchase-item cards were shown.
+
+Implementation:
+- Removed the legacy report-section bottom border and bottom margin from `.purchase-report`; the ranking cards now end cleanly without the extra line beneath them.
+- Changed the Mobile product field so the label/delete controls occupy the card header area and the product `<select>` gets its own full-width row below.
+- Increased the Mobile product-cell top inset to 38px with the product label positioned at the top-left and the delete icon kept at the top-right.
+- Strengthened the mobile selector specificity with `.purchase-table td.purchase-line-product` so the table-cell `padding:0!important` rule cannot collapse the reserved header space.
+- Preserved the existing 2-column Stock Before / Received Qty and Unit Cost / Total layout, color surfaces, scanner/add controls, and purchase behavior.
+
+Behavior boundary:
+- No purchase persistence, stock updates, supplier lookup, barcode scanner, permissions, view-cost masking, CSV behavior/content, Firestore schema, route, or session behavior changed.
+
+Release candidate:
+- React `0.4.280` / Build `2026.10.07.436`.
+- Public `0.16.32` / Build `2026.10.07.151`.
+- Generated bundle `/react/assets/index-CGqSVzEw.js`.
+
+Verification before deploy:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS (foundation, migration coverage, parity matrix, P0 actions, callables, tenant access, UI layers).
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `.436` / `index-CGqSVzEw.js`.
+- `git diff --check` PASS.
+- Authenticated candidate browser verification with Production reads and Firestore writes blocked:
+  - Mobile 390x844: row width 348px; product select width 319px; delete 34x34; product select begins 7px below the delete button bottom, so there is no overlap; horizontal overflow = 0.
+  - Desktop and Mobile `.purchase-report` computed bottom border = `0px none`; bottom margin = `0px`.
+  - Firestore writes = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
+
+Deploy state:
+- Ready to commit/push and deploy Firebase Hosting only.
+- No Functions, Firestore Rules, or Storage Rules change required.
+- No merge to `main`.

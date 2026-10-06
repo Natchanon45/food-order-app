@@ -379,7 +379,9 @@ html[data-module="retail-pos-purchases"] body{
   box-shadow:var(--purchase-shadow)!important;
 }
 .purchase-report{
+  margin-bottom:0!important;
   padding:0!important;
+  border-bottom:0!important;
 }
 .purchase-report-visual-heading{
   display:flex;
@@ -998,15 +1000,21 @@ html[data-module="retail-pos-purchases"] body{
     font-size:.59rem;
     font-weight:750;
   }
-  .purchase-line-product{
+  .purchase-table td.purchase-line-product{
+    position:relative;
     grid-column:1/-1;
-    padding-right:44px!important;
+    padding:38px 0 0!important;
+  }
+  .purchase-line-product::before{
+    position:absolute;
+    top:0;
+    left:0;
   }
   .purchase-line-qty{grid-column:2}
   .purchase-line-cost{grid-column:1}
   .purchase-line-remove{
     position:absolute;
-    top:10px;
+    top:9px;
     right:10px;
     display:block!important;
     width:34px!important;

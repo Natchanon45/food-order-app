@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.06.150',
+  build: '2026.10.07.151',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-PURCHASES-RESPONSIVE-REFINEMENT',
+  commit: 'POS-PURCHASES-MOBILE-CARD-FIX',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'POS Purchases responsive refinement',
-  updatedAt: '2026-10-06T22:30:00+0700',
+  milestone: 'POS Purchases mobile card fix',
+  updatedAt: '2026-10-07T06:30:00+0700',
   whatsNew: [
-    'Rebalance the Purchases desktop item table and simplify the delete action',
-    'Rebuild mobile purchase items as clean two-column cards with colored stock/cost totals',
-    'Keep CSV export text visible on mobile and rebalance purchase report filters/cards'
+    'Remove the extra divider under the purchase ranking cards',
+    'Give the mobile product selector its own full-width row below the item header',
+    'Keep the compact top-right delete action clear of the product selector'
   ]
 };
 

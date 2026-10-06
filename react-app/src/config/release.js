@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.06.435",
+  build: "2026.10.07.436",
   branch: "feature/react-firebase-port",
-  commit: "POS-PURCHASES-RESPONSIVE-REFINEMENT",
+  commit: "POS-PURCHASES-MOBILE-CARD-FIX",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "POS Purchases responsive refinement",
+  milestone: "POS Purchases mobile card fix",
   whatsNew: [
-    "Rebalance the Purchases desktop item table and simplify the delete action",
-    "Rebuild mobile purchase items as clean two-column cards with colored stock/cost totals",
-    "Keep CSV export text visible on mobile and rebalance purchase report filters/cards",
+    "Remove the extra divider under the purchase ranking cards",
+    "Give the mobile product selector its own full-width row below the item header",
+    "Keep the compact top-right delete action clear of the product selector",
   ],
 });
