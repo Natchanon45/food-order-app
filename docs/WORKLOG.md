@@ -9501,6 +9501,19 @@ Verification before deploy:
   - Firestore writes = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
 
 Deploy state:
-- Ready to commit/push and deploy Firebase Hosting only.
-- No Firestore Rules, Indexes, Functions, Storage Rules, or schema migration required.
+- Implementation commit: `7ba29251` — `feat: add lazy product picker to POS purchases`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production loads `/react/assets/index-C5GdNyYQ.js`.
+- Production browser verification repeated the candidate checks successfully:
+  - initial rendered product options = 0 while catalog count remains 1,997;
+  - first open = 30 options;
+  - load more = 60 options;
+  - search `101` = 1 correct result;
+  - barcode `8857123982063` = same correct result;
+  - selected product displays stock 26;
+  - Mobile dropdown width = 319px with horizontal overflow = 0.
+- Production verification: Firestore writes = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
+- Added `.gitattributes` with `public/react/assets/*.js -whitespace` so `git diff --check` ignores false-positive trailing whitespace inside generated Vite runtime strings while source files remain checked normally.
+- Deployment scope was Hosting only; no Firestore Rules, Indexes, Functions, Storage Rules, or schema migration.
 - No merge to `main`.
