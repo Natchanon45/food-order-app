@@ -737,8 +737,9 @@ export function PosStockCountsPage() {
           </label>
         </div>
 
-        <div className="count-list-controls">
-          <div className="count-list-heading">
+        <div className="count-list-sticky-shell">
+          <div className="count-list-controls">
+            <div className="count-list-heading">
             <span className="count-list-heading-icon"><i className="bi bi-boxes" aria-hidden="true"></i></span>
             <div>
               <strong>{tr("visual.list_title")}</strong>
@@ -773,19 +774,20 @@ export function PosStockCountsPage() {
                 <option value="uncounted">{tr("filters.uncounted")}</option>
               </select>
             </label>
+            </div>
+          </div>
+
+          <div className={`count-table-sticky-head ${canViewValue ? "has-value" : "no-value"}`} aria-hidden="true">
+            <span className="count-sticky-product"><i className="bi bi-box-seam" aria-hidden="true"></i>{tr("columns.product")}</span>
+            <span className="count-sticky-system"><i className="bi bi-database-check" aria-hidden="true"></i>{tr("columns.system")}</span>
+            <span className="count-sticky-actual"><i className="bi bi-pencil-square" aria-hidden="true"></i>{tr("columns.actual")}</span>
+            <span className="count-sticky-variance"><i className="bi bi-arrow-left-right" aria-hidden="true"></i>{tr("columns.variance")}</span>
+            <span className="count-sticky-value" hidden={!canViewValue}><i className="bi bi-cash-stack" aria-hidden="true"></i>{tr("columns.variance_value")}</span>
           </div>
         </div>
 
-        <div className={`count-table-sticky-head ${canViewValue ? "has-value" : "no-value"}`} aria-hidden="true">
-          <span className="count-sticky-product"><i className="bi bi-box-seam" aria-hidden="true"></i>{tr("columns.product")}</span>
-          <span className="count-sticky-system"><i className="bi bi-database-check" aria-hidden="true"></i>{tr("columns.system")}</span>
-          <span className="count-sticky-actual"><i className="bi bi-pencil-square" aria-hidden="true"></i>{tr("columns.actual")}</span>
-          <span className="count-sticky-variance"><i className="bi bi-arrow-left-right" aria-hidden="true"></i>{tr("columns.variance")}</span>
-          <span className="count-sticky-value" hidden={!canViewValue}><i className="bi bi-cash-stack" aria-hidden="true"></i>{tr("columns.variance_value")}</span>
-        </div>
-
         <div className="table-wrap">
-          <table className="count-table">
+          <table className={`count-table ${canViewValue ? "has-value" : "no-value"}`}>
             <thead><tr>
               <th>{tr("columns.product")}</th>
               <th className="number">{tr("columns.system")}</th>

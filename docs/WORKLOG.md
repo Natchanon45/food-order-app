@@ -8822,3 +8822,55 @@ Production verification:
 - Mobile 390x844 keeps card rows, colored numeric treatments, one-column controls, and horizontal overflow = 0.
 - Raw translation keys = 0.
 - Firestore write attempts = 0; page errors = 0; request failures = 0; HTTP errors = 0.
+
+---
+## 2026-10-06 — Stock Count sticky search/header alignment + Mobile card rebuild
+
+User request:
+- Keep the entire Stock Count list/search/header section pinned below the POS action bar while scrolling.
+- Fix Desktop column labels not lining up with row values.
+- Rebuild Mobile Stock Count product cards because the current label/value layout was visually disorganized.
+
+Implementation:
+- Wrapped the inventory controls and column guide in `count-list-sticky-shell` and made that whole shell sticky at `top:74px` for Desktop >=1024px.
+- Search/filter controls therefore remain visible together with the column meanings while scrolling long product lists.
+- Desktop table rows now use CSS Grid with exactly the same track definition as the sticky guide:
+  - Product = flexible
+  - Recorded Stock = 140px
+  - Physical Count = 160px
+  - Variance = 120px
+  - Variance Value = 150px
+- Added `has-value` / `no-value` table classes so permission-based value masking keeps grid alignment correct.
+- Centered numeric cells and guide labels on the same tracks; header centers and data centers now match exactly.
+- Rebuilt Mobile <=620px rows as 2-column metric cards with grid areas:
+  - product product
+  - system actual
+  - variance value
+- Product identity spans the full card width; each metric gets its own bordered surface, label, and value/input.
+- Removed fixed desktop cell widths from Mobile so both metric columns expand evenly.
+- Empty Bootstrap validation feedback is hidden on Mobile so inputs do not create stray vertical gaps.
+- No stock-count permissions, calculations, scanner flow, history, confirmation logic, or Firestore writes changed.
+
+Release candidate:
+- React 0.4.280 / Build 2026.10.06.428.
+- Public 0.16.32 / Build 2026.10.06.143.
+- Generated bundle `/react/assets/index-eig90Z9R.js`.
+
+Verification before deploy:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build .428 / `index-eig90Z9R.js`.
+- `git diff --check` PASS.
+- Authenticated candidate overlay with Firestore writes blocked PASS:
+  - Desktop 1440x900: sticky shell position=sticky, top=74px.
+  - Desktop header/data centers = [435, 894, 1044, 1184, 1319] for both guide and first row.
+  - Desktop header/data widths = [778, 140, 160, 120, 150] for both guide and first row.
+  - After scrolling, sticky shell top = 74 and POS header bottom = 74.
+  - Mobile 440x956: product header spans both columns; system/actual share one row; variance/value share the second row; input fits its card; horizontal overflow = 0.
+  - Firestore write attempts = 0; page errors = 0; request failures = 0; HTTP errors = 0.
+
+Deploy state:
+- Pending commit/push and Firebase Hosting deploy.
+- Hosting-only deployment intended; no Rules, Storage, or Functions change.
+- No merge to `main`.

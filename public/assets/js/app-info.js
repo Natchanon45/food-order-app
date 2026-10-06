@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.06.142',
+  build: '2026.10.06.143',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-STOCK-COUNT-LIST-POLISH',
+  commit: 'POS-STOCK-COUNT-STICKY-SHELL-MOBILE-CARDS',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'POS Stock Count list polish',
-  updatedAt: '2026-10-06T11:35:00+0700',
+  milestone: 'POS Stock Count sticky shell and mobile cards',
+  updatedAt: '2026-10-06T12:10:00+0700',
   whatsNew: [
-    'Modernize the Stock Count search/filter workspace and product rows',
-    'Differentiate recorded, physical, variance, and variance-value numbers with semantic colors',
-    'Keep the Stock Count column labels pinned below the POS action bar while scrolling on desktop'
+    'Pin the Stock Count search/filter workspace and column labels together below the POS action bar on desktop',
+    'Align Stock Count desktop headers and row values to the same grid tracks',
+    'Rebuild Mobile Stock Count rows as organized two-column metric cards'
   ]
 };
 
