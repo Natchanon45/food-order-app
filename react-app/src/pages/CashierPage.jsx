@@ -233,8 +233,7 @@ function LalamoveDispatch({ order, t, money, busy, onQuote, onPlace, onRefresh, 
 }
 
 function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, actions }) {
-  const providerCancelable = lalamoveCanCancel(order);
-  const dispatchedLocked = order.lalamoveOrderId && !lalamoveDispatchFinished(order) && !providerCancelable;
+  const dispatchedLocked = order.lalamoveOrderId && !lalamoveDispatchFinished(order);
   return <article className="card order-card">
     <div className="order-head"><QueueHeading order={order} title={`Delivery: ${order.recipientName || t("cashier.delivery.recipient_fallback")}`} t={t} formatTime={formatTime} /><span className="badge">{statusLabel(order, t)}</span></div>
     <p><span className={"badge" + (order.paymentStatus === "paid" ? "" : " warning")}>{paymentLabel(order, t)}</span><br /><strong>{t("cashier.delivery.phone")}</strong> {order.recipientPhone || "-"}<br /><strong>{t("cashier.delivery.address")}</strong> {order.deliveryAddress || "-"}</p>
@@ -723,8 +722,7 @@ export function CashierPage() {
   };
 
   const cancelOrder = async order => {
-    if (!order || busyKey || lalamoveDeliveryCompleted(order)) return;
-    const hasCancelableDispatch = lalamoveCanCancel(order);
+    if (!order || busyKey) return;
     const targetLabel = order.orderType === "delivery"
       ? t("cashier.cancel_order.delivery_target", { customer: order.recipientName || t("cashier.cancel_order.customer_fallback") })
       : order.orderType === "takeaway"
@@ -733,7 +731,7 @@ export function CashierPage() {
           ? t(order.serviceType === "dine_in" ? "quick_order.cashier.dine_in_title" : "quick_order.cashier.takeaway_title")
           : t("cashier.cancel_order.table_target", { table: order.tableCode || "-", round: order.roundNumber || 1 });
     const ok = await sweetConfirm(
-      `${t("cashier.cancel_order.message", { target: targetLabel })}\n\n${t("cashier.cancel_order.warning")}${hasCancelableDispatch ? `\n\n${t("cashier.lalamove.cancel_confirm")}` : ""}`,
+      `${t("cashier.cancel_order.message", { target: targetLabel })}\n\n${t("cashier.cancel_order.warning")}`,
       {
         title: t("cashier.cancel_order.title"),
         confirmText: t("cashier.common.confirm"),
@@ -744,16 +742,17 @@ export function CashierPage() {
     if (!ok) return;
     setBusyKey(`cancel:${order.id}`);
     try {
-      if (hasCancelableDispatch) await cancelLalamoveDispatch(tenant.id, order.id);
-      const optimistic = {
-        status: "cancelled",
-        cancelledAt: new Date().toISOString(),
-      };
-      setOrders(current => current.map(row => row.id === order.id ? { ...row, ...optimistic } : row));
-      const cancelled = await cancelOperationalOrder(tenant.id, order.id, {
-        ...(hasCancelableDispatch ? { lalamoveCancelSource: "PENGUIN_CASHIER_ORDER_CANCEL" } : {}),
-      });
-      setOrders(current => current.map(row => row.id === order.id ? { ...row, ...cancelled } : row));
+      if (order.orderType === "takeaway") {
+        await updateOrder(order.id, { status: "cancelled" });
+      } else {
+        const optimistic = {
+          status: "cancelled",
+          cancelledAt: new Date().toISOString(),
+        };
+        setOrders(current => current.map(row => row.id === order.id ? { ...row, ...optimistic } : row));
+        const cancelled = await cancelOperationalOrder(tenant.id, order.id);
+        setOrders(current => current.map(row => row.id === order.id ? { ...row, ...cancelled } : row));
+      }
       if (isTableOrder(order) && order.tableCode) {
         const hasOther = normalizedOrders.some(row => row.id !== order.id
           && row.tableToken === order.tableToken
@@ -764,7 +763,7 @@ export function CashierPage() {
     } catch (error) {
       setOrders(current => current.map(row => row.id === order.id ? order : row));
       console.error("CASHIER_CANCEL_ORDER_FAILED", error);
-      showToast(t(hasCancelableDispatch ? "cashier.lalamove.cancel_failed" : "cashier.toasts.status_update_failed"), "error");
+      showToast(t("cashier.toasts.status_update_failed"), "error");
     } finally { setBusyKey(""); }
   };
 

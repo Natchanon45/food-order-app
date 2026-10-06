@@ -1336,11 +1336,15 @@ for (const locale of ["th","en","my","lo","km"]) {
   }
 }
 assert(
-  cashierPage.includes("const hasCancelableDispatch = lalamoveCanCancel(order);")
-  && cashierPage.includes("if (hasCancelableDispatch) await cancelLalamoveDispatch(tenant.id, order.id);")
-  && cashierPage.includes('lalamoveCancelSource: "PENGUIN_CASHIER_ORDER_CANCEL"')
-  && cashierPage.includes("const dispatchedLocked = order.lalamoveOrderId && !lalamoveDispatchFinished(order) && !providerCancelable;"),
-  "Cashier whole-order cancellation must cancel an active Lalamove dispatch before local cancellation",
+  cashierPage.includes("const dispatchedLocked = order.lalamoveOrderId && !lalamoveDispatchFinished(order);")
+  && cashierPage.includes('title={t("cashier.lalamove.local_cancel_locked")}')
+  && !cashierPage.includes("PENGUIN_CASHIER_ORDER_CANCEL"),
+  "Cashier must preserve the original Lalamove local-cancel lock and keep provider cancellation separate",
+);
+assert(
+  cashierPage.includes('if (order.orderType === "takeaway")')
+  && cashierPage.includes('await updateOrder(order.id, { status: "cancelled" });'),
+  "Cashier takeaway cancellation must use the proven operational status-update path",
 );
 assert(
   (cashierPage.match(/bi bi-cash-coin app-icon/g)||[]).length===4
@@ -1367,11 +1371,18 @@ assert(
   "Kitchen item/order cancel actions must use the same x-circle app-icon markup as Cashier"
 );
 assert(
-  kitchenPage.includes("cancelLalamoveDispatch")
-  && kitchenPage.includes("!locked || lalamoveCanCancel(order)")
-  && kitchenPage.includes("if (hasCancelableDispatch) await cancelLalamoveDispatch(tenant.id, order.id);")
-  && kitchenPage.includes('lalamoveCancelSource: "PENGUIN_KITCHEN_ORDER_CANCEL"'),
-  "Kitchen whole-order cancellation must remain available before pickup and cancel Lalamove first",
+  !kitchenPage.includes("cancelLalamoveDispatch")
+  && kitchenPage.includes("!locked ? <button")
+  && !kitchenPage.includes("PENGUIN_KITCHEN_ORDER_CANCEL"),
+  "Kitchen must preserve the original active-Lalamove lock for local order cancellation",
+);
+assert(
+  kitchenPage.includes("if (isTakeaway(order))")
+  && kitchenPage.includes('status: "cancelled"')
+  && kitchenPage.includes("subtotalAmount: 0")
+  && kitchenPage.includes("deliveryFee: 0")
+  && kitchenPage.includes("totalAmount: 0"),
+  "Kitchen takeaway cancellation must use the Laravel-parity status/totals update path",
 );
 assert(
   kitchenItemEditorCss.includes('.kitchen-item-actions .btn[data-cancel-item],')

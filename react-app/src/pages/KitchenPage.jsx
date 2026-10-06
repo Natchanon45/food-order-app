@@ -8,7 +8,6 @@ import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
 import { sweetConfirm } from "@/components/sweetDialog";
 import {
-  cancelLalamoveDispatch,
   cancelOperationalOrder,
   loadOperationalSnapshot,
   refreshLalamoveDispatch,
@@ -78,11 +77,6 @@ function lalamoveCompletionStale(order) {
     && !["paid", "completed"].includes(String(order?.status || "").toLowerCase());
 }
 function lalamoveDispatchActive(order) {
-  return isLalamoveDelivery(order)
-    && Boolean(order?.lalamoveOrderId)
-    && !["PICKED_UP", "COMPLETED", "CANCELED", "CANCELLED", "REJECTED", "EXPIRED"].includes(lalamoveStatus(order));
-}
-function lalamoveCanCancel(order) {
   return isLalamoveDelivery(order)
     && Boolean(order?.lalamoveOrderId)
     && !["PICKED_UP", "COMPLETED", "CANCELED", "CANCELLED", "REJECTED", "EXPIRED"].includes(lalamoveStatus(order));
@@ -204,7 +198,7 @@ function KitchenOrderCard({
           <i className={`bi bi-${icon}`} aria-hidden="true"></i><span>{label}</span>
         </button>
       ))}
-      {!locked || lalamoveCanCancel(order) ? <button className="btn btn-danger" type="button" data-cancel-order={order.id} onClick={() => onCancelOrder(order)}><i className="bi bi-x-circle app-icon" aria-hidden="true"></i><span>{t("kitchen.actions.cancel_order")}</span></button> : null}
+      {!locked ? <button className="btn btn-danger" type="button" data-cancel-order={order.id} onClick={() => onCancelOrder(order)}><i className="bi bi-x-circle app-icon" aria-hidden="true"></i><span>{t("kitchen.actions.cancel_order")}</span></button> : null}
     </div>
   </Tag>;
 }
@@ -415,12 +409,9 @@ export function KitchenPage() {
   };
 
   const cancelOrder = async order => {
-    if (!order || (isKitchenLocked(order) && !lalamoveCanCancel(order))) return;
-    const hasCancelableDispatch = lalamoveCanCancel(order);
+    if (!order || isKitchenLocked(order)) return;
     const ok = await sweetConfirm(
-      hasCancelableDispatch
-        ? `${t("kitchen.confirm.cancel_order_message")}\n\n${t("cashier.lalamove.cancel_confirm")}`
-        : t("kitchen.confirm.cancel_order_message"),
+      t("kitchen.confirm.cancel_order_message"),
       {
         title: t("kitchen.confirm.cancel_order_title"),
         confirmText: t("kitchen.confirm.ok"),
@@ -430,21 +421,28 @@ export function KitchenPage() {
     );
     if (!ok) return;
     try {
-      if (hasCancelableDispatch) await cancelLalamoveDispatch(tenant.id, order.id);
-      const optimistic = {
-        status: "cancelled",
-        cancelledAt: new Date().toISOString(),
-      };
-      setOrders(current => current.map(row => row.id === order.id ? { ...row, ...optimistic } : row));
-      const cancelled = await cancelOperationalOrder(tenant.id, order.id, {
-        ...(hasCancelableDispatch ? { lalamoveCancelSource: "PENGUIN_KITCHEN_ORDER_CANCEL" } : {}),
-      });
-      setOrders(current => current.map(row => row.id === order.id ? { ...row, ...cancelled } : row));
+      if (isTakeaway(order)) {
+        await updateOrder(order.id, {
+          status: "cancelled",
+          subtotalAmount: 0,
+          deliveryFee: 0,
+          totalAmount: 0,
+          cancelledAt: new Date().toISOString(),
+        });
+      } else {
+        const optimistic = {
+          status: "cancelled",
+          cancelledAt: new Date().toISOString(),
+        };
+        setOrders(current => current.map(row => row.id === order.id ? { ...row, ...optimistic } : row));
+        const cancelled = await cancelOperationalOrder(tenant.id, order.id);
+        setOrders(current => current.map(row => row.id === order.id ? { ...row, ...cancelled } : row));
+      }
       showToast(t("kitchen.toast.order_cancelled"));
     } catch (error) {
       setOrders(current => current.map(row => row.id === order.id ? order : row));
       console.error("KITCHEN_CANCEL_ORDER_FAILED", error);
-      showToast(t(hasCancelableDispatch ? "cashier.lalamove.cancel_failed" : "kitchen.toast.status_update_failed"), "error");
+      showToast(t("kitchen.toast.status_update_failed"), "error");
     }
   };
 

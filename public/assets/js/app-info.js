@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.06.144',
+  build: '2026.10.06.145',
   branch: 'feature/react-firebase-port',
-  commit: 'RESTAURANT-CASHIER-COD-IDENTITY-FIXES',
+  commit: 'TAKEAWAY-CANCEL-LALAMOVE-RESTORE',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Restaurant cashier COD and store identity fixes',
-  updatedAt: '2026-10-06T12:35:00+0700',
+  milestone: 'Takeaway cancellation and Lalamove logic restore',
+  updatedAt: '2026-10-06T13:25:00+0700',
   whatsNew: [
-    'Allow safe whole-order cancellation while an active Lalamove job is still cancellable',
-    'Keep Lalamove COD unpaid until completed delivery and merchant settlement confirmation',
-    'Separate restaurant settings/store identity from Retail POS settings/retailPos identity'
+    'Restore the original Lalamove local-cancel lock and separate provider cancellation flow',
+    'Fix Take Away whole-order cancellation in Cashier through the proven status-update path',
+    'Fix Take Away whole-order cancellation in Kitchen with Laravel-parity zeroed totals'
   ]
 };
 

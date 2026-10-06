@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.06.429",
+  build: "2026.10.06.430",
   branch: "feature/react-firebase-port",
-  commit: "RESTAURANT-CASHIER-COD-IDENTITY-FIXES",
+  commit: "TAKEAWAY-CANCEL-LALAMOVE-RESTORE",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Restaurant cashier COD and store identity fixes",
+  milestone: "Takeaway cancellation and Lalamove logic restore",
   whatsNew: [
-    "Allow safe whole-order cancellation while an active Lalamove job is still cancellable",
-    "Keep Lalamove COD unpaid until completed delivery and merchant settlement confirmation",
-    "Separate restaurant settings/store identity from Retail POS settings/retailPos identity",
+    "Restore the original Lalamove local-cancel lock and separate provider cancellation flow",
+    "Fix Take Away whole-order cancellation in Cashier through the proven status-update path",
+    "Fix Take Away whole-order cancellation in Kitchen with Laravel-parity zeroed totals",
   ],
 });

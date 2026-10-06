@@ -9067,3 +9067,51 @@ Production browser verification:
 Branch state:
 - Continue on `feature/react-firebase-port`.
 - No merge to `main`.
+
+---
+## 2026-10-06 — Correct Take Away cancellation + restore original Lalamove cancellation logic
+
+User correction:
+- The order that could not be cancelled was the bottom-most Take Away order (`TA-144212-UUC`), not the Lalamove Delivery order.
+- Restore the previously approved Lalamove cancellation behavior.
+
+Production investigation:
+- The active Take Away order is `9115a451-8130-4dc4-847a-66a17434f2f7`, queue `TA-144212-UUC`, status `pending`, payment `unpaid`, pickup `waiting`.
+- The order is tenant-scoped and the current authenticated owner has the correct tenant membership.
+- Laravel MASTER uses the ordinary order-status update path for Cashier cancellation and zeroes totals when Kitchen cancels an entire order.
+- The React migration had routed every whole-order cancellation through the newer `cancelOperationalOrder()` audit helper instead of preserving the proven Take Away parity path.
+
+Correction:
+- Cashier Take Away cancellation now uses `updateOperationalOrder` through the existing `updateOrder()` wrapper with only `status: cancelled`, matching the Laravel status-update path.
+- Kitchen Take Away cancellation now uses the normal update path and writes `status: cancelled`, `subtotalAmount: 0`, `deliveryFee: 0`, `totalAmount: 0`, and `cancelledAt`, matching Laravel MASTER behavior.
+- Other non-Take-Away cancellation paths retain their existing React behavior.
+
+Lalamove restore:
+- Reverted the mistaken cross-flow orchestration added in Build .429.
+- Cashier once again locks local whole-order cancellation while an active Lalamove provider order exists; the dedicated `ยกเลิก Lalamove` provider action remains separate.
+- Kitchen once again treats an active Lalamove dispatch as locked and does not expose local whole-order cancellation during that state.
+- Removed automatic provider cancellation from Cashier/Kitchen whole-order cancellation.
+- COD payment lifecycle and COD settlement changes from Build .429 are intentionally retained.
+
+Release candidate:
+- React 0.4.280 / Build 2026.10.06.430.
+- Public 0.16.32 / Build 2026.10.06.145.
+
+Verification before deploy:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.06.430` / `/react/assets/index-Cgt4ZKTo.js`.
+- `git diff --check` PASS.
+- Authenticated candidate browser test used the real active Take Away order but intercepted Firestore write-stream requests before persistence:
+  - Cashier found `TA-144212-UUC`, enabled its whole-order cancel action, reached the Firestore write path, and produced 2 intercepted write-stream requests.
+  - Kitchen found the same Take Away order, enabled its whole-order cancel action, reached the Firestore write path, and produced 2 intercepted write-stream requests.
+  - No Production order was modified by this verification.
+  - Active Lalamove Cashier card retained the dedicated provider-cancel action, had no local whole-order cancel, and showed the locked local-cancel control.
+  - Active Lalamove Kitchen card had no local whole-order cancel.
+  - Desktop horizontal overflow = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
+
+Deploy state:
+- Ready to commit/push and deploy Hosting only.
+- No Functions, Firestore Rules, or Storage Rules change required.
+- No merge to `main`.
