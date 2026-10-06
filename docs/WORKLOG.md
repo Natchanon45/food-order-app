@@ -8749,6 +8749,17 @@ Verification before deploy:
 - Regression contract now guards the modern heading, live badges, semantic field icons, emerald gradient, and responsive workspace structure.
 
 Deploy state:
-- Pending commit/push and Firebase Hosting deploy.
-- Hosting-only deployment intended; no Firestore Rules, Storage Rules, or Functions change.
+- Implementation/build commit: `ea2d0da4` — `style: refresh POS stock count workspace`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions deployment.
 - No merge to `main`.
+
+Production verification:
+- Production `/pos/stock-counts` loads `/react/assets/index-DvMCFTCI.js` and React Build `2026.10.06.426`.
+- Authenticated verification used a temporary copy of the current Chrome profile; Firestore write endpoints were blocked.
+- Desktop 1440x900: emerald heading, 2 live badges, 4 setup cards in one row, zero horizontal overflow.
+- Tablet 768x900: heading/actions stacked, actions in 2 columns, setup cards in 2 columns, zero horizontal overflow.
+- Mobile 390x844: stacked heading, 1-column setup cards, touch-friendly controls, zero horizontal overflow.
+- Live store data loaded (1,997 products visible in the badge), raw translation keys = 0.
+- Page errors = 0; request failures = 0; HTTP errors = 0; Firestore write attempts = 0.
