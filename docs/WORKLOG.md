@@ -9217,6 +9217,17 @@ Verification before deploy:
   - Page errors = 0; request failures = 0; HTTP errors = 0; Firestore writes = 0.
 
 Deploy state:
-- Ready to commit/push and deploy Firebase Hosting only.
-- No Functions, Firestore Rules, or Storage Rules change required.
+- Implementation commit: `74c6bb26` — `style: simplify POS stock count new-round card`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Deployment scope was Hosting only; no Functions, Firestore Rules, or Storage Rules deployment.
 - No merge to `main`.
+
+Production verification:
+- Production loads `/react/assets/index-BgcT2htk.js`.
+- Desktop 1440x900: `รอบตรวจนับใหม่` card height = 91px.
+- The card contains only the clipboard icon, title, guidance text, and exactly two visible actions.
+- `count-workspace-kicker` and `count-workspace-badges` are absent.
+- Both action buttons remain on the right side in the same desktop row.
+- Mobile 390x844 retains only the requested title/description/actions and has no horizontal overflow.
+- Firestore writes = 0; page errors = 0; request failures = 0; HTTP errors = 0.
