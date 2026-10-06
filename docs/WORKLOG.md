@@ -8871,6 +8871,18 @@ Verification before deploy:
   - Firestore write attempts = 0; page errors = 0; request failures = 0; HTTP errors = 0.
 
 Deploy state:
-- Pending commit/push and Firebase Hosting deploy.
-- Hosting-only deployment intended; no Rules, Storage, or Functions change.
+- Implementation/build commit: `6415a69e` — `fix: refine POS stock count sticky layout`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, or Functions deployment.
 - No merge to `main`.
+
+Production verification:
+- Production `/pos/stock-counts` loads `/react/assets/index-eig90Z9R.js` and React Build `2026.10.06.428`.
+- Authenticated live data loaded 1,997 stock rows with Firestore write endpoints blocked.
+- Desktop 1440x900: sticky shell = `position:sticky; top:74px`; POS action-bar bottom = 74px.
+- Desktop guide centers and first-row cell centers both equal `[435, 894, 1044, 1184, 1319]`.
+- Desktop guide widths and first-row cell widths both equal `[778, 140, 160, 120, 150]`.
+- Mobile 440x956: product identity spans both columns; Recorded Stock / Physical Count share the first metric row; Variance / Variance Value share the second; input stays within its card.
+- Raw translation keys = 0; horizontal overflow = 0.
+- Firestore write attempts = 0; page errors = 0; request failures = 0; HTTP errors = 0.
