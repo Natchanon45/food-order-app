@@ -8,6 +8,7 @@ import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
 import { sweetConfirm } from "@/components/sweetDialog";
 import {
+  cancelLalamoveDispatch,
   cancelOperationalOrder,
   loadOperationalSnapshot,
   refreshLalamoveDispatch,
@@ -77,6 +78,11 @@ function lalamoveCompletionStale(order) {
     && !["paid", "completed"].includes(String(order?.status || "").toLowerCase());
 }
 function lalamoveDispatchActive(order) {
+  return isLalamoveDelivery(order)
+    && Boolean(order?.lalamoveOrderId)
+    && !["PICKED_UP", "COMPLETED", "CANCELED", "CANCELLED", "REJECTED", "EXPIRED"].includes(lalamoveStatus(order));
+}
+function lalamoveCanCancel(order) {
   return isLalamoveDelivery(order)
     && Boolean(order?.lalamoveOrderId)
     && !["PICKED_UP", "COMPLETED", "CANCELED", "CANCELLED", "REJECTED", "EXPIRED"].includes(lalamoveStatus(order));
@@ -198,7 +204,7 @@ function KitchenOrderCard({
           <i className={`bi bi-${icon}`} aria-hidden="true"></i><span>{label}</span>
         </button>
       ))}
-      {!locked ? <button className="btn btn-danger" type="button" data-cancel-order={order.id} onClick={() => onCancelOrder(order)}><i className="bi bi-x-circle app-icon" aria-hidden="true"></i><span>{t("kitchen.actions.cancel_order")}</span></button> : null}
+      {!locked || lalamoveCanCancel(order) ? <button className="btn btn-danger" type="button" data-cancel-order={order.id} onClick={() => onCancelOrder(order)}><i className="bi bi-x-circle app-icon" aria-hidden="true"></i><span>{t("kitchen.actions.cancel_order")}</span></button> : null}
     </div>
   </Tag>;
 }
@@ -242,7 +248,7 @@ function KitchenItemEditor({ editor, menus, busy, t, money, onClose, onSave }) {
     if (event.target === event.currentTarget && !busy) onClose();
   }}>
     <section className="kitchen-item-editor" role="dialog" aria-modal="true" aria-labelledby="kitchenItemEditorTitle">
-      <h2 id="kitchenItemEditorTitle">{t("kitchen.editor.title")}</h2>
+      <h2 id="kitchenItemEditorTitle" className="kitchen-item-editor-title"><span className="kitchen-item-editor-title-icon"><i className="bi bi-pencil-square app-icon" aria-hidden="true"></i></span><span>{t("kitchen.editor.title")}</span></h2>
       <div className="editor-grid">
         <div className="field">
           <label htmlFor="kitchenReplacementMenu">{t("kitchen.editor.menu")}</label>
@@ -260,8 +266,8 @@ function KitchenItemEditor({ editor, menus, busy, t, money, onClose, onSave }) {
         </div>
       </div>
       <div className="editor-actions">
-        <button type="button" className="btn" data-close-editor disabled={busy} onClick={onClose}>{t("kitchen.actions.cancel")}</button>
-        <button type="button" className="btn btn-primary" data-save-editor disabled={busy} onClick={() => onSave({ order, index, item, menuId, qty, note, activeMenus, maxQty })}>{t("kitchen.actions.save_edit")}</button>
+        <button type="button" className="btn" data-close-editor disabled={busy} onClick={onClose}><i className="bi bi-x-circle app-icon" aria-hidden="true"></i><span>{t("kitchen.actions.cancel")}</span></button>
+        <button type="button" className="btn btn-primary" data-save-editor disabled={busy} onClick={() => onSave({ order, index, item, menuId, qty, note, activeMenus, maxQty })}><i className="bi bi-floppy app-icon" aria-hidden="true"></i><span>{t("kitchen.actions.save_edit")}</span></button>
       </div>
     </section>
   </div>;
@@ -409,9 +415,12 @@ export function KitchenPage() {
   };
 
   const cancelOrder = async order => {
-    if (!order || isKitchenLocked(order)) return;
+    if (!order || (isKitchenLocked(order) && !lalamoveCanCancel(order))) return;
+    const hasCancelableDispatch = lalamoveCanCancel(order);
     const ok = await sweetConfirm(
-      t("kitchen.confirm.cancel_order_message"),
+      hasCancelableDispatch
+        ? `${t("kitchen.confirm.cancel_order_message")}\n\n${t("cashier.lalamove.cancel_confirm")}`
+        : t("kitchen.confirm.cancel_order_message"),
       {
         title: t("kitchen.confirm.cancel_order_title"),
         confirmText: t("kitchen.confirm.ok"),
@@ -420,19 +429,22 @@ export function KitchenPage() {
       },
     );
     if (!ok) return;
-    const optimistic = {
-      status: "cancelled",
-      cancelledAt: new Date().toISOString(),
-    };
-    setOrders(current => current.map(row => row.id === order.id ? { ...row, ...optimistic } : row));
     try {
-      const cancelled = await cancelOperationalOrder(tenant.id, order.id);
+      if (hasCancelableDispatch) await cancelLalamoveDispatch(tenant.id, order.id);
+      const optimistic = {
+        status: "cancelled",
+        cancelledAt: new Date().toISOString(),
+      };
+      setOrders(current => current.map(row => row.id === order.id ? { ...row, ...optimistic } : row));
+      const cancelled = await cancelOperationalOrder(tenant.id, order.id, {
+        ...(hasCancelableDispatch ? { lalamoveCancelSource: "PENGUIN_KITCHEN_ORDER_CANCEL" } : {}),
+      });
       setOrders(current => current.map(row => row.id === order.id ? { ...row, ...cancelled } : row));
       showToast(t("kitchen.toast.order_cancelled"));
     } catch (error) {
       setOrders(current => current.map(row => row.id === order.id ? order : row));
       console.error("KITCHEN_CANCEL_ORDER_FAILED", error);
-      showToast(t("kitchen.toast.status_update_failed"), "error");
+      showToast(t(hasCancelableDispatch ? "cashier.lalamove.cancel_failed" : "kitchen.toast.status_update_failed"), "error");
     }
   };
 

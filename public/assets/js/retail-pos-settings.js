@@ -82,7 +82,8 @@ function readLocalSettings() {
 async function readSettings() {
   const local = readLocalSettings();
   try {
-    const [store, receipt, tax, payment, theme] = await Promise.all([
+    const [retailPos, store, receipt, tax, payment, theme] = await Promise.all([
+      getRecord(RetailCollections.settings, "retailPos"),
       getRecord(RetailCollections.settings, "store"),
       getRecord(RetailCollections.settings, "receipt"),
       getRecord(RetailCollections.settings, "tax"),
@@ -94,9 +95,11 @@ async function readSettings() {
       ...defaults,
       ...local,
       ...(store || {}),
+      ...(retailPos || {}),
       ...(receipt || {}),
       ...(tax || {}),
       ...(payment || {}),
+      shopName: String(retailPos?.shopName || local.shopName || defaults.shopName),
       posTheme: normalizePosTheme(theme?.theme || local.posTheme || defaults.posTheme),
       tenantId,
       shopId: tenantId,
@@ -243,8 +246,9 @@ async function saveSettings(settings) {
   };
   localStorage.setItem(tenantSettingsKey(), JSON.stringify(localSettings));
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(localSettings));
-  const storeSettings = {
-    id: "store",
+  const retailPosSettings = {
+    id: "retailPos",
+    type: "retail-pos",
     shopName: settings.shopName,
     shopAddress: settings.shopAddress,
     shopPhone: settings.shopPhone,
@@ -281,7 +285,7 @@ async function saveSettings(settings) {
     theme: normalizePosTheme(settings.posTheme)
   };
   const result = await saveSettingsDocumentsLocalFirst([
-    storeSettings,
+    retailPosSettings,
     receiptSettings,
     taxSettings,
     paymentSettings,

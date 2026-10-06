@@ -83,8 +83,12 @@ function lalamoveCanRetry(order) {
 }
 function isLalamoveCod(order) {
   return isLalamoveDelivery(order)
-    && String(order?.paymentMethod || "").toLowerCase() === "cod"
-    && order?.lalamoveCodEnabled === true;
+    && String(order?.paymentMethod || "").toLowerCase() === "cod";
+}
+function lalamoveCodAwaitingSettlement(order) {
+  return isLalamoveCod(order)
+    && lalamoveDeliveryCompleted(order)
+    && String(order?.paymentStatus || "").toLowerCase() !== "paid";
 }
 function lalamoveDispatchReady(order) {
   const paymentReady = order?.paymentStatus === "paid"
@@ -102,8 +106,9 @@ function isWaitingQueuePlaceholder(order) {
 }
 function activeOrders(orders) {
   return orders.filter(order => {
-    if (isWaitingQueuePlaceholder(order) || ["cancelled", "completed"].includes(order.status)) return false;
-    if (lalamoveDeliveryCompleted(order)) return false;
+    if (isWaitingQueuePlaceholder(order) || order.status === "cancelled") return false;
+    if (lalamoveCodAwaitingSettlement(order)) return true;
+    if (order.status === "completed" || lalamoveDeliveryCompleted(order)) return false;
     if (order.status !== "paid") return true;
     return isLalamoveDelivery(order) && !lalamoveDispatchFinished(order);
   });
@@ -187,6 +192,7 @@ function LalamoveDispatch({ order, t, money, busy, onQuote, onPlace, onRefresh, 
       <div className="order-head"><strong>{t("cashier.lalamove.title")}</strong><span className="badge">{t(statusKey)}</span></div>
       <div className="menu-category" style={{ marginTop: 4 }}>{t("cashier.lalamove.order_id")}: {id}</div>
       {codLine}
+      {lalamoveCodAwaitingSettlement(order) ? <div className="menu-category" style={{ marginTop: 6, fontWeight: 800, color: "#9a6700" }}>{t("cashier.lalamove.cod_waiting_settlement")}</div> : null}
       <div className="order-actions" style={{ marginTop: 8 }}>
         {canTrack ? <a className={status === "COMPLETED" ? "btn btn-sm" : "btn btn-warning btn-sm"} href={shareLink} target="_blank" rel="noopener noreferrer"><i className={status === "COMPLETED" ? "bi bi-receipt" : "bi bi-geo-alt"}></i><span>{t(status === "COMPLETED" ? "cashier.lalamove.delivery_details" : "cashier.lalamove.tracking")}</span></a> : null}
         {!lalamoveCanRetry(order) && !lalamoveDispatchFinished(order) ? <button className="btn btn-sm" type="button" disabled={busy} onClick={() => onRefresh(order)}><i className="bi bi-arrow-clockwise app-icon"></i><span>{t("cashier.lalamove.refresh")}</span></button> : null}
@@ -227,7 +233,8 @@ function LalamoveDispatch({ order, t, money, busy, onQuote, onPlace, onRefresh, 
 }
 
 function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, actions }) {
-  const dispatchedLocked = order.lalamoveOrderId && !lalamoveDispatchFinished(order);
+  const providerCancelable = lalamoveCanCancel(order);
+  const dispatchedLocked = order.lalamoveOrderId && !lalamoveDispatchFinished(order) && !providerCancelable;
   return <article className="card order-card">
     <div className="order-head"><QueueHeading order={order} title={`Delivery: ${order.recipientName || t("cashier.delivery.recipient_fallback")}`} t={t} formatTime={formatTime} /><span className="badge">{statusLabel(order, t)}</span></div>
     <p><span className={"badge" + (order.paymentStatus === "paid" ? "" : " warning")}>{paymentLabel(order, t)}</span><br /><strong>{t("cashier.delivery.phone")}</strong> {order.recipientPhone || "-"}<br /><strong>{t("cashier.delivery.address")}</strong> {order.deliveryAddress || "-"}</p>
@@ -240,7 +247,8 @@ function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, actions }) {
       {slipUrl ? <a className="btn btn-warning" href={slipUrl} target="_blank" rel="noopener noreferrer"><i className="bi bi-eye app-icon"></i><span>{t("cashier.payment.view_slip")}</span></a>
         : order.paymentSlipPath ? <button className="btn btn-warning" type="button" disabled><i className="bi bi-eye app-icon"></i><span>{t("cashier.payment.loading_slip")}</span></button> : null}
       {order.paymentStatus !== "paid" && !isLalamoveCod(order) ? <button className="btn btn-primary cashier-payment-action" type="button" disabled={busy} onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{t("cashier.payment.receive")}</span></button> : null}
-      {dispatchedLocked
+      {lalamoveCodAwaitingSettlement(order) ? <button className="btn btn-primary cashier-payment-action cashier-cod-settlement-action" type="button" disabled={busy} onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{t("cashier.lalamove.cod_receive")}</span></button> : null}
+      {lalamoveDeliveryCompleted(order) ? null : dispatchedLocked
         ? <button className="btn btn-primary" type="button" disabled title={t("cashier.lalamove.local_cancel_locked")}><i className="bi bi-truck app-icon"></i><span>{t("cashier.lalamove.dispatched")}</span></button>
         : <button className="btn btn-danger" type="button" disabled={busy} onClick={() => actions.cancelOrder(order)}><i className="bi bi-x-circle app-icon"></i><span>{t("cashier.actions.cancel_all")}</span></button>}
     </div>
@@ -605,7 +613,14 @@ export function CashierPage() {
 
   const pay = async order => {
     if (!order || busyKey) return;
-    const ok = await sweetConfirm(t("cashier.payment.confirm_message"), {
+    const codSettlement = isLalamoveCod(order);
+    if (codSettlement && !lalamoveDeliveryCompleted(order)) {
+      showToast(t("cashier.lalamove.cod_before_delivery"), "error");
+      return;
+    }
+    const ok = await sweetConfirm(
+      codSettlement ? t("cashier.lalamove.cod_settlement_confirm") : t("cashier.payment.confirm_message"),
+      {
       title: t("cashier.payment.confirm_title"),
       confirmText: t("cashier.common.confirm"),
       cancelText: t("cashier.common.cancel"),
@@ -617,12 +632,19 @@ export function CashierPage() {
     try {
       const now = new Date().toISOString();
       const patch = { paymentStatus: "paid", paidAt: now };
-      if (order.orderType === "delivery" && order.status === "served") {
+      if (codSettlement) {
+        patch.status = "paid";
+        patch.completedAt = order.completedAt || now;
+        patch.lalamoveCodSettlementStatus = "received";
+        patch.lalamoveCodSettledAt = now;
+      } else if (order.orderType === "delivery" && order.status === "served") {
         patch.status = "paid";
         patch.completedAt = now;
       }
       await updateOrder(order.id, patch);
-      showToast(order.orderType === "takeaway"
+      showToast(codSettlement
+        ? t("cashier.lalamove.cod_settlement_saved")
+        : order.orderType === "takeaway"
         ? t("cashier.toasts.takeaway_payment_saved")
         : patch.status === "paid" && isLalamoveDelivery(order)
           ? t("cashier.lalamove.payment_ready_dispatch")
@@ -701,7 +723,8 @@ export function CashierPage() {
   };
 
   const cancelOrder = async order => {
-    if (!order || busyKey) return;
+    if (!order || busyKey || lalamoveDeliveryCompleted(order)) return;
+    const hasCancelableDispatch = lalamoveCanCancel(order);
     const targetLabel = order.orderType === "delivery"
       ? t("cashier.cancel_order.delivery_target", { customer: order.recipientName || t("cashier.cancel_order.customer_fallback") })
       : order.orderType === "takeaway"
@@ -710,7 +733,7 @@ export function CashierPage() {
           ? t(order.serviceType === "dine_in" ? "quick_order.cashier.dine_in_title" : "quick_order.cashier.takeaway_title")
           : t("cashier.cancel_order.table_target", { table: order.tableCode || "-", round: order.roundNumber || 1 });
     const ok = await sweetConfirm(
-      `${t("cashier.cancel_order.message", { target: targetLabel })}\n\n${t("cashier.cancel_order.warning")}`,
+      `${t("cashier.cancel_order.message", { target: targetLabel })}\n\n${t("cashier.cancel_order.warning")}${hasCancelableDispatch ? `\n\n${t("cashier.lalamove.cancel_confirm")}` : ""}`,
       {
         title: t("cashier.cancel_order.title"),
         confirmText: t("cashier.common.confirm"),
@@ -720,13 +743,16 @@ export function CashierPage() {
     );
     if (!ok) return;
     setBusyKey(`cancel:${order.id}`);
-    const optimistic = {
-      status: "cancelled",
-      cancelledAt: new Date().toISOString(),
-    };
-    setOrders(current => current.map(row => row.id === order.id ? { ...row, ...optimistic } : row));
     try {
-      const cancelled = await cancelOperationalOrder(tenant.id, order.id);
+      if (hasCancelableDispatch) await cancelLalamoveDispatch(tenant.id, order.id);
+      const optimistic = {
+        status: "cancelled",
+        cancelledAt: new Date().toISOString(),
+      };
+      setOrders(current => current.map(row => row.id === order.id ? { ...row, ...optimistic } : row));
+      const cancelled = await cancelOperationalOrder(tenant.id, order.id, {
+        ...(hasCancelableDispatch ? { lalamoveCancelSource: "PENGUIN_CASHIER_ORDER_CANCEL" } : {}),
+      });
       setOrders(current => current.map(row => row.id === order.id ? { ...row, ...cancelled } : row));
       if (isTableOrder(order) && order.tableCode) {
         const hasOther = normalizedOrders.some(row => row.id !== order.id
@@ -738,7 +764,7 @@ export function CashierPage() {
     } catch (error) {
       setOrders(current => current.map(row => row.id === order.id ? order : row));
       console.error("CASHIER_CANCEL_ORDER_FAILED", error);
-      showToast(t("cashier.toasts.status_update_failed"), "error");
+      showToast(t(hasCancelableDispatch ? "cashier.lalamove.cancel_failed" : "cashier.toasts.status_update_failed"), "error");
     } finally { setBusyKey(""); }
   };
 
@@ -760,11 +786,29 @@ export function CashierPage() {
 
   const quoteLalamove = async order => {
     setBusyKey(`ll-quote:${order.id}`);
+    const legacyCodBackfill = isLalamoveCod(order) && order.lalamoveCodEnabled !== true;
     try {
+      if (legacyCodBackfill) {
+        await updateOrder(order.id, {
+          lalamoveCodEnabled: true,
+          lalamoveCodAmount: Number(order.totalAmount || 0),
+          lalamoveCodSettlementStatus: order.lalamoveCodSettlementStatus || "pending",
+        });
+      }
       const result = await quoteLalamoveDispatch(tenant.id, order.id);
       const dispatch = result?.item || result || {};
       showToast(t("cashier.lalamove.quote_ready", { amount: money(dispatch.quoteFee || 0) }));
     } catch (error) {
+      if (legacyCodBackfill) {
+        try {
+          await updateOrder(order.id, {
+            lalamoveCodEnabled: false,
+            lalamoveCodAmount: 0,
+          });
+        } catch (rollbackError) {
+          console.error("CASHIER_LALAMOVE_COD_BACKFILL_ROLLBACK_FAILED", rollbackError);
+        }
+      }
       console.error("CASHIER_LALAMOVE_QUOTE_FAILED", error);
       showToast(lalamoveErrorText(error, t, money), "error");
     } finally { setBusyKey(""); }

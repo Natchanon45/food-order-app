@@ -14,32 +14,34 @@ function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
-function normalizeSettings(store = {}, receipt = {}, legacy = {}) {
+function normalizeSettings(retailPos = {}, store = {}, receipt = {}, legacy = {}) {
+  const profile = { ...store, ...retailPos };
   return {
-    shopName: receipt.shopName || store.shopName || store.name || legacy.shopName || "POS ร้านค้าปลีก",
-    shopAddress: receipt.shopAddress || store.shopAddress || store.address || legacy.shopAddress || "",
-    shopPhone: receipt.shopPhone || store.shopPhone || store.phone || legacy.shopPhone || "",
-    taxId: receipt.taxId || receipt.shopTaxId || store.taxId || store.shopTaxId || legacy.taxId || legacy.shopTaxId || "",
-    receiptThanks: receipt.receiptThanks || store.receiptThanks || legacy.receiptThanks || "ขอบคุณที่ใช้บริการ",
-    receiptFooter: receipt.receiptFooter || store.receiptFooter || legacy.receiptFooter || "เอกสารฉบับนี้ออกโดยระบบของร้านตามข้อมูลด้านบน"
+    shopName: receipt.shopName || retailPos.shopName || legacy.shopName || "POS ร้านค้าปลีก",
+    shopAddress: receipt.shopAddress || profile.shopAddress || profile.address || legacy.shopAddress || "",
+    shopPhone: receipt.shopPhone || profile.shopPhone || profile.phone || legacy.shopPhone || "",
+    taxId: receipt.taxId || receipt.shopTaxId || profile.taxId || profile.shopTaxId || legacy.taxId || legacy.shopTaxId || "",
+    receiptThanks: receipt.receiptThanks || profile.receiptThanks || legacy.receiptThanks || "ขอบคุณที่ใช้บริการ",
+    receiptFooter: receipt.receiptFooter || profile.receiptFooter || legacy.receiptFooter || "เอกสารฉบับนี้ออกโดยระบบของร้านตามข้อมูลด้านบน"
   };
 }
 
 function fallbackStoreSettings() {
   const legacy = readJson(LEGACY_STORE_SETTINGS_KEY, {});
   const cached = readJson(STORE_SETTINGS_KEY, {});
-  return normalizeSettings(cached, cached, legacy);
+  return normalizeSettings(cached, {}, cached, legacy);
 }
 
 async function getStoreSettings() {
   if (settingsCache) return settingsCache;
   const fallback = fallbackStoreSettings();
   try {
-    const [store, receipt] = await Promise.all([
+    const [retailPos, store, receipt] = await Promise.all([
+      getRecord(RetailCollections.settings, "retailPos"),
       getRecord(RetailCollections.settings, "store"),
       getRecord(RetailCollections.settings, "receipt")
     ]);
-    settingsCache = normalizeSettings(store || {}, receipt || {}, fallback);
+    settingsCache = normalizeSettings(retailPos || {}, store || {}, receipt || {}, fallback);
     writeJson(STORE_SETTINGS_KEY, settingsCache);
     return settingsCache;
   } catch (error) {

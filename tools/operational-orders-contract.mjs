@@ -132,8 +132,9 @@ for(const marker of [
 ]) assert.ok(lalamoveWebhook.includes(marker),"Lalamove webhook completion contract missing: "+marker);
 
 const cashierSource=read("react-app/src/pages/CashierPage.jsx");
-assert.ok(cashierSource.includes('["cancelled", "completed"].includes(order.status)'),"Cashier completed-order terminal guard missing");
-assert.ok(cashierSource.includes('if (lalamoveDeliveryCompleted(order)) return false;'),"Cashier stale-completed Lalamove guard missing");
+assert.ok(cashierSource.includes('if (isWaitingQueuePlaceholder(order) || order.status === "cancelled") return false;'),"Cashier cancelled-order terminal guard missing");
+assert.ok(cashierSource.includes('if (lalamoveCodAwaitingSettlement(order)) return true;'),"Cashier completed COD settlement exception missing");
+assert.ok(cashierSource.includes('if (order.status === "completed" || lalamoveDeliveryCompleted(order)) return false;'),"Cashier completed-order terminal guard missing");
 assert.ok(cashierSource.includes('normalizedOrders.filter(lalamoveCompletionStale)'),"Cashier stale-completed repair scan missing");
 assert.ok(cashierSource.includes('refreshLalamoveDispatch(tenant.id, orderId)'),"Cashier stale-completed repair callable missing");
 const kitchenSource=read("react-app/src/pages/KitchenPage.jsx");

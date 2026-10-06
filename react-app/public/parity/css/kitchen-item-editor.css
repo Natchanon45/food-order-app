@@ -145,6 +145,33 @@
 .kitchen-item-editor h2 {
   margin: 0 0 14px;
 }
+.kitchen-item-editor-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #123c2d;
+}
+.kitchen-item-editor-title-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 36px;
+  border-radius: 11px;
+  background: #ecfdf5;
+  color: #047857;
+}
+.kitchen-item-editor .editor-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.kitchen-item-editor .editor-actions .app-icon {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
 
 .kitchen-item-editor .editor-grid {
   display: grid;

@@ -71,7 +71,9 @@ function hasSettingsPermission(profile, roleRows, permission) {
 }
 
 function normalizedSettings(rows = {}) {
-  const store = rows.store || {}, tax = rows.tax || {}, payment = rows.payment || {};
+  const restaurantStore = rows.store || {}, retailPos = rows.retailPos || {};
+  const store = { ...restaurantStore, ...retailPos };
+  const tax = rows.tax || {}, payment = rows.payment || {};
   const receipt = rows.receipt || {}, loyalty = rows.loyalty || {}, theme = rows.posTheme || {};
   return {
     ...DEFAULTS,
@@ -79,7 +81,7 @@ function normalizedSettings(rows = {}) {
     ...tax,
     ...payment,
     ...receipt,
-    shopName: String(store.shopName || DEFAULTS.shopName),
+    shopName: String(retailPos.shopName || DEFAULTS.shopName),
     taxId: String(tax.taxId || store.taxId || ""),
     vatRegistered: tax.vatRegistered === true || tax.vatRegistered === "yes" ? "yes" : "no",
     promptPayEnabled: payment.promptPayEnabled === true || payment.promptPayEnabled === "yes" ? "yes" : "no",
@@ -261,7 +263,7 @@ export function PosSettingsPage() {
     const validation = validate(next, { store: canEditStore });
     if (validation) { setError(validation); showToast(validation, "error"); return; }
     const sections = [
-      ...(canEditStore ? ["store", "tax", "payment", "receipt", "pos-theme"] : []),
+      ...(canEditStore ? ["retailPos", "tax", "payment", "receipt", "pos-theme"] : []),
       ...(canEditLoyalty ? ["loyalty"] : []),
     ];
     setBusy(true); setError("");
@@ -292,7 +294,7 @@ export function PosSettingsPage() {
     setBusy(true); setError("");
     try {
       const saved = await savePosStoreSettings(tenant.id, DEFAULTS, {
-        sections: ["store", "tax", "payment", "receipt", "pos-theme"],
+        sections: ["retailPos", "tax", "payment", "receipt", "pos-theme"],
       });
       const resolved = normalizedSettings(saved);
       setForm(resolved); applyPosTheme(DEFAULT_POS_THEME, tenant.id);

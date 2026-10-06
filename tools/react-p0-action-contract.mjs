@@ -172,7 +172,7 @@ requireAll("Cashier table payment", cashier, [
 ]);
 requireAll("Cashier cancellation", cashier, [
   "const cancelOrder = async order =>",
-  "await cancelOperationalOrder(tenant.id, order.id)",
+  "await cancelOperationalOrder(tenant.id, order.id, {",
   'status: "cancelled"',
   "sweetConfirm(",
 ]);

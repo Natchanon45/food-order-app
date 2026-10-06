@@ -355,12 +355,26 @@ const posThemesCss=read("react-app/public/parity/css/retail-pos-themes.css");
 const legacyPosThemesCss=read("public/assets/css/retail-pos-themes.css");
 const legacyPosSettingsHtml=read("public/pos/settings/index.html");
 const legacyPosSettingsJs=read("public/assets/js/retail-pos-settings.js");
+const legacyRetailReceiptSettings=read("public/assets/js/retail-sales-receipt-settings.js");
 const posSettingsPage=read("react-app/src/pages/PosSettingsPage.jsx");
 const posSettingsVisualCss=read("react-app/public/parity/css/retail-settings-visual-dashboard.css");
 const posThemeTranslations=JSON.parse(read("react-app/src/i18n/parity-translations.json"));
 const posUserProfile=read("react-app/src/components/PosUserProfile.jsx");
 const retailPosSession=read("react-app/src/auth/retailPosSession.js");
 const posData=read("react-app/src/data/retailPosData.js");
+assert(
+  posData.includes('const ids=["retailPos","store","tax","payment","receipt","loyalty","pos-theme"]')
+  && posData.includes('const retailPos={id:"retailPos",type:"retail-pos"')
+  && posData.includes('const rows=new Map([["retailPos",retailPos]')
+  && !posData.includes('const rows=new Map([["store",store]')
+  && posSettingsPage.includes('shopName: String(retailPos.shopName || DEFAULTS.shopName)')
+  && posSettingsPage.includes('["retailPos", "tax", "payment", "receipt", "pos-theme"]')
+  && legacyPosSettingsJs.includes('getRecord(RetailCollections.settings, "retailPos")')
+  && legacyPosSettingsJs.includes('id: "retailPos"')
+  && legacyRetailReceiptSettings.includes('getRecord(RetailCollections.settings, "retailPos")')
+  && read("public/assets/js/public-storefront-service.js").includes('return String(settings?.shopName || "").trim();'),
+  "Retail POS identity must use settings/retailPos while restaurant storefront remains on settings/store",
+);
 const posReturnsPage=read("react-app/src/pages/PosReturnsPage.jsx");
 const posReturnsData=read("react-app/src/data/retailPosReturns.js");
 const posReturnsVisualCss=read("react-app/public/parity/css/retail-returns-visual-dashboard.css");
@@ -639,7 +653,7 @@ assert(
   staticDeliveryEntry.includes('id="deliveryHeroStoreName"')
   &&!staticDeliveryEntry.includes('<span>PENGUIN</span></h1>')
   &&!staticDeliveryEntry.includes('<span>KINJAI</span></h1>')
-  &&staticDeliveryEntry.includes('/assets/js/delivery.js?v=20261005-136')
+  &&staticDeliveryEntry.includes('/assets/js/delivery.js?v=20261006-144')
   &&staticDeliveryRuntime.includes("renderDeliveryStoreHero")
   &&staticDeliveryRuntime.includes("dataService.getOrderDeliveryShopName(settings)")
   &&publicStorefrontService.includes("getOrderDeliveryShopName(settings = {})")
@@ -753,13 +767,13 @@ for(const themeId of posThemeIds){
 assert(posThemeHook.includes("loadPosThemeSetting")&&posThemeHook.includes("readCachedPosTheme")&&posThemeHook.includes("pos-theme-applied"),"React POS theme hook must apply cached tenant theme immediately and reconcile the Firestore setting");
 assert(posThemeData.includes('POS_THEME_SETTINGS_ID = "pos-theme"')&&posThemeData.includes('doc(db, "tenants"')&&posThemeData.includes('"settings", POS_THEME_SETTINGS_ID')&&posThemeData.includes("savePosThemeSetting"),"React POS theme preference must use tenant-scoped settings/pos-theme");
 assert(legacyPosThemeRuntime.includes("POS_THEME_SETTINGS_ID = 'pos-theme'")&&legacyPosThemeRuntime.includes("getRecord(RetailCollections.settings, POS_THEME_SETTINGS_ID)")&&legacyPosThemeRuntime.includes("document.documentElement.dataset.posTheme"),"Legacy POS theme runtime must read tenant settings/pos-theme and apply a document-level theme token");
-assert(posData.includes('["store","tax","payment","receipt","loyalty","pos-theme"]')&&posData.includes('const posTheme={id:"pos-theme",type:"pos-theme"')&&posData.includes('["pos-theme",posTheme]')&&posData.includes("options.sections")&&posData.includes("return loadPosStoreSettings(tenantId)"),"React POS Store Settings load/save must persist the tenant theme and support permission-scoped settings writes");
+assert(posData.includes('["retailPos","store","tax","payment","receipt","loyalty","pos-theme"]')&&posData.includes('const posTheme={id:"pos-theme",type:"pos-theme"')&&posData.includes('["pos-theme",posTheme]')&&posData.includes("options.sections")&&posData.includes("return loadPosStoreSettings(tenantId)"),"React POS Store Settings load/save must persist the retail identity, tenant theme, and permission-scoped settings writes");
 assert(legacyPosSettingsJs.includes('id: "pos-theme"')&&legacyPosSettingsJs.includes('type: "pos-theme"')&&legacyPosSettingsJs.includes("saveSettingsDocumentsLocalFirst")&&legacyPosSettingsJs.includes("applyPosTheme(themeSettings.theme)"),"Legacy POS Settings must save the tenant theme through the existing local-first settings sync and apply it immediately");
 assert(legacyPosSettingsHtml.includes('/react/assets/index-')&&!legacyPosSettingsHtml.includes('id="storeSettingsForm"'),"Canonical /pos/settings shell must be cut over to React instead of retaining the legacy settings form");
 assert(posSettingsPage.includes('className="pos-theme-picker"')&&posSettingsPage.includes('name="posTheme"')&&posSettingsPage.includes('tr("theme.note")'),"React POS Settings must expose the translated five-card theme picker");
 assert(posSettingsPage.includes('applyPosTheme(value, tenant?.id, { cache: false })')&&posSettingsPage.includes("applyPosTheme(next.posTheme, tenant.id)")&&legacyPosSettingsJs.includes('applyPosTheme(normalizePosTheme(event.target.value), { cache: false })')&&legacyPosSettingsJs.includes('applyPosTheme(themeSettings.theme)'),"POS theme preview must stay temporary until Save while saved theme changes update the persistent cache");
 assert(posSettingsPage.includes("getRetailPosSession")&&posSettingsPage.includes('pagePermissions.has("pos.settings")')&&posSettingsPage.includes("firstAllowedPosPage(posAccessProfile, roleRows)")&&posSettingsPage.includes("<PageReadyOverlay"),"Canonical React POS Settings must preserve POS session/permission routing and full-page readiness");
-assert(posSettingsPage.includes('...(canEditStore ? ["store", "tax", "payment", "receipt", "pos-theme"] : [])')&&posSettingsPage.includes('...(canEditLoyalty ? ["loyalty"] : [])')&&posSettingsPage.includes('sections: ["store", "tax", "payment", "receipt", "pos-theme"]'),"React POS Settings save/reset must preserve granular store-vs-loyalty permission boundaries");
+assert(posSettingsPage.includes('...(canEditStore ? ["retailPos", "tax", "payment", "receipt", "pos-theme"] : [])')&&posSettingsPage.includes('...(canEditLoyalty ? ["loyalty"] : [])')&&posSettingsPage.includes('sections: ["retailPos", "tax", "payment", "receipt", "pos-theme"]'),"React POS Settings save/reset must preserve granular retail-store-vs-loyalty permission boundaries");
 assert(posSettingsPage.includes('sweetConfirm(tr("actions.reset_confirm"), {')&&posSettingsPage.includes('confirmIcon: "arrow-clockwise"')&&!posSettingsPage.includes("sweetConfirm({"),"React POS Settings reset must use the shared app confirmation dialog with the real message argument");
 assert(posSettingsPage.includes('className="settings-visual-hero"')&&posSettingsPage.includes('className="settings-card-grid"')&&posSettingsPage.includes('className="settings-preview-layout"')&&posSettingsVisualCss.includes("linear-gradient(120deg,#083b2d")&&posSettingsVisualCss.includes(".settings-card-grid{display:grid")&&posSettingsVisualCss.includes("@media(max-width:620px)"),"React POS Settings must keep the approved colorful responsive Control Center visual structure");
 assert(posThemesCss.includes('html[data-pos-theme="minimal-clean"]')&&posThemesCss.includes('html[data-pos-theme="section-sidebar"]')&&posThemesCss.includes('html[data-pos-theme="summary"]')&&posThemesCss.includes('html[data-pos-theme="dark-hitech"]'),"React POS theme stylesheet must implement themes 1, 3, 4, and 5 while Modern Card inherits the approved v2.3 base");
@@ -1302,8 +1316,35 @@ const layerCss=read("react-app/public/parity/css/ui-layer-stack.css");
 assert(layerCss.includes(".owner-password-backdrop,")&&layerCss.includes("--ui-layer-modal-z: 2147483000;")&&layerCss.includes("--ui-layer-dialog-z: 2147483600;")&&layerCss.includes("--ui-layer-toast-z: 2147483647;"),"Owner password modal must remain below SweetAlert and Toast layers");
 assert(cashierPage.includes("bi bi-printer app-icon")&&cashierPage.includes("bi bi-x-circle app-icon"),"Cashier order action icons must use Laravel MASTER app-icon markup");
 assert(
-  (cashierPage.match(/bi bi-cash-coin app-icon/g)||[]).length===3
-  &&(cashierPage.match(/cashier-payment-action/g)||[]).length===3
+  cashierPage.includes("function lalamoveCodAwaitingSettlement(order)")
+  && cashierPage.includes("if (lalamoveCodAwaitingSettlement(order)) return true;")
+  && cashierPage.includes('cashier-cod-settlement-action')
+  && cashierPage.includes('patch.lalamoveCodSettlementStatus = "received";')
+  && cashierPage.includes('patch.lalamoveCodSettledAt = now;')
+  && staticDeliveryRuntime.includes('orderPayload.lalamoveCodEnabled = lalamoveCodEnabled;')
+  && staticDeliveryRuntime.includes('orderPayload.lalamoveCodAmount = lalamoveCodEnabled ? finalTotal : 0;')
+  && staticDeliveryRuntime.includes('throw new Error("LALAMOVE_COD_UNAVAILABLE")')
+  && cashierPage.includes("const legacyCodBackfill = isLalamoveCod(order) && order.lalamoveCodEnabled !== true;")
+  && cashierPage.includes('lalamoveCodSettlementStatus: order.lalamoveCodSettlementStatus || "pending"')
+  && cashierPage.includes("CASHIER_LALAMOVE_COD_BACKFILL_ROLLBACK_FAILED"),
+  "Lalamove COD must be marked at checkout and remain unpaid until completed delivery plus manual settlement confirmation",
+);
+for (const locale of ["th","en","my","lo","km"]) {
+  const cod = dict[locale]?.cashier?.lalamove;
+  for (const key of ["cod_waiting_settlement","cod_receive","cod_before_delivery","cod_settlement_confirm","cod_settlement_saved"]) {
+    assert(cod?.[key], `Cashier Lalamove COD settlement translation missing: ${locale}.${key}`);
+  }
+}
+assert(
+  cashierPage.includes("const hasCancelableDispatch = lalamoveCanCancel(order);")
+  && cashierPage.includes("if (hasCancelableDispatch) await cancelLalamoveDispatch(tenant.id, order.id);")
+  && cashierPage.includes('lalamoveCancelSource: "PENGUIN_CASHIER_ORDER_CANCEL"')
+  && cashierPage.includes("const dispatchedLocked = order.lalamoveOrderId && !lalamoveDispatchFinished(order) && !providerCancelable;"),
+  "Cashier whole-order cancellation must cancel an active Lalamove dispatch before local cancellation",
+);
+assert(
+  (cashierPage.match(/bi bi-cash-coin app-icon/g)||[]).length===4
+  &&(cashierPage.match(/cashier-payment-action/g)||[]).length===4
   &&cashierPage.includes('onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon"')
   &&cashierPage.includes('onClick={() => actions.payTable(sorted)}><i className="bi bi-cash-coin app-icon"')
   &&cashierRefreshCss.includes(".cashier-payment-action .bi-cash-coin.app-icon::before")
@@ -1313,10 +1354,24 @@ assert(
 const kitchenPage=read("react-app/src/pages/KitchenPage.jsx");
 const kitchenItemEditorCss=read("react-app/public/parity/css/kitchen-item-editor.css");
 assert(
+  kitchenPage.includes('className="kitchen-item-editor-title"')
+  && kitchenPage.includes('bi bi-pencil-square app-icon')
+  && kitchenPage.includes('data-close-editor disabled={busy} onClick={onClose}><i className="bi bi-x-circle app-icon"')
+  && kitchenPage.includes('data-save-editor disabled={busy}') && kitchenPage.includes('bi bi-floppy app-icon'),
+  "Kitchen edit-item modal must keep semantic title/cancel/save icons",
+);
+assert(
   kitchenPage.includes('data-cancel-item={order.id} data-item-index={index} onClick={() => onCancelItem(order, index)}><i className="bi bi-x-circle app-icon"')
   &&kitchenPage.includes('data-cancel-order={order.id} onClick={() => onCancelOrder(order)}><i className="bi bi-x-circle app-icon"')
   &&kitchenPage.includes('<span>{t("kitchen.actions.cancel_order")}</span>'),
   "Kitchen item/order cancel actions must use the same x-circle app-icon markup as Cashier"
+);
+assert(
+  kitchenPage.includes("cancelLalamoveDispatch")
+  && kitchenPage.includes("!locked || lalamoveCanCancel(order)")
+  && kitchenPage.includes("if (hasCancelableDispatch) await cancelLalamoveDispatch(tenant.id, order.id);")
+  && kitchenPage.includes('lalamoveCancelSource: "PENGUIN_KITCHEN_ORDER_CANCEL"'),
+  "Kitchen whole-order cancellation must remain available before pickup and cancel Lalamove first",
 );
 assert(
   kitchenItemEditorCss.includes('.kitchen-item-actions .btn[data-cancel-item],')

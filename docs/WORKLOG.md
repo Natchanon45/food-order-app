@@ -8886,3 +8886,149 @@ Production verification:
 - Mobile 440x956: product identity spans both columns; Recorded Stock / Physical Count share the first metric row; Variance / Variance Value share the second; input stays within its card.
 - Raw translation keys = 0; horizontal overflow = 0.
 - Firestore write attempts = 0; page errors = 0; request failures = 0; HTTP errors = 0.
+
+---
+## 2026-10-06 — Cashier/Kitchen whole-order cancellation for active Lalamove delivery
+
+User request:
+- The bottom-most Delivery order could not be cancelled from either Cashier or Kitchen while a Lalamove job was active.
+
+Root cause:
+- Cashier replaced the local whole-order cancel button with a disabled `Lalamove dispatched` button whenever a provider job was active.
+- Kitchen treated every active Lalamove dispatch as fully locked and hid the whole-order cancel action.
+- Cancelling only the local Firestore order would be unsafe because the Lalamove driver job could remain active.
+
+Implementation:
+- Cashier now exposes whole-order cancellation while the provider state is still cancellable.
+- Kitchen keeps item edit/cancel locked after dispatch, but restores whole-order cancellation while Lalamove itself can still be cancelled.
+- Whole-order cancellation now cancels the Lalamove provider job first and only then marks the PENGUIN order cancelled.
+- Provider terminal/non-cancellable states such as PICKED_UP and COMPLETED remain protected.
+- Added cancellation source metadata for Cashier and Kitchen orchestration.
+- Existing standalone `ยกเลิก Lalamove` action remains available; no order/session/permission schema was changed.
+
+Verification:
+- `npm run test:react-foundation` PASS.
+- `git diff --check` PASS.
+- Regression contracts now require Cashier and Kitchen to call `cancelLalamoveDispatch` before local order cancellation for an active provider job.
+
+Deploy state:
+- Not deployed yet; grouped into the next Hosting release after the remaining restaurant-side fixes.
+- No Firestore Rules, Storage Rules, or Functions change required for this issue.
+- No merge to `main`.
+
+---
+## 2026-10-06 — Kitchen edit-item modal semantic icons
+
+User request:
+- Add icons to the Kitchen item-edit modal controls.
+
+Implementation:
+- Added a pencil/edit icon badge to the modal title.
+- Added an x-circle icon to Cancel and a floppy/save icon to Save Edit.
+- Added modal-local alignment rules so title/action icons remain centered on desktop and mobile.
+- Form fields, validation, edit limits, price/quantity recalculation, and Firestore behavior are unchanged.
+
+Verification:
+- `npm run test:react-foundation` PASS.
+- `git diff --check` PASS.
+- Regression contract now guards title, cancel, and save icon markup.
+
+Deploy state:
+- Not deployed yet; grouped into the next Hosting release after the remaining restaurant-side fixes.
+- No Rules, Storage, or Functions change required.
+- No merge to `main`.
+
+---
+## 2026-10-06 — Correct Lalamove COD payment lifecycle
+
+User request:
+- Delivery COD must not force Cashier to receive payment before delivery.
+- Payment should be confirmed only after Lalamove has delivered to the customer and the merchant has verified the COD transfer from Lalamove.
+
+Root cause:
+- Delivery checkout stored `paymentMethod: cod` and `paymentStatus: unpaid` but never persisted `lalamoveCodEnabled` / `lalamoveCodAmount` even when the Lalamove quotation included `CASH_ON_DELIVERY`.
+- Cashier therefore classified the order as a normal unpaid delivery and exposed the standard Receive Payment action before dispatch.
+- Cashier also hid every COMPLETED Lalamove delivery, which would prevent a correctly unpaid COD order from remaining available for settlement confirmation.
+
+Implementation:
+- Lalamove COD checkout now requires the quotation to contain `CASH_ON_DELIVERY` and persists `lalamoveCodEnabled: true` plus the COD amount.
+- Cashier identifies Lalamove COD from the delivery/payment method independently from the old marker, so legacy COD orders no longer expose normal pre-delivery payment collection.
+- COD can dispatch while unpaid only when the dedicated COD marker is enabled, matching the existing server-side Lalamove dispatch guard.
+- After Lalamove reaches COMPLETED, an unpaid COD order remains visible in Cashier instead of disappearing.
+- Only then does Cashier expose a dedicated `Receive COD payment` action.
+- The confirmation explicitly tells staff to verify that the Lalamove COD transfer has actually arrived before confirming.
+- Confirmation sets `paymentStatus: paid`, closes the order as paid, and records `lalamoveCodSettlementStatus: received` plus settlement time.
+- Added TH / EN / MY / LO / KM settlement-state translations.
+- Existing server-side Lalamove completion behavior remains authoritative: COMPLETED marks delivery fulfillment but does not auto-mark COD as paid.
+
+Verification:
+- `npm run test:react-foundation` PASS.
+- `git diff --check` PASS.
+- Regression contract requires checkout COD markers, post-delivery Cashier visibility, dedicated settlement action, settlement fields, and all five locale strings.
+
+Deploy state:
+- Not deployed yet; grouped into the next Hosting release.
+- No Functions change is required for the new lifecycle because the deployed function logic already supports unpaid COD dispatch and independent COD settlement.
+- No merge to `main`.
+
+---
+## 2026-10-06 — Separate restaurant identity from Retail POS identity
+
+User request:
+- Restaurant channels (Table Order / Delivery / Takeaway / Walk-in) must use a restaurant name independent from the Retail POS store name.
+- Retail POS settings/receipts must not overwrite or inherit the restaurant name as their canonical identity.
+
+Root cause:
+- Public registration already created separate `settings/store` (restaurant) and `settings/retailPos` (Retail POS) documents.
+- Later Retail POS settings code regressed by loading/saving its identity through `settings/store`, so changing the POS shop name overwrote the restaurant name.
+- The current test tenant confirms the regression: `settings/store.shopName` is `สมใจการค้า`, while the tenant/restaurant identity is `ตั่วเฮียอาหารอิสาน`, and `settings/retailPos` is missing.
+
+Implementation:
+- React POS settings now load both documents only for legacy field fallback, but the POS shop name is authoritative only from `settings/retailPos`.
+- React POS settings now persist the POS profile to `settings/retailPos` and never write POS identity fields to `settings/store`.
+- POS payment/receipt settings read the Retail POS identity first; a missing POS name falls back to `POS ร้านค้าปลีก` rather than copying the restaurant name.
+- Legacy POS settings and legacy retail receipt helpers were updated to the same `settings/retailPos` boundary.
+- Restaurant storefront service remains on `settings/store.shopName`; Admin restaurant settings continue to manage `settings/store`.
+- Tax/payment/receipt/theme documents and permissions remain unchanged.
+
+Verification:
+- `npm run test:react-foundation` PASS.
+- `git diff --check` PASS.
+- Regression contract now guards `settings/retailPos` POS persistence and the customer storefront's independent `settings/store.shopName` source.
+
+Deploy/data state:
+- Code not deployed yet; grouped into the next Hosting release.
+- After deploy, the current test tenant requires one intentional data repair: create `settings/retailPos` with the existing POS name `สมใจการค้า`, then restore `settings/store.shopName` to restaurant name `ตั่วเฮียอาหารอิสาน` without touching restaurant address/delivery settings.
+- No Rules, Storage, or Functions deployment is required for the identity split.
+- No merge to `main`.
+
+---
+## 2026-10-06 — Legacy Lalamove COD backfill + final restaurant-side release verification
+
+Follow-up finding:
+- Existing COD orders created before this fix can have `paymentMethod: cod` and a stored Lalamove quotation containing `CASH_ON_DELIVERY`, but no `lalamoveCodEnabled` marker.
+- The current pending production test order `7fda0327-a461-4e37-be4d-50bbfa81a2f4` is exactly this shape, so server dispatch would reject it as not ready even though checkout had already verified COD support.
+
+Implementation:
+- Cashier treats an unpaid Lalamove COD order as dispatch-eligible in the UI.
+- Immediately before requesting a fresh dispatch quote, a legacy COD order missing the marker is backfilled with `lalamoveCodEnabled`, COD amount, and pending settlement status.
+- If the callable quote fails, the compatibility backfill is rolled back so an unsupported COD state is not left enabled.
+- New orders do not need this path because Delivery checkout now persists COD markers at creation time.
+
+Final verification before deploy:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS: migration coverage, parity matrix, P0 actions, 54 callable refs / 0 missing, tenant access, and UI layers.
+- `npm run build:react` PASS; generated build contract PASS for React Build `2026.10.06.429` and bundle `/react/assets/index-C6VteOe4.js`.
+- `git diff --check` PASS.
+- Read-only production Firestore inspection confirmed the legacy pending COD order already stores a Lalamove quote with `specialRequests: [CASH_ON_DELIVERY]`.
+- Candidate browser test against production Firebase with local candidate assets PASS: Cashier active Lalamove order exposes provider cancel + whole-order cancel; pre-delivery COD has no Receive Payment button; Kitchen whole-order cancel is available; edit modal icons render; POS settings no longer inherit restaurant name; Delivery still reads restaurant `settings/store`; desktop overflow/errors/request failures/HTTP errors/writes = 0.
+
+Data repair note:
+- Historical WORKLOG confirms the restaurant `settings/store.shopName` was `ตั่วเฮียส้มตำอาหารอีสาน` before the Retail POS settings regression overwrote it.
+- After Hosting deploy, repair the test tenant by preserving `สมใจการค้า` as `settings/retailPos.shopName` and restoring `settings/store.shopName` to `ตั่วเฮียส้มตำอาหารอีสาน`.
+- Do not change restaurant address, phone, coordinates, delivery provider, Lalamove settings, payment settings, orders, or stock.
+
+Deploy state:
+- Ready to commit/push and deploy Hosting only.
+- No Functions, Firestore Rules, or Storage Rules change is required.
+- No merge to `main`.

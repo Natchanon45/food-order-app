@@ -1203,6 +1203,7 @@ function submitErrorMessage(error) {
   if (code.includes("storage/retry-limit-exceeded")) return t("delivery.checkout.errors.storage_retry");
   if (code.includes("storage/canceled")) return t("delivery.checkout.errors.storage_cancelled");
   if (code.includes("STORAGE_NOT_READY")) return t("delivery.checkout.errors.storage_not_ready");
+  if (code.includes("LALAMOVE_COD_UNAVAILABLE")) return t("delivery.checkout.distance.lalamove_cod_unavailable");
   return t("delivery.checkout.errors.submit_failed", { code: code || "UNKNOWN_ERROR" });
 }
 
@@ -1579,6 +1580,11 @@ submitOrderButton.addEventListener("click", async () => {
         specialRequests: Array.isArray(quote.specialRequests) ? quote.specialRequests : [],
         stops: Array.isArray(quote.stops) ? quote.stops : [],
       };
+      const lalamoveSpecialRequests = Array.isArray(quote.specialRequests) ? quote.specialRequests : [];
+      const lalamoveCodEnabled = method === "cod" && lalamoveSpecialRequests.includes("CASH_ON_DELIVERY");
+      if (method === "cod" && !lalamoveCodEnabled) throw new Error("LALAMOVE_COD_UNAVAILABLE");
+      orderPayload.lalamoveCodEnabled = lalamoveCodEnabled;
+      orderPayload.lalamoveCodAmount = lalamoveCodEnabled ? finalTotal : 0;
       orderPayload.lalamoveDispatchFee = quotedFee;
       orderPayload.lalamoveDispatchPriceDifference = 0;
       orderPayload.lalamoveDispatchRequiresApproval = false;
