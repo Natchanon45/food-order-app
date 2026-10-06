@@ -9327,3 +9327,52 @@ Production verification:
 - Mobile 390x844: green card edges x=21..369 and accent x=21..369; left/right delta = 0px.
 - Therefore the top gradient line no longer extends beyond the green `รอบตรวจนับใหม่` card on either side.
 - Horizontal overflow = 0; Firestore writes = 0; page errors = 0; request failures = 0; HTTP errors = 0.
+
+---
+## 2026-10-06 — POS Purchases responsive item editor and receiving overview refinement
+
+User report:
+- `/pos/purchases` looked unbalanced on desktop and especially cramped on mobile.
+- Desktop purchase-item columns needed better proportions and the delete action showed an unwanted visible `ลบ` label below the trash icon.
+- Mobile purchase rows were too narrow and disorganized: product selector, stock-before, received quantity, unit cost, total, and delete action did not read as one coherent item card.
+- Mobile `ภาพรวมการรับสินค้า` hid the `ส่งออก CSV` text and the filter/summary layout needed better balance.
+
+Implementation:
+- Rebalanced the desktop purchase table column widths to Product 30%, Stock Before 11%, Received Qty 17%, Unit Cost 20%, Total 14%, Action 8%.
+- Added a subtle green row accent, stronger numeric hierarchy, blue Stock Before value, and green line-total value.
+- Kept the delete control accessible with `aria-label`/`title` but removed the child hidden-label span that was surfacing visually as `ลบ`; desktop delete is now a centered 38x38 icon-only control.
+- Added explicit `purchase-line-qty` and `purchase-line-cost` classes for responsive layout targeting.
+- Rebuilt each mobile purchase row as a 2-column card:
+  - product selector spans the full row, with room reserved for the delete button;
+  - Stock Before + Received Qty share the second row;
+  - Unit Cost + Total share the third row;
+  - delete is a compact 34x34 top-right icon;
+  - stock uses a blue metric surface, received quantity a violet input surface, unit cost an orange input surface, and total a green metric surface.
+- Detached the mobile table from desktop table-layout sizing and explicitly reset all desktop nth-column widths at the mobile breakpoint, preventing the narrow-field regression seen in the screenshots.
+- Mobile report filters remain Date From/Date To, Month/All, then full-width CSV; restored visible `ส่งออก CSV` text next to the icon.
+- Kept the 2x2 mobile receiving-summary cards and slightly tightened their height/padding.
+- Desktop report filter columns were rebalanced so dates, presets, and CSV action fill the row more evenly.
+
+Behavior boundary:
+- No purchase persistence, stock update, supplier lookup, invoice/date/note logic, scanner behavior, CSV content, permission checks, view-cost masking, Firestore schema, collection names, or route/session behavior changed.
+
+Release candidate:
+- React `0.4.280` / Build `2026.10.06.435`.
+- Public `0.16.32` / Build `2026.10.06.150`.
+- Generated bundle `/react/assets/index-BI5lL2JN.js`.
+
+Verification before deploy:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS, including foundation, migration coverage, parity matrix, P0 actions, 54 callable refs / 0 missing, tenant access, and UI-layer checks.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `.435` / `index-BI5lL2JN.js`.
+- `git diff --check` PASS.
+- Authenticated candidate browser verification used Production reads with Firestore writes blocked:
+  - Desktop 1440x900: table row width 1348px; columns 404 / 148 / 229 / 270 / 189 / 108; delete 38x38 icon-only with accessible label; horizontal overflow = 0.
+  - Mobile 390x844: row 348px wide; product selector area 319px; Stock/Qty/Cost/Total each 155px; delete 34x34 top-right; CSV action 328px wide with visible `ส่งออก CSV`; summary cards render 2x2; horizontal overflow = 0.
+  - Firestore writes = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
+
+Deploy state:
+- Ready to commit/push and deploy Firebase Hosting only.
+- No Functions, Firestore Rules, or Storage Rules change required.
+- No merge to `main`.

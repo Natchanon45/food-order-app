@@ -245,7 +245,14 @@ html[data-module="retail-pos-purchases"] body{
   min-width:980px!important;
   border-collapse:separate!important;
   border-spacing:0!important;
+  table-layout:fixed!important;
 }
+.purchase-table th:nth-child(1),.purchase-table td:nth-child(1){width:30%!important}
+.purchase-table th:nth-child(2),.purchase-table td:nth-child(2){width:11%!important}
+.purchase-table th:nth-child(3),.purchase-table td:nth-child(3){width:17%!important}
+.purchase-table th:nth-child(4),.purchase-table td:nth-child(4){width:20%!important}
+.purchase-table th:nth-child(5),.purchase-table td:nth-child(5){width:14%!important}
+.purchase-table th:nth-child(6),.purchase-table td:nth-child(6){width:8%!important}
 .purchase-table thead th{
   position:sticky;
   top:0;
@@ -260,7 +267,11 @@ html[data-module="retail-pos-purchases"] body{
 .purchase-table tbody tr{
   --purchase-row-accent:#10b981;
   --purchase-row-soft:#f4fcf8;
+  background:#fff;
   transition:background-color .15s ease,box-shadow .15s ease;
+}
+.purchase-table tbody tr td:first-child{
+  border-left:3px solid var(--purchase-row-accent);
 }
 .purchase-table tbody tr:hover{
   background:var(--purchase-row-soft);
@@ -289,16 +300,29 @@ html[data-module="retail-pos-purchases"] body{
 .purchase-table .line-total{
   color:#294c3d;
   font-variant-numeric:tabular-nums;
+  font-weight:850;
+}
+.purchase-table .line-stock{
+  color:#2563eb;
+}
+.purchase-table .line-total{
+  color:#047857;
+}
+.purchase-line-remove{
+  text-align:center!important;
 }
 .remove-line{
   width:38px!important;
   height:38px!important;
   display:grid!important;
   place-items:center!important;
+  margin:0 auto!important;
+  padding:0!important;
   border:1px solid #fecdd3!important;
   border-radius:11px!important;
   background:#fff1f2!important;
   color:#e11d48!important;
+  font-size:.9rem;
 }
 .purchase-summary{
   display:flex!important;
@@ -404,7 +428,7 @@ html[data-module="retail-pos-purchases"] body{
 }
 .purchase-report-filters{
   display:grid!important;
-  grid-template-columns:160px 160px auto auto auto!important;
+  grid-template-columns:minmax(150px,180px) minmax(150px,180px) minmax(120px,1fr) minmax(120px,1fr) minmax(170px,1.15fr)!important;
   gap:10px!important;
   align-items:center;
   margin:14px 0!important;
@@ -924,30 +948,49 @@ html[data-module="retail-pos-purchases"] body{
     background:transparent!important;
   }
   .purchase-table{
+    display:block!important;
     min-width:0!important;
     width:100%!important;
+    table-layout:auto!important;
   }
   .purchase-table thead{display:none!important}
   .purchase-table tbody{
     display:grid!important;
+    width:100%!important;
     gap:9px!important;
   }
   .purchase-table tr{
+    position:relative;
     display:grid!important;
-    grid-template-columns:1fr 1fr!important;
-    gap:8px!important;
+    width:100%!important;
+    box-sizing:border-box;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:10px!important;
     padding:12px!important;
-    border:1px solid #dde8e2!important;
+    border:1px solid #dbe8e1!important;
+    border-left:4px solid #10b981!important;
     border-radius:16px!important;
-    background:#fff!important;
+    background:
+      radial-gradient(circle at 100% 0,rgba(16,185,129,.05),transparent 8rem),
+      #fff!important;
     box-shadow:0 8px 22px rgba(20,67,47,.055)!important;
   }
   .purchase-table td{
     display:grid!important;
-    gap:4px;
+    width:auto!important;
+    min-width:0!important;
+    gap:5px;
     padding:0!important;
     border:0!important;
     text-align:left!important;
+  }
+  .purchase-table td:nth-child(1),
+  .purchase-table td:nth-child(2),
+  .purchase-table td:nth-child(3),
+  .purchase-table td:nth-child(4),
+  .purchase-table td:nth-child(5),
+  .purchase-table td:nth-child(6){
+    width:auto!important;
   }
   .purchase-table td[data-label]::before{
     content:attr(data-label);
@@ -957,27 +1000,60 @@ html[data-module="retail-pos-purchases"] body{
   }
   .purchase-line-product{
     grid-column:1/-1;
+    padding-right:44px!important;
   }
+  .purchase-line-qty{grid-column:2}
+  .purchase-line-cost{grid-column:1}
   .purchase-line-remove{
-    grid-column:1/-1;
-    justify-items:end;
+    position:absolute;
+    top:10px;
+    right:10px;
+    display:block!important;
+    width:34px!important;
+    height:34px!important;
   }
   .purchase-table select,
   .purchase-table input{
     width:100%!important;
     min-width:0!important;
-    min-height:42px!important;
+    min-height:44px!important;
+    border-radius:12px!important;
   }
   .purchase-table .line-stock,
   .purchase-table .line-total{
-    min-height:42px;
+    min-height:44px;
     align-content:center;
-    padding:0 10px!important;
-    border:1px solid #e1e8e4!important;
-    border-radius:11px;
+    padding:0 11px!important;
+    border:1px solid #dce8e2!important;
+    border-radius:12px;
     background:#f8fbf9;
   }
-  .remove-line{width:100%!important;max-width:none!important;height:40px!important}
+  .purchase-table .line-stock{
+    border-color:#bfdbfe!important;
+    background:#eff6ff!important;
+    color:#1d4ed8!important;
+  }
+  .purchase-table .line-total{
+    border-color:#bbf7d0!important;
+    background:#ecfdf5!important;
+    color:#047857!important;
+  }
+  .purchase-line-qty input{
+    border-color:#ddd6fe!important;
+    background:#faf9ff!important;
+  }
+  .purchase-line-cost input{
+    border-color:#fed7aa!important;
+    background:#fffaf5!important;
+  }
+  .remove-line{
+    width:34px!important;
+    max-width:34px!important;
+    height:34px!important;
+    min-height:34px!important;
+    margin:0!important;
+    border-radius:10px!important;
+  }
 
   .purchase-summary{
     padding:11px 12px!important;
@@ -1005,15 +1081,19 @@ html[data-module="retail-pos-purchases"] body{
   }
   #exportPurchaseCsv{
     grid-column:1/-1;
+    display:inline-flex!important;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
   }
-  #exportPurchaseCsv span{display:none}
+  #exportPurchaseCsv span{display:inline!important}
   .purchase-report-stats{
     grid-template-columns:repeat(2,minmax(0,1fr))!important;
     gap:8px!important;
   }
   .purchase-stat-card{
-    min-height:104px;
-    padding:11px!important;
+    min-height:100px;
+    padding:12px!important;
     border-radius:15px!important;
   }
   .purchase-stat-icon{width:30px;height:30px;margin-bottom:7px}

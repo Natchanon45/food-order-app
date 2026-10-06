@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.06.149',
+  build: '2026.10.06.150',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-STOCK-COUNT-ACCENT-ALIGNMENT',
+  commit: 'POS-PURCHASES-RESPONSIVE-REFINEMENT',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'POS Stock Count accent alignment',
-  updatedAt: '2026-10-06T22:08:00+0700',
+  milestone: 'POS Purchases responsive refinement',
+  updatedAt: '2026-10-06T22:30:00+0700',
   whatsNew: [
-    'Align the Stock Count top accent line exactly with the green new-round card edges',
-    'Remove the remaining left/right protruding accent tips above the new-round card',
-    'Keep the continuous desktop row separators and gray uncounted-row accent unchanged'
+    'Rebalance the Purchases desktop item table and simplify the delete action',
+    'Rebuild mobile purchase items as clean two-column cards with colored stock/cost totals',
+    'Keep CSV export text visible on mobile and rebalance purchase report filters/cards'
   ]
 };
 

@@ -823,13 +823,13 @@ export function PosPurchasesPage() {
                       </select>
                     </td>
                     <td className="number line-stock" data-label={tr("columns.stock_before")}>{formatNumber(Number(product?.stock || 0))}</td>
-                    <td data-label={tr("columns.qty_received")}>
+                    <td className="purchase-line-qty" data-label={tr("columns.qty_received")}>
                       <input className="line-qty" type="number" min="0.001" step="0.001"
                         disabled={!canCreate || busy}
                         value={line.qty}
                         onChange={event => updateLine(line.id, "qty", event.target.value)} />
                     </td>
-                    <td data-label={tr("columns.unit_cost")} hidden={!canViewCost}>
+                    <td className="purchase-line-cost" data-label={tr("columns.unit_cost")} hidden={!canViewCost}>
                       <input className="line-cost" type="number" min="0" step="0.01"
                         disabled={!canCreate || busy}
                         value={line.unitCost}
@@ -844,7 +844,6 @@ export function PosPurchasesPage() {
                         aria-label={tr("actions.remove")} title={tr("actions.remove")}
                         onClick={() => removeLine(line.id)}>
                         <i className="bi bi-trash3" aria-hidden="true"></i>
-                        <span className="visually-hidden">{tr("actions.remove")}</span>
                       </button>
                     </td>
                   </tr>;

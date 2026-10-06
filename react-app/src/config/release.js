@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.06.434",
+  build: "2026.10.06.435",
   branch: "feature/react-firebase-port",
-  commit: "POS-STOCK-COUNT-ACCENT-ALIGNMENT",
+  commit: "POS-PURCHASES-RESPONSIVE-REFINEMENT",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "POS Stock Count accent alignment",
+  milestone: "POS Purchases responsive refinement",
   whatsNew: [
-    "Align the Stock Count top accent line exactly with the green new-round card edges",
-    "Remove the remaining left/right protruding accent tips above the new-round card",
-    "Keep the continuous desktop row separators and gray uncounted-row accent unchanged",
+    "Rebalance the Purchases desktop item table and simplify the delete action",
+    "Rebuild mobile purchase items as clean two-column cards with colored stock/cost totals",
+    "Keep CSV export text visible on mobile and rebalance purchase report filters/cards",
   ],
 });
