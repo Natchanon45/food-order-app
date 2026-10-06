@@ -9436,3 +9436,71 @@ Production deploy + verification:
 - Production verification: Firestore writes = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
 - Deployment scope was Hosting only; no Functions, Firestore Rules, or Storage Rules deployment.
 - No merge to `main`.
+
+---
+## 2026-10-07 — POS Purchases async searchable product picker + Firestore lazy loading
+
+User request:
+- Replace the very long native Product `<select>` on `/pos/purchases` with Select2-like searchable behavior and lazy loading.
+- Keep the React route native to React rather than attaching jQuery Select2 to React-managed DOM.
+
+Implementation:
+- Replaced the native purchase product `<select>` with `AsyncProductPicker`, a React-native searchable combobox/listbox.
+- Opening the picker loads only 30 products from Firestore ordered by product name.
+- Empty-query browsing supports lazy pagination with `limit(30) + startAfter(cursor)`; scrolling near the bottom or pressing `โหลดสินค้าเพิ่ม` loads the next page.
+- Search is debounced by 280 ms and queries Firestore by:
+  - product-name prefix;
+  - product-code prefix;
+  - barcode prefix;
+  then de-duplicates and displays up to 30 matches.
+- Search result rows show product name, product code, barcode when present, and current stock.
+- Added clear-selection, retry, loading, no-result, and load-more states.
+- Product options are cached only after their lazy page/search result loads; the page no longer downloads or watches the complete product catalog.
+- Initial Purchases data now requests only:
+  - aggregate product count via `getCountFromServer`;
+  - suppliers;
+  - purchase history.
+- Removed the full-catalog `listRetailProducts(tenant.id)` initial read and the full-catalog `watchRetailProducts(...)` realtime listener from `/pos/purchases`.
+- Supplier and purchase-history realtime listeners remain unchanged.
+- Barcode scanner now checks the small local product cache first, then performs exact Firestore product/document/barcode lookup only when needed.
+- Purchase saving still uses the selected product's canonical `_documentId` and the existing `receivePosPurchase` transaction. No purchase/stock transaction logic changed.
+
+Data helpers:
+- Added `countRetailProducts(tenantId)`.
+- Added `listRetailProductOptionsPage(tenantId, { pageSize, cursor, search })`.
+- Added `findRetailProductByLookup(tenantId, value)`.
+- Existing full-catalog helpers remain available for other POS routes that still require them.
+
+Localization:
+- Added picker search/clear/stock/no-results/retry/loading/load-more strings for TH / EN / MY / LO / KM.
+
+Responsive UI:
+- Desktop dropdown is a floating searchable panel with max 320px result viewport.
+- Mobile dropdown matches the 319px product trigger width and caps results at 48vh.
+- Opening the picker temporarily releases the desktop purchase-table wrapper overflow so the dropdown is not clipped.
+
+Release candidate:
+- React `0.4.280` / Build `2026.10.07.437`.
+- Public `0.16.32` / Build `2026.10.07.152`.
+- Generated bundle `/react/assets/index-C5GdNyYQ.js`.
+
+Verification before deploy:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `.437` / `index-C5GdNyYQ.js`.
+- `git diff --check` PASS.
+- Authenticated candidate browser verification with Production reads and Firestore writes blocked PASS:
+  - before opening the picker: 0 rendered product options, native `.line-product` selects = 0, catalog count still shows 1,997;
+  - first open: exactly 30 product options;
+  - `โหลดสินค้าเพิ่ม`: options increase to 60;
+  - searching `101`: exactly 1 matching product (`101 พลัส ซอสหอยนางรม 280 ก.`);
+  - searching barcode `8857123982063`: finds the same product;
+  - selecting it updates trigger text and displays stock 26;
+  - Mobile 390x844: dropdown x=37..356, width 319px, 30 options, horizontal overflow = 0;
+  - Firestore writes = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
+
+Deploy state:
+- Ready to commit/push and deploy Firebase Hosting only.
+- No Firestore Rules, Indexes, Functions, Storage Rules, or schema migration required.
+- No merge to `main`.

@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.07.151',
+  build: '2026.10.07.152',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-PURCHASES-MOBILE-CARD-FIX',
+  commit: 'POS-PURCHASES-ASYNC-PRODUCT-PICKER',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'POS Purchases mobile card fix',
-  updatedAt: '2026-10-07T06:30:00+0700',
+  milestone: 'POS Purchases async lazy product picker',
+  updatedAt: '2026-10-07T07:05:00+0700',
   whatsNew: [
-    'Remove the extra divider under the purchase ranking cards',
-    'Give the mobile product selector its own full-width row below the item header',
-    'Keep the compact top-right delete action clear of the product selector'
+    'Replace the Purchases product dropdown with a searchable async picker',
+    'Load product options in 30-item Firestore pages instead of loading the full catalog',
+    'Use exact lazy product lookup for barcode scanning while keeping purchase transactions unchanged'
   ]
 };
 

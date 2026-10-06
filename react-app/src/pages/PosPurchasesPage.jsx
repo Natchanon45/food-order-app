@@ -13,7 +13,11 @@ import {
   watchPosPurchases,
   watchPosSuppliers,
 } from "@/data/retailPurchasingData";
-import { listRetailProducts, watchRetailProducts } from "@/data/retailProductsData";
+import {
+  countRetailProducts,
+  findRetailProductByLookup,
+  listRetailProductOptionsPage,
+} from "@/data/retailProductsData";
 import { loadPosRoleSettings } from "@/data/retailPosSystemData";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
@@ -71,6 +75,175 @@ function hasPurchasePermission(profile, roleRows, permission) {
     return ["pos.purchases.create", "pos.purchases.view_cost"].includes(permission);
   }
   return false;
+}
+
+function AsyncProductPicker({
+  tenantId,
+  value,
+  selectedProduct,
+  disabled,
+  tr,
+  onSelect,
+  onOptionsLoaded,
+}) {
+  const rootRef = useRef(null);
+  const inputRef = useRef(null);
+  const requestRef = useRef(0);
+  const [open, setOpen] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [options, setOptions] = useState([]);
+  const [cursor, setCursor] = useState(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+
+  const selectedLabel = selectedProduct
+    ? `${selectedProduct.name} (${selectedProduct.id})`
+    : (value || tr("runtime.select_product"));
+
+  const mergeOptions = useCallback((current, incoming) => {
+    const merged = new Map();
+    [...current, ...incoming].forEach(item => {
+      if (item?.id) merged.set(String(item.id), item);
+    });
+    return [...merged.values()];
+  }, []);
+
+  const loadOptions = useCallback(async ({ reset = true, term = searchText } = {}) => {
+    if (!tenantId || (!reset && loading)) return;
+    const requestId = ++requestRef.current;
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const result = await listRetailProductOptionsPage(tenantId, {
+        pageSize: 30,
+        cursor: reset ? null : cursor,
+        search: term,
+      });
+      if (requestId !== requestRef.current) return;
+      const rows = Array.isArray(result?.rows) ? result.rows : [];
+      setOptions(current => reset ? rows : mergeOptions(current, rows));
+      setCursor(result?.cursor || null);
+      setHasMore(Boolean(result?.hasMore));
+      onOptionsLoaded(rows);
+    } catch (error) {
+      console.warn("POS_PURCHASES_PRODUCT_OPTIONS_LOAD_FAILED", error);
+      if (requestId === requestRef.current) setLoadError(true);
+    } finally {
+      if (requestId === requestRef.current) setLoading(false);
+    }
+  }, [cursor, loading, mergeOptions, onOptionsLoaded, searchText, tenantId]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const timer = window.setTimeout(() => {
+      loadOptions({ reset: true, term: searchText });
+    }, searchText ? 280 : 0);
+    return () => window.clearTimeout(timer);
+  }, [open, searchText]); // loadOptions intentionally omitted to avoid cursor-triggered reloads
+
+  useEffect(() => {
+    if (!open) return undefined;
+    inputRef.current?.focus();
+    const wrap = rootRef.current?.closest(".purchase-table-wrap");
+    wrap?.classList.add("product-picker-open");
+    const closeOnOutside = event => {
+      if (!rootRef.current?.contains(event.target)) setOpen(false);
+    };
+    const closeOnEscape = event => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOnOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      wrap?.classList.remove("product-picker-open");
+      document.removeEventListener("pointerdown", closeOnOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open]);
+
+  const choose = useCallback(product => {
+    if (!product?.id) return;
+    onOptionsLoaded([product]);
+    onSelect(String(product.id));
+    setOpen(false);
+    setSearchText("");
+  }, [onOptionsLoaded, onSelect]);
+
+  const clear = useCallback(() => {
+    onSelect("");
+    setOpen(false);
+    setSearchText("");
+  }, [onSelect]);
+
+  const onListScroll = useCallback(event => {
+    const node = event.currentTarget;
+    if (!searchText && hasMore && !loading && node.scrollTop + node.clientHeight >= node.scrollHeight - 36) {
+      loadOptions({ reset: false, term: "" });
+    }
+  }, [hasMore, loadOptions, loading, searchText]);
+
+  return <div className={`purchase-product-picker${open ? " is-open" : ""}`} ref={rootRef}>
+    <button
+      type="button"
+      className="purchase-product-trigger"
+      aria-haspopup="listbox"
+      aria-expanded={open}
+      disabled={disabled}
+      onClick={() => setOpen(current => !current)}>
+      <span className={value ? "" : "is-placeholder"}>{selectedLabel}</span>
+      <i className={`bi bi-chevron-${open ? "up" : "down"}`} aria-hidden="true"></i>
+    </button>
+    {open ? <div className="purchase-product-dropdown">
+      <div className="purchase-product-search">
+        <i className="bi bi-search" aria-hidden="true"></i>
+        <input
+          ref={inputRef}
+          type="search"
+          autoComplete="off"
+          value={searchText}
+          placeholder={tr("runtime.product_search_placeholder")}
+          onChange={event => setSearchText(event.target.value)} />
+      </div>
+      <div className="purchase-product-options" role="listbox" onScroll={onListScroll}>
+        {value ? <button type="button" className="purchase-product-clear" onClick={clear}>
+          <i className="bi bi-x-circle" aria-hidden="true"></i>
+          <span>{tr("runtime.product_clear")}</span>
+        </button> : null}
+        {options.map(product => <button
+          type="button"
+          role="option"
+          aria-selected={String(product.id) === String(value)}
+          className={String(product.id) === String(value) ? "is-selected" : ""}
+          key={`${product._documentId || product.id}:${product.id}`}
+          onClick={() => choose(product)}>
+          <span className="purchase-product-option-name">{product.name}</span>
+          <small>
+            <span>{product.id}</span>
+            {product.barcode ? <span>{product.barcode}</span> : null}
+            <span>{tr("runtime.product_stock", { count: Number(product.stock || 0) })}</span>
+          </small>
+        </button>)}
+        {!loading && !options.length && !loadError
+          ? <p className="purchase-product-empty">{tr("runtime.product_no_results")}</p>
+          : null}
+        {loadError ? <button type="button" className="purchase-product-retry"
+          onClick={() => loadOptions({ reset: true, term: searchText })}>
+          <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
+          <span>{tr("runtime.product_retry")}</span>
+        </button> : null}
+        {loading ? <div className="purchase-product-loading">
+          <span className="purchase-product-spinner" aria-hidden="true"></span>
+          <span>{tr("runtime.product_loading")}</span>
+        </div> : null}
+        {!searchText && hasMore && !loading ? <button type="button" className="purchase-product-load-more"
+          onClick={() => loadOptions({ reset: false, term: "" })}>
+          <i className="bi bi-chevron-down" aria-hidden="true"></i>
+          <span>{tr("runtime.product_load_more")}</span>
+        </button> : null}
+      </div>
+    </div> : null}
+  </div>;
 }
 
 let zxingLoader = null;
@@ -132,6 +305,7 @@ export function PosPurchasesPage() {
   });
 
   const [products, setProducts] = useState([]);
+  const [productCatalogCount, setProductCatalogCount] = useState(0);
   const [suppliers, setSuppliers] = useState([]);
   const [history, setHistory] = useState([]);
   const [initialReady, setInitialReady] = useState(false);
@@ -244,14 +418,25 @@ export function PosPurchasesPage() {
     return () => { alive = false; };
   }, [tenant?.id, profile, posAccessProfile?.roleId, posAccessProfile?.role]);
 
+  const cacheProducts = useCallback(rows => {
+    if (!Array.isArray(rows) || !rows.length) return;
+    setProducts(current => {
+      const byId = new Map(current.map(item => [String(item.id), item]));
+      rows.forEach(item => {
+        if (item?.id) byId.set(String(item.id), { ...byId.get(String(item.id)), ...item });
+      });
+      return [...byId.values()];
+    });
+  }, []);
+
   const refresh = useCallback(async () => {
     if (!tenant?.id || !profile || !canView) return;
-    const [nextProducts, nextSuppliers, nextHistory] = await Promise.all([
-      listRetailProducts(tenant.id),
+    const [nextProductCount, nextSuppliers, nextHistory] = await Promise.all([
+      countRetailProducts(tenant.id),
       listPosSuppliers(tenant.id),
       listPosPurchases(tenant.id),
     ]);
-    setProducts(nextProducts);
+    setProductCatalogCount(nextProductCount);
     setSuppliers(nextSuppliers);
     setHistory(nextHistory);
   }, [tenant?.id, profile, canView]);
@@ -279,11 +464,9 @@ export function PosPurchasesPage() {
       return undefined;
     }
     const onError = watchError => console.warn("POS_PURCHASES_WATCH_FAILED", watchError);
-    const stopProducts = watchRetailProducts(tenant.id, setProducts, onError);
     const stopSuppliers = watchPosSuppliers(tenant.id, setSuppliers, onError);
     const stopPurchases = watchPosPurchases(tenant.id, setHistory, onError);
     return () => {
-      stopProducts();
       stopSuppliers();
       stopPurchases();
     };
@@ -305,10 +488,6 @@ export function PosPurchasesPage() {
     ].filter(Boolean).join(" • ") || tr("runtime.supplier_found");
   }, [supplier, tr, formatNumber]);
 
-  const sortedProducts = useMemo(
-    () => [...products].sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), "th")),
-    [products],
-  );
   const total = useMemo(
     () => lines.reduce((sum, line) =>
       sum + Number(line.qty || 0) * Number(line.unitCost || 0), 0),
@@ -386,18 +565,25 @@ export function PosPurchasesPage() {
       oscillator.addEventListener("ended", () => context.close());
     } catch {}
   }, []);
-  const acceptScan = useCallback(codeValue => {
+  const acceptScan = useCallback(async codeValue => {
     const code = String(codeValue || "").trim();
-    if (!code) return false;
-    const lowered = code.toLowerCase();
-    const product = products.find(item =>
+    if (!code || !tenant?.id) return false;
+    let product = products.find(item =>
       String(item.barcode || "") === code
-      || String(item.id || "").toLowerCase() === lowered);
+      || String(item.id || "").toLowerCase() === code.toLowerCase());
+    if (!product) {
+      try {
+        product = await findRetailProductByLookup(tenant.id, code);
+      } catch (lookupError) {
+        console.warn("POS_PURCHASES_SCANNER_LOOKUP_FAILED", lookupError);
+      }
+    }
     if (!product) {
       showToast(scannerText("not_found"), "error");
       stopScanner();
       return true;
     }
+    cacheProducts([product]);
     setLines(current => {
       const source = current.length ? current : [createLine()];
       let targetIndex = source.findIndex(line => !line.productId);
@@ -410,13 +596,13 @@ export function PosPurchasesPage() {
     showToast(scannerText("success"));
     stopScanner();
     return true;
-  }, [products, scannerText, showToast, signalScanSuccess, stopScanner]);
+  }, [cacheProducts, products, scannerText, showToast, signalScanSuccess, stopScanner, tenant?.id]);
   const nativeScanLoop = useCallback(async function scanLoop() {
     if (!scanStreamRef.current || !scanDetectorRef.current || !scanVideoRef.current) return;
     try {
       const codes = await scanDetectorRef.current.detect(scanVideoRef.current);
       const value = String(codes?.[0]?.rawValue || "").trim();
-      if (value && acceptScan(value)) return;
+      if (value && await acceptScan(value)) return;
     } catch {}
     scanFrameRef.current = window.requestAnimationFrame(scanLoop);
   }, [acceptScan]);
@@ -452,7 +638,7 @@ export function PosPurchasesPage() {
         scanVideoRef.current,
         result => {
           const value = String(result?.getText?.() || result?.text || "").trim();
-          if (value) acceptScan(value);
+          if (value) void acceptScan(value);
         },
       );
     } catch (scanError) {
@@ -709,7 +895,7 @@ export function PosPurchasesPage() {
             <p>{tr("visual.hero_description")}</p>
             <div className="purchase-hero-status">
               <i className="bi bi-arrow-down-square" aria-hidden="true"></i>
-              <span>{tr("visual.catalog_ready", { count: formatNumber(products.length) })}</span>
+              <span>{tr("visual.catalog_ready", { count: formatNumber(productCatalogCount) })}</span>
             </div>
           </div>
           <div className="purchase-hero-metrics">
@@ -814,13 +1000,14 @@ export function PosPurchasesPage() {
                   const product = products.find(item => item.id === line.productId);
                   return <tr className="purchase-line-row" key={line.id}>
                     <td className="purchase-line-product" data-label={tr("columns.product")}>
-                      <select className="line-product" value={line.productId}
+                      <AsyncProductPicker
+                        tenantId={tenant?.id || ""}
+                        value={line.productId}
+                        selectedProduct={product || null}
                         disabled={!canCreate || busy}
-                        onChange={event => updateLine(line.id, "productId", event.target.value)}>
-                        <option value="">{tr("runtime.select_product")}</option>
-                        {sortedProducts.map(item =>
-                          <option key={item.id} value={item.id}>{item.name} ({item.id})</option>)}
-                      </select>
+                        tr={tr}
+                        onOptionsLoaded={cacheProducts}
+                        onSelect={productId => updateLine(line.id, "productId", productId)} />
                     </td>
                     <td className="number line-stock" data-label={tr("columns.stock_before")}>{formatNumber(Number(product?.stock || 0))}</td>
                     <td className="purchase-line-qty" data-label={tr("columns.qty_received")}>

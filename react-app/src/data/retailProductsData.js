@@ -1,6 +1,7 @@
 import {
-  collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, runTransaction,
-  serverTimestamp, setDoc, writeBatch,
+  collection, deleteDoc, doc, endAt, getCountFromServer, getDoc, getDocs, limit,
+  onSnapshot, orderBy, query, runTransaction, serverTimestamp, setDoc, startAfter,
+  startAt, where, writeBatch,
 } from "firebase/firestore";
 import { deleteObject, getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage";
 import { auth, db, storage } from "@/firebase/client";
@@ -80,6 +81,85 @@ function normalizeMovementDocuments(documents = []) {
   return documents.map(row)
     .sort((a, b) => timeValue(b.createdAtServer || b.createdAt || b.updatedAt) - timeValue(a.createdAtServer || a.createdAt || a.updatedAt))
     .slice(0, 500);
+}
+
+export async function countRetailProducts(tenantId) {
+  const id = requireContext(tenantId);
+  const snapshot = await getCountFromServer(tenantCollection(id, "products"));
+  return Number(snapshot.data().count || 0);
+}
+
+export async function listRetailProductOptionsPage(
+  tenantId,
+  { pageSize = 30, cursor = null, search = "" } = {},
+) {
+  const id = requireContext(tenantId);
+  const size = Math.max(10, Math.min(60, Number(pageSize || 30)));
+  const term = cleanName(search);
+  const productsRef = tenantCollection(id, "products");
+
+  if (term) {
+    const upperTerm = term.toUpperCase();
+    const querySpecs = [
+      query(productsRef, orderBy("name"), startAt(term), endAt(term + "\uf8ff"), limit(size)),
+      query(productsRef, orderBy("id"), startAt(upperTerm), endAt(upperTerm + "\uf8ff"), limit(size)),
+      query(productsRef, orderBy("barcode"), startAt(term), endAt(term + "\uf8ff"), limit(size)),
+    ];
+    const settled = await Promise.allSettled(querySpecs.map(productQuery => getDocs(productQuery)));
+    const documents = [];
+    settled.forEach(result => {
+      if (result.status === "fulfilled") documents.push(...result.value.docs);
+    });
+    const needle = term.toLocaleLowerCase("th");
+    const rows = normalizeProductDocuments(documents)
+      .filter(product => [
+        product.name,
+        product.id,
+        product.barcode,
+      ].some(value => String(value || "").toLocaleLowerCase("th").includes(needle)))
+      .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), "th"))
+      .slice(0, size);
+    return { rows, cursor: null, hasMore: false };
+  }
+
+  const productQuery = cursor
+    ? query(productsRef, orderBy("name"), startAfter(cursor), limit(size))
+    : query(productsRef, orderBy("name"), limit(size));
+  const snapshot = await getDocs(productQuery);
+  return {
+    rows: normalizeProductDocuments(snapshot.docs),
+    cursor: snapshot.docs.at(-1) || null,
+    hasMore: snapshot.docs.length === size,
+  };
+}
+
+export async function findRetailProductByLookup(tenantId, rawValue) {
+  const id = requireContext(tenantId);
+  const value = String(rawValue || "").trim();
+  if (!value) return null;
+  const productsRef = tenantCollection(id, "products");
+  const upperValue = value.toUpperCase();
+
+  const directIds = [...new Set([value, upperValue])];
+  for (const documentId of directIds) {
+    const snapshot = await getDoc(tenantDoc(id, "products", documentId));
+    if (snapshot.exists()) return normalizeProductDocuments([snapshot])[0] || null;
+  }
+
+  const queries = [
+    query(productsRef, where("id", "==", upperValue), limit(5)),
+    query(productsRef, where("barcode", "==", value), limit(5)),
+  ];
+  const settled = await Promise.allSettled(queries.map(productQuery => getDocs(productQuery)));
+  for (const result of settled) {
+    if (result.status !== "fulfilled" || result.value.empty) continue;
+    const rows = normalizeProductDocuments(result.value.docs);
+    const match = rows.find(product =>
+      String(product.id || "").toUpperCase() === upperValue
+      || String(product.barcode || "") === value);
+    if (match) return match;
+  }
+  return null;
 }
 
 export async function listRetailProducts(tenantId) {
