@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.06.145',
+  build: '2026.10.06.146',
   branch: 'feature/react-firebase-port',
-  commit: 'TAKEAWAY-CANCEL-LALAMOVE-RESTORE',
+  commit: 'TAKEAWAY-DOCID-CANONICALIZATION',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Takeaway cancellation and Lalamove logic restore',
-  updatedAt: '2026-10-06T13:25:00+0700',
+  milestone: 'Takeaway legacy document ID compatibility',
+  updatedAt: '2026-10-06T14:05:00+0700',
   whatsNew: [
-    'Restore the original Lalamove local-cancel lock and separate provider cancellation flow',
-    'Fix Take Away whole-order cancellation in Cashier through the proven status-update path',
-    'Fix Take Away whole-order cancellation in Kitchen with Laravel-parity zeroed totals'
+    'Use the real Firestore document ID for legacy Take Away orders even when embedded id differs',
+    'Restore Cashier and Kitchen actions for legacy Take Away records without duplicating documents',
+    'Preserve mismatched historical payload IDs as legacyId for compatibility and diagnostics'
   ]
 };
 

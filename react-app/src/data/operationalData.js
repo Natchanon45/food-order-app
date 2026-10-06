@@ -25,8 +25,17 @@ function tenantDoc(tenantId, collectionName, id) {
 function tenantCollection(tenantId, collectionName) {
   return collection(db, "tenants", requireTenantId(tenantId), collectionName);
 }
+function documentRow(snapshot) {
+  const data = snapshot.data() || {};
+  const embeddedId = String(data.id || "").trim();
+  return {
+    ...data,
+    ...(embeddedId && embeddedId !== snapshot.id ? { legacyId: embeddedId } : {}),
+    id: snapshot.id,
+  };
+}
 function docs(snapshot) {
-  return snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+  return snapshot.docs.map(documentRow);
 }
 function millis(value) {
   if (value?.toMillis) return value.toMillis();
@@ -111,25 +120,25 @@ export async function updateOperationalTable(tenantId, tableId, patch = {}) {
   }, { merge: true });
   const snapshot = await getDoc(ref);
   if (!snapshot.exists()) throw new Error("TABLE_NOT_FOUND");
-  return { id: snapshot.id, ...snapshot.data() };
+  return documentRow(snapshot);
 }
 export async function getOperationalOrder(tenantId, orderId) {
   const id = String(orderId || "").trim();
   if (!id) return null;
   const snapshot = await getDoc(tenantDoc(tenantId, "orders", id));
-  return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
+  return snapshot.exists() ? documentRow(snapshot) : null;
 }
 
 export async function getOperationalStoreSettings(tenantId) {
   const snapshot = await getDoc(tenantDoc(tenantId, "settings", "store"));
-  return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : {};
+  return snapshot.exists() ? documentRow(snapshot) : {};
 }
 
 export async function getOperationalTable(tenantId, tableId) {
   const id = String(tableId || "").trim();
   if (!id) return null;
   const snapshot = await getDoc(tenantDoc(tenantId, "tables", id));
-  return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
+  return snapshot.exists() ? documentRow(snapshot) : null;
 }
 export async function updateCustomerDisplay(tenantId, displayId, payload = {}) {
   const id = String(displayId || "").trim();
@@ -147,7 +156,7 @@ export async function updateCustomerDisplay(tenantId, displayId, payload = {}) {
 export function watchCustomerDisplay(tenantId, displayId, onValue, onError = console.error) {
   const id = String(displayId || "").trim() || "main-register";
   return onSnapshot(tenantDoc(tenantId, "customerDisplays", id), snapshot => {
-    onValue(snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null);
+    onValue(snapshot.exists() ? documentRow(snapshot) : null);
   }, onError);
 }
 export async function updateOperationalOrder(tenantId, orderId, patch = {}) {
@@ -162,7 +171,7 @@ export async function updateOperationalOrder(tenantId, orderId, patch = {}) {
   }, { merge: true });
   const snapshot = await getDoc(ref);
   if (!snapshot.exists()) throw new Error("ORDER_NOT_FOUND");
-  return { id: snapshot.id, ...snapshot.data() };
+  return documentRow(snapshot);
 }
 
 export async function cancelOperationalOrder(tenantId, orderId, extra = {}) {

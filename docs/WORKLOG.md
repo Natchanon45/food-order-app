@@ -9126,3 +9126,50 @@ Production verification:
 - Active Lalamove Kitchen card exposes no local whole-order cancellation while dispatch is active.
 - A fresh read-only Production query after verification confirmed `TA-144212-UUC` remains `pending / unpaid / waiting`; the verification did not cancel or mutate the real order.
 - Desktop horizontal overflow = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
+
+---
+## 2026-10-06 — Take Away cancellation root-cause fix: Firestore document ID was shadowed by legacy payload ID
+
+Symptom:
+- User confirmed Take Away still could not be cancelled from either Cashier or Kitchen after Build 2026.10.06.430.
+- The affected Production queue is `TA-144212-UUC`.
+
+Root cause proven on Production:
+- The real Firestore document path is `tenants/13c9bb08-927b-4f9c-a2ef-b320ef7eed99/orders/CA9bK6dTmJR4SaSBzdI7`.
+- That historical document also contains an embedded payload field `id = 9115a451-8130-4dc4-847a-66a17434f2f7`.
+- React `operationalData.js` materialized snapshots as `{ id: item.id, ...item.data() }`, so the embedded payload `id` overwrote the actual Firestore document ID.
+- Cashier/Kitchen therefore rendered the legacy payload UUID as `order.id` and attempted updates against a non-existent document path.
+- A direct read/update test proved the distinction: updating embedded ID path returned `not-found`; an idempotent `status: pending` update against real document ID `CA9bK6dTmJR4SaSBzdI7` succeeded with the authenticated owner.
+- Production audit found this was the only mismatched order among 36 orders in the current test tenant; menu/table IDs were unaffected.
+
+Fix:
+- Added `documentRow(snapshot)` in `react-app/src/data/operationalData.js`.
+- Snapshot data is now spread first and the real Firestore `snapshot.id` is assigned last, so all operational actions use the canonical document path.
+- When an embedded historical `id` differs, it is preserved as `legacyId` for diagnostics/backward compatibility instead of replacing the canonical ID.
+- Applied the same materializer to realtime lists and direct get/update return values so an action cannot regress to the embedded legacy ID after a successful refresh/update.
+
+Regression protection:
+- `tools/operational-orders-contract.mjs` now requires the canonical `documentRow(snapshot)` materialization markers.
+- Existing Take Away/Lalamove cancellation behavior from Build .430 is unchanged; this repair is only document identity resolution.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.06.431` / `/react/assets/index-dv8VlUFh.js`.
+- `git diff --check` PASS.
+- Authenticated candidate browser test with Production reads and Firestore writes intercepted before persistence PASS:
+  - Cashier `TA-144212-UUC` receipt URL now contains real document ID `CA9bK6dTmJR4SaSBzdI7`, not legacy payload UUID.
+  - Cashier cancel action is enabled and reaches the write stream.
+  - Kitchen `data-cancel-order` now equals `CA9bK6dTmJR4SaSBzdI7`; cancel action is enabled and reaches the write stream.
+  - Horizontal overflow = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
+  - No Production cancellation was persisted during browser verification.
+
+Release candidate:
+- React `0.4.280` / Build `2026.10.06.431`.
+- Public `0.16.32` / Build `2026.10.06.146`.
+
+Deploy state:
+- Ready to commit/push and deploy Hosting only.
+- No Firestore Rules, Functions, or Storage Rules change required.
+- No merge to `main`.

@@ -101,7 +101,8 @@ const adapter=read("react-app/src/data/operationalData.js");
 for(const marker of [
   'loadOperationalSnapshot', 'watchOperationalOrders', 'watchOperationalTables',
   'watchQuickOrderHeldBills', 'createWalkInCallable', 'assignWalkInTableCallable', 'moveTableSessionCallable',
-  'source: "quick_order"', 'HELD_BILL_SOURCE_MISMATCH'
+  'source: "quick_order"', 'HELD_BILL_SOURCE_MISMATCH',
+  'function documentRow(snapshot)', 'legacyId: embeddedId', 'id: snapshot.id', 'snapshot.docs.map(documentRow)'
 ]) assert.ok(adapter.includes(marker),`React data adapter missing: ${marker}`);
 
 const lalamoveDispatch=read("functions/lalamove-dispatch.js");
