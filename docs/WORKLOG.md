@@ -9170,6 +9170,16 @@ Release candidate:
 - Public `0.16.32` / Build `2026.10.06.146`.
 
 Deploy state:
-- Ready to commit/push and deploy Hosting only.
-- No Firestore Rules, Functions, or Storage Rules change required.
+- Implementation commit: `319752b1` — `fix: use Firestore ids for legacy takeaway orders`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Deployment scope was Hosting only; no Firestore Rules, Functions, or Storage Rules deployment.
 - No merge to `main`.
+
+Production verification:
+- Production loads `/react/assets/index-dv8VlUFh.js`.
+- Cashier `TA-144212-UUC` now renders receipt/action identity from real Firestore document ID `CA9bK6dTmJR4SaSBzdI7`; the legacy payload UUID no longer replaces `order.id`.
+- Kitchen `data-cancel-order` for the same Take Away order is now `CA9bK6dTmJR4SaSBzdI7`.
+- Both Cashier and Kitchen cancel actions are enabled and each reached the Firestore write stream during safe verification; all writes were intercepted before persistence.
+- Read-only Production recheck confirmed the order remains `pending / unpaid / waiting`, proving the verification did not cancel it.
+- Horizontal overflow = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
