@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.05.140',
+  build: '2026.10.06.141',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-SCANNER-TOAST-DEDUP',
+  commit: 'POS-STOCK-COUNT-WORKSPACE-REFRESH',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'React POS scanner toast de-duplication',
-  updatedAt: '2026-10-05T17:55:48+0700',
+  milestone: 'POS Stock Count workspace refresh',
+  updatedAt: '2026-10-06T10:40:00+0700',
   whatsNew: [
-    'Show exactly one scanner Toast result per camera scan on canonical React /pos',
-    'Show scanner success only after the product is actually added to the sale cart',
-    'Ignore duplicate camera callbacks so one scan cannot add or notify twice'
+    'Refresh the New Stock Count workspace with a modern emerald control-card header',
+    'Add live counted/difference badges and semantic icons to the stock-count setup fields',
+    'Preserve stock-count permissions, calculations, scanner behavior, and confirm/write logic'
   ]
 };
 

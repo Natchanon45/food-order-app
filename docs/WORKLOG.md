@@ -8707,3 +8707,48 @@ Production verification:
 - Deployed bundle contains React Build `2026.10.05.425` and release marker `POS-SCANNER-TOAST-DEDUP`.
 - Scanner contract now guarantees one processed camera result per scanner session and conditional success Toast only after a real cart add.
 - No production sale, stock, Firestore, or settings write was performed during this verification.
+
+---
+## 2026-10-06 — Stock Count “รอบตรวจนับใหม่” workspace refresh
+
+User request:
+- `/pos/stock-counts` already had the new visual dashboard, but the “รอบตรวจนับใหม่” section still looked flat/legacy compared with the rest of the redesigned POS management UI.
+- User asked for this workspace to look more modern and visually polished.
+
+Change:
+- Rebuilt the New Stock Count header as an emerald control-card surface instead of a plain white heading row.
+- Added a translated Control Center kicker using the existing `visual.kicker` catalog.
+- Added live status badges for counted products (`counted / total`) and current variance-item count using the existing derived stock-count state.
+- Strengthened action hierarchy for `ใส่ยอดตามระบบทั้งหมด` and `ล้างยอดนับจริง` without changing their handlers or permissions.
+- Converted the four setup fields into semantic mini cards with icons: count name → bookmark-star, count date → calendar, counted by → person-check, and note → chat/text.
+- Refined field focus states, toolbar surface, spacing, shadows, and border hierarchy so the setup area visually matches the colorful Stock Count dashboard.
+- Tablet <=900px stacks the workspace header/actions cleanly and uses two setup columns; mobile <=620px uses one setup column and touch-friendly controls.
+- No stock-count calculation, permission, realtime watcher, scanner, confirmation, history, value masking, movement, or Firestore persistence logic changed.
+
+Important files:
+- `react-app/src/pages/PosStockCountsPage.jsx`
+- `react-app/public/parity/css/retail-stock-counts-visual-dashboard.css`
+- `public/react/parity/css/retail-stock-counts-visual-dashboard.css`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- generated React entry shells and `/react/assets/index-DvMCFTCI.js`
+
+Release candidate:
+- React 0.4.280 / Build 2026.10.06.426.
+- Public 0.16.32 / Build 2026.10.06.141.
+- Generated bundle `/react/assets/index-DvMCFTCI.js`.
+
+Verification before deploy:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS: React foundation, migration coverage (53 routes / 21 POS), parity matrix, P0 actions, callable contract (54 references / 0 missing), tenant access, and UI layers.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build .426 / `index-DvMCFTCI.js`.
+- `git diff --check` PASS.
+- Isolated real-Chrome visual fixture PASS: Desktop 1440px = emerald workspace header + four setup cards; Tablet 768px = stacked header/actions + two setup columns; Mobile 390px = stacked header + one setup column; horizontal overflow = 0 at all three widths.
+- Regression contract now guards the modern heading, live badges, semantic field icons, emerald gradient, and responsive workspace structure.
+
+Deploy state:
+- Pending commit/push and Firebase Hosting deploy.
+- Hosting-only deployment intended; no Firestore Rules, Storage Rules, or Functions change.
+- No merge to `main`.

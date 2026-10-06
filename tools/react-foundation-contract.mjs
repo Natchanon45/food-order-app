@@ -996,8 +996,23 @@ assert(
   && posStockCountsVisualCss.includes("conic-gradient(#10b981")
   && posStockCountsVisualCss.includes(".count-variance-track")
   && posStockCountsVisualCss.includes(".count-table tr::before")
+  && posStockCountsVisualCss.includes(".count-workspace-kicker")
+  && posStockCountsVisualCss.includes(".count-workspace-badges")
+  && posStockCountsVisualCss.includes(".count-meta-field")
+  && posStockCountsVisualCss.includes("linear-gradient(120deg,#0b513d")
   && posStockCountsVisualCss.includes("@media(max-width:620px)"),
   "React POS Stock Counts colorful visual dashboard/responsive treatment missing",
+);
+assert(
+  posStockCountsPage.includes('className="count-heading-copy"')
+  && posStockCountsPage.includes('className="count-workspace-kicker"')
+  && posStockCountsPage.includes('className="count-workspace-badges"')
+  && posStockCountsPage.includes('className="count-meta-label"')
+  && posStockCountsPage.includes('bi bi-bookmark-star')
+  && posStockCountsPage.includes('bi bi-calendar3')
+  && posStockCountsPage.includes('bi bi-person-check')
+  && posStockCountsPage.includes('bi bi-chat-left-text'),
+  "React POS Stock Counts new-count workspace must keep the modern heading, live badges, and semantic field icons",
 );
 assert(
   posStockCountsPage.includes('bi bi-clipboard2-data')

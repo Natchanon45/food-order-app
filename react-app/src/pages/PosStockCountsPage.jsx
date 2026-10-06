@@ -675,9 +675,25 @@ export function PosStockCountsPage() {
 
       <section className="panel count-panel">
         <div className="count-heading section-heading">
-          <div>
+          <div className="count-heading-copy">
+            <span className="count-workspace-kicker">
+              <i className="bi bi-stars" aria-hidden="true"></i>
+              <span>{tr("visual.kicker")}</span>
+            </span>
             <h1><i className="bi bi-clipboard-check pos-context-icon" data-icon-tone="lime" aria-hidden="true"></i><span>{tr("new.title")}</span></h1>
             <p>{tr("new.description")}</p>
+            <div className="count-workspace-badges">
+              <span>
+                <i className="bi bi-check2-circle" aria-hidden="true"></i>
+                <span>{tr("summary.counted_items")}</span>
+                <strong>{formatNumber(countVisual.counted)} / {formatNumber(countVisual.total)}</strong>
+              </span>
+              <span>
+                <i className="bi bi-arrow-left-right" aria-hidden="true"></i>
+                <span>{tr("visual.variance_items")}</span>
+                <strong>{formatNumber(countVisual.differences)}</strong>
+              </span>
+            </div>
           </div>
           <div className="count-actions-top">
             <button id="fillSystemBtn" className="btn btn-secondary" type="button"
@@ -694,23 +710,27 @@ export function PosStockCountsPage() {
         </div>
 
         <div className="count-meta">
-          <label>{tr("fields.name")}
+          <label className="count-meta-field count-meta-name">
+            <span className="count-meta-label"><i className="bi bi-bookmark-star" aria-hidden="true"></i>{tr("fields.name")}</span>
             <input id="countName" maxLength={120} value={countName}
               disabled={!canPerform || busy}
               onChange={event => setCountName(event.target.value)}
               placeholder={tr("fields.name_placeholder")} />
           </label>
-          <label>{tr("fields.date")}
+          <label className="count-meta-field count-meta-date">
+            <span className="count-meta-label"><i className="bi bi-calendar3" aria-hidden="true"></i>{tr("fields.date")}</span>
             <input id="countDate" type="date" value={countDate}
               disabled={!canPerform || busy}
               onChange={event => setCountDate(event.target.value)} />
           </label>
-          <label>{tr("fields.counted_by")}
+          <label className="count-meta-field count-meta-person">
+            <span className="count-meta-label"><i className="bi bi-person-check" aria-hidden="true"></i>{tr("fields.counted_by")}</span>
             <input id="countedBy" maxLength={100} value={countedBy}
               disabled={!canPerform || busy}
               onChange={event => setCountedBy(event.target.value)} />
           </label>
-          <label>{tr("fields.note")}
+          <label className="count-meta-field count-meta-note">
+            <span className="count-meta-label"><i className="bi bi-chat-left-text" aria-hidden="true"></i>{tr("fields.note")}</span>
             <input id="countNote" maxLength={200} value={countNote}
               disabled={!canPerform || busy}
               onChange={event => setCountNote(event.target.value)} />

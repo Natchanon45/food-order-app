@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.05.425",
+  build: "2026.10.06.426",
   branch: "feature/react-firebase-port",
-  commit: "POS-SCANNER-TOAST-DEDUP",
+  commit: "POS-STOCK-COUNT-WORKSPACE-REFRESH",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "React POS scanner toast de-duplication",
+  milestone: "POS Stock Count workspace refresh",
   whatsNew: [
-    "Show exactly one scanner Toast result per camera scan on canonical React /pos",
-    "Show scanner success only after the product is actually added to the sale cart",
-    "Ignore duplicate camera callbacks so one scan cannot add or notify twice",
+    "Refresh the New Stock Count workspace with a modern emerald control-card header",
+    "Add live counted/difference badges and semantic icons to the stock-count setup fields",
+    "Preserve stock-count permissions, calculations, scanner behavior, and confirm/write logic",
   ],
 });
