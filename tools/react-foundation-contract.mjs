@@ -1680,58 +1680,115 @@ assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/cust
 assert(firebaseHostingConfig.includes('"source": "/pos/customers"')&&firebaseHostingConfig.includes('"source": "/pos/customers/**"'),"Hosting must cache-bust canonical React POS Customers");
 
 
-const legacyPosBackupHtml=read("public/pos/backup/index.html");
-const legacyPosBackupVisualCss=read("public/assets/css/retail-pos-backup-visual-dashboard.css");
-const legacyPosBackupJs=read("public/assets/js/retail-pos-backup.js");
+/* POS Backup + Users canonical React cutover — 2026-10-07 */
+const posBackupPage=read("react-app/src/pages/PosBackupPage.jsx");
+const posUsersPage=read("react-app/src/pages/PosUsersPage.jsx");
+const retailPosSystemData=read("react-app/src/data/retailPosSystemData.js");
+const retailPosStaffData=read("react-app/src/data/retailPosStaffData.js");
+const retailPosStaffFunction=read("functions/retail-pos-staff.js");
+const posBackupVisualCss=read("react-app/public/parity/css/retail-pos-backup-visual-dashboard.css");
+const posUsersVisualCss=read("react-app/public/parity/css/retail-pos-users-visual-dashboard.css");
+const reactEntrypointSync=read("tools/sync-react-legacy-entrypoints.py");
+
 assert(
-  legacyPosBackupHtml.includes('class="pos-backup-visual-page"')
-  &&legacyPosBackupHtml.includes('retail-pos-backup-visual-dashboard.css?v=20261007-001')
-  &&legacyPosBackupHtml.includes('/assets/js/platform-branding-runtime.js?v=20261007-001')
-  &&legacyPosBackupHtml.includes('class="panel backup-panel backup-export-panel"')
-  &&legacyPosBackupHtml.includes('backup-restore-panel')
-  &&legacyPosBackupHtml.includes('backup-included-panel')
-  &&legacyPosBackupVisualCss.includes(".backup-export-panel")
-  &&legacyPosBackupVisualCss.includes(".backup-dropzone")
-  &&legacyPosBackupVisualCss.includes(".included-grid")
-  &&legacyPosBackupVisualCss.includes("grid-auto-flow:column")
-  &&legacyPosBackupVisualCss.includes("scrollbar-width:none")
-  &&legacyPosBackupVisualCss.includes("@media(max-width:700px)"),
-  "Legacy POS Backup must keep the approved modern responsive visual workspace without changing its action IDs"
-);
-for(const id of ["exportBackupBtn","backupDropzone","backupFile","restoreSummary","replaceConfirm","clearSelectedBtn","restoreBackupBtn"]) {
-  assert(legacyPosBackupHtml.includes(`id="${id}"`),`Legacy POS Backup action ID missing after visual refresh: ${id}`);
-}
-assert(
-  legacyPosBackupJs.includes("Promise.all(FIREBASE_EXPORTS.map")
-  &&legacyPosBackupJs.includes("return Object.fromEntries(entries)"),
-  "Legacy POS Backup stats/export collection reads must remain parallelized to avoid serial dashboard delay"
+  appRoutes.includes('import { PosBackupPage }')
+  &&appRoutes.includes('path="/pos/backup"')
+  &&appRoutes.includes('import { PosUsersPage }')
+  &&appRoutes.includes('path="/pos/users"'),
+  "POS Backup and Users React routes must remain mounted"
 );
 
-const legacyPosUsersHtml=read("public/pos/users/index.html");
-const legacyPosUsersVisualCss=read("public/assets/css/retail-pos-users-visual-dashboard.css");
-const legacyPosUsersJs=read("public/assets/js/retail-pos-users.js");
 assert(
-  legacyPosUsersHtml.includes('class="pos-users-visual-page"')
-  &&legacyPosUsersHtml.includes('retail-pos-users-visual-dashboard.css?v=20261007-001')
-  &&legacyPosUsersHtml.includes('/assets/js/platform-branding-runtime.js?v=20261007-001')
-  &&legacyPosUsersHtml.includes("users-role-list-panel")
-  &&legacyPosUsersHtml.includes("users-role-editor-panel")
-  &&legacyPosUsersHtml.includes("users-account-panel")
-  &&legacyPosUsersHtml.includes("users-editor-dialog")
-  &&legacyPosUsersVisualCss.includes(".permission-current-icon")
-  &&legacyPosUsersVisualCss.includes(".role-card-icon")
-  &&legacyPosUsersVisualCss.includes(".user-card-badges")
-  &&legacyPosUsersVisualCss.includes(".users-dialog-title h2>.pos-context-icon")
-  &&legacyPosUsersVisualCss.includes("min-width:0;max-width:100%;box-sizing:border-box")
-  &&legacyPosUsersVisualCss.includes("margin:16px -14px -14px")
-  &&legacyPosUsersVisualCss.includes("@media(max-width:620px)")
-  &&legacyPosUsersJs.includes("role-card")
-  &&legacyPosUsersJs.includes("user-account-card")
-  &&legacyPosUsersJs.includes('renderCurrent();renderRoles();renderUsers();openRole(roles[0]?.id||"");\nawait hydrateAccessData()')
-  &&legacyPosUsersJs.includes('data-role-id="')
-  &&legacyPosUsersJs.includes('data-user-id="'),
-  "Legacy POS Users must keep the approved modern responsive role/user workspace and stable edit selectors"
+  reactEntrypointSync.includes('"public/pos/backup/index.html"')
+  &&reactEntrypointSync.includes('"public/pos/users/index.html"')
+  &&firebaseHostingConfig.includes('"source": "/pos/backup"')
+  &&firebaseHostingConfig.includes('"source": "/pos/backup/**"')
+  &&firebaseHostingConfig.includes('"source": "/pos/users"')
+  &&firebaseHostingConfig.includes('"source": "/pos/users/**"'),
+  "Canonical POS Backup and Users routes must sync to the React shell with no-cache Hosting headers"
 );
-for(const id of ["newRoleBtn","roleForm","roleId","roleName","permissionCheckboxes","deleteRoleBtn","newUserBtn","userList","userDialog","userForm"]) {
-  assert(legacyPosUsersHtml.includes(`id="${id}"`),`Legacy POS Users action ID missing after visual refresh: ${id}`);
+
+for(const id of ["exportBackupBtn","backupStats","backupDropzone","backupFile","restoreSummary","replaceConfirm","clearSelectedBtn","restoreBackupBtn"]){
+  assert(posBackupPage.includes(`id="${id}"`),`React POS Backup action ID missing: ${id}`);
 }
+assert(
+  posBackupPage.includes('bodyClass:"pos-backup-page pos-backup-visual-page"')
+  &&posBackupPage.includes('"retail-pos-backup-visual-dashboard.css"')
+  &&posBackupPage.includes("exportRetailPosBackup")
+  &&posBackupPage.includes("restoreRetailPosBackup")
+  &&posBackupPage.includes('data-pos-supporting="backup"')
+  &&posBackupPage.includes("onDragOver")
+  &&posBackupPage.includes("onDrop")
+  &&posBackupPage.includes('["owner","super_admin"].includes(profile.role)')
+  &&retailPosSystemData.includes('httpsCallable(functions,"exportRetailPosBackup")')
+  &&retailPosSystemData.includes('httpsCallable(functions,"restoreRetailPosBackup")')
+  &&posBackupVisualCss.includes(".backup-export-panel")
+  &&posBackupVisualCss.includes(".backup-dropzone")
+  &&posBackupVisualCss.includes(".backup-included-panel")
+  &&posBackupVisualCss.includes("grid-auto-flow:column")
+  &&posBackupVisualCss.includes("@media(max-width:700px)")
+  &&posBackupPage.includes('tr("header.title"')
+  &&posBackupPage.includes('tr("export.title"')
+  &&posBackupPage.includes('tr("restore.title"')
+  &&posBackupPage.includes('tr("included.firebase_note"'),
+  "React POS Backup must preserve owner-gated Firebase backup/restore, five-language copy, drag-drop, and approved responsive visual parity"
+);
+for(const locale of ["th","en","my","lo","km"]){
+  const backup=dict[locale]?.pos_backup;
+  assert(
+    backup?.header?.title
+    &&backup?.export?.description
+    &&backup?.restore?.description
+    &&backup?.stats?.stock_movements
+    &&backup?.stats?.tax_invoices
+    &&backup?.stats?.held_bills
+    &&backup?.stats?.settings
+    &&backup?.included?.firebase_note
+    &&backup?.messages?.unsupported_file
+    &&backup?.messages?.summary_failed,
+    `React POS Backup Firebase-era translations missing: ${locale}`
+  );
+}
+
+for(const id of ["newRoleBtn","roleForm","roleId","roleName","permissionCheckboxes","deleteRoleBtn","newUserBtn","userList","userDialog","userForm"]){
+  assert(posUsersPage.includes(`id="${id}"`),`React POS Users action ID missing: ${id}`);
+}
+for(const permission of [
+  "pos.sale.checkout","pos.sales.export","pos.returns.create","pos.shifts.open",
+  "pos.products.create","pos.stock_counts.perform","pos.stock_movements.export",
+  "pos.purchases.create","pos.payables.pay","pos.suppliers.create",
+  "pos.customers.create","pos.settings.edit_store","pos.backup.restore","pos.users.manage_roles"
+]){
+  assert(posUsersPage.includes(permission),`React POS Users granular permission missing: ${permission}`);
+}
+assert(
+  posUsersPage.includes('bodyClass:"pos-users-page pos-users-visual-page"')
+  &&posUsersPage.includes('"retail-pos-users-visual-dashboard.css"')
+  &&posUsersPage.includes("listRetailPosStaff")
+  &&posUsersPage.includes("upsertRetailPosStaff")
+  &&posUsersPage.includes("const addRole=")
+  &&posUsersPage.includes("const deleteRole=async")
+  &&posUsersPage.includes("const toggleGroup=")
+  &&posUsersPage.includes('data-role-id={row.id}')
+  &&posUsersPage.includes('data-user-id={user.uid}')
+  &&posUsersPage.includes('type="password"')
+  &&posUsersPage.includes('value="both"')
+  &&posUsersPage.includes('["owner","super_admin"].includes(profile.role)')
+  &&retailPosStaffData.includes('collection(db,"tenants",tenantId,"memberships")')
+  &&retailPosStaffData.includes('httpsCallable(functions,"upsertRetailPosStaff")')
+  &&retailPosStaffFunction.includes('const BUSINESS_SCOPES = new Set(["retail_pos", "both"])')
+  &&retailPosStaffFunction.includes('businessScope === "both" ? ["order_delivery", POS_BUSINESS_UNIT]')
+  &&retailPosSystemData.includes('doc(db,"tenants",tenantId,"settings","roles")')
+  &&retailPosSystemData.includes("legacySnap")
+  &&posUsersVisualCss.includes(".permission-current-icon")
+  &&posUsersVisualCss.includes(".role-card-icon")
+  &&posUsersVisualCss.includes(".user-card-badges")
+  &&posUsersVisualCss.includes("@media(max-width:620px)"),
+  "React POS Users must preserve custom roles, granular permissions, group toggles, password updates, POS/both scope, legacy-role fallback, and approved visual parity"
+);
+
+assert(
+  !fs.existsSync(path.join(root,"public/assets/js/retail-pos-backup.js"))
+  &&!fs.existsSync(path.join(root,"public/assets/js/retail-pos-users.js")),
+  "Legacy POS Backup/Users page-logic JavaScript must stay removed after React canonical cutover"
+);

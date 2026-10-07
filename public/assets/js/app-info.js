@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.07.165',
+  build: '2026.10.07.166',
   branch: 'feature/react-firebase-port',
-  commit: 'THAI-ORDER-ALERT-SPEECH',
+  commit: 'POS-BACKUP-USERS-REACT-CUTOVER',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Natural Thai order alert speech',
-  updatedAt: '2026-10-07T12:48:08+0700',
+  milestone: 'Retail POS Backup and Users React cutover',
+  updatedAt: '2026-10-07T13:25:26+0700',
   whatsNew: [
-    'Replace spoken Delivery, Walk-in, Takeaway, and Table labels with natural Thai service wording',
-    'Announce Table orders as สั่งที่โต๊ะ without speaking a table number',
-    'Keep the existing Thai female voice, chime, amount calculation, and alert behavior unchanged'
+    'Cut over /pos/backup and /pos/users from legacy HTML/JavaScript to canonical React routes',
+    'Preserve custom roles, granular POS permissions, password updates, and five-language Backup/Users UI',
+    'Remove the legacy Backup and Users page-logic JavaScript while keeping stable URLs and responsive visuals'
   ]
 };
 

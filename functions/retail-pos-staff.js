@@ -4,6 +4,7 @@ const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
 const MANAGER_ROLES = new Set(["owner", "super_admin"]);
 const POS_BUSINESS_UNIT = "retail_pos";
+const BUSINESS_SCOPES = new Set(["retail_pos", "both"]);
 
 async function getCallerProfile(auth) {
   if (!auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
@@ -32,6 +33,11 @@ function normalizeRole(value = "") {
   if (!role || role === "owner") throw new HttpsError("invalid-argument", "Invalid POS role");
   return role;
 }
+function normalizeBusinessScope(value = "") {
+  const scope = clean(value || "retail_pos").toLowerCase();
+  if (!BUSINESS_SCOPES.has(scope)) throw new HttpsError("invalid-argument", "Invalid POS business scope");
+  return scope;
+}
 async function getUserByEmailOrNull(email) {
   try { return await getAuth().getUserByEmail(email); }
   catch (error) {
@@ -48,6 +54,7 @@ exports.upsertRetailPosStaff = onCall({ region: "asia-southeast1" }, async reque
   const password = String(request.data?.password || "");
   const role = normalizeRole(request.data?.roleId || request.data?.role);
   const active = request.data?.active !== false;
+  const businessScope = normalizeBusinessScope(request.data?.businessScope);
 
   if (!email || !displayName) throw new HttpsError("invalid-argument", "Name and email are required");
   if (password && password.length < 6) throw new HttpsError("invalid-argument", "Password must be at least 6 characters");
@@ -87,8 +94,9 @@ exports.upsertRetailPosStaff = onCall({ region: "asia-southeast1" }, async reque
     staffScope: "pos",
     source: "pos",
     userType: "retail_pos_staff",
-    businessUnit: POS_BUSINESS_UNIT,
-    businessUnits: [POS_BUSINESS_UNIT],
+    businessScope,
+    businessUnit: businessScope === "both" ? "all" : POS_BUSINESS_UNIT,
+    businessUnits: businessScope === "both" ? ["order_delivery", POS_BUSINESS_UNIT] : [POS_BUSINESS_UNIT],
     tenantId: tenant.id,
     tenantSlug: tenant.slug,
     tenantName: tenant.name,

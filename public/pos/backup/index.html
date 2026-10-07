@@ -1,28 +1,60 @@
 <!doctype html>
 <html lang="th">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#159447">
-<title>สำรองและกู้คืนข้อมูล POS</title>
-<link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260801-096">
-<link rel="stylesheet" href="/assets/css/retail-pos-backup.css?v=20260731-080">
-<link rel="stylesheet" href="/assets/css/retail-pos-navigation.css?v=20261004-106">
-<link rel="stylesheet" href="/assets/css/retail-pos-backup-visual-dashboard.css?v=20261007-001">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#159447" />
+  <title>PENGUIN</title>
+  <link rel="stylesheet" href="/assets/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1.13.1">
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/4.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <link rel="stylesheet" href="/react/parity/css/unified-table-icon.css">
+  <link rel="stylesheet" href="/react/parity/css/sweet-dialog.css">
+  <link rel="stylesheet" href="/react/parity/css/i18n.css">
+  <link rel="stylesheet" href="/react/parity/css/app.css">
+  <link rel="stylesheet" href="/react/parity/css/icons.css">
+  <link rel="stylesheet" href="/react/parity/css/shared-responsive.css">
+  <link rel="stylesheet" href="/react/parity/css/theme-checkbox.css">
+  <link rel="stylesheet" href="/react/parity/css/page-ready-state.css">
+  <link rel="stylesheet" href="/react/parity/css/ui-layer-stack.css" data-ui-layer-policy>
+  <link rel="stylesheet" href="/react/parity/css/toast-global-policy.css" data-toast-policy>
+  <script defer src="/assets/js/horizontal-scroll-restore.js?v=20261002-002"></script>
+  <script>
+    (() => {
+      const recoveryKey = "lukkhaja_react_entry_recovery";
+      window.__lukkhajaReactEntryLoaded = () => {
+        try { sessionStorage.removeItem(recoveryKey); } catch {}
+      };
+      window.addEventListener("error", event => {
+        const target = event.target;
+        if (!(target instanceof HTMLScriptElement) || target.type !== "module") return;
+        const src = String(target.src || "");
+        if (!src.includes("/react/assets/")) return;
+        try {
+          if (sessionStorage.getItem(recoveryKey) === "1") return;
+          sessionStorage.setItem(recoveryKey, "1");
+        } catch {}
+        const url = new URL(location.href);
+        url.searchParams.set("__react_reload", String(Date.now()));
+        location.replace(url.toString());
+      }, true);
+    })();
+  </script>
+  <script type="module" crossorigin src="/react/assets/index-COzhMO-y.js"></script>
+  <link rel="modulepreload" crossorigin href="/react/assets/rolldown-runtime-CbXtAM7H.js">
+  <link rel="modulepreload" crossorigin href="/react/assets/react-vendor-BcSqwNtZ.js">
+  <link rel="modulepreload" crossorigin href="/react/assets/firebase-C32K78-K.js">
 </head>
-<body class="pos-backup-visual-page">
-<header class="pos-header"><div class="app-title"><div><strong>สำรองและกู้คืนข้อมูล</strong><small>สินค้า ยอดขาย ใบซื้อ ผู้จำหน่าย กะ รูปสินค้า และการตั้งค่าร้าน</small></div></div><div class="header-actions"></div></header>
-<main class="backup-container">
-<section class="panel backup-panel backup-export-panel"><div class="backup-heading"><div><h1>สร้างไฟล์สำรอง</h1><p>บันทึกข้อมูล POS ของร้านจากฐานข้อมูลเป็นไฟล์ JSON หนึ่งไฟล์ พร้อมข้อมูลในเครื่องและรูปสินค้าที่จัดเก็บไว้</p></div><button id="exportBackupBtn" class="btn btn-pay" type="button">ดาวน์โหลดไฟล์สำรอง</button></div><div id="backupStats" class="backup-stats"></div><div id="exportProgress" class="backup-progress" hidden><span class="backup-spinner"></span><span>กำลังรวบรวมข้อมูลและรูปสินค้า...</span></div></section>
-<section class="panel backup-panel restore-panel backup-restore-panel"><div><h2>กู้คืนจากไฟล์สำรอง</h2><p>ลากไฟล์สำรองมาวาง หรือคลิกเพื่อเลือกไฟล์ ระบบจะตรวจสอบไฟล์ก่อนเขียนทับข้อมูลเดิม</p></div><label id="backupDropzone" class="backup-dropzone"><input id="backupFile" type="file" accept="application/json,.json"><div class="backup-dropzone-content"><div class="backup-upload-icon">⇧</div><strong>ลากไฟล์สำรองมาวางที่นี่</strong><span>หรือคลิกเพื่อเลือกไฟล์ .json</span><small id="backupFileName" hidden></small></div></label><div id="restoreSummary" class="restore-summary" hidden></div><label class="confirm-row" id="replaceConfirmRow" hidden><input id="replaceConfirm" type="checkbox"><span>ฉันเข้าใจว่าการกู้คืนจะเขียนทับข้อมูล POS ปัจจุบันในเครื่องนี้</span></label><p id="backupError" class="error-text"></p><div class="restore-actions"><button id="clearSelectedBtn" class="btn btn-secondary" type="button" hidden>ยกเลิกไฟล์ที่เลือก</button><button id="restoreBackupBtn" class="btn btn-pay" type="button" disabled>เริ่มกู้คืนข้อมูล</button></div><div id="restoreProgress" class="backup-progress" hidden><span class="backup-spinner"></span><span>กำลังกู้คืนข้อมูล...</span></div></section>
-<section class="panel backup-note backup-included-panel"><h2>ข้อมูลที่รวมอยู่ในไฟล์สำรอง</h2><div class="included-grid"><span>สินค้าและสต็อก</span><span>รูปสินค้า</span><span>ประวัติการขาย</span><span>ใบซื้อและรับสินค้า</span><span>ทะเบียนผู้จำหน่าย</span><span>ประวัติปรับสต็อก</span><span>บิลพัก</span><span>ข้อมูลกะทำงาน</span><span>ตั้งค่าร้านและใบเสร็จ</span><span>ผู้ใช้ บทบาท และสิทธิ์</span><span>รูปแบบการพิมพ์</span></div><p>ควรเก็บไฟล์สำรองไว้นอกเครื่อง POS เช่น Google Drive, Flash Drive หรือคอมพิวเตอร์อีกเครื่องหนึ่ง</p></section>
-</main>
-<div id="toast" class="toast" role="status"></div>
-<script type="module" src="/assets/js/platform-branding-runtime.js?v=20261007-001"></script>
-<script type="module" src="/assets/js/retail-toast-status.js?v=20260801-103"></script>
-<script type="module" src="/assets/js/retail-pos-backup.js?v=20260629-038"></script>
-<script type="module" src="/assets/js/retail-pos-navigation.js?v=20261004-105"></script>
-<script type="module" src="/assets/js/retail-system-permissions.js?v=20260707-016"></script>
-<script type="module" src="/assets/js/retail-pos-i18n-bootstrap.js?v=20261004-105" data-pos-i18n-generated="1"></script>
+<body>
+  <div id="root">
+    <div class="page-ready-overlay" id="pageReadyOverlay" role="status" aria-live="polite" aria-busy="true" aria-hidden="false">
+      <div class="page-ready-simple" aria-labelledby="pageReadyTitle">
+        <span class="page-ready-spinner" aria-hidden="true"></span>
+        <div class="page-ready-copy">
+          <h2 id="pageReadyTitle">กำลังโหลดข้อมูล...</h2>
+          <p>กรุณารอสักครู่....</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

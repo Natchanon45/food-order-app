@@ -2702,26 +2702,26 @@
       "meta_title": "สำรองและกู้คืนข้อมูล POS",
       "header": {
         "title": "สำรองและกู้คืนข้อมูล",
-        "subtitle": "สินค้า ยอดขาย ใบซื้อ ผู้จำหน่าย กะ รูปสินค้า และการตั้งค่าร้าน"
+        "subtitle": "สำรองข้อมูล Retail POS ของร้านจาก Firebase และกู้คืนอย่างปลอดภัย"
       },
       "export": {
         "title": "สร้างไฟล์สำรอง",
-        "description": "บันทึกข้อมูล POS ของร้านจากฐานข้อมูลเป็นไฟล์ JSON หนึ่งไฟล์ พร้อมข้อมูลในเครื่องและรูปสินค้าที่จัดเก็บไว้",
+        "description": "ดาวน์โหลดข้อมูล Retail POS ของร้านจาก Firestore เป็นไฟล์ JSON",
         "action": "ดาวน์โหลดไฟล์สำรอง",
-        "progress": "กำลังรวบรวมข้อมูลและรูปสินค้า..."
+        "progress": "กำลังรวบรวมข้อมูลจาก Firebase..."
       },
       "restore": {
         "title": "กู้คืนจากไฟล์สำรอง",
-        "description": "ลากไฟล์สำรองมาวาง หรือคลิกเพื่อเลือกไฟล์ ระบบจะตรวจสอบไฟล์ก่อนเขียนทับข้อมูลเดิม",
+        "description": "เลือกหรือลากไฟล์สำรอง JSON มาวาง ระบบจะตรวจสอบไฟล์ก่อนแทนที่ข้อมูล POS ของร้าน",
         "drop": "ลากไฟล์สำรองมาวางที่นี่",
         "choose": "หรือคลิกเพื่อเลือกไฟล์ .json",
-        "confirm": "ฉันเข้าใจว่าการกู้คืนจะเขียนทับข้อมูล POS ปัจจุบันในเครื่องนี้",
-        "clear": "ยกเลิกไฟล์ที่เลือก",
+        "confirm": "ฉันเข้าใจว่าการกู้คืนจะแทนที่ข้อมูล Retail POS ปัจจุบันของร้านนี้",
+        "clear": "ล้างไฟล์ที่เลือก",
         "action": "เริ่มกู้คืนข้อมูล",
-        "progress": "กำลังกู้คืนข้อมูล..."
+        "progress": "กำลังกู้คืนข้อมูลใน Firebase..."
       },
       "included": {
-        "title": "ข้อมูลที่รวมอยู่ในไฟล์สำรอง",
+        "title": "ข้อมูล Firestore ที่รวมในไฟล์สำรอง",
         "items": {
           "products": "สินค้าและสต็อก",
           "images": "รูปสินค้า",
@@ -2735,7 +2735,8 @@
           "users": "ผู้ใช้ บทบาท และสิทธิ์",
           "printing": "รูปแบบการพิมพ์"
         },
-        "note": "ควรเก็บไฟล์สำรองไว้นอกเครื่อง POS เช่น Google Drive, Flash Drive หรือคอมพิวเตอร์อีกเครื่องหนึ่ง"
+        "note": "ควรเก็บไฟล์สำรองไว้นอกเครื่อง POS เช่น Google Drive, Flash Drive หรือคอมพิวเตอร์อีกเครื่องหนึ่ง",
+        "firebase_note": "บัญชี Firebase Authentication และไฟล์รูปใน Storage จะไม่ถูกลบหรือสร้างใหม่จากการกู้คืนข้อมูล POS"
       },
       "stats": {
         "categories": "หมวดสินค้า",
@@ -2750,7 +2751,11 @@
         "images": "รูปสินค้า",
         "shifts": "กะ",
         "roles": "บทบาท",
-        "users": "ผู้ใช้งาน"
+        "users": "ผู้ใช้งาน",
+        "stock_movements": "ความเคลื่อนไหวสต็อก",
+        "tax_invoices": "ใบกำกับภาษี",
+        "held_bills": "บิลพัก",
+        "settings": "การตั้งค่า"
       },
       "summary": {
         "date": "วันที่สำรอง",
@@ -2776,7 +2781,9 @@
         "image_restore_timeout": "การกู้คืนรูปสินค้าใช้เวลานานเกินไป กรุณาลองใหม่",
         "restore_server_done": "กู้คืนข้อมูลฐานข้อมูลและข้อมูลในเครื่องเรียบร้อยแล้ว",
         "restore_browser_done": "กู้คืนข้อมูลในเครื่องเรียบร้อยแล้ว",
-        "restore_failed": "กู้คืนข้อมูลไม่สำเร็จ"
+        "restore_failed": "กู้คืนข้อมูลไม่สำเร็จ",
+        "unsupported_file": "ไฟล์สำรองนี้ไม่รองรับกับระบบ React/Firebase POS",
+        "summary_failed": "โหลดสรุปข้อมูลสำรองไม่สำเร็จ"
       }
     },
     "pos_catalog": {
@@ -8968,26 +8975,26 @@
       "meta_title": "POS Backup and Restore",
       "header": {
         "title": "Backup and restore",
-        "subtitle": "Products, sales, purchases, suppliers, shifts, product images, and store settings"
+        "subtitle": "Back up the store Retail POS data from Firebase and restore it safely."
       },
       "export": {
         "title": "Create a backup",
-        "description": "Save the store POS database, browser data, and stored product images in one JSON file.",
+        "description": "Download the store Retail POS data from Firestore as a JSON file.",
         "action": "Download backup",
-        "progress": "Collecting data and product images..."
+        "progress": "Collecting data from Firebase..."
       },
       "restore": {
         "title": "Restore from backup",
-        "description": "Drop a backup file here or click to choose one. The file will be validated before existing data is replaced.",
+        "description": "Choose or drop a JSON backup file. It will be validated before the store POS data is replaced.",
         "drop": "Drop a backup file here",
         "choose": "or click to choose a .json file",
-        "confirm": "I understand that restoring will replace the current POS data on this device.",
+        "confirm": "I understand that restoring will replace this store’s current Retail POS data.",
         "clear": "Clear selected file",
         "action": "Start restoring data",
-        "progress": "Restoring data..."
+        "progress": "Restoring data in Firebase..."
       },
       "included": {
-        "title": "Data included in the backup",
+        "title": "Firestore data included in the backup",
         "items": {
           "products": "Products and stock",
           "images": "Product images",
@@ -9001,7 +9008,8 @@
           "users": "Users, roles, and permissions",
           "printing": "Print formats"
         },
-        "note": "Keep backup files outside the POS device, such as on Google Drive, a flash drive, or another computer."
+        "note": "Keep backup files outside the POS device, such as on Google Drive, a flash drive, or another computer.",
+        "firebase_note": "Firebase Authentication accounts and image files in Storage are not deleted or recreated by POS restore."
       },
       "stats": {
         "categories": "Categories",
@@ -9016,7 +9024,11 @@
         "images": "Product images",
         "shifts": "Shifts",
         "roles": "Roles",
-        "users": "Users"
+        "users": "Users",
+        "stock_movements": "Stock movements",
+        "tax_invoices": "Tax invoices",
+        "held_bills": "Held bills",
+        "settings": "Settings"
       },
       "summary": {
         "date": "Backup date",
@@ -9042,7 +9054,9 @@
         "image_restore_timeout": "Restoring product images took too long. Try again.",
         "restore_server_done": "Database and device data restored successfully.",
         "restore_browser_done": "Device data restored successfully.",
-        "restore_failed": "Unable to restore data."
+        "restore_failed": "Unable to restore data.",
+        "unsupported_file": "This backup is not supported by the React/Firebase POS.",
+        "summary_failed": "Unable to load backup summary."
       }
     },
     "pos_catalog": {
@@ -14958,27 +14972,27 @@
     "pos_backup": {
       "meta_title": "POS Backup နှင့် Restore",
       "header": {
-        "title": "Backup နှင့် Restore",
-        "subtitle": "ကုန်ပစ္စည်း၊ အရောင်း၊ အဝယ်၊ ပေးသွင်းသူ၊ Shift၊ ကုန်ပစ္စည်းပုံနှင့် ဆိုင်ဆက်တင်များ"
+        "title": "အရန်သိမ်းခြင်းနှင့် ပြန်လည်ရယူခြင်း",
+        "subtitle": "Firebase မှ ဆိုင်၏ Retail POS ဒေတာကို အရန်သိမ်းပြီး လုံခြုံစွာ ပြန်လည်ရယူပါ။"
       },
       "export": {
-        "title": "Backup ဖန်တီးမည်",
-        "description": "ဆိုင် POS database၊ browser data နှင့် သိမ်းထားသော ကုန်ပစ္စည်းပုံများကို JSON ဖိုင်တစ်ခုတည်းတွင် သိမ်းပါ။",
-        "action": "Backup ဒေါင်းလုဒ်မည်",
-        "progress": "ဒေတာနှင့် ကုန်ပစ္စည်းပုံများ စုဆောင်းနေသည်..."
+        "title": "အရန်ဖိုင် ဖန်တီးရန်",
+        "description": "ဆိုင်၏ Retail POS ဒေတာကို Firestore မှ JSON ဖိုင်အဖြစ် ဒေါင်းလုဒ်လုပ်ပါ။",
+        "action": "အရန်ဖိုင် ဒေါင်းလုဒ်လုပ်ရန်",
+        "progress": "Firebase မှ ဒေတာ စုဆောင်းနေသည်..."
       },
       "restore": {
-        "title": "Backup မှ Restore ပြန်လုပ်မည်",
-        "description": "Backup ဖိုင်ကို ဤနေရာတွင် ချပါ သို့မဟုတ် ရွေးရန်နှိပ်ပါ။ လက်ရှိဒေတာကို အစားထိုးမီ ဖိုင်ကို စစ်ဆေးပါမည်။",
-        "drop": "Backup ဖိုင်ကို ဤနေရာတွင် ချပါ",
-        "choose": "သို့မဟုတ် .json ဖိုင်ရွေးရန် နှိပ်ပါ",
-        "confirm": "Restore လုပ်ခြင်းသည် ဤစက်ရှိ လက်ရှိ POS ဒေတာကို အစားထိုးမည်ကို နားလည်ပါသည်။",
-        "clear": "ရွေးထားသောဖိုင်ကို ရှင်းမည်",
-        "action": "ဒေတာ Restore စတင်မည်",
-        "progress": "ဒေတာ Restore လုပ်နေသည်..."
+        "title": "အရန်ဖိုင်မှ ပြန်လည်ရယူရန်",
+        "description": "JSON အရန်ဖိုင်ကို ရွေးပါ သို့မဟုတ် ဆွဲချပါ။ POS ဒေတာကို အစားထိုးမီ ဖိုင်ကို စစ်ဆေးပါမည်။",
+        "drop": "အရန်ဖိုင်ကို ဤနေရာသို့ ဆွဲချပါ",
+        "choose": "သို့မဟုတ် .json ဖိုင်ကို ရွေးရန် နှိပ်ပါ",
+        "confirm": "ပြန်လည်ရယူခြင်းသည် ဤဆိုင်၏ လက်ရှိ Retail POS ဒေတာကို အစားထိုးမည်ကို နားလည်ပါသည်။",
+        "clear": "ရွေးထားသောဖိုင်ကို ရှင်းရန်",
+        "action": "ပြန်လည်ရယူမှု စတင်ရန်",
+        "progress": "Firebase တွင် ဒေတာ ပြန်လည်ရယူနေသည်..."
       },
       "included": {
-        "title": "Backup တွင် ပါဝင်သောဒေတာ",
+        "title": "အရန်ဖိုင်တွင် ပါဝင်သော Firestore ဒေတာ",
         "items": {
           "products": "ကုန်ပစ္စည်းနှင့် စတော့",
           "images": "ကုန်ပစ္စည်းပုံများ",
@@ -14992,7 +15006,8 @@
           "users": "အသုံးပြုသူ၊ အခန်းကဏ္ဍနှင့် ခွင့်ပြုချက်များ",
           "printing": "ပရင့်ပုံစံများ"
         },
-        "note": "Backup ဖိုင်ကို POS စက်ပြင်ပတွင် သိမ်းပါ၊ ဥပမာ Google Drive၊ flash drive သို့မဟုတ် အခြားကွန်ပျူတာ။"
+        "note": "Backup ဖိုင်ကို POS စက်ပြင်ပတွင် သိမ်းပါ၊ ဥပမာ Google Drive၊ flash drive သို့မဟုတ် အခြားကွန်ပျူတာ။",
+        "firebase_note": "Firebase Authentication အကောင့်များနှင့် Storage ရှိ ရုပ်ပုံဖိုင်များကို POS ပြန်လည်ရယူမှုက ဖျက်ခြင်း သို့မဟုတ် အသစ်ဖန်တီးခြင်း မပြုပါ။"
       },
       "stats": {
         "categories": "အမျိုးအစားများ",
@@ -15007,7 +15022,11 @@
         "images": "ကုန်ပစ္စည်းပုံများ",
         "shifts": "Shift များ",
         "roles": "အခန်းကဏ္ဍများ",
-        "users": "အသုံးပြုသူများ"
+        "users": "အသုံးပြုသူများ",
+        "stock_movements": "စတော့လှုပ်ရှားမှု",
+        "tax_invoices": "အခွန်ပြေစာများ",
+        "held_bills": "ခေတ္တသိမ်းဘေလ်များ",
+        "settings": "ဆက်တင်များ"
       },
       "summary": {
         "date": "Backup ရက်စွဲ",
@@ -15033,7 +15052,9 @@
         "image_restore_timeout": "ကုန်ပစ္စည်းပုံ restore လုပ်ရာတွင် အချိန်ကြာလွန်းသည်။ ထပ်မံကြိုးစားပါ။",
         "restore_server_done": "Database နှင့် စက်ဒေတာ restore ပြီးပါပြီ။",
         "restore_browser_done": "စက်ဒေတာ restore ပြီးပါပြီ။",
-        "restore_failed": "ဒေတာ restore မလုပ်နိုင်ပါ။"
+        "restore_failed": "ဒေတာ restore မလုပ်နိုင်ပါ။",
+        "unsupported_file": "ဤအရန်ဖိုင်ကို React/Firebase POS တွင် မပံ့ပိုးပါ။",
+        "summary_failed": "အရန်အကျဉ်းချုပ်ကို မတင်နိုင်ပါ။"
       }
     },
     "pos_catalog": {
@@ -20949,27 +20970,27 @@
     "pos_backup": {
       "meta_title": "Backup ແລະ Restore POS",
       "header": {
-        "title": "Backup ແລະ Restore",
-        "subtitle": "ສິນຄ້າ, ການຂາຍ, ການຊື້, ຜູ້ສະໜອງ, ກະ, ຮູບສິນຄ້າ ແລະການຕັ້ງຄ່າຮ້ານ"
+        "title": "ສຳຮອງ ແລະ ກູ້ຄືນຂໍ້ມູນ",
+        "subtitle": "ສຳຮອງຂໍ້ມູນ Retail POS ຂອງຮ້ານຈາກ Firebase ແລະ ກູ້ຄືນຢ່າງປອດໄພ"
       },
       "export": {
-        "title": "ສ້າງ Backup",
-        "description": "ບັນທຶກ database POS ຂອງຮ້ານ, ຂໍ້ມູນ browser ແລະຮູບສິນຄ້າໄວ້ໃນໄຟລ໌ JSON ດຽວ.",
-        "action": "ດາວໂຫຼດ Backup",
-        "progress": "ກຳລັງລວບລວມຂໍ້ມູນ ແລະຮູບສິນຄ້າ..."
+        "title": "ສ້າງໄຟລ໌ສຳຮອງ",
+        "description": "ດາວໂຫຼດຂໍ້ມູນ Retail POS ຂອງຮ້ານຈາກ Firestore ເປັນໄຟລ໌ JSON",
+        "action": "ດາວໂຫຼດໄຟລ໌ສຳຮອງ",
+        "progress": "ກຳລັງລວບລວມຂໍ້ມູນຈາກ Firebase..."
       },
       "restore": {
-        "title": "Restore ຈາກ Backup",
-        "description": "ລາກໄຟລ໌ Backup ມາວາງ ຫຼືຄລິກເພື່ອເລືອກ. ລະບົບຈະກວດໄຟລ໌ກ່ອນແທນທີ່ຂໍ້ມູນເກົ່າ.",
-        "drop": "ວາງໄຟລ໌ Backup ທີ່ນີ້",
-        "choose": "ຫຼືຄລິກເພື່ອເລືອກໄຟລ໌ .json",
-        "confirm": "ຂ້ອຍເຂົ້າໃຈວ່າ Restore ຈະແທນທີ່ຂໍ້ມູນ POS ປັດຈຸບັນໃນອຸປະກອນນີ້.",
+        "title": "ກູ້ຄືນຈາກໄຟລ໌ສຳຮອງ",
+        "description": "ເລືອກ ຫຼື ລາກໄຟລ໌ JSON ມາວາງ ລະບົບຈະກວດສອບກ່ອນແທນທີ່ຂໍ້ມູນ POS ຂອງຮ້ານ",
+        "drop": "ລາກໄຟລ໌ສຳຮອງມາວາງທີ່ນີ້",
+        "choose": "ຫຼື ຄລິກເພື່ອເລືອກໄຟລ໌ .json",
+        "confirm": "ຂ້ອຍເຂົ້າໃຈວ່າການກູ້ຄືນຈະແທນທີ່ຂໍ້ມູນ Retail POS ປັດຈຸບັນຂອງຮ້ານນີ້",
         "clear": "ລ້າງໄຟລ໌ທີ່ເລືອກ",
-        "action": "ເລີ່ມ Restore ຂໍ້ມູນ",
-        "progress": "ກຳລັງ Restore ຂໍ້ມູນ..."
+        "action": "ເລີ່ມກູ້ຄືນຂໍ້ມູນ",
+        "progress": "ກຳລັງກູ້ຄືນຂໍ້ມູນໃນ Firebase..."
       },
       "included": {
-        "title": "ຂໍ້ມູນທີ່ຢູ່ໃນ Backup",
+        "title": "ຂໍ້ມູນ Firestore ທີ່ລວມໃນໄຟລ໌ສຳຮອງ",
         "items": {
           "products": "ສິນຄ້າ ແລະ stock",
           "images": "ຮູບສິນຄ້າ",
@@ -20983,7 +21004,8 @@
           "users": "ຜູ້ໃຊ້, ບົດບາດ ແລະສິດ",
           "printing": "ຮູບແບບການພິມ"
         },
-        "note": "ເກັບໄຟລ໌ Backup ໄວ້ນອກອຸປະກອນ POS ເຊັ່ນ Google Drive, flash drive ຫຼືຄອມພິວເຕີອື່ນ."
+        "note": "ເກັບໄຟລ໌ Backup ໄວ້ນອກອຸປະກອນ POS ເຊັ່ນ Google Drive, flash drive ຫຼືຄອມພິວເຕີອື່ນ.",
+        "firebase_note": "ບັນຊີ Firebase Authentication ແລະ ໄຟລ໌ຮູບໃນ Storage ຈະບໍ່ຖືກລຶບ ຫຼື ສ້າງໃໝ່ໂດຍການກູ້ຄືນ POS"
       },
       "stats": {
         "categories": "ໝວດໝູ່",
@@ -20998,7 +21020,11 @@
         "images": "ຮູບສິນຄ້າ",
         "shifts": "ກະ",
         "roles": "ບົດບາດ",
-        "users": "ຜູ້ໃຊ້"
+        "users": "ຜູ້ໃຊ້",
+        "stock_movements": "ການເຄື່ອນໄຫວສະຕັອກ",
+        "tax_invoices": "ໃບກຳກັບພາສີ",
+        "held_bills": "ບິນພັກ",
+        "settings": "ການຕັ້ງຄ່າ"
       },
       "summary": {
         "date": "ວັນທີ Backup",
@@ -21024,7 +21050,9 @@
         "image_restore_timeout": "Restore ຮູບສິນຄ້າໃຊ້ເວລາດົນເກີນໄປ. ລອງໃໝ່.",
         "restore_server_done": "Restore database ແລະຂໍ້ມູນອຸປະກອນສຳເລັດ.",
         "restore_browser_done": "Restore ຂໍ້ມູນອຸປະກອນສຳເລັດ.",
-        "restore_failed": "ບໍ່ສາມາດ Restore ຂໍ້ມູນໄດ້."
+        "restore_failed": "ບໍ່ສາມາດ Restore ຂໍ້ມູນໄດ້.",
+        "unsupported_file": "ໄຟລ໌ສຳຮອງນີ້ບໍ່ຮອງຮັບກັບ React/Firebase POS",
+        "summary_failed": "ບໍ່ສາມາດໂຫຼດສະຫຼຸບການສຳຮອງໄດ້"
       }
     },
     "pos_catalog": {
@@ -26940,27 +26968,27 @@
     "pos_backup": {
       "meta_title": "Backup និង Restore POS",
       "header": {
-        "title": "Backup និង Restore",
-        "subtitle": "ផលិតផល ការលក់ ការទិញ អ្នកផ្គត់ផ្គង់ វេន រូបផលិតផល និងការកំណត់ហាង"
+        "title": "បម្រុងទុក និងស្ដារទិន្នន័យ",
+        "subtitle": "បម្រុងទុកទិន្នន័យ Retail POS របស់ហាងពី Firebase ហើយស្ដារវិញដោយសុវត្ថិភាព"
       },
       "export": {
-        "title": "បង្កើត Backup",
-        "description": "រក្សាទុក database POS របស់ហាង ទិន្នន័យ browser និងរូបផលិតផលក្នុងឯកសារ JSON តែមួយ។",
-        "action": "ទាញយក Backup",
-        "progress": "កំពុងប្រមូលទិន្នន័យ និងរូបផលិតផល..."
+        "title": "បង្កើតឯកសារបម្រុងទុក",
+        "description": "ទាញយកទិន្នន័យ Retail POS របស់ហាងពី Firestore ជាឯកសារ JSON",
+        "action": "ទាញយកឯកសារបម្រុងទុក",
+        "progress": "កំពុងប្រមូលទិន្នន័យពី Firebase..."
       },
       "restore": {
-        "title": "Restore ពី Backup",
-        "description": "ទម្លាក់ឯកសារ Backup នៅទីនេះ ឬចុចដើម្បីជ្រើស។ ឯកសារនឹងត្រូវបានពិនិត្យមុនជំនួសទិន្នន័យបច្ចុប្បន្ន។",
-        "drop": "ទម្លាក់ឯកសារ Backup នៅទីនេះ",
-        "choose": "ឬចុចដើម្បីជ្រើសឯកសារ .json",
-        "confirm": "ខ្ញុំយល់ថា Restore នឹងជំនួសទិន្នន័យ POS បច្ចុប្បន្ននៅលើឧបករណ៍នេះ។",
+        "title": "ស្ដារពីឯកសារបម្រុងទុក",
+        "description": "ជ្រើស ឬ ទម្លាក់ឯកសារ JSON។ ប្រព័ន្ធនឹងផ្ទៀងផ្ទាត់មុនពេលជំនួសទិន្នន័យ POS របស់ហាង។",
+        "drop": "ទម្លាក់ឯកសារបម្រុងទុកនៅទីនេះ",
+        "choose": "ឬ ចុចដើម្បីជ្រើសឯកសារ .json",
+        "confirm": "ខ្ញុំយល់ថាការស្ដារនឹងជំនួសទិន្នន័យ Retail POS បច្ចុប្បន្នរបស់ហាងនេះ",
         "clear": "សម្អាតឯកសារដែលបានជ្រើស",
-        "action": "ចាប់ផ្តើម Restore ទិន្នន័យ",
-        "progress": "កំពុង Restore ទិន្នន័យ..."
+        "action": "ចាប់ផ្តើមស្ដារទិន្នន័យ",
+        "progress": "កំពុងស្ដារទិន្នន័យក្នុង Firebase..."
       },
       "included": {
-        "title": "ទិន្នន័យក្នុង Backup",
+        "title": "ទិន្នន័យ Firestore ដែលរួមក្នុងឯកសារបម្រុងទុក",
         "items": {
           "products": "ផលិតផល និង stock",
           "images": "រូបផលិតផល",
@@ -26974,7 +27002,8 @@
           "users": "អ្នកប្រើ តួនាទី និងសិទ្ធិ",
           "printing": "ទម្រង់បោះពុម្ព"
         },
-        "note": "រក្សាទុកឯកសារ Backup ក្រៅឧបករណ៍ POS ដូចជា Google Drive, flash drive ឬកុំព្យូទ័រផ្សេង។"
+        "note": "រក្សាទុកឯកសារ Backup ក្រៅឧបករណ៍ POS ដូចជា Google Drive, flash drive ឬកុំព្យូទ័រផ្សេង។",
+        "firebase_note": "គណនី Firebase Authentication និងឯកសាររូបភាពក្នុង Storage មិនត្រូវបានលុប ឬ បង្កើតឡើងវិញដោយការស្ដារ POS ទេ។"
       },
       "stats": {
         "categories": "ប្រភេទ",
@@ -26989,7 +27018,11 @@
         "images": "រូបផលិតផល",
         "shifts": "វេន",
         "roles": "តួនាទី",
-        "users": "អ្នកប្រើ"
+        "users": "អ្នកប្រើ",
+        "stock_movements": "ចលនាស្តុក",
+        "tax_invoices": "វិក្កយបត្រពន្ធ",
+        "held_bills": "វិក្កយបត្រផ្អាក",
+        "settings": "ការកំណត់"
       },
       "summary": {
         "date": "កាលបរិច្ឆេទ Backup",
@@ -27015,7 +27048,9 @@
         "image_restore_timeout": "ការ Restore រូបផលិតផលយូរពេក។ សូមព្យាយាមម្តងទៀត។",
         "restore_server_done": "Restore database និងទិន្នន័យឧបករណ៍ជោគជ័យ។",
         "restore_browser_done": "Restore ទិន្នន័យឧបករណ៍ជោគជ័យ។",
-        "restore_failed": "មិនអាច Restore ទិន្នន័យបានទេ។"
+        "restore_failed": "មិនអាច Restore ទិន្នន័យបានទេ។",
+        "unsupported_file": "ឯកសារបម្រុងទុកនេះមិនគាំទ្រដោយ React/Firebase POS ទេ។",
+        "summary_failed": "មិនអាចផ្ទុកសេចក្ដីសង្ខេបការបម្រុងទុកបានទេ។"
       }
     },
     "pos_catalog": {

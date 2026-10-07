@@ -10381,3 +10381,82 @@ Production deploy + verification:
 - Downloaded Production bundle contains all required speech markers: `มีรายการสั่งซื้อใหม่`, `จัดส่งเดลิเวอรี่`, `สั่งที่หน้าร้าน`, `สั่งกลับบ้าน`, and `สั่งที่โต๊ะ`.
 - No Firestore Rules, Storage Rules, Cloud Functions, or schema deployment occurred.
 - No merge to `main`.
+
+---
+
+## 2026-10-07 — Retail POS Backup + Users canonical React cutover
+
+User request:
+- Proceed with the planned cutover of `/pos/backup` and `/pos/users` from the remaining legacy HTML/JavaScript implementations to their existing React routes.
+- Preserve functionality first, then remove the page-specific legacy HTML/JavaScript implementation safely.
+
+Discovery / root cause:
+- `PosBackupPage.jsx` and `PosUsersPage.jsx` already existed and were mounted in React Router, but the canonical Firebase Hosting paths still served physical legacy `public/pos/backup/index.html` and `public/pos/users/index.html` files.
+- `tools/sync-react-legacy-entrypoints.py` did not include those two paths, so React postbuild never replaced them with the React shell.
+- Production source checks before the cutover confirmed `/pos/backup` still loaded `retail-pos-backup.js` and `/pos/users` still loaded `retail-pos-users.js`.
+- The dormant React pages were not fully parity-ready:
+  - Backup had an unexercised missing React hook import and depended on Backup callables that were not deployed in Production.
+  - Users used generic staff callables with fixed roles, so custom POS roles/password updates and legacy granular role actions would regress if cut over directly.
+
+Implementation:
+- Added canonical React shell sync targets for `public/pos/backup/index.html` and `public/pos/users/index.html`.
+- Added no-cache Hosting headers for `/pos/backup`, `/pos/backup/**`, `/pos/users`, and `/pos/users/**`.
+- Removed page-specific legacy logic files:
+  - `public/assets/js/retail-pos-backup.js`
+  - `public/assets/js/retail-pos-users.js`
+- Preserved the previously approved visual treatment by copying the route visual CSS into the React parity CSS tree and loading it from the React pages.
+
+React Backup:
+- Fixed the dormant hook import and retained owner/super_admin access gating.
+- Uses `exportRetailPosBackup` / `restoreRetailPosBackup` Firebase callables.
+- Added read-only backup summary loading, drag/drop JSON selection, stable legacy action IDs, and the approved responsive Backup visual workspace.
+- Updated Backup copy to use the existing TH/EN/MY/LO/KM catalog with Firebase-era wording that accurately states Firestore is backed up while Firebase Authentication accounts and Storage images are not deleted/recreated during restore.
+- Old pre-React backup files remain intentionally rejected rather than being silently restored into an unverifiable tenant; the React/Firebase format is `app: retail-pos-react`, version `1`.
+
+React Users:
+- Added `react-app/src/data/retailPosStaffData.js` to read POS staff from the tenant memberships collection and use the existing `upsertRetailPosStaff` callable.
+- Restored parity capabilities before cutover:
+  - custom role creation/deletion;
+  - role name editing;
+  - menu permissions;
+  - granular action permissions;
+  - select/clear all per permission group;
+  - POS user add/edit;
+  - optional password change for existing users;
+  - active/suspended state;
+  - Retail POS / both-systems scope.
+- `loadPosRoleSettings()` now falls back from `settings/pos-roles` to legacy `settings/roles` so existing custom roles/permissions carry forward on first React use.
+- Updated `upsertRetailPosStaff` source to accept `businessScope: retail_pos|both` while preserving `source: pos`, `staffScope: pos`, and compatible business-unit markers.
+- Reused the approved Users role/user visual workspace and stable IDs/selectors.
+
+Regression protection:
+- Replaced legacy Backup/Users foundation assertions with canonical React cutover assertions.
+- Guards now require React routes, canonical entrypoint sync, Hosting cache headers, Backup/Users stable action IDs, visual parity, custom/granular role capabilities, password support, legacy-role fallback, five-language Backup copy, and removal of both page-specific legacy JavaScript files.
+- Added `/pos/backup` to required React migration coverage.
+
+Candidate verification before Functions deploy:
+- Authenticated Chrome Owner profile successfully loads the local React candidate shell for both canonical paths against Production data.
+- `/pos/users` candidate: 5 real roles, 3 real POS users, 19 permission groups, Add Role/Add User controls present, no horizontal overflow, no Firestore writes.
+- `/pos/backup` candidate React UI loads with no legacy script and no overflow, but Production returned CORS for `exportRetailPosBackup`, confirming the Backup callables had never been deployed; this dependency must be deployed before Hosting cutover.
+- A platform Super Admin profile without tenant context correctly redirects away from tenant POS pages; no authorization bypass was attempted.
+
+Verification:
+- `node --check functions/retail-pos-staff.js` PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- React foundation/migration/callable/tenant-access/UI-layer contracts PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for React Build `2026.10.07.451` / `/react/assets/index-COzhMO-y.js`.
+- Postbuild sync explicitly reports both `public/pos/backup/index.html` and `public/pos/users/index.html` synced to the React shell.
+- `git diff --check` PASS.
+
+Release candidate:
+- React `0.4.280` / Build `2026.10.07.451`.
+- Public `0.16.32` / Build `2026.10.07.166`.
+
+Deploy state:
+- Implementation commit/push pending.
+- Required Functions deploy pending: `exportRetailPosBackup`, `restoreRetailPosBackup`, `upsertRetailPosStaff`.
+- Firebase Hosting deploy pending.
+- No Firestore Rules, Storage Rules, or schema change required.
+- No merge to `main`.

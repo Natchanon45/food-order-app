@@ -47,6 +47,7 @@ for (const required of [
   "/admin",
   "/platform",
   "/pos",
+  "/pos/backup",
   "/pos/products",
   "/pos/catalog",
   "/pos/customer-display",

@@ -10,11 +10,16 @@ const DEFAULT_POS_ROLES = Object.freeze([
   { id: "kitchen", name: "ครัว", permissions: [], locked: true },
 ]);
 const roleRef=tenantId=>doc(db,"tenants",tenantId,"settings","pos-roles");
+const legacyRoleRef=tenantId=>doc(db,"tenants",tenantId,"settings","roles");
 
 export async function loadPosRoleSettings(tenantId){
   const snap=await getDoc(roleRef(tenantId));
-  const roles=Array.isArray(snap.data()?.roles)?snap.data().roles:[];
-  return roles.length?roles.map(r=>({...r,id:String(r.id),name:String(r.name||r.id),permissions:Array.isArray(r.permissions)?r.permissions:[]})):DEFAULT_POS_ROLES.map(r=>({...r,permissions:[...r.permissions]}));
+  let roles=Array.isArray(snap.data()?.roles)?snap.data().roles:[];
+  if(!roles.length){
+    const legacySnap=await getDoc(legacyRoleRef(tenantId));
+    roles=Array.isArray(legacySnap.data()?.roles)?legacySnap.data().roles:[];
+  }
+  return roles.length?roles.map(r=>({...r,id:String(r.id),name:String(r.name||r.id),permissions:Array.isArray(r.permissions)?r.permissions:[],locked:r.locked===true})):DEFAULT_POS_ROLES.map(r=>({...r,permissions:[...r.permissions]}));
 }
 export async function savePosRoleSettings(tenantId,roles=[]){
   const normalized=roles.map(r=>({id:String(r.id),name:String(r.name||r.id),permissions:[...new Set(r.permissions||[])],locked:r.locked===true}));
