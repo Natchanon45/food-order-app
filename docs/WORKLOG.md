@@ -10232,3 +10232,17 @@ Deploy state:
 - Firebase Hosting-only deploy pending.
 - No Firestore Rules, Storage Rules, Cloud Functions, or schema change required.
 - No merge to `main`.
+
+Production deploy + verification:
+- Implementation commit: `2c15c8b8` — `fix: restore two-column table order cards`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production React bundle is `/react/assets/index-rJHzZwPo.js` for React Build `2026.10.07.448` / Public Build `2026.10.07.163`.
+- Production Table 12 verification:
+  - Desktop 1600x900: exactly 2 columns (`307px 307px`), compact `307x112` cards, 88x88 images, one-line `120.00 บาท`, overflow `0`.
+  - Mobile 390x844: exactly 1 column (`366px`), compact `366x106` card, 82x82 image, one-line price, overflow `0`.
+  - `table-order-modern.css` is not loaded in Production.
+  - Adding one real menu item locally created one cart row and enabled `ยืนยันการสั่ง`; submit was intentionally not clicked.
+- Firestore write attempts `0`; page errors `0`; console errors `0`; HTTP errors `0`.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Cloud Functions, or schema deployment occurred.
+- No merge to `main`.
