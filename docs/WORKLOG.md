@@ -9684,3 +9684,29 @@ Production deploy + verification:
 - Raw `shared.action.ok` / `shared.actions.ok` text is absent from the visible dialog.
 - Production verification: Firestore writes = 0; page errors = 0.
 - Hosting only; no Rules/Functions/Storage deployment and no merge to `main`.
+
+
+---
+
+## 2026-10-07 — POS Backup visual workspace refresh
+
+User request:
+- Modernize `/pos/backup` so it matches the newer colorful Retail POS management screens.
+- Preserve all existing backup/export/restore behavior.
+
+Change:
+- Added a dedicated visual layer `retail-pos-backup-visual-dashboard.css`.
+- Converted the existing export section into a dark emerald/teal hero surface while retaining the same `#exportBackupBtn` action and progress/stat containers.
+- Refined the restore surface with a green/cyan/violet accent border, modern drag/drop area, selected-file chip, structured restore summary cards, warning confirmation treatment, and responsive action bar.
+- Reworked the included-data list into semantic soft-color cards and added a compact storage reminder surface.
+- Added desktop/tablet/mobile responsive treatment without changing any existing IDs or JavaScript event bindings.
+
+Behavior boundary:
+- No backup JSON schema, collection list, browser/local data export, product-image export/import, tenant validation, restore confirmation, Firebase write path, permissions, navigation, or business logic changed.
+- Canonical route remains the existing legacy implementation for this visual-only phase.
+
+Verification/deploy state:
+- Source-only visual change prepared on branch `feature/react-firebase-port`.
+- `docs/WORKLOG.md` updated before moving to `/pos/users`.
+- Full Mac test/build/browser verification and Hosting deploy will run after both requested visual refreshes are complete.
+- No merge to `main`.
