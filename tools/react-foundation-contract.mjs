@@ -1544,3 +1544,46 @@ for(const locale of ["th","en","my","lo","km"]){const visual=dict[locale]?.pos_c
 assert(posData.includes("export function watchPosCustomers")&&posData.includes("export async function listPosLoyaltyLedger")&&posData.includes("export function watchPosLoyaltyLedger")&&posData.includes('tenantCollection(tenantId, "loyaltyLedger")'),"POS Customers realtime customer/loyalty mapping missing");
 assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/customers/index.html"'),"React postbuild must sync canonical /pos/customers to the React shell");
 assert(firebaseHostingConfig.includes('"source": "/pos/customers"')&&firebaseHostingConfig.includes('"source": "/pos/customers/**"'),"Hosting must cache-bust canonical React POS Customers");
+
+
+const legacyPosBackupHtml=read("public/pos/backup/index.html");
+const legacyPosBackupVisualCss=read("public/assets/css/retail-pos-backup-visual-dashboard.css");
+assert(
+  legacyPosBackupHtml.includes('class="pos-backup-visual-page"')
+  &&legacyPosBackupHtml.includes('retail-pos-backup-visual-dashboard.css?v=20261007-001')
+  &&legacyPosBackupHtml.includes('class="panel backup-panel backup-export-panel"')
+  &&legacyPosBackupHtml.includes('backup-restore-panel')
+  &&legacyPosBackupHtml.includes('backup-included-panel')
+  &&legacyPosBackupVisualCss.includes(".backup-export-panel")
+  &&legacyPosBackupVisualCss.includes(".backup-dropzone")
+  &&legacyPosBackupVisualCss.includes(".included-grid")
+  &&legacyPosBackupVisualCss.includes("@media(max-width:700px)"),
+  "Legacy POS Backup must keep the approved modern responsive visual workspace without changing its action IDs"
+);
+for(const id of ["exportBackupBtn","backupDropzone","backupFile","restoreSummary","replaceConfirm","clearSelectedBtn","restoreBackupBtn"]) {
+  assert(legacyPosBackupHtml.includes(`id="${id}"`),`Legacy POS Backup action ID missing after visual refresh: ${id}`);
+}
+
+const legacyPosUsersHtml=read("public/pos/users/index.html");
+const legacyPosUsersVisualCss=read("public/assets/css/retail-pos-users-visual-dashboard.css");
+const legacyPosUsersJs=read("public/assets/js/retail-pos-users.js");
+assert(
+  legacyPosUsersHtml.includes('class="pos-users-visual-page"')
+  &&legacyPosUsersHtml.includes('retail-pos-users-visual-dashboard.css?v=20261007-001')
+  &&legacyPosUsersHtml.includes("users-role-list-panel")
+  &&legacyPosUsersHtml.includes("users-role-editor-panel")
+  &&legacyPosUsersHtml.includes("users-account-panel")
+  &&legacyPosUsersHtml.includes("users-editor-dialog")
+  &&legacyPosUsersVisualCss.includes(".permission-current-icon")
+  &&legacyPosUsersVisualCss.includes(".role-card-icon")
+  &&legacyPosUsersVisualCss.includes(".user-card-badges")
+  &&legacyPosUsersVisualCss.includes("@media(max-width:620px)")
+  &&legacyPosUsersJs.includes("role-card")
+  &&legacyPosUsersJs.includes("user-account-card")
+  &&legacyPosUsersJs.includes('data-role-id="')
+  &&legacyPosUsersJs.includes('data-user-id="'),
+  "Legacy POS Users must keep the approved modern responsive role/user workspace and stable edit selectors"
+);
+for(const id of ["newRoleBtn","roleForm","roleId","roleName","permissionCheckboxes","deleteRoleBtn","newUserBtn","userList","userDialog","userForm"]) {
+  assert(legacyPosUsersHtml.includes(`id="${id}"`),`Legacy POS Users action ID missing after visual refresh: ${id}`);
+}

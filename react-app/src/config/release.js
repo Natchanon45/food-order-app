@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.07.440",
+  build: "2026.10.07.441",
   branch: "feature/react-firebase-port",
-  commit: "POS-CUSTOMERS-DIALOG-OK-I18N-FIX",
+  commit: "POS-FINAL-LEGACY-VISUAL-REFRESH",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "POS Customers dialog OK translation repair",
+  milestone: "POS Backup and Users visual refresh",
   whatsNew: [
-    "Fix the Customer cannot-delete alert so the OK button uses the localized shared.actions.ok label",
-    "Apply the same localized OK key correction to Customer delete-error and Supplier delete alerts",
-    "Add regression guards preventing the obsolete shared.action.ok key from returning raw text",
+    "Modernize the POS Backup workspace with a responsive emerald/teal recovery dashboard",
+    "Modernize the POS Users and permissions workspace with role, permission, and staff visual hierarchy",
+    "Preserve all existing legacy Backup/User actions and Firebase behavior while refreshing presentation",
   ],
 });

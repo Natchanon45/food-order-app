@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.07.155',
+  build: '2026.10.07.156',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-CUSTOMERS-DIALOG-OK-I18N-FIX',
+  commit: 'POS-FINAL-LEGACY-VISUAL-REFRESH',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'POS Customers dialog OK translation repair',
-  updatedAt: '2026-10-07T07:47:00+0700',
+  milestone: 'POS Backup and Users visual refresh',
+  updatedAt: '2026-10-07T08:08:00+0700',
   whatsNew: [
-    'Fix the Customer cannot-delete alert so the OK button uses the localized shared.actions.ok label',
-    'Apply the same localized OK key correction to Customer delete-error and Supplier delete alerts',
-    'Add regression guards preventing the obsolete shared.action.ok key from returning raw text'
+    'Modernize the POS Backup workspace with a responsive emerald/teal recovery dashboard',
+    'Modernize the POS Users and permissions workspace with role, permission, and staff visual hierarchy',
+    'Preserve all existing legacy Backup/User actions and Firebase behavior while refreshing presentation'
   ]
 };
 
