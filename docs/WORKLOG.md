@@ -11366,5 +11366,17 @@ Release candidate:
 - bundle `/react/assets/index-DPioHuf3.js`
 
 Deploy state:
-- Commit/push and Firebase Hosting-only deploy pending at this checkpoint.
+- Implementation commit `a589a1e8` — `fix: restore delivery address and action parity` pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production bundle is `/react/assets/index-DPioHuf3.js`.
+- Production targeted Delivery audit passed with a guest saved-address + mock-GPS scenario:
+  - nearest saved address auto-selected within the Laravel 100-meter rule
+  - live Lalamove quote became ready at about 0.10 km
+  - PromptPay actions render exactly `ดาวน์โหลด` / `แก้ไข`
+  - visible Delivery button icon clipping count = 0
+  - payment-slip remove button is icon-only 42x42
+  - logout layout is icon-only 30x30 on the same row as customer name
+  - no page errors or relevant HTTP errors.
+- Production P0 browser smoke: **52/52 PASS**.
+- Deployment scope was Hosting only.
 - No Functions, Firestore Rules, Storage Rules, schema changes, or merge to `main`.
