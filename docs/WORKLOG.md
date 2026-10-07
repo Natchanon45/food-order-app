@@ -10997,7 +10997,22 @@ Release candidate:
 - Marker: `FULL-REACT-SYSTEM-CUTOVER`.
 - Final candidate bundle: `/react/assets/index-Dclizvbl.js`.
 
-Deploy state:
-- Hosting deploy pending.
-- No Cloud Functions, Firestore Rules, Storage Rules, or schema change required.
+Production deploy + verification:
+- Implementation/docs commit `872a04ab` — `feat: complete full React system cutover` pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production release: React `0.4.280` / Build `2026.10.07.457`; Public `0.16.32` / Build `2026.10.07.172`.
+- Production bundle: `/react/assets/index-Dclizvbl.js`.
+- Live Production verification:
+  - Home, Takeaway, Delivery, Privacy, Terms, Verify, Queue, and POS Login all loaded the same React bundle.
+  - Takeaway loaded 10 real menu cards.
+  - Delivery loaded 10 real menu cards, Google Map, and live Lalamove quote at ~10.30 km / 77 THB.
+  - legacy `/takeaway` stored-tenant route redirected to `/s/saas-test-shop/takeaway`.
+  - `/pos/login` redirected to React `/login?next=/pos/`.
+  - removed `/assets/js/delivery.js` returned HTTP 404 as expected.
+  - legacy page-script requests = 0.
+  - blocked Firestore writes = 0.
+  - horizontal overflow = 0.
+  - page errors = 0; console errors = 0; related HTTP errors = 0.
+  - `app-info.js` exposes Public Build `2026.10.07.172` and marker `FULL-REACT-SYSTEM-CUTOVER`.
+- No Cloud Functions, Firestore Rules, Storage Rules, or schema deployment was required.
 - No merge to `main`.
