@@ -11562,3 +11562,66 @@ Deploy state:
   - no page errors or relevant HTTP errors.
 - Deployment scope was Hosting only.
 - No Functions, Firestore Rules, Storage Rules, schema changes, or merge to `main`.
+
+
+---
+
+## 2026-10-07 — Global visible-button icon/spacing policy + Delivery Success repair (Build 2026.10.07.465)
+
+Request:
+- Make button styling a permanent project rule because text-only/too-tight buttons kept reappearing.
+- Required policy:
+  - every user-visible action button/button-like link has an icon,
+  - icon has visible spacing before the label,
+  - buttons/action groups keep spacing from adjacent actions and surrounding sections.
+- Apply the rule to the supplied Delivery/Delivery Success screenshots.
+
+Test-first evidence:
+- Extended `tests/react-parity/delivery-success-parity.spec.mjs` before changing runtime code.
+- Initial test against Production Build 2026.10.07.464 failed because `#orderAgainLink` had no `i.app-icon`.
+- Production DOM audit also found:
+  - `#orderAgainLink`, `#saveImageButton`, and `#verifyLatestLink` were text-only,
+  - Brand -> `สั่งเพิ่ม` spacing was exactly 0px,
+  - existing toolbar button gap was 8px,
+  - tracking -> toolbar spacing was 16px.
+
+Permanent project rule:
+- Added the rule to `README.md`, `STRUCTURE.md`, and `docs/PARITY_VERIFICATION_PLAN.md`.
+- Standard minimums:
+  - icon -> label: >= 7px,
+  - adjacent actions: >= 8px,
+  - action group -> section before/after: >= 12px.
+- Text action buttons are not allowed.
+- Intentional icon-only controls still require a visible icon and accessible label.
+- Branded sign-in controls may use their branded image as the icon.
+- `tools/react-foundation-contract.mjs` now guards the documented policy and Delivery Success action icon/spacing contract.
+
+Implementation:
+- Delivery Success `สั่งเพิ่ม`: `bi-plus-circle app-icon` + label span.
+- `ดาวน์โหลดใบสั่งซื้อ`: `bi-download app-icon` + label span.
+- `ดูยอดล่าสุด`: `bi-eye app-icon` + label span.
+- Conditional `ติดตามคนขับ`: `bi-truck app-icon` + label span.
+- Delivery Success header gap set to 12px and locale remains pushed to the far right.
+- Receipt toolbar gap increased to 12px and bottom separation to 16px.
+- Shared `icons.css` continues to provide the canonical 7px icon/text gap.
+
+Verification before deploy:
+- Delivery Success parity suite: **5/5 PASS** on Hosting emulator.
+- Existing Delivery checkout parity suite: **4/4 PASS**.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- Generated build contract PASS for Build `2026.10.07.465` / `/react/assets/index-DAOfBKzq.js`.
+- `git diff --check` PASS.
+- Candidate measured geometry:
+  - `สั่งเพิ่ม`: icon gap 7px, icon fully inside button,
+  - `ดาวน์โหลดใบสั่งซื้อ`: icon gap 7px, icon fully inside button,
+  - `ดูยอดล่าสุด`: icon gap 7px, icon fully inside button,
+  - Brand -> `สั่งเพิ่ม`: 12px,
+  - `สั่งเพิ่ม` -> locale: > 8px,
+  - toolbar button gap: 12px,
+  - tracking -> toolbar: 16px,
+  - toolbar bottom spacing: 16px.
+- No Functions, Firestore Rules, Storage Rules, or schema changes.
+
+Deploy state:
+- Commit/push and Hosting-only deploy pending at this checkpoint.

@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.07.464",
+  build: "2026.10.07.465",
   branch: "feature/react-firebase-port",
-  commit: "DELIVERY-SUCCESS-PARITY",
+  commit: "GLOBAL-BUTTON-UI-POLICY",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Delivery success parity",
+  milestone: "Global button icon and spacing policy",
   whatsNew: [
-    "Restore Delivery Success tracking, header, toolbar, and receipt structure from Laravel MASTER",
-    "Match Laravel receipt item/date/shop-field behavior and live order status presentation",
-    "Restore PNG order-evidence download behavior instead of opening the print dialog",
+    "Enforce semantic icons on visible action buttons and button-like links",
+    "Standardize icon-to-label, adjacent-action, and section-spacing minimums",
+    "Apply the policy to Delivery Success header, receipt toolbar, and driver tracking action",
   ],
 });

@@ -395,6 +395,10 @@ const fullReactAppRoutes=read("react-app/src/app/App.jsx");
 const deliveryPage=read("react-app/src/pages/DeliveryPage.jsx");
 const takeawayPage=read("react-app/src/pages/TakeawayPage.jsx");
 const deliverySuccessPage=read("react-app/src/pages/DeliverySuccessPage.jsx");
+const deliverySuccessTrackingCss=read("react-app/public/parity/css/delivery-success-tracking.css");
+const readmeRules=read("README.md");
+const structureRules=read("STRUCTURE.md");
+const parityVerificationPlan=read("docs/PARITY_VERIFICATION_PLAN.md");
 const verifyPage=read("react-app/src/pages/VerifyPage.jsx");
 const legalPage=read("react-app/src/pages/LegalPage.jsx");
 const customerDeliveryData=read("react-app/src/data/customerDeliveryData.js");
@@ -702,6 +706,30 @@ assert(
   &&deliverySuccessPage.includes("loadHtml2Canvas")
   &&deliverySuccessPage.includes("delivery-order-"),
   "Delivery, Takeaway, and Delivery Success canonical storefronts must be native React routes"
+);
+assert(
+  readmeRules.includes("Global button UI rule")
+  &&readmeRules.includes("at least **7px** icon-to-label gap")
+  &&readmeRules.includes("at least **8px** between adjacent buttons/actions")
+  &&readmeRules.includes("at least **12px** separation")
+  &&structureRules.includes("Global button contract")
+  &&parityVerificationPlan.includes("every user-visible button or button-like link has a semantic icon"),
+  "Global visible-button icon and spacing policy must stay documented"
+);
+assert(
+  deliverySuccessPage.includes('id="orderAgainLink"')
+  &&deliverySuccessPage.includes('bi bi-plus-circle app-icon')
+  &&deliverySuccessPage.includes('id="saveImageButton"')
+  &&deliverySuccessPage.includes('bi bi-download app-icon')
+  &&deliverySuccessPage.includes('id="verifyLatestLink"')
+  &&deliverySuccessPage.includes('bi bi-eye app-icon')
+  &&deliverySuccessPage.includes('id="customerLalamoveTrackLink"')
+  &&deliverySuccessPage.includes('bi bi-truck app-icon')
+  &&deliverySuccessTrackingCss.includes(".delivery-success-page .app-header {")
+  &&deliverySuccessTrackingCss.includes("gap: 12px;")
+  &&deliverySuccessTrackingCss.includes(".delivery-success-page .receipt-toolbar {")
+  &&deliverySuccessTrackingCss.includes("margin-bottom: 16px;"),
+  "Delivery Success visible actions must retain semantic icons and perimeter spacing"
 );
 assert(
   deliveryPage.includes('extraCategory="__favorites__"')

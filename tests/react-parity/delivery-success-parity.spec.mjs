@@ -78,6 +78,59 @@ test.describe("Delivery Success Laravel parity", () => {
     await expect(page.locator("#receiptItems .receipt-item-line")).not.toHaveCount(0);
   });
 
+  test("visible action buttons follow the global icon and spacing policy", async ({ page }) => {
+    await openSuccess(page);
+
+    for (const selector of ["#orderAgainLink", "#saveImageButton", "#verifyLatestLink"]) {
+      const button = page.locator(selector);
+      await expect(button.locator(":scope > i.app-icon")).toHaveCount(1);
+      await expect(button.locator(":scope > span")).toHaveCount(1);
+
+      const metrics = await button.evaluate(element => {
+        const style = getComputedStyle(element);
+        const icon = element.querySelector(":scope > i.app-icon");
+        const label = element.querySelector(":scope > span");
+        const iconRect = icon?.getBoundingClientRect();
+        const labelRect = label?.getBoundingClientRect();
+        return {
+          display: style.display,
+          gap: Number.parseFloat(style.gap || "0") || 0,
+          visualGap: iconRect && labelRect ? labelRect.left - iconRect.right : 0,
+        };
+      });
+
+      expect(["inline-flex", "flex"]).toContain(metrics.display);
+      expect(metrics.gap).toBeGreaterThanOrEqual(7);
+      expect(metrics.visualGap).toBeGreaterThanOrEqual(7);
+    }
+
+    const spacing = await page.evaluate(() => {
+      const rect = selector => document.querySelector(selector)?.getBoundingClientRect();
+      const brand = rect(".app-header .brand");
+      const orderAgain = rect("#orderAgainLink");
+      const locale = rect(".app-header .app-locale-switcher");
+      const tracking = rect("#deliveryTrackingCard");
+      const toolbar = rect(".receipt-toolbar");
+      const save = rect("#saveImageButton");
+      const verify = rect("#verifyLatestLink");
+      const toolbarStyle = getComputedStyle(document.querySelector(".receipt-toolbar"));
+
+      return {
+        brandToOrderAgain: brand && orderAgain ? orderAgain.left - brand.right : 0,
+        orderAgainToLocale: orderAgain && locale ? locale.left - orderAgain.right : 0,
+        toolbarButtonGap: save && verify ? verify.left - save.right : 0,
+        trackingToToolbar: tracking && toolbar ? toolbar.top - tracking.bottom : 0,
+        toolbarBottomMargin: Number.parseFloat(toolbarStyle.marginBottom || "0") || 0,
+      };
+    });
+
+    expect(spacing.brandToOrderAgain).toBeGreaterThanOrEqual(8);
+    expect(spacing.orderAgainToLocale).toBeGreaterThanOrEqual(8);
+    expect(spacing.toolbarButtonGap).toBeGreaterThanOrEqual(8);
+    expect(spacing.trackingToToolbar).toBeGreaterThanOrEqual(12);
+    expect(spacing.toolbarBottomMargin).toBeGreaterThanOrEqual(12);
+  });
+
   test("downloads the order evidence as PNG like Laravel", async ({ page }) => {
     await openSuccess(page);
 

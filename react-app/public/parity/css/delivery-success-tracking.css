@@ -84,6 +84,21 @@
 }
 .delivery-tracking-updated { color: #738078; font-size: .78rem; }
 #customerLalamoveTrackLink[hidden] { display: none !important; }
+
+.delivery-success-page .app-header {
+  gap: 12px;
+}
+.delivery-success-page .app-header > .app-locale-switcher {
+  margin-left: auto;
+}
+.delivery-success-page .receipt-toolbar {
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.delivery-success-page :is(#orderAgainLink, #saveImageButton, #verifyLatestLink, #customerLalamoveTrackLink) {
+  white-space: nowrap;
+}
+
 @media (max-width: 640px) {
   .delivery-tracking-card { margin: 0 12px 14px; padding: 14px; }
   .delivery-tracking-head { align-items: center; }

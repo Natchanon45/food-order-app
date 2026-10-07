@@ -231,7 +231,7 @@ export function DeliverySuccessPage() {
   return <>
     <PublicStorefrontHeader
       title={t("delivery.success.header.title")}
-      action={<Link className="btn btn-sm" id="orderAgainLink" to={slug ? "/s/" + encodeURIComponent(slug) + "/delivery" : "/"}>{t("delivery.success.header.order_again")}</Link>}
+      action={<Link className="btn btn-sm" id="orderAgainLink" to={slug ? "/s/" + encodeURIComponent(slug) + "/delivery" : "/"}><i className="bi bi-plus-circle app-icon" aria-hidden="true"></i><span>{t("delivery.success.header.order_again")}</span></Link>}
     />
 
     <main className="receipt-page">
@@ -272,17 +272,17 @@ export function DeliverySuccessPage() {
             rel="noopener"
             hidden={!showTrackLink}
           >
-            {t("delivery.success.tracking.track_driver")}
+            <i className="bi bi-truck app-icon" aria-hidden="true"></i><span>{t("delivery.success.tracking.track_driver")}</span>
           </a>
         </div>
       </section>
 
       <div className="receipt-toolbar">
         <button className="btn btn-primary" id="saveImageButton" type="button" disabled={!order || downloading} onClick={download}>
-          {t(downloading ? "delivery.success.actions.creating_image" : "delivery.success.actions.download")}
+          <i className="bi bi-download app-icon" aria-hidden="true"></i><span>{t(downloading ? "delivery.success.actions.creating_image" : "delivery.success.actions.download")}</span>
         </button>
         <a className="btn" id="verifyLatestLink" href={verifyUrl || "#"} target="_blank" rel="noopener">
-          {t("delivery.success.actions.verify_latest")}
+          <i className="bi bi-eye app-icon" aria-hidden="true"></i><span>{t("delivery.success.actions.verify_latest")}</span>
         </a>
       </div>
 
