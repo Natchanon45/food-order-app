@@ -10312,3 +10312,60 @@ Production deploy + verification:
 - Firestore write attempts `0`; page errors `0`; console errors `0`; HTTP errors `0`; horizontal overflow `0`.
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Cloud Functions, or schema deployment occurred.
 - No merge to `main`.
+
+---
+
+## 2026-10-07 — Natural Thai spoken order-alert service labels
+
+User request:
+- Change only the spoken/TTS wording used for new-order alerts so it sounds natural and uses the agreed Thai service wording.
+- Keep visible UI labels and order-channel business logic unchanged.
+- Required spoken service labels:
+  - Delivery -> `จัดส่งเดลิเวอรี่`
+  - Walk-in -> `สั่งที่หน้าร้าน`
+  - Takeaway -> `สั่งกลับบ้าน`
+  - Table/Order -> `สั่งที่โต๊ะ`, without speaking any table number.
+
+Root cause / current behavior:
+- `react-app/src/components/orderAlertAudio.js` mapped order channels to transliterated labels: `เดลิเวอรี่`, `เทคอะเวย์`, `วอล์กอิน`, and fallback `ออเดอร์`.
+- The surrounding sentence was `มียอดสั่งซื้อใหม่ ...`, which was understandable but less natural than the requested Thai phrasing.
+- TTS itself already used Thai female voice selection, `th-TH`, rate `0.96`, pitch `1.03`, and the existing four-note chime; those audio characteristics did not need changing.
+
+Change:
+- `orderAlertChannelLabel()` now speaks only the agreed service wording:
+  - `delivery` -> `จัดส่งเดลิเวอรี่`
+  - `takeaway` / `take_away` -> `สั่งกลับบ้าน`
+  - `walkin` / `walk-in` / `walking` -> `สั่งที่หน้าร้าน`
+  - table/order and all remaining dine-in-compatible fallback types -> `สั่งที่โต๊ะ`.
+- Changed the complete sentence to `มีรายการสั่งซื้อใหม่ {service} ยอด {amount} บาท` for more natural Thai cadence.
+- Table announcements do not reference `tableCode` or `tableName`, so no table number can be spoken.
+- Kept amount calculation, chime, Thai female voice preference, speech rate/pitch/volume, alert queueing, default-on behavior, and visible Cashier/Kitchen UI unchanged.
+- Updated the React foundation regression guard to require all four Thai service labels, reject the previous transliterated labels, and reject table-code/table-name dependencies in the speech module.
+- Prepared React `0.4.280` / Build `2026.10.07.450`; Public `0.16.32` / Build `2026.10.07.165`.
+
+Important files:
+- `react-app/src/components/orderAlertAudio.js`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `README.md`
+
+Verification before deploy:
+- `npm run test:react-foundation` PASS.
+- Direct helper verification PASS:
+  - delivery 120 -> `มีรายการสั่งซื้อใหม่ จัดส่งเดลิเวอรี่ ยอด 120 บาท`
+  - walkin 85 -> `มีรายการสั่งซื้อใหม่ สั่งที่หน้าร้าน ยอด 85 บาท`
+  - takeaway 60 -> `มีรายการสั่งซื้อใหม่ สั่งกลับบ้าน ยอด 60 บาท`
+  - table 150 with `tableCode: 12` -> `มีรายการสั่งซื้อใหม่ สั่งที่โต๊ะ ยอด 150 บาท`
+  - dine_in 90 with a table code -> `มีรายการสั่งซื้อใหม่ สั่งที่โต๊ะ ยอด 90 บาท`.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.07.450` / `/react/assets/index-C9gHut3K.js`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Implementation commit/push pending.
+- Firebase Hosting-only deploy pending.
+- No Firestore Rules, Storage Rules, Cloud Functions, or schema change required.
+- No merge to `main`.

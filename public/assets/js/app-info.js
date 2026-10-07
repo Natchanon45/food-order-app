@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.07.164',
+  build: '2026.10.07.165',
   branch: 'feature/react-firebase-port',
-  commit: 'TABLE-ORDER-MOBILE-CATEGORY-SCROLLSPY',
+  commit: 'THAI-ORDER-ALERT-SPEECH',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Table Order mobile category scroll-spy',
-  updatedAt: '2026-10-07T12:37:00+0700',
+  milestone: 'Natural Thai order alert speech',
+  updatedAt: '2026-10-07T12:48:08+0700',
   whatsNew: [
-    'Restore mobile category highlighting while scrolling through the All menu list',
-    'Auto-center the active category tab as the visible menu category changes',
-    'Keep the original two-column desktop menu layout and ordering behavior unchanged'
+    'Replace spoken Delivery, Walk-in, Takeaway, and Table labels with natural Thai service wording',
+    'Announce Table orders as สั่งที่โต๊ะ without speaking a table number',
+    'Keep the existing Thai female voice, chime, amount calculation, and alert behavior unchanged'
   ]
 };
 

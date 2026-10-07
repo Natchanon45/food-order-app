@@ -11,10 +11,10 @@ const delay = ms => new Promise(resolve => window.setTimeout(resolve, ms));
 
 export function orderAlertChannelLabel(order = {}) {
   const type = String(order?.orderType || order?.channel || "").trim().toLowerCase();
-  if (type === "delivery") return "เดลิเวอรี่";
-  if (type === "takeaway" || type === "take_away") return "เทคอะเวย์";
-  if (type === "walkin" || type === "walk-in" || type === "walking") return "วอล์กอิน";
-  return "ออเดอร์";
+  if (type === "delivery") return "จัดส่งเดลิเวอรี่";
+  if (type === "takeaway" || type === "take_away") return "สั่งกลับบ้าน";
+  if (type === "walkin" || type === "walk-in" || type === "walking") return "สั่งที่หน้าร้าน";
+  return "สั่งที่โต๊ะ";
 }
 
 export function orderAlertAmount(order = {}) {
@@ -42,7 +42,7 @@ export function orderAlertSpeechText(order = {}) {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   });
-  return `มียอดสั่งซื้อใหม่ ${orderAlertChannelLabel(order)} ${amount} บาท`;
+  return `มีรายการสั่งซื้อใหม่ ${orderAlertChannelLabel(order)} ยอด ${amount} บาท`;
 }
 
 export function chooseThaiFemaleVoice(voices = []) {

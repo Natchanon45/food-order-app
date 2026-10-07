@@ -1559,11 +1559,18 @@ assert(
   "Cashier/Kitchen order alerts must default on, include Walk-in, unlock from staff interaction, and queue spoken alerts",
 );
 assert(
-  orderAlertAudio.includes("มียอดสั่งซื้อใหม่")
-  &&orderAlertAudio.includes('return "เดลิเวอรี่"')
-  &&orderAlertAudio.includes('return "เทคอะเวย์"')
-  &&orderAlertAudio.includes('return "วอล์กอิน"')
-  &&orderAlertAudio.includes('return "ออเดอร์"')
+  orderAlertAudio.includes("มีรายการสั่งซื้อใหม่")
+  &&orderAlertAudio.includes('return "จัดส่งเดลิเวอรี่"')
+  &&orderAlertAudio.includes('return "สั่งกลับบ้าน"')
+  &&orderAlertAudio.includes('return "สั่งที่หน้าร้าน"')
+  &&orderAlertAudio.includes('return "สั่งที่โต๊ะ"')
+  &&orderAlertAudio.includes("ยอด ${amount} บาท")
+  &&!orderAlertAudio.includes("tableCode")
+  &&!orderAlertAudio.includes("tableName")
+  &&!orderAlertAudio.includes('return "เดลิเวอรี่"')
+  &&!orderAlertAudio.includes('return "เทคอะเวย์"')
+  &&!orderAlertAudio.includes('return "วอล์กอิน"')
+  &&!orderAlertAudio.includes('return "ออเดอร์"')
   &&orderAlertAudio.includes("659.25")
   &&orderAlertAudio.includes("783.99")
   &&orderAlertAudio.includes("987.77")
@@ -1571,7 +1578,7 @@ assert(
   &&orderAlertAudio.includes("premwadee")
   &&orderAlertAudio.includes("utterance.rate = 0.96")
   &&orderAlertAudio.includes('utterance.lang = voice?.lang || "th-TH"'),
-  "Order alert audio must keep the Waiting Queue-style melody plus natural Thai female speech with channel and amount",
+  "Order alert audio must use natural Thai service wording, omit table numbers, and keep the Thai female speech/chime contract",
 );
 const quickOrderPage=read("react-app/src/pages/QuickOrderPage.jsx");
 assert(quickOrderPage.includes('data-category="__best__"')&&quickOrderPage.includes("BEST_SELLER_LIMIT = 12"),"Quick Order best-seller category parity missing");
