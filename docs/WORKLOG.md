@@ -1,6 +1,6 @@
 # Development Worklog
 
-Updated: 2026-10-05
+Updated: 2026-10-07
 
 This file is the chronological engineering worklog for the React + Firebase migration.
 
@@ -9834,4 +9834,17 @@ Deploy state:
 - Commit/push pending.
 - Firebase Hosting-only deploy pending.
 - No Firestore Rules, Storage Rules, Functions, or schema deployment.
+- No merge to `main`.
+
+Production deploy + verification:
+- Implementation commit: `9ed0e810` — `fix: restore POS legacy favicons`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production source for both `/pos/backup/` and `/pos/users/` includes `/assets/js/platform-branding-runtime.js?v=20261007-001`.
+- Read-only headless Google Chrome verification blocked Backup/User/navigation/permission/i18n business scripts and allowed only the branding path needed for this check.
+- `/pos/backup/`: `#platformDynamicFavicon` resolved to the configured Firebase Storage favicon and `#platformAppleTouchIcon` resolved to the configured App Icon; page errors = 0.
+- `/pos/users/`: `#platformDynamicFavicon` resolved to the same configured Firebase Storage favicon and `#platformAppleTouchIcon` resolved to the configured App Icon; page errors = 0.
+- No business data-changing action was executed during favicon verification.
+- Production React bundle is `/react/assets/index-DrCSsy0G.js`.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or schema migration.
 - No merge to `main`.
