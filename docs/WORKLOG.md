@@ -9906,3 +9906,15 @@ Deploy state:
 - Firebase Hosting-only deploy pending.
 - No Firestore Rules, Storage Rules, or Cloud Functions change/deploy is required.
 - No merge to `main`.
+
+Production deploy + verification:
+- Implementation commit: `9119df55` — `feat: add super admin request badges`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production React bundle is `/react/assets/index-Du0JwFNz.js` for React Build `2026.10.07.443` / Public Build `2026.10.07.158`.
+- Production HTTP checks: `/platform` = 200, `/admin/tenants` = 200, bundle = 200.
+- The deployed `/platform` shell references `/react/assets/index-Du0JwFNz.js`.
+- Downloaded Production bundle contains the required notification contracts: `Asia/Bangkok`, `platform-nav-notification-badge`, `tenant-admin-notification-panel`, and wallet notification load handling.
+- The notification feature uses existing callable Functions and read paths only; no Firestore Rules, Storage Rules, Cloud Functions, or schema deployment occurred.
+- The copied authenticated browser profile available to automation remains an `owner`, so protected Super Admin visual acceptance still cannot be truthfully claimed. The new Production bundle itself loaded without candidate page/request/HTTP errors before deploy, and role enforcement correctly redirected the owner away from Super Admin routes.
+- No merge to `main`.
