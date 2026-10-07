@@ -10119,3 +10119,56 @@ Production deploy + verification:
 - Firestore write attempts = `0`; page errors = `0`; console errors = `0`; HTTP errors = `0`; horizontal overflow = `0`.
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Cloud Functions, or schema deployment occurred.
 - No merge to `main`.
+
+---
+
+## 2026-10-07 — Table Order modern storefront redesign
+
+User feedback:
+- After repairing permanent table QR ordering, the real `/s/{slug}/order` screen was functional but visually poor.
+- The reported 1600px desktop screenshot showed cramped three-column menu cards inside a narrow content area: product names/prices wrapped vertically, the menu side felt compressed, the cart column consumed too much of the available workspace, and large unused page margins made the layout feel unbalanced.
+
+Root cause / layout finding:
+- React `PublicMenuCatalog` rendered `<div class="grid grid-3">` without the historical `#menuGrid` contract.
+- Existing responsive CSS in `pos-refresh.css` already targeted `.delivery-pos #menuGrid` for the intended menu grid behavior, so those rules never applied to the React component.
+- The shared `.container` remained capped at 1120px, which further compressed three menu columns next to the cart sidebar.
+- Older card rules also retained `align-items:start` / `align-self:start`, causing the text/footer and `+` button positioning to shrink instead of using the available card width.
+
+Change:
+- Restored `id="menuGrid"` and added `public-menu-grid` on the shared React catalog grid.
+- Added a page-scoped `table-order-modern.css` loaded only by `PublicOrderPage` so Delivery/POS/Admin layouts are not globally redesigned.
+- Desktop storefront now uses up to 1440px, with a balanced `main menu + 370px cart` layout.
+- Desktop menu cards use a modern image-led 3-column layout with 16:10 imagery, two-line product names, category pills, one-line prices, and a squared-rounded green add button aligned to the card edge.
+- Tablet uses inset spacing and two menu columns; Mobile uses one compact horizontal menu card per row with a 102px image and right-aligned add button.
+- Reworked category controls into pill tabs, refined the search surface, cart panel, previous-round card, pagination, and fixed checkout bar.
+- Preserved table-session validation, menu data, image crop positions, category filtering, search, pagination behavior, cart math, item notes, order notes, previous rounds, and order submission logic.
+- Added React foundation guards for `#menuGrid`, the page-scoped visual layer, desktop 1440px workspace, 3-column card layout, image ratio, and mobile one-column reflow.
+- Prepared React `0.4.280` / Build `2026.10.07.447`; Public `0.16.32` / Build `2026.10.07.162`.
+
+Important files:
+- `react-app/src/components/PublicStorefront.jsx`
+- `react-app/src/pages/PublicOrderPage.jsx`
+- `react-app/public/parity/css/table-order-modern.css`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `README.md`
+
+Verification before deploy:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.07.447` / `/react/assets/index-DVcQAL6x.js`.
+- `git diff --check` PASS.
+- Read-only candidate overlay against Production Firestore for active Table 12:
+  - Desktop 1600x900: container `1440px`; menu area `1044px`; cart `370px`; 3 columns around `337px`; first image `335x210`; name area `303px`; price area `245px`; add button at the right edge; overflow `0`.
+  - Tablet 1024x768: container `992px` with 16px inset; menu 2 columns around `308px`; overflow `0`.
+  - Mobile 390x844: single-column 370px cards; 102px image; price stays on one line; add button right-aligned; overflow `0`.
+  - Adding a real menu item changed the cart total to `120.00 บาท` and enabled `ยืนยันการสั่ง`; submit was intentionally not clicked.
+  - Firestore write attempts `0`; page errors `0`; console errors `0`; HTTP errors `0`.
+
+Deploy state:
+- Implementation commit/push pending.
+- Firebase Hosting-only deploy pending.
+- No Firestore Rules, Storage Rules, Cloud Functions, or schema change required.
+- No merge to `main`.

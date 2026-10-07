@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.07.446",
+  build: "2026.10.07.447",
   branch: "feature/react-firebase-port",
-  commit: "TABLE-PERMANENT-QR-SESSION-RESOLVER",
+  commit: "TABLE-ORDER-MODERN-STOREFRONT",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Permanent table QR session resolver",
+  milestone: "Table Order modern storefront",
   whatsNew: [
-    "Restore permanent table QR ordering after a cashier opens the table",
-    "Resolve tokenless table links to the current occupied table session automatically",
-    "Keep unavailable tables blocked while preserving tokenized session validation",
+    "Redesign Table Order with a wider balanced desktop workspace and premium menu cards",
+    "Restore the intended menuGrid contract so menu cards no longer collapse into unreadable narrow columns",
+    "Improve menu filters, cart panel, sticky checkout, and responsive tablet/mobile layouts",
   ],
 });

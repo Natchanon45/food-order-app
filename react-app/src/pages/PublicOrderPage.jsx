@@ -28,7 +28,7 @@ export function PublicOrderPage() {
       "app.css", "menu-qr.css", "customer-rounds.css", "menu-pagination.css", "icons.css",
       "pos-refresh.css", "table-order-sticky-lite.css", "sweet-dialog.css",
       "order-delivery-workspace-theme.css", "public-menu-image-frame.css", "i18n.css",
-      "shared-responsive.css", "toast-system.css", "ui-layer-stack.css",
+      "shared-responsive.css", "toast-system.css", "ui-layer-stack.css", "table-order-modern.css",
     ],
   });
   const params = useMemo(() => new URLSearchParams(location.search), []);

@@ -113,7 +113,7 @@ export function PublicMenuCatalog({
           placeholder={t(prefix + ".search_placeholder")}
           onChange={event => { setSearch(event.target.value); setPage(1); }} />
       </div>
-      <div className="grid grid-3">
+      <div id="menuGrid" className="grid grid-3 public-menu-grid">
         {visible.length ? visible.map(item => (
           <article className="card menu-card" key={item.id}>
             <div className="menu-image">

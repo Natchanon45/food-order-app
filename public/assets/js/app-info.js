@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.07.161',
+  build: '2026.10.07.162',
   branch: 'feature/react-firebase-port',
-  commit: 'TABLE-PERMANENT-QR-SESSION-RESOLVER',
+  commit: 'TABLE-ORDER-MODERN-STOREFRONT',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Permanent table QR session resolver',
-  updatedAt: '2026-10-07T12:04:00+0700',
+  milestone: 'Table Order modern storefront',
+  updatedAt: '2026-10-07T12:14:00+0700',
   whatsNew: [
-    'Restore permanent table QR ordering after a cashier opens the table',
-    'Resolve tokenless table links to the current occupied table session automatically',
-    'Keep unavailable tables blocked while preserving tokenized session validation'
+    'Redesign Table Order with a wider balanced desktop workspace and premium menu cards',
+    'Restore the intended menuGrid contract so menu cards no longer collapse into unreadable narrow columns',
+    'Improve menu filters, cart panel, sticky checkout, and responsive tablet/mobile layouts'
   ]
 };
 
