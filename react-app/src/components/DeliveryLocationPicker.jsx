@@ -47,10 +47,10 @@ export function DeliveryLocationPicker({
   const [locating, setLocating] = useState(false);
   const normalized = validLocation(value);
 
-  const apply = useCallback((location, { pan = true } = {}) => {
+  const apply = useCallback((location, { pan = true, source = "map" } = {}) => {
     const next = validLocation(location);
     if (!next) return;
-    onChange?.(next);
+    onChange?.(next, { source });
     const map = mapRef.current;
     const marker = markerRef.current;
     const position = { lat: next.latitude, lng: next.longitude };
@@ -83,11 +83,11 @@ export function DeliveryLocationPicker({
       if (!normalized) marker.setMap(null);
       marker.addListener("dragend", () => {
         const point = marker.getPosition();
-        if (point) apply({ latitude: point.lat(), longitude: point.lng() }, { pan: false });
+        if (point) apply({ latitude: point.lat(), longitude: point.lng() }, { pan: false, source: "map" });
       });
       map.addListener("click", event => {
         if (disabled || !event.latLng) return;
-        apply({ latitude: event.latLng.lat(), longitude: event.latLng.lng() });
+        apply({ latitude: event.latLng.lat(), longitude: event.latLng.lng() }, { source: "map" });
       });
       mapRef.current = map;
       markerRef.current = marker;
@@ -116,7 +116,7 @@ export function DeliveryLocationPicker({
     setLocating(true);
     navigator.geolocation.getCurrentPosition(position => {
       const next = { latitude: position.coords.latitude, longitude: position.coords.longitude };
-      apply(next);
+      apply(next, { source: "current-location" });
       setMapState("ready");
       setLocating(false);
     }, error => {

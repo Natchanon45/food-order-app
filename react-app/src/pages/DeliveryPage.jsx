@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { httpsCallable } from "firebase/functions";
 import { sweetConfirm } from "@/components/sweetDialog";
@@ -23,9 +23,43 @@ import { qrDataUrl } from "@/utils/localQr";
 
 const computeDeliveryRoute = httpsCallable(functions, "computeDeliveryRoute");
 const quotePublicLalamoveDelivery = httpsCallable(functions, "quotePublicLalamoveDelivery");
+const NEARBY_SAVED_ADDRESS_METERS = 100;
 
 function normalizePhone(value) {
   return String(value || "").replace(/\D/g, "");
+}
+function normalizeLocation(value = {}) {
+  const latitude = Number(value?.latitude);
+  const longitude = Number(value?.longitude);
+  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) return null;
+  if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) return null;
+  return { latitude, longitude };
+}
+function radians(degrees) {
+  return degrees * Math.PI / 180;
+}
+function distanceMeters(fromValue, toValue) {
+  const from = normalizeLocation(fromValue);
+  const to = normalizeLocation(toValue);
+  if (!from || !to) return Number.POSITIVE_INFINITY;
+  const earthRadiusMeters = 6371008.8;
+  const latitudeDelta = radians(to.latitude - from.latitude);
+  const longitudeDelta = radians(to.longitude - from.longitude);
+  const latitude1 = radians(from.latitude);
+  const latitude2 = radians(to.latitude);
+  const value = Math.sin(latitudeDelta / 2) ** 2
+    + Math.cos(latitude1) * Math.cos(latitude2) * Math.sin(longitudeDelta / 2) ** 2;
+  return earthRadiusMeters * 2 * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
+}
+function nearestSavedAddress(addresses = [], location) {
+  let nearest = null;
+  for (const address of addresses) {
+    const savedLocation = normalizeLocation(address);
+    if (!savedLocation) continue;
+    const meters = distanceMeters(location, savedLocation);
+    if (!nearest || meters < nearest.meters) nearest = { address, meters };
+  }
+  return nearest;
 }
 function newAddressId() {
   return typeof crypto?.randomUUID === "function"
@@ -131,6 +165,8 @@ export function DeliveryPage() {
   const [recipientPhone, setRecipientPhone] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [deliveryLocation, setDeliveryLocation] = useState(null);
+  const locationResolveSerialRef = useRef(0);
+  const locationSourceRef = useRef("");
   const [routeState, setRouteState] = useState({ pending: false, route: null, quote: null, error: "" });
   const [manualZoneId, setManualZoneId] = useState("");
   const [freeGiftIds, setFreeGiftIds] = useState(new Set());
@@ -333,14 +369,62 @@ export function DeliveryPage() {
   };
 
   const selectAddress = address => {
+    locationResolveSerialRef.current += 1;
+    locationSourceRef.current = "saved-address";
     setSelectedAddressId(address.id);
     setRecipientName(address.recipientName || profile.displayName || "");
     setRecipientPhone(address.recipientPhone || profile.phone || "");
     setDeliveryAddress(address.address || "");
-    if (Number.isFinite(Number(address.latitude)) && Number.isFinite(Number(address.longitude))) {
-      setDeliveryLocation({ latitude: Number(address.latitude), longitude: Number(address.longitude) });
+    const location = normalizeLocation(address);
+    if (location) setDeliveryLocation(location);
+  };
+
+  const resolveDeliveryLocation = async (location, meta = {}) => {
+    const next = normalizeLocation(location);
+    if (!next) return;
+    const source = String(meta?.source || "map");
+    locationSourceRef.current = source;
+    const serial = ++locationResolveSerialRef.current;
+    const hadSelectedAddress = Boolean(selectedAddressId);
+
+    setDeliveryLocation(next);
+    setSelectedAddressId("");
+
+    if (source === "current-location") {
+      const nearest = nearestSavedAddress(profile.addresses || [], next);
+      if (nearest && nearest.meters <= NEARBY_SAVED_ADDRESS_METERS) {
+        selectAddress(nearest.address);
+        return;
+      }
+    }
+
+    if (
+      serial === locationResolveSerialRef.current
+      && hadSelectedAddress
+      && ["current-location", "map", "manual"].includes(source)
+    ) {
+      setDeliveryAddress("");
     }
   };
+
+  useEffect(() => {
+    if (
+      profileLoading
+      || selectedAddressId
+      || locationSourceRef.current !== "current-location"
+      || !deliveryLocation
+    ) return;
+    const nearest = nearestSavedAddress(profile.addresses || [], deliveryLocation);
+    if (nearest && nearest.meters <= NEARBY_SAVED_ADDRESS_METERS) {
+      selectAddress(nearest.address);
+    }
+  }, [
+    profileLoading,
+    profile.addresses,
+    selectedAddressId,
+    deliveryLocation?.latitude,
+    deliveryLocation?.longitude,
+  ]);
 
   const persistProfile = async next => {
     const saved = await saveDeliveryCustomerProfile(tenant, next, customerUser);
@@ -645,12 +729,23 @@ export function DeliveryPage() {
               <PublicCartList items={cart} prefix="delivery.checkout.cart" onIncrease={increase} onDecrease={decrease} onNote={noteItem} emptyTextKey="delivery.checkout.menu.cart_empty" listId="cartList" />
             </section>
 
-            <section className="card" style={{ marginTop: 18 }}>
+            <section className="card delivery-account-card" style={{ marginTop: 18 }}>
               <div className="section-title"><h2><i className="bi bi-person-vcard app-icon" aria-hidden="true"></i><span>{t("delivery.checkout.customer.section_title")}</span></h2></div>
               <div className="grid grid-2" style={{ alignItems: "center" }}>
                 <div>
-                  <div id="customerAccount" hidden={!customerUser}>
-                    <strong id="customerAccountName">{customerUser?.displayName || t("delivery.checkout.customer.google_account")}</strong>
+                  <div className="delivery-account-user-row">
+                    <div id="customerAccount" hidden={!customerUser}>
+                      <strong id="customerAccountName">{customerUser?.displayName || t("delivery.checkout.customer.google_account")}</strong>
+                    </div>
+                    {customerUser ? <button
+                      type="button"
+                      className="delivery-account-logout"
+                      id="customerLogoutButton"
+                      aria-label={t("delivery.checkout.customer.logout")}
+                      title={t("delivery.checkout.customer.logout")}
+                      disabled={Boolean(customerBusy)}
+                      onClick={logoutGoogle}
+                    ><i className={customerBusy === "logout" ? "bi bi-hourglass-split app-icon" : "bi bi-box-arrow-right app-icon"} aria-hidden="true"></i></button> : null}
                   </div>
                   <div id="customerModeText" className="menu-category">{t(customerUser ? "delivery.checkout.customer.signed_in_mode" : "delivery.checkout.customer.guest_mode")}</div>
                 </div>
@@ -658,9 +753,6 @@ export function DeliveryPage() {
                   {!customerUser ? <button type="button" className="google-login-button delivery-google-login-button" id="googleLoginButton" disabled={Boolean(customerBusy)} onClick={loginGoogle}>
                     <img src="/assets/images/google-logo.svg" alt="" width="20" height="20" aria-hidden="true" />
                     <span>{t(customerBusy === "login" ? "delivery.checkout.customer.google_login_busy" : "delivery.checkout.customer.google_login")}</span>
-                  </button> : null}
-                  {customerUser ? <button type="button" className="btn" id="customerLogoutButton" disabled={Boolean(customerBusy)} onClick={logoutGoogle}>
-                    {t(customerBusy === "logout" ? "delivery.checkout.customer.logout_busy" : "delivery.checkout.customer.logout")}
                   </button> : null}
                 </div>
               </div>
@@ -670,7 +762,7 @@ export function DeliveryPage() {
               <div className="section-title"><h2><i className="bi bi-truck app-icon"></i><span>{t("delivery.checkout.address.section_title")}</span></h2></div>
               <div className="grid grid-2 delivery-contact-grid">
                 <div className="field"><label>{t("delivery.checkout.address.recipient_name")} *</label><input className="input" id="recipientName" required maxLength={120} value={recipientName} disabled={submitting} onChange={event => setRecipientName(event.target.value)} /><div className="address-lookup-status" aria-hidden="true">&nbsp;</div></div>
-                <div className="field"><label>{t("delivery.checkout.address.phone")} *</label><input className="input" id="recipientPhone" type="tel" inputMode="tel" required maxLength={20} value={recipientPhone} disabled={submitting} onChange={event => setRecipientPhone(event.target.value)} /><div id="addressLookupStatus" className="address-lookup-status"></div></div>
+                <div className="field"><label>{t("delivery.checkout.address.phone")} *</label><input className="input" id="recipientPhone" type="tel" inputMode="tel" required maxLength={20} value={recipientPhone} disabled={submitting} onChange={event => setRecipientPhone(event.target.value)} /><div id="addressLookupStatus" className="address-lookup-status">{profileLoading ? t("delivery.checkout.address.loading") : (profile.addresses || []).length ? t("delivery.checkout.address.found", { count: (profile.addresses || []).length }) : t("delivery.checkout.address.none_for_store")}</div></div>
               </div>
 
               <section id="addressBook" className="address-book">
@@ -680,7 +772,7 @@ export function DeliveryPage() {
                 </div>
                 <div id="addressList" className="address-list">
                   {(profile.addresses || []).length ? (profile.addresses || []).map(address => <label className={"address-card" + (selectedAddressId === address.id ? " selected" : "")} key={address.id}>
-                    <input type="radio" name="savedDeliveryAddressReact" checked={selectedAddressId === address.id} onChange={() => selectAddress(address)} />
+                    <input type="radio" name="savedDeliveryAddressReact" value={address.id} checked={selectedAddressId === address.id} onChange={() => selectAddress(address)} />
                     <div><div className="address-card-title">{address.label || t("delivery.checkout.address.fallback_label")}{address.isDefault ? <span className="address-default">{t("delivery.checkout.address.default_badge")}</span> : null}</div><div className="address-card-text"><strong>{address.recipientName || profile.displayName || ""}</strong><br/>{address.address}</div></div>
                     <div className="address-card-actions">
                       <button type="button" className="btn btn-sm" onClick={event => { event.preventDefault(); setAddressEditor({ ...address }); }}>{t("delivery.checkout.address.edit")}</button>
@@ -700,9 +792,9 @@ export function DeliveryPage() {
                 </div> : null}
               </section>
 
-              <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.address.delivery_address")} *</label><textarea className="input" id="deliveryAddress" required maxLength={500} value={deliveryAddress} disabled={submitting} onChange={event => { setDeliveryAddress(event.target.value); setSelectedAddressId(""); }} /></div>
+              <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.address.delivery_address")} *</label><textarea className="input" id="deliveryAddress" required maxLength={500} value={deliveryAddress} disabled={submitting} onChange={event => { locationResolveSerialRef.current += 1; locationSourceRef.current = "manual"; setDeliveryAddress(event.target.value); setSelectedAddressId(""); }} /></div>
               {tenant ? <DeliveryLocationPicker slug={tenant.slug || slug} value={deliveryLocation} t={t} language={locale}
-                disabled={submitting || locked} onChange={location => { setDeliveryLocation(location); setSelectedAddressId(""); }} /> : null}
+                disabled={submitting || locked} onChange={resolveDeliveryLocation} /> : null}
               {distanceStatus ? <div id="deliveryDistanceStatus" className={"delivery-distance-status" + (routeReady ? " is-ready" : routeState.error || (routeState.route && !routeState.route.inRange) ? " is-error" : "")}>{distanceStatus}</div> : null}
 
               <div className="field" style={{ marginTop: 12 }}>
@@ -748,8 +840,8 @@ export function DeliveryPage() {
                     <div className="payment-lock-total"><span>{t("delivery.checkout.payment_lock.locked_total")}</span><strong id="lockedTotal">{money(lockedTotal?.total ?? total)}</strong></div>
                   </div>}
                   <div className="payment-lock-actions">
-                    {paymentLocked && promptPayQr.src ? <a className="btn btn-dark" id="downloadPaymentQr" href={promptPayQr.src} download={"promptpay-" + (tenant?.slug || "penguin") + ".png"}><i className="bi bi-download app-icon"></i><span>{t("delivery.checkout.payment_lock.download_qr")}</span></a> : null}
-                    {paymentLocked ? <button className="btn" id="editLockedOrder" type="button" onClick={() => { setPaymentLocked(false); setLockedTotal(null); clearSlip(); }}><i className="bi bi-pencil app-icon"></i><span>{t("delivery.checkout.payment_lock.edit_items")}</span></button> : null}
+                    {paymentLocked && promptPayQr.src ? <a className="btn btn-dark" id="downloadPaymentQr" href={promptPayQr.src} download={"promptpay-" + (tenant?.slug || "penguin") + ".png"}><i className="bi bi-download app-icon"></i><span>{t("delivery.checkout.payment_lock.download_short")}</span></a> : null}
+                    {paymentLocked ? <button className="btn" id="editLockedOrder" type="button" onClick={() => { setPaymentLocked(false); setLockedTotal(null); clearSlip(); }}><i className="bi bi-pencil app-icon"></i><span>{t("delivery.checkout.payment_lock.edit_short")}</span></button> : null}
                   </div>
                 </div>
                 {!paymentLocked && !promptPayQr.src ? <div id="promptPayPlaceholder" className="empty" style={{ padding: "24px 12px" }}>{promptPayQr.error || t("delivery.checkout.payment.add_items_for_qr")}</div> : null}
@@ -763,7 +855,7 @@ export function DeliveryPage() {
                       {!slipFile ? <div className="payment-slip-content" id="paymentSlipContent"><div className="payment-slip-icon"><i className="bi bi-image"></i></div><div className="payment-slip-title">{t("delivery.checkout.payment.slip_drop_title")}</div><div className="payment-slip-help">{t("delivery.checkout.payment.slip_help")}</div></div> : <div className="payment-slip-preview" id="paymentSlipPreviewWrap"><img id="paymentSlipPreview" src={slipPreview} alt={t("delivery.checkout.payment.slip_preview_alt")} /><div className="payment-slip-meta"><span id="paymentSlipFileName">{slipFile.name}</span><span id="paymentSlipFileSize">{(slipFile.size / 1024 / 1024).toFixed(2)} MB</span></div></div>}
                     </div>
                     <div className="payment-slip-error" id="paymentSlipError" hidden></div>
-                    {slipFile ? <button type="button" className="btn btn-danger btn-sm payment-slip-remove-icon" id="removePaymentSlip" onClick={clearSlip}><i className="bi bi-x-lg app-icon"></i><span>{t("delivery.checkout.payment.remove_slip")}</span></button> : null}
+                    {slipFile ? <button type="button" className="btn btn-sm payment-slip-remove-icon" id="removePaymentSlip" aria-label={t("delivery.checkout.payment.remove_slip")} title={t("delivery.checkout.payment.remove_slip")} onClick={clearSlip}><i className="bi bi-x-lg app-icon" aria-hidden="true"></i></button> : null}
                   </div>
                   <small className="menu-category">{t("delivery.checkout.payment.review_note")}</small></> : null}
               </div> : null}

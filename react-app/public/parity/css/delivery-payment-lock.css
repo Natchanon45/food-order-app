@@ -74,3 +74,88 @@
   justify-content: center;
   white-space: nowrap;
 }
+
+/* DELIVERY_PAYMENT_ACTION_UI_REACT_20261007_001 */
+body.delivery-page .btn > .app-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  display: inline-grid;
+  place-items: center;
+  margin: 0;
+  font-size: 18px;
+  line-height: 1;
+  overflow: visible;
+}
+
+body.delivery-page .btn > .app-icon::before {
+  display: block;
+  line-height: 1;
+  overflow: visible;
+}
+
+#paymentLockPanel .payment-lock-actions {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+#paymentLockPanel .payment-lock-actions .btn {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  min-height: 42px;
+  flex: none !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  padding-inline: 12px !important;
+  gap: 7px !important;
+}
+
+.payment-slip-wrap {
+  position: relative !important;
+}
+
+body.delivery-page .payment-slip-wrap #removePaymentSlip.payment-slip-remove-icon {
+  position: absolute !important;
+  top: 29px !important;
+  right: 9px !important;
+  z-index: 10 !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  min-height: 42px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 2px solid rgba(15, 23, 42, .24) !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, .96) !important;
+  color: #111827 !important;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, .22) !important;
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+  cursor: pointer !important;
+  line-height: 1 !important;
+  overflow: visible !important;
+}
+
+body.delivery-page .payment-slip-wrap #removePaymentSlip.payment-slip-remove-icon .app-icon {
+  width: 20px !important;
+  height: 20px !important;
+  flex: 0 0 20px !important;
+  margin: 0 !important;
+  font-size: 20px !important;
+  line-height: 1 !important;
+  overflow: visible !important;
+}
+
+@media (max-width: 480px) {
+  #paymentLockPanel .payment-lock-actions .btn {
+    min-height: 40px;
+    padding-inline: 10px !important;
+  }
+}

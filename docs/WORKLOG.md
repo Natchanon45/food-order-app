@@ -11294,3 +11294,77 @@ Deploy state:
 - Production P0 browser smoke: **52/52 PASS**.
 - Deployment scope was Hosting only.
 - No Functions, Firestore Rules, Storage Rules, schema change, or merge to main.
+
+
+---
+
+## 2026-10-07 — Delivery address/action parity repair (Build 2026.10.07.461)
+
+Request:
+- Match the PromptPay action labels to Laravel: short `ดาวน์โหลด` / `แก้ไข`.
+- Repair Delivery button icons that appeared clipped or incomplete after the React-only cutover.
+- Restore automatic matching of the nearest saved customer address when using the device current location.
+- Restore the previously approved signed-in customer logout control as an icon-only action on the same row as the customer name.
+
+Implementation:
+- PromptPay locked actions now use existing localized Laravel-parity keys:
+  - `delivery.checkout.payment_lock.download_short`
+  - `delivery.checkout.payment_lock.edit_short`
+- Added Delivery-specific icon sizing/overflow guards so button icons remain fully visible.
+- Restored the payment-slip remove action as icon-only, circular overlay, with localized `aria-label` / `title`.
+- Restored the approved customer account layout:
+  - `delivery-account-card`
+  - `delivery-account-user-row`
+  - customer name and logout icon share the same row
+  - logout is icon-only `bi-box-arrow-right`; no visible logout text
+  - Google login slot stays hidden while signed in.
+- Ported Laravel nearest-saved-address behavior from `delivery-location-address-resolver.js` into React:
+  - current-location and map actions now carry an explicit source
+  - Haversine distance is calculated client-side
+  - saved address auto-select threshold is exactly 100 meters, matching Laravel
+  - auto-select occurs only for `current-location`, not explicit map click/drag
+  - if GPS arrives before the profile finishes loading, React re-checks once the saved addresses are ready
+  - selecting a matching address restores saved recipient name, phone, address text, and saved coordinates.
+- Added saved-address radio values using the address ID so selection state is explicit in the DOM.
+- Preserved manually typed address text when current location has no nearby saved-address match.
+- No new callable/backend dependency was introduced. An existing unexported reverse-geocode implementation was intentionally not wired into React in this change, so the deployment remains Hosting-only.
+- Added regression assertions for nearest-address threshold/source behavior, short PromptPay labels, icon-only logout structure, and Delivery payment icon CSS.
+
+Verification:
+- `npm run test:react-foundation` PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- React callable contract: 59 references / 0 missing exports.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.07.461` / `/react/assets/index-DPioHuf3.js`.
+- `git diff --check` PASS.
+- Hosting-emulator nearest-address scenario using mock GPS:
+  - saved address ID `near-store-home` selected automatically
+  - saved address text restored
+  - recipient name and phone restored
+  - threshold behavior is based on the Laravel 100-meter rule.
+- Hosting-emulator serviceable Lalamove scenario near the real test-store location:
+  - Lalamove quote ready at about 0.10 km
+  - PromptPay locks successfully
+  - buttons render exactly `ดาวน์โหลด` / `แก้ไข`
+  - download and edit icons are present
+  - payment-slip remove action is icon-only 42x42 with a 20x20 icon
+  - all visible Delivery button icons in the tested flow are inside their button bounds; clipped icon count = 0
+  - no page errors.
+- Signed-in account CSS/DOM layout check:
+  - logout button is icon-only 30x30
+  - one icon child / no visible text
+  - icon is 18x18 and inside the button
+  - button and customer name are vertically centered on the same row
+  - signed-in Google button slot is hidden.
+- Hosting-emulator P0 browser smoke: **52/52 PASS**.
+
+Release candidate:
+- React Version `0.4.280`
+- Build `2026.10.07.461`
+- marker `DELIVERY-ADDRESS-ACTION-PARITY`
+- bundle `/react/assets/index-DPioHuf3.js`
+
+Deploy state:
+- Commit/push and Firebase Hosting-only deploy pending at this checkpoint.
+- No Functions, Firestore Rules, Storage Rules, schema changes, or merge to `main`.

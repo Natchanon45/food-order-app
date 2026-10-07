@@ -240,3 +240,104 @@
     flex: 1;
   }
 }
+
+/* DELIVERY_CUSTOMER_LOGOUT_ICON_ONLY_20261007_001 */
+.delivery-account-card {
+  position: relative;
+}
+
+.delivery-account-user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.delivery-account-user-row:has(#customerAccount:not([hidden])) {
+  min-height: 30px;
+  margin-bottom: 4px;
+}
+
+#customerAccount {
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+}
+
+#customerAccount:not([hidden]) {
+  display: flex;
+}
+
+#customerAccountName {
+  display: block;
+  min-width: 0;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.delivery-account-card:has(#customerLogoutButton) > .grid.grid-2 {
+  gap: 0;
+}
+
+.delivery-account-card:has(#customerLogoutButton) > .grid.grid-2 > div:last-child {
+  display: none !important;
+}
+
+#customerLogoutButton {
+  position: static;
+  z-index: 2;
+  display: inline-grid !important;
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  min-height: 30px !important;
+  flex: 0 0 30px;
+  align-self: center;
+  place-items: center;
+  margin: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--muted);
+  box-shadow: none !important;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  appearance: none;
+  overflow: visible !important;
+}
+
+#customerLogoutButton:hover {
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--green-dark);
+  box-shadow: none !important;
+  transform: none;
+}
+
+#customerLogoutButton:focus-visible {
+  outline: 2px solid rgba(21, 148, 71, .3);
+  outline-offset: 2px;
+}
+
+#customerLogoutButton .app-icon {
+  width: 18px !important;
+  height: 18px !important;
+  flex: 0 0 18px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  margin: 0 !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  vertical-align: middle !important;
+  overflow: visible !important;
+}
+
+#customerLogoutButton .app-icon::before {
+  display: block;
+  line-height: 1;
+}
