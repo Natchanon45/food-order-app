@@ -11429,4 +11429,9 @@ Verification before deploy:
 - No backend/Rules/schema changes.
 
 Deploy state:
-- Commit/push and Hosting-only deploy pending at this checkpoint.
+- Implementation commit `0e5e4c5c` — `fix: align delivery address and payment parity` pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production bundle is `/react/assets/index-BDGLjQ-X.js`.
+- Production `npm run test:delivery-parity-browser`: **3/3 PASS** against the live Hosting origin.
+- Deployment scope was Hosting only.
+- No Functions, Firestore Rules, Storage Rules, schema changes, or merge to `main`.
