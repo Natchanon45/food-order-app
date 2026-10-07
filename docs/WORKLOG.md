@@ -11280,5 +11280,17 @@ Release candidate:
 - bundle /react/assets/index-B3zQsc0z.js
 
 Deploy state:
-- Commit/push and Firebase Hosting-only deploy pending at this checkpoint.
+- Implementation commit `b08516f7` — `fix: restore delivery laravel visual parity` pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production bundle is `/react/assets/index-B3zQsc0z.js`.
+- Production Delivery targeted audit using `saas-test-shop` passed on desktop/mobile:
+  - no horizontal overflow or page errors
+  - real menus load
+  - Google account width/layout matches the card
+  - automatic delivery zone is visible/read-only
+  - PromptPay lock/placeholder structure is present
+  - Add item updates cart count and total correctly
+  - no relevant HTTP 4xx dependencies
+- Production P0 browser smoke: **52/52 PASS**.
+- Deployment scope was Hosting only.
 - No Functions, Firestore Rules, Storage Rules, schema change, or merge to main.
