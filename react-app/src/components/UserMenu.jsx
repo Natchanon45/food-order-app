@@ -6,23 +6,10 @@ import { clearRetailPosSession } from "@/auth/retailPosSession";
 import { useI18n } from "@/i18n/I18nProvider";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 
-const roleLabel = role => ({
-  super_admin: "เจ้าของระบบ",
-  owner: "เจ้าของร้าน",
-  admin: "ผู้ดูแลระบบ",
-  manager: "ผู้จัดการ",
-  cashier: "แคชเชียร์",
-  kitchen: "ครัว",
-})[role] || role;
+const roleLabel = (role, t) => t(`shared.user_menu.roles.${role}`);
 
-function greetingName(profile = {}) {
-  if (profile.role === "cashier") return "แคชเชียร์";
-  if (profile.role === "kitchen") return "Kitchen";
-  if (profile.role === "manager") return "Manager";
-  if (profile.role === "admin") return "Admin";
-  if (profile.role === "owner") return profile.displayName || "Owner";
-  if (profile.role === "super_admin") return profile.displayName || "Super Admin";
-  return profile.displayName || roleLabel(profile.role);
+function greetingName(profile = {}, t) {
+  return profile.displayName || roleLabel(profile.role, t);
 }
 
 const iconClass = {
@@ -33,26 +20,26 @@ const iconClass = {
   users: "fi fi-rr-users",
 };
 
-function menuLinks(profile = {}) {
+function menuLinks(profile = {}, t) {
   const reactPath = path => path;
-  const links = [{ key: "home", href: "/", icon: "home", label: "หน้าหลัก" }];
+  const links = [{ key: "home", href: "/", icon: "home", label: t("shared.user_menu.home") }];
   if (profile.role === "super_admin") {
     return [
-      { key: "platform", href: reactPath("/platform"), icon: "home", label: "ระบบกลาง" },
-      { key: "tenants", href: reactPath("/admin/tenants"), icon: "settings", label: "จัดการร้านค้า" },
+      { key: "platform", href: reactPath("/platform"), icon: "home", label: t("shared.user_menu.platform") },
+      { key: "tenants", href: reactPath("/admin/tenants"), icon: "settings", label: t("shared.user_menu.manage_stores") },
     ];
   }
   if (["owner", "admin", "manager", "cashier"].includes(profile.role)) {
-    links.push({ key: "waiting_queue", href: reactPath("/cashier/waiting-queue"), icon: "people", label: "คิวรอโต๊ะ" });
+    links.push({ key: "waiting_queue", href: reactPath("/cashier/waiting-queue"), icon: "people", label: t("shared.user_menu.waiting_queue") });
   }
   if (["owner", "cashier"].includes(profile.role)) {
-    links.push({ key: "table_qr", href: reactPath("/cashier/table-qr"), icon: "easel2", label: "เปิดโต๊ะ" });
+    links.push({ key: "table_qr", href: reactPath("/cashier/table-qr"), icon: "easel2", label: t("shared.user_menu.open_table") });
   }
   if (["owner", "admin"].includes(profile.role)) {
-    links.push({ key: "admin", href: reactPath("/admin"), icon: "settings", label: "จัดการระบบร้าน" });
+    links.push({ key: "admin", href: reactPath("/admin"), icon: "settings", label: t("shared.user_menu.store_management") });
   }
   if (profile.role === "owner") {
-    links.push({ key: "admin_users", href: reactPath("/admin/users"), icon: "users", label: "จัดการพนักงาน" });
+    links.push({ key: "admin_users", href: reactPath("/admin/users"), icon: "users", label: t("shared.user_menu.staff_management") });
   }
   return links;
 }
@@ -231,20 +218,20 @@ export function UserMenu({ profile }) {
     location.replace(loginPath);
   };
 
-  const links = menuLinks(profile);
+  const links = menuLinks(profile, t);
   return (
     <>
       <div className={`user-menu${open ? " open" : ""}`} data-user-menu="true" ref={rootRef} style={{ marginLeft: 0, order: 100 }}>
         <button type="button" className="user-menu-trigger" data-user-menu-trigger aria-expanded={open}
           aria-haspopup="menu" onClick={event => { event.stopPropagation(); setOpen(value => !value); }}>
           <span className="user-menu-avatar"><i className="bi bi-person app-icon" aria-hidden="true"></i></span>
-          <span className="user-menu-trigger-label">{profile.displayName || roleLabel(profile.role)}</span>
+          <span className="user-menu-trigger-label">{profile.displayName || roleLabel(profile.role, t)}</span>
           <i className="bi bi-chevron-down app-icon user-menu-chevron" aria-hidden="true"></i>
         </button>
         <div className="user-menu-panel" data-user-menu-panel role="menu" hidden={!open}>
           <div className="user-menu-greeting">
-            สวัสดี {greetingName(profile)}
-            <span className="user-menu-role">{roleLabel(profile.role)}</span>
+            {t("shared.user_menu.greeting", { name: greetingName(profile, t) })}
+            <span className="user-menu-role">{roleLabel(profile.role, t)}</span>
           </div>
           {links.map(item => (
             <a className="user-menu-link" href={item.href} data-user-menu-key={item.key} role="menuitem" key={item.href}>
@@ -266,7 +253,7 @@ export function UserMenu({ profile }) {
           ) : null}
           <button type="button" className="user-menu-action danger" data-logout role="menuitem" onClick={logout}>
             <i className="fi fi-rr-exit app-icon" aria-hidden="true"></i>
-            <span>ออกจากระบบ</span>
+            <span>{t("shared.user_menu.logout")}</span>
           </button>
         </div>
       </div>

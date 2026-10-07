@@ -98,7 +98,7 @@ function showToast(message, type = "success") {
   }, 3200);
 }
 
-function ControlCard({ titleId, icon, title, description, badge = "Super Admin", badgeId, badgeClass = "", children, className = "" }) {
+function ControlCard({ titleId, icon, title, description, badge = "", badgeId, badgeClass = "", children, className = "" }) {
   return (
     <section className={`card platform-google-api-card ${className}`} aria-labelledby={titleId}>
       <div className="section-title platform-google-api-title">
@@ -570,7 +570,7 @@ export function PlatformPage() {
           <Link className="card nav-card" to="/platform/pricing"><i className="bi bi-tags app-icon" aria-hidden="true"></i><strong>{t("platform.cards.pricing.title")}</strong><small>{t("platform.cards.pricing.description")}</small></Link>
         </section>
 
-        <ControlCard titleId="platformBrandingTitle" icon="bi bi-palette" title={t("platform.branding.title")} description={t("platform.branding.description")} className="platform-branding-card">
+        <ControlCard titleId="platformBrandingTitle" icon="bi bi-palette" title={t("platform.branding.title")} description={t("platform.branding.description")} badge={t("shared.user_menu.roles.super_admin")} className="platform-branding-card">
           <form id="platformBrandingForm" className="platform-google-api-form" noValidate onSubmit={saveBranding}>
             <div className="platform-branding-grid">
               {BRANDING_ITEMS.map(item => {
@@ -626,7 +626,7 @@ export function PlatformPage() {
           </form>
         </ControlCard>
 
-        <ControlCard titleId="platformGoogleApiTitle" icon="bi bi-google" title={t("platform.google_api.title")} description={t("platform.google_api.description")} className="platform-google-services-card">
+        <ControlCard titleId="platformGoogleApiTitle" icon="bi bi-google" title={t("platform.google_api.title")} description={t("platform.google_api.description")} badge={t("shared.user_menu.roles.super_admin")} className="platform-google-services-card">
           <form id="platformGoogleApiForm" className="platform-google-api-form" noValidate onSubmit={saveGoogle}>
             <div className="platform-google-api-grid">
               <SecretField

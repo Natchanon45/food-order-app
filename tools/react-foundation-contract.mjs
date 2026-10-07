@@ -1423,6 +1423,7 @@ for(const key of ["home","waiting_queue","table_qr","admin","admin_users"]){
   assert(userMenu.includes(`key: "${key}"`)&&sharedIconsCss.includes(`[data-user-menu-key="${key}"]`),`User menu semantic palette key missing: ${key}`);
 }
 assert(userMenu.includes("data-user-menu-key={item.key}"),"React UserMenu must expose semantic menu keys");
+assert(userMenu.includes('t(`shared.user_menu.roles.${role}`)')&&userMenu.includes('t("shared.user_menu.greeting"')&&userMenu.includes('t("shared.user_menu.logout")')&&!userMenu.includes("Super Admin"),"React UserMenu must localize visible role, greeting, and logout labels without Super Admin wording");
 assert(!sharedIconsCss.includes('.user-menu-link[href="/admin/users"]'),"User menu icon colors must not depend on Laravel-only href routes");
 assert(userMenu.includes('import { createPortal } from "react-dom";')&&userMenu.includes("return createPortal(")&&userMenu.includes("document.body,"),"Owner password dialog must portal to document.body so fixed positioning uses the viewport, not the sticky/backdrop-filter header");
 assert(userMenu.includes('className="owner-password-backdrop" data-ui-layer="modal"'),"Owner password dialog must participate in the shared modal layer policy");

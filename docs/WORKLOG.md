@@ -11158,3 +11158,48 @@ Commit / push / deploy:
 - Production removed endpoints for Admin/POS legacy JS, global legacy CSS, jQuery, and Select2 return HTTP 404.
 - `/react/index.html` canonicalizes with HTTP 301 to `/react`; root Production shell and browser resource inspection confirm Build `.458` assets are live.
 - Deployment scope was Hosting only. No Functions, Firestore Rules, Storage Rules, schema deploy, or merge to `main`.
+
+
+---
+
+## 2026-10-07 — Replace visible Super Admin wording with localized Administrator labels
+
+Request:
+- Remove user-visible "Super Admin" wording from the React frontend.
+- Thai must show "ผู้ดูแลระบบ".
+- All supported languages must use the normal translation system.
+- Keep the internal role ID `super_admin`, permissions, routes, Firebase schema, and business logic unchanged.
+
+Implementation:
+- Updated all user-visible translation strings containing "Super Admin" across `th`, `en`, `my`, `lo`, and `km`.
+- Role labels now resolve as:
+  - th: ผู้ดูแลระบบ
+  - en: Administrator
+  - my: အုပ်ချုပ်ရေးမှူး
+  - lo: ຜູ້ບໍລິຫານ
+  - km: អ្នកគ្រប់គ្រង
+- Refactored `UserMenu.jsx` so role labels, greeting, navigation labels, and logout use `shared.user_menu.*` i18n keys instead of hardcoded Thai/English fallbacks.
+- Replaced the Platform Control Card default "Super Admin" badge with the localized role label.
+- Added regression coverage that fails if "Super Admin" returns in React translations or User Menu visible copy.
+- Internal `super_admin` role checks and canonical `/super-admin/saas-setup` route are intentionally unchanged.
+
+Release candidate:
+- React Version `0.4.280`
+- Build `2026.10.07.459`
+- marker `ADMINISTRATOR-VISIBLE-LABELS`
+- candidate bundle `/react/assets/index-Ddo9H8Ck.js`
+
+Verification:
+- React source visible wording audit: 0 occurrences of "Super Admin".
+- Generated candidate bundle: 0 occurrences of "Super Admin".
+- `npm run test:react-foundation` PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.07.459`.
+- `git diff --check` PASS.
+- Firebase Hosting emulator P0 browser smoke: **52/52 PASS**, including language-switch coverage.
+
+Deploy state:
+- Commit/push and Firebase Hosting-only deploy pending at this checkpoint.
+- No Functions, Firestore Rules, Storage Rules, schema, or main-branch merge changes.
