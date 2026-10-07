@@ -10172,3 +10172,16 @@ Deploy state:
 - Firebase Hosting-only deploy pending.
 - No Firestore Rules, Storage Rules, Cloud Functions, or schema change required.
 - No merge to `main`.
+
+Production deploy + verification:
+- Implementation commit: `a92c0c40` — `style: redesign table order storefront`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production bundle is `/react/assets/index-DVcQAL6x.js`; Table Order loads `/react/parity/css/table-order-modern.css?v=2026.10.07.447`.
+- Production Table 12 verification:
+  - Desktop 1600x900: 1440px container, 3 menu columns around 337px, one-line `120.00 บาท`, 46px add button aligned to the card edge, overflow `0`.
+  - Mobile 390x844: one 370px menu card per row, one-line price, 44px right-aligned add button, overflow `0`.
+  - Adding one real menu item created one local cart row and enabled `ยืนยันการสั่ง`; submit was intentionally not clicked.
+- Firestore write attempts `0`; page errors `0`; console errors `0`; HTTP errors `0`.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Cloud Functions, or schema deployment occurred.
+- No merge to `main`.
