@@ -9975,3 +9975,17 @@ Deploy state:
 - Firebase Hosting-only deploy pending.
 - No Firestore Rules, Storage Rules, Functions, or schema change required.
 - No merge to `main`.
+
+Production deploy + verification:
+- Implementation commit: `7fa44729` — `style: modernize platform owners workspace`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production React bundle is `/react/assets/index-C4KyVO-x.js`; dedicated Owners CSS is `/react/parity/css/platform-owners-modern.css?v=2026.10.07.444`.
+- Production HTTP checks: `/platform/owners` = 200, bundle = 200, dedicated CSS = 200.
+- Authenticated Production verification used the copied Microsoft Edge `super_admin` profile with Firestore writes blocked:
+  - Desktop 1440x900: 4 KPI cards, 3 real store cards, 3 Owner actions, 2-column grid (`670px 670px`), hero 1400x300, page overflow `0`.
+  - Mobile 390x844: 4 KPI cards, 3 store cards, 3 Owner actions, 1-column grid (`332px`), hero 366x394, page overflow `0`.
+  - Production role remained `super_admin`; no auth bypass was used.
+  - Raw translation keys `0`, Firestore write attempts `0`, page errors `0`, unexpected request failures `0`, HTTP errors `0`.
+- No Firestore Rules, Storage Rules, Cloud Functions, or schema deployment occurred.
+- No merge to `main`.
