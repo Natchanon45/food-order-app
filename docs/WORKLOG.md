@@ -10673,3 +10673,45 @@ Deploy state:
 - Hosting Build 453 pending.
 - No Firestore Rules, Storage Rules, or schema migration required.
 - No merge to main.
+
+Production deploy + live verification:
+- Implementation commit: `3194189d` — `fix: repair table service settlement lifecycle`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Functions deployed successfully in `asia-southeast1`:
+  - `settleTableSession`
+  - `closeWalkInTable`
+- Both callable endpoints return healthy CORS headers for `https://penguin-food.web.app`.
+- Firebase Hosting target `foodapp` deployed successfully with React Build `2026.10.07.453` / Public Build `2026.10.07.168`.
+- Production React bundle is `/react/assets/index-B-FB6yXp.js`.
+
+Real stuck Table 12 repair:
+- Before callable propagation, Production Cashier still showed Table 12 as kitchen served + payment paid, and `/cashier/table-qr` still showed Table 12 under issued QR tables.
+- After `settleTableSession` became available, the Build 453 stale-settlement repair invoked the server transaction against the real stuck session.
+- Result:
+  - Table 12 disappeared from Cashier.
+  - Table 12 disappeared from Kitchen.
+  - Issued QR tables became empty.
+  - Table 12 returned to the Available Tables list.
+- This confirms the repair closes the actual session state and releases the table; it is not a UI-only hide.
+- Browser direct Firestore writes during this verification were zero; the repair mutation occurred through the intended callable transaction.
+
+Final Production smoke:
+- Cashier loads `/react/assets/index-B-FB6yXp.js`; Table 12 is no longer active; horizontal overflow = 0.
+- Kitchen loads the same bundle; Table 12 is no longer active; horizontal overflow = 0.
+- No ready live Table/Walk-in order remained after the repair, so the new per-item serve button was not clicked against customer Production data. Source, contracts, generated bundle, and translations all contain the per-item serve path.
+- `/cashier/table-qr`:
+  - occupied QR tables = 0;
+  - available tables include Table 12;
+  - Walk-in Table 01 remains occupied;
+  - Walk-in card has exactly one `ปิดโต๊ะ` button on Desktop and Mobile;
+  - the real Walk-in close button was intentionally not clicked because Table 01 is an active customer state.
+- Table Order current-round candidate verification measured the restored note layout at row 404 px / note 404 px, full-width ratio 1.000, with note below item/quantity controls.
+- Deployed bundle markers confirmed:
+  - `เสิร์ฟรายการนี้`
+  - Walk-in close warning
+  - `cart-row cart-row-aligned`
+  - `data-close-walkin-table`
+  - `settleTableSession`.
+- Final live page/API errors = 0; no related HTTP failures were observed.
+- No Firestore Rules, Storage Rules, or schema deployment was required.
+- No merge to `main`.
