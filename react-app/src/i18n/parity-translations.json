@@ -667,6 +667,17 @@
         "orders": ":count ออเดอร์",
         "receipts": ":count ใบเสร็จ",
         "items": ":count รายการ"
+      },
+      "notifications": {
+        "title": "มีรายการที่ต้องรับทราบ",
+        "description": "มีคำขอเติมเครดิตหรือการส่งส่วนแบ่งเข้ามาใหม่",
+        "scope": "นับรายการค้างตรวจทั้งหมด และรายการที่ Slip2Go ยืนยันอัตโนมัติในวันนี้",
+        "revenue_share_label": "ส่งส่วนแบ่ง",
+        "wallet_label": "เติมเครดิต",
+        "breakdown": "ค้างตรวจ :pending • Slip2Go วันนี้ :auto",
+        "tenant_aria": "ร้านนี้มีการแจ้งเตือน :count รายการ",
+        "revenue_share": "ส่วนแบ่ง",
+        "wallet": "เติมเครดิต"
       }
     },
     "admin_users": {
@@ -2250,6 +2261,12 @@
       "scope": {
         "title": "ขอบเขตระบบกลาง",
         "description": "Super Admin ใช้สำหรับจัดการ Tenant และสถานะบริการเท่านั้น ไม่เข้าสู่หน้าครัว แคชเชียร์ เมนู โต๊ะ หรือข้อมูลปฏิบัติการของร้านโดยอัตโนมัติ"
+      },
+      "notifications": {
+        "total_aria": "มีการแจ้งเตือน :count รายการ",
+        "scope": "ค้างตรวจ + รายการ Slip2Go ที่อนุมัติอัตโนมัติวันนี้",
+        "wallet": "เติมเครดิต :count",
+        "revenue_share": "ส่วนแบ่ง :count"
       }
     },
     "platform_contact": {
@@ -6899,6 +6916,17 @@
         "orders": ":count orders",
         "receipts": ":count receipts",
         "items": ":count items"
+      },
+      "notifications": {
+        "title": "Items to acknowledge",
+        "description": "New wallet top-up requests or revenue-share submissions have arrived.",
+        "scope": "Includes all pending items and items auto-approved by Slip2Go today.",
+        "revenue_share_label": "Revenue share",
+        "wallet_label": "Wallet top-up",
+        "breakdown": "Pending :pending • Slip2Go today :auto",
+        "tenant_aria": "This store has :count notifications",
+        "revenue_share": "Revenue share",
+        "wallet": "Wallet top-up"
       }
     },
     "admin_users": {
@@ -8482,6 +8510,12 @@
       "scope": {
         "title": "Platform scope",
         "description": "Super Admin is for Tenant and service-status management only. It does not automatically enter kitchen, cashier, menu, table, or other store operational data."
+      },
+      "notifications": {
+        "total_aria": ":count admin notifications",
+        "scope": "Pending review + Slip2Go auto-approved today",
+        "wallet": "Top-ups :count",
+        "revenue_share": "Revenue share :count"
       }
     },
     "platform_contact": {
@@ -12856,6 +12890,17 @@
         "orders": ":count အော်ဒါများ",
         "receipts": "ပြေစာ :count",
         "items": ":count ပစ္စည်းများ"
+      },
+      "notifications": {
+        "title": "အသိအမှတ်ပြုရန် လိုအပ်သောအချက်များ",
+        "description": "ခရက်ဒစ်ဖြည့်တောင်းဆိုမှု သို့မဟုတ် ဝင်ငွေခွဲဝေတင်ပြမှု အသစ်ရှိပါသည်။",
+        "scope": "စစ်ဆေးရန်ကျန်သည့်အချက်အားလုံးနှင့် ယနေ့ Slip2Go အလိုအလျောက်အတည်ပြုထားသောအချက်များ ပါဝင်သည်။",
+        "revenue_share_label": "ဝင်ငွေခွဲဝေ",
+        "wallet_label": "ခရက်ဒစ်ဖြည့်",
+        "breakdown": "စစ်ဆေးရန် :pending • ယနေ့ Slip2Go :auto",
+        "tenant_aria": "ဤဆိုင်တွင် အသိပေးချက် :count ခုရှိသည်",
+        "revenue_share": "ဝင်ငွေခွဲဝေ",
+        "wallet": "ခရက်ဒစ်ဖြည့်"
       }
     },
     "admin_users": {
@@ -14439,6 +14484,12 @@
       "scope": {
         "title": "ပလပ်ဖောင်းနယ်ပယ်",
         "description": "Super Admin သည် Tenant နှင့် ဝန်ဆောင်မှုအခြေအနေစီမံခန့်ခွဲမှုအတွက်သာဖြစ်သည်။ ၎င်းသည် မီးဖိုချောင်၊ ငွေကိုင်၊ မီနူး၊ စားပွဲ သို့မဟုတ် အခြားစတိုးဆိုင်လုပ်ငန်းလည်ပတ်မှုဒေတာကို အလိုအလျောက်မ၀င်ပါ။"
+      },
+      "notifications": {
+        "total_aria": "စီမံခန့်ခွဲသူ အသိပေးချက် :count ခု",
+        "scope": "စစ်ဆေးရန်ကျန် + ယနေ့ Slip2Go အလိုအလျောက်အတည်ပြု",
+        "wallet": "ခရက်ဒစ်ဖြည့် :count",
+        "revenue_share": "ဝင်ငွေခွဲဝေ :count"
       }
     },
     "platform_contact": {
@@ -18813,6 +18864,17 @@
         "orders": ":count ສັ່ງ",
         "receipts": ":count ໃບຮັບເງິນ",
         "items": ":count ລາຍການ"
+      },
+      "notifications": {
+        "title": "ມີລາຍການທີ່ຕ້ອງຮັບຮູ້",
+        "description": "ມີຄຳຂໍເຕີມເຄຣດິດ ຫຼື ການສົ່ງສ່ວນແບ່ງໃໝ່.",
+        "scope": "ລວມລາຍການຄ້າງກວດທັງໝົດ ແລະລາຍການທີ່ Slip2Go ອະນຸມັດອັດຕະໂນມັດໃນມື້ນີ້.",
+        "revenue_share_label": "ສົ່ງສ່ວນແບ່ງ",
+        "wallet_label": "ເຕີມເຄຣດິດ",
+        "breakdown": "ຄ້າງກວດ :pending • Slip2Go ມື້ນີ້ :auto",
+        "tenant_aria": "ຮ້ານນີ້ມີແຈ້ງເຕືອນ :count ລາຍການ",
+        "revenue_share": "ສ່ວນແບ່ງ",
+        "wallet": "ເຕີມເຄຣດິດ"
       }
     },
     "admin_users": {
@@ -20396,6 +20458,12 @@
       "scope": {
         "title": "ຂອບເຂດເວທີ",
         "description": "Super Admin ແມ່ນສໍາລັບ Tenant ແລະການຈັດການສະຖານະການບໍລິການເທົ່ານັ້ນ. ມັນບໍ່ໄດ້ເຂົ້າໄປໃນເຮືອນຄົວ, ພະນັກງານເກັບເງິນ, ເມນູ, ຕາຕະລາງ, ຫຼືຂໍ້ມູນການດໍາເນີນງານຂອງຮ້ານອື່ນໆໂດຍອັດຕະໂນມັດ."
+      },
+      "notifications": {
+        "total_aria": "ມີແຈ້ງເຕືອນຜູ້ດູແລ :count ລາຍການ",
+        "scope": "ຄ້າງກວດ + Slip2Go ອະນຸມັດອັດຕະໂນມັດມື້ນີ້",
+        "wallet": "ເຕີມເຄຣດິດ :count",
+        "revenue_share": "ສ່ວນແບ່ງ :count"
       }
     },
     "platform_contact": {
@@ -24770,6 +24838,17 @@
         "orders": ":count បញ្ជាទិញ",
         "receipts": "បង្កាន់ដៃ :count",
         "items": ":count ធាតុ"
+      },
+      "notifications": {
+        "title": "មានការជូនដំណឹងដែលត្រូវទទួលស្គាល់",
+        "description": "មានសំណើបញ្ចូលក្រេឌីត ឬការដាក់ស្នើចំណែកប្រាក់ចំណូលថ្មី។",
+        "scope": "រាប់ធាតុរង់ចាំពិនិត្យទាំងអស់ និងធាតុដែល Slip2Go អនុម័តស្វ័យប្រវត្តិថ្ងៃនេះ។",
+        "revenue_share_label": "ចំណែកប្រាក់ចំណូល",
+        "wallet_label": "បញ្ចូលក្រេឌីត",
+        "breakdown": "រង់ចាំ :pending • Slip2Go ថ្ងៃនេះ :auto",
+        "tenant_aria": "ហាងនេះមានការជូនដំណឹង :count",
+        "revenue_share": "ចំណែកប្រាក់ចំណូល",
+        "wallet": "បញ្ចូលក្រេឌីត"
       }
     },
     "admin_users": {
@@ -26353,6 +26432,12 @@
       "scope": {
         "title": "វិសាលភាពវេទិកា",
         "description": "Super Admin គឺសម្រាប់ Tenant និងការគ្រប់គ្រងស្ថានភាពសេវាកម្មតែប៉ុណ្ណោះ។ វាមិនចូលទៅក្នុងផ្ទះបាយ អ្នកគិតលុយ ម៉ឺនុយ តារាង ឬទិន្នន័យប្រតិបត្តិការហាងផ្សេងទៀតដោយស្វ័យប្រវត្តិទេ។"
+      },
+      "notifications": {
+        "total_aria": "មានការជូនដំណឹងអ្នកគ្រប់គ្រង :count",
+        "scope": "រង់ចាំពិនិត្យ + Slip2Go អនុម័តស្វ័យប្រវត្តិថ្ងៃនេះ",
+        "wallet": "បញ្ចូលក្រេឌីត :count",
+        "revenue_share": "ចំណែកប្រាក់ចំណូល :count"
       }
     },
     "platform_contact": {

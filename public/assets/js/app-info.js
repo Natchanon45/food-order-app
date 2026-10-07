@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.07.157',
+  build: '2026.10.07.158',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-LEGACY-FAVICON-BRANDING',
+  commit: 'SUPER-ADMIN-REQUEST-NOTIFICATIONS',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'POS Backup and Users favicon branding',
-  updatedAt: '2026-10-07T08:51:00+0700',
+  milestone: 'Super Admin request notification badges',
+  updatedAt: '2026-10-07T09:13:04+0700',
   whatsNew: [
-    'Restore the platform-managed favicon on the legacy POS Backup workspace',
-    'Restore the platform-managed favicon on the legacy POS Users and permissions workspace',
-    'Keep favicon and Apple touch icon fallback behavior aligned with Platform Branding'
+    'Notify Super Admin about pending wallet top-up and revenue-share submissions',
+    'Keep same-day Slip2Go matched auto-approved submissions visible in notification badges',
+    'Show aggregate and per-tenant notification breakdowns with direct review actions'
   ]
 };
 

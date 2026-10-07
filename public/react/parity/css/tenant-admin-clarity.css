@@ -1390,3 +1390,202 @@ p {
 .tenant-sales-grid article.subsidy{background:#fff1f3;border-color:#efc9ce}
 .tenant-sales-grid article.amount-due{background:#edf9f1;border-color:#b9dec6}
 .tenant-review-amount small,#revenueShareReviewSummary small{display:block;color:#6f7d75;font-size:.72rem;line-height:1.4}
+
+
+/* Super Admin request notification badges */
+.tenant-admin-notification-panel{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  margin-bottom:16px;
+  padding:18px 20px;
+  border-color:#fecaca;
+  background:linear-gradient(135deg,#fff 0%,#fff7ed 55%,#fef2f2 100%);
+  box-shadow:0 10px 28px rgba(185,28,28,.08);
+}
+.tenant-admin-notification-copy{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  min-width:0;
+}
+.tenant-admin-notification-copy>div{
+  display:grid;
+  gap:3px;
+  min-width:0;
+}
+.tenant-admin-notification-copy strong{
+  color:#7f1d1d;
+  font-size:16px;
+}
+.tenant-admin-notification-copy span{
+  color:#374151;
+  font-size:13px;
+}
+.tenant-admin-notification-copy small{
+  color:#6b7280;
+  font-size:12px;
+}
+.tenant-admin-notification-icon{
+  position:relative;
+  display:grid;
+  place-items:center;
+  flex:0 0 46px;
+  width:46px;
+  height:46px;
+  border-radius:15px;
+  background:#dc2626;
+  color:#fff;
+  box-shadow:0 8px 18px rgba(220,38,38,.22);
+  font-size:20px;
+}
+.tenant-admin-notification-icon b{
+  position:absolute;
+  top:-8px;
+  right:-9px;
+  display:grid;
+  place-items:center;
+  min-width:22px;
+  height:22px;
+  padding:0 6px;
+  border:3px solid #fff;
+  border-radius:999px;
+  background:#7f1d1d;
+  color:#fff;
+  font-size:10px;
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.tenant-admin-notification-summary{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:10px;
+}
+.tenant-admin-notification-summary article{
+  display:grid;
+  grid-template-columns:auto auto;
+  grid-template-areas:"label metric" "detail detail";
+  align-items:center;
+  gap:2px 12px;
+  min-width:190px;
+  padding:11px 13px;
+  border:1px solid transparent;
+  border-radius:14px;
+}
+.tenant-admin-notification-summary article>span{
+  grid-area:label;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  font-size:12px;
+  font-weight:650;
+}
+.tenant-admin-notification-summary article>strong{
+  grid-area:metric;
+  justify-self:end;
+  font-size:20px;
+  font-variant-numeric:tabular-nums;
+}
+.tenant-admin-notification-summary article>small{
+  grid-area:detail;
+  color:#6b7280;
+  font-size:11px;
+}
+.tenant-admin-notification-summary .revenue{
+  border-color:#fecaca;
+  background:#fff;
+  color:#b91c1c;
+}
+.tenant-admin-notification-summary .wallet{
+  border-color:#fed7aa;
+  background:#fff;
+  color:#c2410c;
+}
+.tenant-card-notifications{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:-2px 0 12px;
+  padding:9px;
+  border:1px solid #fee2e2;
+  border-radius:13px;
+  background:#fffafa;
+}
+.tenant-notification-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  min-height:32px;
+  padding:6px 9px;
+  border:1px solid transparent;
+  border-radius:999px;
+  background:#fff;
+  cursor:pointer;
+  font:inherit;
+  font-size:12px;
+  font-weight:650;
+  transition:transform .16s ease,box-shadow .16s ease;
+}
+.tenant-notification-chip:hover{
+  transform:translateY(-1px);
+  box-shadow:0 6px 14px rgba(17,24,39,.08);
+}
+.tenant-notification-chip b{
+  display:grid;
+  place-items:center;
+  min-width:21px;
+  height:21px;
+  padding:0 5px;
+  border-radius:999px;
+  color:#fff;
+  font-size:10px;
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.tenant-notification-chip.revenue{
+  border-color:#fecaca;
+  color:#b91c1c;
+}
+.tenant-notification-chip.revenue b{
+  background:#dc2626;
+}
+.tenant-notification-chip.wallet{
+  border-color:#fed7aa;
+  color:#c2410c;
+}
+.tenant-notification-chip.wallet b{
+  background:#ea580c;
+}
+@media(max-width:760px){
+  .tenant-admin-notification-panel{
+    align-items:stretch;
+    flex-direction:column;
+    padding:15px;
+  }
+  .tenant-admin-notification-summary{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    justify-content:stretch;
+  }
+  .tenant-admin-notification-summary article{
+    min-width:0;
+  }
+}
+@media(max-width:520px){
+  .tenant-admin-notification-summary{
+    grid-template-columns:1fr;
+  }
+  .tenant-card-notifications{
+    display:grid;
+    grid-template-columns:1fr;
+  }
+  .tenant-notification-chip{
+    justify-content:flex-start;
+    width:100%;
+  }
+  .tenant-notification-chip b{
+    margin-left:auto;
+  }
+}

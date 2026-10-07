@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.07.442",
+  build: "2026.10.07.443",
   branch: "feature/react-firebase-port",
-  commit: "POS-LEGACY-FAVICON-BRANDING",
+  commit: "SUPER-ADMIN-REQUEST-NOTIFICATIONS",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "POS Backup and Users favicon branding",
+  milestone: "Super Admin request notification badges",
   whatsNew: [
-    "Restore the platform-managed favicon on the legacy POS Backup workspace",
-    "Restore the platform-managed favicon on the legacy POS Users and permissions workspace",
-    "Keep favicon and Apple touch icon fallback behavior aligned with Platform Branding",
+    "Notify Super Admin about pending wallet top-up and revenue-share submissions",
+    "Keep same-day Slip2Go matched auto-approved submissions visible in notification badges",
+    "Show aggregate and per-tenant notification breakdowns with direct review actions",
   ],
 });

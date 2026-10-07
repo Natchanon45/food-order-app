@@ -10,6 +10,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { sweetConfirm, sweetPrompt } from "@/components/sweetDialog";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
+import { EMPTY_PLATFORM_ADMIN_NOTIFICATIONS, loadPlatformAdminNotificationSummary } from "@/data/platformAdminNotifications";
 import {
   backfillTenantSubscriptions,
   createTenant,
@@ -207,7 +208,7 @@ function TenantSubscription({ tenant, t, intlLocale, onAction }) {
   );
 }
 
-function TenantCard({ tenant, summary = {}, t, formatNumber, intlLocale, onEdit, onShare, onUnlock, onLalamoveApproval, lalamoveApprovalBusy = false, onWallet, onDelete, onSubscriptionAction }) {
+function TenantCard({ tenant, summary = {}, notifications = {}, t, formatNumber, intlLocale, onEdit, onShare, onRevenueNotice, onUnlock, onLalamoveApproval, lalamoveApprovalBusy = false, onWallet, onDelete, onSubscriptionAction }) {
   const active = tenant.active !== false;
   const shareEnabled = tenant.billingMode === "revenue_share" || summary.revenueShareEnabled === true;
   const ownerLabel = tenant.ownerUid
@@ -217,6 +218,9 @@ function TenantCard({ tenant, summary = {}, t, formatNumber, intlLocale, onEdit,
     ? t("admin_tenants.tenant.revenue_share_suspended")
     : (active ? t("admin_tenants.tenant.active") : t("admin_tenants.tenant.inactive"));
   const money = value => formatNumber(Number(value || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const walletNotificationCount = Number(notifications.wallet || 0);
+  const revenueNotificationCount = Number(notifications.revenueShare || 0);
+  const notificationTotal = walletNotificationCount + revenueNotificationCount;
 
   return (
     <article className="tenant-store-card" data-tenant-card={tenant.id} data-billing-mode={shareEnabled ? "revenue_share" : "subscription"}>
@@ -230,6 +234,21 @@ function TenantCard({ tenant, summary = {}, t, formatNumber, intlLocale, onEdit,
         </div>
         <span className={`tenant-status-pill ${active ? "active" : "inactive"}`}>{statusLabel}</span>
       </header>
+
+      {notificationTotal > 0 ? (
+        <div className="tenant-card-notifications" aria-label={t("admin_tenants.notifications.tenant_aria", { count: formatNumber(notificationTotal) })}>
+          {revenueNotificationCount > 0 ? (
+            <button className="tenant-notification-chip revenue" type="button" data-tenant-revenue-notification={tenant.id} onClick={() => onRevenueNotice(tenant)}>
+              <i className="bi bi-receipt-cutoff" aria-hidden="true"></i><span>{t("admin_tenants.notifications.revenue_share", { count: formatNumber(revenueNotificationCount) })}</span><b>{formatNumber(revenueNotificationCount)}</b>
+            </button>
+          ) : null}
+          {walletNotificationCount > 0 ? (
+            <button className="tenant-notification-chip wallet" type="button" data-tenant-wallet-notification={tenant.id} onClick={() => onWallet(tenant)}>
+              <i className="bi bi-wallet2" aria-hidden="true"></i><span>{t("admin_tenants.notifications.wallet", { count: formatNumber(walletNotificationCount) })}</span><b>{formatNumber(walletNotificationCount)}</b>
+            </button>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="tenant-meta-row">
         <span><i className="bi bi-person-badge" aria-hidden="true"></i>{ownerLabel}</span>
@@ -460,6 +479,8 @@ export function AdminTenantsPage() {
   const [lalamoveApprovalBusy, setLalamoveApprovalBusy] = useState("");
   const [walletSlipItem, setWalletSlipItem] = useState(null);
   const [walletSlipUrl, setWalletSlipUrl] = useState("");
+  const [adminNotifications, setAdminNotifications] = useState(EMPTY_PLATFORM_ADMIN_NOTIFICATIONS);
+  const [adminNotificationsLoading, setAdminNotificationsLoading] = useState(true);
 
   const periodPayload = useCallback(() => {
     const payload = { period, ...(tenantId ? { tenantId } : {}) };
@@ -546,6 +567,26 @@ export function AdminTenantsPage() {
     loadReviews();
   }, [profile?.role, loadReviews]);
 
+  const refreshAdminNotifications = useCallback(async ({ force = true } = {}) => {
+    if (profile?.role !== "super_admin" || !initialTenantsReady) return;
+    try {
+      const summary = await loadPlatformAdminNotificationSummary({ force, tenants });
+      setAdminNotifications(summary);
+    } catch (error) {
+      console.error("ADMIN_TENANT_NOTIFICATIONS_LOAD_FAILED", error);
+    } finally {
+      setAdminNotificationsLoading(false);
+    }
+  }, [profile?.role, initialTenantsReady, tenants]);
+
+  useEffect(() => {
+    if (profile?.role !== "super_admin" || !initialTenantsReady) return undefined;
+    setAdminNotificationsLoading(true);
+    refreshAdminNotifications({ force: true });
+    const timer = window.setInterval(() => refreshAdminNotifications({ force: true }), 60_000);
+    return () => window.clearInterval(timer);
+  }, [profile?.role, initialTenantsReady, refreshAdminNotifications]);
+
   const visibleTenants = useMemo(
     () => tenantId ? tenants.filter(item => String(item.id) === String(tenantId)) : tenants,
     [tenants, tenantId],
@@ -579,6 +620,12 @@ export function AdminTenantsPage() {
     setShareBillingCycle(summary.revenueShareBillingCycle === "daily" ? "daily" : "monthly");
     setShareError("");
     shareDialogRef.current?.showModal?.();
+  };
+
+  const openRevenueNotice = tenant => {
+    setTenantId(String(tenant?.id || ""));
+    setReviewStatus("all");
+    window.setTimeout(() => document.getElementById("tenantShareReviewTitle")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
   };
 
   const saveShare = async event => {
@@ -716,7 +763,7 @@ export function AdminTenantsPage() {
     try {
       await reviewRevenueSharePayment({ tenantId: item.tenant.id, paymentId: item.id, action: "approve" });
       showToast(t("admin_tenants.review.approved"));
-      await Promise.all([loadReviews(), loadTenantList(), loadSales()]);
+      await Promise.all([loadReviews(), loadTenantList(), loadSales(), refreshAdminNotifications({ force: true })]);
     } catch (error) {
       console.error("REVENUE_SHARE_APPROVE_FAILED", error);
       const message = t("admin_tenants.review.review_failed");
@@ -748,7 +795,7 @@ export function AdminTenantsPage() {
       reviewDialogRef.current?.close?.();
       setRejectItem(null);
       setReviewNote("");
-      await Promise.all([loadReviews(), loadTenantList(), loadSales()]);
+      await Promise.all([loadReviews(), loadTenantList(), loadSales(), refreshAdminNotifications({ force: true })]);
     } catch (error) {
       console.error("REVENUE_SHARE_REJECT_FAILED", error);
       const message = t("admin_tenants.review.review_failed");
@@ -952,7 +999,7 @@ export function AdminTenantsPage() {
       const message = t(action === "approve" ? "admin_tenants.wallet.approve_success" : "admin_tenants.wallet.reject_success");
       setStatus(message);
       showToast(message);
-      await loadTenantList();
+      await Promise.all([loadTenantList(), refreshAdminNotifications({ force: true })]);
     } catch (error) {
       console.error("TENANT_LALAMOVE_WALLET_REVIEW_FAILED", error);
       const message = t("admin_tenants.wallet.review_failed");
@@ -981,6 +1028,9 @@ export function AdminTenantsPage() {
     startDate,
     endDate,
   }, t, intlLocale);
+  const notificationTotal = Number(adminNotifications?.total || 0);
+  const walletNotificationCount = Number(adminNotifications?.wallet?.total || 0);
+  const revenueNotificationCount = Number(adminNotifications?.revenueShare?.total || 0);
 
   return (
     <>
@@ -1006,6 +1056,35 @@ export function AdminTenantsPage() {
             <i className="bi bi-plus-lg" aria-hidden="true"></i><span>{t("admin_tenants.hero.create")}</span>
           </button>
         </section>
+
+        {!adminNotificationsLoading && notificationTotal > 0 ? (
+          <section className="card tenant-admin-notification-panel" aria-labelledby="tenantAdminNotificationTitle" data-admin-notification-total={notificationTotal}>
+            <div className="tenant-admin-notification-copy">
+              <span className="tenant-admin-notification-icon"><i className="bi bi-bell-fill" aria-hidden="true"></i><b>{formatNumber(notificationTotal)}</b></span>
+              <div>
+                <strong id="tenantAdminNotificationTitle">{t("admin_tenants.notifications.title")}</strong>
+                <span>{t("admin_tenants.notifications.description")}</span>
+                <small>{t("admin_tenants.notifications.scope")}</small>
+              </div>
+            </div>
+            <div className="tenant-admin-notification-summary">
+              {revenueNotificationCount > 0 ? (
+                <article className="revenue">
+                  <span><i className="bi bi-receipt-cutoff" aria-hidden="true"></i>{t("admin_tenants.notifications.revenue_share_label")}</span>
+                  <strong>{formatNumber(revenueNotificationCount)}</strong>
+                  <small>{t("admin_tenants.notifications.breakdown", { pending: formatNumber(adminNotifications.revenueShare?.pending || 0), auto: formatNumber(adminNotifications.revenueShare?.autoApprovedToday || 0) })}</small>
+                </article>
+              ) : null}
+              {walletNotificationCount > 0 ? (
+                <article className="wallet">
+                  <span><i className="bi bi-wallet2" aria-hidden="true"></i>{t("admin_tenants.notifications.wallet_label")}</span>
+                  <strong>{formatNumber(walletNotificationCount)}</strong>
+                  <small>{t("admin_tenants.notifications.breakdown", { pending: formatNumber(adminNotifications.wallet?.pending || 0), auto: formatNumber(adminNotifications.wallet?.autoApprovedToday || 0) })}</small>
+                </article>
+              ) : null}
+            </div>
+          </section>
+        ) : null}
 
         <section className="card tenant-global-filter" aria-labelledby="tenantGlobalFilterLabel">
           <div className="tenant-global-filter-copy">
@@ -1114,11 +1193,13 @@ export function AdminTenantsPage() {
                       key={tenant.id}
                       tenant={tenant}
                       summary={summaries[tenant.id] || {}}
+                      notifications={adminNotifications?.byTenant?.[tenant.id] || {}}
                       t={t}
                       formatNumber={formatNumber}
                       intlLocale={intlLocale}
                       onEdit={openEdit}
                       onShare={openShare}
+                      onRevenueNotice={openRevenueNotice}
                       onUnlock={unlockShare}
                       onLalamoveApproval={toggleLalamoveApproval}
                       lalamoveApprovalBusy={lalamoveApprovalBusy === tenant.id}

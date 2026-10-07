@@ -104,6 +104,77 @@
   font-weight: 400;
   overflow-wrap: anywhere;
 }
+
+.platform-cards .platform-tenant-notification-card {
+  grid-template-areas:
+    "icon title"
+    "icon copy"
+    "alerts alerts";
+  position: relative;
+}
+.platform-cards .platform-tenant-notification-card.has-notifications {
+  border-color: #fecaca;
+  box-shadow: 0 10px 28px rgba(220,38,38,.10);
+}
+.platform-nav-card-icon {
+  grid-area: icon;
+  position: relative;
+  display: block !important;
+  width: 48px;
+  height: 48px;
+  margin: 0 !important;
+  font-size: inherit !important;
+}
+.platform-nav-notification-badge {
+  position: absolute;
+  top: -9px;
+  right: -11px;
+  z-index: 2;
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border: 3px solid #fff;
+  border-radius: 999px;
+  background: #dc2626;
+  color: #fff;
+  box-shadow: 0 5px 14px rgba(220,38,38,.28);
+  font-size: 11px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.platform-nav-notification-breakdown {
+  grid-area: alerts;
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 8px 0 0 !important;
+  font-size: 12px !important;
+}
+.platform-nav-notification-breakdown > span {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  margin: 0 !important;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 12px !important;
+  line-height: 1.2;
+  font-weight: 650;
+}
+.platform-nav-notification-breakdown .wallet {
+  background: #fff7ed;
+  color: #c2410c;
+}
+.platform-nav-notification-breakdown .revenue {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+.platform-nav-notification-breakdown i {
+  font-size: 13px;
+}
 .platform-google-api-card,
 .platform-scope-card {
   margin-top: 16px;
@@ -801,5 +872,20 @@
   .platform-branding-item-logo .platform-branding-preview {
     width: min(180px, 100%);
     height: 90px;
+  }
+}
+
+
+@media (max-width: 460px) {
+  .platform-nav-card-icon {
+    width: 42px;
+    height: 42px;
+  }
+  .platform-nav-notification-badge {
+    top: -8px;
+    right: -10px;
+  }
+  .platform-nav-notification-breakdown {
+    margin-top: 6px !important;
   }
 }

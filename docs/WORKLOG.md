@@ -9848,3 +9848,61 @@ Production deploy + verification:
 - Production React bundle is `/react/assets/index-DrCSsy0G.js`.
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or schema migration.
 - No merge to `main`.
+
+---
+
+## 2026-10-07 — Super Admin wallet/revenue-share request notification badges
+
+User request:
+- Add Super Admin badges so administrators are alerted whenever a tenant submits a PENGUIN/Lalamove wallet top-up request or a revenue-share slip.
+- The notification must still appear when Slip2Go verifies the slip as matched and the backend auto-approves it.
+
+Root cause:
+- Existing Super Admin review UI is status-oriented.
+- Both revenue-share and wallet top-up submission flows intentionally set `status: approved` immediately when Slip2Go returns a valid matched transaction.
+- A pending-only notification therefore hides exactly the matched/auto-approved submissions the administrator still wants to know about.
+
+Change:
+- Added `platformAdminNotifications.js` using only existing Super Admin callables; no new Firestore client permissions or Functions are required.
+- Notification semantics:
+  - every still-pending request remains counted regardless of age;
+  - a Slip2Go `matched` submission that is already `approved` is also counted on its submission day using the `Asia/Bangkok` date;
+  - wallet and revenue-share counts are kept separate and also combined.
+- `/platform` -> “จัดการร้านค้า” now shows a red aggregate badge plus wallet/revenue breakdown pills.
+- `/admin/tenants` now shows an aggregate notification panel with Pending vs Slip2Go-today breakdown.
+- Each affected tenant card shows actionable chips:
+  - Revenue Share opens that tenant’s review list with status `all`, so Slip2Go auto-approved rows are visible.
+  - Wallet opens the tenant wallet/top-up dialog, where both pending and auto-approved top-ups remain visible.
+- Notification data refreshes every 60 seconds while a Super Admin page is open.
+- Manual approve/reject actions refresh notification counts immediately.
+- Added responsive desktop/mobile treatment and TH/EN/MY/LO/KM copy.
+- Added regression guards requiring pending + same-day Slip2Go auto-approved counting and the aggregate/per-tenant badges.
+- Prepared React Build `2026.10.07.443`, Public Build `2026.10.07.158`.
+
+Important files:
+- `react-app/src/data/platformAdminNotifications.js`
+- `react-app/src/pages/PlatformPage.jsx`
+- `react-app/src/pages/AdminTenantsPage.jsx`
+- `react-app/public/parity/css/platform-control-center.css`
+- `react-app/public/parity/css/tenant-admin-clarity.css`
+- `react-app/src/i18n/parity-translations.json`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `README.md`
+
+Verification:
+- `node --check react-app/src/data/platformAdminNotifications.js` PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for React Build `2026.10.07.443` / `/react/assets/index-Du0JwFNz.js`.
+- `git diff --check` PASS.
+- Read-only candidate overlay loaded the new `index-Du0JwFNz.js` with page/request/HTTP errors = 0 and Firestore write attempts = 0.
+- The available copied Chrome profile is authenticated as tenant `owner`, so `/platform` and `/admin/tenants` correctly redirected to `/`. It cannot be used as Super Admin visual acceptance and no authorization bypass was attempted.
+
+Deploy state:
+- Implementation commit/push pending.
+- Firebase Hosting-only deploy pending.
+- No Firestore Rules, Storage Rules, or Cloud Functions change/deploy is required.
+- No merge to `main`.

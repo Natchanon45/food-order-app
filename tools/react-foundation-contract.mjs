@@ -1231,7 +1231,47 @@ for(const marker of [
   'return Promise.all(tenants.map(hydrateTenantLalamoveState))'
 ]) assert(platformTenantService.includes(marker),"tenant Lalamove hydration contract missing: "+marker);
 
+const platformAdminNotifications=read("react-app/src/data/platformAdminNotifications.js");
+const tenantAdminClarityCss=read("react-app/public/parity/css/tenant-admin-clarity.css");
+assert(
+  platformAdminNotifications.includes('timeZone: "Asia/Bangkok"')
+  &&platformAdminNotifications.includes('listPlatformRevenueSharePayments({ status: "all" })')
+  &&platformAdminNotifications.includes('String(item.status || "").toLowerCase() === "approved"')
+  &&platformAdminNotifications.includes('String(item.verificationProvider || "").toLowerCase().includes("slip2go")')
+  &&platformAdminNotifications.includes('String(item.verificationStatus || "").toLowerCase() === "matched"')
+  &&platformAdminNotifications.includes("submittedToday(item, todayKey)")
+  &&platformAdminNotifications.includes("getTenantLalamoveWallet")
+  &&platformAdminNotifications.includes("revenuePending + revenueAutoApprovedToday")
+  &&platformAdminNotifications.includes("walletPending + walletAutoApprovedToday"),
+  "Super Admin notifications must count all pending requests plus same-day Slip2Go auto-approved submissions in Bangkok time"
+);
+assert(
+  platformPage.includes("platform-nav-notification-badge")
+  &&platformPage.includes("platform.notifications.wallet")
+  &&platformPage.includes("platform.notifications.revenue_share")
+  &&platformPage.includes("loadPlatformAdminNotificationSummary({ force: true })")
+  &&platformControlCenterCss.includes(".platform-nav-notification-badge")
+  &&platformControlCenterCss.includes(".platform-nav-notification-breakdown"),
+  "Platform control center must expose aggregate wallet/revenue notification badges"
+);
+for(const locale of ["th","en","my","lo","km"]) {
+  assert(Boolean(dict?.[locale]?.platform?.notifications?.wallet),`Platform notification locale missing: ${locale}`);
+  assert(Boolean(dict?.[locale]?.platform?.notifications?.revenue_share),`Platform notification revenue locale missing: ${locale}`);
+  assert(Boolean(dict?.[locale]?.admin_tenants?.notifications?.breakdown),`Tenant notification locale missing: ${locale}`);
+}
+
 const adminTenantsPage=read("react-app/src/pages/AdminTenantsPage.jsx");
+assert(
+  adminTenantsPage.includes('className="card tenant-admin-notification-panel"')
+  &&adminTenantsPage.includes("data-tenant-revenue-notification={tenant.id}")
+  &&adminTenantsPage.includes("data-tenant-wallet-notification={tenant.id}")
+  &&adminTenantsPage.includes('setReviewStatus("all")')
+  &&adminTenantsPage.includes("refreshAdminNotifications({ force: true })")
+  &&tenantAdminClarityCss.includes(".tenant-admin-notification-panel")
+  &&tenantAdminClarityCss.includes(".tenant-notification-chip.revenue")
+  &&tenantAdminClarityCss.includes(".tenant-notification-chip.wallet"),
+  "Admin Tenants must expose actionable aggregate and per-tenant notification badges"
+);
 assert(
   adminTenantsPage.includes('tenant.lalamove?.accountMode === "fod_central"')
   &&adminTenantsPage.includes('data-lalamove-approval={tenant.id}')

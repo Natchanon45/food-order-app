@@ -7,6 +7,7 @@ import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
 import { applyPlatformBranding } from "@/components/PlatformBrandingRuntime";
 import { loadPlatformBranding, savePlatformBranding } from "@/data/platformBrandingService";
+import { EMPTY_PLATFORM_ADMIN_NOTIFICATIONS, loadPlatformAdminNotificationSummary } from "@/data/platformAdminNotifications";
 import {
   loadPlatformGoogleApis,
   loadPlatformLalamove,
@@ -184,7 +185,7 @@ function SecretField({
 export function PlatformPage() {
   const authState = useAuth();
   const { profile } = authState;
-  const { t, raw } = useI18n();
+  const { t, raw, formatNumber } = useI18n();
   const stylesReady = useParityPage({
     title: t("platform.meta.title"),
     styles: ["platform-control-center.css", "super-admin-header.css"],
@@ -219,6 +220,8 @@ export function PlatformPage() {
   const [lalamoveWebhookStatus, setLalamoveWebhookStatus] = useState("");
   const [lalamoveError, setLalamoveError] = useState("");
   const [lalamoveTesting, setLalamoveTesting] = useState(false);
+  const [adminNotifications, setAdminNotifications] = useState(EMPTY_PLATFORM_ADMIN_NOTIFICATIONS);
+  const [adminNotificationsLoading, setAdminNotificationsLoading] = useState(true);
 
   const googleStatusText = (configured, masked, clearing = false) => {
     if (clearing) return t("platform.google_api.clear_pending");
@@ -328,6 +331,28 @@ export function PlatformPage() {
 
     return () => { active = false; };
   }, [profile?.role, t]);
+
+  useEffect(() => {
+    if (profile?.role !== "super_admin") return undefined;
+    let active = true;
+    const refresh = async () => {
+      try {
+        const summary = await loadPlatformAdminNotificationSummary({ force: true });
+        if (active) setAdminNotifications(summary);
+      } catch (error) {
+        console.error("PLATFORM_ADMIN_NOTIFICATIONS_LOAD_FAILED", error);
+      } finally {
+        if (active) setAdminNotificationsLoading(false);
+      }
+    };
+    setAdminNotificationsLoading(true);
+    refresh();
+    const timer = window.setInterval(refresh, 60_000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, [profile?.role]);
 
   useEffect(() => {
     if (profile?.role !== "super_admin") return undefined;
@@ -609,6 +634,9 @@ export function PlatformPage() {
     : (lalamoveError || (lalamove.ready
       ? t("platform.lalamove.connection_ready", { environment: lalamove.environment })
       : t("platform.lalamove.connection_not_ready")));
+  const notificationTotal = Number(adminNotifications?.total || 0);
+  const walletNotificationCount = Number(adminNotifications?.wallet?.total || 0);
+  const revenueNotificationCount = Number(adminNotifications?.revenueShare?.total || 0);
 
   return (
     <>
@@ -627,7 +655,17 @@ export function PlatformPage() {
         </section>
 
         <section className="nav-cards platform-cards">
-          <Link className="card nav-card" to="/admin/tenants"><i className="bi bi-arrow-left-right app-icon" aria-hidden="true"></i><strong>{t("platform.cards.tenants.title")}</strong><small>{t("platform.cards.tenants.description")}</small></Link>
+          <Link className={`card nav-card platform-tenant-notification-card${notificationTotal > 0 ? " has-notifications" : ""}`} to="/admin/tenants" data-platform-tenant-notifications={notificationTotal}>
+            <span className="platform-nav-card-icon"><i className="bi bi-arrow-left-right app-icon" aria-hidden="true"></i>{notificationTotal > 0 ? <b className="platform-nav-notification-badge" aria-label={t("platform.notifications.total_aria", { count: formatNumber(notificationTotal) })}>{formatNumber(notificationTotal)}</b> : null}</span>
+            <strong>{t("platform.cards.tenants.title")}</strong>
+            <small>{t("platform.cards.tenants.description")}</small>
+            {!adminNotificationsLoading && notificationTotal > 0 ? (
+              <span className="platform-nav-notification-breakdown" aria-label={t("platform.notifications.scope")}>
+                {walletNotificationCount > 0 ? <span className="wallet"><i className="bi bi-wallet2" aria-hidden="true"></i>{t("platform.notifications.wallet", { count: formatNumber(walletNotificationCount) })}</span> : null}
+                {revenueNotificationCount > 0 ? <span className="revenue"><i className="bi bi-receipt-cutoff" aria-hidden="true"></i>{t("platform.notifications.revenue_share", { count: formatNumber(revenueNotificationCount) })}</span> : null}
+              </span>
+            ) : null}
+          </Link>
           <Link className="card nav-card" to="/platform/owners"><i className="bi bi-people app-icon" aria-hidden="true"></i><strong>{t("platform.cards.owners.title")}</strong><small>{t("platform.cards.owners.description")}</small></Link>
           <Link className="card nav-card" to="/platform/contact"><i className="bi bi-chat-heart app-icon" aria-hidden="true"></i><strong>{t("platform.cards.contact.title")}</strong><small>{t("platform.cards.contact.description")}</small></Link>
           <Link className="card nav-card" to="/platform/pricing"><i className="bi bi-tags app-icon" aria-hidden="true"></i><strong>{t("platform.cards.pricing.title")}</strong><small>{t("platform.cards.pricing.description")}</small></Link>
