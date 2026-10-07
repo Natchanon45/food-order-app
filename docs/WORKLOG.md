@@ -10534,3 +10534,46 @@ Deploy state:
 - Firebase Hosting cutover remains pending.
 - No Firestore Rules or Storage Rules change required.
 - No merge to `main`.
+
+### Backup v2 Functions deploy + final pre-Hosting candidate verification
+
+Deployment:
+- exportRetailPosBackup v2 updated successfully in asia-southeast1.
+- restoreRetailPosBackup v2 updated successfully in asia-southeast1.
+- The earlier upsertRetailPosStaff update remains deployed.
+- Firebase Hosting is still intentionally not deployed at this checkpoint.
+
+Authenticated Owner candidate verification against Production data:
+- Candidate React bundle: /react/assets/index-D1Q6l4Rg.js / Build 2026.10.07.452.
+- /pos/backup:
+  - React shell loaded with no legacy Backup script.
+  - 14 visible summary groups loaded successfully.
+  - Products: 1,997; categories: 49; sales: 11; customers: 5; loyalty entries: 11; stock movements: 102; shifts: 8; tax invoices: 1.
+  - Backup download succeeded as retail-pos-react version 2, codec firestore-types-v1.
+  - Download contains the expected POS integrity collections, including dailySummary, counters, runningNumbers, saleItems, syncQueue, and taxBuyerProfiles.
+  - Typed Firestore markers found in the real file: 2,639.
+  - Backup settings IDs were only: retailPos, tax, payment, receipt, loyalty, pos-theme, catalog-order.
+  - Shared-setting leak check: none.
+  - Non-POS counter leak check: none.
+  - Non-POS running-number leak check: none.
+  - Non-POS held-bill leak check: none.
+  - Restore button remained disabled because no restore file/confirmation was supplied.
+- /pos/users:
+  - 5 real roles.
+  - 3 real POS users.
+  - 19 permission groups.
+  - Add Role local UI behavior passed.
+  - Edit User dialog opened with email read-only, two password fields, and Retail POS / both-system scope options.
+  - Desktop and mobile horizontal overflow = 0.
+- Harness observed:
+  - Firestore writes: 0.
+  - page errors: 0.
+  - console errors: 0.
+  - request failures: 0.
+  - HTTP errors: 0.
+- No Production Restore action has been executed.
+
+Deploy state:
+- Safe to proceed with Firebase Hosting Build 2026.10.07.452.
+- No Firestore Rules or Storage Rules deployment required.
+- No merge to main.
