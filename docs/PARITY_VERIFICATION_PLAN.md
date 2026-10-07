@@ -211,3 +211,11 @@ For routes with a Laravel MASTER equivalent:
 7. Prevent page-specific legacy JavaScript/CSS runtime directories from returning to Firebase Hosting.
 8. Expand the same verification system to P1 then P2.
 9. Only mark a verification group complete after its required dimensions pass, not after visual inspection alone.
+
+
+## Global initial readiness parity
+- Every user-visible React route shows the shared full-screen `PageReadyOverlay` until required styles and initial auth/tenant/data have settled.
+- Loading content is centered on both X/Y axes and contains spinner + indeterminate progress + localized shared loading/wait text.
+- Partial page UI and page-specific initial loading blocks must not appear underneath or after the global overlay.
+- Redirect/compatibility routes show the same overlay while navigation is pending.
+- Successful readiness removes the initial overlay completely; explicit initial-load failures move to a clear error state.

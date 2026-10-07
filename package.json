@@ -21,6 +21,7 @@
     "build:react": "vite build --config vite.react.config.js",
     "preview:react": "vite preview --config vite.react.config.js",
     "test:react-foundation": "node tools/react-foundation-contract.mjs",
+    "test:kitchen-lalamove-lock": "node --test tests/react-parity/kitchen-lalamove-lock.spec.mjs",
     "test:operational": "node tools/operational-orders-contract.mjs",
     "test:react-migration": "node tools/react-migration-coverage.mjs",
     "test:react-parity-matrix": "node tools/react-parity-matrix.mjs",
@@ -32,7 +33,7 @@
     "test:tenant-access": "node tools/tenant-access-contract.mjs",
     "test:ui-layers": "node tools/ui-layer-contract.mjs",
     "report:react-parity": "node tools/react-parity-report.mjs",
-    "test:react-parity": "npm run test:react-foundation && npm run test:react-migration && npm run test:react-parity-matrix && npm run test:react-p0-actions && npm run test:react-callables && npm run test:tenant-access && npm run test:ui-layers",
+    "test:react-parity": "npm run test:react-foundation && npm run test:kitchen-lalamove-lock && npm run test:react-migration && npm run test:react-parity-matrix && npm run test:react-p0-actions && npm run test:react-callables && npm run test:tenant-access && npm run test:ui-layers",
     "test:react-parity-full": "npm run test:react-parity && npm run test:delivery-parity-browser && npm run test:delivery-success-parity-browser && npm run test:react-p0-browser",
     "postbuild:react": "python3 tools/sync-react-entrypoints.py && npm run verify:react-build",
     "verify:react-build": "node tools/generated-react-build-contract.mjs"

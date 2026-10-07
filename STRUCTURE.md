@@ -121,3 +121,5 @@ npx firebase-tools deploy --only hosting --project chat-45754
 Functions-only deployments do not require a Hosting Build bump unless Hosting is also deployed.
 
 Do not deploy unrelated Firebase services merely because the working tree is dirty.
+
+- Global initial-ready contract: every React route uses `PageReadyOverlay` for initial readiness. It remains full-screen and centered on X/Y with spinner + indeterminate progress + shared localized loading/wait text until styles plus required initial auth/tenant/data are ready or have settled to an explicit error. Partial page content must not appear beneath an unfinished initial load, all initial loading UI disappears when readiness completes, and redirect/compatibility routes show the same overlay while navigating.

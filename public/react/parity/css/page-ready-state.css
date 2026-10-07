@@ -123,6 +123,7 @@ body.page-ready-blocked > *:not(.page-ready-overlay) {
   display: grid;
   justify-items: center;
   gap: 8px;
+  width: min(360px, 100%);
   text-align: center;
 }
 
@@ -160,6 +161,16 @@ body.page-ready-blocked > *:not(.page-ready-overlay) {
   border-radius: inherit;
   background: linear-gradient(90deg, #0c7b3c, #1a9d50);
   transition: width .3s ease;
+}
+
+.page-ready-progress-indeterminate {
+  width: min(240px, 72vw);
+  margin-top: 10px;
+}
+
+.page-ready-progress-indeterminate > span {
+  width: 38%;
+  animation: page-ready-progress-move 1.25s ease-in-out infinite;
 }
 
 .page-ready-meta {

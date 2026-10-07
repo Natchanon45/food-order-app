@@ -402,6 +402,23 @@ const structureRules=read("STRUCTURE.md");
 const parityVerificationPlan=read("docs/PARITY_VERIFICATION_PLAN.md");
 const verifyPage=read("react-app/src/pages/VerifyPage.jsx");
 const legalPage=read("react-app/src/pages/LegalPage.jsx");
+const pageReadyOverlay=read("react-app/src/components/PageReadyOverlay.jsx");
+const pageReadyPolicyPages=[
+  "DeliveryPage.jsx",
+  "DeliverySuccessPage.jsx",
+  "LegalPage.jsx",
+  "PosBackupPage.jsx",
+  "PosForbiddenPage.jsx",
+  "PosUsersPage.jsx",
+  "PublicOrderPage.jsx",
+  "PublicRouteMissingPage.jsx",
+  "TakeawayPage.jsx",
+  "VerifyPage.jsx",
+  "WaitingQueueCustomerPage.jsx",
+  "RegisterPage.jsx",
+  "WaitingQueueDisplayPage.jsx",
+  "StorefrontCompatibilityEntry.jsx",
+].map(name=>({name,source:read("react-app/src/pages/"+name)}));
 const customerDeliveryData=read("react-app/src/data/customerDeliveryData.js");
 const deliveryLocationPicker=read("react-app/src/components/DeliveryLocationPicker.jsx");
 const publicStorefrontData=read("react-app/src/data/publicStorefrontData.js");
@@ -736,6 +753,43 @@ assert(
   appParityCss.includes(".app-header { position: sticky;")
   &&appParityCss.includes("justify-content: space-between; gap: 12px;"),
   "Shared app-header must preserve direct-child button/badge spacing"
+);
+for (const { name, source } of pageReadyPolicyPages) {
+  assert(
+    source.includes('PageReadyOverlay'),
+    "Initial full-screen PageReadyOverlay missing: " + name
+  );
+  assert(
+    !/if\s*\([^\n]*!stylesReady[^\n]*\)\s*return\s+null/.test(source),
+    "Initial styles readiness must not return a blank page: " + name
+  );
+}
+assert(
+  readmeRules.includes("Global initial loading rule")
+  &&readmeRules.includes("กำลังโหลดข้อมูล...")
+  &&structureRules.includes("Global initial-ready contract")
+  &&parityVerificationPlan.includes("Global initial readiness parity"),
+  "Global initial loading/readiness policy must stay documented"
+);
+assert(
+  pageReadyOverlay.includes('className="page-ready-spinner"')
+  &&pageReadyOverlay.includes('page-ready-progress-indeterminate')
+  &&pageReadyOverlay.includes('t("shared.state.loading")')
+  &&pageReadyOverlay.includes('t("shared.state.please_wait")')
+  &&pageReadyCss.includes("place-items: center;")
+  &&pageReadyCss.includes(".page-ready-progress-indeterminate"),
+  "PageReadyOverlay must remain full-screen centered with spinner/progress/shared translations"
+);
+assert(
+  dict.th?.shared?.state?.loading === "กำลังโหลดข้อมูล..."
+  &&dict.th?.shared?.state?.please_wait === "กรุณารอสักครู่ ...",
+  "Thai global initial loading text must match the approved wording"
+);
+assert(
+  verifyPage.includes('t("verify.header")')
+  &&!verifyPage.includes('t("verify.header.title")')
+  &&verifyPage.includes("PageReadyOverlay"),
+  "Verify header must use the translated verify.header value and full-screen initial loading"
 );
 assert(
   deliverySuccessPage.includes('id="orderAgainLink"')

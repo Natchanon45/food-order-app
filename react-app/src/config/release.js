@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.07.467",
+  build: "2026.10.08.468",
   branch: "feature/react-firebase-port",
-  commit: "DELIVERY-MOBILE-BADGE-FAVORITES",
+  commit: "GLOBAL-INITIAL-READY-VERIFY-KITCHEN-LOCK",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Delivery mobile badge and favorites visibility",
+  milestone: "Global initial loading and Kitchen Lalamove lock parity",
   whatsNew: [
-    "Keep the Delivery badge immediately beside the brand on mobile",
-    "Show the Favorites category only after a favorite has been persisted",
-    "Hide the Favorites category again when the final favorite is removed",
+    "Require full-screen centered spinner/progress loading before every React route is initially ready",
+    "Fix Verify header translation so raw translation keys never surface",
+    "Lock Kitchen delivery items after a Lalamove dispatch is placed, including legacy dispatch evidence",
   ],
 });

@@ -5529,10 +5529,10 @@
         "prompt_title": "กรอกข้อมูล"
       },
       "state": {
-        "loading": "กำลังโหลด...",
+        "loading": "กำลังโหลดข้อมูล...",
         "saving": "กำลังบันทึก...",
         "processing": "กำลังดำเนินการ...",
-        "please_wait": "กรุณารอสักครู่...",
+        "please_wait": "กรุณารอสักครู่ ...",
         "empty": "ยังไม่มีข้อมูล",
         "no_data": "ไม่พบข้อมูล",
         "error": "เกิดข้อผิดพลาด",
@@ -11553,10 +11553,10 @@
         "prompt_title": "Enter information"
       },
       "state": {
-        "loading": "Loading...",
+        "loading": "Loading data...",
         "saving": "Saving...",
         "processing": "Processing...",
-        "please_wait": "Please wait...",
+        "please_wait": "Please wait a moment...",
         "empty": "No items yet",
         "no_data": "No data found",
         "error": "An error occurred",
@@ -17577,10 +17577,10 @@
         "prompt_title": "အချက်အလက်ထည့်ပါ။"
       },
       "state": {
-        "loading": "ဖွင့်နေသည်...",
+        "loading": "ဒေတာကို ဖွင့်နေသည်...",
         "saving": "သိမ်းဆည်းနေသည်...",
         "processing": "လုပ်ဆောင်နေသည်...",
-        "please_wait": "ခဏစောင့်ပါ...",
+        "please_wait": "ခဏစောင့်ပါ ...",
         "empty": "ပစ္စည်းမရသေးပါ။",
         "no_data": "ဒေတာမတွေ့ပါ။",
         "error": "အမှားအယွင်းတစ်ခု ဖြစ်ပွားခဲ့သည်။",
@@ -23601,10 +23601,10 @@
         "prompt_title": "ໃສ່ຂໍ້ມູນ"
       },
       "state": {
-        "loading": "ກຳລັງໂຫລດ...",
+        "loading": "ກຳລັງໂຫຼດຂໍ້ມູນ...",
         "saving": "ກຳລັງບັນທຶກ...",
         "processing": "ກຳລັງປະມວນຜົນ...",
-        "please_wait": "ກະລຸນາລໍຖ້າ...",
+        "please_wait": "ກະລຸນາລໍຖ້າ ...",
         "empty": "ບໍ່ມີລາຍການເທື່ອ",
         "no_data": "ບໍ່ພົບຂໍ້ມູນ",
         "error": "ເກີດຄວາມຜິດພາດຂຶ້ນ",
@@ -29625,10 +29625,10 @@
         "prompt_title": "បញ្ចូលព័ត៌មាន"
       },
       "state": {
-        "loading": "កំពុង​ផ្ទុក...",
+        "loading": "កំពុងផ្ទុកទិន្នន័យ...",
         "saving": "កំពុងរក្សាទុក...",
         "processing": "កំពុងដំណើរការ...",
-        "please_wait": "សូមរង់ចាំ...",
+        "please_wait": "សូមរង់ចាំបន្តិច ...",
         "empty": "មិនមានធាតុនៅឡើយទេ",
         "no_data": "រកមិនឃើញទិន្នន័យទេ។",
         "error": "កំហុសមួយបានកើតឡើង",

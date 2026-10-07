@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { useParams } from "react-router-dom";
 import { sweetAlert, sweetConfirm } from "@/components/sweetDialog";
 import {
@@ -146,7 +147,7 @@ export function TakeawayPage() {
     }
   };
 
-  if (!stylesReady) return null;
+  if (!stylesReady || loading) return <PageReadyOverlay />;
   const shopName = String(settings?.shopName || tenant?.name || t("shared.store.fallback_name") || "PENGUIN").trim();
 
   return (

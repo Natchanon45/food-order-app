@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { Link, useParams } from "react-router-dom";
 import { getPublicOrder, getPublicStoreSettings, resolvePublicTenant, watchPublicOrder } from "@/data/publicStorefrontData";
 import { PublicStorefrontFooter, PublicStorefrontHeader, showStorefrontToast } from "@/components/PublicStorefront";
@@ -226,7 +227,7 @@ export function DeliverySuccessPage() {
     }
   };
 
-  if (!stylesReady) return null;
+  if (!stylesReady || loading) return <PageReadyOverlay />;
 
   return <>
     <PublicStorefrontHeader

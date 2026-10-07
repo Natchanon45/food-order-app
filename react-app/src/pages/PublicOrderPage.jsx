@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { useParams } from "react-router-dom";
 import { sweetConfirm } from "@/components/sweetDialog";
 import {
@@ -173,7 +174,7 @@ export function PublicOrderPage() {
   const heroTitle = validSession ? t("order.hero.for_table", { table: activeName }) : storeFailure ? t("order.errors.store_title") : t("order.errors.invalid_title");
   const heroDescription = validSession ? t("order.hero.description") : storeFailure ? t("order.errors.store_description") : t("order.errors.invalid_description");
 
-  if (!stylesReady) return null;
+  if (!stylesReady || loading) return <PageReadyOverlay />;
   return (
     <>
       <PublicStorefrontHeader title={t("order.header.title")} badge={loading ? t("order.header.checking") : badge} />

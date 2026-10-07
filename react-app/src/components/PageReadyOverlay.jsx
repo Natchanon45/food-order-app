@@ -23,7 +23,8 @@ export function PageReadyOverlay({
           <p>{message || t("auth.login.errors.failed")}</p>
           {onRetry ? (
             <button className="btn btn-primary page-ready-retry" type="button" data-page-ready-retry onClick={onRetry}>
-              {t("shared.actions.retry")}
+              <i className="bi bi-arrow-clockwise app-icon" aria-hidden="true"></i>
+              <span>{t("shared.actions.retry")}</span>
             </button>
           ) : null}
         </div>
@@ -46,6 +47,7 @@ export function PageReadyOverlay({
           <h2 id="pageReadyTitle" data-page-ready-title>{t("shared.state.loading")}</h2>
           <p data-page-ready-message>{t("shared.state.please_wait")}</p>
         </div>
+        <div className="page-ready-progress page-ready-progress-indeterminate" aria-hidden="true"><span></span></div>
       </div>
     </div>
   );

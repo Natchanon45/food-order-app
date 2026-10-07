@@ -2,7 +2,7 @@
 
 Current development branch: `feature/react-firebase-port`
 Current milestone: React + Firebase parity migration / Super Admin Console
-Next PENGUIN release identity: Version `0.4.280` • Build `2026.10.07.467`
+Next PENGUIN release identity: Version `0.4.280` • Build `2026.10.08.468`
 Primary production Hosting: `https://penguin-food.web.app` (legacy `https://natchanon-food-order-delivery.web.app` retained for transition only)
 
 > New Chat / continuation: read `STRUCTURE.md`, `docs/NEXT_CHAT_HANDOFF.md`, and `docs/WORKLOG.md` before changing code.
@@ -559,3 +559,7 @@ Display layout workflow: in PC mode, `/pos/customer-display/` keeps the customer
 Deploy rules: use `firebase deploy --only hosting` for changes under `public/` only. Use `firebase deploy --only functions:<functionName>` when files under `functions/` change. Use `firebase deploy --only functions:<functionName>,hosting` only when both function code/routes and hosting assets change.
 
 Deploy for this build: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
+
+
+### Global initial loading rule
+Every user-visible React route must render the shared full-screen `PageReadyOverlay` before its required initial data is ready. The overlay must cover the viewport, center content on both X/Y axes, show a spinner plus indeterminate progress, and use localized shared text (`กำลังโหลดข้อมูล...` / `กรุณารอสักครู่ ...` in Thai). Keep it visible until required styles plus initial auth/tenant/data have settled into either a ready state or an explicit error state. Never reveal a partially initialized page or leave a page-specific initial loading block visible after the full-screen overlay is removed. Redirect/compatibility routes use the same overlay while navigation is pending.

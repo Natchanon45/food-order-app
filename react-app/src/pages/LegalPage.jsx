@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { useParityPage } from "@/hooks/useParityPage";
 
 const CONTENT = {
@@ -35,7 +36,7 @@ export function LegalPage({ type = "privacy" }) {
     bodyClass: "legal-react-page",
     styles: ["app.css", "icons.css", "legal-react.css"],
   });
-  if (!stylesReady) return null;
+  if (!stylesReady) return <PageReadyOverlay />;
   return (
     <>
       <header className="app-header"><Link className="brand" to="/"><span className="brand-mark">PG</span><span>PENGUIN</span></Link></header>

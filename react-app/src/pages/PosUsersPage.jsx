@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
 import { useTenant } from "@/tenant/TenantProvider";
@@ -150,7 +151,7 @@ export function PosUsersPage(){
     finally{setBusy("")}
   };
 
-  if(authState.status==="loading"||tenantState.status==="loading"||!stylesReady||(tenant?.id&&!ready))return null;
+  if(authState.status==="loading"||tenantState.status==="loading"||!stylesReady||(tenant?.id&&!ready))return <PageReadyOverlay/>;
   if(!profile)return <Navigate to="/login?next=%2Fpos%2Fusers" replace/>;
   if(!tenant)return <Navigate to="/" replace/>;
   if(!["owner","super_admin"].includes(profile.role))return <Navigate to="/pos" replace/>;

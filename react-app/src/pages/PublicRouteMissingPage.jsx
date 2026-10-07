@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { useParityPage } from "@/hooks/useParityPage";
 
 export function PublicRouteMissingPage({ title = "ลิงก์ร้านค้าไม่สมบูรณ์", detail = "กรุณาเปิดร้านผ่านลิงก์หรือ QR ที่มีชื่อร้าน" }) {
@@ -7,7 +8,7 @@ export function PublicRouteMissingPage({ title = "ลิงก์ร้านค
     bodyClass: "public-route-missing-page",
     styles: ["app.css", "icons.css", "shared-responsive.css"],
   });
-  if (!stylesReady) return null;
+  if (!stylesReady) return <PageReadyOverlay />;
   return (
     <main className="container" style={{ maxWidth: 620, paddingTop: 56 }}>
       <section className="card" style={{ padding: 30, textAlign: "center" }}>

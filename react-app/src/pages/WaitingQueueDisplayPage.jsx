@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { useI18n } from "@/i18n/I18nProvider";
 import { waitingQueueNamespaceTranslator } from "@/i18n/waitingQueueI18n";
 import { useParityPage } from "@/hooks/useParityPage";
@@ -9,9 +10,10 @@ const VOICE_BASE = { th: "/assets/audio/waiting-queue-th", en: "/assets/audio/wa
 export function WaitingQueueDisplayPage() {
   const { locale, intlLocale } = useI18n();
   const tr = useMemo(() => waitingQueueNamespaceTranslator(locale, "waiting_queue_display"), [locale]);
-  useParityPage({ title: tr("meta.title"), styles: ["retail-pos.css", "waiting-queue-display.css"] });
+  const stylesReady = useParityPage({ title: tr("meta.title"), styles: ["retail-pos.css", "waiting-queue-display.css"] });
   const tenantId = useMemo(() => new URLSearchParams(location.search).get("tenantId")?.trim() || "", []);
   const [rows, setRows] = useState([]);
+  const [initialReady, setInitialReady] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [online, setOnline] = useState(() => navigator.onLine);
   const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem("waiting_queue_display_sound") !== "off");
@@ -21,8 +23,13 @@ export function WaitingQueueDisplayPage() {
   const audioContext = useRef(null);
 
   useEffect(() => {
-    if (!tenantId) return;
-    return watchPublicQueueBoard(tenantId, setRows, error => console.error("WAITING_DISPLAY_WATCH_FAILED", error));
+    if (!tenantId) { setInitialReady(true); return undefined; }
+    setInitialReady(false);
+    return watchPublicQueueBoard(
+      tenantId,
+      nextRows => { setRows(nextRows); setInitialReady(true); },
+      error => { console.error("WAITING_DISPLAY_WATCH_FAILED", error); setInitialReady(true); },
+    );
   }, [tenantId]);
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -86,6 +93,8 @@ export function WaitingQueueDisplayPage() {
   const clock = new Date(now).toLocaleString(intlLocale,{weekday:"long",hour:"2-digit",minute:"2-digit",second:"2-digit"});
   const ready=soundEnabled && soundArmed;
   const audioMode=!ready ? tr("audio.off") : voiceAvailable && VOICE_BASE[locale] ? tr("audio.mode_voice") : tr("audio.mode_chime");
+
+  if (!stylesReady || !initialReady) return <PageReadyOverlay />;
 
   return <main className="waiting-display-shell">
     <header className="waiting-display-head">

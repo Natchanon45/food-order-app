@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { useParams } from "react-router-dom";
 import { httpsCallable } from "firebase/functions";
 import { sweetConfirm } from "@/components/sweetDialog";
@@ -156,7 +157,7 @@ export function DeliveryPage() {
 
   const [customerUser, setCustomerUser] = useState(null);
   const [profile, setProfile] = useState({ displayName: "", phone: "", addresses: [] });
-  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [customerBusy, setCustomerBusy] = useState("");
   const [selectedAddressId, setSelectedAddressId] = useState("");
   const [addressEditor, setAddressEditor] = useState(null);
@@ -717,7 +718,7 @@ export function DeliveryPage() {
     });
   };
 
-  if (!stylesReady) return null;
+  if (!stylesReady || loading || (tenant && profileLoading && !loadError)) return <PageReadyOverlay />;
   const shopName = String(settings.orderDeliveryShopName || settings.shopName || tenant?.name || t("shared.store.fallback_name") || "PENGUIN").trim();
   const locked = paymentMethod === "promptpay" && paymentLocked;
 

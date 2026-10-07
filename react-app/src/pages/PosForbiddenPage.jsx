@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { Link } from "react-router-dom";
 import { getRetailPosSession } from "@/auth/retailPosSession";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
@@ -17,7 +18,7 @@ export function PosForbiddenPage() {
   });
   const session = useMemo(() => getRetailPosSession(), []);
   const posProfile = session || profile || {};
-  if (!stylesReady) return null;
+  if (!stylesReady) return <PageReadyOverlay />;
   return (
     <>
       <header className="pos-header">

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { onAuthStateChanged, reload } from "firebase/auth";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "@/firebase/client";
@@ -56,8 +57,9 @@ export function RegisterPage() {
   const [verifyMode, setVerifyMode] = useState(false);
   const [verifyStatus, setVerifyStatus] = useState({ text: t("auth.register.verify_waiting"), error: false });
   const [pricing, setPricing] = useState(null);
+  const [pricingReady, setPricingReady] = useState(false);
 
-  useParityPage({
+  const stylesReady = useParityPage({
     bodyClass: "register-page",
     title: t("auth.register.title"),
     styles: ["register-page.css"],
@@ -67,7 +69,8 @@ export function RegisterPage() {
     let alive = true;
     loadPublicSubscriptionPricing()
       .then(result => { if (alive) setPricing(result); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => { if (alive) setPricingReady(true); });
     return () => { alive = false; };
   }, []);
 
@@ -234,6 +237,8 @@ export function RegisterPage() {
     const message = validationMessage(name);
     return <div className={`field-error${message ? " show" : ""}`}>{message}</div>;
   };
+
+  if (!stylesReady || !pricingReady) return <PageReadyOverlay />;
 
   return (
     <>

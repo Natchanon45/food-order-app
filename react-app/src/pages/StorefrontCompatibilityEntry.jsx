@@ -1,4 +1,6 @@
-import { Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { PublicRouteMissingPage } from "@/pages/PublicRouteMissingPage";
 
 const ACTIVE_TENANT_KEY = "food_order_active_tenant";
@@ -13,9 +15,16 @@ function storedTenantSlug() {
 }
 
 export function StorefrontCompatibilityEntry({ target, allowStoredTenant = false }) {
+  const navigate = useNavigate();
   const slug = allowStoredTenant ? storedTenantSlug() : "";
-  if (slug) {
-    return <Navigate to={"/s/" + encodeURIComponent(slug) + "/" + target + location.search + location.hash} replace />;
-  }
+  const destination = slug
+    ? "/s/" + encodeURIComponent(slug) + "/" + target + location.search + location.hash
+    : "";
+
+  useEffect(() => {
+    if (destination) navigate(destination, { replace: true });
+  }, [destination, navigate]);
+
+  if (destination) return <PageReadyOverlay />;
   return <PublicRouteMissingPage />;
 }

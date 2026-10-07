@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { sweetAlert, sweetConfirm } from "@/components/sweetDialog";
 import {
   callCountdownSeconds,
@@ -192,7 +193,7 @@ export function WaitingQueueCustomerPage() {
     }
   };
 
-  if (!stylesReady) return null;
+  if (!stylesReady || loading) return <PageReadyOverlay />;
   return (
     <main className="waiting-customer-shell">
       <header className="waiting-customer-brand">
@@ -200,13 +201,6 @@ export function WaitingQueueCustomerPage() {
         <div><strong>{t("customer.brand_title")}</strong><span>{t("customer.brand_subtitle")}</span></div>
       </header>
 
-      {loading ? (
-        <div id="waitingCustomerLoading" className="waiting-customer-loading">
-          <span className="waiting-customer-spinner" aria-hidden="true"></span>
-          <strong>{t("customer.loading_title")}</strong>
-          <span>{t("customer.loading_help")}</span>
-        </div>
-      ) : null}
 
       {errorText ? <div id="waitingCustomerError" className="waiting-customer-error">{errorText}</div> : null}
 

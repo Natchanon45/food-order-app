@@ -11774,3 +11774,66 @@ Deploy state:
 - Clean guest context hides Favorites; a successfully persisted favorite reveals it; reload restores it; removing the final favorite hides it again.
 - Guest favorites remain localStorage-backed; signed-in favorites remain Firestore `favoriteMenuIds`-backed.
 - Hosting-only deploy; no Functions/Rules/schema changes and no merge to `main`.
+
+
+---
+
+## 2026-10-08 — Global initial loading + Verify title + Kitchen Lalamove lock parity (Build 2026.10.08.468)
+
+Request:
+- Add a permanent system rule: every page must show a full-screen initial loading state before required data is ready.
+- Loading must be centered on both X/Y axes with spinner + progress and localized text:
+  - `กำลังโหลดข้อมูล...`
+  - `กรุณารอสักครู่ ...`
+- Do not reveal partially loaded page content; remove initial loading completely when ready.
+- Fix raw `verify.header.title` visible on Verify.
+- Match Laravel Kitchen behavior: once Cashier has successfully placed a Lalamove dispatch, Kitchen item/amount editing must lock.
+
+Test-first evidence:
+- Foundation contract initially failed at `DeliveryPage.jsx` because it had no full-screen PageReadyOverlay.
+- Kitchen lock behavior test initially failed because no shared lock utility existed.
+- Verify source showed `t("verify.header.title")` while the translation schema stores `verify.header` as a string.
+- Static audit found 14 React pages/route entries without the shared initial full-screen overlay; after repair the audit reports **0**.
+
+Implementation:
+- Standardized initial readiness on the shared `PageReadyOverlay` across Delivery, Delivery Success, Takeaway, Verify, Public Order, Legal, POS Backup/Forbidden/Users, Waiting Queue Customer/Display, Register, public missing-route, and storefront compatibility redirect flow.
+- Overlay remains full-screen/fixed, centered X/Y and now includes:
+  - spinner,
+  - indeterminate progress bar,
+  - shared localized loading/wait copy.
+- Thai shared text is now exactly `กำลังโหลดข้อมูล...` / `กรุณารอสักครู่ ...`; EN/MY/LO/KM equivalents were updated normally.
+- Initial page-specific inline loading blocks were removed where the shared overlay now owns initial readiness.
+- Redirect compatibility entry now shows the overlay while navigation is pending.
+- Verify header now uses `t("verify.header")`; raw `verify.header.title` is no longer present.
+- Added `react-app/src/utils/kitchenOrderLock.js` as the Kitchen Lalamove lock source of truth:
+  - active dispatch evidence locks editing,
+  - `PICKED_UP` remains locked,
+  - legacy/partially migrated orders are recognized from Lalamove dispatch evidence even if `deliveryProvider` is missing,
+  - CANCELED/CANCELLED/REJECTED/EXPIRED releases the dispatch-specific lock when the operational order itself is still active,
+  - served/paid/completed/cancelled operational states remain locked.
+- Added `test:kitchen-lalamove-lock` to the standard `test:react-parity` chain.
+- Added permanent loading/readiness rules to README, STRUCTURE, and PARITY_VERIFICATION_PLAN; foundation contract guards the rule and visual contract.
+
+Candidate verification:
+- `npm run build:react` PASS.
+- Generated build contract PASS: `2026.10.08.468` / `/react/assets/index-CLcSUg_u.js`.
+- Operational orders contract PASS.
+- React parity/foundation/migration/P0/callable/tenant/UI-layer contracts PASS.
+- Kitchen Lalamove lock behavior: **4/4 PASS**.
+- Delivery parity browser suite: **6/6 PASS**.
+- Delivery Success parity browser suite: **5/5 PASS**.
+- Verify browser check using order `04afe611-95d9-4755-a1e8-52752f4c0101`:
+  - full-screen overlay visible while Firestore is intentionally delayed,
+  - viewport coverage 1440x900,
+  - X center deviation 0px / Y center deviation about 0.01px,
+  - spinner present,
+  - indeterminate progress present,
+  - approved Thai loading/wait text present,
+  - after data is ready: overlay absent, inline Verify loading absent,
+  - header reads `ตรวจสอบยอดล่าสุด`,
+  - raw `verify.header.title` absent.
+- `git diff --check` PASS.
+- No Functions, Firestore Rules, Storage Rules, or schema changes.
+
+Deploy state:
+- Commit/push and Hosting-only deploy pending at this checkpoint.

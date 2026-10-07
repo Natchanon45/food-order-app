@@ -18,6 +18,7 @@ import {
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
+import { isKitchenLocked, isLalamoveDelivery, lalamoveDispatchActive, lalamoveStatus } from "@/utils/kitchenOrderLock";
 
 const ACTIVE_STATUSES = new Set(["pending", "accepted", "cooking", "ready", "served"]);
 
@@ -66,24 +67,12 @@ function queueSequence(order) {
   const parsed = Number(String(order?.queueNo || "").replace(/\D/g, ""));
   return Number.isFinite(parsed) ? parsed : 0;
 }
-function lalamoveStatus(order) { return String(order?.lalamoveOrderStatus || "").toUpperCase(); }
-function isLalamoveDelivery(order) {
-  return isDelivery(order) && String(order?.deliveryProvider || "").toLowerCase() === "lalamove";
-}
 function lalamoveDeliveryCompleted(order) {
   return isLalamoveDelivery(order) && lalamoveStatus(order) === "COMPLETED";
 }
 function lalamoveCompletionStale(order) {
   return lalamoveDeliveryCompleted(order)
     && !["paid", "completed"].includes(String(order?.status || "").toLowerCase());
-}
-function lalamoveDispatchActive(order) {
-  return isLalamoveDelivery(order)
-    && Boolean(order?.lalamoveOrderId)
-    && !["PICKED_UP", "COMPLETED", "CANCELED", "CANCELLED", "REJECTED", "EXPIRED"].includes(lalamoveStatus(order));
-}
-function isKitchenLocked(order) {
-  return ["served", "paid", "completed", "cancelled"].includes(order?.status) || lalamoveDispatchActive(order);
 }
 function supportsItemServe(order) {
   return isTableOrder(order) || isWalkIn(order);

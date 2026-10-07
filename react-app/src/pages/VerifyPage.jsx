@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { getPublicOrder, getPublicStoreSettings, resolvePublicTenant } from "@/data/publicStorefrontData";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
@@ -94,7 +95,7 @@ export function VerifyPage() {
     return () => { alive = false; };
   }, [tenantSlug, orderId, orderIds.join(","), t]);
 
-  if (!stylesReady) return null;
+  if (!stylesReady || loading) return <PageReadyOverlay />;
   const shopName = String(settings?.orderDeliveryShopName || settings?.shopName || tenant?.name || t("verify.shop_fallback")).trim();
   const first = orders[0];
   const merged = orderIds.length > 0;
@@ -111,14 +112,13 @@ export function VerifyPage() {
       : t("verify.order_type.table", { table: order?.tableCode || "-" });
 
   return <>
-    <header className="app-header verify-header"><div className="brand verify-brand"><span className="brand-mark">PG</span><span className="verify-brand-title">{t("verify.header.title")}</span></div></header>
+    <header className="app-header verify-header"><div className="brand verify-brand"><span className="brand-mark">PG</span><span className="verify-brand-title">{t("verify.header")}</span></div></header>
     <main className="container verify-container">
       <section className="hero verify-hero">
         <div className="verify-hero-copy"><span className="verify-hero-icon"><i className="bi bi-shield-check"></i></span><div><h1>{t("verify.hero.title")}</h1><p>{t("verify.hero.description")}</p></div></div>
         <span className="verify-trust-badge"><i className="bi bi-cloud-check"></i><span>{t("verify.latest_badge")}</span></span>
       </section>
       <section className="card verify-result-card">
-        {loading ? <div className="verify-loading"><span className="verify-loading-icon"><i className="bi bi-arrow-repeat"></i></span><span>{t("verify.loading")}</span></div> : null}
         {errorText ? <div className="verify-error"><span className="verify-error-icon"><i className="bi bi-exclamation-circle"></i></span><strong>{errorText}</strong></div> : null}
         {!loading && !errorText && first ? <>
           <div className="verify-shop-head">
