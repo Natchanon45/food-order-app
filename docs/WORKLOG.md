@@ -9775,3 +9775,22 @@ Release state:
 - Public `0.16.32` / Build `2026.10.07.156`.
 - Hosting deploy still pending this final local commit/push.
 - No merge to `main`.
+Production deploy + verification:
+- Implementation commit: `0f4b4e7a` — `style: finalize POS backup and users workspaces`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production React bundle is `/react/assets/index-BaSuJWBm.js`.
+- `/pos/backup` Production verification:
+  - Desktop 1440x900: 12 summary cards, hero 292px, page overflow 0.
+  - Mobile 390x844: hero 262px, swipeable summary strip overflow confined inside the strip, page overflow 0.
+  - Restore action remains disabled until a valid backup file/confirmation is supplied.
+- `/pos/users` Production verification:
+  - Desktop/Mobile render 4 role cards and 2 permission blocks immediately from the existing access model.
+  - Current owner label resolves correctly.
+  - Desktop/Mobile page overflow = 0.
+  - User editor dialog internal overflow = 0, close control = 38px, duplicate generated title icon hidden.
+- React `/pos` smoke check loads `/react/assets/index-BaSuJWBm.js` with horizontal overflow = 0.
+- Production verification completed with Firestore writes blocked/avoided: blocked writes = 0, page errors = 0, unexpected request failures = 0, HTTP errors = 0.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or schema migration.
+- `/pos/backup` and `/pos/users` remain legacy route implementations; this phase is a presentation/responsiveness refresh only.
+- No merge to `main`.
