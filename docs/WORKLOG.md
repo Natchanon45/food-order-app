@@ -9710,3 +9710,30 @@ Verification/deploy state:
 - `docs/WORKLOG.md` updated before moving to `/pos/users`.
 - Full Mac test/build/browser verification and Hosting deploy will run after both requested visual refreshes are complete.
 - No merge to `main`.
+
+
+---
+
+## 2026-10-07 — POS Users and permissions visual workspace refresh
+
+User request:
+- Modernize `/pos/users` to match the newer Retail POS management screens after the Backup refresh.
+- Preserve role/user/security behavior.
+
+Change:
+- Added `retail-pos-users-visual-dashboard.css` as a dedicated final visual layer.
+- Turned the current-user strip into a modern dark-green/violet access banner with a shield badge.
+- Refined the desktop role workspace into a sticky role rail plus a larger permission editor, with modern selected-role state, colored permission groups, clearer count badges, and polished action controls.
+- Redesigned generated role cards and POS user cards with semantic icons, role/status/auth-state badges, and responsive card layouts while preserving all existing data/action attributes.
+- Refined the user editor dialog with a structured icon/title header, modern field surfaces, hint treatment, and responsive footer.
+- Added responsive tablet/mobile layouts for role cards, permission blocks, account cards, and the dialog.
+
+Behavior boundary:
+- Existing role create/edit/delete handlers, menu/action permission keys, group select/clear actions, POS user creation/update callable, Firebase Auth linkage, tenant filtering, active/suspended state, owner exclusion, IDs, and event selectors are unchanged.
+- Only generated presentation markup was enriched; `data-role-id` and `data-user-id` contracts remain intact.
+- Canonical route remains the existing legacy implementation for this visual-only phase.
+
+Verification/deploy state:
+- `docs/WORKLOG.md` updated after the second requested visual issue.
+- Full Mac test/build, authenticated desktop/mobile browser verification, Build bump, commit/push sync, and Hosting-only deploy are next.
+- No merge to `main`.
