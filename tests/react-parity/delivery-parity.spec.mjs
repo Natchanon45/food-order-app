@@ -61,6 +61,63 @@ test.describe("Delivery Laravel behavior parity", () => {
     expect(badgeToLocale).toBeGreaterThanOrEqual(8);
   });
 
+  test("mobile header keeps the delivery badge beside the brand content", async ({ page }) => {
+    await page.setViewportSize({ width: 440, height: 956 });
+    await openDelivery(page);
+
+    const metrics = await page.locator(".app-header").first().evaluate(header => {
+      const brand = header.querySelector(":scope > .brand");
+      const badge = header.querySelector(":scope > .badge");
+      const locale = header.querySelector(":scope > .app-locale-switcher");
+      const brandRect = brand?.getBoundingClientRect();
+      const badgeRect = badge?.getBoundingClientRect();
+      const localeRect = locale?.getBoundingClientRect();
+      const contentRight = brand
+        ? Math.max(...[...brand.children].map(child => child.getBoundingClientRect().right))
+        : 0;
+
+      return {
+        brandBoxTail: brandRect ? brandRect.right - contentRight : Number.POSITIVE_INFINITY,
+        contentToBadge: badgeRect ? badgeRect.left - contentRight : 0,
+        badgeToLocale: badgeRect && localeRect ? localeRect.left - badgeRect.right : 0,
+        localeRightInset: localeRect ? window.innerWidth - localeRect.right : Number.POSITIVE_INFINITY,
+      };
+    });
+
+    expect(metrics.brandBoxTail).toBeLessThanOrEqual(2);
+    expect(metrics.contentToBadge).toBeGreaterThanOrEqual(8);
+    expect(metrics.contentToBadge).toBeLessThanOrEqual(16);
+    expect(metrics.badgeToLocale).toBeGreaterThanOrEqual(8);
+    expect(metrics.localeRightInset).toBeGreaterThanOrEqual(8);
+  });
+
+  test("favorites category appears only after a guest has a persisted favorite", async ({ page }) => {
+    await openDelivery(page);
+
+    const favoritesTab = page.locator('#categoryTabs [data-category="__favorites__"]');
+    await expect(favoritesTab).toHaveCount(0);
+
+    const firstFavorite = page.locator("#menuGrid .menu-favorite-button").first();
+    await firstFavorite.click();
+    await expect(firstFavorite).toHaveAttribute("aria-pressed", "true");
+    await expect(favoritesTab).toHaveCount(1);
+
+    const persisted = await page.evaluate(() => {
+      const key = Object.keys(localStorage).find(value => value.startsWith("food_order_guest_menu_favorites:"));
+      return key ? JSON.parse(localStorage.getItem(key) || "[]") : [];
+    });
+    expect(persisted.length).toBeGreaterThan(0);
+
+    await page.reload({ waitUntil: "domcontentloaded" });
+    const reloadedFavoritesTab = page.locator('#categoryTabs [data-category="__favorites__"]');
+    await expect(reloadedFavoritesTab).toHaveCount(1);
+    const persistedFavoriteButton = page.locator("#menuGrid .menu-favorite-button.is-favorite").first();
+    await expect(persistedFavoriteButton).toBeVisible();
+
+    await persistedFavoriteButton.click();
+    await expect(page.locator('#categoryTabs [data-category="__favorites__"]')).toHaveCount(0);
+  });
+
   test("profile load automatically selects the default saved address", async ({ page }) => {
     await openDelivery(page);
 

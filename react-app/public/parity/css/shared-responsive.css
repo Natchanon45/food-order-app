@@ -54,6 +54,14 @@ body:not(.receipt-page):not(.print-page):not(.document-page) :is(.table-list, ta
     min-width: 0;
   }
 
+  body.delivery-page:not(.receipt-page):not(.print-page):not(.document-page) .app-header > .brand {
+    flex: 0 0 auto;
+  }
+
+  body.delivery-page:not(.receipt-page):not(.print-page):not(.document-page) .app-header > .badge {
+    flex: 0 0 auto;
+  }
+
   body:not(.receipt-page):not(.print-page):not(.document-page) .app-header > :is([data-header-actions], .app-locale-switcher, .user-menu) {
     flex: 0 0 auto;
     max-width: 100%;

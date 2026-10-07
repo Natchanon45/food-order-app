@@ -11710,3 +11710,55 @@ Deploy state:
   - `ดูยอดล่าสุด` icon Y-center deviation = 0px.
 - Deployment scope was Hosting only.
 - No Functions, Firestore Rules, Storage Rules, schema changes, or merge to `main`.
+
+
+---
+
+## 2026-10-07 — Delivery mobile badge alignment + conditional Favorites (Build 2026.10.07.467)
+
+Request:
+- Re-check Delivery badge against the permanent badge spacing rule.
+- On Mobile, keep the Delivery header badge visibly beside the left-side brand instead of letting the brand flex box push it toward the center/right.
+- Show the `เมนูโปรด` category only when the current guest or signed-in customer actually has persisted favorite menu IDs:
+  - guest: localStorage,
+  - signed-in customer: Firebase customer profile.
+
+Test-first evidence:
+- Added two browser tests before runtime changes.
+- Production Build 2026.10.07.466 initially failed both:
+  - mobile brand box had 170.34px of unused trailing width, pushing the badge away from the visible PENGUIN content;
+  - `__favorites__` category existed even with zero persisted favorites.
+- The favorites test covers:
+  - hidden before first favorite,
+  - visible only after persistence succeeds,
+  - survives reload from localStorage,
+  - disappears after removing the final favorite.
+
+Implementation:
+- Mobile Delivery header overrides the shared responsive brand flex to `flex: 0 0 auto` with selector specificity high enough to beat the generic mobile rule.
+- Mobile Delivery badge is also non-growing/non-shrinking.
+- `extraCategory` is now supplied only while `favoriteIds.size > 0`.
+- If the final favorite is removed while the Favorites tab is active, the page automatically returns to `ทั้งหมด`.
+- Favorite UI state is now committed only after `saveDeliveryCustomerFavorites(...)` succeeds:
+  - guest writes to `food_order_guest_menu_favorites:<tenant>` localStorage,
+  - signed-in customer writes `favoriteMenuIds` to the tenant customer profile in Firestore.
+- Existing customer-favorite loading still merges guest favorites into the signed-in customer's Firebase profile where applicable.
+
+Verification before deploy:
+- `npm run build:react` PASS.
+- Generated build contract PASS for Build `2026.10.07.467` / `/react/assets/index-vYwHTtyY.js`.
+- Delivery parity browser suite: **6/6 PASS**.
+- Delivery Success parity browser suite: **5/5 PASS**.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `git diff --check` PASS.
+- Candidate Mobile 440px geometry:
+  - brand unused trailing width = 0px,
+  - visible brand content -> badge = 10px,
+  - badge -> language > 8px,
+  - badge x-position = 131.67px while language remains at the right edge.
+- Candidate with a clean guest context: Favorites category hidden.
+- No Functions, Firestore Rules, Storage Rules, or schema changes.
+
+Deploy state:
+- Commit/push and Hosting-only deploy pending at this checkpoint.

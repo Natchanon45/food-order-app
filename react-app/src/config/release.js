@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.07.466",
+  build: "2026.10.07.467",
   branch: "feature/react-firebase-port",
-  commit: "BUTTON-BADGE-Y-CENTER-POLICY",
+  commit: "DELIVERY-MOBILE-BADGE-FAVORITES",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Button badge spacing and icon Y-center policy",
+  milestone: "Delivery mobile badge and favorites visibility",
   whatsNew: [
-    "Require clear spacing on both sides of same-row buttons and badges",
-    "Require visible button icons to stay centered on the button Y axis",
-    "Apply shared header spacing so Delivery brand and badge no longer touch",
+    "Keep the Delivery badge immediately beside the brand on mobile",
+    "Show the Favorites category only after a favorite has been persisted",
+    "Hide the Favorites category again when the final favorite is removed",
   ],
 });

@@ -396,6 +396,7 @@ const deliveryPage=read("react-app/src/pages/DeliveryPage.jsx");
 const takeawayPage=read("react-app/src/pages/TakeawayPage.jsx");
 const deliverySuccessPage=read("react-app/src/pages/DeliverySuccessPage.jsx");
 const deliverySuccessTrackingCss=read("react-app/public/parity/css/delivery-success-tracking.css");
+const sharedResponsiveCss=read("react-app/public/parity/css/shared-responsive.css");
 const readmeRules=read("README.md");
 const structureRules=read("STRUCTURE.md");
 const parityVerificationPlan=read("docs/PARITY_VERIFICATION_PLAN.md");
@@ -625,6 +626,14 @@ assert(
   &&deliveryPage.includes("saveDeliveryCustomerProfile")
   &&deliveryPage.includes("getDeliveryCustomerFavorites")
   &&deliveryPage.includes("saveDeliveryCustomerFavorites")
+  &&deliveryPage.includes('extraCategory={favoriteIds.size > 0 ? "__favorites__" : null}')
+  &&deliveryPage.includes('if (favoriteIds.size === 0 && activeCategory === "__favorites__")')
+  &&deliveryPage.includes('await saveDeliveryCustomerFavorites(tenant, [...next], customerUser);')
+  &&customerDeliveryData.includes('if (!user) return writeGuestFavorites(tenant, ids);')
+  &&customerDeliveryData.includes('favoriteMenuIds: ids')
+  &&sharedResponsiveCss.includes('body.delivery-page:not(.receipt-page):not(.print-page):not(.document-page) .app-header > .brand')
+  &&sharedResponsiveCss.includes('body.delivery-page:not(.receipt-page):not(.print-page):not(.document-page) .app-header > .badge')
+  &&sharedResponsiveCss.includes('flex: 0 0 auto;')
   &&deliveryLocationPicker.includes('"getDeliveryGoogleMapsConfig"')
   &&deliveryLocationPicker.includes("navigator.geolocation.getCurrentPosition")
   &&deliveryLocationPicker.includes('source: "current-location"')
@@ -744,7 +753,7 @@ assert(
   "Delivery Success visible actions must retain semantic icons and perimeter spacing"
 );
 assert(
-  deliveryPage.includes('extraCategory="__favorites__"')
+  deliveryPage.includes('extraCategory={favoriteIds.size > 0 ? "__favorites__" : null}')
   &&deliveryPage.includes("quotePublicLalamoveDelivery")
   &&deliveryPage.includes("computeDeliveryRoute")
   &&deliveryPage.includes("generatePromptPayPayload")

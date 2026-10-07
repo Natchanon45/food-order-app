@@ -246,6 +246,13 @@ export function DeliveryPage() {
 
   useEffect(() => () => { if (slipPreview) URL.revokeObjectURL(slipPreview); }, [slipPreview]);
 
+  useEffect(() => {
+    if (favoriteIds.size === 0 && activeCategory === "__favorites__") {
+      setActiveCategory("__all__");
+      setPage(1);
+    }
+  }, [favoriteIds.size, activeCategory]);
+
   const money = value => formatNumber(Number(value || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const cartCount = useMemo(() => cart.reduce((sum, item) => sum + Number(item.qty || 0), 0), [cart]);
   const subtotal = useMemo(() => cart.reduce((sum, item) => sum + Number(item.qty || 0) * Number(item.price || 0), 0), [cart]);
@@ -371,15 +378,13 @@ export function DeliveryPage() {
 
   const toggleFavorite = async item => {
     const id = String(item.id);
-    const previous = favoriteIds;
-    const next = new Set(previous);
+    const next = new Set(favoriteIds);
     if (next.has(id)) next.delete(id); else next.add(id);
-    setFavoriteIds(next);
     try {
       await saveDeliveryCustomerFavorites(tenant, [...next], customerUser);
+      setFavoriteIds(next);
     } catch (error) {
       console.error("DELIVERY_FAVORITE_SAVE_FAILED", error);
-      setFavoriteIds(previous);
       showStorefrontToast(t("delivery.checkout.menu.favorite_save_failed"), "error");
     }
   };
@@ -731,7 +736,7 @@ export function DeliveryPage() {
             <PublicMenuCatalog menus={menus} prefix="delivery.checkout.menu" activeCategory={activeCategory}
               setActiveCategory={setActiveCategory} search={search} setSearch={setSearch} page={page} setPage={setPage}
               onAdd={add} disabled={submitting || locked}
-              extraCategory="__favorites__" extraLabel={t("delivery.checkout.menu.favorites")}
+              extraCategory={favoriteIds.size > 0 ? "__favorites__" : null} extraLabel={t("delivery.checkout.menu.favorites")}
               extraFilter={item => favoriteIds.has(String(item.id))}
               favoriteIds={favoriteIds} onToggleFavorite={toggleFavorite}
               favoriteAddLabel={t("delivery.checkout.menu.favorite_add")}
