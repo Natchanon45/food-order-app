@@ -9633,3 +9633,14 @@ Deploy state:
 - Ready to commit/push and deploy Firebase Hosting only.
 - No Firestore Rules, Indexes, Functions, Storage Rules, or schema migration required.
 - No merge to `main`.
+Production deploy + verification:
+- Implementation commit: `a2cf555b` — `fix: repair POS customer dialogs`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully.
+- Production loads `/react/assets/index-7_wAQOOo.js`.
+- Purchase-history header: left/right inset 19px; shell/header alignment within 1px; close control 38x38.
+- Points-history header: left/right inset 19px; shell/header alignment within 1px; close control 38x38.
+- Customer delete confirmation now renders `ลบลูกค้า “คุณเอ นามสมมุติ” หรือไม่?` with `ยกเลิก` / `ลบ`; `[object Object]` absent.
+- Production verification: Firestore writes = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
+- Deployment scope was Hosting only; no Firestore Rules, Indexes, Functions, Storage Rules, or schema migration.
+- No merge to `main`.
