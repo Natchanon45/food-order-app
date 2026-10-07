@@ -10185,3 +10185,50 @@ Production deploy + verification:
 - Firestore write attempts `0`; page errors `0`; console errors `0`; HTTP errors `0`.
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Cloud Functions, or schema deployment occurred.
 - No merge to `main`.
+
+---
+
+## 2026-10-07 — Restore original Table Order design with two menu items per row
+
+User clarification:
+- The Build `.447` visual redesign was not desired.
+- The intended UI is the previous compact Table Order design, with the specific correction that Desktop should show **2 menu items per row**, not 3, because 3 cards compressed product content too much.
+
+Change:
+- Removed the page-scoped `table-order-modern.css` redesign from `PublicOrderPage` and deleted its source/generated CSS files.
+- Restored the previous compact horizontal menu-card presentation from the existing shared Order/Delivery CSS.
+- Kept `id="menuGrid"` on the React `PublicMenuCatalog`; this is the missing DOM contract required by the existing `pos-refresh.css` rule `.delivery-pos #menuGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }`.
+- Removed the extra redesign-only `public-menu-grid` class so the shared catalog remains as close as possible to the prior markup.
+- Updated the React foundation guard to require the original compact card rules plus exactly two desktop menu columns, and to prevent `table-order-modern.css` from being loaded again.
+- Preserved the permanent table QR session resolver from Build `.446`, including tokenless QR resolution, strict occupied-session validation, cart behavior, filtering, search, pagination, notes, previous rounds, and order submission.
+- Prepared React `0.4.280` / Build `2026.10.07.448`; Public `0.16.32` / Build `2026.10.07.163`.
+
+Important files:
+- `react-app/src/components/PublicStorefront.jsx`
+- `react-app/src/pages/PublicOrderPage.jsx`
+- `react-app/public/parity/css/table-order-modern.css` (removed)
+- `public/react/parity/css/table-order-modern.css` (removed)
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `README.md`
+
+Verification before deploy:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.07.448` / `/react/assets/index-rJHzZwPo.js`.
+- `git diff --check` PASS.
+- Read-only candidate overlay against Production Table 12:
+  - Desktop 1600x900: exactly 2 columns (`307px 307px`), compact card `307x112`, image `88x88`, one-line `120.00 บาท`, overflow `0`.
+  - Tablet 1024x768: exactly 2 columns (`269px 269px`), compact card `269x112`, overflow `0`.
+  - Mobile 390x844: 1 column (`366px`), compact card `366x106`, image `82x82`, overflow `0`.
+  - `table-order-modern.css` is not loaded.
+  - Adding one real menu item locally enabled `ยืนยันการสั่ง`; submit was intentionally not clicked.
+  - Firestore write attempts `0`; page errors `0`; console errors `0`; HTTP errors `0`.
+
+Deploy state:
+- Implementation commit/push pending.
+- Firebase Hosting-only deploy pending.
+- No Firestore Rules, Storage Rules, Cloud Functions, or schema change required.
+- No merge to `main`.

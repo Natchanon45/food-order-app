@@ -487,7 +487,7 @@ const publicFirebaseContext=read("public/assets/js/public-firebase-context.js");
 const publicStorefrontService=read("public/assets/js/public-storefront-service.js");
 const publicOrderPage=read("react-app/src/pages/PublicOrderPage.jsx");
 const publicStorefrontComponent=read("react-app/src/components/PublicStorefront.jsx");
-const tableOrderModernCss=read("react-app/public/parity/css/table-order-modern.css");
+const posRefreshCss=read("react-app/public/parity/css/pos-refresh.css");
 const legacyTableQrResolver=read("public/assets/js/table-qr-resolver.js");
 assert(
   legacyTableQrResolver.includes('table?.status === "occupied" && table?.orderToken')
@@ -500,16 +500,12 @@ assert(
   "React table ordering must preserve permanent table QR resolution by attaching the current occupied-table token before session validation"
 );
 assert(
-  publicOrderPage.includes('"table-order-modern.css"')
-  &&publicStorefrontComponent.includes('id="menuGrid" className="grid grid-3 public-menu-grid"')
-  &&tableOrderModernCss.includes("body.table-order-page .container")
-  &&tableOrderModernCss.includes("width: min(1440px, calc(100% - 48px))")
-  &&tableOrderModernCss.includes("grid-template-columns: minmax(0, 1fr) 370px")
-  &&tableOrderModernCss.includes("grid-template-columns: repeat(3, minmax(0, 1fr)) !important")
-  &&tableOrderModernCss.includes("aspect-ratio: 16 / 10 !important")
-  &&tableOrderModernCss.includes("@media (max-width: 599px)")
-  &&tableOrderModernCss.includes("grid-template-columns: 1fr !important"),
-  "Table Order must keep the page-scoped modern storefront layout with readable desktop menu cards and mobile reflow"
+  !publicOrderPage.includes('"table-order-modern.css"')
+  &&publicStorefrontComponent.includes('id="menuGrid" className="grid grid-3"')
+  &&posRefreshCss.includes(".delivery-pos #menuGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}")
+  &&posRefreshCss.includes(".delivery-pos .menu-card{grid-template-columns:88px minmax(0,1fr)}")
+  &&posRefreshCss.includes(".delivery-pos .menu-image{width:88px;height:88px}"),
+  "Table Order must keep the original compact card design while rendering exactly two menu items per desktop row"
 );
 const staticDataService=read("public/assets/js/data-service.js");
 const deliveryCustomerAuthFunction=read("functions/delivery-customer-auth.js");

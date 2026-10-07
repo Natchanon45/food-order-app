@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.07.162',
+  build: '2026.10.07.163',
   branch: 'feature/react-firebase-port',
-  commit: 'TABLE-ORDER-MODERN-STOREFRONT',
+  commit: 'TABLE-ORDER-TWO-COLUMN-RESTORE',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Table Order modern storefront',
-  updatedAt: '2026-10-07T12:14:00+0700',
+  milestone: 'Table Order original design with two-column menus',
+  updatedAt: '2026-10-07T12:29:00+0700',
   whatsNew: [
-    'Redesign Table Order with a wider balanced desktop workspace and premium menu cards',
-    'Restore the intended menuGrid contract so menu cards no longer collapse into unreadable narrow columns',
-    'Improve menu filters, cart panel, sticky checkout, and responsive tablet/mobile layouts'
+    'Restore the previous Table Order visual design',
+    'Render two menu items per desktop row so product cards have enough room',
+    'Keep the permanent table QR session resolver and ordering behavior unchanged'
   ]
 };
 
