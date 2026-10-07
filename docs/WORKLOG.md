@@ -10715,3 +10715,51 @@ Final Production smoke:
 - Final live page/API errors = 0; no related HTTP failures were observed.
 - No Firestore Rules, Storage Rules, or schema deployment was required.
 - No merge to `main`.
+
+---
+
+## 2026-10-07 — Modern Table QR workspace + circular current-round quantity controls
+
+User request:
+- Refresh `/cashier/table-qr` to a more modern visual style while keeping the existing green palette.
+- Add an icon to the QR print-again button.
+- Make the current-round Table Order plus/minus quantity controls circular.
+
+Implementation:
+- Added route-specific React parity stylesheet `cashier-table-qr-modern.css`.
+- Table QR Hero now has a QR-scan icon treatment, preserved green gradient, softer depth, and modern rounded surface.
+- Paper-size control is now presented as a printer-themed modern panel while keeping the same 58 mm / 80 mm / A4 behavior.
+- Available, issued, and Walk-in table cards now use consistent modern card hierarchy, semantic icons, rounded corners, subtle shadows, and existing green/status colors.
+- Available-table issue action now has a QR icon.
+- `พิมพ์อีกครั้ง` now includes the printer icon using the shared app-icon button pattern.
+- Existing 4-card desktop Table QR layout, Walk-in actions, move-table controls, close-table lifecycle, and print CSS remain unchanged.
+- `PublicCartList` now marks both current-round quantity buttons with `cart-qty-button`.
+- React parity `app.css` renders these two controls as 34 x 34 px circles with subtle green hover/active feedback.
+- The restored two-row current-round layout remains unchanged: item/quantity on top, full-width note below.
+- Added React foundation regression coverage for the modern Table QR CSS/icon markup and circular quantity controls.
+
+Verification:
+- `npm run test:react-foundation` PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS: React Build `2026.10.07.454` / `/react/assets/index-DL7HiWhy.js`.
+- `git diff --check` PASS.
+- Read-only candidate against real Production data:
+  - QR Desktop: 10 available cards, 4 equal grid columns (342.5 px each), hero radius 28 px, paper panel radius 20 px, table card radius 20 px.
+  - QR Mobile: no horizontal overflow.
+  - Hero QR icon, paper printer icon, and issue QR icon rendered.
+  - Current-round minus/plus buttons: both 34 x 34 px, `border-radius: 50%`.
+  - Note input remains full-width: 404 px note / 404 px row.
+  - blocked browser Firestore writes: 0.
+  - page errors: 0; console errors: 0; HTTP errors: 0.
+
+Release candidate:
+- React `0.4.280` / Build `2026.10.07.454`.
+- Public `0.16.32` / Build `2026.10.07.169`.
+- Marker: `TABLE-QR-MODERN-UI`.
+
+Deploy state:
+- Hosting deploy pending.
+- No Function, Firestore Rules, Storage Rules, or schema change required.
+- No merge to `main`.

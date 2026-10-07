@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.07.453",
+  build: "2026.10.07.454",
   branch: "feature/react-firebase-port",
-  commit: "TABLE-SERVICE-SETTLEMENT-REPAIR",
+  commit: "TABLE-QR-MODERN-UI",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Table service and settlement lifecycle repair",
+  milestone: "Modern Table QR workspace polish",
   whatsNew: [
-    "Restore per-item serving for Table and Walk-in kitchen orders",
-    "Close paid and fully served table sessions regardless of whether payment or serving happens first",
-    "Add Walk-in close-table action and restore the legacy full-width current-round note layout",
+    "Refresh Table QR management with a cleaner modern green workspace and card hierarchy",
+    "Add printer icon treatment to QR print-again and QR issue actions",
+    "Make current-round plus and minus quantity controls circular while preserving the two-row cart layout",
   ],
 });

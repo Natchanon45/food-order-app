@@ -80,6 +80,34 @@ textarea.input { min-height: 82px; resize: vertical; }
 .cart-row-aligned > [data-note] { grid-area: note; display: block; width: 100%; max-width: none; margin: 0 !important; box-sizing: border-box; }
 .qty { display: flex; align-items: center; gap: 7px; }
 .qty button { width: 30px; height: 30px; border: 0; border-radius: 9px; }
+.cart-row-aligned .qty .cart-qty-button {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0;
+  border: 1px solid #dce7df;
+  border-radius: 50%;
+  background: #f3f7f4;
+  color: #183d25;
+  display: inline-grid;
+  place-items: center;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 4px 10px rgba(15, 70, 36, .06);
+  transition: transform .15s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.cart-row-aligned .qty .cart-qty-button:hover {
+  border-color: rgba(21, 148, 71, .28);
+  background: #eaf7ee;
+  color: var(--green-dark);
+  box-shadow: 0 6px 14px rgba(15, 70, 36, .1);
+  transform: translateY(-1px);
+}
+.cart-row-aligned .qty .cart-qty-button:active {
+  transform: scale(.96);
+}
 .empty { text-align: center; padding: 38px 20px; color: var(--muted); }
 .app-toast, .toast, [role="status"].toast { position: fixed !important; left: 50% !important; top: 68vh !important; bottom: auto !important; z-index: var(--top-layer-z) !important; width: min(560px, calc(100% - 24px)); display: flex; align-items: center; justify-content: center; gap: 10px; transform: translate(-50%, calc(-50% + 20px)); opacity: 0; background: var(--black); color: white; padding: 12px 18px; border-radius: 999px; text-align: center; box-shadow: 0 14px 36px rgba(0,0,0,.28); transition: .2s ease; pointer-events: none; }
 .app-toast.show, .toast.show, [role="status"].toast.show { opacity: 1 !important; transform: translate(-50%, -50%) !important; }

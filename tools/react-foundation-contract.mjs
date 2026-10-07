@@ -526,6 +526,14 @@ assert(
   &&publicStorefrontComponent.indexOf('className="qty"')<publicStorefrontComponent.indexOf('data-note={item.id}'),
   "Table Order current-round cart must keep the legacy two-row layout: item/quantity above and full-width note below"
 );
+assert(
+  publicStorefrontComponent.match(/className="cart-qty-button"/g)?.length === 2
+  &&globalAppCss.includes(".cart-row-aligned .qty .cart-qty-button")
+  &&globalAppCss.includes("border-radius: 50%;")
+  &&globalAppCss.includes("min-width: 34px;")
+  &&globalAppCss.includes("min-height: 34px;"),
+  "Table Order current-round plus/minus controls must remain circular"
+);
 const staticDataService=read("public/assets/js/data-service.js");
 const deliveryCustomerAuthFunction=read("functions/delivery-customer-auth.js");
 const firestoreRules=read("firestore.rules");
@@ -1442,10 +1450,25 @@ const sharedIconsCss=read("react-app/public/parity/css/icons.css");
 assert(sharedIconsCss.includes(".btn:has(> .app-icon + span):not(.btn-icon-only)")&&sharedIconsCss.includes(".btn:has(> i + span):not(.btn-icon-only)")&&sharedIconsCss.includes(".btn:has(> svg + span):not(.btn-icon-only)")&&sharedIconsCss.includes("gap: 7px;"),"Shared React icon/text button spacing contract missing");
 const tableQrPage=read("react-app/src/pages/CashierTableQrPage.jsx");
 const odWorkspaceCss=read("react-app/public/parity/css/order-delivery-workspace-theme.css");
+const tableQrModernCss=read("react-app/public/parity/css/cashier-table-qr-modern.css");
 assert(tableQrPage.includes('bodyClass: "order-delivery-workspace od-qr-page"'),"Cashier Table QR page must keep od-qr-page scope");
 assert(tableQrPage.includes('to="/cashier"><i className="bi bi-arrow-left app-icon"'),"Cashier Table QR back button must keep the left-arrow icon");
 assert(odWorkspaceCss.includes("@media (min-width: 1200px)")&&odWorkspaceCss.includes("body.od-qr-page .container")&&odWorkspaceCss.includes("width: min(1440px, calc(100% - 48px));"),"Cashier Table QR desktop container width contract missing");
 assert(odWorkspaceCss.includes('body.od-qr-page :is(#availableTables, #occupiedTables, #walkInTables).grid-3')&&odWorkspaceCss.includes("grid-template-columns: repeat(4, minmax(0, 1fr));"),"Cashier Table QR desktop must render 4 cards per row");
+assert(
+  tableQrPage.includes('"cashier-table-qr-modern.css"')
+  &&tableQrPage.includes('className="hero qr-modern-hero"')
+  &&tableQrPage.includes('className="card qr-paper-panel"')
+  &&tableQrPage.includes('className="card qr-table-card qr-table-card-available"')
+  &&tableQrPage.includes('className="btn btn-dark qr-print-again-btn"')
+  &&tableQrPage.includes('id="printIssuedQr"')
+  &&tableQrPage.includes('bi bi-printer app-icon')
+  &&tableQrModernCss.includes("body.od-qr-page .qr-modern-hero")
+  &&tableQrModernCss.includes("body.od-qr-page .qr-table-card")
+  &&tableQrModernCss.includes("body.od-qr-page .qr-print-again-btn")
+  &&tableQrModernCss.includes("@media (max-width: 720px)"),
+  "Cashier Table QR must preserve the modern green workspace and printer-icon reprint action"
+);
 const operationalData=read("react-app/src/data/operationalData.js");
 const operationalOrdersFunctions=read("functions/operational-orders.js");
 assert(

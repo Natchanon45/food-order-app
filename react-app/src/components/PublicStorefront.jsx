@@ -236,9 +236,9 @@ export function PublicCartList({ items = [], prefix, onIncrease, onDecrease, onN
             <div className="menu-category">{t(cartPrefix + ".amount", { amount: formatNumber(Number(item.price || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) })}</div>
           </div>
           <div className="qty">
-            <button type="button" onClick={() => onDecrease(item)}>−</button>
+            <button className="cart-qty-button" type="button" onClick={() => onDecrease(item)}>−</button>
             <strong>{item.qty}</strong>
-            <button type="button" onClick={() => onIncrease(item.id)}>+</button>
+            <button className="cart-qty-button" type="button" onClick={() => onIncrease(item.id)}>+</button>
           </div>
           <input className="input" data-note={item.id} value={item.note || ""} placeholder={t(cartPrefix + ".item_note_placeholder")}
             onChange={event => onNote(item.id, event.target.value)} />

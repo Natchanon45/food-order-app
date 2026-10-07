@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.07.168',
+  build: '2026.10.07.169',
   branch: 'feature/react-firebase-port',
-  commit: 'TABLE-SERVICE-SETTLEMENT-REPAIR',
+  commit: 'TABLE-QR-MODERN-UI',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Table service and settlement lifecycle repair',
-  updatedAt: '2026-10-07T14:45:58+0700',
+  milestone: 'Modern Table QR workspace polish',
+  updatedAt: '2026-10-07T15:16:11+0700',
   whatsNew: [
-    'Restore per-item serving for Table and Walk-in kitchen orders',
-    'Close paid and fully served table sessions regardless of whether payment or serving happens first',
-    'Add Walk-in close-table action and restore the legacy full-width current-round note layout'
+    'Refresh Table QR management with a cleaner modern green workspace and card hierarchy',
+    'Add printer icon treatment to QR print-again and QR issue actions',
+    'Make current-round plus and minus quantity controls circular while preserving the two-row cart layout'
   ]
 };
 

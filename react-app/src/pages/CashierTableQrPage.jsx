@@ -90,7 +90,7 @@ export function CashierTableQrPage() {
     bodyClass: "order-delivery-workspace od-qr-page",
     styles: [
       "app.css", "menu-qr.css", "cashier-qr-print.css", "icons.css",
-      "sweet-dialog.css", "order-delivery-workspace-theme.css",
+      "sweet-dialog.css", "order-delivery-workspace-theme.css", "cashier-table-qr-modern.css",
     ],
     attributes: { "data-roles": "owner,admin,manager,cashier" },
   });
@@ -386,13 +386,19 @@ export function CashierTableQrPage() {
 
       <div id="demoBanner"></div>
       <main className="container">
-        <section className="hero">
-          <h1>{t("cashier_documents.table_qr.hero_title")}</h1>
-          <p>{t("cashier_documents.table_qr.hero_description")}</p>
+        <section className="hero qr-modern-hero">
+          <div className="qr-modern-hero-leading">
+            <span className="qr-modern-hero-icon" aria-hidden="true"><i className="bi bi-qr-code-scan"></i></span>
+            <div>
+              <h1>{t("cashier_documents.table_qr.hero_title")}</h1>
+              <p>{t("cashier_documents.table_qr.hero_description")}</p>
+            </div>
+          </div>
         </section>
 
-        <section className="card" style={{ marginBottom: 18 }}>
-          <div className="field">
+        <section className="card qr-paper-panel" style={{ marginBottom: 18 }}>
+          <div className="qr-paper-panel-icon" aria-hidden="true"><i className="bi bi-printer"></i></div>
+          <div className="field qr-paper-field">
             <label htmlFor="qrPaperSize">{t("cashier_documents.table_qr.paper_size")}</label>
             <select className="input" id="qrPaperSize" value={paperSize} onChange={event => setPaperSizeState(event.target.value)}>
               <option value="80">{t("cashier_documents.table_qr.paper_80")}</option>
@@ -402,35 +408,46 @@ export function CashierTableQrPage() {
           </div>
         </section>
 
-        <section>
-          <div className="section-title">
+        <section className="qr-table-section">
+          <div className="section-title qr-table-section-title">
             <h2>{t("cashier_documents.table_qr.available_title")}</h2>
             <span className="badge" id="availableCount">{t("cashier_documents.table_qr.table_count", { count: available.length })}</span>
           </div>
           <div id="availableTables" className="grid grid-3">
             {available.length ? available.map(table => (
-              <article className="card" key={table.id}>
-                <h2 style={{ marginTop: 0 }}>{table.name || table.code || table.id}</h2>
-                <div className="badge">{t("cashier_documents.table_qr.status_available")}</div>
-                <button className="btn btn-primary" type="button" style={{ width: "100%", marginTop: 14 }} disabled={Boolean(busyKey)} onClick={() => issueTable(table)}>
-                  {busyKey === `issue:${table.id}` ? t("cashier_documents.table_qr.issuing") : t("cashier_documents.table_qr.issue_print")}
+              <article className="card qr-table-card qr-table-card-available" key={table.id}>
+                <div className="qr-table-card-head">
+                  <div>
+                    <h2>{table.name || table.code || table.id}</h2>
+                    <div className="badge">{t("cashier_documents.table_qr.status_available")}</div>
+                  </div>
+                  <span className="qr-table-card-icon" aria-hidden="true"><i className="bi bi-table"></i></span>
+                </div>
+                <button className="btn btn-primary qr-table-primary-action" type="button" disabled={Boolean(busyKey)} onClick={() => issueTable(table)}>
+                  <i className="bi bi-qr-code app-icon" aria-hidden="true"></i>
+                  <span>{busyKey === `issue:${table.id}` ? t("cashier_documents.table_qr.issuing") : t("cashier_documents.table_qr.issue_print")}</span>
                 </button>
               </article>
             )) : <div className="card empty">{t("cashier_documents.table_qr.no_available_tables")}</div>}
           </div>
         </section>
 
-        <section style={{ marginTop: 22 }}>
-          <div className="section-title">
+        <section className="qr-table-section" style={{ marginTop: 22 }}>
+          <div className="section-title qr-table-section-title">
             <h2>{t("cashier_documents.table_qr.issued_title")}</h2>
             <span className="badge warning" id="occupiedCount">{t("cashier_documents.table_qr.table_count", { count: occupied.length })}</span>
           </div>
           <div id="occupiedTables" className="grid grid-3">
             {occupied.length ? occupied.map(table => (
-              <article className="card order-card" key={table.id}>
-                <h2 style={{ marginTop: 0 }}>{table.name || table.code || table.id}</h2>
-                <div className="badge warning">{t("cashier_documents.table_qr.status_issued")}</div>
-                <p className="menu-category" style={{ marginBottom: 0 }}>{t("cashier_documents.table_qr.occupied_help")}</p>
+              <article className="card order-card qr-table-card qr-table-card-issued" key={table.id}>
+                <div className="qr-table-card-head">
+                  <div>
+                    <h2>{table.name || table.code || table.id}</h2>
+                    <div className="badge warning">{t("cashier_documents.table_qr.status_issued")}</div>
+                  </div>
+                  <span className="qr-table-card-icon is-issued" aria-hidden="true"><i className="bi bi-qr-code-scan"></i></span>
+                </div>
+                <p className="menu-category qr-table-card-help">{t("cashier_documents.table_qr.occupied_help")}</p>
                 <div className="order-actions" style={{ marginTop: 14 }}>
                   <button className="btn btn-dark" type="button" disabled={Boolean(busyKey)} onClick={() => reprintTable(table)}>
                     <i className="bi bi-printer app-icon" aria-hidden="true"></i>
@@ -446,8 +463,8 @@ export function CashierTableQrPage() {
           </div>
         </section>
 
-        <section style={{ marginTop: 22 }}>
-          <div className="section-title">
+        <section className="qr-table-section" style={{ marginTop: 22 }}>
+          <div className="section-title qr-table-section-title">
             <h2>{t("cashier_documents.table_qr.walkin_title")}</h2>
             <span className="badge warning" id="walkInCount">{t("cashier_documents.table_qr.table_count", { count: walkIns.length })}</span>
           </div>
@@ -458,10 +475,15 @@ export function CashierTableQrPage() {
               const customer = String(order?.customerName || "").trim() || t("cashier_documents.table_qr.walkin_customer_fallback");
               const targets = availableMoveTargets(table);
               return (
-                <article className="card order-card" key={table.id} data-walkin-table-card={table.id}>
-                  <h2 style={{ marginTop: 0 }}>{table.name || table.code || table.id}</h2>
-                  <div className="badge warning">{t("cashier_documents.table_qr.status_walkin")}</div>
-                  <p className="menu-category" style={{ marginBottom: 8 }}>{t("cashier_documents.table_qr.walkin_summary", { queue, customer })}</p>
+                <article className="card order-card qr-table-card qr-table-card-walkin" key={table.id} data-walkin-table-card={table.id}>
+                  <div className="qr-table-card-head">
+                    <div>
+                      <h2>{table.name || table.code || table.id}</h2>
+                      <div className="badge warning">{t("cashier_documents.table_qr.status_walkin")}</div>
+                    </div>
+                    <span className="qr-table-card-icon is-walkin" aria-hidden="true"><i className="bi bi-person-walking"></i></span>
+                  </div>
+                  <p className="menu-category qr-table-card-help">{t("cashier_documents.table_qr.walkin_summary", { queue, customer })}</p>
                   <div className="order-actions" style={{ marginTop: 10 }}>
                     <button className="btn btn-dark" type="button" onClick={() => viewWalkIn(table)}>{t("cashier_documents.table_qr.walkin_view")}</button>
                     <button className="btn btn-danger" type="button" data-close-walkin-table={table.id} disabled={Boolean(busyKey)} onClick={() => closeWalkInTableAction(table)}>
@@ -505,7 +527,10 @@ export function CashierTableQrPage() {
                   </div>
                   <div className="qr-ticket-footer">{t("cashier_documents.table_qr.ticket_footer", { table: ticket.table.name })}<br />{t("cashier_documents.table_qr.ticket_footer_check")}</div>
                 </div>
-                <button className="btn btn-dark" id="printIssuedQr" type="button" style={{ marginTop: 12 }} onClick={() => requestPrint(ticket)}>{t("cashier_documents.table_qr.print_again")}</button>
+                <button className="btn btn-dark qr-print-again-btn" id="printIssuedQr" type="button" onClick={() => requestPrint(ticket)}>
+                  <i className="bi bi-printer app-icon" aria-hidden="true"></i>
+                  <span>{t("cashier_documents.table_qr.print_again")}</span>
+                </button>
               </article>
             </div>
           </section>
