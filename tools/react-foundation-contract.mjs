@@ -1686,6 +1686,8 @@ const posUsersPage=read("react-app/src/pages/PosUsersPage.jsx");
 const retailPosSystemData=read("react-app/src/data/retailPosSystemData.js");
 const retailPosStaffData=read("react-app/src/data/retailPosStaffData.js");
 const retailPosStaffFunction=read("functions/retail-pos-staff.js");
+const retailPosBackupFunction=read("functions/retail-pos-backup.js");
+const retailPosBackupCodec=read("functions/retail-pos-backup-codec.js");
 const posBackupVisualCss=read("react-app/public/parity/css/retail-pos-backup-visual-dashboard.css");
 const posUsersVisualCss=read("react-app/public/parity/css/retail-pos-users-visual-dashboard.css");
 const reactEntrypointSync=read("tools/sync-react-legacy-entrypoints.py");
@@ -1730,8 +1732,23 @@ assert(
   &&posBackupPage.includes('tr("header.title"')
   &&posBackupPage.includes('tr("export.title"')
   &&posBackupPage.includes('tr("restore.title"')
-  &&posBackupPage.includes('tr("included.firebase_note"'),
-  "React POS Backup must preserve owner-gated Firebase backup/restore, five-language copy, drag-drop, and approved responsive visual parity"
+  &&posBackupPage.includes('tr("included.firebase_note"')
+  &&posBackupPage.includes('Number(data.version)===1')
+  &&posBackupPage.includes('Number(data.version)!==2||data.codec!=="firestore-types-v1"')
+  &&retailPosBackupFunction.includes('const BACKUP_VERSION = 2')
+  &&retailPosBackupFunction.includes('const BACKUP_CODEC = "firestore-types-v1"')
+  &&retailPosBackupFunction.includes('decodeFirestoreValue(value, db)')
+  &&retailPosBackupFunction.includes('const FULL_COLLECTIONS = [')
+  &&retailPosBackupFunction.includes('const SCOPED_COLLECTIONS = ["dailySummary", "counters", "runningNumbers", "syncQueue", "heldBills"]')
+  &&retailPosBackupFunction.includes('const POS_COUNTER_PREFIXES = ["SALE_", "TAX_", "REFUND_", "VOID_", "SHIFT_"]')
+  &&retailPosBackupFunction.includes('snap.docs.filter(doc => belongsToPos(name, doc.id, doc.data()))')
+  &&retailPosBackupFunction.includes('await clearCollection(db, ref, name)')
+  &&retailPosBackupFunction.includes('tenant.collection("settings").doc(id)')
+  &&!retailPosBackupFunction.includes('\n  "store",')
+  &&retailPosBackupCodec.includes('const TYPE_KEY = "__penguinFirestoreType"')
+  &&retailPosBackupCodec.includes('nanoseconds: value.nanoseconds')
+  &&retailPosBackupCodec.includes('return new Timestamp(Number(value.seconds), Number(value.nanoseconds))'),
+  "React POS Backup must preserve owner-gated Firebase backup/restore, Firestore typed-value fidelity, five-language copy, drag-drop, and approved responsive visual parity"
 );
 for(const locale of ["th","en","my","lo","km"]){
   const backup=dict[locale]?.pos_backup;
@@ -1745,6 +1762,7 @@ for(const locale of ["th","en","my","lo","km"]){
     &&backup?.stats?.settings
     &&backup?.included?.firebase_note
     &&backup?.messages?.unsupported_file
+    &&backup?.messages?.v1_restore_unsafe
     &&backup?.messages?.summary_failed,
     `React POS Backup Firebase-era translations missing: ${locale}`
   );

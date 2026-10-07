@@ -2736,7 +2736,7 @@
           "printing": "รูปแบบการพิมพ์"
         },
         "note": "ควรเก็บไฟล์สำรองไว้นอกเครื่อง POS เช่น Google Drive, Flash Drive หรือคอมพิวเตอร์อีกเครื่องหนึ่ง",
-        "firebase_note": "บัญชี Firebase Authentication และไฟล์รูปใน Storage จะไม่ถูกลบหรือสร้างใหม่จากการกู้คืนข้อมูล POS"
+        "firebase_note": "บัญชี Firebase Authentication และไฟล์รูปใน Storage จะไม่ถูกลบหรือสร้างใหม่ และการกู้คืนจะไม่เขียนทับการตั้งค่าร่วมของ Admin/Delivery/Lalamove ที่อยู่นอกขอบเขต Retail POS"
       },
       "stats": {
         "categories": "หมวดสินค้า",
@@ -2783,7 +2783,8 @@
         "restore_browser_done": "กู้คืนข้อมูลในเครื่องเรียบร้อยแล้ว",
         "restore_failed": "กู้คืนข้อมูลไม่สำเร็จ",
         "unsupported_file": "ไฟล์สำรองนี้ไม่รองรับกับระบบ React/Firebase POS",
-        "summary_failed": "โหลดสรุปข้อมูลสำรองไม่สำเร็จ"
+        "summary_failed": "โหลดสรุปข้อมูลสำรองไม่สำเร็จ",
+        "v1_restore_unsafe": "ไฟล์สำรองรุ่น 1 ไม่รองรับการกู้คืน เพราะไม่สามารถรักษาชนิดข้อมูลเวลา Firestore ได้ กรุณาสร้างไฟล์สำรองใหม่"
       }
     },
     "pos_catalog": {
@@ -9009,7 +9010,7 @@
           "printing": "Print formats"
         },
         "note": "Keep backup files outside the POS device, such as on Google Drive, a flash drive, or another computer.",
-        "firebase_note": "Firebase Authentication accounts and image files in Storage are not deleted or recreated by POS restore."
+        "firebase_note": "Firebase Authentication accounts and image files in Storage are not deleted or recreated, and restore does not overwrite shared Admin/Delivery/Lalamove settings outside the Retail POS scope."
       },
       "stats": {
         "categories": "Categories",
@@ -9056,7 +9057,8 @@
         "restore_browser_done": "Device data restored successfully.",
         "restore_failed": "Unable to restore data.",
         "unsupported_file": "This backup is not supported by the React/Firebase POS.",
-        "summary_failed": "Unable to load backup summary."
+        "summary_failed": "Unable to load backup summary.",
+        "v1_restore_unsafe": "Backup version 1 cannot be restored because it cannot preserve Firestore timestamp types. Create a new backup first."
       }
     },
     "pos_catalog": {
@@ -15007,7 +15009,7 @@
           "printing": "ပရင့်ပုံစံများ"
         },
         "note": "Backup ဖိုင်ကို POS စက်ပြင်ပတွင် သိမ်းပါ၊ ဥပမာ Google Drive၊ flash drive သို့မဟုတ် အခြားကွန်ပျူတာ။",
-        "firebase_note": "Firebase Authentication အကောင့်များနှင့် Storage ရှိ ရုပ်ပုံဖိုင်များကို POS ပြန်လည်ရယူမှုက ဖျက်ခြင်း သို့မဟုတ် အသစ်ဖန်တီးခြင်း မပြုပါ။"
+        "firebase_note": "Firebase Authentication အကောင့်များနှင့် Storage ရှိ ရုပ်ပုံဖိုင်များကို ဖျက်ခြင်း သို့မဟုတ် အသစ်ဖန်တီးခြင်း မပြုဘဲ Retail POS နယ်ပယ်အပြင်ရှိ Admin/Delivery/Lalamove shared settings များကိုလည်း မရေးทับပါ။"
       },
       "stats": {
         "categories": "အမျိုးအစားများ",
@@ -15054,7 +15056,8 @@
         "restore_browser_done": "စက်ဒေတာ restore ပြီးပါပြီ။",
         "restore_failed": "ဒေတာ restore မလုပ်နိုင်ပါ။",
         "unsupported_file": "ဤအရန်ဖိုင်ကို React/Firebase POS တွင် မပံ့ပိုးပါ။",
-        "summary_failed": "အရန်အကျဉ်းချုပ်ကို မတင်နိုင်ပါ။"
+        "summary_failed": "အရန်အကျဉ်းချုပ်ကို မတင်နိုင်ပါ။",
+        "v1_restore_unsafe": "အရန်ဖိုင် version 1 ကို Firestore timestamp အမျိုးအစားများ မထိန်းသိမ်းနိုင်သောကြောင့် ပြန်လည်ရယူ၍မရပါ။ အရန်ဖိုင်အသစ် ဖန်တီးပါ။"
       }
     },
     "pos_catalog": {
@@ -21005,7 +21008,7 @@
           "printing": "ຮູບແບບການພິມ"
         },
         "note": "ເກັບໄຟລ໌ Backup ໄວ້ນອກອຸປະກອນ POS ເຊັ່ນ Google Drive, flash drive ຫຼືຄອມພິວເຕີອື່ນ.",
-        "firebase_note": "ບັນຊີ Firebase Authentication ແລະ ໄຟລ໌ຮູບໃນ Storage ຈະບໍ່ຖືກລຶບ ຫຼື ສ້າງໃໝ່ໂດຍການກູ້ຄືນ POS"
+        "firebase_note": "ບັນຊີ Firebase Authentication ແລະ ໄຟລ໌ຮູບໃນ Storage ຈະບໍ່ຖືກລຶບ ຫຼື ສ້າງໃໝ່ ແລະ ການກູ້ຄືນຈະບໍ່ຂຽນທັບການຕັ້ງຄ່າຮ່ວມ Admin/Delivery/Lalamove ທີ່ຢູ່ນອກ Retail POS"
       },
       "stats": {
         "categories": "ໝວດໝູ່",
@@ -21052,7 +21055,8 @@
         "restore_browser_done": "Restore ຂໍ້ມູນອຸປະກອນສຳເລັດ.",
         "restore_failed": "ບໍ່ສາມາດ Restore ຂໍ້ມູນໄດ້.",
         "unsupported_file": "ໄຟລ໌ສຳຮອງນີ້ບໍ່ຮອງຮັບກັບ React/Firebase POS",
-        "summary_failed": "ບໍ່ສາມາດໂຫຼດສະຫຼຸບການສຳຮອງໄດ້"
+        "summary_failed": "ບໍ່ສາມາດໂຫຼດສະຫຼຸບການສຳຮອງໄດ້",
+        "v1_restore_unsafe": "ບໍ່ສາມາດກູ້ຄືນໄຟລ໌ສຳຮອງຮຸ່ນ 1 ໄດ້ ເນື່ອງຈາກບໍ່ສາມາດຮັກສາຊະນິດ Timestamp ຂອງ Firestore ໄດ້ ກະລຸນາສ້າງໄຟລ໌ສຳຮອງໃໝ່"
       }
     },
     "pos_catalog": {
@@ -27003,7 +27007,7 @@
           "printing": "ទម្រង់បោះពុម្ព"
         },
         "note": "រក្សាទុកឯកសារ Backup ក្រៅឧបករណ៍ POS ដូចជា Google Drive, flash drive ឬកុំព្យូទ័រផ្សេង។",
-        "firebase_note": "គណនី Firebase Authentication និងឯកសាររូបភាពក្នុង Storage មិនត្រូវបានលុប ឬ បង្កើតឡើងវិញដោយការស្ដារ POS ទេ។"
+        "firebase_note": "គណនី Firebase Authentication និងឯកសាររូបភាពក្នុង Storage មិនត្រូវបានលុប ឬបង្កើតឡើងវិញទេ ហើយការស្ដារមិនសរសេរជាន់លើការកំណត់រួម Admin/Delivery/Lalamove ដែលនៅក្រៅ Retail POS ទេ។"
       },
       "stats": {
         "categories": "ប្រភេទ",
@@ -27050,7 +27054,8 @@
         "restore_browser_done": "Restore ទិន្នន័យឧបករណ៍ជោគជ័យ។",
         "restore_failed": "មិនអាច Restore ទិន្នន័យបានទេ។",
         "unsupported_file": "ឯកសារបម្រុងទុកនេះមិនគាំទ្រដោយ React/Firebase POS ទេ។",
-        "summary_failed": "មិនអាចផ្ទុកសេចក្ដីសង្ខេបការបម្រុងទុកបានទេ។"
+        "summary_failed": "មិនអាចផ្ទុកសេចក្ដីសង្ខេបការបម្រុងទុកបានទេ។",
+        "v1_restore_unsafe": "មិនអាចស្ដារឯកសារបម្រុងទុកកំណែ 1 បានទេ ព្រោះវាមិនអាចរក្សាប្រភេទ Firestore Timestamp បាន។ សូមបង្កើតឯកសារបម្រុងទុកថ្មី។"
       }
     },
     "pos_catalog": {

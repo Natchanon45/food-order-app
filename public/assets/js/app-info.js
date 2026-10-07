@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.07.166',
+  build: '2026.10.07.167',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-BACKUP-USERS-REACT-CUTOVER',
+  commit: 'POS-BACKUP-TYPED-SCOPED-RESTORE',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Retail POS Backup and Users React cutover',
-  updatedAt: '2026-10-07T13:25:26+0700',
+  milestone: 'Retail POS React cutover with safe typed restore',
+  updatedAt: '2026-10-07T14:00:32+0700',
   whatsNew: [
-    'Cut over /pos/backup and /pos/users from legacy HTML/JavaScript to canonical React routes',
-    'Preserve custom roles, granular POS permissions, password updates, and five-language Backup/Users UI',
-    'Remove the legacy Backup and Users page-logic JavaScript while keeping stable URLs and responsive visuals'
+    'Complete the React cutover for /pos/backup and /pos/users',
+    'Upgrade POS backups to version 2 with exact Firestore typed values and POS numbering/integrity data',
+    'Scope restore away from shared Admin, Delivery, Lalamove, Quick Order settings, counters, and held bills'
   ]
 };
 

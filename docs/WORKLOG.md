@@ -10460,3 +10460,77 @@ Deploy state:
 - Firebase Hosting deploy pending.
 - No Firestore Rules, Storage Rules, or schema change required.
 - No merge to `main`.
+
+### 2026-10-07 continuation — Backup v2 typed/scoped restore safety before Hosting cutover
+
+Checkpoint after the initial cutover implementation:
+- Commit `ea0d1d2e` — `feat: cut over POS backup and users to React` was pushed to `origin/feature/react-firebase-port`.
+- Initial Functions deployment succeeded for:
+  - `exportRetailPosBackup`
+  - `restoreRetailPosBackup`
+  - `upsertRetailPosStaff`
+- After Cloud Functions propagation, authenticated Owner candidate verification against Production data passed:
+  - Backup candidate loaded the React shell with no legacy Backup script.
+  - Real backup download succeeded and contained 1,997 products plus all original v1 collection keys.
+  - Users candidate loaded 5 roles, 3 POS users, and 19 permission groups.
+  - Add Role local UI behavior, Edit User dialog, password fields, Retail POS/both scope options, and desktop/mobile horizontal overflow checks passed.
+  - No page errors, console errors, request failures, HTTP errors, or Firestore writes were observed.
+- No Production Restore action was executed.
+
+Additional restore-safety audit before Hosting deploy:
+- Found that backup v1 converted Firestore Timestamp values to strings. Restoring v1 could therefore change Firestore field types.
+- Found that `tenants/{tenant}/settings` is shared with Admin/Delivery/Lalamove. Clearing the whole settings collection would be unsafe.
+- Found that `tenants/{tenant}/counters` is shared with Operational Orders through `order_queue_*` documents.
+- Found that `tenants/{tenant}/heldBills` is shared:
+  - Retail POS uses `source: retail_pos`.
+  - Quick Order uses `source: quick_order`.
+- Therefore Hosting remained undeployed while restore safety was corrected.
+
+Backup v2 implementation:
+- Backup format is now `app: retail-pos-react`, version `2`, codec `firestore-types-v1`.
+- Added `functions/retail-pos-backup-codec.js` to round-trip Firestore typed values:
+  - Timestamp with seconds + nanoseconds;
+  - GeoPoint;
+  - DocumentReference;
+  - bytes;
+  - Date;
+  - NaN / positive Infinity / negative Infinity.
+- React explicitly rejects version 1 restore files with a five-language safety message and accepts only compatible v2 files.
+- Added POS integrity collections required for safe restore continuity:
+  - `dailySummary`
+  - `saleItems`
+  - `counters`
+  - `runningNumbers`
+  - `syncQueue`
+  - `taxBuyerProfiles`
+- Export collection reads run in parallel.
+- Restore pre-decodes/validates rows before destructive collection writes.
+- POS settings are now whitelisted to:
+  - `retailPos`, `tax`, `payment`, `receipt`, `loyalty`, `pos-theme`, `pos-roles`, `roles`, `catalog-order`.
+- Shared settings such as `settings/store`, Lalamove, and Lalamove Wallet are not cleared or overwritten.
+- Shared Firestore collections are scoped during both backup and restore:
+  - `counters` / `runningNumbers`: POS prefixes only (`SALE_`, `TAX_`, `REFUND_`, `VOID_`, `SHIFT_`);
+  - `dailySummary` / `syncQueue`: POS channel/order/schema markers only;
+  - `heldBills`: `source: retail_pos` only, preserving Quick Order held bills.
+- Firebase Authentication accounts and Storage image files remain intentionally outside restore.
+
+Verification after v2 safety changes:
+- `node --check functions/retail-pos-backup.js` PASS.
+- `node --check functions/retail-pos-backup-codec.js` PASS.
+- Backup codec round-trip test PASS, including Timestamp nanosecond fidelity.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- React foundation contract includes typed/scoped Backup regression protection and PASSes.
+- `git diff --check` PASS.
+
+Release candidate after safety repair:
+- React `0.4.280` / Build `2026.10.07.452`.
+- Public `0.16.32` / Build `2026.10.07.167`.
+- Marker: `POS-BACKUP-TYPED-SCOPED-RESTORE`.
+
+Deploy state:
+- Backup v2 Functions deployment pending.
+- React Build 452 production build pending.
+- Firebase Hosting cutover remains pending.
+- No Firestore Rules or Storage Rules change required.
+- No merge to `main`.
