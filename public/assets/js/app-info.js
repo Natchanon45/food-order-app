@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.07.153',
+  build: '2026.10.07.154',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-CUSTOMERS-LOYALTY-HISTORY-REFRESH',
+  commit: 'POS-CUSTOMERS-DIALOG-SHELL-DELETE-FIX',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'POS Customers loyalty history refresh',
-  updatedAt: '2026-10-07T07:18:00+0700',
+  milestone: 'POS Customers dialog shell and delete confirmation repair',
+  updatedAt: '2026-10-07T07:34:00+0700',
   whatsNew: [
-    'Redesign the customer points-history dialog with a full-width modern layout',
-    'Add balance, movement, earned, and used summary cards above the point timeline',
-    'Improve sale/return entries with semantic icons, badges, references, deltas, and responsive mobile cards'
+    'Restore correct inset spacing for Customer purchase/points-history header icons and close buttons',
+    'Fix Customer delete confirmation so it renders text instead of [object Object]',
+    'Correct the same SweetDialog argument misuse in Supplier delete alerts and confirmations'
   ]
 };
 

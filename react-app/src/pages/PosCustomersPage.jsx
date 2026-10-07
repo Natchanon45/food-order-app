@@ -325,14 +325,16 @@ export function PosCustomersPage() {
     if (!canDelete || busy) return;
     const history = summaryFor(customer);
     if (history.count > 0) {
-      await sweetAlert({ title: tr("runtime.delete_used"), confirmText: t("shared.action.ok") });
+      await sweetAlert(tr("runtime.delete_used"), {
+        confirmText: t("shared.action.ok"),
+        type: "warning",
+      });
       return;
     }
-    const approved = await sweetConfirm({
-      title: tr("runtime.delete_confirm", { name: customer.name }),
+    const approved = await sweetConfirm(tr("runtime.delete_confirm", { name: customer.name }), {
       confirmText: tr("runtime.delete"),
       cancelText: tr("form.cancel"),
-      tone: "danger",
+      type: "warning",
     });
     if (!approved) return;
     setBusy(true);
@@ -344,7 +346,7 @@ export function PosCustomersPage() {
       console.error("POS_CUSTOMER_DELETE_FAILED", deleteError);
       const message = tr("runtime.delete_failed", { error: String(deleteError?.message || "DELETE_FAILED") });
       showToast(message, "error");
-      await sweetAlert({ title: message, confirmText: t("shared.action.ok") });
+      await sweetAlert(message, { confirmText: t("shared.action.ok"), type: "error" });
     } finally {
       setBusy(false);
     }

@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.07.438",
+  build: "2026.10.07.439",
   branch: "feature/react-firebase-port",
-  commit: "POS-CUSTOMERS-LOYALTY-HISTORY-REFRESH",
+  commit: "POS-CUSTOMERS-DIALOG-SHELL-DELETE-FIX",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "POS Customers loyalty history refresh",
+  milestone: "POS Customers dialog shell and delete confirmation repair",
   whatsNew: [
-    "Redesign the customer points-history dialog with a full-width modern layout",
-    "Add balance, movement, earned, and used summary cards above the point timeline",
-    "Improve sale/return entries with semantic icons, badges, references, deltas, and responsive mobile cards",
+    "Restore correct inset spacing for Customer purchase/points-history header icons and close buttons",
+    "Fix Customer delete confirmation so it renders text instead of [object Object]",
+    "Correct the same SweetDialog argument misuse in Supplier delete alerts and confirmations",
   ],
 });

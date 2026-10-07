@@ -9588,3 +9588,48 @@ Production deploy + verification:
 - Firestore writes = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
 - Deployment scope was Hosting only; no Firestore Rules, Indexes, Functions, Storage Rules, or schema migration.
 - No merge to `main`.
+
+---
+## 2026-10-07 — POS Customers history-header spacing and delete dialog repair
+
+User report:
+- Customer points-history and purchase-history modal headers had icons too close to/clipped by the left edge and close buttons visually too close to the right edge.
+- Customer delete confirmation rendered `[object Object]` instead of readable text.
+
+Root cause:
+- `.customer-history-head` inherited the shared `.dialog-head` negative horizontal margin (`0 -22px 16px`) even though the history-dialog shells have no matching 22px parent padding. This pushed both header edges outside the rounded dialog shell.
+- `PosCustomersPage` passed an options object as the first argument to `sweetConfirm` / `sweetAlert`, but the shared API signature is `(message, options)`. String coercion therefore rendered `[object Object]`.
+- The same incorrect SweetDialog call pattern was present in `PosSuppliersPage` delete flows.
+
+Change:
+- Reset Customer history header margin to `0`, force full-width border-box sizing, keep 18px header inset, and size the history close button to a centered 38x38 control.
+- Made the history title icon non-shrinking at 42px.
+- Corrected Customer delete blocked-alert, delete confirmation, and delete-error alert to use `sweetAlert(message, options)` / `sweetConfirm(message, options)`.
+- Corrected the same latent Supplier delete SweetDialog argument misuse.
+- Added regression assertions preventing object-first SweetDialog calls on Customers/Suppliers and guarding the Customer history header inset/close-control CSS.
+
+Behavior boundary:
+- No customer/supplier deletion rules, purchase-history restrictions, permissions, Firestore writes, schema, point logic, or routes changed.
+- Delete confirmation still requires explicit confirmation; candidate browser verification blocked Firestore writes.
+
+Release candidate:
+- React `0.4.280` / Build `2026.10.07.439`.
+- Public `0.16.32` / Build `2026.10.07.154`.
+- Generated bundle `/react/assets/index-7_wAQOOo.js`.
+
+Verification before deploy:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `.439` / `index-7_wAQOOo.js`.
+- `git diff --check` PASS.
+- Authenticated candidate verification against Production reads with Firestore writes blocked PASS:
+  - Purchase-history dialog: icon inset 19px, close-button inset 19px, header aligned to shell within 1px, close control 38x38.
+  - Points-history dialog: icon inset 19px, close-button inset 19px, header aligned to shell within 1px, close control 38x38.
+  - Delete confirmation text = `ลบลูกค้า “คุณเอ นามสมมุติ” หรือไม่?`; `[object Object]` absent; buttons = `ลบ` / `ยกเลิก`.
+  - Firestore writes = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
+
+Deploy state:
+- Ready to commit/push and deploy Firebase Hosting only.
+- No Firestore Rules, Indexes, Functions, Storage Rules, or schema migration required.
+- No merge to `main`.
