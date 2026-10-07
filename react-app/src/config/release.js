@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.07.454",
+  build: "2026.10.07.455",
   branch: "feature/react-firebase-port",
-  commit: "TABLE-QR-MODERN-UI",
+  commit: "TABLE-ORDER-QTY-ICONS",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Modern Table QR workspace polish",
+  milestone: "Table Order quantity icon correction",
   whatsNew: [
-    "Refresh Table QR management with a cleaner modern green workspace and card hierarchy",
-    "Add printer icon treatment to QR print-again and QR issue actions",
-    "Make current-round plus and minus quantity controls circular while preserving the two-row cart layout",
+    "Replace text plus/minus glyphs with Bootstrap plus and dash icons in the current-round cart",
+    "Keep the circular quantity controls and full-width note layout unchanged",
+    "Add localized accessible labels for quantity increase and decrease controls",
   ],
 });

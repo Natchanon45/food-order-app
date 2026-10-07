@@ -10784,3 +10784,47 @@ Production deploy + verification:
 - The only browser console 404 is the already-known `/favicon.ico`; it is unrelated to Table QR or current-round UI assets.
 - No Function, Firestore Rules, Storage Rules, or schema deploy was required.
 - No merge to `main`.
+
+---
+
+## 2026-10-07 — Replace current-round quantity text glyphs with real Bootstrap Icons
+
+User report:
+- The circular plus/minus controls in Table Order looked like alphabet/text characters rather than icons.
+
+Root cause:
+- The previous visual polish changed the button shape to circles, but `PublicCartList` still rendered literal Unicode text glyphs `−` and `+` inside the buttons.
+
+Implementation:
+- Replaced the literal glyphs with real Bootstrap Icons:
+  - `bi bi-dash-lg` for decrease;
+  - `bi bi-plus-lg` for increase.
+- Kept the existing 34 x 34 px circular button styling and the restored two-row current-round cart layout.
+- Added localized `order.cart.decrease` / `order.cart.increase` labels for TH / EN / MY / LO / KM and wired them to `aria-label` + `title`.
+- Updated the React foundation regression guard so these controls cannot silently regress back to text glyphs.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS: React Build `2026.10.07.455` / `/react/assets/index-C4r_QqpA.js`.
+- `git diff --check` PASS.
+- Browser candidate verification with Google Chrome:
+  - both buttons remain 34 x 34 px with `border-radius: 50%`;
+  - visible button text is empty;
+  - decrease markup is `<i class="bi bi-dash-lg">`;
+  - increase markup is `<i class="bi bi-plus-lg">`;
+  - pseudo-elements resolve through `font-family: bootstrap-icons`, confirming the icon font is actually rendering;
+  - Thai accessible labels resolve to `ลดจำนวน` and `เพิ่มจำนวน`;
+  - horizontal overflow = 0;
+  - page/console/HTTP errors = 0.
+
+Release candidate:
+- React `0.4.280` / Build `2026.10.07.455`.
+- Public `0.16.32` / Build `2026.10.07.170`.
+- Marker: `TABLE-ORDER-QTY-ICONS`.
+
+Deploy state:
+- Hosting deploy pending.
+- No Function, Firestore Rules, Storage Rules, or schema change required.
+- No merge to `main`.

@@ -528,12 +528,19 @@ assert(
 );
 assert(
   publicStorefrontComponent.match(/className="cart-qty-button"/g)?.length === 2
+  &&publicStorefrontComponent.includes('className="bi bi-dash-lg"')
+  &&publicStorefrontComponent.includes('className="bi bi-plus-lg"')
+  &&!publicStorefrontComponent.includes('onDecrease(item)}>−</button>')
+  &&!publicStorefrontComponent.includes('onIncrease(item.id)}>+</button>')
   &&globalAppCss.includes(".cart-row-aligned .qty .cart-qty-button")
   &&globalAppCss.includes("border-radius: 50%;")
   &&globalAppCss.includes("min-width: 34px;")
   &&globalAppCss.includes("min-height: 34px;"),
-  "Table Order current-round plus/minus controls must remain circular"
+  "Table Order current-round quantity controls must remain circular and use Bootstrap icons instead of text glyphs"
 );
+for(const locale of ["th","en","my","lo","km"]){
+  assert(dict[locale]?.order?.cart?.decrease && dict[locale]?.order?.cart?.increase, `Table Order quantity accessibility labels missing: ${locale}`);
+}
 const staticDataService=read("public/assets/js/data-service.js");
 const deliveryCustomerAuthFunction=read("functions/delivery-customer-auth.js");
 const firestoreRules=read("firestore.rules");

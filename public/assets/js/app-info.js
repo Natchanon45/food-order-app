@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.07.169',
+  build: '2026.10.07.170',
   branch: 'feature/react-firebase-port',
-  commit: 'TABLE-QR-MODERN-UI',
+  commit: 'TABLE-ORDER-QTY-ICONS',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Modern Table QR workspace polish',
-  updatedAt: '2026-10-07T15:16:11+0700',
+  milestone: 'Table Order quantity icon correction',
+  updatedAt: '2026-10-07T15:20:00+0700',
   whatsNew: [
-    'Refresh Table QR management with a cleaner modern green workspace and card hierarchy',
-    'Add printer icon treatment to QR print-again and QR issue actions',
-    'Make current-round plus and minus quantity controls circular while preserving the two-row cart layout'
+    'Replace text plus/minus glyphs with Bootstrap plus and dash icons in the current-round cart',
+    'Keep the circular quantity controls and full-width note layout unchanged',
+    'Add localized accessible labels for quantity increase and decrease controls'
   ]
 };
 

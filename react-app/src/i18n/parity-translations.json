@@ -2012,7 +2012,9 @@
         "item_note_placeholder": "หมายเหตุ เช่น ไม่เผ็ด",
         "total": "ยอดรวมรอบปัจจุบัน",
         "currency": "บาท",
-        "amount": ":amount บาท"
+        "amount": ":amount บาท",
+        "decrease": "ลดจำนวน",
+        "increase": "เพิ่มจำนวน"
       },
       "previous": {
         "title": "รายการที่โต๊ะนี้สั่งแล้ว",
@@ -8296,7 +8298,9 @@
         "item_note_placeholder": "Note, e.g. not spicy",
         "total": "Current order total",
         "currency": "THB",
-        "amount": "THB :amount"
+        "amount": "THB :amount",
+        "decrease": "Decrease quantity",
+        "increase": "Increase quantity"
       },
       "previous": {
         "title": "Orders already placed for this table",
@@ -14305,7 +14309,9 @@
         "item_note_placeholder": "မှတ်ချက်၊ ဥပမာ မစပ်ပါ",
         "total": "လက်ရှိအော်ဒါ စုစုပေါင်း",
         "currency": "ဘတ်",
-        "amount": ":amount ဘတ်"
+        "amount": ":amount ဘတ်",
+        "decrease": "အရေအတွက်လျှော့ရန်",
+        "increase": "အရေအတွက်တိုးရန်"
       },
       "previous": {
         "title": "ဤစားပွဲမှ တင်ပြီးသောအော်ဒါများ",
@@ -20314,7 +20320,9 @@
         "item_note_placeholder": "ໝາຍເຫດ ເຊັ່ນ ບໍ່ເຜັດ",
         "total": "ລວມຄຳສັ່ງປັດຈຸບັນ",
         "currency": "ບາດ",
-        "amount": ":amount ບາດ"
+        "amount": ":amount ບາດ",
+        "decrease": "ຫຼຸດຈຳນວນ",
+        "increase": "ເພີ່ມຈຳນວນ"
       },
       "previous": {
         "title": "ຄຳສັ່ງທີ່ສັ່ງແລ້ວສຳລັບໂຕະນີ້",
@@ -26323,7 +26331,9 @@
         "item_note_placeholder": "កំណត់ចំណាំ ឧ. មិនហឹរ",
         "total": "សរុបការបញ្ជាទិញបច្ចុប្បន្ន",
         "currency": "បាត",
-        "amount": ":amount បាត"
+        "amount": ":amount បាត",
+        "decrease": "បន្ថយចំនួន",
+        "increase": "បន្ថែមចំនួន"
       },
       "previous": {
         "title": "ការបញ្ជាទិញដែលបានផ្ញើរួចសម្រាប់តុនេះ",
