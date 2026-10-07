@@ -9577,3 +9577,14 @@ Deploy state:
 - Ready to commit/push and deploy Firebase Hosting only.
 - No Firestore Rules, Indexes, Functions, Storage Rules, or schema migration required.
 - No merge to `main`.
+Production deploy + verification:
+- Implementation commit: `45a66c44` — `style: refresh POS customer points history`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production loads `/react/assets/index-tegwEjTj.js`.
+- Desktop 1440x900: modal 780px; inner content 778px; right-side unused gap = 1px; four 179px summary cards; history rows 733px; no horizontal/list overflow.
+- Mobile 390x844: modal 374px; summary cards render 2x2 at 171px; history rows 339px; no horizontal/list overflow.
+- Production verification confirmed the first ledger row still renders `+3` and `คงเหลือ 143 แต้ม` correctly.
+- Firestore writes = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
+- Deployment scope was Hosting only; no Firestore Rules, Indexes, Functions, Storage Rules, or schema migration.
+- No merge to `main`.
