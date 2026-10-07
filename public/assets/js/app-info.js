@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.07.156',
+  build: '2026.10.07.157',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-FINAL-LEGACY-VISUAL-REFRESH',
+  commit: 'POS-LEGACY-FAVICON-BRANDING',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'POS Backup and Users visual refresh',
-  updatedAt: '2026-10-07T08:08:00+0700',
+  milestone: 'POS Backup and Users favicon branding',
+  updatedAt: '2026-10-07T08:51:00+0700',
   whatsNew: [
-    'Modernize the POS Backup workspace with a responsive emerald/teal recovery dashboard',
-    'Modernize the POS Users and permissions workspace with role, permission, and staff visual hierarchy',
-    'Preserve all existing legacy Backup/User actions and Firebase behavior while refreshing presentation'
+    'Restore the platform-managed favicon on the legacy POS Backup workspace',
+    'Restore the platform-managed favicon on the legacy POS Users and permissions workspace',
+    'Keep favicon and Apple touch icon fallback behavior aligned with Platform Branding'
   ]
 };
 

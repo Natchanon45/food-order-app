@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.07.441",
+  build: "2026.10.07.442",
   branch: "feature/react-firebase-port",
-  commit: "POS-FINAL-LEGACY-VISUAL-REFRESH",
+  commit: "POS-LEGACY-FAVICON-BRANDING",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "POS Backup and Users visual refresh",
+  milestone: "POS Backup and Users favicon branding",
   whatsNew: [
-    "Modernize the POS Backup workspace with a responsive emerald/teal recovery dashboard",
-    "Modernize the POS Users and permissions workspace with role, permission, and staff visual hierarchy",
-    "Preserve all existing legacy Backup/User actions and Firebase behavior while refreshing presentation",
+    "Restore the platform-managed favicon on the legacy POS Backup workspace",
+    "Restore the platform-managed favicon on the legacy POS Users and permissions workspace",
+    "Keep favicon and Apple touch icon fallback behavior aligned with Platform Branding",
   ],
 });

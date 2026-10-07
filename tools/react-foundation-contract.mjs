@@ -1552,6 +1552,7 @@ const legacyPosBackupJs=read("public/assets/js/retail-pos-backup.js");
 assert(
   legacyPosBackupHtml.includes('class="pos-backup-visual-page"')
   &&legacyPosBackupHtml.includes('retail-pos-backup-visual-dashboard.css?v=20261007-001')
+  &&legacyPosBackupHtml.includes('/assets/js/platform-branding-runtime.js?v=20261007-001')
   &&legacyPosBackupHtml.includes('class="panel backup-panel backup-export-panel"')
   &&legacyPosBackupHtml.includes('backup-restore-panel')
   &&legacyPosBackupHtml.includes('backup-included-panel')
@@ -1578,6 +1579,7 @@ const legacyPosUsersJs=read("public/assets/js/retail-pos-users.js");
 assert(
   legacyPosUsersHtml.includes('class="pos-users-visual-page"')
   &&legacyPosUsersHtml.includes('retail-pos-users-visual-dashboard.css?v=20261007-001')
+  &&legacyPosUsersHtml.includes('/assets/js/platform-branding-runtime.js?v=20261007-001')
   &&legacyPosUsersHtml.includes("users-role-list-panel")
   &&legacyPosUsersHtml.includes("users-role-editor-panel")
   &&legacyPosUsersHtml.includes("users-account-panel")

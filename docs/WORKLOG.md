@@ -9794,3 +9794,44 @@ Production deploy + verification:
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Functions, or schema migration.
 - `/pos/backup` and `/pos/users` remain legacy route implementations; this phase is a presentation/responsiveness refresh only.
 - No merge to `main`.
+
+---
+
+## 2026-10-07 — POS Backup / Users platform favicon repair
+
+User request:
+- `/pos/backup` and `/pos/users` did not show the configured favicon in the browser tab.
+
+Root cause:
+- Both routes are still legacy static POS pages.
+- Unlike React routes, neither page mounts React `PlatformBrandingRuntime`.
+- The two static pages also did not load `/assets/js/platform-branding-runtime.js`, so no dynamic `rel="icon"` or `apple-touch-icon` link was created from `platformSettings/branding`.
+- The existing static branding runtime already provides the required fallback order: Favicon -> App Icon -> Logo.
+
+Change:
+- Added `platform-branding-runtime.js?v=20261007-001` to both legacy pages.
+- Added React foundation regression guards requiring both pages to retain the branding runtime.
+- Bumped React Build to `2026.10.07.442` and Public Build to `2026.10.07.157`.
+- No Backup/User business logic, permissions, IDs, Firebase writes, schema, or restore/user-management behavior changed.
+
+Important files:
+- `public/pos/backup/index.html`
+- `public/pos/users/index.html`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `README.md`
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.07.442` / `/react/assets/index-DrCSsy0G.js`.
+- `git diff --check` PASS.
+- Production deploy and browser verification are pending after commit/push.
+
+Deploy state:
+- Commit/push pending.
+- Firebase Hosting-only deploy pending.
+- No Firestore Rules, Storage Rules, Functions, or schema deployment.
+- No merge to `main`.
