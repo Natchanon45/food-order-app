@@ -10299,3 +10299,16 @@ Deploy state:
 - Firebase Hosting-only deploy pending.
 - No Firestore Rules, Storage Rules, Cloud Functions, or schema change required.
 - No merge to `main`.
+
+Production deploy + verification:
+- Implementation commit: `e987f612` — `fix: restore mobile category scrollspy`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production bundle is `/react/assets/index-Dx-C57cU.js` for React Build `2026.10.07.449` / Public Build `2026.10.07.164`.
+- Production Table 12 verification at 440x956 using the active token from the user-reported URL:
+  - initial active category = `ทั้งหมด`, 37 cards rendered;
+  - scrolling to the `แกง` region changed active tab to `แกง` and horizontally moved the category strip (`scrollLeft = 58`) while all 37 cards remained rendered;
+  - Desktop 1600px remained exactly two columns (`307px 307px`) with active category `ทั้งหมด`.
+- Firestore write attempts `0`; page errors `0`; console errors `0`; HTTP errors `0`; horizontal overflow `0`.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Cloud Functions, or schema deployment occurred.
+- No merge to `main`.
