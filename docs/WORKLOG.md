@@ -10369,3 +10369,15 @@ Deploy state:
 - Firebase Hosting-only deploy pending.
 - No Firestore Rules, Storage Rules, Cloud Functions, or schema change required.
 - No merge to `main`.
+
+Production deploy + verification:
+- Implementation commit: `d58852b2` — `fix: localize spoken order channels`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production React bundle is `/react/assets/index-C9gHut3K.js` for React Build `2026.10.07.450` / Public Build `2026.10.07.165`.
+- Production HTTP checks: `/cashier` = 200, `/kitchen` = 200, bundle = 200, `app-info.js` = 200.
+- Production Cashier shell references `/react/assets/index-C9gHut3K.js`.
+- Production `app-info.js` reports Build `2026.10.07.165`, commit marker `THAI-ORDER-ALERT-SPEECH`, and milestone `Natural Thai order alert speech`.
+- Downloaded Production bundle contains all required speech markers: `มีรายการสั่งซื้อใหม่`, `จัดส่งเดลิเวอรี่`, `สั่งที่หน้าร้าน`, `สั่งกลับบ้าน`, and `สั่งที่โต๊ะ`.
+- No Firestore Rules, Storage Rules, Cloud Functions, or schema deployment occurred.
+- No merge to `main`.
