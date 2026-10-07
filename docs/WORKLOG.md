@@ -11207,3 +11207,78 @@ Deploy state:
 - Production P0 browser smoke: **52/52 PASS**.
 - Deployment scope was Hosting only.
 - No Functions, Firestore Rules, Storage Rules, schema, or main-branch merge changes.
+
+
+---
+
+## 2026-10-07 — Delivery Laravel visual parity pass (Build 2026.10.07.460)
+
+Request:
+- After the React-only cutover, Delivery was the remaining page with noticeable visual/layout drift.
+- Compare directly against Laravel MASTER instead of asking the user to enumerate every visual difference.
+- Preserve React/Firebase delivery business logic.
+
+Laravel baseline:
+- Project: /Users/natchanonsripleng/Desktop/Sites/food-order-app-php80
+- Branch: main
+- Reference view: resources/views/migrated/delivery.blade.php
+- Reference CSS/behavior: Delivery/address/map/payment/favorites/workspace assets under public/assets.
+- React remained on feature/react-firebase-port; no reset/clean/discard and no merge to main.
+
+Parity corrections:
+- Restored Laravel body class parity: customer-order-page.
+- Restored Laravel Delivery CSS order and added the two missing Google account styles:
+  - delivery-google-normal-button.css
+  - delivery-google-font-mobile-spacing.css
+- Replaced React-diverged delivery-addresses.css with the Laravel MASTER copy.
+- Reworked the customer account block to use the Laravel visual structure and hooks while retaining React customer-auth handlers:
+  - customerAccount / customerAccountName / customerModeText
+  - delivery-google-button-slot
+  - googleLoginButton using google-login-button delivery-google-login-button
+  - Google logo asset
+  - customerLogoutButton
+- Restored Laravel DOM hooks across contact/address book/map:
+  recipient inputs, address status, address book/form controls, map picker/status/coordinates, and current-location action.
+- Restored deliveryDistanceStatus and kept the delivery-zone control visible like Laravel:
+  - manual mode remains editable
+  - Google Routes/Lalamove automatic modes remain disabled/read-only
+  - automatic delivery calculation behavior is unchanged.
+- Fixed the React loading state so an in-progress menu load shows common.loading instead of the failure message.
+- Restored Laravel payment structure/hooks:
+  promptPaySection, paymentLockPanel/state/summary/actions, PromptPay placeholder/QR/amount/name, payment-slip wrapper/dropzone/preview/error/remove controls.
+- Restored remaining Laravel visual IDs for hero, menu search/pagination, cart, free-gift area, subtotal/delivery fee/free-shipping, note/payment method, submit action, and cart total.
+- PublicMenuCatalog/PublicCartList gained optional IDs only; callers that do not pass them are unchanged.
+- Added Delivery parity assertions to the React foundation contract.
+- Kept React/Firebase Maps, Lalamove quotation/COD, promotions, favorites, PromptPay generation, slip upload, customer data, and order creation logic intact.
+- Confirmed Laravel itself uses the sticky/scrollable desktop Delivery side column through pos-refresh.css, so that behavior was intentionally preserved rather than removed.
+
+Verification:
+- Static Laravel Blade parity audit: 0 missing Delivery IDs in React; the only apparent missing class is bi-credit-card, which React generates dynamically at runtime.
+- npm run test:react-foundation PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS.
+- Migration coverage PASS: 53 routes / 21 POS routes / 52 React shells / 0 pending shell sync.
+- npm run build:react PASS.
+- Generated React build contract PASS for Build 2026.10.07.460 / /react/assets/index-B3zQsc0z.js.
+- git diff --check PASS.
+- Hosting-emulator Delivery audit using real tenant saas-test-shop:
+  - desktop 1440x1000 and mobile 390x844
+  - no horizontal overflow
+  - real menus load (10 paged cards desktop / 37 cards mobile)
+  - Google login fills the account-card width
+  - deliveryZone exists and is disabled in automatic mode
+  - payment lock/placeholder structures exist
+  - first Add action updates cart 0 -> 1, total 0.00 -> 120.00, and creates one cart row
+  - no page errors
+- Hosting-emulator P0 browser smoke: 52/52 PASS.
+- Visual screenshots were reviewed for the top workspace and the Map/Delivery Zone/Payment sections on desktop and mobile; temporary screenshots were removed before commit.
+
+Release candidate:
+- React Version 0.4.280
+- Build 2026.10.07.460
+- marker DELIVERY-LARAVEL-VISUAL-PARITY
+- bundle /react/assets/index-B3zQsc0z.js
+
+Deploy state:
+- Commit/push and Firebase Hosting-only deploy pending at this checkpoint.
+- No Functions, Firestore Rules, Storage Rules, schema change, or merge to main.

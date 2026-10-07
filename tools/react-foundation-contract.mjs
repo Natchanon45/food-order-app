@@ -594,8 +594,18 @@ assert(
   "React Delivery customer context must remain isolated from staff identity and privileges"
 );
 assert(
-  deliveryPage.includes('className="card delivery-account-card"')
-  &&deliveryPage.includes('className="delivery-account-user-row"')
+  deliveryPage.includes('id="customerAccount"')
+  &&deliveryPage.includes('id="customerModeText"')
+  &&deliveryPage.includes('className="delivery-google-button-slot"')
+  &&deliveryPage.includes('className="google-login-button delivery-google-login-button"')
+  &&deliveryPage.includes('src="/assets/images/google-logo.svg"')
+  &&deliveryPage.includes('bodyClass: "order-delivery-workspace delivery-page customer-order-page"')
+  &&deliveryPage.includes('"delivery-google-normal-button.css"')
+  &&deliveryPage.includes('"delivery-google-font-mobile-spacing.css"')
+  &&deliveryPage.includes('id="deliveryZone"')
+  &&deliveryPage.includes('id="paymentLockPanel"')
+  &&deliveryPage.includes('className="payment-slip-wrap"')
+  &&deliveryPage.includes('id="promptPayPlaceholder"')
   &&deliveryPage.includes("loginDeliveryCustomerWithGoogle")
   &&deliveryPage.includes("logoutDeliveryCustomer")
   &&deliveryPage.includes("getDeliveryCustomerProfile")

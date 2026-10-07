@@ -99,12 +99,13 @@ export function DeliveryPage() {
   const { t, locale, formatNumber } = useI18n();
   const stylesReady = useParityPage({
     title: t("delivery.checkout.meta_title"),
-    bodyClass: "order-delivery-workspace delivery-page",
+    bodyClass: "order-delivery-workspace delivery-page customer-order-page",
     styles: [
       "app.css", "menu-qr.css", "payment-slip.css", "menu-pagination.css", "delivery-addresses.css",
       "delivery-location-map.css", "delivery-promotions.css", "icons.css", "pos-refresh.css",
-      "delivery-favorites.css", "mobile-menu-scroll.css", "delivery-payment-lock.css", "sweet-dialog.css",
-      "order-delivery-workspace-theme.css", "public-menu-image-frame.css", "shared-responsive.css",
+      "public-menu-image-frame.css", "mobile-menu-scroll.css", "delivery-payment-lock.css", "sweet-dialog.css",
+      "order-delivery-workspace-theme.css", "delivery-google-normal-button.css",
+      "delivery-google-font-mobile-spacing.css", "delivery-favorites.css", "shared-responsive.css",
     ],
   });
 
@@ -617,15 +618,16 @@ export function DeliveryPage() {
 
   return <>
     <PublicStorefrontHeader title={t("delivery.checkout.header.title")} badge={t("delivery.checkout.header.badge")} />
+    <div id="demoBanner"></div>
     <main className="container">
       <section className="hero">
-        <h1 className="hero-title"><i className="bi bi-scooter app-icon" aria-hidden="true"></i><span>{shopName}</span></h1>
+        <h1 className="hero-title"><i className="bi bi-scooter app-icon" aria-hidden="true"></i><span id="deliveryHeroStoreName">{shopName}</span></h1>
         <p>{t("delivery.checkout.hero.description")}</p>
       </section>
 
       {loadError ? <section className="card empty">{loadError}</section> : (
         <div className="delivery-pos">
-          {loading ? <div className="delivery-menu-column"><div className="card empty">{t("delivery.checkout.menu.load_failed")}</div></div> : (
+          {loading ? <div className="delivery-menu-column"><div className="card empty">{t("common.loading")}</div></div> : (
             <PublicMenuCatalog menus={menus} prefix="delivery.checkout.menu" activeCategory={activeCategory}
               setActiveCategory={setActiveCategory} search={search} setSearch={setSearch} page={page} setPage={setPage}
               onAdd={add} disabled={submitting || locked}
@@ -633,39 +635,50 @@ export function DeliveryPage() {
               extraFilter={item => favoriteIds.has(String(item.id))}
               favoriteIds={favoriteIds} onToggleFavorite={toggleFavorite}
               favoriteAddLabel={t("delivery.checkout.menu.favorite_add")}
-              favoriteRemoveLabel={t("delivery.checkout.menu.favorite_remove")} />
+              favoriteRemoveLabel={t("delivery.checkout.menu.favorite_remove")}
+              searchId="searchInput" paginationId="menuPagination" />
           )}
 
           <div className="delivery-side-column">
             <section className="card">
-              <div className="section-title"><h2><i className="bi bi-cart3 app-icon"></i><span>{t("delivery.checkout.menu.cart_title")}</span></h2><span className="badge">{t("delivery.checkout.menu.cart_count", { count: cartCount })}</span></div>
-              <PublicCartList items={cart} prefix="delivery.checkout.cart" onIncrease={increase} onDecrease={decrease} onNote={noteItem} emptyTextKey="delivery.checkout.menu.cart_empty" />
+              <div className="section-title"><h2><i className="bi bi-cart3 app-icon"></i><span>{t("delivery.checkout.menu.cart_title")}</span></h2><span id="cartCount" className="badge">{t("delivery.checkout.menu.cart_count", { count: cartCount })}</span></div>
+              <PublicCartList items={cart} prefix="delivery.checkout.cart" onIncrease={increase} onDecrease={decrease} onNote={noteItem} emptyTextKey="delivery.checkout.menu.cart_empty" listId="cartList" />
             </section>
 
-            <section className="card delivery-account-card" style={{ marginTop: 18 }}>
-              <div className="section-title"><h2><i className="bi bi-person-vcard app-icon"></i><span>{t("delivery.checkout.customer.section_title")}</span></h2></div>
+            <section className="card" style={{ marginTop: 18 }}>
+              <div className="section-title"><h2><i className="bi bi-person-vcard app-icon" aria-hidden="true"></i><span>{t("delivery.checkout.customer.section_title")}</span></h2></div>
               <div className="grid grid-2" style={{ alignItems: "center" }}>
                 <div>
-                  {customerUser ? <div className="delivery-account-user-row"><strong>{customerUser.displayName || t("delivery.checkout.customer.google_account")}</strong><button type="button" className="delivery-account-logout" title={t("delivery.checkout.customer.logout")} onClick={logoutGoogle} disabled={Boolean(customerBusy)}><i className="bi bi-box-arrow-right app-icon"></i></button></div> : null}
-                  <div className="menu-category">{t(customerUser ? "delivery.checkout.customer.signed_in_mode" : "delivery.checkout.customer.guest_mode")}</div>
+                  <div id="customerAccount" hidden={!customerUser}>
+                    <strong id="customerAccountName">{customerUser?.displayName || t("delivery.checkout.customer.google_account")}</strong>
+                  </div>
+                  <div id="customerModeText" className="menu-category">{t(customerUser ? "delivery.checkout.customer.signed_in_mode" : "delivery.checkout.customer.guest_mode")}</div>
                 </div>
-                {!customerUser ? <div style={{ display: "flex", justifyContent: "flex-end" }}><button type="button" className="google-login-button" disabled={Boolean(customerBusy)} onClick={loginGoogle}><span>{t(customerBusy === "login" ? "delivery.checkout.customer.google_login_busy" : "delivery.checkout.customer.google_login")}</span></button></div> : null}
+                <div className="delivery-google-button-slot" style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
+                  {!customerUser ? <button type="button" className="google-login-button delivery-google-login-button" id="googleLoginButton" disabled={Boolean(customerBusy)} onClick={loginGoogle}>
+                    <img src="/assets/images/google-logo.svg" alt="" width="20" height="20" aria-hidden="true" />
+                    <span>{t(customerBusy === "login" ? "delivery.checkout.customer.google_login_busy" : "delivery.checkout.customer.google_login")}</span>
+                  </button> : null}
+                  {customerUser ? <button type="button" className="btn" id="customerLogoutButton" disabled={Boolean(customerBusy)} onClick={logoutGoogle}>
+                    {t(customerBusy === "logout" ? "delivery.checkout.customer.logout_busy" : "delivery.checkout.customer.logout")}
+                  </button> : null}
+                </div>
               </div>
             </section>
 
             <section className="card" style={{ marginTop: 18 }}>
               <div className="section-title"><h2><i className="bi bi-truck app-icon"></i><span>{t("delivery.checkout.address.section_title")}</span></h2></div>
               <div className="grid grid-2 delivery-contact-grid">
-                <div className="field"><label>{t("delivery.checkout.address.recipient_name")} *</label><input className="input" maxLength={120} value={recipientName} disabled={submitting} onChange={event => setRecipientName(event.target.value)} /></div>
-                <div className="field"><label>{t("delivery.checkout.address.phone")} *</label><input className="input" inputMode="tel" maxLength={20} value={recipientPhone} disabled={submitting} onChange={event => setRecipientPhone(event.target.value)} /></div>
+                <div className="field"><label>{t("delivery.checkout.address.recipient_name")} *</label><input className="input" id="recipientName" required maxLength={120} value={recipientName} disabled={submitting} onChange={event => setRecipientName(event.target.value)} /><div className="address-lookup-status" aria-hidden="true">&nbsp;</div></div>
+                <div className="field"><label>{t("delivery.checkout.address.phone")} *</label><input className="input" id="recipientPhone" type="tel" inputMode="tel" required maxLength={20} value={recipientPhone} disabled={submitting} onChange={event => setRecipientPhone(event.target.value)} /><div id="addressLookupStatus" className="address-lookup-status"></div></div>
               </div>
 
-              <section className="address-book">
+              <section id="addressBook" className="address-book">
                 <div className="address-book-head">
                   <div><strong>{t("delivery.checkout.address.book_title")}</strong><div className="menu-category">{profileLoading ? t("delivery.checkout.address.loading") : t("delivery.checkout.address.book_help")}</div></div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}><span className="badge">{t("delivery.checkout.address.count", { count: (profile.addresses || []).length })}</span><button type="button" className="btn btn-primary btn-sm" disabled={(profile.addresses || []).length >= 5 || Boolean(customerBusy)} onClick={() => setAddressEditor({ id: "", label: t("delivery.checkout.address.home_label"), recipientName, address: deliveryAddress, isDefault: !(profile.addresses || []).length })}><i className="bi bi-plus-lg app-icon"></i><span>{t("delivery.checkout.address.add")}</span></button></div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}><span id="addressCount" className="badge">{t("delivery.checkout.address.count", { count: (profile.addresses || []).length })}</span><button type="button" className="btn btn-primary btn-sm" id="addAddressButton" disabled={(profile.addresses || []).length >= 5 || Boolean(customerBusy)} onClick={() => setAddressEditor({ id: "", label: t("delivery.checkout.address.home_label"), recipientName, address: deliveryAddress, isDefault: !(profile.addresses || []).length })}><i className="bi bi-plus-lg app-icon"></i><span>{t("delivery.checkout.address.add")}</span></button></div>
                 </div>
-                <div className="address-list">
+                <div id="addressList" className="address-list">
                   {(profile.addresses || []).length ? (profile.addresses || []).map(address => <label className={"address-card" + (selectedAddressId === address.id ? " selected" : "")} key={address.id}>
                     <input type="radio" name="savedDeliveryAddressReact" checked={selectedAddressId === address.id} onChange={() => selectAddress(address)} />
                     <div><div className="address-card-title">{address.label || t("delivery.checkout.address.fallback_label")}{address.isDefault ? <span className="address-default">{t("delivery.checkout.address.default_badge")}</span> : null}</div><div className="address-card-text"><strong>{address.recipientName || profile.displayName || ""}</strong><br/>{address.address}</div></div>
@@ -676,56 +689,82 @@ export function DeliveryPage() {
                     </div>
                   </label>) : <div className="empty" style={{ padding: "20px 10px" }}>{t("delivery.checkout.address.none_saved")}</div>}
                 </div>
-                {addressEditor ? <div className="address-form">
+                {addressEditor ? <div id="addressForm" className="address-form">
                   <div className="grid grid-2">
-                    <div className="field"><label>{t("delivery.checkout.address.label")} *</label><input className="input" value={addressEditor.label || ""} onChange={event => setAddressEditor(current => ({ ...current, label: event.target.value }))} /></div>
-                    <div className="field"><label>{t("delivery.checkout.address.recipient")} *</label><input className="input" value={addressEditor.recipientName || ""} onChange={event => setAddressEditor(current => ({ ...current, recipientName: event.target.value }))} /></div>
+                    <div className="field"><label>{t("delivery.checkout.address.label")} *</label><input className="input" id="addressLabel" maxLength={50} value={addressEditor.label || ""} onChange={event => setAddressEditor(current => ({ ...current, label: event.target.value }))} /></div>
+                    <div className="field"><label>{t("delivery.checkout.address.recipient")} *</label><input className="input" id="addressRecipient" maxLength={120} value={addressEditor.recipientName || ""} onChange={event => setAddressEditor(current => ({ ...current, recipientName: event.target.value }))} /></div>
                   </div>
-                  <div className="field" style={{ marginTop: 10 }}><label>{t("delivery.checkout.address.details")} *</label><textarea className="input" value={addressEditor.address || ""} onChange={event => setAddressEditor(current => ({ ...current, address: event.target.value }))} /></div>
-                  <label style={{ display: "block", marginTop: 10 }}><input type="checkbox" checked={Boolean(addressEditor.isDefault)} onChange={event => setAddressEditor(current => ({ ...current, isDefault: event.target.checked }))} /> {t("delivery.checkout.address.default_checkbox")}</label>
-                  <div className="address-form-actions"><button type="button" className="btn" onClick={() => setAddressEditor(null)}><i className="bi bi-x-lg app-icon"></i><span>{t("delivery.checkout.address.cancel")}</span></button><button type="button" className="btn btn-primary" disabled={customerBusy === "address"} onClick={saveAddress}><i className="bi bi-floppy app-icon"></i><span>{t("delivery.checkout.address.save")}</span></button></div>
+                  <div className="field" style={{ marginTop: 10 }}><label>{t("delivery.checkout.address.details")} *</label><textarea className="input" id="addressText" maxLength={500} value={addressEditor.address || ""} onChange={event => setAddressEditor(current => ({ ...current, address: event.target.value }))} /></div>
+                  <label style={{ display: "block", marginTop: 10 }}><input type="checkbox" id="addressDefault" checked={Boolean(addressEditor.isDefault)} onChange={event => setAddressEditor(current => ({ ...current, isDefault: event.target.checked }))} /> {t("delivery.checkout.address.default_checkbox")}</label>
+                  <div className="address-form-actions"><button type="button" className="btn" id="cancelAddressButton" onClick={() => setAddressEditor(null)}><i className="bi bi-x-lg app-icon"></i><span>{t("delivery.checkout.address.cancel")}</span></button><button type="button" className="btn btn-primary" id="saveAddressButton" disabled={customerBusy === "address"} onClick={saveAddress}><i className="bi bi-floppy app-icon"></i><span>{t("delivery.checkout.address.save")}</span></button></div>
                 </div> : null}
               </section>
 
-              <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.address.delivery_address")} *</label><textarea className="input" maxLength={500} value={deliveryAddress} disabled={submitting} onChange={event => { setDeliveryAddress(event.target.value); setSelectedAddressId(""); }} /></div>
+              <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.address.delivery_address")} *</label><textarea className="input" id="deliveryAddress" required maxLength={500} value={deliveryAddress} disabled={submitting} onChange={event => { setDeliveryAddress(event.target.value); setSelectedAddressId(""); }} /></div>
               {tenant ? <DeliveryLocationPicker slug={tenant.slug || slug} value={deliveryLocation} t={t} language={locale}
                 disabled={submitting || locked} onChange={location => { setDeliveryLocation(location); setSelectedAddressId(""); }} /> : null}
-              {distanceStatus ? <div className={"delivery-distance-status" + (routeReady ? " is-ready" : routeState.error || (routeState.route && !routeState.route.inRange) ? " is-error" : "")}>{distanceStatus}</div> : null}
+              {distanceStatus ? <div id="deliveryDistanceStatus" className={"delivery-distance-status" + (routeReady ? " is-ready" : routeState.error || (routeState.route && !routeState.route.inRange) ? " is-error" : "")}>{distanceStatus}</div> : null}
 
-              {manualMode ? <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.address.delivery_zone")} *</label><select className="input" value={manualZoneId} disabled={locked || submitting} onChange={event => setManualZoneId(event.target.value)}>{zones.map(zone => <option key={zone.id} value={zone.id}>{zone.label} • {money(zone.fee)} {t("delivery.checkout.units.baht")}</option>)}</select></div> : null}
+              <div className="field" style={{ marginTop: 12 }}>
+                <label>{t("delivery.checkout.address.delivery_zone")} *</label>
+                <select
+                  className="input"
+                  id="deliveryZone"
+                  required
+                  value={usesLalamove ? (lalamoveZone?.id || "") : (manualMode ? manualZoneId : (selectedZone?.id || ""))}
+                  disabled={locked || submitting || !manualMode}
+                  onChange={event => { if (manualMode) setManualZoneId(event.target.value); }}
+                >
+                  {usesLalamove
+                    ? <option value="lalamove">{lalamoveZone ? `${lalamoveZone.label} • ${money(lalamoveZone.fee)} ${t("delivery.checkout.units.baht")}` : "Lalamove"}</option>
+                    : zones.map(zone => <option key={zone.id} value={zone.id}>{zone.label} • {money(zone.fee)} {t("delivery.checkout.units.baht")}</option>)}
+                </select>
+              </div>
 
-              {giftMenus.length ? <section className="delivery-free-gift-section">
-                <div className="delivery-free-gift-head"><div><h3><i className="bi bi-gift app-icon"></i><span>{t("delivery.checkout.promotion.gift_title")}</span></h3><div className="menu-category">{giftConfig.validFrom && giftConfig.validUntil ? t("delivery.checkout.promotion.gift_period_range", { from: prettyDate(giftConfig.validFrom), until: prettyDate(giftConfig.validUntil) }) : giftConfig.validUntil ? t("delivery.checkout.promotion.gift_period", { date: prettyDate(giftConfig.validUntil) }) : ""}</div></div><span className="badge">{freeGiftIds.size} / {giftConfig.maxSelectableItems}</span></div>
-                <div className="delivery-free-gift-list">{giftMenus.map(menu => {
+              {giftMenus.length ? <section id="deliveryFreeGiftSection" className="delivery-free-gift-section">
+                <div className="delivery-free-gift-head"><div><h3><i className="bi bi-gift app-icon"></i><span>{t("delivery.checkout.promotion.gift_title")}</span></h3><div id="deliveryFreeGiftPeriod" className="menu-category">{giftConfig.validFrom && giftConfig.validUntil ? t("delivery.checkout.promotion.gift_period_range", { from: prettyDate(giftConfig.validFrom), until: prettyDate(giftConfig.validUntil) }) : giftConfig.validUntil ? t("delivery.checkout.promotion.gift_period", { date: prettyDate(giftConfig.validUntil) }) : ""}</div></div><span id="deliveryFreeGiftCounter" className="badge">{freeGiftIds.size} / {giftConfig.maxSelectableItems}</span></div>
+                <div id="deliveryFreeGiftList" className="delivery-free-gift-list">{giftMenus.map(menu => {
                   const checked = freeGiftIds.has(String(menu.id));
                   const disabled = locked || (!checked && freeGiftIds.size >= giftConfig.maxSelectableItems);
                   return <label className={"delivery-free-gift-item" + (checked ? " is-selected" : "") + (disabled && !checked ? " is-limit-reached" : "")} key={menu.id}><input type="checkbox" checked={checked} disabled={disabled} onChange={() => toggleGift(String(menu.id))}/><span className="delivery-free-gift-item-content"><strong>{menu.name}</strong><small>{menu.category || t("delivery.checkout.menu.other")}</small></span></label>;
                 })}</div>
-                <div className={"delivery-free-gift-status" + (!freeGiftIds.size ? " is-required" : "")}>{freeGiftIds.size ? t("delivery.checkout.promotion.gift_selection", { selected: freeGiftIds.size, max: giftConfig.maxSelectableItems }) : t("delivery.checkout.promotion.gift_required")}</div>
+                <div id="deliveryFreeGiftStatus" className={"delivery-free-gift-status" + (!freeGiftIds.size ? " is-required" : "")}>{freeGiftIds.size ? t("delivery.checkout.promotion.gift_selection", { selected: freeGiftIds.size, max: giftConfig.maxSelectableItems }) : t("delivery.checkout.promotion.gift_required")}</div>
               </section> : null}
 
               <div className="card" style={{ marginTop: 12, boxShadow: "none", background: "#f8fbf9" }}>
-                <div className="receipt-row"><span>{t("delivery.checkout.summary.food_subtotal")}</span><strong>{money(subtotal)} {t("delivery.checkout.units.baht")}</strong></div>
-                <div className="receipt-row"><span>{t("delivery.checkout.summary.delivery_fee")}</span><strong>{money(deliveryFee)} {t("delivery.checkout.units.baht")}</strong></div>
-                {freeShipping.enabled && subtotal > 0 ? <div className={"delivery-free-shipping-status" + (!freeShippingApplied ? " is-progress" : "")}>{freeShippingApplied ? t("delivery.checkout.promotion.free_shipping_applied", { minimum: money(freeShipping.minimumSubtotal) }) : t("delivery.checkout.promotion.free_shipping_progress", { remaining: money(Math.max(0, freeShipping.minimumSubtotal - subtotal)) })}</div> : null}
+                <div className="receipt-row"><span>{t("delivery.checkout.summary.food_subtotal")}</span><strong><span id="deliverySubtotal">{money(subtotal)}</span> {t("delivery.checkout.units.baht")}</strong></div>
+                <div className="receipt-row"><span>{t("delivery.checkout.summary.delivery_fee")}</span><strong><span id="deliveryFeeDisplay">{money(deliveryFee)}</span> {t("delivery.checkout.units.baht")}</strong></div>
+                {freeShipping.enabled && subtotal > 0 ? <div id="deliveryFreeShippingStatus" className={"delivery-free-shipping-status" + (!freeShippingApplied ? " is-progress" : "")}>{freeShippingApplied ? t("delivery.checkout.promotion.free_shipping_applied", { minimum: money(freeShipping.minimumSubtotal) }) : t("delivery.checkout.promotion.free_shipping_progress", { remaining: money(Math.max(0, freeShipping.minimumSubtotal - subtotal)) })}</div> : null}
               </div>
-              <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.summary.order_note")}</label><textarea className="input" maxLength={300} value={orderNote} disabled={submitting} onChange={event => setOrderNote(event.target.value)} /></div>
-              <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.summary.payment_method")} *</label><select className="input" value={paymentMethod} disabled={locked || submitting} onChange={event => { setPaymentMethod(event.target.value); setPaymentLocked(false); setLockedTotal(null); clearSlip(); }}><option value="promptpay">{t("delivery.checkout.payment.promptpay_option")}</option><option value="cod">{t("delivery.checkout.payment.cod_option")}</option></select></div>
+              <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.summary.order_note")}</label><textarea className="input" id="orderNote" maxLength={300} value={orderNote} disabled={submitting} onChange={event => setOrderNote(event.target.value)} /></div>
+              <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.summary.payment_method")} *</label><select className="input" id="paymentMethod" value={paymentMethod} disabled={locked || submitting} onChange={event => { setPaymentMethod(event.target.value); setPaymentLocked(false); setLockedTotal(null); clearSlip(); }}><option value="promptpay">{t("delivery.checkout.payment.promptpay_option")}</option><option value="cod">{t("delivery.checkout.payment.cod_option")}</option></select></div>
 
-              {paymentMethod === "promptpay" ? <div className="card" style={{ marginTop: 12, textAlign: "center" }}>
+              {paymentMethod === "promptpay" ? <div id="promptPaySection" className="card" style={{ marginTop: 12, textAlign: "center" }}>
                 <h3 style={{ marginTop: 0 }}><i className="bi bi-qr-code app-icon"></i><span>{t("delivery.checkout.payment.promptpay_title")}</span></h3>
-                {!paymentLocked ? <div className="payment-lock-state"><strong>{t("delivery.checkout.payment_lock.unlocked_title")}</strong><span>{t("delivery.checkout.payment_lock.unlocked_help")}</span></div> : <>
-                  <div className="payment-lock-summary"><div><span>{t("delivery.checkout.summary.food_subtotal")}</span><strong>{money(lockedTotal?.subtotal ?? subtotal)}</strong></div><div><span>{t("delivery.checkout.summary.delivery_fee")}</span><strong>{money(lockedTotal?.deliveryFee ?? deliveryFee)}</strong></div><div className="payment-lock-total"><span>{t("delivery.checkout.payment_lock.locked_total")}</span><strong>{money(lockedTotal?.total ?? total)}</strong></div></div>
-                  <div className="payment-lock-actions">{promptPayQr.src ? <a className="btn btn-dark" href={promptPayQr.src} download={"promptpay-" + (tenant?.slug || "penguin") + ".png"}><i className="bi bi-download app-icon"></i><span>{t("delivery.checkout.payment_lock.download_qr")}</span></a> : null}<button className="btn" type="button" onClick={() => { setPaymentLocked(false); setLockedTotal(null); clearSlip(); }}><i className="bi bi-pencil app-icon"></i><span>{t("delivery.checkout.payment_lock.edit_items")}</span></button></div>
-                </>}
-                {paymentLocked && promptPayQr.src ? <img src={promptPayQr.src} width="220" height="220" alt={t("delivery.checkout.payment.qr_alt")} /> : null}
-                {paymentLocked && promptPayQr.error ? <div className="empty">{promptPayQr.error}</div> : null}
-                {paymentLocked ? <><div><strong>{money(total)} {t("delivery.checkout.units.baht")}</strong></div><div className="menu-category">{settings.promptPayName || settings.promptPayAccountName || settings.shopName || ""}</div>
-                  <div className={"payment-slip-dropzone" + (slipFile ? " has-file" : "")} style={{ marginTop: 14, textAlign: "left" }}>
-                    <input type="file" accept="image/*,.heic,.heif" onChange={event => chooseSlip(event.target.files?.[0] || null)} />
-                    {!slipFile ? <div className="payment-slip-content"><div className="payment-slip-icon"><i className="bi bi-image"></i></div><div className="payment-slip-title">{t("delivery.checkout.payment.slip_drop_title")}</div><div className="payment-slip-help">{t("delivery.checkout.payment.slip_help")}</div></div> : <div className="payment-slip-preview"><img src={slipPreview} alt={t("delivery.checkout.payment.slip_preview_alt")} /><div className="payment-slip-meta"><span>{slipFile.name}</span><span>{(slipFile.size / 1024 / 1024).toFixed(2)} MB</span></div></div>}
+                <div id="paymentLockPanel" className="payment-lock-panel">
+                  {!paymentLocked ? <div className="payment-lock-state" id="paymentLockState"><strong>{t("delivery.checkout.payment_lock.unlocked_title")}</strong><span>{t("delivery.checkout.payment_lock.unlocked_help")}</span></div> : <div className="payment-lock-summary" id="paymentLockSummary">
+                    <div><span>{t("delivery.checkout.summary.food_subtotal")}</span><strong id="lockedSubtotal">{money(lockedTotal?.subtotal ?? subtotal)}</strong></div>
+                    <div><span>{t("delivery.checkout.summary.delivery_fee")}</span><strong id="lockedDeliveryFee">{money(lockedTotal?.deliveryFee ?? deliveryFee)}</strong></div>
+                    <div className="payment-lock-total"><span>{t("delivery.checkout.payment_lock.locked_total")}</span><strong id="lockedTotal">{money(lockedTotal?.total ?? total)}</strong></div>
+                  </div>}
+                  <div className="payment-lock-actions">
+                    {paymentLocked && promptPayQr.src ? <a className="btn btn-dark" id="downloadPaymentQr" href={promptPayQr.src} download={"promptpay-" + (tenant?.slug || "penguin") + ".png"}><i className="bi bi-download app-icon"></i><span>{t("delivery.checkout.payment_lock.download_qr")}</span></a> : null}
+                    {paymentLocked ? <button className="btn" id="editLockedOrder" type="button" onClick={() => { setPaymentLocked(false); setLockedTotal(null); clearSlip(); }}><i className="bi bi-pencil app-icon"></i><span>{t("delivery.checkout.payment_lock.edit_items")}</span></button> : null}
                   </div>
-                  {slipFile ? <button type="button" className="btn btn-danger btn-sm" style={{ marginTop: 8 }} onClick={clearSlip}><i className="bi bi-x-lg app-icon"></i><span>{t("delivery.checkout.payment.remove_slip")}</span></button> : null}
+                </div>
+                {!paymentLocked && !promptPayQr.src ? <div id="promptPayPlaceholder" className="empty" style={{ padding: "24px 12px" }}>{promptPayQr.error || t("delivery.checkout.payment.add_items_for_qr")}</div> : null}
+                {paymentLocked && promptPayQr.src ? <img id="promptPayQr" src={promptPayQr.src} width="220" height="220" alt={t("delivery.checkout.payment.qr_alt")} /> : null}
+                {paymentLocked && promptPayQr.error ? <div className="empty">{promptPayQr.error}</div> : null}
+                {paymentLocked ? <><div><strong id="promptPayAmount">{money(total)} {t("delivery.checkout.units.baht")}</strong></div><div id="promptPayName" className="menu-category">{settings.promptPayName || settings.promptPayAccountName || settings.shopName || ""}</div>
+                  <div className="payment-slip-wrap" id="paymentSlipWrap" style={{ marginTop: 14, textAlign: "left" }}>
+                    <label style={{ fontSize: 13, fontWeight: 700, color: "var(--muted)" }}>{t("delivery.checkout.payment.slip_label")} *</label>
+                    <div className={"payment-slip-dropzone" + (slipFile ? " has-file" : "")} id="paymentSlipDropzone">
+                      <input id="paymentSlip" type="file" accept="image/*,.heic,.heif" onChange={event => chooseSlip(event.target.files?.[0] || null)} />
+                      {!slipFile ? <div className="payment-slip-content" id="paymentSlipContent"><div className="payment-slip-icon"><i className="bi bi-image"></i></div><div className="payment-slip-title">{t("delivery.checkout.payment.slip_drop_title")}</div><div className="payment-slip-help">{t("delivery.checkout.payment.slip_help")}</div></div> : <div className="payment-slip-preview" id="paymentSlipPreviewWrap"><img id="paymentSlipPreview" src={slipPreview} alt={t("delivery.checkout.payment.slip_preview_alt")} /><div className="payment-slip-meta"><span id="paymentSlipFileName">{slipFile.name}</span><span id="paymentSlipFileSize">{(slipFile.size / 1024 / 1024).toFixed(2)} MB</span></div></div>}
+                    </div>
+                    <div className="payment-slip-error" id="paymentSlipError" hidden></div>
+                    {slipFile ? <button type="button" className="btn btn-danger btn-sm payment-slip-remove-icon" id="removePaymentSlip" onClick={clearSlip}><i className="bi bi-x-lg app-icon"></i><span>{t("delivery.checkout.payment.remove_slip")}</span></button> : null}
+                  </div>
                   <small className="menu-category">{t("delivery.checkout.payment.review_note")}</small></> : null}
               </div> : null}
             </section>
@@ -735,8 +774,8 @@ export function DeliveryPage() {
     </main>
 
     <div className="cart-bar">
-      <div><small>{t("delivery.checkout.summary.total_with_delivery")}</small><div style={{ fontSize: 20, fontWeight: 800 }}>{money(total)} {t("delivery.checkout.units.baht")}</div></div>
-      <button className="btn btn-primary" type="button" disabled={!tenant || !cart.length || submitting} onClick={submit}>
+      <div><small>{t("delivery.checkout.summary.total_with_delivery")}</small><div style={{ fontSize: 20, fontWeight: 800 }}><span id="cartTotal">{money(total)}</span> {t("delivery.checkout.units.baht")}</div></div>
+      <button className="btn btn-primary" id="submitOrder" type="button" disabled={!tenant || !cart.length || submitting} onClick={submit}>
         <i className={"bi bi-" + (submitting ? "hourglass-split" : paymentMethod === "promptpay" && !paymentLocked ? "credit-card" : "check-lg") + " app-icon"}></i>
         <span>{submitting ? t("delivery.checkout.submit.sending") : paymentMethod === "promptpay" && !paymentLocked ? t("delivery.checkout.summary.review_and_pay") : t("delivery.checkout.summary.submit_order")}</span>
       </button>

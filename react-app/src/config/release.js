@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.07.459",
+  build: "2026.10.07.460",
   branch: "feature/react-firebase-port",
-  commit: "ADMINISTRATOR-VISIBLE-LABELS",
+  commit: "DELIVERY-LARAVEL-VISUAL-PARITY",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Localized administrator labels",
+  milestone: "Delivery Laravel visual parity",
   whatsNew: [
-    "Use the localized Administrator role label consistently across all user-visible screens",
-    "Move User Menu role, greeting, navigation, and logout copy fully through the shared translation system",
-    "Keep the internal super_admin role ID and permission behavior unchanged",
+    "Restore Delivery page structure, CSS ordering, and visual hooks to match the Laravel MASTER baseline",
+    "Align Google login, address/map, delivery-zone, PromptPay lock, and payment-slip presentation without restoring legacy JavaScript",
+    "Keep React/Firebase delivery, Maps, Lalamove, promotion, payment, favorites, and order logic unchanged",
   ],
 });

@@ -65,6 +65,7 @@ export function PublicMenuCatalog({
   page, setPage, onAdd, disabled = false, mobilePageSize = Number.MAX_SAFE_INTEGER,
   desktopPageSize = 10, extraCategory = null, extraFilter = null, extraLabel = "",
   favoriteIds = null, onToggleFavorite = null, favoriteAddLabel = "", favoriteRemoveLabel = "",
+  searchId = undefined, paginationId = undefined,
 }) {
   const { t, formatNumber } = useI18n();
   const mobile = useMobileStorefront();
@@ -184,7 +185,7 @@ export function PublicMenuCatalog({
             </button>
           ))}
         </div>
-        <input className="input menu-search" value={search} disabled={disabled}
+        <input className="input menu-search" id={searchId} value={search} disabled={disabled}
           placeholder={t(prefix + ".search_placeholder")}
           onChange={event => { setSearch(event.target.value); setPage(1); }} />
       </div>
@@ -218,7 +219,7 @@ export function PublicMenuCatalog({
         )) : <div className="card empty">{t(prefix + (prefix.startsWith("delivery.") ? ".not_found" : ".empty"))}</div>}
       </div>
       {!mobile && totalPages > 1 ? (
-        <nav className="menu-pagination" aria-label={t(prefix + ".pagination_aria")}>
+        <nav className="menu-pagination" id={paginationId} aria-label={t(prefix + ".pagination_aria")}>
           <button type="button" className="menu-page-button menu-page-nav" disabled={current === 1}
             onClick={() => setPage(Math.max(1, current - 1))}><i className="bi bi-chevron-left app-icon"></i></button>
           {pageNumbers(current, totalPages).map(value => (
@@ -234,11 +235,11 @@ export function PublicMenuCatalog({
   );
 }
 
-export function PublicCartList({ items = [], prefix, onIncrease, onDecrease, onNote, emptyTextKey }) {
+export function PublicCartList({ items = [], prefix, onIncrease, onDecrease, onNote, emptyTextKey, listId = undefined }) {
   const { t, formatNumber } = useI18n();
   const cartPrefix = prefix;
   return (
-    <div className="cart-list">
+    <div className="cart-list" id={listId}>
       {items.length ? items.map(item => (
         <div className="cart-row cart-row-aligned" key={item.id}>
           <div className="cart-item-info">

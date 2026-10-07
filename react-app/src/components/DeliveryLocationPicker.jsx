@@ -135,18 +135,18 @@ export function DeliveryLocationPicker({
         : t("delivery.checkout.address.location_missing");
 
   return (
-    <section className="delivery-location-picker">
+    <section className="delivery-location-picker" id="deliveryLocationPicker">
       <div className="delivery-location-head">
         <div><strong>{t("delivery.checkout.address.location_title")} *</strong><div className="menu-category">{t("delivery.checkout.address.location_help")}</div></div>
-        <button type="button" className="btn btn-sm" disabled={disabled || locating} onClick={current}>
+        <button type="button" className="btn btn-sm" id="useCurrentLocationButton" disabled={disabled || locating} onClick={current}>
           <i className="bi bi-crosshair app-icon" aria-hidden="true"></i>
           <span>{locating ? t("delivery.checkout.address.location_locating") : t("delivery.checkout.address.use_current_location")}</span>
         </button>
       </div>
-      <div ref={mapElementRef} className="delivery-location-map" aria-label={t("delivery.checkout.address.location_title")}></div>
+      <div ref={mapElementRef} id="deliveryLocationMap" className="delivery-location-map" aria-label={t("delivery.checkout.address.location_title")}></div>
       <div className="delivery-location-footer">
-        <div className={"delivery-location-status" + (normalized ? " is-ready" : mapState.includes("error") ? " is-error" : "")}>{status}</div>
-        {normalized ? <div className="delivery-location-coordinates">{normalized.latitude.toFixed(7)}, {normalized.longitude.toFixed(7)}</div> : null}
+        <div id="deliveryLocationStatus" className={"delivery-location-status" + (normalized ? " is-ready" : mapState.includes("error") ? " is-error" : "")}>{status}</div>
+        {normalized ? <div id="deliveryLocationCoordinates" className="delivery-location-coordinates">{normalized.latitude.toFixed(7)}, {normalized.longitude.toFixed(7)}</div> : null}
       </div>
     </section>
   );
