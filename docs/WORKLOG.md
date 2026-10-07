@@ -10883,3 +10883,20 @@ Deploy state:
 - Hosting deploy pending.
 - No Function, Firestore Rules, Storage Rules, or schema change required.
 - No merge to `main`.
+
+Production deploy + verification:
+- Implementation commit `b490d373` — `fix: distinguish walk-in close dialog icons` pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully.
+- Production release: React `0.4.280` / Build `2026.10.07.456`; Public `0.16.32` / Build `2026.10.07.171`.
+- Production bundle: `/react/assets/index-B-7f69Ur.js`.
+- Live `/cashier/table-qr` Walk-in dialog verification:
+  - title = `ปิดโต๊ะ Walk-in`;
+  - confirm action `ปิดโต๊ะ` uses `bi bi-door-closed`;
+  - cancel action `ยกเลิก` uses `bi bi-x-lg`;
+  - `sameIcon = false`;
+  - dialog was cancelled after inspection; no Walk-in table was closed;
+  - horizontal overflow = 0;
+  - page errors = 0; related HTTP errors = 0.
+- One generic browser console 404 was observed without a paired response error, consistent with the existing favicon noise and unrelated to this dialog fix.
+- No Function, Firestore Rules, Storage Rules, or schema deploy was required.
+- No merge to `main`.
