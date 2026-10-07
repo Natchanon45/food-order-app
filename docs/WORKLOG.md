@@ -11474,5 +11474,10 @@ Verification before deploy:
 - `git diff --check` PASS.
 
 Deploy state:
-- Commit/push and Hosting-only deploy pending at this checkpoint.
+- Implementation commit `bba453cc` — `fix: align delivery header and slip icon parity` pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production bundle is `/react/assets/index-DT-Uipf5.js`.
+- Production `npm run test:delivery-parity-browser`: **4/4 PASS**.
+- Header direct-child order, badge placement, locale placement, payment-slip `+`, default-address selection, address-action icons, and PromptPay visual order all pass on live Production.
+- Deployment scope was Hosting only.
 - No Functions, Firestore Rules, Storage Rules, schema change, or merge to `main`.
