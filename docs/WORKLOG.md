@@ -9675,3 +9675,12 @@ Verification before deploy:
 Deploy state:
 - Ready for Hosting-only deploy.
 - No merge to `main`.
+Production deploy + verification:
+- Implementation commit: `66addfb9` — `fix: localize POS customer dialog actions`.
+- Pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully.
+- Production loads `/react/assets/index-BZSsI3TZ.js`.
+- Cannot-delete alert message renders correctly and confirm button = `ตกลง`.
+- Raw `shared.action.ok` / `shared.actions.ok` text is absent from the visible dialog.
+- Production verification: Firestore writes = 0; page errors = 0.
+- Hosting only; no Rules/Functions/Storage deployment and no merge to `main`.
