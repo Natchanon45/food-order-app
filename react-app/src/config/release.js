@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.07.443",
+  build: "2026.10.07.444",
   branch: "feature/react-firebase-port",
-  commit: "SUPER-ADMIN-REQUEST-NOTIFICATIONS",
+  commit: "PLATFORM-OWNERS-MODERN-CONTROL-CENTER",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Super Admin request notification badges",
+  milestone: "Platform Owners modern control center",
   whatsNew: [
-    "Notify Super Admin about pending wallet top-up and revenue-share submissions",
-    "Keep same-day Slip2Go matched auto-approved submissions visible in notification badges",
-    "Show aggregate and per-tenant notification breakdowns with direct review actions",
+    "Redesign the Super Admin Owner workspace with a distinctive responsive control-center layout",
+    "Add store, assigned Owner, pending Owner, and suspended-store overview metrics",
+    "Present owner identity, store status, search, filtering, and actions with clearer visual hierarchy",
   ],
 });

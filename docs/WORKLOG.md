@@ -9918,3 +9918,60 @@ Production deploy + verification:
 - The notification feature uses existing callable Functions and read paths only; no Firestore Rules, Storage Rules, Cloud Functions, or schema deployment occurred.
 - The copied authenticated browser profile available to automation remains an `owner`, so protected Super Admin visual acceptance still cannot be truthfully claimed. The new Production bundle itself loaded without candidate page/request/HTTP errors before deploy, and role enforcement correctly redirected the owner away from Super Admin routes.
 - No merge to `main`.
+
+---
+
+## 2026-10-07 — Platform Owners modern control center
+
+User request:
+- Redesign the real Super Admin `/platform/owners` page to look modern, polished, distinctive, and responsive.
+- Implement directly in code; no mockup-first step.
+
+Observed issue / root cause:
+- The page still relied almost entirely on generic `tenant-admin.css` surfaces and inline card styles.
+- Desktop used one full-width vertical owner card per store, leaving large unused horizontal space and weak hierarchy.
+- Search/filter controls, store status, Owner identity, and action state were visually similar, so the page read like a long form/list rather than a Super Admin control center.
+
+Change:
+- Added a dedicated `platform-owners-modern.css` visual layer so the redesign does not alter `/admin/tenants`.
+- Replaced the generic Hero with a branded Owner Control Center hero and four live metrics: total stores, stores with Owner, stores awaiting Owner, and suspended stores.
+- Rebuilt the workspace header and Search/Status controls into a dedicated toolbar with icons and focus states.
+- Replaced the full-width generic cards with a responsive owner-card system: 2 columns on desktop, 1 column on tablet/mobile, with store initial/avatar, slug, store status, Owner identity block, account state, contextual hint, and primary action.
+- Added distinct visual states for assigned Owner, missing Owner, and suspended store.
+- Modernized the existing Owner create/edit modal header to match the new workspace while preserving the existing form/actions.
+- Removed the old owner-card inline presentation styles.
+- Preserved the existing `listTenants`, `createTenantOwner`, `updateTenantOwner`, filtering, permissions, stable Tenant IDs, and modal submit behavior.
+- Added TH / EN / MY / LO / KM strings for the new metrics, toolbar labels, result count, empty state, and account-help copy.
+- Added React foundation guards for the dedicated CSS, desktop 2-column grid, responsive breakpoints, state accents, translation keys, and preserved create/edit actions.
+- Prepared React `0.4.280` / Build `2026.10.07.444`; Public `0.16.32` / Build `2026.10.07.159`.
+
+Important files:
+- `react-app/src/pages/PlatformOwnersPage.jsx`
+- `react-app/public/parity/css/platform-owners-modern.css`
+- `react-app/src/i18n/parity-translations.json`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `README.md`
+
+Verification:
+- `npm run test:react-foundation` PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.07.444` / `/react/assets/index-C4KyVO-x.js`.
+- `git diff --check` PASS.
+- Authenticated candidate verification used a copied Microsoft Edge `super_admin` profile with Production reads and Firestore writes blocked:
+  - Desktop 1440x900: 4 KPI cards, 3 real store cards, 3 Owner actions, 2-column grid (`670px 670px`), page overflow `0`.
+  - Mobile 390x844: same 4 KPIs / 3 store cards, 1-column grid (`332px`), page overflow `0`.
+  - Search empty-state passed.
+  - Edit Owner modal opened read-only at 620px width with no horizontal overflow.
+  - Raw translation keys `0`.
+  - Firestore write attempts `0`.
+  - Page errors `0`, unexpected request failures `0`, HTTP errors `0`.
+
+Deploy state:
+- Implementation commit/push pending.
+- Firebase Hosting-only deploy pending.
+- No Firestore Rules, Storage Rules, Functions, or schema change required.
+- No merge to `main`.

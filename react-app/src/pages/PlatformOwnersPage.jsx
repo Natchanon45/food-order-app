@@ -30,7 +30,7 @@ export function PlatformOwnersPage() {
   const { t, formatNumber } = useI18n();
   const stylesReady = useParityPage({
     title: t("platform_owners.meta.title"),
-    styles: ["tenant-admin.css", "super-admin-header.css"],
+    styles: ["tenant-admin.css", "platform-owners-modern.css", "super-admin-header.css"],
     attributes: { "data-roles": "super_admin" },
   });
   const [tenants, setTenants] = useState([]);
@@ -79,6 +79,8 @@ export function PlatformOwnersPage() {
   }, [tenants, search, filter]);
 
   const ownerCount = tenants.filter(item => item.ownerUid).length;
+  const pendingOwnerCount = Math.max(0, tenants.length - ownerCount);
+  const inactiveCount = tenants.filter(item => item.active === false).length;
 
   const openModal = (tenant, nextMode) => {
     setSelected(tenant);
@@ -175,52 +177,112 @@ export function PlatformOwnersPage() {
         </div>
       </header>
 
-      <main className="container">
-        <section className="hero">
-          <h1>{t("platform_owners.hero.title")}</h1>
-          <p>{t("platform_owners.hero.description")}</p>
+      <main className="container platform-owners-page">
+        <section className="platform-owners-hero">
+          <div className="platform-owners-hero-copy">
+            <span className="platform-owners-eyebrow"><i className="bi bi-stars" aria-hidden="true"></i>{t("platform_owners.hero.eyebrow")}</span>
+            <h1>{t("platform_owners.hero.title")}</h1>
+            <p>{t("platform_owners.hero.description")}</p>
+          </div>
+          <div className="platform-owners-metrics" aria-label={t("platform_owners.hero.metrics_aria")}>
+            <article>
+              <span className="platform-owner-metric-icon stores"><i className="bi bi-shop-window" aria-hidden="true"></i></span>
+              <div><small>{t("platform_owners.hero.stats.stores")}</small><strong>{formatNumber(tenants.length)}</strong></div>
+            </article>
+            <article>
+              <span className="platform-owner-metric-icon owners"><i className="bi bi-person-check" aria-hidden="true"></i></span>
+              <div><small>{t("platform_owners.hero.stats.owners")}</small><strong>{formatNumber(ownerCount)}</strong></div>
+            </article>
+            <article>
+              <span className="platform-owner-metric-icon pending"><i className="bi bi-person-plus" aria-hidden="true"></i></span>
+              <div><small>{t("platform_owners.hero.stats.pending")}</small><strong>{formatNumber(pendingOwnerCount)}</strong></div>
+            </article>
+            <article>
+              <span className="platform-owner-metric-icon inactive"><i className="bi bi-pause-circle" aria-hidden="true"></i></span>
+              <div><small>{t("platform_owners.hero.stats.inactive")}</small><strong>{formatNumber(inactiveCount)}</strong></div>
+            </article>
+          </div>
         </section>
 
-        <section className="card">
-          <div className="section-title">
-            <h2>{t("platform_owners.list.title")}</h2>
-            <span className="badge" id="ownerCount">{t("platform_owners.list.count", { count: formatNumber(ownerCount) })}</span>
+        <section className="card platform-owners-workspace">
+          <div className="platform-owners-workspace-head">
+            <div className="platform-owners-workspace-title">
+              <span className="platform-owners-workspace-icon"><i className="bi bi-person-vcard" aria-hidden="true"></i></span>
+              <div>
+                <h2>{t("platform_owners.list.title")}</h2>
+                <p>{t("platform_owners.list.description")}</p>
+              </div>
+            </div>
+            <span className="platform-owner-result-pill" id="ownerCount">{t("platform_owners.list.result_count", { count: formatNumber(filtered.length), total: formatNumber(tenants.length) })}</span>
           </div>
-          <div className="grid grid-2" style={{ marginBottom: 14 }}>
-            <input className="input" id="ownerSearch" value={search} onChange={e => setSearch(e.target.value)} placeholder={t("platform_owners.list.search")} />
-            <select className="input" id="ownerStatusFilter" value={filter} onChange={e => setFilter(e.target.value)}>
-              <option value="all">{t("platform_owners.list.status_all")}</option>
-              <option value="has-owner">{t("platform_owners.list.status_has_owner")}</option>
-              <option value="no-owner">{t("platform_owners.list.status_no_owner")}</option>
-              <option value="inactive">{t("platform_owners.list.status_inactive")}</option>
-            </select>
+
+          <div className="platform-owner-toolbar">
+            <label className="platform-owner-control" htmlFor="ownerSearch">
+              <span>{t("platform_owners.list.search_label")}</span>
+              <span className="platform-owner-control-shell">
+                <i className="bi bi-search" aria-hidden="true"></i>
+                <input className="input" id="ownerSearch" value={search} onChange={e => setSearch(e.target.value)} placeholder={t("platform_owners.list.search")} />
+              </span>
+            </label>
+            <label className="platform-owner-control" htmlFor="ownerStatusFilter">
+              <span>{t("platform_owners.list.filter_label")}</span>
+              <span className="platform-owner-control-shell">
+                <i className="bi bi-funnel" aria-hidden="true"></i>
+                <select className="input" id="ownerStatusFilter" value={filter} onChange={e => setFilter(e.target.value)}>
+                  <option value="all">{t("platform_owners.list.status_all")}</option>
+                  <option value="has-owner">{t("platform_owners.list.status_has_owner")}</option>
+                  <option value="no-owner">{t("platform_owners.list.status_no_owner")}</option>
+                  <option value="inactive">{t("platform_owners.list.status_inactive")}</option>
+                </select>
+              </span>
+            </label>
           </div>
-          <div id="ownerList" className="grid">
-            {loading ? <div className="empty">{t("platform_owners.list.loading")}</div>
+
+          <div id="ownerList" className="platform-owner-grid">
+            {loading ? <div className="platform-owner-empty-state"><i className="bi bi-arrow-repeat" aria-hidden="true"></i><strong>{t("platform_owners.list.loading")}</strong></div>
               : loadError ? <div className="upload-error">{loadError}</div>
               : filtered.length ? filtered.map(tenant => (
-                <article className="card" style={{ boxShadow: "none", background: "#f8fbf9" }} key={tenant.id}>
-                  <div className="section-title" style={{ margin: 0 }}>
-                    <div><h2 style={{ margin: 0 }}>{tenant.name || t("platform_owners.tenant.unknown_name")}</h2><div className="menu-category">/{tenant.slug || "-"}</div></div>
-                    <span className={`badge${tenant.active === false ? " warning" : ""}`}>{tenant.active === false ? t("platform_owners.tenant.inactive") : t("platform_owners.tenant.active")}</span>
+                <article className={`platform-owner-card${tenant.ownerUid ? " has-owner" : " needs-owner"}${tenant.active === false ? " is-inactive" : ""}`} key={tenant.id}>
+                  <header className="platform-owner-card-head">
+                    <div className="platform-owner-store-identity">
+                      <span className="platform-owner-store-mark">{String(tenant.name || t("platform_owners.tenant.unknown_name")).trim().slice(0, 1).toUpperCase()}</span>
+                      <div>
+                        <span className="platform-owner-slug"><i className="bi bi-link-45deg" aria-hidden="true"></i>/{tenant.slug || "-"}</span>
+                        <h3>{tenant.name || t("platform_owners.tenant.unknown_name")}</h3>
+                      </div>
+                    </div>
+                    <span className={`platform-owner-store-status${tenant.active === false ? " inactive" : " active"}`}>
+                      <i className="bi bi-circle-fill" aria-hidden="true"></i>
+                      {tenant.active === false ? t("platform_owners.tenant.inactive") : t("platform_owners.tenant.active")}
+                    </span>
+                  </header>
+
+                  <div className="platform-owner-profile">
+                    <span className={`platform-owner-profile-icon${tenant.ownerUid ? " ready" : " pending"}`}>
+                      <i className={`bi ${tenant.ownerUid ? "bi-person-badge" : "bi-person-plus"}`} aria-hidden="true"></i>
+                    </span>
+                    <div className="platform-owner-profile-copy">
+                      <span>{t("platform_owners.tenant.owner_label")}</span>
+                      <strong>{tenant.ownerUid ? (tenant.ownerDisplayName || t("platform_owners.tenant.owner_unknown")) : t("platform_owners.tenant.no_owner")}</strong>
+                      <small>{tenant.ownerUid ? (tenant.ownerEmail || "-") : t("platform_owners.tenant.pending")}</small>
+                    </div>
+                    <span className={`platform-owner-account-state${tenant.ownerUid ? " ready" : " pending"}`}>
+                      <i className={`bi ${tenant.ownerUid ? "bi-check-circle-fill" : "bi-clock-fill"}`} aria-hidden="true"></i>
+                      {tenant.ownerUid ? t("platform_owners.tenant.owner_exists") : t("platform_owners.tenant.pending")}
+                    </span>
                   </div>
-                  <div style={{ marginTop: 14 }}>
-                    {tenant.ownerUid ? <>
-                      <div><strong>{tenant.ownerDisplayName || t("platform_owners.tenant.owner_unknown")}</strong></div>
-                      <div className="menu-category" style={{ fontSize: 14 }}>{tenant.ownerEmail || "-"}</div>
-                      <div style={{ marginTop: 8 }}><span className="badge">{t("platform_owners.tenant.owner_exists")}</span></div>
-                    </> : <>
-                      <div className="menu-category" style={{ fontSize: 14 }}>{t("platform_owners.tenant.no_owner")}</div>
-                      <div style={{ marginTop: 8 }}><span className="badge warning">{t("platform_owners.tenant.pending")}</span></div>
-                    </>}
-                  </div>
-                  <div className="order-actions" style={{ marginTop: 14 }}>
+
+                  <footer className="platform-owner-card-actions">
+                    <span className="platform-owner-card-hint">
+                      <i className={`bi ${tenant.ownerUid ? "bi-shield-check" : "bi-exclamation-circle"}`} aria-hidden="true"></i>
+                      {tenant.ownerUid ? t("platform_owners.tenant.ready_help") : t("platform_owners.tenant.pending_help")}
+                    </span>
                     {tenant.ownerUid
-                      ? <button className="btn" type="button" data-owner-action="edit" data-tenant-id={tenant.id} onClick={() => openModal(tenant, "edit")}><i className="bi bi-pencil-square app-icon"></i><span>{t("platform_owners.tenant.edit_owner")}</span></button>
-                      : <button className="btn btn-primary" type="button" data-owner-action="create" data-tenant-id={tenant.id} onClick={() => openModal(tenant, "create")}><i className="bi bi-person app-icon"></i><span>{t("platform_owners.tenant.create_owner")}</span></button>}
-                  </div>
+                      ? <button className="btn platform-owner-action" type="button" data-owner-action="edit" data-tenant-id={tenant.id} onClick={() => openModal(tenant, "edit")}><i className="bi bi-pencil-square app-icon" aria-hidden="true"></i><span>{t("platform_owners.tenant.edit_owner")}</span></button>
+                      : <button className="btn btn-primary platform-owner-action" type="button" data-owner-action="create" data-tenant-id={tenant.id} onClick={() => openModal(tenant, "create")}><i className="bi bi-person-plus app-icon" aria-hidden="true"></i><span>{t("platform_owners.tenant.create_owner")}</span></button>}
+                  </footer>
                 </article>
-              )) : <div className="empty">{t("platform_owners.list.empty")}</div>}
+              )) : <div className="platform-owner-empty-state"><i className="bi bi-search" aria-hidden="true"></i><strong>{t("platform_owners.list.empty")}</strong><span>{t("platform_owners.list.empty_help")}</span></div>}
           </div>
         </section>
       </main>

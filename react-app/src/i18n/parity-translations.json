@@ -2435,7 +2435,15 @@
       },
       "hero": {
         "title": "บัญชี Owner ของแต่ละร้าน",
-        "description": "สร้างบัญชี Owner และแก้ไขชื่อเจ้าของร้านได้โดยตรงจากหน้านี้"
+        "description": "สร้างบัญชี Owner และแก้ไขชื่อเจ้าของร้านได้โดยตรงจากหน้านี้",
+        "eyebrow": "OWNER CONTROL CENTER",
+        "metrics_aria": "ภาพรวมบัญชี Owner",
+        "stats": {
+          "stores": "ร้านทั้งหมด",
+          "owners": "มี Owner แล้ว",
+          "pending": "รอสร้าง Owner",
+          "inactive": "ร้านถูกระงับ"
+        }
       },
       "list": {
         "title": "รายการบัญชีเจ้าของร้าน",
@@ -2447,7 +2455,12 @@
         "status_inactive": "ร้านถูกระงับ",
         "empty": "ไม่พบข้อมูลบัญชี Owner",
         "loading": "กำลังโหลด...",
-        "load_failed": "โหลดบัญชี Owner ไม่สำเร็จ"
+        "load_failed": "โหลดบัญชี Owner ไม่สำเร็จ",
+        "description": "จัดการตัวตนเจ้าของร้านและสถานะบัญชีจากมุมมองเดียว",
+        "result_count": "แสดง :count จาก :total ร้าน",
+        "search_label": "ค้นหาบัญชี",
+        "filter_label": "กรองสถานะ",
+        "empty_help": "ลองเปลี่ยนคำค้นหาหรือตัวกรองแล้วตรวจสอบอีกครั้ง"
       },
       "modal": {
         "create_title": "สร้างบัญชี Owner",
@@ -2475,7 +2488,10 @@
         "no_owner": "ร้านนี้ยังไม่มีบัญชี Owner",
         "pending": "รอสร้างบัญชี",
         "edit_owner": "แก้ไขชื่อ Owner",
-        "create_owner": "สร้าง Owner"
+        "create_owner": "สร้าง Owner",
+        "owner_label": "บัญชีเจ้าของร้าน",
+        "ready_help": "บัญชี Owner พร้อมใช้งานสำหรับร้านนี้",
+        "pending_help": "ร้านนี้ยังต้องสร้างบัญชี Owner"
       },
       "toast": {
         "updated": "แก้ไขชื่อเจ้าของร้านเรียบร้อยแล้ว",
@@ -8684,7 +8700,15 @@
       },
       "hero": {
         "title": "Owner accounts by store",
-        "description": "Create Owner accounts and update store-owner display names directly from this page."
+        "description": "Create Owner accounts and update store-owner display names directly from this page.",
+        "eyebrow": "OWNER CONTROL CENTER",
+        "metrics_aria": "Owner account overview",
+        "stats": {
+          "stores": "Total stores",
+          "owners": "Owners assigned",
+          "pending": "Awaiting Owner",
+          "inactive": "Suspended stores"
+        }
       },
       "list": {
         "title": "Store owner account list",
@@ -8696,7 +8720,12 @@
         "status_inactive": "Store suspended",
         "empty": "No Owner accounts found",
         "loading": "Loading...",
-        "load_failed": "Could not load Owner accounts"
+        "load_failed": "Could not load Owner accounts",
+        "description": "Manage store-owner identities and account status from one workspace.",
+        "result_count": "Showing :count of :total stores",
+        "search_label": "Search accounts",
+        "filter_label": "Filter status",
+        "empty_help": "Try another search term or status filter."
       },
       "modal": {
         "create_title": "Create Owner account",
@@ -8724,7 +8753,10 @@
         "no_owner": "This store does not have an Owner account yet",
         "pending": "Waiting for account creation",
         "edit_owner": "Edit Owner name",
-        "create_owner": "Create Owner"
+        "create_owner": "Create Owner",
+        "owner_label": "Store owner account",
+        "ready_help": "The Owner account is ready for this store.",
+        "pending_help": "This store still needs an Owner account."
       },
       "toast": {
         "updated": "Store owner name updated",
@@ -14658,7 +14690,15 @@
       },
       "hero": {
         "title": "စတိုးဆိုင်အလိုက် Owner အကောင့်များ",
-        "description": "Owner အကောင့်များဖန်တီးပြီး စတိုးဆိုင်ပိုင်ရှင်ပြသသည့်အမည်များကို ဤစာမျက်နှာမှ တိုက်ရိုက်မွမ်းမံပါ။"
+        "description": "Owner အကောင့်များဖန်တီးပြီး စတိုးဆိုင်ပိုင်ရှင်ပြသသည့်အမည်များကို ဤစာမျက်နှာမှ တိုက်ရိုက်မွမ်းမံပါ။",
+        "eyebrow": "OWNER CONTROL CENTER",
+        "metrics_aria": "Owner အကောင့် အနှစ်ချုပ်",
+        "stats": {
+          "stores": "ဆိုင်အားလုံး",
+          "owners": "Owner သတ်မှတ်ပြီး",
+          "pending": "Owner ဖန်တီးရန်ကျန်",
+          "inactive": "ရပ်ဆိုင်းထားသောဆိုင်"
+        }
       },
       "list": {
         "title": "စတိုးပိုင်ရှင်အကောင့်စာရင်း",
@@ -14670,7 +14710,12 @@
         "status_inactive": "ဆိုင်ခေတ္တရပ်ဆိုင်းထားသည်။",
         "empty": "Owner အကောင့်များ မတွေ့ပါ။",
         "loading": "ဖွင့်နေသည်...",
-        "load_failed": "Owner အကောင့်များကို ဖွင့်၍မရပါ။"
+        "load_failed": "Owner အကောင့်များကို ဖွင့်၍မရပါ။",
+        "description": "ဆိုင်ပိုင်ရှင်အထောက်အထားနှင့် အကောင့်အခြေအနေကို တစ်နေရာတည်းမှ စီမံပါ။",
+        "result_count": ":total ဆိုင်အနက် :count ဆိုင်ပြနေသည်",
+        "search_label": "အကောင့်ရှာရန်",
+        "filter_label": "အခြေအနေစစ်ရန်",
+        "empty_help": "ရှာဖွေစာသား သို့မဟုတ် အခြေအနေစစ်ထုတ်မှုကို ပြောင်းကြည့်ပါ။"
       },
       "modal": {
         "create_title": "Owner အကောင့်ဖန်တီးပါ။",
@@ -14698,7 +14743,10 @@
         "no_owner": "ဤစတိုးတွင် Owner အကောင့်တစ်ခု မရှိသေးပါ။",
         "pending": "အကောင့်ဖန်တီးမှုကို စောင့်နေသည်။",
         "edit_owner": "Owner အမည်ကို တည်းဖြတ်ပါ။",
-        "create_owner": "Owner ဖန်တီးပါ"
+        "create_owner": "Owner ဖန်တီးပါ",
+        "owner_label": "ဆိုင်ပိုင်ရှင်အကောင့်",
+        "ready_help": "ဤဆိုင်အတွက် Owner အကောင့် အသင့်ဖြစ်ပါသည်။",
+        "pending_help": "ဤဆိုင်အတွက် Owner အကောင့် ဖန်တီးရန်လိုသေးသည်။"
       },
       "toast": {
         "updated": "ဆိုင်ပိုင်ရှင်အမည်ကို အပ်ဒိတ်လုပ်ထားသည်။",
@@ -20632,7 +20680,15 @@
       },
       "hero": {
         "title": "Owner ບັນຊີຕາມຮ້ານ",
-        "description": "ສ້າງບັນຊີ Owner ແລະອັບເດດຊື່ສະແດງເຈົ້າຂອງຮ້ານໂດຍກົງຈາກໜ້ານີ້."
+        "description": "ສ້າງບັນຊີ Owner ແລະອັບເດດຊື່ສະແດງເຈົ້າຂອງຮ້ານໂດຍກົງຈາກໜ້ານີ້.",
+        "eyebrow": "OWNER CONTROL CENTER",
+        "metrics_aria": "ພາບລວມບັນຊີ Owner",
+        "stats": {
+          "stores": "ຮ້ານທັງໝົດ",
+          "owners": "ມີ Owner ແລ້ວ",
+          "pending": "ລໍຖ້າສ້າງ Owner",
+          "inactive": "ຮ້ານຖືກລະງັບ"
+        }
       },
       "list": {
         "title": "ບັນຊີເຈົ້າຂອງຮ້ານ",
@@ -20644,7 +20700,12 @@
         "status_inactive": "ຮ້ານຄ້າຖືກໂຈະ",
         "empty": "ບໍ່ພົບບັນຊີ Owner",
         "loading": "ກຳລັງໂຫລດ...",
-        "load_failed": "ບໍ່ສາມາດໂຫຼດບັນຊີ Owner ໄດ້"
+        "load_failed": "ບໍ່ສາມາດໂຫຼດບັນຊີ Owner ໄດ້",
+        "description": "ຈັດການຕົວຕົນເຈົ້າຂອງຮ້ານ ແລະສະຖານະບັນຊີຈາກໜ້າດຽວ.",
+        "result_count": "ສະແດງ :count ຈາກ :total ຮ້ານ",
+        "search_label": "ຄົ້ນຫາບັນຊີ",
+        "filter_label": "ກອງສະຖານະ",
+        "empty_help": "ລອງປ່ຽນຄຳຄົ້ນຫາ ຫຼື ຕົວກອງສະຖານະ."
       },
       "modal": {
         "create_title": "ສ້າງບັນຊີ Owner",
@@ -20672,7 +20733,10 @@
         "no_owner": "ຮ້ານນີ້ຍັງບໍ່ມີບັນຊີ Owner ເທື່ອ",
         "pending": "ກຳລັງລໍຖ້າການສ້າງບັນຊີ",
         "edit_owner": "ແກ້ໄຂ Owner ຊື່",
-        "create_owner": "ສ້າງ Owner"
+        "create_owner": "ສ້າງ Owner",
+        "owner_label": "ບັນຊີເຈົ້າຂອງຮ້ານ",
+        "ready_help": "ບັນຊີ Owner ພ້ອມໃຊ້ງານສຳລັບຮ້ານນີ້.",
+        "pending_help": "ຮ້ານນີ້ຍັງຕ້ອງສ້າງບັນຊີ Owner."
       },
       "toast": {
         "updated": "ອັບເດດຊື່ເຈົ້າຂອງຮ້ານແລ້ວ",
@@ -26606,7 +26670,15 @@
       },
       "hero": {
         "title": "Owner គណនីតាមហាង",
-        "description": "បង្កើតគណនី Owner និងធ្វើបច្ចុប្បន្នភាពឈ្មោះបង្ហាញម្ចាស់ហាងដោយផ្ទាល់ពីទំព័រនេះ។"
+        "description": "បង្កើតគណនី Owner និងធ្វើបច្ចុប្បន្នភាពឈ្មោះបង្ហាញម្ចាស់ហាងដោយផ្ទាល់ពីទំព័រនេះ។",
+        "eyebrow": "OWNER CONTROL CENTER",
+        "metrics_aria": "ទិដ្ឋភាពគណនី Owner",
+        "stats": {
+          "stores": "ហាងសរុប",
+          "owners": "មាន Owner រួច",
+          "pending": "រង់ចាំបង្កើត Owner",
+          "inactive": "ហាងបានផ្អាក"
+        }
       },
       "list": {
         "title": "បញ្ជីគណនីម្ចាស់ហាង",
@@ -26618,7 +26690,12 @@
         "status_inactive": "ហាងត្រូវបានផ្អាក",
         "empty": "រកមិនឃើញគណនី Owner ទេ។",
         "loading": "កំពុង​ផ្ទុក...",
-        "load_failed": "មិនអាចផ្ទុកគណនី Owner បានទេ។"
+        "load_failed": "មិនអាចផ្ទុកគណនី Owner បានទេ។",
+        "description": "គ្រប់គ្រងអត្តសញ្ញាណម្ចាស់ហាង និងស្ថានភាពគណនីពីកន្លែងតែមួយ។",
+        "result_count": "បង្ហាញ :count ក្នុងចំណោម :total ហាង",
+        "search_label": "ស្វែងរកគណនី",
+        "filter_label": "តម្រងស្ថានភាព",
+        "empty_help": "សាកល្បងផ្លាស់ប្តូរពាក្យស្វែងរក ឬតម្រងស្ថានភាព។"
       },
       "modal": {
         "create_title": "បង្កើតគណនី Owner",
@@ -26646,7 +26723,10 @@
         "no_owner": "ហាងនេះមិនទាន់មានគណនី Owner នៅឡើយទេ",
         "pending": "កំពុងរង់ចាំការបង្កើតគណនី",
         "edit_owner": "កែសម្រួល Owner ឈ្មោះ",
-        "create_owner": "បង្កើត Owner"
+        "create_owner": "បង្កើត Owner",
+        "owner_label": "គណនីម្ចាស់ហាង",
+        "ready_help": "គណនី Owner រួចរាល់សម្រាប់ហាងនេះ។",
+        "pending_help": "ហាងនេះនៅតែត្រូវបង្កើតគណនី Owner។"
       },
       "toast": {
         "updated": "បានធ្វើបច្ចុប្បន្នភាពឈ្មោះម្ចាស់ហាង",

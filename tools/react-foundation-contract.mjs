@@ -1281,6 +1281,40 @@ assert(
   &&adminTenantsPage.includes('lalamoveApprovalBusy={lalamoveApprovalBusy === tenant.id}'),
   "Super Admin tenant page must expose a non-blocking central Lalamove approval action only for fod_central tenants"
 );
+const platformOwnersPage=read("react-app/src/pages/PlatformOwnersPage.jsx");
+const platformOwnersModernCss=read("react-app/public/parity/css/platform-owners-modern.css");
+assert(
+  platformOwnersPage.includes('"platform-owners-modern.css"')
+  &&platformOwnersPage.includes('className="platform-owners-hero"')
+  &&platformOwnersPage.includes('className="platform-owners-metrics"')
+  &&platformOwnersPage.includes('className="platform-owner-toolbar"')
+  &&platformOwnersPage.includes('className="platform-owner-grid"')
+  &&platformOwnersPage.includes('className={`platform-owner-card${tenant.ownerUid ? " has-owner" : " needs-owner"}${tenant.active === false ? " is-inactive" : ""}`}')
+  &&platformOwnersPage.includes('data-owner-action="edit"')
+  &&platformOwnersPage.includes('data-owner-action="create"')
+  &&platformOwnersPage.includes('openModal(tenant, "edit")')
+  &&platformOwnersPage.includes('openModal(tenant, "create")')
+  &&!platformOwnersPage.includes('style={{ boxShadow: "none", background: "#f8fbf9" }}'),
+  "Platform Owners must keep the modern control-center hierarchy while preserving owner edit/create actions"
+);
+assert(
+  platformOwnersModernCss.includes(".platform-owners-hero")
+  &&platformOwnersModernCss.includes("grid-template-columns:minmax(0,1.05fr) minmax(520px,.95fr)")
+  &&platformOwnersModernCss.includes(".platform-owner-grid")
+  &&platformOwnersModernCss.includes("grid-template-columns:repeat(2,minmax(0,1fr))")
+  &&platformOwnersModernCss.includes(".platform-owner-card.needs-owner::before")
+  &&platformOwnersModernCss.includes(".platform-owner-card.is-inactive::before")
+  &&platformOwnersModernCss.includes("@media(max-width:980px)")
+  &&platformOwnersModernCss.includes("@media(max-width:540px)"),
+  "Platform Owners modern CSS must preserve the distinctive desktop grid and responsive owner-card states"
+);
+for(const locale of ["th","en","my","lo","km"]) {
+  assert(Boolean(dict?.[locale]?.platform_owners?.hero?.stats?.stores),`Platform Owners store metric locale missing: ${locale}`);
+  assert(Boolean(dict?.[locale]?.platform_owners?.hero?.stats?.owners),`Platform Owners owner metric locale missing: ${locale}`);
+  assert(Boolean(dict?.[locale]?.platform_owners?.list?.result_count),`Platform Owners result locale missing: ${locale}`);
+  assert(Boolean(dict?.[locale]?.platform_owners?.tenant?.owner_label),`Platform Owners account label locale missing: ${locale}`);
+}
+
 const lalamoveApprovalHandler=adminTenantsPage.slice(
   adminTenantsPage.indexOf("const toggleLalamoveApproval = async tenant =>"),
   adminTenantsPage.indexOf("const refreshWallet = async tenant =>")

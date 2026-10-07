@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.07.158',
+  build: '2026.10.07.159',
   branch: 'feature/react-firebase-port',
-  commit: 'SUPER-ADMIN-REQUEST-NOTIFICATIONS',
+  commit: 'PLATFORM-OWNERS-MODERN-CONTROL-CENTER',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Super Admin request notification badges',
-  updatedAt: '2026-10-07T09:13:04+0700',
+  milestone: 'Platform Owners modern control center',
+  updatedAt: '2026-10-07T11:18:00+0700',
   whatsNew: [
-    'Notify Super Admin about pending wallet top-up and revenue-share submissions',
-    'Keep same-day Slip2Go matched auto-approved submissions visible in notification badges',
-    'Show aggregate and per-tenant notification breakdowns with direct review actions'
+    'Redesign the Super Admin Owner workspace with a distinctive responsive control-center layout',
+    'Add store, assigned Owner, pending Owner, and suspended-store overview metrics',
+    'Present owner identity, store status, search, filtering, and actions with clearer visual hierarchy'
   ]
 };
 
