@@ -11694,4 +11694,19 @@ Verification before deploy:
 - No Functions, Firestore Rules, Storage Rules, or schema changes.
 
 Deploy state:
-- Commit/push and Hosting-only deploy pending at this checkpoint.
+- Implementation commit `3a57e6cd` — `fix: enforce button badge spacing and icon centering` pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production bundle is `/react/assets/index-B2znYP2F.js`.
+- Production Delivery parity suite: **4/4 PASS**.
+- Production Delivery Success parity suite: **5/5 PASS**.
+- Targeted Production total: **9/9 PASS**.
+- Production geometry:
+  - Delivery Brand -> badge = 12px,
+  - Delivery badge -> locale > 8px,
+  - `เพิ่มที่อยู่` icon Y-center deviation = 0px,
+  - `ตรวจสอบและชำระเงิน` icon Y-center deviation = 0px,
+  - `สั่งเพิ่ม` icon Y-center deviation = 0px,
+  - `ดาวน์โหลดใบสั่งซื้อ` icon Y-center deviation = 0px,
+  - `ดูยอดล่าสุด` icon Y-center deviation = 0px.
+- Deployment scope was Hosting only.
+- No Functions, Firestore Rules, Storage Rules, schema changes, or merge to `main`.
