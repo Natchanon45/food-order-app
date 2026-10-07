@@ -1548,6 +1548,7 @@ assert(firebaseHostingConfig.includes('"source": "/pos/customers"')&&firebaseHos
 
 const legacyPosBackupHtml=read("public/pos/backup/index.html");
 const legacyPosBackupVisualCss=read("public/assets/css/retail-pos-backup-visual-dashboard.css");
+const legacyPosBackupJs=read("public/assets/js/retail-pos-backup.js");
 assert(
   legacyPosBackupHtml.includes('class="pos-backup-visual-page"')
   &&legacyPosBackupHtml.includes('retail-pos-backup-visual-dashboard.css?v=20261007-001')
@@ -1557,12 +1558,19 @@ assert(
   &&legacyPosBackupVisualCss.includes(".backup-export-panel")
   &&legacyPosBackupVisualCss.includes(".backup-dropzone")
   &&legacyPosBackupVisualCss.includes(".included-grid")
+  &&legacyPosBackupVisualCss.includes("grid-auto-flow:column")
+  &&legacyPosBackupVisualCss.includes("scrollbar-width:none")
   &&legacyPosBackupVisualCss.includes("@media(max-width:700px)"),
   "Legacy POS Backup must keep the approved modern responsive visual workspace without changing its action IDs"
 );
 for(const id of ["exportBackupBtn","backupDropzone","backupFile","restoreSummary","replaceConfirm","clearSelectedBtn","restoreBackupBtn"]) {
   assert(legacyPosBackupHtml.includes(`id="${id}"`),`Legacy POS Backup action ID missing after visual refresh: ${id}`);
 }
+assert(
+  legacyPosBackupJs.includes("Promise.all(FIREBASE_EXPORTS.map")
+  &&legacyPosBackupJs.includes("return Object.fromEntries(entries)"),
+  "Legacy POS Backup stats/export collection reads must remain parallelized to avoid serial dashboard delay"
+);
 
 const legacyPosUsersHtml=read("public/pos/users/index.html");
 const legacyPosUsersVisualCss=read("public/assets/css/retail-pos-users-visual-dashboard.css");
@@ -1577,9 +1585,13 @@ assert(
   &&legacyPosUsersVisualCss.includes(".permission-current-icon")
   &&legacyPosUsersVisualCss.includes(".role-card-icon")
   &&legacyPosUsersVisualCss.includes(".user-card-badges")
+  &&legacyPosUsersVisualCss.includes(".users-dialog-title h2>.pos-context-icon")
+  &&legacyPosUsersVisualCss.includes("min-width:0;max-width:100%;box-sizing:border-box")
+  &&legacyPosUsersVisualCss.includes("margin:16px -14px -14px")
   &&legacyPosUsersVisualCss.includes("@media(max-width:620px)")
   &&legacyPosUsersJs.includes("role-card")
   &&legacyPosUsersJs.includes("user-account-card")
+  &&legacyPosUsersJs.includes('renderCurrent();renderRoles();renderUsers();openRole(roles[0]?.id||"");\nawait hydrateAccessData()')
   &&legacyPosUsersJs.includes('data-role-id="')
   &&legacyPosUsersJs.includes('data-user-id="'),
   "Legacy POS Users must keep the approved modern responsive role/user workspace and stable edit selectors"

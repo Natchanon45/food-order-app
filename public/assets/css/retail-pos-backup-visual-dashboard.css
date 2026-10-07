@@ -356,7 +356,19 @@
   .pos-backup-visual-page .backup-heading h1{font-size:1.35rem}
   .pos-backup-visual-page .backup-heading p{font-size:.78rem}
   .pos-backup-visual-page .backup-export-panel #exportBackupBtn{width:100%;min-height:46px}
-  .pos-backup-visual-page .backup-stats,
+  .pos-backup-visual-page .backup-stats{
+    display:grid;
+    grid-auto-flow:column;
+    grid-auto-columns:minmax(112px,42%);
+    grid-template-columns:none;
+    gap:7px;
+    overflow-x:auto;
+    overscroll-behavior-inline:contain;
+    scrollbar-width:none;
+    padding-bottom:2px;
+  }
+  .pos-backup-visual-page .backup-stats::-webkit-scrollbar{display:none}
+  .pos-backup-visual-page .backup-export-panel .backup-stats>div{min-height:60px;padding:8px 10px}
   .pos-backup-visual-page .restore-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
   .pos-backup-visual-page .backup-restore-panel{padding:16px}
   .pos-backup-visual-page .backup-dropzone{min-height:180px;margin-top:13px;border-radius:15px}
@@ -367,7 +379,6 @@
   .pos-backup-visual-page .included-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:390px){
-  .pos-backup-visual-page .backup-stats,
   .pos-backup-visual-page .restore-summary{grid-template-columns:1fr 1fr}
   .pos-backup-visual-page .included-grid{grid-template-columns:1fr}
 }

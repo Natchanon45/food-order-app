@@ -52,18 +52,17 @@ function showToast(message){clearTimeout(toastTimer);els.toast.textContent=messa
 function withTimeout(promise,milliseconds,message){let timer;const timeout=new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(message)),milliseconds)});return Promise.race([promise,timeout]).finally(()=>clearTimeout(timer))}
 function countRows(firebaseData,key,localKey){const rows=firebaseData?.[key];return Array.isArray(rows)?rows.length:readJson(localKey,[]).length}
 async function collectFirebaseData(){
-  const data = {};
-  for (const [key, collectionName, localKey] of FIREBASE_EXPORTS) {
-    try {
-      const rows = await listRecords(collectionName);
-      data[key] = Array.isArray(rows) ? rows : [];
-      if (localKey && key !== "settings") writeJson(localKey, data[key]);
-    } catch (error) {
-      console.warn("[pos-backup] firebase export fallback", collectionName, error);
-      data[key] = localKey ? readJson(localKey, []) : [];
+  const entries=await Promise.all(FIREBASE_EXPORTS.map(async([key,collectionName,localKey])=>{
+    try{
+      const rows=await listRecords(collectionName),value=Array.isArray(rows)?rows:[];
+      if(localKey&&key!=="settings")writeJson(localKey,value);
+      return[key,value];
+    }catch(error){
+      console.warn("[pos-backup] firebase export fallback",collectionName,error);
+      return[key,localKey?readJson(localKey,[]):[]];
     }
-  }
-  return data;
+  }));
+  return Object.fromEntries(entries);
 }
 async function renderCurrentStats(){
   const data=await collectFirebaseData();

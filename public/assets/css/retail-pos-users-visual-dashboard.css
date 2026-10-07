@@ -428,6 +428,9 @@
   color:#173f31;
   font-size:1rem;
 }
+.pos-users-visual-page .users-dialog-title h2>.pos-context-icon{
+  display:none!important;
+}
 .pos-users-visual-page .users-dialog-title small{
   display:block;
   margin-top:3px;
@@ -522,7 +525,14 @@
   .pos-users-visual-page .users-dialog-head{margin:0 -14px 14px;padding:13px 14px}
   .pos-users-visual-page .users-dialog-title small{display:none}
   .pos-users-visual-page .users-editor-dialog .permission-form-grid{grid-template-columns:1fr!important}
-  .pos-users-visual-page .users-editor-dialog .dialog-actions{grid-template-columns:1fr}
+  .pos-users-visual-page .users-editor-dialog .permission-form-grid label,
+  .pos-users-visual-page .users-editor-dialog .permission-form-grid input,
+  .pos-users-visual-page .users-editor-dialog .permission-form-grid select{min-width:0;max-width:100%;box-sizing:border-box}
+  .pos-users-visual-page .users-editor-dialog .dialog-actions{
+    grid-template-columns:1fr;
+    margin:16px -14px -14px;
+    padding:14px 14px 14px;
+  }
 }
 @media(max-width:390px){
   .pos-users-visual-page .permission-current{gap:10px}

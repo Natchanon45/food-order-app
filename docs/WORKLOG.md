@@ -9737,3 +9737,41 @@ Verification/deploy state:
 - `docs/WORKLOG.md` updated after the second requested visual issue.
 - Full Mac test/build, authenticated desktop/mobile browser verification, Build bump, commit/push sync, and Hosting-only deploy are next.
 - No merge to `main`.
+
+---
+## 2026-10-07 — POS Backup / Users final responsive verification refinements
+
+Local Mac verification after Remote Desktop Commander recovered exposed three presentation/runtime-readiness details before deploy:
+- `/pos/backup` loaded all 12 summary metrics correctly, but the original 2-column mobile summary grid made the green hero 644px tall.
+- `/pos/users` waited for remote access-data hydration before rendering the existing local/default roles, leaving the role/permission workspace visually blank while hydration was pending.
+- The Users mobile editor had 8px internal horizontal overflow from the shared dialog footer's desktop `-22px` margin, and the generic POS icon enhancer injected a duplicate heading icon beside the authored dialog icon.
+
+Refinement:
+- Backup Firestore collection reads are now parallelized with `Promise.all`, preserving the same collection set/fallback behavior while reducing serial dashboard delay.
+- Backup Mobile shows the 12 summary metrics as a compact swipeable horizontal stat strip; the hero now remains compact instead of expanding into six stat rows.
+- Users renders the current session/default roles, permission blocks, and local empty-user state immediately, then re-renders after the existing Firebase hydration completes. Remote persistence/hydration behavior remains unchanged.
+- Users editor hides the generated `h2 > .pos-context-icon` because the modal already has one authored semantic icon.
+- Users mobile footer uses the same 14px modal inset as the mobile form, eliminating the previous 8px dialog overflow.
+- Added regression guards for the mobile stat strip, parallel Backup reads, immediate Users local render, duplicate-icon suppression, and mobile footer inset.
+
+Verification:
+- `node --check` for touched legacy JS pending immediately after this log entry.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for React Build `2026.10.07.441` / `/react/assets/index-BaSuJWBm.js`.
+- `git diff --check` PASS.
+- Authenticated candidate browser test using Production reads with all Firestore writes blocked/avoided PASS:
+  - Backup Desktop 1440x900: 12 summary cards, no horizontal overflow.
+  - Backup Mobile 390x844: hero height 262px, 12 summary cards in a swipeable 66px-high strip, page overflow 0.
+  - Backup summary data loaded in ~9.2s in the isolated candidate context after parallelization.
+  - Users Desktop: 4 role cards and 2 permission blocks render immediately; current owner text resolves; page overflow 0.
+  - Users Mobile: one-column workspace; 4 role cards + 2 permission blocks; page overflow 0.
+  - User dialog Desktop/Mobile: one authored header icon only; generated icon hidden; dialog internal overflow 0.
+  - Candidate browser run: blocked writes 0, page errors 0, unexpected request failures 0, HTTP errors 0.
+
+Release state:
+- React `0.4.280` / Build `2026.10.07.441`.
+- Public `0.16.32` / Build `2026.10.07.156`.
+- Hosting deploy still pending this final local commit/push.
+- No merge to `main`.
