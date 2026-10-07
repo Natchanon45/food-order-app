@@ -11624,4 +11624,17 @@ Verification before deploy:
 - No Functions, Firestore Rules, Storage Rules, or schema changes.
 
 Deploy state:
-- Commit/push and Hosting-only deploy pending at this checkpoint.
+- Implementation commit `cdd11f27` — `fix: enforce visible button icon spacing policy` pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production bundle is `/react/assets/index-DAOfBKzq.js`.
+- Production Delivery Success parity suite: **5/5 PASS** using the user's live order.
+- Production Delivery checkout parity suite: **4/4 PASS**.
+- Targeted Production total: **9/9 PASS**.
+- The Production button-policy test verifies:
+  - semantic icons exist on `สั่งเพิ่ม`, `ดาวน์โหลดใบสั่งซื้อ`, and `ดูยอดล่าสุด`,
+  - icon -> label gap is >= 7px,
+  - Brand -> `สั่งเพิ่ม` gap is >= 8px,
+  - toolbar adjacent-button gap is >= 8px,
+  - tracking/action-group surrounding spacing is >= 12px.
+- Deployment scope was Hosting only.
+- No Functions, Firestore Rules, Storage Rules, schema changes, or merge to `main`.
