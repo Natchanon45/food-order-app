@@ -11762,3 +11762,15 @@ Verification before deploy:
 
 Deploy state:
 - Commit/push and Hosting-only deploy pending at this checkpoint.
+
+### 2026-10-07 — Build 2026.10.07.467 deployed
+- Implementation commit: `682113e9 fix: align mobile delivery badge and favorites visibility`.
+- Firebase Hosting `foodapp` deployed successfully.
+- Production bundle: `/react/assets/index-vYwHTtyY.js`.
+- Production Delivery parity: **6/6 PASS**.
+- Production Delivery Success parity: **5/5 PASS**.
+- Targeted Production total: **11/11 PASS**.
+- Mobile Delivery badge stays immediately after visible PENGUIN brand content; locale stays at the far right.
+- Clean guest context hides Favorites; a successfully persisted favorite reveals it; reload restores it; removing the final favorite hides it again.
+- Guest favorites remain localStorage-backed; signed-in favorites remain Firestore `favoriteMenuIds`-backed.
+- Hosting-only deploy; no Functions/Rules/schema changes and no merge to `main`.
