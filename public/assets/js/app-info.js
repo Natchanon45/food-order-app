@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.07.160',
+  build: '2026.10.07.161',
   branch: 'feature/react-firebase-port',
-  commit: 'SUPER-ADMIN-WALLET-SLIP-ACCESS',
+  commit: 'TABLE-PERMANENT-QR-SESSION-RESOLVER',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Super Admin wallet slip viewer repair',
-  updatedAt: '2026-10-07T11:23:00+0700',
+  milestone: 'Permanent table QR session resolver',
+  updatedAt: '2026-10-07T12:04:00+0700',
   whatsNew: [
-    'Allow active Super Admin accounts to read tenant Lalamove wallet top-up slips for central review',
-    'Restore View Slip for pending and Slip2Go auto-approved wallet top-ups',
-    'Show a visible error toast if a wallet slip cannot be opened'
+    'Restore permanent table QR ordering after a cashier opens the table',
+    'Resolve tokenless table links to the current occupied table session automatically',
+    'Keep unavailable tables blocked while preserving tokenized session validation'
   ]
 };
 

@@ -5,7 +5,7 @@ import {
   PublicCartList, PublicMenuCatalog, PublicStorefrontFooter, PublicStorefrontHeader, showStorefrontToast,
 } from "@/components/PublicStorefront";
 import {
-  createPublicTableOrder, findPublicTableSession, listPublicMenus, resolvePublicTenant, watchPublicTableOrders,
+  createPublicTableOrder, findPublicTableSession, getPublicTable, listPublicMenus, resolvePublicTenant, watchPublicTableOrders,
 } from "@/data/publicStorefrontData";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
@@ -72,14 +72,32 @@ export function PublicOrderPage() {
       setLoading(true);
       setError("");
       try {
-        if (!requestedTable || !tableToken) throw new Error("INVALID_TABLE_SESSION");
+        if (!requestedTable) throw new Error("INVALID_TABLE_SESSION");
         const resolvedTenant = await resolvePublicTenant(slug);
         if (!alive) return;
         setTenant(resolvedTenant);
-        const [table, rows] = await Promise.all([
-          findPublicTableSession(resolvedTenant, requestedTable, tableToken),
-          listPublicMenus(resolvedTenant),
-        ]);
+
+        let table = await getPublicTable(resolvedTenant, requestedTable);
+        const directToken = String(table?.orderToken || "").trim();
+        const directActive = Boolean(table && table.active !== false && table.status === "occupied" && directToken);
+        if (!directActive) {
+          table = tableToken ? await findPublicTableSession(resolvedTenant, requestedTable, tableToken) : null;
+        }
+
+        if (table) {
+          const resolvedCode = String(table.code || table.id || requestedTable).trim();
+          const resolvedToken = String(table.orderToken || "").trim();
+          if (resolvedCode && resolvedToken && (resolvedCode !== requestedTable || resolvedToken !== tableToken)) {
+            const nextParams = new URLSearchParams(location.search);
+            nextParams.set("table", resolvedCode);
+            nextParams.delete("code");
+            nextParams.set("token", resolvedToken);
+            location.replace(`${location.pathname}?${nextParams.toString()}`);
+            return;
+          }
+        }
+
+        const rows = await listPublicMenus(resolvedTenant);
         if (!alive) return;
         setMenus(rows);
         setActiveTable(table);

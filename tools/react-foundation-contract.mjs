@@ -485,6 +485,18 @@ const staticDeliveryAddresses=read("public/assets/js/delivery-addresses.js");
 const staticCustomerProfileService=read("public/assets/js/customer-profile-service.js");
 const publicFirebaseContext=read("public/assets/js/public-firebase-context.js");
 const publicStorefrontService=read("public/assets/js/public-storefront-service.js");
+const publicOrderPage=read("react-app/src/pages/PublicOrderPage.jsx");
+const legacyTableQrResolver=read("public/assets/js/table-qr-resolver.js");
+assert(
+  legacyTableQrResolver.includes('table?.status === "occupied" && table?.orderToken')
+  &&legacyTableQrResolver.includes('params.set("token", activeToken)')
+  &&publicOrderPage.includes("getPublicTable")
+  &&publicOrderPage.includes('const directActive = Boolean(table && table.active !== false && table.status === "occupied" && directToken)')
+  &&publicOrderPage.includes('nextParams.set("token", resolvedToken)')
+  &&publicOrderPage.includes('location.replace(`${location.pathname}?${nextParams.toString()}`)')
+  &&!publicOrderPage.includes('if (!requestedTable || !tableToken) throw new Error("INVALID_TABLE_SESSION")'),
+  "React table ordering must preserve permanent table QR resolution by attaching the current occupied-table token before session validation"
+);
 const staticDataService=read("public/assets/js/data-service.js");
 const deliveryCustomerAuthFunction=read("functions/delivery-customer-auth.js");
 const firestoreRules=read("firestore.rules");
