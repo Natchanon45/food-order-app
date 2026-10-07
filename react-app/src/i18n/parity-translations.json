@@ -1268,7 +1268,8 @@
           "not_found": "ไม่พบเมนู",
           "load_failed": "โหลดเมนูไม่สำเร็จ",
           "cart_empty": "ยังไม่มีรายการในตะกร้า",
-          "item_note_placeholder": "หมายเหตุรายการ"
+          "item_note_placeholder": "หมายเหตุรายการ",
+          "page_summary": "หน้า :current จาก :total • :count เมนู"
         },
         "customer": {
           "section_title": "บัญชีและที่อยู่จัดส่ง",
@@ -1353,7 +1354,9 @@
           "lalamove_unavailable": "ไม่สามารถขอราคาค่าจัดส่งจาก Lalamove ได้ กรุณาลองใหม่",
           "lalamove_out_of_service_area": "ตำแหน่งนี้อยู่นอกพื้นที่ให้บริการของ Lalamove กรุณาเลือกตำแหน่งจัดส่งใหม่",
           "lalamove_cod_unavailable": "พื้นที่นี้ยังไม่รองรับบริการเก็บเงินปลายทางของ Lalamove กรุณาเลือกชำระเงินล่วงหน้าหรือเปลี่ยนพื้นที่จัดส่ง",
-          "lalamove_expired": "ราคาค่าส่ง Lalamove หมดอายุแล้ว ระบบกำลังขอราคาใหม่"
+          "lalamove_expired": "ราคาค่าส่ง Lalamove หมดอายุแล้ว ระบบกำลังขอราคาใหม่",
+          "calculating": "กำลังคำนวณระยะทางจัดส่ง...",
+          "route_failed": "ไม่สามารถคำนวณเส้นทางจัดส่งได้ กรุณาลองใหม่"
         },
         "promotion": {
           "gift_title": "เลือกของแถม",
@@ -1483,6 +1486,13 @@
         },
         "units": {
           "baht": "บาท"
+        },
+        "cart": {
+          "amount": ":amount บาท",
+          "empty": "ยังไม่มีรายการในตะกร้า",
+          "item_note_placeholder": "หมายเหตุรายการ",
+          "increase": "เพิ่มจำนวน",
+          "decrease": "ลดจำนวน"
         }
       },
       "success": {
@@ -5643,7 +5653,8 @@
         "version": "Version :version",
         "build": "Build :build",
         "icon_credit": "Uicons by Flaticon"
-      }
+      },
+      "loading": "กำลังโหลด..."
     },
     "storefront": {
       "errors": {
@@ -5700,7 +5711,9 @@
         "item_note_placeholder": "หมายเหตุ เช่น ไม่เผ็ด",
         "total": "ยอดรวม",
         "currency": "บาท",
-        "amount": ":amount บาท"
+        "amount": ":amount บาท",
+        "increase": "เพิ่มจำนวน",
+        "decrease": "ลดจำนวน"
       },
       "remove": {
         "title": "ลบรายการอาหาร",
@@ -7554,7 +7567,8 @@
           "not_found": "No menu items found",
           "load_failed": "Could not load the menu",
           "cart_empty": "Your cart is empty",
-          "item_note_placeholder": "Item note"
+          "item_note_placeholder": "Item note",
+          "page_summary": "Page :current of :total • :count items"
         },
         "customer": {
           "section_title": "Account and delivery addresses",
@@ -7639,7 +7653,9 @@
           "lalamove_unavailable": "Could not get a Lalamove delivery quotation. Please try again.",
           "lalamove_out_of_service_area": "This location is outside Lalamove’s service area. Please choose another delivery location.",
           "lalamove_cod_unavailable": "Lalamove cash on delivery is not available for this area. Please prepay or choose another delivery location.",
-          "lalamove_expired": "The Lalamove quotation has expired. A new quotation is required."
+          "lalamove_expired": "The Lalamove quotation has expired. A new quotation is required.",
+          "calculating": "Calculating delivery route...",
+          "route_failed": "Could not calculate the delivery route. Please try again."
         },
         "promotion": {
           "gift_title": "Choose free gifts",
@@ -7769,6 +7785,13 @@
         },
         "units": {
           "baht": "THB"
+        },
+        "cart": {
+          "amount": "THB :amount",
+          "empty": "Your cart is empty",
+          "item_note_placeholder": "Item note",
+          "increase": "Increase quantity",
+          "decrease": "Decrease quantity"
         }
       },
       "success": {
@@ -11654,7 +11677,8 @@
         "version": "Version :version",
         "build": "Build :build",
         "icon_credit": "Uicons by Flaticon"
-      }
+      },
+      "loading": "Loading..."
     },
     "storefront": {
       "errors": {
@@ -11711,7 +11735,9 @@
         "item_note_placeholder": "Note, e.g. not spicy",
         "total": "Total",
         "currency": "THB",
-        "amount": "THB :amount"
+        "amount": "THB :amount",
+        "increase": "Increase quantity",
+        "decrease": "Decrease quantity"
       },
       "remove": {
         "title": "Remove item",
@@ -13565,7 +13591,8 @@
           "not_found": "မီနူးမတွေ့ပါ",
           "load_failed": "မီနူးကို မဖွင့်နိုင်ပါ",
           "cart_empty": "ခြင်းထဲတွင် ပစ္စည်းမရှိသေးပါ",
-          "item_note_placeholder": "မီနူးမှတ်ချက်"
+          "item_note_placeholder": "မီနူးမှတ်ချက်",
+          "page_summary": "စာမျက်နှာ :current / :total • :count မျိုး"
         },
         "customer": {
           "section_title": "အကောင့်နှင့် ပို့ဆောင်ရန်လိပ်စာများ",
@@ -13650,7 +13677,9 @@
           "lalamove_unavailable": "Lalamove ပေးပို့မှု quotation ကို မရခဲ့ပါ။ ထပ်စမ်းကြည့်ပါ။",
           "lalamove_out_of_service_area": "ဤတည်နေရာသည် Lalamove ၏ ဝန်ဆောင်မှုဧရိယာ အပြင်ဘက်ဖြစ်သည်။ ကျေးဇူးပြု၍ အခြားပေးပို့ရမည့်နေရာကို ရွေးပါ။",
           "lalamove_cod_unavailable": "Lalamove ဤဧရိယာအတွက် ပို့ဆောင်မှုတွင် ငွေသားမရနိုင်ပါ။ ကျေးဇူးပြု၍ ကြိုတင်ငွေပေးချေပါ သို့မဟုတ် အခြားပေးပို့ရမည့်နေရာကို ရွေးချယ်ပါ။",
-          "lalamove_expired": "Lalamove ကိုးကားချက် သက်တမ်းကုန်သွားပါပြီ။ ကိုးကားချက်အသစ်တစ်ခု လိုအပ်ပါသည်။"
+          "lalamove_expired": "Lalamove ကိုးကားချက် သက်တမ်းကုန်သွားပါပြီ။ ကိုးကားချက်အသစ်တစ်ခု လိုအပ်ပါသည်။",
+          "calculating": "ပို့ဆောင်ရေးလမ်းကြောင်း တွက်ချက်နေသည်...",
+          "route_failed": "ပို့ဆောင်ရေးလမ်းကြောင်းကို တွက်ချက်၍မရပါ။ ထပ်မံကြိုးစားပါ။"
         },
         "promotion": {
           "gift_title": "အခမဲ့လက်ဆောင်များကိုရွေးချယ်ပါ။",
@@ -13780,6 +13809,13 @@
         },
         "units": {
           "baht": "THB"
+        },
+        "cart": {
+          "amount": ":amount ဘတ်",
+          "empty": "ခြင်းထဲတွင် ပစ္စည်းမရှိသေးပါ",
+          "item_note_placeholder": "မီနူးမှတ်ချက်",
+          "increase": "အရေအတွက်တိုးရန်",
+          "decrease": "အရေအတွက်လျှော့ရန်"
         }
       },
       "success": {
@@ -17665,7 +17701,8 @@
         "version": "ဗားရှင်း :version",
         "build": "တည်ဆောက်ခြင်း :build",
         "icon_credit": "Flaticon မှ Uicons"
-      }
+      },
+      "loading": "ဖွင့်နေသည်..."
     },
     "storefront": {
       "errors": {
@@ -17722,7 +17759,9 @@
         "item_note_placeholder": "မှတ်ချက်၊ ဥပမာ မစပ်ပါ",
         "total": "စုစုပေါင်း",
         "currency": "ဘတ်",
-        "amount": ":amount ဘတ်"
+        "amount": ":amount ဘတ်",
+        "increase": "အရေအတွက်တိုးရန်",
+        "decrease": "အရေအတွက်လျှော့ရန်"
       },
       "remove": {
         "title": "ပစ္စည်းဖယ်ရှားမည်",
@@ -19576,7 +19615,8 @@
           "not_found": "ບໍ່ພົບລາຍການອາຫານ",
           "load_failed": "ບໍ່ສາມາດໂຫຼດເມນູໄດ້",
           "cart_empty": "ຍັງບໍ່ມີລາຍການໃນກະຕ່າ",
-          "item_note_placeholder": "ໝາຍເຫດລາຍການ"
+          "item_note_placeholder": "ໝາຍເຫດລາຍການ",
+          "page_summary": "ໜ້າ :current ຈາກ :total • :count ລາຍການ"
         },
         "customer": {
           "section_title": "ບັນຊີ ແລະ ທີ່ຢູ່ຈັດສົ່ງ",
@@ -19661,7 +19701,9 @@
           "lalamove_unavailable": "ບໍ່ສາມາດຮັບໃບສະເໜີລາຄາການຈັດສົ່ງ Lalamove ໄດ້. ກະລຸນາລອງອີກຄັ້ງ.",
           "lalamove_out_of_service_area": "ສະຖານທີ່ນີ້ແມ່ນຢູ່ນອກເຂດບໍລິການຂອງ Lalamove. ກະລຸນາເລືອກສະຖານທີ່ຈັດສົ່ງອື່ນ.",
           "lalamove_cod_unavailable": "Lalamove ເງິນສົດໃນການຂົນສົ່ງແມ່ນບໍ່ສາມາດໃຊ້ໄດ້ສໍາລັບພື້ນທີ່ນີ້. ກະລຸນາຈ່າຍລ່ວງໜ້າ ຫຼືເລືອກສະຖານທີ່ຈັດສົ່ງອື່ນ.",
-          "lalamove_expired": "ໃບສະເໜີລາຄາ Lalamove ໝົດອາຍຸແລ້ວ. ຕ້ອງການໃບສະເໜີລາຄາໃໝ່."
+          "lalamove_expired": "ໃບສະເໜີລາຄາ Lalamove ໝົດອາຍຸແລ້ວ. ຕ້ອງການໃບສະເໜີລາຄາໃໝ່.",
+          "calculating": "ກຳລັງຄຳນວນເສັ້ນທາງຈັດສົ່ງ...",
+          "route_failed": "ບໍ່ສາມາດຄຳນວນເສັ້ນທາງຈັດສົ່ງໄດ້ ກະລຸນາລອງໃໝ່"
         },
         "promotion": {
           "gift_title": "ເລືອກຂອງຂວັນຟຣີ",
@@ -19791,6 +19833,13 @@
         },
         "units": {
           "baht": "THB"
+        },
+        "cart": {
+          "amount": ":amount ບາດ",
+          "empty": "ຍັງບໍ່ມີລາຍການໃນກະຕ່າ",
+          "item_note_placeholder": "ໝາຍເຫດລາຍການ",
+          "increase": "ເພີ່ມຈຳນວນ",
+          "decrease": "ຫຼຸດຈຳນວນ"
         }
       },
       "success": {
@@ -23676,7 +23725,8 @@
         "version": "ລຸ້ນ :version",
         "build": "ສ້າງ :build",
         "icon_credit": "Uicons ໂດຍ Flaticon"
-      }
+      },
+      "loading": "ກຳລັງໂຫຼດ..."
     },
     "storefront": {
       "errors": {
@@ -23733,7 +23783,9 @@
         "item_note_placeholder": "ໝາຍເຫດ ເຊັ່ນ ບໍ່ເຜັດ",
         "total": "ລວມ",
         "currency": "ບາດ",
-        "amount": ":amount ບາດ"
+        "amount": ":amount ບາດ",
+        "increase": "ເພີ່ມຈຳນວນ",
+        "decrease": "ຫຼຸດຈຳນວນ"
       },
       "remove": {
         "title": "ລຶບລາຍການ",
@@ -25587,7 +25639,8 @@
           "not_found": "រកមិនឃើញមុខម្ហូប",
           "load_failed": "មិនអាចផ្ទុកម៉ឺនុយបានទេ",
           "cart_empty": "កន្ត្រករបស់អ្នកនៅទទេ",
-          "item_note_placeholder": "កំណត់ចំណាំមុខម្ហូប"
+          "item_note_placeholder": "កំណត់ចំណាំមុខម្ហូប",
+          "page_summary": "ទំព័រ :current នៃ :total • :count មុខ"
         },
         "customer": {
           "section_title": "គណនី និងអាសយដ្ឋានដឹកជញ្ជូន",
@@ -25672,7 +25725,9 @@
           "lalamove_unavailable": "មិនអាចទទួលបានសម្រង់ដឹកជញ្ជូន Lalamove ទេ។ សូមព្យាយាមម្តងទៀត។",
           "lalamove_out_of_service_area": "ទីតាំងនេះនៅក្រៅតំបន់សេវាកម្មរបស់ Lalamove។ សូមជ្រើសរើសទីតាំងដឹកជញ្ជូនផ្សេងទៀត។",
           "lalamove_cod_unavailable": "Lalamove សាច់ប្រាក់លើការដឹកជញ្ជូនមិនមានសម្រាប់តំបន់នេះទេ។ សូមបង់ប្រាក់ជាមុន ឬជ្រើសរើសទីតាំងដឹកជញ្ជូនផ្សេងទៀត។",
-          "lalamove_expired": "សម្រង់ Lalamove បានផុតកំណត់ហើយ។ តម្រូវឱ្យមានការដកស្រង់ថ្មី។"
+          "lalamove_expired": "សម្រង់ Lalamove បានផុតកំណត់ហើយ។ តម្រូវឱ្យមានការដកស្រង់ថ្មី។",
+          "calculating": "កំពុងគណនាផ្លូវដឹកជញ្ជូន...",
+          "route_failed": "មិនអាចគណនាផ្លូវដឹកជញ្ជូនបានទេ។ សូមព្យាយាមម្តងទៀត។"
         },
         "promotion": {
           "gift_title": "ជ្រើសរើសអំណោយឥតគិតថ្លៃ",
@@ -25802,6 +25857,13 @@
         },
         "units": {
           "baht": "THB"
+        },
+        "cart": {
+          "amount": ":amount បាត",
+          "empty": "កន្ត្រករបស់អ្នកនៅទទេ",
+          "item_note_placeholder": "កំណត់ចំណាំមុខម្ហូប",
+          "increase": "បន្ថែមចំនួន",
+          "decrease": "បន្ថយចំនួន"
         }
       },
       "success": {
@@ -29687,7 +29749,8 @@
         "version": "កំណែ :version",
         "build": "សាងសង់ :build",
         "icon_credit": "Uicons ដោយ Flaticon"
-      }
+      },
+      "loading": "កំពុងផ្ទុក..."
     },
     "storefront": {
       "errors": {
@@ -29744,7 +29807,9 @@
         "item_note_placeholder": "កំណត់ចំណាំ ឧ. មិនហឹរ",
         "total": "សរុប",
         "currency": "បាត",
-        "amount": ":amount បាត"
+        "amount": ":amount បាត",
+        "increase": "បន្ថែមចំនួន",
+        "decrease": "បន្ថយចំនួន"
       },
       "remove": {
         "title": "លុបមុខម្ហូប",

@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.07.171',
+  build: '2026.10.07.172',
   branch: 'feature/react-firebase-port',
-  commit: 'WALKIN-CLOSE-DIALOG-ICON',
+  commit: 'FULL-REACT-SYSTEM-CUTOVER',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Walk-in close dialog icon correction',
-  updatedAt: '2026-10-07T15:39:16+0700',
+  milestone: 'Full React system cutover',
+  updatedAt: '2026-10-07T17:25:00+0700',
   whatsNew: [
-    'Use a door-close icon for the Walk-in close-table confirmation action',
-    'Keep the cancel action on the standard x icon so the two dialog actions are visually distinct',
-    'Preserve the existing Walk-in close-table lifecycle and warning copy'
+    'Move the remaining public storefront, legal, verification, and POS utility entrypoints onto the canonical React shell',
+    'Replace legacy Delivery and Takeaway page runtimes with native React/Firebase flows while preserving Maps, Lalamove, promotions, PromptPay, slips, favorites, and customer addresses',
+    'Guard every physical frontend index entry and Hosting rewrite so future builds cannot fall back to page-specific legacy HTML'
   ]
 };
 

@@ -1,7 +1,60 @@
 <!doctype html>
 <html lang="th">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#159447"><link rel="stylesheet" href="/assets/css/app.css?v=20260801-096"><link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240"><link rel="stylesheet" href="/assets/css/waiting-queue.css?v=20260801-106"><title>ติดตามคิวรอโต๊ะ</title>    <link rel="stylesheet" href="/assets/css/waiting-queue-legacy-customer.css?v=20260801-002" />
-  </head>
-<body class="queue-track-page"><main class="queue-track-shell"><section class="queue-track-brand"><span class="brand-mark">PG</span><span>คิวรอโต๊ะ</span></section><section id="queueTrackCard" class="queue-track-card"><div class="queue-track-loading">กำลังตรวจสอบคิว...</div></section><p class="queue-track-hint">หน้านี้จะอัปเดตสถานะอัตโนมัติ กรุณาเปิดหน้านี้ไว้จนกว่าจะได้รับโต๊ะ</p></main><script type="module" src="/assets/js/waiting-queue-track.js?v=20260801-103"></script>    <script defer src="/assets/js/waiting-queue-legacy-customer.js?v=20260801-002"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#159447" />
+  <title>PENGUIN</title>
+  <link rel="stylesheet" href="/assets/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1.13.1">
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/4.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <link rel="stylesheet" href="/react/parity/css/unified-table-icon.css">
+  <link rel="stylesheet" href="/react/parity/css/sweet-dialog.css">
+  <link rel="stylesheet" href="/react/parity/css/i18n.css">
+  <link rel="stylesheet" href="/react/parity/css/app.css">
+  <link rel="stylesheet" href="/react/parity/css/icons.css">
+  <link rel="stylesheet" href="/react/parity/css/shared-responsive.css">
+  <link rel="stylesheet" href="/react/parity/css/theme-checkbox.css">
+  <link rel="stylesheet" href="/react/parity/css/page-ready-state.css">
+  <link rel="stylesheet" href="/react/parity/css/ui-layer-stack.css" data-ui-layer-policy>
+  <link rel="stylesheet" href="/react/parity/css/toast-global-policy.css" data-toast-policy>
+  <script defer src="/assets/js/horizontal-scroll-restore.js?v=20261002-002"></script>
+  <script>
+    (() => {
+      const recoveryKey = "lukkhaja_react_entry_recovery";
+      window.__lukkhajaReactEntryLoaded = () => {
+        try { sessionStorage.removeItem(recoveryKey); } catch {}
+      };
+      window.addEventListener("error", event => {
+        const target = event.target;
+        if (!(target instanceof HTMLScriptElement) || target.type !== "module") return;
+        const src = String(target.src || "");
+        if (!src.includes("/react/assets/")) return;
+        try {
+          if (sessionStorage.getItem(recoveryKey) === "1") return;
+          sessionStorage.setItem(recoveryKey, "1");
+        } catch {}
+        const url = new URL(location.href);
+        url.searchParams.set("__react_reload", String(Date.now()));
+        location.replace(url.toString());
+      }, true);
+    })();
+  </script>
+  <script type="module" crossorigin src="/react/assets/index-Dclizvbl.js"></script>
+  <link rel="modulepreload" crossorigin href="/react/assets/rolldown-runtime-CbXtAM7H.js">
+  <link rel="modulepreload" crossorigin href="/react/assets/react-vendor-BcSqwNtZ.js">
+  <link rel="modulepreload" crossorigin href="/react/assets/firebase-J1xTQvXy.js">
+</head>
+<body>
+  <div id="root">
+    <div class="page-ready-overlay" id="pageReadyOverlay" role="status" aria-live="polite" aria-busy="true" aria-hidden="false">
+      <div class="page-ready-simple" aria-labelledby="pageReadyTitle">
+        <span class="page-ready-spinner" aria-hidden="true"></span>
+        <div class="page-ready-copy">
+          <h2 id="pageReadyTitle">กำลังโหลดข้อมูล...</h2>
+          <p>กรุณารอสักครู่....</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
 </html>

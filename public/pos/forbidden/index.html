@@ -1,19 +1,60 @@
 <!doctype html>
 <html lang="th">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#159447">
-<title>ไม่มีสิทธิ์เข้าถึง</title>
-<link rel="stylesheet" href="/assets/css/retail-pos.css?v=20260801-096">
-<link rel="stylesheet" href="/assets/css/retail-pos-navigation.css?v=20261004-106">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#159447" />
+  <title>PENGUIN</title>
+  <link rel="stylesheet" href="/assets/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1.13.1">
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/4.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <link rel="stylesheet" href="/react/parity/css/unified-table-icon.css">
+  <link rel="stylesheet" href="/react/parity/css/sweet-dialog.css">
+  <link rel="stylesheet" href="/react/parity/css/i18n.css">
+  <link rel="stylesheet" href="/react/parity/css/app.css">
+  <link rel="stylesheet" href="/react/parity/css/icons.css">
+  <link rel="stylesheet" href="/react/parity/css/shared-responsive.css">
+  <link rel="stylesheet" href="/react/parity/css/theme-checkbox.css">
+  <link rel="stylesheet" href="/react/parity/css/page-ready-state.css">
+  <link rel="stylesheet" href="/react/parity/css/ui-layer-stack.css" data-ui-layer-policy>
+  <link rel="stylesheet" href="/react/parity/css/toast-global-policy.css" data-toast-policy>
+  <script defer src="/assets/js/horizontal-scroll-restore.js?v=20261002-002"></script>
+  <script>
+    (() => {
+      const recoveryKey = "lukkhaja_react_entry_recovery";
+      window.__lukkhajaReactEntryLoaded = () => {
+        try { sessionStorage.removeItem(recoveryKey); } catch {}
+      };
+      window.addEventListener("error", event => {
+        const target = event.target;
+        if (!(target instanceof HTMLScriptElement) || target.type !== "module") return;
+        const src = String(target.src || "");
+        if (!src.includes("/react/assets/")) return;
+        try {
+          if (sessionStorage.getItem(recoveryKey) === "1") return;
+          sessionStorage.setItem(recoveryKey, "1");
+        } catch {}
+        const url = new URL(location.href);
+        url.searchParams.set("__react_reload", String(Date.now()));
+        location.replace(url.toString());
+      }, true);
+    })();
+  </script>
+  <script type="module" crossorigin src="/react/assets/index-Dclizvbl.js"></script>
+  <link rel="modulepreload" crossorigin href="/react/assets/rolldown-runtime-CbXtAM7H.js">
+  <link rel="modulepreload" crossorigin href="/react/assets/react-vendor-BcSqwNtZ.js">
+  <link rel="modulepreload" crossorigin href="/react/assets/firebase-J1xTQvXy.js">
 </head>
 <body>
-<header class="pos-header"><div><strong>ไม่มีสิทธิ์เข้าถึง</strong><small>เลือกเมนูที่ได้รับอนุญาตหรือสลับผู้ใช้งาน</small></div><div class="header-actions"></div></header>
-<main class="forbidden-page">
-<section class="forbidden-card"><h1>บัญชีนี้ไม่มีสิทธิ์เปิดหน้านี้</h1><p>กดปุ่มเมนูด้านบนเพื่อเลือกหน้าที่ได้รับอนุญาต หรือเลือก “สลับผู้ใช้” เพื่อกลับไปใช้บัญชีอื่น</p><div class="dialog-actions"><a class="btn btn-secondary header-link" href="/pos/">ไปหน้าหลัก POS</a></div></section>
-</main>
-<script type="module" src="/assets/js/retail-pos-navigation.js?v=20261004-105"></script>
-<script type="module" src="/assets/js/retail-pos-i18n-bootstrap.js?v=20261004-105" data-pos-i18n-generated="1"></script>
+  <div id="root">
+    <div class="page-ready-overlay" id="pageReadyOverlay" role="status" aria-live="polite" aria-busy="true" aria-hidden="false">
+      <div class="page-ready-simple" aria-labelledby="pageReadyTitle">
+        <span class="page-ready-spinner" aria-hidden="true"></span>
+        <div class="page-ready-copy">
+          <h2 id="pageReadyTitle">กำลังโหลดข้อมูล...</h2>
+          <p>กรุณารอสักครู่....</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

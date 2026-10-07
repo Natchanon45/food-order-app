@@ -4,6 +4,21 @@ import shutil
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "public/react/index.html"
 TARGETS = [
+    "public/index.html",
+    "public/order/index.html",
+    "public/privacy/index.html",
+    "public/verify/index.html",
+    "public/terms/index.html",
+    "public/queue/index.html",
+    "public/delivery/index.html",
+    "public/delivery/success/index.html",
+    "public/takeaway/index.html",
+    "public/pos/login/index.html",
+    "public/pos/forbidden/index.html",
+    "public/pos/catalog/index.html",
+    "public/pos/customer-display/index.html",
+    "public/pos/receipt/index.html",
+    "public/pos/tax-invoice/index.html",
     "public/login/index.html",
     "public/register/index.html",
     "public/pos/index.html",

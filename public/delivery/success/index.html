@@ -1,113 +1,60 @@
 <!doctype html>
 <html lang="th">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#159447">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#159447" />
+  <title>PENGUIN</title>
   <link rel="stylesheet" href="/assets/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1.13.1">
-  <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
-  <link rel="stylesheet" href="/assets/css/receipt-layout.css?v=20260623-4">
-  <link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240">
-  <link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260730-059">
-  <link rel="stylesheet" href="/assets/css/delivery-success-tracking.css?v=20260930-001">
-  <title data-i18n="delivery.success.meta_title">บันทึกคำสั่งซื้อ</title>
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/4.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <link rel="stylesheet" href="/react/parity/css/unified-table-icon.css">
+  <link rel="stylesheet" href="/react/parity/css/sweet-dialog.css">
+  <link rel="stylesheet" href="/react/parity/css/i18n.css">
+  <link rel="stylesheet" href="/react/parity/css/app.css">
+  <link rel="stylesheet" href="/react/parity/css/icons.css">
+  <link rel="stylesheet" href="/react/parity/css/shared-responsive.css">
+  <link rel="stylesheet" href="/react/parity/css/theme-checkbox.css">
+  <link rel="stylesheet" href="/react/parity/css/page-ready-state.css">
+  <link rel="stylesheet" href="/react/parity/css/ui-layer-stack.css" data-ui-layer-policy>
+  <link rel="stylesheet" href="/react/parity/css/toast-global-policy.css" data-toast-policy>
+  <script defer src="/assets/js/horizontal-scroll-restore.js?v=20261002-002"></script>
+  <script>
+    (() => {
+      const recoveryKey = "lukkhaja_react_entry_recovery";
+      window.__lukkhajaReactEntryLoaded = () => {
+        try { sessionStorage.removeItem(recoveryKey); } catch {}
+      };
+      window.addEventListener("error", event => {
+        const target = event.target;
+        if (!(target instanceof HTMLScriptElement) || target.type !== "module") return;
+        const src = String(target.src || "");
+        if (!src.includes("/react/assets/")) return;
+        try {
+          if (sessionStorage.getItem(recoveryKey) === "1") return;
+          sessionStorage.setItem(recoveryKey, "1");
+        } catch {}
+        const url = new URL(location.href);
+        url.searchParams.set("__react_reload", String(Date.now()));
+        location.replace(url.toString());
+      }, true);
+    })();
+  </script>
+  <script type="module" crossorigin src="/react/assets/index-Dclizvbl.js"></script>
+  <link rel="modulepreload" crossorigin href="/react/assets/rolldown-runtime-CbXtAM7H.js">
+  <link rel="modulepreload" crossorigin href="/react/assets/react-vendor-BcSqwNtZ.js">
+  <link rel="modulepreload" crossorigin href="/react/assets/firebase-J1xTQvXy.js">
 </head>
-<body class="order-delivery-workspace od-receipt-page">
-  <header class="app-header">
-    <div class="brand">
-      <span class="brand-mark">PG</span>
-      <span data-i18n="delivery.success.header.title">คำสั่งซื้อ Delivery</span>
-    </div>
-    <a class="btn btn-sm" id="orderAgainLink" href="#">
-      <i class="bi bi-plus-lg app-icon" aria-hidden="true"></i>
-      <span data-i18n="delivery.success.header.order_again">สั่งเพิ่ม</span>
-    </a>
-  </header>
-
-  <main class="receipt-page">
-    <section class="delivery-tracking-card" id="deliveryTrackingCard">
-      <div class="delivery-tracking-head">
-        <div>
-          <h2 data-i18n="delivery.success.tracking.title">ติดตามสถานะการจัดส่ง</h2>
-          <p id="deliveryTrackingMessage" data-i18n="delivery.success.tracking.loading">กำลังโหลดสถานะล่าสุด...</p>
+<body>
+  <div id="root">
+    <div class="page-ready-overlay" id="pageReadyOverlay" role="status" aria-live="polite" aria-busy="true" aria-hidden="false">
+      <div class="page-ready-simple" aria-labelledby="pageReadyTitle">
+        <span class="page-ready-spinner" aria-hidden="true"></span>
+        <div class="page-ready-copy">
+          <h2 id="pageReadyTitle">กำลังโหลดข้อมูล...</h2>
+          <p>กรุณารอสักครู่....</p>
         </div>
-        <span class="delivery-tracking-badge" id="deliveryTrackingBadge" data-i18n="delivery.success.tracking.loading_short">กำลังโหลด</span>
       </div>
-      <ol class="delivery-tracking-timeline" id="deliveryTrackingTimeline">
-        <li class="delivery-tracking-step" data-tracking-step="0"><span class="delivery-tracking-label" data-i18n="delivery.success.tracking.steps.received">รับออเดอร์</span></li>
-        <li class="delivery-tracking-step" data-tracking-step="1"><span class="delivery-tracking-label" data-i18n="delivery.success.tracking.steps.accepted">ร้านรับออเดอร์</span></li>
-        <li class="delivery-tracking-step" data-tracking-step="2"><span class="delivery-tracking-label" data-i18n="delivery.success.tracking.steps.cooking">กำลังเตรียมอาหาร</span></li>
-        <li class="delivery-tracking-step" data-tracking-step="3"><span class="delivery-tracking-label" data-i18n="delivery.success.tracking.steps.ready">พร้อมจัดส่ง</span></li>
-        <li class="delivery-tracking-step" data-tracking-step="4"><span class="delivery-tracking-label" data-i18n="delivery.success.tracking.steps.picked_up">ไรเดอร์รับสินค้า</span></li>
-        <li class="delivery-tracking-step" data-tracking-step="5"><span class="delivery-tracking-label" data-i18n="delivery.success.tracking.steps.delivered">จัดส่งสำเร็จ</span></li>
-      </ol>
-      <div class="delivery-tracking-actions">
-        <span class="delivery-tracking-updated" id="deliveryTrackingUpdated"></span>
-        <a class="btn btn-primary" id="customerLalamoveTrackLink" href="#" target="_blank" rel="noopener" hidden>
-          <i class="bi bi-geo-alt app-icon" aria-hidden="true"></i>
-          <span data-i18n="delivery.success.tracking.track_driver">ติดตามไรเดอร์</span>
-        </a>
-      </div>
-    </section>
-
-    <div class="receipt-toolbar">
-      <button class="btn btn-primary" id="saveImageButton" type="button">
-        <i class="bi bi-download app-icon" aria-hidden="true"></i>
-        <span data-action-label data-i18n="delivery.success.actions.download">ดาวน์โหลดใบสั่งซื้อ</span>
-      </button>
-      <a class="btn" id="verifyLatestLink" href="#" target="_blank" rel="noopener">
-        <i class="bi bi-arrow-clockwise app-icon" aria-hidden="true"></i>
-        <span data-i18n="delivery.success.actions.verify_latest">ดูยอดล่าสุด</span>
-      </a>
     </div>
-
-    <section class="receipt" id="customerReceipt">
-      <div class="receipt-header">
-        <h1 id="shopName" data-i18n="delivery.success.receipt.shop_fallback">PENGUIN</h1>
-        <div id="shopAddress"></div>
-        <div id="shopPhone"></div>
-        <strong data-i18n="delivery.success.receipt.evidence">หลักฐานคำสั่งซื้อ Delivery</strong>
-      </div>
-      <hr class="receipt-rule">
-      <div class="receipt-row"><span data-i18n="delivery.success.receipt.fields.order_number">เลขที่รายการ</span><strong id="receiptNumber">-</strong></div>
-      <div class="receipt-row"><span data-i18n="delivery.success.receipt.fields.date">วันที่</span><span id="receiptDate">-</span></div>
-      <div class="receipt-row"><span data-i18n="delivery.success.receipt.fields.payment">การชำระเงิน</span><strong id="receiptPayment">-</strong></div>
-      <hr class="receipt-rule">
-      <div><strong><span data-i18n="delivery.success.receipt.fields.recipient">ชื่อผู้รับ</span>:</strong> <span id="receiptRecipient">-</span></div>
-      <div><strong><span data-i18n="delivery.success.receipt.fields.phone">โทร</span>:</strong> <span id="receiptPhone">-</span></div>
-      <div><strong><span data-i18n="delivery.success.receipt.fields.address">ที่อยู่</span>:</strong> <span id="receiptAddress">-</span></div>
-      <div><strong><span data-i18n="delivery.success.receipt.fields.zone">พื้นที่</span>:</strong> <span id="receiptDeliveryZone">-</span></div>
-      <hr class="receipt-rule">
-      <table class="receipt-items receipt-items-3col">
-        <thead><tr>
-          <th data-i18n="delivery.success.receipt.fields.item">รายการ</th>
-          <th class="num receipt-unit" data-i18n="delivery.success.receipt.fields.price">ราคา</th>
-          <th class="num receipt-line-total" data-i18n="delivery.success.receipt.fields.total">รวม</th>
-        </tr></thead>
-        <tbody id="receiptItems"></tbody>
-      </table>
-      <hr class="receipt-rule">
-      <div class="receipt-row"><span data-i18n="delivery.success.receipt.fields.subtotal">ค่าอาหาร</span><span><span id="receiptSubtotal">0.00</span> <span data-i18n="delivery.success.receipt.unit_baht">บาท</span></span></div>
-      <div class="receipt-row"><span data-i18n="delivery.success.receipt.fields.delivery_fee">ค่าจัดส่ง</span><span><span id="receiptDeliveryFee">0.00</span> <span data-i18n="delivery.success.receipt.unit_baht">บาท</span></span></div>
-      <div class="receipt-row receipt-total"><span data-i18n="delivery.success.receipt.fields.net_total">ยอดสุทธิ</span><span><span id="receiptTotal">0.00</span> <span data-i18n="delivery.success.receipt.unit_baht">บาท</span></span></div>
-      <div id="receiptNoteWrap" hidden>
-        <hr class="receipt-rule">
-        <strong data-i18n="delivery.success.receipt.fields.note">หมายเหตุ</strong>
-        <div id="receiptNote"></div>
-      </div>
-      <hr class="receipt-rule">
-      <div class="receipt-header">
-        <div id="verifyQr" style="width:120px;height:120px;margin:0 auto"></div>
-        <div data-i18n="delivery.success.receipt.verify_qr.title">สแกนเพื่อตรวจสอบยอดล่าสุดจากระบบ</div>
-        <small data-i18n="delivery.success.receipt.verify_qr.note">ยอดในระบบอาจเปลี่ยนแปลงได้ หากร้านยกเลิกรายการ</small>
-      </div>
-    </section>
-  </main>
-
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <script type="module" src="/assets/js/public-tenant-resolver.js?v=20261003-010"></script>
-  <script type="module" src="/assets/js/platform-branding-runtime.js?v=20261005-131"></script>
-  <script type="module" src="/assets/js/delivery-success.js?v=20261005-136"></script>
+  </div>
 </body>
 </html>

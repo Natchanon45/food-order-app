@@ -1,102 +1,60 @@
 <!doctype html>
 <html lang="th">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#159447">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#159447" />
+  <title>PENGUIN</title>
   <link rel="stylesheet" href="/assets/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1.13.1">
-  <link rel="stylesheet" href="/assets/css/i18n.css?v=20260930-002">
-  <link rel="stylesheet" href="/assets/css/app.css?v=20260930-002">
-  <link rel="stylesheet" href="/assets/css/menu-qr.css?v=20260622-5">
-  <link rel="stylesheet" href="/assets/css/menu-pagination.css?v=20260930-002">
-  <link rel="stylesheet" href="/assets/css/icons.css?v=20260930-002">
-  <link rel="stylesheet" href="/assets/css/pos-refresh.css?v=20260930-002">
-  <link rel="stylesheet" href="/assets/css/public-menu-image-frame.css?v=20260930-002">
-  <link rel="stylesheet" href="/assets/css/table-order-sticky-lite.css?v=20260930-002">
-  <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260930-002">
-  <link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260930-002">
-  <link rel="stylesheet" href="/assets/css/shared-responsive.css?v=20260930-002">
-  <link rel="stylesheet" href="/assets/css/ui-layer-stack.css?v=20260929-001">
-  <title data-i18n="takeaway.meta.title">สั่งกลับบ้าน</title>
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/4.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <link rel="stylesheet" href="/react/parity/css/unified-table-icon.css">
+  <link rel="stylesheet" href="/react/parity/css/sweet-dialog.css">
+  <link rel="stylesheet" href="/react/parity/css/i18n.css">
+  <link rel="stylesheet" href="/react/parity/css/app.css">
+  <link rel="stylesheet" href="/react/parity/css/icons.css">
+  <link rel="stylesheet" href="/react/parity/css/shared-responsive.css">
+  <link rel="stylesheet" href="/react/parity/css/theme-checkbox.css">
+  <link rel="stylesheet" href="/react/parity/css/page-ready-state.css">
+  <link rel="stylesheet" href="/react/parity/css/ui-layer-stack.css" data-ui-layer-policy>
+  <link rel="stylesheet" href="/react/parity/css/toast-global-policy.css" data-toast-policy>
+  <script defer src="/assets/js/horizontal-scroll-restore.js?v=20261002-002"></script>
+  <script>
+    (() => {
+      const recoveryKey = "lukkhaja_react_entry_recovery";
+      window.__lukkhajaReactEntryLoaded = () => {
+        try { sessionStorage.removeItem(recoveryKey); } catch {}
+      };
+      window.addEventListener("error", event => {
+        const target = event.target;
+        if (!(target instanceof HTMLScriptElement) || target.type !== "module") return;
+        const src = String(target.src || "");
+        if (!src.includes("/react/assets/")) return;
+        try {
+          if (sessionStorage.getItem(recoveryKey) === "1") return;
+          sessionStorage.setItem(recoveryKey, "1");
+        } catch {}
+        const url = new URL(location.href);
+        url.searchParams.set("__react_reload", String(Date.now()));
+        location.replace(url.toString());
+      }, true);
+    })();
+  </script>
+  <script type="module" crossorigin src="/react/assets/index-Dclizvbl.js"></script>
+  <link rel="modulepreload" crossorigin href="/react/assets/rolldown-runtime-CbXtAM7H.js">
+  <link rel="modulepreload" crossorigin href="/react/assets/react-vendor-BcSqwNtZ.js">
+  <link rel="modulepreload" crossorigin href="/react/assets/firebase-J1xTQvXy.js">
 </head>
-<body class="order-delivery-workspace table-order-page takeaway-order-page">
-  <div id="demoBanner"></div>
-  <header class="app-header">
-    <div class="brand">
-      <span class="brand-mark">PG</span>
-      <span data-i18n="takeaway.header.title">สั่งกลับบ้าน</span>
-    </div>
-    <span class="badge" id="takeawayBadge" data-i18n="takeaway.header.badge">Take Away</span>
-  </header>
-
-  <main class="container">
-    <section class="hero">
-      <h1 class="hero-title">
-        <i class="bi bi-bag-check app-icon" aria-hidden="true"></i>
-        <span id="takeawayHeroStoreName" data-i18n="shared.store.fallback_name">PENGUIN</span>
-      </h1>
-      <p data-i18n="takeaway.hero.description">กรอกชื่อหรือเบอร์โทร เลือกเมนู แล้วรับเลขคิวสำหรับรับอาหาร</p>
-    </section>
-
-    <section class="card" id="customerPanel" style="margin-bottom:18px">
-      <div class="section-title">
-        <h2 data-i18n="takeaway.customer.title">ข้อมูลสำหรับเรียกรับอาหาร</h2>
-        <span class="badge warning" data-i18n="takeaway.customer.no_table">ไม่ต้องเปิดโต๊ะ</span>
-      </div>
-      <div class="grid grid-2">
-        <div class="field">
-          <label data-i18n="takeaway.customer.name">ชื่อผู้รับอาหาร</label>
-          <input class="input" id="customerName" maxlength="80" data-i18n-placeholder="takeaway.customer.name_placeholder" placeholder="เช่น คุณเอ">
-        </div>
-        <div class="field">
-          <label data-i18n="takeaway.customer.phone">เบอร์โทร</label>
-          <input class="input" id="customerPhone" inputmode="tel" maxlength="20" data-i18n-placeholder="takeaway.customer.phone_placeholder" placeholder="เช่น 0812345678">
+<body>
+  <div id="root">
+    <div class="page-ready-overlay" id="pageReadyOverlay" role="status" aria-live="polite" aria-busy="true" aria-hidden="false">
+      <div class="page-ready-simple" aria-labelledby="pageReadyTitle">
+        <span class="page-ready-spinner" aria-hidden="true"></span>
+        <div class="page-ready-copy">
+          <h2 id="pageReadyTitle">กำลังโหลดข้อมูล...</h2>
+          <p>กรุณารอสักครู่....</p>
         </div>
       </div>
-      <small data-i18n="takeaway.customer.hint">กรอกอย่างน้อย 1 อย่าง เพื่อให้แคชเชียร์เรียกคิวได้ถูกต้อง</small>
-    </section>
-
-    <div class="delivery-pos">
-      <div class="delivery-menu-column">
-        <div class="menu-filter-area" id="menuListStart">
-          <div class="category-tabs" id="categoryTabs" role="tablist" data-i18n-aria-label="takeaway.menu.category_aria" aria-label="หมวดหมู่อาหาร"></div>
-          <input class="input menu-search" id="searchInput" data-i18n-placeholder="takeaway.menu.search_placeholder" placeholder="ค้นหาเมนู...">
-        </div>
-        <div id="menuGrid" class="grid grid-3"></div>
-        <nav id="menuPagination" class="menu-pagination" data-i18n-aria-label="takeaway.menu.pagination_aria" aria-label="เปลี่ยนหน้ารายการอาหาร" hidden></nav>
-      </div>
-
-      <div class="delivery-side-column">
-        <section id="cartSection" class="card current-round">
-          <div class="section-title">
-            <h2 data-i18n="takeaway.cart.title">รายการสั่งกลับบ้าน</h2>
-            <span id="cartCount" class="badge">0 รายการ</span>
-          </div>
-          <div id="cartList" class="cart-list"></div>
-          <div class="field" style="margin-top:14px">
-            <label data-i18n="takeaway.cart.note">หมายเหตุรวมถึงร้าน</label>
-            <textarea class="input" id="orderNote" data-i18n-placeholder="takeaway.cart.note_placeholder" placeholder="เช่น ขอช้อนเพิ่ม"></textarea>
-          </div>
-        </section>
-      </div>
     </div>
-  </main>
-
-  <div class="cart-bar">
-    <div>
-      <small data-i18n="takeaway.cart.total">ยอดรวม</small>
-      <div style="font-size:20px;font-weight:800">
-        <span id="cartTotal">0.00</span> <span data-i18n="takeaway.cart.currency">บาท</span>
-      </div>
-    </div>
-    <button class="btn btn-primary" id="submitOrder">
-      <span data-submit-label data-i18n="takeaway.actions.submit">ส่งรายการเข้าครัว</span>
-    </button>
   </div>
-
-  <script type="module" src="/assets/js/public-tenant-resolver.js?v=20261003-010"></script>
-  <script type="module" src="/assets/js/dom-menu-pagination.js?v=20260930-002"></script>
-  <script type="module" src="/assets/js/takeaway-order.js?v=20261002-003"></script>
-  <script type="module" src="/assets/js/table-order-category-scrollspy.js?v=20260622-1"></script>
 </body>
 </html>

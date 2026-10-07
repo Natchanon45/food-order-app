@@ -1,45 +1,60 @@
 <!doctype html>
 <html lang="th">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#159447">
-  <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096">
-  <title>นโยบายความเป็นส่วนตัว | PENGUIN</title>
-  <style>
-    .legal-card{padding:28px;line-height:1.75}.legal-title{display:flex;align-items:center;gap:12px;margin:0 0 12px}.legal-title .bi{color:var(--green);font-size:30px}.legal-updated{display:inline-flex;align-items:center;gap:8px;margin:0 0 18px;padding:6px 11px;border-radius:999px;background:#e8f3ec;color:var(--green-dark);font-weight:800;font-size:13px}.legal-section{display:grid;gap:8px;margin-top:22px}.legal-section h2{display:flex;align-items:center;gap:10px;margin:0;font-size:22px}.legal-section h2 .bi{color:var(--green);font-size:20px}.legal-section p{margin:0}.legal-actions{display:flex;flex-wrap:nowrap;justify-content:center;gap:10px;margin-top:22px}.legal-actions a{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;border:1px solid #cfe4d6;border-radius:999px;padding:8px 13px;background:#f5fbf7;color:var(--green-dark);font-weight:800;text-decoration:none}.legal-actions a:hover{background:#e8f3ec}@media(max-width:560px){.legal-card{padding:20px}.legal-title{font-size:28px}.legal-section h2{font-size:20px}.legal-actions{display:grid;grid-template-columns:1fr}.legal-actions a{width:100%;justify-content:center;white-space:normal}}
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#159447" />
+  <title>PENGUIN</title>
+  <link rel="stylesheet" href="/assets/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1.13.1">
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/4.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <link rel="stylesheet" href="/react/parity/css/unified-table-icon.css">
+  <link rel="stylesheet" href="/react/parity/css/sweet-dialog.css">
+  <link rel="stylesheet" href="/react/parity/css/i18n.css">
+  <link rel="stylesheet" href="/react/parity/css/app.css">
+  <link rel="stylesheet" href="/react/parity/css/icons.css">
+  <link rel="stylesheet" href="/react/parity/css/shared-responsive.css">
+  <link rel="stylesheet" href="/react/parity/css/theme-checkbox.css">
+  <link rel="stylesheet" href="/react/parity/css/page-ready-state.css">
+  <link rel="stylesheet" href="/react/parity/css/ui-layer-stack.css" data-ui-layer-policy>
+  <link rel="stylesheet" href="/react/parity/css/toast-global-policy.css" data-toast-policy>
+  <script defer src="/assets/js/horizontal-scroll-restore.js?v=20261002-002"></script>
+  <script>
+    (() => {
+      const recoveryKey = "lukkhaja_react_entry_recovery";
+      window.__lukkhajaReactEntryLoaded = () => {
+        try { sessionStorage.removeItem(recoveryKey); } catch {}
+      };
+      window.addEventListener("error", event => {
+        const target = event.target;
+        if (!(target instanceof HTMLScriptElement) || target.type !== "module") return;
+        const src = String(target.src || "");
+        if (!src.includes("/react/assets/")) return;
+        try {
+          if (sessionStorage.getItem(recoveryKey) === "1") return;
+          sessionStorage.setItem(recoveryKey, "1");
+        } catch {}
+        const url = new URL(location.href);
+        url.searchParams.set("__react_reload", String(Date.now()));
+        location.replace(url.toString());
+      }, true);
+    })();
+  </script>
+  <script type="module" crossorigin src="/react/assets/index-Dclizvbl.js"></script>
+  <link rel="modulepreload" crossorigin href="/react/assets/rolldown-runtime-CbXtAM7H.js">
+  <link rel="modulepreload" crossorigin href="/react/assets/react-vendor-BcSqwNtZ.js">
+  <link rel="modulepreload" crossorigin href="/react/assets/firebase-J1xTQvXy.js">
 </head>
 <body>
-  <header class="app-header"><a class="brand" href="/"><span class="brand-mark">PG</span> PENGUIN</a></header>
-  <main class="container">
-    <article class="card legal-card">
-      <h1 class="legal-title"><i class="bi bi-shield-lock" aria-hidden="true"></i><span>นโยบายความเป็นส่วนตัว</span></h1>
-      <p class="legal-updated"><i class="bi bi-calendar-check" aria-hidden="true"></i><span>ปรับปรุงล่าสุด: 30 มิถุนายน 2026</span></p>
-      <p>PENGUIN เป็นระบบสั่งอาหารและจัดส่งออนไลน์ เราให้ความสำคัญกับข้อมูลส่วนบุคคลของลูกค้าและพนักงานร้านค้า</p>
-      <section class="legal-section">
-        <h2><i class="bi bi-database-lock" aria-hidden="true"></i><span>ข้อมูลที่เราเก็บ</span></h2>
-        <p>เมื่อคุณเข้าสู่ระบบด้วย Google เราอาจได้รับชื่อ อีเมล รูปโปรไฟล์ และรหัสบัญชีจาก Google นอกจากนี้ ระบบอาจเก็บเบอร์โทรศัพท์ ที่อยู่จัดส่ง รายการสั่งซื้อ และข้อมูลการชำระเงินที่จำเป็นต่อการให้บริการ โดยระบบไม่รับรหัสผ่าน Google ของคุณ</p>
-      </section>
-      <section class="legal-section">
-        <h2><i class="bi bi-clipboard-check" aria-hidden="true"></i><span>วัตถุประสงค์การใช้ข้อมูล</span></h2>
-        <p>เราใช้ข้อมูลเพื่อยืนยันตัวตน บันทึกโปรไฟล์และที่อยู่ตามที่คุณร้องขอ ดำเนินคำสั่งซื้อ จัดส่งอาหาร ให้บริการลูกค้า ป้องกันการทุจริต และรักษาความปลอดภัยของระบบ</p>
-      </section>
-      <section class="legal-section">
-        <h2><i class="bi bi-safe" aria-hidden="true"></i><span>การเปิดเผยและการเก็บรักษา</span></h2>
-        <p>ข้อมูลคำสั่งซื้อจะเปิดเผยแก่ร้านค้าและผู้ให้บริการที่จำเป็นต่อการดำเนินงานเท่านั้น เราไม่ขายข้อมูลส่วนบุคคล และเก็บข้อมูลเท่าที่จำเป็นต่อบริการ หน้าที่ตามกฎหมาย และการรักษาความปลอดภัย</p>
-      </section>
-      <section class="legal-section">
-        <h2><i class="bi bi-envelope-check" aria-hidden="true"></i><span>สิทธิ์และการติดต่อ</span></h2>
-        <p>คุณสามารถขอเข้าถึง แก้ไข หรือลบข้อมูลของคุณ รวมถึงยกเลิกการเชื่อมต่อบัญชี Google ได้โดยติดต่อฝ่ายสนับสนุน</p>
-      </section>
-      <nav class="legal-actions" aria-label="ลิงก์ที่เกี่ยวข้อง">
-        <a href="mailto:sripleng.natchanon@gmail.com"><i class="bi bi-envelope" aria-hidden="true"></i><span>ติดต่อฝ่ายสนับสนุน</span></a>
-        <a href="/"><i class="bi bi-house-door" aria-hidden="true"></i><span>กลับหน้าแรก</span></a>
-        <a href="/terms"><i class="bi bi-file-earmark-text" aria-hidden="true"></i><span>ข้อกำหนดการใช้งาน</span></a>
-      </nav>
-    </article>
-  </main>
-  <script type="module" src="/assets/js/platform-branding-runtime.js?v=20261005-130"></script>
+  <div id="root">
+    <div class="page-ready-overlay" id="pageReadyOverlay" role="status" aria-live="polite" aria-busy="true" aria-hidden="false">
+      <div class="page-ready-simple" aria-labelledby="pageReadyTitle">
+        <span class="page-ready-spinner" aria-hidden="true"></span>
+        <div class="page-ready-copy">
+          <h2 id="pageReadyTitle">กำลังโหลดข้อมูล...</h2>
+          <p>กรุณารอสักครู่....</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

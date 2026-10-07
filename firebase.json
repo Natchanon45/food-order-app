@@ -615,35 +615,35 @@
       },
       {
         "source": "/delivery/success",
-        "destination": "/delivery/success/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/delivery/success/**",
-        "destination": "/delivery/success/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/s/*/react/delivery/success",
-        "destination": "/delivery/success/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/s/*/react/delivery/success/**",
-        "destination": "/delivery/success/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/s/*/react/delivery",
-        "destination": "/delivery/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/s/*/react/delivery/**",
-        "destination": "/delivery/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/s/*/react/takeaway",
-        "destination": "/takeaway/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/s/*/react/takeaway/**",
-        "destination": "/takeaway/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/s/*/react/order",
@@ -655,35 +655,35 @@
       },
       {
         "source": "/s/*/delivery/success",
-        "destination": "/delivery/success/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/s/*/delivery/success/**",
-        "destination": "/delivery/success/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/s/*/delivery",
-        "destination": "/delivery/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/s/*/delivery/**",
-        "destination": "/delivery/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/s/*/takeaway",
-        "destination": "/takeaway/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/s/*/takeaway/**",
-        "destination": "/takeaway/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/takeaway",
-        "destination": "/takeaway/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/takeaway/**",
-        "destination": "/takeaway/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/s/*/order",
@@ -695,35 +695,35 @@
       },
       {
         "source": "/delivery/**",
-        "destination": "/delivery/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/s/**",
-        "destination": "/delivery/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/verify/**",
-        "destination": "/verify/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/order/**",
-        "destination": "/order/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/queue/**",
-        "destination": "/queue/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/pos/login",
-        "destination": "/pos/login/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/pos/login/**",
-        "destination": "/pos/login/index.html"
+        "destination": "/react/index.html"
       },
       {
         "source": "/pos/**",
-        "destination": "/pos/index.html"
+        "destination": "/react/index.html"
       }
     ]
   },

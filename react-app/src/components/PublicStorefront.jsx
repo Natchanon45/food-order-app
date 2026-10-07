@@ -64,6 +64,7 @@ export function PublicMenuCatalog({
   menus = [], prefix, activeCategory, setActiveCategory, search, setSearch,
   page, setPage, onAdd, disabled = false, mobilePageSize = Number.MAX_SAFE_INTEGER,
   desktopPageSize = 10, extraCategory = null, extraFilter = null, extraLabel = "",
+  favoriteIds = null, onToggleFavorite = null, favoriteAddLabel = "", favoriteRemoveLabel = "",
 }) {
   const { t, formatNumber } = useI18n();
   const mobile = useMobileStorefront();
@@ -194,6 +195,15 @@ export function PublicMenuCatalog({
               <img src={item.image || "/assets/images/default-food.svg"} alt={item.name || ""}
                 data-image-position-x="50" data-image-position-y={clamp(item.imagePositionY)}
                 style={{ objectPosition: "50% " + clamp(item.imagePositionY) + "%" }} />
+              {onToggleFavorite ? (() => {
+                const favorite = favoriteIds instanceof Set ? favoriteIds.has(String(item.id)) : false;
+                const labelText = favorite ? favoriteRemoveLabel : favoriteAddLabel;
+                return <button type="button" className={"menu-favorite-button" + (favorite ? " is-favorite" : "")}
+                  aria-pressed={favorite} aria-label={labelText} title={labelText}
+                  onClick={event => { event.stopPropagation(); onToggleFavorite(item); }}>
+                  <i className={"bi bi-heart" + (favorite ? "-fill" : "")} aria-hidden="true"></i>
+                </button>;
+              })() : null}
             </div>
             <div className="menu-name">{item.name}</div>
             <div className="menu-category">{label(String(item.category || other))}</div>

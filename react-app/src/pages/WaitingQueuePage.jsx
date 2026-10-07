@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { resetFormValidationUi } from "@/components/FormValidationUi";
@@ -532,7 +532,7 @@ export function WaitingQueuePage() {
       <header className="app-header waiting-app-header">
         <div className="waiting-header-leading">
           <div className="brand"><span className="brand-mark">PG</span><i className="bi bi-person-standing app-icon" aria-hidden="true"></i><span>{wq("header.title")}</span></div>
-          <a className="btn btn-dark btn-sm waiting-home-link" href="/?from=waiting-queue" aria-label={wq("header.back")} title={wq("header.back")}><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{wq("header.back")}</span></a>
+          <Link className="btn btn-dark btn-sm waiting-home-link" to="/" aria-label={wq("header.back")} title={wq("header.back")}><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{wq("header.back")}</span></Link>
         </div>
         <LocaleSwitcher />
       </header>

@@ -331,9 +331,9 @@ assert(
   "React Home Order / Delivery header must stay one-line with a two-line-capable description and no Waiting Queue main card"
 );
 assert(
-  waitingQueuePage.includes('<a className="btn btn-dark btn-sm waiting-home-link" href="/?from=waiting-queue"')
-  &&!waitingQueuePage.includes('<Link className="btn btn-dark btn-sm waiting-home-link"'),
-  "Waiting Queue Back must full-navigate with a fresh cache key to canonical static Home instead of rendering the alternate React Home route"
+  waitingQueuePage.includes('import { Link, Navigate } from "react-router-dom";')
+  &&waitingQueuePage.includes('<Link className="btn btn-dark btn-sm waiting-home-link" to="/"'),
+  "Waiting Queue Back must use the canonical React Home route"
 );
 assert(
   waitingQueueCore.includes('rows => callback(rows.filter(row => normalizeString(row.queueDate) === toDateKey()))')
@@ -395,83 +395,81 @@ const developerPanel=read("react-app/src/components/AppDeveloperPanel.jsx");
 const developerPanelCss=read("react-app/public/parity/css/app-version-badge-runtime.css");
 const releaseConfig=read("react-app/src/config/release.js");
 const parityFooter=read("react-app/src/components/ParityFooter.jsx");
-const staticI18n=read("public/assets/js/i18n.js");
-const staticUi=read("public/assets/js/ui.js");
-const staticHome=read("public/index.html");
-const staticPrivacyEntry=read("public/privacy/index.html");
-const staticTermsEntry=read("public/terms/index.html");
-const staticVerifyEntry=read("public/verify/index.html");
-const staticVerifyRuntime=read("public/assets/js/verify.js");
-const staticVerifyCss=read("public/assets/css/verify-page.css");
-const staticBrandingRuntime=read("public/assets/js/platform-branding-runtime.js");
-const staticHomeDashboardCss=read("public/assets/css/home-dashboard.css");
-const staticPublicLandingRefreshCss=read("public/assets/css/public-landing-refresh.css");
 const registerPageCss=read("react-app/public/parity/css/register-page.css");
 const firebaseHostingConfig=read("firebase.json");
-const staticHomeSession=read("public/assets/js/home-session-fa.js");
-assert(
-  staticHome.includes('class="dashboard-section dashboard-section-order-delivery"')
-  &&!staticHome.includes('waiting-queue-home-card')
-  &&!staticHome.includes('waiting-queue-entry.js')
-  &&staticHomeDashboardCss.includes(".dashboard-section-order-delivery .dashboard-section-head")
-  &&staticHomeDashboardCss.includes("grid-template-columns: max-content minmax(0, 1fr);")
-  &&staticHomeDashboardCss.includes("white-space: nowrap;")
-  &&staticHomeDashboardCss.includes("max-width: 210px;")
-  &&staticHome.includes('get("from") === "waiting-queue"')
-  &&staticHome.includes('history.replaceState(null, "", "/")')
-  &&firebaseHostingConfig.includes('"source": "/"')
-  &&firebaseHostingConfig.includes('"source": "/index.html"')
-  &&firebaseHostingConfig.includes('"value": "no-cache, no-store, must-revalidate"'),
-  "Canonical static Home must keep the requested layout, omit Waiting Queue, and never remain stale behind Hosting cache"
-);
-assert(
-  staticHome.includes('/assets/js/platform-branding-runtime.js?v=20261005-130')
-  &&staticBrandingRuntime.includes('doc(db, "platformSettings", "branding")')
-  &&staticBrandingRuntime.includes("onAuthStateChanged(auth")
-  &&staticBrandingRuntime.includes('applyBrandImage(".brand-mark", appIconUrl || logoUrl')
-  &&staticBrandingRuntime.includes("width:42px!important")
-  &&staticBrandingRuntime.includes("object-fit:contain!important"),
-  "Canonical static Home must consume the shared Super Admin Branding App Icon instead of remaining PG-only"
-);
-const staticAuthService=read("public/assets/js/auth-service.js");
-const staticHomeTranslations=read("public/assets/js/home-translations.js");
 const hostingRc=read(".firebaserc");
 const reactFirebaseClient=read("react-app/src/firebase/client.js");
 const staticFirebaseConfig=read("public/assets/js/firebase-config.js");
 const messagingServiceWorker=read("public/firebase-messaging-sw.js");
 const publicSignupFunction=read("functions/public-signup.js");
-const staticDeliveryEntry=read("public/delivery/index.html");
-const staticDeliverySuccessEntry=read("public/delivery/success/index.html");
-const staticDeliverySuccessRuntime=read("public/assets/js/delivery-success.js");
+const fullReactAppRoutes=read("react-app/src/app/App.jsx");
+const deliveryPage=read("react-app/src/pages/DeliveryPage.jsx");
+const takeawayPage=read("react-app/src/pages/TakeawayPage.jsx");
+const deliverySuccessPage=read("react-app/src/pages/DeliverySuccessPage.jsx");
+const verifyPage=read("react-app/src/pages/VerifyPage.jsx");
+const legalPage=read("react-app/src/pages/LegalPage.jsx");
+const customerDeliveryData=read("react-app/src/data/customerDeliveryData.js");
+const deliveryLocationPicker=read("react-app/src/components/DeliveryLocationPicker.jsx");
+const publicStorefrontData=read("react-app/src/data/publicStorefrontData.js");
+const fullReactEntrypointSync=read("tools/sync-react-legacy-entrypoints.py");
+const firebaseHosting=JSON.parse(firebaseHostingConfig);
+const hostingRewrites=Array.isArray(firebaseHosting?.hosting?.rewrites) ? firebaseHosting.hosting.rewrites : [];
+
 assert(
-  [staticPrivacyEntry, staticTermsEntry, staticDeliveryEntry].every(source=>source.includes('/assets/js/platform-branding-runtime.js?v=20261005-130')),
-  "Public Privacy, Terms, and Delivery headers must consume the shared Super Admin Branding runtime instead of staying PG-only"
+  fullReactAppRoutes.includes('path="/" element={<HomePage />}')
+  &&homePage.includes('className="dashboard-section dashboard-section-order-delivery"')
+  &&!homePage.includes('cardKey="waiting_queue"'),
+  "Canonical Home must be the React HomePage"
 );
+
+for(const target of [
+  "public/index.html",
+  "public/order/index.html",
+  "public/privacy/index.html",
+  "public/verify/index.html",
+  "public/terms/index.html",
+  "public/queue/index.html",
+  "public/delivery/index.html",
+  "public/delivery/success/index.html",
+  "public/takeaway/index.html",
+  "public/pos/login/index.html",
+  "public/pos/forbidden/index.html",
+  "public/pos/catalog/index.html",
+  "public/pos/customer-display/index.html",
+  "public/pos/receipt/index.html",
+  "public/pos/tax-invoice/index.html",
+]){
+  assert(fullReactEntrypointSync.includes('"' + target + '"'), "Full React postbuild entrypoint sync missing: " + target);
+}
+
+for(const source of [
+  "/delivery/success","/delivery/success/**",
+  "/s/*/react/delivery/success","/s/*/react/delivery","/s/*/react/takeaway","/s/*/react/order",
+  "/s/*/delivery/success","/s/*/delivery","/s/*/takeaway","/s/*/order",
+  "/takeaway","/takeaway/**","/delivery/**","/s/**","/verify/**","/order/**","/queue/**",
+  "/pos/login","/pos/login/**","/pos/**",
+]){
+  const row=hostingRewrites.find(item=>item.source===source);
+  assert(row?.destination==="/react/index.html", "Frontend Hosting rewrite must target the React shell: " + source);
+}
+
 assert(
-  staticVerifyEntry.includes('class="verify-page"')
-  &&staticVerifyEntry.includes('/assets/css/verify-page.css?v=20261005-133')
-  &&staticVerifyEntry.includes('/assets/js/platform-branding-runtime.js?v=20261005-133')
-  &&staticVerifyEntry.includes('/assets/js/verify.js?v=20261005-133')
-  &&staticVerifyEntry.includes('<span class="brand-mark">PG</span>')
-  &&staticVerifyRuntime.includes("tenantContext?.name")
-  &&staticVerifyRuntime.includes("settings?.orderDeliveryShopName")
-  &&staticVerifyRuntime.includes('class="verify-summary-grid"')
-  &&staticVerifyRuntime.includes('class="verify-detail-panel"')
-  &&staticVerifyRuntime.includes('class="verify-items-panel"')
-  &&staticVerifyCss.includes(".verify-result-card")
-  &&staticVerifyCss.includes(".verify-metric-total")
-  &&staticVerifyCss.includes("linear-gradient(120deg,#0a392c")
-  &&staticVerifyCss.includes("@media(max-width:480px)"),
-  "Public Verify must use shared Branding, tenant-side store naming, and the responsive visual verification-card design"
+  fullReactAppRoutes.includes('path="/privacy" element={<LegalPage type="privacy" />}')
+  &&fullReactAppRoutes.includes('path="/terms" element={<LegalPage type="terms" />}')
+  &&legalPage.includes('privacy:')
+  &&legalPage.includes('terms:')
+  &&read("react-app/public/parity/css/legal-react.css").includes(".legal-react-page"),
+  "Privacy and Terms must be native React legal pages"
 );
+
 assert(
-  staticHome.includes('id="homePremiumAnnualPromo" hidden aria-hidden="true"')
-  &&staticHome.includes('/assets/css/public-landing-refresh.css?v=20261005-130')
-  &&staticPublicLandingRefreshCss.includes("#homePremiumAnnualPromo")
-  &&staticPublicLandingRefreshCss.includes(".public-feature-card:nth-child(1)")
-  &&staticPublicLandingRefreshCss.includes("linear-gradient(118deg,#0a3c2c")
-  &&staticPublicLandingRefreshCss.includes("overflow-x:clip"),
-  "Unauthenticated Home must hide the annual promo block and keep the colorful public landing refresh"
+  fullReactAppRoutes.includes('path="/verify" element={<VerifyPage />}')
+  &&verifyPage.includes("getPublicOrder")
+  &&verifyPage.includes('className="verify-summary-grid"')
+  &&verifyPage.includes('className="verify-detail-panel"')
+  &&verifyPage.includes('className="verify-items-panel"')
+  &&read("react-app/public/parity/css/verify-page.css").includes(".verify-result-card"),
+  "Public Verify must be a native React verification page"
 );
 assert(
   registerPageCss.includes(".register-header>.btn")
@@ -481,10 +479,6 @@ assert(
   &&registerPageCss.includes("text-decoration-thickness:3px"),
   "Register must keep header action spacing and the red strike-through on the original annual price"
 );
-const staticDeliveryAddresses=read("public/assets/js/delivery-addresses.js");
-const staticCustomerProfileService=read("public/assets/js/customer-profile-service.js");
-const publicFirebaseContext=read("public/assets/js/public-firebase-context.js");
-const publicStorefrontService=read("public/assets/js/public-storefront-service.js");
 const publicOrderPage=read("react-app/src/pages/PublicOrderPage.jsx");
 const publicStorefrontComponent=read("react-app/src/components/PublicStorefront.jsx");
 const posRefreshCss=read("react-app/public/parity/css/pos-refresh.css");
@@ -541,7 +535,6 @@ assert(
 for(const locale of ["th","en","my","lo","km"]){
   assert(dict[locale]?.order?.cart?.decrease && dict[locale]?.order?.cart?.increase, `Table Order quantity accessibility labels missing: ${locale}`);
 }
-const staticDataService=read("public/assets/js/data-service.js");
 const deliveryCustomerAuthFunction=read("functions/delivery-customer-auth.js");
 const firestoreRules=read("firestore.rules");
 const storageRules=read("storage.rules");
@@ -550,12 +543,6 @@ assert(
   &&storageRules.includes("allow read: if hasRole([\'super_admin\']) || tenantProductAdmin(tenantId);"),
   "Super Admin must be able to read tenant Lalamove wallet top-up slips for central review"
 );
-const staticDeliveryStaffGuard=read("public/assets/js/delivery-staff-guard.js");
-const staticDeliveryAddressesCss=read("public/assets/css/delivery-addresses.css");
-const staticDeliveryRuntime=read("public/assets/js/delivery.js");
-const staticDeliveryPagination=read("public/assets/js/dom-menu-pagination.js");
-const publicI18nBootstrap=read("public/assets/js/public-i18n-bootstrap.js");
-const publicTranslations=read("public/assets/js/public-translations.js");
 const paritySync=read("tools/sync-react-parity-assets.py");
 const cashierPage=read("react-app/src/pages/CashierPage.jsx");
 const cashierRefreshCss=read("react-app/public/parity/css/cashier-refresh.css");
@@ -594,47 +581,24 @@ assert(
 assert(functionsIndex.includes('exports.lalamoveWebhook = lalamoveWebhook.lalamoveWebhook'),"Lalamove Hosting webhook must stay exported from Functions index");
 assert(
   functionsIndex.includes("exports.quotePublicLalamoveDelivery = lalamoveDispatch.quotePublicLalamoveDelivery")
-  &&publicStorefrontService.includes('httpsCallable(customerFunctions, "quotePublicLalamoveDelivery")')
-  &&publicStorefrontService.includes("getLalamoveQuotation")
-  &&staticDeliveryRuntime.includes("function usesLalamove()")
-  &&staticDeliveryRuntime.includes("dataService.getLalamoveQuotation")
-  &&staticDeliveryRuntime.includes('deliveryProvider: usesLalamove() ? "lalamove" : "self"')
-  &&staticDeliveryRuntime.includes('"lalamove_quotation"')
-  &&staticDeliveryRuntime.includes("lalamoveDispatchQuote"),
-  "Public Delivery must use a live Lalamove quotation when the tenant selects Lalamove"
+  &&deliveryPage.includes('httpsCallable(functions, "quotePublicLalamoveDelivery")')
+  &&deliveryPage.includes('httpsCallable(functions, "computeDeliveryRoute")')
+  &&deliveryPage.includes('deliveryProvider: usesLalamove ? "lalamove" : "self"')
+  &&deliveryPage.includes('"lalamove_quotation"')
+  &&deliveryPage.includes("lalamoveDispatchQuote")
+  &&deliveryPage.includes('throw new Error("LALAMOVE_COD_UNAVAILABLE")'),
+  "React Public Delivery must preserve live Lalamove quotation, Google route, dispatch quote, and COD safety"
 );
 assert(
-  staticDeliveryEntry.includes('class="card delivery-account-card"')
-  &&staticDeliveryEntry.includes('id="customerLogoutButton"')
-  &&staticDeliveryEntry.includes('bi bi-box-arrow-right app-icon')
-  &&staticDeliveryAddresses.includes("customerLogoutButton.innerHTML = '<i class=\"bi bi-box-arrow-right app-icon\"")
-  &&staticDeliveryAddresses.includes("customerLogoutButton.setAttribute('aria-label', logoutLabel)")
-  &&!staticDeliveryAddresses.includes("currentStaff")
-  &&!staticDeliveryAddresses.includes("staffSignedIn")
-  &&staticDeliveryAddresses.includes("const showGoogle = !signedIn")
-  &&publicFirebaseContext.includes('CUSTOMER_APP_NAME = "penguin-storefront-customer-v2"')
-  &&publicFirebaseContext.includes('CUSTOMER_BROKER_APP_NAME = "penguin-google-customer-broker-v1"')
-  &&publicFirebaseContext.includes("customerAuth = getAuth(customerApp)")
-  &&publicFirebaseContext.includes("customerDb = getFirestore(customerApp)")
-  &&publicFirebaseContext.includes("customerStorage = getStorage(customerApp)")
-  &&publicFirebaseContext.includes('customerFunctions = getFunctions(customerApp, "asia-southeast1")')
-  &&publicFirebaseContext.includes("customerBrokerAuth = getAuth(customerBrokerApp)")
-  &&publicFirebaseContext.includes("customerBrokerFunctions = getFunctions(")
-  &&staticCustomerProfileService.includes("signInWithPopup(")
-  &&staticCustomerProfileService.includes("customerBrokerAuth")
-  &&staticCustomerProfileService.includes("customerBrokerFunctions")
-  &&!staticCustomerProfileService.includes("signInWithPopup(customerAuth")
-  &&staticCustomerProfileService.includes("createDeliveryCustomerSession")
-  &&staticCustomerProfileService.includes("signInWithCustomToken(customerAuth, customToken)")
-  &&staticCustomerProfileService.includes("claims?.customerContext === true")
-  &&staticCustomerProfileService.includes('user?.uid?.startsWith("cust_")')
-  &&staticCustomerProfileService.includes("signOut(customerAuth)")
-  &&staticCustomerProfileService.includes("customerProfileDoc(user.uid)")
-  &&!staticCustomerProfileService.includes("loadGoogleCustomerLoginSetting")
-  &&!staticCustomerProfileService.includes("getStaffSession")
-  &&publicStorefrontService.includes("customerStorage")
-  &&staticDataService.includes("const runtimeDb = publicCustomerRoute ? customerDb : db")
-  &&staticDataService.includes("const runtimeStorage = publicCustomerRoute ? customerStorage : storage")
+  customerDeliveryData.includes('CUSTOMER_APP_NAME = "penguin-storefront-customer-v2"')
+  &&customerDeliveryData.includes('BROKER_APP_NAME = "penguin-google-customer-broker-v1"')
+  &&customerDeliveryData.includes("signInWithPopup(brokerAuth")
+  &&customerDeliveryData.includes('"createDeliveryCustomerSession"')
+  &&customerDeliveryData.includes("signInWithCustomToken(customerAuth, token)")
+  &&customerDeliveryData.includes("claims.customerContext === true")
+  &&customerDeliveryData.includes('user?.uid?.startsWith("cust_")')
+  &&customerDeliveryData.includes("signOut(customerAuth)")
+  &&customerDeliveryData.includes('"customerProfiles"')
   &&deliveryCustomerAuthFunction.includes('const CUSTOMER_UID_PREFIX = "cust_"')
   &&deliveryCustomerAuthFunction.includes('sign_in_provider === "google.com"')
   &&deliveryCustomerAuthFunction.includes("customerContext: true")
@@ -642,25 +606,27 @@ assert(
   &&functionsIndex.includes("exports.createDeliveryCustomerSession = deliveryCustomerAuth.createDeliveryCustomerSession")
   &&firestoreRules.includes("function customerContext()")
   &&firestoreRules.includes("request.auth.token.get('customerContext', false) == true")
-  &&firestoreRules.includes("function signedIn() { return authenticated() && !customerContext(); }")
   &&storageRules.includes("function customerContext()")
-  &&storageRules.includes("return authenticated() && !customerContext();")
-  &&staticDeliveryStaffGuard.includes("intentionally isolated from staff auth")
-  &&!staticDeliveryStaffGuard.includes("googleLoginButton.hidden = true")
-  &&staticDeliveryEntry.includes('class="delivery-account-user-row"')
-  &&staticDeliveryAddressesCss.includes(".delivery-account-user-row {")
-  &&staticDeliveryAddressesCss.includes("align-items: center;")
-  &&staticDeliveryAddressesCss.includes("justify-content: space-between;")
-  &&staticDeliveryAddressesCss.includes("#customerAccount:not([hidden])")
-  &&staticDeliveryAddressesCss.includes("#customerLogoutButton")
-  &&staticDeliveryAddressesCss.includes("position: static;")
-  &&staticDeliveryAddressesCss.includes("align-self: center;")
-  &&staticDeliveryAddressesCss.includes("flex: 0 0 30px;")
-  &&!staticDeliveryAddressesCss.includes("top: 10px;")
-  &&!staticDeliveryAddressesCss.includes("right: 10px;")
-  &&staticDeliveryAddressesCss.includes("background: transparent !important;")
-  &&staticDeliveryAddressesCss.includes("border: 0 !important;"),
-  "Delivery customer context must be isolated from staff identity, privileges, data, storage, and Functions"
+  &&storageRules.includes("return authenticated() && !customerContext();"),
+  "React Delivery customer context must remain isolated from staff identity and privileges"
+);
+assert(
+  deliveryPage.includes('className="card delivery-account-card"')
+  &&deliveryPage.includes('className="delivery-account-user-row"')
+  &&deliveryPage.includes("loginDeliveryCustomerWithGoogle")
+  &&deliveryPage.includes("logoutDeliveryCustomer")
+  &&deliveryPage.includes("getDeliveryCustomerProfile")
+  &&deliveryPage.includes("saveDeliveryCustomerProfile")
+  &&deliveryPage.includes("getDeliveryCustomerFavorites")
+  &&deliveryPage.includes("saveDeliveryCustomerFavorites")
+  &&deliveryLocationPicker.includes('"getDeliveryGoogleMapsConfig"')
+  &&deliveryLocationPicker.includes("navigator.geolocation.getCurrentPosition")
+  &&deliveryLocationPicker.includes("marker.addListener")
+  &&deliveryPage.includes("uploadPublicPaymentSlip")
+  &&deliveryPage.includes("createPublicDeliveryOrder")
+  &&publicStorefrontData.includes("export async function uploadPublicPaymentSlip")
+  &&publicStorefrontData.includes("export async function createPublicDeliveryOrder"),
+  "React Delivery must preserve customer account, address/favorite, map, payment-slip, and order-submit capabilities"
 );
 assert(
   cashierPage.includes('className="cashier-hero-title-row"')
@@ -696,12 +662,12 @@ assert(
   &&developerPanel.includes("REACT_RELEASE.build"),
   "React release identity must stay centralized across footer/developer surfaces"
 );
-assert(staticI18n.includes("globalThis.APP_I18N_DICTIONARIES")&&staticI18n.includes("activeDictionaries()")&&staticI18n.includes("app:i18n-configured"),"Static i18n must share dictionaries across cache-versioned module instances and publish configuration");
-assert(staticUi.includes("localizedFooterText")&&staticUi.includes("data-static-app-footer")&&staticUi.includes("app:i18n-configured")&&staticUi.includes("footerFallback"),"Static footer must never expose raw translation keys while i18n is still configuring");
-assert(staticUi.includes('./i18n.js?v=20261001-002')&&staticHomeSession.includes('./i18n.js?v=20261001-002')&&staticHome.includes('/assets/js/ui.js?v=20261001-002')&&staticHome.includes('/assets/js/home-session-fa.js?v=20261001-002'),"Static Home must keep one cache identity for shared i18n modules");
-assert(["th","en","my","lo","km"].every(locale=>staticHome.includes(`data-locale-option="${locale}"`))&&["\"th\"","\"en\"","\"my\"","\"lo\"","\"km\""].every(locale=>staticHomeTranslations.includes(locale)),"Static Home language menu and translation payload must include all five supported locales");
-assert(staticAuthService.includes('data-user-menu-key="${item.key}"')&&staticAuthService.includes('key: "table_qr"')&&staticAuthService.includes('key: "admin_users"'),"Static user menu must expose semantic keys so menu icon colors match React");
-assert(staticHome.includes("data-home-session-ready")&&staticHomeSession.includes("finishHomeReady")&&staticHomeSession.includes("redirecting = true"),"Static Home must cover auth/session bootstrap with the loading overlay");
+const reactI18nProvider=read("react-app/src/i18n/I18nProvider.jsx");
+assert(
+  reactI18nProvider.includes('const SUPPORTED = ["th", "en", "my", "lo", "km"]')
+  &&["th","en","my","lo","km"].every(locale=>dict[locale]),
+  "React i18n must support all five production locales"
+);
 assert(read("react-app/src/pages/LoginPage.jsx").includes("const stylesReady = useParityPage")&&read("react-app/src/pages/LoginPage.jsx").includes("if (!stylesReady)")&&read("react-app/src/pages/LoginPage.jsx").includes("<PageReadyOverlay"),"React Login must keep the loading overlay until page CSS is ready");
 const cashierReceiptPage=read("react-app/src/pages/CashierReceiptPage.jsx");
 assert(cashierReceiptPage.includes('bi bi-arrow-left app-icon')&&cashierReceiptPage.includes('bi bi-check-lg app-icon')&&cashierReceiptPage.includes('id="printButton"'),"Cashier Receipt back/print action icons must match Laravel MASTER");
@@ -710,42 +676,38 @@ const generatedBuildContract=read("tools/generated-react-build-contract.mjs");
 assert(packageJson.includes('"verify:react-build": "node tools/generated-react-build-contract.mjs"')&&packageJson.includes("npm run verify:react-build"),"React postbuild must verify generated deploy artifacts");
 assert(generatedBuildContract.includes("Cashier Receipt generated bundle is missing the Back arrow icon")&&generatedBuildContract.includes("Cashier Receipt generated bundle is missing the Print check icon")&&generatedBuildContract.includes("is stale: expected release Build"),"Generated React build contract must guard release identity and Receipt action icons");
 assert(read("react-app/src/components/UserMenu.jsx").includes("loggingOut")&&read("react-app/src/components/UserMenu.jsx").includes("<PageReadyOverlay"),"React logout must show a blocking loading overlay before redirecting to Login");
+
 assert(
-  staticDeliveryEntry.includes('id="deliveryHeroStoreName"')
-  &&!staticDeliveryEntry.includes('<span>PENGUIN</span></h1>')
-  &&!staticDeliveryEntry.includes('<span>KINJAI</span></h1>')
-  &&staticDeliveryEntry.includes('/assets/js/delivery.js?v=20261006-144')
-  &&staticDeliveryRuntime.includes("renderDeliveryStoreHero")
-  &&staticDeliveryRuntime.includes("dataService.getOrderDeliveryShopName(settings)")
-  &&publicStorefrontService.includes("getOrderDeliveryShopName(settings = {})")
-  &&publicStorefrontService.includes('return String(settings?.shopName || "").trim();')
-  &&!publicStorefrontService.includes('tenant?.name\n      || settings?.orderDeliveryShopName\n      || settings?.shopName'),
-  "Delivery customer Hero must use settings/store.shopName only and must not fall back to the Super Admin tenant name"
+  fullReactAppRoutes.includes('path="/s/:slug/delivery" element={<DeliveryPage />}')
+  &&fullReactAppRoutes.includes('path="/s/:slug/takeaway" element={<TakeawayPage />}')
+  &&fullReactAppRoutes.includes('path="/s/:slug/delivery/success" element={<DeliverySuccessPage />}')
+  &&deliveryPage.includes("loadPublicStorefront")
+  &&deliveryPage.includes("settings.orderDeliveryShopName || settings.shopName")
+  &&takeawayPage.includes("createPublicTakeawayOrder")
+  &&deliverySuccessPage.includes("watchPublicOrder")
+  &&deliverySuccessPage.includes("qrDataUrl")
+  &&deliverySuccessPage.includes('"/verify?tenant="'),
+  "Delivery, Takeaway, and Delivery Success canonical storefronts must be native React routes"
 );
 assert(
-  staticDeliverySuccessEntry.includes('/assets/js/platform-branding-runtime.js?v=20261005-131')
-  &&staticDeliverySuccessEntry.includes('/assets/js/delivery-success.js?v=20261005-136')
-  &&staticDeliverySuccessRuntime.includes("./public-storefront-service.js?v=20261005-136")
-  &&staticDeliverySuccessRuntime.includes('dataService.getOrderDeliveryShopName(settings)')
-  &&staticDeliverySuccessEntry.includes('<span class="brand-mark">PG</span>'),
-  "Delivery Success must apply shared Super Admin Branding and use settings/store.shopName through the same storefront resolver"
+  deliveryPage.includes('extraCategory="__favorites__"')
+  &&deliveryPage.includes("quotePublicLalamoveDelivery")
+  &&deliveryPage.includes("computeDeliveryRoute")
+  &&deliveryPage.includes("generatePromptPayPayload")
+  &&deliveryPage.includes("paymentLocked")
+  &&deliveryPage.includes("payment-slip-dropzone")
+  &&deliveryPage.includes("deliveryFreeGiftActive")
+  &&deliveryPage.includes("freeShippingApplied")
+  &&deliveryPage.includes("payload.lalamoveCodEnabled = cod;")
+  &&deliveryPage.includes("payload.lalamoveCodAmount = cod ? total : 0;"),
+  "React Delivery must retain favorites, routing, PromptPay lock/slip, promotions, and Lalamove COD"
 );
-assert(
-  !staticDeliveryPagination.includes("common.pagination.")
-  &&staticDeliveryPagination.includes('"delivery.checkout.menu.previous_page"')
-  &&staticDeliveryPagination.includes('"delivery.checkout.menu.next_page"')
-  &&staticDeliveryPagination.includes('"delivery.checkout.menu.page_aria"')
-  &&staticDeliveryPagination.includes('"delivery.checkout.menu.page_summary"')
-  &&staticDeliveryPagination.includes("value === key ? fallback : value")
-  &&(publicTranslations.match(/"page_summary"\s*:/g)||[]).length>=10
-  &&staticDeliveryEntry.includes('/assets/js/public-i18n-bootstrap.js?v=20261002-007')
-  &&staticDeliveryEntry.includes('/assets/js/dom-menu-pagination.js?v=20261002-001')
-  &&publicI18nBootstrap.includes('./public-translations.js?v=20261002-007'),
-  "Delivery pagination must use Delivery-localized copy with a fallback and must never expose raw common.pagination keys"
-);
-for(const key of ["calculating","fee_rule_missing","out_of_range","ready_with_limit","route_failed","store_location_missing","unavailable"]){
-  const count=(publicTranslations.match(new RegExp(`"${key}"\\s*:`,"g"))||[]).length;
-  assert(count===5,`Delivery distance translation must exist in all five public locales: ${key}`);
+for(const locale of ["th","en","my","lo","km"]){
+  const delivery=dict[locale]?.delivery?.checkout;
+  assert(delivery?.menu?.page_summary, "React Delivery page summary translation missing: " + locale);
+  assert(delivery?.distance?.calculating && delivery?.distance?.route_failed, "React Delivery route translations missing: " + locale);
+  assert(delivery?.cart?.increase && delivery?.cart?.decrease, "React Delivery cart quantity translations missing: " + locale);
+  assert(dict[locale]?.takeaway?.cart?.increase && dict[locale]?.takeaway?.cart?.decrease, "React Takeaway cart quantity translations missing: " + locale);
 }
 assert(posPage.includes('import { AppDeveloperPanel }')&&posPage.includes('"app-version-badge-runtime.css"')&&posPage.includes("<AppDeveloperPanel />"),"React POS floating Developer Panel must be mounted");
 assert(developerPanel.includes("data-app-version-badge")&&developerPanel.includes("data-app-dev-panel")&&developerPanel.includes("Retail Cache Keys")&&developerPanel.includes("Firebase / Firestore")===false&&developerPanel.includes("REACT_RELEASE.dataService")&&developerPanel.includes("metaKey")&&developerPanel.includes('event.key === "Escape"')&&developerPanel.includes('onClick={() => setOpen(true)}\n      ></button>'),"React Developer Panel runtime diagnostics/keyboard controls/empty MASTER badge button missing");
@@ -777,7 +739,7 @@ assert(posCustomerDisplayPage.indexOf('id="customerDisplayFullscreen"')<posCusto
 assert(posCustomerDisplayPage.includes("setPaymentQrSrc(localPaymentQr)")&&posCustomerDisplayPage.includes('hidden={!paymentQrSrc || Boolean(payment?.error) || paymentQrFailed}'),"POS Customer Display must fall back to local QR and keep the QR image element for MASTER-compatible hidden-state styling");
 assert(posCustomerDisplayPage.includes('typeof value?.toMillis === "function"')&&posCustomerDisplayPage.includes('Date.parse(String(value))')&&!posCustomerDisplayPage.includes('hidden={snapshot?.status !== "paid"}'),"React POS Customer Display must normalize Firestore/string timestamps and keep the MASTER thank-you strip visible");
 assert(legacyPosCustomerDisplay.includes("import { qrDataUrl } from './local-qr.js?v=20260722-037'")&&legacyPosCustomerDisplay.includes("payment.payload")&&legacyPosCustomerDisplay.includes("qrDataUrl(payment.payload")&&legacyPosCustomerDisplay.includes("timestampMillis(snapshot.updatedAt)")&&legacyPosCustomerDisplay.includes("els.paidState.hidden = false"),"Legacy POS Customer Display must render PromptPay payload locally, normalize timestamps, and keep the MASTER thank-you strip visible");
-assert(legacyPosCustomerDisplayHtml.includes('class="total-summary"')&&legacyPosCustomerDisplayHtml.includes('retail-customer-display-responsive.css')&&legacyPosCustomerDisplayHtml.includes('retail-customer-display-qr-consistency.css')&&legacyPosCustomerDisplayHtml.includes('class="thai-qr-payment-header"')&&legacyPosCustomerDisplayHtml.includes('class="promptpay-brand"')&&legacyPosCustomerDisplayHtml.includes('class="thai-qr-center-mark"')&&!legacyPosCustomerDisplayHtml.includes('id="paidState" class="paid-state" hidden'),"Legacy POS Customer Display must keep the Laravel MASTER total-summary/Thai QR Payment frame and visible thank-you strip");
+assert(posCustomerDisplayPage.includes('className="total-summary"')&&posCustomerDisplayPage.includes('"retail-customer-display-responsive.css"')&&posCustomerDisplayPage.includes('"retail-customer-display-qr-consistency.css"')&&posCustomerDisplayPage.includes('className="thai-qr-payment-header"')&&posCustomerDisplayPage.includes('className="promptpay-brand"')&&posCustomerDisplayPage.includes('className="thai-qr-center-mark"')&&posCustomerDisplayPage.includes('id="paidState" className="paid-state"'),"React POS Customer Display must keep the Laravel MASTER total-summary/Thai QR Payment frame and visible thank-you strip");
 assert(legacyPosCustomerDisplayCss.includes(".thai-qr-payment-header")&&legacyPosCustomerDisplayCss.includes(".promptpay-brand-logo")&&legacyPosCustomerDisplayCss.includes(".thai-qr-center-mark")&&reactPosCustomerDisplayCss.includes(".thai-qr-payment-header"),"POS Customer Display Thai QR Payment frame CSS missing");
 assert(["th","en","my","lo","km"].every(locale=>legacyPosI18nBootstrap.includes(`data-locale-option="${locale}"`))&&legacyPosI18nBootstrap.includes('if (locale !== "th")')&&legacyPosTranslations.includes('"my": {')&&legacyPosTranslations.includes('"lo": {')&&legacyPosTranslations.includes('"km": {'),"Legacy POS locale switcher must expose and translate all five system locales");
 assert(!legacyPosCustomerDisplayHtml.includes('bi-arrows-fullscreen" aria-hidden="true"></i><span>')&&!legacyPosCustomerDisplay.includes("pairing-toggle-copy")&&!posCustomerDisplayPage.includes("pairing-toggle-copy"),"POS Customer Display top-right actions must be icon-only like Laravel MASTER");
@@ -923,7 +885,7 @@ assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/sale
 assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/tax-invoices/index.html"'),"React postbuild must sync canonical /pos/tax-invoices to the React shell");
 assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/returns/index.html"'),"React postbuild must sync canonical /pos/returns to the React shell");
 assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/shifts/index.html"'),"React postbuild must sync canonical /pos/shifts to the React shell");
-assert(firebaseHostingConfig.includes('"source": "/pos"')&&firebaseHostingConfig.includes('"source": "/pos/sales"')&&firebaseHostingConfig.includes('"source": "/pos/tax-invoices"')&&firebaseHostingConfig.includes('"source": "/pos/returns"')&&firebaseHostingConfig.includes('"source": "/pos/shifts"')&&firebaseHostingConfig.includes('"source": "/pos/shifts/**"')&&firebaseHostingConfig.includes('"source": "/pos/**"')&&firebaseHostingConfig.includes('"destination": "/pos/index.html"'),"Hosting must cache-bust canonical React POS routes while retaining legacy POS subroute fallback");
+assert(firebaseHostingConfig.includes('"source": "/pos"')&&firebaseHostingConfig.includes('"source": "/pos/sales"')&&firebaseHostingConfig.includes('"source": "/pos/tax-invoices"')&&firebaseHostingConfig.includes('"source": "/pos/returns"')&&firebaseHostingConfig.includes('"source": "/pos/shifts"')&&firebaseHostingConfig.includes('"source": "/pos/shifts/**"')&&firebaseHostingConfig.includes('"source": "/pos/**"')&&hostingRewrites.find(item=>item.source==="/pos/**")?.destination==="/react/index.html","Hosting must keep all canonical POS routes on the React shell");
 assert(posPage.includes('/pos/login/?next=${encodeURIComponent(requested)}')&&posPage.includes("firstAllowedPosPage(posAccessProfile)")&&posPage.includes("location.replace(posRedirectTarget)")&&!posPage.includes('<Navigate to="/login?next=%2Fpos"'),"React POS sale access redirects must preserve legacy POS login/permission behavior with full-page navigation");
 assert(posNavigation.includes('location.replace("/pos/login/")')&&posNavigation.includes("export function firstAllowedPosPage"),"React POS navigation logout/first-allowed routing must stay inside the legacy POS session flow");
 assert(posCatalogCss.includes(".catalog-tabs")&&posCatalogCss.includes(".product-card.visual-card"),"Canonical Laravel POS catalog CSS missing from React parity assets");
@@ -1523,9 +1485,9 @@ assert(
   && cashierPage.includes('cashier-cod-settlement-action')
   && cashierPage.includes('patch.lalamoveCodSettlementStatus = "received";')
   && cashierPage.includes('patch.lalamoveCodSettledAt = now;')
-  && staticDeliveryRuntime.includes('orderPayload.lalamoveCodEnabled = lalamoveCodEnabled;')
-  && staticDeliveryRuntime.includes('orderPayload.lalamoveCodAmount = lalamoveCodEnabled ? finalTotal : 0;')
-  && staticDeliveryRuntime.includes('throw new Error("LALAMOVE_COD_UNAVAILABLE")')
+  && deliveryPage.includes("payload.lalamoveCodEnabled = cod;")
+  && deliveryPage.includes("payload.lalamoveCodAmount = cod ? total : 0;")
+  && deliveryPage.includes('throw new Error("LALAMOVE_COD_UNAVAILABLE")')
   && cashierPage.includes("const legacyCodBackfill = isLalamoveCod(order) && order.lalamoveCodEnabled !== true;")
   && cashierPage.includes('lalamoveCodSettlementStatus: order.lalamoveCodSettlementStatus || "pending"')
   && cashierPage.includes("CASHIER_LALAMOVE_COD_BACKFILL_ROLLBACK_FAILED"),

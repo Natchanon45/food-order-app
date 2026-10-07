@@ -1,131 +1,60 @@
 <!doctype html>
 <html lang="th">
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
-    <meta name="theme-color" content="#159447" />
-    <link rel="stylesheet" href="/assets/css/app.css?v=20260801-096" />
-    <link rel="stylesheet" href="/assets/css/menu-qr.css?v=20260622-5" />
-    <link
-      rel="stylesheet"
-      href="/assets/css/customer-rounds.css?v=20260622-5"
-    />
-    <link
-      rel="stylesheet"
-      href="/assets/css/menu-pagination.css?v=20260903-238"
-    />
-    <link rel="stylesheet" href="/assets/css/icons.css?v=20260903-240" />
-    <link rel="stylesheet" href="/assets/css/pos-refresh.css?v=20260629-046" />
-    <link
-      rel="stylesheet"
-      href="/assets/css/table-order-sticky-lite.css?v=20260630-057"
-    />
-    <link rel="stylesheet" href="/assets/css/sweet-dialog.css?v=20260731-095" />
-    <link rel="stylesheet" href="/assets/css/order-delivery-workspace-theme.css?v=20260731-079" />
-    <link rel="stylesheet" href="/assets/css/public-menu-image-frame.css?v=20260916-002" />
-    <title>สั่งอาหาร</title>
-  </head>
-  <body class="order-delivery-workspace table-order-page">
-    <div id="demoBanner"></div>
-    <header class="app-header">
-      <div class="brand">
-        <span class="brand-mark">PG</span><span>สั่งอาหาร</span>
-      </div>
-      <span class="badge" id="tableBadge">กำลังตรวจสอบ</span>
-    </header>
-    <main class="container">
-      <section class="hero">
-        <h1 id="tableTitle" class="hero-title"><i class="bi bi-journal-text app-icon" aria-hidden="true"></i><span>เมนูอาหาร</span></h1>
-        <p>เลือกเมนู ใส่หมายเหตุ และกดยืนยันได้ทันที</p>
-      </section>
-      <div class="delivery-pos">
-        <div class="delivery-menu-column">
-          <div class="menu-filter-area" id="menuListStart">
-            <div
-              class="category-tabs"
-              id="categoryTabs"
-              role="tablist"
-              aria-label="หมวดหมู่อาหาร"
-            ></div>
-            <input
-              class="input menu-search"
-              id="searchInput"
-              placeholder="ค้นหาเมนู..."
-            />
-          </div>
-          <div id="menuGrid" class="grid grid-3"></div>
-          <nav
-            id="menuPagination"
-            class="menu-pagination"
-            aria-label="เปลี่ยนหน้ารายการอาหาร"
-            hidden
-          ></nav>
-        </div>
-        <div class="delivery-side-column">
-          <section id="cartSection" class="card current-round">
-            <div class="section-title">
-              <h2>
-                <i class="bi bi-cart3 app-icon" aria-hidden="true"></i><span>รายการรอบปัจจุบัน</span>
-                <span id="currentRoundLabel" class="round-label">รอบที่ 1</span>
-              </h2>
-              <span id="cartCount" class="badge">0 รายการ</span>
-            </div>
-            <div id="cartList" class="cart-list"></div>
-            <div class="field" style="margin-top: 14px">
-              <label>หมายเหตุรวมถึงร้าน</label
-              ><textarea
-                class="input"
-                id="orderNote"
-                placeholder="เช่น ขอช้อนเพิ่ม"
-              ></textarea>
-            </div>
-          </section>
-          <section
-            id="previousOrdersSection"
-            class="card previous-orders"
-            style="margin-top: 18px"
-            hidden
-          >
-            <div class="section-title">
-              <h2><i class="bi bi-clock-history app-icon" aria-hidden="true"></i><span>รายการที่โต๊ะนี้สั่งแล้ว</span></h2>
-              <span id="previousRoundCount" class="badge">0 รอบ</span>
-            </div>
-            <div id="previousOrdersList" class="previous-orders-list"></div>
-          </section>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#159447" />
+  <title>PENGUIN</title>
+  <link rel="stylesheet" href="/assets/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1.13.1">
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/4.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <link rel="stylesheet" href="/react/parity/css/unified-table-icon.css">
+  <link rel="stylesheet" href="/react/parity/css/sweet-dialog.css">
+  <link rel="stylesheet" href="/react/parity/css/i18n.css">
+  <link rel="stylesheet" href="/react/parity/css/app.css">
+  <link rel="stylesheet" href="/react/parity/css/icons.css">
+  <link rel="stylesheet" href="/react/parity/css/shared-responsive.css">
+  <link rel="stylesheet" href="/react/parity/css/theme-checkbox.css">
+  <link rel="stylesheet" href="/react/parity/css/page-ready-state.css">
+  <link rel="stylesheet" href="/react/parity/css/ui-layer-stack.css" data-ui-layer-policy>
+  <link rel="stylesheet" href="/react/parity/css/toast-global-policy.css" data-toast-policy>
+  <script defer src="/assets/js/horizontal-scroll-restore.js?v=20261002-002"></script>
+  <script>
+    (() => {
+      const recoveryKey = "lukkhaja_react_entry_recovery";
+      window.__lukkhajaReactEntryLoaded = () => {
+        try { sessionStorage.removeItem(recoveryKey); } catch {}
+      };
+      window.addEventListener("error", event => {
+        const target = event.target;
+        if (!(target instanceof HTMLScriptElement) || target.type !== "module") return;
+        const src = String(target.src || "");
+        if (!src.includes("/react/assets/")) return;
+        try {
+          if (sessionStorage.getItem(recoveryKey) === "1") return;
+          sessionStorage.setItem(recoveryKey, "1");
+        } catch {}
+        const url = new URL(location.href);
+        url.searchParams.set("__react_reload", String(Date.now()));
+        location.replace(url.toString());
+      }, true);
+    })();
+  </script>
+  <script type="module" crossorigin src="/react/assets/index-Dclizvbl.js"></script>
+  <link rel="modulepreload" crossorigin href="/react/assets/rolldown-runtime-CbXtAM7H.js">
+  <link rel="modulepreload" crossorigin href="/react/assets/react-vendor-BcSqwNtZ.js">
+  <link rel="modulepreload" crossorigin href="/react/assets/firebase-J1xTQvXy.js">
+</head>
+<body>
+  <div id="root">
+    <div class="page-ready-overlay" id="pageReadyOverlay" role="status" aria-live="polite" aria-busy="true" aria-hidden="false">
+      <div class="page-ready-simple" aria-labelledby="pageReadyTitle">
+        <span class="page-ready-spinner" aria-hidden="true"></span>
+        <div class="page-ready-copy">
+          <h2 id="pageReadyTitle">กำลังโหลดข้อมูล...</h2>
+          <p>กรุณารอสักครู่....</p>
         </div>
       </div>
-    </main>
-    <div class="cart-bar">
-      <div>
-        <small>ยอดรวมรอบปัจจุบัน</small>
-        <div style="font-size: 20px; font-weight: 800">
-          <span id="cartTotal">0.00</span> บาท
-        </div>
-      </div>
-      <button class="btn btn-primary" id="submitOrder"><i class="bi bi-check-lg app-icon" aria-hidden="true"></i><span>ยืนยันการสั่ง</span></button>
     </div>
-    <script
-      type="module"
-      src="/assets/js/sweet-dialog.js?v=20260731-080"
-    ></script>
-    <script
-      type="module"
-      src="/assets/js/public-tenant-resolver.js?v=20261003-010"
-    ></script>
-    <script
-      type="module"
-      src="/assets/js/table-qr-resolver.js?v=20260903-232"
-    ></script>
-    <script
-      type="module"
-      src="/assets/js/customer-secure.js?v=20261002-004"
-    ></script>
-    <script
-      type="module"
-      src="/assets/js/table-order-category-scrollspy.js?v=20260622-1"
-    ></script>
-  </body>
+  </div>
+</body>
 </html>

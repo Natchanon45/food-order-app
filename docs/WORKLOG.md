@@ -10900,3 +10900,104 @@ Production deploy + verification:
 - One generic browser console 404 was observed without a paired response error, consistent with the existing favicon noise and unrelated to this dialog fix.
 - No Function, Firestore Rules, Storage Rules, or schema deploy was required.
 - No merge to `main`.
+
+
+---
+
+## 2026-10-07 — Full React system cutover
+
+User directive:
+- The application must be React across the whole frontend, not a mixed React + page-specific legacy HTML/JavaScript system.
+
+Root cause / architecture gap:
+- Most staff/admin/POS routes were already React, but physical legacy entrypoints still existed for Home, Delivery, Takeaway, Delivery Success, Verify, Privacy/Terms, Queue, POS Login/Forbidden, POS Catalog, Customer Display, Receipt, and Tax Invoice.
+- Firebase Hosting still routed several storefront/POS paths to those physical legacy HTML files before React Router could handle them.
+- Public Delivery still depended on the old `delivery.js` runtime and related page-specific modules for Google Maps/route calculation, Lalamove quotation, customer address book/favorites, promotions, PromptPay/payment lock, slip upload, and final order creation.
+- Existing regression contracts still required selected static/legacy HTML behavior, so they would have forced the mixed architecture to remain.
+
+Implementation:
+- Added native React routes/components for:
+  - `/s/:slug/delivery`
+  - `/s/:slug/delivery/success`
+  - `/s/:slug/takeaway`
+  - `/verify`
+  - `/privacy`
+  - `/terms`
+  - `/pos/forbidden`
+  - legacy storefront compatibility entry handling.
+- `/queue` now mounts the React customer queue page.
+- `/pos/login` now canonicalizes to the shared React Login flow with `next=/pos/`; existing `LoginPage` still prepares the Retail POS session.
+- Preserved old `/takeaway` behavior that can reopen the previously stored tenant context by redirecting to `/s/{slug}/takeaway`.
+- Rebuilt Delivery in React/Firebase with:
+  - live menu/cart;
+  - guest + Google customer context isolated from staff auth;
+  - saved addresses and favorites;
+  - Google Maps pin/current-location picker;
+  - Google Routes self-delivery calculation;
+  - live Lalamove quotation + COD capability validation;
+  - free shipping/free gift promotions;
+  - PromptPay QR/payment lock;
+  - payment-slip validation/upload;
+  - final public delivery order creation;
+  - Delivery Success receipt + realtime order watch + Verify QR.
+- Extended `PublicMenuCatalog` with React favorite controls.
+- Added five-locale cart/accessibility and delivery route translations.
+- Updated Firebase Hosting rewrites so Delivery/Takeaway/Storefront/Verify/Order/Queue/POS fallback routes resolve to `/react/index.html`.
+- Expanded `tools/sync-react-legacy-entrypoints.py` so all physical frontend `index.html` entrypoints are overwritten by the current React shell during postbuild.
+- Strengthened generated-build and migration contracts:
+  - every physical frontend `index.html` must reference the same current React bundle;
+  - migration report must show React shell or scheduled postbuild sync;
+  - Hosting frontend rewrites must target the React shell.
+- Updated Waiting Queue back navigation to the React Home route.
+- Removed page-specific legacy runtime files that no longer have a canonical consumer:
+  - `delivery.js`
+  - `delivery-success.js`
+  - `takeaway-order.js`
+  - `verify.js`
+  - `waiting-queue-track.js`
+  - `waiting-queue-legacy-customer.js`
+  - `delivery-bootstrap.js`
+  - `delivery-addresses.js`
+  - `delivery-location-map.js`
+  - `delivery-location-address-resolver.js`
+  - `delivery-address-status-sync.js`
+  - `delivery-payment-lock.js`
+  - `delivery-button-click-fix.js`
+  - `delivery-category-scroll-fix.js`
+  - `delivery-promotions.js`
+  - `delivery-favorites.js`
+  - `delivery-staff-guard.js`.
+- Shared services/assets that still have real dependencies were intentionally retained.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS after updating legacy-only contract assertions to React component contracts.
+- `npm run build:react` PASS after the legacy runtime deletion.
+- Generated React build contract PASS: React Build `2026.10.07.457` / `/react/assets/index-Dclizvbl.js`.
+- Migration coverage: 53 routes, 21 POS routes, **52 React physical shells, 0 pending postbuild shell sync**.
+- `git diff --check` PASS.
+- Read-only browser verification against real Production data with Firestore writes blocked:
+  - Takeaway React: menu data loaded, cart add works, no legacy script.
+  - Delivery React: real menu, Google Map, Google customer login entry, address book, favorites UI, no raw translation keys.
+  - Delivery geolocation/out-of-range handling works.
+  - In-range Lalamove quotation verified at ~10.30 km / 77 THB.
+  - PromptPay payment lock shows QR, QR download, slip upload surface, edit-items action, and locks menu changes.
+  - Privacy / Terms / Verify are React.
+  - legacy `/takeaway` stored-tenant compatibility redirects correctly.
+  - `/delivery` without slug keeps the incomplete-link state.
+  - `/queue` and `/pos/login` are React.
+  - desktop/mobile horizontal overflow = 0.
+  - legacy page-script requests = 0.
+  - blocked Firestore writes = 0.
+  - page errors = 0; console errors = 0; HTTP errors = 0.
+
+Release candidate:
+- React `0.4.280` / Build `2026.10.07.457`.
+- Public `0.16.32` / Build `2026.10.07.172`.
+- Marker: `FULL-REACT-SYSTEM-CUTOVER`.
+- Final candidate bundle: `/react/assets/index-Dclizvbl.js`.
+
+Deploy state:
+- Hosting deploy pending.
+- No Cloud Functions, Firestore Rules, Storage Rules, or schema change required.
+- No merge to `main`.

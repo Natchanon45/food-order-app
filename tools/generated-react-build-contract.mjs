@@ -6,6 +6,15 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = relative => fs.readFileSync(path.join(root, relative), "utf8");
 
+function walkIndexEntries(dir, rows = []) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) walkIndexEntries(full, rows);
+    else if (entry.name === "index.html") rows.push(full);
+  }
+  return rows;
+}
+
 function currentReactBuild() {
   const release = read("react-app/src/config/release.js");
   const match = release.match(/build:\s*"([^"]+)"/);
@@ -42,6 +51,14 @@ const posShifts = bundleFromEntry("public/pos/shifts/index.html");
 const posProducts = bundleFromEntry("public/pos/products/index.html");
 const posStockMovements = bundleFromEntry("public/pos/stock-movements/index.html");
 const posStockCounts = bundleFromEntry("public/pos/stock-counts/index.html");
+
+const canonicalIndexEntries = walkIndexEntries(path.join(root, "public"))
+  .filter(file => file !== path.join(root, "public", "react", "index.html"))
+  .map(file => path.relative(root, file).split(path.sep).join("/"));
+for (const entry of canonicalIndexEntries) {
+  const generated = bundleFromEntry(entry);
+  assert.equal(generated.ref, receipt.ref, `Canonical entrypoint must use the current React bundle: ${entry}`);
+}
 
 assert(
   receipt.source.includes(build),

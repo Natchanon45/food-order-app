@@ -46,10 +46,18 @@ import { PlatformContactPage } from "@/pages/PlatformContactPage";
 import { PlatformPricingPage } from "@/pages/PlatformPricingPage";
 import { SaasSetupPage } from "@/pages/SaasSetupPage";
 import { PublicOrderPage } from "@/pages/PublicOrderPage";
+import { TakeawayPage } from "@/pages/TakeawayPage";
+import { DeliveryPage } from "@/pages/DeliveryPage";
+import { DeliverySuccessPage } from "@/pages/DeliverySuccessPage";
+import { VerifyPage } from "@/pages/VerifyPage";
+import { LegalPage } from "@/pages/LegalPage";
+import { PosForbiddenPage } from "@/pages/PosForbiddenPage";
+import { PublicRouteMissingPage } from "@/pages/PublicRouteMissingPage";
+import { LegacyStorefrontEntry } from "@/pages/LegacyStorefrontEntry";
 
-function LegacyPublicOrderRedirect() {
+function StorefrontAliasRedirect({ target }) {
   const { slug = "" } = useParams();
-  return <Navigate to={"/s/" + encodeURIComponent(slug) + "/order" + location.search + location.hash} replace />;
+  return <Navigate to={"/s/" + encodeURIComponent(slug) + "/" + target + location.search + location.hash} replace />;
 }
 
 function NotFound() {
@@ -134,6 +142,16 @@ export default function App() {
       <Route path="/waiting-queue" element={<WaitingQueuePage />} />
       <Route path="/waiting-queue/customer" element={<WaitingQueueCustomerPage />} />
       <Route path="/waiting-queue/display" element={<WaitingQueueDisplayPage />} />
+      <Route path="/queue" element={<WaitingQueueCustomerPage />} />
+      <Route path="/privacy" element={<LegalPage type="privacy" />} />
+      <Route path="/terms" element={<LegalPage type="terms" />} />
+      <Route path="/verify" element={<VerifyPage />} />
+      <Route path="/delivery" element={<PublicRouteMissingPage />} />
+      <Route path="/delivery/success" element={<PublicRouteMissingPage />} />
+      <Route path="/takeaway" element={<LegacyStorefrontEntry target="takeaway" allowStoredTenant />} />
+      <Route path="/order" element={<PublicRouteMissingPage />} />
+      <Route path="/pos/login" element={<Navigate to="/login?next=/pos/" replace />} />
+      <Route path="/pos/forbidden" element={<PosForbiddenPage />} />
       <Route path="/pos" element={<PosPage />} />
       <Route path="/pos/catalog" element={<PosCatalogPage />} />
       <Route path="/pos/products" element={<PosProductsPage />} />
@@ -159,7 +177,13 @@ export default function App() {
       <Route path="/platform/pricing" element={<PlatformPricingPage />} />
       <Route path="/super-admin/saas-setup" element={<SaasSetupPage />} />
       <Route path="/s/:slug/order" element={<PublicOrderPage />} />
-      <Route path="/s/:slug/react/order" element={<LegacyPublicOrderRedirect />} />
+      <Route path="/s/:slug/takeaway" element={<TakeawayPage />} />
+      <Route path="/s/:slug/delivery" element={<DeliveryPage />} />
+      <Route path="/s/:slug/delivery/success" element={<DeliverySuccessPage />} />
+      <Route path="/s/:slug/react/order" element={<StorefrontAliasRedirect target="order" />} />
+      <Route path="/s/:slug/react/takeaway" element={<StorefrontAliasRedirect target="takeaway" />} />
+      <Route path="/s/:slug/react/delivery" element={<StorefrontAliasRedirect target="delivery" />} />
+      <Route path="/s/:slug/react/delivery/success" element={<StorefrontAliasRedirect target="delivery/success" />} />
       <Route path="*" element={<NotFound />} />
       </Routes>
     </RevenueShareSuspensionGuard>

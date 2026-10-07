@@ -22,15 +22,29 @@ function htmlRoute(file) {
 }
 
 const registryRoutes = new Set(registry.routes.map(item => item.route));
-const htmlRoutes = walk(path.join(root, "public"))
+const htmlEntries = walk(path.join(root, "public"))
   .filter(file => file.endsWith("/index.html") || file.endsWith("\\index.html"))
-  .filter(file => !file.includes(path.join("public", "react") + path.sep))
-  .map(htmlRoute);
+  .filter(file => !file.includes(path.join("public", "react") + path.sep));
+const htmlRoutes = htmlEntries.map(htmlRoute);
+const syncScript = fs.readFileSync(path.join(root, "tools/sync-react-legacy-entrypoints.py"), "utf8");
+let physicalReactShells = 0;
+let pendingShellSync = 0;
 
-for (const route of htmlRoutes) {
+for (const file of htmlEntries) {
+  const route = htmlRoute(file);
   if (!registryRoutes.has(route)) {
-    throw new Error("LEGACY_HTML_ROUTE_NOT_IN_REACT_REGISTRY: " + route);
+    throw new Error("HTML_ROUTE_NOT_IN_REACT_REGISTRY: " + route);
   }
+  const html = fs.readFileSync(file, "utf8");
+  if (html.includes("/react/assets/index-")) {
+    physicalReactShells += 1;
+    continue;
+  }
+  const relative = path.relative(root, file).split(path.sep).join("/");
+  if (!syncScript.includes('"' + relative + '"')) {
+    throw new Error("NON_REACT_ENTRYPOINT_NOT_SCHEDULED_FOR_SYNC: " + relative);
+  }
+  pendingShellSync += 1;
 }
 
 for (const required of [
@@ -84,4 +98,4 @@ const posCount = registry.routes.filter(item => item.group === "pos").length;
 if (posCount !== 21) throw new Error("POS_ROUTE_COUNT_CHANGED: " + posCount);
 
 console.log("React migration coverage: PASS");
-console.log("Routes:", registry.routes.length, "| POS:", posCount, "| Legacy HTML:", htmlRoutes.length);
+console.log("Routes:", registry.routes.length, "| POS:", posCount, "| React shells:", physicalReactShells, "| Pending postbuild shell sync:", pendingShellSync);
