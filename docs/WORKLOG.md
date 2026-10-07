@@ -11481,3 +11481,71 @@ Deploy state:
 - Header direct-child order, badge placement, locale placement, payment-slip `+`, default-address selection, address-action icons, and PromptPay visual order all pass on live Production.
 - Deployment scope was Hosting only.
 - No Functions, Firestore Rules, Storage Rules, schema change, or merge to `main`.
+
+
+---
+
+## 2026-10-07 — Delivery Success full Laravel parity repair (Build 2026.10.07.464)
+
+Request:
+- User reported Delivery appeared broadly broken after React cutover and supplied a side-by-side Delivery Success comparison.
+- Re-audit the Delivery flow more carefully instead of patching isolated visuals.
+- Continue test-first workflow.
+
+Test-first evidence:
+- Added `tests/react-parity/delivery-success-parity.spec.mjs` before changing Success runtime code.
+- Initial Production run against Build 2026.10.07.463 using the user's live order ID failed **4/4**:
+  1. missing Laravel workspace body/theme classes,
+  2. missing tracking card/timeline,
+  3. toolbar/receipt hooks did not match Laravel,
+  4. download action did not produce a PNG download.
+- Existing Delivery checkout parity suite remained the regression guard for the main Delivery page.
+
+Laravel MASTER baseline:
+- `resources/views/migrated/delivery__success.blade.php`
+- `public/assets/js/delivery-success.js`
+- `public/assets/css/delivery-success-tracking.css`
+- `public/assets/css/order-delivery-workspace-theme.css`
+- `public/assets/css/receipt-layout.css`
+
+Implementation:
+- Restored Success body classes: `order-delivery-workspace od-receipt-page delivery-success-page`.
+- Restored Laravel stylesheet stack including `order-delivery-workspace-theme.css`.
+- Extended `PublicStorefrontHeader` with an optional direct action sibling so Success can render Laravel order:
+  brand -> `#orderAgainLink` -> locale switcher.
+- Restored the full tracking card:
+  - status message and badge,
+  - six-step timeline,
+  - current/done state mapping,
+  - last-updated timestamp,
+  - conditional Lalamove customer tracking link.
+- Restored receipt-page order:
+  tracking card -> receipt toolbar -> receipt.
+- Restored toolbar hooks `#saveImageButton` and `#verifyLatestLink`.
+- Restored Laravel receipt IDs and item markup, including `.receipt-item-line`, item text, quantity, and note.
+- Receipt now uses `settings.shopName` like Laravel MASTER.
+- Receipt date now uses Gregorian Bangkok `dd/mm/yyyy HH:mm`, matching Laravel instead of Thai Buddhist year/seconds.
+- Receipt subtotal follows Laravel stored subtotal/fallback semantics.
+- Verification URL restored to Laravel-compatible `/verify/?tenant=...&order=...`.
+- Download action now creates a PNG using the same html2canvas 1.4.1 CDN dependency as Laravel and downloads `delivery-order-<ORDER>.png`; it no longer opens a print window.
+- React/Firebase order loading and live Firestore watch remain intact.
+
+Verification before deploy:
+- Delivery Success parity browser suite: **4/4 PASS** on Hosting emulator using the user's live order.
+- Existing Delivery checkout parity browser suite: **4/4 PASS**.
+- Success browser checks cover body/theme, header structure, 6-step tracking, toolbar/receipt order, receipt hooks/items, and real PNG download event.
+- Candidate visual capture confirmed:
+  - tracking card above toolbar,
+  - centered receipt,
+  - Gregorian date `07/10/2026 21:56`,
+  - Laravel-style receipt width/spacing.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS after updating the foundation contract for the restored Success structure.
+- React callable contract: 59 references / 0 missing exports.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.07.464` / `/react/assets/index-Jh-9nXIG.js`.
+- `git diff --check` PASS.
+- No Functions, Firestore Rules, Storage Rules, schema changes, or merge to `main`.
+
+Deploy state:
+- Commit/push and Hosting-only deploy pending at this checkpoint.

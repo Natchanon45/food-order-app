@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.07.463",
+  build: "2026.10.07.464",
   branch: "feature/react-firebase-port",
-  commit: "DELIVERY-HEADER-SLIP-PARITY",
+  commit: "DELIVERY-SUCCESS-PARITY",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Delivery header and payment-slip parity",
+  milestone: "Delivery success parity",
   whatsNew: [
-    "Match the Laravel Delivery header sibling order while keeping PENGUIN branding",
-    "Restore the Laravel plus symbol in the payment-slip drop zone",
-    "Keep the Delivery parity browser suite as the test-first regression guard",
+    "Restore Delivery Success tracking, header, toolbar, and receipt structure from Laravel MASTER",
+    "Match Laravel receipt item/date/shop-field behavior and live order status presentation",
+    "Restore PNG order-evidence download behavior instead of opening the print dialog",
   ],
 });

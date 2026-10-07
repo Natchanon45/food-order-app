@@ -692,7 +692,15 @@ assert(
   &&takeawayPage.includes("createPublicTakeawayOrder")
   &&deliverySuccessPage.includes("watchPublicOrder")
   &&deliverySuccessPage.includes("qrDataUrl")
-  &&deliverySuccessPage.includes('"/verify?tenant="'),
+  &&deliverySuccessPage.includes('"/verify/?tenant="')
+  &&deliverySuccessPage.includes('bodyClass: "order-delivery-workspace od-receipt-page delivery-success-page"')
+  &&deliverySuccessPage.includes('"order-delivery-workspace-theme.css"')
+  &&deliverySuccessPage.includes('id="deliveryTrackingCard"')
+  &&deliverySuccessPage.includes('id="deliveryTrackingTimeline"')
+  &&deliverySuccessPage.includes('id="saveImageButton"')
+  &&deliverySuccessPage.includes('id="verifyLatestLink"')
+  &&deliverySuccessPage.includes("loadHtml2Canvas")
+  &&deliverySuccessPage.includes("delivery-order-"),
   "Delivery, Takeaway, and Delivery Success canonical storefronts must be native React routes"
 );
 assert(

@@ -21,11 +21,11 @@ export function showStorefrontToast(message, type = "success") {
   }, 2600);
 }
 
-export function PublicStorefrontHeader({ title, badge, brandMark = "PG" }) {
+export function PublicStorefrontHeader({ title, badge, brandMark = "PG", action = null }) {
   return (
     <header className="app-header">
       <div className="brand"><span className="brand-mark">{brandMark}</span><span>{title}</span></div>
-      {badge ? <span className="badge">{badge}</span> : null}
+      {action || (badge ? <span className="badge">{badge}</span> : null)}
       <LocaleSwitcher />
     </header>
   );
