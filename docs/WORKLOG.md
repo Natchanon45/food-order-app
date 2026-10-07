@@ -10839,3 +10839,47 @@ Production deploy + verification:
 - Therefore the Production artifact is the same artifact that browser verification confirmed renders through `font-family: bootstrap-icons` with empty button text.
 - No Function, Firestore Rules, Storage Rules, or schema deploy was required.
 - No merge to `main`.
+
+---
+
+## 2026-10-07 — Walk-in close-table confirmation icon deduplication
+
+User report:
+- In the Walk-in close-table confirmation dialog, the Cancel and Close Table actions both displayed the same X icon.
+
+Root cause:
+- `sweetDialog.js` automatically maps button labels containing `ปิด` / `close` to `x-lg`.
+- The Walk-in confirm action label is `ปิดโต๊ะ`, so it received the same `x-lg` icon as the Cancel action.
+
+Implementation:
+- `CashierTableQrPage.jsx` now explicitly sets:
+  - confirm icon = `door-closed`;
+  - cancel icon = `x-lg`.
+- This is scoped only to the Walk-in close-table confirmation and does not change icon inference for other dialogs.
+- React foundation contract now guards these explicit icon assignments.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS: React Build `2026.10.07.456` / `/react/assets/index-B-7f69Ur.js`.
+- `git diff --check` PASS.
+- Browser candidate verification on real Walk-in card:
+  - dialog title = `ปิดโต๊ะ Walk-in`;
+  - confirm action = `ปิดโต๊ะ` with `bi bi-door-closed`;
+  - cancel action = `ยกเลิก` with `bi bi-x-lg`;
+  - icons are not the same;
+  - dialog opened without confirming, so no customer state was changed;
+  - blocked Firestore writes = 0;
+  - page/console/HTTP errors = 0;
+  - horizontal overflow = 0.
+
+Release candidate:
+- React `0.4.280` / Build `2026.10.07.456`.
+- Public `0.16.32` / Build `2026.10.07.171`.
+- Marker: `WALKIN-CLOSE-DIALOG-ICON`.
+
+Deploy state:
+- Hosting deploy pending.
+- No Function, Firestore Rules, Storage Rules, or schema change required.
+- No merge to `main`.

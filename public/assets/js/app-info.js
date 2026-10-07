@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.07.170',
+  build: '2026.10.07.171',
   branch: 'feature/react-firebase-port',
-  commit: 'TABLE-ORDER-QTY-ICONS',
+  commit: 'WALKIN-CLOSE-DIALOG-ICON',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Table Order quantity icon correction',
-  updatedAt: '2026-10-07T15:20:00+0700',
+  milestone: 'Walk-in close dialog icon correction',
+  updatedAt: '2026-10-07T15:39:16+0700',
   whatsNew: [
-    'Replace text plus/minus glyphs with Bootstrap plus and dash icons in the current-round cart',
-    'Keep the circular quantity controls and full-width note layout unchanged',
-    'Add localized accessible labels for quantity increase and decrease controls'
+    'Use a door-close icon for the Walk-in close-table confirmation action',
+    'Keep the cancel action on the standard x icon so the two dialog actions are visually distinct',
+    'Preserve the existing Walk-in close-table lifecycle and warning copy'
   ]
 };
 

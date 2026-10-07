@@ -1483,6 +1483,8 @@ assert(
   &&tableQrPage.includes("const closeWalkInTableAction = async table =>")
   &&tableQrPage.includes("data-close-walkin-table={table.id}")
   &&tableQrPage.includes('walkin_close_confirm_warning')
+  &&tableQrPage.includes('confirmIcon: "door-closed"')
+  &&tableQrPage.includes('cancelIcon: "x-lg"')
   &&operationalData.includes('httpsCallable(functions, "closeWalkInTable")')
   &&operationalOrdersFunctions.includes("exports.closeWalkInTable = onCall")
   &&operationalOrdersFunctions.includes('tableOccupancyStatus: "closed"')

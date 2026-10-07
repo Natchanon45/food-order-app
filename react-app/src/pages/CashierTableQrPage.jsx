@@ -344,7 +344,9 @@ export function CashierTableQrPage() {
       {
         title: t("cashier_documents.table_qr.walkin_close_confirm_title"),
         confirmText: t("cashier_documents.table_qr.close_table"),
+        confirmIcon: "door-closed",
         cancelText: t("cashier.common.cancel"),
+        cancelIcon: "x-lg",
         type: "warning",
       },
     );
