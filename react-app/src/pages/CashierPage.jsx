@@ -17,6 +17,7 @@ import {
   placeLalamoveDispatch,
   quoteLalamoveDispatch,
   refreshLalamoveDispatch,
+  settleTableSession,
   updateOperationalOrder,
   updateOperationalTable,
   watchOperationalOrders,
@@ -434,6 +435,7 @@ export function CashierPage() {
   const [moveTargetId, setMoveTargetId] = useState("");
   const refreshAt = useRef(new Map());
   const completionRepairRef = useRef(new Set());
+  const tableSettlementRepairRef = useRef(new Set());
   const allowedRole = ["owner", "admin", "manager", "cashier"].includes(profile?.role);
 
   const money = value => formatNumber(Number(value || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -467,6 +469,24 @@ export function CashierPage() {
         console.warn("CASHIER_LALAMOVE_COMPLETION_REPAIR_FAILED", orderId, error);
         window.setTimeout(() => completionRepairRef.current.delete(orderId), LALAMOVE_STATUS_COOLDOWN_MS);
       });
+    });
+  }, [tenant?.id, allowedRole, normalizedOrders]);
+
+  useEffect(() => {
+    if (!tenant?.id || !allowedRole) return;
+    normalizedOrders.filter(order => isTableOrder(order)
+      && String(order?.paymentStatus || "").toLowerCase() === "paid"
+      && ["served", "paid"].includes(String(order?.status || "").toLowerCase())
+      && String(order?.tableCode || "").trim()
+    ).forEach(order => {
+      const orderId = String(order.id || "");
+      if (!orderId || tableSettlementRepairRef.current.has(orderId)) return;
+      tableSettlementRepairRef.current.add(orderId);
+      settleTableSession(tenant.id, orderId)
+        .catch(error => {
+          console.warn("CASHIER_TABLE_SETTLEMENT_REPAIR_FAILED", orderId, error);
+          window.setTimeout(() => tableSettlementRepairRef.current.delete(orderId), 10000);
+        });
     });
   }, [tenant?.id, allowedRole, normalizedOrders]);
 
@@ -683,8 +703,13 @@ export function CashierPage() {
         if (isServed(order)) { patch.status = "paid"; patch.completedAt = now; }
         return updateOperationalOrder(tenant.id, order.id, patch);
       }));
-      const allWillClose = rounds.every(order => order.status === "paid" || isServed(order));
-      if (allWillClose) await closeTableAfterPayment(rounds);
+      let allWillClose = false;
+      try {
+        const settlement = await settleTableSession(tenant.id, rounds[0].id);
+        allWillClose = settlement?.closed === true;
+      } catch (settlementError) {
+        console.warn("CASHIER_TABLE_SETTLEMENT_AFTER_PAYMENT_FAILED", settlementError);
+      }
       showToast(t(allWillClose ? "cashier.toasts.table_paid_closed" : "cashier.toasts.table_paid_waiting_kitchen", { table: rounds[0].tableCode }));
       printTable(printWindow, rounds);
     } catch (error) {

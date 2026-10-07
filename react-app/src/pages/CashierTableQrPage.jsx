@@ -8,6 +8,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { sweetAlert, sweetConfirm } from "@/components/sweetDialog";
 import {
   assignWalkInTable,
+  closeWalkInTable,
   getOperationalTable,
   loadOperationalSnapshot,
   updateOperationalTable,
@@ -334,6 +335,32 @@ export function CashierTableQrPage() {
     }
   };
 
+  const closeWalkInTableAction = async table => {
+    if (!tenant?.id || busyKey) return;
+    const order = walkInOrderForTable(table, orders);
+    const label = table.name || t("cashier_documents.table_qr.table_fallback", { table: table.code || table.id });
+    const ok = await sweetConfirm(
+      `${t("cashier_documents.table_qr.walkin_close_confirm_message", { table: label })}\n\n${t("cashier_documents.table_qr.walkin_close_confirm_warning")}`,
+      {
+        title: t("cashier_documents.table_qr.walkin_close_confirm_title"),
+        confirmText: t("cashier_documents.table_qr.close_table"),
+        cancelText: t("cashier.common.cancel"),
+        type: "warning",
+      },
+    );
+    if (!ok) return;
+    setBusyKey(`walkin-close:${table.id}`);
+    try {
+      await closeWalkInTable(tenant.id, table.id, order?.id || table.walkInOrderId || "");
+      showToast(t("cashier_documents.table_qr.walkin_close_success", { table: label }));
+    } catch (error) {
+      console.error("WALK_IN_TABLE_CLOSE_FAILED", error);
+      showToast(t("cashier_documents.table_qr.walkin_close_failed"), "error");
+    } finally {
+      setBusyKey("");
+    }
+  };
+
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (allowed && loading)) {
     return <PageReadyOverlay context={t("cashier_documents.table_qr.header_title")} title={t("cashier.loading.title")} message={t("cashier.loading.preparing")} progress={76} />;
   }
@@ -437,6 +464,10 @@ export function CashierTableQrPage() {
                   <p className="menu-category" style={{ marginBottom: 8 }}>{t("cashier_documents.table_qr.walkin_summary", { queue, customer })}</p>
                   <div className="order-actions" style={{ marginTop: 10 }}>
                     <button className="btn btn-dark" type="button" onClick={() => viewWalkIn(table)}>{t("cashier_documents.table_qr.walkin_view")}</button>
+                    <button className="btn btn-danger" type="button" data-close-walkin-table={table.id} disabled={Boolean(busyKey)} onClick={() => closeWalkInTableAction(table)}>
+                      <i className="bi bi-door-closed app-icon" aria-hidden="true"></i>
+                      <span>{busyKey === `walkin-close:${table.id}` ? t("cashier_documents.table_qr.walkin_closing") : t("cashier_documents.table_qr.close_table")}</span>
+                    </button>
                   </div>
                   <div className="field" style={{ marginTop: 12 }}>
                     <label>{t("cashier_documents.table_qr.move_to")}</label>

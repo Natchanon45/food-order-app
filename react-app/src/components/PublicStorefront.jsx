@@ -230,18 +230,18 @@ export function PublicCartList({ items = [], prefix, onIncrease, onDecrease, onN
   return (
     <div className="cart-list">
       {items.length ? items.map(item => (
-        <div className="cart-row" key={item.id}>
-          <div>
+        <div className="cart-row cart-row-aligned" key={item.id}>
+          <div className="cart-item-info">
             <strong>{item.name}</strong>
             <div className="menu-category">{t(cartPrefix + ".amount", { amount: formatNumber(Number(item.price || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) })}</div>
-            <input className="input" value={item.note || ""} placeholder={t(cartPrefix + ".item_note_placeholder")}
-              style={{ marginTop: 7 }} onChange={event => onNote(item.id, event.target.value)} />
           </div>
           <div className="qty">
             <button type="button" onClick={() => onDecrease(item)}>−</button>
             <strong>{item.qty}</strong>
             <button type="button" onClick={() => onIncrease(item.id)}>+</button>
           </div>
+          <input className="input" data-note={item.id} value={item.note || ""} placeholder={t(cartPrefix + ".item_note_placeholder")}
+            onChange={event => onNote(item.id, event.target.value)} />
         </div>
       )) : <div className="empty">{t(emptyTextKey || cartPrefix + ".empty")}</div>}
     </div>

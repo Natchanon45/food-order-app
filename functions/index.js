@@ -265,6 +265,8 @@ const operationalOrders = require("./operational-orders");
 exports.createWalkInOrder = operationalOrders.createWalkInOrder;
 exports.assignWalkInTable = operationalOrders.assignWalkInTable;
 exports.moveTableSession = operationalOrders.moveTableSession;
+exports.settleTableSession = operationalOrders.settleTableSession;
+exports.closeWalkInTable = operationalOrders.closeWalkInTable;
 exports.releaseQuickOrderHeldBill = operationalOrders.releaseQuickOrderHeldBill;
 
 const lalamoveWebhook = require("./lalamove-webhook");

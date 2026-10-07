@@ -11,7 +11,7 @@ const lalamoveLifecycle=require(path.join(root,"functions/lalamove-order-lifecyc
 const test=operational.__test;
 const read=p=>fs.readFileSync(path.join(root,p),"utf8");
 
-assert.deepEqual(Object.keys(operational).sort(),["assignWalkInTable","createWalkInOrder","moveTableSession","releaseQuickOrderHeldBill"]);
+assert.deepEqual(Object.keys(operational).sort(),["assignWalkInTable","closeWalkInTable","createWalkInOrder","moveTableSession","releaseQuickOrderHeldBill","settleTableSession"]);
 assert.equal(test.queueNumber(3),"Q003");
 assert.equal(test.queueNumber(1012),"Q1012");
 assert.equal(test.bangkokDateKey(new Date("2026-09-27T17:30:00Z")),"2026-09-28");
@@ -31,6 +31,11 @@ assert.equal(test.tableAvailable({active:true,status:"occupied",orderToken:""}),
 assert.equal(test.tableAvailable({active:true,status:"occupied",walkInOrderId:"walkin-a"}, "walkin-a"),true);
 assert.equal(test.tableAvailable({active:true,status:"occupied",walkInOrderId:"walkin-a"}, "walkin-b"),false);
 assert.equal(test.tableAvailable({active:true,status:"available",orderToken:"qr-token"}),false);
+assert.equal(test.waitingQueuePlaceholder({waitingQueueId:"wq-1",roundNumber:0,items:[],totalAmount:0}),true);
+assert.equal(test.waitingQueuePlaceholder({waitingQueueId:"wq-1",roundNumber:1,items:[],totalAmount:0}),false);
+assert.equal(test.orderFullyServed({status:"served",items:[{served:false}]}),true);
+assert.equal(test.orderFullyServed({status:"ready",items:[{served:true},{served:true}]}),true);
+assert.equal(test.orderFullyServed({status:"ready",items:[{served:true},{served:false}]}),false);
 
 const completionAt="2026-10-03T03:00:00.000Z";
 assert.deepEqual(
@@ -90,6 +95,9 @@ for(const marker of [
   'orderType: "walkin"', 'orderSource: "cashier_walkin"', 'paymentStatus: "paid"',
   'tx.create(orderRef, order)', 'nextQueue(tx, db, tenantId)', 'claimedTablePatch',
   'existingBeforeValidation.exists', 'return { item, idempotent: true }',
+  'exports.settleTableSession', 'TABLE_SETTLEMENT_ROLES', 'releasedQrTablePatch',
+  'waitingQueuePlaceholder(row)', 'orderFullyServed(row)',
+  'exports.closeWalkInTable', 'tableOccupancyStatus: "closed"', 'releasedTablePatch',
   'exports.releaseQuickOrderHeldBill', 'HELD_BILL_OPERATION_ID_INVALID',
   'releaseOperationId: operationId', 'HELD_BILL_ALREADY_RELEASED'
 ]) assert.ok(functionSource.includes(marker),`function contract missing: ${marker}`);
@@ -101,6 +109,7 @@ const adapter=read("react-app/src/data/operationalData.js");
 for(const marker of [
   'loadOperationalSnapshot', 'watchOperationalOrders', 'watchOperationalTables',
   'watchQuickOrderHeldBills', 'createWalkInCallable', 'assignWalkInTableCallable', 'moveTableSessionCallable',
+  'settleTableSessionCallable', 'closeWalkInTableCallable', 'export async function settleTableSession', 'export async function closeWalkInTable',
   'source: "quick_order"', 'HELD_BILL_SOURCE_MISMATCH',
   'function documentRow(snapshot)', 'legacyId: embeddedId', 'id: snapshot.id', 'snapshot.docs.map(documentRow)'
 ]) assert.ok(adapter.includes(marker),`React data adapter missing: ${marker}`);
@@ -138,10 +147,14 @@ assert.ok(cashierSource.includes('if (lalamoveCodAwaitingSettlement(order)) retu
 assert.ok(cashierSource.includes('if (order.status === "completed" || lalamoveDeliveryCompleted(order)) return false;'),"Cashier completed-order terminal guard missing");
 assert.ok(cashierSource.includes('normalizedOrders.filter(lalamoveCompletionStale)'),"Cashier stale-completed repair scan missing");
 assert.ok(cashierSource.includes('refreshLalamoveDispatch(tenant.id, orderId)'),"Cashier stale-completed repair callable missing");
+assert.ok(cashierSource.includes('CASHIER_TABLE_SETTLEMENT_REPAIR_FAILED'),"Cashier stale table-settlement repair scan missing");
+assert.ok(cashierSource.includes('settleTableSession(tenant.id, rounds[0].id)'),"Cashier table payment settlement callable missing");
 const kitchenSource=read("react-app/src/pages/KitchenPage.jsx");
 assert.ok(kitchenSource.includes('ACTIVE_STATUSES.has(order.status) && !lalamoveDeliveryCompleted(order)'),"Kitchen stale-completed Lalamove guard missing");
 assert.ok(kitchenSource.includes('orders.filter(lalamoveCompletionStale)'),"Kitchen stale-completed repair scan missing");
 assert.ok(kitchenSource.includes('refreshLalamoveDispatch(tenant.id, orderId)'),"Kitchen stale-completed repair callable missing");
+assert.ok(kitchenSource.includes('data-serve-item={order.id}'),"Kitchen per-item serve action missing");
+assert.ok(kitchenSource.includes('settleTableSession(tenant.id, order.id)'),"Kitchen final serve table settlement callable missing");
 const notifierSource=read("react-app/src/components/CashierOrderNotifier.jsx");
 assert.ok(notifierSource.includes('new Set(["paid", "completed", "cancelled", "deleted", "voided"])'),"Notifier terminal-order guard missing");
 

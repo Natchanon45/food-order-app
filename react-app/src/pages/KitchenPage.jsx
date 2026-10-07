@@ -11,6 +11,7 @@ import {
   cancelOperationalOrder,
   loadOperationalSnapshot,
   refreshLalamoveDispatch,
+  settleTableSession,
   updateOperationalOrder,
   watchOperationalOrders,
 } from "@/data/operationalData";
@@ -84,6 +85,23 @@ function lalamoveDispatchActive(order) {
 function isKitchenLocked(order) {
   return ["served", "paid", "completed", "cancelled"].includes(order?.status) || lalamoveDispatchActive(order);
 }
+function supportsItemServe(order) {
+  return isTableOrder(order) || isWalkIn(order);
+}
+function activeItems(order) {
+  return (Array.isArray(order?.items) ? order.items : []).filter(item => item?.cancelled !== true);
+}
+function canServeItem(order, item) {
+  return supportsItemServe(order)
+    && order?.status === "ready"
+    && item
+    && item.cancelled !== true
+    && item.served !== true;
+}
+function allItemsServed(order, items = order?.items || []) {
+  const rows = (Array.isArray(items) ? items : []).filter(item => item?.cancelled !== true);
+  return supportsItemServe(order) && rows.length > 0 && rows.every(item => item?.served === true);
+}
 function recalculateOrder(order, items) {
   const subtotalAmount = items.filter(item => !item.cancelled)
     .reduce((sum, item) => sum + Number(item.qty || 0) * Number(item.price || 0), 0);
@@ -149,7 +167,7 @@ function LalamoveNotice({ order, t }) {
 }
 
 function KitchenOrderCard({
-  order, nested = false, t, formatTime, money, onEditItem, onCancelItem, onCancelOrder, onStatus,
+  order, nested = false, t, formatTime, money, onEditItem, onCancelItem, onServeItem, onCancelOrder, onStatus,
 }) {
   const locked = isKitchenLocked(order);
   const overdue = ["pending", "accepted", "cooking"].includes(order?.status) && ageMinutes(order) >= 15;
@@ -180,11 +198,14 @@ function KitchenOrderCard({
           <strong>{Number(item.qty || 0)} × {String(item.name || "")}{item.isGift === true ? ` ${t("kitchen.order.gift_suffix")}` : ""}</strong>
           {item.note ? <><br /><small>{t("kitchen.order.item_note")} {item.note}</small></> : null}
           {item.cancelled ? <><br /><small>{t("kitchen.states.cancelled")}</small></>
-            : locked ? <div className="kitchen-item-actions"><span className="badge">{lockedItemLabel(order, t)}</span></div>
-              : <div className="kitchen-item-actions">
-                  <button className="btn btn-sm" type="button" data-edit-item={order.id} data-item-index={index} onClick={() => onEditItem(order, index)}><i className="bi bi-pencil" aria-hidden="true"></i><span>{t("kitchen.actions.edit")}</span></button>
-                  <button className="btn btn-danger btn-sm" type="button" data-cancel-item={order.id} data-item-index={index} onClick={() => onCancelItem(order, index)}><i className="bi bi-x-circle app-icon" aria-hidden="true"></i><span>{t("kitchen.actions.cancel")}</span></button>
-                </div>}
+            : supportsItemServe(order) && item.served === true
+              ? <div className="kitchen-item-actions"><span className="badge">{t("kitchen.actions.served")}</span></div>
+              : locked ? <div className="kitchen-item-actions"><span className="badge">{lockedItemLabel(order, t)}</span></div>
+                : <div className="kitchen-item-actions">
+                    <button className="btn btn-sm" type="button" data-edit-item={order.id} data-item-index={index} onClick={() => onEditItem(order, index)}><i className="bi bi-pencil" aria-hidden="true"></i><span>{t("kitchen.actions.edit")}</span></button>
+                    <button className="btn btn-danger btn-sm" type="button" data-cancel-item={order.id} data-item-index={index} onClick={() => onCancelItem(order, index)}><i className="bi bi-x-circle app-icon" aria-hidden="true"></i><span>{t("kitchen.actions.cancel")}</span></button>
+                    {canServeItem(order, item) ? <button className="btn btn-dark btn-sm kitchen-serve-item-action" type="button" data-serve-item={order.id} data-item-index={index} onClick={() => onServeItem(order, index)}><i className="bi bi-send-check app-icon" aria-hidden="true"></i><span>{t("kitchen.actions.serve_item")}</span></button> : null}
+                  </div>}
         </li>
       ))}
     </ul>
@@ -289,6 +310,7 @@ export function KitchenPage() {
   const [editor, setEditor] = useState(null);
   const [editorBusy, setEditorBusy] = useState(false);
   const completionRepairRef = useRef(new Set());
+  const tableSettlementRepairRef = useRef(new Set());
   const allowedRole = ["owner", "admin", "kitchen"].includes(profile?.role);
 
   const money = value => `${formatNumber(Number(value || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${t("kitchen.units.currency")}`;
@@ -337,6 +359,23 @@ export function KitchenPage() {
         console.warn("KITCHEN_LALAMOVE_COMPLETION_REPAIR_FAILED", orderId, error);
         window.setTimeout(() => completionRepairRef.current.delete(orderId), 10000);
       });
+    });
+  }, [tenant?.id, allowedRole, orders]);
+
+  useEffect(() => {
+    if (!tenant?.id || !allowedRole) return;
+    orders.filter(order => isTableOrder(order)
+      && String(order?.paymentStatus || "").toLowerCase() === "paid"
+      && (String(order?.status || "").toLowerCase() === "served" || allItemsServed(order))
+    ).forEach(order => {
+      const orderId = String(order.id || "");
+      if (!orderId || tableSettlementRepairRef.current.has(orderId)) return;
+      tableSettlementRepairRef.current.add(orderId);
+      settleTableSession(tenant.id, orderId)
+        .catch(error => {
+          console.warn("KITCHEN_TABLE_SETTLEMENT_REPAIR_FAILED", orderId, error);
+          window.setTimeout(() => tableSettlementRepairRef.current.delete(orderId), 10000);
+        });
     });
   }, [tenant?.id, allowedRole, orders]);
 
@@ -446,22 +485,59 @@ export function KitchenPage() {
     }
   };
 
-  const changeStatus = async (order, status) => {
-    if (!order?.id || isKitchenLocked(order)) return;
-    const patch = { status };
-    if (status === "served") patch.servedAt = new Date().toISOString();
-    if (isTakeaway(order) && status === "ready") patch.pickupStatus = "ready";
-    if (isTakeaway(order) && status === "served") patch.pickupStatus = "served";
-    if (isDelivery(order) && status === "served" && order.paymentStatus === "paid") {
-      patch.status = "paid";
-      patch.completedAt = new Date().toISOString();
-    }
-    if (isWalkIn(order) && status === "served" && order.paymentStatus === "paid") {
-      patch.status = "paid";
-      patch.completedAt = new Date().toISOString();
+  const serveItem = async (order, itemIndex) => {
+    const item = order?.items?.[itemIndex];
+    if (!canServeItem(order, item)) return;
+    const now = new Date().toISOString();
+    const items = order.items.map((row, index) => index === itemIndex
+      ? { ...row, served: true, servedAt: now }
+      : row);
+    const complete = allItemsServed(order, items);
+    const paid = String(order.paymentStatus || "").toLowerCase() === "paid";
+    const patch = { items, lastServedItemAt: now };
+    if (complete) {
+      patch.status = paid ? "paid" : "served";
+      patch.servedAt = now;
+      if (paid) patch.completedAt = now;
     }
     try {
       await updateOrder(order.id, patch);
+      if (complete && isTableOrder(order)) {
+        await settleTableSession(tenant.id, order.id);
+      }
+      showToast(t(complete ? "kitchen.toast.order_served" : "kitchen.toast.item_served"));
+    } catch (error) {
+      console.error("KITCHEN_SERVE_ITEM_FAILED", error);
+      showToast(t("kitchen.toast.item_serve_failed"), "error");
+    }
+  };
+
+  const changeStatus = async (order, status) => {
+    if (!order?.id || isKitchenLocked(order)) return;
+    const now = new Date().toISOString();
+    const patch = { status };
+    if (status === "served") {
+      patch.servedAt = now;
+      if (supportsItemServe(order)) {
+        patch.items = (order.items || []).map(item => item.cancelled
+          ? item
+          : { ...item, served: true, servedAt: item.servedAt || now });
+        patch.lastServedItemAt = now;
+      }
+    }
+    if (isTakeaway(order) && status === "ready") patch.pickupStatus = "ready";
+    if (isTakeaway(order) && status === "served") patch.pickupStatus = "served";
+    if ((isDelivery(order) || isWalkIn(order) || isTableOrder(order))
+      && status === "served"
+      && order.paymentStatus === "paid") {
+      patch.status = "paid";
+      patch.completedAt = now;
+    }
+    try {
+      await updateOrder(order.id, patch);
+      if (status === "served" && isTableOrder(order)) {
+        await settleTableSession(tenant.id, order.id);
+      }
       const key = isTakeaway(order) && patch.status === "served"
         ? "kitchen.toast.takeaway_served"
         : isTakeaway(order) && patch.status === "ready"
@@ -534,8 +610,9 @@ export function KitchenPage() {
     t,
     formatTime,
     money,
-    onEditItem: (order, index) => { if (!isKitchenLocked(order)) setEditor({ order, index }); },
+    onEditItem: (order, index) => { if (!isKitchenLocked(order) && order?.items?.[index]?.served !== true) setEditor({ order, index }); },
     onCancelItem: cancelItem,
+    onServeItem: serveItem,
     onCancelOrder: cancelOrder,
     onStatus: changeStatus,
   };

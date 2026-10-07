@@ -4,6 +4,7 @@ const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
 const REGION = "asia-southeast1";
 const WALK_IN_ROLES = new Set(["owner", "admin", "manager", "cashier", "super_admin"]);
+const TABLE_SETTLEMENT_ROLES = new Set(["owner", "admin", "manager", "cashier", "kitchen", "super_admin"]);
 const CLOSED_STATUSES = new Set(["paid", "cancelled", "voided", "deleted", "completed"]);
 
 function text(value = "", max = 500) {
@@ -34,13 +35,13 @@ function queueNumber(sequence) {
   return `Q${String(sequence).padStart(3, "0")}`;
 }
 
-async function callerContext(request) {
+async function callerContext(request, allowedRoles = WALK_IN_ROLES) {
   if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
   const db = getFirestore();
   const profileSnap = await db.collection("users").doc(request.auth.uid).get();
   const profile = profileSnap.data();
-  if (!profile || profile.active === false || !WALK_IN_ROLES.has(profile.role)) {
-    throw new HttpsError("permission-denied", "Walk-in order permission required");
+  if (!profile || profile.active === false || !allowedRoles.has(profile.role)) {
+    throw new HttpsError("permission-denied", "Operational order permission required");
   }
   const tenantId = text(profile.tenantId, 160);
   if (!tenantId && profile.role !== "super_admin") {
@@ -143,6 +144,38 @@ function releasedTablePatch() {
     walkInOccupiedAt: FieldValue.delete(), occupancyType: "available",
     updatedAt: FieldValue.serverTimestamp(),
   };
+}
+
+function releasedQrTablePatch() {
+  return {
+    ...releasedTablePatch(),
+    orderToken: "",
+    currentRound: 0,
+    orderIds: [],
+    sessionStartedAt: null,
+    queueNo: FieldValue.delete(),
+    queueSequence: FieldValue.delete(),
+    queueDate: FieldValue.delete(),
+  };
+}
+
+function waitingQueuePlaceholder(order = {}) {
+  const items = Array.isArray(order.items) ? order.items : [];
+  return Boolean(order.waitingQueueId)
+    && Number(order.roundNumber || 0) === 0
+    && items.length === 0
+    && Number(order.totalAmount ?? order.total ?? 0) === 0;
+}
+
+function activeOrderItems(order = {}) {
+  return (Array.isArray(order.items) ? order.items : []).filter(item => item?.cancelled !== true);
+}
+
+function orderFullyServed(order = {}) {
+  const status = text(order.status, 30).toLowerCase();
+  if (["served", "paid", "completed"].includes(status)) return true;
+  const items = activeOrderItems(order);
+  return items.length > 0 && items.every(item => item?.served === true);
 }
 
 async function nextQueue(tx, db, tenantId, now = new Date()) {
@@ -387,6 +420,153 @@ exports.moveTableSession = onCall({ region: REGION, timeoutSeconds: 30 }, async 
 });
 
 
+exports.settleTableSession = onCall({ region: REGION, timeoutSeconds: 30 }, async request => {
+  const { db, tenantId } = await callerContext(request, TABLE_SETTLEMENT_ROLES);
+  const orderId = text(request.data?.orderId, 180);
+  if (!orderId) invalid("ORDER_ID_INVALID");
+
+  const orderRef = db.collection("tenants").doc(tenantId).collection("orders").doc(orderId);
+  const triggerSnapshot = await orderRef.get();
+  if (!triggerSnapshot.exists) missing("ORDER_NOT_FOUND");
+  const trigger = { id: triggerSnapshot.id, ...triggerSnapshot.data() };
+  const orderType = text(trigger.orderType, 30).toLowerCase();
+  if (["delivery", "takeaway", "walkin"].includes(orderType) || !text(trigger.tableCode, 120)) {
+    conflict("TABLE_ORDER_REQUIRED");
+  }
+
+  const tableLookup = await findTable(db, tenantId, trigger.tableCode);
+  if (!tableLookup) return { closed: true, alreadyClosed: true, tableCode: text(trigger.tableCode, 120) };
+
+  return db.runTransaction(async tx => {
+    const tableSnapshot = await tx.get(tableLookup.ref);
+    if (!tableSnapshot.exists) return { closed: true, alreadyClosed: true, tableCode: text(trigger.tableCode, 120) };
+    const table = { id: tableSnapshot.id, ...tableSnapshot.data() };
+    const tableToken = text(table.orderToken, 300);
+    const triggerToken = text(trigger.tableToken, 300);
+
+    if (text(table.status, 30).toLowerCase() !== "occupied" || !tableToken || (triggerToken && tableToken !== triggerToken)) {
+      return { closed: true, alreadyClosed: true, tableCode: text(table.code || table.id, 120) };
+    }
+
+    const ids = [...new Set([
+      ...(Array.isArray(table.orderIds) ? table.orderIds : []),
+      orderId,
+    ].map(value => text(value, 180)).filter(Boolean))];
+    const refs = ids.map(id => db.collection("tenants").doc(tenantId).collection("orders").doc(id));
+    const snapshots = await Promise.all(refs.map(ref => tx.get(ref)));
+    const rows = snapshots
+      .filter(snapshot => snapshot.exists)
+      .map(snapshot => ({ id: snapshot.id, ref: snapshot.ref, ...snapshot.data() }))
+      .filter(row => !waitingQueuePlaceholder(row))
+      .filter(row => {
+        const type = text(row.orderType, 30).toLowerCase();
+        const sameToken = text(row.tableToken, 300) === tableToken;
+        return !["delivery", "takeaway", "walkin"].includes(type) && sameToken;
+      });
+
+    if (!rows.length) return { closed: false, reason: "NO_TABLE_ROUNDS", tableCode: text(table.code || table.id, 120) };
+
+    const nowIso = new Date().toISOString();
+    rows.forEach(row => {
+      const status = text(row.status, 30).toLowerCase();
+      if (text(row.paymentStatus, 30).toLowerCase() === "paid"
+        && orderFullyServed(row)
+        && !CLOSED_STATUSES.has(status)) {
+        tx.update(row.ref, {
+          status: "paid",
+          servedAt: row.servedAt || nowIso,
+          completedAt: row.completedAt || nowIso,
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+      }
+    });
+
+    const allSettled = rows.every(row => {
+      const status = text(row.status, 30).toLowerCase();
+      if (CLOSED_STATUSES.has(status)) return true;
+      return text(row.paymentStatus, 30).toLowerCase() === "paid" && orderFullyServed(row);
+    });
+
+    if (allSettled) tx.update(tableLookup.ref, releasedQrTablePatch());
+
+    return {
+      closed: allSettled,
+      normalizedOrders: rows.filter(row =>
+        text(row.paymentStatus, 30).toLowerCase() === "paid"
+        && orderFullyServed(row)
+        && !CLOSED_STATUSES.has(text(row.status, 30).toLowerCase())
+      ).length,
+      tableCode: text(table.code || table.id, 120),
+      orderCount: rows.length,
+    };
+  });
+});
+
+exports.closeWalkInTable = onCall({ region: REGION, timeoutSeconds: 30 }, async request => {
+  const { db, tenantId } = await callerContext(request);
+  const tableIdOrCode = text(request.data?.tableId || request.data?.tableCode, 180);
+  const expectedOrderId = text(request.data?.orderId, 180);
+  if (!tableIdOrCode) invalid("TABLE_NOT_FOUND");
+
+  const tableLookup = await findTable(db, tenantId, tableIdOrCode);
+  if (!tableLookup) missing("TABLE_NOT_FOUND");
+
+  return db.runTransaction(async tx => {
+    const tableSnapshot = await tx.get(tableLookup.ref);
+    if (!tableSnapshot.exists) missing("TABLE_NOT_FOUND");
+    const table = { id: tableSnapshot.id, ...tableSnapshot.data() };
+    const markerOrderId = text(table.walkInOrderId, 180);
+    const occupancyType = text(table.occupancyType, 40).toLowerCase();
+
+    if (!markerOrderId && occupancyType !== "walkin") {
+      if (text(table.status, 30).toLowerCase() === "available") {
+        return { closed: true, alreadyClosed: true, tableId: table.id };
+      }
+      conflict("WALK_IN_TABLE_REQUIRED");
+    }
+    if (expectedOrderId && markerOrderId && expectedOrderId !== markerOrderId) {
+      conflict("WALK_IN_ORDER_MISMATCH");
+    }
+
+    const orderId = markerOrderId || expectedOrderId;
+    const orderRef = orderId
+      ? db.collection("tenants").doc(tenantId).collection("orders").doc(orderId)
+      : null;
+    const orderSnapshot = orderRef ? await tx.get(orderRef) : null;
+    if (orderSnapshot?.exists) {
+      const order = orderSnapshot.data() || {};
+      if (text(order.orderType, 30).toLowerCase() !== "walkin"
+        || text(order.serviceType, 30).toLowerCase() !== "dine_in") {
+        conflict("WALK_IN_DINE_IN_REQUIRED");
+      }
+    }
+
+    const nowIso = new Date().toISOString();
+    tx.update(tableLookup.ref, {
+      ...releasedTablePatch(),
+      orderToken: "",
+      currentRound: 0,
+      orderIds: [],
+      sessionStartedAt: null,
+    });
+    if (orderSnapshot?.exists) {
+      tx.update(orderRef, {
+        tableClosedAt: nowIso,
+        tableOccupancyStatus: "closed",
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    }
+
+    return {
+      closed: true,
+      alreadyClosed: false,
+      tableId: table.id,
+      orderId,
+      tableCode: text(table.code || table.id, 120),
+    };
+  });
+});
+
 exports.releaseQuickOrderHeldBill = onCall({ region: REGION, timeoutSeconds: 30 }, async request => {
   const { db, uid, tenantId } = await callerContext(request);
   const id = text(request.data?.id, 180);
@@ -425,6 +605,6 @@ exports.releaseQuickOrderHeldBill = onCall({ region: REGION, timeoutSeconds: 30 
 });
 
 Object.defineProperty(exports, "__test", {
-  value: { bangkokDateKey, queueNumber, normalizeRequestedItems, priceItems, tableAvailable },
+  value: { bangkokDateKey, queueNumber, normalizeRequestedItems, priceItems, tableAvailable, waitingQueuePlaceholder, orderFullyServed },
   enumerable: false,
 });

@@ -519,6 +519,13 @@ assert(
   &&publicStorefrontComponent.includes('tabs.scrollTo({ left: Math.max(0, left), behavior: "smooth" })'),
   "React Table Order must preserve mobile category scroll-spy highlighting while browsing All without filtering the visible menu list"
 );
+assert(
+  publicStorefrontComponent.includes('className="cart-row cart-row-aligned"')
+  &&publicStorefrontComponent.includes('className="cart-item-info"')
+  &&publicStorefrontComponent.includes('data-note={item.id}')
+  &&publicStorefrontComponent.indexOf('className="qty"')<publicStorefrontComponent.indexOf('data-note={item.id}'),
+  "Table Order current-round cart must keep the legacy two-row layout: item/quantity above and full-width note below"
+);
 const staticDataService=read("public/assets/js/data-service.js");
 const deliveryCustomerAuthFunction=read("functions/delivery-customer-auth.js");
 const firestoreRules=read("firestore.rules");
@@ -1439,6 +1446,25 @@ assert(tableQrPage.includes('bodyClass: "order-delivery-workspace od-qr-page"'),
 assert(tableQrPage.includes('to="/cashier"><i className="bi bi-arrow-left app-icon"'),"Cashier Table QR back button must keep the left-arrow icon");
 assert(odWorkspaceCss.includes("@media (min-width: 1200px)")&&odWorkspaceCss.includes("body.od-qr-page .container")&&odWorkspaceCss.includes("width: min(1440px, calc(100% - 48px));"),"Cashier Table QR desktop container width contract missing");
 assert(odWorkspaceCss.includes('body.od-qr-page :is(#availableTables, #occupiedTables, #walkInTables).grid-3')&&odWorkspaceCss.includes("grid-template-columns: repeat(4, minmax(0, 1fr));"),"Cashier Table QR desktop must render 4 cards per row");
+const operationalData=read("react-app/src/data/operationalData.js");
+const operationalOrdersFunctions=read("functions/operational-orders.js");
+assert(
+  tableQrPage.includes("closeWalkInTable")
+  &&tableQrPage.includes("const closeWalkInTableAction = async table =>")
+  &&tableQrPage.includes("data-close-walkin-table={table.id}")
+  &&tableQrPage.includes('walkin_close_confirm_warning')
+  &&operationalData.includes('httpsCallable(functions, "closeWalkInTable")')
+  &&operationalOrdersFunctions.includes("exports.closeWalkInTable = onCall")
+  &&operationalOrdersFunctions.includes('tableOccupancyStatus: "closed"')
+  &&functionsIndex.includes("exports.closeWalkInTable = operationalOrders.closeWalkInTable;"),
+  "Walk-in seated tables must expose an explicit close-table action that releases occupancy without deleting order history"
+);
+for(const locale of ["th","en","my","lo","km"]){
+  const qr=dict[locale]?.cashier_documents?.table_qr;
+  for(const key of ["walkin_closing","walkin_close_confirm_title","walkin_close_confirm_message","walkin_close_confirm_warning","walkin_close_success","walkin_close_failed"]){
+    assert(qr?.[key],`Walk-in close-table translation missing: ${locale}.${key}`);
+  }
+}
 const quickOrderCss=read("react-app/public/parity/css/quick-order.css");
 assert(quickOrderCss.includes(".quick-held-actions .btn")&&quickOrderCss.includes("display: inline-flex;")&&quickOrderCss.includes("gap: 7px;"),"Quick Order held-bill buttons must preserve icon/text spacing");
 const userMenu=read("react-app/src/components/UserMenu.jsx");
@@ -1537,6 +1563,39 @@ assert(
   &&kitchenItemEditorCss.includes('transform: translateY(1px);'),
   "Kitchen cancel icons must keep Cashier-style vertical centering and x-circle optical alignment"
 );
+assert(
+  kitchenPage.includes("function canServeItem(order, item)")
+  &&kitchenPage.includes('data-serve-item={order.id}')
+  &&kitchenPage.includes('kitchen-serve-item-action')
+  &&kitchenPage.includes('const serveItem = async (order, itemIndex) =>')
+  &&kitchenPage.includes('served: true, servedAt: now')
+  &&kitchenPage.includes('patch.status = paid ? "paid" : "served"')
+  &&kitchenPage.includes("await settleTableSession(tenant.id, order.id)")
+  &&kitchenItemEditorCss.includes(".kitchen-serve-item-action"),
+  "React Kitchen must restore per-item serving for table/Walk-in orders and settle a paid table after the final served item"
+);
+assert(
+  cashierPage.includes("tableSettlementRepairRef")
+  &&cashierPage.includes("CASHIER_TABLE_SETTLEMENT_REPAIR_FAILED")
+  &&cashierPage.includes("const settlement = await settleTableSession(tenant.id, rounds[0].id)")
+  &&operationalData.includes('httpsCallable(functions, "settleTableSession")')
+  &&operationalOrdersFunctions.includes("exports.settleTableSession = onCall")
+  &&operationalOrdersFunctions.includes('const TABLE_SETTLEMENT_ROLES = new Set(["owner", "admin", "manager", "cashier", "kitchen", "super_admin"])')
+  &&operationalOrdersFunctions.includes("waitingQueuePlaceholder(row)")
+  &&operationalOrdersFunctions.includes("orderFullyServed(row)")
+  &&operationalOrdersFunctions.includes("releasedQrTablePatch()")
+  &&functionsIndex.includes("exports.settleTableSession = operationalOrders.settleTableSession;"),
+  "Table settlement must be order-independent: serving then payment or payment then serving must close completed table sessions"
+);
+for(const locale of ["th","en","my","lo","km"]){
+  const kitchen=dict[locale]?.kitchen;
+  for(const key of ["serve_item"]){
+    assert(kitchen?.actions?.[key],`Kitchen item-serve action translation missing: ${locale}.${key}`);
+  }
+  for(const key of ["item_served","order_served","item_serve_failed"]){
+    assert(kitchen?.toast?.[key],`Kitchen item-serve toast translation missing: ${locale}.${key}`);
+  }
+}
 assert(
   cashierPage.includes('CashierOrderNotifier orders={orders} onToast={showToast} surface="cashier"')
   &&kitchenPage.includes('CashierOrderNotifier orders={orders} onToast={showToast} surface="kitchen"'),

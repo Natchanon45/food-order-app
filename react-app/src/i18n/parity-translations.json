@@ -1211,7 +1211,13 @@
         "close_confirm_warning": "QR ใบเดิมจะใช้งานไม่ได้ และโต๊ะจะกลับเป็นโต๊ะว่าง",
         "close_success": "ปิด :table เรียบร้อยแล้ว",
         "close_failed": "ปิดโต๊ะไม่สำเร็จ กรุณาลองใหม่",
-        "expired": "QR ของโต๊ะนี้หมดอายุหรือโต๊ะถูกปิดแล้ว"
+        "expired": "QR ของโต๊ะนี้หมดอายุหรือโต๊ะถูกปิดแล้ว",
+        "walkin_closing": "กำลังปิดโต๊ะ...",
+        "walkin_close_confirm_title": "ปิดโต๊ะ Walk-in",
+        "walkin_close_confirm_message": "ยืนยันปิด :table ใช่หรือไม่?",
+        "walkin_close_confirm_warning": "ระบบจะปล่อยโต๊ะให้ว่าง แต่จะไม่ยกเลิกหรือลบประวัติออเดอร์ Walk-in",
+        "walkin_close_success": "ปิด :table และคืนสถานะเป็นโต๊ะว่างแล้ว",
+        "walkin_close_failed": "ปิดโต๊ะ Walk-in ไม่สำเร็จ กรุณาลองใหม่"
       }
     },
     "common": {
@@ -1796,7 +1802,8 @@
         "edit": "แก้ไข",
         "cancel": "ยกเลิก",
         "cancel_order": "ยกเลิกทั้งออเดอร์",
-        "save_edit": "บันทึกการแก้ไข"
+        "save_edit": "บันทึกการแก้ไข",
+        "serve_item": "เสิร์ฟรายการนี้"
       },
       "states": {
         "cancelled": "ยกเลิกแล้ว",
@@ -1838,7 +1845,10 @@
         "takeaway_ready": "ออเดอร์ Take Away พร้อมเสิร์ฟแล้ว",
         "delivery_completed": "ส่งให้ไรเดอร์และปิดออเดอร์ Delivery แล้ว",
         "status_changed": "เปลี่ยนสถานะเป็น :status",
-        "status_update_failed": "อัปเดตสถานะไม่สำเร็จ"
+        "status_update_failed": "อัปเดตสถานะไม่สำเร็จ",
+        "item_served": "เสิร์ฟรายการนี้แล้ว",
+        "order_served": "เสิร์ฟครบทั้งออเดอร์แล้ว",
+        "item_serve_failed": "บันทึกเสิร์ฟรายการไม่สำเร็จ"
       }
     },
     "legal": {
@@ -7485,7 +7495,13 @@
         "close_confirm_warning": "The current QR will stop working and the table will become available again.",
         "close_success": ":table closed",
         "close_failed": "Could not close the table. Try again.",
-        "expired": "This table QR has expired or the table has already been closed."
+        "expired": "This table QR has expired or the table has already been closed.",
+        "walkin_closing": "Closing table...",
+        "walkin_close_confirm_title": "Close Walk-in table",
+        "walkin_close_confirm_message": "Close :table?",
+        "walkin_close_confirm_warning": "The table will become available. The Walk-in order and its history will not be cancelled or deleted.",
+        "walkin_close_success": ":table is closed and available again",
+        "walkin_close_failed": "Could not close the Walk-in table. Try again."
       }
     },
     "common": {
@@ -8070,7 +8086,8 @@
         "edit": "Edit",
         "cancel": "Cancel",
         "cancel_order": "Cancel entire order",
-        "save_edit": "Save changes"
+        "save_edit": "Save changes",
+        "serve_item": "Serve this item"
       },
       "states": {
         "cancelled": "Cancelled",
@@ -8112,7 +8129,10 @@
         "takeaway_ready": "Take Away order is ready to serve.",
         "delivery_completed": "Delivery handed to the rider and the order is closed.",
         "status_changed": "Status changed to :status",
-        "status_update_failed": "Unable to update the status."
+        "status_update_failed": "Unable to update the status.",
+        "item_served": "Item served",
+        "order_served": "All items in this order have been served",
+        "item_serve_failed": "Could not save the served item"
       }
     },
     "legal": {
@@ -13484,7 +13504,13 @@
         "close_confirm_warning": "လက်ရှိ QR သည် အလုပ်မလုပ်တော့ဘဲ ဇယားကို ပြန်လည်ရရှိနိုင်မည်ဖြစ်သည်။",
         "close_success": ":table ပိတ်ပါသည်။",
         "close_failed": "စားပွဲကို မပိတ်နိုင်ခဲ့ပါ။ ထပ်ကြိုးစားပါ။",
-        "expired": "ဤဇယား QR သက်တမ်းကုန်သွားသည် သို့မဟုတ် ဇယားကို ပိတ်ထားပြီးဖြစ်သည်။"
+        "expired": "ဤဇယား QR သက်တမ်းကုန်သွားသည် သို့မဟုတ် ဇယားကို ပိတ်ထားပြီးဖြစ်သည်။",
+        "walkin_closing": "စားပွဲပိတ်နေသည်...",
+        "walkin_close_confirm_title": "Walk-in စားပွဲပိတ်ရန်",
+        "walkin_close_confirm_message": ":table ကို ပိတ်မလား?",
+        "walkin_close_confirm_warning": "စားပွဲကို ပြန်လည်အားလပ်စေမည်ဖြစ်ပြီး Walk-in အော်ဒါနှင့် မှတ်တမ်းကို ပယ်ဖျက်ခြင်း သို့မဟုတ် ဖျက်ခြင်း မပြုပါ။",
+        "walkin_close_success": ":table ကို ပိတ်ပြီး ပြန်လည်အားလပ်စေပါပြီ",
+        "walkin_close_failed": "Walk-in စားပွဲကို မပိတ်နိုင်ပါ။ ထပ်မံကြိုးစားပါ။"
       }
     },
     "common": {
@@ -14069,7 +14095,8 @@
         "edit": "ပြင်ဆင်",
         "cancel": "ပယ်ဖျက်",
         "cancel_order": "အော်ဒါတစ်ခုလုံး ပယ်ဖျက်",
-        "save_edit": "ပြင်ဆင်မှု သိမ်းမည်"
+        "save_edit": "ပြင်ဆင်မှု သိမ်းမည်",
+        "serve_item": "ဤမီနူးကို ပေးမည်"
       },
       "states": {
         "cancelled": "ပယ်ဖျက်ပြီး",
@@ -14111,7 +14138,10 @@
         "takeaway_ready": "Take Away အော်ဒါ ပေးရန် အဆင်သင့်ဖြစ်ပါပြီ။",
         "delivery_completed": "Rider ထံ လွှဲပြီး Delivery အော်ဒါကို ပိတ်ပြီးပါပြီ။",
         "status_changed": "အခြေအနေကို :status သို့ ပြောင်းပြီးပါပြီ",
-        "status_update_failed": "အခြေအနေကို မပြောင်းနိုင်ပါ။"
+        "status_update_failed": "အခြေအနေကို မပြောင်းနိုင်ပါ။",
+        "item_served": "ဤမီနူးကို ပေးပြီးပါပြီ",
+        "order_served": "အော်ဒါရှိ မီနူးအားလုံး ပေးပြီးပါပြီ",
+        "item_serve_failed": "မီနူးပေးပြီးကြောင်း မသိမ်းနိုင်ပါ"
       }
     },
     "legal": {
@@ -19483,7 +19513,13 @@
         "close_confirm_warning": "QR ປັດຈຸບັນຈະຢຸດເຮັດວຽກ ແລະຕາຕະລາງຈະສາມາດໃຊ້ໄດ້ອີກຄັ້ງ.",
         "close_success": ":table ປິດ",
         "close_failed": "ບໍ່ສາມາດປິດຕາຕະລາງໄດ້. ລອງອີກຄັ້ງ.",
-        "expired": "ຕາຕະລາງນີ້ QR ໝົດອາຍຸແລ້ວ ຫຼືຕາຕະລາງໄດ້ຖືກປິດໄປແລ້ວ."
+        "expired": "ຕາຕະລາງນີ້ QR ໝົດອາຍຸແລ້ວ ຫຼືຕາຕະລາງໄດ້ຖືກປິດໄປແລ້ວ.",
+        "walkin_closing": "ກຳລັງປິດໂຕະ...",
+        "walkin_close_confirm_title": "ປິດໂຕະ Walk-in",
+        "walkin_close_confirm_message": "ຢືນຢັນປິດ :table ບໍ?",
+        "walkin_close_confirm_warning": "ລະບົບຈະປ່ອຍໂຕະໃຫ້ວ່າງ ແຕ່ຈະບໍ່ຍົກເລີກ ຫຼື ລຶບປະຫວັດອໍເດີ Walk-in",
+        "walkin_close_success": "ປິດ :table ແລະຄືນສະຖານະເປັນໂຕະວ່າງແລ້ວ",
+        "walkin_close_failed": "ປິດໂຕະ Walk-in ບໍ່ສຳເລັດ ກະລຸນາລອງໃໝ່"
       }
     },
     "common": {
@@ -20068,7 +20104,8 @@
         "edit": "ແກ້ໄຂ",
         "cancel": "ຍົກເລີກ",
         "cancel_order": "ຍົກເລີກທັງອໍເດີ",
-        "save_edit": "ບັນທຶກການແກ້ໄຂ"
+        "save_edit": "ບັນທຶກການແກ້ໄຂ",
+        "serve_item": "ເສີບລາຍການນີ້"
       },
       "states": {
         "cancelled": "ຍົກເລີກແລ້ວ",
@@ -20110,7 +20147,10 @@
         "takeaway_ready": "ອໍເດີ Take Away ພ້ອມເສີບແລ້ວ.",
         "delivery_completed": "ສົ່ງ Delivery ໃຫ້ Rider ແລ້ວ ແລະ ປິດອໍເດີ.",
         "status_changed": "ປ່ຽນສະຖານະເປັນ :status ແລ້ວ",
-        "status_update_failed": "ບໍ່ສາມາດອັບເດດສະຖານະໄດ້."
+        "status_update_failed": "ບໍ່ສາມາດອັບເດດສະຖານະໄດ້.",
+        "item_served": "ເສີບລາຍການນີ້ແລ້ວ",
+        "order_served": "ເສີບຄົບທັງອໍເດີແລ້ວ",
+        "item_serve_failed": "ບັນທຶກການເສີບລາຍການບໍ່ສຳເລັດ"
       }
     },
     "legal": {
@@ -25482,7 +25522,13 @@
         "close_confirm_warning": "QR បច្ចុប្បន្ននឹងឈប់ដំណើរការ ហើយតារាងនឹងមានម្តងទៀត។",
         "close_success": ":table បានបិទ",
         "close_failed": "មិនអាចបិទតុបានទេ។ ព្យាយាមម្តងទៀត។",
-        "expired": "តារាងនេះ QR បានផុតកំណត់ ឬតារាងត្រូវបានបិទរួចហើយ។"
+        "expired": "តារាងនេះ QR បានផុតកំណត់ ឬតារាងត្រូវបានបិទរួចហើយ។",
+        "walkin_closing": "កំពុងបិទតុ...",
+        "walkin_close_confirm_title": "បិទតុ Walk-in",
+        "walkin_close_confirm_message": "បញ្ជាក់បិទ :table?",
+        "walkin_close_confirm_warning": "ប្រព័ន្ធនឹងធ្វើឱ្យតុទំនេរ ប៉ុន្តែមិនបោះបង់ ឬលុបប្រវត្តិការបញ្ជាទិញ Walk-in ទេ។",
+        "walkin_close_success": "បានបិទ :table ហើយតុអាចប្រើបានវិញ",
+        "walkin_close_failed": "មិនអាចបិទតុ Walk-in បានទេ។ សូមព្យាយាមម្តងទៀត។"
       }
     },
     "common": {
@@ -26067,7 +26113,8 @@
         "edit": "កែសម្រួល",
         "cancel": "បោះបង់",
         "cancel_order": "បោះបង់ការបញ្ជាទិញទាំងមូល",
-        "save_edit": "រក្សាទុកការកែប្រែ"
+        "save_edit": "រក្សាទុកការកែប្រែ",
+        "serve_item": "បម្រើមុខម្ហូបនេះ"
       },
       "states": {
         "cancelled": "បានបោះបង់",
@@ -26109,7 +26156,10 @@
         "takeaway_ready": "ការបញ្ជាទិញ Take Away រួចរាល់សម្រាប់បម្រើ។",
         "delivery_completed": "បានប្រគល់ Delivery ឱ្យ Rider និងបិទការបញ្ជាទិញ។",
         "status_changed": "បានប្តូរស្ថានភាពទៅ :status",
-        "status_update_failed": "មិនអាចធ្វើបច្ចុប្បន្នភាពស្ថានភាពបានទេ។"
+        "status_update_failed": "មិនអាចធ្វើបច្ចុប្បន្នភាពស្ថានភាពបានទេ។",
+        "item_served": "បានបម្រើមុខម្ហូបនេះ",
+        "order_served": "បានបម្រើមុខម្ហូបទាំងអស់ក្នុងការបញ្ជាទិញ",
+        "item_serve_failed": "មិនអាចរក្សាទុកការបម្រើមុខម្ហូបបានទេ"
       }
     },
     "legal": {

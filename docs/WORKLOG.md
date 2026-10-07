@@ -10619,3 +10619,57 @@ Final cutover state:
 - upsertRetailPosStaff business-scope update is deployed.
 - No Firestore Rules or Storage Rules deployment was required.
 - No merge to main.
+
+---
+
+## 2026-10-07 — Table/Walk-in serving and table settlement lifecycle repair
+
+User request:
+- Restore per-item serving in Kitchen for Table and Walk-in orders.
+- After Kitchen serving + Cashier payment, remove the completed order and close the QR table regardless of which action happens first.
+- Add an explicit close-table action for Walk-in customers seated at a table.
+- Restore the previous current-round cart layout shown in the supplied reference: item/price + quantity on the first row, full-width note input on the second row.
+
+Root causes:
+- Legacy kitchen-item-serve.js had per-item serving, but React KitchenPage did not migrate it.
+- React table closing depended on client action order. Payment-first then serving left paid+served rows and the table occupied.
+- Walk-in table management supported moving tables but not releasing a table while preserving order history.
+- React PublicCartList kept the note input inside the item-info column instead of the legacy full-width second grid row.
+
+Implementation:
+- Added settleTableSession callable with Firestore transaction settlement for owner/admin/manager/cashier/kitchen/super_admin.
+- Settlement ignores waiting-queue round-0 placeholders, normalizes paid+served rounds to paid/completed, and releases QR session/token/table occupancy only when all real rounds are terminal or paid+served.
+- Added closeWalkInTable callable. It releases Walk-in occupancy while preserving the order and historical tableCode/tableName; the order receives tableClosedAt and tableOccupancyStatus=closed.
+- Added React data wrappers and Functions exports for both new callables.
+- Kitchen now restores per-item เสิร์ฟรายการนี้ for Table and Walk-in ready orders. Served rows lock individually; final item sets served or paid depending on payment status and then settles Table sessions.
+- Kitchen and Cashier include stale paid+served Table auto-repair so existing stuck sessions self-heal after deployment.
+- Cashier table payment now calls settlement after payment writes rather than deciding table close from stale client state.
+- Walk-in cards on /cashier/table-qr now include a red ปิดโต๊ะ action with a warning that order history is preserved.
+- PublicCartList now natively uses cart-row-aligned, cart-item-info, and a root data-note input, restoring the old two-row current-round layout.
+- Added TH/EN/MY/LO/KM translations and updated operational/foundation/P0 regression contracts.
+
+Verification before deploy:
+- Operational helper tests PASS for waiting-queue placeholder and fully-served detection.
+- node --check functions/operational-orders.js PASS.
+- node --check functions/index.js PASS.
+- npm run test:operational PASS.
+- npm run test:react-parity PASS; callable contract = 57 references / 0 missing exports.
+- npm run build:react PASS.
+- Generated build contract PASS: React Build 2026.10.07.453 / /react/assets/index-B-FB6yXp.js.
+- git diff --check PASS.
+- Read-only candidate on real Production data: one Walk-in card has one ปิดโต๊ะ button; no overflow.
+- Current-round candidate row 404px / note input 404px, ratio 1.000, note below item/quantity row; no overflow.
+- Current Production paid+served Table data triggered the candidate auto-repair scan. The new callable was intentionally not deployed yet, so no Production mutation occurred.
+- Firestore writes during candidate verification: 0.
+
+Release candidate:
+- React 0.4.280 / Build 2026.10.07.453.
+- Public 0.16.32 / Build 2026.10.07.168.
+- Marker TABLE-SERVICE-SETTLEMENT-REPAIR.
+
+Deploy state:
+- Implementation commit/push pending.
+- Functions settleTableSession and closeWalkInTable pending.
+- Hosting Build 453 pending.
+- No Firestore Rules, Storage Rules, or schema migration required.
+- No merge to main.

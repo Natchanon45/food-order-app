@@ -8,6 +8,8 @@ import { auth, db, functions } from "@/firebase/client";
 const createWalkInCallable = httpsCallable(functions, "createWalkInOrder");
 const assignWalkInTableCallable = httpsCallable(functions, "assignWalkInTable");
 const moveTableSessionCallable = httpsCallable(functions, "moveTableSession");
+const settleTableSessionCallable = httpsCallable(functions, "settleTableSession");
+const closeWalkInTableCallable = httpsCallable(functions, "closeWalkInTable");
 const releaseQuickOrderHeldBillCallable = httpsCallable(functions, "releaseQuickOrderHeldBill");
 const quoteLalamoveCallable = httpsCallable(functions, "quoteTenantLalamoveDispatch");
 const placeLalamoveCallable = httpsCallable(functions, "placeTenantLalamoveDispatch");
@@ -221,6 +223,30 @@ export async function createWalkInOrder(tenantId, payload) {
 export async function moveTableSession(tenantId, payload = {}) {
   try {
     const response = await moveTableSessionCallable({ tenantId: requireTenantId(tenantId), ...payload });
+    return response.data;
+  } catch (error) {
+    throw normalizeFunctionError(error);
+  }
+}
+
+export async function settleTableSession(tenantId, orderId) {
+  try {
+    const response = await settleTableSessionCallable({
+      tenantId: requireTenantId(tenantId), orderId: String(orderId || "").trim(),
+    });
+    return response.data;
+  } catch (error) {
+    throw normalizeFunctionError(error);
+  }
+}
+
+export async function closeWalkInTable(tenantId, tableId, orderId = "") {
+  try {
+    const response = await closeWalkInTableCallable({
+      tenantId: requireTenantId(tenantId),
+      tableId: String(tableId || "").trim(),
+      orderId: String(orderId || "").trim(),
+    });
     return response.data;
   } catch (error) {
     throw normalizeFunctionError(error);

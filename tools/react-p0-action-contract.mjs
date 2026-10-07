@@ -167,7 +167,8 @@ requireAll("Cashier payment", cashier, [
 requireAll("Cashier table payment", cashier, [
   "await Promise.all(payable.map(order =>",
   "updateOperationalOrder(tenant.id, order.id, patch)",
-  "closeTableAfterPayment(rounds)",
+  "settleTableSession(tenant.id, rounds[0].id)",
+  "CASHIER_TABLE_SETTLEMENT_AFTER_PAYMENT_FAILED",
   "printTable(printWindow, rounds)",
 ]);
 requireAll("Cashier cancellation", cashier, [
