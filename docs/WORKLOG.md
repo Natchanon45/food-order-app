@@ -11016,3 +11016,38 @@ Production deploy + verification:
   - `app-info.js` exposes Public Build `2026.10.07.172` and marker `FULL-REACT-SYSTEM-CUTOVER`.
 - No Cloud Functions, Firestore Rules, Storage Rules, or schema deployment was required.
 - No merge to `main`.
+
+
+---
+
+## 2026-10-07 — P0 production auth-boundary smoke timing repair
+
+Symptom / investigation:
+- Post-cutover Production P0 browser smoke initially reported 8 auth-boundary failures on selected Admin/Cashier routes even though route rendering itself was healthy.
+- The failing assertion expected anonymous browsers to reach `/login` after a fixed 350 ms delay.
+
+Root cause:
+- Full React startup intentionally resolves Firebase auth, tenant state, and route CSS before page-level redirects on several protected screens.
+- Direct timing measurements against Production confirmed every reported route did redirect correctly, but took roughly 0.9–1.7 seconds.
+- During that interval only the existing loading/readiness UI was rendered; protected workspace content was not exposed.
+- This was therefore a test timing false failure, not an authentication or tenant-data leak.
+
+Change:
+- Updated `tests/react-parity/p0-smoke.spec.mjs` auth-boundary assertions to wait for the actual `/login` URL condition with a 5-second ceiling instead of sleeping exactly 350 ms.
+- Production runtime, auth logic, business logic, Firebase data paths, permissions, Functions, Rules, and release identity were not changed.
+
+Verification:
+- Measured all 8 initially failing routes individually; each reached `/login` in about 0.9–1.7 seconds.
+- Production P0 browser smoke: **52/52 PASS**.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS at React Build `2026.10.07.457` / `/react/assets/index-Dclizvbl.js`.
+- `git diff --check` PASS.
+- React migration coverage remains 53 routes / 21 POS routes / 52 React physical shells / 0 pending shell sync.
+
+Deploy state:
+- Test/documentation-only repair; Production bundle and Build are unchanged.
+- No Firebase Hosting, Functions, Firestore Rules, Storage Rules, or schema deploy is required for this change.
+- No merge to `main`.
+- Commit/push pending at the time of this worklog entry.

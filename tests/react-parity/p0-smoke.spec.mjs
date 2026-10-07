@@ -51,7 +51,7 @@ test.describe("P0 auth boundaries", () => {
   for (const route of protectedRoutes) {
     test(`${route} does not expose protected workspace to an anonymous browser`, async ({ page }) => {
       await page.goto(reactUrl(route), { waitUntil: "domcontentloaded" });
-      await page.waitForTimeout(350);
+      await page.waitForURL(url => url.pathname === "/login", { timeout: 5_000 });
       expect(page.url()).toContain("/login");
     });
   }
