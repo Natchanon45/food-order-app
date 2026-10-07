@@ -11435,3 +11435,44 @@ Deploy state:
 - Production `npm run test:delivery-parity-browser`: **3/3 PASS** against the live Hosting origin.
 - Deployment scope was Hosting only.
 - No Functions, Firestore Rules, Storage Rules, schema changes, or merge to `main`.
+
+
+---
+
+## 2026-10-07 — Delivery header/slip parity TDD repair (Build 2026.10.07.463)
+
+Request:
+- Payment-slip drop-zone icon still did not match Laravel after prior rounds.
+- Delivery header layout must match Laravel while preserving current PENGUIN branding.
+- Continue test-first workflow.
+
+Test-first evidence:
+- Extended `tests/react-parity/delivery-parity.spec.mjs` before changing runtime code.
+- New tests initially failed against Build 2026.10.07.462:
+  - header had only 2 direct children: `brand` + `header-actions`, instead of Laravel's `brand -> badge -> locale` sibling order;
+  - payment-slip icon content was empty because React rendered `bi-image` instead of Laravel's literal `+`.
+
+Laravel baseline:
+- `resources/views/migrated/delivery.blade.php` renders header content as brand then badge; shared layout appends locale switcher after the yielded header.
+- Laravel payment slip markup uses `<div class="payment-slip-icon">+</div>`.
+
+Implementation:
+- `PublicStorefrontHeader` now renders direct siblings in Laravel order:
+  `brand -> badge -> LocaleSwitcher`.
+- PENGUIN branding is preserved; FOD/LUKKAJA branding was not restored.
+- React payment-slip drop zone now renders literal `+` instead of `bi-image`.
+
+Verification before deploy:
+- Delivery parity browser test: **4/4 PASS**.
+- Header test verifies 3 direct children and geometry: badge stays beside brand, locale remains to the right.
+- Payment-slip test verifies exact `+` text and no nested image icon.
+- Existing default-address, saved-address action-icon, and PromptPay layout tests remain PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.07.463` / `/react/assets/index-DT-Uipf5.js`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Commit/push and Hosting-only deploy pending at this checkpoint.
+- No Functions, Firestore Rules, Storage Rules, schema change, or merge to `main`.

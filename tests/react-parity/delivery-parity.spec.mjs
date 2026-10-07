@@ -41,6 +41,24 @@ async function openDelivery(page) {
 }
 
 test.describe("Delivery Laravel behavior parity", () => {
+  test("header keeps Laravel sibling order: brand, badge, language", async ({ page }) => {
+    await openDelivery(page);
+
+    const header = page.locator(".app-header").first();
+    const directChildren = await header.evaluate(element => [...element.children].map(child => ({
+      className: child.className,
+      left: child.getBoundingClientRect().left,
+      right: child.getBoundingClientRect().right,
+    })));
+
+    expect(directChildren).toHaveLength(3);
+    expect(directChildren[0].className).toContain("brand");
+    expect(directChildren[1].className).toContain("badge");
+    expect(directChildren[2].className).toContain("app-locale-switcher");
+    expect(directChildren[1].left - directChildren[0].right).toBeLessThanOrEqual(24);
+    expect(directChildren[2].left).toBeGreaterThan(directChildren[1].right);
+  });
+
   test("profile load automatically selects the default saved address", async ({ page }) => {
     await openDelivery(page);
 
@@ -97,6 +115,9 @@ test.describe("Delivery Laravel behavior parity", () => {
     await expect(page.locator("#promptPayQr")).toBeVisible();
     await expect(page.locator("#paymentLockSummary")).toBeVisible();
     await expect(page.locator("#paymentSlipWrap")).toBeVisible();
+    const slipIcon = page.locator("#paymentSlipContent .payment-slip-icon");
+    await expect(slipIcon).toHaveText("+");
+    await expect(slipIcon.locator("i")).toHaveCount(0);
 
     const order = await page.evaluate(() => {
       const ids = [

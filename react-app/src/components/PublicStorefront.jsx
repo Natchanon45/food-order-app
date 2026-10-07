@@ -25,10 +25,8 @@ export function PublicStorefrontHeader({ title, badge, brandMark = "PG" }) {
   return (
     <header className="app-header">
       <div className="brand"><span className="brand-mark">{brandMark}</span><span>{title}</span></div>
-      <div className="header-actions" style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
-        <LocaleSwitcher />
-        {badge ? <span className="badge">{badge}</span> : null}
-      </div>
+      {badge ? <span className="badge">{badge}</span> : null}
+      <LocaleSwitcher />
     </header>
   );
 }
