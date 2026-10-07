@@ -10763,3 +10763,24 @@ Deploy state:
 - Hosting deploy pending.
 - No Function, Firestore Rules, Storage Rules, or schema change required.
 - No merge to `main`.
+
+Production deploy + verification:
+- Implementation commit `c32b9022` — `style: modernize table QR workspace` pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully.
+- Production release: React `0.4.280` / Build `2026.10.07.454`; Public `0.16.32` / Build `2026.10.07.169`.
+- Production bundle: `/react/assets/index-DL7HiWhy.js`.
+- `/cashier/table-qr` live verification:
+  - QR Hero icon rendered.
+  - paper-size printer icon rendered.
+  - available-table QR action icon rendered.
+  - desktop available-table grid remains four equal columns at the tested 1600 px viewport.
+  - hero radius 28 px, paper panel radius 20 px, card radius 20 px.
+  - horizontal overflow = 0.
+- Table Order live verification:
+  - minus and plus controls render 34 x 34 px with `border-radius: 50%`.
+  - note input remains full-width at 404 px / row 404 px.
+  - horizontal overflow = 0.
+- No related page or HTTP errors.
+- The only browser console 404 is the already-known `/favicon.ico`; it is unrelated to Table QR or current-round UI assets.
+- No Function, Firestore Rules, Storage Rules, or schema deploy was required.
+- No merge to `main`.
