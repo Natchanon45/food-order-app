@@ -215,10 +215,26 @@ export function DeliveryPage() {
           getDeliveryCustomerFavorites(tenant, user),
         ]);
         if (!alive) return;
-        setProfile(nextProfile || { displayName: "", phone: "", addresses: [] });
+        const resolvedProfile = nextProfile || { displayName: "", phone: "", addresses: [] };
+        const addresses = Array.isArray(resolvedProfile.addresses) ? resolvedProfile.addresses : [];
+        const preferredAddress = addresses.find(address => address?.isDefault) || addresses[0] || null;
+
+        setProfile(resolvedProfile);
         setFavoriteIds(new Set(favorites || []));
-        if (nextProfile?.displayName) setRecipientName(current => current || nextProfile.displayName);
-        if (nextProfile?.phone) setRecipientPhone(current => current || nextProfile.phone);
+
+        if (preferredAddress && locationSourceRef.current !== "current-location") {
+          locationResolveSerialRef.current += 1;
+          locationSourceRef.current = "saved-address";
+          setSelectedAddressId(preferredAddress.id);
+          setRecipientName(preferredAddress.recipientName || resolvedProfile.displayName || "");
+          setRecipientPhone(preferredAddress.recipientPhone || resolvedProfile.phone || "");
+          setDeliveryAddress(preferredAddress.address || "");
+          const preferredLocation = normalizeLocation(preferredAddress);
+          if (preferredLocation) setDeliveryLocation(preferredLocation);
+        } else {
+          if (resolvedProfile.displayName) setRecipientName(current => current || resolvedProfile.displayName);
+          if (resolvedProfile.phone) setRecipientPhone(current => current || resolvedProfile.phone);
+        }
       } catch (error) {
         console.error("DELIVERY_CUSTOMER_PROFILE_LOAD_FAILED", error);
       } finally {
@@ -775,9 +791,9 @@ export function DeliveryPage() {
                     <input type="radio" name="savedDeliveryAddressReact" value={address.id} checked={selectedAddressId === address.id} onChange={() => selectAddress(address)} />
                     <div><div className="address-card-title">{address.label || t("delivery.checkout.address.fallback_label")}{address.isDefault ? <span className="address-default">{t("delivery.checkout.address.default_badge")}</span> : null}</div><div className="address-card-text"><strong>{address.recipientName || profile.displayName || ""}</strong><br/>{address.address}</div></div>
                     <div className="address-card-actions">
-                      <button type="button" className="btn btn-sm" onClick={event => { event.preventDefault(); setAddressEditor({ ...address }); }}>{t("delivery.checkout.address.edit")}</button>
-                      {!address.isDefault ? <button type="button" className="btn btn-sm" onClick={event => { event.preventDefault(); makeDefault(address); }}>{t("delivery.checkout.address.set_default")}</button> : null}
-                      <button type="button" className="btn btn-danger btn-sm" onClick={event => { event.preventDefault(); deleteAddress(address); }}>{t("delivery.checkout.address.delete")}</button>
+                      <button type="button" className="btn btn-sm" onClick={event => { event.preventDefault(); setAddressEditor({ ...address }); }}><i className="bi bi-pencil app-icon" aria-hidden="true"></i><span>{t("delivery.checkout.address.edit")}</span></button>
+                      {!address.isDefault ? <button type="button" className="btn btn-sm" onClick={event => { event.preventDefault(); makeDefault(address); }}><i className="bi bi-star app-icon" aria-hidden="true"></i><span>{t("delivery.checkout.address.set_default")}</span></button> : null}
+                      <button type="button" className="btn btn-danger btn-sm" onClick={event => { event.preventDefault(); deleteAddress(address); }}><i className="bi bi-trash3 app-icon" aria-hidden="true"></i><span>{t("delivery.checkout.address.delete")}</span></button>
                     </div>
                   </label>) : <div className="empty" style={{ padding: "20px 10px" }}>{t("delivery.checkout.address.none_saved")}</div>}
                 </div>
@@ -833,6 +849,10 @@ export function DeliveryPage() {
 
               {paymentMethod === "promptpay" ? <div id="promptPaySection" className="card" style={{ marginTop: 12, textAlign: "center" }}>
                 <h3 style={{ marginTop: 0 }}><i className="bi bi-qr-code app-icon"></i><span>{t("delivery.checkout.payment.promptpay_title")}</span></h3>
+                {!paymentLocked && !promptPayQr.src ? <div id="promptPayPlaceholder" className="empty" style={{ padding: "24px 12px" }}>{promptPayQr.error || t("delivery.checkout.payment.add_items_for_qr")}</div> : null}
+                {paymentLocked && promptPayQr.src ? <img id="promptPayQr" src={promptPayQr.src} width="220" height="220" alt={t("delivery.checkout.payment.qr_alt")} /> : null}
+                {paymentLocked && promptPayQr.error ? <div className="empty">{promptPayQr.error}</div> : null}
+                {paymentLocked ? <><div><strong id="promptPayAmount">{money(total)} {t("delivery.checkout.units.baht")}</strong></div><div id="promptPayName" className="menu-category">{settings.promptPayName || settings.promptPayAccountName || settings.shopName || ""}</div></> : null}
                 <div id="paymentLockPanel" className="payment-lock-panel">
                   {!paymentLocked ? <div className="payment-lock-state" id="paymentLockState"><strong>{t("delivery.checkout.payment_lock.unlocked_title")}</strong><span>{t("delivery.checkout.payment_lock.unlocked_help")}</span></div> : <div className="payment-lock-summary" id="paymentLockSummary">
                     <div><span>{t("delivery.checkout.summary.food_subtotal")}</span><strong id="lockedSubtotal">{money(lockedTotal?.subtotal ?? subtotal)}</strong></div>
@@ -844,10 +864,7 @@ export function DeliveryPage() {
                     {paymentLocked ? <button className="btn" id="editLockedOrder" type="button" onClick={() => { setPaymentLocked(false); setLockedTotal(null); clearSlip(); }}><i className="bi bi-pencil app-icon"></i><span>{t("delivery.checkout.payment_lock.edit_short")}</span></button> : null}
                   </div>
                 </div>
-                {!paymentLocked && !promptPayQr.src ? <div id="promptPayPlaceholder" className="empty" style={{ padding: "24px 12px" }}>{promptPayQr.error || t("delivery.checkout.payment.add_items_for_qr")}</div> : null}
-                {paymentLocked && promptPayQr.src ? <img id="promptPayQr" src={promptPayQr.src} width="220" height="220" alt={t("delivery.checkout.payment.qr_alt")} /> : null}
-                {paymentLocked && promptPayQr.error ? <div className="empty">{promptPayQr.error}</div> : null}
-                {paymentLocked ? <><div><strong id="promptPayAmount">{money(total)} {t("delivery.checkout.units.baht")}</strong></div><div id="promptPayName" className="menu-category">{settings.promptPayName || settings.promptPayAccountName || settings.shopName || ""}</div>
+                {paymentLocked ? <>
                   <div className="payment-slip-wrap" id="paymentSlipWrap" style={{ marginTop: 14, textAlign: "left" }}>
                     <label style={{ fontSize: 13, fontWeight: 700, color: "var(--muted)" }}>{t("delivery.checkout.payment.slip_label")} *</label>
                     <div className={"payment-slip-dropzone" + (slipFile ? " has-file" : "")} id="paymentSlipDropzone">

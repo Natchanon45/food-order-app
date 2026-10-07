@@ -11380,3 +11380,53 @@ Deploy state:
 - Production P0 browser smoke: **52/52 PASS**.
 - Deployment scope was Hosting only.
 - No Functions, Firestore Rules, Storage Rules, schema changes, or merge to `main`.
+
+
+---
+
+## 2026-10-07 — Delivery parity TDD repair (Build 2026.10.07.462)
+
+Request:
+- Use test-first workflow before fixing Delivery parity regressions.
+- Saved-address radio must auto-select like Laravel.
+- Saved-address actions must include icons.
+- PromptPay locked layout must visually follow the Laravel runtime order shown side-by-side by the user.
+
+Test-first evidence:
+- Added `tests/react-parity/delivery-parity.spec.mjs` before changing runtime code.
+- Initial run against Build 2026.10.07.461 failed 3/3:
+  1. default saved-address radio remained unchecked,
+  2. Edit / Set default / Delete had no icons,
+  3. `paymentLockPanel` appeared before QR/account instead of after it.
+- Added `npm run test:delivery-parity-browser` and included it in `test:react-parity-full`.
+
+Laravel MASTER baseline:
+- Profile load chooses `addresses.find(item => item.isDefault) || addresses[0]` and marks it selected.
+- PromptPay runtime inserts `paymentLockPanel` after QR + amount + account name and before payment slip.
+
+Implementation:
+- Customer profile load now automatically selects the default saved address, falling back to the first saved address.
+- Auto-selection restores recipient name, phone, delivery text, and saved coordinates when available.
+- Current-location nearest-address behavior keeps priority when GPS resolution is already active.
+- Added Bootstrap icons:
+  - Edit: `bi-pencil`
+  - Set default: `bi-star`
+  - Delete: `bi-trash3`
+- Reordered React PromptPay locked DOM to match Laravel:
+  QR -> amount -> account name -> lock summary/actions -> payment slip.
+- No Firebase schema, Functions, Rules, Lalamove, order, or payment business logic changed.
+
+Verification before deploy:
+- Delivery parity browser test: **3/3 PASS**.
+- Tests also verify action icons remain inside button bounds.
+- PromptPay test verifies both DOM order and vertical visual order.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- React callable contract: 59 references / 0 missing exports.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.07.462` / `/react/assets/index-BDGLjQ-X.js`.
+- `git diff --check` PASS.
+- No backend/Rules/schema changes.
+
+Deploy state:
+- Commit/push and Hosting-only deploy pending at this checkpoint.
