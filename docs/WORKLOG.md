@@ -10828,3 +10828,14 @@ Deploy state:
 - Hosting deploy pending.
 - No Function, Firestore Rules, Storage Rules, or schema change required.
 - No merge to `main`.
+
+Production deploy + verification:
+- Implementation commit `9b9cbde1` — `fix: use icons for table order quantity controls` pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully.
+- Production release: React `0.4.280` / Build `2026.10.07.455`; Public `0.16.32` / Build `2026.10.07.170`.
+- Production bundle: `/react/assets/index-C4r_QqpA.js`.
+- Production bundle SHA-256 exactly matches the locally tested candidate: `bbc05da260e34c9d3c69229c7fc3f8c81669b68cb79a831827f7905e3a549aca`.
+- Production bundle contains `bi bi-dash-lg`, `bi bi-plus-lg`, localized quantity-label keys, and `cart-qty-button` markers.
+- Therefore the Production artifact is the same artifact that browser verification confirmed renders through `font-family: bootstrap-icons` with empty button text.
+- No Function, Firestore Rules, Storage Rules, or schema deploy was required.
+- No merge to `main`.
