@@ -11097,7 +11097,7 @@ Data/deployment boundary:
 - No Firebase collection/schema/internal-ID rename.
 - No Firestore Rules, Storage Rules, or Cloud Functions change/deploy is required.
 - Existing React parity CSS, static fonts/images, Bootstrap Icons, compatibility URLs, and old hashed React bundles required by the stale-tab recovery policy remain intentionally.
-- Hosting deployment for Build `.458` is pending this implementation commit.
+- Hosting deployment for Build `.458` completed successfully after implementation commit `8a4044bc`.
 - No merge to `main`.
 
 
@@ -11151,5 +11151,10 @@ Scope / safety:
 - This establishes a React-only frontend runtime. It does not claim every authenticated/data-writing parity action has 100% automated side-effect verification; that broader verification program remains tracked separately.
 
 Commit / push / deploy:
-- Implementation commit/push pending at this checkpoint.
-- Firebase Hosting-only deployment pending after commit/push.
+- Implementation commit `8a4044bc` — `refactor: remove legacy frontend runtime` pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production loads `/react/assets/index-Dr6zxvtM.js` plus `firebase-NSZn2s4d.js`, `react-vendor-C6B81y6D.js`, and `rolldown-runtime-hePW80VL.js`.
+- Production P0 browser smoke: **52/52 PASS**.
+- Production removed endpoints for Admin/POS legacy JS, global legacy CSS, jQuery, and Select2 return HTTP 404.
+- `/react/index.html` canonicalizes with HTTP 301 to `/react`; root Production shell and browser resource inspection confirm Build `.458` assets are live.
+- Deployment scope was Hosting only. No Functions, Firestore Rules, Storage Rules, schema deploy, or merge to `main`.
