@@ -7,6 +7,7 @@ import { firstAllowedPosPage, getPosPermissions, PosNavigation } from "@/compone
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { sweetConfirm } from "@/components/sweetDialog";
 import { listPosSales, listPosTaxInvoices } from "@/data/retailPosData";
+import * as taxApi from "@/data/retailPosTaxInvoiceData";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
@@ -17,11 +18,6 @@ const STALE_SYNC_MS = 24 * 60 * 60 * 1000;
 const DBD_LOOKUP_URL_KEY = "retail_pos_dbd_lookup_url";
 const DEFAULT_DBD_LOOKUP_URL = "/api/tax-buyer/lookup";
 const DBD_DATAWAREHOUSE_URL = "https://datawarehouse.dbd.go.th/juristic";
-let legacyTaxApiPromise = null;
-const legacyTaxApi = () => {
-  if (!legacyTaxApiPromise) legacyTaxApiPromise = import(/* @vite-ignore */ "/assets/js/retail-pos-full-tax-invoice.js?v=20260716-017");
-  return legacyTaxApiPromise;
-};
 const readJson = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
 const asDate = value => {
   if (value?.toDate) return value.toDate();
@@ -137,7 +133,7 @@ export function PosTaxInvoicesPage() {
     setRefreshBusy(true); setLoadError("");
     const health = { checkedAt: Date.now(), pendingTaxError: "", profileError: "", remoteListError: "" };
     try {
-      const api = await legacyTaxApi();
+      const api = taxApi;
       if (sync) { try { await api.syncPendingTaxInvoices(); } catch (error) { health.pendingTaxError = tr("invoice_load_error", { error: String(error?.message || error || "").slice(0, 90) }); } }
       try { await api.syncTaxBuyerProfiles(); } catch (error) { health.profileError = tr("profile_load_error", { error: String(error?.message || error || "").slice(0, 90) }); }
       let remoteInvoices = [];
@@ -273,7 +269,7 @@ export function PosTaxInvoicesPage() {
     const id = String(sale?.id || ""), number = String(sale?.saleNumber || sale?.number || "");
     return invoices.find(row => (id && String(row.saleId || row.sourceSale?.id || "") === id) || (number && String(row.saleNumber || row.sourceSale?.saleNumber || "") === number)) || null;
   };  const showLateDialog = async sale => {
-    const api = await legacyTaxApi(); const defaults = api.defaultBuyerFromSale(sale) || {};
+    const api = taxApi; const defaults = api.defaultBuyerFromSale(sale) || {};
     setCurrentSourceSale(sale); setLateBuyer({ buyerTaxId: defaults.buyerTaxId || "", buyerName: defaults.buyerName || "", buyerBranchName: defaults.buyerBranchName || tr("head_office"), buyerAddress: defaults.buyerAddress || "" });
     setLateError(""); setLateManualUrl(""); lateDialogRef.current?.showModal?.();
   };
@@ -310,12 +306,12 @@ export function PosTaxInvoicesPage() {
   };
   const submitLate = async event => {
     event.preventDefault(); if (!currentSourceSale) return; setLateBusy(true); setLateError("");
-    try { const api = await legacyTaxApi(); const invoice = await api.createFullTaxInvoiceFromSale(currentSourceSale, lateBuyer); lateDialogRef.current?.close?.(); openInvoice(invoice); setSourceResult({ sale: currentSourceSale, issued: invoice }); await refresh({ sync: false }); }
+    try { const api = taxApi; const invoice = await api.createFullTaxInvoiceFromSale(currentSourceSale, lateBuyer); lateDialogRef.current?.close?.(); openInvoice(invoice); setSourceResult({ sale: currentSourceSale, issued: invoice }); await refresh({ sync: false }); }
     catch (error) { setLateError(String(error?.message || tr("issue_failed"))); }
     finally { setLateBusy(false); }
   };  const applyProfile = profileRow => setProfileForm({ id: profileRow?.id || profileRow?.customerKey || "", buyerTaxId: profileRow?.buyerTaxId || "", buyerName: profileRow?.buyerName || "", buyerBranchName: profileRow?.buyerBranchName || tr("head_office"), buyerAddress: profileRow?.buyerAddress || "" });
   const openProfiles = async () => {
-    const api = await legacyTaxApi();
+    const api = taxApi;
     let rows = api.listTaxBuyerProfiles();
     setProfiles(rows); applyProfile(rows[0] || {}); setProfileError(""); profileDialogRef.current?.showModal?.();
     try {
@@ -329,7 +325,7 @@ export function PosTaxInvoicesPage() {
   };
   const saveProfile = async event => {
     event.preventDefault(); setProfileBusy(true); setProfileError("");
-    try { const api = await legacyTaxApi(); const saved = api.saveTaxBuyerProfile({ ...profileForm, customerKey: profileForm.id || normalizeTaxId(profileForm.buyerTaxId) || profileForm.buyerName }); try { await api.syncTaxBuyerProfiles(); } catch {} const rows = api.listTaxBuyerProfiles(); setProfiles(rows); applyProfile(rows.find(row => String(row.id || row.customerKey) === String(saved.id || saved.customerKey)) || saved); }
+    try { const api = taxApi; const saved = api.saveTaxBuyerProfile({ ...profileForm, customerKey: profileForm.id || normalizeTaxId(profileForm.buyerTaxId) || profileForm.buyerName }); try { await api.syncTaxBuyerProfiles(); } catch {} const rows = api.listTaxBuyerProfiles(); setProfiles(rows); applyProfile(rows.find(row => String(row.id || row.customerKey) === String(saved.id || saved.customerKey)) || saved); }
     catch (error) { setProfileError(String(error?.message || tr("profile_save_failed"))); } finally { setProfileBusy(false); }
   };
   const deleteProfile = async () => {
@@ -342,22 +338,22 @@ export function PosTaxInvoicesPage() {
     });
     if (!confirmed) return;
     setProfileBusy(true);
-    try { const api = await legacyTaxApi(); api.deleteTaxBuyerProfile(profileForm.id); try { await api.syncTaxBuyerProfiles(); } catch {} const rows = api.listTaxBuyerProfiles(); setProfiles(rows); applyProfile(rows[0] || {}); }
+    try { const api = taxApi; api.deleteTaxBuyerProfile(profileForm.id); try { await api.syncTaxBuyerProfiles(); } catch {} const rows = api.listTaxBuyerProfiles(); setProfiles(rows); applyProfile(rows[0] || {}); }
     finally { setProfileBusy(false); }
   };
   const showVoid = invoice => { setVoidInvoice(invoice); setVoidReason(""); setVoidError(""); voidDialogRef.current?.showModal?.(); };
   const submitVoid = async event => {
     event.preventDefault(); if (!voidInvoice) return; setVoidBusy(true); setVoidError("");
-    try { const api = await legacyTaxApi(); await api.voidFullTaxInvoice(voidInvoice, voidReason); voidDialogRef.current?.close?.(); setVoidInvoice(null); await refresh({ sync: false }); }
+    try { const api = taxApi; await api.voidFullTaxInvoice(voidInvoice, voidReason); voidDialogRef.current?.close?.(); setVoidInvoice(null); await refresh({ sync: false }); }
     catch (error) { setVoidError(String(error?.message || tr("void_failed"))); } finally { setVoidBusy(false); }
   };
   const showEdit = invoice => { const buyer = invoice.buyer || {}; setEditInvoice(invoice); setEditBuyer({ buyerTaxId: buyer.buyerTaxId || "", buyerName: buyer.buyerName || "", buyerBranchName: buyer.buyerBranchName || tr("head_office"), buyerAddress: buyer.buyerAddress || "" }); setEditError(""); setEditManualUrl(""); editDialogRef.current?.showModal?.(); };
   const submitEdit = async event => {
     event.preventDefault(); if (!editInvoice) return; setEditBusy(true); setEditError("");
-    try { const api = await legacyTaxApi(); api.updateLocalTaxInvoiceBuyer(editInvoice, editBuyer); editDialogRef.current?.close?.(); setEditInvoice(null); await refresh({ sync: false }); }
+    try { const api = taxApi; api.updateLocalTaxInvoiceBuyer(editInvoice, editBuyer); editDialogRef.current?.close?.(); setEditInvoice(null); await refresh({ sync: false }); }
     catch (error) { setEditError(String(error?.message || tr("buyer_save_failed"))); } finally { setEditBusy(false); }
   };
-  const retrySync = async invoice => { const id = keyOf(invoice); setRetryingId(id); try { const api = await legacyTaxApi(); await api.retryTaxInvoiceSync(invoice); await refresh({ sync: false }); } finally { setRetryingId(""); } };  const recoveryText = invoice => [
+  const retrySync = async invoice => { const id = keyOf(invoice); setRetryingId(id); try { const api = taxApi; await api.retryTaxInvoiceSync(invoice); await refresh({ sync: false }); } finally { setRetryingId(""); } };  const recoveryText = invoice => [
     tr("recovery_title"), "Invoice ID: " + (keyOf(invoice) || "-"), "Invoice No: " + (invoice.invoiceNumber || "-"),
     "Sale: " + (invoice.saleNumber || invoice.saleId || invoice.sourceSale?.saleNumber || invoice.sourceSale?.id || "-"),
     "Source Receipt: " + (sourceReceiptUrl(invoice) || "-"), "Buyer: " + (invoice.buyer?.buyerName || "-"), "Status: " + (invoice.status || "-"),

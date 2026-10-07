@@ -98,48 +98,6 @@ function showToast(message, type = "success") {
   }, 3200);
 }
 
-function ensureExternalStyle(id, href) {
-  if (document.getElementById(id)) return;
-  const link = document.createElement("link");
-  link.id = id;
-  link.rel = "stylesheet";
-  link.href = href;
-  document.head.appendChild(link);
-}
-
-function ensureExternalScript(id, src) {
-  const existing = document.getElementById(id);
-  if (existing) {
-    if (existing.dataset.loaded === "true") return Promise.resolve();
-    return new Promise((resolve, reject) => {
-      existing.addEventListener("load", resolve, { once: true });
-      existing.addEventListener("error", reject, { once: true });
-    });
-  }
-  return new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.id = id;
-    script.src = src;
-    script.async = true;
-    script.addEventListener("load", () => {
-      script.dataset.loaded = "true";
-      resolve();
-    }, { once: true });
-    script.addEventListener("error", reject, { once: true });
-    document.head.appendChild(script);
-  });
-}
-
-async function ensureSelect2Runtime() {
-  ensureExternalStyle("platformSelect2Style", "/assets/vendor/select2/select2-4.0.13.min.css?v=20260914-002");
-  if (!window.jQuery) {
-    await ensureExternalScript("platformJqueryScript", "/assets/vendor/jquery/jquery-3.7.1.min.js?v=20260914-002");
-  }
-  if (!window.jQuery?.fn?.select2) {
-    await ensureExternalScript("platformSelect2Script", "/assets/vendor/select2/select2-4.0.13.min.js?v=20260914-002");
-  }
-}
-
 function ControlCard({ titleId, icon, title, description, badge = "Super Admin", badgeId, badgeClass = "", children, className = "" }) {
   return (
     <section className={`card platform-google-api-card ${className}`} aria-labelledby={titleId}>
@@ -210,7 +168,6 @@ export function PlatformPage() {
   const [slipBusy, setSlipBusy] = useState(true);
   const [slipQuota, setSlipQuota] = useState("");
   const [slipLoadError, setSlipLoadError] = useState(false);
-  const receiverAccountTypeRef = useRef(null);
 
   const [lalamove, setLalamove] = useState(EMPTY_LALAMOVE);
   const [lalamoveInput, setLalamoveInput] = useState({ apiKey: "", apiSecret: "" });
@@ -353,64 +310,6 @@ export function PlatformPage() {
       window.clearInterval(timer);
     };
   }, [profile?.role]);
-
-  useEffect(() => {
-    if (profile?.role !== "super_admin") return undefined;
-    let active = true;
-    let select = null;
-
-    ensureSelect2Runtime()
-      .then(() => {
-        if (!active || !receiverAccountTypeRef.current || !window.jQuery?.fn?.select2) return;
-        const jq = window.jQuery;
-        select = jq(receiverAccountTypeRef.current);
-        if (!select.hasClass("select2-hidden-accessible")) {
-          select.select2({
-            width: "100%",
-            minimumResultsForSearch: 0,
-            allowClear: true,
-            placeholder: t("platform.slip_verification.receiver_search_placeholder"),
-            matcher(params, data) {
-              const term = String(params.term || "").trim().toLocaleLowerCase();
-              if (!term) return data;
-              const haystack = `${data.text || ""} ${data.id || ""}`.toLocaleLowerCase();
-              return haystack.includes(term) ? data : null;
-            },
-            language: {
-              searching: () => t("platform.slip_verification.receiver_searching"),
-              noResults: () => t("platform.slip_verification.receiver_no_results"),
-            },
-          });
-        }
-        select
-          .off("change.platformReact")
-          .on("change.platformReact", () => {
-            const value = String(select.val() || "");
-            setSlip(current => ({
-              ...current,
-              receiver: { ...(current.receiver || {}), accountType: value },
-            }));
-          });
-        select.val(slip.receiver?.accountType || "").trigger("change.select2");
-      })
-      .catch(error => console.error("PLATFORM_SELECT2_LOAD_FAILED", error));
-
-    return () => {
-      active = false;
-      if (!select) return;
-      select.off("change.platformReact");
-      if (select.hasClass("select2-hidden-accessible")) select.select2("destroy");
-    };
-  }, [profile?.role, t]);
-
-  useEffect(() => {
-    const element = receiverAccountTypeRef.current;
-    const jq = window.jQuery;
-    if (!element || !jq?.fn?.select2) return;
-    const select = jq(element);
-    if (!select.hasClass("select2-hidden-accessible")) return;
-    select.val(slip.receiver?.accountType || "").trigger("change.select2");
-  }, [slip.receiver?.accountType]);
 
   const chooseBrandingFile = async (kind, file) => {
     if (!file) return;
@@ -808,7 +707,7 @@ export function PlatformPage() {
             <div className="platform-slip-receiver-grid">
               <div className="field">
                 <label htmlFor="platformSlip2GoReceiverAccountType">{t("platform.slip_verification.receiver_account_type")}</label>
-                <select ref={receiverAccountTypeRef} className="input" id="platformSlip2GoReceiverAccountType" value={slip.receiver?.accountType || ""} disabled={slipBusy} onChange={event => setSlip(current => ({ ...current, receiver: { ...current.receiver, accountType: event.target.value } }))}>
+                <select className="input" id="platformSlip2GoReceiverAccountType" value={slip.receiver?.accountType || ""} disabled={slipBusy} onChange={event => setSlip(current => ({ ...current, receiver: { ...current.receiver, accountType: event.target.value } }))}>
                   {Object.entries(receiverTypes).map(([value, label]) => <option value={value} key={value || "none"}>{label}</option>)}
                 </select>
               </div>

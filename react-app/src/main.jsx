@@ -7,6 +7,7 @@ import { TenantProvider } from "@/tenant/TenantProvider";
 import { PlatformBrandingRuntime } from "@/components/PlatformBrandingRuntime";
 import { FormValidationUi } from "@/components/FormValidationUi";
 import "@/ui/toast-top-layer";
+import "@/ui/horizontalScrollEnhancer";
 import App from "@/app/App";
 
 const reactAlias = location.pathname === "/react" || location.pathname.startsWith("/react/");

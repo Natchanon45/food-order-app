@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "description": "ระบบร้านอาหารและร้านค้าปลีกบน Firebase รองรับ QR Table Order, Take Away, Delivery, Kitchen, Cashier และ Retail POS",
-  "main": "retail-pos.js",
   "directories": {
     "doc": "docs"
   },
@@ -18,9 +17,6 @@
   },
   "scripts": {
     "sync:bootstrap-icons": "mkdir -p public/assets/vendor/bootstrap-icons/fonts public/assets/vendor/bootstrap-icons/icons && cp node_modules/bootstrap-icons/font/bootstrap-icons.min.css public/assets/vendor/bootstrap-icons/bootstrap-icons.min.css && cp node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff* public/assets/vendor/bootstrap-icons/fonts/ && cp node_modules/bootstrap-icons/icons/bag.svg public/assets/vendor/bootstrap-icons/icons/bag.svg",
-    "sync:sortablejs": "mkdir -p public/assets/vendor/sortablejs && cp node_modules/sortablejs/Sortable.min.js public/assets/vendor/sortablejs/Sortable.min.js",
-    "sync:sheetjs": "mkdir -p public/assets/vendor/sheetjs && cp node_modules/xlsx/dist/xlsx.full.min.js public/assets/vendor/sheetjs/xlsx.full.min.js",
-    "build:admin-css": "tailwindcss -c tailwind.admin.config.cjs -i ./public/assets/css/admin-tailwind-input.css -o ./public/assets/css/admin-tailwind.css --minify",
     "dev:react": "vite --config vite.react.config.js",
     "build:react": "vite build --config vite.react.config.js",
     "preview:react": "vite preview --config vite.react.config.js",
@@ -36,7 +32,7 @@
     "report:react-parity": "node tools/react-parity-report.mjs",
     "test:react-parity": "npm run test:react-foundation && npm run test:react-migration && npm run test:react-parity-matrix && npm run test:react-p0-actions && npm run test:react-callables && npm run test:tenant-access && npm run test:ui-layers",
     "test:react-parity-full": "npm run test:react-parity && npm run test:react-p0-browser",
-    "postbuild:react": "python3 tools/sync-react-legacy-entrypoints.py && npm run verify:react-build",
+    "postbuild:react": "python3 tools/sync-react-entrypoints.py && npm run verify:react-build",
     "verify:react-build": "node tools/generated-react-build-contract.mjs"
   },
   "repository": {
@@ -54,7 +50,6 @@
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "@vitejs/plugin-react": "^6.1.1",
-    "tailwindcss": "^3.4.17",
     "vite": "^8.3.1"
   }
 }

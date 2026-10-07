@@ -11051,3 +11051,105 @@ Deploy state:
 - No Firebase Hosting, Functions, Firestore Rules, Storage Rules, or schema deploy is required for this change.
 - No merge to `main`.
 - Commit/push pending at the time of this worklog entry.
+
+
+---
+
+## 2026-10-07 — React-only frontend runtime cleanup
+
+User directive:
+- Remove the old frontend implementation from `feature/react-firebase-port` and leave the application React 100%.
+
+Starting state:
+- Full React route/shell cutover was already Production-deployed on React Build `2026.10.07.457`.
+- All physical frontend entrypoints already mounted the React shell, but Firebase Hosting still contained the old `public/assets/js` and `public/assets/css` page runtimes plus several static vendor bridges and migration fixtures.
+
+Implementation:
+- Moved the global horizontal-scroll behavior into `react-app/src/ui/horizontalScrollEnhancer.js` and bundle it from `main.jsx`.
+- Moved POS tax-invoice history sync/offline behavior into React-owned `react-app/src/data/retailPosTaxInvoiceData.js`, preserving tenant/local-cache fallback, Firestore paths, TAX running-number shape, sync, void, retry, buyer-profile and local-first semantics.
+- Replaced SaaS Setup's dynamic legacy Sweet Dialog import with the shared React `sweetDialog` component.
+- Replaced Platform receiver-account Select2/jQuery enhancement with the existing controlled React select without changing the saved `receiver.accountType` data shape.
+- Delivery Success print now loads React parity CSS instead of `/assets/css`.
+- Removed the complete hosted legacy runtime trees `public/assets/js`, `public/assets/css`, and stale `public/react/parity/js`.
+- Removed the root `retail-pos.js` entry, unused Admin Tailwind build/config, and unused static jQuery/Select2/QRCode.js/SheetJS/SortableJS vendor copies. Bootstrap Icons static assets remain because React uses them as UI assets.
+- Renamed `sync-react-legacy-entrypoints.py` to `sync-react-entrypoints.py`.
+- Renamed the React compatibility component from `LegacyStorefrontEntry` to `StorefrontCompatibilityEntry`; the old `/takeaway` URL compatibility behavior remains and resolves into the canonical React tenant route.
+- Removed migration-only legacy JS/HTML fixtures and the unused static P0 inventory builder/snapshot. Regression contracts now validate React source and explicit required action/DOM ID inventories directly.
+- Added structural regression guards preventing hosted legacy JS/CSS runtime directories and the jQuery/Select2 bridge from returning.
+- Removed obsolete legacy asset cache-header entries from Firebase Hosting config.
+- Removed unused Tailwind dev dependency/build script.
+- Prepared React Version `0.4.280` / Build `2026.10.07.458`, marker `REACT-ONLY-FRONTEND-RUNTIME`.
+
+Verification:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- React migration coverage PASS: 53 routes / 21 POS routes / 52 React physical shells / 0 pending shell sync.
+- React callable contract PASS: 59 references / 0 missing exports.
+- `npm run build:react` PASS.
+- Generated build contract PASS: Build `2026.10.07.458` / `/react/assets/index-Dr6zxvtM.js`.
+- `git diff --check` PASS.
+- Firebase Hosting emulator P0 canonical browser smoke: **52/52 PASS**.
+- Candidate mobile browser audit on Home, Login, Waiting Queue, Privacy/Terms, Verify, Delivery, Takeaway and POS Login: legacyRequests=0, pageErrors=0, horizontal overflow=false, raw translation keys=false.
+- Removed legacy asset endpoints for Admin/POS JS, global CSS, jQuery and Select2 return 404 in the Hosting emulator.
+- Final structure audit: legacy-named project paths=0; `public/assets/js` absent; `public/assets/css` absent; `public/react/parity/js` absent; old POS fixtures absent; static P0 inventory absent; non-React physical shells=0.
+
+Data/deployment boundary:
+- No Firebase collection/schema/internal-ID rename.
+- No Firestore Rules, Storage Rules, or Cloud Functions change/deploy is required.
+- Existing React parity CSS, static fonts/images, Bootstrap Icons, compatibility URLs, and old hashed React bundles required by the stale-tab recovery policy remain intentionally.
+- Hosting deployment for Build `.458` is pending this implementation commit.
+- No merge to `main`.
+
+
+---
+
+## 2026-10-07 — React-only frontend runtime cleanup (Build 2026.10.07.458)
+
+Request:
+- Frontend must be React 100%; remove remaining page-specific legacy runtime instead of keeping hidden bridges beside React.
+- Preserve business logic, Firebase paths/schema, permissions, compatibility URLs, and current React UI behavior.
+
+Implementation:
+- Removed Hosting-served legacy runtime trees: public/assets/js, public/assets/css, root retail-pos.js, and stale public/react/parity/js.
+- Moved remaining runtime bridges into React-owned source:
+  - horizontal scroll -> react-app/src/ui/horizontalScrollEnhancer.js
+  - SaaS confirmation -> React sweetDialog
+  - POS full-tax sync/offline behavior -> react-app/src/data/retailPosTaxInvoiceData.js
+  - Platform receiver account type -> controlled React select; jQuery/Select2 bridge removed
+- Preserved POS Tax Invoice tenant/cache/counter behavior, including legacy cache migration, document metadata cleanup, TAX monthly reservation numbering, and P9 schema/counter markers.
+- Removed unused Hosting static runtimes: jQuery, Select2, QRCode.js, static SheetJS copy, and static SortableJS copy. Bootstrap Icons remains as a React UI asset.
+- Kept npm xlsx installed because React POS Catalog still exposes Excel import UI; do not remove it until that feature is separately verified end-to-end.
+- Removed obsolete admin Tailwind build script/config with no React consumer.
+- Renamed sync-react-legacy-entrypoints.py -> sync-react-entrypoints.py.
+- Renamed LegacyStorefrontEntry -> StorefrontCompatibilityEntry; compatibility URLs remain React Router based.
+- Removed obsolete Firebase Hosting headers for deleted legacy JS.
+- Added structural guards preventing the removed legacy runtime directories and jQuery/Select2 bridge from returning.
+
+Verification:
+- npm run test:operational PASS.
+- npm run test:react-parity PASS.
+- Migration coverage PASS: 53 routes / 21 POS routes / 52 physical React shells / 0 pending shell sync.
+- npm run build:react PASS.
+- Generated React build contract PASS for Build 2026.10.07.458 / /react/assets/index-Dr6zxvtM.js.
+- git diff --check PASS.
+- Structural audit: public/assets/js absent; public/assets/css absent; public/react/parity/js absent; root retail-pos.js absent; non-React physical shells = 0; legacy runtime/vendor source refs = 0; missing current HTML/chunk refs = 0.
+- Firebase Hosting emulator P0 browser smoke: 52/52 PASS.
+- Extra mobile runtime audit across Home/Login/Waiting Queue/Privacy/Terms/Verify/Delivery/Takeaway/POS Login: legacy requests = 0, page errors = 0, horizontal overflow = 0, dependency HTTP 4xx = 0.
+- Removed static endpoints such as /assets/js/admin.js, /assets/js/retail-pos.js, /assets/css/app.css, jQuery and Select2 return 404.
+- /react/parity/js/toast-top-layer.js no longer exists as JavaScript; Hosting fallback returns text/html React shell and no route requests it.
+
+Release candidate:
+- React 0.4.280 / Build 2026.10.07.458.
+- Marker REACT-ONLY-FRONTEND-RUNTIME.
+- Current bundle /react/assets/index-Dr6zxvtM.js.
+- Current shared chunks firebase-NSZn2s4d.js, react-vendor-C6B81y6D.js, rolldown-runtime-hePW80VL.js.
+
+Scope / safety:
+- No reset / clean / discard.
+- No merge to main.
+- No Functions, Firestore Rules, Storage Rules, or schema change.
+- This establishes a React-only frontend runtime. It does not claim every authenticated/data-writing parity action has 100% automated side-effect verification; that broader verification program remains tracked separately.
+
+Commit / push / deploy:
+- Implementation commit/push pending at this checkpoint.
+- Firebase Hosting-only deployment pending after commit/push.

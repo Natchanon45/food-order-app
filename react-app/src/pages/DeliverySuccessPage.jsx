@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getPublicOrder, getPublicStoreSettings, resolvePublicTenant, watchPublicOrder } from "@/data/publicStorefrontData";
 import { PublicStorefrontFooter, PublicStorefrontHeader } from "@/components/PublicStorefront";
+import { REACT_RELEASE } from "@/config/release";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { qrDataUrl } from "@/utils/localQr";
@@ -84,7 +85,8 @@ export function DeliverySuccessPage() {
     try {
       const printWindow = window.open("", "_blank", "noopener,noreferrer");
       if (!printWindow) return;
-      printWindow.document.write("<!doctype html><html><head><title>" + t("delivery.success.meta_title") + "</title><link rel='stylesheet' href='/assets/css/app.css'><link rel='stylesheet' href='/assets/css/receipt-layout.css'></head><body>" + node.outerHTML + "<script>window.onload=()=>{window.print();setTimeout(()=>window.close(),300)}<\/script></body></html>");
+      const styleVersion = encodeURIComponent(REACT_RELEASE.build);
+      printWindow.document.write("<!doctype html><html><head><title>" + t("delivery.success.meta_title") + "</title><link rel='stylesheet' href='/react/parity/css/app.css?v=" + styleVersion + "'><link rel='stylesheet' href='/react/parity/css/receipt-layout.css?v=" + styleVersion + "'></head><body>" + node.outerHTML + "<script>window.onload=()=>{window.print();setTimeout(()=>window.close(),300)}<\/script></body></html>");
       printWindow.document.close();
     } catch (error) {
       console.error("DELIVERY_SUCCESS_PRINT_FAILED", error);

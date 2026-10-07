@@ -4,6 +4,7 @@ import { useAuth } from "@/auth/AuthProvider";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { ParityFooter } from "@/components/ParityFooter";
+import { sweetConfirm } from "@/components/sweetDialog";
 import { UserMenu } from "@/components/UserMenu";
 import {
   inspectLegacyData,
@@ -38,14 +39,6 @@ function showToast(message, type = "success") {
   }, 3200);
 }
 
-async function askConfirm(message, options) {
-  if (typeof window.sweetConfirm !== "function") {
-    await import(/* @vite-ignore */ "/assets/js/sweet-dialog.js?v=20260731-095");
-  }
-  return typeof window.sweetConfirm === "function"
-    ? window.sweetConfirm(message, options)
-    : false;
-}
 export function SaasSetupPage() {
   const authState = useAuth();
   const { profile } = authState;
@@ -90,7 +83,7 @@ export function SaasSetupPage() {
   }, [profile?.role]);
 
   const startMigration = async () => {
-    const confirmed = await askConfirm(
+    const confirmed = await sweetConfirm(
       overwrite
         ? t("runtime.confirm.overwrite")
         : t("runtime.confirm.copy", { source: SAAS_SOURCE_SHOP_ID }),

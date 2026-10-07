@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.07.457",
+  build: "2026.10.07.458",
   branch: "feature/react-firebase-port",
-  commit: "FULL-REACT-SYSTEM-CUTOVER",
+  commit: "REACT-ONLY-FRONTEND-RUNTIME",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Full React system cutover",
+  milestone: "React-only frontend runtime",
   whatsNew: [
-    "Move the remaining public storefront, legal, verification, and POS utility entrypoints onto the canonical React shell",
-    "Replace legacy Delivery and Takeaway page runtimes with native React/Firebase flows while preserving Maps, Lalamove, promotions, PromptPay, slips, favorites, and customer addresses",
-    "Guard every physical frontend index entry and Hosting rewrite so future builds cannot fall back to page-specific legacy HTML",
+    "Remove the remaining page-specific legacy JavaScript and CSS runtime trees from Firebase Hosting",
+    "Move horizontal scrolling, SaaS confirmation, POS tax-invoice sync, and Platform receiver controls fully into React-owned code",
+    "Retain only React bundles, React parity styles, required static assets, and compatibility URLs that resolve to the React shell",
   ],
 });

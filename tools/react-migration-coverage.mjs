@@ -26,7 +26,7 @@ const htmlEntries = walk(path.join(root, "public"))
   .filter(file => file.endsWith("/index.html") || file.endsWith("\\index.html"))
   .filter(file => !file.includes(path.join("public", "react") + path.sep));
 const htmlRoutes = htmlEntries.map(htmlRoute);
-const syncScript = fs.readFileSync(path.join(root, "tools/sync-react-legacy-entrypoints.py"), "utf8");
+const syncScript = fs.readFileSync(path.join(root, "tools/sync-react-entrypoints.py"), "utf8");
 let physicalReactShells = 0;
 let pendingShellSync = 0;
 

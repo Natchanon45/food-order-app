@@ -188,7 +188,6 @@ For routes with a Laravel MASTER equivalent:
 - Route source registry: `react-app/migration/master-registry.json`
 - Verification matrix: `react-app/migration/parity-verification-matrix.json`
 - Matrix validator: `tools/react-parity-matrix.mjs`
-- P0 static action inventory builder: `tools/build-p0-action-inventory.mjs`
 - P0 action/side-effect contract: `tools/react-p0-action-contract.mjs`
 - P0 browser tests: `tests/react-parity/p0-smoke.spec.mjs`
 - Coverage report: `npm run report:react-parity`
@@ -198,12 +197,12 @@ For routes with a Laravel MASTER equivalent:
 
 ## Immediate execution order
 
-1. Refine the generated P0 action inventory until every runtime-generated MASTER action has a stable semantic mapping to React.
+1. Keep the canonical React-only entrypoints protected by structural and route-coverage contracts.
 2. Keep expanding non-mutating P0 Playwright interactions and responsive checks.
 3. Prepare deterministic authenticated role fixtures for Super Admin / Owner / Admin / Manager / Cashier.
 4. Provide an isolated Firestore Emulator runtime (Java/OpenJDK or another isolated environment); do not substitute production writes.
 5. Automate P0 success/failure/write actions and verify exact Firestore/Function side effects.
-6. Add MASTER-vs-React responsive screenshot comparison for P0.
-7. Switch canonical entries only after the corresponding route meets the verification gate.
-8. Expand the same system to P1 then P2.
-9. Only mark a migration group complete after matrix status is `verified`, not after visual inspection alone.
+6. Add MASTER-vs-React responsive screenshot comparison only where Laravel MASTER remains the requested behavior reference.
+7. Prevent page-specific legacy JavaScript/CSS runtime directories from returning to Firebase Hosting.
+8. Expand the same verification system to P1 then P2.
+9. Only mark a verification group complete after its required dimensions pass, not after visual inspection alone.

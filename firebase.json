@@ -327,15 +327,6 @@
         ]
       },
       {
-        "source": "/assets/js/firebase-config.js",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "no-cache, no-store, must-revalidate"
-          }
-        ]
-      },
-      {
         "source": "/delivery/**",
         "headers": [
           {
@@ -350,15 +341,6 @@
           {
             "key": "Permissions-Policy",
             "value": "geolocation=(self)"
-          }
-        ]
-      },
-      {
-        "source": "/assets/js/cashier-original-order.js",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "no-cache, no-store, must-revalidate"
           }
         ]
       },

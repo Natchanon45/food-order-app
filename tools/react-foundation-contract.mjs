@@ -14,24 +14,19 @@ assert(rewrites[0]?.source==="/react"&&rewrites[0]?.destination==="/react/index.
 assert(rewrites[1]?.source==="/react/**"&&rewrites[1]?.destination==="/react/index.html","/react/** rewrite missing");
 for(const source of ["/cashier/**","/kitchen/**","/pos/**","/admin/**"])assert(rewrites.some(r=>r.source===source),`legacy rewrite lost: ${source}`);
 
-const publicTenantResolver=read("public/assets/js/public-tenant-resolver.js");
+const publicRouteMissingPage=read("react-app/src/pages/PublicRouteMissingPage.jsx");
+const publicStorefrontDataContract=read("react-app/src/data/publicStorefrontData.js");
+const appParityCss=read("react-app/public/parity/css/app.css");
 assert(
-  publicTenantResolver.includes('font-family:"Kanit Local"')
-  && publicTenantResolver.includes('url("/assets/fonts/Kanit-Regular.ttf")')
-  && publicTenantResolver.includes('url("/assets/fonts/Kanit-SemiBold.ttf")')
-  && publicTenantResolver.includes('--app-ui-font:"Kanit Local"')
-  && !publicTenantResolver.includes("--system-font")
-  && !publicTenantResolver.includes("system-ui")
-  && publicTenantResolver.includes('class="storefront-state"')
-  && publicTenantResolver.includes('class="storefront-state__store-name"')
-  && publicTenantResolver.includes('doc(customerDb, "tenants", tenantId, "settings", "store")')
-  && publicTenantResolver.includes('storeSnapshot.data()?.shopName')
-  && publicTenantResolver.includes('const shopName = await configuredStoreName(tenant)')
-  && publicTenantResolver.includes('id="storefrontUnavailableBack"')
-  && publicTenantResolver.includes('id="storefrontUnavailableRetry"')
-  && publicTenantResolver.includes('<path d="m15 18-6-6 6-6"></path>')
-  && publicTenantResolver.includes('<path d="M20 4v7h-7"></path>'),
-  "Public unavailable storefront must use Kanit, show the resolved store name, and keep icon actions"
+  appParityCss.includes('font-family: "Kanit Local"')
+  &&appParityCss.includes('url("/assets/fonts/Kanit-Regular.ttf")')
+  &&appParityCss.includes('url("/assets/fonts/Kanit-SemiBold.ttf")')
+  &&publicStorefrontDataContract.includes('tenantDocument(tenant, "settings", "store")')
+  &&publicStorefrontDataContract.includes('data.name || data.shopName || data.slug || slug')
+  &&publicRouteMissingPage.includes('history.back()')
+  &&publicRouteMissingPage.includes('bi bi-arrow-left app-icon')
+  &&publicRouteMissingPage.includes('bi bi-house-door app-icon'),
+  "React public unavailable storefront must use local Kanit, resolve settings/store, and keep navigation actions"
 );
 
 const dict=JSON.parse(read("react-app/src/i18n/parity-translations.json"));
@@ -144,17 +139,19 @@ const reactIndex=read("react-app/index.html");
 assert(reactIndex.includes("<title>PENGUIN</title>")&&!reactIndex.includes("<title>KINJAI</title>")&&!reactIndex.includes("<title>LUKKAJA</title>"),"React entry title must remain PENGUIN");
 assert(reactIndex.includes("page-ready-overlay"),"Laravel-parity pre-React loading overlay missing");
 assert(reactIndex.includes('/react/parity/css/app.css'),"global app.css must load on every React route");
-const horizontalScrollRestore=read("public/assets/js/horizontal-scroll-restore.js");
+const horizontalScrollEnhancer=read("react-app/src/ui/horizontalScrollEnhancer.js");
+const reactMain=read("react-app/src/main.jsx");
 assert(
-  reactIndex.includes('/assets/js/horizontal-scroll-restore.js?v=20261002-002')
-  &&horizontalScrollRestore.includes("function bindTouchDrag(element)")
-  &&horizontalScrollRestore.includes("element.style.touchAction = 'pan-y'")
-  &&horizontalScrollRestore.includes("element.addEventListener('touchmove'")
-  &&horizontalScrollRestore.includes("{ passive: false }")
-  &&horizontalScrollRestore.includes("bindTouchDrag(element);")
-  &&horizontalScrollRestore.includes("function containsScrollableTarget(node)")
-  &&horizontalScrollRestore.includes("if (!containsScrollableTarget(node)) return;"),
-  "React horizontal-scroll helper must load globally, preserve touch drag support, and ignore unrelated DOM mutations"
+  !reactIndex.includes("/assets/js/horizontal-scroll-restore.js")
+  &&reactMain.includes('import "@/ui/horizontalScrollEnhancer";')
+  &&horizontalScrollEnhancer.includes("function bindTouchDrag(element)")
+  &&horizontalScrollEnhancer.includes("element.style.touchAction = 'pan-y'")
+  &&horizontalScrollEnhancer.includes("element.addEventListener('touchmove'")
+  &&horizontalScrollEnhancer.includes("{ passive: false }")
+  &&horizontalScrollEnhancer.includes("bindTouchDrag(element);")
+  &&horizontalScrollEnhancer.includes("function containsScrollableTarget(node)")
+  &&horizontalScrollEnhancer.includes("if (!containsScrollableTarget(node)) return;"),
+  "React horizontal-scroll enhancer must be bundled by React, preserve touch drag support, and ignore unrelated DOM mutations"
 );
 const pageReadyCss=read("react-app/public/parity/css/page-ready-state.css");
 assert(pageReadyCss.includes(".page-ready-spinner {")&&pageReadyCss.includes("display: block;")&&pageReadyCss.includes("box-sizing: border-box;"),"Page-ready spinner must keep a real 44x44 block box");
@@ -346,16 +343,12 @@ assert(
 );
 const posPage=read("react-app/src/pages/PosPage.jsx");
 const posNavigation=read("react-app/src/components/PosNavigation.jsx");
-const retailPosNavigation=read("public/assets/js/retail-pos-navigation.js");
-const legacyPosThemeRuntime=read("public/assets/js/retail-pos-theme.js");
 const posThemeConfig=read("react-app/src/config/posThemes.js");
 const posThemeData=read("react-app/src/data/posThemeData.js");
 const posThemeHook=read("react-app/src/hooks/usePosTheme.js");
 const posThemesCss=read("react-app/public/parity/css/retail-pos-themes.css");
-const legacyPosThemesCss=read("public/assets/css/retail-pos-themes.css");
+const legacyPosThemesCss=read("react-app/public/parity/css/retail-pos-themes.css");
 const legacyPosSettingsHtml=read("public/pos/settings/index.html");
-const legacyPosSettingsJs=read("public/assets/js/retail-pos-settings.js");
-const legacyRetailReceiptSettings=read("public/assets/js/retail-sales-receipt-settings.js");
 const posSettingsPage=read("react-app/src/pages/PosSettingsPage.jsx");
 const posSettingsVisualCss=read("react-app/public/parity/css/retail-settings-visual-dashboard.css");
 const posThemeTranslations=JSON.parse(read("react-app/src/i18n/parity-translations.json"));
@@ -369,10 +362,7 @@ assert(
   && !posData.includes('const rows=new Map([["store",store]')
   && posSettingsPage.includes('shopName: String(retailPos.shopName || DEFAULTS.shopName)')
   && posSettingsPage.includes('["retailPos", "tax", "payment", "receipt", "pos-theme"]')
-  && legacyPosSettingsJs.includes('getRecord(RetailCollections.settings, "retailPos")')
-  && legacyPosSettingsJs.includes('id: "retailPos"')
-  && legacyRetailReceiptSettings.includes('getRecord(RetailCollections.settings, "retailPos")')
-  && read("public/assets/js/public-storefront-service.js").includes('return String(settings?.shopName || "").trim();'),
+  && read("react-app/src/data/publicStorefrontData.js").includes('tenantDocument(tenant, "settings", "store")'),
   "Retail POS identity must use settings/retailPos while restaurant storefront remains on settings/store",
 );
 const posReturnsPage=read("react-app/src/pages/PosReturnsPage.jsx");
@@ -399,7 +389,6 @@ const registerPageCss=read("react-app/public/parity/css/register-page.css");
 const firebaseHostingConfig=read("firebase.json");
 const hostingRc=read(".firebaserc");
 const reactFirebaseClient=read("react-app/src/firebase/client.js");
-const staticFirebaseConfig=read("public/assets/js/firebase-config.js");
 const messagingServiceWorker=read("public/firebase-messaging-sw.js");
 const publicSignupFunction=read("functions/public-signup.js");
 const fullReactAppRoutes=read("react-app/src/app/App.jsx");
@@ -411,7 +400,7 @@ const legalPage=read("react-app/src/pages/LegalPage.jsx");
 const customerDeliveryData=read("react-app/src/data/customerDeliveryData.js");
 const deliveryLocationPicker=read("react-app/src/components/DeliveryLocationPicker.jsx");
 const publicStorefrontData=read("react-app/src/data/publicStorefrontData.js");
-const fullReactEntrypointSync=read("tools/sync-react-legacy-entrypoints.py");
+const fullReactEntrypointSync=read("tools/sync-react-entrypoints.py");
 const firebaseHosting=JSON.parse(firebaseHostingConfig);
 const hostingRewrites=Array.isArray(firebaseHosting?.hosting?.rewrites) ? firebaseHosting.hosting.rewrites : [];
 
@@ -482,12 +471,8 @@ assert(
 const publicOrderPage=read("react-app/src/pages/PublicOrderPage.jsx");
 const publicStorefrontComponent=read("react-app/src/components/PublicStorefront.jsx");
 const posRefreshCss=read("react-app/public/parity/css/pos-refresh.css");
-const legacyTableQrResolver=read("public/assets/js/table-qr-resolver.js");
-const legacyTableOrderScrollSpy=read("public/assets/js/table-order-category-scrollspy.js");
 assert(
-  legacyTableQrResolver.includes('table?.status === "occupied" && table?.orderToken')
-  &&legacyTableQrResolver.includes('params.set("token", activeToken)')
-  &&publicOrderPage.includes("getPublicTable")
+  publicOrderPage.includes("getPublicTable")
   &&publicOrderPage.includes('const directActive = Boolean(table && table.active !== false && table.status === "occupied" && directToken)')
   &&publicOrderPage.includes('nextParams.set("token", resolvedToken)')
   &&publicOrderPage.includes('location.replace(`${location.pathname}?${nextParams.toString()}`)')
@@ -503,9 +488,7 @@ assert(
   "Table Order must keep the original compact card design while rendering exactly two menu items per desktop row"
 );
 assert(
-  legacyTableOrderScrollSpy.includes('const mobileQuery = window.matchMedia("(max-width: 899px)")')
-  &&legacyTableOrderScrollSpy.includes('setActiveCategory(cardCategory(current))')
-  &&publicStorefrontComponent.includes('const [highlightedCategory, setHighlightedCategory] = useState(all)')
+  publicStorefrontComponent.includes('const [highlightedCategory, setHighlightedCategory] = useState(all)')
   &&publicStorefrontComponent.includes('const scrollSpyEnabled = mobile && prefix === "order.menu" && activeCategory === all')
   &&publicStorefrontComponent.includes('data-category={category}')
   &&publicStorefrontComponent.includes('data-menu-category={String(item.category || other)}')
@@ -573,7 +556,7 @@ assert(
 );
 assert(
   hostingRc.includes('"penguin-food"')&&!hostingRc.includes('"natchanon-food-order-delivery"')
-  &&[reactFirebaseClient,staticFirebaseConfig,messagingServiceWorker].every(source=>source.includes('authDomain: "penguin-food.web.app"')&&!source.includes("natchanon-food-order-delivery.web.app"))
+  &&[reactFirebaseClient,messagingServiceWorker].every(source=>source.includes('authDomain: "penguin-food.web.app"')&&!source.includes("natchanon-food-order-delivery.web.app"))
   &&publicSignupFunction.includes('const PUBLIC_APP_ORIGIN = "https://penguin-food.web.app"')
   &&!publicSignupFunction.includes("natchanon-food-order-delivery.web.app"),
   "PENGUIN production origin must stay canonical across Hosting, Firebase Auth, messaging, and signup links"
@@ -727,22 +710,17 @@ assert(posPage.includes('bi bi-credit-card pos-context-icon')&&posPage.includes(
 assert(!posPage.includes('paymentCompleteDialog')&&!posPage.includes('retail-pos-complete.css')&&!posPage.includes('completedSale')&&posPage.includes('paymentDialogRef.current?.close?.();')&&posPage.includes('resetSaleState();')&&posPage.includes('if (receiptSettings.autoPrint && sale?.id) openReceiptForSale(sale, { auto: true });'),"React POS post-payment flow must match current Laravel MASTER: close payment, reset sale, toast/optional auto-print, with no legacy complete dialog");
 assert(posDisplayLinkCss.includes('a[href^="/pos/customer-display"]'),"React POS customer-display button must receive MASTER display-link styling");
 const posCustomerDisplayPage=read("react-app/src/pages/PosCustomerDisplayPage.jsx");
-const legacyPosCustomerDisplayHtml=read("public/pos/customer-display/index.html");
-const legacyPosCustomerDisplay=read("public/assets/js/retail-customer-display.js");
-const legacyPosI18nBootstrap=read("public/assets/js/retail-pos-i18n-bootstrap.js");
-const legacyPosTranslations=read("public/assets/js/retail-pos-translations.js");
-const legacyPosCustomerDisplayCss=read("public/assets/css/retail-customer-display.css");
 const reactPosCustomerDisplayCss=read("react-app/public/parity/css/retail-customer-display.css");
 const customerDisplayQrConsistencyCss=read("react-app/public/parity/css/retail-customer-display-qr-consistency.css");
 assert(posCustomerDisplayPage.includes('disabledGlobalStyles: ["app.css", "icons.css", "shared-responsive.css"]')&&posCustomerDisplayPage.includes('"pos-locale-switcher-placement.css"')&&posCustomerDisplayPage.includes("data-pos-locale-switcher-target"),"POS Customer Display must use the Laravel POS shell CSS boundary");
 assert(posCustomerDisplayPage.indexOf('id="customerDisplayFullscreen"')<posCustomerDisplayPage.indexOf('id="displayPairingCard"')&&posCustomerDisplayPage.indexOf('id="displayPairingCard"')<posCustomerDisplayPage.indexOf("<LocaleSwitcher"),"POS Customer Display header order must match MASTER: fullscreen, pairing QR, locale");
 assert(posCustomerDisplayPage.includes("setPaymentQrSrc(localPaymentQr)")&&posCustomerDisplayPage.includes('hidden={!paymentQrSrc || Boolean(payment?.error) || paymentQrFailed}'),"POS Customer Display must fall back to local QR and keep the QR image element for MASTER-compatible hidden-state styling");
 assert(posCustomerDisplayPage.includes('typeof value?.toMillis === "function"')&&posCustomerDisplayPage.includes('Date.parse(String(value))')&&!posCustomerDisplayPage.includes('hidden={snapshot?.status !== "paid"}'),"React POS Customer Display must normalize Firestore/string timestamps and keep the MASTER thank-you strip visible");
-assert(legacyPosCustomerDisplay.includes("import { qrDataUrl } from './local-qr.js?v=20260722-037'")&&legacyPosCustomerDisplay.includes("payment.payload")&&legacyPosCustomerDisplay.includes("qrDataUrl(payment.payload")&&legacyPosCustomerDisplay.includes("timestampMillis(snapshot.updatedAt)")&&legacyPosCustomerDisplay.includes("els.paidState.hidden = false"),"Legacy POS Customer Display must render PromptPay payload locally, normalize timestamps, and keep the MASTER thank-you strip visible");
+assert(posCustomerDisplayPage.includes('import { qrDataUrl } from "@/utils/localQr";')&&posCustomerDisplayPage.includes("payment?.payload ? qrDataUrl(payment.payload")&&posCustomerDisplayPage.includes('typeof value?.toMillis === "function"')&&posCustomerDisplayPage.includes('id="paidState" className="paid-state"'),"React POS Customer Display must render PromptPay payload locally, normalize timestamps, and keep the thank-you strip visible");
 assert(posCustomerDisplayPage.includes('className="total-summary"')&&posCustomerDisplayPage.includes('"retail-customer-display-responsive.css"')&&posCustomerDisplayPage.includes('"retail-customer-display-qr-consistency.css"')&&posCustomerDisplayPage.includes('className="thai-qr-payment-header"')&&posCustomerDisplayPage.includes('className="promptpay-brand"')&&posCustomerDisplayPage.includes('className="thai-qr-center-mark"')&&posCustomerDisplayPage.includes('id="paidState" className="paid-state"'),"React POS Customer Display must keep the Laravel MASTER total-summary/Thai QR Payment frame and visible thank-you strip");
-assert(legacyPosCustomerDisplayCss.includes(".thai-qr-payment-header")&&legacyPosCustomerDisplayCss.includes(".promptpay-brand-logo")&&legacyPosCustomerDisplayCss.includes(".thai-qr-center-mark")&&reactPosCustomerDisplayCss.includes(".thai-qr-payment-header"),"POS Customer Display Thai QR Payment frame CSS missing");
-assert(["th","en","my","lo","km"].every(locale=>legacyPosI18nBootstrap.includes(`data-locale-option="${locale}"`))&&legacyPosI18nBootstrap.includes('if (locale !== "th")')&&legacyPosTranslations.includes('"my": {')&&legacyPosTranslations.includes('"lo": {')&&legacyPosTranslations.includes('"km": {'),"Legacy POS locale switcher must expose and translate all five system locales");
-assert(!legacyPosCustomerDisplayHtml.includes('bi-arrows-fullscreen" aria-hidden="true"></i><span>')&&!legacyPosCustomerDisplay.includes("pairing-toggle-copy")&&!posCustomerDisplayPage.includes("pairing-toggle-copy"),"POS Customer Display top-right actions must be icon-only like Laravel MASTER");
+assert(reactPosCustomerDisplayCss.includes(".thai-qr-payment-header")&&reactPosCustomerDisplayCss.includes(".promptpay-brand-logo")&&reactPosCustomerDisplayCss.includes(".thai-qr-center-mark"),"React POS Customer Display Thai QR Payment frame CSS missing");
+assert(["th","en","my","lo","km"].every(locale=>dict[locale]?.pos_customer_display),"React POS Customer Display translations must cover all five system locales");
+assert(posCustomerDisplayPage.includes('bi-arrows-fullscreen')&&!posCustomerDisplayPage.includes("pairing-toggle-copy"),"React POS Customer Display top-right actions must stay icon-only");
 assert(customerDisplayQrConsistencyCss.includes(".display-header-button,")&&customerDisplayQrConsistencyCss.includes(".pairing-toggle {")&&customerDisplayQrConsistencyCss.includes("border-radius: 14px !important;"),"POS Customer Display icon-only action sizing / thank-you lower-corner parity missing");
 const posReceiptPage=read("react-app/src/pages/PosReceiptPage.jsx");
 const posReceiptCss=read("react-app/public/parity/css/pos-receipt-page.css");
@@ -772,29 +750,24 @@ assert(posNavigation.includes("const roleLabel = useMemo")&&posNavigation.includ
 assert(posNavigation.includes('import { createPortal } from "react-dom";')&&posNavigation.includes("createPortal(")&&posNavigation.includes("document.body) : null")&&posNavigation.includes('bi bi-house pos-context-icon')&&posNavigation.includes('data-icon-tone="emerald"'),"React POS drawer must portal to document.body like legacy and render the central-home icon explicitly");
 assert(posNavigationCss.includes(".pos-menu-panel{background:#f8fbf9;color:var(--black);"),"React POS drawer must keep explicit dark text even when mounted from a white-text header context");
 assert(posNavigation.includes('data-menu-tone={group.tone || "green"}')&&posNavigation.includes('aria-current={item.key === currentKey ? "page" : undefined}')&&posNavigation.includes('bi bi-chevron-right pos-menu-link-chevron'),"React POS Modern Card v2 navigation must preserve group tone, active-page semantics, and submenu chevrons");
-assert(retailPosNavigation.includes('data-menu-tone="${esc(group.tone || "green")}"')&&retailPosNavigation.includes('bi bi-chevron-right pos-menu-link-chevron')&&retailPosNavigation.includes('aria-current="page"'),"Legacy POS Modern Card v2 navigation must preserve group tone, active-page semantics, and submenu chevrons");
 assert(posNavigationCss.includes("POS menu Modern Card v2.1")&&posNavigationCss.includes("width:min(420px,96vw)!important")&&posNavigationCss.includes("min-height:54px!important")&&posNavigationCss.includes("min-height:45px!important")&&posNavigationCss.includes("background:linear-gradient(90deg,#bfeccc 0%,#d9f5e2 100%)!important")&&posNavigationCss.includes(".pos-menu-link.is-current")&&posNavigationCss.includes("grid-template-columns:31px minmax(0,1fr) 16px!important"),"POS Modern Card v2.1 CSS must keep the approved wider/taller/stronger-color sizing and active submenu treatment");
 assert(posNavigationCss.includes("POS menu Modern Card v2.2")&&posNavigationCss.includes("flex:1 1 0%!important")&&posNavigationCss.includes("height:0!important")&&posNavigationCss.includes("overflow-y:auto!important")&&posNavigationCss.includes("overflow-x:hidden!important")&&posNavigationCss.includes("scrollbar-gutter:stable")&&posNavigationCss.includes("flex:0 0 auto!important")&&posNavigationCss.includes("safe-area-inset-bottom"),"POS Modern Card v2.2 must keep header/profile/home/footer fixed while only the center navigation scrolls");
 assert(posNavigationCss.includes("POS menu Modern Card v2.3")&&posNavigationCss.includes("display:flex!important")&&posNavigationCss.includes("flex-direction:column!important")&&posNavigationCss.includes("align-items:stretch!important")&&posNavigationCss.includes("height:auto!important")&&posNavigationCss.includes("min-height:0!important"),"POS Modern Card v2.3 must stack expanded cards by natural height instead of CSS Grid tracks so cards cannot overlap");
 assert(posNavigationCss.includes(".pos-menu-footer #posLogoutBtn{")&&posNavigationCss.includes("column-gap:12px!important"),"POS drawer logout button must keep visible spacing between its icon and label");
 assert(posNavigation.includes("scrollOpenedGroupIntoView")&&posNavigation.includes("data-menu-group-card={group.id}")&&posNavigation.includes('scrollIntoView({ block: "nearest", behavior: "smooth" })'),"React POS multi-open drawer must auto-scroll newly opened groups into the visible nav area");
-assert(retailPosNavigation.includes('data-menu-group-card="${esc(group.id)}"')&&retailPosNavigation.includes('group.scrollIntoView({ block: "nearest", behavior: "smooth" })'),"Legacy POS multi-open drawer must auto-scroll newly opened groups into the visible nav area");
 
 const posThemeIds=["minimal-clean","modern-card","section-sidebar","summary","dark-hitech"];
-assert(posThemeConfig.includes('DEFAULT_POS_THEME = "modern-card"')&&legacyPosThemeRuntime.includes("DEFAULT_POS_THEME = 'modern-card'"),"POS theme system must preserve Modern Card as the backward-compatible default");
+assert(posThemeConfig.includes('DEFAULT_POS_THEME = "modern-card"'),"React POS theme system must preserve Modern Card as the backward-compatible default");
 for(const themeId of posThemeIds){
   assert(posThemeConfig.includes(`id: "${themeId}"`),`React POS theme option missing: ${themeId}`);
-  assert(legacyPosThemeRuntime.includes(`id: '${themeId}'`),`Legacy POS theme option missing: ${themeId}`);
   assert(posSettingsPage.includes(`POS_THEME_OPTIONS.map`),`React POS Settings must render the shared theme option catalog: ${themeId}`);
 }
 assert(posThemeHook.includes("loadPosThemeSetting")&&posThemeHook.includes("readCachedPosTheme")&&posThemeHook.includes("pos-theme-applied"),"React POS theme hook must apply cached tenant theme immediately and reconcile the Firestore setting");
 assert(posThemeData.includes('POS_THEME_SETTINGS_ID = "pos-theme"')&&posThemeData.includes('doc(db, "tenants"')&&posThemeData.includes('"settings", POS_THEME_SETTINGS_ID')&&posThemeData.includes("savePosThemeSetting"),"React POS theme preference must use tenant-scoped settings/pos-theme");
-assert(legacyPosThemeRuntime.includes("POS_THEME_SETTINGS_ID = 'pos-theme'")&&legacyPosThemeRuntime.includes("getRecord(RetailCollections.settings, POS_THEME_SETTINGS_ID)")&&legacyPosThemeRuntime.includes("document.documentElement.dataset.posTheme"),"Legacy POS theme runtime must read tenant settings/pos-theme and apply a document-level theme token");
 assert(posData.includes('["retailPos","store","tax","payment","receipt","loyalty","pos-theme"]')&&posData.includes('const posTheme={id:"pos-theme",type:"pos-theme"')&&posData.includes('["pos-theme",posTheme]')&&posData.includes("options.sections")&&posData.includes("return loadPosStoreSettings(tenantId)"),"React POS Store Settings load/save must persist the retail identity, tenant theme, and permission-scoped settings writes");
-assert(legacyPosSettingsJs.includes('id: "pos-theme"')&&legacyPosSettingsJs.includes('type: "pos-theme"')&&legacyPosSettingsJs.includes("saveSettingsDocumentsLocalFirst")&&legacyPosSettingsJs.includes("applyPosTheme(themeSettings.theme)"),"Legacy POS Settings must save the tenant theme through the existing local-first settings sync and apply it immediately");
 assert(legacyPosSettingsHtml.includes('/react/assets/index-')&&!legacyPosSettingsHtml.includes('id="storeSettingsForm"'),"Canonical /pos/settings shell must be cut over to React instead of retaining the legacy settings form");
 assert(posSettingsPage.includes('className="pos-theme-picker"')&&posSettingsPage.includes('name="posTheme"')&&posSettingsPage.includes('tr("theme.note")'),"React POS Settings must expose the translated five-card theme picker");
-assert(posSettingsPage.includes('applyPosTheme(value, tenant?.id, { cache: false })')&&posSettingsPage.includes("applyPosTheme(next.posTheme, tenant.id)")&&legacyPosSettingsJs.includes('applyPosTheme(normalizePosTheme(event.target.value), { cache: false })')&&legacyPosSettingsJs.includes('applyPosTheme(themeSettings.theme)'),"POS theme preview must stay temporary until Save while saved theme changes update the persistent cache");
+assert(posSettingsPage.includes('applyPosTheme(value, tenant?.id, { cache: false })')&&posSettingsPage.includes("applyPosTheme(next.posTheme, tenant.id)"),"React POS theme preview must stay temporary until Save while saved theme changes update the persistent cache");
 assert(posSettingsPage.includes("getRetailPosSession")&&posSettingsPage.includes('pagePermissions.has("pos.settings")')&&posSettingsPage.includes("firstAllowedPosPage(posAccessProfile, roleRows)")&&posSettingsPage.includes("<PageReadyOverlay"),"Canonical React POS Settings must preserve POS session/permission routing and full-page readiness");
 assert(posSettingsPage.includes('...(canEditStore ? ["retailPos", "tax", "payment", "receipt", "pos-theme"] : [])')&&posSettingsPage.includes('...(canEditLoyalty ? ["loyalty"] : [])')&&posSettingsPage.includes('sections: ["retailPos", "tax", "payment", "receipt", "pos-theme"]'),"React POS Settings save/reset must preserve granular retail-store-vs-loyalty permission boundaries");
 assert(posSettingsPage.includes('sweetConfirm(tr("actions.reset_confirm"), {')&&posSettingsPage.includes('confirmIcon: "arrow-clockwise"')&&!posSettingsPage.includes("sweetConfirm({"),"React POS Settings reset must use the shared app confirmation dialog with the real message argument");
@@ -802,11 +775,10 @@ assert(posSettingsPage.includes('className="settings-visual-hero"')&&posSettings
 assert(posThemesCss.includes('html[data-pos-theme="minimal-clean"]')&&posThemesCss.includes('html[data-pos-theme="section-sidebar"]')&&posThemesCss.includes('html[data-pos-theme="summary"]')&&posThemesCss.includes('html[data-pos-theme="dark-hitech"]'),"React POS theme stylesheet must implement themes 1, 3, 4, and 5 while Modern Card inherits the approved v2.3 base");
 assert(legacyPosThemesCss.includes('html[data-pos-theme="minimal-clean"]')&&legacyPosThemesCss.includes('html[data-pos-theme="section-sidebar"]')&&legacyPosThemesCss.includes('html[data-pos-theme="summary"]')&&legacyPosThemesCss.includes('html[data-pos-theme="dark-hitech"]'),"Legacy POS theme stylesheet must match the React theme catalog");
 assert(posThemesCss.includes(".pos-theme-summary{")&&posThemesCss.includes('html[data-pos-theme="summary"] .pos-theme-summary')&&posThemesCss.includes('display:grid!important'),"Theme 4 must reveal its summary dashboard only when the Summary theme is active");
-assert(posNavigation.includes('posTheme !== "section-sidebar"')&&posNavigation.includes("setOpenGroups(new Set(groups.map(group => group.id)))")&&retailPosNavigation.includes('activeTheme === "section-sidebar"')&&retailPosNavigation.includes("expandAllThemeGroups"),"Theme 3 must keep all permitted groups visible as a sectioned sidebar on React and legacy POS");
-assert(posNavigation.includes('posTheme !== "summary"')&&posNavigation.includes("loadPosThemeSummary")&&retailPosNavigation.includes('activeTheme === "summary"')&&retailPosNavigation.includes("refreshThemeSummary"),"Theme 4 summary data must load lazily only for the Summary theme");
+assert(posNavigation.includes('posTheme !== "section-sidebar"')&&posNavigation.includes("setOpenGroups(new Set(groups.map(group => group.id)))"),"React Theme 3 must keep all permitted groups visible as a sectioned sidebar");
+assert(posNavigation.includes('posTheme !== "summary"')&&posNavigation.includes("loadPosThemeSummary"),"React Theme 4 summary data must load lazily only for the Summary theme");
 assert(posNavigation.includes('permissions.has("pos.sales")')&&posNavigation.includes('permissions.has("pos.products")')&&posThemeData.includes("includeSales ? listPosSales")&&posThemeData.includes("includeProducts ? listRetailProducts"),"React Theme 4 summary must query only datasets the POS role is allowed to view");
-assert(retailPosNavigation.includes('hasPermission("pos.sales")')&&retailPosNavigation.includes('hasPermission("pos.products")')&&legacyPosThemeRuntime.includes("includeSales ? listRecords(RetailCollections.sales)")&&legacyPosThemeRuntime.includes("includeProducts ? listRecords(RetailCollections.products)"),"Legacy Theme 4 summary must preserve POS permission boundaries before reading sales/product metrics");
-assert(!posThemeData.includes("deleteDoc(")&&!posThemeData.includes("runTransaction(")&&!legacyPosThemeRuntime.includes("saveRecord("),"POS menu theme rendering/summary data must remain read-only apart from the explicit settings/pos-theme save path");
+assert(!posThemeData.includes("deleteDoc(")&&!posThemeData.includes("runTransaction("),"React POS menu theme rendering/summary data must remain read-only apart from the explicit settings/pos-theme save path");
 assert(firestoreRules.includes("match /settings/{settingId} { allow read: if true; allow create, update, delete: if (tenantAdminRole(tenantId)")&&firestoreRules.includes("settingId != 'lalamove'")&&firestoreRules.includes("settingId != 'lalamoveWallet'"),"Existing tenant settings Rules must continue to allow admins to save pos-theme without a Rules deployment");
 for(const locale of ["th","en","my","lo","km"]){
   const catalog=posThemeTranslations[locale];
@@ -820,17 +792,14 @@ for(const locale of ["th","en","my","lo","km"]){
   }
 }
 
-const legacyPosSaleMaster=read("tests/fixtures/retail-pos-legacy/pos-index.html");
-assert(legacyPosSaleMaster.includes('id="productGrid"')&&legacyPosSaleMaster.includes('id="cartList"')&&legacyPosSaleMaster.includes('id="payBtn"')&&legacyPosSaleMaster.includes('id="paymentDialog"'),"Retail POS sale legacy MASTER fixture must preserve the pre-React root UI/action inventory");
-const legacyPosSalesMaster=read("tests/fixtures/retail-pos-legacy/pos-sales-index.html");
-assert(legacyPosSalesMaster.includes('id="salesTableBody"')&&legacyPosSalesMaster.includes('id="saleDialog"')&&legacyPosSalesMaster.includes('id="exportCsvBtn"')&&legacyPosSalesMaster.includes('id="printReceiptBtn"'),"Retail POS sales-history legacy MASTER fixture must preserve the pre-React UI/action inventory");
-const legacyPosTaxInvoicesMaster=read("tests/fixtures/retail-pos-legacy/pos-tax-invoices-index.html");
+assert(["productGrid","cartList","payBtn","paymentDialog"].every(id=>posPage.includes(`id="${id}"`)),"React POS sale root UI/action inventory missing");
+assert(["salesTableBody","saleDialog","exportCsvBtn","printReceiptBtn"].every(id=>read("react-app/src/pages/PosSalesPage.jsx").includes(`id="${id}"`)),"React POS sales-history UI/action inventory missing");
 const posTaxInvoicesPage=read("react-app/src/pages/PosTaxInvoicesPage.jsx");
-const legacyPosTaxInvoiceIds=[...legacyPosTaxInvoicesMaster.matchAll(/id="([^"]+)"/g)].map(match=>match[1]);
-assert(legacyPosTaxInvoiceIds.length>=52&&legacyPosTaxInvoiceIds.includes("taxInvoiceList")&&legacyPosTaxInvoiceIds.includes("lateTaxInvoiceDialog")&&legacyPosTaxInvoiceIds.includes("taxProfileDialog")&&legacyPosTaxInvoiceIds.includes("voidTaxInvoiceDialog")&&legacyPosTaxInvoiceIds.includes("editTaxBuyerDialog"),"Retail POS tax-invoice-history legacy MASTER fixture must preserve the pre-React UI/action inventory");
-for(const id of legacyPosTaxInvoiceIds) assert(posTaxInvoicesPage.includes(`id="${id}"`),`React POS tax-invoice-history legacy ID missing: ${id}`);
+const requiredPosTaxInvoiceIds=["refreshBtn","sourceSaleSearch","findSourceSaleBtn","sourceSaleResult","taxInvoiceSearch","taxProfileBtn","copyTaxViewLinkBtn","taxSyncHealth","summaryText","taxInvoiceList","emptyState","lateTaxInvoiceDialog","lateTaxInvoiceForm","lateTaxInvoiceSaleText","lateBuyerTaxIdInput","lateDbdLookupBtn","lateBuyerNameInput","lateBuyerBranchInput","lateBuyerAddressInput","lateTaxInvoiceError","lateTaxInvoiceCancelBtn","lateTaxInvoiceSubmitBtn","taxProfileDialog","taxProfileForm","taxProfileList","taxProfileIdInput","taxProfileTaxIdInput","taxProfileNameInput","taxProfileBranchInput","taxProfileAddressInput","taxProfileError","taxProfileDeleteBtn","taxProfileNewBtn","taxProfileCloseBtn","voidTaxInvoiceDialog","voidTaxInvoiceForm","voidTaxInvoiceText","voidTaxInvoiceReasonInput","voidTaxInvoiceError","voidTaxInvoiceCancelBtn","voidTaxInvoiceSubmitBtn","editTaxBuyerDialog","editTaxBuyerForm","editTaxBuyerText","editBuyerTaxIdInput","editDbdLookupBtn","editBuyerNameInput","editBuyerBranchInput","editBuyerAddressInput","editTaxBuyerError","editTaxBuyerCancelBtn","editTaxBuyerSubmitBtn"];
+for(const id of requiredPosTaxInvoiceIds) assert(posTaxInvoicesPage.includes(`id="${id}"`),`React POS tax-invoice-history legacy ID missing: ${id}`);
 assert(posTaxInvoicesPage.includes("getRetailPosSession")&&posTaxInvoicesPage.includes('posPermissions.has("pos.tax_invoices")')&&posTaxInvoicesPage.includes("firstAllowedPosPage(posAccessProfile)")&&posTaxInvoicesPage.includes("/pos/login/?next="),"React POS tax-invoice-history session/permission parity missing");
-assert(posTaxInvoicesPage.includes("/assets/js/retail-pos-full-tax-invoice.js?v=20260716-017")&&posTaxInvoicesPage.includes("syncPendingTaxInvoices")&&posTaxInvoicesPage.includes("syncTaxBuyerProfiles")&&posTaxInvoicesPage.includes("createFullTaxInvoiceFromSale")&&posTaxInvoicesPage.includes("voidFullTaxInvoice")&&posTaxInvoicesPage.includes("retryTaxInvoiceSync")&&posTaxInvoicesPage.includes("updateLocalTaxInvoiceBuyer"),"React POS tax-invoice-history must retain the production tax sync/offline behavior bridge");
+const posTaxInvoiceData=read("react-app/src/data/retailPosTaxInvoiceData.js");
+assert(posTaxInvoicesPage.includes('import * as taxApi from "@/data/retailPosTaxInvoiceData";')&&!posTaxInvoicesPage.includes("/assets/js/retail-pos-full-tax-invoice.js")&&posTaxInvoiceData.includes("syncPendingTaxInvoices")&&posTaxInvoiceData.includes("syncTaxBuyerProfiles")&&posTaxInvoiceData.includes("createFullTaxInvoiceFromSale")&&posTaxInvoiceData.includes("voidFullTaxInvoice")&&posTaxInvoiceData.includes("retryTaxInvoiceSync")&&posTaxInvoiceData.includes("updateLocalTaxInvoiceBuyer"),"React POS tax-invoice-history must keep tax sync/offline behavior inside the React bundle");
 assert(posTaxInvoicesPage.includes('import { sweetConfirm } from "@/components/sweetDialog";')&&posTaxInvoicesPage.includes('"sweet-dialog.css"')&&posTaxInvoicesPage.includes('title: t("shared.dialog.confirm_title")')&&!posTaxInvoicesPage.includes("window.confirm("),"Canonical React Tax Invoice History must use the app sweet confirmation dialog instead of a browser-native confirm");
 assert(!posTaxInvoicesPage.includes('className="btn btn-secondary" href="/pos/"')&&posTaxInvoicesPage.includes('data-pos-supporting-header')&&posTaxInvoicesPage.includes('bi bi-receipt pos-context-icon')&&posTaxInvoicesPage.includes('bi bi-bookmark-star pos-context-icon')&&posTaxInvoicesPage.includes('["all","all","x-circle","rose"]')&&posTaxInvoicesPage.includes('["remote","remote_only","sliders","slate"]'),"React POS tax-invoice visual controls/icons must match the current task2 reference");
 assert(posTaxInvoicesCss.includes(".tax-invoices-page .shell{width:100%;max-width:none;margin:0;padding:26px 18px 38px}"),"React POS tax-invoice desktop shell must keep the full-width base layout");
@@ -838,10 +807,8 @@ assert(posTaxInvoicesPage.includes('"pos-tax-invoices-visual-dashboard.css"')&&p
 assert(posTaxInvoicesPage.includes('data-tax-status={invoice.status === "void" ? "void" : "issued"}')&&posTaxInvoicesPage.includes("data-tax-sync={syncFilterForInvoice(invoice)}"),"React POS tax-invoice document cards must expose visual status/sync state without changing actions");
 assert(posTaxInvoicesVisualCss.includes("linear-gradient(125deg,#073c2c")&&posTaxInvoicesVisualCss.includes("conic-gradient(#10b981")&&posTaxInvoicesVisualCss.includes(".tax-timeline-bar")&&posTaxInvoicesVisualCss.includes(".tax-workspace-panel .list")&&posTaxInvoicesVisualCss.includes("grid-template-columns:repeat(2,minmax(0,1fr))")&&posTaxInvoicesVisualCss.includes("@media(max-width:760px)"),"React POS tax-invoice colorful Visual Analytics responsive styling missing");
 assert(posTaxInvoicesVisualCss.includes(".tax-invoices-page .pos-header .header-actions{")&&posTaxInvoicesVisualCss.includes("flex-wrap:nowrap!important")&&posTaxInvoicesVisualCss.includes(".tax-invoices-page .pos-header #refreshBtn>span")&&posTaxInvoicesVisualCss.includes(".tax-invoices-page .pos-header #posMenuTrigger .pos-menu-trigger-label")&&posTaxInvoicesVisualCss.includes("flex:0 0 40px!important"),"React POS tax-invoice mobile header must keep Refresh/Locale/Menu on one icon-only row");
-const legacyPosReturnsMaster=read("tests/fixtures/retail-pos-legacy/pos-returns-index.html");
-const legacyPosReturnIds=[...legacyPosReturnsMaster.matchAll(/id="([^"]+)"/g)].map(match=>match[1]);
-assert(legacyPosReturnIds.length===21&&legacyPosReturnIds.includes("returnSaleSearch")&&legacyPosReturnIds.includes("returnEditorPanel")&&legacyPosReturnIds.includes("returnHistory")&&legacyPosReturnIds.includes("voidSaleBtn")&&legacyPosReturnIds.includes("confirmReturnBtn"),"Retail POS returns legacy MASTER fixture must preserve the pre-React 21-ID UI/action inventory");
-for(const id of legacyPosReturnIds) assert(posReturnsPage.includes(`id="${id}"`),`React POS returns legacy ID missing: ${id}`);
+const requiredPosReturnIds=["returnSaleSearch","returnSearchBtn","returnSaleResults","returnSaleEmpty","returnEditorPanel","returnSaleId","returnSaleMeta","clearSelectedSale","returnItemsBody","returnDate","refundMethod","returnReason","returnNote","returnTotal","returnError","voidSaleBtn","confirmReturnBtn","returnHistorySearch","returnHistory","returnHistoryEmpty","toast"];
+for(const id of requiredPosReturnIds) assert(posReturnsPage.includes(`id="${id}"`),`React POS returns legacy ID missing: ${id}`);
 assert(posReturnsPage.includes("getRetailPosSession")&&posReturnsPage.includes('permissions.has("pos.returns")')&&posReturnsPage.includes("firstAllowedPosPage(posAccessProfile)")&&posReturnsPage.includes("/pos/login/?next="),"React POS returns session/permission parity missing");
 assert(posReturnsPage.includes("selectAllRemainingForVoid")&&posReturnsPage.includes("sweetConfirm")&&posReturnsPage.includes('id="returnLoyaltyPreview"')&&posReturnsPage.includes('id="scanReturnSearchBtn"')&&posReturnsPage.includes('className="return-receipt-dialog"')&&posReturnsPage.includes('id="printReturnReceipt"'),"React POS returns must preserve VOID-confirm, loyalty preview, barcode scan, and receipt actions");
 assert(posReturnsPage.includes('import { sweetConfirm } from "@/components/sweetDialog";')&&posReturnsPage.includes('"sweet-dialog.css"')&&posReturnsPage.includes('title: t("shared.dialog.confirm_title")')&&!posReturnsPage.includes("window.confirm("),"Canonical React Returns must use the app sweet confirmation dialog instead of a browser-native confirm");
@@ -858,10 +825,8 @@ assert(posReturnsVisualCss.includes("/* Returns lower-workflow visual polish */"
 assert(posReturnsVisualCss.includes(".returns-loyalty-icon{")&&posReturnsVisualCss.includes("display:grid!important")&&posReturnsVisualCss.includes("place-items:center!important")&&posReturnsVisualCss.includes(".returns-loyalty-icon>i{"),"React POS returns Loyalty icon must remain centered inside its visual badge");
 assert(posReturnsVisualCss.includes(".returns-loyalty-strip>div:first-child .returns-loyalty-icon>i::before{")&&posReturnsVisualCss.includes("color:#fff!important")&&posReturnsVisualCss.includes("text-shadow:0 1px 3px rgba(52,16,101,.5)"),"React POS returns Loyalty star must remain high-contrast white on the purple badge");
 assert(posReturnsPage.includes("saleDocumentId: selectedSale._documentId || selectedSale.id")&&posReturnsData.includes("cachedProduct?._documentId")&&posReturnsData.includes("cachedCustomer?._documentId"),"React POS returns must preserve legacy logical-ID versus Firestore-document-ID compatibility");
-const legacyPosShiftsMaster=read("tests/fixtures/retail-pos-legacy/pos-shifts-index.html");
-const legacyPosShiftIds=[...legacyPosShiftsMaster.matchAll(/id="([^"]+)"/g)].map(match=>match[1]);
-assert(legacyPosShiftIds.length===24&&legacyPosShiftIds.includes("noActiveShift")&&legacyPosShiftIds.includes("activeShiftPanel")&&legacyPosShiftIds.includes("openShiftForm")&&legacyPosShiftIds.includes("closeShiftForm")&&legacyPosShiftIds.includes("shiftHistoryBody")&&legacyPosShiftIds.includes("clearShiftHistory"),"Retail POS shifts legacy MASTER fixture must preserve the pre-React 24-ID UI/action inventory");
-for(const id of legacyPosShiftIds) assert(posShiftsPage.includes(`id="${id}"`),`React POS shifts legacy ID missing: ${id}`);
+const requiredPosShiftIds=["noActiveShift","openShiftForm","cashierName","terminalCode","openingCash","openNote","openShiftError","activeShiftPanel","activeShiftMeta","openingCashDisplay","shiftSalesTotal","shiftCashSales","shiftTransferSales","shiftBillCount","expectedCash","closeShiftForm","actualCash","closeNote","cashDifference","closeShiftError","clearShiftHistory","shiftHistoryBody","shiftHistoryEmpty","toast"];
+for(const id of requiredPosShiftIds) assert(posShiftsPage.includes(`id="${id}"`),`React POS shifts legacy ID missing: ${id}`);
 assert(posShiftsPage.includes("getRetailPosSession")&&posShiftsPage.includes('pagePermissions.has("pos.shifts")')&&posShiftsPage.includes("firstAllowedPosPage(posAccessProfile, roleRows)")&&posShiftsPage.includes("/pos/login/?next="),"React POS shifts session/page-permission parity missing");
 for(const permission of ["pos.shifts.open","pos.shifts.close","pos.shifts.view_amount","pos.shifts.view_history","pos.shifts.clear_history"]) assert(posShiftsPage.includes(permission),`React POS shifts granular permission missing: ${permission}`);
 assert(posShiftsPage.includes('bi bi-clock-history pos-context-icon')&&posShiftsPage.includes('bi bi-bar-chart-line pos-context-icon')&&posShiftsPage.includes('bi bi-play-circle pos-context-icon')&&posShiftsPage.includes('"app-version-badge-runtime.css"')&&posShiftsPage.includes("<AppDeveloperPanel />"),"React POS shifts must preserve task2 shift/history/action icons and floating developer/version control");
@@ -880,11 +845,11 @@ assert(posShiftsVisualCss.includes("linear-gradient(125deg,#063e2e")&&posShiftsV
 assert(posShiftsVisualCss.includes(".shift-table thead{display:none}")&&posShiftsVisualCss.includes("content:attr(data-label)")&&posShiftsVisualCss.includes(".table-wrap::after{display:none!important}"),"React POS shifts mobile history must render as contained cards without horizontal-scroll instruction");
 assert(posShiftsPage.includes('activeShift\n              ? (canViewAmount ? money(totals.totalSales) : "—")\n              : (canViewAmount && canViewHistory ? money(shiftVisualStats.salesTotal) : "—")')&&posShiftsPage.includes("canViewHistory ? formatNumber(history.length)")&&posShiftsPage.includes("canViewAmount && (activeShift || canViewHistory)"),"React POS shifts dashboard must preserve amount/history permission boundaries");
 assert(posData.includes("POS_SHIFT_SYNC_QUEUE_KEY")&&posData.includes("closingIds")&&posData.includes("requestedShiftId")&&posData.includes("requestedClosedAt")&&posData.includes("actualCash:closeCash")&&posData.includes("salesTotal:totalSales"),"Shared POS data layer must preserve pending-close visibility and legacy shift field aliases");
-assert(paritySync.includes('"public/pos/index.html"')||read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/index.html"'),"React postbuild must sync the canonical /pos root entry to the React shell");
-assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/sales/index.html"'),"React postbuild must sync canonical /pos/sales to the React shell");
-assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/tax-invoices/index.html"'),"React postbuild must sync canonical /pos/tax-invoices to the React shell");
-assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/returns/index.html"'),"React postbuild must sync canonical /pos/returns to the React shell");
-assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/shifts/index.html"'),"React postbuild must sync canonical /pos/shifts to the React shell");
+assert(paritySync.includes('"public/pos/index.html"')||read("tools/sync-react-entrypoints.py").includes('"public/pos/index.html"'),"React postbuild must sync the canonical /pos root entry to the React shell");
+assert(read("tools/sync-react-entrypoints.py").includes('"public/pos/sales/index.html"'),"React postbuild must sync canonical /pos/sales to the React shell");
+assert(read("tools/sync-react-entrypoints.py").includes('"public/pos/tax-invoices/index.html"'),"React postbuild must sync canonical /pos/tax-invoices to the React shell");
+assert(read("tools/sync-react-entrypoints.py").includes('"public/pos/returns/index.html"'),"React postbuild must sync canonical /pos/returns to the React shell");
+assert(read("tools/sync-react-entrypoints.py").includes('"public/pos/shifts/index.html"'),"React postbuild must sync canonical /pos/shifts to the React shell");
 assert(firebaseHostingConfig.includes('"source": "/pos"')&&firebaseHostingConfig.includes('"source": "/pos/sales"')&&firebaseHostingConfig.includes('"source": "/pos/tax-invoices"')&&firebaseHostingConfig.includes('"source": "/pos/returns"')&&firebaseHostingConfig.includes('"source": "/pos/shifts"')&&firebaseHostingConfig.includes('"source": "/pos/shifts/**"')&&firebaseHostingConfig.includes('"source": "/pos/**"')&&hostingRewrites.find(item=>item.source==="/pos/**")?.destination==="/react/index.html","Hosting must keep all canonical POS routes on the React shell");
 assert(posPage.includes('/pos/login/?next=${encodeURIComponent(requested)}')&&posPage.includes("firstAllowedPosPage(posAccessProfile)")&&posPage.includes("location.replace(posRedirectTarget)")&&!posPage.includes('<Navigate to="/login?next=%2Fpos"'),"React POS sale access redirects must preserve legacy POS login/permission behavior with full-page navigation");
 assert(posNavigation.includes('location.replace("/pos/login/")')&&posNavigation.includes("export function firstAllowedPosPage"),"React POS navigation logout/first-allowed routing must stay inside the legacy POS session flow");
@@ -927,10 +892,8 @@ assert(posSalesPage.includes("watchPosSales")&&posSalesPage.includes('currentKey
 assert(posData.includes("export function watchPosSales")&&posData.includes("onSnapshot("),"React POS sales-history realtime Firestore watcher missing");
 assert(posData.includes("export async function createPosReturn")&&posData.includes("export async function openPosShift")&&posData.includes("export async function closePosShift")&&posData.includes("export async function listPosTaxInvoices"),"POS sales-group Firestore operations missing");
 assert(firestoreRules.includes("validPosOperationCounter")&&firestoreRules.includes("validPosOperationRunningNumber"),"POS return/shift running-number Firestore rules missing");
-const legacyPosProductsMaster=read("tests/fixtures/retail-pos-legacy/pos-products-index.html");
-const legacyPosProductIds=[...legacyPosProductsMaster.matchAll(/id="([^"]+)"/g)].map(match=>match[1]);
-assert(legacyPosProductIds.length===60&&legacyPosProductIds.includes("productTableBody")&&legacyPosProductIds.includes("productCategoryManager")&&legacyPosProductIds.includes("productSortManager")&&legacyPosProductIds.includes("productDialog")&&legacyPosProductIds.includes("categoryDialog")&&legacyPosProductIds.includes("stockDialog")&&legacyPosProductIds.includes("toast"),"Retail POS Products legacy MASTER fixture must preserve the pre-React 60-ID UI/action inventory");
-for(const id of legacyPosProductIds) assert(posProductsPage.includes(`id="${id}"`),`React POS Products legacy ID missing: ${id}`);
+const requiredPosProductIds=["productCount","stockTotal","lowStockCount","outStockCount","addProductBtn","productSearch","stockFilter","productTableBody","tableEmpty","productPagination","productCategoryManager","categoryCountBadge","addCategoryBtn","categorySearch","clearCategorySearch","categoryStatusFilter","categorySort","categoryPageSize","categoryManagerSummary","categoryManagerRoot","categoryPagination","productSortManager","sortManagerRoot","clearMovementBtn","movementList","movementEmpty","productDialog","productForm","productDialogTitle","closeProductDialog","editingProductId","productId","productBarcode","productName","productPrice","productUnit","productStock","productMinStock","productFormError","cancelProductBtn","categoryDialog","categoryForm","categoryDialogTitle","closeCategoryDialog","categoryName","categoryDialogHint","categoryFormError","cancelCategoryBtn","saveCategoryBtn","stockDialog","stockForm","closeStockDialog","stockProductId","stockProductName","stockAction","stockQuantity","stockNote","stockFormError","cancelStockBtn","toast"];
+for(const id of requiredPosProductIds) assert(posProductsPage.includes(`id="${id}"`),`React POS Products legacy ID missing: ${id}`);
 assert(posProductsPage.includes("getRetailPosSession")&&posProductsPage.includes('pagePermissions.has("pos.products")')&&posProductsPage.includes("firstAllowedPosPage(posAccessProfile, roleRows)")&&posProductsPage.includes("/pos/login/?next="),"React POS Products session/page-permission parity missing");
 assert(posProductsPage.includes('localStorage.getItem("retail_pos_roles_v1")')&&posProductsPage.includes("BUILTIN_POS_ROLES")&&posProductsPage.includes("ROLE_SETTINGS_TIMEOUT_MS = 6000")&&posProductsPage.includes("POS_ROLE_SETTINGS_TIMEOUT"),"React POS Products must use cached/built-in role readiness and avoid an indefinite role-settings gate");
 assert(posProductsPage.includes("INITIAL_DATA_TIMEOUT_MS = 10000")&&posProductsPage.includes("POS_PRODUCTS_INITIAL_LOAD_TIMEOUT")&&posProductsPage.includes("setInitialReady(true)"),"React POS Products initial Firestore load must fail open to realtime watchers instead of showing an indefinite loading screen");
@@ -961,13 +924,11 @@ assert(posProductsData.includes('tenantCollection(id, "products")')&&posProducts
 assert(posProductsData.includes('type = "adjustment"')&&posProductsData.includes("runTransaction")&&posProductsData.includes("after === before")&&posProductsData.includes("_documentIds")&&posProductsData.includes('source._documentId || productId')&&posProductsData.includes('product._documentId || product.id')&&posProductsData.includes("legacyDocumentIds.forEach"),"POS Products stock/legacy-document safeguards missing");
 assert(posProductsData.includes('tenants/${id}/product-images/${productId}/'),"POS product image storage path must match Storage rules");
 for(const css of ["retail-products.css","retail-products-sort-manager.css","retail-product-categories.css","retail-product-merchandising.css"]) assert(paritySync.includes('"' + css + '"'),"POS Products CSS must remain sourced from Laravel MASTER: " + css);
-assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/products/index.html"'),"React postbuild must sync canonical /pos/products to the React shell");
+assert(read("tools/sync-react-entrypoints.py").includes('"public/pos/products/index.html"'),"React postbuild must sync canonical /pos/products to the React shell");
 assert(firebaseHostingConfig.includes('"source": "/pos/products"')&&firebaseHostingConfig.includes('"source": "/pos/products/**"'),"Hosting must cache-bust canonical React POS Products");
 
-const legacyPosStockMovementsMaster=read("tests/fixtures/retail-pos-legacy/pos-stock-movements-index.html");
-const legacyPosStockMovementIds=[...legacyPosStockMovementsMaster.matchAll(/id="([^"]+)"/g)].map(match=>match[1]);
-assert(legacyPosStockMovementIds.length===17&&legacyPosStockMovementIds.includes("movementSearch")&&legacyPosStockMovementIds.includes("movementCount")&&legacyPosStockMovementIds.includes("exportMovementCsv")&&legacyPosStockMovementIds.includes("movementTableBody")&&legacyPosStockMovementIds.includes("movementEmpty"),"Retail POS Stock Movements legacy MASTER fixture must preserve the pre-React 17-ID UI/action inventory");
-for(const id of legacyPosStockMovementIds) assert(posStockMovementsPage.includes(`id="${id}"`),`React POS Stock Movements legacy ID missing: ${id}`);
+const requiredPosStockMovementIds=["movementSearch","movementDateFrom","movementDateTo","movementTypeFilter","movementTodayBtn","movementMonthBtn","movementAllBtn","movementCount","movementIn","movementOut","movementNet","movementPeriodText","exportMovementCsv","movementProductFilter","movementProductOptions","movementTableBody","movementEmpty"];
+for(const id of requiredPosStockMovementIds) assert(posStockMovementsPage.includes(`id="${id}"`),`React POS Stock Movements legacy ID missing: ${id}`);
 assert(posStockMovementsPage.includes("getRetailPosSession")&&posStockMovementsPage.includes('pagePermissions.has("pos.stock_movements")')&&posStockMovementsPage.includes("firstAllowedPosPage(posAccessProfile, roleRows)")&&posStockMovementsPage.includes("/pos/login/?next="),"React POS Stock Movements session/page-permission parity missing");
 for(const permission of ["pos.stock_movements.view_quantity","pos.stock_movements.export"]) assert(posStockMovementsPage.includes(permission),`React POS Stock Movements granular permission missing: ${permission}`);
 assert(posStockMovementsPage.includes('localStorage.getItem("retail_pos_roles_v1")')&&posStockMovementsPage.includes("ROLE_SETTINGS_TIMEOUT_MS = 6000")&&posStockMovementsPage.includes("POS_ROLE_SETTINGS_TIMEOUT"),"React POS Stock Movements must use cached/built-in role readiness with a bounded role-settings wait");
@@ -984,14 +945,12 @@ assert(posStockMovementsPage.includes('"retail-barcode-scan-tools.css"')&&!posSt
 const posBarcodeScanCss=read("react-app/public/parity/css/retail-barcode-scan-tools.css");
 assert(posBarcodeScanCss.includes(".movement-product-input input{padding-right:100px!important}")&&posBarcodeScanCss.includes(".movement-filter-clear"),"React POS barcode parity CSS must include the legacy Stock Movements clear/scan input treatment");
 assert(posStockMovementsPage.includes('t(`pos_stock.movements.${key}`')&&posStockMovementsPage.includes('tr("header.title")')&&posStockMovementsPage.includes('tr("report.title")'),"React POS Stock Movements must use the five-language pos_stock.movements translation catalog");
-assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/stock-movements/index.html"'),"React postbuild must sync canonical /pos/stock-movements to the React shell");
+assert(read("tools/sync-react-entrypoints.py").includes('"public/pos/stock-movements/index.html"'),"React postbuild must sync canonical /pos/stock-movements to the React shell");
 assert(firebaseHostingConfig.includes('"source": "/pos/stock-movements"')&&firebaseHostingConfig.includes('"source": "/pos/stock-movements/**"'),"Hosting must cache-bust canonical React POS Stock Movements");
 
 
-const legacyPosStockCountsMaster=read("tests/fixtures/retail-pos-legacy/pos-stock-counts-index.html");
-const legacyPosStockCountIds=[...legacyPosStockCountsMaster.matchAll(/id="([^"]+)"/g)].map(match=>match[1]);
-assert(legacyPosStockCountIds.length===21&&legacyPosStockCountIds.includes("countName")&&legacyPosStockCountIds.includes("countTableBody")&&legacyPosStockCountIds.includes("countedItems")&&legacyPosStockCountIds.includes("countHistory")&&legacyPosStockCountIds.includes("confirmCountBtn")&&legacyPosStockCountIds.includes("toast"),"Retail POS Stock Counts legacy MASTER fixture must preserve the pre-React 21-ID UI/action inventory");
-for(const id of legacyPosStockCountIds) assert(posStockCountsPage.includes(`id="${id}"`),`React POS Stock Counts legacy ID missing: ${id}`);
+const requiredPosStockCountIds=["fillSystemBtn","clearActualBtn","countName","countDate","countedBy","countNote","countSearch","countFilter","countTableBody","countEmpty","countedItems","shortQty","overQty","varianceValue","countError","resetCountBtn","confirmCountBtn","historySearch","countHistory","countHistoryEmpty","toast"];
+for(const id of requiredPosStockCountIds) assert(posStockCountsPage.includes(`id="${id}"`),`React POS Stock Counts legacy ID missing: ${id}`);
 assert(appRoutes.includes('import { PosStockCountsPage }')&&appRoutes.includes('path="/pos/stock-counts"'),"React POS Stock Counts route must be mounted");
 assert(posStockCountsPage.includes("getRetailPosSession")&&posStockCountsPage.includes('pagePermissions.has("pos.stock_counts")')&&posStockCountsPage.includes("firstAllowedPosPage(posAccessProfile, roleRows)")&&posStockCountsPage.includes("/pos/login/?next="),"React POS Stock Counts session/page-permission parity missing");
 for(const permission of ["pos.stock_counts.perform","pos.stock_counts.view_value","pos.stock_counts.view_history"]) assert(posStockCountsPage.includes(permission),`React POS Stock Counts granular permission missing: ${permission}`);
@@ -1113,13 +1072,11 @@ assert(posProductsData.includes('type:"adjustment"')&&!posProductsData.includes(
 assert(firestoreRules.includes("request.resource.data.type in ['adjustment', 'purchase']"),"Stock Counts rules-compatibility safeguard requires the current stock-movement role type allowance");
 assert(paritySync.includes('"retail-stock-counts.css"'),"POS Stock Counts CSS must remain sourced from the legacy MASTER parity sync");
 assert(posStockCountsPage.includes('"retail-barcode-scan-tools.css"'),"React POS Stock Counts must load the legacy barcode scanner parity CSS");
-assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/stock-counts/index.html"'),"React postbuild must sync canonical /pos/stock-counts to the React shell");
+assert(read("tools/sync-react-entrypoints.py").includes('"public/pos/stock-counts/index.html"'),"React postbuild must sync canonical /pos/stock-counts to the React shell");
 assert(firebaseHostingConfig.includes('"source": "/pos/stock-counts"')&&firebaseHostingConfig.includes('"source": "/pos/stock-counts/**"'),"Hosting must cache-bust canonical React POS Stock Counts");
 
-const legacyPosPurchasesMaster=read("tests/fixtures/retail-pos-legacy/pos-purchases-index.html");
-const legacyPosPurchaseIds=[...legacyPosPurchasesMaster.matchAll(/id="([^"]+)"/g)].map(match=>match[1]);
-assert(legacyPosPurchaseIds.length===16&&legacyPosPurchaseIds.includes("purchaseForm")&&legacyPosPurchaseIds.includes("supplierName")&&legacyPosPurchaseIds.includes("purchaseLines")&&legacyPosPurchaseIds.includes("purchaseTotal")&&legacyPosPurchaseIds.includes("purchaseHistory")&&legacyPosPurchaseIds.includes("toast"),"Retail POS Purchases legacy MASTER fixture must preserve the pre-React 16-ID UI/action inventory");
-for(const id of legacyPosPurchaseIds) assert(posPurchasesPage.includes(`id="${id}"`),`React POS Purchases legacy ID missing: ${id}`);
+const requiredPosPurchaseIds=["purchaseForm","supplierName","supplierList","supplierHint","purchaseInvoice","purchaseDate","purchaseNote","addPurchaseLineBtn","purchaseLines","purchaseTotal","purchaseError","resetPurchaseBtn","purchaseSearch","purchaseHistory","purchaseHistoryEmpty","toast"];
+for(const id of requiredPosPurchaseIds) assert(posPurchasesPage.includes(`id="${id}"`),`React POS Purchases legacy ID missing: ${id}`);
 for(const id of ["scanPurchaseLineBtn","purchaseDateFrom","purchaseDateTo","purchaseThisMonth","purchaseAll","exportPurchaseCsv","purchaseCount","purchaseGrandTotal","purchaseQtyTotal","supplierCount","supplierRanking","purchaseProductRanking","posScanDialog","posScanVideo","posScanStatus"]) assert(posPurchasesPage.includes(`id="${id}"`),`React POS Purchases runtime/report ID missing: ${id}`);
 assert(appRoutes.includes('import { PosPurchasesPage }')&&appRoutes.includes('path="/pos/purchases"'),"React POS Purchases route must be mounted");
 assert(posPurchasesPage.includes("getRetailPosSession")&&posPurchasesPage.includes('pagePermissions.has("pos.purchases")')&&posPurchasesPage.includes("firstAllowedPosPage(posAccessProfile, roleRows)")&&posPurchasesPage.includes("/pos/login/?next="),"React POS Purchases session/page-permission parity missing");
@@ -1148,7 +1105,7 @@ assert(posProductsData.includes("export async function countRetailProducts")&&po
 assert(posPurchasingData.includes("creditDays")&&posPurchasingData.includes('referenceType:"purchase"')&&posPurchasingData.includes("referenceNumber:id"),"POS Purchases data layer must preserve payable credit fields and stock-movement purchase references");
 assert(posPurchaseBarcodeCss.includes(".scan-barcode-btn.scan-toolbar-btn")&&posPurchaseBarcodeCss.includes(".purchase-lines-heading #scanPurchaseLineBtn"),"React POS Purchases scanner toolbar CSS parity missing");
 assert(paritySync.includes('extract_runtime_css("retail-barcode-scan-tools.js", "retail-barcode-scan-tools.css")'),"POS Purchases scanner CSS must remain sourced from the legacy runtime during parity sync");
-assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/purchases/index.html"'),"React postbuild must sync canonical /pos/purchases to the React shell");
+assert(read("tools/sync-react-entrypoints.py").includes('"public/pos/purchases/index.html"'),"React postbuild must sync canonical /pos/purchases to the React shell");
 assert(firebaseHostingConfig.includes('"source": "/pos/purchases"')&&firebaseHostingConfig.includes('"source": "/pos/purchases/**"'),"Hosting must cache-bust canonical React POS Purchases");
 
 assert(appRoutes.includes('import { PosPayablesPage }')&&appRoutes.includes('path="/pos/payables"'),"React POS Payables route must be mounted");
@@ -1165,7 +1122,7 @@ assert(posPayablesPage.includes('hidden={!canPay} onClick={() => openPayment(row
 assert(posPayablesPage.includes('"retail-payables-visual-dashboard.css"')&&posPayablesPage.includes('className="payable-visual-hero"')&&posPayablesPage.includes('className="panel payable-risk-panel"')&&posPayablesPage.includes('className="payment-dialog payable-payment-dialog"'),"React POS Payables Control Center structure missing");
 assert(posPayablesVisualCss.includes("linear-gradient(120deg,#083b2d")&&posPayablesVisualCss.includes(".payable-risk-track")&&posPayablesVisualCss.includes(".payable-stat-card::after")&&posPayablesVisualCss.includes(".payable-table td[data-label]::before")&&posPayablesVisualCss.includes("#paymentDialog.payable-payment-dialog")&&posPayablesVisualCss.includes("@media(max-width:620px)"),"React POS Payables colorful visual dashboard/responsive treatment missing");
 for(const locale of ["th","en","my","lo","km"]){const visual=dict[locale]?.pos_purchasing?.payables?.visual;assert(visual&&visual.kicker&&visual.hero_description&&visual.open_suppliers&&visual.risk_title&&visual.supplier_title&&visual.payment_description,`React POS Payables visual translations missing: ${locale}`);}
-assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/payables/index.html"'),"React postbuild must sync canonical /pos/payables to the React shell");
+assert(read("tools/sync-react-entrypoints.py").includes('"public/pos/payables/index.html"'),"React postbuild must sync canonical /pos/payables to the React shell");
 assert(firebaseHostingConfig.includes('"source": "/pos/payables"')&&firebaseHostingConfig.includes('"source": "/pos/payables/**"'),"Hosting must cache-bust canonical React POS Payables");
 
 
@@ -1184,7 +1141,7 @@ assert(posSuppliersPage.includes('"retail-suppliers-visual-dashboard.css"')&&pos
 assert(posSuppliersVisualCss.includes("linear-gradient(120deg,#083b2d")&&posSuppliersVisualCss.includes(".supplier-stat-card::after")&&posSuppliersVisualCss.includes(".supplier-card::before")&&posSuppliersVisualCss.includes("#supplierDialog.supplier-editor-dialog")&&posSuppliersVisualCss.includes("@media(max-width:620px)"),"React POS Suppliers colorful visual dashboard/responsive treatment missing");
 for(const locale of ["th","en","my","lo","km"]){const visual=dict[locale]?.pos_purchasing?.suppliers?.visual;assert(visual&&visual.kicker&&visual.hero_description&&visual.integrated&&visual.average_credit&&visual.search_label&&visual.form_description,`React POS Suppliers visual translations missing: ${locale}`);}
 assert(posPurchasingData.includes("export function watchPosSuppliers")&&posPurchasingData.includes("export async function savePosSupplier")&&posPurchasingData.includes("export async function deletePosSupplier")&&posPurchasingData.includes('tenantCollection(tenantId,"suppliers")'),"POS Suppliers Firestore CRUD/realtime mapping missing");
-assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/suppliers/index.html"'),"React postbuild must sync canonical /pos/suppliers to the React shell");
+assert(read("tools/sync-react-entrypoints.py").includes('"public/pos/suppliers/index.html"'),"React postbuild must sync canonical /pos/suppliers to the React shell");
 assert(firebaseHostingConfig.includes('"source": "/pos/suppliers"')&&firebaseHostingConfig.includes('"source": "/pos/suppliers/**"'),"Hosting must cache-bust canonical React POS Suppliers");
 
 
@@ -1729,7 +1686,7 @@ assert(posCustomersPage.includes('"retail-customers-visual-dashboard.css"')&&pos
 assert(posCustomersVisualCss.includes("linear-gradient(120deg,#083b2d")&&posCustomersVisualCss.includes(".customer-stat-card::after")&&posCustomersVisualCss.includes(".customer-card::before")&&posCustomersVisualCss.includes("#customerDialog.customer-editor-dialog")&&posCustomersVisualCss.includes(".customer-history-head{flex:0 0 auto;width:100%;box-sizing:border-box;margin:0!important")&&posCustomersVisualCss.includes(".customer-history-head .icon-btn{width:38px")&&posCustomersVisualCss.includes(".loyalty-history-summary")&&posCustomersVisualCss.includes(".loyalty-summary-card")&&posCustomersVisualCss.includes(".loyalty-history-item.is-return")&&posCustomersVisualCss.includes(".loyalty-history-deltas")&&posCustomersVisualCss.includes("@media(max-width:620px)"),"React POS Customers colorful visual dashboard/responsive history treatment missing or dialog header spacing regressed");
 for(const locale of ["th","en","my","lo","km"]){const visual=dict[locale]?.pos_customers?.visual;const loyalty=dict[locale]?.pos_customers?.loyalty;assert(visual&&visual.kicker&&visual.hero_description&&visual.integrated&&visual.average_points&&visual.search_label&&visual.form_description&&loyalty?.title&&loyalty?.summary_title&&loyalty?.summary_balance&&loyalty?.summary_movements&&loyalty?.summary_earned&&loyalty?.summary_used&&loyalty?.activity_title&&loyalty?.activity_count,"React POS Customers visual/loyalty translations missing: "+locale);}
 assert(posData.includes("export function watchPosCustomers")&&posData.includes("export async function listPosLoyaltyLedger")&&posData.includes("export function watchPosLoyaltyLedger")&&posData.includes('tenantCollection(tenantId, "loyaltyLedger")'),"POS Customers realtime customer/loyalty mapping missing");
-assert(read("tools/sync-react-legacy-entrypoints.py").includes('"public/pos/customers/index.html"'),"React postbuild must sync canonical /pos/customers to the React shell");
+assert(read("tools/sync-react-entrypoints.py").includes('"public/pos/customers/index.html"'),"React postbuild must sync canonical /pos/customers to the React shell");
 assert(firebaseHostingConfig.includes('"source": "/pos/customers"')&&firebaseHostingConfig.includes('"source": "/pos/customers/**"'),"Hosting must cache-bust canonical React POS Customers");
 
 
@@ -1743,7 +1700,7 @@ const retailPosBackupFunction=read("functions/retail-pos-backup.js");
 const retailPosBackupCodec=read("functions/retail-pos-backup-codec.js");
 const posBackupVisualCss=read("react-app/public/parity/css/retail-pos-backup-visual-dashboard.css");
 const posUsersVisualCss=read("react-app/public/parity/css/retail-pos-users-visual-dashboard.css");
-const reactEntrypointSync=read("tools/sync-react-legacy-entrypoints.py");
+const reactEntrypointSync=read("tools/sync-react-entrypoints.py");
 
 assert(
   appRoutes.includes('import { PosBackupPage }')
@@ -1859,7 +1816,16 @@ assert(
 );
 
 assert(
-  !fs.existsSync(path.join(root,"public/assets/js/retail-pos-backup.js"))
-  &&!fs.existsSync(path.join(root,"public/assets/js/retail-pos-users.js")),
-  "Legacy POS Backup/Users page-logic JavaScript must stay removed after React canonical cutover"
+  !fs.existsSync(path.join(root,"public/assets/js"))
+  &&!fs.existsSync(path.join(root,"public/assets/css"))
+  &&!fs.existsSync(path.join(root,"public/react/parity/js"))
+  &&!fs.existsSync(path.join(root,"retail-pos.js")),
+  "Public Hosting must remain React-only: legacy page JavaScript/CSS runtime directories and the root retail-pos entry must stay removed"
+);
+assert(
+  !platformPage.includes("window.jQuery")
+  &&!platformPage.includes("select2")
+  &&!platformPage.includes("/assets/vendor/jquery")
+  &&!platformPage.includes("/assets/vendor/select2"),
+  "React Platform must not restore the legacy jQuery/Select2 runtime bridge"
 );

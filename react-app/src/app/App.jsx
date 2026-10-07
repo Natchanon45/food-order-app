@@ -53,7 +53,7 @@ import { VerifyPage } from "@/pages/VerifyPage";
 import { LegalPage } from "@/pages/LegalPage";
 import { PosForbiddenPage } from "@/pages/PosForbiddenPage";
 import { PublicRouteMissingPage } from "@/pages/PublicRouteMissingPage";
-import { LegacyStorefrontEntry } from "@/pages/LegacyStorefrontEntry";
+import { StorefrontCompatibilityEntry } from "@/pages/StorefrontCompatibilityEntry";
 
 function StorefrontAliasRedirect({ target }) {
   const { slug = "" } = useParams();
@@ -148,7 +148,7 @@ export default function App() {
       <Route path="/verify" element={<VerifyPage />} />
       <Route path="/delivery" element={<PublicRouteMissingPage />} />
       <Route path="/delivery/success" element={<PublicRouteMissingPage />} />
-      <Route path="/takeaway" element={<LegacyStorefrontEntry target="takeaway" allowStoredTenant />} />
+      <Route path="/takeaway" element={<StorefrontCompatibilityEntry target="takeaway" allowStoredTenant />} />
       <Route path="/order" element={<PublicRouteMissingPage />} />
       <Route path="/pos/login" element={<Navigate to="/login?next=/pos/" replace />} />
       <Route path="/pos/forbidden" element={<PosForbiddenPage />} />
