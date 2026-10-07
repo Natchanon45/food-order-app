@@ -87,8 +87,82 @@ export function PublicMenuCatalog({
   const totalPages = Math.max(1, Math.ceil(filtered.length / size));
   const current = Math.min(page, totalPages);
   const visible = mobile ? filtered : filtered.slice((current - 1) * size, current * size);
+  const [highlightedCategory, setHighlightedCategory] = useState(all);
+  const scrollSpyEnabled = mobile && prefix === "order.menu" && activeCategory === all;
+  const selectedCategory = scrollSpyEnabled ? highlightedCategory : activeCategory;
 
   useEffect(() => { if (page > totalPages) setPage(totalPages); }, [page, totalPages, setPage]);
+
+  useEffect(() => {
+    if (!scrollSpyEnabled) {
+      setHighlightedCategory(activeCategory);
+      return undefined;
+    }
+
+    setHighlightedCategory(all);
+    let frame = 0;
+    let userHasScrolled = false;
+    let lastWindowY = window.scrollY;
+
+    const updateFromScroll = () => {
+      frame = 0;
+      if (!userHasScrolled) return;
+
+      const menuGrid = document.getElementById("menuGrid");
+      const filterArea = document.getElementById("menuListStart");
+      if (!menuGrid || !filterArea) return;
+
+      const cards = [...menuGrid.querySelectorAll(":scope > .menu-card")]
+        .filter(card => !card.hidden && card.dataset.menuCategory);
+      if (!cards.length) return;
+
+      const stickyBottom = filterArea.getBoundingClientRect().bottom + 12;
+      if (menuGrid.getBoundingClientRect().top > stickyBottom) {
+        setHighlightedCategory(all);
+        return;
+      }
+
+      const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 8;
+      if (nearBottom) {
+        setHighlightedCategory(cards[cards.length - 1].dataset.menuCategory || all);
+        return;
+      }
+
+      let currentCard = cards[0];
+      for (const card of cards) {
+        if (card.getBoundingClientRect().top <= stickyBottom) currentCard = card;
+        else break;
+      }
+      setHighlightedCategory(currentCard.dataset.menuCategory || all);
+    };
+
+    const scheduleUpdate = () => {
+      const currentY = window.scrollY;
+      if (Math.abs(currentY - lastWindowY) > 3) userHasScrolled = true;
+      lastWindowY = currentY;
+      if (frame) return;
+      frame = window.requestAnimationFrame(updateFromScroll);
+    };
+
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", scheduleUpdate);
+    return () => {
+      window.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", scheduleUpdate);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [scrollSpyEnabled, activeCategory, all, visible.length]);
+
+  useEffect(() => {
+    if (!mobile || prefix !== "order.menu") return;
+    const tabs = document.getElementById("categoryTabs");
+    if (!tabs) return;
+    const target = [...tabs.querySelectorAll("[data-category]")]
+      .find(button => button.dataset.category === selectedCategory);
+    if (!target) return;
+    const left = target.offsetLeft - (tabs.clientWidth / 2) + (target.clientWidth / 2);
+    tabs.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+  }, [mobile, prefix, selectedCategory]);
 
   const label = category => {
     if (category === all) return t(prefix + ".all");
@@ -100,11 +174,11 @@ export function PublicMenuCatalog({
   return (
     <div className="delivery-menu-column">
       <div className="menu-filter-area" id="menuListStart">
-        <div className="category-tabs" role="tablist" aria-label={t(prefix + ".category_aria")}>
+        <div className="category-tabs" id="categoryTabs" role="tablist" aria-label={t(prefix + ".category_aria")}>
           {categories.map(category => (
-            <button key={category} type="button" className={"category-tab" + (category === activeCategory ? " active" : "")}
-              role="tab" aria-selected={category === activeCategory}
-              onClick={() => { setActiveCategory(category); setPage(1); }}>
+            <button key={category} type="button" data-category={category} className={"category-tab" + (category === selectedCategory ? " active" : "")}
+              role="tab" aria-selected={category === selectedCategory}
+              onClick={() => { setActiveCategory(category); setHighlightedCategory(category); setPage(1); }}>
               {label(category)}
             </button>
           ))}
@@ -115,7 +189,7 @@ export function PublicMenuCatalog({
       </div>
       <div id="menuGrid" className="grid grid-3">
         {visible.length ? visible.map(item => (
-          <article className="card menu-card" key={item.id}>
+          <article className="card menu-card" data-menu-category={String(item.category || other)} key={item.id}>
             <div className="menu-image">
               <img src={item.image || "/assets/images/default-food.svg"} alt={item.name || ""}
                 data-image-position-x="50" data-image-position-y={clamp(item.imagePositionY)}

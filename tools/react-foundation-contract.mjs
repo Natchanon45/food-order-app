@@ -489,6 +489,7 @@ const publicOrderPage=read("react-app/src/pages/PublicOrderPage.jsx");
 const publicStorefrontComponent=read("react-app/src/components/PublicStorefront.jsx");
 const posRefreshCss=read("react-app/public/parity/css/pos-refresh.css");
 const legacyTableQrResolver=read("public/assets/js/table-qr-resolver.js");
+const legacyTableOrderScrollSpy=read("public/assets/js/table-order-category-scrollspy.js");
 assert(
   legacyTableQrResolver.includes('table?.status === "occupied" && table?.orderToken')
   &&legacyTableQrResolver.includes('params.set("token", activeToken)')
@@ -506,6 +507,17 @@ assert(
   &&posRefreshCss.includes(".delivery-pos .menu-card{grid-template-columns:88px minmax(0,1fr)}")
   &&posRefreshCss.includes(".delivery-pos .menu-image{width:88px;height:88px}"),
   "Table Order must keep the original compact card design while rendering exactly two menu items per desktop row"
+);
+assert(
+  legacyTableOrderScrollSpy.includes('const mobileQuery = window.matchMedia("(max-width: 899px)")')
+  &&legacyTableOrderScrollSpy.includes('setActiveCategory(cardCategory(current))')
+  &&publicStorefrontComponent.includes('const [highlightedCategory, setHighlightedCategory] = useState(all)')
+  &&publicStorefrontComponent.includes('const scrollSpyEnabled = mobile && prefix === "order.menu" && activeCategory === all')
+  &&publicStorefrontComponent.includes('data-category={category}')
+  &&publicStorefrontComponent.includes('data-menu-category={String(item.category || other)}')
+  &&publicStorefrontComponent.includes('setHighlightedCategory(currentCard.dataset.menuCategory || all)')
+  &&publicStorefrontComponent.includes('tabs.scrollTo({ left: Math.max(0, left), behavior: "smooth" })'),
+  "React Table Order must preserve mobile category scroll-spy highlighting while browsing All without filtering the visible menu list"
 );
 const staticDataService=read("public/assets/js/data-service.js");
 const deliveryCustomerAuthFunction=read("functions/delivery-customer-auth.js");

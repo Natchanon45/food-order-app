@@ -10246,3 +10246,56 @@ Production deploy + verification:
 - Firestore write attempts `0`; page errors `0`; console errors `0`; HTTP errors `0`.
 - Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Cloud Functions, or schema deployment occurred.
 - No merge to `main`.
+
+---
+
+## 2026-10-07 — Restore mobile Table Order category scroll-spy
+
+User symptom:
+- On Mobile Table Order, while browsing `ทั้งหมด`, scrolling down through products did not change the highlighted category tab.
+- The category bar stayed on `ทั้งหมด` even when the visible products belonged to later categories.
+
+Root cause:
+- The legacy Table Order implementation had a mobile category scroll-spy (`customer.js` / `table-order-category-scrollspy.js`) that tracked the visible menu card and updated the category tab without changing the actual `activeCategory` filter.
+- React `PublicMenuCatalog` only retained tab click filtering; it had no scroll-based highlighted-category state and did not expose the category DOM markers used by the legacy scroll-spy.
+
+Change:
+- Added a separate `highlightedCategory` state to `PublicMenuCatalog` so scroll highlighting is independent from `activeCategory` filtering.
+- Scroll-spy runs only for React Table Order on mobile/tablet (`<=899px`) while the real filter is `ทั้งหมด`.
+- Each category button now exposes `data-category`; each menu card exposes `data-menu-category`.
+- On window scroll, the visible card nearest the sticky filter boundary determines the highlighted category.
+- Near page bottom, the final menu category is selected.
+- The category strip automatically scrolls horizontally to center the highlighted tab.
+- Clicking a category still performs the existing real filter; while a specific category is selected, scroll-spy is disabled.
+- Clicking `ทั้งหมด` restores the full list and re-enables scroll-spy after user scrolling.
+- Desktop behavior and the existing two-menu-per-row layout remain unchanged.
+- Added regression guards against the legacy scroll-spy contract.
+- Prepared React `0.4.280` / Build `2026.10.07.449`; Public `0.16.32` / Build `2026.10.07.164`.
+
+Important files:
+- `react-app/src/components/PublicStorefront.jsx`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `README.md`
+
+Verification before deploy:
+- `npm run test:react-foundation` PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.07.449` / `/react/assets/index-Dx-C57cU.js`.
+- `git diff --check` PASS.
+- Read-only candidate overlay against Production Table 12 at 440x956:
+  - initial active tab = `ทั้งหมด`, 37 visible menu cards;
+  - scrolling to the `แกง` product region changed active tab to `แกง` and category strip `scrollLeft` to 58 while all 37 cards remained rendered;
+  - clicking `แกง` filtered to 6 `แกง` cards;
+  - clicking `ทั้งหมด` restored 37 cards;
+  - Desktop 1600px remained exactly 2 columns (`307px 307px`).
+  - Firestore write attempts `0`; page errors `0`; console errors `0`; HTTP errors `0`; overflow `0`.
+
+Deploy state:
+- Implementation commit/push pending.
+- Firebase Hosting-only deploy pending.
+- No Firestore Rules, Storage Rules, Cloud Functions, or schema change required.
+- No merge to `main`.

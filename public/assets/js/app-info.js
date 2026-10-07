@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.07.163',
+  build: '2026.10.07.164',
   branch: 'feature/react-firebase-port',
-  commit: 'TABLE-ORDER-TWO-COLUMN-RESTORE',
+  commit: 'TABLE-ORDER-MOBILE-CATEGORY-SCROLLSPY',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Table Order original design with two-column menus',
-  updatedAt: '2026-10-07T12:29:00+0700',
+  milestone: 'Table Order mobile category scroll-spy',
+  updatedAt: '2026-10-07T12:37:00+0700',
   whatsNew: [
-    'Restore the previous Table Order visual design',
-    'Render two menu items per desktop row so product cards have enough room',
-    'Keep the permanent table QR session resolver and ordering behavior unchanged'
+    'Restore mobile category highlighting while scrolling through the All menu list',
+    'Auto-center the active category tab as the visible menu category changes',
+    'Keep the original two-column desktop menu layout and ordering behavior unchanged'
   ]
 };
 
