@@ -229,7 +229,7 @@ export function PosSuppliersPage(){
   const remove=useCallback(async supplier=>{
     if(!canDelete||busy)return;
     const summary=summaryFor(supplier);
-    if(summary.count>0){await sweetAlert(tr("runtime.delete_used"),{confirmText:t("shared.action.ok"),type:"warning"});return}
+    if(summary.count>0){await sweetAlert(tr("runtime.delete_used"),{confirmText:t("shared.actions.ok"),type:"warning"});return}
     const approved=await sweetConfirm(tr("runtime.delete_confirm",{name:supplier.name}),{
       confirmText:tr("runtime.delete"),
       cancelText:tr("form.cancel"),
@@ -244,7 +244,7 @@ export function PosSuppliersPage(){
     }catch(deleteError){
       console.error("POS_SUPPLIER_DELETE_FAILED",deleteError);
       const message=tr("runtime.delete_failed",{error:String(deleteError?.message||"DELETE_FAILED")});
-      showToast(message,"error");await sweetAlert(message,{confirmText:t("shared.action.ok"),type:"error"});
+      showToast(message,"error");await sweetAlert(message,{confirmText:t("shared.actions.ok"),type:"error"});
     }finally{setBusy(false)}
   },[canDelete,busy,summaryFor,tenant?.id,tr,t,showToast]);
 

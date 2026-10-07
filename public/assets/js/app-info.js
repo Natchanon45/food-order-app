@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.07.154',
+  build: '2026.10.07.155',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-CUSTOMERS-DIALOG-SHELL-DELETE-FIX',
+  commit: 'POS-CUSTOMERS-DIALOG-OK-I18N-FIX',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'POS Customers dialog shell and delete confirmation repair',
-  updatedAt: '2026-10-07T07:34:00+0700',
+  milestone: 'POS Customers dialog OK translation repair',
+  updatedAt: '2026-10-07T07:47:00+0700',
   whatsNew: [
-    'Restore correct inset spacing for Customer purchase/points-history header icons and close buttons',
-    'Fix Customer delete confirmation so it renders text instead of [object Object]',
-    'Correct the same SweetDialog argument misuse in Supplier delete alerts and confirmations'
+    'Fix the Customer cannot-delete alert so the OK button uses the localized shared.actions.ok label',
+    'Apply the same localized OK key correction to Customer delete-error and Supplier delete alerts',
+    'Add regression guards preventing the obsolete shared.action.ok key from returning raw text'
   ]
 };
 

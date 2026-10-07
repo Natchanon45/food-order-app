@@ -326,7 +326,7 @@ export function PosCustomersPage() {
     const history = summaryFor(customer);
     if (history.count > 0) {
       await sweetAlert(tr("runtime.delete_used"), {
-        confirmText: t("shared.action.ok"),
+        confirmText: t("shared.actions.ok"),
         type: "warning",
       });
       return;
@@ -346,7 +346,7 @@ export function PosCustomersPage() {
       console.error("POS_CUSTOMER_DELETE_FAILED", deleteError);
       const message = tr("runtime.delete_failed", { error: String(deleteError?.message || "DELETE_FAILED") });
       showToast(message, "error");
-      await sweetAlert(message, { confirmText: t("shared.action.ok"), type: "error" });
+      await sweetAlert(message, { confirmText: t("shared.actions.ok"), type: "error" });
     } finally {
       setBusy(false);
     }

@@ -9644,3 +9644,34 @@ Production deploy + verification:
 - Production verification: Firestore writes = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
 - Deployment scope was Hosting only; no Firestore Rules, Indexes, Functions, Storage Rules, or schema migration.
 - No merge to `main`.
+
+---
+## 2026-10-07 — POS Customers raw OK translation key repair
+
+Symptom:
+- Customer cannot-delete alert rendered the raw button label `shared.action.ok`.
+
+Root cause:
+- Customer/Supplier delete alerts referenced `shared.action.ok`, but the shared dictionary key is `shared.actions.ok`.
+
+Change:
+- Replaced all affected Customer and Supplier alert confirm labels with `t("shared.actions.ok")`.
+- Added regression guards that reject the obsolete `shared.action.ok` key in both pages.
+- No delete logic, permissions, history checks, Firestore paths, or schema changed.
+
+Release candidate:
+- React `0.4.280` / Build `2026.10.07.440`.
+- Public `0.16.32` / Build `2026.10.07.155`.
+- Generated bundle `/react/assets/index-BZSsI3TZ.js`.
+
+Verification before deploy:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS.
+- `git diff --check` PASS.
+- Authenticated candidate test: cannot-delete message rendered correctly and confirm button rendered `ตกลง`; no raw translation key; Firestore writes/page errors/request failures/HTTP errors = 0.
+
+Deploy state:
+- Ready for Hosting-only deploy.
+- No merge to `main`.
