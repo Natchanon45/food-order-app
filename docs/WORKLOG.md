@@ -10106,3 +10106,16 @@ Deploy state:
 - Firebase Hosting-only deploy pending.
 - No Firestore Rules, Storage Rules, Cloud Functions, or schema change required.
 - No merge to `main`.
+
+Production deploy + verification:
+- Implementation commit: `54285b79` — `fix: restore permanent table qr sessions`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production React bundle is `/react/assets/index-BMiO6KYp.js` for React Build `2026.10.07.446` / Public Build `2026.10.07.161`.
+- Production verification used the exact tokenless permanent QR URL from the reported flow: `/s/saas-test-shop/order/?table=12`.
+- Table 12 automatically normalized to the current session URL by appending the live `token` query parameter, rendered `เมนูสำหรับโต๊ะ 12`, and loaded 10 real menu cards.
+- A real menu item was added locally to the cart; total changed to `120.00 บาท` and `ยืนยันการสั่ง` changed from disabled to enabled. The submit action itself was intentionally not clicked, so Production order data was not modified.
+- Available Table 09 remained blocked as `QR นี้ไม่สามารถใช้งานได้` with 0 menus.
+- Firestore write attempts = `0`; page errors = `0`; console errors = `0`; HTTP errors = `0`; horizontal overflow = `0`.
+- Deployment scope was Hosting only; no Firestore Rules, Storage Rules, Cloud Functions, or schema deployment occurred.
+- No merge to `main`.
