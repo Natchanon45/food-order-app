@@ -11638,3 +11638,60 @@ Deploy state:
   - tracking/action-group surrounding spacing is >= 12px.
 - Deployment scope was Hosting only.
 - No Functions, Firestore Rules, Storage Rules, schema changes, or merge to `main`.
+
+
+---
+
+## 2026-10-07 — Global button/badge spacing + icon Y-center policy (Build 2026.10.07.466)
+
+Request:
+- Extend the permanent UI rules:
+  - same-row `element -> button -> element` must keep spacing on both sides,
+  - same-row `element -> badge -> element` must keep spacing on both sides,
+  - button icons must always be vertically centered on the button Y axis.
+
+Permanent policy:
+- Updated `README.md`, `STRUCTURE.md`, and `docs/PARITY_VERIFICATION_PLAN.md`.
+- Standard minimums:
+  - icon -> label: >= 7px,
+  - same-row element -> button -> element: >= 8px clear space on both sides,
+  - same-row element -> badge -> element: >= 8px clear space on both sides,
+  - adjacent actions: >= 8px,
+  - action group -> surrounding section: >= 12px,
+  - icon Y-center deviation from button center: <= 1px.
+- Intentional icon-only controls still require a visible, Y-centered icon and accessible label.
+- `tools/react-foundation-contract.mjs` now guards the expanded policy and the shared app-header gap.
+
+Test-first evidence:
+- Production Build 2026.10.07.465 was measured before changing runtime CSS.
+- Delivery header measured `Brand -> badge = 0px`, so the new badge-spacing rule correctly failed.
+- The new Delivery header browser assertion failed with expected >=8px / actual 0px.
+- Existing visible button icons measured Y-center deviation 0px and therefore already satisfied the new Y-axis rule.
+
+Implementation:
+- Shared `.app-header` now has a 12px flex gap.
+- Existing locale `margin-left:auto` remains intact, so language controls stay at the far edge while preserving the minimum direct-sibling gap.
+- Delivery header now satisfies `brand -> badge -> locale` spacing without changing the PENGUIN branding order.
+- Delivery saved-address action tests now verify icon containment and <=1px Y-center deviation.
+- Delivery Success visible-action policy test now verifies <=1px icon Y-center deviation in addition to icon presence, icon/label gap, adjacent action spacing, and perimeter spacing.
+
+Verification before deploy:
+- `npm run build:react` PASS.
+- Generated build contract PASS for Build `2026.10.07.466` / `/react/assets/index-B2znYP2F.js`.
+- Delivery parity browser suite: **4/4 PASS**.
+- Delivery Success parity browser suite: **5/5 PASS**.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `git diff --check` PASS.
+- Candidate geometry:
+  - Delivery Brand -> badge = 12px,
+  - Delivery badge -> locale > 8px,
+  - `เพิ่มที่อยู่` icon Y-center deviation = 0px,
+  - `ตรวจสอบและชำระเงิน` icon Y-center deviation = 0px,
+  - `สั่งเพิ่ม` icon Y-center deviation = 0px,
+  - `ดาวน์โหลดใบสั่งซื้อ` icon Y-center deviation = 0px,
+  - `ดูยอดล่าสุด` icon Y-center deviation = 0px.
+- No Functions, Firestore Rules, Storage Rules, or schema changes.
+
+Deploy state:
+- Commit/push and Hosting-only deploy pending at this checkpoint.

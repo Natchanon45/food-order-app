@@ -92,16 +92,24 @@ test.describe("Delivery Success Laravel parity", () => {
         const label = element.querySelector(":scope > span");
         const iconRect = icon?.getBoundingClientRect();
         const labelRect = label?.getBoundingClientRect();
+        const buttonRect = element.getBoundingClientRect();
         return {
           display: style.display,
           gap: Number.parseFloat(style.gap || "0") || 0,
           visualGap: iconRect && labelRect ? labelRect.left - iconRect.right : 0,
+          iconCenterDeltaY: iconRect
+            ? Math.abs(
+                (buttonRect.top + buttonRect.height / 2)
+                - (iconRect.top + iconRect.height / 2)
+              )
+            : Number.POSITIVE_INFINITY,
         };
       });
 
       expect(["inline-flex", "flex"]).toContain(metrics.display);
       expect(metrics.gap).toBeGreaterThanOrEqual(7);
       expect(metrics.visualGap).toBeGreaterThanOrEqual(7);
+      expect(metrics.iconCenterDeltaY).toBeLessThanOrEqual(1);
     }
 
     const spacing = await page.evaluate(() => {

@@ -708,13 +708,25 @@ assert(
   "Delivery, Takeaway, and Delivery Success canonical storefronts must be native React routes"
 );
 assert(
-  readmeRules.includes("Global button UI rule")
+  readmeRules.includes("Global button / badge UI rule")
   &&readmeRules.includes("at least **7px** icon-to-label gap")
-  &&readmeRules.includes("at least **8px** between adjacent buttons/actions")
+  &&readmeRules.includes("center deviation no greater than **1px**")
+  &&readmeRules.includes("element → button → element")
+  &&readmeRules.includes("element → badge → element")
+  &&readmeRules.includes("at least **8px** clear space on both sides")
   &&readmeRules.includes("at least **12px** separation")
-  &&structureRules.includes("Global button contract")
-  &&parityVerificationPlan.includes("every user-visible button or button-like link has a semantic icon"),
-  "Global visible-button icon and spacing policy must stay documented"
+  &&structureRules.includes("Global button/badge contract")
+  &&structureRules.includes("Y axis may deviate from the button center by at most 1px")
+  &&parityVerificationPlan.includes("every user-visible button or button-like link has a semantic icon")
+  &&parityVerificationPlan.includes("element → button → element")
+  &&parityVerificationPlan.includes("element → badge → element")
+  &&parityVerificationPlan.includes("no more than 1px"),
+  "Global visible-button/badge spacing and icon Y-center policy must stay documented"
+);
+assert(
+  appParityCss.includes(".app-header { position: sticky;")
+  &&appParityCss.includes("justify-content: space-between; gap: 12px;"),
+  "Shared app-header must preserve direct-child button/badge spacing"
 );
 assert(
   deliverySuccessPage.includes('id="orderAgainLink"')

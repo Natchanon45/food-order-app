@@ -19,7 +19,7 @@ Laravel is the visual and behavioral source of truth during the React + Firebase
 - MASTER branch: `main`
 - Do not redesign a React page when a Laravel MASTER implementation exists.
 - Compare source, DOM/classes, responsive behavior, icons, dates, dialogs, buttons, and runtime screenshots.
-- Global button contract: every visible action button/button-like link must include a semantic icon. Text buttons use icon first + label second with >=7px internal gap; adjacent actions keep >=8px separation; action groups keep >=12px from the previous/next section. Do not introduce text-only action buttons. Intentional icon-only controls must retain a visible icon and accessible label.
+- Global button/badge contract: every visible action button/button-like link must include a semantic icon. Text buttons use icon first + label second with >=7px internal gap, and the icon center on the Y axis may deviate from the button center by at most 1px. Same-row `element → button → element` and `element → badge → element` sequences require >=8px clear space on both sides of the button/badge. Adjacent actions keep >=8px separation; action groups keep >=12px from the previous/next section. Do not introduce text-only action buttons. Intentional icon-only controls must retain a visible, Y-centered icon and accessible label.
 
 ## Important directories
 

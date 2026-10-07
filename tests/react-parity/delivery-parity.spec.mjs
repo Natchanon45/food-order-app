@@ -55,8 +55,10 @@ test.describe("Delivery Laravel behavior parity", () => {
     expect(directChildren[0].className).toContain("brand");
     expect(directChildren[1].className).toContain("badge");
     expect(directChildren[2].className).toContain("app-locale-switcher");
-    expect(directChildren[1].left - directChildren[0].right).toBeLessThanOrEqual(24);
-    expect(directChildren[2].left).toBeGreaterThan(directChildren[1].right);
+    const brandToBadge = directChildren[1].left - directChildren[0].right;
+    const badgeToLocale = directChildren[2].left - directChildren[1].right;
+    expect(brandToBadge).toBeGreaterThanOrEqual(8);
+    expect(badgeToLocale).toBeGreaterThanOrEqual(8);
   });
 
   test("profile load automatically selects the default saved address", async ({ page }) => {
@@ -97,9 +99,14 @@ test.describe("Delivery Laravel behavior parity", () => {
             && iconRect.right <= buttonRect.right + 1
             && iconRect.top >= buttonRect.top - 1
             && iconRect.bottom <= buttonRect.bottom + 1,
-        } : { inside: false };
+          centerDeltaY: Math.abs(
+            (buttonRect.top + buttonRect.height / 2)
+            - (iconRect.top + iconRect.height / 2)
+          ),
+        } : { inside: false, centerDeltaY: Number.POSITIVE_INFINITY };
       });
       expect(bounds.inside).toBe(true);
+      expect(bounds.centerDeltaY).toBeLessThanOrEqual(1);
     }
   });
 

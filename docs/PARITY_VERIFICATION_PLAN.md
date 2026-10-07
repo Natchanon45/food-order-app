@@ -36,8 +36,10 @@ A route can be marked `verified` only when all required dimensions pass:
 3. **Action parity**
    - every visible button/link/menu action is inventoried
    - every user-visible button or button-like link has a semantic icon; text buttons render icon first + label second
-   - icon-to-label gap is at least 7px, adjacent action gap is at least 8px, and action groups keep at least 12px from the section before/after
-   - intentional icon-only controls retain a visible icon plus accessible label; text-only action buttons are not accepted
+   - icon-to-label gap is at least 7px and the icon Y-center differs from the button Y-center by no more than 1px
+   - same-row `element → button → element` and `element → badge → element` sequences keep at least 8px clear space on both sides of the button/badge
+   - adjacent action gap is at least 8px, and action groups keep at least 12px from the section before/after
+   - intentional icon-only controls retain a visible, Y-centered icon plus accessible label; text-only action buttons are not accepted
    - click result matches MASTER
    - navigation destination matches
    - modal/prompt/confirm text and button semantics match

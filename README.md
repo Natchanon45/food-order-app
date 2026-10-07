@@ -2,7 +2,7 @@
 
 Current development branch: `feature/react-firebase-port`
 Current milestone: React + Firebase parity migration / Super Admin Console
-Next PENGUIN release identity: Version `0.4.280` • Build `2026.10.07.465`
+Next PENGUIN release identity: Version `0.4.280` • Build `2026.10.07.466`
 Primary production Hosting: `https://penguin-food.web.app` (legacy `https://natchanon-food-order-delivery.web.app` retained for transition only)
 
 > New Chat / continuation: read `STRUCTURE.md`, `docs/NEXT_CHAT_HANDOFF.md`, and `docs/WORKLOG.md` before changing code.
@@ -12,7 +12,7 @@ Primary production Hosting: `https://penguin-food.web.app` (legacy `https://natc
 >
 > Firebase Hosting rule: **Build must change before every Hosting deploy.** Review/bump Version for a user-visible release and never redeploy the same Version + Build pair.
 >
-> **Global button UI rule:** every user-visible action rendered as a button or button-like link must have a semantic icon. For text buttons, render the icon first and the label second, keep at least **7px** icon-to-label gap, keep at least **8px** between adjacent buttons/actions, and keep at least **12px** separation from the section immediately before and after the action group. Text-only action buttons are not allowed. Intentional icon-only controls are allowed only when the icon is visible and an accessible label remains. Branded sign-in controls may use their branded image as the icon.
+> **Global button / badge UI rule:** every user-visible action rendered as a button or button-like link must have a semantic icon. For text buttons, render the icon first and the label second, keep at least **7px** icon-to-label gap, and keep the icon vertically centered on the button Y axis with center deviation no greater than **1px**. In a same-row sequence `element → button → element`, the button must keep at least **8px** clear space on both sides. In `element → badge → element`, the badge must also keep at least **8px** clear space on both sides. Adjacent buttons/actions must keep at least **8px** separation, and action groups must keep at least **12px** separation from the section immediately before and after them. Text-only action buttons are not allowed. Intentional icon-only controls are allowed only when the icon is visible, Y-centered, and an accessible label remains. Branded sign-in controls may use their branded image as the icon.
 
 > **Temporary MCP fallback rule:** while Desktop Commander MCP command execution is unavailable, every completed GitHub-side change must end with copy-paste commands for the user to (1) `git pull --ff-only origin feature/react-firebase-port` and (2) deploy Firebase Hosting with `npx firebase-tools deploy --only hosting:foodapp --project chat-45754`. Include any required test/build or Build-bump step before deploy when applicable.
 
