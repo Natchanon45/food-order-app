@@ -98,7 +98,7 @@ service firebase.storage {
     }
 
     match /tenants/{tenantId}/lalamove-wallet-topups/{topupId}/{fileName} {
-      allow read: if tenantProductAdmin(tenantId);
+      allow read: if hasRole(['super_admin']) || tenantProductAdmin(tenantId);
       allow create, update: if tenantProductAdmin(tenantId) && validRevenueShareSlip(10 * 1024 * 1024);
       allow delete: if tenantProductAdmin(tenantId);
     }

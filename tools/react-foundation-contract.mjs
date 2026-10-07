@@ -489,6 +489,11 @@ const staticDataService=read("public/assets/js/data-service.js");
 const deliveryCustomerAuthFunction=read("functions/delivery-customer-auth.js");
 const firestoreRules=read("firestore.rules");
 const storageRules=read("storage.rules");
+assert(
+  storageRules.includes("match /tenants/{tenantId}/lalamove-wallet-topups/{topupId}/{fileName}")
+  &&storageRules.includes("allow read: if hasRole([\'super_admin\']) || tenantProductAdmin(tenantId);"),
+  "Super Admin must be able to read tenant Lalamove wallet top-up slips for central review"
+);
 const staticDeliveryStaffGuard=read("public/assets/js/delivery-staff-guard.js");
 const staticDeliveryAddressesCss=read("public/assets/css/delivery-addresses.css");
 const staticDeliveryRuntime=read("public/assets/js/delivery.js");
@@ -1313,6 +1318,20 @@ for(const locale of ["th","en","my","lo","km"]) {
   assert(Boolean(dict?.[locale]?.platform_owners?.hero?.stats?.owners),`Platform Owners owner metric locale missing: ${locale}`);
   assert(Boolean(dict?.[locale]?.platform_owners?.list?.result_count),`Platform Owners result locale missing: ${locale}`);
   assert(Boolean(dict?.[locale]?.platform_owners?.tenant?.owner_label),`Platform Owners account label locale missing: ${locale}`);
+}
+
+const walletSlipHandler=adminTenantsPage.slice(
+  adminTenantsPage.indexOf("const openWalletSlip = async item =>"),
+  adminTenantsPage.indexOf("const closeWalletSlip = () =>")
+);
+assert(
+  walletSlipHandler.includes("getDownloadURL(storageRef(storage, path))")
+  &&walletSlipHandler.includes('t("admin_tenants.wallet.slip_load_failed")')
+  &&walletSlipHandler.includes('showToast(message, "error")'),
+  "Super Admin wallet slip viewer must resolve Storage URLs and surface a visible error when loading fails"
+);
+for(const locale of ["th","en","my","lo","km"]) {
+  assert(Boolean(dict?.[locale]?.admin_tenants?.wallet?.slip_load_failed),`Wallet slip load error locale missing: ${locale}`);
 }
 
 const lalamoveApprovalHandler=adminTenantsPage.slice(

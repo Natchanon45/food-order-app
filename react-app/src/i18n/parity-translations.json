@@ -538,7 +538,8 @@
           "delivery_refund": "คืนเครดิตค่าจัดส่ง Lalamove",
           "adjustment": "ปรับปรุงยอดเครดิต",
           "cod_adjustment": "ปรับปรุงยอด COD"
-        }
+        },
+        "slip_load_failed": "เปิดสลิปไม่สำเร็จ กรุณาลองใหม่อีกครั้ง"
       },
       "subscription": {
         "title": "สมาชิกและวันหมดอายุ",
@@ -6803,7 +6804,8 @@
           "delivery_refund": "Lalamove delivery credit refund",
           "adjustment": "Credit adjustment",
           "cod_adjustment": "COD adjustment"
-        }
+        },
+        "slip_load_failed": "Could not open the slip. Please try again."
       },
       "subscription": {
         "title": "Subscription and expiry",
@@ -12793,7 +12795,8 @@
           "delivery_refund": "Lalamove ပေးပို့ခရက်ဒစ် ပြန်အမ်းခြင်း။",
           "adjustment": "အကြွေးများတော့",
           "cod_adjustment": "COD ချိန်ညှိမှု"
-        }
+        },
+        "slip_load_failed": "စလစ်ကို ဖွင့်၍မရပါ။ ထပ်မံကြိုးစားပါ။"
       },
       "subscription": {
         "title": "စာရင်းသွင်းခြင်းနှင့် သက်တမ်းကုန်ဆုံးခြင်း။",
@@ -18783,7 +18786,8 @@
           "delivery_refund": "Lalamove ສົ່ງເງິນຄືນສິນເຊື່ອ",
           "adjustment": "ການປັບສິນເຊື່ອ",
           "cod_adjustment": "COD ການປັບຕົວ"
-        }
+        },
+        "slip_load_failed": "ບໍ່ສາມາດເປີດສະລິບໄດ້ ກະລຸນາລອງໃໝ່"
       },
       "subscription": {
         "title": "ການສະໝັກໃຊ້ ແລະໝົດອາຍຸ",
@@ -24773,7 +24777,8 @@
           "delivery_refund": "Lalamove ការបង្វិលសងឥណទានដឹកជញ្ជូន",
           "adjustment": "ការកែតម្រូវឥណទាន",
           "cod_adjustment": "ការកែតម្រូវ COD"
-        }
+        },
+        "slip_load_failed": "មិនអាចបើកស្លិបបានទេ។ សូមព្យាយាមម្តងទៀត។"
       },
       "subscription": {
         "title": "ការជាវ និងការផុតកំណត់",

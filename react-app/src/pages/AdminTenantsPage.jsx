@@ -942,7 +942,9 @@ export function AdminTenantsPage() {
       walletSlipDialogRef.current?.showModal?.();
     } catch (error) {
       console.error("TENANT_LALAMOVE_WALLET_SLIP_FAILED", error);
-      setStatus(t("admin_tenants.wallet.load_failed"));
+      const message = t("admin_tenants.wallet.slip_load_failed");
+      setStatus(message);
+      showToast(message, "error");
     }
   };
 

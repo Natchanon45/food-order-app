@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.07.159',
+  build: '2026.10.07.160',
   branch: 'feature/react-firebase-port',
-  commit: 'PLATFORM-OWNERS-MODERN-CONTROL-CENTER',
+  commit: 'SUPER-ADMIN-WALLET-SLIP-ACCESS',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'Platform Owners modern control center',
-  updatedAt: '2026-10-07T11:18:00+0700',
+  milestone: 'Super Admin wallet slip viewer repair',
+  updatedAt: '2026-10-07T11:23:00+0700',
   whatsNew: [
-    'Redesign the Super Admin Owner workspace with a distinctive responsive control-center layout',
-    'Add store, assigned Owner, pending Owner, and suspended-store overview metrics',
-    'Present owner identity, store status, search, filtering, and actions with clearer visual hierarchy'
+    'Allow active Super Admin accounts to read tenant Lalamove wallet top-up slips for central review',
+    'Restore View Slip for pending and Slip2Go auto-approved wallet top-ups',
+    'Show a visible error toast if a wallet slip cannot be opened'
   ]
 };
 

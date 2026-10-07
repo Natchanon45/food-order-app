@@ -9989,3 +9989,51 @@ Production deploy + verification:
   - Raw translation keys `0`, Firestore write attempts `0`, page errors `0`, unexpected request failures `0`, HTTP errors `0`.
 - No Firestore Rules, Storage Rules, Cloud Functions, or schema deployment occurred.
 - No merge to `main`.
+
+---
+
+## 2026-10-07 — Super Admin Lalamove wallet slip viewer permission repair
+
+User symptom:
+- In `/admin/tenants`, opening a store PENGUIN/Lalamove Wallet worked, but clicking `ดูสลิป` on a credit top-up request did nothing.
+- This affected both pending/manual-review top-ups and Slip2Go auto-approved rows.
+
+Root cause:
+- The React button and `openWalletSlip()` handler were working.
+- Authenticated Production reproduction with a copied Microsoft Edge `super_admin` profile confirmed the click fired, the secondary `<dialog>` itself could open, but Firebase Storage returned `403` / `storage/unauthorized` for `tenants/{tenantId}/lalamove-wallet-topups/{topupId}/{file}`.
+- Storage Rules allowed `tenantProductAdmin(tenantId)` to read wallet top-up slips, but a platform-level Super Admin is not a member/owner of each tenant.
+- Revenue-share slips already explicitly allowed `super_admin`, so wallet top-up review was inconsistent.
+- The catch path only set page status behind the already-open wallet dialog, so the failure looked like a silent button.
+
+Change:
+- Updated only the wallet top-up slip read rule to `hasRole(['super_admin']) || tenantProductAdmin(tenantId)`.
+- Create/update/delete permissions remain tenant-scoped and unchanged.
+- `openWalletSlip()` now shows a visible error toast if Storage URL resolution fails.
+- Added `admin_tenants.wallet.slip_load_failed` copy for TH / EN / MY / LO / KM.
+- Added React foundation regression guards for the Super Admin read rule, Storage URL resolution, visible failure toast, and translation coverage.
+- Prepared React `0.4.280` / Build `2026.10.07.445`; Public `0.16.32` / Build `2026.10.07.160`.
+
+Important files:
+- `storage.rules`
+- `react-app/src/pages/AdminTenantsPage.jsx`
+- `react-app/src/i18n/parity-translations.json`
+- `tools/react-foundation-contract.mjs`
+- `react-app/src/config/release.js`
+- `public/assets/js/app-info.js`
+- `README.md`
+
+Verification before deploy:
+- Production reproduction before the fix: enabled slip button click count = 1, slip dialog open = 0, Firebase Storage console error = `storage/unauthorized`; manual direct `showModal()` succeeded, proving the dialog was not the cause.
+- `npm run test:react-foundation` PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `2026.10.07.445` / `/react/assets/index-yK0yIoaV.js`.
+- `git diff --check` PASS.
+
+Deploy state:
+- Commit/push pending.
+- Storage Rules deploy required because the defect is an authorization-rule mismatch.
+- Firebase Hosting deploy required for the visible error-toast UX and Build `.445`.
+- No Firestore Rules, Cloud Functions, or schema change required.
+- No merge to `main`.
