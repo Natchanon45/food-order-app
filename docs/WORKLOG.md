@@ -9517,3 +9517,63 @@ Deploy state:
 - Added `.gitattributes` with `public/react/assets/*.js -whitespace` so `git diff --check` ignores false-positive trailing whitespace inside generated Vite runtime strings while source files remain checked normally.
 - Deployment scope was Hosting only; no Firestore Rules, Indexes, Functions, Storage Rules, or schema migration.
 - No merge to `main`.
+
+---
+## 2026-10-07 — POS Customers points-history dialog visual refresh
+
+User report:
+- `/pos/customers` points-history modal looked sparse and unbalanced, with the history content constrained to the left and a large unused white area on the right.
+- User asked to reorganize the page/dialog based on the provided screenshot.
+
+Root cause / layout diagnosis:
+- The outer loyalty dialog allowed up to 780px, but the older `.loyalty-history-dialog` base rule still constrained the inner content to `min(620px, ...)`, producing a visibly empty right column.
+- Point-history rows were plain two-column cards with little hierarchy between transaction identity, reference, point movement, and remaining balance.
+
+Implementation:
+- Expanded `.loyalty-history-dialog` to use the full available modal width.
+- Added a dedicated warm loyalty header treatment while preserving the shared modal shell/backdrop.
+- Added four read-only summary cards above the history list:
+  - current points balance;
+  - movement count;
+  - total points earned/restored;
+  - total points used/deducted.
+- Added a section header showing recent point activity and the number of ledger entries.
+- Redesigned each ledger entry with:
+  - semantic sale/return icon;
+  - sale/return badge;
+  - transaction ID;
+  - timestamp;
+  - sale reference;
+  - green/red point delta chips;
+  - remaining-balance pill.
+- Return rows receive a distinct orange visual treatment; sale rows retain the green semantic treatment.
+- Mobile uses a 2x2 summary grid and compact responsive ledger cards; point deltas/balance move to their own bottom row to prevent crowding.
+- Added an accessible close-button label.
+- Added TH / EN / MY / LO / KM labels for the new summary/activity UI.
+
+Behavior boundary:
+- This is presentation/read-only summarization only.
+- No customer CRUD, loyalty ledger writes, sale/return processing, point calculations, permissions, Firestore paths, schema, route, or session behavior changed.
+- Existing `pos.customers.view_points` gating remains authoritative.
+
+Release candidate:
+- React `0.4.280` / Build `2026.10.07.438`.
+- Public `0.16.32` / Build `2026.10.07.153`.
+- Generated bundle `/react/assets/index-tegwEjTj.js`.
+
+Verification before deploy:
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- `npm run build:react` PASS.
+- Generated React build contract PASS for Build `.438` / `index-tegwEjTj.js`.
+- `git diff --check` PASS.
+- Authenticated candidate browser verification with Production reads and Firestore writes blocked PASS:
+  - Desktop 1440x900: modal 780px wide; inner content 778px wide; unused right-side gap = 1px; four summary cards each 179px; history rows 733px wide; no horizontal overflow.
+  - Mobile 390x844: modal 374px wide; four summary cards render 2x2 at 171px each; history rows 339px wide; no horizontal/list overflow.
+  - First visible ledger row renders `+3` and `คงเหลือ 143 แต้ม` correctly.
+  - Firestore writes = 0; page errors = 0; unexpected request failures = 0; HTTP errors = 0.
+
+Deploy state:
+- Ready to commit/push and deploy Firebase Hosting only.
+- No Firestore Rules, Indexes, Functions, Storage Rules, or schema migration required.
+- No merge to `main`.

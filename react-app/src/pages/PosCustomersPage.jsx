@@ -363,6 +363,17 @@ export function PosCustomersPage() {
     ? [...summaryFor(selected).rows].sort((a, b) => asDate(b.createdAt) - asDate(a.createdAt))
     : [], [selected, summaryFor]);
   const loyaltyRows = useMemo(() => loyaltyCustomer ? ledgerFor(loyaltyCustomer) : [], [loyaltyCustomer, ledgerFor]);
+  const loyaltySummary = useMemo(() => loyaltyRows.reduce((acc, row) => {
+    const isReturn = row.type === "return";
+    acc.earned += isReturn ? Number(row.pointsUsedRestored || 0) : Number(row.pointsEarned || 0);
+    acc.used += isReturn ? Number(row.pointsEarnedDeducted || 0) : Number(row.pointsUsed || 0);
+    return acc;
+  }, {
+    count: loyaltyRows.length,
+    earned: 0,
+    used: 0,
+    balance: Math.max(0, Number(loyaltyCustomer?.points ?? loyaltyRows[0]?.balanceAfter ?? 0)),
+  }), [loyaltyCustomer?.points, loyaltyRows]);
 
   const needsReady = authState.status === "loading" || tenantState.status === "loading" || !stylesReady
     || Boolean(redirectTarget) || !rolesReady || (tenant?.id && profile && canView && !initialReady);
@@ -484,15 +495,45 @@ export function PosCustomersPage() {
 
     <dialog id="loyaltyHistoryDialog" ref={loyaltyRef} className="customer-loyalty-modal" onCancel={event => event.preventDefault()}>
       <div className="loyalty-history-dialog">
-        <div className="dialog-head customer-history-head"><div className="customer-history-title-wrap"><span className="customer-history-title-icon loyalty"><i className="bi bi-star-fill" aria-hidden="true"></i></span><div><h2 id="loyaltyHistoryTitle">{tr("loyalty.title")}{loyaltyCustomer ? ` — ${loyaltyCustomer.name}` : ""}</h2><p>{tr("visual.loyalty_description")}</p></div></div><button id="closeLoyaltyHistory" type="button" className="icon-btn" onClick={() => loyaltyRef.current?.close?.()}><i className="bi bi-x-lg" aria-hidden="true"></i></button></div>
+        <div className="dialog-head customer-history-head loyalty-history-head">
+          <div className="customer-history-title-wrap">
+            <span className="customer-history-title-icon loyalty"><i className="bi bi-star-fill" aria-hidden="true"></i></span>
+            <div>
+              <h2 id="loyaltyHistoryTitle">{tr("loyalty.title")}{loyaltyCustomer ? ` — ${loyaltyCustomer.name}` : ""}</h2>
+              <p>{tr("visual.loyalty_description")}</p>
+            </div>
+          </div>
+          <button id="closeLoyaltyHistory" type="button" className="icon-btn" aria-label={tr("form.close")} onClick={() => loyaltyRef.current?.close?.()}><i className="bi bi-x-lg" aria-hidden="true"></i></button>
+        </div>
+        <div className="loyalty-history-summary" aria-label={tr("loyalty.summary_title")}>
+          <article className="loyalty-summary-card balance"><span className="loyalty-summary-icon"><i className="bi bi-star" aria-hidden="true"></i></span><div><span>{tr("loyalty.summary_balance")}</span><strong>{formatNumber(loyaltySummary.balance)}</strong></div></article>
+          <article className="loyalty-summary-card activity"><span className="loyalty-summary-icon"><i className="bi bi-arrow-left-right" aria-hidden="true"></i></span><div><span>{tr("loyalty.summary_movements")}</span><strong>{formatNumber(loyaltySummary.count)}</strong></div></article>
+          <article className="loyalty-summary-card earned"><span className="loyalty-summary-icon"><i className="bi bi-arrow-up-right" aria-hidden="true"></i></span><div><span>{tr("loyalty.summary_earned")}</span><strong>+{formatNumber(loyaltySummary.earned)}</strong></div></article>
+          <article className="loyalty-summary-card used"><span className="loyalty-summary-icon"><i className="bi bi-arrow-down-right" aria-hidden="true"></i></span><div><span>{tr("loyalty.summary_used")}</span><strong>-{formatNumber(loyaltySummary.used)}</strong></div></article>
+        </div>
+        <div className="loyalty-history-section-head"><div><i className="bi bi-clock-history" aria-hidden="true"></i><span>{tr("loyalty.activity_title")}</span></div><span>{tr("loyalty.activity_count", { count: formatNumber(loyaltySummary.count) })}</span></div>
         <div id="loyaltyHistoryList" className="loyalty-history-list">
           {loyaltyRows.length ? loyaltyRows.map(row => {
             const isReturn = row.type === "return";
             const positive = isReturn ? Number(row.pointsUsedRestored || 0) : Number(row.pointsEarned || 0);
             const negative = isReturn ? Number(row.pointsEarnedDeducted || 0) : Number(row.pointsUsed || 0);
-            return <article className="loyalty-history-item" key={row.id}>
-              <div><strong>{isReturn ? tr("loyalty.return") : tr("loyalty.sale")} {row.returnId || row.saleNumber || row.saleId || ""}</strong><span>{dateTimeText(row.createdAt)} • {row.saleId ? tr("loyalty.reference", { id: row.saleId }) : ""}</span></div>
-              <div className="loyalty-history-values">{positive > 0 ? <strong className="loyalty-positive">+{formatNumber(positive)}</strong> : null}{negative > 0 ? <strong className="loyalty-negative">-{formatNumber(negative)}</strong> : null}<span>{tr("loyalty.balance", { count: formatNumber(row.balanceAfter || 0) })}</span></div>
+            const transactionId = row.returnId || row.saleNumber || row.saleId || "";
+            return <article className={`loyalty-history-item ${isReturn ? "is-return" : "is-sale"}`} key={row.id}>
+              <span className="loyalty-history-row-icon"><i className={`bi bi-${isReturn ? "arrow-counterclockwise" : "receipt"}`} aria-hidden="true"></i></span>
+              <div className="loyalty-history-copy">
+                <div className="loyalty-history-row-title"><strong>{isReturn ? tr("loyalty.return") : tr("loyalty.sale")} {transactionId}</strong><span className={`loyalty-type-badge ${isReturn ? "is-return" : "is-sale"}`}>{isReturn ? tr("loyalty.return") : tr("loyalty.sale")}</span></div>
+                <div className="loyalty-history-meta">
+                  <span><i className="bi bi-clock" aria-hidden="true"></i>{dateTimeText(row.createdAt)}</span>
+                  {row.saleId ? <span><i className="bi bi-link-45deg" aria-hidden="true"></i>{tr("loyalty.reference", { id: row.saleId })}</span> : null}
+                </div>
+              </div>
+              <div className="loyalty-history-values">
+                <div className="loyalty-history-deltas">
+                  {positive > 0 ? <strong className="loyalty-positive">+{formatNumber(positive)}</strong> : null}
+                  {negative > 0 ? <strong className="loyalty-negative">-{formatNumber(negative)}</strong> : null}
+                </div>
+                <span className="loyalty-balance-pill"><i className="bi bi-wallet2" aria-hidden="true"></i>{tr("loyalty.balance", { count: formatNumber(row.balanceAfter || 0) })}</span>
+              </div>
             </article>;
           }) : <div className="empty-state customer-history-empty">{tr("loyalty.empty")}</div>}
         </div>

@@ -10,18 +10,18 @@ export const APP_INFO = {
   name: 'PENGUIN',
   product: 'PENGUIN',
   version: '0.16.32',
-  build: '2026.10.07.152',
+  build: '2026.10.07.153',
   branch: 'feature/react-firebase-port',
-  commit: 'POS-PURCHASES-ASYNC-PRODUCT-PICKER',
+  commit: 'POS-CUSTOMERS-LOYALTY-HISTORY-REFRESH',
   firebaseProject: 'chat-45754',
   repository: 'Natchanon45/food-order-app',
   environment: 'production',
-  milestone: 'POS Purchases async lazy product picker',
-  updatedAt: '2026-10-07T07:05:00+0700',
+  milestone: 'POS Customers loyalty history refresh',
+  updatedAt: '2026-10-07T07:18:00+0700',
   whatsNew: [
-    'Replace the Purchases product dropdown with a searchable async picker',
-    'Load product options in 30-item Firestore pages instead of loading the full catalog',
-    'Use exact lazy product lookup for barcode scanning while keeping purchase transactions unchanged'
+    'Redesign the customer points-history dialog with a full-width modern layout',
+    'Add balance, movement, earned, and used summary cards above the point timeline',
+    'Improve sale/return entries with semantic icons, badges, references, deltas, and responsive mobile cards'
   ]
 };
 

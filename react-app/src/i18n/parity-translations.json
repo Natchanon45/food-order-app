@@ -6185,7 +6185,14 @@
         "sale": "รายการขาย",
         "return": "คืนสินค้า",
         "reference": "อ้างอิง :id",
-        "balance": "คงเหลือ :count แต้ม"
+        "balance": "คงเหลือ :count แต้ม",
+        "summary_title": "สรุปประวัติแต้ม",
+        "summary_balance": "แต้มคงเหลือ",
+        "summary_movements": "รายการเคลื่อนไหว",
+        "summary_earned": "แต้มที่ได้รับ",
+        "summary_used": "แต้มที่ใช้ / หัก",
+        "activity_title": "รายการเคลื่อนไหวล่าสุด",
+        "activity_count": ":count รายการ"
       },
       "runtime": {
         "member_code": "สมาชิก :code",
@@ -12135,7 +12142,14 @@
         "sale": "Sale",
         "return": "Return",
         "reference": "Reference :id",
-        "balance": "Balance :count points"
+        "balance": "Balance :count points",
+        "summary_title": "Points history summary",
+        "summary_balance": "Points balance",
+        "summary_movements": "Movements",
+        "summary_earned": "Points earned",
+        "summary_used": "Used / deducted",
+        "activity_title": "Recent point activity",
+        "activity_count": ":count entries"
       },
       "runtime": {
         "member_code": "Member :code",
@@ -18085,7 +18099,14 @@
         "sale": "ရောင်းချမှု",
         "return": "ပြန်အပ်မှု",
         "reference": "ရည်ညွှန်း :id",
-        "balance": "လက်ကျန် :count မှတ်"
+        "balance": "လက်ကျန် :count မှတ်",
+        "summary_title": "အမှတ်မှတ်တမ်းအကျဉ်း",
+        "summary_balance": "လက်ကျန်အမှတ်",
+        "summary_movements": "လှုပ်ရှားမှုများ",
+        "summary_earned": "ရရှိသောအမှတ်",
+        "summary_used": "သုံး / နုတ်ထားသောအမှတ်",
+        "activity_title": "နောက်ဆုံးအမှတ်လှုပ်ရှားမှု",
+        "activity_count": ":count ခု"
       },
       "runtime": {
         "member_code": "အဖွဲ့ဝင် :code",
@@ -24035,7 +24056,14 @@
         "sale": "ລາຍການຂາຍ",
         "return": "ຄືນສິນຄ້າ",
         "reference": "ອ້າງອີງ :id",
-        "balance": "ຄົງເຫຼືອ :count ຄະແນນ"
+        "balance": "ຄົງເຫຼືອ :count ຄະແນນ",
+        "summary_title": "ສະຫຼຸບປະຫວັດຄະແນນ",
+        "summary_balance": "ຄະແນນຄົງເຫຼືອ",
+        "summary_movements": "ລາຍການເຄື່ອນໄຫວ",
+        "summary_earned": "ຄະແນນທີ່ໄດ້",
+        "summary_used": "ໃຊ້ / ຫັກຄະແນນ",
+        "activity_title": "ການເຄື່ອນໄຫວຄະແນນຫຼ້າສຸດ",
+        "activity_count": ":count ລາຍການ"
       },
       "runtime": {
         "member_code": "ສະມາຊິກ :code",
@@ -29985,7 +30013,14 @@
         "sale": "ការលក់",
         "return": "ការត្រឡប់",
         "reference": "យោង :id",
-        "balance": "នៅសល់ :count ពិន្ទុ"
+        "balance": "នៅសល់ :count ពិន្ទុ",
+        "summary_title": "សង្ខេបប្រវត្តិពិន្ទុ",
+        "summary_balance": "ពិន្ទុនៅសល់",
+        "summary_movements": "ចលនាពិន្ទុ",
+        "summary_earned": "ពិន្ទុដែលបានទទួល",
+        "summary_used": "បានប្រើ / ដកពិន្ទុ",
+        "activity_title": "ចលនាពិន្ទុថ្មីៗ",
+        "activity_count": ":count ធាតុ"
       },
       "runtime": {
         "member_code": "សមាជិក :code",
