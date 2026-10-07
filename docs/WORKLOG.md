@@ -11837,3 +11837,21 @@ Candidate verification:
 
 Deploy state:
 - Commit/push and Hosting-only deploy pending at this checkpoint.
+
+
+### 2026-10-08 — Build 2026.10.08.468 deployed
+- Implementation commit `12752eac` — `fix: enforce global loading and kitchen dispatch lock` pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production bundle: `/react/assets/index-CLcSUg_u.js`.
+- Production P0 browser smoke: **52/52 PASS**.
+- Production Verify check with order `04afe611-95d9-4755-a1e8-52752f4c0101` confirms:
+  - full-screen 1440x900 overlay during delayed initial Firestore load,
+  - X center deviation 0px / Y about 0.01px,
+  - spinner + indeterminate progress,
+  - `กำลังโหลดข้อมูล...` / `กรุณารอสักครู่ ...`,
+  - translated header `ตรวจสอบยอดล่าสุด`,
+  - no raw `verify.header.title`,
+  - no full-screen or inline initial loading remains once ready.
+- Kitchen Lalamove lock remains covered by **4/4 PASS** in the standard React parity suite.
+- Deployment scope was Hosting only.
+- No Functions, Firestore Rules, Storage Rules, schema changes, or merge to `main`.
