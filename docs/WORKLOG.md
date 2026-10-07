@@ -10577,3 +10577,45 @@ Deploy state:
 - Safe to proceed with Firebase Hosting Build 2026.10.07.452.
 - No Firestore Rules or Storage Rules deployment required.
 - No merge to main.
+
+### Production Hosting cutover + final live verification
+
+Firebase Hosting:
+- Deployed target foodapp successfully to https://penguin-food.web.app.
+- Production canonical /pos/backup and /pos/users now serve the React shell for Build 2026.10.07.452.
+- Both routes return HTTP 200 with Cache-Control: no-cache, no-store, must-revalidate.
+- Both canonical shells reference /react/assets/index-D1Q6l4Rg.js.
+- Production app-info.js reports Public Build 2026.10.07.167, marker POS-BACKUP-TYPED-SCOPED-RESTORE, milestone Retail POS React cutover with safe typed restore.
+- Production bundle /react/assets/index-D1Q6l4Rg.js returns HTTP 200.
+
+Authenticated Production Owner smoke verification:
+- /pos/backup live read-only:
+  - title: สำรองและกู้คืนข้อมูล POS.
+  - bundle: /react/assets/index-D1Q6l4Rg.js.
+  - legacy Backup script: absent.
+  - 14 summary groups loaded from the deployed Backup callable.
+  - Summary includes 1,997 products, 49 categories, 11 sales, 5 customers, 11 loyalty entries, 102 stock movements, 8 shifts, 1 tax invoice, and 7 POS settings.
+  - horizontal overflow: 0.
+  - application error text: empty.
+  - Restore button remained disabled; no restore was run.
+- /pos/users live:
+  - title: ผู้ใช้และสิทธิ์.
+  - bundle: /react/assets/index-D1Q6l4Rg.js.
+  - legacy Users script: absent.
+  - 5 roles, 3 POS users, 19 permission groups loaded.
+  - desktop horizontal overflow: 0.
+  - mobile horizontal overflow: 0.
+  - application error text: empty.
+- The only browser console 404 was /favicon.ico. The repository currently has no favicon asset and the React shell has no favicon link. This is unrelated to Backup/Users logic, callables, or bundle loading and was not changed as part of this cutover.
+- No page errors, callable/request failures, or Backup/Users HTTP failures were observed in the read-only live checks.
+- No Production Restore was executed and no user/role write was performed during final smoke verification.
+
+Final cutover state:
+- /pos/backup: canonical React Production route.
+- /pos/users: canonical React Production route.
+- Legacy page-specific Backup/Users JavaScript remains removed.
+- Backup v2 typed/scoped export is deployed.
+- Backup v2 safe restore callable is deployed but was intentionally not executed against Production data.
+- upsertRetailPosStaff business-scope update is deployed.
+- No Firestore Rules or Storage Rules deployment was required.
+- No merge to main.
