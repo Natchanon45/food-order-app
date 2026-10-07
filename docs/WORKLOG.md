@@ -10037,3 +10037,17 @@ Deploy state:
 - Firebase Hosting deploy required for the visible error-toast UX and Build `.445`.
 - No Firestore Rules, Cloud Functions, or schema change required.
 - No merge to `main`.
+
+Production deploy + verification:
+- Implementation commit: `1b06a1ab` — `fix: allow super admin wallet slip review`.
+- Commit pushed to `origin/feature/react-firebase-port`.
+- Firebase Storage Rules deployed successfully; `storage.rules` compiled and released.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production bundle is `/react/assets/index-yK0yIoaV.js` for React Build `2026.10.07.445` / Public Build `2026.10.07.160`.
+- Authenticated Production verification with the copied Microsoft Edge `super_admin` profile and Firestore writes blocked confirmed both real top-up rows from the reported wallet:
+  - `6,000.00` credits, `manual_review` / pending: slip dialog opened and JPEG loaded with natural width `1194`.
+  - `30,000.00` credits, `matched` / `Auto-approved by Slip2Go`: slip dialog opened and JPEG loaded with natural width `1194`.
+- Firestore write attempts = `0`; console errors = `0`; page errors = `0`; HTTP errors = `0` during final verification.
+- Storage write/delete permissions remain unchanged and tenant-scoped; only authenticated active Super Admin read access was added for wallet top-up slips.
+- No Firestore Rules, Cloud Functions, or schema deployment occurred.
+- No merge to `main`.
