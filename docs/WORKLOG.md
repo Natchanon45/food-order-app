@@ -12587,3 +12587,12 @@ Safety / remaining validation:
 - After Hosting release, verify canonical HTML/JS and perform user-assisted real mobile Safari QR download, Delivery successful-order Back behavior, and Quick Order receipt print/alert in a genuine staff session.
 - Pre-existing untracked historical hashed assets must remain; do not reset/clean/delete.
 - Git commit/push and Hosting deploy status: pending at this entry; add a production checkpoint after successful release.
+
+### Build .490 — Git push and Production Hosting confirmed
+
+- Implementation, regression, generated .490 asset, and prior .489 bundle committed in `fad923ad` (`fix: download Delivery QR PNG and prevent checkout/receipt alert replay`), pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `hosting:foodapp` deployed successfully to `https://penguin-food.web.app` under project `chat-45754`. 548 public files served; release finalized. No Functions, Firestore Rules, or Storage Rules deploy.
+- Live canonical URL checks PASS (all HTTP 200, all serve `/react/assets/index-BC-WUDBh.js`): `/s/saas-test-shop/delivery`, `/cashier/quick-order`, `/cashier/receipt`, `/cashier`, `/kitchen`.
+- Live JS asset HTTP 200, byte-for-byte SHA-256 same as Mac candidate (bdeb4780452079ee1e9594fbe0e8296e07bd8f9727f9d59967ca68708b3ec976), contains Build `2026.10.08.490`. Old `/react/assets/index-BCW1U1rO.js` remains HTTP 200 with JavaScript MIME type.
+- Local Browser QR PNG download smoke: Desktop and emulated mobile-touch PASS, actual PNG file and signature validated. No authenticated live Delivery orders/payment attempts or Quick Order printing/notifications executed by automated smoke. Genuine iOS/Safari receipt/back/notification workflow still awaits user acceptance.
+- Existing historic untracked Vite hashed assets preserved; main not merged. Follow-up if user finds device-specific issues: inspect Safari download and the print-dialog afterprint behavior rather than changing payment backend.
