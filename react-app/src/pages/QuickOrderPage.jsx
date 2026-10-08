@@ -329,8 +329,13 @@ export function QuickOrderPage() {
     pendingSignature.current = "";
   };
 
-  const displayId = safeDisplayId(profile?.uid || profile?.id || "main");
-  const customerDisplayLink = `/pos/customer-display?displayId=${encodeURIComponent(displayId)}`;
+  const displayParams = new URLSearchParams(location.search);
+  const pairedDisplayId = displayParams.get("displayId") || displayParams.get("registerId") || "";
+  // A cashier opening the QR pairing link must write to the *same* display,
+  // even if the cashier uses a different authenticated staff account.
+  const displayId = /^quick-order-[A-Za-z0-9_-]{1,128}$/.test(pairedDisplayId)
+    ? pairedDisplayId : safeDisplayId(profile?.uid || profile?.id || "main");
+  const customerDisplayLink = `/cashier/customer-display?displayId=${encodeURIComponent(displayId)}`;
 
   useEffect(() => {
     if (!tenant?.id || !allowedRole) return undefined;
@@ -732,7 +737,7 @@ export function QuickOrderPage() {
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (allowedRole && loading)) {
     return <PageReadyOverlay context={t("quick_order.header.title")} title={t("quick_order.loading.title")} message={t("quick_order.loading.preparing")} />;
   }
-  if (!profile) return <Navigate to="/login?next=%2Fcashier%2Fquick-order" replace />;
+  if (!profile) return <Navigate to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   if (!allowedRole) return <Navigate to="/" replace />;
   if (tenantState.status === "error" || !tenant) return <Navigate to="/" replace />;
 
