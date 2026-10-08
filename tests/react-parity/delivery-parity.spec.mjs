@@ -101,7 +101,21 @@ test.describe("Delivery Laravel behavior parity", () => {
     await firstFavorite.click();
     await expect(firstFavorite).toHaveAttribute("aria-pressed", "true");
     await expect(favoritesTab).toHaveCount(1);
-    await expect(favoritesTab).toHaveText(/^❤️\s*เมนูโปรด$/);
+    await expect(favoritesTab).toHaveText(/^เมนูโปรด$/);
+    const favoriteTabStyle = await favoritesTab.evaluate(element => {
+      const style = getComputedStyle(element);
+      const before = getComputedStyle(element, "::before");
+      return {
+        fontWeight: style.fontWeight,
+        beforeContent: before.content,
+        beforeColor: before.color,
+        beforeMarginRight: before.marginRight,
+      };
+    });
+    expect(Number.parseInt(favoriteTabStyle.fontWeight, 10)).toBeGreaterThanOrEqual(800);
+    expect(favoriteTabStyle.beforeContent).toBe('"♥"');
+    expect(favoriteTabStyle.beforeColor).toBe("rgb(225, 29, 72)");
+    expect(favoriteTabStyle.beforeMarginRight).toBe("5px");
 
     const persisted = await page.evaluate(() => {
       const key = Object.keys(localStorage).find(value => value.startsWith("food_order_guest_menu_favorites:"));

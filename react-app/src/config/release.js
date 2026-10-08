@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.08.469",
+  build: "2026.10.08.470",
   branch: "feature/react-firebase-port",
-  commit: "DELIVERY-FAVORITES-HEART-LABEL",
+  commit: "DELIVERY-FAVORITES-LARAVEL-ICON",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Delivery Favorites category heart label",
+  milestone: "Delivery Favorites Laravel heart icon parity",
   whatsNew: [
-    "Prefix the Delivery Favorites category label with a visible heart",
-    "Preserve conditional Favorites visibility only when saved favorites exist",
-    "Keep guest and signed-in favorite persistence behavior unchanged",
+    "Replace the Favorites emoji label with the Laravel CSS heart icon treatment",
+    "Match Laravel Favorites icon color, spacing, and font weight",
+    "Preserve conditional Favorites visibility and persistence behavior",
   ],
 });

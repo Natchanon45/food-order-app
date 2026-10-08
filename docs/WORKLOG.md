@@ -11898,3 +11898,42 @@ Deploy state:
 - Production now renders the Favorites category as `❤️ เมนูโปรด` after a favorite exists, and removes the category again when the last favorite is removed.
 - Deployment scope was Hosting only.
 - No Functions, Firestore Rules, Storage Rules, schema changes, or merge to `main`.
+
+---
+
+## 2026-10-08 — Delivery Favorites Laravel heart-icon parity (Build 2026.10.08.470)
+
+Request:
+- Replace the previously added emoji before `เมนูโปรด` with the exact visual treatment from Laravel MASTER.
+
+Laravel MASTER comparison:
+- `public/assets/css/delivery-favorites.css` uses a CSS pseudo-element, not an emoji in the label:
+  - `content:"♥"`
+  - `color:#e11d48`
+  - `margin-right:5px`
+  - Favorites tab `font-weight:800`.
+- React already carried the Laravel CSS file, but its selector targeted localized category values while React uses the stable internal category id `__favorites__`, so the Laravel rule never matched.
+
+Test-first:
+- Changed the Delivery parity assertion to require plain localized text `เมนูโปรด` plus the Laravel `::before` styling.
+- Production Build .469 failed first as expected because it rendered `❤️ เมนูโปรด`.
+- Candidate Build .470 focused browser test passes 1/1 and verifies:
+  - text is exactly `เมนูโปรด`,
+  - `::before` content is `♥`,
+  - color is rgb(225, 29, 72) / #e11d48,
+  - right margin is 5px,
+  - font weight is at least 800.
+
+Implementation:
+- Removed the emoji prefix from DeliveryPage's `extraLabel`.
+- Updated `delivery-favorites.css` to target `data-category="__favorites__"`, preserving the exact Laravel styling.
+- Favorites persistence/conditional visibility behavior is unchanged.
+
+Verification:
+- `npm run build:react` PASS.
+- Generated build contract PASS: `2026.10.08.470` / `/react/assets/index-DXebLmjs.js`.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- Focused candidate Delivery Favorites browser test: **1/1 PASS**.
+- `git diff --check` PASS.
+- No Functions, Firestore Rules, Storage Rules, or schema changes.
