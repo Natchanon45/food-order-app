@@ -18,3 +18,13 @@ test("mobile Delivery tabs sticky independently, while search stays normal flow"
   assert.match(css, /body.delivery-page \.category-tabs \{\s*position: sticky !important;/);
   assert.match(css, /body.delivery-page \.menu-filter-area \.menu-search \{\s*position: static !important;/);
 });
+
+test("Delivery mobile uses viewport fixed tabs after scroll with placeholder, not the entire filter box", () => {
+  assert.match(component, /id="deliveryCategoryAnchor"/);
+  assert.match(component, /className=\{deliveryTabsFixed \? "delivery-category-anchor is-fixed"/);
+  assert.match(component, /getElementById\("deliveryCategoryAnchor"\)/);
+  assert.match(component, /gridBottom > tabs.offsetHeight/);
+  assert.match(component, /delivery-tabs-fixed/);
+  assert.match(css, /body.delivery-page #categoryTabs.delivery-tabs-fixed \{\s*position: fixed !important;/);
+  assert.match(css, /body.delivery-page #deliveryCategoryAnchor.is-fixed \{\s*height: 54px;/);
+});

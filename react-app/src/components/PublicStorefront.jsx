@@ -92,6 +92,38 @@ export function PublicMenuCatalog({
   const deliveryScrollSpyEnabled = mobile && prefix === "delivery.checkout.menu" && activeCategory === all && !String(search || "").trim();
   const trackCategoryScroll = scrollSpyEnabled || deliveryScrollSpyEnabled;
   const selectedCategory = trackCategoryScroll ? highlightedCategory : activeCategory;
+  const [deliveryTabsFixed, setDeliveryTabsFixed] = useState(false);
+  useEffect(() => {
+    if (!mobile || prefix !== "delivery.checkout.menu") {
+      setDeliveryTabsFixed(false);
+      return undefined;
+    }
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const anchor = document.getElementById("deliveryCategoryAnchor");
+      const grid = document.getElementById("menuGrid");
+      const tabs = document.getElementById("categoryTabs");
+      if (!anchor || !grid || !tabs) return;
+      const top = anchor.getBoundingClientRect().top;
+      const gridBottom = grid.getBoundingClientRect().bottom;
+      const shouldFix = top <= 0 && gridBottom > tabs.offsetHeight + 12;
+      setDeliveryTabsFixed(current => current === shouldFix ? current : shouldFix);
+    };
+    const schedule = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [mobile, prefix, visible.length]);
+
 
   useEffect(() => { if (page > totalPages) setPage(totalPages); }, [page, totalPages, setPage]);
 
@@ -176,7 +208,8 @@ export function PublicMenuCatalog({
   return (
     <div className="delivery-menu-column">
       <div className="menu-filter-area" id="menuListStart">
-        <div className="category-tabs" id="categoryTabs" role="tablist" aria-label={t(prefix + ".category_aria")}>
+        {mobile && prefix === "delivery.checkout.menu" ? <div id="deliveryCategoryAnchor" className={deliveryTabsFixed ? "delivery-category-anchor is-fixed" : "delivery-category-anchor"} aria-hidden="true" /> : null}
+        <div className={"category-tabs" + (deliveryTabsFixed && prefix === "delivery.checkout.menu" ? " delivery-tabs-fixed" : "")} id="categoryTabs" role="tablist" aria-label={t(prefix + ".category_aria")}>
           {categories.map(category => (
             <button key={category} type="button" data-category={category} className={"category-tab" + (category === selectedCategory ? " active" : "")}
               role="tab" aria-selected={category === selectedCategory}

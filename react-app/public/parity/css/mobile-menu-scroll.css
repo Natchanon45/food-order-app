@@ -164,3 +164,25 @@
     margin: 0 0 12px;
   }
 }
+
+/* Actual viewport pinning (the Delivery filter container cannot provide a
+   reliable sticky scroll ancestor on mobile browsers). Only tabs are pinned. */
+@media (max-width: 899px) {
+  body.delivery-page #deliveryCategoryAnchor.is-fixed {
+    height: 54px;
+  }
+  body.delivery-page #categoryTabs.delivery-tabs-fixed {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    z-index: 90 !important;
+    border-radius: 0 !important;
+    padding: 7px 10px !important;
+    background: #fff;
+  }
+}

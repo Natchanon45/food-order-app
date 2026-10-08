@@ -12496,3 +12496,10 @@ Deployment boundary:
 - Production /s/saas-test-shop/delivery references index-DpiOhGZu.js; asset HTTP 200 and mobile-menu-scroll.css includes sticky-tabs override.
 - Automated tests passed; authenticated iPhone/mobile visual scroll smoke is not yet verified on a real browser.
 - No main merge; old untracked hashed bundles preserved.
+
+
+## 2026-10-08 — Delivery mobile category viewport pin corrective (Build .485)
+- User reported .484 does not work on mobile.
+- Replaced unreliable sticky-only category tab behavior with scroll-position viewport fixed class applied to categoryTabs alone, plus scroll anchor placeholder to prevent page jumps.
+- Search remains in normal document flow. Category highlight tracking and auto horizontal centering retained, Table Order unaffected.
+- Operational, React Parity, generated Build contract, mobile regression tests PASS. Hosting-only release; no backend/rules changes.
