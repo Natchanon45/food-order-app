@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.08.470",
+  build: "2026.10.08.471",
   branch: "feature/react-firebase-port",
-  commit: "DELIVERY-FAVORITES-LARAVEL-ICON",
+  commit: "ADMIN-STORE-SETTINGS-WORKSPACE",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Delivery Favorites Laravel heart icon parity",
+  milestone: "Modern organized store and payment settings workspace",
   whatsNew: [
-    "Replace the Favorites emoji label with the Laravel CSS heart icon treatment",
-    "Match Laravel Favorites icon color, spacing, and font weight",
-    "Preserve conditional Favorites visibility and persistence behavior",
+    "Reorganize store and payment settings into modern collapsible groups with a status dashboard",
+    "Keep infrequently used location, payment, Lalamove, promotion, and delivery fee details collapsed until needed",
+    "Hide Lalamove credentials, wallet, and store delivery fees when their selected mode does not use them",
   ],
 });

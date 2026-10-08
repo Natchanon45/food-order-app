@@ -388,7 +388,7 @@ function AdminEntityModal({ open, entity, editing, saving, onClose, children, t 
   );
 }
 
-function DeliveryFeeEditor({ fees, setFees, readonly = false, t }) {
+function DeliveryFeeEditor({ fees, setFees, readonly = false, embedded = false, t }) {
   const update = (index, patch) => setFees(current => current.map((item, itemIndex) => itemIndex === index ? { ...item, ...patch } : item));
   const remove = index => {
     if (readonly) return;
@@ -419,10 +419,16 @@ function DeliveryFeeEditor({ fees, setFees, readonly = false, t }) {
       aria-disabled={readonly ? "true" : "false"}
       style={{ boxShadow: "none", background: "#f8fbf9" }}
     >
-      <div className="section-title delivery-fee-head" style={{ marginTop: 0 }}>
-        <div><h2>{t("admin.delivery_fee.title")}</h2><div className="menu-category">{t("admin.delivery_fee.description")}</div></div>
-        <button className="btn btn-primary btn-sm" id="addDeliveryFeeOption" type="button" disabled={readonly} onClick={add}><i className="bi bi-plus-lg app-icon" aria-hidden="true"></i><span>{t("admin.delivery_fee.add")}</span></button>
-      </div>
+      {embedded ? (
+        <div className="admin-settings-inline-actions">
+          <button className="btn btn-primary btn-sm" id="addDeliveryFeeOption" type="button" disabled={readonly} onClick={add}><i className="bi bi-plus-lg app-icon" aria-hidden="true"></i><span>{t("admin.delivery_fee.add")}</span></button>
+        </div>
+      ) : (
+        <div className="section-title delivery-fee-head" style={{ marginTop: 0 }}>
+          <div><h2>{t("admin.delivery_fee.title")}</h2><div className="menu-category">{t("admin.delivery_fee.description")}</div></div>
+          <button className="btn btn-primary btn-sm" id="addDeliveryFeeOption" type="button" disabled={readonly} onClick={add}><i className="bi bi-plus-lg app-icon" aria-hidden="true"></i><span>{t("admin.delivery_fee.add")}</span></button>
+        </div>
+      )}
       <div id="deliveryFeeOptionsList" className="delivery-fee-options" role="table" aria-label={t("admin.delivery_fee.table_aria")}>
         <div className="delivery-fee-table-header" role="row">
           <div role="columnheader">{t("admin.delivery_fee.table_headers.number")}</div>
@@ -496,7 +502,7 @@ function DeliveryFeeEditor({ fees, setFees, readonly = false, t }) {
   );
 }
 
-function PromotionEditor({ value, onChange, menus, t, formatMoney }) {
+function PromotionEditor({ value, onChange, menus, t, formatMoney, embedded = false }) {
   const patch = update => onChange({ ...value, ...update });
   const activeMenus = menus
     .filter(item => item.active !== false)
@@ -504,10 +510,10 @@ function PromotionEditor({ value, onChange, menus, t, formatMoney }) {
     .sort((left, right) => String(left?.name || "").localeCompare(String(right?.name || ""), "th"));
   return (
     <section className="admin-delivery-promotion" id="deliveryPromotionSettings">
-      <div className="admin-delivery-promotion-head">
+      {!embedded ? <div className="admin-delivery-promotion-head">
         <div><h3><i className="bi bi-gift" aria-hidden="true"></i>{t("admin.delivery_promotion.title")}</h3><p>{t("admin.delivery_promotion.description")}</p></div>
         <span className="admin-delivery-promotion-badge">{t("admin.delivery_promotion.badge")}</span>
-      </div>
+      </div> : null}
       <div className="admin-delivery-promotion-block">
         <label className="admin-promotion-toggle">
           <input type="checkbox" id="deliveryFreeShippingEnabled" checked={value.freeShippingEnabled} onChange={e => patch({ freeShippingEnabled: e.target.checked })} />
@@ -545,6 +551,44 @@ function PromotionEditor({ value, onChange, menus, t, formatMoney }) {
         </div>
       </div>
       <div className="admin-delivery-promotion-note"><i className="bi bi-shield-check" aria-hidden="true"></i><span>{t("admin.delivery_promotion.backend_note")}</span></div>
+    </section>
+  );
+}
+
+function AdminSettingsGroup({
+  id,
+  icon,
+  title,
+  description = "",
+  status = "",
+  statusTone = "neutral",
+  defaultOpen = false,
+  children,
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <section
+      id={id}
+      className={"admin-settings-group" + (open ? " is-open" : "")}
+      data-settings-group
+      data-settings-open={open ? "true" : "false"}
+    >
+      <button
+        type="button"
+        className="admin-settings-group-toggle"
+        aria-expanded={open}
+        aria-controls={id + "Body"}
+        onClick={() => setOpen(value => !value)}
+      >
+        <span className="admin-settings-group-icon" aria-hidden="true"><i className={"bi bi-" + icon}></i></span>
+        <span className="admin-settings-group-copy">
+          <strong>{title}</strong>
+          {description ? <small>{description}</small> : null}
+        </span>
+        {status ? <span className={"admin-settings-group-status is-" + statusTone}>{status}</span> : null}
+        <span className="admin-settings-group-chevron" aria-hidden="true"><i className={"bi bi-chevron-" + (open ? "up" : "down")}></i></span>
+      </button>
+      {open ? <div className="admin-settings-group-body" id={id + "Body"}>{typeof children === "function" ? children(open) : children}</div> : null}
     </section>
   );
 }
@@ -613,7 +657,7 @@ export function AdminPage() {
       "admin-icon-polish.css", "sweet-dialog.css", "order-delivery-workspace-theme.css", "admin-retail-pos-parity.css",
       "admin-react-master-visual.css",
       "admin-modal-retail-pos-parity.css", "admin-delivery-fee-row-alignment.css",
-      "admin-store-location.css", "admin-delivery-providers.css", "admin-delivery-promotions.css",
+      "admin-store-location.css", "admin-store-settings-workspace.css", "admin-delivery-providers.css", "admin-delivery-promotions.css",
       "admin-upload.css", "admin-mobile-table.css",
     ],
     attributes: { "data-roles": "admin", "data-admin-workspace-refresh": "1" },
@@ -1457,6 +1501,13 @@ export function AdminPage() {
       : previewLalamoveMode === "disabled"
         ? "admin.delivery_settings.lalamove_status_disabled"
         : "admin.delivery_settings.lalamove_status_not_ready";
+  const storeBasicsReady = Boolean(storeForm.shopName.trim() && storeForm.shopAddress.trim());
+  const promptPayReady = Boolean(storeForm.promptPayId.trim() && storeForm.promptPayName.trim());
+  const bankReady = Boolean(storeForm.bankName.trim() && storeForm.bankAccountNumber.trim() && storeForm.bankAccountName.trim());
+  const paymentMethodCount = Number(promptPayReady) + Number(bankReady);
+  const promotionActiveCount = Number(promotion.freeShippingEnabled) + Number(promotion.freeGiftEnabled);
+  const deliveryFeeTierCount = fees.filter(item => item.id !== "pickup").length;
+  const deliveryStatusText = lalamoveSelected ? "Lalamove" : t("admin.store_workspace.self_delivery");
 
   return (
     <>
@@ -1502,210 +1553,304 @@ export function AdminPage() {
           heading={<h2>{t("admin.store.section_title")}</h2>}
           t={t}
         >
-          <form id="storeForm" className="grid" onSubmit={saveStore}>
-            <div className="field"><label htmlFor="shopName">{t("admin.store.shop_name")}</label><input className="input" id="shopName" required value={storeForm.shopName} onChange={e => patchStore({ shopName: e.target.value })} /></div>
-            <div className="field"><label htmlFor="shopAddress">{t("admin.store.shop_address")}</label><textarea className="input" id="shopAddress" required value={storeForm.shopAddress} onChange={e => patchStore({ shopAddress: e.target.value })}></textarea></div>
-            <div className="field"><label htmlFor="shopPhone">{t("admin.store.shop_phone")}</label><input className="input" id="shopPhone" type="tel" value={storeForm.shopPhone} onChange={e => patchStore({ shopPhone: e.target.value })} /></div>
-
-            <section className="admin-store-location">
-              <div className="admin-store-location-head">
-                <div><h3>{t("admin.store_location.title")}</h3><div className="menu-category">{t("admin.store_location.description")}</div></div>
-                <button className="btn btn-sm" id="adminUseCurrentLocation" type="button" disabled={locationBusy} onClick={useCurrentLocation}><i className="bi bi-crosshair app-icon" aria-hidden="true"></i><span>{t("admin.store_location.use_current")}</span></button>
-              </div>
-              <AdminMap tenantSlug={tenant.slug} location={location} onLocation={value => { setLocation(value); setLocationError(""); setMapError(""); }} onError={setMapError} t={t} />
-              <div className="admin-store-location-footer">
-                <span id="adminStoreLocationStatus" className={(locationError || mapError) ? "is-error" : location ? "is-ready" : ""}>{locationError || mapError || (location ? t("admin.store_location.status_ready") : t("admin.store_location.status_unset"))}</span>
-                <span id="adminStoreLocationCoordinates">{location ? location.latitude.toFixed(7) + ", " + location.longitude.toFixed(7) : ""}</span>
-              </div>
-              <input type="hidden" id="storeLatitude" value={location?.latitude ?? ""} readOnly />
-              <input type="hidden" id="storeLongitude" value={location?.longitude ?? ""} readOnly />
-            </section>
-
-            <div className="grid grid-2">
-              <div className="field"><label htmlFor="promptPayId">{t("admin.store.promptpay_id")}</label><input className="input" id="promptPayId" inputMode="numeric" value={storeForm.promptPayId} onChange={e => patchStore({ promptPayId: e.target.value })} /></div>
-              <div className="field"><label htmlFor="promptPayName">{t("admin.store.promptpay_name")}</label><input className="input" id="promptPayName" value={storeForm.promptPayName} onChange={e => patchStore({ promptPayName: e.target.value })} /></div>
+          <form id="storeForm" className="grid admin-store-settings-form" onSubmit={saveStore}>
+            <div className="admin-store-settings-overview" data-admin-store-overview>
+              <article className="admin-store-status-card" data-store-status="store">
+                <span className="admin-store-status-icon" aria-hidden="true"><i className="bi bi-shop"></i></span>
+                <span className="admin-store-status-copy"><small>{t("admin.store_workspace.overview_store")}</small><strong>{storeForm.shopName.trim() || t("admin.store_workspace.not_set")}</strong></span>
+              </article>
+              <article className="admin-store-status-card" data-store-status="location">
+                <span className="admin-store-status-icon" aria-hidden="true"><i className="bi bi-geo-alt"></i></span>
+                <span className="admin-store-status-copy"><small>{t("admin.store_workspace.overview_location")}</small><strong>{location ? t("admin.store_workspace.location_ready") : t("admin.store_workspace.not_set")}</strong></span>
+              </article>
+              <article className="admin-store-status-card" data-store-status="payment">
+                <span className="admin-store-status-icon" aria-hidden="true"><i className="bi bi-credit-card"></i></span>
+                <span className="admin-store-status-copy"><small>{t("admin.store_workspace.overview_payment")}</small><strong>{paymentMethodCount ? t("admin.store_workspace.payment_methods", { count: paymentMethodCount }) : t("admin.store_workspace.not_set")}</strong></span>
+              </article>
+              <article className="admin-store-status-card" data-store-status="delivery">
+                <span className="admin-store-status-icon" aria-hidden="true"><i className="bi bi-truck"></i></span>
+                <span className="admin-store-status-copy"><small>{t("admin.store_workspace.overview_delivery")}</small><strong>{deliveryStatusText}</strong></span>
+              </article>
             </div>
-            <div className="grid grid-2">
-              <div className="field"><label htmlFor="bankName">{t("admin.store.bank_name")}</label><input className="input" id="bankName" value={storeForm.bankName} onChange={e => patchStore({ bankName: e.target.value })} /></div>
-              <div className="field"><label htmlFor="bankAccountNumber">{t("admin.store.bank_account_number")}</label><input className="input" id="bankAccountNumber" inputMode="numeric" value={storeForm.bankAccountNumber} onChange={e => patchStore({ bankAccountNumber: e.target.value })} /></div>
-            </div>
-            <div className="field"><label htmlFor="bankAccountName">{t("admin.store.bank_account_name")}</label><input className="input" id="bankAccountName" value={storeForm.bankAccountName} onChange={e => patchStore({ bankAccountName: e.target.value })} /></div>
 
-            <div className="card admin-lalamove-account-card" id="lalamoveAccountCard" style={{ boxShadow: "none", background: "#f8fbf9" }}>
-              <div className="section-title" style={{ marginTop: 0 }}>
-                <div><h2>{t("admin.delivery_settings.lalamove_account_title")}</h2><div className="menu-category">{t("admin.delivery_settings.lalamove_account_description")}</div></div>
-                <span className={"badge" + (previewLalamoveAvailable ? "" : " dark")} id="lalamoveAccountStatus">{t(lalamoveStatusKey)}</span>
+            <AdminSettingsGroup
+              id="storeBasicsGroup"
+              icon="shop"
+              title={t("admin.store_workspace.profile_title")}
+              description={t("admin.store_workspace.profile_description")}
+              status={storeBasicsReady ? t("admin.store_workspace.ready") : t("admin.store_workspace.incomplete")}
+              statusTone={storeBasicsReady ? "ready" : "warning"}
+              defaultOpen
+            >
+              <div className="admin-store-basic-grid">
+                <div className="field"><label htmlFor="shopName">{t("admin.store.shop_name")}</label><input className="input" id="shopName" required value={storeForm.shopName} onChange={e => patchStore({ shopName: e.target.value })} /></div>
+                <div className="field"><label htmlFor="shopPhone">{t("admin.store.shop_phone")}</label><input className="input" id="shopPhone" type="tel" value={storeForm.shopPhone} onChange={e => patchStore({ shopPhone: e.target.value })} /></div>
+                <div className="field admin-store-address-field"><label htmlFor="shopAddress">{t("admin.store.shop_address")}</label><textarea className="input" id="shopAddress" required value={storeForm.shopAddress} onChange={e => patchStore({ shopAddress: e.target.value })}></textarea></div>
               </div>
+            </AdminSettingsGroup>
 
-              <div className="grid grid-2">
-                <div className="field">
-                  <label htmlFor="lalamoveAccountMode">{t("admin.delivery_settings.lalamove_account_mode")}</label>
-                  <select className="input" id="lalamoveAccountMode" value={lalamoveForm.accountMode} onChange={e => patchLalamove({ accountMode: e.target.value })}>
-                    <option value="disabled">{t("admin.delivery_settings.lalamove_mode_disabled")}</option>
-                    <option value="tenant">{t("admin.delivery_settings.lalamove_mode_tenant")}</option>
-                    <option value="fod_central">{t("admin.delivery_settings.lalamove_mode_fod")}</option>
-                  </select>
+            <AdminSettingsGroup
+              id="storeLocationGroup"
+              icon="geo-alt"
+              title={t("admin.store_location.title")}
+              description={t("admin.store_location.description")}
+              status={location ? t("admin.store_workspace.location_ready") : t("admin.store_workspace.not_set")}
+              statusTone={location ? "ready" : "warning"}
+            >
+              <section className="admin-store-location">
+                <div className="admin-store-location-head">
+                  <div><h3>{t("admin.store_location.title")}</h3><div className="menu-category">{t("admin.store_location.description")}</div></div>
+                  <button className="btn btn-sm" id="adminUseCurrentLocation" type="button" disabled={locationBusy} onClick={useCurrentLocation}><i className="bi bi-crosshair app-icon" aria-hidden="true"></i><span>{t("admin.store_location.use_current")}</span></button>
                 </div>
-                <div className={"field" + (!tenantLalamoveMode ? " is-lalamove-readonly" : "")} id="lalamoveTenantEnvironmentField" aria-disabled={tenantLalamoveMode ? "false" : "true"}>
-                  <label htmlFor="lalamoveTenantEnvironment">{t("admin.delivery_settings.lalamove_environment")}</label>
-                  <select className="input" id="lalamoveTenantEnvironment" value={lalamoveForm.environment} disabled={!tenantLalamoveMode} onChange={e => patchLalamove({ environment: e.target.value })}>
-                    <option value="sandbox">Sandbox</option>
-                    <option value="production">Production</option>
-                  </select>
+                <AdminMap tenantSlug={tenant.slug} location={location} onLocation={value => { setLocation(value); setLocationError(""); setMapError(""); }} onError={setMapError} t={t} />
+                <div className="admin-store-location-footer">
+                  <span id="adminStoreLocationStatus" className={(locationError || mapError) ? "is-error" : location ? "is-ready" : ""}>{locationError || mapError || (location ? t("admin.store_location.status_ready") : t("admin.store_location.status_unset"))}</span>
+                  <span id="adminStoreLocationCoordinates">{location ? location.latitude.toFixed(7) + ", " + location.longitude.toFixed(7) : ""}</span>
                 </div>
-              </div>
-
-              <div className={"grid grid-2" + (!tenantLalamoveMode ? " is-lalamove-readonly" : "")} id="lalamoveTenantCredentials" aria-disabled={tenantLalamoveMode ? "false" : "true"}>
-                <div className="field">
-                  <label htmlFor="lalamoveTenantApiKey">{t("admin.delivery_settings.lalamove_api_key")}</label>
-                  <input className="input" id="lalamoveTenantApiKey" type="password" autoComplete="off" disabled={!tenantLalamoveMode} value={lalamoveForm.apiKey} placeholder={lalamoveApiKeyMask || "pk_..."} onChange={e => patchLalamove({ apiKey: e.target.value })} />
-                </div>
-                <div className="field">
-                  <label htmlFor="lalamoveTenantApiSecret">{t("admin.delivery_settings.lalamove_api_secret")}</label>
-                  <input className="input" id="lalamoveTenantApiSecret" type="password" autoComplete="off" disabled={!tenantLalamoveMode} value={lalamoveForm.apiSecret} placeholder={lalamoveApiSecretMask || "sk_..."} onChange={e => patchLalamove({ apiSecret: e.target.value })} />
-                </div>
-              </div>
-
-              <div className="menu-category" id="lalamoveAccountHelp">{t("admin.delivery_settings.lalamove_mode_help")}</div>
-              <div className="admin-lalamove-account-actions">
-                <button className="btn btn-sm" type="button" id="testTenantLalamoveConnection" hidden={!tenantLalamoveMode} disabled={!tenantLalamoveMode || lalamoveTesting} onClick={testLalamoveAccount}><i className="bi bi-plug"></i>{" "}<span>{t("admin.delivery_settings.lalamove_test_connection")}</span></button>
-                <button className="btn btn-primary btn-sm" type="button" id="saveLalamoveAccountSettings" disabled={lalamoveSaving} onClick={saveLalamoveAccount}><i className="bi bi-floppy"></i>{" "}<span>{t("admin.delivery_settings.lalamove_save_account")}</span></button>
-              </div>
-
-              <section className="admin-lalamove-wallet" id="lalamoveFodWallet" aria-labelledby="lalamoveFodWalletTitle">
-                <div className="admin-lalamove-wallet-head">
-                  <div>
-                    <span className="admin-lalamove-wallet-icon"><i className="bi bi-wallet2" aria-hidden="true"></i></span>
-                    <div><strong id="lalamoveFodWalletTitle">{t("admin.delivery_settings.fod_wallet_title")}</strong><small id="lalamoveFodWalletMode">{t(walletModeKey)}</small></div>
-                  </div>
-                  <div className="admin-lalamove-wallet-balance"><span>{t("admin.delivery_settings.fod_wallet_balance")}</span><strong id="lalamoveFodWalletBalance">{money(walletBalance, intlLocale)}</strong><small>{t("admin.delivery_settings.fod_wallet_credit_unit")}</small></div>
-                </div>
-
-                <div className="admin-lalamove-wallet-topup" id="lalamoveFodWalletTopupPanel" hidden={!walletTopupReady}>
-                  <div className="admin-lalamove-wallet-topup-destination">
-                    <div><span>{t("admin.delivery_settings.fod_wallet_topup_destination")}</span><strong id="lalamoveFodWalletDestinationType">{walletDestinationTypeLabel}</strong></div>
-                    <div><span>{t("admin.delivery_settings.fod_wallet_topup_account_name")}</span><strong id="lalamoveFodWalletDestinationName">{walletDestination.accountName || "-"}</strong></div>
-                    <div><span>{t("admin.delivery_settings.fod_wallet_topup_account_number")}</span><strong id="lalamoveFodWalletDestinationNumber">{walletDestination.accountNumber || "-"}</strong></div>
-                  </div>
-
-                  <div id="lalamoveFodWalletTopupForm" className="admin-lalamove-wallet-topup-form" role="group">
-                    <label className="admin-lalamove-wallet-topup-amount">
-                      <span className="admin-lalamove-wallet-field-label">{t("admin.delivery_settings.fod_wallet_topup_amount")}</span>
-                      <span className="admin-lalamove-wallet-amount-control">
-                        <span className="admin-lalamove-wallet-amount-icon"><i className="bi bi-cash-stack" aria-hidden="true"></i></span>
-                        <input className="admin-lalamove-wallet-amount-input" id="lalamoveFodWalletTopupAmount" type="number" min="1" max="1000000" step="0.01" inputMode="decimal" placeholder="0.00" value={walletTopupAmount} disabled={walletTopupBusy} onChange={e => setWalletTopupAmount(e.target.value)} />
-                        <span className="admin-lalamove-wallet-amount-unit">{t("admin.delivery_settings.fod_wallet_credit_unit")}</span>
-                      </span>
-                    </label>
-
-                    <div className="admin-lalamove-wallet-slip-field">
-                      <span className="admin-lalamove-wallet-field-label">{t("admin.delivery_settings.fod_wallet_topup_slip")}</span>
-                      <div
-                        className={"admin-lalamove-wallet-slip-picker" + (walletTopupFile ? " has-file" : "") + (walletSlipDragOver ? " is-dragover" : "")}
-                        id="lalamoveFodWalletSlipPicker"
-                        role="button"
-                        tabIndex="0"
-                        aria-describedby="lalamoveFodWalletSlipHint"
-                        onClick={e => {
-                          if (walletTopupBusy || e.target.closest("#lalamoveFodWalletSlipClear")) return;
-                          document.getElementById("lalamoveFodWalletTopupSlip")?.click();
-                        }}
-                        onKeyDown={e => {
-                          if ((e.key !== "Enter" && e.key !== " ") || walletTopupBusy || e.target.closest("#lalamoveFodWalletSlipClear")) return;
-                          e.preventDefault();
-                          document.getElementById("lalamoveFodWalletTopupSlip")?.click();
-                        }}
-                        onDragEnter={e => { e.preventDefault(); if (!walletTopupBusy) setWalletSlipDragOver(true); }}
-                        onDragOver={e => { e.preventDefault(); if (!walletTopupBusy) setWalletSlipDragOver(true); }}
-                        onDragLeave={e => { e.preventDefault(); setWalletSlipDragOver(false); }}
-                        onDrop={e => {
-                          e.preventDefault();
-                          setWalletSlipDragOver(false);
-                          if (walletTopupBusy) return;
-                          chooseWalletSlip(e.dataTransfer?.files?.[0] || null);
-                        }}
-                      >
-                        <input id="lalamoveFodWalletTopupSlip" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" disabled={walletTopupBusy} onChange={e => chooseWalletSlip(e.target.files?.[0] || null)} />
-                        <div className="admin-lalamove-wallet-slip-empty" id="lalamoveFodWalletSlipEmpty" hidden={Boolean(walletTopupFile)}>
-                          <span className="admin-lalamove-wallet-slip-icon"><i className="bi bi-receipt" aria-hidden="true"></i></span>
-                          <div><strong>{t("admin.delivery_settings.fod_wallet_topup_choose_slip")}</strong></div>
-                          <i className="bi bi-upload admin-lalamove-wallet-slip-upload-icon" aria-hidden="true"></i>
-                        </div>
-                        <div className="admin-lalamove-wallet-slip-selected" id="lalamoveFodWalletSlipSelected" hidden={!walletTopupFile}>
-                          <span className="admin-lalamove-wallet-slip-icon is-selected"><i className="bi bi-file-earmark-check" aria-hidden="true"></i></span>
-                          <div><strong id="lalamoveFodWalletSlipName">{walletTopupFile?.name || "-"}</strong><small id="lalamoveFodWalletSlipSize">{walletTopupFile ? formatFileSize(walletTopupFile.size) : "-"}</small></div>
-                          <button className="admin-lalamove-wallet-slip-clear" id="lalamoveFodWalletSlipClear" type="button" disabled={walletTopupBusy} aria-label={t("admin.delivery_settings.fod_wallet_topup_clear_file")} onClick={e => { e.preventDefault(); e.stopPropagation(); chooseWalletSlip(null); }}><i className="bi bi-x-lg" aria-hidden="true"></i><span>{t("admin.delivery_settings.fod_wallet_topup_clear_file")}</span></button>
-                        </div>
-                      </div>
-                      <small className="admin-lalamove-wallet-slip-hint" id="lalamoveFodWalletSlipHint">{t("admin.delivery_settings.fod_wallet_topup_file_hint")}</small>
-                    </div>
-
-                    <div className="admin-action-row admin-lalamove-wallet-topup-actions">
-                      <button className="btn btn-primary btn-sm admin-lalamove-wallet-topup-submit" id="lalamoveFodWalletTopupSubmit" type="button" disabled={walletTopupBusy} onClick={submitWalletTopup}><i className="bi bi-cloud-arrow-up" aria-hidden="true"></i><span>{t("admin.delivery_settings.fod_wallet_topup_submit")}</span></button>
-                    </div>
-                  </div>
-                  <small className="admin-lalamove-wallet-topup-help" id="lalamoveFodWalletTopupHelp">{t(walletTopupHelpKey)}</small>
-                  <div className="admin-lalamove-wallet-credit-policy" role="note">
-                    <p><i className="bi bi-arrow-left-right" aria-hidden="true"></i><span>{t("admin.delivery_settings.fod_wallet_credit_rate")}</span></p>
-                    <p><i className="bi bi-shield-exclamation" aria-hidden="true"></i><span>{t("admin.delivery_settings.fod_wallet_credit_terms")}</span></p>
-                  </div>
-                </div>
-
-                <div className="admin-lalamove-wallet-topup-history">
-                  <div className="admin-lalamove-wallet-ledger-title"><strong>{t("admin.delivery_settings.fod_wallet_topup_history")}</strong><span>{t("admin.delivery_settings.fod_wallet_phase3_note")}</span></div>
-                  <div id="lalamoveFodWalletTopupRequests" className="admin-lalamove-wallet-transactions">
-                    {walletTopupItems.length ? walletTopupItems.map(item => (
-                      <div className={"admin-lalamove-wallet-row topup " + String(item.status || "pending")} key={item.id}>
-                        <div><strong>{money(item.amount || 0, intlLocale)} {t("admin.delivery_settings.fod_wallet_credit_unit")} · {walletStatusLabel(item.status)}</strong><small>{walletDate(item.submittedAt)}{item.verificationStatus ? " · " + item.verificationStatus : ""}</small></div>
-                        {String(item.status || "") === "pending" ? <button className="btn btn-danger btn-sm" type="button" data-delete-fod-wallet-topup={item.id} disabled={walletDeleteBusy === item.id} onClick={() => removeWalletTopup(item)}><i className="bi bi-trash3" aria-hidden="true"></i><span>{t("admin.delivery_settings.fod_wallet_topup_delete")}</span></button> : null}
-                      </div>
-                    )) : <div className="admin-lalamove-wallet-empty">{t("admin.delivery_settings.fod_wallet_topup_empty")}</div>}
-                  </div>
-                </div>
-
-                <div className="admin-lalamove-wallet-ledger">
-                  <div className="admin-lalamove-wallet-ledger-title"><strong>{t("admin.delivery_settings.fod_wallet_recent")}</strong><span>{t("admin.delivery_settings.fod_wallet_ledger_note")}</span></div>
-                  <div id="lalamoveFodWalletTransactions" className="admin-lalamove-wallet-transactions">
-                    {!walletStorageReady ? <div className="menu-category">{t(walletLoadError ? "admin.delivery_settings.fod_wallet_load_failed" : "admin.delivery_settings.fod_wallet_storage_missing")}</div>
-                      : walletTransactions.length ? walletTransactions.map(row => {
-                        const credit = row.direction === "credit";
-                        const reference = row.orderId || row.reference || row.lalamoveOrderId || "";
-                        return <div className={"admin-lalamove-wallet-row " + (credit ? "credit" : "debit")} key={row.id}>
-                          <div><strong>{walletTypeLabel(row.type)}</strong><small>{walletDate(row.createdAt)}{reference ? " · " + reference : ""}</small></div>
-                          <span>{credit ? "+" : "−"}{money(row.amount || 0, intlLocale)} {t("admin.delivery_settings.fod_wallet_credit_unit")}</span>
-                        </div>;
-                      }) : <div className="admin-lalamove-wallet-empty">{t("admin.delivery_settings.fod_wallet_empty")}</div>}
-                  </div>
-                </div>
+                <input type="hidden" id="storeLatitude" value={location?.latitude ?? ""} readOnly />
+                <input type="hidden" id="storeLongitude" value={location?.longitude ?? ""} readOnly />
               </section>
-            </div>
+            </AdminSettingsGroup>
 
-            <div className="card admin-delivery-settings-card" style={{ boxShadow: "none", background: "#f8fbf9" }}>
-              <div className="section-title" style={{ marginTop: 0 }}><div><h2>{t("admin.delivery_settings.title")}</h2><div className="menu-category">{t("admin.delivery_settings.description")}</div></div></div>
-              <div className="grid grid-2">
-                <div className="field">
-                  <label>{t("admin.delivery_settings.provider_label")}</label>
-                  <select id="deliveryProvider" hidden value={storeForm.deliveryProvider} onChange={e => patchStore({ deliveryProvider: e.target.value })}><option value="self">self</option><option value="lalamove">lalamove</option></select>
-                  <div className="admin-delivery-provider-options" id="deliveryProviderOptions">
-                    <div className={"admin-delivery-provider-card" + (storeForm.deliveryProvider === "self" ? " is-active" : "")} data-delivery-provider-card="self" role="button" tabIndex="0" onClick={() => patchStore({ deliveryProvider: "self" })} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); patchStore({ deliveryProvider: "self" }); } }}>
-                      <div className="admin-delivery-provider-icon"><i className="bi bi-shop" aria-hidden="true"></i></div>
-                      <div className="admin-delivery-provider-content"><div className="admin-delivery-provider-title-row"><strong>{t("admin.delivery_settings.self_title")}</strong><span className={"admin-delivery-provider-badge" + (storeForm.deliveryProvider === "self" ? " is-active" : " is-available")} data-delivery-provider-badge="self">{t(storeForm.deliveryProvider === "self" ? "admin.delivery_settings.self_selected_status" : "admin.delivery_settings.self_available_status")}</span></div><div className="admin-delivery-provider-description">{t("admin.delivery_settings.self_description")}</div></div>
-                      <div className="admin-delivery-provider-check" data-delivery-provider-indicator="self"><i className={"bi bi-" + (storeForm.deliveryProvider === "self" ? "check-circle-fill" : "circle")} aria-hidden="true"></i></div>
-                    </div>
-                    <div className={"admin-delivery-provider-card" + (lalamoveAvailable ? (lalamoveSelected ? " is-active" : "") : " is-disabled")} data-delivery-provider-card="lalamove" aria-disabled={lalamoveAvailable ? "false" : "true"} role="button" tabIndex={lalamoveAvailable ? 0 : -1} onClick={() => { if (lalamoveAvailable) patchStore({ deliveryProvider: "lalamove" }); }} onKeyDown={e => { if (!lalamoveAvailable || (e.key !== "Enter" && e.key !== " ")) return; e.preventDefault(); patchStore({ deliveryProvider: "lalamove" }); }}>
-                      <div className="admin-delivery-provider-icon"><i className="bi bi-truck" aria-hidden="true"></i></div>
-                      <div className="admin-delivery-provider-content"><div className="admin-delivery-provider-title-row"><strong>Lalamove</strong><span className={"admin-delivery-provider-badge" + (lalamoveAvailable ? (lalamoveSelected ? " is-active" : " is-available") : " is-disabled")} data-delivery-provider-badge="lalamove">{t(lalamoveAvailable ? lalamoveSelected ? "admin.delivery_settings.lalamove_selected_status" : "admin.delivery_settings.lalamove_available_status" : "admin.delivery_settings.lalamove_status")}</span></div><div className="admin-delivery-provider-description" data-delivery-provider-description="lalamove">{t(lalamoveAvailable ? "admin.delivery_settings.lalamove_description" : "admin.delivery_settings.lalamove_unavailable_description")}</div></div>
-                      <div className={lalamoveAvailable ? "admin-delivery-provider-check" : "admin-delivery-provider-lock"} data-delivery-provider-indicator="lalamove"><i className={"bi bi-" + (!lalamoveAvailable ? "lock-fill" : lalamoveSelected ? "check-circle-fill" : "circle")} aria-hidden="true"></i></div>
-                    </div>
-                  </div>
-                </div>
-                <div className="field"><label htmlFor="deliveryMaxDistanceKm">{t("admin.delivery_settings.max_distance_label")}</label><input className="input" id="deliveryMaxDistanceKm" type="number" min="0" step="0.1" value={storeForm.deliveryMaxDistanceKm} onChange={e => patchStore({ deliveryMaxDistanceKm: e.target.value })} /></div>
+            <AdminSettingsGroup
+              id="storePaymentGroup"
+              icon="credit-card"
+              title={t("admin.store_workspace.payment_title")}
+              description={t("admin.store_workspace.payment_description")}
+              status={paymentMethodCount ? t("admin.store_workspace.payment_methods", { count: paymentMethodCount }) : t("admin.store_workspace.not_set")}
+              statusTone={paymentMethodCount ? "ready" : "muted"}
+            >
+              <div className="admin-payment-method-grid">
+                <section className="admin-payment-method-card">
+                  <div className="admin-payment-method-head"><i className="bi bi-qr-code" aria-hidden="true"></i><strong>PromptPay</strong></div>
+                  <div className="field"><label htmlFor="promptPayId">{t("admin.store.promptpay_id")}</label><input className="input" id="promptPayId" inputMode="numeric" value={storeForm.promptPayId} onChange={e => patchStore({ promptPayId: e.target.value })} /></div>
+                  <div className="field"><label htmlFor="promptPayName">{t("admin.store.promptpay_name")}</label><input className="input" id="promptPayName" value={storeForm.promptPayName} onChange={e => patchStore({ promptPayName: e.target.value })} /></div>
+                </section>
+                <section className="admin-payment-method-card">
+                  <div className="admin-payment-method-head"><i className="bi bi-bank" aria-hidden="true"></i><strong>{t("admin.store.bank_name")}</strong></div>
+                  <div className="field"><label htmlFor="bankName">{t("admin.store.bank_name")}</label><input className="input" id="bankName" value={storeForm.bankName} onChange={e => patchStore({ bankName: e.target.value })} /></div>
+                  <div className="field"><label htmlFor="bankAccountNumber">{t("admin.store.bank_account_number")}</label><input className="input" id="bankAccountNumber" inputMode="numeric" value={storeForm.bankAccountNumber} onChange={e => patchStore({ bankAccountNumber: e.target.value })} /></div>
+                  <div className="field"><label htmlFor="bankAccountName">{t("admin.store.bank_account_name")}</label><input className="input" id="bankAccountName" value={storeForm.bankAccountName} onChange={e => patchStore({ bankAccountName: e.target.value })} /></div>
+                </section>
               </div>
-              <div className="menu-category admin-delivery-distance-note">{t("admin.delivery_settings.distance_help")}</div>
-            </div>
+            </AdminSettingsGroup>
 
-            <PromotionEditor value={promotion} onChange={setPromotion} menus={menus} t={t} formatMoney={value => money(value, intlLocale)} />
-            <DeliveryFeeEditor fees={fees} setFees={setFees} readonly={lalamoveSelected} t={t} />
+            <AdminSettingsGroup
+              id="storeDeliveryGroup"
+              icon="truck"
+              title={t("admin.delivery_settings.title")}
+              description={t("admin.delivery_settings.description")}
+              status={deliveryStatusText}
+              statusTone="active"
+            >
+              <div className="admin-delivery-settings-card admin-settings-inner-panel">
+                            <div className="grid grid-2">
+                              <div className="field">
+                                <label>{t("admin.delivery_settings.provider_label")}</label>
+                                <select id="deliveryProvider" hidden value={storeForm.deliveryProvider} onChange={e => patchStore({ deliveryProvider: e.target.value })}><option value="self">self</option><option value="lalamove">lalamove</option></select>
+                                <div className="admin-delivery-provider-options" id="deliveryProviderOptions">
+                                  <div className={"admin-delivery-provider-card" + (storeForm.deliveryProvider === "self" ? " is-active" : "")} data-delivery-provider-card="self" role="button" tabIndex="0" onClick={() => patchStore({ deliveryProvider: "self" })} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); patchStore({ deliveryProvider: "self" }); } }}>
+                                    <div className="admin-delivery-provider-icon"><i className="bi bi-shop" aria-hidden="true"></i></div>
+                                    <div className="admin-delivery-provider-content"><div className="admin-delivery-provider-title-row"><strong>{t("admin.delivery_settings.self_title")}</strong><span className={"admin-delivery-provider-badge" + (storeForm.deliveryProvider === "self" ? " is-active" : " is-available")} data-delivery-provider-badge="self">{t(storeForm.deliveryProvider === "self" ? "admin.delivery_settings.self_selected_status" : "admin.delivery_settings.self_available_status")}</span></div><div className="admin-delivery-provider-description">{t("admin.delivery_settings.self_description")}</div></div>
+                                    <div className="admin-delivery-provider-check" data-delivery-provider-indicator="self"><i className={"bi bi-" + (storeForm.deliveryProvider === "self" ? "check-circle-fill" : "circle")} aria-hidden="true"></i></div>
+                                  </div>
+                                  <div className={"admin-delivery-provider-card" + (lalamoveAvailable ? (lalamoveSelected ? " is-active" : "") : " is-disabled")} data-delivery-provider-card="lalamove" aria-disabled={lalamoveAvailable ? "false" : "true"} role="button" tabIndex={lalamoveAvailable ? 0 : -1} onClick={() => { if (lalamoveAvailable) patchStore({ deliveryProvider: "lalamove" }); }} onKeyDown={e => { if (!lalamoveAvailable || (e.key !== "Enter" && e.key !== " ")) return; e.preventDefault(); patchStore({ deliveryProvider: "lalamove" }); }}>
+                                    <div className="admin-delivery-provider-icon"><i className="bi bi-truck" aria-hidden="true"></i></div>
+                                    <div className="admin-delivery-provider-content"><div className="admin-delivery-provider-title-row"><strong>Lalamove</strong><span className={"admin-delivery-provider-badge" + (lalamoveAvailable ? (lalamoveSelected ? " is-active" : " is-available") : " is-disabled")} data-delivery-provider-badge="lalamove">{t(lalamoveAvailable ? lalamoveSelected ? "admin.delivery_settings.lalamove_selected_status" : "admin.delivery_settings.lalamove_available_status" : "admin.delivery_settings.lalamove_status")}</span></div><div className="admin-delivery-provider-description" data-delivery-provider-description="lalamove">{t(lalamoveAvailable ? "admin.delivery_settings.lalamove_description" : "admin.delivery_settings.lalamove_unavailable_description")}</div></div>
+                                    <div className={lalamoveAvailable ? "admin-delivery-provider-check" : "admin-delivery-provider-lock"} data-delivery-provider-indicator="lalamove"><i className={"bi bi-" + (!lalamoveAvailable ? "lock-fill" : lalamoveSelected ? "check-circle-fill" : "circle")} aria-hidden="true"></i></div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="field"><label htmlFor="deliveryMaxDistanceKm">{t("admin.delivery_settings.max_distance_label")}</label><input className="input" id="deliveryMaxDistanceKm" type="number" min="0" step="0.1" value={storeForm.deliveryMaxDistanceKm} onChange={e => patchStore({ deliveryMaxDistanceKm: e.target.value })} /></div>
+                            </div>
+                            <div className="menu-category admin-delivery-distance-note">{t("admin.delivery_settings.distance_help")}</div>
+                          </div>
+            </AdminSettingsGroup>
+
+            <AdminSettingsGroup
+              id="storeLalamoveGroup"
+              icon="box-seam"
+              title={t("admin.delivery_settings.lalamove_account_title")}
+              description={t("admin.store_workspace.lalamove_description")}
+              status={t(lalamoveStatusKey)}
+              statusTone={previewLalamoveAvailable ? "ready" : previewLalamoveMode === "disabled" ? "muted" : "warning"}
+            >
+              <div className="admin-lalamove-account-card admin-settings-inner-panel" id="lalamoveAccountCard">
+                            <div className="grid grid-2">
+                              <div className="field">
+                                <label htmlFor="lalamoveAccountMode">{t("admin.delivery_settings.lalamove_account_mode")}</label>
+                                <select className="input" id="lalamoveAccountMode" value={lalamoveForm.accountMode} onChange={e => patchLalamove({ accountMode: e.target.value })}>
+                                  <option value="disabled">{t("admin.delivery_settings.lalamove_mode_disabled")}</option>
+                                  <option value="tenant">{t("admin.delivery_settings.lalamove_mode_tenant")}</option>
+                                  <option value="fod_central">{t("admin.delivery_settings.lalamove_mode_fod")}</option>
+                                </select>
+                              </div>
+                              {tenantLalamoveMode ? (
+                                <div className="field" id="lalamoveTenantEnvironmentField">
+                                  <label htmlFor="lalamoveTenantEnvironment">{t("admin.delivery_settings.lalamove_environment")}</label>
+                                  <select className="input" id="lalamoveTenantEnvironment" value={lalamoveForm.environment} onChange={e => patchLalamove({ environment: e.target.value })}>
+                                    <option value="sandbox">Sandbox</option>
+                                    <option value="production">Production</option>
+                                  </select>
+                                </div>
+                              ) : null}
+                            </div>
+
+                            {tenantLalamoveMode ? (
+                              <div className="grid grid-2" id="lalamoveTenantCredentials">
+                              <div className="field">
+                                <label htmlFor="lalamoveTenantApiKey">{t("admin.delivery_settings.lalamove_api_key")}</label>
+                                <input className="input" id="lalamoveTenantApiKey" type="password" autoComplete="off" disabled={!tenantLalamoveMode} value={lalamoveForm.apiKey} placeholder={lalamoveApiKeyMask || "pk_..."} onChange={e => patchLalamove({ apiKey: e.target.value })} />
+                              </div>
+                              <div className="field">
+                                <label htmlFor="lalamoveTenantApiSecret">{t("admin.delivery_settings.lalamove_api_secret")}</label>
+                                <input className="input" id="lalamoveTenantApiSecret" type="password" autoComplete="off" disabled={!tenantLalamoveMode} value={lalamoveForm.apiSecret} placeholder={lalamoveApiSecretMask || "sk_..."} onChange={e => patchLalamove({ apiSecret: e.target.value })} />
+                              </div>
+                              </div>
+                            ) : null}
+
+                            <div className="menu-category" id="lalamoveAccountHelp">{t("admin.delivery_settings.lalamove_mode_help")}</div>
+                            <div className="admin-lalamove-account-actions">
+                              <button className="btn btn-sm" type="button" id="testTenantLalamoveConnection" hidden={!tenantLalamoveMode} disabled={!tenantLalamoveMode || lalamoveTesting} onClick={testLalamoveAccount}><i className="bi bi-plug"></i>{" "}<span>{t("admin.delivery_settings.lalamove_test_connection")}</span></button>
+                              <button className="btn btn-primary btn-sm" type="button" id="saveLalamoveAccountSettings" disabled={lalamoveSaving} onClick={saveLalamoveAccount}><i className="bi bi-floppy"></i>{" "}<span>{t("admin.delivery_settings.lalamove_save_account")}</span></button>
+                            </div>
+
+                            {previewLalamoveMode === "fod_central" ? (
+                            <section className="admin-lalamove-wallet" id="lalamoveFodWallet" aria-labelledby="lalamoveFodWalletTitle">
+                                <div className="admin-lalamove-wallet-head">
+                                <div>
+                                  <span className="admin-lalamove-wallet-icon"><i className="bi bi-wallet2" aria-hidden="true"></i></span>
+                                  <div><strong id="lalamoveFodWalletTitle">{t("admin.delivery_settings.fod_wallet_title")}</strong><small id="lalamoveFodWalletMode">{t(walletModeKey)}</small></div>
+                                </div>
+                                <div className="admin-lalamove-wallet-balance"><span>{t("admin.delivery_settings.fod_wallet_balance")}</span><strong id="lalamoveFodWalletBalance">{money(walletBalance, intlLocale)}</strong><small>{t("admin.delivery_settings.fod_wallet_credit_unit")}</small></div>
+                              </div>
+
+                              <div className="admin-lalamove-wallet-topup" id="lalamoveFodWalletTopupPanel" hidden={!walletTopupReady}>
+                                <div className="admin-lalamove-wallet-topup-destination">
+                                  <div><span>{t("admin.delivery_settings.fod_wallet_topup_destination")}</span><strong id="lalamoveFodWalletDestinationType">{walletDestinationTypeLabel}</strong></div>
+                                  <div><span>{t("admin.delivery_settings.fod_wallet_topup_account_name")}</span><strong id="lalamoveFodWalletDestinationName">{walletDestination.accountName || "-"}</strong></div>
+                                  <div><span>{t("admin.delivery_settings.fod_wallet_topup_account_number")}</span><strong id="lalamoveFodWalletDestinationNumber">{walletDestination.accountNumber || "-"}</strong></div>
+                                </div>
+
+                                <div id="lalamoveFodWalletTopupForm" className="admin-lalamove-wallet-topup-form" role="group">
+                                  <label className="admin-lalamove-wallet-topup-amount">
+                                    <span className="admin-lalamove-wallet-field-label">{t("admin.delivery_settings.fod_wallet_topup_amount")}</span>
+                                    <span className="admin-lalamove-wallet-amount-control">
+                                      <span className="admin-lalamove-wallet-amount-icon"><i className="bi bi-cash-stack" aria-hidden="true"></i></span>
+                                      <input className="admin-lalamove-wallet-amount-input" id="lalamoveFodWalletTopupAmount" type="number" min="1" max="1000000" step="0.01" inputMode="decimal" placeholder="0.00" value={walletTopupAmount} disabled={walletTopupBusy} onChange={e => setWalletTopupAmount(e.target.value)} />
+                                      <span className="admin-lalamove-wallet-amount-unit">{t("admin.delivery_settings.fod_wallet_credit_unit")}</span>
+                                    </span>
+                                  </label>
+
+                                  <div className="admin-lalamove-wallet-slip-field">
+                                    <span className="admin-lalamove-wallet-field-label">{t("admin.delivery_settings.fod_wallet_topup_slip")}</span>
+                                    <div
+                                      className={"admin-lalamove-wallet-slip-picker" + (walletTopupFile ? " has-file" : "") + (walletSlipDragOver ? " is-dragover" : "")}
+                                      id="lalamoveFodWalletSlipPicker"
+                                      role="button"
+                                      tabIndex="0"
+                                      aria-describedby="lalamoveFodWalletSlipHint"
+                                      onClick={e => {
+                                        if (walletTopupBusy || e.target.closest("#lalamoveFodWalletSlipClear")) return;
+                                        document.getElementById("lalamoveFodWalletTopupSlip")?.click();
+                                      }}
+                                      onKeyDown={e => {
+                                        if ((e.key !== "Enter" && e.key !== " ") || walletTopupBusy || e.target.closest("#lalamoveFodWalletSlipClear")) return;
+                                        e.preventDefault();
+                                        document.getElementById("lalamoveFodWalletTopupSlip")?.click();
+                                      }}
+                                      onDragEnter={e => { e.preventDefault(); if (!walletTopupBusy) setWalletSlipDragOver(true); }}
+                                      onDragOver={e => { e.preventDefault(); if (!walletTopupBusy) setWalletSlipDragOver(true); }}
+                                      onDragLeave={e => { e.preventDefault(); setWalletSlipDragOver(false); }}
+                                      onDrop={e => {
+                                        e.preventDefault();
+                                        setWalletSlipDragOver(false);
+                                        if (walletTopupBusy) return;
+                                        chooseWalletSlip(e.dataTransfer?.files?.[0] || null);
+                                      }}
+                                    >
+                                      <input id="lalamoveFodWalletTopupSlip" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" disabled={walletTopupBusy} onChange={e => chooseWalletSlip(e.target.files?.[0] || null)} />
+                                      <div className="admin-lalamove-wallet-slip-empty" id="lalamoveFodWalletSlipEmpty" hidden={Boolean(walletTopupFile)}>
+                                        <span className="admin-lalamove-wallet-slip-icon"><i className="bi bi-receipt" aria-hidden="true"></i></span>
+                                        <div><strong>{t("admin.delivery_settings.fod_wallet_topup_choose_slip")}</strong></div>
+                                        <i className="bi bi-upload admin-lalamove-wallet-slip-upload-icon" aria-hidden="true"></i>
+                                      </div>
+                                      <div className="admin-lalamove-wallet-slip-selected" id="lalamoveFodWalletSlipSelected" hidden={!walletTopupFile}>
+                                        <span className="admin-lalamove-wallet-slip-icon is-selected"><i className="bi bi-file-earmark-check" aria-hidden="true"></i></span>
+                                        <div><strong id="lalamoveFodWalletSlipName">{walletTopupFile?.name || "-"}</strong><small id="lalamoveFodWalletSlipSize">{walletTopupFile ? formatFileSize(walletTopupFile.size) : "-"}</small></div>
+                                        <button className="admin-lalamove-wallet-slip-clear" id="lalamoveFodWalletSlipClear" type="button" disabled={walletTopupBusy} aria-label={t("admin.delivery_settings.fod_wallet_topup_clear_file")} onClick={e => { e.preventDefault(); e.stopPropagation(); chooseWalletSlip(null); }}><i className="bi bi-x-lg" aria-hidden="true"></i><span>{t("admin.delivery_settings.fod_wallet_topup_clear_file")}</span></button>
+                                      </div>
+                                    </div>
+                                    <small className="admin-lalamove-wallet-slip-hint" id="lalamoveFodWalletSlipHint">{t("admin.delivery_settings.fod_wallet_topup_file_hint")}</small>
+                                  </div>
+
+                                  <div className="admin-action-row admin-lalamove-wallet-topup-actions">
+                                    <button className="btn btn-primary btn-sm admin-lalamove-wallet-topup-submit" id="lalamoveFodWalletTopupSubmit" type="button" disabled={walletTopupBusy} onClick={submitWalletTopup}><i className="bi bi-cloud-arrow-up" aria-hidden="true"></i><span>{t("admin.delivery_settings.fod_wallet_topup_submit")}</span></button>
+                                  </div>
+                                </div>
+                                <small className="admin-lalamove-wallet-topup-help" id="lalamoveFodWalletTopupHelp">{t(walletTopupHelpKey)}</small>
+                                <div className="admin-lalamove-wallet-credit-policy" role="note">
+                                  <p><i className="bi bi-arrow-left-right" aria-hidden="true"></i><span>{t("admin.delivery_settings.fod_wallet_credit_rate")}</span></p>
+                                  <p><i className="bi bi-shield-exclamation" aria-hidden="true"></i><span>{t("admin.delivery_settings.fod_wallet_credit_terms")}</span></p>
+                                </div>
+                              </div>
+
+                              <div className="admin-lalamove-wallet-topup-history">
+                                <div className="admin-lalamove-wallet-ledger-title"><strong>{t("admin.delivery_settings.fod_wallet_topup_history")}</strong><span>{t("admin.delivery_settings.fod_wallet_phase3_note")}</span></div>
+                                <div id="lalamoveFodWalletTopupRequests" className="admin-lalamove-wallet-transactions">
+                                  {walletTopupItems.length ? walletTopupItems.map(item => (
+                                    <div className={"admin-lalamove-wallet-row topup " + String(item.status || "pending")} key={item.id}>
+                                      <div><strong>{money(item.amount || 0, intlLocale)} {t("admin.delivery_settings.fod_wallet_credit_unit")} · {walletStatusLabel(item.status)}</strong><small>{walletDate(item.submittedAt)}{item.verificationStatus ? " · " + item.verificationStatus : ""}</small></div>
+                                      {String(item.status || "") === "pending" ? <button className="btn btn-danger btn-sm" type="button" data-delete-fod-wallet-topup={item.id} disabled={walletDeleteBusy === item.id} onClick={() => removeWalletTopup(item)}><i className="bi bi-trash3" aria-hidden="true"></i><span>{t("admin.delivery_settings.fod_wallet_topup_delete")}</span></button> : null}
+                                    </div>
+                                  )) : <div className="admin-lalamove-wallet-empty">{t("admin.delivery_settings.fod_wallet_topup_empty")}</div>}
+                                </div>
+                              </div>
+
+                              <div className="admin-lalamove-wallet-ledger">
+                                <div className="admin-lalamove-wallet-ledger-title"><strong>{t("admin.delivery_settings.fod_wallet_recent")}</strong><span>{t("admin.delivery_settings.fod_wallet_ledger_note")}</span></div>
+                                <div id="lalamoveFodWalletTransactions" className="admin-lalamove-wallet-transactions">
+                                  {!walletStorageReady ? <div className="menu-category">{t(walletLoadError ? "admin.delivery_settings.fod_wallet_load_failed" : "admin.delivery_settings.fod_wallet_storage_missing")}</div>
+                                    : walletTransactions.length ? walletTransactions.map(row => {
+                                      const credit = row.direction === "credit";
+                                      const reference = row.orderId || row.reference || row.lalamoveOrderId || "";
+                                      return <div className={"admin-lalamove-wallet-row " + (credit ? "credit" : "debit")} key={row.id}>
+                                        <div><strong>{walletTypeLabel(row.type)}</strong><small>{walletDate(row.createdAt)}{reference ? " · " + reference : ""}</small></div>
+                                        <span>{credit ? "+" : "−"}{money(row.amount || 0, intlLocale)} {t("admin.delivery_settings.fod_wallet_credit_unit")}</span>
+                                      </div>;
+                                    }) : <div className="admin-lalamove-wallet-empty">{t("admin.delivery_settings.fod_wallet_empty")}</div>}
+                                </div>
+                              </div>
+                            </section>
+                            ) : null}
+                          </div>
+            </AdminSettingsGroup>
+
+            <AdminSettingsGroup
+              id="storePromotionGroup"
+              icon="gift"
+              title={t("admin.delivery_promotion.title")}
+              description={t("admin.delivery_promotion.description")}
+              status={promotionActiveCount ? t("admin.store_workspace.promotion_active", { count: promotionActiveCount }) : t("admin.store_workspace.promotion_off")}
+              statusTone={promotionActiveCount ? "active" : "muted"}
+            >
+              <PromotionEditor embedded value={promotion} onChange={setPromotion} menus={menus} t={t} formatMoney={value => money(value, intlLocale)} />
+            </AdminSettingsGroup>
+
+            {!lalamoveSelected ? (
+              <AdminSettingsGroup
+                id="storeFeeGroup"
+                icon="cash-coin"
+                title={t("admin.delivery_fee.title")}
+                description={t("admin.store_workspace.fees_description")}
+                status={t("admin.store_workspace.fee_tiers", { count: deliveryFeeTierCount })}
+                statusTone="active"
+              >
+                <DeliveryFeeEditor embedded fees={fees} setFees={setFees} readonly={false} t={t} />
+              </AdminSettingsGroup>
+            ) : (
+              <div className="admin-settings-hidden-note"><i className="bi bi-info-circle" aria-hidden="true"></i><span>{t("admin.store_workspace.lalamove_fee_note")}</span></div>
+            )}
 
             <button className="btn btn-primary admin-store-save-full-row" id="storeSettingsSaveButton" type="submit" disabled={storeSaving} data-admin-button-icon="floppy"><i className="bi bi-floppy app-icon admin-button-icon" aria-hidden="true"></i><span className="admin-button-label">{t("admin.store.save")}</span></button>
           </form>

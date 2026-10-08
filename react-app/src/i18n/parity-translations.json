@@ -335,6 +335,28 @@
         "takeaway_paper_title": "สแกนเพื่อสั่งกลับบ้าน",
         "takeaway_link": "ลิงก์สั่งกลับบ้าน",
         "takeaway_label": "สั่งกลับบ้าน"
+      },
+      "store_workspace": {
+        "overview_store": "ข้อมูลร้าน",
+        "overview_location": "ตำแหน่งร้าน",
+        "overview_payment": "การรับชำระ",
+        "overview_delivery": "การจัดส่ง",
+        "profile_title": "ข้อมูลพื้นฐานร้าน",
+        "profile_description": "ชื่อ ที่อยู่ และเบอร์โทรที่ใช้บนเอกสารและหน้าลูกค้า",
+        "payment_title": "การรับชำระเงิน",
+        "payment_description": "จัดการพร้อมเพย์และบัญชีธนาคาร",
+        "lalamove_description": "บัญชี API และเครดิตสำหรับเรียกรถ Lalamove",
+        "fees_description": "ช่วงระยะทางและค่าจัดส่งของร้าน",
+        "ready": "พร้อมใช้งาน",
+        "incomplete": "ข้อมูลยังไม่ครบ",
+        "not_set": "ยังไม่ได้ตั้งค่า",
+        "location_ready": "กำหนดแล้ว",
+        "payment_methods": ":count ช่องทาง",
+        "self_delivery": "ร้านจัดส่งเอง",
+        "promotion_active": "เปิด :count รายการ",
+        "promotion_off": "ปิดทั้งหมด",
+        "fee_tiers": ":count ช่วง",
+        "lalamove_fee_note": "Lalamove คำนวณค่าจัดส่งจากระบบอัตโนมัติ จึงซ่อนตารางค่าส่งของร้าน"
       }
     },
     "admin_qr": {
@@ -6634,6 +6656,28 @@
         "takeaway_paper_title": "Scan to order takeaway",
         "takeaway_link": "Takeaway order link",
         "takeaway_label": "Takeaway"
+      },
+      "store_workspace": {
+        "overview_store": "Store",
+        "overview_location": "Location",
+        "overview_payment": "Payments",
+        "overview_delivery": "Delivery",
+        "profile_title": "Store basics",
+        "profile_description": "Name, address, and phone shown on customer pages and documents",
+        "payment_title": "Payment methods",
+        "payment_description": "Manage PromptPay and bank account details",
+        "lalamove_description": "API account and credits used for Lalamove dispatch",
+        "fees_description": "Store delivery distance tiers and fees",
+        "ready": "Ready",
+        "incomplete": "Needs attention",
+        "not_set": "Not configured",
+        "location_ready": "Configured",
+        "payment_methods": ":count methods",
+        "self_delivery": "Store delivery",
+        "promotion_active": ":count active",
+        "promotion_off": "All off",
+        "fee_tiers": ":count tiers",
+        "lalamove_fee_note": "Lalamove calculates delivery pricing automatically, so store fee tiers are hidden."
       }
     },
     "admin_qr": {
@@ -12658,6 +12702,28 @@
         "takeaway_paper_title": "Takeaway မှာရန် စကင်ဖတ်ပါ",
         "takeaway_link": "Takeaway မှာယူမှုလင့်ခ်",
         "takeaway_label": "ယူသွားပါ။"
+      },
+      "store_workspace": {
+        "overview_store": "ဆိုင်",
+        "overview_location": "တည်နေရာ",
+        "overview_payment": "ငွေပေးချေမှု",
+        "overview_delivery": "ပို့ဆောင်မှု",
+        "profile_title": "ဆိုင်အခြေခံအချက်အလက်",
+        "profile_description": "ဖောက်သည်စာမျက်နှာနှင့် စာရွက်စာတမ်းများတွင်ပြမည့် အမည်၊ လိပ်စာ၊ ဖုန်း",
+        "payment_title": "ငွေပေးချေမှုနည်းလမ်း",
+        "payment_description": "PromptPay နှင့် ဘဏ်အကောင့်ကို စီမံရန်",
+        "lalamove_description": "Lalamove အတွက် API အကောင့်နှင့် ခရက်ဒစ်",
+        "fees_description": "ဆိုင်၏ ပို့ဆောင်အကွာအဝေးနှင့် စျေးနှုန်း",
+        "ready": "အသင့်",
+        "incomplete": "အချက်အလက်မပြည့်စုံ",
+        "not_set": "မသတ်မှတ်ရသေး",
+        "location_ready": "သတ်မှတ်ပြီး",
+        "payment_methods": ":count နည်းလမ်း",
+        "self_delivery": "ဆိုင်မှပို့ဆောင်",
+        "promotion_active": ":count ခု ဖွင့်ထား",
+        "promotion_off": "အားလုံးပိတ်",
+        "fee_tiers": ":count အဆင့်",
+        "lalamove_fee_note": "Lalamove က ပို့ဆောင်ခကို အလိုအလျောက်တွက်ချက်သောကြောင့် ဆိုင်၏ပို့ဆောင်ခအဆင့်များကို ဝှက်ထားသည်။"
       }
     },
     "admin_qr": {
@@ -18682,6 +18748,28 @@
         "takeaway_paper_title": "ສະແກນເພື່ອສັ່ງ Takeaway",
         "takeaway_link": "ລິ້ງສັ່ງ Takeaway",
         "takeaway_label": "ສັ່ງກັບບ້ານ"
+      },
+      "store_workspace": {
+        "overview_store": "ຮ້ານ",
+        "overview_location": "ຕຳແໜ່ງ",
+        "overview_payment": "ການຊຳລະ",
+        "overview_delivery": "ຈັດສົ່ງ",
+        "profile_title": "ຂໍ້ມູນພື້ນຖານຮ້ານ",
+        "profile_description": "ຊື່ ທີ່ຢູ່ ແລະເບີໂທທີ່ສະແດງໃຫ້ລູກຄ້າ",
+        "payment_title": "ຊ່ອງທາງຮັບເງິນ",
+        "payment_description": "ຈັດການ PromptPay ແລະບັນຊີທະນາຄານ",
+        "lalamove_description": "ບັນຊີ API ແລະເຄຣດິດສຳລັບ Lalamove",
+        "fees_description": "ຊ່ວງໄລຍະທາງ ແລະຄ່າຈັດສົ່ງຂອງຮ້ານ",
+        "ready": "ພ້ອມໃຊ້",
+        "incomplete": "ຂໍ້ມູນບໍ່ຄົບ",
+        "not_set": "ຍັງບໍ່ຕັ້ງຄ່າ",
+        "location_ready": "ກຳນົດແລ້ວ",
+        "payment_methods": ":count ຊ່ອງທາງ",
+        "self_delivery": "ຮ້ານຈັດສົ່ງເອງ",
+        "promotion_active": "ເປີດ :count ລາຍການ",
+        "promotion_off": "ປິດທັງໝົດ",
+        "fee_tiers": ":count ຊ່ວງ",
+        "lalamove_fee_note": "Lalamove ຄຳນວນຄ່າຈັດສົ່ງອັດຕະໂນມັດ ຈຶ່ງເຊື່ອງຕາຕະລາງຄ່າສົ່ງຂອງຮ້ານ"
       }
     },
     "admin_qr": {
@@ -24706,6 +24794,28 @@
         "takeaway_paper_title": "ស្កេនដើម្បីបញ្ជាទិញយកទៅឆ្ងាយ",
         "takeaway_link": "តំណការបញ្ជាទិញ Takeaway",
         "takeaway_label": "យកតាមខ្លួន"
+      },
+      "store_workspace": {
+        "overview_store": "ហាង",
+        "overview_location": "ទីតាំង",
+        "overview_payment": "ការទូទាត់",
+        "overview_delivery": "ការដឹកជញ្ជូន",
+        "profile_title": "ព័ត៌មានមូលដ្ឋានហាង",
+        "profile_description": "ឈ្មោះ អាសយដ្ឋាន និងទូរស័ព្ទដែលបង្ហាញដល់អតិថិជន",
+        "payment_title": "វិធីទទួលប្រាក់",
+        "payment_description": "គ្រប់គ្រង PromptPay និងគណនីធនាគារ",
+        "lalamove_description": "គណនី API និងឥណទានសម្រាប់ Lalamove",
+        "fees_description": "ចម្ងាយ និងថ្លៃដឹកជញ្ជូនរបស់ហាង",
+        "ready": "រួចរាល់",
+        "incomplete": "ព័ត៌មានមិនទាន់គ្រប់",
+        "not_set": "មិនទាន់កំណត់",
+        "location_ready": "បានកំណត់",
+        "payment_methods": ":count វិធី",
+        "self_delivery": "ហាងដឹកជញ្ជូនផ្ទាល់",
+        "promotion_active": "បើក :count",
+        "promotion_off": "បិទទាំងអស់",
+        "fee_tiers": ":count កម្រិត",
+        "lalamove_fee_note": "Lalamove គណនាថ្លៃដឹកជញ្ជូនដោយស្វ័យប្រវត្តិ ដូច្នេះតារាងថ្លៃដឹករបស់ហាងត្រូវបានលាក់។"
       }
     },
     "admin_qr": {

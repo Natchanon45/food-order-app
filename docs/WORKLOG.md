@@ -11944,3 +11944,75 @@ Verification:
 - Focused Production Favorites Laravel-icon regression: **1/1 PASS**.
 - Production tab now keeps visible text `เมนูโปรด` and renders the red Laravel-style `♥` from CSS `::before`; no emoji is present in the label.
 - Hosting-only deployment; no Functions/Rules/schema changes and no merge to `main`.
+
+
+---
+
+## 2026-10-08 — Modern organized Admin store/payment settings workspace (Build 2026.10.08.471)
+
+Request:
+- Redesign the expanded `ข้อมูลร้านและการรับชำระ` section because it had grown too long and mixed many unrelated settings.
+- Make the workspace more modern, easier to scan, and hide settings that are not currently needed.
+- Preserve all existing data fields, save behavior, business rules, and Firebase schema.
+
+Analysis:
+- The previous single form exposed store identity, map/location, PromptPay, bank account, Lalamove API/credentials/wallet, delivery provider, promotions, delivery fee tiers, and the save action in one continuous vertical page.
+- This caused the map and advanced integrations to consume significant space even when the user only wanted to update a basic store field.
+- The redesign therefore uses progressive disclosure instead of deleting settings.
+
+Test-first:
+- Added `tests/react-parity/admin-store-settings-layout.spec.mjs` before the runtime redesign.
+- Initial result: **0/4 PASS** as expected because the modern grouping/status workspace did not exist.
+- The test now guards:
+  - seven named disclosure groups,
+  - Store Basics open by default,
+  - contextual Lalamove credential/wallet visibility,
+  - hiding store delivery fee details when Lalamove is selected,
+  - top configuration-status dashboard,
+  - responsive modern workspace CSS.
+- Added `test:admin-store-layout` into the standard `test:react-parity` chain.
+
+Implementation:
+- Added reusable `AdminSettingsGroup` for nested disclosure panels with semantic icon, status, chevron and accessible `aria-expanded`.
+- Added a compact four-card status dashboard at the top:
+  - Store — actual store name,
+  - Location — configured / not configured,
+  - Payments — configured payment-method count,
+  - Delivery — store delivery / Lalamove.
+- Reorganized the form into:
+  1. `storeBasicsGroup` — store name, phone, address; **open by default**.
+  2. `storeLocationGroup` — map/current location; collapsed by default so the map does not initialize until needed.
+  3. `storePaymentGroup` — PromptPay and bank account cards; collapsed by default.
+  4. `storeDeliveryGroup` — delivery provider and max distance.
+  5. `storeLalamoveGroup` — account mode/integration details.
+  6. `storePromotionGroup` — Delivery promotion settings.
+  7. `storeFeeGroup` — store-controlled delivery fee tiers.
+- Lalamove progressive disclosure:
+  - tenant Environment/API credentials render only in Tenant Partner mode,
+  - PENGUIN Wallet renders only in central-account mode,
+  - store delivery-fee tiers are hidden while Lalamove is the selected provider because provider pricing is calculated externally.
+- Promotion and fee editors gained embedded rendering to avoid duplicate nested card headings.
+- The existing Save Store button remains the single save action and is visually sticky at the bottom of the workspace.
+- Added responsive layout:
+  - four status cards on desktop,
+  - two columns at medium width,
+  - one column on compact mobile,
+  - payment methods stack on mobile,
+  - disclosure status/chevron remain aligned without crowding.
+- Added normal translations for TH/EN/MY/LO/KM under `admin.store_workspace`.
+- No settings keys, document paths, IDs, save payloads, or schemas were renamed.
+
+Candidate verification:
+- React Build: `2026.10.08.471`.
+- Generated build contract: PASS on `/react/assets/index-CZozpByB.js`.
+- Admin Store Layout: **4/4 PASS**.
+- `npm run test:operational`: PASS.
+- `npm run test:react-parity`: PASS.
+- React migration coverage: 53 routes / 52 React shells / 0 pending shell sync.
+- React callable contract: 59 references / 0 missing exports.
+- Tenant access and UI layer contracts: PASS.
+- `git diff --check`: PASS.
+- No Functions, Firestore Rules, Storage Rules, or schema changes.
+
+Deploy state:
+- Commit/push and Hosting-only deployment pending at this checkpoint.
