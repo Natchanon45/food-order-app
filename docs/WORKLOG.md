@@ -12179,3 +12179,40 @@ Deploy scope:
 - Cloud Functions deployment required only for signup, revenue-share and subscription lifecycle Functions affected by this change.
 - No Firestore Rules, Storage Rules, schema deployment, or merge to main.
 - Commit/push and Production deploy pending at this checkpoint.
+
+
+### 2026-10-08 — Build 2026.10.08.473 Production deploy verified
+- Implementation commit: `28ea38ce` — `feat: add signup revenue share business policy`.
+- Firebase Hosting Production bundle verified at `https://penguin-food.web.app`:
+  - `/react/assets/index-f2OyyAlQ.js`.
+- Cloud Functions Production revision verified from Firebase function metadata:
+  - source hash `63e731d1f3d5f33180fb98d2f9cb0a5ba86f2c9e`,
+  - new source generations on 2026-10-08,
+  - the 12 deployed Functions in this release are:
+    - `requestTrialTenantSignup`,
+    - `activateTrialTenantSignup`,
+    - `getPlatformRevenueShareSummary`,
+    - `getTenantRevenueShareAccess`,
+    - `getTenantRevenueShareSummary`,
+    - `reconcileRevenueShare`,
+    - `submitTenantRevenueSharePayment`,
+    - `syncRevenueShareTenants`,
+    - `updateTenantRevenueShare`,
+    - `backfillTenantSubscriptions`,
+    - `initializeTenantSubscription`,
+    - `syncExpiredTenants`.
+- Final verification:
+  - `npm run test:operational`: PASS.
+  - `npm run test:react-parity`: PASS.
+  - Signup billing / revenue-share regression: **11/11 PASS**.
+  - Production P0 browser smoke: **52/52 PASS**.
+  - Production safe Register interaction: **PASS**, without submit/data writes:
+    - business selection appears before billing selection,
+    - Restaurant-only / Retail-only / Both show the correct shop-name fields,
+    - Subscription shows monthly/yearly choices,
+    - Restaurant Revenue Share shows 3 Restaurant scope choices,
+    - Retail Revenue Share hides Restaurant scope and keeps the fixed Retail POS rule,
+    - 590 / 7,080 / 5,900 pricing copy is present,
+    - Production bundle matches Build .473.
+- No Firestore Rules, Storage Rules, database schema, collection-name, document-ID, or internal tenant-ID changes.
+- No merge to `main`.
