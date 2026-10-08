@@ -200,7 +200,7 @@ export function CashierReceiptPage() {
   }, [first, error, params]);
 
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (allowed && !snapshot && !error)) {
-    return <PageReadyOverlay context={t("cashier_documents.receipt.header_title")} title={t("cashier.loading.title")} message={t("cashier.loading.preparing")} progress={76} />;
+    return <PageReadyOverlay context={t("cashier_documents.receipt.header_title")} title={t("cashier.loading.title")} message={t("cashier.loading.preparing")} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fcashier%2Freceipt" replace />;
   if (!allowed) return <Navigate to="/" replace />;

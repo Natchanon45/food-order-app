@@ -5,8 +5,15 @@ export function PageReadyOverlay({
   message,
   error = false,
   onRetry = null,
+  progressPercent = null,
 }) {
   const { t } = useI18n();
+  const numericProgress = progressPercent === null || progressPercent === undefined
+    ? null
+    : Number(progressPercent);
+  const hasRealProgress = Number.isFinite(numericProgress);
+  const clampedProgress = hasRealProgress ? Math.max(0, Math.min(100, numericProgress)) : null;
+  const roundedProgress = hasRealProgress ? Math.round(clampedProgress) : null;
 
   if (error) {
     return (
@@ -47,7 +54,21 @@ export function PageReadyOverlay({
           <h2 id="pageReadyTitle" data-page-ready-title>{t("shared.state.loading")}</h2>
           <p data-page-ready-message>{t("shared.state.please_wait")}</p>
         </div>
-        <div className="page-ready-progress page-ready-progress-indeterminate" aria-hidden="true"><span></span></div>
+        {hasRealProgress ? (
+          <div className="page-ready-progress-block" data-page-ready-real-progress>
+            <div
+              className="page-ready-progress page-ready-progress-determinate"
+              role="progressbar"
+              aria-label={t("shared.state.loading")}
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow={roundedProgress}
+            >
+              <span style={{ width: clampedProgress + "%" }}></span>
+            </div>
+            <strong className="page-ready-progress-percent">{roundedProgress}%</strong>
+          </div>
+        ) : null}
       </div>
     </div>
   );

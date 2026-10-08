@@ -983,7 +983,7 @@ export function PosPage() {
     || Boolean(posRedirectTarget)
     || (tenantState.status === "ready" && tenant?.id && profile && canUseRetailPos(posAccessProfile) && hasSaleAccess && !initialDataReady)
   ) {
-    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={92} />;
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }
 
   return (

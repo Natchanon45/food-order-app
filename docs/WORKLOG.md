@@ -12030,3 +12030,75 @@ Deploy state:
   - same Firebase data paths,
   - no Functions/Rules/schema changes.
 - Hosting-only deployment; no merge to `main`.
+
+
+---
+
+## 2026-10-08 — Strict initial readiness + real-progress-only loading (Build 2026.10.08.472)
+
+Request:
+- Some pages briefly showed the full-screen loader, removed it too early, then continued loading page components/data inside the visible page.
+- Remove the bottom fake/indeterminate progress bar.
+- Progress may be shown only when a route has a measurable real percent; otherwise show spinner + loading/wait text only.
+
+Root cause:
+- Several routes gated PageReadyOverlay only on auth/tenant/styles while their own first data fetch was still pending.
+- 24 routes also passed hard-coded progress values such as 68/76/82/90/92, even though those numbers were not based on measurable work.
+- The overlay itself rendered an indeterminate animated progress bar regardless of real progress.
+
+Test-first:
+- Added `tests/react-parity/global-initial-readiness.spec.mjs`.
+- Before runtime fixes: **0/4 PASS**.
+- It now permanently enforces:
+  - no indeterminate/fake progress markup or animation,
+  - no hard-coded numeric `progress={...}` props in route overlays,
+  - optional real `progressPercent` must expose a true 0–100 progressbar + visible percent,
+  - known first-load pages must keep PageReadyOverlay until `initialReady`.
+- Added `test:global-initial-readiness` into the standard `test:react-parity` chain.
+
+Initial-readiness repairs:
+- Added first-load-only readiness gates without changing later refresh/action loading behavior to:
+  - Admin,
+  - Admin QR,
+  - Platform Owners,
+  - Platform Pricing,
+  - POS Catalog,
+  - Revenue Share Report,
+  - Platform Contact,
+  - Platform Control Center,
+  - SaaS Setup.
+- Revenue Share now waits for initial access, history and first report readiness before revealing the page.
+- Platform Control Center waits for Branding, Google APIs, Slip verification, Lalamove and the first admin-notification summary.
+- Action/refresh busy states after the page has opened remain component-local and do not force the page back into full-screen initial loading.
+
+Real-progress-only overlay:
+- Removed all 24 hard-coded fake progress props.
+- Removed the indeterminate progress bar and animation.
+- Normal initial loading now shows only:
+  - centered spinner,
+  - `กำลังโหลดข้อมูล...`,
+  - `กรุณารอสักครู่ ...`.
+- `PageReadyOverlay` now accepts optional `progressPercent`.
+- A progress bar is rendered only when `progressPercent` is a finite measurable value; it displays the actual rounded percentage.
+- Permanent README / STRUCTURE / PARITY_VERIFICATION_PLAN / foundation contracts were updated to forbid fake/estimated/indeterminate progress.
+
+Candidate verification:
+- React Build: `2026.10.08.472`.
+- Generated build contract: PASS on `/react/assets/index-Bvkrur-l.js`.
+- `npm run test:operational`: PASS.
+- `npm run test:react-parity`: PASS.
+- Global Initial Readiness: **4/4 PASS**.
+- React migration coverage: 53 routes / 52 React shells / 0 pending.
+- Callable contract: 59 references / 0 missing Functions exports.
+- Tenant access + UI layer contracts: PASS.
+- Hosting-emulator browser check with intentionally delayed Firestore:
+  - full-screen overlay remains visible during initial fetch,
+  - spinner present,
+  - approved Thai loading/wait text present,
+  - progress bars = 0,
+  - fake indeterminate progress = 0,
+  - after readiness: overlay absent, Verify inline loading absent, no loading text remains.
+- No Functions, Firestore Rules, Storage Rules or schema changes.
+
+Deploy state:
+- Commit/push and Hosting-only deployment pending at this checkpoint.

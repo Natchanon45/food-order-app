@@ -79,9 +79,11 @@ requireAll("Admin QR is read/print only", adminQrPage, [
 requireAll("Revenue share submit/read actions", revenueSharePage, [
   "await submitRevenueSharePayment(tenant.id, periodPayload, slip)",
   "await getRevenueShareSlipUrl(item.slip.path)",
-  "loadAccess().finally",
+  "loadAccess()",
   "loadHistory();",
   "if (access?.enabled) loadReport();",
+  "setInitialAccessReady(true)",
+  "setInitialReportReady(true)",
 ]);
 requireAll("Revenue share storage/callable", revenueShareData, [
   'const slipPath = `tenants/${id}/revenue-share-slips/${paymentId}/${fileName}`',

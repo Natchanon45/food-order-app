@@ -163,7 +163,6 @@ export function HomePage() {
         context="PENGUIN"
         title={t("shared.state.loading")}
         message={t("shared.state.please_wait")}
-        progress={68}
       />
     );
   }

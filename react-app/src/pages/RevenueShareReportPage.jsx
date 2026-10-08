@@ -73,6 +73,9 @@ export function RevenueShareReportPage() {
   const [report, setReport] = useState({ period: null, summary: {}, wallet: {}, lalamoveFailures: [] });
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [initialAccessReady, setInitialAccessReady] = useState(false);
+  const [initialHistoryReady, setInitialHistoryReady] = useState(false);
+  const [initialReportReady, setInitialReportReady] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [paymentMessage, setPaymentMessage] = useState("");
@@ -139,6 +142,8 @@ export function RevenueShareReportPage() {
     } catch (loadError) {
       console.error("REVENUE_SHARE_HISTORY_FAILED", loadError);
       setPayments(null);
+    } finally {
+      setInitialHistoryReady(true);
     }
   }, []);
 
@@ -159,14 +164,27 @@ export function RevenueShareReportPage() {
       setError(t("revenue_share_report.states.load_failed"));
     } finally {
       setLoading(false);
+      setInitialReportReady(true);
     }
   }, [access?.enabled, periodPayload, t]);
 
   useEffect(() => {
-    if (!tenant?.id || !["owner", "admin"].includes(profile?.role)) return;
+    if (!tenant?.id || !["owner", "admin"].includes(profile?.role)) return undefined;
     let alive = true;
     setLoading(true);
-    loadAccess().finally(() => { if (alive) setLoading(false); });
+    setInitialAccessReady(false);
+    setInitialHistoryReady(false);
+    setInitialReportReady(false);
+    loadAccess()
+      .then(next => {
+        if (alive && next?.enabled !== true) setInitialReportReady(true);
+      })
+      .finally(() => {
+        if (alive) {
+          setInitialAccessReady(true);
+          setLoading(false);
+        }
+      });
     loadHistory();
     return () => { alive = false; };
   }, [tenant?.id, profile?.role, loadAccess, loadHistory]);
@@ -179,6 +197,7 @@ export function RevenueShareReportPage() {
     if (selectedSlipUrl) URL.revokeObjectURL(selectedSlipUrl);
   }, [selectedSlipUrl]);
 
+  const initialReady = initialAccessReady && initialHistoryReady && initialReportReady;
   const summary = report.summary || {};
   const wallet = report.wallet || {};
   const failures = report.lalamoveFailures || [];
@@ -392,8 +411,8 @@ export function RevenueShareReportPage() {
       })
     : t("revenue_share_report.explanation.disabled");
 
-  if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={90} />;
+  if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (["owner", "admin"].includes(profile?.role) && tenant?.id && !initialReady)) {
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Freports%2Frevenue-share" replace />;
   if (!["owner", "admin"].includes(profile.role)) return <Navigate to="/" replace />;

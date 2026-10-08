@@ -215,7 +215,7 @@ For routes with a Laravel MASTER equivalent:
 
 ## Global initial readiness parity
 - Every user-visible React route shows the shared full-screen `PageReadyOverlay` until required styles and initial auth/tenant/data have settled.
-- Loading content is centered on both X/Y axes and contains spinner + indeterminate progress + localized shared loading/wait text.
-- Partial page UI and page-specific initial loading blocks must not appear underneath or after the global overlay.
+- Loading content is centered on both X/Y axes and contains the spinner + localized shared loading/wait text. A progress bar appears only when the route supplies measurable real 0–100% progress; hard-coded estimates and indeterminate/fake progress are forbidden.
+- Partial page UI and page-specific initial loading blocks must not appear underneath or after the global overlay; the overlay remains until all critical initial page-component data are settled.
 - Redirect/compatibility routes show the same overlay while navigation is pending.
 - Successful readiness removes the initial overlay completely; explicit initial-load failures move to a clear error state.

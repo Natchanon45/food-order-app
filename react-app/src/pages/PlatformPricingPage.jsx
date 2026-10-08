@@ -44,6 +44,7 @@ export function PlatformPricingPage() {
   });
   const [config, setConfig] = useState(DEFAULT_SUBSCRIPTION_PRICING);
   const [loading, setLoading] = useState(true);
+  const [initialReady, setInitialReady] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const lastVatRate = useRef(7);
@@ -66,7 +67,11 @@ export function PlatformPricingPage() {
   };
 
   useEffect(() => {
-    if (profile?.role === "super_admin") load();
+    if (profile?.role !== "super_admin") return undefined;
+    let alive = true;
+    setInitialReady(false);
+    load().finally(() => { if (alive) setInitialReady(true); });
+    return () => { alive = false; };
   }, [profile?.role]);
 
   const update = patch => {
@@ -117,8 +122,8 @@ export function PlatformPricingPage() {
     }
   };
 
-  if (authState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={80} />;
+  if (authState.status === "loading" || !stylesReady || (profile?.role === "super_admin" && !initialReady)) {
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fplatform%2Fpricing" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;

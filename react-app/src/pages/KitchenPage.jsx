@@ -589,7 +589,7 @@ export function KitchenPage() {
   };
 
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (allowedRole && loading)) {
-    return <PageReadyOverlay context={t("kitchen.brand")} title={t("kitchen.loading.title")} message={t("kitchen.loading.preparing")} progress={76} />;
+    return <PageReadyOverlay context={t("kitchen.brand")} title={t("kitchen.loading.title")} message={t("kitchen.loading.preparing")} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fkitchen" replace />;
   if (!allowedRole) return <Navigate to="/" replace />;

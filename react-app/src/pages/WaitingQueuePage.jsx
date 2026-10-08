@@ -518,7 +518,7 @@ export function WaitingQueuePage() {
   };
 
   if (authStatus === "loading" || tenantState.status === "loading" || !stylesReady || (tenant && loading)) {
-    return <PageReadyOverlay context="PENGUIN" title={wq("hero.loading_actor")} message={wq("controls.syncing")} progress={82} />;
+    return <PageReadyOverlay context="PENGUIN" title={wq("hero.loading_actor")} message={wq("controls.syncing")} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fwaiting-queue" replace />;
   if (!ROLES.has(profile.role) || tenantState.status === "error" || !tenant) return <Navigate to="/" replace />;

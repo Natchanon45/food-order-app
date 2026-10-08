@@ -112,11 +112,13 @@ export function PlatformContactPage() {
   const [contactStatus, setContactStatus] = useState("");
   const [contactStatusType, setContactStatusType] = useState("success");
   const [contactBusy, setContactBusy] = useState(true);
+  const [initialContactReady, setInitialContactReady] = useState(false);
   const [contactSaving, setContactSaving] = useState(false);
   const [google, setGoogle] = useState({ enabled: false, clientId: "", tokenTtlDays: 30, source: "environment" });
   const [googleStatus, setGoogleStatus] = useState("");
   const [googleStatusType, setGoogleStatusType] = useState("success");
   const [googleBusy, setGoogleBusy] = useState(true);
+  const [initialGoogleReady, setInitialGoogleReady] = useState(false);
   const [googleSaving, setGoogleSaving] = useState(false);
 
   const patchContact = patch => setContact(current => ({ ...current, ...patch }));
@@ -136,6 +138,7 @@ export function PlatformContactPage() {
       setContactStatusType("error");
     } finally {
       setContactBusy(false);
+      setInitialContactReady(true);
     }
   };
 
@@ -156,13 +159,17 @@ export function PlatformContactPage() {
       setGoogleStatusType("error");
     } finally {
       setGoogleBusy(false);
+      setInitialGoogleReady(true);
     }
   };
 
   useEffect(() => {
-    if (profile?.role !== "super_admin") return;
+    if (profile?.role !== "super_admin") return undefined;
+    setInitialContactReady(false);
+    setInitialGoogleReady(false);
     loadContact();
     loadGoogle();
+    return undefined;
   }, [profile?.role, defaults]);
 
   const normalizedContact = () => ({
@@ -288,11 +295,12 @@ export function PlatformContactPage() {
     previewContact.messengerEnabled && previewContact.messengerUrl ? { channel: "messenger", icon: "messenger", label: previewContact.messengerLabel, href: previewContact.messengerUrl } : null,
     previewContact.emailEnabled && previewContact.email ? { channel: "email", icon: "envelope-fill", label: previewContact.emailLabel, href: `mailto:${previewContact.email}` } : null,
   ].filter(Boolean);
+  const initialReady = initialContactReady && initialGoogleReady;
   const googleReady = google.enabled === true && CLIENT_ID_PATTERN.test(String(google.clientId || "").trim());
   const origins = [location.origin, "http://127.0.0.1:8000", "http://localhost:8000"].filter((value, index, list) => list.indexOf(value) === index);
 
-  if (authState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={78} />;
+  if (authState.status === "loading" || !stylesReady || (profile?.role === "super_admin" && !initialReady)) {
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fplatform%2Fcontact" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;

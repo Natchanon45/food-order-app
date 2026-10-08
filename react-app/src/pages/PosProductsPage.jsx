@@ -912,7 +912,7 @@ export function PosProductsPage() {
     || (Boolean(profile && tenant) && !rolesReady)
     || Boolean(tenant?.id && profile && rolesReady && canView && !initialReady);
   if (needsReady) {
-    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={92} />;
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }
 
   const selectedStockProduct = products.find(item => item.id === stockForm.productId);

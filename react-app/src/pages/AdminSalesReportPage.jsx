@@ -362,7 +362,7 @@ export function AdminSalesReportPage() {
   };
 
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={86} />;
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fadmin%2Fsales-report" replace />;
   if (!["owner", "admin"].includes(profile.role)) return <Navigate to="/" replace />;

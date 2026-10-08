@@ -37,6 +37,7 @@ export function PlatformOwnersPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [initialReady, setInitialReady] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [selected, setSelected] = useState(null);
   const [mode, setMode] = useState("create");
@@ -63,7 +64,11 @@ export function PlatformOwnersPage() {
   };
 
   useEffect(() => {
-    if (profile?.role === "super_admin") load();
+    if (profile?.role !== "super_admin") return undefined;
+    let alive = true;
+    setInitialReady(false);
+    load().finally(() => { if (alive) setInitialReady(true); });
+    return () => { alive = false; };
   }, [profile?.role]);
 
   const filtered = useMemo(() => {
@@ -158,8 +163,8 @@ export function PlatformOwnersPage() {
     field.setCustomValidity(!confirmSecret || confirmSecret === secret ? "" : t("platform_owners.modal.password_mismatch"));
   }, [confirmSecret, secret, mode, t]);
 
-  if (authState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={76} />;
+  if (authState.status === "loading" || !stylesReady || (profile?.role === "super_admin" && !initialReady)) {
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fplatform%2Fowners" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;

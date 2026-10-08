@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.08.471",
+  build: "2026.10.08.472",
   branch: "feature/react-firebase-port",
-  commit: "ADMIN-STORE-SETTINGS-WORKSPACE",
+  commit: "GLOBAL-INITIAL-READINESS-REAL-PROGRESS",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Modern organized store and payment settings workspace",
+  milestone: "Strict initial readiness and real-progress-only loading",
   whatsNew: [
-    "Reorganize store and payment settings into modern collapsible groups with a status dashboard",
-    "Keep infrequently used location, payment, Lalamove, promotion, and delivery fee details collapsed until needed",
-    "Hide Lalamove credentials, wallet, and store delivery fees when their selected mode does not use them",
+    "Keep the full-screen loading overlay until critical initial page-component data are ready",
+    "Remove fake and indeterminate progress bars from page loading",
+    "Allow loading percent only when measurable real progressPercent data are supplied",
   ],
 });

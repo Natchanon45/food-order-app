@@ -1013,7 +1013,7 @@ export function AdminTenantsPage() {
   };
 
   if (authState.status === "loading" || !stylesReady || (profile?.role === "super_admin" && !initialTenantsReady)) {
-    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={74} />;
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fadmin%2Ftenants" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;

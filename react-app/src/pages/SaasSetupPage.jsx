@@ -58,6 +58,7 @@ export function SaasSetupPage() {
   const [stateKey, setStateKey] = useState("runtime.state.checking");
   const [overwrite, setOverwrite] = useState(false);
   const [busy, setBusy] = useState(true);
+  const [initialReady, setInitialReady] = useState(false);
   const [logLines, setLogLines] = useState([]);
 
   const appendLog = message => setLogLines(lines => [...lines, String(message || "")]);
@@ -75,11 +76,15 @@ export function SaasSetupPage() {
       showToast(t("runtime.toast.check_failed"), "error");
     } finally {
       setBusy(false);
+      setInitialReady(true);
     }
   };
 
   useEffect(() => {
-    if (profile?.role === "super_admin") refreshSummary();
+    if (profile?.role !== "super_admin") return undefined;
+    setInitialReady(false);
+    refreshSummary();
+    return undefined;
   }, [profile?.role]);
 
   const startMigration = async () => {
@@ -126,8 +131,8 @@ export function SaasSetupPage() {
     }
   };
 
-  if (authState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="PENGUIN" title={globalT("shared.state.loading")} message={globalT("shared.state.please_wait")} progress={80} />;
+  if (authState.status === "loading" || !stylesReady || (profile?.role === "super_admin" && !initialReady)) {
+    return <PageReadyOverlay context="PENGUIN" title={globalT("shared.state.loading")} message={globalT("shared.state.please_wait")} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fsuper-admin%2Fsaas-setup" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;

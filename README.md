@@ -2,7 +2,7 @@
 
 Current development branch: `feature/react-firebase-port`
 Current milestone: React + Firebase parity migration / Super Admin Console
-Next PENGUIN release identity: Version `0.4.280` • Build `2026.10.08.471`
+Next PENGUIN release identity: Version `0.4.280` • Build `2026.10.08.472`
 Primary production Hosting: `https://penguin-food.web.app` (legacy `https://natchanon-food-order-delivery.web.app` retained for transition only)
 
 > New Chat / continuation: read `STRUCTURE.md`, `docs/NEXT_CHAT_HANDOFF.md`, and `docs/WORKLOG.md` before changing code.
@@ -562,4 +562,4 @@ Deploy for this build: git pull --rebase origin feature/retail-pos && firebase d
 
 
 ### Global initial loading rule
-Every user-visible React route must render the shared full-screen `PageReadyOverlay` before its required initial data is ready. The overlay must cover the viewport, center content on both X/Y axes, show a spinner plus indeterminate progress, and use localized shared text (`กำลังโหลดข้อมูล...` / `กรุณารอสักครู่ ...` in Thai). Keep it visible until required styles plus initial auth/tenant/data have settled into either a ready state or an explicit error state. Never reveal a partially initialized page or leave a page-specific initial loading block visible after the full-screen overlay is removed. Redirect/compatibility routes use the same overlay while navigation is pending.
+Every user-visible React route must render the shared full-screen `PageReadyOverlay` before its required initial data is ready. The overlay must cover the viewport, center content on both X/Y axes, show the spinner and localized shared text (`กำลังโหลดข้อมูล...` / `กรุณารอสักครู่ ...` in Thai), and stay visible until required styles plus all critical initial auth/tenant/page-component data have settled into either a ready state or an explicit error state. Never reveal a partially initialized page or leave a page-specific initial loading block visible after the full-screen overlay is removed. Redirect/compatibility routes use the same overlay while navigation is pending. **Progress bars are forbidden unless the route has a measurable real 0–100% value.** Hard-coded/estimated percentages and indeterminate/fake progress animations are not allowed. When real progress is available, pass it through `progressPercent` and display the actual percent.

@@ -39,6 +39,7 @@ export function PosCatalogPage() {
   const [importResult, setImportResult] = useState({ message: "", tone: "" });
   const [pendingRows, setPendingRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [initialReady, setInitialReady] = useState(false);
   const [excelRows, setExcelRows] = useState([]);
   const [excelResult, setExcelResult] = useState({ message: "", tone: "" });
   const [excelImporting, setExcelImporting] = useState(false);
@@ -68,7 +69,11 @@ export function PosCatalogPage() {
   };
 
   useEffect(() => {
-    if (profile?.role === "owner" && tenant?.id) load();
+    if (profile?.role !== "owner" || !tenant?.id) return undefined;
+    let alive = true;
+    setInitialReady(false);
+    load().finally(() => { if (alive) setInitialReady(true); });
+    return () => { alive = false; };
   }, [profile?.role, tenant?.id]);
 
   const categorySummaries = useMemo(() => {
@@ -216,8 +221,8 @@ export function PosCatalogPage() {
       : breakdown.ready && breakdown.skippedExisting ? tr("dynamic.all_existing", { count: number(breakdown.ready) })
         : breakdown.ready ? tr("dynamic.no_importable") : tr("dynamic.only_drafts");
 
-  if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={92} />;
+  if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (profile?.role === "owner" && tenant?.id && !initialReady)) {
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fpos%2Fcatalog" replace />;
   if (profile.role !== "owner" || tenantState.status === "error" || !tenant) return <Navigate to="/" replace />;

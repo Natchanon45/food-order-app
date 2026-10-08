@@ -29,6 +29,7 @@ export function AdminQrPage() {
   });
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [initialReady, setInitialReady] = useState(false);
   const [loadError, setLoadError] = useState("");
 
   const baseUrl = useMemo(() => {
@@ -39,16 +40,19 @@ export function AdminQrPage() {
   useEffect(() => {
     if (!tenant?.id || !["owner", "admin"].includes(profile?.role)) return undefined;
     setLoading(true);
+    setInitialReady(false);
     setLoadError("");
     return subscribeActiveTables(
       tenant.id,
       rows => {
         setTables(rows);
         setLoading(false);
+        setInitialReady(true);
       },
       error => {
         setLoadError(error?.message || "ADMIN_QR_LOAD_FAILED");
         setLoading(false);
+        setInitialReady(true);
       },
     );
   }, [tenant?.id, profile?.role]);
@@ -69,8 +73,8 @@ export function AdminQrPage() {
     requestAnimationFrame(() => window.print());
   };
 
-  if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={88} />;
+  if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (["owner", "admin"].includes(profile?.role) && tenant?.id && !initialReady)) {
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fadmin%2Fqr" replace />;
   if (!["owner", "admin"].includes(profile.role)) return <Navigate to="/" replace />;

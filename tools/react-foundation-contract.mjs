@@ -767,18 +767,27 @@ for (const { name, source } of pageReadyPolicyPages) {
 assert(
   readmeRules.includes("Global initial loading rule")
   &&readmeRules.includes("กำลังโหลดข้อมูล...")
+  &&readmeRules.includes("Hard-coded/estimated percentages")
   &&structureRules.includes("Global initial-ready contract")
-  &&parityVerificationPlan.includes("Global initial readiness parity"),
-  "Global initial loading/readiness policy must stay documented"
+  &&structureRules.includes("progressPercent")
+  &&parityVerificationPlan.includes("Global initial readiness parity")
+  &&parityVerificationPlan.includes("hard-coded estimates and indeterminate/fake progress are forbidden"),
+  "Global initial loading/readiness and real-progress-only policy must stay documented"
 );
 assert(
   pageReadyOverlay.includes('className="page-ready-spinner"')
-  &&pageReadyOverlay.includes('page-ready-progress-indeterminate')
+  &&pageReadyOverlay.includes("progressPercent = null")
+  &&pageReadyOverlay.includes('role="progressbar"')
+  &&pageReadyOverlay.includes('aria-valuenow={roundedProgress}')
+  &&pageReadyOverlay.includes('{roundedProgress}%')
+  &&!pageReadyOverlay.includes("page-ready-progress-indeterminate")
   &&pageReadyOverlay.includes('t("shared.state.loading")')
   &&pageReadyOverlay.includes('t("shared.state.please_wait")')
   &&pageReadyCss.includes("place-items: center;")
-  &&pageReadyCss.includes(".page-ready-progress-indeterminate"),
-  "PageReadyOverlay must remain full-screen centered with spinner/progress/shared translations"
+  &&pageReadyCss.includes(".page-ready-progress-percent")
+  &&!pageReadyCss.includes("page-ready-progress-indeterminate")
+  &&!pageReadyCss.includes("page-ready-progress-move"),
+  "PageReadyOverlay must stay full-screen centered and show progress only from a measurable real percent"
 );
 assert(
   dict.th?.shared?.state?.loading === "กำลังโหลดข้อมูล..."

@@ -146,9 +146,16 @@ body.page-ready-blocked > *:not(.page-ready-overlay) {
   overflow-wrap: anywhere;
 }
 
+.page-ready-progress-block {
+  width: min(240px, 72vw);
+  display: grid;
+  gap: 7px;
+  margin-top: 10px;
+}
+
 .page-ready-progress {
+  width: 100%;
   height: 8px;
-  margin-top: 20px;
   overflow: hidden;
   border-radius: 999px;
   background: #e7efe9;
@@ -156,36 +163,18 @@ body.page-ready-blocked > *:not(.page-ready-overlay) {
 
 .page-ready-progress > span {
   display: block;
-  width: 8%;
+  width: 0;
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #0c7b3c, #1a9d50);
-  transition: width .3s ease;
+  transition: width .2s ease;
 }
 
-.page-ready-progress-indeterminate {
-  width: min(240px, 72vw);
-  margin-top: 10px;
-}
-
-.page-ready-progress-indeterminate > span {
-  width: 38%;
-  animation: page-ready-progress-move 1.25s ease-in-out infinite;
-}
-
-.page-ready-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 9px;
-  color: #7b8880;
-  font-size: .72rem;
-}
-
-.page-ready-meta strong {
+.page-ready-progress-percent {
   color: #2d5a40;
+  font-size: .78rem;
   font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 
 .page-ready-retry {
@@ -193,11 +182,6 @@ body.page-ready-blocked > *:not(.page-ready-overlay) {
   width: 100%;
   min-height: 42px;
   margin-top: 18px;
-}
-
-.page-ready-overlay.is-retrying .page-ready-progress > span {
-  width: 42% !important;
-  animation: page-ready-progress-move 1.25s ease-in-out infinite;
 }
 
 .page-ready-overlay.is-error .page-ready-spinner {
@@ -209,11 +193,6 @@ body.page-ready-blocked > *:not(.page-ready-overlay) {
 
 .page-ready-overlay.is-error .page-ready-error-icon {
   display: none;
-}
-
-.page-ready-overlay.is-error .page-ready-progress > span {
-  width: 100% !important;
-  background: #d92d20;
 }
 
 .page-ready-overlay.is-error .page-ready-retry {
@@ -230,12 +209,6 @@ body.page-ready-blocked > *:not(.page-ready-overlay) {
 
 @keyframes page-ready-spin {
   to { transform: rotate(360deg); }
-}
-
-@keyframes page-ready-progress-move {
-  0% { transform: translateX(-130%); }
-  50% { transform: translateX(90%); }
-  100% { transform: translateX(250%); }
 }
 
 @media (max-width: 640px) {
@@ -265,8 +238,7 @@ body.page-ready-blocked > *:not(.page-ready-overlay) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .page-ready-spinner,
-  .page-ready-overlay.is-retrying .page-ready-progress > span {
+  .page-ready-spinner {
     animation-duration: 1.8s;
   }
 }

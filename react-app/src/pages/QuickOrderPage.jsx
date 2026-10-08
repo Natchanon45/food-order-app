@@ -730,7 +730,7 @@ export function QuickOrderPage() {
   }, [heldBills, heldSearch, heldSort]);
 
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (allowedRole && loading)) {
-    return <PageReadyOverlay context={t("quick_order.header.title")} title={t("quick_order.loading.title")} message={t("quick_order.loading.preparing")} progress={76} />;
+    return <PageReadyOverlay context={t("quick_order.header.title")} title={t("quick_order.loading.title")} message={t("quick_order.loading.preparing")} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fcashier%2Fquick-order" replace />;
   if (!allowedRole) return <Navigate to="/" replace />;

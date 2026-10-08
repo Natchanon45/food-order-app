@@ -167,7 +167,7 @@ export function AdminUsersPage() {
   };
 
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (profile?.role === "owner" && tenantState.status === "ready" && !initialUsersReady)) {
-    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={84} />;
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fadmin%2Fusers" replace />;
   if (profile.role !== "owner") return <Navigate to="/" replace />;

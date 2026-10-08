@@ -664,6 +664,7 @@ export function AdminPage() {
   });
 
   const [loading, setLoading] = useState(true);
+  const [initialReady, setInitialReady] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [settings, setSettings] = useState({});
   const [menus, setMenus] = useState([]);
@@ -778,7 +779,11 @@ export function AdminPage() {
   }, [tenant?.id, tenant?.name, t]);
 
   useEffect(() => {
-    if (profile && ["owner", "admin"].includes(profile.role) && tenant?.id) load();
+    if (!profile || !["owner", "admin"].includes(profile.role) || !tenant?.id) return undefined;
+    let alive = true;
+    setInitialReady(false);
+    load().finally(() => { if (alive) setInitialReady(true); });
+    return () => { alive = false; };
   }, [profile?.role, tenant?.id, load]);
 
   const patchStore = patch => setStoreForm(current => ({ ...current, ...patch }));
@@ -1419,8 +1424,8 @@ export function AdminPage() {
     }
   };
 
-  if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={82} />;
+  if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (["owner", "admin"].includes(profile?.role) && tenant?.id && !initialReady)) {
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fadmin" replace />;
   if (!["owner", "admin"].includes(profile.role)) return <Navigate to="/" replace />;

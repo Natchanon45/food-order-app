@@ -223,7 +223,7 @@ export function PosReceiptPage() {
   };
 
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (tenant?.id && !ready)) {
-    return <PageReadyOverlay context={t("pos.receipt.header_title")} title={t("pos.receipt.loading")} message={t("shared.state.please_wait")} progress={88} />;
+    return <PageReadyOverlay context={t("pos.receipt.header_title")} title={t("pos.receipt.loading")} message={t("shared.state.please_wait")} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fpos%2Freceipt" replace />;
   if (!tenant) return <Navigate to="/" replace />;

@@ -154,18 +154,21 @@ export function PlatformPage() {
   const [brandingFiles, setBrandingFiles] = useState({ logo: null, favicon: null, appIcon: null });
   const [brandingClear, setBrandingClear] = useState({ logo: false, favicon: false, appIcon: false });
   const [brandingBusy, setBrandingBusy] = useState(true);
+  const [initialBrandingReady, setInitialBrandingReady] = useState(false);
   const [brandingPreview, setBrandingPreview] = useState({ logo: "", favicon: "", appIcon: "" });
 
   const [google, setGoogle] = useState(EMPTY_GOOGLE);
   const [googleInput, setGoogleInput] = useState({ mapsBrowserKey: "", routesApiKey: "", visionApiKey: "" });
   const [googleClear, setGoogleClear] = useState({ mapsBrowserKey: false, routesApiKey: false, visionApiKey: false });
   const [googleBusy, setGoogleBusy] = useState(true);
+  const [initialGoogleReady, setInitialGoogleReady] = useState(false);
   const [googleLoadError, setGoogleLoadError] = useState(false);
 
   const [slip, setSlip] = useState(EMPTY_SLIP);
   const [slipSecret, setSlipSecret] = useState("");
   const [slipClearSecret, setSlipClearSecret] = useState(false);
   const [slipBusy, setSlipBusy] = useState(true);
+  const [initialSlipReady, setInitialSlipReady] = useState(false);
   const [slipQuota, setSlipQuota] = useState("");
   const [slipLoadError, setSlipLoadError] = useState(false);
 
@@ -173,12 +176,14 @@ export function PlatformPage() {
   const [lalamoveInput, setLalamoveInput] = useState({ apiKey: "", apiSecret: "" });
   const [lalamoveClear, setLalamoveClear] = useState({ apiKey: false, apiSecret: false });
   const [lalamoveBusy, setLalamoveBusy] = useState(true);
+  const [initialLalamoveReady, setInitialLalamoveReady] = useState(false);
   const [lalamoveWebhookBusy, setLalamoveWebhookBusy] = useState(false);
   const [lalamoveWebhookStatus, setLalamoveWebhookStatus] = useState("");
   const [lalamoveError, setLalamoveError] = useState("");
   const [lalamoveTesting, setLalamoveTesting] = useState(false);
   const [adminNotifications, setAdminNotifications] = useState(EMPTY_PLATFORM_ADMIN_NOTIFICATIONS);
   const [adminNotificationsLoading, setAdminNotificationsLoading] = useState(true);
+  const [initialNotificationsReady, setInitialNotificationsReady] = useState(false);
 
   const googleStatusText = (configured, masked, clearing = false) => {
     if (clearing) return t("platform.google_api.clear_pending");
@@ -223,6 +228,10 @@ export function PlatformPage() {
   useEffect(() => {
     if (profile?.role !== "super_admin") return;
     let active = true;
+    setInitialBrandingReady(false);
+    setInitialGoogleReady(false);
+    setInitialSlipReady(false);
+    setInitialLalamoveReady(false);
 
     setBrandingBusy(true);
     loadPlatformBranding()
@@ -237,7 +246,12 @@ export function PlatformPage() {
         console.error("PLATFORM_BRANDING_LOAD_FAILED", error);
         if (active) showToast(t("platform.branding.load_failed"), "error");
       })
-      .finally(() => { if (active) setBrandingBusy(false); });
+      .finally(() => {
+        if (active) {
+          setBrandingBusy(false);
+          setInitialBrandingReady(true);
+        }
+      });
 
     setGoogleBusy(true);
     setGoogleLoadError(false);
@@ -254,7 +268,12 @@ export function PlatformPage() {
           showToast(t("platform.google_api.load_failed"), "error");
         }
       })
-      .finally(() => { if (active) setGoogleBusy(false); });
+      .finally(() => {
+        if (active) {
+          setGoogleBusy(false);
+          setInitialGoogleReady(true);
+        }
+      });
 
     setSlipBusy(true);
     setSlipLoadError(false);
@@ -272,7 +291,12 @@ export function PlatformPage() {
           showToast(t("platform.slip_verification.load_failed"), "error");
         }
       })
-      .finally(() => { if (active) setSlipBusy(false); });
+      .finally(() => {
+        if (active) {
+          setSlipBusy(false);
+          setInitialSlipReady(true);
+        }
+      });
 
     setLalamoveBusy(true);
     loadPlatformLalamove()
@@ -284,7 +308,12 @@ export function PlatformPage() {
           showToast(t("platform.lalamove.load_failed"), "error");
         }
       })
-      .finally(() => { if (active) setLalamoveBusy(false); });
+      .finally(() => {
+        if (active) {
+          setLalamoveBusy(false);
+          setInitialLalamoveReady(true);
+        }
+      });
 
     return () => { active = false; };
   }, [profile?.role, t]);
@@ -299,10 +328,14 @@ export function PlatformPage() {
       } catch (error) {
         console.error("PLATFORM_ADMIN_NOTIFICATIONS_LOAD_FAILED", error);
       } finally {
-        if (active) setAdminNotificationsLoading(false);
+        if (active) {
+          setAdminNotificationsLoading(false);
+          setInitialNotificationsReady(true);
+        }
       }
     };
     setAdminNotificationsLoading(true);
+    setInitialNotificationsReady(false);
     refresh();
     const timer = window.setInterval(refresh, 60_000);
     return () => {
@@ -520,8 +553,10 @@ export function PlatformPage() {
     }
   };
 
-  if (authState.status === "loading" || !stylesReady) {
-    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} progress={72} />;
+  const initialReady = initialBrandingReady && initialGoogleReady && initialSlipReady && initialLalamoveReady && initialNotificationsReady;
+
+  if (authState.status === "loading" || !stylesReady || (profile?.role === "super_admin" && !initialReady)) {
+    return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fplatform" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;
