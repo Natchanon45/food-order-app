@@ -893,3 +893,7 @@ Candidate Build .476 on local Mac only; React homepage and route guard updates p
 
 ## 2026-10-08 — Delivery mobile sticky categories .484
 - Mobile Delivery: only category tab strip is sticky; search scrolls with menu; active category follows current visible menu and tabs center automatically. Desktop/Table Order behavior unchanged. Hosting-only release; see WORKLOG.
+
+
+### Build .484 delivered
+- Delivery mobile category-only sticky/scroll-spy released to Firebase Hosting, implementation 3f4cb08a. Production verification recorded in WORKLOG.

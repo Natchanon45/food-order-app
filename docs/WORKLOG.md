@@ -12488,3 +12488,11 @@ Deployment boundary:
 - Table Order scroll-spy behavior remains unchanged, Desktop remains unaffected, no payment/Slip2Go backend or data changes.
 - Operational, React Parity and build checks PASS; dedicated mobile scroll regression PASS 3/3.
 - Hosting only; no Functions/Rules and no main merge.
+
+
+### Delivery mobile category scroll — Production checkpoint Build .484
+- Implementation commit 3f4cb08a pushed to feature/react-firebase-port.
+- Firebase Hosting foodapp deploy completed successfully; no Functions, Firestore Rules, Storage or tenant-data changes.
+- Production /s/saas-test-shop/delivery references index-DpiOhGZu.js; asset HTTP 200 and mobile-menu-scroll.css includes sticky-tabs override.
+- Automated tests passed; authenticated iPhone/mobile visual scroll smoke is not yet verified on a real browser.
+- No main merge; old untracked hashed bundles preserved.
