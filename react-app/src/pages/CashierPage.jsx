@@ -28,6 +28,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
 import { qrDataUrl } from "@/utils/localQr";
+import { deliveryDriverMapsUrl, isSelfDeliveryOrder } from "@/utils/deliveryDriverShare";
 
 const approveDeliveryPaymentReview = httpsCallable(functions, "approveDeliveryPaymentReview");
 const LALAMOVE_STATUS_COOLDOWN_MS = 10000;
@@ -239,11 +240,21 @@ function LalamoveDispatch({ order, t, money, busy, onQuote, onPlace, onRefresh, 
   </div>;
 }
 
-function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, actions }) {
+function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, actions, onShareDriver }) {
   const dispatchedLocked = order.lalamoveOrderId && !lalamoveDispatchFinished(order);
+  const selfDelivery = isSelfDeliveryOrder(order);
+  const driverMapsUrl = selfDelivery ? deliveryDriverMapsUrl(order) : "";
   return <article className="card order-card">
     <div className="order-head"><QueueHeading order={order} title={`Delivery: ${order.recipientName || t("cashier.delivery.recipient_fallback")}`} t={t} formatTime={formatTime} /><span className="badge">{statusLabel(order, t)}</span></div>
     <p><span className={"badge" + (order.paymentStatus === "paid" ? "" : " warning")}>{paymentLabel(order, t)}</span><br /><strong>{t("cashier.delivery.phone")}</strong> {order.recipientPhone || "-"}<br /><strong>{t("cashier.delivery.address")}</strong> {order.deliveryAddress || "-"}</p>
+    {selfDelivery ? <div className="cashier-driver-panel" data-self-delivery-driver-share>
+      <div className="cashier-driver-heading"><i className="bi bi-geo-alt app-icon" aria-hidden="true"></i><strong>{t("cashier.delivery.driver_location_title")}</strong></div>
+      <div className="cashier-driver-actions">
+        {driverMapsUrl ? <a className="btn btn-sm" href={driverMapsUrl} target="_blank" rel="noopener noreferrer" data-driver-maps-link><i className="bi bi-map app-icon" aria-hidden="true"></i><span>{t("cashier.delivery.driver_open_maps")}</span></a> : null}
+        <button className="btn btn-primary btn-sm" type="button" disabled={!driverMapsUrl} data-driver-share-button onClick={() => onShareDriver(order)}><i className="bi bi-share app-icon" aria-hidden="true"></i><span>{t("cashier.delivery.driver_share")}</span></button>
+      </div>
+      <small className="menu-category">{t(driverMapsUrl ? "cashier.delivery.driver_verify_pin" : "cashier.delivery.driver_missing_coordinates")}</small>
+    </div> : null}
     <ItemRows order={order} t={t} money={money} />
     <OrderNote order={order} t={t} />
     <div className="order-head" style={{ marginTop: 10 }}><strong>{t("cashier.delivery.net_total")}</strong><strong className="price">{money(order.totalAmount)} {t("cashier.common.baht")}</strong></div>
@@ -978,6 +989,41 @@ export function CashierPage() {
     } finally { setBusyKey(""); }
   };
 
+  // The shared link contains a destination from this specific order, not
+  // the current device's location. Never share internal app/auth URLs.
+  const shareDriverLocation = async order => {
+    const url = deliveryDriverMapsUrl(order);
+    if (!url) {
+      showToast(t("cashier.delivery.driver_missing_coordinates"), "error");
+      return;
+    }
+    const queue = String(order.queueNo || order.id || "-").trim();
+    const address = String(order.deliveryAddress || "").trim() || "-";
+    const title = t("cashier.delivery.driver_share_title", { queue });
+    const message = t("cashier.delivery.driver_share_message", { queue, address });
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share({ title, text: message, url });
+        return;
+      } catch (error) {
+        // Cancelling a share must never silently copy the customer's location.
+        if (error?.name === "AbortError") return;
+        console.warn("CASHIER_DRIVER_NATIVE_SHARE_FAILED", error);
+      }
+    }
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error("CLIPBOARD_UNAVAILABLE");
+      await navigator.clipboard.writeText(message + "\n" + url);
+      showToast(t("cashier.delivery.driver_share_copied"));
+    } catch {
+      await sweetPrompt(t("cashier.delivery.driver_share_copy_help"), url, {
+        title,
+        confirmText: t("cashier.common.confirm"),
+        readOnly: true,
+      });
+    }
+  };
+
   const copyTakeawayLink = async () => {
     if (!takeawayUrl) {
       showToast(translated(t, "cashier.takeaway_tools.store_unavailable", "Store information is unavailable. Refresh the page and try again."), "error");
@@ -1070,7 +1116,7 @@ export function CashierPage() {
               if (card.type === "table") return <TableBillCard key={card.key} group={card.group} t={t} money={money} formatTime={formatTime} busy={busy} actions={actions} />;
               if (card.type === "walkin") return <WalkInCard key={card.key} order={card.order} tables={tables} active={active} t={t} money={money} formatTime={formatTime} busy={busy} actions={actions} />;
               if (card.type === "takeaway") return <TakeawayCard key={card.key} order={card.order} t={t} money={money} formatTime={formatTime} busy={busy} actions={actions} />;
-              return <DeliveryCard key={card.key} order={card.order} t={t} money={money} formatTime={formatTime} slipUrl={card.order.paymentSlipUrl || slipUrls[card.order.id] || ""} busy={busy} actions={actions} />;
+              return <DeliveryCard key={card.key} order={card.order} t={t} money={money} formatTime={formatTime} slipUrl={card.order.paymentSlipUrl || slipUrls[card.order.id] || ""} busy={busy} actions={actions} onShareDriver={shareDriverLocation} />;
             }) : <div className="cashier-empty"><span className="cashier-empty-mark" aria-hidden="true"></span><strong>{t("cashier.queue.empty_title")}</strong><span>{t("cashier.queue.empty_help")}</span></div>}
           </div>
         </section>

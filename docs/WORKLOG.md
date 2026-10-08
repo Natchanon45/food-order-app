@@ -12596,3 +12596,32 @@ Safety / remaining validation:
 - Live JS asset HTTP 200, byte-for-byte SHA-256 same as Mac candidate (bdeb4780452079ee1e9594fbe0e8296e07bd8f9727f9d59967ca68708b3ec976), contains Build `2026.10.08.490`. Old `/react/assets/index-BCW1U1rO.js` remains HTTP 200 with JavaScript MIME type.
 - Local Browser QR PNG download smoke: Desktop and emulated mobile-touch PASS, actual PNG file and signature validated. No authenticated live Delivery orders/payment attempts or Quick Order printing/notifications executed by automated smoke. Genuine iOS/Safari receipt/back/notification workflow still awaits user acceptance.
 - Existing historic untracked Vite hashed assets preserved; main not merged. Follow-up if user finds device-specific issues: inspect Safari download and the print-dialog afterprint behavior rather than changing payment backend.
+
+## 2026-10-08 — Self-delivery driver Google Maps sharing (Build .491)
+
+Request:
+- The store wants to share a customer's pinned Delivery destination with its own delivery driver, so the driver can open navigation in Google Maps.
+- Scope explicitly limited to **store-managed self-delivery**, not Lalamove. Location auto-detect/saved-address accuracy was reported separately and remains an independent unresolved task.
+
+Implementation:
+- `react-app/src/utils/deliveryDriverShare.js`: only self-delivery orders (including legacy providerless self-orders without Lalamove evidence) can generate Google Maps driving Directions URLs. Explicit Lalamove/other-provider orders and orders with Lalamove quotation/dispatch evidence are excluded. Coordinate validation rejects missing, nonnumeric, out-of-range and 0,0 pins. Destination comes exclusively from each order's immutable-at-share-time `deliveryLatitude`/`deliveryLongitude`, never the cashier's current device location.
+- `react-app/src/pages/CashierPage.jsx`: inside each self-delivery order card, a separate driver panel displays `ตรวจสอบบน Google Maps` and `แชร์พิกัดให้คนขับ`. The share action uses the device's native share sheet on supported mobile devices (e.g. LINE as a selectable destination). Where unavailable, copies the order queue/address plus Maps link to the clipboard; if clipboard is blocked, presents a read-only link for manual copying. Cancelling native share does not copy anything. Missing coordinates disable sharing and show an explicit warning; Lalamove cards display no self-delivery driver panel. No staff/customer personal phone is included in the share payload.
+- `react-app/public/parity/css/cashier-refresh.css`: isolated driver buttons with visible labels, 8px action gaps, 40px minimum control height, and responsive wrapping, independent of the icon-only mobile payment actions.
+- `react-app/src/i18n/parity-translations.json`: TH/EN/MY/LO/KM text for driver actions, hints, errors, copied status, and message template.
+- `tests/react-parity/self-delivery-driver-share.spec.mjs` + `package.json`: six targeted regressions wired into `test:react-parity`.
+- `react-app/src/config/release.js` bumped to Build 2026.10.08.491, marker SELF-DELIVERY-DRIVER-MAPS-SHARE. README release identity reviewed and updated.
+- No order schema, payment statuses, tenant documents, Cloud Functions, Firestore Rules or Storage Rules are changed.
+
+Verification:
+- `npm run test:self-delivery-driver-share`: 6/6 PASS (provider guards, coordinates, URL, scoped UI, browser-native share/clipboard fallback, five translations).
+- `npm run test:operational`: PASS.
+- `npm run test:react-parity`: PASS (prior contracts also pass).
+- Chrome installed on Mac used for local CSS responsive test at 320, 390, 440 and 1024 pixels: button text visible, >=40px height, zero horizontal overflow in isolated panel, all PASS. Not an authenticated production order test.
+- `npm run build:react` + postbuild generated contract: PASS; final bundle `/react/assets/index-cdWz40EM.js`, React Build 2026.10.08.491; `git diff --check`: PASS.
+- Current production before release is Build .490. Do not report .491 as live until release verification.
+
+Release/safety:
+- Preserve all pre-existing untracked historical hashed assets; no Git reset/clean/discard.
+- Firebase deployment scope is Hosting:foodapp only; no Functions, Rules, schema, or customer writes.
+- Remains to verify staff use on real phone and desktop (native share/LINE and clipboard), and independently repair Delivery GPS-vs-saved-address precision logic in a separate task.
+- Git commit/push and Hosting release pending at this checkpoint; add a production-confirmation entry on success.

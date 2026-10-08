@@ -1,13 +1,14 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.08.490",
+  build: "2026.10.08.491",
   branch: "feature/react-firebase-port",
-  commit: "DELIVERY-QR-POSTCHECKOUT-QUICK-PRINT-ALERT",
+  commit: "SELF-DELIVERY-DRIVER-MAPS-SHARE",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Fix Delivery QR downloads and checkout history plus Quick Order receipt alerts",
+  milestone: "Share Google Maps delivery location with self-delivery drivers",
   whatsNew: [
+    "Share customer-confirmed Delivery map pins with store-managed drivers using Google Maps",
     "Verify Restaurant Delivery PromptPay slips with central PENGUIN Slip2Go credits against each store's own PromptPay receiver",
     "Auto-release matched payments to Kitchen while routing unavailable or non-verifiable checks to trusted Cashier review",
     "Keep every Delivery visible to Cashier, admit COD immediately, and block unpaid prepayment orders from Kitchen",

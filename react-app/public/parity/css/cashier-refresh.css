@@ -505,3 +505,69 @@
 .cashier-pickup-done-action:hover {
   background: #1d4ed8;
 }
+
+/* Self-delivery: show driver directions separately from payment/cancel actions.
+   Keep the labels visible on narrow Cashier cards instead of hiding them with
+   the mobile .order-actions icon-only rule. */
+.cashier-page .cashier-driver-panel {
+  margin: 12px 0 14px;
+  padding: 12px;
+  border: 1px solid #cde3d2;
+  border-radius: 14px;
+  background: #f2faf4;
+}
+
+.cashier-page .cashier-driver-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: #154b2c;
+  font-size: 13px;
+}
+
+.cashier-page .cashier-driver-heading .app-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.cashier-page .cashier-driver-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cashier-page .cashier-driver-actions .btn {
+  flex: 1 1 148px;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 11px;
+  text-align: center;
+}
+
+.cashier-page .cashier-driver-actions .btn .app-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  line-height: 1;
+}
+
+.cashier-page .cashier-driver-actions .btn:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.cashier-page .cashier-driver-panel > small {
+  display: block;
+  margin-top: 8px;
+  line-height: 1.45;
+}

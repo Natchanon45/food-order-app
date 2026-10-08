@@ -24,6 +24,14 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Latest self-delivery driver-share checkpoint — Build 2026.10.08.491
+
+- User requested a **share-to-driver Google Maps button for store-managed Delivery only**, not Lalamove. Implementation is on \`feature/react-firebase-port\`; authoritative history in the last section of \`docs/WORKLOG.md\`.
+- Cashier's Delivery order card now offers both \`ตรวจสอบบน Google Maps\` and \`แชร์พิกัดให้คนขับ\`, using the already persisted order deliveryLatitude/deliveryLongitude. Native share when available, otherwise clipboard, otherwise manual copy. Order number/address and Maps URL only; no phone. Invalid coordinates disable sharing. Lalamove/third-party excluded, including orders with Lalamove dispatch evidence. Legacy self-order with missing provider but no Lalamove metadata supported.
+- React Build .491 candidate; generated bundle \`/react/assets/index-cdWz40EM.js\`. Targeted regressions 6/6 PASS, Operational PASS, React Parity PASS, build contract PASS, isolated Chrome responsive panel at 320/390/440/1024px PASS.
+- At this checkpoint \`git commit/push\` and Hosting release are pending. Use Firebase Hosting \`foodapp\` only for this frontend feature. Never deploy Functions/Rules, alter tenant data, delete old hashed assets or merge main.
+- Important outstanding issue **not fixed by this feature**: auto-detected GPS vs saved address coordinate mismatches in DeliveryPage. Sharing uses the saved order pin, so customer/staff must confirm the pin before giving to driver. User follow-up for real mobile share/LINE and Google Maps app is still required.
+
 ## Latest checkout/receipt checkpoint (2026-10-08, supersedes earlier .487-.489 notes)
 
 - Prior Build 2026.10.08.489 IS on Production (observed live asset `index-BCW1U1rO.js` matching local SHA-256), despite the historical .489 handoff claiming it was not deployed. Do not deploy .489 again.

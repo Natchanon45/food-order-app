@@ -1105,7 +1105,16 @@
         "recipient_fallback": "ไม่ระบุชื่อ",
         "phone": "โทร:",
         "address": "ที่อยู่:",
-        "net_total": "ยอดสุทธิ"
+        "net_total": "ยอดสุทธิ",
+        "driver_location_title": "พิกัดสำหรับคนขับของร้าน",
+        "driver_open_maps": "ตรวจสอบบน Google Maps",
+        "driver_share": "แชร์พิกัดให้คนขับ",
+        "driver_verify_pin": "ใช้จุดจัดส่งที่ลูกค้าระบุในออเดอร์ กรุณาตรวจสอบหมุดก่อนแชร์",
+        "driver_missing_coordinates": "ออเดอร์นี้ไม่มีพิกัดจัดส่งที่ถูกต้อง กรุณาติดต่อขอพิกัดจากลูกค้า",
+        "driver_share_title": "นำทางส่งออเดอร์ :queue",
+        "driver_share_message": "จุดส่งออเดอร์ :queue\nที่อยู่: :address\nเปิดนำทางใน Google Maps:",
+        "driver_share_copied": "คัดลอกข้อมูลจุดส่งและลิงก์ Google Maps แล้ว สามารถส่งให้คนขับได้",
+        "driver_share_copy_help": "เบราว์เซอร์ไม่อนุญาตให้คัดลอกอัตโนมัติ กรุณาคัดลอกลิงก์นี้แล้วส่งให้คนขับ"
       },
       "takeaway": {
         "queue_called": "เรียกคิวแล้ว",
@@ -7543,7 +7552,16 @@
         "recipient_fallback": "Unnamed recipient",
         "phone": "Phone:",
         "address": "Address:",
-        "net_total": "Net total"
+        "net_total": "Net total",
+        "driver_location_title": "Store driver destination",
+        "driver_open_maps": "Check Google Maps",
+        "driver_share": "Share with driver",
+        "driver_verify_pin": "This is the destination pinned by the customer. Check the pin before sharing.",
+        "driver_missing_coordinates": "This order has no valid delivery coordinates. Ask the customer to share their location.",
+        "driver_share_title": "Deliver order :queue",
+        "driver_share_message": "Delivery for order :queue\nAddress: :address\nOpen directions in Google Maps:",
+        "driver_share_copied": "Delivery details and Google Maps link copied. Send them to your driver.",
+        "driver_share_copy_help": "Automatic copying is blocked. Copy this Google Maps link and send it to your driver."
       },
       "takeaway": {
         "queue_called": "Queue called",
@@ -13706,7 +13724,16 @@
         "recipient_fallback": "လက်ခံသူအမည်မသတ်မှတ်",
         "phone": "ဖုန်း:",
         "address": "လိပ်စာ:",
-        "net_total": "စုစုပေါင်း"
+        "net_total": "စုစုပေါင်း",
+        "driver_location_title": "ဆိုင်မှပို့ဆောင်သူအတွက် တည်နေရာ",
+        "driver_open_maps": "Google Maps တွင် စစ်ဆေးရန်",
+        "driver_share": "ပို့ဆောင်သူထံ မျှဝေရန်",
+        "driver_verify_pin": "ဖောက်သည်ရွေးချယ်ထားသော ပို့ဆောင်မည့်နေရာ ဖြစ်ပါသည်။ မမျှဝေမီ စစ်ဆေးပါ။",
+        "driver_missing_coordinates": "ဤအော်ဒါတွင် မှန်ကန်သော တည်နေရာမရှိပါ။ ဖောက်သည်ထံမှ တည်နေရာတောင်းပါ။",
+        "driver_share_title": "အော်ဒါ :queue ပို့ဆောင်ရန်",
+        "driver_share_message": "အော်ဒါ :queue ပို့ဆောင်မည့်နေရာ\nလိပ်စာ: :address\nGoogle Maps လမ်းညွှန်:",
+        "driver_share_copied": "တည်နေရာနှင့် Google Maps လင့်ခ်ကို ကူးယူပြီးပါပြီ။",
+        "driver_share_copy_help": "အလိုအလျောက် ကူးယူမရပါ။ လင့်ခ်ကို ကူးယူ၍ ပို့ဆောင်သူထံ ပေးပို့ပါ။"
       },
       "takeaway": {
         "queue_called": "တန်းစီနံပါတ် ခေါ်ပြီး",
@@ -19869,7 +19896,16 @@
         "recipient_fallback": "ບໍ່ລະບຸຜູ້ຮັບ",
         "phone": "ເບີໂທ:",
         "address": "ທີ່ຢູ່:",
-        "net_total": "ຍອດສຸດທິ"
+        "net_total": "ຍອດສຸດທິ",
+        "driver_location_title": "ພິກັດສຳລັບຄົນຂັບຂອງຮ້ານ",
+        "driver_open_maps": "ກວດສອບໃນ Google Maps",
+        "driver_share": "ແຊຣ໌ພິກັດໃຫ້ຄົນຂັບ",
+        "driver_verify_pin": "ໃຊ້ຈຸດສົ່ງທີ່ລູກຄ້າລະບຸ ກະລຸນາກວດສອບກ່ອນແຊຣ໌",
+        "driver_missing_coordinates": "ອໍເດີນີ້ບໍ່ມີພິກັດສົ່ງທີ່ຖືກຕ້ອງ ກະລຸນາຂໍພິກັດຈາກລູກຄ້າ",
+        "driver_share_title": "ນຳທາງສົ່ງອໍເດີ :queue",
+        "driver_share_message": "ຈຸດສົ່ງອໍເດີ :queue\nທີ່ຢູ່: :address\nເປີດເສັ້ນທາງໃນ Google Maps:",
+        "driver_share_copied": "ຄັດລອກຂໍ້ມູນການສົ່ງແລະລິ້ງ Google Maps ແລ້ວ",
+        "driver_share_copy_help": "ບໍ່ສາມາດຄັດລອກອັດຕະໂນມັດໄດ້ ກະລຸນາຄັດລອກລິ້ງໃຫ້ຄົນຂັບ"
       },
       "takeaway": {
         "queue_called": "ເອີ້ນຄິວແລ້ວ",
@@ -26032,7 +26068,16 @@
         "recipient_fallback": "មិនបញ្ជាក់អ្នកទទួល",
         "phone": "ទូរស័ព្ទ:",
         "address": "អាសយដ្ឋាន:",
-        "net_total": "សរុបសុទ្ធ"
+        "net_total": "សរុបសុទ្ធ",
+        "driver_location_title": "ទីតាំងសម្រាប់អ្នកដឹកជញ្ជូនរបស់ហាង",
+        "driver_open_maps": "ពិនិត្យក្នុង Google Maps",
+        "driver_share": "ចែករំលែកទីតាំងឱ្យអ្នកដឹក",
+        "driver_verify_pin": "ប្រើទីតាំងដែលអតិថិជនបានជ្រើស។ សូមពិនិត្យមុនចែករំលែក។",
+        "driver_missing_coordinates": "ការបញ្ជាទិញនេះមិនមានទីតាំងត្រឹមត្រូវទេ។ សូមសុំទីតាំងពីអតិថិជន។",
+        "driver_share_title": "ដឹកជញ្ជូនការបញ្ជាទិញ :queue",
+        "driver_share_message": "ទីតាំងដឹកជញ្ជូនការបញ្ជាទិញ :queue\nអាសយដ្ឋាន: :address\nបើកផ្លូវក្នុង Google Maps:",
+        "driver_share_copied": "បានចម្លងព័ត៌មានដឹកជញ្ជូន និងតំណ Google Maps រួចរាល់។",
+        "driver_share_copy_help": "មិនអាចចម្លងដោយស្វ័យប្រវត្តិបានទេ។ សូមចម្លងតំណហើយផ្ញើឱ្យអ្នកដឹក។"
       },
       "takeaway": {
         "queue_called": "បានហៅជួរ",
