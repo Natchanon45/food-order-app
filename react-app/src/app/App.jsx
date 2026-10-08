@@ -94,12 +94,15 @@ function TenantAccessLoginRedirect({ reason }) {
 function MasterBusinessGuard({ children }) {
   const authState = useAuth();
   const tenantState = useTenant();
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const profile = authState.profile;
   if (!profile || profile.role === "super_admin") return children;
-  const posPath = /^\/pos(?:\/|$)/.test(pathname) && !["/pos/login", "/pos/forbidden"].includes(pathname);
-  const restaurantPath = /^\/(?:admin|cashier|kitchen|waiting-queue)(?:\/|$)/.test(pathname)
-    && pathname !== "/admin/tenants" && pathname !== "/waiting-queue/customer" && pathname !== "/waiting-queue/display";
+  // Legacy Quick Order customer display URLs live below /pos, but are not Retail POS.
+  const displayId = new URLSearchParams(search).get("displayId") || "";
+  const isQuickOrderDisplay = pathname === "/pos/customer-display" && /^quick-order-[A-Za-z0-9_-]{1,128}$/.test(displayId);
+  const posPath = /^\/pos(?:\/|$)/.test(pathname) && !["/pos/login", "/pos/forbidden"].includes(pathname) && !isQuickOrderDisplay;
+  const restaurantPath = (/^\/(?:admin|cashier|kitchen|waiting-queue)(?:\/|$)/.test(pathname)
+    && pathname !== "/admin/tenants" && pathname !== "/waiting-queue/customer" && pathname !== "/waiting-queue/display") || isQuickOrderDisplay;
   if (!posPath && !restaurantPath) return children;
   if (authState.status === "loading" || tenantState.status === "loading") return <PageReadyOverlay context="PENGUIN" title="กำลังโหลดข้อมูล..." message="กรุณารอสักครู่..." />;
   if (tenantState.status !== "ready") return children;
@@ -160,6 +163,7 @@ export default function App() {
       <Route path="/kitchen" element={<KitchenPage />} />
       <Route path="/cashier" element={<CashierPage />} />
       <Route path="/cashier/quick-order" element={<QuickOrderPage />} />
+      <Route path="/cashier/customer-display" element={<PosCustomerDisplayPage />} />
       <Route path="/cashier/receipt" element={<CashierReceiptPage />} />
       <Route path="/cashier/table-qr" element={<CashierTableQrPage />} />
       <Route path="/cashier/waiting-queue" element={<WaitingQueuePage />} />
