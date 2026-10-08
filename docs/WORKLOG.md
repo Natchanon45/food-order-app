@@ -12259,3 +12259,13 @@ Deploy state:
 - Original signupBilling snapshot and revenueShareBusinessType/scope remain untouched.
 - Signup information card presents current Master business separately from original billing/business/scope in a responsive layout.
 - Deployment requires Hosting and updateTenant Function; no Rules/Storage/schema changes; no main merge.
+
+
+### Build 2026.10.08.474 — Production deployment verified
+- Commit pushed: 647e7bf2 (feature/react-firebase-port).
+- npm run test:operational PASS; npm run test:react-parity PASS, including 12/12 signup policy tests.
+- npm run build:react and generated build contract PASS (index-CfBFiHtu.js); git diff --check PASS.
+- Firebase deploy succeeded: hosting:foodapp and functions:updateTenant only (project chat-45754).
+- Production /admin/tenants HTML references index-CfBFiHtu.js; tenant-admin.css contains tenant-master-business-field.
+- No authenticated live tenant update was performed. Existing signup snapshots and share settings remain unchanged.
+- No merge into main. Older untracked generated bundle index-Dplusb-p.js retained per emptyOutDir:false safety rule.

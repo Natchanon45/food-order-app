@@ -800,3 +800,9 @@ Exact post-save crash confirmed:
 ## 2026-10-08 — Master business editor + signup card
 - Master business selector in Super Admin tenant Edit; signup snapshot and revenue-share settings remain separate.
 - Candidate Build 2026.10.08.474; see WORKLOG for release details.
+
+
+### Production checkpoint — Build 2026.10.08.474
+- Tenant Master business editor + signup card refresh committed 647e7bf2 and deployed to Hosting and updateTenant Function.
+- Production HTML and CSS verified via HTTP. Authenticated editing interaction is not yet independently browser-verified.
+- Untracked old candidate bundle: public/react/assets/index-Dplusb-p.js; do not randomly delete.
