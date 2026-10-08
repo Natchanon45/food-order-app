@@ -89,12 +89,14 @@ export function PublicMenuCatalog({
   const visible = mobile ? filtered : filtered.slice((current - 1) * size, current * size);
   const [highlightedCategory, setHighlightedCategory] = useState(all);
   const scrollSpyEnabled = mobile && prefix === "order.menu" && activeCategory === all;
-  const selectedCategory = scrollSpyEnabled ? highlightedCategory : activeCategory;
+  const deliveryScrollSpyEnabled = mobile && prefix === "delivery.checkout.menu" && activeCategory === all && !String(search || "").trim();
+  const trackCategoryScroll = scrollSpyEnabled || deliveryScrollSpyEnabled;
+  const selectedCategory = trackCategoryScroll ? highlightedCategory : activeCategory;
 
   useEffect(() => { if (page > totalPages) setPage(totalPages); }, [page, totalPages, setPage]);
 
   useEffect(() => {
-    if (!scrollSpyEnabled) {
+    if (!trackCategoryScroll) {
       setHighlightedCategory(activeCategory);
       return undefined;
     }
@@ -109,7 +111,7 @@ export function PublicMenuCatalog({
       if (!userHasScrolled) return;
 
       const menuGrid = document.getElementById("menuGrid");
-      const filterArea = document.getElementById("menuListStart");
+      const filterArea = document.getElementById("categoryTabs");
       if (!menuGrid || !filterArea) return;
 
       const cards = [...menuGrid.querySelectorAll(":scope > .menu-card")]
@@ -151,10 +153,10 @@ export function PublicMenuCatalog({
       window.removeEventListener("resize", scheduleUpdate);
       if (frame) window.cancelAnimationFrame(frame);
     };
-  }, [scrollSpyEnabled, activeCategory, all, visible.length]);
+  }, [trackCategoryScroll, activeCategory, all, visible.length]);
 
   useEffect(() => {
-    if (!mobile || prefix !== "order.menu") return;
+    if (!mobile || (prefix !== "order.menu" && prefix !== "delivery.checkout.menu")) return;
     const tabs = document.getElementById("categoryTabs");
     if (!tabs) return;
     const target = [...tabs.querySelectorAll("[data-category]")]

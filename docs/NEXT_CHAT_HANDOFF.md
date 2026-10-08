@@ -889,3 +889,7 @@ Candidate Build .476 on local Mac only; React homepage and route guard updates p
 - User authorized and deployment succeeded: 5 Functions (verifyDeliveryPaymentSlip/finalizeDeliveryPaymentSlip/approveDeliveryPaymentReview/notifyKitchenDeliveryAdmitted/quotePublicLalamoveDelivery), Firestore Rules, and Hosting foodapp.
 - Production /admin and /delivery reference index-BFsKHcE-.js, asset 200; no main merge.
 - Next step: authenticated live E2E for matched/rejected slips, auto-paid/cashier manual and Kitchen notification; no real slip tested yet. See WORKLOG.
+
+
+## 2026-10-08 — Delivery mobile sticky categories .484
+- Mobile Delivery: only category tab strip is sticky; search scrolls with menu; active category follows current visible menu and tabs center automatically. Desktop/Table Order behavior unchanged. Hosting-only release; see WORKLOG.

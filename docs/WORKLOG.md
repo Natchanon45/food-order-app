@@ -12480,3 +12480,11 @@ Deployment boundary:
 - No functions/Storage outside specified 5, no merge to main. Pre-existing untracked generated bundles preserved.
 - IMPORTANT: authenticated E2E tests of Slip2Go with genuine customer slip/merchant bank receiver, confirmation notifications and cashier manual release were not executed against live orders. Do not represent production payment flow as field-verified until real account tests.
 - Future work: evaluate receiver confirmation, Google/Lalamove fee edge cases, unknown Slip2Go result codes, replay prevention and production monitoring with sanitized logs.
+
+
+## 2026-10-08 — Delivery mobile category sticky strip + scroll tracking (Build 2026.10.08.484)
+- Mobile Delivery category tabs stay sticky at top, while search input scrolls normally with menu list rather than remaining fixed with tabs.
+- Delivery category scroll-spy now highlights the category matching the currently browsed menu card when browsing All (without search); the horizontal strip auto-centers the active category.
+- Table Order scroll-spy behavior remains unchanged, Desktop remains unaffected, no payment/Slip2Go backend or data changes.
+- Operational, React Parity and build checks PASS; dedicated mobile scroll regression PASS 3/3.
+- Hosting only; no Functions/Rules and no main merge.

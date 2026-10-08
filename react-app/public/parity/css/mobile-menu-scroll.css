@@ -140,3 +140,27 @@
     border-radius: 12px;
   }
 }
+
+/* Delivery mobile: only category tabs stay in view; search scrolls with menu. */
+@media (max-width: 899px) {
+  body.delivery-page .menu-filter-area {
+    display: contents !important;
+  }
+  body.delivery-page .category-tabs {
+    position: sticky !important;
+    top: env(safe-area-inset-top) !important;
+    z-index: 70 !important;
+    display: flex;
+    background: rgba(255,255,255,.98);
+    padding: 7px 8px !important;
+    margin: 0 -10px 8px !important;
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 7px 20px rgba(16,35,23,.10);
+    scroll-padding-inline: 14px;
+  }
+  body.delivery-page .menu-filter-area .menu-search {
+    position: static !important;
+    display: block;
+    margin: 0 0 12px;
+  }
+}
