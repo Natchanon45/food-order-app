@@ -12377,3 +12377,7 @@ Deploy state:
 - Implementation commit 290a4405 pushed to feature/react-firebase-port.
 - Firebase Hosting deployment succeeded. Production bundle index-CGeELT5g.js.
 - All operational, parity and React build checks passed. No backend changes or main merge.
+
+## 2026-10-08 — Lalamove approval button (Build 2026.10.08.482)
+- Shortened Thai approval button to อนุมัติ Lalamove and English to Approve Lalamove; unchanged approval logic and confirmation.
+- Hosting only, no merge main.

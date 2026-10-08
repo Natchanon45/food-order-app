@@ -864,3 +864,6 @@ Candidate Build .476 on local Mac only; React homepage and route guard updates p
 
 ### Build .481 deployed
 - Short Lalamove revoke label in /admin/tenants deployed; implementation 290a4405.
+
+## 2026-10-08 — Build .482
+- Shortened Lalamove approval label; see WORKLOG.
