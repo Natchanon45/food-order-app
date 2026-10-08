@@ -385,3 +385,16 @@ body.owner-modal-open {
 .tenant-signup-billing-grid strong{overflow-wrap:anywhere;line-height:1.45}
 @media(max-width:600px){.tenant-signup-billing{padding:12px}.tenant-signup-billing-grid{grid-template-columns:1fr 1fr}.tenant-signup-billing-grid>span{padding:10px}.tenant-signup-business-overview{padding:10px}}
 @media(max-width:360px){.tenant-signup-billing-grid{grid-template-columns:1fr}}
+
+/* Compact full-width registration summary */
+.tenant-store-card .tenant-signup-billing{display:block;width:100%;max-width:none;min-width:0;box-sizing:border-box;margin:13px 0;padding:14px 16px;border-radius:15px}
+.tenant-store-card .tenant-signup-billing-title{margin-bottom:11px}
+.tenant-store-card .tenant-signup-billing-layout{display:grid;grid-template-columns:minmax(200px,1.05fr) minmax(0,2.7fr);gap:12px;align-items:stretch;min-width:0}
+.tenant-store-card .tenant-signup-business-overview{margin:0;min-height:76px;box-sizing:border-box;background:#ebf6ef;border-color:#d5e9dc}
+.tenant-store-card .tenant-signup-billing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;min-width:0}
+.tenant-store-card .tenant-signup-billing-grid>span{display:flex;flex-direction:column;justify-content:center;gap:7px;min-width:0;padding:13px 14px;box-sizing:border-box}
+.tenant-store-card .tenant-signup-billing-grid small{font-size:11px}
+.tenant-store-card .tenant-signup-billing-grid strong{font-size:13px}
+@media(max-width:850px){.tenant-store-card .tenant-signup-billing-layout{grid-template-columns:1fr}.tenant-store-card .tenant-signup-business-overview{min-height:66px}}
+@media(max-width:540px){.tenant-store-card .tenant-signup-billing{padding:12px}.tenant-store-card .tenant-signup-billing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tenant-store-card .tenant-signup-billing-grid>span{padding:11px}}
+@media(max-width:350px){.tenant-store-card .tenant-signup-billing-grid{grid-template-columns:1fr}}

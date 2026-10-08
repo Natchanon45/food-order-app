@@ -269,6 +269,7 @@ function TenantCard({ tenant, summary = {}, notifications = {}, t, formatNumber,
           <strong>{t("admin_tenants.signup_billing.title")}</strong>
           <span className="tenant-signup-billing-pill"><i className="bi bi-clock-history" aria-hidden="true"></i>{t("admin_tenants.signup_billing.model")}</span>
         </div>
+        <div className="tenant-signup-billing-layout">
         <div className="tenant-signup-business-overview">
           <span className="tenant-signup-business-mark"><i className="bi bi-shop-window" aria-hidden="true"></i></span>
           <span><small>{t("admin_tenants.signup_billing.business")} (Master)</small><strong>{t(`admin_tenants.signup_billing.businesses.${masterBusinessType}`)}</strong></span>
@@ -303,6 +304,7 @@ function TenantCard({ tenant, summary = {}, notifications = {}, t, formatNumber,
               <strong>{t(`admin_tenants.subscription.plans.${signupPlanCode === "yearly" ? "yearly" : "monthly"}`)}</strong>
             </span>
           )}
+        </div>
         </div>
       </div>
 

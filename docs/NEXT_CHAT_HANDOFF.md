@@ -828,3 +828,7 @@ Candidate Build .476 on local Mac only; React homepage and route guard updates p
 - Master business Home/route filtering and Firestore tenant business collection access deployed successfully with user authorization.
 - Production bundle index-BOJWGx2k.js; implementation commit 3ac480f5. Check WORKLOG. No main merge.
 - Authenticated tenant smoke not performed; shared settings and callable access are outside this deployment scope.
+
+
+## 2026-10-08 — Signup information visual compact layout
+- Build 2026.10.08.477: expanded Super Admin tenant signup summary to full-width, Master left/detail grid right with responsive stacking. No backend logic changes. See WORKLOG.

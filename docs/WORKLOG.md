@@ -12314,3 +12314,11 @@ Deploy state:
 - No data writes to customer tenants, no Functions/Storage deploy and no merge into main.
 - Limit: authenticated tenant-by-tenant UI/data smoke and callable access review remain for more comprehensive assurance. Existing shared settings and callable access mechanisms were not changed.
 - Untracked older generated bundle index-Dplusb-p.js preserved.
+
+
+## 2026-10-08 — Compact full-width tenant signup information (Build 2026.10.08.477)
+- Redesigned Super Admin tenant registration summary into a full-width horizontal layout: left Master business highlight; right adaptive signup details grid.
+- Desktop shows compact horizontal cards, tablet stacks Master above details and mobile uses 2 columns / 1 narrow column.
+- Data source and business logic unchanged: current Master is distinct from immutable original signupBilling snapshot. No Firestore/Functions/Rules/schema changes.
+- npm run test:operational PASS, npm run test:react-parity PASS, npm run build:react and generated build contract PASS.
+- Hosting-only deployment required; no main merge.
