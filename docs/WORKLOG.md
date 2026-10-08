@@ -12277,3 +12277,12 @@ Deploy state:
 - Retail-only: no scope choice; all non-cancelled valid Retail POS sales eligible.
 - Both: delivery-only excludes Retail POS; storefront-only includes Retail POS + non-delivery restaurant sales; all includes both channels.
 - Preserved legacy signup history, Master editing, billing-cycle and Lalamove calculations.
+
+
+### Build 2026.10.08.475 — Production checkpoint
+- Commit 959d5a43 pushed to feature/react-firebase-port.
+- Operational PASS, React parity PASS, revenue share regression 13/13 PASS, React Build/contract PASS, git diff --check PASS.
+- Firebase Hosting and five Functions successfully deployed: updateTenantRevenueShare, getPlatformRevenueShareSummary, getTenantRevenueShareSummary, reconcileRevenueShare, syncRevenueShareTenants.
+- Production /admin/tenants serves /react/assets/index-4BuXq3cq.js, matching Build 2026.10.08.475.
+- No customer tenant records modified during verification; no main merge.
+- Untracked old generated bundle index-Dplusb-p.js retained.

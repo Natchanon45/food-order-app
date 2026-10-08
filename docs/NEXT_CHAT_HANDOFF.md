@@ -809,3 +809,8 @@ Exact post-save crash confirmed:
 
 \n## 2026-10-08 — Revenue-share scope correction
 Build candidate 2026.10.08.475: business type is Master-derived read-only in Revenue Share dialog; dual-business delivery-only excludes Retail POS, storefront/all includes POS. See WORKLOG.
+
+
+### Production verification — Build 2026.10.08.475
+- Revenue share Master-derived read-only business field + dual-business channel scope fix deployed to Hosting and five revenue-share Functions.
+- Production HTML verifies index-4BuXq3cq.js; commit 959d5a43. Authenticated live tenant edits not performed.
