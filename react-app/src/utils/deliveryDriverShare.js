@@ -1,5 +1,6 @@
-// Driver directions are a link to the destination stored on the order,
-// never to the cashier's, driver's or currently selected checkout location.
+// Store is the fixed origin; the customer order pin is the destination.
+// Never silently substitute the cashier/driver device position for store GPS.
+import { validDeliveryLocation } from "./deliveryLocationPolicy.js";
 export function isSelfDeliveryOrder(order) {
   if (String(order?.orderType || "").toLowerCase() !== "delivery") return false;
   const provider = String(order?.deliveryProvider || "").trim().toLowerCase();
@@ -29,13 +30,15 @@ export function deliveryDriverDestination(order) {
   return { latitude, longitude };
 }
 
-export function deliveryDriverMapsUrl(order) {
+export function deliveryDriverMapsUrl(order, storeLocation) {
   const coordinates = deliveryDriverDestination(order);
-  if (!coordinates) return "";
-  const destination = [coordinates.latitude.toFixed(7), coordinates.longitude.toFixed(7)].join(",");
+  const origin = validDeliveryLocation(storeLocation);
+  if (!coordinates || !origin) return "";
+  const point = value => [value.latitude.toFixed(7), value.longitude.toFixed(7)].join(",");
   const params = new URLSearchParams({
     api: "1",
-    destination,
+    origin: point(origin),
+    destination: point(coordinates),
     travelmode: "driving",
     dir_action: "navigate",
   });

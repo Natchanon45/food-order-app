@@ -12676,3 +12676,37 @@ Remaining user acceptance:
 - Live canonical routes `/s/saas-test-shop/delivery`, `/delivery`, `/cashier`, `/kitchen`: HTTP 200 and reference `/react/assets/index-CsqMnk5f.js`. Exact live and Mac JS byte match, contains `2026.10.09.492`, SHA-256 `92ab672251aa615831efe0c134966322e711e1063c94058f7dc105625e77e14f`; live `delivery-location-map.css` byte-identical. Previous `index-cdWz40EM.js` (.491) remains accessible.
 - **After deployment**, Chrome against real `https://penguin-food.web.app/s/saas-test-shop/delivery` with isolated guest profile fixture / browser-injected GPS (no production data writes) PASS: Saved A 13.8298400,100.6420800; GPS 13.8299000,100.6421500 remains distinct, not snapped to Saved A; editing Saved B preserves its own 13.8298600,100.6421000 coordinate. Local Chrome coarse GPS accuracy=350m PASS (warning shown, original pin retained).
 - Outstanding manual acceptance: real phone precise-location permissions/GPS, adjust and explicitly Save incorrect historical pins. No real customer order/payment or authenticated customer-profile writes were made. Never auto-fix historical saved pins without verified ground truth.
+
+## 2026-10-09 — Laravel MASTER GPS-nearest Delivery parity + store-origin driver navigation (.493)
+
+Requested:
+- On opening customer Delivery, auto-detect GPS and select the nearest saved delivery address first, as Laravel did, on desktop and mobile. Prior Build .492 intentionally disabled GPS-to-saved matching, which did not match user's requested Laravel behavior.
+- When sharing Self Delivery navigation to a driver, use the configured **store** pin as route origin and the **customer order** pin as destination; not the driver's or cashier's current GPS.
+
+Laravel source checked (read-only at /Users/natchanonsripleng/Desktop/Sites/food-order-app-php80, branch main):
+- `public/assets/js/delivery-location-map.js` auto-runs `requestCurrentLocation({automatic:true})` on entry, uses browser GPS with high accuracy, and exposes the initial request to the address book.
+- `public/assets/js/delivery-location-address-resolver.js` matches `nearestSavedAddress()` only for `source==='current-location'`, with `NEARBY_SAVED_ADDRESS_METERS=100`; direct map clicks are explicit and must never re-snap.
+- `public/assets/js/delivery-addresses-normal-button.js` waits for initial GPS request, falls back to preferred saved address if GPS is unavailable, and supports explicit saved address overrides.
+
+Implementation:
+- `react-app/src/utils/deliveryLocationPolicy.js`: restored haversine closest valid saved-address selection with 100m limit (GPS only), and kept strict coordinate and GPS-accuracy checks.
+- `react-app/src/pages/DeliveryPage.jsx`: on initial mount request fresh high-accuracy GPS (Desktop and Mobile, maximumAge 0). Wait for both GPS result and customer profile; if a saved address is within 100m, preselect **nearest** record regardless of its `isDefault` flag and center map on its exact saved pin; if no saved pin is nearby, keep the GPS coordinate without selecting an unrelated saved card; if denied/coarse/unavailable, fall back to default saved address. Explicit choice while GPS loads wins, and subsequent manual map clicks/drags never snap to a saved address. Manual 'Use current location' also selects the closest saved address when appropriate. Keeps .492 protections: independent Saved Address editor pin, no silent saved pin rewrite, customer pin confirmation, and payment-lock protection.
+- `react-app/src/utils/deliveryDriverShare.js`: changed Maps Directions link to require validated `origin=storeLatitude,storeLongitude` and `destination=order.deliveryLatitude,order.deliveryLongitude`, travelmode driving, retaining store-delivery-only guard. Missing store or customer coordinates result in no sharing URL, never fallback to current device GPS.
+- `react-app/src/pages/CashierPage.jsx`: read the existing `tenants/{tenantId}/settings/store` document with **existing** `getOperationalStoreSettings` helper (already in operationalData; no data layer changes needed) and pass validated store coordinates to both Maps link and native share/copy action. While store settings are unavailable or lack valid coordinates, disable sharing and show an explicit store location configuration hint. Lalamove cards remain excluded.
+- `react-app/src/i18n/parity-translations.json`: missing store pickup location notice in TH, EN, MY, LO, KM.
+- Updated `tools/react-foundation-contract.mjs`, `tests/react-parity/delivery-location-integrity.spec.mjs`, and `tests/react-parity/self-delivery-driver-share.spec.mjs` to verify restored Laravel 100m nearest selection plus store-origin route and missing-pin safety.
+- Release bump: Version 0.4.280, **Build 2026.10.09.493**; README reviewed/updated.
+
+Verification:
+- `npm run test:delivery-location-integrity`: 9/9 PASS (including nearest match, threshold, map no-snap, pin-safety).
+- `npm run test:self-delivery-driver-share`: 6/6 PASS including explicit shop origin and destination, invalid/missing origin blocked, provider scoping and all five languages.
+- `npm run test:operational`: PASS.
+- Full `npm run test:react-parity`: PASS after updating obsolete default-first foundation contract.
+- `npm run build:react` and generated postbuild contract: PASS with `/react/assets/index-CkmdkY6R.js` main JS; `git diff --check`: PASS.
+- Chrome on authorized Mac using local production build (no real customer writes), separate PC 1280px and mobile 440px browser sessions: initial saved default A and nondefault closer B, GPS closest to B; **auto-selects B** without clicking GPS. Manual user selection of A persists, without being overwritten. GPS-denied scenario falls back to A. All PASS.
+- Real device location quality still depends on browser OS permissions and GPS accuracy. Previously incorrectly stored pins are not auto-corrected without verified ground truth.
+
+Safety and delivery:
+- Only React/Hosting changes, no Firestore/Storage Rules or Cloud Functions deploy, no customer profile/order updates, no main merge.
+- Existing untracked Vite hashed bundles preserved (emptyOutDir:false).
+- Git commit/push and Hosting production release pending at note creation; record final live JS verification after deploying.

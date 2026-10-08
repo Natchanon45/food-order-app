@@ -22,7 +22,7 @@ import { useParityPage } from "@/hooks/useParityPage";
 import { generatePromptPayPayload } from "@/utils/promptPay";
 import { qrDataUrl } from "@/utils/localQr";
 import { svgQrPngBlob } from "@/utils/downloadQrPng";
-import { validDeliveryLocation as normalizeLocation } from "@/utils/deliveryLocationPolicy";
+import { validDeliveryLocation as normalizeLocation, matchGpsSavedAddress, validatedGpsFix } from "@/utils/deliveryLocationPolicy";
 
 const computeDeliveryRoute = httpsCallable(functions, "computeDeliveryRoute");
 const quotePublicLalamoveDelivery = httpsCallable(functions, "quotePublicLalamoveDelivery");
@@ -136,6 +136,7 @@ export function DeliveryPage() {
   const [deliveryLocation, setDeliveryLocation] = useState(null);
   const locationSourceRef = useRef("");
   const [locationConfirmed, setLocationConfirmed] = useState(false);
+  const [initialGps, setInitialGps] = useState({ status: "pending", point: null, accuracy: null });
   const [routeState, setRouteState] = useState({ pending: false, route: null, quote: null, error: "" });
   const [manualZoneId, setManualZoneId] = useState("");
   const [freeGiftIds, setFreeGiftIds] = useState(new Set());
@@ -187,24 +188,12 @@ export function DeliveryPage() {
         if (!alive) return;
         const resolvedProfile = nextProfile || { displayName: "", phone: "", addresses: [] };
         const addresses = Array.isArray(resolvedProfile.addresses) ? resolvedProfile.addresses : [];
-        const preferredAddress = addresses.find(address => address?.isDefault) || addresses[0] || null;
-
         setProfile(resolvedProfile);
         setFavoriteIds(new Set(favorites || []));
-
-        if (preferredAddress && !locationSourceRef.current) {
-          locationSourceRef.current = "saved-address";
-          setSelectedAddressId(preferredAddress.id);
-          setRecipientName(preferredAddress.recipientName || resolvedProfile.displayName || "");
-          setRecipientPhone(preferredAddress.recipientPhone || resolvedProfile.phone || "");
-          setDeliveryAddress(preferredAddress.address || "");
-          const preferredLocation = normalizeLocation(preferredAddress);
-          setDeliveryLocation(preferredLocation);
-          setLocationConfirmed(false);
-        } else {
-          if (resolvedProfile.displayName) setRecipientName(current => current || resolvedProfile.displayName);
-          if (resolvedProfile.phone) setRecipientPhone(current => current || resolvedProfile.phone);
-        }
+        // Wait for the initial GPS result before selecting a default saved
+        // address. The closest valid saved address should win, not "isDefault".
+        if (resolvedProfile.displayName) setRecipientName(current => current || resolvedProfile.displayName);
+        if (resolvedProfile.phone) setRecipientPhone(current => current || resolvedProfile.phone);
       } catch (error) {
         console.error("DELIVERY_CUSTOMER_PROFILE_LOAD_FAILED", error);
       } finally {
@@ -213,6 +202,46 @@ export function DeliveryPage() {
     });
     return () => { alive = false; stop?.(); };
   }, [tenant?.id]);
+
+  // Laravel MASTER: request device GPS as soon as Delivery opens on both PC
+  // and mobile, independently from Google Maps API readiness. A manual
+  // location/address selection made during the request must always win.
+  useEffect(() => {
+    let active = true;
+    if (!window.isSecureContext || !navigator.geolocation?.getCurrentPosition) {
+      setInitialGps({ status: "unavailable", point: null, accuracy: null });
+      return undefined;
+    }
+    navigator.geolocation.getCurrentPosition(position => {
+      if (!active) return;
+      const { point, accuracy } = validatedGpsFix(position.coords);
+      setInitialGps({ status: point ? "ready" : "unavailable", point, accuracy });
+    }, error => {
+      if (!active) return;
+      console.warn("DELIVERY_INITIAL_GPS_UNAVAILABLE", error?.code || error);
+      setInitialGps({ status: "unavailable", point: null, accuracy: null });
+    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 });
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    if (profileLoading || initialGps.status === "pending" || locationSourceRef.current) return;
+    const addresses = Array.isArray(profile.addresses) ? profile.addresses : [];
+    if (initialGps.point) {
+      const nearest = matchGpsSavedAddress(addresses, initialGps.point, "current-location");
+      if (nearest) {
+        selectAddress(nearest.address);
+      } else {
+        // Unlike a saved-address match, a free GPS point remains the delivery
+        // destination. Its textual address needs user confirmation/entry.
+        resolveDeliveryLocation(initialGps.point, { source: "current-location" });
+      }
+    } else {
+      // Laravel fallback when permission is denied or GPS is too coarse.
+      const preferred = addresses.find(address => address?.isDefault) || addresses[0] || null;
+      if (preferred) selectAddress(preferred);
+    }
+  }, [profileLoading, profile.addresses, initialGps]);
 
   useEffect(() => () => { if (slipPreview) URL.revokeObjectURL(slipPreview); }, [slipPreview]);
 
@@ -395,11 +424,17 @@ export function DeliveryPage() {
     if (!next) return;
     const source = String(meta?.source || "map");
     locationSourceRef.current = source;
+    if (source === "current-location" && !profileLoading) {
+      const nearest = matchGpsSavedAddress(profile.addresses || [], next, source);
+      if (nearest) {
+        selectAddress(nearest.address);
+        return;
+      }
+    }
     setDeliveryLocation(next);
     setLocationConfirmed(false);
     setSelectedAddressId("");
-    // Never snap a fresh GPS/map pin to a nearby saved address. When the
-    // address no longer corresponds to its saved pin, ask for fresh details.
+    // Map clicks and non-matching GPS intentionally override a saved pin.
     if (selectedAddressId) setDeliveryAddress("");
   };
 

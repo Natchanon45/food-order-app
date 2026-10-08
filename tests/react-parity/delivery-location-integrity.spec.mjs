@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { validDeliveryLocation, validatedGpsFix } from "../../react-app/src/utils/deliveryLocationPolicy.js";
+import { validDeliveryLocation, validatedGpsFix, nearestSavedAddress, matchGpsSavedAddress } from "../../react-app/src/utils/deliveryLocationPolicy.js";
 
 const page = fs.readFileSync("react-app/src/pages/DeliveryPage.jsx", "utf8");
 const picker = fs.readFileSync("react-app/src/components/DeliveryLocationPicker.jsx", "utf8");
@@ -23,6 +23,24 @@ test("coordinate validation rejects null/empty/zero-zero, preserves nearby but d
   ]) assert.equal(validDeliveryLocation(bad), null);
 });
 
+test("nearest saved selection: close ties, 100m threshold, map override, and invalid pins", () => {
+  const gps = { latitude: 13.756331, longitude: 100.501762 };
+  const saved = [
+    { id: "far", latitude: 13.765, longitude: 100.501762 },
+    { id: "nearest", latitude: 13.75638, longitude: 100.501763 },
+    { id: "second", latitude: 13.7566, longitude: 100.501762 },
+    { id: "invalid", latitude: null, longitude: null },
+  ];
+  const match = nearestSavedAddress(saved, gps);
+  assert.equal(match?.address?.id, "nearest");
+  assert.ok(match?.meters > 0 && match?.meters < 100);
+  assert.equal(matchGpsSavedAddress(saved, gps, "current-location")?.address?.id, "nearest");
+  assert.equal(matchGpsSavedAddress(saved, gps, "map"), null);
+  assert.equal(matchGpsSavedAddress(saved, gps, "manual"), null);
+  assert.equal(nearestSavedAddress([{ id: "far", latitude: 13.765, longitude: 100.501762 }], gps), null);
+  assert.equal(nearestSavedAddress(saved, { latitude: 0, longitude: 0 }), null);
+});
+
 test("GPS accepts fresh accurate fixes but rejects coarse readings and invalid coordinates", () => {
   const accurate = { latitude: 13.75654, longitude: 100.501762, accuracy: 11.7 };
   assert.deepEqual(validatedGpsFix(accurate), { point: { latitude: 13.75654, longitude: 100.501762 }, accuracy: 12 });
@@ -33,14 +51,14 @@ test("GPS accepts fresh accurate fixes but rejects coarse readings and invalid c
   assert.equal(validatedGpsFix({ ...accurate, accuracy: -10 }).point, null);
 });
 
-test("using current GPS never silently selects or overrides nearby saved-address coordinates", () => {
-  assert.doesNotMatch(page, /NEARBY_SAVED_ADDRESS_METERS|nearestSavedAddress|distanceMeters\(/);
-  assert.match(page, /const resolveDeliveryLocation = \(location, meta = \{\}\) => \{/);
+test("Laravel GPS matches the nearest saved address within 100m, but map clicks never snap", () => {
+  assert.match(page, /matchGpsSavedAddress\(addresses, initialGps.point, "current-location"\)/);
+  assert.match(page, /matchGpsSavedAddress\(profile.addresses \|\| \[\], next, source\)/);
+  assert.match(page, /if \(nearest\) \{[\s\S]*?selectAddress\(nearest.address\)/);
   const resolver = page.slice(page.indexOf("const resolveDeliveryLocation ="), page.indexOf("const persistProfile ="));
   assert.match(resolver, /setDeliveryLocation\(next\)/);
   assert.ok(resolver.includes('setSelectedAddressId("")'));
-  assert.doesNotMatch(resolver, /selectAddress\(/);
-  assert.match(page, /if \(preferredAddress && !locationSourceRef\.current\)/);
+  assert.match(resolver, /source === "current-location"/);
 });
 
 test("selecting saved address replaces active coordinate including invalid pin and map pans to chosen marker", () => {

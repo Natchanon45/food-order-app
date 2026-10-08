@@ -24,6 +24,16 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Latest Laravel GPS-nearest and driver-route checkpoint — Build 2026.10.09.493
+
+- User specifically wants **Laravel MASTER location flow**: auto request device GPS when customer opens Delivery on PC/mobile, select the nearest saved address to that GPS (up to 100 metres) even when it is *not* the default saved address. Explicit clicks/drags must never auto-snap. If no saved pin is nearby, use raw GPS; if GPS unavailable, fallback to default saved address.
+- Read-only Laravel files used for reference: \`public/assets/js/delivery-location-map.js\`, \`delivery-location-address-resolver.js\` and \`delivery-addresses-normal-button.js\` from \`/Users/natchanonsripleng/Desktop/Sites/food-order-app-php80\` (main).
+- React now requests fresh GPS on page mount and waits for guest/customer profile before initial selection; \`deliveryLocationPolicy.js\` provides 100m closest saved-match only for \`current-location\` sources. User manual choices win if GPS callback arrives later. Strict GPS accuracy, no silent saved pin rewriting, separate Saved Address map, payment lock and explicit checkout pin confirmation remain protected.
+- User also wants self-delivery driver Maps link from **store -> customer**, not current-driver-position -> customer. \`deliveryDriverMapsUrl(order, storeLocation)\` now requires validated origin from existing read-only \`getOperationalStoreSettings(tenantId)\` (\`tenants/{id}/settings/store\`: \`storeLatitude/storeLongitude\`) and validated order \`deliveryLatitude/Longitude\`. Missing store/customer pins block share with a localized error. Other delivery providers excluded.
+- Build **2026.10.09.493**, candidate asset \`/react/assets/index-CkmdkY6R.js\`; location regressions 9/9 PASS, driver route 6/6 PASS, operational & React parity suite PASS, build verification PASS. Chrome local browser PC and Mobile: closer saved B wins against default A automatically; manual override stays intact; GPS denied falls back to A. See latest WORKLOG.
+- At this checkpoint Git implementation commit/push and Hosting release still pending. For this feature only Hosting \`foodapp\` may deploy, not Functions/Rules; do not merge main, reset/clean or delete historical Vite bundles. Real iOS/Android GPS/browser acceptance still needed.
+- **Supersedes Build .492 behavior** that deliberately did NOT choose a nearby saved address. The user's new requirement explicitly restores that Laravel behavior; do not regress to no-match mode.
+
 ## Latest Delivery GPS/saved-address checkpoint — Build 2026.10.09.492
 
 - User reported GPS/current location and previously saved address pins mismatching, after the earlier driver-share release.

@@ -13,6 +13,7 @@ import { functions, storage } from "@/firebase/client";
 import {
   assignWalkInTable,
   cancelLalamoveDispatch,
+  getOperationalStoreSettings,
   cancelOperationalOrder,
   moveTableSession,
   placeLalamoveDispatch,
@@ -29,6 +30,7 @@ import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
 import { qrDataUrl } from "@/utils/localQr";
 import { deliveryDriverMapsUrl, isSelfDeliveryOrder } from "@/utils/deliveryDriverShare";
+import { validDeliveryLocation } from "@/utils/deliveryLocationPolicy";
 
 const approveDeliveryPaymentReview = httpsCallable(functions, "approveDeliveryPaymentReview");
 const LALAMOVE_STATUS_COOLDOWN_MS = 10000;
@@ -240,10 +242,10 @@ function LalamoveDispatch({ order, t, money, busy, onQuote, onPlace, onRefresh, 
   </div>;
 }
 
-function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, actions, onShareDriver }) {
+function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, actions, onShareDriver, storeLocation }) {
   const dispatchedLocked = order.lalamoveOrderId && !lalamoveDispatchFinished(order);
   const selfDelivery = isSelfDeliveryOrder(order);
-  const driverMapsUrl = selfDelivery ? deliveryDriverMapsUrl(order) : "";
+  const driverMapsUrl = selfDelivery ? deliveryDriverMapsUrl(order, storeLocation) : "";
   return <article className="card order-card">
     <div className="order-head"><QueueHeading order={order} title={`Delivery: ${order.recipientName || t("cashier.delivery.recipient_fallback")}`} t={t} formatTime={formatTime} /><span className="badge">{statusLabel(order, t)}</span></div>
     <p><span className={"badge" + (order.paymentStatus === "paid" ? "" : " warning")}>{paymentLabel(order, t)}</span><br /><strong>{t("cashier.delivery.phone")}</strong> {order.recipientPhone || "-"}<br /><strong>{t("cashier.delivery.address")}</strong> {order.deliveryAddress || "-"}</p>
@@ -253,7 +255,7 @@ function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, actions, onS
         {driverMapsUrl ? <a className="btn btn-sm" href={driverMapsUrl} target="_blank" rel="noopener noreferrer" data-driver-maps-link><i className="bi bi-map app-icon" aria-hidden="true"></i><span>{t("cashier.delivery.driver_open_maps")}</span></a> : null}
         <button className="btn btn-primary btn-sm" type="button" disabled={!driverMapsUrl} data-driver-share-button onClick={() => onShareDriver(order)}><i className="bi bi-share app-icon" aria-hidden="true"></i><span>{t("cashier.delivery.driver_share")}</span></button>
       </div>
-      <small className="menu-category">{t(driverMapsUrl ? "cashier.delivery.driver_verify_pin" : "cashier.delivery.driver_missing_coordinates")}</small>
+      <small className="menu-category">{t(driverMapsUrl ? "cashier.delivery.driver_verify_pin" : !storeLocation ? "cashier.delivery.driver_missing_store_location" : "cashier.delivery.driver_missing_coordinates")}</small>
     </div> : null}
     <ItemRows order={order} t={t} money={money} />
     <OrderNote order={order} t={t} />
@@ -443,6 +445,7 @@ export function CashierPage() {
 
   const [orders, setOrders] = useState([]);
   const [ordersSynced, setOrdersSynced] = useState(false);
+  const [storeLocation, setStoreLocation] = useState(null);
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -473,6 +476,26 @@ export function CashierPage() {
   };
   const normalizedOrders = useMemo(() => normalizeCashierOrders(orders), [orders]);
   const active = useMemo(() => activeOrders(normalizedOrders), [normalizedOrders]);
+  useEffect(() => {
+    if (!tenant?.id || !allowedRole) {
+      setStoreLocation(null);
+      return undefined;
+    }
+    let active = true;
+    setStoreLocation(null);
+    getOperationalStoreSettings(tenant.id).then(settings => {
+      if (!active) return;
+      setStoreLocation(validDeliveryLocation({
+        latitude: settings.storeLatitude,
+        longitude: settings.storeLongitude,
+      }));
+    }).catch(error => {
+      console.warn("CASHIER_STORE_ORIGIN_READ_FAILED", error);
+      if (active) setStoreLocation(null);
+    });
+    return () => { active = false; };
+  }, [tenant?.id, allowedRole]);
+
   const takeawayUrl = tenant?.slug
     ? new URL(`/s/${encodeURIComponent(tenant.slug)}/takeaway/`, location.origin).toString()
     : "";
@@ -992,7 +1015,7 @@ export function CashierPage() {
   // The shared link contains a destination from this specific order, not
   // the current device's location. Never share internal app/auth URLs.
   const shareDriverLocation = async order => {
-    const url = deliveryDriverMapsUrl(order);
+    const url = deliveryDriverMapsUrl(order, storeLocation);
     if (!url) {
       showToast(t("cashier.delivery.driver_missing_coordinates"), "error");
       return;
@@ -1116,7 +1139,7 @@ export function CashierPage() {
               if (card.type === "table") return <TableBillCard key={card.key} group={card.group} t={t} money={money} formatTime={formatTime} busy={busy} actions={actions} />;
               if (card.type === "walkin") return <WalkInCard key={card.key} order={card.order} tables={tables} active={active} t={t} money={money} formatTime={formatTime} busy={busy} actions={actions} />;
               if (card.type === "takeaway") return <TakeawayCard key={card.key} order={card.order} t={t} money={money} formatTime={formatTime} busy={busy} actions={actions} />;
-              return <DeliveryCard key={card.key} order={card.order} t={t} money={money} formatTime={formatTime} slipUrl={card.order.paymentSlipUrl || slipUrls[card.order.id] || ""} busy={busy} actions={actions} onShareDriver={shareDriverLocation} />;
+              return <DeliveryCard key={card.key} order={card.order} t={t} money={money} formatTime={formatTime} slipUrl={card.order.paymentSlipUrl || slipUrls[card.order.id] || ""} busy={busy} actions={actions} onShareDriver={shareDriverLocation} storeLocation={storeLocation} />;
             }) : <div className="cashier-empty"><span className="cashier-empty-mark" aria-hidden="true"></span><strong>{t("cashier.queue.empty_title")}</strong><span>{t("cashier.queue.empty_help")}</span></div>}
           </div>
         </section>
