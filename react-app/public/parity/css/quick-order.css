@@ -1801,3 +1801,49 @@
   }
 
 }
+
+/* Quick Order: vertically center the back arrow on desktop and both axes on mobile. */
+.quick-order-page .quick-header-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  line-height: 1;
+}
+
+.quick-order-page .quick-header-back > i.app-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  flex: 0 0 18px;
+  margin: 0;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.quick-order-page .quick-header-back > i.app-icon::before {
+  display: block;
+  margin: 0;
+  line-height: 1;
+  transform: none;
+}
+
+@media (max-width: 640px) {
+  .quick-order-page .quick-header-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 40px;
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+    gap: 0;
+    line-height: 1;
+  }
+}
