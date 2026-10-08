@@ -11937,3 +11937,10 @@ Verification:
 - Focused candidate Delivery Favorites browser test: **1/1 PASS**.
 - `git diff --check` PASS.
 - No Functions, Firestore Rules, Storage Rules, or schema changes.
+
+### 2026-10-08 — Build 2026.10.08.470 deployed
+- Implementation commit deployed to Firebase Hosting `foodapp`.
+- Production bundle: `/react/assets/index-DXebLmjs.js`.
+- Focused Production Favorites Laravel-icon regression: **1/1 PASS**.
+- Production tab now keeps visible text `เมนูโปรด` and renders the red Laravel-style `♥` from CSS `::before`; no emoji is present in the label.
+- Hosting-only deployment; no Functions/Rules/schema changes and no merge to `main`.
