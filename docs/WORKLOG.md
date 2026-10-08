@@ -12351,3 +12351,12 @@ Deploy state:
 - Implementation 674ab9fa pushed to feature/react-firebase-port; Firebase Hosting deployment succeeded.
 - Production root HTML references index-BVRccUB-.js; live home-dashboard.css includes Retail POS heading marker.
 - No customer data edits or backend deployments. Authenticated visual smoke still pending; old untracked bundle index-Dplusb-p.js retained.
+
+
+## 2026-10-08 — Admin category/menu drag-and-drop Auto-save (Build 2026.10.08.480)
+- On /admin menu sort, changed both category/menu order button labels to บันทึก (Save).
+- Sortable onEnd persists immediately on release for both category ordering and per-category menu ordering; skip no-op drags.
+- Sequential pending-save queue stores the latest change if another drag completes before a prior save finishes. Prevents losing rapid reorders; toast on saved/failed.
+- Manual Save buttons remain available; disabled while the respective save is in progress.
+- Updated P0 action contract and added admin-menu-sort-autosave regression checks (4/4 pass).
+- Operational PASS, React parity PASS, React build and generated artifact contract PASS. Hosting-only release; no main merge.

@@ -849,3 +849,8 @@ Candidate Build .476 on local Mac only; React homepage and route guard updates p
 
 ### Production confirmed — Build 2026.10.08.479
 - Hosting complete, bundle index-BVRccUB-.js verified. Home loading, POS guard overlay and Retail POS heading marker fixes implemented; see WORKLOG.
+
+
+## 2026-10-08 — Auto-save admin order .480
+- Both category/menu order buttons renamed บันทึก; Sortable onEnd auto-persists on drop with queued latest change when saves overlap.
+- Build .480. See WORKLOG for tests/deployment checkpoint.

@@ -710,6 +710,9 @@ export function AdminPage() {
   const [selectedSortCategory, setSelectedSortCategory] = useState("");
   const categorySortListRef = useRef(null);
   const itemSortListRef = useRef(null);
+  const sortSaveInFlightRef = useRef({ category: false, item: false });
+  const sortPendingRef = useRef({ category: null, item: null });
+  const [sortSaving, setSortSaving] = useState({ category: false, item: false });
 
   useEffect(() => {
     const media = window.matchMedia?.("(max-width: 480px)");
@@ -1353,6 +1356,54 @@ export function AdminPage() {
     [menus, selectedSortCategory, t],
   );
 
+  const persistCategoryOrder = async nextOrder => {
+    if (!tenant?.id) return;
+    sortPendingRef.current.category = [...nextOrder];
+    if (sortSaveInFlightRef.current.category) return;
+    sortSaveInFlightRef.current.category = true;
+    setSortSaving(current => ({ ...current, category: true }));
+    try {
+      while (sortPendingRef.current.category) {
+        const order = sortPendingRef.current.category;
+        sortPendingRef.current.category = null;
+        try {
+          await saveAdminCategoryOrder(tenant.id, order);
+          showToast(t("admin.menu.category_order_saved"));
+        } catch (error) {
+          console.error("ADMIN_CATEGORY_ORDER_SAVE_FAILED", error);
+          showToast(t("admin.menu.category_order_failed"), "error");
+        }
+      }
+    } finally {
+      sortSaveInFlightRef.current.category = false;
+      setSortSaving(current => ({ ...current, category: false }));
+    }
+  };
+
+  const persistItemOrder = async (category, ids) => {
+    if (!tenant?.id || !category) return;
+    sortPendingRef.current.item = { category, ids: [...ids] };
+    if (sortSaveInFlightRef.current.item) return;
+    sortSaveInFlightRef.current.item = true;
+    setSortSaving(current => ({ ...current, item: true }));
+    try {
+      while (sortPendingRef.current.item) {
+        const next = sortPendingRef.current.item;
+        sortPendingRef.current.item = null;
+        try {
+          await saveAdminMenuOrder(tenant.id, next.category, next.ids);
+          showToast(t("admin.menu.item_order_saved", { category: next.category }));
+        } catch (error) {
+          console.error("ADMIN_ITEM_ORDER_SAVE_FAILED", error);
+          showToast(t("admin.menu.item_order_failed"), "error");
+        }
+      }
+    } finally {
+      sortSaveInFlightRef.current.item = false;
+      setSortSaving(current => ({ ...current, item: false }));
+    }
+  };
+
   useEffect(() => {
     if (loading) return undefined;
     const touchDevice = window.matchMedia?.("(pointer: coarse)")?.matches || "ontouchstart" in window;
@@ -1379,20 +1430,26 @@ export function AdminPage() {
     const categoryList = categorySortListRef.current;
     const itemList = itemSortListRef.current;
     const categorySortable = categoryList && categoryOrder.length
-      ? new Sortable(categoryList, options(() => {
+      ? new Sortable(categoryList, options(event => {
+        if (event.oldIndex === event.newIndex) return;
         const nextOrder = [...categoryList.querySelectorAll("[data-sort-category]")]
           .map(node => node.dataset.sortCategory)
           .filter(Boolean);
-        if (nextOrder.length) setCategoryOrder(nextOrder);
+        if (nextOrder.length) {
+          setCategoryOrder(nextOrder);
+          void persistCategoryOrder(nextOrder);
+        }
       }))
       : null;
     const itemSortable = itemList && itemOrder.length
-      ? new Sortable(itemList, options(() => {
+      ? new Sortable(itemList, options(event => {
+        if (event.oldIndex === event.newIndex) return;
         const ids = [...itemList.querySelectorAll("[data-sort-menu-id]")]
           .map(node => node.dataset.sortMenuId)
           .filter(Boolean);
         const ranks = new Map(ids.map((id, index) => [id, index + 1]));
         setMenus(current => current.map(item => ranks.has(item.id) ? { ...item, sortOrder: ranks.get(item.id) } : item));
+        if (ids.length) void persistItemOrder(selectedSortCategory, ids);
       }))
       : null;
 
@@ -1402,27 +1459,8 @@ export function AdminPage() {
     };
   }, [loading, selectedSortCategory, categoryOrder.length, itemOrder.length]);
 
-  const saveCategories = async () => {
-    try {
-      await saveAdminCategoryOrder(tenant.id, categoryOrder);
-      showToast(t("admin.menu.category_order_saved"));
-      await load();
-    } catch (error) {
-      console.error("ADMIN_CATEGORY_ORDER_SAVE_FAILED", error);
-      showToast(t("admin.menu.category_order_failed"), "error");
-    }
-  };
-
-  const saveItems = async () => {
-    try {
-      await saveAdminMenuOrder(tenant.id, selectedSortCategory, itemOrder.map(item => item.id));
-      showToast(t("admin.menu.item_order_saved", { category: selectedSortCategory }));
-      await load();
-    } catch (error) {
-      console.error("ADMIN_ITEM_ORDER_SAVE_FAILED", error);
-      showToast(t("admin.menu.item_order_failed"), "error");
-    }
-  };
+  const saveCategories = () => persistCategoryOrder([...categoryOrder]);
+  const saveItems = () => persistItemOrder(selectedSortCategory, itemOrder.map(item => item.id));
 
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (["owner", "admin"].includes(profile?.role) && tenant?.id && !initialReady)) {
     return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
@@ -1915,7 +1953,7 @@ export function AdminPage() {
         >
           <div className="sort-manager">
             <div className="sort-panel">
-              <div className="sort-panel-head"><strong>{t("admin.menu.category_order")}</strong><button type="button" className="btn btn-primary btn-sm" id="saveCategoryOrder" data-admin-button-icon="floppy" onClick={saveCategories}><i className="bi bi-floppy app-icon admin-button-icon" aria-hidden="true"></i><span className="admin-button-label">{t("admin.menu.save_category_order")}</span></button></div>
+              <div className="sort-panel-head"><strong>{t("admin.menu.category_order")}</strong><button type="button" className="btn btn-primary btn-sm" id="saveCategoryOrder" data-admin-button-icon="floppy" disabled={sortSaving.category} onClick={saveCategories}><i className="bi bi-floppy app-icon admin-button-icon" aria-hidden="true"></i><span className="admin-button-label">{"บันทึก"}</span></button></div>
               <div id="categorySortList" className="sort-list" ref={categorySortListRef}>
                 {categoryOrder.length ? categoryOrder.map(name => (
                   <div
@@ -1935,7 +1973,7 @@ export function AdminPage() {
               </div>
             </div>
             <div className="sort-panel">
-              <div className="sort-panel-head"><div><strong>{t("admin.menu.item_order")}</strong><div className="menu-category" id="selectedSortCategory">{selectedSortCategory || "-"}</div></div><button type="button" className="btn btn-primary btn-sm" id="saveItemOrder" data-admin-button-icon="floppy" disabled={!selectedSortCategory} onClick={saveItems}><i className="bi bi-floppy app-icon admin-button-icon" aria-hidden="true"></i><span className="admin-button-label">{t("admin.menu.save_item_order")}</span></button></div>
+              <div className="sort-panel-head"><div><strong>{t("admin.menu.item_order")}</strong><div className="menu-category" id="selectedSortCategory">{selectedSortCategory || "-"}</div></div><button type="button" className="btn btn-primary btn-sm" id="saveItemOrder" data-admin-button-icon="floppy" disabled={!selectedSortCategory || sortSaving.item} onClick={saveItems}><i className="bi bi-floppy app-icon admin-button-icon" aria-hidden="true"></i><span className="admin-button-label">{"บันทึก"}</span></button></div>
               <div id="itemSortList" className="sort-list" ref={itemSortListRef}>
                 {itemOrder.length ? itemOrder.map(item => (
                   <div
