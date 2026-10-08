@@ -12517,3 +12517,11 @@ Deployment boundary:
 - Moved anchor outside .menu-filter-area and pin entire filter toolbar to viewport via delivery-filters-fixed class while scrolling, with spacer to avoid content jump.
 - Category scroll-spy/highlight and horizontal scrolling remain. Desktop and Table Order unchanged.
 - Delivery mobile regression 5/5, React Parity and React Build contract PASS. Hosting-only.
+
+
+## 2026-10-08 — Cashier legacy payment and Kitchen order audio candidate (Build .487, NOT DEPLOYED)
+- User screenshot shows legacy Delivery PromptPay order dated 07/10/2026 with slip, Cashier payment failure after stricter .483 Rules.
+- Root cause: older orders lack server proof/paymentReviewRequired, so Cashier used direct Firestore paid update which new Rules correctly deny.
+- Candidate: route all Delivery PromptPay cashier settlements to trusted approveDeliveryPaymentReview Callable. Accept only legacy order created before 2026-10-08 00:00 +07, with nonzero amount and existing slip pointer when server proof does not exist; record reviewing staff identity/time and release Kitchen. New orders still require signed server manual-review proof. Allow manager role consistently with frontend.
+- Kitchen audio issue: CashierOrderNotifier saw all pending orders even before paid confirmation, so Kitchen admission after cashier payment was not a new ID. Now Kitchen notifier filters on deliveryKitchenAdmitted, Cashier notifier remains all orders. Browser needs staff sound button gesture to arm WebAudio due autoplay.
+- No production tenant records changed. New Cloud Function version required for legacy payment compatibility. Project requires explicit user approval before Functions deployment; do not release Hosting alone.

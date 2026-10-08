@@ -133,7 +133,7 @@ test("non-service verification paths preserve a server proof for cashier approva
   assert.match(backend, /return manualProof\("verification_expired"\)/);
   assert.match(backend, /return manualProof\("merchant_promptpay_receiver_not_supported"\)/);
   assert.match(backend, /return manualProof\("slip2go_request_rate_limit"\)/);
-  assert.match(backend, /proof\.status !== "manual_review"/);
+  assert.match(backend, /proof.status === "manual_review"/);
   assert.match(backend, /proofBoundToOrder\(order, proof\)/);
 });
 
@@ -148,4 +148,23 @@ test("server blocks unapproved staff payment changes while a Delivery slip needs
   assert.match(orderRule, /tenantAdminRole\(tenantId\)/);
   assert.match(rules, /resource\.data\.get\('paymentMethod', ''\) == 'promptpay'/);
   assert.match(orderRule, /deliveryPaymentReviewFieldsUnchanged\(\)/);
+});
+
+test("legacy pre-Slip2Go cashier approval is audited and bounded to historical slip orders", () => {
+  const source = fs.readFileSync("functions/delivery-slip.js", "utf8");
+  assert.match(source, /!proofSnap.exists && created > 0/);
+  assert.match(source, /created < Date.parse\("2026-10-08T00:00:00\+07:00"\)/);
+  assert.match(source, /order.paymentSlipPath \|\| order.paymentSlipUrl/);
+  assert.match(source, /Number\(order.totalAmount\) > 0/);
+  assert.match(source, /slipVerificationStatus: legacySlip \? "legacy_cashier_approved"/);
+  assert.match(source, /paymentReviewedByUid: actor.uid/);
+  const cashier = fs.readFileSync("react-app/src/pages/CashierPage.jsx", "utf8");
+  assert.match(cashier, /const manualDeliveryReview = order.orderType === "delivery"/);
+  assert.match(cashier, /approveDeliveryPaymentReview\(\{ tenantId: tenant.id, orderId: order.id \}\)/);
+});
+test("kitchen audio notifies on payment admission rather than on unpaid order creation", () => {
+  const source = fs.readFileSync("react-app/src/components/CashierOrderNotifier.jsx", "utf8");
+  assert.match(source, /surface !== "kitchen" \|\| deliveryKitchenAdmitted\(order\)/);
+  assert.match(source, /createOrderAlertAudioController/);
+  assert.match(source, /announcementChainRef/);
 });

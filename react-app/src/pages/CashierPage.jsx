@@ -252,7 +252,7 @@ function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, actions }) {
       <a className="btn btn-dark" href={cashierRoute(`/receipt/?order=${encodeURIComponent(order.id)}`)} target="_blank" rel="noopener noreferrer"><i className="bi bi-printer app-icon"></i><span>{t("cashier.common.print")}</span></a>
       {slipUrl ? <a className="btn btn-warning" href={slipUrl} target="_blank" rel="noopener noreferrer"><i className="bi bi-eye app-icon"></i><span>{t("cashier.payment.view_slip")}</span></a>
         : order.paymentSlipPath ? <button className="btn btn-warning" type="button" disabled><i className="bi bi-eye app-icon"></i><span>{t("cashier.payment.loading_slip")}</span></button> : null}
-      {order.paymentStatus !== "paid" && !isLalamoveCod(order) && order.slipCheckStatus !== "matched" ? <button className="btn btn-primary cashier-payment-action" type="button" disabled={busy} onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{order.paymentReviewRequired === true ? t("cashier.payment.slip_manual_release") : t("cashier.payment.receive")}</span></button> : null}
+      {order.paymentStatus !== "paid" && !isLalamoveCod(order) && order.slipCheckStatus !== "matched" ? <button className="btn btn-primary cashier-payment-action" type="button" disabled={busy} onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{order.paymentMethod === "promptpay" && order.orderType === "delivery" ? t("cashier.payment.slip_manual_release") : t("cashier.payment.receive")}</span></button> : null}
       {lalamoveCodAwaitingSettlement(order) ? <button className="btn btn-primary cashier-payment-action cashier-cod-settlement-action" type="button" disabled={busy} onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{t("cashier.lalamove.cod_receive")}</span></button> : null}
       {lalamoveDeliveryCompleted(order) ? null : dispatchedLocked
         ? <button className="btn btn-primary" type="button" disabled title={t("cashier.lalamove.local_cancel_locked")}><i className="bi bi-truck app-icon"></i><span>{t("cashier.lalamove.dispatched")}</span></button>
@@ -655,8 +655,8 @@ export function CashierPage() {
     const printWindow = openReceiptPrintWindow();
     setBusyKey(`pay:${order.id}`);
     try {
-      const manualDeliveryReview = order.paymentReviewRequired === true
-        && order.orderType === "delivery" && order.paymentMethod === "promptpay";
+      const manualDeliveryReview = order.orderType === "delivery"
+        && order.paymentMethod === "promptpay";
       if (manualDeliveryReview) {
         await approveDeliveryPaymentReview({ tenantId: tenant.id, orderId: order.id });
         showToast(t("cashier.payment.slip_manual_approved"));
@@ -688,7 +688,9 @@ export function CashierPage() {
     } catch (error) {
       closePrintWindow(printWindow);
       console.error("CASHIER_PAYMENT_FAILED", error);
-      showToast(t("cashier.toasts.payment_failed"), "error");
+      showToast(error?.message?.includes("DELIVERY_MANUAL_REVIEW_NOT_ALLOWED")
+        ? "สลิปนี้ไม่อยู่ในเงื่อนไขอนุมัติ กรุณาตรวจสอบหลักฐานหรือสถานะการชำระอีกครั้ง"
+        : t("cashier.toasts.payment_failed"), "error");
     } finally {
       setBusyKey("");
     }

@@ -909,3 +909,7 @@ Candidate Build .476 on local Mac only; React homepage and route guard updates p
 
 ## 2026-10-08 — Delivery mobile both controls fixed Build .486
 - Both category tabs and menu search now pinned together on mobile Delivery. Previous .485 pinned category alone. See WORKLOG.
+
+
+## 2026-10-08 — Build .487 cashier legacy payment/audio candidate NOT DEPLOYED
+- Legacy 07/10 slip receipt fails direct payment update since Firestore .483 protected fields. New candidate accepts pre-rollout legacy cashier approval via trusted callable, and kitchen notifier filters out unadmitted order IDs. Test/build then seek explicit Functions rollout permission. See WORKLOG.

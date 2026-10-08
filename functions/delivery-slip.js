@@ -22,7 +22,7 @@ async function cashierProfile(auth, tenantId) {
   const snapshot = await getFirestore().collection("users").doc(auth.uid).get();
   const profile = snapshot.data() || {};
   if (!snapshot.exists || profile.active === false || String(profile.tenantId || "") !== tenantId
-    || !["owner", "admin", "cashier"].includes(String(profile.role || ""))) {
+    || !["owner", "admin", "cashier", "manager"].includes(String(profile.role || ""))) {
     throw new HttpsError("permission-denied", "CASHIER_PERMISSION_REQUIRED");
   }
   return { uid: auth.uid, email: clean(auth.token?.email || profile.email, 180), role: String(profile.role || "") };
@@ -283,11 +283,15 @@ exports.approveDeliveryPaymentReview = onCall(
         return;
       }
       const proof = proofSnap.data() || {};
+      const created = order.createdAt?.toMillis?.() || Date.parse(String(order.createdAtText || "")) || 0;
+      const legacySlip = !proofSnap.exists && created > 0
+        && created < Date.parse("2026-10-08T00:00:00+07:00")
+        && Boolean(clean(order.paymentSlipPath || order.paymentSlipUrl, 500))
+        && Number(order.totalAmount) > 0;
       if (order.orderType !== "delivery" || order.paymentMethod !== "promptpay"
         || order.paymentStatus !== "pending_verification"
-        || order.paymentReviewRequired !== true
-        || proof.status !== "manual_review"
-        || !proofBoundToOrder(order, proof)) {
+        || !(legacySlip || (order.paymentReviewRequired === true
+          && proof.status === "manual_review" && proofBoundToOrder(order, proof)))) {
         throw new HttpsError("failed-precondition", "DELIVERY_MANUAL_REVIEW_NOT_ALLOWED");
       }
       tx.update(orderRef, {
@@ -295,7 +299,7 @@ exports.approveDeliveryPaymentReview = onCall(
         paidAt: FieldValue.serverTimestamp(),
         slipCheckStatus: "cashier_approved",
         slipVerificationProvider: "cashier_manual",
-        slipVerificationStatus: "cashier_approved",
+        slipVerificationStatus: legacySlip ? "legacy_cashier_approved" : "cashier_approved",
         paymentReviewRequired: false,
         paymentReviewedByUid: actor.uid,
         paymentReviewedByEmail: actor.email,
