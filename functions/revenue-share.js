@@ -103,7 +103,7 @@ function revenueSetting(tenant = {}) {
     rate: Math.max(0, Math.min(100, Number(tenant.revenueShareRate || 0))),
     billingCycle: tenant.revenueShareBillingCycle === "daily" ? "daily" : "monthly",
     recipientName: String(tenant.revenueShareRecipientName || "").trim(),
-    businessType: normalizeBusinessType(tenant.revenueShareBusinessType || tenant.businessType || "both"),
+    businessType: normalizeBusinessType(tenant.businessType || tenant.signupBilling?.businessType || tenant.revenueShareBusinessType || "both"),
     restaurantScope: normalizeRestaurantScope(tenant.revenueShareRestaurantScope || "all"),
     channels,
   };
@@ -825,7 +825,7 @@ exports.updateTenantRevenueShare = onCall({ region: REGION }, async request => {
   const db = getFirestore(), tenantRef = db.collection("tenants").doc(tenantId), snapshot = await tenantRef.get();
   if (!snapshot.exists) throw new HttpsError("not-found", "Tenant not found");
   const tenant = { id: snapshot.id, ...snapshot.data() };
-  const businessType = normalizeBusinessType(request.data?.businessType || tenant.revenueShareBusinessType || tenant.businessType || "both");
+  const businessType = normalizeBusinessType(tenant.businessType || tenant.signupBilling?.businessType || tenant.revenueShareBusinessType || "both");
   const restaurantScope = businessType === "retail"
     ? "all"
     : normalizeRestaurantScope(request.data?.restaurantScope || tenant.revenueShareRestaurantScope || "all");

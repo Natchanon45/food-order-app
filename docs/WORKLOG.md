@@ -12269,3 +12269,11 @@ Deploy state:
 - Production /admin/tenants HTML references index-CfBFiHtu.js; tenant-admin.css contains tenant-master-business-field.
 - No authenticated live tenant update was performed. Existing signup snapshots and share settings remain unchanged.
 - No merge into main. Older untracked generated bundle index-Dplusb-p.js retained per emptyOutDir:false safety rule.
+
+\n## 2026-10-08 — Master-driven revenue share correction (Build 2026.10.08.475)
+- Share dialog business type is read-only and sourced from tenant Master, not editable independently.
+- Server updateTenantRevenueShare ignores supplied business type and derives it from tenant Master, retaining a legacy fallback.
+- Restaurant/Cafe: selected delivery/storefront/both scope determines eligible restaurant orders; Retail POS never counts.
+- Retail-only: no scope choice; all non-cancelled valid Retail POS sales eligible.
+- Both: delivery-only excludes Retail POS; storefront-only includes Retail POS + non-delivery restaurant sales; all includes both channels.
+- Preserved legacy signup history, Master editing, billing-cycle and Lalamove calculations.

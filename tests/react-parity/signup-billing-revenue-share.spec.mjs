@@ -86,7 +86,7 @@ test("revenue-share business policy selects restaurant and retail sales independ
   }), {
     enabled: true,
     includeRestaurant: true,
-    includeRetail: true,
+    includeRetail: false,
     restaurantScope: "delivery_only",
   });
 });
@@ -189,4 +189,22 @@ test("Super Admin can change master business without rewriting signup and share 
   assert.match(edit, /businessUnitsFor\(requestedBusinessType\)/);
   assert.doesNotMatch(edit, /signupBilling\s*:/);
   assert.doesNotMatch(edit, /revenueShareBusinessType\s*:/);
+});
+
+test("master business and selected scope control Retail POS commission eligibility", () => {
+  const policy = require("../../functions/revenue-share-policy.js");
+  const channels = (businessType, restaurantScope) => policy.revenueShareChannels({
+    businessType, revenueShareBusinessType: "both", revenueShareEnabled: true,
+    revenueShareRestaurantScope: restaurantScope,
+  });
+  assert.equal(channels("restaurant_cafe", "all").includeRetail, false);
+  assert.equal(channels("retail", "all").includeRetail, true);
+  assert.equal(channels("both", "delivery_only").includeRetail, false);
+  assert.equal(channels("both", "storefront_only").includeRetail, true);
+  assert.equal(channels("both", "all").includeRetail, true);
+  assert.equal(channels("both", "delivery_only").includeRestaurant, true);
+  const ui = fs.readFileSync("react-app/src/pages/AdminTenantsPage.jsx", "utf8");
+  const backend = fs.readFileSync("functions/revenue-share.js", "utf8");
+  assert.match(ui, /id="revenueShareBusinessType" readOnly/);
+  assert.doesNotMatch(backend.slice(backend.indexOf("exports.updateTenantRevenueShare")), /request.data\?\.businessType/);
 });

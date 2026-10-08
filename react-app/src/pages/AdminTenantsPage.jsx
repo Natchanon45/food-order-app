@@ -670,7 +670,7 @@ export function AdminTenantsPage() {
     setShareEnabled(summary.revenueShareEnabled === true || tenant.billingMode === "revenue_share");
     setShareRate(Number(summary.revenueShareRate || tenant.revenueShareRate || 0).toFixed(2));
     setShareBillingCycle(summary.revenueShareBillingCycle === "daily" ? "daily" : "monthly");
-    setShareBusinessType(summary.revenueShareBusinessType || tenant.revenueShareBusinessType || tenant.businessType || tenant.signupBilling?.businessType || "both");
+    setShareBusinessType(tenant.businessType || tenant.signupBilling?.businessType || tenant.revenueShareBusinessType || "both");
     setShareRestaurantScope(summary.revenueShareRestaurantScope || tenant.revenueShareRestaurantScope || tenant.signupBilling?.restaurantRevenueShareScope || "all");
     setShareError("");
     shareDialogRef.current?.showModal?.();
@@ -694,7 +694,6 @@ export function AdminTenantsPage() {
         enabled: shareEnabled,
         rate,
         billingCycle: shareBillingCycle,
-        businessType: shareBusinessType,
         restaurantScope: shareBusinessType === "retail" ? "all" : shareRestaurantScope,
       });
       showToast(t("admin_tenants.share.saved"));
@@ -1355,11 +1354,7 @@ export function AdminTenantsPage() {
             </label>
             <div className="field">
               <label htmlFor="revenueShareBusinessType">{t("admin_tenants.share.business_type")}</label>
-              <select className="input" id="revenueShareBusinessType" value={shareBusinessType} onChange={e => setShareBusinessType(e.target.value)}>
-                <option value="restaurant_cafe">{t("admin_tenants.signup_billing.businesses.restaurant_cafe")}</option>
-                <option value="retail">{t("admin_tenants.signup_billing.businesses.retail")}</option>
-                <option value="both">{t("admin_tenants.signup_billing.businesses.both")}</option>
-              </select>
+              <input className="input" id="revenueShareBusinessType" readOnly value={t(`admin_tenants.signup_billing.businesses.${shareBusinessType}`)} aria-readonly="true" />
               <small>{t("admin_tenants.share.business_type_help")}</small>
             </div>
             {shareBusinessType !== "retail" ? (
@@ -1373,7 +1368,7 @@ export function AdminTenantsPage() {
                 <small>{t("admin_tenants.share.restaurant_scope_help")}</small>
               </div>
             ) : null}
-            {shareBusinessType !== "restaurant_cafe" ? (
+            {shareBusinessType === "retail" ? (
               <div className="tenant-share-retail-rule">
                 <i className="bi bi-basket2" aria-hidden="true"></i>
                 <span>{t("admin_tenants.share.retail_scope_fixed")}</span>

@@ -67,18 +67,15 @@ function restaurantOrderEligible(orderType, scope = "all") {
 function revenueShareChannels(tenant = {}) {
   const enabled = tenant.revenueShareEnabled === true || clean(tenant.billingMode) === "revenue_share";
   const businessType = normalizeBusinessType(
-    tenant.revenueShareBusinessType
-      || tenant.businessType
-      || tenant.signupBusinessType
-      || "both"
+    tenant.businessType || tenant.signupBilling?.businessType || tenant.revenueShareBusinessType || "both"
   );
+  const restaurantScope = businessType === "retail" ? "all"
+    : normalizeRestaurantScope(tenant.revenueShareRestaurantScope || "all");
   return {
     enabled,
     includeRestaurant: businessType === "restaurant_cafe" || businessType === "both",
-    includeRetail: businessType === "retail" || businessType === "both",
-    restaurantScope: businessType === "retail"
-      ? "all"
-      : normalizeRestaurantScope(tenant.revenueShareRestaurantScope || "all"),
+    includeRetail: businessType === "retail" || (businessType === "both" && restaurantScope !== "delivery_only"),
+    restaurantScope,
   };
 }
 

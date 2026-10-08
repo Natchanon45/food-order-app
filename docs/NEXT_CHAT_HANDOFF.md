@@ -806,3 +806,6 @@ Exact post-save crash confirmed:
 - Tenant Master business editor + signup card refresh committed 647e7bf2 and deployed to Hosting and updateTenant Function.
 - Production HTML and CSS verified via HTTP. Authenticated editing interaction is not yet independently browser-verified.
 - Untracked old candidate bundle: public/react/assets/index-Dplusb-p.js; do not randomly delete.
+
+\n## 2026-10-08 — Revenue-share scope correction
+Build candidate 2026.10.08.475: business type is Master-derived read-only in Revenue Share dialog; dual-business delivery-only excludes Retail POS, storefront/all includes POS. See WORKLOG.
