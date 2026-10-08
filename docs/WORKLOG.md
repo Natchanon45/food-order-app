@@ -12534,3 +12534,11 @@ Deployment boundary:
 - Kitchen notifier now notices new *admitted* Delivery orders and can announce them with WebAudio once sound is enabled/unlocked by user interaction.
 - Live /cashier references index-B1NTOMkh.js, asset responds HTTP 200.
 - No Firestore Rules change and no main merge. Real-payment and real-browser audio smoke tests remain pending; browsers may require pressing bell first.
+
+## 2026-10-08 — Quick Order pairing QR routes to Retail POS: investigation and source repair .488 (NOT DEPLOYED)
+- User found Quick Order customer display /pos/customer-display?displayId=quick-order-* pairing QR + Open POS linked Retail POS. Prior d126ac8 only adjusted QR target path and was prematurely presented as resolved despite no build/deploy.
+- Source issues: POS customer display under /pos got Retail MasterBusinessGuard restrictions, QuickOrderPage ignored registerId/displayId query and generated display identity only from logged-in user, login redirect dropped paired display query.
+- Source changes: /cashier/customer-display route reuses read-only PosCustomerDisplayPage for restaurant; QuickOrderPage customer-display launch points to this restaurant route and accepts validated quick-order-* paired IDs; pairing QR/link returns to /cashier/quick-order with same displayId; login redirects preserve pathname+search; legacy /pos/customer-display quick-order IDs permitted under restaurant guard without enabling Retail POS.
+- Added tests/react-parity/quick-order-display-pairing.spec.mjs with pairing route, ID continuity, auth preservation, and Master guard checks, included in npm run test:react-parity.
+- Prepared Build .488 in react-app/src/config/release.js. Desktop Commander quota exhausted; GitHub source commits only; no tests, actual Vite build, browser E2E, Firebase deploy or production verification have occurred. Production .487 still active.
+- Follow-up: run Mac pull/build/tests, deploy hosting:foodapp only, test QR scan as different cashier login & old/new display links, confirm Firestore document ID shared between screen and cashier. Preserve all untracked build artifacts and do not merge main.
