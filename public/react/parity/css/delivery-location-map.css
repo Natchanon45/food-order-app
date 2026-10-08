@@ -106,3 +106,46 @@
   color: #b42318;
   background: #fff1f0;
 }
+
+/* DELIVERY_SAVED_PIN_ISOLATION_20261009_001 */
+.delivery-saved-pin-editor {
+  margin-top: 12px;
+}
+.delivery-saved-pin-editor .delivery-location-picker {
+  background: #f1f8f4;
+  border-color: #c9e0d1;
+}
+.delivery-saved-pin-editor > .menu-category {
+  margin-top: 8px;
+  line-height: 1.5;
+}
+.delivery-pin-confirm {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-top: 12px;
+  border: 1px solid #c9e0d1;
+  border-radius: 12px;
+  color: #12522b;
+  background: #f0fbf3;
+  line-height: 1.55;
+  font-weight: 600;
+  cursor: pointer;
+}
+.delivery-pin-confirm input {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: #0e8f47;
+}
+.delivery-pin-confirm span {
+  min-width: 0;
+}
+@media (max-width: 640px) {
+  .delivery-location-picker .delivery-location-head > .btn {
+    width: 100%;
+    min-height: 44px;
+  }
+}

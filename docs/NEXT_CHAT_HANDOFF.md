@@ -24,6 +24,16 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Latest Delivery GPS/saved-address checkpoint — Build 2026.10.09.492
+
+- User reported GPS/current location and previously saved address pins mismatching, after the earlier driver-share release.
+- Fix: **removed automatic 100m nearest-saved-address snapping**. Fresh GPS never gets replaced by a nearby saved pin. Initial default saved address still prefills, and explicit Saved Address selection pins exact saved coords. Google map viewport pans to selected saved pin.
+- Saved Address editor has an **independent pinned map**; new address starts unpinned, editing existing address shows only that address's own stored coordinate, and only explicit Save Address persists it. Checkout no longer silently rewrites saved coordinates after successful order.
+- GPS must be fresh, accuracy estimate <=100m; coarse/unavailable fix warns and leaves old pin unchanged. Checkout requires explicit customer pin confirmation before locking payment or submitting; checkout lock prevents pin/text selection changes. TH/EN/MY/LO/KM localized.
+- Regression tests 8/8 PASS, operational PASS, React parity PASS, build contract PASS; Chrome local-browser guest scenario with saved A/B very close + GPS different: PASS; coarse 350m GPS rejects and warns: PASS. Final bundle **\`/react/assets/index-CsqMnk5f.js\`** Build **2026.10.09.492**.
+- At this point Git commit/push + Firebase Hosting release not yet recorded; update after successful production verification. Only Hosting \`foodapp\` should deploy; no Functions/Rules/customer data mutation, no main merge, no reset/clean of historical bundles.
+- Previously saved pins that are already incorrect **cannot be recovered automatically**: customer must explicitly edit, reposition on map and save. Physical GPS/Google Maps on real iOS/Android remains an acceptance test, not proven by desktop geolocation mock. Details in latest \`docs/WORKLOG.md\`.
+
 ## Latest self-delivery driver-share checkpoint — Build 2026.10.08.491
 
 - User requested a **share-to-driver Google Maps button for store-managed Delivery only**, not Lalamove. Implementation is on \`feature/react-firebase-port\`; authoritative history in the last section of \`docs/WORKLOG.md\`.

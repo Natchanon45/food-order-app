@@ -12634,3 +12634,37 @@ Release/safety:
 - Live bundle HTTP 200, 3,566,604 bytes, SHA-256 equal to Mac build `8e5303f4f659485c088b2c57d6c4881a12d2778469f2924c4b0bfbc861d5de90`. Live Cashier CSS `/react/parity/css/cashier-refresh.css` HTTP 200, byte-identical to Mac and includes driver controls. Prior .490 bundle still HTTP 200.
 - Browser visual smoke was an isolated static driver-panel exercise with Chrome at 320, 390, 440 and 1024 px, not authenticated Firebase order E2E; native share/LINE on a real staff device remains user acceptance.
 - Historical untracked hashed Vite bundles retained; no clean/reset/main merge. GPS current-vs-saved location auto-matching is **not** fixed and should be addressed separately, to avoid sharing inaccurate customer pins.
+
+## 2026-10-09 — Delivery GPS vs Saved Address pin integrity (Build .492)
+
+User-reported defect: automatic location detection and saved address lookup show different/wrong pins on customer Delivery; already-shared driver Google Maps links use the saved order pin and therefore require trustworthy coordinates.
+
+Confirmed root causes in previous .491 source:
+1. `NEARBY_SAVED_ADDRESS_METERS = 100`: using GPS within 100m of a saved address immediately called `selectAddress(nearest.address)`, overwriting the actual GPS with the saved pin. A later effect repeated the same fuzzy snap once guest profile had loaded.
+2. Selecting a saved address updated Google Maps marker position but did not pan the map viewport, so the selected pin could be off-screen and the map could appear to show another location.
+3. Editing **any** saved address used the *checkout's* `deliveryLocation` instead of that address's own coordinate, thereby silently rewriting stored pins.
+4. After successful checkout, a matching address-text record was silently updated with the order's current coordinate, corrupting previously saved pins even if the customer had not edited that saved address.
+5. Browser `getCurrentPosition` accepted coarse/cached geolocation results (maximumAge:15000), without checking `coords.accuracy`.
+6. Checkout did not require the customer to verify the map pin; map events captured stale `disabled` state when checkout became locked.
+
+Fix:
+- `DeliveryPage.jsx`: removed proximity based saved-address matching entirely. Initial default saved address still prefills once; explicit selections always use that saved record's coordinates, and user GPS/map selection always keeps the exact chosen GPS/map coordinate (never snaps to a saved address). Invalid saved pins clear any previous pin; selected saved address text is cleared if the customer chooses a different GPS/map position, rather than incorrectly associating old address text with new coordinates.
+- Checkout requires explicit “map pin is correct” checkbox before payment-lock/order submission; changing pin, chosen saved address or delivery address text resets confirmation. Saved-address options and address text are disabled while payment is locked.
+- Saved-address editor now has its **own** Google Maps instance, GPS location action and `addressEditor.latitude/longitude`. Editing existing entry loads that entry's coordinate; adding a new entry starts unpinned, never copies a preselected Checkout pin. Explicit Save Address is the **only** way to persist address-book coordinates; checkout no longer silently saves or rewrites saved-address pins.
+- `DeliveryLocationPicker.jsx`: re-centres map to selected external marker, shows GPS estimated precision, requires fresh high-accuracy fixes (maximumAge:0, enableHighAccuracy:true, timeout:20000) and refuses to move pin if estimated accuracy exceeds 100m or is unavailable; asks user to retry or drop map pin manually. Disables Google Maps marker drag/click when checkout locked, including listeners created before locking. Distinct DOM IDs for address editor and checkout. Retry map API load after transient failure.
+- `deliveryLocationPolicy.js`: centralized strict lat/long and estimated GPS accuracy guard. `delivery-location-map.css` scopes editor styling and pin-confirmation checkbox. `parity-translations.json`: localized labels, guidance, warnings in th/en/my/lo/km. Updated legacy `tools/react-foundation-contract.mjs` to explicitly forbid 100m snap; new `delivery-location-integrity.spec.mjs` with eight regression cases wired into `test:react-parity`.
+- Bumped React release Build `2026.10.09.492`, README metadata updated.
+
+Verification (all on authorized Mac):
+- Targeted 8/8 location integrity regressions PASS.
+- Operational contract PASS.
+- Complete `npm run test:react-parity` PASS including prior Slip2Go, QR, kitchen notification and driver-share contracts.
+- React build and postbuild-generated contract PASS. **Final** main index JS: `/react/assets/index-CsqMnk5f.js`; Build `2026.10.09.492`. `git diff --check` PASS.
+- Live Google Chrome local-static-server *browser* smoke with guest address A 13.82984,100.64208 and B 13.82986,100.64210, GPS 13.82990,100.64215 (within 100m): initial saved A correct, clicking GPS keeps distinct GPS coordinate and clears saved selection/confirmation, editing saved B shows its own B coordinates. PASS.
+- Chrome coarse GPS fix simulated `coords.accuracy=350m`: saved A pin remains unchanged, Thai warning shown about ±350m. PASS.
+- No production customer profiles/orders inspected or changed. These tests mock geolocation/guest localStorage and are not genuine GPS device accuracy or physical-doorstep geocoding validation.
+
+Remaining user acceptance:
+- Have customer open Delivery on **real iPhone/Android**, allow Precise Location, compare fresh GPS location vs a saved pin; repair any previously corrupted address-book pin by **explicit Edit Address + drag/pin + Save**. The old saved coordinates cannot be corrected automatically without a trusted ground truth.
+- Verify a real customer Order GPS pin is correct before using driver-share; no live real-payment test was initiated.
+- Commit/push, Hosting deploy and live bundle verification pending when this note was initially written. No Functions or Firestore/Storage Rules deployment, no main merge, and do not delete old Vite hashed bundles.

@@ -22,47 +22,13 @@ import { useParityPage } from "@/hooks/useParityPage";
 import { generatePromptPayPayload } from "@/utils/promptPay";
 import { qrDataUrl } from "@/utils/localQr";
 import { svgQrPngBlob } from "@/utils/downloadQrPng";
+import { validDeliveryLocation as normalizeLocation } from "@/utils/deliveryLocationPolicy";
 
 const computeDeliveryRoute = httpsCallable(functions, "computeDeliveryRoute");
 const quotePublicLalamoveDelivery = httpsCallable(functions, "quotePublicLalamoveDelivery");
 const verifyDeliveryPaymentSlip = httpsCallable(functions, "verifyDeliveryPaymentSlip", { timeout: 70000 });
-const NEARBY_SAVED_ADDRESS_METERS = 100;
-
 function normalizePhone(value) {
   return String(value || "").replace(/\D/g, "");
-}
-function normalizeLocation(value = {}) {
-  const latitude = Number(value?.latitude);
-  const longitude = Number(value?.longitude);
-  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) return null;
-  if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) return null;
-  return { latitude, longitude };
-}
-function radians(degrees) {
-  return degrees * Math.PI / 180;
-}
-function distanceMeters(fromValue, toValue) {
-  const from = normalizeLocation(fromValue);
-  const to = normalizeLocation(toValue);
-  if (!from || !to) return Number.POSITIVE_INFINITY;
-  const earthRadiusMeters = 6371008.8;
-  const latitudeDelta = radians(to.latitude - from.latitude);
-  const longitudeDelta = radians(to.longitude - from.longitude);
-  const latitude1 = radians(from.latitude);
-  const latitude2 = radians(to.latitude);
-  const value = Math.sin(latitudeDelta / 2) ** 2
-    + Math.cos(latitude1) * Math.cos(latitude2) * Math.sin(longitudeDelta / 2) ** 2;
-  return earthRadiusMeters * 2 * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
-}
-function nearestSavedAddress(addresses = [], location) {
-  let nearest = null;
-  for (const address of addresses) {
-    const savedLocation = normalizeLocation(address);
-    if (!savedLocation) continue;
-    const meters = distanceMeters(location, savedLocation);
-    if (!nearest || meters < nearest.meters) nearest = { address, meters };
-  }
-  return nearest;
 }
 function newAddressId() {
   return typeof crypto?.randomUUID === "function"
@@ -168,8 +134,8 @@ export function DeliveryPage() {
   const [recipientPhone, setRecipientPhone] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [deliveryLocation, setDeliveryLocation] = useState(null);
-  const locationResolveSerialRef = useRef(0);
   const locationSourceRef = useRef("");
+  const [locationConfirmed, setLocationConfirmed] = useState(false);
   const [routeState, setRouteState] = useState({ pending: false, route: null, quote: null, error: "" });
   const [manualZoneId, setManualZoneId] = useState("");
   const [freeGiftIds, setFreeGiftIds] = useState(new Set());
@@ -226,15 +192,15 @@ export function DeliveryPage() {
         setProfile(resolvedProfile);
         setFavoriteIds(new Set(favorites || []));
 
-        if (preferredAddress && locationSourceRef.current !== "current-location") {
-          locationResolveSerialRef.current += 1;
+        if (preferredAddress && !locationSourceRef.current) {
           locationSourceRef.current = "saved-address";
           setSelectedAddressId(preferredAddress.id);
           setRecipientName(preferredAddress.recipientName || resolvedProfile.displayName || "");
           setRecipientPhone(preferredAddress.recipientPhone || resolvedProfile.phone || "");
           setDeliveryAddress(preferredAddress.address || "");
           const preferredLocation = normalizeLocation(preferredAddress);
-          if (preferredLocation) setDeliveryLocation(preferredLocation);
+          setDeliveryLocation(preferredLocation);
+          setLocationConfirmed(false);
         } else {
           if (resolvedProfile.displayName) setRecipientName(current => current || resolvedProfile.displayName);
           if (resolvedProfile.phone) setRecipientPhone(current => current || resolvedProfile.phone);
@@ -412,62 +378,30 @@ export function DeliveryPage() {
   };
 
   const selectAddress = address => {
-    locationResolveSerialRef.current += 1;
     locationSourceRef.current = "saved-address";
+    setLocationConfirmed(false);
     setSelectedAddressId(address.id);
     setRecipientName(address.recipientName || profile.displayName || "");
     setRecipientPhone(address.recipientPhone || profile.phone || "");
     setDeliveryAddress(address.address || "");
     const location = normalizeLocation(address);
-    if (location) setDeliveryLocation(location);
+    // A saved address is selected only by an explicit user action (or the
+    // initial default). Invalid/missing coordinates must not leave a stale pin.
+    setDeliveryLocation(location);
   };
 
-  const resolveDeliveryLocation = async (location, meta = {}) => {
+  const resolveDeliveryLocation = (location, meta = {}) => {
     const next = normalizeLocation(location);
     if (!next) return;
     const source = String(meta?.source || "map");
     locationSourceRef.current = source;
-    const serial = ++locationResolveSerialRef.current;
-    const hadSelectedAddress = Boolean(selectedAddressId);
-
     setDeliveryLocation(next);
+    setLocationConfirmed(false);
     setSelectedAddressId("");
-
-    if (source === "current-location") {
-      const nearest = nearestSavedAddress(profile.addresses || [], next);
-      if (nearest && nearest.meters <= NEARBY_SAVED_ADDRESS_METERS) {
-        selectAddress(nearest.address);
-        return;
-      }
-    }
-
-    if (
-      serial === locationResolveSerialRef.current
-      && hadSelectedAddress
-      && ["current-location", "map", "manual"].includes(source)
-    ) {
-      setDeliveryAddress("");
-    }
+    // Never snap a fresh GPS/map pin to a nearby saved address. When the
+    // address no longer corresponds to its saved pin, ask for fresh details.
+    if (selectedAddressId) setDeliveryAddress("");
   };
-
-  useEffect(() => {
-    if (
-      profileLoading
-      || selectedAddressId
-      || locationSourceRef.current !== "current-location"
-      || !deliveryLocation
-    ) return;
-    const nearest = nearestSavedAddress(profile.addresses || [], deliveryLocation);
-    if (nearest && nearest.meters <= NEARBY_SAVED_ADDRESS_METERS) {
-      selectAddress(nearest.address);
-    }
-  }, [
-    profileLoading,
-    profile.addresses,
-    selectedAddressId,
-    deliveryLocation?.latitude,
-    deliveryLocation?.longitude,
-  ]);
 
   const persistProfile = async next => {
     const saved = await saveDeliveryCustomerProfile(tenant, next, customerUser);
@@ -482,8 +416,9 @@ export function DeliveryPage() {
     if (!label || !name || !address) {
       showStorefrontToast(t("delivery.checkout.address.required_fields"), "error"); return;
     }
-    if (!deliveryLocation) {
-      showStorefrontToast(t("delivery.checkout.validation.delivery_location_required"), "error"); return;
+    const addressPin = normalizeLocation(addressEditor);
+    if (!addressPin) {
+      showStorefrontToast(t("delivery.checkout.address.saved_pin_required"), "error"); return;
     }
     let addresses = [...(profile.addresses || [])];
     if (!addressEditor.id && addresses.length >= 5) {
@@ -494,7 +429,7 @@ export function DeliveryPage() {
     if (isDefault) addresses = addresses.map(row => ({ ...row, isDefault: false }));
     const row = {
       id, label, recipientName: name, recipientPhone: normalizePhone(recipientPhone),
-      address, latitude: deliveryLocation.latitude, longitude: deliveryLocation.longitude, isDefault,
+      address, latitude: addressPin.latitude, longitude: addressPin.longitude, isDefault,
     };
     const index = addresses.findIndex(item => item.id === id);
     if (index >= 0) addresses[index] = row; else addresses.push(row);
@@ -585,6 +520,7 @@ export function DeliveryPage() {
       showStorefrontToast(t("delivery.checkout.validation.delivery_details_required"), "error"); return false;
     }
     if (!deliveryLocation) { showStorefrontToast(t("delivery.checkout.validation.delivery_location_required"), "error"); return false; }
+    if (!locationConfirmed) { showStorefrontToast(t("delivery.checkout.address.confirm_pin_required"), "error"); return false; }
     if (routeState.pending) { showStorefrontToast(t("delivery.checkout.distance.calculating"), "error"); return false; }
     if (!routeReady) {
       const message = usesLalamove
@@ -712,27 +648,8 @@ export function DeliveryPage() {
 
       await createPublicDeliveryOrder(tenant, payload, { menus, settings });
 
-      // Preserve the legacy convenience behavior: save the current address after a successful order.
-      try {
-        const addresses = [...(profile.addresses || [])];
-        const matched = addresses.find(row => String(row.address || "").trim() === deliveryAddress.trim());
-        if (matched) {
-          const next = addresses.map(row => row.id === matched.id ? {
-            ...row, recipientName: recipientName.trim(), recipientPhone: normalizePhone(recipientPhone),
-            latitude: deliveryLocation.latitude, longitude: deliveryLocation.longitude,
-          } : row);
-          await persistProfile({ ...profile, displayName: recipientName.trim(), phone: normalizePhone(recipientPhone), addresses: next });
-        } else if (addresses.length < 5) {
-          const next = [...addresses, {
-            id: newAddressId(), label: t("delivery.checkout.address.latest_label"), recipientName: recipientName.trim(),
-            recipientPhone: normalizePhone(recipientPhone), address: deliveryAddress.trim(),
-            latitude: deliveryLocation.latitude, longitude: deliveryLocation.longitude, isDefault: addresses.length === 0,
-          }];
-          await persistProfile({ ...profile, displayName: recipientName.trim(), phone: normalizePhone(recipientPhone), addresses: next });
-        }
-      } catch (profileError) {
-        console.warn("DELIVERY_PROFILE_SAVE_AFTER_ORDER_FAILED", profileError);
-      }
+      // Do not rewrite saved-address coordinates as a side effect of checkout.
+      // Customer address-book pins change only through explicit Save Address.
 
       // Replace the submitted checkout history entry so Back cannot restore a
       // locked PromptPay amount or replay a completed order from the browser cache.
@@ -848,11 +765,11 @@ export function DeliveryPage() {
               <section id="addressBook" className="address-book">
                 <div className="address-book-head">
                   <div><strong>{t("delivery.checkout.address.book_title")}</strong><div className="menu-category">{profileLoading ? t("delivery.checkout.address.loading") : t("delivery.checkout.address.book_help")}</div></div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}><span id="addressCount" className="badge">{t("delivery.checkout.address.count", { count: (profile.addresses || []).length })}</span><button type="button" className="btn btn-primary btn-sm" id="addAddressButton" disabled={(profile.addresses || []).length >= 5 || Boolean(customerBusy)} onClick={() => setAddressEditor({ id: "", label: t("delivery.checkout.address.home_label"), recipientName, address: deliveryAddress, isDefault: !(profile.addresses || []).length })}><i className="bi bi-plus-lg app-icon"></i><span>{t("delivery.checkout.address.add")}</span></button></div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}><span id="addressCount" className="badge">{t("delivery.checkout.address.count", { count: (profile.addresses || []).length })}</span><button type="button" className="btn btn-primary btn-sm" id="addAddressButton" disabled={locked || submitting || (profile.addresses || []).length >= 5 || Boolean(customerBusy)} onClick={() => setAddressEditor({ id: "", label: t("delivery.checkout.address.home_label"), recipientName, address: deliveryAddress, isDefault: !(profile.addresses || []).length })}><i className="bi bi-plus-lg app-icon"></i><span>{t("delivery.checkout.address.add")}</span></button></div>
                 </div>
                 <div id="addressList" className="address-list">
                   {(profile.addresses || []).length ? (profile.addresses || []).map(address => <label className={"address-card" + (selectedAddressId === address.id ? " selected" : "")} key={address.id}>
-                    <input type="radio" name="savedDeliveryAddressReact" value={address.id} checked={selectedAddressId === address.id} onChange={() => selectAddress(address)} />
+                    <input type="radio" name="savedDeliveryAddressReact" value={address.id} checked={selectedAddressId === address.id} disabled={locked || submitting} onChange={() => selectAddress(address)} />
                     <div><div className="address-card-title">{address.label || t("delivery.checkout.address.fallback_label")}{address.isDefault ? <span className="address-default">{t("delivery.checkout.address.default_badge")}</span> : null}</div><div className="address-card-text"><strong>{address.recipientName || profile.displayName || ""}</strong><br/>{address.address}</div></div>
                     <div className="address-card-actions">
                       <button type="button" className="btn btn-sm" onClick={event => { event.preventDefault(); setAddressEditor({ ...address }); }}><i className="bi bi-pencil app-icon" aria-hidden="true"></i><span>{t("delivery.checkout.address.edit")}</span></button>
@@ -867,14 +784,26 @@ export function DeliveryPage() {
                     <div className="field"><label>{t("delivery.checkout.address.recipient")} *</label><input className="input" id="addressRecipient" maxLength={120} value={addressEditor.recipientName || ""} onChange={event => setAddressEditor(current => ({ ...current, recipientName: event.target.value }))} /></div>
                   </div>
                   <div className="field" style={{ marginTop: 10 }}><label>{t("delivery.checkout.address.details")} *</label><textarea className="input" id="addressText" maxLength={500} value={addressEditor.address || ""} onChange={event => setAddressEditor(current => ({ ...current, address: event.target.value }))} /></div>
+                  {tenant ? <div className="delivery-saved-pin-editor">
+                    <DeliveryLocationPicker slug={tenant.slug || slug} value={normalizeLocation(addressEditor)}
+                      idPrefix="savedAddress" t={t} language={locale} disabled={customerBusy === "address"}
+                      onChange={point => setAddressEditor(current => current ? { ...current, ...point } : current)} />
+                    <p className="menu-category">{t("delivery.checkout.address.saved_pin_help")}</p>
+                  </div> : null}
                   <label style={{ display: "block", marginTop: 10 }}><input type="checkbox" id="addressDefault" checked={Boolean(addressEditor.isDefault)} onChange={event => setAddressEditor(current => ({ ...current, isDefault: event.target.checked }))} /> {t("delivery.checkout.address.default_checkbox")}</label>
-                  <div className="address-form-actions"><button type="button" className="btn" id="cancelAddressButton" onClick={() => setAddressEditor(null)}><i className="bi bi-x-lg app-icon"></i><span>{t("delivery.checkout.address.cancel")}</span></button><button type="button" className="btn btn-primary" id="saveAddressButton" disabled={customerBusy === "address"} onClick={saveAddress}><i className="bi bi-floppy app-icon"></i><span>{t("delivery.checkout.address.save")}</span></button></div>
+                  <div className="address-form-actions"><button type="button" className="btn" id="cancelAddressButton" onClick={() => setAddressEditor(null)}><i className="bi bi-x-lg app-icon"></i><span>{t("delivery.checkout.address.cancel")}</span></button><button type="button" className="btn btn-primary" id="saveAddressButton" disabled={locked || submitting || customerBusy === "address"} onClick={saveAddress}><i className="bi bi-floppy app-icon"></i><span>{t("delivery.checkout.address.save")}</span></button></div>
                 </div> : null}
               </section>
 
-              <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.address.delivery_address")} *</label><textarea className="input" id="deliveryAddress" required maxLength={500} value={deliveryAddress} disabled={submitting} onChange={event => { locationResolveSerialRef.current += 1; locationSourceRef.current = "manual"; setDeliveryAddress(event.target.value); setSelectedAddressId(""); }} /></div>
+              <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.address.delivery_address")} *</label><textarea className="input" id="deliveryAddress" required maxLength={500} value={deliveryAddress} disabled={submitting || locked} onChange={event => { locationSourceRef.current = "manual"; setDeliveryAddress(event.target.value); setSelectedAddressId(""); setLocationConfirmed(false); }} /></div>
               {tenant ? <DeliveryLocationPicker slug={tenant.slug || slug} value={deliveryLocation} t={t} language={locale}
-                disabled={submitting || locked} onChange={resolveDeliveryLocation} /> : null}
+                disabled={submitting || locked} onChange={resolveDeliveryLocation}
+                onUncertain={() => setLocationConfirmed(false)} /> : null}
+              {deliveryLocation ? <label className="delivery-pin-confirm">
+                <input id="deliveryPinConfirmed" type="checkbox" checked={locationConfirmed} disabled={submitting || locked}
+                  onChange={event => setLocationConfirmed(event.target.checked)} />
+                <span>{t("delivery.checkout.address.confirm_pin_label")}</span>
+              </label> : null}
               {distanceStatus ? <div id="deliveryDistanceStatus" className={"delivery-distance-status" + (routeReady ? " is-ready" : routeState.error || (routeState.route && !routeState.route.inRange) ? " is-error" : "")}>{distanceStatus}</div> : null}
 
               <div className="field" style={{ marginTop: 12 }}>
