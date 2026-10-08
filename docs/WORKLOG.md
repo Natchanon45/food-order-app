@@ -12286,3 +12286,21 @@ Deploy state:
 - Production /admin/tenants serves /react/assets/index-4BuXq3cq.js, matching Build 2026.10.08.475.
 - No customer tenant records modified during verification; no main merge.
 - Untracked old generated bundle index-Dplusb-p.js retained.
+
+
+## 2026-10-08 — Master business tenant visibility (candidate, deployment blocked)
+- Business requirement: Restaurant-only users see only restaurant capabilities; Retail-only see Retail POS capabilities; Both see both. Must guard underlying data access, not only cards.
+- Candidate Build 2026.10.08.476: Home dashboard sections filtered using live tenant Master; App route guard checks master for /pos vs /admin, /cashier, /kitchen, /waiting-queue and redirects unauthorized paths.
+- Automated operational/react parity and React build contract PASS.
+- SECURITY BLOCKER: Firestore Rules currently allow tenantMember retail collections and role-based tenant restaurant data independent of Master; storefront/public and callable permissions still need comprehensive review.
+- DO NOT deploy candidate or declare feature finished until server-side Rules/access checks are added and safely verified. Existing project policy limits deploy to Hosting unless Rules explicitly authorized.
+- No customer data modified, no merge main, no reset or cleanup of old generated assets.
+
+
+### 2026-10-08 — Master business access Rules implementation (Build 2026.10.08.476)
+- Tenant Master businessType controls Home visibility and business dashboard route guards using live tenant context.
+- Firestore Rules enforce Master across tenant-scoped Retail POS collections and Restaurant/Cafe menus/orders/tables/queues. Legacy tenant Master absence defaults both; Super Admin retains access.
+- Shared takeaway counters retain Restaurant permissions independently of POS. Original records remain untouched.
+- Master access regression 2/2 PASS, operational/react-parity PASS, Build .476 contract PASS, Rules compilation dry-run PASS.
+- User explicitly authorized Firestore Rules deployment. Hosting plus Firestore Rules only.
+- Shared config and callable authorization retain their existing mechanisms; authenticated end-to-end verification remains recommended.

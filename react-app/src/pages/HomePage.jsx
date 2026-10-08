@@ -37,7 +37,12 @@ function safeEmail(value = "") {
   return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(normalized) ? normalized : "";
 }
 
-function supportsModule(profile = {}, moduleName = "") {
+function supportsModule(profile = {}, moduleName = "", tenant = null) {
+  if (tenant && profile.role !== "super_admin") {
+    const master = tenant.businessType;
+    if (master === "restaurant_cafe" && moduleName === "retail-pos") return false;
+    if (master === "retail" && moduleName === "order-delivery") return false;
+  }
   if (!moduleName || profile.role === "super_admin") return true;
   const values = [
     profile.module, profile.tenantType, profile.businessType,
@@ -57,10 +62,10 @@ function supportsModule(profile = {}, moduleName = "") {
   return !values.length || values.includes(moduleName) || values.includes("all");
 }
 
-function DashboardCard({ profile, roles, module, href, cardKey, icon, label, description, visible = true, feature = false }) {
+function DashboardCard({ profile, tenant, roles, module, href, cardKey, icon, label, description, visible = true, feature = false }) {
   const ownerCanView = profile?.role === "owner" && roles.some(role => roleAliases.has(role));
   const roleAllowed = ownerCanView || roles.includes(profile?.role);
-  const moduleAllowed = supportsModule(profile, module);
+  const moduleAllowed = supportsModule(profile, module, tenant);
   if (!visible || !roleAllowed || !moduleAllowed) return null;
 
   return (
@@ -77,6 +82,8 @@ export function HomePage() {
   const tenantState = useTenant();
   const { tenant } = tenantState;
   const profile = authState.profile;
+  const masterRestaurantEnabled = tenant?.businessType !== "retail";
+  const masterRetailEnabled = tenant?.businessType !== "restaurant_cafe";
   const staff = profile?.active !== false && STAFF_ROLES.includes(profile?.role);
   const [revenueShareEnabled, setRevenueShareEnabled] = useState(false);
   const [resolvedShopName, setResolvedShopName] = useState("");
@@ -309,18 +316,18 @@ export function HomePage() {
             <p>{profile.role === "owner" ? shopName : t("home.staff.hero_description")}</p>
           </section>
 
-          <section className="dashboard-section dashboard-section-order-delivery" aria-labelledby="frontServiceTitle">
+          {masterRestaurantEnabled ? <section className="dashboard-section dashboard-section-order-delivery" aria-labelledby="frontServiceTitle">
             <div className="dashboard-section-head">
               <h2 id="frontServiceTitle">Order / Delivery</h2>
               <p>{t("home.staff.order_delivery.description")}</p>
             </div>
             <div className="nav-cards" aria-label={t("home.staff.order_delivery.aria_label")}>
-              <DashboardCard profile={profile} roles={["owner","admin","kitchen","super_admin"]} href="/kitchen" cardKey="kitchen" icon="fi fi-rr-restaurant app-icon" label={t("home.staff.cards.kitchen")} description={t("home.staff.card_descriptions.kitchen")} />
-              <DashboardCard profile={profile} roles={["owner","admin","cashier","super_admin"]} href="/cashier" cardKey="cashier" icon="fi fi-rr-receipt app-icon" label={t("home.staff.cards.cashier")} description={t("home.staff.card_descriptions.cashier")} />
-              <DashboardCard profile={profile} roles={["owner","admin","super_admin"]} href="/admin" cardKey="admin" icon="fi fi-rr-settings-sliders app-icon" label={t("home.staff.cards.system_admin")} description={t("home.staff.card_descriptions.system_admin")} />
-              <DashboardCard profile={profile} roles={["owner","super_admin"]} href="/admin/users" cardKey="admin_users" icon="fi fi-rr-users app-icon" label={t("home.staff.cards.staff_admin")} description={t("home.staff.card_descriptions.staff_admin")} />
+              <DashboardCard profile={profile} tenant={tenant} roles={["owner","admin","kitchen","super_admin"]} href="/kitchen" cardKey="kitchen" icon="fi fi-rr-restaurant app-icon" label={t("home.staff.cards.kitchen")} description={t("home.staff.card_descriptions.kitchen")} />
+              <DashboardCard profile={profile} tenant={tenant} roles={["owner","admin","cashier","super_admin"]} href="/cashier" cardKey="cashier" icon="fi fi-rr-receipt app-icon" label={t("home.staff.cards.cashier")} description={t("home.staff.card_descriptions.cashier")} />
+              <DashboardCard profile={profile} tenant={tenant} roles={["owner","admin","super_admin"]} href="/admin" cardKey="admin" icon="fi fi-rr-settings-sliders app-icon" label={t("home.staff.cards.system_admin")} description={t("home.staff.card_descriptions.system_admin")} />
+              <DashboardCard profile={profile} tenant={tenant} roles={["owner","super_admin"]} href="/admin/users" cardKey="admin_users" icon="fi fi-rr-users app-icon" label={t("home.staff.cards.staff_admin")} description={t("home.staff.card_descriptions.staff_admin")} />
             </div>
-          </section>
+          </section> : null}
 
           {revenueShareEnabled ? (
             <section className="dashboard-section" aria-labelledby="centralReportsTitle" data-revenue-share-section>
@@ -329,21 +336,21 @@ export function HomePage() {
                 <p>{t("revenue_share_report.menu.section_description")}</p>
               </div>
               <div className="nav-cards" aria-label={t("revenue_share_report.menu.section_title")}>
-                <DashboardCard profile={profile} roles={["owner","admin"]} href="/reports/revenue-share" cardKey="revenue_share" icon="bi bi-graph-up-arrow app-icon" label={t("revenue_share_report.menu.title")} description={t("revenue_share_report.menu.description")} />
+                <DashboardCard profile={profile} tenant={tenant} roles={["owner","admin"]} href="/reports/revenue-share" cardKey="revenue_share" icon="bi bi-graph-up-arrow app-icon" label={t("revenue_share_report.menu.title")} description={t("revenue_share_report.menu.description")} />
               </div>
             </section>
           ) : null}
 
-          <section className="dashboard-section dashboard-section-pos" aria-labelledby="retailPosTitle">
+          {masterRetailEnabled ? <section className="dashboard-section dashboard-section-pos" aria-labelledby="retailPosTitle">
             <div className="dashboard-section-head">
               <h2 id="retailPosTitle">Retail POS</h2>
               <p>{t("home.staff.retail_pos.description")}</p>
             </div>
             <div className="nav-cards nav-cards-pos" aria-label={t("home.staff.retail_pos.aria_label")}>
-              <DashboardCard profile={profile} roles={["owner","admin","manager","cashier","super_admin"]} module="retail-pos" href="/pos" cardKey="pos" icon="fi fi-rr-shop app-icon" label={t("home.staff.retail_pos.store")} description="" feature />
-              <DashboardCard profile={profile} roles={["owner","super_admin"]} module="retail-pos" href="/pos/catalog" cardKey="pos_catalog" icon="fi fi-rr-box-open app-icon" label="POS Catalog" description="" />
+              <DashboardCard profile={profile} tenant={tenant} roles={["owner","admin","manager","cashier","super_admin"]} module="retail-pos" href="/pos" cardKey="pos" icon="fi fi-rr-shop app-icon" label={t("home.staff.retail_pos.store")} description="" feature />
+              <DashboardCard profile={profile} tenant={tenant} roles={["owner","super_admin"]} module="retail-pos" href="/pos/catalog" cardKey="pos_catalog" icon="fi fi-rr-box-open app-icon" label="POS Catalog" description="" />
             </div>
-          </section>
+          </section> : null}
         </main>
       )}
 

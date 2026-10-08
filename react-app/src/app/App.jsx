@@ -90,6 +90,27 @@ function TenantAccessLoginRedirect({ reason }) {
   return null;
 }
 
+function MasterBusinessGuard({ children }) {
+  const authState = useAuth();
+  const tenantState = useTenant();
+  const { pathname } = useLocation();
+  const profile = authState.profile;
+  if (!profile || profile.role === "super_admin") return children;
+  const posPath = /^\/pos(?:\/|$)/.test(pathname) && !["/pos/login", "/pos/forbidden"].includes(pathname);
+  const restaurantPath = /^\/(?:admin|cashier|kitchen|waiting-queue)(?:\/|$)/.test(pathname)
+    && pathname !== "/admin/tenants" && pathname !== "/waiting-queue/customer" && pathname !== "/waiting-queue/display";
+  if (!posPath && !restaurantPath) return children;
+  if (tenantState.status !== "ready") return <main className="container" role="status">กำลังโหลดข้อมูล... กรุณารอสักครู่ ...</main>;
+  const master = tenantState.tenant?.businessType;
+  const units = Array.isArray(tenantState.tenant?.businessUnits) ? tenantState.tenant.businessUnits : [];
+  const allowsPos = master ? ["retail", "both"].includes(master) : (!units.length || units.includes("retail_pos"));
+  const allowsRestaurant = master ? ["restaurant_cafe", "both"].includes(master) : (!units.length || units.includes("order_delivery"));
+  if ((posPath && !allowsPos) || (restaurantPath && !allowsRestaurant)) {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+}
+
 function RevenueShareSuspensionGuard({ children }) {
   const authState = useAuth();
   const tenantState = useTenant();
@@ -122,6 +143,7 @@ function RevenueShareSuspensionGuard({ children }) {
 export default function App() {
   return (
     <RevenueShareSuspensionGuard>
+      <MasterBusinessGuard>
       <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
@@ -186,6 +208,7 @@ export default function App() {
       <Route path="/s/:slug/react/delivery/success" element={<StorefrontAliasRedirect target="delivery/success" />} />
       <Route path="*" element={<NotFound />} />
       </Routes>
+      </MasterBusinessGuard>
     </RevenueShareSuspensionGuard>
   );
 }

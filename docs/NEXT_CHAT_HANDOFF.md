@@ -814,3 +814,11 @@ Build candidate 2026.10.08.475: business type is Master-derived read-only in Rev
 ### Production verification — Build 2026.10.08.475
 - Revenue share Master-derived read-only business field + dual-business channel scope fix deployed to Hosting and five revenue-share Functions.
 - Production HTML verifies index-4BuXq3cq.js; commit 959d5a43. Authenticated live tenant edits not performed.
+
+
+## 2026-10-08 — In-progress Master business module access
+Candidate Build .476 on local Mac only; React homepage and route guard updates pass tests. Firestore Rules and public/callable access audit outstanding. Not deployed. Respect no-Rules deployment rule without explicit approval; do not declare completion. See WORKLOG.
+
+
+### Build .476 — Tenant Master access
+- Home/private routes and tenant Firestore business collections enforce Master separation. User approved Rules deployment. No main merge. Retain generated old bundles.
