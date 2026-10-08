@@ -901,3 +901,7 @@ Candidate Build .476 on local Mac only; React homepage and route guard updates p
 
 ## 2026-10-08 — Build .485 corrective mobile category pinning
 - .484 sticky did not work according to user. .485 uses viewport fixed category strip + measured scroll anchor, search stays normal. Hosting only.
+
+
+### Build .485 live
+- Corrective viewport-fixed Delivery category scrolling released via Hosting, implementation 7df5d1f6. Live mobile visual confirmation still needed.

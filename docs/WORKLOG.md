@@ -12503,3 +12503,10 @@ Deployment boundary:
 - Replaced unreliable sticky-only category tab behavior with scroll-position viewport fixed class applied to categoryTabs alone, plus scroll anchor placeholder to prevent page jumps.
 - Search remains in normal document flow. Category highlight tracking and auto horizontal centering retained, Table Order unaffected.
 - Operational, React Parity, generated Build contract, mobile regression tests PASS. Hosting-only release; no backend/rules changes.
+
+
+### Delivery Mobile Build .485 — Production checkpoint
+- Implementation 7df5d1f6 pushed to feature/react-firebase-port and Firebase Hosting foodapp deployed successfully.
+- Live Delivery URL loads index-BZvgTYkY.js; JS asset returns 200 and new viewport pin CSS served.
+- Mobile scroll regression 4/4 and React parity/build tests PASS. No backend/functions/rules deployed.
+- Authenticated physical/mobile browser scroll outcome still unverified; user reported previous .484 faulty. Preserve user untracked asset bundles and do not merge main.
