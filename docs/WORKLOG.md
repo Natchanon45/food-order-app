@@ -12016,3 +12016,17 @@ Candidate verification:
 
 Deploy state:
 - Commit/push and Hosting-only deployment pending at this checkpoint.
+
+
+### 2026-10-08 — Build 2026.10.08.471 deployed
+- Implementation commit `af591341` — `feat: reorganize admin store settings workspace` pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production bundle: `/react/assets/index-CZozpByB.js`.
+- Production serves `/react/parity/css/admin-store-settings-workspace.css` successfully (HTTP 200).
+- Production P0 browser smoke: **52/52 PASS**.
+- The Admin store/payment redesign remains UI-only:
+  - same store/payment/delivery field IDs,
+  - same save payload and verification,
+  - same Firebase data paths,
+  - no Functions/Rules/schema changes.
+- Hosting-only deployment; no merge to `main`.
