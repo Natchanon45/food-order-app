@@ -913,3 +913,8 @@ Candidate Build .476 on local Mac only; React homepage and route guard updates p
 
 ## 2026-10-08 — Build .487 cashier legacy payment/audio candidate NOT DEPLOYED
 - Legacy 07/10 slip receipt fails direct payment update since Firestore .483 protected fields. New candidate accepts pre-rollout legacy cashier approval via trusted callable, and kitchen notifier filters out unadmitted order IDs. Test/build then seek explicit Functions rollout permission. See WORKLOG.
+
+
+### Build .487 deployed to Production
+- Authorized and successfully deployed approveDeliveryPaymentReview Function and Hosting foodapp; /cashier serving index-B1NTOMkh.js.
+- Follow up: real cashier legacy-slip settlement and browser sound bell/permission tests; see WORKLOG.

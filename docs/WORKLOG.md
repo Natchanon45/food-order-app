@@ -12525,3 +12525,12 @@ Deployment boundary:
 - Candidate: route all Delivery PromptPay cashier settlements to trusted approveDeliveryPaymentReview Callable. Accept only legacy order created before 2026-10-08 00:00 +07, with nonzero amount and existing slip pointer when server proof does not exist; record reviewing staff identity/time and release Kitchen. New orders still require signed server manual-review proof. Allow manager role consistently with frontend.
 - Kitchen audio issue: CashierOrderNotifier saw all pending orders even before paid confirmation, so Kitchen admission after cashier payment was not a new ID. Now Kitchen notifier filters on deliveryKitchenAdmitted, Cashier notifier remains all orders. Browser needs staff sound button gesture to arm WebAudio due autoplay.
 - No production tenant records changed. New Cloud Function version required for legacy payment compatibility. Project requires explicit user approval before Functions deployment; do not release Hosting alone.
+
+
+### Build .487 — Production release confirmation
+- User explicitly approved coordinated deploy of approveDeliveryPaymentReview and Hosting.
+- Firebase Functions (approveDeliveryPaymentReview, asia-southeast1) updated successfully on chat-45754; Hosting foodapp deployed successfully.
+- Old pre-Slip2Go slip records may now be approved by cashier via trusted callable with staff audit; newer orders require authoritative proof.
+- Kitchen notifier now notices new *admitted* Delivery orders and can announce them with WebAudio once sound is enabled/unlocked by user interaction.
+- Live /cashier references index-B1NTOMkh.js, asset responds HTTP 200.
+- No Firestore Rules change and no main merge. Real-payment and real-browser audio smoke tests remain pending; browsers may require pressing bell first.
