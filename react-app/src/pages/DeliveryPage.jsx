@@ -24,6 +24,7 @@ import { qrDataUrl } from "@/utils/localQr";
 
 const computeDeliveryRoute = httpsCallable(functions, "computeDeliveryRoute");
 const quotePublicLalamoveDelivery = httpsCallable(functions, "quotePublicLalamoveDelivery");
+const verifyDeliveryPaymentSlip = httpsCallable(functions, "verifyDeliveryPaymentSlip", { timeout: 70000 });
 const NEARBY_SAVED_ADDRESS_METERS = 100;
 
 function normalizePhone(value) {
@@ -601,6 +602,35 @@ export function DeliveryPage() {
     setSubmitting(true);
     try {
       const slip = paymentMethod === "promptpay" ? await uploadPublicPaymentSlip(tenant, slipFile, orderId) : { path: "" };
+      let slipCheckStatus = "";
+      if (paymentMethod === "promptpay") {
+        const response = await verifyDeliveryPaymentSlip({
+          tenantId: tenant.id, orderId, slipPath: slip.path, amount: total,
+          deliveryFee, items: cart.map(item => ({ id: item.id, qty: item.qty })),
+          deliveryProvider: usesLalamove ? "lalamove" : "self",
+          latitude: deliveryLocation.latitude, longitude: deliveryLocation.longitude,
+          quotationId: usesLalamove ? String(routeState.quote?.quotationId || "") : "",
+          zoneId: selectedZone.id,
+        });
+        const result = response?.data || {};
+        slipCheckStatus = String(result.status || "");
+        const slipErrors = {
+          duplicate: "slip_duplicate",
+          mismatch: "slip_mismatch",
+          receiver_mismatch: "slip_receiver_mismatch",
+          invalid: "slip_invalid",
+        };
+        if (slipErrors[slipCheckStatus]) {
+          showStorefrontToast(t("delivery.checkout.payment." + slipErrors[slipCheckStatus]), "error");
+          return;
+        }
+        if (!["matched", "manual_review"].includes(slipCheckStatus)) {
+          throw new Error("DELIVERY_SLIP_CHECK_INCOMPLETE");
+        }
+        if (slipCheckStatus === "manual_review") {
+          showStorefrontToast(t("delivery.checkout.payment.slip_manual"));
+        }
+      }
       const paidItems = cart.map(({ id, name, price, qty, note: itemNote }) => ({
         menuId: id, name, price: Number(price || 0), qty: Number(qty || 0), note: itemNote || "", cancelled: false,
       }));
@@ -620,6 +650,7 @@ export function DeliveryPage() {
         subtotalAmount: subtotal, totalAmount: total,
         paymentMethod, paymentStatus: paymentMethod === "promptpay" ? "pending_verification" : "unpaid",
         paymentSlipUrl: "", paymentSlipPath: slip.path || "",
+        ...(paymentMethod === "promptpay" ? { slipCheckStatus, paymentReviewRequired: slipCheckStatus === "manual_review" } : {}),
         status: "pending", note: orderNote.trim(), items: [...paidItems, ...giftItems],
         deliveryLatitude: deliveryLocation.latitude, deliveryLongitude: deliveryLocation.longitude,
       };
@@ -687,7 +718,7 @@ export function DeliveryPage() {
       location.assign("/s/" + encodeURIComponent(tenant.slug || slug) + "/delivery/success?order=" + encodeURIComponent(orderId));
     } catch (error) {
       console.error("DELIVERY_REACT_SUBMIT_FAILED", error);
-      showStorefrontToast(deliveryErrorMessage(error, t, settings), "error");
+      showStorefrontToast(String(error?.code || "").includes("functions/") ? t("delivery.checkout.payment.slip_service_error") : deliveryErrorMessage(error, t, settings), "error");
     } finally { setSubmitting(false); }
   };
 
@@ -851,7 +882,7 @@ export function DeliveryPage() {
                 {freeShipping.enabled && subtotal > 0 ? <div id="deliveryFreeShippingStatus" className={"delivery-free-shipping-status" + (!freeShippingApplied ? " is-progress" : "")}>{freeShippingApplied ? t("delivery.checkout.promotion.free_shipping_applied", { minimum: money(freeShipping.minimumSubtotal) }) : t("delivery.checkout.promotion.free_shipping_progress", { remaining: money(Math.max(0, freeShipping.minimumSubtotal - subtotal)) })}</div> : null}
               </div>
               <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.summary.order_note")}</label><textarea className="input" id="orderNote" maxLength={300} value={orderNote} disabled={submitting} onChange={event => setOrderNote(event.target.value)} /></div>
-              <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.summary.payment_method")} *</label><select className="input" id="paymentMethod" value={paymentMethod} disabled={locked || submitting} onChange={event => { setPaymentMethod(event.target.value); setPaymentLocked(false); setLockedTotal(null); clearSlip(); }}><option value="promptpay">{t("delivery.checkout.payment.promptpay_option")}</option><option value="cod">{t("delivery.checkout.payment.cod_option")}</option></select></div>
+              <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.summary.payment_method")} *</label><select className="input" id="paymentMethod" value={paymentMethod} disabled={submitting} onChange={event => { setPaymentMethod(event.target.value); setPaymentLocked(false); setLockedTotal(null); clearSlip(); }}><option value="promptpay">{t("delivery.checkout.payment.promptpay_option")}</option><option value="cod">{t("delivery.checkout.payment.cod_option")}</option></select></div>
 
               {paymentMethod === "promptpay" ? <div id="promptPaySection" className="card" style={{ marginTop: 12, textAlign: "center" }}>
                 <h3 style={{ marginTop: 0 }}><i className="bi bi-qr-code app-icon"></i><span>{t("delivery.checkout.payment.promptpay_title")}</span></h3>

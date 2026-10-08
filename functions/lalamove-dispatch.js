@@ -327,6 +327,17 @@ async function publicLalamoveQuotation(request) {
       paymentMethod,
     },
   });
+  // Authoritative server quote, required before automated slip acceptance.
+  if (quote.quotationId) {
+    await context.tenantRef.collection("deliveryCheckoutQuotes").doc(String(quote.quotationId)).set({
+      tenantId: context.tenantRef.id,
+      quotationId: String(quote.quotationId),
+      fee: Number(quote.fee || 0),
+      latitude, longitude, paymentMethod,
+      expiresAt: String(quote.expiresAt || ""),
+      issuedAt: FieldValue.serverTimestamp(),
+    });
+  }
   return {
     item: {
       ...quote,

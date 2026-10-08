@@ -12381,3 +12381,37 @@ Deploy state:
 ## 2026-10-08 — Lalamove approval button (Build 2026.10.08.482)
 - Shortened Thai approval button to อนุมัติ Lalamove and English to Approve Lalamove; unchanged approval logic and confirmation.
 - Hosting only, no merge main.
+
+
+## 2026-10-08 — Delivery Slip2Go integration (WORK IN PROGRESS — NOT DEPLOYED)
+- Confirmed scope: restaurant/cafe Delivery only; no Retail POS changes.
+- Existing tenant Delivery checkout creates pending_verification orders directly and stores uploaded slips; existing kitchen watches active orders regardless of payment verification.
+- Existing Slip2Go helper functions/slip-verification.js checks against platform central receiver; customer payment recipient is tenant-specific promptPayId/Name, so reusing as-is would misverify the destination.
+- Existing notifyDeliveryOrderCreated alerts owner/cashier on creation. New flow must retain cashier alerts for COD and manual-review orders, only alert kitchen after payment admission.
+- Staged react-app/src/data/deliveryKitchenGate.js with COD admitted, PromptPay held until paid, and a KitchenPage card filter. Node regression 2/2 PASS.
+- SECURITY WORK REMAINING before deploying: trusted server verification using tenant-specific receiver, duplicate protection, trustworthy transition to paid, customer retry/COD error handling, manual cashier approval and release, payment status security and push/notification behavior, integration tests.
+- DO NOT deploy this WIP Kitchen filter alone or merge main. No tenant orders or production data touched.
+
+
+## 2026-10-08 — Delivery Slip2Go central payment verification (Build 2026.10.08.483)
+- Scope restaurant/cafe Delivery only; retail-only Master excluded. COD bypasses Slip2Go, immediately enters kitchen.
+- Added callable verifyDeliveryPaymentSlip: uploads stay in tenant payment-slips; server fetches image, verifies against central Slip2Go secret and merchant PromptPay phone/tax ID (receiver types 02001/02003), checks exact amount, duplicate reference and receiver.
+- Validates customer cart line IDs/qty/prices against Firestore menu master before verification and signs amount, fee and sorted cart data in an inaccessible server-side proof document.
+- Rejected duplicate, invalid, wrong-amount and receiver-mismatch slips stop checkout and prompt a new upload/COD.
+- Slip2Go service unavailable, invalid central credentials, quota exhausted or throttling triggers manual cashier review; OCR fallback cannot authorize automatic payment. Central credit usage capped by IP + tenant burst rate and unique bank transaction reference ledger.
+- Added finalizeDeliveryPaymentSlip Firestore onCreate trigger to transition pending_verification to paid only on fresh, exact matching server proof. Otherwise kitchen entry remains gated.
+- Kitchen filters unpaid PromptPay from cards; cashier sees every created Delivery order including COD and manual-review slips, with manual-confirm-and-send-to-kitchen button.
+- Added notifyKitchenDeliveryAdmitted event to notify kitchen upon COD creation or verified/approved PromptPay transition. Existing cashier creation notification unchanged.
+- Updated tenant Firestore order update security rule to stop kitchen role changing paymentStatus/slipVerificationStatus itself.
+- Customer can change from locked PromptPay to COD and see localized slip errors and receipt statuses (TH/EN/MM/LO/KM).
+- Added unit/contract tests for slip decisions, duplicate/mismatch, downtime, exact proof binding, COD/PromptPay gate, frontend wiring.
+- Preserve generated hashed bundles; do not merge main. Cloud Function/Firestore Rules/Hosting deployment required.
+- Caveat: payment receiver validation is based on merchant PromptPay proxy and exact amount/cart; independent server recomputation of every dynamic Lalamove/Google delivery quotation is not implemented.
+
+
+### Build 2026.10.08.483 — Payment security checks and shipping fee handling
+- Client-supplied delivery fees cannot authorize an automatic paid status without independent server verification. Server checks original tenant Lalamove quote snapshot (new function quotePublicLalamoveDelivery persistence), tenant manual-zone fees, or cached verified Google route before automatic Slip2Go acceptance.
+- When delivery fee cannot be independently confirmed, fallback is cashier manual review; when an authoritative fee conflicts with the checkout fee, reject as amount mismatch. This prevents automatically authorizing forged small shipping fees.
+- For PromptPay delivery, direct Firestore staff updates to payment-related fields are blocked (including owner/admin/cashier/kitchen), while trusted Cloud Functions use Admin SDK.
+- Updated Firestore Rules syntax to use negated affectedKeys().hasAny; dry-run now compiles without invalid hasNone warning.
+- NOTE: A few custom/legacy delivery-zone configurations may require cashier manual review until full authoritative fee validation is extended.

@@ -1087,10 +1087,14 @@
         "paid_short": "ชำระแล้ว",
         "unpaid": "ยังไม่ชำระ",
         "receive": "รับชำระ",
+        "slip_manual_release": "ยืนยันสลิปและส่งเข้าครัว",
+        "slip_manual_pending": "รอแคชเชียร์ตรวจสอบสลิป",
+        "slip_auto_pending": "Slip2Go ตรวจสลิปแล้ว กำลังยืนยันยอด",
         "view_slip": "ดูสลิป",
         "loading_slip": "กำลังโหลดสลิป...",
         "confirm_message": "ตรวจสอบสลิปหรือรับเงินเรียบร้อยแล้วใช่หรือไม่?",
-        "confirm_title": "ยืนยันการชำระเงิน"
+        "confirm_title": "ยืนยันการชำระเงิน",
+        "slip_manual_approved": "ยืนยันสลิปและส่งออเดอร์เข้าครัวแล้ว"
       },
       "actions": {
         "cancel_all": "ยกเลิกทุกรายการ",
@@ -1556,14 +1560,20 @@
           "slip_help": "รองรับรูปจากกล้องและคลังรูป • ไม่เกิน 8 MB",
           "slip_preview_alt": "ตัวอย่างสลิป",
           "remove_slip": "ลบสลิป",
-          "review_note": "** ระบบรับหลักฐานการชำระไว้ให้ร้านตรวจสอบเท่านั้น",
+          "review_note": "ระบบใช้ Slip2Go ตรวจสลิปก่อนส่งเข้าครัว หากบริการไม่พร้อม แคชเชียร์จะตรวจสอบเอง",
           "slip_too_large": "สลิปต้องมีขนาดไม่เกิน 8 MB",
           "slip_type_detail": "รองรับเฉพาะไฟล์รูปภาพ JPG, PNG, WebP และ HEIC",
           "slip_type_toast": "ชนิดไฟล์สลิปไม่รองรับ",
           "slip_fallback_name": "สลิปการชำระเงิน",
           "slip_attached": "แนบสลิปเรียบร้อยแล้ว",
           "slip_required_error": "กรุณาแนบสลิปก่อนยืนยันคำสั่งซื้อ",
-          "slip_required_toast": "กรุณาแนบสลิปหรือหลักฐานการชำระ"
+          "slip_required_toast": "กรุณาแนบสลิปหรือหลักฐานการชำระ",
+          "slip_duplicate": "สลิปนี้ถูกใช้แล้ว กรุณาอัปโหลดสลิปใหม่หรือเลือกเก็บเงินปลายทาง",
+          "slip_mismatch": "ยอดโอนเงินไม่ตรงกับยอดคำสั่งซื้อ กรุณาอัปโหลดสลิปใหม่หรือเลือกเก็บเงินปลายทาง",
+          "slip_receiver_mismatch": "บัญชีผู้รับเงินบนสลิปไม่ตรงกับร้านค้า กรุณาตรวจสอบและอัปโหลดใหม่",
+          "slip_invalid": "สลิปมีปัญหาหรือไม่ถูกต้อง กรุณาอัปโหลดสลิปใหม่หรือเลือกเก็บเงินปลายทาง",
+          "slip_manual": "ระบบตรวจสลิปอัตโนมัติไม่พร้อม แคชเชียร์จะตรวจสอบก่อนส่งออเดอร์เข้าครัว",
+          "slip_service_error": "ไม่สามารถตรวจสลิปได้ กรุณาลองใหม่หรือเลือกเก็บเงินปลายทาง"
         },
         "validation": {
           "delivery_details_required": "กรุณากรอกชื่อผู้รับ ที่อยู่ และเบอร์โทรศัพท์",
@@ -1694,6 +1704,8 @@
           "paid": "ชำระเงินแล้ว",
           "cod": "เก็บเงินปลายทาง",
           "pending_verification": "ส่งหลักฐานแล้ว รอร้านตรวจสอบ",
+          "cashier_review": "รอแคชเชียร์ตรวจสอบสลิปก่อนส่งเข้าครัว",
+          "slip2go_finalizing": "Slip2Go ตรวจผ่านแล้ว กำลังยืนยันชำระเงิน",
           "unpaid": "ยังไม่ชำระเงิน"
         },
         "shop_phone": "โทร :phone",
@@ -7513,10 +7525,14 @@
         "paid_short": "Paid",
         "unpaid": "Unpaid",
         "receive": "Receive payment",
+        "slip_manual_release": "Verify slip and send to kitchen",
+        "slip_manual_pending": "Waiting for cashier slip review",
+        "slip_auto_pending": "Slip2Go verified; finalizing payment",
         "view_slip": "View slip",
         "loading_slip": "Loading slip...",
         "confirm_message": "Have you verified the payment slip or received the payment?",
-        "confirm_title": "Confirm payment"
+        "confirm_title": "Confirm payment",
+        "slip_manual_approved": "Slip approved and order released to kitchen"
       },
       "actions": {
         "cancel_all": "Cancel all items",
@@ -7982,14 +7998,20 @@
           "slip_help": "Camera and photo-library images supported • Up to 8 MB",
           "slip_preview_alt": "Payment slip preview",
           "remove_slip": "Remove slip",
-          "review_note": "** Payment proof is stored for restaurant verification only.",
+          "review_note": "Slip2Go checks payment before orders reach the kitchen. If unavailable, the cashier reviews the slip.",
           "slip_too_large": "The payment slip must be 8 MB or smaller.",
           "slip_type_detail": "Only JPG, PNG, WebP, and HEIC images are supported.",
           "slip_type_toast": "This payment slip file type is not supported.",
           "slip_fallback_name": "payment-slip",
           "slip_attached": "Payment slip attached",
           "slip_required_error": "Attach a payment slip before confirming the order.",
-          "slip_required_toast": "Attach a payment slip or proof of payment."
+          "slip_required_toast": "Attach a payment slip or proof of payment.",
+          "slip_duplicate": "This slip has already been used. Upload another slip or switch to cash on delivery.",
+          "slip_mismatch": "The transferred amount does not match the order total. Upload another slip or switch to cash on delivery.",
+          "slip_receiver_mismatch": "The slip receiver does not match this store. Check the payment and upload another slip.",
+          "slip_invalid": "The slip is invalid or could not be verified. Upload another slip or switch to cash on delivery.",
+          "slip_manual": "Automatic slip verification is unavailable. The cashier will review it before releasing the order to the kitchen.",
+          "slip_service_error": "Unable to verify the slip. Please retry or select cash on delivery."
         },
         "validation": {
           "delivery_details_required": "Enter the recipient name, delivery address, and phone number.",
@@ -8120,6 +8142,8 @@
           "paid": "Paid",
           "cod": "Cash on delivery",
           "pending_verification": "Proof submitted, awaiting restaurant verification",
+          "cashier_review": "Waiting for cashier slip review before entering the kitchen",
+          "slip2go_finalizing": "Slip2Go verified; finalizing payment",
           "unpaid": "Unpaid"
         },
         "shop_phone": "Phone :phone",
@@ -13664,10 +13688,14 @@
         "paid_short": "ငွေချေပြီး",
         "unpaid": "မချေရသေး",
         "receive": "ငွေလက်ခံမည်",
+        "slip_manual_release": "စလစ်စစ်ဆေးပြီး မီးဖိုချောင်သို့ပို့မည်",
+        "slip_manual_pending": "ငွေကိုင်မှ စလစ်စစ်ဆေးရန် စောင့်ဆိုင်းနေသည်",
+        "slip_auto_pending": "Slip2Go စစ်ဆေးပြီး ငွေပေးချေမှုအတည်ပြုနေသည်",
         "view_slip": "စလစ်ကြည့်မည်",
         "loading_slip": "စလစ်ဖွင့်နေသည်...",
         "confirm_message": "ငွေလွှဲစလစ်ကို စစ်ဆေးပြီးပြီ သို့မဟုတ် ငွေလက်ခံပြီးပြီလား?",
-        "confirm_title": "ငွေပေးချေမှု အတည်ပြု"
+        "confirm_title": "ငွေပေးချေမှု အတည်ပြု",
+        "slip_manual_approved": "စလစ်ကို အတည်ပြုပြီး အော်ဒါကို မီးဖိုခန်းသို့ ပို့ပြီးပါပြီ"
       },
       "actions": {
         "cancel_all": "မီနူးအားလုံး ပယ်ဖျက်",
@@ -14140,7 +14168,13 @@
           "slip_fallback_name": "ငွေပေးချေမှုစလစ်",
           "slip_attached": "ငွေပေးချေမှုစလစ် ပူးတွဲပြီးပါပြီ",
           "slip_required_error": "အော်ဒါမအတည်ပြုမီ ငွေပေးချေမှုစလစ် ပူးတွဲပါ။",
-          "slip_required_toast": "ငွေပေးချေမှုစလစ် သို့မဟုတ် ငွေပေးချေမှုအထောက်အထား ပူးတွဲပါ။"
+          "slip_required_toast": "ငွေပေးချေမှုစလစ် သို့မဟုတ် ငွေပေးချေမှုအထောက်အထား ပူးတွဲပါ။",
+          "slip_duplicate": "ဤစလစ်ကို အသုံးပြုပြီးပါပြီ။ စလစ်အသစ်တင်ပါ သို့မဟုတ် COD ကိုရွေးပါ။",
+          "slip_mismatch": "လွှဲငွေပမာဏသည် အော်ဒါစုစုပေါင်းနှင့် မကိုက်ညီပါ။ စလစ်အသစ်တင်ပါ သို့မဟုတ် COD ကိုရွေးပါ။",
+          "slip_receiver_mismatch": "စလစ်ရှိ ငွေလက်ခံအကောင့်သည် ဆိုင်နှင့်မကိုက်ညီပါ။ စစ်ဆေးပြီး စလစ်အသစ်တင်ပါ။",
+          "slip_invalid": "စလစ်မမှန်ကန်ပါ သို့မဟုတ် စစ်ဆေး၍မရပါ။ စလစ်အသစ်တင်ပါ သို့မဟုတ် COD ကိုရွေးပါ။",
+          "slip_manual": "အလိုအလျောက် စလစ်စစ်ဆေးမှု မရနိုင်ပါ။ မီးဖိုခန်းသို့ မပို့မီ Cashier က စစ်ဆေးပါမည်။",
+          "slip_service_error": "စလစ်စစ်ဆေး၍ မရပါ။ ထပ်ကြိုးစားပါ သို့မဟုတ် COD ရွေးပါ။"
         },
         "validation": {
           "delivery_details_required": "လက်ခံသူအမည်၊ ပေးပို့လိပ်စာနှင့် ဖုန်းနံပါတ်တို့ကို ထည့်သွင်းပါ။",
@@ -14271,6 +14305,8 @@
           "paid": "အခကြေးငွေ",
           "cod": "ပစ္စည်းရောက်မှငွေချေပါ။",
           "pending_verification": "အထောက်အထားတင်ပြပြီး စားသောက်ဆိုင်အတည်ပြုချက်ကို စောင့်နေသည်။",
+          "cashier_review": "မီးဖိုချောင်သို့ မပို့မီ ငွေကိုင်မှ စလစ်စစ်ဆေးရန် စောင့်ဆိုင်းနေသည်။",
+          "slip2go_finalizing": "Slip2Go စစ်ဆေးပြီး ငွေပေးချေမှုအတည်ပြုနေသည်။",
           "unpaid": "အခကြေးငွေမယူရသေး"
         },
         "shop_phone": "ဖုန်း :phone",
@@ -19815,10 +19851,14 @@
         "paid_short": "ຊຳລະແລ້ວ",
         "unpaid": "ຍັງບໍ່ຊຳລະ",
         "receive": "ຮັບຊຳລະ",
+        "slip_manual_release": "ຢືນຢັນສະລິບແລະສົ່ງເຂົ້າຄົວ",
+        "slip_manual_pending": "ລໍຖ້າແຄຊເຊຍກວດສະລິບ",
+        "slip_auto_pending": "Slip2Go ກວດແລ້ວ ກຳລັງຢືນຢັນຍອດ",
         "view_slip": "ເບິ່ງສະລິບ",
         "loading_slip": "ກຳລັງໂຫຼດສະລິບ...",
         "confirm_message": "ໄດ້ກວດສະລິບ ຫຼື ຮັບເງິນແລ້ວບໍ?",
-        "confirm_title": "ຢືນຢັນການຊຳລະ"
+        "confirm_title": "ຢືນຢັນການຊຳລະ",
+        "slip_manual_approved": "ຢືນຢັນສະລິບ ແລະ ສົ່ງອໍເດີເຂົ້າຄົວແລ້ວ"
       },
       "actions": {
         "cancel_all": "ຍົກເລີກທຸກລາຍການ",
@@ -20291,7 +20331,13 @@
           "slip_fallback_name": "ໃບຊຳລະເງິນ",
           "slip_attached": "ແນບສະລິບແລ້ວ",
           "slip_required_error": "ແນບສະລິບກ່ອນຢືນຢັນຄຳສັ່ງ.",
-          "slip_required_toast": "ແນບສະລິບ ຫຼື ຫຼັກຖານການຊຳລະ."
+          "slip_required_toast": "ແນບສະລິບ ຫຼື ຫຼັກຖານການຊຳລະ.",
+          "slip_duplicate": "ສະລິບນີ້ຖືກໃຊ້ແລ້ວ ກະລຸນາອັບໂຫຼດສະລິບໃໝ່ ຫຼື ເລືອກເກັບເງິນປາຍທາງ",
+          "slip_mismatch": "ຈຳນວນເງິນໂອນບໍ່ກົງກັບຍອດອໍເດີ ກະລຸນາອັບໂຫຼດສະລິບໃໝ່ ຫຼື ເລືອກ COD",
+          "slip_receiver_mismatch": "ບັນຊີຜູ້ຮັບໃນສະລິບບໍ່ກົງກັບຮ້ານ ກະລຸນາກວດສອບແລະອັບໂຫຼດໃໝ່",
+          "slip_invalid": "ສະລິບບໍ່ຖືກຕ້ອງ ຫຼື ກວດສອບບໍ່ໄດ້ ກະລຸນາອັບໂຫຼດໃໝ່ ຫຼື ເລືອກ COD",
+          "slip_manual": "ລະບົບກວດສະລິບອັດຕະໂນມັດບໍ່ພ້ອມ ແຄຊເຊຍຈະກວດກ່ອນສົ່ງອໍເດີເຂົ້າຄົວ",
+          "slip_service_error": "ກວດສະລິບບໍ່ໄດ້ ກະລຸນາລອງໃໝ່ ຫຼື ເລືອກ COD."
         },
         "validation": {
           "delivery_details_required": "ໃສ່ຊື່ຜູ້ຮັບ, ທີ່ຢູ່ສົ່ງ ແລະເບີໂທລະສັບ.",
@@ -20422,6 +20468,8 @@
           "paid": "ຈ່າຍແລ້ວ",
           "cod": "ເງິນສົດໃນການຈັດສົ່ງ",
           "pending_verification": "ສົ່ງຫຼັກຖານ, ລໍຖ້າການຢັ້ງຢືນຮ້ານອາຫານ",
+          "cashier_review": "ລໍຖ້າແຄຊເຊຍກວດສະລິບກ່ອນສົ່ງເຂົ້າຄົວ",
+          "slip2go_finalizing": "Slip2Go ກວດແລ້ວ ກຳລັງຢືນຢັນຍອດ",
           "unpaid": "ບໍ່ໄດ້ຈ່າຍ"
         },
         "shop_phone": "ໂທລະສັບ :phone",
@@ -25966,10 +26014,14 @@
         "paid_short": "បានបង់",
         "unpaid": "មិនទាន់បង់",
         "receive": "ទទួលការទូទាត់",
+        "slip_manual_release": "ពិនិត្យស្លិប និងផ្ញើទៅផ្ទះបាយ",
+        "slip_manual_pending": "រង់ចាំអ្នកគិតលុយពិនិត្យស្លិប",
+        "slip_auto_pending": "Slip2Go បានពិនិត្យ កំពុងបញ្ជាក់ការទូទាត់",
         "view_slip": "មើលស្លិប",
         "loading_slip": "កំពុងផ្ទុកស្លិប...",
         "confirm_message": "បានពិនិត្យស្លិប ឬទទួលប្រាក់រួចហើយទេ?",
-        "confirm_title": "បញ្ជាក់ការទូទាត់"
+        "confirm_title": "បញ្ជាក់ការទូទាត់",
+        "slip_manual_approved": "បានអនុម័តស្លីប និងបញ្ជូនការកម្មង់ទៅផ្ទះបាយ"
       },
       "actions": {
         "cancel_all": "បោះបង់មុខម្ហូបទាំងអស់",
@@ -26442,7 +26494,13 @@
           "slip_fallback_name": "ប័ណ្ណទូទាត់",
           "slip_attached": "បានភ្ជាប់ស្លិបបង់ប្រាក់",
           "slip_required_error": "សូមភ្ជាប់ស្លិបបង់ប្រាក់មុនបញ្ជាក់ការបញ្ជាទិញ។",
-          "slip_required_toast": "សូមភ្ជាប់ស្លិប ឬភស្តុតាងបង់ប្រាក់។"
+          "slip_required_toast": "សូមភ្ជាប់ស្លិប ឬភស្តុតាងបង់ប្រាក់។",
+          "slip_duplicate": "ស្លីបនេះត្រូវបានប្រើរួចហើយ។ សូមបញ្ចូលស្លីបថ្មី ឬជ្រើសបង់ប្រាក់ពេលទទួលទំនិញ។",
+          "slip_mismatch": "ចំនួនប្រាក់ផ្ទេរមិនត្រូវនឹងសរុបការកម្មង់។ សូមបញ្ចូលស្លីបថ្មី ឬជ្រើស COD។",
+          "slip_receiver_mismatch": "គណនីអ្នកទទួលក្នុងស្លីបមិនត្រូវនឹងហាង។ សូមពិនិត្យ និងបញ្ចូលស្លីបថ្មី។",
+          "slip_invalid": "ស្លីបមិនត្រឹមត្រូវ ឬមិនអាចផ្ទៀងផ្ទាត់បាន។ សូមបញ្ចូលស្លីបថ្មី ឬជ្រើស COD។",
+          "slip_manual": "ការផ្ទៀងផ្ទាត់ស្លីបស្វ័យប្រវត្តិមិនអាចប្រើបាន។ Cashier នឹងពិនិត្យមុនបញ្ជូនការកម្មង់ទៅផ្ទះបាយ។",
+          "slip_service_error": "មិនអាចពិនិត្យស្លិបបានទេ។ សូមព្យាយាមម្តងទៀត ឬជ្រើស COD។"
         },
         "validation": {
           "delivery_details_required": "បញ្ចូលឈ្មោះអ្នកទទួល អាសយដ្ឋានដឹកជញ្ជូន និងលេខទូរស័ព្ទ។",
@@ -26573,6 +26631,8 @@
           "paid": "បង់",
           "cod": "សាច់ប្រាក់លើការដឹកជញ្ជូន",
           "pending_verification": "ភស្តុតាងត្រូវបានដាក់ស្នើ រង់ចាំការផ្ទៀងផ្ទាត់ភោជនីយដ្ឋាន",
+          "cashier_review": "រង់ចាំអ្នកគិតលុយពិនិត្យស្លិបមុនផ្ញើទៅផ្ទះបាយ",
+          "slip2go_finalizing": "Slip2Go បានពិនិត្យ កំពុងបញ្ជាក់ការទូទាត់",
           "unpaid": "មិនទាន់បង់ប្រាក់"
         },
         "shop_phone": "ទូរស័ព្ទ :phone",

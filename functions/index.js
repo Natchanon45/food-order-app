@@ -278,3 +278,10 @@ exports.quoteTenantLalamoveDispatch = lalamoveDispatch.quoteTenantLalamoveDispat
 exports.placeTenantLalamoveDispatch = lalamoveDispatch.placeTenantLalamoveDispatch;
 exports.refreshTenantLalamoveDispatch = lalamoveDispatch.refreshTenantLalamoveDispatch;
 exports.cancelTenantLalamoveDispatch = lalamoveDispatch.cancelTenantLalamoveDispatch;
+
+// PENGUIN central Slip2Go verification for restaurant/cafe Delivery only.
+const deliverySlip = require("./delivery-slip");
+exports.verifyDeliveryPaymentSlip = deliverySlip.verifyDeliveryPaymentSlip;
+exports.finalizeDeliveryPaymentSlip = deliverySlip.finalizeDeliveryPaymentSlip;
+exports.approveDeliveryPaymentReview = deliverySlip.approveDeliveryPaymentReview;
+exports.notifyKitchenDeliveryAdmitted = deliverySlip.notifyKitchenDeliveryAdmitted;

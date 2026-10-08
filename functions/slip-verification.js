@@ -143,16 +143,16 @@ function fallbackResult(primary, fallback, expectedAmount) {
   };
 }
 
-async function inspectSlip(buffer, mime, filename, expectedAmount) {
+async function inspectSlip(buffer, mime, filename, expectedAmount, options = {}) {
   const snapshot = await getFirestore().collection("platformPrivateSettings").doc("slipVerification").get();
   const settings = snapshot.data() || {};
-  const provider = ["google_vision", "slip2go", "slip2go_fallback_vision"].includes(settings.provider)
-    ? settings.provider : "google_vision";
+  const provider = options.providerOverride || (["google_vision", "slip2go", "slip2go_fallback_vision"].includes(settings.provider)
+    ? settings.provider : "google_vision");
   if (provider === "google_vision") return inspectGoogleVision(buffer, mime, expectedAmount);
 
   const apiUrl = String(settings.slip2GoApiUrl || "").replace(/\/$/, "");
   const secret = String(settings.slip2GoSecret || "");
-  const receiver = {
+  const receiver = options.receiverOverride || {
     accountType: String(settings.receiverAccountType || ""),
     accountNameTH: String(settings.receiverNameTh || ""),
     accountNameEN: String(settings.receiverNameEn || ""),

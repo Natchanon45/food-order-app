@@ -867,3 +867,19 @@ Candidate Build .476 on local Mac only; React homepage and route guard updates p
 
 ## 2026-10-08 — Build .482
 - Shortened Lalamove approval label; see WORKLOG.
+
+
+## 2026-10-08 — WIP Delivery Slip2Go checkout / cashier / kitchen
+- Started only: kitchen admission gate and tests in local working tree. NOT committed, pushed or deployed.
+- Requires server-side verification + tenant-specific receiver + safe cashier manual approval + notifications before release.
+- See latest WORKLOG. Do not deploy partial filter on its own.
+
+
+## 2026-10-08 — Delivery Slip2Go central integration .483
+- New restaurant Delivery verification callable and backend payment-finalization + kitchen alert triggers, merchant PromptPay receiver validation, manual cashier fallback and gated kitchen.
+- Client messages localized. Modified Rules for kitchen payment field protection. Build .483 candidate.
+- Before completing rollout inspect Firebase function deployment, callable runtime and authenticated checkout manual/E2E smoke; see WORKLOG.
+
+
+### Shipping fee authenticity .483
+- Server verifies delivery fees against persisted Lalamove quote, cached Google route or configured manual zone before Slip2Go auto-paid. Unverifiable -> cashier manually confirms, mismatched -> customer retries. Added quotePublicLalamoveDelivery to deployment scope. Firestore Rules dry-run clean.

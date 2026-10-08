@@ -186,7 +186,11 @@ export function DeliverySuccessPage() {
     : order?.paymentMethod === "cod"
       ? t("delivery.success.payment.cod")
       : order?.paymentStatus === "pending_verification"
-        ? t("delivery.success.payment.pending_verification")
+        ? (order.paymentReviewRequired === true
+          ? t("delivery.success.payment.cashier_review")
+          : order.slipCheckStatus === "matched"
+            ? t("delivery.success.payment.slip2go_finalizing")
+            : t("delivery.success.payment.pending_verification"))
         : t("delivery.success.payment.unpaid");
 
   const tracking = trackingState(order || {});

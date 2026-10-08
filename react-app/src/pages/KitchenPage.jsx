@@ -18,6 +18,7 @@ import {
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
+import { deliveryKitchenAdmitted } from "@/data/deliveryKitchenGate";
 import { isKitchenLocked, isLalamoveDelivery, lalamoveDispatchActive, lalamoveStatus } from "@/utils/kitchenOrderLock";
 
 const ACTIVE_STATUSES = new Set(["pending", "accepted", "cooking", "ready", "served"]);
@@ -369,7 +370,7 @@ export function KitchenPage() {
   }, [tenant?.id, allowedRole, orders]);
 
   const cards = useMemo(() => {
-    const active = orders.filter(order => ACTIVE_STATUSES.has(order.status) && !lalamoveDeliveryCompleted(order));
+    const active = orders.filter(order => ACTIVE_STATUSES.has(order.status) && !lalamoveDeliveryCompleted(order) && deliveryKitchenAdmitted(order));
     const tableGroups = new Map();
     active.filter(isTableOrder).forEach(order => {
       const key = tableGroupKey(order);

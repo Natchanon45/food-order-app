@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { getDownloadURL, ref as storageRef } from "firebase/storage";
+import { httpsCallable } from "firebase/functions";
 import { useAuth } from "@/auth/AuthProvider";
 import { CashierOrderNotifier } from "@/components/CashierOrderNotifier";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
@@ -8,7 +9,7 @@ import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
 import { sweetConfirm, sweetPrompt } from "@/components/sweetDialog";
-import { storage } from "@/firebase/client";
+import { functions, storage } from "@/firebase/client";
 import {
   assignWalkInTable,
   cancelLalamoveDispatch,
@@ -28,6 +29,7 @@ import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
 import { qrDataUrl } from "@/utils/localQr";
 
+const approveDeliveryPaymentReview = httpsCallable(functions, "approveDeliveryPaymentReview");
 const LALAMOVE_STATUS_COOLDOWN_MS = 10000;
 const FINISHED_LALAMOVE = new Set(["COMPLETED", "CANCELED", "CANCELLED", "REJECTED", "EXPIRED"]);
 
@@ -169,7 +171,11 @@ function OrderNote({ order, t }) {
 function paymentLabel(order, t) {
   if (order.paymentStatus === "paid" && order.status === "served") return t("cashier.payment.paid_waiting_close");
   if (order.paymentStatus === "paid") return t("cashier.payment.confirmed");
-  if (order.paymentStatus === "pending_verification") return t("cashier.payment.slip_pending");
+  if (order.paymentStatus === "pending_verification") {
+    if (order.paymentReviewRequired === true) return t("cashier.payment.slip_manual_pending");
+    if (order.slipCheckStatus === "matched") return t("cashier.payment.slip_auto_pending");
+    return t("cashier.payment.slip_pending");
+  }
   if (order.paymentMethod === "cod") return t("cashier.payment.cod");
   return t("cashier.payment.waiting");
 }
@@ -246,7 +252,7 @@ function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, actions }) {
       <a className="btn btn-dark" href={cashierRoute(`/receipt/?order=${encodeURIComponent(order.id)}`)} target="_blank" rel="noopener noreferrer"><i className="bi bi-printer app-icon"></i><span>{t("cashier.common.print")}</span></a>
       {slipUrl ? <a className="btn btn-warning" href={slipUrl} target="_blank" rel="noopener noreferrer"><i className="bi bi-eye app-icon"></i><span>{t("cashier.payment.view_slip")}</span></a>
         : order.paymentSlipPath ? <button className="btn btn-warning" type="button" disabled><i className="bi bi-eye app-icon"></i><span>{t("cashier.payment.loading_slip")}</span></button> : null}
-      {order.paymentStatus !== "paid" && !isLalamoveCod(order) ? <button className="btn btn-primary cashier-payment-action" type="button" disabled={busy} onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{t("cashier.payment.receive")}</span></button> : null}
+      {order.paymentStatus !== "paid" && !isLalamoveCod(order) && order.slipCheckStatus !== "matched" ? <button className="btn btn-primary cashier-payment-action" type="button" disabled={busy} onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{order.paymentReviewRequired === true ? t("cashier.payment.slip_manual_release") : t("cashier.payment.receive")}</span></button> : null}
       {lalamoveCodAwaitingSettlement(order) ? <button className="btn btn-primary cashier-payment-action cashier-cod-settlement-action" type="button" disabled={busy} onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{t("cashier.lalamove.cod_receive")}</span></button> : null}
       {lalamoveDeliveryCompleted(order) ? null : dispatchedLocked
         ? <button className="btn btn-primary" type="button" disabled title={t("cashier.lalamove.local_cancel_locked")}><i className="bi bi-truck app-icon"></i><span>{t("cashier.lalamove.dispatched")}</span></button>
@@ -649,6 +655,14 @@ export function CashierPage() {
     const printWindow = openReceiptPrintWindow();
     setBusyKey(`pay:${order.id}`);
     try {
+      const manualDeliveryReview = order.paymentReviewRequired === true
+        && order.orderType === "delivery" && order.paymentMethod === "promptpay";
+      if (manualDeliveryReview) {
+        await approveDeliveryPaymentReview({ tenantId: tenant.id, orderId: order.id });
+        showToast(t("cashier.payment.slip_manual_approved"));
+        printOrder(printWindow, order.id);
+        return;
+      }
       const now = new Date().toISOString();
       const patch = { paymentStatus: "paid", paidAt: now };
       if (codSettlement) {
