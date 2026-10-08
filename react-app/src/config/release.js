@@ -8,8 +8,8 @@ export const REACT_RELEASE = Object.freeze({
   environment: "production",
   milestone: "Restaurant Delivery Slip2Go auto verify and gated kitchen handoff",
   whatsNew: [
-    "Allow Super Admin to edit a store master business type separately from revenue-share settings",
-    "Show current master business and original signup selections in distinct, readable sections",
-    "Preserve original signup snapshots and order history when switching enabled business units",
+    "Verify Restaurant Delivery PromptPay slips with central PENGUIN Slip2Go credits against each store's own PromptPay receiver",
+    "Auto-release matched payments to Kitchen while routing unavailable or non-verifiable checks to trusted Cashier review",
+    "Keep every Delivery visible to Cashier, admit COD immediately, and block unpaid prepayment orders from Kitchen",
   ],
 });

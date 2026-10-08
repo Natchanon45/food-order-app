@@ -12415,3 +12415,56 @@ Deploy state:
 - For PromptPay delivery, direct Firestore staff updates to payment-related fields are blocked (including owner/admin/cashier/kitchen), while trusted Cloud Functions use Admin SDK.
 - Updated Firestore Rules syntax to use negated affectedKeys().hasAny; dry-run now compiles without invalid hasNone warning.
 - NOTE: A few custom/legacy delivery-zone configurations may require cashier manual review until full authoritative fee validation is extended.
+
+---
+
+### 2026-10-08 — Delivery Slip2Go Build 2026.10.08.483 candidate completion (NOT DEPLOYED)
+
+Final candidate behavior:
+- Scope remains Restaurant/Cafe Delivery only; Retail POS is unchanged.
+- PENGUIN central Slip2Go credentials/credits perform customer slip verification while the receiver is overridden to the tenant store's own PromptPay phone/tax-ID proxy.
+- Customer flow:
+  - duplicate / wrong amount / wrong receiver / invalid slip is rejected before order creation;
+  - customer can upload another slip or switch payment method to COD;
+  - service/config/quota/rate-limit or non-authoritative delivery-fee cases fall back to Cashier manual review instead of pretending verification passed.
+- Automatic paid admission requires a fresh server proof bound to tenant/order, uploaded slip path, server menu subtotal, authoritative delivery fee, total amount, sorted cart signature and Slip2Go transaction reference.
+- Delivery fee is server-confirmed from persisted Lalamove checkout quotation, verified Google route cache + configured fee tier, or server-known manual fee rule. If it cannot be independently established, the result is manual review.
+- Global duplicate protection uses the bank transaction reference in platformSlipUsedReferences.
+- Cashier sees every Delivery order regardless of COD / prepay / manual review.
+- Matched Slip2Go orders are server-marked paid and do not need a receive-payment button.
+- Manual PromptPay approval calls trusted approveDeliveryPaymentReview, validates tenant/role/order/proof binding, and records reviewer UID/email/role/time before releasing Kitchen.
+- Kitchen admits COD immediately; PromptPay stays hidden until server-paid; admission notification is emitted only when Delivery becomes admitted.
+- Firestore Rules protect payment/slip-review fields from staff client writes while paymentReviewRequired=true; trusted Cloud Functions use Admin SDK.
+- New customer/Cashier outcome copy is localized in TH/EN/MY/LO/KM.
+- Existing Delivery-create owner/Cashier notification remains unchanged.
+
+Security/reliability hardening:
+- Removed an undefined verified guard in Delivery proof creation.
+- Server owns manual-review state on order creation.
+- Expired/non-service proof paths remain reviewable instead of stranding the order.
+- Manual-review Firestore protection applies only when paymentReviewRequired=true, avoiding over-locking unrelated legacy PromptPay flows.
+- Receiver type confirmed against the existing Slip2Go dictionary: 02001 PromptPay phone, 02003 PromptPay national/tax ID.
+
+Verification:
+- Implementation source commit already pushed: ed16dcc8 — feat: verify restaurant Delivery slips via central Slip2Go with cashier fallback.
+- Functions syntax checks: PASS.
+- npm run test:operational: PASS.
+- npm run test:react-parity: PASS.
+- Slip2Go + Kitchen admission regression in the standard suite: 12/12 PASS.
+- React callable contract: 61 references / 0 missing exports.
+- Firestore Rules dry-run: compiled successfully.
+- Targeted Functions dry-run for verifyDeliveryPaymentSlip, finalizeDeliveryPaymentSlip, approveDeliveryPaymentReview, notifyKitchenDeliveryAdmitted: PASS.
+- npm run build:react: PASS.
+- Generated React build contract: PASS — Build 2026.10.08.483, bundle /react/assets/index-BFsKHcE-.js.
+- Hosting-emulator P0 browser smoke: 52/52 PASS.
+- Hosting-emulator Delivery parity: 6/6 PASS.
+- Delivery Success parity: 5 skipped / 0 failed because no success-order fixture was supplied.
+- git diff --check: PASS.
+
+Deployment boundary:
+- NOT DEPLOYED.
+- Production remains React Build 2026.10.08.482.
+- Do not deploy Hosting alone because the .483 frontend calls new Functions and relies on the new payment-review Rules.
+- Coordinated Production release must include Hosting + the four Functions above + Firestore Rules.
+- Project policy requires explicit user authorization before Functions/Firestore Rules deployment.
+- No merge to main.
