@@ -12668,3 +12668,11 @@ Remaining user acceptance:
 - Have customer open Delivery on **real iPhone/Android**, allow Precise Location, compare fresh GPS location vs a saved pin; repair any previously corrupted address-book pin by **explicit Edit Address + drag/pin + Save**. The old saved coordinates cannot be corrected automatically without a trusted ground truth.
 - Verify a real customer Order GPS pin is correct before using driver-share; no live real-payment test was initiated.
 - Commit/push, Hosting deploy and live bundle verification pending when this note was initially written. No Functions or Firestore/Storage Rules deployment, no main merge, and do not delete old Vite hashed bundles.
+
+### Build .492 — Git / Hosting deployment / live GPS smoke CONFIRMED
+
+- Implementation commit `f6769081 fix: preserve accurate Delivery GPS and saved address pins` pushed successfully to `origin/feature/react-firebase-port`; ahead/behind `0/0`.
+- Firebase Hosting `hosting:foodapp` deployed to project `chat-45754` successfully. 552 public files, release completed at `https://penguin-food.web.app`. No Functions, Firestore Rules or Storage Rules change.
+- Live canonical routes `/s/saas-test-shop/delivery`, `/delivery`, `/cashier`, `/kitchen`: HTTP 200 and reference `/react/assets/index-CsqMnk5f.js`. Exact live and Mac JS byte match, contains `2026.10.09.492`, SHA-256 `92ab672251aa615831efe0c134966322e711e1063c94058f7dc105625e77e14f`; live `delivery-location-map.css` byte-identical. Previous `index-cdWz40EM.js` (.491) remains accessible.
+- **After deployment**, Chrome against real `https://penguin-food.web.app/s/saas-test-shop/delivery` with isolated guest profile fixture / browser-injected GPS (no production data writes) PASS: Saved A 13.8298400,100.6420800; GPS 13.8299000,100.6421500 remains distinct, not snapped to Saved A; editing Saved B preserves its own 13.8298600,100.6421000 coordinate. Local Chrome coarse GPS accuracy=350m PASS (warning shown, original pin retained).
+- Outstanding manual acceptance: real phone precise-location permissions/GPS, adjust and explicitly Save incorrect historical pins. No real customer order/payment or authenticated customer-profile writes were made. Never auto-fix historical saved pins without verified ground truth.
