@@ -12322,3 +12322,10 @@ Deploy state:
 - Data source and business logic unchanged: current Master is distinct from immutable original signupBilling snapshot. No Firestore/Functions/Rules/schema changes.
 - npm run test:operational PASS, npm run test:react-parity PASS, npm run build:react and generated build contract PASS.
 - Hosting-only deployment required; no main merge.
+
+
+### Build 2026.10.08.477 — Production checkpoint
+- Implementation commit 9b4c0432 pushed to feature/react-firebase-port.
+- Firebase Hosting-only deploy succeeded at https://penguin-food.web.app; no Functions, Firestore Rules or Storage changes.
+- Production served index-C0AOWSxk.js and updated compact signup CSS.
+- No merge to main, no customer tenant mutations. Untracked old generated index-Dplusb-p.js retained.
