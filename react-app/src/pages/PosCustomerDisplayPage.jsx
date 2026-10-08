@@ -98,7 +98,8 @@ export function PosCustomerDisplayPage() {
   }, [payment?.error, primaryPaymentQr, localPaymentQr]);
   const paymentVisible = Boolean(payment && snapshot?.status !== "paid");
   const pairingUrl = useMemo(() => {
-    const url = new URL("/pos", location.origin);
+    const targetPath = displayId.startsWith("quick-order-") ? "/cashier/quick-order" : "/pos";
+    const url = new URL(targetPath, location.origin);
     url.searchParams.set("registerId", registerId);
     url.searchParams.set("displayId", displayId);
     return url.href;
