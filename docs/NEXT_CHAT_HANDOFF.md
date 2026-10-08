@@ -822,3 +822,9 @@ Candidate Build .476 on local Mac only; React homepage and route guard updates p
 
 ### Build .476 — Tenant Master access
 - Home/private routes and tenant Firestore business collections enforce Master separation. User approved Rules deployment. No main merge. Retain generated old bundles.
+
+
+### Production confirmed — Build 2026.10.08.476
+- Master business Home/route filtering and Firestore tenant business collection access deployed successfully with user authorization.
+- Production bundle index-BOJWGx2k.js; implementation commit 3ac480f5. Check WORKLOG. No main merge.
+- Authenticated tenant smoke not performed; shared settings and callable access are outside this deployment scope.

@@ -12304,3 +12304,13 @@ Deploy state:
 - Master access regression 2/2 PASS, operational/react-parity PASS, Build .476 contract PASS, Rules compilation dry-run PASS.
 - User explicitly authorized Firestore Rules deployment. Hosting plus Firestore Rules only.
 - Shared config and callable authorization retain their existing mechanisms; authenticated end-to-end verification remains recommended.
+
+
+### Build 2026.10.08.476 — Hosting + Firestore Rules Production checkpoint
+- Implementation commit: 3ac480f5 on feature/react-firebase-port.
+- Firebase CLI verified Firestore rules compilation, uploaded and released firestore.rules; Hosting target foodapp released successfully.
+- Public /admin/tenants serves index-BOJWGx2k.js, matching Build 2026.10.08.476.
+- Full React parity/operational tests PASS, Master business access regression 2/2 PASS.
+- No data writes to customer tenants, no Functions/Storage deploy and no merge into main.
+- Limit: authenticated tenant-by-tenant UI/data smoke and callable access review remain for more comprehensive assurance. Existing shared settings and callable access mechanisms were not changed.
+- Untracked older generated bundle index-Dplusb-p.js preserved.
