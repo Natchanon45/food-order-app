@@ -24,6 +24,14 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Latest checkout/receipt checkpoint (2026-10-08, supersedes earlier .487-.489 notes)
+
+- Prior Build 2026.10.08.489 IS on Production (observed live asset `index-BCW1U1rO.js` matching local SHA-256), despite the historical .489 handoff claiming it was not deployed. Do not deploy .489 again.
+- NEW React Build 2026.10.08.490 source candidate fixes Delivery PromptPay QR PNG downloads (including native-touch-safe link), successful Delivery checkout browser Back/history, and Quick Order receipt tab afterprint/paid-Walk-in cashier notification replay. See the latest section of `docs/WORKLOG.md` for causes, implementation and regression details.
+- Operational PASS; React Parity PASS; targeted regressions 5/5 PASS; Build contract PASS. Built hashed asset: `/react/assets/index-BC-WUDBh.js`. Chrome Desktop and mobile-touch simulation downloaded valid actual PNG files.
+- At checkpoint creation, Git commit/push and Firebase Hosting deploy for .490 are pending. Update this paragraph after release; do not infer deployment solely from source files.
+- Only Firebase Hosting release is permitted for this frontend fix. Never deploy Cloud Functions / Rules without explicit permission, merge main, or delete old hashed assets. Real customer Delivery and staff receipt workflow E2E still require user verification.
+
 ## Current repository state
 
 - Active path: `/Users/natchanonsripleng/Desktop/Sites/food-order-app`

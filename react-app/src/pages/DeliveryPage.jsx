@@ -21,6 +21,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { generatePromptPayPayload } from "@/utils/promptPay";
 import { qrDataUrl } from "@/utils/localQr";
+import { svgQrPngBlob } from "@/utils/downloadQrPng";
 
 const computeDeliveryRoute = httpsCallable(functions, "computeDeliveryRoute");
 const quotePublicLalamoveDelivery = httpsCallable(functions, "quotePublicLalamoveDelivery");
@@ -179,6 +180,7 @@ export function DeliveryPage() {
   const [paymentLocked, setPaymentLocked] = useState(false);
   const [lockedTotal, setLockedTotal] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [promptPayPng, setPromptPayPng] = useState({ source: "", url: "" });
 
   useEffect(() => {
     let alive = true;
@@ -351,6 +353,24 @@ export function DeliveryPage() {
       return { src: "", error: t("delivery.checkout.payment.promptpay_invalid") };
     }
   }, [paymentMethod, total, settings.promptPayId, t]);
+
+  // Prepare real PNG bytes while the payment card is displayed. Native anchor
+  // downloads retain the browser user gesture on mobile (unlike async click()).
+  useEffect(() => {
+    if (!promptPayQr.src) return undefined;
+    let active = true;
+    let url = "";
+    svgQrPngBlob(promptPayQr.src).then(blob => {
+      if (!active) return;
+      url = URL.createObjectURL(blob);
+      setPromptPayPng({ source: promptPayQr.src, url });
+    }).catch(error => console.error("DELIVERY_QR_PNG_PREPARE_FAILED", error));
+    return () => {
+      active = false;
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [promptPayQr.src]);
+  const paymentQrDownloadUrl = promptPayPng.source === promptPayQr.src ? promptPayPng.url : "";
 
   const add = item => {
     if (paymentLocked) return;
@@ -714,8 +734,15 @@ export function DeliveryPage() {
         console.warn("DELIVERY_PROFILE_SAVE_AFTER_ORDER_FAILED", profileError);
       }
 
+      // Replace the submitted checkout history entry so Back cannot restore a
+      // locked PromptPay amount or replay a completed order from the browser cache.
       try { sessionStorage.removeItem("delivery_checkout_draft:" + (tenant.slug || slug)); } catch {}
-      location.assign("/s/" + encodeURIComponent(tenant.slug || slug) + "/delivery/success?order=" + encodeURIComponent(orderId));
+      setCart([]);
+      setFreeGiftIds(new Set());
+      setPaymentLocked(false);
+      setLockedTotal(null);
+      clearSlip();
+      location.replace("/s/" + encodeURIComponent(tenant.slug || slug) + "/delivery/success?order=" + encodeURIComponent(orderId));
     } catch (error) {
       console.error("DELIVERY_REACT_SUBMIT_FAILED", error);
       showStorefrontToast(String(error?.code || "").includes("functions/") ? t("delivery.checkout.payment.slip_service_error") : deliveryErrorMessage(error, t, settings), "error");
@@ -897,7 +924,9 @@ export function DeliveryPage() {
                     <div className="payment-lock-total"><span>{t("delivery.checkout.payment_lock.locked_total")}</span><strong id="lockedTotal">{money(lockedTotal?.total ?? total)}</strong></div>
                   </div>}
                   <div className="payment-lock-actions">
-                    {paymentLocked && promptPayQr.src ? <a className="btn btn-dark" id="downloadPaymentQr" href={promptPayQr.src} download={"promptpay-" + (tenant?.slug || "penguin") + ".png"}><i className="bi bi-download app-icon"></i><span>{t("delivery.checkout.payment_lock.download_short")}</span></a> : null}
+                    {paymentLocked && promptPayQr.src ? paymentQrDownloadUrl
+                      ? <a className="btn btn-dark" id="downloadPaymentQr" href={paymentQrDownloadUrl} download={"promptpay-" + (tenant?.slug || "penguin") + ".png"}><i className="bi bi-download app-icon"></i><span>{t("delivery.checkout.payment_lock.download_short")}</span></a>
+                      : <button className="btn btn-dark" id="downloadPaymentQr" type="button" disabled><i className="bi bi-download app-icon"></i><span>{t("delivery.checkout.payment_lock.download_short")}</span></button> : null}
                     {paymentLocked ? <button className="btn" id="editLockedOrder" type="button" onClick={() => { setPaymentLocked(false); setLockedTotal(null); clearSlip(); }}><i className="bi bi-pencil app-icon"></i><span>{t("delivery.checkout.payment_lock.edit_short")}</span></button> : null}
                   </div>
                 </div>

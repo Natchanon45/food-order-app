@@ -12552,3 +12552,38 @@ Deployment boundary:
 - GitHub source static checks 8/8 PASS, but npm/build/browser tests NOT RUN due to Desktop Commander monthly quota. NO Firebase Hosting deploy; Production remains .487. No changes to backend or Firestore.
 - To ship: on Mac run git pull --ff-only origin feature/react-firebase-port, npm run test:operational, npm run test:react-parity, npm run build:react, npx firebase-tools deploy --only hosting:foodapp --project chat-45754. Confirm mobile arrow centering and QR pair flow in authenticated browser.
 - Do not clean/reset old generated hashed bundles, do not merge main.
+
+## 2026-10-08 — Delivery PromptPay QR PNG + successful checkout Back safety + Quick Order receipt/audio (Build .490)
+
+User reports:
+1. Delivery payment-lock QR download fails on mobile; desktop downloads a file that cannot be opened.
+2. After submitting a successful Delivery order, browser Back can restore the locked old checkout or an empty cart with an old amount, misleading customers into attempting a repeat order.
+3. Cashier Quick Order print leaves an orphaned receipt tab; returning to Cashier can play an already-handled Walk-in order notification again.
+
+Root causes:
+- Delivery used local qrDataUrl() which produces data:image/svg+xml, but the HTML download attribute saved those SVG bytes with a .png filename.
+- Delivery navigated to Success via location.assign(), preserving the submitted checkout history entry and its browser-restored payment-lock/cart state.
+- Quick Order's auto-print did not explicitly close its script-opened receipt tab. Cashier notifier considered walkin/cashier_walkin orders with paymentStatus=paid and status=pending to be newly incoming cashier orders; the audio component could also mount before its first realtime orders snapshot when load watchdog elapsed.
+
+Changes:
+- react-app/src/utils/downloadQrPng.js: rasterizes the existing local SVG QR to a 640px white-backed PNG Blob with nearest-neighbor pixels. DeliveryPage prepares a scoped Object URL before click, uses a native download anchor (mobile browser gesture preserved), disables the button while the PNG is unavailable and revokes URLs on source changes/unmount. PromptPay payload, receiver, fee and payment proof logic remain untouched.
+- react-app/src/pages/DeliveryPage.jsx: only after createPublicDeliveryOrder and the best-effort customer profile save, reset cart/gifts/slip/payment lock and use location.replace() for success instead of location.assign(). No early reset on failed upload/verification/order creation.
+- react-app/src/components/orderAlertEligibility.js + CashierOrderNotifier.jsx: suppress **cashier audio only** for already-paid cashier-origin Walk-in orders. Kitchen notifications and legitimate customer/takeaway/delivery alerts are unchanged.
+- react-app/src/pages/CashierPage.jsx: only mount the notifier after the first successful realtime orders snapshot so a late initial load cannot be mistaken for new orders.
+- react-app/src/pages/QuickOrderPage.jsx + CashierReceiptPage.jsx: mark only Quick Order auto-print with closeafterprint=quick-order; after print dialog closes, attempt to close the script-opened tab, otherwise return to /cashier/quick-order. Normal receipt routes keep existing behavior.
+- tests/react-parity/delivery-qr-checkout-quickorder-receipt.spec.mjs and package.json: five targeted regressions, included in test:react-parity. React release bumped to 2026.10.08.490.
+
+Verification before release:
+- npm run test:operational PASS.
+- npm run test:react-parity PASS, including all 5 new tests and prior Slip2Go/Kitchen/Quick Order contracts.
+- npm run build:react and verify:react-build PASS (2026.10.08.490, /react/assets/index-BC-WUDBh.js).
+- git diff --check PASS.
+- Google Chrome (real installed macOS Chrome via Playwright) Desktop 1280x720 and mobile touch emulation 440x956 each generated and downloaded a real PNG (12,332 bytes; valid PNG signature), PASS. This is browser testing of the QR converter; not an authenticated customer payment/order.
+- Production 2026.10.08.489 was independently observed before these changes at /cashier/quick-order, referencing index-BCW1U1rO.js; its asset content matched local SHA-256 even though the previous handoff incorrectly said it was undeployed.
+
+Safety / remaining validation:
+- Frontend and Hosting only. No Functions, Firestore Rules, Storage Rules, tenant data changes, payment state changes, or merges to main.
+- Do not place a paid customer order purely for smoke tests.
+- After Hosting release, verify canonical HTML/JS and perform user-assisted real mobile Safari QR download, Delivery successful-order Back behavior, and Quick Order receipt print/alert in a genuine staff session.
+- Pre-existing untracked historical hashed assets must remain; do not reset/clean/delete.
+- Git commit/push and Hosting deploy status: pending at this entry; add a production checkpoint after successful release.

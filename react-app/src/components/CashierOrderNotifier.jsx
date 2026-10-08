@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useI18n } from "@/i18n/I18nProvider";
 import { createOrderAlertAudioController } from "@/components/orderAlertAudio";
 import { deliveryKitchenAdmitted } from "@/data/deliveryKitchenGate";
+import { cashierOrderAlertEligible } from "@/components/orderAlertEligibility";
 
 const ENABLED_KEY = "food_order_order_alerts_enabled_v4";
 const CLOSED = new Set(["paid", "completed", "cancelled", "deleted", "voided"]);
@@ -40,7 +41,9 @@ export function CashierOrderNotifier({ orders = [], onToast, surface = "cashier"
   if (!controllerRef.current) controllerRef.current = createOrderAlertAudioController();
 
   const rows = useMemo(
-    () => orders.filter(actualOrder).filter(order => surface !== "kitchen" || deliveryKitchenAdmitted(order)),
+    () => orders.filter(actualOrder)
+      .filter(order => cashierOrderAlertEligible(order, surface))
+      .filter(order => surface !== "kitchen" || deliveryKitchenAdmitted(order)),
     [orders, surface],
   );
 

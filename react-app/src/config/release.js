@@ -1,12 +1,12 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.08.489",
+  build: "2026.10.08.490",
   branch: "feature/react-firebase-port",
-  commit: "QUICK-ORDER-DISPLAY-PAIRING-BACK-ICON",
+  commit: "DELIVERY-QR-POSTCHECKOUT-QUICK-PRINT-ALERT",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Correct Quick Order display pairing and align cashier back arrow",
+  milestone: "Fix Delivery QR downloads and checkout history plus Quick Order receipt alerts",
   whatsNew: [
     "Verify Restaurant Delivery PromptPay slips with central PENGUIN Slip2Go credits against each store's own PromptPay receiver",
     "Auto-release matched payments to Kitchen while routing unavailable or non-verifiable checks to trusted Cashier review",

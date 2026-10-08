@@ -431,6 +431,7 @@ export function CashierPage() {
   });
 
   const [orders, setOrders] = useState([]);
+  const [ordersSynced, setOrdersSynced] = useState(false);
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -502,6 +503,7 @@ export function CashierPage() {
     let ready = false;
     setLoading(true);
     setLoadError("");
+    setOrdersSynced(false);
 
     // Laravel MASTER opens Cashier from the realtime orders subscription.
     // Do not block the whole page on the heavier operational snapshot
@@ -522,6 +524,7 @@ export function CashierPage() {
     const stopOrders = watchOperationalOrders(tenant.id, rows => {
       if (!alive) return;
       setOrders(rows);
+      setOrdersSynced(true);
       setLoadError("");
       markReady();
     }, error => {
@@ -1019,7 +1022,7 @@ export function CashierPage() {
         <div className="brand"><span className="brand-mark">PG</span>{t("cashier.header.title")}</div>
         <div className="app-header-actions" data-header-actions>
           <LocaleSwitcher style={{ marginLeft: 0, marginRight: 0 }} />
-          <CashierOrderNotifier orders={orders} onToast={showToast} surface="cashier" />
+          {ordersSynced ? <CashierOrderNotifier orders={orders} onToast={showToast} surface="cashier" /> : null}
           <UserMenu profile={profile} />
         </div>
       </header>

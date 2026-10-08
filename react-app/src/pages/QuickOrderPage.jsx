@@ -688,7 +688,7 @@ export function QuickOrderPage() {
   const printCompletedReceipt = () => {
     const id = String(paymentResult?.id || "").trim();
     if (!id) { setPaymentResult(null); return; }
-    const url = cashierRoute(`/receipt/?order=${encodeURIComponent(id)}&autoprint=1`);
+    const url = cashierRoute(`/receipt/?order=${encodeURIComponent(id)}&autoprint=1&closeafterprint=quick-order`);
     const receiptWindow = window.open("", "_blank");
     if (receiptWindow) {
       receiptWindow.opener = null;

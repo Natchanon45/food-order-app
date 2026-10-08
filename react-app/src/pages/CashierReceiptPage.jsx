@@ -199,6 +199,21 @@ export function CashierReceiptPage() {
     return () => { cancelled = true; };
   }, [first, error, params]);
 
+  // A Quick Order receipt is printed in a script-opened tab. Close that tab
+  // once the print dialog is dismissed instead of leaving an orphaned receipt.
+  // If the browser blocks closing (same-tab fallback), return to Quick Order.
+  useEffect(() => {
+    if (params.get("closeafterprint") !== "quick-order") return undefined;
+    const onAfterPrint = () => {
+      window.setTimeout(() => {
+        window.close();
+        if (!window.closed) location.replace("/cashier/quick-order");
+      }, 250);
+    };
+    window.addEventListener("afterprint", onAfterPrint, { once: true });
+    return () => window.removeEventListener("afterprint", onAfterPrint);
+  }, [params]);
+
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (allowed && !snapshot && !error)) {
     return <PageReadyOverlay context={t("cashier_documents.receipt.header_title")} title={t("cashier.loading.title")} message={t("cashier.loading.preparing")} />;
   }
@@ -219,7 +234,7 @@ export function CashierReceiptPage() {
       <header className="app-header">
         <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
           <div className="brand"><span className="brand-mark">PG</span>{t("cashier_documents.receipt.header_title")}</div>
-          <Link className="btn btn-sm" to="/cashier"><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{t("cashier_documents.receipt.back")}</span></Link>
+          <Link className="btn btn-sm" to={params.get("closeafterprint") === "quick-order" ? "/cashier/quick-order" : "/cashier"}><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{params.get("closeafterprint") === "quick-order" ? t("quick_order.meta.title") : t("cashier_documents.receipt.back")}</span></Link>
         </div>
         <div className="app-header-actions" data-header-actions>
           <LocaleSwitcher style={{ marginLeft: 0, marginRight: 0 }} />
