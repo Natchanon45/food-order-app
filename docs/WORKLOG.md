@@ -12102,3 +12102,21 @@ Candidate verification:
 
 Deploy state:
 - Commit/push and Hosting-only deployment pending at this checkpoint.
+
+
+### 2026-10-08 — Build 2026.10.08.472 deployed
+- Implementation commit `115fdf45` — `fix: enforce strict initial readiness and real progress` pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production bundle: `/react/assets/index-Bvkrur-l.js`.
+- Production P0 browser smoke: **52/52 PASS**.
+- Production delayed-Firestore loading check confirms:
+  - spinner present,
+  - `กำลังโหลดข้อมูล...` / `กรุณารอสักครู่ ...`,
+  - progress bars = **0** when no measurable progress exists,
+  - fake/indeterminate progress = **0**,
+  - after readiness: full-screen overlay absent,
+  - Verify inline loading absent,
+  - visible initial-loading text absent.
+- Global Initial Readiness regression remains **4/4 PASS** in the standard React parity suite.
+- Deployment scope was Hosting only.
+- No Functions, Firestore Rules, Storage Rules, schema changes, or merge to `main`.
