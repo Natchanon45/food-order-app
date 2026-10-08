@@ -12542,3 +12542,13 @@ Deployment boundary:
 - Added tests/react-parity/quick-order-display-pairing.spec.mjs with pairing route, ID continuity, auth preservation, and Master guard checks, included in npm run test:react-parity.
 - Prepared Build .488 in react-app/src/config/release.js. Desktop Commander quota exhausted; GitHub source commits only; no tests, actual Vite build, browser E2E, Firebase deploy or production verification have occurred. Production .487 still active.
 - Follow-up: run Mac pull/build/tests, deploy hosting:foodapp only, test QR scan as different cashier login & old/new display links, confirm Firestore document ID shared between screen and cashier. Preserve all untracked build artifacts and do not merge main.
+
+## 2026-10-08 — Quick Order cashier back-arrow alignment, Build .489 (SOURCE ONLY, NOT DEPLOYED)
+- User screenshot /cashier/quick-order: arrow icon within กลับหน้าแคชเชียร์ needs Y-axis centering on desktop and both X/Y centering on mobile.
+- Fixed only .quick-order-page .quick-header-back and child Bootstrap icon in react-app/public/parity/css/quick-order.css; icon uses 18x18 px centered grid and pseudo-element line-height normalization. Mobile <=640px uses a centered 40x40 px square control.
+- Added aria-label/title for mobile (button text hidden) in QuickOrderPage.jsx.
+- Added tests/react-parity/quick-order-back-icon-alignment.spec.mjs to npm run test:react-parity.
+- Prepared Build 2026.10.08.489; includes still-unreleased .488 Quick Order screen pairing fixes from earlier handoff.
+- GitHub source static checks 8/8 PASS, but npm/build/browser tests NOT RUN due to Desktop Commander monthly quota. NO Firebase Hosting deploy; Production remains .487. No changes to backend or Firestore.
+- To ship: on Mac run git pull --ff-only origin feature/react-firebase-port, npm run test:operational, npm run test:react-parity, npm run build:react, npx firebase-tools deploy --only hosting:foodapp --project chat-45754. Confirm mobile arrow centering and QR pair flow in authenticated browser.
+- Do not clean/reset old generated hashed bundles, do not merge main.
