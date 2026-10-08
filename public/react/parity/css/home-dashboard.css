@@ -558,3 +558,14 @@ body.staff-home .nav-card[data-dashboard-card="pos_catalog"] .nav-card-icon { --
     padding: 20px 12px;
   }
 }
+
+/* Shared heading marker for Restaurant, Reports and Retail POS */
+body.staff-home .dashboard-section-pos .dashboard-section-head h2{
+  display:inline-flex;align-items:center;gap:10px;
+}
+body.staff-home .dashboard-section-pos .dashboard-section-head h2::before{
+  content:"";width:11px;height:11px;flex:0 0 11px;
+  border-radius:4px;
+  background:linear-gradient(135deg,var(--dashboard-green),var(--dashboard-green-bright));
+  box-shadow:0 0 0 6px var(--dashboard-green-soft);
+}

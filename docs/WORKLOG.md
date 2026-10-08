@@ -12337,3 +12337,11 @@ Deploy state:
 - Root cause was parent grid placement, not child width. No revenue-share or tenant Master logic changed.
 - npm run test:operational, npm run test:react-parity, npm run build:react and generated build contract all PASS.
 - Hosting-only deployment. Authenticated screenshot verification still requires browser login; production bundle/CSS verification after deploy.
+
+
+## 2026-10-08 — Home atomic report readiness and POS overlay styling (Build 2026.10.08.479)
+- Home owner/admin revenue share access starts as pending null and participates in the full-screen loading gate: central report no longer appears 3-5 seconds after Home already rendered.
+- MasterBusinessGuard previously used bare unstyled Thai loading text; now uses same full-screen PageReadyOverlay for /pos and /pos/catalog while tenant context loads.
+- Added matching green marker before Retail POS title via home-dashboard.css.
+- Operational tests, full React parity and React Build contract PASS.
+- Hosting-only release; no Firebase Functions/Rules changes; no main merge.

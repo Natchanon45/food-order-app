@@ -85,7 +85,7 @@ export function HomePage() {
   const masterRestaurantEnabled = tenant?.businessType !== "retail";
   const masterRetailEnabled = tenant?.businessType !== "restaurant_cafe";
   const staff = profile?.active !== false && STAFF_ROLES.includes(profile?.role);
-  const [revenueShareEnabled, setRevenueShareEnabled] = useState(false);
+  const [revenueShareEnabled, setRevenueShareEnabled] = useState(null);
   const [resolvedShopName, setResolvedShopName] = useState("");
   const [publicContact, setPublicContact] = useState(null);
 
@@ -102,11 +102,12 @@ export function HomePage() {
       setRevenueShareEnabled(false);
       return () => { alive = false; };
     }
+    setRevenueShareEnabled(null);
     httpsCallable(functions, "getTenantRevenueShareAccess")({})
       .then(result => { if (alive) setRevenueShareEnabled(result.data?.enabled === true); })
       .catch(() => { if (alive) setRevenueShareEnabled(false); });
     return () => { alive = false; };
-  }, [profile?.role]);
+  }, [profile?.role, profile?.tenantId]);
 
   useEffect(() => {
     let alive = true;
@@ -164,6 +165,7 @@ export function HomePage() {
     || !stylesReady
     || profile?.role === "super_admin"
     || (staff && tenantState.status === "loading")
+    || (staff && ["owner", "admin"].includes(profile?.role) && revenueShareEnabled === null)
   ) {
     return (
       <PageReadyOverlay

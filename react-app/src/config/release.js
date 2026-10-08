@@ -1,12 +1,12 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.08.478",
+  build: "2026.10.08.479",
   branch: "feature/react-firebase-port",
-  commit: "SIGNUP-GRID-FULL-SPAN",
+  commit: "HOME-READY-POS-LOADING",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Full-width signup summary grid span fix",
+  milestone: "Atomic Home reporting readiness and POS loading polish",
   whatsNew: [
     "Allow Super Admin to edit a store master business type separately from revenue-share settings",
     "Show current master business and original signup selections in distinct, readable sections",

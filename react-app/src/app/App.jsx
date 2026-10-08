@@ -5,6 +5,7 @@ import { useAuth } from "@/auth/AuthProvider";
 import { useTenant } from "@/tenant/TenantProvider";
 import { auth } from "@/firebase/client";
 import { HomePage } from "@/pages/HomePage";
+import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { LoginPage } from "@/pages/LoginPage";
 import { RegisterPage } from "@/pages/RegisterPage";
 import { PlatformPage } from "@/pages/PlatformPage";
@@ -100,7 +101,8 @@ function MasterBusinessGuard({ children }) {
   const restaurantPath = /^\/(?:admin|cashier|kitchen|waiting-queue)(?:\/|$)/.test(pathname)
     && pathname !== "/admin/tenants" && pathname !== "/waiting-queue/customer" && pathname !== "/waiting-queue/display";
   if (!posPath && !restaurantPath) return children;
-  if (tenantState.status !== "ready") return <main className="container" role="status">กำลังโหลดข้อมูล... กรุณารอสักครู่ ...</main>;
+  if (authState.status === "loading" || tenantState.status === "loading") return <PageReadyOverlay context="PENGUIN" title="กำลังโหลดข้อมูล..." message="กรุณารอสักครู่..." />;
+  if (tenantState.status !== "ready") return children;
   const master = tenantState.tenant?.businessType;
   const units = Array.isArray(tenantState.tenant?.businessUnits) ? tenantState.tenant.businessUnits : [];
   const allowsPos = master ? ["retail", "both"].includes(master) : (!units.length || units.includes("retail_pos"));
