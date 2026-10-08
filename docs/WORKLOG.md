@@ -12625,3 +12625,12 @@ Release/safety:
 - Firebase deployment scope is Hosting:foodapp only; no Functions, Rules, schema, or customer writes.
 - Remains to verify staff use on real phone and desktop (native share/LINE and clipboard), and independently repair Delivery GPS-vs-saved-address precision logic in a separate task.
 - Git commit/push and Hosting release pending at this checkpoint; add a production-confirmation entry on success.
+
+### Self-delivery Driver Share Build .491 — Production Hosting confirmed
+
+- Commit `35833f0c feat: share self-delivery customer map pins with drivers` pushed to `origin/feature/react-firebase-port` successfully; local/remote branch ahead/behind `0/0`.
+- Firebase Hosting `hosting:foodapp` deployed successfully, project `chat-45754`, Hosting URL `https://penguin-food.web.app`. Upload/release confirmed (550 public files). No Cloud Functions, Firestore Rules, Storage Rules or tenant data deploy.
+- Live canonical `/cashier`, `/cashier/quick-order`, `/s/saas-test-shop/delivery` and `/kitchen`: HTTP 200, all reference `/react/assets/index-cdWz40EM.js` Build 2026.10.08.491.
+- Live bundle HTTP 200, 3,566,604 bytes, SHA-256 equal to Mac build `8e5303f4f659485c088b2c57d6c4881a12d2778469f2924c4b0bfbc861d5de90`. Live Cashier CSS `/react/parity/css/cashier-refresh.css` HTTP 200, byte-identical to Mac and includes driver controls. Prior .490 bundle still HTTP 200.
+- Browser visual smoke was an isolated static driver-panel exercise with Chrome at 320, 390, 440 and 1024 px, not authenticated Firebase order E2E; native share/LINE on a real staff device remains user acceptance.
+- Historical untracked hashed Vite bundles retained; no clean/reset/main merge. GPS current-vs-saved location auto-matching is **not** fixed and should be addressed separately, to avoid sharing inaccurate customer pins.
