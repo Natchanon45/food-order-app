@@ -883,3 +883,9 @@ Candidate Build .476 on local Mac only; React homepage and route guard updates p
 
 ### Shipping fee authenticity .483
 - Server verifies delivery fees against persisted Lalamove quote, cached Google route or configured manual zone before Slip2Go auto-paid. Unverifiable -> cashier manually confirms, mismatched -> customer retries. Added quotePublicLalamoveDelivery to deployment scope. Firestore Rules dry-run clean.
+
+
+### 2026-10-08 — Slip2Go Build .483 DEPLOYED
+- User authorized and deployment succeeded: 5 Functions (verifyDeliveryPaymentSlip/finalizeDeliveryPaymentSlip/approveDeliveryPaymentReview/notifyKitchenDeliveryAdmitted/quotePublicLalamoveDelivery), Firestore Rules, and Hosting foodapp.
+- Production /admin and /delivery reference index-BFsKHcE-.js, asset 200; no main merge.
+- Next step: authenticated live E2E for matched/rejected slips, auto-paid/cashier manual and Kitchen notification; no real slip tested yet. See WORKLOG.
