@@ -398,3 +398,13 @@ body.owner-modal-open {
 @media(max-width:850px){.tenant-store-card .tenant-signup-billing-layout{grid-template-columns:1fr}.tenant-store-card .tenant-signup-business-overview{min-height:66px}}
 @media(max-width:540px){.tenant-store-card .tenant-signup-billing{padding:12px}.tenant-store-card .tenant-signup-billing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tenant-store-card .tenant-signup-billing-grid>span{padding:11px}}
 @media(max-width:350px){.tenant-store-card .tenant-signup-billing-grid{grid-template-columns:1fr}}
+
+/* Force registration summary to span BOTH columns of the parent tenant grid. */
+.tenant-store-card > .tenant-signup-billing{
+  grid-column:1 / -1;
+  justify-self:stretch;
+  align-self:stretch;
+  width:100%;
+  min-width:0;
+  max-width:none;
+}

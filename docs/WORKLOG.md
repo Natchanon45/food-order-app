@@ -12329,3 +12329,11 @@ Deploy state:
 - Firebase Hosting-only deploy succeeded at https://penguin-food.web.app; no Functions, Firestore Rules or Storage changes.
 - Production served index-C0AOWSxk.js and updated compact signup CSS.
 - No merge to main, no customer tenant mutations. Untracked old generated index-Dplusb-p.js retained.
+
+
+## 2026-10-08 — Registration summary parent-grid spanning fix (Build 2026.10.08.478)
+- User screenshot after .477 proved registration box still occupied only first parent grid column (approx 330px) and right side was blank.
+- Corrected .tenant-store-card > .tenant-signup-billing with grid-column:1/-1 and stretch; existing inner horizontal responsive arrangement remains.
+- Root cause was parent grid placement, not child width. No revenue-share or tenant Master logic changed.
+- npm run test:operational, npm run test:react-parity, npm run build:react and generated build contract all PASS.
+- Hosting-only deployment. Authenticated screenshot verification still requires browser login; production bundle/CSS verification after deploy.

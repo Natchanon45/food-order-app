@@ -1,12 +1,12 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.08.477",
+  build: "2026.10.08.478",
   branch: "feature/react-firebase-port",
-  commit: "COMPACT-SIGNUP-SUMMARY",
+  commit: "SIGNUP-GRID-FULL-SPAN",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Compact tenant signup overview",
+  milestone: "Full-width signup summary grid span fix",
   whatsNew: [
     "Allow Super Admin to edit a store master business type separately from revenue-share settings",
     "Show current master business and original signup selections in distinct, readable sections",

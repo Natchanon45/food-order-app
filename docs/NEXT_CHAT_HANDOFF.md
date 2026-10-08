@@ -836,3 +836,7 @@ Candidate Build .476 on local Mac only; React homepage and route guard updates p
 
 ### Production confirmed — Build 2026.10.08.477
 - Compact full-width Super Admin signup information layout deployed on Hosting; implementation 9b4c0432. See WORKLOG.
+
+
+## 2026-10-08 — Signup summary grid-span fix .478
+- User reported .477 left-column layout. .478 forces registration summary to span all parent tenant-card grid columns; see WORKLOG.
