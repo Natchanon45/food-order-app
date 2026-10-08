@@ -12367,3 +12367,7 @@ Deploy state:
 - Firebase Hosting foodapp deployment succeeded; production /admin serves index-SQLfu11O.js (Build .480).
 - No Functions/Rules/Storage changes, no tenant data mutated, no merge into main.
 - Authenticated drag-and-drop browser smoke still to be verified; old generated index-Dplusb-p.js preserved.
+
+## 2026-10-08 — Lalamove revoke button label (Build 2026.10.08.481)
+- Super Admin /admin/tenants revoke button Thai label shortened to ยกเลิกสิทธิ์ Lalamove, English to Revoke Lalamove Access, preventing mobile overflow.
+- Confirmation/dialog messages and approval logic unchanged. Hosting only; no main merge.

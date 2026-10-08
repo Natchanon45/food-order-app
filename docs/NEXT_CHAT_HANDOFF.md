@@ -858,3 +858,6 @@ Candidate Build .476 on local Mac only; React homepage and route guard updates p
 
 ### Production deployed — Admin sorting Auto-save Build .480
 - Hosting updated with on-drop Auto-save for category/menu and renamed Save buttons. Implementation 1b562128. See WORKLOG.
+
+## 2026-10-08 — Build .481
+- Shortened Lalamove revoke button only, for mobile label fit; see WORKLOG.
