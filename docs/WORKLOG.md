@@ -12216,3 +12216,38 @@ Deploy scope:
     - Production bundle matches Build .473.
 - No Firestore Rules, Storage Rules, database schema, collection-name, document-ID, or internal tenant-ID changes.
 - No merge to `main`.
+
+---
+
+## 2026-10-08 — Production P0 anonymous auth-redirect timing stabilization
+
+Context:
+- Continued verification after the full React frontend/runtime cutover while Production was already on React Build `2026.10.08.473`.
+- Structural audit reconfirmed `public/assets/js`, `public/assets/css`, and `public/react/parity/js` are absent.
+- React source contains zero references to legacy `/assets/js` or `/assets/css` page runtimes.
+- React migration coverage remains 53 routes / 21 POS routes / 52 physical React shells / 0 pending shell sync.
+
+Observed verification flake:
+- Production P0 browser smoke initially passed 50/52.
+- Anonymous auth-boundary checks for `/admin` and `/platform/contact` exceeded the previous fixed 5-second navigation ceiling.
+- Direct anonymous timing verification showed:
+  - `/admin` redirected to `/login?next=%2Fadmin` in about 2.24 seconds.
+  - `/platform/contact` redirected to `/login?next=%2Fplatform%2Fcontact` in about 1.37 seconds.
+  - While waiting, the page exposed only the full-screen loading/readiness state; no protected workspace content was visible.
+  - Page errors were zero.
+
+Change:
+- Increased only the P0 anonymous auth redirect wait ceiling from 5 seconds to 10 seconds in `tests/react-parity/p0-smoke.spec.mjs`.
+- Runtime auth logic, permissions, React pages, Firebase data, Functions, Rules, schema, and release identity were not changed.
+
+Verification:
+- Production P0 browser smoke against `https://penguin-food.web.app`: **52/52 PASS**.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- React migration coverage PASS: 53 routes / 21 POS routes / 52 React shells / 0 pending shell sync.
+- `git diff --check` PASS.
+
+Deploy state:
+- Test-only stabilization; no Hosting, Functions, Firestore Rules, Storage Rules, or schema deploy is required.
+- Production remains React `0.4.280` / Build `2026.10.08.473`.
+- No merge to `main`.
