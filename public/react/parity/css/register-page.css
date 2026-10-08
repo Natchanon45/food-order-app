@@ -8,3 +8,58 @@
 .old-price-slash{position:relative;display:inline-block;color:#6b7280!important;font-size:18px!important;font-weight:900!important;text-decoration-line:line-through;text-decoration-color:#dc2626;text-decoration-thickness:3px;text-decoration-skip-ink:none}
 .plan-year-price .old-price-slash{margin-right:5px}
 @media(max-width:760px){.register-header{gap:10px!important}.register-header>.btn{margin-left:6px}}
+
+
+/* Signup billing / business / revenue-share workspace — 2026-10-08 */
+.register-choice-section{display:grid;gap:10px;padding:14px;border:1px solid #dfeae3;border-radius:18px;background:linear-gradient(180deg,#fbfefc,#f7fbf8)}
+.register-choice-heading{display:flex;align-items:center;gap:10px}
+.register-choice-heading>div{display:grid;gap:2px;min-width:0}
+.register-choice-heading b{font-size:15px;color:#173526}
+.register-choice-heading small{color:#697a70;font-size:12px;line-height:1.45}
+.register-choice-icon,.business-option-icon,.revenue-scope-icon{display:grid;place-items:center;flex:0 0 auto;width:34px;height:34px;border-radius:10px;background:#e8f7ee;color:#0c7b3c}
+.register-choice-icon i,.business-option-icon i,.revenue-scope-icon i{display:block;line-height:1}
+.package-grid-two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.package-grid-two .package-option{min-height:132px;cursor:pointer}
+.package-grid-two .package-option:not(.is-selected):hover{border-color:#aad8bc;background:#f8fcf9}
+
+.business-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.business-option,.revenue-scope-option{position:relative;display:grid!important;grid-template-columns:40px minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:10px;row-gap:4px;align-items:center;min-height:104px;padding:12px;border:1px solid #dbe7df;border-radius:15px;background:#fff;cursor:pointer;transition:border-color .16s ease,background .16s ease,box-shadow .16s ease}
+.business-option input,.revenue-scope-option input,.cycle-option input{position:absolute!important;width:1px!important;height:1px!important;min-width:1px!important;min-height:1px!important;opacity:0;pointer-events:none}
+.business-option strong,.revenue-scope-option strong{align-self:end;font-size:14px;color:#1c3326}
+.business-option small,.revenue-scope-option small{grid-column:2/4;align-self:start;color:#697a70;font-size:11px;line-height:1.4}
+.business-check,.revenue-scope-check{display:none;align-self:center;color:#159447;font-size:18px;line-height:1}
+.business-option.is-selected,.revenue-scope-option.is-selected{border-color:#76c895;background:#effaf3;box-shadow:0 8px 22px rgba(21,148,71,.10)}
+.business-option.is-selected .business-check,.revenue-scope-option.is-selected .revenue-scope-check{display:block}
+.business-option:focus-within,.revenue-scope-option:focus-within,.cycle-option:focus-within,.package-option:focus-within{outline:3px solid rgba(21,148,71,.18);outline-offset:2px}
+
+.subscription-cycle-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.cycle-option{position:relative;display:flex!important;align-items:center;justify-content:space-between;gap:12px;min-height:76px;padding:12px 14px;border:1px solid #dbe7df;border-radius:15px;background:#fff;cursor:pointer}
+.cycle-option>span{display:grid;gap:4px}
+.cycle-option strong{color:#173526}
+.cycle-option small{color:#687970;font-size:12px}
+.cycle-option>i{display:none;color:#159447;font-size:20px;line-height:1}
+.cycle-option.is-selected{border-color:#76c895;background:#effaf3}
+.cycle-option.is-selected>i{display:block}
+
+.revenue-scope-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.revenue-scope-option{grid-template-columns:40px minmax(0,1fr) auto;min-height:116px}
+.revenue-retail-rule{display:flex;align-items:center;gap:7px;padding:9px 11px;border-radius:11px;background:#eef8f2;color:#315a42!important}
+.revenue-retail-rule i{display:grid;place-items:center;line-height:1}
+.revenue-retail-only{background:linear-gradient(180deg,#f4fbf6,#fbfefc)}
+
+.plan-badge{display:inline-flex;align-items:center;gap:7px}
+.plan-badge i{display:grid;place-items:center;line-height:1}
+.share-plan-price{font-size:22px}
+.plan-selection-summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;padding:12px;border:1px solid #dce9e0;border-radius:14px;background:#f7fbf8}
+.plan-selection-summary span{display:flex;align-items:center;gap:7px;color:#65756c;font-size:12px}
+.plan-selection-summary span i{display:grid;place-items:center;line-height:1;color:#159447}
+.plan-selection-summary strong{text-align:right;color:#173526;font-size:12px}
+.field-error.show{margin-top:2px}
+
+@media(max-width:760px){
+  .package-grid-two,.business-choice-grid,.subscription-cycle-grid,.revenue-scope-grid{grid-template-columns:1fr}
+  .register-choice-section{padding:12px}
+  .business-option,.revenue-scope-option{min-height:92px}
+  .plan-selection-summary{grid-template-columns:1fr}
+  .plan-selection-summary strong{text-align:left;padding-left:25px}
+}

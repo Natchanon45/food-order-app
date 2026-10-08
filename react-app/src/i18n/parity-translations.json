@@ -607,6 +607,29 @@
         "update_failed": "อัปเดตอายุสมาชิกไม่สำเร็จ",
         "backfilled": "กำหนดอายุเริ่มต้นให้ :count ร้านแล้ว"
       },
+      "signup_billing": {
+        "title": "ข้อมูลการสมัครใช้บริการ",
+        "model": "รูปแบบค่าบริการ",
+        "business": "ประเภทธุรกิจ",
+        "restaurant_scope": "ยอดร้านอาหารที่คิดส่วนแบ่ง",
+        "retail_scope": "ยอดร้านค้าปลีกที่คิดส่วนแบ่ง",
+        "subscription_cycle": "รอบสมาชิก",
+        "models": {
+          "subscription": "สมาชิก Premium",
+          "revenue_share": "คิดส่วนแบ่งยอดขาย"
+        },
+        "businesses": {
+          "restaurant_cafe": "ร้านอาหาร / คาเฟ่",
+          "retail": "ร้านค้าปลีก / โชว์ห่วย",
+          "both": "ทั้งร้านอาหาร / คาเฟ่ และร้านค้าปลีก"
+        },
+        "restaurant_scopes": {
+          "delivery_only": "Delivery เท่านั้น",
+          "storefront_only": "ขายหน้าร้านเท่านั้น",
+          "all": "Delivery + ขายหน้าร้าน"
+        },
+        "retail_all": "Retail POS ทุกบิล"
+      },
       "sales": {
         "order": "ยอดอาหาร Online",
         "pos": "Retail POS",
@@ -622,7 +645,12 @@
         "eyebrow": "การคิดส่วนแบ่ง",
         "title": "กำหนดส่วนแบ่งยอดขาย",
         "enabled": "เปิดใช้งานการคิดส่วนแบ่ง",
-        "help": "คิดเปอร์เซ็นต์เฉพาะยอดสินค้า/อาหาร Online และ Retail POS โดยไม่รวมค่าส่ง และเรียกคืนต้นทุน Lalamove แยกต่างหาก",
+        "help": "กำหนดประเภทธุรกิจและช่องทางยอดขายที่นำมาคิดส่วนแบ่ง โดยไม่รวมค่าส่ง และเรียกคืนต้นทุน Lalamove แยกต่างหาก",
+        "business_type": "ประเภทธุรกิจที่คิดส่วนแบ่ง",
+        "business_type_help": "ค่าเริ่มต้นมาจากข้อมูลที่ลูกค้าเลือกตอนสมัคร และผู้ดูแลระบบสามารถปรับแก้ได้",
+        "restaurant_scope": "ยอดร้านอาหาร / คาเฟ่ที่คิดส่วนแบ่ง",
+        "restaurant_scope_help": "Delivery = ทั้งโอนก่อนและ COD • หน้าร้าน = ทุกบิล Restaurant ที่ไม่ใช่ Delivery",
+        "retail_scope_fixed": "ร้านค้าปลีก / โชว์ห่วยคิดส่วนแบ่งจากยอด Retail POS ทุกบิลเสมอ",
         "rate": "อัตราส่วนแบ่ง (%)",
         "billing_cycle": "รอบการชำระและตรวจสอบ",
         "billing_cycle_help": "ใช้รอบนี้สำหรับการแนบสลิปและระงับการใช้งานเมื่อค้างชำระ",
@@ -816,9 +844,82 @@
       "register": {
         "title": "ลงทะเบียนเปิดร้าน",
         "home": "หน้าหลัก",
-        "hero_title": "เริ่มใช้งาน Premium ฟรี 1 เดือน",
-        "hero_description": "สมัครร้านใหม่ ยืนยันอีเมล แล้วระบบจะเปิดสิทธิ์เจ้าของร้านให้อัตโนมัติ",
+        "hero_title": "เลือกรูปแบบบริการที่เหมาะกับธุรกิจของคุณ",
+        "hero_description": "เลือกประเภทธุรกิจก่อน แล้วเลือกระหว่างสมาชิก Premium หรือคิดส่วนแบ่งยอดขาย ระบบจะตั้งค่าร้านตามที่เลือก",
         "package": "แพ็กเกจ",
+        "billing": {
+          "title": "เลือกรูปแบบการใช้บริการ",
+          "help": "เลือกชำระค่าสมาชิก หรือใช้รูปแบบคิดส่วนแบ่งจากยอดขาย",
+          "subscription": {
+            "title": "สมาชิก Premium รายเดือน / รายปี",
+            "trial": "ฟรีเดือนแรก",
+            "monthly": ":amount บาท / เดือน",
+            "yearly": "ราคาปกติ :regular บาท • พิเศษ :amount บาท / ปี"
+          },
+          "revenue_share": {
+            "title": "คิดส่วนแบ่งยอดขาย",
+            "price": "คิดตามยอดขายที่เลือก",
+            "help": "ระบบจะคิดเฉพาะยอดขายตามธุรกิจและช่องทางที่เลือก โดยผู้ดูแลระบบเป็นผู้กำหนดอัตราส่วนแบ่ง (%)"
+          }
+        },
+        "business": {
+          "title": "เลือกธุรกิจของคุณ",
+          "help": "เลือกให้ตรงกับธุรกิจที่ร้านใช้งาน ระบบจะแสดงเฉพาะส่วนที่เกี่ยวข้อง",
+          "restaurant": {
+            "title": "ร้านอาหาร / คาเฟ่",
+            "help": "Order, Delivery, Kitchen, Cashier และการขายหน้าร้าน"
+          },
+          "retail": {
+            "title": "ร้านค้าปลีก",
+            "help": "Retail POS / ร้านโชว์ห่วย และการขายหน้าร้าน"
+          },
+          "both": {
+            "title": "ทั้ง 2 ธุรกิจ",
+            "help": "มีทั้งร้านอาหาร / คาเฟ่ และร้านค้าปลีก / โชว์ห่วย"
+          }
+        },
+        "subscription_cycle": {
+          "title": "เลือกรอบชำระหลังทดลองใช้ฟรี",
+          "help": "ฟรีเดือนแรก จากนั้นชำระตามรอบที่เลือก โดยไม่มีการคิดส่วนแบ่งยอดขาย",
+          "monthly": "รายเดือน",
+          "yearly": "รายปี",
+          "baht_per_month": "บาท / เดือน",
+          "baht_per_year": "บาท / ปี",
+          "year_suffix": "ปี"
+        },
+        "revenue_scope": {
+          "title": "เลือกรายการขายของร้านอาหาร / คาเฟ่ที่นำมาคิดส่วนแบ่ง",
+          "help": "เงื่อนไขนี้ใช้เฉพาะยอดขายฝั่งร้านอาหาร / คาเฟ่",
+          "delivery": {
+            "title": "Delivery เท่านั้น",
+            "help": "คิดทั้งรายการโอนจ่ายก่อนและเก็บเงินปลายทาง แต่ไม่คิดยอดขายหน้าร้าน"
+          },
+          "storefront": {
+            "title": "ขายหน้าร้านเท่านั้น",
+            "help": "คิดทุกบิลที่ไม่ใช่ Delivery เช่น สั่งที่โต๊ะ Walk-in และ Takeaway"
+          },
+          "all": {
+            "title": "Delivery + หน้าร้าน",
+            "help": "คิดทั้งยอด Delivery และยอดขายหน้าร้านทุกกรณี"
+          },
+          "retail_title": "เงื่อนไขส่วนแบ่งร้านค้าปลีก",
+          "retail_always": "ร้านค้าปลีก / โชว์ห่วยจะคิดส่วนแบ่งจากยอดขาย Retail POS ทุกบิลเสมอ",
+          "retail_short": "ยอดขาย Retail POS ทุกบิล"
+        },
+        "aside": {
+          "subscription_badge": "Premium Subscription",
+          "share_badge": "Revenue Share",
+          "subscription_title": "สมาชิก Premium ฟรีเดือนแรก",
+          "share_title": "สมัครแบบคิดส่วนแบ่งยอดขาย",
+          "share_price": "ส่วนแบ่งตามยอดขาย",
+          "share_rate_note": "อัตราส่วนแบ่ง (%) จะถูกกำหนดในหน้าจัดการร้านค้าของผู้ดูแลระบบ",
+          "business": "ประเภทธุรกิจ",
+          "restaurant_scope": "ยอดร้านอาหารที่คิดส่วนแบ่ง",
+          "retail_scope": "ยอดร้านค้าปลีกที่คิดส่วนแบ่ง",
+          "not_selected": "ยังไม่ได้เลือก",
+          "restaurant_feature": "Order / Delivery / Kitchen / Cashier",
+          "share_admin_note": "ส่งเงื่อนไขที่เลือกไปยังหน้าจัดการร้านค้าของผู้ดูแลระบบ"
+        },
         "plans": {
           "free": "ฟรี",
           "pro": "โปร",
@@ -860,7 +961,7 @@
         "retail_pos_hint": "(Retail POS)",
         "same_shop_help": "ถ้าชื่อร้านค้าและชื่อร้านเป็นชื่อเดียวกัน ให้กรอกข้อมูลชื่อร้านอาหาร และ ชื่อร้านค้า เป็นชื่อเดียวกัน",
         "slug_help": "(ให้กรอกเป็นภาษาอังกฤษ ดูตัวอย่างลิงก์ของร้านเต็มได้ข้างล่าง)",
-        "after_signup_note": "หลังสมัคร ระบบจะส่งลิงก์ยืนยันไปที่อีเมล เมื่อยืนยันแล้วให้กลับมาหน้านี้เพื่อเปิดร้านและเริ่มนับ Premium Trial 1 เดือน",
+        "after_signup_note": "หลังสมัคร ระบบจะส่งลิงก์ยืนยันไปที่อีเมล เมื่อยืนยันแล้วให้กลับมาหน้านี้เพื่อเปิดร้านตามรูปแบบการใช้บริการที่เลือก",
         "terms_text": "ข้าพเจ้าได้อ่านข้อตกลงและนโยบายการใช้งานจากระบบและมีความเข้าใจเป็นอย่างดีแล้ว",
         "submit": "ยืนยันการสมัครใช้บริการ",
         "login": "ลงชื่อเข้าใช้",
@@ -878,18 +979,22 @@
           "package_unavailable": "แพ็กเกจนี้ยังไม่เปิดสมัครในขณะนี้ กรุณาเลือกพรีเมียมเพื่อทดลองใช้งานฟรี 1 เดือน",
           "verify_sent": "ส่งอีเมลยืนยันแล้ว กรุณาตรวจสอบกล่องจดหมาย รวมถึง Spam/Junk",
           "trial_activated": "เปิดร้านสำเร็จแล้ว Premium Trial เริ่มใช้งานแล้ว",
+          "revenue_share_activated": "เปิดร้านสำเร็จแล้ว ระบบใช้รูปแบบคิดส่วนแบ่งยอดขายตามเงื่อนไขที่สมัครไว้",
           "email_verified": "อีเมลยืนยันแล้ว กดเปิดร้านได้เลย",
           "resend_sent": "ส่งอีเมลยืนยันอีกครั้งแล้ว กรุณาตรวจสอบ Inbox และ Spam/Junk",
           "verify_first": "กรุณากดลิงก์ยืนยันในอีเมลก่อน"
         },
         "validation": {
           "accept_terms": "กรุณายอมรับข้อตกลงและนโยบายการใช้งาน",
+          "billing_mode": "กรุณาเลือกรูปแบบการใช้บริการ",
+          "business_type": "กรุณาเลือกประเภทธุรกิจของคุณ",
           "required": "กรุณากรอก:field",
           "phone_digits": "กรุณากรอกเบอร์โทรศัพท์ 10 หลัก",
           "email": "กรุณากรอกอีเมลให้ถูกต้อง",
           "password_min": "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร",
           "password_confirmation": "ยืนยันรหัสผ่านไม่ตรงกัน",
-          "incomplete": "กรุณาตรวจสอบข้อมูลที่จำเป็นให้ครบถ้วน"
+          "incomplete": "กรุณาตรวจสอบข้อมูลที่จำเป็นให้ครบถ้วน",
+          "revenue_share_scope": "กรุณาเลือกยอดขายร้านอาหาร / คาเฟ่ที่ต้องการนำมาคิดส่วนแบ่ง"
         },
         "errors": {
           "slug_exists": "Slug นี้ถูกใช้งานแล้ว กรุณาเปลี่ยน slug",
@@ -6928,6 +7033,29 @@
         "update_failed": "Could not update the subscription",
         "backfilled": "Initial subscription expiry set for :count stores"
       },
+      "signup_billing": {
+        "title": "Signup service settings",
+        "model": "Billing model",
+        "business": "Business type",
+        "restaurant_scope": "Restaurant share base",
+        "retail_scope": "Retail share base",
+        "subscription_cycle": "Subscription cycle",
+        "models": {
+          "subscription": "Premium subscription",
+          "revenue_share": "Sales revenue share"
+        },
+        "businesses": {
+          "restaurant_cafe": "Restaurant / Cafe",
+          "retail": "Retail / Convenience store",
+          "both": "Restaurant / Cafe + Retail"
+        },
+        "restaurant_scopes": {
+          "delivery_only": "Delivery only",
+          "storefront_only": "Storefront only",
+          "all": "Delivery + storefront"
+        },
+        "retail_all": "Every Retail POS sale"
+      },
       "sales": {
         "order": "Online food sales",
         "pos": "Retail POS",
@@ -6943,7 +7071,12 @@
         "eyebrow": "Revenue share",
         "title": "Configure sales revenue share",
         "enabled": "Enable revenue share",
-        "help": "Apply the percentage only to online product/food sales and Retail POS sales. Delivery is excluded from the percentage and Lalamove cost is reimbursed separately.",
+        "help": "Choose the business type and sales channels included in revenue share. Delivery fees are excluded, and Lalamove cost is accounted for separately.",
+        "business_type": "Revenue-share business type",
+        "business_type_help": "Defaults to the customer's signup selection and can be adjusted by an administrator.",
+        "restaurant_scope": "Restaurant / cafe share base",
+        "restaurant_scope_help": "Delivery includes prepaid and COD. Storefront includes every non-delivery restaurant bill.",
+        "retail_scope_fixed": "Retail / convenience stores always include every Retail POS sale in revenue share.",
         "rate": "Revenue share rate (%)",
         "billing_cycle": "Payment and review cycle",
         "billing_cycle_help": "This cycle controls slip submission and suspension when payment is overdue.",
@@ -7137,9 +7270,82 @@
       "register": {
         "title": "Register your store",
         "home": "Home",
-        "hero_title": "Start Premium free for 1 month",
-        "hero_description": "Register a new store and verify your email. The system will automatically grant the store-owner role.",
+        "hero_title": "Choose the service model that fits your business",
+        "hero_description": "Select your business first, then choose a Premium subscription or sales revenue share. The store is configured from your choices.",
         "package": "Package",
+        "billing": {
+          "title": "Choose your service model",
+          "help": "Choose a subscription plan or a sales revenue-share model.",
+          "subscription": {
+            "title": "Premium monthly / yearly subscription",
+            "trial": "First month free",
+            "monthly": "฿:amount / month",
+            "yearly": "Regular ฿:regular • Special ฿:amount / year"
+          },
+          "revenue_share": {
+            "title": "Sales revenue share",
+            "price": "Based on selected sales",
+            "help": "Only sales from the selected business/channels are included. The administrator sets the revenue-share rate (%)."
+          }
+        },
+        "business": {
+          "title": "Choose your business",
+          "help": "Select the business your store operates so only relevant settings are shown.",
+          "restaurant": {
+            "title": "Restaurant / Cafe",
+            "help": "Order, Delivery, Kitchen, Cashier and storefront sales"
+          },
+          "retail": {
+            "title": "Retail store",
+            "help": "Retail POS / convenience-store storefront sales"
+          },
+          "both": {
+            "title": "Both businesses",
+            "help": "Restaurant / cafe plus retail / convenience store"
+          }
+        },
+        "subscription_cycle": {
+          "title": "Choose the billing cycle after the free trial",
+          "help": "The first month is free. After that, pay by the selected cycle with no sales revenue share.",
+          "monthly": "Monthly",
+          "yearly": "Yearly",
+          "baht_per_month": "THB / month",
+          "baht_per_year": "THB / year",
+          "year_suffix": "year"
+        },
+        "revenue_scope": {
+          "title": "Choose restaurant / cafe sales included in revenue share",
+          "help": "This setting applies only to the restaurant / cafe side.",
+          "delivery": {
+            "title": "Delivery only",
+            "help": "Includes prepaid and COD deliveries. Storefront sales are excluded."
+          },
+          "storefront": {
+            "title": "Storefront only",
+            "help": "Includes every non-delivery bill such as table orders, walk-ins and takeaway."
+          },
+          "all": {
+            "title": "Delivery + storefront",
+            "help": "Includes both Delivery and all storefront restaurant sales."
+          },
+          "retail_title": "Retail revenue-share rule",
+          "retail_always": "Retail / convenience-store revenue share always includes every Retail POS sale.",
+          "retail_short": "Every Retail POS sale"
+        },
+        "aside": {
+          "subscription_badge": "Premium Subscription",
+          "share_badge": "Revenue Share",
+          "subscription_title": "Premium subscription with first month free",
+          "share_title": "Register with sales revenue share",
+          "share_price": "Revenue share on sales",
+          "share_rate_note": "The revenue-share rate (%) is configured by the administrator in Store Management.",
+          "business": "Business type",
+          "restaurant_scope": "Restaurant share base",
+          "retail_scope": "Retail share base",
+          "not_selected": "Not selected",
+          "restaurant_feature": "Order / Delivery / Kitchen / Cashier",
+          "share_admin_note": "Your selected conditions are sent to the administrator Store Management screen."
+        },
         "plans": {
           "free": "Free",
           "pro": "Pro",
@@ -7181,7 +7387,7 @@
         "retail_pos_hint": "(Retail POS)",
         "same_shop_help": "If the restaurant and retail store use the same name, enter the same name in both fields.",
         "slug_help": "(Use English letters. A full example store URL appears below.)",
-        "after_signup_note": "After registration, a verification link will be sent to your email. Return to this page after verifying to activate the store and start the 1-month Premium Trial.",
+        "after_signup_note": "After registration, a verification link will be sent to your email. Return to this page after verifying to activate the store with the service model you selected.",
         "terms_text": "I have read and understood the terms and usage policy provided by the system.",
         "submit": "Confirm registration",
         "login": "Sign in",
@@ -7199,18 +7405,22 @@
           "package_unavailable": "This package is not open for registration yet. Choose Premium to try it free for 1 month.",
           "verify_sent": "Verification email sent. Please check your inbox, including Spam/Junk.",
           "trial_activated": "Store activated successfully. Your Premium Trial has started.",
+          "revenue_share_activated": "Store activated successfully with the sales revenue-share conditions selected during registration.",
           "email_verified": "Email verified. You can activate the store now.",
           "resend_sent": "Verification email sent again. Please check your Inbox and Spam/Junk.",
           "verify_first": "Please open the verification link in your email first."
         },
         "validation": {
           "accept_terms": "Please accept the terms and usage policy.",
+          "billing_mode": "Please choose a service model.",
+          "business_type": "Please choose your business type.",
           "required": "Please enter :field.",
           "phone_digits": "Please enter a 10-digit phone number.",
           "email": "Please enter a valid email address.",
           "password_min": "Password must be at least 8 characters.",
           "password_confirmation": "Password confirmation does not match.",
-          "incomplete": "Please check all required information."
+          "incomplete": "Please check all required information.",
+          "revenue_share_scope": "Please choose the restaurant / cafe sales scope for revenue share."
         },
         "errors": {
           "slug_exists": "This slug is already in use. Please choose another slug.",
@@ -12989,7 +13199,7 @@
         "eyebrow": "အမြတ်ဝေစု",
         "title": "အရောင်းဝင်ငွေဝေစုကို စီစဉ်သတ်မှတ်ပါ။",
         "enabled": "ဝင်ငွေမျှဝေမှုကို ဖွင့်ပါ။",
-        "help": "ရာခိုင်နှုန်းကို အွန်လိုင်းထုတ်ကုန်/အစားအစာရောင်းချမှုနှင့် Retail POS ရောင်းချမှုတွင်သာ အသုံးချပါ။ ပို့ဆောင်မှုကို ရာခိုင်နှုန်းမှ ဖယ်ထုတ်ထားပြီး Lalamove ကုန်ကျစရိတ်ကို သီးခြားပြန်ထုတ်ပေးပါသည်။",
+        "help": "ဝေစုတွက်မည့် လုပ်ငန်းနှင့် ရောင်းချမှုလမ်းကြောင်းကို သတ်မှတ်ပါ။ Delivery ကြေးမပါဝင်ဘဲ Lalamove ကုန်ကျစရိတ်ကို သီးခြားတွက်ချက်ပါသည်",
         "rate": "အမြတ်ဝေစုနှုန်း (%)",
         "billing_cycle": "ငွေပေးချေမှုနှင့် ပြန်လည်သုံးသပ်မှု စက်ဝန်း",
         "billing_cycle_help": "ငွေပေးချေမှု ရက်လွန်သွားသောအခါ ဤစက်ဝန်းသည် စလစ်တင်သွင်းမှုနှင့် ဆိုင်းငံ့ခြင်းကို ထိန်းချုပ်ပါသည်။",
@@ -13003,7 +13213,12 @@
         "saving": "သိမ်းဆည်းနေသည်...",
         "saved": "အမြတ်ဝေစုနှုန်းကို သိမ်းဆည်းထားသည်။",
         "table_missing": "ဝင်ငွေမျှဝေခြင်းဒေတာဘေ့စ်ဇယားကို မဖန်တီးရသေးပါ။",
-        "save_failed": "ဝင်ငွေဝေစုကို မသိမ်းဆည်းနိုင်ခဲ့ပါ။"
+        "save_failed": "ဝင်ငွေဝေစုကို မသိမ်းဆည်းနိုင်ခဲ့ပါ။",
+        "business_type": "ဝေစုတွက်မည့် လုပ်ငန်းအမျိုးအစား",
+        "business_type_help": "ဖောက်သည် စာရင်းသွင်းစဉ် ရွေးထားသည့်တန်ဖိုးကို မူလအဖြစ်သုံးပြီး စီမံခန့်ခွဲသူ ပြင်နိုင်သည်",
+        "restaurant_scope": "စားသောက်ဆိုင် / ကဖေး ဝေစုအခြေခံ",
+        "restaurant_scope_help": "Delivery တွင် ကြိုတင်ငွေပေးနှင့် COD ပါဝင်ပြီး ဆိုင်တွင်းတွင် Delivery မဟုတ်သော ဘီလ်အားလုံးပါဝင်သည်",
+        "retail_scope_fixed": "လက်လီ / ကုန်စုံဆိုင်သည် Retail POS ရောင်းအားဘီလ်အားလုံးမှ ဝေစုတွက်သည်"
       },
       "review": {
         "title": "အခွန်ခွဲဝေစလစ် သုံးသပ်ချက်",
@@ -13068,6 +13283,29 @@
         "tenant_aria": "ဤဆိုင်တွင် အသိပေးချက် :count ခုရှိသည်",
         "revenue_share": "ဝင်ငွေခွဲဝေ",
         "wallet": "ခရက်ဒစ်ဖြည့်"
+      },
+      "signup_billing": {
+        "title": "စာရင်းသွင်း ဝန်ဆောင်မှုအချက်အလက်",
+        "model": "ငွေပေးချေမှုပုံစံ",
+        "business": "လုပ်ငန်းအမျိုးအစား",
+        "restaurant_scope": "စားသောက်ဆိုင် ဝေစုအခြေခံ",
+        "retail_scope": "လက်လီ ဝေစုအခြေခံ",
+        "subscription_cycle": "အဖွဲ့ဝင်ကာလ",
+        "models": {
+          "subscription": "Premium အဖွဲ့ဝင်",
+          "revenue_share": "ရောင်းအားဝေစု"
+        },
+        "businesses": {
+          "restaurant_cafe": "စားသောက်ဆိုင် / ကဖေး",
+          "retail": "လက်လီ / ကုန်စုံဆိုင်",
+          "both": "စားသောက်ဆိုင် / ကဖေး + လက်လီ"
+        },
+        "restaurant_scopes": {
+          "delivery_only": "Delivery သာ",
+          "storefront_only": "ဆိုင်တွင်းသာ",
+          "all": "Delivery + ဆိုင်တွင်း"
+        },
+        "retail_all": "Retail POS ရောင်းအားဘီလ်အားလုံး"
       }
     },
     "admin_users": {
@@ -13183,8 +13421,8 @@
       "register": {
         "title": "သင်၏စတိုးဆိုင်ကိုမှတ်ပုံတင်ပါ။",
         "home": "အိမ်",
-        "hero_title": "1 လ အခမဲ့ Premium စတင်ပါ။",
-        "hero_description": "စတိုးဆိုင်အသစ်တစ်ခုကို မှတ်ပုံတင်ပြီး သင့်အီးမေးလ်ကို အတည်ပြုပါ။ စနစ်သည် စတိုးဆိုင်ပိုင်ရှင် ရာထူးကို အလိုအလျောက် ပေးပါမည်။",
+        "hero_title": "သင့်လုပ်ငန်းနှင့် ကိုက်ညီသော ဝန်ဆောင်မှုပုံစံကို ရွေးချယ်ပါ",
+        "hero_description": "လုပ်ငန်းအမျိုးအစားကို အရင်ရွေးပြီး Premium အဖွဲ့ဝင် သို့မဟုတ် ရောင်းအားဝေစုကို ရွေးချယ်ပါ။ စနစ်သည် သင့်ရွေးချယ်မှုအတိုင်း ဆိုင်ကို စီစဉ်ပေးပါမည်",
         "package": "အထုပ်",
         "plans": {
           "free": "Free",
@@ -13227,7 +13465,7 @@
         "retail_pos_hint": "(Retail POS)",
         "same_shop_help": "စားသောက်ဆိုင်နှင့် လက်လီစတိုးဆိုင်သည် တူညီသောအမည်ကို အသုံးပြုပါက အကွက်နှစ်ခုစလုံးတွင် တူညီသောအမည်ကို ထည့်သွင်းပါ။",
         "slug_help": "(အင်္ဂလိပ်စာလုံးများကို အသုံးပြုပါ။ နမူနာစတိုးဆိုင် URL အပြည့်အစုံကို အောက်တွင် ပေါ်လာပါမည်။)",
-        "after_signup_note": "စာရင်းသွင်းပြီးနောက်၊ အတည်ပြုခြင်းလင့်ခ်ကို သင့်အီးမေးလ်သို့ ပေးပို့ပါမည်။ စတိုးဆိုင်ကို အသက်သွင်းရန်နှင့် 1-လ Premium Trial စတင်ရန် အတည်ပြုပြီးနောက် ဤစာမျက်နှာသို့ ပြန်သွားပါ။",
+        "after_signup_note": "စာရင်းသွင်းပြီးနောက် အီးမေးလ်အတည်ပြုလင့်ခ် ပို့ပါမည်။ အတည်ပြုပြီးလျှင် ဤစာမျက်နှာသို့ ပြန်လာကာ ရွေးထားသော ဝန်ဆောင်မှုပုံစံဖြင့် ဆိုင်ကိုဖွင့်ပါ",
         "terms_text": "စနစ်မှ ပေးထားသည့် စည်းကမ်းချက်များ နှင့် အသုံးပြုမှု မူဝါဒကို ကျွန်ုပ် ဖတ်ပြီး နားလည်ပါသည်။",
         "submit": "မှတ်ပုံတင်အတည်ပြုပါ။",
         "login": "ဝင်ရောက်ပါ။",
@@ -13247,7 +13485,8 @@
           "trial_activated": "စတိုးကို အောင်မြင်စွာ စတင်အသုံးပြုနိုင်ပါပြီ။ သင်၏ Premium Trial စတင်ပါပြီ။",
           "email_verified": "Email အတည်ပြုပြီးပါပြီ။ စတိုးဆိုင်ကို ယခုစဖွင့်နိုင်ပါသည်။",
           "resend_sent": "အတည်ပြုအီးမေးလ်ကို ထပ်မံပေးပို့ခဲ့သည်။ သင်၏ Inbox နှင့် Spam/Junk ကိုစစ်ဆေးပါ။",
-          "verify_first": "သင့်အီးမေးလ်ရှိ အတည်ပြုခြင်းလင့်ခ်ကို ဦးစွာဖွင့်ပါ။"
+          "verify_first": "သင့်အီးမေးလ်ရှိ အတည်ပြုခြင်းလင့်ခ်ကို ဦးစွာဖွင့်ပါ။",
+          "revenue_share_activated": "ရောင်းအားဝေစုစနစ်ဖြင့် ဆိုင်ကို အောင်မြင်စွာ ဖွင့်ပြီးပါပြီ"
         },
         "validation": {
           "accept_terms": "စည်းကမ်းချက်များနှင့် အသုံးပြုမှုမူဝါဒကို လက်ခံပါ။",
@@ -13256,7 +13495,10 @@
           "email": "ကျေးဇူးပြု၍ တရားဝင်အီးမေးလ်လိပ်စာကို ထည့်ပါ။",
           "password_min": "စကားဝှက်သည် အနည်းဆုံး အက္ခရာ ၈ လုံး ရှိရမည်။",
           "password_confirmation": "စကားဝှက်အတည်ပြုချက်နှင့် မကိုက်ညီပါ။",
-          "incomplete": "လိုအပ်သော အချက်အလက်အားလုံးကို စစ်ဆေးပါ။"
+          "incomplete": "လိုအပ်သော အချက်အလက်အားလုံးကို စစ်ဆေးပါ။",
+          "billing_mode": "ဝန်ဆောင်မှုပုံစံကို ရွေးချယ်ပါ",
+          "business_type": "သင့်လုပ်ငန်းအမျိုးအစားကို ရွေးချယ်ပါ",
+          "revenue_share_scope": "ရောင်းအားဝေစုတွက်မည့် စားသောက်ဆိုင် / ကဖေး ရောင်းအားအပိုင်းကို ရွေးချယ်ပါ"
         },
         "errors": {
           "slug_exists": "ဤမျှော့ကို အသုံးပြုနေပြီဖြစ်သည်။ ကျေးဇူးပြု၍ အခြားပက်ကျိကို ရွေးပါ။",
@@ -13269,6 +13511,79 @@
           "signup_failed": "မှတ်ပုံတင်ခြင်း မအောင်မြင်ပါ။",
           "activate_failed": "စတိုးဆိုင်ကို ဖွင့်၍မရပါ။",
           "resend_failed": "အတည်ပြုအီးမေးလ်ကို ပြန်မပို့နိုင်ပါ။"
+        },
+        "billing": {
+          "title": "ဝန်ဆောင်မှု ငွေပေးချေမှုပုံစံကို ရွေးချယ်ပါ",
+          "help": "လစဉ်/နှစ်စဉ် အဖွဲ့ဝင်ကြေး သို့မဟုတ် ရောင်းအားဝေစုစနစ်ကို ရွေးချယ်ပါ",
+          "subscription": {
+            "title": "Premium လစဉ် / နှစ်စဉ် အဖွဲ့ဝင်",
+            "trial": "ပထမလ အခမဲ့",
+            "monthly": ":amount ဘတ် / လ",
+            "yearly": "ပုံမှန် :regular ဘတ် • အထူး :amount ဘတ် / နှစ်"
+          },
+          "revenue_share": {
+            "title": "ရောင်းအားမှ ဝေစုတွက်ချက်ခြင်း",
+            "price": "ရွေးချယ်ထားသော ရောင်းအားအပေါ် တွက်ချက်",
+            "help": "ရွေးထားသော လုပ်ငန်းနှင့် ရောင်းချမှုလမ်းကြောင်းများမှ ရောင်းအားကိုသာ တွက်ချက်ပြီး စီမံခန့်ခွဲသူက ဝေစုနှုန်း (%) သတ်မှတ်ပါမည်"
+          }
+        },
+        "business": {
+          "title": "သင့်လုပ်ငန်းအမျိုးအစားကို ရွေးချယ်ပါ",
+          "help": "အသုံးပြုမည့်လုပ်ငန်းနှင့် ကိုက်ညီသည့် အမျိုးအစားကို ရွေးပါ",
+          "restaurant": {
+            "title": "စားသောက်ဆိုင် / ကဖေး",
+            "help": "Order, Delivery, Kitchen, Cashier နှင့် ဆိုင်တွင်းရောင်းချမှု"
+          },
+          "retail": {
+            "title": "လက်လီဆိုင်",
+            "help": "Retail POS / ကုန်စုံဆိုင် နှင့် ဆိုင်တွင်းရောင်းချမှု"
+          },
+          "both": {
+            "title": "လုပ်ငန်း ၂ မျိုးလုံး",
+            "help": "စားသောက်ဆိုင် / ကဖေး နှင့် လက်လီ / ကုန်စုံဆိုင် နှစ်မျိုးလုံး"
+          }
+        },
+        "subscription_cycle": {
+          "title": "အခမဲ့ကာလပြီးနောက် ငွေပေးချေမည့်ကာလကို ရွေးပါ",
+          "help": "ပထမလ အခမဲ့ဖြစ်ပြီး နောက်ပိုင်းရွေးချယ်ထားသောကာလအလိုက် ပေးချေပါ။ ရောင်းအားဝေစု မတွက်ပါ",
+          "monthly": "လစဉ်",
+          "yearly": "နှစ်စဉ်",
+          "baht_per_month": "ဘတ် / လ",
+          "baht_per_year": "ဘတ် / နှစ်",
+          "year_suffix": "နှစ်"
+        },
+        "revenue_scope": {
+          "title": "စားသောက်ဆိုင် / ကဖေး ရောင်းအားဝေစုတွက်မည့် အပိုင်းကို ရွေးပါ",
+          "help": "ဤသတ်မှတ်ချက်သည် စားသောက်ဆိုင် / ကဖေးဘက်အတွက်သာ ဖြစ်သည်",
+          "delivery": {
+            "title": "Delivery သာ",
+            "help": "ကြိုတင်ငွေပေးနှင့် COD Delivery အားလုံးပါဝင်ပြီး ဆိုင်တွင်းရောင်းအား မပါ"
+          },
+          "storefront": {
+            "title": "ဆိုင်တွင်းရောင်းအားသာ",
+            "help": "Delivery မဟုတ်သော စားပွဲ၊ Walk-in နှင့် Takeaway ဘီလ်အားလုံးပါဝင်သည်"
+          },
+          "all": {
+            "title": "Delivery + ဆိုင်တွင်း",
+            "help": "Delivery နှင့် ဆိုင်တွင်း စားသောက်ဆိုင်ရောင်းအားအားလုံး ပါဝင်သည်"
+          },
+          "retail_title": "လက်လီလုပ်ငန်း ဝေစုစည်းမျဉ်း",
+          "retail_always": "လက်လီ / ကုန်စုံဆိုင်သည် Retail POS ရောင်းအားဘီလ်အားလုံးမှ ဝေစုတွက်ပါမည်",
+          "retail_short": "Retail POS ရောင်းအားဘီလ်အားလုံး"
+        },
+        "aside": {
+          "subscription_badge": "Premium Subscription",
+          "share_badge": "Revenue Share",
+          "subscription_title": "Premium အဖွဲ့ဝင် ပထမလအခမဲ့",
+          "share_title": "ရောင်းအားဝေစုဖြင့် စာရင်းသွင်းခြင်း",
+          "share_price": "ရောင်းအားအလိုက် ဝေစု",
+          "share_rate_note": "ဝေစုနှုန်း (%) ကို စီမံခန့်ခွဲသူက Store Management တွင် သတ်မှတ်ပါမည်",
+          "business": "လုပ်ငန်းအမျိုးအစား",
+          "restaurant_scope": "စားသောက်ဆိုင် ဝေစုအခြေခံ",
+          "retail_scope": "လက်လီ ဝေစုအခြေခံ",
+          "not_selected": "မရွေးချယ်ရသေး",
+          "restaurant_feature": "Order / Delivery / Kitchen / Cashier",
+          "share_admin_note": "ရွေးထားသော အချက်အလက်များကို စီမံခန့်ခွဲသူ၏ Store Management သို့ ပို့ပေးပါမည်"
         }
       }
     },
@@ -19035,7 +19350,7 @@
         "eyebrow": "ສ່ວນແບ່ງລາຍຮັບ",
         "title": "ຕັ້ງຄ່າສ່ວນແບ່ງລາຍໄດ້ຈາກການຂາຍ",
         "enabled": "ເປີດໃຊ້ສ່ວນແບ່ງລາຍໄດ້",
-        "help": "ນຳໃຊ້ອັດຕາສ່ວນພຽງແຕ່ກັບການຂາຍສິນຄ້າ/ອາຫານອອນລາຍ ແລະການຂາຍ Retail POS. ການຈັດສົ່ງແມ່ນບໍ່ລວມເອົາເປີເຊັນ ແລະຄ່າໃຊ້ຈ່າຍ Lalamove ຈະຖືກຈ່າຍຄືນແຍກຕ່າງຫາກ.",
+        "help": "ກຳນົດທຸລະກິດ ແລະ ຊ່ອງທາງຍອດຂາຍທີ່ນຳມາຄິດສ່ວນແບ່ງ ໂດຍບໍ່ລວມຄ່າຈັດສົ່ງ",
         "rate": "ອັດຕາສ່ວນແບ່ງລາຍຮັບ (%)",
         "billing_cycle": "ຮອບວຽນການຈ່າຍເງິນ ແລະການທົບທວນຄືນ",
         "billing_cycle_help": "ຮອບວຽນນີ້ຄວບຄຸມການຍື່ນໃບສະໄລ ແລະ ການລະງັບການຊຳລະເງິນເມື່ອເກີນກຳນົດ.",
@@ -19049,7 +19364,12 @@
         "saving": "ກຳລັງບັນທຶກ...",
         "saved": "ບັນທຶກອັດຕາສ່ວນແບ່ງລາຍໄດ້",
         "table_missing": "ຕາຕະລາງຖານຂໍ້ມູນສ່ວນແບ່ງລາຍຮັບຍັງບໍ່ທັນໄດ້ຖືກສ້າງຂຶ້ນເທື່ອ",
-        "save_failed": "ບໍ່ສາມາດບັນທຶກສ່ວນແບ່ງລາຍຮັບໄດ້"
+        "save_failed": "ບໍ່ສາມາດບັນທຶກສ່ວນແບ່ງລາຍຮັບໄດ້",
+        "business_type": "ປະເພດທຸລະກິດທີ່ຄິດສ່ວນແບ່ງ",
+        "business_type_help": "ຄ່າເລີ່ມຕົ້ນມາຈາກທີ່ລູກຄ້າເລືອກຕອນສະໝັກ ແລະ ຜູ້ດູແລປັບໄດ້",
+        "restaurant_scope": "ຍອດຮ້ານອາຫານ / ຄາເຟທີ່ຄິດສ່ວນແບ່ງ",
+        "restaurant_scope_help": "Delivery ລວມຈ່າຍກ່ອນແລະ COD • ໜ້າຮ້ານລວມທຸກບິນທີ່ບໍ່ແມ່ນ Delivery",
+        "retail_scope_fixed": "ຮ້ານຄ້າປີກ / ໂຊຫ່ວຍຄິດສ່ວນແບ່ງຈາກ Retail POS ທຸກບິນ"
       },
       "review": {
         "title": "ການທົບທວນຄືນໃບແບ່ງປັນລາຍຮັບ",
@@ -19114,6 +19434,29 @@
         "tenant_aria": "ຮ້ານນີ້ມີແຈ້ງເຕືອນ :count ລາຍການ",
         "revenue_share": "ສ່ວນແບ່ງ",
         "wallet": "ເຕີມເຄຣດິດ"
+      },
+      "signup_billing": {
+        "title": "ຂໍ້ມູນການສະໝັກບໍລິການ",
+        "model": "ຮູບແບບຄ່າບໍລິການ",
+        "business": "ປະເພດທຸລະກິດ",
+        "restaurant_scope": "ຍອດຮ້ານອາຫານທີ່ຄິດສ່ວນແບ່ງ",
+        "retail_scope": "ຍອດຮ້ານຄ້າປີກທີ່ຄິດສ່ວນແບ່ງ",
+        "subscription_cycle": "ຮອບສະມາຊິກ",
+        "models": {
+          "subscription": "Premium Subscription",
+          "revenue_share": "ຄິດສ່ວນແບ່ງຍອດຂາຍ"
+        },
+        "businesses": {
+          "restaurant_cafe": "ຮ້ານອາຫານ / ຄາເຟ",
+          "retail": "ຮ້ານຄ້າປີກ / ໂຊຫ່ວຍ",
+          "both": "ຮ້ານອາຫານ / ຄາເຟ + ຮ້ານຄ້າປີກ"
+        },
+        "restaurant_scopes": {
+          "delivery_only": "Delivery ເທົ່ານັ້ນ",
+          "storefront_only": "ໜ້າຮ້ານເທົ່ານັ້ນ",
+          "all": "Delivery + ໜ້າຮ້ານ"
+        },
+        "retail_all": "Retail POS ທຸກບິນ"
       }
     },
     "admin_users": {
@@ -19229,8 +19572,8 @@
       "register": {
         "title": "ລົງທະບຽນຮ້ານຂອງທ່ານ",
         "home": "ບ້ານ",
-        "hero_title": "ເລີ່ມ Premium ຟຣີ 1 ເດືອນ",
-        "hero_description": "ລົງທະບຽນຮ້ານຄ້າໃໝ່ ແລະຢັ້ງຢືນອີເມວຂອງທ່ານ. ລະບົບຈະໃຫ້ບົດບາດເຈົ້າຂອງຮ້ານໂດຍອັດຕະໂນມັດ.",
+        "hero_title": "ເລືອກຮູບແບບບໍລິການທີ່ເໝາະກັບທຸລະກິດຂອງທ່ານ",
+        "hero_description": "ເລືອກປະເພດທຸລະກິດກ່ອນ ແລ້ວເລືອກ Premium Subscription ຫຼື ສ່ວນແບ່ງຍອດຂາຍ ລະບົບຈະຕັ້ງຄ່າຮ້ານຕາມທີ່ເລືອກ",
         "package": "ຊຸດ",
         "plans": {
           "free": "Free",
@@ -19273,7 +19616,7 @@
         "retail_pos_hint": "(Retail POS)",
         "same_shop_help": "ຖ້າຮ້ານອາຫານແລະຮ້ານຂາຍຍ່ອຍໃຊ້ຊື່ດຽວກັນ, ໃສ່ຊື່ດຽວກັນໃນທັງສອງຊ່ອງ.",
         "slug_help": "(ໃຊ້ຕົວອັກສອນພາສາອັງກິດ. ຕົວຢ່າງເຕັມທີ່ເກັບ URL ປາກົດຢູ່ລຸ່ມນີ້.)",
-        "after_signup_note": "ຫຼັງຈາກການລົງທະບຽນ, ການເຊື່ອມຕໍ່ການຢັ້ງຢືນຈະຖືກສົ່ງໄປຫາອີເມວຂອງທ່ານ. ກັບຄືນຫາໜ້ານີ້ຫຼັງຈາກກວດສອບການເປີດໃຊ້ຮ້ານ ແລະເລີ່ມ 1 ເດືອນ Premium Trial.",
+        "after_signup_note": "ຫຼັງສະໝັກຈະສົ່ງລິ້ງຢືນຢັນໄປທາງອີເມວ ເມື່ອຢືນຢັນແລ້ວໃຫ້ກັບມາເປີດຮ້ານຕາມຮູບແບບທີ່ເລືອກ",
         "terms_text": "ຂ້າພະເຈົ້າໄດ້ອ່ານແລະເຂົ້າໃຈຂໍ້ກໍານົດແລະນະໂຍບາຍການນໍາໃຊ້ທີ່ສະຫນອງໃຫ້ໂດຍລະບົບ.",
         "submit": "ຢືນຢັນການລົງທະບຽນ",
         "login": "ເຂົ້າສູ່ລະບົບ",
@@ -19293,7 +19636,8 @@
           "trial_activated": "ເປີດໃຊ້ຮ້ານສຳເລັດແລ້ວ. Premium Trial ຂອງທ່ານໄດ້ເລີ່ມແລ້ວ.",
           "email_verified": "Email ຢັ້ງຢືນແລ້ວ. ທ່ານສາມາດເປີດໃຊ້ຮ້ານດຽວນີ້.",
           "resend_sent": "ສົ່ງອີເມວຢືນຢັນອີກຄັ້ງ. ກະລຸນາກວດເບິ່ງ Inbox ແລະ Spam/Junk ຂອງທ່ານ.",
-          "verify_first": "ກະລຸນາເປີດລິ້ງຢືນຢັນໃນອີເມວຂອງເຈົ້າກ່ອນ."
+          "verify_first": "ກະລຸນາເປີດລິ້ງຢືນຢັນໃນອີເມວຂອງເຈົ້າກ່ອນ.",
+          "revenue_share_activated": "ເປີດຮ້ານສຳເລັດ ແລະ ໃຊ້ຮູບແບບສ່ວນແບ່ງຍອດຂາຍແລ້ວ"
         },
         "validation": {
           "accept_terms": "ກະລຸນາຍອມຮັບຂໍ້ກຳນົດ ແລະນະໂຍບາຍການນຳໃຊ້.",
@@ -19302,7 +19646,10 @@
           "email": "ກະລຸນາໃສ່ທີ່ຢູ່ອີເມວທີ່ຖືກຕ້ອງ.",
           "password_min": "ລະຫັດຜ່ານຕ້ອງມີຢ່າງໜ້ອຍ 8 ຕົວອັກສອນ.",
           "password_confirmation": "ການຢືນຢັນລະຫັດຜ່ານບໍ່ກົງກັນ.",
-          "incomplete": "ກະລຸນາກວດເບິ່ງຂໍ້ມູນທີ່ຕ້ອງການທັງໝົດ."
+          "incomplete": "ກະລຸນາກວດເບິ່ງຂໍ້ມູນທີ່ຕ້ອງການທັງໝົດ.",
+          "billing_mode": "ກະລຸນາເລືອກຮູບແບບຄ່າບໍລິການ",
+          "business_type": "ກະລຸນາເລືອກປະເພດທຸລະກິດ",
+          "revenue_share_scope": "ກະລຸນາເລືອກຂອບເຂດຍອດຮ້ານອາຫານ / ຄາເຟທີ່ຈະນຳມາຄິດສ່ວນແບ່ງ"
         },
         "errors": {
           "slug_exists": "ທາກນີ້ຖືກໃຊ້ແລ້ວ. ກະລຸນາເລືອກ slug ອື່ນ.",
@@ -19315,6 +19662,79 @@
           "signup_failed": "ການລົງທະບຽນລົ້ມເຫລວ.",
           "activate_failed": "ບໍ່ສາມາດເປີດໃຊ້ຮ້ານໄດ້.",
           "resend_failed": "ບໍ່ສາມາດສົ່ງອີເມວຢືນຢັນຄືນໃໝ່ໄດ້."
+        },
+        "billing": {
+          "title": "ເລືອກຮູບແບບຄ່າບໍລິການ",
+          "help": "ເລືອກສະມາຊິກລາຍເດືອນ/ລາຍປີ ຫຼື ຮູບແບບແບ່ງສ່ວນຈາກຍອດຂາຍ",
+          "subscription": {
+            "title": "ສະມາຊິກ Premium ລາຍເດືອນ / ລາຍປີ",
+            "trial": "ຟຣີເດືອນທຳອິດ",
+            "monthly": ":amount ບາດ / ເດືອນ",
+            "yearly": "ລາຄາປົກກະຕິ :regular ບາດ • ພິເສດ :amount ບາດ / ປີ"
+          },
+          "revenue_share": {
+            "title": "ຄິດສ່ວນແບ່ງຈາກຍອດຂາຍ",
+            "price": "ຄິດຕາມຍອດຂາຍທີ່ເລືອກ",
+            "help": "ຄິດສະເພາະຍອດຂາຍຈາກທຸລະກິດ/ຊ່ອງທາງທີ່ເລືອກ ແລະ ຜູ້ດູແລກຳນົດອັດຕາ (%)"
+          }
+        },
+        "business": {
+          "title": "ເລືອກທຸລະກິດຂອງທ່ານ",
+          "help": "ເລືອກໃຫ້ກົງກັບທຸລະກິດທີ່ໃຊ້ງານ",
+          "restaurant": {
+            "title": "ຮ້ານອາຫານ / ຄາເຟ",
+            "help": "Order, Delivery, Kitchen, Cashier ແລະ ການຂາຍໜ້າຮ້ານ"
+          },
+          "retail": {
+            "title": "ຮ້ານຄ້າປີກ",
+            "help": "Retail POS / ຮ້ານໂຊຫ່ວຍ ແລະ ການຂາຍໜ້າຮ້ານ"
+          },
+          "both": {
+            "title": "ທັງ 2 ທຸລະກິດ",
+            "help": "ມີທັງຮ້ານອາຫານ / ຄາເຟ ແລະ ຮ້ານຄ້າປີກ / ໂຊຫ່ວຍ"
+          }
+        },
+        "subscription_cycle": {
+          "title": "ເລືອກຮອບຊຳລະຫຼັງຈາກຟຣີ",
+          "help": "ຟຣີເດືອນທຳອິດ ຫຼັງຈາກນັ້ນຊຳລະຕາມຮອບທີ່ເລືອກ ໂດຍບໍ່ຄິດສ່ວນແບ່ງ",
+          "monthly": "ລາຍເດືອນ",
+          "yearly": "ລາຍປີ",
+          "baht_per_month": "ບາດ / ເດືອນ",
+          "baht_per_year": "ບາດ / ປີ",
+          "year_suffix": "ປີ"
+        },
+        "revenue_scope": {
+          "title": "ເລືອກຍອດຮ້ານອາຫານ / ຄາເຟທີ່ນຳມາຄິດສ່ວນແບ່ງ",
+          "help": "ໃຊ້ສະເພາະຝັ່ງຮ້ານອາຫານ / ຄາເຟ",
+          "delivery": {
+            "title": "Delivery ເທົ່ານັ້ນ",
+            "help": "ລວມທັງຈ່າຍກ່ອນ ແລະ COD ແຕ່ບໍ່ລວມຍອດໜ້າຮ້ານ"
+          },
+          "storefront": {
+            "title": "ຂາຍໜ້າຮ້ານເທົ່ານັ້ນ",
+            "help": "ລວມທຸກບິນທີ່ບໍ່ແມ່ນ Delivery ເຊັ່ນ ໂຕະ, Walk-in ແລະ Takeaway"
+          },
+          "all": {
+            "title": "Delivery + ໜ້າຮ້ານ",
+            "help": "ລວມທັງ Delivery ແລະ ຍອດຂາຍໜ້າຮ້ານທຸກກໍລະນີ"
+          },
+          "retail_title": "ກົດສ່ວນແບ່ງຮ້ານຄ້າປີກ",
+          "retail_always": "ຮ້ານຄ້າປີກ / ໂຊຫ່ວຍຄິດສ່ວນແບ່ງຈາກ Retail POS ທຸກບິນ",
+          "retail_short": "Retail POS ທຸກບິນ"
+        },
+        "aside": {
+          "subscription_badge": "Premium Subscription",
+          "share_badge": "Revenue Share",
+          "subscription_title": "Premium ຟຣີເດືອນທຳອິດ",
+          "share_title": "ສະໝັກແບບຄິດສ່ວນແບ່ງຍອດຂາຍ",
+          "share_price": "ສ່ວນແບ່ງຕາມຍອດຂາຍ",
+          "share_rate_note": "ອັດຕາສ່ວນແບ່ງ (%) ກຳນົດໂດຍຜູ້ດູແລໃນ Store Management",
+          "business": "ປະເພດທຸລະກິດ",
+          "restaurant_scope": "ຍອດຮ້ານອາຫານທີ່ຄິດສ່ວນແບ່ງ",
+          "retail_scope": "ຍອດຮ້ານຄ້າປີກທີ່ຄິດສ່ວນແບ່ງ",
+          "not_selected": "ຍັງບໍ່ໄດ້ເລືອກ",
+          "restaurant_feature": "Order / Delivery / Kitchen / Cashier",
+          "share_admin_note": "ສົ່ງເງື່ອນໄຂທີ່ເລືອກໄປຫາ Store Management ຂອງຜູ້ດູແລ"
         }
       }
     },
@@ -25081,7 +25501,7 @@
         "eyebrow": "ចំណែក​ចំណូល",
         "title": "កំណត់រចនាសម្ព័ន្ធចំណែកចំណូលពីការលក់",
         "enabled": "បើកការចែករំលែកប្រាក់ចំណូល",
-        "help": "អនុវត្តភាគរយសម្រាប់តែការលក់ផលិតផល/អាហារតាមអ៊ីនធឺណិត និងការលក់ Retail POS ប៉ុណ្ណោះ។ ការដឹកជញ្ជូនមិនត្រូវបានរាប់បញ្ចូលពីភាគរយ ហើយការចំណាយ Lalamove ត្រូវបានសងវិញដោយឡែកពីគ្នា។",
+        "help": "កំណត់ប្រភេទអាជីវកម្ម និង ឆានែលការលក់ដែលយកមកគិតចំណែក ដោយមិនរាប់ថ្លៃដឹកជញ្ជូន",
         "rate": "អត្រាចែករំលែកចំណូល (%)",
         "billing_cycle": "វដ្តនៃការទូទាត់និងពិនិត្យឡើងវិញ",
         "billing_cycle_help": "វដ្តនេះគ្រប់គ្រងការបញ្ជូនប័ណ្ណ និងការផ្អាកនៅពេលដែលការទូទាត់ហួសកាលកំណត់។",
@@ -25095,7 +25515,12 @@
         "saving": "កំពុងរក្សាទុក...",
         "saved": "អត្រាចែករំលែកប្រាក់ចំណូលត្រូវបានរក្សាទុក",
         "table_missing": "តារាងមូលដ្ឋានទិន្នន័យចែករំលែកចំណូលមិនទាន់ត្រូវបានបង្កើតនៅឡើយទេ",
-        "save_failed": "មិនអាចរក្សាទុកចំណែកចំណូលបានទេ។"
+        "save_failed": "មិនអាចរក្សាទុកចំណែកចំណូលបានទេ។",
+        "business_type": "ប្រភេទអាជីវកម្មដែលគិតចំណែក",
+        "business_type_help": "តម្លៃដើមមកពីជម្រើសរបស់អតិថិជនពេលចុះឈ្មោះ ហើយអ្នកគ្រប់គ្រងអាចកែបាន",
+        "restaurant_scope": "មូលដ្ឋានចំណែកភោជនីយដ្ឋាន / កាហ្វេ",
+        "restaurant_scope_help": "Delivery រួមបង់មុន និង COD • នៅហាងរួមគ្រប់វិក្កយបត្រដែលមិនមែន Delivery",
+        "retail_scope_fixed": "ហាងលក់រាយគិតចំណែកពី Retail POS គ្រប់វិក្កយបត្រ"
       },
       "review": {
         "title": "ការពិនិត្យមើលប័ណ្ណចែករំលែកប្រាក់ចំណូល",
@@ -25160,6 +25585,29 @@
         "tenant_aria": "ហាងនេះមានការជូនដំណឹង :count",
         "revenue_share": "ចំណែកប្រាក់ចំណូល",
         "wallet": "បញ្ចូលក្រេឌីត"
+      },
+      "signup_billing": {
+        "title": "ព័ត៌មានការចុះឈ្មោះសេវា",
+        "model": "របៀបថ្លៃសេវា",
+        "business": "ប្រភេទអាជីវកម្ម",
+        "restaurant_scope": "មូលដ្ឋានចំណែកភោជនីយដ្ឋាន",
+        "retail_scope": "មូលដ្ឋានចំណែកលក់រាយ",
+        "subscription_cycle": "រយៈពេលសមាជិក",
+        "models": {
+          "subscription": "Premium Subscription",
+          "revenue_share": "ចែករំលែកចំណូលពីការលក់"
+        },
+        "businesses": {
+          "restaurant_cafe": "ភោជនីយដ្ឋាន / កាហ្វេ",
+          "retail": "ហាងលក់រាយ",
+          "both": "ភោជនីយដ្ឋាន / កាហ្វេ + ហាងលក់រាយ"
+        },
+        "restaurant_scopes": {
+          "delivery_only": "Delivery តែប៉ុណ្ណោះ",
+          "storefront_only": "លក់នៅហាងតែប៉ុណ្ណោះ",
+          "all": "Delivery + នៅហាង"
+        },
+        "retail_all": "Retail POS គ្រប់វិក្កយបត្រ"
       }
     },
     "admin_users": {
@@ -25275,8 +25723,8 @@
       "register": {
         "title": "ចុះឈ្មោះហាងរបស់អ្នក។",
         "home": "ផ្ទះ",
-        "hero_title": "ចាប់ផ្តើម Premium ឥតគិតថ្លៃរយៈពេល 1 ខែ",
-        "hero_description": "ចុះឈ្មោះហាងថ្មី និងផ្ទៀងផ្ទាត់អ៊ីមែលរបស់អ្នក។ ប្រព័ន្ធនឹងផ្តល់តួនាទីដល់ម្ចាស់ហាងដោយស្វ័យប្រវត្តិ។",
+        "hero_title": "ជ្រើសរើសរបៀបសេវាដែលសមនឹងអាជីវកម្មរបស់អ្នក",
+        "hero_description": "ជ្រើសរើសប្រភេទអាជីវកម្មជាមុន បន្ទាប់មកជ្រើស Premium Subscription ឬ ចែករំលែកចំណូលពីការលក់។ ប្រព័ន្ធនឹងកំណត់ហាងតាមជម្រើសរបស់អ្នក",
         "package": "កញ្ចប់",
         "plans": {
           "free": "Free",
@@ -25319,7 +25767,7 @@
         "retail_pos_hint": "(Retail POS)",
         "same_shop_help": "ប្រសិនបើភោជនីយដ្ឋាន និងហាងលក់រាយប្រើឈ្មោះដូចគ្នា សូមបញ្ចូលឈ្មោះដូចគ្នាក្នុងវាលទាំងពីរ។",
         "slug_help": "(ប្រើអក្សរអង់គ្លេស។ ហាងឧទាហរណ៍ពេញលេញ URL បង្ហាញខាងក្រោម។)",
-        "after_signup_note": "បន្ទាប់ពីការចុះឈ្មោះ តំណផ្ទៀងផ្ទាត់នឹងត្រូវបានផ្ញើទៅកាន់អ៊ីមែលរបស់អ្នក។ ត្រឡប់ទៅទំព័រនេះវិញបន្ទាប់ពីផ្ទៀងផ្ទាត់ដើម្បីធ្វើឱ្យហាងសកម្ម និងចាប់ផ្តើម Premium Trial 1 ខែ។",
+        "after_signup_note": "បន្ទាប់ពីចុះឈ្មោះ ប្រព័ន្ធនឹងផ្ញើតំណផ្ទៀងផ្ទាត់ទៅអ៊ីមែល។ បន្ទាប់ពីផ្ទៀងផ្ទាត់ សូមត្រឡប់មកបើកហាងតាមរបៀបសេវាដែលបានជ្រើស",
         "terms_text": "ខ្ញុំបានអាន និងយល់ពីលក្ខខណ្ឌ និងគោលការណ៍ប្រើប្រាស់ដែលផ្តល់ដោយប្រព័ន្ធ។",
         "submit": "បញ្ជាក់ការចុះឈ្មោះ",
         "login": "ចូល",
@@ -25339,7 +25787,8 @@
           "trial_activated": "បើកដំណើរការហាងដោយជោគជ័យ។ Premium Trial របស់អ្នកបានចាប់ផ្តើមហើយ។",
           "email_verified": "Email បានផ្ទៀងផ្ទាត់។ អ្នកអាចបើកដំណើរការហាងឥឡូវនេះ។",
           "resend_sent": "បានផ្ញើអ៊ីមែលផ្ទៀងផ្ទាត់ម្តងទៀត។ សូមពិនិត្យមើលប្រអប់សំបុត្ររបស់អ្នក និងសារឥតបានការ។",
-          "verify_first": "សូមបើកតំណផ្ទៀងផ្ទាត់នៅក្នុងអ៊ីមែលរបស់អ្នកជាមុនសិន។"
+          "verify_first": "សូមបើកតំណផ្ទៀងផ្ទាត់នៅក្នុងអ៊ីមែលរបស់អ្នកជាមុនសិន។",
+          "revenue_share_activated": "បើកហាងបានជោគជ័យ ហើយបានប្រើរបៀបចែករំលែកចំណូលតាមលក្ខខណ្ឌដែលបានជ្រើស"
         },
         "validation": {
           "accept_terms": "សូមទទួលយកលក្ខខណ្ឌ និងគោលការណ៍ប្រើប្រាស់។",
@@ -25348,7 +25797,10 @@
           "email": "សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែលត្រឹមត្រូវ។",
           "password_min": "ពាក្យសម្ងាត់ត្រូវតែមានយ៉ាងហោចណាស់ 8 តួអក្សរ។",
           "password_confirmation": "ការបញ្ជាក់ពាក្យសម្ងាត់មិនត្រូវគ្នាទេ។",
-          "incomplete": "សូមពិនិត្យមើលព័ត៌មានដែលត្រូវការទាំងអស់។"
+          "incomplete": "សូមពិនិត្យមើលព័ត៌មានដែលត្រូវការទាំងអស់។",
+          "billing_mode": "សូមជ្រើសរើសរបៀបសេវា",
+          "business_type": "សូមជ្រើសរើសប្រភេទអាជីវកម្ម",
+          "revenue_share_scope": "សូមជ្រើសរើសវិសាលភាពការលក់ភោជនីយដ្ឋាន / កាហ្វេដែលត្រូវគិតចំណែក"
         },
         "errors": {
           "slug_exists": "ខ្យង​នេះ​ត្រូវ​បាន​ប្រើ​រួច​ហើយ។ សូម​ជ្រើសរើស​ខ្យង​មួយ​ទៀត។",
@@ -25361,6 +25813,79 @@
           "signup_failed": "ការចុះឈ្មោះបានបរាជ័យ។",
           "activate_failed": "មិនអាចបើកដំណើរការហាងបានទេ។",
           "resend_failed": "មិនអាចផ្ញើអ៊ីមែលផ្ទៀងផ្ទាត់ឡើងវិញបានទេ។"
+        },
+        "billing": {
+          "title": "ជ្រើសរើសរបៀបបង់ថ្លៃសេវា",
+          "help": "ជ្រើសរើសសមាជិកប្រចាំខែ/ឆ្នាំ ឬ របៀបចែករំលែកចំណូលពីការលក់",
+          "subscription": {
+            "title": "សមាជិក Premium ប្រចាំខែ / ឆ្នាំ",
+            "trial": "ឥតគិតថ្លៃខែដំបូង",
+            "monthly": ":amount បាត / ខែ",
+            "yearly": "តម្លៃធម្មតា :regular បាត • ពិសេស :amount បាត / ឆ្នាំ"
+          },
+          "revenue_share": {
+            "title": "គិតចំណែកពីការលក់",
+            "price": "គិតតាមការលក់ដែលបានជ្រើស",
+            "help": "គិតតែការលក់ពីអាជីវកម្ម និង ឆានែលដែលបានជ្រើស ហើយអ្នកគ្រប់គ្រងកំណត់អត្រាចំណែក (%)"
+          }
+        },
+        "business": {
+          "title": "ជ្រើសរើសប្រភេទអាជីវកម្មរបស់អ្នក",
+          "help": "ជ្រើសរើសឱ្យត្រូវនឹងអាជីវកម្មដែលហាងប្រើ",
+          "restaurant": {
+            "title": "ភោជនីយដ្ឋាន / កាហ្វេ",
+            "help": "Order, Delivery, Kitchen, Cashier និងការលក់នៅហាង"
+          },
+          "retail": {
+            "title": "ហាងលក់រាយ",
+            "help": "Retail POS / ហាងទំនិញ និងការលក់នៅហាង"
+          },
+          "both": {
+            "title": "អាជីវកម្មទាំង 2",
+            "help": "មានទាំងភោជនីយដ្ឋាន / កាហ្វេ និង ហាងលក់រាយ"
+          }
+        },
+        "subscription_cycle": {
+          "title": "ជ្រើសរើសរយៈពេលបង់ប្រាក់បន្ទាប់ពីខែឥតគិតថ្លៃ",
+          "help": "ខែដំបូងឥតគិតថ្លៃ បន្ទាប់មកបង់តាមរយៈពេលដែលបានជ្រើស ដោយមិនគិតចំណែកការលក់",
+          "monthly": "ប្រចាំខែ",
+          "yearly": "ប្រចាំឆ្នាំ",
+          "baht_per_month": "បាត / ខែ",
+          "baht_per_year": "បាត / ឆ្នាំ",
+          "year_suffix": "ឆ្នាំ"
+        },
+        "revenue_scope": {
+          "title": "ជ្រើសរើសការលក់ភោជនីយដ្ឋាន / កាហ្វេដែលគិតចំណែក",
+          "help": "លក្ខខណ្ឌនេះប្រើសម្រាប់ផ្នែកភោជនីយដ្ឋាន / កាហ្វេតែប៉ុណ្ណោះ",
+          "delivery": {
+            "title": "Delivery តែប៉ុណ្ណោះ",
+            "help": "រួមទាំងបង់មុន និង COD ប៉ុន្តែមិនរួមការលក់នៅហាង"
+          },
+          "storefront": {
+            "title": "លក់នៅហាងតែប៉ុណ្ណោះ",
+            "help": "រួមគ្រប់វិក្កយបត្រដែលមិនមែន Delivery ដូចជា តុ, Walk-in និង Takeaway"
+          },
+          "all": {
+            "title": "Delivery + នៅហាង",
+            "help": "រួមទាំង Delivery និងការលក់នៅហាងគ្រប់ករណី"
+          },
+          "retail_title": "ច្បាប់ចំណែកសម្រាប់ហាងលក់រាយ",
+          "retail_always": "ហាងលក់រាយគិតចំណែកពីការលក់ Retail POS គ្រប់វិក្កយបត្រ",
+          "retail_short": "Retail POS គ្រប់វិក្កយបត្រ"
+        },
+        "aside": {
+          "subscription_badge": "Premium Subscription",
+          "share_badge": "Revenue Share",
+          "subscription_title": "Premium ឥតគិតថ្លៃខែដំបូង",
+          "share_title": "ចុះឈ្មោះដោយចែករំលែកចំណូល",
+          "share_price": "ចំណែកតាមការលក់",
+          "share_rate_note": "អត្រាចំណែក (%) កំណត់ដោយអ្នកគ្រប់គ្រងនៅ Store Management",
+          "business": "ប្រភេទអាជីវកម្ម",
+          "restaurant_scope": "មូលដ្ឋានចំណែកភោជនីយដ្ឋាន",
+          "retail_scope": "មូលដ្ឋានចំណែកលក់រាយ",
+          "not_selected": "មិនទាន់ជ្រើស",
+          "restaurant_feature": "Order / Delivery / Kitchen / Cashier",
+          "share_admin_note": "លក្ខខណ្ឌដែលបានជ្រើសនឹងផ្ញើទៅ Store Management របស់អ្នកគ្រប់គ្រង"
         }
       }
     },

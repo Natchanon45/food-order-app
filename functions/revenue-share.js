@@ -3,6 +3,12 @@ const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
 const { inspectSlip } = require("./slip-verification");
+const {
+  normalizeBusinessType,
+  normalizeRestaurantScope,
+  revenueShareChannels,
+  restaurantOrderEligible,
+} = require("./revenue-share-policy");
 
 const REGION = "asia-southeast1";
 const TZ_OFFSET = "+07:00";
@@ -91,11 +97,15 @@ async function assertTenantAdmin(auth) {
 }
 
 function revenueSetting(tenant = {}) {
+  const channels = revenueShareChannels(tenant);
   return {
-    enabled: tenant.revenueShareEnabled === true || tenant.billingMode === "revenue_share",
+    enabled: channels.enabled,
     rate: Math.max(0, Math.min(100, Number(tenant.revenueShareRate || 0))),
     billingCycle: tenant.revenueShareBillingCycle === "daily" ? "daily" : "monthly",
-    recipientName: String(tenant.revenueShareRecipientName || "").trim()
+    recipientName: String(tenant.revenueShareRecipientName || "").trim(),
+    businessType: normalizeBusinessType(tenant.revenueShareBusinessType || tenant.businessType || "both"),
+    restaurantScope: normalizeRestaurantScope(tenant.revenueShareRestaurantScope || "all"),
+    channels,
   };
 }
 
@@ -153,8 +163,12 @@ async function summaryForTenant(tenantId, period, setting) {
       ? Math.min(lalamoveCost, Math.max(0, Number(row.lalamoveWalletDebitedAmount)))
       : 0;
 
-    orderSales += foodSales;
-    orderCount += 1;
+    const shareEligibleOrder = !setting.enabled
+      || (setting.channels.includeRestaurant && restaurantOrderEligible(orderType, setting.channels.restaurantScope));
+    if (shareEligibleOrder) {
+      orderSales += foodSales;
+      orderCount += 1;
+    }
     customerDeliveryFees += isLalamove ? customerFee : 0;
     lalamoveDeliveryCost += lalamoveCost;
     lalamoveWalletCoveredCost += walletCovered;
@@ -165,6 +179,7 @@ async function summaryForTenant(tenantId, period, setting) {
     const row = snapshot.data();
     const date = saleDate(row);
     if (!date || date < period.start || date >= period.end || !validSale(row)) return;
+    if (setting.enabled && !setting.channels.includeRetail) return;
     const gross = Number(row.totalAmount ?? row.total ?? 0) || 0;
     const refund = Number(row.refundTotal || 0) || 0;
     posSales += Math.max(0, gross - refund);
@@ -190,6 +205,10 @@ async function summaryForTenant(tenantId, period, setting) {
     revenueShareEnabled: setting.enabled,
     revenueShareRate: setting.rate,
     revenueShareBillingCycle: setting.billingCycle,
+    revenueShareBusinessType: setting.businessType,
+    revenueShareRestaurantScope: setting.restaurantScope,
+    revenueShareIncludeRestaurant: setting.channels.includeRestaurant,
+    revenueShareIncludeRetail: setting.channels.includeRetail,
     revenueShare,
     platformAmountDue,
   };
@@ -806,10 +825,27 @@ exports.updateTenantRevenueShare = onCall({ region: REGION }, async request => {
   const db = getFirestore(), tenantRef = db.collection("tenants").doc(tenantId), snapshot = await tenantRef.get();
   if (!snapshot.exists) throw new HttpsError("not-found", "Tenant not found");
   const tenant = { id: snapshot.id, ...snapshot.data() };
+  const businessType = normalizeBusinessType(request.data?.businessType || tenant.revenueShareBusinessType || tenant.businessType || "both");
+  const restaurantScope = businessType === "retail"
+    ? "all"
+    : normalizeRestaurantScope(request.data?.restaurantScope || tenant.revenueShareRestaurantScope || "all");
   const active = enabled ? tenant.revenueShareSuspended !== true : subscriptionActive(tenant);
-  await mirrorTenantAccess(tenantRef, tenant, { revenueShareEnabled: enabled, revenueShareRate: Math.round(rate * 10000) / 10000, revenueShareBillingCycle: billingCycle, billingMode: enabled ? "revenue_share" : "subscription", active }, { revenueShareRecipientName: recipientName });
+  await mirrorTenantAccess(
+    tenantRef,
+    tenant,
+    {
+      revenueShareEnabled: enabled,
+      revenueShareRate: Math.round(rate * 10000) / 10000,
+      revenueShareBillingCycle: billingCycle,
+      revenueShareBusinessType: businessType,
+      revenueShareRestaurantScope: restaurantScope,
+      billingMode: enabled ? "revenue_share" : "subscription",
+      active,
+    },
+    { revenueShareRecipientName: recipientName }
+  );
   if (!enabled && tenant.revenueShareSuspended) await reconcileTenant(tenantId);
-  return { ok: true, tenantId, enabled, rate, billingCycle, recipientName, active };
+  return { ok: true, tenantId, enabled, rate, billingCycle, businessType, restaurantScope, recipientName, active };
 });
 
 exports.unlockTenantRevenueShare = onCall({ region: REGION }, async request => {

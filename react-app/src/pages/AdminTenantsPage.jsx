@@ -211,6 +211,11 @@ function TenantSubscription({ tenant, t, intlLocale, onAction }) {
 function TenantCard({ tenant, summary = {}, notifications = {}, t, formatNumber, intlLocale, onEdit, onShare, onRevenueNotice, onUnlock, onLalamoveApproval, lalamoveApprovalBusy = false, onWallet, onDelete, onSubscriptionAction }) {
   const active = tenant.active !== false;
   const shareEnabled = tenant.billingMode === "revenue_share" || summary.revenueShareEnabled === true;
+  const signupBilling = tenant.signupBilling || {};
+  const signupBillingMode = signupBilling.billingMode || (shareEnabled ? "revenue_share" : "subscription");
+  const signupBusinessType = signupBilling.businessType || tenant.revenueShareBusinessType || tenant.businessType || "both";
+  const signupRestaurantScope = signupBilling.restaurantRevenueShareScope || tenant.revenueShareRestaurantScope || "all";
+  const signupPlanCode = signupBilling.planCode || tenant.planCode || "monthly";
   const ownerLabel = tenant.ownerUid
     ? (tenant.ownerDisplayName || tenant.ownerEmail || t("admin_tenants.tenant.owner_exists"))
     : t("admin_tenants.tenant.owner_missing");
@@ -255,6 +260,44 @@ function TenantCard({ tenant, summary = {}, notifications = {}, t, formatNumber,
         {shareEnabled
           ? <span className="tenant-billing-mode revenue-share"><i className="bi bi-percent" aria-hidden="true"></i>{t("admin_tenants.tenant.revenue_share_mode", { cycle: t(`admin_tenants.share.billing_cycles.${summary.revenueShareBillingCycle === "daily" ? "daily" : "monthly"}`) })}</span>
           : <span><i className="bi bi-calendar-check" aria-hidden="true"></i>{subscriptionStatusText(tenant, t, "member_statuses")} · {t("admin_tenants.tenant.expires", { date: subscriptionDisplayDate(tenant.subscriptionExpiresAt, intlLocale, "-") })}</span>}
+      </div>
+
+      <div className="tenant-signup-billing" data-signup-billing={tenant.id}>
+        <div className="tenant-signup-billing-title">
+          <i className="bi bi-ui-checks-grid" aria-hidden="true"></i>
+          <strong>{t("admin_tenants.signup_billing.title")}</strong>
+        </div>
+        <div className="tenant-signup-billing-grid">
+          <span>
+            <small>{t("admin_tenants.signup_billing.model")}</small>
+            <strong>{t(`admin_tenants.signup_billing.models.${signupBillingMode}`)}</strong>
+          </span>
+          <span>
+            <small>{t("admin_tenants.signup_billing.business")}</small>
+            <strong>{t(`admin_tenants.signup_billing.businesses.${signupBusinessType}`)}</strong>
+          </span>
+          {signupBillingMode === "revenue_share" ? (
+            <>
+              {signupBusinessType !== "retail" ? (
+                <span>
+                  <small>{t("admin_tenants.signup_billing.restaurant_scope")}</small>
+                  <strong>{t(`admin_tenants.signup_billing.restaurant_scopes.${signupRestaurantScope}`)}</strong>
+                </span>
+              ) : null}
+              {signupBusinessType !== "restaurant_cafe" ? (
+                <span>
+                  <small>{t("admin_tenants.signup_billing.retail_scope")}</small>
+                  <strong>{t("admin_tenants.signup_billing.retail_all")}</strong>
+                </span>
+              ) : null}
+            </>
+          ) : (
+            <span>
+              <small>{t("admin_tenants.signup_billing.subscription_cycle")}</small>
+              <strong>{t(`admin_tenants.subscription.plans.${signupPlanCode === "yearly" ? "yearly" : "monthly"}`)}</strong>
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="tenant-sales-grid">
@@ -464,6 +507,8 @@ export function AdminTenantsPage() {
   const [shareEnabled, setShareEnabled] = useState(false);
   const [shareRate, setShareRate] = useState("0.00");
   const [shareBillingCycle, setShareBillingCycle] = useState("monthly");
+  const [shareBusinessType, setShareBusinessType] = useState("both");
+  const [shareRestaurantScope, setShareRestaurantScope] = useState("all");
   const [shareSaving, setShareSaving] = useState(false);
   const [shareError, setShareError] = useState("");
   const [rejectItem, setRejectItem] = useState(null);
@@ -618,6 +663,8 @@ export function AdminTenantsPage() {
     setShareEnabled(summary.revenueShareEnabled === true || tenant.billingMode === "revenue_share");
     setShareRate(Number(summary.revenueShareRate || tenant.revenueShareRate || 0).toFixed(2));
     setShareBillingCycle(summary.revenueShareBillingCycle === "daily" ? "daily" : "monthly");
+    setShareBusinessType(summary.revenueShareBusinessType || tenant.revenueShareBusinessType || tenant.businessType || tenant.signupBilling?.businessType || "both");
+    setShareRestaurantScope(summary.revenueShareRestaurantScope || tenant.revenueShareRestaurantScope || tenant.signupBilling?.restaurantRevenueShareScope || "all");
     setShareError("");
     shareDialogRef.current?.showModal?.();
   };
@@ -640,6 +687,8 @@ export function AdminTenantsPage() {
         enabled: shareEnabled,
         rate,
         billingCycle: shareBillingCycle,
+        businessType: shareBusinessType,
+        restaurantScope: shareBusinessType === "retail" ? "all" : shareRestaurantScope,
       });
       showToast(t("admin_tenants.share.saved"));
       shareDialogRef.current?.close?.();
@@ -1287,6 +1336,32 @@ export function AdminTenantsPage() {
               <input id="revenueShareEnabled" type="checkbox" checked={shareEnabled} onChange={e => setShareEnabled(e.target.checked)} />
               <span><strong>{t("admin_tenants.share.enabled")}</strong><small>{t("admin_tenants.share.help")}</small></span>
             </label>
+            <div className="field">
+              <label htmlFor="revenueShareBusinessType">{t("admin_tenants.share.business_type")}</label>
+              <select className="input" id="revenueShareBusinessType" value={shareBusinessType} onChange={e => setShareBusinessType(e.target.value)}>
+                <option value="restaurant_cafe">{t("admin_tenants.signup_billing.businesses.restaurant_cafe")}</option>
+                <option value="retail">{t("admin_tenants.signup_billing.businesses.retail")}</option>
+                <option value="both">{t("admin_tenants.signup_billing.businesses.both")}</option>
+              </select>
+              <small>{t("admin_tenants.share.business_type_help")}</small>
+            </div>
+            {shareBusinessType !== "retail" ? (
+              <div className="field">
+                <label htmlFor="revenueShareRestaurantScope">{t("admin_tenants.share.restaurant_scope")}</label>
+                <select className="input" id="revenueShareRestaurantScope" value={shareRestaurantScope} onChange={e => setShareRestaurantScope(e.target.value)}>
+                  <option value="delivery_only">{t("admin_tenants.signup_billing.restaurant_scopes.delivery_only")}</option>
+                  <option value="storefront_only">{t("admin_tenants.signup_billing.restaurant_scopes.storefront_only")}</option>
+                  <option value="all">{t("admin_tenants.signup_billing.restaurant_scopes.all")}</option>
+                </select>
+                <small>{t("admin_tenants.share.restaurant_scope_help")}</small>
+              </div>
+            ) : null}
+            {shareBusinessType !== "restaurant_cafe" ? (
+              <div className="tenant-share-retail-rule">
+                <i className="bi bi-basket2" aria-hidden="true"></i>
+                <span>{t("admin_tenants.share.retail_scope_fixed")}</span>
+              </div>
+            ) : null}
             <div className="field">
               <label htmlFor="revenueShareRate">{t("admin_tenants.share.rate")}</label>
               <div className="tenant-share-input"><input className="input" id="revenueShareRate" type="number" min="0" max="100" step="0.01" value={shareRate} required onChange={e => setShareRate(e.target.value)} /><span>%</span></div>

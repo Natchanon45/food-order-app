@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.08.472",
+  build: "2026.10.08.473",
   branch: "feature/react-firebase-port",
-  commit: "GLOBAL-INITIAL-READINESS-REAL-PROGRESS",
+  commit: "SIGNUP-BUSINESS-REVENUE-SHARE-POLICY",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Strict initial readiness and real-progress-only loading",
+  milestone: "Public signup business model and scoped revenue share",
   whatsNew: [
-    "Keep the full-screen loading overlay until critical initial page-component data are ready",
-    "Remove fake and indeterminate progress bars from page loading",
-    "Allow loading percent only when measurable real progressPercent data are supplied",
+    "Let new stores choose Restaurant/Cafe, Retail, or both before selecting the billing model",
+    "Support Premium monthly/yearly signup or scoped sales revenue share with restaurant channel rules",
+    "Send signup billing choices to Super Admin Store Management and apply them to revenue-share calculations",
   ],
 });

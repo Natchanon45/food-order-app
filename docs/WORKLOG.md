@@ -12120,3 +12120,62 @@ Deploy state:
 - Global Initial Readiness regression remains **4/4 PASS** in the standard React parity suite.
 - Deployment scope was Hosting only.
 - No Functions, Firestore Rules, Storage Rules, schema changes, or merge to `main`.
+
+---
+
+## 2026-10-08 — Public signup business model + scoped revenue share (Build 2026.10.08.473)
+
+Request:
+- Extend public registration so the customer chooses business type first: Restaurant / Cafe, Retail / convenience store, or both.
+- Support Premium subscription or sales revenue share.
+- Premium subscription keeps 590 THB/month, normal annual value 7,080 THB, annual offer 5,900 THB, first month free, with no revenue-share calculation.
+- Restaurant/Cafe revenue share supports Delivery only (prepaid + COD), storefront only, or Delivery + storefront.
+- Retail revenue share always includes every Retail POS sale.
+- Send the selected signup configuration to Super Admin Store Management.
+
+Implementation:
+- Added functions/revenue-share-policy.js for shared billing/business/scope validation and revenue-share channel policy.
+- Public signup now requires explicit billing/business selection and persists the immutable signup snapshot in signupBilling.
+- Tenant activation creates only the selected business units: order_delivery, retail_pos, or both.
+- Subscription signup preserves monthly/yearly planCode and the real 30-day trial end as subscriptionExpiresAt.
+- Revenue-share signup activates directly in revenue-share mode, stores business/scope, starts at rate 0 until Super Admin sets the percentage, and does not create a subscription trial.
+- Subscription initializer/backfill/scheduler skip revenue-share tenants and preserve plan/trial metadata.
+- Repeat activation returns the original Subscription trial end.
+- Revenue-share calculation now filters the percentage base by the selected policy:
+  - Delivery only -> delivery orders only.
+  - Storefront only -> every non-Delivery Restaurant order, including table, walkin, takeaway and legacy non-delivery orders.
+  - Restaurant all -> all Restaurant orders.
+  - Retail -> every valid Retail POS sale.
+  - Both -> selected Restaurant scope plus all Retail POS sales.
+- Lalamove delivery accounting remains independent from the percentage-base filter.
+- Super Admin Store Management shows the original signup billing snapshot and can edit current revenue-share business/scope in the existing dialog.
+- Register UI sequence is business first -> billing model -> monthly/yearly or Restaurant revenue-share scope.
+- Shop-name fields are conditional by selected business.
+- New copy is localized for Thai, English, Myanmar, Lao and Khmer.
+
+Test-first / regression:
+- Added tests/react-parity/signup-billing-revenue-share.spec.mjs and included it in test:react-parity.
+- Initial feature contract was 0/7 PASS before implementation.
+- Final focused suite: 11/11 PASS.
+- Coverage includes explicit selection validation, business units, channel eligibility, business-first UI order, persistence, Super Admin controls, subscription lifecycle, idempotent activation and five-locale copy.
+
+Candidate verification:
+- React Version: 0.4.280.
+- React Build: 2026.10.08.473.
+- Generated bundle: /react/assets/index-f2OyyAlQ.js.
+- Generated React build contract: PASS.
+- npm run test:operational: PASS.
+- npm run test:react-parity: PASS.
+- Signup billing / revenue-share regression: 11/11 PASS.
+- React migration coverage: 53 routes / 52 React shells / 0 pending shell sync.
+- React callable contract: 59 references / 0 missing exports.
+- Tenant access + UI layer contracts: PASS.
+- Function syntax checks: PASS.
+- git diff --check: PASS.
+- No Firestore Rules, Storage Rules, database schema, collection name, document ID, or internal tenant ID changes.
+
+Deploy scope:
+- Hosting target foodapp required for Register / Super Admin UI and Build .473.
+- Cloud Functions deployment required only for signup, revenue-share and subscription lifecycle Functions affected by this change.
+- No Firestore Rules, Storage Rules, schema deployment, or merge to main.
+- Commit/push and Production deploy pending at this checkpoint.

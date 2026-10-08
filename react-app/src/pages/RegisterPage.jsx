@@ -50,6 +50,18 @@ export function RegisterPage() {
   const { t, intlLocale, locale } = useI18n();
   const navigate = useNavigate();
   const [fields, setFields] = useState(emptyFields);
+  const [billingMode, setBillingMode] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("penguin_signup_billing_choice") || "{}").billingMode || "subscription"; } catch { return "subscription"; }
+  });
+  const [businessType, setBusinessType] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("penguin_signup_billing_choice") || "{}").businessType || ""; } catch { return ""; }
+  });
+  const [planCode, setPlanCode] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("penguin_signup_billing_choice") || "{}").planCode || "monthly"; } catch { return "monthly"; }
+  });
+  const [restaurantRevenueShareScope, setRestaurantRevenueShareScope] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("penguin_signup_billing_choice") || "{}").restaurantRevenueShareScope || ""; } catch { return ""; }
+  });
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [tried, setTried] = useState(false);
@@ -64,6 +76,17 @@ export function RegisterPage() {
     title: t("auth.register.title"),
     styles: ["register-page.css"],
   });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("penguin_signup_billing_choice", JSON.stringify({
+        billingMode,
+        businessType,
+        planCode,
+        restaurantRevenueShareScope,
+      }));
+    } catch {}
+  }, [billingMode, businessType, planCode, restaurantRevenueShareScope]);
 
   useEffect(() => {
     let alive = true;
@@ -94,14 +117,28 @@ export function RegisterPage() {
     return `${location.origin}/s/${encodeURIComponent(slug)}/`;
   }, [fields.slug]);
 
+  const includesRestaurant = businessType === "restaurant_cafe" || businessType === "both";
+  const includesRetail = businessType === "retail" || businessType === "both";
+  const revenueShareMode = billingMode === "revenue_share";
+
   const setField = (name, value) => {
     setFields(current => ({ ...current, [name]: value }));
   };
 
   const validationMessage = name => {
-    const value = String(fields[name] || "").trim();
     if (name === "termsAccepted") return termsAccepted ? "" : t("auth.register.validation.accept_terms");
-    if (["ownerName","phone","email","orderDeliveryShopName","retailPosShopName","slug","secretA","secretB"].includes(name) && !value) {
+    if (name === "businessType") return businessType ? "" : t("auth.register.validation.business_type");
+    if (name === "billingMode") return billingMode ? "" : t("auth.register.validation.billing_mode");
+    if (name === "restaurantRevenueShareScope") {
+      return revenueShareMode && includesRestaurant && !restaurantRevenueShareScope
+        ? t("auth.register.validation.revenue_share_scope")
+        : "";
+    }
+    const value = String(fields[name] || "").trim();
+    const requiredField = ["ownerName","phone","email","slug","secretA","secretB"].includes(name)
+      || (name === "orderDeliveryShopName" && includesRestaurant)
+      || (name === "retailPosShopName" && includesRetail);
+    if (requiredField && !value) {
       const labels = {
         ownerName: t("auth.register.fields.owner_name"),
         phone: t("auth.register.fields.phone"),
@@ -124,8 +161,11 @@ export function RegisterPage() {
   const allValid = () => {
     setTried(true);
     const names = [
-      "ownerName","phone","email","orderDeliveryShopName","retailPosShopName",
-      "slug","secretA","secretB","termsAccepted",
+      "billingMode", "businessType", "ownerName", "phone", "email",
+      ...(includesRestaurant ? ["orderDeliveryShopName"] : []),
+      ...(includesRetail ? ["retailPosShopName"] : []),
+      ...(revenueShareMode && includesRestaurant ? ["restaurantRevenueShareScope"] : []),
+      "slug", "secretA", "secretB", "termsAccepted",
     ];
     const firstInvalid = names.find(name => validationMessage(name));
     if (firstInvalid) {
@@ -147,10 +187,14 @@ export function RegisterPage() {
     try {
       const payload = {
         packageId: "premium",
+        billingMode,
+        businessType,
+        planCode,
+        restaurantRevenueShareScope: includesRestaurant ? restaurantRevenueShareScope : "all",
         ownerName: fields.ownerName.trim(),
         phone: digits(fields.phone),
-        orderDeliveryShopName: fields.orderDeliveryShopName.trim(),
-        retailPosShopName: fields.retailPosShopName.trim(),
+        orderDeliveryShopName: includesRestaurant ? fields.orderDeliveryShopName.trim() : "",
+        retailPosShopName: includesRetail ? fields.retailPosShopName.trim() : "",
         slug: cleanSlug(fields.slug),
         email: fields.email.trim().toLowerCase(),
         secret: fields.secretA,
@@ -179,7 +223,12 @@ export function RegisterPage() {
     setBusy(true);
     try {
       const result = await activateSignup();
-      setVerifyStatus({ text: t("auth.register.status.trial_activated"), error: false });
+      setVerifyStatus({
+        text: t(result?.billingMode === "revenue_share"
+          ? "auth.register.status.revenue_share_activated"
+          : "auth.register.status.trial_activated"),
+        error: false,
+      });
       const query = result?.slug ? `?tenant=${encodeURIComponent(result.slug)}` : "";
       navigate(`/login${query}`, { replace: true });
     } catch (error) {
@@ -264,38 +313,113 @@ export function RegisterPage() {
           <section className="register-card">
             {!verifyMode ? (
               <form id="registerForm" className="register-form" noValidate onSubmit={submit}>
-                <section className="full">
-                  <b>{t("auth.register.package")}</b>
-                  <div className="package-grid">
-                    <label className="package-option is-disabled">
-                      <input type="radio" name="packagePlan" value="free" disabled />
-                      <strong>{t("auth.register.plans.free")}</strong>
-                      <i className="bi bi-check-circle-fill package-check"></i>
-                      <span className="package-price">{t("auth.register.plans.free_price")}</span>
-                      <small>{t("auth.register.plans.free_note")}</small>
-                    </label>
-                    <label className="package-option is-disabled">
-                      <input type="radio" name="packagePlan" value="pro" disabled />
-                      <strong>{t("auth.register.plans.pro")}</strong>
-                      <i className="bi bi-check-circle-fill package-check"></i>
-                      <span className="package-price">{t("auth.register.plans.pro_price")}</span>
-                      <small>{t("auth.register.plans.pro_note")}</small>
-                    </label>
-                    <label className="package-option is-selected">
-                      <input id="packageId" type="radio" name="packagePlan" value="premium" checked readOnly />
-                      <strong>{t("auth.register.plans.premium")}</strong>
-                      <i className="bi bi-check-circle-fill package-check"></i>
-                      <span className="package-price">{t("auth.register.plans.premium_first_price")}</span>
+                <section className="full register-choice-section">
+                  <div className="register-choice-heading">
+                    <span className="register-choice-icon"><i className="bi bi-shop-window" aria-hidden="true"></i></span>
+                    <div><b>{t("auth.register.business.title")}</b><small>{t("auth.register.business.help")}</small></div>
+                  </div>
+                  <div className="business-choice-grid">
+                    {[
+                      ["restaurant_cafe", "bi-cup-hot", "restaurant"],
+                      ["retail", "bi-basket2", "retail"],
+                      ["both", "bi-grid-1x2", "both"],
+                    ].map(([value, icon, key]) => (
+                      <label key={value} className={`business-option ${businessType === value ? "is-selected" : ""}`}>
+                        <input id={value === "restaurant_cafe" ? "businessType" : `businessType-${value}`} type="radio" name="businessType" value={value} checked={businessType === value} onChange={() => setBusinessType(value)} />
+                        <span className="business-option-icon"><i className={`bi ${icon}`} aria-hidden="true"></i></span>
+                        <strong>{t(`auth.register.business.${key}.title`)}</strong>
+                        <small>{t(`auth.register.business.${key}.help`)}</small>
+                        <i className="bi bi-check-circle-fill business-check" aria-hidden="true"></i>
+                      </label>
+                    ))}
+                  </div>
+                  {renderError("businessType")}
+                </section>
+
+                <section className="full register-choice-section">
+                  <div className="register-choice-heading">
+                    <span className="register-choice-icon"><i className="bi bi-wallet2" aria-hidden="true"></i></span>
+                    <div><b>{t("auth.register.billing.title")}</b><small>{t("auth.register.billing.help")}</small></div>
+                  </div>
+                  <div className="package-grid package-grid-two">
+                    <label className={`package-option ${billingMode === "subscription" ? "is-selected" : ""}`}>
+                      <input id="billingMode" type="radio" name="billingMode" value="subscription" checked={billingMode === "subscription"} onChange={() => setBillingMode("subscription")} />
+                      <strong>{t("auth.register.billing.subscription.title")}</strong>
+                      <i className="bi bi-check-circle-fill package-check" aria-hidden="true"></i>
+                      <span className="package-price">{t("auth.register.billing.subscription.trial")}</span>
                       <small>
-                        {config
-                          ? t("auth.register.pricing.next_month", { amount: number(config.monthlyPrice) })
-                          : t("auth.register.plans.premium_note")}
-                        {monthlyVatText ? <><br />{monthlyVatText}</> : null}
-                        <br />{t("auth.register.plans.premium_trial_note")}
+                        {t("auth.register.billing.subscription.monthly", { amount: number(config?.monthlyPrice || 590) })}
+                        <br />
+                        {t("auth.register.billing.subscription.yearly", {
+                          regular: number(annual?.regularConfigured || 7080),
+                          amount: number(annual?.configured || 5900),
+                        })}
                       </small>
                     </label>
+                    <label className={`package-option ${billingMode === "revenue_share" ? "is-selected" : ""}`}>
+                      <input id="billingModeRevenueShare" type="radio" name="billingMode" value="revenue_share" checked={billingMode === "revenue_share"} onChange={() => setBillingMode("revenue_share")} />
+                      <strong>{t("auth.register.billing.revenue_share.title")}</strong>
+                      <i className="bi bi-check-circle-fill package-check" aria-hidden="true"></i>
+                      <span className="package-price">{t("auth.register.billing.revenue_share.price")}</span>
+                      <small>{t("auth.register.billing.revenue_share.help")}</small>
+                    </label>
                   </div>
+                  {renderError("billingMode")}
                 </section>
+
+                {!revenueShareMode ? (
+                  <section className="full register-choice-section">
+                    <div className="register-choice-heading">
+                      <span className="register-choice-icon"><i className="bi bi-calendar2-check" aria-hidden="true"></i></span>
+                      <div><b>{t("auth.register.subscription_cycle.title")}</b><small>{t("auth.register.subscription_cycle.help")}</small></div>
+                    </div>
+                    <div className="subscription-cycle-grid">
+                      <label className={`cycle-option ${planCode === "monthly" ? "is-selected" : ""}`}>
+                        <input type="radio" name="planCode" value="monthly" checked={planCode === "monthly"} onChange={() => setPlanCode("monthly")} />
+                        <span><strong>{t("auth.register.subscription_cycle.monthly")}</strong><small>{number(config?.monthlyPrice || 590)} {t("auth.register.subscription_cycle.baht_per_month")}</small></span>
+                        <i className="bi bi-check-circle-fill" aria-hidden="true"></i>
+                      </label>
+                      <label className={`cycle-option ${planCode === "yearly" ? "is-selected" : ""}`}>
+                        <input type="radio" name="planCode" value="yearly" checked={planCode === "yearly"} onChange={() => setPlanCode("yearly")} />
+                        <span><strong>{t("auth.register.subscription_cycle.yearly")}</strong><small><span className="old-price-slash">{number(annual?.regularConfigured || 7080)}</span> <b>{number(annual?.configured || 5900)}</b> {t("auth.register.subscription_cycle.baht_per_year")}</small></span>
+                        <i className="bi bi-check-circle-fill" aria-hidden="true"></i>
+                      </label>
+                    </div>
+                  </section>
+                ) : null}
+
+                {revenueShareMode && includesRestaurant ? (
+                  <section className="full register-choice-section revenue-scope-section">
+                    <div className="register-choice-heading">
+                      <span className="register-choice-icon"><i className="bi bi-percent" aria-hidden="true"></i></span>
+                      <div><b>{t("auth.register.revenue_scope.title")}</b><small>{t("auth.register.revenue_scope.help")}</small></div>
+                    </div>
+                    <div className="revenue-scope-grid">
+                      {[
+                        ["delivery_only", "bi-truck", "delivery"],
+                        ["storefront_only", "bi-shop", "storefront"],
+                        ["all", "bi-diagram-3", "all"],
+                      ].map(([value, icon, key]) => (
+                        <label key={value} className={`revenue-scope-option ${restaurantRevenueShareScope === value ? "is-selected" : ""}`}>
+                          <input id={value === "delivery_only" ? "restaurantRevenueShareScope" : undefined} type="radio" name="restaurantRevenueShareScope" value={value} checked={restaurantRevenueShareScope === value} onChange={() => setRestaurantRevenueShareScope(value)} />
+                          <span className="revenue-scope-icon"><i className={`bi ${icon}`} aria-hidden="true"></i></span>
+                          <strong>{t(`auth.register.revenue_scope.${key}.title`)}</strong>
+                          <small>{t(`auth.register.revenue_scope.${key}.help`)}</small>
+                          <i className="bi bi-check-circle-fill revenue-scope-check" aria-hidden="true"></i>
+                        </label>
+                      ))}
+                    </div>
+                    {renderError("restaurantRevenueShareScope")}
+                    {includesRetail ? <p className="field-help revenue-retail-rule"><i className="bi bi-info-circle" aria-hidden="true"></i><span>{t("auth.register.revenue_scope.retail_always")}</span></p> : null}
+                  </section>
+                ) : revenueShareMode && includesRetail ? (
+                  <section className="full register-choice-section revenue-retail-only">
+                    <div className="register-choice-heading">
+                      <span className="register-choice-icon"><i className="bi bi-basket2" aria-hidden="true"></i></span>
+                      <div><b>{t("auth.register.revenue_scope.retail_title")}</b><small>{t("auth.register.revenue_scope.retail_always")}</small></div>
+                    </div>
+                  </section>
+                ) : null}
 
                 <div className="register-form-grid">
                   <label>
@@ -325,17 +449,21 @@ export function RegisterPage() {
                     {renderError("email")}
                   </label>
 
-                  <label>
-                    {t("auth.register.fields.order_delivery_shop")} <span className="label-small">{t("auth.register.order_delivery_hint")}</span>
-                    <input id="orderDeliveryShopName" required value={fields.orderDeliveryShopName} onChange={e => setField("orderDeliveryShopName", e.target.value)} maxLength="120" />
-                    {renderError("orderDeliveryShopName")}
-                  </label>
-                  <label>
-                    {t("auth.register.fields.retail_pos_shop")} <span className="label-small">{t("auth.register.retail_pos_hint")}</span>
-                    <input id="retailPosShopName" required value={fields.retailPosShopName} onChange={e => setField("retailPosShopName", e.target.value)} maxLength="120" />
-                    {renderError("retailPosShopName")}
-                  </label>
-                  <p className="full field-help">{t("auth.register.same_shop_help")}</p>
+                  {includesRestaurant ? (
+                    <label className={includesRetail ? "" : "full"}>
+                      {t("auth.register.fields.order_delivery_shop")} <span className="label-small">{t("auth.register.order_delivery_hint")}</span>
+                      <input id="orderDeliveryShopName" required value={fields.orderDeliveryShopName} onChange={e => setField("orderDeliveryShopName", e.target.value)} maxLength="120" />
+                      {renderError("orderDeliveryShopName")}
+                    </label>
+                  ) : null}
+                  {includesRetail ? (
+                    <label className={includesRestaurant ? "" : "full"}>
+                      {t("auth.register.fields.retail_pos_shop")} <span className="label-small">{t("auth.register.retail_pos_hint")}</span>
+                      <input id="retailPosShopName" required value={fields.retailPosShopName} onChange={e => setField("retailPosShopName", e.target.value)} maxLength="120" />
+                      {renderError("retailPosShopName")}
+                    </label>
+                  ) : null}
+                  {includesRestaurant && includesRetail ? <p className="full field-help">{t("auth.register.same_shop_help")}</p> : null}
 
                   <label className="full">
                     {t("auth.register.fields.slug")} <span className="label-small">{t("auth.register.slug_help")}</span>
@@ -406,30 +534,54 @@ export function RegisterPage() {
           </section>
 
           <aside className="register-card plan-card">
-            <span className="plan-badge">Premium Trial</span>
-            <h2>{t("auth.register.aside_title")}</h2>
-            <p className="plan-price">0฿ <small>{t("auth.register.plans.first_month_suffix")}</small></p>
-            <p className="plan-next-price">
-              {config
-                ? t("auth.register.pricing.next_month", { amount: number(config.monthlyPrice) })
-                : t("auth.register.plans.next_month_price")}
-              {monthlyVatText ? <span className="plan-vat-note">{monthlyVatText}</span> : null}
-            </p>
-            <p className="plan-year-price">
-              {annual
-                ? <>
-                    {annual.discountConfigured > 0 ? <span className="old-price-slash">{number(annual.regularConfigured)}</span> : null}
-                    {" "}
-                    <span className="new-year-price">{number(annual.configured)}/{annualPeriod}</span>
+            <span className="plan-badge">
+              <i className={`bi ${revenueShareMode ? "bi-percent" : "bi-stars"}`} aria-hidden="true"></i>
+              <span>{t(revenueShareMode ? "auth.register.aside.share_badge" : "auth.register.aside.subscription_badge")}</span>
+            </span>
+            <h2>{t(revenueShareMode ? "auth.register.aside.share_title" : "auth.register.aside.subscription_title")}</h2>
+            {revenueShareMode ? (
+              <>
+                <p className="plan-price share-plan-price">{t("auth.register.aside.share_price")}</p>
+                <p className="plan-next-price">{t("auth.register.aside.share_rate_note")}</p>
+                <div className="plan-selection-summary">
+                  <span><i className="bi bi-shop-window" aria-hidden="true"></i>{t("auth.register.aside.business")}</span>
+                  <strong>{businessType ? t(`auth.register.business.${businessType === "restaurant_cafe" ? "restaurant" : businessType}.title`) : t("auth.register.aside.not_selected")}</strong>
+                  {includesRestaurant ? (
+                    <>
+                      <span><i className="bi bi-diagram-3" aria-hidden="true"></i>{t("auth.register.aside.restaurant_scope")}</span>
+                      <strong>{t(`auth.register.revenue_scope.${restaurantRevenueShareScope === "delivery_only" ? "delivery" : restaurantRevenueShareScope === "storefront_only" ? "storefront" : "all"}.title`)}</strong>
+                    </>
+                  ) : null}
+                  {includesRetail ? (
+                    <>
+                      <span><i className="bi bi-basket2" aria-hidden="true"></i>{t("auth.register.aside.retail_scope")}</span>
+                      <strong>{t("auth.register.revenue_scope.retail_short")}</strong>
+                    </>
+                  ) : null}
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="plan-price">0฿ <small>{t("auth.register.plans.first_month_suffix")}</small></p>
+                {planCode === "monthly" ? (
+                  <p className="plan-next-price">
+                    {t("auth.register.pricing.next_month", { amount: number(config?.monthlyPrice || 590) })}
+                    {monthlyVatText ? <span className="plan-vat-note">{monthlyVatText}</span> : null}
+                  </p>
+                ) : (
+                  <p className="plan-year-price">
+                    <span className="old-price-slash">{number(annual?.regularConfigured || 7080)}</span>{" "}
+                    <span className="new-year-price">{number(annual?.configured || 5900)}/{t("auth.register.subscription_cycle.year_suffix")}</span>
                     {annualDiscount ? <small className="plan-discount-label">{annualDiscount}</small> : null}
-                  </>
-                : t("auth.register.plans.annual_loading")}
-            </p>
+                  </p>
+                )}
+              </>
+            )}
             <ul>
-              <li><i className="bi bi-check-circle"></i><span>Order / Delivery / Kitchen / Cashier</span></li>
-              <li><i className="bi bi-check-circle"></i><span>{t("auth.register.retail_pos_feature")}</span></li>
-              <li><i className="bi bi-check-circle"></i><span>{t("auth.register.owner_permission")}</span></li>
-              <li><i className="bi bi-check-circle"></i><span>{t("auth.register.trial_start")}</span></li>
+              {includesRestaurant ? <li><i className="bi bi-check-circle" aria-hidden="true"></i><span>{t("auth.register.aside.restaurant_feature")}</span></li> : null}
+              {includesRetail ? <li><i className="bi bi-check-circle" aria-hidden="true"></i><span>{t("auth.register.retail_pos_feature")}</span></li> : null}
+              <li><i className="bi bi-check-circle" aria-hidden="true"></i><span>{t("auth.register.owner_permission")}</span></li>
+              <li><i className="bi bi-check-circle" aria-hidden="true"></i><span>{t(revenueShareMode ? "auth.register.aside.share_admin_note" : "auth.register.trial_start")}</span></li>
             </ul>
           </aside>
         </section>

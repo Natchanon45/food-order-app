@@ -53,12 +53,16 @@ async function mirrorSubscription(batch, db, tenant, patch) {
   }, { merge: true });
 }
 
-function defaultPatch(now = new Date()) {
+function defaultPatch(now = new Date(), tenant = {}) {
+  const planCode = tenant.planCode === "yearly" ? "yearly" : "monthly";
+  const trialEndsAt = asDate(tenant.trialEndsAt);
+  const trialStartsAt = asDate(tenant.trialStartsAt);
+  const trialing = tenant.subscriptionStatus === "trialing" && trialEndsAt && trialEndsAt > now;
   return {
-    planCode: "monthly",
-    subscriptionStatus: "active",
-    subscriptionStartedAt: Timestamp.fromDate(now),
-    subscriptionExpiresAt: Timestamp.fromDate(addDays(now, DEFAULT_TERM_DAYS)),
+    planCode,
+    subscriptionStatus: trialing ? "trialing" : "active",
+    subscriptionStartedAt: Timestamp.fromDate(trialStartsAt || now),
+    subscriptionExpiresAt: Timestamp.fromDate(trialing ? trialEndsAt : addDays(now, DEFAULT_TERM_DAYS)),
     gracePeriodDays: DEFAULT_GRACE_DAYS,
     active: true,
     updatedAt: FieldValue.serverTimestamp()
@@ -71,10 +75,10 @@ exports.initializeTenantSubscription = onDocumentCreated(
     const snapshot = event.data;
     if (!snapshot) return;
     const tenant = snapshot.data();
-    if (tenant.subscriptionExpiresAt) return;
+    if (tenant.subscriptionExpiresAt || revenueShareEnabled(tenant)) return;
     const db = getFirestore();
     const batch = db.batch();
-    const patch = defaultPatch();
+    const patch = defaultPatch(new Date(), tenant);
     batch.set(snapshot.ref, patch, { merge: true });
     await mirrorSubscription(batch, db, tenant, patch);
     await batch.commit();
@@ -92,7 +96,7 @@ exports.backfillTenantSubscriptions = onCall(
       const tenant = tenantDoc.data();
       if (tenant.subscriptionExpiresAt || revenueShareEnabled(tenant)) continue;
       const batch = db.batch();
-      const patch = defaultPatch();
+      const patch = defaultPatch(new Date(), tenant);
       batch.set(tenantDoc.ref, patch, { merge: true });
       await mirrorSubscription(batch, db, tenant, patch);
       await batch.commit();
@@ -183,7 +187,7 @@ exports.syncExpiredTenants = onSchedule(
       if (revenueShareEnabled(tenant)) continue;
       if (!tenant.subscriptionExpiresAt) {
         const batch = db.batch();
-        const patch = defaultPatch();
+        const patch = defaultPatch(new Date(), tenant);
         batch.set(tenantDoc.ref, patch, { merge: true });
         await mirrorSubscription(batch, db, tenant, patch);
         await batch.commit();

@@ -353,3 +353,17 @@ body.owner-modal-open {
     grid-template-columns: 1fr !important;
   }
 }
+
+
+/* Signup billing summary + revenue-share scope controls — 2026-10-08 */
+.tenant-signup-billing{display:grid;gap:9px;margin:12px 0;padding:12px;border:1px solid #dce9e0;border-radius:14px;background:linear-gradient(180deg,#fbfefc,#f6fbf8)}
+.tenant-signup-billing-title{display:flex;align-items:center;gap:8px;color:#173526}
+.tenant-signup-billing-title i{display:grid;place-items:center;line-height:1;color:#159447}
+.tenant-signup-billing-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.tenant-signup-billing-grid>span{display:grid;gap:3px;min-width:0;padding:9px 10px;border:1px solid #e5eee8;border-radius:11px;background:#fff}
+.tenant-signup-billing-grid small{color:#6b7b72;font-size:10px;line-height:1.3}
+.tenant-signup-billing-grid strong{color:#173526;font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+.tenant-share-retail-rule{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid #d7e9dd;border-radius:12px;background:#f0f9f3;color:#315a42;font-size:12px;font-weight:800;line-height:1.45}
+.tenant-share-retail-rule i{display:grid;place-items:center;flex:0 0 auto;line-height:1;color:#159447}
+@media(max-width:980px){.tenant-signup-billing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.tenant-signup-billing-grid{grid-template-columns:1fr}}
