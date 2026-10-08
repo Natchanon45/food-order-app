@@ -11888,3 +11888,13 @@ Candidate verification:
 
 Deploy state:
 - Commit/push and Hosting-only deployment pending at this checkpoint.
+
+
+### 2026-10-08 — Build 2026.10.08.469 deployed
+- Implementation commit `f3a962f4` — `fix: add heart to delivery favorites category` pushed to `origin/feature/react-firebase-port`.
+- Firebase Hosting target `foodapp` deployed successfully to `https://penguin-food.web.app`.
+- Production bundle: `/react/assets/index-B5d0PDpx.js`.
+- Focused Production Delivery Favorites regression test: **1/1 PASS**.
+- Production now renders the Favorites category as `❤️ เมนูโปรด` after a favorite exists, and removes the category again when the last favorite is removed.
+- Deployment scope was Hosting only.
+- No Functions, Firestore Rules, Storage Rules, schema changes, or merge to `main`.
