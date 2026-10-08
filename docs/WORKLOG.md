@@ -12710,3 +12710,12 @@ Safety and delivery:
 - Only React/Hosting changes, no Firestore/Storage Rules or Cloud Functions deploy, no customer profile/order updates, no main merge.
 - Existing untracked Vite hashed bundles preserved (emptyOutDir:false).
 - Git commit/push and Hosting production release pending at note creation; record final live JS verification after deploying.
+
+### Build .493 — Implementation pushed, Hosting Production, and read-only live browser checks confirmed
+
+- Implementation commit `bbd881f9 feat: restore Laravel nearest delivery location and store-origin driver maps` pushed successfully to `origin/feature/react-firebase-port`, ahead/behind 0/0 at push.
+- Firebase Hosting only `hosting:foodapp`, project `chat-45754`, deployed successfully to `https://penguin-food.web.app`. 553 public files; no Cloud Functions, Firestore Rules, Storage Rules, or live customer records changed.
+- Production canonical `/s/saas-test-shop/delivery`, `/delivery`, `/cashier`, `/kitchen` all HTTP 200 referencing `/react/assets/index-CkmdkY6R.js`. Bundle live matches Mac byte-for-byte with Build `2026.10.09.493`, SHA-256 `d7cf25788d4b52adafa32c2cf60347e54f6bfadaccbf74c17b9a10eef0d71aac`. Prior .492 bundle remains readable.
+- After release, **real Production HTTP/Chrome guest-mode smoke** with synthetic localStorage address fixture and browser-mocked GPS: PC 1280px and Mobile 440px both auto-select nondefault Saved Address B over default A because it is nearer GPS; coordinates of B confirmed on screen. GPS permission-denied case falls back to default A. No production customer profile mutations, checkout/payment, or order creation were performed. All PASS.
+- Driver Maps link unit tests verify `origin=storeLatitude,storeLongitude` and `destination=deliveryLatitude,deliveryLongitude` plus refusal to provide links when store pin or order pin missing. Real authenticated Cashier & Google Maps app flow requires store staff manual smoke; no test pretended that the user's real phone GPS was accessible.
+- Never merge main or remove old hashed bundles; existing untracked historical assets preserved.
