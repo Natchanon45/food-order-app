@@ -795,3 +795,8 @@ Exact post-save crash confirmed:
 - Repository search confirmed this was the only incorrect Promise-style qrDataUrl usage; Cashier, Quick Order, Receipt, Admin QR, and Table QR already use the synchronous API correctly.
 - Added a react-foundation regression assertion forbidding qrDataUrl(url, 220).then in WaitingQueuePage.
 - Full post-save flow verified in an isolated offline Chrome profile so no Firebase test queue was created: add dialog opened, save completed locally, add dialog closed, ticket dialog opened, queue W004 was shown in the test profile, QR src began with data:image/svg+xml, and .waiting-page remained mounted with no runtime exception.
+
+
+## 2026-10-08 — Master business editor + signup card
+- Master business selector in Super Admin tenant Edit; signup snapshot and revenue-share settings remain separate.
+- Candidate Build 2026.10.08.474; see WORKLOG for release details.

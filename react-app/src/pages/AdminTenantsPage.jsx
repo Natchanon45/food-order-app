@@ -213,7 +213,8 @@ function TenantCard({ tenant, summary = {}, notifications = {}, t, formatNumber,
   const shareEnabled = tenant.billingMode === "revenue_share" || summary.revenueShareEnabled === true;
   const signupBilling = tenant.signupBilling || {};
   const signupBillingMode = signupBilling.billingMode || (shareEnabled ? "revenue_share" : "subscription");
-  const signupBusinessType = signupBilling.businessType || tenant.revenueShareBusinessType || tenant.businessType || "both";
+  const signupBusinessType = signupBilling.businessType || tenant.businessType || "both";
+  const masterBusinessType = tenant.businessType || signupBusinessType;
   const signupRestaurantScope = signupBilling.restaurantRevenueShareScope || tenant.revenueShareRestaurantScope || "all";
   const signupPlanCode = signupBilling.planCode || tenant.planCode || "monthly";
   const ownerLabel = tenant.ownerUid
@@ -266,6 +267,11 @@ function TenantCard({ tenant, summary = {}, notifications = {}, t, formatNumber,
         <div className="tenant-signup-billing-title">
           <i className="bi bi-ui-checks-grid" aria-hidden="true"></i>
           <strong>{t("admin_tenants.signup_billing.title")}</strong>
+          <span className="tenant-signup-billing-pill"><i className="bi bi-clock-history" aria-hidden="true"></i>{t("admin_tenants.signup_billing.model")}</span>
+        </div>
+        <div className="tenant-signup-business-overview">
+          <span className="tenant-signup-business-mark"><i className="bi bi-shop-window" aria-hidden="true"></i></span>
+          <span><small>{t("admin_tenants.signup_billing.business")} (Master)</small><strong>{t(`admin_tenants.signup_billing.businesses.${masterBusinessType}`)}</strong></span>
         </div>
         <div className="tenant-signup-billing-grid">
           <span>
@@ -497,7 +503,7 @@ export function AdminTenantsPage() {
   const [loadingSales, setLoadingSales] = useState(false);
   const [status, setStatus] = useState("");
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: "", slug: "", phone: "", address: "" });
+  const [form, setForm] = useState({ name: "", slug: "", phone: "", address: "", businessType: "both" });
   const [slugEdited, setSlugEdited] = useState(false);
   const [saving, setSaving] = useState(false);
   const [reviewStatus, setReviewStatus] = useState("pending");
@@ -639,7 +645,7 @@ export function AdminTenantsPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: "", slug: "", phone: "", address: "" });
+    setForm({ name: "", slug: "", phone: "", address: "", businessType: "both" });
     setSlugEdited(false);
     setStatus("");
     dialogRef.current?.showModal?.();
@@ -651,6 +657,7 @@ export function AdminTenantsPage() {
       slug: tenant.slug || "",
       phone: tenant.shopPhone || "",
       address: tenant.shopAddress || "",
+      businessType: tenant.businessType || (tenant.businessUnits?.length === 1 ? (tenant.businessUnits[0] === "retail_pos" ? "retail" : "restaurant_cafe") : "both"),
     });
     setSlugEdited(true);
     setStatus("");
@@ -738,6 +745,7 @@ export function AdminTenantsPage() {
       slug: normalizeSlug(form.slug),
       phone: form.phone.trim(),
       address: form.address.trim(),
+      ...(editing ? { businessType: form.businessType } : {}),
     };
     if (!payload.name || !payload.slug) return;
     setSaving(true);
@@ -1309,6 +1317,15 @@ export function AdminTenantsPage() {
                 <input className="input" id="tenantAddress" maxLength="300" value={form.address} onChange={e => setForm(current => ({ ...current, address: e.target.value }))} placeholder={t("admin_tenants.tenant.fields.address_placeholder")} />
               </div>
             </div>
+            {editing ? (
+              <div className="field tenant-master-business-field">
+                <label htmlFor="tenantMasterBusinessType"><i className="bi bi-diagram-3" aria-hidden="true"></i> {t("admin_tenants.signup_billing.business")} (Master)</label>
+                <select className="input" id="tenantMasterBusinessType" value={form.businessType} onChange={e => setForm(current => ({ ...current, businessType: e.target.value }))}>
+                  {["restaurant_cafe", "retail", "both"].map(type => <option value={type} key={type}>{t(`admin_tenants.signup_billing.businesses.${type}`)}</option>)}
+                </select>
+                <small>{t("admin_tenants.signup_billing.title")} · {t("admin_tenants.signup_billing.business")}: {t(`admin_tenants.signup_billing.businesses.${editing.signupBilling?.businessType || editing.businessType || "both"}`)}</small>
+              </div>
+            ) : null}
             {status ? <div className="upload-error" id="tenantError">{status}</div> : <div className="upload-error" id="tenantError" hidden></div>}
           </div>
           <div className="tenant-dialog-actions">

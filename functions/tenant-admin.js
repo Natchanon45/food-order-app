@@ -2,6 +2,7 @@ const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getAuth } = require("firebase-admin/auth");
 const { randomUUID } = require("crypto");
+const { BUSINESS_TYPES, businessUnitsFor } = require("./revenue-share-policy");
 
 function normalizeSlug(value = "") {
   return String(value)
@@ -265,6 +266,10 @@ exports.updateTenant = onCall(
     const slug = normalizeSlug(request.data?.slug || "");
     const phone = String(request.data?.phone || "").trim();
     const address = String(request.data?.address || "").trim();
+    const requestedBusinessType = request.data?.businessType;
+    if (requestedBusinessType !== undefined && !BUSINESS_TYPES.has(requestedBusinessType)) {
+      throw new HttpsError("invalid-argument", "Invalid master business type");
+    }
     if (!tenantId) throw new HttpsError("invalid-argument", "Tenant ID is required");
     validateTenant(name, slug);
 
@@ -284,7 +289,10 @@ exports.updateTenant = onCall(
     }
 
     const batch = db.batch();
+    const masterBusinessChanged = requestedBusinessType !== undefined && requestedBusinessType !== current.businessType;
+    const masterFields = masterBusinessChanged ? { businessType: requestedBusinessType, businessUnits: businessUnitsFor(requestedBusinessType) } : {};
     batch.set(tenantRef, {
+      ...masterFields,
       name,
       slug,
       updatedAt: FieldValue.serverTimestamp()
@@ -307,6 +315,7 @@ exports.updateTenant = onCall(
     const usersSnapshot = await db.collection("users").where("tenantId", "==", tenantId).get();
     usersSnapshot.docs.forEach(userDoc => {
       batch.set(userDoc.ref, {
+        ...(masterBusinessChanged ? { businessType: requestedBusinessType, businessUnits: businessUnitsFor(requestedBusinessType) } : {}),
         tenantSlug: slug,
         tenantName: name,
         updatedAt: FieldValue.serverTimestamp()

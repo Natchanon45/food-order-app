@@ -176,3 +176,17 @@ test("new signup and Super Admin billing copy is localized in every supported lo
     assert.ok(dictionary?.[locale]?.admin_tenants?.share?.business_type, `${locale} missing share.business_type`);
   }
 });
+
+
+test("Super Admin can change master business without rewriting signup and share choices", () => {
+  const ui = fs.readFileSync("react-app/src/pages/AdminTenantsPage.jsx", "utf8");
+  const backend = fs.readFileSync("functions/tenant-admin.js", "utf8");
+  const edit = backend.slice(backend.indexOf("exports.updateTenant ="), backend.indexOf("exports.deleteTenant ="));
+  assert.match(ui, /id="tenantMasterBusinessType"/);
+  assert.match(ui, /businessType: form.businessType/);
+  assert.match(ui, /tenant-signup-business-overview/);
+  assert.match(edit, /BUSINESS_TYPES\.has\(requestedBusinessType\)/);
+  assert.match(edit, /businessUnitsFor\(requestedBusinessType\)/);
+  assert.doesNotMatch(edit, /signupBilling\s*:/);
+  assert.doesNotMatch(edit, /revenueShareBusinessType\s*:/);
+});

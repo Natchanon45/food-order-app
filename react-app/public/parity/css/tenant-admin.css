@@ -367,3 +367,21 @@ body.owner-modal-open {
 .tenant-share-retail-rule i{display:grid;place-items:center;flex:0 0 auto;line-height:1;color:#159447}
 @media(max-width:980px){.tenant-signup-billing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.tenant-signup-billing-grid{grid-template-columns:1fr}}
+
+/* Master business and signup snapshot: visually distinct, responsive and legible. */
+.tenant-master-business-field{padding:14px;border:1px solid #cee5d8;border-radius:14px;background:#f5faf7}
+.tenant-master-business-field label{display:flex;align-items:center;gap:8px;font-weight:750}
+.tenant-master-business-field small{display:block;margin-top:7px;color:#64776b;line-height:1.5}
+.tenant-signup-billing{width:100%;max-width:none;min-width:0;padding:15px;border:1px solid #d7e7dd;border-radius:16px;background:linear-gradient(145deg,#f8fcf9,#f3f8f6)}
+.tenant-signup-billing-title{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+.tenant-signup-billing-pill{margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;background:#e9f3ee;color:#406450;font-size:11px}
+.tenant-signup-business-overview{display:flex;align-items:center;gap:12px;min-width:0;margin-bottom:12px;padding:12px 14px;border-radius:12px;background:white;border:1px solid #dceae1}
+.tenant-signup-business-overview>span:last-child{display:grid;gap:4px;min-width:0}
+.tenant-signup-business-overview small{color:#65796d;font-size:11px}
+.tenant-signup-business-overview strong{font-size:14px;color:#194f32;overflow-wrap:anywhere}
+.tenant-signup-business-mark{display:grid;place-items:center;flex:none;width:35px;height:35px;border-radius:10px;background:#e2f3e9;color:#13733f}
+.tenant-signup-billing-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px}
+.tenant-signup-billing-grid>span{padding:12px 13px;border-radius:12px;min-width:0}
+.tenant-signup-billing-grid strong{overflow-wrap:anywhere;line-height:1.45}
+@media(max-width:600px){.tenant-signup-billing{padding:12px}.tenant-signup-billing-grid{grid-template-columns:1fr 1fr}.tenant-signup-billing-grid>span{padding:10px}.tenant-signup-business-overview{padding:10px}}
+@media(max-width:360px){.tenant-signup-billing-grid{grid-template-columns:1fr}}

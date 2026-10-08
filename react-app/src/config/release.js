@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.08.473",
+  build: "2026.10.08.474",
   branch: "feature/react-firebase-port",
-  commit: "SIGNUP-BUSINESS-REVENUE-SHARE-POLICY",
+  commit: "TENANT-MASTER-BUSINESS-EDIT",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Public signup business model and scoped revenue share",
+  milestone: "Master business management and signup information layout",
   whatsNew: [
-    "Let new stores choose Restaurant/Cafe, Retail, or both before selecting the billing model",
-    "Support Premium monthly/yearly signup or scoped sales revenue share with restaurant channel rules",
-    "Send signup billing choices to Super Admin Store Management and apply them to revenue-share calculations",
+    "Allow Super Admin to edit a store master business type separately from revenue-share settings",
+    "Show current master business and original signup selections in distinct, readable sections",
+    "Preserve original signup snapshots and order history when switching enabled business units",
   ],
 });

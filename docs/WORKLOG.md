@@ -12251,3 +12251,11 @@ Deploy state:
 - Test-only stabilization; no Hosting, Functions, Firestore Rules, Storage Rules, or schema deploy is required.
 - Production remains React `0.4.280` / Build `2026.10.08.473`.
 - No merge to `main`.
+
+
+## 2026-10-08 — Super Admin tenant Master business editor and signup card refresh (Build 2026.10.08.474)
+- Added a separate Master business selector (Restaurant/Cafe, Retail, Both) to tenant Edit dialog; not the revenue-share selector.
+- updateTenant validates business type server-side and synchronizes businessType/businessUnits for tenant and users without deleting stores, orders, sales or collections.
+- Original signupBilling snapshot and revenueShareBusinessType/scope remain untouched.
+- Signup information card presents current Master business separately from original billing/business/scope in a responsive layout.
+- Deployment requires Hosting and updateTenant Function; no Rules/Storage/schema changes; no main merge.
