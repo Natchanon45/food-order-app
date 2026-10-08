@@ -12345,3 +12345,9 @@ Deploy state:
 - Added matching green marker before Retail POS title via home-dashboard.css.
 - Operational tests, full React parity and React Build contract PASS.
 - Hosting-only release; no Firebase Functions/Rules changes; no main merge.
+
+
+### Build 2026.10.08.479 — Production checkpoint
+- Implementation 674ab9fa pushed to feature/react-firebase-port; Firebase Hosting deployment succeeded.
+- Production root HTML references index-BVRccUB-.js; live home-dashboard.css includes Retail POS heading marker.
+- No customer data edits or backend deployments. Authenticated visual smoke still pending; old untracked bundle index-Dplusb-p.js retained.
