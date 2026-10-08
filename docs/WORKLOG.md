@@ -12371,3 +12371,9 @@ Deploy state:
 ## 2026-10-08 — Lalamove revoke button label (Build 2026.10.08.481)
 - Super Admin /admin/tenants revoke button Thai label shortened to ยกเลิกสิทธิ์ Lalamove, English to Revoke Lalamove Access, preventing mobile overflow.
 - Confirmation/dialog messages and approval logic unchanged. Hosting only; no main merge.
+
+
+### Build 2026.10.08.481 — Production checkpoint
+- Implementation commit 290a4405 pushed to feature/react-firebase-port.
+- Firebase Hosting deployment succeeded. Production bundle index-CGeELT5g.js.
+- All operational, parity and React build checks passed. No backend changes or main merge.
