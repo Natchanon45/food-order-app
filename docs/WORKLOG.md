@@ -12360,3 +12360,10 @@ Deploy state:
 - Manual Save buttons remain available; disabled while the respective save is in progress.
 - Updated P0 action contract and added admin-menu-sort-autosave regression checks (4/4 pass).
 - Operational PASS, React parity PASS, React build and generated artifact contract PASS. Hosting-only release; no main merge.
+
+
+### Build 2026.10.08.480 — Production checkpoint
+- Implementation commit 1b562128 pushed to feature/react-firebase-port.
+- Firebase Hosting foodapp deployment succeeded; production /admin serves index-SQLfu11O.js (Build .480).
+- No Functions/Rules/Storage changes, no tenant data mutated, no merge into main.
+- Authenticated drag-and-drop browser smoke still to be verified; old generated index-Dplusb-p.js preserved.

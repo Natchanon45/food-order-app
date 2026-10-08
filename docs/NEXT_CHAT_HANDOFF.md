@@ -854,3 +854,7 @@ Candidate Build .476 on local Mac only; React homepage and route guard updates p
 ## 2026-10-08 — Auto-save admin order .480
 - Both category/menu order buttons renamed บันทึก; Sortable onEnd auto-persists on drop with queued latest change when saves overlap.
 - Build .480. See WORKLOG for tests/deployment checkpoint.
+
+
+### Production deployed — Admin sorting Auto-save Build .480
+- Hosting updated with on-drop Auto-save for category/menu and renamed Save buttons. Implementation 1b562128. See WORKLOG.
