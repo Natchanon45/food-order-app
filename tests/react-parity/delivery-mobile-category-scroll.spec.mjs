@@ -23,8 +23,14 @@ test("Delivery mobile uses viewport fixed tabs after scroll with placeholder, no
   assert.match(component, /id="deliveryCategoryAnchor"/);
   assert.match(component, /className=\{deliveryTabsFixed \? "delivery-category-anchor is-fixed"/);
   assert.match(component, /getElementById\("deliveryCategoryAnchor"\)/);
-  assert.match(component, /gridBottom > tabs.offsetHeight/);
-  assert.match(component, /delivery-tabs-fixed/);
-  assert.match(css, /body.delivery-page #categoryTabs.delivery-tabs-fixed \{\s*position: fixed !important;/);
-  assert.match(css, /body.delivery-page #deliveryCategoryAnchor.is-fixed \{\s*height: 54px;/);
+  assert.match(component, /gridBottom > filters.offsetHeight/);
+  assert.match(component, /delivery-filters-fixed/);
+  assert.match(css, /body.delivery-page #menuListStart.delivery-filters-fixed \{/);
+  assert.match(css, /body.delivery-page #deliveryCategoryAnchor.is-fixed \{\s*height: 104px;/);
+});
+
+test("category and search are fixed together in one Delivery toolbar", () => {
+  assert.match(component, /menu-filter-area" \+ \(deliveryTabsFixed/);
+  assert.match(css, /#menuListStart.delivery-filters-fixed \{[\s\S]*?position: fixed !important;/);
+  assert.match(css, /#menuListStart.delivery-filters-fixed \.menu-search/);
 });

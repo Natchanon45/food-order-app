@@ -103,11 +103,11 @@ export function PublicMenuCatalog({
       frame = 0;
       const anchor = document.getElementById("deliveryCategoryAnchor");
       const grid = document.getElementById("menuGrid");
-      const tabs = document.getElementById("categoryTabs");
-      if (!anchor || !grid || !tabs) return;
+      const filters = document.getElementById("menuListStart");
+      if (!anchor || !grid || !filters) return;
       const top = anchor.getBoundingClientRect().top;
       const gridBottom = grid.getBoundingClientRect().bottom;
-      const shouldFix = top <= 0 && gridBottom > tabs.offsetHeight + 12;
+      const shouldFix = top <= 0 && gridBottom > filters.offsetHeight + 12;
       setDeliveryTabsFixed(current => current === shouldFix ? current : shouldFix);
     };
     const schedule = () => {
@@ -207,9 +207,9 @@ export function PublicMenuCatalog({
 
   return (
     <div className="delivery-menu-column">
-      <div className="menu-filter-area" id="menuListStart">
-        {mobile && prefix === "delivery.checkout.menu" ? <div id="deliveryCategoryAnchor" className={deliveryTabsFixed ? "delivery-category-anchor is-fixed" : "delivery-category-anchor"} aria-hidden="true" /> : null}
-        <div className={"category-tabs" + (deliveryTabsFixed && prefix === "delivery.checkout.menu" ? " delivery-tabs-fixed" : "")} id="categoryTabs" role="tablist" aria-label={t(prefix + ".category_aria")}>
+      {mobile && prefix === "delivery.checkout.menu" ? <div id="deliveryCategoryAnchor" className={deliveryTabsFixed ? "delivery-category-anchor is-fixed" : "delivery-category-anchor"} aria-hidden="true" /> : null}
+      <div className={"menu-filter-area" + (deliveryTabsFixed && prefix === "delivery.checkout.menu" ? " delivery-filters-fixed" : "")} id="menuListStart">
+        <div className="category-tabs" id="categoryTabs" role="tablist" aria-label={t(prefix + ".category_aria")}>
           {categories.map(category => (
             <button key={category} type="button" data-category={category} className={"category-tab" + (category === selectedCategory ? " active" : "")}
               role="tab" aria-selected={category === selectedCategory}

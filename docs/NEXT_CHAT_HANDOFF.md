@@ -905,3 +905,7 @@ Candidate Build .476 on local Mac only; React homepage and route guard updates p
 
 ### Build .485 live
 - Corrective viewport-fixed Delivery category scrolling released via Hosting, implementation 7df5d1f6. Live mobile visual confirmation still needed.
+
+
+## 2026-10-08 — Delivery mobile both controls fixed Build .486
+- Both category tabs and menu search now pinned together on mobile Delivery. Previous .485 pinned category alone. See WORKLOG.

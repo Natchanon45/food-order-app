@@ -12510,3 +12510,10 @@ Deployment boundary:
 - Live Delivery URL loads index-BZvgTYkY.js; JS asset returns 200 and new viewport pin CSS served.
 - Mobile scroll regression 4/4 and React parity/build tests PASS. No backend/functions/rules deployed.
 - Authenticated physical/mobile browser scroll outcome still unverified; user reported previous .484 faulty. Preserve user untracked asset bundles and do not merge main.
+
+
+## 2026-10-08 — Delivery mobile fixed categories AND search (Build .486)
+- User clarified both category strip and search box must stay pinned on mobile Delivery.
+- Moved anchor outside .menu-filter-area and pin entire filter toolbar to viewport via delivery-filters-fixed class while scrolling, with spacer to avoid content jump.
+- Category scroll-spy/highlight and horizontal scrolling remain. Desktop and Table Order unchanged.
+- Delivery mobile regression 5/5, React Parity and React Build contract PASS. Hosting-only.
