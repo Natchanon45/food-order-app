@@ -926,3 +926,8 @@ Candidate Build .476 on local Mac only; React homepage and route guard updates p
 - Regression script tests/react-parity/quick-order-display-pairing.spec.mjs added to React parity suite. Release prepared 2026.10.08.488.
 - Desktop Commander quota exhausted; no local npm tests/build or Firebase Hosting deployment possible from this chat. Production remains .487 pending verified build and deploy, NO main merge.
 - Next: on authorized Mac run git pull --ff-only origin feature/react-firebase-port, npm run test:operational, npm run test:react-parity, npm run build:react (generates .488), npx firebase-tools deploy --only hosting:foodapp --project chat-45754, then authenticated QR + button smoke tests including staff-device pairing and restaurant-only Master.
+
+## 2026-10-08 — Build .489 Quick Order cashier back icon alignment (SOURCE ONLY)
+- Scoped quick-header-back icon centered Y on desktop, X+Y on mobile using 40x40 square and 18px icon box. Added mobile accessible name and regression checks.
+- Static GitHub source checks 8/8 PASS. Desktop Commander quota remains exhausted; no local tests/build or Hosting deployment performed. Production still .487.
+- This release also contains previous unreleased .488 Quick Order display pairing changes. Mac must pull ff-only, test, build, deploy Hosting, then verify both icon and QR pairing. Never reset/clean or merge main. See WORKLOG.
