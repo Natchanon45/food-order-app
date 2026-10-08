@@ -918,3 +918,11 @@ Candidate Build .476 on local Mac only; React homepage and route guard updates p
 ### Build .487 deployed to Production
 - Authorized and successfully deployed approveDeliveryPaymentReview Function and Hosting foodapp; /cashier serving index-B1NTOMkh.js.
 - Follow up: real cashier legacy-slip settlement and browser sound bell/permission tests; see WORKLOG.
+
+## 2026-10-08 — Quick Order display QR pairing repair, Build .488 (SOURCE ONLY, NOT DEPLOYED)
+- User reports /pos/customer-display quick-order-* pairing QR / Open POS goes Retail POS.
+- Confirmed previous URL-only commit d126ac8 was never built/deployed. Further issues: restaurant Master guard treated /pos/customer-display as Retail; QuickOrderPage ignored paired displayId after scanning/login.
+- Code prepared on feature/react-firebase-port: new /cashier/customer-display route, QuickOrder links to it, pairing QR selects /cashier/quick-order for quick-order-* IDs, QuickOrder reads displayId/registerId from URL and writes to paired Firestore display, login preserves next path + query, restaurant-only legacy quick-order displays handled in MasterBusinessGuard.
+- Regression script tests/react-parity/quick-order-display-pairing.spec.mjs added to React parity suite. Release prepared 2026.10.08.488.
+- Desktop Commander quota exhausted; no local npm tests/build or Firebase Hosting deployment possible from this chat. Production remains .487 pending verified build and deploy, NO main merge.
+- Next: on authorized Mac run git pull --ff-only origin feature/react-firebase-port, npm run test:operational, npm run test:react-parity, npm run build:react (generates .488), npx firebase-tools deploy --only hosting:foodapp --project chat-45754, then authenticated QR + button smoke tests including staff-device pairing and restaurant-only Master.
