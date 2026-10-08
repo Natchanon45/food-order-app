@@ -1,15 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.08.468",
+  build: "2026.10.08.469",
   branch: "feature/react-firebase-port",
-  commit: "GLOBAL-INITIAL-READY-VERIFY-KITCHEN-LOCK",
+  commit: "DELIVERY-FAVORITES-HEART-LABEL",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Global initial loading and Kitchen Lalamove lock parity",
+  milestone: "Delivery Favorites category heart label",
   whatsNew: [
-    "Require full-screen centered spinner/progress loading before every React route is initially ready",
-    "Fix Verify header translation so raw translation keys never surface",
-    "Lock Kitchen delivery items after a Lalamove dispatch is placed, including legacy dispatch evidence",
+    "Prefix the Delivery Favorites category label with a visible heart",
+    "Preserve conditional Favorites visibility only when saved favorites exist",
+    "Keep guest and signed-in favorite persistence behavior unchanged",
   ],
 });

@@ -737,7 +737,7 @@ export function DeliveryPage() {
             <PublicMenuCatalog menus={menus} prefix="delivery.checkout.menu" activeCategory={activeCategory}
               setActiveCategory={setActiveCategory} search={search} setSearch={setSearch} page={page} setPage={setPage}
               onAdd={add} disabled={submitting || locked}
-              extraCategory={favoriteIds.size > 0 ? "__favorites__" : null} extraLabel={t("delivery.checkout.menu.favorites")}
+              extraCategory={favoriteIds.size > 0 ? "__favorites__" : null} extraLabel={`❤️ ${t("delivery.checkout.menu.favorites")}`}
               extraFilter={item => favoriteIds.has(String(item.id))}
               favoriteIds={favoriteIds} onToggleFavorite={toggleFavorite}
               favoriteAddLabel={t("delivery.checkout.menu.favorite_add")}

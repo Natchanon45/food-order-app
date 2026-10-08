@@ -101,6 +101,7 @@ test.describe("Delivery Laravel behavior parity", () => {
     await firstFavorite.click();
     await expect(firstFavorite).toHaveAttribute("aria-pressed", "true");
     await expect(favoritesTab).toHaveCount(1);
+    await expect(favoritesTab).toHaveText(/^❤️\s*เมนูโปรด$/);
 
     const persisted = await page.evaluate(() => {
       const key = Object.keys(localStorage).find(value => value.startsWith("food_order_guest_menu_favorites:"));

@@ -11855,3 +11855,36 @@ Deploy state:
 - Kitchen Lalamove lock remains covered by **4/4 PASS** in the standard React parity suite.
 - Deployment scope was Hosting only.
 - No Functions, Firestore Rules, Storage Rules, schema changes, or merge to `main`.
+
+
+---
+
+## 2026-10-08 — Delivery Favorites category heart label (Build 2026.10.08.469)
+
+Request:
+- Add a visible heart in front of the Delivery Favorites category label so it reads `❤️ เมนูโปรด`.
+
+Test-first:
+- Added a Delivery parity assertion requiring the Favorites tab text to match `❤️ เมนูโปรด`.
+- The focused Production test failed first as expected because Build .468 still rendered only `เมนูโปรด`.
+
+Implementation:
+- Updated Delivery's `PublicMenuCatalog` `extraLabel` to prefix the localized Favorites text with `❤️`.
+- Favorites behavior is otherwise unchanged:
+  - the Favorites category is only rendered when `favoriteIds.size > 0`,
+  - guest persistence remains localStorage-backed,
+  - signed-in persistence remains Firebase-backed,
+  - removing the final favorite still hides the Favorites category.
+
+Candidate verification:
+- React Build: `2026.10.08.469`.
+- Candidate bundle: `/react/assets/index-B5d0PDpx.js`.
+- `npm run build:react` PASS.
+- `npm run test:operational` PASS.
+- `npm run test:react-parity` PASS.
+- Delivery browser parity on Hosting emulator: **6/6 PASS** including `❤️ เมนูโปรด` regression coverage.
+- `git diff --check` PASS.
+- No Functions, Firestore Rules, Storage Rules, or schema changes.
+
+Deploy state:
+- Commit/push and Hosting-only deployment pending at this checkpoint.
