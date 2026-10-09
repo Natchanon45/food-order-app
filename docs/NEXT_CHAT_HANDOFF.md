@@ -24,6 +24,16 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Latest: Delivery server-side closed-store enforcement — Build 2026.10.09.498
+
+- User explicitly authorized **Cloud Functions and Firestore Security Rules** to prevent external/custom SDK order submissions while store is closed, after .497 client-only schedule protection.
+- Problem: public Firestore direct \`orderType="delivery"\` create was allowed in both root \`/orders\` and tenant \`/tenants/{id}/orders\`; frontend safeguards were bypassable.
+- New isolated \`functions/public-delivery-submit.js\` callable \`submitPublicDeliveryOrder\` (asia-southeast1, Node22) validates public guest Delivery payload and computes hours with \`functions/delivery-opening-hours.js\` matching React Bangkok timezone policy. Admin SDK Firestore transaction atomically reads store schedule, manual override and order ID; blocks closed/missing/retail-only/duplicates, creates new pending Delivery with server-owned status/ID/timestamps.
+- React now submits \`createPublicDeliveryOrder\` via callable after existing gift/Slip2Go steps, preserving API shape. \`firestore.rules\` blocks all client direct Delivery order creates on root/tenant paths and orderType-morph updates; Takeaway, Table, other channels retain create permissions. Existing orders are unchanged.
+- New \`delivery-server-guard.spec.mjs\` 7/7 PASS and updated \`delivery-opening-hours.spec.mjs\` 10/10 PASS; Operational, Full React Parity, Vite build/postbuild & Function Node syntax PASS. Build **2026.10.09.498** asset \`/react/assets/index-CNsdruuu.js\`.
+- Rollout must be ordered: deploy **only** \`functions:submitPublicDeliveryOrder\` -> verify -> **hosting:foodapp** -> verify new JS -> **firestore:rules** -> verify. Do not deploy other Functions/Rules, no data mutation, no main merge/reset/clean. Java is unavailable on Mac so Firestore Emulator not executed; rely on static contract tests and Firebase compilation. User should refresh cached prior Delivery builds to avoid client direct-write denial after Rules change.
+- Pending at checkpoint: implementation commit/push and three staged deployments; update status after verification. This is enforcement of store closure even against direct API calls, not general fraud/rate-limiting/App Check protection. See latest WORKLOG.
+
 ## Latest: Weekly Delivery opening hours + emergency open/close — Build 2026.10.09.497
 
 - Requested restaurant shop weekly schedule (each Monday–Sunday with enabled checkbox + per-day opening/closing HH:MM), with a separate immediate override for emergencies/renovation (open now, close now, normal schedule; optional reason and Bangkok-local end time). Checkout outside allowed periods shows a prominent "store closed" status and blocks new Delivery orders. Table, Takeaway, Retail POS unaffected.

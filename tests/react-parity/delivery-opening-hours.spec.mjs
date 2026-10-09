@@ -83,11 +83,13 @@ test("Delivery shows live banner and blocks both adding and submitting while clo
   assert.match(page,/await checkDeliveryStoreIsOpen\(tenant\)/);
 });
 
-test("Delivery transaction rechecks status atomically when admin closes mid-order", () => {
+test("Delivery performs pre-payment read and submits to authoritative server-side transaction", () => {
   assert.match(catalog,/getDocFromServer\(tenantDocument\(tenant, "settings", "store"\)\)/);
-  assert.match(catalog,/await runTransaction\(db, async transaction => \{/);
-  assert.match(catalog,/if \(!getDeliveryOpeningStatus\(settingsSnapshot.data\(\)\).open\) throw new Error\("DELIVERY_STORE_CLOSED"\)/);
-  assert.match(catalog,/transaction.set\(tenantDocument\(tenant, "orders", id\)/);
+  assert.match(catalog,/await submitPublicDeliveryOrder\(\{/);
+  const source = fs.readFileSync("functions/public-delivery-submit.js", "utf8");
+  assert.match(source,/return db.runTransaction\(async transaction => \{/);
+  assert.match(source,/!getDeliveryOpeningStatus\(settingsSnap.data\(\), new Date\(\)\).open/);
+  assert.match(source,/transaction.create\(orderRef,/);
 });
 
 test("opening-hour labels are available in all five supported languages", () => {

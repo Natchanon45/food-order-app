@@ -3,8 +3,11 @@ import {
   serverTimestamp, setDoc, where,
 } from "firebase/firestore";
 import { ref as storageRef, uploadBytes } from "firebase/storage";
-import { db, storage } from "@/firebase/client";
+import { httpsCallable } from "firebase/functions";
+import { db, storage, functions } from "@/firebase/client";
 import { getDeliveryOpeningStatus } from "@/utils/deliveryOpeningHours";
+
+const submitPublicDeliveryOrder = httpsCallable(functions, "submitPublicDeliveryOrder", { timeout: 55000 });
 
 const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
 const ACTIVE_TENANT_KEY = "food_order_active_tenant";
@@ -308,18 +311,13 @@ export async function createPublicDeliveryOrder(tenant, order = {}, catalog = nu
   } else if (selectedIds.length) {
     throw new Error("DELIVERY_FREE_GIFT_NOT_AVAILABLE");
   }
-  // Atomic read of current store settings followed by the order create.
-  // When an admin closes the store during this transaction, Firestore retries
-  // against the new settings and rejects the order instead of accepting it.
-  await runTransaction(db, async transaction => {
-    const settingsSnapshot = await transaction.get(tenantDocument(tenant, "settings", "store"));
-    if (!settingsSnapshot.exists()) throw new Error("DELIVERY_STORE_STATUS_UNAVAILABLE");
-    if (!getDeliveryOpeningStatus(settingsSnapshot.data()).open) throw new Error("DELIVERY_STORE_CLOSED");
-    transaction.set(tenantDocument(tenant, "orders", id), tenantPayload(tenant, {
-      ...normalized, id, orderType: "delivery", status: order.status || "pending",
-      paymentStatus: order.paymentStatus || "unpaid", createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
-    }));
+  // Server Admin SDK creates the order only after an authoritative store-hours
+  // transaction. A forged Firestore SDK call cannot bypass shop closure.
+  const result = await submitPublicDeliveryOrder({
+    tenantId: tenant.id,
+    order: { ...normalized, id },
   });
+  if (result?.data?.id !== id) throw new Error("DELIVERY_ORDER_CREATE_NOT_CONFIRMED");
   clearPublicOrderId(tenant, "delivery");
   return { id };
 }

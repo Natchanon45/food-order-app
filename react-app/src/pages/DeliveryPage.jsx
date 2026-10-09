@@ -78,7 +78,7 @@ function freeShippingConfig(settings = {}) {
   };
 }
 function deliveryErrorMessage(error, t, settings) {
-  const detail = String(error?.details?.providerError || error?.serverResponse?.providerError || error?.code || error?.message || "");
+  const detail = String(error?.details?.providerError || error?.serverResponse?.providerError || error?.message || error?.code || "");
   if (detail.includes("DELIVERY_STORE_CLOSED") || detail.includes("DELIVERY_STORE_STATUS_UNAVAILABLE")) {
     return t("delivery.opening_hours.order_unavailable");
   }
@@ -643,6 +643,7 @@ export function DeliveryPage() {
       showStorefrontToast(t("delivery.checkout.payment.slip_required_toast"), "error"); return;
     }
     const orderId = preparePublicOrderId(tenant, "delivery");
+    let submittingToBackend = false;
     setSubmitting(true);
     try {
       await checkDeliveryStoreIsOpen(tenant);
@@ -735,6 +736,7 @@ export function DeliveryPage() {
         payload.deliveryRouteProvider = "google_routes";
       }
 
+      submittingToBackend = true;
       await createPublicDeliveryOrder(tenant, payload, { menus, settings });
 
       // Do not rewrite saved-address coordinates as a side effect of checkout.
@@ -751,7 +753,10 @@ export function DeliveryPage() {
       location.replace("/s/" + encodeURIComponent(tenant.slug || slug) + "/delivery/success?order=" + encodeURIComponent(orderId));
     } catch (error) {
       console.error("DELIVERY_REACT_SUBMIT_FAILED", error);
-      showStorefrontToast(String(error?.code || "").includes("functions/") ? t("delivery.checkout.payment.slip_service_error") : deliveryErrorMessage(error, t, settings), "error");
+      const isSlipFunctionError = !submittingToBackend && String(error?.code || "").includes("functions/");
+      showStorefrontToast(isSlipFunctionError
+        ? t("delivery.checkout.payment.slip_service_error")
+        : deliveryErrorMessage(error, t, settings), "error");
     } finally { setSubmitting(false); }
   };
 

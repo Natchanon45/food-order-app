@@ -1,13 +1,14 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.09.497",
+  build: "2026.10.09.498",
   branch: "feature/react-firebase-port",
-  commit: "DELIVERY-WEEKLY-HOURS-EMERGENCY-CLOSE",
+  commit: "DELIVERY-BACKEND-HOURS-GUARD",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Weekly Delivery opening hours and real-time temporary store closures",
+  milestone: "Enforce Delivery store hours with Cloud Function and Firestore security rules",
   whatsNew: [
+    "Block public direct Firestore Delivery creates and enforce store hours in server transactions",
     "Set per-day Delivery hours and immediately close or reopen stores for emergencies",
     "Keep GPS location separate from saved-address pins and require customer delivery pin confirmation",
     "Share customer-confirmed Delivery map pins with store-managed drivers using Google Maps",
