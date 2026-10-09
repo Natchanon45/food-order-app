@@ -147,3 +147,33 @@ test("saved Edit/Delete buttons now use dedicated SVG designs", () => {
   assert.match(vectors, /data-delivery-icon="delete"/);
   assert.match(css, /#addressBook \.address-list \.address-card-actions svg\.delivery-address-action-svg/);
 });
+
+test("all three saved-address actions use matching outline SVG icons, not mixed fonts",()=>{
+ const icons=fs.readFileSync("react-app/src/components/DeliveryCustomIcons.jsx","utf8");
+ const section=source.slice(source.indexOf('id="addressBook"'),source.indexOf('{addressEditor ? createPortal('));
+ for(const name of ["Add","Edit","Delete"]){
+   assert.match(icons, new RegExp('export function Delivery'+name+'Artwork\\('));
+   assert.match(section, new RegExp('<Delivery'+name+'Artwork \\/>'));
+ }
+ for(const kind of ["add","edit","delete"]){
+   assert.match(icons,new RegExp('data-delivery-icon="'+kind+'"'));
+ }
+ assert.match(icons,/strokeWidth: 1\.9/);
+ assert.match(icons,/strokeLinecap: "round"/);
+ assert.match(icons,/strokeLinejoin: "round"/);
+ assert.doesNotMatch(icons,/rgba\(|fill="rgba\(|bi-pencil|bi-trash/);
+ assert.doesNotMatch(section,/bi bi-plus-lg/);
+ assert.match(css,/DELIVERY_ADDRESS_ICON_SET_20261009_510/);
+ assert.match(css,/#addressBook \.address-list \.address-card-actions \{\s*gap: 10px;/);
+ assert.match(css,/#addressBook \.address-list \.address-card-actions \.address-icon-button \{[\s\S]*?background: #f0f5f2;/);
+ assert.match(css,/#addressBook \.address-list \.address-card-actions \.address-icon-button\.danger \{[\s\S]*?background: #fff3f1;/);
+ assert.match(css,/#addressBook #addAddressButton svg\.delivery-address-add-svg/);
+});
+
+test("Add/Edit/Delete buttons retain their actions and accessible text",()=>{
+ assert.match(source,/id="addAddressButton"[\s\S]*?onClick=\{\(\) => setAddressEditor\(/);
+ assert.match(source,/aria-label=\{t\("delivery\.checkout\.address\.edit"\)\}/);
+ assert.match(source,/aria-label=\{t\("delivery\.checkout\.address\.delete"\)\}/);
+ assert.match(source,/onClick=\{\(\) => setAddressEditor\(\{ \.\.\.address \}\)\}/);
+ assert.match(source,/onClick=\{\(\) => deleteAddress\(address\)\}/);
+});

@@ -24,6 +24,13 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Latest: Three coordinated delivery address icons — Build 2026.10.09.510
+
+- User rejected previous visually dense hand-drawn icons and instructed assistant to implement a clean alternative for the three address controls Add, Edit, Delete. Mac-direct feature branch implementation.
+- `DeliveryCustomIcons.jsx`: matching open-stroke Lucide-style Plus, Pencil, Trash2 SVGs (24x24 viewbox, 1.9px strokes, round caps/joins, no filled artwork). `DeliveryPage.jsx` uses same Plus in Add header and no-selection notice, preserves Edit/Delete actions/aria-labels. `delivery-addresses.css` redesigns icon-only Edit/Delete actions as understated sage/blush backgrounds without heavy borders; card stays 62px Mobile /66px PC, icons centered and separated 9/10px. No changes to GPS, cart, checkout, Hero or backend.
+- Build 2026.10.09.510 main JS `/react/assets/index-Bjs7TiRD.js`. Address UI 17/17, GPS integrity 12/12, Operational, full React parity, Vite build/generated contract PASS. Actual compiled Mac Chrome guest GPS delivery at 320px Add/Edit dialogs open and close correctly, icons centered and no overflow. Further 360px real fixture failed while awaiting Firebase profile, so separate compiled-CSS + exact SVG DOM smoke at 320/360/390/440/768/1280 PASS with no horizontal overflow and zero center offset. Script `tests/react-parity/delivery-icon-triad-css-smoke.mjs` retained for future regression.
+- Commit/Push and Hosting-only Production deploy/check pending at this checkpoint. Preserve branch feature/react-firebase-port, do not merge main/reset/clean/delete old hashed bundles. No customer/tenant/order/Firestore data writes.
+
 ## Latest: Round store logo + Admin drag-to-focus cover for all four order surfaces — Build 2026.10.09.509
 
 - User approved a large **circle logo nearly the Hero height** (NOT the width), upload help square 1200×1200 logo and landscape 1600×900 cover (PNG/JPG/WebP max 8MB), and per-shop cover focus selection by dragging a marker. Shared across Delivery, Table Order, Takeaway, Cashier Quick Order.

@@ -5,7 +5,7 @@ import { useParams } from "react-router-dom";
 import { httpsCallable } from "firebase/functions";
 import { sweetConfirm } from "@/components/sweetDialog";
 import { DeliveryLocationPicker } from "@/components/DeliveryLocationPicker";
-import { DeliveryEditArtwork, DeliveryDeleteArtwork } from "@/components/DeliveryCustomIcons";
+import { DeliveryAddArtwork, DeliveryEditArtwork, DeliveryDeleteArtwork } from "@/components/DeliveryCustomIcons";
 import { StoreBrandMark, brandedHeroStyle } from "@/components/StoreHeroBranding";
 import {
   PublicCartList, PublicMenuCatalog, PublicStorefrontFooter, PublicStorefrontHeader, showStorefrontToast,
@@ -909,7 +909,7 @@ export function DeliveryPage() {
                     disabled={locked || submitting || savedAddresses.length >= 5 || Boolean(customerBusy)}
                     onClick={() => setAddressEditor({ id: "", label: t("delivery.checkout.address.home_label"),
                       recipientName, address: "" })}>
-                    <i className="bi bi-plus-lg app-icon" aria-hidden="true"></i>
+                    <DeliveryAddArtwork />
                     <span>{t("delivery.checkout.address.add")}</span>
                   </button>
                 </div>
@@ -930,7 +930,7 @@ export function DeliveryPage() {
                       disabled={locked || submitting || Boolean(customerBusy) || (profile.addresses || []).length >= 5}
                       onClick={() => setAddressEditor({ id: "", label: t("delivery.checkout.address.home_label"),
                         recipientName, address: "" })}>
-                      <i className="bi bi-plus-lg app-icon" aria-hidden="true"></i>
+                      <DeliveryAddArtwork />
                       <span>{t("delivery.checkout.address.add")}</span>
                     </button>
                   </div>

@@ -1,13 +1,14 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.09.509",
+  build: "2026.10.09.510",
   branch: "feature/react-firebase-port",
-  commit: "STORE-HERO-ROUND-LOGO-DRAGGABLE-COVER-FOCUS",
+  commit: "DELIVERY-ADDRESS-UNIFIED-THREE-ICON-SET",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Large circular shop logo and configurable Hero cover focal point",
+  milestone: "Unify Add/Edit/Delete delivery address actions with clear outline icons",
   whatsNew: [
+    "Replace mixed/dense saved-address action icons with one clean outline Plus, Pencil and Trash set",
     "Show a large circular shop logo on all four ordering Heroes and save adjustable cover focal position",
     "Add drag-to-select image focus, live cover crop preview and 1200-square logo guidance to Store Settings",
     "Upload a store logo and branded hero background in store settings for Delivery, Table, Takeaway and Quick Order",
