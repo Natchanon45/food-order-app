@@ -1,13 +1,14 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.09.506",
+  build: "2026.10.09.507",
   branch: "feature/react-firebase-port",
-  commit: "DELIVERY-SLIP-WRAP-RECEIPT-LABELS",
+  commit: "DELIVERY-ICON-POLISH-RESTORE-ADDRESS-ACTIONS",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Fix mobile slip note overflow and Delivery receipt payment/provider/item labels",
+  milestone: "Redesign Delivery scooter badge and restore prominent edit/delete icons",
   whatsNew: [
+    "Refine Delivery scooter hero emblem and restore soft-filled Edit/Delete address action icon buttons",
     "Update Delivery receipt payment review, Lalamove provider and inline item quantities",
     "Wrap Slip2Go verification note and long slip filenames within mobile delivery payment cards",
     "Make saved delivery address cards compact with single-row icon actions and selected-address caption",

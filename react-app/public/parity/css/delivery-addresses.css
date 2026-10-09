@@ -1214,3 +1214,88 @@ body.delivery-page #addressBook .address-list .address-card-actions .address-ico
   body.delivery-page #addressBook .address-list .address-card { padding-inline: 8px; gap: 6px; }
   body.delivery-page #addressBook .address-list .address-card-choice { gap: 7px; }
 }
+
+/* DELIVERY_ICON_POLISH_20261009_507
+   Green courier-scooter emblem to match PENGUIN, without the old orange tile. */
+body.delivery-page .hero .hero-title > .delivery-hero-scooter.app-icon {
+  --app-icon-bg: #edfaf1;
+  --app-icon-fg: #08783e;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  margin: 0;
+  padding: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.7);
+  background: #edfaf1;
+  color: #08783e;
+  font-size: 20px;
+  line-height: 1;
+  box-shadow: 0 3px 12px rgba(2,49,25,.13), inset 0 0 0 1px rgba(16,119,58,.08);
+}
+body.delivery-page .hero .hero-title > .delivery-hero-scooter.app-icon::before {
+  display: block;
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  line-height: 20px;
+  margin: 0;
+  padding: 0;
+}
+
+/* Back to the first address-action treatment: visible light filled tiles
+   for edit and delete, while keeping the 62px mobile card intact. */
+body.delivery-page #addressBook .address-list .address-card-actions .address-icon-button {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  border: 1px solid #ddebe0;
+  border-radius: 9px;
+  color: #3a6550;
+  background: #edf3ef;
+  box-shadow: none;
+  transition: background-color .16s ease, border-color .16s ease, color .16s ease;
+}
+body.delivery-page #addressBook .address-list .address-card-actions .address-icon-button.danger {
+  border: 1px solid #ffdcd8;
+  color: #c83d39;
+  background: #fff0ee;
+}
+body.delivery-page #addressBook .address-list .address-card-actions .address-icon-button:hover:not(:disabled) {
+  border-color: #b6dec5;
+  background: #e2f0e8;
+  color: #14683b;
+}
+body.delivery-page #addressBook .address-list .address-card-actions .address-icon-button.danger:hover:not(:disabled) {
+  border-color: #f7c7c2;
+  background: #ffe3df;
+  color: #a92e2a;
+}
+body.delivery-page #addressBook .address-list .address-card-actions .address-icon-button .app-icon,
+body.delivery-page #addressBook .address-list .address-card-actions .address-icon-button .app-icon::before {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  font-size: 17px;
+  line-height: 18px;
+  margin: 0;
+  padding: 0;
+}
+@media (max-width: 480px) {
+  body.delivery-page .hero .hero-title > .delivery-hero-scooter.app-icon {
+    flex-basis: 34px;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+  body.delivery-page #addressBook .address-list .address-card-actions .address-icon-button {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    min-height: 30px;
+  }
+}

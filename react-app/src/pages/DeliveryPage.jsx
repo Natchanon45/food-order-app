@@ -810,7 +810,7 @@ export function DeliveryPage() {
     <div id="demoBanner"></div>
     <main className="container">
       <section className="hero">
-        <h1 className="hero-title"><i className="bi bi-scooter app-icon" aria-hidden="true"></i><span id="deliveryHeroStoreName">{shopName}</span></h1>
+        <h1 className="hero-title"><i className="bi bi-scooter app-icon delivery-hero-scooter" aria-hidden="true"></i><span id="deliveryHeroStoreName">{shopName}</span></h1>
         <p>{t("delivery.checkout.hero.description")}</p>
       </section>
 
@@ -952,7 +952,7 @@ export function DeliveryPage() {
                           aria-label={t("delivery.checkout.address.edit")} title={t("delivery.checkout.address.edit")}
                           disabled={Boolean(customerBusy) || locked || submitting}
                           onClick={() => setAddressEditor({ ...address })}>
-                          <i className="bi bi-pencil app-icon" aria-hidden="true"></i>
+                          <i className="bi bi-pencil-square app-icon" aria-hidden="true"></i>
                         </button>
                         <button type="button" className="address-icon-button danger"
                           aria-label={t("delivery.checkout.address.delete")} title={t("delivery.checkout.address.delete")}

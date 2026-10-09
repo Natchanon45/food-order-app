@@ -24,6 +24,13 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Latest: Delivery scooter and original Edit/Delete address button styling — Build 2026.10.09.507
+
+- User explicitly requires Mac-direct implementation, not code suggestions. Requested new scooter emblem and restore original clear Edit/Delete icons to the compact saved-address cards.
+- DeliveryPage.jsx header `bi-scooter` given `delivery-hero-scooter` class; Edit icon restored to `bi-pencil-square`, Delete remains `bi-trash3`; CSS scoped to Delivery uses mint/green centered scooter badge (34px Mobile, 38px PC), original subtle sage filled Edit and blush/red Delete icon tiles (30px Mobile, 32px PC). No change to callbacks or accessibility.
+- Build 2026.10.09.507 generated JS `/react/assets/index-D0M1Jvri.js`. Focused address UI 15/15, GPS integrity 12/12, Operational, full React parity, Vite build/postbuild PASS. Actual compiled Mac Chrome 320/360/390/440/768/1280 PASS: new scooter green at correct size, action icons perfectly Y-centered, gap exactly 8px, cards retain 62px Mobile/66px PC, no overflow or page errors, Edit dialog still opens/cancels.
+- Commit/Push and Firebase Hosting-only Production release pending at this checkpoint. Do NOT merge main/reset/clean, remove historical hashed assets or deploy backend/Rules. Production smoke pending. See WORKLOG.
+
 ## Latest: Delivery slip guidance wrap and confirmation receipt copy — Build 2026.10.09.506
 
 - User supplied screenshot of Slip2Go guidance overflowing the card after slip upload at iPhone 440px, then asked to change the customer Delivery receipt's payment row to 'ชำระเงินแล้ว รอร้านตรวจสอบ' when pending, Lalamove area to 'จัดส่งโดย Lalamove', and item names to 'ตำข้าวโพดไข่เค็ม x 1'. Implement both as ONE Hosting-only release.

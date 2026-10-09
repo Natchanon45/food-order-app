@@ -129,3 +129,22 @@ test("header count is compact and selected subtitle is localized for all five la
  assert.match(css,/body\.delivery-page #addressBook \.address-book-count/);
  assert.match(css,/body\.delivery-page #addressBook #addAddressButton/);
 });
+
+test("delivery scooter heading uses the new green badge with centered icon", () => {
+  assert.match(source, /bi bi-scooter app-icon delivery-hero-scooter/);
+  assert.match(css, /body\.delivery-page \.hero \.hero-title > \.delivery-hero-scooter\.app-icon \{/);
+  assert.match(css, /--app-icon-bg: #edfaf1;/);
+  assert.match(css, /--app-icon-fg: #08783e;/);
+  assert.match(css, /body\.delivery-page \.hero \.hero-title > \.delivery-hero-scooter\.app-icon::before/);
+});
+
+test("saved address Edit/Delete restore the earlier filled icon styles with mobile fit", () => {
+  const cards=source.slice(source.indexOf('id="addressList"'),source.indexOf('{addressEditor ? createPortal('));
+  assert.match(cards, /bi-pencil-square/);
+  assert.match(cards, /bi-trash3/);
+  assert.match(cards, /className="address-icon-button danger"/);
+  assert.match(css, /DELIVERY_ICON_POLISH_20261009_507/);
+  assert.match(css, /#addressBook \.address-list \.address-card-actions \.address-icon-button \{[\s\S]*?background: #edf3ef;/);
+  assert.match(css, /#addressBook \.address-list \.address-card-actions \.address-icon-button\.danger \{[\s\S]*?background: #fff0ee;/);
+  assert.match(css, /@media \(max-width: 480px\) \{[\s\S]*?width: 30px;/);
+});
