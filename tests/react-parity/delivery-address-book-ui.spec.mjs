@@ -4,6 +4,7 @@ import fs from "node:fs";
 
 const source = fs.readFileSync("react-app/src/pages/DeliveryPage.jsx","utf8");
 const css = fs.readFileSync("react-app/public/parity/css/delivery-addresses.css","utf8");
+const locationCss = fs.readFileSync("react-app/public/parity/css/delivery-location-map.css","utf8");
 
 test("address heading and Add button share the same row",()=>{
  const head=source.slice(source.indexOf('className="address-book-head"'),source.indexOf('id="deliveryAddressChoiceNotice"'));
@@ -79,4 +80,19 @@ test("mobile map header stacks the GPS button under the title and text remains r
  assert.match(css, /white-space: normal;/);
  assert.match(css, /@media \(max-width: 640px\) \{[\s\S]*?#addressForm \.delivery-location-head \{\s*grid-template-columns: minmax\(0, 1fr\)/);
  assert.match(css, /#addressForm \.delivery-location-head > \.btn \{[\s\S]*?justify-self: stretch/);
+});
+
+test("Home control floats as borderless favorite-style icon above each card", () => {
+  assert.match(css,/body\.delivery-page \.address-list \.address-primary-button \{[\s\S]*?position: absolute;/);
+  assert.match(css,/body\.delivery-page \.address-list \.address-primary-button \{[\s\S]*?background: transparent;/);
+  assert.match(css,/body\.delivery-page \.address-list \.address-primary-button \{[\s\S]*?border: 0;/);
+  assert.match(css,/body\.delivery-page \.address-list \.address-primary-button\.is-primary \{[\s\S]*?color: #0b914a;/);
+  assert.match(css,/body\.delivery-page \.address-list \.address-primary-button:focus-visible/);
+});
+
+test("Saved delivery map checkout help wraps within the card instead of nowrap overflow", () => {
+  assert.match(locationCss,/#deliveryLocationPicker \.delivery-location-head \.menu-category \{/);
+  assert.match(locationCss,/#deliveryLocationPicker \.delivery-location-head \.menu-category \{[\s\S]*?white-space: normal;/);
+  assert.match(locationCss,/#deliveryLocationPicker \.delivery-location-head \.menu-category \{[\s\S]*?overflow-wrap: anywhere;/);
+  assert.match(locationCss,/#deliveryLocationPicker \.delivery-location-footer > div \{/);
 });

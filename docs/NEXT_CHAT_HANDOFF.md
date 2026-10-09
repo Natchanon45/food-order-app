@@ -24,6 +24,16 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Latest: Floating favorite-style Home icon and saved map help wrapping — Build 2026.10.09.503
+
+- User's mobile screenshot requested a Home control visually like the transparent floating product favorite heart, plus repairing long "ตำแหน่งจัดส่ง" saved map help text spilling outside the card.
+- Actual 320/440px Chrome baseline showed saved map help forced nowrap at ~473.8px width while map card header was only 236/356px. Scoped `#deliveryLocationPicker` CSS now makes that help wrap naturally to the card width, including translated long text. Does not modify the address-edit modal or map/geolocation behavior.
+- Home default control CSS now matches favorite-style floating icon (transparent borderless 30x30px top-right; empty gray outline, selected solid green house), including keyboard focus and hover; remains single saved primary and does not alter selected checkout address. Product favorite button logic unaffected.
+- Build **2026.10.09.503**, JS `/react/assets/index-BjEjutke.js`, Version 0.4.280. Focused address UI 10/10, Operational/full React Parity, Build/postbuild PASS. Actual compiled Chrome guest fixture at widths 320/360/390/440/768/1280 PASS: Home border 0, alpha transparent, 8px card inset; selected Home persisting uniquely; saved map description wrapping (mobile 37-56px height), no clipping/overflow, original checkout selection preserved.
+- Commit/Push and Firebase Hosting-only deploy pending at checkpoint. Do not merge main/reset/clean, remove old hashed assets or mutate live customer orders/addresses. See WORKLOG for detailed baseline measurements.
+
+
+
 ## Latest: Delivery address card and mobile modal visual repair — Build 2026.10.09.502
 
 - User screenshots after .501 showed a square border around radio, oversized modal location icon/unbalanced close control on PC, and unusable mobile modal map heading at 440px.

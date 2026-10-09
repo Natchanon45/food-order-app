@@ -239,3 +239,48 @@
   gap: 8px;
   min-height: 38px;
 }
+
+/* DELIVERY_SAVED_MAP_HELP_WRAP_20261009_503
+   Checkout map is read-only; let its long translated saved-pin help wrap. */
+#deliveryLocationPicker {
+  min-width: 0;
+  max-width: 100%;
+}
+#deliveryLocationPicker .delivery-location-head {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+#deliveryLocationPicker .delivery-location-head > div {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+#deliveryLocationPicker .delivery-location-head strong {
+  display: block;
+  line-height: 1.45;
+  margin-bottom: 5px;
+}
+#deliveryLocationPicker .delivery-location-head .menu-category {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  line-height: 1.55;
+  font-size: 12px;
+}
+#deliveryLocationPicker .delivery-location-footer {
+  min-width: 0;
+  max-width: 100%;
+}
+#deliveryLocationPicker .delivery-location-footer > div {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}

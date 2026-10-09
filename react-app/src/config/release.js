@@ -1,13 +1,14 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.09.502",
+  build: "2026.10.09.503",
   branch: "feature/react-firebase-port",
-  commit: "DELIVERY-ADDRESS-MOBILE-ICON-UI-POLISH",
+  commit: "DELIVERY-FAVORITE-HOME-SAVED-MAP-HELP",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Polish address radio, modal icons and mobile map controls",
+  milestone: "Match Home icon to favorite design and wrap saved map delivery description",
   whatsNew: [
+    "Show a floating borderless Home favorite icon and wrap the saved delivery map description on mobile",
     "Fix compact address radio styling, rebalance modal icons and make mobile GPS map controls readable",
     "Show compact saved-address cards with one clickable home primary icon and an accessible full-size address editor",
     "Use an instant store-open switch beside the normal schedule action and show full weekday names",

@@ -1058,3 +1058,73 @@
   .delivery-address-dialog .delivery-address-dialog-body { padding-inline: 12px; }
   #addressForm .delivery-location-head > .btn { min-height: 44px; }
 }
+
+/* DELIVERY_HOME_FAVORITE_ICON_20261009_503
+   Same floating/icon-only presentation as menu product favorites. */
+body.delivery-page .address-list .address-card {
+  position: relative;
+  grid-template-columns: minmax(0,1fr);
+  gap: 6px;
+}
+body.delivery-page .address-list .address-card-choice {
+  padding-right: 30px;
+  min-height: 32px;
+}
+body.delivery-page .address-list .address-primary-button {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  min-height: 30px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #a0ada3;
+  box-shadow: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: color .16s ease, transform .16s ease;
+}
+body.delivery-page .address-list .address-primary-button.is-primary {
+  border: 0;
+  background: transparent;
+  color: #0b914a;
+  box-shadow: none;
+}
+body.delivery-page .address-list .address-primary-button:hover:not(:disabled) {
+  border: 0;
+  background: transparent;
+  color: #0b914a;
+  box-shadow: none;
+}
+body.delivery-page .address-list .address-primary-button:active:not(:disabled) {
+  transform: scale(.94);
+}
+body.delivery-page .address-list .address-primary-button .app-icon,
+body.delivery-page .address-list .address-primary-button .app-icon::before {
+  display: inline-grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+  font-size: 18px;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 1px rgba(17,60,33,.13));
+}
+body.delivery-page .address-list .address-primary-button.is-primary .app-icon {
+  filter: drop-shadow(0 1px 1px rgba(255,255,255,.5));
+}
+body.delivery-page .address-list .address-primary-button:focus-visible {
+  outline: 2px solid rgba(14,137,68,.6);
+  outline-offset: 2px;
+  border-radius: 5px;
+}
