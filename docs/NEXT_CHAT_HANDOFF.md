@@ -24,6 +24,13 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Latest: Delivery uses GPS and manual saved addresses; no primary Home control — Build 2026.10.09.504
+
+- User approved removing redundant Home/set-default button from Delivery saved-address cards because current delivery destination uses accurate GPS (only within <=100m of saved pin) or customer's explicit selection; out-of-range, denied GPS or no addresses never silently choose the legacy default.
+- DeliveryPage.jsx: removed primaryAddressId, makeDefault() setter and Home buttons/UI. Compact card radio selection/Edit/Delete remain. No more default assignment to newly added address or promotion on delete. Existing legacy isDefault field on edited address is preserved exactly, without rewriting others; historical profile schemas/other app consumers unchanged. Manual selection always overrides auto GPS.
+- Cleaned 17 dead Home-only CSS rules in delivery-addresses.css, freed label card width. No other UI/map/checkout/backend logic touched.
+- Build 2026.10.09.504, JS /react/assets/index-mpUULFMy.js. Targeted address UI 11/11, GPS integrity 12/12, Operational, React full parity, server guard, build/postbuild PASS. Installed Chrome local six scenarios (320/390/440/1280, GPS near/far/denied, no addresses, explicit override, old metadata on edit) PASS. No Production customer/profile/order/payment writes.
+- Commit/push and Hosting-only Production release pending at this checkpoint. Branch feature/react-firebase-port. No main merge, no reset/clean/discard, preserve old generated Vite hashed assets.
 ## Latest: Floating favorite-style Home icon and saved map help wrapping — Build 2026.10.09.503
 
 - User's mobile screenshot requested a Home control visually like the transparent floating product favorite heart, plus repairing long "ตำแหน่งจัดส่ง" saved map help text spilling outside the card.

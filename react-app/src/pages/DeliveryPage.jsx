@@ -139,7 +139,6 @@ export function DeliveryPage() {
   const [addressEditor, setAddressEditor] = useState(null);
   const [addressEditorError, setAddressEditorError] = useState("");
   const savedAddresses = Array.isArray(profile.addresses) ? profile.addresses : [];
-  const primaryAddressId = savedAddresses.find(address => address.isDefault)?.id || savedAddresses[0]?.id || "";
 
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
@@ -242,8 +241,8 @@ export function DeliveryPage() {
         const addresses = Array.isArray(resolvedProfile.addresses) ? resolvedProfile.addresses : [];
         setProfile(resolvedProfile);
         setFavoriteIds(new Set(favorites || []));
-        // Wait for the initial GPS result before selecting a default saved
-        // address. The closest valid saved address should win, not "isDefault".
+        // Wait for GPS after the address book loads; only a saved pin within
+        // 100 metres may be auto-selected, regardless of legacy isDefault.
         if (resolvedProfile.displayName) setRecipientName(current => current || resolvedProfile.displayName);
         if (resolvedProfile.phone) setRecipientPhone(current => current || resolvedProfile.phone);
       } catch (error) {
@@ -512,17 +511,17 @@ export function DeliveryPage() {
       setAddressEditorError(t("delivery.checkout.address.max_five")); return;
     }
     const id = addressEditor.id || newAddressId();
-    // Default is controlled by the home icon; first address becomes primary.
-    const existingPrimaryId = addresses.find(item => item.isDefault)?.id || addresses[0]?.id || "";
-    const primaryId = !addresses.length || existingPrimaryId === id ? id : existingPrimaryId;
-    const isDefault = primaryId === id;
+    const index = addresses.findIndex(item => item.id === id);
+    // Keep legacy isDefault metadata unchanged for existing addresses only.
+    // New saved addresses do not need a primary flag; GPS or explicit choice
+    // determines the destination, never the legacy default property.
     const row = {
       id, label, recipientName: name, recipientPhone: normalizePhone(recipientPhone),
-      address, latitude: addressPin.latitude, longitude: addressPin.longitude, isDefault,
+      address, latitude: addressPin.latitude, longitude: addressPin.longitude,
+      ...(index >= 0 && Object.prototype.hasOwnProperty.call(addresses[index], "isDefault")
+        ? { isDefault: addresses[index].isDefault } : {}),
     };
-    const index = addresses.findIndex(item => item.id === id);
     if (index >= 0) addresses[index] = row; else addresses.push(row);
-    addresses = addresses.map(item => ({ ...item, isDefault: item.id === primaryId }));
     setAddressEditorError("");
     setCustomerBusy("address");
     try {
@@ -541,11 +540,9 @@ export function DeliveryPage() {
       confirmText: t("delivery.checkout.common.confirm"), cancelText: t("delivery.checkout.common.cancel"), type: "warning",
     });
     if (!ok) return;
-    let addresses = (profile.addresses || []).filter(row => row.id !== address.id);
-    if (addresses.length) {
-      const primaryId = addresses.find(row => row.isDefault)?.id || addresses[0].id;
-      addresses = addresses.map(row => ({ ...row, isDefault: row.id === primaryId }));
-    }
+    // Do not rewrite the remaining legacy primary flags when deleting.
+    // Neither GPS matching nor manual checkout selection depends on them.
+    const addresses = (profile.addresses || []).filter(row => row.id !== address.id);
     try {
       await persistProfile({ ...profile, addresses });
       if (selectedAddressId === address.id) {
@@ -560,21 +557,6 @@ export function DeliveryPage() {
       showStorefrontToast(t("delivery.checkout.address.save_failed"), "error");
     }
   };
-  const makeDefault = async address => {
-    if (customerBusy || submitting || paymentLocked || address.id === primaryAddressId) return;
-    const addresses = savedAddresses.map(row => ({ ...row, isDefault: row.id === address.id }));
-    setCustomerBusy("default");
-    try {
-      await persistProfile({ ...profile, addresses });
-      showStorefrontToast(t("delivery.checkout.address.set_default_done"));
-    } catch (error) {
-      console.error("DELIVERY_ADDRESS_DEFAULT_FAILED", error);
-      showStorefrontToast(t("delivery.checkout.address.save_failed"), "error");
-    } finally {
-      setCustomerBusy("");
-    }
-  };
-
   const loginGoogle = async () => {
     if (!tenant || customerBusy) return;
     setCustomerBusy("login");
@@ -925,7 +907,7 @@ export function DeliveryPage() {
                   <button type="button" className="btn btn-primary btn-sm" id="addAddressButton"
                     disabled={locked || submitting || savedAddresses.length >= 5 || Boolean(customerBusy)}
                     onClick={() => setAddressEditor({ id: "", label: t("delivery.checkout.address.home_label"),
-                      recipientName, address: "", isDefault: savedAddresses.length === 0 })}>
+                      recipientName, address: "" })}>
                     <i className="bi bi-plus-lg app-icon" aria-hidden="true"></i>
                     <span>{t("delivery.checkout.address.add")}</span>
                   </button>
@@ -946,7 +928,7 @@ export function DeliveryPage() {
                     <button type="button" className="btn btn-primary btn-sm"
                       disabled={locked || submitting || Boolean(customerBusy) || (profile.addresses || []).length >= 5}
                       onClick={() => setAddressEditor({ id: "", label: t("delivery.checkout.address.home_label"),
-                        recipientName, address: "", isDefault: !(profile.addresses || []).length })}>
+                        recipientName, address: "" })}>
                       <i className="bi bi-plus-lg app-icon" aria-hidden="true"></i>
                       <span>{t("delivery.checkout.address.add")}</span>
                     </button>
@@ -961,19 +943,6 @@ export function DeliveryPage() {
                           disabled={locked || submitting} onChange={() => selectAddress(address)} />
                         <span className="address-card-title">{address.label || t("delivery.checkout.address.fallback_label")}</span>
                       </label>
-                      <button type="button"
-                        className={"address-primary-button" + (primaryAddressId === address.id ? " is-primary" : "")}
-                        data-primary-address={address.id} aria-pressed={primaryAddressId === address.id}
-                        aria-label={t(primaryAddressId === address.id
-                          ? "delivery.checkout.address.default_badge"
-                          : "delivery.checkout.address.set_default")}
-                        title={t(primaryAddressId === address.id
-                          ? "delivery.checkout.address.default_badge"
-                          : "delivery.checkout.address.set_default")}
-                        disabled={Boolean(customerBusy) || locked || submitting}
-                        onClick={() => makeDefault(address)}>
-                        <i className={"bi " + (primaryAddressId === address.id ? "bi-house-fill" : "bi-house") + " app-icon"} aria-hidden="true"></i>
-                      </button>
                       <div className="address-card-actions">
                         <button type="button" className="btn btn-sm" disabled={Boolean(customerBusy) || locked || submitting}
                           onClick={() => setAddressEditor({ ...address })}>

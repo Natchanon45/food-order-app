@@ -23,17 +23,25 @@ test("saved cards list the address label only, hiding recipient and street detai
  assert.match(cards,/address-card-actions/);
 });
 
-test("only one clickable top-right home primary indicator",()=>{
+test("no default-address action is exposed; old profile flags do not drive destination selection",()=>{
  const cards=source.slice(source.indexOf('id="addressList"'),source.indexOf('{addressEditor ? createPortal('));
- assert.match(cards,/className=\{"address-primary-button"/);
- assert.match(cards,/data-primary-address=\{address.id\}/);
- assert.match(cards,/aria-pressed=\{primaryAddressId === address.id\}/);
- assert.match(cards,/bi-house-fill/);
- assert.match(cards,/bi-house/);
- assert.doesNotMatch(cards,/bi-star|set_default"\)\}\<\/span/);
- assert.match(css,/\.address-primary-button \{/);
- assert.match(source,/savedAddresses\.map\(row => \(\{ \.\.\.row, isDefault: row\.id === address\.id \}\)\)/);
- assert.match(source,/addresses = addresses\.map\(item => \(\{ \.\.\.item, isDefault: item\.id === primaryId \}\)\)/);
+ assert.match(cards,/address-card-choice/);
+ assert.match(cards,/onChange=\{\(\) => selectAddress\(address\)\}/);
+ assert.doesNotMatch(cards,/address-primary-button|data-primary-address|bi-house|is-primary/);
+ assert.doesNotMatch(source,/const makeDefault|primaryAddressId|isDefault: addresses.length === 0/);
+ assert.doesNotMatch(css,/address-primary-button/);
+ assert.match(source,/matchGpsSavedAddress\(addresses, initialGps.point, "current-location"\)/);
+ assert.match(source,/if \(nearest\) selectAddress\(nearest.address\)/);
+});
+
+test("legacy isDefault fields are preserved on editing without mutating other addresses",()=>{
+ const save=source.slice(source.indexOf('const saveAddress = async'),source.indexOf('const deleteAddress = async'));
+ const del=source.slice(source.indexOf('const deleteAddress = async'),source.indexOf('const loginGoogle = async'));
+ assert.match(save,/Object\.prototype\.hasOwnProperty\.call\(addresses\[index\], "isDefault"\)/);
+ assert.match(save,/isDefault: addresses\[index\]\.isDefault/);
+ assert.doesNotMatch(save,/existingPrimaryId|primaryId|addresses = addresses\.map/);
+ assert.doesNotMatch(del,/isDefault:|\.find\(row => row\.isDefault\)/);
+ assert.match(del,/filter\(row => row\.id !== address\.id\)/);
 });
 
 test("modal editor uses a portal with larger responsive map and visible validation",()=>{
@@ -82,12 +90,13 @@ test("mobile map header stacks the GPS button under the title and text remains r
  assert.match(css, /#addressForm \.delivery-location-head > \.btn \{[\s\S]*?justify-self: stretch/);
 });
 
-test("Home control floats as borderless favorite-style icon above each card", () => {
-  assert.match(css,/body\.delivery-page \.address-list \.address-primary-button \{[\s\S]*?position: absolute;/);
-  assert.match(css,/body\.delivery-page \.address-list \.address-primary-button \{[\s\S]*?background: transparent;/);
-  assert.match(css,/body\.delivery-page \.address-list \.address-primary-button \{[\s\S]*?border: 0;/);
-  assert.match(css,/body\.delivery-page \.address-list \.address-primary-button\.is-primary \{[\s\S]*?color: #0b914a;/);
-  assert.match(css,/body\.delivery-page \.address-list \.address-primary-button:focus-visible/);
+test("address card reserves no Home-button gutter and retains edit/delete icon actions", () => {
+  const cards=source.slice(source.indexOf('id="addressList"'),source.indexOf('{addressEditor ? createPortal('));
+  assert.doesNotMatch(cards,/address-primary-button|set_default|aria-pressed/);
+  assert.match(cards,/bi-pencil/);
+  assert.match(cards,/bi-trash3/);
+  assert.match(css,/body\.delivery-page \.address-list \.address-card-choice \{\s*padding-right: 0;/);
+  assert.match(css,/body\.delivery-page \.address-list \.address-card \{\s*grid-template-columns: minmax\(0, 1fr\)/);
 });
 
 test("Saved delivery map checkout help wraps within the card instead of nowrap overflow", () => {

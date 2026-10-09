@@ -12969,3 +12969,19 @@ Implementation:
 - Live `/s/saas-test-shop/delivery`, `/delivery`, `/admin`, `/cashier`, `/kitchen` all HTTP 200 with `/react/assets/index-BjEjutke.js`; live JS and both CSS files `delivery-addresses.css` / `delivery-location-map.css` byte-identical to compiled Mac build.
 - Installed Chrome **Production** smoke with isolated local guest profile and emulated GPS (no production records written): widths 320/440/1280px PASS. Read-only checkout saved-location help wraps naturally to 236/356/356px content widths with 56/37/37px heights, no card or page overflow. Home action is absolute floating with transparent background, 0px border, selected green. Clicking the other Home persisted exactly one primary in isolated guest profile without changing selected checkout destination. No runtime page errors. Full local browser 320/360/390/440/768/1280 and source regression 10/10, full React parity/operational/build contract PASS.
 - User can refresh /s/saas-test-shop/delivery to inspect. Browser GPS was emulated for acceptance; physical-device user validation remains manual.
+## 2026-10-09 — Remove redundant primary Home control from Delivery addresses (Build .504)
+
+User accepted removing 'ตั้งเป็นที่อยู่หลัก' from customer Delivery cards. Destination is selected from accurate device GPS only when a saved pin is within 100 metres; otherwise customer chooses a saved address or saves a new one. Legacy isDefault field must remain in old records for backward compatibility; it must no longer determine checkout auto-selection or get rewritten during add/delete.
+
+Implementation:
+- react-app/src/pages/DeliveryPage.jsx: removed primaryAddressId, makeDefault() profile writes, and Home icon/button/tooltip/handler from all saved address cards. Kept radio selection and Edit/Delete controls. Removed isDefault initializer from Add Address buttons. Editing an existing saved address retains its isDefault property verbatim if present. New addresses no longer get an automatic primary marker; deleting an address does not promote another or rewrite any others. GPS radius, explicit manual selection precedence, saved-only checkout, Google map, payment and store-hours rules untouched.
+- react-app/public/parity/css/delivery-addresses.css: removed 17 dead Home-button CSS rules, restored full-width card labels. Radio, compact cards, responsive modal and map rules unchanged.
+- tests/react-parity/delivery-address-book-ui.spec.mjs: retired Home expectations, added no-Home and legacy-field preservation contracts; tests/react-parity/delivery-parity.spec.mjs: action icons now Edit and Delete only.
+- Bumped release to 2026.10.09.504 (Version 0.4.280 retained), commit tag DELIVERY-GPS-MANUAL-ADDRESS-NO-DEFAULT, README updated.
+
+Verification:
+- Targeted address-book tests 11/11 PASS; Delivery location integrity 12/12 PASS including far saved default, nearest of many, denied GPS and saved-only checkout.
+- npm run test:operational, full npm run test:react-parity (including backend security tests 7/7), React build/postbuild and git diff --check PASS. New JS bundle /react/assets/index-mpUULFMy.js.
+- Installed Chrome local compiled-app smoke using isolated browser Guest profiles and emulated GPS: Mobile 320 far one address unselected/warned, Mobile 390 near several selects nearest, iPhone 440 near several selects nearest while manual override wins, Desktop 1280 near selects correct address, Mobile 390 no saved addresses blocks, Mobile 440 GPS denied blocks. No Home button in any case, no horizontal overflow. Editing old non-primary preserves its isDefault=false and old primary isDefault=true without rewriting others.
+- Profile storage schema unchanged and no production account/profile/payment/order write made. No backend/Cloud Functions/Firestore Rules change, no main merge/reset/clean, no removal of old hashed Vite assets.
+- Commit/push and Hosting-only deploy pending at this checkpoint; update after release verification.

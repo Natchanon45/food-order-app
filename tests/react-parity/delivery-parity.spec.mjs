@@ -156,15 +156,13 @@ test.describe("Delivery Laravel behavior parity", () => {
     const secondaryCard = page.locator('.address-card:has(input[value="latest-address"])');
     const actions = secondaryCard.locator(".address-card-actions");
     const edit = actions.getByRole("button", { name: "แก้ไข" });
-    const makeDefault = secondaryCard.locator(".address-primary-button");
     const remove = actions.getByRole("button", { name: "ลบ" });
 
     await expect(edit.locator("i.bi-pencil")).toHaveCount(1);
-    await expect(makeDefault.locator("i.bi-house")).toHaveCount(1);
-    await expect(makeDefault).toHaveAttribute("aria-pressed", "false");
     await expect(remove.locator("i.bi-trash3")).toHaveCount(1);
+    await expect(page.locator(".address-primary-button")).toHaveCount(0);
 
-    for (const button of [edit, makeDefault, remove]) {
+    for (const button of [edit, remove]) {
       const icon = button.locator("i.app-icon");
       await expect(icon).toBeVisible();
       const bounds = await button.evaluate(element => {
