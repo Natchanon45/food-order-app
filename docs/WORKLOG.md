@@ -12883,3 +12883,18 @@ Implementation:
 - Installed Chrome smoke via local compiled Build .500 (no live order/payment/tenant edits), using isolated localStorage profile fixture + simulated GPS: PC 1280 single far address leaves radio blank and submit disabled; mobile 390 same, then explicit radio selection loads saved coordinates; mobile 440 single nearby auto-selects; PC multiple saved selects closer nondefault; mobile zero addresses blocks checkout but Add Address opens editor; mobile GPS denied remains unselected. All 6 scenario checks PASS. In all: no green overlay, no confirmation checkbox; checkout address readOnly; absent selected pin means no checkout map.
 - Backend note: guest addresses are stored in browser local data, so the Saved Address membership rule is enforced in the React checkout (the current guest-capable Cloud Function cannot independently verify a guest's local address book). Backend's store-hours security guard remains in place. No Cloud Functions or Firestore Rules changed or redeployed in this UI-only release.
 - Branch feature/react-firebase-port, preserve historical untracked hashed assets, no reset/clean/discard, no main merge. Commit/push, Firebase Hosting release and post-release verification pending as of this worklog entry.
+
+### Build .500 — Hosting Production verification CONFIRMED
+
+- Implementation commit `b318bae9 fix: require explicit saved address outside GPS matching radius` pushed to `origin/feature/react-firebase-port`; synced ahead/behind 0/0.
+- Firebase Hosting only `hosting:foodapp` (project `chat-45754`) deployed successfully to `https://penguin-food.web.app`, 563 public files. No Cloud Functions or Firestore/Storage Rules deployed, no tenant/customer writes, no existing order/payment mutations, no main merge. Previous .499 bundle preserved.
+- Live `/admin`, `/delivery`, `/s/saas-test-shop/delivery`, `/cashier`, `/kitchen` HTTP 200 with `/react/assets/index-a0X6jxym.js`, byte-identical to built Mac copy. Live delivery-location-map.css also byte-identical.
+- **Post-deploy real Chrome Production read-only acceptance using isolated browser guest profiles and emulated fresh GPS**, without placing orders:
+  - PC 1280 **ONE saved default, GPS far >100m**: none selected, explicit selection notice, no checkout map/pin, submit disabled — PASS.
+  - Mobile 390 same single far saved address: same PASS.
+  - PC 1280 with two saved addresses and GPS near non-default second: second automatically selected, checkout map available — PASS.
+  - Mobile 390 with no saved addresses: none selected, notice, submit disabled — PASS.
+  - Mobile 440 GPS permission denied with two saved addresses: none selected, notice, submit disabled — PASS.
+  - All five had no duplicated green marker, no old pin-confirm checkbox, checkout delivery address read-only and no runtime page errors. Before release, Mac local Chrome also confirmed explicit manual choice of a far saved address loads that saved coordinate, and Add Address opens separate editor.
+- Focused location regressions 12/12, opening-hours 10/10, server guard 7/7, full React Parity/Operational, build/contract and git diff check all PASS.
+- Physical-device geolocation, signed-in customer's actual saved address book and authenticated order payment remain manual acceptance. Guest profile is locally persisted; saved membership enforcement remains frontend only, distinct from existing server-side store-hours enforcement.
