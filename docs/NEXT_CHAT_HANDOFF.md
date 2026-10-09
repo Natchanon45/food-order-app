@@ -24,6 +24,14 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Latest: Compact saved delivery address cards and wide editor — Build 2026.10.09.501
+
+- User screenshot PC/Mobile requested header "ที่อยู่จัดส่งของฉัน" + Add Address on one row; address cards show only address labels (details during edit only); "ตั้งเป็นหลัก" replaced with clickable house icon top-right on each card with exactly one default; edit/create form and Google map enlarged significantly across PC/Mobile.
+- DeliveryPage.jsx: compact radio-selectable cards, accessible top-right \`address-primary-button\` with \`bi-house\` / \`bi-house-fill\`, \`aria-pressed\`, separate edit/delete actions. Exclusive default normalized on saving/editing/deleting and by \`makeDefault\` persisting profile. Current selected delivery destination does NOT change when setting primary. No default editor checkbox.
+- Address form uses a portal dialog to body with fixed header/footer and scrollable inputs + map, mobile nearly full viewport and PC up to 700px, Escape close and visible validation. \`delivery-addresses.css\` responsive 320–1280, single-row header and compact card.
+- Existing saved-address-only checkout, 100m GPS selection, Google native marker, and server store-hours protection unchanged. Guest test profile only, no live tenant writes. New \`tests/react-parity/delivery-address-book-ui.spec.mjs\` 5/5 PASS, integrated full React parity; changed existing Playwright fixture to allow GPS within 100m and assert home icon. Full React parity / operational / Vite Build PASS. Installed Chrome actual compiled-app test at 320/360/390/440/768/1280 confirms single-row Add, compact cards, unique persisted primary icon, edit modal width 308–700px and map width 270–626px, no horizontal overflow, validation/ESC PASS; guest profile edit/save + create/save pinned address PASS.
+- Version 0.4.280 Build **2026.10.09.501**, main bundled asset \`/react/assets/index-CbV5hfUt.js\`. Only Firebase Hosting is allowed to deploy; no Functions/Rules. Preserve legacy hashed assets and do not merge main/reset/clean. Commit/push and release pending at this handoff checkpoint. Update after verification.
+
 ## Latest: Delivery saved-only GPS address matching and Google pin cleanup — Build .500
 
 - User clarified: even when there is exactly ONE saved default address, if fresh accurate device GPS is farther than 100m from it, do NOT select it automatically. If multiple saved addresses, auto-select the nearest only if inside 100m. If GPS unavailable/coarse, or no addresses nearby, leave checkout selection empty and show customer a clear choice: manually select saved address or add/save a new address with its own GPS pin. With zero saved addresses, Delivery cannot proceed.

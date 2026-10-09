@@ -1,13 +1,14 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.09.500",
+  build: "2026.10.09.501",
   branch: "feature/react-firebase-port",
-  commit: "DELIVERY-SAVED-ONLY-GPS-RADIUS",
+  commit: "DELIVERY-ADDRESS-CARDS-HOME-MODAL",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Never auto-select far saved addresses; require saved delivery destination and native Google pin",
+  milestone: "Compact saved-address cards, clickable home primary and spacious address editing",
   whatsNew: [
+    "Show compact saved-address cards with one clickable home primary icon and an accessible full-size address editor",
     "Use an instant store-open switch beside the normal schedule action and show full weekday names",
     "Block public direct Firestore Delivery creates and enforce store hours in server transactions",
     "Set per-day Delivery hours and immediately close or reopen stores for emergencies",

@@ -341,3 +341,399 @@
   display: block;
   line-height: 1;
 }
+
+/* DELIVERY_SAVED_ADDRESS_COMPACT_MODAL_20261009_001 */
+/* Keep the Add button alongside the title, even in a narrow checkout column. */
+.address-book {
+  padding: 14px;
+  border-radius: 15px;
+}
+.address-book .address-book-head {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.address-book-heading {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.address-book-heading > strong {
+  display: block;
+  font-size: clamp(13px, 3.6vw, 17px);
+  line-height: 1.4;
+  font-weight: 800;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.address-book-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px 8px;
+  margin-top: 6px;
+}
+.address-book-meta #addressCount {
+  margin: 0;
+  min-width: 0;
+  font-size: 11px;
+  padding: 3px 7px;
+}
+.address-book-meta .menu-category {
+  font-size: 11px;
+  line-height: 1.35;
+}
+.address-book .address-book-head #addAddressButton {
+  flex: 0 0 auto;
+  display: inline-flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  min-height: 38px;
+  padding: 7px 10px;
+  margin: 0;
+  border-radius: 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.address-book .address-book-head #addAddressButton .app-icon {
+  display: inline-grid;
+  place-items: center;
+  line-height: 1;
+}
+.address-list {
+  gap: 8px;
+}
+.address-list .address-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 40px;
+  gap: 4px 8px;
+  min-width: 0;
+  padding: 10px 11px;
+  cursor: default;
+  border-radius: 12px;
+  border: 1px solid #dbe8e0;
+  box-shadow: 0 2px 7px rgba(8, 61, 33, .025);
+}
+.address-list .address-card.selected {
+  border-color: #159447;
+  background: #f7fff9;
+  box-shadow: 0 0 0 1px rgba(21,148,71,.16);
+}
+.address-card-choice {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 5px 0;
+  margin: 0;
+}
+.address-card-choice input[type="radio"] {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+.address-card-choice .address-card-title {
+  display: block;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.address-primary-button {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #d7e5da;
+  border-radius: 10px;
+  background: #f3f6f4;
+  color: #8b9991;
+  cursor: pointer;
+}
+.address-primary-button .app-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  line-height: 1;
+}
+.address-primary-button.is-primary {
+  color: #08763b;
+  border-color: #b7dfc3;
+  background: #e8f7ed;
+}
+.address-primary-button:hover:not(:disabled) { border-color: #159447; color: #08763b; }
+.address-primary-button:focus-visible { outline: 3px solid rgba(21,148,71,.24); outline-offset: 2px; }
+.address-primary-button:disabled { opacity: .65; cursor: not-allowed; }
+.address-list .address-card-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+  flex-wrap: nowrap;
+  margin: 1px 0 0;
+}
+.address-list .address-card-actions .btn {
+  flex: 0 0 auto;
+  min-height: 32px;
+  min-width: 70px;
+  padding: 5px 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.35;
+  border-radius: 8px;
+}
+.address-list .address-card-actions .app-icon {
+  width: 15px;
+  height: 15px;
+  display: inline-grid;
+  place-items: center;
+  font-size: 15px;
+  line-height: 1;
+}
+
+/* Larger form and map in a focused modal, not nested inside the sidebar. */
+.delivery-address-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483500;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(9, 30, 19, .62);
+  backdrop-filter: blur(5px);
+}
+.delivery-address-dialog-backdrop .delivery-address-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: min(700px, 100%);
+  max-height: calc(100dvh - 36px);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #dfebe2;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 28px 90px rgba(0, 18, 7, .35);
+}
+.delivery-address-dialog-header {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 17px 19px;
+  border-bottom: 1px solid #e5eee8;
+  background: linear-gradient(110deg, #f4fbf6, #fff);
+}
+.delivery-address-dialog-heading {
+  display: flex;
+  gap: 12px;
+  min-width: 0;
+  align-items: center;
+}
+.delivery-address-dialog-icon {
+  flex: 0 0 43px;
+  height: 43px;
+  border-radius: 12px;
+  background: #e3f5e8;
+  color: #0c8848;
+  display: inline-grid;
+  place-items: center;
+  font-size: 21px;
+}
+.delivery-address-dialog-heading h2 {
+  margin: 0 0 4px;
+  font-size: 19px;
+  color: #123d23;
+  line-height: 1.35;
+}
+.delivery-address-dialog-heading p {
+  margin: 0;
+  color: #698071;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.delivery-address-dialog-close {
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid #dce6df;
+  border-radius: 10px;
+  background: white;
+  color: #496253;
+  cursor: pointer;
+}
+.delivery-address-dialog-close .app-icon { font-size: 17px; line-height: 1; }
+.delivery-address-dialog-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 18px 20px 24px;
+  overscroll-behavior: contain;
+}
+.delivery-address-dialog-body .delivery-address-edit-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 14px;
+}
+.delivery-address-dialog-body .field { min-width: 0; }
+.delivery-address-dialog-body .field label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 13px;
+  font-weight: 750;
+}
+.delivery-address-dialog-body .field .input {
+  width: 100%;
+  min-height: 46px;
+  background: #fff;
+  border-radius: 11px;
+  font-size: 15px;
+  padding: 10px 12px;
+}
+.delivery-address-details-field { margin-top: 14px; }
+.delivery-address-details-field textarea.input {
+  min-height: 90px;
+  resize: vertical;
+  line-height: 1.55;
+}
+.delivery-address-dialog .delivery-saved-pin-editor { margin-top: 16px; }
+.delivery-address-dialog .delivery-location-picker {
+  background: #f8fbf9;
+  padding: 15px;
+  border-radius: 14px;
+}
+.delivery-address-dialog .delivery-location-map {
+  height: clamp(270px, 38vh, 360px);
+  border-radius: 12px;
+}
+.delivery-address-dialog .delivery-location-head {
+  align-items: center;
+  flex-direction: row;
+}
+.delivery-address-dialog .delivery-location-head .btn {
+  width: auto;
+  min-width: 132px;
+  min-height: 42px;
+}
+.delivery-address-dialog-actions {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin: 0;
+  padding: 13px 20px;
+  border-top: 1px solid #e5eee8;
+  background: white;
+}
+.delivery-address-dialog-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 43px;
+  min-width: 104px;
+  border-radius: 10px;
+}
+@media (max-width: 640px) {
+  .address-book { padding: 11px; }
+  .address-book .address-book-head { gap: 8px; }
+  .address-book-heading > strong { font-size: 14px; }
+  .address-book .address-book-head #addAddressButton {
+    min-height: 37px;
+    font-size: 12px;
+    padding-inline: 9px;
+  }
+  .delivery-address-dialog-backdrop { padding: 6px; align-items: stretch; }
+  .delivery-address-dialog-backdrop .delivery-address-dialog {
+    width: 100%;
+    max-height: calc(100dvh - 12px);
+    height: calc(100dvh - 12px);
+    border-radius: 16px;
+  }
+  .delivery-address-dialog-header { padding: 13px 14px; }
+  .delivery-address-dialog-heading h2 { font-size: 17px; }
+  .delivery-address-dialog-icon { flex-basis: 38px; height: 38px; }
+  .delivery-address-dialog-body { padding: 14px 14px 22px; }
+  .delivery-address-dialog-body .delivery-address-edit-fields {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .delivery-address-dialog-body .field .input { min-height: 44px; }
+  .delivery-address-dialog .delivery-location-picker { padding: 12px; }
+  .delivery-address-dialog .delivery-location-map {
+    height: clamp(275px, 40vh, 370px);
+  }
+  .delivery-address-dialog .delivery-location-head {
+    flex-direction: row;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .delivery-address-dialog .delivery-location-head > .btn {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 0;
+    padding-inline: 10px;
+    font-size: 12px;
+  }
+  .delivery-address-dialog-actions {
+    padding: 11px 14px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .delivery-address-dialog-actions .btn { min-width: 0; }
+}
+@media (max-width: 350px) {
+  .address-book .address-book-head #addAddressButton {
+    font-size: 11px; gap: 7px; padding-inline: 7px;
+  }
+  .address-book-meta .menu-category { display: none; }
+  .delivery-address-dialog-heading p { font-size: 11px; }
+  .delivery-address-dialog .delivery-location-head {
+    flex-direction: column;
+  }
+  .delivery-address-dialog .delivery-location-head > .btn {
+    width: 100%;
+  }
+}
+
+.delivery-address-inline-error {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+  padding: 10px 18px;
+  background: #fff1ee;
+  border-top: 1px solid #f2c6bc;
+  color: #a42e23;
+  font-size: 13px;
+  font-weight: 700;
+}
+.delivery-address-inline-error .app-icon { line-height: 1.5; flex: 0 0 16px; }
+@media (max-width: 640px) {
+  .delivery-address-inline-error { padding: 9px 14px; }
+}
+@media (max-width: 350px) {
+  .delivery-address-dialog-body { padding-inline: 9px; }
+  .delivery-address-dialog .delivery-location-picker { padding-inline: 8px; }
+  .delivery-address-dialog .delivery-location-map { min-width: 0; }
+}

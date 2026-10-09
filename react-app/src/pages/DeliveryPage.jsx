@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { useParams } from "react-router-dom";
 import { httpsCallable } from "firebase/functions";
@@ -136,6 +137,9 @@ export function DeliveryPage() {
   const [customerBusy, setCustomerBusy] = useState("");
   const [selectedAddressId, setSelectedAddressId] = useState("");
   const [addressEditor, setAddressEditor] = useState(null);
+  const [addressEditorError, setAddressEditorError] = useState("");
+  const savedAddresses = Array.isArray(profile.addresses) ? profile.addresses : [];
+  const primaryAddressId = savedAddresses.find(address => address.isDefault)?.id || savedAddresses[0]?.id || "";
 
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
@@ -155,6 +159,23 @@ export function DeliveryPage() {
   const [lockedTotal, setLockedTotal] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [promptPayPng, setPromptPayPng] = useState({ source: "", url: "" });
+
+  // Full-screen editor avoids crowding the narrow delivery sidebar.
+  useEffect(() => {
+    if (!addressEditor) return undefined;
+    setAddressEditorError("");
+    const previous = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    const onKeyDown = event => {
+      if (event.key === "Escape" && customerBusy !== "address") setAddressEditor(null);
+    };
+    document.getElementById("addressLabel")?.focus();
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.documentElement.style.overflow = previous;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [Boolean(addressEditor), customerBusy]);
 
   useEffect(() => {
     let alive = true;
@@ -480,25 +501,29 @@ export function DeliveryPage() {
     const name = String(addressEditor.recipientName || "").trim();
     const address = String(addressEditor.address || "").trim();
     if (!label || !name || !address) {
-      showStorefrontToast(t("delivery.checkout.address.required_fields"), "error"); return;
+      setAddressEditorError(t("delivery.checkout.address.required_fields")); return;
     }
     const addressPin = normalizeLocation(addressEditor);
     if (!addressPin) {
-      showStorefrontToast(t("delivery.checkout.address.saved_pin_required"), "error"); return;
+      setAddressEditorError(t("delivery.checkout.address.saved_pin_required")); return;
     }
     let addresses = [...(profile.addresses || [])];
     if (!addressEditor.id && addresses.length >= 5) {
-      showStorefrontToast(t("delivery.checkout.address.max_five"), "error"); return;
+      setAddressEditorError(t("delivery.checkout.address.max_five")); return;
     }
     const id = addressEditor.id || newAddressId();
-    const isDefault = addressEditor.isDefault || addresses.length === 0;
-    if (isDefault) addresses = addresses.map(row => ({ ...row, isDefault: false }));
+    // Default is controlled by the home icon; first address becomes primary.
+    const existingPrimaryId = addresses.find(item => item.isDefault)?.id || addresses[0]?.id || "";
+    const primaryId = !addresses.length || existingPrimaryId === id ? id : existingPrimaryId;
+    const isDefault = primaryId === id;
     const row = {
       id, label, recipientName: name, recipientPhone: normalizePhone(recipientPhone),
       address, latitude: addressPin.latitude, longitude: addressPin.longitude, isDefault,
     };
     const index = addresses.findIndex(item => item.id === id);
     if (index >= 0) addresses[index] = row; else addresses.push(row);
+    addresses = addresses.map(item => ({ ...item, isDefault: item.id === primaryId }));
+    setAddressEditorError("");
     setCustomerBusy("address");
     try {
       await persistProfile({ ...profile, displayName: name, phone: normalizePhone(recipientPhone), addresses });
@@ -507,7 +532,7 @@ export function DeliveryPage() {
       showStorefrontToast(t(index >= 0 ? "delivery.checkout.address.updated" : "delivery.checkout.address.saved"));
     } catch (error) {
       console.error("DELIVERY_ADDRESS_SAVE_FAILED", error);
-      showStorefrontToast(t("delivery.checkout.address.save_failed"), "error");
+      setAddressEditorError(t("delivery.checkout.address.save_failed"));
     } finally { setCustomerBusy(""); }
   };
   const deleteAddress = async address => {
@@ -517,7 +542,10 @@ export function DeliveryPage() {
     });
     if (!ok) return;
     let addresses = (profile.addresses || []).filter(row => row.id !== address.id);
-    if (addresses.length && !addresses.some(row => row.isDefault)) addresses[0] = { ...addresses[0], isDefault: true };
+    if (addresses.length) {
+      const primaryId = addresses.find(row => row.isDefault)?.id || addresses[0].id;
+      addresses = addresses.map(row => ({ ...row, isDefault: row.id === primaryId }));
+    }
     try {
       await persistProfile({ ...profile, addresses });
       if (selectedAddressId === address.id) {
@@ -533,13 +561,17 @@ export function DeliveryPage() {
     }
   };
   const makeDefault = async address => {
-    const addresses = (profile.addresses || []).map(row => ({ ...row, isDefault: row.id === address.id }));
+    if (customerBusy || submitting || paymentLocked || address.id === primaryAddressId) return;
+    const addresses = savedAddresses.map(row => ({ ...row, isDefault: row.id === address.id }));
+    setCustomerBusy("default");
     try {
       await persistProfile({ ...profile, addresses });
       showStorefrontToast(t("delivery.checkout.address.set_default_done"));
     } catch (error) {
       console.error("DELIVERY_ADDRESS_DEFAULT_FAILED", error);
       showStorefrontToast(t("delivery.checkout.address.save_failed"), "error");
+    } finally {
+      setCustomerBusy("");
     }
   };
 
@@ -883,8 +915,20 @@ export function DeliveryPage() {
 
               <section id="addressBook" className="address-book">
                 <div className="address-book-head">
-                  <div><strong>{t("delivery.checkout.address.book_title")}</strong><div className="menu-category">{profileLoading ? t("delivery.checkout.address.loading") : t("delivery.checkout.address.book_help")}</div></div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}><span id="addressCount" className="badge">{t("delivery.checkout.address.count", { count: (profile.addresses || []).length })}</span><button type="button" className="btn btn-primary btn-sm" id="addAddressButton" disabled={locked || submitting || (profile.addresses || []).length >= 5 || Boolean(customerBusy)} onClick={() => setAddressEditor({ id: "", label: t("delivery.checkout.address.home_label"), recipientName, address: deliveryAddress, isDefault: !(profile.addresses || []).length })}><i className="bi bi-plus-lg app-icon"></i><span>{t("delivery.checkout.address.add")}</span></button></div>
+                  <div className="address-book-heading">
+                    <strong>{t("delivery.checkout.address.book_title")}</strong>
+                    <div className="address-book-meta">
+                      <span id="addressCount" className="badge">{t("delivery.checkout.address.count", { count: savedAddresses.length })}</span>
+                      <span className="menu-category">{profileLoading ? t("delivery.checkout.address.loading") : t("delivery.checkout.address.book_help")}</span>
+                    </div>
+                  </div>
+                  <button type="button" className="btn btn-primary btn-sm" id="addAddressButton"
+                    disabled={locked || submitting || savedAddresses.length >= 5 || Boolean(customerBusy)}
+                    onClick={() => setAddressEditor({ id: "", label: t("delivery.checkout.address.home_label"),
+                      recipientName, address: "", isDefault: savedAddresses.length === 0 })}>
+                    <i className="bi bi-plus-lg app-icon" aria-hidden="true"></i>
+                    <span>{t("delivery.checkout.address.add")}</span>
+                  </button>
                 </div>
                 {!selectedAddressId && !addressEditor && !profileLoading ? <div
                   className="delivery-address-choice-notice" role="status" id="deliveryAddressChoiceNotice">
@@ -909,31 +953,101 @@ export function DeliveryPage() {
                   </div>
                 </div> : null}
                 <div id="addressList" className="address-list">
-                  {(profile.addresses || []).length ? (profile.addresses || []).map(address => <label className={"address-card" + (selectedAddressId === address.id ? " selected" : "")} key={address.id}>
-                    <input type="radio" name="savedDeliveryAddressReact" value={address.id} checked={selectedAddressId === address.id} disabled={locked || submitting} onChange={() => selectAddress(address)} />
-                    <div><div className="address-card-title">{address.label || t("delivery.checkout.address.fallback_label")}{address.isDefault ? <span className="address-default">{t("delivery.checkout.address.default_badge")}</span> : null}</div><div className="address-card-text"><strong>{address.recipientName || profile.displayName || ""}</strong><br/>{address.address}</div></div>
-                    <div className="address-card-actions">
-                      <button type="button" className="btn btn-sm" onClick={event => { event.preventDefault(); setAddressEditor({ ...address }); }}><i className="bi bi-pencil app-icon" aria-hidden="true"></i><span>{t("delivery.checkout.address.edit")}</span></button>
-                      {!address.isDefault ? <button type="button" className="btn btn-sm" onClick={event => { event.preventDefault(); makeDefault(address); }}><i className="bi bi-star app-icon" aria-hidden="true"></i><span>{t("delivery.checkout.address.set_default")}</span></button> : null}
-                      <button type="button" className="btn btn-danger btn-sm" onClick={event => { event.preventDefault(); deleteAddress(address); }}><i className="bi bi-trash3 app-icon" aria-hidden="true"></i><span>{t("delivery.checkout.address.delete")}</span></button>
+                  {savedAddresses.length ? savedAddresses.map(address => (
+                    <div className={"address-card" + (selectedAddressId === address.id ? " selected" : "")} key={address.id}>
+                      <label className="address-card-choice">
+                        <input type="radio" name="savedDeliveryAddressReact"
+                          value={address.id} checked={selectedAddressId === address.id}
+                          disabled={locked || submitting} onChange={() => selectAddress(address)} />
+                        <span className="address-card-title">{address.label || t("delivery.checkout.address.fallback_label")}</span>
+                      </label>
+                      <button type="button"
+                        className={"address-primary-button" + (primaryAddressId === address.id ? " is-primary" : "")}
+                        data-primary-address={address.id} aria-pressed={primaryAddressId === address.id}
+                        aria-label={t(primaryAddressId === address.id
+                          ? "delivery.checkout.address.default_badge"
+                          : "delivery.checkout.address.set_default")}
+                        title={t(primaryAddressId === address.id
+                          ? "delivery.checkout.address.default_badge"
+                          : "delivery.checkout.address.set_default")}
+                        disabled={Boolean(customerBusy) || locked || submitting}
+                        onClick={() => makeDefault(address)}>
+                        <i className={"bi " + (primaryAddressId === address.id ? "bi-house-fill" : "bi-house") + " app-icon"} aria-hidden="true"></i>
+                      </button>
+                      <div className="address-card-actions">
+                        <button type="button" className="btn btn-sm" disabled={Boolean(customerBusy) || locked || submitting}
+                          onClick={() => setAddressEditor({ ...address })}>
+                          <i className="bi bi-pencil app-icon" aria-hidden="true"></i><span>{t("delivery.checkout.address.edit")}</span>
+                        </button>
+                        <button type="button" className="btn btn-danger btn-sm" disabled={Boolean(customerBusy) || locked || submitting}
+                          onClick={() => deleteAddress(address)}>
+                          <i className="bi bi-trash3 app-icon" aria-hidden="true"></i><span>{t("delivery.checkout.address.delete")}</span>
+                        </button>
+                      </div>
                     </div>
-                  </label>) : <div className="empty" style={{ padding: "20px 10px" }}>{t("delivery.checkout.address.none_saved")}</div>}
+                  )) : <div className="empty" style={{ padding: "20px 10px" }}>{t("delivery.checkout.address.none_saved")}</div>}
                 </div>
-                {addressEditor ? <div id="addressForm" className="address-form">
-                  <div className="grid grid-2">
-                    <div className="field"><label>{t("delivery.checkout.address.label")} *</label><input className="input" id="addressLabel" maxLength={50} value={addressEditor.label || ""} onChange={event => setAddressEditor(current => ({ ...current, label: event.target.value }))} /></div>
-                    <div className="field"><label>{t("delivery.checkout.address.recipient")} *</label><input className="input" id="addressRecipient" maxLength={120} value={addressEditor.recipientName || ""} onChange={event => setAddressEditor(current => ({ ...current, recipientName: event.target.value }))} /></div>
-                  </div>
-                  <div className="field" style={{ marginTop: 10 }}><label>{t("delivery.checkout.address.details")} *</label><textarea className="input" id="addressText" maxLength={500} value={addressEditor.address || ""} onChange={event => setAddressEditor(current => ({ ...current, address: event.target.value }))} /></div>
-                  {tenant ? <div className="delivery-saved-pin-editor">
-                    <DeliveryLocationPicker slug={tenant.slug || slug} value={normalizeLocation(addressEditor)}
-                      idPrefix="savedAddress" t={t} language={locale} disabled={customerBusy === "address"}
-                      onChange={point => setAddressEditor(current => current ? { ...current, ...point } : current)} />
-                    <p className="menu-category">{t("delivery.checkout.address.saved_pin_help")}</p>
-                  </div> : null}
-                  <label style={{ display: "block", marginTop: 10 }}><input type="checkbox" id="addressDefault" checked={Boolean(addressEditor.isDefault)} onChange={event => setAddressEditor(current => ({ ...current, isDefault: event.target.checked }))} /> {t("delivery.checkout.address.default_checkbox")}</label>
-                  <div className="address-form-actions"><button type="button" className="btn" id="cancelAddressButton" onClick={() => setAddressEditor(null)}><i className="bi bi-x-lg app-icon"></i><span>{t("delivery.checkout.address.cancel")}</span></button><button type="button" className="btn btn-primary" id="saveAddressButton" disabled={locked || submitting || customerBusy === "address"} onClick={saveAddress}><i className="bi bi-floppy app-icon"></i><span>{t("delivery.checkout.address.save")}</span></button></div>
-                </div> : null}
+                {addressEditor ? createPortal(
+                  <div className="delivery-address-dialog-backdrop">
+                    <section id="addressForm" className="address-form delivery-address-dialog"
+                      role="dialog" aria-modal="true" aria-labelledby="deliveryAddressModalTitle">
+                      <header className="delivery-address-dialog-header">
+                        <div className="delivery-address-dialog-heading">
+                          <span className="delivery-address-dialog-icon">
+                            <i className="bi bi-geo-alt app-icon" aria-hidden="true"></i>
+                          </span>
+                          <div>
+                            <h2 id="deliveryAddressModalTitle">{t(addressEditor.id
+                              ? "delivery.checkout.address.edit" : "delivery.checkout.address.add")}</h2>
+                            <p>{t("delivery.checkout.address.saved_pin_help")}</p>
+                          </div>
+                        </div>
+                        <button type="button" className="delivery-address-dialog-close"
+                          aria-label={t("delivery.checkout.address.cancel")}
+                          disabled={customerBusy === "address"} onClick={() => setAddressEditor(null)}>
+                          <i className="bi bi-x-lg app-icon" aria-hidden="true"></i>
+                        </button>
+                      </header>
+                      <div className="delivery-address-dialog-body">
+                        <div className="grid grid-2 delivery-address-edit-fields">
+                          <div className="field"><label htmlFor="addressLabel">{t("delivery.checkout.address.label")} *</label>
+                            <input className="input" id="addressLabel" maxLength={50} value={addressEditor.label || ""}
+                              onChange={event => setAddressEditor(current => ({ ...current, label: event.target.value }))} /></div>
+                          <div className="field"><label htmlFor="addressRecipient">{t("delivery.checkout.address.recipient")} *</label>
+                            <input className="input" id="addressRecipient" maxLength={120} value={addressEditor.recipientName || ""}
+                              onChange={event => setAddressEditor(current => ({ ...current, recipientName: event.target.value }))} /></div>
+                        </div>
+                        <div className="field delivery-address-details-field">
+                          <label htmlFor="addressText">{t("delivery.checkout.address.details")} *</label>
+                          <textarea className="input" id="addressText" maxLength={500} rows={3}
+                            value={addressEditor.address || ""}
+                            onChange={event => setAddressEditor(current => ({ ...current, address: event.target.value }))} />
+                        </div>
+                        {tenant ? <div className="delivery-saved-pin-editor">
+                          <DeliveryLocationPicker slug={tenant.slug || slug} value={normalizeLocation(addressEditor)}
+                            idPrefix="savedAddress" t={t} language={locale} disabled={customerBusy === "address"}
+                            onChange={point => setAddressEditor(current => current ? { ...current, ...point } : current)} />
+                        </div> : null}
+                      </div>
+                      {addressEditorError ? <div className="delivery-address-inline-error" role="alert">
+                        <i className="bi bi-exclamation-circle app-icon" aria-hidden="true"></i>
+                        <span>{addressEditorError}</span>
+                      </div> : null}
+                      <footer className="address-form-actions delivery-address-dialog-actions">
+                        <button type="button" className="btn" id="cancelAddressButton"
+                          disabled={customerBusy === "address"} onClick={() => setAddressEditor(null)}>
+                          <i className="bi bi-x-lg app-icon" aria-hidden="true"></i>
+                          <span>{t("delivery.checkout.address.cancel")}</span>
+                        </button>
+                        <button type="button" className="btn btn-primary" id="saveAddressButton"
+                          disabled={locked || submitting || Boolean(customerBusy)} onClick={saveAddress}>
+                          <i className="bi bi-floppy app-icon" aria-hidden="true"></i>
+                          <span>{t("delivery.checkout.address.save")}</span>
+                        </button>
+                      </footer>
+                    </section>
+                  </div>, document.body
+                ) : null}
               </section>
 
               <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.address.delivery_address")} *</label><textarea className="input" id="deliveryAddress" required maxLength={500}

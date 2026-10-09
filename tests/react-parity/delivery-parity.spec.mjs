@@ -35,6 +35,10 @@ async function seedGuestProfile(page) {
 }
 
 async function openDelivery(page) {
+  // Automatic selection requires accurate current GPS within 100 metres;
+  // Playwright's default denied geolocation must not silently pick the default.
+  await page.context().grantPermissions(["geolocation"]);
+  await page.context().setGeolocation({ latitude: DEFAULT_ADDRESS.latitude, longitude: DEFAULT_ADDRESS.longitude, accuracy: 12 });
   await seedGuestProfile(page);
   await page.goto(STORE_ROUTE, { waitUntil: "domcontentloaded" });
   await expect(page.locator("#addressList .address-card")).toHaveCount(2);
@@ -152,11 +156,12 @@ test.describe("Delivery Laravel behavior parity", () => {
     const secondaryCard = page.locator('.address-card:has(input[value="latest-address"])');
     const actions = secondaryCard.locator(".address-card-actions");
     const edit = actions.getByRole("button", { name: "แก้ไข" });
-    const makeDefault = actions.getByRole("button", { name: "ตั้งเป็นหลัก" });
+    const makeDefault = secondaryCard.locator(".address-primary-button");
     const remove = actions.getByRole("button", { name: "ลบ" });
 
     await expect(edit.locator("i.bi-pencil")).toHaveCount(1);
-    await expect(makeDefault.locator("i.bi-star")).toHaveCount(1);
+    await expect(makeDefault.locator("i.bi-house")).toHaveCount(1);
+    await expect(makeDefault).toHaveAttribute("aria-pressed", "false");
     await expect(remove.locator("i.bi-trash3")).toHaveCount(1);
 
     for (const button of [edit, makeDefault, remove]) {
