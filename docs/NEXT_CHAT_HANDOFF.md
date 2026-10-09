@@ -24,6 +24,14 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Latest: Delivery address card and mobile modal visual repair — Build 2026.10.09.502
+
+- User screenshots after .501 showed a square border around radio, oversized modal location icon/unbalanced close control on PC, and unusable mobile modal map heading at 440px.
+- Root cause confirmed via Chrome computed geometry: mobile map heading had a 100%-width GPS button still arranged in a flex row, compressing the title to 0px at 440px. Old global icon sizing enlarged glyphs. These bugs evaded 320px-only checks.
+- Fixed only react-app/public/parity/css/delivery-addresses.css: explicitly circular 20px radio with keyboard focus and refined card styling; center-aligned pin/close glyphs in proportionate buttons; map header now two columns on PC and one stacked column <=640px with readable description and independent full-width GPS action. Mobile modal fills screen and scrolls with fixed footer; saved-address logic, unique home primary and native Google marker unchanged.
+- Build 2026.10.09.502 JS /react/assets/index-dsgwEW43.js. Focused UI regressions 8/8, Operational, full React Parity, build contract PASS. Actual installed Chrome widths 320/360/390/440/768/1280: radio 50% radius with no square, icon/close center difference 0px, mobile map title 278-384px wide with button beneath, desktop right-aligned button, no overflow/page errors, map usable.
+- Commit/push and Hosting-only deployment pending at checkpoint. No Functions/Rules, real address/customer/order changes, no main merge/reset/clean or old bundle deletion.
+
 ## Latest: Compact saved delivery address cards and wide editor — Build 2026.10.09.501
 
 - User screenshot PC/Mobile requested header "ที่อยู่จัดส่งของฉัน" + Add Address on one row; address cards show only address labels (details during edit only); "ตั้งเป็นหลัก" replaced with clickable house icon top-right on each card with exactly one default; edit/create form and Google map enlarged significantly across PC/Mobile.

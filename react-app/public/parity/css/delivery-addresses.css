@@ -737,3 +737,324 @@
   .delivery-address-dialog .delivery-location-picker { padding-inline: 8px; }
   .delivery-address-dialog .delivery-location-map { min-width: 0; }
 }
+
+/* DELIVERY_ADDRESS_MOBILE_LAYOUT_FIX_20261009_502
+   Preserve native radio accessibility without a square input border;
+   explicit modal/map layout must override older page-wide mobile selectors. */
+.address-list .address-card {
+  border-radius: 15px;
+  padding: 12px 13px 11px;
+  background: #fff;
+  border: 1px solid #dbe7de;
+  gap: 7px 10px;
+  box-shadow: 0 3px 12px rgba(8, 57, 30, .035);
+  transition: border-color .16s ease, background-color .16s ease, box-shadow .16s ease;
+}
+.address-list .address-card.selected {
+  border-color: #25a15b;
+  background: #f4fcf6;
+  box-shadow: 0 0 0 1px rgba(21,148,71,.14);
+}
+.address-list .address-card-choice {
+  gap: 11px;
+  min-height: 40px;
+  padding: 0;
+}
+/* Replaces the browser radio plus inherited square input decoration. */
+.address-list .address-card-choice input[type="radio"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  margin: 0;
+  padding: 0;
+  border: 2px solid #a8bdb0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: none;
+  outline-offset: 3px;
+  cursor: pointer;
+}
+.address-list .address-card-choice input[type="radio"]:checked {
+  border-color: #11894c;
+  background: radial-gradient(circle at center, #11894c 0 5px, white 5.5px);
+}
+.address-list .address-card-choice input[type="radio"]:focus-visible {
+  outline: 3px solid rgba(17,137,76,.26);
+}
+.address-list .address-card-choice .address-card-title {
+  font-size: 14px;
+  font-weight: 750;
+  letter-spacing: 0;
+  line-height: 1.45;
+}
+.address-list .address-primary-button {
+  width: 38px;
+  height: 38px;
+  justify-self: end;
+  align-self: center;
+  border-radius: 11px;
+  color: #7e9486;
+  background: #f4f7f5;
+  border-color: #e0eae3;
+}
+.address-list .address-primary-button.is-primary {
+  color: #0b8443;
+  background: #e6f5e9;
+  border-color: #c8e7d1;
+}
+.address-list .address-primary-button .app-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  font-size: 18px;
+  line-height: 1;
+}
+.address-list .address-primary-button .app-icon::before {
+  display: block;
+  line-height: 1;
+}
+.address-list .address-card-actions { margin: 0; padding-top: 2px; gap: 8px; }
+.address-list .address-card-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 76px;
+  min-height: 34px;
+  padding: 6px 11px;
+  font-weight: 650;
+  border-radius: 9px;
+}
+.address-list .address-card-actions .btn:first-child {
+  background: #edf3ef;
+  color: #35523f;
+  border-color: #edf3ef;
+}
+.address-list .address-card-actions .btn.btn-danger {
+  background: #fff0ef;
+  color: #ba3434;
+  border: 1px solid #ffdedb;
+}
+.address-list .address-card-actions .app-icon,
+.address-list .address-card-actions .app-icon::before {
+  display: inline-grid;
+  place-items: center;
+  line-height: 1;
+}
+@media (hover:hover) {
+  .address-list .address-card:hover { border-color: #a7d1b3; }
+  .address-list .address-card-actions .btn:first-child:hover { background: #e4eee7; }
+  .address-list .address-card-actions .btn.btn-danger:hover { background: #ffe6e3; }
+}
+/* Balanced header icon and close control: avoid global .app-icon size multiplier. */
+.delivery-address-dialog .delivery-address-dialog-header {
+  align-items: center;
+  gap: 12px;
+}
+.delivery-address-dialog .delivery-address-dialog-heading {
+  min-width: 0;
+  flex: 1 1 auto;
+  gap: 12px;
+}
+.delivery-address-dialog .delivery-address-dialog-heading > div {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.delivery-address-dialog .delivery-address-dialog-icon {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border-radius: 12px;
+}
+.delivery-address-dialog .delivery-address-dialog-icon .app-icon,
+.delivery-address-dialog .delivery-address-dialog-icon .app-icon::before {
+  display: inline-grid;
+  place-items: center;
+  font-size: 18px;
+  line-height: 1;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+.delivery-address-dialog .delivery-address-dialog-close {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  padding: 0;
+  flex: 0 0 38px;
+  border-radius: 11px;
+  border: 1px solid #dce7df;
+  background: #fff;
+  color: #617367;
+  line-height: 1;
+}
+.delivery-address-dialog .delivery-address-dialog-close .app-icon,
+.delivery-address-dialog .delivery-address-dialog-close .app-icon::before {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  font-size: 15px;
+  line-height: 1;
+}
+.delivery-address-dialog .delivery-address-dialog-close:hover:not(:disabled) {
+  background: #edf5f0;
+  color: #175d36;
+}
+.delivery-address-dialog .delivery-address-dialog-close:focus-visible {
+  outline: 3px solid rgba(21,148,71,.28);
+  outline-offset: 2px;
+}
+.delivery-address-dialog .delivery-address-dialog-heading h2 {
+  font-size: 18px;
+  line-height: 1.35;
+  margin: 0 0 3px;
+}
+.delivery-address-dialog .delivery-address-dialog-heading p {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 1.55;
+}
+/* Root cause of mobile screenshot: old CSS set the map button width to 100%
+   but left its parent flex-direction:row at 440px, squeezing the text to 0px.
+   A two-track grid on desktop and single column on mobile fixes both. */
+#addressForm .delivery-location-head {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) max-content;
+  align-items: center;
+  gap: 10px 14px;
+  width: 100%;
+  margin-bottom: 13px;
+}
+#addressForm .delivery-location-head > div {
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+#addressForm .delivery-location-head strong {
+  display: block;
+  margin: 0 0 5px;
+  line-height: 1.45;
+  font-weight: 750;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+#addressForm .delivery-location-head .menu-category {
+  width: auto;
+  max-width: 100%;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  font-size: 12px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+#addressForm .delivery-location-head > .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  justify-self: end;
+  align-self: center;
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 42px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 1.2;
+}
+#addressForm .delivery-location-head > .btn .app-icon,
+#addressForm .delivery-location-head > .btn .app-icon::before {
+  display: inline-grid;
+  place-items: center;
+  font-size: 16px;
+  line-height: 1;
+}
+#addressForm .delivery-location-picker {
+  min-width: 0;
+  overflow: hidden;
+  background: #f3f9f5;
+}
+#addressForm .delivery-location-map {
+  display: block;
+  min-width: 0;
+  width: 100%;
+  height: clamp(260px, 34vh, 340px);
+}
+@media (max-width: 640px) {
+  .delivery-address-dialog-backdrop {
+    padding: 0;
+    align-items: stretch;
+  }
+  .delivery-address-dialog-backdrop .delivery-address-dialog {
+    width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    border: 0;
+  }
+  .delivery-address-dialog .delivery-address-dialog-header {
+    padding: 13px 16px;
+  }
+  .delivery-address-dialog .delivery-address-dialog-icon {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+    border-radius: 11px;
+  }
+  .delivery-address-dialog .delivery-address-dialog-icon .app-icon,
+  .delivery-address-dialog .delivery-address-dialog-icon .app-icon::before {
+    width: 17px;
+    height: 17px;
+    font-size: 17px;
+  }
+  .delivery-address-dialog .delivery-address-dialog-heading h2 { font-size: 16px; }
+  .delivery-address-dialog .delivery-address-dialog-close {
+    width: 38px;
+    height: 38px;
+  }
+  .delivery-address-dialog .delivery-address-dialog-body {
+    padding: 15px 15px 24px;
+  }
+  #addressForm .delivery-location-head {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+  #addressForm .delivery-location-head > .btn {
+    justify-self: stretch;
+    width: 100%;
+    min-height: 43px;
+    white-space: normal;
+  }
+  #addressForm .delivery-location-head > div,
+  #addressForm .delivery-location-head .menu-category {
+    width: 100%;
+  }
+  #addressForm .delivery-location-map {
+    height: clamp(240px, 34vh, 300px);
+  }
+  .delivery-address-dialog .delivery-address-dialog-actions {
+    padding: 11px 15px max(11px, env(safe-area-inset-bottom));
+  }
+}
+@media (max-width: 350px) {
+  .delivery-address-dialog .delivery-address-dialog-heading { gap: 8px; }
+  .delivery-address-dialog .delivery-address-dialog-header { gap: 8px; padding: 10px 12px; }
+  .delivery-address-dialog .delivery-address-dialog-body { padding-inline: 12px; }
+  #addressForm .delivery-location-head > .btn { min-height: 44px; }
+}

@@ -1,13 +1,14 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.09.501",
+  build: "2026.10.09.502",
   branch: "feature/react-firebase-port",
-  commit: "DELIVERY-ADDRESS-CARDS-HOME-MODAL",
+  commit: "DELIVERY-ADDRESS-MOBILE-ICON-UI-POLISH",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Compact saved-address cards, clickable home primary and spacious address editing",
+  milestone: "Polish address radio, modal icons and mobile map controls",
   whatsNew: [
+    "Fix compact address radio styling, rebalance modal icons and make mobile GPS map controls readable",
     "Show compact saved-address cards with one clickable home primary icon and an accessible full-size address editor",
     "Use an instant store-open switch beside the normal schedule action and show full weekday names",
     "Block public direct Firestore Delivery creates and enforce store hours in server transactions",

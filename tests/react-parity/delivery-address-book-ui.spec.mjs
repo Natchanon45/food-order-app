@@ -55,3 +55,28 @@ test("location matching and checkout saved-address guard remain unchanged",()=>{
  assert.match(source,/deliveryLocation\.latitude !== point\.latitude/);
  assert.match(source,/deliveryAddress\.trim\(\) !== String\(saved\.address \|\| ""\)\.trim\(\)/);
 });
+
+test("radio is an unboxed circular control with visible checked and keyboard states", () => {
+ assert.match(css, /\.address-list \.address-card-choice input\[type="radio"\] \{/);
+ assert.match(css, /appearance: none;/);
+ assert.match(css, /border-radius: 50%;/);
+ assert.match(css, /\.address-list \.address-card-choice input\[type="radio"\]:checked/);
+ assert.match(css, /\.address-list \.address-card-choice input\[type="radio"\]:focus-visible/);
+});
+
+test("modal header icon and close icon have explicit square and centered glyph sizing", () => {
+ assert.match(css, /\.delivery-address-dialog \.delivery-address-dialog-icon \.app-icon/);
+ assert.match(css, /\.delivery-address-dialog \.delivery-address-dialog-close \.app-icon/);
+ assert.match(css, /\.delivery-address-dialog \.delivery-address-dialog-close:focus-visible/);
+ assert.match(css, /place-items: center;/);
+ assert.match(source, /className="delivery-address-dialog-close"/);
+});
+
+test("mobile map header stacks the GPS button under the title and text remains readable", () => {
+ assert.match(css, /#addressForm \.delivery-location-head \{\s*display: grid;/);
+ assert.match(css, /grid-template-columns: minmax\(0,1fr\) max-content/);
+ assert.match(css, /#addressForm \.delivery-location-head \.menu-category \{/);
+ assert.match(css, /white-space: normal;/);
+ assert.match(css, /@media \(max-width: 640px\) \{[\s\S]*?#addressForm \.delivery-location-head \{\s*grid-template-columns: minmax\(0, 1fr\)/);
+ assert.match(css, /#addressForm \.delivery-location-head > \.btn \{[\s\S]*?justify-self: stretch/);
+});
