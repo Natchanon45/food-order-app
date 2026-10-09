@@ -152,4 +152,8 @@ test("visible Google Maps-independent pin follows exact coordinates when map pan
   assert.match(picker, /delivery-location-visible-pin/);
   assert.match(picker, /for \(const event of \["center_changed", "zoom_changed", "idle"\]\)/);
   assert.match(picker, /window\.requestAnimationFrame\(syncVisiblePin\)/);
+  // A valid coordinate alone is not enough: Google Maps must be ready and
+  // projection must succeed before the fallback pin becomes visible.
+  assert.match(picker, /hidden=\{!normalized \|\| mapState !== "ready"\}/);
+  assert.match(picker, /overlay\.style\.visibility = overlay\.hidden \? "hidden" : "visible"/);
 });

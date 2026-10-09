@@ -64,7 +64,7 @@ export function DeliveryLocationPicker({
     const overlay = visiblePinRef.current;
     const location = validLocation(locationRef.current);
     if (!overlay || !map || !element || !location) {
-      if (overlay) overlay.hidden = true;
+      if (overlay) { overlay.hidden = true; overlay.style.visibility = "hidden"; }
       return;
     }
     const mapCenter = map.getCenter?.();
@@ -73,10 +73,11 @@ export function DeliveryLocationPicker({
       longitude: typeof mapCenter?.lng === "function" ? mapCenter.lng() : location.longitude,
     }) || location;
     const point = mapPinPixel(location, center, Number(map.getZoom?.() || 0), element.clientWidth, element.clientHeight);
-    if (!point) { overlay.hidden = true; return; }
+    if (!point) { overlay.hidden = true; overlay.style.visibility = "hidden"; return; }
     overlay.style.left = point.x + "px";
     overlay.style.top = point.y + "px";
     overlay.hidden = point.x < 0 || point.y < 0 || point.x > element.clientWidth || point.y > element.clientHeight;
+    overlay.style.visibility = overlay.hidden ? "hidden" : "visible";
   }, []);
 
   const apply = useCallback((location, { pan = true, source = "map" } = {}) => {
@@ -151,7 +152,10 @@ export function DeliveryLocationPicker({
       oldMarker?.setMap(null);
       markerRef.current = null;
       mapRef.current = null;
-      if (visiblePinRef.current) visiblePinRef.current.hidden = true;
+      if (visiblePinRef.current) {
+        visiblePinRef.current.hidden = true;
+        visiblePinRef.current.style.visibility = "hidden";
+      }
     };
   }, [slug, language, syncVisiblePin]);
 
@@ -235,7 +239,7 @@ export function DeliveryLocationPicker({
       <div className="delivery-map-stage">
         <div ref={mapElementRef} id={mapId} className="delivery-location-map" aria-label={t("delivery.checkout.address.location_title")}></div>
         <div ref={visiblePinRef} className="delivery-location-visible-pin" role="img"
-          aria-label={t("delivery.checkout.address.location_title")} hidden={!normalized}>
+          aria-label={t("delivery.checkout.address.location_title")} hidden={!normalized || mapState !== "ready"}>
           <i className="bi bi-geo-alt-fill app-icon" aria-hidden="true"></i>
         </div>
       </div>

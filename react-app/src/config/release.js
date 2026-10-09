@@ -1,12 +1,12 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.09.495",
+  build: "2026.10.09.496",
   branch: "feature/react-firebase-port",
-  commit: "DELIVERY-MAP-PIN-INDEPENDENT-OVERLAY",
+  commit: "DELIVERY-MAP-PIN-LATE-MAP-GUARD",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Render precise delivery pin independently of Google Maps lite marker support",
+  milestone: "Show mapped delivery pin only after geographic projection is ready",
   whatsNew: [
     "Keep GPS location separate from saved-address pins and require customer delivery pin confirmation",
     "Share customer-confirmed Delivery map pins with store-managed drivers using Google Maps",

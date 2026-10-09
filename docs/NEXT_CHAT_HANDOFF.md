@@ -24,6 +24,13 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Latest: Show independent delivery pin only after map projection — Build 2026.10.09.496
+
+- After .495, live Google Maps production smoke showed an overlay pin could flash at top-left before Maps initialization, because JSX made pin visible as soon as valid coords arrived.
+- .496 fixes this: the independent geo-anchored pin remains hidden until \`mapState==="ready"\` **and** \`syncVisiblePin\` has calculated a valid projected pixel position; default CSS visibility is hidden. Cleanup/invalid pin also hide. Preserves closest saved address selection (<=100m after profile loading), standalone saved editor, customer confirmation, and self-delivery route sharing.
+- Release Build **2026.10.09.496**, generated asset \`/react/assets/index-C7iJdWGI.js\`. Targeted location regressions **12/12 PASS**, React parity and build contract PASS. Google Maps real production acceptance still pending until Hosting release checked; no real customer writes.
+- Git implementation commit/push & Hosting deploy pending as of entry creation. Scope Hosting only; do not merge main or clean/delete old hashed assets.
+
 ## Follow-up: Google Maps lite/static renderer visible pin — Build 2026.10.09.495
 
 - Post-.494 Production browser check found Google Maps could render using StaticMapService/lite HTML instead of classic \`.gm-style\`, with correct Saved Address values but no reliable native Marker visual. Prior \`.gm-style\` wait timeout was a too-specific map-renderer check, not proof that Google Maps API was absent.

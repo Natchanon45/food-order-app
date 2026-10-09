@@ -12763,3 +12763,13 @@ Verification:
 - Still require verification on real Google Maps mobile user agent and an actual physical device, since browser/device GPS and static map tile mode can differ.
 
 Safety: no user profiles or orders modified, no Cloud Functions, Firestore Rules or Storage Rules changed; no main merge and no deletion of historic unhashed bundles. Git commit/push and Firebase Hosting release pending at entry creation; update after release.
+
+### Build .496 — Prevent pin from appearing before Google Maps projection is ready
+
+Post-.495 Production smoke with real Google Maps identified that the overlay was briefly visible at the top-left before map tiles/API finished initialization: React changed `hidden={!normalized}` to false as soon as customer coordinates arrived, while no pixel position had been calculated. Google Maps could still be in a loading/empty state. This was not acceptable for a location picker.
+
+- `DeliveryLocationPicker.jsx`: keep the overlay hidden until **both** a valid saved coordinate and `mapState==="ready"` exist. `syncVisiblePin` explicitly sets `style.visibility="visible"` only after a valid pixel location is calculated; invalid, unready, unloaded and out-of-viewport states remain hidden. Cleanup also hides the overlay.
+- `delivery-location-map.css`: overlay defaults to `visibility:hidden` to avoid first-paint flash regardless of React scheduling.
+- Targeted regression now checks the hidden-before-ready invariant. Build **2026.10.09.496**, asset `/react/assets/index-C7iJdWGI.js`.
+- `npm run test:delivery-location-integrity` 12/12 PASS, full React parity PASS (before last focused assertion; last assertion rerun PASS), `npm run build:react`/build contract PASS, `git diff --check` PASS.
+- Git commit/push and Hosting Production release pending. No Functions/Firestore/Storage rules, order/customer writes or main merge.
