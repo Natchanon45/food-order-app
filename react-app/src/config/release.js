@@ -1,13 +1,14 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.09.504",
+  build: "2026.10.09.505",
   branch: "feature/react-firebase-port",
-  commit: "DELIVERY-GPS-MANUAL-ADDRESS-NO-DEFAULT",
+  commit: "DELIVERY-ADDRESS-COMPACT-ICON-ACTIONS",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Remove redundant default-address action; keep GPS and manual selection",
+  milestone: "Compact saved address rows with inline edit and delete icon actions",
   whatsNew: [
+    "Make saved delivery address cards compact with single-row icon actions and selected-address caption",
     "Remove the redundant Home default-address button; use only nearby GPS matching and explicit saved-address selection",
     "Show a floating borderless Home favorite icon and wrap the saved delivery map description on mobile",
     "Fix compact address radio styling, rebalance modal icons and make mobile GPS map controls readable",

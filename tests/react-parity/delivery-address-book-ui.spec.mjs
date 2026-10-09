@@ -105,3 +105,27 @@ test("Saved delivery map checkout help wraps within the card instead of nowrap o
   assert.match(locationCss,/#deliveryLocationPicker \.delivery-location-head \.menu-category \{[\s\S]*?overflow-wrap: anywhere;/);
   assert.match(locationCss,/#deliveryLocationPicker \.delivery-location-footer > div \{/);
 });
+
+test("compact cards have one horizontal selection row and icon-only edit/delete actions",()=>{
+ const cards=source.slice(source.indexOf('id="addressList"'),source.indexOf('{addressEditor ? createPortal('));
+ assert.match(cards,/className="address-card-content"/);
+ assert.match(cards,/selectedAddressId === address\.id \? <span className="address-card-subtitle"/);
+ assert.match(cards,/selected_delivery_address/);
+ assert.match(cards,/className="address-icon-button"/);
+ assert.match(cards,/className="address-icon-button danger"/);
+ assert.match(cards,/aria-label=\{t\("delivery\.checkout\.address\.edit"\)\}/);
+ assert.match(cards,/aria-label=\{t\("delivery\.checkout\.address\.delete"\)\}/);
+ assert.doesNotMatch(cards,/<span>\{t\("delivery\.checkout\.address\.(edit|delete)"\)\}<\/span>/);
+ assert.match(css,/body\.delivery-page #addressBook \.address-list \.address-card \{\s*display: grid;\s*grid-template-columns: minmax\(0, 1fr\) auto;/);
+ assert.match(css,/body\.delivery-page #addressBook \.address-list \.address-card-actions \{[\s\S]*?grid-column: auto;/);
+ assert.match(css,/body\.delivery-page #addressBook \.address-list \.address-card-actions \.address-icon-button \{[\s\S]*?border: 0;/);
+});
+
+test("header count is compact and selected subtitle is localized for all five languages",()=>{
+ const translations=JSON.parse(fs.readFileSync("react-app/src/i18n/parity-translations.json","utf8"));
+ assert.match(source,/id="addressCount" className="address-book-count"/);
+ for(const lang of ["th","en","my","lo","km"])
+   assert.ok(translations[lang].delivery.checkout.address.selected_delivery_address,lang);
+ assert.match(css,/body\.delivery-page #addressBook \.address-book-count/);
+ assert.match(css,/body\.delivery-page #addressBook #addAddressButton/);
+});

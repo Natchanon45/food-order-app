@@ -24,6 +24,14 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Latest: Compact Delivery saved address cards / inline icon actions — Build 2026.10.09.505
+
+- User explicitly requires implementation (not patch suggestions), matching compact mockup. Previous cards ~100px tall with action buttons on second row; desired cards 65–75px, radio/name left, Edit/Delete icons right, selected-delivery subtitle.
+- React DeliveryPage.jsx: radio/title and selected-only translated subtitle left; icon-only accessible Edit/Delete controls right, plain secondary address count and compact Add on header. Same GPS <=100m saved-only policy, manual choice, map, payment and store-hour behavior. No Home default control reintroduced.
+- Scoped delivery-addresses.css grid with flexible name + auto controls, cards 62px mobile / 66px desktop, inline icon actions with >=8px action spacing, green selected highlight. Text TH/EN/MY/LO/KM.
+- Build 2026.10.09.505, JS /react/assets/index-DFL_FfeQ.js, Version 0.4.280 unchanged. Focused address UI 13/13, GPS integrity 12/12, Operational, full React parity, Build/postbuild PASS. Actual Chrome local compiled app at widths 320/360/390/440/768/1280 PASS, Edit modal works, manual selection overrides GPS, no overflow/page errors.
+- Commit/Push and Firebase Hosting-only release pending at checkpoint. No Functions/Firestore/Storage Rules or real customer/order/payment data changed; no main merge, reset/clean or old Vite bundle deletion.
+
 ## Latest: Delivery uses GPS and manual saved addresses; no primary Home control — Build 2026.10.09.504
 
 - User approved removing redundant Home/set-default button from Delivery saved-address cards because current delivery destination uses accurate GPS (only within <=100m of saved pin) or customer's explicit selection; out-of-range, denied GPS or no addresses never silently choose the legacy default.

@@ -900,8 +900,7 @@ export function DeliveryPage() {
                   <div className="address-book-heading">
                     <strong>{t("delivery.checkout.address.book_title")}</strong>
                     <div className="address-book-meta">
-                      <span id="addressCount" className="badge">{t("delivery.checkout.address.count", { count: savedAddresses.length })}</span>
-                      <span className="menu-category">{profileLoading ? t("delivery.checkout.address.loading") : t("delivery.checkout.address.book_help")}</span>
+                      <span id="addressCount" className="address-book-count">{t("delivery.checkout.address.count", { count: savedAddresses.length })}</span>
                     </div>
                   </div>
                   <button type="button" className="btn btn-primary btn-sm" id="addAddressButton"
@@ -941,16 +940,25 @@ export function DeliveryPage() {
                         <input type="radio" name="savedDeliveryAddressReact"
                           value={address.id} checked={selectedAddressId === address.id}
                           disabled={locked || submitting} onChange={() => selectAddress(address)} />
-                        <span className="address-card-title">{address.label || t("delivery.checkout.address.fallback_label")}</span>
+                        <span className="address-card-content">
+                          <span className="address-card-title">{address.label || t("delivery.checkout.address.fallback_label")}</span>
+                          {selectedAddressId === address.id ? <span className="address-card-subtitle">
+                            {t("delivery.checkout.address.selected_delivery_address")}
+                          </span> : null}
+                        </span>
                       </label>
                       <div className="address-card-actions">
-                        <button type="button" className="btn btn-sm" disabled={Boolean(customerBusy) || locked || submitting}
+                        <button type="button" className="address-icon-button"
+                          aria-label={t("delivery.checkout.address.edit")} title={t("delivery.checkout.address.edit")}
+                          disabled={Boolean(customerBusy) || locked || submitting}
                           onClick={() => setAddressEditor({ ...address })}>
-                          <i className="bi bi-pencil app-icon" aria-hidden="true"></i><span>{t("delivery.checkout.address.edit")}</span>
+                          <i className="bi bi-pencil app-icon" aria-hidden="true"></i>
                         </button>
-                        <button type="button" className="btn btn-danger btn-sm" disabled={Boolean(customerBusy) || locked || submitting}
+                        <button type="button" className="address-icon-button danger"
+                          aria-label={t("delivery.checkout.address.delete")} title={t("delivery.checkout.address.delete")}
+                          disabled={Boolean(customerBusy) || locked || submitting}
                           onClick={() => deleteAddress(address)}>
-                          <i className="bi bi-trash3 app-icon" aria-hidden="true"></i><span>{t("delivery.checkout.address.delete")}</span>
+                          <i className="bi bi-trash3 app-icon" aria-hidden="true"></i>
                         </button>
                       </div>
                     </div>
