@@ -24,6 +24,15 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Latest: Delivery saved-only GPS address matching and Google pin cleanup — Build .500
+
+- User clarified: even when there is exactly ONE saved default address, if fresh accurate device GPS is farther than 100m from it, do NOT select it automatically. If multiple saved addresses, auto-select the nearest only if inside 100m. If GPS unavailable/coarse, or no addresses nearby, leave checkout selection empty and show customer a clear choice: manually select saved address or add/save a new address with its own GPS pin. With zero saved addresses, Delivery cannot proceed.
+- In DeliveryPage.jsx, raw GPS and manual checkout map click/text can never create a new unsaved delivery destination. Saved address ID, exact saved pin coordinates and address text must match before submission; still permits explicitly choosing a saved address outside current GPS range. The old pin-confirm checkbox, state, and requirement were removed. Checkout Google map is view-only for saved pin; separate saved-address editor retains GPS/map editing. Selected address deletion clears checkout pin. Guard persists for store-hours and payment.
+- DeliveryLocationPicker.jsx uses ONLY native Google Maps Marker, removing the duplicate green independent marker, and removes the checkout-level GPS button (saved address editor retains it). Orphaned mapPinProjection.js intentionally removed, previous hashed Vite bundles not removed.
+- Improved closed shop banner and added amber choose-or-save notice; 5 supported languages updated. No backend, Functions or Rules changed. As guest address book is browser-local, this Saved Address membership check is a frontend rule, whereas existing Backend store-hours blocking remains separate.
+- Build 2026.10.09.500, bundled JS /react/assets/index-a0X6jxym.js. Location integrity 12/12, Opening Hours 10/10, Server Security 7/7, Operational, React Parity and generated build PASS. Chrome local compiled-app scenarios PASS on PC/mobile: one far default, one near, closest of several, no addresses, GPS denied and explicit manual selection. No live customer data/order writes.
+- Commit/Push and Hosting-only production release pending when drafted. DO NOT merge main/reset/clean/discard work; preserve historical hashed bundles. Real physical GPS and native Google Maps device acceptance still need user validation.
+
 ## Latest: Admin Delivery opening-hours UI toggle + full day labels — Build .499
 
 - User screenshot /admin requested a right-side toggle switch for manual Open/Close alongside Restore Normal Schedule button in same header row; change weekday labels to full Thai and English names and all supported locales.

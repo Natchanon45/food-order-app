@@ -142,7 +142,6 @@ export function DeliveryPage() {
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [deliveryLocation, setDeliveryLocation] = useState(null);
   const locationSourceRef = useRef("");
-  const [locationConfirmed, setLocationConfirmed] = useState(false);
   const [initialGps, setInitialGps] = useState({ status: "pending", point: null, accuracy: null });
   const initialGpsRequestedForTenantRef = useRef("");
   const [routeState, setRouteState] = useState({ pending: false, route: null, quote: null, error: "" });
@@ -261,20 +260,14 @@ export function DeliveryPage() {
   useEffect(() => {
     if (profileLoading || initialGps.status === "pending" || locationSourceRef.current) return;
     const addresses = Array.isArray(profile.addresses) ? profile.addresses : [];
-    if (initialGps.point) {
-      const nearest = matchGpsSavedAddress(addresses, initialGps.point, "current-location");
-      if (nearest) {
-        selectAddress(nearest.address);
-      } else {
-        // Unlike a saved-address match, a free GPS point remains the delivery
-        // destination. Its textual address needs user confirmation/entry.
-        resolveDeliveryLocation(initialGps.point, { source: "current-location" });
-      }
-    } else {
-      // Laravel fallback when permission is denied or GPS is too coarse.
-      const preferred = addresses.find(address => address?.isDefault) || addresses[0] || null;
-      if (preferred) selectAddress(preferred);
-    }
+    // Even a single default Saved Address must never be selected when the
+    // customer's GPS is farther than 100m away, missing or inaccurate.
+    // Only a verified nearby saved pin may be selected automatically.
+    const nearest = initialGps.point
+      ? matchGpsSavedAddress(addresses, initialGps.point, "current-location")
+      : null;
+    if (nearest) selectAddress(nearest.address);
+    // Otherwise leave checkout unselected and require explicit choice or save.
   }, [profileLoading, profile.addresses, initialGps]);
 
   useEffect(() => () => { if (slipPreview) URL.revokeObjectURL(slipPreview); }, [slipPreview]);
@@ -450,36 +443,31 @@ export function DeliveryPage() {
   };
 
   const selectAddress = address => {
+    const point = normalizeLocation(address);
+    if (!point || !String(address?.id || "").trim()) {
+      showStorefrontToast(t("delivery.checkout.address.saved_pin_required"), "error");
+      return;
+    }
     locationSourceRef.current = "saved-address";
-    setLocationConfirmed(false);
     setSelectedAddressId(address.id);
     setRecipientName(address.recipientName || profile.displayName || "");
     setRecipientPhone(address.recipientPhone || profile.phone || "");
     setDeliveryAddress(address.address || "");
-    const location = normalizeLocation(address);
-    // A saved address is selected only by an explicit user action (or the
-    // initial default). Invalid/missing coordinates must not leave a stale pin.
-    setDeliveryLocation(location);
+    setDeliveryLocation(point);
   };
 
-  const resolveDeliveryLocation = (location, meta = {}) => {
-    const next = normalizeLocation(location);
-    if (!next) return;
-    const source = String(meta?.source || "map");
-    locationSourceRef.current = source;
-    if (source === "current-location" && !profileLoading) {
-      const nearest = matchGpsSavedAddress(profile.addresses || [], next, source);
-      if (nearest) {
-        selectAddress(nearest.address);
-        return;
-      }
+  // A removed or changed saved address may not remain a checkout destination.
+  useEffect(() => {
+    if (profileLoading || !selectedAddressId) return;
+    const saved = (profile.addresses || []).find(address => address.id === selectedAddressId);
+    const point = normalizeLocation(saved);
+    if (!saved || !point) {
+      locationSourceRef.current = "";
+      setSelectedAddressId("");
+      setDeliveryAddress("");
+      setDeliveryLocation(null);
     }
-    setDeliveryLocation(next);
-    setLocationConfirmed(false);
-    setSelectedAddressId("");
-    // Map clicks and non-matching GPS intentionally override a saved pin.
-    if (selectedAddressId) setDeliveryAddress("");
-  };
+  }, [profileLoading, profile.addresses, selectedAddressId]);
 
   const persistProfile = async next => {
     const saved = await saveDeliveryCustomerProfile(tenant, next, customerUser);
@@ -532,7 +520,12 @@ export function DeliveryPage() {
     if (addresses.length && !addresses.some(row => row.isDefault)) addresses[0] = { ...addresses[0], isDefault: true };
     try {
       await persistProfile({ ...profile, addresses });
-      if (selectedAddressId === address.id) setSelectedAddressId("");
+      if (selectedAddressId === address.id) {
+        locationSourceRef.current = "";
+        setSelectedAddressId("");
+        setDeliveryAddress("");
+        setDeliveryLocation(null);
+      }
       showStorefrontToast(t("delivery.checkout.address.deleted"));
     } catch (error) {
       console.error("DELIVERY_ADDRESS_DELETE_FAILED", error);
@@ -601,8 +594,14 @@ export function DeliveryPage() {
     if (!recipientName.trim() || !recipientPhone.trim() || !deliveryAddress.trim()) {
       showStorefrontToast(t("delivery.checkout.validation.delivery_details_required"), "error"); return false;
     }
-    if (!deliveryLocation) { showStorefrontToast(t("delivery.checkout.validation.delivery_location_required"), "error"); return false; }
-    if (!locationConfirmed) { showStorefrontToast(t("delivery.checkout.address.confirm_pin_required"), "error"); return false; }
+    const saved = (profile.addresses || []).find(address => address.id === selectedAddressId);
+    const point = normalizeLocation(saved);
+    if (addressEditor || !saved || !point || !deliveryLocation
+      || deliveryLocation.latitude !== point.latitude || deliveryLocation.longitude !== point.longitude
+      || deliveryAddress.trim() !== String(saved.address || "").trim()) {
+      showStorefrontToast(t("delivery.checkout.address.saved_selection_required"), "error");
+      return false;
+    }
     if (routeState.pending) { showStorefrontToast(t("delivery.checkout.distance.calculating"), "error"); return false; }
     if (!routeReady) {
       const message = usesLalamove
@@ -801,17 +800,31 @@ export function DeliveryPage() {
         <p>{t("delivery.checkout.hero.description")}</p>
       </section>
 
-            {!storeAcceptingOrders ? <section className="delivery-closed-banner" id="deliveryStoreClosed" role="alert" aria-live="polite">
-              <i className="bi bi-door-closed app-icon" aria-hidden="true"></i>
-              <div><strong>{t("delivery.opening_hours.closed_title")}</strong>
-                <p>{t(businessStatus.reason === "closed_day" ? "delivery.opening_hours.closed_day" :
-                  businessStatus.reason === "outside_hours" ? "delivery.opening_hours.outside_hours" :
-                  businessStatus.reason === "unavailable" ? "delivery.opening_hours.status_unavailable" :
-                  "delivery.opening_hours.manual_closed")}</p>
-                {closedReason ? <p className="delivery-closed-reason">{closedReason}</p> : null}
-                <small>{t("delivery.opening_hours.closed_help")}</small>
-              </div>
-            </section> : null}
+      {!storeAcceptingOrders ? <section className="delivery-closed-banner" id="deliveryStoreClosed"
+        role="alert" aria-live="polite">
+        <span className="delivery-closed-icon"><i className="bi bi-door-closed app-icon" aria-hidden="true"></i></span>
+        <div className="delivery-closed-body">
+          <div className="delivery-closed-heading">
+            <strong>{t("delivery.opening_hours.closed_title")}</strong>
+            <span className="delivery-closed-status">
+              <i className="bi bi-circle-fill app-icon" aria-hidden="true"></i>
+              {t("delivery.opening_hours.closed_badge")}
+            </span>
+          </div>
+          <p className="delivery-closed-detail">{t(businessStatus.reason === "closed_day" ? "delivery.opening_hours.closed_day" :
+            businessStatus.reason === "outside_hours" ? "delivery.opening_hours.outside_hours" :
+            businessStatus.reason === "unavailable" ? "delivery.opening_hours.status_unavailable" :
+            "delivery.opening_hours.manual_closed")}</p>
+          {closedReason ? <p className="delivery-closed-reason">
+            <i className="bi bi-info-circle app-icon" aria-hidden="true"></i>
+            {closedReason}
+          </p> : null}
+          <p className="delivery-closed-footnote">
+            <i className="bi bi-clock-history app-icon" aria-hidden="true"></i>
+            {t("delivery.opening_hours.closed_help")}
+          </p>
+        </div>
+      </section> : null}
       {loadError ? <section className="card empty">{loadError}</section> : (
         <div className="delivery-pos">
           {loading ? <div className="delivery-menu-column"><div className="card empty">{t("common.loading")}</div></div> : (
@@ -873,6 +886,28 @@ export function DeliveryPage() {
                   <div><strong>{t("delivery.checkout.address.book_title")}</strong><div className="menu-category">{profileLoading ? t("delivery.checkout.address.loading") : t("delivery.checkout.address.book_help")}</div></div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}><span id="addressCount" className="badge">{t("delivery.checkout.address.count", { count: (profile.addresses || []).length })}</span><button type="button" className="btn btn-primary btn-sm" id="addAddressButton" disabled={locked || submitting || (profile.addresses || []).length >= 5 || Boolean(customerBusy)} onClick={() => setAddressEditor({ id: "", label: t("delivery.checkout.address.home_label"), recipientName, address: deliveryAddress, isDefault: !(profile.addresses || []).length })}><i className="bi bi-plus-lg app-icon"></i><span>{t("delivery.checkout.address.add")}</span></button></div>
                 </div>
+                {!selectedAddressId && !addressEditor && !profileLoading ? <div
+                  className="delivery-address-choice-notice" role="status" id="deliveryAddressChoiceNotice">
+                  <i className="bi bi-geo-alt app-icon" aria-hidden="true"></i>
+                  <div>
+                    <strong>{t("delivery.checkout.address.choice_required_title")}</strong>
+                    <p>{t(!(profile.addresses || []).length
+                      ? "delivery.checkout.address.choice_no_saved"
+                      : initialGps.status === "pending"
+                        ? "delivery.checkout.address.choice_locating"
+                        : initialGps.status === "ready"
+                          ? "delivery.checkout.address.choice_no_nearby"
+                          : "delivery.checkout.address.choice_gps_unavailable")}</p>
+                    <small>{t("delivery.checkout.address.choice_help")}</small>
+                    <button type="button" className="btn btn-primary btn-sm"
+                      disabled={locked || submitting || Boolean(customerBusy) || (profile.addresses || []).length >= 5}
+                      onClick={() => setAddressEditor({ id: "", label: t("delivery.checkout.address.home_label"),
+                        recipientName, address: "", isDefault: !(profile.addresses || []).length })}>
+                      <i className="bi bi-plus-lg app-icon" aria-hidden="true"></i>
+                      <span>{t("delivery.checkout.address.add")}</span>
+                    </button>
+                  </div>
+                </div> : null}
                 <div id="addressList" className="address-list">
                   {(profile.addresses || []).length ? (profile.addresses || []).map(address => <label className={"address-card" + (selectedAddressId === address.id ? " selected" : "")} key={address.id}>
                     <input type="radio" name="savedDeliveryAddressReact" value={address.id} checked={selectedAddressId === address.id} disabled={locked || submitting} onChange={() => selectAddress(address)} />
@@ -901,19 +936,11 @@ export function DeliveryPage() {
                 </div> : null}
               </section>
 
-              <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.address.delivery_address")} *</label><textarea className="input" id="deliveryAddress" required maxLength={500} value={deliveryAddress} disabled={submitting || locked} onChange={event => { locationSourceRef.current = "manual"; setDeliveryAddress(event.target.value); setSelectedAddressId(""); setLocationConfirmed(false); }} /></div>
-              {tenant ? <DeliveryLocationPicker slug={tenant.slug || slug} value={deliveryLocation} t={t} language={locale}
-                disabled={submitting || locked} onChange={resolveDeliveryLocation}
-                onUncertain={() => setLocationConfirmed(false)} /> : null}
-              {deliveryLocation && locationSourceRef.current === "current-location" && !selectedAddressId
-                ? <div className="delivery-location-verify-notice" role="status"><i className="bi bi-exclamation-circle app-icon" aria-hidden="true"></i><span>{t("delivery.checkout.address.no_nearby_saved_confirm")}</span></div> : null}
-              {deliveryLocation && initialGps.status === "unavailable" && locationSourceRef.current === "saved-address"
-                ? <div className="delivery-location-verify-notice" role="status"><i className="bi bi-geo-alt app-icon" aria-hidden="true"></i><span>{t("delivery.checkout.address.gps_saved_fallback_notice")}</span></div> : null}
-              {deliveryLocation ? <label className="delivery-pin-confirm">
-                <input id="deliveryPinConfirmed" type="checkbox" checked={locationConfirmed} disabled={submitting || locked}
-                  onChange={event => setLocationConfirmed(event.target.checked)} />
-                <span>{t("delivery.checkout.address.confirm_pin_label")}</span>
-              </label> : null}
+              <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.address.delivery_address")} *</label><textarea className="input" id="deliveryAddress" required maxLength={500}
+                value={deliveryAddress} readOnly placeholder={t("delivery.checkout.address.choice_required_title")} /></div>
+              {tenant && selectedAddressId && deliveryLocation ? <DeliveryLocationPicker
+                slug={tenant.slug || slug} value={deliveryLocation} t={t} language={locale}
+                disabled showCurrentLocation={false} /> : null}
               {distanceStatus ? <div id="deliveryDistanceStatus" className={"delivery-distance-status" + (routeReady ? " is-ready" : routeState.error || (routeState.route && !routeState.route.inRange) ? " is-error" : "")}>{distanceStatus}</div> : null}
 
               <div className="field" style={{ marginTop: 12 }}>
@@ -989,7 +1016,7 @@ export function DeliveryPage() {
 
     <div className="cart-bar">
       <div><small>{t("delivery.checkout.summary.total_with_delivery")}</small><div style={{ fontSize: 20, fontWeight: 800 }}><span id="cartTotal">{money(total)}</span> {t("delivery.checkout.units.baht")}</div></div>
-      <button className="btn btn-primary" id="submitOrder" type="button" disabled={!tenant || !cart.length || submitting || !storeAcceptingOrders} onClick={submit}>
+      <button className="btn btn-primary" id="submitOrder" type="button" disabled={!tenant || !cart.length || submitting || !storeAcceptingOrders || !selectedAddressId || !deliveryLocation || Boolean(addressEditor)} onClick={submit}>
         <i className={"bi bi-" + (submitting ? "hourglass-split" : paymentMethod === "promptpay" && !paymentLocked ? "credit-card" : "check-lg") + " app-icon"}></i>
         <span>{submitting ? t("delivery.checkout.submit.sending") : paymentMethod === "promptpay" && !paymentLocked ? t("delivery.checkout.summary.review_and_pay") : t("delivery.checkout.summary.submit_order")}</span>
       </button>

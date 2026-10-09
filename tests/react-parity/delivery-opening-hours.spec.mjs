@@ -83,7 +83,7 @@ test("Delivery shows live banner and blocks both adding and submitting while clo
   assert.match(page,/window.setInterval\(\(\) => setOpeningClock\(Date.now\(\)\), 15000\)/);
   assert.match(page,/id="deliveryStoreClosed"/);
   assert.match(page,/onAdd=\{add\} disabled=\{submitting \|\| locked \|\| !storeAcceptingOrders\}/);
-  assert.match(page,/disabled=\{!tenant \|\| !cart.length \|\| submitting \|\| !storeAcceptingOrders\}/);
+  assert.match(page,/disabled=\{!tenant \|\| !cart.length \|\| submitting \|\| !storeAcceptingOrders \|\| !selectedAddressId/);
   assert.match(page,/await checkDeliveryStoreIsOpen\(tenant\)/);
 });
 
