@@ -24,7 +24,7 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
-## Latest: Three coordinated delivery address icons — Build 2026.10.09.510
+## Latest: User-authorized feature -> main Fast-forward Merge (2026-10-09)\n\n- Authorized user request: commit/push/merge all 477 commits from feature/react-firebase-port to main. Original origin/main `013fd5ad` is ancestor of feature `67ad1f9d`, so exact tree Fast-forward successful in separate clean temporary main worktree; no conflicts. No production redeploy was required because Build `.510` was already live.\n- Preflight passed Operational 7/7, full React Parity, generated-build contract and git diff --check. 16 old untracked generated hashed JS bundles in original Mac feature worktree kept intact.\n- Added docs-only integration note on top of merged main and will sync this commit back to feature. Main/feature remote refs should be verified after final pushes. See WORKLOG.\n\n## Latest: Three coordinated delivery address icons — Build 2026.10.09.510
 
 - User rejected previous visually dense hand-drawn icons and instructed assistant to implement a clean alternative for the three address controls Add, Edit, Delete. Mac-direct feature branch implementation.
 - `DeliveryCustomIcons.jsx`: matching open-stroke Lucide-style Plus, Pencil, Trash2 SVGs (24x24 viewbox, 1.9px strokes, round caps/joins, no filled artwork). `DeliveryPage.jsx` uses same Plus in Add header and no-selection notice, preserves Edit/Delete actions/aria-labels. `delivery-addresses.css` redesigns icon-only Edit/Delete actions as understated sage/blush backgrounds without heavy borders; card stays 62px Mobile /66px PC, icons centered and separated 9/10px. No changes to GPS, cart, checkout, Hero or backend.
