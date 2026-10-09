@@ -30,7 +30,7 @@ Do not rely on old chat memory instead of these files and current Git state.
 - DeliveryHoursEditor component now uses accessible controlled role=switch, persisted effective opening state for checked, the existing immediate admin save callback for mode open/closed (with reason/end time), and Restore Schedule button in the same right-aligned header row. Mobile short schedule label fits down to 320px.
 - CSS and TH/EN/MY/LO/KM translations updated. Underlying day numbers and Firestore schema unchanged. Build 2026.10.09.499, new asset /react/assets/index-Cfuu91Og.js. No backend or Rules changes.
 - Targeted tests 10/10 and server guard 7/7 PASS; Operational, full React parity and build PASS. Chrome rendered actual component TH/EN 320-1366px and MY/LO/KM 440px with no overflow, tested Closed->Open->Normal Schedule callbacks successfully.
-- Commit/push and Firebase Hosting only deploy pending when checkpoint drafted. No tenant writes, no main merge/reset/clean or deletion of historic hashed bundles.
+- PRODUCTION CONFIRMED: implementation commit 604e61c8 pushed to feature/react-firebase-port, 0/0 ahead/behind; Firebase Hosting foodapp deployed Build 2026.10.09.499. Live /admin, Delivery, Cashier, Kitchen HTTP 200 and /react/assets/index-Cfuu91Og.js, admin-opening-hours.css and Firebase shared asset byte-identical to Mac. No production tenant toggle, auth-session or payment tests; UI component tested locally with actual React interaction. No Functions/Rules changes, no tenant writes, no main merge/reset/clean/deletion of old bundles.
 
 ## Latest: Delivery server-side closed-store enforcement — Build 2026.10.09.498
 

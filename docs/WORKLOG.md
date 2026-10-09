@@ -12858,3 +12858,12 @@ Verification:
 - Focused opening hours 10/10 PASS; server guard 7/7 PASS; Operational and full React parity PASS; Vite Build/postbuild PASS; git diff --check PASS.
 - Chrome ran actual DeliveryHoursEditor via temporary local Vite fixture: widths 320, 390, 440, 768 and 1366 for Thai/English plus Burmese/Lao/Khmer at 440. Same-row header, no horizontal overflow and correct full weekday names PASS. At widths 320 and 1366 toggled Closed -> Open -> Normal Schedule, verified save-callback modes and preserved reason, PASS.
 - Removed only temporary preview fixtures and stopped preview server. No tenant settings/order/payment data modified. Hosting-only release; no Functions/Rules changes, no main merge or removal of old hashed assets. Commit/push and Hosting deploy pending at entry creation.
+
+
+### Build .499 — Production Hosting release verified
+
+- Implementation commit 604e61c8 pushed successfully to origin/feature/react-firebase-port with 0/0 ahead/behind. Firebase Hosting only (hosting:foodapp, project chat-45754) successfully finalized/released to https://penguin-food.web.app, 562 files; no Cloud Function, Firestore or Storage Rules deploy or data mutation.
+- HTTP Production verification: /admin, /delivery, /s/saas-test-shop/delivery, /cashier, /kitchen all HTTP 200 referencing /react/assets/index-Cfuu91Og.js, exactly matching local Build .499.
+- Live main JS bundle, /react/parity/css/admin-opening-hours.css, and shared Firebase chunk firebase-IqF1EeP8.js byte-identical to the Mac build. No old assets removed.
+- Real DeliveryHoursEditor interaction was tested in a local Chrome preview at 320–1366 widths in five languages. An authenticated Production Admin account was not used to toggle a real tenant; no claims of production tenant-setting write test.
+- Handoff updated after release. No merge main, reset, clean or discard of existing untracked Vite bundles.
