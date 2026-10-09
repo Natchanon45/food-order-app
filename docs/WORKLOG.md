@@ -12773,3 +12773,10 @@ Post-.495 Production smoke with real Google Maps identified that the overlay was
 - Targeted regression now checks the hidden-before-ready invariant. Build **2026.10.09.496**, asset `/react/assets/index-C7iJdWGI.js`.
 - `npm run test:delivery-location-integrity` 12/12 PASS, full React parity PASS (before last focused assertion; last assertion rerun PASS), `npm run build:react`/build contract PASS, `git diff --check` PASS.
 - Git commit/push and Hosting Production release pending. No Functions/Firestore/Storage rules, order/customer writes or main merge.
+
+### Build .496 — Production deployment verification
+
+- Implementation commit 5de1b27f pushed to feature/react-firebase-port. Firebase Hosting foodapp deployed successfully to https://penguin-food.web.app, project chat-45754. No Functions, Rules, customer or tenant data changed.
+- After deployment, real Production Google Maps JavaScript was tested with Chrome and an isolated guest fixture and emulated geolocation, without creating any order: PC 1280 and mobile 440 selected the nearest Saved Address B at 13.8298600, 100.6421000, loaded Google map content and displayed the independent map pin correctly. PC pin measured x159 y116 within 356x320; mobile x159 y96 within 356x280. Browser test passed both.
+- Existing regression 12/12, full React parity, operational test and generated build contract passed. Build 2026.10.09.496, bundle index-C7iJdWGI.js.
+- Real customer devices and physical GPS accuracy still require user confirmation. No main merge, no cleanup of historical bundles.

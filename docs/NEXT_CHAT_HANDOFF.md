@@ -29,7 +29,7 @@ Do not rely on old chat memory instead of these files and current Git state.
 - After .495, live Google Maps production smoke showed an overlay pin could flash at top-left before Maps initialization, because JSX made pin visible as soon as valid coords arrived.
 - .496 fixes this: the independent geo-anchored pin remains hidden until \`mapState==="ready"\` **and** \`syncVisiblePin\` has calculated a valid projected pixel position; default CSS visibility is hidden. Cleanup/invalid pin also hide. Preserves closest saved address selection (<=100m after profile loading), standalone saved editor, customer confirmation, and self-delivery route sharing.
 - Release Build **2026.10.09.496**, generated asset \`/react/assets/index-C7iJdWGI.js\`. Targeted location regressions **12/12 PASS**, React parity and build contract PASS. Google Maps real production acceptance still pending until Hosting release checked; no real customer writes.
-- Git implementation commit/push & Hosting deploy pending as of entry creation. Scope Hosting only; do not merge main or clean/delete old hashed assets.
+- PRODUCTION VERIFIED: commit 5de1b27f pushed to feature/react-firebase-port; Firebase Hosting foodapp deployed to penguin-food.web.app. Chrome on real Production and actual Google Maps JavaScript, using isolated guest address fixture and emulated GPS, PASS on PC 1280 and Mobile 440: selected nearest saved B, map content loaded and projected marker visible. Still require real device/customer verification. No Cloud Functions/Rules, tenant writes, main merge, reset, or historic bundle removal.
 
 ## Follow-up: Google Maps lite/static renderer visible pin — Build 2026.10.09.495
 
