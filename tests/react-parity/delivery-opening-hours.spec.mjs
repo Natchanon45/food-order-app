@@ -68,9 +68,13 @@ test("Admin manages days and immediate close without overwriting weekly settings
   assert.match(admin,/saveAdminStoreSettings\(tenant.id, \{ deliveryManualStatus: normalized \}\)/);
   assert.match(admin,/deliveryHours: normalizeDeliveryHours\(deliveryHours\)/);
   const editor=fs.readFileSync("react-app/src/components/DeliveryHoursEditor.jsx","utf8");
-  assert.match(editor,/data-manual-close/);
-  assert.match(editor,/data-manual-open/);
+  assert.match(editor,/className="admin-delivery-hours-override-header"/);
+  assert.match(editor,/className="admin-delivery-hours-header-controls"/);
+  assert.match(editor,/data-manual-toggle type="checkbox" role="switch"/);
+  assert.match(editor,/checked=\{status.open\} disabled=\{busy\}/);
+  assert.match(editor,/mode: event.target.checked \? "open" : "closed", reason, until/);
   assert.match(editor,/data-manual-auto/);
+  assert.doesNotMatch(editor,/data-manual-open|data-manual-close/);
   assert.match(editor,/type="time"/);
 });
 
@@ -97,8 +101,20 @@ test("opening-hour labels are available in all five supported languages", () => 
     const a=translations[locale]?.admin?.opening_hours;
     const d=translations[locale]?.delivery?.opening_hours;
     assert.ok(a && d,locale);
-    for(const key of ["title","temporary_title","force_open","force_close","day_0","day_1","day_6","open","close","until","reason","enable_schedule"])
+    for(const key of ["title","temporary_title","switch_on","switch_off","use_schedule_short","day_0","day_1","day_6","open","close","until","reason","enable_schedule"])
       assert.ok(a[key],locale+" "+key);
+    for(const day of [0,1,2,3,4,5,6])
+      assert.ok(a["day_"+day].length >= (locale === "en" ? 6 : 3),locale+" day_"+day);
+    if (locale === "th") {
+      assert.equal(a.day_1,"จันทร์");
+      assert.equal(a.day_4,"พฤหัสบดี");
+      assert.equal(a.day_0,"อาทิตย์");
+    }
+    if (locale === "en") {
+      assert.equal(a.day_1,"Monday");
+      assert.equal(a.day_2,"Tuesday");
+      assert.equal(a.day_0,"Sunday");
+    }
     for(const key of ["closed_title","outside_hours","closed_day","order_unavailable"])assert.ok(d[key],locale+" "+key);
   }
 });

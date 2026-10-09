@@ -1,13 +1,14 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.09.498",
+  build: "2026.10.09.499",
   branch: "feature/react-firebase-port",
-  commit: "DELIVERY-BACKEND-HOURS-GUARD",
+  commit: "DELIVERY-OVERRIDE-TOGGLE-FULL-DAYS",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Enforce Delivery store hours with Cloud Function and Firestore security rules",
+  milestone: "Simplify Delivery opening-hours UI with a top-right switch and full weekday names",
   whatsNew: [
+    "Use an instant store-open switch beside the normal schedule action and show full weekday names",
     "Block public direct Firestore Delivery creates and enforce store hours in server transactions",
     "Set per-day Delivery hours and immediately close or reopen stores for emergencies",
     "Keep GPS location separate from saved-address pins and require customer delivery pin confirmation",

@@ -24,6 +24,14 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Latest: Admin Delivery opening-hours UI toggle + full day labels — Build .499
+
+- User screenshot /admin requested a right-side toggle switch for manual Open/Close alongside Restore Normal Schedule button in same header row; change weekday labels to full Thai and English names and all supported locales.
+- DeliveryHoursEditor component now uses accessible controlled role=switch, persisted effective opening state for checked, the existing immediate admin save callback for mode open/closed (with reason/end time), and Restore Schedule button in the same right-aligned header row. Mobile short schedule label fits down to 320px.
+- CSS and TH/EN/MY/LO/KM translations updated. Underlying day numbers and Firestore schema unchanged. Build 2026.10.09.499, new asset /react/assets/index-Cfuu91Og.js. No backend or Rules changes.
+- Targeted tests 10/10 and server guard 7/7 PASS; Operational, full React parity and build PASS. Chrome rendered actual component TH/EN 320-1366px and MY/LO/KM 440px with no overflow, tested Closed->Open->Normal Schedule callbacks successfully.
+- Commit/push and Firebase Hosting only deploy pending when checkpoint drafted. No tenant writes, no main merge/reset/clean or deletion of historic hashed bundles.
+
 ## Latest: Delivery server-side closed-store enforcement — Build 2026.10.09.498
 
 - User explicitly authorized **Cloud Functions and Firestore Security Rules** to prevent external/custom SDK order submissions while store is closed, after .497 client-only schedule protection.

@@ -12842,3 +12842,19 @@ Implementation:
 - Read-only Chrome production smoke **after Rules release**: Delivery at 390px and 1280px loaded shop heading, cart and submit UI without page errors, PASS. No real customer order, tenant schedule mutation, or payment writes in testing.
 - Security test 7/7, opening hours 10/10, full React Parity/Operational/build all PASS. Final build `2026.10.09.498`, asset `index-CNsdruuu.js` live and byte-identical. Other channels retain their rules.
 - Remaining acceptance: one authorized end-to-end real store COD/PromptPay checkout and manually close/open store confirmation (requires actual store data); Firestore emulator unavailable without Java. Do not claim App Check, rate limiting or payment anti-fraud is solved by this store hours-only change.
+
+
+## 2026-10-09 — Opening-hours UI toggle + full weekday names (Build .499)
+
+User requested, based on /admin screenshot, replacing separate Open Now and Close Now actions with one toggle switch at the top-right of the immediate store-opening header, next to the Restore Normal Schedule action. Each Monday–Sunday should use the full translated weekday name.
+
+Changes:
+- React DeliveryHoursEditor: a controlled accessible checkbox role=switch uses the persisted effective opening status, not an unsaved weekly draft, and calls the existing immediate Firestore save callback with mode=open or mode=closed, reason, and optional end time. Restore Normal Schedule button shares the same header row; on narrow screens it displays a concise label. No underlying stored IDs, settings fields, weekly hours, closure policy or backend endpoints changed.
+- CSS admin-opening-hours: green/grey toggle with check/x icon, keyboard focus indicator, busy/disabled state; single header row from mobile 320px to desktop; full names fit weekly hours table without overflow.
+- i18n parity-translations: full weekday names in Thai, English, Burmese, Lao, Khmer; switch status and short normal-schedule labels added.
+- Opening-hours regression test checks semantic switch and callback mode, retired buttons, complete translations and full weekday names. Release Build incremented to 2026.10.09.499; generated JS /react/assets/index-Cfuu91Og.js.
+
+Verification:
+- Focused opening hours 10/10 PASS; server guard 7/7 PASS; Operational and full React parity PASS; Vite Build/postbuild PASS; git diff --check PASS.
+- Chrome ran actual DeliveryHoursEditor via temporary local Vite fixture: widths 320, 390, 440, 768 and 1366 for Thai/English plus Burmese/Lao/Khmer at 440. Same-row header, no horizontal overflow and correct full weekday names PASS. At widths 320 and 1366 toggled Closed -> Open -> Normal Schedule, verified save-callback modes and preserved reason, PASS.
+- Removed only temporary preview fixtures and stopped preview server. No tenant settings/order/payment data modified. Hosting-only release; no Functions/Rules changes, no main merge or removal of old hashed assets. Commit/push and Hosting deploy pending at entry creation.

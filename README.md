@@ -2,7 +2,7 @@
 
 Current development branch: `feature/react-firebase-port`
 Current milestone: React + Firebase parity migration / Super Admin Console
-Current PENGUIN release: Version `0.4.280` • Build `2026.10.09.498` (backend-enforced Delivery hours and protected order creation)
+Current PENGUIN release: Version `0.4.280` • Build `2026.10.09.499` (top-right open/close toggle and full weekday names)
 Primary production Hosting: `https://penguin-food.web.app` (legacy `https://natchanon-food-order-delivery.web.app` retained for transition only)
 
 > New Chat / continuation: read `STRUCTURE.md`, `docs/NEXT_CHAT_HANDOFF.md`, and `docs/WORKLOG.md` before changing code.
