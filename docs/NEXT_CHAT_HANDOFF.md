@@ -24,6 +24,13 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Latest: Delivery slip guidance wrap and confirmation receipt copy — Build 2026.10.09.506
+
+- User supplied screenshot of Slip2Go guidance overflowing the card after slip upload at iPhone 440px, then asked to change the customer Delivery receipt's payment row to 'ชำระเงินแล้ว รอร้านตรวจสอบ' when pending, Lalamove area to 'จัดส่งโดย Lalamove', and item names to 'ตำข้าวโพดไข่เค็ม x 1'. Implement both as ONE Hosting-only release.
+- DeliveryPage.jsx assigns the scoped `delivery-payment-slip-review-note` hook; payment-slip.css makes long guidance and unusual filenames wrap safely within the payment card. DeliverySuccessPage.jsx uses pure presentation helpers in react-app/src/utils/deliveryReceiptPresentation.js: pending verification label without mutating paymentStatus; confirmed-paid/COD labels unchanged; provider conditional Lalamove vs self; inline `name x qty`. Success receipt CSS prevents clipping longer item names. TH/EN/MY/LO/KM translations for pending copy and Lalamove.
+- Build 2026.10.09.506 with bundle `/react/assets/index-BXZfwSp3.js`. Slip tests 16/16, new receipt helper 5/5, complete React Parity/Operational/build/postbuild PASS. Actual Chrome compiled local UI using *isolated read-only DOM fixtures* tested long mobile review note/filename 320–1280 and receipt statuses/quantities 320/390/440/768/1280, no clipping or page overflow. No actual payment or customer/order/profile writes. Slip payment backend, store hours, GPS selection unchanged.
+- Commit/Push and Hosting-only release pending at time of writing, see WORKLOG. Do not merge main, reset, clean, delete old Vite hashes, or deploy Firestore/Cloud Functions/Storage Rules.
+
 ## Latest: Compact Delivery saved address cards / inline icon actions — Build 2026.10.09.505
 
 - User explicitly requires implementation (not patch suggestions), matching compact mockup. Previous cards ~100px tall with action buttons on second row; desired cards 65–75px, radio/name left, Edit/Delete icons right, selected-delivery subtitle.

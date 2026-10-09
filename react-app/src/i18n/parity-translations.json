@@ -1721,6 +1721,7 @@
         },
         "receipt": {
           "shop_fallback": "PENGUIN",
+          "lalamove_delivery": "จัดส่งโดย Lalamove",
           "evidence": "หลักฐานคำสั่งซื้อ Delivery",
           "fields": {
             "order_number": "เลขที่รายการ",
@@ -1777,7 +1778,7 @@
         "payment": {
           "paid": "ชำระเงินแล้ว",
           "cod": "เก็บเงินปลายทาง",
-          "pending_verification": "ส่งหลักฐานแล้ว รอร้านตรวจสอบ",
+          "pending_verification": "ชำระเงินแล้ว รอร้านตรวจสอบ",
           "cashier_review": "รอแคชเชียร์ตรวจสอบสลิปก่อนส่งเข้าครัว",
           "slip2go_finalizing": "Slip2Go ตรวจผ่านแล้ว กำลังยืนยันชำระเงิน",
           "unpaid": "ยังไม่ชำระเงิน"
@@ -8233,6 +8234,7 @@
         },
         "receipt": {
           "shop_fallback": "PENGUIN",
+          "lalamove_delivery": "Delivered by Lalamove",
           "evidence": "Delivery order confirmation",
           "fields": {
             "order_number": "Order number",
@@ -8289,7 +8291,7 @@
         "payment": {
           "paid": "Paid",
           "cod": "Cash on delivery",
-          "pending_verification": "Proof submitted, awaiting restaurant verification",
+          "pending_verification": "Payment submitted, awaiting restaurant verification",
           "cashier_review": "Waiting for cashier slip review before entering the kitchen",
           "slip2go_finalizing": "Slip2Go verified; finalizing payment",
           "unpaid": "Unpaid"
@@ -14470,6 +14472,7 @@
         },
         "receipt": {
           "shop_fallback": "PENGUIN",
+          "lalamove_delivery": "Lalamove ဖြင့် ပို့ဆောင်သည်",
           "evidence": "ပို့ဆောင်မှုအမိန့်အတည်ပြုခြင်း။",
           "fields": {
             "order_number": "အော်ဒါနံပါတ်",
@@ -14526,7 +14529,7 @@
         "payment": {
           "paid": "အခကြေးငွေ",
           "cod": "ပစ္စည်းရောက်မှငွေချေပါ။",
-          "pending_verification": "အထောက်အထားတင်ပြပြီး စားသောက်ဆိုင်အတည်ပြုချက်ကို စောင့်နေသည်။",
+          "pending_verification": "ငွေပေးချေပြီး၊ ဆိုင်၏စစ်ဆေးမှုကို စောင့်နေသည်",
           "cashier_review": "မီးဖိုချောင်သို့ မပို့မီ ငွေကိုင်မှ စလစ်စစ်ဆေးရန် စောင့်ဆိုင်းနေသည်။",
           "slip2go_finalizing": "Slip2Go စစ်ဆေးပြီး ငွေပေးချေမှုအတည်ပြုနေသည်။",
           "unpaid": "အခကြေးငွေမယူရသေး"
@@ -20707,6 +20710,7 @@
         },
         "receipt": {
           "shop_fallback": "PENGUIN",
+          "lalamove_delivery": "ຈັດສົ່ງໂດຍ Lalamove",
           "evidence": "ການຢືນຢັນການຈັດສົ່ງ",
           "fields": {
             "order_number": "ໝາຍເລກສັ່ງຊື້",
@@ -20763,7 +20767,7 @@
         "payment": {
           "paid": "ຈ່າຍແລ້ວ",
           "cod": "ເງິນສົດໃນການຈັດສົ່ງ",
-          "pending_verification": "ສົ່ງຫຼັກຖານ, ລໍຖ້າການຢັ້ງຢືນຮ້ານອາຫານ",
+          "pending_verification": "ຊໍາລະເງິນແລ້ວ ລໍຖ້າຮ້ານກວດສອບ",
           "cashier_review": "ລໍຖ້າແຄຊເຊຍກວດສະລິບກ່ອນສົ່ງເຂົ້າຄົວ",
           "slip2go_finalizing": "Slip2Go ກວດແລ້ວ ກຳລັງຢືນຢັນຍອດ",
           "unpaid": "ບໍ່ໄດ້ຈ່າຍ"
@@ -26944,6 +26948,7 @@
         },
         "receipt": {
           "shop_fallback": "PENGUIN",
+          "lalamove_delivery": "ដឹកជញ្ជូនដោយ Lalamove",
           "evidence": "ការបញ្ជាក់ការបញ្ជាទិញដឹកជញ្ជូន",
           "fields": {
             "order_number": "លេខបញ្ជាទិញ",
@@ -27000,7 +27005,7 @@
         "payment": {
           "paid": "បង់",
           "cod": "សាច់ប្រាក់លើការដឹកជញ្ជូន",
-          "pending_verification": "ភស្តុតាងត្រូវបានដាក់ស្នើ រង់ចាំការផ្ទៀងផ្ទាត់ភោជនីយដ្ឋាន",
+          "pending_verification": "បានបង់ប្រាក់ហើយ រង់ចាំហាងពិនិត្យ",
           "cashier_review": "រង់ចាំអ្នកគិតលុយពិនិត្យស្លិបមុនផ្ញើទៅផ្ទះបាយ",
           "slip2go_finalizing": "Slip2Go បានពិនិត្យ កំពុងបញ្ជាក់ការទូទាត់",
           "unpaid": "មិនទាន់បង់ប្រាក់"

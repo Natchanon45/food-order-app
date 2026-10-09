@@ -1097,7 +1097,7 @@ export function DeliveryPage() {
                     <div className="payment-slip-error" id="paymentSlipError" hidden></div>
                     {slipFile ? <button type="button" className="btn btn-sm payment-slip-remove-icon" id="removePaymentSlip" aria-label={t("delivery.checkout.payment.remove_slip")} title={t("delivery.checkout.payment.remove_slip")} onClick={clearSlip}><i className="bi bi-x-lg app-icon" aria-hidden="true"></i></button> : null}
                   </div>
-                  <small className="menu-category">{t("delivery.checkout.payment.review_note")}</small></> : null}
+                  <small className="menu-category delivery-payment-slip-review-note" id="paymentSlipReviewNote">{t("delivery.checkout.payment.review_note")}</small></> : null}
               </div> : null}
             </section>
           </div>

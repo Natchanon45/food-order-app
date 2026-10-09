@@ -168,3 +168,23 @@ test("kitchen audio notifies on payment admission rather than on unpaid order cr
   assert.match(source, /createOrderAlertAudioController/);
   assert.match(source, /announcementChainRef/);
 });
+
+test("Delivery slip verification review note wraps inside the checkout card", () => {
+  const jsx=fs.readFileSync("react-app/src/pages/DeliveryPage.jsx","utf8");
+  const css=fs.readFileSync("react-app/public/parity/css/payment-slip.css","utf8");
+  assert.match(jsx,/className="menu-category delivery-payment-slip-review-note" id="paymentSlipReviewNote"/);
+  assert.match(css,/body\.delivery-page #promptPaySection \.delivery-payment-slip-review-note \{[\s\S]*?display: block;/);
+  assert.match(css,/body\.delivery-page #promptPaySection \.delivery-payment-slip-review-note \{[\s\S]*?max-width: 100%;/);
+  assert.match(css,/body\.delivery-page #promptPaySection \.delivery-payment-slip-review-note \{[\s\S]*?white-space: normal;/);
+  assert.match(css,/body\.delivery-page #promptPaySection \.delivery-payment-slip-review-note \{[\s\S]*?overflow-wrap: anywhere;/);
+});
+
+test("uploaded slip preview filename wraps without pushing file size or card wider", () => {
+  const jsx=fs.readFileSync("react-app/src/pages/DeliveryPage.jsx","utf8");
+  const css=fs.readFileSync("react-app/public/parity/css/payment-slip.css","utf8");
+  assert.match(jsx,/id="paymentSlipFileName"/);
+  assert.match(jsx,/id="paymentSlipFileSize"/);
+  assert.match(css,/#promptPaySection #paymentSlipFileName \{[\s\S]*?overflow-wrap: anywhere;/);
+  assert.match(css,/#promptPaySection #paymentSlipFileSize \{[\s\S]*?white-space: nowrap;/);
+  assert.match(css,/#promptPaySection \.payment-slip-preview \{[\s\S]*?min-width: 0;/);
+});

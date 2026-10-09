@@ -1,13 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.09.505",
+  build: "2026.10.09.506",
   branch: "feature/react-firebase-port",
-  commit: "DELIVERY-ADDRESS-COMPACT-ICON-ACTIONS",
+  commit: "DELIVERY-SLIP-WRAP-RECEIPT-LABELS",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Compact saved address rows with inline edit and delete icon actions",
+  milestone: "Fix mobile slip note overflow and Delivery receipt payment/provider/item labels",
   whatsNew: [
+    "Update Delivery receipt payment review, Lalamove provider and inline item quantities",
+    "Wrap Slip2Go verification note and long slip filenames within mobile delivery payment cards",
     "Make saved delivery address cards compact with single-row icon actions and selected-address caption",
     "Remove the redundant Home default-address button; use only nearby GPS matching and explicit saved-address selection",
     "Show a floating borderless Home favorite icon and wrap the saved delivery map description on mobile",

@@ -129,3 +129,21 @@
   .delivery-tracking-actions { align-items: flex-start; flex-direction: column; }
   .delivery-tracking-actions .btn { width: 100%; justify-content: center; }
 }
+
+/* DELIVERY_SUCCESS_INLINE_ITEM_QUANTITY_20261009_506
+   Display a menu row as "item name x 1" with the quantity directly after
+   the name, rather than a separate floating quantity column. */
+body.delivery-success-page #receiptItems .receipt-item-line {
+  display: block;
+  min-width: 0;
+}
+body.delivery-success-page #receiptItems .receipt-item-text {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  -webkit-line-clamp: unset;
+  word-break: normal;
+}

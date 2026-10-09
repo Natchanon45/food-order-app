@@ -6,6 +6,7 @@ import { PublicStorefrontFooter, PublicStorefrontHeader, showStorefrontToast } f
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { qrDataUrl } from "@/utils/localQr";
+import { deliveryReceiptPaymentLabel, deliveryReceiptZoneLabel, deliveryReceiptItemLabel } from "@/utils/deliveryReceiptPresentation";
 
 function valueMs(value) {
   if (!value) return 0;
@@ -181,17 +182,10 @@ export function DeliverySuccessPage() {
   const verifyQr = verifyUrl ? qrDataUrl(verifyUrl, { size: 120, margin: 4 }) : "";
   const shopName = String(settings?.shopName || t("delivery.success.receipt.shop_fallback")).trim();
 
-  const paymentText = order?.paymentStatus === "paid"
-    ? t("delivery.success.payment.paid")
-    : order?.paymentMethod === "cod"
-      ? t("delivery.success.payment.cod")
-      : order?.paymentStatus === "pending_verification"
-        ? (order.paymentReviewRequired === true
-          ? t("delivery.success.payment.cashier_review")
-          : order.slipCheckStatus === "matched"
-            ? t("delivery.success.payment.slip2go_finalizing")
-            : t("delivery.success.payment.pending_verification"))
-        : t("delivery.success.payment.unpaid");
+  // Receipt copy is informational: the saved order remains pending_verification
+  // until the server verifies payment or the authorized cashier approves it.
+  const paymentText = deliveryReceiptPaymentLabel(order, t);
+  const deliveryZoneText = deliveryReceiptZoneLabel(order, t);
 
   const tracking = trackingState(order || {});
   const trackingText = t("delivery.success.tracking.statuses." + tracking.key);
@@ -313,7 +307,7 @@ export function DeliverySuccessPage() {
         <div><strong>{t("delivery.success.receipt.fields.recipient")}:</strong> <span id="receiptRecipient">{order.recipientName || "-"}</span></div>
         <div><strong>{t("delivery.success.receipt.fields.phone")}:</strong> <span id="receiptPhone">{order.recipientPhone || "-"}</span></div>
         <div><strong>{t("delivery.success.receipt.fields.address")}:</strong> <span id="receiptAddress">{order.deliveryAddress || "-"}</span></div>
-        <div><strong>{t("delivery.success.receipt.fields.zone")}:</strong> <span id="receiptDeliveryZone">{order.deliveryZoneLabel || "-"}</span></div>
+        <div><strong>{t("delivery.success.receipt.fields.zone")}:</strong> <span id="receiptDeliveryZone">{deliveryZoneText}</span></div>
 
         <hr className="receipt-rule" />
 
@@ -329,8 +323,7 @@ export function DeliverySuccessPage() {
             {items.map((item, index) => <tr key={(item.menuId || item.name || "item") + index}>
               <td className="receipt-item-name">
                 <div className="receipt-item-line">
-                  <span className="receipt-item-text" title={item.name}>{item.name}</span>
-                  <span className="receipt-item-qty">x {Number(item.qty || 0)}</span>
+                  <span className="receipt-item-text" title={item.name}>{deliveryReceiptItemLabel(item)}</span>
                 </div>
                 {item.note ? <div className="receipt-item-note">{item.note}</div> : null}
               </td>
