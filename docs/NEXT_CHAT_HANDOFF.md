@@ -24,6 +24,14 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Latest: Round store logo + Admin drag-to-focus cover for all four order surfaces — Build 2026.10.09.509
+
+- User approved a large **circle logo nearly the Hero height** (NOT the width), upload help square 1200×1200 logo and landscape 1600×900 cover (PNG/JPG/WebP max 8MB), and per-shop cover focus selection by dragging a marker. Shared across Delivery, Table Order, Takeaway, Cashier Quick Order.
+- `store-hero-branding.css`: responsive circular shop logo 76px @320, 88px phone 360-440, 112px desktop, white ring/shadow and separate text column, no title overlap. `StoreHeroBranding.jsx` now applies focus-aware backgroundPosition from `storeHeroFocus.js` to all four surfaces, centering old stores at 50/50.
+- `StoreBrandingEditor.jsx` Admin cover UI: drag source image target (actual pointer capture and touch), keyboard arrow +/-2% (Shift 10%), Home/reset center, visible marker, coordinates, live crop preview. AdminPage.jsx persists and verifies `shopHeroFocusX/Y` with existing tenant store settings save, resets focus when cover replaced/removed. 5 locale texts for recommended dimensions, max 8 MB and focus UI. No backend/Storage Rules changed and no tenant image uploaded by tests.
+- Build 2026.10.09.509, new JS `/react/assets/index-DcBPBVN_.js` (Version 0.4.280 unchanged). Unit focus 6/6 and existing brand 6/6, full Operational/React parity/build PASS. Real compiled Chrome viewport smoke on phone/tablet/desktop PASS, no horizontal overflow. Actual React Editor Vite-only test passed mouse drag, touch tap, keyboard and reset on 320/440/1280; temporary test harness safely removed. Cross-surface Hero fixture smoke validates logo/background in Delivery/Table/Takeaway/Quick Order structures.
+- **Pending** implementation commit/push and Hosting-only production deploy/check; preserve feature/react-firebase-port, no merge main/reset/clean/discard or old Vite bundle removal. No real Firestore customer/store data written; authorized admin upload/save should be tested by user. See WORKLOG.
+
 ## Latest: Shop logo + Hero cover upload for Delivery/Table/Takeaway/Quick Order — Build 2026.10.09.508
 
 - User rejected recolored scooter font and requested per-shop uploaded logo, an uploaded shop-related Hero cover in admin Store Settings, and the same customization for dine-in Table Order, Takeaway and Cashier Quick Order. Continued direct Mac development without further permission prompts.

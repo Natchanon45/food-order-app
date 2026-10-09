@@ -10,6 +10,7 @@ import { AdminDeliveryQr } from "@/components/AdminDeliveryQr";
 import { DeliveryHoursEditor } from "@/components/DeliveryHoursEditor";
 import { StoreBrandingEditor } from "@/components/StoreBrandingEditor";
 import { uploadStoreBrandImage } from "@/data/storeBrandingData";
+import { normalizeHeroFocus } from "@/utils/storeHeroFocus";
 import { defaultDeliveryHours, normalizeDeliveryHours, normalizeManualStoreStatus, bangkokClock } from "@/utils/deliveryOpeningHours";
 import { AdminCollapsibleCard } from "@/components/AdminCollapsibleCard";
 import { sweetConfirm } from "@/components/sweetDialog";
@@ -684,7 +685,7 @@ export function AdminPage() {
   const [walletSlipDragOver, setWalletSlipDragOver] = useState(false);
   const [walletDeleteBusy, setWalletDeleteBusy] = useState("");
   const [storeForm, setStoreForm] = useState({
-    shopName: "", shopAddress: "", shopPhone: "", shopLogoUrl: "", shopHeroImageUrl: "", promptPayId: "", promptPayName: "",
+    shopName: "", shopAddress: "", shopPhone: "", shopLogoUrl: "", shopHeroImageUrl: "", shopHeroFocusX: 50, shopHeroFocusY: 50, promptPayId: "", promptPayName: "",
     bankName: "", bankAccountNumber: "", bankAccountName: "",
     deliveryProvider: "self", deliveryMaxDistanceKm: 10,
   });
@@ -766,6 +767,8 @@ export function AdminPage() {
         shopName: String(s.shopName || tenant.name || ""),
         shopLogoUrl: String(s.shopLogoUrl || s.logoUrl || ""),
         shopHeroImageUrl: String(s.shopHeroImageUrl || s.heroImageUrl || ""),
+        shopHeroFocusX: normalizeHeroFocus(s.shopHeroFocusX),
+        shopHeroFocusY: normalizeHeroFocus(s.shopHeroFocusY),
         shopAddress: String(s.shopAddress || ""),
         shopPhone: String(s.shopPhone || ""),
         promptPayId: String(s.promptPayId || ""),
@@ -1083,6 +1086,8 @@ export function AdminPage() {
         shopName: storeForm.shopName.trim(),
         shopLogoUrl: nextLogoUrl,
         shopHeroImageUrl: nextCoverUrl,
+        shopHeroFocusX: normalizeHeroFocus(storeForm.shopHeroFocusX),
+        shopHeroFocusY: normalizeHeroFocus(storeForm.shopHeroFocusY),
         shopAddress: storeForm.shopAddress.trim(),
         shopPhone: storeForm.shopPhone.trim(),
         promptPayId: storeForm.promptPayId.trim(),
@@ -1109,7 +1114,7 @@ export function AdminPage() {
         "bankName", "bankAccountNumber", "bankAccountName", "deliveryProvider",
       ];
       const textMismatch = textFields.some(field => String(saved?.[field] ?? "") !== String(payload[field] ?? ""));
-      const numberMismatch = ["storeLatitude", "storeLongitude", "deliveryMaxDistanceKm"].some(field => {
+      const numberMismatch = ["storeLatitude", "storeLongitude", "deliveryMaxDistanceKm", "shopHeroFocusX", "shopHeroFocusY"].some(field => {
         const expected = payload[field];
         const actual = saved?.[field];
         if (expected === null || expected === undefined || expected === "") {
@@ -1130,7 +1135,8 @@ export function AdminPage() {
         throw new Error("STORE_SETTINGS_VERIFICATION_FAILED");
       }
       setSettings(saved);
-      setStoreForm(current => ({ ...current, shopLogoUrl: saved.shopLogoUrl || "", shopHeroImageUrl: saved.shopHeroImageUrl || "" }));
+      setStoreForm(current => ({ ...current, shopLogoUrl: saved.shopLogoUrl || "", shopHeroImageUrl: saved.shopHeroImageUrl || "",
+        shopHeroFocusX: normalizeHeroFocus(saved.shopHeroFocusX), shopHeroFocusY: normalizeHeroFocus(saved.shopHeroFocusY) }));
       setStoreBrandFiles({ logo: null, cover: null });
       setDeliveryHours(normalizeDeliveryHours(saved.deliveryHours));
       showToast(t("admin.store.save_success"));

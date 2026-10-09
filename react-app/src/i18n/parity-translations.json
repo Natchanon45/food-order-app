@@ -375,13 +375,17 @@
       },
       "store_branding": {
         "logo_title": "โลโก้ร้าน",
-        "logo_help": "แนะนำไฟล์ PNG พื้นหลังโปร่งใส หรือ JPG / WebP สำหรับใช้ทุกหน้าสั่งซื้อ",
+        "logo_help": "แนะนำโลโก้สี่เหลี่ยม 1200 × 1200 พิกเซล (PNG โปร่งใส / JPG / WebP) ไม่เกิน 8 MB",
         "cover_title": "ภาพปกหน้าสั่งซื้อ",
-        "cover_help": "แนะนำภาพแนวนอน 1600 × 900 พิกเซล ใช้เป็นพื้นหลังบน Delivery, สั่งที่โต๊ะ, สั่งกลับบ้าน และ Quick Order",
+        "cover_help": "แนะนำภาพแนวนอน 1600 × 900 พิกเซล (JPG / PNG / WebP) ไม่เกิน 8 MB ใช้ใน Delivery, สั่งที่โต๊ะ, สั่งกลับบ้าน และ Quick Order",
         "none": "ยังไม่ได้อัปโหลด",
         "choose": "เลือกรูปภาพ",
         "remove": "ลบรูปภาพ",
-        "invalid": "โปรดใช้รูป JPG, PNG หรือ WebP ไม่เกิน 8 MB"
+        "invalid": "โปรดใช้รูป JPG, PNG หรือ WebP ไม่เกิน 8 MB",
+        "focus_title": "กำหนดจุดโฟกัสภาพปก",
+        "focus_help": "แตะหรือลากหมุดบนภาพต้นฉบับเพื่อเลือกจุดเด่น ภาพตัวอย่างด้านบนจะแสดงตำแหน่งที่ครอบจริง บันทึกการตั้งค่าเพื่อใช้งานทุกหน้าสั่งซื้อ",
+        "focus_aria": "เลือกตำแหน่งโฟกัสภาพปก ใช้ปุ่มลูกศรปรับตำแหน่ง หรือปุ่ม Home กลับกึ่งกลาง",
+        "focus_reset": "กลับกึ่งกลาง"
       },
       "store_workspace": {
         "overview_store": "ข้อมูลร้าน",
@@ -6898,13 +6902,17 @@
       },
       "store_branding": {
         "logo_title": "Store logo",
-        "logo_help": "Use a transparent PNG or a JPG/WebP for all ordering pages",
+        "logo_help": "Recommended square logo: 1200 × 1200 px. Transparent PNG, JPG or WebP; maximum 8 MB",
         "cover_title": "Ordering page cover",
-        "cover_help": "Landscape image recommended (1600 × 900). Shared by Delivery, Table, Takeaway and Quick Order",
+        "cover_help": "Recommended landscape cover: 1600 × 900 px, JPG / PNG / WebP; maximum 8 MB. Used across Delivery, Table, Takeaway and Quick Order",
         "none": "No image uploaded",
         "choose": "Choose image",
         "remove": "Remove image",
-        "invalid": "Please choose a JPG, PNG or WebP image under 8 MB"
+        "invalid": "Please choose a JPG, PNG or WebP image under 8 MB",
+        "focus_title": "Choose cover focal point",
+        "focus_help": "Tap or drag the target on the original image. The preview above shows the actual crop. Save to apply to every order page",
+        "focus_aria": "Choose cover image focal point. Use arrow keys to adjust; Home to center",
+        "focus_reset": "Center image"
       },
       "store_workspace": {
         "overview_store": "Store",
@@ -13146,13 +13154,17 @@
       },
       "store_branding": {
         "logo_title": "ဆိုင်လိုဂို",
-        "logo_help": "ဆိုင်စာမျက်နှာများအတွက် PNG၊ JPG သို့မဟုတ် WebP ပုံထည့်ပါ",
+        "logo_help": "စတုရန်းလိုဂို 1200 × 1200 px ကိုအကြံပြုသည်။ PNG / JPG / WebP၊ 8 MB အောက်",
         "cover_title": "အော်ဒါစာမျက်နှာ နောက်ခံပုံ",
-        "cover_help": "အလျားလိုက်ပုံ (1600 × 900) ကို အကြံပြုပါသည်။ အော်ဒါစာမျက်နှာအားလုံးတွင် အသုံးပြုပါမည်",
+        "cover_help": "အလျားလိုက်ပုံ 1600 × 900 px ကိုအကြံပြုသည်။ JPG / PNG / WebP၊ 8 MB အောက်၊ အော်ဒါစာမျက်နှာအားလုံးတွင် အသုံးပြုသည်",
         "none": "ပုံမတင်ရသေးပါ",
         "choose": "ပုံရွေးပါ",
         "remove": "ပုံဖယ်ရှားရန်",
-        "invalid": "8 MB အောက် JPG၊ PNG သို့မဟုတ် WebP ပုံရွေးပါ"
+        "invalid": "8 MB အောက် JPG၊ PNG သို့မဟုတ် WebP ပုံရွေးပါ",
+        "focus_title": "ပုံအာရုံစိုက်ရာနေရာ",
+        "focus_help": "မူရင်းပုံပေါ်ရှိ အမှတ်ကို နှိပ် သို့မဟုတ် ဆွဲရွှေ့ပါ။ အပေါ်တွင် ဖြတ်တောက်ထားသောပုံကို ကြည့်နိုင်သည်။ ပြီးနောက် သိမ်းဆည်းပါ",
+        "focus_aria": "ပုံပေါ်ရှိ အာရုံစိုက်ရာနေရာကို သတ်မှတ်ရန် မြှားခလုတ်များကို သုံးပါ",
+        "focus_reset": "အလယ်သို့ပြန်ထား"
       },
       "store_workspace": {
         "overview_store": "ဆိုင်",
@@ -19394,13 +19406,17 @@
       },
       "store_branding": {
         "logo_title": "ໂລໂກ້ຮ້ານ",
-        "logo_help": "ໃຊ້ຮູບ PNG, JPG ຫຼື WebP ໃນທຸກໜ້າສັ່ງອາຫານ",
+        "logo_help": "ແນະນຳໂລໂກ້ສີ່ຫຼ່ຽມ 1200 × 1200 px, PNG / JPG / WebP ບໍ່ເກີນ 8 MB",
         "cover_title": "ຮູບພື້ນຫຼັງໜ້າສັ່ງ",
-        "cover_help": "ແນະນຳຮູບແນວນອນ 1600 × 900 ສຳລັບທຸກໜ້າສັ່ງອາຫານ",
+        "cover_help": "ແນະນຳຮູບແນວນອນ 1600 × 900 px, JPG / PNG / WebP ບໍ່ເກີນ 8 MB ສຳລັບທຸກໜ້າສັ່ງ",
         "none": "ຍັງບໍ່ມີຮູບ",
         "choose": "ເລືອກຮູບ",
         "remove": "ລຶບຮູບ",
-        "invalid": "ເລືອກ JPG, PNG ຫຼື WebP ບໍ່ເກີນ 8 MB"
+        "invalid": "ເລືອກ JPG, PNG ຫຼື WebP ບໍ່ເກີນ 8 MB",
+        "focus_title": "ກຳນົດຈຸດໂຟກັສຮູບປົກ",
+        "focus_help": "ແຕະຫຼືລາກຈຸດເທິງຮູບຕົ້ນສະບັບ ເບິ່ງຮູບທີ່ຕັດຢູ່ດ້ານເທິງ ແລ້ວບັນທຶກ",
+        "focus_aria": "ເລືອກຈຸດໂຟກັສດ້ວຍປຸ່ມລູກສອນ",
+        "focus_reset": "ກັບສູ່ກາງ"
       },
       "store_workspace": {
         "overview_store": "ຮ້ານ",
@@ -25642,13 +25658,17 @@
       },
       "store_branding": {
         "logo_title": "ឡូហ្គោហាង",
-        "logo_help": "ប្រើរូបភាព PNG, JPG ឬ WebP សម្រាប់ទំព័រកម្មង់ទាំងអស់",
+        "logo_help": "ណែនាំឡូហ្គោការ៉េ 1200 × 1200 px; PNG / JPG / WebP មិនលើស 8 MB",
         "cover_title": "រូបភាពផ្ទៃខាងក្រោយទំព័រកម្មង់",
-        "cover_help": "ណែនាំរូបភាពផ្ដេក 1600 × 900 សម្រាប់ទំព័រកម្មង់ទាំងអស់",
+        "cover_help": "ណែនាំរូបភាពផ្ដេក 1600 × 900 px; JPG / PNG / WebP មិនលើស 8 MB សម្រាប់ទំព័រកម្មង់ទាំងអស់",
         "none": "មិនទាន់មានរូបភាព",
         "choose": "ជ្រើសរើសរូបភាព",
         "remove": "លុបរូបភាព",
-        "invalid": "ជ្រើស JPG, PNG ឬ WebP មិនលើស 8 MB"
+        "invalid": "ជ្រើស JPG, PNG ឬ WebP មិនលើស 8 MB",
+        "focus_title": "កំណត់ចំណុចផ្ដោតរូបភាព",
+        "focus_help": "ចុច ឬអូសចំណុចលើរូបដើម។ មើលរូបភាពដែលត្រូវកាត់ខាងលើ រួចរក្សាទុក",
+        "focus_aria": "កំណត់ចំណុចផ្ដោតដោយគ្រាប់ចុចព្រួញ",
+        "focus_reset": "ត្រឡប់កណ្ដាល"
       },
       "store_workspace": {
         "overview_store": "ហាង",

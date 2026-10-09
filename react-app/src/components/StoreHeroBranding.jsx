@@ -1,4 +1,5 @@
 import React from "react";
+import { heroFocusPosition } from "@/utils/storeHeroFocus";
 
 // Reuse tenant settings on public and cashier ordering surfaces.
 export function brandedHeroStyle(settings = {}) {
@@ -6,6 +7,7 @@ export function brandedHeroStyle(settings = {}) {
   if (!/^https:\/\//i.test(url)) return undefined;
   return {
     backgroundImage: `linear-gradient(90deg, rgba(6, 30, 20, .88), rgba(8, 55, 33, .63) 55%, rgba(0, 43, 27, .34)), url(${JSON.stringify(url)})`,
+    backgroundPosition: heroFocusPosition(settings).css,
   };
 }
 

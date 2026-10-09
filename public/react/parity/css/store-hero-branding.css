@@ -108,3 +108,108 @@ body.quick-order-page .hero.store-branded-hero {
   background-size: cover, cover;
   background-repeat: no-repeat;
 }
+
+/* Brand v509: the real restaurant logo fills most of each Hero's height.
+   Keep text at the right instead of crowding the photo or overlapping it. */
+body .store-branded-hero.hero {
+  --store-hero-logo-size: 112px;
+  min-height: 142px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 16px 18px 16px calc(var(--store-hero-logo-size) + 34px);
+  gap: 4px;
+}
+body .store-branded-hero.hero .hero-title {
+  position: static;
+  display: block;
+  max-width: 100%;
+  margin: 0;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+body .store-branded-hero.hero .hero-title > span:not(.store-hero-brand-mark) {
+  display: inline;
+  max-width: 100%;
+  line-height: inherit;
+}
+body .store-branded-hero.hero > p,
+body .store-branded-hero.hero > div > p {
+  position: relative;
+  z-index: 1;
+  margin: 4px 0 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.48;
+}
+body .store-branded-hero.hero .store-hero-brand-mark:not(.store-hero-brand-mark-section) {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  width: var(--store-hero-logo-size);
+  min-width: var(--store-hero-logo-size);
+  height: var(--store-hero-logo-size);
+  flex-basis: var(--store-hero-logo-size);
+  padding: 5px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  background: #f7fff9;
+  box-shadow: 0 5px 18px rgba(0,35,23,.27), 0 0 0 2px rgba(29,169,88,.25);
+}
+body .store-branded-hero.hero .store-hero-brand-mark img {
+  border-radius: 50%;
+  object-fit: cover;
+}
+body .store-branded-hero.hero .store-hero-fallback-icon {
+  width: 58px;
+  height: 58px;
+  font-size: 51px;
+}
+body .store-branded-hero.hero.quick-order-hero > div {
+  position: static;
+  z-index: 1;
+  width: 100%;
+  min-width: 0;
+}
+body .store-hero-brand-mark-section {
+  border-radius: 50%;
+}
+body .store-hero-brand-mark-section img {
+  border-radius: 50%;
+}
+@media (max-width: 600px) {
+  body .store-branded-hero.hero {
+    --store-hero-logo-size: 88px;
+    min-height: 116px;
+    padding: 12px 12px 12px calc(var(--store-hero-logo-size) + 23px);
+    gap: 2px;
+  }
+  body .store-branded-hero.hero .store-hero-brand-mark:not(.store-hero-brand-mark-section) {
+    left: 10px;
+    padding: 4px;
+    border-width: 2px;
+  }
+  body .store-branded-hero.hero .store-hero-fallback-icon {
+    font-size: 40px;
+    width: 44px;
+    height: 44px;
+  }
+  body .store-branded-hero.hero .hero-title {
+    font-size: clamp(18px, 4vw, 25px);
+  }
+  body .store-branded-hero.hero > p,
+  body .store-branded-hero.hero > div > p {
+    font-size: 12px;
+  }
+}
+@media (max-width: 350px) {
+  body .store-branded-hero.hero {
+    --store-hero-logo-size: 76px;
+  }
+}
+
+/* Old icon tiles are still used outside the Hero (Delivery address header). */
