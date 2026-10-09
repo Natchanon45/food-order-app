@@ -12719,3 +12719,29 @@ Safety and delivery:
 - After release, **real Production HTTP/Chrome guest-mode smoke** with synthetic localStorage address fixture and browser-mocked GPS: PC 1280px and Mobile 440px both auto-select nondefault Saved Address B over default A because it is nearer GPS; coordinates of B confirmed on screen. GPS permission-denied case falls back to default A. No production customer profile mutations, checkout/payment, or order creation were performed. All PASS.
 - Driver Maps link unit tests verify `origin=storeLatitude,storeLongitude` and `destination=deliveryLatitude,deliveryLongitude` plus refusal to provide links when store pin or order pin missing. Real authenticated Cashier & Google Maps app flow requires store staff manual smoke; no test pretended that the user's real phone GPS was accessible.
 - Never merge main or remove old hashed bundles; existing untracked historical assets preserved.
+
+## 2026-10-09 — Delivery saved-address map marker race + address-first GPS selection (Build .494)
+
+User-visible defect: after the .493 Laravel-nearest saved-address fix, address and latitude/longitude were selected but the Google Maps marker was not reliably displayed on either PC or mobile. Desired workflow: load the saved address book before checking nearest to current GPS; if none is nearby, show the current GPS point and have the customer verify their address/pin with the store. A saved point must always display a marker.
+
+Root causes confirmed:
+1. In `DeliveryLocationPicker.jsx`, the map initialization effect depended only on `slug,language` and captured an initially empty `normalized` coordinate. It created a hidden marker at the Bangkok fallback; when saved address/GPS arrived before asynchronous Google Maps init completed, the coordinate effect returned early because `mapRef.current` was null. Map creation then used stale `normalized=null` and left marker hidden, even though React showed the chosen coordinates.
+2. Google Maps click/drag handlers captured the original React `onChange` callback, potentially using stale saved-address selection state when changing the marker manually.
+3. The initial GPS request could start before loading the customer address book, so matching occurred correctly only later but did not have the requested address-first sequencing.
+
+Changes:
+- `react-app/src/components/DeliveryLocationPicker.jsx`: use `locationRef.current` for the latest location once Maps JS resolves; after `mapState=ready`, force sync marker visibility, position, map centre and zoom >=16 from latest React value, and hide marker if location becomes invalid. Clean up marker when map changes/unmounts. Use `applyRef.current` in Google Maps event listeners to avoid stale parent callback.
+- `react-app/src/pages/DeliveryPage.jsx`: request initial GPS only after the tenant's customer profile (saved addresses) has finished loading, then compare the GPS point against the saved book under Laravel 100m nearest-address rule. A confirmed manual selection is still respected. Existing precise GPS checks and explicit customer pin confirmation still apply.
+- For no nearby saved address, display an actionable confirmation notice that the customer must enter delivery address and verify pin with the store before ordering; for GPS unavailable, clarify that saved default is a fallback. Keep existing required address, pin checkbox and locked-checkout controls.
+- Localized the two new notices in TH/EN/MY/LO/KM (`parity-translations.json`), plus responsive CSS (`delivery-location-map.css`).
+- Added two focused marker lifecycle and address-first regressions to `tests/react-parity/delivery-location-integrity.spec.mjs`, now 11 cases. Release ID bumped to `2026.10.09.494` in release.js/README.
+- Laravel MASTER remains untouched; restored nearest saved 100m behavior from .493 remains in place.
+
+Verification:
+- Targeted `npm run test:delivery-location-integrity` 11/11 PASS.
+- Full `npm run test:react-parity` PASS, `npm run build:react` and postbuild generated contract PASS. Build main asset `/react/assets/index-D8_RhRxF.js`. `git diff --check` PASS.
+- Browser smoke on Mac: installed Chrome with a mock Google Maps API (fake Map + Marker DOM that records placement, visibility and zoom) against built app served locally. **Desktop 1280px and Mobile 440px** both PASS: closer Saved Address B initially auto-selected over default A, pin rendered at B and zoom 16; explicit selecting A moves pin to A; clicking a different spot moves pin and clears unrelated Saved Address selection/address label. This confirms React->Google Maps marker lifecycle, not the real user's own GPS/device or live Google Maps tiles.
+- Before fix, Chrome diagnostic on .493 production showed selected numeric coordinates and Google Maps initialized at fallback zoom 11 while marker could remain hidden due to map/prop load race. Real Google Maps tiles were reachable.
+- No authenticated customer profile data or live Delivery orders/payments modified. Only Hosting deployment is planned; no Functions/Rules, main merge, or Vite bundle deletion.
+
+Status at this worklog entry: Git implementation commit/push and Firebase Hosting release pending. Update after deploy and production verification. Real Android/iPhone Google Maps pin verification still required.

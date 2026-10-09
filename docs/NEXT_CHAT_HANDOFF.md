@@ -24,6 +24,14 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Latest Google Maps marker and address-first loading checkpoint — Build 2026.10.09.494
+
+- User found that after .493 the selected Saved Address and numeric coordinates did not always produce a visible Google Maps marker. Root cause: async Google Maps init captures null \`normalized\`, creates a hidden pin, and missed new \`value\` updates that arrived before \`mapRef.current\` existed; map click listeners also captured old React callback.
+- Fix \`DeliveryLocationPicker.jsx\`: read latest coordinates via \`locationRef\` at API completion; synchronize marker creation/visibility/position and map centre/zoom when Maps becomes ready, even if address loads before map. Remove marker for invalid/cleared pin; use \`applyRef\` to keep click/drag up to date. PC and Mobile both.
+- Fix \`DeliveryPage.jsx\`: start initial geolocation only **after** the saved address book loads, then select nearest valid saved pin within 100m (Laravel policy). When no saved pin near GPS, keep GPS and prompt to enter/verify delivery address + pin with store; when GPS unavailable, explain default saved fallback. Existing explicit pin confirmation remains. Messages localized TH/EN/MY/LO/KM.
+- Build **2026.10.09.494**, main asset \`/react/assets/index-D8_RhRxF.js\`. Location integrity regressions **11/11 PASS**, React parity PASS, build contract PASS, Git diff --check PASS. Chrome on Mac with controlled Google Map/Marker mock: Desktop 1280px & Mobile 440px rendered correct marker at auto-nearest Saved B with zoom 16, changing to Saved A moved pin, clicking map updated pin and deselected A. These are real DOM interactions on compiled app but not live device GPS or production Google Maps tiles.
+- Implementation commit/push and Hosting release pending when checkpoint was drafted. Update after production verification. Only Firebase Hosting; no Functions/Rules, customer profile/order writes, main merge, reset/clean or deletion of existing hashed assets.
+
 ## Latest Laravel GPS-nearest and driver-route checkpoint — Build 2026.10.09.493
 
 - User specifically wants **Laravel MASTER location flow**: auto request device GPS when customer opens Delivery on PC/mobile, select the nearest saved address to that GPS (up to 100 metres) even when it is *not* the default saved address. Explicit clicks/drags must never auto-snap. If no saved pin is nearby, use raw GPS; if GPS unavailable, fallback to default saved address.

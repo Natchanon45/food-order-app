@@ -149,3 +149,27 @@
     min-height: 44px;
   }
 }
+
+
+/* Confirm unmatched GPS delivery addresses instead of guessing a saved pin. */
+.delivery-location-verify-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 10px 12px;
+  margin-top: 10px;
+  border-radius: 11px;
+  background: #fff8eb;
+  border: 1px solid #f2d5a2;
+  color: #784500;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.delivery-location-verify-notice .app-icon {
+  flex: 0 0 18px;
+  width: 18px;
+  min-width: 18px;
+  line-height: 1.5;
+  text-align: center;
+}
+.delivery-location-verify-notice span { min-width: 0; }

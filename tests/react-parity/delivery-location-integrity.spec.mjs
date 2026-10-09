@@ -65,8 +65,8 @@ test("selecting saved address replaces active coordinate including invalid pin a
   const select = page.slice(page.indexOf("const selectAddress ="), page.indexOf("const resolveDeliveryLocation ="));
   assert.match(select, /setDeliveryLocation\(location\)/);
   assert.match(select, /setLocationConfirmed\(false\)/);
-  assert.match(picker, /mapRef\.current\.panTo\(position\)/);
-  assert.match(picker, /markerRef\.current\.setPosition\(position\)/);
+  assert.match(picker, /map\.panTo\(position\)/);
+  assert.match(picker, /marker\.setPosition\(position\)/);
 });
 
 test("editing or creating saved address owns a separate map pin, never borrows the active checkout pin", () => {
@@ -108,5 +108,30 @@ test("delivery checkout requires explicit pin confirmation and all locales conta
       assert.ok(values[key], `${locale} missing ${key}`);
     }
     assert.ok(values.gps_accuracy.includes(":meters"));
+  }
+});
+
+test("Google Maps marker always reflects the saved pin even when profile/GPS arrives during map initialization", () => {
+  assert.match(picker, /const locationRef = useRef\(null\)/);
+  assert.match(picker, /locationRef\.current = normalized/);
+  assert.match(picker, /const selected = validLocation\(locationRef\.current\)/);
+  assert.match(picker, /zoom: selected \? 16 : 11/);
+  assert.match(picker, /\[value\?\.latitude, value\?\.longitude, mapState\]/);
+  assert.match(picker, /if \(!next\) \{\s*marker\.setMap\(null\)/);
+  assert.match(picker, /marker\.setPosition\(position\)/);
+  assert.match(picker, /marker\.setMap\(map\)/);
+  assert.match(picker, /map\.panTo\(position\)/);
+  assert.match(picker, /map\.setZoom\(Math\.max\(Number\(map\.getZoom\(\) \|\| 0\), 16\)\)/);
+  assert.match(picker, /applyRef\.current\(\{ latitude: event\.latLng\.lat\(\)/);
+});
+
+test("saved addresses finish loading before initial GPS starts, and unmatched GPS requires explicit location verification", () => {
+  assert.match(page, /if \(!tenant\?\.id \|\| profileLoading \|\| initialGpsRequestedForTenantRef\.current === tenant\.id\)/);
+  assert.match(page, /id="deliveryPinConfirmed"/);
+  assert.match(page, /className="delivery-location-verify-notice"/);
+  assert.match(page, /no_nearby_saved_confirm/);
+  for(const locale of ["th","en","my","lo","km"]) {
+    const a=translations[locale].delivery.checkout.address;
+    assert.ok(a.no_nearby_saved_confirm && a.gps_saved_fallback_notice);
   }
 });

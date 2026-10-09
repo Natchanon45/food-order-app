@@ -137,6 +137,7 @@ export function DeliveryPage() {
   const locationSourceRef = useRef("");
   const [locationConfirmed, setLocationConfirmed] = useState(false);
   const [initialGps, setInitialGps] = useState({ status: "pending", point: null, accuracy: null });
+  const initialGpsRequestedForTenantRef = useRef("");
   const [routeState, setRouteState] = useState({ pending: false, route: null, quote: null, error: "" });
   const [manualZoneId, setManualZoneId] = useState("");
   const [freeGiftIds, setFreeGiftIds] = useState(new Set());
@@ -203,10 +204,12 @@ export function DeliveryPage() {
     return () => { alive = false; stop?.(); };
   }, [tenant?.id]);
 
-  // Laravel MASTER: request device GPS as soon as Delivery opens on both PC
-  // and mobile, independently from Google Maps API readiness. A manual
-  // location/address selection made during the request must always win.
+  // Resolve the customer address book first, then obtain device GPS. Compare
+  // against that same loaded set of saved pins before selecting the nearest.
+  // This is independent from Google Maps script/map readiness on PC/mobile.
   useEffect(() => {
+    if (!tenant?.id || profileLoading || initialGpsRequestedForTenantRef.current === tenant.id) return undefined;
+    initialGpsRequestedForTenantRef.current = tenant.id;
     let active = true;
     if (!window.isSecureContext || !navigator.geolocation?.getCurrentPosition) {
       setInitialGps({ status: "unavailable", point: null, accuracy: null });
@@ -222,7 +225,7 @@ export function DeliveryPage() {
       setInitialGps({ status: "unavailable", point: null, accuracy: null });
     }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 });
     return () => { active = false; };
-  }, []);
+  }, [tenant?.id, profileLoading]);
 
   useEffect(() => {
     if (profileLoading || initialGps.status === "pending" || locationSourceRef.current) return;
@@ -834,6 +837,10 @@ export function DeliveryPage() {
               {tenant ? <DeliveryLocationPicker slug={tenant.slug || slug} value={deliveryLocation} t={t} language={locale}
                 disabled={submitting || locked} onChange={resolveDeliveryLocation}
                 onUncertain={() => setLocationConfirmed(false)} /> : null}
+              {deliveryLocation && locationSourceRef.current === "current-location" && !selectedAddressId
+                ? <div className="delivery-location-verify-notice" role="status"><i className="bi bi-exclamation-circle app-icon" aria-hidden="true"></i><span>{t("delivery.checkout.address.no_nearby_saved_confirm")}</span></div> : null}
+              {deliveryLocation && initialGps.status === "unavailable" && locationSourceRef.current === "saved-address"
+                ? <div className="delivery-location-verify-notice" role="status"><i className="bi bi-geo-alt app-icon" aria-hidden="true"></i><span>{t("delivery.checkout.address.gps_saved_fallback_notice")}</span></div> : null}
               {deliveryLocation ? <label className="delivery-pin-confirm">
                 <input id="deliveryPinConfirmed" type="checkbox" checked={locationConfirmed} disabled={submitting || locked}
                   onChange={event => setLocationConfirmed(event.target.checked)} />

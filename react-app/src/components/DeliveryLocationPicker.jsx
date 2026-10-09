@@ -42,10 +42,14 @@ export function DeliveryLocationPicker({
   disabledRef.current = disabled;
   const mapRef = useRef(null);
   const markerRef = useRef(null);
+  // Google Maps initializes asynchronously. The callback must use the latest
+  // selected saved-address/GPS pin, not the null value captured at mount.
+  const locationRef = useRef(null);
   const [mapState, setMapState] = useState("loading");
   const [locating, setLocating] = useState(false);
   const [gpsAccuracy, setGpsAccuracy] = useState(null);
   const normalized = validLocation(value);
+  locationRef.current = normalized;
   const mapId = idPrefix === "delivery" ? "deliveryLocationMap" : idPrefix + "LocationMap";
   const currentButtonId = idPrefix === "delivery" ? "useCurrentLocationButton" : idPrefix + "CurrentLocationButton";
   const pickerId = idPrefix === "delivery" ? "deliveryLocationPicker" : idPrefix + "LocationPicker";
@@ -70,6 +74,10 @@ export function DeliveryLocationPicker({
       map.setZoom(Math.max(Number(map.getZoom() || 0), 16));
     }
   }, [onChange]);
+  // Google event handlers survive across React renders. Always use the latest
+  // checkout callback (selected saved address, payment lock and loaded profile).
+  const applyRef = useRef(apply);
+  applyRef.current = apply;
 
   useEffect(() => {
     let alive = true;
@@ -77,27 +85,28 @@ export function DeliveryLocationPicker({
     setMapState("loading");
     ensureGoogleMaps(slug, language).then(maps => {
       if (!alive || !mapElementRef.current) return;
-      const center = normalized
-        ? { lat: normalized.latitude, lng: normalized.longitude }
+      const selected = validLocation(locationRef.current);
+      const center = selected
+        ? { lat: selected.latitude, lng: selected.longitude }
         : { lat: 13.756331, lng: 100.501762 };
       const map = new maps.Map(mapElementRef.current, {
         center,
-        zoom: normalized ? 16 : 11,
+        zoom: selected ? 16 : 11,
         streetViewControl: false,
         mapTypeControl: false,
         fullscreenControl: true,
         gestureHandling: "cooperative",
       });
       const marker = new maps.Marker({ map, position: center, draggable: !disabledRef.current });
-      if (!normalized) marker.setMap(null);
+      if (!selected) marker.setMap(null);
       marker.addListener("dragend", () => {
         if (disabledRef.current) return;
         const point = marker.getPosition();
-        if (point) apply({ latitude: point.lat(), longitude: point.lng() }, { pan: false, source: "map" });
+        if (point) applyRef.current({ latitude: point.lat(), longitude: point.lng() }, { pan: false, source: "map" });
       });
       map.addListener("click", event => {
         if (disabledRef.current || !event.latLng) return;
-        apply({ latitude: event.latLng.lat(), longitude: event.latLng.lng() }, { source: "map" });
+        applyRef.current({ latitude: event.latLng.lat(), longitude: event.latLng.lng() }, { source: "map" });
       });
       mapRef.current = map;
       markerRef.current = marker;
@@ -106,7 +115,13 @@ export function DeliveryLocationPicker({
       console.error("DELIVERY_REACT_MAP_LOAD_FAILED", error);
       if (alive) setMapState("error");
     });
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+      const oldMarker = markerRef.current;
+      oldMarker?.setMap(null);
+      markerRef.current = null;
+      mapRef.current = null;
+    };
   }, [slug, language]);
 
   useEffect(() => {
@@ -115,14 +130,19 @@ export function DeliveryLocationPicker({
 
   useEffect(() => {
     const next = validLocation(value);
-    if (!next || !mapRef.current || !markerRef.current) return;
+    const map = mapRef.current;
+    const marker = markerRef.current;
+    if (!map || !marker) return;
+    if (!next) {
+      marker.setMap(null);
+      return;
+    }
     const position = { lat: next.latitude, lng: next.longitude };
-    markerRef.current.setMap(mapRef.current);
-    markerRef.current.setPosition(position);
-    // A saved address loaded into the form must move the visible map viewport,
-    // not only move a marker that might be kilometres outside the viewport.
-    mapRef.current.panTo(position);
-  }, [value?.latitude, value?.longitude]);
+    marker.setPosition(position);
+    marker.setMap(map);
+    map.panTo(position);
+    map.setZoom(Math.max(Number(map.getZoom() || 0), 16));
+  }, [value?.latitude, value?.longitude, mapState]);
 
   const current = () => {
     if (disabled || locating) return;
