@@ -12745,3 +12745,21 @@ Verification:
 - No authenticated customer profile data or live Delivery orders/payments modified. Only Hosting deployment is planned; no Functions/Rules, main merge, or Vite bundle deletion.
 
 Status at this worklog entry: Git implementation commit/push and Firebase Hosting release pending. Update after deploy and production verification. Real Android/iPhone Google Maps pin verification still required.
+
+### 2026-10-09 — Google Maps lite/static runtime marker omission follow-up (Build .495)
+
+During post-release verification of Build .494 against **real Production Google Maps**, Chrome rendered `#deliveryLocationMap` using a small static/lite `StaticMapService.GetMapImage` renderer; the map was initialized and the selected Saved Address coordinates appeared, but there was no classic `.gm-style` map layer/marker DOM to show the pin reliably. The earlier simulated Map/Marker-only smoke had passed but did not cover this renderer. A check waiting for `.gm-style` timed out; a later read-only diagnostic confirmed `window.google.maps.Map` was ready and the map HTML existed, so this was not an overall app/map loading failure.
+
+Corrective Build .495:
+- Added `react-app/src/utils/mapPinProjection.js`: pure Web Mercator zoom projection of saved customer latitude/longitude into pixel offsets relative to the current Google Maps viewport centre, with valid-size guards and world wrap.
+- `DeliveryLocationPicker.jsx`: independent visible location pin overlay (`delivery-location-visible-pin`) in the map stage. The overlay is tied to the **exact saved location**, not a decorative fixed-centre pin. It uses `map.getCenter()/getZoom()`, refreshes on center/zoom/idle events, and hides if point moves outside the viewport or is invalid. Google Maps native marker remains available for drag, while independent pin covers lite renderer failures. Existing load-race repair and latest React callback were preserved. CSS in `delivery-location-map.css` renders high-contrast semantic map-pin icon; overlay pointer-events:none so map remains interactive.
+- Targeted test added for map projection, pan direction, invalid dimensions, antimeridian and overlay-map lifecycle; all languages were already translated in .494.
+- Release Build incremented from .494 to **2026.10.09.495** (Version 0.4.280 retained).
+
+Verification:
+- `npm run test:delivery-location-integrity`: **12/12 PASS**.
+- `npm run test:operational`, full `npm run test:react-parity`, `npm run build:react`/generated build contract: PASS. Built bundle `/react/assets/index-BGHWZobX.js`. `git diff --check`: PASS.
+- Mac Chrome local compiled-app guest-mode browser smoke with controlled map renderer (no production writes): Desktop width 1280 and Mobile width 440 both **showed the independent pin** at Saved Address B: PC x177/y159 in 354x318 map; Mobile x177/y139 in 354x278 map. Simulated map pan east shifted pin left from x177 to x174.67 (coordinates remain pinned, not screen-centred). Both PASS.
+- Still require verification on real Google Maps mobile user agent and an actual physical device, since browser/device GPS and static map tile mode can differ.
+
+Safety: no user profiles or orders modified, no Cloud Functions, Firestore Rules or Storage Rules changed; no main merge and no deletion of historic unhashed bundles. Git commit/push and Firebase Hosting release pending at entry creation; update after release.

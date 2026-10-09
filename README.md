@@ -2,7 +2,7 @@
 
 Current development branch: `feature/react-firebase-port`
 Current milestone: React + Firebase parity migration / Super Admin Console
-Current PENGUIN release: Version `0.4.280` • Build `2026.10.09.493` (Laravel-nearest GPS location + store-to-customer driver route)
+Current PENGUIN release: Version `0.4.280` • Build `2026.10.09.495` (reliable saved delivery pin on Google Maps lite and full map)
 Primary production Hosting: `https://penguin-food.web.app` (legacy `https://natchanon-food-order-delivery.web.app` retained for transition only)
 
 > New Chat / continuation: read `STRUCTURE.md`, `docs/NEXT_CHAT_HANDOFF.md`, and `docs/WORKLOG.md` before changing code.

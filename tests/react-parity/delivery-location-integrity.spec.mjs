@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { validDeliveryLocation, validatedGpsFix, nearestSavedAddress, matchGpsSavedAddress } from "../../react-app/src/utils/deliveryLocationPolicy.js";
+import { mapPinPixel } from "../../react-app/src/utils/mapPinProjection.js";
 
 const page = fs.readFileSync("react-app/src/pages/DeliveryPage.jsx", "utf8");
 const picker = fs.readFileSync("react-app/src/components/DeliveryLocationPicker.jsx", "utf8");
@@ -116,7 +117,7 @@ test("Google Maps marker always reflects the saved pin even when profile/GPS arr
   assert.match(picker, /locationRef\.current = normalized/);
   assert.match(picker, /const selected = validLocation\(locationRef\.current\)/);
   assert.match(picker, /zoom: selected \? 16 : 11/);
-  assert.match(picker, /\[value\?\.latitude, value\?\.longitude, mapState\]/);
+  assert.match(picker, /\[value\?\.latitude, value\?\.longitude, mapState, syncVisiblePin\]/);
   assert.match(picker, /if \(!next\) \{\s*marker\.setMap\(null\)/);
   assert.match(picker, /marker\.setPosition\(position\)/);
   assert.match(picker, /marker\.setMap\(map\)/);
@@ -134,4 +135,21 @@ test("saved addresses finish loading before initial GPS starts, and unmatched GP
     const a=translations[locale].delivery.checkout.address;
     assert.ok(a.no_nearby_saved_confirm && a.gps_saved_fallback_notice);
   }
+});
+
+test("visible Google Maps-independent pin follows exact coordinates when map pans/zooms", () => {
+  const a = { latitude: 13.756331, longitude: 100.501762 };
+  assert.deepEqual(mapPinPixel(a, a, 16, 400, 280), { x: 200, y: 140 });
+  const east = mapPinPixel({ ...a, longitude: a.longitude + 0.001 }, a, 16, 400, 280);
+  assert.ok(east.x > 200 && Math.abs(east.y - 140) < 1);
+  const north = mapPinPixel({ ...a, latitude: a.latitude + 0.001 }, a, 16, 400, 280);
+  assert.ok(north.y < 140);
+  assert.equal(mapPinPixel(a, a, 16, 0, 280), null);
+  assert.equal(mapPinPixel(a, a, 16, 400, 0), null);
+  const wrap = mapPinPixel({ latitude: 0, longitude: -179.999 }, { latitude: 0, longitude: 179.999 }, 13, 400, 280);
+  assert.ok(wrap.x > 200 && wrap.x < 400);
+  assert.match(picker, /ref=\{visiblePinRef\}/);
+  assert.match(picker, /delivery-location-visible-pin/);
+  assert.match(picker, /for \(const event of \["center_changed", "zoom_changed", "idle"\]\)/);
+  assert.match(picker, /window\.requestAnimationFrame\(syncVisiblePin\)/);
 });

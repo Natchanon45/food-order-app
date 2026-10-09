@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { functions } from "@/firebase/client";
 import { validDeliveryLocation as validLocation, validatedGpsFix } from "@/utils/deliveryLocationPolicy";
+import { mapPinPixel } from "@/utils/mapPinProjection";
 
 const getGoogleMapsConfig = httpsCallable(functions, "getDeliveryGoogleMapsConfig");
 let googleMapsPromise = null;
@@ -42,6 +43,7 @@ export function DeliveryLocationPicker({
   disabledRef.current = disabled;
   const mapRef = useRef(null);
   const markerRef = useRef(null);
+  const visiblePinRef = useRef(null);
   // Google Maps initializes asynchronously. The callback must use the latest
   // selected saved-address/GPS pin, not the null value captured at mount.
   const locationRef = useRef(null);
@@ -55,6 +57,27 @@ export function DeliveryLocationPicker({
   const pickerId = idPrefix === "delivery" ? "deliveryLocationPicker" : idPrefix + "LocationPicker";
   const statusId = idPrefix === "delivery" ? "deliveryLocationStatus" : idPrefix + "LocationStatus";
   const coordinatesId = idPrefix === "delivery" ? "deliveryLocationCoordinates" : idPrefix + "LocationCoordinates";
+
+  const syncVisiblePin = useCallback(() => {
+    const map = mapRef.current;
+    const element = mapElementRef.current;
+    const overlay = visiblePinRef.current;
+    const location = validLocation(locationRef.current);
+    if (!overlay || !map || !element || !location) {
+      if (overlay) overlay.hidden = true;
+      return;
+    }
+    const mapCenter = map.getCenter?.();
+    const center = validLocation({
+      latitude: typeof mapCenter?.lat === "function" ? mapCenter.lat() : location.latitude,
+      longitude: typeof mapCenter?.lng === "function" ? mapCenter.lng() : location.longitude,
+    }) || location;
+    const point = mapPinPixel(location, center, Number(map.getZoom?.() || 0), element.clientWidth, element.clientHeight);
+    if (!point) { overlay.hidden = true; return; }
+    overlay.style.left = point.x + "px";
+    overlay.style.top = point.y + "px";
+    overlay.hidden = point.x < 0 || point.y < 0 || point.x > element.clientWidth || point.y > element.clientHeight;
+  }, []);
 
   const apply = useCallback((location, { pan = true, source = "map" } = {}) => {
     const next = validLocation(location);
@@ -73,7 +96,8 @@ export function DeliveryLocationPicker({
       map.panTo(position);
       map.setZoom(Math.max(Number(map.getZoom() || 0), 16));
     }
-  }, [onChange]);
+    window.requestAnimationFrame(syncVisiblePin);
+  }, [onChange, syncVisiblePin]);
   // Google event handlers survive across React renders. Always use the latest
   // checkout callback (selected saved address, payment lock and loaded profile).
   const applyRef = useRef(apply);
@@ -110,7 +134,13 @@ export function DeliveryLocationPicker({
       });
       mapRef.current = map;
       markerRef.current = marker;
+      // Keep the independent visible pin registered to the actual coordinate
+      // even when Google's lite/static renderer omits a Marker layer.
+      for (const event of ["center_changed", "zoom_changed", "idle"]) {
+        map.addListener(event, () => window.requestAnimationFrame(syncVisiblePin));
+      }
       setMapState("ready");
+      window.requestAnimationFrame(syncVisiblePin);
     }).catch(error => {
       console.error("DELIVERY_REACT_MAP_LOAD_FAILED", error);
       if (alive) setMapState("error");
@@ -121,8 +151,9 @@ export function DeliveryLocationPicker({
       oldMarker?.setMap(null);
       markerRef.current = null;
       mapRef.current = null;
+      if (visiblePinRef.current) visiblePinRef.current.hidden = true;
     };
-  }, [slug, language]);
+  }, [slug, language, syncVisiblePin]);
 
   useEffect(() => {
     markerRef.current?.setDraggable(!disabled);
@@ -135,6 +166,7 @@ export function DeliveryLocationPicker({
     if (!map || !marker) return;
     if (!next) {
       marker.setMap(null);
+      syncVisiblePin();
       return;
     }
     const position = { lat: next.latitude, lng: next.longitude };
@@ -142,7 +174,8 @@ export function DeliveryLocationPicker({
     marker.setMap(map);
     map.panTo(position);
     map.setZoom(Math.max(Number(map.getZoom() || 0), 16));
-  }, [value?.latitude, value?.longitude, mapState]);
+    window.requestAnimationFrame(syncVisiblePin);
+  }, [value?.latitude, value?.longitude, mapState, syncVisiblePin]);
 
   const current = () => {
     if (disabled || locating) return;
@@ -199,7 +232,13 @@ export function DeliveryLocationPicker({
           <span>{locating ? t("delivery.checkout.address.location_locating") : t("delivery.checkout.address.use_current_location")}</span>
         </button>
       </div>
-      <div ref={mapElementRef} id={mapId} className="delivery-location-map" aria-label={t("delivery.checkout.address.location_title")}></div>
+      <div className="delivery-map-stage">
+        <div ref={mapElementRef} id={mapId} className="delivery-location-map" aria-label={t("delivery.checkout.address.location_title")}></div>
+        <div ref={visiblePinRef} className="delivery-location-visible-pin" role="img"
+          aria-label={t("delivery.checkout.address.location_title")} hidden={!normalized}>
+          <i className="bi bi-geo-alt-fill app-icon" aria-hidden="true"></i>
+        </div>
+      </div>
       <div className="delivery-location-footer">
         <div id={statusId} className={"delivery-location-status" + (mapState.includes("error") || mapState === "geolocation-inaccurate" ? " is-error" : normalized ? " is-ready" : "")}>{status}</div>
         {normalized ? <div id={coordinatesId} className="delivery-location-coordinates">{normalized.latitude.toFixed(7)}, {normalized.longitude.toFixed(7)}</div> : null}

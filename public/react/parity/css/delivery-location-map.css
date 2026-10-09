@@ -173,3 +173,36 @@
   text-align: center;
 }
 .delivery-location-verify-notice span { min-width: 0; }
+
+/* Pin overlay is anchored to geo coordinates, not a decoration at map center.
+   Google's reduced/static renderer sometimes omits its classic Marker layer. */
+.delivery-map-stage {
+  position: relative;
+  width: 100%;
+}
+.delivery-location-visible-pin {
+  position: absolute;
+  z-index: 3;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+  color: #08783a;
+  font-size: 36px;
+  width: 36px;
+  height: 43px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .58));
+}
+.delivery-location-visible-pin[hidden] { display: none !important; }
+.delivery-location-visible-pin .app-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 43px;
+  font-size: 36px;
+  line-height: 1;
+  color: #078846;
+  -webkit-text-stroke: .7px #fff;
+}

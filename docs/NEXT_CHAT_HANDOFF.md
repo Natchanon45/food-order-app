@@ -24,6 +24,13 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Follow-up: Google Maps lite/static renderer visible pin — Build 2026.10.09.495
+
+- Post-.494 Production browser check found Google Maps could render using StaticMapService/lite HTML instead of classic \`.gm-style\`, with correct Saved Address values but no reliable native Marker visual. Prior \`.gm-style\` wait timeout was a too-specific map-renderer check, not proof that Google Maps API was absent.
+- \`react-app/src/utils/mapPinProjection.js\` projects the saved coordinate to viewport pixels using Mercator zoom/centre with world wrap, and \`DeliveryLocationPicker.jsx\` draws an independent, pointer-transparent visible pin anchored to the true customer coordinate. It updates on Google map centre/zoom/idle, stays positioned when map pans, and hides invalid/offscreen pins. Native Marker remains for drag interaction. \`delivery-location-map.css\` adds high-contrast marker styling.
+- Build **2026.10.09.495**, bundle \`/react/assets/index-BGHWZobX.js\`. Regression 12/12, React parity and operational contracts, Vite build/contract PASS. Chrome compiled-app PC width 1280 & mobile 440 using controlled Maps renderer: visible overlay pin at selected saved B; pan east moves projected pin left. No real customer's GPS was used. Earlier .494 fix (profile-before-GPS and map load race) remains.
+- Implementation commit/push and Hosting production verification pending at this checkpoint. Deploy Hosting:foodapp only, no Functions/Rules/tenant writes, no merge main, no deletion of old bundles. Real iOS/Android Google Maps acceptance still required.
+
 ## Latest Google Maps marker and address-first loading checkpoint — Build 2026.10.09.494
 
 - User found that after .493 the selected Saved Address and numeric coordinates did not always produce a visible Google Maps marker. Root cause: async Google Maps init captures null \`normalized\`, creates a hidden pin, and missed new \`value\` updates that arrived before \`mapRef.current\` existed; map click listeners also captured old React callback.
