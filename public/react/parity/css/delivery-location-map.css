@@ -207,3 +207,16 @@
   color: #078846;
   -webkit-text-stroke: .7px #fff;
 }
+
+/* Business-hours closure is prominent before customer starts shopping. */
+.delivery-closed-banner {
+  display: flex; gap: 12px; align-items: flex-start; margin: 0 0 18px;
+  padding: 16px 18px; background: #fff1ee; color: #8b1c16;
+  border: 1px solid #e7b2a8; border-radius: 14px; line-height: 1.55;
+}
+.delivery-closed-banner > .app-icon { font-size: 25px; line-height: 1.15; flex: 0 0 27px; }
+.delivery-closed-banner div { min-width: 0; }
+.delivery-closed-banner strong { font-size: 18px; }
+.delivery-closed-banner p { margin: 7px 0 4px; }
+.delivery-closed-banner small { display: block; margin-top: 8px; font-size: 12px; }
+.delivery-closed-banner .delivery-closed-reason { font-weight: 700; }

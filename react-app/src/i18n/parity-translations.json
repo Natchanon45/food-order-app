@@ -1,6 +1,40 @@
 {
   "th": {
     "admin": {
+      "opening_hours": {
+        "title": "วันและเวลาเปิดทำการ",
+        "description": "เลือกวันและเวลาเปิดร้านสำหรับ Delivery และสั่งเปิดหรือปิดร้านชั่วคราวได้ทันที",
+        "status_label": "เวลาทำการ",
+        "timezone": "เวลาไทย (GMT+7)",
+        "open_now": "ร้านเปิดรับออเดอร์",
+        "closed_now": "ร้านปิดอยู่",
+        "temporary_title": "เปิด / ปิด ร้านทันที",
+        "temporary_help": "ใช้ปิดปรับปรุงหรือเหตุฉุกเฉิน กำหนดเวลาสิ้นสุดได้ หากไม่กำหนดจะใช้จนกว่าจะเปลี่ยนเอง",
+        "reason": "เหตุผลแจ้งลูกค้า",
+        "reason_example": "เช่น ปิดปรับปรุงร้าน",
+        "until": "สิ้นสุดสถานะพิเศษ (เวลาไทย)",
+        "force_open": "เปิดร้านทันที",
+        "force_close": "ปิดร้านทันที",
+        "use_schedule": "กลับสู่ตารางปกติ",
+        "override_closed": "ปิดร้านชั่วคราว",
+        "override_open": "เปิดร้านเป็นพิเศษ",
+        "enable_schedule": "เปิดใช้งานตารางเวลารายสัปดาห์",
+        "schedule_help": "เลือกวันที่เปิดและตั้งเวลาเปิด–ปิดแต่ละวัน รองรับเวลาข้ามเที่ยงคืน",
+        "day": "วันทำการ",
+        "open": "เวลาเปิด",
+        "close": "เวลาปิด",
+        "save_note": "กดบันทึกการตั้งค่าร้านด้านล่างเพื่อใช้ตารางเวลา ปุ่มเปิด–ปิดทันทีจะบันทึกแยกทันที",
+        "until_future": "กำหนดเวลาสิ้นสุดให้เป็นเวลาอนาคตตามเวลาไทย",
+        "immediate_saved": "เปลี่ยนสถานะร้านสำเร็จแล้ว",
+        "immediate_failed": "เปลี่ยนสถานะร้านไม่สำเร็จ",
+        "day_1": "จ",
+        "day_2": "อ",
+        "day_3": "พ",
+        "day_4": "พฤ",
+        "day_5": "ศ",
+        "day_6": "ส",
+        "day_0": "อา"
+      },
       "meta": {
         "title": "จัดการระบบ"
       },
@@ -1383,6 +1417,15 @@
       }
     },
     "delivery": {
+      "opening_hours": {
+        "closed_title": "ร้านปิดอยู่",
+        "closed_day": "วันนี้ร้านไม่เปิดให้บริการ Delivery",
+        "outside_hours": "ตอนนี้อยู่นอกเวลาทำการ Delivery",
+        "manual_closed": "ร้านปิดรับออเดอร์ชั่วคราว",
+        "status_unavailable": "ยังตรวจสอบสถานะเปิด–ปิดร้านไม่ได้",
+        "closed_help": "ดูรายการอาหารได้ แต่ไม่สามารถสั่งอาหารได้จนกว่าร้านจะเปิด",
+        "order_unavailable": "ร้านปิดอยู่ ไม่สามารถสั่งอาหารได้ในขณะนี้"
+      },
       "checkout": {
         "meta_title": "สั่งอาหาร Delivery",
         "header": {
@@ -6457,6 +6500,40 @@
   },
   "en": {
     "admin": {
+      "opening_hours": {
+        "title": "Opening days and hours",
+        "description": "Set Delivery hours and immediately open or close the store.",
+        "status_label": "Opening schedule",
+        "timezone": "Thailand time (GMT+7)",
+        "open_now": "Accepting orders",
+        "closed_now": "Store closed",
+        "temporary_title": "Open / close immediately",
+        "temporary_help": "Close for repairs or emergencies. An optional end time restores the normal schedule; leave blank to change manually.",
+        "reason": "Reason shown to customers",
+        "reason_example": "e.g. Closed for maintenance",
+        "until": "Override ends (Thailand time)",
+        "force_open": "Open now",
+        "force_close": "Close now",
+        "use_schedule": "Use normal schedule",
+        "override_closed": "Temporarily closed",
+        "override_open": "Temporarily open",
+        "enable_schedule": "Use weekly opening hours",
+        "schedule_help": "Select open days and times for each day. Overnight shifts are supported.",
+        "day": "Day",
+        "open": "Opens",
+        "close": "Closes",
+        "save_note": "Save the weekly schedule with Save Store Settings below. Open/close buttons save immediately.",
+        "until_future": "End time must be in the future (Thailand time)",
+        "immediate_saved": "Store status updated",
+        "immediate_failed": "Could not update store status",
+        "day_1": "Mon",
+        "day_2": "Tue",
+        "day_3": "Wed",
+        "day_4": "Thu",
+        "day_5": "Fri",
+        "day_6": "Sat",
+        "day_0": "Sun"
+      },
       "meta": {
         "title": "System management"
       },
@@ -7839,6 +7916,15 @@
       }
     },
     "delivery": {
+      "opening_hours": {
+        "closed_title": "Store is closed",
+        "closed_day": "Delivery is unavailable on this scheduled day.",
+        "outside_hours": "Delivery is outside the store's opening hours.",
+        "manual_closed": "The store is temporarily closed.",
+        "status_unavailable": "Opening status is currently unavailable.",
+        "closed_help": "You may browse, but ordering is disabled until the store reopens.",
+        "order_unavailable": "Store is closed and not accepting orders."
+      },
       "checkout": {
         "meta_title": "PENGUIN",
         "header": {
@@ -12638,6 +12724,40 @@
   },
   "my": {
     "admin": {
+      "opening_hours": {
+        "title": "ဆိုင်ဖွင့်ရက်နှင့် အချိန်",
+        "description": "Set Delivery hours and immediately open or close the store.",
+        "status_label": "Opening schedule",
+        "timezone": "Thailand time (GMT+7)",
+        "open_now": "အော်ဒါလက်ခံနေသည်",
+        "closed_now": "ဆိုင်ပိတ်ထားသည်",
+        "temporary_title": "Open / close immediately",
+        "temporary_help": "Close for repairs or emergencies. An optional end time restores the normal schedule; leave blank to change manually.",
+        "reason": "Reason shown to customers",
+        "reason_example": "e.g. Closed for maintenance",
+        "until": "Override ends (Thailand time)",
+        "force_open": "ယခုဖွင့်မည်",
+        "force_close": "ယခုပိတ်မည်",
+        "use_schedule": "Use normal schedule",
+        "override_closed": "Temporarily closed",
+        "override_open": "Temporarily open",
+        "enable_schedule": "Use weekly opening hours",
+        "schedule_help": "Select open days and times for each day. Overnight shifts are supported.",
+        "day": "Day",
+        "open": "Opens",
+        "close": "Closes",
+        "save_note": "Save the weekly schedule with Save Store Settings below. Open/close buttons save immediately.",
+        "until_future": "End time must be in the future (Thailand time)",
+        "immediate_saved": "Store status updated",
+        "immediate_failed": "Could not update store status",
+        "day_1": "တနင်္လာ",
+        "day_2": "အင်္ဂါ",
+        "day_3": "ဗုဒ္ဓဟူး",
+        "day_4": "ကြာသပတေး",
+        "day_5": "သောကြာ",
+        "day_6": "စနေ",
+        "day_0": "တနင်္ဂနွေ"
+      },
       "meta": {
         "title": "စနစ်စီမံခန့်ခွဲမှု"
       },
@@ -14020,6 +14140,15 @@
       }
     },
     "delivery": {
+      "opening_hours": {
+        "closed_title": "ဆိုင်ပိတ်ထားသည်",
+        "closed_day": "Delivery is unavailable on this scheduled day.",
+        "outside_hours": "Delivery is outside the store's opening hours.",
+        "manual_closed": "The store is temporarily closed.",
+        "status_unavailable": "Opening status is currently unavailable.",
+        "closed_help": "You may browse, but ordering is disabled until the store reopens.",
+        "order_unavailable": "ဆိုင်ပိတ်ထားသဖြင့် အော်ဒါမတင်နိုင်ပါ"
+      },
       "checkout": {
         "meta_title": "PENGUIN",
         "header": {
@@ -18819,6 +18948,40 @@
   },
   "lo": {
     "admin": {
+      "opening_hours": {
+        "title": "ມື້ ແລະ ເວລາເປີດຮ້ານ",
+        "description": "Set Delivery hours and immediately open or close the store.",
+        "status_label": "Opening schedule",
+        "timezone": "Thailand time (GMT+7)",
+        "open_now": "ກຳລັງຮັບອໍເດີ",
+        "closed_now": "ຮ້ານປິດແລ້ວ",
+        "temporary_title": "Open / close immediately",
+        "temporary_help": "Close for repairs or emergencies. An optional end time restores the normal schedule; leave blank to change manually.",
+        "reason": "Reason shown to customers",
+        "reason_example": "e.g. Closed for maintenance",
+        "until": "Override ends (Thailand time)",
+        "force_open": "ເປີດຮ້ານທັນທີ",
+        "force_close": "ປິດຮ້ານທັນທີ",
+        "use_schedule": "Use normal schedule",
+        "override_closed": "Temporarily closed",
+        "override_open": "Temporarily open",
+        "enable_schedule": "Use weekly opening hours",
+        "schedule_help": "Select open days and times for each day. Overnight shifts are supported.",
+        "day": "Day",
+        "open": "Opens",
+        "close": "Closes",
+        "save_note": "Save the weekly schedule with Save Store Settings below. Open/close buttons save immediately.",
+        "until_future": "End time must be in the future (Thailand time)",
+        "immediate_saved": "Store status updated",
+        "immediate_failed": "Could not update store status",
+        "day_1": "ຈ",
+        "day_2": "ອ",
+        "day_3": "ພ",
+        "day_4": "ພຫ",
+        "day_5": "ສຸກ",
+        "day_6": "ເສົາ",
+        "day_0": "ອາ"
+      },
       "meta": {
         "title": "ຈັດການລະບົບ"
       },
@@ -20201,6 +20364,15 @@
       }
     },
     "delivery": {
+      "opening_hours": {
+        "closed_title": "ຮ້ານປິດຢູ່",
+        "closed_day": "Delivery is unavailable on this scheduled day.",
+        "outside_hours": "Delivery is outside the store's opening hours.",
+        "manual_closed": "The store is temporarily closed.",
+        "status_unavailable": "Opening status is currently unavailable.",
+        "closed_help": "You may browse, but ordering is disabled until the store reopens.",
+        "order_unavailable": "ຮ້ານປິດ ບໍ່ສາມາດສັ່ງໄດ້"
+      },
       "checkout": {
         "meta_title": "PENGUIN",
         "header": {
@@ -25000,6 +25172,40 @@
   },
   "km": {
     "admin": {
+      "opening_hours": {
+        "title": "ថ្ងៃ និងម៉ោងបើកហាង",
+        "description": "Set Delivery hours and immediately open or close the store.",
+        "status_label": "Opening schedule",
+        "timezone": "Thailand time (GMT+7)",
+        "open_now": "កំពុងទទួលការបញ្ជាទិញ",
+        "closed_now": "ហាងបិទហើយ",
+        "temporary_title": "Open / close immediately",
+        "temporary_help": "Close for repairs or emergencies. An optional end time restores the normal schedule; leave blank to change manually.",
+        "reason": "Reason shown to customers",
+        "reason_example": "e.g. Closed for maintenance",
+        "until": "Override ends (Thailand time)",
+        "force_open": "បើកឥឡូវនេះ",
+        "force_close": "បិទឥឡូវនេះ",
+        "use_schedule": "Use normal schedule",
+        "override_closed": "Temporarily closed",
+        "override_open": "Temporarily open",
+        "enable_schedule": "Use weekly opening hours",
+        "schedule_help": "Select open days and times for each day. Overnight shifts are supported.",
+        "day": "Day",
+        "open": "Opens",
+        "close": "Closes",
+        "save_note": "Save the weekly schedule with Save Store Settings below. Open/close buttons save immediately.",
+        "until_future": "End time must be in the future (Thailand time)",
+        "immediate_saved": "Store status updated",
+        "immediate_failed": "Could not update store status",
+        "day_1": "ចន្ទ",
+        "day_2": "អង្គារ",
+        "day_3": "ពុធ",
+        "day_4": "ព្រហ",
+        "day_5": "សុក្រ",
+        "day_6": "សៅរ៍",
+        "day_0": "អាទិត្យ"
+      },
       "meta": {
         "title": "ការគ្រប់គ្រងប្រព័ន្ធ"
       },
@@ -26382,6 +26588,15 @@
       }
     },
     "delivery": {
+      "opening_hours": {
+        "closed_title": "ហាងកំពុងបិទ",
+        "closed_day": "Delivery is unavailable on this scheduled day.",
+        "outside_hours": "Delivery is outside the store's opening hours.",
+        "manual_closed": "The store is temporarily closed.",
+        "status_unavailable": "Opening status is currently unavailable.",
+        "closed_help": "You may browse, but ordering is disabled until the store reopens.",
+        "order_unavailable": "ហាងបិទ មិនអាចបញ្ជាទិញបាន"
+      },
       "checkout": {
         "meta_title": "PENGUIN",
         "header": {

@@ -1,9 +1,10 @@
 import {
-  collection, doc, getDoc, getDocs, onSnapshot, query, runTransaction,
+  collection, doc, getDoc, getDocFromServer, getDocs, onSnapshot, query, runTransaction,
   serverTimestamp, setDoc, where,
 } from "firebase/firestore";
 import { ref as storageRef, uploadBytes } from "firebase/storage";
 import { db, storage } from "@/firebase/client";
+import { getDeliveryOpeningStatus } from "@/utils/deliveryOpeningHours";
 
 const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
 const ACTIVE_TENANT_KEY = "food_order_active_tenant";
@@ -94,6 +95,22 @@ export async function resolvePublicTenant(slugValue = publicSlugFromPath()) {
 export async function getPublicStoreSettings(tenant) {
   const snapshot = await getDoc(tenantDocument(tenant, "settings", "store"));
   return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : {};
+}
+
+// Subscribe to live status changes while the customer keeps Delivery open.
+export function watchPublicStoreSettings(tenant, onSettings, onError = console.error) {
+  return onSnapshot(tenantDocument(tenant, "settings", "store"),
+    snapshot => onSettings(snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : {}),
+    onError);
+}
+
+// A server fetch right before the payment workflow avoids relying on a cached
+// opening status when the store has just forced an emergency closure.
+export async function checkDeliveryStoreIsOpen(tenant) {
+  const snapshot = await getDocFromServer(tenantDocument(tenant, "settings", "store"));
+  if (!snapshot.exists()) throw new Error("DELIVERY_STORE_STATUS_UNAVAILABLE");
+  if (!getDeliveryOpeningStatus(snapshot.data()).open) throw new Error("DELIVERY_STORE_CLOSED");
+  return true;
 }
 
 export async function listPublicMenus(tenant) {
@@ -291,10 +308,18 @@ export async function createPublicDeliveryOrder(tenant, order = {}, catalog = nu
   } else if (selectedIds.length) {
     throw new Error("DELIVERY_FREE_GIFT_NOT_AVAILABLE");
   }
-  await setDoc(tenantDocument(tenant, "orders", id), tenantPayload(tenant, {
-    ...normalized, id, orderType: "delivery", status: order.status || "pending",
-    paymentStatus: order.paymentStatus || "unpaid", createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
-  }));
+  // Atomic read of current store settings followed by the order create.
+  // When an admin closes the store during this transaction, Firestore retries
+  // against the new settings and rejects the order instead of accepting it.
+  await runTransaction(db, async transaction => {
+    const settingsSnapshot = await transaction.get(tenantDocument(tenant, "settings", "store"));
+    if (!settingsSnapshot.exists()) throw new Error("DELIVERY_STORE_STATUS_UNAVAILABLE");
+    if (!getDeliveryOpeningStatus(settingsSnapshot.data()).open) throw new Error("DELIVERY_STORE_CLOSED");
+    transaction.set(tenantDocument(tenant, "orders", id), tenantPayload(tenant, {
+      ...normalized, id, orderType: "delivery", status: order.status || "pending",
+      paymentStatus: order.paymentStatus || "unpaid", createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+    }));
+  });
   clearPublicOrderId(tenant, "delivery");
   return { id };
 }

@@ -1,13 +1,14 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.09.496",
+  build: "2026.10.09.497",
   branch: "feature/react-firebase-port",
-  commit: "DELIVERY-MAP-PIN-LATE-MAP-GUARD",
+  commit: "DELIVERY-WEEKLY-HOURS-EMERGENCY-CLOSE",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Show mapped delivery pin only after geographic projection is ready",
+  milestone: "Weekly Delivery opening hours and real-time temporary store closures",
   whatsNew: [
+    "Set per-day Delivery hours and immediately close or reopen stores for emergencies",
     "Keep GPS location separate from saved-address pins and require customer delivery pin confirmation",
     "Share customer-confirmed Delivery map pins with store-managed drivers using Google Maps",
     "Verify Restaurant Delivery PromptPay slips with central PENGUIN Slip2Go credits against each store's own PromptPay receiver",

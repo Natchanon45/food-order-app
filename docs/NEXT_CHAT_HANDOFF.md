@@ -24,6 +24,15 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Latest: Weekly Delivery opening hours + emergency open/close — Build 2026.10.09.497
+
+- Requested restaurant shop weekly schedule (each Monday–Sunday with enabled checkbox + per-day opening/closing HH:MM), with a separate immediate override for emergencies/renovation (open now, close now, normal schedule; optional reason and Bangkok-local end time). Checkout outside allowed periods shows a prominent "store closed" status and blocks new Delivery orders. Table, Takeaway, Retail POS unaffected.
+- \`DeliveryHoursEditor.jsx\` lives inside Admin Settings; weekly \`deliveryHours\` saved with existing Store Settings button; \`deliveryManualStatus\` saved immediately and separately via \`saveAdminStoreSettings\`. Current status uses saved schedule (not unsaved edits). Settings live at \`tenants/{tenantId}/settings/store\`; **no DB backfill**; older shops remain open 24/7 until weekly schedule explicitly enabled, so current merchants do not unexpectedly close at deployment.
+- \`deliveryOpeningHours.js\` evaluates weekdays + 24h/overnight hours in Asia/Bangkok, temporary closure/reopen expiry; customer \`DeliveryPage.jsx\` live \`onSnapshot\` and 15s tick display closed banner/owner reason, disable cart actions and Submit; first settings snapshot must load before page ready.
+- \`publicStorefrontData.js\`: uncached store status read before payment step; Firestore \`runTransaction\` checks the latest store settings alongside the Delivery order write, rejects if closed. **Security caveat:** separate Firestore Rules or server-side order submission is still needed against arbitrary malicious SDK writes; Functions/Rules have not been deployed or changed (Hosting-only policy). Existing orders, payout/Slip2Go logic unaffected.
+- Version 0.4.280 Build **2026.10.09.497**, main asset \`/react/assets/index-xdqGCsHK.js\`. Targeted opening-hours regressions 10/10 PASS, Operational PASS, full React Parity PASS, build/contract PASS, responsive static Chrome layout 320–1366px PASS. TH/EN/MY/LO/KM messages. Worklog has scope and verification.
+- Git commit/push and Hosting release pending at this checkpoint. If user wants backend-enforced refusal to accept direct Firestore writes outside schedule, request explicit authorization for Rules/Function rollout before changing production backend. Never merge main, reset/clean, delete historic Vite assets or modify production tenant settings as part of tests.
+
 ## Latest: Show independent delivery pin only after map projection — Build 2026.10.09.496
 
 - After .495, live Google Maps production smoke showed an overlay pin could flash at top-left before Maps initialization, because JSX made pin visible as soon as valid coords arrived.

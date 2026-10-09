@@ -1,0 +1,42 @@
+/* Delivery weekly hours and emergency open/close controls */
+.admin-delivery-hours { display: grid; gap: 14px; }
+.admin-delivery-hours-live {
+  display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center;
+  font-size: 13px; color: #586e61;
+}
+.admin-delivery-hours-indicator { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
+.admin-delivery-hours-indicator.is-open { color: #0b7544; }
+.admin-delivery-hours-indicator.is-closed { color: #c53030; }
+.admin-delivery-hours-override {
+  border: 1px solid #d0e0d5; border-radius: 13px; padding: 14px;
+  background: #f8fbf9; display: grid; gap: 12px;
+}
+.admin-delivery-hours-override .field { display: flex; flex-direction: column; gap: 6px; }
+.admin-delivery-hours-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.admin-delivery-hours-actions .btn {
+  min-height: 41px; display: inline-flex; align-items: center;
+  justify-content: center; gap: 8px;
+}
+.admin-delivery-hours-actions .app-icon { display: inline-grid; place-items: center; line-height: 1; }
+.admin-delivery-hours-override-status { display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; font-size: 13px; }
+.admin-delivery-hours-enable { display: inline-flex; align-items: center; gap: 9px; font-size: 14px; cursor: pointer; }
+.admin-delivery-hours-enable input { width: 19px; height: 19px; accent-color: #078549; }
+.admin-delivery-hours-table { display: grid; border: 1px solid #d4e1d8; border-radius: 12px; overflow: hidden; }
+.admin-delivery-hours-head, .admin-delivery-hours-row {
+  display: grid; grid-template-columns: minmax(95px, 1.2fr) minmax(90px, 1fr) minmax(90px, 1fr);
+  gap: 10px; padding: 9px 12px; align-items: center; min-width: 0;
+}
+.admin-delivery-hours-head { background: #eaf5ee; font-weight: 700; font-size: 13px; }
+.admin-delivery-hours-row + .admin-delivery-hours-row { border-top: 1px solid #e1e9e3; }
+.admin-delivery-hours-row .input { width: 100%; min-width: 0; box-sizing: border-box; }
+.admin-delivery-hours-day { display: flex; gap: 9px; align-items: center; cursor: pointer; }
+.admin-delivery-hours-day input { width: 18px; height: 18px; accent-color: #078549; }
+@media (max-width: 480px) {
+  .admin-delivery-hours-override { padding: 11px; }
+  .admin-delivery-hours-head, .admin-delivery-hours-row {
+    grid-template-columns: minmax(76px,1.08fr) minmax(79px,1fr) minmax(79px,1fr);
+    gap: 5px; padding: 9px 7px; font-size: 12px;
+  }
+  .admin-delivery-hours-row .input { padding: 8px 2px; font-size: 12px; }
+  .admin-delivery-hours-actions .btn { flex: 1 1 135px; }
+}

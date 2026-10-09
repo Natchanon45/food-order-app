@@ -7,6 +7,8 @@ import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
 import { AdminDeliveryQr } from "@/components/AdminDeliveryQr";
+import { DeliveryHoursEditor } from "@/components/DeliveryHoursEditor";
+import { defaultDeliveryHours, normalizeDeliveryHours, normalizeManualStoreStatus, bangkokClock } from "@/utils/deliveryOpeningHours";
 import { AdminCollapsibleCard } from "@/components/AdminCollapsibleCard";
 import { sweetConfirm } from "@/components/sweetDialog";
 import {
@@ -657,7 +659,7 @@ export function AdminPage() {
       "admin-icon-polish.css", "sweet-dialog.css", "order-delivery-workspace-theme.css", "admin-retail-pos-parity.css",
       "admin-react-master-visual.css",
       "admin-modal-retail-pos-parity.css", "admin-delivery-fee-row-alignment.css",
-      "admin-store-location.css", "admin-store-settings-workspace.css", "admin-delivery-providers.css", "admin-delivery-promotions.css",
+      "admin-store-location.css", "admin-store-settings-workspace.css", "admin-opening-hours.css", "admin-delivery-providers.css", "admin-delivery-promotions.css",
       "admin-upload.css", "admin-mobile-table.css",
     ],
     attributes: { "data-roles": "admin", "data-admin-workspace-refresh": "1" },
@@ -691,6 +693,9 @@ export function AdminPage() {
   const [fees, setFees] = useState([]);
   const [promotion, setPromotion] = useState(normalizedPromotion({}));
   const [storeSaving, setStoreSaving] = useState(false);
+  const [deliveryHours, setDeliveryHours] = useState(defaultDeliveryHours);
+  const [deliveryManualStatus, setDeliveryManualStatus] = useState({ mode: "auto", reason: "", until: "" });
+  const [manualStatusSaving, setManualStatusSaving] = useState(false);
   const [menuSearch, setMenuSearch] = useState("");
   const [menuStatus, setMenuStatus] = useState("all");
   const [tableSearch, setTableSearch] = useState("");
@@ -766,6 +771,8 @@ export function AdminPage() {
         deliveryMaxDistanceKm: Number(s.deliveryMaxDistanceKm ?? 10) >= 0 ? Number(s.deliveryMaxDistanceKm ?? 10) : 10,
       });
       setLocation(normalizeLocation(s.storeLatitude, s.storeLongitude));
+      setDeliveryHours(normalizeDeliveryHours(s.deliveryHours));
+      setDeliveryManualStatus(normalizeManualStoreStatus(s.deliveryManualStatus));
       setFees(feeRowsFromSettings(s, t));
       setPromotion(normalizedPromotion(s));
       const categories = [...new Set((data.menus || []).map(item => String(item.category || t("admin.menu.other_category"))))];
@@ -1069,6 +1076,7 @@ export function AdminPage() {
         storeLatitude: location?.latitude ?? null,
         storeLongitude: location?.longitude ?? null,
         deliveryPromotion: promotionForStore(promotion),
+        deliveryHours: normalizeDeliveryHours(deliveryHours),
       };
       const saved = await saveAdminStoreSettings(tenant.id, payload);
       const expectedPromotion = JSON.stringify(payload.deliveryPromotion);
@@ -1094,16 +1102,40 @@ export function AdminPage() {
       }));
       const feeMismatch = JSON.stringify(normalizeFeeRows(saved?.deliveryFeeOptions))
         !== JSON.stringify(normalizeFeeRows(payload.deliveryFeeOptions));
-      if (textMismatch || numberMismatch || feeMismatch || expectedPromotion !== actualPromotion) {
+      if (textMismatch || numberMismatch || feeMismatch || expectedPromotion !== actualPromotion
+        || JSON.stringify(normalizeDeliveryHours(saved?.deliveryHours)) !== JSON.stringify(payload.deliveryHours)) {
         throw new Error("STORE_SETTINGS_VERIFICATION_FAILED");
       }
       setSettings(saved);
+      setDeliveryHours(normalizeDeliveryHours(saved.deliveryHours));
       showToast(t("admin.store.save_success"));
     } catch (error) {
       console.error("ADMIN_STORE_SAVE_FAILED", error);
       showToast(t("admin.store.save_failed"), "error");
     } finally {
       setStoreSaving(false);
+    }
+  };
+
+  const applyDeliveryManualStatus = async value => {
+    if (!tenant?.id || manualStatusSaving || storeSaving) return;
+    const normalized = normalizeManualStoreStatus(value);
+    if (normalized.until && normalized.until <= bangkokClock().dateTime) {
+      showToast(t("admin.opening_hours.until_future"), "error");
+      return;
+    }
+    setManualStatusSaving(true);
+    try {
+      const saved = await saveAdminStoreSettings(tenant.id, { deliveryManualStatus: normalized });
+      const actual = normalizeManualStoreStatus(saved.deliveryManualStatus);
+      if (JSON.stringify(actual) !== JSON.stringify(normalized)) throw new Error("DELIVERY_MANUAL_STATUS_VERIFY_FAILED");
+      setDeliveryManualStatus(actual);
+      showToast(t("admin.opening_hours.immediate_saved"));
+    } catch (error) {
+      console.error("DELIVERY_MANUAL_STATUS_SAVE_FAILED", error);
+      showToast(t("admin.opening_hours.immediate_failed"), "error");
+    } finally {
+      setManualStatusSaving(false);
     }
   };
 
@@ -1653,6 +1685,19 @@ export function AdminPage() {
                 <input type="hidden" id="storeLatitude" value={location?.latitude ?? ""} readOnly />
                 <input type="hidden" id="storeLongitude" value={location?.longitude ?? ""} readOnly />
               </section>
+            </AdminSettingsGroup>
+
+            <AdminSettingsGroup
+              id="storeOpeningHoursGroup"
+              icon="clock-history"
+              title={t("admin.opening_hours.title")}
+              description={t("admin.opening_hours.description")}
+              status={t("admin.opening_hours.status_label")}
+              statusTone="active"
+            >
+              <DeliveryHoursEditor t={t} hours={deliveryHours} savedHours={settings.deliveryHours} onChange={setDeliveryHours}
+                manual={deliveryManualStatus} onApplyManual={applyDeliveryManualStatus}
+                busy={manualStatusSaving || storeSaving} />
             </AdminSettingsGroup>
 
             <AdminSettingsGroup

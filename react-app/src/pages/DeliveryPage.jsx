@@ -8,8 +8,8 @@ import {
   PublicCartList, PublicMenuCatalog, PublicStorefrontFooter, PublicStorefrontHeader, showStorefrontToast,
 } from "@/components/PublicStorefront";
 import {
-  createPublicDeliveryOrder, deliveryFreeGiftActive, loadPublicStorefront, normalizeDeliveryFreeGift,
-  preparePublicOrderId, resolvePublicTenant, uploadPublicPaymentSlip,
+  checkDeliveryStoreIsOpen, createPublicDeliveryOrder, deliveryFreeGiftActive, loadPublicStorefront, normalizeDeliveryFreeGift,
+  preparePublicOrderId, resolvePublicTenant, uploadPublicPaymentSlip, watchPublicStoreSettings,
 } from "@/data/publicStorefrontData";
 import {
   getDeliveryCustomerFavorites, getDeliveryCustomerProfile, loginDeliveryCustomerWithGoogle,
@@ -23,6 +23,7 @@ import { generatePromptPayPayload } from "@/utils/promptPay";
 import { qrDataUrl } from "@/utils/localQr";
 import { svgQrPngBlob } from "@/utils/downloadQrPng";
 import { validDeliveryLocation as normalizeLocation, matchGpsSavedAddress, validatedGpsFix } from "@/utils/deliveryLocationPolicy";
+import { getDeliveryOpeningStatus } from "@/utils/deliveryOpeningHours";
 
 const computeDeliveryRoute = httpsCallable(functions, "computeDeliveryRoute");
 const quotePublicLalamoveDelivery = httpsCallable(functions, "quotePublicLalamoveDelivery");
@@ -78,6 +79,9 @@ function freeShippingConfig(settings = {}) {
 }
 function deliveryErrorMessage(error, t, settings) {
   const detail = String(error?.details?.providerError || error?.serverResponse?.providerError || error?.code || error?.message || "");
+  if (detail.includes("DELIVERY_STORE_CLOSED") || detail.includes("DELIVERY_STORE_STATUS_UNAVAILABLE")) {
+    return t("delivery.opening_hours.order_unavailable");
+  }
   if (detail.includes("ERR_OUT_OF_SERVICE_AREA")) return t("delivery.checkout.distance.lalamove_out_of_service_area");
   if (detail.includes("LALAMOVE_COD_UNAVAILABLE")) return t("delivery.checkout.distance.lalamove_cod_unavailable");
   if (detail.includes("DELIVERY_FREE_GIFT_LIMIT_EXCEEDED")) {
@@ -114,6 +118,9 @@ export function DeliveryPage() {
 
   const [tenant, setTenant] = useState(null);
   const [settings, setSettings] = useState({});
+  const [settingsLiveReady, setSettingsLiveReady] = useState(false);
+  const [settingsLiveError, setSettingsLiveError] = useState(false);
+  const [openingClock, setOpeningClock] = useState(() => Date.now());
   const [menus, setMenus] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -173,6 +180,30 @@ export function DeliveryPage() {
     })();
     return () => { alive = false; };
   }, [slug]);
+
+  // Live settings update the storefront immediately after an emergency
+  // close/reopen. Time-based transitions also tick without a page reload.
+  useEffect(() => {
+    if (!tenant) return undefined;
+    let alive = true;
+    setSettingsLiveReady(false);
+    setSettingsLiveError(false);
+    const unsubscribe = watchPublicStoreSettings(tenant, updated => {
+      if (!alive) return;
+      setSettings(updated);
+      setSettingsLiveReady(true);
+      setSettingsLiveError(false);
+    }, error => {
+      console.error("DELIVERY_STORE_HOURS_LISTENER_FAILED", error);
+      if (alive) { setSettingsLiveError(true); setSettingsLiveReady(true); }
+    });
+    return () => { alive = false; unsubscribe?.(); };
+  }, [tenant?.id]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setOpeningClock(Date.now()), 15000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (!tenant) return undefined;
@@ -254,6 +285,15 @@ export function DeliveryPage() {
       setPage(1);
     }
   }, [favoriteIds.size, activeCategory]);
+
+  const businessStatus = useMemo(
+    () => settingsLiveReady && !settingsLiveError
+      ? getDeliveryOpeningStatus(settings, new Date(openingClock))
+      : { open: false, reason: "unavailable", message: "" },
+    [settings, settingsLiveReady, settingsLiveError, openingClock],
+  );
+  const storeAcceptingOrders = businessStatus.open === true;
+  const closedReason = String(businessStatus.message || "").trim();
 
   const money = value => formatNumber(Number(value || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const cartCount = useMemo(() => cart.reduce((sum, item) => sum + Number(item.qty || 0), 0), [cart]);
@@ -371,7 +411,7 @@ export function DeliveryPage() {
   const paymentQrDownloadUrl = promptPayPng.source === promptPayQr.src ? promptPayPng.url : "";
 
   const add = item => {
-    if (paymentLocked) return;
+    if (paymentLocked || !storeAcceptingOrders) return;
     setCart(current => {
       const found = current.find(row => row.id === item.id);
       return found
@@ -379,7 +419,7 @@ export function DeliveryPage() {
         : [...current, { ...item, qty: 1, note: "" }];
     });
   };
-  const increase = id => { if (!paymentLocked) setCart(current => current.map(row => row.id === id ? { ...row, qty: row.qty + 1 } : row)); };
+  const increase = id => { if (!paymentLocked && storeAcceptingOrders) setCart(current => current.map(row => row.id === id ? { ...row, qty: row.qty + 1 } : row)); };
   const decrease = async item => {
     if (paymentLocked) return;
     if (item.qty > 1) {
@@ -553,6 +593,10 @@ export function DeliveryPage() {
   };
 
   const validateBase = () => {
+    if (!storeAcceptingOrders) {
+      showStorefrontToast(t("delivery.opening_hours.order_unavailable"), "error");
+      return false;
+    }
     if (!cart.length) { showStorefrontToast(t("delivery.checkout.validation.add_items_first"), "error"); return false; }
     if (!recipientName.trim() || !recipientPhone.trim() || !deliveryAddress.trim()) {
       showStorefrontToast(t("delivery.checkout.validation.delivery_details_required"), "error"); return false;
@@ -583,6 +627,12 @@ export function DeliveryPage() {
   const submit = async () => {
     if (!tenant || submitting) return;
     if (!validateBase()) return;
+    // Server-side read before payment lock, and again before upload/verify.
+    try { await checkDeliveryStoreIsOpen(tenant); }
+    catch (error) {
+      showStorefrontToast(t("delivery.opening_hours.order_unavailable"), "error");
+      return;
+    }
     if (paymentMethod === "promptpay" && !paymentLocked) {
       setLockedTotal({ subtotal, deliveryFee, total });
       setPaymentLocked(true);
@@ -595,6 +645,7 @@ export function DeliveryPage() {
     const orderId = preparePublicOrderId(tenant, "delivery");
     setSubmitting(true);
     try {
+      await checkDeliveryStoreIsOpen(tenant);
       const slip = paymentMethod === "promptpay" ? await uploadPublicPaymentSlip(tenant, slipFile, orderId) : { path: "" };
       let slipCheckStatus = "";
       if (paymentMethod === "promptpay") {
@@ -731,7 +782,8 @@ export function DeliveryPage() {
     });
   };
 
-  if (!stylesReady || loading || (tenant && profileLoading && !loadError)) return <PageReadyOverlay />;
+  if (!stylesReady || loading || (tenant && profileLoading && !loadError)
+    || (tenant && !settingsLiveReady && !loadError)) return <PageReadyOverlay />;
   const shopName = String(settings.orderDeliveryShopName || settings.shopName || tenant?.name || t("shared.store.fallback_name") || "PENGUIN").trim();
   const locked = paymentMethod === "promptpay" && paymentLocked;
 
@@ -744,12 +796,23 @@ export function DeliveryPage() {
         <p>{t("delivery.checkout.hero.description")}</p>
       </section>
 
+            {!storeAcceptingOrders ? <section className="delivery-closed-banner" id="deliveryStoreClosed" role="alert" aria-live="polite">
+              <i className="bi bi-door-closed app-icon" aria-hidden="true"></i>
+              <div><strong>{t("delivery.opening_hours.closed_title")}</strong>
+                <p>{t(businessStatus.reason === "closed_day" ? "delivery.opening_hours.closed_day" :
+                  businessStatus.reason === "outside_hours" ? "delivery.opening_hours.outside_hours" :
+                  businessStatus.reason === "unavailable" ? "delivery.opening_hours.status_unavailable" :
+                  "delivery.opening_hours.manual_closed")}</p>
+                {closedReason ? <p className="delivery-closed-reason">{closedReason}</p> : null}
+                <small>{t("delivery.opening_hours.closed_help")}</small>
+              </div>
+            </section> : null}
       {loadError ? <section className="card empty">{loadError}</section> : (
         <div className="delivery-pos">
           {loading ? <div className="delivery-menu-column"><div className="card empty">{t("common.loading")}</div></div> : (
             <PublicMenuCatalog menus={menus} prefix="delivery.checkout.menu" activeCategory={activeCategory}
               setActiveCategory={setActiveCategory} search={search} setSearch={setSearch} page={page} setPage={setPage}
-              onAdd={add} disabled={submitting || locked}
+              onAdd={add} disabled={submitting || locked || !storeAcceptingOrders}
               extraCategory={favoriteIds.size > 0 ? "__favorites__" : null} extraLabel={t("delivery.checkout.menu.favorites")}
               extraFilter={item => favoriteIds.has(String(item.id))}
               favoriteIds={favoriteIds} onToggleFavorite={toggleFavorite}
@@ -921,7 +984,7 @@ export function DeliveryPage() {
 
     <div className="cart-bar">
       <div><small>{t("delivery.checkout.summary.total_with_delivery")}</small><div style={{ fontSize: 20, fontWeight: 800 }}><span id="cartTotal">{money(total)}</span> {t("delivery.checkout.units.baht")}</div></div>
-      <button className="btn btn-primary" id="submitOrder" type="button" disabled={!tenant || !cart.length || submitting} onClick={submit}>
+      <button className="btn btn-primary" id="submitOrder" type="button" disabled={!tenant || !cart.length || submitting || !storeAcceptingOrders} onClick={submit}>
         <i className={"bi bi-" + (submitting ? "hourglass-split" : paymentMethod === "promptpay" && !paymentLocked ? "credit-card" : "check-lg") + " app-icon"}></i>
         <span>{submitting ? t("delivery.checkout.submit.sending") : paymentMethod === "promptpay" && !paymentLocked ? t("delivery.checkout.summary.review_and_pay") : t("delivery.checkout.summary.submit_order")}</span>
       </button>
