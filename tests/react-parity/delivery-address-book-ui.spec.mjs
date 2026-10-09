@@ -93,8 +93,8 @@ test("mobile map header stacks the GPS button under the title and text remains r
 test("address card reserves no Home-button gutter and retains edit/delete icon actions", () => {
   const cards=source.slice(source.indexOf('id="addressList"'),source.indexOf('{addressEditor ? createPortal('));
   assert.doesNotMatch(cards,/address-primary-button|set_default|aria-pressed/);
-  assert.match(cards,/bi-pencil/);
-  assert.match(cards,/bi-trash3/);
+  assert.match(cards,/DeliveryEditArtwork/);
+  assert.match(cards,/DeliveryDeleteArtwork/);
   assert.match(css,/body\.delivery-page \.address-list \.address-card-choice \{\s*padding-right: 0;/);
   assert.match(css,/body\.delivery-page \.address-list \.address-card \{\s*grid-template-columns: minmax\(0, 1fr\)/);
 });
@@ -130,21 +130,20 @@ test("header count is compact and selected subtitle is localized for all five la
  assert.match(css,/body\.delivery-page #addressBook #addAddressButton/);
 });
 
-test("delivery scooter heading uses the new green badge with centered icon", () => {
-  assert.match(source, /bi bi-scooter app-icon delivery-hero-scooter/);
-  assert.match(css, /body\.delivery-page \.hero \.hero-title > \.delivery-hero-scooter\.app-icon \{/);
-  assert.match(css, /--app-icon-bg: #edfaf1;/);
-  assert.match(css, /--app-icon-fg: #08783e;/);
-  assert.match(css, /body\.delivery-page \.hero \.hero-title > \.delivery-hero-scooter\.app-icon::before/);
+test("Delivery uses store logo and branded hero rather than legacy scooter", () => {
+  assert.match(source, /className="hero store-branded-hero" style=\{brandedHeroStyle\(settings\)\}/);
+  assert.match(source, /<StoreBrandMark settings=\{settings\} \/>/);
+  assert.match(source, /className="store-hero-brand-mark-section"/);
+  assert.doesNotMatch(source, /DeliveryScooterArtwork|bi bi-scooter app-icon/);
 });
 
-test("saved address Edit/Delete restore the earlier filled icon styles with mobile fit", () => {
+test("saved Edit/Delete buttons now use dedicated SVG designs", () => {
   const cards=source.slice(source.indexOf('id="addressList"'),source.indexOf('{addressEditor ? createPortal('));
-  assert.match(cards, /bi-pencil-square/);
-  assert.match(cards, /bi-trash3/);
+  const vectors=fs.readFileSync("react-app/src/components/DeliveryCustomIcons.jsx","utf8");
+  assert.match(cards, /<DeliveryEditArtwork \/>/);
+  assert.match(cards, /<DeliveryDeleteArtwork \/>/);
   assert.match(cards, /className="address-icon-button danger"/);
-  assert.match(css, /DELIVERY_ICON_POLISH_20261009_507/);
-  assert.match(css, /#addressBook \.address-list \.address-card-actions \.address-icon-button \{[\s\S]*?background: #edf3ef;/);
-  assert.match(css, /#addressBook \.address-list \.address-card-actions \.address-icon-button\.danger \{[\s\S]*?background: #fff0ee;/);
-  assert.match(css, /@media \(max-width: 480px\) \{[\s\S]*?width: 30px;/);
+  assert.match(vectors, /data-delivery-icon="edit"/);
+  assert.match(vectors, /data-delivery-icon="delete"/);
+  assert.match(css, /#addressBook \.address-list \.address-card-actions svg\.delivery-address-action-svg/);
 });

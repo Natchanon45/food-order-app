@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
+import { StoreBrandMark, brandedHeroStyle } from "@/components/StoreHeroBranding";
 import { useParams } from "react-router-dom";
 import { sweetConfirm } from "@/components/sweetDialog";
 import {
   PublicCartList, PublicMenuCatalog, PublicStorefrontFooter, PublicStorefrontHeader, showStorefrontToast,
 } from "@/components/PublicStorefront";
 import {
-  createPublicTableOrder, findPublicTableSession, getPublicTable, listPublicMenus, resolvePublicTenant, watchPublicTableOrders,
+  createPublicTableOrder, findPublicTableSession, getPublicTable, getPublicStoreSettings, listPublicMenus, resolvePublicTenant, watchPublicTableOrders,
 } from "@/data/publicStorefrontData";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
@@ -29,7 +30,7 @@ export function PublicOrderPage() {
       "app.css", "menu-qr.css", "customer-rounds.css", "menu-pagination.css", "icons.css",
       "pos-refresh.css", "table-order-sticky-lite.css", "sweet-dialog.css",
       "order-delivery-workspace-theme.css", "public-menu-image-frame.css", "i18n.css",
-      "shared-responsive.css", "toast-system.css", "ui-layer-stack.css",
+      "shared-responsive.css", "store-hero-branding.css", "toast-system.css", "ui-layer-stack.css",
     ],
   });
   const params = useMemo(() => new URLSearchParams(location.search), []);
@@ -38,6 +39,7 @@ export function PublicOrderPage() {
   const [tenant, setTenant] = useState(null);
   const [activeTable, setActiveTable] = useState(null);
   const [menus, setMenus] = useState([]);
+  const [storeSettings, setStoreSettings] = useState({});
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -98,9 +100,10 @@ export function PublicOrderPage() {
           }
         }
 
-        const rows = await listPublicMenus(resolvedTenant);
+        const [rows, brandingSettings] = await Promise.all([listPublicMenus(resolvedTenant), getPublicStoreSettings(resolvedTenant)]);
         if (!alive) return;
         setMenus(rows);
+        setStoreSettings(brandingSettings || {});
         setActiveTable(table);
         if (!table) setError("INVALID_TABLE_SESSION");
         poll = window.setInterval(async () => {
@@ -179,8 +182,8 @@ export function PublicOrderPage() {
     <>
       <PublicStorefrontHeader title={t("order.header.title")} badge={loading ? t("order.header.checking") : badge} />
       <main className="container">
-        <section className="hero">
-          <h1 className="hero-title"><i className={"bi bi-" + (validSession ? "journal-text" : "journal-x") + " app-icon"} aria-hidden="true"></i><span>{heroTitle}</span></h1>
+        <section className="hero store-branded-hero" style={brandedHeroStyle(storeSettings)}>
+          <h1 className="hero-title"><StoreBrandMark settings={storeSettings} /><span>{heroTitle}</span></h1>
           <p>{heroDescription}</p>
         </section>
         <div className="delivery-pos">

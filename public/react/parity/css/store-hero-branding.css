@@ -1,0 +1,110 @@
+/* Per-tenant hero image / logo on Delivery, Table Order, Takeaway & Quick Order.
+   No store photo uploaded: preserve the existing green branded gradient. */
+body .store-branded-hero.hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  min-height: 102px;
+  border: 1px solid rgba(255,255,255,.22);
+}
+body .store-branded-hero.hero::after {
+  opacity: .38;
+  z-index: 0;
+}
+body .store-branded-hero.hero > * {
+  position: relative;
+  z-index: 1;
+}
+body .store-branded-hero.hero .hero-title {
+  align-items: center;
+  gap: 11px;
+  flex-wrap: nowrap;
+  max-width: 100%;
+}
+body .store-branded-hero.hero .hero-title > span:not(.store-hero-brand-mark) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+body .store-hero-brand-mark {
+  box-sizing: border-box;
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  flex: 0 0 46px;
+  margin: 0;
+  padding: 3px;
+  border: 1px solid rgba(255,255,255,.64);
+  border-radius: 14px;
+  background: #f9fffb;
+  color: #10794b;
+  box-shadow: 0 4px 13px rgba(0,28,16,.22);
+}
+body .store-hero-brand-mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+body .store-hero-brand-mark .store-hero-fallback-icon {
+  display: grid;
+  place-items: center;
+  width: 29px;
+  height: 29px;
+  font-size: 25px;
+  line-height: 1;
+  color: #10794b;
+}
+body .store-hero-brand-mark img:not([hidden]) + .store-hero-fallback-icon {
+  display: none;
+}
+body .store-hero-brand-mark img[hidden] + .store-hero-fallback-icon {
+  display: grid;
+}
+body .store-hero-brand-mark-section {
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  flex-basis: 38px;
+  border-radius: 11px;
+  background: #e9f7ef;
+  border-color: #d5ebdd;
+  box-shadow: none;
+}
+body .store-hero-brand-mark-section .store-hero-fallback-icon {
+  font-size: 21px;
+}
+@media (max-width: 480px) {
+  body .store-hero-brand-mark {
+    width: 39px;
+    height: 39px;
+    min-width: 39px;
+    flex-basis: 39px;
+    border-radius: 11px;
+  }
+  body .store-hero-brand-mark-section {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    flex-basis: 34px;
+  }
+  body .store-branded-hero.hero {
+    min-height: 94px;
+  }
+}
+
+/* Preserve cover cropping over legacy ordering-layout theme CSS. */
+body.delivery-page .hero.store-branded-hero,
+body.table-order-page .hero.store-branded-hero,
+body.order-delivery-workspace .hero.store-branded-hero,
+body.quick-order-page .hero.store-branded-hero {
+  background-position: center center;
+  background-size: cover, cover;
+  background-repeat: no-repeat;
+}

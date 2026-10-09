@@ -1,13 +1,15 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
   version: "0.4.280",
-  build: "2026.10.09.507",
+  build: "2026.10.09.508",
   branch: "feature/react-firebase-port",
-  commit: "DELIVERY-ICON-POLISH-RESTORE-ADDRESS-ACTIONS",
+  commit: "MULTI-SURFACE-STORE-LOGO-COVER-BRANDING",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Redesign Delivery scooter badge and restore prominent edit/delete icons",
+  milestone: "Add per-store logo and cover uploads across all four ordering surfaces",
   whatsNew: [
+    "Upload a store logo and branded hero background in store settings for Delivery, Table, Takeaway and Quick Order",
+    "Use custom Edit/Delete SVG buttons on saved Delivery addresses",
     "Refine Delivery scooter hero emblem and restore soft-filled Edit/Delete address action icon buttons",
     "Update Delivery receipt payment review, Lalamove provider and inline item quantities",
     "Wrap Slip2Go verification note and long slip filenames within mobile delivery payment cards",

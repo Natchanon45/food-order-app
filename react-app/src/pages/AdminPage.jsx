@@ -8,6 +8,8 @@ import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
 import { AdminDeliveryQr } from "@/components/AdminDeliveryQr";
 import { DeliveryHoursEditor } from "@/components/DeliveryHoursEditor";
+import { StoreBrandingEditor } from "@/components/StoreBrandingEditor";
+import { uploadStoreBrandImage } from "@/data/storeBrandingData";
 import { defaultDeliveryHours, normalizeDeliveryHours, normalizeManualStoreStatus, bangkokClock } from "@/utils/deliveryOpeningHours";
 import { AdminCollapsibleCard } from "@/components/AdminCollapsibleCard";
 import { sweetConfirm } from "@/components/sweetDialog";
@@ -659,7 +661,7 @@ export function AdminPage() {
       "admin-icon-polish.css", "sweet-dialog.css", "order-delivery-workspace-theme.css", "admin-retail-pos-parity.css",
       "admin-react-master-visual.css",
       "admin-modal-retail-pos-parity.css", "admin-delivery-fee-row-alignment.css",
-      "admin-store-location.css", "admin-store-settings-workspace.css", "admin-opening-hours.css", "admin-delivery-providers.css", "admin-delivery-promotions.css",
+      "admin-store-location.css", "admin-store-settings-workspace.css", "admin-store-branding.css", "admin-opening-hours.css", "admin-delivery-providers.css", "admin-delivery-promotions.css",
       "admin-upload.css", "admin-mobile-table.css",
     ],
     attributes: { "data-roles": "admin", "data-admin-workspace-refresh": "1" },
@@ -682,7 +684,7 @@ export function AdminPage() {
   const [walletSlipDragOver, setWalletSlipDragOver] = useState(false);
   const [walletDeleteBusy, setWalletDeleteBusy] = useState("");
   const [storeForm, setStoreForm] = useState({
-    shopName: "", shopAddress: "", shopPhone: "", promptPayId: "", promptPayName: "",
+    shopName: "", shopAddress: "", shopPhone: "", shopLogoUrl: "", shopHeroImageUrl: "", promptPayId: "", promptPayName: "",
     bankName: "", bankAccountNumber: "", bankAccountName: "",
     deliveryProvider: "self", deliveryMaxDistanceKm: 10,
   });
@@ -693,6 +695,7 @@ export function AdminPage() {
   const [fees, setFees] = useState([]);
   const [promotion, setPromotion] = useState(normalizedPromotion({}));
   const [storeSaving, setStoreSaving] = useState(false);
+  const [storeBrandFiles, setStoreBrandFiles] = useState({ logo: null, cover: null });
   const [deliveryHours, setDeliveryHours] = useState(defaultDeliveryHours);
   const [deliveryManualStatus, setDeliveryManualStatus] = useState({ mode: "auto", reason: "", until: "" });
   const [manualStatusSaving, setManualStatusSaving] = useState(false);
@@ -747,6 +750,7 @@ export function AdminPage() {
       if (!data) throw lastError || new Error("ADMIN_LOAD_FAILED");
       const s = data.settings || {};
       setSettings(s);
+      setStoreBrandFiles({ logo: null, cover: null });
       setMenus(data.menus || []);
       setTables(data.tables || []);
       const lalamoveStatus = data.lalamove || {};
@@ -760,6 +764,8 @@ export function AdminPage() {
       });
       setStoreForm({
         shopName: String(s.shopName || tenant.name || ""),
+        shopLogoUrl: String(s.shopLogoUrl || s.logoUrl || ""),
+        shopHeroImageUrl: String(s.shopHeroImageUrl || s.heroImageUrl || ""),
         shopAddress: String(s.shopAddress || ""),
         shopPhone: String(s.shopPhone || ""),
         promptPayId: String(s.promptPayId || ""),
@@ -797,6 +803,13 @@ export function AdminPage() {
   }, [profile?.role, tenant?.id, load]);
 
   const patchStore = patch => setStoreForm(current => ({ ...current, ...patch }));
+  const changeStoreBrandFile = (kind, file) => {
+    if (file && (!["image/png", "image/jpeg", "image/webp"].includes(file.type) || file.size > 8 * 1024 * 1024)) {
+      showToast(t("admin.store_branding.invalid"), "error");
+      return;
+    }
+    setStoreBrandFiles(current => ({ ...current, [kind]: file }));
+  };
   const patchLalamove = patch => setLalamoveForm(current => ({ ...current, ...patch }));
 
   useEffect(() => {
@@ -1045,6 +1058,14 @@ export function AdminPage() {
       .filter(item => item.id === "pickup" || Number(item.maxDistanceKm) > 0);
     setStoreSaving(true);
     try {
+      // Upload only after the user saves settings, using existing tenant-scoped
+      // product-image Storage permissions. No open/public write path.
+      const [logoUpload, coverUpload] = await Promise.all([
+        storeBrandFiles.logo ? uploadStoreBrandImage(tenant.id, storeBrandFiles.logo, "logo") : Promise.resolve(null),
+        storeBrandFiles.cover ? uploadStoreBrandImage(tenant.id, storeBrandFiles.cover, "cover") : Promise.resolve(null),
+      ]);
+      const nextLogoUrl = logoUpload?.url || storeForm.shopLogoUrl || "";
+      const nextCoverUrl = coverUpload?.url || storeForm.shopHeroImageUrl || "";
       const pickupFee = cleanFees.find(item => item.id === "pickup") || {
         id: "pickup",
         label: t("admin.delivery_fee.default_pickup"),
@@ -1060,6 +1081,8 @@ export function AdminPage() {
       const payload = {
         ...storeForm,
         shopName: storeForm.shopName.trim(),
+        shopLogoUrl: nextLogoUrl,
+        shopHeroImageUrl: nextCoverUrl,
         shopAddress: storeForm.shopAddress.trim(),
         shopPhone: storeForm.shopPhone.trim(),
         promptPayId: storeForm.promptPayId.trim(),
@@ -1082,7 +1105,7 @@ export function AdminPage() {
       const expectedPromotion = JSON.stringify(payload.deliveryPromotion);
       const actualPromotion = JSON.stringify(promotionForStore(normalizedPromotion(saved)));
       const textFields = [
-        "shopName", "shopAddress", "shopPhone", "promptPayId", "promptPayName",
+        "shopName", "shopAddress", "shopPhone", "shopLogoUrl", "shopHeroImageUrl", "promptPayId", "promptPayName",
         "bankName", "bankAccountNumber", "bankAccountName", "deliveryProvider",
       ];
       const textMismatch = textFields.some(field => String(saved?.[field] ?? "") !== String(payload[field] ?? ""));
@@ -1107,6 +1130,8 @@ export function AdminPage() {
         throw new Error("STORE_SETTINGS_VERIFICATION_FAILED");
       }
       setSettings(saved);
+      setStoreForm(current => ({ ...current, shopLogoUrl: saved.shopLogoUrl || "", shopHeroImageUrl: saved.shopHeroImageUrl || "" }));
+      setStoreBrandFiles({ logo: null, cover: null });
       setDeliveryHours(normalizeDeliveryHours(saved.deliveryHours));
       showToast(t("admin.store.save_success"));
     } catch (error) {
@@ -1662,6 +1687,8 @@ export function AdminPage() {
                 <div className="field"><label htmlFor="shopPhone">{t("admin.store.shop_phone")}</label><input className="input" id="shopPhone" type="tel" value={storeForm.shopPhone} onChange={e => patchStore({ shopPhone: e.target.value })} /></div>
                 <div className="field admin-store-address-field"><label htmlFor="shopAddress">{t("admin.store.shop_address")}</label><textarea className="input" id="shopAddress" required value={storeForm.shopAddress} onChange={e => patchStore({ shopAddress: e.target.value })}></textarea></div>
               </div>
+              <StoreBrandingEditor values={storeForm} files={storeBrandFiles} busy={storeSaving}
+                t={t} onChange={patchStore} onFile={changeStoreBrandFile} />
             </AdminSettingsGroup>
 
             <AdminSettingsGroup

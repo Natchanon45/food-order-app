@@ -158,16 +158,16 @@ test.describe("Delivery Laravel behavior parity", () => {
     const edit = actions.getByRole("button", { name: "แก้ไข" });
     const remove = actions.getByRole("button", { name: "ลบ" });
 
-    await expect(edit.locator("i.bi-pencil")).toHaveCount(1);
-    await expect(remove.locator("i.bi-trash3")).toHaveCount(1);
+    await expect(edit.locator('svg[data-delivery-icon="edit"]')).toHaveCount(1);
+    await expect(remove.locator('svg[data-delivery-icon="delete"]')).toHaveCount(1);
     await expect(page.locator(".address-primary-button")).toHaveCount(0);
 
     for (const button of [edit, remove]) {
-      const icon = button.locator("i.app-icon");
+      const icon = button.locator("svg.delivery-address-action-svg");
       await expect(icon).toBeVisible();
       const bounds = await button.evaluate(element => {
         const buttonRect = element.getBoundingClientRect();
-        const iconRect = element.querySelector("i.app-icon")?.getBoundingClientRect();
+        const iconRect = element.querySelector("svg.delivery-address-action-svg")?.getBoundingClientRect();
         return iconRect ? {
           inside:
             iconRect.left >= buttonRect.left - 1

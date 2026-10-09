@@ -1,0 +1,97 @@
+/* Store branding assets are edited alongside Store Basics, shared by all four order views. */
+body.admin-vr-page .admin-store-branding-editor {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 13px;
+  margin-top: 13px;
+}
+body.admin-vr-page .admin-store-branding-field {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 13px;
+  border-radius: 14px;
+  border: 1px solid #dce8df;
+  background: #f8fbf9;
+}
+body.admin-vr-page .admin-store-branding-field-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+body.admin-vr-page .admin-store-branding-field-heading strong {
+  color: #173c2b;
+  font-size: 13px;
+}
+body.admin-vr-page .admin-store-branding-field-heading small {
+  font-size: 11px;
+  color: #63756c;
+  line-height: 1.6;
+}
+body.admin-vr-page .admin-store-branding-preview {
+  box-sizing: border-box;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px dashed #cadcd1;
+  border-radius: 12px;
+  background: #fff;
+}
+body.admin-vr-page .admin-store-branding-preview.is-logo { height: 142px; }
+body.admin-vr-page .admin-store-branding-preview.is-cover { height: 142px; }
+body.admin-vr-page .admin-store-branding-preview img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+body.admin-vr-page .admin-store-branding-preview.is-cover img {
+  object-fit: cover;
+}
+body.admin-vr-page .admin-store-branding-placeholder {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #7e9284;
+}
+body.admin-vr-page .admin-store-branding-placeholder i {
+  display: block;
+  font-size: 27px;
+  color: #15864b;
+}
+body.admin-vr-page .admin-store-branding-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+body.admin-vr-page .admin-store-branding-pick {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #e4f4e9;
+  color: #12733c;
+  font-size: 12px;
+  cursor: pointer;
+}
+body.admin-vr-page .admin-store-branding-pick input[type=file] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+body.admin-vr-page .admin-store-branding-pick:focus-within {
+  outline: 2px solid #15965b;
+  outline-offset: 2px;
+}
+@media (max-width: 680px) {
+  body.admin-vr-page .admin-store-branding-editor {
+    grid-template-columns: minmax(0,1fr);
+  }
+}

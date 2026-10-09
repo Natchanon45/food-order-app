@@ -5,6 +5,8 @@ import { useParams } from "react-router-dom";
 import { httpsCallable } from "firebase/functions";
 import { sweetConfirm } from "@/components/sweetDialog";
 import { DeliveryLocationPicker } from "@/components/DeliveryLocationPicker";
+import { DeliveryEditArtwork, DeliveryDeleteArtwork } from "@/components/DeliveryCustomIcons";
+import { StoreBrandMark, brandedHeroStyle } from "@/components/StoreHeroBranding";
 import {
   PublicCartList, PublicMenuCatalog, PublicStorefrontFooter, PublicStorefrontHeader, showStorefrontToast,
 } from "@/components/PublicStorefront";
@@ -109,7 +111,7 @@ export function DeliveryPage() {
     title: t("delivery.checkout.meta_title"),
     bodyClass: "order-delivery-workspace delivery-page customer-order-page",
     styles: [
-      "app.css", "menu-qr.css", "payment-slip.css", "menu-pagination.css", "delivery-addresses.css",
+      "app.css", "menu-qr.css", "payment-slip.css", "menu-pagination.css", "delivery-addresses.css", "store-hero-branding.css",
       "delivery-location-map.css", "delivery-promotions.css", "icons.css", "pos-refresh.css",
       "public-menu-image-frame.css", "mobile-menu-scroll.css", "delivery-payment-lock.css", "sweet-dialog.css",
       "order-delivery-workspace-theme.css", "delivery-google-normal-button.css",
@@ -809,8 +811,8 @@ export function DeliveryPage() {
     <PublicStorefrontHeader title={t("delivery.checkout.header.title")} badge={t("delivery.checkout.header.badge")} />
     <div id="demoBanner"></div>
     <main className="container">
-      <section className="hero">
-        <h1 className="hero-title"><i className="bi bi-scooter app-icon delivery-hero-scooter" aria-hidden="true"></i><span id="deliveryHeroStoreName">{shopName}</span></h1>
+      <section className="hero store-branded-hero" style={brandedHeroStyle(settings)}>
+        <h1 className="hero-title"><StoreBrandMark settings={settings} /><span id="deliveryHeroStoreName">{shopName}</span></h1>
         <p>{t("delivery.checkout.hero.description")}</p>
       </section>
 
@@ -889,7 +891,7 @@ export function DeliveryPage() {
             </section>
 
             <section className="card" style={{ marginTop: 18 }}>
-              <div className="section-title"><h2><i className="bi bi-truck app-icon"></i><span>{t("delivery.checkout.address.section_title")}</span></h2></div>
+              <div className="section-title"><h2><StoreBrandMark settings={settings} className="store-hero-brand-mark-section" /><span>{t("delivery.checkout.address.section_title")}</span></h2></div>
               <div className="grid grid-2 delivery-contact-grid">
                 <div className="field"><label>{t("delivery.checkout.address.recipient_name")} *</label><input className="input" id="recipientName" required maxLength={120} value={recipientName} disabled={submitting} onChange={event => setRecipientName(event.target.value)} /><div className="address-lookup-status" aria-hidden="true">&nbsp;</div></div>
                 <div className="field"><label>{t("delivery.checkout.address.phone")} *</label><input className="input" id="recipientPhone" type="tel" inputMode="tel" required maxLength={20} value={recipientPhone} disabled={submitting} onChange={event => setRecipientPhone(event.target.value)} /><div id="addressLookupStatus" className="address-lookup-status">{profileLoading ? t("delivery.checkout.address.loading") : (profile.addresses || []).length ? t("delivery.checkout.address.found", { count: (profile.addresses || []).length }) : t("delivery.checkout.address.none_for_store")}</div></div>
@@ -952,13 +954,13 @@ export function DeliveryPage() {
                           aria-label={t("delivery.checkout.address.edit")} title={t("delivery.checkout.address.edit")}
                           disabled={Boolean(customerBusy) || locked || submitting}
                           onClick={() => setAddressEditor({ ...address })}>
-                          <i className="bi bi-pencil-square app-icon" aria-hidden="true"></i>
+                          <DeliveryEditArtwork />
                         </button>
                         <button type="button" className="address-icon-button danger"
                           aria-label={t("delivery.checkout.address.delete")} title={t("delivery.checkout.address.delete")}
                           disabled={Boolean(customerBusy) || locked || submitting}
                           onClick={() => deleteAddress(address)}>
-                          <i className="bi bi-trash3 app-icon" aria-hidden="true"></i>
+                          <DeliveryDeleteArtwork />
                         </button>
                       </div>
                     </div>

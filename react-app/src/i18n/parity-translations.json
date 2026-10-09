@@ -373,6 +373,16 @@
         "takeaway_link": "ลิงก์สั่งกลับบ้าน",
         "takeaway_label": "สั่งกลับบ้าน"
       },
+      "store_branding": {
+        "logo_title": "โลโก้ร้าน",
+        "logo_help": "แนะนำไฟล์ PNG พื้นหลังโปร่งใส หรือ JPG / WebP สำหรับใช้ทุกหน้าสั่งซื้อ",
+        "cover_title": "ภาพปกหน้าสั่งซื้อ",
+        "cover_help": "แนะนำภาพแนวนอน 1600 × 900 พิกเซล ใช้เป็นพื้นหลังบน Delivery, สั่งที่โต๊ะ, สั่งกลับบ้าน และ Quick Order",
+        "none": "ยังไม่ได้อัปโหลด",
+        "choose": "เลือกรูปภาพ",
+        "remove": "ลบรูปภาพ",
+        "invalid": "โปรดใช้รูป JPG, PNG หรือ WebP ไม่เกิน 8 MB"
+      },
       "store_workspace": {
         "overview_store": "ข้อมูลร้าน",
         "overview_location": "ตำแหน่งร้าน",
@@ -6886,6 +6896,16 @@
         "takeaway_link": "Takeaway order link",
         "takeaway_label": "Takeaway"
       },
+      "store_branding": {
+        "logo_title": "Store logo",
+        "logo_help": "Use a transparent PNG or a JPG/WebP for all ordering pages",
+        "cover_title": "Ordering page cover",
+        "cover_help": "Landscape image recommended (1600 × 900). Shared by Delivery, Table, Takeaway and Quick Order",
+        "none": "No image uploaded",
+        "choose": "Choose image",
+        "remove": "Remove image",
+        "invalid": "Please choose a JPG, PNG or WebP image under 8 MB"
+      },
       "store_workspace": {
         "overview_store": "Store",
         "overview_location": "Location",
@@ -13123,6 +13143,16 @@
         "takeaway_paper_title": "Takeaway မှာရန် စကင်ဖတ်ပါ",
         "takeaway_link": "Takeaway မှာယူမှုလင့်ခ်",
         "takeaway_label": "ယူသွားပါ။"
+      },
+      "store_branding": {
+        "logo_title": "ဆိုင်လိုဂို",
+        "logo_help": "ဆိုင်စာမျက်နှာများအတွက် PNG၊ JPG သို့မဟုတ် WebP ပုံထည့်ပါ",
+        "cover_title": "အော်ဒါစာမျက်နှာ နောက်ခံပုံ",
+        "cover_help": "အလျားလိုက်ပုံ (1600 × 900) ကို အကြံပြုပါသည်။ အော်ဒါစာမျက်နှာအားလုံးတွင် အသုံးပြုပါမည်",
+        "none": "ပုံမတင်ရသေးပါ",
+        "choose": "ပုံရွေးပါ",
+        "remove": "ပုံဖယ်ရှားရန်",
+        "invalid": "8 MB အောက် JPG၊ PNG သို့မဟုတ် WebP ပုံရွေးပါ"
       },
       "store_workspace": {
         "overview_store": "ဆိုင်",
@@ -19362,6 +19392,16 @@
         "takeaway_link": "ລິ້ງສັ່ງ Takeaway",
         "takeaway_label": "ສັ່ງກັບບ້ານ"
       },
+      "store_branding": {
+        "logo_title": "ໂລໂກ້ຮ້ານ",
+        "logo_help": "ໃຊ້ຮູບ PNG, JPG ຫຼື WebP ໃນທຸກໜ້າສັ່ງອາຫານ",
+        "cover_title": "ຮູບພື້ນຫຼັງໜ້າສັ່ງ",
+        "cover_help": "ແນະນຳຮູບແນວນອນ 1600 × 900 ສຳລັບທຸກໜ້າສັ່ງອາຫານ",
+        "none": "ຍັງບໍ່ມີຮູບ",
+        "choose": "ເລືອກຮູບ",
+        "remove": "ລຶບຮູບ",
+        "invalid": "ເລືອກ JPG, PNG ຫຼື WebP ບໍ່ເກີນ 8 MB"
+      },
       "store_workspace": {
         "overview_store": "ຮ້ານ",
         "overview_location": "ຕຳແໜ່ງ",
@@ -25599,6 +25639,16 @@
         "takeaway_paper_title": "ស្កេនដើម្បីបញ្ជាទិញយកទៅឆ្ងាយ",
         "takeaway_link": "តំណការបញ្ជាទិញ Takeaway",
         "takeaway_label": "យកតាមខ្លួន"
+      },
+      "store_branding": {
+        "logo_title": "ឡូហ្គោហាង",
+        "logo_help": "ប្រើរូបភាព PNG, JPG ឬ WebP សម្រាប់ទំព័រកម្មង់ទាំងអស់",
+        "cover_title": "រូបភាពផ្ទៃខាងក្រោយទំព័រកម្មង់",
+        "cover_help": "ណែនាំរូបភាពផ្ដេក 1600 × 900 សម្រាប់ទំព័រកម្មង់ទាំងអស់",
+        "none": "មិនទាន់មានរូបភាព",
+        "choose": "ជ្រើសរើសរូបភាព",
+        "remove": "លុបរូបភាព",
+        "invalid": "ជ្រើស JPG, PNG ឬ WebP មិនលើស 8 MB"
       },
       "store_workspace": {
         "overview_store": "ហាង",

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
+import { StoreBrandMark, brandedHeroStyle } from "@/components/StoreHeroBranding";
 import { useParams } from "react-router-dom";
 import { sweetAlert, sweetConfirm } from "@/components/sweetDialog";
 import {
@@ -20,7 +21,7 @@ export function TakeawayPage() {
     styles: [
       "app.css", "menu-qr.css", "menu-pagination.css", "icons.css", "pos-refresh.css",
       "public-menu-image-frame.css", "table-order-sticky-lite.css", "sweet-dialog.css",
-      "order-delivery-workspace-theme.css", "shared-responsive.css", "ui-layer-stack.css",
+      "order-delivery-workspace-theme.css", "shared-responsive.css", "store-hero-branding.css", "ui-layer-stack.css",
     ],
   });
   const [tenant, setTenant] = useState(null);
@@ -154,8 +155,8 @@ export function TakeawayPage() {
     <>
       <PublicStorefrontHeader title={t("takeaway.header.title")} badge={t("takeaway.header.badge")} />
       <main className="container">
-        <section className="hero">
-          <h1 className="hero-title"><i className="bi bi-bag-check app-icon" aria-hidden="true"></i><span>{shopName}</span></h1>
+        <section className="hero store-branded-hero" style={brandedHeroStyle(settings)}>
+          <h1 className="hero-title"><StoreBrandMark settings={settings} /><span>{shopName}</span></h1>
           <p>{t("takeaway.hero.description")}</p>
         </section>
 

@@ -24,6 +24,15 @@ git status --short
 ```
 
 Do not rely on old chat memory instead of these files and current Git state.
+## Latest: Shop logo + Hero cover upload for Delivery/Table/Takeaway/Quick Order — Build 2026.10.09.508
+
+- User rejected recolored scooter font and requested per-shop uploaded logo, an uploaded shop-related Hero cover in admin Store Settings, and the same customization for dine-in Table Order, Takeaway and Cashier Quick Order. Continued direct Mac development without further permission prompts.
+- StoreHeroBranding.jsx + store-hero-branding.css render per-tenant `settings.shopLogoUrl`/`shopHeroImageUrl` (legacy logoUrl/heroImageUrl read support), dark overlay and `background-size:cover` all 4 pages; Delivery section heading also shows logo, never previous scooter. Missing image gracefully falls back to shop glyph and original green gradient.
+- StoreBrandingEditor.jsx added under Admin Store Basics: browse/preview/replace/remove logo and cover; StoreBrandingData compresses JPG/PNG/WebP to WebP (alpha retained for logo), max 8MB original / 5MB uploaded, writes only on Store Save to existing tenant-scoped Storage rules `tenants/{tenantId}/product-images/store-branding/...` and saves URLs in tenant settings/store with read-back verification. Removes clear settings display links, not underlying bytes. No Storage/Firestore Rules changes/deploy. Labels localized TH/EN/MY/LO/KM. Real tenant uploads NOT tested and no real account/settings modified.
+- Hand-drawn dedicated SVG Edit/Delete actions in DeliveryCustomIcons.jsx replace Bootstrap font glyphs; icon positioning retained 30px/33px tiles, address cards 62px mobile /66px desktop. Scooter-artwork code removed, old static tests updated.
+- Build 2026.10.09.508 (JS /react/assets/index-BYxDosD9.js), React parity/operational/build and brand tests 6/6 PASS. Actual installed Chrome visual smoke with read-only logo/cover fixtures 320/360/390/440/768/1280 ALL PASS: responsive cover, mark/fallback, admin previews one vs two columns, centered Edit/Delete, no card/page overflow or runtime error, editor modal works. No order/payment changes.
+- Pending Commit/Push and Firebase Hosting-only release; preserve feature/react-firebase-port, never merge main/reset/clean or delete old hashed bundles. Production verification to follow. See WORKLOG.
+
 ## Latest: Delivery scooter and original Edit/Delete address button styling — Build 2026.10.09.507
 
 - User explicitly requires Mac-direct implementation, not code suggestions. Requested new scooter emblem and restore original clear Edit/Delete icons to the compact saved-address cards.

@@ -3,6 +3,7 @@ import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
+import { StoreBrandMark, brandedHeroStyle } from "@/components/StoreHeroBranding";
 import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
 import { sweetConfirm } from "@/components/sweetDialog";
@@ -85,7 +86,7 @@ export function QuickOrderPage() {
   const stylesReady = useParityPage({
     title: t("quick_order.meta.title"),
     bodyClass: "quick-order-page",
-    styles: ["app.css", "icons.css", "sweet-dialog.css", "quick-order.css", "page-ready-state.css"],
+    styles: ["app.css", "icons.css", "sweet-dialog.css", "quick-order.css", "page-ready-state.css", "store-hero-branding.css"],
     attributes: { "data-roles": "owner,admin,manager,cashier" },
   });
   const allowedRole = ["owner", "admin", "manager", "cashier"].includes(profile?.role);
@@ -760,9 +761,9 @@ export function QuickOrderPage() {
 
       <div id="demoBanner"></div>
       <main className="container quick-order-shell">
-        <section className="hero quick-order-hero">
+        <section className="hero quick-order-hero store-branded-hero" style={brandedHeroStyle(storeSettings)}>
           <div>
-            <h1 className="hero-title"><i className="bi bi-shop app-icon" aria-hidden="true"></i><span id="quickStoreName">{storeName}</span></h1>
+            <h1 className="hero-title"><StoreBrandMark settings={storeSettings} /><span id="quickStoreName">{storeName}</span></h1>
             <p>{t("quick_order.hero.description")}</p>
           </div>
         </section>
