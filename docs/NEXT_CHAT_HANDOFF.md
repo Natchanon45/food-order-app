@@ -4,6 +4,12 @@ Updated: 2026-10-10
 Project: Food Order / Delivery / Retail POS
 Repository: `Natchanon45/food-order-app`
 
+## 2026-10-10 — User-authorized main Fast-forward merge
+
+- User confirmed Cashier net-total UI is correct and explicitly requested Commit, Push and Merge. Preflight fetched both branches and confirmed origin/main (98c07f6e) is an ancestor of origin/feature/react-firebase-port (1944dc60), 9 commits behind, with no local tracked changes; 16 previous untracked Vite hashed JS files were preserved.
+- Re-ran npm run test:react-parity and npm run verify:react-build; both PASS (0.4.284 / 2026.10.10.514). Switched to local main, merged feature/react-firebase-port with git merge --ff-only and pushed origin/main from 98c07f6e to 1944dc60; no merge commit and no conflict.
+- Post-merge documentation commit recorded on main and both main/feature branch tips synchronized (see git log). Firebase Hosting was already deployed and Production verified before this merge; no redeploy, no version/build bump, no Functions or Firestore Rules deployment. Keep working on feature/react-firebase-port and preserve historical untracked bundles.
+
 ## 2026-10-10 — Cashier bill modal net total wording (Build .514)
 
 - User supplied real Cashier Delivery bill screenshot: modal grand total label incorrectly read "ยอดรวมทั้งโต๊ะ" because it reused cashier.table.total across every order type. Change only label selection: Delivery, Take Away and Walk-in show "ยอดรวมสุทธิ" (cashier.bill_preview.net_total), table rounds retain table-specific label. Total numeric sum and calculation unchanged.

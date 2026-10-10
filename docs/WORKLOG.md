@@ -13209,3 +13209,15 @@ Updated CashierPage.jsx, cashier bill preview TH/EN/MY/LO/KM translations and re
 - Firebase Hosting only: npx --no-install firebase-tools deploy --only hosting:foodapp --project chat-45754 --non-interactive; completed with exit 0, 582 public files, release complete at https://penguin-food.web.app.
 - Production curl smoke: /cashier/, /cashier/receipt/, /kitchen/ each HTTP 200 referencing /react/assets/index-hXz-nnu4.js. Live and Mac built JS SHA-256 4861d54b9c851f47aa845dad425922753768036bec40b6f2c595aa3195d800a8.
 - Only label/translation logic changed (no amounts, payment state, Cloud Functions, Firestore Rules, data writes, or main merge). Old untracked hashed bundles preserved. Build .514 is deployed; next Hosting deploy must bump Build. Authenticated Cashier UI acceptance remains with user.
+
+---
+
+## 2026-10-10 — Authorized Fast-forward Merge to main
+
+- User confirmed Cashier bill-preview net total UI is correct and explicitly authorized commit, push and merge into main.
+- Checked online Mac repository Natchanon45/food-order-app, branch feature/react-firebase-port HEAD 1944dc60 tracking origin/feature/react-firebase-port. Local working tree had no modified tracked files; 16 old untracked public/react/assets/index-*.js files were intentionally preserved.
+- Fetched latest origin/main and origin/feature/react-firebase-port; main 98c07f6e was an ancestor of feature 1944dc60, exactly 9 commits behind, so Fast-forward Merge was safe. No Git merge conflict or divergence.
+- Repeated npm run test:react-parity and npm run verify:react-build PASS (Version 0.4.284, Build 2026.10.10.514, generated bundle index-hXz-nnu4.js).
+- Executed git switch main; git merge --ff-only feature/react-firebase-port; git push origin main. Remote main moved 98c07f6e -> 1944dc60, confirmed main/origin/main and feature/origin/feature had the same code tip before this documentation commit.
+- Documentation of completed merge committed/pushed on main, then feature branch was Fast-forward synchronized/pushed to the same resulting documentation tip. Returned working branch to feature/react-firebase-port.
+- Firebase Hosting .514 was deployed before the merge and is unchanged. No additional Firebase deployment, Cloud Functions, Rules, data writes, clean/reset/discard or user files removed.
