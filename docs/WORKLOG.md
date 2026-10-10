@@ -13202,3 +13202,10 @@ Release state: Hosting-only UI release prepared. No Cloud Functions, Firestore R
 User supplied screenshot where Delivery modal displayed "ยอดรวมทั้งโต๊ะ". Root cause: CashierBillPreviewModal reused cashier.table.total in the grand total header regardless of order type. Fixed the grand total label to "ยอดรวมสุทธิ" for Delivery, Take Away, and Walk-in, and kept "ยอดรวมทั้งโต๊ะ" for table bills only. Numeric calculation / total value unchanged.
 
 Updated CashierPage.jsx, cashier bill preview TH/EN/MY/LO/KM translations and regression contract in tests/react-parity/cashier-bill-preview.spec.mjs. Full npm run test:react-parity PASSED (focused Cashier receipt/bill checks 12/12); npm run build:react and verify:react-build PASSED; Build 2026.10.10.514, Version 0.4.284, bundle /react/assets/index-hXz-nnu4.js. Hosting-only UI release, no Cloud Function or Firebase data writes, no main merge. Previous untracked old Vite hashed assets retained. Deployment confirmation must be logged separately.
+
+### Production deployment — Cashier net total label Build .514
+
+- Implementation commit b4a7886f pushed to origin/feature/react-firebase-port, branch synchronized 0/0.
+- Firebase Hosting only: npx --no-install firebase-tools deploy --only hosting:foodapp --project chat-45754 --non-interactive; completed with exit 0, 582 public files, release complete at https://penguin-food.web.app.
+- Production curl smoke: /cashier/, /cashier/receipt/, /kitchen/ each HTTP 200 referencing /react/assets/index-hXz-nnu4.js. Live and Mac built JS SHA-256 4861d54b9c851f47aa845dad425922753768036bec40b6f2c595aa3195d800a8.
+- Only label/translation logic changed (no amounts, payment state, Cloud Functions, Firestore Rules, data writes, or main merge). Old untracked hashed bundles preserved. Build .514 is deployed; next Hosting deploy must bump Build. Authenticated Cashier UI acceptance remains with user.

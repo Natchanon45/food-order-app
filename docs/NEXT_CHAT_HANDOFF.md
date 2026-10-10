@@ -8,7 +8,7 @@ Repository: `Natchanon45/food-order-app`
 
 - User supplied real Cashier Delivery bill screenshot: modal grand total label incorrectly read "ยอดรวมทั้งโต๊ะ" because it reused cashier.table.total across every order type. Change only label selection: Delivery, Take Away and Walk-in show "ยอดรวมสุทธิ" (cashier.bill_preview.net_total), table rounds retain table-specific label. Total numeric sum and calculation unchanged.
 - Added net_total translation to five Cashier bill-preview locales. Regression tests include branch-specific label check and exact Thai wording. Full React Parity and generated Vite Build PASS. Version 0.4.284 / Build 2026.10.10.514; bundle /react/assets/index-hXz-nnu4.js.
-- Hosting-only release prepared on feature/react-firebase-port. No Cloud Function, Rules, tenant/payment/order data changes, no main merge. Preserve all old untracked Vite bundles. Update WORKLOG after deploy.
+- Hosting-only release LIVE: implementation commit b4a7886f pushed to feature/react-firebase-port and hosting:foodapp deployed on Firebase project chat-45754 (582 public files, exit 0). Production /cashier/, /cashier/receipt/, /kitchen/ HTTP 200 reference /react/assets/index-hXz-nnu4.js. SHA-256 of live and local JS matches: 4861d54b9c851f47aa845dad425922753768036bec40b6f2c595aa3195d800a8. No Cloud Function, Rules, tenant/payment/order writes, no main merge, and historical untracked Vite bundles retained. Bump Build before next Hosting deploy.
 
 ## 2026-10-10 — Cashier modal bill preview and print loader typography (Build .513)
 
