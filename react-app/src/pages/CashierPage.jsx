@@ -31,6 +31,7 @@ import { useTenant } from "@/tenant/TenantProvider";
 import { qrDataUrl } from "@/utils/localQr";
 import { deliveryDriverMapsUrl, isSelfDeliveryOrder } from "@/utils/deliveryDriverShare";
 import { validDeliveryLocation } from "@/utils/deliveryLocationPolicy";
+import { openReceiptPrintLoading, updateReceiptPrintLoading } from "@/utils/receiptPrintWindow";
 
 const approveDeliveryPaymentReview = httpsCallable(functions, "approveDeliveryPaymentReview");
 const LALAMOVE_STATUS_COOLDOWN_MS = 10000;
@@ -653,17 +654,25 @@ export function CashierPage() {
       });
     }
   };
-  const openReceiptPrintWindow = () => {
-    const printWindow = window.open("", "_blank");
-    if (printWindow) printWindow.opener = null;
-    return printWindow;
-  };
+  const openReceiptPrintWindow = () => openReceiptPrintLoading({
+    title: t("cashier.loading.payment_review"),
+    message: t("cashier.loading.payment_review_help"),
+    language: document.documentElement.lang,
+  });
   const printOrder = (printWindow, orderId) => {
+    updateReceiptPrintLoading(printWindow, {
+      title: t("cashier.loading.receipt_preparing"),
+      message: t("cashier.loading.receipt_preparing_help"),
+    });
     const url = cashierRoute(`/receipt/?order=${encodeURIComponent(orderId)}&autoprint=1`);
     if (printWindow && !printWindow.closed) printWindow.location.replace(url);
     else location.assign(url);
   };
   const printTable = (printWindow, rounds) => {
+    updateReceiptPrintLoading(printWindow, {
+      title: t("cashier.loading.receipt_preparing"),
+      message: t("cashier.loading.receipt_preparing_help"),
+    });
     const ids = rounds.map(order => order.id).filter(Boolean).join(",");
     const url = cashierRoute(`/receipt/?orders=${encodeURIComponent(ids)}&autoprint=1`);
     if (printWindow && !printWindow.closed) printWindow.location.replace(url);

@@ -13142,3 +13142,19 @@ Production smoke: /admin/, /delivery/, /kitchen/, /cashier/ returned HTTP 200 an
 Scope: No Firestore Rules, Storage Rules, main merge, actual customer/order/payment data edits or tenant setting changes. Previous untracked hashed JS bundles preserved. Authenticated end-to-end purchase, Slip2Go interruption, Cashier approval and Kitchen notification still require real-account acceptance testing with safe test orders.
 
 Build 2026.10.10.511 is now deployed; increment Build before any future Hosting deployment.
+
+---
+
+## 2026-10-10 — Cashier receipt print tab instant waiting screen, Build 2026.10.10.512
+
+Symptom: With Delivery PromptPay manual cashier review (Slip2Go temporarily unavailable), cashier confirmed the payment and then saw an empty white receipt tab for 5–10 seconds before print began.
+
+Root cause: CashierPage opens window.open("", "_blank") synchronously before awaiting approveDeliveryPaymentReview, but its new about:blank tab was not populated until Firestore-backed approval completed. This was a UI/print-tab readiness gap, not a change to receipt data, payment approval, or Kitchen gating.
+
+Change: Added react-app/src/utils/receiptPrintWindow.js, which synchronously renders a standalone centered loading view with PENGUIN branding, an animated spinner, accessible status and localized progress text in the popup on click, before the async approval. CashierPage imports the helper, shows payment confirmation then receipt preparation before navigating the same tab to /cashier/receipt/?order=...&autoprint=1 or the existing table receipt path. On failed approval, the popup still closes; if the popup is blocked/initialization fails, the existing same-tab navigation fallback remains. Text is assigned with textContent. Payment approval, COD, Slip2Go, Kitchen release, receipt print trigger and Cloud Functions are unchanged.
+
+Key files: react-app/src/utils/receiptPrintWindow.js, react-app/src/pages/CashierPage.jsx, react-app/src/i18n/parity-translations.json, tests/react-parity/cashier-receipt-loading*.spec.mjs, package.json, react-app/src/config/release.js, tools/react-foundation-contract.mjs, generated public/react/entrypoints and bundle, README.md, docs/NEXT_CHAT_HANDOFF.md, docs/WORKLOG.md.
+
+Verification: Node receipt-popup regression 6/6 PASS; real installed Chrome popup smoke at 390 and 1280px 2/2 PASS, visible centered spinner, immediate message, language, no overflow, then status transition. Full npm run test:react-parity PASS; npm run build:react plus verify:react-build PASS, new JS index-Bm69FZDi.js, Version 0.4.282 Build 2026.10.10.512; git diff --check PASS. No authenticated real order/payment or physical printer test.
+
+Deployment: Hosting-only UI fix prepared on feature/react-firebase-port. No Cloud Function, Rules, tenant/order/payment data changes or main merge. Old untracked Vite hashed JS bundles preserved. Verify deployment and user acceptance of real cashier manual-review timing after release.

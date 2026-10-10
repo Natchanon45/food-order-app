@@ -4,6 +4,13 @@ Updated: 2026-10-10
 Project: Food Order / Delivery / Retail POS
 Repository: `Natchanon45/food-order-app`
 
+## 2026-10-10 — Cashier print-tab blank-page repair (Build .512)
+
+- Cashier confirmation created window.open('', '_blank') before awaiting approveDeliveryPaymentReview. The empty tab appeared white for 5–10 seconds while the backend verified payment. The payment gate and Kitchen release were working; this was an uninitialized print-tab UI.
+- New utility react-app/src/utils/receiptPrintWindow.js synchronously fills the script-opened tab with a centered, branded, accessible loading UI, then updates status when opening the receipt. CashierPage uses it for single/order and table payments. On payment failure the tab is closed; if popups are blocked or cannot be initialized, original same-tab receipt navigation fallback remains. Receipt auto-print and Slip2Go/Cashier payment approval rules unchanged.
+- Loading and preparing messages localized TH/EN/MY/LO/KM. Regression tests: Node unit 6/6; installed Chrome real popup at 390px and 1280px 2/2; full React parity PASS; Vite Build PASS and generated artifact /react/assets/index-Bm69FZDi.js verified for Version 0.4.282 / Build 2026.10.10.512.
+- Hosting-only release prepared; no new Cloud Function or Firebase Rules changes. Preserve historical untracked hashed bundles; do not merge main. Update deploy state in Worklog when Hosting release is verified.
+
 ## 2026-10-10 — Delivery payment toggles / Kitchen loader repair (production deployed)
 
 - User clarified self-delivery with PromptPay prepayment, Slip2Go auto verification and cashier manual review during provider downtime; COD must remain available as an optional per-store method. Existing Slip2Go and authorized cashier release rules remain unchanged.
