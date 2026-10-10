@@ -13269,3 +13269,16 @@ Validation: Added restaurant-only Quick Order regression (4/4) including running
 - Production smoke URLs /cashier/quick-order, /cashier/table-qr, /kitchen/, /cashier/ each HTTP 200 and reference /react/assets/index-CRDhG3Ft.js. Remote and locally built JavaScript SHA-256 f5f46637796057bc6c499cfccc36684deb9e80145f34d50e9b24c10187dee5d9 match.
 - Full React Parity PASS, restaurant-only Quick Order tests 4/4, React Build and generated build contract PASS. Authenticated tenant-level test remains pending: user should hard refresh and verify restaurant menus/categories, table list, cart creation and successful order. We did NOT create a real order or modify tenant data.
 - Retail-only held-bill controls remain hidden for restaurant_cafe, as existing rules deny that feature. Cross-device Customer Display Firestore collection remains retail-only and needs separate authorization work if user wants it for restaurant_cafe. Build .516 now LIVE and must be incremented before any further Hosting deploy.
+
+
+---
+
+## 2026-10-10 — Restaurant-only Quick Order customer display permissions prepared
+
+Issue: User screenshot of /cashier/customer-display?displayId=quick-order-* showed zero items despite Quick Order menu-loading repair in production .516. QuickOrderPage writes tenant-scoped customerDisplays document, and PosCustomerDisplayPage watches that document. Existing Firestore rules required retail_pos, denying both writes and reads for restaurant_cafe-only tenants.
+
+Fix prepared: Change only firestore.rules collection customerDisplays. Keep existing Retail POS read/write/delete semantics. Add restaurant order_delivery permission for get of quick-order-* document scoped to tenantMember, not list. Add create/update for quick-order-* docs scoped to authorized staff (owner/admin/manager/cashier/super_admin), tenantPayloadMatches, matching id/displayId/registerId and tenantId/shopId, max 100 items. Other Retail POS collections, heldBills, and Cloud Functions untouched. Existing shipped .516 browser already produces the correct display payload, no Hosting deploy needed.
+
+Tests: focused customer-display rules regression 4/4 PASS; full npm run test:react-parity PASS; npm run verify:react-build PASS for existing production Build .516; Firebase CLI dry-run of firestore:rules project chat-45754 compiled successfully, exit 0. No Java runtime for emulator, no authenticated test or tenant data writes performed.
+
+Deployment status: NOT DEPLOYED. Prior Hosting-only deployment rule means obtaining explicit user approval before targeted deployment of firestore:rules is required. Do not redeploy Hosting, bump build or deploy Functions for this Rules-only change. Do not merge main unless requested. Preserve historical untracked hashed bundles.

@@ -4,6 +4,13 @@ Updated: 2026-10-10
 Project: Food Order / Delivery / Retail POS
 Repository: `Natchanon45/food-order-app`
 
+## 2026-10-10 — Restaurant-only Quick Order customer-display permissions (Rules not deployed)
+
+- User screenshot of /cashier/customer-display?displayId=quick-order-* showed 0 items and blank totals for restaurant_cafe-only tenant. Root cause: both QuickOrderPage updateCustomerDisplay and customer page watchCustomerDisplay target tenants/{tenantId}/customerDisplays/{displayId}; Firestore Rules restricted reads/writes to retail_pos. Existing shipped React .516 already publishes correct snapshot and watches correct document.
+- firestore.rules now additionally allows restaurant order_delivery single-doc get for quick-order-* IDs with tenant membership. Restaurant creates/updates only quick-order-* docs by authorized owner/admin/manager/cashier/super_admin roles, tenant payload match, document ID and register/display/id fields matching, tenantId/shopId matching, and <=100 cart items. No collection-wide list access for restaurant-only; retail POS read/write/delete unchanged; heldBills remain retail-only.
+- Added quick-order-customer-display-rules regression 4/4, integrated npm run test:react-parity (all PASS), verify:react-build PASS for production .516; firebase-tools firestore:rules --dry-run on project chat-45754 compiled successfully, exit 0. Emulator not available because Java is not installed.
+- IMPORTANT: Rules change is PREPARED BUT NOT DEPLOYED. Existing workflow defaults to Hosting only; obtain explicit approval for targeted firestore:rules production deployment. Do not deploy Hosting/Functions or bump Build for rules-only change. Ask user to refresh both cashier Quick Order and paired customer display after authorized deploy. Do not merge main without request, and retain historical untracked hashed bundles.
+
 ## 2026-10-10 — Restaurant-only Cashier Quick Order initial loading fix (Build .516)
 
 - User screenshot of /cashier/quick-order with restaurant_cafe-only tenant showed "ยังไม่สามารถโหลดข้อมูลร้านค้าได้ กรุณาลองอีกครั้ง" and no menu. Root cause: loadOperationalSnapshot used Promise.all for settings, menus, tables, orders AND retail-only heldBills. firestore.rules permits heldBills reads only with retail_pos. Denial aborts the complete snapshot before menu/table/order callbacks.

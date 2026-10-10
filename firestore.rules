@@ -323,7 +323,30 @@ service cloud.firestore {
       match /auditLogs/{auditId} { allow read: if tenantBusinessEnabled(tenantId, 'retail_pos') && (tenantAdminRole(tenantId)); allow create: if tenantBusinessEnabled(tenantId, 'retail_pos') && (validPosAuditLog(tenantId)); allow update, delete: if tenantBusinessEnabled(tenantId, 'retail_pos') && (false); }
       match /customers/{customerId} { allow read: if tenantBusinessEnabled(tenantId, 'retail_pos') && (tenantMember(tenantId)); allow create, update: if tenantBusinessEnabled(tenantId, 'retail_pos') && (retailTenantWrite(tenantId) && validRetailCustomer(tenantId)); allow delete: if tenantBusinessEnabled(tenantId, 'retail_pos') && (tenantAdminRole(tenantId) && tenantResourceMatches(tenantId)); }
       match /loyaltyLedger/{entryId} { allow read: if tenantBusinessEnabled(tenantId, 'retail_pos') && (tenantMember(tenantId)); allow create: if tenantBusinessEnabled(tenantId, 'retail_pos') && (retailTenantWrite(tenantId) && validLoyaltyLedgerEntry(tenantId)); allow update, delete: if tenantBusinessEnabled(tenantId, 'retail_pos') && (false); }
-      match /customerDisplays/{displayId} { allow read: if tenantBusinessEnabled(tenantId, 'retail_pos') && (tenantMember(tenantId)); allow create, update: if tenantBusinessEnabled(tenantId, 'retail_pos') && (retailTenantWrite(tenantId) && tenantPayloadMatches(tenantId)); allow delete: if tenantBusinessEnabled(tenantId, 'retail_pos') && (tenantAdminRole(tenantId) && tenantResourceMatches(tenantId)); }
+      // Retail POS permissions are unchanged. Restaurant displays are restricted
+      // to one named quick-order-* document and staff of the owning tenant only.
+      match /customerDisplays/{displayId} {
+        allow get: if (tenantBusinessEnabled(tenantId, 'retail_pos') && tenantMember(tenantId))
+          || (tenantBusinessEnabled(tenantId, 'order_delivery')
+            && displayId.matches('quick-order-.*') && tenantMember(tenantId));
+        // Quick Order reads its one paired document; avoid tenant-wide listing.
+        allow list: if tenantBusinessEnabled(tenantId, 'retail_pos') && tenantMember(tenantId);
+        allow create, update: if (tenantBusinessEnabled(tenantId, 'retail_pos')
+            && retailTenantWrite(tenantId) && tenantPayloadMatches(tenantId))
+          || (tenantBusinessEnabled(tenantId, 'order_delivery')
+            && displayId.matches('quick-order-.*')
+            && tenantHasRole(tenantId, ['owner', 'admin', 'manager', 'cashier', 'super_admin'])
+            && tenantPayloadMatches(tenantId)
+            && request.resource.data.get('id', '') == displayId
+            && request.resource.data.get('displayId', '') == displayId
+            && request.resource.data.get('registerId', '') == displayId
+            && request.resource.data.get('tenantId', '') == tenantId
+            && request.resource.data.get('shopId', '') == tenantId
+            && request.resource.data.get('items', []) is list
+            && request.resource.data.get('items', []).size() <= 100);
+        allow delete: if tenantBusinessEnabled(tenantId, 'retail_pos')
+          && tenantAdminRole(tenantId) && tenantResourceMatches(tenantId);
+      }
       match /heldBills/{heldBillId} { allow read: if tenantBusinessEnabled(tenantId, 'retail_pos') && (tenantMember(tenantId)); allow create, update: if tenantBusinessEnabled(tenantId, 'retail_pos') && (retailTenantWrite(tenantId) && validHeldBill(tenantId)); allow delete: if tenantBusinessEnabled(tenantId, 'retail_pos') && (tenantHasRole(tenantId, ['owner', 'admin', 'manager', 'cashier', 'super_admin']) && tenantResourceMatches(tenantId)); }
       match /shifts/{shiftId} { allow read: if tenantBusinessEnabled(tenantId, 'retail_pos') && (tenantMember(tenantId)); allow create: if tenantBusinessEnabled(tenantId, 'retail_pos') && (retailTenantWrite(tenantId) && validRetailShift(tenantId)); allow update: if tenantBusinessEnabled(tenantId, 'retail_pos') && (retailTenantWrite(tenantId) && tenantResourceMatches(tenantId) && request.resource.data.id == resource.data.id && validRetailShift(tenantId)); allow delete: if tenantBusinessEnabled(tenantId, 'retail_pos') && (false); }
       match /returns/{returnId} { allow read: if tenantBusinessEnabled(tenantId, 'retail_pos') && (tenantMember(tenantId)); allow create: if tenantBusinessEnabled(tenantId, 'retail_pos') && (retailTenantWrite(tenantId) && validRetailReturn(tenantId)); allow update, delete: if tenantBusinessEnabled(tenantId, 'retail_pos') && (false); }
