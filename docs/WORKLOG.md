@@ -13303,3 +13303,19 @@ Deployment status: NOT DEPLOYED. Prior Hosting-only deployment rule means obtain
 - Executed git switch main, git merge --ff-only feature/react-firebase-port, git push origin main. GitHub main advanced a5420d1e -> 789dd438 with no conflicts; merge ancestry and main/remote 0/0 verified.
 - Wrote a documentation-only audit commit on main, pushed origin/main, then Fast-forwarded and pushed feature/react-firebase-port to the same commit, returning Mac working branch to feature/react-firebase-port.
 - No additional Firebase Hosting, Firestore Rules, Functions, or data deployment; current Production Version/Build unchanged. No clean/reset/discard and no changes to existing orders or tenant settings.
+
+---
+
+## 2026-10-10 — Investigation: iPad/iPhone lack Thai order spoken announcements (no behavior change)
+
+Question: User asked why iPad/other iOS browsers do not announce Thai spoken order audio like macOS.
+
+Read-only code diagnosis:
+- Cashier and Kitchen both render CashierOrderNotifier, backed by react-app/src/components/orderAlertAudio.js and createOrderAlertAudioController.
+- The bell button calls controller.arm() which initializes/resumes AudioContext and preloads voices, then plays a Web Audio chime. It does NOT call speechSynthesis.speak() during the direct user gesture. On a new order, announce() plays chime, waits ~1320ms, loads voice list (possibly another 900ms), and only then calls speechSynthesis.speak(new SpeechSynthesisUtterance(th-TH text)) asynchronously from Firestore order-watch callbacks. WebKit iOS can require a direct user gesture to initialize the speech session; Mac browsers have less restrictive behavior. Code currently marks the bell 'armed' if AudioContext runs, without validating a spoken-voice session or iOS Thai voice availability; speech errors return false without visible diagnostic.
+- Apple WebKit's current SpeechSynthesis.cpp enforces RequireUserGestureForSpeechStart on iOS when audio playback requires user gesture; speak() may return if not unlocked. This explains the discrepancy strongly but remains an unconfirmed cause for the user's particular iPad without on-device diagnostic logs.
+- Other considerations: iPad voice list may lack Thai voice; iOS silent/mute/audio route; locked or backgrounded Safari can pause speech and event processing. WaitingQueueDisplayPage is a different subsystem using WAV intro/digits/outro and separate sound-arm button; do not conflate it with Cashier/Kitchen order TTS.
+
+Advice: distinguish whether alert chime works but spoken Thai is silent, or both are silent. Test with screen awake, Cashier/Kitchen in foreground, volume up, unmuted, bell enabled; then diagnose whether iOS voice initialization and fallback pre-recorded or generated Thai audio are needed. A robust implementation would prime Web Speech in the actual user tap (not merely AudioContext), explicitly show chime vs voice ready/error statuses, and optionally provide reusable recorded/TTS assets for consistency across Apple devices (subject to user authorization and actual iOS device testing).
+
+This was diagnosis only. No production code, UI, tests, Cloud Function, Firebase Hosting, Firestore Rules, release/build, or tenant data changed. No deployment was performed.
