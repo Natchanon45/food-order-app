@@ -90,6 +90,9 @@ export function QuickOrderPage() {
     attributes: { "data-roles": "owner,admin,manager,cashier" },
   });
   const allowedRole = ["owner", "admin", "manager", "cashier"].includes(profile?.role);
+  // Match firestore.rules: restaurant-only tenants have no retail_pos heldBills access.
+  // Legacy tenants with no businessType retain both business units.
+  const retailHeldEnabled = tenant?.businessType !== "restaurant_cafe";
 
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -238,6 +241,7 @@ export function QuickOrderPage() {
     let stopTables = () => {};
     setLoading(true);
     setLoadError("");
+    setHeldBills([]);
     setServiceTypeState(readServicePreference(tenant.id));
 
     loadOperationalSnapshot(tenant.id)
@@ -275,11 +279,13 @@ export function QuickOrderPage() {
         setLoading(false);
       });
 
-    const stopHeld = watchQuickOrderHeldBills(
-      tenant.id,
-      rows => { if (alive) setHeldBills(rows); },
-      error => console.error("QUICK_ORDER_HELD_WATCH_FAILED", error),
-    );
+    const stopHeld = retailHeldEnabled
+      ? watchQuickOrderHeldBills(
+          tenant.id,
+          rows => { if (alive) setHeldBills(rows); },
+          error => console.error("QUICK_ORDER_HELD_WATCH_FAILED", error),
+        )
+      : () => {};
 
     return () => {
       alive = false;
@@ -288,7 +294,7 @@ export function QuickOrderPage() {
       stopTables?.();
       stopHeld?.();
     };
-  }, [tenant?.id, allowedRole, t]);
+  }, [tenant?.id, retailHeldEnabled, allowedRole, t]);
 
   const setServiceType = (value, remember = true) => {
     const next = value === "takeaway" ? "takeaway" : "dine_in";
@@ -900,10 +906,10 @@ export function QuickOrderPage() {
               <label className="field quick-order-note-field"><span>{t("cashier.items.order_note_title")}</span><textarea className="input" id="quickOrderNote" rows="2" maxLength="500" value={orderNote} onChange={e => setOrderNote(e.target.value)} /></label>
               <div className="quick-cart-total"><span>{t("quick_order.cart.subtotal")}</span><strong id="quickCartTotal">{money(summary.total)}</strong></div>
               <div className="quick-cart-final-actions">
-                <div className="quick-held-actions">
+                {retailHeldEnabled ? <div className="quick-held-actions">
                   <button className="btn quick-hold-button" id="quickHoldBill" type="button" disabled={!summary.qty || busy} onClick={holdCurrentBill}><i className="bi bi-pause-circle app-icon" aria-hidden="true"></i><span>{t("quick_order.held.hold")}</span></button>
                   <button className="btn quick-held-list-button" id="quickHeldBillsButton" type="button" onClick={() => setHeldOpen(true)}><i className="bi bi-clock-history app-icon" aria-hidden="true"></i><span>{t("quick_order.held.open_list")}</span><strong className="quick-held-count" id="quickHeldCount">{heldBills.length}</strong></button>
-                </div>
+                </div> : null}
                 <button className="btn btn-primary quick-submit" id="quickSubmitOrder" type="button" disabled={!summary.qty || busy} onClick={() => submitOrder()}><span>{busy ? t("quick_order.actions.submitting") : t("quick_order.actions.submit")}</span></button>
               </div>
             </div>

@@ -4,6 +4,14 @@ Updated: 2026-10-10
 Project: Food Order / Delivery / Retail POS
 Repository: `Natchanon45/food-order-app`
 
+## 2026-10-10 — Restaurant-only Cashier Quick Order initial loading fix (Build .516)
+
+- User screenshot of /cashier/quick-order with restaurant_cafe-only tenant showed "ยังไม่สามารถโหลดข้อมูลร้านค้าได้ กรุณาลองอีกครั้ง" and no menu. Root cause: loadOperationalSnapshot used Promise.all for settings, menus, tables, orders AND retail-only heldBills. firestore.rules permits heldBills reads only with retail_pos. Denial aborts the complete snapshot before menu/table/order callbacks.
+- Core loadOperationalSnapshot now reads only restaurant-safe settings/menus/tables/orders, returning heldBills: [] to retain object shape. Retail-eligible Quick Order tenants keep their separate realtime heldBills listener and pause-bill UI; restaurant_cafe-only tenants skip the unauthorized listener and hide retail-only pause-bill controls. Cashier Table QR uses same safer core snapshot.
+- Customer-display Firestore sync is separately restricted to retail_pos by existing rules and can still warn for restaurant-only tenants; solving that cross-device feature and enabling restaurant-only held bills requires separately scoped authorized backend/rules work if requested. This does NOT block core Quick Order menu/table/order data.
+- New tests/react-parity/quick-order-restaurant-only.spec.mjs regression 4/4, including executing actual snapshot code with mocked Firestore rejecting heldBills. Full React Parity PASS; Vite React Build PASS and generated contract PASS; release Version 0.4.286 Build 2026.10.10.516, JS index-CRDhG3Ft.js. No Cloud Functions or Firestore Rules changed and no live tenant/order data mutated.
+- Hosting-only repair prepared on feature/react-firebase-port. No main merge authorization. Keep all old untracked hashed assets. Authenticated restaurant-only tenant acceptance still needed to validate live menu/checkout beyond build smoke.
+
 ## 2026-10-10 — User-authorized Fast-forward merge to main (Delivery heading .515)
 
 - User confirmed the Delivery shipping brand alignment is correct and expressly authorized commit/push/merge. Feature implementation 9add2da9 and production documentation 8b95b207 were already committed and pushed to origin/feature/react-firebase-port.

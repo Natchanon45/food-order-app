@@ -76,21 +76,20 @@ export function normalizeFunctionError(error) {
 
 export async function loadOperationalSnapshot(tenantId) {
   const id = requireTenantId(tenantId);
-  const [settingsSnap, menuSnap, tableSnap, orderSnap, heldSnap] = await Promise.all([
+  // Core restaurant data must not depend on Retail POS-only collections.
+  // heldBills are loaded separately through watchQuickOrderHeldBills only for
+  // tenants with retail_pos enabled; querying them here breaks restaurant_cafe.
+  const [settingsSnap, menuSnap, tableSnap, orderSnap] = await Promise.all([
     getDoc(tenantDoc(id, "settings", "store")),
     getDocs(tenantCollection(id, "menus")),
     getDocs(tenantCollection(id, "tables")),
     getDocs(query(tenantCollection(id, "orders"), orderBy("createdAt", "desc"))),
-    getDocs(tenantCollection(id, "heldBills")),
   ]);
   const settings = settingsSnap.exists() ? { id: settingsSnap.id, ...settingsSnap.data() } : {};
   const menus = menuSort(docs(menuSnap), settings.categoryOrder || []);
   const tables = docs(tableSnap);
   const orders = docs(orderSnap);
-  const heldBills = docs(heldSnap)
-    .filter(item => item.source === "quick_order" && item.status === "held")
-    .sort((a, b) => millis(b.createdAt) - millis(a.createdAt));
-  return { settings, menus, tables, orders, heldBills };
+  return { settings, menus, tables, orders, heldBills: [] };
 }
 
 // Kitchen only needs its menu catalogue and ordering stream. Do not read heldBills:

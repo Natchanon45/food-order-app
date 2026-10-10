@@ -13251,3 +13251,13 @@ Regression: tests/react-parity/delivery-shipping-title-brand.spec.mjs (2/2); Pla
 - npm run test:react-parity PASS and npm run verify:react-build PASS (Version 0.4.285 / Build 2026.10.10.515, bundle index-KNQYF0SH.js).
 - Executed git switch main, git merge --ff-only feature/react-firebase-port, git push origin main. Main advanced bafbaa95 -> 8b95b207 by Fast-forward; no conflicts. Updated docs/NEXT_CHAT_HANDOFF.md and docs/WORKLOG.md with merge audit, committed/pushed on main, and Fast-forward synchronized feature branch to same docs commit, then returned local checkout to feature/react-firebase-port.
 - No second Firebase deployment, no Cloud Function/Firestore Rules/data changes; Hosting Build .515 already deployed, with production JS/CSS SHA-256 verified in earlier Worklog. No cleanup/reset/discard of old hashed bundles. Next Hosting release must bump Build.
+
+---
+
+## 2026-10-10 — Restaurant-only Cashier Quick Order data load repair
+
+Symptom: Production screenshot at /cashier/quick-order with restaurant_cafe-only tenant showed cannot load store data, unavailable tables and no menus. Root cause: shared loadOperationalSnapshot attempted settings/store, menus, tables, orders AND heldBills in Promise.all, but firestore.rules requires retail_pos to read heldBills. Denied read rejected entire snapshot, prevented initialization of menus/tables/orders and delayed watchers. CashierTableQrPage also reused this overbroad initial loader; Quick Order subscribed unconditionally to the denied heldBills listener.
+
+Fix: Core snapshot now fetches only settings, menus, tables and orders, returning heldBills:[] to retain the existing shape. Retail/both/legacy tenants still use independent held bills realtime watcher and pause bill controls; restaurant_cafe tenants skip the unauthorized listener and omit unavailable Retail POS-only pause/list actions. No Cloud Function/Rules relaxation. Existing restaurant-only customer display sync is also retail-scope limited and needs separate authorized design, but does not block basic menus.
+
+Validation: Added restaurant-only Quick Order regression (4/4) including running the loader against mocked Firestore that denies heldBills; verifies permitted reads, menu, table, order, settings, Firestore rules and conditional watcher; Cashier Table QR also uses corrected core loader. Full npm run test:react-parity PASS, npm run build:react PASS, generated React build contract PASS, git diff --check PASS. Version 0.4.286, Build 2026.10.10.516, JS index-CRDhG3Ft.js. No authenticated live tenant data writes or order creation. Hosting-only deploy planned. No main merge requested. Preserve old 17 untracked hashed Vite bundles.
