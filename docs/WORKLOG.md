@@ -13158,3 +13158,13 @@ Key files: react-app/src/utils/receiptPrintWindow.js, react-app/src/pages/Cashie
 Verification: Node receipt-popup regression 6/6 PASS; real installed Chrome popup smoke at 390 and 1280px 2/2 PASS, visible centered spinner, immediate message, language, no overflow, then status transition. Full npm run test:react-parity PASS; npm run build:react plus verify:react-build PASS, new JS index-Bm69FZDi.js, Version 0.4.282 Build 2026.10.10.512; git diff --check PASS. No authenticated real order/payment or physical printer test.
 
 Deployment: Hosting-only UI fix prepared on feature/react-firebase-port. No Cloud Function, Rules, tenant/order/payment data changes or main merge. Old untracked Vite hashed JS bundles preserved. Verify deployment and user acceptance of real cashier manual-review timing after release.
+
+---
+
+### 2026-10-10 — Cashier loading screen: Hosting deployment and Production verification
+
+- Implementation commit 6fe6c9ac was pushed to origin/feature/react-firebase-port. No main merge.
+- Firebase Hosting-only deployment completed: npx --no-install firebase-tools deploy --only hosting:foodapp --project chat-45754 --non-interactive; 580 public files, Firebase reported version finalized, release complete and Deploy complete (exit 0). No Cloud Function or Firestore/Storage Rules deployed.
+- Production /cashier/, /cashier/receipt/, /kitchen/ and /delivery/ each returned HTTP 200 with /react/assets/index-Bm69FZDi.js. Production JS and Mac build SHA-256 both b0a363a69a78c280ab12e400117c0c5181940206b00f272dfdc30e4bc01222c6. React release 0.4.282 / Build 2026.10.10.512 is live.
+- Automated checks PASS: full React parity, receipt popup unit 6/6, real Chrome browser popup 390px and 1280px 2/2, generated Vite build contract. No live tenant, order, customer or payment records written.
+- Follow-up: perform manual cashier PromptPay slip approval with a safe real test order and confirm immediate spinner, backend release, receipt automatic print dialog and Kitchen admission; this authenticated flow was not exercised in deployment smoke. Next Hosting release must bump Build. Historical untracked bundles preserved.
