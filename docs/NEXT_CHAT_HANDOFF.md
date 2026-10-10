@@ -4,6 +4,15 @@ Updated: 2026-10-10
 Project: Food Order / Delivery / Retail POS
 Repository: `Natchanon45/food-order-app`
 
+## 2026-10-10 — User-authorized Fast-forward merge to main (Delivery heading .515)
+
+- User confirmed the Delivery shipping brand alignment is correct and expressly authorized commit/push/merge. Feature implementation 9add2da9 and production documentation 8b95b207 were already committed and pushed to origin/feature/react-firebase-port.
+- Fetched origin/main and origin/feature/react-firebase-port; confirmed origin/main bafbaa95 is a strict ancestor of origin/feature/react-firebase-port 8b95b207 (2 commits ahead, 0 diverged). No tracked local edits; 16 historical untracked public/react/assets/index-*.js kept.
+- Re-ran full npm run test:react-parity and npm run verify:react-build: both PASS for release 0.4.285 / 2026.10.10.515, bundle index-KNQYF0SH.js.
+- Used git switch main; git merge --ff-only feature/react-firebase-port; git push origin main. Fast-forward bafbaa95 -> 8b95b207 confirmed, no conflict.
+- The resulting documentation commit was recorded on main and synchronized back to feature/react-firebase-port, after which both branch tips and their origins match. Returned local checkout to feature/react-firebase-port.
+- Release .515 was already deployed and production-smoke-verified prior to merge. NO additional Firebase Hosting or Cloud Function deploy, no Build bump, Firestore changes or Bundle deletion.
+
 ## 2026-10-10 — Delivery shipping header brand alignment (Build .515)
 
 - User supplied mobile Chrome screenshot of /s/aui-bau-traditional-thai-coffee/delivery with the "ข้อมูลจัดส่ง" heading. The icon tile beside the heading is StoreBrandMark (uses shopLogoUrl/logoUrl when available; otherwise standard storefront fallback), not a stray injected image. User requested X/Y centering and spacing to the heading text.

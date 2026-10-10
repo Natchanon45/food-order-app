@@ -13240,3 +13240,14 @@ Regression: tests/react-parity/delivery-shipping-title-brand.spec.mjs (2/2); Pla
 - Firebase Hosting-only deployment completed with exit 0: project chat-45754 target hosting:foodapp/penguin-food, 583 public files, version finalized and released at https://penguin-food.web.app. No Cloud Function, Rules, Firestore or tenant settings changed.
 - Production smoke: /s/aui-bau-traditional-thai-coffee/delivery, /delivery/ and /cashier/ HTTP 200; each references /react/assets/index-KNQYF0SH.js. Remote/local SHA-256 JavaScript match c0af5f4870c8c9d5d3529130d7f3ee90475a01dd6f4eda69e0e7a236b9fbe1a7; CSS match 2d4324c5f02b4e98c81c3783780cb1a6dedbfdc64297bd10d71a46335e361795.
 - Version 0.4.285 Build 2026.10.10.515 LIVE. Not merged into main; older generated hashed untracked bundles retained. Authenticated UI acceptance with user's actual configured logo is still requested; automated Chrome tests with logo/fallback passed. Increment Build before further Hosting deploys.
+
+---
+
+## 2026-10-10 — Authorized Git merge of Delivery shipping logo alignment into main
+
+- User confirmed the recent shipping-heading alignment fix and requested commit, push, merge. Feature commits 9add2da9 (implementation) and 8b95b207 (release documentation) had already been committed and pushed.
+- Verified online Mac branch feature/react-firebase-port synced 0/0, with no tracked edits; 16 old Vite public/react/assets/index-*.js untracked bundles left untouched.
+- Fetched latest origin/main and origin/feature/react-firebase-port; main bafbaa95 was an ancestor of feature 8b95b207, 2 commits behind, no diverged commits. No untracked path collisions.
+- npm run test:react-parity PASS and npm run verify:react-build PASS (Version 0.4.285 / Build 2026.10.10.515, bundle index-KNQYF0SH.js).
+- Executed git switch main, git merge --ff-only feature/react-firebase-port, git push origin main. Main advanced bafbaa95 -> 8b95b207 by Fast-forward; no conflicts. Updated docs/NEXT_CHAT_HANDOFF.md and docs/WORKLOG.md with merge audit, committed/pushed on main, and Fast-forward synchronized feature branch to same docs commit, then returned local checkout to feature/react-firebase-port.
+- No second Firebase deployment, no Cloud Function/Firestore Rules/data changes; Hosting Build .515 already deployed, with production JS/CSS SHA-256 verified in earlier Worklog. No cleanup/reset/discard of old hashed bundles. Next Hosting release must bump Build.
