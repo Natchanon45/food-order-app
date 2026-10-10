@@ -13282,3 +13282,12 @@ Fix prepared: Change only firestore.rules collection customerDisplays. Keep exis
 Tests: focused customer-display rules regression 4/4 PASS; full npm run test:react-parity PASS; npm run verify:react-build PASS for existing production Build .516; Firebase CLI dry-run of firestore:rules project chat-45754 compiled successfully, exit 0. No Java runtime for emulator, no authenticated test or tenant data writes performed.
 
 Deployment status: NOT DEPLOYED. Prior Hosting-only deployment rule means obtaining explicit user approval before targeted deployment of firestore:rules is required. Do not redeploy Hosting, bump build or deploy Functions for this Rules-only change. Do not merge main unless requested. Preserve historical untracked hashed bundles.
+
+### 2026-10-10 — Authorized Production Firestore Rules deployment (Quick Order customer display)
+
+- User explicitly approved Firebase Rules deployment after review of scoped restaurant_cafe quick-order-* authorization; project chat-45754, branch feature/react-firebase-port, Rules implementation commit 9228f0f6 pushed and synchronized (0/0).
+- Verified checked-out rules match the committed version and only extend restaurant_cafe single-document get plus staff create/update for quick-order-* with tenant-scoped identifiers and matching payload. Retail POS existing permissions and heldBills restrictions preserved.
+- Repeated targeted pre-deploy dry-run: rules compiled successfully and Dry run complete. Local historical generated JS files remain untouched.
+- Deployed using npx --no-install firebase-tools deploy --only firestore:rules --project chat-45754 --non-interactive. CLI output: rules compiled successfully; released rules firestore.rules to cloud.firestore; Deploy complete; exit 0.
+- No Firebase Hosting, Cloud Functions, Storage Rules or Firestore indexes deployed; no runtime app build/version bump; live Hosting stays Version 0.4.286 Build 2026.10.10.516. No live tenant/transaction mutation, no merge into main.
+- This deployment enables authorized restaurant-only Quick Order customer-display access, but authenticated multi-device realtime behavior remains to be verified by user: open cashier Quick Order and paired customer-display page, refresh both, put a test menu item in cart (no need to submit order), inspect item count and grand total. If still empty, collect console error from both pages for troubleshooting.
