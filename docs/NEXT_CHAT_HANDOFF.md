@@ -4,6 +4,13 @@ Updated: 2026-10-10
 Project: Food Order / Delivery / Retail POS
 Repository: `Natchanon45/food-order-app`
 
+## 2026-10-10 — Delivery shipping header brand alignment (Build .515)
+
+- User supplied mobile Chrome screenshot of /s/aui-bau-traditional-thai-coffee/delivery with the "ข้อมูลจัดส่ง" heading. The icon tile beside the heading is StoreBrandMark (uses shopLogoUrl/logoUrl when available; otherwise standard storefront fallback), not a stray injected image. User requested X/Y centering and spacing to the heading text.
+- DeliveryPage adds delivery-shipping-title and delivery-shipping-title-row classes only around that heading. store-hero-branding.css now sets a local 42px centered circular logo tile (38px at <=480px), grid place-items:center, center-fitted image (object-position 50% 50%), centered fallback icon, and column gap 14px / 12px on mobile. Large hero logos, other section headings, tenant image selection and behavior unchanged.
+- Added static regression (2/2) and actual Chrome Browser CSS layout tests 6/6 (logo/fallback at widths 320,440,1280), measuring centered axes, label gap and no overflow. Full npm run test:react-parity PASS; npm run build:react and verify:react-build PASS, release Version 0.4.285 Build 2026.10.10.515, index-KNQYF0SH.js.
+- Hosting-only release prepared from feature/react-firebase-port. Do not merge main without user permission, do not clean/delete previous untracked old hashed Vite assets, no Cloud Functions or rules changes.
+
 ## 2026-10-10 — User-authorized main Fast-forward merge
 
 - User confirmed Cashier net-total UI is correct and explicitly requested Commit, Push and Merge. Preflight fetched both branches and confirmed origin/main (98c07f6e) is an ancestor of origin/feature/react-firebase-port (1944dc60), 9 commits behind, with no local tracked changes; 16 previous untracked Vite hashed JS files were preserved.

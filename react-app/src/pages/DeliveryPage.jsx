@@ -909,7 +909,7 @@ export function DeliveryPage() {
             </section>
 
             <section className="card" style={{ marginTop: 18 }}>
-              <div className="section-title"><h2><StoreBrandMark settings={settings} className="store-hero-brand-mark-section" /><span>{t("delivery.checkout.address.section_title")}</span></h2></div>
+              <div className="section-title delivery-shipping-title"><h2 className="delivery-shipping-title-row"><StoreBrandMark settings={settings} className="store-hero-brand-mark-section" /><span>{t("delivery.checkout.address.section_title")}</span></h2></div>
               <div className="grid grid-2 delivery-contact-grid">
                 <div className="field"><label>{t("delivery.checkout.address.recipient_name")} *</label><input className="input" id="recipientName" required maxLength={120} value={recipientName} disabled={submitting} onChange={event => setRecipientName(event.target.value)} /><div className="address-lookup-status" aria-hidden="true">&nbsp;</div></div>
                 <div className="field"><label>{t("delivery.checkout.address.phone")} *</label><input className="input" id="recipientPhone" type="tel" inputMode="tel" required maxLength={20} value={recipientPhone} disabled={submitting} onChange={event => setRecipientPhone(event.target.value)} /><div id="addressLookupStatus" className="address-lookup-status">{profileLoading ? t("delivery.checkout.address.loading") : (profile.addresses || []).length ? t("delivery.checkout.address.found", { count: (profile.addresses || []).length }) : t("delivery.checkout.address.none_for_store")}</div></div>

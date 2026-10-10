@@ -213,3 +213,77 @@ body .store-hero-brand-mark-section img {
 }
 
 /* Old icon tiles are still used outside the Hero (Delivery address header). */
+
+
+/* Delivery contact header: center the tenant logo (or default store icon)
+   within a square and keep a consistent breathing space before the heading.
+   Scope to this title only; the large restaurant hero remains unchanged. */
+body.delivery-page .delivery-shipping-title h2.delivery-shipping-title-row {
+  display: flex;
+  align-items: center;
+  column-gap: 14px;
+  min-width: 0;
+  margin: 0;
+  line-height: 1.3;
+}
+body.delivery-page .delivery-shipping-title-row > .store-hero-brand-mark-section {
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  margin: 0;
+  padding: 4px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+body.delivery-page .delivery-shipping-title-row > .store-hero-brand-mark-section img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  object-fit: contain;
+  object-position: 50% 50%;
+  border-radius: 50%;
+}
+body.delivery-page .delivery-shipping-title-row > .store-hero-brand-mark-section .store-hero-fallback-icon,
+body.delivery-page .delivery-shipping-title-row > .store-hero-brand-mark-section img[hidden] + .store-hero-fallback-icon {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+  font-size: 22px;
+  line-height: 1;
+}
+body.delivery-page .delivery-shipping-title-row > .store-hero-brand-mark-section .store-hero-fallback-icon::before {
+  display: block;
+  line-height: 1;
+  margin: 0;
+}
+body.delivery-page .delivery-shipping-title-row > .store-hero-brand-mark-section img:not([hidden]) + .store-hero-fallback-icon {
+  display: none;
+}
+body.delivery-page .delivery-shipping-title-row > span:last-child {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 480px) {
+  body.delivery-page .delivery-shipping-title h2.delivery-shipping-title-row {
+    column-gap: 12px;
+  }
+  body.delivery-page .delivery-shipping-title-row > .store-hero-brand-mark-section {
+    flex-basis: 38px;
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+  }
+  body.delivery-page .delivery-shipping-title-row > .store-hero-brand-mark-section .store-hero-fallback-icon {
+    font-size: 21px;
+  }
+}

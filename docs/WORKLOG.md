@@ -13221,3 +13221,15 @@ Updated CashierPage.jsx, cashier bill preview TH/EN/MY/LO/KM translations and re
 - Executed git switch main; git merge --ff-only feature/react-firebase-port; git push origin main. Remote main moved 98c07f6e -> 1944dc60, confirmed main/origin/main and feature/origin/feature had the same code tip before this documentation commit.
 - Documentation of completed merge committed/pushed on main, then feature branch was Fast-forward synchronized/pushed to the same resulting documentation tip. Returned working branch to feature/react-firebase-port.
 - Firebase Hosting .514 was deployed before the merge and is unchanged. No additional Firebase deployment, Cloud Functions, Rules, data writes, clean/reset/discard or user files removed.
+
+---
+
+## 2026-10-10 — Delivery checkout "ข้อมูลจัดส่ง" store logo centering
+
+Request: User observed logo tile misalignment next to the shipping contact heading on /s/aui-bau-traditional-thai-coffee/delivery, asked for centered X/Y and spacing from the heading.
+
+Finding: DeliveryPage JSX has StoreBrandMark beside the translated shipping section title. The component intentionally uses the tenant's logo when shopLogoUrl/logoUrl is configured, with storefront fallback otherwise; shared .store-hero-brand-mark-section styles did not establish a title-local flex-gap and exact centering.
+
+Changes: Scoped heading to delivery-shipping-title / delivery-shipping-title-row in DeliveryPage and added localized CSS overrides at end of store-hero-branding.css to center a circular 42px desktop / 38px mobile brand tile, image object-position 50% 50%, icon tile grid place-items:center, 14px desktop / 12px mobile spacing and text wrapping. No change to hero/banner logo layout or tenant branding source, checkout fields, order/payment logic or other pages.
+
+Regression: tests/react-parity/delivery-shipping-title-brand.spec.mjs (2/2); Playwright actual Chrome layout test for logo and storefront fallback at 320, 440, 1280px (6/6), checking glyph/tile center axes, gap and no page overflow. Full npm run test:react-parity PASS; npm run build:react and verify:react-build PASS. Version 0.4.285, Build 2026.10.10.515, React bundle index-KNQYF0SH.js. No live authenticated checkout or tenant data changes. Hosting-only deployment planned; main merge NOT requested, preserve previous untracked hashed Vite bundles.

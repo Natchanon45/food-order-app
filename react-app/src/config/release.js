@@ -1,13 +1,14 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
-  version: "0.4.284",
-  build: "2026.10.10.514",
+  version: "0.4.285",
+  build: "2026.10.10.515",
   branch: "feature/react-firebase-port",
-  commit: "CASHIER-BILL-TOTAL-LABEL-BY-ORDER-TYPE",
+  commit: "DELIVERY-SHIPPING-LOGO-ALIGNMENT",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Order-type-aware net total label in Cashier bill modal",
+  milestone: "Centered restaurant brand mark in Delivery shipping contact heading",
   whatsNew: [
+    "Center the tenant logo or fallback store icon on both axes next to Delivery shipping information, with even heading spacing",
     "Show Net total for Delivery, Take Away and Walk-in bill previews, preserving table-only totals",
     "View Cashier bills in a responsive in-page modal with order details, slip image and print action",
     "Remove PG PENGUIN mark from receipt loading and use the same Kanit font as the rest of the system",
