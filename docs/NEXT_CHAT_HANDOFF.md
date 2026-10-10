@@ -4,6 +4,15 @@ Updated: 2026-10-10
 Project: Food Order / Delivery / Retail POS
 Repository: `Natchanon45/food-order-app`
 
+## 2026-10-11 — User-authorized Commit/Push/Fast-forward main merge (iOS voice .518)
+
+- User confirmed the Cashier/Kitchen icon-only header and Thai iOS voice behavior and explicitly requested commit, push and merge to main. Prior voice support Build .517 and header compactness Build .518 had been deployed to Hosting but remained uncommitted in Mac working tree.
+- Fetched remote main and feature/react-firebase-port. origin/main db935940 was direct ancestor of origin/feature/react-firebase-port c1022d0f (1 commit ahead, no divergence); untracked old bundle path collision check found none.
+- Re-ran npm run test:react-parity, npm run verify:react-build and Playwright iPad-like browser audio test; all PASS. Current production Version 0.4.288, Build 2026.10.11.518, bundle public/react/assets/index-xr95bypR.js. No Hosting redeploy or Build bump needed just for merging.
+- Staged and committed all pertinent React source/UI, 27 GPL-compatible eSpeak NG Thai WAV clips and manifest, test scripts, iOS regression/browser test, generated 518 React bundle and entrypoints, README, Handoff and Worklog as implementation commit 78d67e4d; pushed origin/feature/react-firebase-port (0/0). Preserved all 19 previous untracked Vite hashed bundles, including the older Build .517 generated output.
+- git switch main; git merge --ff-only feature/react-firebase-port; git push origin main succeeded. Remote main advanced db935940 -> 78d67e4d and main was clean, with no merge conflict.
+- Post-merge docs-only audit commit synchronized to main and feature, then returned local checkout to feature/react-firebase-port. Both tips/remote tracking should be checked for 0/0. No Cloud Functions/Firestore Rules/Hosting redeploy, live orders or tenant mutations; existing prod Build .518 remains unchanged.
+
 ## 2026-10-11 — Compact Cashier/Kitchen header voice status (Build .518)
 
 - User supplied a live Cashier screenshot and confirmed Thai spoken voice now works, but status text "เสียงพูดไทยจากอุปกรณ์พร้อมใช้งาน" appears visibly beside the bell, wasting horizontal space.

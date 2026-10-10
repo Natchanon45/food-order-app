@@ -13363,3 +13363,16 @@ Release status: Hosting-only Build .518 prepared. Do not modify Firestore Rules,
 - GET /cashier, /kitchen/, /cashier/quick-order all HTTP 200 with generated JS /react/assets/index-xr95bypR.js. Production and local SHA-256 both ea47f37cdcd0fd6ec9a1119ac67b282d2d8ff8865e8e14b99c0deb2a9a5d3e5a, confirming correct Build .518 deployed.
 - Shared Cashier/Kitchen header now contains only test voice and notification bell buttons. Only the visually exposed standalone voice status span removed; tooltips, ARIA labels, status dot and audio logic preserved. Unit regression 7/7 PASS and full parity/build PASS predeploy.
 - No Cloud Functions, Firestore Rules, tenant/order data changes, Git commits/pushes or main merge. Retain previous uncommitted Build .517 implementation and all historical hashed Vite bundles. User to hard refresh both pages for visual confirmation; Build bump required before next Hosting deploy.
+
+---
+
+## 2026-10-11 — Authorized Commit/Push/Merge of iOS Thai speech and compact Cashier/Kitchen toolbar
+
+- User confirmed the Production Cashier/Kitchen toolbar is correct with icons only, and authorized commit, push, merge.
+- On the authorized Mac, current work branch feature/react-firebase-port tracking origin. Both previous Hosting releases Build .517 (iPad/iPhone voice fallback) and Build .518 (remove visible speech-ready sentence) had been deployed but remained uncommitted. No hidden file edits were discarded; 19 earlier untracked Vite hashed asset files preserved.
+- Refetched origin/main db935940 and origin/feature/react-firebase-port c1022d0f; origin/main was direct ancestor of feature and 1 commit behind with no divergence. Verified untracked old bundles don't collide with tracked remote main.
+- Re-ran full npm run test:react-parity PASS including iOS voice 7/7, npm run verify:react-build PASS for release Version 0.4.288 Build 2026.10.11.518, and Playwright iPad-like browser audio WAV decode/play announcement PASS 1/1. No live test order was created.
+- Staged only tracked modifications plus the 27 eSpeak NG Thai audio WAV clips/manifest, new recorded speech module, new iOS voice regression/browser tests, and current generated release JS public/react/assets/index-xr95bypR.js. Kept all 19 previous untracked historic Vite JS bundles, including intermediate 517 bundle, without git clean/reset.
+- Implementation Commit 78d67e4d 'fix: enable iOS Thai order voice and compact alert controls' pushed origin/feature/react-firebase-port, confirmed 0/0 and tracked tree clean.
+- Switched to main, git merge --ff-only feature/react-firebase-port, pushed main db935940 -> 78d67e4d, verified main and origin/main 0/0 and proper ancestry. No merge conflict.
+- Documentation-only follow-up recorded on main; push and Fast-forward sync back onto feature/react-firebase-port; return checkout to feature. NO repeated Firebase Hosting/Functions/Rules deploy and no Build bump needed: production .518 already deployed and verified before Git merge.
