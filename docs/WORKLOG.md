@@ -13126,3 +13126,19 @@ Key files: react-app/src/pages/{AdminPage,DeliveryPage,KitchenPage}.jsx, react-a
 Deployment state: Implementation commit 7ab83f48 pushed to origin/feature/react-firebase-port (0/0); no main merge. Firebase Hosting and Cloud Function NOT deployed. To release payment toggles safely requires deploying the changed Cloud Function submitPublicDeliveryOrder along with Hosting; project convention permits Hosting-only by default, so user authorization for Function deployment is needed before release. Do not deploy frontend alone. Prior untracked hashed assets retained; live tenant settings and orders unchanged.
 
 Follow-up: After deployment authorization, deploy Function and Hosting in a coordinated release, hard refresh Build 2026.10.10.511, then test on a real restaurant_cafe tenant using temporary safe test orders: COD off/on, PromptPay auto-match, manual cashier review, Kitchen admission, and restored-error behavior. No SQL migration necessary for Firestore settings booleans.
+
+---
+
+## 2026-10-10 — Production deployment: Delivery payment and Kitchen fix
+
+Authorization: User expressly approved deploying Cloud Function submitPublicDeliveryOrder and Firebase Hosting for project chat-45754. Branch feature/react-firebase-port; implementation commit 7ab83f48; release 0.4.281 / Build 2026.10.10.511.
+
+Backend: Deployed only functions:submitPublicDeliveryOrder (Node 22, 2nd Gen, asia-southeast1). Firebase CLI logged successful update operation and Deploy complete. No other Cloud Functions deployed. The firebase-functions package age warning was non-blocking; no dependency upgrade was made.
+
+Hosting: Deployed only hosting:foodapp. Firebase confirmed version finalized and released; 579 public files; Hosting URL https://penguin-food.web.app; command exit code 0.
+
+Production smoke: /admin/, /delivery/, /kitchen/, /cashier/ returned HTTP 200 and use /react/assets/index-PV9uUcY7.js. Production/local SHA-256 both a3862833e2fc1e7fff6b0a71427465276d1530a54987351f3fcdc72746c05ecb. Preflight build contract, Delivery Server Guard 9/9, Slip2Go and Kitchen 17/17, full React Parity and JS syntax checks passed.
+
+Scope: No Firestore Rules, Storage Rules, main merge, actual customer/order/payment data edits or tenant setting changes. Previous untracked hashed JS bundles preserved. Authenticated end-to-end purchase, Slip2Go interruption, Cashier approval and Kitchen notification still require real-account acceptance testing with safe test orders.
+
+Build 2026.10.10.511 is now deployed; increment Build before any future Hosting deployment.
