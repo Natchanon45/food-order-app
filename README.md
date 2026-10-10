@@ -2,7 +2,7 @@
 
 Current development branch: `feature/react-firebase-port`
 Current milestone: React + Firebase parity migration / Super Admin Console
-Current PENGUIN prepared release: Version 0.4.283 • Build 2026.10.10.513 (Cashier in-page bill modal and refined Kanit receipt loading screen; Hosting release pending)
+Current PENGUIN production release: Version 0.4.283 • Build 2026.10.10.513 (Cashier in-page bill modal and Kanit receipt loading screen; Hosting deployed 2026-10-10)
 Primary production Hosting: `https://penguin-food.web.app` (legacy `https://natchanon-food-order-delivery.web.app` retained for transition only)
 
 > New Chat / continuation: read `STRUCTURE.md`, `docs/NEXT_CHAT_HANDOFF.md`, and `docs/WORKLOG.md` before changing code.

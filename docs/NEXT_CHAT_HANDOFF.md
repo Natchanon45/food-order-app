@@ -10,7 +10,7 @@ Repository: `Natchanon45/food-order-app`
 - Receipt print tab waiting screen removes center PG PENGUIN mark while retaining spinner and status. Uses actual shared Kanit Local font files and matching fallback; Thai receipt-preparation message exactly "ระบบกำลังเปิดหน้าพิมพ์ใบเสร็จ กรุณารอสักครู่..." (the primary status heading remains).
 - Added modal close X, close footer action, backdrop / ESC dismiss, focus return and scroll containment. Localized bill preview TH/EN/MY/LO/KM. No Firebase API, Cloud Function, Rules or live tenant data changes.
 - Tests: bill modal static regression 4/4, receipt loader unit 7/7, full npm run test:react-parity PASS, Chrome CSS modal widths 320/440/1280 PASS, Chrome actual loader 390/1280 PASS, Vite Build and generated contract PASS. Release candidate Version 0.4.283 / Build 2026.10.10.513, JS /react/assets/index-DHwYQlC7.js.
-- Hosting-only release prepared; check docs/WORKLOG.md for final deployment. Do not merge main, reset/clean or delete prior untracked hashed JS. Test authenticated cashier with real safe demo order separately.
+- Production Hosting deployed: implementation commit a73fdc3b pushed to feature/react-firebase-port; hosting:foodapp project chat-45754 succeeded (581 files, exit 0). Live /cashier/, /cashier/receipt/ and /kitchen/ HTTP 200 reference index-DHwYQlC7.js. Production JS SHA-256 f35bf105dd77c9612077d385adb0b5a02c8eb888cb2ec6f54a3913beb5db29d1, CSS SHA-256 75ba92dce63f6d39dedbb351f5c74dc37318e3d0aa1325f5a0d6f56c7a0ade08, both match Mac. No Cloud Functions or Rules deployed, no main merge or old hashed bundles deleted. Bump Build before next Hosting release and test authenticated cashier with a safe real order.
 
 ## 2026-10-10 — Cashier print-tab blank-page repair (Build .512)
 

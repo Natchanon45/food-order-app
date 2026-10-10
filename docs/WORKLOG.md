@@ -13184,3 +13184,13 @@ Files: react-app/src/pages/CashierPage.jsx, react-app/src/utils/receiptPrintWind
 Verification: Full React Parity PASS, Cashier bill preview source/contract 4/4, receipt spinner unit 7/7, installed Chrome CSS modal widths 320, 440 and 1280 (3/3), Chrome actual receipt popup at 390 and 1280 (2/2), Vite React Build and generated contract PASS. Hash name index-DHwYQlC7.js, Version 0.4.283 / Build 2026.10.10.513. No actual signed-in Cashier payment test; manual acceptance necessary.
 
 Release state: Hosting-only UI release prepared. No Cloud Functions, Firestore Rules, Storage Rules, tenant/order/slip mutations or main merge. Do not remove historical untracked bundles. Build .513 must be bumped again before any subsequent Hosting release.
+
+---
+
+### 2026-10-10 — Cashier bill modal release .513 deployed to Production
+
+- Implementation commit a73fdc3b pushed to feature/react-firebase-port, remote branch synced 0/0. Deployment approved under existing Hosting-only workflow; no main merge.
+- Hosting-only deployment succeeded: npx --no-install firebase-tools deploy --only hosting:foodapp --project chat-45754 --non-interactive (exit 0, 581 public files, version finalized/released). Live https://penguin-food.web.app/cashier uses Version 0.4.283 / Build 2026.10.10.513.
+- Smoke: /cashier/, /cashier/receipt/ and /kitchen/ all HTTP 200 using /react/assets/index-DHwYQlC7.js. Live and Mac JavaScript SHA-256 f35bf105dd77c9612077d385adb0b5a02c8eb888cb2ec6f54a3913beb5db29d1. Live and Mac cashier-refresh CSS SHA-256 75ba92dce63f6d39dedbb351f5c74dc37318e3d0aa1325f5a0d6f56c7a0ade08.
+- Local validation: full React parity and built contract PASS; bill-preview source and locale regression 4/4; receipt loader 7/7; Chrome modal viewport fixture at 320/440/1280 and spinner popup smoke at 390/1280, browser 5/5 PASS.
+- No Cloud Function, Rules, or live customer/order/payment records changed. Previously untracked hashed bundles kept intact. Authenticated user acceptance for viewing an actual slip and receipt print still required. Bump Build before any subsequent Hosting release.
