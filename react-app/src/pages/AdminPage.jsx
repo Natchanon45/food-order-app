@@ -688,6 +688,7 @@ export function AdminPage() {
     shopName: "", shopAddress: "", shopPhone: "", shopLogoUrl: "", shopHeroImageUrl: "", shopHeroFocusX: 50, shopHeroFocusY: 50, promptPayId: "", promptPayName: "",
     bankName: "", bankAccountNumber: "", bankAccountName: "",
     deliveryProvider: "self", deliveryMaxDistanceKm: 10,
+    deliveryPromptPayEnabled: true, deliveryCodEnabled: true,
   });
   const [location, setLocation] = useState(null);
   const [locationError, setLocationError] = useState("");
@@ -778,6 +779,8 @@ export function AdminPage() {
         bankAccountName: String(s.bankAccountName || ""),
         deliveryProvider: String(s.deliveryProvider || "self").toLowerCase() === "lalamove" && lalamoveStatus.available === true ? "lalamove" : "self",
         deliveryMaxDistanceKm: Number(s.deliveryMaxDistanceKm ?? 10) >= 0 ? Number(s.deliveryMaxDistanceKm ?? 10) : 10,
+        deliveryPromptPayEnabled: s.deliveryPromptPayEnabled !== false,
+        deliveryCodEnabled: s.deliveryCodEnabled !== false,
       });
       setLocation(normalizeLocation(s.storeLatitude, s.storeLongitude));
       setDeliveryHours(normalizeDeliveryHours(s.deliveryHours));
@@ -1042,6 +1045,10 @@ export function AdminPage() {
   const saveStore = async event => {
     event.preventDefault();
     if (!tenant?.id || storeSaving) return;
+    if (!storeForm.deliveryPromptPayEnabled && !storeForm.deliveryCodEnabled) {
+      showToast(t("admin.delivery_settings.payment_options_required"), "error");
+      return;
+    }
     const cleanFees = fees
       .map((item, index) => {
         const id = String(item.id || "fee-" + (index + 1));
@@ -1113,6 +1120,8 @@ export function AdminPage() {
         "shopName", "shopAddress", "shopPhone", "shopLogoUrl", "shopHeroImageUrl", "promptPayId", "promptPayName",
         "bankName", "bankAccountNumber", "bankAccountName", "deliveryProvider",
       ];
+      const paymentMismatch = saved?.deliveryPromptPayEnabled !== payload.deliveryPromptPayEnabled
+        || saved?.deliveryCodEnabled !== payload.deliveryCodEnabled;
       const textMismatch = textFields.some(field => String(saved?.[field] ?? "") !== String(payload[field] ?? ""));
       const numberMismatch = ["storeLatitude", "storeLongitude", "deliveryMaxDistanceKm", "shopHeroFocusX", "shopHeroFocusY"].some(field => {
         const expected = payload[field];
@@ -1130,7 +1139,7 @@ export function AdminPage() {
       }));
       const feeMismatch = JSON.stringify(normalizeFeeRows(saved?.deliveryFeeOptions))
         !== JSON.stringify(normalizeFeeRows(payload.deliveryFeeOptions));
-      if (textMismatch || numberMismatch || feeMismatch || expectedPromotion !== actualPromotion
+      if (textMismatch || paymentMismatch || numberMismatch || feeMismatch || expectedPromotion !== actualPromotion
         || JSON.stringify(normalizeDeliveryHours(saved?.deliveryHours)) !== JSON.stringify(payload.deliveryHours)) {
         throw new Error("STORE_SETTINGS_VERIFICATION_FAILED");
       }
@@ -1610,7 +1619,8 @@ export function AdminPage() {
   const storeBasicsReady = Boolean(storeForm.shopName.trim() && storeForm.shopAddress.trim());
   const promptPayReady = Boolean(storeForm.promptPayId.trim() && storeForm.promptPayName.trim());
   const bankReady = Boolean(storeForm.bankName.trim() && storeForm.bankAccountNumber.trim() && storeForm.bankAccountName.trim());
-  const paymentMethodCount = Number(promptPayReady) + Number(bankReady);
+  const paymentMethodCount = Number(promptPayReady && storeForm.deliveryPromptPayEnabled)
+    + Number(bankReady) + Number(storeForm.deliveryCodEnabled);
   const promotionActiveCount = Number(promotion.freeShippingEnabled) + Number(promotion.freeGiftEnabled);
   const deliveryFeeTierCount = fees.filter(item => item.id !== "pickup").length;
   const deliveryStatusText = lalamoveSelected ? "Lalamove" : t("admin.store_workspace.self_delivery");
@@ -1742,6 +1752,22 @@ export function AdminPage() {
               statusTone={paymentMethodCount ? "ready" : "muted"}
             >
               <div className="admin-payment-method-grid">
+                <section className="admin-payment-method-card">
+                  <label className="admin-payment-method-head" htmlFor="deliveryPromptPayEnabled">
+                    <input type="checkbox" id="deliveryPromptPayEnabled" checked={storeForm.deliveryPromptPayEnabled} onChange={e => patchStore({ deliveryPromptPayEnabled: e.target.checked })} />
+                    <i className="bi bi-qr-code" aria-hidden="true"></i><strong>{t("admin.delivery_settings.promptpay_enabled_label")}</strong>
+                  </label>
+                  <div className="menu-category">{t("admin.delivery_settings.promptpay_enabled_help")}</div>
+                </section>
+                <section className="admin-payment-method-card">
+                  <label className="admin-payment-method-head" htmlFor="deliveryCodEnabled">
+                    <input type="checkbox" id="deliveryCodEnabled" checked={storeForm.deliveryCodEnabled} onChange={e => patchStore({ deliveryCodEnabled: e.target.checked })} />
+                    <i className="bi bi-cash-stack" aria-hidden="true"></i><strong>{t("admin.delivery_settings.cod_enabled_label")}</strong>
+                  </label>
+                  <div className="menu-category">{t("admin.delivery_settings.cod_enabled_help")}</div>
+                </section>
+              </div>
+              <div className="admin-payment-method-grid" style={{ marginTop: 16 }}>
                 <section className="admin-payment-method-card">
                   <div className="admin-payment-method-head"><i className="bi bi-qr-code" aria-hidden="true"></i><strong>PromptPay</strong></div>
                   <div className="field"><label htmlFor="promptPayId">{t("admin.store.promptpay_id")}</label><input className="input" id="promptPayId" inputMode="numeric" value={storeForm.promptPayId} onChange={e => patchStore({ promptPayId: e.target.value })} /></div>

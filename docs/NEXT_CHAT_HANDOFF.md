@@ -4,6 +4,14 @@ Updated: 2026-10-08
 Project: Food Order / Delivery / Retail POS
 Repository: `Natchanon45/food-order-app`
 
+## 2026-10-10 — Delivery payment toggles / Kitchen loader repair (prepared, no deploy)
+
+- User clarified self-delivery with PromptPay prepayment, Slip2Go auto verification and cashier manual review during provider downtime; COD must remain available as an optional per-store method. Existing Slip2Go and authorized cashier release rules remain unchanged.
+- Current changes on feature/react-firebase-port: Admin adds deliveryPromptPayEnabled and deliveryCodEnabled stored in tenants/{tenantId}/settings/store. Missing flags default to true for legacy shops. Cannot save both off. Delivery live settings show only enabled options and validate before checkout. submitPublicDeliveryOrder independently rejects disabled options inside the store-open Firestore transaction. Kitchen uses loadKitchenMenus for settings+menus plus orders listener, no read of Retail POS-only heldBills, and separates the two error states.
+- Regression: test:delivery-server-guard covers all enabled/disabled combinations; test:delivery-slip2go maintains trusted payment gate; Kitchen scope tests added; full parity/build status in WORKLOG.
+- Release candidate 0.4.281 / Build 2026.10.10.511 is prepared. **No live Firebase deploy or live tenant changes.** Backend functionality requires deploy of Cloud Function submitPublicDeliveryOrder in addition to Hosting. Historical user rule authorizes Hosting-only by default; request explicit permission before deploying Functions, and do not release incomplete browser/server combinations.
+- Do not merge main unless requested; do not remove prior untracked hashed JS bundles.
+
 ## Read this first in a new chat
 
 Before changing code, read:

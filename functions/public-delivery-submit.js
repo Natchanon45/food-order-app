@@ -81,7 +81,15 @@ async function createDeliveryOrderWithGuard(db, tenantId, id, order) {
     if (!["both", "restaurant_cafe"].includes(type)) {
       throw new HttpsError("permission-denied", "DELIVERY_BUSINESS_DISABLED");
     }
-    if (!getDeliveryOpeningStatus(settingsSnap.data(), new Date()).open) {
+    const store = settingsSnap.data() || {};
+    // Both payment options default to their legacy enabled state until a shop opts out.
+    if (order.paymentMethod === "cod" && store.deliveryCodEnabled === false) {
+      throw new HttpsError("failed-precondition", "DELIVERY_COD_DISABLED");
+    }
+    if (order.paymentMethod === "promptpay" && store.deliveryPromptPayEnabled === false) {
+      throw new HttpsError("failed-precondition", "DELIVERY_PROMPTPAY_DISABLED");
+    }
+    if (!getDeliveryOpeningStatus(store, new Date()).open) {
       throw new HttpsError("failed-precondition", "DELIVERY_STORE_CLOSED");
     }
     if (existingOrder.exists) {

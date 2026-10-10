@@ -90,7 +90,8 @@ test("delivery checkout exposes localized Slip2Go outcomes and customer can swit
     "slip_invalid",
     "slip_manual",
   ]) assert.ok(delivery.includes(key), `missing ${key}`);
-  assert.ok(delivery.includes('disabled={submitting} onChange={event => { setPaymentMethod(event.target.value)'));
+  assert.ok(delivery.includes('setPaymentMethod(event.target.value)'));
+  assert.match(delivery, /codEnabled \? <option value="cod">/);
   assert.ok(!delivery.includes("สลิปนี้ถูกใช้แล้ว"));
 });
 

@@ -315,6 +315,8 @@ export function DeliveryPage() {
   const subtotal = useMemo(() => cart.reduce((sum, item) => sum + Number(item.qty || 0) * Number(item.price || 0), 0), [cart]);
   const zones = useMemo(() => normalizeZones(settings).filter(zone => zone.id !== "pickup"), [settings]);
   const usesLalamove = String(settings.deliveryProvider || "self").toLowerCase() === "lalamove";
+  const promptPayEnabled = settings.deliveryPromptPayEnabled !== false;
+  const codEnabled = settings.deliveryCodEnabled !== false;
   const maxDistance = Number(settings.deliveryMaxDistanceKm) > 0 ? Number(settings.deliveryMaxDistanceKm) : null;
 
   const routeZone = routeState.route?.zone || null;
@@ -601,7 +603,23 @@ export function DeliveryPage() {
     setSlipFile(null); setSlipPreview("");
   };
 
+  useEffect(() => {
+    if (!settingsLiveReady) return;
+    if ((paymentMethod === "promptpay" && promptPayEnabled)
+      || (paymentMethod === "cod" && codEnabled)) return;
+    const fallback = promptPayEnabled ? "promptpay" : codEnabled ? "cod" : "";
+    setPaymentMethod(fallback);
+    setPaymentLocked(false);
+    setLockedTotal(null);
+    clearSlip();
+  }, [settingsLiveReady, promptPayEnabled, codEnabled, paymentMethod]);
+
   const validateBase = () => {
+    if (!((paymentMethod === "promptpay" && promptPayEnabled)
+      || (paymentMethod === "cod" && codEnabled))) {
+      showStorefrontToast(t("admin.delivery_settings.payment_method_unavailable"), "error");
+      return false;
+    }
     if (!storeAcceptingOrders) {
       showStorefrontToast(t("delivery.opening_hours.order_unavailable"), "error");
       return false;
@@ -1068,7 +1086,11 @@ export function DeliveryPage() {
                 {freeShipping.enabled && subtotal > 0 ? <div id="deliveryFreeShippingStatus" className={"delivery-free-shipping-status" + (!freeShippingApplied ? " is-progress" : "")}>{freeShippingApplied ? t("delivery.checkout.promotion.free_shipping_applied", { minimum: money(freeShipping.minimumSubtotal) }) : t("delivery.checkout.promotion.free_shipping_progress", { remaining: money(Math.max(0, freeShipping.minimumSubtotal - subtotal)) })}</div> : null}
               </div>
               <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.summary.order_note")}</label><textarea className="input" id="orderNote" maxLength={300} value={orderNote} disabled={submitting} onChange={event => setOrderNote(event.target.value)} /></div>
-              <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.summary.payment_method")} *</label><select className="input" id="paymentMethod" value={paymentMethod} disabled={submitting} onChange={event => { setPaymentMethod(event.target.value); setPaymentLocked(false); setLockedTotal(null); clearSlip(); }}><option value="promptpay">{t("delivery.checkout.payment.promptpay_option")}</option><option value="cod">{t("delivery.checkout.payment.cod_option")}</option></select></div>
+              <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.summary.payment_method")} *</label><select className="input" id="paymentMethod" value={paymentMethod} disabled={submitting || (!promptPayEnabled && !codEnabled)} onChange={event => { setPaymentMethod(event.target.value); setPaymentLocked(false); setLockedTotal(null); clearSlip(); }}>
+                  {!promptPayEnabled && !codEnabled ? <option value="">{t("admin.delivery_settings.payment_method_unavailable")}</option> : null}
+                  {promptPayEnabled ? <option value="promptpay">{t("delivery.checkout.payment.promptpay_option")}</option> : null}
+                  {codEnabled ? <option value="cod">{t("delivery.checkout.payment.cod_option")}</option> : null}
+                </select></div>
 
               {paymentMethod === "promptpay" ? <div id="promptPaySection" className="card" style={{ marginTop: 12, textAlign: "center" }}>
                 <h3 style={{ marginTop: 0 }}><i className="bi bi-qr-code app-icon"></i><span>{t("delivery.checkout.payment.promptpay_title")}</span></h3>

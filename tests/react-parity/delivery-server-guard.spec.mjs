@@ -115,6 +115,50 @@ test("retail-only, missing store, missing tenant and duplicate order are refused
     assert.equal(state.writes.length, 0);
   }
 });
+test("per-shop COD and PromptPay switches are enforced in the server transaction", async () => {
+  for (const [payment, settings, allowed] of [
+    ["cod", {}, true],
+    ["promptpay", {}, true],
+    ["cod", { deliveryCodEnabled: true, deliveryPromptPayEnabled: false }, true],
+    ["promptpay", { deliveryCodEnabled: true, deliveryPromptPayEnabled: false }, false],
+    ["cod", { deliveryCodEnabled: false, deliveryPromptPayEnabled: true }, false],
+    ["promptpay", { deliveryCodEnabled: false, deliveryPromptPayEnabled: true }, true],
+    ["cod", { deliveryCodEnabled: false, deliveryPromptPayEnabled: false }, false],
+    ["promptpay", { deliveryCodEnabled: false, deliveryPromptPayEnabled: false }, false],
+  ]) {
+    const { db, state } = fakeFirestore({ hours: settings, businessType: "restaurant_cafe" });
+    const operation = backend.createDeliveryOrderWithGuard(db, tenantId, orderId, payload(payment).order);
+    if (allowed) {
+      await operation;
+      assert.equal(state.writes.length, 1, payment + JSON.stringify(settings));
+      assert.equal(state.writes[0].data.paymentStatus, payment === "cod" ? "unpaid" : "pending_verification");
+    } else {
+      const code = payment === "cod" ? "DELIVERY_COD_DISABLED" : "DELIVERY_PROMPTPAY_DISABLED";
+      await assert.rejects(operation, errorCode(code));
+      assert.equal(state.writes.length, 0, payment + JSON.stringify(settings));
+    }
+  }
+});
+test("Admin delivery payment settings and customer checkout have matching controls", () => {
+  const admin = fs.readFileSync("react-app/src/pages/AdminPage.jsx", "utf8");
+  const customer = fs.readFileSync("react-app/src/pages/DeliveryPage.jsx", "utf8");
+  const translations = JSON.parse(fs.readFileSync("react-app/src/i18n/parity-translations.json", "utf8"));
+  for (const flag of ["deliveryCodEnabled", "deliveryPromptPayEnabled"]) {
+    assert.match(admin, new RegExp('checked=\\{storeForm\\.' + flag + '\\}'));
+    assert.match(admin, new RegExp('saved\\?\\.' + flag + ' !== payload\\.' + flag));
+    assert.match(customer, new RegExp('settings\\.' + flag + ' !== false'));
+  }
+  assert.match(admin, /!storeForm\.deliveryPromptPayEnabled && !storeForm\.deliveryCodEnabled/);
+  assert.match(customer, /codEnabled \? <option value="cod">/);
+  assert.match(customer, /promptPayEnabled \? <option value="promptpay">/);
+  assert.match(customer, /const validateBase = \(\) => \{\s+if \(!\(\(paymentMethod === "promptpay"/);
+  for (const locale of ["th", "en", "my", "lo", "km"]) {
+    for (const key of ["cod_enabled_label", "promptpay_enabled_label", "payment_options_required", "payment_method_unavailable"]) {
+      assert.ok(translations[locale].admin.delivery_settings[key], locale + ":" + key);
+    }
+  }
+});
+
 test("Firestore rules disallow direct delivery writes for both tenant and legacy root, preserve other types", () => {
   const rules = fs.readFileSync("firestore.rules", "utf8");
   const root = rules.match(/match \/orders\/\{orderId\} \{[^\n]*/)?.[0];

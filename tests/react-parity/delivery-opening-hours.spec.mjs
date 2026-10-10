@@ -92,7 +92,8 @@ test("Delivery performs pre-payment read and submits to authoritative server-sid
   assert.match(catalog,/await submitPublicDeliveryOrder\(\{/);
   const source = fs.readFileSync("functions/public-delivery-submit.js", "utf8");
   assert.match(source,/return db.runTransaction\(async transaction => \{/);
-  assert.match(source,/!getDeliveryOpeningStatus\(settingsSnap.data\(\), new Date\(\)\).open/);
+  assert.match(source,/const store = settingsSnap.data\(\) \|\| \{\}/);
+  assert.match(source,/!getDeliveryOpeningStatus\(store, new Date\(\)\).open/);
   assert.match(source,/transaction.create\(orderRef,/);
 });
 

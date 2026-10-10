@@ -9,7 +9,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { sweetConfirm } from "@/components/sweetDialog";
 import {
   cancelOperationalOrder,
-  loadOperationalSnapshot,
+  loadKitchenMenus,
   refreshLalamoveDispatch,
   settleTableSession,
   updateOperationalOrder,
@@ -294,7 +294,9 @@ export function KitchenPage() {
   });
 
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  const [menuLoadError, setMenuLoadError] = useState("");
+  const [orderLoadError, setOrderLoadError] = useState("");
+  const loadError = menuLoadError || orderLoadError;
   const [orders, setOrders] = useState([]);
   const [menus, setMenus] = useState([]);
   const [editor, setEditor] = useState(null);
@@ -314,26 +316,43 @@ export function KitchenPage() {
     if (!tenant?.id || !allowedRole) return undefined;
     let alive = true;
     setLoading(true);
-    setLoadError("");
-    loadOperationalSnapshot(tenant.id)
-      .then(snapshot => {
+    setMenuLoadError("");
+    setOrderLoadError("");
+    let menusSettled = false;
+    let ordersSettled = false;
+    const finish = () => {
+      if (alive && menusSettled && ordersSettled) setLoading(false);
+    };
+    loadKitchenMenus(tenant.id)
+      .then(rows => {
         if (!alive) return;
-        setMenus(snapshot.menus || []);
-        setOrders(snapshot.orders || []);
-        setLoading(false);
+        setMenus(rows);
+        setMenuLoadError("");
+        menusSettled = true;
+        finish();
       })
       .catch(error => {
-        console.error("KITCHEN_INITIAL_LOAD_FAILED", error);
+        console.error("KITCHEN_MENUS_LOAD_FAILED", error);
         if (!alive) return;
-        setLoadError(t("kitchen.loading.failed"));
-        setLoading(false);
+        setMenuLoadError(t("kitchen.loading.failed"));
+        menusSettled = true;
+        finish();
       });
     const stop = watchOperationalOrders(
       tenant.id,
-      rows => { if (alive) { setOrders(rows); setLoading(false); } },
+      rows => {
+        if (!alive) return;
+        setOrders(rows);
+        setOrderLoadError("");
+        ordersSettled = true;
+        finish();
+      },
       error => {
         console.error("KITCHEN_ORDER_WATCH_FAILED", error);
-        if (alive) setLoadError(t("kitchen.loading.failed"));
+        if (!alive) return;
+        setOrderLoadError(t("kitchen.loading.failed"));
+        ordersSettled = true;
+        finish();
       },
     );
     return () => { alive = false; stop?.(); };

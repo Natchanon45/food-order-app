@@ -93,6 +93,18 @@ export async function loadOperationalSnapshot(tenantId) {
   return { settings, menus, tables, orders, heldBills };
 }
 
+// Kitchen only needs its menu catalogue and ordering stream. Do not read heldBills:
+ // that collection is Retail POS-only and restaurant-only tenants cannot list it.
+export async function loadKitchenMenus(tenantId) {
+  const id = requireTenantId(tenantId);
+  const [settingsSnap, menuSnap] = await Promise.all([
+    getDoc(tenantDoc(id, "settings", "store")),
+    getDocs(tenantCollection(id, "menus")),
+  ]);
+  const settings = settingsSnap.exists() ? settingsSnap.data() || {} : {};
+  return menuSort(docs(menuSnap), settings.categoryOrder || []);
+}
+
 export function watchOperationalOrders(tenantId, onRows, onError = console.error) {
   return onSnapshot(
     query(tenantCollection(tenantId, "orders"), orderBy("createdAt", "desc")),
