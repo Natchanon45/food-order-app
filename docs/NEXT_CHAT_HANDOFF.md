@@ -4,6 +4,12 @@ Updated: 2026-10-10
 Project: Food Order / Delivery / Retail POS
 Repository: `Natchanon45/food-order-app`
 
+## 2026-10-10 — Cashier bill modal net total wording (Build .514)
+
+- User supplied real Cashier Delivery bill screenshot: modal grand total label incorrectly read "ยอดรวมทั้งโต๊ะ" because it reused cashier.table.total across every order type. Change only label selection: Delivery, Take Away and Walk-in show "ยอดรวมสุทธิ" (cashier.bill_preview.net_total), table rounds retain table-specific label. Total numeric sum and calculation unchanged.
+- Added net_total translation to five Cashier bill-preview locales. Regression tests include branch-specific label check and exact Thai wording. Full React Parity and generated Vite Build PASS. Version 0.4.284 / Build 2026.10.10.514; bundle /react/assets/index-hXz-nnu4.js.
+- Hosting-only release prepared on feature/react-firebase-port. No Cloud Function, Rules, tenant/payment/order data changes, no main merge. Preserve all old untracked Vite bundles. Update WORKLOG after deploy.
+
 ## 2026-10-10 — Cashier modal bill preview and print loader typography (Build .513)
 
 - User screenshot highlighted orange eye action on /cashier in Delivery card; previously view_slip opened a separate browser tab. It now opens an in-page, accessible scrollable bill-details modal (receipt items, customer/address, payment state, amounts, inline uploaded slip) using shared Cashier styling. Also added "View bill" eye action for Take Away, Walk-in and Table bill groups, preserving separate Print button and all payment/cashier/Kitchen gates.

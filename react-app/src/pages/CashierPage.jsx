@@ -453,7 +453,7 @@ function CashierBillPreviewModal({ preview, slipUrls, t, money, formatTime, onCl
               <div><span>{t("cashier.bill_preview.delivery_fee")}</span><strong>{money(first.deliveryFee || 0)} {t("cashier.common.baht")}</strong></div>
             </div>
           ) : null}
-          <div className="cashier-bill-preview-grand-total"><strong>{t("cashier.table.total")}</strong><strong>{money(total)} {t("cashier.common.baht")}</strong></div>
+          <div className="cashier-bill-preview-grand-total"><strong>{first.orderType === "delivery" || first.orderType === "takeaway" || isWalkIn(first) ? t("cashier.bill_preview.net_total") : t("cashier.table.total")}</strong><strong>{money(total)} {t("cashier.common.baht")}</strong></div>
           {first.orderType === "delivery" && (previewSlipUrl || first.paymentSlipPath) ? (
             <div className="cashier-bill-preview-slip">
               <h3><i className="bi bi-file-earmark-image app-icon" aria-hidden="true"></i><span>{t("cashier.bill_preview.slip")}</span></h3>

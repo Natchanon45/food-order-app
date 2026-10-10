@@ -38,7 +38,13 @@ test("Bill modal CSS is layered, scrollable and responsive without modifying cas
 
 test("Bill preview title, close, and breakdown are available in all five languages", () => {
   for (const locale of ["th", "en", "my", "lo", "km"]) {
-    for (const key of ["view", "title", "order_code", "close", "slip", "subtotal", "delivery_fee"])
+    for (const key of ["view", "title", "order_code", "close", "slip", "subtotal", "delivery_fee", "net_total"])
       assert.ok(dict[locale].cashier.bill_preview[key], locale + " missing " + key);
   }
+});
+
+test("Delivery, takeaway and walk-in preview use net total; table bills retain table total", () => {
+  assert.match(page, /first\\.orderType === "delivery" \\|\\| first\\.orderType === "takeaway" \\|\\| isWalkIn\\(first\\) \\? t\\("cashier\\.bill_preview\\.net_total"\\) : t\\("cashier\\.table\\.total"\\)/);
+  assert.equal(dict.th.cashier.bill_preview.net_total, "ยอดรวมสุทธิ");
+  assert.ok(dict.th.cashier.table.total.includes("โต๊ะ"));
 });

@@ -13194,3 +13194,11 @@ Release state: Hosting-only UI release prepared. No Cloud Functions, Firestore R
 - Smoke: /cashier/, /cashier/receipt/ and /kitchen/ all HTTP 200 using /react/assets/index-DHwYQlC7.js. Live and Mac JavaScript SHA-256 f35bf105dd77c9612077d385adb0b5a02c8eb888cb2ec6f54a3913beb5db29d1. Live and Mac cashier-refresh CSS SHA-256 75ba92dce63f6d39dedbb351f5c74dc37318e3d0aa1325f5a0d6f56c7a0ade08.
 - Local validation: full React parity and built contract PASS; bill-preview source and locale regression 4/4; receipt loader 7/7; Chrome modal viewport fixture at 320/440/1280 and spinner popup smoke at 390/1280, browser 5/5 PASS.
 - No Cloud Function, Rules, or live customer/order/payment records changed. Previously untracked hashed bundles kept intact. Authenticated user acceptance for viewing an actual slip and receipt print still required. Bump Build before any subsequent Hosting release.
+
+---
+
+## 2026-10-10 — Cashier Delivery modal net total text
+
+User supplied screenshot where Delivery modal displayed "ยอดรวมทั้งโต๊ะ". Root cause: CashierBillPreviewModal reused cashier.table.total in the grand total header regardless of order type. Fixed the grand total label to "ยอดรวมสุทธิ" for Delivery, Take Away, and Walk-in, and kept "ยอดรวมทั้งโต๊ะ" for table bills only. Numeric calculation / total value unchanged.
+
+Updated CashierPage.jsx, cashier bill preview TH/EN/MY/LO/KM translations and regression contract in tests/react-parity/cashier-bill-preview.spec.mjs. Full npm run test:react-parity PASSED (focused Cashier receipt/bill checks 12/12); npm run build:react and verify:react-build PASSED; Build 2026.10.10.514, Version 0.4.284, bundle /react/assets/index-hXz-nnu4.js. Hosting-only UI release, no Cloud Function or Firebase data writes, no main merge. Previous untracked old Vite hashed assets retained. Deployment confirmation must be logged separately.

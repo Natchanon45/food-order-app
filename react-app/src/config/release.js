@@ -1,13 +1,14 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
-  version: "0.4.283",
-  build: "2026.10.10.513",
+  version: "0.4.284",
+  build: "2026.10.10.514",
   branch: "feature/react-firebase-port",
-  commit: "CASHIER-BILL-MODAL-PRINT-LOADER-POLISH",
+  commit: "CASHIER-BILL-TOTAL-LABEL-BY-ORDER-TYPE",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Cashier bill preview modal and system-font receipt loading screen",
+  milestone: "Order-type-aware net total label in Cashier bill modal",
   whatsNew: [
+    "Show Net total for Delivery, Take Away and Walk-in bill previews, preserving table-only totals",
     "View Cashier bills in a responsive in-page modal with order details, slip image and print action",
     "Remove PG PENGUIN mark from receipt loading and use the same Kanit font as the rest of the system",
     "Refine Thai receipt loading message to reflect preparation and wait status",

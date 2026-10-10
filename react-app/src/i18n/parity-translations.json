@@ -1075,7 +1075,8 @@
         "close": "ปิดหน้าต่าง",
         "slip": "สลิปการชำระเงิน",
         "subtotal": "ค่าอาหาร",
-        "delivery_fee": "ค่าจัดส่ง"
+        "delivery_fee": "ค่าจัดส่ง",
+        "net_total": "ยอดรวมสุทธิ"
       },
       "meta": {
         "title": "หน้าแคชเชียร์"
@@ -7621,7 +7622,8 @@
         "close": "Close",
         "slip": "Payment slip",
         "subtotal": "Food subtotal",
-        "delivery_fee": "Delivery fee"
+        "delivery_fee": "Delivery fee",
+        "net_total": "Net total"
       },
       "meta": {
         "title": "Cashier"
@@ -13892,7 +13894,8 @@
         "close": "ပိတ်မည်",
         "slip": "ငွေလွှဲပြေစာ",
         "subtotal": "အစားအသောက်စုစုပေါင်း",
-        "delivery_fee": "ပို့ဆောင်ခ"
+        "delivery_fee": "ပို့ဆောင်ခ",
+        "net_total": "စုစုပေါင်း အသားတင်"
       },
       "meta": {
         "title": "ငွေရှင်းကောင်တာ"
@@ -20163,7 +20166,8 @@
         "close": "ປິດ",
         "slip": "ສະລິບຊຳລະເງິນ",
         "subtotal": "ຄ່າອາຫານ",
-        "delivery_fee": "ຄ່າຈັດສົ່ງ"
+        "delivery_fee": "ຄ່າຈັດສົ່ງ",
+        "net_total": "ຍອດລວມສຸດທິ"
       },
       "meta": {
         "title": "ແຄດເຊຍ"
@@ -26434,7 +26438,8 @@
         "close": "បិទ",
         "slip": "បង្កាន់ដៃបង់ប្រាក់",
         "subtotal": "ថ្លៃអាហារសរុប",
-        "delivery_fee": "ថ្លៃដឹកជញ្ជូន"
+        "delivery_fee": "ថ្លៃដឹកជញ្ជូន",
+        "net_total": "សរុបសុទ្ធ"
       },
       "meta": {
         "title": "អ្នកគិតលុយ"
