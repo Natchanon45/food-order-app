@@ -13233,3 +13233,10 @@ Finding: DeliveryPage JSX has StoreBrandMark beside the translated shipping sect
 Changes: Scoped heading to delivery-shipping-title / delivery-shipping-title-row in DeliveryPage and added localized CSS overrides at end of store-hero-branding.css to center a circular 42px desktop / 38px mobile brand tile, image object-position 50% 50%, icon tile grid place-items:center, 14px desktop / 12px mobile spacing and text wrapping. No change to hero/banner logo layout or tenant branding source, checkout fields, order/payment logic or other pages.
 
 Regression: tests/react-parity/delivery-shipping-title-brand.spec.mjs (2/2); Playwright actual Chrome layout test for logo and storefront fallback at 320, 440, 1280px (6/6), checking glyph/tile center axes, gap and no page overflow. Full npm run test:react-parity PASS; npm run build:react and verify:react-build PASS. Version 0.4.285, Build 2026.10.10.515, React bundle index-KNQYF0SH.js. No live authenticated checkout or tenant data changes. Hosting-only deployment planned; main merge NOT requested, preserve previous untracked hashed Vite bundles.
+
+### Production release — shipping section brand alignment Build .515
+
+- User-facing UI fix committed as 9add2da9, pushed to origin/feature/react-firebase-port, branch synced 0/0.
+- Firebase Hosting-only deployment completed with exit 0: project chat-45754 target hosting:foodapp/penguin-food, 583 public files, version finalized and released at https://penguin-food.web.app. No Cloud Function, Rules, Firestore or tenant settings changed.
+- Production smoke: /s/aui-bau-traditional-thai-coffee/delivery, /delivery/ and /cashier/ HTTP 200; each references /react/assets/index-KNQYF0SH.js. Remote/local SHA-256 JavaScript match c0af5f4870c8c9d5d3529130d7f3ee90475a01dd6f4eda69e0e7a236b9fbe1a7; CSS match 2d4324c5f02b4e98c81c3783780cb1a6dedbfdc64297bd10d71a46335e361795.
+- Version 0.4.285 Build 2026.10.10.515 LIVE. Not merged into main; older generated hashed untracked bundles retained. Authenticated UI acceptance with user's actual configured logo is still requested; automated Chrome tests with logo/fallback passed. Increment Build before further Hosting deploys.
