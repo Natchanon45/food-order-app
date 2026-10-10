@@ -31,6 +31,8 @@ export function CashierOrderNotifier({ orders = [], onToast, surface = "cashier"
   const { t } = useI18n();
   const [enabled, setEnabledState] = useState(initialEnabled);
   const [armed, setArmed] = useState(false);
+  const [voiceStatus, setVoiceStatus] = useState({ chimeReady: false, speechReady: false, mode: "locked", error: "" });
+  const [voiceTesting, setVoiceTesting] = useState(false);
   const seenRef = useRef(new Set());
   const initializedRef = useRef(false);
   const titleTimerRef = useRef(null);
@@ -46,6 +48,8 @@ export function CashierOrderNotifier({ orders = [], onToast, surface = "cashier"
       .filter(order => surface !== "kitchen" || deliveryKitchenAdmitted(order)),
     [orders, surface],
   );
+
+  useEffect(() => controllerRef.current.subscribe(setVoiceStatus), []);
 
   const setEnabled = value => {
     setEnabledState(value);
@@ -91,7 +95,7 @@ export function CashierOrderNotifier({ orders = [], onToast, surface = "cashier"
       }).catch(() => {});
     };
     const unlockFromInteraction = event => {
-      if (event?.target?.closest?.("#orderAlertButton")) return;
+      if (event?.target?.closest?.("#orderAlertButton, #orderAlertVoiceTestButton")) return;
       tryArm();
     };
 
@@ -136,6 +140,7 @@ export function CashierOrderNotifier({ orders = [], onToast, surface = "cashier"
         .then(async () => {
           const result = await controllerRef.current.announce(order);
           if (result?.chimePlayed) setArmed(true);
+          if (result?.chimePlayed && !result?.spoken) onToast?.(t("notifications.order.voice_failed"));
         });
     });
   }, [rows, enabled, armed, t, onToast]);
@@ -148,7 +153,7 @@ export function CashierOrderNotifier({ orders = [], onToast, surface = "cashier"
   const toggle = async () => {
     if (!enabled || !armed) {
       setEnabled(true);
-      const ok = await controllerRef.current.arm();
+      const ok = await controllerRef.current.arm({ speechGesture: true });
       setArmed(ok);
       if (ok) await controllerRef.current.playChime();
       onToast?.(t(ok ? "notifications.order.enabled" : "notifications.order.enable"));
@@ -161,6 +166,31 @@ export function CashierOrderNotifier({ orders = [], onToast, surface = "cashier"
     onToast?.(t("notifications.order.disabled"));
   };
 
+  const tryVoice = async () => {
+    if (voiceTesting) return;
+    setVoiceTesting(true);
+    setEnabled(true);
+    try {
+      const result = await controllerRef.current.testVoice();
+      const status = controllerRef.current.voiceState();
+      setArmed(status.chimeReady);
+      onToast?.(t(result.spoken ? (result.mode === "recorded"
+        ? "notifications.order.voice_recorded" : "notifications.order.voice_web")
+        : "notifications.order.voice_failed"));
+    } catch (error) {
+      console.warn("CASHIER_VOICE_TEST_FAILED", error);
+      onToast?.(t("notifications.order.voice_failed"));
+    } finally {
+      setVoiceTesting(false);
+    }
+  };
+
+  const voiceLabel = t(
+    !voiceStatus.chimeReady ? "notifications.order.voice_locked"
+      : voiceStatus.speechReady
+        ? (voiceStatus.mode === "web" ? "notifications.order.voice_web" : "notifications.order.voice_recorded")
+        : "notifications.order.voice_checking",
+  );
   const label = t(
     !enabled
       ? "notifications.order.enable"
@@ -170,7 +200,22 @@ export function CashierOrderNotifier({ orders = [], onToast, surface = "cashier"
   );
 
   return (
-    <button
+    <div className="order-alert-controls" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <button
+        type="button"
+        id="orderAlertVoiceTestButton"
+        className="delivery-alert-toggle order-alert-voice-test"
+        aria-label={t("notifications.order.test_voice") + " • " + voiceLabel}
+        title={t("notifications.order.test_voice") + " • " + voiceLabel}
+        data-voice-mode={voiceStatus.mode}
+        data-voice-ready={String(voiceStatus.speechReady)}
+        onClick={tryVoice}
+        disabled={voiceTesting}
+        style={{ width: 36, height: 36, padding: 0, border: "1px solid #d9e5dc", borderRadius: "50%", background: "#fff", display: "grid", placeItems: "center", flex: "0 0 auto", position: "relative" }}
+      ><i className={voiceTesting ? "bi bi-hourglass-split app-icon" : voiceStatus.speechReady ? "bi bi-volume-up-fill app-icon" : "bi bi-volume-up app-icon"} aria-hidden="true" />
+        <span aria-hidden="true" style={{ position: "absolute", right: 1, bottom: 1, width: 8, height: 8, borderRadius: "50%", border: "1px solid #fff", background: voiceStatus.speechReady ? "#159447" : voiceStatus.chimeReady ? "#d69b2b" : "#98a39b" }} />
+      </button>
+      <button
       type="button"
       id="orderAlertButton"
       className="delivery-alert-toggle order-alert-toggle"
@@ -179,7 +224,7 @@ export function CashierOrderNotifier({ orders = [], onToast, surface = "cashier"
       data-surface={surface}
       aria-pressed={String(enabled && armed)}
       aria-label={label}
-      title={label}
+      title={label + " • " + voiceLabel}
       onClick={toggle}
       style={{
         width: 36,
@@ -198,5 +243,6 @@ export function CashierOrderNotifier({ orders = [], onToast, surface = "cashier"
         aria-hidden="true"
       />
     </button>
+    </div>
   );
 }

@@ -13319,3 +13319,47 @@ Read-only code diagnosis:
 Advice: distinguish whether alert chime works but spoken Thai is silent, or both are silent. Test with screen awake, Cashier/Kitchen in foreground, volume up, unmuted, bell enabled; then diagnose whether iOS voice initialization and fallback pre-recorded or generated Thai audio are needed. A robust implementation would prime Web Speech in the actual user tap (not merely AudioContext), explicitly show chime vs voice ready/error statuses, and optionally provide reusable recorded/TTS assets for consistency across Apple devices (subject to user authorization and actual iOS device testing).
 
 This was diagnosis only. No production code, UI, tests, Cloud Function, Firebase Hosting, Firestore Rules, release/build, or tenant data changed. No deployment was performed.
+
+---
+
+## 2026-10-10 — iPad/iPhone Thai order voice fallback and activation UX
+
+User issue: Mac Cashier/Kitchen speaks Thai order announcements after the chime, while iPad plays the chime only. Inspected orderAlertAudio.js and CashierOrderNotifier.jsx. Existing WebAudioContext unlock works after staff interaction; Firestore-triggered speechSynthesis.speak() later on iOS may be blocked, and UI previously marked audio ready based only on AudioContext, without proving speech had started. Existing 1.32s chime gap followed by async getVoices exacerbates mobile user-gesture restrictions.
+
+Implemented: New locally hosted 27-segment recorded Thai order voice pack with compositional Thai currency/decimals, channels Delivery/Takeaway/Walk-in/Table and words for Baht/Satang, served as WAV and decoded into existing running Web AudioContext. iOS prefers reliable AudioBufferSourceNode voice when native speech has not been successfully primed by actual click; Mac retains native Thai WebSpeech, with fallback if that fails. Bell enabling from click primes SpeechSynthesisUtterance directly before await; added separate test voice icon button (with visually indicated green/amber/gray speech readiness and localized diagnostic toast/ARIA status) to Cashier and Kitchen. Cached fallback is predecoded, no external TTS API or per-order request to providers, and no Firestore/order-payment/kitchen-admission changes.
+
+Rights: Initially generated sample using macOS Kanya, but investigated Apple commercial redistribution terms and did not ship or retain its samples. Regenerated ALL fallback segments using commercial-use-capable open-source eSpeak NG v1.52 th voice on the authorized Mac. Manifest records engine/provenance and references GPL-3.0-or-later engine license; no eSpeak executable or model bundled into app. eSpeak Thai voice is a less natural robotic fallback compared with Mac Kanya; recommend commercially licensed neural TTS assets if voice naturalness is essential.
+
+Verification: node --test tests/react-parity/ios-order-alert-audio.spec.mjs 6/6 PASS (number composition, WAV format, 5 locale labels, iOS detection, existing Cashier/Kitchen gate). Playwright desktop Chrome with iPad UA, actual real WAV decoding and Web AudioBufferSourceNode speech for delivery 170 baht PASS 1/1. Full npm run test:react-parity PASS, npm run build:react and verify:react-build PASS; Version 0.4.287 / Build 2026.10.10.517 / bundle index-CgDx6yit.js. Not a physical iOS WebKit audio hardware acceptance test; iOS background/locked playback remains out of scope/platform-limited.
+
+Files: react-app/src/components/CashierOrderNotifier.jsx, orderAlertAudio.js, new orderAlertRecordedAudio.js, react-app/src/i18n/parity-translations.json, new public/assets/audio/order-alert-th/ WAVs and manifest, package.json, tests/react-parity/ios-order-alert-*.spec.mjs, tools/react-foundation-contract.mjs, release.js, generated React entrypoints/assets, README/Handoff/Worklog. Historical untracked hashed Vite bundles preserved.
+
+Deploy state: Hosting-only release prepared; no Cloud Functions, Firestore Rules, real orders or tenant data modified. Git commits/pushes/main merge were not explicitly requested; leave tracked changes intact until explicit user approval. Once deployed, update Worklog and README, and ask user to manually test Safari iPad with foreground screen awake by tapping voice-test speaker first, then placing safe test order. Build bump required before next Hosting deploy.
+
+### Production Hosting release — iOS order voice Build .517
+
+- User authorized implementation of iOS Thai voice issue, including local fallback. Hosting-only production deploy command: npx --no-install firebase-tools deploy --only hosting:foodapp --project chat-45754 --non-interactive, completed with exit 0, Firebase finalized/released 614 public files, URL https://penguin-food.web.app.
+- Smoke GET /cashier/, /kitchen/, /cashier/quick-order/ HTTP 200 and all reference /react/assets/index-CgDx6yit.js. Locally compiled JS and live production JS SHA-256 match exactly: f797205a705214c1483a5e115280eff7dd6134f15a7e720668ecd9cefe94e310. Live audio snippets intro/delivery/one/hundred/seven/ten/baht/welcome and manifest all HTTP 200 and SHA-256 equal local eSpeak NG files.
+- Prior checks: React Parity PASS; iOS voice tests 6/6; actual desktop Chrome emulating iPad UA and decoding/playing real local WAV buffer audio PASS; Vite Build and verification PASS. These are not physical iOS WebKit tests. No authenticated live order/test order created. iOS foreground user must press voice test button in Cashier/Kitchen and test incoming order with volume unmuted. Silent mode/audio route and locked-background tabs may differ.
+- No Firebase Functions/Firestore/Storage Rules, actual tenant/order/payment writes, Build redeploy, Git commit/push or main merge. Source, WAV assets, generated Build .517 and this log remain uncommitted in the Mac working tree, per project Git policy until user explicitly requests it. Preserve all user work and older 17 untracked bundles. A subsequent Hosting deploy must increment Build.
+
+---
+
+## 2026-10-11 — Remove visible voice status next to Cashier/Kitchen bell
+
+User confirms iOS speech announcements now play. Screenshot of /cashier shows long visible "เสียงพูดไทยจากอุปกรณ์พร้อมใช้งาน" to the right of the bell and asks for its complete removal to save space.
+
+Root cause: CashierOrderNotifier.jsx rendered a span.sr-only status with voiceLabel in a flex toolbar. The sr-only hide rule exists only in waiting-queue.css, not loaded by Cashier/Kitchen, thus the status became visible and consumed header width.
+
+Change: Remove that trailing span from shared CashierOrderNotifier; keep both 36px icon actions, 8px gap, voice status indicator dot, accessible aria-label/title descriptions, Web Speech / Web Audio and new-order gating unchanged. No unrelated UI/logic/data changes.
+
+Verification: Focused ios-order-alert-audio regression now 7/7 PASS including checking no status span; npm run test:react-parity PASS; npm run build:react and verify:react-build PASS. Version 0.4.288 Build 2026.10.11.518, bundle index-xr95bypR.js. No live authenticated order created.
+
+Release status: Hosting-only Build .518 prepared. Do not modify Firestore Rules, Cloud Functions, tenant data. User has not requested Git commit/push/merge. Preserve previous uncommitted .517 implementation and historic untracked bundles.
+
+### Production Hosting verification — compact audio controls Build .518
+
+- Firebase deploy --only hosting:foodapp --project chat-45754 --non-interactive succeeded, Firebase finalized/released version (615 public files; exit 0; Hosting URL https://penguin-food.web.app).
+- GET /cashier, /kitchen/, /cashier/quick-order all HTTP 200 with generated JS /react/assets/index-xr95bypR.js. Production and local SHA-256 both ea47f37cdcd0fd6ec9a1119ac67b282d2d8ff8865e8e14b99c0deb2a9a5d3e5a, confirming correct Build .518 deployed.
+- Shared Cashier/Kitchen header now contains only test voice and notification bell buttons. Only the visually exposed standalone voice status span removed; tooltips, ARIA labels, status dot and audio logic preserved. Unit regression 7/7 PASS and full parity/build PASS predeploy.
+- No Cloud Functions, Firestore Rules, tenant/order data changes, Git commits/pushes or main merge. Retain previous uncommitted Build .517 implementation and all historical hashed Vite bundles. User to hard refresh both pages for visual confirmation; Build bump required before next Hosting deploy.

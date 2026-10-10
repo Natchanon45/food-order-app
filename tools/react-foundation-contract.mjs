@@ -696,7 +696,7 @@ assert(parityStyleHook.includes("REACT_RELEASE.build")&&parityStyleHook.includes
 const releaseBuildMatch=releaseConfig.match(/build:\s*"([^"]+)"/);
 assert(
   releaseConfig.includes('product: "PENGUIN"')
-  &&releaseConfig.includes('version: "0.4.286"')
+  &&releaseConfig.includes('version: "0.4.288"')
   &&releaseBuildMatch
   &&/^\d{4}\.\d{2}\.\d{2}\.\d{3}$/.test(releaseBuildMatch[1])
   &&parityFooter.includes("REACT_RELEASE.version")
@@ -1725,7 +1725,7 @@ assert(
   &&orderAlertAudio.includes('return "สั่งกลับบ้าน"')
   &&orderAlertAudio.includes('return "สั่งที่หน้าร้าน"')
   &&orderAlertAudio.includes('return "สั่งที่โต๊ะ"')
-  &&orderAlertAudio.includes("ยอด ${amount} บาท")
+  &&orderAlertAudio.includes(' + " ยอด " + amount + " บาท"')
   &&!orderAlertAudio.includes("tableCode")
   &&!orderAlertAudio.includes("tableName")
   &&!orderAlertAudio.includes('return "เดลิเวอรี่"')
@@ -1737,7 +1737,7 @@ assert(
   &&orderAlertAudio.includes("987.77")
   &&orderAlertAudio.includes("kanya")
   &&orderAlertAudio.includes("premwadee")
-  &&orderAlertAudio.includes("utterance.rate = 0.96")
+  &&orderAlertAudio.includes("utterance.rate = .96")
   &&orderAlertAudio.includes('utterance.lang = voice?.lang || "th-TH"'),
   "Order alert audio must use natural Thai service wording, omit table numbers, and keep the Thai female speech/chime contract",
 );
