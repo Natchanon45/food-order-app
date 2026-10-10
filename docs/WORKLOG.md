@@ -13291,3 +13291,15 @@ Deployment status: NOT DEPLOYED. Prior Hosting-only deployment rule means obtain
 - Deployed using npx --no-install firebase-tools deploy --only firestore:rules --project chat-45754 --non-interactive. CLI output: rules compiled successfully; released rules firestore.rules to cloud.firestore; Deploy complete; exit 0.
 - No Firebase Hosting, Cloud Functions, Storage Rules or Firestore indexes deployed; no runtime app build/version bump; live Hosting stays Version 0.4.286 Build 2026.10.10.516. No live tenant/transaction mutation, no merge into main.
 - This deployment enables authorized restaurant-only Quick Order customer-display access, but authenticated multi-device realtime behavior remains to be verified by user: open cashier Quick Order and paired customer-display page, refresh both, put a test menu item in cart (no need to submit order), inspect item count and grand total. If still empty, collect console error from both pages for troubleshooting.
+
+---
+
+## 2026-10-10 — User-confirmed restaurant customer display; Fast-forward merge to main
+
+- User confirmed the restaurant_cafe Quick Order customer display now works after approved Firestore Security Rules deployment and requested Commit, Push and Merge.
+- The implementation commit 9228f0f6 and production Rules deployment Worklog commit 789dd438 had already been committed/pushed to origin/feature/react-firebase-port; there were no tracked local file edits. All 17 old untracked Vite hashed JS bundles preserved.
+- Fetched origin/main and origin/feature/react-firebase-port: origin/main a5420d1e was an ancestor of origin/feature/react-firebase-port 789dd438, four commits behind with no divergence or untracked filename collision.
+- Full npm run test:react-parity PASS and npm run verify:react-build PASS (Version 0.4.286 / Build 2026.10.10.516).
+- Executed git switch main, git merge --ff-only feature/react-firebase-port, git push origin main. GitHub main advanced a5420d1e -> 789dd438 with no conflicts; merge ancestry and main/remote 0/0 verified.
+- Wrote a documentation-only audit commit on main, pushed origin/main, then Fast-forwarded and pushed feature/react-firebase-port to the same commit, returning Mac working branch to feature/react-firebase-port.
+- No additional Firebase Hosting, Firestore Rules, Functions, or data deployment; current Production Version/Build unchanged. No clean/reset/discard and no changes to existing orders or tenant settings.

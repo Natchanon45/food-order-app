@@ -4,6 +4,15 @@ Updated: 2026-10-10
 Project: Food Order / Delivery / Retail POS
 Repository: `Natchanon45/food-order-app`
 
+## 2026-10-10 — Authorized main Fast-forward merge (Quick Order customer display)
+
+- User confirmed the restaurant-only Quick Order customer display is working after deploying production Firestore Rules, and explicitly requested Commit, Push, Merge. Both implementation 9228f0f6 and deployed-Rules documentation 789dd438 were already committed and pushed on feature/react-firebase-port.
+- Fetched both remotes; origin/main a5420d1e was a direct ancestor of origin/feature/react-firebase-port 789dd438 (4 commits ahead, 0 divergence). Tracked worktree clean; 17 previous untracked hashed React bundles preserved.
+- Re-ran npm run test:react-parity and npm run verify:react-build; both PASS for Version 0.4.286 / Build 2026.10.10.516.
+- Per authorization executed git switch main, git merge --ff-only feature/react-firebase-port, git push origin main. Remote main Fast-forwarded a5420d1e -> 789dd438, no merge conflicts.
+- Added this audit to NEXT_CHAT_HANDOFF and WORKLOG as a docs-only follow-up commit on main; synchronized that commit back onto feature/react-firebase-port and returned the local checkout to feature branch. Both branches should track the same tip, confirmed by final Git checks.
+- Production Hosting Build .516 and scoped Firestore Rules were deployed before merge, so NO extra Hosting/Rules/Functions deployment was performed. No Firebase build bump, live order or tenant mutations, main merge conflict, reset/clean or discarded assets.
+
 ## 2026-10-10 — Restaurant-only Quick Order customer-display permissions (Rules deployed)
 
 - User screenshot of /cashier/customer-display?displayId=quick-order-* showed 0 items and blank totals for restaurant_cafe-only tenant. Root cause: both QuickOrderPage updateCustomerDisplay and customer page watchCustomerDisplay target tenants/{tenantId}/customerDisplays/{displayId}; Firestore Rules restricted reads/writes to retail_pos. Existing shipped React .516 already publishes correct snapshot and watches correct document.
