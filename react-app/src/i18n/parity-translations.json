@@ -1068,6 +1068,15 @@
       }
     },
     "cashier": {
+      "bill_preview": {
+        "view": "ดูบิล",
+        "title": "รายละเอียดบิล",
+        "order_code": "เลขที่บิล",
+        "close": "ปิดหน้าต่าง",
+        "slip": "สลิปการชำระเงิน",
+        "subtotal": "ค่าอาหาร",
+        "delivery_fee": "ค่าจัดส่ง"
+      },
       "meta": {
         "title": "หน้าแคชเชียร์"
       },
@@ -1084,7 +1093,7 @@
         "payment_review": "กำลังยืนยันการชำระเงิน",
         "payment_review_help": "ระบบกำลังตรวจสอบและบันทึกยอดชำระ กรุณารอสักครู่",
         "receipt_preparing": "ชำระเงินสำเร็จ กำลังเตรียมใบเสร็จ",
-        "receipt_preparing_help": "กรุณารอ ระบบกำลังเปิดหน้าพิมพ์ใบเสร็จ",
+        "receipt_preparing_help": "ระบบกำลังเปิดหน้าพิมพ์ใบเสร็จ กรุณารอสักครู่...",
         "orders": "กำลังโหลดบิลและคำสั่งซื้อ...",
         "tables": "กำลังโหลดข้อมูลโต๊ะ...",
         "retrying": "การเชื่อมต่อช้ากว่าปกติ กำลังเชื่อมต่อใหม่อัตโนมัติ...",
@@ -7605,6 +7614,15 @@
       }
     },
     "cashier": {
+      "bill_preview": {
+        "view": "View bill",
+        "title": "Bill details",
+        "order_code": "Bill number",
+        "close": "Close",
+        "slip": "Payment slip",
+        "subtotal": "Food subtotal",
+        "delivery_fee": "Delivery fee"
+      },
       "meta": {
         "title": "Cashier"
       },
@@ -13867,6 +13885,15 @@
       }
     },
     "cashier": {
+      "bill_preview": {
+        "view": "ဘေလ်ကြည့်ရန်",
+        "title": "ဘေလ်အသေးစိတ်",
+        "order_code": "ဘေလ်နံပါတ်",
+        "close": "ပိတ်မည်",
+        "slip": "ငွေလွှဲပြေစာ",
+        "subtotal": "အစားအသောက်စုစုပေါင်း",
+        "delivery_fee": "ပို့ဆောင်ခ"
+      },
       "meta": {
         "title": "ငွေရှင်းကောင်တာ"
       },
@@ -20129,6 +20156,15 @@
       }
     },
     "cashier": {
+      "bill_preview": {
+        "view": "ເບິ່ງບິນ",
+        "title": "ລາຍລະອຽດບິນ",
+        "order_code": "ເລກບິນ",
+        "close": "ປິດ",
+        "slip": "ສະລິບຊຳລະເງິນ",
+        "subtotal": "ຄ່າອາຫານ",
+        "delivery_fee": "ຄ່າຈັດສົ່ງ"
+      },
       "meta": {
         "title": "ແຄດເຊຍ"
       },
@@ -26391,6 +26427,15 @@
       }
     },
     "cashier": {
+      "bill_preview": {
+        "view": "មើលវិក្កយបត្រ",
+        "title": "ព័ត៌មានលម្អិតវិក្កយបត្រ",
+        "order_code": "លេខវិក្កយបត្រ",
+        "close": "បិទ",
+        "slip": "បង្កាន់ដៃបង់ប្រាក់",
+        "subtotal": "ថ្លៃអាហារសរុប",
+        "delivery_fee": "ថ្លៃដឹកជញ្ជូន"
+      },
       "meta": {
         "title": "អ្នកគិតលុយ"
       },

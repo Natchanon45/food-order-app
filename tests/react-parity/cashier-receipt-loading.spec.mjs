@@ -91,3 +91,13 @@ test("All supported locales provide separate payment and receipt loading explana
     }
   }
 });
+
+test("Cashier loading popup uses local Kanit system font and no PG PENGUIN mark", () => {
+  const { host, doc } = mockPopup();
+  openReceiptPrintLoading({}, host);
+  assert.match(doc.html, /font-family: "Kanit Local"/);
+  assert.match(doc.html, /\/assets\/fonts\/Kanit-Regular\.ttf/);
+  assert.doesNotMatch(doc.html, /receipt-print-loading-brand|receipt-print-loading-mark/);
+  const locales = JSON.parse(fs.readFileSync("react-app/src/i18n/parity-translations.json", "utf8"));
+  assert.equal(locales.th.cashier.loading.receipt_preparing_help, "ระบบกำลังเปิดหน้าพิมพ์ใบเสร็จ กรุณารอสักครู่...");
+});

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { getDownloadURL, ref as storageRef } from "firebase/storage";
 import { httpsCallable } from "firebase/functions";
@@ -264,8 +264,7 @@ function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, actions, onS
     <LalamoveDispatch order={order} t={t} money={money} busy={busy} onQuote={actions.quote} onPlace={actions.place} onRefresh={actions.refresh} onCancel={actions.cancelLalamove} />
     <div className="order-actions" style={{ marginTop: 12 }}>
       <a className="btn btn-dark" href={cashierRoute(`/receipt/?order=${encodeURIComponent(order.id)}`)} target="_blank" rel="noopener noreferrer"><i className="bi bi-printer app-icon"></i><span>{t("cashier.common.print")}</span></a>
-      {slipUrl ? <a className="btn btn-warning" href={slipUrl} target="_blank" rel="noopener noreferrer"><i className="bi bi-eye app-icon"></i><span>{t("cashier.payment.view_slip")}</span></a>
-        : order.paymentSlipPath ? <button className="btn btn-warning" type="button" disabled><i className="bi bi-eye app-icon"></i><span>{t("cashier.payment.loading_slip")}</span></button> : null}
+      <button className="btn btn-warning cashier-view-bill-action" type="button" aria-label={t("cashier.bill_preview.view")} onClick={() => actions.viewBill(order, slipUrl)}><i className="bi bi-eye app-icon" aria-hidden="true"></i><span>{t("cashier.bill_preview.view")}</span></button>
       {order.paymentStatus !== "paid" && !isLalamoveCod(order) && order.slipCheckStatus !== "matched" ? <button className="btn btn-primary cashier-payment-action" type="button" disabled={busy} onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{order.paymentMethod === "promptpay" && order.orderType === "delivery" ? t("cashier.payment.slip_manual_release") : t("cashier.payment.receive")}</span></button> : null}
       {lalamoveCodAwaitingSettlement(order) ? <button className="btn btn-primary cashier-payment-action cashier-cod-settlement-action" type="button" disabled={busy} onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{t("cashier.lalamove.cod_receive")}</span></button> : null}
       {lalamoveDeliveryCompleted(order) ? null : dispatchedLocked
@@ -285,6 +284,7 @@ function TakeawayCard({ order, t, money, formatTime, busy, actions }) {
     <div className="order-head" style={{ marginTop: 10 }}><strong>{t("cashier.takeaway.net_total")}</strong><strong className="price">{money(order.totalAmount)} {t("cashier.common.baht")}</strong></div>
     <div className="order-actions" style={{ marginTop: 12 }}>
       <a className="btn btn-dark" href={cashierRoute(`/receipt/?order=${encodeURIComponent(order.id)}`)} target="_blank" rel="noopener noreferrer"><i className="bi bi-printer app-icon"></i><span>{t("cashier.common.print")}</span></a>
+      <button className="btn btn-warning cashier-view-bill-action" type="button" onClick={() => actions.viewBill(order)}><i className="bi bi-eye app-icon" aria-hidden="true"></i><span>{t("cashier.bill_preview.view")}</span></button>
       {!paid ? <button className="btn btn-primary cashier-payment-action" type="button" disabled={busy} onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{t("cashier.payment.receive")}</span></button> : null}
       {ready && order.pickupStatus !== "called" ? <button className="btn btn-warning" type="button" disabled={busy} onClick={() => actions.callPickup(order)}><i className="bi bi-receipt app-icon"></i><span>{t("cashier.actions.call_pickup")}</span></button> : null}
       {ready || order.pickupStatus === "called" ? <button className="btn cashier-pickup-done-action" type="button" disabled={busy} onClick={() => actions.pickupDone(order)}><i className="bi bi-check-circle app-icon"></i><span>{t("cashier.actions.handed_over")}</span></button> : null}
@@ -333,6 +333,7 @@ function WalkInCard({ order, tables, active, t, money, formatTime, busy, actions
     <div className="order-head" style={{ marginTop: 12 }}><strong>{t("cashier.table.total")}</strong><strong className="price">{money(order.totalAmount)} {t("cashier.common.baht")}</strong></div>
     <div className="order-actions" style={{ marginTop: 12 }}>
       <a className="btn btn-dark" href={cashierRoute(`/receipt/?order=${encodeURIComponent(order.id)}`)} target="_blank" rel="noopener noreferrer"><i className="bi bi-printer app-icon"></i><span>{t("cashier.common.print")}</span></a>
+      <button className="btn btn-warning cashier-view-bill-action" type="button" onClick={() => actions.viewBill(order)}><i className="bi bi-eye app-icon" aria-hidden="true"></i><span>{t("cashier.bill_preview.view")}</span></button>
       <button className="btn btn-danger" type="button" disabled={busy} onClick={() => actions.cancelOrder(order)}><i className="bi bi-x-circle app-icon"></i><span>{t("cashier.actions.cancel_all")}</span></button>
     </div>
   </article>;
@@ -360,12 +361,115 @@ function TableBillCard({ group, t, money, formatTime, busy, actions }) {
     <div className="order-head" style={{ marginTop: 14, paddingTop: 12, borderTop: "2px solid #dfe8e2" }}><strong>{t("cashier.table.total")}</strong><strong className="price">{money(total)} {t("cashier.common.baht")}</strong></div>
     <div className="order-actions" style={{ marginTop: 12 }}>
       <a className="btn btn-dark" href={cashierRoute(`/receipt/?orders=${encodeURIComponent(ids)}`)} target="_blank" rel="noopener noreferrer"><i className="bi bi-printer app-icon"></i><span>{t("cashier.common.print")}</span></a>
+      <button className="btn btn-warning cashier-view-bill-action" type="button" onClick={() => actions.viewBill(sorted)}><i className="bi bi-eye app-icon" aria-hidden="true"></i><span>{t("cashier.bill_preview.view")}</span></button>
       {unpaid.length ? <>
         <button className="btn btn-warning" type="button" disabled={busy} onClick={() => actions.moveTable(sorted)}><i className="bi bi-arrow-left-right app-icon"></i><span>{t("cashier.table_move.button")}</span></button>
         <button className="btn btn-primary cashier-payment-action" type="button" disabled={busy} onClick={() => actions.payTable(sorted)}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{t("cashier.payment.receive")}</span></button>
       </> : <button className="btn btn-primary" type="button" disabled><i className="bi bi-check-circle app-icon"></i><span>{t("cashier.payment.paid_short")}</span></button>}
     </div>
   </article>;
+}
+
+
+function CashierBillPreviewModal({ preview, slipUrls, t, money, formatTime, onClose }) {
+  const dialogRef = useRef(null);
+  const closeRef = useRef(null);
+  useEffect(() => {
+    if (!preview) return undefined;
+    const priorOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeRef.current?.focus();
+    const onKeyDown = event => {
+      if (event.key === "Escape") { event.preventDefault(); onClose(); }
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const controls = Array.from(dialogRef.current.querySelectorAll("button:not([disabled]), a[href]"));
+      if (!controls.length) return;
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault(); last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault(); first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => { document.body.style.overflow = priorOverflow; document.removeEventListener("keydown", onKeyDown); };
+  }, [preview, onClose]);
+
+  if (!preview) return null;
+  const rows = Array.isArray(preview.orders) ? preview.orders : [preview.orders];
+  const first = rows[0];
+  if (!first) return null;
+  const total = rows.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0);
+  const ids = rows.map(order => String(order.id || "")).filter(Boolean);
+  const previewSlipUrl = preview.slipUrl || first.paymentSlipUrl || slipUrls[first.id] || "";
+  const receiptUrl = cashierRoute(rows.length > 1
+    ? "/receipt/?orders=" + encodeURIComponent(ids.join(","))
+    : "/receipt/?order=" + encodeURIComponent(ids[0] || ""));
+  return (
+    <div className="cashier-bill-preview-backdrop" data-ui-layer="modal" onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
+      <section className="cashier-bill-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="cashierBillPreviewTitle" ref={dialogRef} tabIndex={-1}>
+        <header className="cashier-bill-preview-head">
+          <div>
+            <h2 id="cashierBillPreviewTitle"><i className="bi bi-receipt app-icon" aria-hidden="true"></i><span>{t("cashier.bill_preview.title")}</span></h2>
+            <p>{t("cashier.bill_preview.order_code")}: {String(first.queueNo || first.id || "-")}</p>
+          </div>
+          <button className="cashier-bill-preview-close" type="button" ref={closeRef} onClick={onClose} aria-label={t("cashier.bill_preview.close")}>
+            <i className="bi bi-x-lg app-icon" aria-hidden="true"></i>
+          </button>
+        </header>
+        <div className="cashier-bill-preview-body">
+          <div className="cashier-bill-preview-meta">
+            <span className="badge">{statusLabel(first, t)}</span>
+            <span className={"badge" + (first.paymentStatus === "paid" ? "" : " warning")}>{paymentLabel(first, t)}</span>
+            <small>{formatTime(displayTime(first))}</small>
+          </div>
+          {first.orderType === "delivery" ? (
+            <div className="cashier-bill-preview-customer">
+              <strong>Delivery: {first.recipientName || t("cashier.delivery.recipient_fallback")}</strong>
+              <p><strong>{t("cashier.delivery.phone")}</strong> {first.recipientPhone || "-"}</p>
+              <p><strong>{t("cashier.delivery.address")}</strong> {first.deliveryAddress || "-"}</p>
+            </div>
+          ) : first.orderType === "takeaway" ? (
+            <div className="cashier-bill-preview-customer"><strong>Take Away</strong><p>{first.customerName || "-"} · {first.customerPhone || "-"}</p></div>
+          ) : first.orderType === "walkin" ? (
+            <div className="cashier-bill-preview-customer"><strong>{t(first.serviceType === "dine_in" ? "quick_order.cashier.dine_in_title" : "quick_order.cashier.takeaway_title")}</strong><p>{first.tableCode || first.customerName || "-"}</p></div>
+          ) : (
+            <div className="cashier-bill-preview-customer"><strong>{t("cashier.table.title", { table: first.tableCode || "-" })}</strong></div>
+          )}
+          <div className="cashier-bill-preview-order-list">
+            {rows.map(order => (
+              <section className="cashier-bill-preview-round" key={order.id}>
+                {rows.length > 1 ? <h3>{t("cashier.table.round", { round: order.roundNumber || 1 })}</h3> : null}
+                <ItemRows order={order} t={t} money={money} />
+                <OrderNote order={order} t={t} />
+                {rows.length > 1 ? <div className="cashier-bill-preview-round-total"><span>{t("cashier.table.round_total")}</span><strong>{money(order.totalAmount)} {t("cashier.common.baht")}</strong></div> : null}
+              </section>
+            ))}
+          </div>
+          {rows.length === 1 && first.orderType === "delivery" ? (
+            <div className="cashier-bill-preview-totals">
+              <div><span>{t("cashier.bill_preview.subtotal")}</span><strong>{money(first.subtotalAmount ?? Math.max(0, Number(first.totalAmount || 0) - Number(first.deliveryFee || 0)))} {t("cashier.common.baht")}</strong></div>
+              <div><span>{t("cashier.bill_preview.delivery_fee")}</span><strong>{money(first.deliveryFee || 0)} {t("cashier.common.baht")}</strong></div>
+            </div>
+          ) : null}
+          <div className="cashier-bill-preview-grand-total"><strong>{t("cashier.table.total")}</strong><strong>{money(total)} {t("cashier.common.baht")}</strong></div>
+          {first.orderType === "delivery" && (previewSlipUrl || first.paymentSlipPath) ? (
+            <div className="cashier-bill-preview-slip">
+              <h3><i className="bi bi-file-earmark-image app-icon" aria-hidden="true"></i><span>{t("cashier.bill_preview.slip")}</span></h3>
+              {previewSlipUrl
+                ? <img src={previewSlipUrl} loading="lazy" alt={t("cashier.bill_preview.slip")} />
+                : <p className="menu-category">{t("cashier.payment.loading_slip")}</p>}
+            </div>
+          ) : null}
+        </div>
+        <footer className="cashier-bill-preview-footer">
+          <button className="btn" type="button" onClick={onClose}><i className="bi bi-x-circle app-icon" aria-hidden="true"></i><span>{t("cashier.bill_preview.close")}</span></button>
+          <a className="btn btn-dark" href={receiptUrl} target="_blank" rel="noopener noreferrer"><i className="bi bi-printer app-icon" aria-hidden="true"></i><span>{t("cashier.common.print")}</span></a>
+        </footer>
+      </section>
+    </div>
+  );
 }
 
 function TableMoveDialog({ value, tables, fromCode, busy, t, onClose, onConfirm }) {
@@ -453,6 +557,8 @@ export function CashierPage() {
   const [busyKey, setBusyKey] = useState("");
   const [slipUrls, setSlipUrls] = useState({});
   const [takeawayQrOpen, setTakeawayQrOpen] = useState(false);
+  const [billPreview, setBillPreview] = useState(null);
+  const billPreviewTriggerRef = useRef(null);
   const [moveGroup, setMoveGroup] = useState(null);
   const [moveTargetId, setMoveTargetId] = useState("");
   const refreshAt = useRef(new Map());
@@ -1085,7 +1191,15 @@ export function CashierPage() {
     refresh: refreshLalamove,
     cancelLalamove,
     moveTable: openMoveTable,
+    viewBill: (orders, slipUrl = "") => {
+      billPreviewTriggerRef.current = document.activeElement;
+      setBillPreview({ orders, slipUrl });
+    },
   };
+  const closeBillPreview = useCallback(() => {
+    setBillPreview(null);
+    window.requestAnimationFrame(() => billPreviewTriggerRef.current?.focus?.());
+  }, []);
 
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (allowedRole && loading)) {
     return <PageReadyOverlay context={t("cashier.header.title")} title={t("cashier.loading.title")} message={t("cashier.loading.preparing")} />;
@@ -1164,6 +1278,7 @@ export function CashierPage() {
         onConfirm={confirmMoveTable}
       />
       <TakeawayQrModal open={takeawayQrOpen} url={takeawayUrl} t={t} onClose={() => setTakeawayQrOpen(false)} onCopy={copyTakeawayLink} />
+      <CashierBillPreviewModal preview={billPreview} slipUrls={slipUrls} t={t} money={money} formatTime={formatTime} onClose={closeBillPreview} />
       <ParityFooter />
     </>
   );

@@ -13168,3 +13168,19 @@ Deployment: Hosting-only UI fix prepared on feature/react-firebase-port. No Clou
 - Production /cashier/, /cashier/receipt/, /kitchen/ and /delivery/ each returned HTTP 200 with /react/assets/index-Bm69FZDi.js. Production JS and Mac build SHA-256 both b0a363a69a78c280ab12e400117c0c5181940206b00f272dfdc30e4bc01222c6. React release 0.4.282 / Build 2026.10.10.512 is live.
 - Automated checks PASS: full React parity, receipt popup unit 6/6, real Chrome browser popup 390px and 1280px 2/2, generated Vite build contract. No live tenant, order, customer or payment records written.
 - Follow-up: perform manual cashier PromptPay slip approval with a safe real test order and confirm immediate spinner, backend release, receipt automatic print dialog and Kitchen admission; this authenticated flow was not exercised in deployment smoke. Next Hosting release must bump Build. Historical untracked bundles preserved.
+
+---
+
+## 2026-10-10 — Cashier View Bill Modal and Kanit print loading screen
+
+Request: From Production screenshots, user asked to make the Cashier eye/"View bill" action display an in-page modal; remove the PG PENGUIN center emblem from the pre-print spinner screen, use shared UI font, and change Thai message to "ระบบกำลังเปิดหน้าพิมพ์ใบเสร็จ กรุณารอสักครู่...".
+
+Root cause: The Delivery card's orange eye action (formerly view_slip) used an external slip href target _blank, taking cashier away from the primary screen. The recently added immediate receipt loader used generic system-ui and a standalone brand element instead of the primary PENGUIN Kanit Local font.
+
+Changes: CashierPage's view-bill button now opens a same-page bill preview dialog, including order status, payer/customer info, items, notes, subtotal/delivery fee, total and inline payment slip (when applicable). Similar buttons added for Take Away, Walk-in and Table group cards; printer links/actions and payment release untouched. Dialog uses global UI modal layer, body scroll lock, focus management, Escape/outside close, responsive max-height and inner scrolling; existing receipts still print via their separate route. Print waiting popup retains spinner, removes header brand block and uses locally hosted Kanit Regular/SemiBold with the app's fallback family. Thai receipt-opening status updated exactly as requested. All five supported locales have bill dialog copy.
+
+Files: react-app/src/pages/CashierPage.jsx, react-app/src/utils/receiptPrintWindow.js, react-app/src/i18n/parity-translations.json, react-app/public/parity/css/cashier-refresh.css and synchronized public/react/parity CSS, tests/react-parity/cashier-bill-preview*.spec.mjs, cashier-receipt-loading*.spec.mjs, package.json, release.js, tools/react-foundation-contract.mjs, README.md, docs/NEXT_CHAT_HANDOFF.md, generated Build .513 files.
+
+Verification: Full React Parity PASS, Cashier bill preview source/contract 4/4, receipt spinner unit 7/7, installed Chrome CSS modal widths 320, 440 and 1280 (3/3), Chrome actual receipt popup at 390 and 1280 (2/2), Vite React Build and generated contract PASS. Hash name index-DHwYQlC7.js, Version 0.4.283 / Build 2026.10.10.513. No actual signed-in Cashier payment test; manual acceptance necessary.
+
+Release state: Hosting-only UI release prepared. No Cloud Functions, Firestore Rules, Storage Rules, tenant/order/slip mutations or main merge. Do not remove historical untracked bundles. Build .513 must be bumped again before any subsequent Hosting release.

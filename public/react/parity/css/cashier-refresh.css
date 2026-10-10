@@ -571,3 +571,143 @@
   margin-top: 8px;
   line-height: 1.45;
 }
+
+/* Cashier bill preview: a real in-page modal, never an extra browser tab. */
+.cashier-bill-preview-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--ui-layer-modal-z, 2147483000);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(13, 35, 24, .58);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+.cashier-bill-preview-dialog {
+  width: min(640px, 100%);
+  max-height: calc(100dvh - 36px);
+  display: flex;
+  flex-flow: column nowrap;
+  overflow: hidden;
+  border: 1px solid rgba(21, 148, 71, .15);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, .25);
+  color: #173727;
+  font-family: var(--app-ui-font);
+}
+.cashier-bill-preview-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid #e1eae4;
+}
+.cashier-bill-preview-head h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: #145c31;
+  font-size: 21px;
+  line-height: 1.3;
+}
+.cashier-bill-preview-head h2 .app-icon { font-size: 23px; }
+.cashier-bill-preview-head p { margin: 5px 0 0; font-size: 12px; color: #6a7970; overflow-wrap: anywhere; }
+.cashier-bill-preview-close {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid #dae7df;
+  border-radius: 10px;
+  background: #f5faf7;
+  color: #315444;
+  cursor: pointer;
+}
+.cashier-bill-preview-close:hover { background: #e7f4ea; }
+.cashier-bill-preview-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 18px 20px;
+}
+.cashier-bill-preview-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 14px;
+}
+.cashier-bill-preview-meta small { margin-left: auto; color: #647a6b; }
+.cashier-bill-preview-customer {
+  padding: 12px 14px;
+  border: 1px solid #e2ede6;
+  border-radius: 12px;
+  background: #f5faf7;
+  overflow-wrap: anywhere;
+}
+.cashier-bill-preview-customer p { margin: 5px 0 0; line-height: 1.5; font-size: 13px; }
+.cashier-bill-preview-order-list { margin-top: 12px; }
+.cashier-bill-preview-round { padding: 8px 0; border-bottom: 1px solid #e7ede9; }
+.cashier-bill-preview-round h3 { margin: 0 0 8px; font-size: 15px; }
+.cashier-bill-preview-round .order-items { margin: 0; padding: 0; }
+.cashier-bill-preview-round .order-items li { overflow-wrap: anywhere; }
+.cashier-bill-preview-round-total,
+.cashier-bill-preview-totals > div,
+.cashier-bill-preview-grand-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: baseline;
+}
+.cashier-bill-preview-round-total { margin: 10px 0 3px; }
+.cashier-bill-preview-totals { display: grid; gap: 8px; margin-top: 12px; font-size: 14px; }
+.cashier-bill-preview-grand-total {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #eaf7ee;
+  color: #126f37;
+  font-size: 18px;
+}
+.cashier-bill-preview-grand-total strong:last-child { text-align: right; }
+.cashier-bill-preview-slip { margin-top: 20px; }
+.cashier-bill-preview-slip h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 16px; }
+.cashier-bill-preview-slip img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: 65vh;
+  height: auto;
+  object-fit: contain;
+  margin: 0 auto;
+  border: 1px solid #e1ebe5;
+  border-radius: 12px;
+  background: #f5f7f5;
+}
+.cashier-bill-preview-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  border-top: 1px solid #e1eae4;
+  background: #fff;
+}
+.cashier-bill-preview-footer .btn { display: inline-flex; align-items: center; gap: 8px; }
+@media (max-width: 560px) {
+  .cashier-bill-preview-backdrop { padding: 8px; }
+  .cashier-bill-preview-dialog { max-height: calc(100dvh - 16px); border-radius: 16px; }
+  .cashier-bill-preview-head { padding: 14px; }
+  .cashier-bill-preview-body { padding: 14px; }
+  .cashier-bill-preview-footer { padding: 12px 14px; }
+  .cashier-bill-preview-head h2 { font-size: 19px; }
+  .cashier-bill-preview-grand-total { font-size: 16px; }
+}
+@media print { .cashier-bill-preview-backdrop { display: none !important; } }

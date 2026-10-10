@@ -27,6 +27,8 @@ for (const width of [390, 1280]) {
       const [popup] = await Promise.all([page.waitForEvent("popup"), page.locator("#approve").click()]);
       await expect(popup.locator("#receiptPrintLoadingTitle")).toHaveText("กำลังยืนยันการชำระเงิน");
       await expect(popup.locator("#receiptPrintLoadingMessage")).toContainText("ตรวจสอบ");
+      await expect(popup.locator(".receipt-print-loading-brand")).toHaveCount(0);
+      await expect(popup.locator(".receipt-print-loading-mark")).toHaveCount(0);
       const metrics = await popup.evaluate(() => {
         const body = document.querySelector(".receipt-print-loading");
         const spinner = document.querySelector(".receipt-print-loading-spinner");
@@ -39,11 +41,13 @@ for (const width of [390, 1280]) {
           role: body.getAttribute("role"),
           visible: rect.width > 0 && rect.height > 0,
           noOpener: window.opener === null,
+          fontFamily: getComputedStyle(document.documentElement).fontFamily,
         };
       });
       expect(metrics.visible).toBe(true);
       expect(metrics.role).toBe("status");
       expect(metrics.noOpener).toBe(true);
+      expect(metrics.fontFamily).toContain("Kanit Local");
       expect(metrics.width).toBeLessThanOrEqual(metrics.viewport + 1);
       expect(metrics.centerOffset).toBeLessThanOrEqual(2);
       expect(metrics.animation).toContain("receipt-print-spin");

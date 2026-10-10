@@ -4,6 +4,14 @@ Updated: 2026-10-10
 Project: Food Order / Delivery / Retail POS
 Repository: `Natchanon45/food-order-app`
 
+## 2026-10-10 — Cashier modal bill preview and print loader typography (Build .513)
+
+- User screenshot highlighted orange eye action on /cashier in Delivery card; previously view_slip opened a separate browser tab. It now opens an in-page, accessible scrollable bill-details modal (receipt items, customer/address, payment state, amounts, inline uploaded slip) using shared Cashier styling. Also added "View bill" eye action for Take Away, Walk-in and Table bill groups, preserving separate Print button and all payment/cashier/Kitchen gates.
+- Receipt print tab waiting screen removes center PG PENGUIN mark while retaining spinner and status. Uses actual shared Kanit Local font files and matching fallback; Thai receipt-preparation message exactly "ระบบกำลังเปิดหน้าพิมพ์ใบเสร็จ กรุณารอสักครู่..." (the primary status heading remains).
+- Added modal close X, close footer action, backdrop / ESC dismiss, focus return and scroll containment. Localized bill preview TH/EN/MY/LO/KM. No Firebase API, Cloud Function, Rules or live tenant data changes.
+- Tests: bill modal static regression 4/4, receipt loader unit 7/7, full npm run test:react-parity PASS, Chrome CSS modal widths 320/440/1280 PASS, Chrome actual loader 390/1280 PASS, Vite Build and generated contract PASS. Release candidate Version 0.4.283 / Build 2026.10.10.513, JS /react/assets/index-DHwYQlC7.js.
+- Hosting-only release prepared; check docs/WORKLOG.md for final deployment. Do not merge main, reset/clean or delete prior untracked hashed JS. Test authenticated cashier with real safe demo order separately.
+
 ## 2026-10-10 — Cashier print-tab blank-page repair (Build .512)
 
 - Cashier confirmation created window.open('', '_blank') before awaiting approveDeliveryPaymentReview. The empty tab appeared white for 5–10 seconds while the backend verified payment. The payment gate and Kitchen release were working; this was an uninitialized print-tab UI.
