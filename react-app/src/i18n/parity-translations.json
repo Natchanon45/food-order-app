@@ -5998,6 +5998,7 @@
       }
     },
     "verify": {
+      "gift_suffix": "(ของแถม)",
       "meta_title": "ตรวจสอบยอดล่าสุด",
       "header": "ตรวจสอบยอดล่าสุด",
       "hero": {
@@ -12276,6 +12277,7 @@
       }
     },
     "verify": {
+      "gift_suffix": "(Free gift)",
       "meta_title": "Verify latest total",
       "header": "Verify latest total",
       "hero": {
@@ -18554,6 +18556,7 @@
       }
     },
     "verify": {
+      "gift_suffix": "(လက်ဆောင်)",
       "meta_title": "နောက်ဆုံးစုစုပေါင်းကို စစ်ဆေးပါ။",
       "header": "နောက်ဆုံးစုစုပေါင်းကို စစ်ဆေးပါ။",
       "hero": {
@@ -24832,6 +24835,7 @@
       }
     },
     "verify": {
+      "gift_suffix": "(ຂອງແຖມ)",
       "meta_title": "ກວດ​ສອບ​ທັງ​ຫມົດ​ຫລ້າ​ສຸດ​",
       "header": "ກວດ​ສອບ​ທັງ​ຫມົດ​ຫລ້າ​ສຸດ​",
       "hero": {
@@ -31110,6 +31114,7 @@
       }
     },
     "verify": {
+      "gift_suffix": "(អំណោយ)",
       "meta_title": "ផ្ទៀងផ្ទាត់សរុបចុងក្រោយ",
       "header": "ផ្ទៀងផ្ទាត់សរុបចុងក្រោយ",
       "hero": {

@@ -13376,3 +13376,22 @@ Release status: Hosting-only Build .518 prepared. Do not modify Firestore Rules,
 - Implementation Commit 78d67e4d 'fix: enable iOS Thai order voice and compact alert controls' pushed origin/feature/react-firebase-port, confirmed 0/0 and tracked tree clean.
 - Switched to main, git merge --ff-only feature/react-firebase-port, pushed main db935940 -> 78d67e4d, verified main and origin/main 0/0 and proper ancestry. No merge conflict.
 - Documentation-only follow-up recorded on main; push and Fast-forward sync back onto feature/react-firebase-port; return checkout to feature. NO repeated Firebase Hosting/Functions/Rules deploy and no Build bump needed: production .518 already deployed and verified before Git merge.
+
+---
+
+## 2026-10-16 — Public order verification leaked raw gift translation key
+
+Reported: /verify mobile screenshot shows final item as ลูกชิ้นหมู verify.gift_suffix. Other payment/status/net total/delivery fields localized; order ID prefix is the intentional short receipt reference.
+
+Root cause: VerifyPage.jsx invokes verify.gift_suffix for isGift=true but this key was missing in TH/EN/MY/LO/KM locale dictionaries. The i18n provider falls back to displaying raw translation key. The database holds a proper gift item, not that raw marker.
+
+Fix: Added verify.gift_suffix for all five locales with the same customer-facing translation as cashier.items.gift_suffix (TH: ของแถม in parentheses). Kept VerifyPage layout, money/payment/fee calculations, Firestore lookup and order identifier unchanged.
+
+Regression: New tests/react-parity/verify-page-i18n.spec.mjs 3/3 PASS audits all static Verify translation keys in all five locales and unchanged identifier/amount semantics; registered in npm run test:react-parity, full parity PASS, npm run build:react and verify:react-build PASS. Version 0.4.289 Build 2026.10.16.519, bundle index-CfGyCfar.js. Only Hosting deploy planned. No live order/tenant writes, no Functions/Rules change, no Git commit/push/merge requested. Preserve all existing untracked Vite hashed bundles.
+
+### Production Hosting release and live mobile verification — Verify gift label .519
+
+- Deployed only Firebase Hosting target hosting:foodapp on chat-45754; Firebase CLI finished 616 files and Deploy complete, exit 0. No Functions/Firestore Rules/data writes or live order updates.
+- Smoke /verify, /cashier/, /delivery/ returned HTTP 200 all referencing /react/assets/index-CfGyCfar.js. Production and local JS SHA-256 exactly c959104ccd0b93f54fa4a85395a4ed2ff82545ad6f25d8bf95dcaada1205edc0.
+- Chrome browser automated live route check using the same public verify link shown in user's screenshot, mobile viewport 440x956: HTTP 200; six receipt lines; free-gift item renders "1 × ลูกชิ้นหมู (ของแถม)" with price 0.00; no "verify.gift_suffix" string; no horizontal viewport overflow. No order or tenant was mutated. Built-in Playwright headless Chromium wasn't installed on this Mac, so used the installed Google Chrome executable through Playwright.
+- Version 0.4.289 Build 2026.10.16.519 LIVE. Regression 3/3 and full React Parity/Build PASS. No Git commit/push/merge authorized yet; leave working modifications intact and preserve all earlier untracked hashed Vite assets. User can hard refresh original /verify link.

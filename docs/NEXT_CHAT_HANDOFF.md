@@ -4,6 +4,13 @@ Updated: 2026-10-10
 Project: Food Order / Delivery / Retail POS
 Repository: `Natchanon45/food-order-app`
 
+## 2026-10-16 — Public Verify page raw gift translation key repair (Build .519)
+
+- User screenshot of /verify mobile showing a free-gift food line with the raw translation key verify.gift_suffix. VerifyPage.jsx already invokes this key, but all TH/EN/MY/LO/KM dictionaries lacked its definition. Other status, payment and net total texts were localized. The short order reference is the intended customer-facing receipt number, not leaked database internals.
+- Added verify.gift_suffix to all five locale blocks in react-app/src/i18n/parity-translations.json using matching cashier.items.gift_suffix text, without changing original translations, item/payment logic, or database.
+- New tests/react-parity/verify-page-i18n.spec.mjs checks all static Verify keys in five languages, gift text, unchanged order reference/amount/status contracts: 3/3 PASS. npm run test:react-parity PASS; npm run build:react and verify:react-build PASS, Version 0.4.289 Build 2026.10.16.519 JS index-CfGyCfar.js.
+- Production LIVE: Hosting-only foodapp target project chat-45754 released successfully, 616 public files, CLI exit 0. /verify, /cashier/ and /delivery/ HTTP 200 load index-CfGyCfar.js, local/live SHA-256 c959104ccd0b93f54fa4a85395a4ed2ff82545ad6f25d8bf95dcaada1205edc0 match. Real public customer verify link tested in headless local Chrome at 440x956 viewport: item shows the Thai text ลูกชิ้นหมู (ของแถม), six rows displayed, no raw key or horizontal overflow; no order changes. No Cloud Functions, Rules or data changes. Do not commit/push/merge unless separately requested; preserve 19 previous untracked hashed bundles and the new release bundle. Next Hosting deploy must bump Build.
+
 ## 2026-10-11 — User-authorized Commit/Push/Fast-forward main merge (iOS voice .518)
 
 - User confirmed the Cashier/Kitchen icon-only header and Thai iOS voice behavior and explicitly requested commit, push and merge to main. Prior voice support Build .517 and header compactness Build .518 had been deployed to Hosting but remained uncommitted in Mac working tree.

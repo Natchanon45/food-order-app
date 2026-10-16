@@ -1,13 +1,14 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
-  version: "0.4.288",
-  build: "2026.10.11.518",
+  version: "0.4.289",
+  build: "2026.10.16.519",
   branch: "feature/react-firebase-port",
-  commit: "CASHIER-KITCHEN-VOICE-STATUS-HEADER-COMPACT",
+  commit: "VERIFY-GIFT-SUFFIX-LOCALIZATION",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Compact Cashier and Kitchen voice controls without oversized header status text",
+  milestone: "Localize free gift line items on customer order verification in five languages",
   whatsNew: [
+    "Show a localized free-gift label instead of verify.gift_suffix on the public order verification page in all five languages",
     "Remove visible Thai voice readiness sentence beside the Cashier/Kitchen notification bell; retain icon status and accessible tooltips",
     "Make iPad/iPhone Cashier and Kitchen read new orders in Thai via locally hosted recorded WebAudio when Web Speech is blocked",
     "Add a Thai voice test button and distinguish chime, live speech and recorded-speech readiness",
