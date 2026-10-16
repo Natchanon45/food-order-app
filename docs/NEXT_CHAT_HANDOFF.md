@@ -4,6 +4,14 @@ Updated: 2026-10-10
 Project: Food Order / Delivery / Retail POS
 Repository: `Natchanon45/food-order-app`
 
+## 2026-10-16 — User-approved Commit/Push/Fast-forward main merge (Verify gift i18n .519)
+
+- User explicitly authorized committing, pushing and merging the previously deployed Build .519 VerifyPage gift-suffix localization into main. Remote main and feature were both at 3e777250; feature worktree had only the planned Verify changes and 20 untracked hashed bundles (19 historical, 1 new release).
+- Revalidated npm run test:react-parity PASS, verify:react-build PASS (Version 0.4.289 Build 2026.10.16.519, JS index-CfGyCfar.js), focused verify-page-i18n regression 3/3 PASS, git diff --check PASS.
+- Staged only tracked changes plus new tests/react-parity/verify-page-i18n.spec.mjs and current public/react/assets/index-CfGyCfar.js; old 19 hashed JS assets left untracked, never cleaned or reset. Implementation commit f74d3ef5 (fix: localize free-gift label on public order verification) pushed to origin/feature/react-firebase-port; remote feature synced 0/0 and tracked tree clean.
+- git switch main; git merge --ff-only feature/react-firebase-port; git push origin main succeeded (3e777250 -> f74d3ef5), no conflict, main/remote synced 0/0. A small docs-only audit commit now records the merge and will be synced back to feature, returning the Mac checkout to feature/react-firebase-port. Check both final refs and preserve old untracked bundles.
+- Hosting 0.4.289 / Build 2026.10.16.519 was already deployed and live-verified on public /verify; no Hosting redeploy, Cloud Functions, Firestore Rules or tenant/order mutations performed as part of Git merge.
+
 ## 2026-10-16 — Public Verify page raw gift translation key repair (Build .519)
 
 - User screenshot of /verify mobile showing a free-gift food line with the raw translation key verify.gift_suffix. VerifyPage.jsx already invokes this key, but all TH/EN/MY/LO/KM dictionaries lacked its definition. Other status, payment and net total texts were localized. The short order reference is the intended customer-facing receipt number, not leaked database internals.

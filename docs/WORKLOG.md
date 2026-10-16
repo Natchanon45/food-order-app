@@ -13395,3 +13395,14 @@ Regression: New tests/react-parity/verify-page-i18n.spec.mjs 3/3 PASS audits all
 - Smoke /verify, /cashier/, /delivery/ returned HTTP 200 all referencing /react/assets/index-CfGyCfar.js. Production and local JS SHA-256 exactly c959104ccd0b93f54fa4a85395a4ed2ff82545ad6f25d8bf95dcaada1205edc0.
 - Chrome browser automated live route check using the same public verify link shown in user's screenshot, mobile viewport 440x956: HTTP 200; six receipt lines; free-gift item renders "1 × ลูกชิ้นหมู (ของแถม)" with price 0.00; no "verify.gift_suffix" string; no horizontal viewport overflow. No order or tenant was mutated. Built-in Playwright headless Chromium wasn't installed on this Mac, so used the installed Google Chrome executable through Playwright.
 - Version 0.4.289 Build 2026.10.16.519 LIVE. Regression 3/3 and full React Parity/Build PASS. No Git commit/push/merge authorized yet; leave working modifications intact and preserve all earlier untracked hashed Vite assets. User can hard refresh original /verify link.
+
+---
+
+## 2026-10-16 — User-authorized Commit/Push/Merge for customer Verify gift label
+
+- User explicitly confirmed the page fix and requested Commit, Push, Merge into main. Production 0.4.289 Build 2026.10.16.519 was already deployed, verified via live mobile Chrome (gift line rendered as localized TH wording; no raw verify.gift_suffix, no overflow) in previous task.
+- Checked Git on authorized Mac branch feature/react-firebase-port, fetched origin/main and feature; both remote tips at 3e777250, no divergence or untracked bundle path collisions. All 19 historical hashed JS artifacts were left untracked and untouched.
+- Re-ran npm run test:react-parity PASS, npm run verify:react-build PASS and Verify translation-focused tests 3/3 PASS. Staged only tracked changes and two new files: Verify regression test and generated Build .519 index-CfGyCfar.js. git diff --cached --check PASS; did not stage previous hashed JS bundles.
+- Implementation commit f74d3ef5 (fix: localize free-gift label on public order verification) pushed to origin/feature/react-firebase-port (0/0, tracked tree clean).
+- Fetched refs, switched to main, Fast-forward merged feature/react-firebase-port 3e777250 -> f74d3ef5, pushed origin/main successfully, no conflicts. Verified main synced 0/0 and contains feature.
+- Documentation-only audit commit planned on main then synchronize to feature and return checkout to feature/react-firebase-port. No Firebase Hosting, Functions, Rules, data deployment or Build version bump needed for merge; live Hosting already correct.
