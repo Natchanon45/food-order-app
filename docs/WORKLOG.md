@@ -13427,3 +13427,15 @@ Safety: No changes to Functions, Rules, actual payment or bank setting data, ord
 - Production smoke: GET /reports/revenue-share, /platform, /cashier/ all HTTP 200 and all reference /react/assets/index-Bd9axu6x.js. Production and local JS SHA-256 both 3abf78452d5ed1ebd123693a3629d9da9a4b4211ec5c44e5df83262636b19512. The live platform-control-center.css SHA-256 2394d52b482860d51abfa17004502e600fbbb30061428dcf3532accad2382d50 also matched local.
 - Focused revenue/share bank regression 4/4 PASS; Playwright desktop/mobile interactive bank combobox 2/2 PASS; full npm run test:react-parity PASS, React Build + contract PASS for Version 0.4.290 Build 2026.10.17.520.
 - Authentication-gated production UX cannot be verified without the owner's session; no slip submission, banking settings mutation, payment record or financial transfer was attempted. User should refresh both pages, confirm explicit no-due message and bank searchable options. Code, generated .520 bundle and docs intentionally remain uncommitted/unpushed; do not merge main without user request. Keep historical 19 untracked hashed assets and bump build before next Hosting deployment.
+
+---
+
+## 2026-10-17 — User-approved Commit, Push, Merge for Revenue Share slip and Slip2Go bank picker
+
+- User explicitly authorized committing, pushing and merging the previously deployed 0.4.290 / Build 2026.10.17.520 into main.
+- Baseline feature/react-firebase-port HEAD 062c7ac8 tracking origin; origin/main same tip, no divergence or collision with 19 pre-existing untracked Vite-hashed JS assets. Followed project Git safety policy, no reset/clean/discard of those historic files.
+- Re-ran full npm run test:react-parity PASS, verify:react-build PASS, focused revenue-share-payment-platform-bank 4/4 PASS and actual Chrome UI bank selector desktop/mobile 2/2 PASS, whitespace PASS. No financial uploads, transfers, or live Super Admin bank account edits were performed.
+- Staged tracked source/style/i18n/release/test/docs/generated entrypoint changes plus new PlatformReceiverBankSelect.jsx, 2 receiver-bank test fixture files, 2 new browser/regression test files, and only current public/react/assets/index-Bd9axu6x.js; exactly 19 older hashed Vite outputs preserved untracked.
+- Implementation commit 634c78a4 (fix: explain zero-due revenue slips and add lazy bank picker) pushed to origin/feature/react-firebase-port, verified 0/0 and tracked tree clean.
+- git fetch origin main feature/react-firebase-port; git switch main; git merge --ff-only feature/react-firebase-port; git push origin main. Remote main advanced 062c7ac8 -> 634c78a4, no conflicts, confirmed main contains feature and origin/main...main 0/0.
+- Docs-only audit commit will be pushed to main and synchronized back onto feature/react-firebase-port with Fast-forward; leave local Mac checked out on feature for next development. No repeated Firebase Hosting deployment; existing Production Build .520 remains unchanged. No Functions, Firestore Rules or data writes during Git merge.

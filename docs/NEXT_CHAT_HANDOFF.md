@@ -4,6 +4,14 @@ Updated: 2026-10-10
 Project: Food Order / Delivery / Retail POS
 Repository: `Natchanon45/food-order-app`
 
+## 2026-10-17 — User-authorized Commit/Push/Fast-forward main merge (revenue slips + bank picker .520)
+
+- User explicitly authorized Commit, Push and Merge into main after Hosting release .520. On authorized Mac, feature/react-firebase-port and origin/main both began at 062c7ac8; tracked worktree had only the approved zero-balance Revenue Share notice, lazy receiver-bank React UI, 5-locale translations, tests, current Build .520 and corresponding docs. 19 historic untracked Vite-hashed JS bundles preserved without clean/reset.
+- Pre-merge validation: git diff --check PASS; npm run test:react-parity PASS; npm run verify:react-build PASS (Version 0.4.290 Build 2026.10.17.520, asset index-Bd9axu6x.js); 4/4 focused unit regressions PASS and 2/2 real Chrome browser desktop/mobile bank picker tests PASS. No authenticated financial transfer, bank-setting mutation, tenant order or live payment performed.
+- Staged only tracked work, 4 new React component/test/fixture files and the current Build .520 hashed asset; kept all 19 historic Vite hashed JS files untracked. Commit 634c78a4 (fix: explain zero-due revenue slips and add lazy bank picker) pushed to origin/feature/react-firebase-port (0/0, tracked tree clean).
+- Fetched remotes, git switch main; git merge --ff-only feature/react-firebase-port; git push origin main successfully advanced origin/main 062c7ac8 -> 634c78a4, with no conflict, 0/0 and proper merge ancestry. Docs-only audit commit to be pushed to main and Fast-forward synchronized to feature/react-firebase-port; Mac checkout returned to feature. Verify final tips after syncing.
+- Firebase Hosting Build .520 was already deployed and validated before Git merge; NO extra Hosting/Functions/Firestore Rules deploy, no Build bump, and no database writes during merge.
+
 ## 2026-10-17 — Revenue Share zero-due slip explanation + Platform lazy bank picker (Build .520)
 
 - User supplied two screenshots: /reports/revenue-share shows a slip already selected but submit button disabled with Platform amount due 0.00 THB; /platform shows a native 35-item bank select for the Slip2Go receiver. Mac mini initially offline but subsequently online and code inspected on feature/react-firebase-port. Tracked tree clean at baseline commit 062c7ac8, 19 historical untracked Vite hashed JS files preserved.
