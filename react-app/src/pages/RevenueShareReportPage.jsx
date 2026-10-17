@@ -205,7 +205,11 @@ export function RevenueShareReportPage() {
     ? "daily" : (access?.billingCycle === "daily" ? "daily" : "monthly");
   const cycleLabel = t(`revenue_share_report.payment.cycles.${billingCycle}`);
   const cycleMatches = period === billingCycle;
-  const canSubmit = Number(summary.platformAmountDue || 0) > 0 && cycleMatches && !uploading;
+  const noAmountDue = !loading && Number(summary.platformAmountDue || 0) <= 0;
+  const canSubmit = access?.enabled === true && !loading && !noAmountDue && cycleMatches && !uploading;
+  const paymentUnavailableMessage = !cycleMatches
+    ? t("revenue_share_report.payment.cycle_mismatch", { cycle: cycleLabel })
+    : noAmountDue ? t("revenue_share_report.payment.no_amount_due") : "";
   const suspensionPeriod = access?.suspendedPeriodStart || access?.suspendedPeriodEnd
     ? (access?.suspendedPeriodStart === access?.suspendedPeriodEnd || !access?.suspendedPeriodEnd
         ? displayDate(access?.suspendedPeriodStart || access?.suspendedPeriodEnd)
@@ -314,6 +318,11 @@ export function RevenueShareReportPage() {
   const submitPayment = async event => {
     event.preventDefault();
     if (uploading) return;
+    if (!canSubmit) {
+      if (paymentUnavailableMessage) setPaymentMessage(paymentUnavailableMessage);
+      setPaymentMessageError(!cycleMatches);
+      return;
+    }
     const validation = validateSlip(slip);
     if (validation) {
       setSlipError(validation);
@@ -561,8 +570,8 @@ export function RevenueShareReportPage() {
           <form id="revenueSharePaymentForm" className="report-payment-form" onSubmit={submitPayment}>
             <div className="report-slip-field">
               <span>{t("revenue_share_report.payment.slip")}</span>
-              <input id="revenueShareSlip" name="slip" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={onSlipChange} />
-              <label className="report-slip-picker" htmlFor="revenueShareSlip"><i className="bi bi-paperclip" aria-hidden="true"></i><strong>{t("revenue_share_report.payment.choose_file")}</strong><small id="revenueShareSlipName">{slip?.name || t("revenue_share_report.payment.no_file")}</small></label>
+              <input id="revenueShareSlip" name="slip" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" disabled={!canSubmit} onChange={onSlipChange} />
+              <label className={"report-slip-picker" + (!canSubmit ? " is-disabled" : "")} htmlFor="revenueShareSlip"><i className="bi bi-paperclip" aria-hidden="true"></i><strong>{t("revenue_share_report.payment.choose_file")}</strong><small id="revenueShareSlipName">{slip?.name || t("revenue_share_report.payment.no_file")}</small></label>
               {slipError ? <small className="report-slip-error" id="revenueShareSlipError" role="alert">{slipError}</small> : <small className="report-slip-error" id="revenueShareSlipError" role="alert" hidden></small>}
               <small>{t("revenue_share_report.payment.slip_help")}</small>
               <div className="report-slip-selected" id="revenueShareSlipSelected" hidden={!slip}>
@@ -573,12 +582,12 @@ export function RevenueShareReportPage() {
                 </div>
               </div>
             </div>
-            <button className="btn btn-primary report-submit-slip" id="submitRevenueShareSlip" type="submit" disabled={!canSubmit}>
+            <button className="btn btn-primary report-submit-slip" id="submitRevenueShareSlip" type="submit" disabled={!canSubmit} aria-describedby="revenueSharePaymentMessage" title={paymentUnavailableMessage || undefined}>
               {uploading ? <span className="tenant-button-spinner" aria-hidden="true"></span> : <i className="bi bi-cloud-arrow-up" aria-hidden="true"></i>}
               <span>{t(uploading ? "revenue_share_report.states.uploading" : "revenue_share_report.actions.submit_slip")}</span>
             </button>
           </form>
-          {!cycleMatches && !paymentMessage ? <div className="report-payment-message error" id="revenueSharePaymentMessage" role="status">{t("revenue_share_report.payment.cycle_mismatch", { cycle: cycleLabel })}</div>
+          {paymentUnavailableMessage ? <div className={"report-payment-message" + (!cycleMatches ? " error" : "")} id="revenueSharePaymentMessage" role="status">{paymentUnavailableMessage}</div>
             : paymentMessage ? <div className={`report-payment-message${paymentMessageError ? " error" : ""}`} id="revenueSharePaymentMessage" role="status">{paymentMessage}</div>
               : <div className="report-payment-message" id="revenueSharePaymentMessage" role="status" hidden></div>}
         </section>

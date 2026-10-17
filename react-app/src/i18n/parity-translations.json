@@ -2423,6 +2423,7 @@
         "load_failed": "โหลดการตั้งค่าไม่สำเร็จ"
       },
       "slip_verification": {
+        "receiver_load_more": "โหลดรายการเพิ่มเติม",
         "title": "ระบบตรวจสอบสลิปส่วนกลาง",
         "description": "เลือก Google Vision หรือ Slip2Go สำหรับตรวจสลิปส่วนแบ่งของ Tenant จากระบบกลาง",
         "provider": "ผู้ให้บริการตรวจสลิป",
@@ -5497,6 +5498,7 @@
         }
       },
       "payment": {
+        "no_amount_due": "งวดนี้ไม่มีค่าบริการหรือส่วนแบ่งที่ต้องโอน (0.00 บาท) จึงไม่ต้องแนบสลิป กรุณาเลือกงวดที่มียอดค้างชำระ",
         "title": "แจ้งโอนส่วนแบ่งและ Lalamove คงค้าง",
         "description": "แนบสลิปของช่วงรายงานที่เลือก ระบบจะเรียกเก็บเฉพาะส่วนแบ่งยอดขายและต้นทุน Lalamove ที่ยังไม่ได้ถูกตัดจาก PENGUIN Wallet",
         "selected_period": "งวดที่เลือก",
@@ -8977,6 +8979,7 @@
         "load_failed": "Could not load settings"
       },
       "slip_verification": {
+        "receiver_load_more": "Load more banks",
         "title": "Central slip verification",
         "description": "Choose Google Vision or Slip2Go to inspect Tenant revenue-share transfer slips centrally.",
         "provider": "Slip verification provider",
@@ -11776,6 +11779,7 @@
         }
       },
       "payment": {
+        "no_amount_due": "No platform payment is due for this period (0.00 THB). A transfer slip is not required. Select a period with an outstanding balance.",
         "title": "Report revenue-share and outstanding Lalamove transfer",
         "description": "Attach the transfer slip for the selected period. Only sales revenue share and Lalamove cost not already debited from PENGUIN Wallet are charged.",
         "selected_period": "Selected period",
@@ -15256,6 +15260,7 @@
         "load_failed": "ဆက်တင်များကို ဖွင့်၍မရပါ။"
       },
       "slip_verification": {
+        "receiver_load_more": "ဘဏ်စာရင်း နောက်ထပ်ပြရန်",
         "title": "ဗဟို ငွေလွှဲစလစ် စစ်ဆေးမှု",
         "description": "Tenant revenue-share ငွေလွှဲစလစ်များကို စစ်ဆေးရန် Google Vision သို့မဟုတ် Slip2Go ကို ရွေးပါ။",
         "provider": "စလစ်အတည်ပြုပေးသူ",
@@ -18055,6 +18060,7 @@
         }
       },
       "payment": {
+        "no_amount_due": "ဤကာလအတွက် ပလက်ဖောင်းသို့ ပေးချေရန်ငွေ မရှိပါ (0.00 ဘတ်)။ ငွေလွှဲဖြတ်ပိုင်းတင်ရန် မလိုအပ်ပါ။ ပေးချေရန်ကျန်ငွေရှိသော ကာလကို ရွေးပါ။",
         "title": "ဝင်ငွေမျှဝေမှုနှင့် ထူးထူးခြားခြား Lalamove လွှဲပြောင်းမှုကို အစီရင်ခံပါ။",
         "description": "ရွေးချယ်ထားသောကာလအတွက် ငွေလွှဲစလစ်ကို ပူးတွဲပါ။ အရောင်းရငွေ ခွဲဝေမှုနှင့် Lalamove မှ ငွေမရှင်းရသေးသော ကုန်ကျစရိတ်များကိုသာ PENGUIN Wallet မှ ကောက်ခံပါသည်။",
         "selected_period": "ရွေးချယ်ထားသောကာလ",
@@ -21535,6 +21541,7 @@
         "load_failed": "ບໍ່ສາມາດໂຫຼດການຕັ້ງຄ່າໄດ້"
       },
       "slip_verification": {
+        "receiver_load_more": "ໂຫຼດທະນາຄານເພີ່ມ",
         "title": "ກວດສອບສະລິບສ່ວນກາງ",
         "description": "ເລືອກ Google Vision ຫຼື Slip2Go ເພື່ອກວດສະລິບ revenue-share ຂອງ Tenant.",
         "provider": "ຜູ້ໃຫ້ບໍລິການຢັ້ງຢືນ Slip",
@@ -24334,6 +24341,7 @@
         }
       },
       "payment": {
+        "no_amount_due": "ງວດນີ້ບໍ່ມີຍອດຕ້ອງໂອນໃຫ້ແພລດຟອມ (0.00 ບາດ) ຈຶ່ງບໍ່ຕ້ອງແນບສະລິບ ກະລຸນາເລືອກງວດທີ່ມີຍອດຄ້າງ",
         "title": "ລາຍງານສ່ວນແບ່ງລາຍໄດ້ ແລະການໂອນເງິນທີ່ຄ້າງຈ່າຍ Lalamove",
         "description": "ຄັດຕິດໃບໂອນເງິນສໍາລັບໄລຍະເວລາທີ່ເລືອກ. ສະເພາະສ່ວນແບ່ງລາຍໄດ້ຈາກການຂາຍ ແລະ Lalamove ຄ່າໃຊ້ຈ່າຍທີ່ຍັງບໍ່ໄດ້ຫັກຈາກ PENGUIN Wallet ຈະຖືກຄິດຄ່າ.",
         "selected_period": "ໄລຍະເວລາທີ່ເລືອກ",
@@ -27814,6 +27822,7 @@
         "load_failed": "មិនអាចផ្ទុកការកំណត់បានទេ។"
       },
       "slip_verification": {
+        "receiver_load_more": "បង្ហាញធនាគារបន្ថែម",
         "title": "ការផ្ទៀងផ្ទាត់ស្លិបកណ្តាល",
         "description": "ជ្រើសរើស Google Vision ឬ Slip2Go ដើម្បីពិនិត្យស្លិប revenue-share របស់ Tenant។",
         "provider": "អ្នកផ្តល់ការផ្ទៀងផ្ទាត់រអិល",
@@ -30613,6 +30622,7 @@
         }
       },
       "payment": {
+        "no_amount_due": "រយៈពេលនេះមិនមានប្រាក់ត្រូវផ្ទេរទៅវេទិកាទេ (0.00 បាត)។ មិនចាំបាច់ភ្ជាប់បង្កាន់ដៃទេ។ សូមជ្រើសរើសរយៈពេលដែលមានសមតុល្យជំពាក់។",
         "title": "រាយការណ៍ការចែករំលែកប្រាក់ចំណូល និងការផ្ទេរ Lalamove ដែលនៅសល់",
         "description": "ភ្ជាប់ប័ណ្ណផ្ទេរប្រាក់សម្រាប់រយៈពេលដែលបានជ្រើសរើស។ មានតែចំណែកចំណូលពីការលក់ និង Lalamove ការចំណាយដែលមិនទាន់បានកាត់ពី PENGUIN Wallet ប៉ុណ្ណោះដែលត្រូវបានគិតថ្លៃ។",
         "selected_period": "រយៈពេលដែលបានជ្រើសរើស",

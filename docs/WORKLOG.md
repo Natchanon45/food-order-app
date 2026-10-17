@@ -13406,3 +13406,24 @@ Regression: New tests/react-parity/verify-page-i18n.spec.mjs 3/3 PASS audits all
 - Implementation commit f74d3ef5 (fix: localize free-gift label on public order verification) pushed to origin/feature/react-firebase-port (0/0, tracked tree clean).
 - Fetched refs, switched to main, Fast-forward merged feature/react-firebase-port 3e777250 -> f74d3ef5, pushed origin/main successfully, no conflicts. Verified main synced 0/0 and contains feature.
 - Documentation-only audit commit planned on main then synchronize to feature and return checkout to feature/react-firebase-port. No Firebase Hosting, Functions, Rules, data deployment or Build version bump needed for merge; live Hosting already correct.
+
+---
+
+## 2026-10-17 — Explain zero-due Revenue Share slips; search/lazy receiver bank in Platform
+
+User report: Screenshot 1 on /reports/revenue-share, selected bank transfer slip IMG_8866.JPG but submit button disabled; Platform due shows 0.00 THB, billing period daily. Screenshot 2 on /platform Super Admin Slip2Go bank receiver picker opens a tall native HTML select instead of searchable/lazy Select2 behavior.
+
+Diagnosis: Existing React RevenueShareReportPage.jsx had canSubmit = summary.platformAmountDue > 0 && cycleMatches && !uploading; consequently zero-due period disabled submit despite selected slip; no contextual notice and file input remained enabled. Server submitRevenueSharePayment correctly enforces billing cycle and payment amount; do not bypass zero-balance rule. PlatformPage.jsx used native select and mapped all localized receiver_account_types (35 entries) as option tags; prior React parity explicitly prohibits reintroducing legacy jQuery Select2.
+
+Implementation: RevenueShareReportPage.jsx now computes noAmountDue, enables file and submit only for allowed, loaded, due > 0, matched-cycle periods; displays clear localized no_amount_due message, disables picker styling and sets aria-describedby/title for the disabled upload button; submit handler also guards against zero-due and cycle mismatch without uploading. React PlatformReceiverBankSelect.jsx is a new accessible searchable React combobox with bank name/code filtering, keyboard ArrowDown/ArrowUp/Enter/Escape, outside-click close, 12-item initial batch, scroll/Load more increment, and exact original accountType codes. Existing savePlatformSlipVerification receiverAccountType payload retained, no server changes. CSS updated in Platform parity style, all 5 locales have labels for zero balance and paging.
+
+Tests: New revenue-share-payment-platform-bank.spec.mjs 4/4 PASS, new platform-receiver-bank-browser.spec.mjs using a Vite React fixture and real local Chrome at desktop and 390px mobile 2/2 PASS, including list batches to all 35 banks, stable bank code persistence, no horizontal overflow. Full npm run test:react-parity PASS, npm run build:react PASS, npm run verify:react-build PASS, git diff --check PASS. Version 0.4.290 Build 2026.10.17.520, JS index-Bd9axu6x.js.
+
+Safety: No changes to Functions, Rules, actual payment or bank setting data, orders or real transfer slips. Live authenticated upload/save actions deliberately not run. Hosting-only release planned, no Git commit/push/main merge requested. Keep 19 legacy hashed Vite assets untracked and untouched.
+
+### Hosting Production deploy — Revenue Share + lazy bank picker Build .520
+
+- Deployed only Firebase Hosting target hosting:foodapp on project chat-45754; command completed, 617 public files, released successfully and exit 0. No Cloud Functions, Firestore or Storage Rules, database or payment/tenant records deployed or modified.
+- Production smoke: GET /reports/revenue-share, /platform, /cashier/ all HTTP 200 and all reference /react/assets/index-Bd9axu6x.js. Production and local JS SHA-256 both 3abf78452d5ed1ebd123693a3629d9da9a4b4211ec5c44e5df83262636b19512. The live platform-control-center.css SHA-256 2394d52b482860d51abfa17004502e600fbbb30061428dcf3532accad2382d50 also matched local.
+- Focused revenue/share bank regression 4/4 PASS; Playwright desktop/mobile interactive bank combobox 2/2 PASS; full npm run test:react-parity PASS, React Build + contract PASS for Version 0.4.290 Build 2026.10.17.520.
+- Authentication-gated production UX cannot be verified without the owner's session; no slip submission, banking settings mutation, payment record or financial transfer was attempted. User should refresh both pages, confirm explicit no-due message and bank searchable options. Code, generated .520 bundle and docs intentionally remain uncommitted/unpushed; do not merge main without user request. Keep historical 19 untracked hashed assets and bump build before next Hosting deployment.

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { PlatformReceiverBankSelect } from "@/components/PlatformReceiverBankSelect";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
@@ -742,9 +743,16 @@ export function PlatformPage() {
             <div className="platform-slip-receiver-grid">
               <div className="field">
                 <label htmlFor="platformSlip2GoReceiverAccountType">{t("platform.slip_verification.receiver_account_type")}</label>
-                <select className="input" id="platformSlip2GoReceiverAccountType" value={slip.receiver?.accountType || ""} disabled={slipBusy} onChange={event => setSlip(current => ({ ...current, receiver: { ...current.receiver, accountType: event.target.value } }))}>
-                  {Object.entries(receiverTypes).map(([value, label]) => <option value={value} key={value || "none"}>{label}</option>)}
-                </select>
+                <PlatformReceiverBankSelect
+                  id="platformSlip2GoReceiverAccountType"
+                  value={slip.receiver?.accountType || ""}
+                  options={receiverTypes}
+                  disabled={slipBusy}
+                  searchPlaceholder={t("platform.slip_verification.receiver_search_placeholder")}
+                  noResultsText={t("platform.slip_verification.receiver_no_results")}
+                  loadMoreText={t("platform.slip_verification.receiver_load_more")}
+                  onChange={accountType => setSlip(current => ({ ...current, receiver: { ...current.receiver, accountType } }))}
+                />
               </div>
               <div className="field"><label htmlFor="platformSlip2GoReceiverNameTh">{t("platform.slip_verification.receiver_name_th")}</label><input className="input" id="platformSlip2GoReceiverNameTh" maxLength="180" disabled={slipBusy} value={slip.receiver?.accountNameTH || ""} onChange={event => setSlip(current => ({ ...current, receiver: { ...current.receiver, accountNameTH: event.target.value } }))} /></div>
               <div className="field"><label htmlFor="platformSlip2GoReceiverNameEn">{t("platform.slip_verification.receiver_name_en")}</label><input className="input" id="platformSlip2GoReceiverNameEn" maxLength="180" disabled={slipBusy} value={slip.receiver?.accountNameEN || ""} onChange={event => setSlip(current => ({ ...current, receiver: { ...current.receiver, accountNameEN: event.target.value } }))} /></div>
