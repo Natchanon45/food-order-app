@@ -4,6 +4,14 @@ Updated: 2026-10-10
 Project: Food Order / Delivery / Retail POS
 Repository: `Natchanon45/food-order-app`
 
+## 2026-10-18 — User-authorized POS Users .522 Commit/Push/Fast-forward main merge
+
+- User explicitly authorized Commit, Push and Merge of the previously deployed and tested POS Users roles/actions + shared dark black Toast work (Version 0.4.292 / Build 2026.10.18.522). The repository was on feature/react-firebase-port, synced 0/0 against origin and main/feature began at bed69c14. Tracked changes matched expected POS Users code/CSS, translations, tests, release metadata, documentation, generated React entrypoints and current asset. Preserved all 19 historic hashed Vite bundles and the previous .521 bundle without reset/clean.
+- Validated npm run test:react-parity PASS, npm run test:pos-users-ui-toast 4/4 PASS, npm run test:pos-users-ui-browser 2/2 PASS at 390/1280 (shared black Toast/green-red icons, X center, 75vh, z-index, native dialog top layer), npm run verify:react-build PASS for .522 index-q1xQGsY6.js and git diff --check PASS. No authenticated role mutations executed.
+- Staged tracked changes, 3 new POS Users test/fixture files and ONLY current public/react/assets/index-q1xQGsY6.js. Implementation commit 12ae2d4e (fix: align POS Users actions and restore shared role-save toast) pushed to origin/feature/react-firebase-port, synced 0/0, tracked tree clean, 20 legacy JS assets still untracked.
+- git fetch origin main feature/react-firebase-port; git switch main; git merge --ff-only feature/react-firebase-port; git push origin main succeeded, advancing main bed69c14 -> 12ae2d4e with zero conflicts and main origin 0/0, feature ancestry verified.
+- Documentation-only audit commit will be pushed on main, then synchronized to feature/react-firebase-port with --ff-only and local checkout returned to feature. Firebase Hosting already ran for .522, no redeploy, Cloud Functions/Firestore Rules or data changes performed by Git operations.
+
 ## 2026-10-18 — Restore PENGUIN shared black role-save Toast on POS Users (Build .522)
 
 - User saw Build .521's standalone custom POS Users role-save notification as a green/red pale box at top-right, explicitly requested the standard PENGUIN black-background Toast with white text, success green / failure red icon, highest UI Layer, and centered at 75vh (middle of lower half of viewport, measured relative to footer), as on other pages.
