@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
+import { AppDeveloperPanel } from "@/components/AppDeveloperPanel";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import {
   importCatalogProducts,
@@ -27,7 +28,7 @@ export function PosCatalogPage() {
   const { t, locale, intlLocale, formatNumber } = useI18n();
   const stylesReady = useParityPage({
     title: t("pos_catalog.title"),
-    styles: ["retail-pos.css", "retail-catalog-import.css", "sweet-dialog.css"],
+    styles: ["app-version-badge-runtime.css", "retail-pos.css", "retail-catalog-import.css", "sweet-dialog.css"],
   });
   const importDialogRef = useRef(null);
   const [existingProducts, setExistingProducts] = useState([]);
@@ -274,6 +275,7 @@ export function PosCatalogPage() {
       <dialog id="importDialog" ref={importDialogRef} className="catalog-dialog" data-pos-supporting-dialog>
         <div className="catalog-dialog-body"><div className="catalog-dialog-icon" aria-hidden="true"><i className="bi bi-check-circle"></i></div><h2>{tr("dialog.title")}</h2><p>{tr("dialog.message", { count: number(pendingRows.length) })}</p><div id="importDialogSummary" className="dialog-summary"><span><small>{tr("dynamic.new_import")}</small><strong id="importDialogCount">{number(pendingRows.length)}</strong></span><span><small>{tr("dynamic.skipped_existing")}</small><strong>{number(breakdown.skippedExisting)}</strong></span><span><small>{tr("preview.draft")}</small><strong>{number(breakdown.draft)}</strong></span></div><p className="preview-muted">{tr("dialog.help")}</p><div className="catalog-dialog-actions"><button id="cancelImport" className="btn secondary" type="button" onClick={() => importDialogRef.current?.close?.()}>{tr("dialog.cancel")}</button><button id="confirmImport" className="btn primary" type="button" onClick={confirmImport}>{tr("dialog.confirm")}</button></div></div>
       </dialog>
+      <AppDeveloperPanel />
     </>
   );
 }

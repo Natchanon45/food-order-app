@@ -281,3 +281,43 @@ input[type="checkbox"] {
   dialog { width: calc(100% - 20px); }
 }
 @media (max-width: 360px) { .product-grid { grid-template-columns: 1fr; } }
+
+/* RETAIL_POS_MOBILE_HEADER_ONE_ROW_20261018_523
+   Keep locale/menu actions on the same row; title/description yield width. */
+@media (max-width:760px){
+  .pos-header:is([data-pos-supporting-header],[data-pos-management-header]){
+    display:flex!important;flex-flow:row nowrap!important;align-items:center!important;
+    justify-content:space-between!important;gap:8px!important;min-width:0!important;
+  }
+  .pos-header:is([data-pos-supporting-header],[data-pos-management-header])>.app-title{
+    flex:1 1 0%!important;min-width:0!important;max-width:none!important;
+  }
+  .pos-header:is([data-pos-supporting-header],[data-pos-management-header])>.app-title>div{
+    flex:1 1 auto!important;min-width:0!important;max-width:100%!important;
+  }
+  .pos-header:is([data-pos-supporting-header],[data-pos-management-header]) .app-title strong{
+    display:-webkit-box!important;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+    max-width:100%!important;white-space:normal!important;overflow:hidden!important;
+    overflow-wrap:anywhere!important;text-overflow:ellipsis!important;line-height:1.25!important;
+  }
+  .pos-header:is([data-pos-supporting-header],[data-pos-management-header]) .app-title small{
+    display:-webkit-box!important;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+    max-width:100%!important;white-space:normal!important;overflow:hidden!important;
+    overflow-wrap:anywhere!important;text-overflow:ellipsis!important;line-height:1.35!important;
+  }
+  .pos-header:is([data-pos-supporting-header],[data-pos-management-header])>.header-actions{
+    display:flex!important;flex:0 0 auto!important;flex-flow:row nowrap!important;
+    align-items:center!important;align-self:center!important;justify-content:flex-end!important;
+    gap:8px!important;width:max-content!important;max-width:none!important;
+    min-width:0!important;margin-left:auto!important;
+  }
+  .pos-header:is([data-pos-supporting-header],[data-pos-management-header])>.header-actions>*{
+    flex:0 0 auto!important;align-self:center!important;margin-top:0!important;margin-bottom:0!important;
+  }
+  .pos-header:is([data-pos-supporting-header],[data-pos-management-header])>.header-actions>.app-locale-switcher{
+    width:auto!important;margin-left:0!important;margin-right:0!important;
+  }
+  .pos-header:is([data-pos-supporting-header],[data-pos-management-header])>.header-actions>a.btn{
+    max-width:min(28vw,130px);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+  }
+}

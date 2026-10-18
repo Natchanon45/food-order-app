@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
+import { AppDeveloperPanel } from "@/components/AppDeveloperPanel";
 import { Link } from "react-router-dom";
 import { getRetailPosSession } from "@/auth/retailPosSession";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
@@ -14,7 +15,7 @@ export function PosForbiddenPage() {
   const stylesReady = useParityPage({
     title: t("pos_forbidden.meta_title"),
     bodyClass: "pos-forbidden-page",
-    styles: ["retail-pos.css", "retail-pos-navigation.css", "icons.css"],
+    styles: ["app-version-badge-runtime.css", "retail-pos.css", "retail-pos-navigation.css", "icons.css"],
   });
   const session = useMemo(() => getRetailPosSession(), []);
   const posProfile = session || profile || {};
@@ -33,6 +34,7 @@ export function PosForbiddenPage() {
           <div className="dialog-actions"><Link className="btn btn-secondary header-link" to="/pos"><i className="bi bi-house-door app-icon"></i><span>{t("pos_forbidden.home")}</span></Link></div>
         </section>
       </main>
+      <AppDeveloperPanel />
     </>
   );
 }

@@ -63,7 +63,7 @@ const roleId=()=>`role-${globalThis.crypto?.randomUUID?.()||Date.now()}`;
 
 export function PosUsersPage(){
   const authState=useAuth(),tenantState=useTenant(),{profile}=authState,{tenant}=tenantState,{t}=useI18n();
-  const stylesReady=useParityPage({title:t("pos_users.meta_title"),bodyClass:"pos-users-page pos-users-visual-page",disabledGlobalStyles:["app.css","icons.css","shared-responsive.css"],styles:["retail-pos-font-local.css","pos-locale-switcher-placement.css","retail-pos.css","retail-pos-navigation.css","retail-pos-users-layout.css","retail-pos-users-mobile.css","retail-pos-users-visual-dashboard.css"]});
+  const stylesReady=useParityPage({title:t("pos_users.meta_title"),bodyClass:"pos-users-page pos-users-visual-page",disabledGlobalStyles:["app.css","icons.css","shared-responsive.css"],styles:["app-version-badge-runtime.css","retail-pos-font-local.css","pos-locale-switcher-placement.css","retail-pos.css","retail-pos-navigation.css","retail-pos-users-layout.css","retail-pos-users-mobile.css","retail-pos-users-visual-dashboard.css"]});
   const dialogRef=useRef(null);
   const toastTimerRef=useRef(null);
   const [users,setUsers]=useState([]),[roles,setRoles]=useState([]),[selectedRole,setSelectedRole]=useState("cashier");

@@ -13488,3 +13488,44 @@ Verification: pos-users-buttons-toast.spec.mjs 4/4 PASS. Playwright actual Chrom
 - Staged all tracked approved release artifacts plus the three new POS Users tests/fixture and only current generated index-q1xQGsY6.js. Left other 20 old hashed JS assets untracked and untouched. Commit 12ae2d4e, fix: align POS Users actions and restore shared role-save toast; pushed to origin/feature/react-firebase-port, 0/0 and tracked worktree clean.
 - Fetched refs, switched to main, git merge --ff-only feature/react-firebase-port; pushed origin/main, advanced bed69c14 -> 12ae2d4e without conflict, verified 0/0 and main ancestry contains feature.
 - A documentation-only audit commit will be pushed to main and brought to feature via fast-forward; restore Mac checkout to feature for future work and verify both Git branches match. Firebase Hosting Build .522 already live, thus no extra Hosting/Functions/Rules deploy, no version bump and no authenticated Firestore role changes in this Git round.
+
+---
+
+## 2026-10-18 — Uniform one-row POS mobile header buttons across all menus
+
+User screenshots show /pos/users and /pos/backup language + menu controls stacked at 430px while /pos/sales keeps one row. Requirement: all POS mobile navigation actions always one row; allow up to two lines for page title and explanation instead.
+
+Cause: shared react-app/public/parity/css/retail-pos.css defined .header-actions with flex-wrap:wrap. Certain page-specific styles masked defect in some menus. Solution: shared responsive contract @media(max-width:760px) appended to retail-pos.css for data-pos-supporting-header and data-pos-management-header, using header row nowrap, flexible app-title, max-two-line title/subtitle and fixed-row header-actions with 8px gap and centered Y, optional extra nav link truncated. No business, permissions, routes or Firestore changes.
+
+Regression: 15 React POS menu screens audited for same shared CSS and header markup, new static test 3/3 PASS. New Chrome browser layout tests run 7 representative POS headers at 320/360/390/430/440px = 35 cases, 5/5 PASS with row alignment, gap >=7px, no horizontal overflow, subtitle <=2 lines. npm run test:react-parity PASS, build:react and verify:react-build PASS; Version 0.4.293 Build 2026.10.18.523 JS index-CC3-Nr6Q.js.
+
+Hosting-only release candidate; no Functions, Rules or tenant/role data writes. No Git commit, push or merge requested. Preserve all historical 20 untracked hashed assets and the new Build .523 asset.
+
+### Production Hosting verification — One-row mobile POS headers Build .523
+
+- Firebase Hosting-only deploy project chat-45754 target hosting:foodapp succeeded (620 public files, upload/finalize/release complete, CLI exit 0), no Functions, Firestore Rules, Storage Rules or tenant/order data modified.
+- Live smoke every one of 15 POS menu routes /pos/users, /pos/backup, /pos/sales, /pos/settings, /pos/customers, /pos/suppliers, /pos/purchases, /pos/products, /pos/stock-movements, /pos/stock-counts, /pos/tax-invoices, /pos/payables, /pos/shifts, /pos/returns, /pos/catalog: HTTP 200 and all load /react/assets/index-CC3-Nr6Q.js.
+- Local/live JS SHA-256 exact match e95d01513d561ff4d7d4a7aea38f7f3286b4e29b42ac7dd8f6f5d783072ae493 and local/live shared retail-pos.css SHA-256 exact match 0ceffa8b4b3da1e31826a25207a682fee0d0c1561960769395bd842a09d35c87.
+- Unit audit 3/3, real Chrome layout regression 5/5 covering 35 viewports/header scenarios and full React parity/build contract all PASS predeployment; no authenticated real-user screenshot on each route, request user mobile acceptance. No Git commit/push/merge yet per explicit approval rule. Preserve historical 20 unhashed tracked-status untracked Vite JS files plus current Build .523; bump Build before next Hosting deploy.
+
+---
+
+## 2026-10-18 — Missing POS floating Developer Panel badge on last two menus (Build .524)
+
+User: two last POS menus (Backup and Users) have no green floating control; it must display on all POS pages.
+
+Root cause from code audit: PosUsersPage and PosBackupPage already mount AppDeveloperPanel but did not include app-version-badge-runtime.css in useParityPage styles. Without its position:fixed / green badge CSS, floating button is invisible or mispositioned. Similar previous issue on /pos/returns (Worklog 2026-10-03). Additional audit of 17 interactive POS pages found that Catalog and Forbidden also lack the shared panel component and runtime stylesheet; all 13 others already have both.
+
+Implementation: PosUsersPage.jsx and PosBackupPage.jsx now include the same app-version-badge-runtime.css as other POS pages; PosCatalogPage.jsx and PosForbiddenPage.jsx mount AppDeveloperPanel once and load its standard CSS. No changes to the Developer Panel component, green badge style, global CSS, Firestore/data, permissions, navigation, mobile single-row header or print/customer display-only routes.
+
+Tests: new static regression pos-floating-developer-badge.spec.mjs asserts 17 POS pages have one panel plus runtime CSS (3/3 PASS), and actual Chrome browser test pos-floating-developer-badge-browser.spec.mjs at 320/430/1280 checks green dot fixed at expected right/bottom dimensions and accessible click-to-open / backdrop close (3/3 PASS). Included in npm test:react-parity and test:react-parity-full respectively. Full npm run test:react-parity PASS; npm run build:react PASS; verify:react-build PASS; git diff --check PASS. Version 0.4.294, Build 2026.10.18.524, generated index-BBgbyzkx.js.
+
+Hosting release pending. Mac on feature/react-firebase-port at e7786e06, 0/0, with previous Build .523 UI changes not committed plus new .524 work. No Git commit/push/merge without explicit user approval. Preserve 21 previous untracked JS assets and current .524. No live authenticated clicks or writes.
+
+### Production Hosting verification — Floating Developer Badge Build .524
+
+- Firebase Hosting-only deploy project chat-45754, hosting:foodapp: 621 public files, upload/finalize/release success, CLI exit 0. No Cloud Functions, Firestore/Storage Rules or tenant/user data mutations.
+- Live smoke all 17 interactive POS routes: /pos, /pos/sales, /pos/tax-invoices, /pos/returns, /pos/shifts, /pos/products, /pos/stock-movements, /pos/stock-counts, /pos/purchases, /pos/payables, /pos/suppliers, /pos/customers, /pos/settings, /pos/backup, /pos/users, /pos/catalog, /pos/forbidden HTTP 200 and served /react/assets/index-BBgbyzkx.js.
+- JS local/production SHA-256 exact match 16244ace9d06dd138ae5ab84feae458e07a513149510eda4f6ef86fabd8b241f. Existing POS floating badge CSS local/production SHA-256 exact match 2f4f1b974ffe95b47042846507669e77fe0adfb6d74f027f8bfa764b1a754fa2.
+- Static check 17/17 interactive screens have one panel + CSS; 3/3 Node regression PASS. Chrome CSS and clickable badge/panel fixtures 3/3 PASS (320, 430, 1280); all React Parity/Build contracts PASS. Did not execute authenticated browser interactions on live customer tenant; user requested to verify bottom-right green dot in Backup and Users with hard refresh.
+- Git remains on feature/react-firebase-port HEAD e7786e06 tracking origin 0/0; changes from Build .523 mobile header and .524 floating badges/test/docs/build intentionally uncommitted and unpushed. Preserve 21 historical untracked hashed JS bundles plus new .524 output, no main merge.
