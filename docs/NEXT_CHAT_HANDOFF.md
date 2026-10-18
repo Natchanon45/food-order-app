@@ -4,6 +4,15 @@ Updated: 2026-10-10
 Project: Food Order / Delivery / Retail POS
 Repository: `Natchanon45/food-order-app`
 
+## 2026-10-18 — User-authorized Commit/Push/Fast-forward main merge of POS mobile header and floating badge (.523/.524)
+
+- User explicitly approved Commit, Push and Merge to main for both already-deployed releases: Build 2026.10.18.523 mobile POS header same-row buttons across 15 POS pages and Build 2026.10.18.524 Developer Panel green floating badge visible across 17 interactive POS screens. Production remains Version 0.4.294 Build 2026.10.18.524.
+- Mac on feature/react-firebase-port at e7786e06, tracked changes matched expected header CSS, four POS pages missing Developer Panel style/component, test/package/release/docs and generated Build .524 entrypoints. origin/main and origin/feature/react-firebase-port were both e7786e06, no divergence, verified Fast-forward ancestry. There were 22 untracked Vite hashed JS outputs before staging, including current .524; all 21 previous hashed JS files preserved with no reset/clean/deletion.
+- Pre-merge validation repeated: npm run test:react-parity PASS, npm run verify:react-build PASS (Version 0.4.294 Build 2026.10.18.524, asset index-BBgbyzkx.js), POS mobile header static regression 3/3 PASS + Chrome 5/5 PASS across 35 representative phone scenarios, POS floating badge static 3/3 PASS + Chrome 3/3 PASS at 320/430/1280. git diff --check and staged diff --check PASS.
+- Staged approved tracked files, 4 new mobile-header/floating-badge test scripts and only current Build .524 hashed JS asset, leaving old 21 hashed JS files untracked. Implementation commit 4b2fe62b (fix: keep POS mobile headers inline and restore floating badges), pushed to origin/feature/react-firebase-port, confirmed 0/0 and clean tracked tree.
+- git fetch origin main feature/react-firebase-port; git switch main; git merge --ff-only feature/react-firebase-port; git push origin main succeeded, advancing e7786e06 -> 4b2fe62b without conflict, main tracking 0/0, verified ancestry main contains feature.
+- Docs-only audit commit to be pushed on main and synchronized by --ff-only to feature/react-firebase-port, then Mac checkout returned to feature. Both releases were already live on Firebase Hosting and hashes were validated; do not repeat Hosting deploy or bump Build solely for Git merge. No Cloud Functions/Rules, Firestore data, tenant permissions, or real user writes.
+
 ## 2026-10-18 — Restore POS floating Version/Build badge on all interactive screens (Build .524)
 
 - User reported that the small green floating Developer Panel/Version/Build badge was missing on the LAST TWO POS navigation menus (Backup and Users) and requested that it be present on every POS page.
