@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/assets/vendor/bootstrap-icons/bootstrap-icons.min.css">
+<link rel="stylesheet" href="/react-app/public/parity/css/retail-pos.css">
+<link rel="stylesheet" href="/react-app/public/parity/css/retail-pos-users-layout.css">
+<link rel="stylesheet" href="/react-app/public/parity/css/retail-pos-users-visual-dashboard.css">
+<link rel="stylesheet" href="/react-app/public/parity/css/ui-layer-stack.css">
+<link rel="stylesheet" href="/react-app/public/parity/css/toast-global-policy.css">
+</head>
+<body class="pos-users-visual-page">
+<main class="permission-container"><section class="permission-panel">
+<div class="section-heading"><button id="add" class="btn btn-pay"><i class="bi bi-plus-lg" aria-hidden="true"></i><span>เพิ่มบทบาท</span></button></div>
+<div class="permission-group-card"><div class="permission-group-head"><strong>ทดสอบ</strong>
+<button id="select" class="permission-group-toggle is-select"><i class="bi bi-check-circle" aria-hidden="true"></i><span>เลือกทั้งหมด</span></button>
+<button id="clear" class="permission-group-toggle is-clear"><i class="bi bi-x-circle" aria-hidden="true"></i><span>ยกเลิกทั้งหมด</span></button>
+</div></div>
+<div class="permission-actions"><button id="edit"><i class="bi bi-pencil-square" aria-hidden="true"></i><span>แก้ไข</span></button></div>
+<div class="dialog-actions"><button class="btn btn-danger" id="hiddenDelete" hidden><i class="bi bi-trash3" aria-hidden="true"></i><span>ลบ</span></button>
+<button class="btn btn-pay" id="save"><i class="bi bi-floppy" aria-hidden="true"></i><span>บันทึกบทบาท</span></button></div>
+</section></main>
+<div id="posUsersToast" class="app-toast success show" data-ui-layer="toast" role="status" aria-live="polite">
+<span class="app-toast-icon" aria-hidden="true"><i class="bi bi-check-circle app-icon"></i></span>
+<span class="app-toast-message">บันทึกบทบาทสำเร็จ</span></div>
+<dialog id="testDialog"><p>Native modal demo</p><button id="closeDialog">ปิด</button></dialog>
+<script type="module" src="/react-app/src/ui/toast-top-layer.js"></script>
+</body></html>

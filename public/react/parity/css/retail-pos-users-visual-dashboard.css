@@ -544,3 +544,30 @@
   }
   .pos-users-visual-page .users-account-panel .permission-actions button{width:100%}
 }
+
+/* POS Users: action buttons obey global semantic-icon alignment contract. */
+.pos-users-visual-page .permission-panel :is(.btn,.permission-actions button),
+.pos-users-visual-page .permission-group-card .permission-group-toggle{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+}
+.pos-users-visual-page .permission-panel :is(.btn,.permission-actions button) > .bi,
+.pos-users-visual-page .permission-group-card .permission-group-toggle > .bi{
+  display:inline-flex;align-items:center;justify-content:center;flex:0 0 1.1em;
+  width:1.1em;height:1.1em;line-height:1;vertical-align:middle;
+}
+.pos-users-visual-page .permission-panel .btn[hidden],
+.pos-users-visual-page .permission-panel button[hidden]{display:none!important}
+.pos-users-visual-page .permission-group-card .permission-group-toggle{
+  min-height:32px;padding:5px 9px;gap:9px;line-height:1.2;
+}
+.pos-users-visual-page .permission-group-card .permission-group-toggle.is-select{
+  color:#08773c;background:#e7f7ed;border:1px solid #c4e9d1;
+}
+.pos-users-visual-page .permission-group-card .permission-group-toggle.is-clear{
+  color:#b82333;background:#fff0f1;border:1px solid #f3c6cb;
+}
+.pos-users-visual-page .permission-group-card .permission-group-toggle.is-select:hover:not(:disabled){background:#d7f2e1}
+.pos-users-visual-page .permission-group-card .permission-group-toggle.is-clear:hover:not(:disabled){background:#ffe1e5}
+.pos-users-visual-page .permission-panel .section-heading .btn,
+.pos-users-visual-page .permission-panel .dialog-actions .btn{gap:9px}
+.pos-users-visual-page .permission-panel .dialog-actions > .btn + .btn{margin-left:0}

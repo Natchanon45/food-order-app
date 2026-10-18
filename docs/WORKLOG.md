@@ -13439,3 +13439,41 @@ Safety: No changes to Functions, Rules, actual payment or bank setting data, ord
 - Implementation commit 634c78a4 (fix: explain zero-due revenue slips and add lazy bank picker) pushed to origin/feature/react-firebase-port, verified 0/0 and tracked tree clean.
 - git fetch origin main feature/react-firebase-port; git switch main; git merge --ff-only feature/react-firebase-port; git push origin main. Remote main advanced 062c7ac8 -> 634c78a4, no conflicts, confirmed main contains feature and origin/main...main 0/0.
 - Docs-only audit commit will be pushed to main and synchronized back onto feature/react-firebase-port with Fast-forward; leave local Mac checked out on feature for next development. No repeated Firebase Hosting deployment; existing Production Build .520 remains unchanged. No Functions, Firestore Rules or data writes during Git merge.
+
+---
+
+## 2026-10-18 — POS Users icons, select/clear state colors, save-role Toast
+
+User requested global button icon/label spacing and Y-centering, semantic icons where missing, green Select all/red Clear all, and Toast after pressing Save Role on /pos/users.
+
+Root causes: Several PosUsersPage action buttons lacked icons; permission toggles already had icons but no 7px+ CSS gap and an overriding common green color; saveRoles awaited Firestore and then updated local state silently without success message.
+
+Implemented: Bootstrap leading icons for role and user action buttons, icon-only Close accessible label; scoped flex CSS with gap 9px and centered icons, explicitly green Select all/red Clear all, targeted hidden-delete guard, responsive Toast. Save-role Toast success follows awaited Firestore save; failures/name invalid show error Toast; 3s auto-dismiss and timer cleanup. Added TH/EN/MY/LO/KM translations. No change to role permission semantics, tenant auth, Firestore Functions/Rules/data.
+
+Verification: node tests pos-users-buttons-toast.spec.mjs 4/4 PASS; Chrome browser layout fixture tests 2/2 PASS at 390/1280 with icon Y deviation <=1.05px, text gap >=7px, colors distinct, hidden delete and no horizontal overflow. Registered in parity suites. Full npm run test:react-parity PASS; build:react and verify:react-build PASS, version 0.4.291 Build 2026.10.18.521, JS index-BlPn4kIF.js. No production authenticated role save attempted. Hosting-only deploy planned, no Git commit/push/main merge until explicit approval. All 19 historic untracked bundles retained.
+
+### Production Hosting verification — POS Users Build .521
+
+- Firebase Hosting only: npx --no-install firebase-tools deploy --only hosting:foodapp --project chat-45754 --non-interactive succeeded (618 public files, Deploy complete, exit 0). No Functions, Firestore/Storage Rules or tenant database writes.
+- Live smoke GET /pos/users, /pos/, /cashier/ HTTP 200, all loaded /react/assets/index-BlPn4kIF.js. Production JS and local Build .521 SHA-256 eb72ee202f1ee0f25219c807e1bd28831e75cce4b96146e7efa1666ea12480ad exact match. Production/local retail-pos-users-visual-dashboard.css SHA-256 b443f8bb91e5a61cb69fd1ce6ed90e8a4aa9c2883cae9d62ca25f04f214b8982 exact match.
+- Verified focused POS Users icon/Toast unit 4/4, actual Chrome CSS geometry/layout browser 2/2 at 390 and 1280px, all React Parity and Build Contract PASS. No authenticated user action/test role change was made; user should hard-refresh /pos/users and test saving an allowed role to confirm the in-app green success Toast. Error cases show red Toast.
+- Git feature/react-firebase-port HEAD stays at bed69c14 and remote 0/0; all source/build/test/docs modifications intentionally remain uncommitted and unpushed until user approval. Preserve all 19 old hashed Vite assets plus current generated .521 JS. No main merge.
+
+---
+
+## 2026-10-18 — Restore global POS Users dark Toast (standard centered lower-half, top UI layer)
+
+User explicitly rejected the new POS Users Toast design from Build .521: green/red pale box top-right did not match established dark PENGUIN Toast. Required black background, white copy, success green/error red icon, highest UI layer, centered on X and at middle of lower half of viewport relative to footer.
+
+Diagnosis: prior implementation in PosUsersPage.jsx rendered .pos-users-toast with custom top-right background/green-red styles scoped to retail-pos-users-visual-dashboard.css. Existing globally loaded toast-global-policy.css already mandates .app-toast success/error styling (#111 dark), .app-toast-icon green #22c55e/error #ef4444, top:75vh, left:50%, max z-index. ui-layer-stack.css plus toast-top-layer.js ensure Toast displays on top of native modal dialog.
+
+Change: PosUsersPage renders React createPortal() into document.body with standard app-toast success/error show, data-ui-layer toast, standard icon+message spans, semantic role/aria-live. Removed previous standalone .pos-users-toast CSS entirely; no change to established Toast global policy. Role-saving Firestore semantics, success only after await, error messages, 3-second cleanup, five locales and button UI from .521 untouched.
+
+Verification: pos-users-buttons-toast.spec.mjs 4/4 PASS. Playwright actual Chrome 390px/1280px CSS test 2/2 PASS checked true rendered 75vh and X center, RGB #111 background, white text, green and red icons, max z-index, as well as successful promotion into Native Dialog Top Layer using shared toast-top-layer.js. Full npm run test:react-parity PASS and npm run build:react, verify:react-build PASS. Version 0.4.292 Build 2026.10.18.522 JS index-q1xQGsY6.js. No authenticated live role-save or tenant mutation; Hosting-only deployment pending. Do not commit/push/merge without user authorization, do not remove old 19 hashed Vite assets.
+
+### Production Hosting release — POS Users standard dark Toast Build .522
+
+- Deployed hosting:foodapp only to Firebase chat-45754; Firebase CLI finalized/released 619 public files, exit 0. No Cloud Functions, Firestore/Storage Rules, database role/tenant mutations or repeated financial operations.
+- Smoke live GET /pos/users, /pos/, /cashier/ HTTP 200, all reference /react/assets/index-q1xQGsY6.js. Local and production JS SHA-256 a345bb3f47de91bcaee3d9479e4ee44899577fa150fcf081bd7ba12a1b80f32a equal; POS Users CSS SHA-256 f56e26971326a8c1815c05b68d5bdf329c4335cd57962453cc3c52df80f825fd equal; unchanged global Toast CSS SHA-256 9eb4e866ec52dc01d59f153b0a47e9f4080cdd37ee7eb6bd01042cb15a5059d9 equal.
+- Focused unit test 4/4 PASS, Chrome mobile 390px/Desktop 1280px browser 2/2 PASS including shared black background, success green/error red icons, center X/75vh, topmost layer when a native dialog opens, global UI policy, role-save after-await. Full React parity/build and generated contract PASS. No authenticated production Save Role performed, so user to refresh /pos/users and verify visual Toast after valid role save.
+- Mac feature/react-firebase-port remains based on bed69c14, tracking remote 0/0. Do not commit/push/merge until explicit approval. Preserve all 19 previous untracked hashed JS files plus .521 and new .522 generated files. Always bump Build on next Hosting release.

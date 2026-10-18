@@ -5088,6 +5088,8 @@
       },
       "current": "ผู้ใช้งานปัจจุบัน: :user • :role",
       "roles": {
+        "save_success": "บันทึกบทบาทสำเร็จ",
+        "save_failed": "บันทึกบทบาทไม่สำเร็จ กรุณาลองอีกครั้ง",
         "title": "บทบาท",
         "description": "ชุดสิทธิ์ที่นำไปใช้กับผู้ใช้",
         "add": "เพิ่มบทบาท",
@@ -11306,6 +11308,8 @@
       },
       "current": "Current user: :user • :role",
       "roles": {
+        "save_success": "Role saved successfully",
+        "save_failed": "Could not save the role. Please try again.",
         "title": "Roles",
         "description": "Permission sets assigned to users",
         "add": "Add role",
@@ -17587,6 +17591,8 @@
       },
       "current": "လက်ရှိအသုံးပြုသူ- :user • :role",
       "roles": {
+        "save_success": "အခန်းကဏ္ဍကို အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ",
+        "save_failed": "အခန်းကဏ္ဍကို မသိမ်းဆည်းနိုင်ပါ။ ထပ်မံကြိုးစားပါ။",
         "title": "ရာထူးတာဝန်များ",
         "description": "အသုံးပြုသူများအတွက် သတ်မှတ်ထားသော ခွင့်ပြုချက်အစုံများ",
         "add": "အခန်းကဏ္ဍကိုထည့်ပါ။",
@@ -23868,6 +23874,8 @@
       },
       "current": "ຜູ້ໃຊ້ປັດຈຸບັນ: :user • :role",
       "roles": {
+        "save_success": "ບັນທຶກບົດບາດສຳເລັດແລ້ວ",
+        "save_failed": "ບັນທຶກບົດບາດບໍ່ສຳເລັດ ກະລຸນາລອງອີກຄັ້ງ",
         "title": "ບົດບາດ",
         "description": "ຊຸດການອະນຸຍາດມອບໃຫ້ຜູ້ໃຊ້",
         "add": "ເພີ່ມບົດບາດ",
@@ -30149,6 +30157,8 @@
       },
       "current": "អ្នកប្រើប្រាស់បច្ចុប្បន្ន៖ :user • :role",
       "roles": {
+        "save_success": "បានរក្សាទុកតួនាទីដោយជោគជ័យ",
+        "save_failed": "មិនអាចរក្សាទុកតួនាទីបានទេ។ សូមព្យាយាមម្ដងទៀត។",
         "title": "តួនាទី",
         "description": "សំណុំការអនុញ្ញាតដែលបានកំណត់ទៅអ្នកប្រើប្រាស់",
         "add": "បន្ថែមតួនាទី",

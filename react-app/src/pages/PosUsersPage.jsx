@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
@@ -64,13 +65,21 @@ export function PosUsersPage(){
   const authState=useAuth(),tenantState=useTenant(),{profile}=authState,{tenant}=tenantState,{t}=useI18n();
   const stylesReady=useParityPage({title:t("pos_users.meta_title"),bodyClass:"pos-users-page pos-users-visual-page",disabledGlobalStyles:["app.css","icons.css","shared-responsive.css"],styles:["retail-pos-font-local.css","pos-locale-switcher-placement.css","retail-pos.css","retail-pos-navigation.css","retail-pos-users-layout.css","retail-pos-users-mobile.css","retail-pos-users-visual-dashboard.css"]});
   const dialogRef=useRef(null);
+  const toastTimerRef=useRef(null);
   const [users,setUsers]=useState([]),[roles,setRoles]=useState([]),[selectedRole,setSelectedRole]=useState("cashier");
   const [ready,setReady]=useState(false),[form,setForm]=useState(EMPTY_USER),[busy,setBusy]=useState(""),[error,setError]=useState("");
+  const [toast,setToast]=useState({message:"",variant:"success"});
 
   const tr=(key,fallback,vars)=>{
     const value=t(key,vars);
     return value&&value!==key?value:fallback;
   };
+  const showRoleToast=(message,variant="success")=>{
+    window.clearTimeout(toastTimerRef.current);
+    setToast({message,variant});
+    toastTimerRef.current=window.setTimeout(()=>setToast({message:"",variant:"success"}),3000);
+  };
+  useEffect(()=>()=>window.clearTimeout(toastTimerRef.current),[]);
   const menuGroups=useMemo(()=>POS_MENU_GROUPS.map(group=>({...group,label:tr(`pos_users.groups.${group.id}`,group.label),
     items:group.items.map(item=>({...item,label:tr(permissionKey(item.key),item.label)}))})),[t]);
   const actionGroups=useMemo(()=>ACTION_GROUPS.map(group=>({...group,label:tr(`pos_users.groups.${group.id}`,group.label),
@@ -123,11 +132,20 @@ export function PosUsersPage(){
     finally{setBusy("")}
   };
   const saveRoles=async()=>{
-    if(!role?.name?.trim()){setError(tr("pos_users.roles.name_required","กรุณากรอกชื่อบทบาท"));return}
+    if(!role?.name?.trim()){
+      const message=tr("pos_users.roles.name_required","กรุณากรอกชื่อบทบาท");
+      setError(message);showRoleToast(message,"error");return;
+    }
     setBusy("roles");setError("");
-    try{await savePosRoleSettings(tenant.id,roles);setRoles(rows=>rows.map(row=>({...row,name:String(row.name||row.id).trim()})))}
-    catch(e){console.error(e);setError(String(e?.message||"บันทึกสิทธิ์ไม่สำเร็จ"))}
-    finally{setBusy("")}
+    try{
+      await savePosRoleSettings(tenant.id,roles);
+      setRoles(rows=>rows.map(row=>({...row,name:String(row.name||row.id).trim()})));
+      showRoleToast(tr("pos_users.roles.save_success","บันทึกบทบาทสำเร็จ"));
+    }catch(e){
+      console.error("POS_ROLES_SAVE_FAILED",e);
+      const message=String(e?.message||tr("pos_users.roles.save_failed","บันทึกบทบาทไม่สำเร็จ กรุณาลองอีกครั้ง"));
+      setError(message);showRoleToast(message,"error");
+    }finally{setBusy("")}
   };
 
   const openUser=user=>{
@@ -184,7 +202,7 @@ export function PosUsersPage(){
 
       <section className="permission-grid">
         <section className="panel permission-panel users-role-list-panel">
-          <div className="section-heading"><div><h2>{tr("pos_users.roles.title","บทบาท")}</h2><p>{tr("pos_users.roles.description","ชุดสิทธิ์ที่นำไปใช้กับผู้ใช้")}</p></div><button id="newRoleBtn" className="btn btn-pay" type="button" onClick={addRole}>{tr("pos_users.roles.add","เพิ่มบทบาท")}</button></div>
+          <div className="section-heading"><div><h2>{tr("pos_users.roles.title","บทบาท")}</h2><p>{tr("pos_users.roles.description","ชุดสิทธิ์ที่นำไปใช้กับผู้ใช้")}</p></div><button id="newRoleBtn" className="btn btn-pay" type="button" onClick={addRole}><i className="bi bi-plus-lg" aria-hidden="true"></i><span>{tr("pos_users.roles.add","เพิ่มบทบาท")}</span></button></div>
           <div className="permission-list">{roles.map(row=><button type="button" className={"permission-card role-card"+(row.id===selectedRole?" is-selected":"")} key={row.id} data-role-id={row.id} onClick={()=>setSelectedRole(row.id)}>
             <span className="role-card-icon" aria-hidden="true"><i className="bi bi-shield-check"></i></span>
             <div className="role-card-copy"><strong>{row.name}</strong><span>{row.permissions?.includes("*")?"ทุกสิทธิ์":tr("pos_users.roles.count",`${row.permissions?.length||0} สิทธิ์`,{count:row.permissions?.length||0})}{row.locked?" • "+tr("pos_users.roles.core","บทบาทหลัก"):""}</span></div>
@@ -198,14 +216,14 @@ export function PosUsersPage(){
             <div className="permission-form-grid"><label className="full">{tr("pos_users.roles.name","ชื่อบทบาท")}<input id="roleName" value={role.name||""} disabled={role.id==="owner"} onChange={event=>patchRole({name:event.target.value})}/></label></div>
             <h3 className="permission-section-title">{tr("pos_users.roles.permissions","กำหนดสิทธิ์")}</h3>
             <div id="permissionCheckboxes" className="permission-checkboxes">{renderPermissionBlock("pos_users.permissions.menu_title","pos_users.permissions.menu_description",menuGroups)}{renderPermissionBlock("pos_users.permissions.actions_title","pos_users.permissions.actions_description",actionGroups)}</div>
-            <div className="dialog-actions"><button id="deleteRoleBtn" type="button" className="btn btn-danger" hidden={role.locked} onClick={deleteRole}>{tr("pos_users.roles.delete","ลบบทบาท")}</button><button className="btn btn-pay" disabled={busy==="roles"}>{tr("pos_users.roles.save","บันทึกบทบาท")}</button></div>
+            <div className="dialog-actions"><button id="deleteRoleBtn" type="button" className="btn btn-danger" hidden={role.locked} onClick={deleteRole}><i className="bi bi-trash3" aria-hidden="true"></i><span>{tr("pos_users.roles.delete","ลบบทบาท")}</span></button><button type="submit" id="saveRoleBtn" className="btn btn-pay" disabled={busy==="roles"}><i className={"bi " + (busy==="roles"?"bi-hourglass-split":"bi-floppy")} aria-hidden="true"></i><span>{tr("pos_users.roles.save","บันทึกบทบาท")}</span></button></div>
           </form>:null}
         </section>
       </section>
 
       <section className="panel permission-panel users-account-panel">
-        <div className="section-heading"><div><h2>{tr("pos_users.users.title","บัญชีผู้ใช้งาน")}</h2><p>{tr("pos_users.users.description","กำหนดอีเมลเข้าสู่ระบบ รหัสผ่าน บทบาท ระบบ และสถานะ")}</p></div><button id="newUserBtn" className="btn btn-pay" type="button" onClick={()=>openUser(null)}>{tr("pos_users.users.add","เพิ่มผู้ใช้")}</button></div>
-        <div id="userList" className="permission-list">{users.map(user=>{const userRole=roles.find(row=>row.id===(user.roleId||user.role));return <article className="permission-card user-account-card" key={user.uid}><span className="user-card-avatar" aria-hidden="true"><i className="bi bi-person"></i></span><div className="user-card-copy"><strong>{user.displayName||user.email}</strong><span className="user-card-email">{user.email}</span><div className="user-card-badges"><span className="user-role-badge">{userRole?.name||user.role}</span><span className={"user-status-badge "+(user.active?"is-active":"is-suspended")}>{tr(user.active?"pos_users.users.active":"pos_users.users.suspended",user.active?"เปิดใช้งาน":"ระงับใช้งาน")}</span><span className="user-auth-badge">{user.businessScope==="both"?tr("pos_users.scope.both","ทั้ง 2 ระบบ"):tr("pos_users.scope.retail_pos","Retail POS เท่านั้น")}</span></div></div><div className="permission-actions"><button type="button" data-user-id={user.uid} onClick={()=>openUser(user)}>{tr("pos_users.roles.edit","แก้ไข")}</button></div></article>})}</div>
+        <div className="section-heading"><div><h2>{tr("pos_users.users.title","บัญชีผู้ใช้งาน")}</h2><p>{tr("pos_users.users.description","กำหนดอีเมลเข้าสู่ระบบ รหัสผ่าน บทบาท ระบบ และสถานะ")}</p></div><button id="newUserBtn" className="btn btn-pay" type="button" onClick={()=>openUser(null)}><i className="bi bi-person-plus" aria-hidden="true"></i><span>{tr("pos_users.users.add","เพิ่มผู้ใช้")}</span></button></div>
+        <div id="userList" className="permission-list">{users.map(user=>{const userRole=roles.find(row=>row.id===(user.roleId||user.role));return <article className="permission-card user-account-card" key={user.uid}><span className="user-card-avatar" aria-hidden="true"><i className="bi bi-person"></i></span><div className="user-card-copy"><strong>{user.displayName||user.email}</strong><span className="user-card-email">{user.email}</span><div className="user-card-badges"><span className="user-role-badge">{userRole?.name||user.role}</span><span className={"user-status-badge "+(user.active?"is-active":"is-suspended")}>{tr(user.active?"pos_users.users.active":"pos_users.users.suspended",user.active?"เปิดใช้งาน":"ระงับใช้งาน")}</span><span className="user-auth-badge">{user.businessScope==="both"?tr("pos_users.scope.both","ทั้ง 2 ระบบ"):tr("pos_users.scope.retail_pos","Retail POS เท่านั้น")}</span></div></div><div className="permission-actions"><button type="button" data-user-id={user.uid} onClick={()=>openUser(user)}><i className="bi bi-pencil-square" aria-hidden="true"></i><span>{tr("pos_users.roles.edit","แก้ไข")}</span></button></div></article>})}</div>
         {!users.length?<div className="empty">{tr("pos_users.users.empty","ยังไม่มีพนักงาน POS ในธุรกิจนี้")}</div>:null}
       </section>
       <p className="error-text">{error}</p>
@@ -213,11 +231,21 @@ export function PosUsersPage(){
 
     <dialog ref={dialogRef} id="userDialog" data-pos-management-dialog className="user-dialog users-editor-dialog">
       <form id="userForm" className="user-form payment-form" onSubmit={saveUser}>
-        <div className="dialog-head users-dialog-head"><div className="users-dialog-title"><span className="users-dialog-icon" aria-hidden="true"><i className="bi bi-person-plus"></i></span><div><h2>{tr(form.uid?"pos_users.users.edit":"pos_users.users.add",form.uid?"แก้ไขผู้ใช้":"เพิ่มผู้ใช้")}</h2><small>{tr(form.uid?"pos_users.users.edit_hint":"pos_users.users.new_hint",form.uid?"อีเมลสำหรับเข้าสู่ระบบไม่สามารถแก้ไขได้ เว้นว่างรหัสผ่านหากไม่ต้องการเปลี่ยน":"ผู้ใช้ใหม่ต้องกำหนดรหัสผ่าน")}</small></div></div><button type="button" className="icon-btn" onClick={()=>dialogRef.current?.close?.()}><i className="bi bi-x-lg"/></button></div>
+        <div className="dialog-head users-dialog-head"><div className="users-dialog-title"><span className="users-dialog-icon" aria-hidden="true"><i className="bi bi-person-plus"></i></span><div><h2>{tr(form.uid?"pos_users.users.edit":"pos_users.users.add",form.uid?"แก้ไขผู้ใช้":"เพิ่มผู้ใช้")}</h2><small>{tr(form.uid?"pos_users.users.edit_hint":"pos_users.users.new_hint",form.uid?"อีเมลสำหรับเข้าสู่ระบบไม่สามารถแก้ไขได้ เว้นว่างรหัสผ่านหากไม่ต้องการเปลี่ยน":"ผู้ใช้ใหม่ต้องกำหนดรหัสผ่าน")}</small></div></div><button type="button" className="icon-btn" aria-label={tr("pos_users.users.cancel","ปิดหน้าต่าง")} title={tr("pos_users.users.cancel","ปิดหน้าต่าง")} onClick={()=>dialogRef.current?.close?.()}><i className="bi bi-x-lg" aria-hidden="true"/></button></div>
         <div className="permission-form-grid user-form-grid"><label>{tr("pos_users.users.name","ชื่อผู้ใช้")}<input required value={form.displayName} onChange={e=>setForm({...form,displayName:e.target.value})}/></label><label>{tr("pos_users.users.email","อีเมลสำหรับเข้าสู่ระบบ")}<input required type="email" readOnly={Boolean(form.uid)} value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/></label><label>{tr("pos_users.users.password","รหัสผ่าน")}<input type="password" minLength={form.uid?0:6} value={form.password} placeholder={form.uid?"เว้นว่างหากไม่เปลี่ยน":tr("pos_users.users.password_placeholder","อย่างน้อย 6 ตัวอักษร")} onChange={e=>setForm({...form,password:e.target.value})}/></label><label>{tr("pos_users.users.confirm_password","ยืนยันรหัสผ่าน")}<input type="password" value={form.confirmPassword} onChange={e=>setForm({...form,confirmPassword:e.target.value})}/></label><label>{tr("pos_users.users.role","บทบาท")}<select value={form.role} onChange={e=>setForm({...form,role:e.target.value})}>{roles.filter(row=>row.id!=="owner").map(row=><option key={row.id} value={row.id}>{row.name}</option>)}</select></label><label>{tr("pos_users.scope.label","ระบบที่เข้าใช้งาน")}<select value={form.businessScope} onChange={e=>setForm({...form,businessScope:e.target.value})}><option value="retail_pos">{tr("pos_users.scope.retail_pos","Retail POS เท่านั้น")}</option><option value="both">{tr("pos_users.scope.both","ทั้ง 2 ระบบ")}</option></select></label><label>{tr("pos_users.users.status","สถานะ")}<select value={form.active?"1":"0"} onChange={e=>setForm({...form,active:e.target.value==="1"})}><option value="1">{tr("pos_users.users.active","เปิดใช้งาน")}</option><option value="0">{tr("pos_users.users.suspended","ระงับใช้งาน")}</option></select></label></div>
         <small id="passwordHint">{tr(form.uid?"pos_users.users.edit_hint":"pos_users.users.new_hint",form.uid?"อีเมลสำหรับเข้าสู่ระบบไม่สามารถแก้ไขได้ เว้นว่างรหัสผ่านหากไม่ต้องการเปลี่ยน":"ผู้ใช้ใหม่ต้องกำหนดรหัสผ่านอย่างน้อย 6 ตัวอักษร")}</small>
-        <p className="error-text">{error}</p><div className="dialog-actions"><button type="button" className="btn btn-secondary" onClick={()=>dialogRef.current?.close?.()}>{tr("pos_users.users.cancel","ยกเลิก")}</button><button type="submit" className="btn btn-pay" disabled={busy==="user"}>{busy==="user"?tr("pos_users.users.saving","กำลังบันทึก..."):tr("pos_users.users.save","บันทึกผู้ใช้")}</button></div>
+        <p className="error-text">{error}</p><div className="dialog-actions"><button type="button" className="btn btn-secondary" onClick={()=>dialogRef.current?.close?.()}><i className="bi bi-x-circle" aria-hidden="true"></i><span>{tr("pos_users.users.cancel","ยกเลิก")}</span></button><button type="submit" className="btn btn-pay" disabled={busy==="user"}><i className={"bi " + (busy==="user"?"bi-hourglass-split":"bi-floppy")} aria-hidden="true"></i><span>{busy==="user"?tr("pos_users.users.saving","กำลังบันทึก..."):tr("pos_users.users.save","บันทึกผู้ใช้")}</span></button></div>
       </form>
     </dialog>
+    {toast.message ? createPortal(
+      <div id="posUsersToast" className={"app-toast " + (toast.variant==="error"?"error":"success") + " show"}
+        data-ui-layer="toast"
+        role={toast.variant==="error"?"alert":"status"} aria-live={toast.variant==="error"?"assertive":"polite"}>
+        <span className="app-toast-icon" aria-hidden="true">
+          <i className={"bi " + (toast.variant==="error"?"bi-x-circle":"bi-check-circle") + " app-icon"}></i>
+        </span>
+        <span className="app-toast-message">{toast.message}</span>
+      </div>, document.body
+    ) : null}
     <AppDeveloperPanel/></>;
 }
