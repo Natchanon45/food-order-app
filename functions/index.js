@@ -253,6 +253,8 @@ const hybridBillingSettings = require("./hybrid-billing-settings");
 exports.getPublicHybridBillingSettings = hybridBillingSettings.getPublicHybridBillingSettings;
 exports.getHybridBillingSettings = hybridBillingSettings.getHybridBillingSettings;
 exports.updateHybridBillingSettings = hybridBillingSettings.updateHybridBillingSettings;
+// Read-only billing preview: no invoices, payments or tenant status are mutated.
+exports.getTenantHybridBillingPreview = require("./hybrid-billing-preview").getTenantHybridBillingPreview;
 
 const subscriptionPricing = require("./subscription-pricing");
 exports.getPublicSubscriptionPricing = subscriptionPricing.getPublicSubscriptionPricing;

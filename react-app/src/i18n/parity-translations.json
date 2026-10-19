@@ -1,5 +1,42 @@
 {
   "th": {
+    "hybrid_report": {
+      "title": "รายงานค่าบริการ Hybrid Billing",
+      "subtitle": "ประเมินค่าบริการจากยอด Delivery ที่ชำระจริงเท่านั้น",
+      "back": "กลับหน้าหลัก",
+      "month": "รอบเดือน",
+      "refresh": "โหลดใหม่",
+      "loading": "กำลังคำนวณค่าบริการ…",
+      "error": "ไม่สามารถโหลดข้อมูลค่าบริการได้ กรุณาลองใหม่",
+      "preview_only": "ข้อมูลประมาณการเท่านั้น ยังไม่ใช่ใบแจ้งหนี้และยังไม่มีการเรียกเก็บเงินจริง",
+      "sales": "ยอดขายสินค้า Delivery",
+      "threshold": "ยอดเพดาน Delivery",
+      "fee": "ค่าบริการประมาณการ",
+      "mode": "รูปแบบค่าบริการ",
+      "modes": {
+        "trial_free": "เดือนแรกฟรีค่ารายเดือน",
+        "fixed_monthly": "ค่าบริการรายเดือน",
+        "delivery_share": "ส่วนแบ่งยอด Delivery"
+      },
+      "breakdown": "รายละเอียดการคำนวณ",
+      "trigger": "ยอด Delivery ถึงเกณฑ์ครั้งแรกวันที่ {date}",
+      "not_triggered": "ยอด Delivery ยังไม่ถึงเกณฑ์",
+      "rate": "อัตราส่วนแบ่ง Delivery {rate}%",
+      "slip_unlimited": "สิทธิ์ตรวจสลิป: ไม่จำกัดเมื่อถึงเพดาน",
+      "slip_limit": "สิทธิ์ตรวจสลิป: {quota} ครั้งต่อเดือนก่อนถึงเพดาน",
+      "projected_fee": "ค่ารายเดือนที่คาดว่าจะเรียกเก็บเมื่อปิดรอบ {amount}",
+      "date": "วันที่",
+      "kind": "ประเภทการคำนวณ",
+      "base": "ฐานคำนวณ",
+      "amount": "ค่าบริการ",
+      "kinds": {
+        "fixed_monthly": "ค่ารายเดือน",
+        "delivery_threshold": "วันที่ถึงเพดาน",
+        "delivery_daily": "ส่วนแบ่งรายวัน"
+      },
+      "no_rows": "ยังไม่มีรายการคำนวณ",
+      "not_invoice": "นี่เป็นเพียงรายงานประมาณการ ไม่ใช่ใบเรียกเก็บหรือหลักฐานการชำระ"
+    },
     "hybrid_billing": {
       "title": "ตั้งค่าค่าบริการ Hybrid Billing",
       "description": "ร้านสมัครใหม่จ่ายค่ารายเดือนหรือส่วนแบ่งยอด Delivery อย่างใดอย่างหนึ่งเท่านั้น",
@@ -6595,6 +6632,43 @@
     }
   },
   "en": {
+    "hybrid_report": {
+      "title": "Hybrid Billing report",
+      "subtitle": "Trusted paid Delivery sales and monthly pricing estimate",
+      "back": "Home",
+      "month": "Billing month",
+      "refresh": "Refresh",
+      "loading": "Loading billing preview…",
+      "error": "Cannot load the billing estimate. Please try again.",
+      "preview_only": "Estimate only: charges are not issued, and no payment has been collected.",
+      "sales": "Delivery merchandise sales",
+      "threshold": "Delivery threshold",
+      "fee": "Estimated monthly charge",
+      "mode": "Billing model",
+      "modes": {
+        "trial_free": "First-month fee waiver",
+        "fixed_monthly": "Fixed monthly fee",
+        "delivery_share": "Delivery percentage"
+      },
+      "breakdown": "Calculation breakdown",
+      "trigger": "Delivery threshold first reached on {date}",
+      "not_triggered": "Delivery threshold not reached",
+      "rate": "Delivery share rate: {rate}%",
+      "slip_unlimited": "Slip verification entitlement: unlimited after threshold",
+      "slip_limit": "Slip verification entitlement: {quota} checks/month before threshold",
+      "projected_fee": "Projected fixed fee at month close: {amount}",
+      "date": "Date",
+      "kind": "Calculation type",
+      "base": "Calculation base",
+      "amount": "Amount",
+      "kinds": {
+        "fixed_monthly": "Monthly fixed fee",
+        "delivery_threshold": "Threshold crossing",
+        "delivery_daily": "Daily Delivery share"
+      },
+      "no_rows": "No calculated charges",
+      "not_invoice": "This is a calculation preview only. It is not a payment request or proof of payment."
+    },
     "hybrid_billing": {
       "title": "Hybrid Billing settings",
       "description": "New tenants pay a monthly fee or a percentage of Delivery sales, never both.",
@@ -12915,6 +12989,43 @@
     }
   },
   "my": {
+    "hybrid_report": {
+      "title": "Hybrid Billing အစီရင်ခံစာ",
+      "subtitle": "ငွေပေးချေပြီးသော Delivery ရောင်းအားမှ ဝန်ဆောင်ခခန့်မှန်းချက်",
+      "back": "ပင်မစာမျက်နှာ",
+      "month": "လ",
+      "refresh": "ပြန်ဖွင့်",
+      "loading": "Loading billing preview…",
+      "error": "Cannot load the billing estimate. Please try again.",
+      "preview_only": "ဤသည်မှာ ခန့်မှန်းချက်သာဖြစ်ပြီး ငွေတောင်းခံလွှာ မဟုတ်ပါ",
+      "sales": "Delivery ရောင်းအား",
+      "threshold": "Delivery သတ်မှတ်ချက်",
+      "fee": "ခန့်မှန်းထားသော ဝန်ဆောင်ခ",
+      "mode": "Billing model",
+      "modes": {
+        "trial_free": "First-month fee waiver",
+        "fixed_monthly": "Fixed monthly fee",
+        "delivery_share": "Delivery percentage"
+      },
+      "breakdown": "Calculation breakdown",
+      "trigger": "Delivery threshold first reached on {date}",
+      "not_triggered": "Delivery threshold not reached",
+      "rate": "Delivery share rate: {rate}%",
+      "slip_unlimited": "Slip verification entitlement: unlimited after threshold",
+      "slip_limit": "Slip verification entitlement: {quota} checks/month before threshold",
+      "projected_fee": "Projected fixed fee at month close: {amount}",
+      "date": "Date",
+      "kind": "Calculation type",
+      "base": "Calculation base",
+      "amount": "Amount",
+      "kinds": {
+        "fixed_monthly": "Monthly fixed fee",
+        "delivery_threshold": "Threshold crossing",
+        "delivery_daily": "Daily Delivery share"
+      },
+      "no_rows": "No calculated charges",
+      "not_invoice": "This is a calculation preview only. It is not a payment request or proof of payment."
+    },
     "hybrid_billing": {
       "title": "Hybrid Billing ပြင်ဆင်မှု",
       "description": "New tenants pay a monthly fee or a percentage of Delivery sales, never both.",
@@ -19235,6 +19346,43 @@
     }
   },
   "lo": {
+    "hybrid_report": {
+      "title": "ລາຍງານ Hybrid Billing",
+      "subtitle": "ປະເມີນຄ່າຈາກຍອດ Delivery ທີ່ຊຳລະແລ້ວ",
+      "back": "ກັບໜ້າຫຼັກ",
+      "month": "ເດືອນ",
+      "refresh": "ໂຫຼດໃໝ່",
+      "loading": "Loading billing preview…",
+      "error": "Cannot load the billing estimate. Please try again.",
+      "preview_only": "ເປັນພຽງການປະເມີນ ບໍ່ແມ່ນໃບເກັບເງິນ",
+      "sales": "ຍອດ Delivery",
+      "threshold": "ເກນ Delivery",
+      "fee": "ຄ່າປະເມີນ",
+      "mode": "Billing model",
+      "modes": {
+        "trial_free": "First-month fee waiver",
+        "fixed_monthly": "Fixed monthly fee",
+        "delivery_share": "Delivery percentage"
+      },
+      "breakdown": "Calculation breakdown",
+      "trigger": "Delivery threshold first reached on {date}",
+      "not_triggered": "Delivery threshold not reached",
+      "rate": "Delivery share rate: {rate}%",
+      "slip_unlimited": "Slip verification entitlement: unlimited after threshold",
+      "slip_limit": "Slip verification entitlement: {quota} checks/month before threshold",
+      "projected_fee": "Projected fixed fee at month close: {amount}",
+      "date": "Date",
+      "kind": "Calculation type",
+      "base": "Calculation base",
+      "amount": "Amount",
+      "kinds": {
+        "fixed_monthly": "Monthly fixed fee",
+        "delivery_threshold": "Threshold crossing",
+        "delivery_daily": "Daily Delivery share"
+      },
+      "no_rows": "No calculated charges",
+      "not_invoice": "This is a calculation preview only. It is not a payment request or proof of payment."
+    },
     "hybrid_billing": {
       "title": "ຕັ້ງຄ່າ Hybrid Billing",
       "description": "New tenants pay a monthly fee or a percentage of Delivery sales, never both.",
@@ -25555,6 +25703,43 @@
     }
   },
   "km": {
+    "hybrid_report": {
+      "title": "របាយការណ៍ Hybrid Billing",
+      "subtitle": "ការប៉ាន់ស្មានពីការលក់ Delivery ដែលបានទូទាត់",
+      "back": "ទំព័រដើម",
+      "month": "ខែ",
+      "refresh": "ផ្ទុកឡើងវិញ",
+      "loading": "Loading billing preview…",
+      "error": "Cannot load the billing estimate. Please try again.",
+      "preview_only": "នេះជាការប៉ាន់ស្មាន មិនមែនជាវិក្កយបត្រ",
+      "sales": "ការលក់ Delivery",
+      "threshold": "កម្រិត Delivery",
+      "fee": "ថ្លៃប៉ាន់ស្មាន",
+      "mode": "Billing model",
+      "modes": {
+        "trial_free": "First-month fee waiver",
+        "fixed_monthly": "Fixed monthly fee",
+        "delivery_share": "Delivery percentage"
+      },
+      "breakdown": "Calculation breakdown",
+      "trigger": "Delivery threshold first reached on {date}",
+      "not_triggered": "Delivery threshold not reached",
+      "rate": "Delivery share rate: {rate}%",
+      "slip_unlimited": "Slip verification entitlement: unlimited after threshold",
+      "slip_limit": "Slip verification entitlement: {quota} checks/month before threshold",
+      "projected_fee": "Projected fixed fee at month close: {amount}",
+      "date": "Date",
+      "kind": "Calculation type",
+      "base": "Calculation base",
+      "amount": "Amount",
+      "kinds": {
+        "fixed_monthly": "Monthly fixed fee",
+        "delivery_threshold": "Threshold crossing",
+        "delivery_daily": "Daily Delivery share"
+      },
+      "no_rows": "No calculated charges",
+      "not_invoice": "This is a calculation preview only. It is not a payment request or proof of payment."
+    },
     "hybrid_billing": {
       "title": "កំណត់ Hybrid Billing",
       "description": "New tenants pay a monthly fee or a percentage of Delivery sales, never both.",

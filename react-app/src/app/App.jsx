@@ -14,6 +14,7 @@ import { AdminUsersPage } from "@/pages/AdminUsersPage";
 import { AdminSalesReportPage } from "@/pages/AdminSalesReportPage";
 import { AdminQrPage } from "@/pages/AdminQrPage";
 import { RevenueShareReportPage } from "@/pages/RevenueShareReportPage";
+import { HybridBillingReportPage } from "@/pages/HybridBillingReportPage";
 import { KitchenPage } from "@/pages/KitchenPage";
 import { CashierPage } from "@/pages/CashierPage";
 import { CashierReceiptPage } from "@/pages/CashierReceiptPage";
@@ -124,8 +125,11 @@ function RevenueShareSuspensionGuard({ children }) {
   const tenant = tenantState.tenant;
   const suspended = tenant?.revenueShareSuspended === true
     && (tenant?.revenueShareEnabled === true || tenant?.billingMode === "revenue_share");
+  const hybridSuspended = tenant?.billingPolicyVersion === "hybrid_v1"
+    && tenant?.hybridBillingSuspended === true;
   const ownerAdmin = ["owner", "admin"].includes(profile?.role);
   const reportPath = location.pathname === "/reports/revenue-share" || location.pathname === "/admin/revenue-share";
+  const hybridReportPath = location.pathname === "/reports/hybrid-billing";
   const tenantErrorCode = String(tenantState.error?.code || tenantState.error?.message || "");
   const loginReason = tenantErrorCode.includes("TENANT_SUBSCRIPTION_EXPIRED")
     ? "subscription_expired"
@@ -137,6 +141,11 @@ function RevenueShareSuspensionGuard({ children }) {
 
   if (profile && profile.role !== "super_admin" && tenantState.status === "error" && loginReason) {
     return <TenantAccessLoginRedirect reason={loginReason} />;
+  }
+
+  if (authState.status === "ready" && tenantState.status === "ready" && ownerAdmin
+    && hybridSuspended && !hybridReportPath && tenantProtectedPath(location.pathname)) {
+    return <Navigate to="/reports/hybrid-billing" replace state={{ hybridBillingSuspended: true, from: location.pathname }} />;
   }
 
   if (authState.status === "ready" && tenantState.status === "ready" && ownerAdmin && suspended && !reportPath && tenantProtectedPath(location.pathname)) {
@@ -160,6 +169,7 @@ export default function App() {
       <Route path="/admin/qr" element={<AdminQrPage />} />
       <Route path="/admin/revenue-share" element={<RevenueShareReportPage />} />
       <Route path="/reports/revenue-share" element={<RevenueShareReportPage />} />
+      <Route path="/reports/hybrid-billing" element={<HybridBillingReportPage />} />
       <Route path="/kitchen" element={<KitchenPage />} />
       <Route path="/cashier" element={<CashierPage />} />
       <Route path="/cashier/quick-order" element={<QuickOrderPage />} />

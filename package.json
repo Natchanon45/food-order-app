@@ -25,7 +25,7 @@
     "test:admin-store-layout": "node --test tests/react-parity/admin-store-settings-layout.spec.mjs",
     "test:global-initial-readiness": "node --test tests/react-parity/global-initial-readiness.spec.mjs",
     "test:signup-billing-revenue-share": "node --test tests/react-parity/signup-billing-revenue-share.spec.mjs",
-    "test:hybrid-billing": "node --test tests/react-parity/hybrid-billing.spec.mjs",
+    "test:hybrid-billing": "node --test tests/react-parity/hybrid-billing.spec.mjs tests/react-parity/hybrid-billing-orders.spec.mjs tests/react-parity/hybrid-billing-report.spec.mjs",
     "test:operational": "node tools/operational-orders-contract.mjs",
     "test:react-migration": "node tools/react-migration-coverage.mjs",
     "test:react-parity-matrix": "node tools/react-parity-matrix.mjs",

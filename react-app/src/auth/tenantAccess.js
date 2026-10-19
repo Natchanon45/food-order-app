@@ -22,6 +22,9 @@ export function revenueShareSuspended(tenant = {}) {
 }
 
 export function effectiveSubscriptionStatus(tenant = {}, now = new Date()) {
+  if (tenant.billingPolicyVersion === "hybrid_v1") {
+    return tenant.hybridBillingSuspended === true ? "hybrid_billing_suspended" : "hybrid_billing_active";
+  }
   if (revenueShareEnabled(tenant)) {
     return tenant.revenueShareSuspended === true ? "revenue_share_suspended" : "revenue_share_active";
   }
@@ -45,6 +48,16 @@ export function effectiveSubscriptionStatus(tenant = {}, now = new Date()) {
 }
 
 export function tenantAccessDecision(tenant = {}, role = "", now = new Date()) {
+  if (tenant.billingPolicyVersion === "hybrid_v1") {
+    if (tenant.hybridBillingSuspended === true) {
+      const allowed = ["owner", "admin"].includes(String(role || ""));
+      return { allowed, status: "hybrid_billing_suspended",
+        code: allowed ? "" : "TENANT_INACTIVE" };
+    }
+    return tenant.active === false
+      ? { allowed: false, status: "inactive", code: "TENANT_INACTIVE" }
+      : { allowed: true, status: "hybrid_billing_active", code: "" };
+  }
   if (revenueShareEnabled(tenant)) {
     if (tenant.revenueShareSuspended === true) {
       const allowed = ["owner", "admin"].includes(String(role || ""));

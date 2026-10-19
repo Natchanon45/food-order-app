@@ -4,6 +4,15 @@ Updated: 2026-10-10
 Project: Food Order / Delivery / Retail POS
 Repository: `Natchanon45/food-order-app`
 
+## 2026-10-19 — Hybrid Billing phase 2 paid Delivery calculation preview (.526), candidate only
+
+- Follow from phase1 commit `886ca7e3` in food-order-app feature/react-firebase-port. User directs work **only** in this repository. Preserve 21+ historical untracked JS bundles; no reset/clean.
+- Added trusted paid Delivery order merchandise mapping `functions/hybrid-billing-orders.js`, protected read-only `getTenantHybridBillingPreview` callable `functions/hybrid-billing-preview.js` and index registration. Base = paid server-stamped Delivery-only minus shipping/refunds, no POS or unpaid orders.
+- New `/reports/hybrid-billing` authenticated monthly preview page and dashboard card; 5 locale texts/CSS/physical entrypoint/parity route registry. Tenant guards preserve Owner/Admin billing report during **future** hybrid suspension while excluding staff. No actual suspension flag writer yet.
+- Candidate release Version **0.4.296** Build **2026.10.19.526**. Production is still Version 0.4.294 / Build .524. `HYBRID_REGISTRATION_READY=false` remains. Do NOT deploy: this is read-only billing estimate, no issued invoices or collection.
+- Added `docs/HYBRID_BILLING_NEXT_CHAT_PROMPT.md` with a complete copy/paste command to continue in a fresh chat, and updated `docs/HYBRID_BILLING_IMPLEMENTATION.md` with the next steps. Read both first in new chat.
+- Open phase3 tasks: server-side immutable invoice/payment-ledger and day-by-day posting, Slip2Go+manual confirmation, next-day restriction/recovery, slip quota, Rules, staging/UAT and rollout approval. No production tenant/order/payment writes or Firebase Deploy.
+
 ## 2026-10-19 — Hybrid Billing phase 1 guarded candidate, DO NOT DEPLOY (.525)
 
 - User scoped work exclusively to food-order-app; old Git main/feature and remotes were synced at f3bf467b before starting. Historic 21 untracked JS bundles preserved.

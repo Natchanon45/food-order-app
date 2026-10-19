@@ -3,7 +3,7 @@
 Current development branch: `feature/react-firebase-port`
 Current milestone: React + Firebase parity migration / Super Admin Console
 Current PENGUIN production release: Version 0.4.294 • Build 2026.10.18.524
-Hybrid Billing DEV candidate (NOT deployable yet): Version 0.4.295 • Build 2026.10.19.525; awaiting invoice/payment/suspension and Slip2Go quota integration. (Restore floating Developer Panel button on every interactive POS page; Hosting deployed 2026-10-18)
+Hybrid Billing DEV candidate (NOT deployable yet): Version 0.4.296 • Build 2026.10.19.526; registration guarded OFF; paid Delivery read-only estimate added; invoice/payment/suspension/Slip2Go quota pending. (Restore floating Developer Panel button on every interactive POS page; Hosting deployed 2026-10-18)
 Primary production Hosting: `https://penguin-food.web.app` (legacy `https://natchanon-food-order-delivery.web.app` retained for transition only)
 
 > New Chat / continuation: read `STRUCTURE.md`, `docs/NEXT_CHAT_HANDOFF.md`, and `docs/WORKLOG.md` before changing code.

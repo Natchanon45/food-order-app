@@ -4923,6 +4923,24 @@
       "notes": []
     },
     {
+      "route": "/reports/hybrid-billing",
+      "group": "reports",
+      "priority": "P1",
+      "laravelView": null,
+      "verificationStatus": "inventory_pending",
+      "requiredDimensions": {
+        "routeAccess": "pending",
+        "visual": "pending",
+        "actions": "pending",
+        "dataSideEffects": "pending",
+        "failurePaths": "pending",
+        "languages": "pending",
+        "responsive": "pending"
+      },
+      "actionInventory": [],
+      "notes": ["New read-only Hybrid Billing report; no Laravel legacy view"]
+    },
+    {
       "route": "/reports/revenue-share",
       "group": "reports",
       "priority": "P1",

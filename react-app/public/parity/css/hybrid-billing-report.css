@@ -1,0 +1,22 @@
+/* Hybrid invoice preview (read-only candidate). No payment action is exposed. */
+.hybrid-report-shell{width:min(1180px,calc(100% - 24px))}
+.hybrid-report-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:15px}
+.hybrid-report-toolbar label{font-weight:800}
+.hybrid-report-toolbar input{min-width:165px;min-height:42px;border:1px solid #d7e5dd;border-radius:10px;padding:7px 10px}
+.hybrid-report-toolbar .btn{display:inline-flex;align-items:center;gap:8px}
+.hybrid-report-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.hybrid-report-metric{padding:17px;display:flex;flex-direction:column;gap:9px;min-width:0}
+.hybrid-report-metric small{color:#5e7367;font-weight:700}
+.hybrid-report-metric strong{font-size:21px;color:#10532f;overflow-wrap:anywhere}
+.hybrid-report-details{display:grid;gap:12px;padding:18px}
+.hybrid-report-details h2{font-size:19px;margin:0}
+.hybrid-report-details p{margin:0}
+.hybrid-report-notice{padding:12px;border-radius:12px;background:#f3faf5;border:1px solid #d7ebdb;color:#1e5737}
+.hybrid-report-table-scroll{max-width:100%;overflow-x:auto}
+.hybrid-report-table-scroll table{border-collapse:collapse;width:100%;min-width:540px;text-align:left}
+.hybrid-report-table-scroll th,.hybrid-report-table-scroll td{padding:11px;border-bottom:1px solid #dcebe0}
+.hybrid-report-table-scroll th{background:#f4fbf5}
+.hybrid-report-status{padding:16px}
+.hybrid-report-status.error{color:#aa2424}
+@media(max-width:760px){.hybrid-report-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.hybrid-report-metric strong{font-size:18px}}
+@media(max-width:390px){.hybrid-report-metrics{grid-template-columns:minmax(0,1fr)}.hybrid-report-toolbar input{flex:1 1 170px;min-width:0}}

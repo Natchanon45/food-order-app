@@ -373,6 +373,14 @@
       "target": "react"
     },
     {
+      "route": "/reports/hybrid-billing",
+      "group": "reports",
+      "firebaseHtml": "reports/hybrid-billing/index.html",
+      "laravelView": null,
+      "status": "pending",
+      "target": "react"
+    },
+    {
       "route": "/reports/revenue-share",
       "group": "reports",
       "firebaseHtml": "reports/revenue-share/index.html",

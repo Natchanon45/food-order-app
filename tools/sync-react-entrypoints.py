@@ -55,6 +55,7 @@ TARGETS = [
     "public/platform/contact/index.html",
     "public/platform/pricing/index.html",
     "public/reports/revenue-share/index.html",
+    "public/reports/hybrid-billing/index.html",
     "public/super-admin/saas-setup/index.html",
 ]
 

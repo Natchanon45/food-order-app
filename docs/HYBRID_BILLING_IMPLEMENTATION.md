@@ -1,6 +1,6 @@
-# PENGUIN Hybrid Billing — phase 1 candidate (.525)
+# PENGUIN Hybrid Billing — phase 2 read-only candidate (.526)
 
-Status: **NOT PRODUCTION-READY, DO NOT DEPLOY**. This repository contains the isolated billing calculation, Super Admin settings and React registration candidate. Registration is deliberately **fail-closed** while server-side invoicing, confirmed payment review, access suspension and slip quota are unfinished.
+Status: **NOT PRODUCTION-READY, DO NOT DEPLOY**. This repository contains the isolated billing calculator, trusted paid Delivery sales reader, a read-only authenticated monthly report, Super Admin settings and React registration candidate. Registration is deliberately **fail-closed** while server-side invoicing, confirmed payment review, access suspension and slip quota are unfinished.
 
 ## Confirmed user rules
 
@@ -42,3 +42,15 @@ npm run verify:react-build
 ```
 
 **Do not run `firebase deploy` yet.** Candidate registration is fail-closed and has no operational payment engine. Production Hosting remains Version 0.4.294 Build 2026.10.18.524.
+
+
+## Phase 2 progress — 2026-10-19 / candidate Build .526
+
+- `functions/hybrid-billing-orders.js`: trusted server-side paid Delivery mapping, requires `orderType=delivery`, `paymentStatus=paid`, Firestore Timestamp `paidAt`; ignores non-Delivery and unpaid orders; excludes shipping, cancelled/refunded and deducts partial refunds; fails closed for malformed payment data.
+- `functions/hybrid-billing-preview.js`: callable `getTenantHybridBillingPreview` for tenant owner/admin (or Super Admin explicit tenant); paginates Firestore `tenants/{id}/orders` by authoritative `paidAt` timestamp for Bangkok month; enforces tenant boundary; maximum scan 50,000 paidAt documents to fail rather than show incomplete fees. Reads immutable `hybridBillingPeriods/{YYYY-MM}.configSnapshot` if present; otherwise estimates using first-month signup snapshot or live admin settings. **Read only**; does not issue invoices, mark paid or suspend.
+- Frontend: `/reports/hybrid-billing` new Read-only report accessible from Hybrid tenant Home Dashboard; displays Delivery sales, configured threshold, fee mode, fee estimate, month invoices projection, quota entitlement. New physical HTML entrypoint in Vite sync and parity route registry. All UI explicitly states **this is not an invoice/payment receipt**.
+- `react-app/src/auth/tenantAccess.js`, `react-app/src/app/App.jsx`: if future `hybridBillingSuspended` flag is true, owner/admin retains billing report access and is redirected from operational routes, while non-billing staff is denied; ordinary admin-disable remains denied. Legacy subscription/revenue share paths unchanged. **No writer currently changes hybridBillingSuspended**.
+- Tests `tests/react-parity/hybrid-billing-orders.spec.mjs` and `hybrid-billing-report.spec.mjs` added and wired to full npm parity suite; pure calculator/sales/preview/UI-access suite runs **34/34 PASS** before final full parity checks.
+- New-chat continuation prompt: `docs/HYBRID_BILLING_NEXT_CHAT_PROMPT.md`. Use this before asking the user to repeat requirements.
+
+**Unfinished and non-negotiable release gates:** This remains a candidate only, because immutable issued invoices, real day-close settlement, bank slip/Slip2Go verification, manual approval, payment arrears, idempotent suspension/recovery, true Slip2Go verification quota, Rules / Storage and end-to-end UAT are not implemented. `HYBRID_REGISTRATION_READY=false` must stay false. Do not deploy Hosting or Functions to production until those exist.

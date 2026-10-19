@@ -331,6 +331,21 @@ export function HomePage() {
             </div>
           </section> : null}
 
+          {tenant?.billingPolicyVersion === "hybrid_v1" ? (
+            <section className="dashboard-section" aria-labelledby="hybridReportTitle">
+              <div className="dashboard-section-head">
+                <h2 id="hybridReportTitle">{t("hybrid_report.title")}</h2>
+                <p>{t("hybrid_report.subtitle")}</p>
+              </div>
+              <div className="nav-cards">
+                <DashboardCard profile={profile} tenant={tenant} roles={["owner", "admin"]}
+                  href="/reports/hybrid-billing" cardKey="hybrid_billing"
+                  icon="bi bi-graph-up-arrow app-icon" label={t("hybrid_report.title")}
+                  description={t("hybrid_report.subtitle")} />
+              </div>
+            </section>
+          ) : null}
+
           {revenueShareEnabled ? (
             <section className="dashboard-section" aria-labelledby="centralReportsTitle" data-revenue-share-section>
               <div className="dashboard-section-head">
