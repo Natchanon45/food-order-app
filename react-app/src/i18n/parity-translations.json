@@ -1,5 +1,18 @@
 {
   "th": {
+    "hybrid_billing": {
+      "title": "ตั้งค่าค่าบริการ Hybrid Billing",
+      "description": "ร้านสมัครใหม่จ่ายค่ารายเดือนหรือส่วนแบ่งยอด Delivery อย่างใดอย่างหนึ่งเท่านั้น",
+      "monthly": "ค่าบริการรายเดือน (บาท)",
+      "threshold": "เพดาน Delivery สะสม (บาท)",
+      "rate": "ส่วนแบ่ง Delivery (%)",
+      "quota": "โควตาตรวจสลิปก่อนถึงเพดาน",
+      "save": "บันทึกค่า Hybrid Billing",
+      "saved": "บันทึกค่าบริการสำเร็จ",
+      "failed": "ไม่สามารถโหลดหรือบันทึกค่าบริการ Hybrid Billing",
+      "legacy": "ตั้งค่าราคาส่วนล่างสำหรับลูกค้าที่ใช้ Subscription เดิมเท่านั้น",
+      "first_month": "เดือนแรกฟรีค่ารายเดือน แต่ถ้า Delivery ถึงเกณฑ์ จะเริ่มคิดเปอร์เซ็นต์ทันที"
+    },
     "admin": {
       "opening_hours": {
         "title": "วันและเวลาเปิดทำการ",
@@ -899,6 +912,30 @@
         }
       },
       "register": {
+        "hybrid": {
+          "title": "ค่าบริการ PENGUIN อัตโนมัติ",
+          "description": "เลือก POS, Delivery หรือทั้งสองบริการ ระบบจะคิดค่าบริการตามยอด Delivery สะสม",
+          "first_month_title": "เดือนแรกฟรีค่าบริการรายเดือน",
+          "first_month_detail": "หากยอด Delivery ถึงเกณฑ์ในเดือนแรก จะเรียกเก็บส่วนแบ่งทันที",
+          "flat_amount": "ค่าบริการรายเดือน {amount} บาท",
+          "flat_detail": "เก็บเมื่อยอด Delivery สะสมในเดือนไม่ถึง {threshold} บาท",
+          "share_amount": "ส่วนแบ่ง Delivery {rate}%",
+          "share_detail": "เมื่อสะสมถึง {threshold} บาท ครั้งแรกคิดจากเพดานเท่านั้น วันถัดไปคิดเฉพาะยอด Delivery รายวัน",
+          "slip_title": "ตรวจสอบสลิป",
+          "slip_detail": "ก่อนถึงเกณฑ์ {quota} ครั้งต่อเดือน ถึงเกณฑ์แล้วไม่จำกัด",
+          "payment_disclosure": "แต่ละเดือนคิดค่ารายเดือนหรือส่วนแบ่งอย่างเดียว ไม่คิดซ้ำ หากค้างส่วนแบ่ง วันถัดไปจะระงับระบบจนชำระครบ",
+          "pricing_unavailable": "ไม่สามารถโหลดค่าบริการปัจจุบัน กรุณาลองสมัครใหม่อีกครั้ง",
+          "rollout_pending": "ระบบกำลังเตรียมเปิดรับสมัครแบบ Hybrid Billing กรุณารอการเปิดใช้งานอย่างเป็นทางการ",
+          "activated": "เปิดใช้งานร้านสำเร็จ",
+          "aside_badge": "คิดค่าบริการอัตโนมัติ",
+          "aside_title": "จ่ายเพียงรูปแบบเดียว",
+          "aside_detail": "เดือนแรกฟรีค่ารายเดือน แต่ยอด Delivery ถึงเพดานจะคิดส่วนแบ่ง",
+          "flat_label": "ค่ารายเดือน",
+          "threshold_label": "เพดาน Delivery",
+          "share_label": "อัตราส่วนแบ่ง",
+          "quota_label": "โควตาสลิป",
+          "one_mode": "คิดรายเดือนหรือเปอร์เซ็นต์เพียงอย่างเดียว"
+        },
         "title": "ลงทะเบียนเปิดร้าน",
         "home": "หน้าหลัก",
         "hero_title": "เลือกรูปแบบบริการที่เหมาะกับธุรกิจของคุณ",
@@ -6558,6 +6595,19 @@
     }
   },
   "en": {
+    "hybrid_billing": {
+      "title": "Hybrid Billing settings",
+      "description": "New tenants pay a monthly fee or a percentage of Delivery sales, never both.",
+      "monthly": "Monthly fee (THB)",
+      "threshold": "Delivery threshold (THB)",
+      "rate": "Delivery share rate (%)",
+      "quota": "Slip checks before threshold",
+      "save": "Save Hybrid Billing",
+      "saved": "Hybrid Billing saved",
+      "failed": "Could not load/save Hybrid Billing settings",
+      "legacy": "The legacy pricing controls below remain for existing subscription accounts only.",
+      "first_month": "First month waives the fixed fee; reaching the Delivery threshold still incurs share."
+    },
     "admin": {
       "opening_hours": {
         "title": "Opening days and hours",
@@ -7457,6 +7507,30 @@
         }
       },
       "register": {
+        "hybrid": {
+          "title": "PENGUIN automatic billing",
+          "description": "Choose POS, Delivery, or both. Pricing changes automatically with cumulative Delivery sales.",
+          "first_month_title": "First month: fixed fee waived",
+          "first_month_detail": "Delivery percentage is charged from the threshold even in the first month.",
+          "flat_amount": "Monthly fee {amount} THB",
+          "flat_detail": "Applies if monthly Delivery sales stay below {threshold} THB.",
+          "share_amount": "Delivery share {rate}%",
+          "share_detail": "At {threshold} THB the first fee uses only the threshold; later days use daily Delivery sales.",
+          "slip_title": "Slip verification",
+          "slip_detail": "{quota} verifications/month below the threshold, unlimited after reaching it.",
+          "payment_disclosure": "Only one billing model per month. Unpaid daily Delivery share suspends access the next day until paid.",
+          "pricing_unavailable": "Cannot load current billing settings. Please retry registration later.",
+          "rollout_pending": "Hybrid Billing registration is being prepared. Please wait for the official launch.",
+          "activated": "Store activated successfully.",
+          "aside_badge": "Automatic billing",
+          "aside_title": "One billing method per month",
+          "aside_detail": "Monthly fee waived in month one; Delivery share can still apply.",
+          "flat_label": "Monthly fee",
+          "threshold_label": "Delivery threshold",
+          "share_label": "Delivery rate",
+          "quota_label": "Slip quota",
+          "one_mode": "Monthly fixed fee OR Delivery share—not both."
+        },
         "title": "Register your store",
         "home": "Home",
         "hero_title": "Choose the service model that fits your business",
@@ -12841,6 +12915,19 @@
     }
   },
   "my": {
+    "hybrid_billing": {
+      "title": "Hybrid Billing ပြင်ဆင်မှု",
+      "description": "New tenants pay a monthly fee or a percentage of Delivery sales, never both.",
+      "monthly": "Monthly fee (THB)",
+      "threshold": "Delivery threshold (THB)",
+      "rate": "Delivery share rate (%)",
+      "quota": "Slip checks before threshold",
+      "save": "Save Hybrid Billing",
+      "saved": "Hybrid Billing saved",
+      "failed": "Could not load/save Hybrid Billing settings",
+      "legacy": "The legacy pricing controls below remain for existing subscription accounts only.",
+      "first_month": "First month waives the fixed fee; reaching the Delivery threshold still incurs share."
+    },
     "admin": {
       "opening_hours": {
         "title": "ဆိုင်ဖွင့်ရက်နှင့် အချိန်",
@@ -13740,6 +13827,30 @@
         }
       },
       "register": {
+        "hybrid": {
+          "title": "PENGUIN အလိုအလျောက် ဝန်ဆောင်ခ",
+          "description": "Choose POS, Delivery, or both. Pricing changes automatically with cumulative Delivery sales.",
+          "first_month_title": "ပထမလ လစဉ်ကြေး အခမဲ့",
+          "first_month_detail": "Delivery percentage is charged from the threshold even in the first month.",
+          "flat_amount": "Monthly fee {amount} THB",
+          "flat_detail": "Applies if monthly Delivery sales stay below {threshold} THB.",
+          "share_amount": "Delivery ဝေစု {rate}%",
+          "share_detail": "At {threshold} THB the first fee uses only the threshold; later days use daily Delivery sales.",
+          "slip_title": "Slip verification",
+          "slip_detail": "{quota} verifications/month below the threshold, unlimited after reaching it.",
+          "payment_disclosure": "Only one billing model per month. Unpaid daily Delivery share suspends access the next day until paid.",
+          "pricing_unavailable": "Cannot load current billing settings. Please retry registration later.",
+          "rollout_pending": "Hybrid Billing မှတ်ပုံတင်ခြင်းကို ပြင်ဆင်နေဆဲဖြစ်သည်။ ဖွင့်လှစ်မည့်အချိန်ကို စောင့်ပါ။",
+          "activated": "Store activated successfully.",
+          "aside_badge": "Automatic billing",
+          "aside_title": "One billing method per month",
+          "aside_detail": "Monthly fee waived in month one; Delivery share can still apply.",
+          "flat_label": "Monthly fee",
+          "threshold_label": "Delivery threshold",
+          "share_label": "Delivery rate",
+          "quota_label": "Slip quota",
+          "one_mode": "Monthly fixed fee OR Delivery share—not both."
+        },
         "title": "သင်၏စတိုးဆိုင်ကိုမှတ်ပုံတင်ပါ။",
         "home": "အိမ်",
         "hero_title": "သင့်လုပ်ငန်းနှင့် ကိုက်ညီသော ဝန်ဆောင်မှုပုံစံကို ရွေးချယ်ပါ",
@@ -19124,6 +19235,19 @@
     }
   },
   "lo": {
+    "hybrid_billing": {
+      "title": "ຕັ້ງຄ່າ Hybrid Billing",
+      "description": "New tenants pay a monthly fee or a percentage of Delivery sales, never both.",
+      "monthly": "Monthly fee (THB)",
+      "threshold": "Delivery threshold (THB)",
+      "rate": "Delivery share rate (%)",
+      "quota": "Slip checks before threshold",
+      "save": "Save Hybrid Billing",
+      "saved": "Hybrid Billing saved",
+      "failed": "Could not load/save Hybrid Billing settings",
+      "legacy": "The legacy pricing controls below remain for existing subscription accounts only.",
+      "first_month": "First month waives the fixed fee; reaching the Delivery threshold still incurs share."
+    },
     "admin": {
       "opening_hours": {
         "title": "ມື້ ແລະ ເວລາເປີດຮ້ານ",
@@ -20023,6 +20147,30 @@
         }
       },
       "register": {
+        "hybrid": {
+          "title": "ຄ່າບໍລິການ PENGUIN ອັດຕະໂນມັດ",
+          "description": "Choose POS, Delivery, or both. Pricing changes automatically with cumulative Delivery sales.",
+          "first_month_title": "ເດືອນທຳອິດ ຟຣີຄ່າລາຍເດືອນ",
+          "first_month_detail": "Delivery percentage is charged from the threshold even in the first month.",
+          "flat_amount": "Monthly fee {amount} THB",
+          "flat_detail": "Applies if monthly Delivery sales stay below {threshold} THB.",
+          "share_amount": "ສ່ວນແບ່ງ Delivery {rate}%",
+          "share_detail": "At {threshold} THB the first fee uses only the threshold; later days use daily Delivery sales.",
+          "slip_title": "Slip verification",
+          "slip_detail": "{quota} verifications/month below the threshold, unlimited after reaching it.",
+          "payment_disclosure": "Only one billing model per month. Unpaid daily Delivery share suspends access the next day until paid.",
+          "pricing_unavailable": "Cannot load current billing settings. Please retry registration later.",
+          "rollout_pending": "ກຳລັງກະກຽມເປີດລົງທະບຽນ Hybrid Billing ກະລຸນາລໍຖ້າ",
+          "activated": "Store activated successfully.",
+          "aside_badge": "Automatic billing",
+          "aside_title": "One billing method per month",
+          "aside_detail": "Monthly fee waived in month one; Delivery share can still apply.",
+          "flat_label": "Monthly fee",
+          "threshold_label": "Delivery threshold",
+          "share_label": "Delivery rate",
+          "quota_label": "Slip quota",
+          "one_mode": "Monthly fixed fee OR Delivery share—not both."
+        },
         "title": "ລົງທະບຽນຮ້ານຂອງທ່ານ",
         "home": "ບ້ານ",
         "hero_title": "ເລືອກຮູບແບບບໍລິການທີ່ເໝາະກັບທຸລະກິດຂອງທ່ານ",
@@ -25407,6 +25555,19 @@
     }
   },
   "km": {
+    "hybrid_billing": {
+      "title": "កំណត់ Hybrid Billing",
+      "description": "New tenants pay a monthly fee or a percentage of Delivery sales, never both.",
+      "monthly": "Monthly fee (THB)",
+      "threshold": "Delivery threshold (THB)",
+      "rate": "Delivery share rate (%)",
+      "quota": "Slip checks before threshold",
+      "save": "Save Hybrid Billing",
+      "saved": "Hybrid Billing saved",
+      "failed": "Could not load/save Hybrid Billing settings",
+      "legacy": "The legacy pricing controls below remain for existing subscription accounts only.",
+      "first_month": "First month waives the fixed fee; reaching the Delivery threshold still incurs share."
+    },
     "admin": {
       "opening_hours": {
         "title": "ថ្ងៃ និងម៉ោងបើកហាង",
@@ -26306,6 +26467,30 @@
         }
       },
       "register": {
+        "hybrid": {
+          "title": "ថ្លៃសេវា PENGUIN ស្វ័យប្រវត្តិ",
+          "description": "Choose POS, Delivery, or both. Pricing changes automatically with cumulative Delivery sales.",
+          "first_month_title": "ខែដំបូងមិនគិតថ្លៃប្រចាំខែ",
+          "first_month_detail": "Delivery percentage is charged from the threshold even in the first month.",
+          "flat_amount": "Monthly fee {amount} THB",
+          "flat_detail": "Applies if monthly Delivery sales stay below {threshold} THB.",
+          "share_amount": "ចំណែក Delivery {rate}%",
+          "share_detail": "At {threshold} THB the first fee uses only the threshold; later days use daily Delivery sales.",
+          "slip_title": "Slip verification",
+          "slip_detail": "{quota} verifications/month below the threshold, unlimited after reaching it.",
+          "payment_disclosure": "Only one billing model per month. Unpaid daily Delivery share suspends access the next day until paid.",
+          "pricing_unavailable": "Cannot load current billing settings. Please retry registration later.",
+          "rollout_pending": "ការចុះឈ្មោះ Hybrid Billing កំពុងរៀបចំ សូមរង់ចាំការបើកដំណើរការ",
+          "activated": "Store activated successfully.",
+          "aside_badge": "Automatic billing",
+          "aside_title": "One billing method per month",
+          "aside_detail": "Monthly fee waived in month one; Delivery share can still apply.",
+          "flat_label": "Monthly fee",
+          "threshold_label": "Delivery threshold",
+          "share_label": "Delivery rate",
+          "quota_label": "Slip quota",
+          "one_mode": "Monthly fixed fee OR Delivery share—not both."
+        },
         "title": "ចុះឈ្មោះហាងរបស់អ្នក។",
         "home": "ផ្ទះ",
         "hero_title": "ជ្រើសរើសរបៀបសេវាដែលសមនឹងអាជីវកម្មរបស់អ្នក",

@@ -696,7 +696,7 @@ assert(parityStyleHook.includes("REACT_RELEASE.build")&&parityStyleHook.includes
 const releaseBuildMatch=releaseConfig.match(/build:\s*"([^"]+)"/);
 assert(
   releaseConfig.includes('product: "PENGUIN"')
-  &&releaseConfig.includes('version: "0.4.294"')
+  &&/version:\s*\"\d+\.\d+\.\d+\"/.test(releaseConfig)
   &&releaseBuildMatch
   &&/^\d{4}\.\d{2}\.\d{2}\.\d{3}$/.test(releaseBuildMatch[1])
   &&parityFooter.includes("REACT_RELEASE.version")

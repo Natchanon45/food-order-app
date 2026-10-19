@@ -249,6 +249,11 @@ exports.backfillTenantSubscriptions = subscriptionAdmin.backfillTenantSubscripti
 exports.updateTenantSubscription = subscriptionAdmin.updateTenantSubscription;
 exports.syncExpiredTenants = subscriptionAdmin.syncExpiredTenants;
 
+const hybridBillingSettings = require("./hybrid-billing-settings");
+exports.getPublicHybridBillingSettings = hybridBillingSettings.getPublicHybridBillingSettings;
+exports.getHybridBillingSettings = hybridBillingSettings.getHybridBillingSettings;
+exports.updateHybridBillingSettings = hybridBillingSettings.updateHybridBillingSettings;
+
 const subscriptionPricing = require("./subscription-pricing");
 exports.getPublicSubscriptionPricing = subscriptionPricing.getPublicSubscriptionPricing;
 exports.getSubscriptionPricing = subscriptionPricing.getSubscriptionPricing;

@@ -1,4 +1,4 @@
-const BILLING_MODES = new Set(["subscription", "revenue_share"]);
+const BILLING_MODES = new Set(["subscription", "revenue_share", "hybrid"]);
 const BUSINESS_TYPES = new Set(["restaurant_cafe", "retail", "both"]);
 const RESTAURANT_SCOPES = new Set(["delivery_only", "storefront_only", "all"]);
 const PLAN_CODES = new Set(["monthly", "yearly"]);
@@ -31,6 +31,7 @@ function signupBillingSelectionValid(input = {}) {
   const billingMode = clean(input.billingMode);
   const businessType = clean(input.businessType);
   if (!BILLING_MODES.has(billingMode) || !BUSINESS_TYPES.has(businessType)) return false;
+  if (billingMode === "hybrid") return true;
   if (billingMode === "subscription") return PLAN_CODES.has(clean(input.planCode));
   if (businessType !== "retail" && !RESTAURANT_SCOPES.has(clean(input.restaurantRevenueShareScope))) return false;
   return true;
@@ -43,7 +44,9 @@ function normalizeSignupBilling(input = {}) {
     billingMode,
     businessType,
     planCode: normalizePlanCode(input.planCode),
-    restaurantRevenueShareScope: businessType === "retail"
+    restaurantRevenueShareScope: billingMode === "hybrid"
+      ? "delivery_only"
+      : businessType === "retail"
       ? "all"
       : normalizeRestaurantScope(input.restaurantRevenueShareScope),
   };

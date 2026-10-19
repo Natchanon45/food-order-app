@@ -75,6 +75,7 @@ exports.initializeTenantSubscription = onDocumentCreated(
     const snapshot = event.data;
     if (!snapshot) return;
     const tenant = snapshot.data();
+    if (tenant.billingPolicyVersion === "hybrid_v1") return;
     if (tenant.subscriptionExpiresAt || revenueShareEnabled(tenant)) return;
     const db = getFirestore();
     const batch = db.batch();
@@ -94,6 +95,7 @@ exports.backfillTenantSubscriptions = onCall(
     let updated = 0;
     for (const tenantDoc of snapshot.docs) {
       const tenant = tenantDoc.data();
+      if (tenant.billingPolicyVersion === "hybrid_v1") continue;
       if (tenant.subscriptionExpiresAt || revenueShareEnabled(tenant)) continue;
       const batch = db.batch();
       const patch = defaultPatch(new Date(), tenant);
@@ -118,6 +120,9 @@ exports.updateTenantSubscription = onCall(
     const snapshot = await tenantRef.get();
     if (!snapshot.exists) throw new HttpsError("not-found", "Tenant not found");
     const tenant = snapshot.data();
+    if (tenant.billingPolicyVersion === "hybrid_v1") {
+      throw new HttpsError("failed-precondition", "Hybrid tenants cannot use legacy subscription controls");
+    }
 
     const action = String(request.data?.action || "").trim();
     const now = new Date();
@@ -184,6 +189,7 @@ exports.syncExpiredTenants = onSchedule(
     let changed = 0;
     for (const tenantDoc of snapshot.docs) {
       const tenant = tenantDoc.data();
+      if (tenant.billingPolicyVersion === "hybrid_v1") continue;
       if (revenueShareEnabled(tenant)) continue;
       if (!tenant.subscriptionExpiresAt) {
         const batch = db.batch();

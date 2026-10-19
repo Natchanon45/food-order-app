@@ -3,7 +3,9 @@ const { getAuth } = require("firebase-admin/auth");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { randomUUID } = require("crypto");
 const { loadPricing, pricingSnapshot } = require("./subscription-pricing-core");
-const { normalizeSignupBilling, signupBillingSelectionValid, businessUnitsFor } = require("./revenue-share-policy");
+const { normalizeSignupBilling, businessUnitsFor } = require("./revenue-share-policy");
+const { loadHybridBillingSettings, HYBRID_REGISTRATION_READY } = require("./hybrid-billing-settings");
+const { dateKey } = require("./hybrid-billing-core");
 
 const PLAN_ID = "premium";
 const TRIAL_DAYS = 30;
@@ -36,10 +38,15 @@ exports.requestTrialTenantSignup = onCall({ region: "asia-southeast1" }, async r
 
   const ownerName = validateText(request.data?.ownerName, "Owner name");
   const phone = validateText(request.data?.phone, "Phone", 8, 30);
-  if (!signupBillingSelectionValid(request.data || {})) {
-    throw new HttpsError("invalid-argument", "Billing mode, business type, or revenue-share scope is invalid");
+  // The server, never the browser, selects the new signup billing policy.
+  const signupBilling = normalizeSignupBilling({ businessType: request.data?.businessType,
+    billingMode: "hybrid", planCode: "monthly" });
+  if (!HYBRID_REGISTRATION_READY) {
+    throw new HttpsError("failed-precondition", "Hybrid registration is pending verified billing rollout");
   }
-  const signupBilling = normalizeSignupBilling(request.data || {});
+  if (!["restaurant_cafe", "retail", "both"].includes(String(request.data?.businessType || ""))) {
+    throw new HttpsError("invalid-argument", "Business type is required");
+  }
   const orderDeliveryShopName = signupBilling.businessType === "retail"
     ? clean(request.data?.orderDeliveryShopName)
     : validateText(request.data?.orderDeliveryShopName, "Restaurant/Cafe shop name");
@@ -57,6 +64,7 @@ exports.requestTrialTenantSignup = onCall({ region: "asia-southeast1" }, async r
   const tenantSlugRef = db.collection("tenantSlugs").doc(slug);
   const now = FieldValue.serverTimestamp();
   const signupPricing = pricingSnapshot(await loadPricing(db));
+  const hybridSettings = await loadHybridBillingSettings(db);
 
   await db.runTransaction(async tx => {
     const [tenantSlugSnap, pendingSlugSnap] = await Promise.all([tx.get(tenantSlugRef), tx.get(pendingSlugRef)]);
@@ -77,6 +85,8 @@ exports.requestTrialTenantSignup = onCall({ region: "asia-southeast1" }, async r
       planCode: signupBilling.planCode,
       restaurantRevenueShareScope: signupBilling.restaurantRevenueShareScope,
       signupBilling: { ...signupBilling },
+      billingPolicyVersion: "hybrid_v1",
+      hybridBillingSnapshot: hybridSettings,
       pricingSnapshot: signupPricing,
       status: "email_verification_required",
       previewUrl: `${PUBLIC_APP_ORIGIN}/s/${slug}/`,
@@ -130,9 +140,16 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
   const trialEndsAt = trialEndDate();
   const signupPricing = pending.pricingSnapshot || pricingSnapshot(await loadPricing(db));
   const signupBilling = normalizeSignupBilling(pending);
+  const hybridSignup = pending.billingPolicyVersion === "hybrid_v1";
+  if (hybridSignup && !HYBRID_REGISTRATION_READY) {
+    throw new HttpsError("failed-precondition", "Hybrid registration is pending verified billing rollout");
+  }
+  const hybridSettings = hybridSignup
+    ? (pending.hybridBillingSnapshot || await loadHybridBillingSettings(db)) : null;
   const businessUnits = businessUnitsFor(signupBilling.businessType);
   const primaryShopName = clean(pending.orderDeliveryShopName) || clean(pending.retailPosShopName);
   const subscriptionTrial = signupBilling.billingMode === "subscription";
+  const signupMonth = dateKey(new Date()).slice(0, 7);
 
   await db.runTransaction(async tx => {
     const [tenantSlugSnap, pendingSlugSnap] = await Promise.all([tx.get(tenantSlugRef), tx.get(pendingSlugRef)]);
@@ -155,6 +172,8 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
       billingMode: signupBilling.billingMode,
       businessType: signupBilling.businessType,
       subscriptionPricingSnapshot: signupPricing,
+      ...(hybridSignup ? { billingPolicyVersion: "hybrid_v1", hybridBillingSnapshot: hybridSettings,
+        hybridTrialMonth: signupMonth } : {}),
       ...(subscriptionTrial
         ? { subscriptionStatus: "trialing", trialStartsAt: now, trialEndsAt }
         : { subscriptionStatus: "active" }),
@@ -179,6 +198,8 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
       billingMode: signupBilling.billingMode,
       businessType: signupBilling.businessType,
       revenueShareEnabled: signupBilling.billingMode === "revenue_share",
+      ...(hybridSignup ? { billingPolicyVersion: "hybrid_v1", hybridBillingSnapshot: hybridSettings,
+        hybridTrialMonth: signupMonth, hybridBillingEnabled: false } : {}),
       revenueShareRate: 0,
       revenueShareBillingCycle: "monthly",
       revenueShareBusinessType: signupBilling.businessType,
@@ -218,7 +239,7 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
       planCode: signupBilling.planCode,
       billingMode: signupBilling.billingMode,
       status: subscriptionTrial ? "trialing" : "active",
-      trialDays: subscriptionTrial ? TRIAL_DAYS : 0,
+      trialDays: hybridSignup ? 0 : subscriptionTrial ? TRIAL_DAYS : 0,
       ...(subscriptionTrial ? { trialStartsAt: now, trialEndsAt } : {}),
       pricingSnapshot: signupPricing,
       createdAt: now,

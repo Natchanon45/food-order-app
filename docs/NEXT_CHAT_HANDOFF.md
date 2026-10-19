@@ -4,6 +4,13 @@ Updated: 2026-10-10
 Project: Food Order / Delivery / Retail POS
 Repository: `Natchanon45/food-order-app`
 
+## 2026-10-19 — Hybrid Billing phase 1 guarded candidate, DO NOT DEPLOY (.525)
+
+- User scoped work exclusively to food-order-app; old Git main/feature and remotes were synced at f3bf467b before starting. Historic 21 untracked JS bundles preserved.
+- User-defined policy: first month no fixed fee, but immediate Delivery-only share if threshold reached; following months either monthly fee below threshold OR Delivery share from threshold (not both); threshold date pays share on threshold only, subsequent dates daily Delivery sales, bill overdue next day suspended, reset monthly, Super Admin-configurable amounts/quotas.
+- Implemented pure functions/hybrid-billing-core.js, settings callables and public pricing, new service-only React RegisterPage, PlatformPricingPage editor, server hybrid_v1 signup policy routing with immutable initial snapshot, legacy subscription scheduler guard, five-locale copy, test updates and docs. Signups are deliberately fail-closed via HYBRID_REGISTRATION_READY=false until backend billing settlement/entitlements integrated.
+- Reference docs/HYBRID_BILLING_IMPLEMENTATION.md. This is a developer candidate, not a billing release. No Firebase Hosting/Functions/Rules production deploy and no tenant/order/payment writes. Production remains Version 0.4.294 Build .524. Do not send production deploy command until remaining daily invoices, paid-slip verification, access gate and quota implemented/tested.
+
 ## 2026-10-18 — User-authorized Commit/Push/Fast-forward main merge of POS mobile header and floating badge (.523/.524)
 
 - User explicitly approved Commit, Push and Merge to main for both already-deployed releases: Build 2026.10.18.523 mobile POS header same-row buttons across 15 POS pages and Build 2026.10.18.524 Developer Panel green floating badge visible across 17 interactive POS screens. Production remains Version 0.4.294 Build 2026.10.18.524.

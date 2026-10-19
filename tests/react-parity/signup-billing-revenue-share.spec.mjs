@@ -91,40 +91,23 @@ test("revenue-share business policy selects restaurant and retail sales independ
   });
 });
 
-test("RegisterPage exposes billing model, business type, conditional restaurant scope, and monthly/yearly subscription choice", () => {
+test("new RegisterPage selects only business services, not a pricing mode", () => {
   const source = fs.readFileSync("react-app/src/pages/RegisterPage.jsx", "utf8");
   for (const token of [
-    'billingMode',
-    'businessType',
-    'restaurantRevenueShareScope',
-    'planCode',
-    '"subscription"',
-    '"revenue_share"',
-    '"restaurant_cafe"',
-    '"retail"',
-    '"both"',
-    '"delivery_only"',
-    '"storefront_only"',
-    'regularConfigured',
+    "businessType", '"restaurant_cafe"', '"retail"', '"both"',
+    "loadPublicHybridBillingSettings", "hybrid-signup-grid",
   ]) assert.ok(source.includes(token), `RegisterPage missing ${token}`);
-  assert.ok(
-    source.indexOf('t("auth.register.business.title")') < source.indexOf('t("auth.register.billing.title")'),
-    "Business selection must appear before billing-model selection",
-  );
+  for (const prohibited of ['name="billingMode"', 'name="planCode"', 'name="restaurantRevenueShareScope"']) {
+    assert.ok(!source.includes(prohibited), `obsolete pricing choice ${prohibited}`);
+  }
 });
 
-test("public signup persists customer billing choices to pending signup and tenant", () => {
+test("public signup server forces Hybrid Billing and preserves selected business unit", () => {
   const source = fs.readFileSync("functions/public-signup.js", "utf8");
   for (const token of [
-    "normalizeSignupBilling",
-    "businessUnitsFor",
-    "billingMode",
-    "revenueShareBusinessType",
-    "revenueShareRestaurantScope",
-    "revenueShareEnabled",
-    "planCode",
+    "normalizeSignupBilling", "businessUnitsFor", 'billingMode: "hybrid"',
+    'billingPolicyVersion: "hybrid_v1"', "hybridBillingSnapshot", "hybridTrialMonth",
     "signupBilling:",
-    "signupBillingSelectionValid",
   ]) assert.ok(source.includes(token), `public-signup missing ${token}`);
 });
 

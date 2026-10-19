@@ -825,6 +825,9 @@ exports.updateTenantRevenueShare = onCall({ region: REGION }, async request => {
   const db = getFirestore(), tenantRef = db.collection("tenants").doc(tenantId), snapshot = await tenantRef.get();
   if (!snapshot.exists) throw new HttpsError("not-found", "Tenant not found");
   const tenant = { id: snapshot.id, ...snapshot.data() };
+  if (tenant.billingPolicyVersion === "hybrid_v1") {
+    throw new HttpsError("failed-precondition", "Hybrid tenants cannot use legacy revenue-share settings");
+  }
   const businessType = normalizeBusinessType(tenant.businessType || tenant.signupBilling?.businessType || tenant.revenueShareBusinessType || "both");
   const restaurantScope = businessType === "retail"
     ? "all"
