@@ -249,8 +249,27 @@ async function inspectHybridJournalCoveragePage({db,tenantId,afterId=null,pageSi
   }
   const hasMore=snap.docs.length>pageSize,nextAfterId=hasMore?docs.at(-1)?.id:null;
   if(hasMore&&!nextAfterId)throw Error("HYBRID_JOURNAL_AUDIT_MISSING_CURSOR");
+  // Financial-source page witness is bound to the ACTUAL source fields and
+  // trusted journal evidence, never merely issue IDs. No PII or secrets leave
+  // this helper. This remains advisory, not a cross-page snapshot.
+  const witness=docs.map((d,i)=>{
+    const order=d.data()||{},payment=events[i].exists?events[i].data()||{}:{},
+      refund=refunds[i]?.exists?refunds[i].data()||{}:{},
+      chain=chains[i]?.head||{};
+    return [d.id,order.paymentStatus,order.paymentReceiptSource,
+      order.paidAt?.toMillis?.()??null,moneyCents(order.totalAmount),
+      moneyCents(order.subtotalAmount),moneyCents(order.deliveryFee??0),
+      moneyCents(order.refundTotal??0),order.refundChainCount??null,
+      order.refundChainHeadDigest??null,payment.source??null,
+      payment.sourceDay??null,payment.paidAt?.toMillis?.()??null,
+      payment.grossCents??null,payment.merchandiseCents??null,
+      payment.referenceHash??null,payment.evidenceSha256??null,
+      refund.refundCents??null,refund.referenceHash??null,
+      refund.evidenceSha256??null,chain.headDigest??null];
+  });
+  const pageDigest=createHash("sha256").update(JSON.stringify(witness)).digest("hex");
   return {tenantId,scanned:docs.length,issues,issueCount:issues.length,
-    hasMore,nextAfterId,coverageCertified:false,
+    hasMore,nextAfterId,pageDigest,coverageCertified:false,
     note:"read_only_pagination_not_a_consistent_snapshot_no_auto_activation"};
 }
 
