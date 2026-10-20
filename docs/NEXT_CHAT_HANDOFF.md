@@ -1436,3 +1436,10 @@ Candidate Build .476 on local Mac only; React homepage and route guard updates p
 - Super Admin `HybridBillingFinancePanel.jsx` now has staged READ-ONLY audit inventory and closed-day adjustment review sections, guarded behind `HYBRID_FINANCE_UI_READY=false` and no live callable invoker. No ISO paidAt auto-conversion, no auto credit notes.
 - **Latest verified code CI:** `f47510c7`, run `39397207041`, 6/6 GitHub Actions jobs PASS. Focused Hybrid **96/96**, Firestore Emulator **31 PASS+2 TODO**, Rules **7 Hybrid+4 legacy PASS**, Storage **4/4**, real demo Auth+Functions Callable **4/4**, React source build/Parity/Operational PASS.
 - **Do not claim production-ready:** original paidAt migration and credit-note authorization/write logic are still NOT built, audit hard limit 3,000, real bank/provider attestation missing, live App Check and PC/mobile staging UAT pending. Financial release flags OFF and candidate exports absent. To continue, prioritize independently verified historical receipt migration and immutable reviewed adjustments, then product-visible staged integration and full external UAT, keeping original invoices untouched until approvals.
+
+
+## 2026-10-20 — Recursive handoff instruction (must carry into every future chat)
+
+- User explicitly requires a **fresh, copy-paste-ready new-chat prompt** near the end of EVERY chat/when token or chat quota may run low, WITHOUT being asked repeatedly. The prompt must itself include the SAME instruction for the following chat (recursive).
+- Canonical maintained template with current GitHub-first branch/PR/verified CI, safety constraints, remaining work, and recursive meta-rule: **`docs/HYBRID_BILLING_NEXT_CHAT_PROMPT.md`, last section headed `HANDOFF CONTRACT — 2026-10-20`**.
+- At every handoff, refresh both `docs/NEXT_CHAT_HANDOFF.md` and `docs/HYBRID_BILLING_NEXT_CHAT_PROMPT.md` with verified latest repository state, and paste the complete up-to-date prompt to the user. Do not claim the app monitors quota or auto-runs background tasks; prepare handoff during the current turn.
