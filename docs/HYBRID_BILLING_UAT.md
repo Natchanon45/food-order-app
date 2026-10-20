@@ -116,3 +116,11 @@ HYBRID_REGISTRATION_READY is false. Existing tenants retain their legacy Subscri
 - Finance API adds authenticated Super Admin-only pending queue with evidence integrity guard and bounded scan. End-to-end **real Firestore Emulator** tests check queue authorization before/after bank approval, but use TEST bank attestation and mocked Storage metadata for server finance wrapper.
 - `npm run test:hybrid-billing` **92/92 PASS**; real Firestore Emulator **26 PASS + 2 TODO**; Auth+Firestore Rules **7/7 + 4/4 PASS**; Auth+Storage **4/4 PASS**; React Parity/Operational and real React JSX source build all PASS in **5/5 GH Actions jobs** (run `39378510771` at `6b4f18d6`).
 - Blocking UAT: real Firebase Functions HTTPS Auth+AppCheck E2E, real bank reconciliation, source receipt provenance/legacy migration/refunds, complete staging PC/mobile checks and approved release; no production change made.
+
+
+## 2026-10-20 — Actual Auth + HTTPS Callable Emulator test
+
+- Test-only Auth + Functions + Firestore Emulator suite `npm run test:hybrid-billing:functions-emulator`: **4/4 PASS** using temporary demo Firebase project and signed-in Firebase Web SDK calling actual v2 HTTPS Callable wrappers. Confirms server-authenticated COD exactly-once with Firestore Server Timestamp, rejects forged actor/financial data and cross-tenant calls, exposes Owner invoice list but rejects privileged Super Admin finance methods.
+- Test wrapper sets `enforceAppCheck:false` **only in the disposable demo project**. This is NOT a real App Check security validation. Original COD and Finance onCall candidates retain `enforceAppCheck:true`, remain unexported from `functions/index.js` and unavailable in Production.
+- Verified GH run `39379518587` commit `0bf584b3`: **6/6 jobs PASS** (Hybrid 92/92, actual Firestore 26+2 TODO, Rules 7+4, Storage 4/4, Auth+Functions 4/4, current React source build and parity PASS). No local or cloud deploy.
+- Bank metadata and settlement in Firestore-only finance path are simulated, not external bank proof; mandatory production-release scenarios still include App Check, payment-provider verification, historical ISO paidAt/refund adjustments and real UI+PC/mobile staging.
