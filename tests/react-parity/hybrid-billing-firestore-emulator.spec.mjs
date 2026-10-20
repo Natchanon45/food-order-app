@@ -19,6 +19,7 @@ const { issueHybridInvoicesForClosedDay } = require("../../functions/hybrid-bill
 const { reconcileHybridArrears } = require("../../functions/hybrid-billing-arrears.js");
 const { approveHybridRecovery } = require("../../functions/hybrid-billing-recovery.js");
 const { runHybridBillingDaily } = require("../../functions/hybrid-billing-daily.js");
+const { makeHybridFinanceHandler } = require("../../functions/hybrid-billing-finance-api.js");
 const { submitHybridPaymentEvidence, reviewHybridPaymentEvidence } =
   require("../../functions/hybrid-billing-payments.js");
 const { paidOrdersInWindow, auditPaidDeliveryReceiptCoverage, previewHybridCycle } = require("../../functions/hybrid-billing-preview.js");
@@ -696,4 +697,55 @@ test("emulator daily orchestration: Bangkok close issues and suspends exact prev
   assert.deepEqual(retry.outcomes[0].closeResult.issued, []);
   assert.equal((await ref.collection("hybridBillingInvoices").get()).size, 1);
   assert.equal((await ref.get()).data().active, false);
+});
+
+test("emulator integrated finance API: owner proof -> Super Admin bank approval -> supervised recovery", async () => {
+  const id = "tenant-emu-finance-api-26", ref = await activate(id);
+  await order(ref, "receipt-finance-api-026", "2026-10-20T02:00:00Z", 15500);
+  await issue(id, midnightAfterTrigger);
+  const invoiceId = cycleId + ":delivery:trigger";
+  await reconcileHybridArrears({ db, tenantId: id, now: now(midnightAfterTrigger) });
+  const ownerUid = "owner-finance-api-026", adminUid = "admin-finance-api-026";
+  await db.collection("users").doc(ownerUid).set({
+    uid: ownerUid, active: true, role: "owner", tenantId: id,
+  });
+  await db.collection("users").doc(adminUid).set({
+    uid: adminUid, active: true, role: "super_admin",
+  });
+  const handle = makeHybridFinanceHandler({
+    getDb: () => db, ready: true,
+    getBucket: () => ({ file: () => ({ getMetadata: async () => [{
+      size: "12500", contentType: "image/png", metadata: { uploadedByUid: ownerUid },
+    }] }) }),
+  });
+  const owner = data => handle({ auth: { uid: ownerUid }, data: { tenantId: id, ...data } });
+  const reviewer = data => handle({ auth: { uid: adminUid }, data: { tenantId: id, ...data } });
+  const list = await owner({ action: "list" });
+  assert.equal(list.rows.length, 1);
+  assert.equal(list.rows[0].status, "unpaid");
+  assert.equal(list.rows[0].amountCents, 77500);
+  await assert.rejects(owner({
+    action: "review", attemptId: "proof-finance-026", decision: "approve",
+    bankTxnRef: "FAKE-OWNER-023", confirmedAmountCents: 77500, recipientConfirmed: true,
+  }), error => error.code === "permission-denied");
+  const attemptId = "proof-finance-026";
+  const evidence = await owner({ action: "submit", invoiceId, attemptId,
+    slipPath: "tenants/" + id + "/hybrid-billing-slips/" + attemptId + "/proof.png" });
+  assert.equal(evidence.status, "pending_review");
+  assert.equal((await ref.get()).data().active, false);
+  const review = await reviewer({ action: "review", attemptId, decision: "approve",
+    bankTxnRef: "BANK-RECONCILED-IN-TEST-026", confirmedAmountCents: 77500,
+    recipientConfirmed: true,
+  });
+  assert.equal(review.decision, "approve");
+  assert.equal((await owner({ action: "list" })).rows[0].status, "paid");
+  // Finance wrapper deliberately uses a live Server clock for recovery.
+  const recovered = await reviewer({ action: "recover", reviewId: "recovery-review-026" });
+  assert.equal(recovered.status, "reactivated");
+  assert.equal((await ref.get()).data().active, true);
+  await assert.rejects(owner({
+    action: "submit", invoiceId, attemptId,
+    slipPath: "tenants/" + id + "/hybrid-billing-slips/" + attemptId + "/proof.png",
+    actorUid: adminUid,
+  }), error => error.code === "invalid-argument");
 });
