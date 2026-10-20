@@ -89,6 +89,8 @@ export function HybridBillingReportPage() {
             <p>{t("hybrid_report.subtitle")}</p>
           </div>
         </section>
+        <HybridBillingFinancePanel tenantId={tenant.id} mode="owner"
+          language={intlLocale?.startsWith("th") ? "th" : "en"} />
         <section className="card hybrid-report-toolbar">
           <label htmlFor="hybridReportDate">{t("hybrid_report.cycle")}</label>
           <input id="hybridReportDate" type="date" min={tenant.hybridBillingStartDate || ""}
