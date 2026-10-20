@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// TEMPORARY rules candidate only: never modify the checked-in Production rules.
+// Strict isolated UAT of the checked-in Rules source (or temporary candidate for historic snapshots).
+// This runner never deploys rules to Firebase.
 // Synthetic Firebase Auth + Firestore emulator test, localhost and demo project.
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, writeFileSync, readFileSync, rmSync, existsSync } from "node:fs";
@@ -13,6 +14,15 @@ if (process.env.FIRESTORE_EMULATOR_HOST || process.env.FIREBASE_AUTH_EMULATOR_HO
   throw new Error("HYBRID_RULES_EMULATOR_ISOLATION_REQUIRED");
 }
 const before = readFileSync(path.join(ROOT, "firestore.rules"), "utf8");
+const baselineDiagnostic = process.env.HYBRID_RULES_BASELINE_DIAGNOSTIC === "1";
+const reviewedSource = before.includes("function isHybridTenant()")
+  && before.includes("function hybridDeliveryReceiptFieldsUnchanged()");
+if (before.includes("function isHybridTenant()") !==
+    before.includes("function hybridDeliveryReceiptFieldsUnchanged()")) {
+  throw Error("HYBRID_RULES_PARTIAL_SOURCE_MIGRATION");
+}
+let candidate = before;
+if (!reviewedSource) {
 const oldStart = `      return superAdminRole()
         || (tenant.get('businessType', 'both') == 'both'`;
 const newStart = `      // Fast path: check Hybrid suspension and ordinary business enablement
@@ -35,7 +45,7 @@ if (before.split(oldStart).length !== 2 || before.split(oldEnd).length !== 2) {
 // TEMP candidate: introduce a simple first-expression operational write gate
 // before evaluating the large existing role/business expressions. This is an
 // investigation only; it does not touch firestore.rules or deploy anything.
-let candidate = before.replace(oldStart, newStart).replace(oldEnd, newEnd);
+candidate = before.replace(oldStart, newStart).replace(oldEnd, newEnd);
 // Candidate-only safe Boolean reassociation: the common case is an active user
 // profile assigned to the current tenant. Evaluate that before tenant owner
 // and membership document fallbacks to avoid repeated expensive get() calls.
@@ -195,10 +205,11 @@ conditionalizeMatch(
   "hybridOperationalWriteAllowed() && resource != null && fastHybridCashier() && tenantResourceMatches(tenantId) && (validRetailSaleEnrichment(tenantId) || validRetailReturnSaleUpdate(tenantId))",
   "delete",
 );
-// Diagnostic mode runs the UNCHANGED production rules in the demo emulator
-// to distinguish a pre-existing evaluation-budget problem from Hybrid edits.
-// It never deploys, changes or rewrites the repository's firestore.rules.
-const baselineDiagnostic = process.env.HYBRID_RULES_BASELINE_DIAGNOSTIC === "1";
+} // end original unmodified-source candidate builder
+// Once the candidate has been reviewed and committed into firestore.rules,
+// run the EXACT tracked rules (not an extra patched version). The separate
+// baseline test covers prior legacy POS operations under current source.
+// Neither mode deploys; local emulator consumes only a temporary copy.
 if (baselineDiagnostic) candidate = before;
 const suite = baselineDiagnostic
   ? "tests/react-parity/hybrid-billing-rules-baseline.spec.mjs"
@@ -229,8 +240,8 @@ try {
   }, null, 2) + "\n");
   console.log(baselineDiagnostic
     ? "HYBRID ORIGINAL RULES BASELINE | demo emulator ONLY | READ-ONLY rules"
-    : "HYBRID RULES UAT | candidate in TEMP only | synthetic Auth + Firestore");
-  console.log("Production firestore.rules is READ ONLY.");
+    : "HYBRID RULES UAT | reviewed source in TEMP emulator | synthetic Auth + Firestore");
+  console.log("No Firebase deployment. Repo firestore.rules read-only for this runner.");
   const result = spawnSync("firebase", [
     "emulators:exec", "--only", "auth,firestore",
     "--project", PROJECT, "--config", config, "--log-verbosity", "QUIET",
