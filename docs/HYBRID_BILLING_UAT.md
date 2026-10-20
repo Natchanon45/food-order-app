@@ -124,3 +124,11 @@ HYBRID_REGISTRATION_READY is false. Existing tenants retain their legacy Subscri
 - Test wrapper sets `enforceAppCheck:false` **only in the disposable demo project**. This is NOT a real App Check security validation. Original COD and Finance onCall candidates retain `enforceAppCheck:true`, remain unexported from `functions/index.js` and unavailable in Production.
 - Verified GH run `39379518587` commit `0bf584b3`: **6/6 jobs PASS** (Hybrid 92/92, actual Firestore 26+2 TODO, Rules 7+4, Storage 4/4, Auth+Functions 4/4, current React source build and parity PASS). No local or cloud deploy.
 - Bank metadata and settlement in Firestore-only finance path are simulated, not external bank proof; mandatory production-release scenarios still include App Check, payment-provider verification, historical ISO paidAt/refund adjustments and real UI+PC/mobile staging.
+
+
+## 2026-10-20 — Legacy paidAt / closed-day late adjustment inspection
+
+- Added read-only, role-bound Super Admin intake for noncanonical paid Delivery `paidAt`, invalid amounts and historical closed-day refund/late-payment changes. Original invoice sealed fields and bank settlements are NEVER changed in these scans. No automatic conversion from client ISO strings to trusted Server Timestamp, and no credit/debit notes automatically issued.
+- **Verified all six GitHub Actions jobs GREEN, code commit `f47510c7`, run `39397207041`**: Hybrid 96/96 PASS, Firestore Emulator 31 PASS +2 explicit TODO, Auth+Firestore Rules 7/7 Hybrid +4/4 baseline PASS, Auth+Storage 4/4 PASS, actual demo Auth+HTTPS Functions 4/4 PASS, React Parity/Operational/new React source compilation PASS.
+- New Emulator coverage: paginated anomalies distinguish paidAt ISO/missing from bad prices, owner denied Super Admin-only audit and adjustment actions, refund (15,500 -> 14,500 baht) and late receipt (10,000 -> 15,500 baht) cause review deltas but preserve original invoices unchanged. UI stages read-only findings and remains OFF.
+- Remediation and release still blocked on independently verified payment provenance migration, approved immutable credit notes/refunds, more than 3,000 paid-row scale, real bank/physical Lalamove provider proof and live App Check; no Firebase production deploy performed.
