@@ -20,6 +20,7 @@ const { reconcileHybridArrears } = require("../../functions/hybrid-billing-arrea
 const { approveHybridRecovery } = require("../../functions/hybrid-billing-recovery.js");
 const { runHybridBillingDaily } = require("../../functions/hybrid-billing-daily.js");
 const { makeHybridFinanceHandler } = require("../../functions/hybrid-billing-finance-api.js");
+const { scanHybridPaidReceiptExceptions } = require("../../functions/hybrid-billing-receipt-audit.js");
 const { submitHybridPaymentEvidence, reviewHybridPaymentEvidence } =
   require("../../functions/hybrid-billing-payments.js");
 const { paidOrdersInWindow, auditPaidDeliveryReceiptCoverage, previewHybridCycle } = require("../../functions/hybrid-billing-preview.js");
@@ -756,4 +757,76 @@ test("emulator integrated finance API: owner proof -> Super Admin bank approval 
     slipPath: "tenants/" + id + "/hybrid-billing-slips/" + attemptId + "/proof.png",
     actorUid: adminUid,
   }), error => error.code === "invalid-argument");
+});
+
+test("emulator: paginated legacy receipt exceptions report never writes to historical paidAt", async () => {
+  const id = "tenant-emu-receipt-audit-27", ref = await activate(id);
+  await order(ref, "receipt-01", "2026-10-20T02:00:00Z", 10000);
+  await ref.collection("orders").doc("receipt-02").create({
+    orderType: "delivery", paymentStatus: "paid", status: "delivered",
+    paidAt: "2026-10-20T16:00:00Z", subtotalAmount: 5500,
+    deliveryFee: 40, totalAmount: 5540,
+  });
+  await ref.collection("orders").doc("receipt-03").create({
+    orderType: "delivery", paymentStatus: "paid", status: "delivered",
+    subtotalAmount: 150, deliveryFee: 40, totalAmount: 190,
+  });
+  await order(ref, "receipt-04", "2026-10-20T13:00:00Z", 500, {
+    subtotalAmount: -100,
+  });
+  await order(ref, "pos-ignored", "2026-10-20T09:00:00Z", 1000, {
+    orderType: "pos", paidAt: "2026-10-20T09:00:00Z",
+  });
+  const first = await scanHybridPaidReceiptExceptions({ db, tenantId: id, pageSize: 2 });
+  assert.equal(first.scanned, 2);
+  assert.equal(first.hasMore, true);
+  assert.deepEqual(first.issues, [{
+    orderId: "receipt-02", reason: "noncanonical_paid_at",
+  }]);
+  assert.equal(first.nextAfterId, "receipt-02");
+  const next = await scanHybridPaidReceiptExceptions({
+    db, tenantId: id, pageSize: 2, afterId: first.nextAfterId,
+  });
+  assert.equal(next.scanned, 2);
+  assert.equal(next.hasMore, false);
+  assert.deepEqual(next.issues, [
+    { orderId: "receipt-03", reason: "noncanonical_paid_at" },
+    { orderId: "receipt-04", reason: "invalid_financial_fields" },
+  ]);
+  const iso = (await ref.collection("orders").doc("receipt-02").get()).data();
+  assert.equal(typeof iso.paidAt, "string", "audit must not silently convert ISO to Timestamp");
+  await assert.rejects(issue(id, midnightAfterTrigger),
+    /HYBRID_PAID_DELIVERY_NONCANONICAL_TIMESTAMP/);
+  assert.equal((await invoices(ref)).length, 0);
+});
+
+test("emulator: only authenticated Super Admin can inventory exceptions through finance handler", async () => {
+  const id = "tenant-emu-finance-audit-28", ref = await activate(id);
+  await ref.collection("orders").doc("receipt-iso-01").create({
+    orderType: "delivery", paymentStatus: "paid", status: "delivered",
+    paidAt: "2026-10-20T03:00:00Z",
+    subtotalAmount: 1000, deliveryFee: 0, totalAmount: 1000,
+  });
+  const ownerId = "owner-audit-28", reviewerId = "super-audit-28";
+  await db.collection("users").doc(ownerId).create({
+    uid: ownerId, role: "owner", active: true, tenantId: id,
+  });
+  await db.collection("users").doc(reviewerId).create({
+    uid: reviewerId, role: "super_admin", active: true,
+  });
+  const handle = makeHybridFinanceHandler({ getDb: () => db, ready: true });
+  const payload = { action: "audit", tenantId: id, afterId: null };
+  await assert.rejects(handle({ auth: { uid: ownerId }, data: payload }),
+    error => error.code === "permission-denied");
+  const result = await handle({ auth: { uid: reviewerId }, data: payload });
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.issues, [{ orderId: "receipt-iso-01", reason: "noncanonical_paid_at" }]);
+  assert.equal(result.note, "read_only_requires_verified_payment_provenance");
+  await assert.rejects(handle({ auth: { uid: reviewerId },
+    data: { ...payload, autoFix: true } }), error => error.code === "invalid-argument");
+  await assert.rejects(handle({ auth: { uid: reviewerId },
+    data: { ...payload, afterId: "../tenant" } }), error =>
+    /HYBRID_RECEIPT_SCAN_INVALID_REQUEST/.test(error.message));
+  assert.equal((await ref.collection("orders").doc("receipt-iso-01").get()).data().paidAt,
+    "2026-10-20T03:00:00Z");
 });
