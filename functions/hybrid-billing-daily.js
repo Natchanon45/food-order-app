@@ -13,6 +13,10 @@ async function runHybridBillingDaily({
   db, now = new Date(), maximumTenants = 200,
   issue = issueHybridInvoicesForClosedDay,
   reconcile = reconcileHybridArrears,
+  readTenants = async (database, limit) => database.collection("tenants")
+    .where("billingPolicyVersion", "==", "hybrid_v1")
+    .where("hybridBillingEnabled", "==", true)
+    .orderBy("__name__").limit(limit).get(),
 }) {
   if (!db || !(now instanceof Date) || !Number.isFinite(now.getTime())
     || !Number.isSafeInteger(maximumTenants) || maximumTenants < 1
@@ -20,10 +24,7 @@ async function runHybridBillingDaily({
   const today = dateKey(now), previous = prevDate(today);
   // Do not list tenant IDs externally. A maximum-size scan fails before
   // issuing anything to avoid an incomplete silent run for large platforms.
-  const snap = await db.collection("tenants")
-    .where("billingPolicyVersion", "==", "hybrid_v1")
-    .where("hybridBillingEnabled", "==", true)
-    .orderBy("__name__").limit(maximumTenants + 1).get();
+  const snap = await readTenants(db, maximumTenants + 1);
   if (!snap || !Array.isArray(snap.docs) || snap.size !== snap.docs.length) {
     throw Error("HYBRID_DAILY_TENANT_SCAN_INCOMPLETE");
   }
