@@ -1784,3 +1784,104 @@ test("emulator: concurrent epoch admission and seal serialize or deny subsequent
  assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
 });
 
+
+test("emulator Phase 3X guarded COD and PromptPay plus first/partial Refund commit before seal and reject AFTER seal",async()=>{
+ const {settleHybridCodDeliveryPayment}=require("../../functions/hybrid-billing-cod-payment.js");
+ const {recordHybridVerifiedPromptPay}=require("../../functions/hybrid-billing-promptpay-payment.js");
+ const {recordHybridVerifiedRefund}=require("../../functions/hybrid-billing-refund-reversal.js");
+ const {appendHybridVerifiedPartialRefund}=require("../../functions/hybrid-billing-multi-refund.js");
+ const {initializeHybridEpochCandidate,sealHybridEpochCandidate,
+   reviewHybridWriterRegistryCandidate}=require("../../functions/hybrid-billing-writer-epoch-candidate.js");
+ const id="tenant-phase3x-guard-071",t=await activate(id),uid="super-phase3x-071";
+ const paidAt=new Date("2026-10-20T12:30:00Z"),reviewNow=new Date("2026-10-21T03:00:00Z");
+ await db.collection("users").doc(uid).set({role:"super_admin",active:true});
+ await initializeHybridEpochCandidate({db,tenantId:id,reviewerUid:uid});
+ const codA="cod-phase3x-071",bankA="bank-phase3x-071";
+ const newCod="cod-phase3x-072",newBank="bank-phase3x-072";
+ const makeOrder=(oid,method)=>t.collection("orders").doc(oid).set({
+   orderType:"delivery",paymentMethod:method,paymentStatus:"unpaid",
+   status:"delivered",totalAmount:1010,subtotalAmount:1000,deliveryFee:10,
+   items:[{id:"item",quantity:1}]});
+ for(const [oid,method] of [[codA,"cod"],[bankA,"promptpay"],
+   [newCod,"cod"],[newBank,"promptpay"]])await makeOrder(oid,method);
+ const codArgs=oid=>({db,tenantId:id,orderId:oid,actorUid:uid,
+   clock:()=>paidAt,serverTimestamp:()=>Timestamp.fromDate(paidAt),
+   epochAdmissionDemo:true});
+ const bankArgs=oid=>({db,tenantId:id,orderId:oid,reviewerUid:uid,epochAdmissionDemo:true,
+   now:reviewNow,resolveIndependentBankPayment:async()=>({
+     verified:true,source:"independent_bank_record",tenantId:id,orderId:oid,
+     currency:"THB",recipientConfirmed:true,platformBankAccountVerified:true,
+     reference:"EPOCH-TRANSFER-"+oid,evidenceSha256:"a".repeat(64),
+     grossAmountCents:101000,paidAt,checkedAt:new Date("2026-10-21T02:59:00Z")
+   })});
+ const refundArgs=(oid,reference,amount,instant)=>({
+   db,tenantId:id,orderId:oid,reviewerUid:uid,epochAdmissionDemo:true,
+   now:reviewNow,resolveIndependentRefund:async()=>({
+     verified:true,source:"independent_bank_refund_record",
+     tenantId:id,orderId:oid,currency:"THB",refundSettled:true,
+     recipientConfirmed:true,platformDebitConfirmed:true,
+     reference,evidenceSha256:"b".repeat(64),refundAmountCents:amount,
+     refundAt:new Date(instant),checkedAt:new Date("2026-10-21T02:59:00Z")
+   })});
+ assert.equal((await settleHybridCodDeliveryPayment(codArgs(codA))).alreadyPaid,false);
+ assert.equal((await recordHybridVerifiedPromptPay(bankArgs(bankA))).alreadyPaid,false);
+ assert.equal((await recordHybridVerifiedRefund(refundArgs(
+   codA,"EPOCH-REFUND-071-A",20000,"2026-10-21T02:00:00Z"))).alreadyRecorded,false);
+ assert.equal((await appendHybridVerifiedPartialRefund(refundArgs(
+   codA,"EPOCH-REFUND-071-B",10000,"2026-10-21T02:10:00Z"))).sequence,2);
+ assert.equal((await t.collection("orders").doc(codA).get()).data().refundTotal,300);
+ assert.equal((await t.collection("orders").doc(bankA).get()).data().paymentStatus,"paid");
+ const receiptsBefore=(await t.collection("hybridBillingReceiptEvents").get()).size;
+ assert.equal(receiptsBefore,4);
+ const sealed=await sealHybridEpochCandidate({db,tenantId:id,reviewerUid:uid});
+ assert.equal(sealed.canIssueInvoice,false);
+ assert.equal(sealed.writerParticipationComplete,false);
+ await assert.rejects(settleHybridCodDeliveryPayment(codArgs(newCod)),/HYBRID_EPOCH_CLOSED/);
+ await assert.rejects(recordHybridVerifiedPromptPay(bankArgs(newBank)),/HYBRID_EPOCH_CLOSED/);
+ await assert.rejects(recordHybridVerifiedRefund(refundArgs(
+   bankA,"EPOCH-REFUND-071-C",10000,"2026-10-21T02:30:00Z"))),
+   /HYBRID_EPOCH_CLOSED/);
+ await assert.rejects(appendHybridVerifiedPartialRefund(refundArgs(
+   codA,"EPOCH-REFUND-071-D",10000,"2026-10-21T02:40:00Z"))),
+   /HYBRID_EPOCH_CLOSED/);
+ assert.equal((await t.collection("hybridBillingReceiptEvents").get()).size,receiptsBefore);
+ assert.equal((await t.collection("orders").doc(newCod).get()).data().paymentStatus,"unpaid");
+ assert.equal((await t.collection("orders").doc(newBank).get()).data().paymentStatus,"unpaid");
+ assert.equal((await t.collection("orders").doc(codA).get()).data().refundTotal,300);
+ assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+ assert.equal(reviewHybridWriterRegistryCandidate().writerParticipationComplete,false);
+});
+test("emulator Phase 3X real opt-in COD writer racing seal cannot commit AFTER seal",async()=>{
+ const {settleHybridCodDeliveryPayment}=require("../../functions/hybrid-billing-cod-payment.js");
+ const {initializeHybridEpochCandidate,sealHybridEpochCandidate}=require(
+   "../../functions/hybrid-billing-writer-epoch-candidate.js");
+ const id="tenant-phase3x-race-073",t=await activate(id),uid="super-phase3x-073";
+ const dt=new Date("2026-10-20T12:30:00Z");
+ await db.collection("users").doc(uid).set({role:"super_admin",active:true});
+ await initializeHybridEpochCandidate({db,tenantId:id,reviewerUid:uid});
+ const createUnpaid=async oid=>t.collection("orders").doc(oid).set({
+   orderType:"delivery",paymentMethod:"cod",paymentStatus:"unpaid",
+   status:"delivered",totalAmount:105,subtotalAmount:100,deliveryFee:5,
+   items:[{id:"test",quantity:1}]});
+ const a="order-phase3x-race-073",b="order-phase3x-race-074";
+ await createUnpaid(a);await createUnpaid(b);
+ const args=oid=>({db,tenantId:id,orderId:oid,actorUid:uid,
+    clock:()=>dt,serverTimestamp:()=>Timestamp.fromDate(dt),
+    epochAdmissionDemo:true});
+ const races=await Promise.allSettled([
+   settleHybridCodDeliveryPayment(args(a)),
+   sealHybridEpochCandidate({db,tenantId:id,reviewerUid:uid})
+ ]);
+ assert.equal(races[1].status,"fulfilled");
+ assert.equal(races[1].value.status,"sealed");
+ if(races[0].status==="rejected")
+   assert.match(String(races[0].reason),/HYBRID_EPOCH_CLOSED|ABORTED|contention/i);
+ const paidA=(await t.collection("orders").doc(a).get()).data().paymentStatus==="paid";
+ assert.equal(paidA,races[0].status==="fulfilled");
+ await assert.rejects(settleHybridCodDeliveryPayment(args(b)),/HYBRID_EPOCH_CLOSED/);
+ assert.equal((await t.collection("orders").doc(b).get()).data().paymentStatus,"unpaid");
+ assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+});
+
