@@ -733,12 +733,19 @@ test("emulator integrated finance API: owner proof -> Super Admin bank approval 
   const evidence = await owner({ action: "submit", invoiceId, attemptId,
     slipPath: "tenants/" + id + "/hybrid-billing-slips/" + attemptId + "/proof.png" });
   assert.equal(evidence.status, "pending_review");
+  await assert.rejects(owner({ action: "queue" }),
+    error => error.code === "permission-denied");
+  const pendingQueue = await reviewer({ action: "queue" });
+  assert.equal(pendingQueue.rows.length, 1);
+  assert.equal(pendingQueue.rows[0].attemptId, attemptId);
+  assert.equal(pendingQueue.rows[0].amountCents, 77500);
   assert.equal((await ref.get()).data().active, false);
   const review = await reviewer({ action: "review", attemptId, decision: "approve",
     bankTxnRef: "BANK-RECONCILED-IN-TEST-026", confirmedAmountCents: 77500,
     recipientConfirmed: true,
   });
   assert.equal(review.decision, "approve");
+  assert.equal((await reviewer({ action: "queue" })).rows.length, 0);
   assert.equal((await owner({ action: "list" })).rows[0].status, "paid");
   // Finance wrapper deliberately uses a live Server clock for recovery.
   const recovered = await reviewer({ action: "recover", reviewId: "recovery-review-026" });
