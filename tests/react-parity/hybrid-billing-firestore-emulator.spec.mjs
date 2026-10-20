@@ -20,7 +20,7 @@ const { reconcileHybridArrears } = require("../../functions/hybrid-billing-arrea
 const { approveHybridRecovery } = require("../../functions/hybrid-billing-recovery.js");
 const { runHybridBillingDaily } = require("../../functions/hybrid-billing-daily.js");
 const { makeHybridFinanceHandler } = require("../../functions/hybrid-billing-finance-api.js");
-const { scanHybridPaidReceiptExceptions } = require("../../functions/hybrid-billing-receipt-audit.js");
+const { scanHybridPaidReceiptExceptions, inspectHybridClosedDayAdjustments } = require("../../functions/hybrid-billing-receipt-audit.js");
 const { submitHybridPaymentEvidence, reviewHybridPaymentEvidence } =
   require("../../functions/hybrid-billing-payments.js");
 const { paidOrdersInWindow, auditPaidDeliveryReceiptCoverage, previewHybridCycle } = require("../../functions/hybrid-billing-preview.js");
@@ -829,4 +829,74 @@ test("emulator: only authenticated Super Admin can inventory exceptions through 
     /HYBRID_RECEIPT_SCAN_INVALID_REQUEST/.test(error.message));
   assert.equal((await ref.collection("orders").doc("receipt-iso-01").get()).data().paidAt,
     "2026-10-20T03:00:00Z");
+});
+
+test("emulator: sealed-day refunds are reported for human credit-note review without mutating invoices", async () => {
+  const id = "tenant-emu-adjustments-29", ref = await activate(id);
+  await order(ref, "paid-adjust-29", "2026-10-20T02:00:00Z", 15500);
+  assert.deepEqual((await issue(id, midnightAfterTrigger)).issued,
+    [cycleId + ":delivery:trigger"]);
+  const baseline = await inspectHybridClosedDayAdjustments({
+    db, tenantId: id, cycleId,
+  });
+  assert.equal(baseline.requiresReview, false);
+  assert.deepEqual(baseline.changed, []);
+  assert.equal(baseline.sealedDays, 5);
+  await ref.collection("orders").doc("paid-adjust-29").update({ refundTotal: 1000 });
+  const adjustment = await inspectHybridClosedDayAdjustments({
+    db, tenantId: id, cycleId,
+  });
+  assert.equal(adjustment.requiresReview, true);
+  assert.deepEqual(adjustment.changed, [{
+    day: "2026-10-20", originalBaseCents: 1550000,
+    currentBaseCents: 1450000, deltaCents: -100000,
+    originalReceiptCount: 1, currentReceiptCount: 1,
+  }]);
+  const existing = (await ref.collection("hybridBillingInvoices")
+    .doc(cycleId + ":delivery:trigger").get()).data();
+  assert.equal(existing.amountCents, 77500,
+    "an immutable original invoice cannot silently be replaced with a credit");
+  await assert.rejects(issue(id, "2026-10-21T17:01:00Z"),
+    /HYBRID_CLOSED_DAY_CHANGED_REQUIRES_ADJUSTMENT/);
+  assert.equal((await ref.collection("hybridBillingInvoices").get()).size, 1);
+});
+
+test("emulator: late closed-day paid receipt appears as a debit/review warning without rewriting bills", async () => {
+  const id = "tenant-emu-late-audit-30", ref = await activate(id);
+  await order(ref, "paid-first-30", "2026-10-20T02:00:00Z", 10000);
+  await issue(id, midnightAfterTrigger);
+  await order(ref, "paid-late-30", "2026-10-20T16:00:00Z", 5500);
+  const result = await inspectHybridClosedDayAdjustments({ db, tenantId: id, cycleId });
+  assert.equal(result.requiresReview, true);
+  assert.deepEqual(result.changed, [{
+    day: "2026-10-20", originalBaseCents: 1000000,
+    currentBaseCents: 1550000, deltaCents: 550000,
+    originalReceiptCount: 1, currentReceiptCount: 2,
+  }]);
+  assert.equal((await ref.collection("hybridBillingInvoices")
+    .doc(cycleId + ":delivery:trigger").get()).data().amountCents, 50000);
+});
+
+test("emulator: only Super Admin can inspect historical adjustment inventory", async () => {
+  const id = "tenant-emu-admin-adjust-31", ref = await activate(id);
+  await order(ref, "paid-admin-adjust-31", "2026-10-20T02:00:00Z", 15500);
+  await issue(id, midnightAfterTrigger);
+  const ownerUid = "owner-admin-adjust-31", adminUid = "super-admin-adjust-31";
+  await db.collection("users").doc(ownerUid).set({
+    uid: ownerUid, active: true, role: "owner", tenantId: id,
+  });
+  await db.collection("users").doc(adminUid).set({
+    uid: adminUid, active: true, role: "super_admin",
+  });
+  const handle = makeHybridFinanceHandler({ getDb: () => db, ready: true });
+  const request = { action: "adjustments", tenantId: id, cycleId };
+  await assert.rejects(handle({ auth: { uid: ownerUid }, data: request }),
+    error => error.code === "permission-denied");
+  const allowed = await handle({ auth: { uid: adminUid }, data: request });
+  assert.equal(allowed.ok, true);
+  assert.equal(allowed.requiresReview, false);
+  await assert.rejects(handle({ auth: { uid: adminUid }, data: {
+    ...request, creditAmountCents: 7000,
+  } }), error => error.code === "invalid-argument");
+  assert.equal((await ref.collection("hybridBillingInvoices").get()).size, 1);
 });
