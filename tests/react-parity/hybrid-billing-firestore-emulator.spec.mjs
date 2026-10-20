@@ -1244,3 +1244,61 @@ test("emulator: concurrent sharded COD/close either includes receipt or flags im
    assert.equal((await invoices(t)).length,1);
  }
 });
+
+
+test("emulator: read-only receipt enrollment audit pages historical COD and legacy exceptions without certifying",async()=>{
+ const {settleHybridCodDeliveryPayment}=require("../../functions/hybrid-billing-cod-payment.js");
+ const {inspectHybridJournalCoveragePage}=require("../../functions/hybrid-billing-receipt-journal.js");
+ const id="tenant-journal-audit-048",t=await activate(id);
+ const uid="cashier-journal-audit-048";
+ await db.collection("users").doc(uid).set({role:"cashier",active:true,tenantId:id});
+ const cod=t.collection("orders").doc("journal-audit-01");
+ await cod.set({orderType:"delivery",paymentMethod:"cod",paymentStatus:"unpaid",
+   status:"delivered",totalAmount:105,deliveryFee:5,subtotalAmount:100,
+   items:[{id:"item-01",quantity:1}]});
+ await settleHybridCodDeliveryPayment({db,tenantId:id,orderId:cod.id,actorUid:uid});
+ await t.collection("orders").doc("journal-audit-02").set({
+   orderType:"delivery",paymentStatus:"paid",status:"delivered",
+   paidAt:"2026-10-20T02:00:00Z",totalAmount:200,deliveryFee:0,subtotalAmount:200,
+ });
+ await t.collection("orders").doc("journal-audit-03").set({
+   orderType:"delivery",paymentStatus:"paid",status:"delivered",
+   paidAt:stamp("2026-10-20T02:00:00Z"),totalAmount:300,deliveryFee:0,subtotalAmount:300,
+ });
+ await t.collection("orders").doc("journal-audit-pos").set({
+   orderType:"pos",paymentStatus:"paid",paidAt:stamp("2026-10-20T02:00:00Z"),
+ });
+ const first=await inspectHybridJournalCoveragePage({db,tenantId:id,pageSize:2});
+ assert.equal(first.scanned,2);
+ assert.equal(first.coverageCertified,false);
+ assert.equal(first.hasMore,true);
+ assert.deepEqual(first.issues,[{orderId:"journal-audit-02",reason:"missing_journal"}]);
+ const last=await inspectHybridJournalCoveragePage({db,tenantId:id,pageSize:2,afterId:first.nextAfterId});
+ assert.equal(last.scanned,1);
+ assert.equal(last.hasMore,false);
+ assert.deepEqual(last.issues,[{orderId:"journal-audit-03",reason:"missing_journal"}]);
+ assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+ await assert.rejects(inspectHybridJournalCoveragePage({db,tenantId:id,pageSize:500}),
+   /HYBRID_JOURNAL_AUDIT_BAD_REQUEST/);
+});
+test("emulator: strict closed-day rejects forged gross and sourceDay despite existing COD journal",async()=>{
+ const {settleHybridCodDeliveryPayment}=require("../../functions/hybrid-billing-cod-payment.js");
+ const id="tenant-journal-forged-049",t=await activate(id,{
+   hybridReceiptJournalMode:"strict_v1",hybridReceiptJournalCoverageReady:true});
+ const uid="cashier-journal-forged-049",orderId="order-journal-forged-049",date=new Date("2026-10-20T12:30:00Z");
+ await db.collection("users").doc(uid).set({role:"cashier",active:true,tenantId:id});
+ await t.collection("orders").doc(orderId).set({orderType:"delivery",paymentMethod:"cod",
+   paymentStatus:"unpaid",status:"delivered",totalAmount:15540,deliveryFee:40,
+   subtotalAmount:15500,items:[{id:"item-01",quantity:1}]});
+ await settleHybridCodDeliveryPayment({db,tenantId:id,orderId,actorUid:uid,
+   clock:()=>date,serverTimestamp:()=>Timestamp.fromDate(date)});
+ const e=t.collection("hybridBillingReceiptEvents").doc("cod-"+orderId);
+ const recorded=(await e.get()).data();
+ await e.update({grossCents:1,sourceDay:"2026-10-21"});
+ await assert.rejects(issue(id,midnightAfterTrigger),/HYBRID_JOURNAL_SOURCE_INCOMPLETE/);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+ // Emulated privileged tampering restored only for this synthetic test.
+ await e.update({grossCents:recorded.grossCents,sourceDay:recorded.sourceDay});
+ assert.deepEqual((await issue(id,midnightAfterTrigger)).issued,[cycleId+":delivery:trigger"]);
+});

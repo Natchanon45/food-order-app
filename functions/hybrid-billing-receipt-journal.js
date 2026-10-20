@@ -45,6 +45,76 @@ async function readJournalFences(tx,tenantRef){
     return {shard:i,version};
   });
 }
+
+const moneyCents = amount => {
+  if (typeof amount!=="number" || !Number.isFinite(amount) || amount<0
+      || amount>1e9 || Math.abs(amount*100-Math.round(amount*100))>0.00001) return null;
+  return Math.round(amount*100);
+};
+/** Pure integrity check usable both in strict transactional close and in an
+ * untrusted/read-only historical inventory. An event merely existing is NOT
+ * sufficient proof. Every financial field and server timestamp must agree.
+ */
+function journalReceiptIssue(orderId,order,event,tenantId){
+  if (!ID.test(String(orderId||"")) || !ID.test(String(tenantId||""))) return "invalid_identifier";
+  if (!order || order.orderType!=="delivery" || order.paymentStatus!=="paid") return "invalid_paid_delivery";
+  if (!event) return "missing_journal";
+  if (order.paymentReceiptSource!=="hybrid_cod_cashier_server"
+      || event.source!=="hybrid_cod_cashier_server") return "unsupported_payment_source";
+  const paidAt=order.paidAt?.toDate?.(), eventAt=event.paidAt?.toDate?.();
+  if (!(paidAt instanceof Date) || !Number.isFinite(paidAt.getTime())
+      || !(eventAt instanceof Date) || !Number.isFinite(eventAt.getTime())) return "noncanonical_paid_at";
+  if (paidAt.getTime()!==eventAt.getTime()) return "payment_time_mismatch";
+  const gross=moneyCents(order.totalAmount);
+  const merchandise=paidDeliverySale(order);
+  const net=merchandise?moneyCents(merchandise.amount):null;
+  if (gross===null || net===null || net<=0) return "unreviewed_refund_or_financial_state";
+  if (event.tenantId!==tenantId || event.orderId!==orderId || event.currency!=="THB"
+      || event.shard!==shardOf(orderId)
+      || event.sourceDay!==dateKey(paidAt)
+      || event.grossCents!==gross || event.merchandiseCents!==net
+      || typeof event.actorUid!=="string" || !ID.test(event.actorUid)) return "journal_integrity_mismatch";
+  return null;
+}
+/**
+ * Read-only page of ALL lifetime paid Delivery docs, including legacy ISO,
+ * non-COD, refunded and out-of-cycle rows. Advisory ONLY: never flips any
+ * tenant release flag. The server caller must authorize Super Admin separately.
+ * Paged reads across requests are NOT a global snapshot or a certification.
+ */
+async function inspectHybridJournalCoveragePage({db,tenantId,afterId=null,pageSize=100}){
+  if(!db || !ID.test(String(tenantId||""))
+    || (afterId!==null && !ID.test(afterId))
+    || !Number.isSafeInteger(pageSize) || pageSize<1 || pageSize>200){
+    throw Error("HYBRID_JOURNAL_AUDIT_BAD_REQUEST");
+  }
+  const tenantRef=db.collection("tenants").doc(tenantId);
+  const tenant=await tenantRef.get();
+  if(!tenant.exists || tenant.data()?.billingPolicyVersion!=="hybrid_v1"
+    || tenant.data()?.hybridBillingEnabled!==true) throw Error("HYBRID_JOURNAL_AUDIT_TENANT_NOT_HYBRID");
+  let query=tenantRef.collection("orders").where("orderType","==","delivery")
+    .where("paymentStatus","==","paid").orderBy("__name__").limit(pageSize+1);
+  if(afterId)query=query.startAfter(afterId);
+  const snap=await query.get();
+  if(!Array.isArray(snap?.docs)||snap.size!==snap.docs.length||snap.size>pageSize+1)
+    throw Error("HYBRID_JOURNAL_AUDIT_SCAN_INCOMPLETE");
+  const docs=snap.docs.slice(0,pageSize);
+  const events=await Promise.all(docs.map(d=>eventRef(tenantRef,d.id).get()));
+  const issues=[];
+  for(let i=0;i<docs.length;i++){
+    let reason;
+    try{reason=journalReceiptIssue(docs[i].id,docs[i].data(),
+      events[i].exists?events[i].data():null,tenantId)}
+    catch{reason="unreviewed_refund_or_financial_state"}
+    if(reason)issues.push({orderId:docs[i].id,reason});
+  }
+  const hasMore=snap.docs.length>pageSize,nextAfterId=hasMore?docs.at(-1)?.id:null;
+  if(hasMore&&!nextAfterId)throw Error("HYBRID_JOURNAL_AUDIT_MISSING_CURSOR");
+  return {tenantId,scanned:docs.length,issues,issueCount:issues.length,
+    hasMore,nextAfterId,coverageCertified:false,
+    note:"read_only_pagination_not_a_consistent_snapshot_no_auto_activation"};
+}
+
 async function verifyJournaledCodOrders(tx,tenantRef,rows){
   if(!Array.isArray(rows)||rows.length>3000) throw Error("HYBRID_JOURNAL_COVERAGE_LIMIT");
   // An explicit strict-coverage flag cannot silently whitelist old paid orders.
@@ -54,15 +124,13 @@ async function verifyJournaledCodOrders(tx,tenantRef,rows){
     && row?.data?.paymentStatus==="paid");
   const docs=await Promise.all(selected.map(row=>tx.get(eventRef(tenantRef,row.id))));
   for(let i=0;i<selected.length;i++){
-    const {id,data}=selected[i],record=docs[i].data()||{};
-    if(!docs[i].exists || record.orderId!==id || record.tenantId!==tenantRef.id
-      || record.source!=="hybrid_cod_cashier_server"
-      || record.merchandiseCents!==Math.round(paidDeliverySale(data)?.amount*100)
-      || record.paidAt?.toMillis?.()!==data.paidAt?.toMillis?.()
-      || data.paymentReceiptSource!=="hybrid_cod_cashier_server") {
-      throw Error("HYBRID_JOURNAL_SOURCE_INCOMPLETE");
-    }
+    const {id,data}=selected[i];
+    let problem;
+    try{problem=journalReceiptIssue(id,data,docs[i].exists?docs[i].data():null,tenantRef.id)}
+    catch{problem="unreviewed_refund_or_financial_state"}
+    if(problem) throw Error("HYBRID_JOURNAL_SOURCE_INCOMPLETE:"+problem);
   }
   return {verified:selected.length};
 }
-module.exports={SHARDS,shardOf,prepareCodReceiptJournal,readJournalFences,verifyJournaledCodOrders};
+module.exports={SHARDS,shardOf,prepareCodReceiptJournal,readJournalFences,
+  verifyJournaledCodOrders,journalReceiptIssue,inspectHybridJournalCoveragePage};
