@@ -900,3 +900,83 @@ test("emulator: only Super Admin can inspect historical adjustment inventory", a
   } }), error => error.code === "invalid-argument");
   assert.equal((await ref.collection("hybridBillingInvoices").get()).size, 1);
 });
+
+
+test("emulator: independently attested historical paidAt correction is immutable, idempotent and does not modify sealed invoices", async () => {
+  const { reconcileHybridHistoricalPaidReceipt } = require("../../functions/hybrid-billing-historical-repair.js");
+  const id = "tenant-emu-history-38", ref = await activate(id);
+  const uid = "super-history-review-001";
+  await db.collection("users").doc(uid).set({ active: true, role: "super_admin" });
+  await order(ref, "sealed-first", "2026-10-20T02:00:00Z", 10000);
+  await issue(id, midnightAfterTrigger);
+  const invoiceId = cycleId + ":delivery:trigger";
+  const beforeInvoice = (await ref.collection("hybridBillingInvoices").doc(invoiceId).get()).data();
+  const afterSeal = (await ref.collection("hybridBillingPeriods").doc(cycleId).get()).data().daySeals;
+  await ref.collection("orders").doc("iso-paid-legacy").create({
+    orderType: "delivery", paymentStatus: "paid", status: "delivered",
+    paidAt: "2026-10-20T12:00:00.000Z", subtotalAmount: 5500,
+    deliveryFee: 40, totalAmount: 5540,
+  });
+  const request = {
+    db, tenantId: id, orderId: "iso-paid-legacy", caseId: "history-case-0001",
+    reviewerUid: uid, now: new Date("2026-10-21T03:00:00Z"),
+    resolveIndependentPayment: async () => ({
+      verified: true, source: "independent_bank_record",
+      reference: "BANK-INDEPENDENT-HISTORY-0001",
+      evidenceSha256: "b".repeat(64), grossAmountCents: 554000,
+      paidAt: new Date("2026-10-20T12:00:00Z"),
+      checkedAt: new Date("2026-10-21T02:59:00Z"),
+    }),
+  };
+  await assert.rejects(issue(id, "2026-10-21T17:01:00Z"), /NONCANONICAL|MISSING_SERVER_TIMESTAMP|SOURCE|COVERAGE|PAID_AT/i);
+  const a = await reconcileHybridHistoricalPaidReceipt(request);
+  assert.equal(a.corrected, true);
+  const row = (await ref.collection("orders").doc("iso-paid-legacy").get()).data();
+  assert.ok(row.paidAt instanceof Timestamp);
+  assert.equal(row.paidAt.toMillis(), Date.parse("2026-10-20T12:00:00Z"));
+  assert.equal(row.hybridPaidAtCorrectionCase, request.caseId);
+  const repeat = await reconcileHybridHistoricalPaidReceipt(request);
+  assert.equal(repeat.alreadyCorrected, true);
+  const correction = (await ref.collection("hybridBillingReceiptCorrections").doc(request.caseId).get()).data();
+  assert.equal(correction.adjustmentReviewRequired, true);
+  assert.deepEqual((await ref.collection("hybridBillingInvoices").doc(invoiceId).get()).data(), beforeInvoice);
+  assert.deepEqual((await ref.collection("hybridBillingPeriods").doc(cycleId).get()).data().daySeals, afterSeal);
+  const difference = await inspectHybridClosedDayAdjustments({ db, tenantId: id, cycleId });
+  assert.equal(difference.requiresReview, true);
+  assert.ok(difference.changed.some(d => d.deltaCents === 550000));
+  await assert.rejects(issue(id, "2026-10-21T17:01:00Z"), /CLOSED_DAY_CHANGED_REQUIRES_ADJUSTMENT/);
+});
+test("emulator: historical receipt correction refuses forged reviewer, amount and reused provider reference", async () => {
+  const { reconcileHybridHistoricalPaidReceipt } = require("../../functions/hybrid-billing-historical-repair.js");
+  const id = "tenant-emu-history-39", ref = await activate(id);
+  const uid = "super-history-review-002";
+  await db.collection("users").doc(uid).set({ active: true, role: "owner", tenantId: id });
+  for (const key of ["receipt-a", "receipt-b"]) {
+    await ref.collection("orders").doc(key).create({
+      orderType: "delivery", paymentStatus: "paid", status: "delivered",
+      paidAt: "2026-10-20T02:00:00Z", subtotalAmount: 100,
+      deliveryFee: 10, totalAmount: 110,
+    });
+  }
+  const now = new Date("2026-10-20T10:00:00Z");
+  const req = (orderId, amountCents) => ({
+    db, tenantId: id, orderId, caseId: "history-case-" + orderId,
+    reviewerUid: uid, now, resolveIndependentPayment: async () => ({
+      verified: true, source: "independent_bank_record",
+      reference: "BANK-INDEPENDENT-HISTORY-0002",
+      evidenceSha256: "c".repeat(64), grossAmountCents: amountCents,
+      paidAt: new Date("2026-10-20T02:00:00Z"),
+      checkedAt: new Date("2026-10-20T09:59:00Z"),
+    }),
+  });
+  await assert.rejects(reconcileHybridHistoricalPaidReceipt(req("receipt-a", 11000)),
+    /SUPER_ADMIN_REQUIRED/);
+  await db.collection("users").doc(uid).update({ role: "super_admin" });
+  await assert.rejects(reconcileHybridHistoricalPaidReceipt(req("receipt-a", 9999)),
+    /AMOUNT_MISMATCH/);
+  const good = await reconcileHybridHistoricalPaidReceipt(req("receipt-a", 11000));
+  assert.equal(good.corrected, true);
+  await assert.rejects(reconcileHybridHistoricalPaidReceipt(req("receipt-b", 11000)),
+    /REFERENCE_ALREADY_USED/);
+  assert.equal(typeof (await ref.collection("orders").doc("receipt-b").get()).data().paidAt, "string");
+});
