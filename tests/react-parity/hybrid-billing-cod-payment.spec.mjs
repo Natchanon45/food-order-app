@@ -13,7 +13,7 @@ test("Phase3I COD remains internal: no Functions export or active front-end rout
 });
 test("COD candidate uses trusted server clock; never parses client timestamps", () => {
   assert.match(backend, /paidAt:\s*serverTimestamp\(\)/);
-  assert.match(backend, /lalamoveCodSettledAt\s*=\s*serverTimestamp\(\)/);
+  assert.match(backend, /HYBRID_COD_LALAMOVE_PROVIDER_SETTLEMENT_REQUIRED/);
   assert.doesNotMatch(backend, /request\.data\.paidAt|new Date\(request/);
 });
 test("COD candidate fail-closes on actor, suspended tenant and previously-paid malformed receipts", () => {

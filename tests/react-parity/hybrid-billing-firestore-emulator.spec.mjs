@@ -457,7 +457,7 @@ test("emulator Phase3I: COD cashier blocks cross-tenant actor and suspended tena
   assert.equal(record.paymentStatus, "unpaid");
 });
 
-test("emulator Phase3I: Lalamove COD requires completion and saves server receipt", async () => {
+test("emulator Phase3I: Lalamove COMPLETED never settles COD funds without independent bank proof", async () => {
   const id = "tenant-emu-cod-lalamove-17", ref = await activate(id);
   const uid = "cashier-cod-emu-003", orderId = "cod-order-lalamove-003";
   await codActor(uid, id);
@@ -466,26 +466,24 @@ test("emulator Phase3I: Lalamove COD requires completion and saves server receip
     status: "ready",
   });
   const payment = () => settleHybridCodDeliveryPayment({ db, tenantId: id, orderId, actorUid: uid });
-  await assert.rejects(payment(), /HYBRID_COD_DELIVERY_NOT_COMPLETED/);
+  await assert.rejects(payment(), /HYBRID_COD_LALAMOVE_PROVIDER_SETTLEMENT_REQUIRED/);
   // Browser-forged COMPLETED alone must never settle money.
   await ref.collection("orders").doc(orderId).update({ lalamoveOrderStatus: "COMPLETED" });
-  await assert.rejects(payment(), /HYBRID_COD_DELIVERY_NOT_COMPLETED/);
-  // This synthetic Admin SDK write models the trusted webhook/refresh path,
-  // NOT proof that the live browser cannot modify these fields yet.
+  await assert.rejects(payment(), /HYBRID_COD_LALAMOVE_PROVIDER_SETTLEMENT_REQUIRED/);
+  // This synthetic Admin SDK write models trusted webhook/refresh status,
+  // NOT proof that COD proceeds ever reached merchant's bank.
   await ref.collection("orders").doc(orderId).update({
     lalamoveCodEnabled: true,
     lalamoveOrderId: "LALAMOVE-TEST-ID-003",
     lalamoveCompletedAt: "2026-10-20T12:00:00Z",
     lalamoveCodDeliveryCompletedAt: "2026-10-20T12:00:00Z",
   });
-  const outcome = await payment();
-  assert.equal(outcome.alreadyPaid, false);
+  await assert.rejects(payment(), /HYBRID_COD_LALAMOVE_PROVIDER_SETTLEMENT_REQUIRED/);
   const record = (await ref.collection("orders").doc(orderId).get()).data();
-  assert.equal(record.paymentStatus, "paid");
-  assert.equal(record.status, "paid");
-  assert.equal(record.lalamoveCodSettlementStatus, "received");
-  assert.ok(record.lalamoveCodSettledAt?.toDate?.() instanceof Date);
-  assert.ok(record.paidAt?.toDate?.() instanceof Date);
+  assert.equal(record.paymentStatus, "unpaid");
+  assert.equal(record.lalamoveCodSettlementStatus, undefined);
+  assert.equal(record.paidAt, undefined);
+  assert.equal((await ref.collection("hybridBillingReceiptEvents").get()).size, 0);
 });
 
 test("emulator Phase3I: preexisting paid ISO receipt requires manual reconciliation", async () => {

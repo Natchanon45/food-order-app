@@ -57,19 +57,11 @@ async function settleHybridCodDeliveryPayment({
       fail("HYBRID_COD_ORDER_NOT_ELIGIBLE");
     }
     const isLalamove = String(order.deliveryProvider || "").toLowerCase() === "lalamove";
-    if (isLalamove && (
-      String(order.lalamoveOrderStatus || "").toUpperCase() !== "COMPLETED"
-      || order.lalamoveCodEnabled !== true
-      || typeof order.lalamoveOrderId !== "string"
-      || !order.lalamoveOrderId.trim()
-      || !Number.isFinite(Date.parse(String(order.lalamoveCompletedAt || "")))
-      || !Number.isFinite(Date.parse(String(order.lalamoveCodDeliveryCompletedAt || "")))
-    )) {
-      // Status alone is mutable on the existing browser-facing order document.
-      // Require the provider completion fields normally written by trusted
-      // Lalamove webhook/refresh flow. This is a provenance *precondition*,
-      // NOT cryptographic verification; reviewed Rules must lock every field.
-      fail("HYBRID_COD_DELIVERY_NOT_COMPLETED");
+    if (isLalamove) {
+      // COMPLETED means delivery finished; it is not proof of COD settlement.
+      // The courier settlement must be independently reconciled to the
+      // merchant's actual receipt, not advanced by a cashier click.
+      fail("HYBRID_COD_LALAMOVE_PROVIDER_SETTLEMENT_REQUIRED");
     }
     if (order.paymentStatus === "paid") {
       // Only a canonical trusted Firestore timestamp permits idempotency.
@@ -101,12 +93,7 @@ async function settleHybridCodDeliveryPayment({
       paymentReceivedByUid: actorUid,
       paymentReceiptSource: "hybrid_cod_cashier_server",
     };
-    if (isLalamove) {
-      patch.status = "paid";
-      patch.completedAt = order.completedAt || serverTimestamp();
-      patch.lalamoveCodSettlementStatus = "received";
-      patch.lalamoveCodSettledAt = serverTimestamp();
-    } else if (order.status === "served") {
+    if (order.status === "served") {
       patch.status = "paid";
       patch.completedAt = serverTimestamp();
     }
