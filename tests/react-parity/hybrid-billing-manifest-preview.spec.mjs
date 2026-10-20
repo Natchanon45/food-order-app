@@ -14,7 +14,7 @@ function mockScan(total,{onRead}={}){
    const start=afterId===null?0:Number(afterId.slice(2));
    const end=Math.min(start+pageSize,total);
    if(onRead)await onRead(start);
-   return {tenantId,scanned:end-start,issues:[],issueCount:0,
+   return {tenantId,scanned:end-start,issues:[],issueCount:0,coverageCertified:false,
      hasMore:end<total,nextAfterId:end<total?"id"+end:null,
      pageDigest:hash([start,end,total])};
  };
