@@ -73,3 +73,38 @@ test("demo enrolled writer admission fails closed on unknown, absent, forged and
   else process.env.FIRESTORE_EMULATOR_HOST=oldH;
  }
 });
+
+
+test("Phase 3X opt-in is literal boolean and cannot target a live or arbitrary host",()=>{
+ const {assertHybridEpochDemoOptIn}=require(
+ "../../functions/hybrid-billing-writer-epoch-candidate.js");
+ assert.equal(assertHybridEpochDemoOptIn(false),false);
+ for(const fake of [undefined,null,0,1,"true",{},[]])
+   assert.throws(()=>assertHybridEpochDemoOptIn(fake),/HYBRID_EPOCH_OPT_IN_INVALID/);
+ const project=process.env.GCLOUD_PROJECT,host=process.env.FIRESTORE_EMULATOR_HOST;
+ try{
+  process.env.GCLOUD_PROJECT="live-project-forbidden";
+  process.env.FIRESTORE_EMULATOR_HOST="127.0.0.1:8187";
+  assert.throws(()=>assertHybridEpochDemoOptIn(true),/HYBRID_EPOCH_DEMO_EMULATOR_ONLY/);
+  process.env.GCLOUD_PROJECT="demo-penguin-hybrid-uat";
+  process.env.FIRESTORE_EMULATOR_HOST="192.168.1.55:8187";
+  assert.throws(()=>assertHybridEpochDemoOptIn(true),/HYBRID_EPOCH_DEMO_EMULATOR_ONLY/);
+  process.env.FIRESTORE_EMULATOR_HOST="127.0.0.1:8187";
+  assert.equal(assertHybridEpochDemoOptIn(true),true);
+ }finally{
+  if(project===undefined)delete process.env.GCLOUD_PROJECT;
+  else process.env.GCLOUD_PROJECT=project;
+  if(host===undefined)delete process.env.FIRESTORE_EMULATOR_HOST;
+  else process.env.FIRESTORE_EMULATOR_HOST=host;
+ }
+ for(const file of ["hybrid-billing-cod-payment.js","hybrid-billing-promptpay-payment.js",
+  "hybrid-billing-refund-reversal.js","hybrid-billing-multi-refund.js"]){
+  const source=readFileSync("functions/"+file,"utf8");
+  assert.match(source,/epochAdmissionDemo=false|epochAdmissionDemo = false/);
+  assert.match(source,/assertHybridEpochDemoOptIn\(epochAdmissionDemo\)/);
+  assert.match(source,/if\s*\(epochAdmissionDemo\)\s*await requireHybridEpochAdmissionCandidate/);
+ }
+ const all=readFileSync("functions/index.js","utf8");
+ assert.doesNotMatch(all,/hybrid-billing-writer-epoch-candidate/);
+});
+
