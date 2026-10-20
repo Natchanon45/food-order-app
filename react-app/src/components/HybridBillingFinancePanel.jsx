@@ -82,14 +82,14 @@ export function HybridBillingFinancePanel({
     return () => { disposed = true; };
   }, [enabled, tenantId, mode, finance, refresh, labels.failed]);
 
-  const run = useCallback(async action => {
+  const run = useCallback(async (action, successMessage = labels.success) => {
     if (!enabled || busy || !tenantId) return;
     setBusy(true);
     setError("");
     setMessage("");
     try {
       await action();
-      setMessage(labels.success);
+      setMessage(successMessage);
       setRefresh(n => n + 1);
     } catch (err) {
       console.error("HYBRID_FINANCE_STAGING_FAILED", err);
@@ -114,8 +114,7 @@ export function HybridBillingFinancePanel({
         invoiceId: selectedInvoice, slipPath });
       setFile(null);
       setSelectedInvoice("");
-      setMessage(labels.sent);
-    });
+    }, labels.sent);
   };
   const review = (row, decision) => run(async () => {
     if (decision === "approve" && (!bankChecked || !bankRef.trim())) {
@@ -206,8 +205,8 @@ export function HybridBillingFinancePanel({
                   {selectedAttempt === row.attemptId ? (
                     <>
                       {proof ? <a href={proof} target="_blank" rel="noopener noreferrer">{labels.verify}</a> : null}
-                      <label htmlFor="hybrid-bank-reference">{labels.reference}</label>
-                      <input id="hybrid-bank-reference" className="input" type="text"
+                      <label htmlFor={`hybrid-bank-reference-${row.attemptId}`}>{labels.reference}</label>
+                      <input id={`hybrid-bank-reference-${row.attemptId}`} className="input" type="text"
                         value={bankRef} onChange={event => setBankRef(event.target.value)} />
                       <label><input type="checkbox" checked={bankChecked}
                         onChange={event => setBankChecked(event.target.checked)} /> {labels.bank}</label>
