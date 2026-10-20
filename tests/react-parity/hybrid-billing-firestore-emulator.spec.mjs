@@ -984,3 +984,106 @@ test("emulator: historical receipt correction refuses forged reviewer, amount an
     /REFERENCE_ALREADY_USED/);
   assert.equal(typeof (await ref.collection("orders").doc("receipt-b").get()).data().paidAt, "string");
 });
+
+
+test("emulator: immutable credit note candidate derives 50 THB from verified 1,000 THB refund without issuing a refund", async () => {
+  const { recordHybridReviewedAdjustment } = require("../../functions/hybrid-billing-adjustments.js");
+  const id = "tenant-emu-adjust-credit-40", ref = await activate(id);
+  const uid = "super-adjust-credit-040";
+  await db.collection("users").doc(uid).set({ active: true, role: "super_admin" });
+  await order(ref, "sale-adjust-credit", "2026-10-20T02:00:00Z", 15500);
+  await issue(id, midnightAfterTrigger);
+  const invoiceId = cycleId + ":delivery:trigger";
+  const invoiceBefore = (await ref.collection("hybridBillingInvoices").doc(invoiceId).get()).data();
+  const period = (await ref.collection("hybridBillingPeriods").doc(cycleId).get()).data();
+  await ref.collection("orders").doc("sale-adjust-credit").update({ refundTotal: 1000 });
+  const changed = await inspectHybridClosedDayAdjustments({ db, tenantId: id, cycleId });
+  assert.equal(changed.changed[0].deltaCents, -100000);
+  const { planClosedDay } = require("../../functions/hybrid-billing-ledger.js");
+  const ordersNow = (await ref.collection("orders").get()).docs.map(d => ({ id: d.id, data: d.data() }));
+  const plan = planClosedDay({ orders: ordersNow, tenantId: id, signupDate: cycleId,
+    cycleId, throughDay: "2026-10-20", settings: period.configSnapshot });
+  const req = { db, tenantId: id, cycleId, invoiceId, reviewId: "review-adjust-credit-040",
+    reviewerUid: uid, now: new Date("2026-10-21T03:00:00Z"),
+    resolveIndependentAdjustment: async () => ({
+      tenantId: id, cycleId, invoiceId, verified: true, sourceType: "verified_refund",
+      evidenceSha256: "d".repeat(64),
+      originalSealDigest: period.daySeals["2026-10-20"].digest,
+      currentSealDigest: plan.seals["2026-10-20"].digest,
+      checkedAt: new Date("2026-10-21T02:59:00Z"),
+    }) };
+  const recorded = await recordHybridReviewedAdjustment(req);
+  assert.equal(recorded.amountCents, 5000);
+  assert.equal(recorded.kind, "credit_note_candidate");
+  assert.equal(recorded.applied, false);
+  assert.equal((await recordHybridReviewedAdjustment(req)).alreadyRecorded, true);
+  const note = (await ref.collection("hybridBillingAdjustments").doc(invoiceId).get()).data();
+  assert.equal(note.status, "approved_unapplied");
+  assert.equal(note.signedDeltaCents, -5000);
+  assert.equal(note.refundInitiated, false);
+  assert.equal((await ref.collection("hybridBillingSettlements").get()).size, 0);
+  assert.deepEqual((await ref.collection("hybridBillingInvoices").doc(invoiceId).get()).data(), invoiceBefore);
+  assert.deepEqual((await ref.collection("hybridBillingPeriods").doc(cycleId).get()).data().daySeals, period.daySeals);
+  await assert.rejects(issue(id, "2026-10-21T17:01:00Z"), /CLOSED_DAY_CHANGED_REQUIRES_ADJUSTMENT/);
+  await assert.rejects(recordHybridReviewedAdjustment({
+    ...req, reviewId: "review-adjust-changed-040",
+  }), /IMMUTABLE_CONFLICT/);
+});
+test("emulator: 5,500 THB late paid sale creates only 275 THB unapplied debit candidate", async () => {
+  const { recordHybridReviewedAdjustment } = require("../../functions/hybrid-billing-adjustments.js");
+  const id = "tenant-emu-adjust-debit-41", ref = await activate(id);
+  const uid = "super-adjust-debit-041";
+  await db.collection("users").doc(uid).set({ active: true, role: "super_admin" });
+  await order(ref, "sale-first-debit", "2026-10-20T02:00:00Z", 10000);
+  await issue(id, midnightAfterTrigger);
+  const period = (await ref.collection("hybridBillingPeriods").doc(cycleId).get()).data();
+  const invoiceId = cycleId + ":delivery:trigger";
+  await order(ref, "sale-late-debit", "2026-10-20T16:00:00Z", 5500);
+  const { planClosedDay } = require("../../functions/hybrid-billing-ledger.js");
+  const rows = (await ref.collection("orders").get()).docs.map(d => ({ id: d.id, data: d.data() }));
+  const plan = planClosedDay({ orders: rows, tenantId: id, signupDate: cycleId,
+    cycleId, throughDay: "2026-10-20", settings: period.configSnapshot });
+  const req = { db, tenantId: id, cycleId, invoiceId, reviewId: "review-adjust-debit-041",
+    reviewerUid: uid, now: new Date("2026-10-21T03:00:00Z"),
+    resolveIndependentAdjustment: async () => ({
+      tenantId: id, cycleId, invoiceId, verified: true,
+      sourceType: "verified_late_paid_receipt", evidenceSha256: "e".repeat(64),
+      originalSealDigest: period.daySeals["2026-10-20"].digest,
+      currentSealDigest: plan.seals["2026-10-20"].digest,
+      checkedAt: new Date("2026-10-21T02:59:00Z"),
+    }) };
+  const debit = await recordHybridReviewedAdjustment(req);
+  assert.equal(debit.kind, "debit_note_candidate");
+  assert.equal(debit.amountCents, 27500);
+  assert.equal(debit.applied, false);
+  await assert.rejects(recordHybridReviewedAdjustment({ ...req,
+    resolveIndependentAdjustment: async () => ({
+      ...await req.resolveIndependentAdjustment(),
+      sourceType: "verified_refund",
+    }),
+  }), /PROVENANCE_DIRECTION/);
+});
+test("emulator: adjustment refuses owner, mismatched original seal and threshold change", async () => {
+  const { recordHybridReviewedAdjustment } = require("../../functions/hybrid-billing-adjustments.js");
+  const id = "tenant-emu-adjust-deny-42", ref = await activate(id);
+  const uid = "reviewer-adjust-deny-042";
+  await db.collection("users").doc(uid).set({ active: true, role: "owner", tenantId: id });
+  await order(ref, "first-order", "2026-10-20T02:00:00Z", 10000);
+  await issue(id, midnightAfterTrigger);
+  const invoiceId = cycleId + ":delivery:trigger";
+  await ref.collection("orders").doc("first-order").update({ refundTotal: 2000 });
+  const period = (await ref.collection("hybridBillingPeriods").doc(cycleId).get()).data();
+  const base = { db, tenantId: id, cycleId, invoiceId,
+    reviewId: "review-adjust-deny-042", reviewerUid: uid,
+    now: new Date("2026-10-21T03:00:00Z"),
+    resolveIndependentAdjustment: async () => ({
+      verified: true, tenantId: id, cycleId, invoiceId, sourceType: "verified_refund",
+      evidenceSha256: "f".repeat(64), originalSealDigest: period.daySeals["2026-10-20"].digest,
+      currentSealDigest: "0".repeat(64),
+      checkedAt: new Date("2026-10-21T02:59:00Z"),
+    }) };
+  await assert.rejects(recordHybridReviewedAdjustment(base), /SUPER_ADMIN_REQUIRED/);
+  await db.collection("users").doc(uid).update({ role: "super_admin" });
+  await assert.rejects(recordHybridReviewedAdjustment(base), /THRESHOLD_TOPOLOGY_CHANGED/);
+  assert.equal((await ref.collection("hybridBillingAdjustments").get()).size, 0);
+});
