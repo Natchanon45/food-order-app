@@ -1161,6 +1161,10 @@ export function AdminTenantsPage() {
           </label>
         </section>
 
+        {tenants.some(item => item.id === tenantId && item.billingPolicyVersion === "hybrid_v1") ? (
+          <HybridBillingFinancePanel tenantId={tenantId} mode="admin"
+            language={intlLocale?.startsWith("th") ? "th" : "en"} />
+        ) : null}
         <section className="card tenant-report-card" aria-labelledby="tenantReportTitle">
           <div className="section-title tenant-report-heading">
             <div>
