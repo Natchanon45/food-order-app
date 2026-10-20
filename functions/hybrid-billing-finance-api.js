@@ -10,12 +10,14 @@ const { submitHybridPaymentEvidence, reviewHybridPaymentEvidence } = require("./
 const { approveHybridRecovery } = require("./hybrid-billing-recovery");
 const { issueHybridInvoicesForClosedDay } = require("./hybrid-billing-ledger");
 const { reconcileHybridArrears } = require("./hybrid-billing-arrears");
+const { scanHybridPaidReceiptExceptions } = require("./hybrid-billing-receipt-audit");
 
 const HYBRID_FINANCE_API_READY = false; // KEEP FALSE until full external UAT.
 const ID = /^[A-Za-z0-9_-]{8,128}$/;
 const paths = {
   list: ["action", "tenantId"],
   queue: ["action", "tenantId"],
+  audit: ["action", "tenantId", "afterId"],
   submit: ["action", "tenantId", "invoiceId", "attemptId", "slipPath"],
   review: ["action", "tenantId", "attemptId", "decision", "bankTxnRef",
     "confirmedAmountCents", "recipientConfirmed"],
@@ -55,7 +57,7 @@ function makeHybridFinanceHandler({
       deny("permission-denied", "HYBRID_FINANCE_CROSS_TENANT_DENIED");
     }
     const action = data.action;
-    if (["queue", "review", "recover", "close", "arrears"].includes(action) && !superAdmin) {
+    if (["queue", "audit", "review", "recover", "close", "arrears"].includes(action) && !superAdmin) {
       deny("permission-denied", "HYBRID_FINANCE_SUPER_ADMIN_REQUIRED");
     }
     if (action === "list") {
@@ -75,6 +77,11 @@ function makeHybridFinanceHandler({
           currency: inv.currency, status: paid.exists ? "paid" : "unpaid" };
       }));
       return { ok: true, rows };
+    }
+    if (action === "audit") {
+      return { ok: true, ...(await scanHybridPaidReceiptExceptions({
+        db, tenantId, afterId: data.afterId,
+      })) };
     }
     if (action === "queue") {
       const tenantRef = db.collection("tenants").doc(tenantId);
