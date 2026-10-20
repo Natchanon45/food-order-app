@@ -68,6 +68,9 @@ test("existing Owner report and Super Admin tenants use staged finance panel, no
   assert.match(panel, /action: "submit", tenantId, attemptId/);
   assert.match(panel, /action: "review", tenantId, attemptId: row.attemptId/);
   assert.match(panel, /action: "recover", tenantId, reviewId/);
+  assert.match(panel, /action: "audit", tenantId, afterId/);
+  assert.match(panel, /action: "adjustments", tenantId, cycleId: adjustmentCycle/);
+  assert.match(panel, /manual|อ่านอย่างเดียว/);
   assert.match(panel, /uploadedByUid: auth.currentUser.uid/);
   assert.doesNotMatch(panel, /httpsCallable\(/);
   assert.doesNotMatch(panel, /updateDoc\(|setDoc\(/);
