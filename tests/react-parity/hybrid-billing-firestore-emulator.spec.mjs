@@ -1181,3 +1181,51 @@ test("emulator: strict journal COD payment proves source coverage of full 15,500
  assert.equal((await t.collection("hybridBillingReceiptEvents").get()).size,2);
  assert.deepEqual((await issue(id,midnightAfterTrigger)).issued,[]);
 });
+
+
+test("emulator: sharded journal fence prevents concurrent paid COD from silently underbilling close",async()=>{
+ const {settleHybridCodDeliveryPayment}=require("../../functions/hybrid-billing-cod-payment.js");
+ const id="tenant-journal-concurrent-047",t=await activate(id,{
+   hybridReceiptJournalMode:"strict_v1",hybridReceiptJournalCoverageReady:true});
+ const uid="cashier-journal-047",date=new Date("2026-10-20T12:30:00Z");
+ await db.collection("users").doc(uid).set({active:true,role:"cashier",tenantId:id});
+ const setup=async (name,gross,goods)=>{
+   const orderId="journal-race-"+name+"-047";
+   await t.collection("orders").doc(orderId).set({orderType:"delivery",paymentMethod:"cod",
+     paymentStatus:"unpaid",status:"delivered",totalAmount:gross,
+     subtotalAmount:goods,deliveryFee:40,items:[{id:"item1",quantity:1}]});
+   return {db,tenantId:id,orderId,actorUid:uid,
+     clock:()=>date,serverTimestamp:()=>Timestamp.fromDate(date)};
+ };
+ const first=await setup("first",10040,10000);
+ const second=await setup("second",5540,5500);
+ await settleHybridCodDeliveryPayment(first);
+ let release,entered,hasPaused=false;
+ const blocked=new Promise(resolve=>{release=resolve;});
+ const enteredPromise=new Promise(resolve=>{entered=resolve;});
+ const close=issueHybridInvoicesForClosedDay({
+   db,tenantId:id,cycleId,now:now(midnightAfterTrigger),
+   readOrders:async (...params)=>{
+     if(!hasPaused){
+       hasPaused=true;
+       entered();
+       await blocked;
+     }
+     return paidOrdersInWindow(...params);
+   },
+ });
+ try{
+   await enteredPromise;
+   await settleHybridCodDeliveryPayment(second);
+ }finally{
+   release();
+ }
+ const result=await Promise.allSettled([close]);
+ const issued=await invoices(t);
+ assert.equal(issued.filter(row=>row.amountCents===50000).length,0,
+   "10,000-only THB 500 underbill must NEVER commit after 5,500 concurrent COD payment");
+ if(result[0].status==="fulfilled" && issued.length){
+   assert.equal(issued[0].amountCents,77500);
+ }
+ assert.equal((await t.collection("hybridBillingReceiptEvents").get()).size,2);
+});
