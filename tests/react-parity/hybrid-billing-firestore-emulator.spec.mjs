@@ -1272,11 +1272,11 @@ test("emulator: read-only receipt enrollment audit pages historical COD and lega
  assert.equal(first.scanned,2);
  assert.equal(first.coverageCertified,false);
  assert.equal(first.hasMore,true);
- assert.deepEqual(first.issues,[{orderId:"journal-audit-02",reason:"missing_journal"}]);
+ assert.deepEqual(first.issues,[{orderId:"journal-audit-02",reason:"noncanonical_paid_at"}]);
  const last=await inspectHybridJournalCoveragePage({db,tenantId:id,pageSize:2,afterId:first.nextAfterId});
  assert.equal(last.scanned,1);
  assert.equal(last.hasMore,false);
- assert.deepEqual(last.issues,[{orderId:"journal-audit-03",reason:"missing_journal"}]);
+ assert.deepEqual(last.issues,[{orderId:"journal-audit-03",reason:"unsupported_payment_source"}]);
  assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
  assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
  await assert.rejects(inspectHybridJournalCoveragePage({db,tenantId:id,pageSize:500}),
@@ -1301,4 +1301,20 @@ test("emulator: strict closed-day rejects forged gross and sourceDay despite exi
  // Emulated privileged tampering restored only for this synthetic test.
  await e.update({grossCents:recorded.grossCents,sourceDay:recorded.sourceDay});
  assert.deepEqual((await issue(id,midnightAfterTrigger)).issued,[cycleId+":delivery:trigger"]);
+});
+
+test("emulator: read-only journal audit pagination accepts short legacy order IDs as cursors",async()=>{
+ const {inspectHybridJournalCoveragePage}=require("../../functions/hybrid-billing-receipt-journal.js");
+ const id="tenant-journal-legacycursor-050",t=await activate(id);
+ for(const name of ["a","b","c"]){
+   await t.collection("orders").doc(name).set({orderType:"delivery",paymentStatus:"paid",
+     status:"delivered",paidAt:stamp("2026-10-20T02:00:00Z"),
+     totalAmount:100,deliveryFee:0,subtotalAmount:100});
+ }
+ const p1=await inspectHybridJournalCoveragePage({db,tenantId:id,pageSize:2});
+ assert.equal(p1.nextAfterId,"b");
+ assert.equal(p1.coverageCertified,false);
+ const p2=await inspectHybridJournalCoveragePage({db,tenantId:id,pageSize:2,afterId:p1.nextAfterId});
+ assert.equal(p2.scanned,1);
+ assert.deepEqual(p2.issues,[{orderId:"c",reason:"unsupported_payment_source"}]);
 });

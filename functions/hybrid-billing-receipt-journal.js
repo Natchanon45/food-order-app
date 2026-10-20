@@ -7,6 +7,7 @@ const { paidDeliverySale } = require("./hybrid-billing-orders");
 const { dateKey } = require("./hybrid-billing-core");
 const SHARDS=16;
 const ID=/^[A-Za-z0-9_-]{8,128}$/;
+const ORDER_ID=/^[A-Za-z0-9_-]{1,256}$/;
 const shardOf = id => {
   if (typeof id!=="string" || !ID.test(id)) throw Error("HYBRID_JOURNAL_BAD_ORDER");
   return createHash("sha256").update(id).digest().readUInt32BE(0)%SHARDS;
@@ -56,14 +57,15 @@ const moneyCents = amount => {
  * sufficient proof. Every financial field and server timestamp must agree.
  */
 function journalReceiptIssue(orderId,order,event,tenantId){
-  if (!ID.test(String(orderId||"")) || !ID.test(String(tenantId||""))) return "invalid_identifier";
+  if (!ORDER_ID.test(String(orderId||"")) || !ID.test(String(tenantId||""))) return "invalid_identifier";
   if (!order || order.orderType!=="delivery" || order.paymentStatus!=="paid") return "invalid_paid_delivery";
+  const paidAt=order.paidAt?.toDate?.();
+  if (!(paidAt instanceof Date) || !Number.isFinite(paidAt.getTime())) return "noncanonical_paid_at";
+  if (order.paymentReceiptSource!=="hybrid_cod_cashier_server") return "unsupported_payment_source";
   if (!event) return "missing_journal";
-  if (order.paymentReceiptSource!=="hybrid_cod_cashier_server"
-      || event.source!=="hybrid_cod_cashier_server") return "unsupported_payment_source";
-  const paidAt=order.paidAt?.toDate?.(), eventAt=event.paidAt?.toDate?.();
-  if (!(paidAt instanceof Date) || !Number.isFinite(paidAt.getTime())
-      || !(eventAt instanceof Date) || !Number.isFinite(eventAt.getTime())) return "noncanonical_paid_at";
+  if (event.source!=="hybrid_cod_cashier_server") return "unsupported_payment_source";
+  const eventAt=event.paidAt?.toDate?.();
+  if (!(eventAt instanceof Date) || !Number.isFinite(eventAt.getTime())) return "noncanonical_paid_at";
   if (paidAt.getTime()!==eventAt.getTime()) return "payment_time_mismatch";
   const gross=moneyCents(order.totalAmount);
   const merchandise=paidDeliverySale(order);
@@ -84,7 +86,7 @@ function journalReceiptIssue(orderId,order,event,tenantId){
  */
 async function inspectHybridJournalCoveragePage({db,tenantId,afterId=null,pageSize=100}){
   if(!db || !ID.test(String(tenantId||""))
-    || (afterId!==null && !ID.test(afterId))
+    || (afterId!==null && (typeof afterId!=="string" || !ORDER_ID.test(afterId)))
     || !Number.isSafeInteger(pageSize) || pageSize<1 || pageSize>200){
     throw Error("HYBRID_JOURNAL_AUDIT_BAD_REQUEST");
   }
