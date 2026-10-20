@@ -90,6 +90,25 @@ if (!orderLine.includes(tenantOrderUpdate)) {
 const guardedLine = orderLine.replace(tenantOrderUpdate,
   "allow update: if hybridOperationalWriteAllowed() && hybridDeliveryReceiptFieldsUnchanged() && tenantBusinessEnabled(tenantId, 'order_delivery')");
 candidate = candidate.slice(0, index) + guardedLine + candidate.slice(lineEnd);
+// The real legacy POS matcher shares create/update validation. Firebase may
+// evaluate both permissions for setDoc() upserts; a new sale has no resource.
+// Reject update cheaply for non-existent documents BEFORE expanding multi-role
+// product/return validation (which can otherwise exhaust 1000 expressions).
+const salesMatch = "match /sales/{saleId} {";
+const salesAt = candidate.indexOf(salesMatch);
+if (salesAt < 0 || candidate.indexOf(salesMatch, salesAt + 1) !== -1) {
+  throw Error("HYBRID_RULES_CANDIDATE_POS_SALES_DRIFT");
+}
+const salesEnd = candidate.indexOf("\n", salesAt);
+const salesLine = candidate.slice(salesAt, salesEnd);
+const salesUpdate = "allow update: if tenantBusinessEnabled(tenantId, 'retail_pos')";
+if (!salesLine.includes(salesUpdate)) {
+  throw Error("HYBRID_RULES_CANDIDATE_POS_UPDATE_DRIFT");
+}
+candidate = candidate.slice(0, salesAt)
+  + salesLine.replace(salesUpdate,
+    "allow update: if resource != null && tenantBusinessEnabled(tenantId, 'retail_pos')")
+  + candidate.slice(salesEnd);
 // Diagnostic mode runs the UNCHANGED production rules in the demo emulator
 // to distinguish a pre-existing evaluation-budget problem from Hybrid edits.
 // It never deploys, changes or rewrites the repository's firestore.rules.
