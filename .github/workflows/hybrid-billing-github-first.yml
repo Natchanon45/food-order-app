@@ -86,6 +86,9 @@ jobs:
         run: npm install --global firebase-tools@15.34.0 --no-audit --no-fund
       - name: Verify candidate with strict evaluator-error detection
         run: npm run test:hybrid-billing:rules-emulator
+      - name: Diagnose original untouched Rules after candidate test
+        if: always()
+        run: npm run test:hybrid-billing:rules-baseline
 
 # This workflow deliberately has no cloud credentials, deployment steps, or
 # automatic enabling of Hybrid Billing. The separate Auth/Rules security UAT
