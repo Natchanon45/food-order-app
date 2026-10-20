@@ -714,6 +714,7 @@ test("emulator integrated finance API: owner proof -> Super Admin bank approval 
   });
   const handle = makeHybridFinanceHandler({
     getDb: () => db, ready: true,
+    clock: () => new Date(midnightAfterTrigger),
     getBucket: () => ({ file: () => ({ getMetadata: async () => [{
       size: "12500", contentType: "image/png", metadata: { uploadedByUid: ownerUid },
     }] }) }),
