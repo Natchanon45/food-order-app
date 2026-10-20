@@ -1839,10 +1839,10 @@ test("emulator Phase 3X guarded COD and PromptPay plus first/partial Refund comm
  await assert.rejects(settleHybridCodDeliveryPayment(codArgs(newCod)),/HYBRID_EPOCH_CLOSED/);
  await assert.rejects(recordHybridVerifiedPromptPay(bankArgs(newBank)),/HYBRID_EPOCH_CLOSED/);
  await assert.rejects(recordHybridVerifiedRefund(refundArgs(
-   bankA,"EPOCH-REFUND-071-C",10000,"2026-10-21T02:30:00Z"))),
+   bankA,"EPOCH-REFUND-071-C",10000,"2026-10-21T02:30:00Z")),
    /HYBRID_EPOCH_CLOSED/);
  await assert.rejects(appendHybridVerifiedPartialRefund(refundArgs(
-   codA,"EPOCH-REFUND-071-D",10000,"2026-10-21T02:40:00Z"))),
+   codA,"EPOCH-REFUND-071-D",10000,"2026-10-21T02:40:00Z")),
    /HYBRID_EPOCH_CLOSED/);
  assert.equal((await t.collection("hybridBillingReceiptEvents").get()).size,receiptsBefore);
  assert.equal((await t.collection("orders").doc(newCod).get()).data().paymentStatus,"unpaid");
