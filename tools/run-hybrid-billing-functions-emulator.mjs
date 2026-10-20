@@ -56,7 +56,7 @@ exports.hybridFinanceDemo = onCall({ region: "asia-southeast1",
   writeFileSync(path.join(folder, "firestore.rules"),
     "rules_version = '2'; service cloud.firestore { match /databases/{database}/documents { match /{document=**} { allow read, write: if false; } } }\n");
   writeFileSync(path.join(folder, "firebase.json"), JSON.stringify({
-    functions: { source: func, codebase: "hybrid-demo" },
+    functions: { source: "functions", codebase: "hybrid-demo" },
     firestore: { rules: path.join(folder, "firestore.rules") },
     emulators: {
       auth: { host: "127.0.0.1", port: 9096 },
@@ -70,9 +70,9 @@ exports.hybridFinanceDemo = onCall({ region: "asia-southeast1",
     "emulators:exec", "--only", "auth,firestore,functions",
     "--project", PROJECT, "--config", path.join(folder, "firebase.json"),
     "--log-verbosity", "QUIET",
-    "node --test tests/react-parity/hybrid-billing-functions-emulator.spec.mjs",
+    "node --test " + JSON.stringify(path.join(ROOT, "tests/react-parity/hybrid-billing-functions-emulator.spec.mjs")),
   ], {
-    cwd: ROOT, stdio: "pipe", encoding: "utf8", maxBuffer: 24 * 1024 * 1024,
+    cwd: folder, stdio: "pipe", encoding: "utf8", maxBuffer: 24 * 1024 * 1024,
     env: { ...process.env, GCLOUD_PROJECT: PROJECT, JAVA_HOME: javaHome,
       PATH: path.join(javaHome, "bin") + path.delimiter + (process.env.PATH || "") },
   });
