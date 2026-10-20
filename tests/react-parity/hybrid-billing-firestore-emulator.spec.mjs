@@ -1665,3 +1665,56 @@ test("emulator: Lalamove candidate rejects forged actor, provider mismatch and s
  assert.equal((await t2.collection("hybridLalamoveCodCompletionProof").get()).size,0);
  assert.equal((await t2.collection("orders").doc(otherOrder).get()).data().paymentStatus,"unpaid");
 });
+
+
+test("emulator: read-only manifest witnesses valid paginated COD journals with no production activation",async()=>{
+ const {settleHybridCodDeliveryPayment}=require("../../functions/hybrid-billing-cod-payment.js");
+ const {previewHybridJournalManifest}=require("../../functions/hybrid-billing-manifest-preview.js");
+ const id="tenant-manifest-readonly-063",t=await activate(id),uid="cashier-manifest-063";
+ await db.collection("users").doc(uid).set({role:"cashier",active:true,tenantId:id});
+ for(let i=0;i<3;i++){
+  const orderId="order-manifest-063-"+i;
+  await t.collection("orders").doc(orderId).set({
+   orderType:"delivery",paymentStatus:"unpaid",paymentMethod:"cod",
+   status:"delivered",totalAmount:105,deliveryFee:5,subtotalAmount:100,
+   items:[{id:"food",quantity:1}]});
+  const date=new Date("2026-10-20T12:30:00Z");
+  await settleHybridCodDeliveryPayment({db,tenantId:id,orderId,actorUid:uid,
+   clock:()=>date,serverTimestamp:()=>Timestamp.fromDate(date)});
+ }
+ const args={db,tenantId:id,pageSize:2};
+ const first=await previewHybridJournalManifest(args);
+ const second=await previewHybridJournalManifest(args);
+ assert.equal(first.scanned,3);
+ assert.equal(first.pages,2);
+ assert.equal(first.issueCount,0);
+ assert.equal(first.rootDigest,second.rootDigest);
+ assert.equal(first.coverageCertified,false);
+ assert.equal(first.canIssueInvoice,false);
+ assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+});
+test("emulator: trusted payment during manifest pagination changes writer fence and fails closed",async()=>{
+ const {settleHybridCodDeliveryPayment}=require("../../functions/hybrid-billing-cod-payment.js");
+ const {previewHybridJournalManifest}=require("../../functions/hybrid-billing-manifest-preview.js");
+ const id="tenant-manifest-race-064",t=await activate(id),uid="cashier-manifest-064";
+ await db.collection("users").doc(uid).set({role:"cashier",active:true,tenantId:id});
+ const date=new Date("2026-10-20T12:30:00Z");
+ for(const orderId of ["order-manifest-race-064-1","order-manifest-race-064-2"]){
+  await t.collection("orders").doc(orderId).set({
+    orderType:"delivery",paymentMethod:"cod",paymentStatus:"unpaid",
+    status:"delivered",totalAmount:105,deliveryFee:5,subtotalAmount:100,
+    items:[{id:"food",quantity:1}]});
+ }
+ await settleHybridCodDeliveryPayment({db,tenantId:id,
+    orderId:"order-manifest-race-064-1",actorUid:uid,
+    clock:()=>date,serverTimestamp:()=>Timestamp.fromDate(date)});
+ await assert.rejects(previewHybridJournalManifest({db,tenantId:id,pageSize:1,
+   afterPage:async({pageIndex})=>{
+     if(pageIndex===0)await settleHybridCodDeliveryPayment({db,tenantId:id,
+      orderId:"order-manifest-race-064-2",actorUid:uid,
+      clock:()=>date,serverTimestamp:()=>Timestamp.fromDate(date)});
+   }}),/HYBRID_MANIFEST_WRITER_RACE/);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+ assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
+});
