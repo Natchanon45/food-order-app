@@ -47,14 +47,19 @@ async function readJournalFences(tx,tenantRef){
 }
 async function verifyJournaledCodOrders(tx,tenantRef,rows){
   if(!Array.isArray(rows)||rows.length>3000) throw Error("HYBRID_JOURNAL_COVERAGE_LIMIT");
-  const selected=rows.filter(row=>row?.data?.paymentReceiptSource==="hybrid_cod_cashier_server");
+  // An explicit strict-coverage flag cannot silently whitelist old paid orders.
+  // Only COD currently emits journal entries, so every other paid Delivery
+  // source must be migrated and independently verified before strict release.
+  const selected=rows.filter(row=>row?.data?.orderType==="delivery"
+    && row?.data?.paymentStatus==="paid");
   const docs=await Promise.all(selected.map(row=>tx.get(eventRef(tenantRef,row.id))));
   for(let i=0;i<selected.length;i++){
     const {id,data}=selected[i],record=docs[i].data()||{};
     if(!docs[i].exists || record.orderId!==id || record.tenantId!==tenantRef.id
       || record.source!=="hybrid_cod_cashier_server"
       || record.merchandiseCents!==Math.round(paidDeliverySale(data)?.amount*100)
-      || record.paidAt?.toMillis?.()!==data.paidAt?.toMillis?.()) {
+      || record.paidAt?.toMillis?.()!==data.paidAt?.toMillis?.()
+      || data.paymentReceiptSource!=="hybrid_cod_cashier_server") {
       throw Error("HYBRID_JOURNAL_SOURCE_INCOMPLETE");
     }
   }

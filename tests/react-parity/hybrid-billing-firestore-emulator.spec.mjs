@@ -1155,6 +1155,29 @@ test("emulator: strict journal source mode rejects uncertified tenant without fi
  await assert.rejects(issue(id,midnightAfterTrigger),/HYBRID_JOURNAL_COVERAGE_NOT_CERTIFIED/);
  assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
  await t.update({hybridReceiptJournalCoverageReady:true});
+ await assert.rejects(issue(id,midnightAfterTrigger),/HYBRID_JOURNAL_SOURCE_INCOMPLETE/);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
  // A legacy paid order cannot be certified by simply editing the flag; strict
  // writer coverage of every paid source is still a separate release blocker.
+});
+
+test("emulator: strict journal COD payment proves source coverage of full 15,500 closed trigger day",async()=>{
+ const {settleHybridCodDeliveryPayment}=require("../../functions/hybrid-billing-cod-payment.js");
+ const id="tenant-journal-trigger-046",t=await activate(id,{
+   hybridReceiptJournalMode:"strict_v1",hybridReceiptJournalCoverageReady:true});
+ const uid="cashier-journal-046",date=new Date("2026-10-20T12:30:00Z");
+ await db.collection("users").doc(uid).set({role:"cashier",tenantId:id,active:true});
+ for(const [name,gross,goods] of [["one",10040,10000],["two",5540,5500]]){
+   const orderId="order-journal-"+name+"-046";
+   await t.collection("orders").doc(orderId).set({orderType:"delivery",paymentMethod:"cod",
+     paymentStatus:"unpaid",status:"delivered",totalAmount:gross,
+     subtotalAmount:goods,deliveryFee:40,items:[{id:"i",quantity:1}]});
+   await settleHybridCodDeliveryPayment({db,tenantId:id,orderId,actorUid:uid,
+     clock:()=>date,serverTimestamp:()=>Timestamp.fromDate(date)});
+ }
+ const result=await issue(id,midnightAfterTrigger);
+ assert.deepEqual(result.issued,[cycleId+":delivery:trigger"]);
+ assert.equal((await invoices(t))[0].amountCents,77500);
+ assert.equal((await t.collection("hybridBillingReceiptEvents").get()).size,2);
+ assert.deepEqual((await issue(id,midnightAfterTrigger)).issued,[]);
 });
