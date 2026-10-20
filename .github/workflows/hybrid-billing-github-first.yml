@@ -1,0 +1,68 @@
+name: Hybrid Billing (GitHub-first, no deploy)
+
+on:
+  push:
+    branches:
+      - feature/hybrid-billing-github-first
+  pull_request:
+    branches:
+      - feature/hybrid-billing-github-first
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hybrid-billing-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    name: Unit, React parity and operational contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install React dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install Firebase Functions dependencies
+        run: npm install --prefix functions --no-audit --no-fund
+      - name: Hybrid Billing contracts
+        run: npm run test:hybrid-billing
+      - name: React parity
+        run: npm run test:react-parity
+      - name: Operational contracts
+        run: npm run test:operational
+      - name: Verify existing generated React build (no new build)
+        run: npm run verify:react-build
+
+  firestore-emulator:
+    name: Firestore demo project integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Install React dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install Firebase Functions dependencies
+        run: npm install --prefix functions --no-audit --no-fund
+      - name: Install Firebase CLI for local-only Emulator
+        run: npm install --global firebase-tools@15.34.0 --no-audit --no-fund
+      - name: Run isolated demo Firestore Emulator tests
+        run: npm run test:hybrid-billing:emulator
+
+# This workflow deliberately has no cloud credentials, deployment steps, or
+# automatic enabling of Hybrid Billing. The separate Auth/Rules security UAT
+# remains BLOCKED until the 1000-expression evaluator issue is resolved.
