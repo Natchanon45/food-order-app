@@ -75,8 +75,10 @@ test("existing Owner report and Super Admin tenants use staged finance panel, no
 
 test("Finance backend queue is Super Admin-only and storage review stays fail closed", () => {
   const source = readFileSync("functions/hybrid-billing-finance-api.js", "utf8");
-  assert.match(source, /"queue", "review", "recover", "close", "arrears"/);
+  assert.match(source, /"queue", "audit", "adjustments", "review", "recover", "close", "arrears"/);
   assert.match(source, /HYBRID_FINANCE_QUEUE_PAGINATION_REQUIRED/);
+  assert.match(source, /scanHybridPaidReceiptExceptions/);
+  assert.match(source, /inspectHybridClosedDayAdjustments/);
   assert.match(source, /HYBRID_FINANCE_STORAGE_PROOF_INVALID/);
   assert.match(source, /metadata\.metadata\?\.uploadedByUid !== uid/);
   assert.doesNotMatch(readFileSync("functions/index.js", "utf8"),
