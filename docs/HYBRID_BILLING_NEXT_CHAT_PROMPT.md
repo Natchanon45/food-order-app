@@ -115,3 +115,37 @@
 - COD Cashier source plumbing added but **OFF** via `HYBRID_COD_CASHIER_CUTOVER_READY=false`. Read `react-app/src/data/hybridCodCashierRoute.mjs` + `hybridCodCashier.js` + `CashierPage.jsx`. Hybrid COD does NOT fall back to browser ISO `paidAt`; Hybrid PromptPay uses existing review, Legacy unchanged. No live Callable reference until exported and approved.
 - Single Firestore Emulator vertical slice covers simulated COD 15,500 → post-day invoice **775** → synthetic slip & bank review → safe recovery pending. Real Emulator **22/22 PASS +2 TODO**, Node Hybrid **87/87 PASS**, full React Parity **PASS**. Rules Candidate security remains BLOCKED exit 2.
 - DO NOT enable either cutover/registration flag, deploy production or modify client Rules without a full test matrix. No commit/push/merge or new Build. Remaining blockers in Worklog/UAT; preserve old 24 Vite assets and all uncommitted local source.
+
+
+---
+
+## HANDOFF CONTRACT — 2026-10-20 (สำคัญ: ต้องใส่ในคำสั่งขึ้นแชทใหม่ทุกครั้ง)
+
+ผู้ใช้กำหนดให้ **ทุกครั้งที่ต้องย้ายแชท/ใกล้จบแชท/โควต้าเริ่มไม่พอ ต้องเตรียมคำสั่งขึ้นแชทใหม่ที่คัดลอกใช้ได้ทันที** และคำสั่งนั้นต้องสั่งแชทใหม่ให้ทำแบบเดียวกันในแชทถัดไป (recursive handoff) โดยไม่ต้องให้ผู้ใช้ร้องขอซ้ำ ยึด **GitHub source-of-truth** เป็นหลักและห้ามเริ่มใหม่โดยไม่ตรวจบริบท GitHub ล่าสุด
+
+**Snapshot จาก CI ที่ตรวจสอบแล้ว (ไม่ใช่สถานะ Production):**
+- Repo: `Natchanon45/food-order-app`; canonical branch: `feature/hybrid-billing-github-first`; Draft PR: https://github.com/Natchanon45/food-order-app/pull/7
+- GitHub Actions: code commit `f47510c7`, run `39397207041` = 6/6 jobs PASS: Hybrid 96/96; Firestore 31 PASS + 2 TODO; Firestore Rules Hybrid 7 + Legacy 4; Storage 4; Auth+Functions Emulator 4; React source build/Parity/Operational PASS. Subsequent documentation commits do not themselves establish newer code test results.
+- Product work: anniversary billing 590 THB or closed-day Delivery 5% at threshold 10,000 THB, day close, invoice, arrears, COD, bank-proof and Super Admin recovery candidates, Rules/Storage source, Owner/Super Admin staged UI and read-only historical paidAt/refund/late-receipt audit. See latest append-only sections of `docs/WORKLOG.md`, `docs/NEXT_CHAT_HANDOFF.md`, `docs/HYBRID_BILLING_UAT.md`.
+- All source release flags **FALSE** (`HYBRID_REGISTRATION_READY`, `HYBRID_COD_CASHIER_CUTOVER_READY`, `HYBRID_FINANCE_UI_READY`, `HYBRID_FINANCE_API_READY`); finance/COD/daily candidate exports are NOT active in `functions/index.js`. PR #7 remains Draft, not merged/deployed. Business production NOT ready.
+- Release blockers: provenance-backed historical paidAt repair, reviewed real credit/debit notes and refunds, bank verification and real Lalamove status provenance, audit beyond 3,000 rows and indexes, actual Production-like App Check on devices, interactive end-to-end Owner/Super Admin + PC/mobile staging UAT and explicit approved deploy.
+- GitHub-first: develop, test, commit and track CI on GitHub; use Mac mini Desktop Commander only for necessary `git pull --ff-only`, environment-only builds/emulators and explicitly approved staging/deploy. Do NOT reset/checkout/clean/delete uncommitted work or the 24 existing untracked hashed JS assets on Mac.
+- **Do not confuse this repository with** Flutter `penguin_app`, LUKKAJA or PHP80.
+
+### คำสั่งขึ้น Chat ใหม่ (แม่แบบ คัดลอกได้ และอัปเดตสถานะก่อนส่งทุกครั้ง)
+
+> ต่องาน PENGUIN Hybrid Billing เดิมจาก GitHub โดยทันที ไม่เริ่มเขียนใหม่
+>
+> Repo: Natchanon45/food-order-app
+> Branch: feature/hybrid-billing-github-first
+> Draft PR: https://github.com/Natchanon45/food-order-app/pull/7 (ห้าม Merge/Deploy เอง)
+>
+> **ก่อนทำงาน:** อ่านไฟล์ล่าสุดบน Branch นี้: docs/NEXT_CHAT_HANDOFF.md, docs/WORKLOG.md, docs/HYBRID_BILLING_IMPLEMENTATION.md, docs/HYBRID_BILLING_UAT.md และ docs/HYBRID_BILLING_NEXT_CHAT_PROMPT.md โดยอ่านส่วนท้าย/ส่วนล่าสุดก่อน แล้วตรวจ Branch Head, status PR และ GitHub Actions ล่าสุดจาก GitHub จริง ไม่ใช้เลขทดสอบเก่าเป็นสถานะล่าสุดโดยไม่ตรวจ
+>
+> **สถานะล่าสุดที่ยืนยัน:** CI ของ code commit f47510c7 run 39397207041 ผ่านทั้ง 6 jobs (Hybrid 96/96, Firestore 31+2 TODO, Rules 7+4, Storage 4, actual demo Auth/Functions 4, React build/parity ผ่าน). พัฒนาเพิ่มรายงาน Super Admin แบบอ่านอย่างเดียวสำหรับ paidAt เก่าและยอด refund/late receipt แต่ยังไม่ได้ซ่อมข้อมูลหรือออกใบลดหนี้อัตโนมัติ
+>
+> **ข้อห้าม:** คง Hybrid registration/COD cashier/finance UI/finance API release flags เป็น false; Functions candidates ไม่ export; ห้ามแก้ข้อมูลการเงินจริงหรือ Deploy/Merge โดยไม่ผ่าน Release UAT และอนุมัติ; ห้าม reset/clean/checkout ที่ทำลายงานยังไม่ Commit บน Mac รวมถึง hashed assets 24 ไฟล์
+>
+> **Workflow:** GitHub-first เท่านั้นสำหรับแก้ไข/Commit/CI; Mac mini MCP เฉพาะ pull/build/emulator/staging/deploy เมื่อจำเป็นจริงและได้รับอนุญาต ให้พัฒนาให้ครบหนึ่งกระบวนการ ไม่แบ่ง Phase ย่อยมากเกินไป ปิด release blockers จริงโดยเฉพาะ migration paidAt ด้วยหลักฐาน, approved immutable credit notes, audit scale, real bank/Lalamove proof, App Check และ PC/mobile staging UAT
+>
+> **สำคัญที่สุด — กฎส่งต่องานแบบต่อเนื่อง:** ก่อนแชทนี้จะจบหรือโควต้าจะหมด ให้สร้างคำสั่งคัดลอกเพื่อเปิด Chat ใหม่อีกครั้ง โดยอัปเดต Repo/Branch/PR/Commit/CI ที่ตรวจสอบแล้ว สิ่งที่ทำสำเร็จ สิ่งที่เหลือ ข้อควรระวัง และคำสั่งให้แชทถัดไปจัดทำ handoff สำหรับแชทต่อไปด้วยทุกครั้ง พร้อมอัปเดต docs/NEXT_CHAT_HANDOFF.md และ docs/HYBRID_BILLING_NEXT_CHAT_PROMPT.md บน GitHub ห้ามลืมหรือให้ผู้ใช้ทวนอีก
