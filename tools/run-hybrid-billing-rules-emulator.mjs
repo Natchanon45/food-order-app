@@ -143,7 +143,7 @@ const salesLine = candidate.slice(salesAt, salesEnd);
 // of both ordinary enrichment and returns. This is a Boolean-equivalent
 // transformation of the existing Legacy policy, candidate only.
 const salesUpdate = "allow update: if tenantBusinessEnabled(tenantId, 'retail_pos') && ((tenantAdminRole(tenantId) && tenantResourceMatches(tenantId)) || (retailTenantWrite(tenantId) && validRetailSaleEnrichment(tenantId)) || (retailTenantWrite(tenantId) && validRetailReturnSaleUpdate(tenantId)))";
-const salesCreate = "allow create: if tenantBusinessEnabled(tenantId, 'retail_pos') && ((retailTenantWrite(tenantId) && validRetailSale(tenantId)) || validPosSale(tenantId))";
+const salesCreate = "allow create: if hybridOperationalWriteAllowed() && tenantBusinessEnabled(tenantId, 'retail_pos') && ((retailTenantWrite(tenantId) && validRetailSale(tenantId)) || validPosSale(tenantId))";
 // retailTenantWrite implies signedIn. The second branch (validPosSale)
 // ALREADY includes signedIn and validRetailSale, so the first branch is
 // redundant for every Legacy and Hybrid tenant.
@@ -152,7 +152,7 @@ if (!salesLine.includes(salesUpdate) || !salesLine.includes(salesCreate)) {
 }
 const factoredSales = salesLine
   .replace(salesCreate,
-    "allow create: if tenantBusinessEnabled(tenantId, 'retail_pos') && validPosSale(tenantId)")
+    "allow create: if hybridOperationalWriteAllowed() && tenantBusinessEnabled(tenantId, 'retail_pos') && validPosSale(tenantId)")
   .replace(salesUpdate,
     "allow update: if resource != null && tenantBusinessEnabled(tenantId, 'retail_pos') && ((tenantAdminRole(tenantId) && tenantResourceMatches(tenantId)) || (retailTenantWrite(tenantId) && (validRetailSaleEnrichment(tenantId) || validRetailReturnSaleUpdate(tenantId))))");
 candidate = candidate.slice(0, salesAt) + factoredSales + candidate.slice(salesEnd);
