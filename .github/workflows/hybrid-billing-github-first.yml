@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - feature/hybrid-billing-github-first
+      - feature/react-firebase-port
   workflow_dispatch:
 
 permissions:
