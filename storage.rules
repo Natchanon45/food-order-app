@@ -125,6 +125,24 @@ service firebase.storage {
         && !firestore.exists(/databases/(default)/documents/tenants/$(tenantId)/revenueSharePayments/$(paymentId));
     }
 
+    // Hybrid billing bank proof is write-once, staff-owned and private.
+    // This is SOURCE ONLY until Auth + Storage emulator testing and release
+    // review pass. An uploaded slip is never itself approval of an invoice.
+    match /tenants/{tenantId}/hybrid-billing-slips/{attemptId}/{fileName} {
+      allow create: if signedIn()
+        && staffProfile().active == true
+        && staffProfile().tenantId == tenantId
+        && staffProfile().role in ['owner', 'admin']
+        && firestore.get(/databases/(default)/documents/tenants/$(tenantId)).data.billingPolicyVersion == 'hybrid_v1'
+        && request.resource.metadata.get('uploadedByUid', '') == request.auth.uid
+        && validRevenueShareSlip(10 * 1024 * 1024);
+      allow read: if hasRole(['super_admin'])
+        || (signedIn() && staffProfile().active == true
+          && staffProfile().tenantId == tenantId
+          && staffProfile().role in ['owner', 'admin']);
+      allow update, delete: if false;
+    }
+
     match /{allPaths=**} {
       allow read, write: if false;
     }
