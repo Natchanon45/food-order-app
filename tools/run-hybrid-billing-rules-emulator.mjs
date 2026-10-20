@@ -90,6 +90,14 @@ if (!orderLine.includes(tenantOrderUpdate)) {
 const guardedLine = orderLine.replace(tenantOrderUpdate,
   "allow update: if hybridOperationalWriteAllowed() && hybridDeliveryReceiptFieldsUnchanged() && tenantBusinessEnabled(tenantId, 'order_delivery')");
 candidate = candidate.slice(0, index) + guardedLine + candidate.slice(lineEnd);
+// Diagnostic mode runs the UNCHANGED production rules in the demo emulator
+// to distinguish a pre-existing evaluation-budget problem from Hybrid edits.
+// It never deploys, changes or rewrites the repository's firestore.rules.
+const baselineDiagnostic = process.env.HYBRID_RULES_BASELINE_DIAGNOSTIC === "1";
+if (baselineDiagnostic) candidate = before;
+const suite = baselineDiagnostic
+  ? "tests/react-parity/hybrid-billing-rules-baseline.spec.mjs"
+  : "tests/react-parity/hybrid-billing-rules-emulator.spec.mjs";
 const homeCandidates = [process.env.JAVA_HOME,
   "/Applications/Android Studio.app/Contents/jbr/Contents/Home",
   "/opt/homebrew/opt/openjdk@21"].filter(Boolean);
@@ -114,12 +122,14 @@ try {
       ui: { enabled: false },
     },
   }, null, 2) + "\n");
-  console.log("HYBRID RULES UAT | candidate in TEMP only | synthetic Auth + Firestore");
+  console.log(baselineDiagnostic
+    ? "HYBRID ORIGINAL RULES BASELINE | demo emulator ONLY | READ-ONLY rules"
+    : "HYBRID RULES UAT | candidate in TEMP only | synthetic Auth + Firestore");
   console.log("Production firestore.rules is READ ONLY.");
   const result = spawnSync("firebase", [
     "emulators:exec", "--only", "auth,firestore",
     "--project", PROJECT, "--config", config, "--log-verbosity", "QUIET",
-    "node --test tests/react-parity/hybrid-billing-rules-emulator.spec.mjs",
+    "node --test " + suite,
   ], {
     cwd: ROOT, stdio: "pipe", encoding: "utf8", maxBuffer: 16 * 1024 * 1024,
     env: { ...process.env, GCLOUD_PROJECT: PROJECT, JAVA_HOME: javaHome,
@@ -131,7 +141,9 @@ try {
   const ruleBudgetExceeded = /maximum of 1000 expressions/i.test(
     String(result.stdout || "") + String(result.stderr || ""));
   if (ruleBudgetExceeded) {
-    console.error("HYBRID_RULES_CANDIDATE_BLOCKED: denied writes hit the Firestore Rules evaluation limit; denial cannot count as security approval.");
+    console.error(baselineDiagnostic
+      ? "HYBRID_BASELINE_RULES_BLOCKED: original rules also hit 1000-expression evaluation errors."
+      : "HYBRID_RULES_CANDIDATE_BLOCKED: denied writes hit the Firestore Rules evaluation limit; denial cannot count as security approval.");
   }
   // A passing assertion is NOT sufficient when Firestore internally failed to
   // evaluate policy. Preserve a nonzero exit code until this is corrected.
