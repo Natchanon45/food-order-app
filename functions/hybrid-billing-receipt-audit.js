@@ -4,7 +4,8 @@
 // string is converted into a Timestamp and no invoice is rewritten.
 // Super Admin caller must independently verify provenance before any migration.
 const { paidDeliverySale } = require("./hybrid-billing-orders");
-const SAFE_ID = /^[A-Za-z0-9_-]{8,128}$/;
+const SAFE_TENANT_ID = /^[A-Za-z0-9_-]{8,128}$/;
+const SAFE_ORDER_ID = /^[A-Za-z0-9_-]{1,256}$/;
 
 function receiptIssue(order) {
   const stamp = order?.paidAt?.toDate?.();
@@ -23,8 +24,8 @@ function receiptIssue(order) {
 async function scanHybridPaidReceiptExceptions({
   db, tenantId, afterId = null, pageSize = 100,
 }) {
-  if (!db || typeof tenantId !== "string" || !SAFE_ID.test(tenantId)
-    || (afterId !== null && (typeof afterId !== "string" || !SAFE_ID.test(afterId)))
+  if (!db || typeof tenantId !== "string" || !SAFE_TENANT_ID.test(tenantId)
+    || (afterId !== null && (typeof afterId !== "string" || !SAFE_ORDER_ID.test(afterId)))
     || !Number.isInteger(pageSize) || pageSize < 1 || pageSize > 250) {
     throw Error("HYBRID_RECEIPT_SCAN_INVALID_REQUEST");
   }
