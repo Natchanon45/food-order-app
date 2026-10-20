@@ -105,13 +105,19 @@ const salesLine = candidate.slice(salesAt, salesEnd);
 // of both ordinary enrichment and returns. This is a Boolean-equivalent
 // transformation of the existing Legacy policy, candidate only.
 const salesUpdate = "allow update: if tenantBusinessEnabled(tenantId, 'retail_pos') && ((tenantAdminRole(tenantId) && tenantResourceMatches(tenantId)) || (retailTenantWrite(tenantId) && validRetailSaleEnrichment(tenantId)) || (retailTenantWrite(tenantId) && validRetailReturnSaleUpdate(tenantId)))";
-if (!salesLine.includes(salesUpdate)) {
-  throw Error("HYBRID_RULES_CANDIDATE_POS_UPDATE_DRIFT");
+const salesCreate = "allow create: if tenantBusinessEnabled(tenantId, 'retail_pos') && ((retailTenantWrite(tenantId) && validRetailSale(tenantId)) || validPosSale(tenantId))";
+// retailTenantWrite implies signedIn. The second branch (validPosSale)
+// ALREADY includes signedIn and validRetailSale, so the first branch is
+// redundant for every Legacy and Hybrid tenant.
+if (!salesLine.includes(salesUpdate) || !salesLine.includes(salesCreate)) {
+  throw Error("HYBRID_RULES_CANDIDATE_POS_WRITE_DRIFT");
 }
-candidate = candidate.slice(0, salesAt)
-  + salesLine.replace(salesUpdate,
-    "allow update: if resource != null && tenantBusinessEnabled(tenantId, 'retail_pos') && ((tenantAdminRole(tenantId) && tenantResourceMatches(tenantId)) || (retailTenantWrite(tenantId) && (validRetailSaleEnrichment(tenantId) || validRetailReturnSaleUpdate(tenantId))))")
-  + candidate.slice(salesEnd);
+const factoredSales = salesLine
+  .replace(salesCreate,
+    "allow create: if tenantBusinessEnabled(tenantId, 'retail_pos') && validPosSale(tenantId)")
+  .replace(salesUpdate,
+    "allow update: if resource != null && tenantBusinessEnabled(tenantId, 'retail_pos') && ((tenantAdminRole(tenantId) && tenantResourceMatches(tenantId)) || (retailTenantWrite(tenantId) && (validRetailSaleEnrichment(tenantId) || validRetailReturnSaleUpdate(tenantId))))");
+candidate = candidate.slice(0, salesAt) + factoredSales + candidate.slice(salesEnd);
 // Diagnostic mode runs the UNCHANGED production rules in the demo emulator
 // to distinguish a pre-existing evaluation-budget problem from Hybrid edits.
 // It never deploys, changes or rewrites the repository's firestore.rules.
