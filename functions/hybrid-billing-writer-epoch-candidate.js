@@ -1,7 +1,8 @@
 "use strict";
 // Phase 3W. Source-only, UNEXPORTED, DEMO-FIRESTORE-ONLY epoch barrier.
 // This is a coordination PROTOTYPE, NOT a global certified receipt/day manifest.
-// Real COD/PromptPay/refund writers DO NOT call this guard yet.
+// Financial candidate writers can now OPT IN ONLY in the isolated demo Emulator.
+// Production/default calls NEVER enroll; registry flags all remain wired:false.
 // The non-participating legacy writers remain an explicit release blocker.
 const {createHash}=require("node:crypto");
 const {FieldValue}=require("firebase-admin/firestore");
@@ -19,6 +20,12 @@ const ADMISSIBLE=new Set(["cod_cashier","promptpay_bank","refund_initial","refun
 const hash=value=>createHash("sha256").update(JSON.stringify(value)).digest("hex");
 const REGISTRY_DIGEST=hash(["hybrid_epoch_registry_candidate_v1",
  SOURCES.map(x=>[x.key,x.source,x.wired])]);
+// Opt-in is deliberately boolean and only usable on isolated demo Firestore.
+function assertHybridEpochDemoOptIn(mode){
+ if(typeof mode!=="boolean")throw Error("HYBRID_EPOCH_OPT_IN_INVALID");
+ if(mode)assertDemo();
+ return mode;
+}
 function assertDemo(){
  if(process.env.GCLOUD_PROJECT!==DEMO
    || !/^127\.0\.0\.1:\d+$/.test(process.env.FIRESTORE_EMULATOR_HOST||""))
@@ -39,7 +46,7 @@ async function requireHybridEpochAdmissionCandidate({tx,tenantRef,sourceKey}){
    throw Error("HYBRID_EPOCH_WRITER_NOT_REGISTERED");
  // This MUST execute inside the SAME transaction as the synthetic writer.
  // The close transaction updates the same doc, forcing stale writer retries.
- // No actual financial writer calls this prototype yet.
+ // Only explicitly opted-in demo candidate financial transactions call this guard.
  const snap=await tx.get(epochRef(tenantRef));
  const state=validateEpoch(snap.exists?snap.data():null);
  if(state.status!=="open")throw Error("HYBRID_EPOCH_CLOSED");
@@ -99,5 +106,6 @@ function reviewHybridWriterRegistryCandidate(){
    reason:"real_financial_writers_and_legacy_paths_do_not_participate"};
 }
 module.exports={SOURCES,REGISTRY_DIGEST,reviewHybridWriterRegistryCandidate,
+ assertHybridEpochDemoOptIn,
  requireHybridEpochAdmissionCandidate,initializeHybridEpochCandidate,
  sealHybridEpochCandidate};

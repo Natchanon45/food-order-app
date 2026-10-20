@@ -8,12 +8,15 @@ const {paidDeliverySale}=require("./hybrid-billing-orders");
 const {dateKey}=require("./hybrid-billing-core");
 const {journalReceiptIssue,loadRefundChain,refundAnchorDigest,refundPartDigest,
  partRefFor,chainRefFor,MAX_REFUND_CHAIN,shardOf}=require("./hybrid-billing-receipt-journal");
+const {assertHybridEpochDemoOptIn,requireHybridEpochAdmissionCandidate}=require("./hybrid-billing-writer-epoch-candidate");
 const ID=/^[A-Za-z0-9_-]{8,128}$/;
 const SOURCE="hybrid_refund_bank_verified_server";
 const cents=n=>typeof n==="number"&&Number.isFinite(n)&&n>=0
   &&n<=1e9&&Math.abs(n*100-Math.round(n*100))<0.00001?Math.round(n*100):null;
 async function appendHybridVerifiedPartialRefund({db,tenantId,orderId,reviewerUid,
- resolveIndependentRefund,now=new Date(),serverTimestamp=()=>FieldValue.serverTimestamp()}){
+ resolveIndependentRefund,now=new Date(),serverTimestamp=()=>FieldValue.serverTimestamp(),
+ epochAdmissionDemo=false}){
+ assertHybridEpochDemoOptIn(epochAdmissionDemo);
  if(!db||![tenantId,orderId,reviewerUid].every(x=>typeof x==="string"&&ID.test(x))
     ||!(now instanceof Date)||!Number.isFinite(now.getTime()))
    throw Error("HYBRID_PARTIAL_REFUND_BAD_REQUEST");
@@ -100,6 +103,8 @@ async function appendHybridVerifiedPartialRefund({db,tenantId,orderId,reviewerUi
    const version=fence.exists?fence.data()?.version:0;
    if(!Number.isSafeInteger(version)||version<0||version>=Number.MAX_SAFE_INTEGER)
      throw Error("HYBRID_PARTIAL_REFUND_FENCE_INVALID");
+   if(epochAdmissionDemo)await requireHybridEpochAdmissionCandidate({
+     tx,tenantRef:t,sourceKey:"refund_partial"});
    const stampServer=serverTimestamp();
    tx.create(claimRef,{tenantId,orderId,source:SOURCE,
      refundSequence:seq,referenceHash:proof.referenceHash,

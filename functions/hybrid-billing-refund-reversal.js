@@ -7,6 +7,7 @@ const {createHash}=require("node:crypto");
 const {Timestamp,FieldValue}=require("firebase-admin/firestore");
 const {paidDeliverySale}=require("./hybrid-billing-orders");
 const {journalReceiptIssue,prepareRefundJournal}=require("./hybrid-billing-receipt-journal");
+const {assertHybridEpochDemoOptIn,requireHybridEpochAdmissionCandidate}=require("./hybrid-billing-writer-epoch-candidate");
 const ID=/^[A-Za-z0-9_-]{8,128}$/;
 const REFERENCE=/^[A-Za-z0-9._/: -]{8,160}$/;
 const SHA=/^[a-f0-9]{64}$/;
@@ -32,7 +33,9 @@ function verifyIndependentRefund(proof,{tenantId,orderId,now}){
 }
 async function recordHybridVerifiedRefund({db,tenantId,orderId,reviewerUid,
  resolveIndependentRefund,now=new Date(),
- serverTimestamp=()=>FieldValue.serverTimestamp()}){
+ serverTimestamp=()=>FieldValue.serverTimestamp(),
+ epochAdmissionDemo=false}){
+ assertHybridEpochDemoOptIn(epochAdmissionDemo);
  if(!db||![tenantId,orderId,reviewerUid].every(x=>typeof x==="string"&&ID.test(x))
   ||!(now instanceof Date)||!Number.isFinite(now.getTime()))
     throw Error("HYBRID_REFUND_BAD_REQUEST");
@@ -99,6 +102,8 @@ async function recordHybridVerifiedRefund({db,tenantId,orderId,reviewerUid,
      throw Error("HYBRID_REFUND_AMOUNT_EXCEEDS_MERCHANDISE");
   const apply=await prepareRefundJournal({tx,tenantRef:t,tenantId,orderId,
     actorUid:reviewerUid,proof,originalNet,serverTimestamp});
+  if(epochAdmissionDemo)await requireHybridEpochAdmissionCandidate({
+    tx,tenantRef:t,sourceKey:"refund_initial"});
   tx.create(claimRef,{tenantId,orderId,source:SOURCE,
     referenceHash:proof.referenceHash,evidenceSha256:proof.evidenceSha256,
     recordedAt:serverTimestamp()});

@@ -6,6 +6,7 @@
 // never pass a client-supplied uid, role, amount, timestamp, or payment state.
 const { FieldValue } = require("firebase-admin/firestore");
 const { prepareCodReceiptJournal, journalReceiptIssue } = require("./hybrid-billing-receipt-journal");
+const {assertHybridEpochDemoOptIn,requireHybridEpochAdmissionCandidate} = require("./hybrid-billing-writer-epoch-candidate");
 
 const SAFE_ID = /^[A-Za-z0-9_-]{8,128}$/;
 const CASHIER_ROLES = new Set(["owner", "admin", "cashier", "manager"]);
@@ -20,7 +21,9 @@ async function settleHybridCodDeliveryPayment({
   db, tenantId, orderId, actorUid,
   serverTimestamp = () => FieldValue.serverTimestamp(),
   clock = () => new Date(),
+  epochAdmissionDemo = false, // source-only, explicit localhost demo opt-in
 }) {
+  assertHybridEpochDemoOptIn(epochAdmissionDemo);
   if (!db || !SAFE_ID.test(String(tenantId || ""))
     || !SAFE_ID.test(String(orderId || ""))
     || !SAFE_ID.test(String(actorUid || ""))) {
@@ -86,6 +89,8 @@ async function settleHybridCodDeliveryPayment({
     const journalWrites = await prepareCodReceiptJournal({
       tx, tenantRef, order, tenantId, orderId, actorUid, now: clock(), serverTimestamp,
     });
+    if (epochAdmissionDemo) await requireHybridEpochAdmissionCandidate({
+      tx,tenantRef,sourceKey:"cod_cashier"});
     const patch = {
       paymentStatus: "paid",
       paidAt: serverTimestamp(),

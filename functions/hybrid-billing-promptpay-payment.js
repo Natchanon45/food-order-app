@@ -7,6 +7,7 @@ const { createHash }=require("node:crypto");
 const { Timestamp, FieldValue }=require("firebase-admin/firestore");
 const { paidDeliverySale }=require("./hybrid-billing-orders");
 const { prepareBankReceiptJournal, journalReceiptIssue }=require("./hybrid-billing-receipt-journal");
+const {assertHybridEpochDemoOptIn,requireHybridEpochAdmissionCandidate}=require("./hybrid-billing-writer-epoch-candidate");
 
 const ID=/^[A-Za-z0-9_-]{8,128}$/;
 const REFERENCE=/^[A-Za-z0-9._/: -]{8,160}$/;
@@ -45,7 +46,9 @@ function verifyPromptPayBankProof(proof,{tenantId,orderId,now}){
 async function recordHybridVerifiedPromptPay({
  db,tenantId,orderId,reviewerUid,resolveIndependentBankPayment,
  now=new Date(),serverTimestamp=()=>FieldValue.serverTimestamp(),
+ epochAdmissionDemo=false, // DEMO-only opt-in; never a user-facing argument
 }){
+ assertHybridEpochDemoOptIn(epochAdmissionDemo);
  if(!db || ![tenantId,orderId,reviewerUid].every(x=>typeof x==="string"&&ID.test(x))
    || !(now instanceof Date) || !Number.isFinite(now.getTime())){
    throw Error("HYBRID_PROMPTPAY_BAD_REQUEST");
@@ -113,6 +116,8 @@ async function recordHybridVerifiedPromptPay({
      tx,tenantRef,tenantId,orderId,actorUid:reviewerUid,order:o,
      proof,serverTimestamp,
    });
+   if(epochAdmissionDemo)await requireHybridEpochAdmissionCandidate({
+     tx,tenantRef,sourceKey:"promptpay_bank"});
    tx.create(bankRef,{tenantId,orderId,source:SOURCE,
      referenceHash:proof.referenceHash,evidenceSha256:proof.evidenceSha256,
      recordedAt:serverTimestamp()});
