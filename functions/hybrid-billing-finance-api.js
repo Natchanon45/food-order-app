@@ -15,6 +15,7 @@ const HYBRID_FINANCE_API_READY = false; // KEEP FALSE until full external UAT.
 const ID = /^[A-Za-z0-9_-]{8,128}$/;
 const paths = {
   list: ["action", "tenantId"],
+  queue: ["action", "tenantId"],
   submit: ["action", "tenantId", "invoiceId", "attemptId", "slipPath"],
   review: ["action", "tenantId", "attemptId", "decision", "bankTxnRef",
     "confirmedAmountCents", "recipientConfirmed"],
@@ -54,7 +55,7 @@ function makeHybridFinanceHandler({
       deny("permission-denied", "HYBRID_FINANCE_CROSS_TENANT_DENIED");
     }
     const action = data.action;
-    if (["review", "recover", "close", "arrears"].includes(action) && !superAdmin) {
+    if (["queue", "review", "recover", "close", "arrears"].includes(action) && !superAdmin) {
       deny("permission-denied", "HYBRID_FINANCE_SUPER_ADMIN_REQUIRED");
     }
     if (action === "list") {
@@ -74,6 +75,32 @@ function makeHybridFinanceHandler({
           currency: inv.currency, status: paid.exists ? "paid" : "unpaid" };
       }));
       return { ok: true, rows };
+    }
+    if (action === "queue") {
+      const tenantRef = db.collection("tenants").doc(tenantId);
+      const tenant = await tenantRef.get();
+      if (!tenant.exists || tenant.data()?.billingPolicyVersion !== "hybrid_v1") {
+        deny("failed-precondition", "HYBRID_FINANCE_NOT_HYBRID");
+      }
+      const evidence = await tenantRef.collection("hybridBillingEvidence")
+        .orderBy("__name__").limit(101).get();
+      if (evidence.size > 100) {
+        deny("resource-exhausted", "HYBRID_FINANCE_QUEUE_PAGINATION_REQUIRED");
+      }
+      const rows = await Promise.all(evidence.docs.map(async doc => {
+        const data = doc.data() || {};
+        if (data.tenantId !== tenantId || data.attemptId !== doc.id
+          || data.status !== "pending_review" || typeof data.slipPath !== "string"
+          || !data.slipPath.startsWith("tenants/" + tenantId + "/hybrid-billing-slips/" + doc.id + "/")) {
+          deny("failed-precondition", "HYBRID_FINANCE_EVIDENCE_INTEGRITY");
+        }
+        const prior = await tenantRef.collection("hybridBillingReviews").doc(doc.id).get();
+        if (prior.exists) return null;
+        return { attemptId: doc.id, invoiceId: data.invoiceId,
+          amountCents: data.amountCents, slipPath: data.slipPath,
+          submittedBy: data.submittedBy };
+      }));
+      return { ok: true, rows: rows.filter(Boolean) };
     }
     if (action === "submit") {
       if (superAdmin) deny("permission-denied", "HYBRID_FINANCE_TENANT_OWNER_REQUIRED");
