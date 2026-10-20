@@ -101,13 +101,16 @@ if (salesAt < 0 || candidate.indexOf(salesMatch, salesAt + 1) !== -1) {
 }
 const salesEnd = candidate.indexOf("\n", salesAt);
 const salesLine = candidate.slice(salesAt, salesEnd);
-const salesUpdate = "allow update: if tenantBusinessEnabled(tenantId, 'retail_pos')";
+// Factor the duplicated retailTenantWrite() role/membership expansion out
+// of both ordinary enrichment and returns. This is a Boolean-equivalent
+// transformation of the existing Legacy policy, candidate only.
+const salesUpdate = "allow update: if tenantBusinessEnabled(tenantId, 'retail_pos') && ((tenantAdminRole(tenantId) && tenantResourceMatches(tenantId)) || (retailTenantWrite(tenantId) && validRetailSaleEnrichment(tenantId)) || (retailTenantWrite(tenantId) && validRetailReturnSaleUpdate(tenantId)))";
 if (!salesLine.includes(salesUpdate)) {
   throw Error("HYBRID_RULES_CANDIDATE_POS_UPDATE_DRIFT");
 }
 candidate = candidate.slice(0, salesAt)
   + salesLine.replace(salesUpdate,
-    "allow update: if resource != null && tenantBusinessEnabled(tenantId, 'retail_pos')")
+    "allow update: if resource != null && tenantBusinessEnabled(tenantId, 'retail_pos') && ((tenantAdminRole(tenantId) && tenantResourceMatches(tenantId)) || (retailTenantWrite(tenantId) && (validRetailSaleEnrichment(tenantId) || validRetailReturnSaleUpdate(tenantId))))")
   + candidate.slice(salesEnd);
 // Diagnostic mode runs the UNCHANGED production rules in the demo emulator
 // to distinguish a pre-existing evaluation-budget problem from Hybrid edits.
