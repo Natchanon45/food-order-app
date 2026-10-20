@@ -56,7 +56,98 @@ const moneyCents = amount => {
  * untrusted/read-only historical inventory. An event merely existing is NOT
  * sufficient proof. Every financial field and server timestamp must agree.
  */
-function journalReceiptIssue(orderId,order,event,tenantId,refundEvent=null){
+
+const MAX_REFUND_CHAIN=8; // hard safety cap: transactional reads remain bounded
+const HASH64=/^[a-f0-9]{64}$/;
+const digest=value=>createHash("sha256").update(JSON.stringify(value)).digest("hex");
+const partRefFor=(t,id,seq)=>t.collection("hybridBillingReceiptEvents")
+  .doc("refundpart-"+id+"-"+String(seq).padStart(6,"0"));
+const chainRefFor=(t,id)=>t.collection("hybridBillingRefundChains").doc(id);
+const milli=stamp=>stamp?.toMillis?.();
+function refundAnchorDigest(e){
+ if(!e || e.source!==REFUND_SOURCE || !HASH64.test(e.referenceHash||"")
+   || !HASH64.test(e.evidenceSha256||"") || !Number.isSafeInteger(e.refundCents)
+   || e.refundCents<=0 || !Number.isSafeInteger(milli(e.refundAt))) return null;
+ return digest(["hybrid-refund-anchor-v1",e.tenantId,e.orderId,e.shard,
+   e.originalMerchandiseCents,e.refundCents,e.referenceHash,
+   e.evidenceSha256,milli(e.refundAt),e.actorUid,e.sourceDay]);
+}
+function refundPartDigest(e){
+ if(!e || !HASH64.test(e.previousDigest||"")
+   || !HASH64.test(e.referenceHash||"") || !HASH64.test(e.evidenceSha256||"")
+   || !Number.isSafeInteger(milli(e.refundAt))) return null;
+ return digest(["hybrid-refund-part-v1",e.tenantId,e.orderId,
+   e.sequence,e.previousDigest,e.refundCents,e.cumulativeCents,
+   e.originalMerchandiseCents,e.referenceHash,e.evidenceSha256,
+   milli(e.refundAt),e.actorUid,e.shard,e.sourceDay]);
+}
+async function loadRefundChain(read,tenantRef,orderId,order){
+ const count=order?.refundChainCount;
+ if(count==null || count===0)return null;
+ if(!Number.isSafeInteger(count)||count<2||count>MAX_REFUND_CHAIN) return {invalid:true};
+ const [head,...parts]=await Promise.all([
+   read(chainRefFor(tenantRef,orderId)),
+   ...Array.from({length:count-1},(_,i)=>read(partRefFor(tenantRef,orderId,i+2)))
+ ]);
+ return {head:head.exists?head.data():null,
+   parts:parts.map(s=>s.exists?s.data():null)};
+}
+/**
+ * Pure integrity validation: preserve immutable refund-{id} as first anchor,
+ * verify EVERY subsequent event, hashes, amounts and chronological order.
+ * No client may supply a chain to the actual Firestore call.
+ */
+function verifyRefundChain(orderId,order,payment,first,chain,tenantId){
+ const count=order?.refundChainCount,head=chain?.head,parts=chain?.parts;
+ if(!Number.isSafeInteger(count)||count<2||count>MAX_REFUND_CHAIN
+   || !head || !Array.isArray(parts) || parts.length!==count-1
+   || !first || first.tenantId!==tenantId || first.orderId!==orderId
+   || first.currency!=="THB" || first.shard!==shardOf(orderId)
+   || first.originalMerchandiseCents!==payment.merchandiseCents)
+    return "refund_chain_missing";
+ const anchor=refundAnchorDigest(first);
+ if(!anchor || first.sourceDay!==dateKey(first.refundAt.toDate())
+   || head.anchorDigest!==anchor || head.tenantId!==tenantId
+   || head.orderId!==orderId || head.count!==count
+   || head.originalMerchandiseCents!==payment.merchandiseCents
+   || order.refundReceiptSource!==REFUND_SOURCE
+   || moneyCents(order.refundedAmount??0)!==0
+   || moneyCents(order.refundAmount??0)!==0)
+    return "refund_chain_integrity_mismatch";
+ const seen=new Set([first.referenceHash]);
+ let previous=anchor,total=first.refundCents,lastAt=milli(first.refundAt);
+ for(let i=0;i<parts.length;i++){
+   const e=parts[i],seq=i+2;
+   if(!e || e.source!==REFUND_SOURCE || e.sequence!==seq
+     || e.tenantId!==tenantId || e.orderId!==orderId || e.currency!=="THB"
+     || e.shard!==shardOf(orderId) || e.previousDigest!==previous
+     || !Number.isSafeInteger(e.refundCents) || e.refundCents<=0
+     || !Number.isSafeInteger(e.cumulativeCents)
+     || e.cumulativeCents!==total+e.refundCents
+     || e.originalMerchandiseCents!==payment.merchandiseCents
+     || !Number.isSafeInteger(milli(e.refundAt)) || milli(e.refundAt)<lastAt
+     || e.sourceDay!==dateKey(e.refundAt.toDate())
+     || !ID.test(e.actorUid||"") || seen.has(e.referenceHash)
+     || e.digest!==refundPartDigest(e))
+      return "refund_chain_integrity_mismatch";
+   total=e.cumulativeCents;lastAt=milli(e.refundAt);previous=e.digest;
+   seen.add(e.referenceHash);
+ }
+ const final=parts.at(-1),net=paidDeliverySale(order),
+  netCents=net?moneyCents(net.amount):null;
+ if(total>payment.merchandiseCents || total!==moneyCents(order.refundTotal)
+   || total!==head.totalRefundCents
+   || total+netCents!==payment.merchandiseCents
+   || previous!==head.headDigest || previous!==order.refundChainHeadDigest
+   || order.refundSettledAt?.toMillis?.()!==lastAt
+   || final.referenceHash!==order.refundBankReferenceHash
+   || final.evidenceSha256!==order.refundEvidenceSha256
+   || head.lastRefundAt?.toMillis?.()!==lastAt)
+    return "refund_chain_total_mismatch";
+ return null;
+}
+
+function journalReceiptIssue(orderId,order,event,tenantId,refundEvent=null,chain=null){
   if (!ORDER_ID.test(String(orderId||"")) || !ID.test(String(tenantId||""))) return "invalid_identifier";
   if (!order || order.orderType!=="delivery" || order.paymentStatus!=="paid") return "invalid_paid_delivery";
   const paidAt=order.paidAt?.toDate?.();
@@ -85,6 +176,9 @@ function journalReceiptIssue(orderId,order,event,tenantId,refundEvent=null){
    ||!ID.test(event.actorUid))return "journal_integrity_mismatch";
   const refunded=moneyCents(order.refundTotal??order.refundedAmount??order.refundAmount??0);
   if(refunded===null)return "unreviewed_refund_or_financial_state";
+  if(order.refundChainCount!=null && order.refundChainCount!==0)
+    return verifyRefundChain(orderId,order,event,refundEvent,chain,tenantId);
+  if(order.refundChainHeadDigest)return "refund_chain_missing";
   if(refunded===0){
     if(refundEvent||order.refundReceiptSource||event.merchandiseCents!==net)
       return "unreviewed_refund_or_financial_state";
@@ -142,12 +236,14 @@ async function inspectHybridJournalCoveragePage({db,tenantId,afterId=null,pageSi
       ||d.data()?.refundReceiptSource)
       ?refundRefFor(tenantRef,d.id).get():Promise.resolve(null)))
   ]);
+  const chains=await Promise.all(docs.map(d=>loadRefundChain(
+    ref=>ref.get(),tenantRef,d.id,d.data())));
   const issues=[];
   for(let i=0;i<docs.length;i++){
     let reason;
     try{reason=journalReceiptIssue(docs[i].id,docs[i].data(),
       events[i].exists?events[i].data():null,tenantId,
-      refunds[i]?.exists?refunds[i].data():null)}
+      refunds[i]?.exists?refunds[i].data():null,chains[i])}
     catch{reason="unreviewed_refund_or_financial_state"}
     if(reason)issues.push({orderId:docs[i].id,reason});
   }
@@ -248,11 +344,13 @@ async function verifyJournaledCodOrders(tx,tenantRef,rows){
       ||row.data?.refundReceiptSource)
       ?tx.get(refundRefFor(tenantRef,row.id)):Promise.resolve(null)))
   ]);
+  const chains=await Promise.all(selected.map(row=>loadRefundChain(
+    ref=>tx.get(ref),tenantRef,row.id,row.data)));
   for(let i=0;i<selected.length;i++){
     const {id,data}=selected[i];
     let problem;
     try{problem=journalReceiptIssue(id,data,docs[i].exists?docs[i].data():null,
-      tenantRef.id,refunds[i]?.exists?refunds[i].data():null)}
+      tenantRef.id,refunds[i]?.exists?refunds[i].data():null,chains[i])}
     catch{problem="unreviewed_refund_or_financial_state"}
     if(problem) throw Error("HYBRID_JOURNAL_SOURCE_INCOMPLETE:"+problem);
   }
@@ -260,4 +358,6 @@ async function verifyJournaledCodOrders(tx,tenantRef,rows){
 }
 module.exports={SHARDS,shardOf,prepareCodReceiptJournal,readJournalFences,
   verifyJournaledCodOrders,journalReceiptIssue,inspectHybridJournalCoveragePage,
-  prepareBankReceiptJournal,prepareRefundJournal};
+  prepareBankReceiptJournal,prepareRefundJournal,MAX_REFUND_CHAIN,
+  refundAnchorDigest,refundPartDigest,loadRefundChain,verifyRefundChain,
+  partRefFor,chainRefFor};
