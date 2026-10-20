@@ -120,6 +120,14 @@ test("candidate: active Hybrid cashier cannot forge paidAt/paymentStatus or sour
   ]) {
     await assert.rejects(updateDoc(orderRef, change), /permission/i);
   }
+  // A merge write must not bypass the same financial-field guard.
+  await assert.rejects(setDoc(orderRef, {
+    paymentStatus: "paid",
+    paidAt: "2026-10-20T16:00:00Z",
+  }, { merge: true }), /permission/i);
+  // A legitimate nonfinancial kitchen/cashier status update remains allowed.
+  await updateDoc(orderRef, { status: "completed" });
+  assert.equal((await getDoc(orderRef)).data().status, "completed");
   const trusted = (await db.collection("tenants").doc(ready)
     .collection("orders").doc("test-order").get()).data();
   assert.equal(trusted.paymentStatus, "unpaid");
