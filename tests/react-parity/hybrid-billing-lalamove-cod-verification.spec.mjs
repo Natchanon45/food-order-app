@@ -25,6 +25,10 @@ test("signed Lalamove COMPLETED event verifies HMAC + freshness, never proves pa
  const actual=validateSignedLalamoveCompletion({payload:e,credentials,now:at});
  assert.equal(actual.providerOrderId,"LL-TEST-ORDER-0001");
  assert.match(actual.eventHash,/^[a-f0-9]{64}$/);
+ // Changing only the UNSIGNED eventId cannot evade replay protection.
+ assert.equal(validateSignedLalamoveCompletion({payload:{
+   ...e,eventId:"LL-SECOND-UNSIGNED-ID-0002"},credentials,now:at}).eventHash,
+   actual.eventHash);
  const bad={...e,signature:"0".repeat(64)};
  assert.throws(()=>validateSignedLalamoveCompletion({payload:bad,credentials,now:at}),
    /WEBHOOK_SIGNATURE_INVALID/);

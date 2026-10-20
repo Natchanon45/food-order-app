@@ -54,7 +54,9 @@ function validateSignedLalamoveCompletion({payload,credentials,now}){
    throw Error("HYBRID_LALAMOVE_WEBHOOK_SIGNATURE_INVALID");
  return {providerOrderId:payload.data.order.orderId.trim(),
     eventId:payload.eventId,eventTimestampMillis:instant,
-    eventHash:digest([credentials.apiKey,payload.eventId].join("|")),
+    // eventId is not part of the HMAC-signed payload; bind replay claim to
+    // the authenticated signature and timestamp instead of unsigned eventId.
+    eventHash:digest([credentials.apiKey,String(payload.timestamp),payload.signature].join("|")),
     payloadSha256:digest(data)};
 }
 /** Authenticated order LOOKUP is separately required to guard spoofed,
