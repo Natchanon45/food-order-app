@@ -15,17 +15,18 @@ if (process.env.FIRESTORE_EMULATOR_HOST || process.env.FIREBASE_AUTH_EMULATOR_HO
 const before = readFileSync(path.join(ROOT, "firestore.rules"), "utf8");
 const oldStart = `      return superAdminRole()
         || (tenant.get('businessType', 'both') == 'both'`;
-const newStart = `      // Financially suspended Hybrid tenants MUST fail before role expansion.
-      // Legacy tenants keep their original super-admin/business checks.
+const newStart = `      // Fast path: check Hybrid suspension and ordinary business enablement
+      // BEFORE expanding the expensive Super Admin profile/role policy.
+      // Super Admin fallback is preserved only when business type mismatches.
       return (tenant.get('billingPolicyVersion', 'legacy') != 'hybrid_v1'
           || (tenant.get('hybridBillingSuspended', false) != true
             && tenant.get('active', true) != false))
-        && (superAdminRole()
-          || (tenant.get('businessType', 'both') == 'both'`;
+        && ((tenant.get('businessType', 'both') == 'both'`;
 const oldEnd = `          || (business == 'order_delivery' && tenant.get('businessType', 'both') == 'restaurant_cafe'));
     }
     function tenantMembershipPath`;
-const newEnd = `          || (business == 'order_delivery' && tenant.get('businessType', 'both') == 'restaurant_cafe')));
+const newEnd = `          || (business == 'order_delivery' && tenant.get('businessType', 'both') == 'restaurant_cafe'))
+          || superAdminRole());
     }
     function tenantMembershipPath`;
 if (before.split(oldStart).length !== 2 || before.split(oldEnd).length !== 2) {
