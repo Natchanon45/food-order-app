@@ -63,6 +63,30 @@ jobs:
       - name: Run isolated demo Firestore Emulator tests
         run: npm run test:hybrid-billing:emulator
 
+  rules-security-gate:
+    name: Auth + Firestore Rules (strict security gate)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Install client and Auth emulator dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install Firebase Functions SDK
+        run: npm install --prefix functions --no-audit --no-fund
+      - name: Install Firebase CLI for demo-only emulators
+        run: npm install --global firebase-tools@15.34.0 --no-audit --no-fund
+      - name: Verify candidate with strict evaluator-error detection
+        run: npm run test:hybrid-billing:rules-emulator
+
 # This workflow deliberately has no cloud credentials, deployment steps, or
 # automatic enabling of Hybrid Billing. The separate Auth/Rules security UAT
-# remains BLOCKED until the 1000-expression evaluator issue is resolved.
+# is now an explicitly failing GitHub Actions job until the evaluator issue is resolved.
+# Do not mark deployment ready while that job is red.
