@@ -20,10 +20,18 @@ const cents = value => {
   return Math.abs(value * 100 - rounded) < 0.00001 ? rounded : null;
 };
 
-function verifyIndependentReceipt(proof, now) {
+function verifyIndependentReceipt(proof, now, tenantId, orderId) {
   // proof must come from an independently queried bank/provider adapter, NOT
   // the web/Callable request, a slip filename, or user-supplied payment time.
-  if (!proof || proof.verified !== true || !ALLOWED_SOURCE.has(proof.source)
+  if (!proof || proof.tenantId !== tenantId || proof.orderId !== orderId
+    || proof.currency !== "THB" || proof.verified !== true
+    || !ALLOWED_SOURCE.has(proof.source)
+    || (proof.source === "independent_bank_record"
+      && (proof.recipientConfirmed !== true || proof.platformBankAccountVerified !== true))
+    || (proof.source === "lalamove_provider_api"
+      && (proof.providerStatus !== "COMPLETED" || proof.codSettled !== true
+        || typeof proof.providerOrderId !== "string"
+        || !REFERENCE.test(proof.providerOrderId)))
     || typeof proof.reference !== "string" || !REFERENCE.test(proof.reference.trim())
     || !DIGEST.test(proof.evidenceSha256)
     || !Number.isSafeInteger(proof.grossAmountCents) || proof.grossAmountCents < 0
@@ -63,7 +71,7 @@ async function reconcileHybridHistoricalPaidReceipt({
   // from a caller. Its independent answer is checked again against stored order.
   const proof = verifyIndependentReceipt(await resolveIndependentPayment({
     tenantId, orderId, caseId,
-  }), now);
+  }), now, tenantId, orderId);
   const tenantRef = db.collection("tenants").doc(tenantId);
   const orderRef = tenantRef.collection("orders").doc(orderId);
   const caseRef = tenantRef.collection("hybridBillingReceiptCorrections").doc(caseId);

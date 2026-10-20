@@ -922,6 +922,8 @@ test("emulator: independently attested historical paidAt correction is immutable
     reviewerUid: uid, now: new Date("2026-10-21T03:00:00Z"),
     resolveIndependentPayment: async () => ({
       verified: true, source: "independent_bank_record",
+      tenantId: id, orderId: "iso-paid-legacy", currency: "THB",
+      recipientConfirmed: true, platformBankAccountVerified: true,
       reference: "BANK-INDEPENDENT-HISTORY-0001",
       evidenceSha256: "b".repeat(64), grossAmountCents: 554000,
       paidAt: new Date("2026-10-20T12:00:00Z"),
@@ -963,6 +965,8 @@ test("emulator: historical receipt correction refuses forged reviewer, amount an
     db, tenantId: id, orderId, caseId: "history-case-" + orderId,
     reviewerUid: uid, now, resolveIndependentPayment: async () => ({
       verified: true, source: "independent_bank_record",
+      tenantId: id, orderId, currency: "THB",
+      recipientConfirmed: true, platformBankAccountVerified: true,
       reference: "BANK-INDEPENDENT-HISTORY-0002",
       evidenceSha256: "c".repeat(64), grossAmountCents: amountCents,
       paidAt: new Date("2026-10-20T02:00:00Z"),
