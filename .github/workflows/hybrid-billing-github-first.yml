@@ -64,6 +64,29 @@ jobs:
       - name: Run isolated demo Firestore Emulator tests
         run: npm run test:hybrid-billing:emulator
 
+  storage-emulator:
+    name: Auth + Storage bank-proof security
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Install client/Auth/Storage SDK
+        run: npm ci --no-audit --no-fund
+      - name: Install Admin SDK
+        run: npm install --prefix functions --no-audit --no-fund
+      - name: Install Firebase CLI for demo emulator only
+        run: npm install --global firebase-tools@15.34.0 --no-audit --no-fund
+      - name: Verify Hybrid bank proof Storage rules in real emulator
+        run: npm run test:hybrid-billing:storage-emulator
+
   rules-security-gate:
     name: Auth + Firestore Rules (strict security gate)
     runs-on: ubuntu-24.04
