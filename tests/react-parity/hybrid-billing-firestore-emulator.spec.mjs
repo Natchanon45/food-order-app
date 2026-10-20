@@ -17,6 +17,7 @@ const { initializeApp, deleteApp } = functionsRequire("firebase-admin/app");
 const { getFirestore, Timestamp } = functionsRequire("firebase-admin/firestore");
 const { issueHybridInvoicesForClosedDay } = require("../../functions/hybrid-billing-ledger.js");
 const { reconcileHybridArrears } = require("../../functions/hybrid-billing-arrears.js");
+const { approveHybridRecovery } = require("../../functions/hybrid-billing-recovery.js");
 const { submitHybridPaymentEvidence, reviewHybridPaymentEvidence } =
   require("../../functions/hybrid-billing-payments.js");
 const { paidOrdersInWindow, auditPaidDeliveryReceiptCoverage, previewHybridCycle } = require("../../functions/hybrid-billing-preview.js");
@@ -613,4 +614,61 @@ test("emulator vertical slice: COD cashier -> trusted receipt -> 775 THB invoice
   assert.equal((await ref.get()).data().active, false);
   // verifiedStorage and reviewed bank transfer are mock attestations here,
   // not provider API verification or a finished merchant-facing payment UI.
+});
+
+test("emulator end-to-end: only verified Super Admin can recover after all bank-settled arrears", async () => {
+  const id = "tenant-emu-recovery-full-23", ref = await activate(id);
+  await order(ref, "receipt-recovery-023", "2026-10-20T03:00:00Z", 15500);
+  await issue(id, midnightAfterTrigger);
+  const invoiceId = cycleId + ":delivery:trigger";
+  const result = await reconcileHybridArrears({ db, tenantId: id, now: now(midnightAfterTrigger) });
+  assert.equal(result.status, "suspended");
+  const uid = "reviewer-recovery-023", reviewId = "hybrid-review-recover-023";
+  await db.collection("users").doc(uid).create({ uid, role: "super_admin", active: true });
+  const recover = () => approveHybridRecovery({
+    db, tenantId: id, reviewerUid: uid, reviewId,
+    now: now(midnightAfterTrigger),
+  });
+  await assert.rejects(recover(), /HYBRID_RECOVERY_UNPAID/);
+  const invoice = (await ref.collection("hybridBillingInvoices").doc(invoiceId).get()).data();
+  assert.equal(invoice.amountCents, 77500);
+  const attemptId = "receipt-recovery-bank-023";
+  await submitHybridPaymentEvidence({
+    db, tenantId: id, invoiceId, attemptId,
+    slipPath: "tenants/" + id + "/hybrid-billing-slips/" + attemptId + "/proof.png",
+    verifiedStorage: true,
+    actor: { uid: "owner-recovery-023", tenantId: id, role: "owner", active: true },
+  });
+  await reviewHybridPaymentEvidence({
+    db, tenantId: id, attemptId, decision: "approve",
+    actor: { uid, role: "super_admin", active: true },
+    bankTxnRef: "RECONCILED-EMULATOR-BANK-023",
+    confirmedAmountCents: 77500, recipientConfirmed: true,
+  });
+  await assert.rejects(approveHybridRecovery({
+    db, tenantId: id, reviewerUid: "non-admin-023", reviewId: "review-unauthorized-023",
+    now: now(midnightAfterTrigger),
+  }), /HYBRID_RECOVERY_SUPER_ADMIN_REQUIRED/);
+  const recovered = await recover();
+  assert.equal(recovered.status, "reactivated");
+  const state = (await ref.get()).data();
+  assert.equal(state.active, true);
+  assert.equal(state.hybridBillingSuspended, false);
+  assert.equal(state.hybridBillingRecoveredBy, uid);
+  assert.equal((await recover()).status, "already_reviewed");
+  assert.equal((await ref.collection("hybridBillingRecoveryReviews").get()).size, 1);
+});
+test("emulator recovery: no automatic reactivation for a manual Super Admin hold", async () => {
+  const id = "tenant-emu-recovery-hold-024", ref = await activate(id);
+  await order(ref, "receipt-manual-hold-024", "2026-10-20T02:30:00Z", 15500);
+  await issue(id, midnightAfterTrigger);
+  await reconcileHybridArrears({ db, tenantId: id, now: now(midnightAfterTrigger) });
+  await ref.update({ hybridBillingManualHold: true });
+  const uid = "reviewer-hold-024";
+  await db.collection("users").doc(uid).set({ uid, role: "super_admin", active: true });
+  await assert.rejects(approveHybridRecovery({
+    db, tenantId: id, reviewerUid: uid, reviewId: "manual-hold-024",
+    now: now(midnightAfterTrigger),
+  }), /HYBRID_RECOVERY_NOT_ELIGIBLE/);
+  assert.equal((await ref.get()).data().active, false);
 });
