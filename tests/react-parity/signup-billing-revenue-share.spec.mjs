@@ -106,7 +106,7 @@ test("public signup server forces Hybrid Billing and preserves selected business
   const source = fs.readFileSync("functions/public-signup.js", "utf8");
   for (const token of [
     "normalizeSignupBilling", "businessUnitsFor", 'billingMode: "hybrid"',
-    'billingPolicyVersion: "hybrid_v1"', "hybridBillingSnapshot", "hybridTrialMonth",
+    'billingPolicyVersion: "hybrid_v1"', "hybridBillingSnapshot", "hybridBillingStartDate",
     "signupBilling:",
   ]) assert.ok(source.includes(token), `public-signup missing ${token}`);
 });

@@ -1,0 +1,14 @@
+{
+  "_comment": "SOURCE-ONLY CANDIDATE. Do NOT deploy. Merge index entry into firestore.indexes.json ONLY during coordinated release after staging verification; remove this _comment on import.",
+  "indexes": [
+    {
+      "collectionGroup": "orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "orderType", "order": "ASCENDING" },
+        { "fieldPath": "paymentStatus", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

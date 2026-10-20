@@ -40,8 +40,10 @@ test("hybrid report is routed, localized and uses backend preview, never payment
   assert.match(app, /path="\/reports\/hybrid-billing"/);
   assert.match(app, /hybridSuspended/);
   assert.match(home, /tenant\?\.billingPolicyVersion === "hybrid_v1"/);
-  assert.match(page, /getHybridBillingPreview\(month\)/);
+  assert.match(page, /getHybridBillingPreview\(onDate\)/);
   assert.match(page, /preview_only/);
+  assert.match(page, /type="date"/);
+  assert.match(page, /cycle_range/);
   assert.doesNotMatch(page, /submitPayment|uploadBytes|confirmPayment/);
   assert.match(data, /getTenantHybridBillingPreview/);
   const dict = JSON.parse(fs.readFileSync("react-app/src/i18n/parity-translations.json", "utf8"));

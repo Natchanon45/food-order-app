@@ -65,9 +65,14 @@ exports.requestTrialTenantSignup = onCall({ region: "asia-southeast1" }, async r
   const now = FieldValue.serverTimestamp();
   const signupPricing = pricingSnapshot(await loadPricing(db));
   const hybridSettings = await loadHybridBillingSettings(db);
+  // Registration request date is the billing anniversary anchor; retries must
+  // keep the original trusted Bangkok date rather than extend the free cycle.
+  const requestSignupDate = dateKey(new Date());
 
   await db.runTransaction(async tx => {
-    const [tenantSlugSnap, pendingSlugSnap] = await Promise.all([tx.get(tenantSlugRef), tx.get(pendingSlugRef)]);
+    const [tenantSlugSnap, pendingSlugSnap, pendingSignupSnap] = await Promise.all([
+      tx.get(tenantSlugRef), tx.get(pendingSlugRef), tx.get(pendingRef),
+    ]);
     if (tenantSlugSnap.exists) throw new HttpsError("already-exists", "This slug is already in use");
     if (pendingSlugSnap.exists && pendingSlugSnap.data()?.uid !== uid) throw new HttpsError("already-exists", "This slug is already reserved");
     const payload = {
@@ -87,6 +92,7 @@ exports.requestTrialTenantSignup = onCall({ region: "asia-southeast1" }, async r
       signupBilling: { ...signupBilling },
       billingPolicyVersion: "hybrid_v1",
       hybridBillingSnapshot: hybridSettings,
+      hybridBillingStartDate: pendingSignupSnap.data()?.hybridBillingStartDate || requestSignupDate,
       pricingSnapshot: signupPricing,
       status: "email_verification_required",
       previewUrl: `${PUBLIC_APP_ORIGIN}/s/${slug}/`,
@@ -149,7 +155,10 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
   const businessUnits = businessUnitsFor(signupBilling.businessType);
   const primaryShopName = clean(pending.orderDeliveryShopName) || clean(pending.retailPosShopName);
   const subscriptionTrial = signupBilling.billingMode === "subscription";
-  const signupMonth = dateKey(new Date()).slice(0, 7);
+  const signupDate = hybridSignup ? pending.hybridBillingStartDate : null;
+  if (hybridSignup && (!signupDate || !/^\d{4}-\d{2}-\d{2}$/.test(signupDate))) {
+    throw new HttpsError("failed-precondition", "Trusted billing signup date missing");
+  }
 
   await db.runTransaction(async tx => {
     const [tenantSlugSnap, pendingSlugSnap] = await Promise.all([tx.get(tenantSlugRef), tx.get(pendingSlugRef)]);
@@ -173,7 +182,7 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
       businessType: signupBilling.businessType,
       subscriptionPricingSnapshot: signupPricing,
       ...(hybridSignup ? { billingPolicyVersion: "hybrid_v1", hybridBillingSnapshot: hybridSettings,
-        hybridTrialMonth: signupMonth } : {}),
+        hybridBillingStartDate: signupDate } : {}),
       ...(subscriptionTrial
         ? { subscriptionStatus: "trialing", trialStartsAt: now, trialEndsAt }
         : { subscriptionStatus: "active" }),
@@ -199,7 +208,7 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
       businessType: signupBilling.businessType,
       revenueShareEnabled: signupBilling.billingMode === "revenue_share",
       ...(hybridSignup ? { billingPolicyVersion: "hybrid_v1", hybridBillingSnapshot: hybridSettings,
-        hybridTrialMonth: signupMonth, hybridBillingEnabled: false } : {}),
+        hybridBillingStartDate: signupDate, hybridBillingEnabled: false } : {}),
       revenueShareRate: 0,
       revenueShareBillingCycle: "monthly",
       revenueShareBusinessType: signupBilling.businessType,

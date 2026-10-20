@@ -11,12 +11,12 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { getHybridBillingPreview } from "@/data/hybridBillingReport";
 
 const BANGKOK = "Asia/Bangkok";
-function bangkokMonth(date = new Date()) {
+function bangkokDate(date = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: BANGKOK, year: "numeric", month: "2-digit",
+    timeZone: BANGKOK, year: "numeric", month: "2-digit", day: "2-digit",
   }).formatToParts(date);
   const map = Object.fromEntries(parts.map(p => [p.type, p.value]));
-  return `${map.year}-${map.month}`;
+  return `${map.year}-${map.month}-${map.day}`;
 }
 
 export function HybridBillingReportPage() {
@@ -24,7 +24,7 @@ export function HybridBillingReportPage() {
   const tenantState = useTenant();
   const { t, intlLocale, formatNumber } = useI18n();
   const tenant = tenantState.tenant;
-  const [month, setMonth] = useState(() => bangkokMonth());
+  const [onDate, setOnDate] = useState(() => bangkokDate());
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -36,7 +36,7 @@ export function HybridBillingReportPage() {
   const reload = () => {
     setLoading(true);
     setError("");
-    getHybridBillingPreview(month)
+    getHybridBillingPreview(onDate)
       .then(setData)
       .catch(err => {
         console.error("HYBRID_BILLING_PREVIEW_FAILED", err);
@@ -48,7 +48,7 @@ export function HybridBillingReportPage() {
   useEffect(() => {
     if (tenant?.billingPolicyVersion === "hybrid_v1"
       && ["owner", "admin"].includes(auth.profile?.role)) reload();
-  }, [tenant?.id, tenant?.billingPolicyVersion, auth.profile?.role, month]);
+  }, [tenant?.id, tenant?.billingPolicyVersion, auth.profile?.role, onDate]);
 
   const number = value => formatNumber(Number(value || 0), {
     minimumFractionDigits: 2, maximumFractionDigits: 2,
@@ -89,9 +89,9 @@ export function HybridBillingReportPage() {
           </div>
         </section>
         <section className="card hybrid-report-toolbar">
-          <label htmlFor="hybridReportMonth">{t("hybrid_report.month")}</label>
-          <input id="hybridReportMonth" type="month" min={tenant.hybridTrialMonth || ""}
-            max={bangkokMonth()} value={month} onChange={event => setMonth(event.target.value)} />
+          <label htmlFor="hybridReportDate">{t("hybrid_report.cycle")}</label>
+          <input id="hybridReportDate" type="date" min={tenant.hybridBillingStartDate || ""}
+            max={bangkokDate()} value={onDate} onChange={event => setOnDate(event.target.value)} />
           <button className="btn btn-sm" type="button" onClick={reload} disabled={loading}>
             <i className="bi bi-arrow-clockwise app-icon" aria-hidden="true"></i>
             <span>{t("hybrid_report.refresh")}</span>
@@ -102,6 +102,12 @@ export function HybridBillingReportPage() {
         {data && !loading ? (
           <>
             <p className="hybrid-report-notice" role="status">{t("hybrid_report.preview_only")}</p>
+            <p className="hybrid-report-notice">
+              {t("hybrid_report.cycle_range", {
+                start: date(data.cycleStart), end: date(data.cycleLastDate),
+                reset: date(data.cycleEnd),
+              })}
+            </p>
             <section className="hybrid-report-metrics" aria-label={t("hybrid_report.title")}>
               {[
                 ["sales", currency(data.totalDeliverySales)],

@@ -60,4 +60,15 @@ function paidDeliveryByDay(orders, month) {
   return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]))
     .map(([date, cents]) => ({ date, amount: cents / 100 }));
 }
-module.exports = { paidDeliverySale, paidDeliveryByDay };
+function paidDeliveryByWindow(orders, startDate, endDate) {
+  if (!Array.isArray(orders) || !(startDate < endDate)) throw new TypeError("Invalid paid Delivery window");
+  const map = new Map();
+  for (const order of orders) {
+    const sale = paidDeliverySale(order);
+    if (!sale || sale.date < startDate || sale.date >= endDate) continue;
+    map.set(sale.date, (map.get(sale.date) || 0) + Math.round(sale.amount * 100));
+  }
+  return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([date, amountCents]) => ({ date, amount: amountCents / 100 }));
+}
+module.exports = { paidDeliverySale, paidDeliveryByDay, paidDeliveryByWindow };

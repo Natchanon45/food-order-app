@@ -27,6 +27,8 @@ import {
 } from "@/data/operationalData";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
+import { hybridDeliveryCashierRoute } from "@/data/hybridCodCashierRoute.mjs";
+import { settleHybridCodCashier } from "@/data/hybridCodCashier";
 import { useTenant } from "@/tenant/TenantProvider";
 import { qrDataUrl } from "@/utils/localQr";
 import { deliveryDriverMapsUrl, isSelfDeliveryOrder } from "@/utils/deliveryDriverShare";
@@ -790,6 +792,14 @@ export function CashierPage() {
 
   const pay = async order => {
     if (!order || busyKey) return;
+    const hybridRoute = hybridDeliveryCashierRoute(tenant, order);
+    // No browser paymentStatus/paidAt fallback for an enrolled Hybrid tenant.
+    // Until the secure callable + client Rules are released, fail closed.
+    if (!["legacy", "proof_review", "server"].includes(hybridRoute)) {
+      showToast(t("cashier.toasts.payment_failed"), "error");
+      console.warn("HYBRID_COD_CASHIER_NOT_RELEASED", hybridRoute);
+      return;
+    }
     const codSettlement = isLalamoveCod(order);
     if (codSettlement && !lalamoveDeliveryCompleted(order)) {
       showToast(t("cashier.lalamove.cod_before_delivery"), "error");
@@ -812,6 +822,16 @@ export function CashierPage() {
       if (manualDeliveryReview) {
         await approveDeliveryPaymentReview({ tenantId: tenant.id, orderId: order.id });
         showToast(t("cashier.payment.slip_manual_approved"));
+        printOrder(printWindow, order.id);
+        return;
+      }
+      if (hybridRoute === "server") {
+        await settleHybridCodCashier(tenant, order);
+        // The callable writes a real server Timestamp. Never retry using the
+        // legacy browser Firestore update if settlement fails.
+        showToast(codSettlement
+          ? t("cashier.lalamove.cod_settlement_saved")
+          : t("cashier.toasts.delivery_paid_closed"));
         printOrder(printWindow, order.id);
         return;
       }
