@@ -1718,3 +1718,69 @@ test("emulator: trusted payment during manifest pagination changes writer fence 
  assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
  assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
 });
+
+
+test("emulator: demo writer epoch opens for enrolled synthetic source and seals without financial certification",async()=>{
+ const {initializeHybridEpochCandidate,sealHybridEpochCandidate,
+   requireHybridEpochAdmissionCandidate,reviewHybridWriterRegistryCandidate}=
+  require("../../functions/hybrid-billing-writer-epoch-candidate.js");
+ const id="tenant-epoch-demo-065",t=await activate(id),uid="super-epoch-demo-065";
+ await db.collection("users").doc(uid).set({role:"super_admin",active:true});
+ const opened=await initializeHybridEpochCandidate({db,tenantId:id,reviewerUid:uid});
+ assert.equal(opened.status,"open");
+ assert.equal(opened.coverageCertified,false);
+ const probe=t.collection("hybridBillingEpochProbes").doc("synthetic-test-only");
+ await db.runTransaction(async tx=>{
+   const gate=await requireHybridEpochAdmissionCandidate({
+     tx,tenantRef:t,sourceKey:"cod_cashier"});
+   assert.equal(gate.canIssueInvoice,false);
+   tx.create(probe,{sourceKey:"cod_cashier",epoch:gate.epoch,candidateOnly:true});
+ });
+ assert.equal((await probe.get()).exists,true);
+ const seal=await sealHybridEpochCandidate({db,tenantId:id,reviewerUid:uid});
+ assert.equal(seal.status,"sealed");
+ assert.equal(seal.writerParticipationComplete,false);
+ assert.equal(seal.canIssueInvoice,false);
+ assert.equal((await sealHybridEpochCandidate({db,tenantId:id,reviewerUid:uid})).alreadySealed,true);
+ await assert.rejects(db.runTransaction(async tx=>{
+   await requireHybridEpochAdmissionCandidate({
+     tx,tenantRef:t,sourceKey:"refund_partial"});
+   tx.create(t.collection("hybridBillingEpochProbes").doc("must-not-write"),{bad:true});
+ }),/HYBRID_EPOCH_CLOSED/);
+ assert.equal((await t.collection("hybridBillingEpochProbes").doc("must-not-write").get()).exists,false);
+ assert.equal(reviewHybridWriterRegistryCandidate().sourcesActuallyWired,0);
+ assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+});
+test("emulator: concurrent epoch admission and seal serialize or deny subsequent synthetic writes",async()=>{
+ const {initializeHybridEpochCandidate,sealHybridEpochCandidate,
+  requireHybridEpochAdmissionCandidate}=require(
+  "../../functions/hybrid-billing-writer-epoch-candidate.js");
+ const id="tenant-epoch-race-066",t=await activate(id),uid="super-epoch-race-066";
+ await db.collection("users").doc(uid).set({role:"super_admin",active:true});
+ await initializeHybridEpochCandidate({db,tenantId:id,reviewerUid:uid});
+ const marker=t.collection("hybridBillingEpochProbes").doc("race-marker");
+ const outcomes=await Promise.allSettled([
+   db.runTransaction(async tx=>{
+     await requireHybridEpochAdmissionCandidate({
+       tx,tenantRef:t,sourceKey:"promptpay_bank"});
+     tx.create(marker,{sourceKey:"promptpay_bank",candidateOnly:true});
+   }),
+   sealHybridEpochCandidate({db,tenantId:id,reviewerUid:uid})
+ ]);
+ assert.equal(outcomes[1].status,"fulfilled");
+ assert.equal(outcomes[1].value.coverageCertified,false);
+ // Serial order may admit the synthetic writer before seal; after seal every
+ // further writer MUST be rejected and no real invoice/coverage may change.
+ assert.equal((await marker.get()).exists,outcomes[0].status==="fulfilled");
+ if(outcomes[0].status==="rejected")
+   assert.match(String(outcomes[0].reason),/HYBRID_EPOCH_CLOSED|ABORTED|contention/i);
+ await assert.rejects(db.runTransaction(tx=>requireHybridEpochAdmissionCandidate({
+   tx,tenantRef:t,sourceKey:"refund_initial"})),/HYBRID_EPOCH_CLOSED/);
+ const seal=(await t.collection("hybridBillingEpochCandidates").doc("active").get()).data();
+ assert.equal(seal.status,"sealed");
+ assert.equal(seal.canIssueInvoice,false);
+ assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+});
+
