@@ -1576,3 +1576,92 @@ test("emulator: two concurrent partial refunds cannot exceed original merchandis
  await assert.rejects(appendHybridVerifiedPartialRefund(req("BANK-RACE-059-OVER",30000,
   "2026-10-21T02:20:00Z")),/OVERREFUND/);
 });
+
+
+test("emulator: signed Lalamove COMPLETED plus fresh authenticated lookup creates delivery-only immutable proof",async()=>{
+ const {createHmac}=require("node:crypto");
+ const {recordHybridLalamoveCodCompletionCandidate}=require(
+   "../../functions/hybrid-billing-lalamove-cod-verification.js");
+ const id="tenant-ll-cod-proof-060",scope="c".repeat(64);
+ const t=await activate(id,{lalamoveAccountScopeSha256:scope});
+ const uid="super-ll-cod-proof-060",orderId="order-ll-cod-proof-060";
+ const llId="LL-PROVIDER-ORDER-060",now=new Date("2026-10-20T12:30:00Z");
+ await db.collection("users").doc(uid).set({role:"super_admin",active:true});
+ await t.collection("orders").doc(orderId).set({orderType:"delivery",
+   deliveryProvider:"lalamove",lalamoveOrderId:llId,lalamoveCodEnabled:true,
+   lalamoveOrderStatus:"COMPLETED",paymentMethod:"cod",paymentStatus:"unpaid",
+   status:"completed",totalAmount:15540,subtotalAmount:15500,
+   deliveryFee:40,items:[{id:"x",quantity:1}]});
+ const credentials={apiKey:"pk_test_codiary_060",apiSecret:"sk_test_codiary_060"};
+ const payload={apiKey:credentials.apiKey,timestamp:Math.trunc(now.getTime()/1000),
+   eventId:"LL-DELIVERY-COMPLETE-060",eventType:"ORDER_STATUS_CHANGED",
+   data:{order:{orderId:llId,status:"COMPLETED"}}};
+ payload.signature=createHmac("sha256",credentials.apiSecret)
+   .update(String(payload.timestamp)+"\r\nPOST\r\n/api/lalamove/webhook\r\n\r\n"+
+     JSON.stringify(payload.data)).digest("hex");
+ const args={db,tenantId:id,orderId,reviewerUid:uid,payload,credentials,now,
+   resolveProviderOrder:async()=>({source:"authenticated_lalamove_order_lookup",
+     authenticated:true,tenantId:id,orderId:llId,status:"COMPLETED",market:"TH",
+     accountScopeSha256:scope,evidenceSha256:"d".repeat(64),checkedAt:now})};
+ const first=await recordHybridLalamoveCodCompletionCandidate(args);
+ assert.deepEqual(first,{tenantId:id,orderId,alreadyRecorded:false,
+   deliveryVerified:true,codSettlementVerified:false,paymentChanged:false});
+ const replay=await recordHybridLalamoveCodCompletionCandidate(args);
+ assert.equal(replay.alreadyRecorded,true);
+ const original=(await t.collection("orders").doc(orderId).get()).data();
+ assert.equal(original.paymentStatus,"unpaid");
+ assert.equal(original.paidAt,undefined);
+ assert.equal(original.lalamoveCodSettlementStatus,undefined);
+ assert.equal((await t.collection("hybridBillingReceiptEvents").get()).size,0);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+ const proof=(await t.collection("hybridLalamoveCodCompletionProof").doc(orderId).get()).data();
+ assert.equal(proof.status,"delivery_verified_settlement_pending");
+ assert.equal(proof.codSettlementVerified,false);
+ assert.equal((await db.collection("platformHybridLalamoveEventClaims").get()).size>=1,true);
+ await assert.rejects(recordHybridLalamoveCodCompletionCandidate({...args,
+   resolveProviderOrder:async()=>({...await args.resolveProviderOrder(),
+     evidenceSha256:"e".repeat(64)})}),/HYBRID_LALAMOVE_PROOF_CONFLICT/);
+});
+test("emulator: Lalamove candidate rejects forged actor, provider mismatch and signed event replay across orders",async()=>{
+ const {createHmac}=require("node:crypto");
+ const {recordHybridLalamoveCodCompletionCandidate}=require(
+  "../../functions/hybrid-billing-lalamove-cod-verification.js");
+ const scope="f".repeat(64),id="tenant-ll-deny-061",
+   second="tenant-ll-deny-062",uid="reviewer-ll-deny-061",providerId="LL-ORDER-061";
+ const t=await activate(id,{lalamoveAccountScopeSha256:scope});
+ const t2=await activate(second,{lalamoveAccountScopeSha256:scope});
+ await db.collection("users").doc(uid).set({role:"owner",active:true,tenantId:id});
+ const orderId="order-ll-deny-061",otherOrder="order-ll-deny-062";
+ for(const [ref,order] of [[t,orderId],[t2,otherOrder]]){
+   await ref.collection("orders").doc(order).set({orderType:"delivery",
+     deliveryProvider:"lalamove",lalamoveOrderId:providerId,
+     lalamoveCodEnabled:true,lalamoveOrderStatus:"COMPLETED",
+     paymentMethod:"cod",paymentStatus:"unpaid",status:"completed",
+     totalAmount:1010,subtotalAmount:1000,deliveryFee:10,items:[{id:"i",quantity:1}]});
+ }
+ const now=new Date("2026-10-20T12:30:00Z");
+ const credentials={apiKey:"pk_test_lldeny_061",apiSecret:"sk_test_lldeny_061"};
+ const payload={apiKey:credentials.apiKey,timestamp:Math.trunc(now.getTime()/1000),
+   eventId:"LL-COMPLETE-EVENT-061",eventType:"ORDER_STATUS_CHANGED",
+   data:{order:{orderId:providerId,status:"COMPLETED"}}};
+ payload.signature=createHmac("sha256",credentials.apiSecret).update(
+   String(payload.timestamp)+"\r\nPOST\r\n/api/lalamove/webhook\r\n\r\n"+
+     JSON.stringify(payload.data)).digest("hex");
+ const request=(tenantId,order)=>({db,tenantId,orderId:order,
+   reviewerUid:uid,payload,credentials,now,resolveProviderOrder:async()=>({
+     source:"authenticated_lalamove_order_lookup",authenticated:true,
+     tenantId,orderId:providerId,status:"COMPLETED",market:"TH",
+     accountScopeSha256:scope,evidenceSha256:"b".repeat(64),checkedAt:now})});
+ await assert.rejects(recordHybridLalamoveCodCompletionCandidate(request(id,orderId)),
+   /SUPER_ADMIN_REQUIRED/);
+ await db.collection("users").doc(uid).update({role:"super_admin"});
+ await assert.rejects(recordHybridLalamoveCodCompletionCandidate({
+   ...request(id,orderId),resolveProviderOrder:async()=>({
+     ...await request(id,orderId).resolveProviderOrder(),status:"PICKED_UP"
+   })}),/AUTHENTICATED_ORDER_LOOKUP_REQUIRED/);
+ await recordHybridLalamoveCodCompletionCandidate(request(id,orderId));
+ await assert.rejects(recordHybridLalamoveCodCompletionCandidate(request(second,otherOrder)),
+  /HYBRID_LALAMOVE_EVENT_REPLAY_CONFLICT/);
+ assert.equal((await t2.collection("hybridLalamoveCodCompletionProof").get()).size,0);
+ assert.equal((await t2.collection("orders").doc(otherOrder).get()).data().paymentStatus,"unpaid");
+});
