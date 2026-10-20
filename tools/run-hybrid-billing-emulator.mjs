@@ -22,10 +22,13 @@ const HOME_CANDIDATES = [
   "/opt/homebrew/opt/openjdk@21",
   "/opt/homebrew/opt/openjdk",
 ].filter(Boolean);
+// GitHub Actions hosted JDK can need more than 5s on cold startup.
+ // This affects Emulator environment diagnosis only; never falls back to
+ // Firebase Production or weakens the localhost/demo project guard.
 function compatibleJava(home) {
   const java = path.join(home, "bin", "java");
   if (!existsSync(java)) return false;
-  const result = spawnSync(java, ["-version"], { encoding: "utf8", timeout: 5000 });
+  const result = spawnSync(java, ["-version"], { encoding: "utf8", timeout: 30000 });
   const output = (result.stderr || "") + (result.stdout || "");
   const match = output.match(/version ["'](\d+)(?:\.|["'])/);
   return result.status === 0 && match && Number(match[1]) >= 21;
