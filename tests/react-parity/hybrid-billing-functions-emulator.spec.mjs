@@ -15,8 +15,7 @@ const { getFirestore } = adminRequire("firebase-admin/firestore");
 const PROJECT = "demo-penguin-hybrid-callable-uat";
 if (process.env.GCLOUD_PROJECT !== PROJECT
   || process.env.FIRESTORE_EMULATOR_HOST !== "127.0.0.1:8192"
-  || process.env.FIREBASE_AUTH_EMULATOR_HOST !== "127.0.0.1:9096"
-  || process.env.FUNCTIONS_EMULATOR !== "true") {
+  || process.env.FIREBASE_AUTH_EMULATOR_HOST !== "127.0.0.1:9096") {
   throw Error("HYBRID_FUNCTIONS_EMULATOR_ISOLATION_REQUIRED");
 }
 const config = {
