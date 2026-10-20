@@ -1318,3 +1318,67 @@ test("emulator: read-only journal audit pagination accepts short legacy order ID
  assert.equal(p2.scanned,1);
  assert.deepEqual(p2.issues,[{orderId:"c",reason:"unsupported_payment_source"}]);
 });
+
+
+test("emulator: independent bank PromptPay candidate writes one trusted journal and refuses bank replay",async()=>{
+ const {recordHybridVerifiedPromptPay}=require("../../functions/hybrid-billing-promptpay-payment.js");
+ const id="tenant-bankpay-051",t=await activate(id),uid="super-bankpay-051";
+ await db.collection("users").doc(uid).set({role:"super_admin",active:true});
+ const date=new Date("2026-10-20T12:30:00Z");
+ const makeOrder=async orderId=>t.collection("orders").doc(orderId).set({
+   orderType:"delivery",paymentMethod:"promptpay",paymentStatus:"unpaid",
+   status:"delivered",totalAmount:15540,subtotalAmount:15500,deliveryFee:40,
+   items:[{id:"item1",quantity:1}]});
+ const first="bank-pay-order-051",second="bank-pay-order-052";
+ await Promise.all([makeOrder(first),makeOrder(second)]);
+ const reference="BANK-INDEPENDENT-PRP-051";
+ const args=orderId=>({db,tenantId:id,orderId,reviewerUid:uid,
+   now:new Date("2026-10-21T03:00:00Z"),
+   resolveIndependentBankPayment:async()=>({
+     verified:true,source:"independent_bank_record",tenantId:id,orderId,
+     currency:"THB",recipientConfirmed:true,platformBankAccountVerified:true,
+     reference,evidenceSha256:"a".repeat(64),grossAmountCents:1554000,
+     paidAt:date,checkedAt:new Date("2026-10-21T02:59:00Z")}),
+ });
+ assert.equal((await recordHybridVerifiedPromptPay(args(first))).alreadyPaid,false);
+ assert.equal((await recordHybridVerifiedPromptPay(args(first))).alreadyPaid,true);
+ await assert.rejects(recordHybridVerifiedPromptPay(args(second)),/BANK_REFERENCE_ALREADY_USED/);
+ const order=(await t.collection("orders").doc(first).get()).data();
+ const event=(await t.collection("hybridBillingReceiptEvents").doc("bank-"+first).get()).data();
+ assert.equal(order.paidAt.toMillis(),date.getTime());
+ assert.equal(event.paidAt.toMillis(),date.getTime());
+ assert.equal(event.grossCents,1554000);
+ assert.equal(event.merchandiseCents,1550000);
+ assert.equal(event.referenceHash,order.paymentBankReferenceHash);
+ assert.equal((await t.collection("hybridBillingReceiptEvents").get()).size,1);
+ assert.equal((await t.collection("orders").doc(second).get()).data().paymentStatus,"unpaid");
+});
+test("emulator: strict journal accepts jointly verified COD and bank PromptPay trigger-day receipts",async()=>{
+ const {recordHybridVerifiedPromptPay}=require("../../functions/hybrid-billing-promptpay-payment.js");
+ const {settleHybridCodDeliveryPayment}=require("../../functions/hybrid-billing-cod-payment.js");
+ const id="tenant-bank-cod-mixed-053",t=await activate(id,{
+   hybridReceiptJournalMode:"strict_v1",hybridReceiptJournalCoverageReady:true});
+ const uid="super-bank-cod-053",date=new Date("2026-10-20T12:30:00Z");
+ await db.collection("users").doc(uid).set({role:"super_admin",active:true});
+ const codId="cod-bank-mixed-053",bankId="promptpay-bank-mixed-053";
+ await t.collection("orders").doc(codId).set({orderType:"delivery",paymentMethod:"cod",
+   paymentStatus:"unpaid",status:"delivered",totalAmount:10040,subtotalAmount:10000,
+   deliveryFee:40,items:[{id:"a",quantity:1}]});
+ await settleHybridCodDeliveryPayment({db,tenantId:id,orderId:codId,actorUid:uid,
+   clock:()=>date,serverTimestamp:()=>Timestamp.fromDate(date)});
+ await t.collection("orders").doc(bankId).set({orderType:"delivery",paymentMethod:"promptpay",
+   paymentStatus:"unpaid",status:"delivered",totalAmount:5540,subtotalAmount:5500,
+   deliveryFee:40,items:[{id:"b",quantity:1}]});
+ await recordHybridVerifiedPromptPay({db,tenantId:id,orderId:bankId,reviewerUid:uid,
+   now:new Date("2026-10-21T03:00:00Z"),
+   resolveIndependentBankPayment:async()=>({verified:true,source:"independent_bank_record",
+     tenantId:id,orderId:bankId,currency:"THB",recipientConfirmed:true,
+     platformBankAccountVerified:true,reference:"BANK-PRP-MIX-053",
+     evidenceSha256:"b".repeat(64),grossAmountCents:554000,
+     paidAt:date,checkedAt:new Date("2026-10-21T02:59:00Z")})});
+ assert.deepEqual((await issue(id,midnightAfterTrigger)).issued,[cycleId+":delivery:trigger"]);
+ assert.equal((await invoices(t))[0].amountCents,77500);
+ const bankEvent=t.collection("hybridBillingReceiptEvents").doc("bank-"+bankId);
+ await bankEvent.update({evidenceSha256:"0".repeat(64)});
+ await assert.rejects(issue(id,"2026-10-21T17:01:00Z"),/HYBRID_JOURNAL_SOURCE_INCOMPLETE/);
+});

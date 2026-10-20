@@ -61,9 +61,17 @@ function journalReceiptIssue(orderId,order,event,tenantId){
   if (!order || order.orderType!=="delivery" || order.paymentStatus!=="paid") return "invalid_paid_delivery";
   const paidAt=order.paidAt?.toDate?.();
   if (!(paidAt instanceof Date) || !Number.isFinite(paidAt.getTime())) return "noncanonical_paid_at";
-  if (order.paymentReceiptSource!=="hybrid_cod_cashier_server") return "unsupported_payment_source";
+  const source=order.paymentReceiptSource;
+  const cod=source==="hybrid_cod_cashier_server";
+  const bank=source==="hybrid_promptpay_bank_verified_server";
+  if (!cod&&!bank) return "unsupported_payment_source";
   if (!event) return "missing_journal";
-  if (event.source!=="hybrid_cod_cashier_server") return "unsupported_payment_source";
+  if (event.source!==source) return "unsupported_payment_source";
+  if (bank && (order.paymentMethod!=="promptpay" || !/^[a-f0-9]{64}$/.test(event.referenceHash||"")
+      || !/^[a-f0-9]{64}$/.test(event.evidenceSha256||"")
+      || event.referenceHash!==order.paymentBankReferenceHash
+      || event.evidenceSha256!==order.paymentEvidenceSha256))
+    return "journal_integrity_mismatch";
   const eventAt=event.paidAt?.toDate?.();
   if (!(eventAt instanceof Date) || !Number.isFinite(eventAt.getTime())) return "noncanonical_paid_at";
   if (paidAt.getTime()!==eventAt.getTime()) return "payment_time_mismatch";
@@ -101,7 +109,8 @@ async function inspectHybridJournalCoveragePage({db,tenantId,afterId=null,pageSi
   if(!Array.isArray(snap?.docs)||snap.size!==snap.docs.length||snap.size>pageSize+1)
     throw Error("HYBRID_JOURNAL_AUDIT_SCAN_INCOMPLETE");
   const docs=snap.docs.slice(0,pageSize);
-  const events=await Promise.all(docs.map(d=>eventRef(tenantRef,d.id).get()));
+  const events=await Promise.all(docs.map(d=>journalEventRef(
+    tenantRef,d.id,d.data()?.paymentReceiptSource).get()));
   const issues=[];
   for(let i=0;i<docs.length;i++){
     let reason;
@@ -117,6 +126,49 @@ async function inspectHybridJournalCoveragePage({db,tenantId,afterId=null,pageSi
     note:"read_only_pagination_not_a_consistent_snapshot_no_auto_activation"};
 }
 
+
+/** Independently attested PromptPay SOURCE-ONLY event. Must be invoked inside
+ * the same Firestore transaction as a bank-ref claim and order paid update.
+ * A future adapter cannot accept browser-supplied proof.
+ */
+async function prepareBankReceiptJournal({tx,tenantRef,tenantId,orderId,actorUid,
+  order,proof,serverTimestamp}){
+ if(!tx || !tenantRef || !ID.test(tenantId) || !ID.test(orderId)
+  || !ID.test(actorUid) || typeof serverTimestamp!=="function"
+  || !proof || !/^[a-f0-9]{64}$/.test(proof.referenceHash||"")
+  || !/^[a-f0-9]{64}$/.test(proof.evidenceSha256||"")
+  || !(proof.paidAt instanceof Date) || !Number.isFinite(proof.paidAt.getTime())
+  || !Number.isSafeInteger(proof.grossAmountCents) || proof.grossAmountCents<=0)
+   throw Error("HYBRID_PROMPTPAY_JOURNAL_INVALID_INPUT");
+ const shard=shardOf(orderId);
+ const ev=tenantRef.collection("hybridBillingReceiptEvents").doc("bank-"+orderId);
+ const fence=fenceRef(tenantRef,shard);
+ const [existing,oldFence]=await Promise.all([tx.get(ev),tx.get(fence)]);
+ if(existing.exists) throw Error("HYBRID_PROMPTPAY_JOURNAL_DUPLICATE");
+ const version=oldFence.exists?oldFence.data()?.version:0;
+ if(!Number.isSafeInteger(version)||version<0||version>=Number.MAX_SAFE_INTEGER)
+   throw Error("HYBRID_JOURNAL_BAD_FENCE");
+ const stamp=require("firebase-admin/firestore").Timestamp.fromDate(proof.paidAt);
+ const sale=paidDeliverySale({...order,paymentStatus:"paid",paidAt:stamp});
+ const net=sale?moneyCents(sale.amount):null;
+ if(net===null || net<=0 || moneyCents(order.totalAmount)!==proof.grossAmountCents)
+   throw Error("HYBRID_PROMPTPAY_JOURNAL_AMOUNT_MISMATCH");
+ const now=serverTimestamp();
+ return ()=>{
+   tx.create(ev,{tenantId,orderId,source:"hybrid_promptpay_bank_verified_server",
+     actorUid,shard,sourceDay:dateKey(proof.paidAt),
+     merchandiseCents:net,grossCents:proof.grossAmountCents,currency:"THB",
+     referenceHash:proof.referenceHash,evidenceSha256:proof.evidenceSha256,
+     paidAt:stamp,createdAt:now});
+   if(oldFence.exists)tx.update(fence,{version:version+1,updatedAt:now});
+   else tx.create(fence,{version:1,shard,updatedAt:now});
+ };
+}
+function journalEventRef(t,id,source){
+ return t.collection("hybridBillingReceiptEvents").doc(
+  (source==="hybrid_promptpay_bank_verified_server"?"bank-":"cod-")+id);
+}
+
 async function verifyJournaledCodOrders(tx,tenantRef,rows){
   if(!Array.isArray(rows)||rows.length>3000) throw Error("HYBRID_JOURNAL_COVERAGE_LIMIT");
   // An explicit strict-coverage flag cannot silently whitelist old paid orders.
@@ -124,7 +176,8 @@ async function verifyJournaledCodOrders(tx,tenantRef,rows){
   // source must be migrated and independently verified before strict release.
   const selected=rows.filter(row=>row?.data?.orderType==="delivery"
     && row?.data?.paymentStatus==="paid");
-  const docs=await Promise.all(selected.map(row=>tx.get(eventRef(tenantRef,row.id))));
+  const docs=await Promise.all(selected.map(row=>tx.get(journalEventRef(
+    tenantRef,row.id,row.data?.paymentReceiptSource))));
   for(let i=0;i<selected.length;i++){
     const {id,data}=selected[i];
     let problem;
@@ -135,4 +188,5 @@ async function verifyJournaledCodOrders(tx,tenantRef,rows){
   return {verified:selected.length};
 }
 module.exports={SHARDS,shardOf,prepareCodReceiptJournal,readJournalFences,
-  verifyJournaledCodOrders,journalReceiptIssue,inspectHybridJournalCoveragePage};
+  verifyJournaledCodOrders,journalReceiptIssue,inspectHybridJournalCoveragePage,
+  prepareBankReceiptJournal};
