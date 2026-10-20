@@ -55,22 +55,16 @@ async function appendHybridVerifiedPartialRefund({db,tenantId,orderId,reviewerUi
    catch{integrity="corrupted";}
    if(integrity)throw Error("HYBRID_PARTIAL_REFUND_CHAIN_INTEGRITY:"+integrity);
    const count=order.refundChainCount||1;
-   if(count>=MAX_REFUND_CHAIN)throw Error("HYBRID_PARTIAL_REFUND_CHAIN_LIMIT");
    const base=first.data(),anchor=refundAnchorDigest(base);
    const prior=chain?.parts?.at(-1)||base;
    const previousDigest=chain?.head?.headDigest||anchor;
    const previousAt=prior.refundAt?.toMillis?.();
    const recordedAt=proof.refundAt.getTime();
-   if(!Number.isSafeInteger(previousAt)||recordedAt<previousAt)
-     throw Error("HYBRID_PARTIAL_REFUND_NONMONOTONIC_DATE");
-   const baseMerchandise=original.data().merchandiseCents;
-   const oldCents=cents(order.refundTotal),total=oldCents+proof.refundAmountCents;
-   if(oldCents===null||!Number.isSafeInteger(total)||total>baseMerchandise)
-     throw Error("HYBRID_PARTIAL_REFUND_OVERREFUND");
-   const seq=count+1,evRef=partRefFor(t,orderId,seq);
-   const existing=await tx.get(evRef);
-   if(existing.exists)throw Error("HYBRID_PARTIAL_REFUND_EVENT_CONFLICT");
+   const oldCents=cents(order.refundTotal);
+   if(oldCents===null)throw Error("HYBRID_PARTIAL_REFUND_INVALID_TOTAL");
    const ownership=claim.data()||{};
+   // Revalidate the COMPLETE immutable chain BEFORE allowing a retry. Do not
+   // apply the new-amount limit or next-sequence cap to an unchanged replay.
    if(claim.exists){
      const replay=chain?.parts?.find(e=>e?.sequence===ownership.refundSequence
        && e.referenceHash===proof.referenceHash
@@ -78,11 +72,21 @@ async function appendHybridVerifiedPartialRefund({db,tenantId,orderId,reviewerUi
        && e.refundCents===proof.refundAmountCents
        && e.refundAt?.toMillis?.()===recordedAt);
      if(replay&&ownership.tenantId===tenantId&&ownership.orderId===orderId
-       &&ownership.source===SOURCE)
+       &&ownership.source===SOURCE && ownership.refundSequence===replay.sequence)
        return {tenantId,orderId,alreadyRecorded:true,sequence:replay.sequence,
          cumulativeRefundCents:oldCents,refundInitiated:false,invoiceApplied:false};
      throw Error("HYBRID_PARTIAL_REFUND_REFERENCE_ALREADY_USED");
    }
+   if(count>=MAX_REFUND_CHAIN)throw Error("HYBRID_PARTIAL_REFUND_CHAIN_LIMIT");
+   if(!Number.isSafeInteger(previousAt)||recordedAt<previousAt)
+     throw Error("HYBRID_PARTIAL_REFUND_NONMONOTONIC_DATE");
+   const baseMerchandise=original.data().merchandiseCents;
+   const total=oldCents+proof.refundAmountCents;
+   if(!Number.isSafeInteger(total)||total>baseMerchandise)
+     throw Error("HYBRID_PARTIAL_REFUND_OVERREFUND");
+   const seq=count+1,evRef=partRefFor(t,orderId,seq);
+   const existing=await tx.get(evRef);
+   if(existing.exists)throw Error("HYBRID_PARTIAL_REFUND_EVENT_CONFLICT");
    const stamp=Timestamp.fromDate(proof.refundAt);
    const event={tenantId,orderId,source:SOURCE,sequence:seq,
      previousDigest,shard:shardOf(orderId),sourceDay:dateKey(proof.refundAt),
