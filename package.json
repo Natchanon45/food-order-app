@@ -28,6 +28,7 @@
     "test:hybrid-billing": "node --test tests/react-parity/hybrid-billing.spec.mjs tests/react-parity/hybrid-billing-orders.spec.mjs tests/react-parity/hybrid-billing-read-consistency.spec.mjs tests/react-parity/hybrid-billing-report.spec.mjs tests/react-parity/hybrid-billing-ledger.spec.mjs tests/react-parity/hybrid-billing-payments.spec.mjs tests/react-parity/hybrid-billing-arrears.spec.mjs tests/react-parity/hybrid-billing-slip-quota.spec.mjs tests/react-parity/hybrid-billing-cod-payment.spec.mjs tests/react-parity/hybrid-billing-cashier-route.spec.mjs",
     "test:hybrid-billing:emulator": "node tools/run-hybrid-billing-emulator.mjs",
     "test:hybrid-billing:rules-emulator": "node tools/run-hybrid-billing-rules-emulator.mjs",
+    "test:hybrid-billing:rules-baseline": "HYBRID_RULES_BASELINE_DIAGNOSTIC=1 node tools/run-hybrid-billing-rules-emulator.mjs",
     "test:operational": "node tools/operational-orders-contract.mjs",
     "test:react-migration": "node tools/react-migration-coverage.mjs",
     "test:react-parity-matrix": "node tools/react-parity-matrix.mjs",
