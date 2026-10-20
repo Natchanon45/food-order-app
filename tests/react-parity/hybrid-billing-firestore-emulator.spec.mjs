@@ -1382,3 +1382,42 @@ test("emulator: strict journal accepts jointly verified COD and bank PromptPay t
  await bankEvent.update({evidenceSha256:"0".repeat(64)});
  await assert.rejects(issue(id,"2026-10-21T17:01:00Z"),/HYBRID_JOURNAL_SOURCE_INCOMPLETE/);
 });
+
+
+test("emulator: corrupt COD journal is never treated as idempotent successful payment",async()=>{
+ const {settleHybridCodDeliveryPayment}=require("../../functions/hybrid-billing-cod-payment.js");
+ const id="tenant-replay-cod-054",t=await activate(id),uid="cashier-replay-cod-054";
+ await db.collection("users").doc(uid).set({role:"cashier",active:true,tenantId:id});
+ const orderId="order-cod-replay-054";
+ await t.collection("orders").doc(orderId).set({
+   orderType:"delivery",paymentMethod:"cod",paymentStatus:"unpaid",
+   status:"delivered",totalAmount:110,subtotalAmount:100,deliveryFee:10,
+   items:[{id:"x",quantity:1}]});
+ const args={db,tenantId:id,orderId,actorUid:uid};
+ await settleHybridCodDeliveryPayment(args);
+ await t.collection("hybridBillingReceiptEvents").doc("cod-"+orderId).update({grossCents:1});
+ await assert.rejects(settleHybridCodDeliveryPayment(args),/HYBRID_COD_JOURNAL_MISSING/);
+ assert.equal((await t.collection("hybridBillingReceiptEvents").get()).size,1);
+});
+test("emulator: tampered bank journal cannot be replayed as verified PromptPay",async()=>{
+ const {recordHybridVerifiedPromptPay}=require("../../functions/hybrid-billing-promptpay-payment.js");
+ const id="tenant-replay-bank-055",t=await activate(id),uid="super-replay-bank-055";
+ const orderId="order-bank-replay-055",date=new Date("2026-10-20T12:30:00Z");
+ await db.collection("users").doc(uid).set({role:"super_admin",active:true});
+ await t.collection("orders").doc(orderId).set({orderType:"delivery",
+   paymentMethod:"promptpay",paymentStatus:"unpaid",status:"delivered",
+   totalAmount:110,subtotalAmount:100,deliveryFee:10,
+   items:[{id:"x",quantity:1}]});
+ const args={db,tenantId:id,orderId,reviewerUid:uid,
+   now:new Date("2026-10-21T03:00:00Z"),
+   resolveIndependentBankPayment:async()=>({
+     verified:true,source:"independent_bank_record",tenantId:id,orderId,
+     currency:"THB",recipientConfirmed:true,platformBankAccountVerified:true,
+     reference:"BANK-REPLAY-055",evidenceSha256:"f".repeat(64),
+     grossAmountCents:11000,paidAt:date,
+     checkedAt:new Date("2026-10-21T02:59:00Z")})};
+ await recordHybridVerifiedPromptPay(args);
+ await t.collection("hybridBillingReceiptEvents").doc("bank-"+orderId).update({sourceDay:"2026-10-21"});
+ await assert.rejects(recordHybridVerifiedPromptPay(args),/HYBRID_PROMPTPAY_EXISTING_PAYMENT_CONFLICT/);
+ assert.equal((await t.collection("hybridBillingReceiptEvents").get()).size,1);
+});

@@ -6,7 +6,7 @@
 const { createHash }=require("node:crypto");
 const { Timestamp, FieldValue }=require("firebase-admin/firestore");
 const { paidDeliverySale }=require("./hybrid-billing-orders");
-const { prepareBankReceiptJournal }=require("./hybrid-billing-receipt-journal");
+const { prepareBankReceiptJournal, journalReceiptIssue }=require("./hybrid-billing-receipt-journal");
 
 const ID=/^[A-Za-z0-9_-]{8,128}$/;
 const REFERENCE=/^[A-Za-z0-9._/: -]{8,160}$/;
@@ -94,6 +94,10 @@ async function recordHybridVerifiedPromptPay({
         || bankOwner.orderId!==orderId || bankOwner.source!==SOURCE){
        throw Error("HYBRID_PROMPTPAY_EXISTING_PAYMENT_CONFLICT");
      }
+     let integrity;
+     try { integrity=journalReceiptIssue(orderId,o,event.data(),tenantId); }
+     catch { integrity="unreviewed_financial_state"; }
+     if(integrity)throw Error("HYBRID_PROMPTPAY_EXISTING_PAYMENT_CONFLICT");
      return {tenantId,orderId,alreadyPaid:true,source:SOURCE};
    }
    if(o.paymentStatus!=="unpaid" || event.exists)

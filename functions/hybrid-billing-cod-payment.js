@@ -5,7 +5,7 @@
 // Future callable MUST take actorUid exclusively from verified request.auth.uid;
 // never pass a client-supplied uid, role, amount, timestamp, or payment state.
 const { FieldValue } = require("firebase-admin/firestore");
-const { prepareCodReceiptJournal } = require("./hybrid-billing-receipt-journal");
+const { prepareCodReceiptJournal, journalReceiptIssue } = require("./hybrid-billing-receipt-journal");
 
 const SAFE_ID = /^[A-Za-z0-9_-]{8,128}$/;
 const CASHIER_ROLES = new Set(["owner", "admin", "cashier", "manager"]);
@@ -77,12 +77,14 @@ async function settleHybridCodDeliveryPayment({
         || !Number.isFinite(order.paidAt.toDate().getTime())) {
         fail("HYBRID_COD_EXISTING_PAYMENT_REQUIRES_RECONCILIATION");
       }
-      if (order.paymentReceiptSource === "hybrid_cod_cashier_server") {
-        const event = await tx.get(tenantRef.collection("hybridBillingReceiptEvents").doc("cod-" + orderId));
-        if (!event.exists || event.data()?.tenantId !== tenantId || event.data()?.orderId !== orderId) {
-          fail("HYBRID_COD_JOURNAL_MISSING");
-        }
+      if (order.paymentReceiptSource !== "hybrid_cod_cashier_server") {
+        fail("HYBRID_COD_EXISTING_PAYMENT_REQUIRES_RECONCILIATION");
       }
+      const event = await tx.get(tenantRef.collection("hybridBillingReceiptEvents").doc("cod-" + orderId));
+      let issue;
+      try { issue = journalReceiptIssue(orderId, order, event.exists ? event.data() : null, tenantId); }
+      catch { issue = "unreviewed_financial_state"; }
+      if (issue) fail("HYBRID_COD_JOURNAL_MISSING");
       return { ok: true, alreadyPaid: true, tenantId, orderId };
     }
     if (order.paymentStatus !== "unpaid") fail("HYBRID_COD_PAYMENT_STATUS_CONFLICT");
