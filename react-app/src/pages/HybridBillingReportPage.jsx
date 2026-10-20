@@ -9,6 +9,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useI18n } from "@/i18n/I18nProvider";
 import { getHybridBillingPreview } from "@/data/hybridBillingReport";
+import { HybridBillingFinancePanel } from "@/components/HybridBillingFinancePanel";
 
 const BANGKOK = "Asia/Bangkok";
 function bangkokDate(date = new Date()) {
