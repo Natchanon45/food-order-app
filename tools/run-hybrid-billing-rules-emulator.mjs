@@ -36,6 +36,27 @@ if (before.split(oldStart).length !== 2 || before.split(oldEnd).length !== 2) {
 // before evaluating the large existing role/business expressions. This is an
 // investigation only; it does not touch firestore.rules or deploy anything.
 let candidate = before.replace(oldStart, newStart).replace(oldEnd, newEnd);
+// Candidate-only safe Boolean reassociation: the common case is an active user
+// profile assigned to the current tenant. Evaluate that before tenant owner
+// and membership document fallbacks to avoid repeated expensive get() calls.
+const oldHasRole = "return signedIn() && (tenantOwner(tenantId) || (exists(tenantMembershipPath(tenantId)) && get(tenantMembershipPath(tenantId)).data.active == true && get(tenantMembershipPath(tenantId)).data.role in roles) || (profileTenantMember(tenantId) && profile().role in roles));";
+const newHasRole = "return signedIn() && ((profileTenantMember(tenantId) && profile().role in roles) || tenantOwner(tenantId) || (exists(tenantMembershipPath(tenantId)) && get(tenantMembershipPath(tenantId)).data.active == true && get(tenantMembershipPath(tenantId)).data.role in roles));";
+if (candidate.split(oldHasRole).length !== 2) {
+  throw Error("HYBRID_RULES_CANDIDATE_MEMBERSHIP_DRIFT");
+}
+candidate = candidate.replace(oldHasRole, newHasRole);
+for (const roleFn of [
+  "tenantAdminRole", "tenantProductManagerRole", "tenantStockMovementRole",
+  "tenantCashierRole", "tenantKitchenRole", "tenantStaffRole",
+]) {
+  const line = candidate.split("\n").find(l => l.includes("function " + roleFn + "("));
+  if (!line || !line.includes("return superAdminRole() || tenantHasRole(")) {
+    throw Error("HYBRID_RULES_CANDIDATE_ROLE_DRIFT:" + roleFn);
+  }
+  candidate = candidate.replace(line,
+    line.replace("return superAdminRole() || tenantHasRole(",
+      "return tenantHasRole(").replace(/; }$/, " || superAdminRole(); }"));
+}
 const sourceBoundary = "    match /tenants/{tenantId} {";
 const guardedBoundary = `    match /tenants/{tenantId} {
       function hybridOperationalWriteAllowed() {
