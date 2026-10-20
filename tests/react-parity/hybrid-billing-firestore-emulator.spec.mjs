@@ -1087,3 +1087,40 @@ test("emulator: adjustment refuses owner, mismatched original seal and threshold
   await assert.rejects(recordHybridReviewedAdjustment(base), /THRESHOLD_TOPOLOGY_CHANGED/);
   assert.equal((await ref.collection("hybridBillingAdjustments").get()).size, 0);
 });
+
+
+test("emulator: 3,001 historical paid Delivery receipts fail closed while paged read-only inventory completes", async () => {
+  const id = "tenant-emu-volume-43", ref = await activate(id);
+  // Emulator-only bulk fixture; all rows have canonical server-like Timestamp.
+  // The billing engine must NEVER simply raise its 3,000-record limit.
+  for (let offset = 0; offset < 3001; offset += 400) {
+    const batch = db.batch();
+    for (let i = offset; i < Math.min(offset + 400, 3001); i++) {
+      batch.create(ref.collection("orders").doc("bulk-" + String(i).padStart(5, "0")), {
+        orderType: "delivery", paymentStatus: "paid", status: "delivered",
+        paidAt: stamp("2026-10-20T02:00:00Z"),
+        subtotalAmount: 1, deliveryFee: 0, totalAmount: 1,
+      });
+    }
+    await batch.commit();
+  }
+  let read = 0, cursor = null, pages = 0;
+  do {
+    const page = await scanHybridPaidReceiptExceptions({
+      db, tenantId: id, afterId: cursor, pageSize: 250,
+    });
+    assert.equal(page.issueCount, 0);
+    assert.ok(page.scanned > 0 && page.scanned <= 250);
+    read += page.scanned;
+    pages++;
+    cursor = page.nextAfterId;
+    if (!page.hasMore) break;
+    assert.ok(cursor);
+  } while (pages <= 13);
+  assert.equal(read, 3001);
+  assert.equal(pages, 13);
+  await assert.rejects(issue(id, midnightAfterTrigger),
+    /HYBRID_RECEIPT_AUDIT_LIMIT/);
+  assert.equal((await ref.collection("hybridBillingInvoices").get()).size, 0);
+  assert.equal((await ref.collection("hybridBillingPeriods").get()).size, 0);
+});
