@@ -129,7 +129,9 @@ service firebase.storage {
     // This is SOURCE ONLY until Auth + Storage emulator testing and release
     // review pass. An uploaded slip is never itself approval of an invoice.
     match /tenants/{tenantId}/hybrid-billing-slips/{attemptId}/{fileName} {
-      allow create: if signedIn()
+      // Explicit resource-null guard is needed: the Storage Emulator may
+      // classify a same-path upload as create unless the precondition is set.
+      allow create: if resource == null && signedIn()
         && staffProfile().active == true
         && staffProfile().tenantId == tenantId
         && staffProfile().role in ['owner', 'admin']
