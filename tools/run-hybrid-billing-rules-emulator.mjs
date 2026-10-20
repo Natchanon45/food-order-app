@@ -59,6 +59,23 @@ for (const roleFn of [
 }
 const sourceBoundary = "    match /tenants/{tenantId} {";
 const guardedBoundary = `    match /tenants/{tenantId} {
+      // Temporary Hybrid authorization short path. The legacy matcher
+      // remains untouched in the false branch of each conditional policy.
+      function isHybridTenant() {
+        return get(/databases/$(database)/documents/tenants/$(tenantId)).data.get('billingPolicyVersion', 'legacy') == 'hybrid_v1';
+      }
+      function fastHybridStaff() {
+        return signedIn()
+          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.active == true
+          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId == tenantId
+          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['owner','admin','cashier','manager','kitchen','super_admin'];
+      }
+      function fastHybridCashier() {
+        return signedIn()
+          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.active == true
+          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId == tenantId
+          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['owner','admin','cashier','manager','super_admin'];
+      }
       function hybridOperationalWriteAllowed() {
         let t = get(/databases/$(database)/documents/tenants/$(tenantId)).data;
         return t.get('billingPolicyVersion', 'legacy') != 'hybrid_v1'
@@ -139,6 +156,45 @@ const factoredSales = salesLine
   .replace(salesUpdate,
     "allow update: if resource != null && tenantBusinessEnabled(tenantId, 'retail_pos') && ((tenantAdminRole(tenantId) && tenantResourceMatches(tenantId)) || (retailTenantWrite(tenantId) && (validRetailSaleEnrichment(tenantId) || validRetailReturnSaleUpdate(tenantId))))");
 candidate = candidate.slice(0, salesAt) + factoredSales + candidate.slice(salesEnd);
+// IMPORTANT: for Hybrid only, use a small policy branch evaluated via Rules'
+// conditional operator so a rejected payment does not expand the enormous
+// old tenant membership/owner OR tree. The *entire* old legacy predicate is
+// retained in the false branch; production source remains untouched.
+function conditionalizeMatch(lineStart, action, fastPredicate, nextAction) {
+  const pos = candidate.indexOf(lineStart);
+  if (pos < 0 || candidate.indexOf(lineStart, pos + 1) !== -1) {
+    throw Error("HYBRID_RULES_CANDIDATE_CONDITIONAL_PATH_DRIFT:" + action);
+  }
+  const end = candidate.indexOf("\n", pos);
+  const line = candidate.slice(pos, end);
+  const startPattern = "allow " + action + ": if ";
+  const afterPattern = "; allow " + nextAction + ":";
+  const a = line.indexOf(startPattern), b = line.indexOf(afterPattern, a);
+  if (a < 0 || b < 0) throw Error("HYBRID_RULES_CANDIDATE_ACTION_DRIFT:" + action);
+  const legacyPolicy = line.slice(a + startPattern.length, b);
+  const revised = line.slice(0, a) + startPattern
+    + "(isHybridTenant() ? (" + fastPredicate + ") : (" + legacyPolicy + "))"
+    + line.slice(b);
+  candidate = candidate.slice(0, pos) + revised + candidate.slice(end);
+}
+conditionalizeMatch(
+  "match /orders/{orderId} { allow get: if tenantBusinessEnabled(tenantId, 'order_delivery')",
+  "update",
+  "hybridOperationalWriteAllowed() && hybridDeliveryReceiptFieldsUnchanged() && request.resource.data.get('orderType', '') == resource.data.get('orderType', '') && fastHybridStaff() && deliveryPaymentReviewFieldsUnchanged()",
+  "delete",
+);
+conditionalizeMatch(
+  "match /sales/{saleId} { allow get: if tenantBusinessEnabled(tenantId, 'retail_pos')",
+  "create",
+  "hybridOperationalWriteAllowed() && fastHybridCashier() && validPosSale(tenantId)",
+  "update",
+);
+conditionalizeMatch(
+  "match /sales/{saleId} { allow get: if tenantBusinessEnabled(tenantId, 'retail_pos')",
+  "update",
+  "hybridOperationalWriteAllowed() && resource != null && fastHybridCashier() && tenantResourceMatches(tenantId) && (validRetailSaleEnrichment(tenantId) || validRetailReturnSaleUpdate(tenantId))",
+  "delete",
+);
 // Diagnostic mode runs the UNCHANGED production rules in the demo emulator
 // to distinguish a pre-existing evaluation-budget problem from Hybrid edits.
 // It never deploys, changes or rewrites the repository's firestore.rules.
