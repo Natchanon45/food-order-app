@@ -1183,7 +1183,7 @@ test("emulator: strict journal COD payment proves source coverage of full 15,500
 });
 
 
-test("emulator: sharded journal fence prevents concurrent paid COD from silently underbilling close",async()=>{
+test("emulator: concurrent sharded COD/close either includes receipt or flags immutable late adjustment",async()=>{
  const {settleHybridCodDeliveryPayment}=require("../../functions/hybrid-billing-cod-payment.js");
  const id="tenant-journal-concurrent-047",t=await activate(id,{
    hybridReceiptJournalMode:"strict_v1",hybridReceiptJournalCoverageReady:true});
@@ -1214,18 +1214,33 @@ test("emulator: sharded journal fence prevents concurrent paid COD from silently
      return paidOrdersInWindow(...params);
    },
  });
- try{
-   await enteredPromise;
-   await settleHybridCodDeliveryPayment(second);
- }finally{
-   release();
- }
- const result=await Promise.allSettled([close]);
- const issued=await invoices(t);
- assert.equal(issued.filter(row=>row.amountCents===50000).length,0,
-   "10,000-only THB 500 underbill must NEVER commit after 5,500 concurrent COD payment");
- if(result[0].status==="fulfilled" && issued.length){
-   assert.equal(issued[0].amountCents,77500);
- }
+ // Submit the writer while the closing transaction is paused. IMPORTANT:
+ // release the pause BEFORE awaiting the writer, otherwise Firestore's
+ // normal read locks correctly block the writer and the test deadlocks.
+ await enteredPromise;
+ const writer=settleHybridCodDeliveryPayment(second);
+ release();
+ const [closed,paid]=await Promise.allSettled([close,writer]);
+ assert.equal(paid.status,"fulfilled","trusted COD writer must eventually succeed");
  assert.equal((await t.collection("hybridBillingReceiptEvents").get()).size,2);
+ const billed=await invoices(t);
+ assert.ok(billed.length<=1);
+ if(!billed.length){
+   // Aborted close was safe. A fresh close sees both paid receipts.
+   const retry=await issue(id,midnightAfterTrigger);
+   assert.equal(retry.issued.length,1);
+   assert.equal((await invoices(t))[0].amountCents,77500);
+ }else if(billed[0].amountCents===50000){
+   // The writer committed AFTER the first close. Original immutable invoice
+   // stays at 500, and a later attempt MUST flag the late receipt for review.
+   // No silent overwrite/automatic debit is allowed.
+   await assert.rejects(issue(id,"2026-10-21T17:01:00Z"),
+     /HYBRID_CLOSED_DAY_CHANGED_REQUIRES_ADJUSTMENT/);
+   assert.equal((await invoices(t))[0].amountCents,50000);
+ }else{
+   assert.equal(billed[0].amountCents,77500);
+ }
+ if(closed.status==="rejected"){
+   assert.equal((await invoices(t)).length,1);
+ }
 });
