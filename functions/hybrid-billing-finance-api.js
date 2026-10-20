@@ -31,6 +31,7 @@ function makeHybridFinanceHandler({
   getDb = getFirestore,
   getBucket = () => getStorage().bucket(),
   ready = HYBRID_FINANCE_API_READY,
+  clock = () => new Date(),
 } = {}) {
   return async request => {
     if (ready !== true) deny("failed-precondition", "HYBRID_FINANCE_NOT_RELEASED");
@@ -112,16 +113,16 @@ function makeHybridFinanceHandler({
     }
     if (action === "recover") {
       return { ok: true, ...await approveHybridRecovery({
-        db, tenantId, reviewerUid: uid, reviewId: data.reviewId,
+        db, tenantId, reviewerUid: uid, reviewId: data.reviewId, now: clock(),
       }) };
     }
     if (action === "close") {
       return { ok: true, ...await issueHybridInvoicesForClosedDay({
-        db, tenantId, cycleId: data.cycleId,
+        db, tenantId, cycleId: data.cycleId, now: clock(),
       }) };
     }
     if (action === "arrears") {
-      return { ok: true, ...await reconcileHybridArrears({ db, tenantId }) };
+      return { ok: true, ...await reconcileHybridArrears({ db, tenantId, now: clock() }) };
     }
     deny("invalid-argument", "HYBRID_FINANCE_UNKNOWN_ACTION");
   };
