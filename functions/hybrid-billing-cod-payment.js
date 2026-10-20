@@ -5,6 +5,7 @@
 // Future callable MUST take actorUid exclusively from verified request.auth.uid;
 // never pass a client-supplied uid, role, amount, timestamp, or payment state.
 const { FieldValue } = require("firebase-admin/firestore");
+const { prepareCodReceiptJournal } = require("./hybrid-billing-receipt-journal");
 
 const SAFE_ID = /^[A-Za-z0-9_-]{8,128}$/;
 const CASHIER_ROLES = new Set(["owner", "admin", "cashier", "manager"]);
@@ -18,6 +19,7 @@ const validAmount = number => typeof number === "number"
 async function settleHybridCodDeliveryPayment({
   db, tenantId, orderId, actorUid,
   serverTimestamp = () => FieldValue.serverTimestamp(),
+  clock = () => new Date(),
 }) {
   if (!db || !SAFE_ID.test(String(tenantId || ""))
     || !SAFE_ID.test(String(orderId || ""))
@@ -75,12 +77,21 @@ async function settleHybridCodDeliveryPayment({
         || !Number.isFinite(order.paidAt.toDate().getTime())) {
         fail("HYBRID_COD_EXISTING_PAYMENT_REQUIRES_RECONCILIATION");
       }
+      if (order.paymentReceiptSource === "hybrid_cod_cashier_server") {
+        const event = await tx.get(tenantRef.collection("hybridBillingReceiptEvents").doc("cod-" + orderId));
+        if (!event.exists || event.data()?.tenantId !== tenantId || event.data()?.orderId !== orderId) {
+          fail("HYBRID_COD_JOURNAL_MISSING");
+        }
+      }
       return { ok: true, alreadyPaid: true, tenantId, orderId };
     }
     if (order.paymentStatus !== "unpaid") fail("HYBRID_COD_PAYMENT_STATUS_CONFLICT");
     if (!isLalamove && !DELIVERED_STATUSES.has(order.status)) {
       fail("HYBRID_COD_DELIVERY_NOT_COMPLETED");
     }
+    const journalWrites = await prepareCodReceiptJournal({
+      tx, tenantRef, order, tenantId, orderId, actorUid, now: clock(), serverTimestamp,
+    });
     const patch = {
       paymentStatus: "paid",
       paidAt: serverTimestamp(),
@@ -98,6 +109,7 @@ async function settleHybridCodDeliveryPayment({
       patch.completedAt = serverTimestamp();
     }
     tx.update(orderRef, patch);
+    journalWrites();
     return { ok: true, alreadyPaid: false, tenantId, orderId };
   });
 }

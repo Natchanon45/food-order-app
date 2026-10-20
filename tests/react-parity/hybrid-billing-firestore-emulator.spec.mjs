@@ -1124,3 +1124,37 @@ test("emulator: 3,001 historical paid Delivery receipts fail closed while paged 
   assert.equal((await ref.collection("hybridBillingInvoices").get()).size, 0);
   assert.equal((await ref.collection("hybridBillingPeriods").get()).size, 0);
 });
+
+
+test("emulator: COD transaction atomically creates exactly one immutable receipt and shard version",async()=>{
+ const {settleHybridCodDeliveryPayment}=require("../../functions/hybrid-billing-cod-payment.js");
+ const {shardOf}=require("../../functions/hybrid-billing-receipt-journal.js");
+ const id="tenant-journal-atomic-044", t=await activate(id),uid="cashier-journal-044";
+ await db.collection("users").doc(uid).set({role:"cashier",tenantId:id,active:true});
+ const ref=t.collection("orders").doc("order-journal-atomic-044");
+ await ref.set({orderType:"delivery",paymentMethod:"cod",paymentStatus:"unpaid",
+  status:"delivered",totalAmount:105,subtotalAmount:100,deliveryFee:5,items:[{id:"x",quantity:1}]});
+ const args={db,tenantId:id,orderId:ref.id,actorUid:uid};
+ const results=await Promise.all([settleHybridCodDeliveryPayment(args),settleHybridCodDeliveryPayment(args)]);
+ assert.equal(results.filter(x=>x.alreadyPaid===false).length,1);
+ const receipt=(await t.collection("hybridBillingReceiptEvents").doc("cod-"+ref.id).get()).data();
+ const paid=(await ref.get()).data();
+ assert.equal(receipt.source,"hybrid_cod_cashier_server");
+ assert.equal(receipt.grossCents,10500);
+ assert.equal(receipt.merchandiseCents,10000);
+ assert.equal(receipt.paidAt.toMillis(),paid.paidAt.toMillis());
+ const shard=shardOf(ref.id);
+ const fence=(await t.collection("hybridBillingReceiptFences").doc("shard-"+String(shard).padStart(2,"0")).get()).data();
+ assert.equal(fence.version,1);
+ assert.equal((await t.collection("hybridBillingReceiptEvents").get()).size,1);
+});
+test("emulator: strict journal source mode rejects uncertified tenant without financial writes",async()=>{
+ const id="tenant-journal-strict-045",t=await activate(id,{hybridReceiptJournalMode:"strict_v1",
+   hybridReceiptJournalCoverageReady:false});
+ await order(t,"paid-without-journal","2026-10-20T02:00:00Z",15500);
+ await assert.rejects(issue(id,midnightAfterTrigger),/HYBRID_JOURNAL_COVERAGE_NOT_CERTIFIED/);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+ await t.update({hybridReceiptJournalCoverageReady:true});
+ // A legacy paid order cannot be certified by simply editing the flag; strict
+ // writer coverage of every paid source is still a separate release blocker.
+});

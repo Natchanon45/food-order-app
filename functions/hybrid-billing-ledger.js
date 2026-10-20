@@ -10,6 +10,7 @@ const { calculateCycle, dateKey, normalizeSettings, DEFAULT_SETTINGS,
   validDate, nextDate, billingCycleById, cycleWindow } = require("./hybrid-billing-core");
 const { paidDeliverySale, paidDeliveryByWindow } = require("./hybrid-billing-orders");
 const { paidOrdersInWindow, auditPaidDeliveryReceiptCoverage } = require("./hybrid-billing-preview");
+const { readJournalFences, verifyJournaledCodOrders } = require("./hybrid-billing-receipt-journal");
 
 const cents = amount => Math.round(amount * 100);
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -117,6 +118,17 @@ async function issueHybridInvoicesForClosedDay({ db, tenantId, cycleId, now = ne
     const settings = normalizeSettings(periodSnap.exists ? stored.configSnapshot
       : cycle.firstCycle && tenant.hybridBillingSnapshot ? tenant.hybridBillingSnapshot
         : { ...DEFAULT_SETTINGS, ...(settingsSnap.data() || {}) });
+    // Strict journal testing requires explicitly certified source enrollment.
+    // Every participating COD writer increments a shard in the SAME payment
+    // transaction; a close reading these shards conflicts with concurrent writes.
+    // Nonparticipating provider/refund writers remain a release blocker.
+    const strictJournal = tenant.hybridReceiptJournalMode === "strict_v1";
+    if (strictJournal) {
+      if (tenant.hybridReceiptJournalCoverageReady !== true) {
+        throw Error("HYBRID_JOURNAL_COVERAGE_NOT_CERTIFIED");
+      }
+      await readJournalFences(tx, tenantRef);
+    }
     // A paidAt Timestamp query cannot return legacy paidAt ISO strings.
     // Audit an independent source index (ALL paid Delivery orders) before
     // trusting any closed-day revenue or creating immutable invoice records.
@@ -131,6 +143,7 @@ async function issueHybridInvoicesForClosedDay({ db, tenantId, cycleId, now = ne
       !row || !row.id || !row.data)) {
       throw new Error("HYBRID_PAID_ORDER_SCAN_INCOMPLETE");
     }
+    if (strictJournal) await verifyJournaledCodOrders(tx, tenantRef, orderRows);
     const plan = planClosedDay({ orders: orderRows, tenantId, signupDate, cycleId, throughDay, settings });
     ensureUnchangedSeals(stored.daySeals, plan.seals);
     const known = new Set(stored.issuedInvoiceIds || []);
