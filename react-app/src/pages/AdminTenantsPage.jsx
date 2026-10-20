@@ -5,6 +5,7 @@ import { useAuth } from "@/auth/AuthProvider";
 import { storage } from "@/firebase/client";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
+import { HybridBillingFinancePanel } from "@/components/HybridBillingFinancePanel";
 import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
 import { sweetConfirm, sweetPrompt } from "@/components/sweetDialog";
