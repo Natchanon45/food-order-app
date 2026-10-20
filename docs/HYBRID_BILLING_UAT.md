@@ -276,3 +276,13 @@ HYBRID_REGISTRATION_READY is false. Existing tenants retain their legacy Subscri
 - Isolated Firestore Emulator: demo-only Super Admin creates candidate OPEN epoch, synthetic COD read-admitted transaction writes PROBE doc, Super Admin seals, any later synthetic Refund writer rejected; concurrent synthetic PromptPay writer vs seal either serializes before seal or rejects, never writes after a sealed barrier.
 - STILL NOT TESTED/PROVEN: real COD/PromptPay/refund writer enrollment, truly immutable paid-record day manifest or global source completeness, real 3,001+ Firestore load, provider/bank production authenticity, Thai tax/legal postings, App Check real domains and PC/tablet/mobile UAT. Emulator TODO 2 remain.
 
+---
+
+## 2026-10-20 — Phase 3W VERIFIED GitHub CI closure (supersedes preceding pending status)
+
+- ACTUAL SOURCE CODE SHA `351dd6c715aa5ce0e26109d19c97bad2df833db8` PR CI **39445005705 SUCCESS 6/6**: `npm run test:hybrid-billing` **128/128 PASS**, real isolated `npm run test:hybrid-billing:emulator` **58 PASS + 2 explicit TODO** (60 total); Auth/Functions/Firestore Rules/Storage + React source/operational green. Code push CI 39444996481 was cancelled by following docs commit; do NOT report it as successful.
+- ACTUAL Phase 3W documentation HEAD before this validation commit `2194232a28ed14c8fa4b7b5c879834d9ff2c3630`, push CI **39445392483 SUCCESS 6/6**, Draft PR CI **39445400647 SUCCESS 6/6**. Those successful six-job runs verify the SAME Phase 3W code and initial six documentation updates. This extra validation-note commit moves HEAD again: check GitHub for its latest CI instead of assuming success.
+- Draft PR #7 remains DRAFT / unmerged. All four rollout gates FALSE. Epoch proposal ONLY demo/localhost; all source writers `wired:false`, no real financial mutation, no global financial-day manifest, no production deploy or Mac MCP. Preserve strict `coverageCertified:false` and `canIssueInvoice:false` and 3,000-row issuance limit.
+- NEXT: Source-only opt-in writer participation wiring + prove complete trust boundary (legacy and Lalamove future money writers remain blockers), an honest >3k DEMO Firestore load/concurrency/index benchmark, then authorized provider/bank staging, legal tax/AR/refund posting, App Check real devices/Owner-Super Admin PC/tablet/mobile UAT, 2 emulator TODO and finance/security approval.
+- **MANDATORY RECURSIVE HANDOFF:** Each future chat MUST include a full next-chat copy/paste prompt with actual GitHub HEAD, Code SHA, VERIFIED CI, repo, branch, Draft PR, completed/open tasks, security rules and next steps, and MUST repeat THIS SAME instruction in that next prompt. Update all SIX docs and Draft PR #7 each time. Never restart, merge, deploy or reset local uncommitted work.
+

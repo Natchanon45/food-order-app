@@ -169,3 +169,13 @@ Two separately authenticated paid-out provider records and posted bank/Wallet cr
 ### Phase 3W release gate BLOCKED
 Demo-only epoch/probe control is NOT an actual day manifest or coverage certification. Real signed writer registration, enforced participation by all paths, bank/Wallet provenance, true concurrency cutoff and immutable financial witness, >3k genuine throughput and legal tax requirements remain UNMET. All four gates FALSE, `coverageCertified:false` and `canIssueInvoice:false` permanently in this candidate; do not change real tenant coverage, do not deploy or merge.
 
+---
+
+## 2026-10-20 — Phase 3W VERIFIED GitHub CI closure (supersedes preceding pending status)
+
+- ACTUAL SOURCE CODE SHA `351dd6c715aa5ce0e26109d19c97bad2df833db8` PR CI **39445005705 SUCCESS 6/6**: `npm run test:hybrid-billing` **128/128 PASS**, real isolated `npm run test:hybrid-billing:emulator` **58 PASS + 2 explicit TODO** (60 total); Auth/Functions/Firestore Rules/Storage + React source/operational green. Code push CI 39444996481 was cancelled by following docs commit; do NOT report it as successful.
+- ACTUAL Phase 3W documentation HEAD before this validation commit `2194232a28ed14c8fa4b7b5c879834d9ff2c3630`, push CI **39445392483 SUCCESS 6/6**, Draft PR CI **39445400647 SUCCESS 6/6**. Those successful six-job runs verify the SAME Phase 3W code and initial six documentation updates. This extra validation-note commit moves HEAD again: check GitHub for its latest CI instead of assuming success.
+- Draft PR #7 remains DRAFT / unmerged. All four rollout gates FALSE. Epoch proposal ONLY demo/localhost; all source writers `wired:false`, no real financial mutation, no global financial-day manifest, no production deploy or Mac MCP. Preserve strict `coverageCertified:false` and `canIssueInvoice:false` and 3,000-row issuance limit.
+- NEXT: Source-only opt-in writer participation wiring + prove complete trust boundary (legacy and Lalamove future money writers remain blockers), an honest >3k DEMO Firestore load/concurrency/index benchmark, then authorized provider/bank staging, legal tax/AR/refund posting, App Check real devices/Owner-Super Admin PC/tablet/mobile UAT, 2 emulator TODO and finance/security approval.
+- **MANDATORY RECURSIVE HANDOFF:** Each future chat MUST include a full next-chat copy/paste prompt with actual GitHub HEAD, Code SHA, VERIFIED CI, repo, branch, Draft PR, completed/open tasks, security rules and next steps, and MUST repeat THIS SAME instruction in that next prompt. Update all SIX docs and Draft PR #7 each time. Never restart, merge, deploy or reset local uncommitted work.
+
