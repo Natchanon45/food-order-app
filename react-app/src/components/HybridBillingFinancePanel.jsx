@@ -22,6 +22,12 @@ const LOCALE = {
     approve: "อนุมัติหลังตรวจธนาคาร", reject: "ปฏิเสธ", recovery: "ตรวจหนี้และปลดระงับร้าน",
     recoveryConfirm: "ฉันได้ตรวจสอบการชำระหนี้ทั้งหมดและสถานะระงับร้านด้วยตนเองแล้ว",
     success: "บันทึกผลเรียบร้อยแล้ว", pending: "รอตรวจสอบ",
+    auditTitle: "ตรวจข้อมูลชำระเก่า (อ่านอย่างเดียว)",
+    auditReceipts: "ตรวจรายการรับชำระ", auditMore: "หน้าถัดไป",
+    auditNone: "ไม่พบข้อมูลผิดปกติในรายการที่ตรวจ", auditCount: "รายการผิดปกติ",
+    adjustTitle: "ตรวจยอดที่เปลี่ยนหลังปิดวัน (ยังไม่ออกใบลดหนี้)",
+    adjustCycle: "วันเริ่มรอบบิล", auditAdjust: "ตรวจยอดหลังปิดวัน",
+    adjustNone: "ไม่พบวันที่ยอดเปลี่ยน", adjustWarning: "ต้องให้ผู้ดูแลตรวจใบลดหนี้/เพิ่มหนี้ด้วยตนเอง",
   },
   en: {
     owner: "Hybrid invoices and payment evidence", admin: "Hybrid Billing review queue",
@@ -38,6 +44,12 @@ const LOCALE = {
     recovery: "Recheck all debt and restore store access",
     recoveryConfirm: "I personally verified all settlements and any manual suspension",
     success: "Changes recorded", pending: "Pending review",
+    auditTitle: "Review historical paid receipts (read-only)",
+    auditReceipts: "Inspect receipts", auditMore: "Next page",
+    auditNone: "No anomalies found in the inspected page", auditCount: "Exceptions",
+    adjustTitle: "Inspect changes after day close (no automatic credit note)",
+    adjustCycle: "Billing cycle start", auditAdjust: "Inspect closed days",
+    adjustNone: "No sealed-day differences", adjustWarning: "Manual debit/credit-note review is required",
   },
 };
 const money = (cents, language) =>
@@ -66,6 +78,9 @@ export function HybridBillingFinancePanel({
   const [recoveryChecked, setRecoveryChecked] = useState(false);
   const [proof, setProof] = useState("");
   const [selectedAttempt, setSelectedAttempt] = useState("");
+  const [receiptAudit, setReceiptAudit] = useState(null);
+  const [adjustmentAudit, setAdjustmentAudit] = useState(null);
+  const [adjustmentCycle, setAdjustmentCycle] = useState("");
   const finance = useMemo(() => createHybridFinanceClient(invoke), [invoke]);
 
   useEffect(() => {
@@ -148,6 +163,24 @@ export function HybridBillingFinancePanel({
     setRecoveryChecked(false);
   });
 
+  const inspectReceipts = afterId => run(async () => {
+    const result = await finance({ action: "audit", tenantId, afterId });
+    setReceiptAudit(previous => ({
+      tenantId, nextAfterId: result.nextAfterId,
+      issues: afterId && previous?.tenantId === tenantId
+        ? [...previous.issues, ...(result.issues || [])] : (result.issues || []),
+    }));
+  });
+  const inspectAdjustments = () => run(async () => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(adjustmentCycle)) {
+      throw Error("HYBRID_ADJUSTMENTS_CYCLE_REQUIRED");
+    }
+    const result = await finance({
+      action: "adjustments", tenantId, cycleId: adjustmentCycle,
+    });
+    setAdjustmentAudit({ tenantId, ...result });
+  });
+
   return (
     <section className="card hybrid-report-details" data-hybrid-finance-mode={mode}
       aria-label={mode === "admin" ? labels.admin : labels.owner}>
@@ -218,6 +251,49 @@ export function HybridBillingFinancePanel({
                   ) : null}
                 </div>
               ))}
+              <section className="card" aria-label={labels.auditTitle}>
+                <h3>{labels.auditTitle}</h3>
+                <button className="btn btn-sm" type="button" disabled={busy}
+                  onClick={() => inspectReceipts(null)}>{labels.auditReceipts}</button>
+                {receiptAudit?.tenantId === tenantId ? (
+                  <>
+                    <p role="status">{labels.auditCount}: {receiptAudit.issues.length}</p>
+                    {receiptAudit.issues.length ? (
+                      <ul>{receiptAudit.issues.map(row => (
+                        <li key={row.orderId}>{row.orderId}: {row.reason}</li>
+                      ))}</ul>
+                    ) : <p>{labels.auditNone}</p>}
+                    {receiptAudit.nextAfterId ? (
+                      <button className="btn btn-sm" type="button" disabled={busy}
+                        onClick={() => inspectReceipts(receiptAudit.nextAfterId)}>
+                        {labels.auditMore}
+                      </button>
+                    ) : null}
+                  </>
+                ) : null}
+              </section>
+              <section className="card" aria-label={labels.adjustTitle}>
+                <h3>{labels.adjustTitle}</h3>
+                <label htmlFor="hybrid-finance-audit-cycle">{labels.adjustCycle}</label>
+                <input className="input" id="hybrid-finance-audit-cycle" type="date"
+                  value={adjustmentCycle} onChange={event => setAdjustmentCycle(event.target.value)}
+                  disabled={busy} />
+                <button className="btn btn-sm" type="button" disabled={busy || !adjustmentCycle}
+                  onClick={inspectAdjustments}>{labels.auditAdjust}</button>
+                {adjustmentAudit?.tenantId === tenantId ? (
+                  adjustmentAudit.changed?.length ? (
+                    <>
+                      <p role="alert">{labels.adjustWarning}</p>
+                      <ul>{adjustmentAudit.changed.map(row => (
+                        <li key={row.day}>{row.day}: {money(row.originalBaseCents, language)}
+                          {" → "}{money(row.currentBaseCents, language)}
+                          {" ("}{money(row.deltaCents, language)}{")"}
+                        </li>
+                      ))}</ul>
+                    </>
+                  ) : <p role="status">{labels.adjustNone}</p>
+                ) : null}
+              </section>
               <label><input type="checkbox" checked={recoveryChecked}
                 onChange={event => setRecoveryChecked(event.target.checked)} /> {labels.recoveryConfirm}</label>
               <button className="btn btn-sm" type="button" disabled={busy || !recoveryChecked}
