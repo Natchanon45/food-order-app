@@ -1483,6 +1483,10 @@ test("emulator: refund rejects forged actor, over-refund and second or tampered 
  await assert.rejects(recordHybridVerifiedRefund(req("BANK-RFD-057")),/SUPER_ADMIN_REQUIRED/);
  await db.collection("users").doc(uid).update({role:"super_admin"});
  await assert.rejects(recordHybridVerifiedRefund(req("BANK-RFD-057",110000)),/AMOUNT_EXCEEDS_MERCHANDISE/);
+ await assert.rejects(recordHybridVerifiedRefund({...req("BANK-RFD-057"),
+   resolveIndependentRefund:async()=>({...await req("BANK-RFD-057").resolveIndependentRefund(),
+     refundAt:new Date("2026-10-20T01:00:00Z")})}),
+   /REFUND_BEFORE_ORIGINAL_PAYMENT/);
  assert.equal((await t.collection("hybridBillingReceiptEvents").get()).size,1);
  await recordHybridVerifiedRefund(req("BANK-RFD-057"));
  await assert.rejects(recordHybridVerifiedRefund(req("BANK-OTHER-057")),/EXISTING_CONFLICT/);

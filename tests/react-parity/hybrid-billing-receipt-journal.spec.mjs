@@ -37,7 +37,7 @@ test("strict receipt verifier detects financial/time/shard tampering and unjourn
  assert.equal(journalReceiptIssue(id,order,{...journal,sourceDay:"2026-10-21"},tenant),"journal_integrity_mismatch");
  assert.equal(journalReceiptIssue(id,order,{...journal,shard:99},tenant),"journal_integrity_mismatch");
  assert.equal(journalReceiptIssue(id,{...order,totalAmount:95},journal,tenant),"journal_integrity_mismatch");
- assert.equal(journalReceiptIssue(id,{...order,refundTotal:10},journal,tenant),"journal_integrity_mismatch");
+ assert.equal(journalReceiptIssue(id,{...order,refundTotal:10},journal,tenant),"unreviewed_refund_or_financial_state");
  assert.equal(journalReceiptIssue(id,{...order,paymentReceiptSource:"promptpay"},journal,tenant),"unsupported_payment_source");
  assert.equal(journalReceiptIssue(id,order,null,tenant),"missing_journal");
  assert.equal(journalReceiptIssue(id,{...order,paidAt:"2026-10-20"},journal,tenant),"noncanonical_paid_at");

@@ -66,6 +66,9 @@ async function recordHybridVerifiedRefund({db,tenantId,orderId,reviewerUid,
     (o.paymentReceiptSource==="hybrid_cod_cashier_server"?"cod-":"bank-")+orderId);
   const paid=await tx.get(paidRef);
   if(!paid.exists)throw Error("HYBRID_REFUND_ORIGINAL_JOURNAL_MISSING");
+  // A refund cannot have settled before its original trusted payment.
+  if(proof.refundAt.getTime()<o.paidAt.toDate().getTime())
+     throw Error("HYBRID_REFUND_BEFORE_ORIGINAL_PAYMENT");
   const previous=refund.data()||{},owned=claim.data()||{};
   if(refund.exists){
     let invalid;
