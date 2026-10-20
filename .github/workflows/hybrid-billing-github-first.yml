@@ -41,6 +41,23 @@ jobs:
       - name: Verify existing generated React build (no new build)
         run: npm run verify:react-build
 
+  react-source-build:
+    name: Compile current React source on GitHub (no deploy)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install React dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Compile source into temporary runner folder only
+        run: npx vite build --config vite.react.config.js --outDir "$RUNNER_TEMP/hybrid-react-compiled" --emptyOutDir
+      - name: Verify the repository Build assets were not committed
+        run: git diff --exit-code -- public/react/assets
+
   firestore-emulator:
     name: Firestore demo project integration
     runs-on: ubuntu-24.04
