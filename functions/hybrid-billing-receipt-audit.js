@@ -77,7 +77,7 @@ async function inspectHybridClosedDayAdjustments({
   db, tenantId, cycleId, maxRecords = 3000,
 }) {
   if (!db || typeof tenantId !== "string" || !SAFE_TENANT_ID.test(tenantId)
-    || typeof cycleId !== "string" || !/^\\d{4}-\\d{2}-\\d{2}$/.test(cycleId)
+    || typeof cycleId !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(cycleId)
     || !Number.isSafeInteger(maxRecords) || maxRecords < 1 || maxRecords > 3000) {
     throw Error("HYBRID_ADJUSTMENT_AUDIT_BAD_REQUEST");
   }
