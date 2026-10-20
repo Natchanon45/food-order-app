@@ -18,6 +18,7 @@ const { getFirestore, Timestamp } = functionsRequire("firebase-admin/firestore")
 const { issueHybridInvoicesForClosedDay } = require("../../functions/hybrid-billing-ledger.js");
 const { reconcileHybridArrears } = require("../../functions/hybrid-billing-arrears.js");
 const { approveHybridRecovery } = require("../../functions/hybrid-billing-recovery.js");
+const { runHybridBillingDaily } = require("../../functions/hybrid-billing-daily.js");
 const { submitHybridPaymentEvidence, reviewHybridPaymentEvidence } =
   require("../../functions/hybrid-billing-payments.js");
 const { paidOrdersInWindow, auditPaidDeliveryReceiptCoverage, previewHybridCycle } = require("../../functions/hybrid-billing-preview.js");
@@ -670,5 +671,29 @@ test("emulator recovery: no automatic reactivation for a manual Super Admin hold
     db, tenantId: id, reviewerUid: uid, reviewId: "manual-hold-024",
     now: now(midnightAfterTrigger),
   }), /HYBRID_RECOVERY_NOT_ELIGIBLE/);
+  assert.equal((await ref.get()).data().active, false);
+});
+
+test("emulator daily orchestration: Bangkok close issues and suspends exact previous-cycle invoice", async () => {
+  const id = "tenant-emu-daily-25", ref = await activate(id);
+  await order(ref, "morning-daily-025", "2026-10-20T02:00:00Z", 10000);
+  await order(ref, "evening-daily-025", "2026-10-20T16:00:00Z", 5500);
+  const readTenants = async () => ({ docs: [await ref.get()], size: 1 });
+  const run = () => runHybridBillingDaily({
+    db, readTenants, now: new Date("2026-10-20T17:31:00Z"),
+  });
+  const outcome = await run();
+  assert.equal(outcome.today, "2026-10-21");
+  assert.equal(outcome.previous, "2026-10-20");
+  assert.equal(outcome.scanned, 1);
+  assert.deepEqual(outcome.outcomes[0].closeResult.issued,
+    [cycleId + ":delivery:trigger"]);
+  assert.equal(outcome.outcomes[0].arrears, "suspended");
+  const row = (await ref.collection("hybridBillingInvoices")
+    .doc(cycleId + ":delivery:trigger").get()).data();
+  assert.equal(row.amountCents, 77500);
+  const retry = await run();
+  assert.deepEqual(retry.outcomes[0].closeResult.issued, []);
+  assert.equal((await ref.collection("hybridBillingInvoices").get()).size, 1);
   assert.equal((await ref.get()).data().active, false);
 });
