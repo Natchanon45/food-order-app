@@ -1421,3 +1421,72 @@ test("emulator: tampered bank journal cannot be replayed as verified PromptPay",
  await assert.rejects(recordHybridVerifiedPromptPay(args),/HYBRID_PROMPTPAY_EXISTING_PAYMENT_CONFLICT/);
  assert.equal((await t.collection("hybridBillingReceiptEvents").get()).size,1);
 });
+
+
+test("emulator: verified settled refund creates immutable linked journal, preserves original invoice and flags late adjustment",async()=>{
+ const {settleHybridCodDeliveryPayment}=require("../../functions/hybrid-billing-cod-payment.js");
+ const {recordHybridVerifiedRefund}=require("../../functions/hybrid-billing-refund-reversal.js");
+ const id="tenant-refund-056",t=await activate(id),uid="super-refund-056";
+ const orderId="order-refund-056",date=new Date("2026-10-20T12:30:00Z");
+ await db.collection("users").doc(uid).set({role:"super_admin",active:true});
+ await t.collection("orders").doc(orderId).set({orderType:"delivery",paymentMethod:"cod",
+   paymentStatus:"unpaid",status:"delivered",totalAmount:15540,subtotalAmount:15500,
+   deliveryFee:40,items:[{id:"x",quantity:1}]});
+ await settleHybridCodDeliveryPayment({db,tenantId:id,orderId,actorUid:uid,
+   clock:()=>date,serverTimestamp:()=>Timestamp.fromDate(date)});
+ await issue(id,midnightAfterTrigger);
+ const before=(await invoices(t))[0];
+ const periodBefore=(await t.collection("hybridBillingPeriods").doc(cycleId).get()).data();
+ const req={db,tenantId:id,orderId,reviewerUid:uid,now:new Date("2026-10-21T03:00:00Z"),
+   resolveIndependentRefund:async()=>({verified:true,source:"independent_bank_refund_record",
+     tenantId:id,orderId,currency:"THB",refundSettled:true,
+     recipientConfirmed:true,platformDebitConfirmed:true,
+     reference:"BANK-REFUND-056",evidenceSha256:"a".repeat(64),
+     refundAmountCents:100000,refundAt:new Date("2026-10-21T02:30:00Z"),
+     checkedAt:new Date("2026-10-21T02:59:00Z")})};
+ const result=await recordHybridVerifiedRefund(req);
+ assert.equal(result.refundCents,100000);
+ assert.equal(result.refundInitiated,false);
+ assert.equal(result.invoiceApplied,false);
+ assert.equal((await recordHybridVerifiedRefund(req)).alreadyRecorded,true);
+ const order=(await t.collection("orders").doc(orderId).get()).data();
+ const original=(await t.collection("hybridBillingReceiptEvents").doc("cod-"+orderId).get()).data();
+ const refund=(await t.collection("hybridBillingReceiptEvents").doc("refund-"+orderId).get()).data();
+ assert.equal(order.refundTotal,1000);
+ assert.equal(original.merchandiseCents,1550000);
+ assert.equal(refund.originalMerchandiseCents,1550000);
+ assert.equal(refund.refundCents,100000);
+ assert.deepEqual((await invoices(t))[0],before);
+ assert.deepEqual((await t.collection("hybridBillingPeriods").doc(cycleId).get()).data().daySeals,periodBefore.daySeals);
+ await assert.rejects(issue(id,"2026-10-21T17:01:00Z"),
+   /HYBRID_CLOSED_DAY_CHANGED_REQUIRES_ADJUSTMENT/);
+ assert.equal((await invoices(t))[0].amountCents,77500);
+});
+test("emulator: refund rejects forged actor, over-refund and second or tampered event",async()=>{
+ const {settleHybridCodDeliveryPayment}=require("../../functions/hybrid-billing-cod-payment.js");
+ const {recordHybridVerifiedRefund}=require("../../functions/hybrid-billing-refund-reversal.js");
+ const id="tenant-refund-deny-057",t=await activate(id),uid="staff-refund-057";
+ const orderId="order-refund-deny-057",date=new Date("2026-10-20T12:30:00Z");
+ await db.collection("users").doc(uid).set({role:"owner",active:true,tenantId:id});
+ await t.collection("orders").doc(orderId).set({orderType:"delivery",paymentMethod:"cod",
+   paymentStatus:"unpaid",status:"delivered",totalAmount:1010,subtotalAmount:1000,
+   deliveryFee:10,items:[{id:"x",quantity:1}]});
+ await settleHybridCodDeliveryPayment({db,tenantId:id,orderId,actorUid:uid,
+   clock:()=>date,serverTimestamp:()=>Timestamp.fromDate(date)});
+ const req=(ref,amount=30000)=>({db,tenantId:id,orderId,reviewerUid:uid,
+   now:new Date("2026-10-21T03:00:00Z"),resolveIndependentRefund:async()=>({
+     verified:true,source:"independent_bank_refund_record",tenantId:id,orderId,
+     currency:"THB",refundSettled:true,recipientConfirmed:true,platformDebitConfirmed:true,
+     reference:ref,evidenceSha256:"b".repeat(64),refundAmountCents:amount,
+     refundAt:new Date("2026-10-21T02:30:00Z"),
+     checkedAt:new Date("2026-10-21T02:59:00Z")})});
+ await assert.rejects(recordHybridVerifiedRefund(req("BANK-RFD-057")),/SUPER_ADMIN_REQUIRED/);
+ await db.collection("users").doc(uid).update({role:"super_admin"});
+ await assert.rejects(recordHybridVerifiedRefund(req("BANK-RFD-057",110000)),/AMOUNT_EXCEEDS_MERCHANDISE/);
+ assert.equal((await t.collection("hybridBillingReceiptEvents").get()).size,1);
+ await recordHybridVerifiedRefund(req("BANK-RFD-057"));
+ await assert.rejects(recordHybridVerifiedRefund(req("BANK-OTHER-057")),/EXISTING_CONFLICT/);
+ await t.collection("hybridBillingReceiptEvents").doc("refund-"+orderId).update({refundCents:1});
+ await assert.rejects(recordHybridVerifiedRefund(req("BANK-RFD-057")),/EXISTING_CONFLICT/);
+ assert.equal((await t.collection("orders").doc(orderId).get()).data().refundTotal,300);
+});
