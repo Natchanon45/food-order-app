@@ -1997,3 +1997,96 @@ test("emulator Phase 3Y: 10000 actual Firestore fake-trusted sources are NOT cer
  }));
 });
 
+
+test("emulator Phase 3Z: enforced demo gateway admits real COD and bank, then sealed read-only audit remains uncertified",async()=>{
+ const {executeHybridDemoEnforcedWriter,describeHybridDemoGateway}=require(
+  "../../functions/hybrid-billing-demo-enforced-writer.js");
+ const {auditHybridSealedEpochCandidate}=require(
+  "../../functions/hybrid-billing-demo-sealed-audit.js");
+ const {initializeHybridEpochCandidate,sealHybridEpochCandidate}=require(
+  "../../functions/hybrid-billing-writer-epoch-candidate.js");
+ const tenantId="tenant-phase3z-gateway-101",t=await activate(tenantId);
+ const uid="super-phase3z-gateway-101",date=new Date("2026-10-20T12:30:00Z");
+ await db.collection("users").doc(uid).set({role:"super_admin",active:true});
+ await initializeHybridEpochCandidate({db,tenantId,reviewerUid:uid});
+ const codId="cod-phase3z-gateway-101",bankId="bank-phase3z-gateway-101";
+ for(const [id,method] of [[codId,"cod"],[bankId,"promptpay"]]){
+  await t.collection("orders").doc(id).set({
+   orderType:"delivery",paymentMethod:method,paymentStatus:"unpaid",
+   status:"delivered",totalAmount:1010,subtotalAmount:1000,deliveryFee:10,
+   items:[{id:"item",quantity:1}]
+  });
+ }
+ const codArgs=id=>({db,tenantId,orderId:id,actorUid:uid,
+  clock:()=>date,serverTimestamp:()=>Timestamp.fromDate(date)});
+ const bankArgs={db,tenantId,orderId:bankId,reviewerUid:uid,
+  now:new Date("2026-10-21T03:00:00Z"),
+  resolveIndependentBankPayment:async()=>({
+    verified:true,source:"independent_bank_record",tenantId,orderId:bankId,
+    currency:"THB",recipientConfirmed:true,platformBankAccountVerified:true,
+    reference:"BANK-GATEWAY-PHASE3Z-101",evidenceSha256:"a".repeat(64),
+    grossAmountCents:101000,paidAt:date,
+    checkedAt:new Date("2026-10-21T02:59:00Z")
+  })};
+ assert.equal((await executeHybridDemoEnforcedWriter({
+  sourceKey:"cod_cashier",args:codArgs(codId)})).alreadyPaid,false);
+ assert.equal((await executeHybridDemoEnforcedWriter({
+  sourceKey:"promptpay_bank",args:bankArgs})).alreadyPaid,false);
+ await sealHybridEpochCandidate({db,tenantId,reviewerUid:uid});
+ const audit=await auditHybridSealedEpochCandidate({db,tenantId,pageSize:1});
+ assert.equal(audit.observedIssues.totalPaidOrders,2);
+ assert.equal(audit.observedIssues.journal,0);
+ assert.equal(audit.observedIssues.unknownPaidSources,0);
+ assert.equal(audit.writerParticipationComplete,false);
+ assert.equal(audit.immutableFinancialDayManifest,false);
+ assert.equal(audit.coverageCertified,false);
+ assert.equal(audit.canIssueInvoice,false);
+ assert.equal(describeHybridDemoGateway().legacyPathsUnenrolled,true);
+ const later="cod-phase3z-gateway-102";
+ await t.collection("orders").doc(later).set({
+  orderType:"delivery",paymentMethod:"cod",paymentStatus:"unpaid",
+  status:"delivered",totalAmount:1010,subtotalAmount:1000,deliveryFee:10,
+  items:[{id:"item",quantity:1}]
+ });
+ await assert.rejects(executeHybridDemoEnforcedWriter({
+   sourceKey:"cod_cashier",args:codArgs(later)}),/HYBRID_EPOCH_CLOSED/);
+ assert.equal((await t.collection("orders").doc(later).get()).data().paymentStatus,"unpaid");
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+ assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
+});
+test("emulator Phase 3Z: legacy bypass after sealed epoch is DETECTABLE but seal NEVER claims global enforcement",async()=>{
+ const {auditHybridSealedEpochCandidate}=require(
+  "../../functions/hybrid-billing-demo-sealed-audit.js");
+ const {initializeHybridEpochCandidate,sealHybridEpochCandidate}=require(
+  "../../functions/hybrid-billing-writer-epoch-candidate.js");
+ const tenantId="tenant-phase3z-bypass-103",t=await activate(tenantId);
+ const uid="super-phase3z-bypass-103";
+ await db.collection("users").doc(uid).set({role:"super_admin",active:true});
+ await initializeHybridEpochCandidate({db,tenantId,reviewerUid:uid});
+ await assert.rejects(auditHybridSealedEpochCandidate({
+  db,tenantId}),/HYBRID_SEALED_AUDIT_EPOCH_NOT_SEALED/);
+ await sealHybridEpochCandidate({db,tenantId,reviewerUid:uid});
+ const before=await auditHybridSealedEpochCandidate({db,tenantId});
+ assert.equal(before.observedIssues.totalPaidOrders,0);
+ assert.equal(before.coverageCertified,false);
+ // Simulate an unregistered legacy writer Bypassing opt-in after seal.
+ // This is a deliberate negative security fixture, NOT a real payment.
+ const ref=t.collection("orders").doc("unregistered-after-seal-103");
+ await ref.set({orderType:"delivery",paymentMethod:"cod",status:"delivered",
+  paymentStatus:"paid",paymentReceiptSource:"hybrid_cod_cashier_server",
+  paidAt:Timestamp.fromDate(new Date("2026-10-20T12:30:00Z")),
+  totalAmount:100,subtotalAmount:95,deliveryFee:5,
+  items:[{id:"item",quantity:1}]});
+ const after=await auditHybridSealedEpochCandidate({db,tenantId});
+ assert.equal(after.observedIssues.totalPaidOrders,1);
+ assert.equal(after.observedIssues.unknownPaidSources,0,
+  "Spoofed claimed source alone cannot detect bypass");
+ assert.equal(after.observedIssues.journal,1,
+  "Missing immutable receipt must reveal bypass");
+ assert.equal(after.writerParticipationComplete,false);
+ assert.equal(after.coverageCertified,false);
+ assert.equal(after.canIssueInvoice,false);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+ assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
+});
+
