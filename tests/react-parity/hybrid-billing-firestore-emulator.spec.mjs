@@ -2032,7 +2032,34 @@ test("emulator Phase 3Z: enforced demo gateway admits real COD and bank, then se
   sourceKey:"cod_cashier",args:codArgs(codId)})).alreadyPaid,false);
  assert.equal((await executeHybridDemoEnforcedWriter({
   sourceKey:"promptpay_bank",args:bankArgs})).alreadyPaid,false);
+ const refundArgs=(orderId,reference,amount,at)=>({
+  db,tenantId,orderId,reviewerUid:uid,
+  now:new Date("2026-10-21T03:00:00Z"),
+  resolveIndependentRefund:async()=>({
+   verified:true,source:"independent_bank_refund_record",tenantId,orderId,
+   currency:"THB",refundSettled:true,recipientConfirmed:true,
+   platformDebitConfirmed:true,reference,evidenceSha256:"b".repeat(64),
+   refundAmountCents:amount,refundAt:new Date(at),
+   checkedAt:new Date("2026-10-21T02:59:00Z")
+  })
+ });
+ assert.equal((await executeHybridDemoEnforcedWriter({
+  sourceKey:"refund_initial",
+  args:refundArgs(codId,"BANK-GATEWAY-REFUND-101-A",20000,"2026-10-21T02:00:00Z")
+ })).alreadyRecorded,false);
+ assert.equal((await executeHybridDemoEnforcedWriter({
+  sourceKey:"refund_partial",
+  args:refundArgs(codId,"BANK-GATEWAY-REFUND-101-B",10000,"2026-10-21T02:10:00Z")
+ })).sequence,2);
  await sealHybridEpochCandidate({db,tenantId,reviewerUid:uid});
+ await assert.rejects(executeHybridDemoEnforcedWriter({
+  sourceKey:"refund_initial",
+  args:refundArgs(bankId,"BANK-GATEWAY-REFUND-101-C",5000,"2026-10-21T02:20:00Z")
+ }),/HYBRID_EPOCH_CLOSED/);
+ await assert.rejects(executeHybridDemoEnforcedWriter({
+  sourceKey:"refund_partial",
+  args:refundArgs(codId,"BANK-GATEWAY-REFUND-101-D",5000,"2026-10-21T02:30:00Z")
+ }),/HYBRID_EPOCH_CLOSED/);
  const audit=await auditHybridSealedEpochCandidate({db,tenantId,pageSize:1});
  assert.equal(audit.observedIssues.totalPaidOrders,2);
  assert.equal(audit.observedIssues.journal,0);
