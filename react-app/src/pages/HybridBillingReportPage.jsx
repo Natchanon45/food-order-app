@@ -9,6 +9,9 @@ import { UserMenu } from "@/components/UserMenu";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useI18n } from "@/i18n/I18nProvider";
 import { getHybridBillingPreview } from "@/data/hybridBillingReport";
+import {
+  getHybridBillingPaymentDestination, getTenantHybridInvoices, submitTenantHybridPayment,
+} from "@/data/hybridBillingLedger";
 
 const BANGKOK = "Asia/Bangkok";
 function bangkokDate(date = new Date()) {
@@ -28,6 +31,11 @@ export function HybridBillingReportPage() {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [invoices, setInvoices] = useState([]);
+  const [destination, setDestination] = useState(null);
+  const [slips, setSlips] = useState({});
+  const [submittingInvoice, setSubmittingInvoice] = useState("");
+  const [paymentMessage, setPaymentMessage] = useState("");
   const requestVersion = useRef(0);
   const stylesReady = useParityPage({
     title: t("hybrid_report.title"),
@@ -58,6 +66,38 @@ export function HybridBillingReportPage() {
     return () => { requestVersion.current += 1; };
   }, [tenant?.id, tenant?.billingPolicyVersion, auth.profile?.role, onDate]);
 
+  const loadInvoices = () => Promise.all([
+    getTenantHybridInvoices(), getHybridBillingPaymentDestination(),
+  ]).then(([items, bank]) => {
+    setInvoices(items); setDestination(bank);
+  }).catch(err => {
+    console.error("HYBRID_INVOICE_LOAD_FAILED", err);
+    setPaymentMessage("ไม่สามารถโหลดรายการบิลหรือบัญชีรับชำระได้");
+  });
+  useEffect(() => {
+    if (tenant?.billingPolicyVersion === "hybrid_v1" &&
+      ["owner", "admin"].includes(auth.profile?.role)) {
+      loadInvoices();
+    }
+  }, [tenant?.id, tenant?.billingPolicyVersion, auth.profile?.role]);
+  const submitInvoiceSlip = async (event, invoice) => {
+    event.preventDefault();
+    const file = slips[invoice.id];
+    if (!file || submittingInvoice || !destination) return;
+    setSubmittingInvoice(invoice.id);
+    setPaymentMessage("");
+    try {
+      await submitTenantHybridPayment(tenant.id, invoice.id, file);
+      setSlips(current => ({ ...current, [invoice.id]: null }));
+      setPaymentMessage("ส่งหลักฐานแล้ว กรุณารอ Super Admin ตรวจสอบการชำระเงิน");
+      await loadInvoices();
+    } catch (err) {
+      console.error("HYBRID_PAYMENT_SUBMIT_FAILED", err);
+      setPaymentMessage("ส่งหลักฐานไม่สำเร็จ กรุณาตรวจสอบสถานะบิลและลองใหม่");
+    } finally {
+      setSubmittingInvoice("");
+    }
+  };
   const number = value => formatNumber(Number(value || 0), {
     minimumFractionDigits: 2, maximumFractionDigits: 2,
   });
@@ -159,6 +199,45 @@ export function HybridBillingReportPage() {
             </section>
           </>
         ) : null}
+        <section className="card hybrid-report-details" aria-labelledby="hybridInvoicesHeading">
+          <h2 id="hybridInvoicesHeading">ใบแจ้งค่าบริการจาก PENGUIN</h2>
+          <p className="hybrid-report-notice">ยอดด้านบนเป็นเพียง Preview ส่วนรายการด้านล่างเป็นบิลที่ PENGUIN ออกจริงหลังตรวจสอบแล้วเท่านั้น</p>
+          {destination ? (
+            <p>บัญชีรับชำระ: <strong>{destination.bankName} — {destination.accountName} — {destination.accountNumber}</strong></p>
+          ) : <p role="status">ยังไม่ได้ตั้งค่าบัญชีรับชำระ กรุณาติดต่อผู้ดูแล PENGUIN ก่อนโอนเงิน</p>}
+          {paymentMessage ? <p role="status">{paymentMessage}</p> : null}
+          <button className="btn btn-sm" type="button" onClick={loadInvoices}>รีเฟรชสถานะบิล</button>
+          <div className="hybrid-report-table-scroll">
+            <table>
+              <thead><tr><th>วันเรียกเก็บ</th><th>ยอดค่าบริการ</th><th>สถานะ</th><th>แจ้งชำระ</th></tr></thead>
+              <tbody>
+                {invoices.length ? invoices.map(invoice => (
+                  <tr key={invoice.id}>
+                    <td>{date(invoice.date)}</td>
+                    <td>{currency(invoice.amount)}</td>
+                    <td>{invoice.state === "paid" ? "ชำระแล้ว" :
+                      invoice.state === "review" ? "รอตรวจสอบ" :
+                      invoice.state === "void" ? "ยกเลิก" : "ค้างชำระ"}</td>
+                    <td>{invoice.state === "outstanding" && destination ? (
+                      <form onSubmit={event => submitInvoiceSlip(event, invoice)}>
+                        <label>
+                          <span className="visually-hidden">หลักฐานชำระ {invoice.id}</span>
+                          <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf"
+                            required disabled={Boolean(submittingInvoice)}
+                            onChange={event => setSlips(current => ({
+                              ...current, [invoice.id]: event.target.files?.[0] || null,
+                            }))} />
+                        </label>
+                        <button className="btn btn-sm btn-primary" type="submit"
+                          disabled={!slips[invoice.id] || Boolean(submittingInvoice)}>ส่งหลักฐาน</button>
+                      </form>
+                    ) : "—"}</td>
+                  </tr>
+                )) : <tr><td colSpan="4">ยังไม่มีใบแจ้งค่าบริการที่ออกแล้ว</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </section>
       </main>
       <ParityFooter />
     </>
