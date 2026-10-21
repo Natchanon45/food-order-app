@@ -28,3 +28,10 @@ jobs:
         run: npm install --prefix functions --ignore-scripts --no-audit --no-fund
       - name: Existing billing/order/report/signup regression contracts
         run: node --test tests/react-parity/hybrid-billing-orders.spec.mjs tests/react-parity/hybrid-billing-report.spec.mjs tests/react-parity/signup-billing-revenue-share.spec.mjs
+
+      - name: Delivery paidAt completeness and anniversary preview guards
+        run: node --test tests/react-parity/hybrid-billing-audit.spec.mjs
+      - name: Verify React source compiles (no deploy)
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run build:react

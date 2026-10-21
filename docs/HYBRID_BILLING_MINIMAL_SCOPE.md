@@ -31,3 +31,9 @@ The change is the **platform fee charged to a Tenant based solely on paid Delive
 
 ## Reusable handoff
 Repository `Natchanon45/food-order-app`. Base `feature/react-firebase-port` pinned at `c9aef253e5d8e0953900a8bb34dbb6921ab40357`. Active minimal branch `feature/hybrid-billing-delivery-only-minimal`. Historical Draft PR #7 `feature/hybrid-billing-github-first` stays DRAFT and unmerged; do not copy its all-writer finance architecture. Continue minimal read-only billing validation, then authorize charge rules and low-impact integration. Before a future handoff, record current HEAD, code commit, CI, completed/open changes, restrictions, and next steps and repeat this handoff instruction.
+
+## 2026-10-21 follow-up — Anniversary and completeness verification
+- Runtime preview is tied to a Tenant trusted start day, either `hybridBillingStartDate` if explicitly provided or the existing server-owned `createdAt` activation timestamp. **Activation date may differ from the original registration request date**; this policy choice must be confirmed before real billing. No live Tenant data was altered.
+- Read-only audit detects missing/ISO `paidAt` on currently paid Delivery orders, bounded at 3,000 Delivery records to avoid unbounded reads. Above the limit, or on malformed timestamps, the preview errors rather than returning an incomplete amount. No global consistent snapshot or financial-source certification is claimed.
+- Source-only unit tests now cover anniversary 16th/31st transitions, Thailand midnight, cross-cycle exclusion, partial refunds, malformed timestamps, and audit caps. Old POS / Lalamove and other transaction routes are unchanged.
+- All readiness flags stay disabled. PR #8 remains DRAFT; PR #7 retains its historical archived proposal and stays DRAFT/unmerged.
