@@ -262,10 +262,25 @@ export function RegisterPage() {
       : t("auth.register.pricing.discount_amount", { amount: number(annual.discountConfigured) })
     : "";
 
+  // Signup keeps its business-specific checks and reuses the shared validation UI styling.
+  const fieldValidationProps = name => {
+    if (!tried) return {};
+    const invalid = Boolean(validationMessage(name));
+    return {
+      "data-validation-state": invalid ? "invalid" : "valid",
+      "aria-invalid": invalid,
+      "aria-describedby": invalid ? `${name}-validation` : undefined,
+    };
+  };
+
   const renderError = name => {
     if (!tried) return null;
     const message = validationMessage(name);
-    return <div className={`field-error${message ? " show" : ""}`}>{message}</div>;
+    return message ? (
+      <div id={`${name}-validation`} className="bootstrap-invalid-feedback show" role="alert">
+        {message}
+      </div>
+    ) : null;
   };
 
   if (!stylesReady || !pricingReady) return <PageReadyOverlay />;
@@ -306,7 +321,7 @@ export function RegisterPage() {
                       ["both", "bi-grid-1x2", "both"],
                     ].map(([value, icon, key]) => (
                       <label key={value} className={`business-option ${businessType === value ? "is-selected" : ""}`}>
-                        <input id={value === "restaurant_cafe" ? "businessType" : `businessType-${value}`} type="radio" name="businessType" value={value} checked={businessType === value} onChange={() => setBusinessType(value)} />
+                        <input id={value === "restaurant_cafe" ? "businessType" : `businessType-${value}`} type="radio" name="businessType" value={value} {...fieldValidationProps("businessType")} checked={businessType === value} onChange={() => setBusinessType(value)} />
                         <span className="business-option-icon"><i className={`bi ${icon}`} aria-hidden="true"></i></span>
                         <strong>{t(`auth.register.business.${key}.title`)}</strong>
                         <small>{t(`auth.register.business.${key}.help`)}</small>
@@ -349,13 +364,13 @@ export function RegisterPage() {
                 <div className="register-form-grid">
                   <label>
                     {t("auth.register.fields.owner_name")}
-                    <input id="ownerName" required value={fields.ownerName} onChange={e => setField("ownerName", e.target.value)} maxLength="120" autoComplete="name" />
+                    <input id="ownerName" {...fieldValidationProps("ownerName")} required value={fields.ownerName} onChange={e => setField("ownerName", e.target.value)} maxLength="120" autoComplete="name" />
                     {renderError("ownerName")}
                   </label>
                   <label>
                     {t("auth.register.fields.phone")}
                     <input
-                      id="phone"
+                      id="phone" {...fieldValidationProps("phone")}
                       type="tel"
                       required
                       value={fields.phone}
@@ -370,21 +385,21 @@ export function RegisterPage() {
                   </label>
                   <label className="full">
                     {t("auth.register.fields.email")}
-                    <input id="email" type="email" required value={fields.email} onChange={e => setField("email", e.target.value)} maxLength="120" autoComplete="email" />
+                    <input id="email" {...fieldValidationProps("email")} type="email" required value={fields.email} onChange={e => setField("email", e.target.value)} maxLength="120" autoComplete="email" />
                     {renderError("email")}
                   </label>
 
                   {includesRestaurant ? (
                     <label className={includesRetail ? "" : "full"}>
                       {t("auth.register.fields.order_delivery_shop")} <span className="label-small">{t("auth.register.order_delivery_hint")}</span>
-                      <input id="orderDeliveryShopName" required value={fields.orderDeliveryShopName} onChange={e => setField("orderDeliveryShopName", e.target.value)} maxLength="120" />
+                      <input id="orderDeliveryShopName" {...fieldValidationProps("orderDeliveryShopName")} required value={fields.orderDeliveryShopName} onChange={e => setField("orderDeliveryShopName", e.target.value)} maxLength="120" />
                       {renderError("orderDeliveryShopName")}
                     </label>
                   ) : null}
                   {includesRetail ? (
                     <label className={includesRestaurant ? "" : "full"}>
                       {t("auth.register.fields.retail_pos_shop")} <span className="label-small">{t("auth.register.retail_pos_hint")}</span>
-                      <input id="retailPosShopName" required value={fields.retailPosShopName} onChange={e => setField("retailPosShopName", e.target.value)} maxLength="120" />
+                      <input id="retailPosShopName" {...fieldValidationProps("retailPosShopName")} required value={fields.retailPosShopName} onChange={e => setField("retailPosShopName", e.target.value)} maxLength="120" />
                       {renderError("retailPosShopName")}
                     </label>
                   ) : null}
@@ -393,7 +408,7 @@ export function RegisterPage() {
                   <label className="full">
                     {t("auth.register.fields.slug")} <span className="label-small">{t("auth.register.slug_help")}</span>
                     <input
-                      id="slug"
+                      id="slug" {...fieldValidationProps("slug")}
                       required
                       value={fields.slug}
                       onChange={e => setField("slug", e.target.value)}
@@ -407,19 +422,19 @@ export function RegisterPage() {
 
                   <label>
                     {t("auth.register.fields.password")}
-                    <input id="secretA" type="password" required value={fields.secretA} onChange={e => setField("secretA", e.target.value)} minLength="8" maxLength="100" autoComplete="new-password" />
+                    <input id="secretA" {...fieldValidationProps("secretA")} type="password" required value={fields.secretA} onChange={e => setField("secretA", e.target.value)} minLength="8" maxLength="100" autoComplete="new-password" />
                     {renderError("secretA")}
                   </label>
                   <label>
                     {t("auth.register.fields.password_confirmation")}
-                    <input id="secretB" type="password" required value={fields.secretB} onChange={e => setField("secretB", e.target.value)} minLength="8" maxLength="100" autoComplete="new-password" />
+                    <input id="secretB" {...fieldValidationProps("secretB")} type="password" required value={fields.secretB} onChange={e => setField("secretB", e.target.value)} minLength="8" maxLength="100" autoComplete="new-password" />
                     {renderError("secretB")}
                   </label>
                 </div>
 
                 <p className="register-note">{t("auth.register.after_signup_note")}</p>
                 <label className="terms-box">
-                  <input id="termsAccepted" type="checkbox" required checked={termsAccepted} onChange={e => setTermsAccepted(e.target.checked)} />
+                  <input id="termsAccepted" {...fieldValidationProps("termsAccepted")} type="checkbox" required checked={termsAccepted} onChange={e => setTermsAccepted(e.target.checked)} />
                   <span>{t("auth.register.terms_text")}</span>
                 </label>
                 {renderError("termsAccepted")}

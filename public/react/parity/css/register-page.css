@@ -73,3 +73,35 @@
 .hybrid-signup-disclosure{padding:12px;border:1px solid #dde9de;background:#f4faf5;border-radius:12px;line-height:1.6}
 .hybrid-signup-aside .plan-selection-summary{display:grid;gap:7px}
 @media(max-width:600px){.hybrid-signup-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Match shared FormValidationUi invalid feedback while preserving signup-only rules.
+   #registerForm is intentionally excluded from generic HTML5 form validation. */
+.register-page #registerForm .bootstrap-invalid-feedback.show {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 4px 0 0;
+  color: var(--bs-form-invalid, #dc2626) !important;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.55;
+  white-space: normal;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+}
+.register-page #registerForm :is(input, select, textarea)[data-validation-state="invalid"] {
+  border-color: var(--bs-form-invalid, #dc2626) !important;
+  background-color: #fff7f7 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, .1) !important;
+}
+.register-page #registerForm :is(input, select, textarea)[data-validation-state="invalid"]:focus-visible {
+  outline: 2px solid rgba(220, 38, 38, .4);
+  outline-offset: 1px;
+}
+/* Radios and checkboxes are visually custom controls: highlight their wrappers. */
+.register-page #registerForm .business-option:has(input[aria-invalid="true"]),
+.register-page #registerForm .terms-box:has(input[aria-invalid="true"]) {
+  border-color: #df6e6e;
+  background: #fff9f9;
+}

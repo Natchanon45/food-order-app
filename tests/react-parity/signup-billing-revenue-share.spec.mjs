@@ -316,3 +316,29 @@ test("Premium price editor exposes central paid-Delivery threshold and percentag
   assert.equal(core.calculatePricing({ monthlyPrice: 590, deliveryThreshold: 18000, deliveryShareRate: 3 }).config.deliveryThreshold, 18000);
   assert.equal(core.calculatePricing({ monthlyPrice: 590, deliveryThreshold: 18000, deliveryShareRate: 3 }).config.deliveryShareRate, 3);
 });
+
+test("Register custom business validation reuses central feedback UI and red invalid state", () => {
+  const fsLocal = require("node:fs");
+  const page = fsLocal.readFileSync("react-app/src/pages/RegisterPage.jsx", "utf8");
+  const css = fsLocal.readFileSync("react-app/public/parity/css/register-page.css", "utf8");
+  const shared = fsLocal.readFileSync("react-app/src/components/FormValidationUi.jsx", "utf8");
+  assert.match(shared, /"#registerForm"/, "central HTML5 validation must not duplicate signup-specific checks");
+  assert.match(shared, /const FEEDBACK_CLASS = "bootstrap-invalid-feedback"/);
+  assert.match(page, /className="bootstrap-invalid-feedback show"/);
+  assert.match(page, /"data-validation-state": invalid \? "invalid" : "valid"/);
+  assert.match(page, /"aria-invalid": invalid/);
+  assert.match(page, /"aria-describedby": invalid/);
+  assert.match(page, /id=\{`\$\{name\}-validation`\}/);
+  for (const name of [
+    "ownerName", "phone", "email", "orderDeliveryShopName", "retailPosShopName",
+    "slug", "secretA", "secretB", "termsAccepted", "businessType",
+  ]) {
+    assert.ok(page.includes(`fieldValidationProps("${name}")`),
+      `missing signup feedback state for ${name}`);
+  }
+  assert.match(css, /#registerForm \.bootstrap-invalid-feedback\.show/);
+  assert.match(css, /color: var\(--bs-form-invalid, #dc2626\) !important/);
+  assert.match(css, /#registerForm :is\(input, select, textarea\)\[data-validation-state="invalid"\]/);
+  assert.match(css, /white-space: normal/);
+  assert.match(page, /validationMessage\("phone"\)|name === "phone"/);
+});
