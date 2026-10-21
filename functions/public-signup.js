@@ -162,7 +162,7 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
   const primaryShopName = clean(pending.orderDeliveryShopName) || clean(pending.retailPosShopName);
   const subscriptionTrial = signupBilling.billingMode === "subscription";
   const startDate = hybridSignup ? String(pending.hybridBillingStartDate || "") : "";
-  if (hybridSignup && (!/^\\d{4}-\\d{2}-\\d{2}$/.test(startDate)
+  if (hybridSignup && (!/^\d{4}-\d{2}-\d{2}$/.test(startDate)
     || startDate > dateKey(new Date())
     || (pending.createdAt?.toDate?.() && startDate !== dateKey(pending.createdAt.toDate())))) {
     throw new HttpsError("failed-precondition", "HYBRID_SIGNUP_START_DATE_UNVERIFIED");

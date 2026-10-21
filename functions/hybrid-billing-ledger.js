@@ -246,11 +246,15 @@ exports.setTenantHybridBillingLive = onCall({ region: REGION, timeoutSeconds: 90
     hybridBillingLive: enabled, hybridBillingLiveUpdatedBy: user.uid,
     hybridBillingLiveUpdatedAt: FieldValue.serverTimestamp(),
   });
+  // Pausing fees must not trap a previously billing-suspended Tenant.
+  if (!enabled && tenant.hybridBillingSuspended === true) {
+    await reconcileTenantAccess(db, ref, { ...tenant, hybridBillingLive: false });
+  }
   return { ok: true, enabled };
 });
 exports.submitTenantHybridPayment = onCall({ region: REGION, timeoutSeconds: 45 }, async request => {
   const { db, ref, tenant, user } = await viewer(request);
-  assertLive(tenant);
+  // Existing issued invoices can still be settled if new billing is paused.
   const invoiceId = String(request.data?.invoiceId || "");
   const paymentId = String(request.data?.paymentId || "");
   const path = String(request.data?.slipPath || "");
@@ -327,13 +331,17 @@ exports.reviewTenantHybridPayment = onCall({ region: REGION }, async request => 
   return { ok: true, status };
 });
 async function reconcileTenantAccess(db, ref, tenant) {
-  if (tenant.billingPolicyVersion !== "hybrid_v1" || tenant.hybridBillingLive !== true) {
+  if (tenant.billingPolicyVersion !== "hybrid_v1") {
+    return { action: "none", reason: "not_hybrid" };
+  }
+  if (tenant.hybridBillingLive !== true && tenant.hybridBillingSuspended !== true) {
     return { action: "none", reason: "not_enabled" };
   }
   const snap = await ref.collection(BILLING_COLLECTION).where("status", "==", "issued").limit(200).get();
   if (snap.size >= 200) return { action: "none", reason: "invoice_scan_limit" };
   const today = dateKey(new Date());
-  const overdue = snap.docs.some(d => d.data().suspendFrom <= today
+  const overdue = tenant.hybridBillingLive === true && snap.docs.some(d =>
+    d.data().suspendFrom <= today
     && Number(d.data().amount) > 0 && d.data().paymentStatus !== "pending");
   const changed = overdue ? tenant.hybridBillingSuspended !== true
     : tenant.hybridBillingSuspended === true;

@@ -79,3 +79,10 @@ test("buyer-facing invoice and superadmin payment review are connected", () => {
   assert.match(data, /uploadBytes\(target, file/);
   assert.match(data, /getDownloadURL/);
 });
+
+test("paused Hybrid issuance still allows settling old invoices and releases only own suspension", () => {
+  assert.match(source, /Existing issued invoices can still be settled if new billing is paused/);
+  assert.match(source, /tenant\.hybridBillingLive === true && snap\.docs\.some/);
+  assert.match(source, /tenant\.hybridBillingWasActive === true/);
+  assert.match(source, /hybridBillingSuspended === true/);
+});
