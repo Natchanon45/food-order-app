@@ -21,9 +21,11 @@ export function hybridDeliveryCashierRoute(tenant, order) {
     || (tenant.hybridReceiptJournalMode !== undefined
       && tenant.hybridReceiptJournalMode !== null);
   if (!hybridSignaled) return "legacy";
-  if (tenant.billingPolicyVersion !== "hybrid_v1"
-    || tenant.hybridBillingEnabled !== true)
+  if (tenant.billingPolicyVersion !== "hybrid_v1")
     return "hybrid_incomplete_migration";
+  // Preserve the existing disabled Hybrid classification for enrolled tenants.
+  if (tenant.hybridBillingEnabled !== true)
+    return "hybrid_disabled";
   // Fail closed BEFORE PromptPay/manual review and before any proof lookup.
   if (tenant.active !== true || tenant.hybridBillingSuspended === true)
     return "hybrid_disabled";

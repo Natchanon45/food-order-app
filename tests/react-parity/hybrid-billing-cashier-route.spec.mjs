@@ -83,7 +83,9 @@ test("Phase3AL: partially migrated Hybrid Delivery never enters legacy browser-p
   for (const tenant of signaled) {
     for (const paymentMethod of ["cod", "promptpay", "cash"]) {
       assert.equal(hybridDeliveryCashierRoute({ ...tenant, active: true },
-        { ...cod, paymentMethod }), "hybrid_incomplete_migration");
+        { ...cod, paymentMethod }),
+        tenant.billingPolicyVersion === "hybrid_v1"
+          ? "hybrid_disabled" : "hybrid_incomplete_migration");
     }
   }
   // Non-Delivery channels retain their existing routing.
