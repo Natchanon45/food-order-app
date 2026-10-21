@@ -191,3 +191,41 @@ test("master business and selected scope control Retail POS commission eligibili
   assert.match(ui, /id="revenueShareBusinessType" readOnly/);
   assert.doesNotMatch(backend.slice(backend.indexOf("exports.updateTenantRevenueShare")), /request.data\?\.businessType/);
 });
+
+test("Delivery commission begins only AFTER the paid monthly threshold, including crossing day", () => {
+  const { eligibleDeliveryShareDays } = require("../../functions/revenue-share-policy.js");
+  const qualify = (rows, threshold = 10000) => eligibleDeliveryShareDays(rows, threshold);
+  const days = qualify([
+    { date: "2026-10-01", cents: 300000 }, // 3,000; no retroactive share
+    { date: "2026-10-02", cents: 700000 }, // exactly 10,000: no share
+    { date: "2026-10-03", cents: 1 },      // 10,000.01: crossing day qualifies
+    { date: "2026-10-04", cents: 10000 },
+    { date: "2026-11-01", cents: 1000000 }, // next month resets
+    { date: "2026-11-02", cents: 1 },
+  ]);
+  assert.deepEqual([...days].sort(), ["2026-10-03", "2026-10-04", "2026-11-02"]);
+  assert.deepEqual([...qualify([
+    { date: "2026-10-02", cents: 500000 },
+    { date: "2026-10-01", cents: 499999 },
+    { date: "2026-10-02", cents: 2 },
+  ])], ["2026-10-02"]);
+  assert.deepEqual([...qualify([{ date: "2026-10-01", cents: 10000 }], 100)], []);
+  assert.deepEqual([...qualify([{ date: "2026-10-01", cents: 10001 }], 100)], ["2026-10-01"]);
+  assert.throws(() => qualify([{ date: "bad", cents: 1000 }]));
+  assert.throws(() => qualify([], -1));
+});
+
+test("only existing Revenue Share computation is adjusted; Delivery must be PAID and exclude shipping", () => {
+  const source = fs.readFileSync("functions/revenue-share.js", "utf8");
+  const form = fs.readFileSync("react-app/src/pages/AdminTenantsPage.jsx", "utf8");
+  assert.match(source, /eligibleDeliveryShareDays/);
+  assert.match(source, /String\(row\.paymentStatus \|\| ""\)\.toLowerCase\(\) !== "paid"/);
+  assert.match(source, /row\.totalAmount \?\? row\.total/);
+  assert.match(source, /Math\.max\(0, total - shipping\)/);
+  assert.match(source, /const revenueShareBase = roundMoney\(shareOrderSales \+ posSales\)/);
+  assert.match(source, /const revenueShare = setting\.enabled \? roundMoney\(revenueShareBase \* setting\.rate \/ 100\) : 0/);
+  assert.match(source, /revenueShareDeliveryThreshold: Math\.round\(threshold \* 100\) \/ 100/);
+  assert.match(form, /id="revenueShareDeliveryThreshold"/);
+  assert.match(form, /deliveryThreshold: Number\(shareDeliveryThreshold\)/);
+  assert.doesNotMatch(source, /issueTenantHybridInvoices|hybridBillingInvoices|processHybridBillingDaily/);
+});
