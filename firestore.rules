@@ -347,7 +347,14 @@ service cloud.firestore {
             && t.get('hybridBillingEnabled', false) != true)
           || resource.data.get('orderType', '') != 'delivery'
           || !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+            // Phase3AK: payment review/receipt attestations are server-owned
+            // even for COD and other non-PromptPay Delivery.
             'paymentStatus', 'paidAt', 'paymentMethod',
+            'paymentReceivedAt', 'paymentReviewedAt',
+            'paymentReviewedByUid', 'paymentReviewedByEmail',
+            'paymentReviewedByRole', 'slipVerifiedAt',
+            'slipVerificationProvider', 'slipVerificationStatus',
+            'slipCheckStatus', 'paymentReviewRequired',
             'totalAmount', 'subtotalAmount', 'deliveryFee', 'items',
             'refundTotal', 'paymentReceivedByUid', 'paymentReceiptSource',
             'paymentBankReferenceHash', 'refundReceiptSource',
