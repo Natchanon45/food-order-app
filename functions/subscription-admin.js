@@ -48,7 +48,7 @@ function subscriptionSlugPatch(tenant, patch) {
   return {
     active: patch.active,
     subscriptionStatus: patch.subscriptionStatus,
-    subscriptionExpiresAt: patch.subscriptionExpiresAt || null,
+    subscriptionExpiresAt: patch.subscriptionExpiresAt ?? tenant.subscriptionExpiresAt ?? null,
     gracePeriodDays: patch.gracePeriodDays ?? tenant.gracePeriodDays ?? DEFAULT_GRACE_DAYS,
     updatedAt: FieldValue.serverTimestamp()
   };
