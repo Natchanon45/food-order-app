@@ -2334,3 +2334,42 @@ test("emulator Phase3AE: manifest freeze fails closed for pre-existing paid orde
  assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
  assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
 });
+
+
+test("emulator Phase3AE: orphan journal/fence mismatch and falsely dated source refuse day freeze", async () => {
+ const {initializeHybridEpochCandidate,initializeHybridDemoDayCutoffCandidate,
+   sealHybridDemoDayCutoffCandidate}=require(
+   "../../functions/hybrid-billing-writer-epoch-candidate.js");
+ const {freezeHybridSealedDayManifestCandidate}=require(
+   "../../functions/hybrid-billing-demo-day-manifest.js");
+ const tenantId="tenant-phase3ae-orphan-107",t=await activate(tenantId);
+ const reviewerUid="super-phase3ae-orphan-107",day="2026-10-20";
+ await db.collection("users").doc(reviewerUid).set({
+   role:"super_admin",active:true,tenantId
+ });
+ await initializeHybridEpochCandidate({db,tenantId,reviewerUid});
+ await initializeHybridDemoDayCutoffCandidate({db,tenantId,reviewerUid,day});
+ const orderId="orphan-phase3ae-107";
+ const orphan=t.collection("hybridBillingReceiptEvents").doc("cod-"+orderId);
+ await orphan.create({
+   tenantId,orderId,source:"hybrid_cod_cashier_server",
+   actorUid:reviewerUid,shard:0,sourceDay:day,
+   merchandiseCents:10000,grossCents:10040,currency:"THB",
+   paidAt:Timestamp.fromDate(new Date("2026-10-20T12:30:00Z"))
+ });
+ await sealHybridDemoDayCutoffCandidate({db,tenantId,reviewerUid,day});
+ await assert.rejects(freezeHybridSealedDayManifestCandidate({
+   db,tenantId,day,reviewerUid
+ }),/HYBRID_DEMO_DAY_MANIFEST_EVENT_FENCE_MISMATCH/,
+   "An orphan Admin-created journal without an atomic shard fence must not freeze");
+ await orphan.update({
+   paidAt:Timestamp.fromDate(new Date("2026-10-21T12:30:00Z"))
+ });
+ await assert.rejects(freezeHybridSealedDayManifestCandidate({
+   db,tenantId,day,reviewerUid
+ }),/HYBRID_DEMO_DAY_MANIFEST_UNVERIFIED_EVENT/,
+   "Day must be sourced from event's actual financial timestamp, not a forged sourceDay");
+ assert.equal((await t.collection("hybridBillingDayManifestCandidates").get()).size,0);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+ assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
+});
