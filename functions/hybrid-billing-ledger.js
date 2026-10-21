@@ -395,4 +395,28 @@ exports.processHybridBillingDaily = onSchedule(
     }
   },
 );
+
+async function reserveHybridSlipCredit(db, tenantRef, tenant, orderId) {
+  if (tenant.billingPolicyVersion !== "hybrid_v1" || tenant.hybridBillingLive !== true) return true;
+  const today = dateKey(new Date());
+  const start = await signupStartDateForPreview(db, tenant);
+  const estimate = await previewHybridCycle(tenantRef, tenant, today, db, start);
+  if (estimate.slipUnlimited) return true;
+  const quota = Number(estimate.slipQuota);
+  const period = estimate.cycleId;
+  const usageRef = tenantRef.collection("hybridSlipUsage").doc(period);
+  const creditRef = tenantRef.collection("hybridSlipCredits").doc(orderId);
+  return db.runTransaction(async tx => {
+    const [usage, credit] = await Promise.all([tx.get(usageRef), tx.get(creditRef)]);
+    if (credit.exists) return credit.data()?.cycleId === period;
+    const used = Number(usage.data()?.count || 0);
+    if (!Number.isSafeInteger(used) || used < 0 || used >= quota) return false;
+    tx.create(creditRef, { cycleId: period, orderId, createdAt: FieldValue.serverTimestamp() });
+    tx.set(usageRef, { cycleId: period, count: used + 1,
+      updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+    return true;
+  });
+}
+exports.reserveHybridSlipCredit = reserveHybridSlipCredit;
+
 exports._test = { eligibleForIssuance, stateForInvoice, safeInvoiceSummary, normalizedDestination };
