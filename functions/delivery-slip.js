@@ -5,6 +5,7 @@ const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
 const { getMessaging } = require("firebase-admin/messaging");
 const { inspectSlip } = require("./slip-verification");
+const { legacyDeliveryPaidWriterAllowed } = require("./hybrid-billing-legacy-payment-guard");
 const {
   slipDecision, normalizedItems, proofBoundToOrder, proofValidForOrder, kitchenAdmitted,
 } = require("./delivery-slip-policy");
@@ -227,13 +228,18 @@ exports.finalizeDeliveryPaymentSlip = onDocumentCreated(
     const { tenantId, orderId } = event.params;
     const db = getFirestore();
     const orderRef = db.collection("tenants").doc(tenantId).collection("orders").doc(orderId);
-    const proofRef = db.collection("tenants").doc(tenantId).collection("deliverySlipChecks").doc(orderId);
+    const tenantRef = db.collection("tenants").doc(tenantId);
+    const proofRef = tenantRef.collection("deliverySlipChecks").doc(orderId);
     await db.runTransaction(async tx => {
       const [snapshot, proofSnap] = await Promise.all([tx.get(orderRef), tx.get(proofRef)]);
       if (!snapshot.exists || !proofSnap.exists) return;
       const current = snapshot.data() || {};
       const proof = proofSnap.data() || {};
       if (proofValidForOrder(current, proof)) {
+        const tenantSnap = await tx.get(tenantRef);
+        if (!legacyDeliveryPaidWriterAllowed(tenantSnap.exists ? tenantSnap.data() : null)) {
+          throw new HttpsError("failed-precondition", "HYBRID_TRUSTED_JOURNAL_WRITER_REQUIRED");
+        }
         // Claim is only issued by the server-side Slip2Go check, never the customer.
         tx.update(orderRef, {
           paymentStatus: "paid", paidAt: FieldValue.serverTimestamp(),
@@ -272,7 +278,8 @@ exports.approveDeliveryPaymentReview = onCall(
     const actor = await cashierProfile(request.auth, tenantId);
     const db = getFirestore();
     const orderRef = db.collection("tenants").doc(tenantId).collection("orders").doc(orderId);
-    const proofRef = db.collection("tenants").doc(tenantId).collection("deliverySlipChecks").doc(orderId);
+    const tenantRef = db.collection("tenants").doc(tenantId);
+    const proofRef = tenantRef.collection("deliverySlipChecks").doc(orderId);
     let result = { alreadyPaid: false };
     await db.runTransaction(async tx => {
       const [orderSnap, proofSnap] = await Promise.all([tx.get(orderRef), tx.get(proofRef)]);
@@ -293,6 +300,10 @@ exports.approveDeliveryPaymentReview = onCall(
         || !(legacySlip || (order.paymentReviewRequired === true
           && proof.status === "manual_review" && proofBoundToOrder(order, proof)))) {
         throw new HttpsError("failed-precondition", "DELIVERY_MANUAL_REVIEW_NOT_ALLOWED");
+      }
+      const tenantSnap = await tx.get(tenantRef);
+      if (!legacyDeliveryPaidWriterAllowed(tenantSnap.exists ? tenantSnap.data() : null)) {
+        throw new HttpsError("failed-precondition", "HYBRID_TRUSTED_JOURNAL_WRITER_REQUIRED");
       }
       tx.update(orderRef, {
         paymentStatus: "paid",
