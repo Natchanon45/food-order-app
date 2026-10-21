@@ -34,6 +34,13 @@ async function configuredDestination(db) {
   if (!snap.exists) return null;
   try { return normalizedDestination(snap.data()); } catch { return null; }
 }
+function sameBillingPrices(locked, candidate) {
+  if (!locked || !candidate) return false;
+  return ["monthlyFee", "deliveryThreshold", "deliveryShareRate",
+    "monthlySlipQuota", "timezone", "policyVersion"].every(
+    key => locked[key] === candidate[key],
+  );
+}
 function stateForInvoice(invoice = {}) {
   if (invoice.status === "paid") return "paid";
   if (invoice.status === "void") return "void";
@@ -130,7 +137,7 @@ async function issueForTenant(db, ref, tenant, throughDate, { attest, actor } = 
     }
   }
   const locked = await periodRef.get();
-  if (!locked.exists || JSON.stringify(locked.data().configSnapshot) !== JSON.stringify(estimate.config)) {
+  if (!locked.exists || !sameBillingPrices(locked.data().configSnapshot, estimate.config)) {
     throw new HttpsError("failed-precondition", "HYBRID_CYCLE_PRICING_CHANGED_RETRY");
   }
   // If historical orders move the trigger day or change an already-issued
@@ -204,7 +211,7 @@ exports.getTenantHybridInvoices = onCall({ region: REGION }, async request => {
   return { ok: true, items: docs.docs.map(d => safeInvoiceSummary(d.id, d.data())) };
 });
 exports.getPlatformHybridInvoices = onCall({ region: REGION }, async request => {
-  const { ref } = await viewer(request, { superAdmin: true });
+  const { ref, tenant } = await viewer(request, { superAdmin: true });
   const docs = await ref.collection(BILLING_COLLECTION).orderBy("issuedAt", "desc").limit(100).get();
   const items = [];
   for (const d of docs.docs) {
@@ -419,4 +426,4 @@ async function reserveHybridSlipCredit(db, tenantRef, tenant, orderId) {
 }
 exports.reserveHybridSlipCredit = reserveHybridSlipCredit;
 
-exports._test = { eligibleForIssuance, stateForInvoice, safeInvoiceSummary, normalizedDestination };
+exports._test = { eligibleForIssuance, stateForInvoice, safeInvoiceSummary, normalizedDestination, sameBillingPrices };
