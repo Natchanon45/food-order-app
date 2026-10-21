@@ -92,3 +92,24 @@ test("Phase3AO: all four Subscription Admin writer paths use fresh-tenant transa
   assert.match(helper, /tx\.set\(db\.collection\("tenantSlugs"\)/);
   assert.equal((backend.match(/mirrorLegacySubscriptionAccess\(/g) || []).length, 1);
 });
+
+test("Release Gate W1: legacy SaaS import routes are transactionally tenant-gated", () => {
+  const migration = fs.readFileSync("functions/saas-migration.js","utf8");
+  const helper = fs.readFileSync("functions/hybrid-billing-legacy-migration-guard.js","utf8");
+  for (const segment of ["async function ensureTenant(", "async function copyCollection(",
+    "async function copySettings(", "async function finalizeMigration("]) {
+    const start = migration.indexOf(segment);
+    assert.ok(start >= 0);
+    const end = migration.indexOf("\n}", start);
+    assert.match(migration.slice(start, end + 2), /transactLegacyMigration\(/);
+  }
+  assert.match(helper, /db\.runTransaction\(async tx =>/);
+  assert.match(helper, /tx\.get\(tenantRef\)/);
+  assert.match(helper, /legacyDeliveryPaidWriterAllowed\(snap\.data\(\)\)/);
+  const admin = fs.readFileSync("functions/tenant-admin.js", "utf8");
+  const deleteSection = admin.slice(admin.indexOf("exports.deleteTenant ="));
+  assert.match(deleteSection, /legacyDeliveryPaidWriterAllowed\(tenantSnapshot\.data\(\)\)/);
+  for (const collection of ["hybridBillingInvoices","hybridBillingReceiptEvents",
+    "hybridBillingRefundChains","hybridBillingDayManifestCandidates"])
+    assert.ok(deleteSection.includes(collection), collection);
+});

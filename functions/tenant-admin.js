@@ -1,5 +1,6 @@
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+const { legacyDeliveryPaidWriterAllowed } = require("./hybrid-billing-legacy-payment-guard");
 const { getAuth } = require("firebase-admin/auth");
 const { randomUUID } = require("crypto");
 const { BUSINESS_TYPES, businessUnitsFor } = require("./revenue-share-policy");
@@ -344,10 +345,20 @@ exports.deleteTenant = onCall(
     const tenantRef = db.collection("tenants").doc(tenantId);
     const tenantSnapshot = await tenantRef.get();
     if (!tenantSnapshot.exists) throw new HttpsError("not-found", "Tenant not found");
+    // Retention gate: never recursively delete Hybrid/journal-marked tenants.
+    // This preflight alone is NOT a transactional global delete lock.
+    if (!legacyDeliveryPaidWriterAllowed(tenantSnapshot.data()))
+      throw new HttpsError("failed-precondition",
+        "Hybrid finance tenant deletion requires approved financial retention workflow");
 
     const protectedCollections = [
       "orders", "memberships", "menus", "tables", "notificationTokens", "deliveryCustomers",
-      "sales", "products", "categories", "revenueSharePayments"
+      "sales", "products", "categories", "revenueSharePayments",
+      "hybridBillingInvoices", "hybridBillingPeriods", "hybridBillingSettlements",
+      "hybridBillingReceiptEvents", "hybridBillingReceiptFences",
+      "hybridBillingRefundChains", "hybridBillingReviews",
+      "hybridBillingEvidence", "hybridBillingRecoveryReviews",
+      "hybridBillingDayCutoffCandidates", "hybridBillingDayManifestCandidates"
     ];
     for (const collectionName of protectedCollections) {
       const snapshot = await tenantRef.collection(collectionName).limit(1).get();

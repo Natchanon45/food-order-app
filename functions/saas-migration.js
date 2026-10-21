@@ -1,5 +1,6 @@
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+const { transactLegacyMigration } = require("./hybrid-billing-legacy-migration-guard");
 
 const SOURCE_SHOP_ID = "default-shop";
 const TARGET_TENANT = Object.freeze({
@@ -19,99 +20,93 @@ async function assertSuperAdmin(auth) {
 }
 
 async function ensureTenant(auth, profile) {
-  const db = getFirestore();
-  const tenantRef = db.collection("tenants").doc(TARGET_TENANT.id);
-  const tenantSnapshot = await tenantRef.get();
-  const existing = tenantSnapshot.exists ? tenantSnapshot.data() : {};
-  const now = FieldValue.serverTimestamp();
-  await tenantRef.set({
-    id: TARGET_TENANT.id,
-    slug: TARGET_TENANT.slug,
-    name: TARGET_TENANT.name,
-    status: existing.status || "active",
-    plan: existing.plan || "development",
-    ownerId: existing.ownerId || auth.uid,
-    updatedAt: now,
-    ...(tenantSnapshot.exists ? {} : { createdAt: now }),
-  }, { merge: true });
-
-  await db.collection("tenantSlugs").doc(TARGET_TENANT.slug).set({
-    tenantId: TARGET_TENANT.id,
-    slug: TARGET_TENANT.slug,
-    name: TARGET_TENANT.name,
-    active: true,
-    updatedAt: now,
-  }, { merge: true });
-
-  await tenantRef.collection("memberships").doc(auth.uid).set({
-    uid: auth.uid,
-    email: String(auth.token?.email || profile.email || ""),
-    displayName: String(profile.displayName || auth.token?.name || auth.token?.email || "Owner"),
-    role: "owner",
-    active: true,
-    updatedAt: now,
-  }, { merge: true });
+  const db = getFirestore(), tenantRef = db.collection("tenants").doc(TARGET_TENANT.id);
+  return transactLegacyMigration({ db, tenantRef, allowCreate: true,
+    onAllowed: (tx, snap) => {
+      const existing = snap.exists ? snap.data() : {}, now = FieldValue.serverTimestamp();
+      tx.set(tenantRef, {
+        id: TARGET_TENANT.id, slug: TARGET_TENANT.slug, name: TARGET_TENANT.name,
+        status: existing.status || "active", plan: existing.plan || "development",
+        ownerId: existing.ownerId || auth.uid, updatedAt: now,
+        ...(snap.exists ? {} : { createdAt: now }),
+      }, { merge: true });
+      tx.set(db.collection("tenantSlugs").doc(TARGET_TENANT.slug), {
+        tenantId: TARGET_TENANT.id, slug: TARGET_TENANT.slug,
+        name: TARGET_TENANT.name, active: true, updatedAt: now,
+      }, { merge: true });
+      tx.set(tenantRef.collection("memberships").doc(auth.uid), {
+        uid: auth.uid, email: String(auth.token?.email || profile.email || ""),
+        displayName: String(profile.displayName || auth.token?.name ||
+          auth.token?.email || "Owner"),
+        role: "owner", active: true, updatedAt: now,
+      }, { merge: true });
+    },
+  });
 }
 async function copyCollection(name, overwrite) {
-  if (!COLLECTIONS.includes(name)) throw new HttpsError("invalid-argument", "Unsupported migration collection");
-  const db = getFirestore();
+  if (!COLLECTIONS.includes(name))
+    throw new HttpsError("invalid-argument", "Unsupported migration collection");
+  const db = getFirestore(), tenantRef = db.collection("tenants").doc(TARGET_TENANT.id);
   const sourceSnapshot = await db.collection("shops").doc(SOURCE_SHOP_ID).collection(name).get();
-  let copied = 0;
-  let skipped = 0;
-
+  let copied = 0, skipped = 0;
   for (const sourceDoc of sourceSnapshot.docs) {
-    const targetRef = db.collection("tenants").doc(TARGET_TENANT.id).collection(name).doc(sourceDoc.id);
-    const targetSnapshot = await targetRef.get();
-    if (targetSnapshot.exists && !overwrite) {
-      skipped += 1;
-      continue;
-    }
-    await targetRef.set({
-      ...sourceDoc.data(),
-      legacyId: sourceDoc.id,
-      tenantId: TARGET_TENANT.id,
-      migratedAt: FieldValue.serverTimestamp(),
-    }, { merge: true });
-    copied += 1;
+    const targetRef = tenantRef.collection(name).doc(sourceDoc.id);
+    const decision = await transactLegacyMigration({
+      db, tenantRef,
+      onAllowed: async tx => {
+        const targetSnapshot = await tx.get(targetRef);
+        if (targetSnapshot.exists && !overwrite) return "skipped";
+        tx.set(targetRef, {
+          ...sourceDoc.data(), legacyId: sourceDoc.id,
+          tenantId: TARGET_TENANT.id, migratedAt: FieldValue.serverTimestamp(),
+        }, { merge: true });
+        return "copied";
+      },
+    });
+    if (decision === "copied") copied += 1;
+    else skipped += 1;
   }
-
   return {
     sourceName: `shops/${SOURCE_SHOP_ID}/${name}`,
     targetName: `tenants/${TARGET_TENANT.id}/${name}`,
-    total: sourceSnapshot.size,
-    copied,
-    skipped,
+    total: sourceSnapshot.size, copied, skipped,
   };
 }
 async function copySettings(overwrite) {
-  const db = getFirestore();
+  const db = getFirestore(), tenantRef = db.collection("tenants").doc(TARGET_TENANT.id);
   const sourceRef = db.collection("shops").doc(SOURCE_SHOP_ID).collection("settings").doc("store");
   const sourceSnapshot = await sourceRef.get();
   const sourceName = `shops/${SOURCE_SHOP_ID}/settings/store`;
   if (!sourceSnapshot.exists) return { sourceName, total: 0, copied: 0, skipped: 0 };
-
-  const targetRef = db.collection("tenants").doc(TARGET_TENANT.id).collection("settings").doc("store");
-  const targetSnapshot = await targetRef.get();
-  if (targetSnapshot.exists && !overwrite) return { sourceName, total: 1, copied: 0, skipped: 1 };
-
-  await targetRef.set({
-    ...sourceSnapshot.data(),
-    tenantId: TARGET_TENANT.id,
-    migratedAt: FieldValue.serverTimestamp(),
-  }, { merge: true });
-  return { sourceName, total: 1, copied: 1, skipped: 0 };
-}
-
-async function finalizeMigration(overwrite) {
-  await getFirestore().collection("tenants").doc(TARGET_TENANT.id).set({
-    migration: {
-      sourceShopId: SOURCE_SHOP_ID,
-      legacyCompleted: true,
-      completedAt: FieldValue.serverTimestamp(),
-      overwrite,
+  const targetRef = tenantRef.collection("settings").doc("store");
+  const decision = await transactLegacyMigration({
+    db, tenantRef,
+    onAllowed: async tx => {
+      const targetSnap = await tx.get(targetRef);
+      if (targetSnap.exists && !overwrite) return "skipped";
+      tx.set(targetRef, {
+        ...sourceSnapshot.data(), tenantId: TARGET_TENANT.id,
+        migratedAt: FieldValue.serverTimestamp(),
+      }, { merge: true });
+      return "copied";
     },
-    updatedAt: FieldValue.serverTimestamp(),
-  }, { merge: true });
+  });
+  return { sourceName, total: 1,
+    copied: decision === "copied" ? 1 : 0,
+    skipped: decision === "skipped" ? 1 : 0 };
+}
+async function finalizeMigration(overwrite) {
+  const db = getFirestore(), tenantRef = db.collection("tenants").doc(TARGET_TENANT.id);
+  return transactLegacyMigration({
+    db, tenantRef,
+    onAllowed: tx => tx.set(tenantRef, {
+      migration: {
+        sourceShopId: SOURCE_SHOP_ID, legacyCompleted: true,
+        completedAt: FieldValue.serverTimestamp(), overwrite,
+      },
+      updatedAt: FieldValue.serverTimestamp(),
+    }, { merge: true }),
+  });
 }
 exports.inspectLegacySaasMigration = onCall({ region: "asia-southeast1" }, async request => {
   await assertSuperAdmin(request.auth);

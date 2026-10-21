@@ -2878,3 +2878,40 @@ test("emulator Phase3AO: Subscription writer blocks Hybrid and journal-only acce
       hybridBillingSuspended: false }), makeSlugPatch: toSlug,
   }), /HYBRID_LEGACY_SUBSCRIPTION_INVALID_PATCH/);
 });
+
+test("emulator Release Gate W1: legacy migration transaction rejects paid Hybrid targets", async () => {
+  const { transactLegacyMigration } =
+    require("../../functions/hybrid-billing-legacy-migration-guard.js");
+  const scenarios = [
+    { billingPolicyVersion: "hybrid_v1" },
+    { billingPolicyVersion: "legacy", hybridBillingEnabled: true },
+    { billingPolicyVersion: "legacy", hybridReceiptJournalMode: "" },
+    { billingPolicyVersion: "legacy", hybridReceiptJournalCoverageReady: true },
+  ];
+  for (let i = 0; i < scenarios.length; i++) {
+    const ref = tenant("tenant-emu-w1-migrate-"+i);
+    await ref.create({ active: false, ...scenarios[i] });
+    let called = false;
+    await assert.rejects(transactLegacyMigration({
+      db, tenantRef: ref, allowCreate: true,
+      onAllowed: tx => {called=true; tx.set(ref.collection("orders").doc("paid"),{
+        paymentStatus:"paid",paidAt:"2026-10-21T01:00:00.000Z",
+      });},
+    }), /HYBRID_LEGACY_MIGRATION_TRUSTED_WRITER_REQUIRED/);
+    assert.equal(called, false);
+    assert.equal((await ref.collection("orders").get()).empty,true);
+  }
+  const ref = tenant("tenant-emu-w1-legacy-target");
+  await ref.create({ billingPolicyVersion:"legacy",active:true });
+  await transactLegacyMigration({db,tenantRef:ref,onAllowed:tx=>{
+    tx.set(ref.collection("menus").doc("imported"),{name:"Legacy Menu"});
+  }});
+  assert.equal((await ref.collection("menus").doc("imported").get()).exists,true);
+  const missing=tenant("tenant-emu-w1-missing");
+  await assert.rejects(transactLegacyMigration({db,tenantRef:missing,
+    onAllowed:tx=>tx.set(missing,{active:true})}),
+    /HYBRID_LEGACY_MIGRATION_TARGET_MISSING/);
+  await transactLegacyMigration({db,tenantRef:missing,allowCreate:true,
+    onAllowed:tx=>tx.set(missing,{active:true})});
+  assert.equal((await missing.get()).exists,true);
+});
