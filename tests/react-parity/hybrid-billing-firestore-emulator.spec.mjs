@@ -94,3 +94,49 @@ test("real Firestore invoice reconciliation suspends then restores tenant and sl
   assert.equal(current.active, true);
   assert.equal((await db.collection("tenantSlugs").doc(tenant.slug).get()).data().active, true);
 });
+
+test("Super Admin approval is transactional, verifies linkage and rejects duplicate review", async () => {
+  const { tenant, ref } = await fixture();
+  await _test.issueForTenant(db, ref, tenant, "2024-10-11", attest);
+  const invoiceId = "2024-10-10:delivery:trigger";
+  const paymentId = "payment-" + randomUUID();
+  await db.collection("users").doc("hybrid-super-admin-test").set({
+    role: "super_admin", active: true,
+  });
+  const paymentRef = invoiceRef(ref).collection("payments").doc(paymentId);
+  await paymentRef.set({
+    tenantId: tenant.id, invoiceId, paymentId, status: "pending",
+    amount: 500, slipPath: "fake-emulator-proof",
+  });
+  await invoiceRef(ref).update({ paymentId, paymentStatus: "pending" });
+  const { reviewTenantHybridPayment, getPlatformHybridInvoices } =
+    require("./hybrid-billing-ledger.js");
+  assert.equal(typeof reviewTenantHybridPayment.run, "function");
+  const args = { auth: { uid: "hybrid-super-admin-test" }, data: {
+    tenantId: tenant.id, invoiceId, paymentId, action: "approve",
+  } };
+  const approved = await reviewTenantHybridPayment.run(args);
+  assert.equal(approved.status, "approved");
+  assert.equal((await invoiceRef(ref).get()).data().status, "paid");
+  assert.equal((await paymentRef.get()).data().status, "approved");
+  await assert.rejects(reviewTenantHybridPayment.run(args),
+    /HYBRID_PAYMENT_REVIEW_CONFLICT/);
+  const listed = await getPlatformHybridInvoices.run({ auth: args.auth,
+    data: { tenantId: tenant.id } });
+  assert.equal(listed.live, true);
+  assert.equal(listed.items[0].state, "paid");
+});
+
+test("only Super Admin may review Hybrid payment", async () => {
+  const { tenant, ref } = await fixture();
+  await _test.issueForTenant(db, ref, tenant, "2024-10-11", attest);
+  await db.collection("users").doc("hybrid-tenant-owner-test").set({
+    role: "owner", tenantId: tenant.id, active: true,
+  });
+  const { reviewTenantHybridPayment } = require("./hybrid-billing-ledger.js");
+  await assert.rejects(reviewTenantHybridPayment.run({
+    auth: { uid: "hybrid-tenant-owner-test" },
+    data: { tenantId: tenant.id, invoiceId: "2024-10-10:delivery:trigger",
+      paymentId: "payment-" + randomUUID(), action: "approve" },
+  }), /SUPER_ADMIN_REQUIRED/);
+});
