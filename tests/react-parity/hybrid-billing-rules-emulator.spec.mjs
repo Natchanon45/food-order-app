@@ -256,3 +256,45 @@ test("Phase3AB Rules: a partially migrated tenant cannot forge Paid Hybrid Deliv
   assert.equal((await serverOrder.doc("migration-paid-01").get()).exists, true);
   assert.equal((await serverOrder.doc("test-order").get()).data().paymentStatus, "unpaid");
 });
+
+
+test("Phase3AK Rules: COD receipt-review attestations stay server-only for Hybrid Owner and Super Admin", async () => {
+  const ref = doc(firestore, "tenants", ready, "orders", "test-order");
+  const server = db.collection("tenants").doc(ready).collection("orders").doc("test-order");
+  const forbidden = [
+    { paymentReceivedAt: "2026-10-21T08:00:00Z" },
+    { paymentReviewedAt: "2026-10-21T08:00:00Z" },
+    { paymentReviewedByUid: "forged-reviewer" },
+    { paymentReviewedByEmail: "forged@example.invalid" },
+    { paymentReviewedByRole: "super_admin" },
+    { slipVerifiedAt: "2026-10-21T08:00:00Z" },
+    { slipVerificationProvider: "forged_bank" },
+    { slipVerificationStatus: "matched" },
+    { slipCheckStatus: "matched" },
+    { paymentReviewRequired: false },
+  ];
+  for (const role of ["owner", "super_admin"]) {
+    await setMember(ready, role);
+    for (const patch of forbidden) {
+      await assert.rejects(updateDoc(ref, patch), /permission/i);
+      await assert.rejects(setDoc(ref, patch, { merge: true }), /permission/i);
+    }
+    await updateDoc(ref, { status: "ready" });
+  }
+  const after = (await server.get()).data();
+  for (const patch of forbidden)
+    assert.equal(after[Object.keys(patch)[0]], undefined);
+  assert.equal(after.paymentStatus, "unpaid");
+  assert.equal(after.status, "ready");
+});
+
+test("Phase3AK Rules: non-PromptPay Legacy review metadata retains previous client behavior", async () => {
+  await setMember(legacy, "owner");
+  const ref = doc(firestore, "tenants", legacy, "orders", "test-order");
+  await updateDoc(ref, { slipVerificationStatus: "legacy_manual",
+    paymentReviewRequired: true });
+  const actual = (await db.collection("tenants").doc(legacy)
+    .collection("orders").doc("test-order").get()).data();
+  assert.equal(actual.slipVerificationStatus, "legacy_manual");
+  assert.equal(actual.paymentReviewRequired, true);
+});
