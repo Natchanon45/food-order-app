@@ -10,7 +10,7 @@ if (!process.env.FIRESTORE_EMULATOR_HOST) {
 const require = createRequire(new URL("../../functions/bootstrap.js", import.meta.url));
 const admin = require("firebase-admin");
 const { getFirestore, Timestamp } = require("firebase-admin/firestore");
-const { _test } = require("../../functions/hybrid-billing-ledger.js");
+const { _test } = require("./hybrid-billing-ledger.js");
 
 admin.initializeApp({ projectId: process.env.GCLOUD_PROJECT || "demo-hybrid-ci" });
 const db = getFirestore();
