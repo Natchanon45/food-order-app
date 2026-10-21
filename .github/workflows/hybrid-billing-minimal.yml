@@ -38,3 +38,8 @@ jobs:
         run: |
           npm ci --ignore-scripts --no-audit --no-fund
           npm run build:react
+      - name: Existing operational orders, slip2go and cashier receipt regressions
+        run: |
+          npm run test:operational
+          npm run test:delivery-slip2go
+          npm run test:cashier-receipt-loading
