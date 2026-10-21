@@ -2373,3 +2373,100 @@ test("emulator Phase3AE: orphan journal/fence mismatch and falsely dated source 
  assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
  assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
 });
+
+
+test("emulator Phase3AF: pending late-source exception is append-only and links frozen original day without posting money", async()=>{
+ const {initializeHybridEpochCandidate,initializeHybridDemoDayCutoffCandidate,
+   sealHybridDemoDayCutoffCandidate}=require(
+    "../../functions/hybrid-billing-writer-epoch-candidate.js");
+ const {freezeHybridSealedDayManifestCandidate}=require(
+    "../../functions/hybrid-billing-demo-day-manifest.js");
+ const {recordHybridDemoLateExceptionCandidate}=require(
+    "../../functions/hybrid-billing-demo-late-exception.js");
+ const tenantId="tenant-phase3af-late-108",t=await activate(tenantId);
+ const reviewerUid="super-phase3af-late-108",originalDay="2026-10-20";
+ await db.collection("users").doc(reviewerUid).set({
+   role:"super_admin",active:true,tenantId
+ });
+ await initializeHybridEpochCandidate({db,tenantId,reviewerUid});
+ await initializeHybridDemoDayCutoffCandidate({
+   db,tenantId,reviewerUid,day:originalDay
+ });
+ await sealHybridDemoDayCutoffCandidate({
+   db,tenantId,reviewerUid,day:originalDay
+ });
+ const witness=await freezeHybridSealedDayManifestCandidate({
+   db,tenantId,day:originalDay,reviewerUid
+ });
+ const originalRef=t.collection("hybridBillingDayManifestCandidates").doc(originalDay);
+ const originalSnap=await originalRef.get();
+ const args={db,tenantId,reviewerUid,originalDay,bookingDay:"2026-10-21",
+   sourceType:"lalamove_cod_paid_out",
+   sourceAt:new Date("2026-10-20T15:00:00Z"),
+   postedAt:new Date("2026-10-21T02:00:00Z"),
+   amountCents:19900,referenceHash:"a".repeat(64),
+   sourceEvidenceSha256:"b".repeat(64),postedEvidenceSha256:"c".repeat(64)};
+ const first=await recordHybridDemoLateExceptionCandidate(args);
+ assert.equal(first.alreadyRecorded,false);
+ assert.equal(first.pending,true);
+ const second=await recordHybridDemoLateExceptionCandidate(args);
+ assert.equal(second.alreadyRecorded,true);
+ assert.equal(second.id,first.id);
+ const late=t.collection("hybridBillingLateExceptionCandidates").doc(first.id);
+ const saved=(await late.get()).data();
+ assert.equal(saved.originalManifestDigest,witness.candidateDigest);
+ assert.equal(saved.status,"pending_independent_review");
+ assert.equal(saved.sourceAttested,false);
+ assert.equal(saved.bankCreditVerified,false);
+ assert.equal(saved.settlementPosted,false);
+ assert.equal(saved.financialDayReopened,false);
+ assert.equal(saved.canIssueInvoice,false);
+ const claim=await db.collection("hybridBillingDemoLateReferenceClaims").doc(first.id).get();
+ assert.equal(claim.data().eventPath,late.path);
+ await assert.rejects(recordHybridDemoLateExceptionCandidate({
+   ...args,amountCents:19800
+ }),/HYBRID_DEMO_LATE_REFERENCE_REPLAY_OR_TAMPER/);
+ assert.equal((await t.collection("hybridBillingLateExceptionCandidates").get()).size,1);
+ assert.equal((await originalRef.get()).updateTime.toMillis(),
+   originalSnap.updateTime.toMillis(),"Original sealed day witness must not be rewritten");
+ assert.equal((await t.collection("orders").get()).size,0);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+ assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
+});
+
+test("emulator Phase3AF: missing original frozen witness and non-Super Admin cannot record late exception",async()=>{
+ const {initializeHybridEpochCandidate,initializeHybridDemoDayCutoffCandidate,
+   sealHybridDemoDayCutoffCandidate}=require(
+    "../../functions/hybrid-billing-writer-epoch-candidate.js");
+ const {freezeHybridSealedDayManifestCandidate}=require(
+    "../../functions/hybrid-billing-demo-day-manifest.js");
+ const {recordHybridDemoLateExceptionCandidate}=require(
+    "../../functions/hybrid-billing-demo-late-exception.js");
+ const tenantId="tenant-phase3af-deny-109",t=await activate(tenantId);
+ const reviewerUid="super-phase3af-deny-109",staffUid="staff-phase3af-deny-109";
+ await db.collection("users").doc(reviewerUid).set({role:"super_admin",active:true,tenantId});
+ await db.collection("users").doc(staffUid).set({role:"cashier",active:true,tenantId});
+ const args={db,tenantId,reviewerUid,originalDay:"2026-10-20",
+   bookingDay:"2026-10-21",sourceType:"promptpay_bank_posted",
+   sourceAt:new Date("2026-10-20T14:00:00Z"),
+   postedAt:new Date("2026-10-21T09:00:00Z"),
+   amountCents:10000,referenceHash:"d".repeat(64),
+   sourceEvidenceSha256:"e".repeat(64),postedEvidenceSha256:"f".repeat(64)};
+ await initializeHybridEpochCandidate({db,tenantId,reviewerUid});
+ await initializeHybridDemoDayCutoffCandidate({
+   db,tenantId,reviewerUid,day:"2026-10-20"
+ });
+ await sealHybridDemoDayCutoffCandidate({
+   db,tenantId,reviewerUid,day:"2026-10-20"
+ });
+ await assert.rejects(recordHybridDemoLateExceptionCandidate(args),
+   /HYBRID_DEMO_DAY_MANIFEST_NOT_FROZEN/);
+ await freezeHybridSealedDayManifestCandidate({
+   db,tenantId,day:"2026-10-20",reviewerUid
+ });
+ await assert.rejects(recordHybridDemoLateExceptionCandidate({
+   ...args,reviewerUid:staffUid
+ }),/HYBRID_DEMO_LATE_SUPER_ADMIN_REQUIRED/);
+ assert.equal((await t.collection("hybridBillingLateExceptionCandidates").get()).size,0);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+});
