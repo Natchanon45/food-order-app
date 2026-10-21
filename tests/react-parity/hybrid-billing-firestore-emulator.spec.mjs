@@ -1885,3 +1885,63 @@ test("emulator Phase 3X real opt-in COD writer racing seal cannot commit AFTER s
  assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
 });
 
+
+test("emulator Phase 3Y: real 3001 paid Delivery Firestore docs expose legacy source and preserve >3000 invoice refusal",async()=>{
+ const {inspectHybridPaidWriterSourcesCandidate}=require(
+  "../../functions/hybrid-billing-paid-source-inventory.js");
+ const {previewHybridJournalManifest}=require(
+  "../../functions/hybrid-billing-manifest-preview.js");
+ const id="tenant-phase3y-3001-081",t=await activate(id),orders=t.collection("orders");
+ const count=3001,paymentAt=stamp("2026-10-20T02:00:00Z");
+ const start=Date.now();
+ // 3001 ACTUAL Firestore Emulator document writes, not generated JS mock pages.
+ // Batches remain <500. These are deliberately UNTRUSTED legacy paid records
+ // with no receipt journals. Never seed the 16 journal fences or tenant flags.
+ for(let offset=0;offset<count;offset+=400){
+  const batch=db.batch();
+  for(let i=offset;i<Math.min(count,offset+400);i++){
+   const id="paid-legacy-"+String(i).padStart(5,"0");
+   batch.create(orders.doc(id),{
+     orderType:"delivery",paymentStatus:"paid",status:"delivered",
+     paymentReceiptSource:"legacy_import_unattested",
+     paymentMethod:"cod",paidAt:paymentAt,
+     totalAmount:105,subtotalAmount:100,deliveryFee:5,
+     items:[{id:"item",quantity:1}]
+   });
+  }
+  await batch.commit();
+ }
+ const loadMs=Date.now()-start;
+ const actual=await orders.count().get();
+ assert.equal(actual.data().count,count);
+ const scanStarted=Date.now();
+ const inventory=await inspectHybridPaidWriterSourcesCandidate({
+   db,tenantId:id,pageSize:200,maxRows:3200});
+ assert.equal(inventory.scanned,count);
+ assert.equal(inventory.unregisteredCount,count);
+ assert.equal(inventory.unregisteredSources.legacy_import_unattested,count);
+ assert.equal(inventory.nonCanonicalPaidAtCount,0);
+ assert.equal(inventory.sourceCompletenessProven,false);
+ assert.equal(inventory.coverageCertified,false);
+ const inventoryMs=Date.now()-scanStarted;
+ const manifestStarted=Date.now();
+ const manifest=await previewHybridJournalManifest({
+   db,tenantId:id,pageSize:200,maxPages:20});
+ const manifestMs=Date.now()-manifestStarted;
+ assert.equal(manifest.scanned,count);
+ assert.equal(manifest.pages,16);
+ assert.equal(manifest.issueCount,count);
+ assert.equal(manifest.coverageCertified,false);
+ assert.equal(manifest.canIssueInvoice,false);
+ assert.match(manifest.rootDigest,/^[a-f0-9]{64}$/);
+ // Existing invoice path MUST stop before recording financial documents.
+ await assert.rejects(issue(id,midnightAfterTrigger),/HYBRID_RECEIPT_AUDIT_LIMIT|resource-exhausted/i);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+ assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
+ console.log("HYBRID_PHASE3Y_REAL_EMULATOR_SCALE",JSON.stringify({
+   orders:count,loadMs,inventoryMs,manifestMs,
+   pages:manifest.pages,untrusted:inventory.unregisteredCount,
+   issueCount:manifest.issueCount,coverageCertified:false,canIssueInvoice:false
+ }));
+});
+
