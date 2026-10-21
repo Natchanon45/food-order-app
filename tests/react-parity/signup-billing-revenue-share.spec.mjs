@@ -342,3 +342,24 @@ test("Register custom business validation reuses central feedback UI and red inv
   assert.match(css, /white-space: normal/);
   assert.match(page, /validationMessage\("phone"\)|name === "phone"/);
 });
+
+test("Register actions use the Login green, full-width mobile grid and one-space centered icon spacing", () => {
+  const { readFileSync } = require("node:fs");
+  const registerCss = readFileSync("react-app/public/parity/css/register-page.css", "utf8");
+  const loginCss = readFileSync("react-app/public/parity/css/login-page.css", "utf8");
+  const jsx = readFileSync("react-app/src/pages/RegisterPage.jsx", "utf8");
+  assert.match(loginCss, /\.btn-pay\s*\{\s*background:\s*#159447;/);
+  const actionFix = registerCss.slice(registerCss.indexOf("/* Register action alignment and mobile width parity"));
+  assert.ok(actionFix, "registration action style missing");
+  assert.match(actionFix, /\.register-page \.register-header > \.btn\s*\{\s*background:\s*#159447;/);
+  assert.match(actionFix, /\.register-page \.register-header > \.btn,[\s\S]*?\.register-page \.register-actions > \.btn\s*\{[\s\S]*?gap: 4px !important;/);
+  assert.match(actionFix, /\.register-page \.register-header > \.btn > \.bi,[\s\S]*?\.register-page \.register-actions > \.btn > \.bi\s*\{[\s\S]*?align-items: center;[\s\S]*?justify-content: center;/);
+  assert.match(actionFix, /@media \(max-width: 760px\)/);
+  assert.match(actionFix, /grid-template-columns: minmax\(0, 1fr\)/);
+  assert.match(actionFix, /justify-content: stretch;/);
+  assert.match(actionFix, /\.register-page \.register-actions > \.btn\s*\{[\s\S]*?width: 100%;/);
+  assert.match(jsx, /className="register-actions"/);
+  assert.match(jsx, /id="submitRegister"/);
+  assert.match(jsx, /className="btn" to="\/login"/);
+  assert.match(jsx, /className="btn btn-sm" to="\/"/);
+});

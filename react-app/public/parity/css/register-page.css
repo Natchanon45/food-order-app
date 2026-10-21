@@ -105,3 +105,63 @@
   border-color: #df6e6e;
   background: #fff9f9;
 }
+
+/* Register action alignment and mobile width parity — 2026-10-22.
+   Keep the existing button border-radius, size and functionality. */
+.register-page .register-header > .btn {
+  background: #159447;
+  border-color: #159447;
+  color: #fff;
+}
+.register-page .register-header > .btn:hover {
+  background: #10833f;
+  border-color: #10833f;
+  color: #fff;
+}
+.register-page .register-header > .btn:focus-visible,
+.register-page .register-actions > .btn:focus-visible {
+  outline: 3px solid #91d4a7;
+  outline-offset: 2px;
+}
+.register-page .register-header > .btn,
+.register-page .register-actions > .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Shared icons.css has a higher-specificity 7px gap rule. */
+  gap: 4px !important;
+}
+.register-page .register-header > .btn > .bi,
+.register-page .register-actions > .btn > .bi {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  margin: 0;
+  line-height: 1;
+  vertical-align: middle;
+}
+.register-page .register-header > .btn > span,
+.register-page .register-actions > .btn > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.25;
+}
+@media (max-width: 760px) {
+  .register-page .register-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-content: stretch;
+    justify-items: stretch;
+    gap: 9px;
+    width: 100%;
+    min-width: 0;
+  }
+  .register-page .register-actions > .btn {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+}
