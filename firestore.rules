@@ -17,13 +17,22 @@ service cloud.firestore {
     function kitchenRole() { return hasRole(['owner', 'kitchen', 'super_admin']); }
     function staffRole() { return hasRole(['owner', 'admin', 'super_admin', 'cashier', 'kitchen']); }
     function superAdminRole() { return hasRole(['super_admin']); }
+    // Phase3AM: one fail-closed predicate shared by all tenant order permissions.
+    // A journal marker also implies partial Hybrid finance migration, even
+    // when billingPolicyVersion / hybridBillingEnabled still look Legacy.
+    function hybridFinancialSignal(tenant) {
+      return tenant.get('billingPolicyVersion', 'legacy') == 'hybrid_v1'
+        || tenant.get('hybridBillingEnabled', false) == true
+        || tenant.get('hybridReceiptJournalCoverageReady', false) == true
+        || tenant.get('hybridReceiptJournalMode', null) != null;
+    }
     // Authoritative business enablement. Legacy tenants without Master fields retain both.
     function tenantBusinessEnabled(tenantId, business) {
       let tenant = get(/databases/$(database)/documents/tenants/$(tenantId)).data;
       // Fast path: check Hybrid suspension and ordinary business enablement
       // BEFORE expanding the expensive Super Admin profile/role policy.
       // Super Admin fallback is preserved only when business type mismatches.
-      return (tenant.get('billingPolicyVersion', 'legacy') != 'hybrid_v1'
+      return (!hybridFinancialSignal(tenant)
           || (tenant.get('hybridBillingSuspended', false) != true
             && tenant.get('active', true) != false))
         && ((tenant.get('businessType', 'both') == 'both'
@@ -316,8 +325,7 @@ service cloud.firestore {
       function isHybridTenant() {
         let t = get(/databases/$(database)/documents/tenants/$(tenantId)).data;
         // Partial migration must fail closed for Client SDK finance writes.
-        return t.get('billingPolicyVersion', 'legacy') == 'hybrid_v1'
-          || t.get('hybridBillingEnabled', false) == true;
+        return hybridFinancialSignal(t);
       }
       function fastHybridStaff() {
         return signedIn()
@@ -333,8 +341,7 @@ service cloud.firestore {
       }
       function hybridOperationalWriteAllowed() {
         let t = get(/databases/$(database)/documents/tenants/$(tenantId)).data;
-        return (t.get('billingPolicyVersion', 'legacy') != 'hybrid_v1'
-            && t.get('hybridBillingEnabled', false) != true)
+        return !hybridFinancialSignal(t)
           || (t.get('hybridBillingSuspended', false) != true
             && t.get('active', true) != false);
       }
@@ -343,8 +350,7 @@ service cloud.firestore {
       // Admin SDK trusted payment callable intentionally bypasses client Rules.
       function hybridDeliveryReceiptFieldsUnchanged() {
         let t = get(/databases/$(database)/documents/tenants/$(tenantId)).data;
-        return (t.get('billingPolicyVersion', 'legacy') != 'hybrid_v1'
-            && t.get('hybridBillingEnabled', false) != true)
+        return !hybridFinancialSignal(t)
           || resource.data.get('orderType', '') != 'delivery'
           || !request.resource.data.diff(resource.data).affectedKeys().hasAny([
             // Phase3AK: payment review/receipt attestations are server-owned

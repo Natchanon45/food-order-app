@@ -30,6 +30,9 @@ const hybrid = "tenant-rules-hybrid-01";
 const legacy = "tenant-rules-legacy-02";
 const ready = "tenant-rules-hybrid-ready-03";
 const migrating = "tenant-rules-migrating-04";
+const journalMode = "tenant-rules-journal-mode-3am";
+const journalCoverage = "tenant-rules-journal-ready-3am";
+const journalSuspended = "tenant-rules-journal-suspend-3am";
 let uid;
 async function putOrder(tenantId) {
   await db.collection("tenants").doc(tenantId).collection("orders").doc("test-order").create({
@@ -56,6 +59,12 @@ test.before(async () => {
       hybridBillingSuspended: false, active: true }],
     [migrating, { billingPolicyVersion: "legacy", hybridBillingEnabled: true,
       hybridBillingSuspended: false, active: true }],
+    [journalMode, { billingPolicyVersion: "legacy", hybridBillingEnabled: false,
+      hybridReceiptJournalMode: "strict_v1", active: true }],
+    [journalCoverage, { billingPolicyVersion: "legacy", hybridBillingEnabled: false,
+      hybridReceiptJournalCoverageReady: true, active: true }],
+    [journalSuspended, { billingPolicyVersion: "legacy", hybridBillingEnabled: false,
+      hybridReceiptJournalMode: "", hybridBillingSuspended: true, active: false }],
   ]) {
     await db.collection("tenants").doc(tenantId).create({
       ownerUid: "real-demo-owner", businessType: "both", ...data,
@@ -297,4 +306,61 @@ test("Phase3AK Rules: non-PromptPay Legacy review metadata retains previous clie
     .collection("orders").doc("test-order").get()).data();
   assert.equal(actual.slipVerificationStatus, "legacy_manual");
   assert.equal(actual.paymentReviewRequired, true);
+});
+
+test("Phase3AM Rules: journal-marked Legacy cannot forge paid Delivery or receipt fields", async () => {
+  for (const tenantId of [journalMode, journalCoverage]) {
+    const ref = doc(firestore, "tenants", tenantId, "orders", "test-order");
+    await setMember(tenantId, "owner");
+    for (const patch of [
+      { paymentStatus: "paid", paidAt: "2026-10-21T02:00:00Z" },
+      { paymentReceiptSource: "hybrid_cod_cashier_server" },
+      { paymentReviewedByUid: "fake-reviewer" },
+      { slipVerificationStatus: "matched" },
+      { totalAmount: 90000 },
+    ]) {
+      await assert.rejects(updateDoc(ref, patch), /permission/i);
+      await assert.rejects(setDoc(ref, patch, { merge: true }), /permission/i);
+    }
+    await updateDoc(ref, { status: "ready" });
+    const after = (await db.collection("tenants").doc(tenantId)
+      .collection("orders").doc("test-order").get()).data();
+    assert.equal(after.status, "ready");
+    assert.equal(after.paymentStatus, "unpaid");
+    assert.equal(after.paidAt, undefined);
+    assert.equal(after.paymentReceiptSource, undefined);
+  }
+});
+
+test("Phase3AM Rules: journal-marked Legacy Paid Delivery cannot be deleted by Owner", async () => {
+  for (const tenantId of [journalMode, journalCoverage]) {
+    await setMember(tenantId, "owner");
+    const orders = db.collection("tenants").doc(tenantId).collection("orders");
+    await orders.doc("paid-journal-3am").create({
+      tenantId, orderType: "delivery", paymentStatus: "paid",
+      status: "delivered", totalAmount: 100,
+      paidAt: "2026-10-21T02:00:00Z",
+    });
+    await assert.rejects(deleteDoc(doc(firestore, "tenants", tenantId,
+      "orders", "paid-journal-3am")), /permission/i);
+    assert.equal((await orders.doc("paid-journal-3am").get()).exists, true);
+  }
+});
+
+test("Phase3AM Rules: suspended journal-only tenant blocks even Super Admin client order access", async () => {
+  await setMember(journalSuspended, "super_admin");
+  const ref = doc(firestore, "tenants", journalSuspended, "orders", "test-order");
+  await assert.rejects(getDoc(ref), /permission/i);
+  await assert.rejects(updateDoc(ref, { status: "ready" }), /permission/i);
+  const raw = (await db.collection("tenants").doc(journalSuspended)
+    .collection("orders").doc("test-order").get()).data();
+  assert.equal(raw.status, "pending");
+  assert.equal(raw.paymentStatus, "unpaid");
+});
+
+test("Phase3AM Rules: no journal or Hybrid signal preserves actual Legacy payment write", async () => {
+  await setMember(legacy, "owner");
+  const ref = doc(firestore, "tenants", legacy, "orders", "test-order");
+  await updateDoc(ref, { paymentStatus: "paid", paidAt: "2026-10-21T02:00:00Z" });
+  assert.equal((await getDoc(ref)).data().paymentStatus, "paid");
 });
