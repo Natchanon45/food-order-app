@@ -161,6 +161,10 @@ exports.updateHybridBillingPaymentDestination = onCall({ region: REGION }, async
   }, { merge: true });
   return { ok: true, destination };
 });
+exports.getPlatformHybridPaymentDestination = onCall({ region: REGION }, async request => {
+  const { db } = await adminAuth(request.auth);
+  return { ok: true, destination: await configuredDestination(db) };
+});
 exports.getTenantHybridInvoices = onCall({ region: REGION }, async request => {
   const { ref } = await viewer(request);
   const docs = await ref.collection(BILLING_COLLECTION).orderBy("issuedAt", "desc").limit(100).get();
@@ -183,7 +187,7 @@ exports.getPlatformHybridInvoices = onCall({ region: REGION }, async request => 
     }
     items.push(invoice);
   }
-  return { ok: true, items };
+  return { ok: true, items, live: tenant.hybridBillingLive === true };
 });
 exports.issueTenantHybridInvoices = onCall({ region: REGION, timeoutSeconds: 120 }, async request => {
   const { db, ref, tenant, user } = await viewer(request, { superAdmin: true });

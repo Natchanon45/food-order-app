@@ -17,6 +17,12 @@ import {
 import {
   loadAdminHybridBillingSettings, saveAdminHybridBillingSettings
 } from "@/data/hybridBillingSettings";
+import {
+  getPlatformHybridInvoices, getPlatformHybridPaymentDestination, hybridSlipUrl,
+  issueTenantHybridInvoices, reconcileTenantHybridBilling,
+  reviewTenantHybridPayment, setTenantHybridBillingLive,
+  updateHybridBillingPaymentDestination,
+} from "@/data/hybridBillingLedger";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 
@@ -54,6 +60,16 @@ export function PlatformPricingPage() {
   const [hybridConfig, setHybridConfig] = useState(null);
   const [hybridLoading, setHybridLoading] = useState(true);
   const [hybridSaving, setHybridSaving] = useState(false);
+  const [hybridBank, setHybridBank] = useState({ bankName: "", accountName: "", accountNumber: "" });
+  const [hybridTenantId, setHybridTenantId] = useState("");
+  const [hybridThroughDate, setHybridThroughDate] = useState(() =>
+    new Date(Date.now() - 86400000).toLocaleDateString("en-CA", { timeZone: "Asia/Bangkok" }));
+  const [hybridReviewNote, setHybridReviewNote] = useState("");
+  const [hybridInvoices, setHybridInvoices] = useState([]);
+  const [hybridTenantLive, setHybridTenantLive] = useState(false);
+  const [hybridConfirm, setHybridConfirm] = useState("");
+  const [hybridBusy, setHybridBusy] = useState(false);
+  const [hybridMessage, setHybridMessage] = useState("");
 
   const load = async () => {
     setLoading(true);
@@ -84,6 +100,85 @@ export function PlatformPricingPage() {
       .finally(() => { if (mounted) setHybridLoading(false); });
     return () => { mounted = false; };
   }, [profile?.role]);
+
+  useEffect(() => {
+    if (profile?.role !== "super_admin") return;
+    getPlatformHybridPaymentDestination()
+      .then(destination => {
+        if (destination) setHybridBank(destination);
+      })
+      .catch(error => console.error("HYBRID_BANK_LOAD_FAILED", error));
+  }, [profile?.role]);
+
+  const loadHybridTenant = async () => {
+    if (!hybridTenantId.trim()) return;
+    setHybridBusy(true); setHybridMessage("");
+    try {
+      const result = await getPlatformHybridInvoices(hybridTenantId.trim());
+      setHybridInvoices(result.items || []);
+      setHybridTenantLive(result.live === true);
+    } catch (error) {
+      console.error("HYBRID_ADMIN_INVOICES_FAILED", error);
+      setHybridMessage("ไม่สามารถโหลดใบแจ้งค่าบริการได้");
+    } finally { setHybridBusy(false); }
+  };
+  const saveHybridBank = async event => {
+    event.preventDefault(); setHybridBusy(true);
+    try {
+      const data = await updateHybridBillingPaymentDestination(hybridBank);
+      setHybridBank(data.destination);
+      setHybridMessage("บันทึกบัญชีรับค่าบริการสำเร็จ");
+    } catch (error) {
+      console.error("HYBRID_BANK_SAVE_FAILED", error);
+      setHybridMessage("ไม่สามารถบันทึกบัญชีรับเงินได้");
+    } finally { setHybridBusy(false); }
+  };
+  const adminHybridAction = async action => {
+    if (!hybridTenantId.trim()) return;
+    setHybridBusy(true); setHybridMessage("");
+    try {
+      if (action === "issue") {
+        await issueTenantHybridInvoices(hybridTenantId.trim(), hybridThroughDate);
+        setHybridMessage("ตรวจสอบข้อมูลและออกบิลที่ถึงกำหนดแล้ว");
+      } else if (action === "reconcile") {
+        await reconcileTenantHybridBilling(hybridTenantId.trim());
+        setHybridMessage("ตรวจสอบสถานะค้างชำระแล้ว");
+      } else if (action === "enable" || action === "disable") {
+        await setTenantHybridBillingLive(hybridTenantId.trim(), action === "enable");
+        setHybridMessage(action === "enable" ? "เปิดใช้งานออกบิล Hybrid ให้ Tenant แล้ว" : "หยุดการออกบิล Hybrid สำหรับ Tenant แล้ว");
+        setHybridConfirm("");
+      }
+      const response = await getPlatformHybridInvoices(hybridTenantId.trim());
+      setHybridInvoices(response.items || []);
+      setHybridTenantLive(response.live === true);
+    } catch (error) {
+      console.error("HYBRID_ADMIN_ACTION_FAILED", error);
+      setHybridMessage(String(error?.message || "ดำเนินการไม่สำเร็จ"));
+    } finally { setHybridBusy(false); }
+  };
+  const reviewHybrid = async (invoice, action) => {
+    if (!invoice.payment?.id || hybridBusy) return;
+    setHybridBusy(true); setHybridMessage("");
+    try {
+      await reviewTenantHybridPayment(hybridTenantId.trim(), invoice.id,
+        invoice.payment.id, action, hybridReviewNote);
+      const data = await getPlatformHybridInvoices(hybridTenantId.trim());
+      setHybridInvoices(data.items || []);
+      setHybridMessage(action === "approve" ? "ยืนยันชำระเงินแล้ว" : "ปฏิเสธหลักฐานแล้ว");
+    } catch (error) {
+      console.error("HYBRID_REVIEW_FAILED", error);
+      setHybridMessage(String(error?.message || "ตรวจสอบหลักฐานไม่สำเร็จ"));
+    } finally { setHybridBusy(false); }
+  };
+  const openHybridSlip = async invoice => {
+    try {
+      const url = await hybridSlipUrl(invoice.payment?.slipPath);
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      console.error("HYBRID_SLIP_OPEN_FAILED", error);
+      setHybridMessage("เปิดหลักฐานชำระไม่ได้");
+    }
+  };
 
   const saveHybrid = async event => {
     event.preventDefault();
@@ -222,6 +317,70 @@ export function PlatformPricingPage() {
               </div>
             ) : null}
           </aside>
+        </section>
+        <section className="platform-pricing-grid" aria-label="จัดการค่าบริการ Hybrid Billing">
+          <form className="card platform-pricing-form-card" onSubmit={saveHybridBank}>
+            <div className="section-title"><h2>บัญชีรับค่าบริการ Hybrid Billing</h2></div>
+            <p className="field-help">บัญชี PENGUIN สำหรับให้ Tenant โอนค่าบริการ ไม่ใช่บัญชีรับยอดขายลูกค้า</p>
+            <div className="platform-pricing-fields">
+              {[
+                ["bankName", "ธนาคาร"], ["accountName", "ชื่อบัญชี"], ["accountNumber", "เลขบัญชี"],
+              ].map(([key, label]) => (
+                <label key={key}><span>{label}</span>
+                  <input value={hybridBank[key]} required
+                    onChange={event => setHybridBank(current => ({ ...current, [key]: event.target.value }))} />
+                </label>
+              ))}
+            </div>
+            <button className="btn btn-primary" disabled={hybridBusy} type="submit">บันทึกบัญชีรับชำระ</button>
+          </form>
+          <div className="card platform-pricing-form-card">
+            <div className="section-title"><h2>ออกบิล / ตรวจสอบการชำระของ Tenant</h2></div>
+            <p className="field-help">ระบบแยกจาก Revenue Share เดิม เปิดใช้งานเป็นราย Tenant เมื่อยืนยันข้อมูลแล้วเท่านั้น</p>
+            <div className="platform-pricing-fields">
+              <label><span>Tenant ID</span>
+                <input value={hybridTenantId} onChange={e => setHybridTenantId(e.target.value)} />
+              </label>
+              <label><span>คำนวณถึงวันที่ (วันปิดยอดแล้ว)</span>
+                <input type="date" value={hybridThroughDate} onChange={e => setHybridThroughDate(e.target.value)} />
+              </label>
+              <label><span>รหัสยืนยันการเปิดเรียกเก็บเงินจริง</span>
+                <input value={hybridConfirm} onChange={e => setHybridConfirm(e.target.value)}
+                  placeholder="พิมพ์ ENABLE เพื่อยืนยัน" />
+              </label>
+            </div>
+            <div className="platform-pricing-actions">
+              <button type="button" className="btn btn-sm" disabled={hybridBusy} onClick={loadHybridTenant}>โหลดบิล</button>
+              <button type="button" className="btn btn-sm" disabled={hybridBusy || !hybridTenantLive} onClick={() => adminHybridAction("issue")}>ออกบิล</button>
+              <button type="button" className="btn btn-sm" disabled={hybridBusy || !hybridTenantLive} onClick={() => adminHybridAction("reconcile")}>ตรวจยอดค้าง</button>
+              <button type="button" className="btn btn-sm" disabled={hybridBusy || hybridTenantLive || hybridConfirm !== "ENABLE"}
+                onClick={() => adminHybridAction("enable")}>เปิดใช้งาน Tenant นี้</button>
+              <button type="button" className="btn btn-sm" disabled={hybridBusy || !hybridTenantLive}
+                onClick={() => adminHybridAction("disable")}>หยุดออกบิล</button>
+            </div>
+            <p>สถานะ: <strong>{hybridTenantLive ? "เปิดออกบิล" : "ยังไม่เปิดออกบิล"}</strong></p>
+            <label><span>หมายเหตุการตรวจสอบ</span>
+              <input value={hybridReviewNote} onChange={e => setHybridReviewNote(e.target.value)} />
+            </label>
+            {hybridMessage ? <p role="status">{hybridMessage}</p> : null}
+            <div className="hybrid-report-table-scroll">
+              <table>
+                <thead><tr><th>เลขบิล</th><th>จำนวนเงิน</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+                <tbody>{hybridInvoices.length ? hybridInvoices.map(invoice => (
+                  <tr key={invoice.id}>
+                    <td>{invoice.id}</td><td>{money(invoice.amount)}</td><td>{invoice.state}</td>
+                    <td>{invoice.payment?.status === "pending" ? (
+                      <div className="platform-pricing-actions">
+                        <button type="button" className="btn btn-sm" disabled={hybridBusy} onClick={() => openHybridSlip(invoice)}>ดูสลิป</button>
+                        <button type="button" className="btn btn-sm" disabled={hybridBusy} onClick={() => reviewHybrid(invoice, "approve")}>อนุมัติ</button>
+                        <button type="button" className="btn btn-sm" disabled={hybridBusy} onClick={() => reviewHybrid(invoice, "reject")}>ปฏิเสธ</button>
+                      </div>
+                    ) : "—"}</td>
+                  </tr>
+                )) : <tr><td colSpan="4">ยังไม่มีบิลของ Tenant ที่เลือก</td></tr>}</tbody>
+              </table>
+            </div>
+          </div>
         </section>
         <p className="field-help">{t("hybrid_billing.legacy")}</p>
         <section className="platform-pricing-grid">

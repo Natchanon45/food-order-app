@@ -258,6 +258,7 @@ exports.getTenantHybridBillingPreview = require("./hybrid-billing-preview").getT
 
 const hybridLedger = require("./hybrid-billing-ledger");
 exports.getHybridBillingPaymentDestination = hybridLedger.getHybridBillingPaymentDestination;
+exports.getPlatformHybridPaymentDestination = hybridLedger.getPlatformHybridPaymentDestination;
 exports.updateHybridBillingPaymentDestination = hybridLedger.updateHybridBillingPaymentDestination;
 exports.getTenantHybridInvoices = hybridLedger.getTenantHybridInvoices;
 exports.getPlatformHybridInvoices = hybridLedger.getPlatformHybridInvoices;

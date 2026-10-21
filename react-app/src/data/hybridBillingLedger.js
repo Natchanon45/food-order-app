@@ -13,6 +13,9 @@ export async function getTenantHybridInvoices() {
 export async function getHybridBillingPaymentDestination() {
   return (await call("getHybridBillingPaymentDestination")).destination;
 }
+export async function getPlatformHybridPaymentDestination() {
+  return (await call("getPlatformHybridPaymentDestination")).destination;
+}
 export function getPlatformHybridInvoices(tenantId) {
   return call("getPlatformHybridInvoices", { tenantId });
 }
