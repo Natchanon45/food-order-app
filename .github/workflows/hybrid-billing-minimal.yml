@@ -32,6 +32,8 @@ jobs:
 
       - name: Delivery paidAt completeness and anniversary preview guards
         run: node --test tests/react-parity/hybrid-billing-audit.spec.mjs
+      - name: Focused Hybrid Delivery/COD cashier timestamp regressions
+        run: node --test tests/react-parity/hybrid-billing-cashier-timestamp.spec.mjs
       - name: Verify React source compiles (no deploy)
         run: |
           npm ci --ignore-scripts --no-audit --no-fund
