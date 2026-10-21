@@ -2591,3 +2591,82 @@ test("emulator Phase3AG: cashier cannot access privileged batch evidence lookups
  assert.equal((await t.collection("orders").get()).size,0);
  assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
 });
+
+
+test("emulator Phase3AH: global provider-order claim prevents replay across Hybrid tenants despite different batch and bank transfers",async()=>{
+ const {reserveHybridDemoCodBatchCandidate}=require(
+  "../../functions/hybrid-billing-demo-batch-reservation.js");
+ const commonProviderId="LL-GLOBAL-REPLAY-PROVIDER-120",at=new Date("2026-10-21T08:00:00Z");
+ const account="a".repeat(64),recipient="b".repeat(64),firstTransfer="c".repeat(64),
+  secondTransfer="1".repeat(64),providerDigest="d".repeat(64),bankDigest="e".repeat(64);
+ async function prepare(n,transfer){
+  const tenantId="tenant-phase3ah-global-"+n,reviewerUid="super-phase3ah-global-"+n;
+  const batchId="batch-phase3ah-global-"+n,tenantRef=await activate(tenantId,{
+   lalamoveAccountScopeSha256:account,lalamoveCodRecipientAccountSha256:recipient
+  });
+  await db.collection("users").doc(reviewerUid).set({role:"super_admin",active:true});
+  const orderIds=["order-phase3ah-global-"+n+"-a","order-phase3ah-global-"+n+"-b"];
+  const providerIds=[commonProviderId,"LL-OTHER-"+n];
+  const amounts=[500,300];
+  for(let i=0;i<2;i++){
+   await tenantRef.collection("orders").doc(orderIds[i]).create({
+    orderType:"delivery",deliveryProvider:"lalamove",paymentMethod:"cod",
+    lalamoveCodEnabled:true,paymentStatus:"unpaid",
+    lalamoveOrderId:providerIds[i],totalAmount:amounts[i]
+   });
+   await tenantRef.collection("hybridLalamoveCodCompletionProof").doc(orderIds[i]).create({
+    tenantId,orderId:orderIds[i],providerOrderId:providerIds[i],
+    accountScopeSha256:account,providerEvidenceSha256:providerDigest,
+    eventHash:"f".repeat(64),deliveryVerified:true,
+    codSettlementVerified:false,bankReconciled:false,
+    status:"delivery_verified_settlement_pending"
+   });
+  }
+  const provider={source:"authenticated_lalamove_batch_remittance_lookup",
+   authenticated:true,tenantId,batchId,market:"TH",currency:"THB",
+   status:"PAID_OUT",batchPayout:true,orderCount:2,
+   allocations:[
+    {orderId:orderIds[0],providerOrderId:providerIds[0],
+     collectedCodCents:50000,feeCents:1000,remittedCents:49000},
+    {orderId:orderIds[1],providerOrderId:providerIds[1],
+     collectedCodCents:30000,feeCents:500,remittedCents:29500}
+   ],
+   accountScopeSha256:account,recipientAccountSha256:recipient,
+   transferReferenceSha256:transfer,evidenceSha256:providerDigest,
+   checkedAt:at,paidOutAt:new Date(at.getTime()-120000),
+   collectedCodCents:80000,feeCents:1500,remittedCents:78500
+  };
+  const bank={source:"independent_bank_posted_credit_lookup",
+   authenticated:true,tenantId,status:"POSTED",currency:"THB",
+   recipientConfirmed:true,recipientAccountSha256:recipient,
+   bankAccountScopeSha256:recipient,transferReferenceSha256:transfer,
+   evidenceSha256:bankDigest,creditedCents:78500,checkedAt:at,
+   postedAt:new Date(at.getTime()-60000)
+  };
+  return {args:{db,tenantId,batchId,orderIds,reviewerUid,now:at,
+   resolveProviderBatch:async()=>provider,
+   resolveIndependentBankCredit:async()=>bank},tenantRef};
+ }
+ const first=await prepare("120",firstTransfer),second=await prepare("121",secondTransfer);
+ assert.equal((await reserveHybridDemoCodBatchCandidate(first.args)).alreadyReserved,false);
+ assert.equal((await reserveHybridDemoCodBatchCandidate(first.args)).alreadyReserved,true);
+ await assert.rejects(reserveHybridDemoCodBatchCandidate(second.args),
+  /HYBRID_DEMO_BATCH_REFERENCE_OR_ORDER_REPLAY/,
+  "A different tenant, transfer and batch may not reassign an already claimed Lalamove provider order");
+ assert.equal((await second.tenantRef.collection("hybridBillingDemoCodBatchCandidates").get()).size,0);
+ assert.equal((await second.tenantRef.collection("hybridBillingDemoCodOrderClaims").get()).size,0);
+ assert.equal((await second.tenantRef.collection("hybridBillingReceiptEvents").get()).size,0);
+ for(const id of second.args.orderIds)
+  assert.equal((await second.tenantRef.collection("orders").doc(id).get()).data().paymentStatus,"unpaid");
+ const globallyClaimed=(await db.collection("hybridBillingDemoLalamoveProviderOrderClaims").get()).docs;
+ assert.equal(globallyClaimed.filter(s=>s.data().batchId===first.args.batchId).length,2);
+ assert.equal(globallyClaimed.filter(s=>s.data().batchId===second.args.batchId).length,0);
+ // A privileged bypass may delete a claim; the idempotent retry must NOT silently fill it.
+ const removed=globallyClaimed.find(s=>s.data().providerOrderId===commonProviderId);
+ await removed.ref.delete();
+ await assert.rejects(reserveHybridDemoCodBatchCandidate(first.args),
+  /HYBRID_DEMO_BATCH_REFERENCE_OR_ORDER_REPLAY/,
+  "Missing global claim is a broken proof, not a reason to recreate an earlier reservation");
+ assert.equal((await first.tenantRef.collection("hybridBillingInvoices").get()).size,0);
+ assert.equal((await second.tenantRef.collection("hybridBillingInvoices").get()).size,0);
+});
