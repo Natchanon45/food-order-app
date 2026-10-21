@@ -141,7 +141,7 @@ test("subscription initializer/backfill/scheduler preserve signup cycle/trial an
   assert.ok(source.includes("tenant.trialEndsAt"));
   assert.ok(source.includes('tenant.subscriptionStatus === "trialing"'));
   assert.equal((source.match(/defaultPatch\(new Date\(\), tenant\)/g) || []).length, 3);
-  assert.equal((source.match(/writeLegacySubscription\(db, /g) || []).length, 4);
+  assert.equal((source.match(/await writeLegacySubscription\(db, /g) || []).length, 4);
   assert.doesNotMatch(source, /db\.batch\(/);
 });
 
