@@ -59,4 +59,4 @@ jobs:
           npm install --no-save --ignore-scripts --no-audit --no-fund firebase-tools@14
       - name: Real Firestore emulator financial workflow (no deploy)
         run: |
-          npx firebase emulators:exec --only firestore --project demo-hybrid-ci "node --test tests/react-parity/hybrid-billing-firestore-emulator.spec.mjs"
+          npx firebase emulators:exec --only firestore,storage --project demo-hybrid-ci "node --test tests/react-parity/hybrid-billing-firestore-emulator.spec.mjs"

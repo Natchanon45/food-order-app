@@ -10,9 +10,13 @@ if (!process.env.FIRESTORE_EMULATOR_HOST) {
 const require = createRequire(new URL("../../functions/bootstrap.js", import.meta.url));
 const admin = require("firebase-admin");
 const { getFirestore, Timestamp } = require("firebase-admin/firestore");
+const { getStorage } = require("firebase-admin/storage");
 const { _test } = require("./hybrid-billing-ledger.js");
 
-admin.initializeApp({ projectId: process.env.GCLOUD_PROJECT || "demo-hybrid-ci" });
+admin.initializeApp({
+  projectId: process.env.GCLOUD_PROJECT || "demo-hybrid-ci",
+  storageBucket: "demo-hybrid-ci.firebasestorage.app",
+});
 const db = getFirestore();
 const paidDate = iso => Timestamp.fromDate(new Date(iso));
 let counter = 0;
@@ -139,4 +143,48 @@ test("only Super Admin may review Hybrid payment", async () => {
     data: { tenantId: tenant.id, invoiceId: "2024-10-10:delivery:trigger",
       paymentId: "payment-" + randomUUID(), action: "approve" },
   }), /SUPER_ADMIN_REQUIRED/);
+});
+
+test("submitted bank-slip and Super Admin review are transactional against emulated Storage and Firestore", async () => {
+  if (!process.env.FIREBASE_STORAGE_EMULATOR_HOST) {
+    throw new Error("HYBRID_STORAGE_EMULATOR_REQUIRED");
+  }
+  const { tenant, ref } = await fixture();
+  await _test.issueForTenant(db, ref, tenant, "2024-10-11", attest);
+  const ownerUid = "owner-" + randomUUID();
+  const adminUid = "admin-" + randomUUID();
+  await Promise.all([
+    db.collection("users").doc(ownerUid).set({ role: "owner", tenantId: tenant.id, active: true }),
+    db.collection("users").doc(adminUid).set({ role: "super_admin", active: true }),
+  ]);
+  const { submitTenantHybridPayment, reviewTenantHybridPayment } =
+    require("./hybrid-billing-ledger.js");
+  const invoiceId = "2024-10-10:delivery:trigger";
+  const tenantAuth = { auth: { uid: ownerUid } };
+  const adminAuth = { auth: { uid: adminUid } };
+  const paymentId = "pay-" + randomUUID();
+  const slipPath = `tenants/${tenant.id}/hybrid-billing-slips/${invoiceId}/${paymentId}/proof.png`;
+  await getStorage().bucket().file(slipPath).save(Buffer.from("test-proof-image"), {
+    metadata: { contentType: "image/png" },
+  });
+  const submitted = await submitTenantHybridPayment.run({
+    ...tenantAuth, data: { invoiceId, paymentId, slipPath, slipName: "proof.png" },
+  });
+  assert.equal(submitted.status, "pending");
+  assert.equal((await invoiceRef(ref).get()).data().paymentStatus, "pending");
+  const paymentRef = invoiceRef(ref).collection("payments").doc(paymentId);
+  assert.equal((await paymentRef.get()).data().status, "pending");
+  // A second submission can neither replace the proof nor produce a second payment.
+  await assert.rejects(submitTenantHybridPayment.run({
+    ...tenantAuth, data: { invoiceId, paymentId, slipPath, slipName: "proof.png" },
+  }), /HYBRID_INVOICE_NOT_PAYABLE/);
+  await assert.rejects(reviewTenantHybridPayment.run({
+    ...tenantAuth, data: { tenantId: tenant.id, invoiceId, paymentId, action: "approve" },
+  }), /SUPER_ADMIN_REQUIRED/);
+  const reviewed = await reviewTenantHybridPayment.run({
+    ...adminAuth, data: { tenantId: tenant.id, invoiceId, paymentId, action: "approve" },
+  });
+  assert.equal(reviewed.status, "approved");
+  assert.equal((await invoiceRef(ref).get()).data().status, "paid");
+  assert.equal((await paymentRef.get()).data().status, "approved");
 });
