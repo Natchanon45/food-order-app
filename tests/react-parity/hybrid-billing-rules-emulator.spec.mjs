@@ -201,3 +201,32 @@ test("Phase3AA Rules: paid Hybrid delivery deletion is blocked even for Owner; u
   assert.equal((await old.doc("old-paid-removable-3aa").get()).exists, false);
 });
 
+
+test("Phase3AA Rules: even Super Admin client cannot self-certify Journal coverage or create forged certified tenant", async () => {
+  await setMember(ready, "super_admin");
+  const tenantRef = doc(firestore, "tenants", ready);
+  for (const payload of [
+    { hybridReceiptJournalCoverageReady: true },
+    { hybridReceiptJournalMode: "strict_v1" },
+    { hybridReceiptJournalCoverageReady: false },
+  ]) {
+    await assert.rejects(updateDoc(tenantRef, payload), /permission/i);
+    await assert.rejects(setDoc(tenantRef, payload, { merge: true }), /permission/i);
+  }
+  const forgedRef = doc(firestore, "tenants", "tenant-phase3aa-forged-coverage-01");
+  await assert.rejects(setDoc(forgedRef, {
+    billingPolicyVersion: "hybrid_v1",
+    hybridBillingEnabled: true,
+    hybridReceiptJournalCoverageReady: true,
+    hybridReceiptJournalMode: "strict_v1",
+  }), /permission/i);
+  const actual = (await db.collection("tenants").doc(ready).get()).data();
+  assert.equal(actual.hybridReceiptJournalCoverageReady, undefined);
+  assert.equal(actual.hybridReceiptJournalMode, undefined);
+  assert.equal((await db.collection("tenants").doc("tenant-phase3aa-forged-coverage-01").get()).exists, false);
+  // Non-financial administrative tenant edits remain supported.
+  await updateDoc(tenantRef, { phase3aaDiagnosticNote: "nonfinancial-client-update" });
+  assert.equal((await db.collection("tenants").doc(ready).get()).data().phase3aaDiagnosticNote,
+    "nonfinancial-client-update");
+});
+
