@@ -76,15 +76,32 @@ test("Phase3AC benchmark: real journaled trusted COD writer transactions, 16 fen
   const durations = new Array(COUNT);
   let nextIndex = 0;
   let successes = 0;
+  let abortedRetries = 0;
   const writerStart = performance.now();
   const writer = async () => {
     while (nextIndex < COUNT) {
       const i = nextIndex++;
       const startedAt = performance.now();
-      const result = await executeHybridDemoEnforcedWriter({
-        sourceKey: "cod_cashier",
-        args: { db, tenantId, orderId: orderIdAt(i), actorUid },
-      });
+      let result;
+      for (let attempt = 0; ; attempt++) {
+        try {
+          result = await executeHybridDemoEnforcedWriter({
+            sourceKey: "cod_cashier",
+            args: { db, tenantId, orderId: orderIdAt(i), actorUid },
+          });
+          break;
+        } catch (error) {
+          // Firestore Emulator serializes contended shared shard fences.
+          // Only the retryable lock-aborted code is retried, never a financial
+          // validation or journal integrity failure. Successful payment counts ONCE.
+          const aborted = Number(error?.code) === 10
+            || /\bABORTED\b|Transaction lock timeout/i.test(String(error?.message || ""));
+          if (!aborted || attempt >= 5) throw error;
+          abortedRetries++;
+          await new Promise(resolve => setTimeout(resolve,
+            Math.min(1200, 80 * (2 ** attempt)) + (i % 11) * 17));
+        }
+      }
       assert.equal(result.alreadyPaid, false);
       durations[i] = performance.now() - startedAt;
       successes++;
@@ -133,7 +150,7 @@ test("Phase3AC benchmark: real journaled trusted COD writer transactions, 16 fen
 
   console.log("HYBRID_PHASE3AC_ACTUAL_TRUSTED_WRITER_BENCHMARK", JSON.stringify({
     actualTrustedJournalTransactions: COUNT, workers: Math.min(WORKERS, COUNT),
-    successful: successes, failed: 0, journalEvents: COUNT, fenceVersionSum: COUNT,
+    successful: successes, failed: 0, abortedRetries, journalEvents: COUNT, fenceVersionSum: COUNT,
     seedMs: Math.round(seedMs), writerMs: Math.round(writerMs),
     transactionsPerSecond: +(COUNT / (writerMs / 1000)).toFixed(2),
     p50Ms: Math.round(percentile(orderedDurations, 0.50)),
