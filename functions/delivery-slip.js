@@ -181,6 +181,18 @@ exports.verifyDeliveryPaymentSlip = onCall(
       return true;
     });
     if (!rateAllowed) return manualProof("slip2go_request_rate_limit");
+    if (tenant.billingPolicyVersion === "hybrid_v1" && tenant.hybridBillingLive === true) {
+      let allowed = false;
+      try {
+        allowed = await require("./hybrid-billing-ledger").reserveHybridSlipCredit(
+          db, tenantRef, { id: tenantId, ...tenant }, orderId,
+        );
+      } catch (error) {
+        console.error("HYBRID_SLIP_QUOTA_UNAVAILABLE", tenantId, error.message);
+        return manualProof("hybrid_slip_quota_unavailable");
+      }
+      if (!allowed) return manualProof("hybrid_slip_quota_exhausted");
+    }
     const [buffer] = await bucketFile.download();
     const receiverOverride = { accountType: receiverType, accountNumber: account };
     const result = await inspectSlip(buffer, mime, slipPath.split("/").pop(), amount, {
