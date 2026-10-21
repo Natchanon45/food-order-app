@@ -14,7 +14,7 @@ const PINS=Object.freeze({
  "lalamove-webhook.js":"a6716d828f9349846afba1481b1bef89efcd811c",
  "retail-pos-backup.js":"d80205ff325b06b15ec3987041e6211073a2f730",
  "revenue-share.js":"393edfeaa54d4aeb3f62fb431c16fad69c8eb802",
- "subscription-admin.js":"2fbc5c92d9a1fc90287791d84213a8f62e617f02",
+ "subscription-admin.js":"f992e8e5744d6ae56b84d65728012ad2179258ff",
  "hybrid-billing-legacy-payment-guard.js":"a696082ffb84ef5cd3eb7ee42d89977e3019d2e5"
 });
 const KEYS=Object.freeze(["paymentStatus","paidAt","refundTotal","refundAmount","paymentReceiptSource"]);
