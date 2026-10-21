@@ -91,24 +91,23 @@ test("revenue-share business policy selects restaurant and retail sales independ
   });
 });
 
-test("new RegisterPage selects only business services, not a pricing mode", () => {
-  const source = fs.readFileSync("react-app/src/pages/RegisterPage.jsx", "utf8");
+test("public signup preserves the existing Premium and Revenue Share choices without Hybrid dependency", () => {
+  const page = fs.readFileSync("react-app/src/pages/RegisterPage.jsx", "utf8");
+  const backend = fs.readFileSync("functions/public-signup.js", "utf8");
   for (const token of [
     "businessType", '"restaurant_cafe"', '"retail"', '"both"',
-    "loadPublicHybridBillingSettings", "hybrid-signup-grid",
-  ]) assert.ok(source.includes(token), `RegisterPage missing ${token}`);
-  for (const prohibited of ['name="billingMode"', 'name="planCode"', 'name="restaurantRevenueShareScope"']) {
-    assert.ok(!source.includes(prohibited), `obsolete pricing choice ${prohibited}`);
-  }
-});
-
-test("public signup server forces Hybrid Billing and preserves selected business unit", () => {
-  const source = fs.readFileSync("functions/public-signup.js", "utf8");
+    "loadPublicSubscriptionPricing", 'name="billingMode"', 'name="planCode"',
+    'name="restaurantRevenueShareScope"', 'billingMode,', "restaurantRevenueShareScope:",
+  ]) assert.ok(page.includes(token), `RegisterPage missing ${token}`);
+  assert.doesNotMatch(page, /loadPublicHybridBillingSettings|hybrid-signup-grid|registrationReady/);
   for (const token of [
-    "normalizeSignupBilling", "businessUnitsFor", 'billingMode: "hybrid"',
-    'billingPolicyVersion: "hybrid_v1"', "hybridBillingSnapshot", "hybridTrialMonth",
-    "signupBilling:",
-  ]) assert.ok(source.includes(token), `public-signup missing ${token}`);
+    "signupBillingSelectionValid", "normalizeSignupBilling", "businessUnitsFor",
+    "signupBilling:", 'revenueShareEnabled: signupBilling.billingMode === "revenue_share"',
+    '["subscription", "revenue_share"]',
+    'pending.billingPolicyVersion === "hybrid_v1"',
+    'existingPendingSnap.data()?.billingPolicyVersion === "hybrid_v1"',
+  ]) assert.ok(backend.includes(token), `Public signup missing ${token}`);
+  assert.doesNotMatch(backend, /loadHybridBillingSettings|HYBRID_REGISTRATION_READY|hybridBillingSnapshot|hybridTrialMonth/);
 });
 
 test("revenue share calculation filters restaurant/POS share base by tenant policy", () => {
