@@ -163,9 +163,11 @@ test("audit uses existing single-field Delivery index and pages by document curs
   assert.equal(result.scanned, 501);
   assert.equal(result.paidDeliveryCount, 501);
   assert.equal(result.coverageCertified, false);
-  assert.deepEqual(calls.filter(c => c[0] === "where"), [
-    ["where", "orderType", "==", "delivery"],
-  ]);
+  const whereCalls = calls.filter(c => c[0] === "where");
+  assert.ok(whereCalls.length >= 2, "must query again after the 500-record page");
+  assert.ok(whereCalls.every(c => JSON.stringify(c) === JSON.stringify([
+    "where", "orderType", "==", "delivery",
+  ])), "all pages must retain the exact Delivery-only scope");
   assert.ok(calls.some(c => c[0] === "startAfter"));
 });
 test("more than 3,000 Delivery records can be read under the bounded cap", async () => {
