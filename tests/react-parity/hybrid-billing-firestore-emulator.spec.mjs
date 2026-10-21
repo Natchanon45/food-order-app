@@ -2222,3 +2222,115 @@ test("emulator Phase3AD: day cutoff admits all four real demo financial writers 
   assert.equal((await t.collection("hybridBillingInvoices").get()).size, 0);
   assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady, undefined);
 });
+
+
+test("emulator Phase3AE: sealed demo day manifest witnesses real journals once and catches later Admin paid bypass", async () => {
+ const {executeHybridDemoEnforcedWriter}=require(
+   "../../functions/hybrid-billing-demo-enforced-writer.js");
+ const {initializeHybridEpochCandidate,initializeHybridDemoDayCutoffCandidate,
+   sealHybridDemoDayCutoffCandidate}=require(
+   "../../functions/hybrid-billing-writer-epoch-candidate.js");
+ const {previewHybridSealedDayManifestCandidate,
+   freezeHybridSealedDayManifestCandidate,
+   recheckHybridFrozenDayManifestCandidate}=require(
+   "../../functions/hybrid-billing-demo-day-manifest.js");
+ const tenantId="tenant-phase3ae-manifest-105",t=await activate(tenantId);
+ const reviewerUid="super-phase3ae-manifest-105",day="2026-10-20";
+ await db.collection("users").doc(reviewerUid).set({
+   role:"super_admin",active:true,tenantId
+ });
+ await initializeHybridEpochCandidate({db,tenantId,reviewerUid});
+ await initializeHybridDemoDayCutoffCandidate({db,tenantId,reviewerUid,day});
+ const stampAt=new Date("2026-10-20T12:30:00Z");
+ const codArgs=id=>({
+   db,tenantId,orderId:id,actorUid:reviewerUid,
+   clock:()=>stampAt,serverTimestamp:()=>Timestamp.fromDate(stampAt)
+ });
+ const first="cod-phase3ae-manifest-105-a",second="cod-phase3ae-manifest-105-b";
+ for(const id of [first,second]){
+   await t.collection("orders").doc(id).create({
+     orderType:"delivery",paymentMethod:"cod",paymentStatus:"unpaid",
+     status:"delivered",subtotalAmount:1000,deliveryFee:10,totalAmount:1010,
+     items:[{id:"item",quantity:1}]
+   });
+ }
+ await assert.rejects(previewHybridSealedDayManifestCandidate({
+   db,tenantId,day,pageSize:1
+ }),/HYBRID_DEMO_DAY_MANIFEST_DAY_NOT_SEALED/);
+ for(const id of [first,second]){
+   assert.equal((await executeHybridDemoEnforcedWriter({
+     sourceKey:"cod_cashier",args:codArgs(id)
+   })).alreadyPaid,false);
+ }
+ await sealHybridDemoDayCutoffCandidate({db,tenantId,reviewerUid,day});
+ const before=await previewHybridSealedDayManifestCandidate({
+   db,tenantId,day,pageSize:1
+ });
+ assert.equal(before.scannedPaidOrders,2);
+ assert.equal(before.totalEvents,2);
+ assert.equal(before.dayEvents,2);
+ assert.equal(before.paymentCount,2);
+ assert.equal(before.refundCount,0);
+ assert.equal(before.dayGrossCents,202000);
+ assert.equal(before.coverageCertified,false);
+ assert.equal(before.canIssueInvoice,false);
+ const frozen=await freezeHybridSealedDayManifestCandidate({
+   db,tenantId,day,reviewerUid,pageSize:1
+ });
+ assert.equal(frozen.frozen,true);
+ assert.equal(frozen.candidateDigest,before.candidateDigest);
+ const doc=t.collection("hybridBillingDayManifestCandidates").doc(day);
+ const firstSnapshot=await doc.get();
+ assert.equal(firstSnapshot.data().candidateOnly,true);
+ assert.equal(firstSnapshot.data().coverageCertified,false);
+ assert.equal(firstSnapshot.data().canIssueInvoice,false);
+ assert.equal((await recheckHybridFrozenDayManifestCandidate({
+   db,tenantId,day,pageSize:1
+ })).unchanged,true);
+ await assert.rejects(freezeHybridSealedDayManifestCandidate({
+   db,tenantId,day,reviewerUid,pageSize:1
+ }),/HYBRID_DEMO_DAY_MANIFEST_ALREADY_FROZEN/);
+ // ADMIN SDK BYPASS: no day barrier and no receipt journal.
+ // Detect this dangerous route, DO NOT claim the candidate proves global enforcement.
+ await t.collection("orders").doc("legacy-phase3ae-bypass-105").set({
+   orderType:"delivery",paymentMethod:"cod",paymentStatus:"paid",
+   paymentReceiptSource:"hybrid_cod_cashier_server",status:"delivered",
+   paidAt:Timestamp.fromDate(stampAt),subtotalAmount:500,
+   deliveryFee:10,totalAmount:510,items:[{id:"item",quantity:1}]
+ });
+ await assert.rejects(recheckHybridFrozenDayManifestCandidate({
+   db,tenantId,day,pageSize:1
+ }),/HYBRID_DEMO_DAY_MANIFEST_UNRECONCILED/);
+ const still=await doc.get();
+ assert.equal(still.data().candidateDigest,frozen.candidateDigest,
+   "Frozen candidate must never be rewritten after an unenrolled Admin bypass");
+ assert.equal(still.updateTime.toMillis(),firstSnapshot.updateTime.toMillis());
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+ assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
+});
+
+test("emulator Phase3AE: manifest freeze fails closed for pre-existing paid order without immutable journal", async () => {
+ const {initializeHybridEpochCandidate,initializeHybridDemoDayCutoffCandidate,
+   sealHybridDemoDayCutoffCandidate}=require(
+   "../../functions/hybrid-billing-writer-epoch-candidate.js");
+ const {freezeHybridSealedDayManifestCandidate}=require(
+   "../../functions/hybrid-billing-demo-day-manifest.js");
+ const tenantId="tenant-phase3ae-bypass-106",t=await activate(tenantId);
+ const reviewerUid="super-phase3ae-bypass-106",day="2026-10-20";
+ await db.collection("users").doc(reviewerUid).set({
+  role:"super_admin",active:true,tenantId
+ });
+ await initializeHybridEpochCandidate({db,tenantId,reviewerUid});
+ await initializeHybridDemoDayCutoffCandidate({db,tenantId,reviewerUid,day});
+ await order(t,"legacy-phase3ae-unpaid-journal-106",
+   "2026-10-20T12:00:00Z",1000,{
+     paymentReceiptSource:"hybrid_cod_cashier_server",paymentMethod:"cod"
+   });
+ await sealHybridDemoDayCutoffCandidate({db,tenantId,reviewerUid,day});
+ await assert.rejects(freezeHybridSealedDayManifestCandidate({
+   db,tenantId,day,reviewerUid
+ }),/HYBRID_DEMO_DAY_MANIFEST_UNRECONCILED/);
+ assert.equal((await t.collection("hybridBillingDayManifestCandidates").get()).size,0);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+ assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
+});
