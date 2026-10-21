@@ -346,39 +346,60 @@ exports.reviewTenantHybridPayment = onCall({ region: REGION }, async request => 
   await reconcileTenantAccess(db, ref, tenant);
   return { ok: true, status };
 });
-async function reconcileTenantAccess(db, ref, tenant) {
-  if (tenant.billingPolicyVersion !== "hybrid_v1") {
-    return { action: "none", reason: "not_hybrid" };
-  }
-  if (tenant.hybridBillingLive !== true && tenant.hybridBillingSuspended !== true) {
-    return { action: "none", reason: "not_enabled" };
-  }
-  const snap = await ref.collection(BILLING_COLLECTION).where("status", "==", "issued").limit(200).get();
-  if (snap.size >= 200) return { action: "none", reason: "invoice_scan_limit" };
-  const today = dateKey(new Date());
-  const overdue = tenant.hybridBillingLive === true && snap.docs.some(d =>
-    d.data().suspendFrom <= today
-    && Number(d.data().amount) > 0 && d.data().paymentStatus !== "pending");
-  const changed = overdue ? tenant.hybridBillingSuspended !== true
-    : tenant.hybridBillingSuspended === true;
-  if (!changed) return { action: "none", overdue };
-  // Never suspend or auto-reactivate an independently disabled Tenant.
-  if (overdue && tenant.active === false && tenant.hybridBillingSuspended !== true) {
-    return { action: "none", reason: "independently_disabled" };
-  }
-  const patch = overdue
-    ? { active: false, hybridBillingSuspended: true, hybridBillingWasActive: tenant.active !== false,
-        hybridBillingSuspendedAt: FieldValue.serverTimestamp() }
-    : { active: tenant.hybridBillingWasActive === true, hybridBillingSuspended: false,
-        hybridBillingWasActive: FieldValue.delete(),
-        hybridBillingSuspendedAt: FieldValue.delete() };
-  const batch = db.batch();
-  batch.set(ref, { ...patch, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
-  if (tenant.slug) batch.set(db.collection("tenantSlugs").doc(String(tenant.slug)), {
-    ...patch, updatedAt: FieldValue.serverTimestamp(),
-  }, { merge: true });
-  await batch.commit();
-  return { action: overdue ? "suspended" : "restored", overdue };
+async function reconcileTenantAccess(db, ref, _tenantHint) {
+  // Re-read current Tenant, invoices, and slug *inside the same transaction*.
+  // Callers may hold stale Tenant snapshots after a review or an admin change.
+  return db.runTransaction(async tx => {
+    const tenantSnap = await tx.get(ref);
+    if (!tenantSnap.exists) return { action: "none", reason: "tenant_missing" };
+    const tenant = tenantSnap.data();
+    if (tenant.billingPolicyVersion !== "hybrid_v1") {
+      return { action: "none", reason: "not_hybrid" };
+    }
+    if (tenant.hybridBillingLive !== true && tenant.hybridBillingSuspended !== true) {
+      return { action: "none", reason: "not_enabled" };
+    }
+
+    const invoices = await tx.get(ref.collection(BILLING_COLLECTION)
+      .where("status", "==", "issued").limit(200));
+    if (invoices.size >= 200) return { action: "none", reason: "invoice_scan_limit" };
+
+    const today = dateKey(new Date());
+    // A bank slip awaiting Super Admin approval is NOT a paid invoice.
+    // Only a reviewed/paid invoice can release an existing suspension.
+    const overdue = tenant.hybridBillingLive === true && invoices.docs.some(d =>
+      d.data().suspendFrom <= today && Number(d.data().amount) > 0);
+    const changed = overdue ? tenant.hybridBillingSuspended !== true
+      : tenant.hybridBillingSuspended === true;
+    if (!changed) return { action: "none", overdue };
+
+    // A separately disabled store must never be re-enabled by Hybrid billing.
+    if (overdue && tenant.active === false && tenant.hybridBillingSuspended !== true) {
+      return { action: "none", reason: "independently_disabled" };
+    }
+
+    const slugRef = tenant.slug
+      ? db.collection("tenantSlugs").doc(String(tenant.slug)) : null;
+    const slugSnap = slugRef ? await tx.get(slugRef) : null;
+    if (slugSnap?.exists && slugSnap.data()?.tenantId !== ref.id) {
+      // Never alter a slug belonging to another Tenant or recreate a missing slug.
+      throw new HttpsError("failed-precondition", "HYBRID_TENANT_SLUG_OWNERSHIP_CHANGED");
+    }
+
+    const patch = overdue
+      ? { active: false, hybridBillingSuspended: true,
+          hybridBillingWasActive: tenant.active !== false,
+          hybridBillingSuspendedAt: FieldValue.serverTimestamp() }
+      : { active: tenant.hybridBillingWasActive === true,
+          hybridBillingSuspended: false,
+          hybridBillingWasActive: FieldValue.delete(),
+          hybridBillingSuspendedAt: FieldValue.delete() };
+    tx.set(ref, { ...patch, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+    if (slugSnap?.exists) {
+      tx.update(slugRef, { active: patch.active, updatedAt: FieldValue.serverTimestamp() });
+    }
+    return { action: overdue ? "suspended" : "restored", overdue };
+  });
 }
 exports.reconcileTenantHybridBilling = onCall({ region: REGION }, async request => {
   const { db, ref, tenant } = await viewer(request, { superAdmin: true });
