@@ -232,3 +232,17 @@ test("explicit audit index is limited to Order channel and paid status", () => {
     && index.fields[0]?.fieldPath === "orderType"
     && index.fields[1]?.fieldPath === "paymentStatus"));
 });
+
+test("current Cashier and Slip2Go payment writers produce different paidAt formats (read-only contract)", () => {
+  const cashier = fs.readFileSync("react-app/src/pages/CashierPage.jsx", "utf8");
+  const slip = fs.readFileSync("functions/delivery-slip.js", "utf8");
+  assert.match(cashier, /const now = new Date\(\)\.toISOString\(\)/);
+  assert.match(cashier, /const patch = \{ paymentStatus: "paid", paidAt: now \}/);
+  assert.match(slip, /paymentStatus: "paid", paidAt: FieldValue\.serverTimestamp\(\)/);
+  // This discrepancy is explicitly a production billing BLOCKER, not a reason
+  // to trust browser timestamps or to rewrite payment/Cashier writers in this PR.
+  const { paidDeliverySale } = require("../../functions/hybrid-billing-orders.js");
+  assert.throws(() => paidDeliverySale(paid(900, "2026-10-20T10:00:00Z", {
+    paidAt: "2026-10-20T10:00:00Z",
+  })), /HYBRID_PAID_DELIVERY_MISSING_SERVER_TIMESTAMP/);
+});
