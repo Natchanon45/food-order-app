@@ -41,6 +41,10 @@ jobs:
           npm run test:operational
           npm run test:delivery-slip2go
           npm run test:cashier-receipt-loading
+      - name: Tenant access and callable routing contracts
+        run: |
+          npm run test:tenant-access
+          npm run test:react-callables
       - name: Verify React source compiles (no deploy)
         run: |
           npm ci --ignore-scripts --no-audit --no-fund
