@@ -224,14 +224,15 @@ test("unverifiable or post-activation signup day must not shift billing cycle", 
     createdAt: { toDate: () => new Date("2026-11-16T17:00:00Z") },
   }), tenant), /HYBRID_SIGNUP_REQUEST_DATE_AFTER_ACTIVATION/);
 });
-test("original Cashier, registration, and Firestore indexes are unchanged by minimal PR", () => {
+test("existing Cashier and indexes remain independent of new registered Hybrid billing", () => {
   const fs = require("node:fs");
   const cashier = fs.readFileSync("react-app/src/pages/CashierPage.jsx", "utf8");
   const signup = fs.readFileSync("functions/public-signup.js", "utf8");
   const preview = fs.readFileSync("functions/hybrid-billing-preview.js", "utf8");
   assert.match(cashier, /const patch = \{ paymentStatus: "paid", paidAt: now \}/);
   assert.doesNotMatch(cashier, /cashierPaidAt|hybridCashierPaidAt/);
-  assert.doesNotMatch(signup, /resolveSignupBillingStartDate|hybridBillingStartDate/);
+  assert.match(signup, /hybridBillingStartDate: startDate/);
+  assert.match(signup, /priorSignup\?\.createdAt \|\| now/);
   assert.match(preview, /signupStartDateForPreview/);
 });
 
