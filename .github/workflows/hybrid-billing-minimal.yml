@@ -40,3 +40,23 @@ jobs:
         run: |
           npm ci --ignore-scripts --no-audit --no-fund
           npm run build:react
+
+  firestore-emulator-billing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Functions and Firebase Emulator tooling
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm install --prefix functions --ignore-scripts --no-audit --no-fund
+          npm install --no-save --ignore-scripts --no-audit --no-fund firebase-tools@14
+      - name: Real Firestore emulator financial workflow (no deploy)
+        run: |
+          npx firebase emulators:exec --only firestore --project demo-hybrid-ci "node --test tests/react-parity/hybrid-billing-firestore-emulator.spec.mjs"
