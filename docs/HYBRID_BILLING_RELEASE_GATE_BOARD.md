@@ -33,3 +33,11 @@ All 4 flags remain FALSE: `HYBRID_REGISTRATION_READY`, `HYBRID_COD_CASHIER_CUTOV
 
 ## Recursive handoff
 Before each chat END: update six canonical docs and PR #7, with verified full Worklog blob. Only near current chat quota exhaustion issue a copy-ready new-chat prompt listing Repo/Branch/PR, actual HEAD/latest CODE SHA, independently verified CI IDs/counts, this gate board, done/blocked status, all six docs, restrictions, and next steps. Repeat the instruction in future handoffs.
+
+## W1 batch evidence — 2026-10-21: TenantSlug + Retail POS restore
+
+CODE `5da3e49dbb8233192bff7d187fc5631f9e305b7e` (candidate only). Old `tenant-admin.updateTenant` could mirror `tenantSlugs/{slug}.active` from a stale `Tenant` snapshot, potentially overriding suspension. New `updateTenantMetadataTransaction` reads CURRENT tenant and slug ownership inside one transaction and fails closed on Hybrid/journal-only/suspended/manual-hold activation signals. User/membership query is still read outside transaction (not source-complete). Name/settings edits remain permitted, while existing Tenant.active bit remains unchanged.
+
+Old `retail-pos-backup.restoreRetailPosBackup` used multiple unguarded Admin SDK batches to delete/restore POS collections, including sales, returns, invoices, ledger and counters. It now validates settings before any delete, preflights trusted tenant policy and wraps **each** destructive 200-document chunk and settings write in a transaction that re-reads the Tenant marker. Any Hybrid policy/enabled/journal-mode/coverage signal is denied. Legacy can still restore. **This does not make multi-batch Legacy restore atomic**; a rollback/recovery plan for interrupted Restore remains necessary for W1.
+
+Real isolated Emulator regression cases added for Hybrid/journal-only POS destructive denial and suspended Hybrid slug reactivation refusal; source contracts assert transaction route and no raw batch. Source SHA audit re-pinned, still 12 reviewed modules. Initial Code Push `39611229914` and PR `39611238879` require independent final job verification. All SIX release gates remain **BLOCKED** and the same two original Emulator TODO stay OPEN. Four Release Flags FALSE. No live money writes, deploy, Finance exports or PR merge.
