@@ -434,5 +434,13 @@ async function reserveHybridSlipCredit(db, tenantRef, tenant, orderId) {
   });
 }
 exports.reserveHybridSlipCredit = reserveHybridSlipCredit;
+exports.getTenantHybridSlipUsage = onCall({ region: REGION }, async request => {
+  const { db, ref, tenant } = await viewer(request);
+  const signupDate = await signupStartDateForPreview(db, tenant);
+  const cycle = billingCycle(signupDate, dateKey(new Date()));
+  const usage = await ref.collection("hybridSlipUsage").doc(cycle.id).get();
+  return { ok: true, cycleId: cycle.id,
+    used: Number(usage.data()?.count || 0) };
+});
 
 exports._test = { eligibleForIssuance, stateForInvoice, safeInvoiceSummary, normalizedDestination, sameBillingPrices, issueForTenant, reconcileTenantAccess };
