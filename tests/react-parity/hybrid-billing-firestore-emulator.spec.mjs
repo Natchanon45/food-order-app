@@ -312,3 +312,20 @@ test("disabling Hybrid collection restores only Hybrid suspension without erasin
   assert.equal(stored.active, true);
   assert.equal((await invoiceRef(ref).get()).data().status, "issued");
 });
+
+test("Tenant billing callable rejects cross-shop invoice history access", async () => {
+  const own = await fixture();
+  const other = await fixture();
+  const uid = "cross-tenant-" + randomUUID();
+  await db.collection("users").doc(uid).set({
+    role: "owner", active: true, tenantId: own.tenant.id,
+  });
+  const { getTenantHybridInvoices } = require("./hybrid-billing-ledger.js");
+  const permitted = await getTenantHybridInvoices.run({
+    auth: { uid }, data: {},
+  });
+  assert.deepEqual(permitted.items, []);
+  await assert.rejects(getTenantHybridInvoices.run({
+    auth: { uid }, data: { tenantId: other.tenant.id },
+  }), /CROSS_TENANT_DENIED/);
+});
