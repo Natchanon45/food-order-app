@@ -314,7 +314,10 @@ service cloud.firestore {
       // Temporary Hybrid authorization short path. The legacy matcher
       // remains untouched in the false branch of each conditional policy.
       function isHybridTenant() {
-        return get(/databases/$(database)/documents/tenants/$(tenantId)).data.get('billingPolicyVersion', 'legacy') == 'hybrid_v1';
+        let t = get(/databases/$(database)/documents/tenants/$(tenantId)).data;
+        // Partial migration must fail closed for Client SDK finance writes.
+        return t.get('billingPolicyVersion', 'legacy') == 'hybrid_v1'
+          || t.get('hybridBillingEnabled', false) == true;
       }
       function fastHybridStaff() {
         return signedIn()
@@ -330,7 +333,8 @@ service cloud.firestore {
       }
       function hybridOperationalWriteAllowed() {
         let t = get(/databases/$(database)/documents/tenants/$(tenantId)).data;
-        return t.get('billingPolicyVersion', 'legacy') != 'hybrid_v1'
+        return (t.get('billingPolicyVersion', 'legacy') != 'hybrid_v1'
+            && t.get('hybridBillingEnabled', false) != true)
           || (t.get('hybridBillingSuspended', false) != true
             && t.get('active', true) != false);
       }
@@ -339,7 +343,8 @@ service cloud.firestore {
       // Admin SDK trusted payment callable intentionally bypasses client Rules.
       function hybridDeliveryReceiptFieldsUnchanged() {
         let t = get(/databases/$(database)/documents/tenants/$(tenantId)).data;
-        return t.get('billingPolicyVersion', 'legacy') != 'hybrid_v1'
+        return (t.get('billingPolicyVersion', 'legacy') != 'hybrid_v1'
+            && t.get('hybridBillingEnabled', false) != true)
           || resource.data.get('orderType', '') != 'delivery'
           || !request.resource.data.diff(resource.data).affectedKeys().hasAny([
             'paymentStatus', 'paidAt', 'paymentMethod',
