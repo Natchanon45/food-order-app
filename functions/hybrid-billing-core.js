@@ -108,4 +108,104 @@ function overdueInvoices({ invoices = [], paidIds = [], onDate }) {
   return invoices.filter(invoice => Number(invoice.amount) > 0
     && invoice.suspendFrom <= day && !paid.has(invoice.id));
 }
-module.exports = { DEFAULT_SETTINGS, normalizeSettings, calculateMonth, overdueInvoices, dateKey, validDate };
+
+function prevDate(s) {
+  return new Date(Date.parse(validDate(s) + "T00:00:00Z") - 86400000).toISOString().slice(0, 10);
+}
+
+// The signup date is the anchor, including shorter/leap months (31 Jan -> 28 Feb -> 31 Mar).
+function anchorAtMonth(signupDate, monthsAfter) {
+  const [year, month, day] = validDate(signupDate).split("-").map(Number);
+  if (!Number.isSafeInteger(monthsAfter) || monthsAfter < 0 || monthsAfter > 1200) {
+    throw new RangeError("Invalid billing cycle offset");
+  }
+  const ym = new Date(Date.UTC(year, month - 1 + monthsAfter, 1));
+  const y = ym.getUTCFullYear(), m = ym.getUTCMonth() + 1;
+  const finalDay = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  return `${y}-${String(m).padStart(2, "0")}-${String(Math.min(day, finalDay)).padStart(2, "0")}`;
+}
+function billingCycle(signupDate, onDate) {
+  validDate(signupDate);
+  validDate(onDate);
+  if (onDate < signupDate) throw new RangeError("Billing date precedes signup");
+  const [y, m] = onDate.split("-").map(Number);
+  const [sy, sm] = signupDate.split("-").map(Number);
+  let offset = (y - sy) * 12 + m - sm;
+  if (anchorAtMonth(signupDate, offset) > onDate) offset--;
+  const startDate = anchorAtMonth(signupDate, offset);
+  const endDate = anchorAtMonth(signupDate, offset + 1);
+  return Object.freeze({
+    id: startDate, startDate, endDate, lastDate: prevDate(endDate),
+    firstCycle: offset === 0,
+  });
+}
+function billingCycleById(signupDate, cycleId) {
+  const cycle = billingCycle(signupDate, validDate(cycleId));
+  if (cycle.id !== cycleId) throw new RangeError("Invalid billing cycle ID");
+  return cycle;
+}
+function cycleWindow(cycle) {
+  return {
+    start: new Date(`${validDate(cycle.startDate)}T00:00:00+07:00`),
+    end: new Date(`${validDate(cycle.endDate)}T00:00:00+07:00`),
+  };
+}
+
+// Prospective anniversary-cycle projection, separate from legacy calendar-month test helpers.
+// Does not issue invoices, suspend Tenants or collect money.
+function calculateCycle({ signupDate, cycleId, dailyDeliverySales = [], settings = {} }) {
+  const cycle = billingCycleById(signupDate, cycleId);
+  if (!Array.isArray(dailyDeliverySales)) throw new TypeError("Invalid dailyDeliverySales");
+  const config = normalizeSettings(settings), sales = new Map();
+  for (const item of dailyDeliverySales) {
+    const day = validDate(item?.date);
+    if (day < cycle.startDate || day >= cycle.endDate) throw new RangeError("Daily sale outside cycle");
+    const amount = validateMoney(item?.amount, "dailyDeliverySales.amount");
+    sales.set(day, (sales.get(day) || 0) + Math.round(amount * 100));
+  }
+  let totalSales = 0, shareTotal = 0, triggerDate = null;
+  const threshold = Math.round(config.deliveryThreshold * 100), invoices = [], days = [];
+  for (const [day, cents] of [...sales.entries()].sort((a,b) => a[0].localeCompare(b[0]))) {
+    totalSales += cents;
+    let base = 0, kind = null;
+    if (!triggerDate && totalSales >= threshold) {
+      triggerDate = day;
+      base = cents; // Only goods paid on the threshold DAY; never rebill previous days.
+      kind = "delivery_threshold";
+    } else if (triggerDate && day !== triggerDate && cents > 0) {
+      base = cents;
+      kind = "delivery_daily";
+    }
+    const charged = Math.round(base * config.deliveryShareRate / 100);
+    shareTotal += charged;
+    if (kind && charged > 0) invoices.push({
+      id: kind === "delivery_threshold" ? `${cycle.id}:delivery:trigger` : `${cycle.id}:delivery:${day}`,
+      kind, date: day, dueDate: day, suspendFrom: nextDate(day),
+      calculationBase: base / 100, amount: charged / 100,
+    });
+    days.push({ date: day, deliverySales: cents / 100,
+      cumulativeDeliverySales: totalSales / 100, billed: charged / 100,
+      triggered: triggerDate === day });
+  }
+  const mode = triggerDate ? "delivery_share" : cycle.firstCycle ? "trial_free" : "fixed_monthly";
+  const fixedFee = mode === "fixed_monthly" ? config.monthlyFee : 0;
+  if (fixedFee > 0) invoices.push({
+    id: `${cycle.id}:monthly:fixed`, kind: "fixed_monthly",
+    date: cycle.lastDate, dueDate: cycle.lastDate, suspendFrom: cycle.endDate,
+    calculationBase: fixedFee, amount: fixedFee, issueAtCycleClose: true,
+  });
+  const deliveryShareFee = roundSatang(shareTotal / 100);
+  return {
+    cycleId: cycle.id, cycleStart: cycle.startDate, cycleEnd: cycle.endDate,
+    cycleLastDate: cycle.lastDate, firstCycle: cycle.firstCycle, mode, triggerDate,
+    totalDeliverySales: totalSales / 100, fixedFee, deliveryShareFee,
+    totalFee: roundSatang(fixedFee + deliveryShareFee),
+    slipUnlimited: Boolean(triggerDate), slipQuota: triggerDate ? null : config.monthlySlipQuota,
+    invoices, days, config,
+  };
+}
+
+module.exports = { DEFAULT_SETTINGS, normalizeSettings, calculateMonth, calculateCycle,
+  billingCycle, billingCycleById, anchorAtMonth, cycleWindow,
+  overdueInvoices, dateKey, validDate };
+

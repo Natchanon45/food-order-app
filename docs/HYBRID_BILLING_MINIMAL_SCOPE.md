@@ -19,13 +19,13 @@ The change is the **platform fee charged to a Tenant based solely on paid Delive
 
 ## Non-goals and outstanding verification
 - No modification to retail POS, table/takeaway, cashier, Lalamove, Firebase Rules, live payments, tenant memberships, registration flags, or production deployment.
-- Source read currently uses a bounded `paidAt` range; older records lacking canonical Firestore `paidAt` may be **missing from the estimate**. This requires separate read-only completeness verification before charging tenants. Do NOT enable invoice or suspension from this preview.
+- The read-only preview now scans at most 3,000 Delivery Order records to detect paid entries with missing or noncanonical `paidAt` before calculating. It fails closed on anomalies or if scan exceeds the cap (no silent undercount); this scan is not a transactionally consistent snapshot or all-writer certification. Large shops need a separately designed efficient completeness mechanism before real fee issuance. No data migration, invoice or suspension is enabled.
 - `calculateMonth` now charges 5% only on paid Delivery goods of the trigger calendar DAY, consistent with the later Hybrid prototype. Confirm this business policy before billing real tenants.
-- Billing anniversary period vs calendar month, threshold-day calculation base, refunds/adjustments, payment confirmation and actual charge workflow require business sign-off. These do **not** justify rewriting the operational payment writers.
+- Anniversary billing has been added to the **new read-only preview path** using immutable server Tenant.createdAt (or existing hybridBillingStartDate) and Bangkok date boundaries; the original calendar-month helper remains for old compatibility tests, not invoice issuance. Fee policy, refunds/adjustments, actual charge workflow and payment confirmation still require sign-off. These do **not** justify rewriting the operational payment writers.
 - All four readiness flags remain false. No real tenant fee issuance, automatic suspension, merge or Firebase deploy.
 
 ## Test plan and acceptance
-- Run Node pure unit tests for Hybrid and Delivery-only adapter; run existing preview/role tests with Firebase dependencies before UAT.
+- Run Node pure unit tests for Hybrid and anniversary Delivery-only adapter; run existing preview/role and bounded completeness-audit tests with Firebase dependencies before UAT.
 - Verify tenanted Owner/Super Admin read-only previews against a sample of actual stored Delivery orders, without modifying data.
 - Preserve all existing workflows; only after sample totals match and fee rules are approved, introduce a small separately reviewed tenant-fee record/payment flow reusing the legacy platform billing controls.
 

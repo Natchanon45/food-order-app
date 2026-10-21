@@ -40,7 +40,10 @@ test("hybrid report is routed, localized and uses backend preview, never payment
   assert.match(app, /path="\/reports\/hybrid-billing"/);
   assert.match(app, /hybridSuspended/);
   assert.match(home, /tenant\?\.billingPolicyVersion === "hybrid_v1"/);
-  assert.match(page, /getHybridBillingPreview\(month\)/);
+  assert.match(page, /getHybridBillingPreview\(onDate\)/);
+  assert.match(page, /type="date"/);
+  assert.match(page, /data\.cycleStart/);
+  assert.match(data, /\{ onDate \}/);
   assert.match(page, /preview_only/);
   assert.doesNotMatch(page, /submitPayment|uploadBytes|confirmPayment/);
   assert.match(data, /getTenantHybridBillingPreview/);

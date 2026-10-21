@@ -1,6 +1,6 @@
 "use strict";
 
-const { dateKey } = require("./hybrid-billing-core");
+const { dateKey, validDate } = require("./hybrid-billing-core");
 
 const CANCELED = new Set(["cancelled", "canceled", "voided", "deleted", "refunded"]);
 const toCents = value => {
@@ -61,4 +61,20 @@ function paidDeliveryByDay(orders, month) {
   return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]))
     .map(([date, cents]) => ({ date, amount: cents / 100 }));
 }
-module.exports = { paidDeliverySale, paidDeliveryByDay };
+
+function paidDeliveryByWindow(orders, startDate, endDate) {
+  if (!Array.isArray(orders) || validDate(startDate) >= validDate(endDate)) {
+    throw new TypeError("Invalid paid Delivery window");
+  }
+  const sales = new Map();
+  for (const order of orders) {
+    const sale = paidDeliverySale(order);
+    if (!sale || sale.date < startDate || sale.date >= endDate) continue;
+    sales.set(sale.date, (sales.get(sale.date) || 0) + Math.round(sale.amount * 100));
+  }
+  return [...sales.entries()].sort((a,b) => a[0].localeCompare(b[0]))
+    .map(([date, cents]) => ({ date, amount: cents / 100 }));
+}
+
+module.exports = { paidDeliverySale, paidDeliveryByDay, paidDeliveryByWindow };
+

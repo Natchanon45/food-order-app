@@ -2,8 +2,8 @@
 
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { getFirestore, Timestamp } = require("firebase-admin/firestore");
-const { dateKey, normalizeSettings } = require("./hybrid-billing-core");
-const { previewDeliveryOnlyMonth } = require("./hybrid-billing-delivery-only");
+const { dateKey, validDate, normalizeSettings, billingCycle, cycleWindow } = require("./hybrid-billing-core");
+const { previewDeliveryOnlyMonth, previewDeliveryOnlyCycle } = require("./hybrid-billing-delivery-only");
 const { loadHybridBillingSettings } = require("./hybrid-billing-settings");
 
 const REGION = "asia-southeast1";
@@ -96,18 +96,102 @@ async function previewHybridMonth(tenantRef, tenant, month, db) {
   };
 }
 
+
+function resolveHybridStartDate(tenant = {}) {
+  if (tenant.hybridBillingStartDate) return validDate(tenant.hybridBillingStartDate);
+  // Existing signup already sets a trusted server Timestamp on the Tenant;
+  // derive the anniversary from it without modifying signup or historical data.
+  const created = tenant.createdAt?.toDate?.();
+  if (!(created instanceof Date) || !Number.isFinite(created.getTime())) {
+    throw new Error("HYBRID_BILLING_START_DATE_UNVERIFIED");
+  }
+  return dateKey(created);
+}
+
+// Bounded, read-only audit to detect paid Delivery documents excluded by a
+// Firestore paidAt Timestamp range (e.g. legacy ISO strings or missing paidAt).
+// This is an anomaly check, NOT a transactionally consistent certification.
+async function auditPaidDeliveryCoverage(tenantRef, { maxDocs = 3000 } = {}) {
+  if (!Number.isSafeInteger(maxDocs) || maxDocs < 1 || maxDocs > 3000) {
+    throw new RangeError("Invalid coverage audit limit");
+  }
+  let scanned = 0, paidDeliveryCount = 0, cursor = null;
+  for (;;) {
+    const pageSize = Math.min(PAGE_LIMIT, maxDocs + 1 - scanned);
+    let query = tenantRef.collection("orders").where("orderType", "==", "delivery")
+      .orderBy("__name__").limit(pageSize);
+    if (cursor) query = query.startAfter(cursor);
+    const snap = await query.get();
+    if (!snap || !Array.isArray(snap.docs) || snap.size !== snap.docs.length
+      || snap.size > pageSize) throw new Error("HYBRID_DELIVERY_COVERAGE_SCAN_INCOMPLETE");
+    scanned += snap.size;
+    if (scanned > maxDocs) throw new Error("HYBRID_DELIVERY_COVERAGE_SCAN_LIMIT");
+    for (const doc of snap.docs) {
+      const order = doc.data();
+      if (String(order.paymentStatus || "").toLowerCase() !== "paid") continue;
+      const status = String(order.status || "").toLowerCase();
+      if (["cancelled", "canceled", "voided", "deleted", "refunded"].includes(status)) continue;
+      paidDeliveryCount++;
+      const paidAt = order.paidAt?.toDate?.();
+      if (!(paidAt instanceof Date) || !Number.isFinite(paidAt.getTime())) {
+        throw new Error("HYBRID_PAID_DELIVERY_NONCANONICAL_TIMESTAMP");
+      }
+    }
+    if (snap.size < pageSize) break;
+    if (!snap.docs.length) throw new Error("HYBRID_DELIVERY_COVERAGE_SCAN_STALLED");
+    cursor = snap.docs.at(-1);
+  }
+  return { scanned, paidDeliveryCount, coverageCertified: false };
+}
+
+async function previewHybridCycle(tenantRef, tenant, onDate, db) {
+  const signupDate = resolveHybridStartDate(tenant);
+  const cycle = billingCycle(signupDate, onDate);
+  const { start, end } = cycleWindow(cycle);
+  // Fail closed rather than showing a plausible partial number when legacy
+  // paid Delivery records lack canonical timestamps.
+  const audit = await auditPaidDeliveryCoverage(tenantRef);
+  const snapshot = await tenantRef.collection("hybridBillingPeriods").doc(cycle.id).get();
+  const locked = snapshot.exists && snapshot.data()?.configSnapshot;
+  const config = normalizeSettings(locked
+    ? snapshot.data().configSnapshot
+    : cycle.firstCycle && tenant.hybridBillingSnapshot
+      ? tenant.hybridBillingSnapshot
+      : await loadHybridBillingSettings(db));
+  const orders = await paidOrdersInWindow(tenantRef, start, end);
+  const result = previewDeliveryOnlyCycle({
+    orders, signupDate, cycleId: cycle.id, settings: config,
+  });
+  const now = new Date(), ended = now >= end, today = dateKey(now);
+  return {
+    ...result, tenantId: tenantRef.id, orderCountRead: orders.length,
+    paidDeliveryAuditCount: audit.paidDeliveryCount,
+    priceLocked: Boolean(locked), source: locked ? "billing_snapshot" : "prospective_estimate",
+    coverageCertified: false, canIssueInvoice: false, periodEnded: ended,
+    projectedFixedFee: !ended && result.mode === "fixed_monthly" ? result.fixedFee : 0,
+    payableInvoices: result.invoices.filter(row =>
+      row.issueAtCycleClose ? ended : row.date < today),
+  };
+}
+
 exports.getTenantHybridBillingPreview = onCall({ region: REGION, timeoutSeconds: 60 }, async request => {
   const db = getFirestore();
   const { tenantRef, tenant } = await assertViewer(request, db);
-  const month = String(request.data?.month || dateKey(new Date()).slice(0, 7));
-  const todayMonth = dateKey(new Date()).slice(0, 7);
-  // Prevent high-volume unrestricted historical order scans through callable requests.
-  const minMonth = String(tenant.hybridTrialMonth || "");
-  if (!minMonth || month < minMonth || month > todayMonth) {
-    throw new HttpsError("invalid-argument", "Month outside tenant billing history");
+  const onDate = String(request.data?.onDate || dateKey(new Date()));
+  try {
+    validDate(onDate);
+    const today = dateKey(new Date());
+    if (onDate < resolveHybridStartDate(tenant) || onDate > today) {
+      throw new RangeError("Date outside Tenant billing history");
+    }
+    const result = await previewHybridCycle(tenantRef, tenant, onDate, db);
+    return { ok: true, ...result };
+  } catch (error) {
+    if (error instanceof RangeError) {
+      throw new HttpsError("invalid-argument", String(error.message));
+    }
+    throw error;
   }
-  const result = await previewHybridMonth(tenantRef, tenant, month, db);
-  return { ok: true, ...result };
 });
 
 // For tests and a future server-only invoicing/suspension reconciler.
@@ -115,3 +199,6 @@ exports.getTenantHybridBillingPreview = onCall({ region: REGION, timeoutSeconds:
 exports.monthWindow = monthWindow;
 exports.paidOrdersInWindow = paidOrdersInWindow;
 exports.previewHybridMonth = previewHybridMonth;
+exports.previewHybridCycle = previewHybridCycle;
+exports.resolveHybridStartDate = resolveHybridStartDate;
+exports.auditPaidDeliveryCoverage = auditPaidDeliveryCoverage;
