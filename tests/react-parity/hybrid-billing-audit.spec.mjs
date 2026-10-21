@@ -232,7 +232,7 @@ test("existing Cashier and indexes remain independent of new registered Hybrid b
   assert.match(cashier, /const patch = \{ paymentStatus: "paid", paidAt: now \}/);
   assert.doesNotMatch(cashier, /cashierPaidAt|hybridCashierPaidAt/);
   assert.match(signup, /hybridBillingStartDate: startDate/);
-  assert.match(signup, /priorSignup\?\.createdAt \|\| now/);
+  assert.match(signup, /firstRequestAt = priorSignup\?\.createdAt \|\| Timestamp\.now\(\)/);
   assert.match(preview, /signupStartDateForPreview/);
 });
 
