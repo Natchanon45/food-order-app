@@ -126,3 +126,27 @@ test("Phase3AG orchestration rejects unknown client input and requires server-ow
  const index=readFileSync("functions/index.js","utf8");
  assert.doesNotMatch(index,/hybrid-billing-lalamove-batch-preview|previewHybridLalamoveCodBatch/);
 });
+
+test("Phase3AG demo batch reservation is unexported, gated to local emulator and cannot certify",async()=>{
+ const {reserveHybridDemoCodBatchCandidate}=require(
+   "../../functions/hybrid-billing-demo-batch-reservation.js");
+ const prior={g:process.env.GCLOUD_PROJECT,h:process.env.FIRESTORE_EMULATOR_HOST};
+ try{
+  process.env.GCLOUD_PROJECT="live-prod-project";
+  process.env.FIRESTORE_EMULATOR_HOST="127.0.0.1:8187";
+  await assert.rejects(reserveHybridDemoCodBatchCandidate({
+   db:{},tenantId,batchId,orderIds:[id1,id2],reviewerUid:"super-phase3ag-110"
+  }),/HYBRID_EPOCH_DEMO_EMULATOR_ONLY/);
+ }finally{
+  if(prior.g===undefined)delete process.env.GCLOUD_PROJECT;
+  else process.env.GCLOUD_PROJECT=prior.g;
+  if(prior.h===undefined)delete process.env.FIRESTORE_EMULATOR_HOST;
+  else process.env.FIRESTORE_EMULATOR_HOST=prior.h;
+ }
+ const index=readFileSync("functions/index.js","utf8");
+ assert.doesNotMatch(index,/hybrid-billing-demo-batch-reservation|reserveHybridDemoCodBatchCandidate/);
+ const src=readFileSync("functions/hybrid-billing-demo-batch-reservation.js","utf8");
+ assert.match(src,/sourceAttested:false,bankCreditVerified:false/);
+ assert.match(src,/settlementPosted:false,paidOrdersChanged:false/);
+ assert.match(src,/canMarkPaid:false,canIssueInvoice:false,coverageCertified:false/);
+});
