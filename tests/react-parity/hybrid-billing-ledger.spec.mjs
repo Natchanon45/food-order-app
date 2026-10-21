@@ -37,7 +37,9 @@ test("issuance locks cycle price, never overwrites an invoice and detects change
   assert.match(source, /configSnapshot: estimate\.config/);
   assert.match(source, /HYBRID_CYCLE_PRICING_CHANGED_RETRY/);
   assert.match(source, /HYBRID_ISSUED_INVOICE_RECONCILIATION_REQUIRED/);
-  assert.match(source, /await invoiceRef\.create\(payload\)/);
+  assert.match(source, /tx\.create\(invoiceRef, payload\)/);
+  assert.match(source, /tx\.create\(periodRef/);
+  assert.match(source, /HYBRID_BILLING_NOT_LIVE_AT_ISSUANCE/);
   assert.doesNotMatch(source, /invoiceRef\.set\(payload/);
 });
 test("payer slip is isolated by Tenant/invoice/payment and cannot be rewritten", () => {
