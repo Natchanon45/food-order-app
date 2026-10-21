@@ -1,0 +1,17 @@
+# Phase3AJ — Suspended Hybrid Demo Gateway and Legacy paidAt Quarantine
+
+Date: 2026-10-21 Asia/Bangkok. Scope: UNEXPORTED, SOURCE-ONLY, isolated synthetic Firestore Emulator plus CI. Never a finance release, production claim, settlement or migration.
+
+## Suspension proof resolver preflight
+A suspended tenant's demo financial proof lookups should not even call injected test-double bank/refund resolver callbacks. `functions/hybrid-billing-demo-gateway-preflight.js` requires exact `demo-penguin-hybrid-uat` project and loopback Firestore Emulator, active `hybrid_v1` tenant, enabled Hybrid, not suspended, nonretail and valid active actor role/tenant scope. `functions/hybrid-billing-demo-enforced-writer.js` calls this before one of four explicitly allowed paths. It is NOT a source-complete production guard; unexported candidate writers can still be called directly in the local test runtime. Because it is a non-atomic pre-read, a tenant can suspend between preflight and proof lookup. Existing financial transactions still re-read the tenant and reject if suspended; new Emulator tests explicitly simulate the race. No payment, refund, invoice or journal commit is performed for rejected cases.
+
+## Noncanonical paidAt quarantine
+`functions/hybrid-billing-demo-paidat-quarantine.js` offers a strictly READ-ONLY, active Super Admin-only, bounded paginated scan of already Paid Delivery Orders. Results distinguish canonical Firestore Timestamp (timestamp representation only, NOT source-attested), legacy ISO string, missing and invalid paidAt. It returns stable sorted exception IDs and a digest of the scanned advisory report. A subsequent page may change independently; this is NOT an immutable snapshot, not a migration plan approved for execution, and never converts ISO strings, rewrites historical records or unblocks invoices. The scan fails closed over `maxRows` rather than claiming complete coverage.
+
+## Tests
+5 pure regression tests `tests/react-parity/hybrid-billing-phase3aj-suspension-paidat.spec.mjs` validate string/missing/date classification, no mutation, invalid bounds, demo-only preflight, and unexported production boundary. 3 genuine Firestore Emulator tests appended: four suspended demo routes cannot invoke provider/bank fixture callbacks and create no money records; tenant suspended during proof resolver still rejected by transactional backend guard; existing mixed legacy string/missing/canonical paidAt records are quarantined untouched and maxRows overflow fails closed. Candidate production `functions/index.js` is unchanged.
+
+Code SHA `f4e63f9495b685ab15ab751921f77b81e9abb802`; Push [39568393391](https://github.com/Natchanon45/food-order-app/actions/runs/39568393391) and PR [39568398797](https://github.com/Natchanon45/food-order-app/actions/runs/39568398797) PENDING at initial documentation. Verify and append separately.
+
+## Release BLOCKED
+Original `test.todo` statements remain in `tests/react-parity/hybrid-billing-firestore-emulator.spec.mjs`: untrusted cashier non-PromptPay paidAt remains uncanonicalized at trusted source; suspended Hybrid client write denial must be proved across actual Rules and every server route. Do not promote a demo preflight or quarantine report to close either. Real provider PAID_OUT and bank/Wallet POSTED, SOURCE-COMPLETE writer routing, correct Thai financial day, AR/VAT adjustments, legal/finance approvals, actual App Check staging and performance signoff remain blocked. Four flags FALSE and NO deploy/merge/real money writes.
