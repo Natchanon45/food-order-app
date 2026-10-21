@@ -2670,3 +2670,101 @@ test("emulator Phase3AH: global provider-order claim prevents replay across Hybr
  assert.equal((await first.tenantRef.collection("hybridBillingInvoices").get()).size,0);
  assert.equal((await second.tenantRef.collection("hybridBillingInvoices").get()).size,0);
 });
+
+
+test("emulator Phase3AJ: suspended Hybrid tenant cannot reach any of four demo financial proof adapters",async()=>{
+ const {executeHybridDemoEnforcedWriter}=require("../../functions/hybrid-billing-demo-enforced-writer.js");
+ const id="tenant-phase3aj-suspend-112",t=await activate(id,{
+  active:false,hybridBillingSuspended:true});
+ const uid="super-phase3aj-suspend-112",oid="order-phase3aj-suspend-112";
+ await db.collection("users").doc(uid).set({role:"super_admin",active:true,tenantId:id});
+ await t.collection("orders").doc(oid).set({
+  orderType:"delivery",paymentMethod:"cod",paymentStatus:"unpaid",
+  status:"delivered",totalAmount:1010,subtotalAmount:1000,deliveryFee:10,
+  items:[{id:"x",quantity:1}]});
+ let bankCalls=0,refundCalls=0;
+ for(const sourceKey of ["cod_cashier","promptpay_bank","refund_initial","refund_partial"]){
+  const args={db,tenantId:id,orderId:oid,reviewerUid:uid,actorUid:uid,
+   resolveIndependentBankPayment:async()=>{bankCalls++;throw Error("SHOULD_NOT_CALL_BANK");},
+   resolveIndependentRefund:async()=>{refundCalls++;throw Error("SHOULD_NOT_CALL_REFUND");}};
+  await assert.rejects(executeHybridDemoEnforcedWriter({sourceKey,args}),
+   /HYBRID_DEMO_GATEWAY_TENANT_SUSPENDED_OR_INELIGIBLE/);
+ }
+ assert.equal(bankCalls,0);
+ assert.equal(refundCalls,0);
+ assert.equal((await t.collection("orders").doc(oid).get()).data().paymentStatus,"unpaid");
+ assert.equal((await t.collection("hybridBillingReceiptEvents").get()).size,0);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+ assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
+});
+test("emulator Phase3AJ: preflight is not transactional; mid-proof suspension still aborts at financial TX",async()=>{
+ const {executeHybridDemoEnforcedWriter}=require("../../functions/hybrid-billing-demo-enforced-writer.js");
+ const id="tenant-phase3aj-race-113",t=await activate(id);
+ const uid="super-phase3aj-race-113",oid="order-phase3aj-race-113";
+ await db.collection("users").doc(uid).set({role:"super_admin",active:true});
+ await t.collection("orders").doc(oid).set({
+  orderType:"delivery",paymentMethod:"promptpay",paymentStatus:"unpaid",
+  status:"delivered",totalAmount:1010,subtotalAmount:1000,deliveryFee:10,
+  items:[{id:"x",quantity:1}]});
+ let proofCalls=0;
+ const at=new Date("2026-10-20T12:30:00Z");
+ await assert.rejects(executeHybridDemoEnforcedWriter({
+  sourceKey:"promptpay_bank",args:{db,tenantId:id,orderId:oid,reviewerUid:uid,
+   now:new Date("2026-10-21T03:00:00Z"),
+   resolveIndependentBankPayment:async()=>{
+    proofCalls++;
+    await t.update({active:false,hybridBillingSuspended:true});
+    return {verified:true,source:"independent_bank_record",tenantId:id,orderId:oid,
+     currency:"THB",recipientConfirmed:true,platformBankAccountVerified:true,
+     reference:"BANK-PHASE3AJ-RACE-113",evidenceSha256:"c".repeat(64),
+     grossAmountCents:101000,paidAt:at,
+     checkedAt:new Date("2026-10-21T02:59:00Z")};
+   }}
+ }),/HYBRID_PROMPTPAY_TENANT_NOT_ACTIVE/);
+ assert.equal(proofCalls,1);
+ const o=(await t.collection("orders").doc(oid).get()).data();
+ assert.equal(o.paymentStatus,"unpaid");
+ assert.equal(o.paidAt,undefined);
+ assert.equal((await t.collection("hybridBillingReceiptEvents").get()).size,0);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+ assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
+});
+test("emulator Phase3AJ: readonly paidAt quarantine identifies untrusted string/missing timestamps without rewriting orders",async()=>{
+ const {previewHybridLegacyPaidAtQuarantineCandidate}=require(
+  "../../functions/hybrid-billing-demo-paidat-quarantine.js");
+ const id="tenant-phase3aj-quarantine-114",t=await activate(id);
+ const uid="super-phase3aj-quarantine-114";
+ await db.collection("users").doc(uid).set({role:"super_admin",active:true});
+ const items=[
+  ["legacy-iso", "2026-10-20T16:00:00Z"],
+  ["legacy-missing", undefined],
+  ["canonical",Timestamp.fromDate(new Date("2026-10-20T12:00:00Z"))]
+ ];
+ for(const [oid,paidAt] of items){
+  await t.collection("orders").doc(oid).set({
+   orderType:"delivery",paymentStatus:"paid",status:"delivered",
+   subtotalAmount:100,deliveryFee:10,totalAmount:110,
+   ...(paidAt===undefined?{}:{paidAt})
+  });
+ }
+ const report=await previewHybridLegacyPaidAtQuarantineCandidate({
+  db,tenantId:id,reviewerUid:uid,pageSize:1,maxRows:3
+ });
+ assert.equal(report.scanned,3);
+ assert.equal(report.quarantineRequired,true);
+ assert.deepEqual(report.exceptions,[
+  {orderId:"legacy-iso",reason:"legacy_string_requires_independent_review"},
+  {orderId:"legacy-missing",reason:"missing_timestamp_requires_independent_review"}
+ ]);
+ assert.equal(report.historicalPaymentsRepaired,false);
+ assert.equal(report.canIssueInvoice,false);
+ assert.equal(report.coverageCertified,false);
+ assert.equal((await t.collection("orders").doc("legacy-iso").get()).data().paidAt,
+  "2026-10-20T16:00:00Z");
+ assert.equal((await t.collection("orders").doc("legacy-missing").get()).data().paidAt,
+  undefined);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+ await assert.rejects(previewHybridLegacyPaidAtQuarantineCandidate({
+  db,tenantId:id,reviewerUid:uid,maxRows:2,pageSize:1
+ }),/HYBRID_PAIDAT_QUARANTINE_LIMIT/);
+});
