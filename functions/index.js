@@ -269,6 +269,7 @@ exports.submitTenantHybridPayment = hybridLedger.submitTenantHybridPayment;
 exports.reviewTenantHybridPayment = hybridLedger.reviewTenantHybridPayment;
 exports.reconcileTenantHybridBilling = hybridLedger.reconcileTenantHybridBilling;
 exports.processHybridBillingDaily = hybridLedger.processHybridBillingDaily;
+exports.getTenantHybridSlipUsage = hybridLedger.getTenantHybridSlipUsage;
 
 
 const subscriptionPricing = require("./subscription-pricing");
