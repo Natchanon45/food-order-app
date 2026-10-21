@@ -1,6 +1,7 @@
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
-const { updateTenantMetadataTransaction } = require("./hybrid-billing-tenant-admin-guard");
+const { updateTenantMetadataTransaction,
+  createLegacyTenantOwnerTransaction } = require("./hybrid-billing-tenant-admin-guard");
 const { legacyDeliveryPaidWriterAllowed } = require("./hybrid-billing-legacy-payment-guard");
 const { getAuth } = require("firebase-admin/auth");
 const { randomUUID } = require("crypto");
@@ -147,68 +148,54 @@ exports.createTenantOwner = onCall(
 
     const db = getFirestore();
     const tenantRef = db.collection("tenants").doc(tenantId);
+    // Preflight avoids unnecessary Auth identities; finance admission is
+    // repeated atomically by createLegacyTenantOwnerTransaction below.
     const tenantSnapshot = await tenantRef.get();
-    if (!tenantSnapshot.exists) throw new HttpsError("not-found", "Tenant not found");
-
+    if (!tenantSnapshot.exists)
+      throw new HttpsError("not-found", "Tenant not found");
     const tenant = tenantSnapshot.data();
-    if (tenant.active === false) throw new HttpsError("failed-precondition", "Tenant is inactive");
-
-    const existingOwner = await tenantRef
-      .collection("memberships")
-      .where("role", "==", "owner")
-      .where("active", "==", true)
-      .limit(1)
-      .get();
-    if (!existingOwner.empty) {
+    if (!legacyDeliveryPaidWriterAllowed(tenant) || tenant.active === false
+      || tenant.hybridBillingSuspended === true || tenant.hybridBillingManualHold === true)
+      throw new HttpsError("failed-precondition",
+        "Hybrid or suspended tenant cannot use legacy Owner enrollment");
+    const existingOwner = await tenantRef.collection("memberships")
+      .where("role", "==", "owner").where("active", "==", true).limit(1).get();
+    if (!existingOwner.empty)
       throw new HttpsError("already-exists", "This tenant already has an active owner");
-    }
 
     let authUser;
     try {
       authUser = await getAuth().createUser({
-        email,
-        password,
-        displayName,
-        disabled: false,
-        emailVerified: false
+        email, password, displayName, disabled: false, emailVerified: false
       });
     } catch (error) {
-      if (error.code === "auth/email-already-exists") {
+      if (error.code === "auth/email-already-exists")
         throw new HttpsError("already-exists", "This email is already registered");
-      }
-      if (error.code === "auth/invalid-password" || error.code === "auth/invalid-email") {
+      if (error.code === "auth/invalid-password" || error.code === "auth/invalid-email")
         throw new HttpsError("invalid-argument", error.message);
-      }
       throw error;
     }
 
-    const now = FieldValue.serverTimestamp();
-    const userProfile = {
-      uid: authUser.uid,
-      email,
-      displayName,
-      role: "owner",
-      active: true,
-      tenantId,
-      tenantSlug: tenant.slug || "",
-      tenantName: tenant.name || "",
-      createdAt: now,
-      updatedAt: now
-    };
-
     try {
-      const batch = db.batch();
-      batch.set(db.collection("users").doc(authUser.uid), userProfile);
-      batch.set(tenantRef.collection("memberships").doc(authUser.uid), userProfile);
-      batch.set(tenantRef, {
-        ownerUid: authUser.uid,
-        ownerEmail: email,
-        ownerDisplayName: displayName,
-        updatedAt: now
-      }, { merge: true });
-      await batch.commit();
+      await createLegacyTenantOwnerTransaction({
+        db, tenantRef, userRef: db.collection("users").doc(authUser.uid),
+        uid: authUser.uid, email, displayName,
+        serverTimestamp: () => FieldValue.serverTimestamp(),
+      });
     } catch (error) {
-      await getAuth().deleteUser(authUser.uid).catch(() => {});
+      // Authentication is external to Firestore. Never leave an orphaned
+      // enabled Auth account following a failed trusted tenant admission.
+      await getAuth().deleteUser(authUser.uid).catch(err =>
+        console.error("Owner enrollment Auth rollback failed", {
+          uid: authUser.uid, code: err.code,
+        }));
+      if (error.message === "HYBRID_OWNER_ENROLLMENT_OWNER_EXISTS")
+        throw new HttpsError("already-exists", "This tenant already has an active owner");
+      if (error.message === "HYBRID_OWNER_ENROLLMENT_TENANT_NOT_FOUND")
+        throw new HttpsError("not-found", "Tenant not found");
+      if (error.message === "HYBRID_OWNER_ENROLLMENT_NOT_ALLOWED")
+        throw new HttpsError("failed-precondition",
+          "Hybrid or suspended tenant cannot use legacy Owner enrollment");
       throw error;
     }
 

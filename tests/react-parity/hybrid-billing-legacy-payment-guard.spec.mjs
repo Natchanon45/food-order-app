@@ -139,3 +139,20 @@ test("W1 grouped source contracts: POS backup Restore is guarded per destructive
   assert.doesNotMatch(s,/db\.batch\(/);
   assert.ok((s.match(/transactLegacyMigration\(/g)||[]).length>=4);
 });
+
+test("W1 Owner Admission: privileged createTenantOwner cannot bypass transactional finance tenant guard", () => {
+  const src = fs.readFileSync("functions/tenant-admin.js","utf8");
+  const helper = fs.readFileSync("functions/hybrid-billing-tenant-admin-guard.js","utf8");
+  const call=src.slice(src.indexOf("exports.createTenantOwner ="),
+    src.indexOf("exports.updateTenantOwner ="));
+  assert.match(call,/createLegacyTenantOwnerTransaction\(/);
+  assert.match(call,/getAuth\(\)\.deleteUser\(authUser\.uid\)/);
+  assert.doesNotMatch(call,/batch\.commit\(|db\.batch\(/);
+  assert.match(helper,/async function createLegacyTenantOwnerTransaction\(/);
+  assert.match(helper,/tx\.get\(tenantRef\)/);
+  assert.match(helper,/legacyDeliveryPaidWriterAllowed\(tenant\)/);
+  assert.match(helper,/tx\.get\(tenantRef\.collection\("memberships"\)/);
+  assert.match(helper,/tx\.create\(userRef, profile\)/);
+  assert.ok(helper.indexOf('tx.get(tenantRef)',helper.indexOf('async function createLegacyTenantOwnerTransaction'))
+    < helper.indexOf('tx.create(userRef',helper.indexOf('async function createLegacyTenantOwnerTransaction')));
+});

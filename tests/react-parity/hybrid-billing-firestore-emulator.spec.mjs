@@ -2972,3 +2972,43 @@ test("emulator Release Gate W1: legacy POS destructive chunk transaction rejects
     onAllowed:tx=>tx.delete(sales)});
   assert.equal((await sales.get()).exists,false);
 });
+
+test("emulator W1: owner enrollment atomically rejects Hybrid, suspended and duplicate Owner", async () => {
+  const { createLegacyTenantOwnerTransaction } =
+    require("../../functions/hybrid-billing-tenant-admin-guard.js");
+  const fixtures=[
+    ["hybrid",{billingPolicyVersion:"hybrid_v1",hybridBillingEnabled:true}],
+    ["enabled",{hybridBillingEnabled:true}],
+    ["journal",{hybridReceiptJournalMode:""}],
+    ["coverage",{hybridReceiptJournalCoverageReady:true}],
+    ["suspended",{active:false}],
+    ["hold",{hybridBillingManualHold:true}],
+  ];
+  for (const [suffix,extra] of fixtures) {
+    const id="tenant-emu-w1-owner-"+suffix,ref=tenant(id);
+    await ref.create({active:true,slug:id,...extra});
+    const uid="owner-emulator-"+suffix;
+    await assert.rejects(createLegacyTenantOwnerTransaction({
+      db,tenantRef:ref,userRef:db.collection("users").doc(uid),
+      uid,email:uid+"@example.test",displayName:"Owner Test",
+      serverTimestamp:()=>Timestamp.now(),
+    }),/HYBRID_OWNER_ENROLLMENT_NOT_ALLOWED/);
+    assert.equal((await db.collection("users").doc(uid).get()).exists,false);
+    assert.equal((await ref.collection("memberships").doc(uid).get()).exists,false);
+  }
+  const tenantId="tenant-emu-w1-legacy-owner",ref=tenant(tenantId);
+  await ref.create({active:true,slug:"legacy-owner",billingPolicyVersion:"legacy"});
+  const args={
+    db,tenantRef:ref,userRef:db.collection("users").doc("owner-emulator-legacy"),
+    uid:"owner-emulator-legacy",email:"owner-emulator-legacy@example.test",
+    displayName:"Legacy Owner",serverTimestamp:()=>Timestamp.now(),
+  };
+  await createLegacyTenantOwnerTransaction(args);
+  assert.equal((await ref.collection("memberships").doc(args.uid).get()).data().role,"owner");
+  assert.equal((await ref.get()).data().ownerUid,args.uid);
+  const second={...args,userRef:db.collection("users").doc("owner-emulator-second"),
+    uid:"owner-emulator-second",email:"owner-emulator-second@example.test"};
+  await assert.rejects(createLegacyTenantOwnerTransaction(second),
+    /HYBRID_OWNER_ENROLLMENT_OWNER_EXISTS/);
+  assert.equal((await second.userRef.get()).exists,false);
+});
