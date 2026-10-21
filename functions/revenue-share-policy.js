@@ -82,6 +82,35 @@ function revenueShareChannels(tenant = {}) {
   };
 }
 
+// Only paid Delivery goods count toward the monthly threshold.
+ // A threshold-crossing day and later days qualify, but previous days are never charged.
+function eligibleDeliveryShareDays(dailyDeliverySales = [], threshold = 10000) {
+  const money = Number(threshold);
+  if (!Number.isFinite(money) || money < 0 || money > 1000000000
+    || Math.abs(money * 100 - Math.round(money * 100)) > 0.00001) {
+    throw new RangeError("Invalid Delivery share threshold");
+  }
+  const thresholdCents = Math.round(money * 100);
+  const byDay = new Map();
+  for (const item of dailyDeliverySales) {
+    const date = String(item?.date || "");
+    const cents = item?.cents;
+    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date) || !Number.isSafeInteger(cents) || cents < 0) {
+      throw new TypeError("Invalid paid Delivery daily amount");
+    }
+    byDay.set(date, (byDay.get(date) || 0) + cents);
+  }
+  const monthlyTotals = new Map();
+  const days = new Set();
+  for (const [date, cents] of [...byDay].sort((a, b) => a[0].localeCompare(b[0]))) {
+    const month = date.slice(0, 7);
+    const total = (monthlyTotals.get(month) || 0) + cents;
+    monthlyTotals.set(month, total);
+    if (cents > 0 && total > thresholdCents) days.add(date);
+  }
+  return days;
+}
+
 module.exports = {
   BILLING_MODES,
   BUSINESS_TYPES,
@@ -96,4 +125,5 @@ module.exports = {
   businessUnitsFor,
   restaurantOrderEligible,
   revenueShareChannels,
+  eligibleDeliveryShareDays,
 };
