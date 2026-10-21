@@ -83,6 +83,16 @@ test("real Firestore invoice write is idempotent and immutable across order corr
 test("real Firestore invoice reconciliation suspends then restores tenant and slug", async () => {
   const { tenant, ref, slug } = await fixture();
   await _test.issueForTenant(db, ref, tenant, "2024-10-11", attest);
+  // The invoice was created today even when the sale was in the past.
+  const today = require("./hybrid-billing-core.js").dateKey(new Date());
+  const issued = (await invoiceRef(ref).get()).data();
+  assert.equal(issued.dueDate, today);
+  assert.ok(issued.suspendFrom > today);
+  const beforeDue = await _test.reconcileTenantAccess(db, ref, tenant);
+  assert.equal(beforeDue.action, "none");
+  assert.equal((await ref.get()).data().active, true);
+  // Deliberately simulate an existing past-due invoice to test recovery.
+  await invoiceRef(ref).update({ suspendFrom: "2024-10-12" });
   const suspended = await _test.reconcileTenantAccess(db, ref, tenant);
   assert.equal(suspended.action, "suspended");
   let current = (await ref.get()).data();
