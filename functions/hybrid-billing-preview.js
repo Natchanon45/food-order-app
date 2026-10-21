@@ -2,8 +2,8 @@
 
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { getFirestore, Timestamp } = require("firebase-admin/firestore");
-const { calculateMonth, dateKey, normalizeSettings } = require("./hybrid-billing-core");
-const { paidDeliveryByDay } = require("./hybrid-billing-orders");
+const { dateKey, normalizeSettings } = require("./hybrid-billing-core");
+const { previewDeliveryOnlyMonth } = require("./hybrid-billing-delivery-only");
 const { loadHybridBillingSettings } = require("./hybrid-billing-settings");
 
 const REGION = "asia-southeast1";
@@ -78,10 +78,8 @@ async function previewHybridMonth(tenantRef, tenant, month, db) {
       ? tenant.hybridBillingSnapshot
       : await loadHybridBillingSettings(db));
   const orders = await paidOrdersInWindow(tenantRef, start, end);
-  const daySales = paidDeliveryByDay(orders, month);
-  const result = calculateMonth({
-    month, firstMonth: month === tenant.hybridTrialMonth,
-    dailyDeliverySales: daySales, settings: config,
+  const result = previewDeliveryOnlyMonth({
+    orders, month, firstMonth: month === tenant.hybridTrialMonth, settings: config,
   });
   const now = new Date();
   const ended = now >= end;

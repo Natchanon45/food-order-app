@@ -1,0 +1,26 @@
+name: Hybrid Billing Minimal Delivery-only (no deploy)
+
+on:
+  push:
+    branches: [feature/hybrid-billing-delivery-only-minimal]
+  pull_request:
+    branches: [feature/react-firebase-port]
+
+permissions:
+  contents: read
+
+jobs:
+  pure-billing-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check
+        run: |
+          node --check functions/hybrid-billing-orders.js
+          node --check functions/hybrid-billing-delivery-only.js
+          node --check functions/hybrid-billing-preview.js
+      - name: Hybrid monthly policy and Delivery-only regression
+        run: node --test tests/react-parity/hybrid-billing.spec.mjs tests/react-parity/hybrid-billing-delivery-only.spec.mjs

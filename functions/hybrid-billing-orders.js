@@ -46,7 +46,8 @@ function paidDeliverySale(order) {
   const merchandise = subtotal === null ? total - shipping : Math.min(subtotal, total - shipping);
   const refund = toCents(order.refundTotal ?? order.refundedAmount ?? order.refundAmount ?? 0);
   if (refund === null) throw new Error("HYBRID_DELIVERY_INVALID_REFUND");
-  return { date: dateKey(paidAt), amount: Math.max(0, merchandise - refund) / 100 };
+  if (refund > merchandise) throw new Error("HYBRID_DELIVERY_REFUND_EXCEEDS_MERCHANDISE");
+  return { date: dateKey(paidAt), amount: (merchandise - refund) / 100 };
 }
 
 function paidDeliveryByDay(orders, month) {
