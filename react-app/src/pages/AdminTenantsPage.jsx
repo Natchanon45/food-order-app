@@ -514,6 +514,7 @@ export function AdminTenantsPage() {
   const [shareTenant, setShareTenant] = useState(null);
   const [shareEnabled, setShareEnabled] = useState(false);
   const [shareRate, setShareRate] = useState("0.00");
+  const [shareDeliveryThreshold, setShareDeliveryThreshold] = useState("10000");
   const [shareBillingCycle, setShareBillingCycle] = useState("monthly");
   const [shareBusinessType, setShareBusinessType] = useState("both");
   const [shareRestaurantScope, setShareRestaurantScope] = useState("all");
@@ -671,6 +672,8 @@ export function AdminTenantsPage() {
     setShareTenant(tenant);
     setShareEnabled(summary.revenueShareEnabled === true || tenant.billingMode === "revenue_share");
     setShareRate(Number(summary.revenueShareRate || tenant.revenueShareRate || 0).toFixed(2));
+    setShareDeliveryThreshold(String(summary.revenueShareDeliveryThreshold
+      ?? tenant.revenueShareDeliveryThreshold ?? 10000));
     setShareBillingCycle(summary.revenueShareBillingCycle === "daily" ? "daily" : "monthly");
     setShareBusinessType(tenant.businessType || tenant.signupBilling?.businessType || tenant.revenueShareBusinessType || "both");
     setShareRestaurantScope(summary.revenueShareRestaurantScope || tenant.revenueShareRestaurantScope || tenant.signupBilling?.restaurantRevenueShareScope || "all");
@@ -695,6 +698,7 @@ export function AdminTenantsPage() {
         tenantId: shareTenant.id,
         enabled: shareEnabled,
         rate,
+        deliveryThreshold: Number(shareDeliveryThreshold),
         billingCycle: shareBillingCycle,
         restaurantScope: shareBusinessType === "retail" ? "all" : shareRestaurantScope,
       });
@@ -1079,7 +1083,8 @@ export function AdminTenantsPage() {
   const money = value => formatNumber(Number(value || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const shareSummary = shareTenant ? (summaries[shareTenant.id] || {}) : {};
   const shareEstimate = shareEnabled
-    ? Number(shareSummary.combinedSales || 0) * Math.max(0, Math.min(100, Number(shareRate || 0))) / 100
+    ? Number(shareSummary.revenueShareBase ?? shareSummary.combinedSales ?? 0)
+      * Math.max(0, Math.min(100, Number(shareRate || 0))) / 100
     : 0;
   const currentPeriodLabel = localizedPeriodLabel(period, {
     date,
@@ -1380,6 +1385,16 @@ export function AdminTenantsPage() {
               <label htmlFor="revenueShareRate">{t("admin_tenants.share.rate")}</label>
               <div className="tenant-share-input"><input className="input" id="revenueShareRate" type="number" min="0" max="100" step="0.01" value={shareRate} required onChange={e => setShareRate(e.target.value)} /><span>%</span></div>
             </div>
+            {shareBusinessType !== "retail" && shareRestaurantScope !== "storefront_only" ? (
+              <div className="field">
+                <label htmlFor="revenueShareDeliveryThreshold">เกณฑ์ยอดขาย Delivery ต่อเดือน / Monthly Delivery threshold (฿)</label>
+                <input className="input" id="revenueShareDeliveryThreshold" type="number"
+                  min="0" max="1000000000" step="0.01" required
+                  value={shareDeliveryThreshold}
+                  onChange={event => setShareDeliveryThreshold(event.target.value)} />
+                <small>คิด % ของสินค้า Delivery ที่ชำระแล้ว ตั้งแต่วันที่ยอดสะสมเกินเกณฑ์ โดยไม่คิดย้อนหลังวันก่อนหน้า</small>
+              </div>
+            ) : null}
             <div className="field">
               <label htmlFor="revenueShareBillingCycle">{t("admin_tenants.share.billing_cycle")}</label>
               <select className="input" id="revenueShareBillingCycle" required value={shareBillingCycle} onChange={e => setShareBillingCycle(e.target.value)}>
@@ -1390,7 +1405,9 @@ export function AdminTenantsPage() {
             </div>
             <div className="tenant-share-preview">
               <span>{t("admin_tenants.share.current_sales")}</span><strong id="revenueShareSalesPreview">{money(shareSummary.combinedSales)} {t("admin_tenants.common.baht")}</strong>
-              <span>{t("admin_tenants.share.estimated")}</span><strong id="revenueShareAmountPreview">{money(shareEstimate)} {t("admin_tenants.common.baht")}</strong>
+              <span>{t("admin_tenants.share.estimated")}</span><strong id="revenueShareAmountPreview">{Number(shareDeliveryThreshold) !== Number(shareSummary.revenueShareDeliveryThreshold ?? shareTenant?.revenueShareDeliveryThreshold ?? 10000)
+                ? "— (บันทึกเพื่อคำนวณใหม่)"
+                : `${money(shareEstimate)} ${t("admin_tenants.common.baht")}`}</strong>
             </div>
             {shareError ? <div className="upload-error" id="revenueShareError">{shareError}</div> : <div className="upload-error" id="revenueShareError" hidden></div>}
           </div>
