@@ -86,3 +86,18 @@ test("paused Hybrid issuance still allows settling old invoices and releases onl
   assert.match(source, /tenant\.hybridBillingWasActive === true/);
   assert.match(source, /hybridBillingSuspended === true/);
 });
+
+test("locked cycle price equality is independent of Firestore field ordering", () => {
+  const a = {
+    monthlyFee: 590, deliveryThreshold: 10000, deliveryShareRate: 5,
+    monthlySlipQuota: 100, timezone: "Asia/Bangkok", policyVersion: "hybrid_v1",
+  };
+  const b = Object.fromEntries(Object.entries(a).reverse());
+  assert.equal(_test.sameBillingPrices(a, b), true);
+  assert.equal(_test.sameBillingPrices(a, { ...b, deliveryShareRate: 6 }), false);
+  assert.equal(_test.sameBillingPrices(null, b), false);
+});
+test("platform invoice administration loads the selected Tenant record", () => {
+  assert.match(source, /const \{ ref, tenant \} = await viewer\(request, \{ superAdmin: true \}\)/);
+  assert.match(source, /live: tenant\.hybridBillingLive === true/);
+});
