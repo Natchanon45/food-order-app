@@ -10,7 +10,8 @@ import { useParityPage } from "@/hooks/useParityPage";
 import { useI18n } from "@/i18n/I18nProvider";
 import { getHybridBillingPreview } from "@/data/hybridBillingReport";
 import {
-  getHybridBillingPaymentDestination, getTenantHybridInvoices, submitTenantHybridPayment,
+  getHybridBillingPaymentDestination, getTenantHybridInvoices, getTenantHybridSlipUsage,
+  submitTenantHybridPayment,
 } from "@/data/hybridBillingLedger";
 
 const BANGKOK = "Asia/Bangkok";
@@ -32,6 +33,7 @@ export function HybridBillingReportPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [invoices, setInvoices] = useState([]);
+  const [slipUsage, setSlipUsage] = useState(null);
   const [destination, setDestination] = useState(null);
   const [slips, setSlips] = useState({});
   const [submittingInvoice, setSubmittingInvoice] = useState("");
@@ -78,6 +80,9 @@ export function HybridBillingReportPage() {
     if (tenant?.billingPolicyVersion === "hybrid_v1" &&
       ["owner", "admin"].includes(auth.profile?.role)) {
       loadInvoices();
+      getTenantHybridSlipUsage().then(setSlipUsage).catch(err => {
+        console.warn("HYBRID_SLIP_USAGE_LOAD_FAILED", err);
+      });
     }
   }, [tenant?.id, tenant?.billingPolicyVersion, auth.profile?.role]);
   const submitInvoiceSlip = async (event, invoice) => {
@@ -172,6 +177,9 @@ export function HybridBillingReportPage() {
               <p>{data.slipUnlimited
                 ? t("hybrid_report.slip_unlimited")
                 : t("hybrid_report.slip_limit", { quota: data.slipQuota })}</p>
+              {slipUsage ? (
+                <p>ใช้สิทธิ์ตรวจสอบสลิป Slip2Go รอบนี้: {number(slipUsage.used)} ครั้ง</p>
+              ) : null}
               {!data.periodEnded && data.projectedFixedFee > 0 ? (
                 <p>{t("hybrid_report.projected_fee", { amount: currency(data.projectedFixedFee) })}</p>
               ) : null}
