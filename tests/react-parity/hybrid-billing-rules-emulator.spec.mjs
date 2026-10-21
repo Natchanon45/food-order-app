@@ -6,7 +6,7 @@ import { createRequire } from "node:module";
 import { initializeApp as initializeClient, deleteApp as deleteClient } from "firebase/app";
 import { getAuth, connectAuthEmulator, signInAnonymously } from "firebase/auth";
 import { getFirestore as clientFirestore, connectFirestoreEmulator,
-  doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
+  doc, getDoc, updateDoc, setDoc, deleteDoc } from "firebase/firestore";
 
 const require = createRequire(import.meta.url);
 const functionsRequire = createRequire(new URL("../../functions/hybrid-billing-ledger.js", import.meta.url));
@@ -144,3 +144,60 @@ test("candidate: legacy cashier still retains old paidAt and paymentStatus write
   assert.equal(value.paymentStatus, "paid");
   assert.equal(value.paidAt, "2026-10-20T02:00:00Z");
 });
+
+
+test("Phase3AA Rules: Hybrid client cannot forge bank-reference, refund chain or settlement proof metadata", async () => {
+  await setMember(ready, "owner");
+  const ref = doc(firestore, "tenants", ready, "orders", "test-order");
+  const forbidden = [
+    { paymentBankReferenceHash: "f".repeat(64) },
+    { refundReceiptSource: "hybrid_refund_bank_verified_server" },
+    { refundBankReferenceHash: "b".repeat(64) },
+    { refundChainCount: 7 },
+    { refundChainHeadDigest: "a".repeat(64) },
+    { refundAt: "2026-10-20T02:00:00Z" },
+    { refundVerifiedAt: "2026-10-20T02:00:00Z" },
+    { refundReviewedAt: "2026-10-20T02:00:00Z" },
+  ];
+  for (const change of forbidden) {
+    await assert.rejects(updateDoc(ref, change), /permission/i,
+      "Hybrid Owner cannot mutate finance metadata: " + Object.keys(change).join());
+    await assert.rejects(setDoc(ref, change, { merge: true }), /permission/i);
+  }
+  const actual = (await db.collection("tenants").doc(ready)
+    .collection("orders").doc("test-order").get()).data();
+  for (const change of forbidden)
+    assert.equal(actual[Object.keys(change)[0]], undefined);
+  await updateDoc(ref, { status: "ready" });
+});
+test("Phase3AA Rules: paid Hybrid delivery deletion is blocked even for Owner; unpaid and legacy retain existing permissions", async () => {
+  const live = db.collection("tenants").doc(ready).collection("orders");
+  await live.doc("immutable-paid-3aa").set({
+    orderType: "delivery", status: "delivered", paymentStatus: "paid",
+    paidAt: "2026-10-20T02:00:00Z", totalAmount: 100,
+    tenantId: ready, paymentReceiptSource: "hybrid_cod_cashier_server",
+    items: [{ name: "tea", qty: 1 }],
+  });
+  await live.doc("unpaid-removable-3aa").set({
+    orderType: "delivery", status: "pending", paymentStatus: "unpaid",
+    totalAmount: 100, tenantId: ready, items: [{ name: "tea", qty: 1 }],
+  });
+  await setMember(ready, "owner");
+  await assert.rejects(deleteDoc(doc(firestore, "tenants", ready,
+    "orders", "immutable-paid-3aa")), /permission/i);
+  assert.equal((await live.doc("immutable-paid-3aa").get()).exists, true);
+  await deleteDoc(doc(firestore, "tenants", ready,
+    "orders", "unpaid-removable-3aa"));
+  assert.equal((await live.doc("unpaid-removable-3aa").get()).exists, false);
+  const old = db.collection("tenants").doc(legacy).collection("orders");
+  await old.doc("old-paid-removable-3aa").set({
+    orderType: "delivery", status: "delivered", paymentStatus: "paid",
+    paidAt: "2026-10-20T02:00:00Z", totalAmount: 100, tenantId: legacy,
+    items: [{ name: "tea", qty: 1 }],
+  });
+  await setMember(legacy, "owner");
+  await deleteDoc(doc(firestore, "tenants", legacy,
+    "orders", "old-paid-removable-3aa"));
+  assert.equal((await old.doc("old-paid-removable-3aa").get()).exists, false);
+});
+
