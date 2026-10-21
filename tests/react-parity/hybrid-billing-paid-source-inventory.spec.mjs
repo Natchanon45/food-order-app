@@ -11,7 +11,7 @@ function fakeDB(rows){
    data:()=>data}));
  const events=[];
  const q={_limit:200,_cursor:null,where(){return this},orderBy(){return this},
-  limit(n){this._limit=n;return this},startAfter(id){this._cursor=id;return this},
+  limit(n){this._limit=n;return this},startAfter(snapshot){this._cursor=typeof snapshot==="string"?snapshot:snapshot.id;return this},
   async get(){
    const k=this._cursor===null?0:items.findIndex(x=>x.id===this._cursor)+1;
    const docs=items.slice(k,k+this._limit);
