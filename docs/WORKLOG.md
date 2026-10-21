@@ -13987,3 +13987,15 @@ Gateway is enforced **within the new opt-in DEMO adapter only**. No production o
 ### Phase3AA engineering summary
 Three new Auth+Firestore Rules tests for financial field forgery, paid order deletion, and tenant receipt readiness. All 10 Rules Emulator cases PASS. Code PR & Push 6/6 green. Checked-in rules only; no Firebase deploy. Full historical Worklog SHA preserved.
 
+
+
+## 2026-10-21 — Phase 3AB privileged legacy paid-writer guard (SOURCE ONLY)
+- New CODE `68eedd7cd06d2add1eef33654ff41839ff2f2c67` and inventory doc `a407d13ff9ca2273a77dcdd9873f562e33732200`. This docs commit will advance HEAD; VERIFY current PR+Push Actions before claiming green (previous Phase3AA HEAD `69462e8a` Push 39543426129 and PR 39543429746 SUCCESS 6/6).
+- Exported `functions/delivery-slip.js` Slip2Go auto-match FINALIZER and manual cashier approval are privileged legacy writers assigning paid status and timestamp with no atomic Hybrid Journal. Both are now fenced in the SAME Firestore transaction: read tenant document and refuse Hybrid or partially-migrated tenant via `HYBRID_TRUSTED_JOURNAL_WRITER_REQUIRED`. `functions/hybrid-billing-legacy-payment-guard.js` is fail-closed on absent tenant and Hybrid/journal-mode/coverage flags. Existing non-Hybrid legacy routes unchanged.
+- Added 3 `tests/react-parity/hybrid-billing-legacy-payment-guard.spec.mjs` unit/static regression cases, registered under `test:hybrid-billing`. **These three new tests are NOT independently certified until GitHub Actions finishes on latest docs HEAD.**
+- New `docs/HYBRID_BILLING_WRITER_INVENTORY.md` surveys export paths, including non-Delivery walk-in paid creation, public unpaid Delivery submission, Lalamove delivery-only webhook and unexported candidate finance writers. Explicitly incomplete global backend/Client SDK coverage.
+- **NOT** mandatory global registry, atomic all-source immutable cutoff/day manifest, authentic Lalamove cash-remittance+posted-bank proof, real 10k trusted journal transactions, Thai tax/AR finance signoff or actual staging App Check/device UAT; prior Firestore Emulator 2 TODO remain. All readiness/certification false.
+- HYBRID_REGISTRATION_READY=false; HYBRID_COD_CASHIER_CUTOVER_READY=false; HYBRID_FINANCE_UI_READY=false; HYBRID_FINANCE_API_READY=false. No finance candidate exports from functions/index.js, no hybridReceiptJournalCoverageReady for real tenants, no live funds/orders edits, no Firebase Deploy, no Draft PR #7 merge, no Mac MCP reset/clean/checkout of uncommitted work.
+- Next Phase 3AC global source-registry and ingress survey (include dynamic paths/backups and Client REST), trusted all-source backend transaction writer enrollment, bank/provider staging reconciliation, race stable day manifests, 10k authentic journal stress, signoffs.
+
+WORKLOG history preserved via independent fetch_blob and exact Git blob SHA verification. Source-only route additions; no environment deployment.
