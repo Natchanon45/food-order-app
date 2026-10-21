@@ -147,11 +147,15 @@ test("pricing editor and five locale texts expose four editable values", () => {
     assert.ok(dictionaries[locale]?.hybrid_report?.cycle_range);
   }
 });
-test("legacy schedulers and pricing controls cannot alter old tenants", () => {
+test("legacy schedulers and pricing controls cannot alter Hybrid tenants", () => {
   const backend = fs.readFileSync("functions/subscription-admin.js", "utf8");
-  assert.equal((backend.match(/billingPolicyVersion === "hybrid_v1"/g) || []).length, 4);
+  const guard = fs.readFileSync("functions/hybrid-billing-legacy-access-guard.js", "utf8");
+  assert.equal((backend.match(/await writeLegacySubscription\(db, /g) || []).length, 4);
+  assert.match(backend, /require\("\.\/hybrid-billing-legacy-access-guard"\)/);
+  assert.match(guard, /legacyDeliveryPaidWriterAllowed\(tenant\)/);
+  assert.match(guard, /tx\.get\(tenantRef\)/);
   for (const filename of ["functions/subscription-admin.js", "functions/revenue-share.js"]) {
     const source = fs.readFileSync(filename, "utf8");
-    assert.match(source, /Hybrid tenants cannot use legacy/);
+    assert.match(source, /Hybrid tenants cannot use legacy|HYBRID_LEGACY_ACCESS/);
   }
 });
