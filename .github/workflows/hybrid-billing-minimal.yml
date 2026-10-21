@@ -24,3 +24,7 @@ jobs:
           node --check functions/hybrid-billing-preview.js
       - name: Hybrid monthly policy and Delivery-only regression
         run: node --test tests/react-parity/hybrid-billing.spec.mjs tests/react-parity/hybrid-billing-delivery-only.spec.mjs
+      - name: Install only existing Functions dependencies for report compatibility tests
+        run: npm install --prefix functions --ignore-scripts --no-audit --no-fund
+      - name: Existing billing/order/report/signup regression contracts
+        run: node --test tests/react-parity/hybrid-billing-orders.spec.mjs tests/react-parity/hybrid-billing-report.spec.mjs tests/react-parity/signup-billing-revenue-share.spec.mjs

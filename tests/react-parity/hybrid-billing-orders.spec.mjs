@@ -68,7 +68,7 @@ test("aggregation is order-independent and combines many same-day paid orders ex
   const result = calculateMonth({ month: "2026-10", firstMonth: false, dailyDeliverySales: daily });
   assert.equal(result.mode, "delivery_share");
   assert.equal(result.triggerDate, "2026-10-21");
-  assert.equal(result.totalFee, 500);
+  assert.equal(result.totalFee, 95); // 5% of paid Delivery goods on trigger day (1,900), not the 10,000 threshold
   assert.equal(result.fixedFee, 0);
 });
 test("monthWindow uses Thai dates incl leap and year rollover", () => {
