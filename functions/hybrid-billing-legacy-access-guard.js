@@ -16,7 +16,7 @@ async function mirrorLegacyTenantAccess({
   if (!db || typeof db.runTransaction !== "function" || !tenantRef
       || typeof tenantRef.get !== "function" || typeof serverTimestamp !== "function"
       || !objectMap(patch) || !objectMap(tenantOnlyPatch)
-      || [...Object.keys(patch), ...Object.keys(tenantOnlyPatch)]
+      || ![...Object.keys(patch), ...Object.keys(tenantOnlyPatch)]
         .some(key => key === "active" || key.startsWith("revenueShare"))) {
     throw Error("HYBRID_LEGACY_ACCESS_BAD_REQUEST");
   }
