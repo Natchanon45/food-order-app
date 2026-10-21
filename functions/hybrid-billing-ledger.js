@@ -13,12 +13,27 @@ const REGION = "asia-southeast1";
 const BILLING_COLLECTION = "hybridBillingInvoices";
 const PROOF_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
 const MAX_PROOF_BYTES = 10 * 1024 * 1024;
+const DESTINATION_DOC = "hybridBillingPayment";
 const ID_RE = /^[a-zA-Z0-9:_-]{12,130}$/;
 const tenantIdValid = id => /^[a-zA-Z0-9_-]{8,128}$/.test(id);
 const amountSatang = value => Math.round(Number(value) * 100);
 const dayBefore = date => new Date(Date.parse(validDate(date) + "T00:00:00Z") - 86400000)
   .toISOString().slice(0, 10);
 
+function normalizedDestination(input = {}) {
+  const bankName = String(input.bankName || "").trim().slice(0, 100);
+  const accountName = String(input.accountName || "").trim().slice(0, 180);
+  const accountNumber = String(input.accountNumber || "").replace(/[ -]/g, "");
+  if (!bankName || !accountName || !/^[0-9]{8,16}$/.test(accountNumber)) {
+    throw new HttpsError("invalid-argument", "HYBRID_BANK_DETAILS_INVALID");
+  }
+  return { bankName, accountName, accountNumber };
+}
+async function configuredDestination(db) {
+  const snap = await db.collection("platformSettings").doc(DESTINATION_DOC).get();
+  if (!snap.exists) return null;
+  try { return normalizedDestination(snap.data()); } catch { return null; }
+}
 function stateForInvoice(invoice = {}) {
   if (invoice.status === "paid") return "paid";
   if (invoice.status === "void") return "void";
@@ -134,6 +149,18 @@ async function issueForTenant(db, ref, tenant, throughDate, { attest, actor } = 
   }
   return { inserted, skipped, cycleId: estimate.cycleId, selectedDate: throughDate };
 }
+exports.getHybridBillingPaymentDestination = onCall({ region: REGION }, async request => {
+  const { db } = await viewer(request);
+  return { ok: true, destination: await configuredDestination(db) };
+});
+exports.updateHybridBillingPaymentDestination = onCall({ region: REGION }, async request => {
+  const { db, uid } = await adminAuth(request.auth);
+  const destination = normalizedDestination(request.data || {});
+  await db.collection("platformSettings").doc(DESTINATION_DOC).set({
+    ...destination, updatedAt: FieldValue.serverTimestamp(), updatedBy: uid,
+  }, { merge: true });
+  return { ok: true, destination };
+});
 exports.getTenantHybridInvoices = onCall({ region: REGION }, async request => {
   const { ref } = await viewer(request);
   const docs = await ref.collection(BILLING_COLLECTION).orderBy("issuedAt", "desc").limit(100).get();
@@ -174,6 +201,8 @@ exports.setTenantHybridBillingLive = onCall({ region: REGION, timeoutSeconds: 90
     throw new HttpsError("failed-precondition", "HYBRID_EXPLICIT_ENABLE_CONFIRMATION_REQUIRED");
   }
   if (enabled) {
+    const destination = await configuredDestination(db);
+    if (!destination) throw new HttpsError("failed-precondition", "HYBRID_BANK_DESTINATION_REQUIRED");
     await verifiedEstimate(db, ref, tenant, dayBefore(dateKey(new Date())));
   }
   await ref.update({
@@ -267,16 +296,20 @@ async function reconcileTenantAccess(db, ref, tenant) {
   const snap = await ref.collection(BILLING_COLLECTION).where("status", "==", "issued").limit(200).get();
   if (snap.size >= 200) return { action: "none", reason: "invoice_scan_limit" };
   const today = dateKey(new Date());
-  const overdue = snap.docs.some(d => d.data().suspendFrom <= today && Number(d.data().amount) > 0);
+  const overdue = snap.docs.some(d => d.data().suspendFrom <= today
+    && Number(d.data().amount) > 0 && d.data().paymentStatus !== "pending");
   const changed = overdue ? tenant.hybridBillingSuspended !== true
     : tenant.hybridBillingSuspended === true;
   if (!changed) return { action: "none", overdue };
-  if (!overdue && tenant.hybridBillingSuspended !== true) return { action: "none", overdue };
-  // Never unsuspend an independently disabled Tenant.
-  const newActive = overdue ? false : tenant.hybridBillingSuspended === true;
+  // Never suspend or auto-reactivate an independently disabled Tenant.
+  if (overdue && tenant.active === false && tenant.hybridBillingSuspended !== true) {
+    return { action: "none", reason: "independently_disabled" };
+  }
   const patch = overdue
-    ? { active: false, hybridBillingSuspended: true, hybridBillingSuspendedAt: FieldValue.serverTimestamp() }
-    : { active: newActive, hybridBillingSuspended: false,
+    ? { active: false, hybridBillingSuspended: true, hybridBillingWasActive: tenant.active !== false,
+        hybridBillingSuspendedAt: FieldValue.serverTimestamp() }
+    : { active: tenant.hybridBillingWasActive === true, hybridBillingSuspended: false,
+        hybridBillingWasActive: FieldValue.delete(),
         hybridBillingSuspendedAt: FieldValue.delete() };
   const batch = db.batch();
   batch.set(ref, { ...patch, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
@@ -300,6 +333,10 @@ exports.processHybridBillingDaily = onSchedule(
     const yesterday = dayBefore(dateKey(new Date()));
     const tenants = await db.collection("tenants")
       .where("billingPolicyVersion", "==", "hybrid_v1").limit(500).get();
+    if (tenants.size >= 500) {
+      // Full-scan safety: never silently omit unprocessed active pilot Tenants.
+      throw new Error("HYBRID_DAILY_TENANT_SCAN_LIMIT");
+    }
     for (const doc of tenants.docs) {
       const tenant = { id: doc.id, ...doc.data() };
       if (tenant.hybridBillingLive !== true) continue;
@@ -313,4 +350,4 @@ exports.processHybridBillingDaily = onSchedule(
     }
   },
 );
-exports._test = { eligibleForIssuance, stateForInvoice, safeInvoiceSummary };
+exports._test = { eligibleForIssuance, stateForInvoice, safeInvoiceSummary, normalizedDestination };
