@@ -121,6 +121,7 @@ test("legacy pricing controls cannot override future hybrid tenants", () => {
 test("first accepted signup date is validated as YYYY-MM-DD and preserved on retry", () => {
   const signup = fs.readFileSync("functions/public-signup.js", "utf8");
   assert.match(signup, /\/\^\\d\{4\}-\\d\{2\}-\\d\{2\}\$\//);
-  assert.match(signup, /createdAt: priorSignup\?\.createdAt \|\| now/);
+  assert.match(signup, /const firstRequestAt = priorSignup\?\.createdAt \|\| Timestamp\.now\(\)/);
+  assert.match(signup, /createdAt: firstRequestAt/);
   assert.match(signup, /HYBRID_SIGNUP_ALREADY_ACTIVE/);
 });
