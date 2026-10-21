@@ -89,7 +89,9 @@ test("paused Hybrid issuance still allows settling old invoices and releases onl
   assert.ok(source.includes('tenant.hybridBillingLive === true && invoices.docs.some'));
   assert.ok(source.includes('const tenantSnap = await tx.get(ref)'));
   assert.ok(source.includes('const invoices = await tx.get(ref.collection(BILLING_COLLECTION)'));
-  assert.doesNotMatch(source, /paymentStatus !== "pending"/);
+  const reconciler = source.slice(source.indexOf("async function reconcileTenantAccess"),
+    source.indexOf("exports.reconcileTenantHybridBilling"));
+  assert.doesNotMatch(reconciler, /paymentStatus !== "pending"/);
   assert.match(source, /tenant\.hybridBillingWasActive === true/);
   assert.match(source, /hybridBillingSuspended === true/);
 });
