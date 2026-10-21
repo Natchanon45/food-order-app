@@ -19,6 +19,8 @@ const tenantIdValid = id => /^[a-zA-Z0-9_-]{8,128}$/.test(id);
 const amountSatang = value => Math.round(Number(value) * 100);
 const dayBefore = date => new Date(Date.parse(validDate(date) + "T00:00:00Z") - 86400000)
   .toISOString().slice(0, 10);
+const dayAfter = date => new Date(Date.parse(validDate(date) + "T00:00:00Z") + 86400000)
+  .toISOString().slice(0, 10);
 
 function normalizedDestination(input = {}) {
   const bankName = String(input.bankName || "").trim().slice(0, 100);
@@ -161,7 +163,10 @@ async function issueForTenant(db, ref, tenant, throughDate, { attest, actor } = 
     const payload = {
       tenantId: tenant.id, policyVersion: "hybrid_v1", cycleId: estimate.cycleId,
       cycleStart: estimate.cycleStart, cycleEnd: estimate.cycleEnd,
-      kind: line.kind, date: line.date, dueDate: line.dueDate, suspendFrom: line.suspendFrom,
+      kind: line.kind, date: line.date,
+      // Charge is not payable before it exists: allow a full calendar day
+      // after issuance before suspending a tenant.
+      dueDate: today, suspendFrom: dayAfter(today),
       calculationBase: line.calculationBase, amount: line.amount, status: "issued",
       paymentStatus: "", paymentId: "",
       configSnapshot: estimate.config,
