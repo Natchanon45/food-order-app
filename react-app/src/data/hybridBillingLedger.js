@@ -7,6 +7,9 @@ async function call(name, args = {}) {
   if (response?.data?.ok !== true) throw new Error("HYBRID_CALL_FAILED");
   return response.data;
 }
+export async function getTenantHybridSlipUsage() {
+  return call("getTenantHybridSlipUsage");
+}
 export async function getTenantHybridInvoices() {
   return (await call("getTenantHybridInvoices")).items || [];
 }
