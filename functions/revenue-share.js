@@ -8,6 +8,7 @@ const {
   normalizeRestaurantScope,
   revenueShareChannels,
   restaurantOrderEligible,
+  eligibleDeliveryShareDays,
 } = require("./revenue-share-policy");
 
 const REGION = "asia-southeast1";
@@ -101,6 +102,7 @@ function revenueSetting(tenant = {}) {
   return {
     enabled: channels.enabled,
     rate: Math.max(0, Math.min(100, Number(tenant.revenueShareRate || 0))),
+    deliveryThreshold: Number(tenant.revenueShareDeliveryThreshold ?? 10000),
     billingCycle: tenant.revenueShareBillingCycle === "daily" ? "daily" : "monthly",
     recipientName: String(tenant.revenueShareRecipientName || "").trim(),
     businessType: normalizeBusinessType(tenant.businessType || tenant.signupBilling?.businessType || tenant.revenueShareBusinessType || "both"),
@@ -136,7 +138,35 @@ async function summaryForTenant(tenantId, period, setting) {
     db.collection("tenants").doc(tenantId).collection("sales").get()
   ]);
   let orderSales = 0, orderCount = 0, posSales = 0, posCount = 0;
+  let shareOrderSales = 0;
   let customerDeliveryFees = 0, lalamoveDeliveryCost = 0, lalamoveWalletCoveredCost = 0, deliverySubsidy = 0;
+
+  // Evaluate a whole Bangkok calendar month even for a daily report. Otherwise
+  // a daily payment could never see Delivery sales from preceding days.
+  const paidDeliveryDaily = new Map();
+  ordersSnapshot.docs.forEach(snapshot => {
+    const row = snapshot.data();
+    if (String(row.orderType || "").toLowerCase() !== "delivery"
+      || String(row.paymentStatus || "").toLowerCase() !== "paid"
+      || String(row.status || "").toLowerCase() === "refunded"
+      || !validOrder(row)) return;
+    const paidAt = asDate(row.paidAt);
+    if (!paidAt) return; // Unknown payment date never unlocks Delivery share.
+    const total = Math.max(0, Number(row.totalAmount ?? row.total ?? 0) || 0);
+    const shipping = Math.max(0, Number(row.deliveryFee || 0) || 0);
+    const subtotal = Number(row.subtotalAmount);
+    const goods = Number.isFinite(subtotal)
+      ? Math.min(Math.max(0, subtotal), Math.max(0, total - shipping))
+      : Math.max(0, total - shipping);
+    const refund = Math.max(0, Number(row.refundTotal ?? row.refundedAmount ?? row.refundAmount ?? 0) || 0);
+    const cents = Math.round(Math.max(0, goods - refund) * 100);
+    const day = dateKey(paidAt);
+    paidDeliveryDaily.set(day, (paidDeliveryDaily.get(day) || 0) + cents);
+  });
+  const eligibleDeliveryDays = eligibleDeliveryShareDays(
+    [...paidDeliveryDaily].map(([date, cents]) => ({ date, cents })),
+    setting.deliveryThreshold,
+  );
 
   ordersSnapshot.docs.forEach(snapshot => {
     const row = snapshot.data();
@@ -168,6 +198,16 @@ async function summaryForTenant(tenantId, period, setting) {
     if (shareEligibleOrder) {
       orderSales += foodSales;
       orderCount += 1;
+      if (!isDelivery) {
+        // Keep the existing Table/Takeaway/Walk-in share rule unchanged.
+        shareOrderSales += foodSales;
+      } else if (String(row.paymentStatus || "").toLowerCase() === "paid"
+        && String(row.status || "").toLowerCase() !== "refunded"
+        && asDate(row.paidAt) && eligibleDeliveryDays.has(dateKey(asDate(row.paidAt)))) {
+        // Charge goods only (no shipping), net of merchandise refunds.
+        const refund = Math.max(0, Number(row.refundTotal ?? row.refundedAmount ?? row.refundAmount ?? 0) || 0);
+        shareOrderSales += Math.max(0, Math.min(foodSales, Math.max(0, total - customerFee)) - refund);
+      }
     }
     customerDeliveryFees += isLalamove ? customerFee : 0;
     lalamoveDeliveryCost += lalamoveCost;
@@ -194,7 +234,8 @@ async function summaryForTenant(tenantId, period, setting) {
   lalamoveWalletCoveredCost = roundMoney(lalamoveWalletCoveredCost);
   deliverySubsidy = roundMoney(deliverySubsidy);
   const combinedSales = roundMoney(orderSales + posSales);
-  const revenueShare = setting.enabled ? roundMoney(combinedSales * setting.rate / 100) : 0;
+  const revenueShareBase = roundMoney(shareOrderSales + posSales);
+  const revenueShare = setting.enabled ? roundMoney(revenueShareBase * setting.rate / 100) : 0;
   const lalamoveOutstandingCost = roundMoney(Math.max(0, lalamoveDeliveryCost - lalamoveWalletCoveredCost));
   const platformAmountDue = setting.enabled ? roundMoney(revenueShare + lalamoveOutstandingCost) : 0;
 
@@ -204,6 +245,8 @@ async function summaryForTenant(tenantId, period, setting) {
     lalamoveOutstandingCost, deliverySubsidy,
     revenueShareEnabled: setting.enabled,
     revenueShareRate: setting.rate,
+    revenueShareDeliveryThreshold: setting.deliveryThreshold,
+    revenueShareBase,
     revenueShareBillingCycle: setting.billingCycle,
     revenueShareBusinessType: setting.businessType,
     revenueShareRestaurantScope: setting.restaurantScope,
@@ -825,6 +868,11 @@ exports.updateTenantRevenueShare = onCall({ region: REGION }, async request => {
   const db = getFirestore(), tenantRef = db.collection("tenants").doc(tenantId), snapshot = await tenantRef.get();
   if (!snapshot.exists) throw new HttpsError("not-found", "Tenant not found");
   const tenant = { id: snapshot.id, ...snapshot.data() };
+  const threshold = Number(request.data?.deliveryThreshold ?? tenant.revenueShareDeliveryThreshold ?? 10000);
+  if (!Number.isFinite(threshold) || threshold < 0 || threshold > 1000000000
+    || Math.abs(threshold * 100 - Math.round(threshold * 100)) > 0.00001) {
+    throw new HttpsError("invalid-argument", "Invalid Delivery share threshold");
+  }
   if (tenant.billingPolicyVersion === "hybrid_v1") {
     throw new HttpsError("failed-precondition", "Hybrid tenants cannot use legacy revenue-share settings");
   }
@@ -839,6 +887,7 @@ exports.updateTenantRevenueShare = onCall({ region: REGION }, async request => {
     {
       revenueShareEnabled: enabled,
       revenueShareRate: Math.round(rate * 10000) / 10000,
+      revenueShareDeliveryThreshold: Math.round(threshold * 100) / 100,
       revenueShareBillingCycle: billingCycle,
       revenueShareBusinessType: businessType,
       revenueShareRestaurantScope: restaurantScope,
@@ -848,7 +897,7 @@ exports.updateTenantRevenueShare = onCall({ region: REGION }, async request => {
     { revenueShareRecipientName: recipientName }
   );
   if (!enabled && tenant.revenueShareSuspended) await reconcileTenant(tenantId);
-  return { ok: true, tenantId, enabled, rate, billingCycle, businessType, restaurantScope, recipientName, active };
+  return { ok: true, tenantId, enabled, rate, deliveryThreshold: threshold, billingCycle, businessType, restaurantScope, recipientName, active };
 });
 
 exports.unlockTenantRevenueShare = onCall({ region: REGION }, async request => {
