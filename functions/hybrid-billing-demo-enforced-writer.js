@@ -4,6 +4,7 @@
 // standalone existing candidate functions and all legacy writers still can
 // bypass it. An enforced gateway is NOT all-writer enforcement.
 const {assertHybridEpochDemoOptIn}=require("./hybrid-billing-writer-epoch-candidate");
+const {requireHybridDemoGatewayPreflight}=require("./hybrid-billing-demo-gateway-preflight");
 const {settleHybridCodDeliveryPayment}=require("./hybrid-billing-cod-payment");
 const {recordHybridVerifiedPromptPay}=require("./hybrid-billing-promptpay-payment");
 const {recordHybridVerifiedRefund}=require("./hybrid-billing-refund-reversal");
@@ -32,6 +33,9 @@ async function executeHybridDemoEnforcedWriter({sourceKey,args}={}){
  const {db,tenantId,orderId,actorUid,reviewerUid,
   resolveIndependentBankPayment,resolveIndependentRefund,now,
   clock,serverTimestamp}=args;
+ // Preflight rejects suspended/unauthorized demo tenants BEFORE mock provider calls.
+ // Not atomic: each financial writer still rechecks tenant/actor in its transaction.
+ await requireHybridDemoGatewayPreflight({db,tenantId,actorUid,reviewerUid,sourceKey});
  if(sourceKey==="cod_cashier")
   return settleHybridCodDeliveryPayment({db,tenantId,orderId,actorUid,
    ...(clock!==undefined?{clock}:{}),
