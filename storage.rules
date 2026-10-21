@@ -125,6 +125,16 @@ service firebase.storage {
         && !firestore.exists(/databases/(default)/documents/tenants/$(tenantId)/revenueSharePayments/$(paymentId));
     }
 
+    // Tenant fee slips: separate from customer checkout and revenue-share payments.
+    match /tenants/{tenantId}/hybrid-billing-slips/{invoiceId}/{paymentId}/{fileName} {
+      allow create: if tenantProductAdmin(tenantId)
+        && validRevenueShareSlip(10 * 1024 * 1024);
+      allow read: if hasRole(['super_admin']) || tenantProductAdmin(tenantId);
+      allow update: if false;
+      allow delete: if tenantProductAdmin(tenantId)
+        && !firestore.exists(/databases/(default)/documents/tenants/$(tenantId)/hybridBillingInvoices/$(invoiceId)/payments/$(paymentId));
+    }
+
     match /{allPaths=**} {
       allow read, write: if false;
     }

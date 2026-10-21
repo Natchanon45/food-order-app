@@ -256,6 +256,17 @@ exports.updateHybridBillingSettings = hybridBillingSettings.updateHybridBillingS
 // Read-only billing preview: no invoices, payments or tenant status are mutated.
 exports.getTenantHybridBillingPreview = require("./hybrid-billing-preview").getTenantHybridBillingPreview;
 
+const hybridLedger = require("./hybrid-billing-ledger");
+exports.getTenantHybridInvoices = hybridLedger.getTenantHybridInvoices;
+exports.getPlatformHybridInvoices = hybridLedger.getPlatformHybridInvoices;
+exports.issueTenantHybridInvoices = hybridLedger.issueTenantHybridInvoices;
+exports.setTenantHybridBillingLive = hybridLedger.setTenantHybridBillingLive;
+exports.submitTenantHybridPayment = hybridLedger.submitTenantHybridPayment;
+exports.reviewTenantHybridPayment = hybridLedger.reviewTenantHybridPayment;
+exports.reconcileTenantHybridBilling = hybridLedger.reconcileTenantHybridBilling;
+exports.processHybridBillingDaily = hybridLedger.processHybridBillingDaily;
+
+
 const subscriptionPricing = require("./subscription-pricing");
 exports.getPublicSubscriptionPricing = subscriptionPricing.getPublicSubscriptionPricing;
 exports.getSubscriptionPricing = subscriptionPricing.getSubscriptionPricing;
