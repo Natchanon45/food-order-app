@@ -29,6 +29,7 @@ connectFirestoreEmulator(firestore, "127.0.0.1", 8188);
 const hybrid = "tenant-rules-hybrid-01";
 const legacy = "tenant-rules-legacy-02";
 const ready = "tenant-rules-hybrid-ready-03";
+const migrating = "tenant-rules-migrating-04";
 let uid;
 async function putOrder(tenantId) {
   await db.collection("tenants").doc(tenantId).collection("orders").doc("test-order").create({
@@ -52,6 +53,8 @@ test.before(async () => {
       hybridBillingSuspended: true, active: false }],
     [legacy, { billingPolicyVersion: "legacy", active: true }],
     [ready, { billingPolicyVersion: "hybrid_v1", hybridBillingEnabled: true,
+      hybridBillingSuspended: false, active: true }],
+    [migrating, { billingPolicyVersion: "legacy", hybridBillingEnabled: true,
       hybridBillingSuspended: false, active: true }],
   ]) {
     await db.collection("tenants").doc(tenantId).create({
@@ -230,3 +233,26 @@ test("Phase3AA Rules: even Super Admin client cannot self-certify Journal covera
     "nonfinancial-client-update");
 });
 
+
+test("Phase3AB Rules: a partially migrated tenant cannot forge Paid Hybrid Delivery through Client SDK", async () => {
+  await setMember(migrating, "owner");
+  const orderRef = doc(firestore, "tenants", migrating, "orders", "test-order");
+  for (const payload of [
+    { paymentStatus: "paid", paidAt: "2026-10-21T01:00:00Z" },
+    { paymentReceiptSource: "hybrid_cod_cashier_server" },
+    { refundBankReferenceHash: "a".repeat(64) },
+  ]) {
+    await assert.rejects(updateDoc(orderRef, payload), /permission/i);
+    await assert.rejects(setDoc(orderRef, payload, { merge: true }), /permission/i);
+  }
+  await updateDoc(orderRef, { status: "ready" }); // operational changes stay possible
+  const serverOrder = db.collection("tenants").doc(migrating).collection("orders");
+  await serverOrder.doc("migration-paid-01").set({
+    orderType: "delivery", paymentStatus: "paid", status: "delivered",
+    paidAt: "2026-10-21T01:00:00Z", tenantId: migrating, totalAmount: 100,
+  });
+  await assert.rejects(deleteDoc(doc(firestore, "tenants", migrating,
+    "orders", "migration-paid-01")), /permission/i);
+  assert.equal((await serverOrder.doc("migration-paid-01").get()).exists, true);
+  assert.equal((await serverOrder.doc("test-order").get()).data().paymentStatus, "unpaid");
+});
