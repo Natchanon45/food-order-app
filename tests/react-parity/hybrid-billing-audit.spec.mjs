@@ -234,3 +234,12 @@ test("original Cashier, registration, and Firestore indexes are unchanged by min
   assert.doesNotMatch(signup, /resolveSignupBillingStartDate|hybridBillingStartDate/);
   assert.match(preview, /signupStartDateForPreview/);
 });
+
+test("callable limits period query to the selected Bangkok day (read-only contract)", () => {
+  const fs = require("node:fs");
+  const source = fs.readFileSync("functions/hybrid-billing-preview.js", "utf8");
+  assert.match(source, /const readEnd = selectedDayEnd < end \? selectedDayEnd : end/);
+  assert.match(source, /paidOrdersInWindow\(tenantRef, start, readEnd\)/);
+  assert.match(source, /throughDate: onDate/);
+  assert.match(source, /selectedDate: onDate/);
+});

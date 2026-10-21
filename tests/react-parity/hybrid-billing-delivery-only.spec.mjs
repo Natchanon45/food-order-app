@@ -106,3 +106,53 @@ test("second anniversary cycle below threshold remains fixed-fee", () => {
   assert.equal(result.invoices[0].date, "2026-12-15");
   assert.equal(result.invoices[0].issueAtCycleClose, true);
 });
+
+// The date selector is an as-of report, not merely an arbitrary cycle picker.
+test("selected day excludes later receipts within the same anniversary cycle", () => {
+  const rows = [
+    order(9000, { paidAt: paidTime("2026-10-18T11:00:00Z") }),
+    order(4000, { paidAt: paidTime("2026-10-19T11:00:00Z") }),
+    order(2000, { paidAt: paidTime("2026-10-20T11:00:00Z") }),
+  ];
+  const initial = previewDeliveryOnlyCycle({
+    orders: rows, signupDate: "2026-10-16", cycleId: "2026-10-16",
+    throughDate: "2026-10-18",
+  });
+  assert.equal(initial.totalDeliverySales, 9000);
+  assert.equal(initial.mode, "trial_free");
+  assert.equal(initial.totalFee, 0);
+  const triggered = previewDeliveryOnlyCycle({
+    orders: rows, signupDate: "2026-10-16", cycleId: "2026-10-16",
+    throughDate: "2026-10-19",
+  });
+  assert.equal(triggered.totalDeliverySales, 13000);
+  assert.equal(triggered.triggerDate, "2026-10-19");
+  assert.equal(triggered.totalFee, 200);
+  const later = previewDeliveryOnlyCycle({
+    orders: rows, signupDate: "2026-10-16", cycleId: "2026-10-16",
+    throughDate: "2026-10-20",
+  });
+  assert.equal(later.totalDeliverySales, 15000);
+  assert.equal(later.totalFee, 300);
+});
+test("selected Bangkok midnight and cycle boundary never include next cycle", () => {
+  const rows = [
+    order(9000, { paidAt: paidTime("2026-11-15T16:59:59Z") }),
+    order(12000, { paidAt: paidTime("2026-11-15T17:00:00Z") }),
+  ];
+  const first = previewDeliveryOnlyCycle({ orders: rows,
+    signupDate: "2026-10-16", cycleId: "2026-10-16",
+    throughDate: "2026-11-15" });
+  assert.equal(first.totalDeliverySales, 9000);
+  const second = previewDeliveryOnlyCycle({ orders: rows,
+    signupDate: "2026-10-16", cycleId: "2026-11-16",
+    throughDate: "2026-11-16" });
+  assert.equal(second.totalDeliverySales, 12000);
+});
+test("as-of day cannot lie outside anniversary period", () => {
+  const base = { orders: [], signupDate: "2026-10-16", cycleId: "2026-10-16" };
+  assert.throws(() => previewDeliveryOnlyCycle({ ...base, throughDate: "2026-10-15" }),
+    /outside the billing cycle/);
+  assert.throws(() => previewDeliveryOnlyCycle({ ...base, throughDate: "2026-11-16" }),
+    /outside the billing cycle/);
+});

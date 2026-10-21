@@ -52,3 +52,13 @@ test("hybrid report is routed, localized and uses backend preview, never payment
     assert.ok(dict[locale]?.hybrid_report?.preview_only);
   }
 });
+
+test("selected day changes invalidate stale read-only report requests", () => {
+  const page = fs.readFileSync("react-app/src/pages/HybridBillingReportPage.jsx", "utf8");
+  const backend = fs.readFileSync("functions/hybrid-billing-preview.js", "utf8");
+  assert.match(page, /const requestVersion = useRef\(0\)/);
+  assert.match(page, /version === requestVersion\.current/);
+  assert.match(page, /requestVersion\.current \+= 1/);
+  assert.match(backend, /const readEnd = selectedDayEnd < end \? selectedDayEnd : end/);
+  assert.match(backend, /throughDate: onDate/);
+});

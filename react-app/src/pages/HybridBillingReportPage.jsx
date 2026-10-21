@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
 import { useTenant } from "@/tenant/TenantProvider";
@@ -28,26 +28,34 @@ export function HybridBillingReportPage() {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const requestVersion = useRef(0);
   const stylesReady = useParityPage({
     title: t("hybrid_report.title"),
     bodyClass: "revenue-share-report-page hybrid-report-page",
     styles: ["app.css", "icons.css", "revenue-share-report.css", "hybrid-billing-report.css"],
   });
   const reload = () => {
+    const version = ++requestVersion.current;
     setLoading(true);
     setError("");
     getHybridBillingPreview(onDate)
-      .then(setData)
+      .then(result => {
+        if (version === requestVersion.current) setData(result);
+      })
       .catch(err => {
+        if (version !== requestVersion.current) return;
         console.error("HYBRID_BILLING_PREVIEW_FAILED", err);
         setData(null);
         setError(t("hybrid_report.error"));
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (version === requestVersion.current) setLoading(false);
+      });
   };
   useEffect(() => {
     if (tenant?.billingPolicyVersion === "hybrid_v1"
       && ["owner", "admin"].includes(auth.profile?.role)) reload();
+    return () => { requestVersion.current += 1; };
   }, [tenant?.id, tenant?.billingPolicyVersion, auth.profile?.role, onDate]);
 
   const number = value => formatNumber(Number(value || 0), {

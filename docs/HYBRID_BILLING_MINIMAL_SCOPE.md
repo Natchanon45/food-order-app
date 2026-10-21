@@ -26,3 +26,8 @@ The sole change is the **Tenant platform fee calculated from paid Delivery goods
 
 ## Chat handoff (update on every continuation)
 Repository: `Natchanon45/food-order-app`. Branch: `feature/hybrid-billing-delivery-only-minimal`. Draft PR #8: https://github.com/Natchanon45/food-order-app/pull/8. Base: `feature/react-firebase-port`, pinned SHA `c9aef253e5d8e0953900a8bb34dbb6921ab40357`. Historic PR #7 must remain Draft/unmerged. Use GitHub-first; do not consume Mac MCP quota for ordinary source/CI work. Verify exact HEAD, working tree scope, push/PR CI on continuation. Before chat context ends update this handoff with exact latest HEAD, verified runs, remaining blockers, and reusable new-chat command.
+
+## Final acceptance close-out: date-accurate read-only report
+- The selected Bangkok report date is now a true **as-of day**: a paid Delivery receipt later in the same anniversary cycle must not alter that day's accumulated threshold, fee, or displayed sales. Query ends at the next Bangkok midnight and the pure adapter independently bounds rows by selected day.
+- Rapid report date changes/refreshes invalidate stale requests instead of overwriting a newer selected period. All changes stay inside the pure calculator/preview and existing report UI.
+- No changes to payment writers, Cashier, original signup, Firestore index/rules, POS or Lalamove. No automatic money collection or live deployment.

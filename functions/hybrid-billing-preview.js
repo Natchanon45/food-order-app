@@ -179,6 +179,10 @@ async function previewHybridCycle(tenantRef, tenant, onDate, db,
   signupDate = resolveHybridStartDate(tenant)) {
   const cycle = billingCycle(signupDate, onDate);
   const { start, end } = cycleWindow(cycle);
+  const followingDay = new Date(Date.parse(onDate + "T00:00:00Z") + 86400000)
+    .toISOString().slice(0, 10);
+  const selectedDayEnd = new Date(`${followingDay}T00:00:00+07:00`);
+  const readEnd = selectedDayEnd < end ? selectedDayEnd : end;
   // Fail closed rather than showing a plausible partial number when legacy
   // paid Delivery records lack canonical timestamps.
   const audit = await auditPaidDeliveryCoverage(tenantRef);
@@ -189,13 +193,14 @@ async function previewHybridCycle(tenantRef, tenant, onDate, db,
     : cycle.firstCycle && tenant.hybridBillingSnapshot
       ? tenant.hybridBillingSnapshot
       : await loadHybridBillingSettings(db));
-  const orders = await paidOrdersInWindow(tenantRef, start, end);
+  const orders = await paidOrdersInWindow(tenantRef, start, readEnd);
   const result = previewDeliveryOnlyCycle({
-    orders, signupDate, cycleId: cycle.id, settings: config,
+    orders, signupDate, cycleId: cycle.id, throughDate: onDate, settings: config,
   });
   const now = new Date(), ended = now >= end, today = dateKey(now);
   return {
-    ...result, tenantId: tenantRef.id, orderCountRead: orders.length,
+    ...result, tenantId: tenantRef.id, selectedDate: onDate,
+    orderCountRead: orders.length,
     paidDeliveryAuditCount: audit.paidDeliveryCount,
     priceLocked: Boolean(locked), source: locked ? "billing_snapshot" : "prospective_estimate",
     coverageCertified: false, canIssueInvoice: false, periodEnded: ended,
