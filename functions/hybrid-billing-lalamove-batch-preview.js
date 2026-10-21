@@ -108,7 +108,7 @@ function reconcileHybridLalamoveCodBatch({
   collected,fees,remitted,
   allocations.map(a=>[a.orderId,a.providerOrderId,a.collectedCodCents,
     a.feeCents,a.remittedCents,a.deliveryEvidenceDigest])]);
- return {tenantId,batchId:provider.batchId,orderCount:allocations.length,
+ return {tenantId,batchId:provider.batchId,transferReferenceSha256:provider.transferReferenceSha256,orderCount:allocations.length,
   collectedCodCents:collected,providerFeeCents:fees,matchedPostedCreditCents:remitted,
   allocations,witnessDigest:witness,
   status:"mock_only_batch_evidence_shape_match_not_settlement",
