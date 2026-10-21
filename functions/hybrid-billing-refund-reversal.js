@@ -6,6 +6,7 @@
 const {createHash}=require("node:crypto");
 const {Timestamp,FieldValue}=require("firebase-admin/firestore");
 const {paidDeliverySale}=require("./hybrid-billing-orders");
+const {dateKey}=require("./hybrid-billing-core");
 const {journalReceiptIssue,prepareRefundJournal}=require("./hybrid-billing-receipt-journal");
 const {assertHybridEpochDemoOptIn,requireHybridEpochAdmissionCandidate}=require("./hybrid-billing-writer-epoch-candidate");
 const ID=/^[A-Za-z0-9_-]{8,128}$/;
@@ -103,7 +104,7 @@ async function recordHybridVerifiedRefund({db,tenantId,orderId,reviewerUid,
   const apply=await prepareRefundJournal({tx,tenantRef:t,tenantId,orderId,
     actorUid:reviewerUid,proof,originalNet,serverTimestamp});
   if(epochAdmissionDemo)await requireHybridEpochAdmissionCandidate({
-    tx,tenantRef:t,sourceKey:"refund_initial"});
+    tx,tenantRef:t,sourceKey:"refund_initial",sourceDay:dateKey(proof.refundAt)});
   tx.create(claimRef,{tenantId,orderId,source:SOURCE,
     referenceHash:proof.referenceHash,evidenceSha256:proof.evidenceSha256,
     recordedAt:serverTimestamp()});
