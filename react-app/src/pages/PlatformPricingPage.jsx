@@ -14,9 +14,6 @@ import {
   saveAdminSubscriptionPricing,
   subscriptionVatLabel,
 } from "@/data/subscriptionPricing";
-import {
-  loadAdminHybridBillingSettings, saveAdminHybridBillingSettings
-} from "@/data/hybridBillingSettings";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 
@@ -51,9 +48,6 @@ export function PlatformPricingPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const lastVatRate = useRef(7);
-  const [hybridConfig, setHybridConfig] = useState(null);
-  const [hybridLoading, setHybridLoading] = useState(true);
-  const [hybridSaving, setHybridSaving] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -72,34 +66,6 @@ export function PlatformPricingPage() {
     }
   };
 
-  useEffect(() => {
-    if (profile?.role !== "super_admin") return undefined;
-    let mounted = true;
-    loadAdminHybridBillingSettings()
-      .then(config => { if (mounted) setHybridConfig(config); })
-      .catch(error => {
-        console.error("HYBRID_SETTINGS_LOAD_FAILED", error);
-        if (mounted) showToast(t("hybrid_billing.failed"), "error");
-      })
-      .finally(() => { if (mounted) setHybridLoading(false); });
-    return () => { mounted = false; };
-  }, [profile?.role]);
-
-  const saveHybrid = async event => {
-    event.preventDefault();
-    if (!hybridConfig) return;
-    setHybridSaving(true);
-    try {
-      const config = await saveAdminHybridBillingSettings(hybridConfig);
-      setHybridConfig(config);
-      showToast(t("hybrid_billing.saved"));
-    } catch (error) {
-      console.error("HYBRID_SETTINGS_SAVE_FAILED", error);
-      showToast(t("hybrid_billing.failed"), "error");
-    } finally {
-      setHybridSaving(false);
-    }
-  };
   useEffect(() => {
     if (profile?.role !== "super_admin") return undefined;
     let alive = true;
@@ -181,49 +147,6 @@ export function PlatformPricingPage() {
           <p>{t("platform.pricing.hero_description")}</p>
         </section>
 
-        <section className="platform-pricing-grid">
-          <form className="card platform-pricing-form-card" id="hybridBillingForm" onSubmit={saveHybrid}>
-            <div className="section-title"><h2><i className="bi bi-graph-up-arrow" aria-hidden="true"></i> {t("hybrid_billing.title")}</h2></div>
-            <p>{t("hybrid_billing.description")}</p>
-            <p className="field-help">{t("hybrid_billing.first_month")}</p>
-            {hybridConfig ? (
-              <div className="platform-pricing-fields">
-                {[
-                  ["monthlyFee", "monthly", 0.01, 1000000, 0.01],
-                  ["deliveryThreshold", "threshold", 0.01, 1000000000, 0.01],
-                  ["deliveryShareRate", "rate", 0, 100, 0.01],
-                  ["monthlySlipQuota", "quota", 0, 1000000, 1],
-                ].map(([field, key, min, max, step]) => (
-                  <label key={field}>
-                    <span>{t(`hybrid_billing.${key}`)}</span>
-                    <input id={`hybrid-${field}`} type="number" required min={min} max={max}
-                      step={step} value={hybridConfig[field]} onChange={e => setHybridConfig(current => ({
-                        ...current, [field]: e.target.value
-                      }))} />
-                  </label>
-                ))}
-              </div>
-            ) : <p role="alert">{hybridLoading ? t("shared.state.loading") : t("hybrid_billing.failed")}</p>}
-            <div className="platform-pricing-actions">
-              <button className="btn btn-primary" type="submit" disabled={!hybridConfig || hybridSaving}>
-                <i className="bi bi-floppy" aria-hidden="true"></i><span>{t("hybrid_billing.save")}</span>
-              </button>
-            </div>
-          </form>
-          <aside className="card platform-pricing-preview-card">
-            <div className="section-title"><h2>{t("hybrid_billing.title")}</h2></div>
-            <p>{t("hybrid_billing.description")}</p>
-            {hybridConfig ? (
-              <div className="platform-pricing-breakdown">
-                <div><span>{t("hybrid_billing.monthly")}</span><strong>{money(Number(hybridConfig.monthlyFee))}</strong></div>
-                <div><span>{t("hybrid_billing.threshold")}</span><strong>{money(Number(hybridConfig.deliveryThreshold))}</strong></div>
-                <div><span>{t("hybrid_billing.rate")}</span><strong>{hybridConfig.deliveryShareRate}%</strong></div>
-                <div><span>{t("hybrid_billing.quota")}</span><strong>{hybridConfig.monthlySlipQuota}</strong></div>
-              </div>
-            ) : null}
-          </aside>
-        </section>
-        <p className="field-help">{t("hybrid_billing.legacy")}</p>
         <section className="platform-pricing-grid">
           <form id="pricingForm" className="card platform-pricing-form-card" onSubmit={submit}>
             <div className="section-title"><h2>Premium</h2></div>

@@ -93,14 +93,11 @@ test("registration only offers business services and server selects hybrid polic
   assert.ok(signup.includes('billingPolicyVersion: "hybrid_v1"'));
   assert.ok(signup.includes('hybridBillingEnabled: false'));
 });
-test("pricing editor & translations expose all four editable values", () => {
+test("subscription pricing does not load inactive Hybrid Billing settings", () => {
   const page = fs.readFileSync("react-app/src/pages/PlatformPricingPage.jsx", "utf8");
-  for (const key of ["monthlyFee", "deliveryThreshold", "deliveryShareRate", "monthlySlipQuota"]) assert.ok(page.includes(key));
-  const dictionaries = JSON.parse(fs.readFileSync("react-app/src/i18n/parity-translations.json", "utf8"));
-  for (const locale of ["th", "en", "my", "lo", "km"]) {
-    assert.ok(dictionaries[locale]?.auth?.register?.hybrid?.share_detail);
-    assert.ok(dictionaries[locale]?.hybrid_billing?.description);
-  }
+  assert.match(page, /id="pricingForm"/);
+  assert.match(page, /saveAdminSubscriptionPricing\(config\)/);
+  assert.doesNotMatch(page, /loadAdminHybridBillingSettings|saveAdminHybridBillingSettings|hybridBillingForm|hybridConfig/);
 });
 test("legacy subscription schedulers skip new hybrid tenants", () => {
   const backend = fs.readFileSync("functions/subscription-admin.js", "utf8");
