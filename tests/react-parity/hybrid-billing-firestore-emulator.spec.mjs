@@ -322,6 +322,49 @@ test("disabling Hybrid collection restores only Hybrid suspension without erasin
   assert.equal((await invoiceRef(ref).get()).data().status, "issued");
 });
 
+test("unapproved bank proof cannot clear an overdue Hybrid invoice or restore access", async () => {
+  const { tenant, ref } = await fixture();
+  await _test.issueForTenant(db, ref, tenant, "2024-10-11", attest);
+  await invoiceRef(ref).update({
+    suspendFrom: "2024-10-12", paymentStatus: "pending", paymentId: "unreviewed-payment",
+  });
+  // Pending proof does not mean funds have been reviewed/received.
+  assert.equal((await _test.reconcileTenantAccess(db, ref, tenant)).action, "suspended");
+  assert.equal((await ref.get()).data().active, false);
+  assert.equal((await _test.reconcileTenantAccess(db, ref, tenant)).action, "none");
+  assert.equal((await ref.get()).data().active, false);
+
+  await invoiceRef(ref).update({ status: "paid", paymentStatus: "approved" });
+  assert.equal((await _test.reconcileTenantAccess(db, ref, tenant)).action, "restored");
+  assert.equal((await ref.get()).data().active, true);
+});
+
+test("Hybrid access reconciliation respects the CURRENT Tenant, not a stale caller snapshot", async () => {
+  const { tenant, ref } = await fixture();
+  await _test.issueForTenant(db, ref, tenant, "2024-10-11", attest);
+  await invoiceRef(ref).update({ suspendFrom: "2024-10-12" });
+  await ref.update({ hybridBillingLive: false }); // A separate Super Admin action.
+  const result = await _test.reconcileTenantAccess(db, ref, tenant);
+  assert.equal(result.action, "none");
+  assert.equal(result.reason, "not_enabled");
+  assert.equal((await ref.get()).data().active, true);
+});
+
+test("Hybrid reconciliation refuses a reassigned slug and never mutates another Tenant", async () => {
+  const { tenant, ref } = await fixture();
+  await _test.issueForTenant(db, ref, tenant, "2024-10-11", attest);
+  await invoiceRef(ref).update({ suspendFrom: "2024-10-12" });
+  const slugRef = db.collection("tenantSlugs").doc(tenant.slug);
+  await slugRef.update({ tenantId: "unrelated-tenant", active: true });
+  await assert.rejects(
+    _test.reconcileTenantAccess(db, ref, tenant),
+    /HYBRID_TENANT_SLUG_OWNERSHIP_CHANGED/,
+  );
+  assert.equal((await ref.get()).data().active, true);
+  assert.equal((await slugRef.get()).data().active, true);
+  assert.equal((await slugRef.get()).data().tenantId, "unrelated-tenant");
+});
+
 test("Tenant billing callable rejects cross-shop invoice history access", async () => {
   const own = await fixture();
   const other = await fixture();
