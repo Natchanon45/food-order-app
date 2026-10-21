@@ -11,6 +11,7 @@ const require = createRequire(new URL("../../functions/bootstrap.js", import.met
 const admin = require("firebase-admin");
 const { getFirestore, Timestamp } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
+const { getAuth } = require("firebase-admin/auth");
 const { _test } = require("./hybrid-billing-ledger.js");
 
 admin.initializeApp({
@@ -201,4 +202,47 @@ test("submitted bank-slip and Super Admin review are transactional against emula
   assert.equal(reviewed.status, "approved");
   assert.equal((await invoiceRef(ref).get()).data().status, "paid");
   assert.equal((await paymentRef.get()).data().status, "approved");
+});
+
+test("Auth and Firestore emulators: signup is gated, first Bangkok request date is immutable, activation is idempotent", async () => {
+  if (!process.env.FIREBASE_AUTH_EMULATOR_HOST) throw new Error("HYBRID_AUTH_EMULATOR_REQUIRED");
+  const uid = "owner-" + randomUUID();
+  const email = "hybrid-" + randomUUID().slice(0, 10) + "@example.test";
+  const slug = "hybrid-new-" + randomUUID().slice(0, 14);
+  await getAuth().createUser({ uid, email, emailVerified: true });
+  const { requestTrialTenantSignup, activateTrialTenantSignup } =
+    require("./public-signup.js");
+  const request = {
+    auth: { uid, token: { email } },
+    data: {
+      email, ownerName: "Emulator Tenant Owner", phone: "0812345678",
+      businessType: "restaurant_cafe", orderDeliveryShopName: "Hybrid Test Cafe",
+      retailPosShopName: "", slug, packageId: "premium",
+    },
+  };
+  const configRef = db.collection("platformSettings").doc("hybridBilling");
+  await configRef.set({ registrationReady: false }, { merge: true });
+  await assert.rejects(requestTrialTenantSignup.run(request),
+    /Hybrid registration is pending verified billing rollout/);
+  await configRef.set({ registrationReady: true }, { merge: true });
+  const created = await requestTrialTenantSignup.run(request);
+  assert.equal(created.ok, true);
+  const signupRef = db.collection("publicTenantSignups").doc(uid);
+  const first = (await signupRef.get()).data();
+  assert.equal(first.billingPolicyVersion, "hybrid_v1");
+  const firstCreatedAt = first.createdAt.toMillis();
+  const firstAnniversary = first.hybridBillingStartDate;
+  await requestTrialTenantSignup.run(request);
+  const retry = (await signupRef.get()).data();
+  assert.equal(retry.createdAt.toMillis(), firstCreatedAt);
+  assert.equal(retry.hybridBillingStartDate, firstAnniversary);
+  const activation = await activateTrialTenantSignup.run({ auth: request.auth, data: {} });
+  const tenant = (await db.collection("tenants").doc(activation.tenantId).get()).data();
+  assert.equal(tenant.hybridBillingStartDate, firstAnniversary);
+  assert.equal(tenant.billingPolicyVersion, "hybrid_v1");
+  const again = await activateTrialTenantSignup.run({ auth: request.auth, data: {} });
+  assert.equal(again.tenantId, activation.tenantId);
+  await assert.rejects(requestTrialTenantSignup.run(request),
+    /HYBRID_SIGNUP_ALREADY_ACTIVE/);
+  await configRef.set({ registrationReady: false }, { merge: true });
 });
