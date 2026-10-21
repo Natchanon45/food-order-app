@@ -272,3 +272,23 @@ test("Auth and Firestore emulators: signup is gated, first Bangkok request date 
   await deleteApp(app);
   await configRef.set({ registrationReady: false }, { merge: true });
 });
+
+test("Slip2Go allowance is charged once per order and rejects the next order at quota", async () => {
+  const { tenant, ref } = await fixture();
+  await db.collection("platformSettings").doc("hybridBilling").set({
+    monthlyFee: 590, deliveryThreshold: 10000,
+    deliveryShareRate: 5, monthlySlipQuota: 1,
+  }, { merge: true });
+  const ledger = require("./hybrid-billing-ledger.js");
+  assert.equal(await ledger.reserveHybridSlipCredit(db, ref, tenant, "order-one"), true);
+  assert.equal(await ledger.reserveHybridSlipCredit(db, ref, tenant, "order-one"), true);
+  assert.equal(await ledger.reserveHybridSlipCredit(db, ref, tenant, "order-two"), false);
+  const superUid = "quota-super-" + randomUUID();
+  await db.collection("users").doc(superUid).set({ role: "super_admin", active: true });
+  const status = await ledger.getTenantHybridSlipUsage.run({
+    auth: { uid: superUid }, data: { tenantId: tenant.id },
+  });
+  assert.equal(status.used, 1);
+  const counter = await ref.collection("hybridSlipUsage").doc(status.cycleId).get();
+  assert.equal(counter.data().count, 1);
+});
