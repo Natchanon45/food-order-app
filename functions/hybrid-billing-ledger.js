@@ -426,4 +426,4 @@ async function reserveHybridSlipCredit(db, tenantRef, tenant, orderId) {
 }
 exports.reserveHybridSlipCredit = reserveHybridSlipCredit;
 
-exports._test = { eligibleForIssuance, stateForInvoice, safeInvoiceSummary, normalizedDestination, sameBillingPrices };
+exports._test = { eligibleForIssuance, stateForInvoice, safeInvoiceSummary, normalizedDestination, sameBillingPrices, issueForTenant, reconcileTenantAccess };
