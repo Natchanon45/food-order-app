@@ -2794,3 +2794,38 @@ test("emulator Phase3AL: migrating Hybrid cashier rejects server COD with no Pai
     assert.equal((await ref.collection("hybridBillingReceiptEvents").get()).size, 0);
   }
 });
+
+test("emulator Phase3AN: legacy access mirror rejects Hybrid and journal-only tenants atomically", async () => {
+  const { mirrorLegacyTenantAccess } = require(
+    "../../functions/hybrid-billing-legacy-access-guard.js");
+  const fixtures = [
+    ["tenant-emu-3an-hybrid", { billingPolicyVersion: "hybrid_v1",
+      hybridBillingEnabled: true, hybridBillingSuspended: true, active: false }],
+    ["tenant-emu-3an-journal", { billingPolicyVersion: "legacy",
+      hybridReceiptJournalMode: "", active: false }],
+    ["tenant-emu-3an-coverage", { billingPolicyVersion: "legacy",
+      hybridReceiptJournalCoverageReady: true, active: false }],
+  ];
+  for (const [id, data] of fixtures) {
+    const ref = tenant(id);
+    const slug = id + "-slug";
+    await ref.create({ slug, ...data });
+    await db.collection("tenantSlugs").doc(slug).set({ tenantId: id, active: false });
+    await assert.rejects(mirrorLegacyTenantAccess({
+      db, tenantRef: ref, patch: { active: true, revenueShareSuspended: false },
+      serverTimestamp: () => Timestamp.now(),
+    }), /HYBRID_LEGACY_ACCESS_TRUSTED_WRITER_REQUIRED/);
+    assert.equal((await ref.get()).data().active, false);
+    assert.equal((await db.collection("tenantSlugs").doc(slug).get()).data().active, false);
+  }
+  const legacyRef = tenant("tenant-emu-3an-legacy");
+  const legacySlug = "tenant-emu-3an-legacy-slug";
+  await legacyRef.create({ slug: legacySlug, billingPolicyVersion: "legacy", active: false });
+  await db.collection("tenantSlugs").doc(legacySlug).set({ active: false });
+  await mirrorLegacyTenantAccess({
+    db, tenantRef: legacyRef, patch: { active: true, revenueShareSuspended: false },
+    serverTimestamp: () => Timestamp.now(),
+  });
+  assert.equal((await legacyRef.get()).data().active, true);
+  assert.equal((await db.collection("tenantSlugs").doc(legacySlug).get()).data().active, true);
+});

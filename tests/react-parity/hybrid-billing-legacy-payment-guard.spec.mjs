@@ -47,3 +47,25 @@ test("both exported legacy paid Delivery Admin SDK transaction writes are fenced
   assert.ok(exportsSource.includes("exports.approveDeliveryPaymentReview"));
   assert.ok(!exportsSource.includes("hybrid-billing-demo-enforced-writer"));
 });
+
+test("Phase3AN: Revenue Share access mirror is an atomic tenant-read guard, not an unguarded batch", () => {
+  const revenue = fs.readFileSync("functions/revenue-share.js", "utf8");
+  const guard = fs.readFileSync("functions/hybrid-billing-legacy-access-guard.js", "utf8");
+  const start = revenue.indexOf("async function mirrorTenantAccess(");
+  const end = revenue.indexOf("\nfunction overrideMatches(", start);
+  assert.ok(start > 0 && end > start);
+  const mirror = revenue.slice(start, end);
+  assert.match(revenue, /require\("\.\/hybrid-billing-legacy-access-guard"\)/);
+  assert.match(mirror, /return mirrorLegacyTenantAccess\(/);
+  assert.doesNotMatch(mirror, /db\.batch\(|\.commit\(/);
+  assert.match(guard, /db\.runTransaction\(async tx =>/);
+  assert.match(guard, /tx\.get\(tenantRef\)/);
+  assert.match(guard, /legacyDeliveryPaidWriterAllowed\(snapshot\.data\(\)\)/);
+  assert.match(guard, /tx\.set\(tenantRef/);
+  assert.ok(guard.indexOf("tx.get(tenantRef)") <
+    guard.indexOf("tx.set(tenantRef"), "read guard must precede all writes");
+  // Explicitly not yet globally covered; a second legacy admin file still
+  // holds independent tenant-active writers for the next review.
+  const subscription = fs.readFileSync("functions/subscription-admin.js", "utf8");
+  assert.match(subscription, /exports\.updateTenantSubscription/);
+});

@@ -3,6 +3,7 @@ const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
 const { inspectSlip } = require("./slip-verification");
+const { mirrorLegacyTenantAccess } = require("./hybrid-billing-legacy-access-guard");
 const {
   normalizeBusinessType,
   normalizeRestaurantScope,
@@ -358,12 +359,13 @@ function subscriptionActive(tenant = {}, now = new Date()) {
 }
 
 async function mirrorTenantAccess(tenantRef, tenant, patch, tenantOnlyPatch = {}) {
-  const db = getFirestore();
-  const slug = String(tenant.slug || "").trim();
-  const batch = db.batch();
-  batch.set(tenantRef, { ...patch, ...tenantOnlyPatch, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
-  if (slug) batch.set(db.collection("tenantSlugs").doc(slug), { ...patch, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
-  await batch.commit();
+  // Phase3AN: the only Revenue Share access mirror goes through a transaction
+  // that re-reads the CURRENT tenant marker. Do not trust an earlier snapshot:
+  // a Hybrid finance suspension may have raced a legacy review/unlock.
+  return mirrorLegacyTenantAccess({
+    db: getFirestore(), tenantRef, patch, tenantOnlyPatch,
+    serverTimestamp: () => FieldValue.serverTimestamp(),
+  });
 }
 
 function overrideMatches(tenant = {}, startDate, endDate) {

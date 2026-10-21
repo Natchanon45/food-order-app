@@ -11,12 +11,12 @@ const files=()=>readdirSync("functions").filter(n=>n.endsWith(".js"));
 test("Phase3AI existing privileged source SHA fingerprints match reviewed Git blobs",()=>{
  for(const [name,sha] of Object.entries(PINS))
   assert.equal(gitBlobSha(read(name)),sha,"REVIEWED_SOURCE_CHANGED: "+name);
- assert.equal(Object.keys(PINS).length,8);
+ assert.equal(Object.keys(PINS).length,10);
 });
 test("Phase3AI baseline audit scans source files and cannot claim global trust",()=>{
  const actual=auditHybridPrivilegedIngressCandidate({readSource:read,listFiles:files});
  assert.equal(actual.status,"source_review_baseline_only");
- assert.equal(actual.reviewedEntrypoints,8);
+ assert.equal(actual.reviewedEntrypoints,10);
  assert.deepEqual(actual.observed.map(x=>x.file),
    ["delivery-slip.js","operational-orders.js","public-delivery-submit.js"]);
  assert.equal(actual.unknownAdminSdkRoutesClosed,false);
